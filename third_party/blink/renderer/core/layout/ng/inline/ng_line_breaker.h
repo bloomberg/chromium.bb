@@ -145,6 +145,7 @@ class CORE_EXPORT NGLineBreaker {
   void HandleOverflow();
   void Rewind(unsigned new_end);
 
+  const ComputedStyle& ComputeCurrentStyle(unsigned item_result_index) const;
   void SetCurrentStyle(const ComputedStyle&);
 
   void MoveToNextOf(const NGInlineItem&);
@@ -224,6 +225,7 @@ class CORE_EXPORT NGLineBreaker {
   NGLineBreakerMode mode_;
   const NGConstraintSpace& constraint_space_;
   NGExclusionSpace* exclusion_space_;
+  scoped_refptr<const NGInlineBreakToken> break_token_;
   scoped_refptr<const ComputedStyle> current_style_;
 
   LazyLineBreakIterator break_iterator_;
