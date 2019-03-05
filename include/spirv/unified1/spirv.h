@@ -1209,5 +1209,5 @@ typedef enum SpvOp_ {
     SpvOpMax = 0x7fffffff,
 } SpvOp;
 
-#endif  // #ifndef spirv_H
+#endif
 
