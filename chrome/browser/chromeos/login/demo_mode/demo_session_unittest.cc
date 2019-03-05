@@ -16,6 +16,7 @@
 #include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/timer/mock_timer.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_resources.h"
@@ -23,6 +24,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/component_updater/fake_cros_component_manager.h"
 #include "chrome/browser/prefs/browser_prefs.h"
+#include "chrome/browser/ui/apps/chrome_app_delegate.h"
 #include "chrome/browser/ui/ash/test_wallpaper_controller.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 #include "chrome/common/pref_names.h"
@@ -38,6 +40,8 @@
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "extensions/browser/app_window/app_window.h"
+#include "extensions/common/extension_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using component_updater::FakeCrOSComponentManager;
@@ -417,9 +421,13 @@ TEST_F(DemoSessionTest, MultipleEnsureOfflineResourcesLoaded) {
       demo_session->resources()->GetAbsolutePath(base::FilePath("foo.txt")));
 }
 
-TEST_F(DemoSessionTest, ShowSplashScreen) {
+TEST_F(DemoSessionTest, ShowSplashScreenUntilScreensaverShown) {
   DemoSession* demo_session = DemoSession::StartIfInDemoMode();
   ASSERT_TRUE(demo_session);
+
+  std::unique_ptr<base::MockOneShotTimer> timer =
+      std::make_unique<base::MockOneShotTimer>();
+  demo_session->SetTimerForTesting(std::move(timer));
 
   EXPECT_EQ(0, test_wallpaper_controller_.show_always_on_top_wallpaper_count());
   EXPECT_EQ(0,
@@ -427,15 +435,95 @@ TEST_F(DemoSessionTest, ShowSplashScreen) {
   session_manager_->SetSessionState(
       session_manager::SessionState::LOGIN_PRIMARY);
   wallpaper_controller_client_->FlushForTesting();
+  EXPECT_EQ(0, test_wallpaper_controller_.show_always_on_top_wallpaper_count());
+  EXPECT_EQ(0,
+            test_wallpaper_controller_.remove_always_on_top_wallpaper_count());
+
+  ASSERT_TRUE(FinishResourcesComponentLoad(
+      base::FilePath(kTestDemoModeResourcesMountPoint)));
+  wallpaper_controller_client_->FlushForTesting();
   EXPECT_EQ(1, test_wallpaper_controller_.show_always_on_top_wallpaper_count());
   EXPECT_EQ(0,
             test_wallpaper_controller_.remove_always_on_top_wallpaper_count());
 
-  session_manager_->SetSessionState(session_manager::SessionState::ACTIVE);
+  TestingProfile* profile = LoginDemoUser();
+  scoped_refptr<const extensions::Extension> screensaver_app =
+      extensions::ExtensionBuilder()
+          .SetManifest(extensions::DictionaryBuilder()
+                           .Set("name", "Test App")
+                           .Set("version", "1.0")
+                           .Set("manifest_version", 2)
+                           .Build())
+          .SetID(DemoSession::GetScreensaverAppId())
+          .Build();
+  extensions::AppWindow* app_window = new extensions::AppWindow(
+      profile, new ChromeAppDelegate(true /* keep_alive */),
+      screensaver_app.get());
+  demo_session->OnAppWindowActivated(app_window);
   wallpaper_controller_client_->FlushForTesting();
   EXPECT_EQ(1, test_wallpaper_controller_.show_always_on_top_wallpaper_count());
   EXPECT_EQ(1,
             test_wallpaper_controller_.remove_always_on_top_wallpaper_count());
+  app_window->OnNativeClose();
+
+  // The timer is cleared after splash screen is removed by the screensaver.
+  EXPECT_FALSE(demo_session->GetTimerForTesting());
+}
+
+TEST_F(DemoSessionTest, ShowSplashScreenUntilTimeout) {
+  DemoSession* demo_session = DemoSession::StartIfInDemoMode();
+  ASSERT_TRUE(demo_session);
+
+  std::unique_ptr<base::MockOneShotTimer> timer =
+      std::make_unique<base::MockOneShotTimer>();
+  demo_session->SetTimerForTesting(std::move(timer));
+
+  EXPECT_EQ(0, test_wallpaper_controller_.show_always_on_top_wallpaper_count());
+  EXPECT_EQ(0,
+            test_wallpaper_controller_.remove_always_on_top_wallpaper_count());
+  session_manager_->SetSessionState(
+      session_manager::SessionState::LOGIN_PRIMARY);
+  wallpaper_controller_client_->FlushForTesting();
+  EXPECT_EQ(0, test_wallpaper_controller_.show_always_on_top_wallpaper_count());
+  EXPECT_EQ(0,
+            test_wallpaper_controller_.remove_always_on_top_wallpaper_count());
+
+  ASSERT_TRUE(FinishResourcesComponentLoad(
+      base::FilePath(kTestDemoModeResourcesMountPoint)));
+  wallpaper_controller_client_->FlushForTesting();
+  EXPECT_EQ(1, test_wallpaper_controller_.show_always_on_top_wallpaper_count());
+  EXPECT_EQ(0,
+            test_wallpaper_controller_.remove_always_on_top_wallpaper_count());
+
+  base::MockOneShotTimer* timer_ptr =
+      static_cast<base::MockOneShotTimer*>(demo_session->GetTimerForTesting());
+  ASSERT_TRUE(timer_ptr);
+  timer_ptr->Fire();
+  wallpaper_controller_client_->FlushForTesting();
+  EXPECT_EQ(1, test_wallpaper_controller_.show_always_on_top_wallpaper_count());
+  EXPECT_EQ(1,
+            test_wallpaper_controller_.remove_always_on_top_wallpaper_count());
+
+  // Launching the screensaver will not trigger splash screen removal anymore.
+  TestingProfile* profile = LoginDemoUser();
+  scoped_refptr<const extensions::Extension> screensaver_app =
+      extensions::ExtensionBuilder()
+          .SetManifest(extensions::DictionaryBuilder()
+                           .Set("name", "Test App")
+                           .Set("version", "1.0")
+                           .Set("manifest_version", 2)
+                           .Build())
+          .SetID(DemoSession::GetScreensaverAppId())
+          .Build();
+  extensions::AppWindow* app_window = new extensions::AppWindow(
+      profile, new ChromeAppDelegate(true /* keep_alive */),
+      screensaver_app.get());
+  demo_session->OnAppWindowActivated(app_window);
+  wallpaper_controller_client_->FlushForTesting();
+  EXPECT_EQ(1, test_wallpaper_controller_.show_always_on_top_wallpaper_count());
+  EXPECT_EQ(1,
+            test_wallpaper_controller_.remove_always_on_top_wallpaper_count());
+  app_window->OnNativeClose();
 }
 
 using DemoSessionLocaleTest = DemoSessionTest;
