@@ -1944,6 +1944,7 @@ jumbo_source_set("unit_tests") {
     "html/forms/html_output_element_test.cc",
     "html/forms/html_select_element_test.cc",
     "html/forms/html_text_area_element_test.cc",
+    "html/forms/internal_popup_menu_test.cc",
     "html/forms/option_list_test.cc",
     "html/forms/password_input_type_test.cc",
     "html/forms/step_range_test.cc",
