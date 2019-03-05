@@ -8,6 +8,8 @@
 #include <random>
 #include <string>
 
+#include "libxml/parser.h"
+
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/i18n/icu_util.h"
@@ -44,7 +46,17 @@ extern "C" int LLVMFuzzerInitialize(int* argc, char*** argv) {
   return 0;
 }
 
+void ignore(void* ctx, const char* msg, ...) {
+  // Error handler to avoid error message spam from libxml parser.
+}
+
+class Env {
+ public:
+  Env() { xmlSetGenericErrorFunc(NULL, &ignore); }
+};
+
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
+  static Env env;
   if (size < sizeof(FuzzerFixedParams)) {
     return 0;
   }
