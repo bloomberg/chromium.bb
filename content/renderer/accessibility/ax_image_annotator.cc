@@ -148,8 +148,8 @@ void AXImageAnnotator::MarkAllImagesDirty() {
   for (auto& key_value : image_annotations_) {
     blink::WebAXObject image = blink::WebAXObject::FromWebDocumentByID(
         render_accessibility_->GetMainDocument(), key_value.first);
-    DCHECK(!image.IsDetached());
-    render_accessibility_->MarkWebAXObjectDirty(image, false /* subtree */);
+    if (!image.IsDetached())
+      render_accessibility_->MarkWebAXObjectDirty(image, false /* subtree */);
   }
   image_annotations_.clear();
 }
