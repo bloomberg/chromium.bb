@@ -12,6 +12,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/time/tick_clock.h"
 #include "base/values.h"
 #include "components/autofill_assistant/browser/metrics.h"
 #include "components/autofill_assistant/browser/protocol_utils.h"
@@ -34,11 +35,8 @@ static constexpr base::TimeDelta kPeriodicScriptCheckInterval =
     base::TimeDelta::FromSeconds(2);
 
 // Number of script checks to run after a call to StartPeriodicScriptChecks.
+// This limit does not apply when in autostart mode.
 static constexpr int kPeriodicScriptCheckCount = 10;
-
-// Maximum number of script checks we should do before failing when trying to
-// autostart.
-static constexpr int kAutostartCheckCountLimit = 5;
 
 // The initial progress to set when autostarting and showing the "Loading..."
 // message.
@@ -57,11 +55,13 @@ static const char* const kWebsiteVisitedBeforeParameterName =
 static const char* const kTrueValue = "true";
 }  // namespace
 
-Controller::Controller(content::WebContents* web_contents, Client* client)
+Controller::Controller(content::WebContents* web_contents,
+                       Client* client,
+                       const base::TickClock* tick_clock)
     : content::WebContentsObserver(web_contents),
       client_(client),
-      weak_ptr_factory_(this) {
-}
+      tick_clock_(tick_clock),
+      weak_ptr_factory_(this) {}
 
 Controller::~Controller() = default;
 
@@ -231,6 +231,7 @@ void Controller::EnterState(AutofillAssistantState state) {
 
   DCHECK_NE(state_, AutofillAssistantState::STOPPED)
       << "Unexpected transition from " << state_ << " to " << state;
+  DVLOG(2) << __func__ << ": " << state_ << " -> " << state;
 
   state_ = state;
   GetUiController()->OnStateChanged(state);
@@ -281,21 +282,26 @@ void Controller::StopPeriodicScriptChecks() {
 }
 
 void Controller::OnPeriodicScriptCheck() {
-  if (periodic_script_check_count_ <= 0) {
+  if (periodic_script_check_count_ > 0) {
+    periodic_script_check_count_--;
+  }
+
+  if (periodic_script_check_count_ <= 0 && !allow_autostart_) {
     DCHECK_EQ(0, periodic_script_check_count_);
     periodic_script_check_scheduled_ = false;
     return;
   }
 
-  if (should_fail_after_checking_scripts_ &&
-      ++total_script_check_count_ >= kAutostartCheckCountLimit) {
-    should_fail_after_checking_scripts_ = false;
-    OnFatalError(l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_DEFAULT_ERROR),
-                 Metrics::AUTOSTART_TIMEOUT);
+  if (allow_autostart_ && !autostart_timeout_script_path_.empty() &&
+      tick_clock_->NowTicks() >= absolute_autostart_timeout_) {
+    DVLOG(1) << __func__ << " giving up waiting on autostart.";
+    std::string script_path = autostart_timeout_script_path_;
+    autostart_timeout_script_path_.clear();
+    periodic_script_check_scheduled_ = false;
+    ExecuteScript(script_path, state_);
     return;
   }
 
-  periodic_script_check_count_--;
   script_tracker()->CheckScripts(kPeriodicScriptCheckInterval);
   base::PostDelayedTaskWithTraits(
       FROM_HERE, {content::BrowserThread::UI},
@@ -322,9 +328,8 @@ void Controller::OnGetScripts(const GURL& url,
     return;
   }
 
-  std::vector<std::unique_ptr<Script>> scripts;
-  bool parse_result = ProtocolUtils::ParseScripts(response, &scripts);
-  if (!parse_result) {
+  SupportsScriptResponseProto response_proto;
+  if (!response_proto.ParseFromString(response)) {
     DVLOG(2) << __func__ << " from " << script_domain_ << " returned "
              << "unparseable response";
     OnFatalError(l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_DEFAULT_ERROR),
@@ -332,9 +337,21 @@ void Controller::OnGetScripts(const GURL& url,
     return;
   }
 
+  std::vector<std::unique_ptr<Script>> scripts;
+  for (const auto& script_proto : response_proto.scripts()) {
+    ProtocolUtils::AddScript(script_proto, &scripts);
+  }
   if (scripts.empty()) {
     OnNoRunnableScripts();
     return;
+  }
+
+  if (allow_autostart_) {
+    autostart_timeout_script_path_ =
+        response_proto.script_timeout_error().script_path();
+    autostart_timeout_ = base::TimeDelta::FromMilliseconds(
+        response_proto.script_timeout_error().timeout_ms());
+    absolute_autostart_timeout_ = tick_clock_->NowTicks() + autostart_timeout_;
   }
 
   DVLOG(2) << __func__ << " from " << script_domain_ << " returned "
@@ -344,7 +361,8 @@ void Controller::OnGetScripts(const GURL& url,
   StartPeriodicScriptChecks();
 }
 
-void Controller::ExecuteScript(const std::string& script_path) {
+void Controller::ExecuteScript(const std::string& script_path,
+                               AutofillAssistantState end_state) {
   DCHECK(!script_tracker()->running());
   EnterState(AutofillAssistantState::RUNNING);
 
@@ -358,12 +376,14 @@ void Controller::ExecuteScript(const std::string& script_path) {
   // TODO(crbug.com/806868): Consider making ClearRunnableScripts part of
   // ExecuteScripts to simplify the controller.
   script_tracker()->ExecuteScript(
-      script_path, base::BindOnce(&Controller::OnScriptExecuted,
-                                  // script_tracker_ is owned by Controller.
-                                  base::Unretained(this), script_path));
+      script_path,
+      base::BindOnce(&Controller::OnScriptExecuted,
+                     // script_tracker_ is owned by Controller.
+                     base::Unretained(this), script_path, end_state));
 }
 
 void Controller::OnScriptExecuted(const std::string& script_path,
+                                  AutofillAssistantState end_state,
                                   const ScriptExecutor::Result& result) {
   if (!result.success) {
     DVLOG(1) << "Failed to execute script " << script_path;
@@ -414,19 +434,19 @@ void Controller::OnScriptExecuted(const std::string& script_path,
       DVLOG(1) << "Unexpected value for at_end: " << result.at_end;
       break;
   }
-  EnterState(AutofillAssistantState::PROMPT);
+  EnterState(end_state);
   GetOrCheckScripts();
 }
 
 bool Controller::MaybeAutostartScript(
     const std::vector<ScriptHandle>& runnable_scripts) {
-  // We want to g through all runnable autostart interrupts first, one at a
+  // We want to go through all runnable autostart interrupts first, one at a
   // time. To do that, always run highest priority autostartable interrupt from
   // runnable_script, which is ordered by priority.
   for (const auto& script : runnable_scripts) {
     if (script.autostart && script.interrupt) {
       std::string script_path = script.path;
-      ExecuteScript(script_path);
+      ExecuteScript(script_path, state_);
       // making a copy of script.path is necessary, as ExecuteScript clears
       // runnable_scripts, so script.path will not survive until the end of
       // ExecuteScript.
@@ -448,12 +468,17 @@ bool Controller::MaybeAutostartScript(
       }
     }
     if (autostart_count == 1) {
-      allow_autostart_ = false;
-      ExecuteScript(autostart_path);
+      DisableAutostart();
+      ExecuteScript(autostart_path, AutofillAssistantState::PROMPT);
       return true;
     }
   }
   return false;
+}
+
+void Controller::DisableAutostart() {
+  allow_autostart_ = false;
+  autostart_timeout_script_path_.clear();
 }
 
 void Controller::OnGetCookie(bool has_cookie) {
@@ -479,7 +504,6 @@ void Controller::OnSetCookie(bool result) {
 void Controller::FinishStart() {
   started_ = true;
   if (allow_autostart_) {
-    should_fail_after_checking_scripts_ = true;
     MaybeSetInitialDetails();
     SetStatusMessage(
         l10n_util::GetStringFUTF8(IDS_AUTOFILL_ASSISTANT_LOADING,
@@ -539,11 +563,7 @@ bool Controller::Terminate(Metrics::DropOutReason reason) {
 
 void Controller::OnScriptSelected(const std::string& script_path) {
   DCHECK(!script_path.empty());
-
-  // This is a script selected from the UI, so it should disable autostart.
-  allow_autostart_ = false;
-
-  ExecuteScript(script_path);
+  ExecuteScript(script_path, AutofillAssistantState::PROMPT);
 }
 
 void Controller::UpdateTouchableArea() {
@@ -634,10 +654,6 @@ void Controller::OnRunnableScriptsChanged(
   if (script_tracker()->running() || state_ == AutofillAssistantState::STOPPED)
     return;
 
-  if (!runnable_scripts.empty()) {
-    should_fail_after_checking_scripts_ = false;
-  }
-
   if (MaybeAutostartScript(runnable_scripts)) {
     return;
   }
@@ -665,11 +681,15 @@ void Controller::OnRunnableScriptsChanged(
   }
   SetDefaultChipType(chips.get());
 
-  if (allow_autostart_) {
+  if (chips->empty() && state_ == AutofillAssistantState::STARTING) {
+    // Continue waiting
+    return;
+  }
+
+  if (allow_autostart_ ||
+      state_ == AutofillAssistantState::AUTOSTART_FALLBACK_PROMPT) {
     // Autostart was expected, but only non-autostartable scripts were found.
-    //
-    // TODO(crbug.com/806868): Consider the case where no non-autostartable
-    // scripts were found.
+    DisableAutostart();
     EnterState(AutofillAssistantState::AUTOSTART_FALLBACK_PROMPT);
   } else {
     EnterState(AutofillAssistantState::PROMPT);

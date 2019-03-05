@@ -66,26 +66,6 @@ std::string ProtocolUtils::CreateGetScriptsRequest(
 }
 
 // static
-bool ProtocolUtils::ParseScripts(
-    const std::string& response,
-    std::vector<std::unique_ptr<Script>>* scripts) {
-  DCHECK(scripts);
-
-  SupportsScriptResponseProto response_proto;
-  if (!response_proto.ParseFromString(response)) {
-    LOG(ERROR) << "Failed to parse getting assistant scripts response.";
-    return false;
-  }
-
-  scripts->clear();
-  for (const auto& script_proto : response_proto.scripts()) {
-    ProtocolUtils::AddScript(script_proto, scripts);
-  }
-
-  return true;
-}
-
-// static
 void ProtocolUtils::AddScript(const SupportedScriptProto& script_proto,
                               std::vector<std::unique_ptr<Script>>* scripts) {
   auto script = std::make_unique<Script>();

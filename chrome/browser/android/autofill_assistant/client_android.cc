@@ -16,6 +16,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/no_destructor.h"
 #include "base/task/post_task.h"
+#include "base/time/default_tick_clock.h"
 #include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/autofill/android/personal_data_manager_android.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
@@ -287,7 +288,8 @@ void ClientAndroid::CreateController() {
   if (controller_) {
     return;
   }
-  controller_ = std::make_unique<Controller>(web_contents_, /* client= */ this);
+  controller_ = std::make_unique<Controller>(
+      web_contents_, /* client= */ this, base::DefaultTickClock::GetInstance());
 }
 
 void ClientAndroid::DestroyController() {

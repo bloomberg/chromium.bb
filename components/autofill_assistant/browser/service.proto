@@ -55,6 +55,22 @@ message ScriptParameterProto {
 // Response of the list of supported scripts.
 message SupportsScriptResponseProto {
   repeated SupportedScriptProto scripts = 1;
+
+  // Defines what should happen if no scripts in [scripts] becomes runnable,
+  // because of preconditions.
+  optional ScriptTimeoutError script_timeout_error = 2;
+}
+
+message ScriptTimeoutError {
+  // Wait for that long before considering that scripts preconditions have timed
+  // out and executing the script specified in script_path.
+  //
+  // The script might be called more than once if the script terminates
+  // successfully and again still nothing is found after timeout_ms.
+  optional int32 timeout_ms = 1;
+
+  // The script to execute when the error happens.
+  optional string script_path = 2;
 }
 
 // Supported script.
