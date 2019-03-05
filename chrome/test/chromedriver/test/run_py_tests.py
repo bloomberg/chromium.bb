@@ -402,6 +402,22 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
   def testGetCurrentWindowHandle(self):
     self._driver.GetCurrentWindowHandle()
 
+  def testDragAndDropWithSVGImage(self):
+    self._driver.Load(
+                    self.GetHttpUrlForFile('/chromedriver/drag_and_drop.svg'))
+
+    drag = self._driver.FindElement("id", "GreenRectangle")
+    drop = self._driver.FindElement("id", "FolderRectangle")
+    self._driver.MouseMoveTo(drag)
+    self._driver.MouseButtonDown()
+    self._driver.MouseMoveTo(drop)
+    self._driver.MouseButtonUp()
+    self.assertTrue(self._driver.IsAlertOpen())
+    self.assertEquals('GreenRectangle has been dropped into a folder.',
+                      self._driver.GetAlertMessage())
+    self._driver.HandleAlert(True)
+    self.assertEquals('translate(300,55)', drag.GetAttribute("transform"))
+
   def testCloseWindow(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/page_test.html'))
     old_handles = self._driver.GetWindowHandles()
