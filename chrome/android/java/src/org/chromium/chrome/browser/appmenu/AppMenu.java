@@ -168,12 +168,14 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
      *                              Can be {@code null} if no item should be highlighted.  Note that
      *                              {@code 0} is dedicated to custom menu items and can be declared
      *                              by external apps.
+     * @param circleHighlightItem   Whether the highlighted item should use a circle highlight or
+     *                              not.
      * @param showFromBottom        Whether the appearance animation should run from the bottom up.
      */
     void show(Context context, final View anchorView, boolean isByPermanentButton,
             int screenRotation, Rect visibleDisplayFrame, int screenHeight,
             @IdRes int footerResourceId, @IdRes int headerResourceId, Integer highlightedItemId,
-            boolean showFromBottom) {
+            boolean circleHighlightItem, boolean showFromBottom) {
         mPopup = new PopupWindow(context);
         mPopup.setFocusable(true);
         mPopup.setInputMethodMode(PopupWindow.INPUT_METHOD_NOT_NEEDED);
@@ -257,9 +259,13 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
                 (ViewGroup) LayoutInflater.from(context).inflate(R.layout.app_menu_layout, null);
         mListView = (ListView) contentView.findViewById(R.id.app_menu_list);
 
-        int footerHeight =
-                inflateFooter(footerResourceId, contentView, menuWidth, highlightedItemId);
+        int footerHeight = inflateFooter(footerResourceId, contentView, menuWidth);
         int headerHeight = inflateHeader(headerResourceId, contentView, menuWidth);
+
+        if (highlightedItemId != null) {
+            View viewToHighlight = contentView.findViewById(highlightedItemId);
+            ViewHighlighter.turnOnHighlight(viewToHighlight, circleHighlightItem);
+        }
 
         // Set the adapter after the header is added to avoid crashes on JellyBean.
         // See crbug.com/761726.
@@ -547,8 +553,7 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
         highlightedView.sendAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_FOCUSED);
     }
 
-    private int inflateFooter(
-            int footerResourceId, View contentView, int menuWidth, Integer highlightedItemId) {
+    private int inflateFooter(int footerResourceId, View contentView, int menuWidth) {
         if (footerResourceId == 0) {
             mFooterView = null;
             return 0;
@@ -561,11 +566,6 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
         int widthMeasureSpec = MeasureSpec.makeMeasureSpec(menuWidth, MeasureSpec.EXACTLY);
         int heightMeasureSpec = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
         mFooterView.measure(widthMeasureSpec, heightMeasureSpec);
-
-        if (highlightedItemId != null) {
-            View viewToHighlight = mFooterView.findViewById(highlightedItemId);
-            ViewHighlighter.turnOnHighlight(viewToHighlight, viewToHighlight != mFooterView);
-        }
 
         if (mHandler != null) mHandler.onFooterViewInflated(mFooterView);
 
