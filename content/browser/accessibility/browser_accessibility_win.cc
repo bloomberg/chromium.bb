@@ -82,8 +82,8 @@ BrowserAccessibilityWin* ToBrowserAccessibilityWin(BrowserAccessibility* obj) {
   return static_cast<BrowserAccessibilityWin*>(obj);
 }
 
-const BrowserAccessibilityWin*
-ToBrowserAccessibilityWin(const BrowserAccessibility* obj) {
+const BrowserAccessibilityWin* ToBrowserAccessibilityWin(
+    const BrowserAccessibility* obj) {
   DCHECK(!obj || obj->IsNative());
   return static_cast<const BrowserAccessibilityWin*>(obj);
 }

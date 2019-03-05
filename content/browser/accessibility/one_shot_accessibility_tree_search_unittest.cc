@@ -29,8 +29,7 @@ class TestBrowserAccessibilityManager
 #else
 class TestBrowserAccessibilityManager : public BrowserAccessibilityManager {
  public:
-  TestBrowserAccessibilityManager(
-      const ui::AXTreeUpdate& initial_tree)
+  TestBrowserAccessibilityManager(const ui::AXTreeUpdate& initial_tree)
       : BrowserAccessibilityManager(initial_tree,
                                     nullptr,
                                     new BrowserAccessibilityFactory()) {}
@@ -41,9 +40,11 @@ class TestBrowserAccessibilityManager : public BrowserAccessibilityManager {
 
 // These tests prevent other tests from being run. crbug.com/514632
 #if defined(ANDROID) && defined(ADDRESS_SANITIZER)
-#define MAYBE_OneShotAccessibilityTreeSearchTest DISABLED_OneShotAccessibilityTreeSearchTets
+#define MAYBE_OneShotAccessibilityTreeSearchTest \
+  DISABLED_OneShotAccessibilityTreeSearchTets
 #else
-#define MAYBE_OneShotAccessibilityTreeSearchTest OneShotAccessibilityTreeSearchTest
+#define MAYBE_OneShotAccessibilityTreeSearchTest \
+  OneShotAccessibilityTreeSearchTest
 #endif
 class MAYBE_OneShotAccessibilityTreeSearchTest : public testing::Test {
  public:
@@ -253,10 +254,10 @@ TEST_F(MAYBE_OneShotAccessibilityTreeSearchTest, TwoPredicates) {
         return (current->GetRole() == ax::mojom::Role::kList ||
                 current->GetRole() == ax::mojom::Role::kListItem);
       });
-  search.AddPredicate([](BrowserAccessibility* start,
-                         BrowserAccessibility* current) {
-    return (current->GetId() % 2 == 1);
-  });
+  search.AddPredicate(
+      [](BrowserAccessibility* start, BrowserAccessibility* current) {
+        return (current->GetId() % 2 == 1);
+      });
   ASSERT_EQ(2U, search.CountMatches());
   EXPECT_EQ(3, search.GetMatchAtIndex(0)->GetId());
   EXPECT_EQ(5, search.GetMatchAtIndex(1)->GetId());

@@ -66,9 +66,8 @@ class AndroidGranularityMovementBrowserTest : public ContentBrowserTest {
   // and fails (by logging an error and returning the empty string) if
   // the result when traversing backwards is not the same
   // (but in reverse order).
-  base::string16 TraverseNodeAtGranularity(
-      BrowserAccessibility* node,
-      int granularity) {
+  base::string16 TraverseNodeAtGranularity(BrowserAccessibility* node,
+                                           int granularity) {
     AccessibilityNotificationWaiter waiter(shell()->web_contents(),
                                            ui::kAXModeComplete,
                                            ax::mojom::Event::kTreeChanged);
@@ -84,11 +83,10 @@ class AndroidGranularityMovementBrowserTest : public ContentBrowserTest {
     base::string16 text = android_node->GetText();
     base::string16 concatenated;
     int previous_end_index = -1;
-    while (manager->NextAtGranularity(
-               granularity, end_index, android_node,
-               &start_index, &end_index)) {
-      int len = (granularity == GRANULARITY_CHARACTER) ?
-          1 : end_index - start_index;
+    while (manager->NextAtGranularity(granularity, end_index, android_node,
+                                      &start_index, &end_index)) {
+      int len =
+          (granularity == GRANULARITY_CHARACTER) ? 1 : end_index - start_index;
       base::string16 selection = text.substr(start_index, len);
       if (base::EndsWith(selection, base::ASCIIToUTF16("\n"),
                          base::CompareCase::INSENSITIVE_ASCII))
@@ -96,8 +94,8 @@ class AndroidGranularityMovementBrowserTest : public ContentBrowserTest {
       if (!selection.empty()) {
         if (!concatenated.empty())
           concatenated += base::ASCIIToUTF16(", ");
-        concatenated += base::ASCIIToUTF16("'") + selection +
-            base::ASCIIToUTF16("'");
+        concatenated +=
+            base::ASCIIToUTF16("'") + selection + base::ASCIIToUTF16("'");
       }
 
       // Prevent an endless loop.
@@ -113,16 +111,16 @@ class AndroidGranularityMovementBrowserTest : public ContentBrowserTest {
     start_index = end_index;
     while (manager->PreviousAtGranularity(
         granularity, start_index, android_node, &start_index, &end_index)) {
-      int len = (granularity == GRANULARITY_CHARACTER) ?
-          1 : end_index - start_index;
+      int len =
+          (granularity == GRANULARITY_CHARACTER) ? 1 : end_index - start_index;
       base::string16 selection = text.substr(start_index, len);
       if (base::EndsWith(selection, base::ASCIIToUTF16("\n"),
                          base::CompareCase::INSENSITIVE_ASCII))
         selection = selection.substr(0, selection.size() - 1);
       if (!reverse.empty())
         reverse = base::ASCIIToUTF16(", ") + reverse;
-      reverse = base::ASCIIToUTF16("'") + selection +
-          base::ASCIIToUTF16("'") + reverse;
+      reverse = base::ASCIIToUTF16("'") + selection + base::ASCIIToUTF16("'") +
+                reverse;
 
       // Prevent an endless loop.
       if (end_index == previous_end_index) {
@@ -146,13 +144,14 @@ class AndroidGranularityMovementBrowserTest : public ContentBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(AndroidGranularityMovementBrowserTest,
                        NavigateByCharacters) {
-  GURL url("data:text/html,"
-           "<body>"
-           "<p>One, two, three!</p>"
-           "<p>"
-           "<button aria-label='Seven, eight, nine!'>Four, five, six!</button>"
-           "</p>"
-           "</body></html>");
+  GURL url(
+      "data:text/html,"
+      "<body>"
+      "<p>One, two, three!</p>"
+      "<p>"
+      "<button aria-label='Seven, eight, nine!'>Four, five, six!</button>"
+      "</p>"
+      "</body></html>");
   BrowserAccessibility* root = LoadUrlAndGetAccessibilityRoot(url);
   ASSERT_EQ(2U, root->PlatformChildCount());
   BrowserAccessibility* para = root->PlatformGetChild(0);
@@ -162,25 +161,24 @@ IN_PROC_BROWSER_TEST_F(AndroidGranularityMovementBrowserTest,
   BrowserAccessibility* button = button_container->PlatformGetChild(0);
   ASSERT_EQ(0U, button->PlatformChildCount());
 
-  ASSERT_EQ(
-      base::ASCIIToUTF16("'O', 'n', 'e', ',', ' ', 't', 'w', 'o', "
-                         "',', ' ', 't', 'h', 'r', 'e', 'e', '!'"),
-      TraverseNodeAtGranularity(para, GRANULARITY_CHARACTER));
+  ASSERT_EQ(base::ASCIIToUTF16("'O', 'n', 'e', ',', ' ', 't', 'w', 'o', "
+                               "',', ' ', 't', 'h', 'r', 'e', 'e', '!'"),
+            TraverseNodeAtGranularity(para, GRANULARITY_CHARACTER));
   ASSERT_EQ(
       base::ASCIIToUTF16("'S', 'e', 'v', 'e', 'n', ',', ' ', 'e', 'i', 'g', "
                          "'h', 't', ',', ' ', 'n', 'i', 'n', 'e', '!'"),
       TraverseNodeAtGranularity(button, GRANULARITY_CHARACTER));
 }
 
-IN_PROC_BROWSER_TEST_F(AndroidGranularityMovementBrowserTest,
-                       NavigateByWords) {
-  GURL url("data:text/html,"
-           "<body>"
-           "<p>One, two, three!</p>"
-           "<p>"
-           "<button aria-label='Seven, eight, nine!'>Four, five, six!</button>"
-           "</p>"
-           "</body></html>");
+IN_PROC_BROWSER_TEST_F(AndroidGranularityMovementBrowserTest, NavigateByWords) {
+  GURL url(
+      "data:text/html,"
+      "<body>"
+      "<p>One, two, three!</p>"
+      "<p>"
+      "<button aria-label='Seven, eight, nine!'>Four, five, six!</button>"
+      "</p>"
+      "</body></html>");
   BrowserAccessibility* root = LoadUrlAndGetAccessibilityRoot(url);
   ASSERT_EQ(2U, root->PlatformChildCount());
   BrowserAccessibility* para = root->PlatformGetChild(0);
@@ -196,12 +194,12 @@ IN_PROC_BROWSER_TEST_F(AndroidGranularityMovementBrowserTest,
             TraverseNodeAtGranularity(button, GRANULARITY_WORD));
 }
 
-IN_PROC_BROWSER_TEST_F(AndroidGranularityMovementBrowserTest,
-                       NavigateByLine) {
-  GURL url("data:text/html,"
-           "<body>"
-           "<pre>One,%0dtwo,%0dthree!</pre>"
-           "</body>");
+IN_PROC_BROWSER_TEST_F(AndroidGranularityMovementBrowserTest, NavigateByLine) {
+  GURL url(
+      "data:text/html,"
+      "<body>"
+      "<pre>One,%0dtwo,%0dthree!</pre>"
+      "</body>");
   BrowserAccessibility* root = LoadUrlAndGetAccessibilityRoot(url);
   ASSERT_EQ(1U, root->PlatformChildCount());
   BrowserAccessibility* pre = root->PlatformGetChild(0);

@@ -101,8 +101,8 @@ bool IsRecordingComplete(AccessibilityEventRecorder& event_recorder,
 
 std::vector<std::string> DumpAccessibilityEventsTest::Dump(
     std::vector<std::string>& run_until) {
-  WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
-      shell()->web_contents());
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
   base::ProcessId pid = base::GetCurrentProcId();
   std::unique_ptr<AccessibilityEventRecorder> event_recorder =
       event_recorder_factory_(
@@ -459,9 +459,8 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
   RunEventTest(FILE_PATH_LITERAL("report-validity-invalid-field.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(
-    DumpAccessibilityEventsTest,
-    AccessibilityEventsRemoveHiddenAttributeSubtree) {
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
+                       AccessibilityEventsRemoveHiddenAttributeSubtree) {
   RunEventTest(FILE_PATH_LITERAL("remove-hidden-attribute-subtree.html"));
 }
 

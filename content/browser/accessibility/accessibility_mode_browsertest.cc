@@ -54,8 +54,8 @@ class AccessibilityModeTest : public ContentBrowserTest {
         node.GetStringAttribute(ax::mojom::StringAttribute::kName) == name)
       return &node;
     for (unsigned int i = 0; i < node.PlatformChildCount(); ++i) {
-      const BrowserAccessibility* result = FindNodeInSubtree(
-          *node.PlatformGetChild(i), role, name);
+      const BrowserAccessibility* result =
+          FindNodeInSubtree(*node.PlatformGetChild(i), role, name);
       if (result)
         return result;
     }

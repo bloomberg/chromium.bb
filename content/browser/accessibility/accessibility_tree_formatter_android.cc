@@ -38,25 +38,26 @@ const char* const BOOL_ATTRIBUTES[] = {
     "selected",        "interesting"};
 
 const char* const STRING_ATTRIBUTES[] = {
-    "name", "hint",
+    "name",
+    "hint",
 };
 
 const char* const INT_ATTRIBUTES[] = {
-  "item_index",
-  "item_count",
-  "row_count",
-  "column_count",
-  "row_index",
-  "row_span",
-  "column_index",
-  "column_span",
-  "input_type",
-  "live_region_type",
-  "range_min",
-  "range_max",
-  "range_current_value",
-  "text_change_added_count",
-  "text_change_removed_count",
+    "item_index",
+    "item_count",
+    "row_count",
+    "column_count",
+    "row_index",
+    "row_span",
+    "column_index",
+    "column_span",
+    "input_type",
+    "live_region_type",
+    "range_min",
+    "range_max",
+    "range_current_value",
+    "text_change_added_count",
+    "text_change_removed_count",
 };
 
 }  // namespace
@@ -96,14 +97,13 @@ AccessibilityTreeFormatter::GetTestPasses() {
   };
 }
 
-AccessibilityTreeFormatterAndroid::AccessibilityTreeFormatterAndroid() {
-}
+AccessibilityTreeFormatterAndroid::AccessibilityTreeFormatterAndroid() {}
 
-AccessibilityTreeFormatterAndroid::~AccessibilityTreeFormatterAndroid() {
-}
+AccessibilityTreeFormatterAndroid::~AccessibilityTreeFormatterAndroid() {}
 
 void AccessibilityTreeFormatterAndroid::AddProperties(
-    const BrowserAccessibility& node, base::DictionaryValue* dict) {
+    const BrowserAccessibility& node,
+    base::DictionaryValue* dict) {
   dict->SetInteger("id", node.GetId());
 
   const BrowserAccessibilityAndroid* android_node =
@@ -194,8 +194,7 @@ base::string16 AccessibilityTreeFormatterAndroid::ProcessTreeForOutput(
   dict.GetString("role_description", &role_description);
   if (!role_description.empty()) {
     WriteAttribute(
-        true,
-        StringPrintf("role_description='%s'", role_description.c_str()),
+        true, StringPrintf("role_description='%s'", role_description.c_str()),
         &line);
   }
 
@@ -211,8 +210,7 @@ base::string16 AccessibilityTreeFormatterAndroid::ProcessTreeForOutput(
     std::string value;
     if (!dict.GetString(attribute_name, &value) || value.empty())
       continue;
-    WriteAttribute(true,
-                   StringPrintf("%s='%s'", attribute_name, value.c_str()),
+    WriteAttribute(true, StringPrintf("%s='%s'", attribute_name, value.c_str()),
                    &line);
   }
 
@@ -221,9 +219,7 @@ base::string16 AccessibilityTreeFormatterAndroid::ProcessTreeForOutput(
     int value;
     if (!dict.GetInteger(attribute_name, &value) || value == 0)
       continue;
-    WriteAttribute(true,
-                   StringPrintf("%s=%d", attribute_name, value),
-                   &line);
+    WriteAttribute(true, StringPrintf("%s=%d", attribute_name, value), &line);
   }
 
   return line;

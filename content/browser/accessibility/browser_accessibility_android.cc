@@ -46,9 +46,7 @@ enum {
 
 // These are enums from
 // android.view.accessibility.AccessibilityNodeInfo.RangeInfo in Java:
-enum {
-  ANDROID_VIEW_ACCESSIBILITY_RANGE_TYPE_FLOAT = 1
-};
+enum { ANDROID_VIEW_ACCESSIBILITY_RANGE_TYPE_FLOAT = 1 };
 
 static bool HasListAncestor(const content::BrowserAccessibility* node) {
   if (node == nullptr)
@@ -396,19 +394,19 @@ bool BrowserAccessibilityAndroid::IsInterestingOnAndroid() const {
 
   // Otherwise, the interesting nodes are leaf nodes with non-whitespace text.
   return PlatformIsLeaf() &&
-      !base::ContainsOnlyChars(GetText(), base::kWhitespaceUTF16);
+         !base::ContainsOnlyChars(GetText(), base::kWhitespaceUTF16);
 }
 
 const BrowserAccessibilityAndroid*
-    BrowserAccessibilityAndroid::GetSoleInterestingNodeFromSubtree() const {
+BrowserAccessibilityAndroid::GetSoleInterestingNodeFromSubtree() const {
   if (IsInterestingOnAndroid())
     return this;
 
   const BrowserAccessibilityAndroid* sole_interesting_node = nullptr;
   for (uint32_t i = 0; i < PlatformChildCount(); ++i) {
     const BrowserAccessibilityAndroid* interesting_node =
-        static_cast<const BrowserAccessibilityAndroid*>(PlatformGetChild(i))->
-            GetSoleInterestingNodeFromSubtree();
+        static_cast<const BrowserAccessibilityAndroid*>(PlatformGetChild(i))
+            ->GetSoleInterestingNodeFromSubtree();
     if (interesting_node && sole_interesting_node) {
       // If there are two interesting nodes, return nullptr.
       return nullptr;
@@ -594,7 +592,7 @@ base::string16 BrowserAccessibilityAndroid::GetRoleDescription() const {
       break;
     case ax::mojom::Role::kCaption:
       // No role description.
-       break;
+      break;
     case ax::mojom::Role::kCaret:
       // No role description.
       break;
@@ -1139,8 +1137,7 @@ bool BrowserAccessibilityAndroid::CanScrollForward() const {
     float max = GetFloatAttribute(ax::mojom::FloatAttribute::kMaxValueForRange);
     return value < max;
   } else {
-    return GetScrollX() < GetMaxScrollX() ||
-           GetScrollY() < GetMaxScrollY();
+    return GetScrollX() < GetMaxScrollX() || GetScrollY() < GetMaxScrollY();
   }
 }
 
@@ -1150,8 +1147,7 @@ bool BrowserAccessibilityAndroid::CanScrollBackward() const {
     float min = GetFloatAttribute(ax::mojom::FloatAttribute::kMinValueForRange);
     return value > min;
   } else {
-    return GetScrollX() > GetMinScrollX() ||
-           GetScrollY() > GetMinScrollY();
+    return GetScrollX() > GetMinScrollX() || GetScrollY() > GetMinScrollY();
   }
 }
 
@@ -1299,30 +1295,24 @@ int BrowserAccessibilityAndroid::GetTextChangeRemovedCount() const {
 }
 
 // static
-size_t BrowserAccessibilityAndroid::CommonPrefixLength(
-    const base::string16 a,
-    const base::string16 b) {
+size_t BrowserAccessibilityAndroid::CommonPrefixLength(const base::string16 a,
+                                                       const base::string16 b) {
   size_t a_len = a.length();
   size_t b_len = b.length();
   size_t i = 0;
-  while (i < a_len &&
-         i < b_len &&
-         a[i] == b[i]) {
+  while (i < a_len && i < b_len && a[i] == b[i]) {
     i++;
   }
   return i;
 }
 
 // static
-size_t BrowserAccessibilityAndroid::CommonSuffixLength(
-    const base::string16 a,
-    const base::string16 b) {
+size_t BrowserAccessibilityAndroid::CommonSuffixLength(const base::string16 a,
+                                                       const base::string16 b) {
   size_t a_len = a.length();
   size_t b_len = b.length();
   size_t i = 0;
-  while (i < a_len &&
-         i < b_len &&
-         a[a_len - i - 1] == b[b_len - i - 1]) {
+  while (i < a_len && i < b_len && a[a_len - i - 1] == b[b_len - i - 1]) {
     i++;
   }
   return i;
@@ -1332,9 +1322,8 @@ size_t BrowserAccessibilityAndroid::CommonSuffixLength(
 // |BrowserAccessibilityCocoa::computeTextEdit|.
 //
 // static
-size_t BrowserAccessibilityAndroid::CommonEndLengths(
-    const base::string16 a,
-    const base::string16 b) {
+size_t BrowserAccessibilityAndroid::CommonEndLengths(const base::string16 a,
+                                                     const base::string16 b) {
   size_t prefix_len = CommonPrefixLength(a, b);
   // Remove the matching prefix before finding the suffix. Otherwise, if
   // old_value_ is "a" and new_value_ is "aa", "a" will be double-counted as

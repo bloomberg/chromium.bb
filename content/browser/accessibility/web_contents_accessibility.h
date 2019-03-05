@@ -24,6 +24,6 @@ class CONTENT_EXPORT WebContentsAccessibility {
  private:
   DISALLOW_COPY_AND_ASSIGN(WebContentsAccessibility);
 };
-}
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_ACCESSIBILITY_WEB_CONTENTS_ACCESSIBILITY_H_

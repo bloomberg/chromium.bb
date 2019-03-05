@@ -75,11 +75,9 @@ AccessibilityTreeFormatter::GetTestPasses() {
   };
 }
 
-AccessibilityTreeFormatterAuraLinux::AccessibilityTreeFormatterAuraLinux() {
-}
+AccessibilityTreeFormatterAuraLinux::AccessibilityTreeFormatterAuraLinux() {}
 
-AccessibilityTreeFormatterAuraLinux::~AccessibilityTreeFormatterAuraLinux() {
-}
+AccessibilityTreeFormatterAuraLinux::~AccessibilityTreeFormatterAuraLinux() {}
 
 std::unique_ptr<base::DictionaryValue>
 AccessibilityTreeFormatterAuraLinux::BuildAccessibilityTreeForPattern(

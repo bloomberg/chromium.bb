@@ -102,8 +102,7 @@ void BrowserAccessibilityStateImpl::UpdatePlatformSpecificHistograms() {
 
   BOOL win_screen_reader = FALSE;
   SystemParametersInfo(SPI_GETSCREENREADER, 0, &win_screen_reader, 0);
-  UMA_HISTOGRAM_BOOLEAN("Accessibility.WinScreenReader",
-                        !!win_screen_reader);
+  UMA_HISTOGRAM_BOOLEAN("Accessibility.WinScreenReader", !!win_screen_reader);
 
   STICKYKEYS sticky_keys = {0};
   sticky_keys.cbSize = sizeof(STICKYKEYS);

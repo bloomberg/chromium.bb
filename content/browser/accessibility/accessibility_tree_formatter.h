@@ -42,11 +42,7 @@ class CONTENT_EXPORT AccessibilityTreeFormatter {
   // A single property filter specification. See GetAllowString() and
   // GetDenyString() for more information.
   struct PropertyFilter {
-    enum Type {
-      ALLOW,
-      ALLOW_EMPTY,
-      DENY
-    };
+    enum Type { ALLOW, ALLOW_EMPTY, DENY };
     base::string16 match_str;
     Type type;
 
@@ -132,8 +128,8 @@ class CONTENT_EXPORT AccessibilityTreeFormatter {
       const base::DictionaryValue& dict);
 
   // Dumps a BrowserAccessibility tree into a string.
-  void FormatAccessibilityTree(
-      BrowserAccessibility* root, base::string16* contents);
+  void FormatAccessibilityTree(BrowserAccessibility* root,
+                               base::string16* contents);
   void FormatAccessibilityTree(const base::DictionaryValue& tree_node,
                                base::string16* contents);
 

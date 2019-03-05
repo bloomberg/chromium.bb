@@ -53,7 +53,6 @@ ui::AXTreeUpdate BrowserAccessibilityManagerAndroid::GetEmptyDocument() {
   return update;
 }
 
-
 bool BrowserAccessibilityManagerAndroid::ShouldRespectDisplayedPasswordText() {
   WebContentsAccessibilityAndroid* wcax = GetWebContentsAXFromRootManager();
   return wcax ? wcax->ShouldRespectDisplayedPasswordText() : false;
@@ -223,7 +222,7 @@ void BrowserAccessibilityManagerAndroid::FireGeneratedEvent(
 }
 
 void BrowserAccessibilityManagerAndroid::SendLocationChangeEvents(
-      const std::vector<AccessibilityHostMsg_LocationChangeParams>& params) {
+    const std::vector<AccessibilityHostMsg_LocationChangeParams>& params) {
   // Android is not very efficient at handling notifications, and location
   // changes in particular are frequent and not time-critical. If a lot of
   // nodes changed location, just send a single notification after a short
@@ -382,8 +381,8 @@ void BrowserAccessibilityManagerAndroid::OnAtomicUpdateFinished(
     ui::AXTree* tree,
     bool root_changed,
     const std::vector<ui::AXTreeObserver::Change>& changes) {
-  BrowserAccessibilityManager::OnAtomicUpdateFinished(
-      tree, root_changed, changes);
+  BrowserAccessibilityManager::OnAtomicUpdateFinished(tree, root_changed,
+                                                      changes);
 
   if (root_changed) {
     WebContentsAccessibilityAndroid* wcax = GetWebContentsAXFromRootManager();
@@ -393,8 +392,8 @@ void BrowserAccessibilityManagerAndroid::OnAtomicUpdateFinished(
   }
 }
 
-bool
-BrowserAccessibilityManagerAndroid::UseRootScrollOffsetsWhenComputingBounds() {
+bool BrowserAccessibilityManagerAndroid::
+    UseRootScrollOffsetsWhenComputingBounds() {
   // The Java layer handles the root scroll offset.
   return false;
 }

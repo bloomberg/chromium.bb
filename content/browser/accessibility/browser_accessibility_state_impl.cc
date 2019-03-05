@@ -58,8 +58,7 @@ BrowserAccessibilityStateImpl* BrowserAccessibilityStateImpl::GetInstance() {
 }
 
 BrowserAccessibilityStateImpl::BrowserAccessibilityStateImpl()
-    : BrowserAccessibilityState(),
-      disable_hot_tracking_(false) {
+    : BrowserAccessibilityState(), disable_hot_tracking_(false) {
   ResetAccessibilityModeValue();
 
   // We need to AddRef() the leaky singleton so that Bind doesn't
@@ -174,8 +173,7 @@ ui::AXMode BrowserAccessibilityStateImpl::GetAccessibilityMode() const {
 #if !defined(OS_ANDROID) && !defined(OS_WIN) && !defined(OS_MACOSX)
 void BrowserAccessibilityStateImpl::PlatformInitialize() {}
 
-void BrowserAccessibilityStateImpl::UpdatePlatformSpecificHistograms() {
-}
+void BrowserAccessibilityStateImpl::UpdatePlatformSpecificHistograms() {}
 #endif
 
 void BrowserAccessibilityStateImpl::AddAccessibilityModeFlags(ui::AXMode mode) {

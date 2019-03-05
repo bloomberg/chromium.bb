@@ -33,7 +33,7 @@ base::string16 GetNameForPlatformConstant(
   }
   return L"";
 }
-}
+}  // namespace
 
 #define QUOTE(X) \
   { X, #X }

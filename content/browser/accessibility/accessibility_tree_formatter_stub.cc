@@ -47,8 +47,7 @@ AccessibilityTreeFormatter::GetTestPasses() {
 AccessibilityTreeFormatterStub::AccessibilityTreeFormatterStub()
     : AccessibilityTreeFormatterBrowser() {}
 
-AccessibilityTreeFormatterStub::~AccessibilityTreeFormatterStub() {
-}
+AccessibilityTreeFormatterStub::~AccessibilityTreeFormatterStub() {}
 
 void AccessibilityTreeFormatterStub::AddProperties(
     const BrowserAccessibility& node,

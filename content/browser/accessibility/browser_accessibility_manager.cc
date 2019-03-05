@@ -178,8 +178,7 @@ bool BrowserAccessibilityManager::never_suppress_or_delay_events_for_testing_ =
     false;
 
 // static
-ui::AXTreeUpdate
-BrowserAccessibilityManager::GetEmptyDocument() {
+ui::AXTreeUpdate BrowserAccessibilityManager::GetEmptyDocument() {
   ui::AXNodeData empty_document;
   empty_document.id = 0;
   empty_document.role = ax::mojom::Role::kRootWebArea;
@@ -422,9 +421,12 @@ void BrowserAccessibilityManager::SendLocationChangeEvents(
   }
 }
 
-void BrowserAccessibilityManager::OnFindInPageResult(
-    int request_id, int match_index, int start_id, int start_offset,
-    int end_id, int end_offset) {
+void BrowserAccessibilityManager::OnFindInPageResult(int request_id,
+                                                     int match_index,
+                                                     int start_id,
+                                                     int start_offset,
+                                                     int end_id,
+                                                     int end_offset) {
   find_in_page_info_.request_id = request_id;
   find_in_page_info_.match_index = match_index;
   find_in_page_info_.start_id = start_id;
@@ -436,8 +438,7 @@ void BrowserAccessibilityManager::OnFindInPageResult(
     ActivateFindInPageResult(request_id);
 }
 
-void BrowserAccessibilityManager::ActivateFindInPageResult(
-    int request_id) {
+void BrowserAccessibilityManager::ActivateFindInPageResult(int request_id) {
   find_in_page_info_.active_request_id = request_id;
   if (find_in_page_info_.request_id != request_id)
     return;
@@ -562,8 +563,7 @@ void BrowserAccessibilityManager::NeverSuppressOrDelayEventsForTesting() {
   never_suppress_or_delay_events_for_testing_ = true;
 }
 
-void BrowserAccessibilityManager::Decrement(
-    const BrowserAccessibility& node) {
+void BrowserAccessibilityManager::Decrement(const BrowserAccessibility& node) {
   if (!delegate_)
     return;
 
@@ -584,9 +584,8 @@ void BrowserAccessibilityManager::DoDefaultAction(
   delegate_->AccessibilityPerformAction(action_data);
 }
 
-void BrowserAccessibilityManager::GetImageData(
-    const BrowserAccessibility& node,
-    const gfx::Size& max_size) {
+void BrowserAccessibilityManager::GetImageData(const BrowserAccessibility& node,
+                                               const gfx::Size& max_size) {
   if (!delegate_)
     return;
 
@@ -597,8 +596,7 @@ void BrowserAccessibilityManager::GetImageData(
   delegate_->AccessibilityPerformAction(action_data);
 }
 
-void BrowserAccessibilityManager::Increment(
-    const BrowserAccessibility& node) {
+void BrowserAccessibilityManager::Increment(const BrowserAccessibility& node) {
   if (!delegate_)
     return;
 
@@ -620,7 +618,8 @@ void BrowserAccessibilityManager::ShowContextMenu(
 }
 
 void BrowserAccessibilityManager::ScrollToMakeVisible(
-    const BrowserAccessibility& node, gfx::Rect subfocus) {
+    const BrowserAccessibility& node,
+    gfx::Rect subfocus) {
   if (!delegate_)
     return;
 
@@ -632,7 +631,8 @@ void BrowserAccessibilityManager::ScrollToMakeVisible(
 }
 
 void BrowserAccessibilityManager::ScrollToPoint(
-    const BrowserAccessibility& node, gfx::Point point) {
+    const BrowserAccessibility& node,
+    gfx::Point point) {
   if (!delegate_)
     return;
 
@@ -644,7 +644,8 @@ void BrowserAccessibilityManager::ScrollToPoint(
 }
 
 void BrowserAccessibilityManager::SetScrollOffset(
-    const BrowserAccessibility& node, gfx::Point offset) {
+    const BrowserAccessibility& node,
+    gfx::Point offset) {
   if (!delegate_)
     return;
 
@@ -850,8 +851,8 @@ ax::mojom::TreeOrder BrowserAccessibilityManager::CompareNodes(
   BrowserAccessibility* common_parent;
   int child_index1;
   int child_index2;
-  if (FindIndicesInCommonParent(
-          object1, object2, &common_parent, &child_index1, &child_index2)) {
+  if (FindIndicesInCommonParent(object1, object2, &common_parent, &child_index1,
+                                &child_index2)) {
     if (child_index1 < child_index2)
       return ax::mojom::TreeOrder::kBefore;
     if (child_index1 > child_index2)
@@ -1027,8 +1028,8 @@ gfx::Rect BrowserAccessibilityManager::GetPageBoundsForRange(
       return gfx::Rect();
     }
 
-    return start_object.GetPageBoundsForRange(
-        start_offset, end_offset - start_offset);
+    return start_object.GetPageBoundsForRange(start_offset,
+                                              end_offset - start_offset);
   }
 
   gfx::Rect result;
@@ -1151,7 +1152,7 @@ BrowserAccessibilityManager* BrowserAccessibilityManager::GetRootManager() {
 }
 
 BrowserAccessibilityDelegate*
-    BrowserAccessibilityManager::GetDelegateFromRootManager() {
+BrowserAccessibilityManager::GetDelegateFromRootManager() {
   BrowserAccessibilityManager* root_manager = GetRootManager();
   if (root_manager)
     return root_manager->delegate();
@@ -1162,14 +1163,12 @@ bool BrowserAccessibilityManager::IsRootTree() {
   return GetRootManager() == this;
 }
 
-ui::AXTreeUpdate
-BrowserAccessibilityManager::SnapshotAXTreeForTesting() {
+ui::AXTreeUpdate BrowserAccessibilityManager::SnapshotAXTreeForTesting() {
   std::unique_ptr<
       ui::AXTreeSource<const ui::AXNode*, ui::AXNodeData, ui::AXTreeData>>
       tree_source(tree_->CreateTreeSource());
-  ui::AXTreeSerializer<const ui::AXNode*,
-                       ui::AXNodeData,
-                       ui::AXTreeData> serializer(tree_source.get());
+  ui::AXTreeSerializer<const ui::AXNode*, ui::AXNodeData, ui::AXTreeData>
+      serializer(tree_source.get());
   ui::AXTreeUpdate update;
   serializer.SerializeChanges(tree_->root(), &update);
   return update;
@@ -1207,7 +1206,7 @@ BrowserAccessibility* BrowserAccessibilityManager::CachingAsyncHitTest(
       if (manager) {
         BrowserAccessibility* node = manager->GetFromID(last_hover_node_id_);
         if (node)
-        return node;
+          return node;
       }
     }
   }

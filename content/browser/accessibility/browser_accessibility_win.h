@@ -42,11 +42,11 @@ class CONTENT_EXPORT BrowserAccessibilityWin : public BrowserAccessibility {
   DISALLOW_COPY_AND_ASSIGN(BrowserAccessibilityWin);
 };
 
-CONTENT_EXPORT BrowserAccessibilityWin*
-ToBrowserAccessibilityWin(BrowserAccessibility* obj);
+CONTENT_EXPORT BrowserAccessibilityWin* ToBrowserAccessibilityWin(
+    BrowserAccessibility* obj);
 
-CONTENT_EXPORT const BrowserAccessibilityWin*
-ToBrowserAccessibilityWin(const BrowserAccessibility* obj);
+CONTENT_EXPORT const BrowserAccessibilityWin* ToBrowserAccessibilityWin(
+    const BrowserAccessibility* obj);
 
 }  // namespace content
 

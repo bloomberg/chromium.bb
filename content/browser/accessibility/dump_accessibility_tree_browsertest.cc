@@ -134,15 +134,14 @@ class DumpAccessibilityTreeTest : public DumpAccessibilityTestBase {
     formatter->SetPropertyFilters(property_filters_);
     formatter->SetNodeFilters(node_filters_);
     base::string16 actual_contents_utf16;
-    WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
-        shell()->web_contents());
+    WebContentsImpl* web_contents =
+        static_cast<WebContentsImpl*>(shell()->web_contents());
     formatter->FormatAccessibilityTree(
         web_contents->GetRootBrowserAccessibilityManager()->GetRoot(),
         &actual_contents_utf16);
     std::string actual_contents = base::UTF16ToUTF8(actual_contents_utf16);
-    return base::SplitString(
-        actual_contents, "\n",
-        base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+    return base::SplitString(actual_contents, "\n", base::KEEP_WHITESPACE,
+                             base::SPLIT_WANT_NONEMPTY);
   }
 
   void RunLanguageDetectionTest(const base::FilePath::CharType* file_path) {
@@ -839,8 +838,7 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaRadio) {
   RunAriaTest(FILE_PATH_LITERAL("aria-radio.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
-                       AccessibilityAriaRadiogroup) {
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaRadiogroup) {
   RunAriaTest(FILE_PATH_LITERAL("aria-radiogroup.html"));
 }
 
@@ -1225,10 +1223,10 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityGraphicsRoles) {
 // Flaky failures: http://crbug.com/445929.
 // Mac failures: http://crbug.com/571712.
 #define MAYBE_AccessibilityContenteditableDescendants \
-    DISABLED_AccessibilityContenteditableDescendants
+  DISABLED_AccessibilityContenteditableDescendants
 #else
 #define MAYBE_AccessibilityContenteditableDescendants \
-    AccessibilityContenteditableDescendants
+  AccessibilityContenteditableDescendants
 #endif
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
                        MAYBE_AccessibilityContenteditableDescendants) {
@@ -1244,25 +1242,25 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
 // Flaky failures: http://crbug.com/445929.
 // Mac failures: http://crbug.com/571712.
 #define MAYBE_AccessibilityContenteditableDescendantsWithSelection \
-    DISABLED_AccessibilityContenteditableDescendantsWithSelection
+  DISABLED_AccessibilityContenteditableDescendantsWithSelection
 #else
 #define MAYBE_AccessibilityContenteditableDescendantsWithSelection \
-    AccessibilityContenteditableDescendantsWithSelection
+  AccessibilityContenteditableDescendantsWithSelection
 #endif
 IN_PROC_BROWSER_TEST_F(
     DumpAccessibilityTreeTest,
     MAYBE_AccessibilityContenteditableDescendantsWithSelection) {
-  RunHtmlTest(FILE_PATH_LITERAL(
-      "contenteditable-descendants-with-selection.html"));
+  RunHtmlTest(
+      FILE_PATH_LITERAL("contenteditable-descendants-with-selection.html"));
 }
 
 #if defined(OS_ANDROID)
 // Flaky failures: http://crbug.com/445929.
 #define MAYBE_AccessibilityContenteditableWithEmbeddedContenteditables \
-    DISABLED_AccessibilityContenteditableWithEmbeddedContenteditables
+  DISABLED_AccessibilityContenteditableWithEmbeddedContenteditables
 #else
 #define MAYBE_AccessibilityContenteditableWithEmbeddedContenteditables \
-    AccessibilityContenteditableWithEmbeddedContenteditables
+  AccessibilityContenteditableWithEmbeddedContenteditables
 #endif
 IN_PROC_BROWSER_TEST_F(
     DumpAccessibilityTreeTest,
@@ -1301,7 +1299,7 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityFooter) {
 }
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
-    AccessibilityFooterInsideOtherSection) {
+                       AccessibilityFooterInsideOtherSection) {
   RunHtmlTest(FILE_PATH_LITERAL("footer-inside-other-section.html"));
 }
 
@@ -1346,7 +1344,7 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityHeader) {
 }
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
-    AccessibilityHeaderInsideOtherSection) {
+                       AccessibilityHeaderInsideOtherSection) {
   RunHtmlTest(FILE_PATH_LITERAL("header-inside-other-section.html"));
 }
 
@@ -1534,7 +1532,7 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityInputRadio) {
 }
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
-                      AccessibilityInputRadioInMenu) {
+                       AccessibilityInputRadioInMenu) {
   RunHtmlTest(FILE_PATH_LITERAL("input-radio-in-menu.html"));
 }
 
@@ -1582,8 +1580,7 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityInputTel) {
   RunHtmlTest(FILE_PATH_LITERAL("input-tel.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
-                       AccessibilityInputText) {
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityInputText) {
   RunHtmlTest(FILE_PATH_LITERAL("input-text.html"));
 }
 
@@ -1607,7 +1604,7 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
 }
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
-    AccessibilityInputTextWithSelection) {
+                       AccessibilityInputTextWithSelection) {
   RunHtmlTest(FILE_PATH_LITERAL("input-text-with-selection.html"));
 }
 

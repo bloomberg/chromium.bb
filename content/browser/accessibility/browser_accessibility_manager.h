@@ -218,10 +218,9 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver {
   void HitTest(const gfx::Point& point);
   void Increment(const BrowserAccessibility& node);
   void LoadInlineTextBoxes(const BrowserAccessibility& node);
-  void ScrollToMakeVisible(
-      const BrowserAccessibility& node, gfx::Rect subfocus);
-  void ScrollToPoint(
-      const BrowserAccessibility& node, gfx::Point point);
+  void ScrollToMakeVisible(const BrowserAccessibility& node,
+                           gfx::Rect subfocus);
+  void ScrollToPoint(const BrowserAccessibility& node, gfx::Point point);
   void SetAccessibilityFocus(const BrowserAccessibility& node);
   void SetFocus(const BrowserAccessibility& node);
   void SetScrollOffset(const BrowserAccessibility& node, gfx::Point offset);
@@ -247,9 +246,12 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver {
 
   // Called when a new find in page result is received. We hold on to this
   // information and don't activate it until the user requests it.
-  void OnFindInPageResult(
-      int request_id, int match_index, int start_id, int start_offset,
-      int end_id, int end_offset);
+  void OnFindInPageResult(int request_id,
+                          int match_index,
+                          int start_id,
+                          int start_offset,
+                          int end_id,
+                          int end_offset);
 
   // This is called when the user has committed to a find in page query,
   // e.g. by pressing enter or tapping on the next / previous result buttons.
@@ -269,7 +271,7 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver {
 
 #if BUILDFLAG(USE_ATK)
   BrowserAccessibilityManagerAuraLinux*
-      ToBrowserAccessibilityManagerAuraLinux();
+  ToBrowserAccessibilityManagerAuraLinux();
 #endif
 
 #if defined(OS_MACOSX)
@@ -389,14 +391,12 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver {
   void CacheHitTestResult(BrowserAccessibility* hit_test_result);
 
  protected:
-  BrowserAccessibilityManager(
-      BrowserAccessibilityDelegate* delegate,
-      BrowserAccessibilityFactory* factory);
+  BrowserAccessibilityManager(BrowserAccessibilityDelegate* delegate,
+                              BrowserAccessibilityFactory* factory);
 
-  BrowserAccessibilityManager(
-      const ui::AXTreeUpdate& initial_tree,
-      BrowserAccessibilityDelegate* delegate,
-      BrowserAccessibilityFactory* factory);
+  BrowserAccessibilityManager(const ui::AXTreeUpdate& initial_tree,
+                              BrowserAccessibilityDelegate* delegate,
+                              BrowserAccessibilityFactory* factory);
 
   // Send platform-specific notifications to each of these objects that
   // their location has changed. This is called by OnLocationChanges

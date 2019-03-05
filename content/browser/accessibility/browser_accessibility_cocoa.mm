@@ -119,8 +119,9 @@ NSString* const NSAccessibilitySelectTextWithCriteriaParameterizedAttribute =
     @"AXSelectTextWithCriteria";
 NSString* const NSAccessibilityBoundsForTextMarkerRangeParameterizedAttribute =
     @"AXBoundsForTextMarkerRange";
-NSString* const NSAccessibilityTextMarkerRangeForUnorderedTextMarkersParameterizedAttribute =
-    @"AXTextMarkerRangeForUnorderedTextMarkers";
+NSString* const
+    NSAccessibilityTextMarkerRangeForUnorderedTextMarkersParameterizedAttribute =
+        @"AXTextMarkerRangeForUnorderedTextMarkers";
 NSString* const NSAccessibilityIndexForChildUIElementParameterizedAttribute =
     @"AXIndexForChildUIElement";
 NSString* const NSAccessibilityValueAutofillAvailableAttribute =
@@ -346,9 +347,8 @@ NSAttributedString* GetAttributedTextForTextMarkerRange(
 }
 
 // Returns an autoreleased copy of the AXNodeData's attribute.
-NSString* NSStringForStringAttribute(
-    BrowserAccessibility* browserAccessibility,
-    StringAttribute attribute) {
+NSString* NSStringForStringAttribute(BrowserAccessibility* browserAccessibility,
+                                     StringAttribute attribute) {
   return base::SysUTF8ToNSString(
       browserAccessibility->GetStringAttribute(attribute));
 }
@@ -465,9 +465,8 @@ AccessibilityMatchPredicate PredicateForSearchKey(NSString* searchKey) {
 // Initialize a OneShotAccessibilityTreeSearch object given the parameters
 // passed to AXUIElementCountForSearchPredicate or
 // AXUIElementsForSearchPredicate. Return true on success.
-bool InitializeAccessibilityTreeSearch(
-    OneShotAccessibilityTreeSearch* search,
-    id parameter) {
+bool InitializeAccessibilityTreeSearch(OneShotAccessibilityTreeSearch* search,
+                                       id parameter) {
   if (![parameter isKindOfClass:[NSDictionary class]])
     return false;
   NSDictionary* dictionary = parameter;
@@ -480,13 +479,13 @@ bool InitializeAccessibilityTreeSearch(
   }
 
   bool immediateDescendantsOnly = false;
-  NSNumber *immediateDescendantsOnlyParameter =
+  NSNumber* immediateDescendantsOnlyParameter =
       [dictionary objectForKey:@"AXImmediateDescendantsOnly"];
   if ([immediateDescendantsOnlyParameter isKindOfClass:[NSNumber class]])
     immediateDescendantsOnly = [immediateDescendantsOnlyParameter boolValue];
 
   bool visibleOnly = false;
-  NSNumber *visibleOnlyParameter = [dictionary objectForKey:@"AXVisibleOnly"];
+  NSNumber* visibleOnlyParameter = [dictionary objectForKey:@"AXVisibleOnly"];
   if ([visibleOnlyParameter isKindOfClass:[NSNumber class]])
     visibleOnly = [visibleOnlyParameter boolValue];
 
@@ -1357,8 +1356,8 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
       // Return @"true" since we cannot be more specific about the value.
       return @"true";
     }
-  default:
-    NOTREACHED();
+    default:
+      NOTREACHED();
   }
 
   return @"false";
@@ -1749,18 +1748,18 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 
   // The following descriptions are specific to webkit.
   if ([role isEqualToString:@"AXWebArea"]) {
-    return base::SysUTF16ToNSString(content_client->GetLocalizedString(
-        IDS_AX_ROLE_WEB_AREA));
+    return base::SysUTF16ToNSString(
+        content_client->GetLocalizedString(IDS_AX_ROLE_WEB_AREA));
   }
 
   if ([role isEqualToString:@"NSAccessibilityLinkRole"]) {
-    return base::SysUTF16ToNSString(content_client->GetLocalizedString(
-        IDS_AX_ROLE_LINK));
+    return base::SysUTF16ToNSString(
+        content_client->GetLocalizedString(IDS_AX_ROLE_LINK));
   }
 
   if ([role isEqualToString:@"AXHeading"]) {
-    return base::SysUTF16ToNSString(content_client->GetLocalizedString(
-        IDS_AX_ROLE_HEADING));
+    return base::SysUTF16ToNSString(
+        content_client->GetLocalizedString(IDS_AX_ROLE_HEADING));
   }
 
   if (([role isEqualToString:NSAccessibilityGroupRole] ||
@@ -1781,7 +1780,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
     }
   }
 
-  switch([self internalRole]) {
+  switch ([self internalRole]) {
     case ax::mojom::Role::kArticle:
       return base::SysUTF16ToNSString(
           content_client->GetLocalizedString(IDS_AX_ROLE_ARTICLE));
@@ -2073,7 +2072,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   if (![self instanceActive])
     return nil;
   gfx::Rect bounds = owner_->GetPageBoundsRect();
-  return  [NSValue valueWithSize:NSMakeSize(bounds.width(), bounds.height())];
+  return [NSValue valueWithSize:NSMakeSize(bounds.width(), bounds.height())];
 }
 
 - (NSString*)sortDirection {
@@ -2112,7 +2111,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 }
 
 // Returns a subrole based upon the role.
-- (NSString*) subrole {
+- (NSString*)subrole {
   if (![self instanceActive])
     return nil;
 
@@ -2139,7 +2138,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   if ([self internalRole] == ax::mojom::Role::kTab)
     [tabSubtree addObject:self];
 
-  for (uint i=0; i < [[self children] count]; ++i) {
+  for (uint i = 0; i < [[self children] count]; ++i) {
     NSArray* tabChildren = [[[self children] objectAtIndex:i] tabs];
     if ([tabChildren count] > 0)
       [tabSubtree addObjectsFromArray:tabChildren];
@@ -2279,8 +2278,8 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
     unsigned int green = SkColorGetG(color);
     unsigned int blue = SkColorGetB(color);
     // This string matches the one returned by a native Mac color well.
-    return [NSString stringWithFormat:@"rgb %7.5f %7.5f %7.5f 1",
-                red / 255., green / 255., blue / 255.];
+    return [NSString stringWithFormat:@"rgb %7.5f %7.5f %7.5f 1", red / 255.,
+                                      green / 255., blue / 255.];
   }
 
   return base::SysUTF16ToNSString(owner_->GetValue());
@@ -2431,8 +2430,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   if (![self instanceActive])
     return nil;
 
-  SEL selector =
-      NSSelectorFromString([self methodNameForAttribute:attribute]);
+  SEL selector = NSSelectorFromString([self methodNameForAttribute:attribute]);
   if (selector)
     return [self performSelector:selector];
 
@@ -2451,7 +2449,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   int len = static_cast<int>(value.size());
 
   if ([attribute isEqualToString:
-      NSAccessibilityStringForRangeParameterizedAttribute]) {
+                     NSAccessibilityStringForRangeParameterizedAttribute]) {
     return [self valueForRange:[(NSValue*)parameter rangeValue]];
   }
 
@@ -2461,8 +2459,8 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
     return [self attributedValueForRange:[(NSValue*)parameter rangeValue]];
   }
 
-  if ([attribute isEqualToString:
-      NSAccessibilityLineForIndexParameterizedAttribute]) {
+  if ([attribute
+          isEqualToString:NSAccessibilityLineForIndexParameterizedAttribute]) {
     int index = [(NSNumber*)parameter intValue];
     for (int i = 0; i < static_cast<int>(line_breaks.size()); ++i) {
       if (line_breaks[i] > index)
@@ -2471,20 +2469,20 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
     return [NSNumber numberWithInt:static_cast<int>(line_breaks.size())];
   }
 
-  if ([attribute isEqualToString:
-      NSAccessibilityRangeForLineParameterizedAttribute]) {
+  if ([attribute
+          isEqualToString:NSAccessibilityRangeForLineParameterizedAttribute]) {
     int line_index = [(NSNumber*)parameter intValue];
     int line_count = static_cast<int>(line_breaks.size()) + 1;
     if (line_index < 0 || line_index >= line_count)
       return nil;
     int start = line_index > 0 ? line_breaks[line_index - 1] : 0;
     int end = line_index < line_count - 1 ? line_breaks[line_index] : len;
-    return [NSValue valueWithRange:
-        NSMakeRange(start, end - start)];
+    return [NSValue valueWithRange:NSMakeRange(start, end - start)];
   }
 
-  if ([attribute isEqualToString:
-      NSAccessibilityCellForColumnAndRowParameterizedAttribute]) {
+  if ([attribute
+          isEqualToString:
+              NSAccessibilityCellForColumnAndRowParameterizedAttribute]) {
     if ([self internalRole] != ax::mojom::Role::kTable &&
         [self internalRole] != ax::mojom::Role::kGrid) {
       return nil;
@@ -2685,7 +2683,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   }
 
   if ([attribute isEqualToString:
-      NSAccessibilityBoundsForRangeParameterizedAttribute]) {
+                     NSAccessibilityBoundsForRangeParameterizedAttribute]) {
     if ([self internalRole] != ax::mojom::Role::kStaticText)
       return nil;
     NSRange range = [(NSValue*)parameter rangeValue];
@@ -2716,8 +2714,9 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
     return nil;
   }
 
-  if ([attribute isEqualToString:
-           NSAccessibilityLineTextMarkerRangeForTextMarkerParameterizedAttribute]) {
+  if ([attribute
+          isEqualToString:
+              NSAccessibilityLineTextMarkerRangeForTextMarkerParameterizedAttribute]) {
     BrowserAccessibilityPositionInstance position =
         CreatePositionFromTextMarker(parameter);
     if (position->IsNullPosition())
@@ -2730,8 +2729,9 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
     return CreateTextMarkerRange(std::move(range));
   }
 
-  if ([attribute isEqualToString:
-           NSAccessibilityBoundsForTextMarkerRangeParameterizedAttribute]) {
+  if ([attribute
+          isEqualToString:
+              NSAccessibilityBoundsForTextMarkerRangeParameterizedAttribute]) {
     BrowserAccessibility* startObject;
     BrowserAccessibility* endObject;
     int startOffset, endOffset;
@@ -2753,8 +2753,9 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
     return [NSValue valueWithRect:nsrect];
   }
 
-  if ([attribute isEqualToString:
-           NSAccessibilityTextMarkerRangeForUnorderedTextMarkersParameterizedAttribute]) {
+  if ([attribute
+          isEqualToString:
+              NSAccessibilityTextMarkerRangeForUnorderedTextMarkersParameterizedAttribute]) {
     if (![parameter isKindOfClass:[NSArray class]])
       return nil;
 
@@ -2775,8 +2776,9 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
     }
   }
 
-  if ([attribute isEqualToString:
-           NSAccessibilityIndexForChildUIElementParameterizedAttribute]) {
+  if ([attribute
+          isEqualToString:
+              NSAccessibilityIndexForChildUIElementParameterizedAttribute]) {
     if (![parameter isKindOfClass:[BrowserAccessibilityCocoa class]])
       return nil;
 
@@ -2866,10 +2868,11 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 
   if ([self internalRole] == ax::mojom::Role::kRootWebArea ||
       [self internalRole] == ax::mojom::Role::kWebArea) {
-    [ret addObjectsFromArray: @[
-                 NSAccessibilityTextMarkerIsValidParameterizedAttribute,
-                     NSAccessibilityIndexForTextMarkerParameterizedAttribute,
-                     NSAccessibilityTextMarkerForIndexParameterizedAttribute]];
+    [ret addObjectsFromArray:@[
+      NSAccessibilityTextMarkerIsValidParameterizedAttribute,
+      NSAccessibilityIndexForTextMarkerParameterizedAttribute,
+      NSAccessibilityTextMarkerForIndexParameterizedAttribute
+    ]];
   }
 
   return ret;
@@ -2983,9 +2986,12 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   if ([role isEqualToString:NSAccessibilityTableRole] ||
       [role isEqualToString:NSAccessibilityGridRole]) {
     [ret addObjectsFromArray:@[
-      NSAccessibilityColumnsAttribute, NSAccessibilityVisibleColumnsAttribute,
-      NSAccessibilityRowsAttribute, NSAccessibilityVisibleRowsAttribute,
-      NSAccessibilityVisibleCellsAttribute, NSAccessibilityHeaderAttribute,
+      NSAccessibilityColumnsAttribute,
+      NSAccessibilityVisibleColumnsAttribute,
+      NSAccessibilityRowsAttribute,
+      NSAccessibilityVisibleRowsAttribute,
+      NSAccessibilityVisibleCellsAttribute,
+      NSAccessibilityHeaderAttribute,
       NSAccessibilityColumnHeaderUIElementsAttribute,
       NSAccessibilityRowHeaderUIElementsAttribute,
       NSAccessibilityARIAColumnCountAttribute,
