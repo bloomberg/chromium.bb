@@ -41,20 +41,10 @@ on HarfBuzz' built-in AAT shaping.
     hb-directwrite.cc
     hb-directwrite.h
     hb-fallback-shape.cc
-    hb-iter-private.hh
-    hb-machinery-private.hh
-    hb-map-private.hh
-    hb-map.cc
-    hb-map.h
     hb-null.hh
     hb-ot-color-sbix-table.hh
     hb-ot-color-svg-table.hh
     hb-ot-color.cc
-    hb-subset-glyf.cc
-    hb-subset-input.cc
-    hb-subset-plan.cc
-    hb-subset.cc
     hb-uniscribe.cc
     hb-uniscribe.h
-    hb-vector-private.hh
     test-unicode-ranges.cc
