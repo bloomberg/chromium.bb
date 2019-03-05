@@ -722,9 +722,9 @@ void LayoutFlexibleBox::SetFlowAwareLocationForChild(
         location.TransposedPoint());
 }
 
-bool LayoutFlexibleBox::MainAxisLengthIsDefinite(
-    const LayoutBox& child,
-    const Length& flex_basis) const {
+bool LayoutFlexibleBox::MainAxisLengthIsDefinite(const LayoutBox& child,
+                                                 const Length& flex_basis,
+                                                 bool add_to_cb) const {
   if (flex_basis.IsAuto())
     return false;
   if (flex_basis.IsPercentOrCalc()) {
@@ -732,7 +732,11 @@ bool LayoutFlexibleBox::MainAxisLengthIsDefinite(
       return true;
     if (has_definite_height_ == SizeDefiniteness::kIndefinite)
       return false;
-    bool definite = child.ComputePercentageLogicalHeight(flex_basis) != -1;
+    LayoutBlock* cb = nullptr;
+    bool definite =
+        child.ContainingBlockLogicalHeightForPercentageResolution(&cb) != -1;
+    if (add_to_cb)
+      cb->AddPercentHeightDescendant(const_cast<LayoutBox*>(&child));
     if (in_layout_) {
       // We can reach this code even while we're not laying ourselves out, such
       // as from mainSizeForPercentageResolution.
@@ -754,7 +758,8 @@ bool LayoutFlexibleBox::CrossAxisLengthIsDefinite(const LayoutBox& child,
       return true;
     if (has_definite_height_ == SizeDefiniteness::kIndefinite)
       return false;
-    bool definite = child.ComputePercentageLogicalHeight(length) != -1;
+    bool definite =
+        child.ContainingBlockLogicalHeightForPercentageResolution() != -1;
     has_definite_height_ =
         definite ? SizeDefiniteness::kDefinite : SizeDefiniteness::kIndefinite;
     return definite;
@@ -1113,7 +1118,7 @@ bool LayoutFlexibleBox::MainSizeIsDefiniteForPercentageResolution(
   // 2) of the flexbox spec.
   // We need to check for the flexbox to have a definite main size.
   // We make up a percentage to check whether we have a definite size.
-  if (!MainAxisLengthIsDefinite(child, Length::Percent(0)))
+  if (!MainAxisLengthIsDefinite(child, Length::Percent(0), false))
     return false;
 
   if (MainAxisIsInlineAxis(child))
