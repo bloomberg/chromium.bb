@@ -86,7 +86,6 @@ void ClientSocketPoolBaseHelper::Request::CrashIfInvalid() const {
 }
 
 ClientSocketPoolBaseHelper::ClientSocketPoolBaseHelper(
-    HigherLayeredPool* pool,
     int max_sockets,
     int max_sockets_per_group,
     base::TimeDelta unused_idle_socket_timeout,
@@ -102,7 +101,6 @@ ClientSocketPoolBaseHelper::ClientSocketPoolBaseHelper(
       connect_job_factory_(connect_job_factory),
       connect_backup_jobs_enabled_(false),
       pool_generation_number_(0),
-      pool_(pool),
       weak_factory_(this) {
   DCHECK_LE(0, max_sockets_per_group);
   DCHECK_LE(max_sockets_per_group, max_sockets);
@@ -122,11 +120,6 @@ ClientSocketPoolBaseHelper::~ClientSocketPoolBaseHelper() {
   CHECK(higher_pools_.empty());
 
   NetworkChangeNotifier::RemoveIPAddressObserver(this);
-
-  // Remove from lower layer pools.
-  for (auto it = lower_pools_.begin(); it != lower_pools_.end(); ++it) {
-    (*it)->RemoveHigherLayeredPool(pool_);
-  }
 }
 
 ClientSocketPoolBaseHelper::CallbackResultPair::CallbackResultPair()
@@ -148,12 +141,6 @@ ClientSocketPoolBaseHelper::CallbackResultPair::operator=(
 ClientSocketPoolBaseHelper::CallbackResultPair::~CallbackResultPair() = default;
 
 bool ClientSocketPoolBaseHelper::IsStalled() const {
-  // If a lower layer pool is stalled, consider |this| stalled as well.
-  for (auto it = lower_pools_.begin(); it != lower_pools_.end(); ++it) {
-    if ((*it)->IsStalled())
-      return true;
-  }
-
   // If fewer than |max_sockets_| are in use, then clearly |this| is not
   // stalled.
   if ((handed_out_socket_count_ + connecting_socket_count_) < max_sockets_)
@@ -170,14 +157,6 @@ bool ClientSocketPoolBaseHelper::IsStalled() const {
       return true;
   }
   return false;
-}
-
-void ClientSocketPoolBaseHelper::AddLowerLayeredPool(
-    LowerLayeredPool* lower_pool) {
-  DCHECK(pool_);
-  CHECK(!base::ContainsKey(lower_pools_, lower_pool));
-  lower_pools_.insert(lower_pool);
-  lower_pool->AddHigherLayeredPool(pool_);
 }
 
 void ClientSocketPoolBaseHelper::AddHigherLayeredPool(
@@ -799,16 +778,8 @@ void ClientSocketPoolBaseHelper::CheckForStalledSocketGroups() {
     // If we have idle sockets, see if we can give one to the top-stalled group.
     std::string top_group_name;
     Group* top_group = NULL;
-    if (!FindTopStalledGroup(&top_group, &top_group_name)) {
-      // There may still be a stalled group in a lower level pool.
-      for (auto it = lower_pools_.begin(); it != lower_pools_.end(); ++it) {
-        if ((*it)->IsStalled()) {
-          CloseOneIdleSocket();
-          break;
-        }
-      }
+    if (!FindTopStalledGroup(&top_group, &top_group_name))
       return;
-    }
 
     if (ReachedMaxSocketsLimit()) {
       if (idle_socket_count() > 0) {

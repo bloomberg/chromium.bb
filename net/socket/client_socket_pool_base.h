@@ -164,7 +164,6 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
   };
 
   ClientSocketPoolBaseHelper(
-      HigherLayeredPool* pool,
       int max_sockets,
       int max_sockets_per_group,
       base::TimeDelta unused_idle_socket_timeout,
@@ -734,18 +733,9 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
   // to the pool, we can make sure that they are discarded rather than reused.
   int pool_generation_number_;
 
-  // Used to add |this| as a higher layer pool on top of lower layer pools.  May
-  // be NULL if no lower layer pools will be added.
-  HigherLayeredPool* pool_;
-
   // Pools that create connections through |this|.  |this| will try to close
   // their idle sockets when it stalls.  Must be empty on destruction.
   std::set<HigherLayeredPool*> higher_pools_;
-
-  // Pools that this goes through.  Typically there's only one, but not always.
-  // |this| will check if they're stalled when it has a new idle socket.  |this|
-  // will remove itself from all lower layered pools on destruction.
-  std::set<LowerLayeredPool*> lower_pools_;
 
   base::WeakPtrFactory<ClientSocketPoolBaseHelper> weak_factory_;
 
@@ -804,14 +794,12 @@ class ClientSocketPoolBase {
   // long to leave an unused idle socket open before closing it.
   // |used_idle_socket_timeout| specifies how long to leave a previously used
   // idle socket open before closing it.
-  ClientSocketPoolBase(HigherLayeredPool* self,
-                       int max_sockets,
+  ClientSocketPoolBase(int max_sockets,
                        int max_sockets_per_group,
                        base::TimeDelta unused_idle_socket_timeout,
                        base::TimeDelta used_idle_socket_timeout,
                        ConnectJobFactory* connect_job_factory)
-      : helper_(self,
-                max_sockets,
+      : helper_(max_sockets,
                 max_sockets_per_group,
                 unused_idle_socket_timeout,
                 used_idle_socket_timeout,
@@ -820,10 +808,6 @@ class ClientSocketPoolBase {
   virtual ~ClientSocketPoolBase() {}
 
   // These member functions simply forward to ClientSocketPoolBaseHelper.
-  void AddLowerLayeredPool(LowerLayeredPool* lower_pool) {
-    helper_.AddLowerLayeredPool(lower_pool);
-  }
-
   void AddHigherLayeredPool(HigherLayeredPool* higher_pool) {
     helper_.AddHigherLayeredPool(higher_pool);
   }
@@ -953,10 +937,6 @@ class ClientSocketPoolBase {
   void EnableConnectBackupJobs() { helper_.EnableConnectBackupJobs(); }
 
   bool CloseOneIdleSocket() { return helper_.CloseOneIdleSocket(); }
-
-  bool CloseOneIdleConnectionInHigherLayeredPool() {
-    return helper_.CloseOneIdleConnectionInHigherLayeredPool();
-  }
 
  private:
   // This adaptor class exists to bridge the

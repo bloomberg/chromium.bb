@@ -287,8 +287,7 @@ LoadState WebSocketTransportClientSocketPool::GetLoadState(
 std::unique_ptr<base::DictionaryValue>
 WebSocketTransportClientSocketPool::GetInfoAsValue(
     const std::string& name,
-    const std::string& type,
-    bool include_nested_pools) const {
+    const std::string& type) const {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetString("name", name);
   dict->SetString("type", type);

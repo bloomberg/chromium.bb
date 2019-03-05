@@ -170,8 +170,7 @@ TransportClientSocketPool::TransportClientSocketPool(
     SocketPerformanceWatcherFactory* socket_performance_watcher_factory,
     NetworkQualityEstimator* network_quality_estimator,
     NetLog* net_log)
-    : base_(this,
-            max_sockets,
+    : base_(max_sockets,
             max_sockets_per_group,
             unused_idle_socket_timeout,
             ClientSocketPool::used_idle_socket_timeout(),
@@ -301,8 +300,7 @@ LoadState TransportClientSocketPool::GetLoadState(
 
 std::unique_ptr<base::DictionaryValue>
 TransportClientSocketPool::GetInfoAsValue(const std::string& name,
-                                          const std::string& type,
-                                          bool include_nested_pools) const {
+                                          const std::string& type) const {
   return base_.GetInfoAsValue(name, type);
 }
 
@@ -318,12 +316,6 @@ void TransportClientSocketPool::AddHigherLayeredPool(
 void TransportClientSocketPool::RemoveHigherLayeredPool(
     HigherLayeredPool* higher_pool) {
   base_.RemoveHigherLayeredPool(higher_pool);
-}
-
-bool TransportClientSocketPool::CloseOneIdleConnection() {
-  if (base_.CloseOneIdleSocket())
-    return true;
-  return base_.CloseOneIdleConnectionInHigherLayeredPool();
 }
 
 void TransportClientSocketPool::DumpMemoryStats(

@@ -616,8 +616,7 @@ class TestClientSocketPool : public ClientSocketPool {
       base::TimeDelta unused_idle_socket_timeout,
       base::TimeDelta used_idle_socket_timeout,
       TestClientSocketPoolBase::ConnectJobFactory* connect_job_factory)
-      : base_(NULL,
-              max_sockets,
+      : base_(max_sockets,
               max_sockets_per_group,
               unused_idle_socket_timeout,
               used_idle_socket_timeout,
@@ -699,8 +698,7 @@ class TestClientSocketPool : public ClientSocketPool {
 
   std::unique_ptr<base::DictionaryValue> GetInfoAsValue(
       const std::string& name,
-      const std::string& type,
-      bool include_nested_pools) const override {
+      const std::string& type) const override {
     return base_.GetInfoAsValue(name, type);
   }
 
@@ -736,10 +734,6 @@ class TestClientSocketPool : public ClientSocketPool {
   void CleanupTimedOutIdleSockets() { base_.CleanupIdleSockets(false); }
 
   void EnableConnectBackupJobs() { base_.EnableConnectBackupJobs(); }
-
-  bool CloseOneIdleConnectionInHigherLayeredPool() {
-    return base_.CloseOneIdleConnectionInHigherLayeredPool();
-  }
 
  private:
   TestClientSocketPoolBase base_;
@@ -4383,29 +4377,6 @@ class MockLayeredPool : public HigherLayeredPool {
   bool can_release_connection_;
 };
 
-TEST_F(ClientSocketPoolBaseTest, FailToCloseIdleSocketsNotHeldByLayeredPool) {
-  CreatePool(kDefaultMaxSockets, kDefaultMaxSocketsPerGroup);
-  connect_job_factory_->set_job_type(TestConnectJob::kMockJob);
-
-  MockLayeredPool mock_layered_pool(pool_.get(), "foo");
-  EXPECT_THAT(mock_layered_pool.RequestSocket(pool_.get()), IsOk());
-  EXPECT_CALL(mock_layered_pool, CloseOneIdleConnection())
-      .WillOnce(Return(false));
-  EXPECT_FALSE(pool_->CloseOneIdleConnectionInHigherLayeredPool());
-}
-
-TEST_F(ClientSocketPoolBaseTest, ForciblyCloseIdleSocketsHeldByLayeredPool) {
-  CreatePool(kDefaultMaxSockets, kDefaultMaxSocketsPerGroup);
-  connect_job_factory_->set_job_type(TestConnectJob::kMockJob);
-
-  MockLayeredPool mock_layered_pool(pool_.get(), "foo");
-  EXPECT_THAT(mock_layered_pool.RequestSocket(pool_.get()), IsOk());
-  EXPECT_CALL(mock_layered_pool, CloseOneIdleConnection())
-      .WillOnce(Invoke(&mock_layered_pool,
-                       &MockLayeredPool::ReleaseOneConnection));
-  EXPECT_TRUE(pool_->CloseOneIdleConnectionInHigherLayeredPool());
-}
-
 // Tests the basic case of closing an idle socket in a higher layered pool when
 // a new request is issued and the lower layer pool is stalled.
 TEST_F(ClientSocketPoolBaseTest, CloseIdleSocketsHeldByLayeredPoolWhenNeeded) {
@@ -4426,6 +4397,31 @@ TEST_F(ClientSocketPoolBaseTest, CloseIdleSocketsHeldByLayeredPoolWhenNeeded) {
                   ClientSocketPool::ProxyAuthCallback(), pool_.get(),
                   NetLogWithSource()));
   EXPECT_THAT(callback.WaitForResult(), IsOk());
+}
+
+// Tests the case that trying to close an idle socket in a higher layered pool
+// fails.
+TEST_F(ClientSocketPoolBaseTest,
+       CloseIdleSocketsHeldByLayeredPoolWhenNeededFails) {
+  CreatePool(1, 1);
+  connect_job_factory_->set_job_type(TestConnectJob::kMockJob);
+
+  MockLayeredPool mock_layered_pool(pool_.get(), "foo");
+  mock_layered_pool.set_can_release_connection(false);
+  EXPECT_THAT(mock_layered_pool.RequestSocket(pool_.get()), IsOk());
+  EXPECT_CALL(mock_layered_pool, CloseOneIdleConnection())
+      .WillOnce(Invoke(&mock_layered_pool,
+                       &MockLayeredPool::ReleaseOneConnection));
+  ClientSocketHandle handle;
+  TestCompletionCallback callback;
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      handle.Init("a", params_, DEFAULT_PRIORITY, SocketTag(),
+                  ClientSocketPool::RespectLimits::ENABLED, callback.callback(),
+                  ClientSocketPool::ProxyAuthCallback(), pool_.get(),
+                  NetLogWithSource()));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(callback.have_result());
 }
 
 // Same as above, but the idle socket is in the same group as the stalled
