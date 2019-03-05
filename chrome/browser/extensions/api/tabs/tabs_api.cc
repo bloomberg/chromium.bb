@@ -100,6 +100,8 @@
 #include "ash/public/cpp/window_pin_type.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/window_pin_type.mojom.h"
+#include "chrome/browser/chromeos/arc/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/ui/ash/chrome_screenshot_grabber.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "content/public/browser/devtools_agent_host.h"
@@ -289,6 +291,8 @@ bool ExtensionHasLockedFullscreenPermission(const Extension* extension) {
 }
 
 #if defined(OS_CHROMEOS)
+// TODO(isandrk, crbug.com/937786): Move platform specific code out of this
+// file.
 void SetLockedFullscreenState(Browser* browser, bool locked) {
   UMA_HISTOGRAM_BOOLEAN("Extensions.LockedFullscreenStateRequest", locked);
 
@@ -312,6 +316,21 @@ void SetLockedFullscreenState(Browser* browser, bool locked) {
   // fullscreen (security concerns).
   ui::Clipboard::GetForCurrentThread()->Clear(ui::CLIPBOARD_TYPE_COPY_PASTE);
   content::DevToolsAgentHost::DetachAllClients();
+
+  // Disable ARC while in the locked fullscreen mode.
+  arc::ArcSessionManager* const arc_session_manager =
+      arc::ArcSessionManager::Get();
+  Profile* const profile = browser->profile();
+  if (arc_session_manager && arc::IsArcAllowedForProfile(profile)) {
+    if (locked) {
+      // Disable ARC, preserve data.
+      arc_session_manager->RequestDisable();
+    } else {
+      // Re-enable ARC if needed.
+      if (arc::IsArcPlayStoreEnabledForProfile(profile))
+        arc_session_manager->RequestEnable();
+    }
+  }
 }
 
 #endif  // defined(OS_CHROMEOS)
