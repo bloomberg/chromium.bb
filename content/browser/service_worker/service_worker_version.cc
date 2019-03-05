@@ -565,10 +565,8 @@ int ServiceWorkerVersion::StartRequestWithCustomTimeout(
   // request will be aborted soon, so don't bother aborting the request directly
   // here, and just skip this bookkeeping.
   if (context_) {
-    if (event_type == ServiceWorkerMetrics::EventType::LONG_RUNNING_MESSAGE) {
-      context_->embedded_worker_registry()->AbortLifetimeTracking(
-          embedded_worker_->embedded_worker_id());
-    }
+    if (event_type == ServiceWorkerMetrics::EventType::LONG_RUNNING_MESSAGE)
+      embedded_worker_->AbortLifetimeTracking();
 
     if (event_type != ServiceWorkerMetrics::EventType::INSTALL &&
         event_type != ServiceWorkerMetrics::EventType::ACTIVATE &&

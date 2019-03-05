@@ -401,6 +401,28 @@ class EmbeddedWorkerInstance::DevToolsProxy {
   DISALLOW_COPY_AND_ASSIGN(DevToolsProxy);
 };
 
+// Tracks how long a service worker runs for, for UMA purposes.
+class EmbeddedWorkerInstance::ScopedLifetimeTracker {
+ public:
+  ScopedLifetimeTracker() : start_ticks_(base::TimeTicks::Now()) {}
+
+  ~ScopedLifetimeTracker() {
+    if (!start_ticks_.is_null()) {
+      ServiceWorkerMetrics::RecordRuntime(base::TimeTicks::Now() -
+                                          start_ticks_);
+    }
+  }
+
+  // Called when DevTools was attached to the worker. Ensures no metric is
+  // recorded for this worker.
+  void Abort() { start_ticks_ = base::TimeTicks(); }
+
+ private:
+  base::TimeTicks start_ticks_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedLifetimeTracker);
+};
+
 // A handle for a renderer process managed by ServiceWorkerProcessManager on the
 // UI thread. Lives on the IO thread.
 class EmbeddedWorkerInstance::WorkerProcessHandle {
@@ -919,6 +941,9 @@ void EmbeddedWorkerInstance::OnStarted(
     return;
   }
 
+  if (!devtools_attached_)
+    lifetime_tracker_ = std::make_unique<ScopedLifetimeTracker>();
+
   if (!registry_->OnWorkerStarted(process_id(), embedded_worker_id_))
     return;
   // Stop was requested before OnStarted was sent back from the worker. Just
@@ -1039,7 +1064,14 @@ void EmbeddedWorkerInstance::SetDevToolsAttached(bool attached) {
     return;
   if (inflight_start_task_)
     inflight_start_task_->set_skip_recording_startup_time();
-  registry_->AbortLifetimeTracking(embedded_worker_id_);
+  AbortLifetimeTracking();
+}
+
+void EmbeddedWorkerInstance::AbortLifetimeTracking() {
+  if (lifetime_tracker_) {
+    lifetime_tracker_->Abort();
+    lifetime_tracker_.reset();
+  }
 }
 
 void EmbeddedWorkerInstance::OnNetworkAccessedForScriptLoad() {
@@ -1056,6 +1088,7 @@ void EmbeddedWorkerInstance::ReleaseProcess() {
   instance_host_binding_.Close();
   devtools_proxy_.reset();
   process_handle_.reset();
+  lifetime_tracker_.reset();
   status_ = EmbeddedWorkerStatus::STOPPED;
   starting_phase_ = NOT_STARTING;
   thread_id_ = kInvalidEmbeddedWorkerThreadId;

@@ -15,7 +15,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
-#include "content/browser/service_worker/service_worker_lifetime_tracker.h"
 #include "content/common/content_export.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 
@@ -54,9 +53,6 @@ class CONTENT_EXPORT EmbeddedWorkerRegistry
   // keeps track of running workers.
   bool OnWorkerStarted(int process_id, int embedded_worker_id);
   void OnWorkerStopped(int process_id, int embedded_worker_id);
-
-  // Aborts the timer which tracks the lifetime of the worker for UMA logging.
-  void AbortLifetimeTracking(int embedded_worker_id);
 
   // Returns an embedded worker instance for given |embedded_worker_id|.
   EmbeddedWorkerInstance* GetWorker(int embedded_worker_id);
@@ -101,7 +97,6 @@ class CONTENT_EXPORT EmbeddedWorkerRegistry
 
   int next_embedded_worker_id_;
   const int initial_embedded_worker_id_;
-  ServiceWorkerLifetimeTracker lifetime_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(EmbeddedWorkerRegistry);
 };

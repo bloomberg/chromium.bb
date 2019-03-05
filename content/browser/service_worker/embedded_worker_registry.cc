@@ -56,18 +56,12 @@ bool EmbeddedWorkerRegistry::OnWorkerStarted(int process_id,
     return false;
   }
 
-  lifetime_tracker_.StartTiming(embedded_worker_id);
   return true;
 }
 
 void EmbeddedWorkerRegistry::OnWorkerStopped(int process_id,
                                              int embedded_worker_id) {
   worker_process_map_[process_id].erase(embedded_worker_id);
-  lifetime_tracker_.StopTiming(embedded_worker_id);
-}
-
-void EmbeddedWorkerRegistry::AbortLifetimeTracking(int embedded_worker_id) {
-  lifetime_tracker_.AbortTiming(embedded_worker_id);
 }
 
 EmbeddedWorkerInstance* EmbeddedWorkerRegistry::GetWorker(
@@ -116,7 +110,6 @@ void EmbeddedWorkerRegistry::DetachWorker(int process_id,
   worker_process_map_[process_id].erase(embedded_worker_id);
   if (worker_process_map_[process_id].empty())
     worker_process_map_.erase(process_id);
-  lifetime_tracker_.StopTiming(embedded_worker_id);
 }
 
 }  // namespace content
