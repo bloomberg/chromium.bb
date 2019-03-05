@@ -27,8 +27,7 @@
 
     <template is="dom-repeat" items="[[chooserExceptions]]">
       <chooser-exception-list-entry exception="[[item]]"
-          tabindex$="[[tabIndex]]" first$="[[!index]]"
-          iron-list-tab-index="[[tabIndex]]" on-show-tooltip="onShowTooltip_">
+          on-show-tooltip="onShowTooltip_">
       </chooser-exception-list-entry>
     </template>
 

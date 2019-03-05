@@ -18,14 +18,20 @@
 /** @polymerBehavior */
 const ListPropertyUpdateBehavior = {
   /**
-   * @param {string} propertyName
+   * @param {string} propertyPath
    * @param {function(!Object): string} itemUidGetter
    * @param {!Array<!Object>} updatedList
+   * @returns {boolean} True if notifySplices was called.
    */
-  updateList: function(propertyName, itemUidGetter, updatedList) {
-    const list = this[propertyName];
+  updateList: function(propertyPath, itemUidGetter, updatedList) {
+    const list = this.get(propertyPath);
     const splices = Polymer.ArraySplice.calculateSplices(
         updatedList.map(itemUidGetter), list.map(itemUidGetter));
+
+    if (splices.length == 0) {
+      return false;
+    }
+
     splices.forEach(splice => {
       const index = splice.index;
       const deleteCount = splice.removed.length;
@@ -39,8 +45,7 @@ const ListPropertyUpdateBehavior = {
       const spliceParams = [index, deleteCount].concat(added);
       list.splice.apply(list, spliceParams);
     });
-    if (splices.length > 0) {
-      this.notifySplices(propertyName, splices);
-    }
+    this.notifySplices(propertyPath, splices);
+    return true;
   },
 };

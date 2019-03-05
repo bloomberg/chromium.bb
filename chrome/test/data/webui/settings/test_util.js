@@ -129,8 +129,8 @@ cr.define('test_util', function() {
   /**
    * Helper to create a mock RawChooserException.
    * @param {!settings.ChooserType} chooserType The chooser exception type.
-   * @param {Array<!SiteException>} sites A list of SiteExceptions corresponding
-   *     to the chooser exception.
+   * @param {Array<!RawSiteException>} sites A list of SiteExceptions
+   *     corresponding to the chooser exception.
    * @param {!Object=} override An object with a subset of the properties of
    *     RawChooserException. Properties defined in |override| will overwrite
    *     the defaults in this function's return value.

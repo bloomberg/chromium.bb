@@ -508,4 +508,57 @@ suite('ChooserExceptionList', function() {
               testElement.chooserExceptions[0]);
         });
   });
+
+  test(
+      'The exception list is updated when incognito status is changed',
+      function() {
+        setUpChooserType(
+            settings.ContentSettingsTypes.USB_DEVICES,
+            settings.ChooserType.USB_DEVICES, prefsPolicyProvider);
+        assertEquals(
+            settings.ContentSettingsTypes.USB_DEVICES, testElement.category);
+        assertEquals(settings.ChooserType.USB_DEVICES, testElement.chooserType);
+        return browserProxy.whenCalled('getChooserExceptionList')
+            .then(function(chooserType) {
+              // Flush the container to ensure that the container is populated.
+              Polymer.dom.flush();
+
+              const chooserExceptionListEntry =
+                  testElement.$$('chooser-exception-list-entry');
+              assertTrue(!!chooserExceptionListEntry);
+
+              const siteListEntry =
+                  chooserExceptionListEntry.$$('site-list-entry');
+              assertTrue(!!siteListEntry);
+              assertNotEquals(
+                  siteListEntry.$.siteDescription.textContext,
+                  'Current incognito session');
+
+              // Simulate an incognito session being created.
+              browserProxy.resetResolver('getChooserExceptionList');
+              browserProxy.setIncognito(true);
+              return browserProxy.whenCalled('getChooserExceptionList');
+            })
+            .then(function(chooserType) {
+              // Flush the container to ensure that the container is populated.
+              Polymer.dom.flush();
+
+              const chooserExceptionListEntry =
+                  testElement.$$('chooser-exception-list-entry');
+              assertTrue(!!chooserExceptionListEntry);
+              assertTrue(chooserExceptionListEntry.$.listContainer
+                             .querySelector('iron-list')
+                             .items.some(item => item.incognito));
+
+              const siteListEntries =
+                  chooserExceptionListEntry.root.querySelectorAll(
+                      'site-list-entry');
+              assertEquals(2, siteListEntries.length);
+              assertTrue(Array.from(siteListEntries)
+                             .some(
+                                 entry => entry.$.siteDescription.textContent ==
+                                     'Current incognito session ' +
+                                         '(embedded on https://foo.com)'));
+            });
+      });
 });
