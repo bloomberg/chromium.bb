@@ -1842,7 +1842,7 @@
     ],
 
     'win32_arm64_release_bot': [
-      'arm64', 'disable_nacl', 'release_bot',
+      'arm64', 'disable_nacl', 'minimal_symbols', 'release_bot',
     ],
 
     'clang_tot_win_release_cross': [
