@@ -216,7 +216,7 @@ class CORE_EXPORT EventHandler final
       Node* override_target_node = nullptr);
   WebInputEventResult ShowNonLocatedContextMenu(
       Element* override_target_element = nullptr,
-      WebMenuSourceType = kMenuSourceNone);
+      WebMenuSourceType = kMenuSourceContextMenuKey);
 
   // Returns whether pointerId is active or not
   bool IsPointerEventActive(int);
