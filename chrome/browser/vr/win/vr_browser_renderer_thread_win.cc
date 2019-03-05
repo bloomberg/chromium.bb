@@ -26,18 +26,20 @@ namespace vr {
 VRBrowserRendererThreadWin* VRBrowserRendererThreadWin::instance_for_testing_ =
     nullptr;
 
-VRBrowserRendererThreadWin::VRBrowserRendererThreadWin() {
+VRBrowserRendererThreadWin::VRBrowserRendererThreadWin(
+    device::mojom::XRCompositorHost* compositor)
+    : compositor_(compositor) {
   DCHECK(instance_for_testing_ == nullptr);
   instance_for_testing_ = this;
 }
 
 VRBrowserRendererThreadWin::~VRBrowserRendererThreadWin() {
   // Call Cleanup to ensure correct destruction order of VR-UI classes.
-  CleanUp();
+  StopOverlay();
   instance_for_testing_ = nullptr;
 }
 
-void VRBrowserRendererThreadWin::CleanUp() {
+void VRBrowserRendererThreadWin::StopOverlay() {
   browser_renderer_ = nullptr;
   initializing_graphics_ = nullptr;
   overlay_ = nullptr;
@@ -51,28 +53,23 @@ void VRBrowserRendererThreadWin::SetVRDisplayInfo(
 }
 
 void VRBrowserRendererThreadWin::SetLocationInfo(GURL gurl) {
-  // TODO(https://crbug.com/905375): Set more of this state.  Only the GURL is
-  // currently used, so its the only thing we are setting correctly.
-  DCHECK(ui_) << "Must be called after StartOverlay";
-  LocationBarState state(gurl, security_state::SecurityLevel::SECURE,
-                         nullptr /* vector icon */, true /* display url */,
-                         false /* offline */);
-
-  ui_->SetLocationBarState(state);
+  gurl_ = gurl;
 }
 
 void VRBrowserRendererThreadWin::SetVisibleExternalPromptNotification(
     ExternalPromptNotificationType prompt) {
-  ui_->SetVisibleExternalPromptNotification(prompt);
-
   if (!draw_state_.SetPrompt(prompt))
     return;
 
+  if (draw_state_.ShouldDrawUI())
+    StartOverlay();
+
+  ui_->SetVisibleExternalPromptNotification(prompt);
+
   overlay_->SetOverlayAndWebXRVisibility(draw_state_.ShouldDrawUI(),
                                          draw_state_.ShouldDrawWebXR());
-  if (draw_state_.ShouldDrawUI())
-    overlay_->RequestNextOverlayPose(base::BindOnce(
-        &VRBrowserRendererThreadWin::OnPose, base::Unretained(this)));
+  if (!draw_state_.ShouldDrawUI())
+    StopOverlay();
 }
 
 VRBrowserRendererThreadWin*
@@ -120,17 +117,14 @@ class VRUiBrowserInterface : public UiBrowserInterface {
   void ShowPageInfo() override {}
 };
 
-void VRBrowserRendererThreadWin::StartOverlay(
-    device::mojom::XRCompositorHost* compositor) {
-  device::mojom::ImmersiveOverlayPtrInfo overlay_info;
-  compositor->CreateImmersiveOverlay(mojo::MakeRequest(&overlay_info));
+void VRBrowserRendererThreadWin::StartOverlay() {
+  compositor_->CreateImmersiveOverlay(mojo::MakeRequest(&overlay_));
 
   initializing_graphics_ = std::make_unique<GraphicsDelegateWin>();
   if (!initializing_graphics_->InitializeOnMainThread()) {
     return;
   }
 
-  overlay_.Bind(std::move(overlay_info));
   initializing_graphics_->InitializeOnGLThread();
   initializing_graphics_->BindContext();
 
@@ -157,6 +151,16 @@ void VRBrowserRendererThreadWin::StartOverlay(
   ui_ = static_cast<BrowserUiInterface*>(ui.get());
   ui_->SetWebVrMode(true);
 
+  if (gurl_.is_valid()) {
+    // TODO(https://crbug.com/905375): Set more of this state.  Only the GURL is
+    // currently used, so its the only thing we are setting correctly. See
+    // VRUiHostImpl::SetLocationInfoOnUi also.
+    LocationBarState state(gurl_, security_state::SecurityLevel::SECURE,
+                           nullptr /* vector icon */, true /* display url */,
+                           false /* offline */);
+    ui_->SetLocationBarState(state);
+  }
+
   // Create the delegates, and keep raw pointers to them.  They are owned by
   // browser_renderer_.
   std::unique_ptr<SchedulerDelegateWin> scheduler_delegate =
@@ -181,13 +185,6 @@ void VRBrowserRendererThreadWin::StartOverlay(
         &VRBrowserRendererThreadWin::OnPose, base::Unretained(this)));
   }
   graphics_->ClearContext();
-}
-
-void VRBrowserRendererThreadWin::StopOverlay() {
-  draw_state_.StopOverlay();
-  overlay_->SetOverlayAndWebXRVisibility(draw_state_.ShouldDrawUI(),
-                                         draw_state_.ShouldDrawWebXR());
-  CleanUp();
 }
 
 void VRBrowserRendererThreadWin::OnPose(device::mojom::XRFrameDataPtr data) {
@@ -251,10 +248,6 @@ void VRBrowserRendererThreadWin::SubmitResult(bool success) {
 }
 
 // VRBrowserRendererThreadWin::DrawContentType functions.
-void VRBrowserRendererThreadWin::DrawState::StopOverlay() {
-  prompt_ = ExternalPromptNotificationType::kPromptNone;
-}
-
 bool VRBrowserRendererThreadWin::DrawState::ShouldDrawUI() {
   return prompt_ != ExternalPromptNotificationType::kPromptNone;
 }

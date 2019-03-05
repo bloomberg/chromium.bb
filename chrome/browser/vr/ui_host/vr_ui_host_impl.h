@@ -47,6 +47,7 @@ class VRUiHostImpl : public VRUiHost,
   void OnBubbleRemoved() override;
 
   void RemoveHeadsetNotificationPrompt(int prompt_sequence_num);
+  void SetLocationInfoOnUi();
 
   device::mojom::XRCompositorHostPtr compositor_;
   std::unique_ptr<VRBrowserRendererThreadWin> ui_rendering_thread_;
