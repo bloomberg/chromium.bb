@@ -991,6 +991,40 @@ TEST_F(TransportClientSocketPoolTest, CloseIdleSocketsOnIPAddressChange) {
   EXPECT_EQ(0, pool_->IdleSocketCount());
 }
 
+TEST_F(TransportClientSocketPoolTest, SSLCertError) {
+  StaticSocketDataProvider data;
+  tagging_client_socket_factory_.AddSocketDataProvider(&data);
+  SSLSocketDataProvider ssl(ASYNC, ERR_CERT_COMMON_NAME_INVALID);
+  tagging_client_socket_factory_.AddSSLSocketDataProvider(&ssl);
+
+  const HostPortPair kHostPortPair("ssl.server.test", 443);
+
+  scoped_refptr<TransportSocketParams> tcp_params =
+      base::MakeRefCounted<TransportSocketParams>(
+          kHostPortPair, false /* disable_resolver_cache */,
+          OnHostResolutionCallback());
+  scoped_refptr<SSLSocketParams> params(
+      new SSLSocketParams(tcp_params, nullptr, nullptr, kHostPortPair,
+                          GetSSLConfig(), PRIVACY_MODE_DISABLED));
+
+  ClientSocketHandle handle;
+  TestCompletionCallback callback;
+  int rv = handle.Init(
+      "group_name",
+      TransportClientSocketPool::SocketParams::CreateFromSSLSocketParams(
+          params),
+      MEDIUM, SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
+      callback.callback(), ClientSocketPool::ProxyAuthCallback(),
+      tagging_pool_.get(), NetLogWithSource());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+  EXPECT_FALSE(handle.is_initialized());
+  EXPECT_FALSE(handle.socket());
+
+  EXPECT_THAT(callback.WaitForResult(), IsError(ERR_CERT_COMMON_NAME_INVALID));
+  EXPECT_TRUE(handle.is_initialized());
+  EXPECT_TRUE(handle.socket());
+}
+
 TEST_F(TransportClientSocketPoolTest, CloseIdleSocketsOnSSLConfigChange) {
   TestCompletionCallback callback;
   ClientSocketHandle handle;
