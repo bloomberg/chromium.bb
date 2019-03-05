@@ -933,6 +933,8 @@ class BBJSONGenerator(object):
       # chromium, due to https://crbug.com/878915
       'win-dbg',
       'win32-dbg',
+      # Defined in internal configs.
+      'chromeos-amd64-generic-google-rel',
     ]
 
   def check_input_file_consistency(self, verbose=False):
