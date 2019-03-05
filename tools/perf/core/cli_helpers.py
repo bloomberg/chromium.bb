@@ -80,7 +80,9 @@ def Ask(question, answers=None, default=None):
     answers: List or dictinary describing user choices. In case of a dictionary,
         the keys are the options display to the user and values are the return
         values for this method. In case of a list, returned values are same as
-        options displayed to the user. Defaults to {'yes': True, 'no', False}.
+        options displayed to the user. When presenting to the user, the order of
+        answers is preserved if list is used, otherwise answers are sorted
+        alphabetically. Defaults to {'yes': True, 'no': False}.
     default: Default option chosen on empty answer. Defaults to 'yes' if default
         value is used for answers parameter or to lack of default answer
         otherwise.
@@ -93,7 +95,10 @@ def Ask(question, answers=None, default=None):
     answers = {'yes': True, 'no': False}
     default = 'yes'
   if isinstance(answers, list):
+    ordered_answers = answers
     answers = {v: v for v in answers}
+  else:
+    ordered_answers = sorted(answers)
 
   # Generate a set of prefixes for all answers such that the user can type just
   # the minimum number of characters required, e.g. 'y' or 'ye' can be used for
@@ -112,10 +117,9 @@ def Ask(question, answers=None, default=None):
         inputs[inp] = retval
 
   if default is None:
-    prompt = ' [%s] ' % '/'.join(answers)
+    prompt = ' [%s] ' % '/'.join(ordered_answers)
   elif default in answers:
-    ans_with_def = [a if a != default else a.upper()
-                    for a in sorted(answers.keys())]
+    ans_with_def = (a if a != default else a.upper() for a in ordered_answers)
     prompt = ' [%s] ' % '/'.join(ans_with_def)
   else:
     raise ValueError('invalid default answer: "%s"' % default)
