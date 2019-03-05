@@ -18,9 +18,9 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionViewDelegate;
+import org.chromium.chrome.browser.util.ColorUtils;
 
 /**
  * Container view for omnibox answer suggestions.
@@ -106,9 +106,8 @@ public class AnswerSuggestionView extends RelativeLayout {
      */
     void setUseDarkColors(boolean useDarkColors) {
         Drawable drawable = mRefineView.getDrawable();
-        DrawableCompat.setTint(drawable,
-                ApiCompatibilityUtils.getColor(getContext().getResources(),
-                        useDarkColors ? R.color.dark_mode_tint : R.color.light_mode_tint));
+        DrawableCompat.setTint(
+                drawable, ColorUtils.getIconTint(getContext(), !useDarkColors).getDefaultColor());
     }
 
     /**

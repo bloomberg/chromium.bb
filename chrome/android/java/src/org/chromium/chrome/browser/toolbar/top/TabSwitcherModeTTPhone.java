@@ -28,6 +28,7 @@ import org.chromium.chrome.browser.toolbar.IncognitoToggleTabLayout;
 import org.chromium.chrome.browser.toolbar.MenuButton;
 import org.chromium.chrome.browser.toolbar.NewTabButton;
 import org.chromium.chrome.browser.toolbar.TabCountProvider;
+import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.animation.CancelAwareAnimatorListener;
 import org.chromium.ui.UiUtils;
@@ -269,10 +270,18 @@ public class TabSwitcherModeTTPhone extends OptimizedFrameLayout
             setBackgroundColor(primaryColor);
         }
 
-        boolean useLightIcons = mIsIncognito
-                && (usingHorizontalTabSwitcher()
-                        || FeatureUtilities.isGridTabSwitcherEnabled(getContext())
-                        || DeviceClassManager.enableAccessibilityLayout());
+        boolean useLightIcons;
+        if (primaryColor == Color.TRANSPARENT) {
+            // If the toolbar is transparent, the icon tint will depend on the background color of
+            // the tab switcher, which is the standard mode background. Note that horizontal tab
+            // switcher is an exception, which uses the correspond background color for standard
+            // and incognito mode.
+            int backgroundColor = ColorUtils.getPrimaryBackgroundColor(
+                    getResources(), usingHorizontalTabSwitcher() && mIsIncognito);
+            useLightIcons = ColorUtils.shouldUseLightForegroundOnBackground(backgroundColor);
+        } else {
+            useLightIcons = ColorUtils.shouldUseLightForegroundOnBackground(primaryColor);
+        }
 
         if (mUseLightIcons == useLightIcons) return;
 
@@ -280,9 +289,9 @@ public class TabSwitcherModeTTPhone extends OptimizedFrameLayout
 
         if (mLightIconTint == null) {
             mLightIconTint =
-                    AppCompatResources.getColorStateList(getContext(), R.color.light_mode_tint);
+                    AppCompatResources.getColorStateList(getContext(), R.color.tint_on_dark_bg);
             mDarkIconTint =
-                    AppCompatResources.getColorStateList(getContext(), R.color.dark_mode_tint);
+                    AppCompatResources.getColorStateList(getContext(), R.color.standard_mode_tint);
         }
 
         ColorStateList tintList = useLightIcons ? mLightIconTint : mDarkIconTint;
@@ -296,11 +305,10 @@ public class TabSwitcherModeTTPhone extends OptimizedFrameLayout
     }
 
     private int getToolbarColorForCurrentState() {
+        // TODO(huayinz): Split tab switcher background color from primary background color.
         if (DeviceClassManager.enableAccessibilityLayout()
                 || FeatureUtilities.isGridTabSwitcherEnabled(getContext())) {
-            int colorId = mIsIncognito ? R.color.incognito_modern_primary_color
-                                       : R.color.modern_primary_color;
-            return ApiCompatibilityUtils.getColor(getResources(), colorId);
+            return ColorUtils.getPrimaryBackgroundColor(getResources(), mIsIncognito);
         }
 
         return Color.TRANSPARENT;

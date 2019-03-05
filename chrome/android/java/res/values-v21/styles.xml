@@ -85,7 +85,7 @@
     </style>
 
     <style name="Theme.Chromium.Incognito" parent="Theme.Chromium.WithWindowAnimation">
-        <item name="android:colorPrimary">@color/incognito_primary_color</item>
+        <item name="android:colorPrimary">@color/incognito_modern_primary_color</item>
     </style>
 
     <!-- Theme variation for low-end devices.

@@ -97,7 +97,7 @@
                     android:layout_marginStart="16dp"
                     tools:ignore="ContentDescription"
                     tools:src="@drawable/ic_expand_more_black_24dp"
-                    tools:tint="@color/dark_mode_tint"/>
+                    tools:tint="@color/standard_mode_tint"/>
             </LinearLayout>
             <TextView
                 android:id="@+id/signin_sync_title"

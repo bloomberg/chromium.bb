@@ -9,7 +9,9 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.content.res.Resources;
+import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.content.res.AppCompatResources;
@@ -68,7 +70,7 @@ public class ToolbarTablet extends ToolbarLayout
 
     private NavigationPopup mNavigationPopup;
 
-    private Boolean mUseLightColorAssets;
+    private Boolean mIsIncognito;
     private LocationBarTablet mLocationBar;
 
     private final int mStartPaddingWithButtons;
@@ -103,7 +105,7 @@ public class ToolbarTablet extends ToolbarLayout
         // ImageView tinting doesn't work with LevelListDrawable, use Drawable tinting instead.
         // See https://crbug.com/891593 for details.
         Drawable reloadIcon = UiUtils.getTintedDrawable(
-                getContext(), R.drawable.btn_reload_stop, R.color.dark_mode_tint);
+                getContext(), R.drawable.btn_reload_stop, R.color.standard_mode_tint);
         mReloadButton.setImageDrawable(reloadIcon);
         mShowTabStack = AccessibilityUtil.isAccessibilityEnabled()
                 && isAccessibilityTabSwitcherPreferenceEnabled();
@@ -337,29 +339,27 @@ public class ToolbarTablet extends ToolbarLayout
     @Override
     void onTabOrModelChanged() {
         super.onTabOrModelChanged();
-        boolean incognito = isIncognito();
-        if (mUseLightColorAssets == null || mUseLightColorAssets != incognito) {
-            int color = ColorUtils.getDefaultThemeColor(getResources(), isIncognito());
+        final boolean incognito = isIncognito();
+        if (mIsIncognito == null || mIsIncognito != incognito) {
+            final int color = ColorUtils.getDefaultThemeColor(getResources(), incognito);
             setBackgroundColor(color);
             getProgressBar().setThemeColor(color, isIncognito());
 
-            ApiCompatibilityUtils.setImageTintList(
-                    mHomeButton, incognito ? mLightModeTint : mDarkModeTint);
-            ApiCompatibilityUtils.setImageTintList(
-                    mBackButton, incognito ? mLightModeTint : mDarkModeTint);
-            ApiCompatibilityUtils.setImageTintList(
-                    mForwardButton, incognito ? mLightModeTint : mDarkModeTint);
-            ApiCompatibilityUtils.setImageTintList(
-                    mSaveOfflineButton, incognito ? mLightModeTint : mDarkModeTint);
-            if (incognito) {
-                mLocationBar.getContainerView().getBackground().setAlpha(
-                        ToolbarPhone.LOCATION_BAR_TRANSPARENT_BACKGROUND_ALPHA);
-            } else {
-                mLocationBar.getContainerView().getBackground().setAlpha(255);
-            }
+            final int textBoxColor =
+                    ColorUtils.getTextBoxColorForToolbarBackground(getResources(), false, color);
+            mLocationBar.getBackground().setColorFilter(textBoxColor, PorterDuff.Mode.SRC_IN);
+
+            final ColorStateList tint = ColorUtils.shouldUseLightForegroundOnBackground(color)
+                    ? mLightModeTint
+                    : mDarkModeTint;
+            ApiCompatibilityUtils.setImageTintList(mHomeButton, tint);
+            ApiCompatibilityUtils.setImageTintList(mBackButton, tint);
+            ApiCompatibilityUtils.setImageTintList(mForwardButton, tint);
+            ApiCompatibilityUtils.setImageTintList(mSaveOfflineButton, tint);
+
             mAccessibilitySwitcherButton.setUseLightDrawables(incognito);
             mLocationBar.updateVisualsForState();
-            mUseLightColorAssets = incognito;
+            mIsIncognito = incognito;
         }
 
         updateNtp();
@@ -511,11 +511,6 @@ public class ToolbarTablet extends ToolbarLayout
     @Override
     public LocationBar getLocationBar() {
         return mLocationBar;
-    }
-
-    @Override
-    boolean useLightDrawables() {
-        return mUseLightColorAssets != null && mUseLightColorAssets;
     }
 
     @Override

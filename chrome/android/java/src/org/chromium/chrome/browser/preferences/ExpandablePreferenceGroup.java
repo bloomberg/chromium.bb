@@ -90,7 +90,7 @@ public class ExpandablePreferenceGroup extends PreferenceGroup {
 
         Drawable tintableDrawable = DrawableCompat.wrap(builder.build());
         DrawableCompat.setTintList(tintableDrawable,
-                AppCompatResources.getColorStateList(context, R.color.dark_mode_tint));
+                AppCompatResources.getColorStateList(context, R.color.standard_mode_tint));
         return tintableDrawable;
     }
 }

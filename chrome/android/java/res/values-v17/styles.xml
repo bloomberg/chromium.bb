@@ -349,7 +349,7 @@
         <item name="android:layout_weight">1</item>
         <item name="android:background">?attr/listChoiceBackgroundIndicator</item>
         <item name="android:scaleType">center</item>
-        <item name="tint">@color/dark_mode_tint</item>
+        <item name="tint">@color/standard_mode_tint</item>
     </style>
     <style name="OverflowMenuAnim">
         <item name="android:windowEnterAnimation">@anim/menu_enter</item>
@@ -605,7 +605,7 @@
         <item name="android:paddingStart">4dp</item>
         <item name="android:scaleType">center</item>
         <item name="android:layout_gravity">end</item>
-        <item name="tint">@color/dark_mode_tint</item>
+        <item name="tint">@color/standard_mode_tint</item>
     </style>
     <style name="ModernToolbar" parent="Widget.AppCompat.Toolbar">
         <item name="titleTextAppearance">@style/TextAppearance.BlackHeadline</item>
@@ -717,6 +717,16 @@
         <item name="android:paddingStart">18dp</item>
         <item name="android:paddingEnd">18dp</item>
         <item name="android:scaleType">centerInside</item>
+    </style>
+    <style name="TextAppearance.ListMenuItem">
+        <item name="android:textColor">@color/standard_mode_tint</item>
+        <item name="android:textSize">16sp</item>
+    </style>
+
+    <!-- Bookmarks -->
+    <style name="TextAppearance.BookmarkEditFolderName"
+        parent="@style/TextAppearance.AppCompat.Medium">
+        <item name="android:textColor">@color/standard_mode_tint</item>
     </style>
 
     <!-- Download Home -->

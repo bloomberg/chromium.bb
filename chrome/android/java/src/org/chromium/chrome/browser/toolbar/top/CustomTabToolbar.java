@@ -139,7 +139,7 @@ public class CustomTabToolbar
     private ImageButton mMenuButton;
 
     // Whether dark tint should be applied to icons and text.
-    private boolean mUseDarkColors = true;
+    private boolean mUseDarkColors;
 
     private ValueAnimator mBrandColorTransitionAnimation;
     private boolean mBrandColorTransitionActive;
@@ -167,7 +167,9 @@ public class CustomTabToolbar
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
-        setBackground(new ColorDrawable(ColorUtils.getDefaultThemeColor(getResources(), false)));
+        final int backgroundColor = ColorUtils.getDefaultThemeColor(getResources(), false);
+        setBackground(new ColorDrawable(backgroundColor));
+        mUseDarkColors = !ColorUtils.shouldUseLightForegroundOnBackground(backgroundColor);
         mUrlBar = (TextView) findViewById(R.id.url_bar);
         mUrlBar.setHint("");
         mUrlBar.setEnabled(false);
@@ -711,11 +713,6 @@ public class CustomTabToolbar
     @Override
     public LocationBar getLocationBar() {
         return this;
-    }
-
-    @Override
-    boolean useLightDrawables() {
-        return !mUseDarkColors;
     }
 
     @Override

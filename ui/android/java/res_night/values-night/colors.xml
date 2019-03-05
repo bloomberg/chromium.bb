@@ -11,7 +11,8 @@
     <color name="disabled_text_color">@color/modern_grey_200_alpha_38</color>
 
     <!-- Common icon colors for drawables. -->
-    <color name="default_icon_color">@color/modern_grey_200</color>
+    <color name="default_icon_color">@color/default_icon_color_white</color>
+    <color name="default_icon_color_disabled">@color/default_icon_color_white_disabled</color>
     <color name="default_icon_color_blue">@color/modern_blue_300</color>
     <color name="hairline_stroke_color">@color/white_alpha_10</color>
 

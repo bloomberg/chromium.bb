@@ -18,7 +18,7 @@
         <org.chromium.ui.widget.ChromeImageView
             android:id="@+id/icon_view"
             style="@style/DownloadIconView"
-            app:tint="@color/dark_mode_tint" />
+            app:tint="@color/standard_mode_tint" />
 
         <!-- Shown for completed downloads. -->
         <RelativeLayout

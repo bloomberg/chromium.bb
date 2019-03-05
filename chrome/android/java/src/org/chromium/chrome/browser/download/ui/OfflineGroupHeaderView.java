@@ -47,7 +47,7 @@ public class OfflineGroupHeaderView
         mIconBackgroundResId = R.drawable.list_item_icon_modern_bg;
 
         mIconForegroundColorList =
-                AppCompatResources.getColorStateList(context, R.color.dark_mode_tint);
+                AppCompatResources.getColorStateList(context, R.color.standard_mode_tint);
     }
 
     @Override

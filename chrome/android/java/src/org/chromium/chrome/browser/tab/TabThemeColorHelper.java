@@ -4,12 +4,12 @@
 
 package org.chromium.chrome.browser.tab;
 
-import android.content.res.Resources;
-import android.graphics.Color;
 import android.support.annotation.Nullable;
 
 import org.chromium.base.UserData;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.lifecycle.StartStopWithNativeObserver;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content_public.browser.NavigationHandle;
@@ -17,12 +17,16 @@ import org.chromium.content_public.browser.NavigationHandle;
 /**
  * Manages theme color used for {@link Tab}. Destroyed together with the tab.
  */
-public class TabThemeColorHelper extends EmptyTabObserver implements UserData {
+public class TabThemeColorHelper
+        extends EmptyTabObserver implements UserData, StartStopWithNativeObserver {
     private static final Class<TabThemeColorHelper> USER_DATA_KEY = TabThemeColorHelper.class;
     private final Tab mTab;
 
     private int mDefaultColor;
     private int mColor;
+
+    /** Whether or not the default color is used. */
+    private boolean mIsDefaultColorUsed;
 
     public static void createForTab(Tab tab) {
         assert get(tab) == null;
@@ -44,10 +48,16 @@ public class TabThemeColorHelper extends EmptyTabObserver implements UserData {
         return get(tab).getDefaultColor();
     }
 
+    /** @return Whether default theme color is used for the specified {@link Tab}. */
+    public static boolean isDefaultColorUsed(Tab tab) {
+        return get(tab).mIsDefaultColorUsed;
+    }
+
     private TabThemeColorHelper(Tab tab) {
         mTab = tab;
         mDefaultColor = calculateDefaultColor();
         mColor = calculateThemeColor(false);
+        updateActivityStateObserver(tab.getActivity() != null);
         tab.addObserver(this);
     }
 
@@ -57,12 +67,13 @@ public class TabThemeColorHelper extends EmptyTabObserver implements UserData {
     }
 
     private int calculateDefaultColor() {
-        Resources resources = mTab.getThemedApplicationContext().getResources();
-        return ColorUtils.getDefaultThemeColor(resources, mTab.isIncognito());
+        return ColorUtils.getDefaultThemeColor(
+                mTab.getContext().getResources(), mTab.isIncognito());
     }
 
     void updateFromTabState(TabState state) {
-        mColor = state.hasThemeColor() ? state.getThemeColor() : getDefaultColor();
+        mIsDefaultColorUsed = !state.hasThemeColor();
+        mColor = mIsDefaultColorUsed ? getDefaultColor() : state.getThemeColor();
         updateIfNeeded(false);
     }
 
@@ -73,35 +84,33 @@ public class TabThemeColorHelper extends EmptyTabObserver implements UserData {
      * @return The theme color that should be used for this tab.
      */
     private int calculateThemeColor(boolean didWebContentsThemeColorChange) {
-        // Start by assuming the current theme color is that one that should be used. This will
-        // either be transparent, the last theme color, or the color restored from TabState.
-        int themeColor =
-                ColorUtils.isValidThemeColor(mColor) || mColor == 0 ? mColor : getDefaultColor();
+        // If default color is not used, start by assuming the current theme color is the one that
+        // should be used. This will either be transparent, the last theme color, or the color
+        // restored from TabState.
+        int themeColor = mIsDefaultColorUsed ? getDefaultColor() : mColor;
 
         // Only use the web contents for the theme color if it is known to have changed, This
         // corresponds to the didChangeThemeColor in WebContentsObserver.
         if (mTab.getWebContents() != null && didWebContentsThemeColorChange) {
             themeColor = mTab.getWebContents().getThemeColor();
-            if (themeColor != 0 && !ColorUtils.isValidThemeColor(themeColor)) themeColor = 0;
+            if (!ColorUtils.isValidThemeColor(themeColor)) {
+                themeColor = TabState.UNSPECIFIED_THEME_COLOR;
+            } else {
+                mIsDefaultColorUsed = false;
+            }
         }
 
         // Do not apply the theme color if there are any security issues on the page.
-        int securityLevel = mTab.getSecurityLevel();
+        final int securityLevel = mTab.getSecurityLevel();
         if (securityLevel == ConnectionSecurityLevel.DANGEROUS
-                || securityLevel == ConnectionSecurityLevel.SECURE_WITH_POLICY_INSTALLED_CERT) {
+                || securityLevel == ConnectionSecurityLevel.SECURE_WITH_POLICY_INSTALLED_CERT
+                || (mTab.getActivity() != null && mTab.getActivity().isTablet())
+                || mTab.isNativePage() || mTab.isShowingInterstitialPage()
+                || themeColor == TabState.UNSPECIFIED_THEME_COLOR || mTab.isIncognito()
+                || mTab.isPreview()) {
             themeColor = getDefaultColor();
+            mIsDefaultColorUsed = true;
         }
-
-        if (mTab.getActivity() != null && mTab.getActivity().isTablet()) {
-            themeColor = getDefaultColor();
-        }
-
-        if (mTab.isNativePage()) themeColor = getDefaultColor();
-        if (mTab.isShowingInterstitialPage()) themeColor = getDefaultColor();
-
-        if (themeColor == Color.TRANSPARENT) themeColor = getDefaultColor();
-        if (mTab.isIncognito()) themeColor = getDefaultColor();
-        if (mTab.isPreview()) themeColor = getDefaultColor();
 
         // Ensure there is no alpha component to the theme color as that is not supported in the
         // dependent UI.
@@ -179,11 +188,36 @@ public class TabThemeColorHelper extends EmptyTabObserver implements UserData {
 
     @Override
     public void onActivityAttachmentChanged(Tab tab, boolean isAttached) {
+        updateActivityStateObserver(isAttached);
         updateDefaultColor();
     }
 
     @Override
     public void onDestroyed(Tab tab) {
+        updateActivityStateObserver(false);
         tab.removeObserver(this);
+    }
+
+    // StartStopWithNativeObserver implementation.
+    @Override
+    public void onStartWithNative() {
+        // We need to update the default color because the resource could be retrieved before the UI
+        // mode on ChromeActivity is properly updated during onStart (e.g. open custom tab in
+        // browser).
+        updateDefaultColor();
+    }
+
+    @Override
+    public void onStopWithNative() {}
+
+    private void updateActivityStateObserver(boolean isAttachedToActivity) {
+        ChromeActivity activity = mTab.getActivity();
+        if (activity == null) return;
+
+        if (isAttachedToActivity) {
+            activity.getLifecycleDispatcher().register(this);
+        } else {
+            activity.getLifecycleDispatcher().unregister(this);
+        }
     }
 }

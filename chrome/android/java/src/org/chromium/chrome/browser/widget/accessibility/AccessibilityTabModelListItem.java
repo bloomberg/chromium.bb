@@ -36,6 +36,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
+import org.chromium.chrome.browser.util.ColorUtils;
 
 /**
  * A widget that shows a single row of the {@link AccessibilityTabModelListView} list.
@@ -214,7 +215,7 @@ public class AccessibilityTabModelListItem extends FrameLayout implements OnClic
 
         mDefaultHeight =
                 context.getResources().getDimensionPixelOffset(R.dimen.accessibility_tab_height);
-        mDarkIconColor = AppCompatResources.getColorStateList(context, R.color.dark_mode_tint);
+        mDarkIconColor = ColorUtils.getIconTint(context, false);
         mDarkCloseIconColor = AppCompatResources.getColorStateList(context, R.color.black_alpha_38);
         mLightCloseIconColor =
                 AppCompatResources.getColorStateList(context, R.color.white_alpha_70);

@@ -21,7 +21,7 @@
             android:layout_width="@dimen/bottom_tab_grid_toolbar_icon_size"
             android:layout_height="match_parent"
             android:src="@drawable/ic_expand_more_black_24dp"
-            app:tint="@color/dark_mode_tint"
+            app:tint="@color/standard_mode_tint"
             android:contentDescription="@string/accessibility_collapse_section_header" />
          <TextView
              android:id="@+id/title"
@@ -38,7 +38,7 @@
             android:layout_width="@dimen/bottom_tab_grid_toolbar_icon_size"
             android:layout_height="match_parent"
             android:src="@drawable/plus"
-            app:tint="@color/dark_mode_tint"
+            app:tint="@color/standard_mode_tint"
             android:contentDescription="@string/bottom_tab_grid_new_tab" />
    </LinearLayout>
 </org.chromium.chrome.browser.tasks.tab_list_ui.BottomTabGridSheetToolbarView>

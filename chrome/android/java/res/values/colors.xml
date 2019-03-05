@@ -38,8 +38,6 @@
     <color name="white_alpha_65">#A6FFFFFF</color>
     <color name="white_alpha_90">#E6FFFFFF</color>
 
-    <color name="modern_grey_800_alpha_38">#613C4043</color>
-
     <!-- Old color palette -->
     <color name="google_blue_grey_500">#607D8B</color>
     <color name="google_blue_50">#E3F2FD</color>
@@ -135,14 +133,13 @@
     <color name="progress_bar_secondary">@color/modern_grey_600</color>
     <color name="progress_bar_background">#3D4386F7</color>
 
-    <!-- Theme colors. Also used for toolbar background -->
-    <!-- TODO(huayinz): Split incognito toolbar background color from primary color. -->
-    <color name="incognito_primary_color">#505050</color>
+    <!-- Incognito background and branding colors -->
     <color name="incognito_modern_primary_color">@color/modern_grey_800</color>
 
     <!-- Toolbar colors -->
     <color name="toolbar_background_primary">@android:color/white</color>
-    <color name="toolbar_search_background">@color/modern_grey_100</color>
+    <color name="toolbar_background_primary_incognito">@color/modern_grey_800</color>
+    <color name="toolbar_text_box_background">@color/modern_grey_100</color>
     <color name="toolbar_shadow_color">@color/black_alpha_11</color>
 
     <!-- LocationBar colors -->

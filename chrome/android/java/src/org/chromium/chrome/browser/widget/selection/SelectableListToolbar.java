@@ -203,7 +203,7 @@ public class SelectableListToolbar<E>
                 getResources(), R.color.light_active_color);
 
         mDarkIconColorList =
-                AppCompatResources.getColorStateList(getContext(), R.color.dark_mode_tint);
+                AppCompatResources.getColorStateList(getContext(), R.color.standard_mode_tint);
         mLightIconColorList =
                 AppCompatResources.getColorStateList(getContext(), R.color.white_mode_tint);
 
@@ -231,7 +231,7 @@ public class SelectableListToolbar<E>
         MenuItem extraMenuItem = getMenu().findItem(mExtraMenuItemId);
         if (extraMenuItem != null) {
             Drawable iconDrawable = TintedDrawable.constructTintedDrawable(
-                    getContext(), R.drawable.ic_more_vert_black_24dp, R.color.dark_mode_tint);
+                    getContext(), R.drawable.ic_more_vert_black_24dp, R.color.standard_mode_tint);
             extraMenuItem.setIcon(iconDrawable);
         }
     }
@@ -698,7 +698,7 @@ public class SelectableListToolbar<E>
             if (mShowInfoIcon) {
                 Drawable iconDrawable =
                         TintedDrawable.constructTintedDrawable(getContext(), R.drawable.btn_info,
-                                infoShowing ? R.color.blue_mode_tint : R.color.dark_mode_tint);
+                                infoShowing ? R.color.blue_mode_tint : R.color.standard_mode_tint);
 
                 infoMenuItem.setIcon(iconDrawable);
             }

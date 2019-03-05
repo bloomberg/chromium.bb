@@ -15,7 +15,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:alpha="0.9"
-        android:background="@drawable/modern_toolbar_background_white"
+        android:background="@drawable/modern_toolbar_text_box_background_with_primary_color"
         android:gravity="center_vertical"
         android:orientation="horizontal" >
 

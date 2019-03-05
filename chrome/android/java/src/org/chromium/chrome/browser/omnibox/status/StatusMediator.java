@@ -12,6 +12,7 @@ import android.view.View;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.previews.PreviewsUma;
+import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -247,7 +248,7 @@ class StatusMediator {
         }
 
         @ColorRes
-        int tintColor = mDarkTheme ? R.color.dark_mode_tint : R.color.light_mode_tint;
+        int tintColor = ColorUtils.getThemedToolbarIconTintRes(!mDarkTheme);
 
         mModel.set(StatusProperties.SEPARATOR_COLOR_RES, separatorColor);
         mNavigationIconTintRes = tintColor;

@@ -344,9 +344,9 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
         super(context, attrs);
         mToolbarSidePadding = getResources().getDimensionPixelOffset(R.dimen.toolbar_edge_padding);
         mLightModeDefaultColor =
-                ApiCompatibilityUtils.getColor(getResources(), R.color.light_mode_tint);
+                ColorUtils.getThemedToolbarIconTint(getContext(), true).getDefaultColor();
         mDarkModeDefaultColor =
-                ApiCompatibilityUtils.getColor(getResources(), R.color.dark_mode_tint);
+                ColorUtils.getThemedToolbarIconTint(getContext(), false).getDefaultColor();
     }
 
     @Override
@@ -404,10 +404,10 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
      */
     public static Drawable createModernLocationBarBackground(Resources resources) {
         Drawable drawable = ApiCompatibilityUtils.getDrawable(
-                resources, R.drawable.modern_toolbar_background_white);
+                resources, R.drawable.modern_toolbar_text_box_background_with_primary_color);
         drawable.mutate();
         drawable.setColorFilter(
-                ApiCompatibilityUtils.getColor(resources, R.color.toolbar_search_background),
+                ApiCompatibilityUtils.getColor(resources, R.color.toolbar_text_box_background),
                 PorterDuff.Mode.SRC_IN);
         return drawable;
     }
@@ -733,7 +733,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
                 return getToolbarDataProvider().getPrimaryColor();
             default:
                 assert false;
-                return ApiCompatibilityUtils.getColor(res, R.color.modern_primary_color);
+                return ApiCompatibilityUtils.getColor(res, R.color.toolbar_background_primary);
         }
     }
 
@@ -2371,17 +2371,17 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
             return;
         }
 
-        mUseLightToolbarDrawables = false;
+        // Only use primary color to decide icon tint, regardless of night mode, incognito mode,
+        // and whether the toolbar is on the NTP.
+        mUseLightToolbarDrawables =
+                ColorUtils.shouldUseLightForegroundOnBackground(currentPrimaryColor);
         mUnfocusedLocationBarUsesTransparentBg = false;
         mLocationBarBackgroundAlpha = 255;
         getProgressBar().setThemeColor(themeColorForProgressBar, isIncognito());
 
         if (isIncognito()) {
-            mUseLightToolbarDrawables = true;
             mLocationBarBackgroundAlpha = LOCATION_BAR_TRANSPARENT_BACKGROUND_ALPHA;
         } else if (mVisualState == VisualState.BRAND_COLOR) {
-            mUseLightToolbarDrawables =
-                    ColorUtils.shouldUseLightForegroundOnBackground(currentPrimaryColor);
             mUnfocusedLocationBarUsesTransparentBg =
                     !ColorUtils.shouldUseOpaqueTextboxBackground(currentPrimaryColor);
             mLocationBarBackgroundAlpha = mUnfocusedLocationBarUsesTransparentBg
@@ -2424,17 +2424,12 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
         DrawableCompat.setTint(mLocationBarBackground,
                 isIncognito() ? Color.WHITE
                               : ApiCompatibilityUtils.getColor(
-                                      getResources(), R.color.toolbar_search_background));
+                                      getResources(), R.color.toolbar_text_box_background));
     }
 
     @Override
     public LocationBar getLocationBar() {
         return mLocationBar;
-    }
-
-    @Override
-    boolean useLightDrawables() {
-        return mUseLightToolbarDrawables;
     }
 
     @Override

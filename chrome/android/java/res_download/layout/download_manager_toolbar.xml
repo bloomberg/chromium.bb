@@ -14,6 +14,6 @@
         android:id="@+id/spinner"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:backgroundTint="@color/dark_mode_tint" />
+        app:backgroundTint="@color/standard_mode_tint" />
 
 </org.chromium.chrome.browser.download.ui.DownloadManagerToolbar>
