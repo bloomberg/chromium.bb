@@ -4,6 +4,8 @@
 #ifndef SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_MEMORY_INSTRUMENTATION_OS_METRICS_H_
 #define SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_MEMORY_INSTRUMENTATION_OS_METRICS_H_
 
+#include <vector>
+
 #include "base/component_export.h"
 #include "base/gtest_prod_util.h"
 #include "base/process/process_handle.h"
@@ -34,6 +36,7 @@ class COMPONENT_EXPORT(
   FRIEND_TEST_ALL_PREFIXES(OSMetricsTest, ParseProcSmaps);
   FRIEND_TEST_ALL_PREFIXES(OSMetricsTest, TestWinModuleReading);
   FRIEND_TEST_ALL_PREFIXES(OSMetricsTest, TestMachOReading);
+  FRIEND_TEST_ALL_PREFIXES(OSMetricsTest, GetMappedAndResidentPages);
   FRIEND_TEST_ALL_PREFIXES(heap_profiling::ProfilingJsonExporterTest,
                            MemoryMaps);
 
@@ -41,6 +44,28 @@ class COMPONENT_EXPORT(
   static std::vector<mojom::VmRegionPtr> GetProcessModules(base::ProcessId);
 #endif
 
+#if defined(OS_LINUX) || defined(OS_ANDROID)
+  // Provides information on the dump state of resident pages.
+  enum class MappedAndResidentPagesDumpState {
+    // Access to /proc/<pid>/pagemap can be denied for android devices running
+    // a kernel version < 4.4.
+    kAccessPagemapDenied,
+    kFailure,
+    kSuccess
+  };
+
+  // Depends on /proc/self/pagemap to determine mapped and resident pages
+  // within bounds (start_address inclusive and end_address exclusive).
+  // It does not use mincore() because it only checks to see
+  // if the page is in the cache and up to date.
+  // mincore() has no guarantee a page has been mapped by the current process.
+  // Guaranteed to work on Android.
+  static MappedAndResidentPagesDumpState GetMappedAndResidentPages(
+      const size_t start_address,
+      const size_t end_address,
+      std::vector<uint8_t>* accessed_pages_bitmap);
+
+#endif  // defined(OS_LINUX) || defined(OS_ANDROID)
 };
 
 }  // namespace memory_instrumentation

@@ -7,6 +7,8 @@
 #include <stdint.h>
 #include <memory>
 
+#include "base/android/library_loader/anchor_functions.h"
+#include "base/android/library_loader/anchor_functions_buildflags.h"
 #include "base/debug/elf_reader.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
@@ -242,6 +244,28 @@ bool OSMetrics::FillOSMemoryDump(base::ProcessId pid,
   dump->platform_private_footprint->vm_swap_bytes = vm_swap_bytes;
   dump->resident_set_kb = process_metrics->GetResidentSetSize() / 1024;
 
+#if defined(OS_ANDROID)
+#if BUILDFLAG(SUPPORTS_CODE_ORDERING)
+  if (!base::android::AreAnchorsSane()) {
+    DLOG(WARNING) << "Incorrect code ordering";
+    return false;
+  }
+
+  std::vector<uint8_t> accessed_pages_bitmap;
+  OSMetrics::MappedAndResidentPagesDumpState state =
+      OSMetrics::GetMappedAndResidentPages(base::android::kStartOfText,
+                                           base::android::kEndOfText,
+                                           &accessed_pages_bitmap);
+
+  // MappedAndResidentPagesDumpState |state| can be |kAccessPagemapDenied|
+  // for Android devices running a kernel version < 4.4.
+  if (state != OSMetrics::MappedAndResidentPagesDumpState::kSuccess)
+    return state != OSMetrics::MappedAndResidentPagesDumpState::kFailure;
+
+  dump->native_library_pages_bitmap = std::move(accessed_pages_bitmap);
+#endif  // BUILDFLAG(SUPPORTS_CODE_ORDERING)
+#endif  //  defined(OS_ANDROID)
+
   return true;
 }
 
@@ -264,6 +288,54 @@ std::vector<VmRegionPtr> OSMetrics::GetProcessMemoryMaps(base::ProcessId pid) {
     return std::vector<VmRegionPtr>();
 
   return maps;
+}
+
+// static
+OSMetrics::MappedAndResidentPagesDumpState OSMetrics::GetMappedAndResidentPages(
+    const size_t start_address,
+    const size_t end_address,
+    std::vector<uint8_t>* accessed_pages_bitmap) {
+  const char* kPagemap = "/proc/self/pagemap";
+
+  base::ScopedFILE pagemap_file(fopen(kPagemap, "r"));
+  if (!pagemap_file.get()) {
+    DLOG(WARNING) << "Could not open " << kPagemap;
+    return OSMetrics::MappedAndResidentPagesDumpState::kAccessPagemapDenied;
+  }
+
+  const size_t kPageSize = base::GetPageSize();
+  const size_t start_page = start_address / kPageSize;
+  // |end_address| is exclusive.
+  const size_t end_page = (end_address - 1) / kPageSize;
+  const size_t total_pages = end_page - start_page + 1;
+
+  // The pagemap has one 64 bit entry per page or 8 bytes.
+  auto offset = static_cast<long>(start_page * 8);
+  if (fseek(pagemap_file.get(), offset, SEEK_SET) != 0) {
+    DLOG(ERROR) << "Error in fseek " << kPagemap;
+    return OSMetrics::MappedAndResidentPagesDumpState::kFailure;
+  }
+
+  // |entries| will be 2kB/MB (if |kPageSize| = 4096),
+  // that would only be ~80kB on Android, and up to 200kB on Linux (for 100MB)
+  std::vector<uint64_t> entries(total_pages);
+  if (fread(&entries[0], sizeof(uint64_t), total_pages, pagemap_file.get()) !=
+      total_pages) {
+    return OSMetrics::MappedAndResidentPagesDumpState::kFailure;
+  }
+
+  accessed_pages_bitmap->resize(1 + (total_pages - 1) / 8);
+  for (size_t page = 0; page < total_pages; page++) {
+    // Bit 63 is "page present" according to
+    // https://www.kernel.org/doc/Documentation/vm/pagemap.txt.
+    if (entries[page] & (1LL << 63)) {
+      auto byte = page / 8;
+      auto bit = page & 0x7;
+      CHECK_LT(byte, accessed_pages_bitmap->size());
+      (*accessed_pages_bitmap)[byte] |= 1 << bit;
+    }
+  }
+  return OSMetrics::MappedAndResidentPagesDumpState::kSuccess;
 }
 
 }  // namespace memory_instrumentation
