@@ -865,6 +865,8 @@ class TestSimpleDocumentInterfaceBrokerImpl
       blink::mojom::FrameHostTestInterfaceRequest request) override {
     binder_callback_.Run(std::move(request));
   }
+  void GetAudioContextManager(
+      blink::mojom::AudioContextManagerRequest) override {}
 
   mojo::Binding<blink::mojom::DocumentInterfaceBroker> binding_;
   BinderCallback binder_callback_;

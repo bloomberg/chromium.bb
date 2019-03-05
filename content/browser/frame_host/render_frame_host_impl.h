@@ -1310,6 +1310,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // blink::mojom::DocumentInterfaceBroker:
   void GetFrameHostTestInterface(
       blink::mojom::FrameHostTestInterfaceRequest request) override;
+  void GetAudioContextManager(
+      blink::mojom::AudioContextManagerRequest request) override;
 
   // Allows tests to disable the swapout event timer to simulate bugs that
   // happen before it fires (to avoid flakiness).

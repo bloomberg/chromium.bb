@@ -7,7 +7,7 @@
 #include "build/build_config.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/mojom/frame/document_interface_broker.mojom-blink.h"
 #include "third_party/blink/public/platform/web_audio_latency_hint.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
@@ -642,8 +642,10 @@ void AudioContext::EnsureAudioContextManagerService() {
   if (audio_context_manager_ || !GetDocument())
     return;
 
-  GetDocument()->GetFrame()->GetInterfaceProvider().GetInterface(
-      mojo::MakeRequest(&audio_context_manager_));
+  GetDocument()
+      ->GetFrame()
+      ->GetDocumentInterfaceBroker()
+      .GetAudioContextManager(mojo::MakeRequest(&audio_context_manager_));
   audio_context_manager_.set_connection_error_handler(
       WTF::Bind(&AudioContext::OnAudioContextManagerServiceConnectionError,
                 WrapWeakPersistent(this)));
