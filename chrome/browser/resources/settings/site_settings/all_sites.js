@@ -127,8 +127,6 @@ Polymer({
   ready: function() {
     this.addWebUIListener(
         'onStorageListFetched', this.onStorageListFetched.bind(this));
-    this.addWebUIListener(
-        'contentSettingSitePermissionChanged', this.populateList_.bind(this));
     this.addEventListener(
         'site-entry-selected',
         (/** @type {!CustomEvent<!{item: !SiteGroup, index: number}>} */ e) => {
