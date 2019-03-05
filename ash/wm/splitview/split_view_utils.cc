@@ -58,7 +58,6 @@ void GetAnimationValuesForType(
     case SPLITVIEW_ANIMATION_HIGHLIGHT_FADE_IN:
     case SPLITVIEW_ANIMATION_HIGHLIGHT_FADE_OUT:
     case SPLITVIEW_ANIMATION_PREVIEW_AREA_FADE_IN:
-    case SPLITVIEW_ANIMATION_PREVIEW_AREA_FADE_OUT:
     case SPLITVIEW_ANIMATION_OVERVIEW_ITEM_FADE_IN:
     case SPLITVIEW_ANIMATION_OVERVIEW_ITEM_FADE_OUT:
     case SPLITVIEW_ANIMATION_TEXT_FADE_IN_WITH_HIGHLIGHT:
@@ -67,7 +66,6 @@ void GetAnimationValuesForType(
       *out_duration = kHighlightsFadeInOutMs;
       *out_tween_type = gfx::Tween::FAST_OUT_SLOW_IN;
       return;
-    case SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_FADE_IN:
     case SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_SLIDE_IN:
       *out_duration = kOtherFadeInOutMs;
       *out_tween_type = gfx::Tween::LINEAR_OUT_SLOW_IN;
@@ -132,12 +130,10 @@ void DoSplitviewOpacityAnimation(ui::Layer* layer,
     case SPLITVIEW_ANIMATION_TEXT_FADE_OUT_WITH_HIGHLIGHT:
       target_opacity = 0.f;
       break;
-    case SPLITVIEW_ANIMATION_HIGHLIGHT_FADE_IN:
-    case SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_FADE_IN:
     case SPLITVIEW_ANIMATION_PREVIEW_AREA_FADE_IN:
       target_opacity = kPreviewAreaHighlightOpacity;
       break;
-    case SPLITVIEW_ANIMATION_PREVIEW_AREA_FADE_OUT:
+    case SPLITVIEW_ANIMATION_HIGHLIGHT_FADE_IN:
       target_opacity = kHighlightOpacity;
       break;
     case SPLITVIEW_ANIMATION_OVERVIEW_ITEM_FADE_IN:
