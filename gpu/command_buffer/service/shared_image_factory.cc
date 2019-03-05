@@ -252,6 +252,12 @@ SharedImageRepresentationFactory::ProduceGLTexture(const Mailbox& mailbox) {
   return manager_->ProduceGLTexture(mailbox, tracker_.get());
 }
 
+std::unique_ptr<SharedImageRepresentationGLTexture>
+SharedImageRepresentationFactory::ProduceRGBEmulationGLTexture(
+    const Mailbox& mailbox) {
+  return manager_->ProduceRGBEmulationGLTexture(mailbox, tracker_.get());
+}
+
 std::unique_ptr<SharedImageRepresentationGLTexturePassthrough>
 SharedImageRepresentationFactory::ProduceGLTexturePassthrough(
     const Mailbox& mailbox) {
