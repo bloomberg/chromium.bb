@@ -93,6 +93,10 @@ abstract class AnswerText {
      */
     @SuppressWarnings("deprecation") // Update usage of Html.fromHtml when API min is 24
     protected void appendAndStyleText(String text, MetricAffectingSpan[] styles) {
+        // Unescape HTML entities (e.g. "&quot;", "&gt;").
+        text = Html.fromHtml(text).toString();
+        text = processAnswerText(text);
+
         // Determine the maximum height of the TextAppearanceSpans that are applied for this field.
         for (MetricAffectingSpan style : styles) {
             if (!(style instanceof TextAppearanceSpan)) continue;
@@ -101,12 +105,9 @@ abstract class AnswerText {
             if (mHeightSp < textHeightSp) mHeightSp = textHeightSp;
         }
 
-        // Unescape HTML entities (e.g. "&quot;", "&gt;").
-        text = Html.fromHtml(text).toString();
-
         // Append as HTML (answer responses contain simple markup).
         int start = mText.length();
-        mText.append(Html.fromHtml(text));
+        mText.append(text);
         int end = mText.length();
 
         for (MetricAffectingSpan style : styles) {
@@ -121,4 +122,14 @@ abstract class AnswerText {
      * @return TextAppearanceSpan array specifying styles to be used to present text field.
      */
     protected abstract MetricAffectingSpan[] getAppearanceForText(@AnswerTextType int type);
+
+    /**
+     * Process (if desired) content of the answer text.
+     *
+     * @param text Source text.
+     * @return Either original or modified text.
+     */
+    protected String processAnswerText(String text) {
+        return text;
+    }
 }
