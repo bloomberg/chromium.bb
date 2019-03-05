@@ -60,22 +60,19 @@ void IdentityAccessorImpl::AccessTokenRequest::OnRequestCompleted(
 void IdentityAccessorImpl::Create(mojom::IdentityAccessorRequest request,
                                   IdentityManager* identity_manager,
                                   AccountTrackerService* account_tracker,
-                                  SigninManagerBase* signin_manager,
                                   ProfileOAuth2TokenService* token_service) {
   new IdentityAccessorImpl(std::move(request), identity_manager,
-                           account_tracker, signin_manager, token_service);
+                           account_tracker, token_service);
 }
 
 IdentityAccessorImpl::IdentityAccessorImpl(
     mojom::IdentityAccessorRequest request,
     IdentityManager* identity_manager,
     AccountTrackerService* account_tracker,
-    SigninManagerBase* signin_manager,
     ProfileOAuth2TokenService* token_service)
     : binding_(this, std::move(request)),
       identity_manager_(identity_manager),
       account_tracker_(account_tracker),
-      signin_manager_(signin_manager),
       token_service_(token_service) {
   binding_.set_connection_error_handler(base::BindRepeating(
       &IdentityAccessorImpl::OnConnectionError, base::Unretained(this)));
@@ -90,19 +87,14 @@ IdentityAccessorImpl::~IdentityAccessorImpl() {
 
 void IdentityAccessorImpl::GetPrimaryAccountInfo(
     GetPrimaryAccountInfoCallback callback) {
-  // It's annoying that this can't be trivially implemented in terms of
-  // GetAccountInfoFromGaiaId(), but there's no SigninManagerBase method that
-  // directly returns the authenticated GAIA ID. We can of course get it from
-  // the AccountInfo but once we have the AccountInfo we ... have the
-  // AccountInfo.
-  AccountInfo account_info = signin_manager_->GetAuthenticatedAccountInfo();
+  AccountInfo account_info = identity_manager_->GetPrimaryAccountInfo();
   AccountState account_state = GetStateOfAccount(account_info);
   std::move(callback).Run(account_info, account_state);
 }
 
 void IdentityAccessorImpl::GetPrimaryAccountWhenAvailable(
     GetPrimaryAccountWhenAvailableCallback callback) {
-  AccountInfo account_info = signin_manager_->GetAuthenticatedAccountInfo();
+  AccountInfo account_info = identity_manager_->GetPrimaryAccountInfo();
   AccountState account_state = GetStateOfAccount(account_info);
 
   if (!account_state.has_refresh_token ||
@@ -178,7 +170,7 @@ AccountState IdentityAccessorImpl::GetStateOfAccount(
   account_state.has_refresh_token =
       token_service_->RefreshTokenIsAvailable(account_info.account_id);
   account_state.is_primary_account =
-      (account_info.account_id == signin_manager_->GetAuthenticatedAccountId());
+      (account_info.account_id == identity_manager_->GetPrimaryAccountId());
   return account_state;
 }
 
