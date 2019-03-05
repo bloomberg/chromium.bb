@@ -17,20 +17,20 @@
 #include "url/gurl.h"
 
 namespace content {
-class RenderWidgetHostImpl;
-class WebContentsImpl;
 struct DropData;
-}
+namespace mojom {
+class WebContentsNSViewClient;
+}  // namespace mojom
+}  // namespace content
 
 // A class that handles tracking and event processing for a drag and drop
 // originating from the content area.
 CONTENT_EXPORT
 @interface WebDragSource : NSObject {
  @private
-  // Our contents. Weak reference (owns or co-owns us).
-  // An instance of this class may outlive |contents_|. The destructor of
-  // |contents_| must set this ivar to |nullptr|.
-  content::WebContentsImpl* contents_;
+  // The client through which to communicate with the WebContentsImpl. Owns
+  // |self| and resets |client_| via clearClientAndWebContentsView.
+  content::mojom::WebContentsNSViewClient* client_;
 
   // The view from which the drag was initiated. Weak reference.
   // An instance of this class may outlive |contentsView_|. The destructor of
@@ -60,25 +60,21 @@ CONTENT_EXPORT
 
   // The file UTI associated with the file drag, if any.
   base::ScopedCFTypeRef<CFStringRef> fileUTI_;
-
-  // Tracks the RenderWidgetHost where the current drag started.
-  base::WeakPtr<content::RenderWidgetHostImpl> dragStartRWH_;
 }
 
 // Initialize a WebDragSource object for a drag (originating on the given
 // contentsView and with the given dropData and pboard). Fill the pasteboard
 // with data types appropriate for dropData.
-- (id)initWithContents:(content::WebContentsImpl*)contents
-                  view:(NSView*)contentsView
-              dropData:(const content::DropData*)dropData
-             sourceRWH:(content::RenderWidgetHostImpl*)sourceRWH
-                 image:(NSImage*)image
-                offset:(NSPoint)offset
-            pasteboard:(NSPasteboard*)pboard
-     dragOperationMask:(NSDragOperation)dragOperationMask;
+- (id)initWithClient:(content::mojom::WebContentsNSViewClient*)client
+                view:(NSView*)contentsView
+            dropData:(const content::DropData*)dropData
+               image:(NSImage*)image
+              offset:(NSPoint)offset
+          pasteboard:(NSPasteboard*)pboard
+   dragOperationMask:(NSDragOperation)dragOperationMask;
 
 // Call when the web contents is gone.
-- (void)clearWebContentsView;
+- (void)clearClientAndWebContentsView;
 
 // Returns a mask of the allowed drag operations.
 - (NSDragOperation)draggingSourceOperationMaskForLocal:(BOOL)isLocal;

@@ -12,9 +12,6 @@
 
 namespace content {
 struct DropData;
-class RenderWidgetHostImpl;
-class WebContentsImpl;
-class WebContentsViewMac;
 namespace mojom {
 class WebContentsNSViewClient;
 }  // namespace mojom
@@ -25,18 +22,22 @@ class WebContentsNSViewClient;
 CONTENT_EXPORT
 @interface WebContentsViewCocoa : BaseView <ViewsHostable> {
  @private
-  // Instances of this class are owned by both webContentsView_ and AppKit. It
-  // is possible for an instance to outlive its webContentsView_. The
-  // webContentsView_ must call -clearWebContentsView in its destructor.
-  content::WebContentsViewMac* webContentsView_;
+  // Instances of this class are owned by both client_ and AppKit. It is
+  // possible for an instance to outlive its webContentsView_. The client_ must
+  // call -clearClientAndView in its destructor.
   content::mojom::WebContentsNSViewClient* client_;
+
+  // The interface exported to views::Views that embed this as a sub-view.
+  ui::ViewsHostableView* viewsHostableView_;
+
   base::scoped_nsobject<WebDragSource> dragSource_;
   base::scoped_nsobject<id> accessibilityParent_;
   BOOL mouseDownCanMoveWindow_;
 }
 
-// The mojo interface through which to communicate with the browser process.
-@property(nonatomic, assign) content::mojom::WebContentsNSViewClient* client;
+// Set or un-set the mojo interface through which to communicate with the
+// browser process.
+- (void)setClient:(content::mojom::WebContentsNSViewClient*)client;
 
 - (void)setMouseDownCanMoveWindow:(BOOL)canMove;
 
@@ -53,17 +54,15 @@ CONTENT_EXPORT
 
 // Private interface.
 // TODO(ccameron): Document these functions.
-- (id)initWithWebContentsViewMac:(content::WebContentsViewMac*)w;
+- (id)initWithViewsHostableView:(ui::ViewsHostableView*)v;
 - (void)registerDragTypes;
 - (void)startDragWithDropData:(const content::DropData&)dropData
-                    sourceRWH:(content::RenderWidgetHostImpl*)sourceRWH
             dragOperationMask:(NSDragOperation)operationMask
                         image:(NSImage*)image
                        offset:(NSPoint)offset;
-- (void)clearWebContentsView;
+- (void)clearViewsHostableView;
 - (void)updateWebContentsVisibility;
 - (void)viewDidBecomeFirstResponder:(NSNotification*)notification;
-- (content::WebContentsImpl*)webContents;
 @end
 
 #endif  // CONTENT_BROWSER_WEB_CONTENTS_WEB_CONTENTS_VIEW_COCOA_H_

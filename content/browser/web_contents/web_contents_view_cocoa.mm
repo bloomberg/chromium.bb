@@ -6,12 +6,8 @@
 
 #import "base/mac/mac_util.h"
 #include "base/mac/sdk_forward_declarations.h"
-#include "content/browser/web_contents/web_contents_impl.h"
-#include "content/browser/web_contents/web_contents_view_mac.h"
 #import "content/browser/web_contents/web_drag_dest_mac.h"
 #import "content/browser/web_contents/web_drag_source_mac.h"
-#include "content/public/browser/web_contents_delegate.h"
-#include "content/public/browser/web_contents_view_delegate.h"
 #include "content/public/common/web_contents_ns_view_bridge.mojom.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
 #include "ui/base/clipboard/clipboard_constants.h"
@@ -21,20 +17,16 @@
 
 using content::mojom::DraggingInfo;
 using content::DropData;
-using content::WebContentsImpl;
-using content::WebContentsViewMac;
 
 ////////////////////////////////////////////////////////////////////////////////
 // WebContentsViewCocoa
 
 @implementation WebContentsViewCocoa
 
-@synthesize client = client_;
-
-- (id)initWithWebContentsViewMac:(WebContentsViewMac*)w {
+- (id)initWithViewsHostableView:(ui::ViewsHostableView*)v {
   self = [super initWithFrame:NSZeroRect];
   if (self != nil) {
-    webContentsView_ = w;
+    viewsHostableView_ = v;
     [self registerDragTypes];
 
     [[NSNotificationCenter defaultCenter]
@@ -99,12 +91,6 @@ using content::WebContentsViewMac;
   [self registerForDraggedTypes:types];
 }
 
-- (WebContentsImpl*)webContents {
-  if (!webContentsView_)
-    return nullptr;
-  return webContentsView_->web_contents();
-}
-
 - (void)mouseEvent:(NSEvent*)theEvent {
   if (!client_)
     return;
@@ -131,17 +117,15 @@ using content::WebContentsViewMac;
 }
 
 - (void)startDragWithDropData:(const DropData&)dropData
-                    sourceRWH:(content::RenderWidgetHostImpl*)sourceRWH
             dragOperationMask:(NSDragOperation)operationMask
                         image:(NSImage*)image
                        offset:(NSPoint)offset {
-  if (![self webContents])
+  if (!client_)
     return;
   dragSource_.reset([[WebDragSource alloc]
-       initWithContents:[self webContents]
+         initWithClient:client_
                    view:self
                dropData:&dropData
-              sourceRWH:sourceRWH
                   image:image
                  offset:offset
              pasteboard:[NSPasteboard pasteboardWithName:NSDragPboard]
@@ -232,10 +216,14 @@ using content::WebContentsViewMac;
   return result;
 }
 
-- (void)clearWebContentsView {
-  webContentsView_ = nullptr;
-  client_ = nullptr;
-  [dragSource_ clearWebContentsView];
+- (void)clearViewsHostableView {
+  viewsHostableView_ = nullptr;
+}
+
+- (void)setClient:(content::mojom::WebContentsNSViewClient*)client {
+  if (!client)
+    [dragSource_ clearClientAndWebContentsView];
+  client_ = client;
 }
 
 - (void)viewDidBecomeFirstResponder:(NSNotification*)notification {
@@ -337,7 +325,7 @@ using content::WebContentsViewMac;
 
 // ViewsHostable protocol implementation.
 - (ui::ViewsHostableView*)viewsHostableView {
-  return webContentsView_;
+  return viewsHostableView_;
 }
 
 // NSAccessibility informal protocol implementation.

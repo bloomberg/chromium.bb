@@ -13,6 +13,9 @@
 #include "base/mac/sdk_forward_declarations.h"
 #include "base/message_loop/message_loop_current.h"
 #import "base/message_loop/message_pump_mac.h"
+#include "base/threading/thread_restrictions.h"
+#include "content/browser/download/drag_download_file.h"
+#include "content/browser/download/drag_download_util.h"
 #include "content/browser/frame_host/popup_menu_helper_mac.h"
 #include "content/browser/renderer_host/display_util.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
@@ -30,7 +33,6 @@
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
 #include "ui/base/cocoa/ns_view_ids.h"
-#include "ui/gfx/image/image_skia_util_mac.h"
 #include "ui/gfx/mac/coordinate_conversion.h"
 
 using blink::WebDragOperation;
@@ -51,8 +53,16 @@ STATIC_ASSERT_ENUM(NSDragOperationDelete, blink::kWebDragOperationDelete);
 STATIC_ASSERT_ENUM(NSDragOperationEvery, blink::kWebDragOperationEvery);
 
 namespace content {
-
 namespace {
+
+// This helper's sole task is to write out data for a promised file; the caller
+// is responsible for opening the file. It takes the drop data and an open file
+// stream.
+void PromiseWriterHelper(const DropData& drop_data, base::File file) {
+  DCHECK(file.IsValid());
+  file.WriteAtCurrentPos(drop_data.file_contents.data(),
+                         drop_data.file_contents.length());
+}
 
 WebContentsViewMac::RenderWidgetHostViewCreateFunction
     g_create_render_widget_host_view = nullptr;
@@ -143,14 +153,17 @@ void WebContentsViewMac::StartDragging(
   base::MessageLoopCurrent::ScopedNestableTaskAllower allow;
   NSDragOperation mask = static_cast<NSDragOperation>(allowed_operations) &
                          ~NSDragOperationGeneric;
-  NSPoint offset = NSPointFromCGPoint(
-      gfx::PointAtOffsetFromOrigin(image_offset).ToCGPoint());
   [drag_dest_ setDragStartTrackersForProcess:source_rwh->GetProcess()->GetID()];
-  [cocoa_view() startDragWithDropData:drop_data
-                            sourceRWH:source_rwh
-                    dragOperationMask:mask
-                                image:gfx::NSImageFromImageSkia(image)
-                               offset:offset];
+  drag_source_start_rwh_ = source_rwh->GetWeakPtr();
+
+  if (ns_view_bridge_remote_) {
+    // TODO(https://crbug.com/898608): Non-trivial gfx::ImageSkias fail to
+    // serialize.
+    ns_view_bridge_remote_->StartDrag(drop_data, mask, gfx::ImageSkia(),
+                                      image_offset);
+  } else {
+    ns_view_bridge_local_->StartDrag(drop_data, mask, image, image_offset);
+  }
 }
 
 void WebContentsViewMac::SizeContents(const gfx::Size& size) {
@@ -299,7 +312,6 @@ void WebContentsViewMac::CreateView(
     const gfx::Size& initial_size, gfx::NativeView context) {
   ns_view_bridge_local_ =
       std::make_unique<WebContentsNSViewBridge>(ns_view_id_, this);
-  [cocoa_view() setClient:this];
 
   drag_dest_.reset([[WebDragDest alloc] initWithWebContentsImpl:web_contents_]);
   if (delegate_)
@@ -502,6 +514,75 @@ bool WebContentsViewMac::PerformDragOperation(
   return true;
 }
 
+bool WebContentsViewMac::DragPromisedFileTo(const base::FilePath& file_path,
+                                            const DropData& drop_data,
+                                            const GURL& download_url,
+                                            base::FilePath* out_file_path) {
+  *out_file_path = file_path;
+  // This is called by -namesOfPromisedFilesDroppedAtDestination, which is
+  // requesting, on the UI thread, the name of the file that will be written
+  // by a drag operation. To know the name of this file, it is necessary to
+  // query the filesystem before returning, which will block the UI thread.
+  base::ScopedAllowBlocking allow_blocking;
+  base::File file(content::CreateFileForDrop(out_file_path));
+  if (!file.IsValid()) {
+    *out_file_path = base::FilePath();
+    return true;
+  }
+
+  if (download_url.is_valid() && web_contents_) {
+    scoped_refptr<DragDownloadFile> drag_file_downloader(new DragDownloadFile(
+        *out_file_path, std::move(file), download_url,
+        content::Referrer(web_contents_->GetLastCommittedURL(),
+                          drop_data.referrer_policy),
+        web_contents_->GetEncoding(), web_contents_));
+
+    // The finalizer will take care of closing and deletion.
+    drag_file_downloader->Start(
+        new PromiseFileFinalizer(drag_file_downloader.get()));
+  } else {
+    // The writer will take care of closing and deletion.
+    base::PostTaskWithTraits(
+        FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
+        base::BindOnce(&PromiseWriterHelper, drop_data, std::move(file)));
+  }
+
+  // The DragDownloadFile constructor may have altered the value of
+  // |*out_file_path| if, say, an existing file at the drop site has the same
+  // name. Return the actual name that was used to write the file.
+  *out_file_path = file_path;
+  return true;
+}
+
+void WebContentsViewMac::EndDrag(uint32_t drag_operation,
+                                 const gfx::PointF& local_point,
+                                 const gfx::PointF& screen_point) {
+  web_contents_->SystemDragEnded(drag_source_start_rwh_.get());
+
+  // |localPoint| and |screenPoint| are in the root coordinate space, for
+  // non-root RenderWidgetHosts they need to be transformed.
+  gfx::PointF transformed_point = local_point;
+  gfx::PointF transformed_screen_point = screen_point;
+  if (drag_source_start_rwh_ && web_contents_->GetRenderWidgetHostView()) {
+    content::RenderWidgetHostViewBase* contentsViewBase =
+        static_cast<content::RenderWidgetHostViewBase*>(
+            web_contents_->GetRenderWidgetHostView());
+    content::RenderWidgetHostViewBase* dragStartViewBase =
+        static_cast<content::RenderWidgetHostViewBase*>(
+            drag_source_start_rwh_->GetView());
+    contentsViewBase->TransformPointToCoordSpaceForView(
+        local_point, dragStartViewBase, &transformed_point);
+    contentsViewBase->TransformPointToCoordSpaceForView(
+        screen_point, dragStartViewBase, &transformed_screen_point);
+  }
+
+  web_contents_->DragSourceEndedAt(
+      transformed_point.x(), transformed_point.y(),
+      transformed_screen_point.x(), transformed_screen_point.y(),
+      static_cast<blink::WebDragOperation>(drag_operation),
+      drag_source_start_rwh_.get());
+}
+
 void WebContentsViewMac::DraggingEntered(mojom::DraggingInfoPtr dragging_info,
                                          DraggingEnteredCallback callback) {
   uint32_t result = 0;
@@ -522,6 +603,16 @@ void WebContentsViewMac::PerformDragOperation(
   bool result = false;
   PerformDragOperation(std::move(dragging_info), &result);
   std::move(callback).Run(result);
+}
+
+void WebContentsViewMac::DragPromisedFileTo(
+    const base::FilePath& file_path,
+    const DropData& drop_data,
+    const GURL& download_url,
+    DragPromisedFileToCallback callback) {
+  base::FilePath actual_file_path;
+  DragPromisedFileTo(file_path, drop_data, download_url, &actual_file_path);
+  std::move(callback).Run(actual_file_path);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
