@@ -354,15 +354,7 @@ endif()
 function(setup_av1_targets)
   add_library(aom_av1_common OBJECT ${AOM_AV1_COMMON_SOURCES})
   list(APPEND AOM_LIB_TARGETS aom_av1_common)
-
-  create_dummy_source_file("aom_av1" "c" "dummy_source_file")
-  add_library(aom_av1 OBJECT "${dummy_source_file}")
   target_sources(aom PRIVATE $<TARGET_OBJECTS:aom_av1_common>)
-  list(APPEND AOM_LIB_TARGETS aom_av1)
-
-  # Not all generators support libraries consisting only of object files. Add a
-  # dummy source file to the aom_av1 target.
-  add_dummy_source_file_to_target("aom_av1" "c")
 
   if(CONFIG_AV1_DECODER)
     add_library(aom_av1_decoder OBJECT ${AOM_AV1_DECODER_SOURCES})
