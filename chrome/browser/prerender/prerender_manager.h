@@ -202,17 +202,6 @@ class PrerenderManager : public content::NotificationObserver,
                                          bool was_hidden,
                                          base::TimeDelta time);
 
-  // Records the perceived first contentful paint time for a prerendered page.
-  // The actual load may have started prior to navigation due to prerender
-  // hints. The FCP ticks is in absolute time; this has the disadvantage that
-  // the histogram will mix browser and renderer ticks, but there seems to be no
-  // way around that.
-  void RecordPrerenderFirstContentfulPaint(const GURL& url,
-                                           content::WebContents* web_contents,
-                                           bool is_no_store,
-                                           bool was_hidden,
-                                           base::TimeTicks ticks);
-
   static PrerenderManagerMode GetMode() { return mode_; }
   static void SetMode(PrerenderManagerMode mode) { mode_ = mode; }
 

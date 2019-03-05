@@ -61,15 +61,6 @@ std::string PrerenderHistograms::GetHistogramPrefix(Origin origin) {
   return "none";
 }
 
-void PrerenderHistograms::RecordPerceivedFirstContentfulPaintStatus(
-    Origin origin,
-    bool successful,
-    bool was_hidden) const {
-  base::UmaHistogramBoolean(GetHistogramName(origin, "PerceivedTTFCPRecorded") +
-                                FirstContentfulPaintHiddenName(was_hidden),
-                            successful);
-}
-
 void PrerenderHistograms::RecordFinalStatus(
     Origin origin,
     FinalStatus final_status) const {
