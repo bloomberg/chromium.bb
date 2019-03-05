@@ -18,7 +18,9 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/common/child_process_host.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/api/file_handlers/mime_util.h"
 #include "mojo/public/c/system/types.h"
@@ -334,8 +336,11 @@ class ExternalFileURLLoader : public network::mojom::URLLoader {
 
 }  // namespace
 
-ExternalFileURLLoaderFactory::ExternalFileURLLoaderFactory(void* profile_id)
-    : profile_id_(profile_id) {}
+ExternalFileURLLoaderFactory::ExternalFileURLLoaderFactory(
+    void* profile_id,
+    int render_process_host_id)
+    : profile_id_(profile_id),
+      render_process_host_id_(render_process_host_id) {}
 
 ExternalFileURLLoaderFactory::~ExternalFileURLLoaderFactory() = default;
 
@@ -347,6 +352,14 @@ void ExternalFileURLLoaderFactory::CreateLoaderAndStart(
     const network::ResourceRequest& request,
     network::mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
+  if (render_process_host_id_ != content::ChildProcessHost::kInvalidUniqueID &&
+      !content::ChildProcessSecurityPolicy::GetInstance()->CanRequestURL(
+          render_process_host_id_, request.url)) {
+    DVLOG(1) << "Denied unauthorized request for "
+             << request.url.possibly_invalid_spec();
+    mojo::ReportBadMessage("Unauthorized externalfile request");
+    return;
+  }
   base::PostTaskWithTraits(
       FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(&ExternalFileURLLoader::CreateAndStart, profile_id_,

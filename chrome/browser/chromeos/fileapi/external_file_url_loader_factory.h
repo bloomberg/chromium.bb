@@ -15,7 +15,10 @@ namespace chromeos {
 // externalfile scheme.
 class ExternalFileURLLoaderFactory : public network::mojom::URLLoaderFactory {
  public:
-  explicit ExternalFileURLLoaderFactory(void* profile_id);
+  // |render_process_host_id| is used to verify that the child process has
+  // permission to request the URL. It should be
+  // ChildProcessHost::kInvalidUniqueID for navigations.
+  ExternalFileURLLoaderFactory(void* profile_id, int render_process_host_id);
   ~ExternalFileURLLoaderFactory() override;
 
  private:
@@ -34,6 +37,7 @@ class ExternalFileURLLoaderFactory : public network::mojom::URLLoaderFactory {
 
   mojo::BindingSet<network::mojom::URLLoaderFactory> bindings_;
   void* profile_id_;
+  const int render_process_host_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalFileURLLoaderFactory);
 };
