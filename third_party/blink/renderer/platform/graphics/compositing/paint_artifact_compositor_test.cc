@@ -2339,7 +2339,10 @@ TEST_P(PaintArtifactCompositorTest, UniqueAnimationCompositedElementIds) {
 
 TEST_P(PaintArtifactCompositorTest, SkipChunkWithOpacityZero) {
   UpdateWithArtifactWithOpacity(0, false, false);
-  ASSERT_EQ(0u, ContentLayerCount());
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    EXPECT_EQ(0u, ContentLayerCount());
+  else
+    EXPECT_EQ(1u, ContentLayerCount());
 }
 
 TEST_P(PaintArtifactCompositorTest,
@@ -2361,7 +2364,10 @@ TEST_P(PaintArtifactCompositorTest,
 
 TEST_P(PaintArtifactCompositorTest, SkipChunkWithTinyOpacity) {
   UpdateWithArtifactWithOpacity(0.0003f, false, false);
-  ASSERT_EQ(0u, ContentLayerCount());
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    EXPECT_EQ(0u, ContentLayerCount());
+  else
+    EXPECT_EQ(1u, ContentLayerCount());
 }
 
 TEST_P(PaintArtifactCompositorTest,
@@ -2447,7 +2453,10 @@ TEST_P(PaintArtifactCompositorTest,
   artifact.Chunk(t0(), c0(), *visible_effect)
       .RectDrawing(FloatRect(0, 0, 100, 100), Color::kBlack);
   Update(artifact.Build());
-  ASSERT_EQ(0u, ContentLayerCount());
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    EXPECT_EQ(0u, ContentLayerCount());
+  else
+    EXPECT_EQ(1u, ContentLayerCount());
 }
 
 TEST_P(
@@ -2472,7 +2481,10 @@ TEST_P(PaintArtifactCompositorTest,
   artifact.Chunk(t0(), c0(), *visible_effect)
       .RectDrawing(FloatRect(0, 0, 100, 100), Color::kBlack);
   Update(artifact.Build());
-  ASSERT_EQ(0u, ContentLayerCount());
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    EXPECT_EQ(0u, ContentLayerCount());
+  else
+    EXPECT_EQ(1u, ContentLayerCount());
 }
 
 TEST_P(PaintArtifactCompositorTest, UpdateManagesLayerElementIds) {
