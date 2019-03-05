@@ -6,7 +6,7 @@ syntax = "proto2";
 
 option optimize_for = LITE_RUNTIME;
 
-package notifications;
+package notifications.proto;
 
 // Stores a scheduled notification which will be displayed in the future.
 // Next tag: 6

@@ -6,7 +6,7 @@ syntax = "proto2";
 
 option optimize_for = LITE_RUNTIME;
 
-package notifications;
+package notifications.proto;
 
 // Stores the icon used in a notification. The icon is in PNG format. Each time
 // we should only load one icon asynchronously into memory.

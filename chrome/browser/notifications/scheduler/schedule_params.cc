@@ -4,6 +4,10 @@
 
 #include "chrome/browser/notifications/scheduler/schedule_params.h"
 
+namespace notifications {
+
 ScheduleParams::ScheduleParams() = default;
 
 ScheduleParams::~ScheduleParams() = default;
+
+}  // namespace notifications

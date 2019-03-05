@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_NOTIFICATIONS_SCHEDULER_SCHEDULE_PARAMS_H_
 #define CHROME_BROWSER_NOTIFICATIONS_SCHEDULER_SCHEDULE_PARAMS_H_
 
+namespace notifications {
+
 // Specifies when to show the scheduled notification, and throttling details.
 struct ScheduleParams {
   enum class Priority {
@@ -25,5 +27,7 @@ struct ScheduleParams {
 
   Priority priority;
 };
+
+}  // namespace notifications
 
 #endif  // CHROME_BROWSER_NOTIFICATIONS_SCHEDULER_SCHEDULE_PARAMS_H_

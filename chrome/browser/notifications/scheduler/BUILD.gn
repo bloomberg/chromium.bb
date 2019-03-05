@@ -8,18 +8,46 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
-source_set("scheduler") {
+group("scheduler") {
+  # TODO(xingliu): Change this to a source set when we have code to be used by
+  # NotificationScheduleServiceFactory.
+  deps = [
+    ":lib",
+  ]
+
+  public_deps = [
+    ":public",
+  ]
+}
+
+source_set("public") {
   sources = [
     "notification_background_task_scheduler.h",
     "notification_data.cc",
     "notification_data.h",
+    "notification_params.cc",
+    "notification_params.h",
+    "notification_schedule_service.h",
     "schedule_params.cc",
     "schedule_params.h",
   ]
 
   deps = [
     "//base",
-    "//skia",
-    "//ui/message_center/public/cpp",
+    "//components/keyed_service/core",
+  ]
+}
+
+# Internal library that embedders should not directly depend on.
+source_set("lib") {
+  sources = [
+    "notification_schedule_service_impl.cc",
+    "notification_schedule_service_impl.h",
+  ]
+
+  deps = [
+    ":public",
+    "//base",
+    "//components/keyed_service/core",
   ]
 }

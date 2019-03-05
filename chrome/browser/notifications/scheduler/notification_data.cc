@@ -4,14 +4,12 @@
 
 #include "chrome/browser/notifications/scheduler/notification_data.h"
 
-#include "chrome/browser/notifications/scheduler/schedule_params.h"
+namespace notifications {
 
-NotificationData::NotificationData(
-    Type type,
-    std::unique_ptr<message_center::Notification> notification,
-    std::unique_ptr<ScheduleParams> schedule_params)
-    : type_(type),
-      notification_(std::move(notification)),
-      schedule_params_(std::move(schedule_params)) {}
+NotificationData::NotificationData() = default;
+
+NotificationData::NotificationData(const NotificationData& other) = default;
 
 NotificationData::~NotificationData() = default;
+
+}  // namespace notifications
