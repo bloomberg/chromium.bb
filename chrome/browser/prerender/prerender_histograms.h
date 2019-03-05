@@ -49,12 +49,6 @@ class PrerenderHistograms {
   // of the prerender.
   static std::string GetHistogramPrefix(Origin origin);
 
-  // Record that a first contentful paint occured, and whether we were able to
-  // successfuly record the perceived FCP.
-  void RecordPerceivedFirstContentfulPaintStatus(Origin origin,
-                                                 bool successful,
-                                                 bool was_hidden) const;
-
   // Record a PerSessionCount data point.
   void RecordPerSessionCount(Origin origin, int count) const;
 

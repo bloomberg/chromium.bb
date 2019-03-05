@@ -496,41 +496,6 @@ void PrerenderManager::RecordNoStateFirstContentfulPaint(const GURL& url,
 
   histograms_->RecordPrefetchFirstContentfulPaintTime(
       origin, is_no_store, was_hidden, time, prefetch_age);
-
-  for (auto& observer : observers_) {
-    observer->OnFirstContentfulPaint();
-  }
-}
-
-void PrerenderManager::RecordPrerenderFirstContentfulPaint(
-    const GURL& url,
-    content::WebContents* web_contents,
-    bool is_no_store,
-    bool was_hidden,
-    base::TimeTicks first_contentful_paint) {
-  DCHECK(!first_contentful_paint.is_null());
-
-  PrerenderTabHelper* tab_helper =
-      PrerenderTabHelper::FromWebContents(web_contents);
-  DCHECK(tab_helper);
-
-  base::TimeDelta prefetch_age;
-  // The origin at prefetch is superceeded by the tab_helper origin for the
-  // histogram recording, below.
-  GetPrefetchInformation(url, &prefetch_age, nullptr);
-  OnPrefetchUsed(url);
-
-  base::TimeTicks swap_ticks = tab_helper->swap_ticks();
-  bool fcp_recorded = false;
-  if (!swap_ticks.is_null() && !first_contentful_paint.is_null()) {
-    histograms_->RecordPrefetchFirstContentfulPaintTime(
-        tab_helper->origin(), is_no_store, was_hidden,
-        first_contentful_paint - swap_ticks, prefetch_age);
-    fcp_recorded = true;
-  }
-  histograms_->RecordPerceivedFirstContentfulPaintStatus(
-      tab_helper->origin(), fcp_recorded, was_hidden);
-
   for (auto& observer : observers_) {
     observer->OnFirstContentfulPaint();
   }
