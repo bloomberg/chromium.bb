@@ -108,7 +108,9 @@ bool CTLogVerifier::VerifySignedTreeHead(
     return false;
 
   std::string serialized_data;
-  ct::EncodeTreeHeadSignature(signed_tree_head, &serialized_data);
+  if (!ct::EncodeTreeHeadSignature(signed_tree_head, &serialized_data))
+    return false;
+
   if (VerifySignature(serialized_data,
                       signed_tree_head.signature.signature_data)) {
     if (signed_tree_head.tree_size == 0) {

@@ -150,8 +150,10 @@ net::ct::SignedCertificateTimestamp::Origin SCTOriginStringToOrigin(
     net::ct::SCTVerifyStatus expected_status,
     const base::ListValue& report_list) {
   std::string expected_serialized_sct;
-  net::ct::EncodeSignedCertificateTimestamp(expected_sct,
-                                            &expected_serialized_sct);
+  if (!net::ct::EncodeSignedCertificateTimestamp(expected_sct,
+                                                 &expected_serialized_sct)) {
+    return ::testing::AssertionFailure() << "Failed to serialize SCT";
+  }
 
   for (size_t i = 0; i < report_list.GetSize(); i++) {
     const base::DictionaryValue* report_sct;

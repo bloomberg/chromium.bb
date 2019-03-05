@@ -161,7 +161,7 @@ TEST_F(CtSerializationTest, EncodeSignedCertificateTimestamp) {
   ASSERT_TRUE(ct::DecodeSignedCertificateTimestamp(&encoded_sct, &sct));
 
   std::string serialized;
-  ct::EncodeSignedCertificateTimestamp(sct, &serialized);
+  ASSERT_TRUE(ct::EncodeSignedCertificateTimestamp(sct, &serialized));
   EXPECT_EQ(serialized, encoded_test_sct);
 }
 
@@ -256,7 +256,7 @@ TEST_F(CtSerializationTest, EncodesValidSignedTreeHead) {
   ASSERT_TRUE(GetSampleSignedTreeHead(&signed_tree_head));
 
   std::string encoded;
-  ct::EncodeTreeHeadSignature(signed_tree_head, &encoded);
+  ASSERT_TRUE(ct::EncodeTreeHeadSignature(signed_tree_head, &encoded));
   // Expected size is 50 bytes:
   // Byte 0 is version, byte 1 is signature type
   // Bytes 2-9 are timestamp
