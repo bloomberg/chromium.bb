@@ -41,7 +41,9 @@ void ChromeExtensionPolicyMigrator::CopyPoliciesIfUnset(
     PolicyMap::Entry* entry = extension_map->GetMutable(migration.old_name);
     if (entry) {
       if (!chrome_map.Get(migration.new_name)) {
-        chrome_map.Set(migration.new_name, entry->DeepCopy());
+        auto new_entry = entry->DeepCopy();
+        migration.transform.Run(new_entry.value.get());
+        chrome_map.Set(migration.new_name, std::move(new_entry));
       }
       // TODO(crbug/869958): Mark the old policy as deprecated for
       // chrome://policy.
