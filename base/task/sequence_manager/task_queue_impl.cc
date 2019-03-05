@@ -235,6 +235,7 @@ void TaskQueueImpl::PostImmediateTaskImpl(PostedTask task,
     }
   }
 
+  bool should_schedule_work = false;
   {
     // TODO(alexclarke): Maybe add a main thread only immediate_incoming_queue
     // See https://crbug.com/901800
@@ -255,10 +256,23 @@ void TaskQueueImpl::PostImmediateTaskImpl(PostedTask task,
     // addition it may need to schedule a DoWork if this queue isn't blocked.
     if (was_immediate_incoming_queue_empty && immediate_work_queue_empty_) {
       empty_queues_to_reload_handle_.SetActive(true);
-      if (post_immediate_task_should_schedule_work_)
-        sequence_manager_->ScheduleWork();
+      should_schedule_work = post_immediate_task_should_schedule_work_;
     }
   }
+
+  // On windows it's important to call this outside of a lock because calling a
+  // pump while holding a lock can result in priority inversions. See
+  // http://shortn/_ntnKNqjDQT for a discussion.
+  //
+  // Calling ScheduleWork outside the lock should be safe, only the main thread
+  // can mutate |post_immediate_task_should_schedule_work_|. If it transitions
+  // to false we call ScheduleWork redundantly that's harmless. If it
+  // transitions to true, the side effect of
+  // |empty_queues_to_reload_handle_SetActive(true)| is guaranteed to be picked
+  // up by the ThreadController's call to SequenceManagerImpl::DelayTillNextTask
+  // when it computes what continuation (if any) is needed.
+  if (should_schedule_work)
+    sequence_manager_->ScheduleWork();
 
   TraceQueueSize();
 }
