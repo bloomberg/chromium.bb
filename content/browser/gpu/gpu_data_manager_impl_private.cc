@@ -371,7 +371,7 @@ bool GpuDataManagerImplPrivate::GpuProcessStartAllowed() const {
   //   Browser process: Windows
   //   GPU process: Linux and Mac
   //   N/A: Android and Chrome OS (GPU access can't be disabled)
-  if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor))
+  if (features::IsVizDisplayCompositorEnabled())
     return true;
 #endif
 
@@ -862,7 +862,7 @@ gpu::GpuMode GpuDataManagerImplPrivate::GetGpuMode() const {
     return gpu::GpuMode::HARDWARE_ACCELERATED;
   } else if (SwiftShaderAllowed()) {
     return gpu::GpuMode::SWIFTSHADER;
-  } else if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor)) {
+  } else if (features::IsVizDisplayCompositorEnabled()) {
     return gpu::GpuMode::DISPLAY_COMPOSITOR;
   } else {
     return gpu::GpuMode::DISABLED;
@@ -890,7 +890,7 @@ void GpuDataManagerImplPrivate::FallBackToNextGpuMode() {
   } else if (SwiftShaderAllowed()) {
     swiftshader_blocked_ = true;
     OnGpuBlocked();
-  } else if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor)) {
+  } else if (features::IsVizDisplayCompositorEnabled()) {
     // The GPU process is frequently crashing with only the display compositor
     // running. This should never happen so something is wrong. Crash the
     // browser process to reset everything.

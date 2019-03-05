@@ -201,7 +201,7 @@ namespace {
 TEST_F(ReflectorImplTest, CheckNormalOutputSurface) {
   // TODO(jonross): Re-enable once Reflector is re-written to work with
   // VizDisplayCompositor. https://crbug.com/601869
-  if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor))
+  if (features::IsVizDisplayCompositorEnabled())
     return;
   output_surface_->SetFlip(false);
   SetUpReflector();
@@ -215,7 +215,7 @@ TEST_F(ReflectorImplTest, CheckNormalOutputSurface) {
 TEST_F(ReflectorImplTest, CheckInvertedOutputSurface) {
   // TODO(jonross): Re-enable once Reflector is re-written to work with
   // VizDisplayCompositor. https://crbug.com/601869
-  if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor))
+  if (features::IsVizDisplayCompositorEnabled())
     return;
   output_surface_->SetFlip(true);
   SetUpReflector();
@@ -228,7 +228,7 @@ TEST_F(ReflectorImplTest, CheckInvertedOutputSurface) {
 TEST_F(ReflectorImplTest, CheckOverlayNoReflector) {
   // TODO(jonross): Re-enable once Reflector is re-written to work with
   // VizDisplayCompositor. https://crbug.com/601869
-  if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor))
+  if (features::IsVizDisplayCompositorEnabled())
     return;
   viz::OverlayCandidateList list;
   viz::OverlayCandidate plane_1, plane_2;
@@ -243,7 +243,7 @@ TEST_F(ReflectorImplTest, CheckOverlayNoReflector) {
 TEST_F(ReflectorImplTest, CheckOverlaySWMirroring) {
   // TODO(jonross): Re-enable once Reflector is re-written to work with
   // VizDisplayCompositor. https://crbug.com/601869
-  if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor))
+  if (features::IsVizDisplayCompositorEnabled())
     return;
   SetUpReflector();
   viz::OverlayCandidateList list;

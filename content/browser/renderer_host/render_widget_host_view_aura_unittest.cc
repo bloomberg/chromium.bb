@@ -3056,7 +3056,7 @@ TEST_F(RenderWidgetHostViewAuraTest, ReturnedResources) {
 TEST_F(RenderWidgetHostViewAuraTest, TwoOutputSurfaces) {
   // TODO(jonross): Delete this test once Viz launches as it will be obsolete.
   // https://crbug.com/844469
-  if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor) ||
+  if (features::IsVizDisplayCompositorEnabled() ||
       features::IsMultiProcessMash()) {
     return;
   }
@@ -3425,7 +3425,7 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
        CompositorFrameSinkChange) {
   // TODO(jonross): Delete this test once Viz launches as it will be obsolete.
   // https://crbug.com/844469
-  if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor) ||
+  if (features::IsVizDisplayCompositorEnabled() ||
       features::IsMultiProcessMash()) {
     return;
   }
@@ -3691,7 +3691,7 @@ TEST_F(RenderWidgetHostViewAuraTest, SourceEventTypeExistsInLatencyInfo) {
 TEST_F(RenderWidgetHostViewAuraTest, ForwardsBeginFrameAcks) {
   // TODO(jonross): Delete this test once Viz launches as it will be obsolete.
   // https://crbug.com/844469
-  if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor) ||
+  if (features::IsVizDisplayCompositorEnabled() ||
       features::IsMultiProcessMash()) {
     return;
   }
@@ -5737,7 +5737,7 @@ TEST_F(RenderWidgetHostViewAuraTest, GestureTapFromStylusHasPointerType) {
 TEST_F(RenderWidgetHostViewAuraTest, HitTestRegionListSubmitted) {
   // TODO(jonross): Delete this test once Viz launches as it will be obsolete.
   // https://crbug.com/844469
-  if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor) ||
+  if (features::IsVizDisplayCompositorEnabled() ||
       features::IsMultiProcessMash()) {
     return;
   }

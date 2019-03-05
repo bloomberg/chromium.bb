@@ -203,7 +203,7 @@ const GpuFeatureData GetGpuFeatureData(
        "WebGL2 has been disabled via blacklist or the command line.", false,
        true},
       {"viz_display_compositor", gpu::kGpuFeatureStatusEnabled,
-       !base::FeatureList::IsEnabled(features::kVizDisplayCompositor),
+       !features::IsVizDisplayCompositorEnabled(),
        "Viz service display compositor is not enabled by default.", false,
        false},
       {"skia_renderer", gpu::kGpuFeatureStatusEnabled,
