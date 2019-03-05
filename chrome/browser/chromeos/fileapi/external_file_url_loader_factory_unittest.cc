@@ -20,6 +20,10 @@
 #include "components/drive/chromeos/fake_file_system.h"
 #include "components/drive/service/fake_drive_service.h"
 #include "components/drive/service/test_util.h"
+#include "content/public/browser/child_process_security_policy.h"
+#include "content/public/common/child_process_host.h"
+#include "content/public/common/url_constants.h"
+#include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_service_manager_context.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
@@ -58,11 +62,13 @@ class ExternalFileURLLoaderFactoryTest : public testing::Test {
     profile_manager_.reset(
         new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
     ASSERT_TRUE(profile_manager_->SetUp());
-    user_manager_ = std::make_unique<chromeos::FakeChromeUserManager>();
     Profile* const profile =
         profile_manager_->CreateTestingProfile("test-user");
+    user_manager_ = std::make_unique<chromeos::FakeChromeUserManager>();
     user_manager_->AddUser(
         AccountId::FromUserEmailGaiaId(profile->GetProfileUserName(), "12345"));
+    render_process_host_ =
+        std::make_unique<content::MockRenderProcessHost>(profile);
 
     auto* service = chromeos::file_system_provider::Service::Get(profile);
     service->RegisterProvider(
@@ -82,11 +88,17 @@ class ExternalFileURLLoaderFactoryTest : public testing::Test {
     drive::DriveIntegrationServiceFactory::GetForProfile(profile);
 
     // Create the URLLoaderFactory.
-    url_loader_factory_ =
-        std::make_unique<ExternalFileURLLoaderFactory>(profile);
+    url_loader_factory_ = std::make_unique<ExternalFileURLLoaderFactory>(
+        profile, render_process_host_id());
   }
 
-  void TearDown() override { profile_manager_.reset(); }
+  virtual int render_process_host_id() {
+    return content::ChildProcessHost::kInvalidUniqueID;
+  }
+
+  content::MockRenderProcessHost* render_process_host() {
+    return render_process_host_.get();
+  }
 
   network::ResourceRequest CreateRequest(std::string url) {
     network::ResourceRequest request;
@@ -142,6 +154,8 @@ class ExternalFileURLLoaderFactoryTest : public testing::Test {
 
   std::unique_ptr<TestingProfileManager> profile_manager_;
   std::unique_ptr<chromeos::FakeChromeUserManager> user_manager_;
+  // Used to register the profile with the ChildProcessSecurityPolicyImpl.
+  std::unique_ptr<content::MockRenderProcessHost> render_process_host_;
   base::ScopedTempDir drive_cache_dir_;
 };
 
@@ -253,6 +267,32 @@ TEST_F(ExternalFileURLLoaderFactoryTest, WrongRangeHeader) {
 
   EXPECT_EQ(net::ERR_REQUEST_RANGE_NOT_SATISFIABLE,
             client.completion_status().error_code);
+}
+
+class SubresourceExternalFileURLLoaderFactoryTest
+    : public ExternalFileURLLoaderFactoryTest {
+ protected:
+  int render_process_host_id() override {
+    return render_process_host()->GetID();
+  }
+};
+
+TEST_F(SubresourceExternalFileURLLoaderFactoryTest, SubresourceAllowed) {
+  content::ChildProcessSecurityPolicy::GetInstance()->GrantRequestScheme(
+      render_process_host_id(), content::kExternalFileScheme);
+
+  network::TestURLLoaderClient client;
+  network::mojom::URLLoaderPtr loader =
+      CreateURLLoaderAndStart(&client, CreateRequest(kTestUrl));
+
+  client.RunUntilComplete();
+
+  ASSERT_EQ(net::OK, client.completion_status().error_code);
+}
+
+TEST_F(SubresourceExternalFileURLLoaderFactoryTest, SubresourceNotAllowed) {
+  network::TestURLLoaderClient client;
+  ASSERT_DEATH(CreateURLLoaderAndStart(&client, CreateRequest(kTestUrl)), "");
 }
 
 }  // namespace chromeos
