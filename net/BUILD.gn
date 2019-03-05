@@ -5254,6 +5254,7 @@ test("net_unittests") {
     "third_party/quic/quartc/quartc_endpoint_test.cc",
     "third_party/quic/quartc/quartc_factory.cc",
     "third_party/quic/quartc/quartc_factory.h",
+    "third_party/quic/quartc/quartc_fakes.h",
     "third_party/quic/quartc/quartc_interval_counter.h",
     "third_party/quic/quartc/quartc_interval_counter_test.cc",
     "third_party/quic/quartc/quartc_packet_writer.cc",

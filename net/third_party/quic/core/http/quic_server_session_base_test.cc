@@ -703,9 +703,8 @@ TEST_P(StreamMemberLifetimeTest, Basic) {
   std::vector<ParsedQuicVersion> packet_version_list = {GetParam()};
   std::unique_ptr<QuicEncryptedPacket> packet(ConstructEncryptedPacket(
       TestConnectionId(1), EmptyQuicConnectionId(), true, false, 1,
-      QuicString(chlo.GetSerialized().AsStringPiece()),
-      PACKET_8BYTE_CONNECTION_ID, PACKET_0BYTE_CONNECTION_ID,
-      PACKET_4BYTE_PACKET_NUMBER, &packet_version_list));
+      QuicString(chlo.GetSerialized().AsStringPiece()), CONNECTION_ID_PRESENT,
+      CONNECTION_ID_ABSENT, PACKET_4BYTE_PACKET_NUMBER, &packet_version_list));
 
   EXPECT_CALL(stream_helper_, CanAcceptClientHello(_, _, _, _, _))
       .WillOnce(testing::Return(true));

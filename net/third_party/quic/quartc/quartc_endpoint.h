@@ -61,11 +61,13 @@ class QuartcClientEndpoint : public QuartcEndpoint {
  public:
   // |alarm_factory|, |clock|, and |delegate| are owned by the caller and must
   // outlive the endpoint.
-  QuartcClientEndpoint(QuicAlarmFactory* alarm_factory,
-                       const QuicClock* clock,
-                       Delegate* delegate,
-                       const QuartcSessionConfig& config,
-                       QuicStringPiece serialized_server_config);
+  QuartcClientEndpoint(
+      QuicAlarmFactory* alarm_factory,
+      const QuicClock* clock,
+      Delegate* delegate,
+      const QuartcSessionConfig& config,
+      QuicStringPiece serialized_server_config,
+      std::unique_ptr<QuicVersionManager> version_manager = nullptr);
 
   void Connect(QuartcPacketTransport* packet_transport) override;
 
@@ -97,6 +99,9 @@ class QuartcClientEndpoint : public QuartcEndpoint {
   // Server config.  If valid, used to perform a 0-RTT connection.
   const QuicString serialized_server_config_;
 
+  // Version manager.  May be injected to control version negotiation in tests.
+  std::unique_ptr<QuicVersionManager> version_manager_;
+
   // Alarm for creating sessions asynchronously.  The alarm is set when
   // Connect() is called.  When it fires, the endpoint creates a session and
   // calls the delegate.
@@ -124,10 +129,12 @@ class QuartcClientEndpoint : public QuartcEndpoint {
 class QuartcServerEndpoint : public QuartcEndpoint,
                              public QuartcDispatcher::Delegate {
  public:
-  QuartcServerEndpoint(QuicAlarmFactory* alarm_factory,
-                       const QuicClock* clock,
-                       QuartcEndpoint::Delegate* delegate,
-                       const QuartcSessionConfig& config);
+  QuartcServerEndpoint(
+      QuicAlarmFactory* alarm_factory,
+      const QuicClock* clock,
+      QuartcEndpoint::Delegate* delegate,
+      const QuartcSessionConfig& config,
+      std::unique_ptr<QuicVersionManager> version_manager = nullptr);
 
   // Implements QuartcEndpoint.
   void Connect(QuartcPacketTransport* packet_transport) override;
@@ -150,6 +157,9 @@ class QuartcServerEndpoint : public QuartcEndpoint,
 
   // Config to be used for new sessions.
   QuartcSessionConfig config_;
+
+  // Version manager.  May be injected to control version negotiation in tests.
+  std::unique_ptr<QuicVersionManager> version_manager_;
 
   // QuartcDispatcher waits for an incoming CHLO, then either rejects it or
   // creates a session to respond to it.  The dispatcher owns all sessions it

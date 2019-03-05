@@ -67,6 +67,11 @@ class QUIC_EXPORT_PRIVATE QuicPacketGenerator {
     // Consults delegate whether a packet should be generated.
     virtual bool ShouldGeneratePacket(HasRetransmittableData retransmittable,
                                       IsHandshake handshake) = 0;
+    // Called when there is data to be sent. Retrieves updated ACK frame from
+    // the delegate.
+    virtual const QuicFrames MaybeBundleAckOpportunistically() = 0;
+    // TODO(fayang): Remove these two interfaces when deprecating
+    // quic_deprecate_ack_bundling_mode.
     virtual const QuicFrame GetUpdatedAckFrame() = 0;
     virtual void PopulateStopWaitingFrame(
         QuicStopWaitingFrame* stop_waiting) = 0;
@@ -211,15 +216,16 @@ class QUIC_EXPORT_PRIVATE QuicPacketGenerator {
   // Set transmission type of next constructed packets.
   void SetTransmissionType(TransmissionType type);
 
-  // Set long header type of next constructed packets.
-  void SetLongHeaderType(QuicLongHeaderType type);
-
   // Allow/Disallow setting transmission type of next constructed packets.
   void SetCanSetTransmissionType(bool can_set_transmission_type);
 
   // Tries to add a message frame containing |message| and returns the status.
   MessageStatus AddMessageFrame(QuicMessageId message_id,
                                 QuicMemSliceSpan message);
+
+  // Called to flush ACK and STOP_WAITING frames, returns false if the flush
+  // fails.
+  bool FlushAckFrame(const QuicFrames& frames);
 
   // Returns the largest payload that will fit into a single MESSAGE frame.
   QuicPacketLength GetLargestMessagePayload() const;
@@ -236,6 +242,10 @@ class QUIC_EXPORT_PRIVATE QuicPacketGenerator {
 
   bool fully_pad_crypto_handshake_packets() const {
     return fully_pad_crypto_handshake_packets_;
+  }
+
+  bool deprecate_ack_bundling_mode() const {
+    return deprecate_ack_bundling_mode_;
   }
 
  private:
@@ -261,6 +271,10 @@ class QUIC_EXPORT_PRIVATE QuicPacketGenerator {
   // Pending paddings should only be sent when there is nothing else to send.
   void SendRemainingPendingPadding();
 
+  // Called when there is data to be sent, Retrieves updated ACK frame from
+  // delegate_ and flushes it.
+  void MaybeBundleAckOpportunistically();
+
   DelegateInterface* delegate_;
 
   QuicPacketCreator packet_creator_;
@@ -273,18 +287,25 @@ class QUIC_EXPORT_PRIVATE QuicPacketGenerator {
   bool flusher_attached_;
 
   // Flags to indicate the need for just-in-time construction of a frame.
+  // TODO(fayang): Remove these two booleans when deprecating
+  // quic_deprecate_ack_bundling_mode.
   bool should_send_ack_;
   bool should_send_stop_waiting_;
   // If we put a non-retransmittable frame in this packet, then we have to hold
   // a reference to it until we flush (and serialize it). Retransmittable frames
   // are referenced elsewhere so that they can later be (optionally)
   // retransmitted.
+  // TODO(fayang): Remove this when deprecating
+  // quic_deprecate_ack_bundling_mode.
   QuicStopWaitingFrame pending_stop_waiting_frame_;
 
   QuicRandom* random_generator_;
 
   // Whether crypto handshake packets should be fully padded.
   bool fully_pad_crypto_handshake_packets_;
+
+  // Latched value of quic_deprecate_ack_bundling_mode.
+  const bool deprecate_ack_bundling_mode_;
 };
 
 }  // namespace quic

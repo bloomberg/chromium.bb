@@ -79,6 +79,7 @@ class QuicTimeWaitListManager : public QuicBlockedWriterInterface {
       QuicConnectionId connection_id,
       bool ietf_quic,
       TimeWaitAction action,
+      EncryptionLevel encryption_level,
       std::vector<std::unique_ptr<QuicEncryptedPacket>>* termination_packets);
 
   // Returns true if the connection_id is in time wait state, false otherwise.
@@ -95,6 +96,7 @@ class QuicTimeWaitListManager : public QuicBlockedWriterInterface {
       const QuicSocketAddress& self_address,
       const QuicSocketAddress& peer_address,
       QuicConnectionId connection_id,
+      PacketHeaderFormat header_format,
       std::unique_ptr<QuicPerPacketContext> packet_context);
 
   // Called by the dispatcher when the underlying socket becomes writable again,
@@ -234,6 +236,8 @@ class QuicTimeWaitListManager : public QuicBlockedWriterInterface {
     int num_packets;
     bool ietf_quic;
     QuicTime time_added;
+    // Encryption level of termination_packets.
+    EncryptionLevel encryption_level;
     // These packets may contain CONNECTION_CLOSE frames, or SREJ messages.
     std::vector<std::unique_ptr<QuicEncryptedPacket>> termination_packets;
     TimeWaitAction action;

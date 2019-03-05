@@ -4,6 +4,7 @@
 
 #include "net/third_party/quic/core/quic_packets.h"
 
+#include "net/third_party/quic/core/quic_connection_id.h"
 #include "net/third_party/quic/core/quic_types.h"
 #include "net/third_party/quic/core/quic_utils.h"
 #include "net/third_party/quic/core/quic_versions.h"
@@ -15,14 +16,45 @@
 
 namespace quic {
 
+QuicConnectionIdLength GetIncludedConnectionIdLength(
+    QuicTransportVersion version,
+    QuicConnectionId connection_id,
+    QuicConnectionIdIncluded connection_id_included) {
+  DCHECK(connection_id_included == CONNECTION_ID_PRESENT ||
+         connection_id_included == CONNECTION_ID_ABSENT);
+  if (!QuicUtils::VariableLengthConnectionIdAllowedForVersion(version)) {
+    return connection_id_included == CONNECTION_ID_PRESENT
+               ? PACKET_8BYTE_CONNECTION_ID
+               : PACKET_0BYTE_CONNECTION_ID;
+  }
+  return connection_id_included == CONNECTION_ID_PRESENT
+             ? static_cast<QuicConnectionIdLength>(connection_id.length())
+             : PACKET_0BYTE_CONNECTION_ID;
+}
+
+QuicConnectionIdLength GetIncludedDestinationConnectionIdLength(
+    QuicTransportVersion version,
+    const QuicPacketHeader& header) {
+  return GetIncludedConnectionIdLength(
+      version, header.destination_connection_id,
+      header.destination_connection_id_included);
+}
+
+QuicConnectionIdLength GetIncludedSourceConnectionIdLength(
+    QuicTransportVersion version,
+    const QuicPacketHeader& header) {
+  return GetIncludedConnectionIdLength(version, header.source_connection_id,
+                                       header.source_connection_id_included);
+}
+
 size_t GetPacketHeaderSize(QuicTransportVersion version,
                            const QuicPacketHeader& header) {
-  return GetPacketHeaderSize(version, header.destination_connection_id_length,
-                             header.source_connection_id_length,
-                             header.version_flag, header.nonce != nullptr,
-                             header.packet_number_length,
-                             header.retry_token_length_length,
-                             header.retry_token.length(), header.length_length);
+  return GetPacketHeaderSize(
+      version, GetIncludedDestinationConnectionIdLength(version, header),
+      GetIncludedSourceConnectionIdLength(version, header), header.version_flag,
+      header.nonce != nullptr, header.packet_number_length,
+      header.retry_token_length_length, header.retry_token.length(),
+      header.length_length);
 }
 
 size_t GetPacketHeaderSize(
@@ -79,9 +111,9 @@ size_t GetStartOfEncryptedData(
 
 QuicPacketHeader::QuicPacketHeader()
     : destination_connection_id(EmptyQuicConnectionId()),
-      destination_connection_id_length(PACKET_8BYTE_CONNECTION_ID),
+      destination_connection_id_included(CONNECTION_ID_PRESENT),
       source_connection_id(EmptyQuicConnectionId()),
-      source_connection_id_length(PACKET_0BYTE_CONNECTION_ID),
+      source_connection_id_included(CONNECTION_ID_ABSENT),
       reset_flag(false),
       version_flag(false),
       has_possible_stateless_reset_token(false),
@@ -133,11 +165,15 @@ QuicIetfStatelessResetPacket::~QuicIetfStatelessResetPacket() {}
 
 std::ostream& operator<<(std::ostream& os, const QuicPacketHeader& header) {
   os << "{ destination_connection_id: " << header.destination_connection_id
-     << ", destination_connection_id_length: "
-     << header.destination_connection_id_length
-     << ", source_connection_id: " << header.source_connection_id
-     << ", source_connection_id_length: " << header.source_connection_id_length
-     << ", packet_number_length: " << header.packet_number_length
+     << " ("
+     << (header.destination_connection_id_included == CONNECTION_ID_PRESENT
+             ? "present"
+             : "absent")
+     << "), source_connection_id: " << header.source_connection_id << " ("
+     << (header.source_connection_id_included == CONNECTION_ID_PRESENT
+             ? "present"
+             : "absent")
+     << "), packet_number_length: " << header.packet_number_length
      << ", reset_flag: " << header.reset_flag
      << ", version_flag: " << header.version_flag;
   if (header.version_flag) {
@@ -204,15 +240,16 @@ QuicPacket::QuicPacket(
       retry_token_length_(retry_token_length),
       length_length_(length_length) {}
 
-QuicPacket::QuicPacket(char* buffer,
+QuicPacket::QuicPacket(QuicTransportVersion version,
+                       char* buffer,
                        size_t length,
                        bool owns_buffer,
                        const QuicPacketHeader& header)
     : QuicPacket(buffer,
                  length,
                  owns_buffer,
-                 header.destination_connection_id_length,
-                 header.source_connection_id_length,
+                 GetIncludedDestinationConnectionIdLength(version, header),
+                 GetIncludedSourceConnectionIdLength(version, header),
                  header.version_flag,
                  header.nonce != nullptr,
                  header.packet_number_length,

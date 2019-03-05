@@ -33,7 +33,7 @@ class QuartcDispatcher : public QuicDispatcher,
       std::unique_ptr<QuicConfig> config,
       std::unique_ptr<QuicCryptoServerConfig> crypto_config,
       QuicStringPiece crypto_config_serialized,
-      std::unique_ptr<QuicVersionManager> version_manager,
+      QuicVersionManager* version_manager,
       std::unique_ptr<QuicConnectionHelperInterface> helper,
       std::unique_ptr<QuicCryptoServerStream::Helper> session_helper,
       std::unique_ptr<QuicAlarmFactory> alarm_factory,
@@ -58,7 +58,6 @@ class QuartcDispatcher : public QuicDispatcher,
   std::unique_ptr<QuicConfig> owned_quic_config_;
   std::unique_ptr<QuicCryptoServerConfig> owned_crypto_config_;
   QuicString crypto_config_;
-  std::unique_ptr<QuicVersionManager> owned_version_manager_;
 
   // Delegate invoked when the dispatcher creates a new session.
   Delegate* delegate_;

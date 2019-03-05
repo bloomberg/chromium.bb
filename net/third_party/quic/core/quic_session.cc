@@ -550,14 +550,6 @@ QuicConsumedData QuicSession::WritevData(QuicStream* stream,
     // up write blocked until OnCanWrite is next called.
     return QuicConsumedData(0, false);
   }
-  if (connection_->encryption_level() != ENCRYPTION_FORWARD_SECURE) {
-    // Set the next sending packets' long header type.
-    QuicLongHeaderType type = ZERO_RTT_PROTECTED;
-    if (id == QuicUtils::GetCryptoStreamId(connection_->transport_version())) {
-      type = GetCryptoStream()->GetLongHeaderType(offset);
-    }
-    connection_->SetLongHeaderType(type);
-  }
 
   QuicConsumedData data =
       connection_->SendStreamData(id, write_length, offset, state);
@@ -1613,9 +1605,6 @@ void QuicSession::SetTransmissionType(TransmissionType type) {
 MessageResult QuicSession::SendMessage(QuicMemSliceSpan message) {
   if (!IsEncryptionEstablished()) {
     return {MESSAGE_STATUS_ENCRYPTION_NOT_ESTABLISHED, 0};
-  }
-  if (connection_->encryption_level() != ENCRYPTION_FORWARD_SECURE) {
-    connection_->SetLongHeaderType(ZERO_RTT_PROTECTED);
   }
   MessageStatus result =
       connection_->SendMessage(last_message_id_ + 1, message);

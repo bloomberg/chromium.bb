@@ -328,10 +328,6 @@ class QuicDispatcher : public QuicTimeWaitListManager::Visitor,
 
   void StopAcceptingNewConnections();
 
-  // Return true if the blocked writer should be added to blocked list.
-  // TODO(wub): Remove when deprecating --quic_check_blocked_writer_for_blockage
-  virtual bool ShouldAddToBlockedList();
-
   // Called to terminate a connection statelessly. Depending on |format|, either
   // 1) send connection close with |error_code| and |error_details| and add
   // connection to time wait list or 2) directly add connection to time wait
@@ -474,9 +470,6 @@ class QuicDispatcher : public QuicTimeWaitListManager::Visitor,
 
   // True if this dispatcher is not draining.
   bool accept_new_connections_;
-
-  // Latched value of --quic_check_blocked_writer_for_blockage.
-  const bool check_blocked_writer_for_blockage_;
 };
 
 }  // namespace quic

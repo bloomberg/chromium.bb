@@ -8571,7 +8571,8 @@ TEST_P(QuicFramerTest, BuildConnectivityProbingPacket) {
       header, buffer.get(), packet_size, ENCRYPTION_NONE);
 
   EXPECT_NE(0u, length);
-  QuicPacket data(buffer.release(), length, true, header);
+  QuicPacket data(framer_.transport_version(), buffer.release(), length, true,
+                  header);
 
   test::CompareCharArraysWithHexError("constructed packet", data.data(),
                                       data.length(), AsChars(p), packet_size);
@@ -8622,7 +8623,8 @@ TEST_P(QuicFramerTest, BuildPaddedPathChallengePacket) {
   // above, before checking that the generated packet is correct.
   EXPECT_EQ(kQuicPathFrameBufferSize, payload.size());
 
-  QuicPacket data(buffer.release(), length, true, header);
+  QuicPacket data(framer_.transport_version(), buffer.release(), length, true,
+                  header);
 
   test::CompareCharArraysWithHexError("constructed packet", data.data(),
                                       data.length(), AsChars(packet),
@@ -8669,7 +8671,8 @@ TEST_P(QuicFramerTest, BuildPathResponsePacket1ResponseUnpadded) {
       header, buffer.get(), QUIC_ARRAYSIZE(packet), payloads,
       /*is_padded=*/false, ENCRYPTION_NONE);
   EXPECT_EQ(length, QUIC_ARRAYSIZE(packet));
-  QuicPacket data(buffer.release(), length, true, header);
+  QuicPacket data(framer_.transport_version(), buffer.release(), length, true,
+                  header);
 
   test::CompareCharArraysWithHexError("constructed packet", data.data(),
                                       data.length(), AsChars(packet),
@@ -8714,7 +8717,8 @@ TEST_P(QuicFramerTest, BuildPathResponsePacket1ResponsePadded) {
       header, buffer.get(), QUIC_ARRAYSIZE(packet), payloads,
       /*is_padded=*/true, ENCRYPTION_NONE);
   EXPECT_EQ(length, QUIC_ARRAYSIZE(packet));
-  QuicPacket data(buffer.release(), length, true, header);
+  QuicPacket data(framer_.transport_version(), buffer.release(), length, true,
+                  header);
 
   test::CompareCharArraysWithHexError("constructed packet", data.data(),
                                       data.length(), AsChars(packet),
@@ -8764,7 +8768,8 @@ TEST_P(QuicFramerTest, BuildPathResponsePacket3ResponsesUnpadded) {
       header, buffer.get(), QUIC_ARRAYSIZE(packet), payloads,
       /*is_padded=*/false, ENCRYPTION_NONE);
   EXPECT_EQ(length, QUIC_ARRAYSIZE(packet));
-  QuicPacket data(buffer.release(), length, true, header);
+  QuicPacket data(framer_.transport_version(), buffer.release(), length, true,
+                  header);
 
   test::CompareCharArraysWithHexError("constructed packet", data.data(),
                                       data.length(), AsChars(packet),
@@ -8816,7 +8821,8 @@ TEST_P(QuicFramerTest, BuildPathResponsePacket3ResponsesPadded) {
       header, buffer.get(), QUIC_ARRAYSIZE(packet), payloads,
       /*is_padded=*/true, ENCRYPTION_NONE);
   EXPECT_EQ(length, QUIC_ARRAYSIZE(packet));
-  QuicPacket data(buffer.release(), length, true, header);
+  QuicPacket data(framer_.transport_version(), buffer.release(), length, true,
+                  header);
 
   test::CompareCharArraysWithHexError("constructed packet", data.data(),
                                       data.length(), AsChars(packet),
@@ -9615,8 +9621,8 @@ TEST_P(QuicFramerTest, ConstructEncryptedPacket) {
   versions.push_back(framer_.version());
   std::unique_ptr<QuicEncryptedPacket> packet(ConstructEncryptedPacket(
       TestConnectionId(), EmptyQuicConnectionId(), false, false,
-      kTestQuicStreamId, kTestString, PACKET_8BYTE_CONNECTION_ID,
-      PACKET_0BYTE_CONNECTION_ID, PACKET_4BYTE_PACKET_NUMBER, &versions));
+      kTestQuicStreamId, kTestString, CONNECTION_ID_PRESENT,
+      CONNECTION_ID_ABSENT, PACKET_4BYTE_PACKET_NUMBER, &versions));
 
   MockFramerVisitor visitor;
   framer_.set_visitor(&visitor);
@@ -9655,8 +9661,8 @@ TEST_P(QuicFramerTest, ConstructMisFramedEncryptedPacket) {
   versions.push_back(framer_.version());
   std::unique_ptr<QuicEncryptedPacket> packet(ConstructMisFramedEncryptedPacket(
       TestConnectionId(), EmptyQuicConnectionId(), false, false,
-      kTestQuicStreamId, kTestString, PACKET_8BYTE_CONNECTION_ID,
-      PACKET_0BYTE_CONNECTION_ID, PACKET_4BYTE_PACKET_NUMBER, &versions,
+      kTestQuicStreamId, kTestString, CONNECTION_ID_PRESENT,
+      CONNECTION_ID_ABSENT, PACKET_4BYTE_PACKET_NUMBER, &versions,
       Perspective::IS_CLIENT));
 
   MockFramerVisitor visitor;

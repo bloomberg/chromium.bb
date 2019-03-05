@@ -2254,7 +2254,6 @@ TEST_P(QuicNetworkTransactionTest, QuicFailsOnBothNetworksWhileTCPSucceeds) {
 
   std::string request_data;
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
-  client_maker_.SetLongHeaderType(quic::ZERO_RTT_PROTECTED);
 
   // The request will initially go out over QUIC.
   MockQuicData quic_data;
@@ -2375,7 +2374,6 @@ TEST_P(QuicNetworkTransactionTest, RetryOnAlternateNetworkWhileTCPSucceeds) {
 
   std::string request_data;
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
-  client_maker_.SetLongHeaderType(quic::ZERO_RTT_PROTECTED);
 
   // The request will initially go out over QUIC.
   MockQuicData quic_data;
@@ -2510,7 +2508,6 @@ TEST_P(QuicNetworkTransactionTest, RetryOnAlternateNetworkWhileTCPHanging) {
 
   std::string request_data;
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
-  client_maker_.SetLongHeaderType(quic::ZERO_RTT_PROTECTED);
 
   // The request will initially go out over QUIC.
   MockQuicData quic_data;
@@ -2643,7 +2640,6 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmed) {
 
   std::string request_data;
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
-  client_maker_.SetLongHeaderType(quic::ZERO_RTT_PROTECTED);
   quic_data.AddWrite(SYNCHRONOUS,
                      client_maker_.MakeRequestHeadersPacketAndSaveData(
                          1, GetNthClientInitiatedBidirectionalStreamId(0), true,
@@ -2754,7 +2750,6 @@ TEST_P(QuicNetworkTransactionTest, TooManyRtosAfterHandshakeConfirmed) {
 
   std::string request_data;
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
-  client_maker_.SetLongHeaderType(quic::ZERO_RTT_PROTECTED);
   quic_data.AddWrite(SYNCHRONOUS,
                      client_maker_.MakeRequestHeadersPacketAndSaveData(
                          1, GetNthClientInitiatedBidirectionalStreamId(0), true,
@@ -2873,7 +2868,6 @@ TEST_P(QuicNetworkTransactionTest,
 
   std::string request_data;
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
-  client_maker_.SetLongHeaderType(quic::ZERO_RTT_PROTECTED);
   quic_data.AddWrite(SYNCHRONOUS,
                      client_maker_.MakeRequestHeadersPacketAndSaveData(
                          1, GetNthClientInitiatedBidirectionalStreamId(0), true,
@@ -2995,7 +2989,6 @@ TEST_P(QuicNetworkTransactionTest, ProtocolErrorAfterHandshakeConfirmed) {
   MockQuicData quic_data;
   quic::QuicStreamOffset header_stream_offset = 0;
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
-  client_maker_.SetLongHeaderType(quic::ZERO_RTT_PROTECTED);
   quic_data.AddWrite(
       SYNCHRONOUS,
       ConstructClientRequestHeadersPacket(
@@ -3068,7 +3061,6 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmedThenBroken) {
 
   std::string request_data;
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
-  client_maker_.SetLongHeaderType(quic::ZERO_RTT_PROTECTED);
   quic_data.AddWrite(SYNCHRONOUS,
                      client_maker_.MakeRequestHeadersPacketAndSaveData(
                          1, GetNthClientInitiatedBidirectionalStreamId(0), true,
@@ -3203,7 +3195,6 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmedThenBroken2) {
 
   std::string request_data;
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
-  client_maker_.SetLongHeaderType(quic::ZERO_RTT_PROTECTED);
   quic_data.AddWrite(SYNCHRONOUS,
                      client_maker_.MakeRequestHeadersPacketAndSaveData(
                          1, GetNthClientInitiatedBidirectionalStreamId(0), true,
@@ -3342,7 +3333,6 @@ TEST_P(QuicNetworkTransactionTest,
 
   std::string request_data;
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
-  client_maker_.SetLongHeaderType(quic::ZERO_RTT_PROTECTED);
   quic_data.AddWrite(SYNCHRONOUS,
                      client_maker_.MakeRequestHeadersPacketAndSaveData(
                          1, GetNthClientInitiatedBidirectionalStreamId(0), true,
@@ -3488,7 +3478,6 @@ TEST_P(QuicNetworkTransactionTest,
 
   std::string request_data;
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
-  client_maker_.SetLongHeaderType(quic::ZERO_RTT_PROTECTED);
   quic_data.AddWrite(SYNCHRONOUS,
                      client_maker_.MakeRequestHeadersPacketAndSaveData(
                          1, GetNthClientInitiatedBidirectionalStreamId(0), true,
@@ -3632,7 +3621,6 @@ TEST_P(QuicNetworkTransactionTest,
 
   std::string request_data;
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
-  client_maker_.SetLongHeaderType(quic::ZERO_RTT_PROTECTED);
   quic_data.AddWrite(SYNCHRONOUS,
                      client_maker_.MakeRequestHeadersPacketAndSaveData(
                          1, GetNthClientInitiatedBidirectionalStreamId(0), true,
@@ -3757,7 +3745,6 @@ TEST_P(QuicNetworkTransactionTest,
   MockQuicData quic_data;
   quic::QuicStreamOffset header_stream_offset = 0;
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
-  client_maker_.SetLongHeaderType(quic::ZERO_RTT_PROTECTED);
   quic_data.AddWrite(
       SYNCHRONOUS,
       ConstructClientRequestHeadersPacket(
@@ -3849,7 +3836,6 @@ TEST_P(QuicNetworkTransactionTest, ResetAfterHandshakeConfirmedThenBroken) {
 
   std::string request_data;
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
-  client_maker_.SetLongHeaderType(quic::ZERO_RTT_PROTECTED);
   quic_data.AddWrite(SYNCHRONOUS,
                      client_maker_.MakeRequestHeadersPacketAndSaveData(
                          1, GetNthClientInitiatedBidirectionalStreamId(0), true,
@@ -4864,7 +4850,6 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithHttpRace) {
   MockQuicData mock_quic_data;
   quic::QuicStreamOffset header_stream_offset = 0;
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
-  client_maker_.SetLongHeaderType(quic::ZERO_RTT_PROTECTED);
   mock_quic_data.AddWrite(
       SYNCHRONOUS,
       ConstructClientRequestHeadersPacket(
@@ -4901,7 +4886,6 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithHttpRace) {
 TEST_P(QuicNetworkTransactionTest, ZeroRTTWithNoHttpRace) {
   MockQuicData mock_quic_data;
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
-  client_maker_.SetLongHeaderType(quic::ZERO_RTT_PROTECTED);
   mock_quic_data.AddWrite(
       SYNCHRONOUS, ConstructClientRequestHeadersPacket(
                        1, GetNthClientInitiatedBidirectionalStreamId(0), true,
@@ -5022,7 +5006,6 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithTooEarlyResponse) {
   quic::QuicStreamOffset client_header_stream_offset = 0;
   quic::QuicStreamOffset server_header_stream_offset = 0;
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
-  client_maker_.SetLongHeaderType(quic::ZERO_RTT_PROTECTED);
   mock_quic_data.AddWrite(
       SYNCHRONOUS, ConstructClientRequestHeadersPacket(
                        1, GetNthClientInitiatedBidirectionalStreamId(0), true,
@@ -5116,7 +5099,6 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithMultipleTooEarlyResponse) {
   quic::QuicStreamOffset client_header_stream_offset = 0;
   quic::QuicStreamOffset server_header_stream_offset = 0;
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
-  client_maker_.SetLongHeaderType(quic::ZERO_RTT_PROTECTED);
   mock_quic_data.AddWrite(
       SYNCHRONOUS, ConstructClientRequestHeadersPacket(
                        1, GetNthClientInitiatedBidirectionalStreamId(0), true,
@@ -5523,7 +5505,6 @@ TEST_P(QuicNetworkTransactionTest, DelayTCPOnStartWithQuicSupportOnSameIP) {
   MockQuicData mock_quic_data;
   quic::QuicStreamOffset header_stream_offset = 0;
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
-  client_maker_.SetLongHeaderType(quic::ZERO_RTT_PROTECTED);
   mock_quic_data.AddWrite(
       SYNCHRONOUS,
       ConstructClientRequestHeadersPacket(

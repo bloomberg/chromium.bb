@@ -539,6 +539,9 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   // Returns true if |header| is considered as an stateless reset packet.
   bool IsIetfStatelessResetPacket(const QuicPacketHeader& header) const;
 
+  // Returns true if encrypter of |level| is available.
+  bool HasEncrypterOfEncryptionLevel(EncryptionLevel level) const;
+
   void set_validate_flags(bool value) { validate_flags_ = value; }
 
   Perspective perspective() const { return perspective_; }

@@ -81,10 +81,6 @@ class TestCryptoStream : public QuicCryptoStream, public QuicCryptoHandshaker {
   }
 
   // QuicCryptoStream implementation
-  QuicLongHeaderType GetLongHeaderType(
-      QuicStreamOffset /*offset*/) const override {
-    return HANDSHAKE;
-  }
   bool encryption_established() const override {
     return encryption_established_;
   }

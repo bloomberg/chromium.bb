@@ -46,6 +46,7 @@ class MockDelegate : public QuicPacketGenerator::DelegateInterface {
   MOCK_METHOD2(ShouldGeneratePacket,
                bool(HasRetransmittableData retransmittable,
                     IsHandshake handshake));
+  MOCK_METHOD0(MaybeBundleAckOpportunistically, const QuicFrames());
   MOCK_METHOD0(GetUpdatedAckFrame, const QuicFrame());
   MOCK_METHOD1(PopulateStopWaitingFrame, void(QuicStopWaitingFrame*));
   MOCK_METHOD0(GetPacketBuffer, char*());
@@ -113,7 +114,25 @@ class TestPacketGenerator : public QuicPacketGenerator {
                       DelegateInterface* delegate,
                       SimpleDataProducer* producer)
       : QuicPacketGenerator(connection_id, framer, random_generator, delegate),
+        ack_frame_(InitAckFrame(1)),
+        delegate_(static_cast<MockDelegate*>(delegate)),
         producer_(producer) {}
+
+  void AddControlFrame(const QuicFrame& frame, bool bundle_ack) {
+    if (GetQuicReloadableFlag(quic_deprecate_ack_bundling_mode) &&
+        !QuicPacketGeneratorPeer::GetPacketCreator(this)->has_ack()) {
+      QuicFrames frames;
+      if (bundle_ack) {
+        frames.push_back(QuicFrame(&ack_frame_));
+      }
+      if (delegate_->ShouldGeneratePacket(NO_RETRANSMITTABLE_DATA,
+                                          NOT_HANDSHAKE)) {
+        EXPECT_CALL(*delegate_, MaybeBundleAckOpportunistically())
+            .WillOnce(Return(frames));
+      }
+    }
+    QuicPacketGenerator::AddControlFrame(frame);
+  }
 
   QuicConsumedData ConsumeDataFastPath(QuicStreamId id,
                                        const struct iovec* iov,
@@ -139,16 +158,41 @@ class TestPacketGenerator : public QuicPacketGenerator {
     if (total_length > 0) {
       producer_->SaveStreamData(id, iov, iov_count, 0, total_length);
     }
+    if (GetQuicReloadableFlag(quic_deprecate_ack_bundling_mode) &&
+        !QuicPacketGeneratorPeer::GetPacketCreator(this)->has_ack() &&
+        delegate_->ShouldGeneratePacket(NO_RETRANSMITTABLE_DATA,
+                                        NOT_HANDSHAKE)) {
+      EXPECT_CALL(*delegate_, MaybeBundleAckOpportunistically()).Times(1);
+    }
     return QuicPacketGenerator::ConsumeData(id, total_length, offset, state);
+  }
+
+  MessageStatus AddMessageFrame(QuicMessageId message_id,
+                                QuicMemSliceSpan message) {
+    if (GetQuicReloadableFlag(quic_deprecate_ack_bundling_mode) &&
+        !QuicPacketGeneratorPeer::GetPacketCreator(this)->has_ack() &&
+        delegate_->ShouldGeneratePacket(NO_RETRANSMITTABLE_DATA,
+                                        NOT_HANDSHAKE)) {
+      EXPECT_CALL(*delegate_, MaybeBundleAckOpportunistically()).Times(1);
+    }
+    return QuicPacketGenerator::AddMessageFrame(message_id, message);
   }
 
   size_t ConsumeCryptoData(EncryptionLevel level,
                            QuicStringPiece data,
                            QuicStreamOffset offset) {
     producer_->SaveCryptoData(level, offset, data);
+    if (GetQuicReloadableFlag(quic_deprecate_ack_bundling_mode) &&
+        !QuicPacketGeneratorPeer::GetPacketCreator(this)->has_ack() &&
+        delegate_->ShouldGeneratePacket(NO_RETRANSMITTABLE_DATA,
+                                        NOT_HANDSHAKE)) {
+      EXPECT_CALL(*delegate_, MaybeBundleAckOpportunistically()).Times(1);
+    }
     return QuicPacketGenerator::ConsumeCryptoData(level, data.length(), offset);
   }
 
+  QuicAckFrame ack_frame_;
+  MockDelegate* delegate_;
   SimpleDataProducer* producer_;
 };
 
@@ -290,6 +334,9 @@ class MockDebugDelegate : public QuicPacketCreator::DebugDelegate {
 };
 
 TEST_F(QuicPacketGeneratorTest, ShouldSendAck_NotWritable) {
+  if (GetQuicReloadableFlag(quic_deprecate_ack_bundling_mode)) {
+    return;
+  }
   delegate_.SetCanNotWrite();
 
   generator_.SetShouldSendAck(false);
@@ -298,6 +345,9 @@ TEST_F(QuicPacketGeneratorTest, ShouldSendAck_NotWritable) {
 }
 
 TEST_F(QuicPacketGeneratorTest, ShouldSendAck_WritableAndShouldNotFlush) {
+  if (GetQuicReloadableFlag(quic_deprecate_ack_bundling_mode)) {
+    return;
+  }
   StrictMock<MockDebugDelegate> debug_delegate;
 
   generator_.set_debug_delegate(&debug_delegate);
@@ -313,6 +363,9 @@ TEST_F(QuicPacketGeneratorTest, ShouldSendAck_WritableAndShouldNotFlush) {
 }
 
 TEST_F(QuicPacketGeneratorTest, ShouldSendAck_WritableAndShouldFlush) {
+  if (GetQuicReloadableFlag(quic_deprecate_ack_bundling_mode)) {
+    return;
+  }
   delegate_.SetCanWriteOnlyNonRetransmittable();
 
   EXPECT_CALL(delegate_, GetUpdatedAckFrame())
@@ -331,6 +384,9 @@ TEST_F(QuicPacketGeneratorTest, ShouldSendAck_WritableAndShouldFlush) {
 }
 
 TEST_F(QuicPacketGeneratorTest, ShouldSendAck_MultipleCalls) {
+  if (GetQuicReloadableFlag(quic_deprecate_ack_bundling_mode)) {
+    return;
+  }
   // Make sure that calling SetShouldSendAck multiple times does not result in a
   // crash. Previously this would result in multiple QuicFrames queued in the
   // packet generator, with all but the last with internal pointers to freed
@@ -352,7 +408,8 @@ TEST_F(QuicPacketGeneratorTest, ShouldSendAck_MultipleCalls) {
 TEST_F(QuicPacketGeneratorTest, AddControlFrame_NotWritable) {
   delegate_.SetCanNotWrite();
 
-  generator_.AddControlFrame(QuicFrame(CreateRstStreamFrame()));
+  generator_.AddControlFrame(QuicFrame(CreateRstStreamFrame()),
+                             /*bundle_ack=*/false);
   EXPECT_TRUE(generator_.HasQueuedFrames());
   EXPECT_TRUE(generator_.HasRetransmittableFrames());
 }
@@ -360,7 +417,8 @@ TEST_F(QuicPacketGeneratorTest, AddControlFrame_NotWritable) {
 TEST_F(QuicPacketGeneratorTest, AddControlFrame_OnlyAckWritable) {
   delegate_.SetCanWriteOnlyNonRetransmittable();
 
-  generator_.AddControlFrame(QuicFrame(CreateRstStreamFrame()));
+  generator_.AddControlFrame(QuicFrame(CreateRstStreamFrame()),
+                             /*bundle_ack=*/false);
   EXPECT_TRUE(generator_.HasQueuedFrames());
   EXPECT_TRUE(generator_.HasRetransmittableFrames());
 }
@@ -368,7 +426,8 @@ TEST_F(QuicPacketGeneratorTest, AddControlFrame_OnlyAckWritable) {
 TEST_F(QuicPacketGeneratorTest, AddControlFrame_WritableAndShouldNotFlush) {
   delegate_.SetCanWriteAnything();
 
-  generator_.AddControlFrame(QuicFrame(CreateRstStreamFrame()));
+  generator_.AddControlFrame(QuicFrame(CreateRstStreamFrame()),
+                             /*bundle_ack=*/false);
   EXPECT_TRUE(generator_.HasQueuedFrames());
   EXPECT_TRUE(generator_.HasRetransmittableFrames());
 }
@@ -376,7 +435,8 @@ TEST_F(QuicPacketGeneratorTest, AddControlFrame_WritableAndShouldNotFlush) {
 TEST_F(QuicPacketGeneratorTest, AddControlFrame_NotWritableBatchThenFlush) {
   delegate_.SetCanNotWrite();
 
-  generator_.AddControlFrame(QuicFrame(CreateRstStreamFrame()));
+  generator_.AddControlFrame(QuicFrame(CreateRstStreamFrame()),
+                             /*bundle_ack=*/false);
   EXPECT_TRUE(generator_.HasQueuedFrames());
   EXPECT_TRUE(generator_.HasRetransmittableFrames());
   generator_.Flush();
@@ -401,7 +461,8 @@ TEST_F(QuicPacketGeneratorTest, AddControlFrame_WritableAndShouldFlush) {
   EXPECT_CALL(delegate_, OnSerializedPacket(_))
       .WillOnce(Invoke(this, &QuicPacketGeneratorTest::SavePacket));
 
-  generator_.AddControlFrame(QuicFrame(CreateRstStreamFrame()));
+  generator_.AddControlFrame(QuicFrame(CreateRstStreamFrame()),
+                             /*bundle_ack=*/false);
   generator_.Flush();
   EXPECT_FALSE(generator_.HasQueuedFrames());
   EXPECT_FALSE(generator_.HasRetransmittableFrames());
@@ -412,6 +473,8 @@ TEST_F(QuicPacketGeneratorTest, AddControlFrame_WritableAndShouldFlush) {
 }
 
 TEST_F(QuicPacketGeneratorTest, ConsumeCryptoData) {
+  delegate_.SetCanWriteAnything();
+
   EXPECT_CALL(delegate_, OnSerializedPacket(_))
       .WillOnce(Invoke(this, &QuicPacketGeneratorTest::SavePacket));
   QuicString data = "crypto data";
@@ -530,6 +593,8 @@ TEST_F(QuicPacketGeneratorTest, ConsumeData_Handshake_PaddingDisabled) {
 }
 
 TEST_F(QuicPacketGeneratorTest, ConsumeData_EmptyData) {
+  delegate_.SetCanWriteAnything();
+
   EXPECT_QUIC_BUG(generator_.ConsumeData(QuicUtils::GetHeadersStreamId(
                                              framer_.transport_version()),
                                          nullptr, 0, 0, 0, NO_FIN),
@@ -704,15 +769,20 @@ TEST_F(QuicPacketGeneratorTest, ConsumeDataLarge) {
 TEST_F(QuicPacketGeneratorTest, ConsumeDataLargeSendAckFalse) {
   delegate_.SetCanNotWrite();
 
-  generator_.SetShouldSendAck(false);
-  generator_.AddControlFrame(QuicFrame(CreateRstStreamFrame()));
+  if (!GetQuicReloadableFlag(quic_deprecate_ack_bundling_mode)) {
+    generator_.SetShouldSendAck(false);
+  }
+  generator_.AddControlFrame(QuicFrame(CreateRstStreamFrame()),
+                             /*bundle_ack=*/true);
   EXPECT_TRUE(generator_.HasQueuedFrames());
   EXPECT_TRUE(generator_.HasRetransmittableFrames());
 
   delegate_.SetCanWriteAnything();
 
-  EXPECT_CALL(delegate_, GetUpdatedAckFrame())
-      .WillOnce(Return(QuicFrame(&ack_frame_)));
+  if (!GetQuicReloadableFlag(quic_deprecate_ack_bundling_mode)) {
+    EXPECT_CALL(delegate_, GetUpdatedAckFrame())
+        .WillOnce(Return(QuicFrame(&ack_frame_)));
+  }
 
   // Create a 10000 byte IOVector.
   CreateData(10000);
@@ -742,17 +812,21 @@ TEST_F(QuicPacketGeneratorTest, ConsumeDataLargeSendAckTrue) {
     return;
   }
   delegate_.SetCanNotWrite();
-  generator_.SetShouldSendAck(true /* stop_waiting */);
+  if (!GetQuicReloadableFlag(quic_deprecate_ack_bundling_mode)) {
+    generator_.SetShouldSendAck(true /* stop_waiting */);
+  }
   delegate_.SetCanWriteAnything();
 
-  // Set up frames to write into the creator when control frames are written.
-  EXPECT_CALL(delegate_, GetUpdatedAckFrame())
-      .WillOnce(Return(QuicFrame(&ack_frame_)));
-  EXPECT_CALL(delegate_, PopulateStopWaitingFrame(_));
-  // Generator should have queued control frames, and creator should be empty.
-  EXPECT_TRUE(generator_.HasQueuedFrames());
-  EXPECT_FALSE(generator_.HasRetransmittableFrames());
-  EXPECT_FALSE(creator_->HasPendingFrames());
+  if (!GetQuicReloadableFlag(quic_deprecate_ack_bundling_mode)) {
+    // Set up frames to write into the creator when control frames are written.
+    EXPECT_CALL(delegate_, GetUpdatedAckFrame())
+        .WillOnce(Return(QuicFrame(&ack_frame_)));
+    EXPECT_CALL(delegate_, PopulateStopWaitingFrame(_));
+    // Generator should have queued control frames, and creator should be empty.
+    EXPECT_TRUE(generator_.HasQueuedFrames());
+    EXPECT_FALSE(generator_.HasRetransmittableFrames());
+    EXPECT_FALSE(creator_->HasPendingFrames());
+  }
 
   // Create a 10000 byte IOVector.
   CreateData(10000);
@@ -780,23 +854,30 @@ TEST_F(QuicPacketGeneratorTest, ConsumeDataLargeSendAckTrue) {
 TEST_F(QuicPacketGeneratorTest, NotWritableThenBatchOperations) {
   delegate_.SetCanNotWrite();
 
-  generator_.SetShouldSendAck(false);
-  generator_.AddControlFrame(QuicFrame(CreateRstStreamFrame()));
+  if (!GetQuicReloadableFlag(quic_deprecate_ack_bundling_mode)) {
+    generator_.SetShouldSendAck(false);
+  }
+  generator_.AddControlFrame(QuicFrame(CreateRstStreamFrame()),
+                             /*bundle_ack=*/true);
   EXPECT_TRUE(generator_.HasQueuedFrames());
   EXPECT_TRUE(generator_.HasRetransmittableFrames());
   EXPECT_FALSE(generator_.HasPendingStreamFramesOfStream(3));
 
   delegate_.SetCanWriteAnything();
 
-  // When the first write operation is invoked, the ack frame will be returned.
-  EXPECT_CALL(delegate_, GetUpdatedAckFrame())
-      .WillOnce(Return(QuicFrame(&ack_frame_)));
+  if (!GetQuicReloadableFlag(quic_deprecate_ack_bundling_mode)) {
+    // When the first write operation is invoked, the ack frame will be
+    // returned.
+    EXPECT_CALL(delegate_, GetUpdatedAckFrame())
+        .WillOnce(Return(QuicFrame(&ack_frame_)));
+  }
 
   // Send some data and a control frame
   MakeIOVector("quux", &iov_);
   generator_.ConsumeData(3, &iov_, 1u, iov_.iov_len, 0, NO_FIN);
   if (framer_.transport_version() != QUIC_VERSION_99) {
-    generator_.AddControlFrame(QuicFrame(CreateGoAwayFrame()));
+    generator_.AddControlFrame(QuicFrame(CreateGoAwayFrame()),
+                               /*bundle_ack=*/false);
   }
   EXPECT_TRUE(generator_.HasPendingStreamFramesOfStream(3));
 
@@ -809,7 +890,12 @@ TEST_F(QuicPacketGeneratorTest, NotWritableThenBatchOperations) {
   EXPECT_FALSE(generator_.HasPendingStreamFramesOfStream(3));
 
   PacketContents contents;
-  contents.num_ack_frames = 1;
+  if (GetQuicReloadableFlag(quic_deprecate_ack_bundling_mode)) {
+    // ACK will be flushed by connection.
+    contents.num_ack_frames = 0;
+  } else {
+    contents.num_ack_frames = 1;
+  }
   if (framer_.transport_version() != QUIC_VERSION_99) {
     contents.num_goaway_frames = 1;
   } else {
@@ -823,16 +909,22 @@ TEST_F(QuicPacketGeneratorTest, NotWritableThenBatchOperations) {
 TEST_F(QuicPacketGeneratorTest, NotWritableThenBatchOperations2) {
   delegate_.SetCanNotWrite();
 
-  generator_.SetShouldSendAck(false);
-  generator_.AddControlFrame(QuicFrame(CreateRstStreamFrame()));
+  if (!GetQuicReloadableFlag(quic_deprecate_ack_bundling_mode)) {
+    generator_.SetShouldSendAck(false);
+  }
+  generator_.AddControlFrame(QuicFrame(CreateRstStreamFrame()),
+                             /*bundle_ack=*/true);
   EXPECT_TRUE(generator_.HasQueuedFrames());
   EXPECT_TRUE(generator_.HasRetransmittableFrames());
 
   delegate_.SetCanWriteAnything();
 
-  // When the first write operation is invoked, the ack frame will be returned.
-  EXPECT_CALL(delegate_, GetUpdatedAckFrame())
-      .WillOnce(Return(QuicFrame(&ack_frame_)));
+  if (!GetQuicReloadableFlag(quic_deprecate_ack_bundling_mode)) {
+    // When the first write operation is invoked, the ack frame will be
+    // returned.
+    EXPECT_CALL(delegate_, GetUpdatedAckFrame())
+        .WillOnce(Return(QuicFrame(&ack_frame_)));
+  }
 
   {
     InSequence dummy;
@@ -851,7 +943,8 @@ TEST_F(QuicPacketGeneratorTest, NotWritableThenBatchOperations2) {
   EXPECT_EQ(data_len, consumed.bytes_consumed);
   EXPECT_TRUE(consumed.fin_consumed);
   if (framer_.transport_version() != QUIC_VERSION_99) {
-    generator_.AddControlFrame(QuicFrame(CreateGoAwayFrame()));
+    generator_.AddControlFrame(QuicFrame(CreateGoAwayFrame()),
+                               /*bundle_ack=*/false);
   }
 
   generator_.Flush();
@@ -860,7 +953,12 @@ TEST_F(QuicPacketGeneratorTest, NotWritableThenBatchOperations2) {
 
   // The first packet should have the queued data and part of the stream data.
   PacketContents contents;
-  contents.num_ack_frames = 1;
+  if (GetQuicReloadableFlag(quic_deprecate_ack_bundling_mode)) {
+    // ACK will be sent by connection.
+    contents.num_ack_frames = 0;
+  } else {
+    contents.num_ack_frames = 1;
+  }
   contents.num_rst_stream_frames = 1;
   contents.num_stream_frames = 1;
   CheckPacketContains(contents, 0);
@@ -1219,17 +1317,21 @@ TEST_F(QuicPacketGeneratorTest, DontCrashOnInvalidStopWaiting) {
   QuicPacketCreatorPeer::SetPacketNumber(creator_, 1000);
 
   delegate_.SetCanNotWrite();
-  generator_.SetShouldSendAck(true);
+  if (!GetQuicReloadableFlag(quic_deprecate_ack_bundling_mode)) {
+    generator_.SetShouldSendAck(true);
+  }
   delegate_.SetCanWriteAnything();
 
-  // Set up frames to write into the creator when control frames are written.
-  EXPECT_CALL(delegate_, GetUpdatedAckFrame())
-      .WillOnce(Return(QuicFrame(&ack_frame_)));
-  EXPECT_CALL(delegate_, PopulateStopWaitingFrame(_));
-  // Generator should have queued control frames, and creator should be empty.
-  EXPECT_TRUE(generator_.HasQueuedFrames());
-  EXPECT_FALSE(generator_.HasRetransmittableFrames());
-  EXPECT_FALSE(creator_->HasPendingFrames());
+  if (!GetQuicReloadableFlag(quic_deprecate_ack_bundling_mode)) {
+    // Set up frames to write into the creator when control frames are written.
+    EXPECT_CALL(delegate_, GetUpdatedAckFrame())
+        .WillOnce(Return(QuicFrame(&ack_frame_)));
+    EXPECT_CALL(delegate_, PopulateStopWaitingFrame(_));
+    // Generator should have queued control frames, and creator should be empty.
+    EXPECT_TRUE(generator_.HasQueuedFrames());
+    EXPECT_FALSE(generator_.HasRetransmittableFrames());
+    EXPECT_FALSE(creator_->HasPendingFrames());
+  }
 
   // This will not serialize any packets, because of the invalid frame.
   EXPECT_CALL(delegate_,
@@ -1248,7 +1350,7 @@ TEST_F(QuicPacketGeneratorTest, ConnectionCloseFrameLargerThanPacketSize) {
   char buf[2000] = {};
   QuicStringPiece error_details(buf, 2000);
   frame->error_details = QuicString(error_details);
-  generator_.AddControlFrame(QuicFrame(frame));
+  generator_.AddControlFrame(QuicFrame(frame), /*bundle_ack=*/false);
   EXPECT_TRUE(generator_.HasQueuedFrames());
   EXPECT_TRUE(generator_.HasRetransmittableFrames());
 }

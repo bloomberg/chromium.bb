@@ -154,7 +154,7 @@ class QuicTimeWaitListManagerTest : public QuicTest {
         new QuicEncryptedPacket(nullptr, 0, false)));
     time_wait_list_manager_.AddConnectionIdToTimeWait(
         connection_id, false, QuicTimeWaitListManager::SEND_TERMINATION_PACKETS,
-        &termination_packets);
+        ENCRYPTION_NONE, &termination_packets);
   }
 
   void AddConnectionId(
@@ -164,7 +164,7 @@ class QuicTimeWaitListManagerTest : public QuicTest {
       std::vector<std::unique_ptr<QuicEncryptedPacket>>* packets) {
     time_wait_list_manager_.AddConnectionIdToTimeWait(
         connection_id, version.transport_version > QUIC_VERSION_43, action,
-        packets);
+        ENCRYPTION_NONE, packets);
   }
 
   bool IsConnectionIdInTimeWait(QuicConnectionId connection_id) {
@@ -173,7 +173,7 @@ class QuicTimeWaitListManagerTest : public QuicTest {
 
   void ProcessPacket(QuicConnectionId connection_id) {
     time_wait_list_manager_.ProcessPacket(
-        self_address_, peer_address_, connection_id,
+        self_address_, peer_address_, connection_id, GOOGLE_QUIC_PACKET,
         QuicMakeUnique<QuicPerPacketContext>());
   }
 

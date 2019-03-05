@@ -15,6 +15,7 @@
 #include "net/third_party/quic/core/crypto/null_encrypter.h"
 #include "net/third_party/quic/core/crypto/quic_decrypter.h"
 #include "net/third_party/quic/core/crypto/quic_encrypter.h"
+#include "net/third_party/quic/core/quic_connection_id.h"
 #include "net/third_party/quic/core/quic_packets.h"
 #include "net/third_party/quic/core/quic_simple_buffer_allocator.h"
 #include "net/third_party/quic/core/quic_types.h"
@@ -860,7 +861,7 @@ class QuicConnectionTest : public QuicTestWithParam<TestParams> {
                 3,
                 QuicStringPiece(data2)),
         packet_number_length_(PACKET_4BYTE_PACKET_NUMBER),
-        connection_id_length_(PACKET_8BYTE_CONNECTION_ID),
+        connection_id_included_(CONNECTION_ID_PRESENT),
         notifier_(&connection_) {
     SetQuicFlag(&FLAGS_quic_supports_tls_handshake, true);
     connection_.set_defer_send_in_response_to_packets(GetParam().ack_response ==
@@ -1022,10 +1023,10 @@ class QuicConnectionTest : public QuicTestWithParam<TestParams> {
     QuicPacketHeader header;
     header.destination_connection_id = connection_id_;
     header.packet_number_length = packet_number_length_;
-    header.destination_connection_id_length = connection_id_length_;
+    header.destination_connection_id_included = connection_id_included_;
     if (peer_framer_.transport_version() > QUIC_VERSION_43 &&
         peer_framer_.perspective() == Perspective::IS_SERVER) {
-      header.destination_connection_id_length = PACKET_0BYTE_CONNECTION_ID;
+      header.destination_connection_id_included = CONNECTION_ID_ABSENT;
     }
     header.packet_number = QuicPacketNumber(number);
     QuicFrames frames;
@@ -1175,10 +1176,10 @@ class QuicConnectionTest : public QuicTestWithParam<TestParams> {
     // is created by peer_framer.
     header.destination_connection_id = connection_id_;
     header.packet_number_length = packet_number_length_;
-    header.destination_connection_id_length = connection_id_length_;
+    header.destination_connection_id_included = connection_id_included_;
     if (peer_framer_.transport_version() > QUIC_VERSION_43 &&
         peer_framer_.perspective() == Perspective::IS_SERVER) {
-      header.destination_connection_id_length = PACKET_0BYTE_CONNECTION_ID;
+      header.destination_connection_id_included = CONNECTION_ID_ABSENT;
     }
     header.packet_number = QuicPacketNumber(number);
 
@@ -1210,7 +1211,7 @@ class QuicConnectionTest : public QuicTestWithParam<TestParams> {
     header.packet_number = QuicPacketNumber(number);
     if (peer_framer_.transport_version() > QUIC_VERSION_43 &&
         peer_framer_.perspective() == Perspective::IS_SERVER) {
-      header.destination_connection_id_length = PACKET_0BYTE_CONNECTION_ID;
+      header.destination_connection_id_included = CONNECTION_ID_ABSENT;
     }
 
     QuicConnectionCloseFrame qccf;
@@ -1344,7 +1345,7 @@ class QuicConnectionTest : public QuicTestWithParam<TestParams> {
   QuicAckFrame ack_;
   QuicStopWaitingFrame stop_waiting_;
   QuicPacketNumberLength packet_number_length_;
-  QuicConnectionIdLength connection_id_length_;
+  QuicConnectionIdIncluded connection_id_included_;
 
   SimpleSessionNotifier notifier_;
 };
@@ -2339,11 +2340,10 @@ TEST_P(QuicConnectionTest, AckSentEveryNthPacket) {
 }
 
 TEST_P(QuicConnectionTest, AckDecimationReducesAcks) {
-  if (GetQuicReloadableFlag(quic_enable_ack_decimation) &&
-      !GetQuicReloadableFlag(quic_keep_ack_decimation_reordering)) {
-    return;
-  }
-
+  const size_t kMinRttMs = 40;
+  RttStats* rtt_stats = const_cast<RttStats*>(manager_->GetRttStats());
+  rtt_stats->UpdateRtt(QuicTime::Delta::FromMilliseconds(kMinRttMs),
+                       QuicTime::Delta::Zero(), QuicTime::Zero());
   EXPECT_CALL(visitor_, OnAckNeedsRetransmittableFrame()).Times(AnyNumber());
 
   QuicConnectionPeer::SetAckMode(
@@ -3369,11 +3369,7 @@ TEST_P(QuicConnectionTest, DoNotAddToWriteBlockedListAfterDisconnect) {
   EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_PEER_GOING_AWAY, _,
                                            ConnectionCloseSource::FROM_SELF));
 
-  if (GetQuicRestartFlag(quic_check_blocked_writer_for_blockage)) {
-    EXPECT_CALL(visitor_, OnWriteBlocked()).Times(0);
-  } else {
-    EXPECT_CALL(visitor_, OnWriteBlocked()).Times(1);
-  }
+  EXPECT_CALL(visitor_, OnWriteBlocked()).Times(0);
 
   {
     QuicConnection::ScopedPacketFlusher flusher(&connection_,
@@ -5461,10 +5457,6 @@ TEST_P(QuicConnectionTest, SendDelayedAckDecimationEighthRtt) {
 }
 
 TEST_P(QuicConnectionTest, SendDelayedAckDecimationWithReordering) {
-  if (GetQuicReloadableFlag(quic_enable_ack_decimation) &&
-      !GetQuicReloadableFlag(quic_keep_ack_decimation_reordering)) {
-    return;
-  }
   EXPECT_CALL(visitor_, OnAckNeedsRetransmittableFrame()).Times(AnyNumber());
   QuicConnectionPeer::SetAckMode(
       &connection_, QuicConnection::ACK_DECIMATION_WITH_REORDERING);
@@ -5530,10 +5522,6 @@ TEST_P(QuicConnectionTest, SendDelayedAckDecimationWithReordering) {
 }
 
 TEST_P(QuicConnectionTest, SendDelayedAckDecimationWithLargeReordering) {
-  if (GetQuicReloadableFlag(quic_enable_ack_decimation) &&
-      !GetQuicReloadableFlag(quic_keep_ack_decimation_reordering)) {
-    return;
-  }
   EXPECT_CALL(visitor_, OnAckNeedsRetransmittableFrame()).Times(AnyNumber());
   QuicConnectionPeer::SetAckMode(
       &connection_, QuicConnection::ACK_DECIMATION_WITH_REORDERING);
@@ -5618,10 +5606,6 @@ TEST_P(QuicConnectionTest, SendDelayedAckDecimationWithLargeReordering) {
 }
 
 TEST_P(QuicConnectionTest, SendDelayedAckDecimationWithReorderingEighthRtt) {
-  if (GetQuicReloadableFlag(quic_enable_ack_decimation) &&
-      !GetQuicReloadableFlag(quic_keep_ack_decimation_reordering)) {
-    return;
-  }
   EXPECT_CALL(visitor_, OnAckNeedsRetransmittableFrame()).Times(AnyNumber());
   QuicConnectionPeer::SetAckMode(
       &connection_, QuicConnection::ACK_DECIMATION_WITH_REORDERING);
@@ -5691,10 +5675,6 @@ TEST_P(QuicConnectionTest, SendDelayedAckDecimationWithReorderingEighthRtt) {
 
 TEST_P(QuicConnectionTest,
        SendDelayedAckDecimationWithLargeReorderingEighthRtt) {
-  if (GetQuicReloadableFlag(quic_enable_ack_decimation) &&
-      !GetQuicReloadableFlag(quic_keep_ack_decimation_reordering)) {
-    return;
-  }
   EXPECT_CALL(visitor_, OnAckNeedsRetransmittableFrame()).Times(AnyNumber());
   QuicConnectionPeer::SetAckMode(
       &connection_, QuicConnection::ACK_DECIMATION_WITH_REORDERING);
@@ -6422,7 +6402,7 @@ TEST_P(QuicConnectionTest, ClientHandlesVersionNegotiation) {
   // NEGOTIATED_VERSION state and tell the packet creator to StopSendingVersion.
   QuicPacketHeader header;
   header.destination_connection_id = connection_id_;
-  header.destination_connection_id_length = PACKET_0BYTE_CONNECTION_ID;
+  header.destination_connection_id_included = CONNECTION_ID_ABSENT;
   header.packet_number = QuicPacketNumber(12);
   header.version_flag = false;
   QuicFrames frames;
@@ -6521,7 +6501,7 @@ TEST_P(QuicConnectionTest, ProcessFramesIfPacketClosedConnection) {
   QuicPacketHeader header;
   header.destination_connection_id = connection_id_;
   if (peer_framer_.transport_version() > QUIC_VERSION_43) {
-    header.destination_connection_id_length = PACKET_0BYTE_CONNECTION_ID;
+    header.destination_connection_id_included = CONNECTION_ID_ABSENT;
   }
   header.packet_number = QuicPacketNumber(1);
   header.version_flag = false;
@@ -7338,8 +7318,8 @@ TEST_P(QuicConnectionTest, ClientAlwaysSendConnectionId) {
   EXPECT_EQ(Perspective::IS_CLIENT, connection_.perspective());
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(1);
   connection_.SendStreamDataWithString(3, "foo", 0, NO_FIN);
-  EXPECT_EQ(PACKET_8BYTE_CONNECTION_ID,
-            writer_->last_packet_header().destination_connection_id_length);
+  EXPECT_EQ(CONNECTION_ID_PRESENT,
+            writer_->last_packet_header().destination_connection_id_included);
 
   EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
   QuicConfig config;
@@ -7349,8 +7329,8 @@ TEST_P(QuicConnectionTest, ClientAlwaysSendConnectionId) {
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(1);
   connection_.SendStreamDataWithString(3, "bar", 3, NO_FIN);
   // Verify connection id is still sent in the packet.
-  EXPECT_EQ(PACKET_8BYTE_CONNECTION_ID,
-            writer_->last_packet_header().destination_connection_id_length);
+  EXPECT_EQ(CONNECTION_ID_PRESENT,
+            writer_->last_packet_header().destination_connection_id_included);
 }
 
 TEST_P(QuicConnectionTest, SendProbingRetransmissions) {

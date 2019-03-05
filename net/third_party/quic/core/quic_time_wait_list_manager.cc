@@ -69,6 +69,7 @@ void QuicTimeWaitListManager::AddConnectionIdToTimeWait(
     QuicConnectionId connection_id,
     bool ietf_quic,
     TimeWaitAction action,
+    EncryptionLevel encryption_level,
     std::vector<std::unique_ptr<QuicEncryptedPacket>>* termination_packets) {
   DCHECK(action != SEND_TERMINATION_PACKETS || termination_packets != nullptr);
   DCHECK(action != DO_NOTHING || ietf_quic);
@@ -85,6 +86,7 @@ void QuicTimeWaitListManager::AddConnectionIdToTimeWait(
   ConnectionIdData data(num_packets, ietf_quic, clock_->ApproximateNow(),
                         action);
   if (termination_packets != nullptr) {
+    data.encryption_level = encryption_level;
     data.termination_packets.swap(*termination_packets);
   }
   connection_id_map_.emplace(std::make_pair(connection_id, std::move(data)));
@@ -99,10 +101,7 @@ bool QuicTimeWaitListManager::IsConnectionIdInTimeWait(
 }
 
 void QuicTimeWaitListManager::OnBlockedWriterCanWrite() {
-  if (GetQuicRestartFlag(quic_check_blocked_writer_for_blockage)) {
-    QUIC_RESTART_FLAG_COUNT_N(quic_check_blocked_writer_for_blockage, 4, 6);
-    writer_->SetWritable();
-  }
+  writer_->SetWritable();
   while (!pending_packets_queue_.empty()) {
     QueuedPacket* queued_packet = pending_packets_queue_.front().get();
     if (!WriteToWire(queued_packet)) {
@@ -116,6 +115,7 @@ void QuicTimeWaitListManager::ProcessPacket(
     const QuicSocketAddress& self_address,
     const QuicSocketAddress& peer_address,
     QuicConnectionId connection_id,
+    PacketHeaderFormat header_format,
     std::unique_ptr<QuicPerPacketContext> packet_context) {
   DCHECK(IsConnectionIdInTimeWait(connection_id));
   // TODO(satyamshekhar): Think about handling packets from different peer
@@ -133,16 +133,46 @@ void QuicTimeWaitListManager::ProcessPacket(
   }
 
   QUIC_DLOG(INFO) << "Processing " << connection_id << " in time wait state: "
-                  << "ietf=" << connection_data->ietf_quic
+                  << "header format=" << header_format
+                  << " ietf=" << connection_data->ietf_quic
                   << ", action=" << connection_data->action
                   << ", number termination packets="
-                  << connection_data->termination_packets.size();
+                  << connection_data->termination_packets.size()
+                  << ", encryption level=" << connection_data->encryption_level;
   switch (connection_data->action) {
     case SEND_TERMINATION_PACKETS:
       if (connection_data->termination_packets.empty()) {
         QUIC_BUG << "There are no termination packets.";
         return;
       }
+      switch (header_format) {
+        case IETF_QUIC_LONG_HEADER_PACKET:
+          if (!connection_data->ietf_quic) {
+            QUIC_CODE_COUNT(quic_received_long_header_packet_for_gquic);
+          }
+          if (connection_data->encryption_level == ENCRYPTION_FORWARD_SECURE) {
+            QUIC_CODE_COUNT(
+                quic_forward_secure_termination_packets_for_long_header);
+          }
+          break;
+        case IETF_QUIC_SHORT_HEADER_PACKET:
+          if (!connection_data->ietf_quic) {
+            QUIC_CODE_COUNT(quic_received_short_header_packet_for_gquic);
+          }
+          if (connection_data->encryption_level == ENCRYPTION_NONE) {
+            QUIC_CODE_COUNT(
+                quic_encryption_none_termination_packets_for_short_header);
+          } else if (connection_data->encryption_level == ENCRYPTION_ZERO_RTT) {
+            QUIC_CODE_COUNT(quic_zero_rtt_termination_packets_for_short_header);
+          }
+          break;
+        case GOOGLE_QUIC_PACKET:
+          if (connection_data->ietf_quic) {
+            QUIC_CODE_COUNT(quic_received_gquic_packet_for_ietf_quic);
+          }
+          break;
+      }
+
       for (const auto& packet : connection_data->termination_packets) {
         SendOrQueuePacket(QuicMakeUnique<QueuedPacket>(
                               self_address, peer_address, packet->Clone()),
@@ -150,6 +180,9 @@ void QuicTimeWaitListManager::ProcessPacket(
       }
       return;
     case SEND_STATELESS_RESET:
+      if (header_format == IETF_QUIC_LONG_HEADER_PACKET) {
+        QUIC_CODE_COUNT(quic_stateless_reset_long_header_packet);
+      }
       SendPublicReset(self_address, peer_address, connection_id,
                       connection_data->ietf_quic, std::move(packet_context));
       return;
@@ -327,6 +360,7 @@ QuicTimeWaitListManager::ConnectionIdData::ConnectionIdData(
     : num_packets(num_packets),
       ietf_quic(ietf_quic),
       time_added(time_added),
+      encryption_level(ENCRYPTION_NONE),
       action(action) {}
 
 QuicTimeWaitListManager::ConnectionIdData::ConnectionIdData(

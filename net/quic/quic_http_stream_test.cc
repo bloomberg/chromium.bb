@@ -1174,7 +1174,6 @@ TEST_P(QuicHttpStreamTest, LogGranularQuicErrorIfHandshakeNotConfirmed) {
   size_t spdy_request_headers_frame_length;
   quic::QuicStreamOffset header_stream_offset = 0;
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
-  client_maker_.SetLongHeaderType(quic::ZERO_RTT_PROTECTED);
   AddWrite(InnerConstructRequestHeadersPacket(
       1, GetNthClientInitiatedBidirectionalStreamId(0), kIncludeVersion, kFin,
       DEFAULT_PRIORITY, &spdy_request_headers_frame_length,

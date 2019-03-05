@@ -124,9 +124,10 @@ std::unique_ptr<QuicPacket> BuildUnsizedDataPacket(
   // Re-construct the data packet with data ownership.
   return QuicMakeUnique<QuicPacket>(
       buffer, length, /* owns_buffer */ true,
-      header.destination_connection_id_length,
-      header.source_connection_id_length, header.version_flag,
-      header.nonce != nullptr, header.packet_number_length,
+      GetIncludedDestinationConnectionIdLength(framer->transport_version(),
+                                               header),
+      GetIncludedSourceConnectionIdLength(framer->transport_version(), header),
+      header.version_flag, header.nonce != nullptr, header.packet_number_length,
       header.retry_token_length_length, header.retry_token.length(),
       header.length_length);
 }
@@ -531,11 +532,6 @@ MockQuicCryptoStream::MockQuicCryptoStream(QuicSession* session)
 
 MockQuicCryptoStream::~MockQuicCryptoStream() {}
 
-QuicLongHeaderType MockQuicCryptoStream::GetLongHeaderType(
-    QuicStreamOffset /*offset*/) const {
-  return HANDSHAKE;
-}
-
 bool MockQuicCryptoStream::encryption_established() const {
   return false;
 }
@@ -790,8 +786,8 @@ QuicEncryptedPacket* ConstructEncryptedPacket(
     const QuicString& data) {
   return ConstructEncryptedPacket(
       destination_connection_id, source_connection_id, version_flag, reset_flag,
-      packet_number, data, PACKET_8BYTE_CONNECTION_ID,
-      PACKET_0BYTE_CONNECTION_ID, PACKET_4BYTE_PACKET_NUMBER);
+      packet_number, data, CONNECTION_ID_PRESENT, CONNECTION_ID_ABSENT,
+      PACKET_4BYTE_PACKET_NUMBER);
 }
 
 QuicEncryptedPacket* ConstructEncryptedPacket(
@@ -801,13 +797,13 @@ QuicEncryptedPacket* ConstructEncryptedPacket(
     bool reset_flag,
     uint64_t packet_number,
     const QuicString& data,
-    QuicConnectionIdLength destination_connection_id_length,
-    QuicConnectionIdLength source_connection_id_length,
+    QuicConnectionIdIncluded destination_connection_id_included,
+    QuicConnectionIdIncluded source_connection_id_included,
     QuicPacketNumberLength packet_number_length) {
   return ConstructEncryptedPacket(
       destination_connection_id, source_connection_id, version_flag, reset_flag,
-      packet_number, data, destination_connection_id_length,
-      source_connection_id_length, packet_number_length, nullptr);
+      packet_number, data, destination_connection_id_included,
+      source_connection_id_included, packet_number_length, nullptr);
 }
 
 QuicEncryptedPacket* ConstructEncryptedPacket(
@@ -817,14 +813,14 @@ QuicEncryptedPacket* ConstructEncryptedPacket(
     bool reset_flag,
     uint64_t packet_number,
     const QuicString& data,
-    QuicConnectionIdLength destination_connection_id_length,
-    QuicConnectionIdLength source_connection_id_length,
+    QuicConnectionIdIncluded destination_connection_id_included,
+    QuicConnectionIdIncluded source_connection_id_included,
     QuicPacketNumberLength packet_number_length,
     ParsedQuicVersionVector* versions) {
   return ConstructEncryptedPacket(
       destination_connection_id, source_connection_id, version_flag, reset_flag,
-      packet_number, data, destination_connection_id_length,
-      source_connection_id_length, packet_number_length, versions,
+      packet_number, data, destination_connection_id_included,
+      source_connection_id_included, packet_number_length, versions,
       Perspective::IS_CLIENT);
 }
 QuicEncryptedPacket* ConstructEncryptedPacket(
@@ -834,16 +830,17 @@ QuicEncryptedPacket* ConstructEncryptedPacket(
     bool reset_flag,
     uint64_t packet_number,
     const QuicString& data,
-    QuicConnectionIdLength destination_connection_id_length,
-    QuicConnectionIdLength source_connection_id_length,
+    QuicConnectionIdIncluded destination_connection_id_included,
+    QuicConnectionIdIncluded source_connection_id_included,
     QuicPacketNumberLength packet_number_length,
     ParsedQuicVersionVector* versions,
     Perspective perspective) {
   QuicPacketHeader header;
   header.destination_connection_id = destination_connection_id;
-  header.destination_connection_id_length = destination_connection_id_length;
+  header.destination_connection_id_included =
+      destination_connection_id_included;
   header.source_connection_id = source_connection_id;
-  header.source_connection_id_length = source_connection_id_length;
+  header.source_connection_id_included = source_connection_id_included;
   header.version_flag = version_flag;
   header.reset_flag = reset_flag;
   header.packet_number_length = packet_number_length;
@@ -898,16 +895,17 @@ QuicEncryptedPacket* ConstructMisFramedEncryptedPacket(
     bool reset_flag,
     uint64_t packet_number,
     const QuicString& data,
-    QuicConnectionIdLength destination_connection_id_length,
-    QuicConnectionIdLength source_connection_id_length,
+    QuicConnectionIdIncluded destination_connection_id_included,
+    QuicConnectionIdIncluded source_connection_id_included,
     QuicPacketNumberLength packet_number_length,
     ParsedQuicVersionVector* versions,
     Perspective perspective) {
   QuicPacketHeader header;
   header.destination_connection_id = destination_connection_id;
-  header.destination_connection_id_length = destination_connection_id_length;
+  header.destination_connection_id_included =
+      destination_connection_id_included;
   header.source_connection_id = source_connection_id;
-  header.source_connection_id_length = source_connection_id_length;
+  header.source_connection_id_included = source_connection_id_included;
   header.version_flag = version_flag;
   header.reset_flag = reset_flag;
   header.packet_number_length = packet_number_length;
@@ -925,9 +923,11 @@ QuicEncryptedPacket* ConstructMisFramedEncryptedPacket(
   // Now set the frame type to 0x1F, which is an invalid frame type.
   reinterpret_cast<unsigned char*>(
       packet->mutable_data())[GetStartOfEncryptedData(
-      framer.transport_version(), destination_connection_id_length,
-      source_connection_id_length, version_flag,
-      false /* no diversification nonce */, packet_number_length,
+      framer.transport_version(),
+      GetIncludedDestinationConnectionIdLength(framer.transport_version(),
+                                               header),
+      GetIncludedSourceConnectionIdLength(framer.transport_version(), header),
+      version_flag, false /* no diversification nonce */, packet_number_length,
       VARIABLE_LENGTH_INTEGER_LENGTH_0, 0, VARIABLE_LENGTH_INTEGER_LENGTH_0)] =
       0x1F;
 

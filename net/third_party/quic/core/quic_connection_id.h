@@ -16,6 +16,13 @@ enum QuicConnectionIdLength {
   PACKET_8BYTE_CONNECTION_ID = 8,
 };
 
+// This is a property of QUIC headers, it indicates whether the connection ID
+// should actually be sent over the wire (or was sent on received packets).
+enum QuicConnectionIdIncluded : uint8_t {
+  CONNECTION_ID_PRESENT = 1,
+  CONNECTION_ID_ABSENT = 2,
+};
+
 // Connection IDs can be 0-18 bytes per IETF specifications.
 const uint8_t kQuicMaxConnectionIdLength = 18;
 
