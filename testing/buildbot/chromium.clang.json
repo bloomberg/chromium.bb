@@ -9564,12 +9564,6 @@
         },
         "test": "xr_browser_tests"
       }
-    ],
-    "scripts": [
-      {
-        "name": "check_gn_headers",
-        "script": "check_gn_headers.py"
-      }
     ]
   },
   "ToTLinux (dbg)": {
@@ -11483,12 +11477,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "xr_browser_tests"
-      }
-    ],
-    "scripts": [
-      {
-        "name": "check_gn_headers",
-        "script": "check_gn_headers.py"
       }
     ]
   },
