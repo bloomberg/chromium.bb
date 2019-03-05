@@ -231,6 +231,10 @@ void InternalPopupMenu::Trace(Visitor* visitor) {
 
 void InternalPopupMenu::WriteDocument(SharedBuffer* data) {
   HTMLSelectElement& owner_element = *owner_element_;
+  // When writing the document, we ensure the ComputedStyle of the select
+  // element's items (see AddElementStyle). This requires a style-clean tree.
+  // See Element::EnsureComputedStyle for further explanation.
+  owner_element.GetDocument().UpdateStyleAndLayoutTree();
   IntRect anchor_rect_in_screen = chrome_client_->ViewportToScreen(
       owner_element.VisibleBoundsInVisualViewport(),
       owner_element.GetDocument().View());
