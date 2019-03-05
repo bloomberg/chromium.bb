@@ -35,11 +35,14 @@ class TouchSelectionMenuChromeOS : public views::TouchSelectionMenuViews {
   // views:TouchSelectionMenuViews.
   void CreateButtons() override;
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+  void OnBeforeBubbleWidgetInit(views::Widget::InitParams* params,
+                                views::Widget* widget) const override;
 
  private:
   ~TouchSelectionMenuChromeOS() override;
 
   arc::mojom::TextSelectionActionPtr action_;
+  int64_t display_id_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchSelectionMenuChromeOS);
 };

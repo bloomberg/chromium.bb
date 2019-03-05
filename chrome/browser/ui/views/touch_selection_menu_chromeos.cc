@@ -6,10 +6,17 @@
 
 #include <utility>
 
+#include "ash/public/cpp/shell_window_ids.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/views/touch_selection_menu_runner_chromeos.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
+#include "services/ws/public/cpp/property_type_converters.h"
+#include "services/ws/public/mojom/window_manager.mojom.h"
+#include "ui/base/ui_base_features.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/views/controls/button/button.h"
@@ -26,8 +33,14 @@ TouchSelectionMenuChromeOS::TouchSelectionMenuChromeOS(
     ui::TouchSelectionMenuClient* client,
     aura::Window* context,
     arc::mojom::TextSelectionActionPtr action)
-    : views::TouchSelectionMenuViews(owner, client, context),
-      action_(std::move(action)) {}
+    : views::TouchSelectionMenuViews(
+          owner,
+          client,
+          features::IsUsingWindowService() ? nullptr : context),
+      action_(std::move(action)),
+      display_id_(
+          display::Screen::GetScreen()->GetDisplayNearestWindow(context).id()) {
+}
 
 void TouchSelectionMenuChromeOS::SetActionsForTesting(
     std::vector<arc::mojom::TextSelectionActionPtr> actions) {
@@ -80,6 +93,15 @@ void TouchSelectionMenuChromeOS::ButtonPressed(views::Button* sender,
 
   instance->HandleIntent(std::move(action_->action_intent),
                          std::move(action_->activity));
+}
+
+void TouchSelectionMenuChromeOS::OnBeforeBubbleWidgetInit(
+    views::Widget::InitParams* params,
+    views::Widget* widget) const {
+  ash_util::SetupWidgetInitParamsForContainer(
+      params, ash::kShellWindowId_SettingBubbleContainer);
+  params->mus_properties[ws::mojom::WindowManager::kDisplayId_InitProperty] =
+      mojo::ConvertTo<std::vector<uint8_t>>(display_id_);
 }
 
 TouchSelectionMenuChromeOS::~TouchSelectionMenuChromeOS() = default;
