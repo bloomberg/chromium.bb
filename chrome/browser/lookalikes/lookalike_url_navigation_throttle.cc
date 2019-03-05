@@ -24,6 +24,7 @@
 #include "chrome/common/chrome_features.h"
 #include "components/security_interstitials/content/security_interstitial_tab_helper.h"
 #include "components/ukm/content/source_url_recorder.h"
+#include "components/url_formatter/top_domains/top500_domains.h"
 #include "components/url_formatter/top_domains/top_domain_util.h"
 #include "content/public/browser/navigation_handle.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -31,8 +32,6 @@
 #include "services/metrics/public/cpp/ukm_recorder.h"
 
 namespace {
-
-#include "components/url_formatter/top_domains/top500-domains-inc.cc"
 
 using MatchType = LookalikeUrlNavigationThrottle::MatchType;
 using NavigationSuggestionEvent =
@@ -443,7 +442,7 @@ std::string LookalikeUrlNavigationThrottle::GetSimilarDomainFromTop500(
           navigated_domain.domain_and_registry);
 
   for (const std::string& navigated_skeleton : navigated_domain.skeletons) {
-    for (const char* const top_domain_skeleton : kTop500) {
+    for (const char* const top_domain_skeleton : top500_domains::kTop500) {
       if (IsEditDistanceAtMostOne(base::UTF8ToUTF16(navigated_skeleton),
                                   base::UTF8ToUTF16(top_domain_skeleton))) {
         const std::string top_domain =

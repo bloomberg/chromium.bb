@@ -489,7 +489,6 @@ jumbo_split_static_library("ui") {
     "//components/upload_list",
     "//components/url_formatter",
     "//components/url_formatter/top_domains:common",
-    "//components/url_formatter/top_domains:generate_top_domains_for_edit_distance",
     "//components/user_manager",
     "//components/user_prefs",
     "//components/variations",
