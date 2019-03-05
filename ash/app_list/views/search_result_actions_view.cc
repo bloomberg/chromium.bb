@@ -103,6 +103,8 @@ SearchResultImageButton::SearchResultImageButton(
 
   SetAccessibleName(action.tooltip_text);
 
+  SetTooltipText(action.tooltip_text);
+
   SetVisible(!visible_on_hover_);
 }
 
