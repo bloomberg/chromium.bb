@@ -16,7 +16,7 @@ namespace blink {
 // PolicyValue is a union of types (int / double / set<int> / bool ) that can be
 // used to specify the parameter of a policy.
 
-// TODO(loonybear): Add the following types: inc/dec int, inc/dec double, set.
+// TODO(loonybear): Add the following types: enum, inc/dec int, inc double, set.
 class BLINK_COMMON_EXPORT PolicyValue {
  public:
   PolicyValue();
@@ -25,6 +25,9 @@ class BLINK_COMMON_EXPORT PolicyValue {
   explicit PolicyValue(mojom::PolicyValueType);
 
   explicit PolicyValue(bool bool_value);
+  explicit PolicyValue(
+      double double_value,
+      mojom::PolicyValueType type = mojom::PolicyValueType::kDecDouble);
 
   // A 'max' PolicyValue is the most permissive value for the policy.
   static PolicyValue CreateMaxPolicyValue(mojom::PolicyValueType type);
@@ -37,9 +40,14 @@ class BLINK_COMMON_EXPORT PolicyValue {
   // PolicyValue getters.
   // Note the getters also DCHECKs that the type is correct.
   bool BoolValue() const;
+  double DoubleValue() const;
 
   // PolicyValue setters.
+  // Note the getters also DCHECKs that the type is correct.
   void SetBoolValue(bool bool_value);
+  void SetDoubleValue(
+      double double_value,
+      mojom::PolicyValueType type = mojom::PolicyValueType::kDecDouble);
 
   // Operater overrides
   PolicyValue& operator=(const PolicyValue& rhs);
@@ -54,6 +62,7 @@ class BLINK_COMMON_EXPORT PolicyValue {
  private:
   mojom::PolicyValueType type_;
   bool bool_value_;
+  double double_value_;
 };
 
 bool BLINK_COMMON_EXPORT operator==(const PolicyValue& lhs,

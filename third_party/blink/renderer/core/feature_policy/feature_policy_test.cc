@@ -80,14 +80,19 @@ class FeaturePolicyParserTest : public testing::Test {
   url::Origin expected_url_origin_b_ = url::Origin::Create(GURL(ORIGIN_B));
   url::Origin expected_url_origin_c_ = url::Origin::Create(GURL(ORIGIN_C));
 
-  // TODO(loonybear): Add a case for non-bool type feature.
   const FeatureNameMap test_feature_name_map = {
       {"fullscreen", blink::mojom::FeaturePolicyFeature::kFullscreen},
       {"payment", blink::mojom::FeaturePolicyFeature::kPayment},
-      {"geolocation", blink::mojom::FeaturePolicyFeature::kGeolocation}};
+      {"geolocation", blink::mojom::FeaturePolicyFeature::kGeolocation},
+      {"oversized-images",
+       blink::mojom::FeaturePolicyFeature::kOversizedImages}};
 
   const PolicyValue min_value = PolicyValue(false);
   const PolicyValue max_value = PolicyValue(true);
+  const PolicyValue min_double_value =
+      PolicyValue(2.0, mojom::PolicyValueType::kDecDouble);
+  const PolicyValue max_double_value =
+      PolicyValue::CreateMaxPolicyValue(mojom::PolicyValueType::kDecDouble);
 };
 
 TEST_F(FeaturePolicyParserTest, ParseValidPolicy) {
@@ -388,6 +393,37 @@ TEST_F(FeaturePolicyParserTest, AllowHistogramDifferentDocument) {
       static_cast<int>(blink::mojom::FeaturePolicyFeature::kGeolocation), 1);
 }
 
+TEST_F(FeaturePolicyParserTest, ParseParameterizedFeatures) {
+  Vector<String> messages;
+
+  scoped_refptr<SecurityOrigin> opaque_origin =
+      SecurityOrigin::CreateUniqueOpaque();
+
+  // Simple policy with *.
+  ParsedFeaturePolicy parsed_policy =
+      ParseFeaturePolicy("oversized-images *", origin_a_.get(),
+                         opaque_origin.get(), &messages, test_feature_name_map);
+  EXPECT_EQ(1UL, parsed_policy.size());
+  EXPECT_EQ(mojom::FeaturePolicyFeature::kOversizedImages,
+            parsed_policy[0].feature);
+  EXPECT_EQ(max_double_value, parsed_policy[0].fallback_value);
+  EXPECT_EQ(max_double_value, parsed_policy[0].opaque_value);
+  EXPECT_EQ(0UL, parsed_policy[0].values.size());
+
+  // Policy with explicit origins
+  parsed_policy = ParseFeaturePolicy(
+      "oversized-images https://example.net 'src'", origin_a_.get(),
+      opaque_origin.get(), &messages, test_feature_name_map);
+  EXPECT_EQ(1UL, parsed_policy.size());
+
+  EXPECT_EQ(mojom::FeaturePolicyFeature::kOversizedImages,
+            parsed_policy[0].feature);
+  EXPECT_GE(min_double_value, parsed_policy[0].fallback_value);
+  EXPECT_LE(max_double_value, parsed_policy[0].opaque_value);
+  EXPECT_EQ(1UL, parsed_policy[0].values.size());
+  EXPECT_LE(max_double_value, parsed_policy[0].values.begin()->second);
+}
+
 // Test policy mutation methods
 class FeaturePolicyMutationTest : public testing::Test {
  protected:
@@ -433,6 +469,10 @@ class FeaturePolicyMutationTest : public testing::Test {
 
   const PolicyValue min_value = PolicyValue(false);
   const PolicyValue max_value = PolicyValue(true);
+  const PolicyValue min_double_value =
+      PolicyValue(2.0, mojom::PolicyValueType::kDecDouble);
+  const PolicyValue max_double_value =
+      PolicyValue::CreateMaxPolicyValue(mojom::PolicyValueType::kDecDouble);
 
   ParsedFeaturePolicy test_policy = {
       {mojom::FeaturePolicyFeature::kFullscreen,

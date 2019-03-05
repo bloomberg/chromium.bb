@@ -172,6 +172,7 @@ PolicyValue FeaturePolicy::GetFeatureValueForOrigin(
     const url::Origin& origin) const {
   DCHECK(base::ContainsKey(feature_list_, feature));
   DCHECK(base::ContainsKey(inherited_policies_, feature));
+
   auto inherited_value = inherited_policies_.at(feature);
   auto allowlist = allowlists_.find(feature);
   if (allowlist != allowlists_.end()) {
@@ -387,7 +388,7 @@ const FeaturePolicy::FeatureList& FeaturePolicy::GetDefaultFeatureList() {
                             mojom::PolicyValueType::kBool)},
        {mojom::FeaturePolicyFeature::kOversizedImages,
         FeatureDefaultValue(FeaturePolicy::FeatureDefault::EnableForAll,
-                            mojom::PolicyValueType::kBool)},
+                            mojom::PolicyValueType::kDecDouble)},
        {mojom::FeaturePolicyFeature::kMicrophone,
         FeatureDefaultValue(FeaturePolicy::FeatureDefault::EnableForSelf,
                             mojom::PolicyValueType::kBool)},

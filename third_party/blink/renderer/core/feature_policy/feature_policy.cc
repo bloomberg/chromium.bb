@@ -46,6 +46,15 @@ bool IsOriginTrialDisabled(const String& feature_name,
   return !origin_trial_enabled(execution_context);
 }
 
+// TODO(loonybear): once the new syntax is implemented, use this method to
+// parse the policy value for each parameterized feature, and for non
+// parameterized feature (i.e. boolean-type policy value).
+PolicyValue GetFallbackValueForFeature(mojom::FeaturePolicyFeature feature) {
+  if (feature == mojom::FeaturePolicyFeature::kOversizedImages)
+    return PolicyValue(2.0, mojom::PolicyValueType::kDecDouble);
+  return PolicyValue(false);
+}
+
 }  // namespace
 
 ParsedFeaturePolicy ParseFeaturePolicyHeader(
@@ -137,6 +146,9 @@ ParsedFeaturePolicy ParseFeaturePolicy(
       }
 
       ParsedFeaturePolicyDeclaration allowlist(feature, feature_type);
+      // TODO(loonybear): fallback value should be parsed from the new syntax.
+      allowlist.fallback_value = GetFallbackValueForFeature(feature);
+      allowlist.opaque_value = GetFallbackValueForFeature(feature);
       features_specified.QuickSet(static_cast<int>(feature));
       std::map<url::Origin, PolicyValue> values;
       PolicyValue value = PolicyValue::CreateMaxPolicyValue(feature_type);
@@ -158,6 +170,8 @@ ParsedFeaturePolicy ParseFeaturePolicy(
       }
 
       for (wtf_size_t i = 1; i < tokens.size(); i++) {
+        // TODO(loonybear): for each token, parse the policy value from the
+        // new syntax.
         if (!tokens[i].ContainsOnlyASCIIOrEmpty()) {
           messages->push_back("Non-ASCII characters in origin.");
           continue;
@@ -181,8 +195,8 @@ ParsedFeaturePolicy ParseFeaturePolicy(
         } else if (EqualIgnoringASCIICase(tokens[i], "'none'")) {
           continue;
         } else if (tokens[i] == "*") {
-          allowlist.fallback_value.SetToMax();
-          allowlist.opaque_value.SetToMax();
+          allowlist.fallback_value = value;
+          allowlist.opaque_value = value;
           break;
         } else {
           scoped_refptr<SecurityOrigin> target_origin =
