@@ -21,6 +21,7 @@
 #include "base/path_service.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/posix/global_descriptors.h"
+#include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
@@ -700,8 +701,9 @@ base::FilePath PlatformCrashpadInitialization(
   base::android::SetJavaExceptionCallback(SetJavaExceptionInfo);
 
   unsigned int dump_percentage =
-      GetCrashReporterClient()->GetCrashDumpPercentageForWebView();
-  if (dump_percentage < 100 && rand() % 100 >= dump_percentage) {
+      GetCrashReporterClient()->GetCrashDumpPercentage();
+  if (dump_percentage < 100 &&
+      static_cast<unsigned int>(base::RandInt(0, 99)) >= dump_percentage) {
     dump_at_crash = false;
   }
 #endif  // OS_ANDROID
