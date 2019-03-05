@@ -77,6 +77,7 @@ class CastWebContentsImpl : public CastWebContents,
   void WebContentsDestroyed() override;
 
   void UpdatePageState();
+  void NotifyObservers();
   void TracePageLoadBegin(const GURL& url);
   void TracePageLoadEnd(const GURL& url);
   void DisableDebugging();
@@ -86,6 +87,7 @@ class CastWebContentsImpl : public CastWebContents,
   content::WebContents* web_contents_;
   Delegate* delegate_;
   PageState page_state_;
+  PageState last_state_;
   const bool enabled_for_dev_;
   shell::RemoteDebuggingServer* const remote_debugging_server_;
 
