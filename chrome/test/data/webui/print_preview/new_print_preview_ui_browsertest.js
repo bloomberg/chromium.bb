@@ -103,16 +103,6 @@ TEST_F('PrintPreviewSettingsSectionsTest', 'PresetDuplex', function() {
   this.runMochaTest(settings_sections_tests.TestNames.PresetDuplex);
 });
 
-GEN('#if defined(OS_CHROMEOS)');
-TEST_F('PrintPreviewSettingsSectionsTest', 'ColorManaged', function() {
-  this.runMochaTest(settings_sections_tests.TestNames.ColorManaged);
-});
-
-TEST_F('PrintPreviewSettingsSectionsTest', 'DuplexManaged', function() {
-  this.runMochaTest(settings_sections_tests.TestNames.DuplexManaged);
-});
-GEN('#endif');
-
 PrintPreviewPagesSettingsTest = class extends NewPrintPreviewTest {
   /** @override */
   get browsePreload() {
@@ -354,6 +344,28 @@ PrintPreviewModelSettingsAvailabilityTest = class extends NewPrintPreviewTest {
 TEST_F('PrintPreviewModelSettingsAvailabilityTest', 'All', function() {
   mocha.run();
 });
+
+GEN('#if defined(OS_CHROMEOS)');
+PrintPreviewModelSettingsPolicyTest = class extends NewPrintPreviewTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://print/new/model.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      '../settings/test_util.js',
+      'print_preview_test_utils.js',
+      'model_settings_policy_test.js',
+    ]);
+  }
+};
+
+TEST_F('PrintPreviewModelSettingsPolicyTest', 'All', function() {
+  mocha.run();
+});
+GEN('#endif');
 
 PrintPreviewPreviewGenerationTest = class extends NewPrintPreviewTest {
   /** @override */

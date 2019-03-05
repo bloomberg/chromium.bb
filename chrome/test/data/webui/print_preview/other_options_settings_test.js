@@ -110,13 +110,29 @@ cr.define('other_options_settings_test', function() {
       ['headerFooter', 'duplex', 'cssBackground', 'rasterize', 'selectionOnly']
           .forEach(setting => {
             const checkbox = otherOptionsSection.$$(`#${setting}`);
-            // Set false and then true.
+            // Set true and then false.
             [true, false].forEach(value => {
               otherOptionsSection.setSetting(setting, value);
-              // Element expected to be visible when available.
+              // Element expected to be checked when setting is true.
               assertEquals(value, checkbox.checked);
             });
           });
+    });
+
+    // Tests that if settings are enforced by enterprise policy the checkbox
+    // is disabled.
+    test('disabled by policy', function() {
+      const policyControlledSettings =
+          cr.isChromeOS ? ['headerFooter', 'duplex'] : ['headerFooter'];
+      policyControlledSettings.forEach(setting => {
+        const checkbox = otherOptionsSection.$$(`#${setting}`);
+        // Set true and then false.
+        [true, false].forEach(value => {
+          otherOptionsSection.set(`settings.${setting}.setByPolicy`, value);
+          // Element expected to be disabled when policy is set.
+          assertEquals(value, checkbox.disabled);
+        });
+      });
     });
   });
 });
