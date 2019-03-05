@@ -23,6 +23,7 @@
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/timer.h"
 
 namespace blink {
@@ -99,6 +100,7 @@ void PerformanceObserver::observe(const PerformanceObserverInit* observer_init,
     return;
   }
 
+  bool is_buffered = false;
   if (observer_init->hasEntryTypes()) {
     if (observer_init->hasType()) {
       exception_state.ThrowDOMException(
@@ -129,6 +131,14 @@ void PerformanceObserver::observe(const PerformanceObserverInit* observer_init,
           kJSMessageSource, kWarningMessageLevel, message));
       return;
     }
+    if (RuntimeEnabledFeatures::PerformanceObserverBufferedFlagEnabled() &&
+        observer_init->buffered()) {
+      String message =
+          "The Performance Observer does not support buffered flag with "
+          "entryTypes. ";
+      GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
+          kJSMessageSource, kWarningMessageLevel, message));
+    }
     filter_options_ = entry_types;
   } else {
     if (!observer_init->hasType()) {
@@ -155,6 +165,32 @@ void PerformanceObserver::observe(const PerformanceObserverInit* observer_init,
           kJSMessageSource, kWarningMessageLevel, message));
       return;
     }
+    if (filter_options_ & entry_type) {
+      String message =
+          "The Performance Observer has already been called with this "
+          "entryType";
+      GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
+          kJSMessageSource, kWarningMessageLevel, message));
+      return;
+    }
+    if (RuntimeEnabledFeatures::PerformanceObserverBufferedFlagEnabled() &&
+        observer_init->buffered()) {
+      if (entry_type == PerformanceEntry::kLongTask) {
+        String message =
+            "Buffered flag does not support the long task entry type ";
+        GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
+            kJSMessageSource, kWarningMessageLevel, message));
+      } else {
+        // Append all entries of this type to the current performance_entries_
+        // to be returned on the next callback.
+        performance_entries_.AppendVector(
+            performance_->getBufferedEntriesByType(
+                AtomicString(observer_init->type())));
+        std::sort(performance_entries_.begin(), performance_entries_.end(),
+                  PerformanceEntry::StartTimeCompareLessThan);
+        is_buffered = true;
+      }
+    }
     filter_options_ |= entry_type;
   }
   if (filter_options_ & PerformanceEntry::kLayoutJank) {
@@ -166,6 +202,9 @@ void PerformanceObserver::observe(const PerformanceObserverInit* observer_init,
   else
     performance_->RegisterPerformanceObserver(*this);
   is_registered_ = true;
+  if (is_buffered) {
+    performance_->ActivateObserver(*this);
+  }
 }
 
 void PerformanceObserver::disconnect() {

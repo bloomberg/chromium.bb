@@ -38,8 +38,10 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/document_timing.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/loader/document_load_timing.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/timing/performance_element_timing.h"
@@ -235,12 +237,30 @@ PerformanceEntryVector Performance::getEntries() {
   return entries;
 }
 
-PerformanceEntryVector Performance::getEntriesByType(
+PerformanceEntryVector Performance::getBufferedEntriesByType(
     const AtomicString& entry_type) {
-  PerformanceEntryVector entries;
   PerformanceEntry::EntryType type =
       PerformanceEntry::ToEntryTypeEnum(entry_type);
+  return getEntriesByTypeInternal(type);
+}
 
+PerformanceEntryVector Performance::getEntriesByType(
+    const AtomicString& entry_type) {
+  PerformanceEntry::EntryType type =
+      PerformanceEntry::ToEntryTypeEnum(entry_type);
+  if (!PerformanceEntry::IsValidTimelineEntryType(type)) {
+    PerformanceEntryVector empty_entries;
+    String message = "Deprecated API for given entry type.";
+    GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
+        kJSMessageSource, kWarningMessageLevel, message));
+    return empty_entries;
+  }
+  return getEntriesByTypeInternal(type);
+}
+
+PerformanceEntryVector Performance::getEntriesByTypeInternal(
+    PerformanceEntry::EntryType type) {
+  PerformanceEntryVector entries;
   switch (type) {
     case PerformanceEntry::kResource:
       for (const auto& resource : resource_timing_buffer_)

@@ -1065,6 +1065,13 @@
       status: "experimental",
     },
     {
+      // Flag enabling the performance observers buffered flag. The buffered
+      // flag indicates whether or not the buffered entries should be loaded
+      // into the observer's buffer upon registration. See crbug.com/725567.
+      name: "PerformanceObserverBufferedFlag",
+      status: "experimental",
+    },
+    {
       name: "PerMethodCanMakePaymentQuota",
       origin_trial_feature_name: "PerMethodCanMakePaymentQuota",
       status: "experimental",
