@@ -5,13 +5,10 @@
 #ifndef IOS_CHROME_BROWSER_PAYMENTS_IOS_PAYMENT_INSTRUMENT_LAUNCHER_H_
 #define IOS_CHROME_BROWSER_PAYMENTS_IOS_PAYMENT_INSTRUMENT_LAUNCHER_H_
 
+#include "base/values.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/payments/core/payment_currency_amount.h"
 #include "ios/chrome/browser/payments/payment_request.h"
-
-namespace base {
-class DictionaryValue;
-}  // namespace base
 
 namespace web {
 class NavigationItem;
@@ -80,21 +77,20 @@ class IOSPaymentInstrumentLauncher : public KeyedService {
   // a mapping of the payment method names to the corresponding JSON-stringified
   // payment method specific data. This function converts that map into a JSON
   // readable object.
-  std::unique_ptr<base::DictionaryValue> SerializeMethodData(
+  base::Value SerializeMethodData(
       const std::map<std::string, std::set<std::string>>&
           stringified_method_data);
 
   // Returns the JSON-serialized top-level certificate chain of the browsing
   // context. |item| has information on the browsing state, including the
   // SSL certificate needed to build the certificate chain.
-  std::unique_ptr<base::ListValue> SerializeCertificateChain(
-      web::NavigationItem* item);
+  base::Value SerializeCertificateChain(web::NavigationItem* item);
 
   // Returns the JSON-serialized array of PaymentDetailsModifier objects.
   // |details| is the object that represents the details of a PaymentRequest
   // object and contains the vector of PaymentDetailsModifier objects to
   // serialize.
-  std::unique_ptr<base::ListValue> SerializeModifiers(PaymentDetails details);
+  base::Value SerializeModifiers(PaymentDetails details);
 
   // Invokes the payment instrument delegate with the appropriate function.
   // If |method_name| or |details| are empty then |delegate_| calls
