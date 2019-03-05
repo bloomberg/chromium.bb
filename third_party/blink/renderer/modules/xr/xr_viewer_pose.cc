@@ -15,7 +15,7 @@ XRViewerPose::XRViewerPose(
     std::unique_ptr<TransformationMatrix> pose_model_matrix)
     : XRPose(std::move(pose_model_matrix), session->EmulatedPosition()) {
   // Can only update views with an invertible matrix.
-  TransformationMatrix inv_pose_matrix = transform_->InverseMatrix();
+  TransformationMatrix inv_pose_matrix = transform_->InverseTransformMatrix();
 
   // session will update views if required
   // views array gets copied to views_

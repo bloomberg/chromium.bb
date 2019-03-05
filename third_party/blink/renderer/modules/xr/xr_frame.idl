@@ -13,4 +13,5 @@
   [RaisesException] XRViewerPose? getViewerPose(XRReferenceSpace referenceSpace);
   [RaisesException] XRInputPose? getInputPose(XRInputSource inputSource,
                             XRReferenceSpace referenceSpace);
+  [RaisesException] XRPose? getPose(XRSpace space, XRSpace relativeTo);
 };

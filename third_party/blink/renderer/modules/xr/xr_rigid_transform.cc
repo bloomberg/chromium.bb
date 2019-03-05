@@ -96,10 +96,15 @@ DOMFloat32Array* XRRigidTransform::matrix() {
   return transformationMatrixToDOMFloat32Array(*matrix_);
 }
 
-TransformationMatrix XRRigidTransform::InverseMatrix() {
+TransformationMatrix XRRigidTransform::InverseTransformMatrix() {
   EnsureMatrix();
   DCHECK(matrix_->IsInvertible());
   return matrix_->Inverse();
+}
+
+TransformationMatrix XRRigidTransform::TransformMatrix() {
+  EnsureMatrix();
+  return *matrix_;
 }
 
 void XRRigidTransform::EnsureMatrix() {
