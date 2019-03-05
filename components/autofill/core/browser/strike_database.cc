@@ -217,4 +217,8 @@ void StrikeDatabase::UpdateCache(const std::string& key,
   strike_map_cache_[key] = data;
 }
 
+std::string StrikeDatabase::GetPrefixFromKey(const std::string& key) {
+  return key.substr(0, key.find(kKeyDeliminator));
+}
+
 }  // namespace autofill

@@ -78,8 +78,13 @@ void StrikeDatabaseIntegratorBase::RemoveExpiredStrikes() {
     if (AutofillClock::Now().ToDeltaSinceWindowsEpoch().InMicroseconds() -
             entry.second.last_update_timestamp() >
         GetExpiryTimeMicros()) {
-      if (strike_database_->GetStrikes(entry.first) > 0)
+      if (strike_database_->GetStrikes(entry.first) > 0) {
         expired_keys.push_back(entry.first);
+        base::UmaHistogramCounts1000(
+            "Autofill.StrikeDatabase.StrikesPresentWhenStrikeExpired." +
+                strike_database_->GetPrefixFromKey(entry.first),
+            strike_database_->GetStrikes(entry.first));
+      }
     }
   }
   for (std::string key : expired_keys) {

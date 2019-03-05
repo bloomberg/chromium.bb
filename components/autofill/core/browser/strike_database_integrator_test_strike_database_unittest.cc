@@ -123,6 +123,50 @@ TEST_F(StrikeDatabaseIntegratorTestStrikeDatabaseTest,
 }
 
 TEST_F(StrikeDatabaseIntegratorTestStrikeDatabaseTest,
+       RemoveExpiredStrikesTestLogsUMA) {
+  autofill::TestAutofillClock test_clock;
+  test_clock.SetNow(AutofillClock::Now());
+  strike_database_.AddStrikes(2);
+  EXPECT_EQ(2, strike_database_.GetStrikes());
+
+  // Advance clock to past expiry time.
+  test_clock.Advance(base::TimeDelta::FromMicroseconds(
+      strike_database_.GetExpiryTimeMicros() + 1));
+
+  // One strike should be removed.
+  strike_database_.RemoveExpiredStrikes();
+  EXPECT_EQ(1, strike_database_.GetStrikes());
+
+  // Strike count is past the max limit.
+  strike_database_.AddStrikes(10);
+  EXPECT_EQ(11, strike_database_.GetStrikes());
+
+  // Advance clock to past expiry time.
+  test_clock.Advance(base::TimeDelta::FromMicroseconds(
+      strike_database_.GetExpiryTimeMicros() + 1));
+
+  // Strike count should be one less than the max limit.
+  strike_database_.RemoveExpiredStrikes();
+  EXPECT_EQ(5, strike_database_.GetStrikes());
+
+  std::vector<base::Bucket> buckets = GetHistogramTester()->GetAllSamples(
+      "Autofill.StrikeDatabase.StrikesPresentWhenStrikeExpired."
+      "StrikeDatabaseIntegratorTest");
+  // There should be two buckets, for strike counts of 2 and 11.
+  ASSERT_EQ(2U, buckets.size());
+  // Bucket for 2 strikes should have count of 1.
+  GetHistogramTester()->ExpectBucketCount(
+      "Autofill.StrikeDatabase.StrikesPresentWhenStrikeExpired."
+      "StrikeDatabaseIntegratorTest",
+      2, 1);
+  // Bucket for 11 strikes should have count of 1.
+  GetHistogramTester()->ExpectBucketCount(
+      "Autofill.StrikeDatabase.StrikesPresentWhenStrikeExpired."
+      "StrikeDatabaseIntegratorTest",
+      11, 1);
+}
+
+TEST_F(StrikeDatabaseIntegratorTestStrikeDatabaseTest,
        GetKeyForStrikeDatabaseIntegratorUniqueIdTest) {
   strike_database_.SetUniqueIdsRequired(true);
   const std::string unique_id = "1234";

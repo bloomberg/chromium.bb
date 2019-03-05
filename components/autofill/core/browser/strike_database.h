@@ -157,6 +157,9 @@ class StrikeDatabase : public KeyedService {
   // Sets the entry for |key| in |strike_map_cache_| to |data|.
   void UpdateCache(const std::string& key, const StrikeData& data);
 
+  // Extracts per-project prefix from |key|.
+  std::string GetPrefixFromKey(const std::string& key);
+
   base::WeakPtrFactory<StrikeDatabase> weak_ptr_factory_;
 };
 

@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_client.h"
@@ -150,10 +151,22 @@ void LocalCardMigrationManager::OnUserAcceptedMainMigrationDialog(
   AutofillMetrics::LogLocalCardMigrationPromptMetric(
       local_card_migration_origin_, AutofillMetrics::MAIN_DIALOG_ACCEPTED);
 
+  // Log number of LocalCardMigration strikes when migration was accepted.
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillSaveCreditCardUsesStrikeSystemV2) &&
+      base::FeatureList::IsEnabled(
+          features::kAutofillLocalCardMigrationUsesStrikeSystemV2)) {
+    base::UmaHistogramCounts1000(
+        "Autofill.StrikeDatabase.StrikesPresentWhenLocalCardMigrationAccepted",
+        GetLocalCardMigrationStrikeDatabase()->GetStrikes());
+  }
+
   // If there are cards which aren't selected, add 3 strikes to
   // LocalCardMigrationStrikeDatabase.
   if (base::FeatureList::IsEnabled(
           features::kAutofillSaveCreditCardUsesStrikeSystemV2) &&
+      base::FeatureList::IsEnabled(
+          features::kAutofillLocalCardMigrationUsesStrikeSystemV2) &&
       (selected_card_guids.size() < migratable_credit_cards_.size())) {
     GetLocalCardMigrationStrikeDatabase()->AddStrikes(
         LocalCardMigrationStrikeDatabase::
