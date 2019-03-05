@@ -9,6 +9,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_key.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 
@@ -40,6 +41,8 @@ class CursorImpl : public blink::mojom::IDBCursor {
                 blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks) override;
   void PrefetchReset(int32_t used_prefetches,
                      int32_t unused_prefetches) override;
+
+  void OnRemoveBinding(base::OnceClosure remove_binding_cb);
 
  private:
   class IDBSequenceHelper;
