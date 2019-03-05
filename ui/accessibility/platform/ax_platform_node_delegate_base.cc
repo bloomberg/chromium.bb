@@ -261,6 +261,14 @@ const AXUniqueId& AXPlatformNodeDelegateBase::GetUniqueId() const {
   return *dummy_unique_id;
 }
 
+AXPlatformNodeDelegate::EnclosingBoundaryOffsets
+AXPlatformNodeDelegateBase::FindTextBoundariesAtOffset(
+    TextBoundaryType boundary_type,
+    int offset,
+    ax::mojom::TextAffinity affinity) const {
+  return base::nullopt;
+}
+
 bool AXPlatformNodeDelegateBase::IsOrderedSetItem() const {
   return false;
 }

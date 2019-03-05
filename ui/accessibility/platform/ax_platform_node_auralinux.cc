@@ -31,6 +31,7 @@
 #include "ui/accessibility/platform/atk_util_auralinux.h"
 #include "ui/accessibility/platform/ax_platform_atk_hyperlink.h"
 #include "ui/accessibility/platform/ax_platform_node_delegate.h"
+#include "ui/accessibility/platform/ax_platform_node_delegate_base.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
 namespace ui {
@@ -1020,8 +1021,19 @@ static char* AXPlatformNodeAuraLinuxGetTextWithBoundaryType(
   // need to convert this input value.
   offset = obj->UnicodeToUTF16OffsetInText(offset);
 
-  std::vector<int32_t> unused_line_start_offsets = std::vector<int32_t>();
   base::string16 text = obj->GetText();
+  AXPlatformNodeDelegate::EnclosingBoundaryOffsets boundaries =
+      obj->GetDelegate()->FindTextBoundariesAtOffset(
+          boundary_type, offset, ax::mojom::TextAffinity::kDownstream);
+  if (boundaries.has_value()) {
+    *start_offset_ptr = obj->UTF16ToUnicodeOffsetInText(boundaries->first);
+    *end_offset_ptr = obj->UTF16ToUnicodeOffsetInText(boundaries->second);
+    base::string16 substr =
+        text.substr(boundaries->first, boundaries->second - boundaries->first);
+    return g_strdup(base::UTF16ToUTF8(substr).c_str());
+  }
+
+  std::vector<int32_t> unused_line_start_offsets;
   size_t start_offset = static_cast<int>(FindAccessibleTextBoundary(
       text, unused_line_start_offsets, boundary_type, offset,
       BACKWARDS_DIRECTION, ax::mojom::TextAffinity::kDownstream));
@@ -1067,7 +1079,7 @@ static base::Optional<TextBoundaryType> AtkTextBoundaryToTextBoundary(
     case ATK_TEXT_BOUNDARY_SENTENCE_END:
       return base::nullopt;
     case ATK_TEXT_BOUNDARY_LINE_START:
-      return base::nullopt;
+      return LINE_BOUNDARY;
     case ATK_TEXT_BOUNDARY_LINE_END:
       return base::nullopt;
   }
@@ -1086,8 +1098,7 @@ static base::Optional<TextBoundaryType> AtkTextGranularityToTextBoundary(
     case ATK_TEXT_GRANULARITY_SENTENCE:
       return SENTENCE_BOUNDARY;
     case ATK_TEXT_GRANULARITY_LINE:
-      return base::nullopt;  // TODO(mrobinson): We need support for line
-                             // granularity.
+      return LINE_BOUNDARY;
     case ATK_TEXT_GRANULARITY_PARAGRAPH:
       return PARAGRAPH_BOUNDARY;
   }
@@ -1157,6 +1168,9 @@ static char* AXPlatformNodeAuraLinuxGetStringAtOffset(
     AtkTextGranularity atk_granularity,
     int* start_offset,
     int* end_offset) {
+  *start_offset = -1;
+  *end_offset = -1;
+
   if (atk_granularity == ATK_TEXT_GRANULARITY_CHAR) {
     return AXPlatformNodeAuraLinuxGetCharacter(atk_text, offset, start_offset,
                                                end_offset);
