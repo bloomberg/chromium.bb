@@ -161,7 +161,12 @@ if (enable_av1_decoder) {
         cflags = [ "-mfpu=neon" ]
       }
       configs += [ ":libaom_config" ]
-      sources = aom_av1_common_intrin_neon
+
+      # https://bugs.chromium.org/p/aomedia/issues/detail?id=2294
+      sources = [
+        "//third_party/libaom/source/libaom/aom_ports/arm_cpudetect.c",
+      ]
+      sources += aom_av1_common_intrin_neon
       sources += aom_dsp_common_intrin_neon
     }
   }
