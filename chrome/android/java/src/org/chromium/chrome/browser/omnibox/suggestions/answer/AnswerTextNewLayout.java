@@ -23,6 +23,7 @@ import org.chromium.components.omnibox.SuggestionAnswer;
 class AnswerTextNewLayout extends AnswerText {
     private static final String TAG = "AnswerTextNewLayout";
     private final boolean mIsAnswer;
+    private final @AnswerType int mAnswerType;
 
     /**
      * Convert SuggestionAnswer to array of elements that directly translate to user-presented
@@ -44,12 +45,16 @@ class AnswerTextNewLayout extends AnswerText {
             result[0] = new AnswerTextNewLayout(context, suggestion.getFillIntoEdit(), true);
             result[1] = new AnswerTextNewLayout(context, query, false);
         } else if (answer.getType() == AnswerType.DICTIONARY) {
-            result[0] = new AnswerTextNewLayout(context, answer.getFirstLine(), true);
-            result[1] = new AnswerTextNewLayout(context, answer.getSecondLine(), false);
+            result[0] =
+                    new AnswerTextNewLayout(context, answer.getType(), answer.getFirstLine(), true);
+            result[1] = new AnswerTextNewLayout(
+                    context, answer.getType(), answer.getSecondLine(), false);
             result[0].mMaxLines = 1;
         } else {
-            result[0] = new AnswerTextNewLayout(context, answer.getSecondLine(), true);
-            result[1] = new AnswerTextNewLayout(context, answer.getFirstLine(), false);
+            result[0] = new AnswerTextNewLayout(
+                    context, answer.getType(), answer.getSecondLine(), true);
+            result[1] = new AnswerTextNewLayout(
+                    context, answer.getType(), answer.getFirstLine(), false);
             result[1].mMaxLines = 1;
         }
 
@@ -60,12 +65,15 @@ class AnswerTextNewLayout extends AnswerText {
      * Create new instance of AnswerTextNewLayout for answer suggestions.
      *
      * @param context Current context.
+     * @param type Answer type, eg. AnswerType.WEATHER.
      * @param line Suggestion line that will be converted to Answer Text.
      * @param isAnswerLine True, if this instance holds answer.
      */
-    AnswerTextNewLayout(Context context, SuggestionAnswer.ImageLine line, boolean isAnswerLine) {
+    AnswerTextNewLayout(Context context, @AnswerType int type, SuggestionAnswer.ImageLine line,
+            boolean isAnswerLine) {
         super(context);
         mIsAnswer = isAnswerLine;
+        mAnswerType = type;
         build(line);
     }
 
@@ -78,6 +86,7 @@ class AnswerTextNewLayout extends AnswerText {
     AnswerTextNewLayout(Context context, String text, boolean isAnswerLine) {
         super(context);
         mIsAnswer = isAnswerLine;
+        mAnswerType = AnswerType.INVALID;
         appendAndStyleText(text, getAppearanceForText(AnswerTextType.SUGGESTION));
     }
 
@@ -99,9 +108,13 @@ class AnswerTextNewLayout extends AnswerText {
      * @return array of TextAppearanceSpan objects defining style for the text.
      */
     private MetricAffectingSpan[] getAppearanceForAnswerText(@AnswerTextType int type) {
+        if (mAnswerType != AnswerType.DICTIONARY && mAnswerType != AnswerType.FINANCE) {
+            return new TextAppearanceSpan[] {
+                    new TextAppearanceSpan(mContext, R.style.TextAppearance_BlackTitle1)};
+        }
+
         @StyleRes
         int res = 0;
-
         switch (type) {
             case AnswerTextType.DESCRIPTION_NEGATIVE:
                 res = R.style.TextAppearance_OmniboxAnswerDescriptionNegativeSmall;
