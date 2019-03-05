@@ -360,7 +360,7 @@ int TableLayoutAlgorithmAuto::CalcEffectiveLogicalWidth() {
   int max_logical_width = 0;
 
   wtf_size_t n_eff_cols = layout_struct_.size();
-  int spacing_in_row_direction = table_->HBorderSpacing();
+  int16_t spacing_in_row_direction = table_->HBorderSpacing();
 
   for (wtf_size_t i = 0; i < n_eff_cols; ++i) {
     layout_struct_[i].effective_logical_width = layout_struct_[i].logical_width;
