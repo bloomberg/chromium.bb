@@ -52,6 +52,10 @@ def _CreateSymbolsDir(build_path, dynamic_library_names):
 
 
 def _ChooseLatestCrashpadDump(device, crashpad_dump_path):
+  if not device.PathExists(crashpad_dump_path):
+    logging.warning('Crashpad dump directory does not exist: %s',
+                    crashpad_dump_path)
+    return None
   latest = None
   latest_timestamp = 0
   for crashpad_file in device.ListDirectory(crashpad_dump_path):
