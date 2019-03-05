@@ -26,6 +26,8 @@ class NetworkFetcherFactory : public update_client::NetworkFetcherFactory {
   ~NetworkFetcherFactory() override;
 
  private:
+  static scoped_hinternet CreateSessionHandle();
+
   THREAD_CHECKER(thread_checker_);
   scoped_hinternet session_handle_;
 

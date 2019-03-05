@@ -134,7 +134,8 @@ class Observer : public update_client::UpdateClient::Observer {
 
 void InitLogging(const base::CommandLine& command_line) {
   logging::LoggingSettings settings;
-  settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
+  settings.logging_dest = logging::LOG_TO_ALL;
+  settings.log_file = FILE_PATH_LITERAL("updater.log");
   logging::InitLogging(settings);
   logging::SetLogItems(true,    // enable_process_id
                        true,    // enable_thread_id
