@@ -34,10 +34,12 @@
 #include "components/gcm_driver/fake_gcm_profile_service.h"
 #include "components/gcm_driver/instance_id/fake_gcm_driver_for_instance_id.h"
 #include "components/version_info/version_info.h"
+#include "content/public/browser/console_message.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/service_worker_context.h"
+#include "content/public/browser/service_worker_context_observer.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
@@ -58,6 +60,7 @@
 #include "extensions/test/background_page_watcher.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
+#include "extensions/test/test_extension_dir.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "url/url_constants.h"
@@ -1645,6 +1648,86 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerBasedBackgroundTest,
   }
 
   EXPECT_FALSE(ProcessManager::Get(profile())->HasServiceWorker(*worker_id));
+}
+
+// Tests that console messages logged by extension service workers, both via
+// the typical console.* methods and via our custom bindings console, are
+// passed through the normal ServiceWorker console messaging and are
+// observable.
+IN_PROC_BROWSER_TEST_P(ServiceWorkerLazyBackgroundTest, ConsoleLogging) {
+  // A helper class to wait for a particular message to be logged from a
+  // ServiceWorker.
+  class ConsoleMessageObserver : public content::ServiceWorkerContextObserver {
+   public:
+    ConsoleMessageObserver(content::BrowserContext* browser_context,
+                           const std::string& expected_message)
+        : expected_message_(base::UTF8ToUTF16(expected_message)),
+          scoped_observer_(this) {
+      content::StoragePartition* partition =
+          content::BrowserContext::GetDefaultStoragePartition(browser_context);
+      scoped_observer_.Add(partition->GetServiceWorkerContext());
+    }
+    ~ConsoleMessageObserver() override = default;
+
+    void Wait() { run_loop_.Run(); }
+
+   private:
+    // ServiceWorkerContextObserver:
+    void OnReportConsoleMessage(
+        int64_t version_id,
+        const content::ConsoleMessage& message) override {
+      // NOTE: We could check the version_id, but it shouldn't be necessary with
+      // the expected messages we're verifying (they're uncommon enough).
+      if (message.message != expected_message_)
+        return;
+      scoped_observer_.RemoveAll();
+      run_loop_.QuitWhenIdle();
+    }
+
+    base::string16 expected_message_;
+    base::RunLoop run_loop_;
+    ScopedObserver<content::ServiceWorkerContext,
+                   content::ServiceWorkerContextObserver>
+        scoped_observer_;
+
+    DISALLOW_COPY_AND_ASSIGN(ConsoleMessageObserver);
+  };
+
+  TestExtensionDir test_dir;
+  test_dir.WriteManifest(
+      R"({
+           "name": "Test Extension",
+           "manifest_version": 2,
+           "version": "0.1",
+           "background": {"service_worker_script": "script.js"}
+         })");
+  constexpr char kScript[] =
+      R"(// First, log a message using the normal, built-in blink console.
+         console.log('test message');
+         chrome.test.runTests([
+           function justATest() {
+             // Next, we use the "Console" object from
+             // extensions/renderer/console.cc, which is used by custom bindings
+             // so that it isn't tampered with by untrusted script. The test
+             // custom bindings log a message whenever a test is passed, so we
+             // force a log by just passing this test.
+             chrome.test.succeed();
+           }
+         ]);)";
+  test_dir.WriteFile(FILE_PATH_LITERAL("script.js"), kScript);
+
+  // The observer for the built-in blink console.
+  ConsoleMessageObserver default_console_observer(profile(), "test message");
+  // The observer for our custom extensions bindings console.
+  ConsoleMessageObserver custom_console_observer(profile(),
+                                                 "[SUCCESS] justATest");
+
+  const Extension* extension = LoadExtension(test_dir.UnpackedPath());
+  ASSERT_TRUE(extension);
+
+  default_console_observer.Wait();
+  custom_console_observer.Wait();
+  // If we receive both messages, we passed!
 }
 
 // Run with both native and JS-based bindings. This ensures that both stable

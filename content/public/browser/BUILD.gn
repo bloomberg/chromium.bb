@@ -103,6 +103,7 @@ jumbo_source_set("browser_sources") {
     "client_certificate_delegate.h",
     "client_hints_controller_delegate.h",
     "color_chooser.h",
+    "console_message.h",
     "content_browser_client.cc",
     "content_browser_client.h",
     "cookie_store_factory.h",
