@@ -1105,8 +1105,8 @@ display_set_up_egl(struct display *display)
 	const char *gl_extensions = NULL;
 
 	display->egl.display =
-		weston_platform_get_egl_display(EGL_PLATFORM_WAYLAND_KHR,
-						display->display, NULL);
+		weston_platform_get_egl_display(EGL_PLATFORM_GBM_KHR,
+						display->gbm.device, NULL);
 	if (display->egl.display == EGL_NO_DISPLAY) {
 		fprintf(stderr, "Failed to create EGLDisplay\n");
 		goto error;
@@ -1340,13 +1340,15 @@ create_display(char const *drm_render_node, int opts)
 		goto error;
 	}
 
+	/* GBM needs to be initialized before EGL, so that we have a valid
+	 * render node gbm_device to create the EGL display from. */
+	if (!display_set_up_gbm(display, drm_render_node))
+		goto error;
+
 	if (!display_set_up_egl(display))
 		goto error;
 
 	if (!display_update_supported_modifiers_for_egl(display))
-		goto error;
-
-	if (!display_set_up_gbm(display, drm_render_node))
 		goto error;
 
 	/* We use explicit synchronization only if the user hasn't disabled it,
