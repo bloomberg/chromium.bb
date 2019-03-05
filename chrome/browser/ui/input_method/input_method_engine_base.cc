@@ -17,6 +17,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ime/composition_text.h"
+#include "ui/base/ime/constants.h"
 #include "ui/base/ime/ime_bridge.h"
 #include "ui/base/ime/text_input_flags.h"
 #include "ui/events/event.h"
@@ -151,7 +152,6 @@ InputMethodEngineBase::InputMethodEngineBase()
       next_context_id_(1),
       composition_text_(new ui::CompositionText()),
       composition_cursor_(0),
-      sent_key_event_(nullptr),
       profile_(nullptr),
       next_request_id_(1),
       composition_changed_(false),
@@ -361,11 +361,10 @@ void InputMethodEngineBase::ProcessKeyEvent(const ui::KeyEvent& key_event,
   KeyboardEvent ext_event;
   GetExtensionKeyboardEventFromKeyEvent(key_event, &ext_event);
 
-  // If the given key event is equal to the key event sent by
-  // SendKeyEvents, this engine ID is propagated to the extension IME.
-  // Note, this check relies on that ui::KeyEvent is propagated as
-  // reference without copying.
-  if (&key_event == sent_key_event_)
+  // If the given key event is from VK, it means the key event was simulated.
+  // Sets the |extension_id| value so that the IME extension can ignore it.
+  auto* properties = key_event.properties();
+  if (properties && properties->find(ui::kPropertyFromVK) != properties->end())
     ext_event.extension_id = extension_id_;
 
   // Should not pass key event in password field.
@@ -453,8 +452,6 @@ bool InputMethodEngineBase::SendKeyEvents(
         type, key_code, ui::KeycodeConverter::CodeStringToDomCode(event.code),
         flags, ui::KeycodeConverter::KeyStringToDomKey(event.key),
         ui::EventTimeForNow());
-    base::AutoReset<const ui::KeyEvent*> reset_sent_key(&sent_key_event_,
-                                                        &ui_event);
     if (!SendKeyEvent(&ui_event, event.code))
       return false;
   }
