@@ -81,7 +81,8 @@
     </style>
     <print-preview-state id="state" state="{{state}}"></print-preview-state>
     <print-preview-model id="model" settings="{{settings}}"
-        destination="{{destination_}}" document-settings="[[documentSettings_]]"
+        controls-managed="{{controlsManaged_}}" destination="{{destination_}}"
+        document-settings="[[documentSettings_]]"
         margins="[[margins_]]" page-size="[[pageSize_]]"
         recent-destinations="{{recentDestinations_}}"
         on-save-sticky-settings="onSaveStickySettings_">
@@ -98,7 +99,7 @@
     <div id="sidebar" on-setting-valid-changed="onSettingValidChanged_">
       <print-preview-header destination="[[destination_]]" state="[[state]]"
           error-message="[[errorMessage_]]" settings="[[settings]]"
-          on-print-requested="onPrintRequested_"
+          managed="[[controlsManaged_]]" on-print-requested="onPrintRequested_"
           on-cancel-requested="onCancelRequested_">
       </print-preview-header>
       <div id="container">

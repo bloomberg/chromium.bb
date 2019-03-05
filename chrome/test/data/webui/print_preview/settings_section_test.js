@@ -281,6 +281,7 @@ cr.define('settings_sections_tests', function() {
         colorDefault: print_preview.ColorMode.COLOR,
         expectedValue: true,
         expectedHidden: true,
+        expectedManaged: false,
       },
        {
          // Policy contradicts actual capabilities and is ignored.
@@ -289,6 +290,7 @@ cr.define('settings_sections_tests', function() {
          colorDefault: print_preview.ColorMode.GRAY,
          expectedValue: true,
          expectedHidden: true,
+         expectedManaged: false,
        },
        {
          // Policy overrides default.
@@ -330,6 +332,7 @@ cr.define('settings_sections_tests', function() {
         page.set('destination_.policies', policies);
         page.set('destination_.capabilities', capabilities);
         page.$$('print-preview-model').applyDestinationSpecificPolicies();
+        assertEquals(subtestParams.expectedManaged, page.controlsManaged_);
         assertEquals(
             subtestParams.expectedValue, page.getSettingValue('color'));
         assertEquals(subtestParams.expectedHidden, colorElement.hidden);
@@ -360,6 +363,7 @@ cr.define('settings_sections_tests', function() {
         duplexDefault: print_preview.DuplexModeRestriction.SIMPLEX,
         expectedValue: false,
         expectedHidden: true,
+        expectedManaged: false,
       },
        {
          // Policy contradicts actual capabilities and is ignored.
@@ -368,6 +372,7 @@ cr.define('settings_sections_tests', function() {
          duplexDefault: print_preview.DuplexModeRestriction.LONG_EDGE,
          expectedValue: false,
          expectedHidden: true,
+         expectedManaged: false,
        },
        {
          // Policy overrides default.
@@ -409,6 +414,7 @@ cr.define('settings_sections_tests', function() {
         page.set('destination_.policies', policies);
         page.set('destination_.capabilities', capabilities);
         page.$$('print-preview-model').applyDestinationSpecificPolicies();
+        assertEquals(subtestParams.expectedManaged, page.controlsManaged_);
         assertEquals(
             subtestParams.expectedValue, page.getSettingValue('duplex'));
         assertEquals(

@@ -56,6 +56,9 @@ Polymer({
       computed: 'computeControlsDisabled_(state)',
     },
 
+    /** @private {boolean} */
+    controlsManaged_: Boolean,
+
     /** @private {print_preview.Destination} */
     destination_: {
       type: Object,
@@ -423,9 +426,11 @@ Polymer({
       this.$.model.applyStickySettings();
     }
 
+    // <if expr="chromeos">
     if (this.destination_) {
       this.$.model.applyDestinationSpecificPolicies();
     }
+    // </if>
 
     if (this.state == print_preview_new.State.NOT_READY ||
         this.state == print_preview_new.State.INVALID_PRINTER) {
