@@ -212,18 +212,9 @@ class FakePhishingDetector : public mojom::PhishingDetector {
   }
 
   // mojom::PhishingDetector
-  void StartPhishingDetection(
-      const GURL& url,
-      StartPhishingDetectionCallback callback) override {
+  void StartPhishingDetection(const GURL& url) override {
     url_ = url;
     phishing_detection_started_ = true;
-
-    // The callback must be run before destruction, so send a minimal
-    // ClientPhishingRequest.
-    ClientPhishingRequest request;
-    request.set_client_score(0.8);
-    std::move(callback).Run(request.SerializeAsString());
-
     return;
   }
 

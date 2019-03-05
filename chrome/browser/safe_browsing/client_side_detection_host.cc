@@ -366,11 +366,26 @@ ClientSideDetectionHost::ClientSideDetectionHost(WebContents* tab)
     database_manager_ = sb_service->database_manager();
     ui_manager_->AddObserver(this);
   }
+  registry_.AddInterface(base::BindRepeating(
+      &ClientSideDetectionHost::PhishingDetectorClientRequest,
+      base::Unretained(this)));
 }
 
 ClientSideDetectionHost::~ClientSideDetectionHost() {
   if (ui_manager_.get())
     ui_manager_->RemoveObserver(this);
+}
+
+void ClientSideDetectionHost::PhishingDetectorClientRequest(
+    mojom::PhishingDetectorClientRequest request) {
+  phishing_detector_client_bindings_.AddBinding(this, std::move(request));
+}
+
+void ClientSideDetectionHost::OnInterfaceRequestFromFrame(
+    content::RenderFrameHost* render_frame_host,
+    const std::string& interface_name,
+    mojo::ScopedMessagePipeHandle* interface_pipe) {
+  registry_.TryBindInterface(interface_name, interface_pipe);
 }
 
 void ClientSideDetectionHost::DidFinishNavigation(
@@ -510,10 +525,7 @@ void ClientSideDetectionHost::OnPhishingPreClassificationDone(
     content::RenderFrameHost* rfh = web_contents()->GetMainFrame();
     safe_browsing::mojom::PhishingDetectorPtr phishing_detector;
     rfh->GetRemoteInterfaces()->GetInterface(&phishing_detector);
-    phishing_detector->StartPhishingDetection(
-        browse_info_->url,
-        base::BindRepeating(&ClientSideDetectionHost::PhishingDetectionDone,
-                            weak_factory_.GetWeakPtr()));
+    phishing_detector->StartPhishingDetection(browse_info_->url);
   }
 }
 
