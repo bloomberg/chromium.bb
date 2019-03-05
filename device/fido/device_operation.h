@@ -38,9 +38,11 @@ class DeviceOperation : public GenericDeviceOperation {
   // Represents a per device logic that is owned by FidoTask. Thus,
   // DeviceOperation does not outlive |request|.
   DeviceOperation(FidoDevice* device,
-                  const Request& request,
+                  Request request,
                   DeviceResponseCallback callback)
-      : device_(device), request_(request), callback_(std::move(callback)) {}
+      : device_(device),
+        request_(std::move(request)),
+        callback_(std::move(callback)) {}
 
   virtual ~DeviceOperation() = default;
 
@@ -65,7 +67,7 @@ class DeviceOperation : public GenericDeviceOperation {
 
  private:
   FidoDevice* const device_ = nullptr;
-  const Request& request_;
+  Request request_;
   DeviceResponseCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceOperation);

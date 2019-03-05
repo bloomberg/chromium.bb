@@ -72,7 +72,7 @@ void MakeCredentialTask::StartTask() {
 void MakeCredentialTask::MakeCredential() {
   register_operation_ = std::make_unique<Ctap2DeviceOperation<
       CtapMakeCredentialRequest, AuthenticatorMakeCredentialResponse>>(
-      device(), request_parameter_, std::move(callback_),
+      device(), std::move(request_parameter_), std::move(callback_),
       base::BindOnce(&ReadCTAPMakeCredentialResponse,
                      device()->DeviceTransport()));
   register_operation_->Start();
@@ -87,7 +87,7 @@ void MakeCredentialTask::U2fRegister() {
 
   DCHECK_EQ(ProtocolVersion::kU2f, device()->supported_protocol());
   register_operation_ = std::make_unique<U2fRegisterOperation>(
-      device(), request_parameter_,
+      device(), std::move(request_parameter_),
       base::BindOnce(&MakeCredentialTask::MaybeRevertU2fFallback,
                      weak_factory_.GetWeakPtr()));
   register_operation_->Start();

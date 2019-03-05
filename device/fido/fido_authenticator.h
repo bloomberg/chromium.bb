@@ -90,7 +90,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoAuthenticator {
   // only valid to call this method if |Options| indicates that the
   // authenticator supports PINs.
   virtual void SetPIN(const std::string& pin,
-                      pin::KeyAgreementResponse& peer_key,
+                      const pin::KeyAgreementResponse& peer_key,
                       SetPINCallback callback);
   // ChangePIN alters the PIN on a device that already has a PIN set. The
   // length of |pin| must respect |pin::kMinLength| and |pin::kMaxLength|. It is

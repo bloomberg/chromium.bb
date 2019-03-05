@@ -19,10 +19,6 @@
 namespace device {
 namespace pin {
 
-// kProtocolVersion is the version of the PIN protocol that this code
-// implements.
-constexpr int kProtocolVersion = 1;
-
 // Subcommand enumerates the subcommands to the main |authenticatorClientPIN|
 // command. See
 // https://fidoalliance.org/specs/fido-v2.0-rd-20180702/fido-client-to-authenticator-protocol-v2.0-rd-20180702.html#authenticatorClientPIN

@@ -48,6 +48,10 @@ class MockObserver : public FidoRequestHandlerBase::Observer {
                     std::string new_authenticator_id));
   MOCK_METHOD2(FidoAuthenticatorPairingModeChanged,
                void(base::StringPiece, bool));
+  MOCK_METHOD2(CollectPIN,
+               void(base::Optional<int>,
+                    base::OnceCallback<void(std::string)>));
+  MOCK_METHOD0(FinishCollectPIN, void());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockObserver);

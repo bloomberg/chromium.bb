@@ -100,6 +100,10 @@ class ChromeAuthenticatorRequestDelegate
   void FidoAuthenticatorPairingModeChanged(base::StringPiece authenticator_id,
                                            bool is_in_pairing_mode) override;
   void BluetoothAdapterPowerChanged(bool is_powered_on) override;
+  void CollectPIN(
+      base::Optional<int> attempts,
+      base::OnceCallback<void(std::string)> provide_pin_cb) override;
+  void FinishCollectPIN() override;
 
   // AuthenticatorRequestDialogModel::Observer:
   void OnModelDestroyed() override;

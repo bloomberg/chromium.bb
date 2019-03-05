@@ -29,6 +29,9 @@ enum class FidoReturnCode : uint8_t {
   kUserConsentButCredentialNotRecognized,
   // The user explicitly refused to provide consent.
   kUserConsentDenied,
+  kAuthenticatorRemovedDuringPINEntry,
+  kSoftPINBlock,
+  kHardPINBlock,
 };
 
 enum class ProtocolVersion {

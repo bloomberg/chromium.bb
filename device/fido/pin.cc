@@ -90,8 +90,13 @@ base::Optional<RetriesResponse> RetriesResponse::Parse(
     return base::nullopt;
   }
 
+  const int64_t retries = it->second.GetUnsigned();
+  if (retries > INT_MAX) {
+    return base::nullopt;
+  }
+
   RetriesResponse ret;
-  ret.retries = it->second.GetUnsigned();
+  ret.retries = static_cast<int>(retries);
   return ret;
 }
 
@@ -398,6 +403,8 @@ TokenRequest::TokenRequest(const std::string& pin,
 }
 
 TokenRequest::~TokenRequest() = default;
+
+TokenRequest::TokenRequest(TokenRequest&& other) = default;
 
 const std::array<uint8_t, 32>& TokenRequest::shared_key() const {
   return shared_key_;

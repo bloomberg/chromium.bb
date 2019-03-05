@@ -33,7 +33,7 @@ void FidoAuthenticator::GetPINToken(
 }
 
 void FidoAuthenticator::SetPIN(const std::string& pin,
-                               pin::KeyAgreementResponse& peer_key,
+                               const pin::KeyAgreementResponse& peer_key,
                                FidoAuthenticator::SetPINCallback callback) {
   NOTREACHED();
 }

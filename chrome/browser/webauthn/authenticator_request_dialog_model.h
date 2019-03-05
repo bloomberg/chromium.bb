@@ -263,6 +263,14 @@ class AuthenticatorRequestDialogModel {
   // one of excluded credentials (during a MakeCredential request).
   void OnActivatedKeyAlreadyRegistered();
 
+  // To be called when the selected authenticator cannot currently handle PIN
+  // requests because it needs a power-cycle due to too many failures.
+  void OnSoftPINBlock();
+
+  // To be called when the selected authenticator must be reset before
+  // performing any PIN operations because of too many failures.
+  void OnHardPINBlock();
+
   // To be called when the Bluetooth adapter powered state changes.
   void OnBluetoothPoweredStateChanged(bool powered);
 
@@ -275,6 +283,11 @@ class AuthenticatorRequestDialogModel {
 
   void SetBleDevicePairedCallback(
       BleDevicePairedCallback ble_device_paired_callback);
+
+  void SetPINCallback(base::OnceCallback<void(std::string)> pin_callback);
+
+  // OnHavePIN is called when the user enters a PIN in the UI.
+  void OnHavePIN(const std::string& pin);
 
   void UpdateAuthenticatorReferenceId(base::StringPiece old_authenticator_id,
                                       std::string new_authenticator_id);
@@ -334,6 +347,7 @@ class AuthenticatorRequestDialogModel {
   BlePairingCallback ble_pairing_callback_;
   base::RepeatingClosure bluetooth_adapter_power_on_callback_;
   BleDevicePairedCallback ble_device_paired_callback_;
+  base::OnceCallback<void(std::string)> pin_callback_;
 
   base::WeakPtrFactory<AuthenticatorRequestDialogModel> weak_factory_;
 

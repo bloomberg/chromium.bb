@@ -83,4 +83,10 @@ void AuthenticatorRequestClientDelegate::FidoAuthenticatorPairingModeChanged(
     base::StringPiece authenticator_id,
     bool is_in_pairing_mode) {}
 
+void AuthenticatorRequestClientDelegate::CollectPIN(
+    base::Optional<int> attempts,
+    base::OnceCallback<void(std::string)> provide_pin_cb) {}
+
+void AuthenticatorRequestClientDelegate::FinishCollectPIN() {}
+
 }  // namespace content

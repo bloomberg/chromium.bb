@@ -13,12 +13,12 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "device/fido/ctap_make_credential_request.h"
 #include "device/fido/device_operation.h"
 
 namespace device {
 
 class FidoDevice;
-class CtapMakeCredentialRequest;
 class AuthenticatorMakeCredentialResponse;
 class PublicKeyCredentialDescriptor;
 

@@ -134,6 +134,12 @@ bool ChromeAuthenticatorRequestDelegate::DoesBlockRequestOnFailure(
     case InterestingFailureReason::kKeyAlreadyRegistered:
       weak_dialog_model_->OnActivatedKeyAlreadyRegistered();
       break;
+    case InterestingFailureReason::kSoftPINBlock:
+      weak_dialog_model_->OnSoftPINBlock();
+      break;
+    case InterestingFailureReason::kHardPINBlock:
+      weak_dialog_model_->OnHardPINBlock();
+      break;
   }
   return true;
 }
@@ -391,6 +397,29 @@ void ChromeAuthenticatorRequestDelegate::BluetoothAdapterPowerChanged(
 
   weak_dialog_model_->OnBluetoothPoweredStateChanged(is_powered_on);
 }
+
+void ChromeAuthenticatorRequestDelegate::CollectPIN(
+    base::Optional<int> attempts,
+    base::OnceCallback<void(std::string)> provide_pin_cb) {
+  if (!weak_dialog_model_)
+    return;
+
+  weak_dialog_model_->SetPINCallback(std::move(provide_pin_cb));
+  if (attempts) {
+    weak_dialog_model_->SetCurrentStep(
+        AuthenticatorRequestDialogModel::Step::kClientPinEntry);
+  } else {
+    weak_dialog_model_->SetCurrentStep(
+        AuthenticatorRequestDialogModel::Step::kClientPinSetup);
+  }
+}
+
+void ChromeAuthenticatorRequestDelegate::FinishCollectPIN() {
+  // TODO: add a distinct step for this.
+  weak_dialog_model_->SetCurrentStep(
+      AuthenticatorRequestDialogModel::Step::kUsbInsertAndActivate);
+}
+
 void ChromeAuthenticatorRequestDelegate::OnModelDestroyed() {
   DCHECK(weak_dialog_model_);
   weak_dialog_model_ = nullptr;

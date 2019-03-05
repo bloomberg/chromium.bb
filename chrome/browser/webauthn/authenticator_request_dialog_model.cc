@@ -378,6 +378,14 @@ void AuthenticatorRequestDialogModel::OnActivatedKeyAlreadyRegistered() {
   SetCurrentStep(Step::kKeyAlreadyRegistered);
 }
 
+void AuthenticatorRequestDialogModel::OnSoftPINBlock() {
+  // TODO
+}
+
+void AuthenticatorRequestDialogModel::OnHardPINBlock() {
+  // TODO
+}
+
 void AuthenticatorRequestDialogModel::OnBluetoothPoweredStateChanged(
     bool powered) {
   transport_availability_.is_ble_powered = powered;
@@ -422,6 +430,18 @@ void AuthenticatorRequestDialogModel::UpdateAuthenticatorReferenceId(
 void AuthenticatorRequestDialogModel::SetBleDevicePairedCallback(
     BleDevicePairedCallback ble_device_paired_callback) {
   ble_device_paired_callback_ = std::move(ble_device_paired_callback);
+}
+
+void AuthenticatorRequestDialogModel::SetPINCallback(
+    base::OnceCallback<void(std::string)> pin_callback) {
+  pin_callback_ = std::move(pin_callback);
+}
+
+void AuthenticatorRequestDialogModel::OnHavePIN(const std::string& pin) {
+  // TODO: disable the PIN submission action once activated. Otherwise
+  // |OnHavePIN| may be called twice because they'll be a delay between
+  // submitted the PIN and figuring out whether it's valid or not.
+  std::move(pin_callback_).Run(pin);
 }
 
 void AuthenticatorRequestDialogModel::AddAuthenticator(

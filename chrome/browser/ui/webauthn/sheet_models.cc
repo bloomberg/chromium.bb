@@ -751,12 +751,15 @@ void AuthenticatorClientPinEntrySheetModel::OnAccept() {
   } else {
     // Submit PIN to authenticator for verification.
     DCHECK(mode_ == AuthenticatorClientPinEntrySheetModel::Mode::kPinEntry);
+    // TODO: use device::pin::IsValid instead.
     if (pin_code_.size() < kMinPinLength) {
       delegate_->ShowPinError(
           l10n_util::GetStringUTF16(IDS_WEBAUTHN_PIN_ENTRY_ERROR_TOO_SHORT));
       return;
     }
   }
-  // TODO(martinkr): Actually set the PIN/request the PIN token and continue
-  // the request.
+
+  if (dialog_model()) {
+    dialog_model()->OnHavePIN(base::UTF16ToUTF8(pin_code_));
+  }
 }

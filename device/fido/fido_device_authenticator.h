@@ -52,7 +52,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDeviceAuthenticator
                    const pin::KeyAgreementResponse& peer_key,
                    GetPINTokenCallback callback) override;
   void SetPIN(const std::string& pin,
-              pin::KeyAgreementResponse& peer_key,
+              const pin::KeyAgreementResponse& peer_key,
               SetPINCallback callback) override;
   void ChangePIN(const std::string& old_pin,
                  const std::string& new_pin,

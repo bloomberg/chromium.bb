@@ -126,6 +126,14 @@ class TestObserver : public FidoRequestHandlerBase::Observer {
   void FidoAuthenticatorPairingModeChanged(base::StringPiece authenticator_id,
                                            bool is_in_pairing_mode) override {}
 
+  void CollectPIN(
+      base::Optional<int> attempts,
+      base::OnceCallback<void(std::string)> provide_pin_cb) override {
+    NOTREACHED();
+  }
+
+  void FinishCollectPIN() override { NOTREACHED(); }
+
  private:
   TransportAvailabilityNotificationReceiver
       transport_availability_notification_receiver_;
