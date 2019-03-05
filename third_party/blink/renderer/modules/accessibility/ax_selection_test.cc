@@ -17,7 +17,9 @@
 #include "third_party/blink/renderer/core/editing/selection_template.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/forms/text_control_element.h"
+#include "third_party/blink/renderer/core/html/html_br_element.h"
 #include "third_party/blink/renderer/core/html/html_div_element.h"
+#include "third_party/blink/renderer/core/html/html_paragraph_element.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_object.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_position.h"
@@ -254,6 +256,96 @@ TEST_F(AccessibilitySelectionTest, SetSelectionInTextWithWhiteSpace) {
       GetSelectionText(ax_selection));
 }
 
+TEST_F(AccessibilitySelectionTest, SetSelectionAcrossLineBreak) {
+  SetBodyInnerHTML(R"HTML(
+      <p id="paragraph">Hello<br id="br">How are you.</p>
+      )HTML");
+
+  const Node* paragraph = GetDocument().QuerySelector("p");
+  ASSERT_NE(nullptr, paragraph);
+  ASSERT_TRUE(IsHTMLParagraphElement(paragraph));
+  const Node* br = GetDocument().QuerySelector("br");
+  ASSERT_NE(nullptr, br);
+  ASSERT_TRUE(IsHTMLBRElement(br));
+  const Node* line2 = GetDocument().QuerySelector("p")->lastChild();
+  ASSERT_NE(nullptr, line2);
+  ASSERT_TRUE(line2->IsTextNode());
+
+  const AXObject* ax_br = GetAXObjectByElementId("br");
+  ASSERT_NE(nullptr, ax_br);
+  ASSERT_EQ(ax::mojom::Role::kLineBreak, ax_br->RoleValue());
+  const AXObject* ax_line2 = GetAXObjectByElementId("paragraph")->LastChild();
+  ASSERT_NE(nullptr, ax_line2);
+  ASSERT_EQ(ax::mojom::Role::kStaticText, ax_line2->RoleValue());
+
+  const auto ax_base = AXPosition::CreatePositionBeforeObject(*ax_br);
+  const auto ax_extent = AXPosition::CreatePositionInTextObject(*ax_line2, 0);
+
+  AXSelection::Builder builder;
+  const AXSelection ax_selection =
+      builder.SetBase(ax_base).SetExtent(ax_extent).Build();
+  const SelectionInDOMTree dom_selection = ax_selection.AsSelection();
+  EXPECT_EQ(paragraph, dom_selection.Base().AnchorNode());
+  EXPECT_EQ(1, dom_selection.Base().OffsetInContainerNode());
+  EXPECT_EQ(line2, dom_selection.Extent().AnchorNode());
+  EXPECT_EQ(0, dom_selection.Extent().OffsetInContainerNode());
+
+  // The selection anchor marker '^' should be before the line break and the
+  // selection focus marker '|' should be after it.
+  EXPECT_EQ(
+      "++<Paragraph>\n"
+      "++++<StaticText: Hello>\n"
+      "^++++<LineBreak: \n>\n"
+      "|++++<StaticText: |How are you.>\n",
+      GetSelectionText(ax_selection));
+}
+
+TEST_F(AccessibilitySelectionTest, SetSelectionAcrossLineBreakInEditableText) {
+  SetBodyInnerHTML(R"HTML(
+      <p contenteditable id="paragraph">Hello<br id="br">How are you.</p>
+      )HTML");
+
+  const Node* paragraph = GetDocument().QuerySelector("p");
+  ASSERT_NE(nullptr, paragraph);
+  ASSERT_TRUE(IsHTMLParagraphElement(paragraph));
+  const Node* br = GetDocument().QuerySelector("br");
+  ASSERT_NE(nullptr, br);
+  ASSERT_TRUE(IsHTMLBRElement(br));
+  const Node* line2 = GetDocument().QuerySelector("p")->lastChild();
+  ASSERT_NE(nullptr, line2);
+  ASSERT_TRUE(line2->IsTextNode());
+
+  const AXObject* ax_br = GetAXObjectByElementId("br");
+  ASSERT_NE(nullptr, ax_br);
+  ASSERT_EQ(ax::mojom::Role::kLineBreak, ax_br->RoleValue());
+  const AXObject* ax_line2 = GetAXObjectByElementId("paragraph")->LastChild();
+  ASSERT_NE(nullptr, ax_line2);
+  ASSERT_EQ(ax::mojom::Role::kStaticText, ax_line2->RoleValue());
+
+  const auto ax_base = AXPosition::CreatePositionBeforeObject(*ax_br);
+  // In the case of text objects, CreateFirstPositionInObject(*...) should
+  // behave identically to CreatePositionInTextObject(*..., 0).
+  const auto ax_extent = AXPosition::CreateFirstPositionInObject(*ax_line2);
+
+  AXSelection::Builder builder;
+  const AXSelection ax_selection =
+      builder.SetBase(ax_base).SetExtent(ax_extent).Build();
+  const SelectionInDOMTree dom_selection = ax_selection.AsSelection();
+  EXPECT_EQ(paragraph, dom_selection.Base().AnchorNode());
+  EXPECT_EQ(1, dom_selection.Base().OffsetInContainerNode());
+  EXPECT_EQ(line2, dom_selection.Extent().AnchorNode());
+  EXPECT_EQ(0, dom_selection.Extent().OffsetInContainerNode());
+
+  // The selection anchor marker '^' should be before the line break and the
+  // selection focus marker '|' should be after it.
+  EXPECT_EQ(
+      "++<Paragraph>\n"
+      "++++<StaticText: Hello>\n"
+      "^++++<LineBreak: \n>\n"
+      "|++++<StaticText: |How are you.>\n",
+      GetSelectionText(ax_selection));
+}
+
 //
 // Get selection tests.
 // Retrieving a selection with endpoints which have no corresponding objects in
@@ -427,7 +519,7 @@ TEST_F(AccessibilitySelectionTest, SetSelectionAroundListBullet) {
       "++++<List>\n"
       "++++++<ListItem>\n"
       "++++++++<ListMarker: \xE2\x80\xA2 >\n"
-      "++++++++<StaticText: Item 1.>\n"
+      "^++++++++<StaticText: Item 1.>\n"
       "++++++<ListItem>\n"
       "++++++++<ListMarker: \xE2\x80\xA2 >\n"
       "++++++++<StaticText: Item 2.|>\n",
@@ -694,6 +786,60 @@ TEST_F(AccessibilitySelectionTest, SelectingTheWholeOfTheTextField) {
   EXPECT_EQ("backward", ToTextControl(*input).selectionDirection());
 }
 
+TEST_F(AccessibilitySelectionTest, SelectEachConsecutiveCharacterInTextField) {
+  SetBodyInnerHTML(R"HTML(
+      <input id="input" value="Inside text field.">
+      )HTML");
+
+  Element* const input = GetDocument().QuerySelector("input");
+  ASSERT_NE(nullptr, input);
+  ASSERT_TRUE(IsTextControl(input));
+  TextControlElement& text_control = ToTextControl(*input);
+  ASSERT_LE(1u, text_control.value().length());
+
+  const AXObject* ax_input = GetAXObjectByElementId("input");
+  ASSERT_NE(nullptr, ax_input);
+  ASSERT_EQ(ax::mojom::Role::kTextField, ax_input->RoleValue());
+
+  for (unsigned int i = 0; i < text_control.value().length() - 1; ++i) {
+    AXSelection::Builder builder;
+    AXSelection ax_selection =
+        builder.SetBase(AXPosition::CreatePositionInTextObject(*ax_input, i))
+            .SetExtent(AXPosition::CreatePositionInTextObject(*ax_input, i + 1))
+            .Build();
+
+    testing::Message message;
+    message << "While selecting forward character "
+            << char{text_control.value()[i]} << " at position " << i
+            << " in text field.";
+    SCOPED_TRACE(message);
+    EXPECT_TRUE(ax_selection.Select());
+
+    EXPECT_EQ(i, text_control.selectionStart());
+    EXPECT_EQ(i + 1, text_control.selectionEnd());
+    EXPECT_EQ("forward", text_control.selectionDirection());
+  }
+
+  for (unsigned int i = text_control.value().length(); i > 0; --i) {
+    AXSelection::Builder builder;
+    AXSelection ax_selection =
+        builder.SetBase(AXPosition::CreatePositionInTextObject(*ax_input, i))
+            .SetExtent(AXPosition::CreatePositionInTextObject(*ax_input, i - 1))
+            .Build();
+
+    testing::Message message;
+    message << "While selecting backward character "
+            << char{text_control.value()[i]} << " at position " << i
+            << " in text field.";
+    SCOPED_TRACE(message);
+    EXPECT_TRUE(ax_selection.Select());
+
+    EXPECT_EQ(i - 1, text_control.selectionStart());
+    EXPECT_EQ(i, text_control.selectionEnd());
+    EXPECT_EQ("backward", text_control.selectionDirection());
+  }
+}
+
 TEST_F(AccessibilitySelectionTest, InvalidSelectionInTextField) {
   SetBodyInnerHTML(R"HTML(
       <p id="before">Before text field.</p>
@@ -868,6 +1014,66 @@ TEST_F(AccessibilitySelectionTest, SelectTheWholeOfTheTextarea) {
   EXPECT_EQ(3u, ToTextControl(*textarea).selectionStart());
   EXPECT_EQ(10u, ToTextControl(*textarea).selectionEnd());
   EXPECT_EQ("backward", ToTextControl(*textarea).selectionDirection());
+}
+
+TEST_F(AccessibilitySelectionTest, SelectEachConsecutiveCharacterInTextarea) {
+  SetBodyInnerHTML(R"HTML(
+      <textarea id="textarea">
+        Inside
+        textarea
+        field.
+      </textarea>
+      )HTML");
+
+  Element* const textarea = GetDocument().QuerySelector("textarea");
+  ASSERT_NE(nullptr, textarea);
+  ASSERT_TRUE(IsTextControl(textarea));
+  TextControlElement& text_control = ToTextControl(*textarea);
+  ASSERT_LE(1u, text_control.value().length());
+
+  const AXObject* ax_textarea = GetAXObjectByElementId("textarea");
+  ASSERT_NE(nullptr, ax_textarea);
+  ASSERT_EQ(ax::mojom::Role::kTextField, ax_textarea->RoleValue());
+
+  for (unsigned int i = 0; i < text_control.value().length() - 1; ++i) {
+    AXSelection::Builder builder;
+    AXSelection ax_selection =
+        builder.SetBase(AXPosition::CreatePositionInTextObject(*ax_textarea, i))
+            .SetExtent(
+                AXPosition::CreatePositionInTextObject(*ax_textarea, i + 1))
+            .Build();
+
+    testing::Message message;
+    message << "While selecting forward character "
+            << char{text_control.value()[i]} << " at position " << i
+            << " in textarea.";
+    SCOPED_TRACE(message);
+    EXPECT_TRUE(ax_selection.Select());
+
+    EXPECT_EQ(i, text_control.selectionStart());
+    EXPECT_EQ(i + 1, text_control.selectionEnd());
+    EXPECT_EQ("forward", text_control.selectionDirection());
+  }
+
+  for (unsigned int i = text_control.value().length(); i > 0; --i) {
+    AXSelection::Builder builder;
+    AXSelection ax_selection =
+        builder.SetBase(AXPosition::CreatePositionInTextObject(*ax_textarea, i))
+            .SetExtent(
+                AXPosition::CreatePositionInTextObject(*ax_textarea, i - 1))
+            .Build();
+
+    testing::Message message;
+    message << "While selecting backward character "
+            << char{text_control.value()[i]} << " at position " << i
+            << " in textarea.";
+    SCOPED_TRACE(message);
+    EXPECT_TRUE(ax_selection.Select());
+
+    EXPECT_EQ(i - 1, text_control.selectionStart());
+    EXPECT_EQ(i, text_control.selectionEnd());
+    EXPECT_EQ("backward", text_control.selectionDirection());
+  }
 }
 
 TEST_F(AccessibilitySelectionTest, InvalidSelectionInTextarea) {
