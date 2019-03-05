@@ -5,6 +5,8 @@
 #include "content/browser/web_contents/web_contents_ns_view_bridge.h"
 
 #import "content/browser/web_contents/web_contents_view_cocoa.h"
+#include "content/browser/web_contents/web_contents_view_mac.h"
+#include "ui/gfx/image/image_skia_util_mac.h"
 
 namespace content {
 
@@ -13,7 +15,7 @@ WebContentsNSViewBridge::WebContentsNSViewBridge(
     mojom::WebContentsNSViewClientAssociatedPtr client)
     : client_(std::move(client)) {
   cocoa_view_.reset(
-      [[WebContentsViewCocoa alloc] initWithWebContentsViewMac:nullptr]);
+      [[WebContentsViewCocoa alloc] initWithViewsHostableView:nullptr]);
   [cocoa_view_ setClient:client_.get()];
   view_id_ =
       std::make_unique<ui::ScopedNSViewIdMapping>(view_id, cocoa_view_.get());
@@ -23,7 +25,8 @@ WebContentsNSViewBridge::WebContentsNSViewBridge(
     uint64_t view_id,
     WebContentsViewMac* web_contents_view) {
   cocoa_view_.reset([[WebContentsViewCocoa alloc]
-      initWithWebContentsViewMac:web_contents_view]);
+      initWithViewsHostableView:web_contents_view]);
+  [cocoa_view_ setClient:web_contents_view];
   view_id_ =
       std::make_unique<ui::ScopedNSViewIdMapping>(view_id, cocoa_view_.get());
 }
@@ -33,7 +36,8 @@ WebContentsNSViewBridge::~WebContentsNSViewBridge() {
   // while the user was operating a UI control which resulted in a
   // close.  In that case, the Cocoa view outlives the
   // WebContentsViewMac instance due to Cocoa retain count.
-  [cocoa_view_ clearWebContentsView];
+  [cocoa_view_ setClient:nullptr];
+  [cocoa_view_ clearViewsHostableView];
   [cocoa_view_ removeFromSuperview];
 }
 
@@ -80,6 +84,18 @@ void WebContentsNSViewBridge::TakeFocus(bool reverse) {
     [[cocoa_view_ window] selectPreviousKeyView:cocoa_view_];
   else
     [[cocoa_view_ window] selectNextKeyView:cocoa_view_];
+}
+
+void WebContentsNSViewBridge::StartDrag(const DropData& drop_data,
+                                        uint32_t operation_mask,
+                                        const gfx::ImageSkia& image,
+                                        const gfx::Vector2d& image_offset) {
+  NSPoint offset = NSPointFromCGPoint(
+      gfx::PointAtOffsetFromOrigin(image_offset).ToCGPoint());
+  [cocoa_view_ startDragWithDropData:drop_data
+                   dragOperationMask:operation_mask
+                               image:gfx::NSImageFromImageSkia(image)
+                              offset:offset];
 }
 
 }  // namespace content

@@ -377,7 +377,10 @@ mojom("interfaces") {
       "ns_view_bridge_factory.mojom",
       "web_contents_ns_view_bridge.mojom",
     ]
-    public_deps += [ "//ui/gfx/geometry/mojo" ]
+    public_deps += [
+      "//ui/gfx/geometry/mojo",
+      "//ui/gfx/image/mojo:interfaces",
+    ]
   }
 
   component_output_prefix = "content_public_common_mojo_bindings"

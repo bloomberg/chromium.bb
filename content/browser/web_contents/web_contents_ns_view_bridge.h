@@ -47,6 +47,10 @@ class CONTENT_EXPORT WebContentsNSViewBridge
   void SetVisible(bool visible) override;
   void MakeFirstResponder() override;
   void TakeFocus(bool reverse) override;
+  void StartDrag(const DropData& drop_data,
+                 uint32_t operation_mask,
+                 const gfx::ImageSkia& image,
+                 const gfx::Vector2d& image_offset) override;
 
  private:
   base::scoped_nsobject<WebContentsViewCocoa> cocoa_view_;

@@ -148,6 +148,7 @@ class SynchronousCompositor;
 class SynchronousCompositorHost;
 class SynchronousCompositorSyncCallBridge;
 class TextInputClientMac;
+class WebContentsViewMac;
 }  // namespace content
 namespace cronet {
 class CronetPrefsManager;
@@ -319,6 +320,7 @@ class BASE_EXPORT ScopedAllowBlocking {
   friend class android_webview::ScopedAllowInitGLBindings;
   friend class content::BrowserProcessSubThread;
   friend class content::GpuProcessTransportFactory;
+  friend class content::WebContentsViewMac;
   friend class cronet::CronetPrefsManager;
   friend class cronet::CronetURLRequestContext;
   friend class mojo::CoreLibraryInitializer;
