@@ -21,18 +21,15 @@
       }
 
       #illustration {
-        background: -webkit-image-set(
-            url(images/100/sign_in_promo.jpg) 1x,
-            url(images/200/sign_in_promo.jpg) 2x)
-                no-repeat center center;
+        background: url(images/sign_in_promo.svg) no-repeat center center;
+        background-size: contain;
         height: 222px;
         margin-top: 100px;
-        width: 574px;
+        width: 594.5px;
       }
 
       :host-context([dark]) #illustration {
         background-image: url(images/sign_in_promo_dark.svg);
-        background-size: contain;
       }
 
       #no-synced-tabs {
