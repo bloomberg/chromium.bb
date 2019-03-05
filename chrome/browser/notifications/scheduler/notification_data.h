@@ -5,38 +5,38 @@
 #ifndef CHROME_BROWSER_NOTIFICATIONS_SCHEDULER_NOTIFICATION_DATA_H_
 #define CHROME_BROWSER_NOTIFICATIONS_SCHEDULER_NOTIFICATION_DATA_H_
 
-#include <memory>
+#include <string>
 
-#include "base/macros.h"
-#include "ui/message_center/public/cpp/notification.h"
+namespace notifications {
 
-struct ScheduleParams;
-
-// Struct used to schedule a notification.
-class NotificationData {
- public:
-  enum class Type {
-    PLACE_HOLDER,
-  };
-
-  NotificationData(Type type,
-                   std::unique_ptr<message_center::Notification> notification,
-                   std::unique_ptr<ScheduleParams> schedule_params);
+// Contains data used to display a scheduled notification. All fields will be
+// persisted to disk as protobuffer NotificationData. The clients of
+// notification scheduler can optionally use the texts or icon in this struct,
+// or use hard coded assets id.
+struct NotificationData {
+  NotificationData();
+  NotificationData(const NotificationData& other);
   ~NotificationData();
 
-  Type type() const { return type_; }
+  // The unique identifier of the notification. This is not used as the key for
+  // the database entry, but the id of other notification struct plumbed to
+  // the scheduler system.
+  std::string id;
 
- private:
-  Type type_;
+  // The title of the notification.
+  std::string title;
 
-  // Notification data that the client can optionally choose to use when showing
-  // a notification. Client should only use this when the data is dynamically
-  // generated, such as URL to navigate when the user clicks the notification.
-  std::unique_ptr<message_center::Notification> notification_;
+  // The body text of the notification.
+  std::string message;
 
-  std::unique_ptr<ScheduleParams> schedule_params_;
+  // The unique identifier of the icon, which must be loaded asynchronously into
+  // memory.
+  std::string icon_uuid;
 
-  DISALLOW_COPY_AND_ASSIGN(NotificationData);
+  // URL of the web site responsible for showing the notification.
+  std::string url;
 };
+
+}  // namespace notifications
 
 #endif  // CHROME_BROWSER_NOTIFICATIONS_SCHEDULER_NOTIFICATION_DATA_H_
