@@ -70,7 +70,7 @@ class MHTMLLoadingTest : public testing::Test {
     params->url = url;
     params->response = WebURLResponse(url);
     params->response.SetMIMEType("multipart/related");
-    params->response.SetHTTPStatusCode(200);
+    params->response.SetHttpStatusCode(200);
     params->response.SetExpectedContentLength(buffer->size());
     auto body_loader = std::make_unique<StaticDataNavigationBodyLoader>();
     body_loader->Write(*buffer);

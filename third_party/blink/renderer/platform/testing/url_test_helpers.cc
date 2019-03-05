@@ -71,7 +71,7 @@ void RegisterMockedURLLoad(const WebURL& full_url,
   WebURLResponse response(full_url);
   response.SetMIMEType(mime_type);
   response.SetHTTPHeaderField(http_names::kContentType, mime_type);
-  response.SetHTTPStatusCode(200);
+  response.SetHttpStatusCode(200);
   response.SetLoadTiming(timing);
 
   RegisterMockedURLLoadWithCustomResponse(full_url, file_path, response);
@@ -84,7 +84,7 @@ void RegisterMockedErrorURLLoad(const WebURL& full_url) {
   WebURLResponse response;
   response.SetMIMEType("image/png");
   response.SetHTTPHeaderField(http_names::kContentType, "image/png");
-  response.SetHTTPStatusCode(404);
+  response.SetHttpStatusCode(404);
   response.SetLoadTiming(timing);
 
   ResourceError error = ResourceError::Failure(full_url);

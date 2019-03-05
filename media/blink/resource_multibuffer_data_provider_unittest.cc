@@ -111,7 +111,7 @@ class ResourceMultiBufferDataProviderTest : public testing::Test {
         WebString::FromUTF8("Content-Length"),
         WebString::FromUTF8(base::StringPrintf("%" PRId64, instance_size)));
     response.SetExpectedContentLength(instance_size);
-    response.SetHTTPStatusCode(kHttpOK);
+    response.SetHttpStatusCode(kHttpOK);
     loader_->DidReceiveResponse(response);
 
     if (ok) {
@@ -156,7 +156,7 @@ class ResourceMultiBufferDataProviderTest : public testing::Test {
                                   WebString::FromUTF8("bytes"));
     }
 
-    response.SetHTTPStatusCode(kHttpPartialContent);
+    response.SetHttpStatusCode(kHttpPartialContent);
     loader_->DidReceiveResponse(response);
 
     EXPECT_EQ(instance_size, url_data_->length());
@@ -244,7 +244,7 @@ TEST_F(ResourceMultiBufferDataProviderTest, BadHttpResponse) {
   EXPECT_CALL(*this, RedirectCallback(scoped_refptr<UrlData>(nullptr)));
 
   WebURLResponse response(gurl_);
-  response.SetHTTPStatusCode(404);
+  response.SetHttpStatusCode(404);
   response.SetHTTPStatusText("Not Found\n");
   loader_->DidReceiveResponse(response);
 }
@@ -308,7 +308,7 @@ TEST_F(ResourceMultiBufferDataProviderTest, InvalidPartialResponse) {
                                              "%d-%d/%d",
                                              1, 10, 1024)));
   response.SetExpectedContentLength(10);
-  response.SetHTTPStatusCode(kHttpPartialContent);
+  response.SetHttpStatusCode(kHttpPartialContent);
   loader_->DidReceiveResponse(response);
 }
 

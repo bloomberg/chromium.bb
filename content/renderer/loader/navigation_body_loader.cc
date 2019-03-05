@@ -51,7 +51,7 @@ void NavigationBodyLoader::FillNavigationParamsResponseAndBodyLoader(
         url, redirect_response, &redirect.redirect_response,
         false /* report_security_info */, request_id);
     if (url.SchemeIs(url::kDataScheme))
-      redirect.redirect_response.SetHTTPStatusCode(200);
+      redirect.redirect_response.SetHttpStatusCode(200);
     redirect.new_url = redirect_info.new_url;
     redirect.new_referrer =
         blink::WebString::FromUTF8(redirect_info.new_referrer);
@@ -67,7 +67,7 @@ void NavigationBodyLoader::FillNavigationParamsResponseAndBodyLoader(
                                         false /* report_security_info */,
                                         request_id);
   if (url.SchemeIs(url::kDataScheme))
-    navigation_params->response.SetHTTPStatusCode(200);
+    navigation_params->response.SetHttpStatusCode(200);
 
   if (url_loader_client_endpoints) {
     navigation_params->body_loader.reset(new NavigationBodyLoader(

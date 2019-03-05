@@ -43,7 +43,7 @@ TEST_F(FontResourceTest,
        ResourceFetcherRevalidateDeferedResourceFromTwoInitiators) {
   KURL url("http://127.0.0.1:8000/font.woff");
   ResourceResponse response(url);
-  response.SetHTTPStatusCode(200);
+  response.SetHttpStatusCode(200);
   response.SetHTTPHeaderField(http_names::kETag, "1234567890");
   Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(
       url, WrappedResourceResponse(response), "");
@@ -103,7 +103,7 @@ TEST_F(FontResourceTest,
 TEST_F(FontResourceTest, CacheAwareFontLoading) {
   KURL url("http://127.0.0.1:8000/font.woff");
   ResourceResponse response(url);
-  response.SetHTTPStatusCode(200);
+  response.SetHttpStatusCode(200);
   Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(
       url, WrappedResourceResponse(response), "");
 

@@ -189,7 +189,7 @@ class WebURLResponse {
   BLINK_PLATFORM_EXPORT void SetRequestId(int);
 
   BLINK_PLATFORM_EXPORT int HttpStatusCode() const;
-  BLINK_PLATFORM_EXPORT void SetHTTPStatusCode(int);
+  BLINK_PLATFORM_EXPORT void SetHttpStatusCode(int);
 
   BLINK_PLATFORM_EXPORT WebString HttpStatusText() const;
   BLINK_PLATFORM_EXPORT void SetHTTPStatusText(const WebString&);

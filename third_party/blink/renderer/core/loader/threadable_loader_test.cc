@@ -119,7 +119,7 @@ void SetUpRedirectURL() {
 
   WebURLResponse response;
   response.SetCurrentRequestUrl(url);
-  response.SetHTTPStatusCode(301);
+  response.SetHttpStatusCode(301);
   response.SetLoadTiming(timing);
   response.AddHTTPHeaderField("Location", SuccessURL().GetString());
   response.AddHTTPHeaderField("Access-Control-Allow-Origin", "http://fake.url");
@@ -136,7 +136,7 @@ void SetUpRedirectLoopURL() {
 
   WebURLResponse response;
   response.SetCurrentRequestUrl(url);
-  response.SetHTTPStatusCode(301);
+  response.SetHttpStatusCode(301);
   response.SetLoadTiming(timing);
   response.AddHTTPHeaderField("Location", RedirectLoopURL().GetString());
   response.AddHTTPHeaderField("Access-Control-Allow-Origin", "http://fake.url");

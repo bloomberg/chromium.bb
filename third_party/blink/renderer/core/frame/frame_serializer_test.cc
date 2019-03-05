@@ -97,7 +97,7 @@ class FrameSerializerTest : public testing::Test,
 
     WebURLResponse response;
     response.SetMIMEType("text/html");
-    response.SetHTTPStatusCode(status_code);
+    response.SetHttpStatusCode(status_code);
 
     platform_->GetURLLoaderMockFactory()->RegisterErrorURL(
         KURL(base_url_, file), response, error);

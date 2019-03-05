@@ -174,7 +174,7 @@ int ResourceResponse::HttpStatusCode() const {
   return http_status_code_;
 }
 
-void ResourceResponse::SetHTTPStatusCode(int status_code) {
+void ResourceResponse::SetHttpStatusCode(int status_code) {
   http_status_code_ = status_code;
 }
 

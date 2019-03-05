@@ -154,8 +154,8 @@ int WebURLResponse::HttpStatusCode() const {
   return resource_response_->HttpStatusCode();
 }
 
-void WebURLResponse::SetHTTPStatusCode(int http_status_code) {
-  resource_response_->SetHTTPStatusCode(http_status_code);
+void WebURLResponse::SetHttpStatusCode(int http_status_code) {
+  resource_response_->SetHttpStatusCode(http_status_code);
 }
 
 WebString WebURLResponse::HttpStatusText() const {

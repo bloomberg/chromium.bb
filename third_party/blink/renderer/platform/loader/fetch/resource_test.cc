@@ -56,7 +56,7 @@ class MockPlatform final : public TestingPlatformSupportWithMockScheduler {
 
 ResourceResponse CreateTestResourceResponse() {
   ResourceResponse response(url_test_helpers::ToKURL("https://example.com/"));
-  response.SetHTTPStatusCode(200);
+  response.SetHttpStatusCode(200);
   return response;
 }
 
@@ -146,7 +146,7 @@ TEST(ResourceTest, RevalidateWithFragment) {
   ScopedTestingPlatformSupport<MockPlatform> mock;
   KURL url("http://127.0.0.1:8000/foo.html");
   ResourceResponse response(url);
-  response.SetHTTPStatusCode(200);
+  response.SetHttpStatusCode(200);
   MockResource* resource = MockResource::Create(url);
   resource->ResponseReceived(response);
   resource->FinishForTest();
@@ -156,7 +156,7 @@ TEST(ResourceTest, RevalidateWithFragment) {
   url.SetFragmentIdentifier("bar");
   resource->SetRevalidatingRequest(ResourceRequest(url));
   ResourceResponse revalidating_response(url);
-  revalidating_response.SetHTTPStatusCode(304);
+  revalidating_response.SetHttpStatusCode(304);
   resource->ResponseReceived(revalidating_response);
 }
 
@@ -164,7 +164,7 @@ TEST(ResourceTest, Vary) {
   ScopedTestingPlatformSupport<MockPlatform> mock;
   const KURL url("http://127.0.0.1:8000/foo.html");
   ResourceResponse response(url);
-  response.SetHTTPStatusCode(200);
+  response.SetHttpStatusCode(200);
 
   MockResource* resource = MockResource::Create(url);
   resource->ResponseReceived(response);
@@ -222,7 +222,7 @@ TEST(ResourceTest, RevalidationFailed) {
   const KURL url("http://test.example.com/");
   MockResource* resource = MockResource::Create(ResourceRequest(url));
   ResourceResponse response(url);
-  response.SetHTTPStatusCode(200);
+  response.SetHttpStatusCode(200);
   resource->ResponseReceived(response);
   const char kData[5] = "abcd";
   resource->AppendData(kData, 4);
@@ -242,7 +242,7 @@ TEST(ResourceTest, RevalidationFailed) {
   resource->AddClient(client, nullptr);
 
   ResourceResponse revalidating_response(url);
-  revalidating_response.SetHTTPStatusCode(200);
+  revalidating_response.SetHttpStatusCode(200);
   resource->ResponseReceived(revalidating_response);
 
   EXPECT_FALSE(resource->IsCacheValidator());
@@ -270,7 +270,7 @@ TEST(ResourceTest, RevalidationSucceeded) {
   const KURL url("http://test.example.com/");
   MockResource* resource = MockResource::Create(ResourceRequest(url));
   ResourceResponse response(url);
-  response.SetHTTPStatusCode(200);
+  response.SetHttpStatusCode(200);
   resource->ResponseReceived(response);
   const char kData[5] = "abcd";
   resource->AppendData(kData, 4);
@@ -290,7 +290,7 @@ TEST(ResourceTest, RevalidationSucceeded) {
   resource->AddClient(client, nullptr);
 
   ResourceResponse revalidating_response(url);
-  revalidating_response.SetHTTPStatusCode(304);
+  revalidating_response.SetHttpStatusCode(304);
   resource->ResponseReceived(revalidating_response);
 
   EXPECT_FALSE(resource->IsCacheValidator());
@@ -312,7 +312,7 @@ TEST(ResourceTest, RevalidationSucceededForResourceWithoutBody) {
   const KURL url("http://test.example.com/");
   Resource* resource = MockResource::Create(ResourceRequest(url));
   ResourceResponse response(url);
-  response.SetHTTPStatusCode(200);
+  response.SetHttpStatusCode(200);
   resource->ResponseReceived(response);
   resource->FinishForTest();
   GetMemoryCache()->Add(resource);
@@ -325,7 +325,7 @@ TEST(ResourceTest, RevalidationSucceededForResourceWithoutBody) {
   resource->AddClient(client, nullptr);
 
   ResourceResponse revalidating_response(url);
-  revalidating_response.SetHTTPStatusCode(304);
+  revalidating_response.SetHttpStatusCode(304);
   resource->ResponseReceived(revalidating_response);
   EXPECT_FALSE(resource->IsCacheValidator());
   EXPECT_EQ(200, resource->GetResponse().HttpStatusCode());
@@ -344,7 +344,7 @@ TEST(ResourceTest, RevalidationSucceededUpdateHeaders) {
   const KURL url("http://test.example.com/");
   Resource* resource = MockResource::Create(ResourceRequest(url));
   ResourceResponse response(url);
-  response.SetHTTPStatusCode(200);
+  response.SetHttpStatusCode(200);
   response.AddHTTPHeaderField("keep-alive", "keep-alive value");
   response.AddHTTPHeaderField("expires", "expires value");
   response.AddHTTPHeaderField("last-modified", "last-modified value");
@@ -380,7 +380,7 @@ TEST(ResourceTest, RevalidationSucceededUpdateHeaders) {
 
   // Perform a revalidation step.
   ResourceResponse revalidating_response(url);
-  revalidating_response.SetHTTPStatusCode(304);
+  revalidating_response.SetHttpStatusCode(304);
   // Headers that aren't copied with an 304 code.
   revalidating_response.AddHTTPHeaderField("keep-alive", "garbage");
   revalidating_response.AddHTTPHeaderField("expires", "garbage");
@@ -422,7 +422,7 @@ TEST(ResourceTest, RedirectDuringRevalidation) {
 
   MockResource* resource = MockResource::Create(ResourceRequest(url));
   ResourceResponse response(url);
-  response.SetHTTPStatusCode(200);
+  response.SetHttpStatusCode(200);
   resource->ResponseReceived(response);
   const char kData[5] = "abcd";
   resource->AppendData(kData, 4);
@@ -451,7 +451,7 @@ TEST(ResourceTest, RedirectDuringRevalidation) {
   ResourceResponse redirect_response(url);
   redirect_response.SetHTTPHeaderField(
       "location", AtomicString(redirect_target_url.GetString()));
-  redirect_response.SetHTTPStatusCode(308);
+  redirect_response.SetHttpStatusCode(308);
   ResourceRequest redirected_revalidating_request(redirect_target_url);
   resource->WillFollowRedirect(redirected_revalidating_request,
                                redirect_response);
@@ -462,7 +462,7 @@ TEST(ResourceTest, RedirectDuringRevalidation) {
 
   // The final response is received.
   ResourceResponse revalidating_response(redirect_target_url);
-  revalidating_response.SetHTTPStatusCode(200);
+  revalidating_response.SetHttpStatusCode(200);
   resource->ResponseReceived(revalidating_response);
 
   EXPECT_TRUE(resource->CacheHandler());
@@ -504,7 +504,7 @@ TEST(ResourceTest, StaleWhileRevalidateCacheControl) {
   ScopedTestingPlatformSupport<MockPlatform> mock;
   const KURL url("http://127.0.0.1:8000/foo.html");
   ResourceResponse response(url);
-  response.SetHTTPStatusCode(200);
+  response.SetHttpStatusCode(200);
   response.SetHTTPHeaderField(http_names::kCacheControl,
                               "max-age=0, stale-while-revalidate=40");
 
@@ -533,13 +533,13 @@ TEST(ResourceTest, StaleWhileRevalidateCacheControlWithRedirect) {
   const KURL redirect_target_url("http://127.0.0.1:8000/food.html");
   ResourceResponse response(url);
   response.SetHTTPHeaderField(http_names::kCacheControl, "max-age=50");
-  response.SetHTTPStatusCode(200);
+  response.SetHttpStatusCode(200);
 
   // The revalidating request is redirected.
   ResourceResponse redirect_response(url);
   redirect_response.SetHTTPHeaderField(
       "location", AtomicString(redirect_target_url.GetString()));
-  redirect_response.SetHTTPStatusCode(302);
+  redirect_response.SetHttpStatusCode(302);
   redirect_response.SetHTTPHeaderField(http_names::kCacheControl,
                                        "max-age=0, stale-while-revalidate=40");
   redirect_response.SetAsyncRevalidationRequested(true);

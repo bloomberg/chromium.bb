@@ -194,7 +194,7 @@ class PLATFORM_EXPORT ResourceResponse final {
   void SetTextEncodingName(const AtomicString&);
 
   int HttpStatusCode() const;
-  void SetHTTPStatusCode(int);
+  void SetHttpStatusCode(int);
 
   const AtomicString& HttpStatusText() const;
   void SetHTTPStatusText(const AtomicString&);

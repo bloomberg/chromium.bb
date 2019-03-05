@@ -97,9 +97,9 @@ void SimNetwork::AddRequest(SimRequestBase& request) {
   response.SetMIMEType(request.mime_type_);
 
   if (request.redirect_url_.IsEmpty()) {
-    response.SetHTTPStatusCode(200);
+    response.SetHttpStatusCode(200);
   } else {
-    response.SetHTTPStatusCode(302);
+    response.SetHttpStatusCode(302);
     response.AddHTTPHeaderField("Location", request.redirect_url_);
   }
 
@@ -117,7 +117,7 @@ bool SimNetwork::FillNavigationParamsResponse(WebNavigationParams* params) {
   SimRequestBase* request = it->value;
   params->response = WebURLResponse(params->url);
   params->response.SetMIMEType(request->mime_type_);
-  params->response.SetHTTPStatusCode(200);
+  params->response.SetHttpStatusCode(200);
   auto body_loader = std::make_unique<StaticDataNavigationBodyLoader>();
   request->UsedForNavigation(body_loader.get());
   params->body_loader = std::move(body_loader);

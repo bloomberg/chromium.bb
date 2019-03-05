@@ -153,7 +153,7 @@ TEST_F(ResourceFetcherTest, UseExistingResource) {
 
   KURL url("http://127.0.0.1:8000/foo.html");
   ResourceResponse response(url);
-  response.SetHTTPStatusCode(200);
+  response.SetHttpStatusCode(200);
   response.SetHTTPHeaderField(http_names::kCacheControl, "max-age=3600");
   RegisterMockedURLLoadWithCustomResponse(url, response);
 
@@ -182,7 +182,7 @@ TEST_F(ResourceFetcherTest, WillSendRequestAdBit) {
       RawResource::CreateForTest(url, source_origin, ResourceType::kRaw);
   AddResourceToMemoryCache(resource);
   ResourceResponse response(url);
-  response.SetHTTPStatusCode(200);
+  response.SetHttpStatusCode(200);
   response.SetHTTPHeaderField(http_names::kCacheControl, "max-age=3600");
   resource->ResponseReceived(response);
   resource->FinishForTest();
@@ -213,7 +213,7 @@ TEST_F(ResourceFetcherTest, Vary) {
   AddResourceToMemoryCache(resource);
 
   ResourceResponse response(url);
-  response.SetHTTPStatusCode(200);
+  response.SetHttpStatusCode(200);
   response.SetHTTPHeaderField(http_names::kCacheControl, "max-age=3600");
   response.SetHTTPHeaderField(http_names::kVary, "*");
   resource->ResponseReceived(response);
@@ -237,7 +237,7 @@ TEST_F(ResourceFetcherTest, ResourceTimingInfo) {
   info->AddFinalTransferSize(5);
   EXPECT_EQ(info->TransferSize(), 5);
   ResourceResponse redirect_response(KURL("https://example.com/original"));
-  redirect_response.SetHTTPStatusCode(200);
+  redirect_response.SetHttpStatusCode(200);
   redirect_response.SetEncodedDataLength(7);
   info->AddRedirect(redirect_response, KURL("https://example.com/redirect"));
   EXPECT_EQ(info->TransferSize(), 12);
@@ -255,7 +255,7 @@ TEST_F(ResourceFetcherTest, VaryOnBack) {
   AddResourceToMemoryCache(resource);
 
   ResourceResponse response(url);
-  response.SetHTTPStatusCode(200);
+  response.SetHttpStatusCode(200);
   response.SetHTTPHeaderField(http_names::kCacheControl, "max-age=3600");
   response.SetHTTPHeaderField(http_names::kVary, "*");
   resource->ResponseReceived(response);
@@ -275,7 +275,7 @@ TEST_F(ResourceFetcherTest, VaryResource) {
 
   KURL url("http://127.0.0.1:8000/foo.html");
   ResourceResponse response(url);
-  response.SetHTTPStatusCode(200);
+  response.SetHttpStatusCode(200);
   response.SetHTTPHeaderField(http_names::kCacheControl, "max-age=3600");
   response.SetHTTPHeaderField(http_names::kVary, "*");
   RegisterMockedURLLoadWithCustomResponse(url, response);
@@ -342,7 +342,7 @@ TEST_F(ResourceFetcherTest, RevalidateWhileFinishingLoading) {
   KURL url("http://127.0.0.1:8000/foo.png");
 
   ResourceResponse response(url);
-  response.SetHTTPStatusCode(200);
+  response.SetHttpStatusCode(200);
   response.SetHTTPHeaderField(http_names::kCacheControl, "max-age=3600");
   response.SetHTTPHeaderField(http_names::kETag, "1234567890");
   RegisterMockedURLLoadWithCustomResponse(url, response);
@@ -456,7 +456,7 @@ class ScopedMockRedirectRequester {
     KURL redirect_url(from_url);
     WebURLResponse redirect_response;
     redirect_response.SetCurrentRequestUrl(redirect_url);
-    redirect_response.SetHTTPStatusCode(301);
+    redirect_response.SetHttpStatusCode(301);
     redirect_response.SetHTTPHeaderField(http_names::kLocation, to_url);
     redirect_response.SetEncodedDataLength(kRedirectResponseOverheadBytes);
     Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(
@@ -779,7 +779,7 @@ TEST_F(ResourceFetcherTest, Revalidate304) {
   AddResourceToMemoryCache(resource);
 
   ResourceResponse response(url);
-  response.SetHTTPStatusCode(304);
+  response.SetHttpStatusCode(304);
   response.SetHTTPHeaderField("etag", "1234567890");
   resource->ResponseReceived(response);
   resource->FinishForTest();
@@ -846,7 +846,7 @@ TEST_F(ResourceFetcherTest, MAYBE_ContentTypeDataURL) {
 TEST_F(ResourceFetcherTest, ContentIdURL) {
   KURL url("cid:0123456789@example.com");
   ResourceResponse response(url);
-  response.SetHTTPStatusCode(200);
+  response.SetHttpStatusCode(200);
   RegisterMockedURLLoadWithCustomResponse(url, response);
 
   auto* fetcher = CreateFetcher();
@@ -873,7 +873,7 @@ TEST_F(ResourceFetcherTest, StaleWhileRevalidate) {
   FetchParameters fetch_params{ResourceRequest(url)};
 
   ResourceResponse response(url);
-  response.SetHTTPStatusCode(200);
+  response.SetHttpStatusCode(200);
   response.SetHTTPHeaderField(http_names::kCacheControl,
                               "max-age=0, stale-while-revalidate=40");
 
@@ -898,7 +898,7 @@ TEST_F(ResourceFetcherTest, StaleWhileRevalidate) {
   // memory cache after the revalidation completes.
   platform_->AdvanceClockSeconds(1);
   ResourceResponse revalidate_response(url);
-  revalidate_response.SetHTTPStatusCode(200);
+  revalidate_response.SetHttpStatusCode(200);
   platform_->GetURLLoaderMockFactory()->UnregisterURL(url);
   RegisterMockedURLLoadWithCustomResponse(url, revalidate_response);
   new_resource = MockResource::Fetch(fetch_params, fetcher, nullptr);
@@ -917,7 +917,7 @@ TEST_F(ResourceFetcherTest, CachedResourceShouldNotCrashByNullURL) {
   // won't take a fast path.
   KURL url("http://127.0.0.1:8000/foo.html");
   ResourceResponse response(url);
-  response.SetHTTPStatusCode(200);
+  response.SetHttpStatusCode(200);
   RegisterMockedURLLoadWithCustomResponse(url, response);
   FetchParameters fetch_params{ResourceRequest(url)};
   MockResource::Fetch(fetch_params, fetcher, nullptr);
