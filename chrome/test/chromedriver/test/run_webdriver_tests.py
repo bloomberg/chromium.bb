@@ -210,7 +210,7 @@ if __name__ == '__main__':
       # TODO(crbug.com/934919): is_unexpected needs to be set for
       # unexpected failures once expectations have been supported.
       output['tests'][test_result.test_name] = {
-        'expected': 'PASS',
+        'expected': test_result.test_status,
         'actual': test_result.test_status,
       }
 
@@ -226,4 +226,7 @@ if __name__ == '__main__':
     with open(options.isolated_script_test_output, 'w') as fp:
       json.dump(output, fp)
 
+  # TODO(crbug.com/934919): exit code should be non-zero once
+  # the runner is able to detect unexpected failures. Currently set
+  # to 0 because all failures are expected.
   sys.exit(0)
