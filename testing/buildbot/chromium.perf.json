@@ -38,6 +38,7 @@
             "--multiple-dimension-script-verbose",
             "True"
           ],
+          "requires_simultaneous_shard_dispatch": true,
           "script": "//testing/trigger_scripts/perf_device_trigger.py"
         }
       },
@@ -76,6 +77,7 @@
             "--multiple-dimension-script-verbose",
             "True"
           ],
+          "requires_simultaneous_shard_dispatch": true,
           "script": "//testing/trigger_scripts/perf_device_trigger.py"
         }
       },
@@ -114,6 +116,7 @@
             "--multiple-dimension-script-verbose",
             "True"
           ],
+          "requires_simultaneous_shard_dispatch": true,
           "script": "//testing/trigger_scripts/perf_device_trigger.py"
         }
       },
@@ -156,6 +159,7 @@
             "--multiple-dimension-script-verbose",
             "True"
           ],
+          "requires_simultaneous_shard_dispatch": true,
           "script": "//testing/trigger_scripts/perf_device_trigger.py"
         }
       }
@@ -202,6 +206,7 @@
             "--multiple-dimension-script-verbose",
             "True"
           ],
+          "requires_simultaneous_shard_dispatch": true,
           "script": "//testing/trigger_scripts/perf_device_trigger.py"
         }
       }
@@ -248,6 +253,7 @@
             "--multiple-dimension-script-verbose",
             "True"
           ],
+          "requires_simultaneous_shard_dispatch": true,
           "script": "//testing/trigger_scripts/perf_device_trigger.py"
         }
       }
@@ -288,6 +294,7 @@
             "--multiple-dimension-script-verbose",
             "True"
           ],
+          "requires_simultaneous_shard_dispatch": true,
           "script": "//testing/trigger_scripts/perf_device_trigger.py"
         }
       },
@@ -324,6 +331,7 @@
             "--multiple-dimension-script-verbose",
             "True"
           ],
+          "requires_simultaneous_shard_dispatch": true,
           "script": "//testing/trigger_scripts/perf_device_trigger.py"
         }
       },
@@ -360,6 +368,7 @@
             "--multiple-dimension-script-verbose",
             "True"
           ],
+          "requires_simultaneous_shard_dispatch": true,
           "script": "//testing/trigger_scripts/perf_device_trigger.py"
         }
       },
@@ -398,6 +407,7 @@
             "--multiple-dimension-script-verbose",
             "True"
           ],
+          "requires_simultaneous_shard_dispatch": true,
           "script": "//testing/trigger_scripts/perf_device_trigger.py"
         }
       },
@@ -436,6 +446,7 @@
             "--multiple-dimension-script-verbose",
             "True"
           ],
+          "requires_simultaneous_shard_dispatch": true,
           "script": "//testing/trigger_scripts/perf_device_trigger.py"
         }
       },
@@ -476,6 +487,7 @@
             "--multiple-dimension-script-verbose",
             "True"
           ],
+          "requires_simultaneous_shard_dispatch": true,
           "script": "//testing/trigger_scripts/perf_device_trigger.py"
         }
       }
@@ -516,6 +528,7 @@
             "--multiple-dimension-script-verbose",
             "True"
           ],
+          "requires_simultaneous_shard_dispatch": true,
           "script": "//testing/trigger_scripts/perf_device_trigger.py"
         }
       },
@@ -552,6 +565,7 @@
             "--multiple-dimension-script-verbose",
             "True"
           ],
+          "requires_simultaneous_shard_dispatch": true,
           "script": "//testing/trigger_scripts/perf_device_trigger.py"
         }
       },
@@ -588,6 +602,7 @@
             "--multiple-dimension-script-verbose",
             "True"
           ],
+          "requires_simultaneous_shard_dispatch": true,
           "script": "//testing/trigger_scripts/perf_device_trigger.py"
         }
       },
@@ -627,6 +642,7 @@
             "--multiple-dimension-script-verbose",
             "True"
           ],
+          "requires_simultaneous_shard_dispatch": true,
           "script": "//testing/trigger_scripts/perf_device_trigger.py"
         }
       }
@@ -679,6 +695,7 @@
             "--multiple-dimension-script-verbose",
             "True"
           ],
+          "requires_simultaneous_shard_dispatch": true,
           "script": "//testing/trigger_scripts/perf_device_trigger.py"
         }
       }
@@ -724,6 +741,7 @@
             "--multiple-dimension-script-verbose",
             "True"
           ],
+          "requires_simultaneous_shard_dispatch": true,
           "script": "//testing/trigger_scripts/perf_device_trigger.py"
         }
       }
@@ -767,6 +785,7 @@
             "--multiple-dimension-script-verbose",
             "True"
           ],
+          "requires_simultaneous_shard_dispatch": true,
           "script": "//testing/trigger_scripts/perf_device_trigger.py"
         }
       },
@@ -805,6 +824,7 @@
             "--multiple-dimension-script-verbose",
             "True"
           ],
+          "requires_simultaneous_shard_dispatch": true,
           "script": "//testing/trigger_scripts/perf_device_trigger.py"
         }
       },
@@ -843,6 +863,7 @@
             "--multiple-dimension-script-verbose",
             "True"
           ],
+          "requires_simultaneous_shard_dispatch": true,
           "script": "//testing/trigger_scripts/perf_device_trigger.py"
         }
       },
@@ -881,6 +902,7 @@
             "--multiple-dimension-script-verbose",
             "True"
           ],
+          "requires_simultaneous_shard_dispatch": true,
           "script": "//testing/trigger_scripts/perf_device_trigger.py"
         }
       },
@@ -919,6 +941,7 @@
             "--multiple-dimension-script-verbose",
             "True"
           ],
+          "requires_simultaneous_shard_dispatch": true,
           "script": "//testing/trigger_scripts/perf_device_trigger.py"
         }
       },
@@ -957,6 +980,7 @@
             "--multiple-dimension-script-verbose",
             "True"
           ],
+          "requires_simultaneous_shard_dispatch": true,
           "script": "//testing/trigger_scripts/perf_device_trigger.py"
         }
       },
@@ -999,6 +1023,7 @@
             "--multiple-dimension-script-verbose",
             "True"
           ],
+          "requires_simultaneous_shard_dispatch": true,
           "script": "//testing/trigger_scripts/perf_device_trigger.py"
         }
       }
@@ -1051,6 +1076,7 @@
             "--multiple-dimension-script-verbose",
             "True"
           ],
+          "requires_simultaneous_shard_dispatch": true,
           "script": "//testing/trigger_scripts/perf_device_trigger.py"
         }
       },
@@ -1087,6 +1113,7 @@
             "--multiple-dimension-script-verbose",
             "True"
           ],
+          "requires_simultaneous_shard_dispatch": true,
           "script": "//testing/trigger_scripts/perf_device_trigger.py"
         }
       },
@@ -1123,6 +1150,7 @@
             "--multiple-dimension-script-verbose",
             "True"
           ],
+          "requires_simultaneous_shard_dispatch": true,
           "script": "//testing/trigger_scripts/perf_device_trigger.py"
         }
       },
@@ -1159,6 +1187,7 @@
             "--multiple-dimension-script-verbose",
             "True"
           ],
+          "requires_simultaneous_shard_dispatch": true,
           "script": "//testing/trigger_scripts/perf_device_trigger.py"
         }
       },
@@ -1195,6 +1224,7 @@
             "--multiple-dimension-script-verbose",
             "True"
           ],
+          "requires_simultaneous_shard_dispatch": true,
           "script": "//testing/trigger_scripts/perf_device_trigger.py"
         }
       },
@@ -1231,6 +1261,7 @@
             "--multiple-dimension-script-verbose",
             "True"
           ],
+          "requires_simultaneous_shard_dispatch": true,
           "script": "//testing/trigger_scripts/perf_device_trigger.py"
         }
       },
@@ -1271,6 +1302,7 @@
             "--multiple-dimension-script-verbose",
             "True"
           ],
+          "requires_simultaneous_shard_dispatch": true,
           "script": "//testing/trigger_scripts/perf_device_trigger.py"
         }
       }
@@ -1311,6 +1343,7 @@
             "--multiple-dimension-script-verbose",
             "True"
           ],
+          "requires_simultaneous_shard_dispatch": true,
           "script": "//testing/trigger_scripts/perf_device_trigger.py"
         }
       },
@@ -1347,6 +1380,7 @@
             "--multiple-dimension-script-verbose",
             "True"
           ],
+          "requires_simultaneous_shard_dispatch": true,
           "script": "//testing/trigger_scripts/perf_device_trigger.py"
         }
       },
@@ -1387,6 +1421,7 @@
             "--multiple-dimension-script-verbose",
             "True"
           ],
+          "requires_simultaneous_shard_dispatch": true,
           "script": "//testing/trigger_scripts/perf_device_trigger.py"
         }
       }
@@ -1427,6 +1462,7 @@
             "--multiple-dimension-script-verbose",
             "True"
           ],
+          "requires_simultaneous_shard_dispatch": true,
           "script": "//testing/trigger_scripts/perf_device_trigger.py"
         }
       },
@@ -1463,6 +1499,7 @@
             "--multiple-dimension-script-verbose",
             "True"
           ],
+          "requires_simultaneous_shard_dispatch": true,
           "script": "//testing/trigger_scripts/perf_device_trigger.py"
         }
       },
@@ -1499,6 +1536,7 @@
             "--multiple-dimension-script-verbose",
             "True"
           ],
+          "requires_simultaneous_shard_dispatch": true,
           "script": "//testing/trigger_scripts/perf_device_trigger.py"
         }
       },
@@ -1535,6 +1573,7 @@
             "--multiple-dimension-script-verbose",
             "True"
           ],
+          "requires_simultaneous_shard_dispatch": true,
           "script": "//testing/trigger_scripts/perf_device_trigger.py"
         }
       },
@@ -1571,6 +1610,7 @@
             "--multiple-dimension-script-verbose",
             "True"
           ],
+          "requires_simultaneous_shard_dispatch": true,
           "script": "//testing/trigger_scripts/perf_device_trigger.py"
         }
       },
@@ -1611,6 +1651,7 @@
             "--multiple-dimension-script-verbose",
             "True"
           ],
+          "requires_simultaneous_shard_dispatch": true,
           "script": "//testing/trigger_scripts/perf_device_trigger.py"
         }
       }
@@ -1657,6 +1698,7 @@
             "--multiple-dimension-script-verbose",
             "True"
           ],
+          "requires_simultaneous_shard_dispatch": true,
           "script": "//testing/trigger_scripts/perf_device_trigger.py"
         }
       },
@@ -1693,6 +1735,7 @@
             "--multiple-dimension-script-verbose",
             "True"
           ],
+          "requires_simultaneous_shard_dispatch": true,
           "script": "//testing/trigger_scripts/perf_device_trigger.py"
         }
       },
@@ -1729,6 +1772,7 @@
             "--multiple-dimension-script-verbose",
             "True"
           ],
+          "requires_simultaneous_shard_dispatch": true,
           "script": "//testing/trigger_scripts/perf_device_trigger.py"
         }
       },
@@ -1765,6 +1809,7 @@
             "--multiple-dimension-script-verbose",
             "True"
           ],
+          "requires_simultaneous_shard_dispatch": true,
           "script": "//testing/trigger_scripts/perf_device_trigger.py"
         }
       },
@@ -1801,6 +1846,7 @@
             "--multiple-dimension-script-verbose",
             "True"
           ],
+          "requires_simultaneous_shard_dispatch": true,
           "script": "//testing/trigger_scripts/perf_device_trigger.py"
         }
       },
@@ -1841,6 +1887,7 @@
             "--multiple-dimension-script-verbose",
             "True"
           ],
+          "requires_simultaneous_shard_dispatch": true,
           "script": "//testing/trigger_scripts/perf_device_trigger.py"
         }
       }

@@ -892,6 +892,7 @@ def validate_tests(waterfall, waterfall_file, fyi_waterfall_file,
 
 def add_common_test_properties(test_entry):
   test_entry['trigger_script'] = {
+      'requires_simultaneous_shard_dispatch': True,
       'script': '//testing/trigger_scripts/perf_device_trigger.py',
       'args': [
           '--multiple-dimension-script-verbose',

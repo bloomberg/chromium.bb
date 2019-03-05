@@ -78,6 +78,7 @@ class PerfDataGeneratorTest(unittest.TestCase):
             '--multiple-dimension-script-verbose',
             'True'
           ],
+          'requires_simultaneous_shard_dispatch': True,
           'script': '//testing/trigger_scripts/perf_device_trigger.py'
         },
         'merge': {
@@ -128,6 +129,7 @@ class PerfDataGeneratorTest(unittest.TestCase):
             '--multiple-dimension-script-verbose',
             'True'
           ],
+          'requires_simultaneous_shard_dispatch': True,
           'script': '//testing/trigger_scripts/perf_device_trigger.py'
         },
         'merge': {
@@ -176,6 +178,7 @@ class PerfDataGeneratorTest(unittest.TestCase):
             '--multiple-dimension-script-verbose',
             'True'
           ],
+          'requires_simultaneous_shard_dispatch': True,
           'script': '//testing/trigger_scripts/perf_device_trigger.py'
         },
         'merge': {
