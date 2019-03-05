@@ -18,7 +18,7 @@
 #import "ui/base/test/cocoa_helper.h"
 #include "ui/events/test/cocoa_test_event_utils.h"
 #include "ui/gfx/image/image.h"
-#include "ui/resources/grit/ui_resources.h"
+#include "ui/gfx/image/image_unittest_util.h"
 #include "ui/strings/grit/ui_strings.h"
 
 using base::ASCIIToUTF16;
@@ -553,9 +553,7 @@ TEST_F(MenuControllerTest, Dynamic) {
   // Now update the item to have a label of "second" and an icon.
   base::string16 second = ASCIIToUTF16("second");
   delegate.SetDynamicLabel(second);
-  const gfx::Image& icon =
-      ResourceBundle::GetSharedInstance().GetNativeImageNamed(
-          IDR_DEFAULT_FAVICON);
+  const gfx::Image& icon = gfx::test::CreateImage(32, 32);
   delegate.SetDynamicIcon(icon);
   // Simulate opening the menu and validate that the item label + icon changes.
   Validate(menu.get(), [menu menu]);
