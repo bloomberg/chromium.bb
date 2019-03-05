@@ -8,8 +8,10 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/task/task_scheduler/task_scheduler.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"
+#include "components/leveldb_proto/internal/leveldb_proto_feature_list.h"
 #include "components/leveldb_proto/internal/shared_proto_database_provider.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
 #include "components/leveldb_proto/testing/proto/test_db.pb.h"
@@ -20,6 +22,7 @@ namespace leveldb_proto {
 namespace {
 
 const std::string kDefaultClientName = "client";
+const std::string kDefaultClientName2 = "client_2";
 
 }  // namespace
 
@@ -116,6 +119,11 @@ class ProtoDatabaseImplTest : public testing::Test {
     shared_db_temp_dir_.reset();
   }
 
+  void SetUpExperimentParams(std::map<std::string, std::string> params) {
+    scoped_feature_list_.InitAndEnableFeatureWithParameters(
+        kProtoDBSharedMigration, params);
+  }
+
   std::unique_ptr<ProtoDatabaseImpl<TestProto>> CreateDBImpl(
       ProtoDbType db_type,
       const base::FilePath& db_dir,
@@ -123,6 +131,29 @@ class ProtoDatabaseImplTest : public testing::Test {
       std::unique_ptr<SharedProtoDatabaseProvider> db_provider) {
     return std::make_unique<ProtoDatabaseImpl<TestProto>>(
         db_type, db_dir, task_runner, std::move(db_provider));
+  }
+
+  void GetDbAndWait(leveldb_proto::ProtoDatabaseProvider* db_provider,
+                    leveldb_proto::ProtoDbType db_type) {
+    base::ScopedTempDir temp_dir;
+    ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+    auto db = db_provider->GetDB<TestProto>(db_type, temp_dir.GetPath(),
+                                            GetTestThreadTaskRunner());
+
+    base::RunLoop run_init;
+
+    // Initialize a database, it should succeed.
+    db->Init(kDefaultClientName,
+             base::BindOnce(
+                 [](base::OnceClosure closure,
+                    leveldb_proto::Enums::InitStatus status) {
+                   std::move(closure).Run();
+                   EXPECT_TRUE(status == leveldb_proto::Enums::InitStatus::kOK);
+                 },
+                 run_init.QuitClosure()));
+
+    run_init.Run();
   }
 
   std::unique_ptr<TestProtoDatabaseProvider> CreateProviderNoSharedDB() {
@@ -313,6 +344,7 @@ class ProtoDatabaseImplTest : public testing::Test {
  private:
   std::unique_ptr<base::ScopedTempDir> temp_dir_;
   base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 
   // Shared database.
   std::unique_ptr<base::Thread> test_thread_;
@@ -832,6 +864,78 @@ TEST_F(ProtoDatabaseImplTest, DestroyShouldWorkWhenUniqueInitFailed) {
 
   // Verify the db is actually destroyed.
   EXPECT_FALSE(base::PathExists(temp_dir.GetPath()));
+}
+
+TEST_F(ProtoDatabaseImplTest, InitUniqueTwiceShouldSucceed) {
+  base::ScopedTempDir temp_dir_profile;
+  ASSERT_TRUE(temp_dir_profile.CreateUniqueTempDir());
+
+  // Both databases will be opened as unique.
+  auto experiment_params = std::map<std::string, std::string>{
+      {"migrate_TEST_DATABASE1", "false"}, {"migrate_TEST_DATABASE2", "false"}};
+  SetUpExperimentParams(experiment_params);
+
+  leveldb_proto::ProtoDatabaseProvider* db_provider =
+      leveldb_proto::ProtoDatabaseProvider::Create(temp_dir_profile.GetPath());
+
+  // Initialize a database, it should succeed.
+  GetDbAndWait(db_provider, leveldb_proto::ProtoDbType::TEST_DATABASE1);
+  // Initialize a second database, it should also succeed.
+  GetDbAndWait(db_provider, leveldb_proto::ProtoDbType::TEST_DATABASE2);
+}
+
+TEST_F(ProtoDatabaseImplTest, InitUniqueThenSharedShouldSucceed) {
+  base::ScopedTempDir temp_dir_profile;
+  ASSERT_TRUE(temp_dir_profile.CreateUniqueTempDir());
+
+  // First database will open as unique, second DB will open as shared.
+  auto experiment_params = std::map<std::string, std::string>{
+      {"migrate_TEST_DATABASE1", "false"}, {"migrate_TEST_DATABASE2", "true"}};
+  SetUpExperimentParams(experiment_params);
+
+  leveldb_proto::ProtoDatabaseProvider* db_provider =
+      leveldb_proto::ProtoDatabaseProvider::Create(temp_dir_profile.GetPath());
+
+  // Initialize a database, it should succeed.
+  GetDbAndWait(db_provider, leveldb_proto::ProtoDbType::TEST_DATABASE1);
+  // Initialize a second database, it should also succeed.
+  GetDbAndWait(db_provider, leveldb_proto::ProtoDbType::TEST_DATABASE2);
+}
+
+TEST_F(ProtoDatabaseImplTest, InitSharedThenUniqueShouldSucceed) {
+  base::ScopedTempDir temp_dir_profile;
+  ASSERT_TRUE(temp_dir_profile.CreateUniqueTempDir());
+
+  // First database will open as shared, second DB will open as unique.
+  auto experiment_params = std::map<std::string, std::string>{
+      {"migrate_TEST_DATABASE1", "true"}, {"migrate_TEST_DATABASE2", "false"}};
+  SetUpExperimentParams(experiment_params);
+
+  leveldb_proto::ProtoDatabaseProvider* db_provider =
+      leveldb_proto::ProtoDatabaseProvider::Create(temp_dir_profile.GetPath());
+
+  // Initialize a database, it should succeed.
+  GetDbAndWait(db_provider, leveldb_proto::ProtoDbType::TEST_DATABASE1);
+  // Initialize a second database, it should also succeed.
+  GetDbAndWait(db_provider, leveldb_proto::ProtoDbType::TEST_DATABASE2);
+}
+
+TEST_F(ProtoDatabaseImplTest, InitSharedTwiceShouldSucceed) {
+  base::ScopedTempDir temp_dir_profile;
+  ASSERT_TRUE(temp_dir_profile.CreateUniqueTempDir());
+
+  // Both databases will open as shared.
+  auto experiment_params = std::map<std::string, std::string>{
+      {"migrate_TEST_DATABASE1", "true"}, {"migrate_TEST_DATABASE2", "true"}};
+  SetUpExperimentParams(experiment_params);
+
+  leveldb_proto::ProtoDatabaseProvider* db_provider =
+      leveldb_proto::ProtoDatabaseProvider::Create(temp_dir_profile.GetPath());
+
+  // Initialize a database, it should succeed.
+  GetDbAndWait(db_provider, leveldb_proto::ProtoDbType::TEST_DATABASE1);
+  // Initialize a second database, it should also succeed.
+  GetDbAndWait(db_provider, leveldb_proto::ProtoDbType::TEST_DATABASE2);
 }
 
 }  // namespace leveldb_proto
