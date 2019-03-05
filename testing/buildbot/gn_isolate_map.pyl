@@ -599,6 +599,10 @@
     "label": "//chrome/android:chrome_public_test_vr_apk",
     "type": "console_test_launcher",
   },
+  "chrome_sandbox": {
+    "label": "//sandbox/linux:chrome_sandbox",
+    "type": "additional_compile_target",
+  },
   "chromedriver": {
     "label": "//chrome/test/chromedriver:chromedriver",
     "type": "additional_compile_target",
@@ -1397,6 +1401,10 @@
   "libxml_xml_read_memory_fuzzer": {
     "label": "//testing/libfuzzer/fuzzers:libxml_xml_read_memory_fuzzer",
     "type": "fuzzer",
+  },
+  "linux_symbols": {
+    "label": "//chrome:linux_symbols",
+    "type": "additional_compile_target",
   },
   "load_library_perf_tests": {
     "args": [
@@ -2384,6 +2392,10 @@
   "swiftshader_vertex_routine_fuzzer": {
     "label": "//testing/libfuzzer/fuzzers:swiftshader_vertex_routine_fuzzer",
     "type": "fuzzer",
+  },
+  "symupload": {
+    "label": "//third_party/breakpad:symupload",
+    "type": "additional_compile_target",
   },
   "sync_integration_tests": {
     "label": "//chrome/test:sync_integration_tests",
