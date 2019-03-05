@@ -256,11 +256,15 @@ class LoginDatabase : public PasswordStoreSync::MetadataStore {
 
   // Fills |form| from the values in the given statement (which is assumed to be
   // of the form used by the Get*Logins methods). Fills the corresponding DB
-  // primary key in |primary_key|. Returns the EncryptionResult from decrypting
-  // the password in |s|; if not ENCRYPTION_RESULT_SUCCESS, |form| is not
-  // filled.
+  // primary key in |primary_key|. If |decrypt_and_fill_password_value| is set
+  // to true, it tries to decrypt the stored password and returns the
+  // EncryptionResult from decrypting the password in |s|; if not
+  // ENCRYPTION_RESULT_SUCCESS, |form| is not filled. If
+  // |decrypt_and_fill_password_value| is set to false, it always returns
+  // ENCRYPTION_RESULT_SUCCESS.
   EncryptionResult InitPasswordFormFromStatement(
       const sql::Statement& s,
+      bool decrypt_and_fill_password_value,
       int* primary_key,
       autofill::PasswordForm* form) const WARN_UNUSED_RESULT;
 

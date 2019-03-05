@@ -427,6 +427,9 @@ TEST_F(LoginDatabaseTest, RemoveLoginsByPrimaryKey) {
   EXPECT_EQ(form, *result[0]);
   result.clear();
 
+  // RemoveLoginByPrimaryKey() doesn't decrypt or fill the password value.
+  form.password_value = ASCIIToUTF16("");
+
   EXPECT_TRUE(db().RemoveLoginByPrimaryKey(primary_key, &change_list));
   EXPECT_EQ(RemoveChangeForForm(form), change_list);
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
