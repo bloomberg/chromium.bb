@@ -31,6 +31,3 @@ class TraceTestExpectations(GpuTestExpectations):
     self.Fail('VideoPathTraceTest_DirectComposition_Video_VP9_Fullsize',
         ['win', 'intel'], bug=930343)
 
-    # Flaky on Win10.
-    self.Flaky('VideoPathTraceTest_DirectComposition_ComplexOverlays',
-        ['win10'], bug=937545)
