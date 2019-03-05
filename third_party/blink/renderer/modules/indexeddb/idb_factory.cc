@@ -411,10 +411,10 @@ IDBOpenDBRequest* IDBFactory::DeleteDatabaseInternal(
   return request;
 }
 
-short IDBFactory::cmp(ScriptState* script_state,
-                      const ScriptValue& first_value,
-                      const ScriptValue& second_value,
-                      ExceptionState& exception_state) {
+int16_t IDBFactory::cmp(ScriptState* script_state,
+                        const ScriptValue& first_value,
+                        const ScriptValue& second_value,
+                        ExceptionState& exception_state) {
   const std::unique_ptr<IDBKey> first =
       ScriptValue::To<std::unique_ptr<IDBKey>>(script_state->GetIsolate(),
                                                first_value, exception_state);
@@ -439,7 +439,7 @@ short IDBFactory::cmp(ScriptState* script_state,
     return 0;
   }
 
-  return static_cast<short>(first->Compare(second.get()));
+  return static_cast<int16_t>(first->Compare(second.get()));
 }
 
 }  // namespace blink
