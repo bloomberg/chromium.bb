@@ -4,17 +4,21 @@
 
 #include "third_party/blink/renderer/core/streams/readable_stream.h"
 
+#include "base/optional.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_function.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_extras_test_utils.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_iterator_result_value.h"
 #include "third_party/blink/renderer/core/messaging/message_channel.h"
 #include "third_party/blink/renderer/core/streams/readable_stream_default_controller_wrapper.h"
 #include "third_party/blink/renderer/core/streams/test_underlying_source.h"
 #include "third_party/blink/renderer/core/streams/underlying_source_base.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/bindings/string_resource.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "v8/include/v8.h"
@@ -428,6 +432,86 @@ TEST_F(ReadableStreamTest, Serialize) {
 
   EXPECT_EQ(ReadAll(scope, transferred),
             base::make_optional<String>("hello, bye"));
+}
+
+TEST_F(ReadableStreamTest, GetReadHandle) {
+  V8TestingScope scope;
+  ScriptState* script_state = scope.GetScriptState();
+  auto* isolate = scope.GetIsolate();
+
+  auto* underlying_source =
+      MakeGarbageCollected<TestUnderlyingSource>(script_state);
+
+  ScriptValue js_underlying_source = ScriptValue(
+      script_state,
+      ToV8(underlying_source, script_state->GetContext()->Global(), isolate));
+  ReadableStream* stream = ReadableStream::Create(
+      script_state, js_underlying_source, ASSERT_NO_EXCEPTION);
+  ASSERT_TRUE(stream);
+
+  ScriptValue abc = ScriptValue(script_state, V8String(isolate, "abc"));
+  underlying_source->Enqueue(abc);
+  underlying_source->Close();
+
+  ReadableStream::ReadHandle* read_handle =
+      stream->GetReadHandle(script_state, ASSERT_NO_EXCEPTION);
+
+  class CaptureFunction : public ScriptFunction {
+   public:
+    static v8::Local<v8::Function> CreateFunction(
+        ScriptState* script_state,
+        base::Optional<ScriptValue>* out_value) {
+      return MakeGarbageCollected<CaptureFunction>(script_state, out_value)
+          ->BindToV8Function();
+    }
+
+    CaptureFunction(ScriptState* script_state,
+                    base::Optional<ScriptValue>* out_value)
+        : ScriptFunction(script_state), out_value_(out_value) {}
+
+    ScriptValue Call(ScriptValue value) override {
+      *out_value_ = value;
+      return value;
+    }
+
+   private:
+    base::Optional<ScriptValue>* out_value_;
+  };
+
+  base::Optional<ScriptValue> iterator;
+  base::Optional<ScriptValue> not_reached;
+
+  read_handle->Read(script_state)
+      .Then(CaptureFunction::CreateFunction(script_state, &iterator),
+            CaptureFunction::CreateFunction(script_state, &not_reached));
+  // Resolve promise and run callbacks.
+  v8::MicrotasksScope::PerformCheckpoint(isolate);
+
+  ASSERT_TRUE(iterator.has_value());
+  EXPECT_FALSE(not_reached.has_value());
+  ASSERT_FALSE(iterator->IsEmpty());
+
+  bool done = false;
+  auto maybe_value = V8UnpackIteratorResult(
+      script_state, iterator->V8Value().As<v8::Object>(), &done);
+  EXPECT_FALSE(done);
+  auto value_as_string = ToBlinkString<String>(
+      maybe_value.ToLocalChecked().As<v8::String>(), kDoNotExternalize);
+  EXPECT_EQ(value_as_string, "abc");
+
+  iterator.reset();
+  read_handle->Read(script_state)
+      .Then(CaptureFunction::CreateFunction(script_state, &iterator),
+            CaptureFunction::CreateFunction(script_state, &not_reached));
+  v8::MicrotasksScope::PerformCheckpoint(isolate);
+
+  ASSERT_TRUE(iterator.has_value());
+  EXPECT_FALSE(not_reached.has_value());
+  ASSERT_FALSE(iterator->IsEmpty());
+
+  maybe_value = V8UnpackIteratorResult(
+      script_state, iterator->V8Value().As<v8::Object>(), &done);
+  EXPECT_TRUE(done);
 }
 
 }  // namespace

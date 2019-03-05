@@ -84,6 +84,8 @@ class CORE_EXPORT ReadableStreamWrapper : public ReadableStream {
            ReadableStream** branch2,
            ExceptionState&) override;
 
+  ReadHandle* GetReadHandle(ScriptState*, ExceptionState&) override;
+
   base::Optional<bool> IsLocked(ScriptState*, ExceptionState&) const override;
   base::Optional<bool> IsDisturbed(ScriptState*,
                                    ExceptionState&) const override;
@@ -114,6 +116,8 @@ class CORE_EXPORT ReadableStreamWrapper : public ReadableStream {
   bool IsBroken() const override { return object_.IsEmpty(); }
 
  private:
+  class ReadHandleImpl;
+
   TraceWrapperV8Reference<v8::Object> object_;
 };
 
