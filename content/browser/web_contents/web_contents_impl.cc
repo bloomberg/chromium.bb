@@ -5067,6 +5067,8 @@ void WebContentsImpl::ResetLoadProgressState() {
 void WebContentsImpl::LoadingStateChanged(bool to_different_document,
                                           bool due_to_interstitial,
                                           LoadNotificationDetails* details) {
+  if (is_being_destroyed_)
+    return;
   // Do not send notifications about loading changes in the FrameTree while the
   // interstitial page is pausing the throbber.
   if (ShowingInterstitialPage() && interstitial_page_->pause_throbber() &&
@@ -5792,6 +5794,8 @@ void WebContentsImpl::DidStopLoading() {
 }
 
 void WebContentsImpl::DidChangeLoadProgress() {
+  if (is_being_destroyed_)
+    return;
   double load_progress = frame_tree_.load_progress();
 
   // The delegate is notified immediately for the first and last updates. Also,

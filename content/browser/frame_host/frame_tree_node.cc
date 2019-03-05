@@ -138,6 +138,8 @@ FrameTreeNode::~FrameTreeNode() {
   // Remove the children.
   current_frame_host()->ResetChildren();
 
+  current_frame_host()->ResetLoadingState();
+
   // If the removed frame was created by a script, then its history entry will
   // never be reused - we can save some memory by removing the history entry.
   // See also https://crbug.com/784356.
@@ -167,6 +169,12 @@ FrameTreeNode::~FrameTreeNode() {
     navigation_request_.reset();
     DidStopLoading();
   }
+
+  // ~SiteProcessCountTracker DCHECKs in some tests if CleanUpNavigation is not
+  // called last. Ideally this would be closer to (possible before) the
+  // ResetLoadingState() call above.
+  render_manager_.CleanUpNavigation();
+  DCHECK(!IsLoading());
 }
 
 void FrameTreeNode::AddObserver(Observer* observer) {
