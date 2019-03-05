@@ -13,7 +13,8 @@
 #include "components/autofill_assistant/browser/mock_ui_controller.h"
 #include "components/autofill_assistant/browser/mock_web_controller.h"
 #include "components/autofill_assistant/browser/service.h"
-#include "content/public/test/test_renderer_host.h"
+#include "content/public/test/test_browser_context.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -68,20 +69,25 @@ class FakeClient : public Client {
 
 }  // namespace
 
-class ControllerTest : public content::RenderViewHostTestHarness {
+class ControllerTest : public testing::Test {
  public:
-  ControllerTest() : fake_client_(&mock_ui_controller_) {}
+  ControllerTest()
+      : thread_bundle_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI_MOCK_TIME),
+        web_contents_(
+            content::WebContentsTester::CreateTestWebContents(&browser_context_,
+                                                              nullptr)),
+        fake_client_(&mock_ui_controller_) {}
   ~ControllerTest() override {}
 
   void SetUp() override {
-    content::RenderViewHostTestHarness::SetUp();
-
     auto web_controller = std::make_unique<NiceMock<MockWebController>>();
     mock_web_controller_ = web_controller.get();
     auto service = std::make_unique<NiceMock<MockService>>();
     mock_service_ = service.get();
 
-    controller_ = std::make_unique<Controller>(web_contents(), &fake_client_);
+    controller_ = std::make_unique<Controller>(
+        web_contents_.get(), &fake_client_, thread_bundle_.GetMockTickClock());
     controller_->SetWebControllerAndServiceForTest(std::move(web_controller),
                                                    std::move(service));
 
@@ -101,15 +107,8 @@ class ControllerTest : public content::RenderViewHostTestHarness {
           states_.emplace_back(state);
         }));
 
-    tester_ = content::WebContentsTester::For(web_contents());
-  }
-
-  void TearDown() override {
-    // Controller must be deleted before the WebContents, owned by
-    // RenderViewHostTestHarness. In production, this is guaranteed by
-    // autofill_assistant::ClientAndroid, which owns Controller.
-    controller_.reset();
-    content::RenderViewHostTestHarness::TearDown();
+    ON_CALL(*mock_web_controller_, OnElementCheck(_, _, _))
+        .WillByDefault(RunOnceCallback<2>(false));
   }
 
  protected:
@@ -145,7 +144,8 @@ class ControllerTest : public content::RenderViewHostTestHarness {
   }
 
   void SetLastCommittedUrl(const GURL& url) {
-    tester_->SetLastCommittedURL(url);
+    content::WebContentsTester::For(web_contents_.get())
+        ->SetLastCommittedURL(url);
   }
 
   // Updates the current url of the controller and forces a refresh, without
@@ -179,12 +179,17 @@ class ControllerTest : public content::RenderViewHostTestHarness {
 
   UiDelegate* GetUiDelegate() { return controller_.get(); }
 
+  // |thread_bundle_| must be the first field, to make sure that everything runs
+  // in the same task environment.
+  content::TestBrowserThreadBundle thread_bundle_;
+  content::TestBrowserContext browser_context_;
+  std::unique_ptr<content::WebContents> web_contents_;
+  base::TimeTicks now_;
   std::vector<AutofillAssistantState> states_;
   MockService* mock_service_;
   MockWebController* mock_web_controller_;
   NiceMock<FakeClient> fake_client_;
   NiceMock<MockUiController> mock_ui_controller_;
-  content::WebContentsTester* tester_;
 
   std::unique_ptr<Controller> controller_;
 };
@@ -218,6 +223,38 @@ TEST_F(ControllerTest, FetchAndRunScripts) {
               ElementsAre(Field(&Chip::text, StrEq("script1"))));
 }
 
+TEST_F(ControllerTest, NoScripts) {
+  SupportsScriptResponseProto empty;
+  SetNextScriptResponse(empty);
+
+  Start("http://a.example.com/path");
+  EXPECT_EQ(AutofillAssistantState::STOPPED, controller_->GetState());
+}
+
+TEST_F(ControllerTest, NoRelevantScripts) {
+  SupportsScriptResponseProto script_response;
+  AddRunnableScript(&script_response, "no_match")
+      ->mutable_presentation()
+      ->mutable_precondition()
+      ->add_domain("http://otherdomain.com");
+  SetNextScriptResponse(script_response);
+
+  Start("http://a.example.com/path");
+  EXPECT_EQ(AutofillAssistantState::STOPPED, controller_->GetState());
+}
+
+TEST_F(ControllerTest, NoRelevantScriptYet) {
+  SupportsScriptResponseProto script_response;
+  AddRunnableScript(&script_response, "no_match_yet")
+      ->mutable_presentation()
+      ->mutable_precondition()
+      ->add_elements_exist()
+      ->add_selectors("#element");
+  SetNextScriptResponse(script_response);
+
+  Start("http://a.example.com/path");
+  EXPECT_EQ(AutofillAssistantState::STARTING, controller_->GetState());
+}
 TEST_F(ControllerTest, ReportPromptAndSuggestionsChanged) {
   SupportsScriptResponseProto script_response;
   AddRunnableScript(&script_response, "script1");
@@ -565,4 +602,100 @@ TEST_F(ControllerTest, ShowUIWhenContentsFocused) {
   SimulateWebContentsFocused();  // must not call ShowUI
 }
 
+TEST_F(ControllerTest, KeepCheckingForElement) {
+  SupportsScriptResponseProto script_response;
+  AddRunnableScript(&script_response, "no_match_yet")
+      ->mutable_presentation()
+      ->mutable_precondition()
+      ->add_elements_exist()
+      ->add_selectors("#element");
+  SetNextScriptResponse(script_response);
+
+  Start("http://a.example.com/path");
+  // No scripts yet; the element doesn't exit.
+  EXPECT_EQ(AutofillAssistantState::STARTING, controller_->GetState());
+
+  for (int i = 0; i < 3; i++) {
+    thread_bundle_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+    EXPECT_EQ(AutofillAssistantState::STARTING, controller_->GetState());
+  }
+
+  EXPECT_CALL(*mock_web_controller_, OnElementCheck(_, _, _))
+      .WillRepeatedly(RunOnceCallback<2>(true));
+  thread_bundle_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+
+  EXPECT_EQ(AutofillAssistantState::AUTOSTART_FALLBACK_PROMPT,
+            controller_->GetState());
+}
+
+TEST_F(ControllerTest, ScriptTimeoutError) {
+  // Wait for #element to show up for will_never_match. After 25s, execute the
+  // script on_timeout_error.
+  SupportsScriptResponseProto script_response;
+  AddRunnableScript(&script_response, "will_never_match")
+      ->mutable_presentation()
+      ->mutable_precondition()
+      ->add_elements_exist()
+      ->add_selectors("#element");
+  script_response.mutable_script_timeout_error()->set_timeout_ms(30000);
+  script_response.mutable_script_timeout_error()->set_script_path(
+      "on_timeout_error");
+  SetNextScriptResponse(script_response);
+
+  // on_timeout_error stops everything with a custom error message.
+  ActionsResponseProto on_timeout_error;
+  on_timeout_error.add_actions()->mutable_tell()->set_message("I give up");
+  on_timeout_error.add_actions()->mutable_stop();
+  std::string on_timeout_error_str;
+  on_timeout_error.SerializeToString(&on_timeout_error_str);
+  EXPECT_CALL(*mock_service_,
+              OnGetActions(StrEq("on_timeout_error"), _, _, _, _, _))
+      .WillOnce(RunOnceCallback<5>(true, on_timeout_error_str));
+
+  Start("http://a.example.com/path");
+  for (int i = 0; i < 30; i++) {
+    EXPECT_EQ(AutofillAssistantState::STARTING, controller_->GetState());
+    thread_bundle_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  }
+  EXPECT_EQ(AutofillAssistantState::STOPPED, controller_->GetState());
+  EXPECT_EQ("I give up", controller_->GetStatusMessage());
+}
+
+TEST_F(ControllerTest, ScriptTimeoutWarning) {
+  // Wait for #element to show up for will_never_match. After 10s, execute the
+  // script on_timeout_error.
+  SupportsScriptResponseProto script_response;
+  AddRunnableScript(&script_response, "will_never_match")
+      ->mutable_presentation()
+      ->mutable_precondition()
+      ->add_elements_exist()
+      ->add_selectors("#element");
+  script_response.mutable_script_timeout_error()->set_timeout_ms(4000);
+  script_response.mutable_script_timeout_error()->set_script_path(
+      "on_timeout_error");
+  SetNextScriptResponse(script_response);
+
+  // on_timeout_error displays an error message and terminates
+  ActionsResponseProto on_timeout_error;
+  on_timeout_error.add_actions()->mutable_tell()->set_message("This is slow");
+  std::string on_timeout_error_str;
+  on_timeout_error.SerializeToString(&on_timeout_error_str);
+  EXPECT_CALL(*mock_service_,
+              OnGetActions(StrEq("on_timeout_error"), _, _, _, _, _))
+      .WillOnce(RunOnceCallback<5>(true, on_timeout_error_str));
+
+  Start("http://a.example.com/path");
+
+  // Warning after 4s, script succeeds and the client continues to wait.
+  for (int i = 0; i < 4; i++) {
+    EXPECT_EQ(AutofillAssistantState::STARTING, controller_->GetState());
+    thread_bundle_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  }
+  EXPECT_EQ(AutofillAssistantState::STARTING, controller_->GetState());
+  EXPECT_EQ("This is slow", controller_->GetStatusMessage());
+  for (int i = 0; i < 10; i++) {
+    EXPECT_EQ(AutofillAssistantState::STARTING, controller_->GetState());
+    thread_bundle_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  }
+}
 }  // namespace autofill_assistant

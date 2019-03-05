@@ -31,6 +31,10 @@ class RenderFrameHost;
 class WebContents;
 }  // namespace content
 
+namespace base {
+class TickClock;
+}  // namespace base
+
 namespace autofill_assistant {
 class ControllerTest;
 
@@ -42,9 +46,11 @@ class Controller : public ScriptExecutorDelegate,
                    public ScriptTracker::Listener,
                    private content::WebContentsObserver {
  public:
-  // |web_contents| and |client| must remain valid for the lifetime of the
-  // instance.
-  Controller(content::WebContents* web_contents, Client* client);
+  // |web_contents|, |client| and |tick_clock| must remain valid for the
+  // lifetime of the instance.
+  Controller(content::WebContents* web_contents,
+             Client* client,
+             const base::TickClock* tick_clock);
   ~Controller() override;
 
   // Returns true if the controller is in a state where UI is necessary.
@@ -120,8 +126,13 @@ class Controller : public ScriptExecutorDelegate,
 
   void GetOrCheckScripts();
   void OnGetScripts(const GURL& url, bool result, const std::string& response);
-  void ExecuteScript(const std::string& script_path);
+
+  // Execute |script_path| and, if execution succeeds, enter |end_state| and
+  // call |on_success|.
+  void ExecuteScript(const std::string& script_path,
+                     AutofillAssistantState end_state);
   void OnScriptExecuted(const std::string& script_path,
+                        AutofillAssistantState end_state,
                         const ScriptExecutor::Result& result);
 
   // Check script preconditions every few seconds for a certain number of times.
@@ -136,6 +147,8 @@ class Controller : public ScriptExecutorDelegate,
   // Runs autostart scripts from |runnable_scripts|, if the conditions are
   // right. Returns true if a script was auto-started.
   bool MaybeAutostartScript(const std::vector<ScriptHandle>& runnable_scripts);
+
+  void DisableAutostart();
 
   // Autofill Assistant cookie logic.
   //
@@ -175,6 +188,7 @@ class Controller : public ScriptExecutorDelegate,
   ScriptTracker* script_tracker();
 
   Client* const client_;
+  const base::TickClock* const tick_clock_;
 
   // Lazily instantiate in GetWebController().
   std::unique_ptr<WebController> web_controller_;
@@ -200,11 +214,18 @@ class Controller : public ScriptExecutorDelegate,
 
   // Number of remaining periodic checks.
   int periodic_script_check_count_ = 0;
-  int total_script_check_count_ = 0;
 
-  // Whether we should hide the overlay and show an error message after a first
-  // unsuccessful round of preconditions checking.
-  bool should_fail_after_checking_scripts_ = false;
+  // Run this script if no scripts become autostartable after
+  // absolute_autostart_timeout.
+  //
+  // Ignored unless |allow_autostart_| is true.
+  std::string autostart_timeout_script_path_;
+
+  // How long to wait for an autostartable script before failing.
+  base::TimeDelta autostart_timeout_;
+
+  // Ticks at which we'll have reached |autostart_timeout_|.
+  base::TimeTicks absolute_autostart_timeout_;
 
   // Area of the screen that corresponds to the current set of touchable
   // elements.

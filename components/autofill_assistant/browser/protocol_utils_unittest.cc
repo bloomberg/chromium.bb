@@ -28,48 +28,49 @@ void AssertClientContext(const ClientContextProto& context) {
   EXPECT_EQ("v", context.chrome().chrome_version());
 }
 
-TEST(ProtocolUtilsTest, NoScripts) {
+TEST(ProtocolUtilsTest, ScriptMissingPath) {
+  SupportedScriptProto script;
+  script.mutable_presentation()->set_name("missing path");
   std::vector<std::unique_ptr<Script>> scripts;
-  EXPECT_TRUE(ProtocolUtils::ParseScripts("", &scripts));
+  ProtocolUtils::AddScript(script, &scripts);
+
   EXPECT_THAT(scripts, IsEmpty());
 }
 
-TEST(ProtocolUtilsTest, SomeInvalidScripts) {
-  SupportsScriptResponseProto proto;
-
-  // 2 Invalid scripts, 1 valid one, with no preconditions.
-  proto.add_scripts()->mutable_presentation()->set_name("missing path");
-  proto.add_scripts()->set_path("missing name");
-  SupportedScriptProto* script = proto.add_scripts();
-  script->set_path("ok");
-  script->mutable_presentation()->set_name("ok name");
-
-  // Only the valid script is returned.
+TEST(ProtocolUtilsTest, ScriptMissingName) {
+  SupportedScriptProto script;
+  script.set_path("missing name");
   std::vector<std::unique_ptr<Script>> scripts;
-  std::string proto_str;
-  proto.SerializeToString(&proto_str);
-  EXPECT_TRUE(ProtocolUtils::ParseScripts(proto_str, &scripts));
+  ProtocolUtils::AddScript(script, &scripts);
+
+  EXPECT_THAT(scripts, IsEmpty());
+}
+
+TEST(ProtocolUtilsTest, MinimalValidScript) {
+  SupportedScriptProto script;
+  script.set_path("path");
+  script.mutable_presentation()->set_name("name");
+  std::vector<std::unique_ptr<Script>> scripts;
+  ProtocolUtils::AddScript(script, &scripts);
+
   ASSERT_THAT(scripts, SizeIs(1));
-  EXPECT_EQ("ok", scripts[0]->handle.path);
-  EXPECT_EQ("ok name", scripts[0]->handle.name);
+  EXPECT_EQ("path", scripts[0]->handle.path);
+  EXPECT_EQ("name", scripts[0]->handle.name);
   EXPECT_NE(nullptr, scripts[0]->precondition);
 }
 
 TEST(ProtocolUtilsTest, OneFullyFeaturedScript) {
-  SupportsScriptResponseProto proto;
-
-  SupportedScriptProto* script = proto.add_scripts();
-  script->set_path("path");
-  auto* presentation = script->mutable_presentation();
+  SupportedScriptProto script_proto;
+  script_proto.set_path("path");
+  auto* presentation = script_proto.mutable_presentation();
   presentation->set_name("name");
   presentation->set_autostart(true);
   presentation->set_initial_prompt("prompt");
   presentation->mutable_precondition()->add_domain("www.example.com");
 
   std::vector<std::unique_ptr<Script>> scripts;
-  std::string proto_str;
-  proto.SerializeToString(&proto_str);
-  EXPECT_TRUE(ProtocolUtils::ParseScripts(proto_str, &scripts));
+  ProtocolUtils::AddScript(script_proto, &scripts);
+
   ASSERT_THAT(scripts, SizeIs(1));
   EXPECT_EQ("path", scripts[0]->handle.path);
   EXPECT_EQ("name", scripts[0]->handle.name);
@@ -79,20 +80,16 @@ TEST(ProtocolUtilsTest, OneFullyFeaturedScript) {
 }
 
 TEST(ProtocolUtilsTest, AllowInterruptsWithNoName) {
-  SupportsScriptResponseProto proto;
-
-  SupportedScriptProto* script = proto.add_scripts();
-  script->set_path("path");
-  auto* presentation = script->mutable_presentation();
+  SupportedScriptProto script_proto;
+  script_proto.set_path("path");
+  auto* presentation = script_proto.mutable_presentation();
   presentation->set_autostart(true);
   presentation->set_initial_prompt("prompt");
   presentation->set_interrupt(true);
   presentation->mutable_precondition()->add_domain("www.example.com");
 
   std::vector<std::unique_ptr<Script>> scripts;
-  std::string proto_str;
-  proto.SerializeToString(&proto_str);
-  EXPECT_TRUE(ProtocolUtils::ParseScripts(proto_str, &scripts));
+  ProtocolUtils::AddScript(script_proto, &scripts);
   ASSERT_THAT(scripts, SizeIs(1));
   EXPECT_EQ("path", scripts[0]->handle.path);
   EXPECT_EQ("", scripts[0]->handle.name);
