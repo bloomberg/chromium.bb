@@ -12,6 +12,7 @@
 #include "base/values.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
+#include "components/policy/proto/device_management_backend.pb.h"
 
 namespace {
 const char kUserDMTokenKey[] = "user_dmtoken";

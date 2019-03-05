@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/policy/value_validation/onc_user_policy_value_validator.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
+#include "components/policy/proto/device_management_backend.pb.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 
 using RetrievePolicyResponseType =

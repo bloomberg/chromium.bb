@@ -12,6 +12,7 @@
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_proto_decoders.h"
 #include "components/policy/proto/cloud_policy.pb.h"
+#include "components/policy/proto/device_management_backend.pb.h"
 
 namespace policy {
 
