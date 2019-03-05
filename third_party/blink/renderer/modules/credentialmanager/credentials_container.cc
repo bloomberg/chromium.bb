@@ -437,8 +437,15 @@ ScriptPromise CredentialsContainer::get(
     return promise;
 
   if (options->hasPublicKey()) {
-    UseCounter::Count(resolver->GetExecutionContext(),
-                      WebFeature::kCredentialManagerGetPublicKeyCredential);
+    auto cryptotoken_origin = SecurityOrigin::Create(KURL(kCryptotokenOrigin));
+    if (cryptotoken_origin->IsSameSchemeHostPort(
+            resolver->GetFrame()->GetSecurityContext()->GetSecurityOrigin())) {
+      UseCounter::Count(resolver->GetExecutionContext(),
+                        WebFeature::kU2FCryptotokenSign);
+    } else {
+      UseCounter::Count(resolver->GetExecutionContext(),
+                        WebFeature::kCredentialManagerGetPublicKeyCredential);
+    }
 
     const String& relying_party_id = options->publicKey()->rpId();
     if (!CheckPublicKeySecurityRequirements(resolver, relying_party_id))
@@ -599,8 +606,16 @@ ScriptPromise CredentialsContainer::create(
         FederatedCredential::Create(options->federated(), exception_state));
   } else {
     DCHECK(options->hasPublicKey());
-    UseCounter::Count(resolver->GetExecutionContext(),
-                      WebFeature::kCredentialManagerCreatePublicKeyCredential);
+    auto cryptotoken_origin = SecurityOrigin::Create(KURL(kCryptotokenOrigin));
+    if (cryptotoken_origin->IsSameSchemeHostPort(
+            resolver->GetFrame()->GetSecurityContext()->GetSecurityOrigin())) {
+      UseCounter::Count(resolver->GetExecutionContext(),
+                        WebFeature::kU2FCryptotokenRegister);
+    } else {
+      UseCounter::Count(
+          resolver->GetExecutionContext(),
+          WebFeature::kCredentialManagerCreatePublicKeyCredential);
+    }
 
     const String& relying_party_id = options->publicKey()->rp()->id();
     if (!CheckPublicKeySecurityRequirements(resolver, relying_party_id))
