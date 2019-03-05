@@ -69,11 +69,16 @@ def parse_args(triggerer):
       help='How long to wait (in seconds) for an available bot in the primary '
            'task slice.')
   # BaseTestTriggerer's setup_parser_contract() takes care of adding needed
-  # swarming.py args if they're not already present.
-  base_test_triggerer.BaseTestTriggerer.setup_parser_contract(parser)
-  args, additional_args = parser.parse_known_args()
-  additional_args = triggerer.modify_args(
-      additional_args, 0, args.shard_index, args.shards, args.dump_json)
+  # swarming.py args if they're not already present. But only do this if
+  # '--shard-index' is passed in. (The exact usage of trigger scripts are
+  # currently changing. See crbug.com/926987 for more info.)
+  if '--shard-index' in sys.argv:
+    base_test_triggerer.BaseTestTriggerer.setup_parser_contract(parser)
+    args, additional_args = parser.parse_known_args()
+    additional_args = triggerer.modify_args(
+        additional_args, 0, args.shard_index, args.shards, args.dump_json)
+  else:
+    args, additional_args = parser.parse_known_args()
 
   if additional_args[0] != 'trigger':
     parser.error(
