@@ -11,7 +11,7 @@ template <typename T>
 class SpanTest : public ::testing::Test {};
 
 using TestTypes = ::testing::Types<uint8_t, uint16_t>;
-TYPED_TEST_CASE(SpanTest, TestTypes);
+TYPED_TEST_SUITE(SpanTest, TestTypes);
 
 TYPED_TEST(SpanTest, Empty) {
   span<TypeParam> empty;
