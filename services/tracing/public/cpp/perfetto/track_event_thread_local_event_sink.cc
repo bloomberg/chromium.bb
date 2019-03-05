@@ -21,6 +21,7 @@
 #include "third_party/perfetto/protos/perfetto/trace/track_event/track_event.pbzero.h"
 
 using TraceLog = base::trace_event::TraceLog;
+using TrackEvent = perfetto::protos::pbzero::TrackEvent;
 
 namespace tracing {
 
@@ -268,22 +269,72 @@ void TrackEventThreadLocalEventSink::AddTraceEvent(
         legacy_event->set_thread_duration(thread_duration);
       }
     }
+  } else if (phase == TRACE_EVENT_PHASE_INSTANT) {
+    switch (flags & TRACE_EVENT_FLAG_SCOPE_MASK) {
+      case TRACE_EVENT_SCOPE_GLOBAL:
+        legacy_event->set_instant_event_scope(
+            TrackEvent::LegacyEvent::SCOPE_GLOBAL);
+        break;
+
+      case TRACE_EVENT_SCOPE_PROCESS:
+        legacy_event->set_instant_event_scope(
+            TrackEvent::LegacyEvent::SCOPE_PROCESS);
+        break;
+
+      case TRACE_EVENT_SCOPE_THREAD:
+        legacy_event->set_instant_event_scope(
+            TrackEvent::LegacyEvent::SCOPE_THREAD);
+        break;
+    }
   }
 
-  legacy_event->set_flags(flags);
-
-  if (flags & (TRACE_EVENT_FLAG_HAS_ID | TRACE_EVENT_FLAG_HAS_LOCAL_ID |
-               TRACE_EVENT_FLAG_HAS_GLOBAL_ID)) {
-    legacy_event->set_id(trace_event->id());
+  uint32_t id_flags =
+      flags & (TRACE_EVENT_FLAG_HAS_ID | TRACE_EVENT_FLAG_HAS_LOCAL_ID |
+               TRACE_EVENT_FLAG_HAS_GLOBAL_ID);
+  switch (id_flags) {
+    case TRACE_EVENT_FLAG_HAS_ID:
+      legacy_event->set_id(trace_event->id());
+      break;
+    case TRACE_EVENT_FLAG_HAS_LOCAL_ID:
+      legacy_event->set_local_id(trace_event->id());
+      break;
+    case TRACE_EVENT_FLAG_HAS_GLOBAL_ID:
+      legacy_event->set_global_id(trace_event->id());
+      break;
+    default:
+      break;
   }
 
-  if (trace_event->scope() != trace_event_internal::kGlobalScope) {
+  if (id_flags && trace_event->scope() != trace_event_internal::kGlobalScope) {
     legacy_event->set_scope(trace_event->scope());
   }
 
-  if ((flags & TRACE_EVENT_FLAG_FLOW_OUT) ||
-      (flags & TRACE_EVENT_FLAG_FLOW_IN)) {
+  if (flags & TRACE_EVENT_FLAG_ASYNC_TTS) {
+    legacy_event->set_use_async_tts(true);
+  }
+
+  uint32_t flow_flags =
+      flags & (TRACE_EVENT_FLAG_FLOW_OUT | TRACE_EVENT_FLAG_FLOW_IN);
+  switch (flow_flags) {
+    case TRACE_EVENT_FLAG_FLOW_OUT | TRACE_EVENT_FLAG_FLOW_IN:
+      legacy_event->set_flow_direction(TrackEvent::LegacyEvent::FLOW_INOUT);
+      break;
+    case TRACE_EVENT_FLAG_FLOW_OUT:
+      legacy_event->set_flow_direction(TrackEvent::LegacyEvent::FLOW_OUT);
+      break;
+    case TRACE_EVENT_FLAG_FLOW_IN:
+      legacy_event->set_flow_direction(TrackEvent::LegacyEvent::FLOW_IN);
+      break;
+    default:
+      break;
+  }
+
+  if (flow_flags) {
     legacy_event->set_bind_id(trace_event->bind_id());
+  }
+
+  if (flags & TRACE_EVENT_FLAG_BIND_TO_ENCLOSING) {
+    legacy_event->set_bind_to_enclosing(true);
   }
 
   if ((flags & TRACE_EVENT_FLAG_HAS_PROCESS_ID) &&
