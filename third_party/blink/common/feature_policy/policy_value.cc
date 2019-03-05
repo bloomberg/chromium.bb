@@ -17,6 +17,9 @@ PolicyValue::PolicyValue(mojom::PolicyValueType type) : type_(type) {
 PolicyValue::PolicyValue(bool bool_value)
     : type_(mojom::PolicyValueType::kBool), bool_value_(bool_value) {}
 
+PolicyValue::PolicyValue(double double_value, mojom::PolicyValueType type)
+    : type_(type), double_value_(double_value) {}
+
 PolicyValue PolicyValue::CreateMaxPolicyValue(mojom::PolicyValueType type) {
   PolicyValue value;
   value.SetType(type);
@@ -36,32 +39,37 @@ bool PolicyValue::BoolValue() const {
   return bool_value_;
 }
 
+double PolicyValue::DoubleValue() const {
+  DCHECK_EQ(type_, mojom::PolicyValueType::kDecDouble);
+  return double_value_;
+}
+
 void PolicyValue::SetBoolValue(bool bool_value) {
-  type_ = mojom::PolicyValueType::kBool;
+  DCHECK_EQ(mojom::PolicyValueType::kBool, type_);
   bool_value_ = bool_value;
+}
+
+void PolicyValue::SetDoubleValue(double double_value,
+                                 mojom::PolicyValueType type) {
+  DCHECK_EQ(type, type_);
+  double_value_ = double_value;
 }
 
 PolicyValue& PolicyValue::operator=(const PolicyValue& rhs) {
   if (this != &rhs) {
     type_ = rhs.type_;
     bool_value_ = rhs.bool_value_;
+    double_value_ = rhs.double_value_;
   }
   return *this;
 }
 
+// static
 PolicyValue PolicyValue::Combine(const PolicyValue& lhs,
                                  const PolicyValue& rhs) {
-  DCHECK_EQ(lhs.Type(), rhs.Type());
-  PolicyValue final_value;
-  final_value.SetType(lhs.Type());
-  switch (lhs.Type()) {
-    case mojom::PolicyValueType::kBool:
-      final_value.SetBoolValue(lhs.BoolValue() && rhs.BoolValue());
-      break;
-    default:
-      NOTREACHED();
-  }
-  return final_value;
+  PolicyValue result = lhs;
+  result.Combine(rhs);
+  return result;
 }
 
 void PolicyValue::Combine(const PolicyValue& rhs) {
@@ -69,6 +77,9 @@ void PolicyValue::Combine(const PolicyValue& rhs) {
   switch (type_) {
     case mojom::PolicyValueType::kBool:
       SetBoolValue(bool_value_ && rhs.BoolValue());
+      break;
+    case mojom::PolicyValueType::kDecDouble:
+      SetDoubleValue(std::min(double_value_, rhs.DoubleValue()), type_);
       break;
     default:
       NOTREACHED();
@@ -81,6 +92,8 @@ bool operator==(const PolicyValue& lhs, const PolicyValue& rhs) {
   switch (lhs.Type()) {
     case mojom::PolicyValueType::kBool:
       return lhs.BoolValue() == rhs.BoolValue();
+    case mojom::PolicyValueType::kDecDouble:
+      return lhs.DoubleValue() == rhs.DoubleValue();
     case mojom::PolicyValueType::kNull:
       return true;
   }
@@ -97,6 +110,8 @@ bool operator<(const PolicyValue& lhs, const PolicyValue& rhs) {
   switch (lhs.Type()) {
     case mojom::PolicyValueType::kBool:
       return rhs.BoolValue();
+    case mojom::PolicyValueType::kDecDouble:
+      return lhs.DoubleValue() < rhs.DoubleValue();
     case mojom::PolicyValueType::kNull:
       NOTREACHED();
       break;
@@ -121,6 +136,9 @@ void PolicyValue::SetToMax() {
     case mojom::PolicyValueType::kBool:
       bool_value_ = true;
       break;
+    case mojom::PolicyValueType::kDecDouble:
+      double_value_ = std::numeric_limits<double>::infinity();
+      break;
     default:
       break;
   }
@@ -131,6 +149,9 @@ void PolicyValue::SetToMin() {
   switch (type_) {
     case mojom::PolicyValueType::kBool:
       bool_value_ = false;
+      break;
+    case mojom::PolicyValueType::kDecDouble:
+      double_value_ = 0.0;
       break;
     default:
       NOTREACHED();

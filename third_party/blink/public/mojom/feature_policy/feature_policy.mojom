@@ -134,18 +134,20 @@ enum FeaturePolicyDisposition {
 };
 
 // This enum defines the types of parameters used to specify a feature policy.
-// TODO(loonybear): Add the following types: inc/dec int, inc/dec double, set.
+// TODO(loonybear): Add the following types: inc/dec int, inc double, enum, set.
 enum PolicyValueType {
   kNull,
   kBool,
+  kDecDouble,
 };
 
 // This union includes all the types that can be used to specify a policy's
 // parameter.
-// TODO(loonybear): Add the following types: inc/dec int, inc/dec double, set.
+// TODO(loonybear): Add the following types: inc/dec int, inc double, enum, set.
 union PolicyValueData {
   bool null_value;
   bool bool_value;
+  double dec_double_value;
 };
 
 // Defined as a structure so that it can be typemapped with StructTraits.

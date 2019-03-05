@@ -479,29 +479,58 @@ void OpenURLBlockUntilNavigationComplete(Shell* shell, const GURL& url) {
 
 // Helper function to generate a feature policy for a single feature and a list
 // of origins. (Equivalent to the declared policy "feature origin1 origin2...".)
-// TODO(loonybear): Add a test for non-bool type PolicyValue.
-blink::ParsedFeaturePolicy CreateFPHeader(
+void SetParsedFeaturePolicyDeclaration(
+    blink::ParsedFeaturePolicyDeclaration* declaration,
     blink::mojom::FeaturePolicyFeature feature,
     const std::vector<GURL>& origins) {
-  blink::ParsedFeaturePolicy result(1);
-  result[0].feature = feature;
-  result[0].fallback_value = blink::PolicyValue(false);
-  result[0].opaque_value = blink::PolicyValue(false);
+  declaration->feature = feature;
+  blink::mojom::PolicyValueType feature_type =
+      blink::FeaturePolicy::GetDefaultFeatureList().at(feature).second;
+  declaration->fallback_value =
+      blink::PolicyValue::CreateMinPolicyValue(feature_type);
+  declaration->opaque_value = declaration->fallback_value;
+  if (feature == blink::mojom::FeaturePolicyFeature::kOversizedImages) {
+    declaration->fallback_value.SetDoubleValue(2.0);
+    declaration->opaque_value.SetDoubleValue(2.0);
+  }
   DCHECK(!origins.empty());
-  for (const GURL& origin : origins)
-    result[0].values.insert(std::pair<url::Origin, blink::PolicyValue>(
-        url::Origin::Create(origin), blink::PolicyValue(true)));
+  for (const auto origin : origins)
+    declaration->values.insert(std::pair<url::Origin, blink::PolicyValue>(
+        url::Origin::Create(origin),
+        blink::PolicyValue::CreateMaxPolicyValue(feature_type)));
+}
+
+blink::ParsedFeaturePolicy CreateFPHeader(
+    blink::mojom::FeaturePolicyFeature feature1,
+    blink::mojom::FeaturePolicyFeature feature2,
+    const std::vector<GURL>& origins) {
+  blink::ParsedFeaturePolicy result(2);
+  SetParsedFeaturePolicyDeclaration(&(result[0]), feature1, origins);
+  SetParsedFeaturePolicyDeclaration(&(result[1]), feature2, origins);
   return result;
 }
 
 // Helper function to generate a feature policy for a single feature which
-// matches every origin. (Equivalent to the declared policy "feature *".)
+// matches every origin. (Equivalent to the declared policy "feature1 *;
+// feature2 *".)
 blink::ParsedFeaturePolicy CreateFPHeaderMatchesAll(
-    blink::mojom::FeaturePolicyFeature feature) {
-  blink::ParsedFeaturePolicy result(1);
-  result[0].feature = feature;
-  result[0].fallback_value = blink::PolicyValue(true);
-  result[0].opaque_value = blink::PolicyValue(true);
+    blink::mojom::FeaturePolicyFeature feature1,
+    blink::mojom::FeaturePolicyFeature feature2) {
+  blink::ParsedFeaturePolicy result(2);
+  blink::mojom::PolicyValueType feature_type1 =
+      blink::FeaturePolicy::GetDefaultFeatureList().at(feature1).second;
+  blink::mojom::PolicyValueType feature_type2 =
+      blink::FeaturePolicy::GetDefaultFeatureList().at(feature2).second;
+  blink::PolicyValue max_value1 =
+      blink::PolicyValue::CreateMaxPolicyValue(feature_type1);
+  blink::PolicyValue max_value2 =
+      blink::PolicyValue::CreateMaxPolicyValue(feature_type2);
+  result[0].feature = feature1;
+  result[0].fallback_value = max_value1;
+  result[0].opaque_value = max_value1;
+  result[1].feature = feature2;
+  result[1].fallback_value = max_value2;
+  result[1].opaque_value = max_value2;
   return result;
 }
 
@@ -714,6 +743,21 @@ class SitePerProcessIgnoreCertErrorsBrowserTest
   }
 };
 
+// SitePerProcessFeaturePolicyBrowserTest
+
+class SitePerProcessFeaturePolicyBrowserTest
+    : public SitePerProcessBrowserTest {
+ public:
+  SitePerProcessFeaturePolicyBrowserTest() = default;
+
+  // Enable tests for parameterized features.
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    SitePerProcessBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitchASCII("enable-blink-features",
+                                    "ExperimentalProductivityFeatures");
+  }
+};
+
 // SitePerProcessFeaturePolicyJavaScriptBrowserTest
 
 class SitePerProcessFeaturePolicyJavaScriptBrowserTest
@@ -724,8 +768,9 @@ class SitePerProcessFeaturePolicyJavaScriptBrowserTest
   // Enable the feature policy JavaScript interface
   void SetUpCommandLine(base::CommandLine* command_line) override {
     SitePerProcessBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitchASCII("enable-blink-features",
-                                    "FeaturePolicyJavaScriptInterface");
+    command_line->AppendSwitchASCII(
+        "enable-blink-features",
+        "FeaturePolicyJavaScriptInterface,ExperimentalProductivityFeatures");
   }
 };
 
@@ -8431,8 +8476,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 }
 
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
-                       TestFeaturePolicyReplicationOnSameOriginNavigation) {
+IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicyBrowserTest,
+                       TestPolicyReplicationOnSameOriginNavigation) {
   GURL start_url(
       embedded_test_server()->GetURL("a.com", "/feature-policy1.html"));
   GURL first_nav_url(
@@ -8443,6 +8488,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   FrameTreeNode* root = web_contents()->GetFrameTree()->root();
   EXPECT_EQ(CreateFPHeader(blink::mojom::FeaturePolicyFeature::kGeolocation,
+                           blink::mojom::FeaturePolicyFeature::kOversizedImages,
                            {start_url.GetOrigin()}),
             root->current_replication_state().feature_policy_header);
 
@@ -8450,7 +8496,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // overwrite the old one.
   EXPECT_TRUE(NavigateToURL(shell(), first_nav_url));
   EXPECT_EQ(CreateFPHeaderMatchesAll(
-                blink::mojom::FeaturePolicyFeature::kGeolocation),
+                blink::mojom::FeaturePolicyFeature::kGeolocation,
+                blink::mojom::FeaturePolicyFeature::kOversizedImages),
             root->current_replication_state().feature_policy_header);
 
   // When the main frame navigates to a page without a policy, the replicated
@@ -8459,8 +8506,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_TRUE(root->current_replication_state().feature_policy_header.empty());
 }
 
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
-                       TestFeaturePolicyReplicationOnCrossOriginNavigation) {
+IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicyBrowserTest,
+                       TestPolicyReplicationOnCrossOriginNavigation) {
   GURL start_url(
       embedded_test_server()->GetURL("a.com", "/feature-policy1.html"));
   GURL first_nav_url(
@@ -8471,6 +8518,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   FrameTreeNode* root = web_contents()->GetFrameTree()->root();
   EXPECT_EQ(CreateFPHeader(blink::mojom::FeaturePolicyFeature::kGeolocation,
+                           blink::mojom::FeaturePolicyFeature::kOversizedImages,
                            {start_url.GetOrigin()}),
             root->current_replication_state().feature_policy_header);
 
@@ -8478,7 +8526,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // overwrite the old one.
   EXPECT_TRUE(NavigateToURL(shell(), first_nav_url));
   EXPECT_EQ(CreateFPHeaderMatchesAll(
-                blink::mojom::FeaturePolicyFeature::kGeolocation),
+                blink::mojom::FeaturePolicyFeature::kGeolocation,
+                blink::mojom::FeaturePolicyFeature::kOversizedImages),
             root->current_replication_state().feature_policy_header);
 
   // When the main frame navigates to a page without a policy, the replicated
@@ -8489,8 +8538,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
 // Test that the replicated feature policy header is correct in subframes as
 // they navigate.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
-                       TestFeaturePolicyReplicationFromRemoteFrames) {
+IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicyBrowserTest,
+                       TestPolicyReplicationFromRemoteFrames) {
   GURL main_url(
       embedded_test_server()->GetURL("a.com", "/feature-policy-main.html"));
   GURL first_nav_url(
@@ -8501,11 +8550,13 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   FrameTreeNode* root = web_contents()->GetFrameTree()->root();
   EXPECT_EQ(CreateFPHeader(blink::mojom::FeaturePolicyFeature::kGeolocation,
+                           blink::mojom::FeaturePolicyFeature::kOversizedImages,
                            {main_url.GetOrigin(), GURL("http://example.com/")}),
             root->current_replication_state().feature_policy_header);
   EXPECT_EQ(1UL, root->child_count());
   EXPECT_EQ(
       CreateFPHeader(blink::mojom::FeaturePolicyFeature::kGeolocation,
+                     blink::mojom::FeaturePolicyFeature::kOversizedImages,
                      {main_url.GetOrigin()}),
       root->child_at(0)->current_replication_state().feature_policy_header);
 
@@ -8513,7 +8564,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   NavigateFrameToURL(root->child_at(0), first_nav_url);
   EXPECT_EQ(
       CreateFPHeaderMatchesAll(
-          blink::mojom::FeaturePolicyFeature::kGeolocation),
+          blink::mojom::FeaturePolicyFeature::kGeolocation,
+          blink::mojom::FeaturePolicyFeature::kOversizedImages),
       root->child_at(0)->current_replication_state().feature_policy_header);
 
   // Navigate the iframe to another location, this one with no policy header
@@ -8526,7 +8578,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   NavigateFrameToURL(root->child_at(0), first_nav_url);
   EXPECT_EQ(
       CreateFPHeaderMatchesAll(
-          blink::mojom::FeaturePolicyFeature::kGeolocation),
+          blink::mojom::FeaturePolicyFeature::kGeolocation,
+          blink::mojom::FeaturePolicyFeature::kOversizedImages),
       root->child_at(0)->current_replication_state().feature_policy_header);
 }
 
@@ -8556,7 +8609,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicyJavaScriptBrowserTest,
   NavigateFrameToURL(root->child_at(1), first_nav_url);
   EXPECT_EQ(
       CreateFPHeaderMatchesAll(
-          blink::mojom::FeaturePolicyFeature::kGeolocation),
+          blink::mojom::FeaturePolicyFeature::kGeolocation,
+          blink::mojom::FeaturePolicyFeature::kOversizedImages),
       root->child_at(1)->current_replication_state().feature_policy_header);
 
   EXPECT_EQ(1UL, root->child_at(1)->child_count());
@@ -8568,6 +8622,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicyJavaScriptBrowserTest,
   EXPECT_EQ(true,
             EvalJs(root->child_at(1)->child_at(0),
                    "document.featurePolicy.allowsFeature('geolocation')"));
+  // TODO(loonybear): Add JS test for parameterized features.
 
   // Now navigate the iframe to a page with no policy, and the same nested
   // cross-site iframe. The policy should be cleared in the proxy.

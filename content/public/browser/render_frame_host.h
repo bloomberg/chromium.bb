@@ -304,6 +304,11 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // RenderFrameHost and is allowed to be used by it. Use this in the browser
   // process to determine whether access to a feature is allowed.
   virtual bool IsFeatureEnabled(blink::mojom::FeaturePolicyFeature feature) = 0;
+  // Returns true if the given |threshold_value| is above the threshold value
+  // specified in the policy for |feature| for this RenderFrameHost. Use this
+  // in the browser process to determine whether access to a feature is allowed.
+  virtual bool IsFeatureEnabled(blink::mojom::FeaturePolicyFeature feature,
+                                blink::PolicyValue threshold_value) = 0;
 
   // Opens view-source tab for the document last committed in this
   // RenderFrameHost.

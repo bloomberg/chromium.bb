@@ -253,6 +253,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   bool GetSuddenTerminationDisablerState(
       blink::WebSuddenTerminationDisablerType disabler_type) override;
   bool IsFeatureEnabled(blink::mojom::FeaturePolicyFeature feature) override;
+  bool IsFeatureEnabled(blink::mojom::FeaturePolicyFeature feature,
+                        blink::PolicyValue threshold_value) override;
   void ViewSource() override;
   blink::mojom::PauseSubresourceLoadingHandlePtr PauseSubresourceLoading()
       override;

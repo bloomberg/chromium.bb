@@ -84,6 +84,8 @@ struct BLINK_COMMON_EXPORT
         return blink::mojom::PolicyValueDataDataView::Tag::NULL_VALUE;
       case blink::mojom::PolicyValueType::kBool:
         return blink::mojom::PolicyValueDataDataView::Tag::BOOL_VALUE;
+      case blink::mojom::PolicyValueType::kDecDouble:
+        return blink::mojom::PolicyValueDataDataView::Tag::DEC_DOUBLE_VALUE;
     }
 
     NOTREACHED();
@@ -92,6 +94,9 @@ struct BLINK_COMMON_EXPORT
   static bool null_value(const blink::PolicyValue& value) { return false; }
   static bool bool_value(const blink::PolicyValue& value) {
     return value.BoolValue();
+  }
+  static double dec_double_value(const blink::PolicyValue& value) {
+    return value.DoubleValue();
   }
   static bool Read(blink::mojom::PolicyValueDataDataView in,
                    blink::PolicyValue* out);
