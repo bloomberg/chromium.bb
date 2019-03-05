@@ -1,3 +1,4 @@
+
 // Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -7,7 +8,9 @@
 #include <map>
 #include <utility>
 
+#include "ash/public/cpp/app_list/app_list_features.h"
 #include "base/command_line.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/timer/mock_timer.h"
 #include "chrome/browser/ui/app_list/app_list_test_util.h"
@@ -18,6 +21,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/arc/common/app.mojom.h"
 #include "components/arc/test/fake_app_instance.h"
+#include "components/prefs/scoped_user_pref_update.h"
 #include "extensions/grit/extensions_browser_resources.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -35,7 +39,6 @@ class ArcAppReinstallSearchProviderTest : public AppListTestBase {
     app_provider_ =
         base::WrapUnique(new app_list::ArcAppReinstallSearchProvider(
             profile_.get(), /*max_result_count=*/2));
-
     std::unique_ptr<base::MockRepeatingTimer> timer =
         std::make_unique<base::MockRepeatingTimer>();
     mock_timer_ = timer.get();
@@ -47,6 +50,7 @@ class ArcAppReinstallSearchProviderTest : public AppListTestBase {
     mock_timer_ = nullptr;
     app_provider_.reset(nullptr);
     arc_app_test_.TearDown();
+
     AppListTestBase::TearDown();
   }
 
@@ -67,6 +71,24 @@ class ArcAppReinstallSearchProviderTest : public AppListTestBase {
     package.package_name = package_name;
     package.sync = false;
     return package.Clone();
+  }
+
+  std::string kAppState = "arc_app_reinstall_state";
+  void SetStateInt64(Profile* profile,
+                     const std::string& package_name,
+                     const std::string& key,
+                     const int64_t value) {
+    const std::string int64_str = base::NumberToString(value);
+    DictionaryPrefUpdate update(profile->GetPrefs(), kAppState);
+    base::DictionaryValue* const dictionary = update.Get();
+    base::Value* package_item =
+        dictionary->FindKeyOfType(package_name, base::Value::Type::DICTIONARY);
+    if (!package_item) {
+      package_item = dictionary->SetKey(
+          package_name, base::Value(base::Value::Type::DICTIONARY));
+    }
+
+    package_item->SetKey(key, base::Value(int64_str));
   }
 
   // Owned by |app_provider_|.
@@ -190,7 +212,36 @@ TEST_F(ArcAppReinstallSearchProviderTest, TestResultsWithAppsChanged) {
   app_instance()->SendInstallationFinished("com.package.fakepackage1", true);
   EXPECT_EQ(1u, app_provider_->results().size());
   app_instance()->UninstallPackage("com.package.fakepackage1");
-  EXPECT_EQ(2u, app_provider_->results().size());
+  // We expect the uninstall not to go back to the list.
+  EXPECT_EQ(1u, app_provider_->results().size());
+
+  // Check for persistence:
+
+  app_provider_ = base::WrapUnique(new app_list::ArcAppReinstallSearchProvider(
+      profile_.get(), /*max_result_count=*/2));
+
+  EXPECT_EQ(0u, app_provider_->results().size());
+  app_provider_->OnIconLoaded("http://icon.com/icon1");
+  EXPECT_EQ(1u, app_provider_->results().size());
+
+  // Check that impression counts are read appropriately.
+  const std::string impression_count = "impression_count";
+  SetStateInt64(profile_.get(), "com.package.fakepackage2", impression_count,
+                50);
+  app_provider_->UpdateResults();
+  EXPECT_EQ(0u, app_provider_->results().size());
+  SetStateInt64(profile_.get(), "com.package.fakepackage2", impression_count,
+                0);
+  app_provider_->UpdateResults();
+  app_provider_->OnIconLoaded("http://icon.com/icon1");
+  EXPECT_EQ(1u, app_provider_->results().size());
+
+  // If uninstalled recently, avoid.
+  const std::string uninstall_time = "uninstall_time";
+  SetStateInt64(profile_.get(), "com.package.fakepackage2", uninstall_time,
+                base::Time::Now().ToDeltaSinceWindowsEpoch().InMilliseconds());
+  app_provider_->UpdateResults();
+  EXPECT_EQ(0u, app_provider_->results().size());
 }
 
 TEST_F(ArcAppReinstallSearchProviderTest, TestResultListComparison) {

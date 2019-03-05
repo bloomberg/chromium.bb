@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_UI_APP_LIST_SEARCH_ARC_ARC_APP_REINSTALL_SEARCH_PROVIDER_H_
 #define CHROME_BROWSER_UI_APP_LIST_SEARCH_ARC_ARC_APP_REINSTALL_SEARCH_PROVIDER_H_
 
-#include <map>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -15,9 +14,11 @@
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
+#include "chrome/browser/ui/app_list/search/arc/arc_app_reinstall_app_result.h"
 #include "chrome/browser/ui/app_list/search/search_provider.h"
 #include "ui/gfx/image/image_skia.h"
 
+class PrefRegistrySimple;
 class Profile;
 FORWARD_DECLARE_TEST(ArcAppReinstallSearchProviderTest,
                      TestResultsWithSearchChanged);
@@ -37,8 +38,10 @@ namespace app_list {
 //
 // For users who do not have ARC++ enabled, we do not make a call through to the
 // Play Store, but rather populate with empty results.
-class ArcAppReinstallSearchProvider : public SearchProvider,
-                                      public ArcAppListPrefs::Observer {
+class ArcAppReinstallSearchProvider
+    : public SearchProvider,
+      public ArcAppListPrefs::Observer,
+      public ArcAppReinstallAppResult::Observer {
  public:
   // Constructor receives the Profile in order to
   // instantiate App results. Ownership is not taken.
@@ -55,6 +58,13 @@ class ArcAppReinstallSearchProvider : public SearchProvider,
 
   // Used by unit tests. SearchProvider takes ownership of pointer.
   void SetTimerForTesting(std::unique_ptr<base::RepeatingTimer> timer);
+
+  // ArcAppReinstallAppResult::Observer:
+  void OnOpened(const std::string& id) override;
+
+  void OnVisibilityChanged(const std::string& id, bool visibility) override;
+
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(::ArcAppReinstallSearchProviderTest,
@@ -100,6 +110,11 @@ class ArcAppReinstallSearchProvider : public SearchProvider,
 
   // For icon load callback, in OnGetAppReinstallCandidates
   void OnIconLoaded(const std::string& icon_url);
+
+  // Should we show this package?
+  bool ShouldShowPackage(const std::string& package_id) const;
+  // Should we show anything to the user?
+  bool ShouldShowAnything() const;
 
   // Are both lists of chrome search results of the same title in the same
   // order?
