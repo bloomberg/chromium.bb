@@ -9,6 +9,7 @@ mojom("mojom") {
     "device.mojom",
     "device_factory.mojom",
     "device_factory_provider.mojom",
+    "devices_changed_observer.mojom",
     "producer.mojom",
     "receiver.mojom",
     "scoped_access_permission.mojom",

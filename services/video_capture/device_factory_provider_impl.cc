@@ -110,8 +110,6 @@ void DeviceFactoryProviderImpl::ConnectToDeviceFactory(
     mojom::DeviceFactoryRequest request) {
   DCHECK(service_ref_);
   LazyInitializeDeviceFactory();
-  if (factory_bindings_.empty())
-    device_factory_->SetServiceRef(service_ref_->Clone());
   factory_bindings_.AddBinding(device_factory_.get(), std::move(request));
 }
 
@@ -156,6 +154,7 @@ void DeviceFactoryProviderImpl::LazyInitializeDeviceFactory() {
               &GpuDependenciesContext::CreateJpegDecodeAccelerator,
               gpu_dependencies_context_->GetWeakPtr()),
           gpu_dependencies_context_->GetTaskRunner()));
+  device_factory_->SetServiceRef(service_ref_->Clone());
 }
 
 void DeviceFactoryProviderImpl::LazyInitializeVideoSourceProvider() {
