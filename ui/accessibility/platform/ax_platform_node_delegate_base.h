@@ -104,6 +104,11 @@ class AX_EXPORT AXPlatformNodeDelegateBase : public AXPlatformNodeDelegate {
 
   const AXUniqueId& GetUniqueId() const override;
 
+  AXPlatformNodeDelegate::EnclosingBoundaryOffsets FindTextBoundariesAtOffset(
+      TextBoundaryType boundary_type,
+      int offset,
+      ax::mojom::TextAffinity affinity) const override;
+
   //
   // Tables. All of these should be called on a node that's a table-like
   // role.
@@ -190,4 +195,4 @@ class AX_EXPORT AXPlatformNodeDelegateBase : public AXPlatformNodeDelegate {
 
 }  // namespace ui
 
-#endif  // UI_ACCESSIBILITY_PLATFORM_AX_PLATFORM_NODE_DELEGATE_H_
+#endif  // UI_ACCESSIBILITY_PLATFORM_AX_PLATFORM_NODE_DELEGATE_BASE_H_

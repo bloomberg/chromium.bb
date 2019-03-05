@@ -358,6 +358,11 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   int GetIndexInParent() const override;
   gfx::AcceleratedWidget GetTargetForNativeAccessibilityEvent() override;
 
+  ui::AXPlatformNodeDelegate::EnclosingBoundaryOffsets
+  FindTextBoundariesAtOffset(ui::TextBoundaryType boundary_type,
+                             int offset,
+                             ax::mojom::TextAffinity affinity) const override;
+
   bool IsTable() const override;
   int32_t GetTableColCount() const override;
   int32_t GetTableRowCount() const override;

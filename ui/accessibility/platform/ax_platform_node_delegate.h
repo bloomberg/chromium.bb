@@ -6,9 +6,12 @@
 #define UI_ACCESSIBILITY_PLATFORM_AX_PLATFORM_NODE_DELEGATE_H_
 
 #include <set>
+#include <utility>
+#include <vector>
 
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_export.h"
+#include "ui/accessibility/ax_text_utils.h"
 #include "ui/accessibility/platform/ax_unique_id.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/native_widget_types.h"
@@ -125,6 +128,15 @@ class AX_EXPORT AXPlatformNodeDelegate {
       ax::mojom::IntListAttribute attr) = 0;
 
   virtual const AXUniqueId& GetUniqueId() const = 0;
+
+  // This method finds text boundaries in the text used for platform text APIs.
+  // Implementations may use side-channel data such as line or word indices to
+  // produce appropriate results.
+  using EnclosingBoundaryOffsets = base::Optional<std::pair<size_t, size_t>>;
+  virtual EnclosingBoundaryOffsets FindTextBoundariesAtOffset(
+      TextBoundaryType boundary_type,
+      int offset,
+      ax::mojom::TextAffinity affinity) const = 0;
 
   //
   // Tables. All of these should be called on a node that's a table-like

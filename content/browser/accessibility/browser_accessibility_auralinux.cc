@@ -55,6 +55,10 @@ bool BrowserAccessibilityAuraLinux::IsNative() const {
   return true;
 }
 
+base::string16 BrowserAccessibilityAuraLinux::GetText() const {
+  return GetNode()->AXPlatformNodeAuraLinux::GetText();
+}
+
 ui::AXPlatformNode* BrowserAccessibilityAuraLinux::GetFromNodeID(int32_t id) {
   if (!instance_active())
     return nullptr;
