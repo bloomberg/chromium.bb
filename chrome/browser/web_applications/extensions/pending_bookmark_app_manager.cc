@@ -15,11 +15,10 @@
 #include "base/time/time.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
-#include "extensions/browser/extension_prefs.h"
-#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/uninstall_reason.h"
 
@@ -54,8 +53,11 @@ struct PendingBookmarkAppManager::TaskAndCallback {
   OnceInstallCallback callback;
 };
 
-PendingBookmarkAppManager::PendingBookmarkAppManager(Profile* profile)
+PendingBookmarkAppManager::PendingBookmarkAppManager(
+    Profile* profile,
+    web_app::AppRegistrar* registrar)
     : profile_(profile),
+      registrar_(registrar),
       extension_ids_map_(profile->GetPrefs()),
       web_contents_factory_(base::BindRepeating(&WebContentsCreateWrapper)),
       task_factory_(base::BindRepeating(&InstallationTaskCreateWrapper)),
@@ -150,12 +152,11 @@ void PendingBookmarkAppManager::SetTimerForTesting(
 
 base::Optional<bool> PendingBookmarkAppManager::IsExtensionPresentAndInstalled(
     const std::string& extension_id) {
-  if (ExtensionRegistry::Get(profile_)->GetExtensionById(
-          extension_id, ExtensionRegistry::EVERYTHING) != nullptr) {
+  if (registrar_->IsInstalled(extension_id)) {
     return base::Optional<bool>(true);
   }
-  if (ExtensionPrefs::Get(profile_)->IsExternalExtensionUninstalled(
-          extension_id)) {
+
+  if (registrar_->WasExternalAppUninstalledByUser(extension_id)) {
     return base::Optional<bool>(false);
   }
 

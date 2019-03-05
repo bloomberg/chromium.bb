@@ -28,6 +28,10 @@ class RenderFrameHost;
 class WebContents;
 }  // namespace content
 
+namespace web_app {
+class AppRegistrar;
+}  // namespace web_app
+
 namespace extensions {
 
 // Implementation of web_app::PendingAppManager that manages the set of
@@ -43,7 +47,8 @@ class PendingBookmarkAppManager final : public web_app::PendingAppManager,
   using TaskFactory = base::RepeatingCallback<
       std::unique_ptr<BookmarkAppInstallationTask>(Profile*, AppInfo)>;
 
-  explicit PendingBookmarkAppManager(Profile* profile);
+  explicit PendingBookmarkAppManager(Profile* profile,
+                                     web_app::AppRegistrar* registrar_);
   ~PendingBookmarkAppManager() override;
 
   // web_app::PendingAppManager
@@ -91,6 +96,7 @@ class PendingBookmarkAppManager final : public web_app::PendingAppManager,
                    const base::string16& error_description) override;
 
   Profile* profile_;
+  web_app::AppRegistrar* registrar_;
   web_app::ExtensionIdsMap extension_ids_map_;
 
   WebContentsFactory web_contents_factory_;

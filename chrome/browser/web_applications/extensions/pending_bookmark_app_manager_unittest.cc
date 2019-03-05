@@ -16,9 +16,11 @@
 #include "base/test/bind_test_util.h"
 #include "base/timer/mock_timer.h"
 #include "chrome/browser/extensions/test_extension_system.h"
+#include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_installation_task.h"
+#include "chrome/browser/web_applications/extensions/bookmark_app_registrar.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/crx_file/id_util.h"
@@ -189,6 +191,8 @@ class PendingBookmarkAppManagerTest : public ChromeRenderViewHostTestHarness {
     test_extension_registry_observer_ =
         std::make_unique<TestExtensionRegistryObserver>(
             ExtensionRegistry::Get(profile()));
+
+    registrar_ = std::make_unique<extensions::BookmarkAppRegistrar>(profile());
   }
 
   void TearDown() override {
@@ -269,7 +273,8 @@ class PendingBookmarkAppManagerTest : public ChromeRenderViewHostTestHarness {
 
   std::unique_ptr<PendingBookmarkAppManager>
   GetPendingBookmarkAppManagerWithTestFactories() {
-    auto manager = std::make_unique<PendingBookmarkAppManager>(profile());
+    auto manager = std::make_unique<PendingBookmarkAppManager>(
+        profile(), registrar_.get());
     manager->SetFactoriesForTesting(test_web_contents_creator(),
                                     successful_installation_task_creator());
     return manager;
@@ -338,6 +343,8 @@ class PendingBookmarkAppManagerTest : public ChromeRenderViewHostTestHarness {
   PendingBookmarkAppManager::WebContentsFactory test_web_contents_creator_;
   PendingBookmarkAppManager::TaskFactory successful_installation_task_creator_;
   PendingBookmarkAppManager::TaskFactory failing_installation_task_creator_;
+
+  std::unique_ptr<web_app::AppRegistrar> registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(PendingBookmarkAppManagerTest);
 };

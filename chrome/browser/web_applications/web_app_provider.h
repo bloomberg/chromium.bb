@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -35,12 +36,12 @@ class InstallManager;
 class WebAppAudioFocusIdMap;
 class WebAppTabHelperBase;
 class SystemWebAppManager;
+class AppRegistrar;
 
 // Forward declarations for new extension-independent subsystems.
 class WebAppDatabase;
 class WebAppDatabaseFactory;
 class WebAppIconManager;
-class WebAppRegistrar;
 
 // Forward declarations for legacy extension-based subsystems.
 class WebAppPolicyManager;
@@ -108,10 +109,10 @@ class WebAppProvider : public KeyedService,
   std::unique_ptr<WebAppAudioFocusIdMap> audio_focus_id_map_;
   std::unique_ptr<WebAppDatabaseFactory> database_factory_;
   std::unique_ptr<WebAppDatabase> database_;
-  std::unique_ptr<WebAppRegistrar> registrar_;
   std::unique_ptr<WebAppIconManager> icon_manager_;
 
   // New generalized subsystems:
+  std::unique_ptr<AppRegistrar> registrar_;
   std::unique_ptr<InstallManager> install_manager_;
   std::unique_ptr<PendingAppManager> pending_app_manager_;
   std::unique_ptr<SystemWebAppManager> system_web_app_manager_;
