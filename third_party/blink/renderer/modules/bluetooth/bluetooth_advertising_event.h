@@ -31,7 +31,7 @@ class BluetoothAdvertisingEvent final : public Event {
       BluetoothDevice* device,
       const String& name,
       const HeapVector<StringOrUnsignedLong>& uuids,
-      base::Optional<short> appearance,
+      base::Optional<uint16_t> appearance,
       base::Optional<int8_t> txPower,
       base::Optional<int8_t> rssi,
       BluetoothManufacturerDataMap* manufacturer_data_map,
@@ -48,7 +48,7 @@ class BluetoothAdvertisingEvent final : public Event {
                             BluetoothDevice* device,
                             const String& name,
                             const HeapVector<StringOrUnsignedLong>& uuids,
-                            base::Optional<short> appearance,
+                            base::Optional<uint16_t> appearance,
                             base::Optional<int8_t> txPower,
                             base::Optional<int8_t> rssi,
                             BluetoothManufacturerDataMap* manufacturer_data_map,
@@ -63,7 +63,7 @@ class BluetoothAdvertisingEvent final : public Event {
   BluetoothDevice* device() const;
   const String& name() const;
   const HeapVector<StringOrUnsignedLong>& uuids() const;
-  short appearance(bool& is_null) const;
+  uint16_t appearance(bool& is_null) const;
   int8_t txPower(bool& is_null) const;
   int8_t rssi(bool& is_null) const;
   BluetoothManufacturerDataMap* manufacturerData() const;
@@ -73,7 +73,7 @@ class BluetoothAdvertisingEvent final : public Event {
   Member<BluetoothDevice> device_;
   String name_;
   HeapVector<StringOrUnsignedLong> uuids_;
-  base::Optional<short> appearance_;
+  base::Optional<uint16_t> appearance_;
   base::Optional<int8_t> txPower_;
   base::Optional<int8_t> rssi_;
   const Member<BluetoothManufacturerDataMap> manufacturer_data_map_;

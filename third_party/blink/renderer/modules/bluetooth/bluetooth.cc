@@ -371,7 +371,7 @@ void Bluetooth::ScanEvent(mojom::blink::WebBluetoothScanResultPtr result) {
   if (result->tx_power_is_set)
     tx_power = result->tx_power;
 
-  base::Optional<int16_t> appearance;
+  base::Optional<uint16_t> appearance;
   if (result->appearance_is_set)
     appearance = result->appearance;
 
