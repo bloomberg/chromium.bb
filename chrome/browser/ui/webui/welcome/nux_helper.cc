@@ -32,12 +32,13 @@ const base::Feature kNuxOnboardingForceEnabled = {
 // chrome/browser/resources/welcome/onboarding_welcome/welcome_app.js
 const base::FeatureParam<std::string> kNuxOnboardingForceEnabledNewUserModules =
     {&kNuxOnboardingForceEnabled, "new-user-modules",
-     "nux-email,nux-google-apps,nux-ntp-background,nux-set-as-default,"
+     "nux-google-apps,nux-email,nux-ntp-background,nux-set-as-default,"
      "signin-view"};
 const base::FeatureParam<std::string>
     kNuxOnboardingForceEnabledReturningUserModules = {
         &kNuxOnboardingForceEnabled, "returning-user-modules",
         "nux-set-as-default"};
+// TODO(hcarmona): remove this flag and all code behind it.
 const base::FeatureParam<bool> kNuxOnboardingForceEnabledShowEmailInterstitial =
     {&kNuxOnboardingForceEnabled, "show-email-interstitial", true};
 

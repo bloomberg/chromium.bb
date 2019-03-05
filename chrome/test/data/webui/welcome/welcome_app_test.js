@@ -74,12 +74,15 @@ cr.define('onboarding_welcome_app_test', function() {
       return test_util.waitForRenderOrTimeout0(testElement).then(() => {
         const views = testElement.shadowRoot.querySelectorAll('[slot=view]');
         assertEquals(views.length, 6);
-        assertEquals(views[0].tagName, 'LANDING-VIEW');
-        assertEquals(views[1].tagName, 'NUX-EMAIL');
-        assertEquals(views[2].tagName, 'NUX-GOOGLE-APPS');
-        assertEquals(views[3].tagName, 'NUX-NTP-BACKGROUND');
-        assertEquals(views[4].tagName, 'NUX-SET-AS-DEFAULT');
-        assertEquals(views[5].tagName, 'SIGNIN-VIEW');
+        ['LANDING-VIEW',
+         'NUX-GOOGLE-APPS',
+         'NUX-EMAIL',
+         'NUX-NTP-BACKGROUND',
+         'NUX-SET-AS-DEFAULT',
+         'SIGNIN-VIEW',
+        ].forEach((expectedView, ix) => {
+          assertEquals(expectedView, views[ix].tagName);
+        });
       });
     });
 
@@ -89,11 +92,14 @@ cr.define('onboarding_welcome_app_test', function() {
       return test_util.waitForRenderOrTimeout0(testElement).then(() => {
         const views = testElement.shadowRoot.querySelectorAll('[slot=view]');
         assertEquals(views.length, 5);
-        assertEquals(views[0].tagName, 'LANDING-VIEW');
-        assertEquals(views[1].tagName, 'NUX-EMAIL');
-        assertEquals(views[2].tagName, 'NUX-GOOGLE-APPS');
-        assertEquals(views[3].tagName, 'NUX-NTP-BACKGROUND');
-        assertEquals(views[4].tagName, 'SIGNIN-VIEW');
+        ['LANDING-VIEW',
+         'NUX-GOOGLE-APPS',
+         'NUX-EMAIL',
+         'NUX-NTP-BACKGROUND',
+         'SIGNIN-VIEW',
+        ].forEach((expectedView, ix) => {
+          assertEquals(expectedView, views[ix].tagName);
+        });
       });
     });
 
