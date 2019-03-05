@@ -33,16 +33,14 @@
 
 namespace blink {
 
-using namespace HTMLNames;
-
 static const HTMLQualifiedName& getBlockQuoteName(const Node* parent)
 {
     if (IsHTMLUListElement(parent))
-        return ulTag;
+        return html_names::kUlTag;
     else if (IsHTMLOListElement(parent))
-        return olTag;
+        return html_names::kOlTag;
     else
-        return blockquoteTag;
+        return html_names::kBlockquoteTag;
 }
 
 IndentBlockCommand::IndentBlockCommand(Document& document)
@@ -53,8 +51,8 @@ IndentBlockCommand::IndentBlockCommand(Document& document)
 Element* IndentBlockCommand::CreateIndentBlock(const QualifiedName& tagName) const
 {
     Element* element = CreateHTMLElement(GetDocument(), tagName);
-    if (tagName.Matches(blockquoteTag))
-        element->setAttribute(styleAttr, "margin: 0 0 0 40px; border: none; padding: 0px;");
+    if (tagName.Matches(html_names::kBlockquoteTag))
+        element->setAttribute(html_names::kStyleAttr, "margin: 0 0 0 40px; border: none; padding: 0px;");
     return element;
 }
 

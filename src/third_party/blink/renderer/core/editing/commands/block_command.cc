@@ -35,8 +35,6 @@
 
 namespace blink {
 
-using namespace HTMLNames;
-
 static bool isTableCellOrRootEditable(const Node* node)
 {
     return IsTableCell(node) || (IsRootEditableElement(*node));
