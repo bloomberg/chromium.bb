@@ -117,32 +117,6 @@ class UI_BASE_IME_EXPORT IMEEngineHandlerInterface {
   // If not, InputMethodChromeOS won't feed it with key events.
   virtual bool IsInterestedInKeyEvent() const = 0;
 
-  // Clear the current composition.
-  virtual bool ClearComposition(int context_id, std::string* error) = 0;
-
-  // Commit the specified text to the specified context.  Fails if the context
-  // is not focused.
-  virtual bool CommitText(int context_id,
-                          const char* text,
-                          std::string* error) = 0;
-
-  // Returns true if this IME is active, false if not.
-  virtual bool IsActive() const = 0;
-
-  // Returns the current active input_component id.
-  virtual const std::string& GetActiveComponentId() const = 0;
-
-  // Deletes |number_of_chars| unicode characters as the basis of |offset| from
-  // the surrounding text. The |offset| is relative position based on current
-  // caret.
-  // NOTE: Currently we are falling back to backspace forwarding workaround,
-  // because delete_surrounding_text is not supported in Chrome. So this
-  // function is restricted for only preceding text.
-  // TODO(nona): Support full spec delete surrounding text.
-  virtual bool DeleteSurroundingText(int context_id,
-                                     int offset,
-                                     size_t number_of_chars,
-                                     std::string* error) = 0;
 #if defined(OS_CHROMEOS)
 
   // Called when a property is activated or changed.
@@ -152,24 +126,10 @@ class UI_BASE_IME_EXPORT IMEEngineHandlerInterface {
   // based candidate index in lookup table.
   virtual void CandidateClicked(uint32_t index) = 0;
 
-  // Show or hide the candidate window.
-  virtual bool SetCandidateWindowVisible(bool visible, std::string* error) = 0;
-
-  // Set the position of the cursor in the candidate window.
-  virtual bool SetCursorPosition(int context_id,
-                                 int candidate_id,
-                                 std::string* error) = 0;
-  // Hides the input view window (from API call).
-  virtual void HideInputView() = 0;
-
   // Sets the mirroring/casting enable states.
   virtual void SetMirroringEnabled(bool mirroring_enabled) = 0;
   virtual void SetCastingEnabled(bool casting_enabled) = 0;
 
-#elif defined(OS_LINUX) || defined(OS_WIN)
-
-  // Get the id of the IME extension.
-  virtual std::string GetExtensionId() const = 0;
 #endif  // defined(OS_CHROMEOS)
  protected:
   IMEEngineHandlerInterface() {}

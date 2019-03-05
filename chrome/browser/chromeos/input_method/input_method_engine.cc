@@ -73,6 +73,43 @@ InputMethodEngine::InputMethodEngine()
 
 InputMethodEngine::~InputMethodEngine() {}
 
+void InputMethodEngine::Enable(const std::string& component_id) {
+  InputMethodEngineBase::Enable(component_id);
+  EnableInputView();
+}
+
+bool InputMethodEngine::IsActive() const {
+  return !active_component_id_.empty();
+}
+
+void InputMethodEngine::PropertyActivate(const std::string& property_name) {
+  observer_->OnMenuItemActivated(active_component_id_, property_name);
+}
+
+void InputMethodEngine::CandidateClicked(uint32_t index) {
+  if (index > candidate_ids_.size()) {
+    return;
+  }
+
+  // Only left button click is supported at this moment.
+  observer_->OnCandidateClicked(active_component_id_, candidate_ids_.at(index),
+                                InputMethodEngineBase::MOUSE_BUTTON_LEFT);
+}
+
+void InputMethodEngine::SetMirroringEnabled(bool mirroring_enabled) {
+  if (mirroring_enabled != is_mirroring_) {
+    is_mirroring_ = mirroring_enabled;
+    observer_->OnScreenProjectionChanged(is_mirroring_ || is_casting_);
+  }
+}
+
+void InputMethodEngine::SetCastingEnabled(bool casting_enabled) {
+  if (casting_enabled != is_casting_) {
+    is_casting_ = casting_enabled;
+    observer_->OnScreenProjectionChanged(is_mirroring_ || is_casting_);
+  }
+}
+
 const InputMethodEngine::CandidateWindowProperty&
 InputMethodEngine::GetCandidateWindowProperty() const {
   return candidate_window_property_;
@@ -214,99 +251,10 @@ bool InputMethodEngine::UpdateMenuItems(
   return true;
 }
 
-bool InputMethodEngine::IsActive() const {
-  return !active_component_id_.empty();
-}
-
 void InputMethodEngine::HideInputView() {
   auto* keyboard_client = ChromeKeyboardControllerClient::Get();
   if (keyboard_client->is_keyboard_enabled())
     keyboard_client->HideKeyboard(ash::mojom::HideReason::kUser);
-}
-
-void InputMethodEngine::SetMirroringEnabled(bool mirroring_enabled) {
-  if (mirroring_enabled != is_mirroring_) {
-    is_mirroring_ = mirroring_enabled;
-    observer_->OnScreenProjectionChanged(is_mirroring_ || is_casting_);
-  }
-}
-
-void InputMethodEngine::SetCastingEnabled(bool casting_enabled) {
-  if (casting_enabled != is_casting_) {
-    is_casting_ = casting_enabled;
-    observer_->OnScreenProjectionChanged(is_mirroring_ || is_casting_);
-  }
-}
-
-void InputMethodEngine::EnableInputView() {
-  input_method::InputMethodManager::Get()
-      ->GetActiveIMEState()
-      ->EnableInputView();
-  auto* keyboard_client = ChromeKeyboardControllerClient::Get();
-  if (keyboard_client->is_keyboard_enabled())
-    keyboard_client->ReloadKeyboardIfNeeded();
-}
-
-
-void InputMethodEngine::Enable(const std::string& component_id) {
-  InputMethodEngineBase::Enable(component_id);
-  EnableInputView();
-}
-
-void InputMethodEngine::PropertyActivate(const std::string& property_name) {
-  observer_->OnMenuItemActivated(active_component_id_, property_name);
-}
-
-void InputMethodEngine::CandidateClicked(uint32_t index) {
-  if (index > candidate_ids_.size()) {
-    return;
-  }
-
-  // Only left button click is supported at this moment.
-  observer_->OnCandidateClicked(active_component_id_, candidate_ids_.at(index),
-                                InputMethodEngineBase::MOUSE_BUTTON_LEFT);
-}
-
-// TODO(uekawa): rename this method to a more reasonable name.
-void InputMethodEngine::MenuItemToProperty(
-    const input_method::InputMethodManager::MenuItem& item,
-    ui::ime::InputMethodMenuItem* property) {
-  property->key = item.id;
-
-  if (item.modified & MENU_ITEM_MODIFIED_LABEL) {
-    property->label = item.label;
-  }
-  if (item.modified & MENU_ITEM_MODIFIED_VISIBLE) {
-    // TODO(nona): Implement it.
-  }
-  if (item.modified & MENU_ITEM_MODIFIED_CHECKED) {
-    property->is_selection_item_checked = item.checked;
-  }
-  if (item.modified & MENU_ITEM_MODIFIED_ENABLED) {
-    // TODO(nona): implement sensitive entry(crbug.com/140192).
-  }
-  if (item.modified & MENU_ITEM_MODIFIED_STYLE) {
-    if (!item.children.empty()) {
-      // TODO(nona): Implement it.
-    } else {
-      switch (item.style) {
-        case input_method::InputMethodManager::MENU_ITEM_STYLE_NONE:
-          NOTREACHED();
-          break;
-        case input_method::InputMethodManager::MENU_ITEM_STYLE_CHECK:
-          // TODO(nona): Implement it.
-          break;
-        case input_method::InputMethodManager::MENU_ITEM_STYLE_RADIO:
-          property->is_selection_item = true;
-          break;
-        case input_method::InputMethodManager::MENU_ITEM_STYLE_SEPARATOR:
-          // TODO(nona): Implement it.
-          break;
-      }
-    }
-  }
-
-  // TODO(nona): Support item.children.
 }
 
 void InputMethodEngine::UpdateComposition(
@@ -351,6 +299,58 @@ bool InputMethodEngine::SendKeyEvent(ui::KeyEvent* event,
 
   input_context->SendKeyEvent(event);
   return true;
+}
+
+void InputMethodEngine::EnableInputView() {
+  input_method::InputMethodManager::Get()
+      ->GetActiveIMEState()
+      ->EnableInputView();
+  auto* keyboard_client = ChromeKeyboardControllerClient::Get();
+  if (keyboard_client->is_keyboard_enabled())
+    keyboard_client->ReloadKeyboardIfNeeded();
+}
+
+
+// TODO(uekawa): rename this method to a more reasonable name.
+void InputMethodEngine::MenuItemToProperty(
+    const input_method::InputMethodManager::MenuItem& item,
+    ui::ime::InputMethodMenuItem* property) {
+  property->key = item.id;
+
+  if (item.modified & MENU_ITEM_MODIFIED_LABEL) {
+    property->label = item.label;
+  }
+  if (item.modified & MENU_ITEM_MODIFIED_VISIBLE) {
+    // TODO(nona): Implement it.
+  }
+  if (item.modified & MENU_ITEM_MODIFIED_CHECKED) {
+    property->is_selection_item_checked = item.checked;
+  }
+  if (item.modified & MENU_ITEM_MODIFIED_ENABLED) {
+    // TODO(nona): implement sensitive entry(crbug.com/140192).
+  }
+  if (item.modified & MENU_ITEM_MODIFIED_STYLE) {
+    if (!item.children.empty()) {
+      // TODO(nona): Implement it.
+    } else {
+      switch (item.style) {
+        case input_method::InputMethodManager::MENU_ITEM_STYLE_NONE:
+          NOTREACHED();
+          break;
+        case input_method::InputMethodManager::MENU_ITEM_STYLE_CHECK:
+          // TODO(nona): Implement it.
+          break;
+        case input_method::InputMethodManager::MENU_ITEM_STYLE_RADIO:
+          property->is_selection_item = true;
+          break;
+        case input_method::InputMethodManager::MENU_ITEM_STYLE_SEPARATOR:
+          // TODO(nona): Implement it.
+          break;
+      }
+    }
+  }
+
+  // TODO(nona): Support item.children.
 }
 
 }  // namespace chromeos
