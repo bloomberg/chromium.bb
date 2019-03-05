@@ -71,8 +71,14 @@ Polymer({
       type: Array,
       value: function() {
         return [];
-      }
-    }
+      },
+    },
+
+    /**
+     * The selected sort method.
+     * @type {!settings.SortMethod|undefined}
+     */
+    sortMethod: {type: String, observer: 'updateOrigins_'}
   },
 
   /** @private {?settings.LocalDataBrowserProxy} */
@@ -116,29 +122,35 @@ Polymer({
   },
 
   /**
-   * Returns a user-friendly name for the origin corresponding to |originIndex|.
-   * If grouped_() is true and |originIndex| is not provided, returns the eTLD+1
-   * for all the origins, otherwise, return the host for that origin.
+   * Returns a user-friendly name for the siteGroup.
+   * If grouped_() is true and eTLD+1 is available, returns the eTLD+1,
+   * otherwise return the origin representation for the first origin.
    * @param {SiteGroup} siteGroup The eTLD+1 group of origins.
-   * @param {number} originIndex Index of the origin to get a user-friendly name
-   *     for. If -1, returns the eTLD+1 name if any, otherwise defaults to the
-   *     first origin.
    * @return {string} The user-friendly name.
    * @private
    */
-  siteRepresentation_: function(siteGroup, originIndex) {
+  siteGroupRepresentation_: function(siteGroup) {
     if (!siteGroup) {
       return '';
     }
-    if (this.grouped_(siteGroup) && originIndex == -1) {
+    if (this.grouped_(siteGroup)) {
       if (siteGroup.etldPlus1 != '') {
         return siteGroup.etldPlus1;
       }
       // Fall back onto using the host of the first origin, if no eTLD+1 name
       // was computed.
     }
-    originIndex = this.getIndexBoundToOriginList_(siteGroup, originIndex);
-    const url = this.toUrl(siteGroup.origins[originIndex].origin);
+    return this.originRepresentation_(siteGroup.origins[0]);
+  },
+
+  /**
+   * Returns a user-friendly name for the origin.
+   * @param {OriginInfo} origin
+   * @return {string} The user-friendly name.
+   * @private
+   */
+  originRepresentation_(origin) {
+    const url = this.toUrl(origin.origin);
     return url.host;
   },
 
@@ -147,8 +159,6 @@ Polymer({
    * @private
    */
   onSiteGroupChanged_: function(siteGroup) {
-    this.displayName_ = this.siteRepresentation_(siteGroup, -1);
-
     // Update the button listener.
     if (this.button_) {
       this.unlisten(this.button_, 'keydown', 'onButtonKeydown_');
@@ -168,26 +178,36 @@ Polymer({
       return;
     }
     this.calculateUsageInfo_(siteGroup);
-    this.calculateNumberOfCookies_(siteGroup);
+    this.getCookieNumString_(siteGroup.numCookies).then(string => {
+      this.cookieString_ = string;
+    });
+    this.updateOrigins_(this.sortMethod);
+    this.displayName_ = this.siteGroupRepresentation_(siteGroup);
   },
 
   /**
-   * Returns any non-HTTPS scheme/protocol for the origin corresponding to
-   * |originIndex|. Otherwise, returns a empty string.
+   * Returns any non-HTTPS scheme/protocol for the siteGroup that only contains
+   * one origin. Otherwise, returns a empty string.
    * @param {SiteGroup} siteGroup The eTLD+1 group of origins.
-   * @param {number} originIndex Index of the origin to get the non-HTTPS scheme
-   *     for. If -1, returns an empty string for the grouped |siteGroup|s but
-   *     defaults to 0 for non-grouped.
    * @return {string} The scheme if non-HTTPS, or empty string if HTTPS.
    * @private
    */
-  scheme_: function(siteGroup, originIndex) {
-    if (!siteGroup || (this.grouped_(siteGroup) && originIndex == -1)) {
+  siteGroupScheme_: function(siteGroup) {
+    if (!siteGroup || (this.grouped_(siteGroup))) {
       return '';
     }
-    originIndex = this.getIndexBoundToOriginList_(siteGroup, originIndex);
+    return this.originScheme_(siteGroup.origins[0]);
+  },
 
-    const url = this.toUrl(siteGroup.origins[originIndex].origin);
+  /**
+   * Returns any non-HTTPS scheme/protocol for the origin. Otherwise, returns
+   * an empty string.
+   * @param {OriginInfo} origin
+   * @return {string} The scheme if non-HTTPS, or empty string if HTTPS.
+   * @private
+   */
+  originScheme_: function(origin) {
+    const url = this.toUrl(origin.origin);
     const scheme = url.protocol.replace(new RegExp(':*$'), '');
     /** @type{string} */ const HTTPS_SCHEME = 'https';
     if (scheme == HTTPS_SCHEME) {
@@ -230,58 +250,31 @@ Polymer({
   },
 
   /**
-   * Calculates the amount of disk storage used by the given group of origins
-   * and eTLD+1. Also updates the corresponding display strings.
+   * Calculates the amount of disk storage used by the given eTLD+1.
+   * Also updates the corresponding display strings.
    * @param {SiteGroup} siteGroup The eTLD+1 group of origins.
    * @private
    */
   calculateUsageInfo_: function(siteGroup) {
-    const getFormattedBytesForSize = (numBytes) => {
-      return this.browserProxy.getFormattedBytes(numBytes);
-    };
-
     let overallUsage = 0;
-    this.originUsages_ = new Array(siteGroup.origins.length);
-    siteGroup.origins.forEach((originInfo, i) => {
+    this.siteGroup.origins.forEach((originInfo, i) => {
       overallUsage += originInfo.usage;
-      if (this.grouped_(siteGroup)) {
-        getFormattedBytesForSize(originInfo.usage).then((string) => {
-          this.set(`originUsages_.${i}`, string);
-        });
-      }
     });
-
-    getFormattedBytesForSize(overallUsage).then(string => {
+    this.browserProxy.getFormattedBytes(overallUsage).then(string => {
       this.overallUsageString_ = string;
     });
   },
 
   /**
-   * Calculates the number of cookies set on the given group of origins
-   * and eTLD+1. Also updates the corresponding display strings.
-   * @param {SiteGroup} siteGroup The eTLD+1 group of origins.
+   * Get display string for number of cookies.
+   * @param {number} numCookies
    * @private
    */
-  calculateNumberOfCookies_: function(siteGroup) {
-    const getCookieNumString = (numCookies) => {
-      if (numCookies == 0) {
-        return Promise.resolve('');
-      }
-      return this.localDataBrowserProxy_.getNumCookiesString(numCookies);
-    };
-
-    this.cookiesNum_ = new Array(siteGroup.origins.length);
-    siteGroup.origins.forEach((originInfo, i) => {
-      if (this.grouped_(siteGroup)) {
-        getCookieNumString(originInfo.numCookies).then((string) => {
-          this.set(`cookiesNum_.${i}`, string);
-        });
-      }
-    });
-
-    getCookieNumString(siteGroup.numCookies).then(string => {
-      this.cookieString_ = string;
-    });
+  getCookieNumString_: function(numCookies) {
+    if (numCookies == 0) {
+      return Promise.resolve('');
+    }
+    return this.localDataBrowserProxy_.getNumCookiesString(numCookies);
   },
 
   /**
@@ -402,5 +395,56 @@ Polymer({
       return 'first';
     }
     return '';
+  },
+
+  /**
+   * Update the order and data display text for origins.
+   * @param {!settings.SortMethod|undefined} sortMethod
+   * @private
+   */
+  updateOrigins_: function(sortMethod) {
+    if (!sortMethod || !this.siteGroup || !this.grouped_(this.siteGroup)) {
+      return null;
+    }
+
+    const origins = this.siteGroup.origins.slice();
+    origins.sort(this.sortFunction_(sortMethod));
+    this.set('siteGroup.origins', origins);
+
+    this.originUsages_ = new Array(origins.length);
+    origins.forEach((originInfo, i) => {
+      this.browserProxy.getFormattedBytes(originInfo.usage).then((string) => {
+        this.set(`originUsages_.${i}`, string);
+      });
+    });
+
+    this.cookiesNum_ = new Array(this.siteGroup.origins.length);
+    origins.forEach((originInfo, i) => {
+      this.getCookieNumString_(originInfo.numCookies).then((string) => {
+        this.set(`cookiesNum_.${i}`, string);
+      });
+    });
+  },
+
+  /**
+   * Sort functions for sorting origins based on selected method.
+   * @param {!settings.SortMethod|undefined} sortMethod
+   * @private
+   */
+  sortFunction_: function(sortMethod) {
+    if (sortMethod == settings.SortMethod.MOST_VISITED) {
+      return (origin1, origin2) => {
+        return origin2.engagement - origin1.engagement;
+      };
+    } else if (sortMethod == settings.SortMethod.STORAGE) {
+      return (origin1, origin2) => {
+        return origin2.usage - origin1.usage ||
+            origin2.numCookies - origin1.numCookies;
+      };
+    } else if (sortMethod == settings.SortMethod.NAME) {
+      return (origin1, origin2) => {
+        return origin1.origin.localeCompare(origin2.origin);
+      };
+    }
   },
 });

@@ -107,3 +107,13 @@ settings.AllSitesAction = {
   CLEAR_DATA: 2,
   ENTER_SITE_DETAILS: 3,
 };
+
+/**
+ * Contains the possible sort methods.
+ * @enum {string}
+ */
+settings.SortMethod = {
+  NAME: 'name',
+  MOST_VISITED: 'most-visited',
+  STORAGE: 'data-stored',
+};
