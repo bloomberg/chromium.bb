@@ -23,7 +23,6 @@
         "benchmarks": {
             "jetstream": {},
             "kraken": {},
-            "loading.desktop": {},
             "loading.mobile": {
                 "end": 73
             }
@@ -34,19 +33,15 @@
             "loading.mobile": {
                 "begin": 73
             },
-            "media.desktop": {},
             "media.mobile": {},
-            "memory.desktop": {},
             "memory.long_running_idle_gmail_background_tbmv2": {},
             "memory.long_running_idle_gmail_tbmv2": {},
             "memory.top_10_mobile": {},
             "octane": {},
             "oortonline_tbmv2": {},
-            "power.desktop": {},
             "power.typical_10_mobile": {},
             "rasterize_and_record_micro.partial_invalidation": {},
             "rasterize_and_record_micro.top_25": {},
-            "rendering.desktop": {},
             "rendering.mobile": {
                 "end": 4
             }
@@ -76,9 +71,7 @@
     "5": {
         "benchmarks": {
             "startup.mobile": {},
-            "system_health.common_desktop": {},
             "system_health.common_mobile": {},
-            "system_health.memory_desktop": {},
             "system_health.memory_mobile": {
                 "end": 18
             }
@@ -90,10 +83,7 @@
                 "begin": 18
             },
             "system_health.webview_startup": {},
-            "tab_switching.typical_25": {},
             "tracing.tracing_with_background_memory_infra": {},
-            "v8.browsing_desktop": {},
-            "v8.browsing_desktop-future": {},
             "v8.browsing_mobile": {
                 "end": 3
             }
@@ -105,7 +95,6 @@
                 "begin": 3
             },
             "v8.browsing_mobile-future": {},
-            "v8.runtime_stats.top_25": {},
             "wasm": {},
             "webrtc": {}
         }
