@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include "services/network/cookie_settings.h"
+
+#include <functional>
+
 #include "base/bind.h"
 #include "net/base/net_errors.h"
 #include "net/base/static_cookie_policy.h"
@@ -24,7 +27,7 @@ CookieSettings::CreateDeleteCookieOnExitPredicate() const {
     return SessionCleanupCookieStore::DeleteCookiePredicate();
   return base::BindRepeating(&CookieSettings::ShouldDeleteCookieOnExit,
                              base::Unretained(this),
-                             base::ConstRef(content_settings_));
+                             std::cref(content_settings_));
 }
 
 void CookieSettings::GetCookieSetting(const GURL& url,

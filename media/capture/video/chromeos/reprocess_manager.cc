@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <functional>
 #include <utility>
 
 #include "media/capture/video/chromeos/camera_metadata_utils.h"
@@ -97,7 +98,7 @@ void ReprocessManager::UpdateSupportedEffects(
       FROM_HERE,
       base::BindOnce(
           &ReprocessManager::ReprocessManagerImpl::UpdateSupportedEffects,
-          base::Unretained(impl.get()), base::ConstRef(metadata)));
+          base::Unretained(impl.get()), std::cref(metadata)));
 }
 
 ReprocessManager::ReprocessManagerImpl::ReprocessManagerImpl() {}

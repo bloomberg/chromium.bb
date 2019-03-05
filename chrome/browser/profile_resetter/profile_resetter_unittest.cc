@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <functional>
 #include <map>
 #include <memory>
 #include <string>
@@ -971,9 +972,8 @@ TEST_F(ProfileResetterTest, GetReadableFeedback) {
   EXPECT_CALL(capture, OnUpdatedList());
   ResettableSettingsSnapshot snapshot(profile());
   snapshot.RequestShortcuts(base::Bind(&FeedbackCapture::SetFeedback,
-                                       base::Unretained(&capture),
-                                       profile(),
-                                       base::ConstRef(snapshot)));
+                                       base::Unretained(&capture), profile(),
+                                       std::cref(snapshot)));
   // Let it enumerate shortcuts on a blockable task runner.
   content::RunAllTasksUntilIdle();
   EXPECT_TRUE(snapshot.shortcuts_determined());

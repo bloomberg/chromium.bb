@@ -45,7 +45,6 @@ using base::Bind;
 using base::BindOnce;
 using base::Callback;
 using base::Closure;
-using base::ConstRef;
 using base::FilePath;
 using base::Unretained;
 using content::BrowserThread;

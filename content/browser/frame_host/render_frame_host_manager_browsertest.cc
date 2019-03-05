@@ -5,6 +5,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <functional>
 #include <memory>
 #include <set>
 
@@ -5468,7 +5469,7 @@ class AssertForegroundHelper {
         FROM_HERE,
         base::BindOnce(&AssertForegroundHelper::AssertForegroundAndRepost,
                        weak_ptr_factory_.GetWeakPtr(),
-                       base::ConstRef(renderer_process), port_provider),
+                       std::cref(renderer_process), port_provider),
         base::TimeDelta::FromMilliseconds(1));
   }
 #else   // defined(OS_MACOSX)
@@ -5479,7 +5480,7 @@ class AssertForegroundHelper {
         FROM_HERE,
         base::BindOnce(&AssertForegroundHelper::AssertForegroundAndRepost,
                        weak_ptr_factory_.GetWeakPtr(),
-                       base::ConstRef(renderer_process)),
+                       std::cref(renderer_process)),
         base::TimeDelta::FromMilliseconds(1));
   }
 #endif  // defined(OS_MACOSX)

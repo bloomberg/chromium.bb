@@ -6,6 +6,7 @@
 #import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
 
+#include <functional>
 #include <memory>
 
 #include "base/bind.h"
@@ -500,13 +501,13 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
   self.testServer->RegisterRequestHandler(base::BindRepeating(
       &net::test_server::HandlePrefixedRequest, kDistillableURL,
       base::BindRepeating(&HandleQueryOrCloseSocket,
-                          base::ConstRef(_serverRespondsWithContent),
-                          base::ConstRef(_serverResponseDelay), true)));
+                          std::cref(_serverRespondsWithContent),
+                          std::cref(_serverResponseDelay), true)));
   self.testServer->RegisterRequestHandler(base::BindRepeating(
       &net::test_server::HandlePrefixedRequest, kNonDistillableURL,
       base::BindRepeating(&HandleQueryOrCloseSocket,
-                          base::ConstRef(_serverRespondsWithContent),
-                          base::ConstRef(_serverResponseDelay), false)));
+                          std::cref(_serverRespondsWithContent),
+                          std::cref(_serverResponseDelay), false)));
   self.serverRespondsWithContent = true;
   GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
 }

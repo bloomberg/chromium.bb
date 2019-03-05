@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+#include <functional>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/single_thread_task_runner.h"
@@ -165,12 +167,12 @@ bool FFmpegAudioDecoder::FFmpegDecode(const DecoderBuffer& buffer) {
   }
 
   bool decoded_frame_this_loop = false;
-  // base::Unretained and base::ConstRef are safe to use with the callback given
+  // base::Unretained and std::cref are safe to use with the callback given
   // to DecodePacket() since that callback is only used the function call.
   switch (decoding_loop_->DecodePacket(
-      &packet, base::BindRepeating(
-                   &FFmpegAudioDecoder::OnNewFrame, base::Unretained(this),
-                   base::ConstRef(buffer), &decoded_frame_this_loop))) {
+      &packet, base::BindRepeating(&FFmpegAudioDecoder::OnNewFrame,
+                                   base::Unretained(this), std::cref(buffer),
+                                   &decoded_frame_this_loop))) {
     case FFmpegDecodingLoop::DecodeStatus::kSendPacketFailed:
       MEDIA_LOG(ERROR, media_log_)
           << "Failed to send audio packet for decoding: "

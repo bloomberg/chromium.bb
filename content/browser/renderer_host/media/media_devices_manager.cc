@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <functional>
 #include <string>
 
 #include "base/bind.h"
@@ -152,7 +153,7 @@ std::string GuessVideoGroupID(const blink::WebMediaDeviceInfoArray& audio_infos,
              const blink::WebMediaDeviceInfo& audio_info) {
             return audio_info.label.find(video_label) != std::string::npos;
           },
-          base::ConstRef(video_label));
+          std::cref(video_label));
 
   const bool video_has_usb_model = LabelHasUSBModel(video_info.label);
   std::string video_usb_model = video_has_usb_model
@@ -167,7 +168,7 @@ std::string GuessVideoGroupID(const blink::WebMediaDeviceInfoArray& audio_infos,
                              GetUSBModelFromLabel(audio_info.label)
                        : false;
           },
-          video_has_usb_model, base::ConstRef(video_usb_model));
+          video_has_usb_model, std::cref(video_usb_model));
 
   for (auto* callback :
        {&video_label_is_included_in_audio_label, &usb_model_matches}) {

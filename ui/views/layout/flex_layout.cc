@@ -817,7 +817,7 @@ const Layout& FlexLayoutInternal::CalculateNewLayout(
   // Do the initial layout update, calculating spacing between children.
   ChildViewSpacing child_spacing(
       base::BindRepeating(&FlexLayoutInternal::CalculateChildSpacing,
-                          base::Unretained(this), base::ConstRef(*layout)));
+                          base::Unretained(this), std::cref(*layout)));
   UpdateLayoutFromChildren(layout.get(), &child_spacing, bounds);
 
   if (main_axis_bounded && !order_to_view_index.empty()) {

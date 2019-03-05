@@ -11,6 +11,7 @@
 #include <Security/Security.h>
 
 #include <algorithm>
+#include <functional>
 #include <memory>
 #include <string>
 #include <utility>
@@ -399,9 +400,8 @@ void ClientCertStoreMac::GetClientCerts(
   if (base::PostTaskAndReplyWithResult(
           GetSSLPlatformKeyTaskRunner().get(), FROM_HERE,
           // Caller is responsible for keeping the |request| alive
-          // until the callback is run, so ConstRef is safe.
-          base::Bind(&GetClientCertsOnBackgroundThread,
-                     base::ConstRef(request)),
+          // until the callback is run, so std::cref is safe.
+          base::Bind(&GetClientCertsOnBackgroundThread, std::cref(request)),
           callback)) {
     return;
   }

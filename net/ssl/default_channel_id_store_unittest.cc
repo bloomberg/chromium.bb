@@ -268,9 +268,8 @@ TEST_F(DefaultChannelIDStoreTest, TestDeleteForDomains) {
   // Whitelist deletion.
   int deletions_finished = 0;
   store.DeleteForDomainsCreatedBetween(
-      base::Bind(&DomainEquals, base::ConstRef(std::string("verisign.com"))),
-      base::Time(), base::Time(),
-      base::Bind(&CallCounter, &deletions_finished));
+      base::Bind(&DomainEquals, std::string("verisign.com")), base::Time(),
+      base::Time(), base::Bind(&CallCounter, &deletions_finished));
   ASSERT_EQ(1, deletions_finished);
   EXPECT_EQ(2u, store.GetChannelIDCount());
   ChannelIDStore::ChannelIDList channel_ids;
@@ -280,9 +279,8 @@ TEST_F(DefaultChannelIDStoreTest, TestDeleteForDomains) {
 
   // Blacklist deletion.
   store.DeleteForDomainsCreatedBetween(
-      base::Bind(&DomainNotEquals, base::ConstRef(std::string("google.com"))),
-      base::Time(), base::Time(),
-      base::Bind(&CallCounter, &deletions_finished));
+      base::Bind(&DomainNotEquals, std::string("google.com")), base::Time(),
+      base::Time(), base::Bind(&CallCounter, &deletions_finished));
   ASSERT_EQ(2, deletions_finished);
   EXPECT_EQ(1u, store.GetChannelIDCount());
   store.GetAllChannelIDs(base::Bind(GetAllCallback, &channel_ids));

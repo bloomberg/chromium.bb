@@ -5,6 +5,7 @@
 #include "content/renderer/media/webrtc/rtc_video_decoder_adapter.h"
 
 #include <algorithm>
+#include <functional>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -198,8 +199,8 @@ bool RTCVideoDecoderAdapter::InitializeSync(
   if (media_task_runner_->PostTask(
           FROM_HERE,
           base::BindOnce(&RTCVideoDecoderAdapter::InitializeOnMediaThread,
-                         base::Unretained(this), base::ConstRef(config),
-                         base::ConstRef(init_cb)))) {
+                         base::Unretained(this), std::cref(config),
+                         std::cref(init_cb)))) {
     waiter.Wait();
   }
   return result;

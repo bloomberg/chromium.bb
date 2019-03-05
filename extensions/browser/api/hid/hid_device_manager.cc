@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include <functional>
 #include <limits>
 #include <string>
 #include <utility>
@@ -364,7 +365,7 @@ void HidDeviceManager::DispatchEvent(
   // safe to pass |device_info| by reference.
   event->will_dispatch_callback =
       base::BindRepeating(&WillDispatchDeviceEvent, weak_factory_.GetWeakPtr(),
-                          base::ConstRef(device_info));
+                          std::cref(device_info));
   event_router_->BroadcastEvent(std::move(event));
 }
 

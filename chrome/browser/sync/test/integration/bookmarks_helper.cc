@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <functional>
 #include <memory>
 #include <set>
 #include <vector>
@@ -1089,6 +1090,6 @@ BookmarksUrlChecker::BookmarksUrlChecker(int profile,
                                          int expected_count)
     : AwaitMatchStatusChangeChecker(base::Bind(BookmarkCountsByUrlMatch,
                                                profile,
-                                               base::ConstRef(url),
+                                               std::cref(url),
                                                expected_count),
                                     "Bookmark URL counts match.") {}

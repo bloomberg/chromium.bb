@@ -4,6 +4,7 @@
 
 #include "base/bind.h"
 
+#include <functional>
 #include <memory>
 #include <utility>
 #include <vector>
@@ -646,15 +647,16 @@ TEST_F(BindTest, WeakPtrForOnce) {
   EXPECT_EQ(2, std::move(normal_func_cb).Run(2));
 }
 
-// ConstRef() wrapper support.
-//   - Binding w/o ConstRef takes a copy.
-//   - Binding a ConstRef takes a reference.
-//   - Binding ConstRef to a function ConstRef does not copy on invoke.
-TEST_F(BindTest, ConstRefForRepeating) {
+// std::cref() wrapper support.
+//   - Binding w/o std::cref takes a copy.
+//   - Binding a std::cref takes a reference.
+//   - Binding std::cref to a function std::cref does not copy on invoke.
+TEST_F(BindTest, StdCrefForRepeating) {
   int n = 1;
 
   RepeatingCallback<int()> copy_cb = BindRepeating(&Identity, n);
-  RepeatingCallback<int()> const_ref_cb = BindRepeating(&Identity, ConstRef(n));
+  RepeatingCallback<int()> const_ref_cb =
+      BindRepeating(&Identity, std::cref(n));
   EXPECT_EQ(n, copy_cb.Run());
   EXPECT_EQ(n, const_ref_cb.Run());
   n++;
@@ -667,7 +669,7 @@ TEST_F(BindTest, ConstRefForRepeating) {
   int move_assigns = 0;
   CopyMoveCounter counter(&copies, &assigns, &move_constructs, &move_assigns);
   RepeatingCallback<int()> all_const_ref_cb =
-      BindRepeating(&GetCopies, ConstRef(counter));
+      BindRepeating(&GetCopies, std::cref(counter));
   EXPECT_EQ(0, all_const_ref_cb.Run());
   EXPECT_EQ(0, copies);
   EXPECT_EQ(0, assigns);
@@ -675,11 +677,11 @@ TEST_F(BindTest, ConstRefForRepeating) {
   EXPECT_EQ(0, move_assigns);
 }
 
-TEST_F(BindTest, ConstRefForOnce) {
+TEST_F(BindTest, StdCrefForOnce) {
   int n = 1;
 
   OnceCallback<int()> copy_cb = BindOnce(&Identity, n);
-  OnceCallback<int()> const_ref_cb = BindOnce(&Identity, ConstRef(n));
+  OnceCallback<int()> const_ref_cb = BindOnce(&Identity, std::cref(n));
   n++;
   EXPECT_EQ(n - 1, std::move(copy_cb).Run());
   EXPECT_EQ(n, std::move(const_ref_cb).Run());
@@ -690,7 +692,7 @@ TEST_F(BindTest, ConstRefForOnce) {
   int move_assigns = 0;
   CopyMoveCounter counter(&copies, &assigns, &move_constructs, &move_assigns);
   OnceCallback<int()> all_const_ref_cb =
-      BindOnce(&GetCopies, ConstRef(counter));
+      BindOnce(&GetCopies, std::cref(counter));
   EXPECT_EQ(0, std::move(all_const_ref_cb).Run());
   EXPECT_EQ(0, copies);
   EXPECT_EQ(0, assigns);
@@ -1020,9 +1022,8 @@ TYPED_TEST(BindVariantsTest, ScopedRefptr) {
   EXPECT_CALL(has_ref, HasAtLeastOneRef()).WillRepeatedly(Return(true));
 
   const scoped_refptr<HasRef> refptr(&has_ref);
-  CallbackType<TypeParam, int()> scoped_refptr_const_ref_cb =
-      TypeParam::Bind(&FunctionWithScopedRefptrFirstParam,
-                      base::ConstRef(refptr), 1);
+  CallbackType<TypeParam, int()> scoped_refptr_const_ref_cb = TypeParam::Bind(
+      &FunctionWithScopedRefptrFirstParam, std::cref(refptr), 1);
   EXPECT_EQ(1, std::move(scoped_refptr_const_ref_cb).Run());
 }
 
@@ -1501,7 +1502,7 @@ TEST_F(BindTest, UnwrapUnretained) {
 
 TEST_F(BindTest, UnwrapConstRef) {
   int p = 0;
-  auto const_ref = ConstRef(p);
+  auto const_ref = std::cref(p);
   EXPECT_EQ(&p, &internal::Unwrap(const_ref));
   EXPECT_EQ(&p, &internal::Unwrap(std::move(const_ref)));
 }

@@ -337,31 +337,6 @@ static inline internal::RetainedRefWrapper<T> RetainedRef(scoped_refptr<T> o) {
   return internal::RetainedRefWrapper<T>(std::move(o));
 }
 
-// ConstRef() allows binding a constant reference to an argument rather
-// than a copy.
-//
-// EXAMPLE OF ConstRef():
-//
-//   void foo(int arg) { cout << arg << endl }
-//
-//   int n = 1;
-//   Closure no_ref = Bind(&foo, n);
-//   Closure has_ref = Bind(&foo, ConstRef(n));
-//
-//   no_ref.Run();  // Prints "1"
-//   has_ref.Run();  // Prints "1"
-//
-//   n = 2;
-//   no_ref.Run();  // Prints "1"
-//   has_ref.Run();  // Prints "2"
-//
-// Note that because ConstRef() takes a reference on |n|, |n| must outlive all
-// its bound callbacks.
-template <typename T>
-inline std::reference_wrapper<const T> ConstRef(const T& o) {
-  return std::cref(o);
-}
-
 // Owned() transfers ownership of an object to the Callback resulting from
 // bind; the object will be deleted when the Callback is deleted.
 //
