@@ -11,7 +11,9 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
+#include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/arc/arc_service_launcher.h"
@@ -21,6 +23,9 @@
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/extensions/api/tabs/tabs_api.h"
+#include "chrome/browser/extensions/extension_function_test_utils.h"
+#include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/policy/test/local_policy_test_server.h"
@@ -43,6 +48,8 @@
 #include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/common/extension.h"
+#include "extensions/common/extension_builder.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_data_stream.h"
 #include "net/url_request/url_request_test_job.h"
@@ -248,6 +255,32 @@ IN_PROC_BROWSER_TEST_F(ArcSessionManagerTest, ManagedAndroidAccount) {
       kManagedAuthToken, base::Time::Max());
   ArcPlayStoreDisabledWaiter().Wait();
   EXPECT_FALSE(IsArcPlayStoreEnabledForProfile(profile()));
+}
+
+// Make sure that ARC is disabled upon entering locked fullscreen mode.
+IN_PROC_BROWSER_TEST_F(ArcSessionManagerTest, ArcDisabledInLockedFullscreen) {
+  EnableArc();
+  ASSERT_EQ(ArcSessionManager::State::ACTIVE,
+            ArcSessionManager::Get()->state());
+
+  const int window_id = extensions::ExtensionTabUtil::GetWindowId(browser());
+  const char kStateLockedFullscreen[] =
+      "[%u, {\"state\": \"locked-fullscreen\"}]";
+
+  auto function = base::MakeRefCounted<extensions::WindowsUpdateFunction>();
+  scoped_refptr<const extensions::Extension> extension(
+      extensions::ExtensionBuilder("Test")
+          .SetID("pmgljoohajacndjcjlajcopidgnhphcl")
+          .AddPermission("lockWindowFullscreenPrivate")
+          .Build());
+  function->set_extension(extension.get());
+
+  extension_function_test_utils::RunFunctionAndReturnSingleResult(
+      function.get(), base::StringPrintf(kStateLockedFullscreen, window_id),
+      browser());
+
+  ASSERT_EQ(ArcSessionManager::State::STOPPED,
+            ArcSessionManager::Get()->state());
 }
 
 }  // namespace arc
