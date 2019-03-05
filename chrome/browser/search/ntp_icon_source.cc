@@ -29,6 +29,7 @@
 #include "components/favicon/core/fallback_url_util.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/favicon_base/favicon_types.h"
+#include "components/favicon_base/favicon_util.h"
 #include "components/history/core/browser/top_sites.h"
 #include "components/image_fetcher/core/image_fetcher_impl.h"
 #include "components/suggestions/proto/suggestions.pb.h"
@@ -71,6 +72,9 @@ const char kDarkModeParameter[] = "dark/";
 // Size of the icon background (gray circle), in dp.
 const int kIconSizeDip = 48;
 
+// Maximum size of the icon, in dp.
+const int kMaxIconSizeDip = 192;
+
 // Size of the favicon fallback (letter + colored circle), in dp.
 const int kFallbackSizeDip = 32;
 
@@ -93,6 +97,12 @@ struct ParsedNtpIconPath {
   // True if a dark mode icon should be used.
   bool is_dark_mode = false;
 };
+
+float GetMaxDeviceScaleFactor() {
+  std::vector<float> favicon_scales = favicon_base::GetFaviconScales();
+  DCHECK(!favicon_scales.empty());
+  return favicon_scales.back();
+}
 
 // Returns true if |search| is a substring of |path| which starts at
 // |start_index|.
@@ -130,11 +140,18 @@ const ParsedNtpIconPath ParseNtpIconPath(const std::string& path) {
   std::string scale_str =
       path.substr(scale_delimiter + 1, slash - scale_delimiter - 1);
 
-  if (!base::StringToInt(size_str, &parsed.size_in_dip))
+  int size_in_dip = 0;
+  if (!base::StringToInt(size_str, &size_in_dip))
     return parsed;
+  parsed.size_in_dip = std::min(size_in_dip, kMaxIconSizeDip);
 
-  if (!scale_str.empty())
-    webui::ParseScaleFactor(scale_str, &parsed.device_scale_factor);
+  if (!scale_str.empty()) {
+    float scale_factor = 0.0;
+    webui::ParseScaleFactor(scale_str, &scale_factor);
+    // Do not exceed the maximum scale factor for the device.
+    parsed.device_scale_factor =
+        std::min(scale_factor, GetMaxDeviceScaleFactor());
+  }
 
   parsed_index = slash + 1;
 
