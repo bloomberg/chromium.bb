@@ -528,18 +528,21 @@ static int get_arf_src_index(AV1_COMP *cpi) {
   return arf_src_index;
 }
 
+static int is_bipred_enabled(const GF_GROUP *const gf_group) {
+  const FRAME_UPDATE_TYPE update_type = gf_group->update_type[gf_group->index];
+  return update_type == BRF_UPDATE || update_type == LAST_BIPRED_UPDATE ||
+         update_type == BIPRED_UPDATE;
+}
+
 static int get_brf_src_index(AV1_COMP *cpi) {
   int brf_src_index = 0;
   const GF_GROUP *const gf_group = &cpi->twopass.gf_group;
 
-  // TODO(zoeliu): We need to add the check on the -bwd_ref command line setup
-  //               flag.
-  if (gf_group->bidir_pred_enabled[gf_group->index]) {
+  if (is_bipred_enabled(gf_group)) {
     if (cpi->oxcf.pass == 2) {
       if (gf_group->update_type[gf_group->index] == BRF_UPDATE)
         brf_src_index = gf_group->brf_src_offset[gf_group->index];
     } else {
-      // TODO(zoeliu): To re-visit the setup for this scenario
       brf_src_index = cpi->rc.bipred_group_interval - 1;
     }
   }

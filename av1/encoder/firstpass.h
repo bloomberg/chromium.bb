@@ -120,7 +120,6 @@ typedef struct {
   unsigned char pyramid_height;
   unsigned char pyramid_lvl_nodes[MAX_PYRAMID_LVL];
   unsigned char brf_src_offset[MAX_STATIC_GF_GROUP_LENGTH + 1];
-  unsigned char bidir_pred_enabled[MAX_STATIC_GF_GROUP_LENGTH + 1];
   int bit_allocation[MAX_STATIC_GF_GROUP_LENGTH + 1];
 } GF_GROUP;
 

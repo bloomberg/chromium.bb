@@ -170,7 +170,6 @@ static void define_pyramid_gf_group_structure(
 
   for (frame_index = 0; frame_index < gf_update_frames; ++frame_index) {
     // Set unused variables to default values
-    gf_group->bidir_pred_enabled[frame_index] = 0;
     gf_group->brf_src_offset[frame_index] = 0;
 
     // Special handle for the first frame for assigning update_type
@@ -208,7 +207,6 @@ static void define_pyramid_gf_group_structure(
     gf_group->rf_level[frame_index] = GF_ARF_STD;
   }
 
-  gf_group->bidir_pred_enabled[frame_index] = 0;
   gf_group->brf_src_offset[frame_index] = 0;
   gf_group->arf_update_idx[frame_index] = 0;
   // This value is only used for INTNL_OVERLAY_UPDATE
@@ -263,7 +261,6 @@ static void define_flat_gf_group_structure(
     gf_group->arf_update_idx[frame_index] = 0;
   }
 
-  gf_group->bidir_pred_enabled[frame_index] = 0;
   gf_group->brf_src_offset[frame_index] = 0;
 
   frame_index++;
@@ -279,7 +276,6 @@ static void define_flat_gf_group_structure(
 
     gf_group->arf_update_idx[frame_index] = 0;
 
-    gf_group->bidir_pred_enabled[frame_index] = 0;
     gf_group->brf_src_offset[frame_index] = 0;
     // NOTE: "bidir_pred_frame_index" stays unchanged for ARF_UPDATE frames.
 
@@ -362,7 +358,6 @@ static void define_flat_gf_group_structure(
         gf_group->rf_level[frame_index] = INTER_NORMAL;
         gf_group->brf_src_offset[frame_index] = 0;
       }
-      gf_group->bidir_pred_enabled[frame_index] = 1;
 
       bipred_frame_index++;
       // Check whether the next bi-predictive frame group would entirely be
@@ -375,7 +370,6 @@ static void define_flat_gf_group_structure(
     } else {
       gf_group->update_type[frame_index] = LF_UPDATE;
       gf_group->rf_level[frame_index] = INTER_NORMAL;
-      gf_group->bidir_pred_enabled[frame_index] = 0;
       gf_group->brf_src_offset[frame_index] = 0;
     }
 
@@ -427,7 +421,6 @@ static void define_flat_gf_group_structure(
     gf_group->rf_level[frame_index] = GF_ARF_STD;
   }
 
-  gf_group->bidir_pred_enabled[frame_index] = 0;
   gf_group->brf_src_offset[frame_index] = 0;
 }
 
