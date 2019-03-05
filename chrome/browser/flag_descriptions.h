@@ -1161,9 +1161,6 @@ extern const char kUnifiedConsentDescription[];
 extern const char kUiPartialSwapName[];
 extern const char kUiPartialSwapDescription[];
 
-extern const char kUseDdljsonApiName[];
-extern const char kUseDdljsonApiDescription[];
-
 extern const char kUsePdfCompositorServiceName[];
 extern const char kUsePdfCompositorServiceDescription[];
 
