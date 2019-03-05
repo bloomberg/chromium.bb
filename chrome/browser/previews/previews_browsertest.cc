@@ -238,6 +238,13 @@ class PreviewsNoScriptBrowserTest : public PreviewsBrowserTest {
     PreviewsBrowserTest::SetUp();
   }
 
+  void SetUpCommandLine(base::CommandLine* cmd) override {
+    cmd->AppendSwitch("enable-spdy-proxy-auth");
+    cmd->AppendSwitch("optimization-guide-disable-installer");
+    cmd->AppendSwitch("purge_hint_cache_store");
+    cmd->AppendSwitch(previews::switches::kIgnorePreviewsBlacklist);
+  }
+
   // Creates hint data for the |hint_setup_url|'s host and then performs a
   // navigation to |hint_setup_url| to trigger the hints to be loaded into the
   // hint cache so they will be available for a subsequent navigation to a test
@@ -283,24 +290,17 @@ class PreviewsNoScriptBrowserTest : public PreviewsBrowserTest {
       test_hints_component_creator_;
 };
 
-// Previews InfoBar (which these tests triggers) does not work on Mac.
-// See https://crbug.com/782322 for detail.
-// Also occasional flakes on win7 (https://crbug.com/789542).
-#if defined(OS_ANDROID) || defined(OS_LINUX)
-#define MAYBE_NoScriptPreviewsEnabled NoScriptPreviewsEnabled
-#define MAYBE_NoScriptPreviewsEnabledHttpRedirectToHttps \
-  NoScriptPreviewsEnabledHttpRedirectToHttps
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#define DISABLE_ON_WIN_MAC_CHROMESOS(x) DISABLED_##x
 #else
-#define MAYBE_NoScriptPreviewsEnabled DISABLED_NoScriptPreviewsEnabled
-#define MAYBE_NoScriptPreviewsEnabledHttpRedirectToHttps \
-  DISABLED_NoScriptPreviewsEnabledHttpRedirectToHttps
+#define DISABLE_ON_WIN_MAC_CHROMESOS(x) x
 #endif
 
 // Loads a webpage that has both script and noscript tags and also requests
 // a script resource. Verifies that the noscript tag is evaluated and the
 // script resource is not loaded.
 IN_PROC_BROWSER_TEST_F(PreviewsNoScriptBrowserTest,
-                       MAYBE_NoScriptPreviewsEnabled) {
+                       DISABLE_ON_WIN_MAC_CHROMESOS(NoScriptPreviewsEnabled)) {
   GURL url = https_url();
 
   // Whitelist NoScript for https_hint_setup_url()'s' host.
@@ -318,8 +318,9 @@ IN_PROC_BROWSER_TEST_F(PreviewsNoScriptBrowserTest,
                                      "Previews.InfoBarAction.NoScript", 1);
 }
 
-IN_PROC_BROWSER_TEST_F(PreviewsNoScriptBrowserTest,
-                       NoScriptPreviewsEnabledButHttpRequest) {
+IN_PROC_BROWSER_TEST_F(
+    PreviewsNoScriptBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMESOS(NoScriptPreviewsEnabledButHttpRequest)) {
   GURL url = http_url();
 
   // Whitelist NoScript for http_hint_setup_url() host.
@@ -332,17 +333,9 @@ IN_PROC_BROWSER_TEST_F(PreviewsNoScriptBrowserTest,
   EXPECT_FALSE(noscript_css_requested());
 }
 
-// Flaky in all platforms except Android. See https://crbug.com/803626 for
-// detail.
-#if defined(OS_ANDROID) || defined(OS_LINUX)
-#define MAYBE_NoScriptPreviewsEnabledButNoTransformDirective \
-  NoScriptPreviewsEnabledButNoTransformDirective
-#else
-#define MAYBE_NoScriptPreviewsEnabledButNoTransformDirective \
-  DISABLED_NoScriptPreviewsEnabledButNoTransformDirective
-#endif
 IN_PROC_BROWSER_TEST_F(PreviewsNoScriptBrowserTest,
-                       MAYBE_NoScriptPreviewsEnabledButNoTransformDirective) {
+                       DISABLE_ON_WIN_MAC_CHROMESOS(
+                           NoScriptPreviewsEnabledButNoTransformDirective)) {
   GURL url = https_no_transform_url();
 
   // Whitelist NoScript for https_hint_setup_url()'s' host.
@@ -359,8 +352,9 @@ IN_PROC_BROWSER_TEST_F(PreviewsNoScriptBrowserTest,
       "Previews.CacheControlNoTransform.BlockedPreview", 5 /* NoScript */, 1);
 }
 
-IN_PROC_BROWSER_TEST_F(PreviewsNoScriptBrowserTest,
-                       MAYBE_NoScriptPreviewsEnabledHttpRedirectToHttps) {
+IN_PROC_BROWSER_TEST_F(
+    PreviewsNoScriptBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMESOS(NoScriptPreviewsEnabledHttpRedirectToHttps)) {
   GURL url = redirect_url();
 
   // Whitelist NoScript for http_hint_setup_url() host.
@@ -378,16 +372,9 @@ IN_PROC_BROWSER_TEST_F(PreviewsNoScriptBrowserTest,
                                      "Previews.InfoBarAction.NoScript", 1);
 }
 
-// Flaky in all platforms except Android. See https://crbug.com/803626 for
-// detail.
-#if defined(OS_ANDROID) || defined(OS_LINUX)
-#define MAYBE_NoScriptPreviewsRecordsOptOut NoScriptPreviewsRecordsOptOut
-#else
-#define MAYBE_NoScriptPreviewsRecordsOptOut \
-  DISABLED_NoScriptPreviewsRecordsOptOut
-#endif
-IN_PROC_BROWSER_TEST_F(PreviewsNoScriptBrowserTest,
-                       MAYBE_NoScriptPreviewsRecordsOptOut) {
+IN_PROC_BROWSER_TEST_F(
+    PreviewsNoScriptBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMESOS(NoScriptPreviewsRecordsOptOut)) {
   GURL url = redirect_url();
 
   // Whitelist NoScript for http_hint_setup_url()'s' host.
@@ -412,20 +399,9 @@ IN_PROC_BROWSER_TEST_F(PreviewsNoScriptBrowserTest,
                                      1);
 }
 
-// Previews InfoBar (which this test triggers) does not work on Mac.
-// See https://crbug.com/782322 for detail.
-// Also occasional flakes on win7 (https://crbug.com/789948) and Ubuntu 16.04
-// (https://crbug.com/831838)
-#if defined(OS_ANDROID)
-#define MAYBE_NoScriptPreviewsEnabledByWhitelist \
-  NoScriptPreviewsEnabledByWhitelist
-#else
-#define MAYBE_NoScriptPreviewsEnabledByWhitelist \
-  DISABLED_NoScriptPreviewsEnabledByWhitelist
-#endif
-
-IN_PROC_BROWSER_TEST_F(PreviewsNoScriptBrowserTest,
-                       MAYBE_NoScriptPreviewsEnabledByWhitelist) {
+IN_PROC_BROWSER_TEST_F(
+    PreviewsNoScriptBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMESOS(NoScriptPreviewsEnabledByWhitelist)) {
   GURL url = https_url();
 
   // Whitelist NoScript for https_hint_setup_url()'s' host.
@@ -438,8 +414,9 @@ IN_PROC_BROWSER_TEST_F(PreviewsNoScriptBrowserTest,
   EXPECT_FALSE(noscript_js_requested());
 }
 
-IN_PROC_BROWSER_TEST_F(PreviewsNoScriptBrowserTest,
-                       NoScriptPreviewsNotEnabledByWhitelist) {
+IN_PROC_BROWSER_TEST_F(
+    PreviewsNoScriptBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMESOS(NoScriptPreviewsNotEnabledByWhitelist)) {
   GURL url = https_url();
 
   // Whitelist random site for NoScript.
@@ -496,6 +473,7 @@ class PreviewsReportingBrowserTest : public CertVerifierBrowserTest {
   void SetUpCommandLine(base::CommandLine* cmd) override {
     CertVerifierBrowserTest::SetUpCommandLine(cmd);
     cmd->AppendSwitch("enable-spdy-proxy-auth");
+
     // Due to race conditions, it's possible that blacklist data is not loaded
     // at the time of first navigation. That may prevent Preview from
     // triggering, and causing the test to flake.

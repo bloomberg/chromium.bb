@@ -126,6 +126,9 @@ class ResourceLoadingNoFeaturesBrowserTest : public InProcessBrowserTest {
   void SetUpCommandLine(base::CommandLine* cmd) override {
     cmd->AppendSwitch("enable-spdy-proxy-auth");
 
+    cmd->AppendSwitch("optimization-guide-disable-installer");
+    cmd->AppendSwitch("purge_hint_cache_store");
+
     // Due to race conditions, it's possible that blacklist data is not loaded
     // at the time of first navigation. That may prevent Preview from
     // triggering, and causing the test to flake.
@@ -349,15 +352,15 @@ class ResourceLoadingHintsBrowserTest
 // Previews InfoBar (which these tests triggers) does not work on Mac.
 // See https://crbug.com/782322 for details. Also occasional flakes on win7
 // (https://crbug.com/789542).
-#if defined(OS_WIN) || defined(OS_MACOSX)
-#define DISABLE_ON_WIN_MAC(x) DISABLED_##x
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#define DISABLE_ON_WIN_MAC_CHROMESOS(x) DISABLED_##x
 #else
-#define DISABLE_ON_WIN_MAC(x) x
+#define DISABLE_ON_WIN_MAC_CHROMESOS(x) x
 #endif
 
 IN_PROC_BROWSER_TEST_F(
     ResourceLoadingHintsBrowserTest,
-    DISABLE_ON_WIN_MAC(ResourceLoadingHintsHttpsWhitelisted)) {
+    DISABLE_ON_WIN_MAC_CHROMESOS(ResourceLoadingHintsHttpsWhitelisted)) {
   GURL url = https_url();
 
   // Whitelist resource loading hints for https_hint_setup_url()'s' host.
@@ -419,7 +422,7 @@ IN_PROC_BROWSER_TEST_F(
 // not blocked.
 IN_PROC_BROWSER_TEST_F(
     ResourceLoadingHintsBrowserTest,
-    DISABLE_ON_WIN_MAC(ExperimentalHints_ExperimentIsNotEnabled)) {
+    DISABLE_ON_WIN_MAC_CHROMESOS(ExperimentalHints_ExperimentIsNotEnabled)) {
   GURL url = https_url();
 
   // Whitelist resource loading hints for https_hint_setup_url()'s' host.
@@ -447,7 +450,7 @@ IN_PROC_BROWSER_TEST_F(
 // Verifies that the hints are used, and the resource loading is blocked.
 IN_PROC_BROWSER_TEST_F(
     ResourceLoadingHintsBrowserTest,
-    DISABLE_ON_WIN_MAC(ExperimentalHints_ExperimentIsEnabled)) {
+    DISABLE_ON_WIN_MAC_CHROMESOS(ExperimentalHints_ExperimentIsEnabled)) {
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndEnableFeatureWithParameters(
       previews::features::kOptimizationHintsExperiments,
@@ -490,7 +493,7 @@ IN_PROC_BROWSER_TEST_F(
 // blocked.
 IN_PROC_BROWSER_TEST_F(
     ResourceLoadingHintsBrowserTest,
-    DISABLE_ON_WIN_MAC(MixExperimentalHints_ExperimentIsEnabled)) {
+    DISABLE_ON_WIN_MAC_CHROMESOS(MixExperimentalHints_ExperimentIsEnabled)) {
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndEnableFeatureWithParameters(
       previews::features::kOptimizationHintsExperiments,
@@ -534,7 +537,7 @@ IN_PROC_BROWSER_TEST_F(
 // used.
 IN_PROC_BROWSER_TEST_F(
     ResourceLoadingHintsBrowserTest,
-    DISABLE_ON_WIN_MAC(MixExperimentalHints_ExperimentIsNotEnabled)) {
+    DISABLE_ON_WIN_MAC_CHROMESOS(MixExperimentalHints_ExperimentIsNotEnabled)) {
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndEnableFeatureWithParameters(
       previews::features::kOptimizationHintsExperiments,
@@ -569,7 +572,8 @@ IN_PROC_BROWSER_TEST_F(
 
 IN_PROC_BROWSER_TEST_F(
     ResourceLoadingHintsBrowserTest,
-    DISABLE_ON_WIN_MAC(ResourceLoadingHintsHttpsWhitelistedRedirectToHttps)) {
+    DISABLE_ON_WIN_MAC_CHROMESOS(
+        ResourceLoadingHintsHttpsWhitelistedRedirectToHttps)) {
   GURL url = redirect_url();
 
   // Whitelist resource loading hints for https_hint_setup_url()'s' host.
@@ -604,7 +608,7 @@ IN_PROC_BROWSER_TEST_F(
 
 IN_PROC_BROWSER_TEST_F(
     ResourceLoadingHintsBrowserTest,
-    DISABLE_ON_WIN_MAC(ResourceLoadingHintsHttpsNoWhitelisted)) {
+    DISABLE_ON_WIN_MAC_CHROMESOS(ResourceLoadingHintsHttpsNoWhitelisted)) {
   GURL url = https_url();
 
   SetExpectedFooJpgRequest(true);
@@ -630,7 +634,7 @@ IN_PROC_BROWSER_TEST_F(
 }
 
 IN_PROC_BROWSER_TEST_F(ResourceLoadingHintsBrowserTest,
-                       DISABLE_ON_WIN_MAC(ResourceLoadingHintsHttp)) {
+                       DISABLE_ON_WIN_MAC_CHROMESOS(ResourceLoadingHintsHttp)) {
   GURL url = http_url();
 
   // Whitelist resource loading hints for http_hint_setup_url()'s' host.
@@ -655,9 +659,9 @@ IN_PROC_BROWSER_TEST_F(ResourceLoadingHintsBrowserTest,
   EXPECT_FALSE(resource_loading_hint_intervention_header_seen());
 }
 
-IN_PROC_BROWSER_TEST_F(
-    ResourceLoadingHintsBrowserTest,
-    DISABLE_ON_WIN_MAC(ResourceLoadingHintsHttpsWhitelistedNoTransform)) {
+IN_PROC_BROWSER_TEST_F(ResourceLoadingHintsBrowserTest,
+                       DISABLE_ON_WIN_MAC_CHROMESOS(
+                           ResourceLoadingHintsHttpsWhitelistedNoTransform)) {
   GURL url = https_no_transform_url();
 
   // Whitelist resource loading hints for http_hint_setup_url()'s' host.
