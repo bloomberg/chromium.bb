@@ -61,8 +61,11 @@ views::ImageButton* CreateCloseButton(views::ButtonListener* listener,
                                       SkColor color) {
   views::ImageButton* close_button = CreateVectorImageButton(listener);
   SetImageFromVectorIconWithColor(close_button, vector_icons::kCloseRoundedIcon,
+                                  GetLayoutConstant(LOCATION_BAR_ICON_SIZE),
                                   color);
   close_button->SetTooltipText(l10n_util::GetStringUTF16(IDS_APP_CLOSE));
+  close_button->SetBorder(views::CreateEmptyBorder(
+      gfx::Insets(GetLayoutConstant(LOCATION_BAR_CHILD_INTERIOR_PADDING))));
   close_button->SizeToPreferredSize();
 
   // Use a circular ink drop.
