@@ -37,27 +37,56 @@ class FileTransferMessageHandler : public protocol::NamedMessagePipeHandler {
   enum State {
     // Initial state.
     kConnected,
-    // We are writing a file.
+    // Writing a file from the client.
     kWriting,
+    // Reading a file and sending to the client.
+    kReading,
+    // Reading complete and waiting for confirmation from client.
+    kEof,
     // End states
     // File successfully written.
     kClosed,
     // An error occured or the transfer was canceled.
     kFailed,
   };
-  void StartFile(protocol::FileTransfer_Metadata metadata);
-  void Write(std::string data);
-  void Close();
-  void Cancel();
-  void OnComplete();
+
+  // Handlers for specific messages from the client.
+  void OnMetadata(protocol::FileTransfer_Metadata metadata);
+  void OnData(std::string data);
+  void OnEnd();
+  void OnRequestTransfer();
+  void OnSuccess();
   void OnError(protocol::FileTransfer_Error error);
-  void SendResult(protocol::FileTransferResult<Monostate> result);
-  void CancelAndSendError(protocol::FileTransfer_Error error);
+
+  // File reading callbacks.
+  void OnOpenResult(FileOperations::Reader::OpenResult result);
+  void OnReadResult(FileOperations::Reader::ReadResult result);
+  void OnChunkSent();
+
+  // File writing callbacks.
+  void OnWritingComplete();
+  void OnWriteError(protocol::FileTransfer_Error error);
+
+  // Reads the next chunk in reading mode.
+  void ReadNextChunk();
+
+  // Cancels any current operation and transitions to failed state.
+  void Cancel();
+
+  // Sends an error message to the client.
+  void SendError(protocol::FileTransfer_Error error);
+
+  // Handles an unexpected message being received.
+  void UnexpectedMessage(base::Location from_here, const char* message);
+
   void SetState(State state);
 
   State state_ = kConnected;
   std::unique_ptr<FileOperations> file_operations_;
   base::Optional<BufferedFileWriter> buffered_file_writer_;
+  std::unique_ptr<FileOperations::Reader> file_reader_;
+  std::size_t queued_chunks_ = 0;
+  base::WeakPtrFactory<FileTransferMessageHandler> weak_ptr_factory_;
 };
 
 }  // namespace remoting

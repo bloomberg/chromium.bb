@@ -87,6 +87,8 @@ class FileTransferMessageHandlerTest : public testing::Test {
   std::unique_ptr<protocol::FakeMessagePipe> fake_pipe_;
   protocol::FileTransfer fake_metadata_;
   protocol::FileTransfer fake_end_;
+  protocol::FileTransfer fake_request_transfer_;
+  protocol::FileTransfer fake_success_;
 };
 
 FileTransferMessageHandlerTest::FileTransferMessageHandlerTest()
@@ -99,18 +101,20 @@ void FileTransferMessageHandlerTest::SetUp() {
   fake_pipe_ =
       base::WrapUnique(new protocol::FakeMessagePipe(false /* asynchronous */));
 
-  fake_metadata_.Clear();
   fake_metadata_.mutable_metadata()->set_filename(kTestFilename);
   fake_metadata_.mutable_metadata()->set_size(
       kTestDataOne.size() + kTestDataTwo.size() + kTestDataThree.size());
-  fake_end_.Clear();
   fake_end_.mutable_end();
+  fake_request_transfer_.mutable_request_transfer();
+  fake_success_.mutable_success();
 }
 
 void FileTransferMessageHandlerTest::TearDown() {}
 
-// Verify that the message handler creates, writes to, and closes a
-// FileProxyWrapper without errors when given valid input.
+// Upload tests.
+
+// Verifies that the message handler creates, writes to, and closes a
+// FileOperations::Writer without errors when given valid input.
 TEST_F(FileTransferMessageHandlerTest, WritesThreeChunks) {
   FakeFileOperations::TestIo test_io;
   auto file_operations = std::make_unique<FakeFileOperations>(&test_io);
@@ -137,15 +141,13 @@ TEST_F(FileTransferMessageHandlerTest, WritesThreeChunks) {
 
   const base::queue<std::string>& actual_sent_messages =
       fake_pipe_->sent_messages();
-  protocol::FileTransfer expected_response;
-  expected_response.mutable_success();
   base::queue<std::string> expected_sent_messages;
-  expected_sent_messages.push(expected_response.SerializeAsString());
+  expected_sent_messages.push(fake_success_.SerializeAsString());
   ASSERT_TRUE(QueuesEqual(expected_sent_messages, actual_sent_messages));
 }
 
 // Verifies that the message handler sends an error protobuf when
-// FileProxyWrapper returns an error.
+// FileOperations::Writer returns an error.
 TEST_F(FileTransferMessageHandlerTest, HandlesWriteError) {
   FakeFileOperations::TestIo test_io;
   auto file_operations = std::make_unique<FakeFileOperations>(&test_io);
@@ -329,6 +331,103 @@ TEST_F(FileTransferMessageHandlerTest, ErrorsOnDataAfterClose) {
   ASSERT_EQ(protocol::FileTransfer::kError, response.message_case());
   ASSERT_EQ(protocol::FileTransfer_Error_Type_PROTOCOL_ERROR,
             response.error().type());
+}
+
+// Download tests.
+
+// Verifies that the message handler will read and respond with a file when a
+// RequestTransfer message is received.
+TEST_F(FileTransferMessageHandlerTest, ReadsFile) {
+  FakeFileOperations::TestIo test_io;
+  auto file_operations = std::make_unique<FakeFileOperations>(&test_io);
+
+  test_io.input_file = FakeFileOperations::InputFile(
+      base::FilePath::FromUTF8Unsafe(kTestFilename),
+      kTestDataOne + kTestDataTwo + kTestDataThree, base::nullopt);
+
+  // This will delete itself when fake_pipe_->ClosePipe() is called.
+  new FileTransferMessageHandler(kTestDatachannelName, fake_pipe_->Wrap(),
+                                 std::move(file_operations));
+
+  fake_pipe_->OpenPipe();
+  fake_pipe_->Receive(MessageToBuffer(fake_request_transfer_));
+  scoped_task_environment_.RunUntilIdle();
+  fake_pipe_->Receive(MessageToBuffer(fake_success_));
+  scoped_task_environment_.RunUntilIdle();
+
+  fake_pipe_->ClosePipe();
+
+  const base::queue<std::string>& actual_sent_messages =
+      fake_pipe_->sent_messages();
+  base::queue<std::string> expected_sent_messages;
+  expected_sent_messages.push(fake_metadata_.SerializeAsString());
+  protocol::FileTransfer data;
+  data.mutable_data()->set_data(test_io.input_file->data);
+  expected_sent_messages.push(data.SerializeAsString());
+  expected_sent_messages.push(fake_end_.SerializeAsString());
+  ASSERT_TRUE(QueuesEqual(expected_sent_messages, actual_sent_messages));
+}
+
+// Verifies that the message handler forwards errors from opening a file with
+// the reader.
+TEST_F(FileTransferMessageHandlerTest, ForwardsReaderOpenError) {
+  FakeFileOperations::TestIo test_io;
+  auto file_operations = std::make_unique<FakeFileOperations>(&test_io);
+
+  test_io.input_file = protocol::MakeFileTransferError(
+      FROM_HERE, protocol::FileTransfer_Error_Type_CANCELED);
+
+  // This will delete itself when fake_pipe_->ClosePipe() is called.
+  new FileTransferMessageHandler(kTestDatachannelName, fake_pipe_->Wrap(),
+                                 std::move(file_operations));
+
+  fake_pipe_->OpenPipe();
+  fake_pipe_->Receive(MessageToBuffer(fake_request_transfer_));
+  scoped_task_environment_.RunUntilIdle();
+
+  fake_pipe_->ClosePipe();
+
+  const base::queue<std::string>& actual_sent_messages =
+      fake_pipe_->sent_messages();
+  base::queue<std::string> expected_sent_messages;
+  protocol::FileTransfer error;
+  *error.mutable_error() = test_io.input_file.error();
+  expected_sent_messages.push(error.SerializeAsString());
+  ASSERT_TRUE(QueuesEqual(expected_sent_messages, actual_sent_messages));
+}
+
+// Verifies that the message handler forwards errors from reading a file.
+TEST_F(FileTransferMessageHandlerTest, ForwardsReadError) {
+  FakeFileOperations::TestIo test_io;
+  auto file_operations = std::make_unique<FakeFileOperations>(&test_io);
+
+  test_io.input_file = FakeFileOperations::InputFile(
+      base::FilePath::FromUTF8Unsafe(kTestFilename),
+      kTestDataOne + kTestDataTwo + kTestDataThree,
+      protocol::MakeFileTransferError(
+          FROM_HERE, protocol::FileTransfer_Error_Type_IO_ERROR));
+
+  // This will delete itself when fake_pipe_->ClosePipe() is called.
+  new FileTransferMessageHandler(kTestDatachannelName, fake_pipe_->Wrap(),
+                                 std::move(file_operations));
+
+  fake_pipe_->OpenPipe();
+  fake_pipe_->Receive(MessageToBuffer(fake_request_transfer_));
+  scoped_task_environment_.RunUntilIdle();
+
+  fake_pipe_->ClosePipe();
+
+  const base::queue<std::string>& actual_sent_messages =
+      fake_pipe_->sent_messages();
+  base::queue<std::string> expected_sent_messages;
+  expected_sent_messages.push(fake_metadata_.SerializeAsString());
+  protocol::FileTransfer data;
+  data.mutable_data()->set_data(test_io.input_file->data);
+  expected_sent_messages.push(data.SerializeAsString());
+  protocol::FileTransfer error;
+  *error.mutable_error() = *test_io.input_file->io_error;
+  expected_sent_messages.push(error.SerializeAsString());
+  ASSERT_TRUE(QueuesEqual(expected_sent_messages, actual_sent_messages));
 }
 
 }  // namespace remoting
