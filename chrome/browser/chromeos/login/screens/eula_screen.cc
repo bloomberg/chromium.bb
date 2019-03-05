@@ -23,17 +23,22 @@ constexpr const char kUserActionAcceptButtonClicked[] = "accept-button";
 constexpr const char kUserActionBackButtonClicked[] = "back-button";
 constexpr const char kContextKeyUsageStatsEnabled[] = "usageStatsEnabled";
 
+// Reflects the value of usage statistics reporting checkbox shown in eula
+// UI. The value is expected to survive EulaScreen res-hows within a single
+// session. For example if a user unchecks the checkbox, goes back, and then
+// gets to EULA screen again, the checkbox should be unchecked.
+bool g_usage_statistics_reporting_enabled = true;
+
 }  // namespace
 
 EulaScreen::EulaScreen(BaseScreenDelegate* base_screen_delegate,
-                       Delegate* delegate,
-                       EulaView* view)
+                       EulaView* view,
+                       const ScreenExitCallback& exit_callback)
     : BaseScreen(base_screen_delegate, OobeScreen::SCREEN_OOBE_EULA),
-      delegate_(delegate),
       view_(view),
+      exit_callback_(exit_callback),
       password_fetcher_(this) {
   DCHECK(view_);
-  DCHECK(delegate_);
   if (view_)
     view_->Bind(this);
 }
@@ -71,7 +76,7 @@ void EulaScreen::InitiatePasswordFetch() {
 }
 
 bool EulaScreen::IsUsageStatsEnabled() const {
-  return delegate_ && delegate_->GetUsageStatisticsReporting();
+  return g_usage_statistics_reporting_enabled;
 }
 
 void EulaScreen::OnViewDestroyed(EulaView* view) {
@@ -95,19 +100,22 @@ void EulaScreen::Hide() {
 }
 
 void EulaScreen::OnUserAction(const std::string& action_id) {
-  if (action_id == kUserActionAcceptButtonClicked)
-    Finish(ScreenExitCode::EULA_ACCEPTED);
-  else if (action_id == kUserActionBackButtonClicked)
-    Finish(ScreenExitCode::EULA_BACK);
-  else
+  if (action_id == kUserActionAcceptButtonClicked) {
+    exit_callback_.Run(g_usage_statistics_reporting_enabled
+                           ? Result::ACCEPTED_WITH_USAGE_STATS_REPORTING
+                           : Result::ACCEPTED_WITHOUT_USAGE_STATS_REPORTING);
+  } else if (action_id == kUserActionBackButtonClicked) {
+    exit_callback_.Run(Result::BACK);
+  } else {
     BaseScreen::OnUserAction(action_id);
+  }
 }
 
 void EulaScreen::OnContextKeyUpdated(
     const ::login::ScreenContext::KeyType& key) {
-  if (key == kContextKeyUsageStatsEnabled && delegate_) {
-    delegate_->SetUsageStatisticsReporting(
-        context_.GetBoolean(kContextKeyUsageStatsEnabled));
+  if (key == kContextKeyUsageStatsEnabled) {
+    g_usage_statistics_reporting_enabled =
+        context_.GetBoolean(kContextKeyUsageStatsEnabled);
   }
 }
 

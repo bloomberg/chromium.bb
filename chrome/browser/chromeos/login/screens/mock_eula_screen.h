@@ -15,12 +15,14 @@ namespace chromeos {
 class MockEulaScreen : public EulaScreen {
  public:
   MockEulaScreen(BaseScreenDelegate* base_screen_delegate,
-                 Delegate* delegate,
-                 EulaView* view);
+                 EulaView* view,
+                 const ScreenExitCallback& exit_callback);
   ~MockEulaScreen() override;
 
   MOCK_METHOD0(Show, void());
   MOCK_METHOD0(Hide, void());
+
+  void ExitScreen(Result result);
 };
 
 class MockEulaView : public EulaView {
