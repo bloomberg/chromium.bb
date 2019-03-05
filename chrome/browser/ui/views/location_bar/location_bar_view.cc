@@ -720,7 +720,7 @@ int LocationBarView::GetAvailableTextHeight() {
 // static
 int LocationBarView::GetAvailableDecorationTextHeight() {
   const int bubble_padding =
-      GetLayoutConstant(LOCATION_BAR_BUBBLE_VERTICAL_PADDING) +
+      GetLayoutConstant(LOCATION_BAR_CHILD_INTERIOR_PADDING) +
       GetLayoutConstant(LOCATION_BAR_BUBBLE_FONT_VERTICAL_PADDING);
   return std::max(
       0, LocationBarView::GetAvailableTextHeight() - (bubble_padding * 2));
