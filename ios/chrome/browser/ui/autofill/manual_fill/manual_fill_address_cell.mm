@@ -143,30 +143,49 @@
   NSMutableArray<UIView*>* verticalLeadViews = [[NSMutableArray alloc] init];
   UIView* guide = self.contentView;
 
-  // Top label, summary of line 1 and 2.
-  NSMutableAttributedString* attributedString =
-      [[NSMutableAttributedString alloc]
-          initWithString:address.line1 ? address.line1 : @""
-              attributes:@{
-                NSForegroundColorAttributeName : UIColor.blackColor,
-                NSFontAttributeName :
-                    [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline]
-              }];
-  if (address.line2.length) {
-    NSString* line2String =
-        [NSString stringWithFormat:@" –– %@", address.line2];
-    NSDictionary* attributes = @{
-      NSForegroundColorAttributeName : UIColor.lightGrayColor,
-      NSFontAttributeName :
-          [UIFont preferredFontForTextStyle:UIFontTextStyleBody]
-    };
-    NSAttributedString* line2StringAttributedString =
-        [[NSAttributedString alloc] initWithString:line2String
-                                        attributes:attributes];
-    [attributedString appendAttributedString:line2StringAttributedString];
+  NSString* blackText = nil;
+  NSString* grayText = nil;
+
+  // Top label is the address summary and fallbacks on city and email.
+  if (address.line1.length) {
+    blackText = address.line1;
+    grayText = address.line2.length ? address.line2 : nil;
+  } else if (address.line2.length) {
+    blackText = address.line2;
+  } else if (address.city.length) {
+    blackText = address.city;
+  } else if (address.emailAddress.length) {
+    blackText = address.emailAddress;
   }
-  self.addressLabel.attributedText = attributedString;
-  [verticalLeadViews addObject:self.addressLabel];
+
+  NSMutableAttributedString* attributedString = nil;
+  if (blackText.length) {
+    attributedString = [[NSMutableAttributedString alloc]
+        initWithString:blackText
+            attributes:@{
+              NSForegroundColorAttributeName : UIColor.blackColor,
+              NSFontAttributeName :
+                  [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline]
+            }];
+    if (grayText.length) {
+      NSString* formattedGrayText =
+          [NSString stringWithFormat:@" –– %@", grayText];
+      NSDictionary* attributes = @{
+        NSForegroundColorAttributeName : UIColor.lightGrayColor,
+        NSFontAttributeName :
+            [UIFont preferredFontForTextStyle:UIFontTextStyleBody]
+      };
+      NSAttributedString* grayAttributedString =
+          [[NSAttributedString alloc] initWithString:formattedGrayText
+                                          attributes:attributes];
+      [attributedString appendAttributedString:grayAttributedString];
+    }
+  }
+
+  if (attributedString) {
+    self.addressLabel.attributedText = attributedString;
+    [verticalLeadViews addObject:self.addressLabel];
+  }
 
   self.dynamicConstraints = [[NSMutableArray alloc] init];
 
