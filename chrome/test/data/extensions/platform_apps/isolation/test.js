@@ -12,7 +12,7 @@ chrome.test.getConfig(function(config) {
           true);
       xhr.onload = function() {
         // Cookies should not have been passed in the request.
-        chrome.test.assertEq('', xhr.responseText);
+        chrome.test.assertEq('None', xhr.responseText);
         chrome.test.succeed();
       };
       xhr.onerror = function() {
