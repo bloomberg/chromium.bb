@@ -294,9 +294,7 @@ proto_library("cloud_policy_proto_generated_compile_proto") {
   component_build_force_source_set = true
   defines = [ "POLICY_PROTO_COMPILATION" ]
 
-  deps = [
-    ":cloud_policy_code_generate",
-  ]
+  proto_deps = [ ":cloud_policy_code_generate" ]
 }
 
 # This target builds the "full" protobuf, used for tests only.
@@ -320,10 +318,9 @@ proto_library("chrome_settings_proto_generated_compile_proto") {
   component_build_force_source_set = true
   defines = [ "POLICY_CHROME_SETTINGS_PROTO_COMPILATION" ]
 
-  deps = [
-    ":cloud_policy_code_generate",
-    ":cloud_policy_proto_generated_compile",
-  ]
+  proto_deps = [ ":cloud_policy_code_generate" ]
+
+  link_deps = [ ":cloud_policy_proto_generated_compile" ]
 }
 
 static_library("generated") {
