@@ -216,6 +216,7 @@
 #include "chrome/browser/chromeos/settings/stats_reporting_controller.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/settings/cros_settings_names.h"
+#include "components/arc/metrics/stability_metrics_manager.h"
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
@@ -999,6 +1000,7 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
 #if defined(OS_CHROMEOS)
   chromeos::CrosSettings::Initialize(local_state);
   chromeos::StatsReportingController::Initialize(local_state);
+  arc::StabilityMetricsManager::Initialize(local_state);
 #endif  // defined(OS_CHROMEOS)
 
   {
@@ -1935,6 +1937,7 @@ void ChromeBrowserMainParts::PostDestroyThreads() {
   CHECK(metrics::MetricsService::UmaMetricsProperlyShutdown());
 
 #if defined(OS_CHROMEOS)
+  arc::StabilityMetricsManager::Shutdown();
   chromeos::StatsReportingController::Shutdown();
   chromeos::CrosSettings::Shutdown();
 #endif  // defined(OS_CHROMEOS)

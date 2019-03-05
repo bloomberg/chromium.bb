@@ -212,11 +212,17 @@ enum class ArcEnabledState {
   kMaxValue = DISABLED_NOT_ALLOWED,
 };
 
+// Called from the Chrome OS metrics provider to record Arc.StateByUserType
+// strictly once per every metrics recording interval. This way they are in
+// every record uploaded to the server and therefore can be used to split and
+// compare analysis data for all other metrics.
+// TODO(shaochuan): Decouple profile-related logic and move recording to
+// components/arc.
+void UpdateEnabledStateByUserTypeUMA();
+
 void UpdateOptInActionUMA(OptInActionType type);
 void UpdateOptInCancelUMA(OptInCancelReason reason);
 void UpdateOptInFlowResultUMA(OptInFlowResult result);
-void UpdateEnabledStateUMA(bool enabled);
-void UpdateEnabledStateByUserTypeUMA(bool enabled, const Profile* profile);
 void UpdateProvisioningResultUMA(ProvisioningResult result,
                                  const Profile* profile);
 void UpdateSecondarySigninResultUMA(ProvisioningResult result);

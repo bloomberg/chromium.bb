@@ -18,11 +18,12 @@
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/arc/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/arc_optin_uma.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/system/statistics_provider.h"
+#include "components/arc/metrics/stability_metrics_manager.h"
 #include "components/metrics/metrics_service.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -235,16 +236,15 @@ void ChromeOSMetricsProvider::ProvideStabilityMetrics(
     stability_proto->set_unclean_system_shutdown_count(count);
     pref->SetInteger(prefs::kStabilitySystemUncleanShutdownCount, 0);
   }
-}
 
-void ChromeOSMetricsProvider::ProvidePreviousSessionData(
-    metrics::ChromeUserMetricsExtension* uma_proto) {
-  ProvideStabilityMetrics(uma_proto->mutable_system_profile());
-  // The enrollment status and ARC state of a client are not likely to change
-  // between browser restarts.  Hence, it's safe and useful to attach these
-  // values to a previous session log.
-  RecordEnrollmentStatus();
-  RecordArcState();
+  // Use current enrollment status for initial stability logs, since it's not
+  // likely to change between browser restarts.
+  UMA_STABILITY_HISTOGRAM_ENUMERATION(
+      "UMA.EnrollmentStatus", GetEnrollmentStatus(), ENROLLMENT_STATUS_MAX);
+
+  // Record ARC-related stability metrics that should be included in initial
+  // stability logs and all regular UMA logs.
+  arc::StabilityMetricsManager::Get()->RecordMetricsToUMA();
 }
 
 void ChromeOSMetricsProvider::ProvideCurrentSessionData(
@@ -256,9 +256,7 @@ void ChromeOSMetricsProvider::ProvideCurrentSessionData(
       uma_proto->add_sampled_profile()->Swap(&profile);
     }
   }
-
-  RecordEnrollmentStatus();
-  RecordArcState();
+  arc::UpdateEnabledStateByUserTypeUMA();
 }
 
 void ChromeOSMetricsProvider::WriteBluetoothProto(
@@ -349,15 +347,4 @@ void ChromeOSMetricsProvider::SetFullHardwareClass(
   }
   full_hardware_class_ = full_hardware_class;
   callback.Run();
-}
-
-void ChromeOSMetricsProvider::RecordEnrollmentStatus() {
-  UMA_STABILITY_HISTOGRAM_ENUMERATION(
-      "UMA.EnrollmentStatus", GetEnrollmentStatus(), ENROLLMENT_STATUS_MAX);
-}
-
-void ChromeOSMetricsProvider::RecordArcState() {
-  arc::ArcSessionManager* arc_session_manager = arc::ArcSessionManager::Get();
-  if (arc_session_manager)
-    arc_session_manager->RecordArcState();
 }
