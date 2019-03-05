@@ -7,6 +7,4 @@
     SecureContext,
     Exposed=Window,
     OriginTrialEnabled=WebXR
-] interface XRSpace : EventTarget {
-  XRRigidTransform? getTransformTo(XRSpace other);
-};
+] interface XRSpace : EventTarget {};

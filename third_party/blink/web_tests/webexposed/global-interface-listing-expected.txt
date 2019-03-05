@@ -10473,6 +10473,7 @@ interface XRFrame
     getter session
     method constructor
     method getInputPose
+    method getPose
     method getViewerPose
 interface XRHitResult
     attribute @@toStringTag
@@ -10560,7 +10561,6 @@ interface XRSessionEvent : Event
 interface XRSpace : EventTarget
     attribute @@toStringTag
     method constructor
-    method getTransformTo
 interface XRStageBounds
     attribute @@toStringTag
     getter geometry

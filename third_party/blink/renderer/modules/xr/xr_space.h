@@ -5,6 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_SPACE_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_SPACE_H_
 
+#include <memory>
+
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
@@ -13,7 +15,7 @@
 
 namespace blink {
 
-class XRRigidTransform;
+class TransformationMatrix;
 class XRSession;
 
 class XRSpace : public EventTargetWithInlineData {
@@ -23,7 +25,9 @@ class XRSpace : public EventTargetWithInlineData {
   explicit XRSpace(XRSession*);
   ~XRSpace() override;
 
-  XRRigidTransform* getTransformTo(XRSpace*) const;
+  // Get a transform that maps from this space to mojo space.
+  // Returns nullptr if computing a transform is not possible.
+  virtual std::unique_ptr<TransformationMatrix> GetTransformToMojoSpace();
 
   XRSession* session() const { return session_; }
 

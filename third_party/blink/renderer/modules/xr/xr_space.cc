@@ -14,18 +14,9 @@ XRSpace::XRSpace(XRSession* session) : session_(session) {}
 
 XRSpace::~XRSpace() = default;
 
-// If possible, get the matrix required to transform between two coordinate
-// systems.
-XRRigidTransform* XRSpace::getTransformTo(XRSpace* other) const {
-  if (session_ != other->session()) {
-    // Cannot get relationships between coordinate systems that belong to
-    // different sessions.
-    return nullptr;
-  }
-
-  // TODO(bajones): Track relationship to other coordinate systems and return
-  // the transforms here. In the meantime we're allowed to return null to
-  // indicate that the transform between the two coordinate systems is unknown.
+std::unique_ptr<TransformationMatrix> XRSpace::GetTransformToMojoSpace() {
+  // The base XRSpace does not have any relevant information, so can't determine
+  // a transform here.
   return nullptr;
 }
 

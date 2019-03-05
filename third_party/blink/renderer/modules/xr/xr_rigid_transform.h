@@ -33,7 +33,8 @@ class XRRigidTransform : public ScriptWrappable {
   DOMPointReadOnly* orientation() const { return orientation_; }
   DOMFloat32Array* matrix();
 
-  TransformationMatrix InverseMatrix();
+  TransformationMatrix InverseTransformMatrix();
+  TransformationMatrix TransformMatrix();  // copies matrix_
 
   void Trace(blink::Visitor*) override;
 

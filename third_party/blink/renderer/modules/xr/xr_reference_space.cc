@@ -30,7 +30,8 @@ std::unique_ptr<TransformationMatrix> XRReferenceSpace::DefaultPose() {
 // service to the space represenced by this reference space.
 std::unique_ptr<TransformationMatrix> XRReferenceSpace::TransformBasePose(
     const TransformationMatrix& base_pose) {
-  // Always return the default pose.
+  // Always return the default pose because we will only get here for an
+  // "identity" reference space.
   return DefaultPose();
 }
 
@@ -41,6 +42,25 @@ std::unique_ptr<TransformationMatrix> XRReferenceSpace::TransformBaseInputPose(
     const TransformationMatrix& base_input_pose,
     const TransformationMatrix& base_pose) {
   return TransformBasePose(base_input_pose);
+}
+
+std::unique_ptr<TransformationMatrix>
+XRReferenceSpace::GetTransformToMojoSpace() {
+  // XRReferenceSpace doesn't do anything special with the base pose, but
+  // derived reference spaces (bounded, unbounded, stationary, etc.) have their
+  // own custom behavior.
+  TransformationMatrix identity;
+  std::unique_ptr<TransformationMatrix> transform_matrix =
+      TransformBasePose(identity);
+
+  if (!transform_matrix) {
+    // Transform wasn't possible.
+    return nullptr;
+  }
+
+  // Must account for position and orientation defined by origin offset.
+  transform_matrix->Multiply(origin_offset_->TransformMatrix());
+  return transform_matrix;
 }
 
 void XRReferenceSpace::setOriginOffset(XRRigidTransform* transform) {

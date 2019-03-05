@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/xr/xr_frame.h"
 
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/modules/xr/xr_input_pose.h"
 #include "third_party/blink/renderer/modules/xr/xr_input_source.h"
 #include "third_party/blink/renderer/modules/xr/xr_reference_space.h"
@@ -18,7 +19,10 @@ namespace {
 
 const char kInactiveFrame[] =
     "XRFrame access outside the callback that produced it is invalid.";
-}
+
+const char kSessionMismatch[] = "XRSpace and XRFrame sessions do not match.";
+
+}  // namespace
 
 XRFrame::XRFrame(XRSession* session) : session_(session) {}
 
@@ -138,6 +142,53 @@ XRInputPose* XRFrame::getInputPose(XRInputSource* input_source,
   }
 
   return nullptr;
+}
+
+// Return an XRPose that has a transform mapping to space A from space B, while
+// accounting for the base pose matrix of this frame. If computing a transform
+// isn't possible, return nullptr.
+XRPose* XRFrame::getPose(XRSpace* space_A,
+                         XRSpace* space_B,
+                         ExceptionState& exception_state) {
+  if (!active_) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      kInactiveFrame);
+    return nullptr;
+  }
+
+  if (space_A->session() != session_) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      kSessionMismatch);
+    return nullptr;
+  }
+
+  if (space_B->session() != session_) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      kSessionMismatch);
+    return nullptr;
+  }
+
+  std::unique_ptr<TransformationMatrix> mojo_from_A =
+      space_A->GetTransformToMojoSpace();
+  if (!mojo_from_A) {
+    return nullptr;
+  }
+
+  // Rigid transforms should always be invertible.
+  DCHECK(mojo_from_A->IsInvertible());
+  TransformationMatrix A_from_mojo = mojo_from_A->Inverse();
+
+  std::unique_ptr<TransformationMatrix> mojo_from_B =
+      space_B->GetTransformToMojoSpace();
+  if (!mojo_from_B) {
+    return nullptr;
+  }
+
+  // TODO(jacde): Update how EmulatedPosition is determined here once spec issue
+  // https://github.com/immersive-web/webxr/issues/534 has been resolved.
+  TransformationMatrix A_from_B = A_from_mojo.Multiply(*mojo_from_B);
+  return MakeGarbageCollected<XRPose>(TransformationMatrix::Create(A_from_B),
+                                      session_->EmulatedPosition());
 }
 
 void XRFrame::SetBasePoseMatrix(const TransformationMatrix& base_pose_matrix) {
