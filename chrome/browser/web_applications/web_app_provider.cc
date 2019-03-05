@@ -16,6 +16,7 @@
 #include "chrome/browser/web_applications/components/web_app_audio_focus_id_map.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/extensions/bookmark_app_registrar.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_tab_helper.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
 #include "chrome/browser/web_applications/extensions/pending_bookmark_app_manager.h"
@@ -77,40 +78,42 @@ void WebAppProvider::StartRegistry() {
   notification_registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
                               content::Source<Profile>(profile_));
 
-  if (base::FeatureList::IsEnabled(features::kDesktopPWAsWithoutExtensions)) {
-    registrar_->Init(base::BindOnce(&WebAppProvider::OnRegistryReady,
-                                    weak_ptr_factory_.GetWeakPtr()));
-  } else {
-    extensions::ExtensionSystem::Get(profile_)->ready().Post(
-        FROM_HERE, base::BindRepeating(&WebAppProvider::OnRegistryReady,
-                                       weak_ptr_factory_.GetWeakPtr()));
-  }
+  registrar_->Init(base::BindOnce(&WebAppProvider::OnRegistryReady,
+                                  weak_ptr_factory_.GetWeakPtr()));
 }
 
 void WebAppProvider::CreateWebAppsSubsystems(Profile* profile) {
   database_factory_ = std::make_unique<WebAppDatabaseFactory>(profile);
   database_ = std::make_unique<WebAppDatabase>(database_factory_.get());
-  registrar_ = std::make_unique<WebAppRegistrar>(database_.get());
+  auto web_app_registrar = std::make_unique<WebAppRegistrar>(database_.get());
   icon_manager_ = std::make_unique<WebAppIconManager>(
       profile, std::make_unique<FileUtilsWrapper>());
 
   auto install_finalizer = std::make_unique<WebAppInstallFinalizer>(
-      registrar_.get(), icon_manager_.get());
+      web_app_registrar.get(), icon_manager_.get());
   install_manager_ = std::make_unique<WebAppInstallManager>(
       profile, std::move(install_finalizer));
+
+  registrar_ = std::move(web_app_registrar);
 }
 
 void WebAppProvider::CreateBookmarkAppsSubsystems(Profile* profile) {
+  auto bookmark_app_registrar =
+      std::make_unique<extensions::BookmarkAppRegistrar>(profile);
+
   install_manager_ = std::make_unique<extensions::BookmarkAppInstallManager>();
 
   pending_app_manager_ =
-      std::make_unique<extensions::PendingBookmarkAppManager>(profile);
+      std::make_unique<extensions::PendingBookmarkAppManager>(
+          profile, bookmark_app_registrar.get());
 
   web_app_policy_manager_ = std::make_unique<WebAppPolicyManager>(
       profile, pending_app_manager_.get());
 
   system_web_app_manager_ = std::make_unique<SystemWebAppManager>(
       profile, pending_app_manager_.get());
+
+  registrar_ = std::move(bookmark_app_registrar);
 }
 
 void WebAppProvider::OnRegistryReady() {
