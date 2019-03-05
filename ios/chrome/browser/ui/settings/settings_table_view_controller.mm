@@ -1039,7 +1039,12 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
       [UIImage imageNamed:kSyncAndGoogleServicesImageName];
   SyncSetupService* syncSetupService =
       SyncSetupServiceFactory::GetForBrowserState(_browserState);
-  if (!syncSetupService->HasFinishedInitialSetup()) {
+  AuthenticationService* authService =
+      AuthenticationServiceFactory::GetForBrowserState(_browserState);
+  if (!authService->IsAuthenticated()) {
+    // No sync status when the user is not signed-in.
+    googleServicesItem.detailText = nil;
+  } else if (!syncSetupService->HasFinishedInitialSetup()) {
     googleServicesItem.detailText =
         l10n_util::GetNSString(IDS_IOS_SYNC_SETUP_IN_PROGRESS);
   } else if (!IsTransientSyncError(syncSetupService->GetSyncServiceState())) {
