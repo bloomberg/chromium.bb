@@ -13,6 +13,10 @@ var TestRunner = class {
     this._browserSession = new TestRunner.Session(this, '');
   }
 
+  static get stabilizeNames() {
+    return ['id', 'nodeId', 'objectId', 'scriptId', 'timestamp', 'backendNodeId', 'parentId', 'frameId', 'loaderId', 'baseURL', 'documentURL', 'styleSheetId', 'executionContextId', 'targetId', 'browserContextId', 'sessionId', 'ownerNode'];
+  }
+
   startDumpingProtocolMessages() {
     this._dumpInspectorProtocolMessages = true;
   };
@@ -27,7 +31,7 @@ var TestRunner = class {
     this._log.call(null, item);
   }
 
-  _logObject(object, title, stabilizeNames = ['id', 'nodeId', 'objectId', 'scriptId', 'timestamp', 'backendNodeId', 'parentId', 'frameId', 'loaderId', 'baseURL', 'documentURL', 'styleSheetId', 'executionContextId', 'targetId', 'browserContextId', 'sessionId']) {
+  _logObject(object, title, stabilizeNames = TestRunner.stabilizeNames) {
     var lines = [];
 
     function dumpValue(value, prefix, prefixWithName) {
