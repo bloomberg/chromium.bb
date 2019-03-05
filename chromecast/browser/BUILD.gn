@@ -18,6 +18,28 @@ buildflag_header("browser_buildflags") {
   flags = [ "ENABLE_CAST_AUDIO_MANAGER_MIXER=$enable_cast_audio_manager_mixer" ]
 }
 
+cast_source_set("prefs") {
+  sources = [
+    "pref_service_helper.cc",
+    "pref_service_helper.h",
+  ]
+
+  if (chromecast_branding == "public") {
+    sources += [ "pref_service_helper_simple.cc" ]
+  }
+
+  deps = [
+    "//base",
+    "//chromecast:chromecast_buildflags",
+    "//chromecast/base",
+    "//components/prefs",
+  ]
+
+  if (is_android) {
+    deps += [ "//components/cdm/browser" ]
+  }
+}
+
 cast_source_set("browser") {
   sources = [
     "application_media_capabilities.cc",
@@ -90,8 +112,6 @@ cast_source_set("browser") {
     "metrics/cast_metrics_service_client.h",
     "metrics/cast_stability_metrics_provider.cc",
     "metrics/cast_stability_metrics_provider.h",
-    "pref_service_helper.cc",
-    "pref_service_helper.h",
     "renderer_prelauncher.cc",
     "renderer_prelauncher.h",
     "service/cast_service_simple.cc",
@@ -112,11 +132,11 @@ cast_source_set("browser") {
       "cast_browser_main_parts_simple.cc",
       "cast_content_browser_client_simple.cc",
       "cast_network_request_interceptor_simple.cc",
-      "pref_service_helper_simple.cc",
     ]
   }
 
   public_deps = [
+    ":prefs",
     ":public",
   ]
 
