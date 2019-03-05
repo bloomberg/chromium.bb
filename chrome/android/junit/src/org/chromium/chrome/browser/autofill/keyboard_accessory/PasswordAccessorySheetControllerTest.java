@@ -91,12 +91,14 @@ public class PasswordAccessorySheetControllerTest {
         mCoordinator.registerDataProvider(testProvider);
 
         // If the coordinator receives a set of initial items, the model should report an insertion.
-        testProvider.notifyObservers(new AccessorySheetData("Passwords"));
+        testProvider.notifyObservers(
+                new AccessorySheetData(FallbackSheetType.PASSWORD, "Passwords"));
         verify(mMockItemListObserver).onItemRangeInserted(mSheetDataPieces, 0, 1);
         assertThat(mSheetDataPieces.size(), is(1));
 
         // If the coordinator receives a new set of items, the model should report a change.
-        testProvider.notifyObservers(new AccessorySheetData("Other Passwords"));
+        testProvider.notifyObservers(
+                new AccessorySheetData(FallbackSheetType.PASSWORD, "Other Passwords"));
         verify(mMockItemListObserver).onItemRangeChanged(mSheetDataPieces, 0, 1, null);
         assertThat(mSheetDataPieces.size(), is(1));
 
@@ -114,7 +116,8 @@ public class PasswordAccessorySheetControllerTest {
     public void testSplitsTabDataToList() {
         setAutofillFeature(false);
         final PropertyProvider<AccessorySheetData> testProvider = new PropertyProvider<>();
-        final AccessorySheetData testData = new AccessorySheetData("Passwords for this site");
+        final AccessorySheetData testData =
+                new AccessorySheetData(FallbackSheetType.PASSWORD, "Passwords for this site");
         testData.getUserInfoList().add(new UserInfo(null));
         testData.getUserInfoList().get(0).addField(new UserInfo.Field("Name", "Name", false, null));
         testData.getUserInfoList().get(0).addField(
@@ -137,7 +140,8 @@ public class PasswordAccessorySheetControllerTest {
     public void testUsesTabTitleOnlyForEmptyListsForModernDesign() {
         setAutofillFeature(true);
         final PropertyProvider<AccessorySheetData> testProvider = new PropertyProvider<>();
-        final AccessorySheetData testData = new AccessorySheetData("No passwords for this");
+        final AccessorySheetData testData =
+                new AccessorySheetData(FallbackSheetType.PASSWORD, "No passwords for this");
         mCoordinator.registerDataProvider(testProvider);
 
         // Providing only FooterCommands and no User Info shows the title as empty state:
@@ -183,7 +187,8 @@ public class PasswordAccessorySheetControllerTest {
         assertThat(getSuggestionsImpressions(AccessoryTabType.ALL, 0), is(0));
 
         // If the tab is shown without interactive item, log "0" samples.
-        AccessorySheetData accessorySheetData = new AccessorySheetData("No passwords!");
+        AccessorySheetData accessorySheetData =
+                new AccessorySheetData(FallbackSheetType.PASSWORD, "No passwords!");
         accessorySheetData.getFooterCommands().add(new FooterCommand("Manage all passwords", null));
         accessorySheetData.getFooterCommands().add(new FooterCommand("Generate password", null));
         testProvider.notifyObservers(accessorySheetData);

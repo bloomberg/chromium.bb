@@ -64,7 +64,7 @@ constexpr int kIconSize = 75;  // An example size for favicons (=> 3.5*20px).
 class AccessorySheetDataBuilder {
  public:
   explicit AccessorySheetDataBuilder(const base::string16& title)
-      : accessory_sheet_data_(title) {}
+      : accessory_sheet_data_(autofill::FallbackSheetType::PASSWORD, title) {}
 
   ~AccessorySheetDataBuilder() = default;
 

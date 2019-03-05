@@ -82,6 +82,7 @@ class MockPasswordAccessoryView : public ManualFillingViewInterface {
 autofill::AccessorySheetData dummy_accessory_sheet_data() {
   constexpr char kExampleAccessorySheetDataTitle[] = "Example title";
   return autofill::AccessorySheetData(
+      autofill::FallbackSheetType::CREDIT_CARD,
       base::ASCIIToUTF16(kExampleAccessorySheetDataTitle));
 }
 
