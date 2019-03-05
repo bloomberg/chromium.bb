@@ -118,6 +118,12 @@ void AddStringsForPdf(base::DictionaryValue* dict) {
   SetL10nString(dict, "annotationSize12", IDS_PDF_ANNOTATION_SIZE12);
   SetL10nString(dict, "annotationSize16", IDS_PDF_ANNOTATION_SIZE16);
   SetL10nString(dict, "annotationSize20", IDS_PDF_ANNOTATION_SIZE20);
+  SetL10nString(dict, "annotationFormWarningTitle",
+                IDS_PDF_DISCARD_FORM_CHANGES);
+  SetL10nString(dict, "annotationFormWarningDetail",
+                IDS_PDF_DISCARD_FORM_CHANGES_DETAIL);
+  SetL10nString(dict, "annotationFormWarningKeepEditing", IDS_PDF_KEEP_EDITING);
+  SetL10nString(dict, "annotationFormWarningDiscard", IDS_PDF_DISCARD);
 #endif
 }
 

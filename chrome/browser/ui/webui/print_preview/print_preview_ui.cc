@@ -364,6 +364,10 @@ std::vector<std::string> SetupPrintPreviewPlugin(
     {"pdf/elements/viewer-pdf-toolbar/viewer-pdf-toolbar.js",
      IDR_PDF_VIEWER_PDF_TOOLBAR_JS},
 #if defined(OS_CHROMEOS)
+    {"pdf/elements/viewer-form-warning/viewer-form-warning.html",
+     IDR_PDF_VIEWER_FORM_WARNING_HTML},
+    {"pdf/elements/viewer-form-warning/viewer-form-warning.js",
+     IDR_PDF_VIEWER_FORM_WARNING_JS},
     {"pdf/elements/viewer-pen-options/viewer-pen-options.html",
      IDR_PDF_VIEWER_PEN_OPTIONS_HTML},
     {"pdf/elements/viewer-pen-options/viewer-pen-options.js",

@@ -106,6 +106,7 @@ constexpr char kJSForce[] = "force";
 constexpr char kJSSaveDataType[] = "saveData";
 constexpr char kJSFileName[] = "fileName";
 constexpr char kJSDataToSave[] = "dataToSave";
+constexpr char kJSHasUnsavedChanges[] = "hasUnsavedChanges";
 // Consume save token (Plugin -> Page)
 constexpr char kJSConsumeSaveTokenType[] = "consumeSaveToken";
 // Go to page (Plugin -> Page)
@@ -1453,6 +1454,9 @@ void OutOfProcessInstance::SaveToBuffer(const std::string& token) {
   message.Set(kJSFileName, pp::Var(file_name));
   // This will be overwritten if the save is successful.
   message.Set(kJSDataToSave, pp::Var(pp::Var::Null()));
+  const bool hasUnsavedChanges =
+      edit_mode_ && !base::FeatureList::IsEnabled(features::kSaveEditedPDFForm);
+  message.Set(kJSHasUnsavedChanges, pp::Var(hasUnsavedChanges));
 
   if (ShouldSaveEdits()) {
     std::vector<uint8_t> data = engine_->GetSaveData();
