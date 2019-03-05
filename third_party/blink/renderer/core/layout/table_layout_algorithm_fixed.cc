@@ -267,7 +267,7 @@ void TableLayoutAlgorithmFixed::UpdateLayout() {
     }
   }
 
-  int hspacing = table_->HBorderSpacing();
+  int16_t hspacing = table_->HBorderSpacing();
   int total_width = total_fixed_width + total_percent_width;
   if (!num_auto || total_width > table_logical_width) {
     // If there are no auto columns, or if the total is too wide, take

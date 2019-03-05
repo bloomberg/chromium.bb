@@ -810,7 +810,7 @@ void LayoutTableSection::UpdateBaselineForCell(LayoutTableCell* cell,
   }
 }
 
-int LayoutTableSection::VBorderSpacingBeforeFirstRow() const {
+int16_t LayoutTableSection::VBorderSpacingBeforeFirstRow() const {
   // We ignore the border-spacing on any non-top section, as it is already
   // included in the previous section's last row position.
   if (this != Table()->TopSection())
@@ -1177,7 +1177,7 @@ void LayoutTableSection::LayoutRows() {
   // Set the width of our section now.  The rows will also be this width.
   SetLogicalWidth(Table()->ContentLogicalWidth());
 
-  int vspacing = Table()->VBorderSpacing();
+  int16_t vspacing = Table()->VBorderSpacing();
   LayoutState state(*this);
 
   // Set the rows' location and size.
@@ -1897,7 +1897,7 @@ void LayoutTableSection::SetLogicalPositionForCell(
     LayoutTableCell* cell,
     unsigned effective_column) const {
   LayoutPoint cell_location(0, row_pos_[cell->RowIndex()]);
-  int horizontal_border_spacing = Table()->HBorderSpacing();
+  int16_t horizontal_border_spacing = Table()->HBorderSpacing();
 
   if (!TableStyle().IsLeftToRightDirection()) {
     cell_location.SetX(LayoutUnit(

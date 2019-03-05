@@ -117,7 +117,7 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
 
   void AddCell(LayoutTableCell*, LayoutTableRow*);
 
-  int VBorderSpacingBeforeFirstRow() const;
+  int16_t VBorderSpacingBeforeFirstRow() const;
   int CalcRowLogicalHeight();
   void LayoutRows();
   bool RecalcLayoutOverflow() final;
