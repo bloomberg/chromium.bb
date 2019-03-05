@@ -2245,6 +2245,12 @@ enum WebFeature {
   kCSSValueAppearanceProgressBarValue = 2811,
   kU2FCryptotokenRegister = 2812,
   kU2FCryptotokenSign = 2813,
+  kCSSValueAppearanceInnerSpinButton = 2814,
+  kCSSValueAppearanceMeter = 2815,
+  kCSSValueAppearanceProgressBar = 2816,
+  kCSSValueAppearanceProgressBarForOthersRendered = 2817,
+  kCSSValueAppearancePushButton = 2818,
+  kCSSValueAppearanceSquareButton = 2819,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
