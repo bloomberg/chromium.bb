@@ -340,8 +340,14 @@ void SetIndividualRuntimeFeatures(
   WebRuntimeFeatures::EnableResourceLoadScheduler(
       base::FeatureList::IsEnabled(features::kResourceLoadScheduler));
 
-  if (base::FeatureList::IsEnabled(features::kLayeredAPI))
-    WebRuntimeFeatures::EnableLayeredAPI(true);
+  if (base::FeatureList::IsEnabled(features::kBuiltInModuleAll))
+    WebRuntimeFeatures::EnableBuiltInModuleAll(true);
+
+  if (base::FeatureList::IsEnabled(features::kBuiltInModuleInfra))
+    WebRuntimeFeatures::EnableBuiltInModuleInfra(true);
+
+  if (base::FeatureList::IsEnabled(features::kBuiltInModuleKvStorage))
+    WebRuntimeFeatures::EnableBuiltInModuleKvStorage(true);
 
   if (base::FeatureList::IsEnabled(blink::features::kLayoutNG))
     WebRuntimeFeatures::EnableLayoutNG(true);

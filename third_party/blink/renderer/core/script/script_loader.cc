@@ -233,7 +233,8 @@ bool ScriptLoader::IsValidScriptTypeAndLanguage(
     return true;
   }
 
-  if (RuntimeEnabledFeatures::LayeredAPIEnabled() && type == "importmap") {
+  if (RuntimeEnabledFeatures::BuiltInModuleInfraEnabled() &&
+      type == "importmap") {
     if (out_is_import_map)
       *out_is_import_map = true;
     return true;

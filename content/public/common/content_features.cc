@@ -230,8 +230,14 @@ const base::Feature kIsolateOrigins{"IsolateOrigins",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 const char kIsolateOriginsFieldTrialParamName[] = "OriginsList";
 
-const base::Feature kLayeredAPI{"LayeredAPI",
-                                base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kBuiltInModuleKvStorage{"BuiltInModuleKvStorage",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kBuiltInModuleAll{"BuiltInModuleAll",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kBuiltInModuleInfra{"BuiltInModuleInfra",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kLazyFrameLoading{"LazyFrameLoading",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
