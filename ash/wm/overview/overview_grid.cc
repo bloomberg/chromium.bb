@@ -1242,11 +1242,15 @@ const DesksBarView* OverviewGrid::GetDesksBarViewForTesting() const {
   return shield_view_->desks_bar_view();
 }
 
-int OverviewGrid::GetGridYOffset() const {
+bool OverviewGrid::IsDesksBarViewActive() const {
   DCHECK(features::IsVirtualDesksEnabled());
 
-  // TODO(afakhry): Update this when animation is added.
-  return DesksBarView::GetBarHeight();
+  // The desk bar view is not active if there is only a single desk when
+  // overview is started. Once there are more than one desk, it should stay
+  // active even if the 2nd to last desk is deleted.
+  return DesksController::Get()->desks().size() > 1 ||
+         (shield_view_ &&
+          !shield_view_->desks_bar_view()->mini_views().empty());
 }
 
 void OverviewGrid::InitShieldWidget(bool animate) {
@@ -1383,9 +1387,15 @@ std::vector<gfx::RectF> OverviewGrid::GetWindowRects(
   gfx::Rect total_bounds = bounds_;
 
   if (features::IsVirtualDesksEnabled()) {
-    total_bounds.set_height(total_bounds.height() -
-                            DesksBarView::GetBarHeight());
-    total_bounds.Offset(0, GetGridYOffset());
+    const int desks_bar_height = DesksBarView::GetBarHeight();
+
+    // Always reduce the grid's height, even if the desks bar is not active. We
+    // do this to avoid changing the overview windows sizes once the desks bar
+    // becomes active, and we shift the grid downwards.
+    total_bounds.set_height(total_bounds.height() - desks_bar_height);
+
+    if (IsDesksBarViewActive())
+      total_bounds.Offset(0, desks_bar_height);
   }
 
   // Windows occupy vertically centered area with additional vertical insets.

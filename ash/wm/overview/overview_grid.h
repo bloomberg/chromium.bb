@@ -215,10 +215,9 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
   // Returns the window of the overview item that contains |location_in_screen|.
   aura::Window* GetTargetWindowOnLocation(const gfx::Point& location_in_screen);
 
-  // The vertical offset by which the overview window grid is pushed down to
-  // account for the desks thumbnails. Initially when we don't have any
-  // thumbnails, this value is zero.
-  int GetGridYOffset() const;
+  // Returns true when the desks bar view is showing desks mini views (or will
+  // show them once it is created).
+  bool IsDesksBarViewActive() const;
 
   // Returns true if the grid has no more windows.
   bool empty() const { return window_list_.empty(); }

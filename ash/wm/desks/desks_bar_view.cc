@@ -5,10 +5,12 @@
 #include "ash/wm/desks/desks_bar_view.h"
 
 #include <algorithm>
+#include <iterator>
 #include <utility>
 
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/wm/desks/desk_mini_view.h"
+#include "ash/wm/desks/desk_mini_view_animations.h"
 #include "ash/wm/desks/new_desk_button.h"
 #include "base/stl_util.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -60,7 +62,7 @@ int DesksBarView::GetBarHeight() {
 }
 
 void DesksBarView::Init() {
-  UpdateNewMiniViews();
+  UpdateNewMiniViews(/*animate=*/false);
 }
 
 const char* DesksBarView::GetClassName() const {
@@ -117,7 +119,7 @@ void DesksBarView::ButtonPressed(views::Button* sender,
 }
 
 void DesksBarView::OnDeskAdded(const Desk* desk) {
-  UpdateNewMiniViews();
+  UpdateNewMiniViews(/*animate=*/true);
 }
 
 void DesksBarView::OnDeskRemoved(const Desk* desk) {
@@ -129,29 +131,56 @@ void DesksBarView::OnDeskRemoved(const Desk* desk) {
 
   DCHECK(iter != mini_views_.end());
 
-  mini_views_.erase(iter);
+  const int begin_x = GetFirstMiniViewXOffset();
+  std::unique_ptr<DeskMiniView> removed_mini_view = std::move(*iter);
+  auto partition_iter = mini_views_.erase(iter);
+
   Layout();
   UpdateMiniViewsLabels();
-
-  // TODO(afakhry): Add animations.
-
   UpdateNewDeskButtonState();
+
+  std::vector<DeskMiniView*> mini_views_before;
+  std::vector<DeskMiniView*> mini_views_after;
+  const auto transform_lambda =
+      [](const std::unique_ptr<DeskMiniView>& mini_view) {
+        return mini_view.get();
+      };
+
+  std::transform(mini_views_.begin(), partition_iter,
+                 std::back_inserter(mini_views_before), transform_lambda);
+  std::transform(partition_iter, mini_views_.end(),
+                 std::back_inserter(mini_views_after), transform_lambda);
+
+  PerformRemoveDeskMiniViewAnimation(std::move(removed_mini_view),
+                                     mini_views_before, mini_views_after,
+                                     begin_x - GetFirstMiniViewXOffset());
 }
 
 void DesksBarView::UpdateNewDeskButtonState() {
   new_desk_button_->SetEnabled(DesksController::Get()->CanCreateDesks());
 }
 
-void DesksBarView::UpdateNewMiniViews() {
+void DesksBarView::UpdateNewMiniViews(bool animate) {
   const auto& desks = DesksController::Get()->desks();
   if (desks.size() < 2) {
     // We do not show mini_views when we have a single desk.
     DCHECK(mini_views_.empty());
+
+    // The bar background is initially translated off the screen.
+    gfx::Transform translate;
+    translate.Translate(0, -kBarHeight);
+    backgroud_view_->layer()->SetTransform(translate);
+    backgroud_view_->layer()->SetOpacity(0);
+
     return;
   }
 
   // This should not be called when a desk is removed.
   DCHECK_LE(mini_views_.size(), desks.size());
+
+  const bool first_time_mini_views = mini_views_.empty();
+  const int begin_x = GetFirstMiniViewXOffset();
+  std::vector<DeskMiniView*> new_mini_views;
 
   for (const auto& desk : desks) {
     if (!FindMiniViewForDesk(desk.get())) {
@@ -159,13 +188,19 @@ void DesksBarView::UpdateNewMiniViews() {
           desk.get(), GetMiniViewTitle(mini_views_.size()), this));
       DeskMiniView* mini_view = mini_views_.back().get();
       mini_view->set_owned_by_client();
+      new_mini_views.emplace_back(mini_view);
       AddChildView(mini_view);
     }
   }
 
   Layout();
 
-  // TODO(afakhry): Add animations.
+  if (!animate)
+    return;
+
+  PerformNewDeskMiniViewAnimation(this, new_mini_views,
+                                  begin_x - GetFirstMiniViewXOffset(),
+                                  first_time_mini_views);
 }
 
 DeskMiniView* DesksBarView::FindMiniViewForDesk(const Desk* desk) const {
@@ -182,6 +217,11 @@ void DesksBarView::UpdateMiniViewsLabels() {
   size_t i = 0;
   for (auto& mini_view : mini_views_)
     mini_view->SetTitle(GetMiniViewTitle(i++));
+}
+
+int DesksBarView::GetFirstMiniViewXOffset() const {
+  return mini_views_.empty() ? bounds().CenterPoint().x()
+                             : mini_views_[0]->bounds().x();
 }
 
 }  // namespace ash
