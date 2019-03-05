@@ -261,12 +261,12 @@ void TrackEventThreadLocalEventSink::AddTraceEvent(
   legacy_event->set_phase(phase);
 
   if (phase == TRACE_EVENT_PHASE_COMPLETE) {
-    legacy_event->set_duration(trace_event->duration().InMicroseconds());
+    legacy_event->set_duration_us(trace_event->duration().InMicroseconds());
 
     if (!trace_event->thread_timestamp().is_null()) {
       int64_t thread_duration = trace_event->thread_duration().InMicroseconds();
       if (thread_duration != -1) {
-        legacy_event->set_thread_duration(thread_duration);
+        legacy_event->set_thread_duration_us(thread_duration);
       }
     }
   } else if (phase == TRACE_EVENT_PHASE_INSTANT) {
@@ -293,7 +293,7 @@ void TrackEventThreadLocalEventSink::AddTraceEvent(
                TRACE_EVENT_FLAG_HAS_GLOBAL_ID);
   switch (id_flags) {
     case TRACE_EVENT_FLAG_HAS_ID:
-      legacy_event->set_id(trace_event->id());
+      legacy_event->set_unscoped_id(trace_event->id());
       break;
     case TRACE_EVENT_FLAG_HAS_LOCAL_ID:
       legacy_event->set_local_id(trace_event->id());
@@ -306,7 +306,7 @@ void TrackEventThreadLocalEventSink::AddTraceEvent(
   }
 
   if (id_flags && trace_event->scope() != trace_event_internal::kGlobalScope) {
-    legacy_event->set_scope(trace_event->scope());
+    legacy_event->set_id_scope(trace_event->scope());
   }
 
   if (flags & TRACE_EVENT_FLAG_ASYNC_TTS) {
