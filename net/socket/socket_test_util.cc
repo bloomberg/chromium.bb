@@ -777,7 +777,7 @@ MockClientSocketFactory::CreateTransportClientSocket(
 }
 
 std::unique_ptr<SSLClientSocket> MockClientSocketFactory::CreateSSLClientSocket(
-    std::unique_ptr<ClientSocketHandle> transport_socket,
+    std::unique_ptr<StreamSocket> stream_socket,
     const HostPortPair& host_and_port,
     const SSLConfig& ssl_config,
     const SSLClientSocketContext& context) {
@@ -793,52 +793,7 @@ std::unique_ptr<SSLClientSocket> MockClientSocketFactory::CreateSSLClientSocket(
   EXPECT_EQ(next_ssl_data->expected_ssl_version_min, ssl_config.version_min);
   EXPECT_EQ(next_ssl_data->expected_ssl_version_max, ssl_config.version_max);
   return std::unique_ptr<SSLClientSocket>(new MockSSLClientSocket(
-      std::move(transport_socket), host_and_port, ssl_config, next_ssl_data));
-}
-
-std::unique_ptr<SSLClientSocket> MockClientSocketFactory::CreateSSLClientSocket(
-    std::unique_ptr<StreamSocket> nested_socket,
-    const HostPortPair& host_and_port,
-    const SSLConfig& ssl_config,
-    const SSLClientSocketContext& context) {
-  SSLSocketDataProvider* next_ssl_data = mock_ssl_data_.GetNext();
-  if (next_ssl_data->next_protos_expected_in_ssl_config.has_value()) {
-    EXPECT_EQ(next_ssl_data->next_protos_expected_in_ssl_config.value().size(),
-              ssl_config.alpn_protos.size());
-    EXPECT_TRUE(std::equal(
-        next_ssl_data->next_protos_expected_in_ssl_config.value().begin(),
-        next_ssl_data->next_protos_expected_in_ssl_config.value().end(),
-        ssl_config.alpn_protos.begin()));
-  }
-  EXPECT_EQ(next_ssl_data->expected_ssl_version_min, ssl_config.version_min);
-  EXPECT_EQ(next_ssl_data->expected_ssl_version_max, ssl_config.version_max);
-  return std::unique_ptr<SSLClientSocket>(new MockSSLClientSocket(
-      std::move(nested_socket), host_and_port, ssl_config, next_ssl_data));
-}
-
-std::unique_ptr<ProxyClientSocket>
-MockClientSocketFactory::CreateProxyClientSocket(
-    std::unique_ptr<ClientSocketHandle> transport_socket,
-    const std::string& user_agent,
-    const HostPortPair& endpoint,
-    const ProxyServer& proxy_server,
-    HttpAuthController* http_auth_controller,
-    bool tunnel,
-    bool using_spdy,
-    NextProto negotiated_protocol,
-    ProxyDelegate* proxy_delegate,
-    bool is_https_proxy,
-    const NetworkTrafficAnnotationTag& traffic_annotation) {
-  if (use_mock_proxy_client_sockets_) {
-    ProxyClientSocketDataProvider* next_proxy_data = mock_proxy_data_.GetNext();
-    return std::make_unique<MockProxyClientSocket>(
-        std::move(transport_socket), http_auth_controller, next_proxy_data);
-  } else {
-    return GetDefaultFactory()->CreateProxyClientSocket(
-        std::move(transport_socket), user_agent, endpoint, proxy_server,
-        http_auth_controller, tunnel, using_spdy, negotiated_protocol,
-        proxy_delegate, is_https_proxy, traffic_annotation);
-  }
+      std::move(stream_socket), host_and_port, ssl_config, next_ssl_data));
 }
 
 std::unique_ptr<ProxyClientSocket>
@@ -1306,25 +1261,11 @@ void MockTCPClientSocket::RunReadIfReadyCallback(int result) {
 }
 
 MockProxyClientSocket::MockProxyClientSocket(
-    std::unique_ptr<StreamSocket> stream_socket,
+    std::unique_ptr<StreamSocket> socket,
     HttpAuthController* auth_controller,
     ProxyClientSocketDataProvider* data)
-    : net_log_(stream_socket->NetLog()),
-      stream_socket_(std::move(stream_socket)),
-      socket_(stream_socket_.get()),
-      data_(data),
-      auth_controller_(auth_controller),
-      weak_factory_(this) {
-  DCHECK(data_);
-}
-
-MockProxyClientSocket::MockProxyClientSocket(
-    std::unique_ptr<ClientSocketHandle> client_socket_handle,
-    HttpAuthController* auth_controller,
-    ProxyClientSocketDataProvider* data)
-    : net_log_(client_socket_handle->socket()->NetLog()),
-      client_socket_handle_(std::move(client_socket_handle)),
-      socket_(client_socket_handle_->socket()),
+    : net_log_(socket->NetLog()),
+      socket_(std::move(socket)),
       data_(data),
       auth_controller_(auth_controller),
       weak_factory_(this) {
@@ -1487,27 +1428,12 @@ void MockSSLClientSocket::ConnectCallback(
 }
 
 MockSSLClientSocket::MockSSLClientSocket(
-    std::unique_ptr<ClientSocketHandle> transport_socket,
-    const HostPortPair& host_port_pair,
-    const SSLConfig& ssl_config,
-    SSLSocketDataProvider* data)
-    : net_log_(transport_socket->socket()->NetLog()),
-      client_socket_handle_(std::move(transport_socket)),
-      stream_socket_(client_socket_handle_->socket()),
-      data_(data),
-      weak_factory_(this) {
-  DCHECK(data_);
-  peer_addr_ = data->connect.peer_addr;
-}
-
-MockSSLClientSocket::MockSSLClientSocket(
-    std::unique_ptr<StreamSocket> nested_socket,
+    std::unique_ptr<StreamSocket> stream_socket,
     const HostPortPair& host_and_port,
     const SSLConfig& ssl_config,
     SSLSocketDataProvider* data)
-    : net_log_(nested_socket->NetLog()),
-      nested_socket_(std::move(nested_socket)),
-      stream_socket_(nested_socket_.get()),
+    : net_log_(stream_socket->NetLog()),
+      stream_socket_(std::move(stream_socket)),
       data_(data),
       weak_factory_(this) {
   DCHECK(data_);

@@ -12,6 +12,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "net/socket/socket_test_util.h"
+#include "net/socket/stream_socket.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
@@ -92,13 +93,13 @@ class XmppSocketDataProvider : public net::SocketDataProvider {
 class MockClientSocketFactory : public net::MockClientSocketFactory {
  public:
   std::unique_ptr<net::SSLClientSocket> CreateSSLClientSocket(
-      std::unique_ptr<net::ClientSocketHandle> transport_socket,
+      std::unique_ptr<net::StreamSocket> stream_socket,
       const net::HostPortPair& host_and_port,
       const net::SSLConfig& ssl_config,
       const net::SSLClientSocketContext& context) override {
     ssl_socket_created_ = true;
     return net::MockClientSocketFactory::CreateSSLClientSocket(
-        std::move(transport_socket), host_and_port, ssl_config, context);
+        std::move(stream_socket), host_and_port, ssl_config, context);
   }
 
   bool ssl_socket_created() const { return ssl_socket_created_; }

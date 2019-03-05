@@ -22,7 +22,6 @@
 #include "net/http/http_stream_parser.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_event_type.h"
-#include "net/socket/client_socket_handle.h"
 #include "net/socket/stream_socket.h"
 #include "url/gurl.h"
 
@@ -31,7 +30,7 @@ namespace net {
 const int HttpProxyClientSocket::kDrainBodyBufferSize;
 
 HttpProxyClientSocket::HttpProxyClientSocket(
-    std::unique_ptr<StreamSocket> stream_socket,
+    std::unique_ptr<StreamSocket> socket,
     const std::string& user_agent,
     const HostPortPair& endpoint,
     const ProxyServer& proxy_server,
@@ -45,45 +44,8 @@ HttpProxyClientSocket::HttpProxyClientSocket(
     : io_callback_(base::BindRepeating(&HttpProxyClientSocket::OnIOComplete,
                                        base::Unretained(this))),
       next_state_(STATE_NONE),
-      stream_socket_(std::move(stream_socket)),
-      socket_(stream_socket_.get()),
+      socket_(std::move(socket)),
       is_reused_(false),
-      endpoint_(endpoint),
-      auth_(http_auth_controller),
-      tunnel_(tunnel),
-      using_spdy_(using_spdy),
-      negotiated_protocol_(negotiated_protocol),
-      is_https_proxy_(is_https_proxy),
-      proxy_server_(proxy_server),
-      proxy_delegate_(proxy_delegate),
-      traffic_annotation_(traffic_annotation),
-      net_log_(socket_->NetLog()) {
-  // Synthesize the bits of a request that are actually used.
-  request_.url = GURL("https://" + endpoint.ToString());
-  request_.method = "CONNECT";
-  if (!user_agent.empty())
-    request_.extra_headers.SetHeader(HttpRequestHeaders::kUserAgent,
-                                     user_agent);
-}
-
-HttpProxyClientSocket::HttpProxyClientSocket(
-    std::unique_ptr<ClientSocketHandle> client_socket_handle,
-    const std::string& user_agent,
-    const HostPortPair& endpoint,
-    const ProxyServer& proxy_server,
-    HttpAuthController* http_auth_controller,
-    bool tunnel,
-    bool using_spdy,
-    NextProto negotiated_protocol,
-    ProxyDelegate* proxy_delegate,
-    bool is_https_proxy,
-    const NetworkTrafficAnnotationTag& traffic_annotation)
-    : io_callback_(base::BindRepeating(&HttpProxyClientSocket::OnIOComplete,
-                                       base::Unretained(this))),
-      next_state_(STATE_NONE),
-      client_socket_handle_(std::move(client_socket_handle)),
-      socket_(client_socket_handle_->socket()),
-      is_reused_(client_socket_handle_->is_reused()),
       endpoint_(endpoint),
       auth_(http_auth_controller),
       tunnel_(tunnel),
@@ -437,8 +399,8 @@ int HttpProxyClientSocket::DoSendRequest() {
   }
 
   parser_buf_ = base::MakeRefCounted<GrowableIOBuffer>();
-  http_stream_parser_.reset(new HttpStreamParser(socket_, is_reused_, &request_,
-                                                 parser_buf_.get(), net_log_));
+  http_stream_parser_.reset(new HttpStreamParser(
+      socket_.get(), is_reused_, &request_, parser_buf_.get(), net_log_));
   return http_stream_parser_->SendRequest(request_line_, request_headers_,
                                           traffic_annotation_, &response_,
                                           io_callback_);
@@ -503,9 +465,7 @@ int HttpProxyClientSocket::DoReadHeadersComplete(int result) {
         return ERR_TUNNEL_CONNECTION_FAILED;
 
       http_stream_parser_.reset();
-      client_socket_handle_.reset();
-      stream_socket_.reset();
-      socket_ = nullptr;
+      socket_.reset();
       is_reused_ = false;
       return ERR_HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT;
 

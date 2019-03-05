@@ -417,12 +417,10 @@ class SSLServerSocketTest : public PlatformTest,
     server_socket_.reset();
     channel_1_.reset(new FakeDataChannel());
     channel_2_.reset(new FakeDataChannel());
-    std::unique_ptr<ClientSocketHandle> client_connection(
-        new ClientSocketHandle);
-    client_connection->SetSocket(std::unique_ptr<StreamSocket>(
-        new FakeSocket(channel_1_.get(), channel_2_.get())));
-    std::unique_ptr<StreamSocket> server_socket(
-        new FakeSocket(channel_2_.get(), channel_1_.get()));
+    std::unique_ptr<StreamSocket> client_connection =
+        std::make_unique<FakeSocket>(channel_1_.get(), channel_2_.get());
+    std::unique_ptr<StreamSocket> server_socket =
+        std::make_unique<FakeSocket>(channel_2_.get(), channel_1_.get());
 
     HostPortPair host_and_pair("unittest", 0);
     SSLClientSocketContext context(

@@ -37,7 +37,6 @@
 #include "net/base/address_list.h"
 #include "net/base/net_errors.h"
 #include "net/cert/pem_tokenizer.h"
-#include "net/socket/client_socket_handle.h"
 #include "net/socket/socket_test_util.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/socket/ssl_server_socket.h"
@@ -316,27 +315,6 @@ class TestSocketFactory : public net::ClientSocketFactory {
     }
   }
   std::unique_ptr<net::SSLClientSocket> CreateSSLClientSocket(
-      std::unique_ptr<net::ClientSocketHandle> client_handle,
-      const net::HostPortPair& host_and_port,
-      const net::SSLConfig& ssl_config,
-      const net::SSLClientSocketContext& context) override {
-    if (!ssl_connect_data_) {
-      // Test isn't overriding SSL socket creation.
-      return net::ClientSocketFactory::GetDefaultFactory()
-          ->CreateSSLClientSocket(std::move(client_handle), host_and_port,
-                                  ssl_config, context);
-    }
-    ssl_socket_data_provider_ = std::make_unique<net::SSLSocketDataProvider>(
-        ssl_connect_data_->mode, ssl_connect_data_->result);
-
-    if (tls_socket_created_)
-      std::move(tls_socket_created_).Run();
-
-    return std::make_unique<net::MockSSLClientSocket>(
-        std::move(client_handle), net::HostPortPair(), net::SSLConfig(),
-        ssl_socket_data_provider_.get());
-  }
-  std::unique_ptr<net::SSLClientSocket> CreateSSLClientSocket(
       std::unique_ptr<net::StreamSocket> nested_socket,
       const net::HostPortPair& host_and_port,
       const net::SSLConfig& ssl_config,
@@ -356,21 +334,6 @@ class TestSocketFactory : public net::ClientSocketFactory {
     return std::make_unique<net::MockSSLClientSocket>(
         std::move(nested_socket), net::HostPortPair(), net::SSLConfig(),
         ssl_socket_data_provider_.get());
-  }
-  std::unique_ptr<net::ProxyClientSocket> CreateProxyClientSocket(
-      std::unique_ptr<net::ClientSocketHandle> transport_socket,
-      const std::string& user_agent,
-      const net::HostPortPair& endpoint,
-      const net::ProxyServer& proxy_server,
-      net::HttpAuthController* http_auth_controller,
-      bool tunnel,
-      bool using_spdy,
-      net::NextProto negotiated_protocol,
-      net::ProxyDelegate* proxy_delegate,
-      bool is_https_proxy,
-      const net::NetworkTrafficAnnotationTag& traffic_annotation) override {
-    NOTIMPLEMENTED();
-    return nullptr;
   }
   std::unique_ptr<net::ProxyClientSocket> CreateProxyClientSocket(
       std::unique_ptr<net::StreamSocket> stream_socket,

@@ -24,8 +24,8 @@
 #include "net/cert/multi_log_ct_verifier.h"
 #include "net/http/transport_security_state.h"
 #include "net/socket/client_socket_factory.h"
-#include "net/socket/client_socket_handle.h"
 #include "net/socket/ssl_client_socket.h"
+#include "net/socket/stream_socket.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "remoting/base/buffered_socket_writer.h"
@@ -336,10 +336,6 @@ void XmppSignalStrategy::Core::StartTls() {
 
   DCHECK(!read_pending_);
 
-  std::unique_ptr<net::ClientSocketHandle> socket_handle(
-      new net::ClientSocketHandle());
-  socket_handle->SetSocket(std::move(socket_));
-
   cert_verifier_ = net::CertVerifier::CreateDefault();
   transport_security_state_.reset(new net::TransportSecurityState());
   cert_transparency_verifier_.reset(new net::MultiLogCTVerifier());
@@ -351,7 +347,7 @@ void XmppSignalStrategy::Core::StartTls() {
   context.ct_policy_enforcer = ct_policy_enforcer_.get();
 
   socket_ = socket_factory_->CreateSSLClientSocket(
-      std::move(socket_handle),
+      std::move(socket_),
       net::HostPortPair(xmpp_server_config_.host, kDefaultHttpsPort),
       net::SSLConfig(), context);
 
