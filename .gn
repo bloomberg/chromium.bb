@@ -593,7 +593,6 @@ check_targets = [
   "//third_party/wtl/*",
   "//third_party/xdg-utils/*",
   "//third_party/xstream/*",
-  "//third_party/yara/*",
   "//third_party/yasm/*",
   "//third_party/zlib/*",
   "//third_party/woff2/*",
