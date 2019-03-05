@@ -72,7 +72,7 @@ void ExecuteCommandLines(system_logs::SystemLogsResponse* response) {
     command.AppendArg("-c");
     command.AppendArg(
         "/usr/bin/du -h --max-depth=5 /home/ /mnt/stateful_partition/ | "
-        "grep -v -e Downloads");
+        "grep -v -e Downloads -e IndexedDB -e databases");
     commands.emplace_back("system_files", command);
   }
 
