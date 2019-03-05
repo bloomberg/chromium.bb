@@ -6,4 +6,3 @@
 %define ARCH_X86_64 1
 
 ; %define STACK_ALIGNMENT 16 -- Stack alignment is controlled by Chromium
-

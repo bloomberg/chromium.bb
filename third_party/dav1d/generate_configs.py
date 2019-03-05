@@ -41,7 +41,9 @@ def RewriteFile(path, search_replace):
   with open(path, 'w') as f:
     for search, replace in search_replace:
       contents = re.sub(search, replace, contents)
-    f.write(contents)
+
+    # Cleanup trailing newlines.
+    f.write(contents.strip() + '\n')
 
 
 def SetupWindowsCrossCompileToolchain(target_arch):
@@ -141,9 +143,14 @@ def main():
   linux_env['CC'] = 'clang'
 
   GenerateConfig('config/linux/x64', linux_env)
+  GenerateConfig('config/linux-noasm/x64', linux_env, ['-Dbuild_asm=false'])
+
   GenerateConfig('config/linux/x86', linux_env,
                  ['--cross-file', '../crossfiles/linux32.crossfile'])
-  GenerateConfig('config/linux-noasm/x64', linux_env, ['-Dbuild_asm=false'])
+  GenerateConfig('config/linux/arm', linux_env,
+                 ['--cross-file', '../crossfiles/arm.crossfile'])
+  GenerateConfig('config/linux/arm64', linux_env,
+                 ['--cross-file', '../crossfiles/arm64.crossfile'])
 
   win_x86_env = SetupWindowsCrossCompileToolchain('x86')
   GenerateConfig(
