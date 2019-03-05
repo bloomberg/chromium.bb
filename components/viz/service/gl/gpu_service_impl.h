@@ -191,7 +191,9 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
     return gpu_channel_manager_->gr_shader_cache();
   }
 
-  gpu::SyncPointManager* sync_point_manager() { return sync_point_manager_; }
+  gpu::SyncPointManager* sync_point_manager() {
+    return gpu_channel_manager_->sync_point_manager();
+  }
   gpu::Scheduler* scheduler() { return scheduler_.get(); }
 
   gpu::GpuWatchdogThread* watchdog_thread() { return watchdog_thread_.get(); }
@@ -297,7 +299,6 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
   // On some platforms (e.g. android webview), the SyncPointManager and
   // SharedImageManager comes from external sources.
   std::unique_ptr<gpu::SyncPointManager> owned_sync_point_manager_;
-  gpu::SyncPointManager* sync_point_manager_ = nullptr;
 
   std::unique_ptr<gpu::SharedImageManager> owned_shared_image_manager_;
 

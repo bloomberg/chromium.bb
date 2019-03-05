@@ -28,6 +28,8 @@ class GLSurface;
 
 namespace gpu {
 class MailboxManager;
+class SharedImageManager;
+class SharedImageRepresentationFactory;
 class SyncPointClientState;
 class SyncPointManager;
 class SyncPointOrderData;
@@ -46,6 +48,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImplNonDDL
       scoped_refptr<gl::GLSurface> gl_surface,
       scoped_refptr<gpu::SharedContextState> shared_context_state,
       gpu::MailboxManager* mailbox_manager,
+      gpu::SharedImageManager* shared_image_manager,
       gpu::SyncPointManager* sync_point_manager,
       bool need_swapbuffers_ack);
   ~SkiaOutputSurfaceImplNonDDL() override;
@@ -107,6 +110,8 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImplNonDDL
  private:
   GrContext* gr_context() { return shared_context_state_->gr_context(); }
 
+  bool WaitSyncToken(const gpu::SyncToken& sync_token);
+  sk_sp<SkImage> MakeSkImageFromSharedImage(const ResourceMetadata& metadata);
   bool GetGrBackendTexture(const ResourceMetadata& metadata,
                            GrBackendTexture* backend_texture);
 
@@ -118,7 +123,8 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImplNonDDL
   // Stuffs for running with |task_executor_| instead of |gpu_service_|.
   scoped_refptr<gl::GLSurface> gl_surface_;
   scoped_refptr<gpu::SharedContextState> shared_context_state_;
-  gpu::MailboxManager* mailbox_manager_;
+  gpu::MailboxManager* const mailbox_manager_;
+  std::unique_ptr<gpu::SharedImageRepresentationFactory> sir_factory_;
   scoped_refptr<gpu::SyncPointOrderData> sync_point_order_data_;
   scoped_refptr<gpu::SyncPointClientState> sync_point_client_state_;
   const bool need_swapbuffers_ack_;

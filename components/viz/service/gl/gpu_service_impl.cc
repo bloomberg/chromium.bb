@@ -241,10 +241,9 @@ void GpuServiceImpl::InitializeWithHost(
     logging::SetLogMessageHandler(GpuLogMessageHandler);
   }
 
-  sync_point_manager_ = sync_point_manager;
-  if (!sync_point_manager_) {
+  if (!sync_point_manager) {
     owned_sync_point_manager_ = std::make_unique<gpu::SyncPointManager>();
-    sync_point_manager_ = owned_sync_point_manager_.get();
+    sync_point_manager = owned_sync_point_manager_.get();
   }
 
   if (!shared_image_manager) {
@@ -264,7 +263,7 @@ void GpuServiceImpl::InitializeWithHost(
   }
 
   scheduler_ =
-      std::make_unique<gpu::Scheduler>(main_runner_, sync_point_manager_);
+      std::make_unique<gpu::Scheduler>(main_runner_, sync_point_manager);
 
   skia_output_surface_sequence_id_ =
       scheduler_->CreateSequence(gpu::SchedulingPriority::kHigh);
@@ -274,7 +273,7 @@ void GpuServiceImpl::InitializeWithHost(
   // initialization has succeeded.
   gpu_channel_manager_ = std::make_unique<gpu::GpuChannelManager>(
       gpu_preferences_, this, watchdog_thread_.get(), main_runner_, io_runner_,
-      scheduler_.get(), sync_point_manager_, shared_image_manager,
+      scheduler_.get(), sync_point_manager, shared_image_manager,
       gpu_memory_buffer_factory_.get(), gpu_feature_info_,
       std::move(activity_flags), std::move(default_offscreen_surface),
       nullptr /* image_decode_accelerator_worker */, vulkan_context_provider());
