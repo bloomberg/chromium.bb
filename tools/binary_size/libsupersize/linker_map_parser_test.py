@@ -52,7 +52,7 @@ class LinkerMapParserTest(unittest.TestCase):
     ret = []
     map_file = _ReadMapFile(_TEST_MAP_PATH)
     linker_name = linker_map_parser.DetectLinkerNameFromMapFile(iter(map_file))
-    section_sizes, raw_symbols = (
+    section_sizes, raw_symbols, _ = (
         linker_map_parser.MapFileParser().Parse(linker_name, iter(map_file)))
     ret.append('******** section_sizes ********')
     for k, v in sorted(section_sizes.iteritems()):

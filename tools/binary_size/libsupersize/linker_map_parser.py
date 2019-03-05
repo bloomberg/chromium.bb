@@ -22,6 +22,7 @@ from __future__ import print_function
 
 import argparse
 import code
+import collections
 import itertools
 import logging
 import os
@@ -58,7 +59,7 @@ class MapFileParserGold(object):
       identify file type.
 
     Returns:
-      A tuple of (section_sizes, symbols).
+      A tuple of (section_sizes, symbols, extras).
     """
     self._lines = iter(lines)
     logging.debug('Scanning for Header')
@@ -72,7 +73,7 @@ class MapFileParserGold(object):
       elif line.startswith('Memory map'):
         self._ParseSections()
       break
-    return self._section_sizes, self._symbols
+    return self._section_sizes, self._symbols, {}
 
   def _SkipToLineWithPrefix(self, prefix, prefix2=None):
     for l in self._lines:
@@ -447,6 +448,12 @@ class MapFileParserLld(object):
     # |next_usable_address := S.address + S.size|.
     next_usable_address = 0
 
+    # For Thin-LTO, a map from each address to the Thin-LTO cache file. This
+    # provides hints downstream to identify object_paths for .L.ref.tmp symbols,
+    # but is not useful in the final output. Therefore it's stored separately,
+    # instead of being in Symbol.
+    thin_map = {}
+
     tokenizer = self.Tokenize(lines)
     for (line, address, size, level, span, tok) in tokenizer:
       # Level 1 data match the "Out" column. They specify sections or
@@ -488,6 +495,7 @@ class MapFileParserLld(object):
               syms[-1].full_name = '** ' + mangled_name
             cur_obj = None
           elif cur_obj == 'lto.tmp' or 'thinlto-cache' in cur_obj:
+            thin_map[address] = os.path.basename(cur_obj)
             cur_obj = None
           if cur_obj is not None:
             syms[-1].object_path = cur_obj
@@ -558,7 +566,7 @@ class MapFileParserLld(object):
 
     if promoted_name_count:
       logging.info('Found %d promoted global names', promoted_name_count)
-    return self._section_sizes, syms
+    return self._section_sizes, syms, {'thin_map': thin_map}
 
 
 def _DetectLto(lines):
@@ -628,7 +636,7 @@ class MapFileParser(object):
       lines: Iterable of lines from the linker map.
 
     Returns:
-      A tuple of (section_sizes, symbols).
+      A tuple of (section_sizes, symbols, extras).
     """
     next(lines)  # Consume the first line of headers.
     if linker_name.startswith('lld'):
@@ -638,13 +646,57 @@ class MapFileParser(object):
     else:
       raise Exception('.map file is from a unsupported linker.')
 
-    section_sizes, syms = inner_parser.Parse(lines)
+    section_sizes, syms, extras = inner_parser.Parse(lines)
     for sym in syms:
       if sym.object_path and not sym.object_path.endswith(')'):
         # Don't want '' to become '.'.
         # Thin archives' paths will get fixed in |ar.CreateThinObjectPath|.
         sym.object_path = os.path.normpath(sym.object_path)
-    return (section_sizes, syms)
+    return (section_sizes, syms, extras)
+
+
+def DeduceObjectPathsFromThinMap(raw_symbols, extras):
+  """Uses Thin-LTO object paths to find object_paths of symbols. """
+  thin_map = extras.get('thin_map', None)  # |address| -> |thin_obj|
+  if not thin_map:  # None or empty.
+    logging.info('No thin-object-path found: Skipping object path deduction.')
+    return
+
+  # Build map of |thin_obj| -> |object_paths|.
+  thin_obj_to_object_paths = collections.defaultdict(set)
+  logging.info('Building map of thin-object-path -> object path.')
+  for symbol in raw_symbols:
+    if symbol.object_path:
+      thin_obj = thin_map.get(symbol.address, None)
+      if thin_obj:
+        thin_obj_to_object_paths[thin_obj].add(symbol.object_path)
+
+  # For each ".L.ref.tmp" symbol without |object_path|, translate |address| ->
+  # |thin_obj| -> |object_paths|. If unique, then assign to symbol. Stats are
+  # kept, keyed on |len(object_paths)|.
+  logging.info('Assigning object paths to .L.ref.tmp symbols.')
+  ref_tmp_popu = [0] * 3
+  ref_tmp_pss = [0] * 3
+  for symbol in raw_symbols:
+    if symbol.full_name.startswith('.L.ref.tmp') and not symbol.object_path:
+      thin_obj = thin_map[symbol.address]
+      count = 0
+      if thin_obj in thin_obj_to_object_paths:
+        object_paths = thin_obj_to_object_paths.get(thin_obj, set())
+        count = min(len(object_paths), 2)  # 2+ maps to 2.
+        if count == 1:
+          for object_path in object_paths:  # Get the unique element.
+            symbol.object_path = object_path
+      ref_tmp_popu[count] += 1
+      ref_tmp_pss[count] += symbol.pss
+
+  logging.info('Object path deduction results for .L.ref.tmp symbols:')
+  logging.info('  No match: %d symbols with total PSS = %g', ref_tmp_popu[0],
+               ref_tmp_pss[0])
+  logging.info('  Assigned (1 object path): %d symbols with total PSS = %g',
+               ref_tmp_popu[1], ref_tmp_pss[1])
+  logging.info('  Ambiguous (2+ object paths): %d symbols with total PSS = %g',
+               ref_tmp_popu[2], ref_tmp_pss[2])
 
 
 def main():
@@ -668,7 +720,7 @@ def main():
   print('Linker type: %s' % linker_name)
 
   with open(args.linker_file, 'r') as map_file:
-    section_sizes, syms = MapFileParser().Parse(linker_name, map_file)
+    section_sizes, syms, extras = MapFileParser().Parse(linker_name, map_file)
 
   if args.dump:
     print(section_sizes)
@@ -677,12 +729,13 @@ def main():
   else:
     # Enter interactive shell.
     readline.parse_and_bind('tab: complete')
-    variables = {'section_sizes': section_sizes, 'syms': syms}
+    variables = {'section_sizes': section_sizes, 'syms': syms, 'extras': extras}
     banner_lines = [
         '*' * 80,
         'Variables:',
         '  section_sizes: Map from section to sizes.',
         '  syms: Raw symbols parsed from the linker map file.',
+        '  extras: Format-specific extra data.',
         '*' * 80,
     ]
     code.InteractiveConsole(variables).interact('\n'.join(banner_lines))

@@ -878,7 +878,7 @@ def _ParseElfInfo(map_path, elf_path, tool_prefix, track_string_literals,
 
   logging.info('Parsing Linker Map')
   with _OpenMaybeGz(map_path) as map_file:
-    section_sizes, raw_symbols = (
+    section_sizes, raw_symbols, linker_map_extras = (
         linker_map_parser.MapFileParser().Parse(linker_name, map_file))
 
     if outdir_context and outdir_context.thin_archives:
@@ -958,7 +958,7 @@ def _ParseElfInfo(map_path, elf_path, tool_prefix, track_string_literals,
             # is fast enough since len(merge_string_syms) < 10.
             raw_symbols[idx:idx + 1] = literal_syms
 
-  return section_sizes, raw_symbols, object_paths_by_name
+  return section_sizes, raw_symbols, object_paths_by_name, linker_map_extras
 
 
 def _ComputePakFileSymbols(
@@ -1315,9 +1315,14 @@ def CreateSectionSizesAndSymbols(
         source_mapper=source_mapper,
         thin_archives=thin_archives)
 
-  section_sizes, raw_symbols, object_paths_by_name = _ParseElfInfo(
-      map_path, elf_path, tool_prefix, track_string_literals,
-      outdir_context=outdir_context, linker_name=linker_name)
+  (section_sizes, raw_symbols, object_paths_by_name,
+   linker_map_extras) = _ParseElfInfo(
+       map_path,
+       elf_path,
+       tool_prefix,
+       track_string_literals,
+       outdir_context=outdir_context,
+       linker_name=linker_name)
   elf_overhead_size = _CalculateElfOverhead(section_sizes, elf_path)
 
   pak_symbols_by_id = None
@@ -1355,6 +1360,7 @@ def CreateSectionSizesAndSymbols(
     raw_symbols.extend(pak_raw_symbols)
 
   _ExtractSourcePathsAndNormalizeObjectPaths(raw_symbols, source_mapper)
+  linker_map_parser.DeduceObjectPathsFromThinMap(raw_symbols, linker_map_extras)
   _PopulateComponents(raw_symbols, knobs)
   logging.info('Converting excessive aliases into shared-path symbols')
   _CompactLargeAliasesIntoSharedSymbols(raw_symbols, knobs)
