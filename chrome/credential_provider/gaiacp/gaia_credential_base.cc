@@ -207,32 +207,30 @@ HRESULT ValidateResult(const base::DictionaryValue* result, BSTR* status_text) {
   // Check the exit_code to see if any errors were detected by the GLS.
   const base::Value* exit_code_value =
       result->FindKeyOfType(kKeyExitCode, base::Value::Type::INTEGER);
-  if (exit_code_value && exit_code_value->GetInt() != kUiecSuccess) {
-    int exit_code = exit_code_value->GetInt();
-    if (exit_code == kUiecEMailMissmatch) {
-      LOGFN(ERROR) << "Email mismatch";
-      *status_text =
-          CGaiaCredentialBase::AllocErrorString(IDS_EMAIL_MISMATCH_BASE);
-      return E_FAIL;
+  int exit_code = exit_code_value->GetInt();
+  if (exit_code != kUiecSuccess) {
+    switch (exit_code) {
+      case kUiecAbort:
+        // This case represents a user abort and no error message is shown.
+        return E_ABORT;
+      case kUiecTimeout:
+      case kUiecKilled:
+        NOTREACHED() << "Internal codes, not returned by GLS";
+        break;
+      case kUiecEMailMissmatch:
+        *status_text =
+            CGaiaCredentialBase::AllocErrorString(IDS_EMAIL_MISMATCH_BASE);
+        break;
+      case kUiecInvalidEmailDomain:
+        *status_text = CGaiaCredentialBase::AllocErrorString(
+            IDS_INVALID_EMAIL_DOMAIN_BASE);
+        break;
+      case kUiecMissingSigninData:
+        *status_text =
+            CGaiaCredentialBase::AllocErrorString(IDS_INVALID_UI_RESPONSE_BASE);
+        break;
     }
-    if (exit_code == kUiecInvalidEmailDomain) {
-      LOGFN(ERROR) << "Invalid email domain";
-      *status_text =
-          CGaiaCredentialBase::AllocErrorString(IDS_INVALID_EMAIL_DOMAIN_BASE);
-      return E_FAIL;
-    }
-    if (exit_code == kUiecMissingSigninData) {
-      LOGFN(ERROR) << "Missing sign in data";
-      *status_text =
-          CGaiaCredentialBase::AllocErrorString(IDS_INVALID_UI_RESPONSE_BASE);
-      return E_FAIL;
-    }
-    if (exit_code != kUiecSuccess) {
-      LOGFN(ERROR) << "Unspecified failure";
-      *status_text =
-          CGaiaCredentialBase::AllocErrorString(IDS_INVALID_UI_RESPONSE_BASE);
-      return E_FAIL;
-    }
+    return E_FAIL;
   }
 
   // Check that the webui returned all expected values.
@@ -991,6 +989,7 @@ HRESULT CGaiaCredentialBase::GetSerialization(
 
   *status_text = nullptr;
   *status_icon = CPSI_NONE;
+  memset(cpcs, 0, sizeof(*cpcs));
 
   // This may be a long running function so disable user input while processing.
   if (events_) {

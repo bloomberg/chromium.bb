@@ -332,8 +332,8 @@ void InlineSigninHelper::OnClientOAuthSuccessAndBrowserOpened(
     Profile::CreateStatus /*status*/) {
   HandlerSigninReason reason = GetHandlerSigninReason(current_url_);
   if (reason == HandlerSigninReason::FETCH_LST_ONLY) {
-// Constants are only available on Windows for the Google Credential Provider
-// for Windows.
+    // Constants are only available on Windows for the Google Credential
+    // Provider for Windows.
 #if defined(OS_WIN)
     std::string json_retval;
     base::Value args(base::Value::Type::DICTIONARY);

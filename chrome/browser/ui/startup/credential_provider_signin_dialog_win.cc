@@ -54,6 +54,14 @@ void WriteResultToHandle(const base::Value& result) {
   }
 }
 
+void WriteResultToHandleWithKeepAlive(
+    std::unique_ptr<ScopedKeepAlive> keep_alive,
+    base::Value signin_result) {
+  WriteResultToHandle(signin_result);
+
+  // Release the keep_alive implicitly and allow the dialog to die.
+}
+
 void HandleAllGcpwInfoFetched(
     std::unique_ptr<ScopedKeepAlive> keep_alive,
     std::unique_ptr<CredentialProviderSigninInfoFetcher> fetcher,
@@ -85,10 +93,15 @@ void HandleSigninCompleteForGcpwLogin(
                                      base::Value::Type::INTEGER)
                       ->GetInt();
 
-  // If there was an exit code, write the result now and continue to release
-  // the keep alive.
+  // If there is an error code, write out the signin results directly.
+  // Otherwise fetch more info required for the signin.  In either case,
+  // make sure the keep alive is not destroyed on return of this function
+  // or a reentrancy crash will occur in HWNDMessageHandler().
   if (exit_code != credential_provider::kUiecSuccess) {
-    WriteResultToHandle(signin_result);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&WriteResultToHandleWithKeepAlive, std::move(keep_alive),
+                       std::move(signin_result)));
   } else if (signin_result.DictSize() > 1) {
     std::string access_token =
         signin_result
@@ -134,6 +147,22 @@ class CredentialProviderWebUIMessageHandler
             base::Unretained(this)));
   }
 
+  void AbortIfPossible() {
+    // If the callback was already called, ignore.
+    if (!signin_callback_)
+      return;
+
+    // Build a result for the credential provider that includes only the abort
+    // exit code.
+    std::unique_ptr<base::Value> result(
+        new base::Value(base::Value::Type::DICTIONARY));
+    result->SetKey(credential_provider::kKeyExitCode,
+                   base::Value(credential_provider::kUiecAbort));
+    base::ListValue args;
+    args.Append(std::move(result));
+    OnSigninComplete(&args);
+  }
+
  private:
   base::Value ParseArgs(const base::ListValue* args, int* out_exit_code) {
     DCHECK(out_exit_code);
@@ -176,6 +205,13 @@ class CredentialProviderWebUIMessageHandler
   }
 
   void OnSigninComplete(const base::ListValue* args) {
+    // If the callback was already called, ignore.  This may happen if the
+    // user presses Escape right after finishing the signin process, the
+    // Escape is processed first by AbortIfPossible(), and the signin then
+    // completes before WriteResultToHandleWithKeepAlive() executes.
+    if (!signin_callback_)
+      return;
+
     int exit_code;
     base::Value signin_result = ParseArgs(args, &exit_code);
 
@@ -274,8 +310,10 @@ class CredentialProviderWebDialogDelegate : public ui::WebDialogDelegate {
   void GetWebUIMessageHandlers(
       std::vector<content::WebUIMessageHandler*>* handlers) const override {
     // The WebDialogUI will own and delete this message handler.
-    handlers->push_back(
-        new CredentialProviderWebUIMessageHandler(std::move(signin_callback_)));
+    DCHECK(!handler_);
+    handler_ =
+        new CredentialProviderWebUIMessageHandler(std::move(signin_callback_));
+    handlers->push_back(handler_);
   }
 
   void GetDialogSize(gfx::Size* size) const override {
@@ -291,6 +329,13 @@ class CredentialProviderWebDialogDelegate : public ui::WebDialogDelegate {
   std::string GetDialogArgs() const override { return std::string(); }
 
   void OnDialogClosed(const std::string& json_retval) override {
+    // To handle the case where the user presses Esc to cancel the sign in,
+    // write out an "abort" result for the credential provider.  However,
+    // this function is also called when the user completes the sign in
+    // successfully and output has already been written.  In this case the
+    // abort is not possible and this call is a noop.
+    handler_->AbortIfPossible();
+
     // Class owns itself and thus needs to be deleted eventually after the
     // closed call back has been signalled since it will no longer be accessed
     // by the WebDialogView.
@@ -325,6 +370,11 @@ class CredentialProviderWebDialogDelegate : public ui::WebDialogDelegate {
   // Callback that will be called when a valid sign in has been completed
   // through the dialog.
   mutable HandleGcpwSigninCompleteResult signin_callback_;
+
+  mutable CredentialProviderWebUIMessageHandler* handler_ = nullptr;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(CredentialProviderWebDialogDelegate);
 };
 
 bool ValidateSigninCompleteResult(const std::string& access_token,

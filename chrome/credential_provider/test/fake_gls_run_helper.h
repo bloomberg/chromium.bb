@@ -8,6 +8,7 @@
 #include <atlcomcli.h>
 
 #include "base/strings/string16.h"
+#include "chrome/credential_provider/common/gcp_strings.h"
 
 struct ICredentialProviderCredential;
 
@@ -35,7 +36,12 @@ class FakeGlsRunHelper {
   HRESULT StartLogonProcess(ICredentialProviderCredential* cred, bool succeeds);
   HRESULT WaitForLogonProcess(ICredentialProviderCredential* cred);
   HRESULT StartLogonProcessAndWait(ICredentialProviderCredential* cred);
+
+  // Gets a command line that runs a fake GLS that produces the desired output.
+  // |default_exit_code| is the default value that will be written unless the
+  // other command line arguments require a specific error code to be returned.
   static HRESULT GetFakeGlsCommandline(
+      UiExitCodes default_exit_code,
       const std::string& gls_email,
       const std::string& gaia_id_override,
       const base::string16& start_gls_event_name,
