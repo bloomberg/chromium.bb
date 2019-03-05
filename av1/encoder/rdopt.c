@@ -869,9 +869,6 @@ static void inter_modes_info_push(InterModesInfo *inter_modes_info,
   inter_modes_info->mode_rate_arr[num] = mode_rate;
   inter_modes_info->sse_arr[num] = sse;
   inter_modes_info->est_rd_arr[num] = rd;
-  if (true_rd) {
-    inter_modes_info->est_rd_arr[num] = rd_cost->rdcost;
-  }
   inter_modes_info->true_rd_arr[num] = true_rd;
   inter_modes_info->rd_cost_arr[num] = *rd_cost;
   inter_modes_info->rd_cost_y_arr[num] = *rd_cost_y;
@@ -9564,6 +9561,14 @@ static int64_t motion_mode_rd(
                              rd_stats_y->rate + rd_stats_uv->rate +
                                  x->skip_cost[skip_ctx][mbmi->skip]);
       }
+
+      // 2 means to both do the tx search and also update the inter_modes_info
+      // structure, since some modes will be conditionally TX searched.
+      if (do_tx_search == 2) {
+        inter_modes_info_push(inter_modes_info, rd_stats->rate, rd_stats->sse,
+                              rd_stats->rdcost, true, rd_stats, rd_stats_y,
+                              rd_stats_uv, mbmi);
+      }
     }
 
     if (this_mode == GLOBALMV || this_mode == GLOBAL_GLOBALMV) {
@@ -12526,6 +12531,20 @@ static void release_compound_type_rd_buffers(
   av1_zero(*bufs);  // Set all pointers to NULL for safety.
 }
 
+// Enables do_tx_search on a per-mode basis.
+int do_tx_search_mode(int do_tx_search_global, int midx) {
+  // 0 and 1 correspond to off and on for all modes.
+  switch (do_tx_search_global) {
+    case 0:
+    case 1: return do_tx_search_global;
+    default:
+      // Otherwise, turn it on conditionally for some modes.
+      // A value of 2 indicates it is being turned on conditionally
+      // for the mode. Turn it on for the first 7 modes.
+      return midx < 7 ? 2 : 0;
+  }
+}
+
 void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
                                MACROBLOCK *x, int mi_row, int mi_col,
                                RD_STATS *rd_cost, BLOCK_SIZE bsize,
@@ -12597,7 +12616,10 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   int64_t best_est_rd = INT64_MAX;
   // TODO(angiebird): Turn this on when this speed feature is well tested
   const InterModeRdModel *md = &tile_data->inter_mode_rd_models[bsize];
-  const int do_tx_search =
+  // If do_tx_search_global is 0, only estimated RD should be computed.
+  // If do_tx_search_global is 1, all modes have TX search performed.
+  // If do_tx_search_global is 2, some modes will have TX search performed.
+  const int do_tx_search_global =
       !((cpi->sf.inter_mode_rd_model_estimation == 1 && md->ready) ||
         (cpi->sf.inter_mode_rd_model_estimation == 2 &&
          x->source_variance < 512));
@@ -12615,6 +12637,7 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   alloc_compound_type_rd_buffers(cm, &rd_buffers);
 
   for (int midx = 0; midx < MAX_MODES; ++midx) {
+    const int do_tx_search = do_tx_search_mode(do_tx_search_global, midx);
     const MODE_DEFINITION *mode_order = &av1_mode_order[midx];
     this_mode = mode_order->mode;
     const MV_REFERENCE_FRAME ref_frame = mode_order->ref_frame[0];
@@ -12872,7 +12895,7 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
 #if CONFIG_COLLECT_COMPONENT_TIMING
   start_timing(cpi, do_tx_search_time);
 #endif
-  if (!do_tx_search) {
+  if (do_tx_search_global != 1) {
     inter_modes_info_sort(inter_modes_info, inter_modes_info->rd_idx_pair_arr);
     search_state.best_rd = INT64_MAX;
 
