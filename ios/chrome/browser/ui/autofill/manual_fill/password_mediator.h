@@ -11,7 +11,7 @@
 
 @protocol ManualFillContentDelegate;
 @protocol ManualFillPasswordConsumer;
-@protocol PasswordListDelegate;
+@protocol PasswordListNavigator;
 
 namespace password_manager {
 class PasswordStore;
@@ -38,8 +38,8 @@ extern NSString* const SuggestPasswordAccessibilityIdentifier;
 @property(nonatomic, weak) id<ManualFillPasswordConsumer> consumer;
 // The delegate in charge of using the content selected by the user.
 @property(nonatomic, weak) id<ManualFillContentDelegate> contentDelegate;
-// The delegate in charge of navigation.
-@property(nonatomic, weak) id<PasswordListDelegate> navigationDelegate;
+// The object in charge of navigation.
+@property(nonatomic, weak) id<PasswordListNavigator> navigator;
 // If YES  actions will be post to the consumer. Set this value before
 // setting the consumer, since just setting this won't trigger the consumer
 // callbacks. Defaults to NO.
