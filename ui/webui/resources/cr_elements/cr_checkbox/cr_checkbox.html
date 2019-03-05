@@ -38,11 +38,13 @@ List of customizable styles:
         --cr-checkbox-ripple-offset: calc(var(--cr-checkbox-size)/2 -
             var(--cr-checkbox-ripple-size)/2 - var(--cr-checkbox-border-size));
 
+        /* --cr-checked-color automatically flips for light/dark mode. */
+        --cr-checkbox-checked-box-color: var(--cr-checked-color);
+        --cr-checkbox-ripple-checked-color: var(--cr-checked-color);
+
         /* Light mode colors. */
-        --cr-checkbox-checked-box-color: var(--google-blue-600);
         --cr-checkbox-checked-ripple-opacity: .2;
         --cr-checkbox-mark-color: white;
-        --cr-checkbox-ripple-checked-color: var(--google-blue-600);
         --cr-checkbox-ripple-unchecked-color: var(--google-grey-600);
         --cr-checkbox-unchecked-box-color: var(--google-grey-refresh-700);
         --cr-checkbox-unchecked-ripple-opacity: .15;
@@ -50,10 +52,8 @@ List of customizable styles:
 
       :host-context([dark]) {
         /* Dark mode colors. */
-        --cr-checkbox-checked-box-color: var(--google-blue-refresh-300);
         --cr-checkbox-checked-ripple-opacity: .4;
         --cr-checkbox-mark-color: var(--google-grey-900);
-        --cr-checkbox-ripple-checked-color: var(--google-blue-refresh-300);
         --cr-checkbox-ripple-unchecked-color: var(--google-grey-refresh-700);
         --cr-checkbox-unchecked-box-color: var(--google-grey-refresh-500);
         --cr-checkbox-unchecked-ripple-opacity: .4;
