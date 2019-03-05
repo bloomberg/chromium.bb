@@ -338,8 +338,8 @@ void LayoutListItem::AddLayoutOverflowFromChildren() {
 
 LayoutUnit LayoutListItem::AdditionalMarginStart() const {
   if (!marker_ || marker_->IsInside() || !Parent() || !Parent()->GetNode() ||
-      (!Parent()->GetNode()->HasTagName(HTMLNames::ulTag) &&
-       !Parent()->GetNode()->HasTagName(HTMLNames::olTag)))
+      (!Parent()->GetNode()->HasTagName(html_names::kUlTag) &&
+       !Parent()->GetNode()->HasTagName(html_names::kOlTag)))
     return LayoutUnit();
   // blpwtk2: left aligned to the marker of the first list item
   const LayoutObject* first_sibling = Parent()->SlowFirstChild();
