@@ -190,6 +190,7 @@ GpuServiceImpl::~GpuServiceImpl() {
   // Scheduler must be destroyed before sync point manager is destroyed.
   scheduler_.reset();
   owned_sync_point_manager_.reset();
+  owned_shared_image_manager_.reset();
 
   // Signal this event before destroying the child process. That way all
   // background threads can cleanup. For example, in the renderer the
@@ -223,6 +224,7 @@ void GpuServiceImpl::InitializeWithHost(
     gpu::GpuProcessActivityFlags activity_flags,
     scoped_refptr<gl::GLSurface> default_offscreen_surface,
     gpu::SyncPointManager* sync_point_manager,
+    gpu::SharedImageManager* shared_image_manager,
     base::WaitableEvent* shutdown_event) {
   DCHECK(main_runner_->BelongsToCurrentThread());
   gpu_host->DidInitialize(gpu_info_, gpu_feature_info_,
@@ -245,6 +247,14 @@ void GpuServiceImpl::InitializeWithHost(
     sync_point_manager_ = owned_sync_point_manager_.get();
   }
 
+  if (!shared_image_manager) {
+    // The shared image will be only used on GPU main thread, so it doesn't need
+    // to be thread safe.
+    owned_shared_image_manager_ =
+        std::make_unique<gpu::SharedImageManager>(false /* thread_safe */);
+    shared_image_manager = owned_shared_image_manager_.get();
+  }
+
   shutdown_event_ = shutdown_event;
   if (!shutdown_event_) {
     owned_shutdown_event_ = std::make_unique<base::WaitableEvent>(
@@ -264,9 +274,9 @@ void GpuServiceImpl::InitializeWithHost(
   // initialization has succeeded.
   gpu_channel_manager_ = std::make_unique<gpu::GpuChannelManager>(
       gpu_preferences_, this, watchdog_thread_.get(), main_runner_, io_runner_,
-      scheduler_.get(), sync_point_manager_, gpu_memory_buffer_factory_.get(),
-      gpu_feature_info_, std::move(activity_flags),
-      std::move(default_offscreen_surface),
+      scheduler_.get(), sync_point_manager_, shared_image_manager,
+      gpu_memory_buffer_factory_.get(), gpu_feature_info_,
+      std::move(activity_flags), std::move(default_offscreen_surface),
       nullptr /* image_decode_accelerator_worker */, vulkan_context_provider());
 
   media_gpu_channel_manager_.reset(

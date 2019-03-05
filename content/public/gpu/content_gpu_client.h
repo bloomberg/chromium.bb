@@ -20,6 +20,7 @@ class Token;
 
 namespace gpu {
 struct GpuPreferences;
+class SharedImageManager;
 class SyncPointManager;
 }
 
@@ -52,9 +53,10 @@ class CONTENT_EXPORT ContentGpuClient {
   virtual void PostCompositorThreadCreated(
       base::SingleThreadTaskRunner* task_runner) {}
 
-  // Allows client to supply a SyncPointManager instance instead of having
-  // content internally create one.
+  // Allows client to supply SyncPointManager and SharedImageManager instance
+  // instead of having content internally create one.
   virtual gpu::SyncPointManager* GetSyncPointManager();
+  virtual gpu::SharedImageManager* GetSharedImageManager();
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
   // Creates a media::CdmProxy for the type of Content Decryption Module (CDM)

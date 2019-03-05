@@ -286,7 +286,8 @@ void PixelTest::SetUpGpuServiceOnGpuThread(base::WaitableEvent* event) {
   gpu_service_->InitializeWithHost(
       std::move(gpu_host_proxy), gpu::GpuProcessActivityFlags(),
       gl::init::CreateOffscreenGLSurface(gfx::Size()),
-      nullptr /* sync_point_manager */, nullptr /* shutdown_event */);
+      nullptr /* sync_point_manager */, nullptr /* shared_image_manager */,
+      nullptr /* shutdown_event */);
   task_executor_ = base::MakeRefCounted<gpu::GpuInProcessThreadService>(
       gpu_thread_->task_runner(), gpu_service_->scheduler(),
       gpu_service_->sync_point_manager(), gpu_service_->mailbox_manager(),

@@ -16,4 +16,7 @@ const char kWebViewEnableSafeBrowsingSupport[] =
 const char kWebViewDisableSafeBrowsingSupport[] =
     "webview-disable-safebrowsing-support";
 
+// Used to enable shared image API for webview.
+const char kWebViewEnableSharedImage[] = "webview-enable-shared-image";
+
 }  // namespace switches

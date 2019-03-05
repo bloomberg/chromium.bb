@@ -132,7 +132,8 @@ static void RasterizeSourceOOP(
   if (mailbox->IsZero()) {
     DCHECK(!sync_token.HasData());
     auto* sii = context_provider->SharedImageInterface();
-    uint32_t flags = gpu::SHARED_IMAGE_USAGE_RASTER |
+    uint32_t flags = gpu::SHARED_IMAGE_USAGE_DISPLAY |
+                     gpu::SHARED_IMAGE_USAGE_RASTER |
                      gpu::SHARED_IMAGE_USAGE_OOP_RASTERIZATION;
     if (texture_is_overlay_candidate)
       flags |= gpu::SHARED_IMAGE_USAGE_SCANOUT;
@@ -187,7 +188,8 @@ static void RasterizeSource(
   gpu::raster::RasterInterface* ri = context_provider->RasterInterface();
   if (mailbox->IsZero()) {
     auto* sii = context_provider->SharedImageInterface();
-    uint32_t flags = gpu::SHARED_IMAGE_USAGE_GLES2 |
+    uint32_t flags = gpu::SHARED_IMAGE_USAGE_DISPLAY |
+                     gpu::SHARED_IMAGE_USAGE_GLES2 |
                      gpu::SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT;
     if (texture_is_overlay_candidate)
       flags |= gpu::SHARED_IMAGE_USAGE_SCANOUT;

@@ -279,13 +279,13 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
               ->settings()
               .resource_settings.use_gpu_memory_buffer_resources);
 
-      uint32_t flags = 0;
+      uint32_t flags = gpu::SHARED_IMAGE_USAGE_DISPLAY;
       if (use_oopr) {
-        flags = gpu::SHARED_IMAGE_USAGE_RASTER |
-                gpu::SHARED_IMAGE_USAGE_OOP_RASTERIZATION;
+        flags |= gpu::SHARED_IMAGE_USAGE_RASTER |
+                 gpu::SHARED_IMAGE_USAGE_OOP_RASTERIZATION;
       } else if (gpu_raster) {
-        flags = gpu::SHARED_IMAGE_USAGE_GLES2 |
-                gpu::SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT;
+        flags |= gpu::SHARED_IMAGE_USAGE_GLES2 |
+                 gpu::SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT;
       }
       if (backing->overlay_candidate)
         flags |= gpu::SHARED_IMAGE_USAGE_SCANOUT;

@@ -12,6 +12,8 @@
 #include "android_webview/browser/gfx/aw_render_thread_context_provider.h"
 #include "android_webview/browser/gfx/deferred_gpu_command_service.h"
 #include "android_webview/browser/gfx/parent_output_surface.h"
+#include "android_webview/common/aw_switches.h"
+#include "base/command_line.h"
 #include "base/stl_util.h"
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/features.h"
@@ -131,8 +133,11 @@ SurfacesInstance::SurfacesInstance()
       nullptr /* shared_bitmap_manager */, settings, frame_sink_id_,
       std::move(output_surface), std::move(scheduler),
       nullptr /* current_task_runner */, skia_output_surface);
+  const bool enable_shared_image =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kWebViewEnableSharedImage);
   display_->Initialize(this, frame_sink_manager_->surface_manager(),
-                       false /* enable_shared_images */);
+                       enable_shared_image);
   frame_sink_manager_->RegisterBeginFrameSource(begin_frame_source_.get(),
                                                 frame_sink_id_);
 
