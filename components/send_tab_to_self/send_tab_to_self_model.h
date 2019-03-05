@@ -35,16 +35,17 @@ class SendTabToSelfModel {
   // Adds |url| at the top of the entries. The entry title will be a
   // trimmed copy of |title|. Allows clients to modify the state of the model
   // as driven by user behaviors.
+  // If the creation is successful this returns a pointer to the resulting
+  // Entry. Otherwise this will return nullptr.
   virtual const SendTabToSelfEntry* AddEntry(const GURL& url,
-                                             const std::string& title,
-                                             base::Time navigation_time) = 0;
+                                             const std::string& title) = 0;
 
   // Remove entry with |guid| from entries. Allows clients to modify the state
-  // of the  model as driven by user behaviors.
+  // of the model as driven by user behaviors.
   virtual void DeleteEntry(const std::string& guid) = 0;
 
   // Dismiss entry with |guid| from entries. Allows clients to modify the state
-  // of the  model as driven by user behaviors.
+  // of the model as driven by user behaviors.
   virtual void DismissEntry(const std::string& guid) = 0;
 
   // Observer registration methods. The model will remove all observers upon

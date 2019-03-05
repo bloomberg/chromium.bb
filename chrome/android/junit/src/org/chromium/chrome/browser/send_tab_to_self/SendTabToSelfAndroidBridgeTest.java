@@ -62,10 +62,9 @@ public class SendTabToSelfAndroidBridgeTest {
     @Test
     @SmallTest
     public void testAddEntry() {
-        mBridge.addEntry(URL, TITLE, NAVIGATION_TIME_MS);
+        mBridge.addEntry(URL, TITLE);
         verify(mNativeMock)
-                .addEntry(any(SendTabToSelfAndroidBridge.class), anyLong(), eq(URL), eq(TITLE),
-                        eq(NAVIGATION_TIME_MS));
+                .addEntry(any(SendTabToSelfAndroidBridge.class), anyLong(), eq(URL), eq(TITLE));
     }
 
     @Test

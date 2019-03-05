@@ -29,7 +29,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientSendTabToSelfSyncTest,
                        AddedUrlFoundWhenBothClientsAlreadySyncing) {
   const GURL kUrl("https://www.example.com");
   const std::string kTitle("example");
-  const base::Time kTime = base::Time::FromDoubleT(0);
 
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
@@ -37,7 +36,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientSendTabToSelfSyncTest,
       SendTabToSelfSyncServiceFactory::GetForProfile(GetProfile(0))
           ->GetSendTabToSelfModel();
 
-  model0->AddEntry(kUrl, kTitle, kTime);
+  model0->AddEntry(kUrl, kTitle);
 
   send_tab_to_self::SendTabToSelfSyncService* service1 =
       SendTabToSelfSyncServiceFactory::GetForProfile(GetProfile(1));
@@ -50,15 +49,12 @@ IN_PROC_BROWSER_TEST_F(TwoClientSendTabToSelfSyncTest,
                        ModelsMatchAfterAddWhenBothClientsAlreadySyncing) {
   const GURL kGurl0("https://www.example0.com");
   const std::string kTitle0("example0");
-  const base::Time kTime0 = base::Time::FromDoubleT(0);
 
   const GURL kGurl1("https://www.example1.com");
   const std::string kTitle1("example1");
-  const base::Time kTime1 = base::Time::FromDoubleT(1);
 
   const GURL kGurl2("https://www.example2.com");
   const std::string kTitle2("example2");
-  const base::Time kTime2 = base::Time::FromDoubleT(2);
 
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
@@ -66,12 +62,12 @@ IN_PROC_BROWSER_TEST_F(TwoClientSendTabToSelfSyncTest,
       SendTabToSelfSyncServiceFactory::GetForProfile(GetProfile(0))
           ->GetSendTabToSelfModel();
 
-  model0->AddEntry(kGurl0, kTitle0, kTime0);
-  model0->AddEntry(kGurl1, kTitle1, kTime1);
+  model0->AddEntry(kGurl0, kTitle0);
+  model0->AddEntry(kGurl1, kTitle1);
 
   SendTabToSelfSyncServiceFactory::GetForProfile(GetProfile(1))
       ->GetSendTabToSelfModel()
-      ->AddEntry(kGurl2, kTitle2, kTime2);
+      ->AddEntry(kGurl2, kTitle2);
 
   EXPECT_TRUE(send_tab_to_self_helper::SendTabToSelfModelEqualityChecker(
                   SendTabToSelfSyncServiceFactory::GetForProfile(GetProfile(1)),

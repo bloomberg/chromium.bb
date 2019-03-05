@@ -20,8 +20,7 @@ public class SendTabToSelfShareActivity extends ShareActivity {
     protected void handleShareAction(ChromeActivity triggeringActivity) {
         Tab tab = triggeringActivity.getActivityTabProvider().getActivityTab();
         SendTabToSelfAndroidBridge bridge = new SendTabToSelfAndroidBridge(tab.getProfile());
-        // TODO(tgupta): Get the real navigation time here rather than  bogus hard-coded one.
-        bridge.addEntry(tab.getUrl(), tab.getTitle(), 123l);
+        bridge.addEntry(tab.getUrl(), tab.getTitle());
         bridge.destroy();
     }
 

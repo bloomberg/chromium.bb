@@ -200,8 +200,7 @@ const SendTabToSelfEntry* SendTabToSelfBridge::GetEntryByGUID(
 
 const SendTabToSelfEntry* SendTabToSelfBridge::AddEntry(
     const GURL& url,
-    const std::string& title,
-    base::Time navigation_time) {
+    const std::string& title) {
   if (!change_processor()->IsTrackingMetadata()) {
     return nullptr;
   }
@@ -211,6 +210,10 @@ const SendTabToSelfEntry* SendTabToSelfBridge::AddEntry(
   // Assure that we don't have a guid collision.
   DCHECK_EQ(GetEntryByGUID(guid), nullptr);
   std::string trimmed_title = base::CollapseWhitespaceASCII(title, false);
+
+  // TODO(crbug.com/938102) Use history service to find most recent navigation
+  // time for url.
+  base::Time navigation_time = clock_->Now();
 
   auto entry = std::make_unique<SendTabToSelfEntry>(
       guid, url, trimmed_title, clock_->Now(), navigation_time,

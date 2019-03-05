@@ -83,16 +83,15 @@ public class SendTabToSelfAndroidBridge {
      *
      * @param url URL to be shared
      * @param title Title of the page
-     * @param navigationTime Time the user navigated to the page
      * @return The persisted entry which contains additional information such as the GUID or null in
      *     the case of an error.
      */
     @Nullable
-    public SendTabToSelfEntry addEntry(String url, String title, long navigationTime) {
+    public SendTabToSelfEntry addEntry(String url, String title) {
         // TODO(tgupta): Add this assertion back in once the code to load is in place.
         // assert mIsNativeSendTabToSelfModelLoaded;
         Natives jni = SendTabToSelfAndroidBridgeJni.get();
-        return jni.addEntry(this, mNativeSendTabToSelfAndroidBridge, url, title, navigationTime);
+        return jni.addEntry(this, mNativeSendTabToSelfAndroidBridge, url, title);
     }
 
     /**
@@ -117,8 +116,7 @@ public class SendTabToSelfAndroidBridge {
                 @JCaller SendTabToSelfAndroidBridge bridge, long nativeSendTabToSelfAndroidBridge);
 
         SendTabToSelfEntry addEntry(@JCaller SendTabToSelfAndroidBridge bridge,
-                long nativeSendTabToSelfAndroidBridge, String url, String title,
-                long navigationTime);
+                long nativeSendTabToSelfAndroidBridge, String url, String title);
 
         void getAllGuids(@JCaller SendTabToSelfAndroidBridge bridge,
                 long nativeSendTabToSelfAndroidBridge, List<String> guids);
