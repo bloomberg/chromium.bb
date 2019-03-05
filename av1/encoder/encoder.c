@@ -4556,10 +4556,8 @@ static void dump_filtered_recon_frames(AV1_COMP *cpi) {
   for (int ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame) {
     const RefCntBuffer *const buf = get_ref_frame_buf(cm, ref_frame);
     const int ref_offset = buf != NULL ? (int)buf->order_hint : -1;
-    printf(" %d(%c-%d-%4.2f)", ref_offset,
-           (cpi->ref_frame_flags & flag_list[ref_frame]) ? 'Y' : 'N',
-           buf ? (int)buf->frame_rf_level : -1,
-           buf ? rate_factor_deltas[buf->frame_rf_level] : -1);
+    printf(" %d(%c)", ref_offset,
+           (cpi->ref_frame_flags & flag_list[ref_frame]) ? 'Y' : 'N');
   }
   printf(" ]\n");
 

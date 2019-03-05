@@ -11956,7 +11956,6 @@ static int inter_mode_search_order_independent_skip(
           const RefCntBuffer *const buf_bwd =
               get_ref_frame_buf(cm, BWDREF_FRAME);
           assert(buf_bwd != NULL);
-          assert(buf_arf2->frame_rf_level == buf_bwd->frame_rf_level);
           (void)buf_arf2;
           (void)buf_bwd;
           return 1;

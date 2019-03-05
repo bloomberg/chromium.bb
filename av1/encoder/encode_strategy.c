@@ -1158,10 +1158,6 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
     // show_existing_frame implies this frame is shown!
     frame_params.show_frame = 1;
   } else {
-    // Retain the RF_LEVEL for the current newly coded frame.
-    cm->cur_frame->frame_rf_level =
-        cpi->twopass.gf_group.rf_level[cpi->twopass.gf_group.index];
-
     if (cpi->film_grain_table) {
       cm->cur_frame->film_grain_params_present = aom_film_grain_table_lookup(
           cpi->film_grain_table, *time_stamp, *time_end, 0 /* =erase */,
