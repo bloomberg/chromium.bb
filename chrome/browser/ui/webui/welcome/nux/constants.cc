@@ -16,10 +16,10 @@ const base::Feature kNuxOnboardingFeature{"NuxOnboarding",
 // chrome/browser/resources/welcome/onboarding_welcome/welcome_app.js
 const base::FeatureParam<std::string> kNuxOnboardingNewUserModules{
     &kNuxOnboardingFeature, "new-user-modules",
-    "nux-email,nux-google-apps,nux-set-as-default,signin-view"};
+    "nux-google-apps,nux-email,nux-set-as-default,signin-view"};
 const base::FeatureParam<std::string> kNuxOnboardingReturningUserModules{
     &kNuxOnboardingFeature, "returning-user-modules", "nux-set-as-default"};
 const base::FeatureParam<bool> kNuxOnboardingShowEmailInterstitial{
-    &kNuxOnboardingFeature, "show-email-interstitial", true};
+    &kNuxOnboardingFeature, "show-email-interstitial", false};
 
 }  // namespace nux
