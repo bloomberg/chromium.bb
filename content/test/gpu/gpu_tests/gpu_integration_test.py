@@ -58,7 +58,7 @@ class GpuIntegrationTest(
       '--also-run-disabled-tests',
       dest='also_run_disabled_tests',
       action='store_true', default=False,
-      help='Run disabled tests, ignoring Skip and Fail expectations')
+      help='Run disabled tests, ignoring Skip expectations')
     parser.add_option(
       '--disable-log-uploads',
       dest='disable_log_uploads',
@@ -167,13 +167,14 @@ class GpuIntegrationTest(
     expectations = self.__class__.GetExpectations()
     expectation = expectations.GetExpectationForTest(
       self.browser, url, test_name)
-    if self.__class__._also_run_disabled_tests:
-      # Ignore test expectations if the user has requested it.
-      expectation = 'pass'
     if expectation == 'skip':
-      # skipTest in Python's unittest harness raises an exception, so
-      # aborts the control flow here.
-      self.skipTest('SKIPPING TEST due to test expectations')
+      if self.__class__._also_run_disabled_tests:
+        # Ignore test expectations if the user has requested it.
+        expectation = 'pass'
+      else:
+        # skipTest in Python's unittest harness raises an exception, so
+        # aborts the control flow here.
+        self.skipTest('SKIPPING TEST due to test expectations')
     try:
       # TODO(nednguyen): For some reason the arguments are getting wrapped
       # in another tuple sometimes (like in the WebGL extension tests).

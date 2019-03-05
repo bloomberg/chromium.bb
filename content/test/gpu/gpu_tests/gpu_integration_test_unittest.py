@@ -73,11 +73,15 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
   def testAlsoRunDisabledTests(self):
     self._RunIntegrationTest(
       'test_also_run_disabled_tests',
-      [],
-      ['unittest_data.integration_tests.TestAlsoRunDisabledTests.success'],
+      ['unittest_data.integration_tests.TestAlsoRunDisabledTests.skip',
+       'unittest_data.integration_tests.TestAlsoRunDisabledTests.flaky'],
+      # Tests that are expected to fail and do fail are treated as test passes
+      [('unittest_data.integration_tests.'
+        'TestAlsoRunDisabledTests.expected_failure')],
       [],
       ['--also-run-disabled-tests'])
-    self.assertEquals(self._test_state['num_test_runs'], 1)
+    self.assertEquals(self._test_state['num_flaky_test_runs'], 4)
+    self.assertEquals(self._test_state['num_test_runs'], 6)
 
   def testStartBrowser_Retries(self):
     class TestException(Exception):

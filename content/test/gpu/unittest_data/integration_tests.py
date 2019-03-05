@@ -256,7 +256,8 @@ class TestRepeat(_BaseSampleIntegrationTest):
 
 class TestAlsoRunDisabledTests(_BaseSampleIntegrationTest):
   _test_state = {
-    'num_test_runs': 0,
+    'num_flaky_test_runs': 0,
+    'num_test_runs': 0
   }
 
   @classmethod
@@ -265,19 +266,25 @@ class TestAlsoRunDisabledTests(_BaseSampleIntegrationTest):
 
   @classmethod
   def GenerateGpuTests(cls, options):
-    yield ('success', 'success.html', ())
+    tests = [
+      ('skip', 'skip.html', ()),
+      ('expected_failure', 'fail.html', ()),
+      ('flaky', 'flaky.html', ())]
+    for test in tests:
+      yield test
 
   @classmethod
   def _CreateExpectations(cls):
     expectations = gpu_test_expectations.GpuTestExpectations()
-    expectations.Skip('success')
+    expectations.Skip('skip')
+    expectations.Fail('expected_failure')
+    expectations.Flaky('flaky', max_num_retries=3)
     return expectations
 
   def RunActualGpuTest(self, file_path, *args):
     self._test_state['num_test_runs'] += 1
-    if file_path != 'success.html':
-      raise Exception('Unexpected test name ' + file_path)
-
+    self._test_state['num_flaky_test_runs'] += file_path == 'flaky.html'
+    raise Exception('Everything fails')
 
 def load_tests(loader, tests, pattern):
   del loader, tests, pattern  # Unused.
