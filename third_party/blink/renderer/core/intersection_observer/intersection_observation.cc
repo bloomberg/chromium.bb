@@ -76,10 +76,9 @@ void IntersectionObservation::Compute(unsigned flags) {
 
   if (last_threshold_index_ != geometry.ThresholdIndex() ||
       last_is_visible_ != geometry.IsVisible()) {
-    entries_.push_back(geometry.CreateEntry(Target(), timestamp));
-    To<Document>(Observer()->GetExecutionContext())
-        ->EnsureIntersectionObserverController()
-        .ScheduleIntersectionObserverForDelivery(*Observer());
+    entries_.push_back(MakeGarbageCollected<IntersectionObserverEntry>(
+        geometry, timestamp, Target()));
+    Observer()->SetNeedsDelivery();
     SetLastThresholdIndex(geometry.ThresholdIndex());
     SetWasVisible(geometry.IsVisible());
   }

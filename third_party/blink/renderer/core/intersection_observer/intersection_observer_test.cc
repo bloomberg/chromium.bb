@@ -38,11 +38,11 @@ class TestIntersectionObserverDelegate : public IntersectionObserverDelegate {
   FloatRect LastIntersectionRect() const {
     if (entries_.IsEmpty())
       return FloatRect();
-    const IntersectionObserverEntry* entry = entries_.back();
-    return FloatRect(entry->intersectionRect()->x(),
-                     entry->intersectionRect()->y(),
-                     entry->intersectionRect()->width(),
-                     entry->intersectionRect()->height());
+    const IntersectionGeometry& geometry = entries_.back()->GetGeometry();
+    return FloatRect(geometry.IntersectionRect().X(),
+                     geometry.IntersectionRect().Y(),
+                     geometry.IntersectionRect().Width(),
+                     geometry.IntersectionRect().Height());
   }
 
   void Trace(blink::Visitor* visitor) override {

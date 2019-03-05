@@ -55,7 +55,7 @@ class IntersectionObserverController
       pending_intersection_observers_;
   // TODO(https://crbug.com/796145): Remove this hack once on-stack objects
   // get supported by either of wrapper-tracing or unified GC.
-  HeapHashSet<TraceWrapperMember<IntersectionObserver>>
+  HeapVector<TraceWrapperMember<IntersectionObserver>>
       intersection_observers_being_invoked_;
 };
 
