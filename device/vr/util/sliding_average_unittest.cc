@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/vr/sliding_average.h"
+#include "device/vr/util/sliding_average.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace vr {
+namespace device {
 
 TEST(SlidingAverage, Basics) {
   SlidingAverage meter(5);
@@ -57,4 +57,4 @@ TEST(SlidingTimeDeltaAverage, Basics) {
   EXPECT_EQ(base::TimeDelta::FromSeconds(150), meter.GetAverage());
 }
 
-}  // namespace vr
+}  // namespace device

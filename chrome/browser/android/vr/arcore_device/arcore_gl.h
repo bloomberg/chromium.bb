@@ -14,8 +14,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
-#include "chrome/browser/vr/fps_meter.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
+#include "device/vr/util/fps_meter.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "ui/display/display.h"
 #include "ui/gfx/geometry/quaternion.h"
@@ -93,7 +93,7 @@ class ArCoreGl {
 
   bool is_initialized_ = false;
 
-  vr::FPSMeter fps_meter_;
+  FPSMeter fps_meter_;
 
   std::vector<std::unique_ptr<ArCoreHitTestRequest>> hit_test_requests_;
 

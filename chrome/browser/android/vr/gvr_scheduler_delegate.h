@@ -18,8 +18,8 @@
 #include "chrome/browser/android/vr/gvr_graphics_delegate.h"
 #include "chrome/browser/android/vr/web_xr_presentation_state.h"
 #include "chrome/browser/vr/base_scheduler_delegate.h"
-#include "chrome/browser/vr/sliding_average.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
+#include "device/vr/util/sliding_average.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "ui/gfx/transform.h"
 
@@ -225,18 +225,18 @@ class GvrSchedulerDelegate : public BaseSchedulerDelegate,
   std::unique_ptr<MailboxToSurfaceBridge> mailbox_bridge_;
   std::unique_ptr<ScopedGpuTrace> gpu_trace_;
 
-  FPSMeter vr_ui_fps_meter_;
+  device::FPSMeter vr_ui_fps_meter_;
 
   // Render time is from JS submitFrame to estimated render completion.
   // This is an estimate when submitting incomplete frames to GVR.
   // If submitFrame blocks, that means the previous frame wasn't done
   // rendering yet.
-  SlidingTimeDeltaAverage webvr_render_time_;
+  device::SlidingTimeDeltaAverage webvr_render_time_;
   // JS time is from SendVSync (pose time) to incoming JS submitFrame.
-  SlidingTimeDeltaAverage webvr_js_time_;
+  device::SlidingTimeDeltaAverage webvr_js_time_;
   // JS wait time is spent waiting for the previous frame to complete
   // rendering, as reported from the Renderer via mojo.
-  SlidingTimeDeltaAverage webvr_js_wait_time_;
+  device::SlidingTimeDeltaAverage webvr_js_wait_time_;
 
   base::WeakPtrFactory<GvrSchedulerDelegate> weak_ptr_factory_;
 
