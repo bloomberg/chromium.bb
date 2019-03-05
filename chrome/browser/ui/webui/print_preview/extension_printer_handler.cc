@@ -229,7 +229,7 @@ void ExtensionPrinterHandler::StartGrantPrinterAccess(
   permissions_manager->AllowUsbDevice(extension_id, *device_info);
 
   GetPrinterProviderAPI(profile_)->DispatchGetUsbPrinterInfoRequested(
-      extension_id, device,
+      extension_id, *device_info,
       base::BindOnce(&ExtensionPrinterHandler::WrapGetPrinterInfoCallback,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
