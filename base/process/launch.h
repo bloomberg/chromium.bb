@@ -32,6 +32,10 @@
 #include "base/posix/file_descriptor_shuffle.h"
 #endif
 
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+#include "base/mac/mach_port_rendezvous.h"
+#endif
+
 namespace base {
 
 class CommandLine;
@@ -189,6 +193,18 @@ struct BASE_EXPORT LaunchOptions {
   // Sets parent process death signal to SIGKILL.
   bool kill_on_parent_death = false;
 #endif  // defined(OS_LINUX)
+
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  // Mach ports that will be accessible to the child process. These are not
+  // directly inherited across process creation, but they are stored by a Mach
+  // IPC server that a child process can communicate with to retrieve them.
+  //
+  // After calling LaunchProcess(), any rights that were transferred with MOVE
+  // dispositions will be consumed, even on failure.
+  //
+  // See base/mac/mach_port_rendezvous.h for details.
+  MachPortsForRendezvous mach_ports_for_rendezvous;
+#endif
 
 #if defined(OS_FUCHSIA)
   // If valid, launches the application in that job object.

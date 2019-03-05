@@ -24,10 +24,10 @@
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
+#include "base/mac/mach_port_rendezvous.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/mac/scoped_nsobject.h"
-#include "base/metrics/field_trial_memory_mac.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
@@ -173,7 +173,7 @@ bool SandboxMac::Enable(SandboxType sandbox_type) {
 
   if (!compiler.InsertStringParam(
           kSandboxFieldTrialSeverName,
-          base::FieldTrialMemoryClient::GetBootstrapName())) {
+          base::MachPortRendezvousClient::GetBootstrapName())) {
     return false;
   }
 
