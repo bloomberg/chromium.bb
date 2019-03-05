@@ -623,6 +623,34 @@ TEST_F(PasswordSyncBridgeTest,
   EXPECT_FALSE(error);
 }
 
+// This tests that if reading logins from the store fails,
+// ShouldMergeSync() would return an error without crashing.
+TEST_F(PasswordSyncBridgeTest,
+       ShouldMergeSyncRemoteAndLocalPasswordsWithErrorWhenStoreReadFails) {
+  // Simulate a failed ReadAllLogins() by returning false.
+  ON_CALL(*mock_password_store_sync(), ReadAllLogins(_))
+      .WillByDefault(testing::Return(false));
+  base::Optional<syncer::ModelError> error =
+      bridge()->MergeSyncData(bridge()->CreateMetadataChangeList(), {});
+  EXPECT_TRUE(error);
+}
+
+// This tests that if adding logins to the store fails,
+// ShouldMergeSync() would return an error without crashing.
+TEST_F(PasswordSyncBridgeTest,
+       ShouldMergeSyncRemoteAndLocalPasswordsWithErrorWhenStoreAddFails) {
+  // Simulate a failed AddLoginSync() by returning an empty change list.
+  ON_CALL(*mock_password_store_sync(), AddLoginSync(_))
+      .WillByDefault(testing::Return(PasswordStoreChangeList()));
+
+  base::Optional<syncer::ModelError> error = bridge()->MergeSyncData(
+      bridge()->CreateMetadataChangeList(),
+      {syncer::EntityChange::CreateAdd(
+          /*storage_key=*/"",
+          SpecificsToEntity(CreateSpecificsWithSignonRealm(kSignonRealm1)))});
+  EXPECT_TRUE(error);
+}
+
 TEST_F(PasswordSyncBridgeTest, ShouldGetAllDataForDebuggingWithHiddenPassword) {
   const int kPrimaryKey1 = 1000;
   const int kPrimaryKey2 = 1001;
