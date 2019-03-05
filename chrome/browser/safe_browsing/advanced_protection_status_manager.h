@@ -68,6 +68,10 @@ class AdvancedProtectionStatusManager
                            AlreadySignedInAndUnderAPIncognito);
   FRIEND_TEST_ALL_PREFIXES(AdvancedProtectionStatusManagerTest,
                            AlreadySignedInAndNotUnderAPIncognito);
+  FRIEND_TEST_ALL_PREFIXES(AdvancedProtectionStatusManagerTest,
+                           AdvancedProtectionDisabledAfterSignin);
+  FRIEND_TEST_ALL_PREFIXES(AdvancedProtectionStatusManagerTest,
+                           StartupAfterLongWaitRefreshesImmediately);
 
   void Initialize();
 
