@@ -573,6 +573,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOfflineVersionWithoutNativeContentDescription,
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(reading_list::kOfflineVersionWithoutNativeContent)},
+    {"store-pending-item-in-context",
+     flag_descriptions::kStorePendingItemInContextName,
+     flag_descriptions::kStorePendingItemInContextDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(web::features::kStorePendingItemInContext)},
 };
 
 // Add all switches from experimental flags to |command_line|.

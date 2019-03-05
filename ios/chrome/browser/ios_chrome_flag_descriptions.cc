@@ -432,6 +432,14 @@ const char kWebFrameMessagingDescription[] =
     "When enabled, API will be injected into webpages to allow sending messages"
     " directly to any frame of a webpage.";
 
+const char kStorePendingItemInContextName[] =
+    "Store pending item in NavigationContext";
+const char kStorePendingItemInContextDescription[] =
+    "When enabled pending item will be stored in NavigationContext after "
+    "context is created. The item is still stored in NavigationManager if the "
+    "navigated was requested, but context does not yet exist or when "
+    "navigation was aborted.";
+
 const char kWebPageTextAccessibilityName[] =
     "Enable text accessibility in web pages";
 const char kWebPageTextAccessibilityDescription[] =
