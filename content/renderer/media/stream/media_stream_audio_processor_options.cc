@@ -79,9 +79,7 @@ bool AudioProcessingProperties::EchoCancellationEnabled() const {
 }
 
 bool AudioProcessingProperties::EchoCancellationIsWebRtcProvided() const {
-  return echo_cancellation_type ==
-             EchoCancellationType::kEchoCancellationAec2 ||
-         echo_cancellation_type == EchoCancellationType::kEchoCancellationAec3;
+  return echo_cancellation_type == EchoCancellationType::kEchoCancellationAec3;
 }
 
 media::AudioProcessingSettings
@@ -92,8 +90,6 @@ AudioProcessingProperties::ToAudioProcessingSettings() const {
     switch (type) {
       case EchoCancellationType::kEchoCancellationDisabled:
         return media::EchoCancellationType::kDisabled;
-      case EchoCancellationType::kEchoCancellationAec2:
-        return media::EchoCancellationType::kAec2;
       case EchoCancellationType::kEchoCancellationAec3:
         return media::EchoCancellationType::kAec3;
       case EchoCancellationType::kEchoCancellationSystem:

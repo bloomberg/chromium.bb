@@ -45,8 +45,6 @@ struct CONTENT_EXPORT AudioProcessingProperties {
   enum class EchoCancellationType {
     // Echo cancellation disabled.
     kEchoCancellationDisabled,
-    // The WebRTC-provided AEC2 echo canceller.
-    kEchoCancellationAec2,
     // The WebRTC-provided AEC3 echo canceller.
     kEchoCancellationAec3,
     // System echo canceller, for example an OS-provided or hardware echo
@@ -75,7 +73,7 @@ struct CONTENT_EXPORT AudioProcessingProperties {
   media::AudioProcessingSettings ToAudioProcessingSettings() const;
 
   EchoCancellationType echo_cancellation_type =
-      EchoCancellationType::kEchoCancellationAec2;
+      EchoCancellationType::kEchoCancellationAec3;
   bool disable_hw_noise_suppression = false;
   bool goog_audio_mirroring = false;
   bool goog_auto_gain_control = true;

@@ -73,7 +73,6 @@ struct Score {
     kDisabled = 1,
     kSystem = 2,
     kAec3 = 3,
-    kAec2 = 4
   };
 
   explicit Score(double fitness,
@@ -415,23 +414,21 @@ class EchoCancellationContainer {
         return Score::EcModeScore::kSystem;
       case EchoCancellationType::kEchoCancellationAec3:
         return Score::EcModeScore::kAec3;
-      case EchoCancellationType::kEchoCancellationAec2:
-        return Score::EcModeScore::kAec2;
     }
   }
 
   static base::Optional<EchoCancellationType> ToEchoCancellationType(
       const char* blink_type) {
     std::string blink_type_str = std::string(blink_type);
-    if (blink_type_str == blink::kEchoCancellationTypeBrowser) {
-      return EchoCancellationType::kEchoCancellationAec2;
-    } else if (blink_type_str == blink::kEchoCancellationTypeAec3) {
+    if (blink_type_str == blink::kEchoCancellationTypeBrowser ||
+        blink_type_str == blink::kEchoCancellationTypeAec3) {
       return EchoCancellationType::kEchoCancellationAec3;
-    } else if (blink_type_str == blink::kEchoCancellationTypeSystem) {
-      return EchoCancellationType::kEchoCancellationSystem;
-    } else {
-      return base::nullopt;
     }
+
+    if (blink_type_str == blink::kEchoCancellationTypeSystem)
+      return EchoCancellationType::kEchoCancellationSystem;
+
+    return base::nullopt;
   }
 
   static std::vector<EchoCancellationType> ToEchoCancellationTypes(
@@ -462,10 +459,10 @@ class EchoCancellationContainer {
       types.push_back(EchoCancellationType::kEchoCancellationDisabled);
 
     if (ec_set.Contains(true)) {
-      if (ec_type_set.Contains(blink::kEchoCancellationTypeBrowser))
-        types.push_back(EchoCancellationType::kEchoCancellationAec2);
-      if (ec_type_set.Contains(blink::kEchoCancellationTypeAec3))
+      if (ec_type_set.Contains(blink::kEchoCancellationTypeBrowser) ||
+          ec_type_set.Contains(blink::kEchoCancellationTypeAec3)) {
         types.push_back(EchoCancellationType::kEchoCancellationAec3);
+      }
       if (ec_type_set.Contains(blink::kEchoCancellationTypeSystem))
         types.push_back(EchoCancellationType::kEchoCancellationSystem);
     }
@@ -511,17 +508,6 @@ class EchoCancellationContainer {
             EchoCancellationType::kEchoCancellationSystem) &&
         device_parameters_.effects() & media::AudioParameters::ECHO_CANCELLER) {
       return EchoCancellationType::kEchoCancellationSystem;
-    }
-
-    base::Optional<bool> override_aec3 = GetOverrideAec3();
-    bool use_aec3 = override_aec3.value_or(
-        base::FeatureList::IsEnabled(features::kWebRtcUseEchoCanceller3));
-    if ((use_aec3 && ec_mode_allowed_values_.Contains(
-                         EchoCancellationType::kEchoCancellationAec3)) ||
-        (!use_aec3 && ec_mode_allowed_values_.Contains(
-                          EchoCancellationType::kEchoCancellationAec2))) {
-      return use_aec3 ? EchoCancellationType::kEchoCancellationAec3
-                      : EchoCancellationType::kEchoCancellationAec2;
     }
 
     // If the previous tie breakers were not enough to determine the selected
@@ -587,8 +573,6 @@ class EchoCancellationContainer {
 
     if (ec) {
       return ec_mode_allowed_values_.Contains(
-                 EchoCancellationType::kEchoCancellationAec2) ||
-             ec_mode_allowed_values_.Contains(
                  EchoCancellationType::kEchoCancellationAec3) ||
              ec_mode_allowed_values_.Contains(
                  EchoCancellationType::kEchoCancellationSystem);
@@ -642,8 +626,7 @@ class ProcessingBasedContainer {
       const media::AudioParameters& device_parameters) {
     return ProcessingBasedContainer(
         ProcessingType::kApmProcessed,
-        {EchoCancellationType::kEchoCancellationAec2,
-         EchoCancellationType::kEchoCancellationAec3,
+        {EchoCancellationType::kEchoCancellationAec3,
          EchoCancellationType::kEchoCancellationDisabled},
         BoolSet(), /* goog_audio_mirroring_set */
         BoolSet(), /* goog_auto_gain_control_set */
