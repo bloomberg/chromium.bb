@@ -93,10 +93,14 @@ class CORE_EXPORT StringUtil {
   static String fromUTF16(const uint16_t* data, size_t length);
 
   static const uint8_t* CharactersLatin1(const String& s) {
+    if (!s.Is8Bit())
+      return nullptr;
     return reinterpret_cast<const uint8_t*>(s.Characters8());
   }
   static const uint8_t* CharactersUTF8(const String& s) { return nullptr; }
   static const uint16_t* CharactersUTF16(const String& s) {
+    if (s.Is8Bit())
+      return nullptr;
     return reinterpret_cast<const uint16_t*>(s.Characters16());
   }
   static size_t CharacterCount(const String& s) { return s.length(); }
