@@ -22,6 +22,10 @@
 namespace device {
 namespace pin {
 
+// kProtocolVersion is the version of the PIN protocol that this code
+// implements.
+constexpr int kProtocolVersion = 1;
+
 // IsValid returns true if |pin|, which must be UTF-8, is a syntactically valid
 // PIN.
 bool IsValid(const std::string& pin);
@@ -48,7 +52,7 @@ struct RetriesResponse {
 
   // retries is the number of PIN attempts remaining before the authenticator
   // locks.
-  int64_t retries;
+  int retries;
 
  private:
   RetriesResponse();
@@ -129,6 +133,7 @@ class TokenRequest {
  public:
   TokenRequest(const std::string& pin, const KeyAgreementResponse& peer_key);
   ~TokenRequest();
+  TokenRequest(TokenRequest&&);
   TokenRequest(const TokenRequest&) = delete;
 
   // shared_key returns the shared ECDH key that was used to encrypt the PIN.
@@ -139,7 +144,7 @@ class TokenRequest {
 
  private:
   std::array<uint8_t, 32> shared_key_;
-  const cbor::Value::MapValue cose_key_;
+  cbor::Value::MapValue cose_key_;
   uint8_t pin_hash_[16];
 };
 

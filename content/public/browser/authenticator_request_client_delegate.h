@@ -39,6 +39,8 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
     kTimeout,
     kKeyNotRegistered,
     kKeyAlreadyRegistered,
+    kSoftPINBlock,
+    kHardPINBlock,
   };
 
   AuthenticatorRequestClientDelegate();
@@ -131,6 +133,10 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
                                   std::string new_authenticator_id) override;
   void FidoAuthenticatorPairingModeChanged(base::StringPiece authenticator_id,
                                            bool is_in_pairing_mode) override;
+  void CollectPIN(
+      base::Optional<int> attempts,
+      base::OnceCallback<void(std::string)> provide_pin_cb) override;
+  void FinishCollectPIN() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AuthenticatorRequestClientDelegate);

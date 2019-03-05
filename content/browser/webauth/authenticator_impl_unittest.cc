@@ -4,6 +4,7 @@
 
 #include "content/browser/webauth/authenticator_impl.h"
 
+#include <list>
 #include <memory>
 #include <string>
 #include <utility>
@@ -2446,6 +2447,258 @@ TEST_F(AuthenticatorImplTest, ExtensionHMACSecret) {
 
     EXPECT_EQ(include_extension, has_hmac_secret);
   }
+}
+
+// PINList is a list of expected |attempts| values and the PIN to answer with.
+using PINList = std::list<std::pair<base::Optional<int>, std::string>>;
+
+class PINTestAuthenticatorRequestDelegate
+    : public AuthenticatorRequestClientDelegate {
+ public:
+  explicit PINTestAuthenticatorRequestDelegate(
+      const PINList& pins,
+      base::Optional<InterestingFailureReason>* failure_reason)
+      : expected_(pins), failure_reason_(failure_reason) {}
+  ~PINTestAuthenticatorRequestDelegate() override { DCHECK(expected_.empty()); }
+
+  void CollectPIN(
+      base::Optional<int> attempts,
+      base::OnceCallback<void(std::string)> provide_pin_cb) override {
+    DCHECK(!expected_.empty());
+    DCHECK(attempts == expected_.front().first)
+        << "got: " << attempts.value_or(-1)
+        << " expected: " << expected_.front().first.value_or(-1);
+    std::string pin = std::move(expected_.front().second);
+    expected_.pop_front();
+
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(provide_pin_cb), std::move(pin)));
+  }
+
+  bool DoesBlockRequestOnFailure(InterestingFailureReason reason) override {
+    *failure_reason_ = reason;
+    return AuthenticatorRequestClientDelegate::DoesBlockRequestOnFailure(
+        reason);
+  }
+
+ private:
+  PINList expected_;
+  base::Optional<InterestingFailureReason>* const failure_reason_;
+  DISALLOW_COPY_AND_ASSIGN(PINTestAuthenticatorRequestDelegate);
+};
+
+class PINTestAuthenticatorContentBrowserClient : public ContentBrowserClient {
+ public:
+  std::unique_ptr<AuthenticatorRequestClientDelegate>
+  GetWebAuthenticationRequestDelegate(
+      RenderFrameHost* render_frame_host) override {
+    return std::make_unique<PINTestAuthenticatorRequestDelegate>(
+        expected, &failure_reason);
+  }
+
+  PINList expected;
+  base::Optional<InterestingFailureReason> failure_reason;
+};
+
+class PINAuthenticatorContentBrowserClientTest : public AuthenticatorImplTest {
+ public:
+  PINAuthenticatorContentBrowserClientTest() = default;
+
+  void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(device::kWebAuthPINSupport);
+
+    AuthenticatorImplTest::SetUp();
+    old_client_ = SetBrowserClientForTesting(&test_client_);
+    virtual_device_.EnablePINSupport();
+    NavigateAndCommit(GURL(kTestOrigin1));
+  }
+
+  void TearDown() override {
+    SetBrowserClientForTesting(old_client_);
+    AuthenticatorImplTest::TearDown();
+  }
+
+ protected:
+  static PublicKeyCredentialCreationOptionsPtr make_credential_options() {
+    PublicKeyCredentialCreationOptionsPtr options =
+        GetTestPublicKeyCredentialCreationOptions();
+    options->authenticator_selection->user_verification =
+        blink::mojom::UserVerificationRequirement::REQUIRED;
+    return options;
+  }
+
+  static PublicKeyCredentialRequestOptionsPtr get_credential_options() {
+    PublicKeyCredentialRequestOptionsPtr options =
+        GetTestPublicKeyCredentialRequestOptions();
+    options->user_verification =
+        blink::mojom::UserVerificationRequirement::REQUIRED;
+    return options;
+  }
+
+  static bool HasUV(const TestMakeCredentialCallback& callback) {
+    DCHECK_EQ(AuthenticatorStatus::SUCCESS, callback.status());
+    base::Optional<Value> attestation_value =
+        Reader::Read(callback.value()->attestation_object);
+    DCHECK(attestation_value);
+    DCHECK(attestation_value->is_map());
+    const auto& attestation = attestation_value->GetMap();
+
+    const auto auth_data_it = attestation.find(Value("authData"));
+    DCHECK(auth_data_it != attestation.end() &&
+           auth_data_it->second.is_bytestring());
+    base::Optional<device::AuthenticatorData> auth_data =
+        device::AuthenticatorData::DecodeAuthenticatorData(
+            auth_data_it->second.GetBytestring());
+    return auth_data->obtained_user_verification();
+  }
+
+  static bool HasUV(const TestGetAssertionCallback& callback) {
+    DCHECK_EQ(AuthenticatorStatus::SUCCESS, callback.status());
+    base::Optional<device::AuthenticatorData> auth_data =
+        device::AuthenticatorData::DecodeAuthenticatorData(
+            callback.value()->authenticator_data);
+    return auth_data->obtained_user_verification();
+  }
+
+  PINTestAuthenticatorContentBrowserClient test_client_;
+  device::test::ScopedVirtualFidoDevice virtual_device_;
+
+ private:
+  ContentBrowserClient* old_client_ = nullptr;
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(PINAuthenticatorContentBrowserClientTest);
+};
+
+static constexpr char kTestPIN[] = "1234";
+
+TEST_F(PINAuthenticatorContentBrowserClientTest, MakeCredentialSet) {
+  TestServiceManagerContext smc;
+  test_client_.expected = {{base::nullopt, kTestPIN}};
+
+  AuthenticatorPtr authenticator = ConnectToAuthenticator();
+  TestMakeCredentialCallback callback_receiver;
+  authenticator->MakeCredential(make_credential_options(),
+                                callback_receiver.callback());
+  callback_receiver.WaitForCallback();
+  EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
+  EXPECT_EQ(kTestPIN, virtual_device_.mutable_state()->pin);
+  EXPECT_TRUE(HasUV(callback_receiver));
+}
+
+TEST_F(PINAuthenticatorContentBrowserClientTest, MakeCredentialUse) {
+  TestServiceManagerContext smc;
+  virtual_device_.mutable_state()->pin = kTestPIN;
+  virtual_device_.mutable_state()->retries = 8;
+
+  test_client_.expected = {{8, "wrong"}, {7, kTestPIN}};
+  AuthenticatorPtr authenticator = ConnectToAuthenticator();
+  TestMakeCredentialCallback callback_receiver;
+  authenticator->MakeCredential(make_credential_options(),
+                                callback_receiver.callback());
+  callback_receiver.WaitForCallback();
+  EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
+  EXPECT_EQ(8, virtual_device_.mutable_state()->retries);
+  EXPECT_TRUE(HasUV(callback_receiver));
+}
+
+TEST_F(PINAuthenticatorContentBrowserClientTest, MakeCredentialSoftLock) {
+  TestServiceManagerContext smc;
+  virtual_device_.mutable_state()->pin = kTestPIN;
+  virtual_device_.mutable_state()->retries = 8;
+
+  test_client_.expected = {{8, "wrong"}, {7, "wrong"}, {6, "wrong"}};
+  AuthenticatorPtr authenticator = ConnectToAuthenticator();
+  TestMakeCredentialCallback callback_receiver;
+  authenticator->MakeCredential(make_credential_options(),
+                                callback_receiver.callback());
+  callback_receiver.WaitForCallback();
+  EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, callback_receiver.status());
+  EXPECT_EQ(5, virtual_device_.mutable_state()->retries);
+  EXPECT_TRUE(virtual_device_.mutable_state()->soft_locked);
+  ASSERT_TRUE(test_client_.failure_reason.has_value());
+  EXPECT_EQ(InterestingFailureReason::kSoftPINBlock,
+            *test_client_.failure_reason);
+}
+
+TEST_F(PINAuthenticatorContentBrowserClientTest, MakeCredentialHardLock) {
+  TestServiceManagerContext smc;
+  virtual_device_.mutable_state()->pin = kTestPIN;
+  virtual_device_.mutable_state()->retries = 1;
+
+  test_client_.expected = {{1, "wrong"}};
+  AuthenticatorPtr authenticator = ConnectToAuthenticator();
+  TestMakeCredentialCallback callback_receiver;
+  authenticator->MakeCredential(make_credential_options(),
+                                callback_receiver.callback());
+  callback_receiver.WaitForCallback();
+  EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, callback_receiver.status());
+  EXPECT_EQ(0, virtual_device_.mutable_state()->retries);
+  ASSERT_TRUE(test_client_.failure_reason.has_value());
+  EXPECT_EQ(InterestingFailureReason::kHardPINBlock,
+            *test_client_.failure_reason);
+}
+
+TEST_F(PINAuthenticatorContentBrowserClientTest, GetAssertion) {
+  TestServiceManagerContext smc;
+  virtual_device_.mutable_state()->pin = kTestPIN;
+  virtual_device_.mutable_state()->retries = 8;
+
+  PublicKeyCredentialRequestOptionsPtr options = get_credential_options();
+  ASSERT_TRUE(virtual_device_.mutable_state()->InjectRegistration(
+      options->allow_credentials[0]->id, kTestRelyingPartyId));
+
+  test_client_.expected = {{8, "wrong"}, {7, kTestPIN}};
+  AuthenticatorPtr authenticator = ConnectToAuthenticator();
+  TestGetAssertionCallback callback_receiver;
+  authenticator->GetAssertion(std::move(options), callback_receiver.callback());
+  callback_receiver.WaitForCallback();
+  EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
+  EXPECT_EQ(8, virtual_device_.mutable_state()->retries);
+  EXPECT_TRUE(HasUV(callback_receiver));
+}
+
+TEST_F(PINAuthenticatorContentBrowserClientTest, GetAssertionSoftLock) {
+  TestServiceManagerContext smc;
+  virtual_device_.mutable_state()->pin = kTestPIN;
+  virtual_device_.mutable_state()->retries = 8;
+
+  PublicKeyCredentialRequestOptionsPtr options = get_credential_options();
+  ASSERT_TRUE(virtual_device_.mutable_state()->InjectRegistration(
+      options->allow_credentials[0]->id, kTestRelyingPartyId));
+
+  test_client_.expected = {{8, "wrong"}, {7, "wrong"}, {6, "wrong"}};
+  AuthenticatorPtr authenticator = ConnectToAuthenticator();
+  TestGetAssertionCallback callback_receiver;
+  authenticator->GetAssertion(std::move(options), callback_receiver.callback());
+  callback_receiver.WaitForCallback();
+  EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, callback_receiver.status());
+  EXPECT_EQ(5, virtual_device_.mutable_state()->retries);
+  EXPECT_TRUE(virtual_device_.mutable_state()->soft_locked);
+  ASSERT_TRUE(test_client_.failure_reason.has_value());
+  EXPECT_EQ(InterestingFailureReason::kSoftPINBlock,
+            *test_client_.failure_reason);
+}
+
+TEST_F(PINAuthenticatorContentBrowserClientTest, GetAssertionHardLock) {
+  TestServiceManagerContext smc;
+  virtual_device_.mutable_state()->pin = kTestPIN;
+  virtual_device_.mutable_state()->retries = 1;
+
+  PublicKeyCredentialRequestOptionsPtr options = get_credential_options();
+  ASSERT_TRUE(virtual_device_.mutable_state()->InjectRegistration(
+      options->allow_credentials[0]->id, kTestRelyingPartyId));
+
+  test_client_.expected = {{1, "wrong"}};
+  AuthenticatorPtr authenticator = ConnectToAuthenticator();
+  TestGetAssertionCallback callback_receiver;
+  authenticator->GetAssertion(std::move(options), callback_receiver.callback());
+  callback_receiver.WaitForCallback();
+  EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, callback_receiver.status());
+  EXPECT_EQ(0, virtual_device_.mutable_state()->retries);
+  ASSERT_TRUE(test_client_.failure_reason.has_value());
+  EXPECT_EQ(InterestingFailureReason::kHardPINBlock,
+            *test_client_.failure_reason);
 }
 
 }  // namespace content

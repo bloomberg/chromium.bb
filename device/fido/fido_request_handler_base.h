@@ -140,6 +140,17 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
     virtual void FidoAuthenticatorPairingModeChanged(
         base::StringPiece authenticator_id,
         bool is_in_pairing_mode) = 0;
+
+    // CollectPIN is called when a PIN is needed to complete a request. The
+    // |retries| parameter is either |nullopt| to indicate that the user needs
+    // to set a PIN, or contains the number of PIN attempts remaining before a
+    // hard lock.
+    virtual void CollectPIN(
+        base::Optional<int> attempts,
+        base::OnceCallback<void(std::string)> provide_pin_cb) = 0;
+
+    // CollectClientPin is guaranteed to have been called previously.
+    virtual void FinishCollectPIN() = 0;
   };
 
   // TODO(https://crbug.com/769631): Remove the dependency on Connector once

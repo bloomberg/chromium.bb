@@ -35,11 +35,11 @@ class Ctap2DeviceOperation : public DeviceOperation<Request, Response> {
       base::OnceCallback<base::Optional<Response>(base::span<const uint8_t>)>;
 
   Ctap2DeviceOperation(FidoDevice* device,
-                       const Request& request,
+                       Request request,
                        DeviceResponseCallback callback,
                        DeviceResponseParser device_response_parser)
       : DeviceOperation<Request, Response>(device,
-                                           request,
+                                           std::move(request),
                                            std::move(callback)),
         device_response_parser_(std::move(device_response_parser)),
         weak_factory_(this) {}

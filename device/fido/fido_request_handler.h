@@ -78,6 +78,8 @@ class FidoRequestHandler : public FidoRequestHandlerBase {
              authenticator->AuthenticatorTransport());
   }
 
+  CompletionCallback completion_callback_;
+
  private:
   static base::Optional<FidoReturnCode>
   ConvertDeviceResponseCodeToFidoReturnCode(
@@ -119,8 +121,6 @@ class FidoRequestHandler : public FidoRequestHandlerBase {
         return base::nullopt;
     }
   }
-
-  CompletionCallback completion_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(FidoRequestHandler);
 };

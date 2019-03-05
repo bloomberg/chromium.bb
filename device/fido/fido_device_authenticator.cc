@@ -7,11 +7,13 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "device/fido/authenticator_supported_options.h"
 #include "device/fido/ctap_get_assertion_request.h"
 #include "device/fido/ctap_make_credential_request.h"
+#include "device/fido/features.h"
 #include "device/fido/fido_device.h"
 #include "device/fido/get_assertion_task.h"
 #include "device/fido/make_credential_task.h"
@@ -55,19 +57,22 @@ void FidoDeviceAuthenticator::InitializeAuthenticatorDone(
 
 void FidoDeviceAuthenticator::MakeCredential(CtapMakeCredentialRequest request,
                                              MakeCredentialCallback callback) {
-  DCHECK(!task_);
   DCHECK(device_->SupportedProtocolIsInitialized())
       << "InitializeAuthenticator() must be called first.";
   DCHECK(Options());
 
-  // Update the request to the "effective" user verification requirement.
-  // https://w3c.github.io/webauthn/#effective-user-verification-requirement-for-credential-creation
-  if (Options()->user_verification_availability ==
-      AuthenticatorSupportedOptions::UserVerificationAvailability::
-          kSupportedAndConfigured) {
-    request.SetUserVerification(UserVerificationRequirement::kRequired);
-  } else {
-    request.SetUserVerification(UserVerificationRequirement::kDiscouraged);
+  // When PIN support is enabled, the mapping from Webauthn's ternary user-
+  // verification preference to CTAP2's binary option is done inside the request
+  // handler instead.
+  if (!base::FeatureList::IsEnabled(device::kWebAuthPINSupport) ||
+      request.user_verification() == UserVerificationRequirement::kPreferred) {
+    if (Options()->user_verification_availability ==
+        AuthenticatorSupportedOptions::UserVerificationAvailability::
+            kSupportedAndConfigured) {
+      request.SetUserVerification(UserVerificationRequirement::kRequired);
+    } else {
+      request.SetUserVerification(UserVerificationRequirement::kDiscouraged);
+    }
   }
 
   // TODO(martinkr): Change FidoTasks to take all request parameters by const
@@ -78,19 +83,26 @@ void FidoDeviceAuthenticator::MakeCredential(CtapMakeCredentialRequest request,
 
 void FidoDeviceAuthenticator::GetAssertion(CtapGetAssertionRequest request,
                                            GetAssertionCallback callback) {
-  DCHECK(!task_);
   DCHECK(device_->SupportedProtocolIsInitialized())
       << "InitializeAuthenticator() must be called first.";
   DCHECK(Options());
+  const bool pin_support =
+      base::FeatureList::IsEnabled(device::kWebAuthPINSupport);
 
   // Update the request to the "effective" user verification requirement.
   // https://w3c.github.io/webauthn/#effective-user-verification-requirement-for-assertion
-  if (Options()->user_verification_availability ==
-      AuthenticatorSupportedOptions::UserVerificationAvailability::
-          kSupportedAndConfigured) {
-    request.SetUserVerification(UserVerificationRequirement::kRequired);
-  } else {
-    request.SetUserVerification(UserVerificationRequirement::kDiscouraged);
+  if (!pin_support ||
+      request.user_verification() == UserVerificationRequirement::kPreferred) {
+    if (Options()->user_verification_availability ==
+            AuthenticatorSupportedOptions::UserVerificationAvailability::
+                kSupportedAndConfigured ||
+        (pin_support && Options()->client_pin_availability ==
+                            AuthenticatorSupportedOptions::
+                                ClientPinAvailability::kSupportedAndPinSet)) {
+      request.SetUserVerification(UserVerificationRequirement::kRequired);
+    } else {
+      request.SetUserVerification(UserVerificationRequirement::kDiscouraged);
+    }
   }
 
   task_ = std::make_unique<GetAssertionTask>(device_.get(), std::move(request),
@@ -203,7 +215,7 @@ void FidoDeviceAuthenticator::GetPINToken(
 }
 
 void FidoDeviceAuthenticator::SetPIN(const std::string& pin,
-                                     pin::KeyAgreementResponse& peer_key,
+                                     const pin::KeyAgreementResponse& peer_key,
                                      SetPINCallback callback) {
   DCHECK(device_->SupportedProtocolIsInitialized())
       << "InitializeAuthenticator() must be called first.";

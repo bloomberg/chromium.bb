@@ -719,7 +719,7 @@ void AuthenticatorImpl::MakeCredential(
           request_->GetWeakPtr()) /* bluetooth_adapter_power_on_callback */,
       base::BindRepeating(
           &device::FidoRequestHandlerBase::InitiatePairingWithDevice,
-          request_->GetWeakPtr()) /* ble_pairing_callback*/);
+          request_->GetWeakPtr()) /* ble_pairing_callback */);
   request_->set_observer(request_delegate_.get());
 
   request_->SetPlatformAuthenticatorOrMarkUnavailable(
@@ -927,6 +927,8 @@ void AuthenticatorImpl::OnRegisterResponse(
           AuthenticatorRequestClientDelegate::InterestingFailureReason::
               kKeyAlreadyRegistered);
       return;
+    case device::FidoReturnCode::kAuthenticatorRemovedDuringPINEntry:
+      [[fallthrough]];
     case device::FidoReturnCode::kAuthenticatorResponseInvalid:
       // The response from the authenticator was corrupted.
       InvokeCallbackAndCleanup(
@@ -943,6 +945,16 @@ void AuthenticatorImpl::OnRegisterResponse(
           std::move(make_credential_response_callback_),
           blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR, nullptr,
           Focus::kDoCheck);
+      return;
+    case device::FidoReturnCode::kSoftPINBlock:
+      SignalFailureToRequestDelegate(
+          AuthenticatorRequestClientDelegate::InterestingFailureReason::
+              kSoftPINBlock);
+      return;
+    case device::FidoReturnCode::kHardPINBlock:
+      SignalFailureToRequestDelegate(
+          AuthenticatorRequestClientDelegate::InterestingFailureReason::
+              kHardPINBlock);
       return;
     case device::FidoReturnCode::kSuccess:
       DCHECK(response_data.has_value());
@@ -1079,6 +1091,8 @@ void AuthenticatorImpl::OnSignResponse(
           AuthenticatorRequestClientDelegate::InterestingFailureReason::
               kKeyNotRegistered);
       return;
+    case device::FidoReturnCode::kAuthenticatorRemovedDuringPINEntry:
+      [[fallthrough]];
     case device::FidoReturnCode::kAuthenticatorResponseInvalid:
       // The response from the authenticator was corrupted.
       InvokeCallbackAndCleanup(
@@ -1093,6 +1107,16 @@ void AuthenticatorImpl::OnSignResponse(
       InvokeCallbackAndCleanup(
           std::move(get_assertion_response_callback_),
           blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR, nullptr);
+      return;
+    case device::FidoReturnCode::kSoftPINBlock:
+      SignalFailureToRequestDelegate(
+          AuthenticatorRequestClientDelegate::InterestingFailureReason::
+              kSoftPINBlock);
+      return;
+    case device::FidoReturnCode::kHardPINBlock:
+      SignalFailureToRequestDelegate(
+          AuthenticatorRequestClientDelegate::InterestingFailureReason::
+              kHardPINBlock);
       return;
     case device::FidoReturnCode::kSuccess:
       DCHECK(response_data.has_value());
@@ -1133,6 +1157,13 @@ void AuthenticatorImpl::SignalFailureToRequestDelegate(
     case AuthenticatorRequestClientDelegate::InterestingFailureReason::kTimeout:
       status = blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR;
       break;
+    case AuthenticatorRequestClientDelegate::InterestingFailureReason::
+        kSoftPINBlock:
+      status = blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR;
+      break;
+    case AuthenticatorRequestClientDelegate::InterestingFailureReason::
+        kHardPINBlock:
+      status = blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR;
   }
 
   error_awaiting_user_acknowledgement_ = status;
