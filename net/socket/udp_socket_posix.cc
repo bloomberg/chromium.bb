@@ -938,6 +938,13 @@ int UDPSocketPosix::SetMulticastOptions() {
   if (multicast_interface_ != 0) {
     switch (addr_family_) {
       case AF_INET: {
+#if defined(OS_FUCHSIA)
+        // setsockopt(IP_MULTICAST_IF) is broken on Fuchsia.
+        // TODO(https://crbug.com/938101) Remove ifdef once the bug is fixed
+        // upstream.
+        return OK;
+#endif
+
 #if defined(OS_MACOSX)
         ip_mreq mreq = {};
         int error = GetIPv4AddressFromIndex(socket_, multicast_interface_,
@@ -951,15 +958,6 @@ int UDPSocketPosix::SetMulticastOptions() {
 #endif  //  !defined(OS_MACOSX)
         int rv = setsockopt(socket_, IPPROTO_IP, IP_MULTICAST_IF,
                             reinterpret_cast<const char*>(&mreq), sizeof(mreq));
-#if defined(OS_FUCHSIA)
-        // Remove this workaround once IP_MULTICAST_IF is implemented.
-        // See https://crbug.com/924792
-        if (rv && errno == EOPNOTSUPP) {
-          LOG(WARNING)
-              << "IP_MULTICAST_IF is not supported. Proceeding anyway.";
-          rv = 0;
-        }
-#endif  // !defined(OS_FUCHSIA)
         if (rv)
           return MapSystemError(errno);
         break;
