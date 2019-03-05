@@ -21,6 +21,9 @@ const char* const kWebViewCrashKeyWhiteList[] = {
     kAppPackageVersionCode,
     kAndroidSdkInt,
 
+    // process type
+    "ptype",
+
     // Java exception stack traces
     "exception_info",
 
