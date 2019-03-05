@@ -9,7 +9,7 @@ option optimize_for = LITE_RUNTIME;
 package ukm;
 
 // Source contains data related to a top-level navigation.
-// Next tag: 13
+// Next tag: 15
 message Source {
   // The URL scheme, such as HTTP, HTTPS, CHROME_EXTENSION, etc.
   enum UrlScheme {
@@ -26,9 +26,17 @@ message Source {
   // An identifier for the source. This should be unique within a session.
   optional int64 id = 1;
 
-  // The previous source id for the tab this source is in. Should only be set
-  // for navigation sources.
+  // The previous source id for the tab this source is in. Should only
+  // be set for navigation sources. Note that only non-same-document
+  // sources are included here. If you want to include same-document
+  // navigations, use previous_same_document_source_id.
   optional int64 previous_source_id = 11;
+
+  // The source id for the previous same document navigation, if the
+  // previously committed source was a same document navigation. If
+  // the previously committed source was not a same document
+  // navigation, this field will be unset.
+  optional int64 previous_same_document_source_id = 14;
 
   // For sources representing the first navigation in a new tab, this id marks
   // the source which opened the tab. Should only be set for the first
@@ -50,6 +58,11 @@ message Source {
   // scope, in the order that the URLs were encountered. Data may include full
   // or partial redirect chains for main frame navigations.
   repeated UrlInfo urls = 8;
+
+  // Whether this source is for a same document navigation. Examples of same
+  // document navigations are fragment navigations, pushState/replaceState,
+  // and same page history navigation.
+  optional bool is_same_document_navigation = 13;
 
   // The URL of the source, as recorded in history. If this URL has not been
   // discovered by Google's crawler, it should not be recorded.
