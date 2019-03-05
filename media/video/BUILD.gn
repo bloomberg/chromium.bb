@@ -57,6 +57,7 @@ source_set("video") {
   ]
 
   deps = [
+    "//gpu/command_buffer/client",
     "//gpu/command_buffer/common",
     "//media/base",
     "//third_party/libyuv",
@@ -118,6 +119,7 @@ source_set("unit_tests") {
   deps = [
     "//base",
     "//base/test:test_support",
+    "//components/viz/test:test_support",
     "//gpu:test_support",
     "//gpu/command_buffer/client:gles2_interface",
     "//gpu/command_buffer/common",

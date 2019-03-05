@@ -28,7 +28,7 @@ namespace media {
 
 class MockGpuVideoAcceleratorFactories : public GpuVideoAcceleratorFactories {
  public:
-  explicit MockGpuVideoAcceleratorFactories(gpu::gles2::GLES2Interface* gles2);
+  explicit MockGpuVideoAcceleratorFactories(gpu::SharedImageInterface* sii);
   ~MockGpuVideoAcceleratorFactories() override;
 
   bool IsGpuVideoAcceleratorEnabled() override;
@@ -82,7 +82,11 @@ class MockGpuVideoAcceleratorFactories : public GpuVideoAcceleratorFactories {
     return video_frame_output_format_;
   }
 
-  gpu::gles2::GLES2Interface* ContextGL() override { return gles2_; }
+  gpu::gles2::GLES2Interface* ContextGL() override { return nullptr; }
+  gpu::SharedImageInterface* SharedImageInterface() override { return sii_; }
+  gpu::GpuMemoryBufferManager* GpuMemoryBufferManager() override {
+    return nullptr;
+  }
 
   void SetVideoFrameOutputFormat(const OutputFormat video_frame_output_format) {
     video_frame_output_format_ = video_frame_output_format;
@@ -102,8 +106,6 @@ class MockGpuVideoAcceleratorFactories : public GpuVideoAcceleratorFactories {
   std::unique_ptr<VideoEncodeAccelerator> CreateVideoEncodeAccelerator()
       override;
 
-  gpu::gles2::GLES2Interface* GetGLES2Interface() { return gles2_; }
-
   const std::vector<gfx::GpuMemoryBuffer*>& created_memory_buffers() {
     return created_memory_buffers_;
   }
@@ -116,7 +118,7 @@ class MockGpuVideoAcceleratorFactories : public GpuVideoAcceleratorFactories {
 
   bool fail_to_allocate_gpu_memory_buffer_ = false;
 
-  gpu::gles2::GLES2Interface* gles2_;
+  gpu::SharedImageInterface* sii_;
 
   std::vector<gfx::GpuMemoryBuffer*> created_memory_buffers_;
 };

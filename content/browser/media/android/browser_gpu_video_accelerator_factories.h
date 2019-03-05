@@ -55,6 +55,8 @@ class BrowserGpuVideoAcceleratorFactories
   media::GpuVideoAcceleratorFactories::OutputFormat VideoFrameOutputFormat(
       media::VideoPixelFormat pixel_format) override;
   gpu::gles2::GLES2Interface* ContextGL() override;
+  gpu::SharedImageInterface* SharedImageInterface() override;
+  gpu::GpuMemoryBufferManager* GpuMemoryBufferManager() override;
   std::unique_ptr<base::SharedMemory> CreateSharedMemory(size_t size) override;
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() override;
   media::VideoDecodeAccelerator::Capabilities

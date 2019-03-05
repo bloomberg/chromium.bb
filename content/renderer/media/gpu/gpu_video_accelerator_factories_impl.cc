@@ -371,7 +371,7 @@ bool GpuVideoAcceleratorFactoriesImpl::ShouldUseGpuMemoryBuffersForVideoFrames(
 unsigned GpuVideoAcceleratorFactoriesImpl::ImageTextureTarget(
     gfx::BufferFormat format) {
   DCHECK(context_provider_);
-  return gpu::GetBufferTextureTarget(gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
+  return gpu::GetBufferTextureTarget(gfx::BufferUsage::SCANOUT_CPU_READ_WRITE,
                                      format,
                                      context_provider_->ContextCapabilities());
 }
@@ -440,6 +440,17 @@ GpuVideoAcceleratorFactoriesImpl::VideoFrameOutputFormat(
 
 gpu::gles2::GLES2Interface* GpuVideoAcceleratorFactoriesImpl::ContextGL() {
   return CheckContextLost() ? nullptr : context_provider_->ContextGL();
+}
+
+gpu::SharedImageInterface*
+GpuVideoAcceleratorFactoriesImpl::SharedImageInterface() {
+  return CheckContextLost() ? nullptr
+                            : context_provider_->SharedImageInterface();
+}
+
+gpu::GpuMemoryBufferManager*
+GpuVideoAcceleratorFactoriesImpl::GpuMemoryBufferManager() {
+  return gpu_memory_buffer_manager_;
 }
 
 std::unique_ptr<base::SharedMemory>
