@@ -14,7 +14,7 @@
 #include "base/trace_event/trace_log.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
-#include "services/tracing/perfetto/json_trace_exporter.h"
+#include "services/tracing/perfetto/chrome_event_bundle_json_exporter.h"
 #include "services/tracing/perfetto/perfetto_service.h"
 #include "services/tracing/public/mojom/constants.mojom.h"
 #include "services/tracing/public/mojom/perfetto_service.mojom.h"
@@ -37,13 +37,13 @@ class PerfettoTracingCoordinator::TracingSession : public perfetto::Consumer {
                  base::OnceClosure tracing_over_callback)
       : tracing_over_callback_(std::move(tracing_over_callback)) {
     base::trace_event::TraceConfig chrome_trace_config_obj(config);
-    json_trace_exporter_.reset(new JSONTraceExporter(
+    json_trace_exporter_ = std::make_unique<ChromeEventBundleJsonExporter>(
         chrome_trace_config_obj.IsArgumentFilterEnabled()
             ? base::trace_event::TraceLog::GetInstance()
                   ->GetArgumentFilterPredicate()
             : JSONTraceExporter::ArgumentFilterPredicate(),
         base::BindRepeating(&TracingSession::OnJSONTraceEventCallback,
-                            base::Unretained(this))));
+                            base::Unretained(this)));
     perfetto::TracingService* service =
         PerfettoService::GetInstance()->GetService();
     consumer_endpoint_ = service->ConnectConsumer(this, /*uid=*/0);
