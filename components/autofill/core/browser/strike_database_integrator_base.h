@@ -66,6 +66,8 @@ class StrikeDatabaseIntegratorBase {
                            GetKeyForStrikeDatabaseIntegratorUniqueIdTest);
   FRIEND_TEST_ALL_PREFIXES(StrikeDatabaseIntegratorTestStrikeDatabaseTest,
                            RemoveExpiredStrikesUniqueIdTest);
+  FRIEND_TEST_ALL_PREFIXES(StrikeDatabaseIntegratorTestStrikeDatabaseTest,
+                           RemoveExpiredStrikesTestLogsUMA);
   friend class SaveCardInfobarEGTestHelper;
   friend class StrikeDatabaseTest;
   friend class StrikeDatabaseTester;

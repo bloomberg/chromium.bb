@@ -1181,4 +1181,42 @@ TEST_F(LocalCardMigrationManagerTest,
   EXPECT_EQ(local_card_migration_strike_database.GetStrikes(), 3);
 }
 
+// When local card migration is accepted, UMA metrics for LocalCardMigration
+// strike count is logged.
+TEST_F(LocalCardMigrationManagerTest, MigrateCreditCard_StrikeCountUMALogged) {
+  scoped_feature_list_.InitWithFeatures(
+      // Enabled
+      {features::kAutofillCreditCardLocalCardMigration,
+       features::kAutofillSaveCreditCardUsesStrikeSystemV2,
+       features::kAutofillLocalCardMigrationUsesStrikeSystemV2},
+      // Disabled
+      {});
+
+  AddLocalCreditCard(personal_data_, "Flo Master", "4111111111111111", "11",
+                     test::NextYear().c_str(), "1", "guid1");
+  AddLocalCreditCard(personal_data_, "Flo Master", "5454545454545454", "11",
+                     test::NextYear().c_str(), "1", "guid2");
+  autofill_client_.GetPrefs()->SetDouble(prefs::kAutofillBillingCustomerNumber,
+                                         12345);
+  local_card_migration_manager_->GetMigratableCreditCards();
+
+  // Add 4 LocalCardMigration strikes.
+  LocalCardMigrationStrikeDatabase local_card_migration_strike_database =
+      LocalCardMigrationStrikeDatabase(strike_database_);
+  local_card_migration_strike_database.AddStrikes(4);
+  EXPECT_EQ(local_card_migration_strike_database.GetStrikes(), 4);
+
+  base::HistogramTester histogram_tester;
+
+  // Select the cards.
+  autofill_client_.set_migration_card_selections(
+      std::vector<std::string>{"guid1", "guid2"});
+  local_card_migration_manager_->AttemptToOfferLocalCardMigration(true);
+
+  // Verify that the strike count was logged when card migration accepted.
+  histogram_tester.ExpectBucketCount(
+      "Autofill.StrikeDatabase.StrikesPresentWhenLocalCardMigrationAccepted", 4,
+      1);
+}
+
 }  // namespace autofill
