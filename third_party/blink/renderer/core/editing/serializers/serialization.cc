@@ -737,6 +737,22 @@ void ReplaceChildrenWithText(ContainerNode* container,
 
   ChildListMutationScope mutation(*container_node);
 
+  // FIXME: This is wrong if containerNode->firstChild() has more than one ref!
+  // Example:
+  // <div>foo</div>
+  // <script>
+  // var oldText = div.firstChild;
+  // console.log(oldText.data); // foo
+  // div.innerText = "bar";
+  // console.log(oldText.data); // bar!?!
+  // </script>
+  // I believe this is an intentional benchmark cheat from years ago.
+  // We should re-visit if we actually want this still.
+  if (container_node->HasOneTextChild()) {
+    ToText(container_node->firstChild())->setData(text);
+    return;
+  }
+
   // NOTE: This method currently always creates a text node, even if that text
   // node will be empty.
   Text* text_node = Text::Create(container_node->GetDocument(), text);
