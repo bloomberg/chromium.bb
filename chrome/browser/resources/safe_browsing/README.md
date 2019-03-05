@@ -25,6 +25,42 @@ Rendered version of this file: https://chromium.googlesource.com/chromium/src/+/
     * The Component Updater system will notice those files and push them to
       users withing ~6 hours. If not, contact `waffles@.`
 
+## Procedure for rollback
+While Omaha allows rollback through the release manager, the Chrome client will
+reject updates with lower version numbers. (This is important for running new
+versions on Canary/Dev channel). Rolling back a bad version is best achieved by:
+  * **Reverting** the changes on the Chromium source tree.
+  * **Submitting** a new CL incrementing the version number.
+  * **Push** the newest version, as above.
+
+## Procedure for incremental rollout
+  * Open the Omaha Release manager at:
+    https://omaharelease.corp.google.com/product/1436/cohorts
+  * **Disable** the automatic push by changing the _Push Scheduler_ from
+    `LATEST_TO_AUTO` to `NONE`. Then commit the changes by clicking _Commit
+    Automation Changes_.
+  * **Upload** the new version of the file types.
+    * In a synced checkout, run the following to generate protos for all
+      platforms and push them to GCS. Replace the arg with your build directory:
+        * % `chrome/browser/resources/safe_browsing/push_file_type_proto.py -d
+          out-gn/Debug`
+  * Create a new cohort.
+    * Under _Cohorts_, click _Manage_, then _Create Subcohort_ of Auto.
+    * Select a name and percentage for the new cohort.
+    * Return to the product page.
+  * **Push** to the new cohort.
+    * Select _Edit Schedule_ for the new cohort, and select the newest file
+      group and a time to roll out.
+  * After the incremental rollout is complete, remember to set the _Push
+    Scheduler_ back to `LATEST_TO_AUTO`
+
+Note: Everything after disabling automation could be scripted through the
+[ReleaseServiceManager](http://google3/java/com/google/installer/releasemanager/proto/releasemanager_stubby.proto).
+An example script using this API is
+[here](http://google3/googleclient/installer/tools/release/keystone/create_release_testing_cohorts.py).
+If we regularly need incremental rollouts, it may be worth creating our own
+scripts to do so reliably.
+
 
 ## Guidelines for a DownloadFileType entry:
 See `download_file_types.proto` for all fields.
@@ -45,8 +81,8 @@ See `download_file_types.proto` for all fields.
 
     * `SAMPLED_PING`: Don't send a full Safe Browsing ping, but
        send a no-PII "light-ping" for a random sample of SBER users.
-       This should be the default for unknown types. The verdict won't
-       be used.
+       This should be used for known safe types. The verdict won't be used.
+
     * `NO_PING`:  Don’t send any pings. This file is whitelisted. All
       NOT_DANGEROUS files should normally use this.
     * `FULL_PING`: Send full pings and use the verdict. All dangerous
@@ -138,5 +174,5 @@ See `download_file_types.proto` for all fields.
 
   * `default_file_type`: Settings used if a downloaded file is not in
     the above list. `extension` is ignored, but other settings are used.
-    The ping_setting should be SAMPLED_PING for all platforms.
-
+    The ping_setting should be FULL_PING for all platforms, so that
+    unknown file types generate pings.
