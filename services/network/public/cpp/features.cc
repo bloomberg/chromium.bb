@@ -20,7 +20,7 @@ const base::Feature kNetworkErrorLogging{"NetworkErrorLogging",
 const base::Feature kNetworkService {
   "NetworkService",
 #if defined(OS_WIN) || defined(OS_MACOSX) || \
-    (defined(OS_LINUX) && !defined(OS_CHROMEOS) && !defined(IS_CHROMECAST))
+    (defined(OS_LINUX) && !defined(IS_CHROMECAST))
       base::FEATURE_ENABLED_BY_DEFAULT
 };
 #else
