@@ -1123,6 +1123,7 @@ HttpHandler::PrepareStandardResponse(
       body_params, base::JSONWriter::OPTIONS_OMIT_DOUBLE_TYPE_PRESERVATION,
       &body);
   response->SetBody(body, "application/json; charset=utf-8");
+  response->AddHeader("cache-control", "no-cache");
   return response;
 }
 
