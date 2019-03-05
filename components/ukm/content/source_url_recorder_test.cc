@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "components/ukm/content/source_url_recorder.h"
+#include "base/test/scoped_feature_list.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/navigation_simulator.h"
@@ -10,6 +11,7 @@
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/metrics_proto/ukm/source.pb.h"
 #include "url/gurl.h"
 
 using content::NavigationSimulator;
@@ -81,7 +83,84 @@ TEST_F(SourceUrlRecorderWebContentsObserverTest, IgnoreUrlInSubframe) {
   EXPECT_EQ(main_frame_url, GetAssociatedURLForWebContentsDocument());
 }
 
-TEST_F(SourceUrlRecorderWebContentsObserverTest, IgnoreSameDocumentNavigation) {
+TEST_F(SourceUrlRecorderWebContentsObserverTest, SameDocumentNavigation) {
+  GURL url1("https://www.example.com/");
+  GURL url2("https://www.example.com/2");
+  GURL same_document_url1("https://www.example.com/#samedocument");
+  GURL same_document_url2("https://www.example.com/#samedocument2");
+  NavigationSimulator::NavigateAndCommitFromBrowser(web_contents(), url1);
+  NavigationSimulator::CreateRendererInitiated(same_document_url1, main_rfh())
+      ->CommitSameDocument();
+  NavigationSimulator::NavigateAndCommitFromBrowser(web_contents(), url2);
+  NavigationSimulator::CreateRendererInitiated(same_document_url2, main_rfh())
+      ->CommitSameDocument();
+
+  EXPECT_EQ(same_document_url2, web_contents()->GetLastCommittedURL());
+
+  // Serialize each source so we can verify expectations below.
+  ukm::Source full_nav_source1, full_nav_source2, same_doc_source1,
+      same_doc_source2;
+  EXPECT_EQ(4ul, test_ukm_recorder_.GetSources().size());
+  for (auto& kv : test_ukm_recorder_.GetSources()) {
+    if (kv.second->url() == url1) {
+      kv.second->PopulateProto(&full_nav_source1);
+    } else if (kv.second->url() == url2) {
+      kv.second->PopulateProto(&full_nav_source2);
+    } else if (kv.second->url() == same_document_url1) {
+      kv.second->PopulateProto(&same_doc_source1);
+    } else if (kv.second->url() == same_document_url2) {
+      kv.second->PopulateProto(&same_doc_source2);
+    } else {
+      FAIL() << "Encountered unexpected source.";
+    }
+  }
+
+  // The first navigation was a non-same-document navigation to url1. As such,
+  // it shouldn't have any previous source ids.
+  EXPECT_EQ(url1, full_nav_source1.url());
+  EXPECT_TRUE(full_nav_source1.has_id());
+  EXPECT_FALSE(full_nav_source1.is_same_document_navigation());
+  EXPECT_FALSE(full_nav_source1.has_previous_source_id());
+  EXPECT_FALSE(full_nav_source1.has_previous_same_document_source_id());
+
+  // The second navigation was a same-document navigation to
+  // same_document_url1. It should have a previous_source_id that points to
+  // url1's source, but no previous_same_document_source_id.
+  EXPECT_EQ(same_document_url1, same_doc_source1.url());
+  EXPECT_TRUE(same_doc_source1.has_id());
+  EXPECT_TRUE(same_doc_source1.is_same_document_navigation());
+  EXPECT_EQ(full_nav_source1.id(), same_doc_source1.previous_source_id());
+  EXPECT_FALSE(same_doc_source1.has_previous_same_document_source_id());
+
+  // The third navigation was a non-same-document navigation to url2. It should
+  // have a previous_source_id pointing to the source for url1, and a
+  // previous_same_document_source_id pointing to the source for
+  // same_document_url1.
+  EXPECT_EQ(url2, full_nav_source2.url());
+  EXPECT_TRUE(full_nav_source2.has_id());
+  EXPECT_FALSE(full_nav_source2.is_same_document_navigation());
+  EXPECT_EQ(full_nav_source1.id(), full_nav_source2.previous_source_id());
+  EXPECT_EQ(same_doc_source1.id(),
+            full_nav_source2.previous_same_document_source_id());
+
+  // The fourth navigation was a same-document navigation to
+  // same_document_url2. It should have a previous_source_id pointing to the
+  // source for url2, and no previous_same_document_source_id.
+  EXPECT_EQ(same_document_url2, same_doc_source2.url());
+  EXPECT_TRUE(same_doc_source2.has_id());
+  EXPECT_TRUE(same_doc_source2.is_same_document_navigation());
+  EXPECT_EQ(full_nav_source2.id(), same_doc_source2.previous_source_id());
+  EXPECT_FALSE(same_doc_source2.has_previous_same_document_source_id());
+
+  EXPECT_EQ(url2, GetAssociatedURLForWebContentsDocument());
+}
+
+TEST_F(SourceUrlRecorderWebContentsObserverTest,
+       SameDocumentNavigationDisabled) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      ukm::kUkmFeature, {{"MaxSameDocumentSourcesPerFullSource", "0"}});
+
   GURL url("https://www.example.com/");
   GURL same_document_url("https://www.example.com/#samedocument");
   NavigationSimulator::NavigateAndCommitFromBrowser(web_contents(), url);
@@ -92,9 +171,10 @@ TEST_F(SourceUrlRecorderWebContentsObserverTest, IgnoreSameDocumentNavigation) {
 
   const auto& sources = test_ukm_recorder_.GetSources();
   EXPECT_EQ(1ul, sources.size());
-  for (const auto& kv : sources) {
+  for (auto& kv : sources) {
     EXPECT_EQ(url, kv.second->url());
     EXPECT_EQ(1u, kv.second->urls().size());
+    EXPECT_FALSE(kv.second->navigation_data().is_same_document_navigation);
   }
 
   EXPECT_EQ(url, GetAssociatedURLForWebContentsDocument());
