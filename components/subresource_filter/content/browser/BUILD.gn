@@ -47,6 +47,7 @@ static_library("browser") {
     "//components/subresource_filter/content/mojom",
     "//components/subresource_filter/core/browser",
     "//components/subresource_filter/core/common",
+    "//components/subresource_filter/core/mojom",
     "//components/ukm:ukm",
     "//content/public/browser",
     "//content/public/common",
