@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include <functional>
 #include <memory>
 #include <string>
 #include <utility>
@@ -408,7 +409,7 @@ void RecoveryComponentInstaller::Install(
     update_client::CrxInstaller::Callback callback) {
   auto result = update_client::InstallFunctionWrapper(
       base::BindOnce(&RecoveryComponentInstaller::DoInstall,
-                     base::Unretained(this), base::ConstRef(unpack_path)));
+                     base::Unretained(this), std::cref(unpack_path)));
   base::PostTask(FROM_HERE, base::BindOnce(std::move(callback), result));
 }
 

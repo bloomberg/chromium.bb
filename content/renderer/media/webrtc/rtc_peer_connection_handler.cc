@@ -8,6 +8,7 @@
 #include <string.h>
 
 #include <algorithm>
+#include <functional>
 #include <memory>
 #include <set>
 #include <string>
@@ -1572,7 +1573,7 @@ RTCPeerConnectionHandler::AddTransceiverWithTrack(
       base::BindRepeating(
           &RTCPeerConnectionHandler::AddTransceiverWithTrackOnSignalingThread,
           base::Unretained(this), base::RetainedRef(track_ref->webrtc_track()),
-          base::ConstRef(init), base::Unretained(&transceiver_state_surfacer),
+          std::cref(init), base::Unretained(&transceiver_state_surfacer),
           base::Unretained(&error_or_transceiver)),
       "AddTransceiverWithTrackOnSignalingThread");
   if (!error_or_transceiver.ok()) {
@@ -1623,8 +1624,8 @@ RTCPeerConnectionHandler::AddTransceiverWithKind(
   RunSynchronousRepeatingClosureOnSignalingThread(
       base::BindRepeating(&RTCPeerConnectionHandler::
                               AddTransceiverWithMediaTypeOnSignalingThread,
-                          base::Unretained(this), base::ConstRef(media_type),
-                          base::ConstRef(init),
+                          base::Unretained(this), std::cref(media_type),
+                          std::cref(init),
                           base::Unretained(&transceiver_state_surfacer),
                           base::Unretained(&error_or_transceiver)),
       "AddTransceiverWithMediaTypeOnSignalingThread");

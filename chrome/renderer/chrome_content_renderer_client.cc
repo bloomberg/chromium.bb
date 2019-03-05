@@ -4,6 +4,7 @@
 
 #include "chrome/renderer/chrome_content_renderer_client.h"
 
+#include <functional>
 #include <memory>
 #include <utility>
 
@@ -326,9 +327,9 @@ void OnModuleEvent(scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
   // over to it. It is safe to pass an unretained pointer to
   // |module_event_sink|: it is owned by a ChromeContentRendererClient, which is
   // a leaked singleton in the process.
-  io_task_runner->PostTask(
-      FROM_HERE, base::BindOnce(&HandleModuleEventOnIOThread,
-                                base::ConstRef(module_event_sink), event));
+  io_task_runner->PostTask(FROM_HERE,
+                           base::BindOnce(&HandleModuleEventOnIOThread,
+                                          std::cref(module_event_sink), event));
 }
 #endif
 
@@ -386,7 +387,7 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   // leaked.
   module_watcher_ = ModuleWatcher::Create(
       base::BindRepeating(&OnModuleEvent, thread->GetIOTaskRunner(),
-                          base::ConstRef(module_event_sink_)));
+                          std::cref(module_event_sink_)));
 #endif
 
   chrome_observer_.reset(new ChromeRenderThreadObserver());

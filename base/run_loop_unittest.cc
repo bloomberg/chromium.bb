@@ -4,6 +4,7 @@
 
 #include "base/run_loop.h"
 
+#include <functional>
 #include <utility>
 
 #include "base/bind.h"
@@ -619,14 +620,15 @@ TEST(RunLoopDelegateTest, NestableTasksDontRunInDefaultNestedLoops) {
 
   // Post a task that will fail if it runs inside the nested run loop.
   ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, BindOnce(
-                     [](const bool& nested_run_loop_ended,
-                        OnceClosure continuation_callback) {
-                       EXPECT_TRUE(nested_run_loop_ended);
-                       EXPECT_FALSE(RunLoop::IsNestedOnCurrentThread());
-                       std::move(continuation_callback).Run();
-                     },
-                     ConstRef(nested_run_loop_ended), main_loop.QuitClosure()));
+      FROM_HERE,
+      BindOnce(
+          [](const bool& nested_run_loop_ended,
+             OnceClosure continuation_callback) {
+            EXPECT_TRUE(nested_run_loop_ended);
+            EXPECT_FALSE(RunLoop::IsNestedOnCurrentThread());
+            std::move(continuation_callback).Run();
+          },
+          std::cref(nested_run_loop_ended), main_loop.QuitClosure()));
 
   // Post a task flipping the boolean bit for extra verification right before
   // quitting |nested_run_loop|.

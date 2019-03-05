@@ -425,13 +425,13 @@ the object when the Callback is run.
 
 ### Passing Parameters By Reference
 
-Const references are *copied* unless `base::ConstRef` is used. Example:
+References are *copied* unless `std::ref` or `std::cref` is used. Example:
 
 ```cpp
 void foo(const int& arg) { printf("%d %p\n", arg, &arg); }
 int n = 1;
 base::Closure has_copy = base::Bind(&foo, n);
-base::Closure has_ref = base::Bind(&foo, base::ConstRef(n));
+base::Closure has_ref = base::Bind(&foo, std::cref(n));
 n = 2;
 foo(n);                        // Prints "2 0xaaaaaaaaaaaa"
 has_copy.Run();                // Prints "1 0xbbbbbbbbbbbb"
@@ -439,9 +439,9 @@ has_ref.Run();                 // Prints "2 0xaaaaaaaaaaaa"
 ```
 
 Normally parameters are copied in the closure.
-**DANGER**: `base::ConstRef` stores a const reference instead, referencing the
-original parameter. This means that you must ensure the object outlives the
-callback!
+**DANGER**: `std::ref` and `std::cref` store a (const) reference instead,
+referencing the original parameter. This means that you must ensure the object
+outlives the callback!
 
 ## Implementation notes
 
@@ -481,16 +481,16 @@ if it's evaluated to false. You can specialize `base::IsWeakReceiver` to make
 an external smart pointer as a weak pointer.
 
 `base::UnwrapTraits<BoundObject>::Unwrap()` is called for each bound arguments
-right before `base::Callback` calls the target function. You can specialize
-this to define an argument wrapper such as `base::Unretained`,
-`base::ConstRef`, `base::Owned`, `base::RetainedRef` and `base::Passed`.
+right before `base::Callback` calls the target function. You can specialize this
+to define an argument wrapper such as `base::Unretained`, `base::Owned`,
+`base::RetainedRef` and `base::Passed`.
 
 ### How The Implementation Works:
 
 There are three main components to the system:
   1) The `base::Callback<>` classes.
   2) The `base::Bind()` functions.
-  3) The arguments wrappers (e.g., `base::Unretained()` and `base::ConstRef()`).
+  3) The arguments wrappers (e.g., `base::Unretained()` and `base::Owned()`).
 
 The Callback classes represent a generic function pointer. Internally, it
 stores a refcounted piece of state that represents the target function and all
@@ -527,16 +527,15 @@ method. These copies are created even if the function takes parameters as const
 references. (Binding to non-const references is forbidden, see bind.h.)
 
 To change this behavior, we introduce a set of argument wrappers (e.g.,
-`base::Unretained()`, and `base::ConstRef()`).  These are simple container
-templates that are passed by value, and wrap a pointer to argument.  See the
-file-level comment in base/bind_helpers.h for more info.
+`base::Unretained()`).  These are simple container templates that are passed by
+value, and wrap a pointer to argument.  See the file-level comment in
+base/bind_helpers.h for more info.
 
 These types are passed to the `Unwrap()` functions to modify the behavior of
 `base::Bind()`.  The `Unwrap()` functions change behavior by doing partial
 specialization based on whether or not a parameter is a wrapper type.
 
-`base::ConstRef()` is similar to `tr1::cref`.  `base::Unretained()` is specific
-to Chromium.
+`base::Unretained()` is specific to Chromium.
 
 ### Missing Functionality
  - Binding arrays to functions that take a non-const pointer.

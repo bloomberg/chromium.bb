@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <functional>
+
 #include "base/bind.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
@@ -83,7 +85,7 @@ class ErrorPageTest
     server_.RegisterRequestHandler(base::BindRepeating(
         &net::test_server::HandlePrefixedRequest, "/echo-query",
         base::BindRepeating(&testing::HandleEchoQueryOrCloseSocket,
-                            base::ConstRef(server_responds_with_content_))));
+                            std::cref(server_responds_with_content_))));
     server_.RegisterRequestHandler(
         base::BindRepeating(&net::test_server::HandlePrefixedRequest, "/iframe",
                             base::BindRepeating(&testing::HandleIFrame)));

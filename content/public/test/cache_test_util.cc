@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include "content/public/test/cache_test_util.h"
+
+#include <functional>
+
 #include "base/bind.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
@@ -41,7 +44,7 @@ void CacheTestUtil::CreateCacheEntries(const std::set<std::string>& keys) {
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&CacheTestUtil::CreateCacheEntriesOnIOThread,
-                     base::Unretained(this), base::ConstRef(keys)));
+                     base::Unretained(this), std::cref(keys)));
   WaitForTasksOnIOThread();
 }
 

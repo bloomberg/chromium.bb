@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <functional>
 #include <unordered_map>
 #include <utility>
 
@@ -251,8 +252,8 @@ void ComponentCloudPolicyService::Backend::UpdateWithLastFetchedPolicy() {
   // Purge any components that don't have a policy configured at the server.
   // TODO(emaxx): This is insecure, as it happens before the policy validation:
   // see crbug.com/668733.
-  store_.Purge(base::BindRepeating(&NotInResponseMap,
-                                   base::ConstRef(*last_fetched_policy_)));
+  store_.Purge(
+      base::BindRepeating(&NotInResponseMap, std::cref(*last_fetched_policy_)));
 
   for (auto it = last_fetched_policy_->begin();
        it != last_fetched_policy_->end(); ++it) {

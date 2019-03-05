@@ -4,6 +4,8 @@
 
 #include "media/capture/video/chromeos/camera_3a_controller.h"
 
+#include <functional>
+
 #include "base/bind.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
@@ -70,7 +72,7 @@ class Camera3AControllerTest : public ::testing::Test {
     thread_.task_runner()->PostTask(
         location,
         base::BindOnce(&Camera3AControllerTest::RunOnThread,
-                       base::Unretained(this), base::ConstRef(location),
+                       base::Unretained(this), std::cref(location),
                        base::Passed(&closure), base::Unretained(&done)));
     done.Wait();
   }
@@ -80,8 +82,7 @@ class Camera3AControllerTest : public ::testing::Test {
     RunOnThreadSync(
         FROM_HERE,
         base::BindOnce(&Camera3AControllerTest::Reset3AControllerOnThread,
-                       base::Unretained(this),
-                       base::ConstRef(static_metadata)));
+                       base::Unretained(this), std::cref(static_metadata)));
   }
 
   template <typename Value>
@@ -320,7 +321,7 @@ TEST_F(Camera3AControllerTest, Stabilize3AForStillCaptureTest) {
   RunOnThreadSync(FROM_HERE,
                   base::BindOnce(&Camera3AController::OnResultMetadataAvailable,
                                  base::Unretained(camera_3a_controller_.get()),
-                                 base::ConstRef(result_metadata)));
+                                 std::cref(result_metadata)));
 
   // |camera_3a_controller_| should call the registered callback once 3A are
   // stabilized.
@@ -339,7 +340,7 @@ TEST_F(Camera3AControllerTest, Stabilize3AForStillCaptureTest) {
   RunOnThreadSync(FROM_HERE,
                   base::BindOnce(&Camera3AController::OnResultMetadataAvailable,
                                  base::Unretained(camera_3a_controller_.get()),
-                                 base::ConstRef(result_metadata)));
+                                 std::cref(result_metadata)));
   done.Wait();
 }
 

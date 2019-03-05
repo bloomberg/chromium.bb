@@ -5,6 +5,7 @@
 #include "net/ssl/client_cert_store_win.h"
 
 #include <algorithm>
+#include <functional>
 #include <memory>
 #include <string>
 
@@ -239,9 +240,9 @@ void ClientCertStoreWin::GetClientCerts(
   if (base::PostTaskAndReplyWithResult(
           GetSSLPlatformKeyTaskRunner().get(), FROM_HERE,
           // Caller is responsible for keeping the |request| alive
-          // until the callback is run, so ConstRef is safe.
+          // until the callback is run, so std::cref is safe.
           base::Bind(&ClientCertStoreWin::GetClientCertsWithMyCertStore,
-                     base::ConstRef(request)),
+                     std::cref(request)),
           callback)) {
     return;
   }

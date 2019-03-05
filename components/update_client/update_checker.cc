@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <functional>
 #include <memory>
 #include <string>
 #include <utility>
@@ -134,9 +135,8 @@ void UpdateCheckerImpl::CheckForUpdates(
       base::BindOnce(&UpdateCheckerImpl::ReadUpdaterStateAttributes,
                      base::Unretained(this)),
       base::BindOnce(&UpdateCheckerImpl::CheckForUpdatesHelper,
-                     base::Unretained(this), session_id,
-                     base::ConstRef(components), additional_attributes,
-                     enabled_component_updates));
+                     base::Unretained(this), session_id, std::cref(components),
+                     additional_attributes, enabled_component_updates));
 }
 
 // This function runs on the blocking pool task runner.

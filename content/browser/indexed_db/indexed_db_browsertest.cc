@@ -4,6 +4,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
+#include <functional>
 #include <utility>
 
 #include "base/bind.h"
@@ -718,9 +720,8 @@ std::unique_ptr<net::test_server::HttpResponse> CorruptDBRequestHandler(
         base::WaitableEvent::ResetPolicy::AUTOMATIC,
         base::WaitableEvent::InitialState::NOT_SIGNALED);
     context->TaskRunner()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&CorruptIndexedDBDatabase, base::ConstRef(context),
-                       origin, &signal_when_finished));
+        FROM_HERE, base::BindOnce(&CorruptIndexedDBDatabase, std::cref(context),
+                                  origin, &signal_when_finished));
     signal_when_finished.Wait();
 
     std::unique_ptr<net::test_server::BasicHttpResponse> http_response(

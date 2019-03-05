@@ -4,6 +4,8 @@
 
 #include "chrome/browser/browsing_data/navigation_entry_remover.h"
 
+#include <functional>
+
 #include "base/bind.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
@@ -98,18 +100,18 @@ void DeleteTabNavigationEntries(
   auto predicate = time_range.IsValid()
                        ? base::BindRepeating(
                              &ShouldDeleteNavigationEntry, time_range.begin(),
-                             time_range.end(), base::ConstRef(restrict_urls))
+                             time_range.end(), std::cref(restrict_urls))
                        : base::BindRepeating(&UrlMatcherForNavigationEntry,
-                                             base::ConstRef(url_set));
+                                             std::cref(url_set));
 
 #if defined(OS_ANDROID)
   auto session_predicate =
       time_range.IsValid()
           ? base::BindRepeating(&ShouldDeleteSerializedNavigationEntry,
                                 time_range.begin(), time_range.end(),
-                                base::ConstRef(restrict_urls))
+                                std::cref(restrict_urls))
           : base::BindRepeating(&UrlMatcherForSerializedNavigationEntry,
-                                base::ConstRef(url_set));
+                                std::cref(url_set));
 
   for (auto it = TabModelList::begin(); it != TabModelList::end(); ++it) {
     TabModel* tab_model = *it;

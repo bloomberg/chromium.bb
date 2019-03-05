@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include <functional>
 #include <set>
 #include <string>
 #include <utility>
@@ -320,7 +321,7 @@ void ChromeSSLHostStateDelegate::Clear(
   HostContentSettingsMap::PatternSourcePredicate pattern_filter;
   if (!host_filter.is_null()) {
     pattern_filter =
-        base::Bind(&HostFilterToPatternFilter, base::ConstRef(host_filter));
+        base::Bind(&HostFilterToPatternFilter, std::cref(host_filter));
   }
 
   HostContentSettingsMapFactory::GetForProfile(profile_)

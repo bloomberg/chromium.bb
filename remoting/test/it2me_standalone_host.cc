@@ -4,6 +4,7 @@
 
 #include "remoting/test/it2me_standalone_host.h"
 
+#include <functional>
 #include <iostream>
 #include <vector>
 
@@ -79,9 +80,9 @@ void It2MeStandaloneHost::Run() {
 }
 
 void It2MeStandaloneHost::StartOutputTimer() {
-  timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(1),
-               base::Bind(&OutputFakeConnectionEventLogger,
-                          base::ConstRef(event_logger_)));
+  timer_.Start(
+      FROM_HERE, base::TimeDelta::FromSeconds(1),
+      base::Bind(&OutputFakeConnectionEventLogger, std::cref(event_logger_)));
 }
 
 void It2MeStandaloneHost::Connect() {

@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include <stdint.h>
+
+#include <functional>
 #include <utility>
 
 #include "base/bind.h"
@@ -766,7 +768,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
 
   characteristic1_->ReadRemoteCharacteristic(
       base::Bind(test_callback, GetReadValueCallback(Call::EXPECTED),
-                 base::ConstRef(observer)),
+                 std::cref(observer)),
       GetGattErrorCallback(Call::NOT_EXPECTED));
 
   std::vector<uint8_t> test_vector = {0, 1, 2, 3, 4, 0xf, 0xf0, 0xff};

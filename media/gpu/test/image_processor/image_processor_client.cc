@@ -4,6 +4,7 @@
 
 #include "media/gpu/test/image_processor/image_processor_client.h"
 
+#include <functional>
 #include <utility>
 
 #include "base/bind.h"
@@ -106,14 +107,13 @@ bool ImageProcessorClient::CreateImageProcessor(
   DCHECK_CALLED_ON_VALID_THREAD(test_main_thread_checker_);
   base::WaitableEvent done(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                            base::WaitableEvent::InitialState::NOT_SIGNALED);
-  // base::Unretained(this) and base::ConstRef() are safe here because |this|,
+  // base::Unretained(this) and std::cref() are safe here because |this|,
   // |input_config| and |output_config| must outlive because this task is
   // blocking.
   image_processor_client_thread_.task_runner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&ImageProcessorClient::CreateImageProcessorTask,
-                     base::Unretained(this), base::ConstRef(input_config),
-                     base::ConstRef(output_config), num_buffers, &done));
+      FROM_HERE, base::BindOnce(&ImageProcessorClient::CreateImageProcessorTask,
+                                base::Unretained(this), std::cref(input_config),
+                                std::cref(output_config), num_buffers, &done));
   done.Wait();
   if (!image_processor_) {
     LOG(ERROR) << "Failed to create ImageProcessor";
@@ -288,7 +288,7 @@ void ImageProcessorClient::Process(const Image& input_image,
 void ImageProcessorClient::ProcessTask(scoped_refptr<VideoFrame> input_frame,
                                        scoped_refptr<VideoFrame> output_frame) {
   DCHECK_CALLED_ON_VALID_THREAD(image_processor_client_thread_checker_);
-  // base::Unretained(this) and base::ConstRef() for FrameReadyCB is safe here
+  // base::Unretained(this) and std::cref() for FrameReadyCB is safe here
   // because the callback is executed on |image_processor_client_thread_| which
   // is owned by this class.
   image_processor_->Process(std::move(input_frame), std::move(output_frame),

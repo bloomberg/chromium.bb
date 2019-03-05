@@ -4,6 +4,7 @@
 
 #include "extensions/browser/api/usb/usb_device_manager.h"
 
+#include <functional>
 #include <memory>
 #include <utility>
 
@@ -268,8 +269,8 @@ void UsbDeviceManager::DispatchEvent(
                             usb::OnDeviceRemoved::Create(device_obj)));
     }
 
-    event->will_dispatch_callback = base::BindRepeating(
-        &WillDispatchDeviceEvent, base::ConstRef(device_info));
+    event->will_dispatch_callback =
+        base::BindRepeating(&WillDispatchDeviceEvent, std::cref(device_info));
     event_router->BroadcastEvent(std::move(event));
   }
 }
