@@ -57,7 +57,15 @@
 #       Extra flags passed to the plugin. See cc_generator_options.
 #
 #   deps (optional)
+#       DEPRECATED: use proto_deps or link_deps instead (crbug.com/938011).
 #       Additional dependencies.
+#
+#   link_deps (optional)
+#       Additional dependencies linked to library.
+#
+#   proto_deps (optional)
+#       Additional dependencies required before running protoc.
+#       e.g. proto file generating action.
 #
 #   use_protobuf_full (optional)
 #       If adding protobuf library would be required, adds protobuf_full to deps
@@ -315,8 +323,11 @@ template("proto_library") {
       }
     }
 
+    # The deps may have steps that have to run before running protoc.
+    if (defined(invoker.proto_deps)) {
+      deps += invoker.proto_deps
+    }
     if (defined(invoker.deps)) {
-      # The deps may have steps that have to run before running protoc.
       deps += invoker.deps
     }
   }
@@ -412,6 +423,9 @@ template("proto_library") {
     # action won't link it).
     if (defined(invoker.deps)) {
       deps += invoker.deps
+    }
+    if (defined(invoker.link_deps)) {
+      deps += invoker.link_deps
     }
   }
 }
