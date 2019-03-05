@@ -91,6 +91,27 @@ class AnswerTextNewLayout extends AnswerText {
     }
 
     /**
+     * Process (if desired) content of the answer text.
+     *
+     * @param text Source text.
+     * @return Either original or modified text.
+     */
+    @Override
+    protected String processAnswerText(String text) {
+        if (mIsAnswer && mAnswerType == AnswerType.CURRENCY) {
+            // Modify the content of answer to present only the value after conversion, that is:
+            //    1,000 United State Dollar = 1,330.75 Canadian Dollar
+            // becomes
+            //    1,330.75 Canadian Dollar
+            int offset = text.indexOf(" = ");
+            if (offset > 0) {
+                text = text.substring(offset + 3);
+            }
+        }
+        return text;
+    }
+
+    /**
      * Return the TextAppearanceSpan array specifying text decorations for a given field type.
      *
      * @param type The answer type as specified at http://goto.google.com/ais_api.
