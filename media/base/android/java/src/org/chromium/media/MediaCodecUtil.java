@@ -197,7 +197,7 @@ class MediaCodecUtil {
     private static boolean canDecode(String mime, boolean isSecure) {
         // TODO(liberato): Should we insist on software here?
         CodecCreationInfo info = createDecoder(mime, isSecure ? CodecType.SECURE : CodecType.ANY);
-        if (info.mediaCodec == null) return false;
+        if (info == null || info.mediaCodec == null) return false;
 
         try {
             info.mediaCodec.release();
