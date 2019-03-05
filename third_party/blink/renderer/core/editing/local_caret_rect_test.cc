@@ -972,21 +972,4 @@ TEST_P(ParameterizedLocalCaretRectTest, AfterCollapsedWhiteSpaceInRTLText) {
                 PositionWithAffinity(position, TextAffinity::kDownstream)));
 }
 
-// https://crbug.com/936988
-TEST_P(ParameterizedLocalCaretRectTest, AfterIneditableInline) {
-  // For LayoutNG, we also enable EditingNG to test NG caret rendering.
-  ScopedEditingNGForTest editing_ng(LayoutNGEnabled());
-
-  LoadAhem();
-  InsertStyleElement("div { font: 10px/10px Ahem }");
-  SetBodyContent(
-      "<div contenteditable><span contenteditable=\"false\">foo</span></div>");
-  const Element* div = GetDocument().QuerySelector("div");
-  const Node* text = div->firstChild()->firstChild();
-
-  const Position position = Position::LastPositionInNode(*div);
-  EXPECT_EQ(LocalCaretRect(text->GetLayoutObject(), LayoutRect(30, 0, 1, 10)),
-            LocalCaretRectOfPosition(PositionWithAffinity(position)));
-}
-
 }  // namespace blink
