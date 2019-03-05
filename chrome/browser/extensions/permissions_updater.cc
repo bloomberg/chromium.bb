@@ -6,7 +6,9 @@
 
 #include <set>
 #include <utility>
+#include <vector>
 
+#include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/feature_list.h"
@@ -31,6 +33,7 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/event_router_factory.h"
 #include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/common/cors_util.h"
 #include "extensions/common/extension.h"
@@ -121,20 +124,24 @@ class PermissionsUpdaterShutdownNotifierFactory
 
 }  // namespace
 
-// A helper class to asynchronously dispatch the permissions updated
-// notification once origin access has been updated. This will fire the
+// A helper class to asynchronously dispatch the event to notify policy host
+// restrictions or permissions once they have been updated. This will fire the
 // event if and only if the BrowserContext is still valid.
 // This class manages its own lifetime and deletes itself when either the
 // permissions updated event is fired, or the BrowserContext is shut down
 // (whichever happens first).
 class PermissionsUpdater::NetworkPermissionsUpdateHelper {
  public:
-  static void UpdateNetworkServicePermissions(
+  static void UpdatePermissions(content::BrowserContext* browser_context,
+                                EventType event_type,
+                                scoped_refptr<const Extension> extension,
+                                const PermissionSet& changed,
+                                base::OnceClosure completion_callback);
+
+  static void UpdateDefaultPolicyHostRestrictions(
       content::BrowserContext* browser_context,
-      EventType event_type,
-      scoped_refptr<const Extension> extension,
-      const PermissionSet& changed,
-      base::OnceClosure completion_callback);
+      const URLPatternSet& default_runtime_blocked_hosts,
+      const URLPatternSet& default_runtime_allowed_hosts);
 
  private:
   // This class manages its own lifetime.
@@ -154,15 +161,17 @@ class PermissionsUpdater::NetworkPermissionsUpdateHelper {
 };
 
 // static
-void PermissionsUpdater::NetworkPermissionsUpdateHelper::
-    UpdateNetworkServicePermissions(content::BrowserContext* browser_context,
-                                    EventType event_type,
-                                    scoped_refptr<const Extension> extension,
-                                    const PermissionSet& changed,
-                                    base::OnceClosure completion_callback) {
-  if (changed.effective_hosts().is_empty()) {
-    // If there is no difference in allowlist/blocklist for the extension, we
-    // can synchronously finish it without updating the CORS access list.
+void PermissionsUpdater::NetworkPermissionsUpdateHelper::UpdatePermissions(
+    content::BrowserContext* browser_context,
+    EventType event_type,
+    scoped_refptr<const Extension> extension,
+    const PermissionSet& changed,
+    base::OnceClosure completion_callback) {
+  // If there is no difference in allowlist/blocklist for the extension, we can
+  // synchronously finish it without updating the CORS access list.
+  // We do not apply this optimization for POLICY event_type, since callers do
+  // not pass effective |changed| argument.
+  if (event_type != POLICY && changed.effective_hosts().is_empty()) {
     PermissionsUpdater::NotifyPermissionsUpdated(
         browser_context, event_type, std::move(extension), changed.Clone(),
         std::move(completion_callback));
@@ -191,6 +200,41 @@ void PermissionsUpdater::NetworkPermissionsUpdateHelper::
       CreateCorsOriginAccessBlockList(*extension),
       base::BindOnce(&NetworkPermissionsUpdateHelper::OnOriginAccessUpdated,
                      helper->weak_factory_.GetWeakPtr()));
+}
+
+// static
+void PermissionsUpdater::NetworkPermissionsUpdateHelper::
+    UpdateDefaultPolicyHostRestrictions(
+        content::BrowserContext* browser_context,
+        const URLPatternSet& default_runtime_blocked_hosts,
+        const URLPatternSet& default_runtime_allowed_hosts) {
+  NetworkPermissionsUpdateHelper* helper = new NetworkPermissionsUpdateHelper(
+      browser_context,
+      base::BindOnce(
+          &PermissionsUpdater::NotifyDefaultPolicyHostRestrictionsUpdated,
+          browser_context, default_runtime_blocked_hosts.Clone(),
+          default_runtime_allowed_hosts.Clone()));
+
+  const ExtensionSet& extensions =
+      ExtensionRegistry::Get(browser_context)->enabled_extensions();
+  base::RepeatingClosure barrier_closure = base::BarrierClosure(
+      extensions.size(),
+      base::BindOnce(&NetworkPermissionsUpdateHelper::OnOriginAccessUpdated,
+                     helper->weak_factory_.GetWeakPtr()));
+
+  for (const auto& extension : extensions) {
+    std::vector<network::mojom::CorsOriginPatternPtr> allow_list =
+        CreateCorsOriginAccessAllowList(
+            *extension,
+            PermissionsData::EffectiveHostPermissionsMode::kOmitTabSpecific);
+    if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+      ExtensionsClient::Get()->AddOriginAccessPermissions(*extension, true,
+                                                          &allow_list);
+    }
+    browser_context->SetCorsOriginAccessListForOrigin(
+        url::Origin::Create(extension->url()), std::move(allow_list),
+        CreateCorsOriginAccessBlockList(*extension), barrier_closure);
+  }
 }
 
 PermissionsUpdater::NetworkPermissionsUpdateHelper::
@@ -391,29 +435,32 @@ void PermissionsUpdater::SetPolicyHostRestrictions(
 
   // Update the BrowserContext origin lists, and send notification to the
   // currently running renderers of the runtime block hosts settings.
-  NetworkPermissionsUpdateHelper::UpdateNetworkServicePermissions(
-      browser_context_, POLICY, extension, PermissionSet(),
-      base::DoNothing::Once());
+  NetworkPermissionsUpdateHelper::UpdatePermissions(browser_context_, POLICY,
+                                                    extension, PermissionSet(),
+                                                    base::DoNothing::Once());
 }
 
 void PermissionsUpdater::SetUsesDefaultHostRestrictions(
     const Extension* extension) {
   extension->permissions_data()->SetUsesDefaultHostRestrictions();
-  NetworkPermissionsUpdateHelper::UpdateNetworkServicePermissions(
-      browser_context_, POLICY, extension, PermissionSet(),
-      base::DoNothing::Once());
+  NetworkPermissionsUpdateHelper::UpdatePermissions(browser_context_, POLICY,
+                                                    extension, PermissionSet(),
+                                                    base::DoNothing::Once());
 }
 
 void PermissionsUpdater::SetDefaultPolicyHostRestrictions(
     const URLPatternSet& default_runtime_blocked_hosts,
     const URLPatternSet& default_runtime_allowed_hosts) {
+  DCHECK_EQ(0, init_flag_ & INIT_FLAG_TRANSIENT);
+
   PermissionsData::SetDefaultPolicyHostRestrictions(
       default_runtime_blocked_hosts, default_runtime_allowed_hosts);
 
-  // Send notification to the currently running renderers of the runtime block
-  // hosts settings.
-  NotifyDefaultPolicyHostRestrictionsUpdated(default_runtime_blocked_hosts,
-                                             default_runtime_allowed_hosts);
+  // Update the BrowserContext origin lists, and send notification to the
+  // currently running renderers of the runtime block hosts settings.
+  NetworkPermissionsUpdateHelper::UpdateDefaultPolicyHostRestrictions(
+      browser_context_, default_runtime_blocked_hosts,
+      default_runtime_allowed_hosts);
 }
 
 void PermissionsUpdater::RemovePermissionsUnsafe(
@@ -434,7 +481,7 @@ void PermissionsUpdater::RemovePermissionsUnsafe(
   // permissions would be re-added.
   constexpr bool update_active_prefs = true;
   SetPermissions(extension, std::move(total), update_active_prefs);
-  NetworkPermissionsUpdateHelper::UpdateNetworkServicePermissions(
+  NetworkPermissionsUpdateHelper::UpdatePermissions(
       browser_context_, REMOVED, extension, *successfully_removed,
       base::DoNothing::Once());
 }
@@ -634,14 +681,12 @@ void PermissionsUpdater::NotifyPermissionsUpdated(
   std::move(completion_callback).Run();
 }
 
-// Notify the renderers that extension policy (policy_blocked_hosts) is updated
-// and provide new set of hosts.
+// static
 void PermissionsUpdater::NotifyDefaultPolicyHostRestrictionsUpdated(
-    const URLPatternSet& default_runtime_blocked_hosts,
-    const URLPatternSet& default_runtime_allowed_hosts) {
-  DCHECK_EQ(0, init_flag_ & INIT_FLAG_TRANSIENT);
-
-  Profile* profile = Profile::FromBrowserContext(browser_context_);
+    content::BrowserContext* browser_context,
+    const URLPatternSet default_runtime_blocked_hosts,
+    const URLPatternSet default_runtime_allowed_hosts) {
+  Profile* profile = Profile::FromBrowserContext(browser_context);
 
   ExtensionMsg_UpdateDefaultPolicyHostRestrictions_Params params;
   params.default_policy_blocked_hosts = default_runtime_blocked_hosts.Clone();
@@ -685,7 +730,7 @@ void PermissionsUpdater::AddPermissionsImpl(
                                        prefs_permissions_to_add);
   }
 
-  NetworkPermissionsUpdateHelper::UpdateNetworkServicePermissions(
+  NetworkPermissionsUpdateHelper::UpdatePermissions(
       browser_context_, ADDED, &extension, active_permissions_to_add,
       std::move(completion_callback));
 }
@@ -717,7 +762,7 @@ void PermissionsUpdater::RemovePermissionsImpl(
                                            prefs_permissions_to_remove);
   }
 
-  NetworkPermissionsUpdateHelper::UpdateNetworkServicePermissions(
+  NetworkPermissionsUpdateHelper::UpdatePermissions(
       browser_context_, REMOVED, &extension, active_permissions_to_remove,
       std::move(completion_callback));
 }
