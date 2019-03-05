@@ -224,12 +224,13 @@ public class ManualFillingIntegrationTest {
                 "https://www.example.com/", "Alan Turing", "", "Street Ave 4", "", "Capitaltown",
                 "", "80666", "", "Disneyland", "1", "a.turing@enigma.com", "DE"));
 
-        // Focus the field to bring up the autofill popup. We force a accessory here because the
-        // autofill popup doesn't trigger on password fields.
+        // Focus the field to bring up the autofill popup.
+        mHelper.clickEmailField(false);
+        DropdownPopupWindowInterface popup = mHelper.waitForAutofillPopup("a.tu");
+
+        // Force a accessory here because the autofill popup doesn't trigger on password fields.
         mHelper.clickEmailField(true);
         mHelper.waitForKeyboardAccessoryToBeShown();
-
-        DropdownPopupWindowInterface popup = mHelper.waitForAutofillPopup("a.tu");
         assertThat(popup.isShowing(), is(true));
 
         // Click the tab to show the sheet and hide keyboard and popup.
