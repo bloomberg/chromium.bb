@@ -38,11 +38,8 @@ class SSLSocketParams;
 class TransportSecurityState;
 class TransportSocketParams;
 
-// TODO(mmenke): Remove HigherLayeredPool implementation once this can no longer
-// sit on top of other socket pools.
 class NET_EXPORT_PRIVATE TransportClientSocketPool
     : public ClientSocketPool,
-      public HigherLayeredPool,
       public SSLConfigService::Observer {
  public:
   // Callback to create a ConnectJob using the provided arguments. The lower
@@ -145,16 +142,12 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
                          const ClientSocketHandle* handle) const override;
   std::unique_ptr<base::DictionaryValue> GetInfoAsValue(
       const std::string& name,
-      const std::string& type,
-      bool include_nested_pools) const override;
+      const std::string& type) const override;
 
   // LowerLayeredPool implementation.
   bool IsStalled() const override;
   void AddHigherLayeredPool(HigherLayeredPool* higher_pool) override;
   void RemoveHigherLayeredPool(HigherLayeredPool* higher_pool) override;
-
-  // HigherLayeredPool implementation.
-  bool CloseOneIdleConnection() override;
 
   void DumpMemoryStats(base::trace_event::ProcessMemoryDump* pmd,
                        const std::string& parent_dump_absolute_name) const;

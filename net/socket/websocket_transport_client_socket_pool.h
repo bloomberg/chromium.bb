@@ -103,8 +103,7 @@ class NET_EXPORT_PRIVATE WebSocketTransportClientSocketPool
                          const ClientSocketHandle* handle) const override;
   std::unique_ptr<base::DictionaryValue> GetInfoAsValue(
       const std::string& name,
-      const std::string& type,
-      bool include_nested_pools) const override;
+      const std::string& type) const override;
 
   // HigherLayeredPool implementation.
   bool IsStalled() const override;

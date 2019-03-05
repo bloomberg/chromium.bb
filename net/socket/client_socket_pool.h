@@ -202,8 +202,7 @@ class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
   // ClientSocketPools will be included.
   virtual std::unique_ptr<base::DictionaryValue> GetInfoAsValue(
       const std::string& name,
-      const std::string& type,
-      bool include_nested_pools) const = 0;
+      const std::string& type) const = 0;
 
   // Returns the maximum amount of time to wait before retrying a connect.
   static const int kMaxConnectRetryIntervalMs = 250;

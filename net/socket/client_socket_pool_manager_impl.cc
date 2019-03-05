@@ -28,11 +28,9 @@ namespace {
 template <class MapType>
 void AddSocketPoolsToList(base::ListValue* list,
                           const MapType& socket_pools,
-                          const std::string& type,
-                          bool include_nested_pools) {
+                          const std::string& type) {
   for (auto it = socket_pools.begin(); it != socket_pools.end(); it++) {
-    list->Append(it->second->GetInfoAsValue(it->first.ToURI(), type,
-                                            include_nested_pools));
+    list->Append(it->second->GetInfoAsValue(it->first.ToURI(), type));
   }
 }
 
@@ -173,12 +171,10 @@ std::unique_ptr<base::Value>
 ClientSocketPoolManagerImpl::SocketPoolInfoToValue() const {
   std::unique_ptr<base::ListValue> list(new base::ListValue());
   list->Append(transport_socket_pool_->GetInfoAsValue("transport_socket_pool",
-                                                "transport_socket_pool",
-                                                false));
+                                                      "transport_socket_pool"));
   AddSocketPoolsToList(list.get(), http_proxy_socket_pools_,
-                       "http_proxy_socket_pool", true);
-  AddSocketPoolsToList(list.get(), proxy_socket_pools_, "proxy_socket_pools",
-                       true);
+                       "http_proxy_socket_pool");
+  AddSocketPoolsToList(list.get(), proxy_socket_pools_, "proxy_socket_pools");
 
   return std::move(list);
 }

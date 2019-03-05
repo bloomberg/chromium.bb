@@ -296,7 +296,7 @@ class NetworkContextTest : public testing::Test,
         ->GetSession()
         ->GetTransportSocketPool(
             net::HttpNetworkSession::SocketPoolType::NORMAL_SOCKET_POOL)
-        ->GetInfoAsValue("", "", false)
+        ->GetInfoAsValue("", "")
         ->GetInteger(name, &value);
     return value;
   }
@@ -309,7 +309,7 @@ class NetworkContextTest : public testing::Test,
             ->GetSession()
             ->GetTransportSocketPool(
                 net::HttpNetworkSession::SocketPoolType::NORMAL_SOCKET_POOL)
-            ->GetInfoAsValue("", "", false);
+            ->GetInfoAsValue("", "");
 
     int count = 0;
     base::Value* active_socket_count = pool_info->FindPathOfType(

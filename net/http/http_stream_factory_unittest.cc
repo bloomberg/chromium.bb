@@ -1391,8 +1391,7 @@ namespace {
 // Return count of distinct groups in given socket pool.
 int GetSocketPoolGroupCount(ClientSocketPool* pool) {
   int count = 0;
-  std::unique_ptr<base::DictionaryValue> dict(
-      pool->GetInfoAsValue("", "", false));
+  std::unique_ptr<base::DictionaryValue> dict(pool->GetInfoAsValue("", ""));
   EXPECT_TRUE(dict != nullptr);
   base::DictionaryValue* groups = nullptr;
   if (dict->GetDictionary("groups", &groups) && (groups != nullptr)) {
@@ -1414,8 +1413,7 @@ int GetSpdySessionCount(HttpNetworkSession* session) {
 // Return count of sockets handed out by a given socket pool.
 int GetHandedOutSocketCount(ClientSocketPool* pool) {
   int count = 0;
-  std::unique_ptr<base::DictionaryValue> dict(
-      pool->GetInfoAsValue("", "", false));
+  std::unique_ptr<base::DictionaryValue> dict(pool->GetInfoAsValue("", ""));
   EXPECT_TRUE(dict != nullptr);
   if (!dict->GetInteger("handed_out_socket_count", &count))
     return -1;
