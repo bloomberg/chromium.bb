@@ -94,7 +94,7 @@ crostiniShare.testSharePathsCrostiniSuccess = (done) => {
                            .getCurrentProfileVolumeInfo(
                                VolumeManagerCommon.VolumeType.DOWNLOADS)
                            .fileSystem.entries['/photos'];
-        chrome.fileManagerPrivate.onCrostiniSharedPathsChanged.dispatchEvent(
+        chrome.fileManagerPrivate.onCrostiniChanged.dispatchEvent(
             {eventType: 'unshare', entries: [photos]});
         // Check unregisterSharedPath is called.
         return test.repeatUntil(() => {

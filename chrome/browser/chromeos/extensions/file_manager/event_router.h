@@ -158,8 +158,7 @@ class EventRouter
   base::WeakPtr<EventRouter> GetWeakPtr();
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(EventRouterTest,
-                           PopulateCrostiniSharedPathsChangedEvent);
+  FRIEND_TEST_ALL_PREFIXES(EventRouterTest, PopulateCrostiniUnshareEvent);
 
   // Starts observing file system change events.
   void ObserveEvents();
@@ -200,14 +199,16 @@ class EventRouter
       chromeos::MountError error,
       const Volume& volume);
 
-  // Populate the paths changed event.
-  static void PopulateCrostiniSharedPathsChangedEvent(
-      extensions::api::file_manager_private::CrostiniSharedPathsChangedEvent&
-          event,
+  // Populate the path unshared event.
+  static void PopulateCrostiniUnshareEvent(
+      extensions::api::file_manager_private::CrostiniEvent& event,
       const std::string& extension_id,
       const std::string& mount_name,
       const std::string& file_system_name,
       const std::string& full_path);
+
+  // Called when crostini is enabled/disabled.
+  void OnCrostiniEnabledChanged();
 
   base::Time last_copy_progress_event_;
 

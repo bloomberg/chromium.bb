@@ -22,7 +22,6 @@ function FileManager() {
    */
   this.fileBrowserBackground_;
 }
-FileManager.prototype.setupCrostini_ = () => {};
 
 /** @type {string} */
 let FILE_MANAGER_ROOT;

@@ -28,12 +28,6 @@ function getEntry(volumeType, path) {
 
 // Run the tests.
 chrome.test.runTests([
-  function testIsCrostiniEnabled() {
-    chrome.fileManagerPrivate.isCrostiniEnabled(
-        chrome.test.callbackPass((enabled) => {
-          chrome.test.assertTrue(enabled);
-        }));
-  },
   function testMountCrostini() {
     chrome.fileManagerPrivate.mountCrostini(
         chrome.test.callbackPass());

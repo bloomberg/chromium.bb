@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/file_manager/file_manager_string_util.h"
 #include "chrome/browser/chromeos/file_manager/open_with_browser.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
@@ -43,6 +44,9 @@ ExtensionFunction::ResponseAction FileManagerPrivateGetStringsFunction::Run() {
   // TODO(crbug.com/868747): Find a better solution for demo mode.
   dict->SetBoolean("HIDE_SPACE_INFO",
                    chromeos::DemoSession::IsDeviceInDemoMode());
+  dict->SetBoolean("CROSTINI_ENABLED",
+                   crostini::IsCrostiniEnabled(
+                       Profile::FromBrowserContext(browser_context())));
   dict->SetBoolean("DRIVE_FS_ENABLED",
                    base::FeatureList::IsEnabled(chromeos::features::kDriveFs));
   dict->SetBoolean(
