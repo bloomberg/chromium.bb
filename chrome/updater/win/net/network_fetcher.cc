@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/win/windows_version.h"
 #include "chrome/updater/win/net/network.h"
 #include "chrome/updater/win/net/network_winhttp.h"
 
@@ -73,12 +74,18 @@ void NetworkFetcher::DownloadToFileComplete() {
 }
 
 NetworkFetcherFactory::NetworkFetcherFactory()
-    : session_handle_(::WinHttpOpen(L"Chrome Updater",
-                                    WINHTTP_ACCESS_TYPE_NO_PROXY,
-                                    WINHTTP_NO_PROXY_NAME,
-                                    WINHTTP_NO_PROXY_BYPASS,
-                                    WINHTTP_FLAG_ASYNC)) {}
+    : session_handle_(CreateSessionHandle()) {}
 NetworkFetcherFactory::~NetworkFetcherFactory() = default;
+
+scoped_hinternet NetworkFetcherFactory::CreateSessionHandle() {
+  const auto* os_info = base::win::OSInfo::GetInstance();
+  const uint32_t access_type = os_info->version() >= base::win::VERSION_WIN8_1
+                                   ? WINHTTP_ACCESS_TYPE_AUTOMATIC_PROXY
+                                   : WINHTTP_ACCESS_TYPE_NO_PROXY;
+  return scoped_hinternet(
+      ::WinHttpOpen(L"Chrome Updater", access_type, WINHTTP_NO_PROXY_NAME,
+                    WINHTTP_NO_PROXY_BYPASS, WINHTTP_FLAG_ASYNC));
+}
 
 std::unique_ptr<update_client::NetworkFetcher> NetworkFetcherFactory::Create()
     const {
