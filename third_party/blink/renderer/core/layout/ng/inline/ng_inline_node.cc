@@ -304,7 +304,7 @@ void CollectInlinesInternal(LayoutBlockFlow* block,
         break;
       }
       node = GetLayoutObjectForParentNode(node);
-      if (node == block) {
+      if (node == block || !node) {
         // Set |node| to |nullptr| to break out of the outer loop.
         node = nullptr;
         break;
