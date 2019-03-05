@@ -50,6 +50,8 @@ class CLIHelpersTest(unittest.TestCase):
 
   @mock.patch('__builtin__.print')
   @mock.patch('__builtin__.raw_input')
+  # https://crbug.com/938575.
+  @decorators.Disabled('chromeos')
   def testAskAgainOnInvalidAnswer(self, raw_input_mock, print_mock):
     raw_input_mock.side_effect = ['foobar', 'y']
     self.assertTrue(cli_helpers.Ask('Ready?'))
