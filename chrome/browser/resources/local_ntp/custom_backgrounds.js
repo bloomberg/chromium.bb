@@ -1075,6 +1075,12 @@ customBackgrounds.initCustomBackgrounds = function(showErrorNotification) {
 
   // Escape and Backspace handling for the background picker dialog.
   menu.onkeydown = function(event) {
+    if (event.keyCode === customBackgrounds.KEYCODES.SPACE) {
+      $(customBackgrounds.IDS.TILES).scrollTop +=
+          $(customBackgrounds.IDS.TILES).offsetHeight;
+      event.stopPropagation();
+      event.preventDefault();
+    }
     if (event.keyCode === customBackgrounds.KEYCODES.ESC ||
         event.keyCode === customBackgrounds.KEYCODES.BACKSPACE) {
       event.preventDefault();
@@ -1120,8 +1126,9 @@ customBackgrounds.initCustomBackgrounds = function(showErrorNotification) {
     ntpApiHandle.logEvent(BACKGROUND_CUSTOMIZATION_LOG_TYPE
                               .NTP_CUSTOMIZE_CHROME_BACKGROUND_CANCEL);
   };
-  $(customBackgrounds.IDS.CANCEL).onkeyup = function(event) {
-    if (event.keyCode === customBackgrounds.KEYCODES.ENTER) {
+  $(customBackgrounds.IDS.CANCEL).onkeydown = function(event) {
+    if (event.keyCode === customBackgrounds.KEYCODES.ENTER ||
+        event.keyCode === customBackgrounds.KEYCODES.SPACE) {
       customBackgrounds.closeCollectionDialog(menu);
       ntpApiHandle.logEvent(BACKGROUND_CUSTOMIZATION_LOG_TYPE
                                 .NTP_CUSTOMIZE_CHROME_BACKGROUND_CANCEL);
