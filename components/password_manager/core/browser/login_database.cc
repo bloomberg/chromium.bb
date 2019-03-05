@@ -1079,7 +1079,11 @@ bool LoginDatabase::RemoveLoginByPrimaryKey(int primary_key,
     sql::Statement s1(db_.GetCachedStatement(
         SQL_FROM_HERE, "SELECT * FROM logins WHERE id = ?"));
     s1.BindInt(0, primary_key);
-    if (!StatementToForms(&s1, nullptr, &key_to_form_map)) {
+    // TODO(mamir): StatementToForms() fails if the password field couldn't be
+    // decrypted. However, this is not relevant for RemoveLoginByPrimaryKey(),
+    // and hence it shouldn't be used here.
+    if (StatementToForms(&s1, nullptr, &key_to_form_map) !=
+        FormRetrievalResult::kSuccess) {
       return false;
     }
   }
@@ -1189,11 +1193,11 @@ bool LoginDatabase::GetAutoSignInLogins(
   sql::Statement s(
       db_.GetCachedStatement(SQL_FROM_HERE, autosignin_statement_.c_str()));
   PrimaryKeyToFormMap key_to_form_map;
-  bool result = StatementToForms(&s, nullptr, &key_to_form_map);
+  FormRetrievalResult result = StatementToForms(&s, nullptr, &key_to_form_map);
   for (auto& pair : key_to_form_map) {
     forms->push_back(std::move(pair.second));
   }
-  return result;
+  return result == FormRetrievalResult::kSuccess;
 }
 
 bool LoginDatabase::DisableAutoSignInForOrigin(const GURL& origin) {
@@ -1354,10 +1358,10 @@ bool LoginDatabase::GetLogins(
                               PSL_DOMAIN_MATCH_COUNT);
   }
   PrimaryKeyToFormMap key_to_form_map;
-  bool success = StatementToForms(
+  FormRetrievalResult result = StatementToForms(
       &s, should_PSL_matching_apply || should_federated_apply ? &form : nullptr,
       &key_to_form_map);
-  if (!success) {
+  if (result != FormRetrievalResult::kSuccess) {
     return false;
   }
   for (auto& pair : key_to_form_map) {
@@ -1394,7 +1398,7 @@ bool LoginDatabase::GetLoginsForSameOrganizationName(
   s.BindString(0, signon_realms_with_same_organization_name_regexp);
 
   PrimaryKeyToFormMap key_to_form_map;
-  bool success = StatementToForms(&s, nullptr, &key_to_form_map);
+  FormRetrievalResult result = StatementToForms(&s, nullptr, &key_to_form_map);
   for (auto& pair : key_to_form_map) {
     forms->push_back(std::move(pair.second));
   }
@@ -1409,7 +1413,7 @@ bool LoginDatabase::GetLoginsForSameOrganizationName(
     return candidate_form_organization_name != organization_name;
   });
 
-  return success;
+  return result == FormRetrievalResult::kSuccess;
 }
 
 bool LoginDatabase::GetLoginsCreatedBetween(
@@ -1424,7 +1428,8 @@ bool LoginDatabase::GetLoginsCreatedBetween(
   s.BindInt64(1, end.is_null() ? std::numeric_limits<int64_t>::max()
                                : end.ToInternalValue());
 
-  return StatementToForms(&s, nullptr, key_to_form_map);
+  return StatementToForms(&s, nullptr, key_to_form_map) ==
+         FormRetrievalResult::kSuccess;
 }
 
 bool LoginDatabase::GetLoginsSyncedBetween(
@@ -1440,10 +1445,12 @@ bool LoginDatabase::GetLoginsSyncedBetween(
               end.is_null() ? base::Time::Max().ToInternalValue()
                             : end.ToInternalValue());
 
-  return StatementToForms(&s, nullptr, key_to_form_map);
+  return StatementToForms(&s, nullptr, key_to_form_map) ==
+         FormRetrievalResult::kSuccess;
 }
 
-bool LoginDatabase::GetAllLogins(PrimaryKeyToFormMap* key_to_form_map) {
+FormRetrievalResult LoginDatabase::GetAllLogins(
+    PrimaryKeyToFormMap* key_to_form_map) {
   DCHECK(key_to_form_map);
   key_to_form_map->clear();
 
@@ -1476,7 +1483,8 @@ bool LoginDatabase::GetAllLoginsWithBlacklistSetting(
 
   PrimaryKeyToFormMap key_to_form_map;
 
-  if (!StatementToForms(&s, nullptr, &key_to_form_map)) {
+  if (StatementToForms(&s, nullptr, &key_to_form_map) !=
+      FormRetrievalResult::kSuccess) {
     return false;
   }
 
@@ -1724,7 +1732,7 @@ std::unique_ptr<sync_pb::ModelTypeState> LoginDatabase::GetModelTypeState() {
   return nullptr;
 }
 
-bool LoginDatabase::StatementToForms(
+FormRetrievalResult LoginDatabase::StatementToForms(
     sql::Statement* statement,
     const PasswordStore::FormDigest* matched_form,
     PrimaryKeyToFormMap* key_to_form_map) {
@@ -1739,7 +1747,7 @@ bool LoginDatabase::StatementToForms(
     EncryptionResult result =
         InitPasswordFormFromStatement(*statement, &primary_key, new_form.get());
     if (result == ENCRYPTION_RESULT_SERVICE_FAILURE)
-      return false;
+      return FormRetrievalResult::kEncrytionServiceFailure;
     if (result == ENCRYPTION_RESULT_ITEM_FAILURE) {
       if (IsUsingCleanupMechanism())
         forms_to_be_deleted.push_back(GetFormForRemoval(*statement));
@@ -1800,8 +1808,8 @@ bool LoginDatabase::StatementToForms(
 #endif
 
   if (!statement->Succeeded())
-    return false;
-  return true;
+    return FormRetrievalResult::kDbError;
+  return FormRetrievalResult::kSuccess;
 }
 
 void LoginDatabase::InitializeStatementStrings(const SQLTableBuilder& builder) {

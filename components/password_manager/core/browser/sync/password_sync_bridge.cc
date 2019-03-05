@@ -249,7 +249,8 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::MergeSyncData(
                                            true);
   // Read all local passwords.
   PrimaryKeyToFormMap key_to_local_form_map;
-  if (!password_store_sync_->ReadAllLogins(&key_to_local_form_map)) {
+  if (password_store_sync_->ReadAllLogins(&key_to_local_form_map) !=
+      FormRetrievalResult::kSuccess) {
     return syncer::ModelError(FROM_HERE,
                               "Failed to load entries from password store.");
   }
@@ -488,7 +489,8 @@ void PasswordSyncBridge::GetData(StorageKeyList storage_keys,
   // There are more efficient implementations, but since this method is rarely
   // called, simplicity is preferred over efficiency.
   PrimaryKeyToFormMap key_to_form_map;
-  if (!password_store_sync_->ReadAllLogins(&key_to_form_map)) {
+  if (password_store_sync_->ReadAllLogins(&key_to_form_map) !=
+      FormRetrievalResult::kSuccess) {
     change_processor()->ReportError(
         {FROM_HERE, "Failed to load entries from the password store."});
     return;
@@ -508,7 +510,8 @@ void PasswordSyncBridge::GetAllDataForDebugging(DataCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   PrimaryKeyToFormMap key_to_form_map;
-  if (!password_store_sync_->ReadAllLogins(&key_to_form_map)) {
+  if (password_store_sync_->ReadAllLogins(&key_to_form_map) !=
+      FormRetrievalResult::kSuccess) {
     change_processor()->ReportError(
         {FROM_HERE, "Failed to load entries from the password store."});
     return;

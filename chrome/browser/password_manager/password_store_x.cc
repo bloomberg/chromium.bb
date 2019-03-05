@@ -555,7 +555,7 @@ void PasswordStoreX::ShutdownOnUIThread() {
   PasswordStoreDefault::ShutdownOnUIThread();
 }
 
-bool PasswordStoreX::ReadAllLogins(
+password_manager::FormRetrievalResult PasswordStoreX::ReadAllLogins(
     password_manager::PrimaryKeyToFormMap* key_to_form_map) {
   // This method is called from the PasswordSyncBridge which supports only
   // PasswordStoreDefault. Therefore, on Linux, it should be called only if the
