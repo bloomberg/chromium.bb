@@ -137,6 +137,21 @@ class OverlayWindowViews : public content::OverlayWindow,
   ui::Layer* GetResizeHandleLayer();
   ui::Layer* GetControlsParentLayer();
 
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  enum class OverlayWindowControl {
+    kBackToTab = 0,
+    kMute,
+    kSkipAd,
+    kClose,
+    kPlayPause,
+    kNextTrack,
+    kPreviousTrack,
+    kMaxValue = kPreviousTrack
+  };
+  void RecordButtonPressed(OverlayWindowControl);
+  void RecordTapGesture(OverlayWindowControl);
+
   // Toggles the play/pause control through the |controller_| and updates the
   // |play_pause_controls_view_| toggled state to reflect the current playing
   // state.

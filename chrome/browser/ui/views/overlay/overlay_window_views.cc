@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
@@ -791,52 +792,84 @@ void OverlayWindowViews::OnGestureEvent(ui::GestureEvent* event) {
 
   if (GetBackToTabControlsBounds().Contains(event->location())) {
     controller_->CloseAndFocusInitiator();
+    RecordTapGesture(OverlayWindowControl::kBackToTab);
     event->SetHandled();
   } else if (GetMuteControlsBounds().Contains(event->location())) {
     ToggleMute();
+    RecordTapGesture(OverlayWindowControl::kMute);
     event->SetHandled();
   } else if (GetSkipAdControlsBounds().Contains(event->location())) {
     controller_->SkipAd();
+    RecordTapGesture(OverlayWindowControl::kSkipAd);
     event->SetHandled();
   } else if (GetCloseControlsBounds().Contains(event->location())) {
     controller_->Close(true /* should_pause_video */,
                        true /* should_reset_pip_player */);
+    RecordTapGesture(OverlayWindowControl::kClose);
     event->SetHandled();
   } else if (GetPlayPauseControlsBounds().Contains(event->location())) {
     TogglePlayPause();
+    RecordTapGesture(OverlayWindowControl::kPlayPause);
     event->SetHandled();
   } else if (GetNextTrackControlsBounds().Contains(event->location())) {
     controller_->NextTrack();
+    RecordTapGesture(OverlayWindowControl::kNextTrack);
     event->SetHandled();
   } else if (GetPreviousTrackControlsBounds().Contains(event->location())) {
     controller_->PreviousTrack();
+    RecordTapGesture(OverlayWindowControl::kPreviousTrack);
     event->SetHandled();
   }
 }
 
 void OverlayWindowViews::ButtonPressed(views::Button* sender,
                                        const ui::Event& event) {
-  if (sender == back_to_tab_controls_view_.get())
+  if (sender == back_to_tab_controls_view_.get()) {
     controller_->CloseAndFocusInitiator();
+    RecordButtonPressed(OverlayWindowControl::kBackToTab);
+  }
 
-  if (sender == mute_controls_view_.get())
+  if (sender == mute_controls_view_.get()) {
     ToggleMute();
+    RecordButtonPressed(OverlayWindowControl::kMute);
+  }
 
-  if (sender == skip_ad_controls_view_.get())
+  if (sender == skip_ad_controls_view_.get()) {
     controller_->SkipAd();
+    RecordButtonPressed(OverlayWindowControl::kSkipAd);
+  }
 
-  if (sender == close_controls_view_.get())
+  if (sender == close_controls_view_.get()) {
     controller_->Close(true /* should_pause_video */,
                        true /* should_reset_pip_player */);
+    RecordButtonPressed(OverlayWindowControl::kClose);
+  }
 
-  if (sender == play_pause_controls_view_.get())
+  if (sender == play_pause_controls_view_.get()) {
     TogglePlayPause();
+    RecordButtonPressed(OverlayWindowControl::kPlayPause);
+  }
 
-  if (sender == next_track_controls_view_.get())
+  if (sender == next_track_controls_view_.get()) {
     controller_->NextTrack();
+    RecordButtonPressed(OverlayWindowControl::kNextTrack);
+  }
 
-  if (sender == previous_track_controls_view_.get())
+  if (sender == previous_track_controls_view_.get()) {
     controller_->PreviousTrack();
+    RecordButtonPressed(OverlayWindowControl::kPreviousTrack);
+  }
+}
+
+void OverlayWindowViews::RecordTapGesture(OverlayWindowControl window_control) {
+  UMA_HISTOGRAM_ENUMERATION("PictureInPictureWindow.TapGesture",
+                            window_control);
+}
+
+void OverlayWindowViews::RecordButtonPressed(
+    OverlayWindowControl window_control) {
+  UMA_HISTOGRAM_ENUMERATION("PictureInPictureWindow.ButtonPressed",
+                            window_control);
 }
 
 gfx::Rect OverlayWindowViews::GetBackToTabControlsBounds() {
