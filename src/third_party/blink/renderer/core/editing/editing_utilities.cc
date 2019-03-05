@@ -1239,8 +1239,8 @@ static bool IsWhitespaceNode(const Node* node)
     if (!node)
         return false;
     if (node->IsTextNode())
-        return ToText(node)->ContainsOnlyWhitespace();
-    return node->HasTagName(brTag);
+        return ToText(node)->ContainsOnlyWhitespaceOrEmpty();
+    return node->HasTagName(html_names::kBrTag);
 }
 
 Node* PreviousRenderedSiblingExcludingWhitespace(const Node* node)
