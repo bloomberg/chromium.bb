@@ -190,6 +190,11 @@ Polymer({
       // Select pen tool when entering annotation mode.
       this.updateAnnotationTool_(this.$.pen);
     }
+    this.dispatchEvent(new CustomEvent('annotation-mode-toggled', {
+      detail: {
+        value: this.annotationMode,
+      },
+    }));
   },
 
   /** @param {Event} e */

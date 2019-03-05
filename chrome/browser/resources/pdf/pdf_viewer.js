@@ -256,7 +256,7 @@ function PDFViewer(browserApi) {
     this.toolbar_.addEventListener(
         'rotate-right', () => this.rotateClockwise());
     this.toolbar_.addEventListener(
-        'annotation-mode-changed', e => this.annotationModeChanged_(e));
+        'annotation-mode-toggled', e => this.annotationModeToggled_(e));
     this.toolbar_.addEventListener(
         'annotation-tool-changed',
         e => this.inkController_.setAnnotationTool(e.detail.value));
@@ -500,17 +500,28 @@ PDFViewer.prototype = {
    * @param {!CustomEvent<{value: boolean}>} e
    * @private
    */
-  annotationModeChanged_: async function(e) {
+  annotationModeToggled_: async function(e) {
     const annotationMode = e.detail.value;
     if (annotationMode) {
       // Enter annotation mode.
-      PDFMetrics.record(PDFMetrics.UserAction.ENTER_ANNOTATION_MODE);
-      this.hasEnteredAnnotationMode_ = true;
       assert(this.currentController_ == this.pluginController_);
       // TODO(dstockwell): set plugin read-only, begin transition
       this.updateProgress(0);
       // TODO(dstockwell): handle save failure
       const result = await this.pluginController_.save(true);
+      if (result.hasUnsavedChanges) {
+        assert(!loadTimeData.getBoolean('pdfFormSaveEnabled'));
+        try {
+          await $('form-warning').show();
+        } catch (e) {
+          // The user aborted entering annotation mode. Revert to the plugin.
+          this.toolbar_.annotationMode = false;
+          this.updateProgress(100);
+          return;
+        }
+      }
+      PDFMetrics.record(PDFMetrics.UserAction.ENTER_ANNOTATION_MODE);
+      this.hasEnteredAnnotationMode_ = true;
       // TODO(dstockwell): feed real progress data from the Ink component
       this.updateProgress(50);
       await this.inkController_.load(result.fileName, result.dataToSave);
@@ -737,6 +748,9 @@ PDFViewer.prototype = {
     $('zoom-toolbar').strings = strings;
     $('password-screen').strings = strings;
     $('error-screen').strings = strings;
+    if ($('form-warning')) {
+      $('form-warning').strings = strings;
+    }
   },
 
   /**
