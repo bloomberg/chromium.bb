@@ -12,14 +12,6 @@
 
 namespace blink {
 
-// TODO(https://crbug.com/925949): Move this to high_contrast_settings.h.
-enum class HighContrastPagePolicy {
-  // Apply high-contrast filter to all frames, regardless of content.
-  kFilterAll,
-  // Apply high-contrast filter to frames based on background color.
-  kFilterByBackground,
-};
-
 // Extract high contrast settings from |settings| and modify them as needed
 // based on |layout_object|.
 HighContrastSettings CORE_EXPORT

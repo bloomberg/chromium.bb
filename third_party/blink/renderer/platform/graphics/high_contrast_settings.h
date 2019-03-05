@@ -25,6 +25,13 @@ enum class HighContrastImagePolicy {
   kFilterSmart,
 };
 
+enum class HighContrastPagePolicy {
+  // Apply high-contrast filter to all frames, regardless of content.
+  kFilterAll,
+  // Apply high-contrast filter to frames based on background color.
+  kFilterByBackground,
+};
+
 struct HighContrastSettings {
   HighContrastMode mode = HighContrastMode::kOff;
   bool grayscale = false;
