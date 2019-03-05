@@ -392,12 +392,12 @@ void RenderWidgetFullscreenPepper::UpdateLayerBounds() {
   // viewport.
   gfx::Size layer_size = gfx::Rect(ViewRect()).size();
   // When IsUseZoomForDSFEnabled() is true, layout and compositor layer sizes
-  // given by blink are all in physical pixels. When IsUseZoomForDSFEnabled() is
-  // false, layout and compositor layer sizes given by blink are all in DIP, and
-  // the compositor scales them internally by the device scale factor.
-  if (!compositor_deps()->IsUseZoomForDSFEnabled()) {
-    layer_size = gfx::ConvertSizeToDIP(
-        GetOriginalScreenInfo().device_scale_factor, layer_size);
+  // given by blink are all in physical pixels, and the compositor does not do
+  // any scaling. But the ViewRect() is always in DIP so we must scale the layer
+  // here as the compositor won't.
+  if (compositor_deps()->IsUseZoomForDSFEnabled()) {
+    layer_size = gfx::ScaleToCeiledSize(
+        layer_size, GetOriginalScreenInfo().device_scale_factor);
   }
   layer_->SetBounds(layer_size);
 }
