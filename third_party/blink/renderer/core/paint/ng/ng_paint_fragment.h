@@ -16,10 +16,8 @@
 
 namespace blink {
 
-class LayoutInline;
 class NGBlockBreakToken;
 struct LayoutSelectionStatus;
-struct PaintInfo;
 enum class NGOutlineType;
 
 // The NGPaintFragment contains a NGPhysicalFragment and geometry in the paint
@@ -188,13 +186,6 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
   // Set ShouldDoFullPaintInvalidation flag to all objects in the first line of
   // this block-level fragment.
   void SetShouldDoFullPaintInvalidationForFirstLine();
-
-  // Paint all descendant inline box fragments that belong to the specified
-  // LayoutObject.
-  void PaintInlineBoxForDescendants(const PaintInfo&,
-                                    const LayoutPoint& paint_offset,
-                                    const LayoutInline*,
-                                    NGPhysicalOffset = {}) const;
 
   // DisplayItemClient methods.
   String DebugName() const override;
