@@ -67,6 +67,7 @@ class LayoutListItem final : public LayoutBlockFlow {
 
   enum OverflowType { Layout, Visual };
   void UpdateOverflow(OverflowType);
+  LayoutUnit AdditionalMarginStart() const override;
 
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
 
