@@ -36,23 +36,7 @@ class GLOzoneEGLWayland : public GLOzoneEGL {
       gfx::AcceleratedWidget widget) override;
 
   scoped_refptr<gl::GLSurface> CreateSurfacelessViewGLSurface(
-      gfx::AcceleratedWidget window) override {
-    // Only EGLGLES2 is supported with surfaceless view gl.
-    if (gl::GetGLImplementation() != gl::kGLImplementationEGLGLES2)
-      return nullptr;
-
-#if defined(WAYLAND_GBM)
-    // If there is a gbm device available, use surfaceless gl surface.
-    if (!connection_->gbm_device())
-      return nullptr;
-    return gl::InitializeGLSurface(new GbmSurfacelessWayland(
-        static_cast<WaylandSurfaceFactory*>(
-            OzonePlatform::GetInstance()->GetSurfaceFactoryOzone()),
-        window));
-#else
-    return nullptr;
-#endif
-  }
+      gfx::AcceleratedWidget window) override;
 
   scoped_refptr<gl::GLSurface> CreateOffscreenGLSurface(
       const gfx::Size& size) override;
@@ -84,6 +68,25 @@ scoped_refptr<gl::GLSurface> GLOzoneEGLWayland::CreateViewGLSurface(
   if (!egl_window)
     return nullptr;
   return gl::InitializeGLSurface(new GLSurfaceWayland(std::move(egl_window)));
+}
+
+scoped_refptr<gl::GLSurface> GLOzoneEGLWayland::CreateSurfacelessViewGLSurface(
+    gfx::AcceleratedWidget window) {
+  // Only EGLGLES2 is supported with surfaceless view gl.
+  if (gl::GetGLImplementation() != gl::kGLImplementationEGLGLES2)
+    return nullptr;
+
+#if defined(WAYLAND_GBM)
+  // If there is a gbm device available, use surfaceless gl surface.
+  if (!connection_->gbm_device())
+    return nullptr;
+  return gl::InitializeGLSurface(new GbmSurfacelessWayland(
+      static_cast<WaylandSurfaceFactory*>(
+          OzonePlatform::GetInstance()->GetSurfaceFactoryOzone()),
+      window));
+#else
+  return nullptr;
+#endif
 }
 
 scoped_refptr<gl::GLSurface> GLOzoneEGLWayland::CreateOffscreenGLSurface(
