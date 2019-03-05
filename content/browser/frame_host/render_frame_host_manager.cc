@@ -82,8 +82,7 @@ RenderFrameHostManager::RenderFrameHostManager(FrameTreeNode* frame_tree_node,
 }
 
 RenderFrameHostManager::~RenderFrameHostManager() {
-  if (speculative_render_frame_host_)
-    UnsetSpeculativeRenderFrameHost();
+  DCHECK(!speculative_render_frame_host_);
 
   // Delete any RenderFrameProxyHosts. It is important to delete those prior to
   // deleting the current RenderFrameHost, since the CrossProcessFrameConnector
