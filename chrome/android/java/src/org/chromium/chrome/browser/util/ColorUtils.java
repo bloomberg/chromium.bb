@@ -89,7 +89,7 @@ public class ColorUtils {
      * @return The {@link ColorRes} for the icon tint.
      */
     public static @ColorRes int getIconTintRes(boolean useLight) {
-        return useLight ? R.color.standard_mode_tint : R.color.tint_on_dark_bg;
+        return useLight ? R.color.tint_on_dark_bg : R.color.standard_mode_tint;
     }
 
     /**
