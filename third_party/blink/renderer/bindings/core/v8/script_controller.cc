@@ -135,7 +135,7 @@ v8::Local<v8::Value> ScriptController::ExecuteScriptAndReturnValue(
                                                      GetFrame()->GetDocument());
     probe::ProduceCompilationCache(frame_, source, script);
     V8CodeCache::ProduceCache(GetIsolate(), script, source,
-                              produce_cache_options, compile_options);
+                              produce_cache_options);
 
     if (!maybe_result.ToLocal(&result)) {
       return result;

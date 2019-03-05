@@ -32,16 +32,12 @@ class CORE_EXPORT ScriptModuleProduceCacheData final
  public:
   ScriptModuleProduceCacheData(v8::Isolate*,
                                SingleCachedMetadataHandler*,
-                               v8::ScriptCompiler::CompileOptions,
                                V8CodeCache::ProduceCacheOptions,
                                v8::Local<v8::Module>);
 
   void Trace(blink::Visitor*);
 
   SingleCachedMetadataHandler* CacheHandler() const { return cache_handler_; }
-  v8::ScriptCompiler::CompileOptions GetCompileOptions() const {
-    return compile_options_;
-  }
   V8CodeCache::ProduceCacheOptions GetProduceCacheOptions() const {
     return produce_cache_options_;
   }
@@ -51,8 +47,6 @@ class CORE_EXPORT ScriptModuleProduceCacheData final
 
  private:
   Member<SingleCachedMetadataHandler> cache_handler_;
-
-  v8::ScriptCompiler::CompileOptions compile_options_;
   V8CodeCache::ProduceCacheOptions produce_cache_options_;
 
   // TODO(keishi): Visitor only defines a trace method for v8::Value so this

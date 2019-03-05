@@ -106,10 +106,6 @@ class ModuleScriptTest : public ::testing::Test {
   }
 
   // Accessors for ModuleScript private members.
-  static v8::ScriptCompiler::CompileOptions GetCompileOptions(
-      const ModuleScript* module_script) {
-    return module_script->produce_cache_data_->GetCompileOptions();
-  }
   static V8CodeCache::ProduceCacheOptions GetProduceCacheOptions(
       const ModuleScript* module_script) {
     return module_script->produce_cache_data_->GetProduceCacheOptions();
@@ -160,8 +156,6 @@ TEST_F(ModuleScriptTest, V8CodeCache) {
             V8CodeCache::TagForCodeCache(cache_handler)));
         EXPECT_EQ(V8CodeCache::ProduceCacheOptions::kSetTimeStamp,
                   GetProduceCacheOptions(module_script));
-        EXPECT_EQ(v8::ScriptCompiler::kNoCompileOptions,
-                  GetCompileOptions(module_script));
         EXPECT_CALL(*sender_ptr, Send(_, _));
         break;
 
@@ -174,8 +168,6 @@ TEST_F(ModuleScriptTest, V8CodeCache) {
             V8CodeCache::TagForCodeCache(cache_handler)));
         EXPECT_EQ(V8CodeCache::ProduceCacheOptions::kProduceCodeCache,
                   GetProduceCacheOptions(module_script));
-        EXPECT_EQ(v8::ScriptCompiler::kNoCompileOptions,
-                  GetCompileOptions(module_script));
         EXPECT_CALL(*sender_ptr, Send(_, _));
         break;
 
@@ -186,8 +178,6 @@ TEST_F(ModuleScriptTest, V8CodeCache) {
             V8CodeCache::TagForTimeStamp(cache_handler)));
         EXPECT_TRUE(cache_handler->GetCachedMetadata(
             V8CodeCache::TagForCodeCache(cache_handler)));
-        EXPECT_EQ(v8::ScriptCompiler::kConsumeCodeCache,
-                  GetCompileOptions(module_script));
         EXPECT_EQ(V8CodeCache::ProduceCacheOptions::kNoProduceCache,
                   GetProduceCacheOptions(module_script));
         break;
