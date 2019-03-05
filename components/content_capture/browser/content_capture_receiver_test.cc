@@ -123,8 +123,6 @@ class ContentCaptureReceiverTest : public content::RenderViewHostTestHarness {
     test_data2_.children.push_back(child);
   }
 
-  void TearDown() override { content::RenderViewHostTestHarness::TearDown(); }
-
   void SetupChildFrame() {
     child_content_capture_sender_ =
         std::make_unique<FakeContentCaptureSender>();

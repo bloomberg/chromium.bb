@@ -83,6 +83,7 @@ class MediaDrmStorageImplTest : public content::RenderViewHostTestHarness {
   void TearDown() override {
     media_drm_storage_.reset();
     base::RunLoop().RunUntilIdle();
+    RenderViewHostTestHarness::TearDown();
   }
 
  protected:
