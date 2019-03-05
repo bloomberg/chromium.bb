@@ -310,6 +310,7 @@
 #if defined(OS_CHROMEOS) && BUILDFLAG(ENABLE_APP_LIST)
 #include "chrome/browser/chromeos/apps/apk_web_app_service.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
+#include "chrome/browser/ui/app_list/search/arc/arc_app_reinstall_search_provider.h"
 #endif
 
 #if defined(OS_MACOSX)
@@ -782,6 +783,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 #endif
 
 #if defined(OS_CHROMEOS) && BUILDFLAG(ENABLE_APP_LIST)
+  app_list::ArcAppReinstallSearchProvider::RegisterProfilePrefs(registry);
   ArcAppListPrefs::RegisterProfilePrefs(registry);
   chromeos::ApkWebAppService::RegisterProfilePrefs(registry);
 #endif

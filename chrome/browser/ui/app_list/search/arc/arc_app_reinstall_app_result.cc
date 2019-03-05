@@ -25,20 +25,23 @@ constexpr float kAppReinstallRelevance = 0.7;
 
 ArcAppReinstallAppResult::ArcAppReinstallAppResult(
     const arc::mojom::AppReinstallCandidatePtr& mojom_data,
-
-    const gfx::ImageSkia& skia_icon) {
+    const gfx::ImageSkia& skia_icon,
+    Observer* observer)
+    : observer_(observer) {
+  DCHECK(observer_);
   set_id(kPlayStoreAppUrlPrefix + mojom_data->package_name);
   SetResultType(ash::SearchResultType::kPlayStoreReinstallApp);
   SetTitle(base::UTF8ToUTF16(mojom_data->title));
   SetDisplayType(ash::SearchResultDisplayType::kRecommendation);
   set_relevance(kAppReinstallRelevance);
-
+  SetNotifyVisibilityChange(true);
   SetIcon(skia_icon);
   SetChipIcon(skia_icon);
   SetNotifyVisibilityChange(true);
 
-  if (mojom_data->star_rating != 0.0f)
+  if (mojom_data->star_rating != 0.0f) {
     SetRating(mojom_data->star_rating);
+  }
 }
 
 ArcAppReinstallAppResult::~ArcAppReinstallAppResult() = default;
@@ -46,6 +49,12 @@ ArcAppReinstallAppResult::~ArcAppReinstallAppResult() = default;
 void ArcAppReinstallAppResult::Open(int /*event_flags*/) {
   RecordAction(base::UserMetricsAction("ArcAppReinstall_Clicked"));
   arc::LaunchPlayStoreWithUrl(id());
+  observer_->OnOpened(id());
+}
+
+void ArcAppReinstallAppResult::OnVisibilityChanged(bool visibility) {
+  ChromeSearchResult::OnVisibilityChanged(visibility);
+  observer_->OnVisibilityChanged(id(), visibility);
 }
 
 }  // namespace app_list
