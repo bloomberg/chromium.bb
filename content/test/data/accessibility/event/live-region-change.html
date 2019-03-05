@@ -4,7 +4,7 @@
 <div id="live" aria-live="polite">Before</div>
 <script>
   function go() {
-    document.getElementById('live').innerText = 'After';
+    document.getElementById('live').firstChild.data = 'After';
   }
 </script>
 </body>
