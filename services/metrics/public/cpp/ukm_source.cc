@@ -58,8 +58,12 @@ UkmSource::NavigationData UkmSource::NavigationData::CopyWithSanitizedUrls(
   NavigationData sanitized_navigation_data;
   sanitized_navigation_data.urls = std::move(sanitized_urls);
   sanitized_navigation_data.previous_source_id = previous_source_id;
+  sanitized_navigation_data.previous_same_document_source_id =
+      previous_same_document_source_id;
   sanitized_navigation_data.opener_source_id = opener_source_id;
   sanitized_navigation_data.tab_id = tab_id;
+  sanitized_navigation_data.is_same_document_navigation =
+      is_same_document_navigation;
   return sanitized_navigation_data;
 }
 
@@ -110,6 +114,11 @@ void UkmSource::PopulateProto(Source* proto_source) const {
   if (navigation_data_.previous_source_id != kInvalidSourceId)
     proto_source->set_previous_source_id(navigation_data_.previous_source_id);
 
+  if (navigation_data_.previous_same_document_source_id != kInvalidSourceId) {
+    proto_source->set_previous_same_document_source_id(
+        navigation_data_.previous_same_document_source_id);
+  }
+
   if (navigation_data_.opener_source_id != kInvalidSourceId)
     proto_source->set_opener_source_id(navigation_data_.opener_source_id);
 
@@ -117,6 +126,9 @@ void UkmSource::PopulateProto(Source* proto_source) const {
   // source_url_recorder.cc
   if (navigation_data_.tab_id != 0)
     proto_source->set_tab_id(navigation_data_.tab_id);
+
+  if (navigation_data_.is_same_document_navigation)
+    proto_source->set_is_same_document_navigation(true);
 }
 
 }  // namespace ukm
