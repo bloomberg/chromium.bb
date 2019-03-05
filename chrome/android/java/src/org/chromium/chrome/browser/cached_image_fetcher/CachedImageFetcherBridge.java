@@ -107,7 +107,8 @@ class CachedImageFetcherBridge {
      */
     public void reportTotalFetchTimeFromNative(String clientName, long startTimeMillis) {
         assert mNativeCachedImageFetcherBridge != 0;
-        nativeReportCacheHitTime(mNativeCachedImageFetcherBridge, clientName, startTimeMillis);
+        nativeReportTotalFetchTimeFromNative(
+                mNativeCachedImageFetcherBridge, clientName, startTimeMillis);
     }
 
     // Native methods

@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.ntp;
 
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.chrome.browser.cached_image_fetcher.CachedImageFetcher;
 import org.chromium.chrome.browser.ntp.LogoBridge.Logo;
 import org.chromium.chrome.browser.ntp.LogoBridge.LogoObserver;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -69,13 +70,12 @@ public class LogoDelegateImpl implements LogoView.Delegate {
         if (!isAnimatedLogoShowing && mAnimatedLogoUrl != null) {
             RecordHistogram.recordSparseHistogram(LOGO_CLICK_UMA_NAME, CTA_IMAGE_CLICKED);
             mLogoView.showLoadingView();
-            mLogoBridge.getAnimatedLogo(new LogoBridge.AnimatedLogoCallback() {
-                @Override
-                public void onAnimatedLogoAvailable(BaseGifImage animatedLogoImage) {
-                    if (mIsDestroyed) return;
-                    mLogoView.playAnimatedLogo(animatedLogoImage);
-                }
-            }, mAnimatedLogoUrl);
+            CachedImageFetcher.getInstance().fetchGif(mAnimatedLogoUrl,
+                    CachedImageFetcher.NTP_ANIMATED_LOGO_UMA_CLIENT_NAME,
+                    (BaseGifImage animatedLogoImage) -> {
+                        if (mIsDestroyed || animatedLogoImage == null) return;
+                        mLogoView.playAnimatedLogo(animatedLogoImage);
+                    });
         } else if (mOnLogoClickUrl != null) {
             RecordHistogram.recordSparseHistogram(LOGO_CLICK_UMA_NAME,
                     isAnimatedLogoShowing ? ANIMATED_LOGO_CLICKED : STATIC_LOGO_CLICKED);
