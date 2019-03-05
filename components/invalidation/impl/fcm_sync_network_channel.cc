@@ -29,10 +29,9 @@ void FCMSyncNetworkChannel::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void FCMSyncNetworkChannel::NotifyChannelStateChange(
-    InvalidatorState invalidator_state) {
+void FCMSyncNetworkChannel::NotifyChannelStateChange(FcmChannelState state) {
   for (auto& observer : observers_)
-    observer.OnFCMSyncNetworkChannelStateChanged(invalidator_state);
+    observer.OnFCMChannelStateChanged(state);
 }
 
 bool FCMSyncNetworkChannel::DeliverIncomingMessage(

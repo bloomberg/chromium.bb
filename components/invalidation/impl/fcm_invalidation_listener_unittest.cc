@@ -301,11 +301,12 @@ class FCMInvalidationListenerTest : public testing::Test {
   }
 
   void EnableNotifications() {
-    fcm_sync_network_channel_->NotifyChannelStateChange(INVALIDATIONS_ENABLED);
+    fcm_sync_network_channel_->NotifyChannelStateChange(
+        FcmChannelState::ENABLED);
     listener_.InformTokenRecieved(fake_invalidation_client_, "token");
   }
 
-  void DisableNotifications(InvalidatorState state) {
+  void DisableNotifications(FcmChannelState state) {
     fcm_sync_network_channel_->NotifyChannelStateChange(state);
   }
 
@@ -478,7 +479,7 @@ TEST_F(FCMInvalidationListenerTest, InvalidateMultipleIds) {
 TEST_F(FCMInvalidationListenerTest, EnableNotificationsNotReady) {
   EXPECT_EQ(TRANSIENT_INVALIDATION_ERROR, GetInvalidatorState());
 
-  DisableNotifications(TRANSIENT_INVALIDATION_ERROR);
+  DisableNotifications(FcmChannelState::NOT_STARTED);
 
   EXPECT_EQ(TRANSIENT_INVALIDATION_ERROR, GetInvalidatorState());
 
@@ -516,17 +517,17 @@ TEST_F(FCMInvalidationListenerTest, ReadyThenEnableNotifications) {
 }
 
 // Enable notifications and ready the client.  Then disable
-// notifications with an auth error and re-enable notifications.  The
-// delegate should go into an auth error mode and then back out.
-TEST_F(FCMInvalidationListenerTest, PushClientAuthError) {
+// notifications with no_token error.  The delegate should
+// go into an error and then back out.
+TEST_F(FCMInvalidationListenerTest, FcmChannelNoTokenError) {
   EnableNotifications();
   listener_.Ready(fake_invalidation_client_);
 
   EXPECT_EQ(INVALIDATIONS_ENABLED, GetInvalidatorState());
 
-  DisableNotifications(INVALIDATION_CREDENTIALS_REJECTED);
+  DisableNotifications(FcmChannelState::NO_INSTANCE_ID_TOKEN);
 
-  EXPECT_EQ(INVALIDATION_CREDENTIALS_REJECTED, GetInvalidatorState());
+  EXPECT_EQ(TRANSIENT_INVALIDATION_ERROR, GetInvalidatorState());
 
   EnableNotifications();
 

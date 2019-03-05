@@ -10,6 +10,7 @@
 #include "base/timer/timer.h"
 #include "components/gcm_driver/gcm_app_handler.h"
 #include "components/gcm_driver/instance_id/instance_id.h"
+#include "components/invalidation/impl/channels_states.h"
 #include "components/invalidation/impl/fcm_sync_network_channel.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -68,7 +69,7 @@ class FCMNetworkHandler : public gcm::GCMAppHandler,
   void StartListening();
   void StopListening();
   bool IsListening() const;
-  void UpdateGcmChannelState(bool);
+  void UpdateChannelState(FcmChannelState state);
 
   // GCMAppHandler overrides.
   void ShutdownHandler() override;
@@ -100,7 +101,7 @@ class FCMNetworkHandler : public gcm::GCMAppHandler,
   gcm::GCMDriver* const gcm_driver_;
   instance_id::InstanceIDDriver* const instance_id_driver_;
 
-  bool gcm_channel_online_ = false;
+  FcmChannelState channel_state_ = FcmChannelState::NOT_STARTED;
   std::string token_;
 
   std::unique_ptr<base::OneShotTimer> token_validation_timer_;
