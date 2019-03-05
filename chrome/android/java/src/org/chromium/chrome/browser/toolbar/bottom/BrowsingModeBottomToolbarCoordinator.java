@@ -154,6 +154,13 @@ public class BrowsingModeBottomToolbarCoordinator {
     }
 
     /**
+     * @param isVisible Whether the browsing mode bottom toolbar is visible.
+     */
+    public void setVisible(boolean isVisible) {
+        mMediator.setVisible(isVisible);
+    }
+
+    /**
      * Show the update badge over the bottom toolbar's app menu.
      */
     public void showAppMenuUpdateBadge() {

@@ -140,6 +140,11 @@ public abstract class ToolbarLayout extends FrameLayout {
     }
 
     /**
+     * @param isVisible Whether the bottom toolbar is visible.
+     */
+    void onBottomToolbarVisibilityChanged(boolean isVisible) {}
+
+    /**
      * Disable the menu button. This removes the view from the hierarchy and nulls the related
      * instance vars.
      */

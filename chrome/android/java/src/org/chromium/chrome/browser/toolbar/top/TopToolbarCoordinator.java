@@ -579,6 +579,14 @@ public class TopToolbarCoordinator implements Toolbar {
     }
 
     /**
+     * @param isVisible Whether the bottom toolbar is visible.
+     */
+    public void onBottomToolbarVisibilityChanged(boolean isVisible) {
+        mToolbarProvider.whenLoaded(
+                (toolbar) -> toolbar.onBottomToolbarVisibilityChanged(isVisible));
+    }
+
+    /**
      * @return The experimental toolbar button if it exists.
      */
     public @Nullable View getExperimentalButtonView() {

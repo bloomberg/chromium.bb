@@ -31,7 +31,6 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.TabLoadStatus;
 import org.chromium.chrome.browser.ThemeColorProvider;
@@ -232,6 +231,8 @@ public class ToolbarManager
 
     private OmniboxStartupMetrics mOmniboxStartupMetrics;
 
+    private boolean mIsBottomToolbarVisible;
+
     /**
      * Creates a ToolbarManager object.
      *
@@ -302,6 +303,11 @@ public class ToolbarManager
             }
         };
 
+        mIsBottomToolbarVisible = FeatureUtilities.isBottomToolbarEnabled()
+                && (!FeatureUtilities.isAdaptiveToolbarEnabled()
+                        || mActivity.getResources().getConfiguration().orientation
+                                != Configuration.ORIENTATION_LANDSCAPE);
+
         mIncognitoStateProvider = new IncognitoStateProvider(mActivity);
         mTabCountProvider = new TabCountProvider();
         mThemeColorProvider = themeColorProvider;
@@ -309,6 +315,7 @@ public class ToolbarManager
 
         mToolbarProvider = AsyncViewProvider.of(controlContainer, R.id.toolbar_stub, R.id.toolbar);
         mToolbar = new TopToolbarCoordinator(controlContainer, mToolbarProvider);
+        mToolbar.onBottomToolbarVisibilityChanged(mIsBottomToolbarVisible);
         mToolbarProvider.whenLoaded((toolbar)
                                             -> onToolbarInflationComplete(menuHandler,
                                                     appMenuPropertiesDelegate, invalidator));
@@ -779,7 +786,7 @@ public class ToolbarManager
                 mActivity.findViewById(R.id.bottom_toolbar_stub),
                 mActivity.getActivityTabProvider(), homeButtonListener, searchAcceleratorListener,
                 shareButtonListener);
-        if (mAppMenuButtonHelper != null) mAppMenuButtonHelper.setMenuShowsFromBottom(true);
+        mBottomToolbarCoordinator.setBottomToolbarVisible(mIsBottomToolbarVisible);
         Toast.setGlobalExtraYOffset(
                 mActivity.getResources().getDimensionPixelSize(R.dimen.bottom_toolbar_height));
     }
@@ -810,11 +817,10 @@ public class ToolbarManager
     }
 
     /**
-     * @return Whether the bottom toolbar is currently enabled (an activity may or may not enable
-     *         this feature).
+     * @return Whether the menu button is in the bottom toolbar.
      */
-    public boolean isBottomToolbarEnabled() {
-        return mBottomToolbarCoordinator != null;
+    public boolean isMenuButtonInBottomToolbar() {
+        return mIsBottomToolbarVisible;
     }
 
     /**
@@ -1087,7 +1093,7 @@ public class ToolbarManager
      * @return The view containing the pop up menu button.
      */
     public @Nullable View getMenuButton() {
-        if (mBottomToolbarCoordinator != null) {
+        if (mBottomToolbarCoordinator != null && isMenuButtonInBottomToolbar()) {
             return mBottomToolbarCoordinator.getMenuButtonWrapper().getImageButton();
         }
         return mToolbar.getMenuButton();
@@ -1198,15 +1204,15 @@ public class ToolbarManager
      * Called when the orientation of the activity has changed.
      */
     public void onOrientationChange() {
-        if (mActionModeController == null) return;
-        mActionModeController.showControlsOnOrientationChange();
-        if (mBottomToolbarCoordinator != null
-                && ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_DUET_ADAPTIVE)) {
-            final boolean isLandscape = mActivity.getResources().getConfiguration().orientation
-                    == Configuration.ORIENTATION_LANDSCAPE;
-            mBottomToolbarCoordinator.setBottomToolbarHidden(isLandscape);
+        if (mActionModeController != null) mActionModeController.showControlsOnOrientationChange();
+
+        if (mBottomToolbarCoordinator != null && FeatureUtilities.isAdaptiveToolbarEnabled()) {
+            mIsBottomToolbarVisible = mActivity.getResources().getConfiguration().orientation
+                    != Configuration.ORIENTATION_LANDSCAPE;
+            mToolbar.onBottomToolbarVisibilityChanged(mIsBottomToolbarVisible);
+            mBottomToolbarCoordinator.setBottomToolbarVisible(mIsBottomToolbarVisible);
             if (mAppMenuButtonHelper != null) {
-                mAppMenuButtonHelper.setMenuShowsFromBottom(!isLandscape);
+                mAppMenuButtonHelper.setMenuShowsFromBottom(mIsBottomToolbarVisible);
             }
         }
     }
@@ -1323,7 +1329,7 @@ public class ToolbarManager
             }
         });
         mAppMenuButtonHelper = new AppMenuButtonHelper(menuHandler);
-        mAppMenuButtonHelper.setMenuShowsFromBottom(mBottomToolbarCoordinator != null);
+        mAppMenuButtonHelper.setMenuShowsFromBottom(isMenuButtonInBottomToolbar());
         mAppMenuButtonHelper.setOnAppMenuShownListener(() -> {
             RecordUserAction.record("MobileToolbarShowMenu");
             mToolbar.onMenuShown();
@@ -1645,7 +1651,7 @@ public class ToolbarManager
         mToolbar.updateForwardButtonVisibility(currentTab != null && currentTab.canGoForward());
         updateReloadState(tabCrashed);
         updateBookmarkButtonStatus();
-        if (mToolbar.getMenuButtonWrapper() != null) {
+        if (mToolbar.getMenuButtonWrapper() != null && !isMenuButtonInBottomToolbar()) {
             mToolbar.getMenuButtonWrapper().setVisibility(View.VISIBLE);
         }
     }
