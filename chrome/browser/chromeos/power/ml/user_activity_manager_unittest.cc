@@ -1356,7 +1356,8 @@ TEST_F(UserActivityManagerTest, BasicTabs) {
   tab_strip_model->CloseAllTabs();
 }
 
-TEST_F(UserActivityManagerTest, MultiBrowsersAndTabs) {
+// Test is flaky. See https://crbug.com/938141.
+TEST_F(UserActivityManagerTest, DISABLED_MultiBrowsersAndTabs) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndDisableFeature(features::kUserActivityPrediction);
 
