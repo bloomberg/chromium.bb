@@ -259,13 +259,7 @@ void DesktopWindowTreeHostPlatform::GetWindowPlacement(
 }
 
 gfx::Rect DesktopWindowTreeHostPlatform::GetWindowBoundsInScreen() const {
-  gfx::Rect bounds =
-      gfx::ConvertRectToDIP(device_scale_factor(), GetBoundsInPixels());
-  bounds += display::Screen::GetScreen()
-                ->GetDisplayNearestWindow(const_cast<aura::Window*>(window()))
-                .bounds()
-                .OffsetFromOrigin();
-  return bounds;
+  return gfx::ConvertRectToDIP(device_scale_factor(), GetBoundsInPixels());
 }
 
 gfx::Rect DesktopWindowTreeHostPlatform::GetClientAreaBoundsInScreen() const {
