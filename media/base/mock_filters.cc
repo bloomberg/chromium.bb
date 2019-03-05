@@ -266,4 +266,8 @@ MockStreamParser::MockStreamParser() = default;
 
 MockStreamParser::~MockStreamParser() = default;
 
+MockMediaClient::MockMediaClient() = default;
+
+MockMediaClient::~MockMediaClient() = default;
+
 }  // namespace media

@@ -183,6 +183,7 @@ jumbo_source_set("base") {
     "media_track.h",
     "media_tracks.cc",
     "media_tracks.h",
+    "media_types.cc",
     "media_types.h",
     "media_url_demuxer.cc",
     "media_url_demuxer.h",

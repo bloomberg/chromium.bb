@@ -14,6 +14,12 @@ const bool kPropCodecsEnabled = true;
 const bool kPropCodecsEnabled = false;
 #endif
 
+#if defined(OS_CHROMEOS) && BUILDFLAG(USE_PROPRIETARY_CODECS)
+const bool kMpeg4Supported = true;
+#else
+const bool kMpeg4Supported = false;
+#endif
+
 TEST(SupportedTypesTest, IsSupportedVideoTypeBasics) {
   // Default to common 709.
   const media::VideoColorSpace kColorSpace = media::VideoColorSpace::REC709();
@@ -41,9 +47,6 @@ TEST(SupportedTypesTest, IsSupportedVideoTypeBasics) {
   EXPECT_FALSE(IsSupportedVideoType({media::kCodecMPEG2,
                                      media::VIDEO_CODEC_PROFILE_UNKNOWN,
                                      kUnspecifiedLevel, kColorSpace}));
-  EXPECT_FALSE(IsSupportedVideoType({media::kCodecMPEG4,
-                                     media::VIDEO_CODEC_PROFILE_UNKNOWN,
-                                     kUnspecifiedLevel, kColorSpace}));
   EXPECT_FALSE(IsSupportedVideoType({media::kCodecHEVC,
                                      media::VIDEO_CODEC_PROFILE_UNKNOWN,
                                      kUnspecifiedLevel, kColorSpace}));
@@ -53,6 +56,10 @@ TEST(SupportedTypesTest, IsSupportedVideoTypeBasics) {
       kPropCodecsEnabled,
       IsSupportedVideoType(
           {media::kCodecH264, media::H264PROFILE_BASELINE, 1, kColorSpace}));
+  EXPECT_EQ(kMpeg4Supported,
+            IsSupportedVideoType({media::kCodecMPEG4,
+                                  media::VIDEO_CODEC_PROFILE_UNKNOWN,
+                                  kUnspecifiedLevel, kColorSpace}));
 }
 
 TEST(SupportedTypesTest, IsSupportedVideoType_VP9TransferFunctions) {

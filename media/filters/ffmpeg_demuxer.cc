@@ -33,7 +33,9 @@
 #include "media/base/limits.h"
 #include "media/base/media_log.h"
 #include "media/base/media_tracks.h"
+#include "media/base/media_types.h"
 #include "media/base/sample_rates.h"
+#include "media/base/supported_types.h"
 #include "media/base/timestamp_constants.h"
 #include "media/base/video_codecs.h"
 #include "media/base/webvtt_util.h"
@@ -252,16 +254,15 @@ std::unique_ptr<FFmpegDemuxerStream> FFmpegDemuxerStream::Create(
   if (stream->codecpar->codec_type == AVMEDIA_TYPE_AUDIO) {
     audio_config.reset(new AudioDecoderConfig());
 
-    // IsValidConfig() checks that the codec is supported and that the channel
-    // layout and sample format are valid.
-    //
     // TODO(chcunningham): Change AVStreamToAudioDecoderConfig to check
     // IsValidConfig internally and return a null scoped_ptr if not valid.
     if (!AVStreamToAudioDecoderConfig(stream, audio_config.get()) ||
-        !audio_config->IsValidConfig()) {
+        !audio_config->IsValidConfig() ||
+        !IsSupportedAudioType(AudioType::FromDecoderConfig(*audio_config))) {
       MEDIA_LOG(DEBUG, media_log) << "Warning, FFmpegDemuxer failed to create "
-                                     "a valid audio decoder configuration from "
-                                     "muxed stream";
+                                     "a valid/supported audio decoder "
+                                     "configuration from muxed stream, config:"
+                                  << audio_config->AsHumanReadableString();
       return nullptr;
     }
 
@@ -270,16 +271,15 @@ std::unique_ptr<FFmpegDemuxerStream> FFmpegDemuxerStream::Create(
   } else if (stream->codecpar->codec_type == AVMEDIA_TYPE_VIDEO) {
     video_config.reset(new VideoDecoderConfig());
 
-    // IsValidConfig() checks that the codec is supported and that the channel
-    // layout and sample format are valid.
-    //
     // TODO(chcunningham): Change AVStreamToVideoDecoderConfig to check
     // IsValidConfig internally and return a null scoped_ptr if not valid.
     if (!AVStreamToVideoDecoderConfig(stream, video_config.get()) ||
-        !video_config->IsValidConfig()) {
+        !video_config->IsValidConfig() ||
+        !IsSupportedVideoType(VideoType::FromDecoderConfig(*video_config))) {
       MEDIA_LOG(DEBUG, media_log) << "Warning, FFmpegDemuxer failed to create "
-                                     "a valid video decoder configuration from "
-                                     "muxed stream";
+                                     "a valid/supported video decoder "
+                                     "configuration from muxed stream, config:"
+                                  << video_config->AsHumanReadableString();
       return nullptr;
     }
 
@@ -1419,6 +1419,9 @@ void FFmpegDemuxer::OnFindStreamInfoDone(int result) {
                               base::TimeDelta());
     }
 
+    // TODO(chcunningham): Remove the IsValidConfig() checks below. If the
+    // config isn't valid we shouldn't have created a demuxer stream nor
+    // an entry in |media_tracks|, so the check should always be true.
     if ((codec_type == AVMEDIA_TYPE_AUDIO &&
          media_tracks->getAudioConfig(track_id).IsValidConfig()) ||
         (codec_type == AVMEDIA_TYPE_VIDEO &&
