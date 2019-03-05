@@ -128,16 +128,21 @@ DeferredGpuCommandService::CreateDeferredGpuCommandService() {
   DCHECK(base::CommandLine::InitializedForCurrentProcess());
   gpu::GpuPreferences gpu_preferences =
       content::GetGpuPreferencesFromCommandLine();
-  bool success = gpu::InitializeGLThreadSafe(
-      base::CommandLine::ForCurrentProcess(), gpu_preferences, &gpu_info,
-      &gpu_feature_info);
+  auto* command_line = base::CommandLine::ForCurrentProcess();
+  bool success = gpu::InitializeGLThreadSafe(command_line, gpu_preferences,
+                                             &gpu_info, &gpu_feature_info);
   if (!success) {
     LOG(FATAL) << "gpu::InitializeGLThreadSafe() failed.";
   }
+  auto sync_point_manager = std::make_unique<gpu::SyncPointManager>();
+  auto mailbox_manager = gpu::gles2::CreateMailboxManager(gpu_preferences);
+  // The shared_image_manager will be shared between renderer thread and GPU
+  // main thread, so it should be thread safe.
+  auto shared_image_manager =
+      std::make_unique<gpu::SharedImageManager>(true /* thread_safe */);
   return new DeferredGpuCommandService(
-      std::make_unique<gpu::SyncPointManager>(),
-      gpu::gles2::CreateMailboxManager(gpu_preferences),
-      std::make_unique<gpu::SharedImageManager>(), gpu_preferences, gpu_info,
+      std::move(sync_point_manager), std::move(mailbox_manager),
+      std::move(shared_image_manager), gpu_preferences, gpu_info,
       gpu_feature_info);
 }
 

@@ -28,6 +28,7 @@
 namespace gpu {
 class GpuInit;
 class SyncPointManager;
+class SharedImageManager;
 }  // namespace gpu
 
 namespace service_manager {
@@ -77,6 +78,7 @@ class VizMainImpl : public mojom::VizMain {
 
     bool create_display_compositor = false;
     gpu::SyncPointManager* sync_point_manager = nullptr;
+    gpu::SharedImageManager* shared_image_manager = nullptr;
     base::WaitableEvent* shutdown_event = nullptr;
     scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner;
     service_manager::Connector* connector = nullptr;

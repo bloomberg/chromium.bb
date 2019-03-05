@@ -27,7 +27,6 @@
 #include "gpu/command_buffer/service/service_discardable_manager.h"
 #include "gpu/command_buffer/service/shader_translator_cache.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
-#include "gpu/command_buffer/service/shared_image_manager.h"
 #include "gpu/config/gpu_driver_bug_workarounds.h"
 #include "gpu/config/gpu_feature_info.h"
 #include "gpu/config/gpu_preferences.h"
@@ -75,6 +74,7 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       Scheduler* scheduler,
       SyncPointManager* sync_point_manager,
+      SharedImageManager* shared_image_manager,
       GpuMemoryBufferFactory* gpu_memory_buffer_factory,
       const GpuFeatureInfo& gpu_feature_info,
       GpuProcessActivityFlags activity_flags,
@@ -150,7 +150,7 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager
 
   SyncPointManager* sync_point_manager() const { return sync_point_manager_; }
 
-  SharedImageManager* shared_image_manager() { return &shared_image_manager_; }
+  SharedImageManager* shared_image_manager() { return shared_image_manager_; }
 
   // Retrieve GPU Resource consumption statistics for the task manager
   void GetVideoMemoryUsageStats(
@@ -203,7 +203,8 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager
   std::unique_ptr<gles2::Outputter> outputter_;
   Scheduler* scheduler_;
   // SyncPointManager guaranteed to outlive running MessageLoop.
-  SyncPointManager* sync_point_manager_;
+  SyncPointManager* const sync_point_manager_;
+  SharedImageManager* const shared_image_manager_;
   std::unique_ptr<gles2::ProgramCache> program_cache_;
   gles2::ShaderTranslatorCache shader_translator_cache_;
   gles2::FramebufferCompletenessCache framebuffer_completeness_cache_;
@@ -212,7 +213,6 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager
   GpuFeatureInfo gpu_feature_info_;
   ServiceDiscardableManager discardable_manager_;
   PassthroughDiscardableManager passthrough_discardable_manager_;
-  SharedImageManager shared_image_manager_;
 #if defined(OS_ANDROID)
   // Last time we know the GPU was powered on. Global for tracking across all
   // transport surfaces.

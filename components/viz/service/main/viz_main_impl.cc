@@ -197,7 +197,8 @@ void VizMainImpl::CreateGpuService(
       std::move(gpu_host),
       gpu::GpuProcessActivityFlags(std::move(activity_flags)),
       gpu_init_->TakeDefaultOffscreenSurface(),
-      dependencies_.sync_point_manager, dependencies_.shutdown_event);
+      dependencies_.sync_point_manager, dependencies_.shared_image_manager,
+      dependencies_.shutdown_event);
 
   if (!pending_frame_sink_manager_params_.is_null()) {
     CreateFrameSinkManagerInternal(

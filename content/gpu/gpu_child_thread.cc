@@ -168,8 +168,11 @@ viz::VizMainImpl::ExternalDependencies CreateVizMainDependencies(
     service_manager::Connector* connector) {
   viz::VizMainImpl::ExternalDependencies deps;
   deps.create_display_compositor = features::IsVizDisplayCompositorEnabled();
-  if (GetContentClient()->gpu())
+  if (GetContentClient()->gpu()) {
     deps.sync_point_manager = GetContentClient()->gpu()->GetSyncPointManager();
+    deps.shared_image_manager =
+        GetContentClient()->gpu()->GetSharedImageManager();
+  }
   auto* process = ChildProcess::current();
   deps.shutdown_event = process->GetShutDownEvent();
   deps.io_thread_task_runner = process->io_task_runner();

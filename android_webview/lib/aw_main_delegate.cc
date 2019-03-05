@@ -347,11 +347,21 @@ gpu::SyncPointManager* GetSyncPointManager() {
   DCHECK(DeferredGpuCommandService::GetInstance());
   return DeferredGpuCommandService::GetInstance()->sync_point_manager();
 }
+gpu::SharedImageManager* GetSharedImageManager() {
+  DCHECK(DeferredGpuCommandService::GetInstance());
+  const bool enable_shared_image =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kWebViewEnableSharedImage);
+  return enable_shared_image
+             ? DeferredGpuCommandService::GetInstance()->shared_image_manager()
+             : nullptr;
+}
 }  // namespace
 
 content::ContentGpuClient* AwMainDelegate::CreateContentGpuClient() {
-  content_gpu_client_.reset(
-      new AwContentGpuClient(base::BindRepeating(&GetSyncPointManager)));
+  content_gpu_client_ = std::make_unique<AwContentGpuClient>(
+      base::BindRepeating(&GetSyncPointManager),
+      base::BindRepeating(&GetSharedImageManager));
   return content_gpu_client_.get();
 }
 

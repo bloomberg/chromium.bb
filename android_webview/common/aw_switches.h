@@ -10,6 +10,7 @@ namespace switches {
 extern const char kWebViewSandboxedRenderer[];
 extern const char kWebViewEnableSafeBrowsingSupport[];
 extern const char kWebViewDisableSafeBrowsingSupport[];
+extern const char kWebViewEnableSharedImage[];
 
 // Please note that if you are adding a flag that is intended for a renderer,
 // you also need to add it into

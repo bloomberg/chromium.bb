@@ -105,9 +105,17 @@ bool SharedImageFactory::CreateSharedImage(const Mailbox& mailbox,
   std::unique_ptr<SharedImageBacking> backing;
   bool using_wrapped_sk_image = wrapped_sk_image_factory_ &&
                                 (usage & SHARED_IMAGE_USAGE_OOP_RASTERIZATION);
-  bool using_interop_factory = using_vulkan_ &&
-                               (usage & SHARED_IMAGE_USAGE_GLES2) &&
+  // If |shared_image_manager_| is thread safe, it means the display is running
+  // on a separate thread (which uses a separate GL context or VkDeviceQueue).
+  bool share_between_threads = shared_image_manager_->is_thread_safe() &&
                                (usage & SHARED_IMAGE_USAGE_DISPLAY);
+  bool share_between_gl_vulkan = using_vulkan_ &&
+                                 (usage & SHARED_IMAGE_USAGE_GLES2) &&
+                                 (usage & SHARED_IMAGE_USAGE_DISPLAY);
+  bool using_interop_factory = share_between_threads || share_between_gl_vulkan;
+  // TODO(penghuang): make sure all shared image are created with correct usage.
+  // https://crbug.com/937480
+  // using_interop_factory = shared_image_manager_->is_thread_safe();
   if (using_wrapped_sk_image) {
     backing = wrapped_sk_image_factory_->CreateSharedImage(
         mailbox, format, size, color_space, usage);

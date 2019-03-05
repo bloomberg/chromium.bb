@@ -44,6 +44,7 @@ class GpuMemoryBufferFactory;
 class GpuWatchdogThread;
 class Scheduler;
 class SyncPointManager;
+class SharedImageManager;
 class VulkanImplementation;
 }  // namespace gpu
 
@@ -85,6 +86,7 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
       gpu::GpuProcessActivityFlags activity_flags,
       scoped_refptr<gl::GLSurface> default_offscreen_surface,
       gpu::SyncPointManager* sync_point_manager = nullptr,
+      gpu::SharedImageManager* shared_image_manager = nullptr,
       base::WaitableEvent* shutdown_event = nullptr);
   void Bind(mojom::GpuServiceRequest request);
 
@@ -292,10 +294,12 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
   std::unique_ptr<gpu::GpuChannelManager> gpu_channel_manager_;
   std::unique_ptr<media::MediaGpuChannelManager> media_gpu_channel_manager_;
 
-  // On some platforms (e.g. android webview), the SyncPointManager comes from
-  // external sources.
+  // On some platforms (e.g. android webview), the SyncPointManager and
+  // SharedImageManager comes from external sources.
   std::unique_ptr<gpu::SyncPointManager> owned_sync_point_manager_;
   gpu::SyncPointManager* sync_point_manager_ = nullptr;
+
+  std::unique_ptr<gpu::SharedImageManager> owned_shared_image_manager_;
 
   std::unique_ptr<gpu::Scheduler> scheduler_;
 

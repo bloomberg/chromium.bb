@@ -680,7 +680,8 @@ CanvasResourceSharedImage::CanvasResourceSharedImage(
       context_provider_wrapper_->ContextProvider()->GetSharedImageInterface();
   DCHECK(shared_image_interface);
 
-  uint32_t flags = gpu::SHARED_IMAGE_USAGE_GLES2 |
+  uint32_t flags = gpu::SHARED_IMAGE_USAGE_DISPLAY |
+                   gpu::SHARED_IMAGE_USAGE_GLES2 |
                    gpu::SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT;
   if (is_overlay_candidate_)
     flags |= gpu::SHARED_IMAGE_USAGE_SCANOUT;

@@ -18,6 +18,7 @@
 #include "components/viz/service/display/texture_deleter.h"
 #include "components/viz/service/display_embedder/direct_context_provider.h"
 #include "components/viz/service/gl/gpu_service_impl.h"
+#include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/common/swap_buffers_complete_params.h"
 #include "gpu/command_buffer/service/context_state.h"
 #include "gpu/command_buffer/service/gr_shader_cache.h"
@@ -183,7 +184,9 @@ CreateSharedImageRepresentationFactory(GpuServiceImpl* gpu_service) {
 std::unique_ptr<gpu::SharedImageRepresentationFactory>
 CreateSharedImageRepresentationFactory(
     gpu::CommandBufferTaskExecutor* task_executor) {
-  return nullptr;
+  // TODO(https://crbug.com/899905): Use a real MemoryTracker, not nullptr.
+  return std::make_unique<gpu::SharedImageRepresentationFactory>(
+      task_executor->shared_image_manager(), nullptr);
 }
 
 class ScopedSurfaceToTexture {
@@ -931,16 +934,18 @@ sk_sp<SkPromiseImageTexture> SkiaOutputSurfaceImplOnGpu::FulfillPromiseTexture(
     std::unique_ptr<gpu::SharedImageRepresentationSkia>* shared_image_out) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  if (!shared_image_representation_factory_) {
-    // TODO(https://crbug.com/900973): support shared image for Android
-    // WebView.
-  } else if (!*shared_image_out && mailbox_holder.mailbox.IsSharedImage()) {
+  if (!*shared_image_out && mailbox_holder.mailbox.IsSharedImage()) {
     std::unique_ptr<gpu::SharedImageRepresentationSkia> shared_image =
         shared_image_representation_factory_->ProduceSkia(
             mailbox_holder.mailbox);
     if (!shared_image) {
       DLOG(ERROR) << "Failed to fulfill the promise texture - SharedImage "
                      "mailbox not found in SharedImageManager.";
+      return nullptr;
+    }
+    if (!(shared_image->usage() & gpu::SHARED_IMAGE_USAGE_DISPLAY)) {
+      DLOG(ERROR) << "Failed to fulfill the promise texture - SharedImage "
+                     "was not created with display usage.";
       return nullptr;
     }
     *shared_image_out = std::move(shared_image);
@@ -1190,6 +1195,8 @@ bool SkiaOutputSurfaceImplOnGpu::MakeCurrent(bool need_fbo0) {
 
 void SkiaOutputSurfaceImplOnGpu::PullTextureUpdates(
     std::vector<gpu::SyncToken> sync_tokens) {
+  // TODO(https://crbug.com/900973): Remove it when MailboxManager is replaced
+  // with SharedImage API.
   if (mailbox_manager_->UsesSync()) {
     for (auto& sync_token : sync_tokens)
       mailbox_manager_->PullTextureUpdates(sync_token);
@@ -1198,6 +1205,8 @@ void SkiaOutputSurfaceImplOnGpu::PullTextureUpdates(
 
 void SkiaOutputSurfaceImplOnGpu::ReleaseFenceSyncAndPushTextureUpdates(
     uint64_t sync_fence_release) {
+  // TODO(https://crbug.com/900973): Remove it when MailboxManager is replaced
+  // with SharedImage API.
   if (mailbox_manager_->UsesSync()) {
     // If MailboxManagerSync is used, we are sharing textures between threads.
     // In this case, sync point can only guarantee GL commands are issued in
