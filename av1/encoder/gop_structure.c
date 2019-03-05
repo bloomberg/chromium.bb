@@ -214,8 +214,6 @@ static void define_pyramid_gf_group_structure(
   // This value is only used for INTNL_OVERLAY_UPDATE
   gf_group->arf_pos_in_gf[frame_index] = 0;
 
-  // This parameter is useless?
-  gf_group->arf_ref_idx[frame_index] = 0;
 #ifdef CHCEK_GF_PARAMETER
   check_frame_params(gf_group, rc->baseline_gf_interval, gf_update_frames);
 #endif
@@ -263,7 +261,6 @@ static void define_flat_gf_group_structure(
       gf_group->rf_level[frame_index] = GF_ARF_STD;
     }
     gf_group->arf_update_idx[frame_index] = 0;
-    gf_group->arf_ref_idx[frame_index] = 0;
   }
 
   gf_group->bidir_pred_enabled[frame_index] = 0;
@@ -281,7 +278,6 @@ static void define_flat_gf_group_structure(
         (unsigned char)(rc->baseline_gf_interval - 1);
 
     gf_group->arf_update_idx[frame_index] = 0;
-    gf_group->arf_ref_idx[frame_index] = 0;
 
     gf_group->bidir_pred_enabled[frame_index] = 0;
     gf_group->brf_src_offset[frame_index] = 0;
@@ -318,7 +314,6 @@ static void define_flat_gf_group_structure(
       gf_group->arf_src_offset[frame_index] = ext_arf_interval;
 
       gf_group->arf_update_idx[frame_index] = which_arf;
-      gf_group->arf_ref_idx[frame_index] = 0;
       ++frame_index;
     }
     accumulative_subgroup_interval += subgroup_interval[cpi->num_extra_arfs];
@@ -329,7 +324,6 @@ static void define_flat_gf_group_structure(
 
   for (i = 0; i < normal_frames; ++i) {
     gf_group->arf_update_idx[frame_index] = which_arf;
-    gf_group->arf_ref_idx[frame_index] = which_arf;
 
     // If we are going to have ARFs, check whether we can have BWDREF in this
     // subgroup, and further, whether we can have ARF subgroup which contains
@@ -402,7 +396,6 @@ static void define_flat_gf_group_structure(
         gf_group->arf_src_offset[frame_index] = ext_arf_interval;
 
         gf_group->arf_update_idx[frame_index] = which_arf;
-        gf_group->arf_ref_idx[frame_index] = 0;
         ++frame_index;
       }
     }
@@ -412,7 +405,6 @@ static void define_flat_gf_group_structure(
   //       will be the start frame for the next group. Otherwise prior to the
   //       call to av1_get_second_pass_params() the data will be undefined.
   gf_group->arf_update_idx[frame_index] = 0;
-  gf_group->arf_ref_idx[frame_index] = 0;
 
   if (rc->source_alt_ref_pending) {
     gf_group->update_type[frame_index] = OVERLAY_UPDATE;
