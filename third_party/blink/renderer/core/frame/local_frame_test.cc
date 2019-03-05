@@ -178,7 +178,7 @@ TEST_F(LocalFrameTest, IsUsingDataSavingPreview) {
 }
 
 TEST_F(LocalFrameTest, IsLazyLoadingImageAllowedWithFeatureDisabled) {
-  ScopedLazyFrameLoadingForTest scoped_lazy_frame_loading_for_test(false);
+  ScopedLazyImageLoadingForTest scoped_lazy_image_loading_for_test(false);
   std::unique_ptr<DummyPageHolder> page_holder = DummyPageHolder::Create(
       IntSize(800, 600), nullptr, nullptr, &DisableDataSaverHoldbackInSettings);
   EXPECT_FALSE(page_holder->GetFrame().IsLazyLoadingImageAllowed());
