@@ -2638,6 +2638,12 @@
     ]
   },
 
+  "AllowPopupsDuringPageUnload": {
+    "os": ["win", "linux", "mac", "chromeos", "android"],
+    "test_policy": { "AllowPopupsDuringPageUnload": true },
+    "pref_mappings": [{ "pref": "allow_popups_during_page_unload" }]
+  },
+
   "----- Chrome OS policies ------------------------------------------------": {},
 
   "ChromeOsLockOnIdleSuspend": {

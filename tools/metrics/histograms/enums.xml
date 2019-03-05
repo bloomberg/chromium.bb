@@ -15599,6 +15599,7 @@ Called by update_net_error_codes.py.-->
   <int value="530" label="BrowserSwitcherChromePath"/>
   <int value="531" label="BrowserSwitcherChromeParameters"/>
   <int value="532" label="DeviceWilcoDtcAllowed"/>
+  <int value="533" label="AllowPopupsDuringPageUnload"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">

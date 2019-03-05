@@ -1714,6 +1714,13 @@ bool RenderViewImpl::CanHandleGestureEvent() {
   return true;
 }
 
+// TODO(https://crbug.com/937569): Remove this in Chrome 82.
+bool RenderViewImpl::AllowPopupsDuringPageUnload() {
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  return command_line.HasSwitch(switches::kAllowPopupsDuringPageUnload);
+}
+
 bool RenderViewImpl::CanUpdateLayout() {
   return true;
 }

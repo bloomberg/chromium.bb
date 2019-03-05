@@ -958,6 +958,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kEnterpriseHardwarePlatformAPIEnabled,
     prefs::kEnterpriseHardwarePlatformAPIEnabled,
     base::Value::Type::BOOLEAN },
+  { key::kAllowPopupsDuringPageUnload,
+    prefs::kAllowPopupsDuringPageUnload,
+    base::Value::Type::BOOLEAN },
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))

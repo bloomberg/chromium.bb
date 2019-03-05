@@ -260,6 +260,7 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   void DidFocus(blink::WebLocalFrame* calling_frame) override;
   blink::WebScreenInfo GetScreenInfo() override;
   bool CanHandleGestureEvent() override;
+  bool AllowPopupsDuringPageUnload() override;
 
 #if defined(OS_ANDROID)
   // Only used on Android since all other platforms implement

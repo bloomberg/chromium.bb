@@ -14931,6 +14931,29 @@
       If the policy is set to false or left unset, DTC is switched off and is not able to collect, process and report telemetry and diagnostics data from the device.
       If wilco DTC is available on the given device and the policy is set to true, collecting, processing and reporting of telemetry and diagnostics data is switched on.''',
     },
+    {
+      'name': 'AllowPopupsDuringPageUnload',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.*:74-', 'chrome_os:74-', 'android:74-'],
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': True,
+      },
+      'example_value': False,
+      'id': 533,
+      'caption': '''Allows a page to show popups during its unloading''',
+      'tags': [],
+      'desc': '''This policy allows an admin to specify that a page may show popups during its unloading.
+
+      When the policy is set to enabled, pages are allowed to show popups while they are being unloaded.
+
+      When the policy is set to disabled or not set, pages are not allowed to show popups while they are being unloaded, as per the spec (https://html.spec.whatwg.org/#apis-for-creating-and-navigating-browsing-contexts-by-name).
+
+      This policy will be removed in Chrome 82.
+
+      See https://www.chromestatus.com/feature/5989473649164288 .''',
+    },
   ],
 
   'messages': {
@@ -15096,5 +15119,5 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   },
   'placeholders': [],
   'deleted_policy_ids': [412],
-  'highest_id_currently_used':  532
+  'highest_id_currently_used':  533
 }
