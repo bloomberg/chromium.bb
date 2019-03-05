@@ -102,6 +102,7 @@ NGLineBreaker::NGLineBreaker(
       mode_(mode),
       constraint_space_(space),
       exclusion_space_(exclusion_space),
+      break_token_(break_token),
       break_iterator_(items_data_.text_content),
       shaper_(items_data_.text_content),
       spacing_(items_data_.text_content),
@@ -396,6 +397,7 @@ void NGLineBreaker::HandleText(const NGInlineItem& item,
          (item.Type() == NGInlineItem::kControl &&
           Text()[item.StartOffset()] == kTabulationCharacter));
   DCHECK(&shape_result);
+  DCHECK_EQ(auto_wrap_, item.Style()->AutoWrap());
 
   // If we're trailing, only trailing spaces can be included in this line.
   if (state_ == LineBreakState::kTrailing) {
@@ -470,10 +472,12 @@ void NGLineBreaker::HandleText(const NGInlineItem& item,
     return HandleOverflow();
   }
 
-  // Add the rest of the item if !auto_wrap.
-  // Because the start position may need to reshape, run ShapingLineBreaker
-  // with max available width.
-  BreakText(item_result, item, shape_result, LayoutUnit::Max());
+  // Add the whole item if !auto_wrap. The previous line should not have wrapped
+  // in the middle of nowrap item.
+  DCHECK_EQ(item_result->start_offset, item.StartOffset());
+  DCHECK_EQ(item_result->end_offset, item.EndOffset());
+  item_result->inline_size = shape_result.SnappedWidth().ClampNegativeToZero();
+  item_result->shape_result = ShapeResultView::Create(&shape_result);
 
   if (item.IsSymbolMarker()) {
     LayoutUnit symbol_width = LayoutListMarker::WidthOfSymbol(*item.Style());
@@ -481,9 +485,9 @@ void NGLineBreaker::HandleText(const NGInlineItem& item,
       item_result->inline_size = symbol_width;
   }
 
-  DCHECK_EQ(item_result->end_offset, item.EndOffset());
   DCHECK(!item_result->may_break_inside);
-  item_result->can_break_after = false;
+  DCHECK(!item_result->can_break_after);
+  trailing_whitespace_ = WhitespaceState::kUnknown;
   position_ += item_result->inline_size;
   MoveToNextOf(item);
 }
@@ -779,6 +783,12 @@ void NGLineBreaker::HandleTrailingSpaces(const NGInlineItem& item,
   const String& text = Text();
   DCHECK(item.Style());
   const ComputedStyle& style = *item.Style();
+
+  if (!auto_wrap_) {
+    state_ = LineBreakState::kDone;
+    return;
+  }
+
   if (style.CollapseWhiteSpace()) {
     if (text[offset_] != kSpaceCharacter) {
       state_ = LineBreakState::kDone;
@@ -796,7 +806,7 @@ void NGLineBreaker::HandleTrailingSpaces(const NGInlineItem& item,
   } else {
     // Find the end of the run of space characters in this item.
     // Other white space characters (e.g., tab) are not included in this item.
-    DCHECK(!auto_wrap_ || style.BreakOnlyAfterWhiteSpace());
+    DCHECK(style.BreakOnlyAfterWhiteSpace());
     unsigned end = offset_;
     while (end < item.EndOffset() && IsBreakableSpace(text[end]))
       end++;
@@ -1415,8 +1425,6 @@ void NGLineBreaker::HandleOverflow() {
     if (!item_results_->IsEmpty())
       Rewind(0);
     state_ = LineBreakState::kContinue;
-    trailing_whitespace_ = WhitespaceState::kLeading;
-    SetCurrentStyle(line_info_->LineStyle());
     return;
   }
 
@@ -1476,19 +1484,57 @@ void NGLineBreaker::Rewind(unsigned new_end) {
     // Use |results[new_end - 1].end_offset| because it may have been truncated
     // and may not be equal to |results[new_end].start_offset|.
     MoveToNextOf(item_results[new_end - 1]);
+    trailing_whitespace_ = WhitespaceState::kUnknown;
   } else {
     // When rewinding all items, use |results[0].start_offset|.
     const NGInlineItemResult& first_remove = item_results[new_end];
     item_index_ = first_remove.item_index;
     offset_ = first_remove.start_offset;
+    trailing_whitespace_ = WhitespaceState::kLeading;
   }
+  SetCurrentStyle(ComputeCurrentStyle(new_end));
 
   item_results.Shrink(new_end);
 
-  trailing_whitespace_ = WhitespaceState::kUnknown;
   trailing_collapsible_space_.reset();
   SetLineEndFragment(nullptr);
   UpdatePosition();
+}
+
+// Returns the style to use for |item_result_index|. Normally when handling
+// items sequentially, the current style is updated on open/close tag. When
+// rewinding, this function computes the style for the specified item.
+const ComputedStyle& NGLineBreaker::ComputeCurrentStyle(
+    unsigned item_result_index) const {
+  NGInlineItemResults& item_results = *item_results_;
+
+  // Use the current item if it can compute the current style.
+  const NGInlineItem* item = item_results[item_result_index].item;
+  DCHECK(item);
+  if (item->Type() == NGInlineItem::kText ||
+      item->Type() == NGInlineItem::kCloseTag) {
+    DCHECK(item->Style());
+    return *item->Style();
+  }
+
+  // Otherwise look back an item that can compute the current style.
+  while (item_result_index) {
+    item = item_results[--item_result_index].item;
+    if (item->Type() == NGInlineItem::kText ||
+        item->Type() == NGInlineItem::kOpenTag) {
+      DCHECK(item->Style());
+      return *item->Style();
+    }
+    if (item->Type() == NGInlineItem::kCloseTag)
+      return item->GetLayoutObject()->Parent()->StyleRef();
+  }
+
+  // Use the style at the beginning of the line if no items are available.
+  if (break_token_) {
+    DCHECK(break_token_->Style());
+    return *break_token_->Style();
+  }
+  return line_info_->LineStyle();
 }
 
 void NGLineBreaker::SetCurrentStyle(const ComputedStyle& style) {
