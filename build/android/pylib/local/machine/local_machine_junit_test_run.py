@@ -39,17 +39,17 @@ class LocalMachineJunitTestRun(test_run.TestRun):
       # extract zipfiles when they change.
       def extract_resource_zip(resource_zip):
         def helper():
-          extract_dest = os.path.join(
-              temp_dir, os.path.splitext(os.path.basename(resource_zip))[0])
+          # Flatten name to avoid needing to create directories.
+          extract_dest = os.path.join(temp_dir,
+                                      resource_zip.replace(os.path.sep, '_'))
           with zipfile.ZipFile(resource_zip, 'r') as zf:
             zf.extractall(extract_dest)
           return extract_dest
         return helper
 
       resource_dirs = reraiser_thread.RunAsync(
-          [extract_resource_zip(resource_zip)
-           for resource_zip in self._test_instance.resource_zips
-           if os.path.exists(resource_zip)])
+          extract_resource_zip(resource_zip)
+          for resource_zip in self._test_instance.resource_zips)
 
       java_script = os.path.join(
           constants.GetOutDirectory(), 'bin', 'helper',
@@ -99,19 +99,19 @@ class LocalMachineJunitTestRun(test_run.TestRun):
         elif not os.path.isdir(self._test_instance.coverage_dir):
           raise Exception('--coverage-dir takes a directory, not file path.')
         if self._test_instance.jacoco:
-            jacoco_coverage_file = os.path.join(
-                self._test_instance.coverage_dir,
-                '%s.exec' % self._test_instance.suite)
-            jacoco_agent_path = os.path.join(host_paths.DIR_SOURCE_ROOT,
-                                             'third_party', 'jacoco',
-                                             'lib', 'jacocoagent.jar')
-            jacoco_args = '-javaagent:{}=destfile={},includes=org.chromium.*'
-            jvm_args.append(jacoco_args.format(jacoco_agent_path,
-                                                 jacoco_coverage_file))
+          jacoco_coverage_file = os.path.join(
+              self._test_instance.coverage_dir,
+              '%s.exec' % self._test_instance.suite)
+          jacoco_agent_path = os.path.join(host_paths.DIR_SOURCE_ROOT,
+                                           'third_party', 'jacoco', 'lib',
+                                           'jacocoagent.jar')
+          jacoco_args = '-javaagent:{}=destfile={},includes=org.chromium.*'
+          jvm_args.append(
+              jacoco_args.format(jacoco_agent_path, jacoco_coverage_file))
         else:
-            jvm_args.append('-Demma.coverage.out.file=%s' % os.path.join(
-                            self._test_instance.coverage_dir,
-                            '%s.ec' % self._test_instance.suite))
+          jvm_args.append('-Demma.coverage.out.file=%s' % os.path.join(
+              self._test_instance.coverage_dir,
+              '%s.ec' % self._test_instance.suite))
 
       if jvm_args:
         command.extend(['--jvm-args', '"%s"' % ' '.join(jvm_args)])
