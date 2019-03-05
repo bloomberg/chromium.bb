@@ -196,24 +196,58 @@ void SharedProtoDatabase::Init(
     const std::string& client_db_id,
     SharedClientInitCallback callback,
     scoped_refptr<base::SequencedTaskRunner> callback_task_runner) {
-  // If we succeeded previously, just check for corruption status and run init
-  // callback.
-  if (init_state_ == InitState::kSuccess) {
-    CheckCorruptionAndRunInitCallback(client_db_id, std::move(callback),
-                                      std::move(callback_task_runner),
-                                      Enums::InitStatus::kOK);
-    return;
+  switch (init_state_) {
+    case InitState::kNotAttempted:
+      outstanding_init_requests_.emplace(std::make_unique<InitRequest>(
+          std::move(callback), std::move(callback_task_runner), client_db_id));
+
+      init_state_ = InitState::kInProgress;
+      // First, try to initialize the metadata database.
+      InitMetadataDatabase(create_if_missing, 0 /* attempt */,
+                           false /* corruption */);
+      break;
+
+    case InitState::kInProgress:
+      outstanding_init_requests_.emplace(std::make_unique<InitRequest>(
+          std::move(callback), std::move(callback_task_runner), client_db_id));
+      break;
+
+      // If we succeeded previously, just check for corruption status and run
+      // init callback.
+    case InitState::kSuccess:
+      CheckCorruptionAndRunInitCallback(client_db_id, std::move(callback),
+                                        std::move(callback_task_runner),
+                                        Enums::InitStatus::kOK);
+      break;
+
+    // If we previously failed then we run the callback with kError.
+    case InitState::kFailure:
+      RunInitStatusCallbackOnCallingSequence(
+          std::move(callback), std::move(callback_task_runner),
+          Enums::InitStatus::kError,
+          SharedDBMetadataProto::MIGRATION_NOT_ATTEMPTED);
+      break;
+
+    case InitState::kNotFound:
+      if (create_if_missing) {
+        // If the shared DB doesn't exist and we should create it if missing,
+        // then we skip initializing the metadata DB and initialize the shared
+        // DB directly.
+        DCHECK(metadata_);
+        outstanding_init_requests_.emplace(std::make_unique<InitRequest>(
+            std::move(callback), std::move(callback_task_runner),
+            client_db_id));
+        InitDatabase(create_if_missing);
+      } else {
+        // If the shared DB doesn't exist and we shouldn't create it if missing,
+        // then we run the callback with kInvalidOperation (which is not found).
+        RunInitStatusCallbackOnCallingSequence(
+            std::move(callback), std::move(callback_task_runner),
+            Enums::InitStatus::kInvalidOperation,
+            SharedDBMetadataProto::MIGRATION_NOT_ATTEMPTED);
+      }
+      break;
   }
-
-  outstanding_init_requests_.emplace(std::make_unique<InitRequest>(
-      std::move(callback), std::move(callback_task_runner), client_db_id));
-  if (init_state_ == InitState::kInProgress)
-    return;
-
-  init_state_ = InitState::kInProgress;
-  // First, try to initialize the metadata database.
-  InitMetadataDatabase(create_if_missing, 0 /* attempt */,
-                       false /* corruption */);
 }
 
 void SharedProtoDatabase::ProcessInitRequests(Enums::InitStatus status) {
@@ -260,7 +294,6 @@ void SharedProtoDatabase::OnMetadataInitComplete(
     int attempt,
     bool corruption,
     bool success) {
-  //    Enums::InitStatus metadata_init_status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(on_task_runner_);
 
   if (!success) {
@@ -352,8 +385,21 @@ void SharedProtoDatabase::OnDatabaseInit(Enums::InitStatus status) {
   }
 
   init_status_ = status;
-  init_state_ = status == Enums::InitStatus::kOK ? InitState::kSuccess
-                                                 : InitState::kFailure;
+
+  switch (status) {
+    case Enums::InitStatus::kOK:
+      init_state_ = InitState::kSuccess;
+      break;
+    case Enums::InitStatus::kInvalidOperation:
+      init_state_ = InitState::kNotFound;
+      break;
+    case Enums::InitStatus::kError:
+    case Enums::InitStatus::kNotInitialized:
+    case Enums::InitStatus::kCorrupt:
+      init_state_ = InitState::kFailure;
+      break;
+  }
+
   ProcessInitRequests(status);
 
   if (init_state_ == InitState::kSuccess) {
