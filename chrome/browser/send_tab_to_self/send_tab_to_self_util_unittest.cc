@@ -10,10 +10,14 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/sync/device_info_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/send_tab_to_self_sync_service_factory.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
+#include "components/send_tab_to_self/send_tab_to_self_model.h"
+#include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
 #include "components/sync/device_info/device_info.h"
 #include "components/sync/device_info/device_info_sync_bridge.h"
 #include "components/sync/device_info/device_info_sync_service.h"
@@ -93,6 +97,44 @@ std::unique_ptr<KeyedService> BuildTestSyncService(
   return std::make_unique<syncer::TestSyncService>();
 }
 
+// SendTabToSelfModelMock
+class SendTabToSelfModelMock : public SendTabToSelfModel {
+ public:
+  SendTabToSelfModelMock() = default;
+  ~SendTabToSelfModelMock() override = default;
+
+  MOCK_METHOD2(AddEntry,
+               const SendTabToSelfEntry*(const GURL&, const std::string&));
+  MOCK_METHOD1(DeleteEntry, void(const std::string&));
+  MOCK_METHOD1(DismissEntry, void(const std::string&));
+
+  MOCK_CONST_METHOD0(GetAllGuids, std::vector<std::string>());
+  MOCK_METHOD0(DeleteAllEntries, void());
+  MOCK_CONST_METHOD1(GetEntryByGUID, SendTabToSelfEntry*(const std::string&));
+
+  void AddObserver(SendTabToSelfModelObserver* observer) {}
+  void RemoveObserver(SendTabToSelfModelObserver* observer) {}
+};
+
+// Mock a SendTabToSelfSyncService to get SendTabToSelfModelMock
+class SendTabToSelfSyncServiceMock : public SendTabToSelfSyncService {
+ public:
+  SendTabToSelfSyncServiceMock() = default;
+  ~SendTabToSelfSyncServiceMock() override = default;
+
+  SendTabToSelfModel* GetSendTabToSelfModel() override {
+    return &send_tab_to_self_model_mock_;
+  }
+
+ protected:
+  SendTabToSelfModelMock send_tab_to_self_model_mock_;
+};
+
+std::unique_ptr<KeyedService> BuildTestSendTabToSelfSyncService(
+    content::BrowserContext* context) {
+  return std::make_unique<SendTabToSelfSyncServiceMock>();
+}
+
 class SendTabToSelfUtilTest : public BrowserWithTestWindowTest {
  public:
   SendTabToSelfUtilTest() = default;
@@ -104,6 +146,7 @@ class SendTabToSelfUtilTest : public BrowserWithTestWindowTest {
     test_sync_service_ = static_cast<syncer::TestSyncService*>(
         ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
             profile(), base::BindRepeating(&BuildTestSyncService)));
+
     mock_device_sync_service_ = static_cast<TestDeviceInfoSyncService*>(
         DeviceInfoSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
             profile(), base::BindRepeating(&BuildMockDeviceInfoSyncService)));
@@ -139,7 +182,6 @@ class SendTabToSelfUtilTest : public BrowserWithTestWindowTest {
  protected:
   syncer::TestSyncService* test_sync_service_;
   TestDeviceInfoSyncService* mock_device_sync_service_;
-
   base::test::ScopedFeatureList scoped_feature_list_;
   Profile* incognito_profile_;
   GURL url_;
@@ -236,6 +278,24 @@ TEST_F(SendTabToSelfUtilTest,
   NavigateAndCommitActiveTab(url_);
 
   EXPECT_FALSE(ShouldOfferFeature(browser()));
+}
+
+TEST_F(SendTabToSelfUtilTest, CreateNewEntry) {
+  SetUpAllTrueEnv();
+  SendTabToSelfSyncServiceFactory::GetInstance()->SetTestingFactory(
+      profile(), base::BindRepeating(&BuildTestSendTabToSelfSyncService));
+  content::WebContents* tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  GURL url = tab->GetURL();
+  std::string title = base::UTF16ToUTF8(tab->GetTitle());
+  SendTabToSelfModelMock* model_mock = static_cast<SendTabToSelfModelMock*>(
+      SendTabToSelfSyncServiceFactory::GetForProfile(profile())
+          ->GetSendTabToSelfModel());
+
+  EXPECT_CALL(*model_mock, AddEntry(url, title))
+      .WillOnce(testing::Return(nullptr));
+
+  CreateNewEntry(tab, profile());
 }
 
 }  // namespace

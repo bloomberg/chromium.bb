@@ -31,10 +31,14 @@ class SendTabToSelfSyncService : public KeyedService {
       syncer::OnceModelTypeStoreFactory create_store_callback);
   ~SendTabToSelfSyncService() override;
 
-  SendTabToSelfModel* GetSendTabToSelfModel();
+  virtual SendTabToSelfModel* GetSendTabToSelfModel();
 
   // For ProfileSyncService to initialize the controller.
   base::WeakPtr<syncer::ModelTypeControllerDelegate> GetControllerDelegate();
+
+ protected:
+  // Default constructor for unit tests
+  SendTabToSelfSyncService();
 
  private:
   std::unique_ptr<SendTabToSelfBridge> bridge_;
