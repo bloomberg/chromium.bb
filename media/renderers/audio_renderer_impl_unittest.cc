@@ -48,22 +48,6 @@ struct OutputFrames {
   int value;
 };
 
-class MockMediaClient : public MediaClient {
- public:
-  MockMediaClient() = default;
-  ~MockMediaClient() override = default;
-
-  void AddSupportedKeySystems(
-      std::vector<std::unique_ptr<KeySystemProperties>>* key_systems) override {
-  }
-  bool IsKeySystemsUpdateNeeded() override { return false; }
-  bool IsSupportedAudioType(const AudioType& type) override { return true; }
-  bool IsSupportedVideoType(const VideoType& type) override { return true; }
-  bool IsSupportedBitstreamAudioCodec(AudioCodec codec) override {
-    return true;
-  }
-};
-
 }  // namespace
 
 // Constants to specify the type of audio data used.
@@ -212,6 +196,8 @@ class AudioRendererImplTest : public ::testing::Test, public RendererClient {
   }
 
   void InitializeBitstreamFormat() {
+    EXPECT_CALL(media_client_, IsSupportedBitstreamAudioCodec(_))
+        .WillRepeatedly(Return(true));
     SetMediaClient(&media_client_);
 
     hardware_params_.Reset(AudioParameters::AUDIO_BITSTREAM_EAC3,

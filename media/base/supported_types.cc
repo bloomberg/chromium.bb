@@ -251,10 +251,16 @@ bool IsDefaultSupportedVideoType(const VideoType& type) {
     case media::kUnknownVideoCodec:
     case media::kCodecVC1:
     case media::kCodecMPEG2:
-    case media::kCodecMPEG4:
     case media::kCodecHEVC:
     case media::kCodecDolbyVision:
       return false;
+
+    case media::kCodecMPEG4:
+#if defined(OS_CHROMEOS)
+      return true;
+#else
+      return false;
+#endif
   }
 
   NOTREACHED();

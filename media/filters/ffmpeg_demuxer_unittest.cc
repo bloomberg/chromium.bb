@@ -22,9 +22,11 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "media/base/decrypt_config.h"
+#include "media/base/media_client.h"
 #include "media/base/media_tracks.h"
 #include "media/base/media_util.h"
 #include "media/base/mock_demuxer_host.h"
+#include "media/base/mock_filters.h"
 #include "media/base/mock_media_log.h"
 #include "media/base/test_helpers.h"
 #include "media/base/timestamp_constants.h"
@@ -35,9 +37,12 @@
 #include "media/formats/mp4/bitstream_converter.h"
 #include "media/media_buildflags.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/color_space.h"
 
+using ::testing::_;
 using ::testing::AnyNumber;
 using ::testing::DoAll;
+using ::testing::Eq;
 using ::testing::Exactly;
 using ::testing::InSequence;
 using ::testing::Invoke;
@@ -47,7 +52,6 @@ using ::testing::SaveArg;
 using ::testing::SetArgPointee;
 using ::testing::StrictMock;
 using ::testing::WithArgs;
-using ::testing::_;
 
 namespace media {
 
@@ -66,9 +70,11 @@ MATCHER_P(SimpleCreatedFFmpegDemuxerStream, stream_type, "") {
 
 MATCHER_P(FailedToCreateValidDecoderConfigFromStream, stream_type, "") {
   return CONTAINS_STRING(
-      arg, "\"debug\":\"Warning, FFmpegDemuxer failed to create a valid " +
-               std::string(stream_type) +
-               " decoder configuration from muxed stream");
+      arg,
+      "\"debug\":\"Warning, FFmpegDemuxer failed to create a "
+      "valid/supported " +
+          std::string(stream_type) +
+          " decoder configuration from muxed stream");
 }
 
 MATCHER_P(SkippingUnsupportedStream, stream_type, "") {
@@ -1343,6 +1349,20 @@ TEST_F(FFmpegDemuxerTest, NaturalSizeWithPASP) {
 TEST_F(FFmpegDemuxerTest, HEVC_in_MP4_container) {
   CreateDemuxer("bear-hevc-frag.mp4");
 #if BUILDFLAG(ENABLE_HEVC_DEMUXING)
+  // HEVC is not supported by default media platform. Embedders who add support
+  // must declare it via MediaClient.
+  MockMediaClient media_client;
+  SetMediaClient(&media_client);
+
+  VideoColorSpace color_space(VideoColorSpace::PrimaryID::SMPTE170M,
+                              VideoColorSpace::TransferID::SMPTE170M,
+                              VideoColorSpace::MatrixID::SMPTE170M,
+                              gfx::ColorSpace::RangeID::LIMITED);
+  VideoType hevc_type = {VideoCodec::kCodecHEVC,
+                         VideoCodecProfile::HEVCPROFILE_MAIN, 10, color_space};
+  EXPECT_CALL(media_client, IsSupportedVideoType(Eq(hevc_type)))
+      .WillRepeatedly(Return(true));
+
   InitializeDemuxer();
 
   DemuxerStream* video = GetStream(DemuxerStream::VIDEO);
@@ -1353,6 +1373,8 @@ TEST_F(FFmpegDemuxerTest, HEVC_in_MP4_container) {
 
   video->Read(NewReadCB(FROM_HERE, 1042, 200200, false));
   base::RunLoop().Run();
+
+  SetMediaClient(nullptr);
 #else
   InitializeDemuxerAndExpectPipelineStatus(DEMUXER_ERROR_NO_SUPPORTED_STREAMS);
 #endif
@@ -1361,6 +1383,15 @@ TEST_F(FFmpegDemuxerTest, HEVC_in_MP4_container) {
 TEST_F(FFmpegDemuxerTest, Read_AC3_Audio) {
   CreateDemuxer("bear-ac3-only-frag.mp4");
 #if BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
+  // AC3 is not supported by default media platform. Embedders who add support
+  // must declare it via MediaClient.
+  MockMediaClient media_client;
+  SetMediaClient(&media_client);
+
+  AudioType ac3_type = {AudioCodec::kCodecAC3};
+  EXPECT_CALL(media_client, IsSupportedAudioType(Eq(ac3_type)))
+      .WillRepeatedly(Return(true));
+
   InitializeDemuxer();
 
   // Attempt a read from the audio stream and run the message loop until done.
@@ -1372,6 +1403,8 @@ TEST_F(FFmpegDemuxerTest, Read_AC3_Audio) {
 
   audio->Read(NewReadCB(FROM_HERE, 836, 34830, true));
   base::RunLoop().Run();
+
+  SetMediaClient(nullptr);
 #else
   InitializeDemuxerAndExpectPipelineStatus(DEMUXER_ERROR_NO_SUPPORTED_STREAMS);
 #endif
@@ -1380,6 +1413,15 @@ TEST_F(FFmpegDemuxerTest, Read_AC3_Audio) {
 TEST_F(FFmpegDemuxerTest, Read_EAC3_Audio) {
   CreateDemuxer("bear-eac3-only-frag.mp4");
 #if BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
+  // EAC3 is not supported by default media platform. Embedders who add support
+  // must declare it via MediaClient.
+  MockMediaClient media_client;
+  SetMediaClient(&media_client);
+
+  AudioType eac3_type = {AudioCodec::kCodecEAC3};
+  EXPECT_CALL(media_client, IsSupportedAudioType(Eq(eac3_type)))
+      .WillRepeatedly(Return(true));
+
   InitializeDemuxer();
 
   // Attempt a read from the audio stream and run the message loop until done.
@@ -1391,6 +1433,8 @@ TEST_F(FFmpegDemuxerTest, Read_EAC3_Audio) {
 
   audio->Read(NewReadCB(FROM_HERE, 872, 34830, true));
   base::RunLoop().Run();
+
+  SetMediaClient(nullptr);
 #else
   InitializeDemuxerAndExpectPipelineStatus(DEMUXER_ERROR_NO_SUPPORTED_STREAMS);
 #endif

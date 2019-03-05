@@ -9,6 +9,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -25,6 +26,7 @@
 #include "media/base/decoder_buffer.h"
 #include "media/base/decryptor.h"
 #include "media/base/demuxer.h"
+#include "media/base/media_client.h"
 #include "media/base/media_track.h"
 #include "media/base/pipeline.h"
 #include "media/base/pipeline_status.h"
@@ -605,6 +607,24 @@ class MockStreamParser : public StreamParser {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockStreamParser);
+};
+
+class MockMediaClient : public media::MediaClient {
+ public:
+  MockMediaClient();
+  ~MockMediaClient() override;
+
+  // MediaClient implementation.
+  MOCK_METHOD1(AddSupportedKeySystems,
+               void(std::vector<std::unique_ptr<media::KeySystemProperties>>*
+                        key_systems));
+  MOCK_METHOD0(IsKeySystemsUpdateNeeded, bool());
+  MOCK_METHOD1(IsSupportedAudioType, bool(const media::AudioType& type));
+  MOCK_METHOD1(IsSupportedVideoType, bool(const media::VideoType& type));
+  MOCK_METHOD1(IsSupportedBitstreamAudioCodec, bool(media::AudioCodec codec));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockMediaClient);
 };
 
 }  // namespace media
