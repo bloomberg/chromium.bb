@@ -334,7 +334,7 @@ TEST_P(LinkHighlightImplTest, HighlightLayerEffectNode) {
   // node.
   EXPECT_EQ(highlight->Effect().GetCompositorElementId(),
             highlight->ElementIdForTesting());
-  EXPECT_TRUE(highlight->Effect().RequiresCompositingForAnimation());
+  EXPECT_TRUE(highlight->Effect().IsRunningOpacityAnimationOnCompositor());
 
   touch_node->remove(IGNORE_EXCEPTION_FOR_TESTING);
   UpdateAllLifecyclePhases();
@@ -381,7 +381,7 @@ TEST_P(LinkHighlightImplTest, MultiColumn) {
   // node.
   const auto& effect = highlight->Effect();
   EXPECT_EQ(effect.GetCompositorElementId(), highlight->ElementIdForTesting());
-  EXPECT_TRUE(effect.RequiresCompositingForAnimation());
+  EXPECT_TRUE(effect.IsRunningOpacityAnimationOnCompositor());
 
   const auto& first_fragment = touch_node->GetLayoutObject()->FirstFragment();
   const auto* second_fragment = first_fragment.NextFragment();

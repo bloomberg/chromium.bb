@@ -134,6 +134,7 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
 
   void SetNeedsUpdate() { needs_update_ = true; }
   bool NeedsUpdate() const { return needs_update_; }
+  void ClearNeedsUpdateForTesting() { needs_update_ = false; }
 
  private:
   // A pending layer is a collection of paint chunks that will end up in
