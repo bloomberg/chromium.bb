@@ -64,43 +64,13 @@ TEST_F('PrintPreviewAppTest', 'PrintToGoogleDrive', function() {
   this.runMochaTest(print_preview_app_test.TestNames.PrintToGoogleDrive);
 });
 
-PrintPreviewSettingsSectionsTest = class extends NewPrintPreviewTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://print/new/app.html';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      '../settings/test_util.js',
-      '../test_browser_proxy.js',
-      'native_layer_stub.js',
-      'plugin_stub.js',
-      'print_preview_test_utils.js',
-      'settings_section_test.js',
-    ]);
-  }
-
-  /** @override */
-  get suiteName() {
-    return settings_sections_tests.suiteName;
-  }
-};
-
-TEST_F(
-    'PrintPreviewSettingsSectionsTest', 'SettingsSectionsVisibilityChange',
-    function() {
-      this.runMochaTest(
-          settings_sections_tests.TestNames.SettingsSectionsVisibilityChange);
-    });
-
-TEST_F('PrintPreviewSettingsSectionsTest', 'PresetCopies', function() {
-  this.runMochaTest(settings_sections_tests.TestNames.PresetCopies);
+TEST_F('PrintPreviewAppTest', 'SettingsSectionsVisibilityChange', function() {
+  this.runMochaTest(
+      print_preview_app_test.TestNames.SettingsSectionsVisibilityChange);
 });
 
-TEST_F('PrintPreviewSettingsSectionsTest', 'PresetDuplex', function() {
-  this.runMochaTest(settings_sections_tests.TestNames.PresetDuplex);
+TEST_F('PrintPreviewAppTest', 'PrintPresets', function() {
+  this.runMochaTest(print_preview_app_test.TestNames.PrintPresets);
 });
 
 PrintPreviewPagesSettingsTest = class extends NewPrintPreviewTest {

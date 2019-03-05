@@ -6,6 +6,8 @@ cr.define('print_preview_app_test', function() {
   /** @enum {string} */
   const TestNames = {
     PrintToGoogleDrive: 'print to google drive',
+    SettingsSectionsVisibilityChange: 'settings sections visibility change',
+    PrintPresets: 'print presets',
   };
 
   const suiteName = 'PrintPreviewAppTest';
@@ -115,6 +117,40 @@ cr.define('print_preview_app_test', function() {
       assertEquals(
           print_preview.Destination.GooglePromotedId.DOCS, args.destination.id);
       assertEquals('1.0', JSON.parse(args.printTicket).version);
+    });
+
+    test(assert(TestNames.SettingsSectionsVisibilityChange), async () => {
+      await finishSetup();
+      const moreSettingsElement = page.$$('print-preview-more-settings');
+      moreSettingsElement.$.label.click();
+      const camelToKebab = s => s.replace(/([A-Z])/g, '-$1').toLowerCase();
+      ['copies', 'layout', 'color', 'mediaSize', 'margins', 'dpi', 'scaling',
+       'otherOptions']
+          .forEach(setting => {
+            const element =
+                page.$$(`print-preview-${camelToKebab(setting)}-settings`);
+            // Show, hide and reset.
+            [true, false, true].forEach(value => {
+              page.set(`settings.${setting}.available`, value);
+              // Element expected to be visible when available.
+              assertEquals(!value, element.hidden);
+            });
+          });
+    });
+
+    test(assert(TestNames.PrintPresets), async () => {
+      await finishSetup();
+
+      assertEquals(1, page.settings.copies.value);
+      page.setSetting('duplex', false);
+      assertFalse(page.settings.duplex.value);
+
+      // Send preset values of duplex LONG_EDGE and 2 copies.
+      const copies = 2;
+      const duplex = print_preview_new.DuplexMode.LONG_EDGE;
+      cr.webUIListenerCallback('print-preset-options', true, copies, duplex);
+      assertEquals(copies, page.getSettingValue('copies'));
+      assertTrue(page.getSettingValue('duplex'));
     });
   });
 
