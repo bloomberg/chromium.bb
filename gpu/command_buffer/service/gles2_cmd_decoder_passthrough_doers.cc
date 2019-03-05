@@ -5143,8 +5143,9 @@ GLES2DecoderPassthroughImpl::DoCreateAndTexStorage2DSharedImageINTERNAL(
     GLuint texture_client_id,
     const volatile GLbyte* mailbox,
     GLenum internalformat) {
+  // RGB emulation is not needed here.
   if (internalformat != GL_NONE) {
-    InsertError(GL_INVALID_OPERATION, "internal format not supported.");
+    InsertError(GL_INVALID_ENUM, "internal format not supported.");
     return error::kNoError;
   }
 

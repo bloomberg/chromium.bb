@@ -330,7 +330,10 @@ class SharedImageBackingGLTexture : public SharedImageBacking {
     DCHECK(texture_);
   }
 
-  ~SharedImageBackingGLTexture() override { DCHECK(!texture_); }
+  ~SharedImageBackingGLTexture() override {
+    DCHECK(!texture_);
+    DCHECK(!rgb_emulation_texture_);
+  }
 
   bool IsCleared() const override {
     return texture_->IsLevelCleared(texture_->target(), 0);
@@ -371,6 +374,11 @@ class SharedImageBackingGLTexture : public SharedImageBacking {
     DCHECK(texture_);
     texture_->RemoveLightweightRef(have_context());
     texture_ = nullptr;
+
+    if (rgb_emulation_texture_) {
+      rgb_emulation_texture_->RemoveLightweightRef(have_context());
+      rgb_emulation_texture_ = nullptr;
+    }
   }
 
   void OnMemoryDump(const std::string& dump_name,
@@ -400,6 +408,57 @@ class SharedImageBackingGLTexture : public SharedImageBacking {
     return std::make_unique<SharedImageRepresentationGLTextureImpl>(
         manager, this, tracker, texture_);
   }
+
+  std::unique_ptr<SharedImageRepresentationGLTexture>
+  ProduceRGBEmulationGLTexture(SharedImageManager* manager,
+                               MemoryTypeTracker* tracker) override {
+    if (!rgb_emulation_texture_) {
+      GLenum target = texture_->target();
+      gl::GLApi* api = gl::g_current_gl_context;
+      ScopedRestoreTexture scoped_restore(api, target);
+
+      bool framebuffer_attachment_angle =
+          (usage() & (SHARED_IMAGE_USAGE_RASTER |
+                      SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT)) != 0;
+      GLuint service_id = MakeTextureAndSetParameters(
+          api, target, framebuffer_attachment_angle);
+
+      gles2::Texture::ImageState image_state = gles2::Texture::BOUND;
+      gl::GLImage* image = texture_->GetLevelImage(target, 0, &image_state);
+      if (!image) {
+        LOG(ERROR) << "Texture is not bound to an image.";
+        return nullptr;
+      }
+
+      DCHECK(image->ShouldBindOrCopy() == gl::GLImage::BIND);
+      const GLenum internal_format = GL_RGB;
+      if (!image->BindTexImageWithInternalformat(target, internal_format)) {
+        LOG(ERROR) << "Failed to bind image to rgb texture.";
+        api->glDeleteTexturesFn(1, &service_id);
+        return nullptr;
+      }
+
+      rgb_emulation_texture_ = new gles2::Texture(service_id);
+      rgb_emulation_texture_->SetLightweightRef();
+      rgb_emulation_texture_->SetTarget(target, 1);
+      rgb_emulation_texture_->sampler_state_.min_filter = GL_LINEAR;
+      rgb_emulation_texture_->sampler_state_.mag_filter = GL_LINEAR;
+      rgb_emulation_texture_->sampler_state_.wrap_s = GL_CLAMP_TO_EDGE;
+      rgb_emulation_texture_->sampler_state_.wrap_t = GL_CLAMP_TO_EDGE;
+
+      const gles2::Texture::LevelInfo* info = texture_->GetLevelInfo(target, 0);
+      rgb_emulation_texture_->SetLevelInfo(
+          target, 0, internal_format, info->width, info->height, 1, 0,
+          info->format, info->type, info->cleared_rect);
+
+      rgb_emulation_texture_->SetLevelImage(target, 0, image, image_state);
+      rgb_emulation_texture_->SetImmutable(true);
+    }
+
+    return std::make_unique<SharedImageRepresentationGLTextureImpl>(
+        manager, this, tracker, rgb_emulation_texture_);
+  }
+
   std::unique_ptr<SharedImageRepresentationSkia> ProduceSkia(
       SharedImageManager* manager,
       MemoryTypeTracker* tracker) override {
@@ -412,6 +471,7 @@ class SharedImageBackingGLTexture : public SharedImageBacking {
 
  private:
   gles2::Texture* texture_ = nullptr;
+  gles2::Texture* rgb_emulation_texture_ = nullptr;
   sk_sp<SkPromiseImageTexture> cached_promise_texture_;
 };
 

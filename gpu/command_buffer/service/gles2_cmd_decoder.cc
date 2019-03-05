@@ -18474,8 +18474,21 @@ void GLES2DecoderImpl::DoCreateAndTexStorage2DSharedImageINTERNAL(
     return;
   }
 
-  std::unique_ptr<SharedImageRepresentationGLTexture> shared_image =
-      group_->shared_image_representation_factory()->ProduceGLTexture(mailbox);
+  std::unique_ptr<SharedImageRepresentationGLTexture> shared_image;
+  if (internal_format == GL_RGB) {
+    shared_image = group_->shared_image_representation_factory()
+                       ->ProduceRGBEmulationGLTexture(mailbox);
+  } else if (internal_format == GL_NONE) {
+    shared_image =
+        group_->shared_image_representation_factory()->ProduceGLTexture(
+            mailbox);
+  } else {
+    LOCAL_SET_GL_ERROR(GL_INVALID_ENUM,
+                       "DoCreateAndTexStorage2DSharedImageINTERNAL",
+                       "invalid internal format");
+    return;
+  }
+
   if (!shared_image) {
     // Mailbox missing, generate a texture.
     bool result = GenTexturesHelper(1, &client_id);

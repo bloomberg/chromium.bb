@@ -25,6 +25,15 @@ class TextureImage : public gl::GLImage {
                  GetInternalFormat(), GL_UNSIGNED_BYTE, nullptr);
     return true;
   }
+  bool BindTexImageWithInternalformat(unsigned target,
+                                      unsigned internal_format) override {
+    glTexImage2D(target,
+                 0,  // mip level
+                 GetInternalFormat(), size_.width(), size_.height(),
+                 0,  // border
+                 GetInternalFormat(), GL_UNSIGNED_BYTE, nullptr);
+    return true;
+  }
   void ReleaseTexImage(unsigned target) override {}
   bool CopyTexImage(unsigned target) override {
     NOTREACHED();

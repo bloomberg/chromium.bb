@@ -6448,7 +6448,7 @@ GLES2Implementation::CreateAndTexStorage2DSharedImageWithInternalFormatCHROMIUM(
   GPU_CLIENT_LOG(
       "[" << GetLogPrefix()
           << "] CreateAndTexStorage2DSharedImageWithInternalFormatCHROMIUM("
-          << static_cast<const void*>(data) << ")");
+          << static_cast<const void*>(data) << ", " << internalformat << ")");
   const Mailbox& mailbox = *reinterpret_cast<const Mailbox*>(data);
   DCHECK(mailbox.Verify())
       << "CreateAndTexStorage2DSharedImageWithInternalFormatCHROMIUM was "
