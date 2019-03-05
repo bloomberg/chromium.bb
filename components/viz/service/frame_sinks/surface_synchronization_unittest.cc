@@ -13,6 +13,7 @@
 #include "components/viz/test/fake_external_begin_frame_source.h"
 #include "components/viz/test/fake_surface_observer.h"
 #include "components/viz/test/mock_compositor_frame_sink_client.h"
+#include "components/viz/test/surface_id_allocator_set.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -38,14 +39,6 @@ std::vector<SurfaceId> empty_surface_ids() {
 }
 std::vector<SurfaceRange> empty_surface_ranges() {
   return std::vector<SurfaceRange>();
-}
-
-SurfaceId MakeSurfaceId(const FrameSinkId& frame_sink_id,
-                        uint32_t parent_sequence_number,
-                        uint32_t child_sequence_number = 1u) {
-  return SurfaceId(frame_sink_id,
-                   LocalSurfaceId(parent_sequence_number, child_sequence_number,
-                                  base::UnguessableToken::Deserialize(0, 1u)));
 }
 
 CompositorFrame MakeCompositorFrame(
@@ -243,6 +236,13 @@ class SurfaceSynchronizationTest : public testing::Test {
     return frame_sink_manager_.surface_manager()->GetSurfaceForId(surface_id);
   }
 
+  SurfaceId MakeSurfaceId(const FrameSinkId& frame_sink_id,
+                          uint32_t parent_sequence_number,
+                          uint32_t child_sequence_number = 1u) {
+    return allocator_set_.MakeSurfaceId(frame_sink_id, parent_sequence_number,
+                                        child_sequence_number);
+  }
+
  protected:
   testing::NiceMock<MockCompositorFrameSinkClient> support_client_;
 
@@ -256,6 +256,7 @@ class SurfaceSynchronizationTest : public testing::Test {
                      std::unique_ptr<CompositorFrameSinkSupport>,
                      FrameSinkIdHash>
       supports_;
+  SurfaceIdAllocatorSet allocator_set_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfaceSynchronizationTest);
 };

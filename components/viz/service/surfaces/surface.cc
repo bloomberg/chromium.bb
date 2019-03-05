@@ -17,6 +17,7 @@
 #include "components/viz/common/resources/transferable_resource.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/service/surfaces/referenced_surface_tracker.h"
+#include "components/viz/service/surfaces/surface_allocation_group.h"
 #include "components/viz/service/surfaces/surface_client.h"
 #include "components/viz/service/surfaces/surface_manager.h"
 #include "components/viz/service/viz_service_export.h"
@@ -26,6 +27,7 @@ namespace viz {
 
 Surface::Surface(const SurfaceInfo& surface_info,
                  SurfaceManager* surface_manager,
+                 SurfaceAllocationGroup* allocation_group,
                  base::WeakPtr<SurfaceClient> surface_client,
                  bool needs_sync_tokens,
                  bool block_activation_on_parent)
@@ -33,10 +35,12 @@ Surface::Surface(const SurfaceInfo& surface_info,
       surface_manager_(surface_manager),
       surface_client_(std::move(surface_client)),
       needs_sync_tokens_(needs_sync_tokens),
-      block_activation_on_parent_(block_activation_on_parent) {
+      block_activation_on_parent_(block_activation_on_parent),
+      allocation_group_(allocation_group) {
   TRACE_EVENT_ASYNC_BEGIN1(TRACE_DISABLED_BY_DEFAULT("viz.surface_lifetime"),
                            "Surface", this, "surface_info",
                            surface_info.ToString());
+  allocation_group_->RegisterSurface(this);
 }
 
 Surface::~Surface() {
@@ -59,6 +63,7 @@ Surface::~Surface() {
   TRACE_EVENT_ASYNC_END1(TRACE_DISABLED_BY_DEFAULT("viz.surface_lifetime"),
                          "Surface", this, "surface_info",
                          surface_info_.ToString());
+  allocation_group_->UnregisterSurface(this);
 }
 
 void Surface::SetDependencyDeadline(

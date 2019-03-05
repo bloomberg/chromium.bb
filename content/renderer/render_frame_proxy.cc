@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 #include <map>
+#include <memory>
 #include <utility>
 
 #include "base/command_line.h"
@@ -218,7 +219,11 @@ RenderFrameProxy::RenderFrameProxy(int routing_id)
       provisional_frame_routing_id_(MSG_ROUTING_NONE),
       web_frame_(nullptr),
       render_view_(nullptr),
-      render_widget_(nullptr) {
+      render_widget_(nullptr),
+      // TODO(samans): Investigate if it is safe to delay creation of this
+      // object until a FrameSinkId is provided.
+      parent_local_surface_id_allocator_(
+          std::make_unique<viz::ParentLocalSurfaceIdAllocator>()) {
   std::pair<RoutingIDProxyMap::iterator, bool> result =
       g_routing_id_proxy_map.Get().insert(std::make_pair(routing_id_, this));
   CHECK(result.second) << "Inserting a duplicate item.";
@@ -506,8 +511,15 @@ void RenderFrameProxy::OnViewChanged(
     const FrameMsg_ViewChanged_Params& params) {
   crashed_ = false;
   // In mash the FrameSinkId comes from RendererWindowTreeClient.
-  if (!features::IsMultiProcessMash())
+  if (!features::IsMultiProcessMash()) {
+    // The same ParentLocalSurfaceIdAllocator cannot provide LocalSurfaceIds for
+    // two different frame sinks, so recreate it here.
+    if (frame_sink_id_ != *params.frame_sink_id) {
+      parent_local_surface_id_allocator_ =
+          std::make_unique<viz::ParentLocalSurfaceIdAllocator>();
+    }
     frame_sink_id_ = *params.frame_sink_id;
+  }
 
   // Resend the FrameRects and allocate a new viz::LocalSurfaceId when the view
   // changes.
@@ -607,7 +619,7 @@ void RenderFrameProxy::OnBubbleLogicalScroll(
 
 void RenderFrameProxy::OnDidUpdateVisualProperties(
     const cc::RenderFrameMetadata& metadata) {
-  if (!parent_local_surface_id_allocator_.UpdateFromChild(
+  if (!parent_local_surface_id_allocator_->UpdateFromChild(
           metadata.local_surface_id_allocation.value_or(
               viz::LocalSurfaceIdAllocation()))) {
     return;
@@ -672,9 +684,10 @@ void RenderFrameProxy::SynchronizeVisualProperties() {
       capture_sequence_number_changed;
 
   if (synchronized_props_changed) {
-    parent_local_surface_id_allocator_.GenerateId();
+    parent_local_surface_id_allocator_->GenerateId();
     pending_visual_properties_.local_surface_id_allocation =
-        parent_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation();
+        parent_local_surface_id_allocator_
+            ->GetCurrentLocalSurfaceIdAllocation();
   }
 
   if (enable_surface_synchronization_) {
@@ -696,7 +709,8 @@ void RenderFrameProxy::SynchronizeVisualProperties() {
 #if defined(USE_AURA)
   if (rect_changed && mus_embedded_frame_) {
     mus_embedded_frame_->SetWindowBounds(
-        parent_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation(),
+        parent_local_surface_id_allocator_
+            ->GetCurrentLocalSurfaceIdAllocation(),
         gfx::Rect(local_frame_size()));
   }
 #endif
@@ -927,6 +941,12 @@ void RenderFrameProxy::OnMusEmbeddedFrameSinkIdAllocated(
     const viz::FrameSinkId& frame_sink_id) {
   // RendererWindowTreeClient should only call this when mus is hosting viz.
   DCHECK(features::IsMultiProcessMash());
+  // The same ParentLocalSurfaceIdAllocator cannot provide LocalSurfaceIds for
+  // two different frame sinks, so re-create it here.
+  if (frame_sink_id_ != frame_sink_id) {
+    parent_local_surface_id_allocator_ =
+        std::make_unique<viz::ParentLocalSurfaceIdAllocator>();
+  }
   frame_sink_id_ = frame_sink_id;
   // Resend the FrameRects and allocate a new viz::LocalSurfaceId when the view
   // changes.
@@ -973,7 +993,8 @@ uint32_t RenderFrameProxy::Print(const blink::WebRect& rect,
 }
 
 const viz::LocalSurfaceId& RenderFrameProxy::GetLocalSurfaceId() const {
-  return parent_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()
+  return parent_local_surface_id_allocator_
+      ->GetCurrentLocalSurfaceIdAllocation()
       .local_surface_id();
 }
 

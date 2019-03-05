@@ -327,7 +327,8 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   bool crashed_ = false;
 
   viz::FrameSinkId frame_sink_id_;
-  viz::ParentLocalSurfaceIdAllocator parent_local_surface_id_allocator_;
+  std::unique_ptr<viz::ParentLocalSurfaceIdAllocator>
+      parent_local_surface_id_allocator_;
 
   bool enable_surface_synchronization_ = false;
 

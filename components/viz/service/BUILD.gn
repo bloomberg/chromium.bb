@@ -158,6 +158,8 @@ viz_component("service") {
     "surfaces/referenced_surface_tracker.h",
     "surfaces/surface.cc",
     "surfaces/surface.h",
+    "surfaces/surface_allocation_group.cc",
+    "surfaces/surface_allocation_group.h",
     "surfaces/surface_client.h",
     "surfaces/surface_deadline_client.h",
     "surfaces/surface_dependency_deadline.cc",

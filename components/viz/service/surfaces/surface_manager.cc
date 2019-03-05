@@ -19,6 +19,7 @@
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/common/surfaces/surface_info.h"
 #include "components/viz/service/surfaces/surface.h"
+#include "components/viz/service/surfaces/surface_allocation_group.h"
 #include "components/viz/service/surfaces/surface_client.h"
 #include "components/viz/service/surfaces/surface_manager_delegate.h"
 
@@ -112,15 +113,21 @@ Surface* SurfaceManager::CreateSurface(
   DCHECK(surface_info.is_valid());
   DCHECK(surface_client);
 
+  // We should not be asked to create a surface that already exists.
   auto it = surface_map_.find(surface_info.id());
   if (it != surface_map_.end())
     return nullptr;
 
-  // If no surface with this SurfaceId exists, simply create the surface
-  // and return.
-  std::unique_ptr<Surface> surface =
-      std::make_unique<Surface>(surface_info, this, surface_client,
-                                needs_sync_tokens, block_activation_on_parent);
+  SurfaceAllocationGroup* allocation_group =
+      GetOrCreateAllocationGroupForSurfaceId(surface_info.id());
+  // GetOrCreateAllocationGroupForSurfaceId can fail if two FrameSinkIds use the
+  // same embed token.
+  if (!allocation_group)
+    return nullptr;
+
+  std::unique_ptr<Surface> surface = std::make_unique<Surface>(
+      surface_info, this, allocation_group, surface_client, needs_sync_tokens,
+      block_activation_on_parent);
   surface->SetDependencyDeadline(std::make_unique<SurfaceDependencyDeadline>(
       surface.get(), begin_frame_source, tick_clock_));
   surface_map_[surface_info.id()] = std::move(surface);
@@ -217,6 +224,9 @@ void SurfaceManager::GarbageCollectSurfaces() {
   // re-entrancy, and if not just remove here.
   for (const SurfaceId& surface_id : surfaces_to_delete)
     surfaces_to_destroy_.erase(surface_id);
+
+  base::EraseIf(embed_token_to_allocation_group_,
+                [](auto& entry) { return entry.second->IsReadyToDestroy(); });
 }
 
 const base::flat_set<SurfaceId>& SurfaceManager::GetSurfacesReferencedByParent(
@@ -657,6 +667,24 @@ void SurfaceManager::SurfaceWillBeDrawn(Surface* surface) {
 
 void SurfaceManager::DropTemporaryReference(const SurfaceId& surface_id) {
   RemoveTemporaryReferenceImpl(surface_id, RemovedReason::DROPPED);
+}
+
+SurfaceAllocationGroup* SurfaceManager::GetOrCreateAllocationGroupForSurfaceId(
+    const SurfaceId& surface_id) {
+  std::unique_ptr<SurfaceAllocationGroup>& allocation_group =
+      embed_token_to_allocation_group_[surface_id.local_surface_id()
+                                           .embed_token()];
+  if (allocation_group && allocation_group->submitter_frame_sink_id() !=
+                              surface_id.frame_sink_id()) {
+    DLOG(ERROR) << "Cannot reuse embed token across frame sinks";
+    return nullptr;
+  }
+  if (!allocation_group) {
+    allocation_group = std::make_unique<SurfaceAllocationGroup>(
+        surface_id.frame_sink_id(),
+        surface_id.local_surface_id().embed_token());
+  }
+  return allocation_group.get();
 }
 
 }  // namespace viz

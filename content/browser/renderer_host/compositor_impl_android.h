@@ -22,6 +22,7 @@
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/local_surface_id.h"
 #include "components/viz/common/surfaces/local_surface_id_allocation.h"
+#include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/host/host_frame_sink_client.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/android/compositor.h"
@@ -189,7 +190,7 @@ class CONTENT_EXPORT CompositorImpl
 
   // Returns a new surface ID when in surface-synchronization mode. Otherwise
   // returns an empty surface.
-  viz::LocalSurfaceIdAllocation GenerateLocalSurfaceId() const;
+  viz::LocalSurfaceIdAllocation GenerateLocalSurfaceId();
 
   // Tears down the display for both Viz and non-Viz, unregistering the root
   // frame sink ID in the process.
@@ -263,6 +264,8 @@ class CONTENT_EXPORT CompositorImpl
   viz::mojom::DisplayPrivateAssociatedPtr display_private_;
   std::unique_ptr<viz::HostDisplayClient> display_client_;
   bool vsync_paused_ = false;
+
+  viz::ParentLocalSurfaceIdAllocator local_surface_id_allocator_;
 
   // Test-only. Called when we are notified of a swap.
   base::RepeatingCallback<void(const gfx::Size&)>

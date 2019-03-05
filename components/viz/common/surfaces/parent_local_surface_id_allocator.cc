@@ -130,6 +130,12 @@ bool ParentLocalSurfaceIdAllocator::HasValidLocalSurfaceIdAllocation() const {
   return !is_invalid_ && current_local_surface_id_allocation_.IsValid();
 }
 
+const base::UnguessableToken& ParentLocalSurfaceIdAllocator::GetEmbedToken()
+    const {
+  return current_local_surface_id_allocation_.local_surface_id_
+      .parent_component_.embed_token;
+}
+
 // static
 const LocalSurfaceIdAllocation&
 ParentLocalSurfaceIdAllocator::InvalidLocalSurfaceIdAllocation() {

@@ -55,7 +55,7 @@ class SurfaceAggregatorPixelTest : public cc::RendererPixelTest<GLRenderer> {
  protected:
   ServerSharedBitmapManager shared_bitmap_manager_;
   FrameSinkManagerImpl manager_;
-  ParentLocalSurfaceIdAllocator allocator_;
+  ParentLocalSurfaceIdAllocator root_allocator_;
   std::unique_ptr<CompositorFrameSinkSupport> support_;
   base::TimeTicks next_display_time_ =
       base::TimeTicks() + base::TimeDelta::FromSeconds(1);
@@ -96,12 +96,12 @@ TEST_F(SurfaceAggregatorPixelTest, DrawSimpleFrame) {
   auto root_frame =
       CompositorFrameBuilder().AddRenderPass(std::move(pass)).Build();
 
-  allocator_.GenerateId();
+  root_allocator_.GenerateId();
   SurfaceId root_surface_id(
       support_->frame_sink_id(),
-      allocator_.GetCurrentLocalSurfaceIdAllocation().local_surface_id());
+      root_allocator_.GetCurrentLocalSurfaceIdAllocation().local_surface_id());
   support_->SubmitCompositorFrame(
-      allocator_.GetCurrentLocalSurfaceIdAllocation().local_surface_id(),
+      root_allocator_.GetCurrentLocalSurfaceIdAllocation().local_surface_id(),
       std::move(root_frame));
 
   SurfaceAggregator aggregator(manager_.surface_manager(),
@@ -124,14 +124,15 @@ TEST_F(SurfaceAggregatorPixelTest, DrawSimpleAggregatedFrame) {
       nullptr, &manager_, kArbitraryChildFrameSinkId, kIsChildRoot,
       kNeedsSyncPoints);
 
-  allocator_.GenerateId();
+  ParentLocalSurfaceIdAllocator child_allocator;
+  child_allocator.GenerateId();
   LocalSurfaceId child_local_surface_id =
-      allocator_.GetCurrentLocalSurfaceIdAllocation().local_surface_id();
+      child_allocator.GetCurrentLocalSurfaceIdAllocation().local_surface_id();
   SurfaceId child_surface_id(child_support->frame_sink_id(),
                              child_local_surface_id);
-  allocator_.GenerateId();
+  root_allocator_.GenerateId();
   LocalSurfaceId root_local_surface_id =
-      allocator_.GetCurrentLocalSurfaceIdAllocation().local_surface_id();
+      root_allocator_.GetCurrentLocalSurfaceIdAllocation().local_surface_id();
   SurfaceId root_surface_id(support_->frame_sink_id(), root_local_surface_id);
 
   {
@@ -213,18 +214,22 @@ TEST_F(SurfaceAggregatorPixelTest, DrawAggregatedFrameWithSurfaceTransforms) {
   auto right_support = std::make_unique<CompositorFrameSinkSupport>(
       nullptr, &manager_, kArbitraryRightFrameSinkId, kIsChildRoot,
       kNeedsSyncPoints);
-  allocator_.GenerateId();
+  ParentLocalSurfaceIdAllocator left_child_allocator;
+  left_child_allocator.GenerateId();
   LocalSurfaceId left_child_local_id =
-      allocator_.GetCurrentLocalSurfaceIdAllocation().local_surface_id();
+      left_child_allocator.GetCurrentLocalSurfaceIdAllocation()
+          .local_surface_id();
   SurfaceId left_child_id(left_support->frame_sink_id(), left_child_local_id);
-  allocator_.GenerateId();
+  ParentLocalSurfaceIdAllocator right_child_allocator;
+  right_child_allocator.GenerateId();
   LocalSurfaceId right_child_local_id =
-      allocator_.GetCurrentLocalSurfaceIdAllocation().local_surface_id();
+      right_child_allocator.GetCurrentLocalSurfaceIdAllocation()
+          .local_surface_id();
   SurfaceId right_child_id(right_support->frame_sink_id(),
                            right_child_local_id);
-  allocator_.GenerateId();
+  root_allocator_.GenerateId();
   LocalSurfaceId root_local_surface_id =
-      allocator_.GetCurrentLocalSurfaceIdAllocation().local_surface_id();
+      root_allocator_.GetCurrentLocalSurfaceIdAllocation().local_surface_id();
   SurfaceId root_surface_id(support_->frame_sink_id(), root_local_surface_id);
 
   {

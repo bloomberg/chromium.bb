@@ -149,8 +149,8 @@ class VizDevToolsTest : public PlatformTest {
   viz::SurfaceId CreateFrameSinkAndSurface(
       const viz::FrameSinkId& frame_sink_id,
       uint32_t parent_id) {
-    viz::LocalSurfaceId local_surface_id(
-        parent_id, base::UnguessableToken::Deserialize(0, 1u));
+    viz::LocalSurfaceId local_surface_id(parent_id,
+                                         base::UnguessableToken::Create());
     // Ensure that a CompositorFrameSinkSupport exists for this frame sink.
     auto& support = supports_[frame_sink_id];
     if (!support) {

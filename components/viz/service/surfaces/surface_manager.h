@@ -39,6 +39,7 @@ class TickClock;
 namespace viz {
 
 class Surface;
+class SurfaceAllocationGroup;
 class SurfaceManagerDelegate;
 struct BeginFrameAck;
 struct BeginFrameArgs;
@@ -196,6 +197,15 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
   // Removes temporary reference to |surface_id| and older surfaces.
   void DropTemporaryReference(const SurfaceId& surface_id);
 
+  // Returns the corresponding SurfaceAllocationGroup for |surface_id|. A
+  // SurfaceAllocationGroup will be created for |surface_id| if one doesn't
+  // exist yet. If there is already a SurfaceAllocationGroup that matches the
+  // embed token of |surface_id| but its submitter doesn't match |surface_id|'s
+  // FrameSinkId, nullptr will be returned. In any other case, the returned
+  // value will always be a valid SurfaceAllocationGroup.
+  SurfaceAllocationGroup* GetOrCreateAllocationGroupForSurfaceId(
+      const SurfaceId& surface_id);
+
  private:
   friend class CompositorFrameSinkSupportTest;
   friend class FrameSinkManagerTest;
@@ -334,6 +344,10 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
   // interval of time. The timer will started/stopped so it only runs if there
   // are temporary references. Also the timer isn't used with Android WebView.
   base::Optional<base::RepeatingTimer> expire_timer_;
+
+  base::flat_map<base::UnguessableToken,
+                 std::unique_ptr<SurfaceAllocationGroup>>
+      embed_token_to_allocation_group_;
 
   base::WeakPtrFactory<SurfaceManager> weak_factory_;
 

@@ -17,6 +17,7 @@
 #include "components/viz/service/hit_test/hit_test_aggregator_delegate.h"
 #include "components/viz/service/surfaces/surface_manager.h"
 #include "components/viz/test/compositor_frame_helpers.h"
+#include "components/viz/test/surface_id_allocator_set.h"
 #include "components/viz/test/test_latest_local_surface_id_lookup_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -25,12 +26,6 @@ namespace {
 
 constexpr uint32_t kDisplayClientId = 2;
 constexpr FrameSinkId kDisplayFrameSink(kDisplayClientId, 0);
-
-SurfaceId MakeSurfaceId(uint32_t frame_sink_id_client_id) {
-  return SurfaceId(
-      FrameSinkId(frame_sink_id_client_id, 0),
-      LocalSurfaceId(1, base::UnguessableToken::Deserialize(0, 1u)));
-}
 
 // TODO(riajiang): TestHostFrameSinkManager should be based on
 // mojom::FrameSinkManagerClient instead.
@@ -186,6 +181,11 @@ class HitTestAggregatorTest : public testing::Test {
     return client_id;
   }
 
+  SurfaceId MakeSurfaceId(uint32_t frame_sink_id_client_id) {
+    return allocator_set_.MakeSurfaceId(FrameSinkId(frame_sink_id_client_id, 0),
+                                        1);
+  }
+
  protected:
   TestHitTestAggregator* hit_test_aggregator() {
     return hit_test_aggregator_.get();
@@ -226,6 +226,7 @@ class HitTestAggregatorTest : public testing::Test {
   std::unique_ptr<TestLatestLocalSurfaceIdLookupDelegate>
       local_surface_id_lookup_delegate_;
   std::unique_ptr<CompositorFrameSinkSupport> support_;
+  SurfaceIdAllocatorSet allocator_set_;
 
   DISALLOW_COPY_AND_ASSIGN(HitTestAggregatorTest);
 };

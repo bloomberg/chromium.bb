@@ -44,6 +44,8 @@ viz_static_library("test_support") {
     "paths.h",
     "surface_hittest_test_helpers.cc",
     "surface_hittest_test_helpers.h",
+    "surface_id_allocator_set.cc",
+    "surface_id_allocator_set.h",
     "test_context_provider.cc",
     "test_context_provider.h",
     "test_context_support.cc",
