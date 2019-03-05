@@ -27,6 +27,7 @@ from devil.android import flag_changer
 from devil.android import forwarder
 from devil.android.ndk import abis
 from devil.android.sdk import intent
+from devil.android.sdk import version_codes
 
 sys.path.append(os.path.join(_SRC_PATH, 'build', 'android'))
 import devil_chromium
@@ -206,14 +207,16 @@ class AndroidProfileTool(object):
     if device is None:
       devices = device_utils.DeviceUtils.HealthyDevices()
       assert devices, 'Expected at least one connected device'
-      # In case of many connected devices, favor the device running arm64.
-      arm_64_device = ''
+      # Favor device running Android version[K,L] if exists.
+      # Code ordering is not yet supported on Monochrome.
+      preferred_device = None
       for device in devices:
-        if device.GetABI() == abis.ARM_64:
-         arm_64_device = device
+        device_version = device.build_version_sdk
+        if (device_version >= version_codes.KITKAT
+            and device_version <= version_codes.LOLLIPOP_MR1):
+         preferred_device = device
          break
-
-      self._device = arm_64_device if arm_64_device else devices[0]
+      self._device = preferred_device if preferred_device else devices[0]
     else:
       self._device = device_utils.DeviceUtils(device)
     self._cygprofile_tests = os.path.join(
