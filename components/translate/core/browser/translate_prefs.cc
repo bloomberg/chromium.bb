@@ -38,7 +38,7 @@
 namespace translate {
 
 const char kForceTriggerTranslateCount[] =
-    "translate_force_trigger_on_english_count_for_backoff";
+    "translate_force_trigger_on_english_count_for_backoff_1";
 const char TranslatePrefs::kPrefTranslateSiteBlacklistDeprecated[] =
     "translate_site_blacklist";
 const char TranslatePrefs::kPrefTranslateSiteBlacklistWithTime[] =
