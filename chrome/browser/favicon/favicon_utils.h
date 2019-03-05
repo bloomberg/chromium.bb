@@ -33,6 +33,10 @@ bool ShouldDisplayFavicon(content::WebContents* web_contents);
 // network error, desaturate the favicon.
 gfx::Image TabFaviconFromWebContents(content::WebContents* contents);
 
+// Returns the image to use when no favicon is available, taking dark mode
+// into account if necessary.
+gfx::Image GetDefaultFavicon();
+
 }  // namespace favicon
 
 #endif  // CHROME_BROWSER_FAVICON_FAVICON_UTILS_H_
