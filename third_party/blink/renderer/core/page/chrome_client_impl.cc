@@ -840,6 +840,13 @@ bool ChromeClientImpl::ShouldOpenUIElementDuringPageDismissal(
     UIElementType ui_element_type,
     const String& dialog_message,
     Document::PageDismissalType dismissal_type) const {
+  // TODO(https://crbug.com/937569): Remove this in Chrome 82.
+  if (ui_element_type == ChromeClient::UIElementType::kPopup &&
+      web_view_->Client() &&
+      web_view_->Client()->AllowPopupsDuringPageUnload()) {
+    return true;
+  }
+
   StringBuilder builder;
   builder.Append("Blocked ");
   builder.Append(UIElementTypeToString(ui_element_type));

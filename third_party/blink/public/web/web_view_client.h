@@ -203,6 +203,10 @@ class WebViewClient {
   // Gestures -------------------------------------------------------------
 
   virtual bool CanHandleGestureEvent() { return false; }
+
+  // Policies -------------------------------------------------------------
+
+  virtual bool AllowPopupsDuringPageUnload() { return false; }
 };
 
 }  // namespace blink

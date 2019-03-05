@@ -2107,6 +2107,9 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
             switches::kUnsafelyTreatInsecureOriginAsSecure,
             prefs->GetString(prefs::kUnsafelyTreatInsecureOriginAsSecure));
       }
+
+      if (prefs->HasPrefPath(prefs::kAllowPopupsDuringPageUnload))
+        command_line->AppendSwitch(switches::kAllowPopupsDuringPageUnload);
     }
 
     if (IsAutoReloadEnabled())
