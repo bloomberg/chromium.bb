@@ -1256,7 +1256,6 @@ std::unique_ptr<service_manager::Service> ProfileImpl::HandleServiceRequest(
     return std::make_unique<identity::IdentityService>(
         IdentityManagerFactory::GetForProfile(this),
         AccountTrackerServiceFactory::GetForProfile(this),
-        SigninManagerFactory::GetForProfile(this),
         ProfileOAuth2TokenServiceFactory::GetForProfile(this),
         std::move(request));
   }

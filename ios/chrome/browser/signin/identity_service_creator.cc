@@ -20,11 +20,8 @@ std::unique_ptr<service_manager::Service> CreateIdentityService(
       IdentityManagerFactory::GetForBrowserState(browser_state);
   AccountTrackerService* account_tracker =
       ios::AccountTrackerServiceFactory::GetForBrowserState(browser_state);
-  SigninManagerBase* signin_manager =
-      ios::SigninManagerFactory::GetForBrowserState(browser_state);
   ProfileOAuth2TokenService* token_service =
       ProfileOAuth2TokenServiceFactory::GetForBrowserState(browser_state);
   return std::make_unique<identity::IdentityService>(
-      identity_manager, account_tracker, signin_manager, token_service,
-      std::move(request));
+      identity_manager, account_tracker, token_service, std::move(request));
 }
