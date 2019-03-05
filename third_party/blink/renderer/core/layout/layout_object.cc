@@ -853,11 +853,21 @@ static inline bool ObjectIsRelayoutBoundary(const LayoutObject* object) {
   if (object->IsLayoutScrollbarPart())
     return false;
 
-  // In general we can't relayout a flex item independently of its container;
-  // not only is the result incorrect due to the override size that's set, it
-  // also messes with the cached main size on the flexbox.
-  if (object->IsBox() && ToLayoutBox(object)->IsFlexItemIncludingNG())
-    return false;
+  if (const LayoutBox* layout_box = ToLayoutBoxOrNull(object)) {
+    // In general we can't relayout a flex item independently of its container;
+    // not only is the result incorrect due to the override size that's set, it
+    // also messes with the cached main size on the flexbox.
+    if (layout_box->IsFlexItemIncludingNG())
+      return false;
+
+    // In LayoutNG, if box has any OOF descendants, they are propagated to
+    // parent. Therefore, we must mark parent chain for layout.
+    if (layout_box->GetCachedLayoutResult() &&
+        layout_box->GetCachedLayoutResult()
+                ->OutOfFlowPositionedDescendants()
+                .size() > 0)
+      return false;
+  }
 
   // Inside multicol it's generally problematic to allow relayout roots. The
   // multicol container itself may be scheduled for relayout as well (due to
