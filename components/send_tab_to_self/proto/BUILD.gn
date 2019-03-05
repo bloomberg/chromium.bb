@@ -4,26 +4,10 @@
 
 import("//third_party/protobuf/proto_library.gni")
 
-copy("send_tab_to_self_header_include") {
-  sources = [
-    "send_tab_to_self_header_include.h",
-  ]
-  outputs = [
-    "$root_gen_dir" +
-        "/components/send_tab_to_self/proto/send_tab_to_self_specifics.pb.h",
-  ]
-  deps = [
-    "//components/sync/protocol:protocol",
-  ]
-}
-
 proto_library("send_tab_to_self_proto") {
   import_dirs = [ "//components/sync/protocol" ]
   sources = [
     "send_tab_to_self.proto",
   ]
-  deps = [
-    ":send_tab_to_self_header_include",
-    "//components/sync/protocol:protocol",
-  ]
+  link_deps = [ "//components/sync/protocol:protocol" ]
 }
