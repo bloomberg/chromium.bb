@@ -750,7 +750,7 @@ TEST_F(PasswordFormHelperTest, ExtractPasswordFormData) {
   __block int call_counter = 0;
   __block int success_counter = 0;
   __block FormData result = FormData();
-  [helper_ extractPasswordFormData:GetFormId(1)
+  [helper_ extractPasswordFormData:base::SysUTF8ToNSString(GetFormId(1))
                  completionHandler:^(BOOL complete, const FormData& form) {
                    ++call_counter;
                    if (complete) {
@@ -768,7 +768,7 @@ TEST_F(PasswordFormHelperTest, ExtractPasswordFormData) {
   success_counter = 0;
   result = FormData();
 
-  [helper_ extractPasswordFormData:"unknown"
+  [helper_ extractPasswordFormData:@"unknown"
                  completionHandler:^(BOOL complete, const FormData& form) {
                    ++call_counter;
                    if (complete) {

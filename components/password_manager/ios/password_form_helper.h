@@ -93,7 +93,7 @@ class WebState;
 // Finds the password form named |formName| and calls
 // |completionHandler| with the populated |FormData| data structure. |found| is
 // YES if the current form was found successfully, NO otherwise.
-- (void)extractPasswordFormData:(const std::string&)formName
+- (void)extractPasswordFormData:(NSString*)formName
               completionHandler:
                   (void (^)(BOOL found,
                             const autofill::FormData& form))completionHandler;
