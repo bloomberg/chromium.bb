@@ -28,6 +28,7 @@ CastWebContentsImpl::CastWebContentsImpl(content::WebContents* web_contents,
     : web_contents_(web_contents),
       delegate_(init_params.delegate),
       page_state_(PageState::IDLE),
+      last_state_(PageState::IDLE),
       enabled_for_dev_(init_params.enabled_for_dev),
       remote_debugging_server_(
           shell::CastBrowserProcess::GetInstance()->remote_debugging_server()),
@@ -50,8 +51,10 @@ CastWebContentsImpl::CastWebContentsImpl(content::WebContents* web_contents,
 
 CastWebContentsImpl::~CastWebContentsImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DisableDebugging();
+  DCHECK(!notifying_) << "Do not destroy CastWebContents during observer "
+                         "notification!";
 
+  DisableDebugging();
   for (auto& observer : observer_list_) {
     observer.ResetCastWebContents();
   }
@@ -95,6 +98,7 @@ void CastWebContentsImpl::LoadUrl(const GURL& url) {
                                          ui::PAGE_TRANSITION_TYPED, "");
   UpdatePageState();
   DCHECK_EQ(PageState::LOADING, page_state_);
+  NotifyObservers();
 }
 
 void CastWebContentsImpl::ClosePage() {
@@ -118,6 +122,7 @@ void CastWebContentsImpl::Stop(int error_code) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (stopped_) {
     UpdatePageState();
+    NotifyObservers();
     return;
   }
   last_error_ = error_code;
@@ -127,6 +132,7 @@ void CastWebContentsImpl::Stop(int error_code) {
   DCHECK_NE(PageState::IDLE, page_state_);
   DCHECK_NE(PageState::LOADING, page_state_);
   DCHECK_NE(PageState::LOADED, page_state_);
+  NotifyObservers();
 }
 
 void CastWebContentsImpl::SetDelegate(CastWebContents::Delegate* delegate) {
@@ -286,6 +292,7 @@ void CastWebContentsImpl::DidStartLoading() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   UpdatePageState();
   DCHECK_EQ(page_state_, PageState::LOADING);
+  NotifyObservers();
 }
 
 void CastWebContentsImpl::DidStopLoading() {
@@ -317,11 +324,12 @@ void CastWebContentsImpl::DidStopLoading() {
   DCHECK((previous == PageState::ERROR && page_state_ == PageState::ERROR) ||
          page_state_ == PageState::LOADED)
       << "Page is in unexpected state: " << page_state_;
+  NotifyObservers();
 }
 
 void CastWebContentsImpl::UpdatePageState() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  PageState last_state = page_state_;
+  last_state_ = page_state_;
   if (!web_contents_) {
     DCHECK(stopped_);
     page_state_ = PageState::DESTROYED;
@@ -338,11 +346,13 @@ void CastWebContentsImpl::UpdatePageState() {
       page_state_ = PageState::CLOSED;
     }
   }
+}
 
+void CastWebContentsImpl::NotifyObservers() {
   if (!delegate_)
     return;
   // Don't notify if the page state didn't change.
-  if (last_state == page_state_)
+  if (last_state_ == page_state_)
     return;
   // Don't recursively notify the delegate.
   if (notifying_)
