@@ -4,6 +4,8 @@
 
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager.h"
 
+#include <string>
+
 #include "base/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager_factory.h"
@@ -51,9 +53,8 @@ class AdvancedProtectionStatusManagerTest : public testing::Test {
     AccountInfo account_info = identity_test_env()->MakeAccountAvailable(email);
 
     account_info.is_under_advanced_protection = is_under_advanced_protection;
-    identity_test_env()->UpdateAccountInfoForAccount(account_info);
-
     identity_test_env()->SetPrimaryAccount(account_info.email);
+    identity_test_env()->UpdateAccountInfoForAccount(account_info);
 
     return account_info.account_id;
   }
@@ -357,6 +358,60 @@ TEST_F(AdvancedProtectionStatusManagerTest, AccountRemoval) {
   EXPECT_TRUE(testing_profile_->GetPrefs()->HasPrefPath(
       prefs::kAdvancedProtectionLastRefreshInUs));
   EXPECT_FALSE(aps_manager.IsRefreshScheduled());
+  aps_manager.UnsubscribeFromSigninEvents();
+}
+
+TEST_F(AdvancedProtectionStatusManagerTest,
+       AdvancedProtectionDisabledAfterSignin) {
+  AdvancedProtectionStatusManager aps_manager(
+      testing_profile_.get(), base::TimeDelta() /*no min delay*/);
+  // There is no account, so the timer should not run at startup.
+  EXPECT_FALSE(aps_manager.IsRefreshScheduled());
+
+  std::string account_id =
+      SignIn("test@test.com", /* is_under_advanced_protection = */ true);
+  base::RunLoop().RunUntilIdle();
+
+  // Now that we've signed into Advanced Protection, we should have a scheduled
+  // refresh.
+  EXPECT_TRUE(aps_manager.is_under_advanced_protection());
+  EXPECT_TRUE(aps_manager.IsRefreshScheduled());
+
+  // Skip the 24 hour wait, and try to refresh the token now.
+  aps_manager.timer_.FireNow();
+  MakeOAuthTokenFetchSucceed(account_id,
+                             /* is_under_advanced_protection = */ false);
+
+  EXPECT_FALSE(aps_manager.is_under_advanced_protection());
+  EXPECT_FALSE(aps_manager.IsRefreshScheduled());
+
+  aps_manager.UnsubscribeFromSigninEvents();
+}
+
+TEST_F(AdvancedProtectionStatusManagerTest,
+       StartupAfterLongWaitRefreshesImmediately) {
+  std::string account_id =
+      SignIn("test@test.com", /* is_under_advanced_protection = */ true);
+  base::RunLoop().RunUntilIdle();
+
+  base::Time last_refresh_time =
+      base::Time::Now() - base::TimeDelta::FromDays(1);
+  testing_profile_->GetPrefs()->SetInt64(
+      prefs::kAdvancedProtectionLastRefreshInUs,
+      last_refresh_time.ToDeltaSinceWindowsEpoch().InMicroseconds());
+
+  AdvancedProtectionStatusManager aps_manager(
+      testing_profile_.get(), base::TimeDelta() /*no min delay*/);
+  ASSERT_FALSE(aps_manager.GetPrimaryAccountId().empty());
+  ASSERT_TRUE(aps_manager.is_under_advanced_protection());
+  EXPECT_TRUE(aps_manager.IsRefreshScheduled());
+
+  MakeOAuthTokenFetchSucceed(account_id,
+                             /* is_under_advanced_protection = */ false);
+
+  EXPECT_FALSE(aps_manager.is_under_advanced_protection());
+  EXPECT_FALSE(aps_manager.IsRefreshScheduled());
+
   aps_manager.UnsubscribeFromSigninEvents();
 }
 
