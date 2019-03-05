@@ -7,10 +7,7 @@
 import datetime
 import os
 
-try:
-  import pandas  # pylint: disable=import-error
-except ImportError:
-  pass
+from core.external_modules import pandas
 
 
 CACHE_DIR = os.path.abspath(os.path.join(

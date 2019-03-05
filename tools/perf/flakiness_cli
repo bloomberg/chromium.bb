@@ -6,8 +6,11 @@
 """This tool provides a command line interface for the flakiness dashboard."""
 
 import sys
+
+from core import external_modules
 from cli_tools import flakiness_cli
 
 
 if __name__ == '__main__':
+  external_modules.RequireModules()
   sys.exit(flakiness_cli.Main())
