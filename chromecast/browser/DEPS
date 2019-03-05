@@ -20,6 +20,7 @@ include_rules = [
   "+components/proxy_config",
   "+components/storage_monitor",
   "+components/user_prefs",
+  "+components/variations/net",
   "+components/version_info",
   "+components/viz/common/switches.h",
   "+components/zoom",

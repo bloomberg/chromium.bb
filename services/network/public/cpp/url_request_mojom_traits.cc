@@ -162,8 +162,7 @@ bool StructTraits<
       !data.ReadReferrer(&out->referrer) ||
       !data.ReadReferrerPolicy(&out->referrer_policy) ||
       !data.ReadHeaders(&out->headers) ||
-      !data.ReadRequestedWithHeader(&out->requested_with_header) ||
-      !data.ReadClientDataHeader(&out->client_data_header) ||
+      !data.ReadCorsExemptHeaders(&out->cors_exempt_headers) ||
       !data.ReadPriority(&out->priority) ||
       !data.ReadCorsPreflightPolicy(&out->cors_preflight_policy) ||
       !data.ReadFetchRequestMode(&out->fetch_request_mode) ||
