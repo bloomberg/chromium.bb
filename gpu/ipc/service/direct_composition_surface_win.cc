@@ -623,6 +623,12 @@ bool DCLayerTree::Initialize(
   dcomp_device_->CreateVisual(root_visual_.GetAddressOf());
   DCHECK(root_visual_);
   dcomp_target_->SetRoot(root_visual_.Get());
+  // A visual inherits the interpolation mode of the parent visual by default.
+  // If no visuals set the interpolation mode, the default for the entire visual
+  // tree is nearest neighbor interpolation.
+  // Set the interpolation mode to Linear to get a better upscaling quality.
+  root_visual_->SetBitmapInterpolationMode(
+      DCOMPOSITION_BITMAP_INTERPOLATION_MODE_LINEAR);
 
   return true;
 }
