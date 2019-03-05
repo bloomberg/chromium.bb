@@ -70,8 +70,7 @@ class CORE_EXPORT V8CodeCache final {
   static void ProduceCache(v8::Isolate*,
                            v8::Local<v8::Script>,
                            const ScriptSourceCode&,
-                           ProduceCacheOptions,
-                           v8::ScriptCompiler::CompileOptions);
+                           ProduceCacheOptions);
   static void ProduceCache(v8::Isolate*,
                            ScriptModuleProduceCacheData*,
                            size_t source_text_length,

@@ -283,7 +283,7 @@ ScriptValue WorkerOrWorkletScriptController::EvaluateInternal(
     maybe_result = V8ScriptRunner::RunCompiledScript(isolate_, compiled_script,
                                                      global_scope_);
     V8CodeCache::ProduceCache(isolate_, compiled_script, source_code,
-                              produce_cache_options, compile_options);
+                              produce_cache_options);
   }
 
   if (!block.CanContinue()) {

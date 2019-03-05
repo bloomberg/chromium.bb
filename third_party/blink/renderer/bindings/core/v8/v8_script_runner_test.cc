@@ -69,8 +69,7 @@ class V8ScriptRunnerTest : public testing::Test {
       return false;
     }
     V8CodeCache::ProduceCache(isolate, compiled_script.ToLocalChecked(),
-                              source_code, produce_cache_options,
-                              compile_options);
+                              source_code, produce_cache_options);
     return true;
   }
 
@@ -87,8 +86,7 @@ class V8ScriptRunnerTest : public testing::Test {
       return false;
     }
     V8CodeCache::ProduceCache(isolate, compiled_script.ToLocalChecked(),
-                              source_code, produce_cache_options,
-                              compile_options);
+                              source_code, produce_cache_options);
     return true;
   }
 

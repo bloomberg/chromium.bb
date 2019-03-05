@@ -1145,12 +1145,8 @@ std::unique_ptr<TracedValue> inspector_parse_script_event::Data(
 }
 
 inspector_compile_script_event::V8CacheResult::ProduceResult::ProduceResult(
-    v8::ScriptCompiler::CompileOptions produce_options,
     int cache_size)
-    : produce_options(produce_options), cache_size(cache_size) {
-  DCHECK(produce_options == v8::ScriptCompiler::kNoCompileOptions ||
-         produce_options == v8::ScriptCompiler::kEagerCompile);
-}
+    : cache_size(cache_size) {}
 
 inspector_compile_script_event::V8CacheResult::ConsumeResult::ConsumeResult(
     v8::ScriptCompiler::CompileOptions consume_options,
@@ -1177,9 +1173,6 @@ std::unique_ptr<TracedValue> inspector_compile_script_event::Data(
   std::unique_ptr<TracedValue> value = FillLocation(url, text_position);
 
   if (cache_result.produce_result) {
-    value->SetString(
-        "cacheProduceOptions",
-        CompileOptionsString(cache_result.produce_result->produce_options));
     value->SetInteger("producedCacheSize",
                       cache_result.produce_result->cache_size);
   }

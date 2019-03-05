@@ -20,11 +20,9 @@ namespace blink {
 ScriptModuleProduceCacheData::ScriptModuleProduceCacheData(
     v8::Isolate* isolate,
     SingleCachedMetadataHandler* cache_handler,
-    v8::ScriptCompiler::CompileOptions compile_options,
     V8CodeCache::ProduceCacheOptions produce_cache_options,
     v8::Local<v8::Module> module)
     : cache_handler_(cache_handler),
-      compile_options_(compile_options),
       produce_cache_options_(produce_cache_options) {
   v8::HandleScope scope(isolate);
 
@@ -99,8 +97,7 @@ ScriptModule ScriptModule::Compile(
   if (out_produce_cache_data) {
     *out_produce_cache_data =
         MakeGarbageCollected<ScriptModuleProduceCacheData>(
-            isolate, cache_handler, compile_options, produce_cache_options,
-            module);
+            isolate, cache_handler, produce_cache_options, module);
   }
 
   return ScriptModule(isolate, module, source_url);

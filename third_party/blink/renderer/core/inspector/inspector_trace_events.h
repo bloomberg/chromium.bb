@@ -419,9 +419,7 @@ namespace inspector_compile_script_event {
 
 struct V8CacheResult {
   struct ProduceResult {
-    ProduceResult(v8::ScriptCompiler::CompileOptions produce_options,
-                  int cache_size);
-    v8::ScriptCompiler::CompileOptions produce_options;
+    explicit ProduceResult(int cache_size);
     int cache_size;
   };
   struct ConsumeResult {
