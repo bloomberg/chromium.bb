@@ -390,16 +390,27 @@ IN_PROC_BROWSER_TEST_F(MouseLatencyBrowserTest,
 // (crbug.com/723618).
 // http://crbug.com/801629 : Flaky on Linux and Windows, and Mac with
 // --enable-features=VizDisplayCompositor
+#if defined(OS_ANDROID)
+#define MAYBE_CoalescedMouseMovesCorrectlyTerminated \
+  DISABLED_CoalescedMouseMovesCorrectlyTerminated
+#else
+#define MAYBE_CoalescedMouseMovesCorrectlyTerminated \
+  CoalescedMouseMovesCorrectlyTerminated
+#endif
 IN_PROC_BROWSER_TEST_F(MouseLatencyBrowserTest,
-                       DISABLED_CoalescedMouseMovesCorrectlyTerminated) {
+                       MAYBE_CoalescedMouseMovesCorrectlyTerminated) {
   LoadURL();
 
   StartTracing();
   DoSyncCoalescedMoves(gfx::PointF(100, 100), gfx::Vector2dF(150, 150),
                        gfx::Vector2dF(250, 250));
-  static_cast<TracingRenderWidgetHost*>(
-      shell()->web_contents()->GetRenderWidgetHostView()->GetRenderWidgetHost())
-      ->WaitFor("InputLatency::MouseUp");
+  // The following wait is the upper bound for gpu swap completed callback. It
+  // is two frames to account for double buffering.
+  MainThreadFrameObserver observer(RenderWidgetHostImpl::From(
+      shell()->web_contents()->GetRenderViewHost()->GetWidget()));
+  observer.Wait();
+  observer.Wait();
+
   const base::Value& trace_data = StopTracing();
 
   AssertTraceIdsBeginAndEnd(trace_data, "InputLatency::MouseMove");
