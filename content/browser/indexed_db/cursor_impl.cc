@@ -30,6 +30,8 @@ class CursorImpl::IDBSequenceHelper {
   void Prefetch(int32_t count, scoped_refptr<IndexedDBCallbacks> callbacks);
   void PrefetchReset(int32_t used_prefetches, int32_t unused_prefetches);
 
+  void OnRemoveBinding(base::OnceClosure remove_binding_cb);
+
  private:
   std::unique_ptr<IndexedDBCursor> cursor_;
 
@@ -88,6 +90,11 @@ void CursorImpl::PrefetchReset(int32_t used_prefetches,
   helper_->PrefetchReset(used_prefetches, unused_prefetches);
 }
 
+void CursorImpl::OnRemoveBinding(base::OnceClosure remove_binding_cb) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  helper_->OnRemoveBinding(std::move(remove_binding_cb));
+}
+
 CursorImpl::IDBSequenceHelper::IDBSequenceHelper(
     std::unique_ptr<IndexedDBCursor> cursor,
     base::SequencedTaskRunner* idb_runner)
@@ -135,6 +142,12 @@ void CursorImpl::IDBSequenceHelper::PrefetchReset(int32_t used_prefetches,
   // TODO(cmumford): Handle this error (crbug.com/363397)
   if (!s.ok())
     DLOG(ERROR) << "Unable to reset prefetch";
+}
+
+void CursorImpl::IDBSequenceHelper::OnRemoveBinding(
+    base::OnceClosure remove_binding_cb) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  cursor_->OnRemoveBinding(std::move(remove_binding_cb));
 }
 
 }  // namespace content

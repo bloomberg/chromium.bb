@@ -13,6 +13,7 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "content/browser/indexed_db/cursor_impl.h"
 #include "content/browser/indexed_db/indexed_db_callbacks.h"
 #include "content/browser/indexed_db/indexed_db_connection.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
@@ -133,10 +134,19 @@ void IndexedDBDispatcherHost::AddDatabaseBinding(
 }
 
 void IndexedDBDispatcherHost::AddCursorBinding(
-    std::unique_ptr<blink::mojom::IDBCursor> cursor,
+    std::unique_ptr<CursorImpl> cursor,
     blink::mojom::IDBCursorAssociatedRequest request) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  cursor_bindings_.AddBinding(std::move(cursor), std::move(request));
+  auto* cursor_ptr = cursor.get();
+  mojo::BindingId binding_id =
+      cursor_bindings_.AddBinding(std::move(cursor), std::move(request));
+  cursor_ptr->OnRemoveBinding(
+      base::BindOnce(&IndexedDBDispatcherHost::RemoveCursorBinding,
+                     weak_factory_.GetWeakPtr(), binding_id));
+}
+
+void IndexedDBDispatcherHost::RemoveCursorBinding(mojo::BindingId binding_id) {
+  cursor_bindings_.RemoveBinding(binding_id);
 }
 
 void IndexedDBDispatcherHost::RenderProcessExited(

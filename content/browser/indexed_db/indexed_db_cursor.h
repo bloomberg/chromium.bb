@@ -39,6 +39,8 @@ class CONTENT_EXPORT IndexedDBCursor {
                         scoped_refptr<IndexedDBCallbacks> callbacks);
   leveldb::Status PrefetchReset(int used_prefetches, int unused_prefetches);
 
+  void OnRemoveBinding(base::OnceClosure remove_binding_cb);
+
   const blink::IndexedDBKey& key() const { return cursor_->key(); }
   const blink::IndexedDBKey& primary_key() const {
     return cursor_->primary_key();
@@ -48,6 +50,9 @@ class CONTENT_EXPORT IndexedDBCursor {
                                                          : cursor_->value();
   }
 
+  // RemoveBinding() removes the mojo cursor binding, which owns
+  // |IndexedDBCursor|, so calls to this function will delete |this|.
+  void RemoveBinding();
   void Close();
 
   leveldb::Status CursorIterationOperation(
@@ -85,6 +90,8 @@ class CONTENT_EXPORT IndexedDBCursor {
   std::unique_ptr<IndexedDBBackingStore::Cursor> cursor_;
   // Must be destroyed before transaction_.
   std::unique_ptr<IndexedDBBackingStore::Cursor> saved_cursor_;
+
+  base::OnceClosure remove_binding_cb_;
 
   bool closed_;
 

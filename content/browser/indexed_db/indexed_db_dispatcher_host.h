@@ -33,6 +33,7 @@ class Origin;
 }
 
 namespace content {
+class CursorImpl;
 class IndexedDBContextImpl;
 
 // Constructed on UI thread.  All remaining calls (including destruction) should
@@ -53,8 +54,9 @@ class CONTENT_EXPORT IndexedDBDispatcherHost
   void AddDatabaseBinding(std::unique_ptr<blink::mojom::IDBDatabase> database,
                           blink::mojom::IDBDatabaseAssociatedRequest request);
 
-  void AddCursorBinding(std::unique_ptr<blink::mojom::IDBCursor> cursor,
+  void AddCursorBinding(std::unique_ptr<CursorImpl> cursor,
                         blink::mojom::IDBCursorAssociatedRequest request);
+  void RemoveCursorBinding(mojo::BindingId binding_id);
 
   // A shortcut for accessing our context.
   IndexedDBContextImpl* context() const { return indexed_db_context_.get(); }

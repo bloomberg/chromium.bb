@@ -319,6 +319,14 @@ leveldb::Status IndexedDBCursor::PrefetchReset(int used_prefetches,
   return s;
 }
 
+void IndexedDBCursor::OnRemoveBinding(base::OnceClosure remove_binding_cb) {
+  remove_binding_cb_ = std::move(remove_binding_cb);
+}
+
+void IndexedDBCursor::RemoveBinding() {
+  std::move(remove_binding_cb_).Run();
+}
+
 void IndexedDBCursor::Close() {
   if (closed_)
     return;

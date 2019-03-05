@@ -189,6 +189,7 @@ class CONTENT_EXPORT IndexedDBTransaction {
   leveldb::Status BlobWriteComplete(
       IndexedDBBackingStore::BlobWriteResult result);
   void ProcessTaskQueue();
+  void CloseOpenCursorBindings();
   void CloseOpenCursors();
   leveldb::Status CommitPhaseTwo();
   void Timeout();
