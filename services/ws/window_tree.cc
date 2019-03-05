@@ -9,6 +9,7 @@
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/trace_event/trace_event.h"
 #include "base/unguessable_token.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/common/surfaces/surface_info.h"
@@ -214,6 +215,9 @@ void WindowTree::SendEventToClient(aura::Window* window,
            << ProxyWindow::GetMayBeNull(window)->GetIdForDebugging()
            << " event_type=" << ui::EventTypeName(event.type())
            << " event_id=" << event_id;
+  TRACE_EVENT_ASYNC_BEGIN1("ui", "WindowTree::SendEventToClient", event_id,
+                           "event_type",
+                           ui::EventTypeName(event_to_send->type()));
   window_tree_client_->OnWindowInputEvent(
       event_id, TransportIdForWindow(window), display_id,
       std::move(event_to_send), matches_event_observer);
@@ -2037,6 +2041,7 @@ void WindowTree::OnWindowInputEventAck(uint32_t event_id,
 
   for (WindowServiceObserver& observer : window_service_->observers())
     observer.OnClientAckedEvent(client_id_, event_id);
+  TRACE_EVENT_ASYNC_END0("ui", "WindowTree::SendEventToClient", event_id);
 }
 
 void WindowTree::DeactivateWindow(Id transport_window_id) {
