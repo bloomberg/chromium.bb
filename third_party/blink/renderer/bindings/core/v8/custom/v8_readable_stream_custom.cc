@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_readable_stream.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
-#include "third_party/blink/renderer/core/streams/readable_stream.h"
+#include "third_party/blink/renderer/core/streams/readable_stream_wrapper.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding.h"
@@ -30,7 +30,9 @@ void V8ReadableStream::ConstructorCustom(
   ScriptValue strategy = ScriptValue(ScriptState::Current(info.GetIsolate()),
                                      v8::Undefined(info.GetIsolate()));
   int num_args = info.Length();
-  auto* impl = MakeGarbageCollected<ReadableStream>();
+  // TODO(ricea): Switch implementation based on StreamsNative feature flag
+  // here.
+  auto* impl = MakeGarbageCollected<ReadableStreamWrapper>();
   v8::Local<v8::Object> wrapper = info.Holder();
   wrapper = impl->AssociateWithWrapper(
       info.GetIsolate(), V8ReadableStream::GetWrapperTypeInfo(), wrapper);

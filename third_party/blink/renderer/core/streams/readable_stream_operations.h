@@ -19,6 +19,11 @@ class ScriptState;
 
 // This class has various methods for ReadableStream[Reader] implemented with
 // V8 Extras.
+//
+//     DEPRECATED: None of these functions work correctly with the new C++
+//     implementation of ReadableStream. Use the ReadableStream API directly
+//     instead.
+//
 // All methods should be called in an appropriate V8 context. All ScriptValue
 // arguments must not be empty.
 //
