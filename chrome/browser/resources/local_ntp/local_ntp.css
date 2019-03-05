@@ -820,3 +820,7 @@ html[darkmode=true] body:not(.light-chip) #promo > div > img {
 #promo.notice-hide {
   display: none;
 }
+
+#user-content {
+  z-index: -1;
+}
