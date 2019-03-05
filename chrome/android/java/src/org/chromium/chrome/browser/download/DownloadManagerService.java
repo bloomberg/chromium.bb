@@ -836,7 +836,7 @@ public class DownloadManagerService
         Uri uri = Uri.parse(contentUri);
         try (Cursor cursor = ContextUtils.getApplicationContext().getContentResolver().query(
                      uri, null, null, null, null)) {
-            if (cursor.getCount() == 0) return null;
+            if (cursor == null || cursor.getCount() == 0) return null;
             cursor.moveToNext();
             String mimeType = cursor.getString(cursor.getColumnIndex(MediaColumns.MIME_TYPE));
             return createLaunchIntent(
