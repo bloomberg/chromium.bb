@@ -662,6 +662,17 @@ void ProcessMemoryMetricsEmitter::CollateResults() {
   }
 
   if (emit_metrics_for_all_processes) {
+    size_t native_resident_kb =
+        global_dump_->aggregated_metrics().native_library_resident_kb();
+
+    // |native_resident_kb| is only calculated for android devices that support
+    // code ordering. Otherwise it is equal to zero and should not be reported.
+    if (native_resident_kb != 0) {
+      MEMORY_METRICS_HISTOGRAM_KB(
+          "Memory.NativeLibrary.MappedAndResidentMemoryFootprint",
+          native_resident_kb);
+    }
+
     UMA_HISTOGRAM_MEMORY_LARGE_MB(
         "Memory.Experimental.Total2.PrivateMemoryFootprint",
         private_footprint_total_kb / 1024);

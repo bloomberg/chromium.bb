@@ -4,10 +4,14 @@
 
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/global_memory_dump.h"
 
+#include <vector>
+
 namespace memory_instrumentation {
 
 GlobalMemoryDump::GlobalMemoryDump(
-    std::vector<mojom::ProcessMemoryDumpPtr> process_dumps) {
+    std::vector<mojom::ProcessMemoryDumpPtr> process_dumps,
+    mojom::AggregatedMetricsPtr aggregated_metrics)
+    : aggregated_metrics_(std::move(aggregated_metrics)) {
   auto it = process_dumps_.before_begin();
   for (mojom::ProcessMemoryDumpPtr& process_dump : process_dumps) {
     it = process_dumps_.emplace_after(it, std::move(process_dump));
@@ -18,7 +22,8 @@ GlobalMemoryDump::~GlobalMemoryDump() = default;
 std::unique_ptr<GlobalMemoryDump> GlobalMemoryDump::MoveFrom(
     mojom::GlobalMemoryDumpPtr ptr) {
   return ptr ? std::unique_ptr<GlobalMemoryDump>(
-                   new GlobalMemoryDump(std::move(ptr->process_dumps)))
+                   new GlobalMemoryDump(std::move(ptr->process_dumps),
+                                        std::move(ptr->aggregated_metrics)))
              : nullptr;
 }
 
@@ -40,5 +45,11 @@ base::Optional<uint64_t> GlobalMemoryDump::ProcessDump::GetMetric(
 
   return base::Optional<uint64_t>(metric_it->second);
 }
+
+GlobalMemoryDump::AggregatedMetrics::AggregatedMetrics(
+    mojom::AggregatedMetricsPtr aggregated_metrics)
+    : aggregated_metrics_(std::move(aggregated_metrics)) {}
+
+GlobalMemoryDump::AggregatedMetrics::~AggregatedMetrics() = default;
 
 }  // namespace memory_instrumentation

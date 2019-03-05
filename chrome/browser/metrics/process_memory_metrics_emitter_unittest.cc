@@ -1,4 +1,4 @@
-// Copyright kTestRendererPid2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -308,6 +308,7 @@ void PopulateRendererMetrics(GlobalMemoryDumpPtr& global_dump,
 
 constexpr int kTestRendererPrivateMemoryFootprint = 130;
 constexpr int kTestRendererSharedMemoryFootprint = 135;
+constexpr int kNativeLibraryResidentMemoryFootprint = 27560;
 
 #if !defined(OS_MACOSX)
 constexpr int kTestRendererResidentSet = 110;
@@ -804,9 +805,13 @@ TEST_F(ProcessMemoryMetricsEmitterTest, RendererAndTotalHistogramsAreRecorded) {
 
   GlobalMemoryDumpPtr global_dump(
       memory_instrumentation::mojom::GlobalMemoryDump::New());
+  global_dump->aggregated_metrics =
+      memory_instrumentation::mojom::AggregatedMetrics::New();
   MetricMap expected_metrics = GetExpectedRendererMetrics();
   PopulateRendererMetrics(global_dump, expected_metrics, kTestRendererPid201);
   PopulateRendererMetrics(global_dump, expected_metrics, kTestRendererPid202);
+  global_dump->aggregated_metrics->native_library_resident_kb =
+      kNativeLibraryResidentMemoryFootprint;
 
   // No histograms should have been recorded yet.
   histograms.ExpectTotalCount("Memory.Renderer.PrivateMemoryFootprint", 0);
@@ -817,6 +822,8 @@ TEST_F(ProcessMemoryMetricsEmitterTest, RendererAndTotalHistogramsAreRecorded) {
   histograms.ExpectTotalCount("Memory.Total.RendererPrivateMemoryFootprint", 0);
   histograms.ExpectTotalCount("Memory.Total.SharedMemoryFootprint", 0);
   histograms.ExpectTotalCount("Memory.Total.ResidentSet", 0);
+  histograms.ExpectTotalCount(
+      "Memory.NativeLibrary.MappedAndResidentMemoryFootprint", 0);
 
   // Simulate some metrics emission.
   scoped_refptr<ProcessMemoryMetricsEmitterFake> emitter =
@@ -849,6 +856,9 @@ TEST_F(ProcessMemoryMetricsEmitterTest, RendererAndTotalHistogramsAreRecorded) {
   histograms.ExpectUniqueSample("Memory.Total.ResidentSet",
                                 2 * kTestRendererResidentSet, 1);
 #endif
+  histograms.ExpectUniqueSample(
+      "Memory.NativeLibrary.MappedAndResidentMemoryFootprint",
+      kNativeLibraryResidentMemoryFootprint, 1);
 }
 
 TEST_F(ProcessMemoryMetricsEmitterTest, MainFramePMFEmitted) {
