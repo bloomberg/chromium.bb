@@ -224,7 +224,9 @@ chrome.fileManagerPrivate.InstallLinuxPackageResponse = {
 };
 
 /** @enum {string} */
-chrome.fileManagerPrivate.CrostiniSharedPathsChangedEventType = {
+chrome.fileManagerPrivate.CrostiniEventType = {
+  ENABLE: 'enable',
+  DISABLE: 'disable',
   SHARE: 'share',
   UNSHARE: 'unshare',
 };
@@ -473,11 +475,11 @@ chrome.fileManagerPrivate.LinuxPackageInfo;
 
 /**
  * @typedef {{
- * eventType: chrome.fileManagerPrivate.CrostiniSharedPathsChangedEventType,
+ * eventType: chrome.fileManagerPrivate.CrostiniEventType,
  * entries: !Array<!Entry>,
  * }}
  */
-chrome.fileManagerPrivate.CrostiniSharedPathsChangedEvent;
+chrome.fileManagerPrivate.CrostiniEvent;
 
 /**
  * Logout the current user for navigating to the re-authentication screen for
@@ -956,12 +958,6 @@ chrome.fileManagerPrivate.getDirectorySize = function(entry, callback) {};
 chrome.fileManagerPrivate.getRecentFiles = function(restriction, callback) {};
 
 /**
- * Returns true if crostini is enabled.
- * @param {function(boolean)} callback
- */
-chrome.fileManagerPrivate.isCrostiniEnabled = function(callback) {};
-
-/**
  * Starts and mounts crostini container.
  * @param {function()} callback Callback called after the crostini container
  *     is started and mounted.
@@ -1070,4 +1066,4 @@ chrome.fileManagerPrivate.onDriveSyncError;
 chrome.fileManagerPrivate.onAppsUpdated;
 
 /** @type {!ChromeEvent} */
-chrome.fileManagerPrivate.onCrostiniSharedPathsChanged;
+chrome.fileManagerPrivate.onCrostiniChanged;

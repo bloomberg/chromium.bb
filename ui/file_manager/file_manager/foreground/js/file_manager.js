@@ -1190,8 +1190,10 @@ FileManager.prototype = /** @struct */ {
             null,
         assert(this.directoryModel_));
 
-    this.setupCrostini_();
     this.ui_.initDirectoryTree(directoryTree);
+    this.setCrostiniEnabled_(loadTimeData.getBoolean('CROSTINI_ENABLED'));
+    chrome.fileManagerPrivate.onCrostiniChanged.addListener(
+        this.onCrostiniChanged_.bind(this));
 
     chrome.fileManagerPrivate.onPreferencesChanged.addListener(() => {
       this.onPreferencesChanged_();
@@ -1201,58 +1203,65 @@ FileManager.prototype = /** @struct */ {
 
   /**
    * Check if crostini is enabled to create linuxFilesItem.
+   * @param {boolean} enabled
    * @private
    */
-  FileManager.prototype.setupCrostini_ = function() {
-    chrome.fileManagerPrivate.isCrostiniEnabled((crostiniEnabled) => {
-      // Check for 'crostini-files' feature.
-      this.crostini_.setEnabled(crostiniEnabled);
+  FileManager.prototype.setCrostiniEnabled_ = function(enabled) {
+    this.crostini_.setEnabled(enabled);
+    // Setup Linux files fake root.
+    this.directoryTree.dataModel.linuxFilesItem = enabled ?
+        new NavigationModelFakeItem(
+            str('LINUX_FILES_ROOT_LABEL'), NavigationModelItemType.CROSTINI,
+            new FakeEntry(
+                str('LINUX_FILES_ROOT_LABEL'),
+                VolumeManagerCommon.RootType.CROSTINI)) :
+        null;
+    // Redraw the tree to ensure 'Linux files' is added/removed.
+    this.directoryTree.redraw(false);
 
-      // Setup Linux files fake root.
-      this.directoryTree.dataModel.linuxFilesItem = crostiniEnabled ?
-          new NavigationModelFakeItem(
-              str('LINUX_FILES_ROOT_LABEL'), NavigationModelItemType.CROSTINI,
-              new FakeEntry(
-                  str('LINUX_FILES_ROOT_LABEL'),
-                  VolumeManagerCommon.RootType.CROSTINI)) :
-          null;
+    if (!enabled) {
+      return;
+    }
 
-      // Redraw the tree even if not enabled.  This is required for testing.
-      this.directoryTree.redraw(false);
+    // Load any existing shared paths.
+    // Only observe firstForSession when using full-page FilesApp.
+    // I.e., don't show toast in a dialog.
+    chrome.fileManagerPrivate.getCrostiniSharedPaths(
+        this.dialogType === DialogType.FULL_PAGE,
+        (entries, firstForSession) => {
+          for (let i = 0; i < entries.length; i++) {
+            this.crostini_.registerSharedPath(entries[i]);
+          }
+          // Show 'Manage sharing' toast the first time FilesApp is opened.
+          if (firstForSession && entries.length >= 1) {
+            this.ui_.toast.show(
+                entries.length == 1 ?
+                    str('FOLDER_SHARED_WITH_CROSTINI') :
+                    strf('FOLDER_SHARED_WITH_CROSTINI_PLURAL', entries.length),
+                {
+                  text: str('MANAGE_LINUX_SHARING_BUTTON_LABEL'),
+                  callback: () => {
+                    chrome.fileManagerPrivate.openSettingsSubpage(
+                        'crostini/sharedPaths');
+                    CommandHandler.recordMenuItemSelected(
+                        CommandHandler.MenuCommandsForUMA
+                            .MANAGE_LINUX_SHARING_TOAST_STARTUP);
+                  }
+                });
+          }
+        });
+  };
 
-      if (!crostiniEnabled) {
-        return;
-      }
-
-      // Load any existing shared paths.
-      // Only observe firstForSession when using full-page FilesApp.
-      // I.e., don't show toast in a dialog.
-      chrome.fileManagerPrivate.getCrostiniSharedPaths(
-          this.dialogType === DialogType.FULL_PAGE,
-          (entries, firstForSession) => {
-            for (let i = 0; i < entries.length; i++) {
-              this.crostini_.registerSharedPath(entries[i]);
-            }
-            // Show 'Manage sharing' toast the first time FilesApp is opened.
-            if (firstForSession && entries.length >= 1) {
-              this.ui_.toast.show(
-                  entries.length == 1 ?
-                      str('FOLDER_SHARED_WITH_CROSTINI') :
-                      strf(
-                          'FOLDER_SHARED_WITH_CROSTINI_PLURAL', entries.length),
-                  {
-                    text: str('MANAGE_LINUX_SHARING_BUTTON_LABEL'),
-                    callback: () => {
-                      chrome.fileManagerPrivate.openSettingsSubpage(
-                          'crostini/sharedPaths');
-                      CommandHandler.recordMenuItemSelected(
-                          CommandHandler.MenuCommandsForUMA
-                              .MANAGE_LINUX_SHARING_TOAST_STARTUP);
-                    }
-                  });
-            }
-          });
-    });
+  /**
+   * @param {chrome.fileManagerPrivate.CrostiniEvent} event
+   * @private
+   */
+  FileManager.prototype.onCrostiniChanged_ = function(event) {
+    if (event.eventType === 'enable') {
+      this.setCrostiniEnabled_(true);
+    } else if (event.eventType === 'disable') {
+      this.setCrostiniEnabled_(false);
+    }
   };
 
   /**

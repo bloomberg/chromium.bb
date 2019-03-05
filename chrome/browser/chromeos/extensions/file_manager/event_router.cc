@@ -18,6 +18,7 @@
 #include "base/values.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
+#include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
@@ -561,6 +562,10 @@ void EventRouter::ObserveEvents() {
   pref_change_registrar_->Add(drive::prefs::kDisableDrive, callback);
   pref_change_registrar_->Add(prefs::kSearchSuggestEnabled, callback);
   pref_change_registrar_->Add(prefs::kUse24HourClock, callback);
+  pref_change_registrar_->Add(
+      crostini::prefs::kCrostiniEnabled,
+      base::BindRepeating(&EventRouter::OnCrostiniEnabledChanged,
+                          weak_factory_.GetWeakPtr()));
 
   chromeos::system::TimezoneSettings::GetInstance()->AddObserver(this);
 
@@ -1080,15 +1085,14 @@ void EventRouter::OnFileSystemMountFailed() {
   OnFileManagerPrefsChanged();
 }
 
-void EventRouter::PopulateCrostiniSharedPathsChangedEvent(
-    file_manager_private::CrostiniSharedPathsChangedEvent& event,
+void EventRouter::PopulateCrostiniUnshareEvent(
+    file_manager_private::CrostiniEvent& event,
     const std::string& extension_id,
     const std::string& mount_name,
     const std::string& file_system_name,
     const std::string& full_path) {
-  event.event_type =
-      file_manager_private::CROSTINI_SHARED_PATHS_CHANGED_EVENT_TYPE_UNSHARE;
-  file_manager_private::CrostiniSharedPathsChangedEvent::EntriesType entry;
+  event.event_type = file_manager_private::CROSTINI_EVENT_TYPE_UNSHARE;
+  file_manager_private::CrostiniEvent::EntriesType entry;
   entry.additional_properties.SetString(
       "fileSystemRoot",
       storage::GetExternalFileSystemRootURIString(
@@ -1109,17 +1113,31 @@ void EventRouter::OnUnshare(const base::FilePath& path) {
     return;
 
   for (const auto& extension_id : GetEventListenerExtensionIds(
-           profile_,
-           file_manager_private::OnCrostiniSharedPathsChanged::kEventName)) {
-    file_manager_private::CrostiniSharedPathsChangedEvent event;
-    PopulateCrostiniSharedPathsChangedEvent(event, extension_id, mount_name,
-                                            file_system_name, full_path);
+           profile_, file_manager_private::OnCrostiniChanged::kEventName)) {
+    file_manager_private::CrostiniEvent event;
+    PopulateCrostiniUnshareEvent(event, extension_id, mount_name,
+                                 file_system_name, full_path);
     DispatchEventToExtension(
         profile_, extension_id,
-        extensions::events::
-            FILE_MANAGER_PRIVATE_ON_CROSTINI_SHARED_PATHS_CHANGED,
-        file_manager_private::OnCrostiniSharedPathsChanged::kEventName,
-        file_manager_private::OnCrostiniSharedPathsChanged::Create(event));
+        extensions::events::FILE_MANAGER_PRIVATE_ON_CROSTINI_CHANGED,
+        file_manager_private::OnCrostiniChanged::kEventName,
+        file_manager_private::OnCrostiniChanged::Create(event));
+  }
+}
+
+void EventRouter::OnCrostiniEnabledChanged() {
+  for (const auto& extension_id : GetEventListenerExtensionIds(
+           profile_, file_manager_private::OnCrostiniChanged::kEventName)) {
+    file_manager_private::CrostiniEvent event;
+    event.event_type =
+        profile_->GetPrefs()->GetBoolean(crostini::prefs::kCrostiniEnabled)
+            ? file_manager_private::CROSTINI_EVENT_TYPE_ENABLE
+            : file_manager_private::CROSTINI_EVENT_TYPE_DISABLE;
+    DispatchEventToExtension(
+        profile_, extension_id,
+        extensions::events::FILE_MANAGER_PRIVATE_ON_CROSTINI_CHANGED,
+        file_manager_private::OnCrostiniChanged::kEventName,
+        file_manager_private::OnCrostiniChanged::Create(event));
   }
 }
 

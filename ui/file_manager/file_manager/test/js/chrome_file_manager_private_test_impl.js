@@ -128,10 +128,6 @@ chrome.fileManagerPrivate = {
   grantAccess: (entryUrls, callback) => {
     setTimeout(callback, 0);
   },
-  crostiniEnabled_: true,
-  isCrostiniEnabled: (callback) => {
-    setTimeout(callback, 0, chrome.fileManagerPrivate.crostiniEnabled_);
-  },
   isUMAEnabled: (callback) => {
     setTimeout(callback, 0, false);
   },
@@ -145,7 +141,7 @@ chrome.fileManagerPrivate = {
   },
   onAppsUpdated: new test.Event(),
   onCopyProgress: new test.Event(),
-  onCrostiniSharedPathsChanged: new test.Event(),
+  onCrostiniChanged: new test.Event(),
   onDeviceChanged: new test.Event(),
   onDirectoryChanged: new test.Event(),
   onDriveConnectionStatusChanged: new test.Event(),

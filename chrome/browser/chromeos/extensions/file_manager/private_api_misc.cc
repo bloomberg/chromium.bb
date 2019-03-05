@@ -640,13 +640,6 @@ void FileManagerPrivateConfigureVolumeFunction::OnCompleted(
   Respond(NoArguments());
 }
 
-ExtensionFunction::ResponseAction
-FileManagerPrivateIsCrostiniEnabledFunction::Run() {
-  return RespondNow(
-      OneArgument(std::make_unique<base::Value>(crostini::IsCrostiniEnabled(
-          Profile::FromBrowserContext(browser_context())))));
-}
-
 FileManagerPrivateMountCrostiniFunction::
     FileManagerPrivateMountCrostiniFunction() {
   // Mounting crostini shares may require the crostini VM to be started.

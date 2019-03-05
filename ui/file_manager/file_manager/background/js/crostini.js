@@ -69,7 +69,7 @@ CrostiniImpl.prototype.init = function(volumeManager) {
  * Register for any shared path changes.
  */
 CrostiniImpl.prototype.listen = function() {
-  chrome.fileManagerPrivate.onCrostiniSharedPathsChanged.addListener(
+  chrome.fileManagerPrivate.onCrostiniChanged.addListener(
       this.onChange_.bind(this));
 };
 
@@ -134,7 +134,7 @@ CrostiniImpl.prototype.unregisterSharedPath = function(entry) {
 
 /**
  * Handles shared path changes.
- * @param {chrome.fileManagerPrivate.CrostiniSharedPathsChangedEvent} event
+ * @param {chrome.fileManagerPrivate.CrostiniEvent} event
  * @private
  */
 CrostiniImpl.prototype.onChange_ = function(event) {

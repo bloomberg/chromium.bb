@@ -180,8 +180,7 @@ class NavigationListModel extends cr.EventTarget {
 
     /**
      * Root folder for crostini Linux files.
-     * This field will be set asynchronously after calling
-     * chrome.fileManagerPrivate.isCrostiniEnabled.
+     * This field will be modified when crostini is enabled/disabled.
      * @private {NavigationModelFakeItem}
      */
     this.linuxFilesItem_ = null;
@@ -373,8 +372,6 @@ class NavigationListModel extends cr.EventTarget {
 
   /**
    * Set the crostini Linux files root and reorder items.
-   * This setter is provided separate to the constructor since
-   * this field is set async after calling fileManagerPrivate.isCrostiniEnabled.
    * @param {NavigationModelFakeItem} item Linux files root.
    */
   set linuxFilesItem(item) {
