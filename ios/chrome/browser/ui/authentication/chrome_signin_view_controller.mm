@@ -252,6 +252,13 @@ enum AuthenticationState {
 
 - (void)acceptSignInAndShowAccountsSettings:(BOOL)showAccountsSettings {
   signin_metrics::LogSigninAccessPointCompleted(_accessPoint, _promoAction);
+  if (showAccountsSettings) {
+    base::RecordAction(
+        base::UserMetricsAction("Signin_Signin_WithAdvancedSyncSettings"));
+  } else {
+    base::RecordAction(
+        base::UserMetricsAction("Signin_Signin_WithDefaultSyncSettings"));
+  }
   std::vector<int> consent_text_ids;
   int openSettingsStringId = -1;
   if (_unifiedConsentEnabled) {
@@ -991,6 +998,9 @@ enum AuthenticationState {
       return;
     case IDENTITY_PICKER_STATE:
       if (!_didFinishSignIn) {
+        if (_unifiedConsentEnabled) {
+          base::RecordAction(base::UserMetricsAction("Signin_Undo_Signin"));
+        }
         _didFinishSignIn = YES;
         [_delegate didSkipSignIn:self];
       }
