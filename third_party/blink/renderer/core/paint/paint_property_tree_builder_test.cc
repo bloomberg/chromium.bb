@@ -4917,7 +4917,7 @@ TEST_P(PaintPropertyTreeBuilderTest,
   EXPECT_TRUE(properties->Transform());
   EXPECT_NE(CompositorElementId(),
             properties->Transform()->GetCompositorElementId());
-  EXPECT_TRUE(properties->Transform()->RequiresCompositingForAnimation());
+  EXPECT_TRUE(properties->Transform()->HasActiveTransformAnimation());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, EffectNodeAnimatedHasCompositorElementId) {
@@ -4929,7 +4929,7 @@ TEST_P(PaintPropertyTreeBuilderTest, EffectNodeAnimatedHasCompositorElementId) {
   EXPECT_TRUE(properties->Effect());
   EXPECT_NE(CompositorElementId(),
             properties->Effect()->GetCompositorElementId());
-  EXPECT_TRUE(properties->Effect()->RequiresCompositingForAnimation());
+  EXPECT_TRUE(properties->Effect()->HasActiveOpacityAnimation());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, FloatUnderInline) {

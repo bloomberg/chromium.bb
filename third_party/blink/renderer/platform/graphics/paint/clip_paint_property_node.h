@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_CLIP_PAINT_PROPERTY_NODE_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_CLIP_PAINT_PROPERTY_NODE_H_
 
+#include <algorithm>
 #include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
 #include "third_party/blink/renderer/platform/geometry/float_rounded_rect.h"
@@ -39,17 +40,19 @@ class PLATFORM_EXPORT ClipPaintPropertyNode
 
     // Returns true if the states are equal, ignoring the clip rect excluding
     // overlay scrollbars which is only used for hit testing.
-    bool EqualIgnoringHitTestRects(const State& o) const {
-      return local_transform_space == o.local_transform_space &&
-             clip_rect == o.clip_rect && clip_path == o.clip_path &&
-             direct_compositing_reasons == o.direct_compositing_reasons;
+    bool EqualIgnoringHitTestRects(const State& other) const {
+      return local_transform_space == other.local_transform_space &&
+             clip_rect == other.clip_rect && clip_path == other.clip_path &&
+             direct_compositing_reasons == other.direct_compositing_reasons;
     }
 
-    bool operator==(const State& o) const {
-      if (!EqualIgnoringHitTestRects(o))
-        return false;
-      return clip_rect_excluding_overlay_scrollbars ==
-             o.clip_rect_excluding_overlay_scrollbars;
+    PaintPropertyChangeType CheckChange(const State& other) const {
+      if (!EqualIgnoringHitTestRects(other) ||
+          clip_rect_excluding_overlay_scrollbars !=
+              other.clip_rect_excluding_overlay_scrollbars) {
+        return PaintPropertyChangeType::kChangedOnlyValues;
+      }
+      return PaintPropertyChangeType::kUnchanged;
     }
   };
 
@@ -70,15 +73,16 @@ class PLATFORM_EXPORT ClipPaintPropertyNode
         true /* is_parent_alias */));
   }
 
-  bool Update(const ClipPaintPropertyNode& parent, State&& state) {
-    bool parent_changed = SetParent(&parent);
-    if (state == state_)
-      return parent_changed;
-
-    DCHECK(!IsParentAlias()) << "Changed the state of an alias node.";
-    state_ = std::move(state);
-    SetChanged();
-    return true;
+  PaintPropertyChangeType Update(const ClipPaintPropertyNode& parent,
+                                 State&& state) {
+    auto parent_changed = SetParent(&parent);
+    auto state_changed = state_.CheckChange(state);
+    if (state_changed != PaintPropertyChangeType::kUnchanged) {
+      DCHECK(!IsParentAlias()) << "Changed the state of an alias node.";
+      state_ = std::move(state);
+      SetChanged();
+    }
+    return std::max(parent_changed, state_changed);
   }
 
   // Checks if the accumulated clip from |this| to |relative_to_state.Clip()|

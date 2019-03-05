@@ -116,6 +116,7 @@ LinkHighlightImpl::LinkHighlightImpl(Node* node)
   state.local_transform_space = &TransformPaintPropertyNode::Root();
   state.compositor_element_id = element_id_;
   state.direct_compositing_reasons = CompositingReason::kActiveOpacityAnimation;
+  state.is_running_opacity_animation_on_compositor = true;
   effect_ = EffectPaintPropertyNode::Create(EffectPaintPropertyNode::Root(),
                                             std::move(state));
 #if DCHECK_IS_ON()
