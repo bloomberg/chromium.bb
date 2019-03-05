@@ -25,6 +25,9 @@ class FakeFileOperations : public FileOperations {
                bool failed,
                std::vector<std::string> chunks);
     OutputFile(const OutputFile& other);
+    OutputFile(OutputFile&& other);
+    OutputFile& operator=(const OutputFile&);
+    OutputFile& operator=(OutputFile&&);
     ~OutputFile();
 
     // The filename provided to Open.
@@ -38,12 +41,38 @@ class FakeFileOperations : public FileOperations {
     std::vector<std::string> chunks;
   };
 
+  struct InputFile {
+    InputFile();
+    InputFile(base::FilePath filename,
+              std::string data,
+              base::Optional<protocol::FileTransfer_Error> io_error);
+    InputFile(const InputFile& other);
+    InputFile(InputFile&& other);
+    InputFile& operator=(const InputFile&);
+    InputFile& operator=(InputFile&&);
+    ~InputFile();
+
+    // The filename reported by the reader.
+    base::FilePath filename;
+
+    // The file data to provide in response to read requests.
+    std::string data;
+
+    // If set, this error will be returned instead of EOF once the provided data
+    // has been read.
+    base::Optional<protocol::FileTransfer_Error> io_error;
+  };
+
   // Used to interact with FakeFileOperations after ownership is passed
   // elsewhere.
   struct TestIo {
     TestIo();
     TestIo(const TestIo& other);
     ~TestIo();
+
+    // The file information used for the next call to Reader::Open. If an error,
+    // it will be returned from the Open call.
+    protocol::FileTransferResult<InputFile> input_file;
 
     // An element will be added for each file written in full or in part.
     std::vector<OutputFile> files_written;
@@ -60,6 +89,7 @@ class FakeFileOperations : public FileOperations {
   std::unique_ptr<Writer> CreateWriter() override;
 
  private:
+  class FakeFileReader;
   class FakeFileWriter;
 
   TestIo* test_io_;

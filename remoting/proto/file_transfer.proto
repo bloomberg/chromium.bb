@@ -33,6 +33,11 @@ message FileTransfer {
   // Next Id: 1
   message Success {}
 
+  // Receiver->sender message sent requesting the sender to select and send a
+  // file. This must be the first message on the connection.
+  // Next Id: 1
+  message RequestTransfer {}
+
   // Bidirectional message aborting the transfer due to an error or user
   // cancellation. This may be sent by the sender to signal a read error, by the
   // receiver to signal a write error, or by either side to signal any of the
@@ -57,9 +62,9 @@ message FileTransfer {
     optional Type type = 1;
     // The error code returned by the failed API call (if applicable).
     optional int32 api_error_code = 2;
-    // The function in which the error occured.
+    // The function in which the error occurred.
     optional string function = 3;
-    // The source file in which the error occured.
+    // The source file in which the error occurred.
     optional string source_file = 4;
     // The line number on which the error occurred.
     optional uint32 line_number = 5;
@@ -70,6 +75,7 @@ message FileTransfer {
     Data data = 2;
     End end = 3;
     Success success = 4;
-    Error error = 5;
+    RequestTransfer request_transfer = 5;
+    Error error = 6;
   }
 }
