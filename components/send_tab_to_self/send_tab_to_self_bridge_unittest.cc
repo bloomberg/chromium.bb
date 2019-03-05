@@ -137,11 +137,10 @@ class SendTabToSelfBridgeTest : public testing::Test {
 
   // For Model Tests.
   void AddSampleEntries() {
-    // Adds timer to avoid having two entries with the same shared timestamp.
-    bridge_->AddEntry(GURL("http://a.com"), "a", AdvanceAndGetTime());
-    bridge_->AddEntry(GURL("http://b.com"), "b", AdvanceAndGetTime());
-    bridge_->AddEntry(GURL("http://c.com"), "c", AdvanceAndGetTime());
-    bridge_->AddEntry(GURL("http://d.com"), "d", AdvanceAndGetTime());
+    bridge_->AddEntry(GURL("http://a.com"), "a");
+    bridge_->AddEntry(GURL("http://b.com"), "b");
+    bridge_->AddEntry(GURL("http://c.com"), "c");
+    bridge_->AddEntry(GURL("http://d.com"), "d");
   }
 
   syncer::MockModelTypeChangeProcessor* processor() { return &mock_processor_; }

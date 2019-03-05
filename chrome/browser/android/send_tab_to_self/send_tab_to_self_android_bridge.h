@@ -42,8 +42,7 @@ class SendTabToSelfAndroidBridge {
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jstring>& j_url,
-      const base::android::JavaParamRef<jstring>& j_title,
-      jlong j_navigation_time);
+      const base::android::JavaParamRef<jstring>& j_title);
 
   // Deletes all entries in the model.
   void DeleteAllEntries(JNIEnv* env,
