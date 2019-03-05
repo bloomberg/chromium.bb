@@ -7,11 +7,14 @@
 
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "v8/include/v8.h"
 
 namespace blink {
+
+class V8AnimateCallback;
+class V8AnimatorConstructor;
+class V8Function;
 
 // Represents a valid registered Javascript animator.  In particular it owns two
 // |v8::Function|s that are the "constructor" and "animate" functions of the
@@ -22,26 +25,25 @@ class MODULES_EXPORT AnimatorDefinition final
     : public GarbageCollectedFinalized<AnimatorDefinition>,
       public NameClient {
  public:
-  AnimatorDefinition(v8::Isolate*,
-                     v8::Local<v8::Function> constructor,
-                     v8::Local<v8::Function> animate,
-                     v8::Local<v8::Function> state);
+  explicit AnimatorDefinition(V8AnimatorConstructor* constructor,
+                              V8AnimateCallback* animate,
+                              V8Function* state);
   ~AnimatorDefinition();
   virtual void Trace(blink::Visitor* visitor);
   const char* NameInHeapSnapshot() const override {
     return "AnimatorDefinition";
   }
 
-  v8::Local<v8::Function> ConstructorLocal(v8::Isolate*);
-  v8::Local<v8::Function> AnimateLocal(v8::Isolate*);
-  bool IsStateful() const { return !state_.IsEmpty(); }
+  V8AnimatorConstructor* ConstructorFunction() const { return constructor_; }
+  V8AnimateCallback* AnimateFunction() const { return animate_; }
+  bool IsStateful() const { return state_; }
 
  private:
   // This object keeps the constructor function, animate, and state function
   // alive. It participates in wrapper tracing as it holds onto V8 wrappers.
-  TraceWrapperV8Reference<v8::Function> constructor_;
-  TraceWrapperV8Reference<v8::Function> animate_;
-  TraceWrapperV8Reference<v8::Function> state_;
+  TraceWrapperMember<V8AnimatorConstructor> constructor_;
+  TraceWrapperMember<V8AnimateCallback> animate_;
+  TraceWrapperMember<V8Function> state_;
 };
 
 }  // namespace blink

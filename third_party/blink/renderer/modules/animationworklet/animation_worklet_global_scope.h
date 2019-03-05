@@ -17,6 +17,7 @@
 namespace blink {
 
 class ExceptionState;
+class V8AnimatorConstructor;
 class WorkletAnimationOptions;
 
 // Represents the animation worklet global scope and implements all methods that
@@ -53,7 +54,7 @@ class MODULES_EXPORT AnimationWorkletGlobalScope : public WorkletGlobalScope {
 
   // Registers a animator definition with the given name and constructor.
   void registerAnimator(const String& name,
-                        const ScriptValue& constructor_value,
+                        V8AnimatorConstructor* animator_ctor,
                         ExceptionState&);
 
   AnimatorDefinition* FindDefinitionForTest(const String& name);

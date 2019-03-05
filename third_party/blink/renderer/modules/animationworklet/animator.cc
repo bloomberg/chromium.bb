@@ -5,12 +5,9 @@
 #include "third_party/blink/renderer/modules/animationworklet/animator.h"
 
 #include "base/stl_util.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_script_runner.h"
-#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/bindings/modules/v8/effect_proxy_or_worklet_group_effect_proxy.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_animate_callback.h"
 #include "third_party/blink/renderer/modules/animationworklet/animator_definition.h"
-#include "third_party/blink/renderer/platform/bindings/script_state.h"
-#include "third_party/blink/renderer/platform/bindings/to_v8.h"
-#include "third_party/blink/renderer/platform/bindings/v8_binding.h"
 
 namespace blink {
 
@@ -29,8 +26,8 @@ Animator::~Animator() = default;
 
 void Animator::Trace(blink::Visitor* visitor) {
   visitor->Trace(definition_);
-  visitor->Trace(group_effect_);
   visitor->Trace(instance_);
+  visitor->Trace(group_effect_);
 }
 
 bool Animator::Animate(
@@ -40,38 +37,23 @@ bool Animator::Animate(
   v8::Isolate* isolate = script_state->GetIsolate();
 
   v8::Local<v8::Value> instance = instance_.NewLocal(isolate);
-  v8::Local<v8::Function> animate = definition_->AnimateLocal(isolate);
-
-  if (IsUndefinedOrNull(instance) || IsUndefinedOrNull(animate))
+  if (IsUndefinedOrNull(instance))
     return false;
 
-  ScriptState::Scope scope(script_state);
-  v8::TryCatch block(isolate);
-  block.SetVerbose(true);
-
-  // Prepare arguments (i.e., current time and effect) and pass them to animate
-  // callback.
-  v8::Local<v8::Value> v8_effect;
+  EffectProxyOrWorkletGroupEffectProxy effect;
   if (group_effect_->getChildren().size() == 1) {
-    v8_effect = ToV8(group_effect_->getChildren()[0],
-                     script_state->GetContext()->Global(), isolate);
+    effect.SetEffectProxy(group_effect_->getChildren()[0]);
   } else {
-    v8_effect =
-        ToV8(group_effect_, script_state->GetContext()->Global(), isolate);
+    effect.SetWorkletGroupEffectProxy(group_effect_);
   }
 
-  v8::Local<v8::Value> v8_current_time =
-      ToV8(current_time, script_state->GetContext()->Global(), isolate);
-
-  v8::Local<v8::Value> argv[] = {v8_current_time, v8_effect};
-
-  V8ScriptRunner::CallFunction(animate, ExecutionContext::From(script_state),
-                               instance, base::size(argv), argv, isolate);
-
-  // The animate function may have produced an error!
-  // TODO(majidvp): We should probably just throw here.
-  if (block.HasCaught())
+  v8::TryCatch try_catch(isolate);
+  try_catch.SetVerbose(true);
+  if (definition_->AnimateFunction()
+          ->Invoke(instance, current_time, effect)
+          .IsNothing()) {
     return false;
+  }
 
   output->local_times = GetLocalTimes();
   return true;
