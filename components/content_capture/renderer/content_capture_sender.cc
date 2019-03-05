@@ -4,6 +4,7 @@
 
 #include "components/content_capture/renderer/content_capture_sender.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "components/content_capture/common/content_capture_data.h"
 #include "components/content_capture/common/content_capture_features.h"
 #include "content/public/renderer/render_frame.h"
@@ -43,6 +44,8 @@ void ContentCaptureSender::DidCaptureContent(
   ContentCaptureData frame_data;
   FillContentCaptureData(&frame_data, first_data /* set_url */);
 
+  frame_data.children.reserve(data.size());
+  base::TimeTicks start = base::TimeTicks::Now();
   for (auto holder : data) {
     ContentCaptureData child;
     child.id = holder->GetId();
@@ -50,6 +53,10 @@ void ContentCaptureSender::DidCaptureContent(
     child.bounds = holder->GetBoundingBox();
     frame_data.children.push_back(child);
   }
+  UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
+      "ContentCapture.GetBoundingBox", base::TimeTicks::Now() - start,
+      base::TimeDelta::FromMicroseconds(1),
+      base::TimeDelta::FromMilliseconds(10), 50);
   GetContentCaptureReceiver()->DidCaptureContent(frame_data, first_data);
 }
 

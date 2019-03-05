@@ -14,10 +14,14 @@
 namespace blink {
 
 TaskSession::DocumentSession::DocumentSession(const Document& document,
-                                              SentNodes& sent_nodes)
-    : document_(&document), sent_nodes_(&sent_nodes) {}
+                                              SentNodes& sent_nodes,
+                                              SentNodeCountCallback& callback)
+    : document_(&document), sent_nodes_(&sent_nodes), callback_(callback) {}
 
-TaskSession::DocumentSession::~DocumentSession() = default;
+TaskSession::DocumentSession::~DocumentSession() {
+  if (callback_.has_value())
+    callback_.value().Run(total_sent_nodes_);
+}
 
 void TaskSession::DocumentSession::AddNodeHolder(cc::NodeHolder node_holder) {
   captured_content_.push_back(node_holder);
@@ -129,7 +133,8 @@ TaskSession::DocumentSession& TaskSession::EnsureDocumentSession(
     const Document& doc) {
   DocumentSession* doc_session = GetDocumentSession(doc);
   if (!doc_session) {
-    doc_session = MakeGarbageCollected<DocumentSession>(doc, *sent_nodes_);
+    doc_session =
+        MakeGarbageCollected<DocumentSession>(doc, *sent_nodes_, callback_);
     to_document_session_.insert(&doc, doc_session);
   }
   return *doc_session;
@@ -146,6 +151,10 @@ TaskSession::DocumentSession* TaskSession::GetDocumentSession(
 void TaskSession::Trace(blink::Visitor* visitor) {
   visitor->Trace(sent_nodes_);
   visitor->Trace(to_document_session_);
+}
+
+void TaskSession::ClearDocumentSessionsForTesting() {
+  to_document_session_.clear();
 }
 
 }  // namespace blink

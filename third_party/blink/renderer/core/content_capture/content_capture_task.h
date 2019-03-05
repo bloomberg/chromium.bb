@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "cc/paint/node_holder.h"
+#include "third_party/blink/renderer/core/content_capture/content_capture_task_histogram_reporter.h"
 #include "third_party/blink/renderer/core/content_capture/task_session.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/timer.h"
@@ -62,6 +63,8 @@ class CORE_EXPORT ContentCaptureTask : public RefCounted<ContentCaptureTask> {
     captured_content_for_testing_ = captured_content;
   }
 
+  void ClearDocumentSessionsForTesting();
+
  protected:
   // All protected data and methods are for testing purpose.
   // Return true if the task should pause.
@@ -107,6 +110,7 @@ class CORE_EXPORT ContentCaptureTask : public RefCounted<ContentCaptureTask> {
   // kRetryTask, with long delay for kContentChange.
   base::TimeDelta task_short_delay_;
   base::TimeDelta task_long_delay_;
+  scoped_refptr<ContentCaptureTaskHistogramReporter> histogram_reporter_;
   base::Optional<TaskState> task_stop_for_testing_;
   base::Optional<std::vector<cc::NodeHolder>> captured_content_for_testing_;
 };
