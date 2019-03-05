@@ -26,7 +26,7 @@ const base::Feature kSlimNavigationManager{"SlimNavigationManager",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kStorePendingItemInContext{
-    "StorePendingItemInContext", base::FEATURE_DISABLED_BY_DEFAULT};
+    "StorePendingItemInContext", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kWKHTTPSystemCookieStore{"WKHTTPSystemCookieStore",
                                              base::FEATURE_ENABLED_BY_DEFAULT};

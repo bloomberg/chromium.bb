@@ -362,6 +362,11 @@ extern const char kWebClearBrowsingDataDescription[];
 extern const char kWebFrameMessagingName[];
 extern const char kWebFrameMessagingDescription[];
 
+// Title and description for the flag to store pending item in NavigationContext
+// after context is created.
+extern const char kStorePendingItemInContextName[];
+extern const char kStorePendingItemInContextDescription[];
+
 // Title and description for the flag to enable text accessibility in webpages.
 extern const char kWebPageTextAccessibilityName[];
 extern const char kWebPageTextAccessibilityDescription[];
