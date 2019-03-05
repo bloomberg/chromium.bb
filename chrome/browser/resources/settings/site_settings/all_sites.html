@@ -44,13 +44,13 @@
         <label id="sortLabel">$i18n{siteSettingsAllSitesSort}</label>
         <select id="sortMethod" class="md-select" aria-labelledby="sortLabel"
           on-change="onSortMethodChanged_">
-          <option value="[[sortMethods_.mostVisited]]">
+          <option value="[[sortMethods_.MOST_VISITED]]">
             $i18n{siteSettingsAllSitesSortMethodMostVisited}
           </option>
-          <option value="[[sortMethods_.storage]]">
+          <option value="[[sortMethods_.STORAGE]]">
             $i18n{siteSettingsAllSitesSortMethodStorage}
           </option>
-          <option value="[[sortMethods_.name]]">
+          <option value="[[sortMethods_.NAME]]">
             $i18n{siteSettingsAllSitesSortMethodName}
           </option>
         </select>
@@ -71,7 +71,8 @@
               iron-list-tab-index="[[tabIndex]]"
               tabindex$="[[tabIndex]]"
               last-focused="{{lastFocused_}}"
-              list-blurred="{{listBlurred_}}">
+              list-blurred="{{listBlurred_}}"
+              sort-method="[[sortMethod_]]">
           </site-entry>
         </template>
       </iron-list>

@@ -54,11 +54,13 @@
           <div class="middle text-elide" id="displayName">
             <div class="site-representation">
               <span class="url-directionality">[[displayName_]]</span>
-              <span class="secondary" hidden$="[[!scheme_(siteGroup, -1)]]">
+              <span class="secondary"
+                  hidden$="[[!siteGroupScheme_(siteGroup)]]">
                 &nbsp;$i18nPolymer{siteSettingsSiteRepresentationSeparator}&nbsp;
               </span>
-              <span class="secondary" hidden$="[[!scheme_(siteGroup, -1)]]">
-                [[scheme_(siteGroup, -1)]]
+              <span class="secondary"
+                  hidden$="[[!siteGroupScheme_(siteGroup)]]">
+                [[siteGroupScheme_(siteGroup)]]
               </span>
             </div>
             <div class="second-line secondary">
@@ -105,17 +107,17 @@
                   <div class="site-representation middle text-elide">
                     <span id="originSiteRepresentation"
                         class="url-directionality">
-                      [[siteRepresentation_(siteGroup, index)]]
+                      [[originRepresentation_(item)]]
                     </span>
                     <span class="secondary"
-                        hidden$="[[!scheme_(siteGroup, index)]]">
+                        hidden$="[[!originScheme_(item)]]">
                       &nbsp;
                           $i18nPolymer{siteSettingsSiteRepresentationSeparator}
                           &nbsp;
                     </span>
                     <span class="secondary"
-                        hidden$="[[!scheme_(siteGroup, index)]]">
-                      [[scheme_(siteGroup, index)]]
+                        hidden$="[[!originScheme_(item)]]">
+                      [[originScheme_(item)]]
                     </span>
                     <!--Define a spacing span so that when the direction is rtl,
                      the spacing is still showing correctly. This is because the

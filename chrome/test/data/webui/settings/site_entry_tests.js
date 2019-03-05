@@ -284,4 +284,94 @@ suite('SiteEntry', function() {
         testElement.$.collapseParent.querySelector('site-favicon').url,
         'https://abc.example.com');
   });
+
+  test('can be sorted by most visited', function() {
+    // Clone this object to avoid propagating changes made in this test.
+    const testSiteGroup = JSON.parse(JSON.stringify(TEST_MULTIPLE_SITE_GROUP));
+    testSiteGroup.origins[0].engagement = 20;
+    testSiteGroup.origins[1].engagement = 30;
+    testSiteGroup.origins[2].engagement = 10;
+    testSiteGroup.origins[0].usage = 0;
+    testSiteGroup.origins[1].usage = 1274;
+    testSiteGroup.origins[2].usage = 1274;
+    testSiteGroup.origins[0].numCookies = 10;
+    testSiteGroup.origins[1].numCookies = 3;
+    testSiteGroup.origins[2].numCookies = 1;
+    testElement.sortMethod = settings.SortMethod.MOST_VISITED;
+    testElement.siteGroup = testSiteGroup;
+    Polymer.dom.flush();
+    const collapseChild = testElement.$.originList.get();
+    Polymer.dom.flush();
+    const origins = collapseChild.querySelectorAll('.list-item');
+    assertEquals(3, origins.length);
+    assertEquals(
+        'www.example.com',
+        origins[0].querySelector('#originSiteRepresentation').innerText.trim());
+    assertEquals(
+        'example.com',
+        origins[1].querySelector('#originSiteRepresentation').innerText.trim());
+    assertEquals(
+        'login.example.com',
+        origins[2].querySelector('#originSiteRepresentation').innerText.trim());
+  });
+
+  test('can be sorted by storage', function() {
+    // Clone this object to avoid propagating changes made in this test.
+    const testSiteGroup = JSON.parse(JSON.stringify(TEST_MULTIPLE_SITE_GROUP));
+    testSiteGroup.origins[0].engagement = 20;
+    testSiteGroup.origins[1].engagement = 30;
+    testSiteGroup.origins[2].engagement = 10;
+    testSiteGroup.origins[0].usage = 0;
+    testSiteGroup.origins[1].usage = 1274;
+    testSiteGroup.origins[2].usage = 1274;
+    testSiteGroup.origins[0].numCookies = 10;
+    testSiteGroup.origins[1].numCookies = 3;
+    testSiteGroup.origins[2].numCookies = 1;
+    testElement.sortMethod = settings.SortMethod.STORAGE;
+    testElement.siteGroup = testSiteGroup;
+    Polymer.dom.flush();
+    const collapseChild = testElement.$.originList.get();
+    Polymer.dom.flush();
+    const origins = collapseChild.querySelectorAll('.list-item');
+    assertEquals(3, origins.length);
+    assertEquals(
+        'www.example.com',
+        origins[0].querySelector('#originSiteRepresentation').innerText.trim());
+    assertEquals(
+        'login.example.com',
+        origins[1].querySelector('#originSiteRepresentation').innerText.trim());
+    assertEquals(
+        'example.com',
+        origins[2].querySelector('#originSiteRepresentation').innerText.trim());
+  });
+
+  test('can be sorted by name', function() {
+    // Clone this object to avoid propagating changes made in this test.
+    const testSiteGroup = JSON.parse(JSON.stringify(TEST_MULTIPLE_SITE_GROUP));
+    testSiteGroup.origins[0].engagement = 20;
+    testSiteGroup.origins[1].engagement = 30;
+    testSiteGroup.origins[2].engagement = 10;
+    testSiteGroup.origins[0].usage = 0;
+    testSiteGroup.origins[1].usage = 1274;
+    testSiteGroup.origins[2].usage = 1274;
+    testSiteGroup.origins[0].numCookies = 10;
+    testSiteGroup.origins[1].numCookies = 3;
+    testSiteGroup.origins[2].numCookies = 1;
+    testElement.sortMethod = settings.SortMethod.NAME;
+    testElement.siteGroup = testSiteGroup;
+    Polymer.dom.flush();
+    const collapseChild = testElement.$.originList.get();
+    Polymer.dom.flush();
+    const origins = collapseChild.querySelectorAll('.list-item');
+    assertEquals(3, origins.length);
+    assertEquals(
+        'example.com',
+        origins[0].querySelector('#originSiteRepresentation').innerText.trim());
+    assertEquals(
+        'login.example.com',
+        origins[1].querySelector('#originSiteRepresentation').innerText.trim());
+    assertEquals(
+        'www.example.com',
+        origins[2].querySelector('#originSiteRepresentation').innerText.trim());
+  });
 });

@@ -67,11 +67,7 @@ Polymer({
      */
     sortMethods_: {
       type: Object,
-      value: {
-        name: 'name',
-        mostVisited: 'most-visited',
-        storage: 'data-stored',
-      },
+      value: settings.SortMethod,
       readOnly: true,
     },
 
@@ -105,6 +101,13 @@ Polymer({
      * }}
      */
     actionMenuModel_: Object,
+
+    /**
+     * The selected sort method.
+     * @type {!settings.SortMethod|undefined}
+     * @private
+     */
+    sortMethod_: String,
   },
 
   /** @private {?settings.LocalDataBrowserProxy} */
@@ -134,11 +137,12 @@ Polymer({
     this.addEventListener('site-entry-storage-updated', () => {
       this.debounce('site-entry-storage-updated', () => {
         if (this.sortMethods_ &&
-            this.$.sortMethod.value == this.sortMethods_.storage) {
+            this.$.sortMethod.value == settings.SortMethod.STORAGE) {
           this.onSortMethodChanged_();
         }
       }, 500);
     });
+    this.sortMethod_ = this.$.sortMethod.value;
   },
 
   /** @override */
@@ -237,11 +241,11 @@ Polymer({
       return siteGroupList;
     }
 
-    if (sortMethod == this.sortMethods_.mostVisited) {
+    if (sortMethod == settings.SortMethod.MOST_VISITED) {
       siteGroupList.sort(this.mostVisitedComparator_);
-    } else if (sortMethod == this.sortMethods_.storage) {
+    } else if (sortMethod == settings.SortMethod.STORAGE) {
       siteGroupList.sort(this.storageComparator_);
-    } else if (sortMethod == this.sortMethods_.name) {
+    } else if (sortMethod == settings.SortMethod.NAME) {
       siteGroupList.sort(this.nameComparator_);
     }
     return siteGroupList;
@@ -312,6 +316,7 @@ Polymer({
    * @private
    */
   onSortMethodChanged_: function() {
+    this.sortMethod_ = this.$.sortMethod.value;
     this.filteredList_ =
         this.sortSiteGroupList_(this.filteredList_);
     // Force the iron-list to rerender its items, as the order has changed.
