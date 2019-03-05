@@ -170,7 +170,7 @@ void ModuleTreeLinker::FetchRoot(const KURL& original_url,
   // href="https://github.com/drufball/layered-apis/blob/master/spec.md#fetch-a-module-script-graph"
   // step="1">Set url to the layered API fetching URL given url and the current
   // settings object's API base URL.</spec>
-  if (RuntimeEnabledFeatures::LayeredAPIEnabled())
+  if (RuntimeEnabledFeatures::BuiltInModuleInfraEnabled())
     url = blink::layered_api::ResolveFetchingURL(url);
 
 #if DCHECK_IS_ON()

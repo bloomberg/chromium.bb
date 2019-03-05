@@ -53,7 +53,7 @@ void DocumentModuleScriptFetcher::Trace(blink::Visitor* visitor) {
 
 bool DocumentModuleScriptFetcher::FetchIfLayeredAPI(
     FetchParameters& fetch_params) {
-  if (!RuntimeEnabledFeatures::LayeredAPIEnabled())
+  if (!RuntimeEnabledFeatures::BuiltInModuleInfraEnabled())
     return false;
 
   KURL layered_api_url = blink::layered_api::GetInternalURL(fetch_params.Url());

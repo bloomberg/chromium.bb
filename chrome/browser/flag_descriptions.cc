@@ -634,11 +634,23 @@ const char kEnableURLLoaderLitePageServerPreviewsDescription[] =
     "This requires enable-lite-page-server-previews to be enabled along with "
     "network-service.";
 
-const char kLayeredAPIName[] = "Experimental layered APIs";
-const char kLayeredAPIDescription[] =
-    "Enable layered API infrastructure, as well as several experimental "
-    "layered APIs. The syntax and the APIs exposed are experimental and will "
-    "change over time.";
+const char kBuiltInModuleAllName[] = "All experimental built-in modules";
+const char kBuiltInModuleAllDescription[] =
+    "Enable all experimental built-in modules, as well as built-in module "
+    "infrastructure and import maps. The syntax and the APIs exposed are "
+    "experimental and will change over time.";
+
+const char kBuiltInModuleInfraName[] = "Built-in module infra and import maps";
+const char kBuiltInModuleInfraDescription[] =
+    "Enable built-in module infrastructure and import maps. Individual "
+    "built-in modules should be enabled by other flags. The syntax and the "
+    "APIs exposed are experimental and will change over time.";
+
+const char kBuiltInModuleKvStorageName[] = "kv-storage built-in module";
+const char kBuiltInModuleKvStorageDescription[] =
+    "Enable kv-storage built-in module, as well as built-in module "
+    "infrastructure and import maps. The syntax and the APIs exposed are "
+    "experimental and will change over time.";
 
 const char kEnableBlinkGenPropertyTreesName[] = "Enable BlinkGenPropertyTrees";
 const char kEnableBlinkGenPropertyTreesDescription[] =
@@ -986,7 +998,7 @@ const char kExperimentalProductivityFeaturesName[] =
     "Experimental Productivity Features";
 const char kExperimentalProductivityFeaturesDescription[] =
     "Enable support for experimental developer productivity features, such as "
-    "Layered APIs and policies for avoiding slow rendering.";
+    "built-in modules and policies for avoiding slow rendering.";
 
 const char kExperimentalSecurityFeaturesName[] =
     "Potentially annoying security features";

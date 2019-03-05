@@ -217,8 +217,16 @@ void WebRuntimeFeatures::EnableJankTrackingSweepLine(bool enable) {
   RuntimeEnabledFeatures::SetJankTrackingSweepLineEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableLayeredAPI(bool enable) {
-  RuntimeEnabledFeatures::SetLayeredAPIEnabled(enable);
+void WebRuntimeFeatures::EnableBuiltInModuleAll(bool enable) {
+  RuntimeEnabledFeatures::SetBuiltInModuleAllEnabled(enable);
+}
+
+void WebRuntimeFeatures::EnableBuiltInModuleInfra(bool enable) {
+  RuntimeEnabledFeatures::SetBuiltInModuleInfraEnabled(enable);
+}
+
+void WebRuntimeFeatures::EnableBuiltInModuleKvStorage(bool enable) {
+  RuntimeEnabledFeatures::SetBuiltInModuleKvStorageEnabled(enable);
 }
 
 void WebRuntimeFeatures::EnableLayoutNG(bool enable) {

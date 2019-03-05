@@ -3371,9 +3371,9 @@ const FeatureEntry kFeatureEntries[] = {
                                     "TabSwitcherOnReturn")},
 #endif
 
-    {"enable-layered-api", flag_descriptions::kLayeredAPIName,
-     flag_descriptions::kLayeredAPIDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kLayeredAPI)},
+    {"enable-built-in-module-all", flag_descriptions::kBuiltInModuleAllName,
+     flag_descriptions::kBuiltInModuleAllDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kBuiltInModuleAll)},
 
     {"enable-blink-gen-property-trees",
      flag_descriptions::kEnableBlinkGenPropertyTreesName,
@@ -4083,6 +4083,15 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kCCTTargetTranslateLanguageDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kCCTTargetTranslateLanguage)},
 #endif
+
+    {"enable-built-in-module-infra", flag_descriptions::kBuiltInModuleInfraName,
+     flag_descriptions::kBuiltInModuleInfraDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kBuiltInModuleInfra)},
+
+    {"enable-built-in-module-kv-storage",
+     flag_descriptions::kBuiltInModuleKvStorageName,
+     flag_descriptions::kBuiltInModuleKvStorageDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kBuiltInModuleKvStorage)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

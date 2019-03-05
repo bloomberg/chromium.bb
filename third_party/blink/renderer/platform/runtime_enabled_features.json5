@@ -182,6 +182,20 @@
       status: "stable"
     },
     {
+      name: "BuiltInModuleAll",
+      implied_by: ["ExperimentalProductivityFeatures"],
+    },
+    {
+      name: "BuiltInModuleInfra",
+      implied_by: ["ExperimentalProductivityFeatures",
+                   "BuiltInModuleAll",
+                   "BuiltInModuleKvStorage"],
+    },
+    {
+      name: "BuiltInModuleKvStorage",
+      implied_by: ["ExperimentalProductivityFeatures"],
+    },
+    {
       name: "CacheInlineScriptCode"
     },
     {
@@ -704,10 +718,6 @@
     {
       name: "LangClientHintHeader",
       status: "experimental",
-    },
-    {
-      name: "LayeredAPI",
-      implied_by: ["ExperimentalProductivityFeatures"],
     },
     {
       // Exposes layout jank fractions to Javascript. See explainer:

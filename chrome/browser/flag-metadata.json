@@ -1282,9 +1282,19 @@
     "expiry_milestone": 76
   },
   {
-    "name": "enable-layered-api",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "name": "enable-built-in-module-all",
+    "owners": [ "hiroshige", "domenic" ],
+    "expiry_milestone": 80
+  },
+  {
+    "name": "enable-built-in-module-infra",
+    "owners": [ "hiroshige", "domenic" ],
+    "expiry_milestone": 80
+  },
+  {
+    "name": "enable-built-in-module-kv-storage",
+    "owners": [ "hiroshige", "domenic" ],
+    "expiry_milestone": 80
   },
   {
     "name": "enable-blink-gen-property-trees",

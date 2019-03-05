@@ -400,8 +400,14 @@ extern const char kEnableLitePageServerPreviewsDescription[];
 extern const char kEnableURLLoaderLitePageServerPreviewsName[];
 extern const char kEnableURLLoaderLitePageServerPreviewsDescription[];
 
-extern const char kLayeredAPIName[];
-extern const char kLayeredAPIDescription[];
+extern const char kBuiltInModuleAllName[];
+extern const char kBuiltInModuleAllDescription[];
+
+extern const char kBuiltInModuleInfraName[];
+extern const char kBuiltInModuleInfraDescription[];
+
+extern const char kBuiltInModuleKvStorageName[];
+extern const char kBuiltInModuleKvStorageDescription[];
 
 extern const char kEnableBlinkGenPropertyTreesName[];
 extern const char kEnableBlinkGenPropertyTreesDescription[];

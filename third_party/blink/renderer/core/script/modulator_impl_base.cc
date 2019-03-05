@@ -161,7 +161,7 @@ KURL ModulatorImplBase::ResolveModuleSpecifier(const String& specifier,
 
     case ParsedSpecifier::Type::kBare:
       // Allow |@std/x| specifiers if Layered API is enabled.
-      if (RuntimeEnabledFeatures::LayeredAPIEnabled()) {
+      if (RuntimeEnabledFeatures::BuiltInModuleInfraEnabled()) {
         if (parsed_specifier.GetImportMapKeyString().StartsWith("@std/")) {
           return KURL("import:" + parsed_specifier.GetImportMapKeyString());
         }
@@ -190,10 +190,10 @@ void ModulatorImplBase::RegisterImportMap(const ImportMap* import_map) {
     return;
   }
 
-  if (!RuntimeEnabledFeatures::LayeredAPIEnabled()) {
+  if (!RuntimeEnabledFeatures::BuiltInModuleInfraEnabled()) {
     GetExecutionContext()->AddErrorMessage(
         ConsoleLogger::Source::kOther,
-        "Import maps are disabled when LayeredAPI is disabled.");
+        "Import maps are disabled when Layered API Infra is disabled.");
     return;
   }
   import_map_ = import_map;
