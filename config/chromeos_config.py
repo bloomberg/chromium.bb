@@ -1501,6 +1501,7 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
   _mst_hwtest_boards = frozenset([
       'eve-arcnext',
   ])
+  _mst_hwtest_skylab_boards = frozenset([])
   _mst_no_hwtest_boards = frozenset([])
   _mst_no_hwtest_experimental_boards = frozenset([])
   _mst_vmtest_boards = frozenset([])
@@ -1522,6 +1523,7 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
       'kevin',
   ])
   _pi_hwtest_experimental_boards = frozenset([])
+  _pi_hwtest_skylab_boards = frozenset([])
   _pi_vmtest_boards = frozenset([
       'betty-arcnext'
   ])
@@ -1557,6 +1559,7 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
       'samus',
       'veyron_minnie',
   ])
+  _nyc_hwtest_skylab_boards = frozenset([])
   _nyc_no_hwtest_boards = frozenset([
       'bob',
       'caroline',
@@ -1574,9 +1577,17 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
   mst_master_config.AddSlaves(
       site_config.AddForBoards(
           'mst-android-pfq',
-          _mst_hwtest_boards,
+          _mst_hwtest_boards - _mst_hwtest_skylab_boards,
           board_configs,
           site_config.templates.mst_android_pfq,
+          hw_tests=hw_test_list.SharedPoolAndroidPFQ(),
+      ) +
+      site_config.AddForBoards(
+          'mst-android-pfq',
+          _mst_hwtest_skylab_boards,
+          board_configs,
+          site_config.templates.mst_android_pfq,
+          enable_skylab_hw_tests=True,
           hw_tests=hw_test_list.SharedPoolAndroidPFQ(),
       ) +
       site_config.AddForBoards(
@@ -1606,9 +1617,17 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
   pi_master_config.AddSlaves(
       site_config.AddForBoards(
           'pi-android-pfq',
-          _pi_hwtest_boards,
+          _pi_hwtest_boards - _pi_hwtest_skylab_boards,
           board_configs,
           site_config.templates.pi_android_pfq,
+          hw_tests=hw_test_list.SharedPoolAndroidPFQ(),
+      ) +
+      site_config.AddForBoards(
+          'pi-android-pfq',
+          _pi_hwtest_skylab_boards,
+          board_configs,
+          site_config.templates.pi_android_pfq,
+          enable_skylab_hw_tests=True,
           hw_tests=hw_test_list.SharedPoolAndroidPFQ(),
       ) +
       site_config.AddForBoards(
@@ -1704,9 +1723,17 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
   nyc_master_config.AddSlaves(
       site_config.AddForBoards(
           'nyc-android-pfq',
-          _nyc_hwtest_boards,
+          _nyc_hwtest_boards - _nyc_hwtest_skylab_boards,
           board_configs,
           site_config.templates.nyc_android_pfq,
+          hw_tests=hw_test_list.SharedPoolAndroidPFQ(),
+      ) +
+      site_config.AddForBoards(
+          'nyc-android-pfq',
+          _nyc_hwtest_skylab_boards,
+          board_configs,
+          site_config.templates.nyc_android_pfq,
+          enable_skylab_hw_tests=True,
           hw_tests=hw_test_list.SharedPoolAndroidPFQ(),
       ) +
       site_config.AddForBoards(
