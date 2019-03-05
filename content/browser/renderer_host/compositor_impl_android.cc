@@ -231,7 +231,6 @@ class CompositorDependencies {
   SingleThreadTaskGraphRunner task_graph_runner;
   viz::HostFrameSinkManager host_frame_sink_manager;
   viz::FrameSinkIdAllocator frame_sink_id_allocator;
-  viz::ParentLocalSurfaceIdAllocator surface_id_allocator;
 
   // Non-viz members:
   // This is owned here so that SurfaceManager will be accessible in process
@@ -1243,12 +1242,10 @@ void CompositorImpl::InitializeVizLayerTreeFrameSink(
   display_private_->SetVSyncPaused(vsync_paused_);
 }
 
-viz::LocalSurfaceIdAllocation CompositorImpl::GenerateLocalSurfaceId() const {
+viz::LocalSurfaceIdAllocation CompositorImpl::GenerateLocalSurfaceId() {
   if (enable_surface_synchronization_) {
-    viz::ParentLocalSurfaceIdAllocator& allocator =
-        CompositorDependencies::Get().surface_id_allocator;
-    allocator.GenerateId();
-    return allocator.GetCurrentLocalSurfaceIdAllocation();
+    local_surface_id_allocator_.GenerateId();
+    return local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation();
   }
 
   return viz::LocalSurfaceIdAllocation();

@@ -43,6 +43,7 @@ class LatencyInfo;
 namespace viz {
 
 class SurfaceClient;
+class SurfaceAllocationGroup;
 class SurfaceManager;
 
 // A Surface is a representation of a sequence of CompositorFrames with a
@@ -80,6 +81,7 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
 
   Surface(const SurfaceInfo& surface_info,
           SurfaceManager* surface_manager,
+          SurfaceAllocationGroup* allocation_group,
           base::WeakPtr<SurfaceClient> surface_client,
           bool needs_sync_tokens,
           bool block_activation_on_parent);
@@ -344,6 +346,8 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
 
   // Frame sinks that this surface observe for activation events.
   base::flat_set<FrameSinkId> observed_sinks_;
+
+  SurfaceAllocationGroup* const allocation_group_;
 
   DISALLOW_COPY_AND_ASSIGN(Surface);
 };

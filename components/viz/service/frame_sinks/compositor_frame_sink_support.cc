@@ -465,13 +465,12 @@ SubmitResult CompositorFrameSinkSupport::MaybeSubmitCompositorFrameInternal(
       return SubmitResult::ACCEPTED;
     }
     current_surface = CreateSurface(surface_info, block_activation_on_parent);
-    last_created_surface_id_ = SurfaceId(frame_sink_id_, local_surface_id);
-
     if (!current_surface) {
       TRACE_EVENT_INSTANT0("viz", "Surface Invariants Violation",
                            TRACE_EVENT_SCOPE_THREAD);
       return SubmitResult::SURFACE_INVARIANTS_VIOLATION;
     }
+    last_created_surface_id_ = SurfaceId(frame_sink_id_, local_surface_id);
 
     surface_manager_->SurfaceDamageExpected(current_surface->surface_id(),
                                             last_begin_frame_args_);
