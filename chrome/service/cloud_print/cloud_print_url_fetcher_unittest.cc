@@ -92,7 +92,10 @@ class TestCloudPrintURLFetcher : public CloudPrintURLFetcher {
 class CloudPrintURLFetcherTest : public testing::Test,
                                  public CloudPrintURLFetcher::Delegate {
  public:
-  CloudPrintURLFetcherTest() : max_retries_(0), fetcher_(nullptr) {}
+  CloudPrintURLFetcherTest()
+      : max_retries_(0),
+        fetcher_(nullptr),
+        quit_run_loop_(run_loop_.QuitClosure()) {}
 
   // Creates a URLFetcher, using the program's main thread to do IO.
   virtual void CreateFetcher(const GURL& url, int max_retries);
@@ -141,6 +144,10 @@ class CloudPrintURLFetcherTest : public testing::Test,
   int max_retries_;
   Time start_time_;
   scoped_refptr<TestCloudPrintURLFetcher> fetcher_;
+  base::RunLoop run_loop_;
+  base::OnceClosure quit_run_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(CloudPrintURLFetcherTest);
 };
 
 class CloudPrintURLFetcherBasicTest : public CloudPrintURLFetcherTest {
@@ -257,8 +264,7 @@ CloudPrintURLFetcherBasicTest::HandleRawResponse(
   if (handle_raw_response_) {
     // If the current message loop is not the IO loop, it will be shut down when
     // the main loop returns and this thread subsequently goes out of scope.
-    io_task_runner()->PostTask(
-        FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
+    std::move(quit_run_loop_).Run();
     return CloudPrintURLFetcher::STOP_PROCESSING;
   }
   return CloudPrintURLFetcher::CONTINUE_PROCESSING;
@@ -272,8 +278,7 @@ CloudPrintURLFetcherBasicTest::HandleRawData(
   // We should never get here if we returned true in HandleRawResponse
   EXPECT_FALSE(handle_raw_response_);
   if (handle_raw_data_) {
-    io_task_runner()->PostTask(
-        FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
+    std::move(quit_run_loop_).Run();
     return CloudPrintURLFetcher::STOP_PROCESSING;
   }
   return CloudPrintURLFetcher::CONTINUE_PROCESSING;
@@ -287,8 +292,7 @@ CloudPrintURLFetcherBasicTest::HandleJSONData(const net::URLFetcher* source,
   // We should never get here if we returned true in one of the above methods.
   EXPECT_FALSE(handle_raw_response_);
   EXPECT_FALSE(handle_raw_data_);
-  io_task_runner()->PostTask(
-      FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
+  std::move(quit_run_loop_).Run();
   return CloudPrintURLFetcher::STOP_PROCESSING;
 }
 
@@ -306,8 +310,7 @@ CloudPrintURLFetcherOverloadTest::HandleRawData(
     // We have already sent 20 requests continuously. And we expect that
     // it takes more than 1 second due to the overload protection settings.
     EXPECT_TRUE(Time::Now() - start_time_ >= one_second);
-    io_task_runner()->PostTask(
-        FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
+    std::move(quit_run_loop_).Run();
   }
   return CloudPrintURLFetcher::STOP_PROCESSING;
 }
@@ -326,8 +329,7 @@ CloudPrintURLFetcherRetryBackoffTest::HandleRawData(
 void CloudPrintURLFetcherRetryBackoffTest::OnRequestGiveUp() {
   // It takes more than 200 ms to finish all 11 requests.
   EXPECT_TRUE(Time::Now() - start_time_ >= TimeDelta::FromMilliseconds(200));
-  io_task_runner()->PostTask(
-      FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
+  std::move(quit_run_loop_).Run();
 }
 
 TEST_F(CloudPrintURLFetcherBasicTest, HandleRawResponse) {
@@ -337,7 +339,7 @@ TEST_F(CloudPrintURLFetcherBasicTest, HandleRawResponse) {
   SetHandleRawResponse(true);
 
   CreateFetcher(test_server.GetURL("/echo"), 0);
-  base::RunLoop().Run();
+  run_loop_.Run();
 }
 
 TEST_F(CloudPrintURLFetcherBasicTest, HandleRawData) {
@@ -347,7 +349,7 @@ TEST_F(CloudPrintURLFetcherBasicTest, HandleRawData) {
 
   SetHandleRawData(true);
   CreateFetcher(test_server.GetURL("/echo"), 0);
-  base::RunLoop().Run();
+  run_loop_.Run();
 }
 
 TEST_F(CloudPrintURLFetcherOverloadTest, Protect) {
@@ -358,7 +360,7 @@ TEST_F(CloudPrintURLFetcherOverloadTest, Protect) {
   GURL url(test_server.GetURL("/defaultresponse"));
   CreateFetcher(url, 11);
 
-  base::RunLoop().Run();
+  run_loop_.Run();
 }
 
 TEST_F(CloudPrintURLFetcherRetryBackoffTest, GiveUp) {
@@ -369,7 +371,7 @@ TEST_F(CloudPrintURLFetcherRetryBackoffTest, GiveUp) {
   GURL url(test_server.GetURL("/defaultresponse"));
   CreateFetcher(url, 11);
 
-  base::RunLoop().Run();
+  run_loop_.Run();
 }
 
 }  // namespace cloud_print
