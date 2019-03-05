@@ -36,9 +36,9 @@ test("json_parser_test") {
     ":json_parser",
     ":linux_dev_platform",
     "//base",
-    "//testing/gmock:gmock",
-    "//testing/gtest:gtest",
-    "//testing/gtest:gtest_main",
+    "//third_party/googletest:gmock",
+    "//third_party/googletest:gtest",
+    "//third_party/googletest:gtest_main",
   ]
 }
 
@@ -61,12 +61,13 @@ test("cbor_test") {
   ]
   deps = [
     ":cbor",
+    ":json_parser",
     ":json_std_string_writer",
     ":linux_dev_platform",
     "//base",
-    "//testing/gmock:gmock",
-    "//testing/gtest:gtest",
-    "//testing/gtest:gtest_main",
+    "//third_party/googletest:gmock",
+    "//third_party/googletest:gtest",
+    "//third_party/googletest:gtest_main",
   ]
 }
 
@@ -77,9 +78,9 @@ test("span_test") {
   ]
   deps = [
     "//base",
-    "//testing/gmock:gmock",
-    "//testing/gtest:gtest",
-    "//testing/gtest:gtest_main",
+    "//third_party/googletest:gmock",
+    "//third_party/googletest:gtest",
+    "//third_party/googletest:gtest_main",
   ]
 }
 
@@ -88,6 +89,9 @@ static_library("json_std_string_writer") {
     "encoding/json_parser_handler.h",
     "encoding/json_std_string_writer.cc",
     "encoding/json_std_string_writer.h",
+    "encoding/platform.h",
+    "encoding/span.h",
+    "encoding/status.h",
   ]
 }
 
@@ -99,8 +103,8 @@ test("json_std_string_writer_test") {
     ":json_std_string_writer",
     ":linux_dev_platform",
     "//base",
-    "//testing/gmock:gmock",
-    "//testing/gtest:gtest",
-    "//testing/gtest:gtest_main",
+    "//third_party/googletest:gmock",
+    "//third_party/googletest:gtest",
+    "//third_party/googletest:gtest_main",
   ]
 }

@@ -4,10 +4,8 @@
 
 #include "cbor.h"
 
-#include <stdio.h>
 #include <cassert>
 #include <limits>
-#include <string>
 #include "json_parser_handler.h"
 
 namespace inspector_protocol {
