@@ -277,7 +277,7 @@ TEST_F(LoginDatabaseTest, Logins) {
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
   EXPECT_EQ(0U, result.size());
 
-  EXPECT_TRUE(db().GetAllLogins(&key_to_form_map));
+  EXPECT_EQ(db().GetAllLogins(&key_to_form_map), FormRetrievalResult::kSuccess);
   EXPECT_EQ(0U, key_to_form_map.size());
 
   // Example password form.
@@ -294,7 +294,7 @@ TEST_F(LoginDatabaseTest, Logins) {
   EXPECT_EQ(form, *result[0]);
   result.clear();
 
-  EXPECT_TRUE(db().GetAllLogins(&key_to_form_map));
+  EXPECT_EQ(db().GetAllLogins(&key_to_form_map), FormRetrievalResult::kSuccess);
   EXPECT_EQ(1U, key_to_form_map.size());
   EXPECT_EQ(form, *key_to_form_map[1]);
   key_to_form_map.clear();

@@ -145,7 +145,8 @@ class LoginDatabase : public PasswordStoreSync::MetadataStore {
       WARN_UNUSED_RESULT;
 
   // Gets the complete list of all credentials.
-  bool GetAllLogins(PrimaryKeyToFormMap* key_to_form_map) WARN_UNUSED_RESULT;
+  FormRetrievalResult GetAllLogins(PrimaryKeyToFormMap* key_to_form_map)
+      WARN_UNUSED_RESULT;
 
   // Gets the complete list of not blacklisted credentials.
   bool GetAutofillableLogins(
@@ -290,17 +291,18 @@ class LoginDatabase : public PasswordStoreSync::MetadataStore {
   // Reads the stored ModelTypeState. Returns nullptr in case of failure.
   std::unique_ptr<sync_pb::ModelTypeState> GetModelTypeState();
 
-  // Overwrites |forms| with credentials retrieved from |statement|. If
-  // |matched_form| is not null, filters out all results but those PSL-matching
+  // Overwrites |key_to_form_map| with credentials retrieved from |statement|.
+  // If |matched_form| is not null, filters out all results but those
+  // PSL-matching
   // |*matched_form| or federated credentials for it. If feature for recovering
   // passwords is enabled, it removes all passwords that couldn't be decrypted
   // when encryption was available from the database. On success returns true.
   // |key_to_form_map| must not be null and will be used to return the results.
   // The key of the map is the DB primary key.
-  bool StatementToForms(sql::Statement* statement,
-                        const PasswordStore::FormDigest* matched_form,
-                        PrimaryKeyToFormMap* key_to_form_map)
-      WARN_UNUSED_RESULT;
+  FormRetrievalResult StatementToForms(
+      sql::Statement* statement,
+      const PasswordStore::FormDigest* matched_form,
+      PrimaryKeyToFormMap* key_to_form_map) WARN_UNUSED_RESULT;
 
   // Initializes all the *_statement_ data members with appropriate SQL
   // fragments based on |builder|.

@@ -115,13 +115,13 @@ class FakeDatabase {
   FakeDatabase() = default;
   ~FakeDatabase() = default;
 
-  bool ReadAllLogins(PrimaryKeyToFormMap* map) {
+  FormRetrievalResult ReadAllLogins(PrimaryKeyToFormMap* map) {
     map->clear();
     for (const auto& pair : data_) {
       map->emplace(pair.first,
                    std::make_unique<autofill::PasswordForm>(*pair.second));
     }
-    return true;
+    return FormRetrievalResult::kSuccess;
   }
 
   PasswordStoreChangeList AddLogin(const autofill::PasswordForm& form) {
@@ -193,7 +193,7 @@ class MockPasswordStoreSync : public PasswordStoreSync {
                bool(std::vector<std::unique_ptr<autofill::PasswordForm>>*));
   MOCK_METHOD1(FillBlacklistLogins,
                bool(std::vector<std::unique_ptr<autofill::PasswordForm>>*));
-  MOCK_METHOD1(ReadAllLogins, bool(PrimaryKeyToFormMap*));
+  MOCK_METHOD1(ReadAllLogins, FormRetrievalResult(PrimaryKeyToFormMap*));
   MOCK_METHOD1(RemoveLoginByPrimaryKeySync, PasswordStoreChangeList(int));
   MOCK_METHOD0(DeleteUndecryptableLogins, DatabaseCleanupResult());
   MOCK_METHOD1(AddLoginSync,
@@ -627,9 +627,9 @@ TEST_F(PasswordSyncBridgeTest,
 // ShouldMergeSync() would return an error without crashing.
 TEST_F(PasswordSyncBridgeTest,
        ShouldMergeSyncRemoteAndLocalPasswordsWithErrorWhenStoreReadFails) {
-  // Simulate a failed ReadAllLogins() by returning false.
+  // Simulate a failed ReadAllLogins() by returning a kDbError.
   ON_CALL(*mock_password_store_sync(), ReadAllLogins(_))
-      .WillByDefault(testing::Return(false));
+      .WillByDefault(testing::Return(FormRetrievalResult::kDbError));
   base::Optional<syncer::ModelError> error =
       bridge()->MergeSyncData(bridge()->CreateMetadataChangeList(), {});
   EXPECT_TRUE(error);

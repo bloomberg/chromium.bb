@@ -239,9 +239,12 @@ bool PasswordStoreDefault::CommitTransaction() {
   return false;
 }
 
-bool PasswordStoreDefault::ReadAllLogins(PrimaryKeyToFormMap* key_to_form_map) {
+FormRetrievalResult PasswordStoreDefault::ReadAllLogins(
+    PrimaryKeyToFormMap* key_to_form_map) {
   DCHECK(background_task_runner()->RunsTasksInCurrentSequence());
-  return login_db_ && login_db_->GetAllLogins(key_to_form_map);
+  if (!login_db_)
+    return FormRetrievalResult::kDbError;
+  return login_db_->GetAllLogins(key_to_form_map);
 }
 
 PasswordStoreChangeList PasswordStoreDefault::RemoveLoginByPrimaryKeySync(

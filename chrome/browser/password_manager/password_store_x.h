@@ -139,7 +139,7 @@ class PasswordStoreX : public password_manager::PasswordStoreDefault {
 
  protected:
   // Implements PasswordStoreSync interface.
-  bool ReadAllLogins(
+  password_manager::FormRetrievalResult ReadAllLogins(
       password_manager::PrimaryKeyToFormMap* key_to_form_map) override;
   password_manager::PasswordStoreChangeList RemoveLoginByPrimaryKeySync(
       int primary_key) override;

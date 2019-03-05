@@ -36,6 +36,17 @@ enum class DatabaseCleanupResult {
   kEncryptionUnavailable,
 };
 
+// Result values for retrieving form from the store.
+enum class FormRetrievalResult {
+  // Success.
+  kSuccess,
+  // Database error.
+  kDbError,
+  // A service-level failure (e.g., on a platform using a keyring, the keyring
+  // is temporarily unavailable).
+  kEncrytionServiceFailure,
+};
+
 // PasswordStore interface for PasswordSyncableService. It provides access to
 // synchronous methods of PasswordStore which shouldn't be accessible to other
 // classes. These methods are to be called on the PasswordStore background
@@ -67,8 +78,8 @@ class PasswordStoreSync {
 
   // Overwrites |key_to_form_map| with a map from the DB primary key to the
   // corresponding form for all stored credentials. Returns true on success.
-  virtual bool ReadAllLogins(PrimaryKeyToFormMap* key_to_form_map)
-      WARN_UNUSED_RESULT = 0;
+  virtual FormRetrievalResult ReadAllLogins(
+      PrimaryKeyToFormMap* key_to_form_map) WARN_UNUSED_RESULT = 0;
 
   // Deletes logins that cannot be decrypted.
   virtual DatabaseCleanupResult DeleteUndecryptableLogins() = 0;
