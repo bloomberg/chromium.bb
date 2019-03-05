@@ -2388,6 +2388,7 @@ chrome_junit_test_java_sources = [
   "junit/src/org/chromium/chrome/browser/ShadowDeviceConditions.java",
   "junit/src/org/chromium/chrome/browser/ShortcutHelperTest.java",
   "junit/src/org/chromium/chrome/browser/SSLClientCertificateRequestTest.java",
+  "junit/src/org/chromium/chrome/browser/autofill/AutofillUiUtilsTest.java",
   "junit/src/org/chromium/chrome/browser/autofill/keyboard_accessory/AccessorySheetControllerTest.java",
   "junit/src/org/chromium/chrome/browser/autofill/keyboard_accessory/KeyboardAccessoryControllerTest.java",
   "junit/src/org/chromium/chrome/browser/autofill/keyboard_accessory/KeyboardAccessoryTabLayoutControllerTest.java",
