@@ -5,6 +5,7 @@
 #ifndef SERVICES_VIDEO_CAPTURE_PUBLIC_CPP_MOCK_VIDEO_SOURCE_PROVIDER_H_
 #define SERVICES_VIDEO_CAPTURE_PUBLIC_CPP_MOCK_VIDEO_SOURCE_PROVIDER_H_
 
+#include "services/video_capture/public/mojom/devices_changed_observer.mojom.h"
 #include "services/video_capture/public/mojom/producer.mojom.h"
 #include "services/video_capture/public/mojom/video_source_provider.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -33,6 +34,11 @@ class MockVideoSourceProvider
   void AddTextureVirtualDevice(const media::VideoCaptureDeviceInfo& device_info,
                                video_capture::mojom::TextureVirtualDeviceRequest
                                    virtual_device) override;
+  void RegisterVirtualDevicesChangedObserver(
+      video_capture::mojom::DevicesChangedObserverPtr observer,
+      bool raise_event_if_virtual_devices_already_present) override {
+    NOTIMPLEMENTED();
+  }
 
   MOCK_METHOD1(DoGetSourceInfos, void(GetSourceInfosCallback& callback));
   MOCK_METHOD2(DoGetVideoSource,

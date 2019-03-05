@@ -2,34 +2,34 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/media/ref_counted_video_capture_factory.h"
+#include "content/browser/renderer_host/media/ref_counted_video_source_provider.h"
 
 namespace content {
 
-RefCountedVideoCaptureFactory::RefCountedVideoCaptureFactory(
-    video_capture::mojom::DeviceFactoryPtr device_factory,
+RefCountedVideoSourceProvider::RefCountedVideoSourceProvider(
+    video_capture::mojom::VideoSourceProviderPtr source_provider,
     video_capture::mojom::DeviceFactoryProviderPtr device_factory_provider,
     base::OnceClosure destruction_cb)
-    : device_factory_(std::move(device_factory)),
+    : source_provider_(std::move(source_provider)),
       device_factory_provider_(std::move(device_factory_provider)),
       destruction_cb_(std::move(destruction_cb)),
       weak_ptr_factory_(this) {}
 
-RefCountedVideoCaptureFactory::~RefCountedVideoCaptureFactory() {
+RefCountedVideoSourceProvider::~RefCountedVideoSourceProvider() {
   std::move(destruction_cb_).Run();
 }
 
-base::WeakPtr<RefCountedVideoCaptureFactory>
-RefCountedVideoCaptureFactory::GetWeakPtr() {
+base::WeakPtr<RefCountedVideoSourceProvider>
+RefCountedVideoSourceProvider::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
-void RefCountedVideoCaptureFactory::ShutdownServiceAsap() {
+void RefCountedVideoSourceProvider::ShutdownServiceAsap() {
   device_factory_provider_->ShutdownServiceAsap();
 }
 
-void RefCountedVideoCaptureFactory::ReleaseFactoryForTesting() {
-  device_factory_.reset();
+void RefCountedVideoSourceProvider::ReleaseProviderForTesting() {
+  source_provider_.reset();
 }
 
 }  // namespace content
