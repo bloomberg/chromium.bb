@@ -7,7 +7,7 @@
 import argparse
 
 from cli_tools.flakiness_cli import analysis
-from cli_tools.flakiness_cli import core
+from cli_tools.flakiness_cli import cached_api
 
 
 def Main():
@@ -32,7 +32,7 @@ def Main():
       ' with flakiness above this level.')
   args = parser.parse_args()
 
-  configs = core.GetBuilders()
+  configs = cached_api.GetBuilders()
   configs = analysis.FilterBy(configs, master=args.master,
                               builder=args.builder, test_type=args.test_type)
   if configs.empty:
@@ -40,7 +40,7 @@ def Main():
 
   dfs = []
   for row in configs.itertuples():
-    df = core.GetTestResults(row.master, row.builder, row.test_type)
+    df = cached_api.GetTestResults(row.master, row.builder, row.test_type)
     df = analysis.FilterBy(df, test_suite=args.test_suite)
     if df.empty:
       continue

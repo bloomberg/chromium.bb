@@ -4,13 +4,13 @@
 
 import unittest
 
-from telemetry import decorators
 from cli_tools.flakiness_cli import analysis
 from cli_tools.flakiness_cli import frames
+from core.external_modules import pandas
 
 
+@unittest.skipIf(pandas is None, 'pandas not available')
 class TestAnalysis(unittest.TestCase):
-  @decorators.Disabled('chromeos')  # crbug.com/921762
   def testFilterBy(self):
     builders = frames.pandas.DataFrame.from_records([
       ['chromium.perf', 'my-mac-bot', 'common_tests'],
