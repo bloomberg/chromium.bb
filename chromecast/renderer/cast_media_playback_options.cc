@@ -79,6 +79,12 @@ void CastMediaPlaybackOptions::SetBackgroundVideoPlaybackEnabled(bool enabled) {
       renderer_media_playback_options_);
 }
 
+void CastMediaPlaybackOptions::SetUseCmaRenderer(bool enable) {
+  renderer_media_playback_options_.is_mojo_renderer_enabled = enable;
+  render_frame()->SetRenderFrameMediaPlaybackOptions(
+      renderer_media_playback_options_);
+}
+
 void CastMediaPlaybackOptions::OnMediaPlaybackOptionsAssociatedRequest(
     chromecast::shell::mojom::MediaPlaybackOptionsAssociatedRequest request) {
   bindings_.AddBinding(this, std::move(request));

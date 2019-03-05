@@ -35,7 +35,6 @@ buildflag_header("media_buildflags") {
     "ENABLE_MEDIA_REMOTING_RPC=$enable_media_remoting_rpc",
     "ENABLE_MPEG_H_AUDIO_DEMUXING=$enable_mpeg_h_audio_demuxing",
     "ENABLE_MSE_MPEG2TS_STREAM_PARSER=$enable_mse_mpeg2ts_stream_parser",
-    "ENABLE_RUNTIME_MEDIA_RENDERER_SELECTION=$enable_runtime_media_renderer_selection",
     "USE_PROPRIETARY_CODECS=$proprietary_codecs",
   ]
 }

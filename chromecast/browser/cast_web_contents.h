@@ -86,6 +86,7 @@ class CastWebContents {
   struct InitParams {
     Delegate* delegate;
     bool enabled_for_dev;
+    bool use_cma_renderer;
   };
 
   // Page state for the main frame.

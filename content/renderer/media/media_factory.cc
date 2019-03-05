@@ -330,7 +330,10 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
   base::WeakPtr<media::MediaObserver> media_observer;
 
   auto factory_selector = CreateRendererFactorySelector(
-      media_log.get(), use_media_player_renderer, GetDecoderFactory(),
+      media_log.get(), use_media_player_renderer,
+      render_frame_->GetRenderFrameMediaPlaybackOptions()
+          .is_mojo_renderer_enabled,
+      GetDecoderFactory(),
       std::make_unique<media::RemotePlaybackClientWrapperImpl>(client),
       &media_observer);
 
@@ -416,6 +419,7 @@ std::unique_ptr<media::RendererFactorySelector>
 MediaFactory::CreateRendererFactorySelector(
     media::MediaLog* media_log,
     bool use_media_player,
+    bool enable_mojo_renderer,
     media::DecoderFactory* decoder_factory,
     std::unique_ptr<media::RemotePlaybackClientWrapper> client_wrapper,
     base::WeakPtr<media::MediaObserver>* out_media_observer) {
@@ -470,13 +474,7 @@ MediaFactory::CreateRendererFactorySelector(
 
   bool use_mojo_renderer_factory = false;
 #if BUILDFLAG(ENABLE_MOJO_RENDERER)
-#if BUILDFLAG(ENABLE_RUNTIME_MEDIA_RENDERER_SELECTION)
-  use_mojo_renderer_factory =
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableMojoRenderer);
-#else
-  use_mojo_renderer_factory = true;
-#endif  // BUILDFLAG(ENABLE_RUNTIME_MEDIA_RENDERER_SELECTION)
+  use_mojo_renderer_factory = enable_mojo_renderer;
   if (use_mojo_renderer_factory) {
     auto mojo_renderer_factory = std::make_unique<media::MojoRendererFactory>(
         base::Bind(&RenderThreadImpl::GetGpuFactories,

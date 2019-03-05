@@ -119,6 +119,7 @@ class MediaFactory {
   std::unique_ptr<media::RendererFactorySelector> CreateRendererFactorySelector(
       media::MediaLog* media_log,
       bool use_media_player,
+      bool enable_mojo_renderer,
       media::DecoderFactory* decoder_factory,
       std::unique_ptr<media::RemotePlaybackClientWrapper> client_wrapper,
       base::WeakPtr<media::MediaObserver>* out_media_observer);

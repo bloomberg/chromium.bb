@@ -80,6 +80,9 @@ class CastWebView {
     // Whether this CastWebView is granted media access.
     bool allow_media_access = false;
 
+    // Whether this CastWebView will use CMA for media playback.
+    bool use_cma_renderer = true;
+
     // Enable development mode for this CastWebView. Whitelists certain
     // functionality for the WebContents, like remote debugging and debugging
     // interfaces.

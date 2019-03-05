@@ -89,6 +89,7 @@ class CastWebContentsImpl : public CastWebContents,
   PageState page_state_;
   PageState last_state_;
   const bool enabled_for_dev_;
+  bool use_cma_renderer_;
   shell::RemoteDebuggingServer* const remote_debugging_server_;
 
   base::flat_set<std::unique_ptr<CastWebContents>> inner_contents_;

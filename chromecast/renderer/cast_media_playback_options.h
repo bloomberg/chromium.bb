@@ -48,6 +48,7 @@ class CastMediaPlaybackOptions
   // MediaPlaybackOptions implementation
   void SetMediaLoadingBlocked(bool blocked) override;
   void SetBackgroundVideoPlaybackEnabled(bool enabled) override;
+  void SetUseCmaRenderer(bool enable) override;
 
   void OnMediaPlaybackOptionsAssociatedRequest(
       chromecast::shell::mojom::MediaPlaybackOptionsAssociatedRequest request);
