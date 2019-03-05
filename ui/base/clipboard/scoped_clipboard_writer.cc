@@ -91,8 +91,7 @@ void ScopedClipboardWriter::WriteWebSmartPaste() {
 void ScopedClipboardWriter::WriteImage(const SkBitmap& bitmap) {
   if (bitmap.drawsNothing())
     return;
-  // TODO(crbug.com/918717): Remove CHECK if no crashes occur on it in canary.
-  CHECK(bitmap.getPixels());
+  DCHECK(bitmap.getPixels());
 
   bitmap_ = bitmap;
   // TODO(dcheng): This is slightly less horrible than what we used to do, but
