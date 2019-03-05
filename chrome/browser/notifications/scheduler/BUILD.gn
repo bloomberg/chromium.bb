@@ -41,13 +41,32 @@ source_set("public") {
 # Internal library that embedders should not directly depend on.
 source_set("lib") {
   sources = [
+    "collection_store.h",
     "notification_schedule_service_impl.cc",
     "notification_schedule_service_impl.h",
+    "proto_db_collection_store.cc",
+    "proto_db_collection_store.h",
   ]
 
   deps = [
     ":public",
     "//base",
     "//components/keyed_service/core",
+    "//components/leveldb_proto",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "proto_db_collection_store_unittest.cc",
+  ]
+
+  deps = [
+    ":lib",
+    ":public",
+    "//components/leveldb_proto:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
   ]
 }
