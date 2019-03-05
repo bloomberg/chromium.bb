@@ -387,13 +387,16 @@ void SearchResultView::VisibilityChanged(View* starting_from, bool is_visible) {
 void SearchResultView::OnGestureEvent(ui::GestureEvent* event) {
   switch (event->type()) {
     case ui::ET_GESTURE_LONG_PRESS:
-      ScrollRectToVisible(GetLocalBounds());
-      NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
-      SetBackgroundHighlighted(true);
-      confirm_remove_by_long_press_ = true;
-      OnSearchResultActionActivated(
-          ash::OmniBoxZeroStateAction::kRemoveSuggestion, event->flags());
-      event->SetHandled();
+      if (actions_view_->IsValidActionIndex(
+              ash::OmniBoxZeroStateAction::kRemoveSuggestion)) {
+        ScrollRectToVisible(GetLocalBounds());
+        NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
+        SetBackgroundHighlighted(true);
+        confirm_remove_by_long_press_ = true;
+        OnSearchResultActionActivated(
+            ash::OmniBoxZeroStateAction::kRemoveSuggestion, event->flags());
+        event->SetHandled();
+      }
       break;
     default:
       break;
