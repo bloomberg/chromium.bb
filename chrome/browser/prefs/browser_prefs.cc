@@ -507,6 +507,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
 #endif  // !defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
+  arc::prefs::RegisterLocalStatePrefs(registry);
   ChromeOSMetricsProvider::RegisterPrefs(registry);
   chromeos::ArcKioskAppManager::RegisterPrefs(registry);
   chromeos::AudioDevicesPrefHandlerImpl::RegisterPrefs(registry);

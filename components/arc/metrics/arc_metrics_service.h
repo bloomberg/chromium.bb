@@ -49,20 +49,6 @@ class ArcMetricsService : public KeyedService,
                           public chromeos::PowerManagerClient::Observer,
                           public mojom::MetricsHost {
  public:
-  // These values are persisted to logs, and should therefore never be
-  // renumbered nor reused. They are public for testing only.
-  enum class NativeBridgeType {
-    // Native bridge value has not been received from the container yet.
-    UNKNOWN = 0,
-    // Native bridge is not used.
-    NONE = 1,
-    // Using houdini translator.
-    HOUDINI = 2,
-    // Using ndk-translation translator.
-    NDK_TRANSLATION = 3,
-    kMaxValue = NDK_TRANSLATION,
-  };
-
   // Delegate for handling window focus observation that is used to track ARC
   // app usage metrics.
   class ArcWindowDelegate {
@@ -107,10 +93,6 @@ class ArcMetricsService : public KeyedService,
                           mojom::BootType boot_type) override;
   void ReportNativeBridge(mojom::NativeBridgeType native_bridge_type) override;
 
-  // Records native bridge UMA according to value received from the
-  // container or as UNKNOWN if the value has not been recieved yet.
-  void RecordNativeBridgeUMA();
-
   // wm::ActivationChangeObserver overrides.
   // Records to UMA when a user has interacted with an ARC app window.
   void OnWindowActivated(wm::ActivationChangeObserver::ActivationReason reason,
@@ -131,10 +113,6 @@ class ArcMetricsService : public KeyedService,
                      const std::string& activity,
                      const std::string& intent);
   void OnTaskDestroyed(int32_t task_id);
-
-  NativeBridgeType native_bridge_type_for_testing() const {
-    return native_bridge_type_;
-  }
 
  private:
   // Adapter to be able to also observe ProcessInstance events.
@@ -192,8 +170,6 @@ class ArcMetricsService : public KeyedService,
 
   ProcessObserver process_observer_;
   base::RepeatingTimer request_process_list_timer_;
-
-  NativeBridgeType native_bridge_type_;
 
   PrefService* const pref_service_;
   const base::Clock* clock_;

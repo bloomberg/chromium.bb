@@ -25,12 +25,10 @@
 #include "chrome/browser/chromeos/arc/policy/arc_android_management_checker.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_resources.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_launcher.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/app_list/arc/arc_fast_app_reinstall_starter.h"
@@ -51,6 +49,7 @@
 #include "components/arc/arc_util.h"
 #include "components/arc/metrics/arc_metrics_constants.h"
 #include "components/arc/metrics/arc_metrics_service.h"
+#include "components/arc/metrics/stability_metrics_manager.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
 #include "content/public/browser/browser_thread.h"
@@ -135,6 +134,24 @@ bool ShouldLaunchPlayStoreApp(Profile* profile,
   return true;
 }
 
+void ResetStabilityMetrics() {
+  // TODO(shaochuan): Make this an event observable by StabilityMetricsManager
+  // and eliminate this null check.
+  auto* stability_metrics_manager = StabilityMetricsManager::Get();
+  if (!stability_metrics_manager)
+    return;
+  stability_metrics_manager->ResetMetrics();
+}
+
+void SetArcEnabledStateMetric(bool enabled) {
+  // TODO(shaochuan): Make this an event observable by StabilityMetricsManager
+  // and eliminate this null check.
+  auto* stability_metrics_manager = StabilityMetricsManager::Get();
+  if (!stability_metrics_manager)
+    return;
+  stability_metrics_manager->SetArcEnabledState(enabled);
+}
+
 }  // namespace
 
 // This class is used to track statuses on OptIn flow. It is created in case ARC
@@ -205,6 +222,7 @@ ArcSessionManager::ArcSessionManager(
   chromeos::SessionManagerClient* client = GetSessionManagerClient();
   if (client)
     client->AddObserver(this);
+  ResetStabilityMetrics();
 }
 
 ArcSessionManager::~ArcSessionManager() {
@@ -438,7 +456,9 @@ void ArcSessionManager::SetProfile(Profile* profile) {
   DCHECK(!profile_);
   DCHECK(IsArcAllowedForProfile(profile));
   profile_ = profile;
-  UpdatePersistentUMAState();
+  // RequestEnable() requires |profile_| set, therefore shouldn't have been
+  // called at this point.
+  SetArcEnabledStateMetric(false);
 }
 
 void ArcSessionManager::Initialize() {
@@ -607,36 +627,6 @@ void ArcSessionManager::CancelAuthCode() {
   SetArcPlayStoreEnabledForProfile(profile_, false);
 }
 
-void ArcSessionManager::RecordArcState() {
-  // Only record legacy enabled state if ARC is allowed in the first place, so
-  // we do not split the ARC population by devices that cannot run ARC.
-  if (should_record_legacy_enabled_state_)
-    UpdateEnabledStateUMA(enabled_state_uma_);
-
-  if (IsAllowed()) {
-    UpdateEnabledStateByUserTypeUMA(enable_requested_, profile_);
-    ArcMetricsService* service =
-        ArcMetricsService::GetForBrowserContext(profile_);
-    service->RecordNativeBridgeUMA();
-    return;
-  }
-
-  const Profile* profile = ProfileManager::GetPrimaryUserProfile();
-  // Don't record UMA for the set of cases:
-  // * No primary profile is set at this moment.
-  // * Primary profile matches the built-in profile used for signing in or the
-  //   lock screen.
-  // * Primary profile matches guest session.
-  // * Primary profile is in incognito mode.
-  if (!profile || chromeos::ProfileHelper::IsSigninProfile(profile) ||
-      chromeos::ProfileHelper::IsLockScreenAppProfile(profile) ||
-      profile->IsOffTheRecord() || profile->IsGuestSession()) {
-    return;
-  }
-
-  UpdateEnabledStateByUserTypeUMA(enabled_state_uma_, profile);
-}
-
 void ArcSessionManager::RequestEnable() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(profile_);
@@ -646,7 +636,7 @@ void ArcSessionManager::RequestEnable() {
     return;
   }
   enable_requested_ = true;
-  UpdatePersistentUMAState();
+  SetArcEnabledStateMetric(true);
 
   VLOG(1) << "ARC opt-in. Starting ARC session.";
 
@@ -757,7 +747,7 @@ void ArcSessionManager::RequestDisable() {
 
   directly_started_ = false;
   enable_requested_ = false;
-  UpdatePersistentUMAState();
+  SetArcEnabledStateMetric(false);
   scoped_opt_in_tracker_.reset();
   pai_starter_.reset();
   fast_app_reinstall_starter_.reset();
@@ -1182,11 +1172,6 @@ void ArcSessionManager::EmitLoginPromptVisibleCalled() {
     return;
 
   arc_session_runner_->RequestStartMiniInstance();
-}
-
-void ArcSessionManager::UpdatePersistentUMAState() {
-  should_record_legacy_enabled_state_ = IsAllowed();
-  enabled_state_uma_ = enable_requested_;
 }
 
 std::ostream& operator<<(std::ostream& os,

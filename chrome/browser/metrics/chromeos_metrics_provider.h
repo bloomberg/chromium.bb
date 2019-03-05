@@ -69,8 +69,6 @@ class ChromeOSMetricsProvider : public metrics::MetricsProvider {
       metrics::SystemProfileProto* system_profile_proto) override;
   void ProvideStabilityMetrics(
       metrics::SystemProfileProto* system_profile_proto) override;
-  void ProvidePreviousSessionData(
-      metrics::ChromeUserMetricsExtension* uma_proto) override;
   void ProvideCurrentSessionData(
       metrics::ChromeUserMetricsExtension* uma_proto) override;
 
@@ -92,12 +90,6 @@ class ChromeOSMetricsProvider : public metrics::MetricsProvider {
 
   // Writes info about paired Bluetooth devices on this system.
   void WriteBluetoothProto(metrics::SystemProfileProto* system_profile_proto);
-
-  // Record the device enrollment status.
-  void RecordEnrollmentStatus();
-
-  // Record whether ARC is enabled or not for ARC capable devices.
-  void RecordArcState();
 
   // For collecting systemwide performance data via the UMA channel.
   std::unique_ptr<metrics::ProfileProvider> profile_provider_;

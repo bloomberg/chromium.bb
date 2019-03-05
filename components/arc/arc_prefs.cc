@@ -12,6 +12,9 @@
 namespace arc {
 namespace prefs {
 
+// ======== PROFILE PREFS ========
+// See below for local state prefs.
+
 // A bool preference indicating whether traffic other than the VPN connection
 // set via kAlwaysOnVpnPackage should be blackholed.
 const char kAlwaysOnVpnLockdown[] = "arc.vpn.always_on.lockdown";
@@ -134,6 +137,18 @@ const char kVoiceInteractionLaunchWithMicOpen[] =
 // to send notification.
 const char kVoiceInteractionNotificationEnabled[] =
     "settings.voice_interaction.notification.enabled";
+
+// ======== LOCAL STATE PREFS ========
+
+// A dictionary preference that keeps track of stability metric values, which is
+// maintained by StabilityMetricsManager. Persisting values in local state is
+// required to include these metrics in the initial stability log in case of a
+// crash.
+const char kStabilityMetrics[] = "arc.metrics.stability";
+
+void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
+  registry->RegisterDictionaryPref(kStabilityMetrics);
+}
 
 void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   // TODO(dspaid): Implement a mechanism to allow this to sync on first boot

@@ -23,7 +23,9 @@
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/metrics/arc_metrics_constants.h"
+#include "components/arc/metrics/stability_metrics_manager.h"
 #include "components/arc/test/test_browser_context.h"
+#include "components/prefs/testing_pref_service.h"
 #include "components/session_manager/core/session_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -138,6 +140,22 @@ class DBusThreadManagerLifetimeHelper {
   }
 };
 
+// Helper class that ensures lifetime of StabilityMetricsManager for testing.
+class ScopedStabilityMetricsManager {
+ public:
+  ScopedStabilityMetricsManager() {
+    prefs::RegisterLocalStatePrefs(local_state_.registry());
+    StabilityMetricsManager::Initialize(&local_state_);
+  }
+
+  ~ScopedStabilityMetricsManager() { StabilityMetricsManager::Shutdown(); }
+
+ private:
+  TestingPrefServiceSimple local_state_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedStabilityMetricsManager);
+};
+
 // Initializes dependencies before creating ArcMetricsService instance.
 ArcMetricsService* CreateArcMetricsService(TestBrowserContext* context) {
   // Register preferences for ARC++ engagement time metrics.
@@ -239,10 +257,11 @@ class ArcMetricsServiceTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<ArcServiceManager> arc_service_manager_;
 
-  // DBusThreadManager and SessionManager should outlive TestBrowserContext
-  // which destructs ArcMetricsService in dtor.
+  // DBusThreadManager, SessionManager and StabilityMetricsManager should
+  // outlive TestBrowserContext which destructs ArcMetricsService in dtor.
   DBusThreadManagerLifetimeHelper dbus_thread_manager_lifetime_helper_;
   session_manager::SessionManager session_manager_;
+  ScopedStabilityMetricsManager scoped_stability_metrics_manager_;
   std::unique_ptr<TestBrowserContext> context_;
 
   std::unique_ptr<aura::Window> fake_arc_window_;
@@ -376,46 +395,19 @@ TEST_F(ArcMetricsServiceTest, ReportBootProgress_InvalidBootType) {
 }
 
 TEST_F(ArcMetricsServiceTest, ReportNativeBridge) {
-  EXPECT_EQ(service()->native_bridge_type_for_testing(),
-            ArcMetricsService::NativeBridgeType::UNKNOWN);
+  // SetArcNativeBridgeType should be called once ArcMetricsService is
+  // constructed.
+  EXPECT_EQ(StabilityMetricsManager::Get()->GetArcNativeBridgeType(),
+            NativeBridgeType::UNKNOWN);
   service()->ReportNativeBridge(mojom::NativeBridgeType::NONE);
-  EXPECT_EQ(service()->native_bridge_type_for_testing(),
-            ArcMetricsService::NativeBridgeType::NONE);
+  EXPECT_EQ(StabilityMetricsManager::Get()->GetArcNativeBridgeType(),
+            NativeBridgeType::NONE);
   service()->ReportNativeBridge(mojom::NativeBridgeType::HOUDINI);
-  EXPECT_EQ(service()->native_bridge_type_for_testing(),
-            ArcMetricsService::NativeBridgeType::HOUDINI);
+  EXPECT_EQ(StabilityMetricsManager::Get()->GetArcNativeBridgeType(),
+            NativeBridgeType::HOUDINI);
   service()->ReportNativeBridge(mojom::NativeBridgeType::NDK_TRANSLATION);
-  EXPECT_EQ(service()->native_bridge_type_for_testing(),
-            ArcMetricsService::NativeBridgeType::NDK_TRANSLATION);
-}
-
-TEST_F(ArcMetricsServiceTest, RecordNativeBridgeUMA) {
-  base::HistogramTester tester;
-  service()->RecordNativeBridgeUMA();
-  tester.ExpectUniqueSample(
-      "Arc.NativeBridge",
-      static_cast<int>(ArcMetricsService::NativeBridgeType::UNKNOWN), 1);
-  service()->ReportNativeBridge(mojom::NativeBridgeType::NONE);
-  // Check that ReportNativeBridge doesn't record histograms.
-  tester.ExpectTotalCount("Arc.NativeBridge", 1);
-  service()->RecordNativeBridgeUMA();
-  tester.ExpectBucketCount(
-      "Arc.NativeBridge",
-      static_cast<int>(ArcMetricsService::NativeBridgeType::NONE), 1);
-  service()->ReportNativeBridge(mojom::NativeBridgeType::HOUDINI);
-  tester.ExpectTotalCount("Arc.NativeBridge", 2);
-  service()->RecordNativeBridgeUMA();
-  tester.ExpectBucketCount(
-      "Arc.NativeBridge",
-      static_cast<int>(ArcMetricsService::NativeBridgeType::HOUDINI), 1);
-  service()->ReportNativeBridge(mojom::NativeBridgeType::NDK_TRANSLATION);
-  tester.ExpectTotalCount("Arc.NativeBridge", 3);
-  service()->RecordNativeBridgeUMA();
-  tester.ExpectBucketCount(
-      "Arc.NativeBridge",
-      static_cast<int>(ArcMetricsService::NativeBridgeType::NDK_TRANSLATION),
-      1);
-  tester.ExpectTotalCount("Arc.NativeBridge", 4);
+  EXPECT_EQ(StabilityMetricsManager::Get()->GetArcNativeBridgeType(),
+            NativeBridgeType::NDK_TRANSLATION);
 }
 
 TEST_F(ArcMetricsServiceTest, RecordArcWindowFocusAction) {
