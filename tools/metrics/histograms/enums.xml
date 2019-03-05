@@ -21774,6 +21774,8 @@ Called by update_net_error_codes.py.-->
   <int value="2809" label="CSSValueAppearanceMenulistTextfield"/>
   <int value="2810" label="CSSValueAppearanceMenulistText"/>
   <int value="2811" label="CSSValueAppearanceProgressBarValue"/>
+  <int value="2812" label="U2FCryptotokenRegister"/>
+  <int value="2813" label="U2FCryptotokenSign"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">
