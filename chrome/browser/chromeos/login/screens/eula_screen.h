@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
@@ -23,18 +24,19 @@ class EulaView;
 // to users.
 class EulaScreen : public BaseScreen, public TpmPasswordFetcherDelegate {
  public:
-  class Delegate {
-   public:
-    virtual ~Delegate() {}
-
-    // Whether usage statistics reporting is enabled on EULA screen.
-    virtual void SetUsageStatisticsReporting(bool val) = 0;
-    virtual bool GetUsageStatisticsReporting() const = 0;
+  enum class Result {
+    // The user accepted EULA, and enabled usage stats reporting.
+    ACCEPTED_WITH_USAGE_STATS_REPORTING,
+    // The user accepted EULA, and disabled usage stats reporting.
+    ACCEPTED_WITHOUT_USAGE_STATS_REPORTING,
+    // The usage did not accept EULA - they clicked back button instead.
+    BACK
   };
 
+  using ScreenExitCallback = base::RepeatingCallback<void(Result result)>;
   EulaScreen(BaseScreenDelegate* base_screen_delegate,
-             Delegate* delegate,
-             EulaView* view);
+             EulaView* view,
+             const ScreenExitCallback& exit_callback);
   ~EulaScreen() override;
 
   // Returns URL of the OEM EULA page that should be displayed using current
@@ -51,6 +53,9 @@ class EulaScreen : public BaseScreen, public TpmPasswordFetcherDelegate {
   // This method is called, when view is being destroyed. Note, if model
   // is destroyed earlier then it has to call SetModel(NULL).
   void OnViewDestroyed(EulaView* view);
+
+ protected:
+  ScreenExitCallback* exit_callback() { return &exit_callback_; }
 
  private:
   // BaseScreen implementation:
@@ -72,9 +77,9 @@ class EulaScreen : public BaseScreen, public TpmPasswordFetcherDelegate {
   // it's destroyed.
   std::string tpm_password_;
 
-  Delegate* delegate_;
-
   EulaView* view_;
+
+  ScreenExitCallback exit_callback_;
 
   TpmPasswordFetcher password_fetcher_;
 

@@ -10,11 +10,15 @@ using ::testing::AtLeast;
 using ::testing::_;
 
 MockEulaScreen::MockEulaScreen(BaseScreenDelegate* base_screen_delegate,
-                               Delegate* delegate,
-                               EulaView* view)
-    : EulaScreen(base_screen_delegate, delegate, view) {}
+                               EulaView* view,
+                               const ScreenExitCallback& exit_callback)
+    : EulaScreen(base_screen_delegate, view, exit_callback) {}
 
 MockEulaScreen::~MockEulaScreen() {}
+
+void MockEulaScreen::ExitScreen(Result result) {
+  exit_callback()->Run(result);
+}
 
 MockEulaView::MockEulaView() {
   EXPECT_CALL(*this, MockBind(_)).Times(AtLeast(1));

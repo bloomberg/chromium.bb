@@ -617,7 +617,9 @@ class WizardControllerFlowTest : public WizardControllerTest {
     mock_eula_view_ = std::make_unique<MockEulaView>();
     mock_eula_screen_ =
         MockScreenExpectLifecycle(std::make_unique<MockEulaScreen>(
-            wizard_controller, wizard_controller, mock_eula_view_.get()));
+            wizard_controller, mock_eula_view_.get(),
+            base::BindRepeating(&WizardController::OnEulaScreenExit,
+                                base::Unretained(wizard_controller))));
 
     mock_enrollment_screen_view_ = std::make_unique<MockEnrollmentScreenView>();
     mock_enrollment_screen_ =
@@ -771,7 +773,8 @@ class WizardControllerFlowTest : public WizardControllerTest {
     EXPECT_CALL(*mock_update_screen_, Show()).Times(1);
     // Enable TimeZone resolve
     InitTimezoneResolver();
-    OnExit(ScreenExitCode::EULA_ACCEPTED);
+    mock_eula_screen_->ExitScreen(
+        EulaScreen::Result::ACCEPTED_WITHOUT_USAGE_STATS_REPORTING);
     EXPECT_TRUE(GetGeolocationProvider());
 
     // Let update screen smooth time process (time = 0ms).
@@ -873,7 +876,8 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest,
   EXPECT_CALL(*mock_eula_screen_, Hide()).Times(1);
   EXPECT_CALL(*mock_update_screen_, StartNetworkCheck()).Times(1);
   EXPECT_CALL(*mock_update_screen_, Show()).Times(1);
-  OnExit(ScreenExitCode::EULA_ACCEPTED);
+  mock_eula_screen_->ExitScreen(
+      EulaScreen::Result::ACCEPTED_WITHOUT_USAGE_STATS_REPORTING);
 
   // Let update screen smooth time process (time = 0ms).
   content::RunAllPendingInMessageLoop();
@@ -913,7 +917,8 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest,
   EXPECT_CALL(*mock_eula_screen_, Hide()).Times(1);
   EXPECT_CALL(*mock_update_screen_, StartNetworkCheck()).Times(1);
   EXPECT_CALL(*mock_update_screen_, Show()).Times(1);
-  OnExit(ScreenExitCode::EULA_ACCEPTED);
+  mock_eula_screen_->ExitScreen(
+      EulaScreen::Result::ACCEPTED_WITHOUT_USAGE_STATS_REPORTING);
 
   // Let update screen smooth time process (time = 0ms).
   content::RunAllPendingInMessageLoop();
@@ -953,7 +958,8 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowSkipUpdateEnroll) {
                   EnrollmentModeMatches(policy::EnrollmentConfig::MODE_MANUAL)))
       .Times(1);
   EXPECT_CALL(*mock_auto_enrollment_check_screen_, Show()).Times(1);
-  OnExit(ScreenExitCode::EULA_ACCEPTED);
+  mock_eula_screen_->ExitScreen(
+      EulaScreen::Result::ACCEPTED_WITHOUT_USAGE_STATS_REPORTING);
   content::RunAllPendingInMessageLoop();
 
   CheckCurrentScreen(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK);
@@ -985,7 +991,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowEulaDeclined) {
   CheckCurrentScreen(OobeScreen::SCREEN_OOBE_EULA);
   EXPECT_CALL(*mock_network_screen_, Show()).Times(1);
   EXPECT_CALL(*mock_eula_screen_, Hide()).Times(1);
-  OnExit(ScreenExitCode::EULA_BACK);
+  mock_eula_screen_->ExitScreen(EulaScreen::Result::BACK);
 
   CheckCurrentScreen(OobeScreen::SCREEN_OOBE_NETWORK);
 }
@@ -1066,7 +1072,8 @@ IN_PROC_BROWSER_TEST_P(WizardControllerUpdateAfterCompletedOobeTest,
   EXPECT_CALL(*mock_eula_screen_, Hide()).Times(1);
   EXPECT_CALL(*mock_update_screen_, StartNetworkCheck()).Times(1);
   EXPECT_CALL(*mock_update_screen_, Show()).Times(1);
-  OnExit(ScreenExitCode::EULA_ACCEPTED);
+  mock_eula_screen_->ExitScreen(
+      EulaScreen::Result::ACCEPTED_WITHOUT_USAGE_STATS_REPORTING);
 
   // Let update screen smooth time process (time = 0ms).
   content::RunAllPendingInMessageLoop();
@@ -1195,7 +1202,8 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateTest,
   EXPECT_CALL(*mock_eula_screen_, Hide()).Times(1);
   EXPECT_CALL(*mock_update_screen_, StartNetworkCheck()).Times(1);
   EXPECT_CALL(*mock_update_screen_, Show()).Times(1);
-  OnExit(ScreenExitCode::EULA_ACCEPTED);
+  mock_eula_screen_->ExitScreen(
+      EulaScreen::Result::ACCEPTED_WITHOUT_USAGE_STATS_REPORTING);
 
   // Let update screen smooth time process (time = 0ms).
   content::RunAllPendingInMessageLoop();
@@ -1240,7 +1248,8 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateTest,
   EXPECT_CALL(*mock_eula_screen_, Hide()).Times(1);
   EXPECT_CALL(*mock_update_screen_, StartNetworkCheck()).Times(1);
   EXPECT_CALL(*mock_update_screen_, Show()).Times(1);
-  OnExit(ScreenExitCode::EULA_ACCEPTED);
+  mock_eula_screen_->ExitScreen(
+      EulaScreen::Result::ACCEPTED_WITHOUT_USAGE_STATS_REPORTING);
 
   // Let update screen smooth time process (time = 0ms).
   content::RunAllPendingInMessageLoop();
@@ -1338,7 +1347,8 @@ IN_PROC_BROWSER_TEST_P(WizardControllerDeviceStateExplicitRequirementTest,
   EXPECT_CALL(*mock_eula_screen_, Hide()).Times(1);
   EXPECT_CALL(*mock_update_screen_, StartNetworkCheck()).Times(1);
   EXPECT_CALL(*mock_update_screen_, Show()).Times(1);
-  OnExit(ScreenExitCode::EULA_ACCEPTED);
+  mock_eula_screen_->ExitScreen(
+      EulaScreen::Result::ACCEPTED_WITHOUT_USAGE_STATS_REPORTING);
 
   // Let update screen smooth time process (time = 0ms).
   base::RunLoop().RunUntilIdle();
@@ -1436,7 +1446,8 @@ IN_PROC_BROWSER_TEST_P(WizardControllerDeviceStateExplicitRequirementTest,
   EXPECT_CALL(*mock_eula_screen_, Hide()).Times(1);
   EXPECT_CALL(*mock_update_screen_, StartNetworkCheck()).Times(1);
   EXPECT_CALL(*mock_update_screen_, Show()).Times(1);
-  OnExit(ScreenExitCode::EULA_ACCEPTED);
+  mock_eula_screen_->ExitScreen(
+      EulaScreen::Result::ACCEPTED_WITHOUT_USAGE_STATS_REPORTING);
 
   // Let update screen smooth time process (time = 0ms).
   base::RunLoop().RunUntilIdle();
@@ -1580,7 +1591,8 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateWithInitialEnrollmentTest,
   EXPECT_CALL(*mock_eula_screen_, Hide()).Times(1);
   EXPECT_CALL(*mock_update_screen_, StartNetworkCheck()).Times(1);
   EXPECT_CALL(*mock_update_screen_, Show()).Times(1);
-  OnExit(ScreenExitCode::EULA_ACCEPTED);
+  mock_eula_screen_->ExitScreen(
+      EulaScreen::Result::ACCEPTED_WITHOUT_USAGE_STATS_REPORTING);
 
   // Let update screen smooth time process (time = 0ms).
   base::RunLoop().RunUntilIdle();
@@ -1654,7 +1666,8 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateWithInitialEnrollmentTest,
   EXPECT_CALL(*mock_eula_screen_, Hide()).Times(1);
   EXPECT_CALL(*mock_update_screen_, StartNetworkCheck()).Times(1);
   EXPECT_CALL(*mock_update_screen_, Show()).Times(1);
-  OnExit(ScreenExitCode::EULA_ACCEPTED);
+  mock_eula_screen_->ExitScreen(
+      EulaScreen::Result::ACCEPTED_WITHOUT_USAGE_STATS_REPORTING);
 
   // Let update screen smooth time process (time = 0ms).
   base::RunLoop().RunUntilIdle();
@@ -1749,7 +1762,8 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateWithInitialEnrollmentTest,
   EXPECT_CALL(*mock_eula_screen_, Hide()).Times(1);
   EXPECT_CALL(*mock_update_screen_, StartNetworkCheck()).Times(1);
   EXPECT_CALL(*mock_update_screen_, Show()).Times(1);
-  OnExit(ScreenExitCode::EULA_ACCEPTED);
+  mock_eula_screen_->ExitScreen(
+      EulaScreen::Result::ACCEPTED_WITHOUT_USAGE_STATS_REPORTING);
 
   // Let update screen smooth time process (time = 0ms).
   base::RunLoop().RunUntilIdle();
@@ -1793,7 +1807,8 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateWithInitialEnrollmentTest,
   EXPECT_CALL(*mock_eula_screen_, Hide()).Times(1);
   EXPECT_CALL(*mock_update_screen_, StartNetworkCheck()).Times(1);
   EXPECT_CALL(*mock_update_screen_, Show()).Times(1);
-  OnExit(ScreenExitCode::EULA_ACCEPTED);
+  mock_eula_screen_->ExitScreen(
+      EulaScreen::Result::ACCEPTED_WITHOUT_USAGE_STATS_REPORTING);
 
   // Let update screen smooth time process (time = 0ms).
   base::RunLoop().RunUntilIdle();
@@ -1849,7 +1864,8 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateWithInitialEnrollmentTest,
   EXPECT_CALL(*mock_eula_screen_, Hide()).Times(1);
   EXPECT_CALL(*mock_update_screen_, StartNetworkCheck()).Times(1);
   EXPECT_CALL(*mock_update_screen_, Show()).Times(1);
-  OnExit(ScreenExitCode::EULA_ACCEPTED);
+  mock_eula_screen_->ExitScreen(
+      EulaScreen::Result::ACCEPTED_WITHOUT_USAGE_STATS_REPORTING);
 
   // Let update screen smooth time process (time = 0ms).
   task_runner->RunUntilIdle();
@@ -1905,7 +1921,8 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateWithInitialEnrollmentTest,
   EXPECT_CALL(*mock_eula_screen_, Hide()).Times(1);
   EXPECT_CALL(*mock_update_screen_, StartNetworkCheck()).Times(1);
   EXPECT_CALL(*mock_update_screen_, Show()).Times(1);
-  OnExit(ScreenExitCode::EULA_ACCEPTED);
+  mock_eula_screen_->ExitScreen(
+      EulaScreen::Result::ACCEPTED_WITHOUT_USAGE_STATS_REPORTING);
 
   // Let update screen smooth time process (time = 0ms).
   base::RunLoop().RunUntilIdle();
@@ -1987,7 +2004,8 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateWithInitialEnrollmentTest,
   EXPECT_CALL(*mock_eula_screen_, Hide()).Times(1);
   EXPECT_CALL(*mock_update_screen_, StartNetworkCheck()).Times(1);
   EXPECT_CALL(*mock_update_screen_, Show()).Times(1);
-  OnExit(ScreenExitCode::EULA_ACCEPTED);
+  mock_eula_screen_->ExitScreen(
+      EulaScreen::Result::ACCEPTED_WITHOUT_USAGE_STATS_REPORTING);
 
   // Let update screen smooth time process (time = 0ms).
   base::RunLoop().RunUntilIdle();
@@ -2152,7 +2170,8 @@ IN_PROC_BROWSER_TEST_F(WizardControllerKioskFlowTest,
   EXPECT_CALL(*mock_eula_screen_, Hide()).Times(1);
   EXPECT_CALL(*mock_update_screen_, StartNetworkCheck()).Times(1);
   EXPECT_CALL(*mock_update_screen_, Show()).Times(1);
-  OnExit(ScreenExitCode::EULA_ACCEPTED);
+  mock_eula_screen_->ExitScreen(
+      EulaScreen::Result::ACCEPTED_WITHOUT_USAGE_STATS_REPORTING);
 
   // Let update screen smooth time process (time = 0ms).
   content::RunAllPendingInMessageLoop();
@@ -2200,7 +2219,8 @@ IN_PROC_BROWSER_TEST_F(WizardControllerKioskFlowTest,
   EXPECT_CALL(*mock_eula_screen_, Hide()).Times(1);
   EXPECT_CALL(*mock_update_screen_, StartNetworkCheck()).Times(1);
   EXPECT_CALL(*mock_update_screen_, Show()).Times(1);
-  OnExit(ScreenExitCode::EULA_ACCEPTED);
+  mock_eula_screen_->ExitScreen(
+      EulaScreen::Result::ACCEPTED_WITHOUT_USAGE_STATS_REPORTING);
 
   // Let update screen smooth time process (time = 0ms).
   content::RunAllPendingInMessageLoop();
@@ -2327,7 +2347,8 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupTest,
   EXPECT_CALL(*mock_eula_screen_, Hide()).Times(1);
   EXPECT_CALL(*mock_arc_terms_of_service_screen_, Show()).Times(1);
 
-  OnExit(ScreenExitCode::EULA_ACCEPTED);
+  mock_eula_screen_->ExitScreen(
+      EulaScreen::Result::ACCEPTED_WITHOUT_USAGE_STATS_REPORTING);
 
   CheckCurrentScreen(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE);
   EXPECT_TRUE(DemoSetupController::IsOobeDemoSetupFlowInProgress());
@@ -2399,7 +2420,8 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupTest,
   EXPECT_CALL(*mock_eula_screen_, Hide()).Times(1);
   EXPECT_CALL(*mock_arc_terms_of_service_screen_, Show()).Times(1);
 
-  OnExit(ScreenExitCode::EULA_ACCEPTED);
+  mock_eula_screen_->ExitScreen(
+      EulaScreen::Result::ACCEPTED_WITHOUT_USAGE_STATS_REPORTING);
 
   CheckCurrentScreen(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE);
   EXPECT_TRUE(DemoSetupController::IsOobeDemoSetupFlowInProgress());
@@ -2454,7 +2476,8 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupTest, DemoSetupCanceled) {
   EXPECT_CALL(*mock_eula_screen_, Hide()).Times(1);
   EXPECT_CALL(*mock_arc_terms_of_service_screen_, Show()).Times(1);
 
-  OnExit(ScreenExitCode::EULA_ACCEPTED);
+  mock_eula_screen_->ExitScreen(
+      EulaScreen::Result::ACCEPTED_WITHOUT_USAGE_STATS_REPORTING);
 
   CheckCurrentScreen(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE);
   EXPECT_TRUE(DemoSetupController::IsOobeDemoSetupFlowInProgress());
@@ -2545,7 +2568,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupTest, EulaBackPressed) {
   EXPECT_CALL(*mock_eula_screen_, Hide()).Times(1);
   EXPECT_CALL(*mock_network_screen_, Show()).Times(1);
 
-  OnExit(ScreenExitCode::EULA_BACK);
+  mock_eula_screen_->ExitScreen(EulaScreen::Result::BACK);
 
   CheckCurrentScreen(OobeScreen::SCREEN_OOBE_NETWORK);
   EXPECT_TRUE(DemoSetupController::IsOobeDemoSetupFlowInProgress());
@@ -2624,7 +2647,8 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupDeviceDisabledTest,
   EXPECT_CALL(*mock_eula_screen_, Hide()).Times(1);
   EXPECT_CALL(*mock_arc_terms_of_service_screen_, Show()).Times(1);
 
-  OnExit(ScreenExitCode::EULA_ACCEPTED);
+  mock_eula_screen_->ExitScreen(
+      EulaScreen::Result::ACCEPTED_WITHOUT_USAGE_STATS_REPORTING);
 
   CheckCurrentScreen(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE);
   EXPECT_TRUE(DemoSetupController::IsOobeDemoSetupFlowInProgress());

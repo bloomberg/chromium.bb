@@ -26,9 +26,9 @@ std::string ExitCodeToString(ScreenExitCode code) {
       return "UPDATE_ERROR_UPDATING";
     case ScreenExitCode::USER_IMAGE_SELECTED:
       return "USER_IMAGE_SELECTED";
-    case ScreenExitCode::EULA_ACCEPTED:
+    case ScreenExitCode::DEPRECATED_EULA_ACCEPTED:
       return "EULA_ACCEPTED";
-    case ScreenExitCode::EULA_BACK:
+    case ScreenExitCode::DEPRECATED_EULA_BACK:
       return "EULA_BACK";
     case ScreenExitCode::DEPRECATED_ENTERPRISE_AUTO_ENROLLMENT_CHECK_COMPLETED:
       return "ENTERPRISE_AUTO_ENROLLMENT_CHECK_COMPLETED";

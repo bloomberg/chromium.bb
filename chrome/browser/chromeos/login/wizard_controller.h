@@ -51,7 +51,6 @@ struct TimeZoneResponseData;
 // Class that manages control flow between wizard screens. Wizard controller
 // interacts with screen controllers to move the user between screens.
 class WizardController : public BaseScreenDelegate,
-                         public EulaScreen::Delegate,
                          public WelcomeScreen::Delegate,
                          public HIDDetectionScreen::Delegate {
  public:
@@ -199,6 +198,8 @@ class WizardController : public BaseScreenDelegate,
   // Exit handlers:
   void OnNetworkScreenExit(NetworkScreen::Result result);
   bool ShowEulaOrArcTosAfterNetworkScreen();
+  void OnEulaScreenExit(EulaScreen::Result result);
+  void OnEulaAccepted(bool usage_statistics_reporting_enabled);
   void OnUpdateScreenExit(UpdateScreen::Result result);
   void OnUpdateCompleted();
   void OnAutoEnrollmentCheckScreenExit();
@@ -207,8 +208,6 @@ class WizardController : public BaseScreenDelegate,
   void OnHIDDetectionCompleted();
   void OnWelcomeContinued();
   void OnConnectionFailed();
-  void OnEulaAccepted();
-  void OnEulaBack();
   void OnUserImageSelected();
   void OnDeviceModificationCanceled();
   void OnKioskAutolaunchCanceled();
@@ -264,10 +263,6 @@ class WizardController : public BaseScreenDelegate,
   ErrorScreen* GetErrorScreen() override;
   void ShowErrorScreen() override;
   void HideErrorScreen(BaseScreen* parent_screen) override;
-
-  // Overridden from EulaScreen::Delegate:
-  void SetUsageStatisticsReporting(bool val) override;
-  bool GetUsageStatisticsReporting() const override;
 
   // Override from WelcomeScreen::Delegate:
   void OnEnableDebuggingScreenRequested() override;
@@ -373,10 +368,6 @@ class WizardController : public BaseScreenDelegate,
   OobeScreen first_screen_;
 
   base::OneShotTimer smooth_show_timer_;
-
-  // State of Usage stat/error reporting checkbox on EULA screen
-  // during wizard lifetime.
-  bool usage_statistics_reporting_ = true;
 
   // If true then update check is cancelled and enrollment is started after
   // EULA is accepted.

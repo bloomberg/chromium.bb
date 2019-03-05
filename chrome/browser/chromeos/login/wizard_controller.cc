@@ -389,7 +389,10 @@ std::unique_ptr<BaseScreen> WizardController::CreateScreen(OobeScreen screen) {
   } else if (screen == OobeScreen::SCREEN_USER_IMAGE_PICKER) {
     return std::make_unique<UserImageScreen>(this, oobe_ui->GetUserImageView());
   } else if (screen == OobeScreen::SCREEN_OOBE_EULA) {
-    return std::make_unique<EulaScreen>(this, this, oobe_ui->GetEulaView());
+    return std::make_unique<EulaScreen>(
+        this, oobe_ui->GetEulaView(),
+        base::BindRepeating(&WizardController::OnEulaScreenExit,
+                            weak_factory_.GetWeakPtr()));
   } else if (screen == OobeScreen::SCREEN_OOBE_ENROLLMENT) {
     return std::make_unique<EnrollmentScreen>(
         this, oobe_ui->GetEnrollmentScreenView(),
@@ -804,6 +807,46 @@ bool WizardController::ShowEulaOrArcTosAfterNetworkScreen() {
   return false;
 }
 
+void WizardController::OnEulaScreenExit(EulaScreen::Result result) {
+  VLOG(1) << "EULA screen exit: " << static_cast<int>(result);
+  OnScreenExit(OobeScreen::SCREEN_OOBE_EULA);
+
+  switch (result) {
+    case EulaScreen::Result::ACCEPTED_WITH_USAGE_STATS_REPORTING:
+      OnEulaAccepted(true /*usage_statistics_reporting_enabled*/);
+      break;
+    case EulaScreen::Result::ACCEPTED_WITHOUT_USAGE_STATS_REPORTING:
+      OnEulaAccepted(false /*usage_statistics_reporting_enabled*/);
+      break;
+    case EulaScreen::Result::BACK:
+      ShowNetworkScreen();
+      break;
+  }
+}
+
+void WizardController::OnEulaAccepted(bool usage_statistics_reporting_enabled) {
+  time_eula_accepted_ = base::Time::Now();
+  StartupUtils::MarkEulaAccepted();
+  ChangeMetricsReportingStateWithReply(
+      usage_statistics_reporting_enabled,
+      base::BindRepeating(&WizardController::OnChangedMetricsReportingState,
+                          weak_factory_.GetWeakPtr()));
+  PerformPostEulaActions();
+
+  if (arc::IsArcTermsOfServiceOobeNegotiationNeeded()) {
+    ShowArcTermsOfServiceScreen();
+    return;
+  } else if (demo_setup_controller_) {
+    ShowDemoModeSetupScreen();
+  }
+
+  if (skip_update_enroll_after_eula_) {
+    ShowAutoEnrollmentCheckScreen();
+  } else {
+    InitiateOOBEUpdate();
+  }
+}
+
 void WizardController::OnUpdateScreenExit(UpdateScreen::Result result) {
   VLOG(1) << "Update screen exit: " << static_cast<int>(result);
   OnScreenExit(OobeScreen::SCREEN_OOBE_UPDATE);
@@ -893,33 +936,6 @@ void WizardController::OnWelcomeContinued() {
 void WizardController::OnConnectionFailed() {
   // TODO(dpolukhin): show error message after login screen is displayed.
   ShowLoginScreen(LoginScreenContext());
-}
-
-void WizardController::OnEulaAccepted() {
-  time_eula_accepted_ = base::Time::Now();
-  StartupUtils::MarkEulaAccepted();
-  ChangeMetricsReportingStateWithReply(
-      usage_statistics_reporting_,
-      base::Bind(&WizardController::OnChangedMetricsReportingState,
-                 weak_factory_.GetWeakPtr()));
-  PerformPostEulaActions();
-
-  if (arc::IsArcTermsOfServiceOobeNegotiationNeeded()) {
-    ShowArcTermsOfServiceScreen();
-    return;
-  } else if (demo_setup_controller_) {
-    ShowDemoModeSetupScreen();
-  }
-
-  if (skip_update_enroll_after_eula_) {
-    ShowAutoEnrollmentCheckScreen();
-  } else {
-    InitiateOOBEUpdate();
-  }
-}
-
-void WizardController::OnEulaBack() {
-  ShowNetworkScreen();
 }
 
 void WizardController::OnChangedMetricsReportingState(bool enabled) {
@@ -1446,12 +1462,6 @@ void WizardController::OnExit(ScreenExitCode exit_code) {
     case ScreenExitCode::USER_IMAGE_SELECTED:
       OnUserImageSelected();
       break;
-    case ScreenExitCode::EULA_ACCEPTED:
-      OnEulaAccepted();
-      break;
-    case ScreenExitCode::EULA_BACK:
-      OnEulaBack();
-      break;
     case ScreenExitCode::ENABLE_DEBUGGING_CANCELED:
       OnDeviceModificationCanceled();
       break;
@@ -1544,14 +1554,6 @@ void WizardController::HideErrorScreen(BaseScreen* parent_screen) {
   DCHECK(parent_screen);
   VLOG(1) << "Hiding error screen.";
   SetCurrentScreen(parent_screen);
-}
-
-void WizardController::SetUsageStatisticsReporting(bool val) {
-  usage_statistics_reporting_ = val;
-}
-
-bool WizardController::GetUsageStatisticsReporting() const {
-  return usage_statistics_reporting_;
 }
 
 void WizardController::OnEnableDebuggingScreenRequested() {
