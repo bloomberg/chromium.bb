@@ -82,7 +82,7 @@ void IconWithBadgeImageSource::Draw(gfx::Canvas* canvas) {
         rep, ExtensionAction::ActionIconSize(), canvas->image_scale()));
   }
   if (grayscale_)
-    skia = gfx::ImageSkiaOperations::CreateHSLShiftedImage(skia, {-1, 0, 0.75});
+    skia = gfx::ImageSkiaOperations::CreateHSLShiftedImage(skia, {-1, 0, 0.6});
 
   int x_offset =
       std::floor((size().width() - ExtensionAction::ActionIconSize()) / 2.0);

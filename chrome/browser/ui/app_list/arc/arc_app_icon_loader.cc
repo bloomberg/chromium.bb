@@ -58,7 +58,7 @@ void ArcAppIconLoader::UpdateImage(const std::string& app_id) {
       arc_prefs_->GetApp(app_id);
   if (app_info && app_info->suspended) {
     image =
-        gfx::ImageSkiaOperations::CreateHSLShiftedImage(image, {-1, 0, 0.75});
+        gfx::ImageSkiaOperations::CreateHSLShiftedImage(image, {-1, 0, 0.6});
   }
 
   delegate()->OnAppImageUpdated(app_id, image);
