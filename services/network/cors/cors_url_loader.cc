@@ -346,7 +346,11 @@ void CorsURLLoader::OnStartLoadingResponseBody(
 void CorsURLLoader::OnComplete(const URLLoaderCompletionStatus& status) {
   DCHECK(network_loader_);
   DCHECK(forwarding_client_);
-  DCHECK(!deferred_redirect_url_);
+
+  // |network_loader_| will call OnComplete at anytime when a problem happens
+  // inside the URLLoader, e.g. on URLLoader::OnConnectionError call. We need
+  // to expect it also happens even during redirect handling.
+  DCHECK(!deferred_redirect_url_ || status.error_code != net::OK);
 
   URLLoaderCompletionStatus modified_status(status);
   if (status.error_code == net::OK)
