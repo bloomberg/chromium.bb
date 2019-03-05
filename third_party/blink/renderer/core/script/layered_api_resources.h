@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/public/resources/grit/blink_resources.h"
-#include "third_party/blink/renderer/core/script/layered_api.h"
+#include "third_party/blink/renderer/core/script/layered_api_module.h"
 
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SCRIPT_LAYERED_API_RESOURCES_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SCRIPT_LAYERED_API_RESOURCES_H_
@@ -20,28 +20,42 @@ namespace layered_api {
 
 namespace {
 
+struct LayeredAPIResource {
+  const char* path;
+  int resource_id;
+  Module module;
+};
+
 const LayeredAPIResource kLayeredAPIResources[] = {
-    {"blank/index.js", IDR_LAYERED_API_BLANK_INDEX_JS},
+    {"blank/index.js", IDR_LAYERED_API_BLANK_INDEX_JS, Module::kBlank},
 
     {"kv-storage/async_iterator.js",
-     IDR_LAYERED_API_KV_STORAGE_ASYNC_ITERATOR_JS},
-    {"kv-storage/idb_utils.js", IDR_LAYERED_API_KV_STORAGE_IDB_UTILS_JS},
-    {"kv-storage/index.js", IDR_LAYERED_API_KV_STORAGE_INDEX_JS},
+     IDR_LAYERED_API_KV_STORAGE_ASYNC_ITERATOR_JS, Module::kKvStorage},
+    {"kv-storage/idb_utils.js", IDR_LAYERED_API_KV_STORAGE_IDB_UTILS_JS,
+     Module::kKvStorage},
+    {"kv-storage/index.js", IDR_LAYERED_API_KV_STORAGE_INDEX_JS,
+     Module::kKvStorage},
 
-    {"virtual-scroller/index.js", IDR_LAYERED_API_VIRTUAL_SCROLLER_INDEX_JS},
+    {"virtual-scroller/index.js", IDR_LAYERED_API_VIRTUAL_SCROLLER_INDEX_JS,
+     Module::kVirtualScroller},
     {"virtual-scroller/item-source.js",
-     IDR_LAYERED_API_VIRTUAL_SCROLLER_ITEM_SOURCE_JS},
+     IDR_LAYERED_API_VIRTUAL_SCROLLER_ITEM_SOURCE_JS, Module::kVirtualScroller},
     {"virtual-scroller/virtual-repeater.js",
-     IDR_LAYERED_API_VIRTUAL_SCROLLER_VIRTUAL_REPEATER_JS},
+     IDR_LAYERED_API_VIRTUAL_SCROLLER_VIRTUAL_REPEATER_JS,
+     Module::kVirtualScroller},
     {"virtual-scroller/virtual-scroller.js",
-     IDR_LAYERED_API_VIRTUAL_SCROLLER_VIRTUAL_SCROLLER_JS},
+     IDR_LAYERED_API_VIRTUAL_SCROLLER_VIRTUAL_SCROLLER_JS,
+     Module::kVirtualScroller},
 
     {"virtual-scroller/layouts/layout-1d-base.js",
-     IDR_LAYERED_API_VIRTUAL_SCROLLER_LAYOUTS_LAYOUT_1D_BASE_JS},
+     IDR_LAYERED_API_VIRTUAL_SCROLLER_LAYOUTS_LAYOUT_1D_BASE_JS,
+     Module::kVirtualScroller},
     {"virtual-scroller/layouts/layout-1d-grid.js",
-     IDR_LAYERED_API_VIRTUAL_SCROLLER_LAYOUTS_LAYOUT_1D_GRID_JS},
+     IDR_LAYERED_API_VIRTUAL_SCROLLER_LAYOUTS_LAYOUT_1D_GRID_JS,
+     Module::kVirtualScroller},
     {"virtual-scroller/layouts/layout-1d.js",
-     IDR_LAYERED_API_VIRTUAL_SCROLLER_LAYOUTS_LAYOUT_1D_JS},
+     IDR_LAYERED_API_VIRTUAL_SCROLLER_LAYOUTS_LAYOUT_1D_JS,
+     Module::kVirtualScroller},
 
 };
 
