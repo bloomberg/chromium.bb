@@ -259,7 +259,7 @@ MutableCSSPropertyValueSet& StyleRule::MutableProperties() {
   // Ensure properties_ is initialized.
   if (!Properties().IsMutable())
     properties_ = properties_->MutableCopy();
-  return *ToMutableCSSPropertyValueSet(properties_.Get());
+  return *To<MutableCSSPropertyValueSet>(properties_.Get());
 }
 
 bool StyleRule::PropertiesHaveFailedOrCanceledSubresources() const {
@@ -302,7 +302,7 @@ StyleRulePage::~StyleRulePage() = default;
 MutableCSSPropertyValueSet& StyleRulePage::MutableProperties() {
   if (!properties_->IsMutable())
     properties_ = properties_->MutableCopy();
-  return *ToMutableCSSPropertyValueSet(properties_.Get());
+  return *To<MutableCSSPropertyValueSet>(properties_.Get());
 }
 
 void StyleRulePage::TraceAfterDispatch(blink::Visitor* visitor) {
@@ -322,7 +322,7 @@ StyleRuleFontFace::~StyleRuleFontFace() = default;
 MutableCSSPropertyValueSet& StyleRuleFontFace::MutableProperties() {
   if (!properties_->IsMutable())
     properties_ = properties_->MutableCopy();
-  return *ToMutableCSSPropertyValueSet(properties_);
+  return *To<MutableCSSPropertyValueSet>(properties_.Get());
 }
 
 void StyleRuleFontFace::TraceAfterDispatch(blink::Visitor* visitor) {
@@ -406,7 +406,7 @@ StyleRuleViewport::~StyleRuleViewport() = default;
 MutableCSSPropertyValueSet& StyleRuleViewport::MutableProperties() {
   if (!properties_->IsMutable())
     properties_ = properties_->MutableCopy();
-  return *ToMutableCSSPropertyValueSet(properties_);
+  return *To<MutableCSSPropertyValueSet>(properties_.Get());
 }
 
 void StyleRuleViewport::TraceAfterDispatch(blink::Visitor* visitor) {

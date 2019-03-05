@@ -2057,13 +2057,10 @@ InspectorCSSAgent::BuildObjectForAttributesStyle(Element* element) {
     return nullptr;
 
   // FIXME: Ugliness below.
-  CSSPropertyValueSet* attribute_style =
-      const_cast<CSSPropertyValueSet*>(element->PresentationAttributeStyle());
-  if (!attribute_style)
+  auto* mutable_attribute_style = DynamicTo<MutableCSSPropertyValueSet>(
+      const_cast<CSSPropertyValueSet*>(element->PresentationAttributeStyle()));
+  if (!mutable_attribute_style)
     return nullptr;
-
-  MutableCSSPropertyValueSet* mutable_attribute_style =
-      ToMutableCSSPropertyValueSet(attribute_style);
 
   InspectorStyle* inspector_style = InspectorStyle::Create(
       mutable_attribute_style->EnsureCSSStyleDeclaration(), nullptr, nullptr);
