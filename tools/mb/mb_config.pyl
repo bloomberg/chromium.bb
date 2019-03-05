@@ -122,7 +122,6 @@
       'CFI Linux ToT': 'clang_tot_cfi_full_cfi_diag_thin_lto_release_static_dcheck_always_on',
       'CrWinAsan': 'asan_clang_fuzzer_static_v8_heap_minimal_symbols_release_tot',
       'CrWinAsan(dll)': 'asan_clang_shared_v8_heap_minimal_symbols_release_tot',
-      'CrWinAsanCov': 'asan_clang_edge_fuzzer_static_v8_heap_minimal_symbols_release_tot',
 
       'linux-win_cross-rel': 'clang_tot_win_release_cross',
       'ToTAndroid': 'android_clang_tot_release_minimal_symbols',
@@ -1046,10 +1045,6 @@
 
     'android_without_codecs_release_trybot_minimal_symbols': [
       'android_without_codecs', 'release_trybot', 'minimal_symbols', 'strip_debug_info',
-    ],
-
-    'asan_clang_edge_fuzzer_static_v8_heap_minimal_symbols_release_tot': [
-      'asan', 'clang_tot', 'edge', 'fuzzer', 'static', 'v8_heap', 'minimal_symbols', 'release',
     ],
 
     'asan_clang_shared_v8_heap_minimal_symbols_release_tot': [

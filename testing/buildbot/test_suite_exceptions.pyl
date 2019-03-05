@@ -77,7 +77,6 @@
     'remove_from': [
       # chromium.clang
       'CrWinAsan(dll)', # https://crbug.com/935598
-      'CrWinAsanCov',
       'linux-win_cross-rel',
       'ToTLinuxTSan',  # https://crbug.com/368525
       # chromium.memory
