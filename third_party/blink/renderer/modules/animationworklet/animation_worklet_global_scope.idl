@@ -9,7 +9,11 @@
     Global=(Worklet,AnimationWorklet),
     OriginTrialEnabled=AnimationWorklet
 ] interface AnimationWorkletGlobalScope : WorkletGlobalScope {
-    // TODO(yukishiino): |animatorConstructor| should be of callback function
-    // type (should be: callback T = any ()).
-    [MeasureAs=AnimationWorkletRegisterAnimator, RaisesException] void registerAnimator(DOMString name, CallbackFunctionTreatedAsScriptValue animatorConstructor);
+    [MeasureAs=AnimationWorkletRegisterAnimator, RaisesException] void registerAnimator(DOMString name, AnimatorConstructor animatorCtor);
 };
+
+// Blink-specific types
+// https://wicg.github.io/animation-worklet/#create-a-new-animator-instance
+callback AnimatorConstructor = any (any options);
+// https://wicg.github.io/animation-worklet/#run-animators
+callback AnimateCallback = void (double currentTime, (EffectProxy or WorkletGroupEffectProxy) effect);

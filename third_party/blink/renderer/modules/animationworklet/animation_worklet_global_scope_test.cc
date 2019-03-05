@@ -135,9 +135,6 @@ class AnimationWorkletGlobalScopeTest : public PageTestBase {
       AnimatorDefinition* definition =
           global_scope->FindDefinitionForTest("test");
       ASSERT_TRUE(definition);
-
-      EXPECT_TRUE(definition->ConstructorLocal(isolate)->IsFunction());
-      EXPECT_TRUE(definition->AnimateLocal(isolate)->IsFunction());
     }
 
     {

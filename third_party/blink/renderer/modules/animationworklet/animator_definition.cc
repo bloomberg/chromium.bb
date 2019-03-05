@@ -4,21 +4,19 @@
 
 #include "third_party/blink/renderer/modules/animationworklet/animator_definition.h"
 
-#include "third_party/blink/renderer/core/execution_context/execution_context.h"
-#include "third_party/blink/renderer/modules/animationworklet/animator.h"
-#include "third_party/blink/renderer/platform/bindings/script_state.h"
-#include "third_party/blink/renderer/platform/bindings/v8_binding.h"
-#include "third_party/blink/renderer/platform/bindings/v8_object_constructor.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_function.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_animate_callback.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_animator_constructor.h"
 
 namespace blink {
 
-AnimatorDefinition::AnimatorDefinition(v8::Isolate* isolate,
-                                       v8::Local<v8::Function> constructor,
-                                       v8::Local<v8::Function> animate,
-                                       v8::Local<v8::Function> state)
-    : constructor_(isolate, constructor),
-      animate_(isolate, animate),
-      state_(isolate, state) {}
+AnimatorDefinition::AnimatorDefinition(V8AnimatorConstructor* constructor,
+                                       V8AnimateCallback* animate,
+                                       V8Function* state)
+    : constructor_(constructor), animate_(animate), state_(state) {
+  DCHECK(constructor_);
+  DCHECK(animate_);
+}
 
 AnimatorDefinition::~AnimatorDefinition() = default;
 
@@ -26,15 +24,6 @@ void AnimatorDefinition::Trace(Visitor* visitor) {
   visitor->Trace(constructor_);
   visitor->Trace(animate_);
   visitor->Trace(state_);
-}
-
-v8::Local<v8::Function> AnimatorDefinition::ConstructorLocal(
-    v8::Isolate* isolate) {
-  return constructor_.NewLocal(isolate);
-}
-
-v8::Local<v8::Function> AnimatorDefinition::AnimateLocal(v8::Isolate* isolate) {
-  return animate_.NewLocal(isolate);
 }
 
 }  // namespace blink

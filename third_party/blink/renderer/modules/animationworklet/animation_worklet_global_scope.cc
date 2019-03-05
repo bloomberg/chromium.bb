@@ -5,12 +5,15 @@
 #include "third_party/blink/renderer/modules/animationworklet/animation_worklet_global_scope.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_object_parser.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_function.h"
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_animate_callback.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_animator_constructor.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
 #include "third_party/blink/renderer/modules/animationworklet/animation_worklet_proxy_client.h"
 #include "third_party/blink/renderer/modules/animationworklet/worklet_animation_options.h"
+#include "third_party/blink/renderer/platform/bindings/callback_method_retriever.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding_macros.h"
 #include "third_party/blink/renderer/platform/bindings/v8_object_constructor.h"
@@ -161,7 +164,7 @@ void AnimationWorkletGlobalScope::RegisterWithProxyClientIfNeeded() {
 
 void AnimationWorkletGlobalScope::registerAnimator(
     const String& name,
-    const ScriptValue& constructor_value,
+    V8AnimatorConstructor* animator_ctor,
     ExceptionState& exception_state) {
   RegisterWithProxyClientIfNeeded();
 
@@ -178,40 +181,23 @@ void AnimationWorkletGlobalScope::registerAnimator(
     return;
   }
 
-  v8::Isolate* isolate = ScriptController()->GetScriptState()->GetIsolate();
-  v8::Local<v8::Context> context = ScriptController()->GetContext();
-
-  DCHECK(constructor_value.V8Value()->IsFunction());
-  v8::Local<v8::Function> constructor =
-      v8::Local<v8::Function>::Cast(constructor_value.V8Value());
-
-  v8::Local<v8::Object> prototype;
-  if (!V8ObjectParser::ParsePrototype(context, constructor, &prototype,
-                                      &exception_state))
+  CallbackMethodRetriever retriever(animator_ctor);
+  retriever.GetPrototypeObject(exception_state);
+  if (exception_state.HadException())
     return;
-
-  v8::Local<v8::Function> animate;
-  if (!V8ObjectParser::ParseFunction(context, prototype, "animate", &animate,
-                                     &exception_state))
+  v8::Local<v8::Function> v8_animate =
+      retriever.GetMethodOrThrow("animate", exception_state);
+  if (exception_state.HadException())
     return;
+  V8AnimateCallback* animate = V8AnimateCallback::Create(v8_animate);
+  v8::Local<v8::Value> v8_state =
+      retriever.GetMethodOrUndefined("state", exception_state);
+  V8Function* state = v8_state->IsFunction()
+                          ? V8Function::Create(v8_state.As<v8::Function>())
+                          : nullptr;
 
-  // The function state is optional. We should only call ParseFunction when it's
-  // defined.
-  v8::Local<v8::Function> state;
-  v8::Local<v8::Value> function_value;
-  v8::TryCatch block(isolate);
-  if (!prototype->Get(context, V8AtomicString(isolate, "state"))
-           .ToLocal(&function_value)) {
-    exception_state.RethrowV8Exception(block.Exception());
-    return;
-  }
-  if (!function_value->IsNullOrUndefined()) {
-    V8ObjectParser::ParseFunction(context, prototype, "state", &state,
-                                  &exception_state);
-  }
-
-  AnimatorDefinition* definition = MakeGarbageCollected<AnimatorDefinition>(
-      isolate, constructor, animate, state);
+  AnimatorDefinition* definition =
+      MakeGarbageCollected<AnimatorDefinition>(animator_ctor, animate, state);
 
   // TODO(https://crbug.com/923063): Ensure worklet definitions are compatible
   // across global scopes.
@@ -235,21 +221,19 @@ Animator* AnimationWorkletGlobalScope::CreateInstance(
     return nullptr;
 
   v8::Isolate* isolate = ScriptController()->GetScriptState()->GetIsolate();
-  v8::Local<v8::Function> constructor = definition->ConstructorLocal(isolate);
-  DCHECK(!IsUndefinedOrNull(constructor));
-  v8::Local<v8::Value> value;
-  if (options && options->GetData())
-    value = options->GetData()->Deserialize(isolate);
+  v8::Local<v8::Value> v8_options =
+      options && options->GetData() ? options->GetData()->Deserialize(isolate)
+                                    : v8::Undefined(isolate).As<v8::Value>();
+  ScriptValue options_value(ScriptController()->GetScriptState(), v8_options);
 
-  v8::Local<v8::Value> instance;
-  if (!V8ScriptRunner::CallAsConstructor(
-           isolate, constructor,
-           ExecutionContext::From(ScriptController()->GetScriptState()),
-           !value.IsEmpty() ? 1 : 0, &value)
-           .ToLocal(&instance))
+  ScriptValue instance;
+  if (!definition->ConstructorFunction()
+           ->Construct(options_value)
+           .To(&instance)) {
     return nullptr;
+  }
 
-  return MakeGarbageCollected<Animator>(isolate, definition, instance,
+  return MakeGarbageCollected<Animator>(isolate, definition, instance.V8Value(),
                                         num_effects);
 }
 

@@ -89,6 +89,7 @@ ARRAY_BUFFER_AND_VIEW_TYPES = TYPED_ARRAY_TYPES.union(frozenset([
 # 'Constructor' as aliases to IDL interface object. This white list is used to
 # disable the hack.
 _CALLBACK_CONSTRUCTORS = frozenset((
+    'AnimatorConstructor',
     'CustomElementConstructor',
     'NoArgumentConstructor',
 ))
