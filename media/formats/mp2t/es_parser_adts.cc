@@ -15,7 +15,6 @@
 #include "media/base/bit_reader.h"
 #include "media/base/channel_layout.h"
 #include "media/base/encryption_pattern.h"
-#include "media/base/encryption_scheme.h"
 #include "media/base/media_util.h"
 #include "media/base/stream_parser_buffer.h"
 #include "media/base/timestamp_constants.h"
@@ -220,7 +219,7 @@ bool EsParserAdts::ParseFromEsQueue() {
             std::make_unique<DecryptConfig>(
                 base_decrypt_config->encryption_mode(),
                 base_decrypt_config->key_id(), base_decrypt_config->iv(),
-                subsamples, base_decrypt_config->encryption_pattern()));
+                subsamples, EncryptionPattern()));
       }
     }
 #endif
