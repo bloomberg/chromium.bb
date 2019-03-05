@@ -409,10 +409,10 @@ class FakePrinterProviderAPI : public PrinterProviderAPI {
 
   void DispatchGetUsbPrinterInfoRequested(
       const std::string& extension_id,
-      scoped_refptr<device::UsbDevice> device,
+      const device::mojom::UsbDeviceInfo& device,
       PrinterProviderAPI::GetPrinterInfoCallback callback) override {
     EXPECT_EQ("fake extension id", extension_id);
-    EXPECT_TRUE(device);
+    EXPECT_FALSE(device.guid.empty());
     pending_usb_info_callbacks_.push(std::move(callback));
   }
 

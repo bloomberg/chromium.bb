@@ -486,6 +486,7 @@ source_set("browser_tests") {
     "//device/base:mocks",
     "//device/bluetooth:mocks",
     "//device/usb:test_support",
+    "//device/usb/public/cpp:test_support",
     "//extensions:test_support",
     "//extensions/browser:test_support",
     "//extensions/common",
