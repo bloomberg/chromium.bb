@@ -19,6 +19,8 @@ blink_core_sources("streams") {
     "readable_stream_default_reader.h",
     "readable_stream_operations.cc",
     "readable_stream_operations.h",
+    "readable_stream_wrapper.cc",
+    "readable_stream_wrapper.h",
     "retain_wrapper_during_construction.cc",
     "retain_wrapper_during_construction.h",
     "stream_algorithms.h",

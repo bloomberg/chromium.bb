@@ -349,7 +349,7 @@ void BodyStreamBuffer::CloseAndLockAndDisturb(ExceptionState& exception_state) {
     return;
   }
 
-  if (stream_->IsInternalStreamMissing()) {
+  if (stream_->IsBroken()) {
     stream_broken_ = true;
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,

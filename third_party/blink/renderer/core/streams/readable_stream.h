@@ -8,7 +8,6 @@
 #include "base/optional.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -25,22 +24,8 @@ class CORE_EXPORT ReadableStream : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  // Call one of Init functions before using the instance.
-  ReadableStream() = default;
-  ~ReadableStream() override = default;
-
-  // If an error happens, |exception_state.HadException()| will be true, and
-  // |this| will not be usable after that.
-  void Init(ScriptState*,
-            ScriptValue underlying_source,
-            ScriptValue strategy,
-            ExceptionState& exception_state);
-  void InitWithInternalStream(ScriptState*,
-                              v8::Local<v8::Object> object,
-                              ExceptionState& exception_state);
-
-  // Create* functions call Init* internally and returns null when an error
-  // happens.
+  // Create* functions create an appropriate subclass depending on which
+  // implementation is selected by blink features.
   static ReadableStream* Create(ScriptState*, ExceptionState&);
   static ReadableStream* Create(ScriptState*,
                                 ScriptValue underlying_source,
@@ -49,12 +34,7 @@ class CORE_EXPORT ReadableStream : public ScriptWrappable {
                                 ScriptValue underlying_source,
                                 ScriptValue strategy,
                                 ExceptionState&);
-  static ReadableStream* CreateFromInternalStream(ScriptState*,
-                                                  v8::Local<v8::Object> object,
-                                                  ExceptionState&);
-  static ReadableStream* CreateFromInternalStream(ScriptState*,
-                                                  ScriptValue object,
-                                                  ExceptionState&);
+
   // This function doesn't take ExceptionState because the caller cannot have
   // one. Returns null when an error happens.
   static ReadableStream* CreateWithCountQueueingStrategy(
@@ -62,45 +42,54 @@ class CORE_EXPORT ReadableStream : public ScriptWrappable {
       UnderlyingSourceBase* underlying_source,
       size_t high_water_mark);
 
-  void Trace(Visitor* visitor) override;
-
   // IDL defined functions
-  bool locked(ScriptState*, ExceptionState&) const;
-  ScriptPromise cancel(ScriptState*, ExceptionState&);
-  ScriptPromise cancel(ScriptState*, ScriptValue reason, ExceptionState&);
-  ScriptValue getReader(ScriptState*, ExceptionState&);
-  ScriptValue getReader(ScriptState*, ScriptValue options, ExceptionState&);
-  ScriptValue pipeThrough(ScriptState*,
-                          ScriptValue transform_stream,
-                          ExceptionState&);
-  ScriptValue pipeThrough(ScriptState*,
-                          ScriptValue transform_stream,
-                          ScriptValue options,
-                          ExceptionState&);
-  ScriptPromise pipeTo(ScriptState*, ScriptValue destination, ExceptionState&);
-  ScriptPromise pipeTo(ScriptState*,
-                       ScriptValue destination,
-                       ScriptValue options,
-                       ExceptionState&);
-  ScriptValue tee(ScriptState*, ExceptionState&);
+  virtual bool locked(ScriptState*, ExceptionState&) const = 0;
+  virtual ScriptPromise cancel(ScriptState*, ExceptionState&) = 0;
+  virtual ScriptPromise cancel(ScriptState*,
+                               ScriptValue reason,
+                               ExceptionState&) = 0;
+  virtual ScriptValue getReader(ScriptState*, ExceptionState&) = 0;
+  virtual ScriptValue getReader(ScriptState*,
+                                ScriptValue options,
+                                ExceptionState&) = 0;
+  virtual ScriptValue pipeThrough(ScriptState*,
+                                  ScriptValue transform_stream,
+                                  ExceptionState&) = 0;
+  virtual ScriptValue pipeThrough(ScriptState*,
+                                  ScriptValue transform_stream,
+                                  ScriptValue options,
+                                  ExceptionState&) = 0;
+  virtual ScriptPromise pipeTo(ScriptState*,
+                               ScriptValue destination,
+                               ExceptionState&) = 0;
+  virtual ScriptPromise pipeTo(ScriptState*,
+                               ScriptValue destination,
+                               ScriptValue options,
+                               ExceptionState&) = 0;
+  virtual ScriptValue tee(ScriptState*, ExceptionState&) = 0;
 
-  void Tee(ScriptState*,
-           ReadableStream** branch1,
-           ReadableStream** branch2,
-           ExceptionState&);
+  virtual void Tee(ScriptState*,
+                   ReadableStream** branch1,
+                   ReadableStream** branch2,
+                   ExceptionState&) = 0;
 
-  base::Optional<bool> IsLocked(ScriptState*, ExceptionState&) const;
-  base::Optional<bool> IsDisturbed(ScriptState*, ExceptionState&) const;
-  base::Optional<bool> IsReadable(ScriptState*, ExceptionState&) const;
-  base::Optional<bool> IsClosed(ScriptState*, ExceptionState&) const;
-  base::Optional<bool> IsErrored(ScriptState*, ExceptionState&) const;
+  virtual base::Optional<bool> IsLocked(ScriptState*,
+                                        ExceptionState&) const = 0;
+  virtual base::Optional<bool> IsDisturbed(ScriptState*,
+                                           ExceptionState&) const = 0;
+  virtual base::Optional<bool> IsReadable(ScriptState*,
+                                          ExceptionState&) const = 0;
+  virtual base::Optional<bool> IsClosed(ScriptState*,
+                                        ExceptionState&) const = 0;
+  virtual base::Optional<bool> IsErrored(ScriptState*,
+                                         ExceptionState&) const = 0;
 
   // Makes this stream locked and disturbed.
-  void LockAndDisturb(ScriptState*, ExceptionState&);
+  virtual void LockAndDisturb(ScriptState*, ExceptionState&) = 0;
 
   // Serialize this stream to |port|. The stream will be locked by this
   // operation.
-  void Serialize(ScriptState*, MessagePort* port, ExceptionState&);
+  virtual void Serialize(ScriptState*, MessagePort* port, ExceptionState&) = 0;
 
   // Given a |port| which is entangled with a MessagePort that was previously
   // passed to Serialize(), returns a new ReadableStream which behaves like it
@@ -109,18 +98,12 @@ class CORE_EXPORT ReadableStream : public ScriptWrappable {
                                      MessagePort* port,
                                      ExceptionState&);
 
-  ScriptValue GetInternalStream(ScriptState* script_state) const;
-
   // In some cases we are known to fail to trace the stream correctly. In such
-  // cases |object_| will be silently gone. This function is for detecting the
-  // issue. Use this function at places where an actual crash happens. Do not
-  // use this function to write "just in case" code.
-  bool IsInternalStreamMissing() const { return object_.IsEmpty(); }
-
- private:
-  class NoopFunction;
-
-  TraceWrapperV8Reference<v8::Object> object_;
+  // cases internal references will be silently lost. This function is for
+  // detecting the issue. Use this function at places where an actual crash
+  // happens. Do not use this function to write "just in case" code.
+  // TODO(ricea): Remove this after switching to the new implementation.
+  virtual bool IsBroken() const = 0;
 };
 
 }  // namespace blink

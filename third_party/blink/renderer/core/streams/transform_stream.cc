@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_script_runner.h"
 #include "third_party/blink/renderer/core/streams/readable_stream.h"
+#include "third_party/blink/renderer/core/streams/readable_stream_wrapper.h"
 #include "third_party/blink/renderer/core/streams/transform_stream_default_controller.h"
 #include "third_party/blink/renderer/core/streams/transform_stream_transformer.h"
 #include "third_party/blink/renderer/core/streams/writable_stream_wrapper.h"
@@ -233,7 +234,7 @@ bool TransformStream::InitInternal(ScriptState* script_state,
   }
 
   DCHECK(readable->IsObject());
-  readable_ = ReadableStream::CreateFromInternalStream(
+  readable_ = ReadableStreamWrapper::CreateFromInternalStream(
       script_state, readable.As<v8::Object>(), exception_state);
 
   if (!readable_)
