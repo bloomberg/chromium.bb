@@ -5956,6 +5956,11 @@ crbug.com/932078 virtual/outofblink-cors/http/tests/security/powerfulFeatureRest
 # Wasm threads enabled by default
 crbug.com/754910 virtual/origin-trials-runtimeflags-disabled/http/tests/origin_trials/webexposed/wasm-threads-origin-trial-disabled.html [ Skip ]
 
+# These tests depend on targeting javascript: url navigations at the specified window.
+crbug.com/935064 external/wpt/html/browsers/browsing-the-web/navigating-across-documents/javascript-url-abort/javascript-url-abort-return-value-string.tentative.html [ Failure ]
+crbug.com/935064 external/wpt/content-security-policy/inheritance/iframe-all-local-schemes.sub.html [ Failure ]
+crbug.com/935064 external/wpt/content-security-policy/unsafe-hashes/javascript_src_allowed-href_blank.html [ Timeout ]
+
 # Sheriff 2019-02-28
 crbug.com/936827 external/wpt/fullscreen/api/element-request-fullscreen-and-remove-manual.html [ Failure Pass ]
 
