@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_DEMO_MODE_DEMO_SESSION_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_DEMO_MODE_DEMO_SESSION_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -16,9 +17,14 @@
 #include "chrome/browser/chromeos/login/demo_mode/demo_extensions_external_loader.h"
 #include "components/session_manager/core/session_manager_observer.h"
 #include "components/user_manager/user_manager.h"
+#include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
 
 class PrefRegistrySimple;
+
+namespace base {
+class OneShotTimer;
+}
 
 namespace session_manager {
 class SessionManager;
@@ -32,7 +38,8 @@ class DemoResources;
 // started and the state of demo mode resources.
 class DemoSession : public session_manager::SessionManagerObserver,
                     public extensions::ExtensionRegistryObserver,
-                    public user_manager::UserManager::UserSessionStateObserver {
+                    public user_manager::UserManager::UserSessionStateObserver,
+                    public extensions::AppWindowRegistry::Observer {
  public:
   // Type of demo mode configuration.
   // Warning: DemoModeConfig is stored in local state. Existing entries should
@@ -138,8 +145,14 @@ class DemoSession : public session_manager::SessionManagerObserver,
   // device is offline in Demo Mode.
   void OverrideIgnorePinPolicyAppsForTesting(std::vector<std::string> apps);
 
+  void SetTimerForTesting(std::unique_ptr<base::OneShotTimer> timer);
+  base::OneShotTimer* GetTimerForTesting();
+
   // user_manager::UserManager::UserSessionStateObserver:
   void ActiveUserChanged(const user_manager::User* user) override;
+
+  // extensions::AppWindowRegistry::Observer:
+  void OnAppWindowActivated(extensions::AppWindow* app_window) override;
 
   bool offline_enrolled() const { return offline_enrolled_; }
 
@@ -162,6 +175,12 @@ class DemoSession : public session_manager::SessionManagerObserver,
   // Installs the CRX file from an update URL. Observes |ExtensionRegistry| to
   // launch the app upon installation.
   void InstallAppFromUpdateUrl(const std::string& id);
+
+  // Shows the splash screen after demo mode resources are installed.
+  void ShowSplashScreen();
+
+  // Removes the splash screen.
+  void RemoveSplashScreen();
 
   // session_manager::SessionManagerObserver:
   void OnSessionStateChanged() override;
@@ -186,15 +205,25 @@ class DemoSession : public session_manager::SessionManagerObserver,
 
   ScopedObserver<session_manager::SessionManager,
                  session_manager::SessionManagerObserver>
-      session_manager_observer_;
+      session_manager_observer_{this};
 
   ScopedObserver<extensions::ExtensionRegistry,
                  extensions::ExtensionRegistryObserver>
-      extension_registry_observer_;
+      extension_registry_observer_{this};
+
+  ScopedObserver<extensions::AppWindowRegistry,
+                 extensions::AppWindowRegistry::Observer>
+      app_window_registry_observer_{this};
 
   scoped_refptr<DemoExtensionsExternalLoader> extensions_external_loader_;
 
-  base::WeakPtrFactory<DemoSession> weak_ptr_factory_;
+  // The fallback timer that ensures the splash screen is removed in case the
+  // screensaver app takes an extra long time to be shown.
+  std::unique_ptr<base::OneShotTimer> remove_splash_screen_fallback_timer_;
+
+  bool splash_screen_removed_ = false;
+
+  base::WeakPtrFactory<DemoSession> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DemoSession);
 };
