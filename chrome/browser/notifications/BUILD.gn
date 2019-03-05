@@ -8,3 +8,10 @@ group("notifications") {
     "//chrome/browser/notifications/scheduler",
   ]
 }
+
+group("unit_tests") {
+  testonly = true
+  deps = [
+    "//chrome/browser/notifications/scheduler:unit_tests",
+  ]
+}
