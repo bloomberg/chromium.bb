@@ -17,6 +17,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.util.ConversionUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -156,6 +157,7 @@ public class ThumbnailDiskStorageTest {
 
     @Before
     public void setUp() throws Exception {
+        RecordHistogram.setDisabledForTests(true);
         mTestThumbnailStorageDelegate = new TestThumbnailStorageDelegate();
         mTestThumbnailGenerator = new TestThumbnailGenerator();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {

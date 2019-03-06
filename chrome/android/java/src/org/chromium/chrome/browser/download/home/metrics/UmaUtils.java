@@ -240,4 +240,28 @@ public class UmaUtils {
                 return "Invalid";
         }
     }
+
+    /**
+     * Records the required stretch for each dimension before rendering the image.
+     * @param requiredWidthStretch Required stretch for width.
+     * @param requiredHeightStretch Required stretch for height.
+     * @param filter The filter type of the view being shown.
+     */
+    public static void recordImageViewRequiredStretch(float requiredWidthStretch,
+            float requiredHeightStretch, @Filters.FilterType int filter) {
+        float maxRequiredStretch = Math.max(requiredWidthStretch, requiredHeightStretch);
+        RecordHistogram.recordCustomCountHistogram(
+                "Android.DownloadManager.Thumbnail.MaxRequiredStretch."
+                        + getSuffixForFilter(filter),
+                (int) (maxRequiredStretch * 100), 10, 1000, 50);
+    }
+
+    /**
+     * Records the number of chips enabled whenever the chip row is changed.
+     * @param numEnabledChips The number of chips being shown.
+     */
+    public static void recordChipStats(int numEnabledChips) {
+        RecordHistogram.recordCustomCountHistogram(
+                "Android.DownloadManager.Chips.Enabled", numEnabledChips, 1, 10, 10);
+    }
 }

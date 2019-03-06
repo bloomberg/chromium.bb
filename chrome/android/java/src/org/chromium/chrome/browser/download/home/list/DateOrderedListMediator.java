@@ -185,7 +185,8 @@ class DateOrderedListMediator {
         mSearchFilter.addObserver(new EmptyStateObserver(mSearchFilter, dateOrderedListObserver));
         mThumbnailProvider = new ThumbnailProviderImpl(
                 ((ChromeApplication) ContextUtils.getApplicationContext()).getReferencePool(),
-                config.inMemoryThumbnailCacheSizeBytes);
+                config.inMemoryThumbnailCacheSizeBytes,
+                ThumbnailProviderImpl.ClientType.DOWNLOAD_HOME);
         mSelectionObserver = new MediatorSelectionObserver(selectionDelegate);
 
         mModel.getProperties().set(ListProperties.ENABLE_ITEM_ANIMATIONS, true);

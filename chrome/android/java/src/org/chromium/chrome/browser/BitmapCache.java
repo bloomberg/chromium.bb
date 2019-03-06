@@ -121,6 +121,11 @@ public class BitmapCache {
         sDeduplicationCache.put(key, new WeakReference<>(bitmap));
     }
 
+    /** @return The total number of bytes taken by the bitmaps in this cache. */
+    public int size() {
+        return getBitmapCache().size();
+    }
+
     private RecentlyUsedCache getBitmapCache() {
         RecentlyUsedCache bitmapCache = mBitmapCache.get();
         if (bitmapCache == null) {

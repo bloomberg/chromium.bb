@@ -45,7 +45,8 @@ public class ThumbnailProviderImplTest {
         mActivityTestRule.startMainActivityOnBlankPage();
         ThreadUtils.runOnUiThread(() -> {
             mReferencePool = new DiscardableReferencePool();
-            mThumbnailProvider = new ThumbnailProviderImpl(mReferencePool);
+            mThumbnailProvider = new ThumbnailProviderImpl(
+                    mReferencePool, ThumbnailProviderImpl.ClientType.NTP_SUGGESTIONS);
         });
     }
 
