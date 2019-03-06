@@ -36,11 +36,6 @@ using offline_items_collection::OfflineItemVisuals;
 using testing::_;
 const char kProviderNamespace[] = "offline_pages";
 
-std::unique_ptr<KeyedService> BuildOfflineContentAggregator(
-    content::BrowserContext* context) {
-  return std::make_unique<OfflineContentAggregator>();
-}
-
 OfflineItem UninterestingImageItem() {
   OfflineItem item;
   item.original_url = GURL("https://uninteresting");
@@ -129,11 +124,8 @@ class AvailableOfflineContentTest : public testing::Test {
  protected:
   void SetUp() override {
     scoped_feature_list_->InitAndEnableFeature(features::kNewNetErrorPageUI);
-    // To control the items in the aggregator, we create it and register a
-    // single MockOfflineContentProvider.
-    aggregator_ = static_cast<OfflineContentAggregator*>(
-        OfflineContentAggregatorFactory::GetInstance()->SetTestingFactoryAndUse(
-            &profile_, base::BindRepeating(&BuildOfflineContentAggregator)));
+    aggregator_ =
+        OfflineContentAggregatorFactory::GetForBrowserContext(nullptr);
     aggregator_->RegisterProvider(kProviderNamespace, &content_provider_);
     content_provider_.SetVisuals({});
   }

@@ -646,6 +646,18 @@ void DownloadManagerService::OnResumptionFailedInternal(
     resume_callback_for_testing_.Run(false);
 }
 
+void DownloadManagerService::GetAllDownloads(
+    content::DownloadManager::DownloadVector* all_items,
+    bool is_off_the_record) {
+  if (in_progress_manager_) {
+    in_progress_manager_->GetAllDownloads(all_items);
+  } else {
+    content::DownloadManager* manager = GetDownloadManager(is_off_the_record);
+    if (manager)
+      manager->GetAllDownloads(all_items);
+  }
+}
+
 download::DownloadItem* DownloadManagerService::GetDownload(
     const std::string& download_guid,
     bool is_off_the_record) {

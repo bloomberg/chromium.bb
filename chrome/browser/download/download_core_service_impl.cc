@@ -12,9 +12,12 @@
 #include "chrome/browser/download/download_offline_content_provider.h"
 #include "chrome/browser/download/download_status_updater.h"
 #include "chrome/browser/download/download_ui_controller.h"
+#include "chrome/browser/download/offline_item_utils.h"
 #include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/offline_items_collection/offline_content_aggregator_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/history/core/browser/history_service.h"
+#include "components/offline_items_collection/core/offline_content_aggregator.h"
 #include "content/public/browser/download_manager.h"
 #include "extensions/buildflags/buildflags.h"
 
@@ -61,12 +64,19 @@ DownloadCoreServiceImpl::GetDownloadManagerDelegate() {
                      new DownloadHistory::HistoryAdapter(history))));
   }
 
+  download_provider_.reset(new DownloadOfflineContentProvider(
+      OfflineContentAggregatorFactory::GetForBrowserContext(
+          profile_->GetOriginalProfile()),
+      offline_items_collection::OfflineContentAggregator::CreateUniqueNameSpace(
+          OfflineItemUtils::GetDownloadNamespacePrefix(
+              profile_->IsOffTheRecord()),
+          profile_->IsOffTheRecord())));
+
   // Pass an empty delegate when constructing the DownloadUIController. The
   // default delegate does all the notifications we need.
   download_ui_.reset(new DownloadUIController(
-      manager, std::unique_ptr<DownloadUIController::Delegate>()));
-
-  download_provider_.reset(new DownloadOfflineContentProvider(manager));
+      manager, std::unique_ptr<DownloadUIController::Delegate>(),
+      download_provider_.get()));
 
 #if !defined(OS_ANDROID)
   download_shelf_controller_.reset(new DownloadShelfController(profile_));

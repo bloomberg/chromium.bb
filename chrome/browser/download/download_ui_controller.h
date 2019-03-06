@@ -9,6 +9,7 @@
 #include <set>
 
 #include "base/macros.h"
+#include "chrome/browser/download/download_offline_content_provider.h"
 #include "components/download/content/public/all_download_item_notifier.h"
 
 // This class handles the task of observing a single DownloadManager for
@@ -36,7 +37,8 @@ class DownloadUIController
   //
   // Currently explicit delegates are only used for testing.
   DownloadUIController(content::DownloadManager* manager,
-                       std::unique_ptr<Delegate> delegate);
+                       std::unique_ptr<Delegate> delegate,
+                       DownloadOfflineContentProvider* provider);
 
   ~DownloadUIController() override;
 
@@ -49,6 +51,7 @@ class DownloadUIController
   download::AllDownloadItemNotifier download_notifier_;
 
   std::unique_ptr<Delegate> delegate_;
+  DownloadOfflineContentProvider* download_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadUIController);
 };
