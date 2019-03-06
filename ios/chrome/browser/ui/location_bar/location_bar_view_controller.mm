@@ -13,6 +13,7 @@
 #import "ios/chrome/browser/ui/commands/activity_service_commands.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
+#import "ios/chrome/browser/ui/commands/infobar_commands.h"
 #import "ios/chrome/browser/ui/commands/load_query_commands.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_animator.h"
 #import "ios/chrome/browser/ui/infobars/infobar_feature.h"
@@ -437,6 +438,10 @@ typedef NS_ENUM(int, TrailingButtonState) {
       setImage:[[UIImage imageNamed:@"infobar_passwords_icon"]
                    imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate]
       forState:UIControlStateNormal];
+  [self.locationBarSteadyView.leadingButton
+             addTarget:self.dispatcher
+                action:@selector(displayModalInfobar)
+      forControlEvents:UIControlEventTouchUpInside];
   self.locationBarSteadyView.leadingButton.tintColor = [UIColor lightGrayColor];
   // Set as hidden as it should only be shown by |displayInfobarButton:|
   self.locationBarSteadyView.leadingButton.hidden = YES;

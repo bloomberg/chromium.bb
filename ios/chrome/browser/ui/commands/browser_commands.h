@@ -10,6 +10,7 @@
 
 #import "ios/chrome/browser/ui/commands/activity_service_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_coordinator_commands.h"
+#import "ios/chrome/browser/ui/commands/infobar_commands.h"
 #import "ios/chrome/browser/ui/commands/page_info_commands.h"
 #import "ios/chrome/browser/ui/commands/popup_menu_commands.h"
 #import "ios/chrome/browser/ui/commands/qr_scanner_commands.h"
@@ -23,13 +24,14 @@ class GURL;
 // which in practice is the BrowserViewController instance displaying the tab.
 // TODO(crbug.com/906662) : Extract BrowserCoordinatorCommands from
 // BrowserCommands.
-@protocol BrowserCommands<NSObject,
-                          ActivityServiceCommands,
-                          BrowserCoordinatorCommands,
-                          PageInfoCommands,
-                          PopupMenuCommands,
-                          QRScannerCommands,
-                          SnackbarCommands>
+@protocol BrowserCommands <NSObject,
+                           ActivityServiceCommands,
+                           BrowserCoordinatorCommands,
+                           InfobarCommands,
+                           PageInfoCommands,
+                           PopupMenuCommands,
+                           QRScannerCommands,
+                           SnackbarCommands>
 
 // Closes the current tab.
 - (void)closeCurrentTab;

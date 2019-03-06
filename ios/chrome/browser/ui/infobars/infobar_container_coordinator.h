@@ -11,8 +11,8 @@ namespace web {
 class WebState;
 }
 
+@class CommandDispatcher;
 @class TabModel;
-@protocol ApplicationCommands;
 @protocol InfobarPositioner;
 @protocol SyncPresenter;
 
@@ -49,8 +49,8 @@ class WebState;
 // YES if an Infobar is being presented for |webState|.
 - (BOOL)isInfobarPresentingForWebState:(web::WebState*)webState;
 
-// The dispatcher for this Coordinator.
-@property(nonatomic, weak) id<ApplicationCommands> dispatcher;
+// The CommandDispatcher for this Coordinator.
+@property(nonatomic, weak) CommandDispatcher* commandDispatcher;
 
 // The delegate used to position the InfobarContainer in the view.
 @property(nonatomic, weak) id<InfobarPositioner> positioner;

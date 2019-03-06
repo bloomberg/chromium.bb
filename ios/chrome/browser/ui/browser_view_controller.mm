@@ -2018,7 +2018,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
       initWithBaseViewController:self
                     browserState:_browserState
                         tabModel:self.tabModel];
-  self.infobarContainerCoordinator.dispatcher = self.dispatcher;
+  self.infobarContainerCoordinator.commandDispatcher = self.dispatcher;
   self.infobarContainerCoordinator.positioner = self;
   self.infobarContainerCoordinator.syncPresenter = self;
   [self.infobarContainerCoordinator start];
