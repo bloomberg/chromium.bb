@@ -47,7 +47,9 @@ PrefetchServiceFactory::PrefetchServiceFactory()
           BrowserContextDependencyManager::GetInstance()) {
   DependsOn(DownloadServiceFactory::GetInstance());
   DependsOn(OfflinePageModelFactory::GetInstance());
-  DependsOn(image_fetcher::CachedImageFetcherServiceFactory::GetInstance());
+  // TODO(hanxi): add
+  // DependsOn(image_fetcher::CachedImageFetcherServiceFactory::GetInstance());
+  // when the PrefetchServiceFactory becomes a SimpleKeyedServiceFactory.
 }
 
 // static
@@ -104,9 +106,11 @@ KeyedService* PrefetchServiceFactory::BuildServiceInstanceFor(
     suggested_articles_observer = std::make_unique<SuggestedArticlesObserver>();
     thumbnail_fetcher = std::make_unique<ThumbnailFetcherImpl>();
   } else {
+    SimpleFactoryKey* simple_factory_key =
+        Profile::GetSimpleFactoryKey(profile);
     image_fetcher::CachedImageFetcherService* image_fetcher_service =
-        image_fetcher::CachedImageFetcherServiceFactory::GetForBrowserContext(
-            context);
+        image_fetcher::CachedImageFetcherServiceFactory::GetForKey(
+            simple_factory_key, profile->GetPrefs());
     DCHECK(image_fetcher_service);
     thumbnail_image_fetcher = image_fetcher_service->GetCachedImageFetcher();
   }
