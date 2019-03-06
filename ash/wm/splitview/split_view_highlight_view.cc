@@ -171,22 +171,46 @@ void SplitViewHighlightView::SetColor(SkColor color) {
 }
 
 void SplitViewHighlightView::OnIndicatorTypeChanged(
-    IndicatorState indicator_state) {
+    IndicatorState indicator_state,
+    IndicatorState previous_indicator_state) {
   if (indicator_state == IndicatorState::kNone) {
-    DoSplitviewOpacityAnimation(layer(),
-                                SPLITVIEW_ANIMATION_HIGHLIGHT_FADE_OUT);
+    if (!SplitViewDragIndicators::IsPreviewAreaState(
+            previous_indicator_state)) {
+      DoSplitviewOpacityAnimation(layer(),
+                                  SPLITVIEW_ANIMATION_HIGHLIGHT_FADE_OUT);
+      return;
+    }
+
+    // There are two SplitViewHighlightView objects,
+    // |SplitViewDragIndicatorsView::left_highlight_view_| and
+    // |SplitViewDragIndicatorsView::right_highlight_view_|.
+    // |was_this_the_preview| indicates that this (in the sense of the keyword
+    // this) is the one that represented the preview area.
+    const bool was_this_the_preview =
+        is_right_or_bottom_ !=
+        SplitViewDragIndicators::IsPreviewAreaOnLeftTopOfScreen(
+            previous_indicator_state);
+    if (was_this_the_preview) {
+      DoSplitviewOpacityAnimation(layer(),
+                                  SPLITVIEW_ANIMATION_PREVIEW_AREA_FADE_OUT);
+    }
     return;
   }
 
   if (SplitViewDragIndicators::IsPreviewAreaState(indicator_state)) {
-    const bool is_preview_on_left_or_top =
+    // There are two SplitViewHighlightView objects,
+    // |SplitViewDragIndicatorsView::left_highlight_view_| and
+    // |SplitViewDragIndicatorsView::right_highlight_view_|.
+    // |is_this_the_preview| indicates that this (in the sense of the keyword
+    // this) is the one that represents the preview area.
+    const bool is_this_the_preview =
+        is_right_or_bottom_ !=
         SplitViewDragIndicators::IsPreviewAreaOnLeftTopOfScreen(
             indicator_state);
-    const bool should_fade_in = is_right_or_bottom_ ? !is_preview_on_left_or_top
-                                                    : is_preview_on_left_or_top;
     DoSplitviewOpacityAnimation(
-        layer(), should_fade_in ? SPLITVIEW_ANIMATION_PREVIEW_AREA_FADE_IN
-                                : SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_FADE_OUT);
+        layer(), is_this_the_preview
+                     ? SPLITVIEW_ANIMATION_PREVIEW_AREA_FADE_IN
+                     : SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_FADE_OUT);
     return;
   }
 

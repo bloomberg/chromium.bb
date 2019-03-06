@@ -42,6 +42,8 @@ constexpr base::TimeDelta kLabelAnimationDelayMs =
 // The time duration for the window transformation animations.
 constexpr base::TimeDelta kWindowTransformMs =
     base::TimeDelta::FromMilliseconds(250);
+constexpr base::TimeDelta kPreviewAreaFadeOutMs =
+    base::TimeDelta::FromMilliseconds(67);
 
 constexpr float kHighlightOpacity = 0.3f;
 constexpr float kPreviewAreaHighlightOpacity = 0.18f;
@@ -91,6 +93,10 @@ void GetAnimationValuesForType(
       *out_preemption_strategy =
           ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET;
       return;
+    case SPLITVIEW_ANIMATION_PREVIEW_AREA_FADE_OUT:
+      *out_duration = kPreviewAreaFadeOutMs;
+      *out_tween_type = gfx::Tween::FAST_OUT_LINEAR_IN;
+      return;
   }
 
   NOTREACHED();
@@ -125,6 +131,7 @@ void DoSplitviewOpacityAnimation(ui::Layer* layer,
   switch (type) {
     case SPLITVIEW_ANIMATION_HIGHLIGHT_FADE_OUT:
     case SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_FADE_OUT:
+    case SPLITVIEW_ANIMATION_PREVIEW_AREA_FADE_OUT:
     case SPLITVIEW_ANIMATION_OVERVIEW_ITEM_FADE_OUT:
     case SPLITVIEW_ANIMATION_TEXT_FADE_OUT:
     case SPLITVIEW_ANIMATION_TEXT_FADE_OUT_WITH_HIGHLIGHT:
