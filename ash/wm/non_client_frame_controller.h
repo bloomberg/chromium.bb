@@ -29,9 +29,6 @@ class Insets;
 }
 
 namespace ws {
-namespace mojom {
-enum class WindowType;
-}
 class TopLevelProxyWindow;
 }  // namespace ws
 
@@ -54,7 +51,6 @@ class ASH_EXPORT NonClientFrameController : public views::WidgetDelegate,
       aura::Window* parent,
       aura::Window* context,
       const gfx::Rect& bounds,
-      ws::mojom::WindowType window_type,
       aura::PropertyConverter* property_converter,
       std::map<std::string, std::vector<uint8_t>>* properties);
 

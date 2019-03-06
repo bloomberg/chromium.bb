@@ -145,8 +145,8 @@ aura::Window* CreateAndParentTopLevelWindowInRoot(
     // See NonClientFrameController for details on lifetime.
     NonClientFrameController* non_client_frame_controller =
         new NonClientFrameController(top_level_proxy_window, container_window,
-                                     context, bounds, window_type,
-                                     property_converter, properties);
+                                     context, bounds, property_converter,
+                                     properties);
     return non_client_frame_controller->window();
   }
 

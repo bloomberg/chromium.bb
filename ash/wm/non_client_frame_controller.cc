@@ -233,7 +233,6 @@ NonClientFrameController::NonClientFrameController(
     aura::Window* parent,
     aura::Window* context,
     const gfx::Rect& bounds,
-    ws::mojom::WindowType window_type,
     aura::PropertyConverter* property_converter,
     std::map<std::string, std::vector<uint8_t>>* properties)
     : widget_(new views::Widget),
@@ -242,12 +241,7 @@ NonClientFrameController::NonClientFrameController(
   // we need to ensure we don't inadvertently change random properties of the
   // underlying ui::Window. For example, showing the Widget shouldn't change
   // the bounds of the ui::Window in anyway.
-  //
-  // Assertions around InitParams::Type matching ws::mojom::WindowType exist in
-  // MusClient.
-  views::Widget::InitParams params(
-      static_cast<views::Widget::InitParams::Type>(window_type));
-  DCHECK_EQ(ws::mojom::WindowType::WINDOW, window_type);
+  views::Widget::InitParams params;
   DCHECK((parent && !context) || (!parent && context));
   params.parent = parent;
   params.context = context;
@@ -264,7 +258,7 @@ NonClientFrameController::NonClientFrameController(
   window_->SetProperty(kWidgetCreationTypeKey, WidgetCreationType::FOR_CLIENT);
   window_->AddObserver(this);
   params.native_widget = native_widget;
-  aura::SetWindowType(window_, window_type);
+  aura::SetWindowType(window_, ws::mojom::WindowType::WINDOW);
   for (auto& property_pair : *properties) {
     property_converter->SetPropertyFromTransportValue(
         window_, property_pair.first, &property_pair.second);
