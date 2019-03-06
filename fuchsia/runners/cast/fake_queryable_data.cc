@@ -21,7 +21,7 @@ void FakeQueryableData::Add(base::StringPiece key, const base::Value& value) {
   entries_[key.as_string()] = cur_entry_converted;
 }
 
-void FakeQueryableData::GetAllEntries(GetAllEntriesCallback callback) {
+void FakeQueryableData::GetChangedEntries(GetChangedEntriesCallback callback) {
   std::vector<chromium::cast::QueryableDataEntry> output;
   for (const auto& e : entries_) {
     output.push_back(e.second);

@@ -23,7 +23,7 @@ class FakeQueryableData : public chromium::cast::QueryableData {
   void Add(base::StringPiece key, const base::Value& value);
 
   // chromium::cast::QueryableData implementation.
-  void GetAllEntries(GetAllEntriesCallback callback) override;
+  void GetChangedEntries(GetChangedEntriesCallback callback) override;
 
  private:
   std::map<std::string, chromium::cast::QueryableDataEntry> entries_;
