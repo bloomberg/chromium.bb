@@ -9,7 +9,7 @@
 // Please run the closure compiler before committing changes.
 // See https://chromium.googlesource.com/chromium/src/+/master/docs/closure_compilation.md
 
-// IMPORTANT:
+// IMPORTANT NOTE: Work-around for crbug.com/543822
 // s/chrome.bluetoothPrivate.bluetooth.Device/chrome.bluetooth.Device/
 
 /** @fileoverview Externs generated from namespace: bluetoothPrivate */

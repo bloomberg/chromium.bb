@@ -9,8 +9,8 @@
  */
 
 cr.define('bookmarks', function() {
+  /** @extends {cr.ui.Store<BookmarksPageState>} */
   class Store extends cr.ui.Store {
-    /** @extends {cr.ui.Store<BookmarksPageState>} */
     constructor() {
       super(bookmarks.util.createEmptyState(), bookmarks.reduceAction);
     }
