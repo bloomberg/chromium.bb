@@ -23,10 +23,8 @@
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/metrics/first_user_action_recorder.h"
 #include "ios/chrome/browser/system_flags.h"
-#import "ios/chrome/browser/tabs/legacy_tab_helper.h"
-#import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
-#import "ios/chrome/browser/u2f/u2f_controller.h"
+#import "ios/chrome/browser/u2f/u2f_tab_helper.h"
 #import "ios/chrome/browser/ui/main/browser_interface_provider.h"
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
@@ -237,13 +235,12 @@ NSString* const kShortcutQRScanner = @"OpenQRScanner";
   if ([startupInformation isPresentingFirstRunUI])
     return;
 
+  GURL externalURL = startupInformation.startupParameters.externalURL;
   // Check if it's an U2F call. If so, route it to correct tab.
   // If not, open or reuse tab in main BVC.
-  if ([U2FController
-          isU2FURL:[[startupInformation startupParameters] externalURL]]) {
-    [UserActivityHandler
-              routeU2FURL:[[startupInformation startupParameters] externalURL]
-        interfaceProvider:interfaceProvider];
+  if (U2FTabHelper::IsU2FUrl(externalURL)) {
+    [UserActivityHandler routeU2FURL:externalURL
+                   interfaceProvider:interfaceProvider];
     // It's OK to clear startup parameters here because routeU2FURL works
     // synchronously.
     [startupInformation setStartupParameters:nil];
@@ -270,7 +267,6 @@ NSString* const kShortcutQRScanner = @"OpenQRScanner";
     GURL URL;
     GURL virtualURL;
     GURL completeURL = startupInformation.startupParameters.completeURL;
-    GURL externalURL = startupInformation.startupParameters.externalURL;
     if (completeURL.SchemeIsFile() &&
         base::FeatureList::IsEnabled(
             experimental_flags::kExternalFilesLoadedInWebState)) {
@@ -342,7 +338,7 @@ NSString* const kShortcutQRScanner = @"OpenQRScanner";
 + (void)routeU2FURL:(const GURL&)URL
     interfaceProvider:(id<BrowserInterfaceProvider>)interfaceProvider {
   // Retrieve the designated TabID from U2F URL.
-  NSString* tabID = [U2FController tabIDFromResponseURL:URL];
+  NSString* tabID = U2FTabHelper::GetTabIdFromU2FUrl(URL);
   if (!tabID) {
     return;
   }
@@ -358,8 +354,7 @@ NSString* const kShortcutQRScanner = @"OpenQRScanner";
       web::WebState* webState = webStateList->GetWebStateAt(index);
       NSString* currentTabID = TabIdTabHelper::FromWebState(webState)->tab_id();
       if ([currentTabID isEqualToString:tabID]) {
-        Tab* tab = LegacyTabHelper::GetTabForWebState(webState);
-        [tab evaluateU2FResultFromURL:URL];
+        U2FTabHelper::FromWebState(webState)->EvaluateU2FResult(URL);
       }
     }
   }

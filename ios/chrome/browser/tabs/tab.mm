@@ -60,7 +60,6 @@
 #import "ios/chrome/browser/tabs/tab_helper_util.h"
 #import "ios/chrome/browser/tabs/tab_private.h"
 #include "ios/chrome/browser/translate/chrome_ios_translate_client.h"
-#import "ios/chrome/browser/u2f/u2f_controller.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/commands/show_signin_command.h"
 #import "ios/chrome/browser/ui/open_in_controller.h"
@@ -130,9 +129,6 @@ NSString* const kTabUrlKey = @"url";
 
   // Allows Tab to conform CRWWebStateDelegate protocol.
   std::unique_ptr<web::WebStateObserverBridge> _webStateObserver;
-
-  // Universal Second Factor (U2F) call controller.
-  U2FController* _secondFactorController;
 
 }
 
@@ -243,27 +239,6 @@ NSString* const kTabUrlKey = @"url";
                       object:self
                     userInfo:@{kTabUrlKey : urlString}];
   }
-}
-
-#pragma mark - Public API (relating to U2F)
-
-- (void)evaluateU2FResultFromURL:(const GURL&)URL {
-  DCHECK(_secondFactorController);
-  [_secondFactorController evaluateU2FResultFromU2FURL:URL
-                                              webState:self.webState];
-}
-
-- (GURL)XCallbackFromRequestURL:(const GURL&)requestURL
-                      originURL:(const GURL&)originURL {
-  // Create U2FController object lazily.
-  if (!_secondFactorController)
-    _secondFactorController = [[U2FController alloc] init];
-  return [_secondFactorController
-      XCallbackFromRequestURL:requestURL
-                    originURL:originURL
-                       tabURL:self.webState->GetLastCommittedURL()
-                        tabID:TabIdTabHelper::FromWebState(self.webState)
-                                  ->tab_id()];
 }
 
 #pragma mark - CRWWebStateObserver protocol

@@ -20,6 +20,7 @@
 #import "ios/chrome/browser/chrome_url_util.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #import "ios/chrome/browser/tabs/legacy_tab_helper.h"
+#import "ios/chrome/browser/u2f/u2f_tab_helper.h"
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"
 #import "ios/web/public/test/fakes/test_navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
@@ -112,6 +113,7 @@ class AppLauncherTabHelperTest : public PlatformTest {
         delegate_([[FakeAppLauncherTabHelperDelegate alloc] init]) {
     AppLauncherTabHelper::CreateForWebState(&web_state_, abuse_detector_,
                                             delegate_);
+    U2FTabHelper::CreateForWebState(&web_state_);
     // Allow is the default policy for this test.
     abuse_detector_.policy = ExternalAppLaunchPolicyAllow;
     auto navigation_manager = std::make_unique<FakeNavigationManager>();

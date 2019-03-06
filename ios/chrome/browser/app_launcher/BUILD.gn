@@ -22,6 +22,7 @@ source_set("app_launcher") {
     "//ios/chrome/browser",
     "//ios/chrome/browser/reading_list",
     "//ios/chrome/browser/tabs",
+    "//ios/chrome/browser/u2f",
     "//ios/web/public",
     "//url",
   ]
@@ -56,6 +57,7 @@ source_set("unit_tests") {
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/reading_list",
     "//ios/chrome/browser/tabs",
+    "//ios/chrome/browser/u2f",
     "//ios/chrome/browser/web:tab_id_tab_helper",
     "//ios/chrome/browser/web:web_internal",
     "//ios/web/public/test/fakes",
