@@ -435,8 +435,14 @@ UIView* SubviewWithAccessibilityIdentifier(NSString* accessibilityID,
 }
 
 + (id<GREYMatcher>)googleServicesSettingsButton {
-  return [ChromeMatchers
-      buttonWithAccessibilityLabelId:(IDS_IOS_GOOGLE_SERVICES_SETTINGS_TITLE)];
+  NSString* syncAndGoogleServicesTitle =
+      l10n_util::GetNSStringWithFixup(IDS_IOS_GOOGLE_SERVICES_SETTINGS_TITLE);
+  id<GREYMatcher> mainTextLabelMatcher =
+      grey_allOf(grey_accessibilityLabel(syncAndGoogleServicesTitle),
+                 grey_sufficientlyVisible(), nil);
+  return grey_allOf(grey_kindOfClass([UITableViewCell class]),
+                    grey_sufficientlyVisible(),
+                    grey_descendant(mainTextLabelMatcher), nil);
 }
 
 + (id<GREYMatcher>)settingsMenuBackButton {
