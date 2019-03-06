@@ -87,7 +87,7 @@ void PictureLayerTilingSet::CopyTilingsAndPropertiesFromPendingTwin(
     gfx::AxisTransform2d raster_transform =
         pending_twin_tiling->raster_transform();
     PictureLayerTiling* this_tiling =
-        FindTilingWithScaleKey(pending_twin_tiling->contents_scale_key());
+        FindTilingWithScale(pending_twin_tiling->raster_scales());
     if (this_tiling && this_tiling->raster_transform() != raster_transform) {
       Remove(this_tiling);
       this_tiling = nullptr;
@@ -130,7 +130,7 @@ void PictureLayerTilingSet::UpdateTilingsToCurrentRasterSourceForActivation(
   // If the tiling is not shared (FindTilingWithScale returns nullptr), then
   // invalidate tiles and update them to the new raster source.
   for (const auto& tiling : tilings_) {
-    if (pending_twin_set->FindTilingWithScaleKey(tiling->contents_scale_key()))
+    if (pending_twin_set->FindTilingWithScale(tiling->raster_scales()))
       continue;
 
     tiling->SetRasterSourceAndResize(raster_source);
@@ -274,7 +274,7 @@ PictureLayerTiling* PictureLayerTilingSet::AddTiling(
 
 #if DCHECK_IS_ON()
   for (size_t i = 0; i < tilings_.size(); ++i) {
-    DCHECK_NE(tilings_[i]->contents_scale_key(), raster_transform.scale());
+    DCHECK_NE(tilings_[i]->contents_scale_key(), raster_transform.scale().width());
     DCHECK_EQ(tilings_[i]->raster_source(), raster_source.get());
   }
 #endif  // DCHECK_IS_ON()
@@ -300,6 +300,15 @@ PictureLayerTiling* PictureLayerTilingSet::FindTilingWithScaleKey(
     float scale_key) const {
   for (size_t i = 0; i < tilings_.size(); ++i) {
     if (tilings_[i]->contents_scale_key() == scale_key)
+      return tilings_[i].get();
+  }
+  return nullptr;
+}
+
+PictureLayerTiling* PictureLayerTilingSet::FindTilingWithScale(
+    const gfx::SizeF& scale) const {
+  for (size_t i = 0; i < tilings_.size(); ++i) {
+    if (tilings_[i]->raster_scales() == scale)
       return tilings_[i].get();
   }
   return nullptr;
@@ -338,6 +347,16 @@ void PictureLayerTilingSet::RemoveTilingsAboveScaleKey(
 void PictureLayerTilingSet::ReleaseAllResources() {
   RemoveAllTilings();
   raster_source_ = nullptr;
+}
+
+void PictureLayerTilingSet::RemoveTilingsWithStaleAspectRatio() {
+  auto to_remove = std::remove_if(
+      tilings_.begin(), tilings_.end(),
+      [=](const std::unique_ptr<PictureLayerTiling>& tiling) {
+        float aspect_ratio = tiling->raster_scales().height() / tiling->raster_scales().width();
+        return aspect_ratio != aspect_ratio_;
+      });
+  tilings_.erase(to_remove, tilings_.end());
 }
 
 void PictureLayerTilingSet::RemoveAllTilings() {
@@ -381,7 +400,8 @@ float PictureLayerTilingSet::GetMaximumContentsScale() const {
   if (tilings_.empty())
     return 0.f;
   // The first tiling has the largest contents scale.
-  return tilings_[0]->raster_transform().scale();
+  return std::max(tilings_[0]->raster_scales().width(),
+                  tilings_[0]->raster_scales().height());
 }
 
 bool PictureLayerTilingSet::TilingsNeedUpdate(
@@ -444,11 +464,13 @@ gfx::Rect PictureLayerTilingSet::ComputeSkewport(
   int inset_right = (old_right - new_right) * extrapolation_multiplier;
   int inset_bottom = (old_bottom - new_bottom) * extrapolation_multiplier;
 
-  int skewport_extrapolation_limit_in_layer_pixels =
+  int skewport_extrapolation_limit_in_layer_pixels_x =
       skewport_extrapolation_limit_in_screen_pixels_ / ideal_contents_scale;
+  int skewport_extrapolation_limit_in_layer_pixels_y =
+      skewport_extrapolation_limit_in_screen_pixels_ / ideal_contents_scale * aspect_ratio_;
   gfx::Rect max_skewport = skewport;
-  max_skewport.Inset(-skewport_extrapolation_limit_in_layer_pixels,
-                     -skewport_extrapolation_limit_in_layer_pixels);
+  max_skewport.Inset(-skewport_extrapolation_limit_in_layer_pixels_x,
+                     -skewport_extrapolation_limit_in_layer_pixels_y);
 
   skewport.Inset(inset_x, inset_y, inset_right, inset_bottom);
   skewport.Union(visible_rect_in_layer_space);
@@ -467,13 +489,12 @@ gfx::Rect PictureLayerTilingSet::ComputeSkewport(
 gfx::Rect PictureLayerTilingSet::ComputeSoonBorderRect(
     const gfx::Rect& visible_rect,
     float ideal_contents_scale) {
-  int max_dimension = std::max(visible_rect.width(), visible_rect.height());
-  int distance =
-      std::min<int>(kMaxSoonBorderDistanceInScreenPixels * ideal_contents_scale,
-                    max_dimension * kSoonBorderDistanceViewportPercentage);
-
   gfx::Rect soon_border_rect = visible_rect;
-  soon_border_rect.Inset(-distance, -distance);
+  soon_border_rect.Inset(
+    -std::min<int>(kMaxSoonBorderDistanceInScreenPixels * ideal_contents_scale,
+                   visible_rect.width() * kSoonBorderDistanceViewportPercentage),
+    -std::min<int>(kMaxSoonBorderDistanceInScreenPixels * (ideal_contents_scale * aspect_ratio_),
+                   visible_rect.height() * kSoonBorderDistanceViewportPercentage));
   soon_border_rect.Intersect(eventually_rect_in_layer_space_);
   return soon_border_rect;
 }
@@ -490,7 +511,7 @@ void PictureLayerTilingSet::UpdatePriorityRects(
     gfx::RectF eventually_rectf(visible_rect_in_layer_space);
     eventually_rectf.Inset(
         -tiling_interest_area_padding_ / ideal_contents_scale,
-        -tiling_interest_area_padding_ / ideal_contents_scale);
+        -tiling_interest_area_padding_ / ideal_contents_scale * aspect_ratio_);
     if (eventually_rectf.Intersects(
             gfx::RectF(gfx::SizeF(raster_source_->GetSize())))) {
       visible_rect_in_layer_space_ = visible_rect_in_layer_space;
@@ -546,6 +567,15 @@ bool PictureLayerTilingSet::UpdateTilePriorities(
         ideal_contents_scale, occlusion_in_layer_space);
   }
   return true;
+}
+
+void PictureLayerTilingSet::SetAspectRatio(float ratio) {
+  if (std::abs(ratio - aspect_ratio_) < std::numeric_limits<float>::epsilon())
+    return;
+  TRACE_EVENT1("cc", "PictureLayerTilingSet::SetAspectRatio", "aspect_ratio",
+               ratio);
+  aspect_ratio_ = ratio;
+  RemoveTilingsWithStaleAspectRatio();
 }
 
 void PictureLayerTilingSet::GetAllPrioritizedTilesForTracing(

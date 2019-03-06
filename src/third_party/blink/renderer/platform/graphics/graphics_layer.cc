@@ -72,11 +72,11 @@
 namespace blink {
 
 std::unique_ptr<GraphicsLayer> GraphicsLayer::Create(
-    GraphicsLayerClient& client) {
-  return base::WrapUnique(new GraphicsLayer(client));
+    GraphicsLayerClient& client, bool use_nearest_neighbor_filter) {
+  return base::WrapUnique(new GraphicsLayer(client, use_nearest_neighbor_filter));
 }
 
-GraphicsLayer::GraphicsLayer(GraphicsLayerClient& client)
+GraphicsLayer::GraphicsLayer(GraphicsLayerClient& client, bool use_nearest_neighbor_filter)
     : client_(client),
       prevent_contents_opaque_changes_(false),
       draws_content_(false),
@@ -86,6 +86,7 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient& client)
       has_scroll_parent_(false),
       has_clip_parent_(false),
       painted_(false),
+      use_nearest_neighbor_filter_(use_nearest_neighbor_filter),
       painting_phase_(kGraphicsLayerPaintAllWithOverflowClip),
       parent_(nullptr),
       mask_layer_(nullptr),
@@ -1127,6 +1128,10 @@ FloatSize GraphicsLayer::VisualRectSubpixelOffset() const {
   if (GetCompositingReasons() & CompositingReason::kComboAllDirectReasons)
     return FloatSize(client_.SubpixelAccumulation());
   return FloatSize();
+}
+
+bool GraphicsLayer::NearestNeighbor() const {
+  return use_nearest_neighbor_filter_;
 }
 
 }  // namespace blink
