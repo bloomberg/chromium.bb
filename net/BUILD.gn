@@ -6402,9 +6402,7 @@ proto_library("reporting_policy_proto") {
   sources = [
     "reporting/reporting_policy.proto",
   ]
-  deps = [
-    "//testing/libfuzzer/proto:json_proto",
-  ]
+  link_deps = [ "//testing/libfuzzer/proto:json_proto" ]
 }
 
 fuzzer_test("net_reporting_header_parser_fuzzer") {
