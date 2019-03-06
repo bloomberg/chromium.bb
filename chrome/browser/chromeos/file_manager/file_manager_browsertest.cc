@@ -582,6 +582,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("dirContextMenuCrostini"),
         TestCase("dirContextMenuPlayFiles"),
         TestCase("dirContextMenuUsbs"),
+        TestCase("dirContextMenuFsp"),
         TestCase("dirContextMenuShortcut")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
