@@ -128,23 +128,6 @@ export class Scene extends Node {
           }
           hitResult.node._hoverFrameId = this._hoverFrame;
           newHoveredNodes.push(hitResult.node);
-        } else {
-          // Statically render the cursor 1 meters down the ray since we didn't
-          // hit anything selectable.
-          let cursorDistance = 1.0;
-          let cursorPos = vec3.fromValues(
-              inputPose.targetRay.origin.x,
-              inputPose.targetRay.origin.y,
-              inputPose.targetRay.origin.z
-              );
-          vec3.add(cursorPos, cursorPos, [
-              inputPose.targetRay.direction.x * cursorDistance,
-              inputPose.targetRay.direction.y * cursorDistance,
-              inputPose.targetRay.direction.z * cursorDistance,
-              ]);
-          // let cursorPos = vec3.fromValues(0, 0, -1.0);
-          // vec3.transformMat4(cursorPos, cursorPos, inputPose.targetRay);
-          this.inputRenderer.addCursor(cursorPos);
         }
       }
     }
