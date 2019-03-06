@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/test/fake_frame_scheduler.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
+#include "third_party/blink/renderer/platform/testing/wtf/scoped_mock_clock.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
@@ -44,14 +45,17 @@ class MockClient final : public GarbageCollectedFinalized<MockClient>,
   void SetDelegate(MockClientDelegate* delegate) { delegate_ = delegate; }
 
   void Run() override {
-    if (delegate_) {
+    if (delegate_)
       delegate_->NotifyRun(this);
-    }
     EXPECT_FALSE(was_run_);
     was_run_ = true;
   }
-  ConsoleLogger* GetConsoleLogger() override { return console_logger_; }
   bool WasRun() { return was_run_; }
+  ConsoleLogger* GetConsoleLogger() override {
+    was_console_logger_obtained_ = true;
+    return console_logger_;
+  }
+  bool WasConsoleLoggerObtained() { return was_console_logger_obtained_; }
 
   void Trace(blink::Visitor* visitor) override {
     ResourceLoadSchedulerClient::Trace(visitor);
@@ -63,6 +67,7 @@ class MockClient final : public GarbageCollectedFinalized<MockClient>,
       MakeGarbageCollected<NullConsoleLogger>();
   MockClientDelegate* delegate_;
   bool was_run_ = false;
+  bool was_console_logger_obtained_ = false;
 };
 
 class ResourceLoadSchedulerTest : public testing::Test {
@@ -617,6 +622,52 @@ TEST_F(ResourceLoadSchedulerTest, LoosenThrottlingPolicy) {
   EXPECT_TRUE(Release(id3));
   EXPECT_TRUE(Release(id2));
   EXPECT_TRUE(Release(id1));
+}
+
+TEST_F(ResourceLoadSchedulerTest, ConsoleMessage) {
+  WTF::ScopedMockClock mock_clock;
+  Scheduler()->SetOutstandingLimitForTesting(0, 0);
+  Scheduler()->OnLifecycleStateChanged(
+      scheduler::SchedulingLifecycleState::kThrottled);
+
+  // Push two requests into the queue.
+  MockClient* client1 = MakeGarbageCollected<MockClient>();
+  ResourceLoadScheduler::ClientId id1 = ResourceLoadScheduler::kInvalidClientId;
+  Scheduler()->Request(client1, ThrottleOption::kThrottleable,
+                       ResourceLoadPriority::kLowest, 0 /* intra_priority */,
+                       &id1);
+  EXPECT_NE(ResourceLoadScheduler::kInvalidClientId, id1);
+  EXPECT_FALSE(client1->WasRun());
+
+  MockClient* client2 = MakeGarbageCollected<MockClient>();
+  ResourceLoadScheduler::ClientId id2 = ResourceLoadScheduler::kInvalidClientId;
+  Scheduler()->Request(client2, ThrottleOption::kThrottleable,
+                       ResourceLoadPriority::kLowest, 0 /* intra_priority */,
+                       &id2);
+  EXPECT_NE(ResourceLoadScheduler::kInvalidClientId, id2);
+  EXPECT_FALSE(client2->WasRun());
+
+  // Cancel the first request
+  EXPECT_TRUE(Release(id1));
+
+  // Advance current time a little and triggers an life cycle event, but it
+  // still won't awake the warning logic.
+  mock_clock.Advance(WTF::TimeDelta::FromSeconds(50));
+  Scheduler()->OnLifecycleStateChanged(
+      scheduler::SchedulingLifecycleState::kNotThrottled);
+  EXPECT_FALSE(client1->WasConsoleLoggerObtained());
+  EXPECT_FALSE(client2->WasConsoleLoggerObtained());
+  Scheduler()->OnLifecycleStateChanged(
+      scheduler::SchedulingLifecycleState::kThrottled);
+
+  // Modify current time to awake the console warning logic, and the second
+  // client should be used for console logging.
+  mock_clock.Advance(WTF::TimeDelta::FromSeconds(15));
+  Scheduler()->OnLifecycleStateChanged(
+      scheduler::SchedulingLifecycleState::kNotThrottled);
+  EXPECT_FALSE(client1->WasConsoleLoggerObtained());
+  EXPECT_TRUE(client2->WasConsoleLoggerObtained());
+  EXPECT_TRUE(Release(id2));
 }
 
 }  // namespace
