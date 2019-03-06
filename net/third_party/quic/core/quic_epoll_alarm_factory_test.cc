@@ -4,9 +4,9 @@
 
 #include "net/third_party/quic/core/quic_epoll_alarm_factory.h"
 
+#include "net/third_party/quic/platform/api/quic_epoll_test_tools.h"
 #include "net/third_party/quic/platform/api/quic_test.h"
 #include "net/third_party/quic/platform/impl/quic_epoll_clock.h"
-#include "net/third_party/quic/test_tools/fake_epoll_server.h"
 
 namespace quic {
 namespace test {
@@ -36,7 +36,7 @@ class QuicEpollAlarmFactoryTest : public QuicTestWithParam<bool> {
 
   const QuicEpollClock clock_;
   QuicEpollAlarmFactory alarm_factory_;
-  test::FakeEpollServer epoll_server_;
+  QuicFakeEpollServer epoll_server_;
   QuicConnectionArena arena_;
 };
 

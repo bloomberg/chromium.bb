@@ -36,7 +36,7 @@ class QuicEpollConnectionHelper : public QuicConnectionHelperInterface {
       delete;
   ~QuicEpollConnectionHelper() override;
 
-  // QuicEpollConnectionHelperInterface
+  // QuicConnectionHelperInterface
   const QuicClock* GetClock() const override;
   QuicRandom* GetRandomGenerator() override;
   QuicBufferAllocator* GetStreamSendBufferAllocator() override;

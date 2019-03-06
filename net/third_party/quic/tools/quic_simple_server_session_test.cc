@@ -798,6 +798,7 @@ TEST_P(QuicSimpleServerSessionServerPushTest,
   // Resetting 1st open stream will close the stream and give space for extra
   // stream to be opened.
   QuicStreamId stream_got_reset = GetNthServerInitiatedUnidirectionalId(0);
+  EXPECT_CALL(owner_, OnRstStreamReceived(_)).Times(1);
   EXPECT_CALL(*connection_, SendControlFrame(_));
   if (!IsVersion99()) {
     // For version 99, this is covered in InjectStopSending()
@@ -814,7 +815,6 @@ TEST_P(QuicSimpleServerSessionServerPushTest,
           kStreamFlowControlWindowSize - header_length, false)));
 
   EXPECT_CALL(*session_, SendBlocked(stream_to_open));
-  EXPECT_CALL(owner_, OnRstStreamReceived(_)).Times(1);
   QuicRstStreamFrame rst(kInvalidControlFrameId, stream_got_reset,
                          QUIC_STREAM_CANCELLED, 0);
   if (IsVersion99()) {

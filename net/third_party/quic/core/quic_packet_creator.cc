@@ -24,9 +24,6 @@
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
 #include "net/third_party/quic/platform/api/quic_text_utils.h"
 
-// If true, enforce that QUIC CHLOs fit in one packet.
-bool FLAGS_quic_enforce_single_packet_chlo = true;
-
 namespace quic {
 namespace {
 

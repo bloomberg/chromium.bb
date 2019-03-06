@@ -1408,7 +1408,7 @@ TEST_P(EndToEndTest, EarlyResponseWithQuicStreamNoError) {
 }
 
 // TODO(rch): this test seems to cause net_unittests timeouts :|
-TEST_P(EndToEndTestWithTls, DISABLED_MultipleTermination) {
+TEST_P(EndToEndTestWithTls, QUIC_TEST_DISABLED_IN_CHROME(MultipleTermination)) {
   ASSERT_TRUE(Initialize());
 
   // Set the offset so we won't frame.  Otherwise when we pick up termination
@@ -3353,7 +3353,7 @@ TEST_P(EndToEndTest, PreSharedKey) {
 }
 
 // TODO: reenable once we have a way to make this run faster.
-TEST_P(EndToEndTest, DISABLED_PreSharedKeyMismatch) {
+TEST_P(EndToEndTest, QUIC_TEST_DISABLED_IN_CHROME(PreSharedKeyMismatch)) {
   client_config_.set_max_time_before_crypto_handshake(
       QuicTime::Delta::FromSeconds(1));
   client_config_.set_max_idle_time_before_crypto_handshake(
@@ -3372,7 +3372,7 @@ TEST_P(EndToEndTest, DISABLED_PreSharedKeyMismatch) {
 }
 
 // TODO: reenable once we have a way to make this run faster.
-TEST_P(EndToEndTest, DISABLED_PreSharedKeyNoClient) {
+TEST_P(EndToEndTest, QUIC_TEST_DISABLED_IN_CHROME(PreSharedKeyNoClient)) {
   client_config_.set_max_time_before_crypto_handshake(
       QuicTime::Delta::FromSeconds(1));
   client_config_.set_max_idle_time_before_crypto_handshake(
@@ -3384,7 +3384,7 @@ TEST_P(EndToEndTest, DISABLED_PreSharedKeyNoClient) {
 }
 
 // TODO: reenable once we have a way to make this run faster.
-TEST_P(EndToEndTest, DISABLED_PreSharedKeyNoServer) {
+TEST_P(EndToEndTest, QUIC_TEST_DISABLED_IN_CHROME(PreSharedKeyNoServer)) {
   client_config_.set_max_time_before_crypto_handshake(
       QuicTime::Delta::FromSeconds(1));
   client_config_.set_max_idle_time_before_crypto_handshake(

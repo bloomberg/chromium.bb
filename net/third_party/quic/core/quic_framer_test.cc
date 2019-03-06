@@ -5287,7 +5287,7 @@ TEST_P(QuicFramerTest, VersionNegotiationPacket) {
       // type (long header)
       {"",
        {0x8F}},
-             // version tag
+      // version tag
       {"",
        {0x00, 0x00, 0x00, 0x00}},
       {"",

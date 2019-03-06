@@ -1125,16 +1125,13 @@ void CreateServerSessionForTest(
   (*server_connection)->AdvanceTime(connection_start_time);
 }
 
-QuicStreamId NextStreamId(QuicTransportVersion version) {
-  return QuicUtils::StreamIdDelta(version);
-}
-
 QuicStreamId GetNthClientInitiatedBidirectionalStreamId(
     QuicTransportVersion version,
     int n) {
   return QuicUtils::GetFirstBidirectionalStreamId(version,
                                                   Perspective::IS_CLIENT) +
-         NextStreamId(version) * (n + 1);
+         // + 1 because spdy_session contains headers stream.
+         QuicUtils::StreamIdDelta(version) * (n + 1);
 }
 
 QuicStreamId GetNthServerInitiatedBidirectionalStreamId(

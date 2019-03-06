@@ -4,7 +4,6 @@
 
 #include "net/third_party/quic/quartc/quartc_session.h"
 
-#include "build/build_config.h"
 #include "net/third_party/quic/core/quic_simple_buffer_allocator.h"
 #include "net/third_party/quic/core/quic_types.h"
 #include "net/third_party/quic/core/tls_client_handshaker.h"
@@ -25,9 +24,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-// Tests flaky on iOS.
-// TODO(vasilvv): figure out what's wrong and re-enable if possible.
-#if !defined(OS_IOS)
 namespace quic {
 
 namespace {
@@ -561,4 +557,3 @@ TEST_F(QuartcSessionTest, PreSharedKeyHandshakeIs0RTT) {
 }  // namespace
 
 }  // namespace quic
-#endif  // !defined(OS_IOS)

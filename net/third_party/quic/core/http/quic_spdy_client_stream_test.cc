@@ -166,7 +166,8 @@ TEST_P(QuicSpdyClientStreamTest, TestFramingOnePacket) {
   EXPECT_EQ(body_, stream_->data());
 }
 
-TEST_F(QuicSpdyClientStreamTest, DISABLED_TestFramingExtraData) {
+TEST_P(QuicSpdyClientStreamTest,
+       QUIC_TEST_DISABLED_IN_CHROME(TestFramingExtraData)) {
   QuicString large_body = "hello world!!!!!!";
 
   auto headers = AsHeaderList(headers_);

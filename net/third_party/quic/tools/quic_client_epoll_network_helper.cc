@@ -11,7 +11,6 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
-#include "base/run_loop.h"
 #include "net/third_party/quic/core/crypto/quic_random.h"
 #include "net/third_party/quic/core/http/spdy_utils.h"
 #include "net/third_party/quic/core/quic_connection.h"
@@ -23,6 +22,7 @@
 #include "net/third_party/quic/platform/api/quic_bug_tracker.h"
 #include "net/third_party/quic/platform/api/quic_logging.h"
 #include "net/third_party/quic/platform/api/quic_ptr_util.h"
+#include "net/third_party/quic/platform/api/quic_system_event_loop.h"
 #include "net/third_party/quic/platform/impl/quic_socket_utils.h"
 
 #ifndef SO_RXQ_OVFL
@@ -118,7 +118,7 @@ void QuicClientEpollNetworkHelper::CleanUpUDPSocketImpl(int fd) {
 }
 
 void QuicClientEpollNetworkHelper::RunEventLoop() {
-  base::RunLoop().RunUntilIdle();
+  QuicRunSystemEventLoopIteration();
   epoll_server_->WaitForEventsAndExecuteCallbacks();
 }
 

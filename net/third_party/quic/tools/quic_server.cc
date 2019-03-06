@@ -169,6 +169,8 @@ void QuicServer::Shutdown() {
     dispatcher_->Shutdown();
   }
 
+  epoll_server_.Shutdown();
+
   close(fd_);
   fd_ = -1;
 }

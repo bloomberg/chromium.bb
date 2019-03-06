@@ -292,3 +292,6 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_termination_packets, false)
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_deprecate_ack_bundling_mode,
           false)
+
+// If true, enforce that QUIC CHLOs fit in one packet.
+QUIC_FLAG(bool, FLAGS_quic_enforce_single_packet_chlo, true)

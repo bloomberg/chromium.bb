@@ -63,8 +63,6 @@
 #include <utility>
 #include <vector>
 
-#include "net/third_party/quic/platform/api/quic_string.h"
-
 namespace quic {
 
 template <typename T>
