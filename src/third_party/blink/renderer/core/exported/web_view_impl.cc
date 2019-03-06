@@ -1966,7 +1966,7 @@ void WebViewImpl::DidChangeWindowRect()
   CustomEvent* event = CustomEvent::Create(
       ToScriptStateForMainWorld(MainFrameImpl()->GetFrame()),
       "bbWindowRectChanged",
-      eventInit);
+      &eventInit);
   MainFrameImpl()->GetFrame()->DomWindow()->DispatchEvent(*event);
 }
 
