@@ -48,6 +48,7 @@ include_rules = [
   "+components/ntp_snippets",
   "+components/ntp_tiles",
   "+components/omnibox/browser",
+  "+components/omnibox/common",
   "+components/open_from_clipboard",
   "+components/password_manager/core/browser",
   "+components/password_manager/core/common",
