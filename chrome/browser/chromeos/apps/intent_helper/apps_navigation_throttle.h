@@ -13,7 +13,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/apps/intent_helper/apps_navigation_types.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "url/gurl.h"
@@ -26,6 +25,10 @@ class WebContents;
 class IntentPickerAutoDisplayService;
 
 namespace chromeos {
+
+enum class AppsNavigationAction;
+enum class IntentPickerCloseReason;
+struct IntentPickerAppInfo;
 
 // Allows navigation to be routed to an installed app on Chrome OS, and provides
 // a static method for showing an intent picker for the current URL to display

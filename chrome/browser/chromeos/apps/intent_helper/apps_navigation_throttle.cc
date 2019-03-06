@@ -26,7 +26,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/common/chrome_features.h"
-#include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "components/arc/metrics/arc_metrics_constants.h"
 #include "content/public/browser/browser_context.h"
@@ -210,7 +209,7 @@ void AppsNavigationThrottle::OnIntentPickerClosed(
       // TODO(crbug.com/826982): This workaround can be removed when preferences
       // are no longer persisted within the ARC container, it was necessary
       // since chrome browser is neither a PWA or ARC app.
-      if (close_reason == chromeos::IntentPickerCloseReason::STAY_IN_CHROME &&
+      if (close_reason == IntentPickerCloseReason::STAY_IN_CHROME &&
           should_persist) {
         arc::ArcIntentPickerAppFetcher::MaybeLaunchOrPersistArcApp(
             url, launch_name, /*should_launch_app=*/false,
@@ -219,8 +218,7 @@ void AppsNavigationThrottle::OnIntentPickerClosed(
       // We reach here if the picker was closed without an app being chosen,
       // e.g. due to the tab being closed. Keep count of this scenario so we can
       // stop the UI from showing after 2+ dismissals.
-      if (close_reason ==
-          chromeos::IntentPickerCloseReason::DIALOG_DEACTIVATED) {
+      if (close_reason == IntentPickerCloseReason::DIALOG_DEACTIVATED) {
         if (ui_auto_display_service)
           ui_auto_display_service->IncrementCounter(url);
       }
