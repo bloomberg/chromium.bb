@@ -433,7 +433,9 @@ VkFormat ToVkFormat(ResourceFormat format) {
     case BGRX_1010102:
       return VK_FORMAT_A2B10G10R10_UNORM_PACK32;
     case ALPHA_8:
+      return VK_FORMAT_R8_UNORM;
     case LUMINANCE_8:
+      return VK_FORMAT_R8_UNORM;
     case LUMINANCE_F16:
     case YVU_420:
     case YUV_420_BIPLANAR:
@@ -441,7 +443,7 @@ VkFormat ToVkFormat(ResourceFormat format) {
     case ETC1:
       break;
   }
-  NOTREACHED();
+  NOTREACHED() << "Unsupported format " << format;
   return VK_FORMAT_UNDEFINED;
 }
 #endif
