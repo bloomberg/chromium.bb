@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <algorithm>
 #include <functional>
 #include <limits>
 #include <memory>
@@ -15,6 +16,7 @@
 #include <vector>
 
 #include "base/containers/adapters.h"
+#include "base/logging.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
@@ -22,6 +24,43 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
+
+TEST(ValuesTest, SizeOfValue) {
+  // Ensure that base::Value is as small as possible, i.e. that there is
+  // no wasted space after the inner value due to alignment constraints.
+  // Distinguish between the 'header' that includes |type_| and |is_alive_|
+  // and the inner value that follows it, which can be a bool, int, double,
+  // string, blob, list or dict.
+#define INNER_TYPES_LIST(X)            \
+  X(bool, bool_value_)                 \
+  X(int, int_value_)                   \
+  X(double, double_value_)             \
+  X(std::string, string_value_)        \
+  X(Value::BlobStorage, binary_value_) \
+  X(Value::ListStorage, list_)         \
+  X(Value::DictStorage, dict_)
+
+#define INNER_STRUCT_LIMIT(type, value) offsetof(Value, value) + sizeof(type),
+
+  // Return the maximum size in bytes of each inner struct inside base::Value
+  size_t max_inner_struct_limit =
+      std::max({INNER_TYPES_LIST(INNER_STRUCT_LIMIT)});
+
+  // Ensure that base::Value is not larger than necessary, i.e. that there is
+  // no un-necessary padding afte the structs due to alignment constraints of
+  // one of the inner fields.
+  EXPECT_EQ(max_inner_struct_limit, sizeof(Value));
+  if (max_inner_struct_limit != sizeof(Value)) {
+    // The following are useful to understand what's wrong when the EXPECT_EQ()
+    // above actually fails.
+#define PRINT_INNER_FIELD_INFO(x, y) \
+  LOG(INFO) << #y " type=" #x " size=" << sizeof(x) << " align=" << alignof(x);
+
+    LOG(INFO) << "Value size=" << sizeof(Value) << " align=" << alignof(Value);
+    INNER_TYPES_LIST(PRINT_INNER_FIELD_INFO)
+    LOG(INFO) << "max_inner_struct_limit=" << max_inner_struct_limit;
+  }
+}
 
 TEST(ValuesTest, TestNothrow) {
   static_assert(std::is_nothrow_move_constructible<Value>::value,
