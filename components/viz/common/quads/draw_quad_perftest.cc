@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/time/time.h"
-#include "cc/base/lap_timer.h"
+#include "base/timer/lap_timer.h"
 #include "components/viz/common/quads/draw_quad.h"
 #include "components/viz/common/quads/render_pass.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
@@ -104,7 +104,7 @@ class DrawQuadPerfTest : public testing::Test {
  private:
   std::unique_ptr<RenderPass> render_pass_;
   SharedQuadState* shared_state_;
-  cc::LapTimer timer_;
+  base::LapTimer timer_;
 };
 
 TEST_F(DrawQuadPerfTest, IterateResources) {

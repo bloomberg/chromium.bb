@@ -13,7 +13,7 @@
 #include "base/strings/string_piece.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
-#include "cc/base/lap_timer.h"
+#include "base/timer/lap_timer.h"
 #include "cc/layers/layer.h"
 #include "cc/test/fake_content_layer_client.h"
 #include "cc/test/fake_layer_tree_host_client.h"
@@ -62,17 +62,13 @@ class LayerTreeHostCommonPerfTest : public LayerTreeTest {
 
   void AfterTest() override {
     CHECK(!test_name_.empty()) << "Must SetTestName() before TearDown().";
-    perf_test::PrintResult("calc_draw_props_time",
-                           "",
-                           test_name_,
-                           1000 * timer_.MsPerLap(),
-                           "us",
-                           true);
+    perf_test::PrintResult("calc_draw_props_time", "", test_name_,
+                           timer_.TimePerLap().InMicrosecondsF(), "us", true);
   }
 
  protected:
   FakeContentLayerClient content_layer_client_;
-  LapTimer timer_;
+  base::LapTimer timer_;
   std::string test_name_;
   std::string json_;
 };

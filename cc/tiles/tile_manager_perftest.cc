@@ -10,7 +10,7 @@
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "cc/base/lap_timer.h"
+#include "base/timer/lap_timer.h"
 #include "cc/raster/raster_buffer.h"
 #include "cc/test/fake_impl_task_runner_provider.h"
 #include "cc/test/fake_layer_tree_frame_sink.h"
@@ -292,7 +292,7 @@ class TileManagerPerfTest : public TestLayerTreeHostBase {
   TileManager* tile_manager() { return host_impl()->tile_manager(); }
 
  protected:
-  LapTimer timer_;
+  base::LapTimer timer_;
 };
 
 // Failing.  https://crbug.com/792995

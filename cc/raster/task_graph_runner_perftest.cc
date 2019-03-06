@@ -11,8 +11,8 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/time/time.h"
+#include "base/timer/lap_timer.h"
 #include "cc/base/completion_event.h"
-#include "cc/base/lap_timer.h"
 #include "cc/raster/synchronous_task_graph_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_test.h"
@@ -274,7 +274,7 @@ class TaskGraphRunnerPerfTest : public testing::Test {
   // minimal additional complexity over the TaskGraphWorkQueue helpers.
   std::unique_ptr<SynchronousTaskGraphRunner> task_graph_runner_;
   NamespaceToken namespace_token_;
-  LapTimer timer_;
+  base::LapTimer timer_;
 };
 
 TEST_F(TaskGraphRunnerPerfTest, BuildTaskGraph) {

@@ -4,7 +4,7 @@
 
 #include <vector>
 
-#include "cc/base/lap_timer.h"
+#include "base/timer/lap_timer.h"
 #include "cc/paint/draw_image.h"
 #include "cc/paint/paint_image_builder.h"
 #include "cc/raster/tile_task.h"
@@ -82,7 +82,7 @@ class SoftwareImageDecodeCachePerfTest : public testing::Test {
   }
 
  private:
-  LapTimer timer_;
+  base::LapTimer timer_;
 };
 
 TEST_F(SoftwareImageDecodeCachePerfTest, FromDrawImage) {

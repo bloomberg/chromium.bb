@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/base/lap_timer.h"
+#include "base/timer/lap_timer.h"
 #include "cc/test/fake_output_surface_client.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/quads/compositor_frame.h"
@@ -157,7 +157,7 @@ class SurfaceAggregatorPerfTest : public testing::Test {
   scoped_refptr<TestContextProvider> context_provider_;
   std::unique_ptr<DisplayResourceProvider> resource_provider_;
   std::unique_ptr<SurfaceAggregator> aggregator_;
-  cc::LapTimer timer_;
+  base::LapTimer timer_;
 };
 
 TEST_F(SurfaceAggregatorPerfTest, ManySurfacesOpaque) {
