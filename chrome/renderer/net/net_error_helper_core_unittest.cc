@@ -390,7 +390,7 @@ class NetErrorHelperCoreTest : public testing::Test,
     last_error_html_ = html;
   }
 
-  void EnablePageHelperFunctions(net::Error net_error) override {
+  void EnablePageHelperFunctions() override {
     enable_page_helper_functions_count_++;
   }
 
