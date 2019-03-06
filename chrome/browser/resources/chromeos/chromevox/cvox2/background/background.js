@@ -187,7 +187,11 @@ Background.prototype = {
     cvox.ChromeVox.braille.thaw();
 
     if (newRange && !newRange.isValid()) {
-      chrome.accessibilityPrivate.setFocusRing([]);
+      chrome.accessibilityPrivate.setFocusRings([{
+        rects: [],
+        type: chrome.accessibilityPrivate.FocusType.GLOW,
+        color: constants.FOCUS_COLOR
+      }]);
       return;
     }
 
@@ -197,7 +201,11 @@ Background.prototype = {
     });
 
     if (!this.currentRange_) {
-      chrome.accessibilityPrivate.setFocusRing([]);
+      chrome.accessibilityPrivate.setFocusRings([{
+        rects: [],
+        type: chrome.accessibilityPrivate.FocusType.GLOW,
+        color: constants.FOCUS_COLOR
+      }]);
       return;
     }
 

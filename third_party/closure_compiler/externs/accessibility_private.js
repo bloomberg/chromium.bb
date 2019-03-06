@@ -119,6 +119,30 @@ chrome.accessibilityPrivate.SelectToSpeakState = {
 };
 
 /**
+ * Information about a focus ring.
+ * @typedef {{
+ *   id: ?string,
+ *   rects: !Array<!chrome.accessibilityPrivate.ScreenRect>,
+ *   type: chrome.accessibilityPrivate.FocusType,
+ *   color: string,
+ *   secondaryColor: ?string
+ * }}
+ */
+chrome.accessibilityPrivate.FocusRingInfo;
+
+/** @enum {string} */
+chrome.accessibilityPrivate.FocusType = {
+  // The focus ring used by ChromeVox and Select-to-Speak. Fades from full
+  // opacity to full transparency. Does not support two colors.
+  GLOW: 'glow',
+  // The focus ring used by Switch Access. Supports two-color focus rings.
+  SOLID: 'solid',
+  // Used by Switch Access to indicate the current scope. Supports two-color
+  // focus rings.
+  DASHED: 'dashed',
+}
+
+/**
  * Called to request battery status from Chrome OS system.
  * @param {function(string):void} callback Returns battery description as a
  *     string.
@@ -135,12 +159,11 @@ chrome.accessibilityPrivate.setNativeAccessibilityEnabled = function(enabled) {}
 
 /**
  * Sets the bounds of the accessibility focus ring.
- * @param {!Array<!chrome.accessibilityPrivate.ScreenRect>} rects Array of
- *     rectangles to draw the accessibility focus ring around.
- * @param {string=} color CSS-style hex color string beginning with # like
- *     #FF9982 or #EEE.
+ * @param {!Array<!chrome.accessibilityPrivate.FocusRingInfo>} focusRings Array of
+ *     focus rings to draw, each with information about the position onscreen,
+ *     display type, and colors to be used.
  */
-chrome.accessibilityPrivate.setFocusRing = function(rects, color) {};
+chrome.accessibilityPrivate.setFocusRings = function(focusRings) {};
 
 /**
  * Sets the bounds of the accessibility highlight.

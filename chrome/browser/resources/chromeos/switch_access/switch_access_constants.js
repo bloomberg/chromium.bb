@@ -29,6 +29,22 @@ const SAConstants = {
   FOCUS_CLASS: 'focus',
 
   /**
+   * The ID used for the focus ring around the current element.
+   * Must be kept in sync with accessibility_manager.cc.
+   * @type {string}
+   * @const
+   */
+  PRIMARY_FOCUS: 'primary',
+
+  /**
+   * The ID used for the focus ring around the current scope.
+   * Must be kept in sync with accessibility_manager.cc.
+   * @type {string}
+   * @const
+   */
+  SCOPE_FOCUS: 'scope',
+
+  /**
    * Actions available in the Switch Access Menu.
    * @enum {string}
    * @const

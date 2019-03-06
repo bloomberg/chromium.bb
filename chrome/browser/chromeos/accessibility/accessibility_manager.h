@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_ACCESSIBILITY_ACCESSIBILITY_MANAGER_H_
 #define CHROME_BROWSER_CHROMEOS_ACCESSIBILITY_ACCESSIBILITY_MANAGER_H_
 
+#include <map>
 #include <memory>
 #include <set>
 #include <string>
@@ -304,6 +305,13 @@ class AccessibilityManager
   // Hides focus ring on screen.
   void HideFocusRing(std::string caller_id);
 
+  // Initializes the focus rings when an extension loads.
+  void InitializeFocusRings(const std::string& extension_id);
+
+  // Hides all focus rings for the extension, and removes that extension from
+  // |focus_ring_names_for_extension_id_|.
+  void RemoveFocusRings(const std::string& extension_id);
+
   // Draws a highlight at the given rects in screen coordinates. Rects may be
   // overlapping and will be merged into one layer. This looks similar to
   // selecting a region with the cursor, except it is drawn in the foreground
@@ -329,6 +337,10 @@ class AccessibilityManager
   // Sets the bluetooth braille display device address for the current user.
   void UpdateBluetoothBrailleDisplayAddress(const std::string& address);
 
+  // Create a focus ring ID from the extension ID and the name of the ring.
+  const std::string GetFocusRingId(const std::string& extension_id,
+                                   const std::string& focus_ring_name);
+
   // Test helpers:
   void SetProfileForTest(Profile* profile);
   static void SetBrailleControllerForTest(
@@ -349,7 +361,9 @@ class AccessibilityManager
   void PostUnloadChromeVox();
   void PostSwitchChromeVoxProfile();
 
+  void PostLoadSelectToSpeak();
   void PostUnloadSelectToSpeak();
+
   void PostLoadSwitchAccess();
   void PostUnloadSwitchAccess();
 
@@ -461,6 +475,9 @@ class AccessibilityManager
   // focus ring feature.
   ash::mojom::AccessibilityFocusRingControllerPtr
       accessibility_focus_ring_controller_;
+
+  std::map<std::string, std::set<std::string>>
+      focus_ring_names_for_extension_id_;
 
   bool app_terminating_ = false;
 
