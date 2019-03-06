@@ -14,6 +14,7 @@
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/unguessable_token.h"
 #include "base/value_conversions.h"
@@ -22,6 +23,7 @@
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "media/base/android/media_drm_bridge.h"
+#include "media/base/media_switches.h"
 #include "services/network/test/test_network_connection_tracker.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -45,8 +47,15 @@ constexpr size_t kConnectionAttempts = 5;
 
 class MediaDrmOriginIdManagerTest : public testing::Test {
  public:
-  MediaDrmOriginIdManagerTest() {
-    profile_ = std::make_unique<TestingProfile>();
+  // By default MediaDrmOriginIdManager will attempt to pre-provision origin
+  // IDs at startup. For most tests this should be disabled.
+  void Initialize(bool enable_preprovision_at_startup = false) {
+    scoped_feature_list_.InitWithFeatureState(
+        media::kMediaDrmPreprovisioningAtStartup,
+        enable_preprovision_at_startup);
+
+    TestingProfile::Builder profile_builder;
+    profile_ = profile_builder.Build();
     origin_id_manager_ =
         MediaDrmOriginIdManagerFactory::GetForProfile(profile_.get());
     origin_id_manager_->SetProvisioningResultCBForTesting(
@@ -77,7 +86,6 @@ class MediaDrmOriginIdManagerTest : public testing::Test {
 
   void PreProvision() {
     origin_id_manager_->PreProvisionIfNecessary();
-    test_browser_thread_bundle_.RunUntilIdle();
   }
 
   std::string DisplayPref(const base::Value* value) {
@@ -95,26 +103,73 @@ class MediaDrmOriginIdManagerTest : public testing::Test {
     return profile_->GetTestingPrefService()->GetDictionary(path);
   }
 
+  // On devices that support per-application provisioning pre-provisioning
+  // should fully populate the list of pre-provisioned origin IDs (as long as
+  // provisioning succeeds). On devices that don't the list should be empty.
+  void CheckPreferenceForPreProvisioning() {
+    DVLOG(1) << "Checking preference " << kMediaDrmOriginIds;
+    auto* pref = FindPreference(kMediaDrmOriginIds);
+    EXPECT_TRUE(pref);
+    EXPECT_EQ(kMediaDrmOriginIds, pref->name());
+    EXPECT_EQ(base::Value::Type::DICTIONARY, pref->GetType());
+
+    auto* dict = pref->GetValue();
+    EXPECT_TRUE(dict->is_dict());
+    DVLOG(1) << DisplayPref(pref->GetValue());
+
+    auto* list = dict->FindKey(kAvailableOriginIds);
+    if (media::MediaDrmBridge::IsPerApplicationProvisioningSupported()) {
+      // PreProvision() should have pre-provisioned
+      // |kExpectedPreferenceListSize| origin IDs.
+      DVLOG(1) << "Per-application provisioning is supported.";
+      EXPECT_TRUE(list->is_list());
+      EXPECT_EQ(list->GetList().size(), kExpectedPreferenceListSize);
+    } else {
+      // No pre-provisioned origin IDs should exist. In fact, the dictionary
+      // should not have any entries.
+      DVLOG(1) << "Per-application provisioning is NOT supported.";
+      EXPECT_FALSE(list);
+      EXPECT_EQ(dict->DictSize(), 0u);
+    }
+  }
+
  protected:
   content::TestBrowserThreadBundle test_browser_thread_bundle_{
       base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
       base::test::ScopedTaskEnvironment::NowSource::MAIN_THREAD_MOCK_TIME};
+  base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<TestingProfile> profile_;
   MediaDrmOriginIdManager* origin_id_manager_;
 };
 
-TEST_F(MediaDrmOriginIdManagerTest, Creation) {
+TEST_F(MediaDrmOriginIdManagerTest, DisablePreProvisioningAtStartup) {
   // Test verifies that the construction of MediaDrmOriginIdManager is
-  // successful.
+  // successful. Pre-provisioning origin IDs at startup should be disabled
+  // so no calls to GetProvisioningResult() are expected.
+  Initialize();
+
+  EXPECT_FALSE(
+      base::FeatureList::IsEnabled(media::kMediaDrmPreprovisioningAtStartup));
+
+  test_browser_thread_bundle_.RunUntilIdle();
+
+  // Preference should not exist. Not using GetDictionary() as it will
+  // create the preference if it doesn't exist.
+  EXPECT_FALSE(
+      profile_->GetTestingPrefService()->HasPrefPath(kMediaDrmOriginIds));
 }
 
 TEST_F(MediaDrmOriginIdManagerTest, OneOriginId) {
   EXPECT_CALL(*this, GetProvisioningResult()).WillRepeatedly(Return(true));
+  Initialize();
+
   EXPECT_TRUE(GetOriginId());
 }
 
 TEST_F(MediaDrmOriginIdManagerTest, TwoOriginIds) {
   EXPECT_CALL(*this, GetProvisioningResult()).WillRepeatedly(Return(true));
+  Initialize();
+
   MediaDrmOriginId origin_id1 = GetOriginId();
   MediaDrmOriginId origin_id2 = GetOriginId();
   EXPECT_TRUE(origin_id1);
@@ -125,45 +180,34 @@ TEST_F(MediaDrmOriginIdManagerTest, TwoOriginIds) {
 TEST_F(MediaDrmOriginIdManagerTest, PreProvision) {
   // On devices that support per-application provisioning PreProvision() will
   // pre-provisioned several origin IDs and populate the preference. On devices
-  // that don't, the list will be empty. Note that simply finding the preference
-  // creates an empty one (as FindPreference() only returns NULL if the
-  // preference is not registered).
+  // that don't, the list will be empty.
   EXPECT_CALL(*this, GetProvisioningResult()).WillRepeatedly(Return(true));
+  Initialize();
+
   PreProvision();
+  test_browser_thread_bundle_.RunUntilIdle();
 
-  DVLOG(1) << "Checking preference " << kMediaDrmOriginIds;
-  auto* pref = FindPreference(kMediaDrmOriginIds);
-  EXPECT_TRUE(pref);
-  EXPECT_EQ(kMediaDrmOriginIds, pref->name());
-  EXPECT_EQ(base::Value::Type::DICTIONARY, pref->GetType());
+  CheckPreferenceForPreProvisioning();
+}
 
-  auto* dict = pref->GetValue();
-  EXPECT_TRUE(dict->is_dict());
-  DVLOG(1) << DisplayPref(pref->GetValue());
+TEST_F(MediaDrmOriginIdManagerTest, PreProvisionAtStartup) {
+  // Initialize without disabling kMediaDrmPreprovisioningAtStartup. Check
+  // that pre-provisioning actually runs at profile creation (on devices
+  // that support it).
+  EXPECT_CALL(*this, GetProvisioningResult()).WillRepeatedly(Return(true));
+  Initialize(true);
+  test_browser_thread_bundle_.RunUntilIdle();
 
-  if (media::MediaDrmBridge::IsPerApplicationProvisioningSupported()) {
-    DVLOG(1) << "Per-application provisioning is supported.";
-
-    // PreProvision() should have pre-provisioned |kExpectedPreferenceListSize|
-    // origin IDs.
-    auto* list = dict->FindKey(kAvailableOriginIds);
-    EXPECT_TRUE(list->is_list());
-    EXPECT_EQ(list->GetList().size(), kExpectedPreferenceListSize);
-  } else {
-    DVLOG(1) << "Per-application provisioning is NOT supported.";
-
-    // No pre-provisioned origin IDs should exist. In fact, the dictionary
-    // should not have any entries.
-    auto* list = dict->FindKey(kAvailableOriginIds);
-    EXPECT_FALSE(list);
-    EXPECT_EQ(dict->DictSize(), 0u);
-  }
+  CheckPreferenceForPreProvisioning();
 }
 
 TEST_F(MediaDrmOriginIdManagerTest, GetOriginIdCreatesList) {
   // After fetching an origin ID the code should pre-provision more origins
-  // and fill up the list.
+  // and fill up the list. This is independent of whether the device supports
+  // per-application provisioning or not.
   EXPECT_CALL(*this, GetProvisioningResult()).WillRepeatedly(Return(true));
+  Initialize();
+
   GetOriginId();
   test_browser_thread_bundle_.RunUntilIdle();
 
@@ -185,6 +229,8 @@ TEST_F(MediaDrmOriginIdManagerTest, OriginIdNotInList) {
   // of pre-provisioned origin IDs (asynchronously). It doesn't matter if the
   // device supports per-application provisioning or not.
   EXPECT_CALL(*this, GetProvisioningResult()).WillRepeatedly(Return(true));
+  Initialize();
+
   MediaDrmOriginId origin_id = GetOriginId();
   test_browser_thread_bundle_.RunUntilIdle();
 
@@ -199,16 +245,23 @@ TEST_F(MediaDrmOriginIdManagerTest, OriginIdNotInList) {
 TEST_F(MediaDrmOriginIdManagerTest, ProvisioningFail) {
   // Provisioning fails, so GetOriginId() returns an empty origin ID.
   EXPECT_CALL(*this, GetProvisioningResult()).WillOnce(testing::Return(false));
+  Initialize();
+
   EXPECT_FALSE(GetOriginId());
 
+  test_browser_thread_bundle_.RunUntilIdle();
+
   // After failure the preference should contain |kExpireableToken| only if
-  // per-application provisioning is not supported.
+  // per-application provisioning is NOT supported.
   DVLOG(1) << "Checking preference " << kMediaDrmOriginIds;
   auto* dict = GetDictionary(kMediaDrmOriginIds);
   DVLOG(1) << DisplayPref(dict);
+
   if (media::MediaDrmBridge::IsPerApplicationProvisioningSupported()) {
+    DVLOG(1) << "Per-application provisioning is supported.";
     EXPECT_FALSE(dict->FindKey(kExpirableToken));
   } else {
+    DVLOG(1) << "Per-application provisioning is NOT supported.";
     EXPECT_TRUE(dict->FindKey(kExpirableToken));
   }
 }
@@ -218,6 +271,8 @@ TEST_F(MediaDrmOriginIdManagerTest, ProvisioningSuccessAfterFail) {
   EXPECT_CALL(*this, GetProvisioningResult())
       .WillOnce(Return(false))
       .WillRepeatedly(Return(true));
+  Initialize();
+
   EXPECT_FALSE(GetOriginId());
   EXPECT_TRUE(GetOriginId());  // Provisioning will succeed on the second call.
 
@@ -229,6 +284,11 @@ TEST_F(MediaDrmOriginIdManagerTest, ProvisioningSuccessAfterFail) {
   auto* dict = GetDictionary(kMediaDrmOriginIds);
   DVLOG(1) << DisplayPref(dict);
   EXPECT_FALSE(dict->FindKey(kExpirableToken));
+
+  // As well, the list of available pre-provisioned origin IDs should be full.
+  auto* list = dict->FindKey(kAvailableOriginIds);
+  EXPECT_TRUE(list->is_list());
+  EXPECT_EQ(list->GetList().size(), kExpectedPreferenceListSize);
 }
 
 TEST_F(MediaDrmOriginIdManagerTest, ProvisioningAfterExpiration) {
@@ -237,6 +297,8 @@ TEST_F(MediaDrmOriginIdManagerTest, ProvisioningAfterExpiration) {
   EXPECT_CALL(*this, GetProvisioningResult())
       .WillOnce(Return(false))
       .WillRepeatedly(Return(true));
+  Initialize();
+
   EXPECT_FALSE(GetOriginId());
   test_browser_thread_bundle_.RunUntilIdle();
 
@@ -271,6 +333,7 @@ TEST_F(MediaDrmOriginIdManagerTest, ProvisioningAfterExpiration) {
     // to pre-provision origin IDs any time.
     DVLOG(1) << "Per-application provisioning is supported.";
     EXPECT_EQ(list->GetList().size(), kExpectedPreferenceListSize);
+    EXPECT_FALSE(dict->FindKey(kExpirableToken));
   } else {
     // Per-application provisioning is not supported, so attempting to
     // pre-provision origin IDs after |kExpirationDelta| should not do anything.
@@ -283,6 +346,7 @@ TEST_F(MediaDrmOriginIdManagerTest, ProvisioningAfterExpiration) {
 
 TEST_F(MediaDrmOriginIdManagerTest, Incognito) {
   // No MediaDrmOriginIdManager should be created for an incognito profile.
+  Initialize();
   auto* incognito_profile = profile_->GetOffTheRecordProfile();
   EXPECT_FALSE(
       MediaDrmOriginIdManagerFactory::GetForProfile(incognito_profile));
@@ -298,6 +362,8 @@ TEST_F(MediaDrmOriginIdManagerTest, NetworkChange) {
   EXPECT_CALL(*this, GetProvisioningResult())
       .WillOnce(Return(false))
       .WillRepeatedly(Return(true));
+  Initialize();
+
   EXPECT_FALSE(GetOriginId());
   test_browser_thread_bundle_.RunUntilIdle();
 
@@ -345,6 +411,8 @@ TEST_F(MediaDrmOriginIdManagerTest, NetworkChangeFails) {
   EXPECT_CALL(*this, GetProvisioningResult())
       .Times(kConnectionAttempts + 1)
       .WillOnce(Return(false));
+  Initialize();
+
   EXPECT_FALSE(GetOriginId());
   test_browser_thread_bundle_.RunUntilIdle();
 

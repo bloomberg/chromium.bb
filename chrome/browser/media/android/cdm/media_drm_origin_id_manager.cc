@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -22,6 +23,7 @@
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/provision_fetcher_factory.h"
 #include "media/base/android/media_drm_bridge.h"
+#include "media/base/media_switches.h"
 #include "media/base/provision_fetcher.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -313,6 +315,16 @@ MediaDrmOriginIdManager::MediaDrmOriginIdManager(PrefService* pref_service)
     : pref_service_(pref_service), weak_factory_(this) {
   DVLOG(1) << __func__;
   DCHECK(pref_service_);
+
+  // This manager can be started when the user's profile is loaded, if
+  // |kMediaDrmPreprovisioningAtStartup| is enabled. In that case attempt to
+  // pre-provisioning origin IDs if needed. If this manager is only loaded when
+  // needed (|kMediaDrmPreprovisioningAtStartup| not enabled), then the caller
+  // is most likely going to call GetOriginId(), so let it pre-provision origin
+  // IDs if necessary. This flag is also used by testing so that it can check
+  // pre-provisioning directly.
+  if (base::FeatureList::IsEnabled(media::kMediaDrmPreprovisioningAtStartup))
+    PreProvisionIfNecessary();
 }
 
 MediaDrmOriginIdManager::~MediaDrmOriginIdManager() {
