@@ -857,7 +857,9 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest,
   EXPECT_EQ(download::DownloadItem::CANCELLED, downloads[0]->GetState());
 }
 
-IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, IncognitoDownloadFile) {
+// TODO(crbug.com/938672): Reenable this.
+IN_PROC_BROWSER_TEST_F(DownloadNotificationTest,
+                       DISABLED_IncognitoDownloadFile) {
   PrepareIncognitoBrowser();
 
   // Starts an incognito download.
@@ -900,8 +902,9 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, IncognitoDownloadFile) {
   chrome::CloseWindow(incognito_browser());
 }
 
+// TODO(crbug.com/938672): Reenable this.
 IN_PROC_BROWSER_TEST_F(DownloadNotificationTest,
-                       SimultaneousIncognitoAndNormalDownloads) {
+                       DISABLED_SimultaneousIncognitoAndNormalDownloads) {
   PrepareIncognitoBrowser();
 
   GURL url_incognito(SlowDownloadInterceptor::kUnknownSizeUrl);
