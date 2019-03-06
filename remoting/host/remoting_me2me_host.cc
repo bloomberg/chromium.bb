@@ -316,6 +316,7 @@ class HostProcess : public ConfigWatcher::Delegate,
   bool OnHostTokenUrlPolicyUpdate(base::DictionaryValue* policies);
   bool OnPairingPolicyUpdate(base::DictionaryValue* policies);
   bool OnGnubbyAuthPolicyUpdate(base::DictionaryValue* policies);
+  bool OnFileTransferPolicyUpdate(base::DictionaryValue* policies);
 
   void InitializeSignaling();
 
@@ -465,11 +466,6 @@ HostProcess::HostProcess(std::unique_ptr<ChromotingHostContext> context,
   //     ->set_use_update_notifications(true);
   // And remove the same line from me2me_desktop_environment.cc.
 
-
-  // TODO(jarhar): Replace this ifdef with a chrome policy.
-#ifdef CHROME_REMOTE_DESKTOP_FILE_TRANSFER_ENABLED
-  desktop_environment_options_.set_enable_file_transfer(true);
-#endif
 
   StartOnUiThread();
 }
@@ -1082,6 +1078,7 @@ void HostProcess::OnPolicyUpdate(
   restart_required |= OnHostTokenUrlPolicyUpdate(policies.get());
   restart_required |= OnPairingPolicyUpdate(policies.get());
   restart_required |= OnGnubbyAuthPolicyUpdate(policies.get());
+  restart_required |= OnFileTransferPolicyUpdate(policies.get());
 
   policy_state_ = POLICY_LOADED;
 
@@ -1404,6 +1401,26 @@ bool HostProcess::OnGnubbyAuthPolicyUpdate(base::DictionaryValue* policies) {
     HOST_LOG << "Policy disables security key auth.";
   }
 
+  return true;
+}
+
+bool HostProcess::OnFileTransferPolicyUpdate(base::DictionaryValue* policies) {
+  DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
+
+  bool file_transfer_enabled;
+  if (!policies->GetBoolean(policy::key::kRemoteAccessHostAllowFileTransfer,
+                            &file_transfer_enabled)) {
+    return false;
+  }
+  desktop_environment_options_.set_enable_file_transfer(file_transfer_enabled);
+
+  if (file_transfer_enabled) {
+    HOST_LOG << "Policy enables file transfer.";
+  } else {
+    HOST_LOG << "Policy disables file transfer.";
+  }
+
+  // Restart required.
   return true;
 }
 
