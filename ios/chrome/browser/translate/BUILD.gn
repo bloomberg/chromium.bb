@@ -123,3 +123,32 @@ source_set("eg_tests") {
   ]
   libs = [ "XCTest.framework" ]
 }
+
+source_set("external_url_eg_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  testonly = true
+  sources = [
+    "legacy_translate_infobar_egtest.mm",
+  ]
+  deps = [
+    ":translate",
+    "//base",
+    "//base/test:test_support",
+    "//components/language/ios/browser",
+    "//components/strings",
+    "//components/translate/core/browser",
+    "//components/translate/core/common",
+    "//components/translate/ios/browser",
+    "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/ui/translate:translate_ui",
+    "//ios/chrome/test/app:test_support",
+    "//ios/chrome/test/earl_grey:test_support",
+    "//ios/third_party/earl_grey:earl_grey+link",
+    "//ios/web:earl_grey_test_support",
+    "//ios/web/public/test",
+    "//ios/web/public/test/http_server",
+    "//net",
+    "//ui/base",
+  ]
+  libs = [ "XCTest.framework" ]
+}
