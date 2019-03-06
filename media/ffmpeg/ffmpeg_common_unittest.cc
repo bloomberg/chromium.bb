@@ -296,5 +296,31 @@ TEST_F(FFmpegCommonTest, VerifyUmaCodecHashes) {
   printf("</enum>\n");
 #endif
 }
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
+TEST_F(FFmpegCommonTest, VerifyH264Profile) {
+  // Open a file to get a real AVStreams from FFmpeg.
+  base::MemoryMappedFile file;
+  ASSERT_TRUE(file.Initialize(GetTestDataFilePath("bear-1280x720.mp4")));
+  InMemoryUrlProtocol protocol(file.data(), file.length(), false);
+  FFmpegGlue glue(&protocol);
+  ASSERT_TRUE(glue.OpenContext());
+  AVFormatContext* format_context = glue.format_context();
+
+  for (size_t i = 0; i < format_context->nb_streams; ++i) {
+    AVStream* stream = format_context->streams[i];
+    AVCodecParameters* codec_parameters = stream->codecpar;
+    AVMediaType codec_type = codec_parameters->codec_type;
+
+    if (codec_type == AVMEDIA_TYPE_VIDEO) {
+      VideoDecoderConfig video_config;
+      EXPECT_TRUE(AVStreamToVideoDecoderConfig(stream, &video_config));
+      EXPECT_EQ(H264PROFILE_HIGH, video_config.profile());
+    } else {
+      // Only process video.
+      continue;
+    }
+  }
+}
+#endif
 
 }  // namespace media
