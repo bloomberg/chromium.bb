@@ -19,6 +19,7 @@ import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.customtabs.TabObserverRegistrar;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.init.ActivityLifecycleDispatcher;
+import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
@@ -40,7 +41,7 @@ import dagger.Lazy;
  * {@link TrustedWebActivityModel} accordingly.
  */
 @ActivityScope
-public class TrustedWebActivityVerifier implements NativeInitObserver {
+public class TrustedWebActivityVerifier implements NativeInitObserver, Destroyable {
     /** The Digital Asset Link relationship used for Trusted Web Activities. */
     private final static int RELATIONSHIP = CustomTabsService.RELATION_HANDLE_ALL_URLS;
 
@@ -206,6 +207,12 @@ public class TrustedWebActivityVerifier implements NativeInitObserver {
         for (Runnable observer : mObservers) {
             observer.run();
         }
+    }
+
+    @Override
+    public void destroy() {
+        // Verification may finish after activity is destroyed.
+        mOriginVerifier.removeListener();
     }
 
     /**

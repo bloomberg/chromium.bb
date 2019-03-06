@@ -9,6 +9,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.customtabs.CustomTabsService;
 import android.support.customtabs.CustomTabsService.Relation;
 import android.text.TextUtils;
@@ -67,7 +68,7 @@ public class OriginVerifier {
     private final String mSignatureFingerprint;
     private final @Relation int mRelation;
     private long mNativeOriginVerifier;
-    private OriginVerificationListener mListener;
+    @Nullable private OriginVerificationListener mListener;
     private Origin mOrigin;
 
     /**
@@ -272,6 +273,13 @@ public class OriginVerifier {
                     BrowserServicesMetrics.VerificationResult.REQUEST_FAILURE);
             ThreadUtils.runOnUiThread(new VerifiedCallback(false, false));
         }
+    }
+
+    /**
+     * Removes the verification listener, but finishes the ongoing verification process, if any.
+     */
+    public void removeListener() {
+        mListener = null;
     }
 
     private static boolean shouldOverrideVerification(String packageName, Origin origin,
