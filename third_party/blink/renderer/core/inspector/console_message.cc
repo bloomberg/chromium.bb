@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -58,6 +59,44 @@ ConsoleMessage* ConsoleMessage::CreateFromWorker(
       kWorkerMessageSource, level, message, std::move(location));
   console_message->worker_id_ =
       IdentifiersFactory::IdFromToken(worker_thread->GetDevToolsWorkerToken());
+  return console_message;
+}
+
+ConsoleMessage* ConsoleMessage::CreateFromWebConsoleMessage(
+    const WebConsoleMessage& message,
+    LocalFrame* local_frame) {
+  MessageLevel web_core_message_level = kInfoMessageLevel;
+  switch (message.level) {
+    case mojom::ConsoleMessageLevel::kVerbose:
+      web_core_message_level = kVerboseMessageLevel;
+      break;
+    case mojom::ConsoleMessageLevel::kInfo:
+      web_core_message_level = kInfoMessageLevel;
+      break;
+    case mojom::ConsoleMessageLevel::kWarning:
+      web_core_message_level = kWarningMessageLevel;
+      break;
+    case mojom::ConsoleMessageLevel::kError:
+      web_core_message_level = kErrorMessageLevel;
+      break;
+  }
+
+  MessageSource message_source = message.nodes.empty()
+                                     ? kOtherMessageSource
+                                     : kRecommendationMessageSource;
+
+  ConsoleMessage* console_message = ConsoleMessage::Create(
+      message_source, web_core_message_level, message.text,
+      SourceLocation::Create(message.url, message.line_number,
+                             message.column_number, nullptr));
+
+  if (local_frame) {
+    Vector<DOMNodeId> nodes;
+    for (const WebNode& web_node : message.nodes)
+      nodes.push_back(DOMNodeIds::IdForNode(&(*web_node)));
+    console_message->SetNodes(local_frame, std::move(nodes));
+  }
+
   return console_message;
 }
 
