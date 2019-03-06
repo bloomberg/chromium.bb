@@ -15,6 +15,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.android_webview.AwContents;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 
 /**
@@ -76,7 +77,8 @@ public class AwJavaBridgeTest {
                 mActivityTestRule.executeJavaScriptAndWaitForResult(
                         awContents, mContentsClient, "typeof test.destroy"));
         int currentCallCount = client2.getOnPageFinishedHelper().getCallCount();
-        awContents.evaluateJavaScriptForTests("test.destroy()", null);
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> awContents.evaluateJavaScriptForTests("test.destroy()", null));
 
         client2.getOnPageFinishedHelper().waitForCallback(currentCallCount);
     }

@@ -526,7 +526,8 @@ public class AwActivityTestRule extends ActivityTestRule<AwTestRunnerActivity> {
         TestAwContentsClient.OnCreateWindowHelper onCreateWindowHelper =
                 parentAwContentsClient.getOnCreateWindowHelper();
         int currentCallCount = onCreateWindowHelper.getCallCount();
-        parentAwContents.evaluateJavaScriptForTests(triggerScript, null);
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> parentAwContents.evaluateJavaScriptForTests(triggerScript, null));
         onCreateWindowHelper.waitForCallback(
                 currentCallCount, 1, WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
     }
