@@ -40,7 +40,6 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/blink/public/common/loader//url_loader_factory_bundle.h"
-#include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 #include "url/origin.h"
@@ -58,7 +57,6 @@ void WorkerScriptFetchInitiator::Start(
     StoragePartitionImpl* storage_partition,
     CompletionCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
   DCHECK(storage_partition);
   DCHECK(resource_type == RESOURCE_TYPE_WORKER ||
          resource_type == RESOURCE_TYPE_SHARED_WORKER)
@@ -129,7 +127,6 @@ WorkerScriptFetchInitiator::CreateFactoryBundle(
     StoragePartitionImpl* storage_partition,
     bool file_support) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
 
   ContentBrowserClient::NonNetworkURLLoaderFactoryMap non_network_factories;
   GetContentClient()
@@ -254,7 +251,6 @@ void WorkerScriptFetchInitiator::CreateScriptLoaderOnIO(
         blob_url_loader_factory_info,
     CompletionCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
   DCHECK(resource_context);
 
   // Set up for service worker.

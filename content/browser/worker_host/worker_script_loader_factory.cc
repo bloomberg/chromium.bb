@@ -14,7 +14,6 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider_type.mojom.h"
 
 namespace content {
@@ -32,7 +31,6 @@ WorkerScriptLoaderFactory::WorkerScriptLoaderFactory(
       loader_factory_(std::move(loader_factory)) {
 #if DCHECK_IS_ON()
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
   // In the current implementation, dedicated workers use
   // ServiceWorkerProviderHost w/ kForSharedWorker.
   // TODO(nhiroki): Rename it to kForWorker for both dedicated workers and

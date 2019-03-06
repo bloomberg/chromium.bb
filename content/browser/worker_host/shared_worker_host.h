@@ -70,16 +70,13 @@ class CONTENT_EXPORT SharedWorkerHost
 
   // Starts the SharedWorker in the renderer process.
   //
-  // S13nServiceWorker:
   // |service_worker_provider_info| is sent to the renderer process and contains
   // information about its ServiceWorkerProviderHost, the browser-side host for
   // supporting the shared worker as a service worker client.
   //
-  // S13nServiceWorker (non-NetworkService):
   // |main_script_loader_factory| is sent to the renderer process and is to be
-  // used to request the shared worker's main script. Currently it's only
-  // non-null when S13nServiceWorker is enabled but NetworkService is disabled,
-  // to allow service worker machinery to observe the request.
+  // used to request the shared worker's main script. This is null when
+  // NetworkService is enabled in favor of |main_script_load_params|.
   //
   // NetworkService (PlzWorker):
   // |main_script_load_params| is sent to the renderer process and to be used to
@@ -97,8 +94,8 @@ class CONTENT_EXPORT SharedWorkerHost
   // a ServiceWorker object about the controller is prepared, it is registered
   // to |controller_service_worker_object_host|. These can be non-null only when
   // NetworkService is enabled.
-  // When S13nServiceWorker is enabled but NetworkService is disabled, the
-  // service worker controller is sent via ServiceWorkerContainer#SetController.
+  // When NetworkService is disabled, the service worker controller is sent via
+  // ServiceWorkerContainer#SetController.
   void Start(
       blink::mojom::SharedWorkerFactoryPtr factory,
       blink::mojom::ServiceWorkerProviderInfoForWorkerPtr

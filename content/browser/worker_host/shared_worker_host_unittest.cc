@@ -29,7 +29,6 @@
 #include "services/network/public/cpp/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
-#include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 #include "url/origin.h"
 
 using blink::MessagePortChannel;
@@ -81,8 +80,8 @@ class SharedWorkerHostTest : public testing::Test {
         subresource_loader_factories;
     base::Optional<SubresourceLoaderParams> subresource_loader_params;
 
-    // Set up various mocks based on NetworkService/S13nServiceWorker
-    // configuration. See the comment on SharedWorkerHost::Start() for details.
+    // Set up various mocks based on NetworkService configuration. See the
+    // comment on SharedWorkerHost::Start() for details.
     if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
       provider_info = blink::mojom::ServiceWorkerProviderInfoForWorker::New();
       ServiceWorkerProviderHost::PreCreateForSharedWorker(
@@ -101,7 +100,7 @@ class SharedWorkerHostTest : public testing::Test {
 
       subresource_loader_params->appcache_loader_factory_info =
           loader_factory_ptr.PassInterface();
-    } else if (blink::ServiceWorkerUtils::IsServicificationEnabled()) {
+    } else {
       provider_info = blink::mojom::ServiceWorkerProviderInfoForWorker::New();
       ServiceWorkerProviderHost::PreCreateForSharedWorker(
           helper_->context()->AsWeakPtr(), mock_render_process_host_.GetID(),
