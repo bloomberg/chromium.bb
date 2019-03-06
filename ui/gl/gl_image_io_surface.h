@@ -110,10 +110,6 @@ class GL_EXPORT GLImageIOSurface : public GLImage {
   base::ScopedCFTypeRef<CVPixelBufferRef> cv_pixel_buffer_;
   gfx::GenericSharedMemoryId io_surface_id_;
 
-  // Cache the color space, because re-assigning the same value can be
-  // expensive.
-  gfx::ColorSpace color_space_;
-
   base::ThreadChecker thread_checker_;
   // The default value of Rec. 601 is based on historical shader code.
   gfx::ColorSpace color_space_for_yuv_to_rgb_ = gfx::ColorSpace::CreateREC601();

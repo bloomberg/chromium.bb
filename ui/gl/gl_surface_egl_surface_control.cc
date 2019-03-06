@@ -177,6 +177,11 @@ bool GLSurfaceEGLSurfaceControl::ScheduleOverlayPlane(
     const gfx::RectF& crop_rect,
     bool enable_blend,
     std::unique_ptr<gfx::GpuFence> gpu_fence) {
+  if (!SurfaceControl::SupportsColorSpace(image->color_space())) {
+    LOG(ERROR) << "Not supported color space used with overlay : "
+               << image->color_space().ToString();
+  }
+
   if (!pending_transaction_)
     pending_transaction_.emplace();
 
@@ -250,6 +255,12 @@ bool GLSurfaceEGLSurfaceControl::ScheduleOverlayPlane(
   if (uninitialized || surface_state.opaque != opaque) {
     surface_state.opaque = opaque;
     pending_transaction_->SetOpaque(*surface_state.surface, opaque);
+  }
+
+  if (uninitialized || surface_state.color_space != image->color_space()) {
+    surface_state.color_space = image->color_space();
+    pending_transaction_->SetColorSpace(*surface_state.surface,
+                                        image->color_space());
   }
 
   return true;

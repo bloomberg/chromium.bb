@@ -306,6 +306,11 @@ std::unique_ptr<BufferQueue::AllocatedSurface> BufferQueue::GetNextSurface() {
   allocated_count_++;
   gl_->BindTexture(texture_target_, texture);
   gl_->BindTexImage2DCHROMIUM(texture_target_, id);
+
+  // The texture must be bound to the image before setting the color space.
+  gl_->SetColorSpaceMetadataCHROMIUM(
+      texture, reinterpret_cast<GLColorSpace>(&color_space_));
+
   return std::make_unique<AllocatedSurface>(this, std::move(buffer), texture,
                                             id, stencil, gfx::Rect(size_));
 }

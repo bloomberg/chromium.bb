@@ -40,7 +40,6 @@ class GL_EXPORT GLImageSurfaceTexture : public GLImage {
                             const gfx::RectF& crop_rect,
                             bool enable_blend,
                             std::unique_ptr<gfx::GpuFence> gpu_fence) override;
-  void SetColorSpace(const gfx::ColorSpace& color_space) override {}
   void Flush() override {}
   void OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
                     uint64_t process_tracing_id,

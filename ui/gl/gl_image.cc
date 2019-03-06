@@ -15,6 +15,10 @@ bool GLImage::BindTexImageWithInternalformat(unsigned target,
   return false;
 }
 
+void GLImage::SetColorSpace(const gfx::ColorSpace& color_space) {
+  color_space_ = color_space;
+}
+
 bool GLImage::EmulatingRGB() const {
   return false;
 }

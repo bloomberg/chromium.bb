@@ -345,6 +345,7 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
         gfx::RectF(device_viewport_size.width(), device_viewport_size.height());
     output_surface_plane.resource_size_in_pixels = device_viewport_size;
     output_surface_plane.format = output_surface_->GetOverlayBufferFormat();
+    output_surface_plane.color_space = reshape_device_color_space_;
     output_surface_plane.use_output_surface_for_resource = true;
     output_surface_plane.overlay_handled = true;
     output_surface_plane.is_opaque = true;

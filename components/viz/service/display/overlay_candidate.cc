@@ -227,6 +227,7 @@ bool OverlayCandidate::FromDrawQuadResource(
     return false;
 
   candidate->format = resource_provider->GetBufferFormat(resource_id);
+  candidate->color_space = resource_provider->GetColorSpace(resource_id);
   if (!base::ContainsValue(kOverlayFormats, candidate->format))
     return false;
 
