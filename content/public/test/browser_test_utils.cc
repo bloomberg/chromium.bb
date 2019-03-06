@@ -870,6 +870,7 @@ void SimulateMouseEvent(WebContents* web_contents,
 
 void SimulateRoutedMouseEvent(WebContents* web_contents,
                               blink::WebInputEvent::Type type,
+                              blink::WebMouseEvent::Button button,
                               const gfx::Point& point) {
   content::WebContentsImpl* web_contents_impl =
       static_cast<content::WebContentsImpl*>(web_contents);
@@ -877,6 +878,7 @@ void SimulateRoutedMouseEvent(WebContents* web_contents,
       static_cast<content::RenderWidgetHostViewBase*>(
           web_contents->GetRenderWidgetHostView());
   blink::WebMouseEvent mouse_event(type, 0, ui::EventTimeForNow());
+  mouse_event.button = button;
   mouse_event.SetPositionInWidget(point.x(), point.y());
   // Mac needs positionInScreen for events to plugins.
   gfx::Rect offset = web_contents->GetContainerBounds();
@@ -885,6 +887,13 @@ void SimulateRoutedMouseEvent(WebContents* web_contents,
 
   web_contents_impl->GetInputEventRouter()->RouteMouseEvent(rwhvb, &mouse_event,
                                                             ui::LatencyInfo());
+}
+
+void SimulateRoutedMouseEvent(WebContents* web_contents,
+                              blink::WebInputEvent::Type type,
+                              const gfx::Point& point) {
+  SimulateRoutedMouseEvent(web_contents, type,
+                           blink::WebMouseEvent::Button::kNoButton, point);
 }
 
 void SimulateMouseWheelEvent(WebContents* web_contents,
@@ -3231,6 +3240,19 @@ bool SynchronizeVisualPropertiesMessageFilter::OnMessageReceived(
   // We do not consume the message, so that we can verify the effects of it
   // being processed.
   return false;
+}
+
+RenderWidgetHostMouseEventMonitor::RenderWidgetHostMouseEventMonitor(
+    RenderWidgetHost* host)
+    : host_(host), event_received_(false) {
+  mouse_callback_ = base::BindRepeating(
+      &RenderWidgetHostMouseEventMonitor::MouseEventCallback,
+      base::Unretained(this));
+  host_->AddMouseEventCallback(mouse_callback_);
+}
+
+RenderWidgetHostMouseEventMonitor::~RenderWidgetHostMouseEventMonitor() {
+  host_->RemoveMouseEventCallback(mouse_callback_);
 }
 
 }  // namespace content
