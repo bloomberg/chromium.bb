@@ -237,8 +237,10 @@ void SignedExchangeLoader::OnStartLoadingResponseBody(
 
 void SignedExchangeLoader::OnComplete(
     const network::URLLoaderCompletionStatus& status) {
-  DCHECK(!encoded_data_length_);
-  encoded_data_length_ = status.encoded_data_length;
+  DCHECK(!outer_response_length_info_);
+  outer_response_length_info_ = OuterResponseLengthInfo();
+  outer_response_length_info_->encoded_data_length = status.encoded_data_length;
+  outer_response_length_info_->decoded_body_length = status.decoded_body_length;
   NotifyClientOnCompleteIfReady();
 }
 
@@ -364,21 +366,23 @@ void SignedExchangeLoader::FinishReadingBody(int result) {
 }
 
 void SignedExchangeLoader::NotifyClientOnCompleteIfReady() {
-  // If |encoded_data_length_| or |decoded_body_read_result_| is unavailable, do
-  // nothing and rely on the subsequent call to notify client.
-  if (!encoded_data_length_ || !decoded_body_read_result_)
+  // If |outer_response_length_info_| or |decoded_body_read_result_| is
+  // unavailable, do nothing and rely on the subsequent call to notify client.
+  if (!outer_response_length_info_ || !decoded_body_read_result_)
     return;
 
   ReportLoadResult(*decoded_body_read_result_ == net::OK
                        ? SignedExchangeLoadResult::kSuccess
                        : SignedExchangeLoadResult::kMerkleIntegrityError);
 
-  // TODO(https://crbug.com/803774): Fill the data length information (
-  // encoded_body_length, decoded_body_length) too.
   network::URLLoaderCompletionStatus status;
   status.error_code = *decoded_body_read_result_;
   status.completion_time = base::TimeTicks::Now();
-  status.encoded_data_length = *encoded_data_length_;
+  status.encoded_data_length = outer_response_length_info_->encoded_data_length;
+  status.encoded_body_length =
+      outer_response_length_info_->decoded_body_length -
+      signed_exchange_handler_->GetExchangeHeaderLength();
+  status.decoded_body_length = body_data_pipe_adapter_->TransferredBytes();
 
   if (ssl_info_) {
     DCHECK((url_loader_options_ &

@@ -309,6 +309,7 @@ void SignedExchangeHandler::DidReadHeader(bool completed_syncly,
   }
 
   header_read_buf_->DidConsume(read_result);
+  exchange_header_length_ += read_result;
   if (header_read_buf_->BytesRemaining() == 0) {
     SignedExchangeLoadResult result = SignedExchangeLoadResult::kSuccess;
     switch (state_) {

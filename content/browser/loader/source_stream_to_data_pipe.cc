@@ -73,6 +73,7 @@ void SourceStreamToDataPipe::DidRead(int result) {
   }
   dest_ = pending_write_->Complete(result);
   pending_write_ = nullptr;
+  transferred_bytes_ += result;
 
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&SourceStreamToDataPipe::ReadMore,
