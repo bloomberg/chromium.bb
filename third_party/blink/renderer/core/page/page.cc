@@ -69,6 +69,7 @@
 #include "third_party/blink/renderer/core/page/scrolling/top_document_root_scroller_controller.h"
 #include "third_party/blink/renderer/core/page/spatial_navigation_controller.h"
 #include "third_party/blink/renderer/core/page/validation_message_client_impl.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme_overlay.h"
@@ -664,7 +665,7 @@ void Page::SettingsChanged(SettingsDelegate::ChangeType change_type) {
       }
       break;
     }
-    case SettingsDelegate::kPaintChange:
+    case SettingsDelegate::kPaintChange: {
       for (Frame* frame = MainFrame(); frame;
            frame = frame->Tree().TraverseNext()) {
         auto* local_frame = DynamicTo<LocalFrame>(frame);
@@ -674,6 +675,28 @@ void Page::SettingsChanged(SettingsDelegate::ChangeType change_type) {
           view->InvalidatePaintForViewAndCompositedLayers();
       }
       break;
+    }
+    case SettingsDelegate::kScrollbarLayoutChange: {
+      for (Frame* frame = MainFrame(); frame;
+           frame = frame->Tree().TraverseNext()) {
+        auto* local_frame = DynamicTo<LocalFrame>(frame);
+        if (!local_frame)
+          continue;
+        // Iterate through all of the scrollable areas and mark their layout
+        // objects for layout.
+        if (LocalFrameView* view = local_frame->View()) {
+          if (const auto* scrollable_areas = view->ScrollableAreas()) {
+            for (const auto& scrollable_area : *scrollable_areas) {
+              if (auto* layout_box = scrollable_area->GetLayoutBox()) {
+                layout_box->SetNeedsLayout(
+                    layout_invalidation_reason::kScrollbarChanged);
+              }
+            }
+          }
+        }
+      }
+      break;
+    }
   }
 }
 

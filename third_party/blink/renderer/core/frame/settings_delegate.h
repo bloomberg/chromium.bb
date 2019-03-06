@@ -68,6 +68,7 @@ class CORE_EXPORT SettingsDelegate {
     kPluginsChange,
     kHighlightAdsChange,
     kPaintChange,
+    kScrollbarLayoutChange,
   };
 
   virtual void SettingsChanged(ChangeType) = 0;
