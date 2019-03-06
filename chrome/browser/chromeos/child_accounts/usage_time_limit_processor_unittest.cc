@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/values.h"
+#include "chrome/browser/chromeos/child_accounts/time_limit_override.h"
 #include "chrome/browser/chromeos/child_accounts/time_limit_test_utils.h"
 #include "chromeos/settings/timezone_settings.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -18,6 +19,15 @@ namespace chromeos {
 namespace utils = time_limit_test_utils;
 
 namespace usage_time_limit {
+
+namespace {
+
+// Returns a string value created from corresponding override |action|.
+base::Value ValueFromAction(TimeLimitOverride::Action action) {
+  return base::Value(TimeLimitOverride::ActionToString(action));
+}
+
+}  // namespace
 
 using UsageTimeLimitProcessorTest = testing::Test;
 
@@ -148,11 +158,13 @@ TEST_F(UsageTimeLimitProcessorInternalTest, OverrideValid) {
   std::string created_at_millis =
       utils::CreatePolicyTimestamp("1 Jan 2018 10:00:00");
   base::Value override_one = base::Value(base::Value::Type::DICTIONARY);
-  override_one.SetKey("action", base::Value(utils::kUnlock));
+  override_one.SetKey("action",
+                      ValueFromAction(TimeLimitOverride::Action::kUnlock));
   override_one.SetKey("created_at_millis", base::Value(created_at_millis));
 
   base::Value override_two = base::Value(base::Value::Type::DICTIONARY);
-  override_two.SetKey("action", base::Value(utils::kLock));
+  override_two.SetKey("action",
+                      ValueFromAction(TimeLimitOverride::Action::kLock));
   override_two.SetKey(
       "created_at_millis",
       base::Value(utils::CreatePolicyTimestamp("1 Jan 2018 9:00:00")));
@@ -162,13 +174,15 @@ TEST_F(UsageTimeLimitProcessorInternalTest, OverrideValid) {
   overrides.GetList().push_back(std::move(override_two));
 
   // Call tested functions.
-  TimeLimitOverride override_struct(overrides);
+  base::Optional<TimeLimitOverride> override_struct =
+      TimeLimitOverride::MostRecentFromList(&overrides);
 
   // Assert right fields are set.
-  ASSERT_EQ(override_struct.action, TimeLimitOverride::Action::kUnlock);
-  ASSERT_EQ(override_struct.created_at,
+  ASSERT_TRUE(override_struct.has_value());
+  EXPECT_EQ(override_struct->action(), TimeLimitOverride::Action::kUnlock);
+  EXPECT_EQ(override_struct->created_at(),
             utils::TimeFromString("1 Jan 2018 10:00:00"));
-  ASSERT_FALSE(override_struct.duration);
+  EXPECT_FALSE(override_struct->duration());
 }
 
 // Check that the most recent override is chosen when more than one is sent on
@@ -177,19 +191,23 @@ TEST_F(UsageTimeLimitProcessorInternalTest, OverrideValid) {
 TEST_F(UsageTimeLimitProcessorInternalTest, MultipleOverrides) {
   // Create policy information.
   base::Value override_one = base::Value(base::Value::Type::DICTIONARY);
-  override_one.SetKey("action", base::Value(utils::kUnlock));
+  override_one.SetKey("action",
+                      ValueFromAction(TimeLimitOverride::Action::kUnlock));
   override_one.SetKey("created_at_millis", base::Value("1000000"));
 
   base::Value override_two = base::Value(base::Value::Type::DICTIONARY);
-  override_two.SetKey("action", base::Value(utils::kLock));
+  override_two.SetKey("action",
+                      ValueFromAction(TimeLimitOverride::Action::kLock));
   override_two.SetKey("created_at_millis", base::Value("999999"));
 
   base::Value override_three = base::Value(base::Value::Type::DICTIONARY);
-  override_two.SetKey("action", base::Value(utils::kLock));
+  override_two.SetKey("action",
+                      ValueFromAction(TimeLimitOverride::Action::kLock));
   override_two.SetKey("created_at_millis", base::Value("900000"));
 
   base::Value override_four = base::Value(base::Value::Type::DICTIONARY);
-  override_two.SetKey("action", base::Value(utils::kUnlock));
+  override_two.SetKey("action",
+                      ValueFromAction(TimeLimitOverride::Action::kUnlock));
   override_two.SetKey("created_at_millis", base::Value("1200000"));
 
   base::Value overrides(base::Value::Type::LIST);
@@ -199,12 +217,14 @@ TEST_F(UsageTimeLimitProcessorInternalTest, MultipleOverrides) {
   overrides.GetList().push_back(std::move(override_four));
 
   // Call tested functions.
-  TimeLimitOverride override_struct(overrides);
+  base::Optional<TimeLimitOverride> override_struct =
+      TimeLimitOverride::MostRecentFromList(&overrides);
 
   // Assert right fields are set.
-  ASSERT_EQ(override_struct.action, TimeLimitOverride::Action::kUnlock);
-  ASSERT_EQ(override_struct.created_at, base::Time::FromJavaTime(1200000));
-  ASSERT_FALSE(override_struct.duration);
+  ASSERT_TRUE(override_struct.has_value());
+  EXPECT_EQ(override_struct->action(), TimeLimitOverride::Action::kUnlock);
+  EXPECT_EQ(override_struct->created_at(), base::Time::FromJavaTime(1200000));
+  EXPECT_FALSE(override_struct->duration());
 }
 
 }  // namespace internal
@@ -488,7 +508,7 @@ TEST_F(UsageTimeLimitProcessorTest, GetStateWithOverrideLock) {
 
   std::unique_ptr<base::DictionaryValue> policy =
       std::make_unique<base::DictionaryValue>(base::DictionaryValue());
-  utils::AddOverride(policy.get(), utils::kLock,
+  utils::AddOverride(policy.get(), TimeLimitOverride::Action::kLock,
                      utils::TimeFromString("Mon, 1 Jan 2018 15:00"));
 
   base::Time time_one = utils::TimeFromString("Mon, 1 Jan 2018 15:05");
@@ -523,7 +543,7 @@ TEST_F(UsageTimeLimitProcessorTest, GetStateUpdateUnlockedTimeWindowLimit) {
   utils::AddTimeWindowLimit(policy.get(), utils::kMonday,
                             utils::CreateTime(18, 0), utils::CreateTime(7, 30),
                             last_updated);
-  utils::AddOverride(policy.get(), utils::kUnlock,
+  utils::AddOverride(policy.get(), TimeLimitOverride::Action::kUnlock,
                      utils::TimeFromString("Mon, 1 Jan 2018 18:30 GMT+0800"));
 
   // Check that the override is invalidating the time window limit.
@@ -580,7 +600,7 @@ TEST_F(UsageTimeLimitProcessorTest, GetStateOverrideTimeWindowLimitOnly) {
                             last_updated);
   utils::AddTimeUsageLimit(policy.get(), utils::kMonday,
                            base::TimeDelta::FromHours(1), last_updated);
-  utils::AddOverride(policy.get(), utils::kUnlock,
+  utils::AddOverride(policy.get(), TimeLimitOverride::Action::kUnlock,
                      utils::TimeFromString("Mon, 1 Jan 2018 22:00 PST"));
 
   base::Time time_one = utils::TimeFromString("Mon, 1 Jan 2018 22:10 PST");
@@ -664,7 +684,7 @@ TEST_F(UsageTimeLimitProcessorTest, GetStateOverrideTimeUsageLimit) {
 
   AssertEqState(expected_state_two, state_two);
 
-  utils::AddOverride(policy.get(), utils::kUnlock,
+  utils::AddOverride(policy.get(), TimeLimitOverride::Action::kUnlock,
                      utils::TimeFromString("Sun, 7 Jan 2018 16:00 PST"));
   base::Time time_three = utils::TimeFromString("Sun, 7 Jan 2018 16:01 PST");
   State state_three =
@@ -697,7 +717,7 @@ TEST_F(UsageTimeLimitProcessorTest, GetStateOldLockOverride) {
   // Setup policy.
   std::unique_ptr<base::DictionaryValue> policy =
       utils::CreateTimeLimitPolicy(utils::CreateTime(6, 0));
-  utils::AddOverride(policy.get(), utils::kLock,
+  utils::AddOverride(policy.get(), TimeLimitOverride::Action::kLock,
                      utils::TimeFromString("Mon, 1 Jan 2018 21:00 PST"));
 
   // Check that the device is locked because of the override.
@@ -1010,7 +1030,7 @@ TEST_F(UsageTimeLimitProcessorTest, GetStateLockOverrideFollowedByBedtime) {
   utils::AddTimeWindowLimit(policy.get(), utils::kMonday,
                             utils::CreateTime(18, 0), utils::CreateTime(20, 0),
                             last_updated);
-  utils::AddOverride(policy.get(), utils::kLock,
+  utils::AddOverride(policy.get(), TimeLimitOverride::Action::kLock,
                      utils::TimeFromString("Mon, 1 Jan 2018 15:00 PST"));
 
   // Check that the device is locked because of the override.
@@ -1075,7 +1095,7 @@ TEST_F(UsageTimeLimitProcessorTest, GetStateUnlockLockDuringBedtime) {
   utils::AddTimeWindowLimit(policy.get(), utils::kMonday,
                             utils::CreateTime(10, 0), utils::CreateTime(20, 0),
                             last_updated);
-  utils::AddOverride(policy.get(), utils::kUnlock,
+  utils::AddOverride(policy.get(), TimeLimitOverride::Action::kUnlock,
                      utils::TimeFromString("Mon, 1 Jan 2018 12:00 PST"));
 
   // Check that the device is unlocked because of the override.
@@ -1094,7 +1114,7 @@ TEST_F(UsageTimeLimitProcessorTest, GetStateUnlockLockDuringBedtime) {
   AssertEqState(expected_state_one, state_one);
 
   // Create lock.
-  utils::AddOverride(policy.get(), utils::kLock,
+  utils::AddOverride(policy.get(), TimeLimitOverride::Action::kLock,
                      utils::TimeFromString("Mon, 1 Jan 2018 14:00 PST"));
 
   // Check that the device is locked because of the bedtime.
@@ -1144,7 +1164,7 @@ TEST_F(UsageTimeLimitProcessorTest,
                             utils::CreateTime(22, 0), utils::CreateTime(10, 0),
                             last_updated);
   utils::AddOverrideWithDuration(
-      policy.get(), utils::kUnlock,
+      policy.get(), TimeLimitOverride::Action::kUnlock,
       utils::TimeFromString("Mon, 1 Jan 2018 21:45 PST"),
       base::TimeDelta::FromMinutes(30));
 
@@ -1211,7 +1231,7 @@ TEST_F(UsageTimeLimitProcessorTest,
 
   // Check that the device is unlocked because of the unlock override.
   utils::AddOverrideWithDuration(
-      policy.get(), utils::kUnlock,
+      policy.get(), TimeLimitOverride::Action::kUnlock,
       utils::TimeFromString("Thu, 4 Jan 2018 9:45 GMT"),
       base::TimeDelta::FromMinutes(30));
   base::Time time_two = utils::TimeFromString("Thu, 4 Jan 2018 10:00 GMT");
@@ -1266,7 +1286,7 @@ TEST_F(UsageTimeLimitProcessorTest,
                             utils::CreateTime(22, 0), utils::CreateTime(10, 0),
                             last_updated);
   utils::AddOverrideWithDuration(
-      policy.get(), utils::kUnlock,
+      policy.get(), TimeLimitOverride::Action::kUnlock,
       utils::TimeFromString("Tue, 2 Jan 2018 22:30 BRT"),
       base::TimeDelta::FromMinutes(30));
 
@@ -1337,7 +1357,7 @@ TEST_F(UsageTimeLimitProcessorTest,
 
   // Check that the device is unlocked because of the unlock override.
   utils::AddOverrideWithDuration(
-      policy.get(), utils::kUnlock,
+      policy.get(), TimeLimitOverride::Action::kUnlock,
       utils::TimeFromString("Mon, 1 Jan 2018 10:30 PST"),
       base::TimeDelta::FromHours(2));
   base::Time time_two = utils::TimeFromString("Mon, 1 Jan 2018 11:30 PST");
@@ -1407,7 +1427,7 @@ TEST_F(UsageTimeLimitProcessorTest, GetStateUpdateUnlockOverrideWithDuration) {
 
   // Check that the device is unlocked because of the unlock override.
   utils::AddOverrideWithDuration(
-      policy.get(), utils::kUnlock,
+      policy.get(), TimeLimitOverride::Action::kUnlock,
       utils::TimeFromString("Sat, 6 Jan 2018 9:45 BRT"),
       base::TimeDelta::FromMinutes(30));
   base::Time time_two = utils::TimeFromString("Sat, 6 Jan 2018 10:00 BRT");
@@ -1428,7 +1448,7 @@ TEST_F(UsageTimeLimitProcessorTest, GetStateUpdateUnlockOverrideWithDuration) {
 
   // Check that the device is unlocked because of the new unlock override.
   utils::AddOverrideWithDuration(
-      policy.get(), utils::kUnlock,
+      policy.get(), TimeLimitOverride::Action::kUnlock,
       utils::TimeFromString("Sat, 6 Jan 2018 10:15 BRT"),
       base::TimeDelta::FromMinutes(30));
   base::Time time_three = utils::TimeFromString("Sat, 6 Jan 2018 10:30 BRT");
@@ -1463,7 +1483,7 @@ TEST_F(UsageTimeLimitProcessorTest,
                             utils::CreateTime(22, 0), utils::CreateTime(10, 0),
                             last_updated);
   utils::AddOverrideWithDuration(
-      policy.get(), utils::kUnlock,
+      policy.get(), TimeLimitOverride::Action::kUnlock,
       utils::TimeFromString("Wed, 3 Jan 2018 21:45 GMT"),
       base::TimeDelta::FromMinutes(30));
 
@@ -1532,7 +1552,7 @@ TEST_F(UsageTimeLimitProcessorTest,
 
   // Check that the device is unlocked because of the unlock override.
   utils::AddOverrideWithDuration(
-      policy.get(), utils::kUnlock,
+      policy.get(), TimeLimitOverride::Action::kUnlock,
       utils::TimeFromString("Sun, 7 Jan 2018 9:45 PST"),
       base::TimeDelta::FromMinutes(30));
   base::Time time_two = utils::TimeFromString("Sun, 7 Jan 2018 10:00 PST");
@@ -1603,7 +1623,7 @@ TEST_F(UsageTimeLimitProcessorTest, GetStateIncreaseUsageLimitAfterLocked) {
   AssertEqState(expected_state_one, state_one);
 
   // Create unlock.
-  utils::AddOverride(policy.get(), utils::kUnlock,
+  utils::AddOverride(policy.get(), TimeLimitOverride::Action::kUnlock,
                      utils::TimeFromString("Wed, 3 Jan 2018 15:00 BRT"));
 
   // Check that the device is unlocked.
@@ -1623,7 +1643,7 @@ TEST_F(UsageTimeLimitProcessorTest, GetStateIncreaseUsageLimitAfterLocked) {
   AssertEqState(expected_state_two, state_two);
 
   // Create lock.
-  utils::AddOverride(policy.get(), utils::kLock,
+  utils::AddOverride(policy.get(), TimeLimitOverride::Action::kLock,
                      utils::TimeFromString("Wed, 3 Jan 2018 16:00 BRT"));
 
   // Check that the device is locked because of the usage limit.
@@ -1705,7 +1725,7 @@ TEST_F(UsageTimeLimitProcessorTest,
 
   AssertEqState(expected_state_one, state_one);
 
-  utils::AddOverride(policy.get(), utils::kUnlock,
+  utils::AddOverride(policy.get(), TimeLimitOverride::Action::kUnlock,
                      utils::TimeFromString("Wed, 3 Jan 2018 7:30 BRT"));
 
   // Check that the device is unlocked because of the override.
@@ -1832,7 +1852,7 @@ TEST_F(UsageTimeLimitProcessorTest, GetStateUnlockConsecutiveLockedAllDay) {
 
   AssertEqState(expected_state_two, state_two);
 
-  utils::AddOverride(policy.get(), utils::kUnlock,
+  utils::AddOverride(policy.get(), TimeLimitOverride::Action::kUnlock,
                      utils::TimeFromString("Thu, 4 Jan 2018 7:30 BRT"));
 
   // Check that the device is unlocked.

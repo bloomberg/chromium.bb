@@ -12,6 +12,7 @@
 
 #include "base/time/time.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/child_accounts/time_limit_override.h"
 
 namespace chromeos {
 namespace time_limit_test_utils {
@@ -24,10 +25,6 @@ extern const char kThursday[];
 extern const char kFriday[];
 extern const char kSaturday[];
 extern const char kSunday[];
-
-// Override actions that should be used to create the Time Limit policy.
-extern const char kLock[];
-extern const char kUnlock[];
 
 // Parses a string time to a base::Time object, see
 // |base::Time::FromUTCString| for compatible input formats.
@@ -76,13 +73,13 @@ void AddTimeWindowLimit(base::DictionaryValue* policy,
 
 // Adds a time limit override dictionary to the provided Time Limit policy.
 void AddOverride(base::DictionaryValue* policy,
-                 std::string action,
+                 usage_time_limit::TimeLimitOverride::Action action,
                  base::Time created_at);
 
 // Adds a time limit override with duration dictionary to the provided
 // Time Limit policy.
 void AddOverrideWithDuration(base::DictionaryValue* policy,
-                             std::string action,
+                             usage_time_limit::TimeLimitOverride::Action action,
                              base::Time created_at,
                              base::TimeDelta duration);
 
