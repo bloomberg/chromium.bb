@@ -309,7 +309,8 @@ void EventTarget::SetDefaultAddEventListenerOptions(
 
         executing_window->GetFrame()->Console().AddMessage(
             ConsoleMessage::Create(
-                kInterventionMessageSource, kWarningMessageLevel,
+                kInterventionMessageSource,
+                mojom::ConsoleMessageLevel::kWarning,
                 "Registering mousewheel event as passive due to "
                 "smoothscroll.js usage. The smoothscroll.js library is "
                 "buggy, no longer necessary and degrades performance. See "

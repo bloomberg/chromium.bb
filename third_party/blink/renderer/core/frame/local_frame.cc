@@ -481,8 +481,8 @@ void LocalFrame::PrintNavigationErrorMessage(const Frame& target_frame,
 }
 
 void LocalFrame::PrintNavigationWarning(const String& message) {
-  console_->AddMessage(
-      ConsoleMessage::Create(kJSMessageSource, kWarningMessageLevel, message));
+  console_->AddMessage(ConsoleMessage::Create(
+      kJSMessageSource, mojom::ConsoleMessageLevel::kWarning, message));
 }
 
 bool LocalFrame::ShouldClose() {

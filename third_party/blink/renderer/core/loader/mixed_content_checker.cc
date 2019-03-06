@@ -284,8 +284,9 @@ ConsoleMessage* MixedContentChecker::CreateConsoleMessageAboutFetch(
       allowed ? "This content should also be served over HTTPS."
               : "This request has been blocked; the content must be served "
                 "over HTTPS.");
-  MessageLevel message_level =
-      allowed ? kWarningMessageLevel : kErrorMessageLevel;
+  mojom::ConsoleMessageLevel message_level =
+      allowed ? mojom::ConsoleMessageLevel::kWarning
+              : mojom::ConsoleMessageLevel::kError;
   if (source_location) {
     return ConsoleMessage::Create(kSecurityMessageSource, message_level,
                                   message, std::move(source_location));
@@ -547,8 +548,9 @@ ConsoleMessage* MixedContentChecker::CreateConsoleMessageAboutWebSocket(
                 "deprecated."
               : "This request has been blocked; this endpoint must be "
                 "available over WSS.");
-  MessageLevel message_level =
-      allowed ? kWarningMessageLevel : kErrorMessageLevel;
+  mojom::ConsoleMessageLevel message_level =
+      allowed ? mojom::ConsoleMessageLevel::kWarning
+              : mojom::ConsoleMessageLevel::kError;
   return ConsoleMessage::Create(kSecurityMessageSource, message_level, message);
 }
 
@@ -653,7 +655,7 @@ bool MixedContentChecker::IsMixedFormAction(
         MainResourceUrlForFrame(mixed_frame).ElidedString().Utf8().data(),
         url.ElidedString().Utf8().data());
     frame->GetDocument()->AddConsoleMessage(ConsoleMessage::Create(
-        kSecurityMessageSource, kWarningMessageLevel, message));
+        kSecurityMessageSource, mojom::ConsoleMessageLevel::kWarning, message));
   }
 
   return true;
@@ -782,8 +784,8 @@ ConsoleMessage* MixedContentChecker::CreateConsoleMessageAboutFetchAutoupgrade(
       "autougprade-mixed.md",
       main_resource_url.ElidedString().Utf8().data(),
       mixed_content_url.ElidedString().Utf8().data());
-  return ConsoleMessage::Create(kSecurityMessageSource, kWarningMessageLevel,
-                                message);
+  return ConsoleMessage::Create(kSecurityMessageSource,
+                                mojom::ConsoleMessageLevel::kWarning, message);
 }
 
 // static
@@ -800,8 +802,8 @@ MixedContentChecker::CreateConsoleMessageAboutWebSocketAutoupgrade(
       "autougprade-mixed.md",
       main_resource_url.ElidedString().Utf8().data(),
       mixed_content_url.ElidedString().Utf8().data());
-  return ConsoleMessage::Create(kSecurityMessageSource, kWarningMessageLevel,
-                                message);
+  return ConsoleMessage::Create(kSecurityMessageSource,
+                                mojom::ConsoleMessageLevel::kWarning, message);
 }
 
 WebMixedContentContextType MixedContentChecker::ContextTypeForInspector(

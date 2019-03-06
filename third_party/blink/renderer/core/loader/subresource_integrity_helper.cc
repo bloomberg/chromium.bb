@@ -56,8 +56,8 @@ void SubresourceIntegrityHelper::GetConsoleMessages(
     HeapVector<Member<ConsoleMessage>>* messages) {
   DCHECK(messages);
   for (const auto& message : report_info.ConsoleErrorMessages()) {
-    messages->push_back(ConsoleMessage::Create(kSecurityMessageSource,
-                                               kErrorMessageLevel, message));
+    messages->push_back(ConsoleMessage::Create(
+        kSecurityMessageSource, mojom::ConsoleMessageLevel::kError, message));
   }
 }
 

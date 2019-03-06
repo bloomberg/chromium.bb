@@ -79,10 +79,10 @@ void XMLParserScriptRunner::ProcessScriptElement(
   if (script_loader->GetScriptType() != mojom::ScriptType::kClassic) {
     // XMLDocumentParser does not support a module script, and thus ignores it.
     success = false;
-    document.AddConsoleMessage(
-        ConsoleMessage::Create(kJSMessageSource, kErrorMessageLevel,
-                               "Module scripts in XML documents are currently "
-                               "not supported. See crbug.com/717643"));
+    document.AddConsoleMessage(ConsoleMessage::Create(
+        kJSMessageSource, mojom::ConsoleMessageLevel::kError,
+        "Module scripts in XML documents are currently "
+        "not supported. See crbug.com/717643"));
   }
 
   if (!success)

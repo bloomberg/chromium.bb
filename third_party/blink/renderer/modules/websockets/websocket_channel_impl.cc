@@ -228,7 +228,7 @@ bool WebSocketChannelImpl::Connect(
         "Connecting to a non-secure WebSocket server from a secure origin is "
         "deprecated.";
     execution_context_->AddConsoleMessage(ConsoleMessage::Create(
-        kJSMessageSource, kWarningMessageLevel, message));
+        kJSMessageSource, mojom::ConsoleMessageLevel::kWarning, message));
   }
 
   url_ = url;
@@ -362,7 +362,7 @@ void WebSocketChannelImpl::Close(int code, const String& reason) {
 }
 
 void WebSocketChannelImpl::Fail(const String& reason,
-                                MessageLevel level,
+                                mojom::ConsoleMessageLevel level,
                                 std::unique_ptr<SourceLocation> location) {
   NETWORK_DVLOG(1) << this << " Fail(" << reason << ")";
   probe::DidReceiveWebSocketMessageError(execution_context_, identifier_,

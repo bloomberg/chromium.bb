@@ -434,7 +434,7 @@ void ServiceWorkerGlobalScopeProxy::OnNavigationPreloadError(
                                        : error->unsanitized_message;
   if (!error_message.IsEmpty()) {
     WorkerGlobalScope()->AddConsoleMessage(ConsoleMessage::Create(
-        kWorkerMessageSource, blink::MessageLevel::kErrorMessageLevel,
+        kWorkerMessageSource, mojom::ConsoleMessageLevel::kError,
         error_message));
   }
   // Reject the preloadResponse promise.
@@ -614,32 +614,12 @@ void ServiceWorkerGlobalScopeProxy::ReportException(
 
 void ServiceWorkerGlobalScopeProxy::ReportConsoleMessage(
     MessageSource source,
-    MessageLevel level,
+    mojom::ConsoleMessageLevel level,
     const String& message,
     SourceLocation* location) {
   DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
-
-  // TODO(https://crbug.com/937184): This back-and-forth conversion will be
-  // unnecessary once we converge on blink::mojom::ConsoleMessageLevel.
-  blink::mojom::ConsoleMessageLevel console_message_level =
-      blink::mojom::ConsoleMessageLevel::kInfo;
-  switch (level) {
-    case kVerboseMessageLevel:
-      console_message_level = blink::mojom::ConsoleMessageLevel::kVerbose;
-      break;
-    case kInfoMessageLevel:
-      console_message_level = blink::mojom::ConsoleMessageLevel::kInfo;
-      break;
-    case kWarningMessageLevel:
-      console_message_level = blink::mojom::ConsoleMessageLevel::kWarning;
-      break;
-    case kErrorMessageLevel:
-      console_message_level = blink::mojom::ConsoleMessageLevel::kError;
-      break;
-  }
-
-  Client().ReportConsoleMessage(source, console_message_level, message,
-                                location->LineNumber(), location->Url());
+  Client().ReportConsoleMessage(source, level, message, location->LineNumber(),
+                                location->Url());
 }
 
 void ServiceWorkerGlobalScopeProxy::WillInitializeWorkerContext() {

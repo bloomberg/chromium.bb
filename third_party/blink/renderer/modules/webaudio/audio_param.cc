@@ -375,7 +375,7 @@ float AudioParam::value() const {
 void AudioParam::WarnIfOutsideRange(const String& param_method, float value) {
   if (value < minValue() || value > maxValue()) {
     Context()->GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
-        kJSMessageSource, kWarningMessageLevel,
+        kJSMessageSource, mojom::ConsoleMessageLevel::kWarning,
         Handler().GetParamName() + "." + param_method + " " +
             String::Number(value) + " outside nominal range [" +
             String::Number(minValue()) + ", " + String::Number(maxValue()) +

@@ -1553,7 +1553,7 @@ static void TestEnumAttributeAttributeSetter(
     if (!IsValidEnum(cpp_value, kValidValues, base::size(kValidValues),
                      "TestEnum", dummy_exception_state)) {
       ExecutionContext::ForCurrentRealm(info)->AddConsoleMessage(
-          ConsoleMessage::Create(kJSMessageSource, kWarningMessageLevel,
+          ConsoleMessage::Create(kJSMessageSource, mojom::ConsoleMessageLevel::kWarning,
                                  dummy_exception_state.Message()));
       return;
     }
@@ -1601,7 +1601,7 @@ static void TestEnumOrNullAttributeAttributeSetter(
     if (!IsValidEnum(cpp_value, kValidValues, base::size(kValidValues),
                      "TestEnum", dummy_exception_state)) {
       ExecutionContext::ForCurrentRealm(info)->AddConsoleMessage(
-          ConsoleMessage::Create(kJSMessageSource, kWarningMessageLevel,
+          ConsoleMessage::Create(kJSMessageSource, mojom::ConsoleMessageLevel::kWarning,
                                  dummy_exception_state.Message()));
       return;
     }

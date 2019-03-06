@@ -92,7 +92,7 @@ void ThreadedMessagingProxyBase::CountDeprecation(WebFeature feature) {
 
 void ThreadedMessagingProxyBase::ReportConsoleMessage(
     MessageSource source,
-    MessageLevel level,
+    mojom::ConsoleMessageLevel level,
     const String& message,
     std::unique_ptr<SourceLocation> location) {
   DCHECK(IsParentContextThread());

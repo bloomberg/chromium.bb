@@ -251,8 +251,9 @@ bool HTMLFormElement::ValidateInteractively() {
       String message(
           "An invalid form control with name='%name' is not focusable.");
       message.Replace("%name", unhandled->GetName());
-      GetDocument().AddConsoleMessage(ConsoleMessage::Create(
-          kRenderingMessageSource, kErrorMessageLevel, message));
+      GetDocument().AddConsoleMessage(
+          ConsoleMessage::Create(kRenderingMessageSource,
+                                 mojom::ConsoleMessageLevel::kError, message));
     }
   }
   return false;
@@ -267,14 +268,14 @@ void HTMLFormElement::PrepareForSubmission(
 
   if (!isConnected()) {
     GetDocument().AddConsoleMessage(ConsoleMessage::Create(
-        kJSMessageSource, kWarningMessageLevel,
+        kJSMessageSource, mojom::ConsoleMessageLevel::kWarning,
         "Form submission canceled because the form is not connected"));
     return;
   }
 
   if (GetDocument().IsSandboxed(kSandboxForms)) {
     GetDocument().AddConsoleMessage(ConsoleMessage::Create(
-        kSecurityMessageSource, kErrorMessageLevel,
+        kSecurityMessageSource, mojom::ConsoleMessageLevel::kError,
         "Blocked form submission to '" + attributes_.Action() +
             "' because the form's frame is sandboxed and the 'allow-forms' "
             "permission is not set."));
@@ -290,7 +291,7 @@ void HTMLFormElement::PrepareForSubmission(
       if (RuntimeEnabledFeatures::UnclosedFormControlIsInvalidEnabled()) {
         String tag_name = ToHTMLFormControlElement(element)->tagName();
         GetDocument().AddConsoleMessage(ConsoleMessage::Create(
-            kSecurityMessageSource, kErrorMessageLevel,
+            kSecurityMessageSource, mojom::ConsoleMessageLevel::kError,
             "Form submission failed, as the <" + tag_name +
                 "> element named "
                 "'" +
@@ -360,17 +361,17 @@ void HTMLFormElement::Submit(Event* event,
   // context flag set, then abort these steps without doing anything.
   if (!isConnected()) {
     GetDocument().AddConsoleMessage(ConsoleMessage::Create(
-        kJSMessageSource, kWarningMessageLevel,
+        kJSMessageSource, mojom::ConsoleMessageLevel::kWarning,
         "Form submission canceled because the form is not connected"));
     return;
   }
 
   if (is_constructing_entry_list_) {
     DCHECK(RuntimeEnabledFeatures::FormDataEventEnabled());
-    GetDocument().AddConsoleMessage(
-        ConsoleMessage::Create(kJSMessageSource, kWarningMessageLevel,
-                               "Form submission canceled because the form is "
-                               "constructing entry list"));
+    GetDocument().AddConsoleMessage(ConsoleMessage::Create(
+        kJSMessageSource, mojom::ConsoleMessageLevel::kWarning,
+        "Form submission canceled because the form is "
+        "constructing entry list"));
     return;
   }
 
@@ -404,7 +405,7 @@ void HTMLFormElement::Submit(Event* event,
   // 'formdata' event handlers might disconnect the form.
   if (RuntimeEnabledFeatures::FormDataEventEnabled() && !isConnected()) {
     GetDocument().AddConsoleMessage(ConsoleMessage::Create(
-        kJSMessageSource, kWarningMessageLevel,
+        kJSMessageSource, mojom::ConsoleMessageLevel::kWarning,
         "Form submission canceled because the form is not connected"));
     return;
   }
@@ -461,7 +462,7 @@ void HTMLFormElement::ScheduleFormSubmission(FormSubmission* submission) {
     // FIXME: This message should be moved off the console once a solution to
     // https://bugs.webkit.org/show_bug.cgi?id=103274 exists.
     GetDocument().AddConsoleMessage(ConsoleMessage::Create(
-        kSecurityMessageSource, kErrorMessageLevel,
+        kSecurityMessageSource, mojom::ConsoleMessageLevel::kError,
         "Blocked form submission to '" + submission->Action().ElidedString() +
             "' because the form's frame is sandboxed and the 'allow-forms' "
             "permission is not set."));

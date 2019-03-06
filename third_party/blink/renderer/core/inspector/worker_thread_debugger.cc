@@ -71,11 +71,12 @@ WorkerThreadDebugger::~WorkerThreadDebugger() {
   DCHECK(worker_threads_.IsEmpty());
 }
 
-void WorkerThreadDebugger::ReportConsoleMessage(ExecutionContext* context,
-                                                MessageSource source,
-                                                MessageLevel level,
-                                                const String& message,
-                                                SourceLocation* location) {
+void WorkerThreadDebugger::ReportConsoleMessage(
+    ExecutionContext* context,
+    MessageSource source,
+    mojom::ConsoleMessageLevel level,
+    const String& message,
+    SourceLocation* location) {
   if (!context)
     return;
   To<WorkerOrWorkletGlobalScope>(context)
@@ -132,8 +133,8 @@ void WorkerThreadDebugger::ContextWillBeDestroyed(
 void WorkerThreadDebugger::ExceptionThrown(WorkerThread* worker_thread,
                                            ErrorEvent* event) {
   worker_thread->GetWorkerReportingProxy().ReportConsoleMessage(
-      kJSMessageSource, kErrorMessageLevel, event->MessageForConsole(),
-      event->Location());
+      kJSMessageSource, mojom::ConsoleMessageLevel::kError,
+      event->MessageForConsole(), event->Location());
 
   const String default_message = "Uncaught";
   ScriptState* script_state =

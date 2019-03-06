@@ -61,7 +61,7 @@ bool FrameConsole::AddMessageToStorage(ConsoleMessage* console_message) {
 }
 
 void FrameConsole::ReportMessageToClient(MessageSource source,
-                                         MessageLevel level,
+                                         mojom::ConsoleMessageLevel level,
                                          const String& message,
                                          SourceLocation* location) {
   if (source == kNetworkMessageSource)
@@ -105,7 +105,7 @@ void FrameConsole::ReportResourceResponseReceived(
       String::Number(response.HttpStatusCode()) + " (" +
       response.HttpStatusText() + ')';
   ConsoleMessage* console_message = ConsoleMessage::CreateForRequest(
-      kNetworkMessageSource, kErrorMessageLevel, message,
+      kNetworkMessageSource, mojom::ConsoleMessageLevel::kError, message,
       response.CurrentRequestUrl().GetString(), loader, request_identifier);
   AddMessage(console_message);
 }
@@ -122,8 +122,8 @@ void FrameConsole::DidFailLoading(DocumentLoader* loader,
     message.Append(error.LocalizedDescription());
   }
   AddMessageToStorage(ConsoleMessage::CreateForRequest(
-      kNetworkMessageSource, kErrorMessageLevel, message.ToString(),
-      error.FailingURL(), loader, request_identifier));
+      kNetworkMessageSource, mojom::ConsoleMessageLevel::kError,
+      message.ToString(), error.FailingURL(), loader, request_identifier));
 }
 
 void FrameConsole::Trace(blink::Visitor* visitor) {

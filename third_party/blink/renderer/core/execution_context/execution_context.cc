@@ -211,7 +211,7 @@ void ExecutionContext::ParseAndSetReferrerPolicy(const String& policies,
                                   : kDoNotSupportReferrerPolicyLegacyKeywords,
           &referrer_policy)) {
     AddConsoleMessage(ConsoleMessage::Create(
-        kRenderingMessageSource, kErrorMessageLevel,
+        kRenderingMessageSource, mojom::ConsoleMessageLevel::kError,
         "Failed to set referrer policy: The value '" + policies +
             "' is not one of " +
             (support_legacy_keywords

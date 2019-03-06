@@ -777,7 +777,7 @@ ContentSecurityPolicy* DocumentLoader::CreateCSP(
                          "required by its embedder: '" +
                          GetFrameLoader().RequiredCSP() + "'.";
         ConsoleMessage* console_message = ConsoleMessage::CreateForRequest(
-            kSecurityMessageSource, kErrorMessageLevel, message,
+            kSecurityMessageSource, mojom::ConsoleMessageLevel::kError, message,
             response.CurrentRequestUrl(), this, MainResourceIdentifier());
         frame_->GetDocument()->AddConsoleMessage(console_message);
         return nullptr;

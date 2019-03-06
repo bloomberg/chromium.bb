@@ -29,8 +29,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_FRAME_CONSOLE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_FRAME_CONSOLE_H_
 
+#include "third_party/blink/public/mojom/devtools/console_message.mojom-shared.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/inspector/console_types.h"
 #include "third_party/blink/renderer/core/loader/console_logger_impl_base.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
@@ -69,7 +69,7 @@ class CORE_EXPORT FrameConsole final
 
   bool AddMessageToStorage(ConsoleMessage*);
   void ReportMessageToClient(MessageSource,
-                             MessageLevel,
+                             mojom::ConsoleMessageLevel,
                              const String& message,
                              SourceLocation*);
 

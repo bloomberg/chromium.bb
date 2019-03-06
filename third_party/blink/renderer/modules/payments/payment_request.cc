@@ -251,7 +251,7 @@ void ValidateShippingOptionOrPaymentItem(const T* item,
 
   if (item->label().IsEmpty()) {
     execution_context.AddConsoleMessage(ConsoleMessage::Create(
-        kJSMessageSource, kErrorMessageLevel,
+        kJSMessageSource, mojom::ConsoleMessageLevel::kError,
         "Empty " + item_name + " label may be confusing the user"));
     return;
   }
@@ -315,7 +315,7 @@ void ValidateAndConvertShippingOptions(
 
     if (option->id().IsEmpty()) {
       execution_context.AddConsoleMessage(ConsoleMessage::Create(
-          kJSMessageSource, kWarningMessageLevel,
+          kJSMessageSource, mojom::ConsoleMessageLevel::kWarning,
           "Empty shipping option ID may be hard to debug"));
       return;
     }
@@ -757,8 +757,8 @@ void WarnIgnoringQueryQuotaForCanMakePayment(
       "reject the promise, but allowing continued usage on localhost and "
       "file:// scheme origins.",
       method_name);
-  execution_context.AddConsoleMessage(
-      ConsoleMessage::Create(kJSMessageSource, kWarningMessageLevel, error));
+  execution_context.AddConsoleMessage(ConsoleMessage::Create(
+      kJSMessageSource, mojom::ConsoleMessageLevel::kWarning, error));
 }
 
 }  // namespace
@@ -939,33 +939,33 @@ ScriptPromise PaymentRequest::Retry(ScriptState* script_state,
 
   if (!options_->requestPayerName() && errors->hasPayer() &&
       errors->payer()->hasName()) {
-    GetExecutionContext()->AddConsoleMessage(
-        ConsoleMessage::Create(kJSMessageSource, kWarningMessageLevel,
-                               "The payer.name passed to retry() may not be "
-                               "shown because requestPayerName is false"));
+    GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
+        kJSMessageSource, mojom::ConsoleMessageLevel::kWarning,
+        "The payer.name passed to retry() may not be "
+        "shown because requestPayerName is false"));
   }
 
   if (!options_->requestPayerEmail() && errors->hasPayer() &&
       errors->payer()->hasEmail()) {
-    GetExecutionContext()->AddConsoleMessage(
-        ConsoleMessage::Create(kJSMessageSource, kWarningMessageLevel,
-                               "The payer.email passed to retry() may not be "
-                               "shown because requestPayerEmail is false"));
+    GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
+        kJSMessageSource, mojom::ConsoleMessageLevel::kWarning,
+        "The payer.email passed to retry() may not be "
+        "shown because requestPayerEmail is false"));
   }
 
   if (!options_->requestPayerPhone() && errors->hasPayer() &&
       errors->payer()->hasPhone()) {
-    GetExecutionContext()->AddConsoleMessage(
-        ConsoleMessage::Create(kJSMessageSource, kWarningMessageLevel,
-                               "The payer.phone passed to retry() may not be "
-                               "shown because requestPayerPhone is false"));
+    GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
+        kJSMessageSource, mojom::ConsoleMessageLevel::kWarning,
+        "The payer.phone passed to retry() may not be "
+        "shown because requestPayerPhone is false"));
   }
 
   if (!options_->requestShipping() && errors->hasShippingAddress()) {
-    GetExecutionContext()->AddConsoleMessage(
-        ConsoleMessage::Create(kJSMessageSource, kWarningMessageLevel,
-                               "The shippingAddress passed to retry() may not "
-                               "be shown because requestShipping is false"));
+    GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
+        kJSMessageSource, mojom::ConsoleMessageLevel::kWarning,
+        "The shippingAddress passed to retry() may not "
+        "be shown because requestShipping is false"));
   }
 
   complete_timer_.Stop();
@@ -1189,7 +1189,7 @@ void PaymentRequest::OnShippingAddressChange(PaymentAddressPtr address) {
   DispatchEvent(*event);
   if (!event->is_waiting_for_update()) {
     GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
-        kJSMessageSource, kWarningMessageLevel,
+        kJSMessageSource, mojom::ConsoleMessageLevel::kWarning,
         "No updateWith() call in 'shippingaddresschange' event handler. User "
         "may see outdated line items and total."));
     payment_provider_->NoUpdatedPaymentDetails();
@@ -1208,7 +1208,7 @@ void PaymentRequest::OnShippingOptionChange(const String& shipping_option_id) {
   DispatchEvent(*event);
   if (!event->is_waiting_for_update()) {
     GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
-        kJSMessageSource, kWarningMessageLevel,
+        kJSMessageSource, mojom::ConsoleMessageLevel::kWarning,
         "No updateWith() call in 'shippingoptionchange' event handler. User "
         "may see outdated line items and total."));
     payment_provider_->NoUpdatedPaymentDetails();
@@ -1468,15 +1468,15 @@ void PaymentRequest::OnHasEnrolledInstrument(
 }
 
 void PaymentRequest::WarnNoFavicon() {
-  GetExecutionContext()->AddConsoleMessage(
-      ConsoleMessage::Create(kJSMessageSource, kWarningMessageLevel,
-                             "Favicon not found for PaymentRequest UI. User "
-                             "may not recognize the website."));
+  GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
+      kJSMessageSource, mojom::ConsoleMessageLevel::kWarning,
+      "Favicon not found for PaymentRequest UI. User "
+      "may not recognize the website."));
 }
 
 void PaymentRequest::OnCompleteTimeout(TimerBase*) {
   GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
-      kJSMessageSource, kErrorMessageLevel,
+      kJSMessageSource, mojom::ConsoleMessageLevel::kError,
       "Timed out waiting for a PaymentResponse.complete() call."));
   payment_provider_->Complete(payments::mojom::blink::PaymentComplete(kFail));
   ClearResolversAndCloseMojoConnection();

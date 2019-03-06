@@ -30,6 +30,7 @@
 #include "cc/input/event_listener_properties.h"
 #include "third_party/blink/public/common/dom_storage/session_storage_namespace_id.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom-shared.h"
 #include "third_party/blink/public/platform/blame_context.h"
 #include "third_party/blink/public/platform/web_drag_operation.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
@@ -38,7 +39,6 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/frame/sandbox_flags.h"
 #include "third_party/blink/renderer/core/html/forms/popup_menu.h"
-#include "third_party/blink/renderer/core/inspector/console_types.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/core/loader/navigation_policy.h"
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
@@ -179,7 +179,7 @@ class CORE_EXPORT ChromeClient
                                                     const String& source) = 0;
   virtual void AddMessageToConsole(LocalFrame*,
                                    MessageSource,
-                                   MessageLevel,
+                                   mojom::ConsoleMessageLevel,
                                    const String& message,
                                    unsigned line_number,
                                    const String& source_id,

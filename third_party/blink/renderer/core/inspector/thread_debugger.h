@@ -7,6 +7,7 @@
 
 #include <memory>
 #include "base/macros.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom-shared.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/inspector/console_types.h"
@@ -61,7 +62,7 @@ class CORE_EXPORT ThreadDebugger : public v8_inspector::V8InspectorClient,
   virtual int ContextGroupId(ExecutionContext*) = 0;
   virtual void ReportConsoleMessage(ExecutionContext*,
                                     MessageSource,
-                                    MessageLevel,
+                                    mojom::ConsoleMessageLevel,
                                     const String& message,
                                     SourceLocation*) = 0;
   void installAdditionalCommandLineAPI(v8::Local<v8::Context>,
@@ -76,7 +77,7 @@ class CORE_EXPORT ThreadDebugger : public v8_inspector::V8InspectorClient,
                                                    v8::Local<v8::Array>,
                                                    int index,
                                                    v8::Local<v8::Value>);
-  static MessageLevel V8MessageLevelToMessageLevel(
+  static mojom::ConsoleMessageLevel V8MessageLevelToMessageLevel(
       v8::Isolate::MessageErrorLevel);
 
   v8::Isolate* isolate_;

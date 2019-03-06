@@ -31,7 +31,7 @@ bool DOMFeaturePolicy::allowsFeature(const String& feature,
       SecurityOrigin::CreateFromString(url);
   if (!origin || origin->IsOpaque()) {
     GetDocument()->AddConsoleMessage(ConsoleMessage::Create(
-        kOtherMessageSource, kWarningMessageLevel,
+        kOtherMessageSource, mojom::ConsoleMessageLevel::kWarning,
         "Invalid origin url for feature '" + feature + "': " + url + "."));
     return false;
   }
@@ -98,9 +98,9 @@ Vector<String> DOMFeaturePolicy::getAllowlistForFeature(
 
 void DOMFeaturePolicy::AddWarningForUnrecognizedFeature(
     const String& feature) const {
-  GetDocument()->AddConsoleMessage(
-      ConsoleMessage::Create(kOtherMessageSource, kWarningMessageLevel,
-                             "Unrecognized feature: '" + feature + "'."));
+  GetDocument()->AddConsoleMessage(ConsoleMessage::Create(
+      kOtherMessageSource, mojom::ConsoleMessageLevel::kWarning,
+      "Unrecognized feature: '" + feature + "'."));
 }
 
 void DOMFeaturePolicy::Trace(blink::Visitor* visitor) {

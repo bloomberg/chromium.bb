@@ -239,7 +239,7 @@ ScriptPromise XR::requestSession(ScriptState* script_state,
     }
 
     doc->AddConsoleMessage(ConsoleMessage::Create(
-        kOtherMessageSource, kWarningMessageLevel,
+        kOtherMessageSource, mojom::ConsoleMessageLevel::kWarning,
         "Inline AR is deprecated and will be removed soon."));
   }
 

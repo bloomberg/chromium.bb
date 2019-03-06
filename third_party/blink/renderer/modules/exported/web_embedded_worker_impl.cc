@@ -262,27 +262,8 @@ void WebEmbeddedWorkerImpl::ResumeAfterDownload() {
 
 void WebEmbeddedWorkerImpl::AddMessageToConsole(
     const WebConsoleMessage& message) {
-  MessageLevel web_core_message_level;
-  switch (message.level) {
-    case mojom::ConsoleMessageLevel::kVerbose:
-      web_core_message_level = kVerboseMessageLevel;
-      break;
-    case mojom::ConsoleMessageLevel::kInfo:
-      web_core_message_level = kInfoMessageLevel;
-      break;
-    case mojom::ConsoleMessageLevel::kWarning:
-      web_core_message_level = kWarningMessageLevel;
-      break;
-    case mojom::ConsoleMessageLevel::kError:
-      web_core_message_level = kErrorMessageLevel;
-      break;
-    default:
-      NOTREACHED();
-      return;
-  }
-
   shadow_page_->GetDocument()->AddConsoleMessage(ConsoleMessage::Create(
-      kOtherMessageSource, web_core_message_level, message.text,
+      kOtherMessageSource, message.level, message.text,
       SourceLocation::Create(message.url, message.line_number,
                              message.column_number, nullptr)));
 }

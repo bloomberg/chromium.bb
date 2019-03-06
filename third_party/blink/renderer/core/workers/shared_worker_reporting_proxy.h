@@ -32,7 +32,7 @@ class SharedWorkerReportingProxy final
                        std::unique_ptr<SourceLocation>,
                        int exception_id) override;
   void ReportConsoleMessage(MessageSource,
-                            MessageLevel,
+                            mojom::ConsoleMessageLevel,
                             const String& message,
                             SourceLocation*) override;
   void DidFetchScript() override;

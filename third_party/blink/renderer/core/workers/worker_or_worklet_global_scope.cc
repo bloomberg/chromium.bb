@@ -234,9 +234,9 @@ void WorkerOrWorkletGlobalScope::CountDeprecation(WebFeature feature) {
 
   // Adds a deprecation message to the console.
   DCHECK(!Deprecation::DeprecationMessage(feature).IsEmpty());
-  AddConsoleMessage(
-      ConsoleMessage::Create(kDeprecationMessageSource, kWarningMessageLevel,
-                             Deprecation::DeprecationMessage(feature)));
+  AddConsoleMessage(ConsoleMessage::Create(
+      kDeprecationMessageSource, mojom::ConsoleMessageLevel::kWarning,
+      Deprecation::DeprecationMessage(feature)));
   ReportingProxy().CountDeprecation(feature);
 }
 

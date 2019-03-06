@@ -130,7 +130,7 @@ void SubresourceFilter::ReportLoad(
       // warning in Lighthouse.
       if (subresource_filter_->ShouldLogToConsole()) {
         execution_context_->AddConsoleMessage(ConsoleMessage::Create(
-            kOtherMessageSource, kErrorMessageLevel,
+            kOtherMessageSource, mojom::ConsoleMessageLevel::kError,
             GetErrorStringForDisallowedLoad(resource_url)));
       }
       FALLTHROUGH;

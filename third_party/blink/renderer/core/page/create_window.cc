@@ -335,7 +335,7 @@ static Frame* CreateWindowHelper(LocalFrame& opener_frame,
       // FIXME: This message should be moved off the console once a solution to
       // https://bugs.webkit.org/show_bug.cgi?id=103274 exists.
       opener_frame.GetDocument()->AddConsoleMessage(ConsoleMessage::Create(
-          kSecurityMessageSource, kErrorMessageLevel,
+          kSecurityMessageSource, mojom::ConsoleMessageLevel::kError,
           "Blocked opening '" +
               request.GetResourceRequest().Url().ElidedString() +
               "' in a new window because the request was made in a sandboxed "

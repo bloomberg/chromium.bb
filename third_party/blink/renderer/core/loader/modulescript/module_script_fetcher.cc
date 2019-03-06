@@ -63,7 +63,7 @@ bool ModuleScriptFetcher::WasModuleLoadSuccessful(
         "\". Strict MIME type checking is enforced for module scripts per "
         "HTML spec.";
     error_messages->push_back(ConsoleMessage::CreateForRequest(
-        kJSMessageSource, kErrorMessageLevel, message,
+        kJSMessageSource, mojom::ConsoleMessageLevel::kError, message,
         response.CurrentRequestUrl().GetString(), nullptr,
         resource->Identifier()));
     return false;

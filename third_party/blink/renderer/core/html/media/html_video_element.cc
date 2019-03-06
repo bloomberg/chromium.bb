@@ -232,7 +232,7 @@ void HTMLVideoElement::ParseAttribute(
             &is_default_overridden_intrinsic_size_, &message);
     if (!message.IsEmpty()) {
       GetDocument().AddConsoleMessage(ConsoleMessage::Create(
-          kOtherMessageSource, kWarningMessageLevel, message));
+          kOtherMessageSource, mojom::ConsoleMessageLevel::kWarning, message));
     }
 
     if (intrinsic_size_changed && GetLayoutObject() &&

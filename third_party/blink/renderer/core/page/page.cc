@@ -828,9 +828,9 @@ void Page::SetPageScheduler(std::unique_ptr<PageScheduler> page_scheduler) {
 
 void Page::ReportIntervention(const String& text) {
   if (LocalFrame* local_frame = DeprecatedLocalMainFrame()) {
-    ConsoleMessage* message =
-        ConsoleMessage::Create(kOtherMessageSource, kWarningMessageLevel, text,
-                               SourceLocation::Create(String(), 0, 0, nullptr));
+    ConsoleMessage* message = ConsoleMessage::Create(
+        kOtherMessageSource, mojom::ConsoleMessageLevel::kWarning, text,
+        SourceLocation::Create(String(), 0, 0, nullptr));
     local_frame->GetDocument()->AddConsoleMessage(message);
   }
 }

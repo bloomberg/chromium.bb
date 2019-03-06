@@ -200,7 +200,7 @@ String DatabaseManager::FullPathForDatabase(const SecurityOrigin* origin,
 void DatabaseManager::LogErrorMessage(ExecutionContext* context,
                                       const String& message) {
   context->AddConsoleMessage(ConsoleMessage::Create(
-      kStorageMessageSource, kErrorMessageLevel, message));
+      kStorageMessageSource, mojom::ConsoleMessageLevel::kError, message));
 }
 
 }  // namespace blink

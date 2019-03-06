@@ -29,13 +29,13 @@
 #include <memory>
 #include <utility>
 
+#include "third_party/blink/public/mojom/devtools/console_message.mojom-shared.h"
 #include "third_party/blink/public/platform/web_content_security_policy_struct.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/execution_context/security_context.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
-#include "third_party/blink/renderer/core/inspector/console_types.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/loader/fetch/integrity_metadata.h"
@@ -507,7 +507,9 @@ class CORE_EXPORT ContentSecurityPolicy
 
   void ApplyPolicySideEffectsToDelegate();
 
-  void LogToConsole(const String& message, MessageLevel = kErrorMessageLevel);
+  void LogToConsole(
+      const String& message,
+      mojom::ConsoleMessageLevel = mojom::ConsoleMessageLevel::kError);
 
   void AddAndReportPolicyFromHeaderValue(const String&,
                                          ContentSecurityPolicyHeaderType,

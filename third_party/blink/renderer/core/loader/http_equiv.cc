@@ -105,7 +105,7 @@ void HttpEquiv::Process(Document& document,
     document.ParseDNSPrefetchControlHeader(content);
   } else if (EqualIgnoringASCIICase(equiv, "x-frame-options")) {
     document.AddConsoleMessage(ConsoleMessage::Create(
-        kSecurityMessageSource, kErrorMessageLevel,
+        kSecurityMessageSource, mojom::ConsoleMessageLevel::kError,
         "X-Frame-Options may only be set via an HTTP header sent along with a "
         "document. It may not be set inside <meta>."));
   } else if (EqualIgnoringASCIICase(equiv, http_names::kAcceptCH)) {
@@ -207,7 +207,7 @@ void HttpEquiv::ProcessHttpEquivSetCookie(Document& document,
   }
 
   document.AddConsoleMessage(ConsoleMessage::Create(
-      kSecurityMessageSource, kErrorMessageLevel,
+      kSecurityMessageSource, mojom::ConsoleMessageLevel::kError,
       String::Format("Blocked setting the `%s` cookie from a `<meta>` tag.",
                      content.Utf8().data())));
 }

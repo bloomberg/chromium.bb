@@ -129,9 +129,9 @@ bool PreviewsResourceLoadingHints::AllowLoad(
 
 void PreviewsResourceLoadingHints::ReportBlockedLoading(
     const KURL& resource_url) const {
-  execution_context_->AddConsoleMessage(
-      ConsoleMessage::Create(kOtherMessageSource, kWarningMessageLevel,
-                             GetConsoleLogStringForBlockedLoad(resource_url)));
+  execution_context_->AddConsoleMessage(ConsoleMessage::Create(
+      kOtherMessageSource, mojom::ConsoleMessageLevel::kWarning,
+      GetConsoleLogStringForBlockedLoad(resource_url)));
 }
 
 void PreviewsResourceLoadingHints::Trace(blink::Visitor* visitor) {

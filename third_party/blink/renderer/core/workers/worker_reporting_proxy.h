@@ -32,6 +32,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKER_REPORTING_PROXY_H_
 
 #include <memory>
+#include "third_party/blink/public/mojom/devtools/console_message.mojom-shared.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/frame/web_feature_forward.h"
@@ -57,7 +58,7 @@ class CORE_EXPORT WorkerReportingProxy {
                                std::unique_ptr<SourceLocation>,
                                int exception_id) {}
   virtual void ReportConsoleMessage(MessageSource,
-                                    MessageLevel,
+                                    mojom::ConsoleMessageLevel,
                                     const String& message,
                                     SourceLocation*) {}
 

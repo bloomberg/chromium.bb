@@ -316,9 +316,9 @@ void NetworkInformation::MaybeShowWebHoldbackConsoleMsg() {
   web_holdback_console_message_shown_ = true;
   if (!GetNetworkStateNotifier().GetWebHoldbackEffectiveType())
     return;
-  GetExecutionContext()->AddConsoleMessage(
-      ConsoleMessage::Create(kOtherMessageSource, kWarningMessageLevel,
-                             GetConsoleLogStringForWebHoldback()));
+  GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
+      kOtherMessageSource, mojom::ConsoleMessageLevel::kWarning,
+      GetConsoleLogStringForWebHoldback()));
 }
 
 }  // namespace blink

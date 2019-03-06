@@ -148,7 +148,7 @@ void HTMLIFrameElement::ParseAttribute(
                                                         invalid_tokens));
     if (!invalid_tokens.IsNull()) {
       GetDocument().AddConsoleMessage(ConsoleMessage::Create(
-          kOtherMessageSource, kErrorMessageLevel,
+          kOtherMessageSource, mojom::ConsoleMessageLevel::kError,
           "Error while parsing the 'sandbox' attribute: " + invalid_tokens));
     }
     if (RuntimeEnabledFeatures::FeaturePolicyForSandboxEnabled()) {
@@ -157,7 +157,8 @@ void HTMLIFrameElement::ParseAttribute(
       if (!messages.IsEmpty()) {
         for (const String& message : messages) {
           GetDocument().AddConsoleMessage(ConsoleMessage::Create(
-              kOtherMessageSource, kWarningMessageLevel, message));
+              kOtherMessageSource, mojom::ConsoleMessageLevel::kWarning,
+              message));
         }
       }
     }
@@ -197,7 +198,7 @@ void HTMLIFrameElement::ParseAttribute(
             value.GetString(), GetDocument().RequiredCSP().GetString())) {
       required_csp_ = g_null_atom;
       GetDocument().AddConsoleMessage(ConsoleMessage::Create(
-          kOtherMessageSource, kErrorMessageLevel,
+          kOtherMessageSource, mojom::ConsoleMessageLevel::kError,
           "'csp' attribute is not a valid policy: " + value));
       return;
     }
@@ -213,7 +214,8 @@ void HTMLIFrameElement::ParseAttribute(
       if (!messages.IsEmpty()) {
         for (const String& message : messages) {
           GetDocument().AddConsoleMessage(ConsoleMessage::Create(
-              kOtherMessageSource, kWarningMessageLevel, message));
+              kOtherMessageSource, mojom::ConsoleMessageLevel::kWarning,
+              message));
         }
       }
       if (!value.IsEmpty()) {
@@ -233,11 +235,11 @@ void HTMLIFrameElement::ParseAttribute(
             WebFeature::kHTMLIFrameElementGestureMedia)) {
       UseCounter::Count(GetDocument(),
                         WebFeature::kHTMLIFrameElementGestureMedia);
-      GetDocument().AddConsoleMessage(
-          ConsoleMessage::Create(kOtherMessageSource, kWarningMessageLevel,
-                                 "<iframe gesture=\"media\"> is not supported. "
-                                 "Use <iframe allow=\"autoplay\">, "
-                                 "https://goo.gl/ximf56"));
+      GetDocument().AddConsoleMessage(ConsoleMessage::Create(
+          kOtherMessageSource, mojom::ConsoleMessageLevel::kWarning,
+          "<iframe gesture=\"media\"> is not supported. "
+          "Use <iframe allow=\"autoplay\">, "
+          "https://goo.gl/ximf56"));
     }
 
     if (name == kSrcAttr)
@@ -329,7 +331,7 @@ Node::InsertionNotificationRequest HTMLIFrameElement::InsertedInto(
             required_csp_, GetDocument().RequiredCSP().GetString())) {
       if (!required_csp_.IsEmpty()) {
         GetDocument().AddConsoleMessage(ConsoleMessage::Create(
-            kOtherMessageSource, kErrorMessageLevel,
+            kOtherMessageSource, mojom::ConsoleMessageLevel::kError,
             "'csp' attribute is not a valid policy: " + required_csp_));
       }
       if (required_csp_ != GetDocument().RequiredCSP()) {

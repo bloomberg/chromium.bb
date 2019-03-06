@@ -31,10 +31,11 @@ void ThreadedObjectProxyBase::CountDeprecation(WebFeature feature) {
                       MessagingProxyWeakPtr(), feature));
 }
 
-void ThreadedObjectProxyBase::ReportConsoleMessage(MessageSource source,
-                                                   MessageLevel level,
-                                                   const String& message,
-                                                   SourceLocation* location) {
+void ThreadedObjectProxyBase::ReportConsoleMessage(
+    MessageSource source,
+    mojom::ConsoleMessageLevel level,
+    const String& message,
+    SourceLocation* location) {
   PostCrossThreadTask(
       *GetParentExecutionContextTaskRunners()->Get(TaskType::kInternalDefault),
       FROM_HERE,

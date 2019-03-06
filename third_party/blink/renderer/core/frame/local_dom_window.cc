@@ -587,9 +587,9 @@ void LocalDOMWindow::DispatchMessageEventWithOriginCheck(
           "The target origin provided ('" + intended_target_origin->ToString() +
               "') does not match the recipient window's origin ('" +
               document()->GetSecurityOrigin()->ToString() + "').");
-      ConsoleMessage* console_message =
-          ConsoleMessage::Create(kSecurityMessageSource, kErrorMessageLevel,
-                                 message, std::move(location));
+      ConsoleMessage* console_message = ConsoleMessage::Create(
+          kSecurityMessageSource, mojom::ConsoleMessageLevel::kError, message,
+          std::move(location));
       GetFrameConsole()->AddMessage(console_message);
       return;
     }
@@ -660,7 +660,7 @@ void LocalDOMWindow::alert(ScriptState* script_state, const String& message) {
   if (document()->IsSandboxed(kSandboxModals)) {
     UseCounter::Count(document(), WebFeature::kDialogInSandboxedContext);
     GetFrameConsole()->AddMessage(ConsoleMessage::Create(
-        kSecurityMessageSource, kErrorMessageLevel,
+        kSecurityMessageSource, mojom::ConsoleMessageLevel::kError,
         "Ignored call to 'alert()'. The document is sandboxed, and the "
         "'allow-modals' keyword is not set."));
     return;
@@ -689,7 +689,7 @@ bool LocalDOMWindow::confirm(ScriptState* script_state, const String& message) {
   if (document()->IsSandboxed(kSandboxModals)) {
     UseCounter::Count(document(), WebFeature::kDialogInSandboxedContext);
     GetFrameConsole()->AddMessage(ConsoleMessage::Create(
-        kSecurityMessageSource, kErrorMessageLevel,
+        kSecurityMessageSource, mojom::ConsoleMessageLevel::kError,
         "Ignored call to 'confirm()'. The document is sandboxed, and the "
         "'allow-modals' keyword is not set."));
     return false;
@@ -720,7 +720,7 @@ String LocalDOMWindow::prompt(ScriptState* script_state,
   if (document()->IsSandboxed(kSandboxModals)) {
     UseCounter::Count(document(), WebFeature::kDialogInSandboxedContext);
     GetFrameConsole()->AddMessage(ConsoleMessage::Create(
-        kSecurityMessageSource, kErrorMessageLevel,
+        kSecurityMessageSource, mojom::ConsoleMessageLevel::kError,
         "Ignored call to 'prompt()'. The document is sandboxed, and the "
         "'allow-modals' keyword is not set."));
     return String();
@@ -1316,7 +1316,7 @@ void LocalDOMWindow::WarnUnusedPreloads(TimerBase* base) {
         "event. Please make sure it has an appropriate `as` value and it is " +
         "preloaded intentionally.";
     GetFrameConsole()->AddMessage(ConsoleMessage::Create(
-        kJSMessageSource, kWarningMessageLevel, message));
+        kJSMessageSource, mojom::ConsoleMessageLevel::kWarning, message));
   }
 }
 
@@ -1405,8 +1405,8 @@ void LocalDOMWindow::PrintErrorMessage(const String& message) const {
   if (message.IsEmpty())
     return;
 
-  GetFrameConsole()->AddMessage(
-      ConsoleMessage::Create(kJSMessageSource, kErrorMessageLevel, message));
+  GetFrameConsole()->AddMessage(ConsoleMessage::Create(
+      kJSMessageSource, mojom::ConsoleMessageLevel::kError, message));
 }
 
 DOMWindow* LocalDOMWindow::open(v8::Isolate* isolate,
