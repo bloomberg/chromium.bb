@@ -423,3 +423,32 @@ window.addEventListener('load', () => {
   ];
   steps.shift()();
 });
+
+/**
+ * Creates a folder shortcut to |directoryName| using the context menu. Note the
+ * current directory must be a parent of the given |directoryName|.
+ *
+ * @param {string} appId Files app windowId.
+ * @param {string} directoryName Directory of shortcut to be created.
+ * @return {Promise} Promise fulfilled on success.
+ */
+async function createShortcut(appId, directoryName) {
+  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
+      'selectFile', appId, [directoryName]));
+
+  await remoteCall.waitForElement(appId, ['.table-row[selected]']);
+  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
+      'fakeMouseRightClick', appId, ['.table-row[selected]']));
+
+
+  await remoteCall.waitForElement(appId, '#file-context-menu:not([hidden])');
+  await remoteCall.waitForElement(
+      appId,
+      '[command="#create-folder-shortcut"]:not([hidden]):not([disabled])');
+  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
+      'fakeMouseClick', appId,
+      ['[command="#create-folder-shortcut"]:not([hidden]):not([disabled])']));
+
+  await remoteCall.waitForElement(
+      appId, `.tree-item[label="${directoryName}"]`);
+}
