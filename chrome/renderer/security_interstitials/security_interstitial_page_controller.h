@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_SSL_SSL_CERTIFICATE_ERROR_PAGE_CONTROLLER_H_
-#define CHROME_RENDERER_SSL_SSL_CERTIFICATE_ERROR_PAGE_CONTROLLER_H_
+#ifndef CHROME_RENDERER_SECURITY_INTERSTITIALS_SECURITY_INTERSTITIAL_PAGE_CONTROLLER_H_
+#define CHROME_RENDERER_SECURITY_INTERSTITIALS_SECURITY_INTERSTITIAL_PAGE_CONTROLLER_H_
 
 #include "base/memory/weak_ptr.h"
 #include "components/security_interstitials/core/controller_client.h"
@@ -16,8 +16,8 @@ class RenderFrame;
 // This class makes various helper functions available to interstitials
 // when committed interstitials are on. It is bound to the JavaScript
 // window.certificateErrorPageController object.
-class SSLCertificateErrorPageController
-    : public gin::Wrappable<SSLCertificateErrorPageController> {
+class SecurityInterstitialPageController
+    : public gin::Wrappable<SecurityInterstitialPageController> {
  public:
   static gin::WrapperInfo kWrapperInfo;
 
@@ -40,8 +40,8 @@ class SSLCertificateErrorPageController
                       base::WeakPtr<Delegate> delegate);
 
  private:
-  explicit SSLCertificateErrorPageController(base::WeakPtr<Delegate> delegate);
-  ~SSLCertificateErrorPageController() override;
+  explicit SecurityInterstitialPageController(base::WeakPtr<Delegate> delegate);
+  ~SecurityInterstitialPageController() override;
 
   void DontProceed();
   void Proceed();
@@ -65,7 +65,7 @@ class SSLCertificateErrorPageController
 
   base::WeakPtr<Delegate> const delegate_;
 
-  DISALLOW_COPY_AND_ASSIGN(SSLCertificateErrorPageController);
+  DISALLOW_COPY_AND_ASSIGN(SecurityInterstitialPageController);
 };
 
-#endif  // CHROME_RENDERER_SSL_SSL_CERTIFICATE_ERROR_PAGE_CONTROLLER_H_
+#endif  // CHROME_RENDERER_SECURITY_INTERSTITIALS_SECURITY_INTERSTITIAL_PAGE_CONTROLLER_H_

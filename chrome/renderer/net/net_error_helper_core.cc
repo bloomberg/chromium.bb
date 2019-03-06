@@ -678,8 +678,7 @@ void NetErrorHelperCore::OnFinishLoad(FrameType frame_type) {
   delegate_->SetIsShowingDownloadButton(
       committed_error_page_info_->download_button_in_page);
 
-  delegate_->EnablePageHelperFunctions(
-      static_cast<net::Error>(committed_error_page_info_->error.reason()));
+  delegate_->EnablePageHelperFunctions();
 
 #if defined(OS_ANDROID)
   if (committed_error_page_info_->offline_content_feature_state ==
