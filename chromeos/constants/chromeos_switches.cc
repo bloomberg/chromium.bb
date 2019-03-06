@@ -50,7 +50,7 @@ const base::Feature kShowPlayInDemoMode{"ShowPlayInDemoMode",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kShowSplashScreenInDemoMode{
-    "ShowSplashScreenInDemoMode", base::FEATURE_DISABLED_BY_DEFAULT};
+    "ShowSplashScreenInDemoMode", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kSupportCountryCustomizationInDemoMode{
     "SupportCountryCustomizationInDemoMode", base::FEATURE_ENABLED_BY_DEFAULT};
