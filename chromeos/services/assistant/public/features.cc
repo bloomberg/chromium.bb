@@ -53,6 +53,12 @@ const base::Feature kEnablePowerManager{"ChromeOSAssistantEnablePowerManager",
 const base::Feature kAssistantKeyRemapping{"AssistantKeyRemapping",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables sending a screen context request ("What's on my screen?" and
+// metalayer selection) as a text query. This is as opposed to sending
+// the request as a contextual cards request.
+const base::Feature kScreenContextQuery{"ChromeOSAssistantScreenContextQuery",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
 bool IsAppSupportEnabled() {
   return base::FeatureList::IsEnabled(
       assistant::features::kAssistantAppSupport);
@@ -100,6 +106,10 @@ bool IsPowerManagerEnabled() {
 
 bool IsKeyRemappingEnabled() {
   return base::FeatureList::IsEnabled(kAssistantKeyRemapping);
+}
+
+bool IsScreenContextQueryEnabled() {
+  return base::FeatureList::IsEnabled(kScreenContextQuery);
 }
 
 }  // namespace features
