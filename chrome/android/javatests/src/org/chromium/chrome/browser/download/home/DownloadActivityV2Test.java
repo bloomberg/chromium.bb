@@ -19,7 +19,6 @@ import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Restriction;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.download.home.list.UiUtils;
@@ -29,7 +28,6 @@ import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.ui.DummyUiActivity;
 import org.chromium.chrome.test.ui.DummyUiActivityTestCase;
 import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.components.offline_items_collection.OfflineItem;
@@ -59,7 +57,6 @@ public class DownloadActivityV2Test extends DummyUiActivityTestCase {
     @BeforeClass
     public static void setUpBeforeActivityLaunched() {
         UiUtils.setDisableUrlFormattingForTests(true);
-        DummyUiActivity.setTestTheme(R.style.Theme_Chromium_Activity_Fullscreen);
     }
 
     @Override
