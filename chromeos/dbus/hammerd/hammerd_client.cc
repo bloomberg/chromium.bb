@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/dbus/hammerd_client.h"
+#include "chromeos/dbus/hammerd/hammerd_client.h"
 
 #include <string>
 
@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "chromeos/dbus/hammerd/fake_hammerd_client.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
@@ -21,13 +22,15 @@ namespace chromeos {
 
 namespace {
 
+HammerdClient* g_instance = nullptr;
+
 class HammerdClientImpl : public HammerdClient {
  public:
   HammerdClientImpl() = default;
   ~HammerdClientImpl() override = default;
 
   // HammerdClient:
-  void Init(dbus::Bus* bus) override {
+  void Init(dbus::Bus* bus) {
     bus_proxy_ =
         bus->GetObjectProxy(hammerd::kHammerdServiceName,
                             dbus::ObjectPath(hammerd::kHammerdServicePath));
@@ -156,9 +159,32 @@ class HammerdClientImpl : public HammerdClient {
 
 }  // namespace
 
+HammerdClient::HammerdClient() = default;
+
+HammerdClient::~HammerdClient() = default;
+
 // static
-std::unique_ptr<HammerdClient> HammerdClient::Create() {
-  return std::make_unique<HammerdClientImpl>();
+void HammerdClient::Initialize(dbus::Bus* bus) {
+  CHECK(!g_instance);
+  if (bus) {
+    auto* instance = new HammerdClientImpl();
+    instance->Init(bus);
+    g_instance = instance;
+  } else {
+    g_instance = new FakeHammerdClient();
+  }
+}
+
+// static
+void HammerdClient::Shutdown() {
+  CHECK(g_instance);
+  delete g_instance;
+  g_instance = nullptr;
+}
+
+// static
+HammerdClient* HammerdClient::Get() {
+  return g_instance;
 }
 
 }  // namespace chromeos

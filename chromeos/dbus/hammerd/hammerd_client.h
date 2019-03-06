@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_DBUS_HAMMERD_CLIENT_H_
-#define CHROMEOS_DBUS_HAMMERD_CLIENT_H_
+#ifndef CHROMEOS_DBUS_HAMMERD_HAMMERD_CLIENT_H_
+#define CHROMEOS_DBUS_HAMMERD_HAMMERD_CLIENT_H_
 
 #include <stdint.h>
 
@@ -23,7 +23,7 @@ namespace chromeos {
 //  * the connected base pairing events.
 // The client forwards the received signals to its observers (together with any
 // data extracted from the signal object).
-class COMPONENT_EXPORT(CHROMEOS_DBUS) HammerdClient : public DBusClient {
+class COMPONENT_EXPORT(CHROMEOS_DBUS) HammerdClient {
  public:
   class Observer {
    public:
@@ -54,14 +54,19 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) HammerdClient : public DBusClient {
     virtual void InvalidBaseConnected() = 0;
   };
 
-  ~HammerdClient() override = default;
+  HammerdClient();
+  virtual ~HammerdClient();
+
+  // Creates and initializes the global instance. If |bus| is null, a
+  // FakeHammerdClient instance will be created.
+  static void Initialize(dbus::Bus* bus);
+  static void Shutdown();
+  static HammerdClient* Get();
 
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
-
-  static std::unique_ptr<HammerdClient> Create();
 };
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_DBUS_HAMMERD_CLIENT_H_
+#endif  // CHROMEOS_DBUS_HAMMERD_HAMMERD_CLIENT_H_

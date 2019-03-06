@@ -14,9 +14,8 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_hammerd_client.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
+#include "chromeos/dbus/hammerd/fake_hammerd_client.h"
 #include "components/account_id/account_id.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -86,12 +85,8 @@ class DetachableBaseHandlerTest : public testing::Test {
 
   // testing::Test:
   void SetUp() override {
-    std::unique_ptr<chromeos::DBusThreadManagerSetter> dbus_setter =
-        chromeos::DBusThreadManager::GetSetterForTesting();
-
-    auto hammerd_client = std::make_unique<chromeos::FakeHammerdClient>();
-    hammerd_client_ = hammerd_client.get();
-    dbus_setter->SetHammerdClient(std::move(hammerd_client));
+    chromeos::HammerdClient::Initialize(nullptr /* bus */);
+    hammerd_client_ = chromeos::FakeHammerdClient::Get();
 
     chromeos::PowerManagerClient::Initialize();
     chromeos::FakePowerManagerClient::Get()->SetTabletMode(
@@ -110,7 +105,7 @@ class DetachableBaseHandlerTest : public testing::Test {
     handler_.reset();
     hammerd_client_ = nullptr;
     chromeos::PowerManagerClient::Shutdown();
-    chromeos::DBusThreadManager::Shutdown();
+    chromeos::HammerdClient::Shutdown();
   }
 
  protected:
@@ -142,7 +137,6 @@ class DetachableBaseHandlerTest : public testing::Test {
     handler_->OnLocalStatePrefServiceInitialized(&local_state_);
   }
 
-  // Owned by DBusThreadManager:
   chromeos::FakeHammerdClient* hammerd_client_ = nullptr;
 
   TestBaseObserver detachable_base_observer_;

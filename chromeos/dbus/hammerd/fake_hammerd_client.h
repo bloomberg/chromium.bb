@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_DBUS_FAKE_HAMMERD_CLIENT_H_
-#define CHROMEOS_DBUS_FAKE_HAMMERD_CLIENT_H_
+#ifndef CHROMEOS_DBUS_HAMMERD_FAKE_HAMMERD_CLIENT_H_
+#define CHROMEOS_DBUS_HAMMERD_FAKE_HAMMERD_CLIENT_H_
 
 #include <vector>
 
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "chromeos/dbus/hammerd_client.h"
+#include "chromeos/dbus/hammerd/hammerd_client.h"
 
 namespace chromeos {
 
@@ -19,8 +19,10 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeHammerdClient : public HammerdClient {
   FakeHammerdClient();
   ~FakeHammerdClient() override;
 
+  // Checks that a FakeHammerdClient instance was initialized and returns it.
+  static FakeHammerdClient* Get();
+
   // HammerdClient:
-  void Init(dbus::Bus* bus) override;
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
 
@@ -41,4 +43,4 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeHammerdClient : public HammerdClient {
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_DBUS_FAKE_HAMMERD_CLIENT_H_
+#endif  // CHROMEOS_DBUS_HAMMERD_FAKE_HAMMERD_CLIENT_H_

@@ -31,6 +31,7 @@
 #include "base/token.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/hammerd/hammerd_client.h"
 #include "chromeos/dbus/power_policy_controller.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/system/fake_statistics_provider.h"
@@ -160,6 +161,8 @@ void AshTestHelper::SetUp(bool start_session, bool provide_local_state) {
   if (!chromeos::DBusThreadManager::IsInitialized()) {
     chromeos::DBusThreadManager::Initialize(
         chromeos::DBusThreadManager::kShared);
+    chromeos::HammerdClient::Initialize(
+        chromeos::DBusThreadManager::Get()->GetSystemBus());
     dbus_thread_manager_initialized_ = true;
   }
 
@@ -272,6 +275,7 @@ void AshTestHelper::TearDown() {
   }
 
   if (dbus_thread_manager_initialized_) {
+    chromeos::HammerdClient::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
     dbus_thread_manager_initialized_ = false;
   }
