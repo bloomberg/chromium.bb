@@ -63,15 +63,31 @@ class AgentImpl : public ::fuchsia::modular::Agent {
       return &service_directory_;
     }
 
+    // Registers |service_binding| to prevent teardown of this
+    // ComponentStateBase while it has one or more clients. |service_binding|
+    // will typically be the ScopedServiceBinding<> of a critical service used
+    // by the component.
+    template <typename T>
+    void AddKeepAliveBinding(T* service_binding) {
+      keepalive_callbacks_.push_back(base::BindRepeating(
+          &T::has_clients, base::Unretained(service_binding)));
+      service_binding->SetOnLastClientCallback(base::BindRepeating(
+          &ComponentStateBase::TeardownIfUnused, base::Unretained(this)));
+    }
+
    private:
     friend class AgentImpl;
 
-    void OnComponentDisconnected();
+    // Tears down this instance if there are no ServiceProvider clients, and
+    // no |keepalive_callbacks_| indicate that there are no clients of
+    // bindings that were configured to keep us alive.
+    void TeardownIfUnused();
 
     const std::string component_id_;
     AgentImpl* agent_impl_ = nullptr;
     base::fuchsia::ServiceDirectory service_directory_;
     std::unique_ptr<base::fuchsia::ServiceProviderImpl> service_provider_;
+    std::vector<base::RepeatingCallback<bool()>> keepalive_callbacks_;
 
     DISALLOW_COPY_AND_ASSIGN(ComponentStateBase);
   };
