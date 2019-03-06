@@ -47,7 +47,6 @@ html[darkmode=true] button.primary .ripple-effect {
 button.paper {
   border: none;
   border-radius: 4px;
-  font-family: 'Roboto', arial, sans-serif;
   font-size: 12px;
   font-weight: 500;
   height: 32px;

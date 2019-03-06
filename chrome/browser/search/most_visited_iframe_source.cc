@@ -39,7 +39,7 @@ const char kEditMenuSvgPath[] = "/edit_menu.svg";
 // Used in the single-iframe version and the edit custom links dialog iframe.
 const char kAnimationsCSSPath[] = "/animations.css";
 const char kAnimationsJSPath[] = "/animations.js";
-const char kConstantsCSSPath[] = "/constants.css";
+const char kLocalNTPCommonCSSPath[] = "/local-ntp-common.css";
 const char kLocalNTPUtilsJSPath[] = "/utils.js";
 
 }  // namespace
@@ -105,8 +105,8 @@ void MostVisitedIframeSource::StartDataRequest(
     SendResource(IDR_CUSTOM_LINKS_ADD_WHITE_SVG, callback);
   } else if (path == kEditMenuSvgPath) {
     SendResource(IDR_CUSTOM_LINKS_EDIT_MENU_SVG, callback);
-  } else if (path == kConstantsCSSPath) {
-    SendResource(IDR_LOCAL_NTP_CONSTANTS_CSS, callback);
+  } else if (path == kLocalNTPCommonCSSPath) {
+    SendResource(IDR_LOCAL_NTP_COMMON_CSS, callback);
   } else if (path == kAnimationsCSSPath) {
     SendResource(IDR_LOCAL_NTP_ANIMATIONS_CSS, callback);
   } else if (path == kAnimationsJSPath) {
@@ -125,6 +125,6 @@ bool MostVisitedIframeSource::ServesPath(const std::string& path) const {
          path == kCommonCSSPath || path == kEditHTMLPath ||
          path == kEditCSSPath || path == kEditJSPath || path == kAddSvgPath ||
          path == kAddWhiteSvgPath || path == kEditMenuSvgPath ||
-         path == kConstantsCSSPath || path == kAnimationsCSSPath ||
+         path == kLocalNTPCommonCSSPath || path == kAnimationsCSSPath ||
          path == kAnimationsJSPath || path == kLocalNTPUtilsJSPath;
 }

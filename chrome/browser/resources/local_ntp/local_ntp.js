@@ -97,7 +97,7 @@ var CLASSES = {
   NON_GOOGLE_PAGE: 'non-google-page',
   NON_WHITE_BG: 'non-white-bg',
   REMOVE_FAKEBOX: 'remove-fakebox',  // Hides the fakebox from the page.
-  RTL: 'rtl',  // Right-to-left language text.
+  RTL: 'rtl',                        // Right-to-left language text.
   // Applied when the doodle notifier should be shown instead of the doodle.
   USE_NOTIFIER: 'use-notifier',
 };
@@ -1209,6 +1209,8 @@ function init() {
   if (!iframesAndVoiceSearchDisabledForTesting) {
     createIframes();
   }
+
+  utils.setPlatformClass(document.body);
 
   document.body.classList.add(CLASSES.INITED);
 }

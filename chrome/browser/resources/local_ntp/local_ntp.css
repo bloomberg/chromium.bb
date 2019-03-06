@@ -65,13 +65,10 @@ html[darkmode=true] body:not(.light-chip) {
   }
 }
 
-/* TODO: Need to discuss with NTP folks before we remove font-family from the
- * body tag. */
 body {
   background-attachment: fixed !important;
   cursor: default;
   display: none;
-  font-family: arial, sans-serif;
   font-size: small;
   margin: 0;
   min-height: 100%;
@@ -183,7 +180,6 @@ html[dir=rtl] #fakebox > input {
 #fakebox-text {
   bottom: 4px;
   color: rgb(var(--GG600-rgb));
-  font-family: 'Roboto', arial, sans-serif;
   font-size: 14px;
   left: 0;
   margin-top: 1px;
@@ -395,7 +391,6 @@ html[darkmode=true] body:not(.light-chip) #mv-notice-x:active {
   border: 1px solid rgb(var(--GG300-rgb));
   /* Necessary for a "pill" shape. Using 50% creates an oval. */
   border-radius: 16px;
-  font-family: 'Roboto', arial, sans-serif;
   font-weight: normal;
   height: fit-content;
   margin: 0 auto;
@@ -650,7 +645,6 @@ input:checked + .toggle::before {
   border-radius: 16px;
   color: rgb(var(--GR600-rgb));
   display: flex;
-  font-family: 'Roboto', arial, sans-serif;
   font-size: 12px;
   font-weight: normal;
   height: fit-content;
@@ -756,7 +750,6 @@ html[darkmode=true] body:not(.light-chip) #error-notice-link:active {
   box-sizing: border-box;
   color: rgb(var(--GG700-rgb));
   display: inline-block;
-  font-family: 'Roboto', arial, sans-serif;
   font-size: 12px;
   line-height: 32px;
   margin-bottom: 0;
