@@ -5,30 +5,28 @@
 #ifndef CHROME_BROWSER_CACHED_IMAGE_FETCHER_CACHED_IMAGE_FETCHER_SERVICE_FACTORY_H_
 #define CHROME_BROWSER_CACHED_IMAGE_FETCHER_CACHED_IMAGE_FETCHER_SERVICE_FACTORY_H_
 
+#include <memory>
+
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
-#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
+#include "components/keyed_service/core/simple_keyed_service_factory.h"
 
-namespace content {
-class BrowserContext;
-}  // namespace content
-
-class Profile;
+class SimpleFactoryKey;
+class PrefService;
 
 namespace image_fetcher {
 
 class CachedImageFetcherService;
 
 // Factory to create one CachedImageFetcherService per browser context.
-class CachedImageFetcherServiceFactory
-    : public BrowserContextKeyedServiceFactory {
+class CachedImageFetcherServiceFactory : public SimpleKeyedServiceFactory {
  public:
   // Return the cache path for the given profile.
-  static base::FilePath GetCachePath(Profile* profile);
+  static base::FilePath GetCachePath(SimpleFactoryKey* key);
 
-  static CachedImageFetcherService* GetForBrowserContext(
-      content::BrowserContext* context);
+  static CachedImageFetcherService* GetForKey(SimpleFactoryKey* key,
+                                              PrefService* prefs);
   static CachedImageFetcherServiceFactory* GetInstance();
 
  private:
@@ -37,11 +35,11 @@ class CachedImageFetcherServiceFactory
   CachedImageFetcherServiceFactory();
   ~CachedImageFetcherServiceFactory() override;
 
-  // BrowserContextKeyedServiceFactory:
-  KeyedService* BuildServiceInstanceFor(
-      content::BrowserContext* context) const override;
-  content::BrowserContext* GetBrowserContextToUse(
-      content::BrowserContext* context) const override;
+  // SimpleKeyedServiceFactory:
+  std::unique_ptr<KeyedService> BuildServiceInstanceFor(
+      SimpleFactoryKey* key,
+      PrefService* prefs) const override;
+  SimpleFactoryKey* GetKeyToUse(SimpleFactoryKey* key) const override;
 
   DISALLOW_COPY_AND_ASSIGN(CachedImageFetcherServiceFactory);
 };
