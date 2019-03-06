@@ -1154,14 +1154,17 @@ TEST_F(BluetoothTest, MAYBE_GetName_NullName) {
 
   BluetoothDevice* device = SimulateLowEnergyDevice(5);
   EXPECT_FALSE(device->GetName());
-}
 
-// TODO(506415): Test GetNameForDisplay with a device with no name.
-// BluetoothDevice::GetAddressWithLocalizedDeviceTypeName() will run, which
-// requires string resources to be loaded. For that, something like
-// InitSharedInstance must be run. See unittest files that call that. It will
-// also require build configuration to generate string resources into a .pak
-// file.
+  // The check below is not currently working on Android and Mac because the
+  // GetAppearance() method is not implemented on those platforms.
+  // TODO(https://crbug.com/588083): Enable the check below when GetAppearance()
+  // is implemented for Android and Mac.
+#if !defined(OS_ANDROID) && !defined(OS_MACOSX)
+  EXPECT_EQ(
+      device->GetNameForDisplay(),
+      base::UTF8ToUTF16("Unknown or Unsupported Device (01:00:00:90:1E:BE)"));
+#endif
+}
 
 #if defined(OS_ANDROID) || defined(OS_MACOSX)
 #define MAYBE_CreateGattConnection CreateGattConnection
