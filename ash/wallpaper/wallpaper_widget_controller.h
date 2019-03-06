@@ -16,10 +16,6 @@ namespace aura {
 class Window;
 }
 
-namespace ui {
-class Layer;
-}
-
 namespace views {
 class Widget;
 }
@@ -71,10 +67,6 @@ class ASH_EXPORT WallpaperWidgetController {
 
   // Returns the blur sigma applied on the wallpaper layer.
   float GetWallpaperBlur() const;
-
-  // Gets the layer associated with |animating_widget_| if that exists. If not
-  // then gets the layer associated with |active_widget_|.
-  ui::Layer* GetLayer();
 
   // TODO: Get the wallpaper view from |animating_widget_| or |active_widget_|
   // instead of caching the pointer value.

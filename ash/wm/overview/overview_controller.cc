@@ -20,7 +20,6 @@
 #include "ash/wm/overview/overview_item.h"
 #include "ash/wm/overview/overview_session.h"
 #include "ash/wm/overview/overview_utils.h"
-#include "ash/wm/overview/scoped_overview_animation_settings.h"
 #include "ash/wm/root_window_finder.h"
 #include "ash/wm/screen_pinning_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
@@ -34,7 +33,6 @@
 #include "base/metrics/user_metrics.h"
 #include "base/stl_util.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/compositor/layer_animator.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/wm/core/window_util.h"
@@ -84,30 +82,6 @@ bool ShouldSlideInOutOverview(const std::vector<aura::Window*>& windows) {
   }
 
   return true;
-}
-
-// Helper to dim the wallpaper. Optionally animates the dimming.
-void SetWallpaperDimmed(bool dimmed) {
-  // Wallpaper is already dimmed in tablet mode for the home launcher, so no
-  // need to dim anymore.
-  if (!Shell::Get()->tablet_mode_controller() ||
-      Shell::Get()
-          ->tablet_mode_controller()
-          ->IsTabletModeWindowManagerEnabled()) {
-    return;
-  }
-
-  const float target_opacity = dimmed ? kShieldOpacity : 1.0f;
-  for (aura::Window* root : Shell::Get()->GetAllRootWindows()) {
-    WallpaperWidgetController* wallpaper_widget_controller =
-        RootWindowController::ForWindow(root)->wallpaper_widget_controller();
-    ui::Layer* layer = wallpaper_widget_controller->GetLayer();
-    if (layer) {
-      ScopedOverviewAnimationSettings settings(OVERVIEW_ANIMATION_SHIELD_FADE,
-                                               layer->GetAnimator());
-      layer->SetOpacity(target_opacity);
-    }
-  }
 }
 
 }  // namespace
@@ -400,7 +374,6 @@ bool OverviewController::ToggleOverview(
 void OverviewController::OnStartingAnimationComplete(bool canceled) {
   if (IsBlurAllowed())
     overview_blur_controller_->Blur(/*animate_only=*/true);
-  SetWallpaperDimmed(true);
 
   for (auto& observer : observers_)
     observer.OnOverviewModeStartingAnimationComplete(canceled);
@@ -415,7 +388,6 @@ void OverviewController::OnEndingAnimationComplete(bool canceled) {
   // the blur.
   if (IsBlurAllowed() && !canceled)
     overview_blur_controller_->Unblur();
-  SetWallpaperDimmed(false);
 
   for (auto& observer : observers_)
     observer.OnOverviewModeEndingAnimationComplete(canceled);

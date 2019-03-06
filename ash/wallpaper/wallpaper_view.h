@@ -22,11 +22,11 @@ class WallpaperView : public views::View, public views::ContextMenuController {
  private:
   friend class WallpaperControllerTest;
 
-  // Overridden from views::View:
+  // views::View:
   void OnPaint(gfx::Canvas* canvas) override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
 
-  // Overridden from views::ContextMenuController:
+  // views::ContextMenuController:
   void ShowContextMenuForView(views::View* source,
                               const gfx::Point& point,
                               ui::MenuSourceType source_type) override;
