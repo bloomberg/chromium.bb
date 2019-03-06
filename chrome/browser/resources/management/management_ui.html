@@ -193,9 +193,9 @@
                 <div class="content-indented browser-report">
                   <iron-icon icon="[[item.icon]]"></iron-icon>
                   <ul>
-                    <template is="dom-repeat" items="[[item.messages]]"
-                        as="message">
-                      <li>[[message]]</li>
+                    <template is="dom-repeat" items="[[item.messageIds]]"
+                        as="messageId">
+                      <li inner-h-t-m-l="[[i18nAdvanced(messageId)]]"></li>
                     </template>
                   </ul>
                 </div>

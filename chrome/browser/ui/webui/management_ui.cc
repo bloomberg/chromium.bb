@@ -15,6 +15,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/theme_resources.h"
+#include "components/safe_browsing/common/safebrowsing_constants.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_ui.h"
 #include "extensions/buildflags/buildflags.h"
@@ -99,8 +100,6 @@ content::WebUIDataSource* CreateManagementUIHtmlSource() {
      IDS_MANAGEMENT_EXTENSION_REPORT_VERSION},
     {kManagementExtensionReportExtensionsPlugin,
      IDS_MANAGEMENT_EXTENSION_REPORT_EXTENSIONS_PLUGINS},
-    {kManagementExtensionReportSafeBrowsingWarnings,
-     IDS_MANAGEMENT_EXTENSION_REPORT_SAFE_BROWSING_WARNINGS},
     {kManagementExtensionReportPerfCrash,
      IDS_MANAGEMENT_EXTENSION_REPORT_PERF_CRASH},
     {kManagementExtensionReportUserBrowsingData,
@@ -110,6 +109,11 @@ content::WebUIDataSource* CreateManagementUIHtmlSource() {
 
   AddLocalizedStringsBulk(source, kLocalizedStrings,
                           base::size(kLocalizedStrings));
+
+  source->AddString(kManagementExtensionReportSafeBrowsingWarnings,
+                    l10n_util::GetStringFUTF16(
+                        IDS_MANAGEMENT_EXTENSION_REPORT_SAFE_BROWSING_WARNINGS,
+                        base::UTF8ToUTF16(safe_browsing::kSafeBrowsingUrl)));
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 

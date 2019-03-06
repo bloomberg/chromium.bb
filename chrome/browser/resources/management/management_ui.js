@@ -5,7 +5,7 @@
 
 /**
  * @typedef {{
- *    messages: !Array<string>,
+ *    messageIds: !Array<string>,
  *    icon: string,
  * }}
  */
@@ -93,10 +93,9 @@ Polymer({
     const reportingInfoMap = reportingInfo.reduce((info, response) => {
       info[response.reportingType] = info[response.reportingType] || {
         icon: this.getIconForReportingType_(response.reportingType),
-        messages: []
+        messageIds: []
       };
-      info[response.reportingType].messages.push(
-          loadTimeData.getString(response.messageId));
+      info[response.reportingType].messageIds.push(response.messageId);
       return info;
     }, {});
 
