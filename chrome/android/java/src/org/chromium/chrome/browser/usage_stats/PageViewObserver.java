@@ -37,20 +37,25 @@ public class PageViewObserver {
     private final TabObserver mTabObserver;
     private final EventTracker mEventTracker;
     private final TokenTracker mTokenTracker;
+    private final SuspensionTracker mSuspensionTracker;
 
     private Tab mCurrentTab;
     private String mLastFqdn;
 
     public PageViewObserver(Activity activity, TabModelSelector tabModelSelector,
-            EventTracker eventTracker, TokenTracker tokenTracker) {
+            EventTracker eventTracker, TokenTracker tokenTracker,
+            SuspensionTracker suspensionTracker) {
         mActivity = activity;
         mTabModelSelector = tabModelSelector;
         mEventTracker = eventTracker;
         mTokenTracker = tokenTracker;
+        mSuspensionTracker = suspensionTracker;
         mTabObserver = new EmptyTabObserver() {
             @Override
             public void onShown(Tab tab, @TabSelectionType int type) {
-                updateUrl(tab.getUrl());
+                if (!tab.isLoading() && !tab.isBeingRestored()) {
+                    updateUrl(tab.getUrl());
+                }
             }
 
             @Override
@@ -102,6 +107,13 @@ public class PageViewObserver {
 
     private void updateUrl(String newUrl) {
         String newFqdn = newUrl == null ? "" : Uri.parse(newUrl).getHost();
+
+        boolean didSuspend = false;
+        if (newFqdn != null && mSuspensionTracker.isWebsiteSuspended(newFqdn)) {
+            SuspendedTab.create(mCurrentTab).show();
+            didSuspend = true;
+        }
+
         if (mLastFqdn != null && mLastFqdn.equals(newFqdn)) return;
 
         if (mLastFqdn != null) {
@@ -111,7 +123,7 @@ public class PageViewObserver {
             mLastFqdn = null;
         }
 
-        if (!URLUtil.isHttpUrl(newUrl) && !URLUtil.isHttpsUrl(newUrl)) return;
+        if (!URLUtil.isHttpUrl(newUrl) && !URLUtil.isHttpsUrl(newUrl) || didSuspend) return;
 
         mLastFqdn = newFqdn;
         mEventTracker.addWebsiteEvent(new WebsiteEvent(

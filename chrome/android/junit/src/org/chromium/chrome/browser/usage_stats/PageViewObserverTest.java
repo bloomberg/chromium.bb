@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.usage_stats;
 
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doReturn;
@@ -57,6 +58,8 @@ public final class PageViewObserverTest {
     private EventTracker mEventTracker;
     @Mock
     private TokenTracker mTokenTracker;
+    @Mock
+    private SuspensionTracker mSuspensionTracker;
     @Captor
     private ArgumentCaptor<TabObserver> mTabObserverCaptor;
     @Captor
@@ -194,9 +197,36 @@ public final class PageViewObserverTest {
         verify(mEventTracker, times(0)).addWebsiteEvent(argThat(isStopEvent(DIFFERENT_FQDN)));
     }
 
+    @Test
+    public void navigationToSuspendedDomain_suspendedTabShown() {
+        PageViewObserver observer = createPageViewObserver();
+        onUpdateUrl(mTab, STARTING_URL);
+
+        doReturn(true).when(mSuspensionTracker).isWebsiteSuspended(DIFFERENT_FQDN);
+        onUpdateUrl(mTab, DIFFERENT_URL);
+
+        verify(mTab, times(2)).addObserver(mTabObserverCaptor.capture());
+        assertTrue(mTabObserverCaptor.getValue() instanceof SuspendedTab);
+    }
+
+    @Test
+    public void navigationToUnsuspendedDomain_suspendedTabRemoved() {
+        PageViewObserver observer = createPageViewObserver();
+        onUpdateUrl(mTab, STARTING_URL);
+
+        doReturn(true).when(mSuspensionTracker).isWebsiteSuspended(DIFFERENT_FQDN);
+        onUpdateUrl(mTab, DIFFERENT_URL);
+
+        verify(mTab, times(2)).addObserver(mTabObserverCaptor.capture());
+        SuspendedTab suspendedTab = (SuspendedTab) mTabObserverCaptor.getValue();
+
+        suspendedTab.onPageLoadStarted(mTab, STARTING_URL);
+        verify(mTab, times(1)).removeObserver(suspendedTab);
+    }
+
     private PageViewObserver createPageViewObserver() {
-        PageViewObserver observer =
-                new PageViewObserver(mActivity, mTabModelSelector, mEventTracker, mTokenTracker);
+        PageViewObserver observer = new PageViewObserver(
+                mActivity, mTabModelSelector, mEventTracker, mTokenTracker, mSuspensionTracker);
         verify(mTabModel, times(1)).addObserver(mTabModelObserverCaptor.capture());
         if (mTabModelSelector.getCurrentTab() != null) {
             verify(mTabModelSelector.getCurrentTab(), times(1))
