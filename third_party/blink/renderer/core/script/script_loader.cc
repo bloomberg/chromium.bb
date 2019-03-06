@@ -165,8 +165,12 @@ bool IsValidClassicScriptTypeAndLanguage(
   return false;
 }
 
-// Returns true on success.
-bool ParseAndRegisterImportMap(ScriptElementBase& element) {
+enum class ShouldFireErrorEvent {
+  kDoNotFire,
+  kShouldFire,
+};
+
+ShouldFireErrorEvent ParseAndRegisterImportMap(ScriptElementBase& element) {
   Document& element_document = element.GetDocument();
   Document* context_document = element_document.ContextDocument();
   DCHECK(context_document);
@@ -174,11 +178,16 @@ bool ParseAndRegisterImportMap(ScriptElementBase& element) {
       Modulator::From(ToScriptStateForMainWorld(context_document->GetFrame()));
   DCHECK(modulator);
 
+  // If import maps are not enabled, we do nothing and return here, and also
+  // do not fire error events.
+  if (!RuntimeEnabledFeatures::BuiltInModuleInfraEnabled())
+    return ShouldFireErrorEvent::kDoNotFire;
+
   if (!modulator->IsAcquiringImportMaps()) {
     element_document.AddConsoleMessage(ConsoleMessage::Create(
         kJSMessageSource, kErrorMessageLevel,
         "An import map is added after module script load was triggered."));
-    return false;
+    return ShouldFireErrorEvent::kShouldFire;
   }
 
   // TODO(crbug.com/922212): Implemenet external import maps.
@@ -186,7 +195,7 @@ bool ParseAndRegisterImportMap(ScriptElementBase& element) {
     element_document.AddConsoleMessage(
         ConsoleMessage::Create(kJSMessageSource, kErrorMessageLevel,
                                "External import maps are not yet supported."));
-    return false;
+    return ShouldFireErrorEvent::kShouldFire;
   }
 
   KURL base_url = element_document.BaseURL();
@@ -194,10 +203,10 @@ bool ParseAndRegisterImportMap(ScriptElementBase& element) {
       ImportMap::Create(element.TextFromChildren(), base_url, element_document);
 
   if (!import_map)
-    return false;
+    return ShouldFireErrorEvent::kShouldFire;
 
   modulator->RegisterImportMap(import_map);
-  return true;
+  return ShouldFireErrorEvent::kDoNotFire;
 }
 
 }  // namespace
@@ -233,8 +242,7 @@ bool ScriptLoader::IsValidScriptTypeAndLanguage(
     return true;
   }
 
-  if (RuntimeEnabledFeatures::BuiltInModuleInfraEnabled() &&
-      type == "importmap") {
+  if (type == "importmap") {
     if (out_is_import_map)
       *out_is_import_map = true;
     return true;
@@ -386,7 +394,8 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
 
   // Process the import map.
   if (is_import_map) {
-    if (!ParseAndRegisterImportMap(*element_)) {
+    if (ParseAndRegisterImportMap(*element_) ==
+        ShouldFireErrorEvent::kShouldFire) {
       element_document.GetTaskRunner(TaskType::kDOMManipulation)
           ->PostTask(FROM_HERE,
                      WTF::Bind(&ScriptElementBase::DispatchErrorEvent,
