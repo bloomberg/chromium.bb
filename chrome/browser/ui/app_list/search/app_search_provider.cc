@@ -128,6 +128,20 @@ float ReRange(const float score, const float min, const float max) {
   return min + score * (max - min);
 }
 
+// Normalizes app IDs by removing any scheme prefix and trailing slash:
+// "arc://[id]/" to "[id]". This is necessary because apps launched from
+// different parts of the launcher have differently formatted IDs.
+std::string NormalizeID(const std::string& id) {
+  std::string app_id(id);
+  // No existing scheme names include the delimiter string "://".
+  std::size_t delimiter_index = app_id.find("://");
+  if (delimiter_index != std::string::npos)
+    app_id.erase(0, delimiter_index + 3);
+  if (!app_id.empty() && app_id.back() == '/')
+    app_id.pop_back();
+  return app_id;
+}
+
 }  // namespace
 
 namespace app_list {
@@ -676,7 +690,7 @@ void AppSearchProvider::Start(const base::string16& query) {
 
 void AppSearchProvider::Train(const std::string& id, RankingItemType type) {
   if (type == RankingItemType::kApp)
-    ranker_->Train(id);
+    ranker_->Train(NormalizeID(id));
 }
 
 void AppSearchProvider::RefreshAppsAndUpdateResults() {
@@ -863,6 +877,10 @@ void AppSearchProvider::UpdateResults() {
   } else {
     UpdateQueriedResults();
   }
+}
+
+std::string AppSearchProvider::NormalizeIDForTest(const std::string& id) {
+  return NormalizeID(id);
 }
 
 }  // namespace app_list

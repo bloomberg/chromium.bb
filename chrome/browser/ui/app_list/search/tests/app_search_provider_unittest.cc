@@ -273,6 +273,21 @@ TEST_F(AppSearchProviderTest, Basic) {
               result == "Fake App 1,Packaged App 1");
 }
 
+TEST_F(AppSearchProviderTest, NormalizeAppID) {
+  const std::string raw_id = "mgndgikekgjfcpckkfioiadnlibdjbkf";
+  const std::string id_with_scheme =
+      "chrome-extension://mgndgikekgjfcpckkfioiadnlibdjbkf";
+  const std::string id_with_slash = "mgndgikekgjfcpckkfioiadnlibdjbkf/";
+  const std::string id_with_scheme_and_slash =
+      "chrome-extension://mgndgikekgjfcpckkfioiadnlibdjbkf/";
+
+  EXPECT_EQ(AppSearchProvider::NormalizeIDForTest(raw_id), raw_id);
+  EXPECT_EQ(AppSearchProvider::NormalizeIDForTest(id_with_scheme), raw_id);
+  EXPECT_EQ(AppSearchProvider::NormalizeIDForTest(id_with_slash), raw_id);
+  EXPECT_EQ(AppSearchProvider::NormalizeIDForTest(id_with_scheme_and_slash),
+            raw_id);
+}
+
 TEST_F(AppSearchProviderTest, DisableAndEnable) {
   CreateSearch();
 

@@ -68,6 +68,8 @@ class AppSearchProvider : public SearchProvider {
     return open_tabs_ui_delegate_for_testing_;
   }
 
+  static std::string NormalizeIDForTest(const std::string& id);
+
  private:
   void UpdateResults();
   void UpdateRecommendedResults(
