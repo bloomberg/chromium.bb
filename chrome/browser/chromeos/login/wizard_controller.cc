@@ -902,10 +902,6 @@ void WizardController::OnEnrollmentDone() {
     return;
   }
 
-  // This populates post-OOBE shelf and UI.
-  session_manager::SessionManager::Get()->SetSessionState(
-      session_manager::SessionState::LOGIN_PRIMARY);
-
   if (KioskAppManager::Get()->IsAutoLaunchEnabled())
     AutoLaunchKioskApp();
   else
