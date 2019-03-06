@@ -10,6 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "media/capture/video/video_frame_receiver.h"
+#include "media/capture/video_capture_types.h"
 #include "services/video_capture/public/mojom/receiver.mojom.h"
 #include "services/video_capture/public/mojom/scoped_access_permission.mojom.h"
 
@@ -34,7 +35,8 @@ class BroadcastingReceiver : public mojom::Receiver {
   void SetOnStoppedHandler(base::OnceClosure on_stopped_handler);
 
   // Returns a client_id that can be used for a call to Suspend/Resume/Remove.
-  int32_t AddClient(mojom::ReceiverPtr client);
+  int32_t AddClient(mojom::ReceiverPtr client,
+                    media::VideoCaptureBufferType target_buffer_type);
   void SuspendClient(int32_t client_id);
   void ResumeClient(int32_t client_id);
   // Returns ownership of the client back to the caller.
@@ -71,7 +73,8 @@ class BroadcastingReceiver : public mojom::Receiver {
   // a client is suspended.
   class ClientContext {
    public:
-    explicit ClientContext(mojom::ReceiverPtr client);
+    ClientContext(mojom::ReceiverPtr client,
+                  media::VideoCaptureBufferType target_buffer_type);
     ~ClientContext();
     ClientContext(ClientContext&& other);
     ClientContext& operator=(ClientContext&& other);
@@ -79,11 +82,15 @@ class BroadcastingReceiver : public mojom::Receiver {
     void OnStartedUsingGpuDecode();
 
     mojom::ReceiverPtr& client() { return client_; }
+    media::VideoCaptureBufferType target_buffer_type() {
+      return target_buffer_type_;
+    }
     void set_is_suspended(bool suspended) { is_suspended_ = suspended; }
     bool is_suspended() const { return is_suspended_; }
 
    private:
     mojom::ReceiverPtr client_;
+    media::VideoCaptureBufferType target_buffer_type_;
     bool is_suspended_;
     bool on_started_has_been_called_;
     bool on_started_using_gpu_decode_has_been_called_;
@@ -104,9 +111,16 @@ class BroadcastingReceiver : public mojom::Receiver {
     void IncreaseConsumerCount();
     void DecreaseConsumerCount();
     bool IsStillBeingConsumed() const;
-    media::mojom::VideoBufferHandlePtr CloneBufferHandle();
+    media::mojom::VideoBufferHandlePtr CloneBufferHandle(
+        media::VideoCaptureBufferType target_buffer_type);
 
    private:
+    // If the source handle is shared_memory_via_raw_file_descriptor, we first
+    // have to unwrap it before we can clone it. Instead of unwrapping, cloning,
+    // and than wrapping back each time we need to clone it, we convert it to
+    // a regular shared memory and keep it in this form.
+    void ConvertRawFileDescriptorToSharedBuffer();
+
     int32_t buffer_id_;
     media::mojom::VideoBufferHandlePtr buffer_handle_;
     // Indicates how many consumers are currently relying on
