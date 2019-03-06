@@ -49,6 +49,7 @@ class AppsGridViewFolderDelegate;
 class ContentsView;
 class PaginationController;
 class PulsingBlockView;
+class GhostImageView;
 
 // Represents the index to an item view in the grid.
 struct GridIndex {
@@ -598,6 +599,12 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // location.
   void MaybeCreateReorderAccessibilityEvent();
 
+  // Creates a new GhostImageView at |reorder_placeholder_| and initializes
+  // |current_ghost_view_| and |last_ghost_view_|.
+  void CreateGhostImageView();
+
+  void BeginHideCurrentGhostImageView();
+
   AppListModel* model_ = nullptr;         // Owned by AppListView.
   AppListItemList* item_list_ = nullptr;  // Not owned.
 
@@ -721,6 +728,12 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
 
   // The location of the most recent foldering drag related accessibility event.
   GridIndex last_folder_dropping_a11y_event_location_;
+
+  // The location when |current_ghost_view_| was shown.
+  GridIndex current_ghost_location_;
+
+  GhostImageView* current_ghost_view_ = nullptr;
+  GhostImageView* last_ghost_view_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(AppsGridView);
 };

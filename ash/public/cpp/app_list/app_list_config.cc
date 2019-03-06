@@ -12,8 +12,8 @@
 namespace app_list {
 
 AppListConfig::AppListConfig()
-    : grid_tile_width_(120),
-      grid_tile_height_(112),
+    : grid_tile_width_(112),
+      grid_tile_height_(120),
       grid_tile_spacing_(0),
       grid_icon_dimension_(64),
       grid_icon_bottom_padding_(24),

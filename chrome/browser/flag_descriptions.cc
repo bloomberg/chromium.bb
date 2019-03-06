@@ -3109,6 +3109,10 @@ const char kDoubleTapToZoomInTabletModeDescription[] =
     "If Enabled, double tapping in webpages while in tablet mode will zoom the "
     "page.";
 
+const char kEnableAppGridGhostName[] = "App Grid Ghosting";
+const char kEnableAppGridGhostDescription[] =
+    "Enables ghosting during an item drag in launcher.";
+
 const char kEnableAppListSearchAutocompleteName[] =
     "App List Search Autocomplete";
 const char kEnableAppListSearchAutocompleteDescription[] =

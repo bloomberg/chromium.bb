@@ -8,6 +8,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "ash/app_list/app_list_metrics.h"
@@ -22,6 +23,7 @@
 #include "ash/app_list/views/app_list_main_view.h"
 #include "ash/app_list/views/apps_container_view.h"
 #include "ash/app_list/views/contents_view.h"
+#include "ash/app_list/views/ghost_image_view.h"
 #include "ash/app_list/views/pulsing_block_view.h"
 #include "ash/app_list/views/search_box_view.h"
 #include "ash/app_list/views/search_result_tile_item_view.h"
@@ -705,6 +707,9 @@ void AppsGridView::EndDrag(bool cancel) {
     }
   }
 
+  // Hide the |current_ghost_view_| for item drag that started
+  // within |apps_grid_view_|.
+  BeginHideCurrentGhostImageView();
   StopPageFlipTimer();
 }
 
@@ -808,6 +813,7 @@ bool AppsGridView::IsDragViewMoved(const AppListItemView& view) const {
 }
 
 void AppsGridView::ClearDragState() {
+  current_ghost_location_ = GridIndex();
   last_folder_dropping_a11y_event_location_ = GridIndex();
   last_reorder_a11y_event_location_ = GridIndex();
   drop_target_region_ = NO_TARGET;
@@ -938,6 +944,13 @@ void AppsGridView::ViewHierarchyChanged(
 
     if (drag_view_ == details.child)
       EndDrag(true);
+
+    if (app_list_features::IsAppGridGhostEnabled()) {
+      if (current_ghost_view_ == details.child)
+        current_ghost_view_ = nullptr;
+      if (last_ghost_view_ == details.child)
+        last_ghost_view_ = nullptr;
+    }
 
     bounds_animator_.StopAnimatingView(details.child);
   }
@@ -1464,6 +1477,7 @@ void AppsGridView::OnReorderTimer() {
   reorder_placeholder_ = drop_target_;
   MaybeCreateReorderAccessibilityEvent();
   AnimateToIdealBounds();
+  CreateGhostImageView();
 }
 
 void AppsGridView::OnFolderItemReparentTimer() {
@@ -1485,6 +1499,7 @@ void AppsGridView::OnFolderItemReparentTimer() {
 void AppsGridView::OnFolderDroppingTimer() {
   MaybeCreateFolderDroppingAccessibilityEvent();
   SetAsFolderDroppingTarget(drop_target_, true);
+  BeginHideCurrentGhostImageView();
 }
 
 void AppsGridView::UpdateDragStateInsideFolder(Pointer pointer,
@@ -1701,6 +1716,9 @@ void AppsGridView::EndDragFromReparentItemInRootLevel(
                                  drag_source_bounds);
   }
 
+  // Hide the |current_ghost_view_| after completed drag from within
+  // folder to |apps_grid_view_|.
+  BeginHideCurrentGhostImageView();
   StopPageFlipTimer();
 }
 
@@ -1713,6 +1731,9 @@ void AppsGridView::EndDragForReparentInHiddenFolderGridView() {
 
   SetAsFolderDroppingTarget(drop_target_, false);
   ClearDragState();
+
+  // Hide |current_ghost_view_| in the hidden folder grid view.
+  BeginHideCurrentGhostImageView();
 }
 
 void AppsGridView::OnFolderItemRemoved() {
@@ -1922,6 +1943,8 @@ void AppsGridView::OnPageFlipTimer() {
   pagination_model_.SelectPage(page_flip_target_, true);
   UMA_HISTOGRAM_ENUMERATION(kAppListPageSwitcherSourceHistogram,
                             kDragAppToBorder, kMaxAppListPageSwitcherSource);
+
+  BeginHideCurrentGhostImageView();
 }
 
 void AppsGridView::MoveItemInModel(AppListItemView* item_view,
@@ -2635,6 +2658,18 @@ void AppsGridView::CalculateIdealBounds() {
     pulsing_blocks_model_.set_ideal_bounds(i, tile_slot);
     ++pulsing_block_index.slot;
   }
+
+  // Ensure GhostImageView's transition during page change.
+  if (app_list_features::IsAppGridGhostEnabled()) {
+    if (current_ghost_view_) {
+      current_ghost_view_->SetTransitionOffset(
+          CalculateTransitionOffset(current_ghost_view_->page()));
+    }
+    if (last_ghost_view_) {
+      last_ghost_view_->SetTransitionOffset(
+          CalculateTransitionOffset(last_ghost_view_->page()));
+    }
+  }
 }
 
 int AppsGridView::GetModelIndexOfItem(const AppListItem* item) {
@@ -2804,6 +2839,53 @@ void AppsGridView::MaybeCreateReorderAccessibilityEvent() {
           base::NumberToString16(row_number),
           base::NumberToString16(col_number)));
   announcement_view->NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
+}
+
+void AppsGridView::CreateGhostImageView() {
+  if (!app_list_features::IsAppGridGhostEnabled())
+    return;
+  if (!drag_view_)
+    return;
+
+  // OnReorderTimer() can trigger this function even when the
+  // |reorder_placeholder_| does not change, no need to set a new GhostImageView
+  // in this case.
+  if (reorder_placeholder_ == current_ghost_location_)
+    return;
+
+  // When the item is dragged outside the boundaries of the app grid, if the
+  // |reorder_placeholder_| moves to another page, then do not show a ghost.
+  if (pagination_model_.selected_page() != reorder_placeholder_.page) {
+    BeginHideCurrentGhostImageView();
+    return;
+  }
+
+  BeginHideCurrentGhostImageView();
+  current_ghost_location_ = reorder_placeholder_;
+
+  if (last_ghost_view_)
+    delete last_ghost_view_;
+
+  // Preserve |current_ghost_view_| while it fades out and instantiate a new
+  // GhostImageView that will fade in.
+  last_ghost_view_ = current_ghost_view_;
+
+  current_ghost_view_ = new GhostImageView(
+      drag_view_, IsFolderItem(drag_view_->item()) /* is_folder */,
+      folder_delegate_, GetExpectedTileBounds(reorder_placeholder_),
+      reorder_placeholder_.page);
+  AddChildView(current_ghost_view_);
+  current_ghost_view_->FadeIn();
+}
+
+void AppsGridView::BeginHideCurrentGhostImageView() {
+  if (!app_list_features::IsAppGridGhostEnabled())
+    return;
+
+  current_ghost_location_ = GridIndex();
+
+  if (current_ghost_view_)
+    current_ghost_view_->FadeOut();
 }
 
 }  // namespace app_list

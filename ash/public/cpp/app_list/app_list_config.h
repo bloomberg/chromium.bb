@@ -74,12 +74,12 @@ class ASH_PUBLIC_EXPORT AppListConfig {
   int folder_unclipped_icon_dimension() const {
     return folder_unclipped_icon_dimension_;
   }
-  int item_icon_in_folder_icon_dimension() const {
-    return item_icon_in_folder_icon_dimension_;
-  }
   int folder_icon_radius() const { return folder_icon_radius_; }
   int folder_background_radius() const { return folder_background_radius_; }
   int folder_bubble_color() const { return folder_bubble_color_; }
+  int item_icon_in_folder_icon_dimension() const {
+    return item_icon_in_folder_icon_dimension_;
+  }
   int folder_dropping_circle_radius() const {
     return folder_dropping_circle_radius_;
   }

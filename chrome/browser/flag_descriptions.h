@@ -1856,6 +1856,9 @@ extern const char kDisableTabletSplitViewDescription[];
 extern const char kDoubleTapToZoomInTabletModeName[];
 extern const char kDoubleTapToZoomInTabletModeDescription[];
 
+extern const char kEnableAppGridGhostName[];
+extern const char kEnableAppGridGhostDescription[];
+
 extern const char kEnableAppListSearchAutocompleteName[];
 extern const char kEnableAppListSearchAutocompleteDescription[];
 
