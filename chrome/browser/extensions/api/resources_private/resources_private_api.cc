@@ -9,6 +9,7 @@
 
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/ui/webui/localized_string.h"
 #include "chrome/common/extensions/api/resources_private.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/strings/grit/components_strings.h"
@@ -30,104 +31,85 @@ namespace extensions {
 
 namespace {
 
-void SetL10nString(base::DictionaryValue* dict, const std::string& string_id,
-                   int resource_id) {
-  dict->SetString(string_id, l10n_util::GetStringUTF16(resource_id));
-}
-
 void AddStringsForIdentity(base::DictionaryValue* dict) {
-  SetL10nString(dict, "window-title", IDS_EXTENSION_CONFIRM_PERMISSIONS);
+  dict->SetString("window-title",
+                  l10n_util::GetStringUTF16(IDS_EXTENSION_CONFIRM_PERMISSIONS));
 }
 
 void AddStringsForPdf(base::DictionaryValue* dict) {
-  SetL10nString(dict, "passwordDialogTitle", IDS_PDF_PASSWORD_DIALOG_TITLE);
-  SetL10nString(dict, "passwordPrompt", IDS_PDF_NEED_PASSWORD);
-  SetL10nString(dict, "passwordSubmit", IDS_PDF_PASSWORD_SUBMIT);
-  SetL10nString(dict, "passwordInvalid", IDS_PDF_PASSWORD_INVALID);
-  SetL10nString(dict, "pageLoading", IDS_PDF_PAGE_LOADING);
-  SetL10nString(dict, "pageLoadFailed", IDS_PDF_PAGE_LOAD_FAILED);
-  SetL10nString(dict, "errorDialogTitle", IDS_PDF_ERROR_DIALOG_TITLE);
-  SetL10nString(dict, "pageReload", IDS_PDF_PAGE_RELOAD_BUTTON);
-  SetL10nString(dict, "bookmarks", IDS_PDF_BOOKMARKS);
-  SetL10nString(dict, "labelPageNumber", IDS_PDF_LABEL_PAGE_NUMBER);
-  SetL10nString(dict, "tooltipRotateCW", IDS_PDF_TOOLTIP_ROTATE_CW);
-  SetL10nString(dict, "tooltipDownload", IDS_PDF_TOOLTIP_DOWNLOAD);
-  SetL10nString(dict, "tooltipPrint", IDS_PDF_TOOLTIP_PRINT);
-  SetL10nString(dict, "tooltipFitToPage", IDS_PDF_TOOLTIP_FIT_PAGE);
-  SetL10nString(dict, "tooltipFitToWidth", IDS_PDF_TOOLTIP_FIT_WIDTH);
-  SetL10nString(dict, "tooltipZoomIn", IDS_PDF_TOOLTIP_ZOOM_IN);
-  SetL10nString(dict, "tooltipZoomOut", IDS_PDF_TOOLTIP_ZOOM_OUT);
+  static constexpr LocalizedString kPdfResources[] = {
+    {"passwordDialogTitle", IDS_PDF_PASSWORD_DIALOG_TITLE},
+    {"passwordPrompt", IDS_PDF_NEED_PASSWORD},
+    {"passwordSubmit", IDS_PDF_PASSWORD_SUBMIT},
+    {"passwordInvalid", IDS_PDF_PASSWORD_INVALID},
+    {"pageLoading", IDS_PDF_PAGE_LOADING},
+    {"pageLoadFailed", IDS_PDF_PAGE_LOAD_FAILED},
+    {"errorDialogTitle", IDS_PDF_ERROR_DIALOG_TITLE},
+    {"pageReload", IDS_PDF_PAGE_RELOAD_BUTTON},
+    {"bookmarks", IDS_PDF_BOOKMARKS},
+    {"labelPageNumber", IDS_PDF_LABEL_PAGE_NUMBER},
+    {"tooltipRotateCW", IDS_PDF_TOOLTIP_ROTATE_CW},
+    {"tooltipDownload", IDS_PDF_TOOLTIP_DOWNLOAD},
+    {"tooltipPrint", IDS_PDF_TOOLTIP_PRINT},
+    {"tooltipFitToPage", IDS_PDF_TOOLTIP_FIT_PAGE},
+    {"tooltipFitToWidth", IDS_PDF_TOOLTIP_FIT_WIDTH},
+    {"tooltipZoomIn", IDS_PDF_TOOLTIP_ZOOM_IN},
+    {"tooltipZoomOut", IDS_PDF_TOOLTIP_ZOOM_OUT},
 #if defined(OS_CHROMEOS)
-  SetL10nString(dict, "tooltipAnnotate", IDS_PDF_ANNOTATION_ANNOTATE);
-  SetL10nString(dict, "annotationDocumentTooLarge",
-                IDS_PDF_ANNOTATION_DOCUMENT_TOO_LARGE);
-  SetL10nString(dict, "annotationDocumentProtected",
-                IDS_PDF_ANNOTATION_DOCUMENT_PROTECTED);
-  SetL10nString(dict, "annotationDocumentRotated",
-                IDS_PDF_ANNOTATION_DOCUMENT_ROTATED);
-  SetL10nString(dict, "annotationPen", IDS_PDF_ANNOTATION_PEN);
-  SetL10nString(dict, "annotationHighlighter", IDS_PDF_ANNOTATION_HIGHLIGHTER);
-  SetL10nString(dict, "annotationEraser", IDS_PDF_ANNOTATION_ERASER);
-  SetL10nString(dict, "annotationUndo", IDS_PDF_ANNOTATION_UNDO);
-  SetL10nString(dict, "annotationRedo", IDS_PDF_ANNOTATION_REDO);
-  SetL10nString(dict, "annotationExpand", IDS_PDF_ANNOTATION_EXPAND);
-  SetL10nString(dict, "annotationColorBlack", IDS_PDF_ANNOTATION_COLOR_BLACK);
-  SetL10nString(dict, "annotationColorRed", IDS_PDF_ANNOTATION_COLOR_RED);
-  SetL10nString(dict, "annotationColorYellow", IDS_PDF_ANNOTATION_COLOR_YELLOW);
-  SetL10nString(dict, "annotationColorGreen", IDS_PDF_ANNOTATION_COLOR_GREEN);
-  SetL10nString(dict, "annotationColorCyan", IDS_PDF_ANNOTATION_COLOR_CYAN);
-  SetL10nString(dict, "annotationColorPurple", IDS_PDF_ANNOTATION_COLOR_PURPLE);
-  SetL10nString(dict, "annotationColorBrown", IDS_PDF_ANNOTATION_COLOR_BROWN);
-  SetL10nString(dict, "annotationColorWhite", IDS_PDF_ANNOTATION_COLOR_WHITE);
-  SetL10nString(dict, "annotationColorCrimson",
-                IDS_PDF_ANNOTATION_COLOR_CRIMSON);
-  SetL10nString(dict, "annotationColorAmber", IDS_PDF_ANNOTATION_COLOR_AMBER);
-  SetL10nString(dict, "annotationColorAvocadoGreen",
-                IDS_PDF_ANNOTATION_COLOR_AVOCADO_GREEN);
-  SetL10nString(dict, "annotationColorCobaltBlue",
-                IDS_PDF_ANNOTATION_COLOR_COBALT_BLUE);
-  SetL10nString(dict, "annotationColorDeepPurple",
-                IDS_PDF_ANNOTATION_COLOR_DEEP_PURPLE);
-  SetL10nString(dict, "annotationColorDarkBrown",
-                IDS_PDF_ANNOTATION_COLOR_DARK_BROWN);
-  SetL10nString(dict, "annotationColorDarkGrey",
-                IDS_PDF_ANNOTATION_COLOR_DARK_GREY);
-  SetL10nString(dict, "annotationColorHotPink",
-                IDS_PDF_ANNOTATION_COLOR_HOT_PINK);
-  SetL10nString(dict, "annotationColorOrange", IDS_PDF_ANNOTATION_COLOR_ORANGE);
-  SetL10nString(dict, "annotationColorLime", IDS_PDF_ANNOTATION_COLOR_LIME);
-  SetL10nString(dict, "annotationColorBlue", IDS_PDF_ANNOTATION_COLOR_BLUE);
-  SetL10nString(dict, "annotationColorViolet", IDS_PDF_ANNOTATION_COLOR_VIOLET);
-  SetL10nString(dict, "annotationColorTeal", IDS_PDF_ANNOTATION_COLOR_TEAL);
-  SetL10nString(dict, "annotationColorLightGrey",
-                IDS_PDF_ANNOTATION_COLOR_LIGHT_GREY);
-  SetL10nString(dict, "annotationColorLightPink",
-                IDS_PDF_ANNOTATION_COLOR_LIGHT_PINK);
-  SetL10nString(dict, "annotationColorLightOrange",
-                IDS_PDF_ANNOTATION_COLOR_LIGHT_ORANGE);
-  SetL10nString(dict, "annotationColorLightGreen",
-                IDS_PDF_ANNOTATION_COLOR_LIGHT_GREEN);
-  SetL10nString(dict, "annotationColorLightBlue",
-                IDS_PDF_ANNOTATION_COLOR_LIGHT_BLUE);
-  SetL10nString(dict, "annotationColorLavender",
-                IDS_PDF_ANNOTATION_COLOR_LAVENDER);
-  SetL10nString(dict, "annotationColorLightTeal",
-                IDS_PDF_ANNOTATION_COLOR_LIGHT_TEAL);
-  SetL10nString(dict, "annotationSize1", IDS_PDF_ANNOTATION_SIZE1);
-  SetL10nString(dict, "annotationSize2", IDS_PDF_ANNOTATION_SIZE2);
-  SetL10nString(dict, "annotationSize3", IDS_PDF_ANNOTATION_SIZE3);
-  SetL10nString(dict, "annotationSize4", IDS_PDF_ANNOTATION_SIZE4);
-  SetL10nString(dict, "annotationSize8", IDS_PDF_ANNOTATION_SIZE8);
-  SetL10nString(dict, "annotationSize12", IDS_PDF_ANNOTATION_SIZE12);
-  SetL10nString(dict, "annotationSize16", IDS_PDF_ANNOTATION_SIZE16);
-  SetL10nString(dict, "annotationSize20", IDS_PDF_ANNOTATION_SIZE20);
-  SetL10nString(dict, "annotationFormWarningTitle",
-                IDS_PDF_DISCARD_FORM_CHANGES);
-  SetL10nString(dict, "annotationFormWarningDetail",
-                IDS_PDF_DISCARD_FORM_CHANGES_DETAIL);
-  SetL10nString(dict, "annotationFormWarningKeepEditing", IDS_PDF_KEEP_EDITING);
-  SetL10nString(dict, "annotationFormWarningDiscard", IDS_PDF_DISCARD);
-#endif
+    {"tooltipAnnotate", IDS_PDF_ANNOTATION_ANNOTATE},
+    {"annotationDocumentTooLarge", IDS_PDF_ANNOTATION_DOCUMENT_TOO_LARGE},
+    {"annotationDocumentProtected", IDS_PDF_ANNOTATION_DOCUMENT_PROTECTED},
+    {"annotationDocumentRotated", IDS_PDF_ANNOTATION_DOCUMENT_ROTATED},
+    {"annotationPen", IDS_PDF_ANNOTATION_PEN},
+    {"annotationHighlighter", IDS_PDF_ANNOTATION_HIGHLIGHTER},
+    {"annotationEraser", IDS_PDF_ANNOTATION_ERASER},
+    {"annotationUndo", IDS_PDF_ANNOTATION_UNDO},
+    {"annotationRedo", IDS_PDF_ANNOTATION_REDO},
+    {"annotationExpand", IDS_PDF_ANNOTATION_EXPAND},
+    {"annotationColorBlack", IDS_PDF_ANNOTATION_COLOR_BLACK},
+    {"annotationColorRed", IDS_PDF_ANNOTATION_COLOR_RED},
+    {"annotationColorYellow", IDS_PDF_ANNOTATION_COLOR_YELLOW},
+    {"annotationColorGreen", IDS_PDF_ANNOTATION_COLOR_GREEN},
+    {"annotationColorCyan", IDS_PDF_ANNOTATION_COLOR_CYAN},
+    {"annotationColorPurple", IDS_PDF_ANNOTATION_COLOR_PURPLE},
+    {"annotationColorBrown", IDS_PDF_ANNOTATION_COLOR_BROWN},
+    {"annotationColorWhite", IDS_PDF_ANNOTATION_COLOR_WHITE},
+    {"annotationColorCrimson", IDS_PDF_ANNOTATION_COLOR_CRIMSON},
+    {"annotationColorAmber", IDS_PDF_ANNOTATION_COLOR_AMBER},
+    {"annotationColorAvocadoGreen", IDS_PDF_ANNOTATION_COLOR_AVOCADO_GREEN},
+    {"annotationColorCobaltBlue", IDS_PDF_ANNOTATION_COLOR_COBALT_BLUE},
+    {"annotationColorDeepPurple", IDS_PDF_ANNOTATION_COLOR_DEEP_PURPLE},
+    {"annotationColorDarkBrown", IDS_PDF_ANNOTATION_COLOR_DARK_BROWN},
+    {"annotationColorDarkGrey", IDS_PDF_ANNOTATION_COLOR_DARK_GREY},
+    {"annotationColorHotPink", IDS_PDF_ANNOTATION_COLOR_HOT_PINK},
+    {"annotationColorOrange", IDS_PDF_ANNOTATION_COLOR_ORANGE},
+    {"annotationColorLime", IDS_PDF_ANNOTATION_COLOR_LIME},
+    {"annotationColorBlue", IDS_PDF_ANNOTATION_COLOR_BLUE},
+    {"annotationColorViolet", IDS_PDF_ANNOTATION_COLOR_VIOLET},
+    {"annotationColorTeal", IDS_PDF_ANNOTATION_COLOR_TEAL},
+    {"annotationColorLightGrey", IDS_PDF_ANNOTATION_COLOR_LIGHT_GREY},
+    {"annotationColorLightPink", IDS_PDF_ANNOTATION_COLOR_LIGHT_PINK},
+    {"annotationColorLightOrange", IDS_PDF_ANNOTATION_COLOR_LIGHT_ORANGE},
+    {"annotationColorLightGreen", IDS_PDF_ANNOTATION_COLOR_LIGHT_GREEN},
+    {"annotationColorLightBlue", IDS_PDF_ANNOTATION_COLOR_LIGHT_BLUE},
+    {"annotationColorLavender", IDS_PDF_ANNOTATION_COLOR_LAVENDER},
+    {"annotationColorLightTeal", IDS_PDF_ANNOTATION_COLOR_LIGHT_TEAL},
+    {"annotationSize1", IDS_PDF_ANNOTATION_SIZE1},
+    {"annotationSize2", IDS_PDF_ANNOTATION_SIZE2},
+    {"annotationSize3", IDS_PDF_ANNOTATION_SIZE3},
+    {"annotationSize4", IDS_PDF_ANNOTATION_SIZE4},
+    {"annotationSize8", IDS_PDF_ANNOTATION_SIZE8},
+    {"annotationSize12", IDS_PDF_ANNOTATION_SIZE12},
+    {"annotationSize16", IDS_PDF_ANNOTATION_SIZE16},
+    {"annotationSize20", IDS_PDF_ANNOTATION_SIZE20},
+    {"annotationFormWarningTitle", IDS_PDF_DISCARD_FORM_CHANGES},
+    {"annotationFormWarningDetail", IDS_PDF_DISCARD_FORM_CHANGES_DETAIL},
+    {"annotationFormWarningKeepEditing", IDS_PDF_KEEP_EDITING},
+    {"annotationFormWarningDiscard", IDS_PDF_DISCARD},
+#endif  // defined(OS_CHROMEOS)
+  };
+  for (const auto& resource : kPdfResources)
+    dict->SetString(resource.name, l10n_util::GetStringUTF16(resource.id));
 }
 
 void AddAdditionalDataForPdf(base::DictionaryValue* dict) {
