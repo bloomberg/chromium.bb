@@ -22,11 +22,6 @@ class FakeAccountFetcherService : public AccountFetcherService {
   FakeAccountFetcherService();
 
  private:
-  void StartFetchingUserInfo(const std::string& account_id) override;
-#if defined(OS_ANDROID)
-  void StartFetchingChildInfo(const std::string& account_id) override;
-#endif
-
   DISALLOW_COPY_AND_ASSIGN(FakeAccountFetcherService);
 };
 

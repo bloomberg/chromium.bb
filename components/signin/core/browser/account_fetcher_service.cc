@@ -123,6 +123,10 @@ void AccountFetcherService::EnableNetworkFetchesForTest() {
     OnRefreshTokensLoaded();
 }
 
+void AccountFetcherService::EnableAccountRemovalForTest() {
+  enable_account_removal_for_test_ = true;
+}
+
 void AccountFetcherService::RefreshAllAccountInfo(bool only_fetch_if_invalid) {
   std::vector<std::string> accounts = token_service_->GetAccounts();
   for (std::vector<std::string>::const_iterator it = accounts.begin();
@@ -349,8 +353,14 @@ void AccountFetcherService::OnRefreshTokenRevoked(
                account_id);
   DVLOG(1) << "REVOKED " << account_id;
 
-  if (!network_fetches_enabled_)
+  // Short-circuit out if network fetches are not enabled.
+  if (!network_fetches_enabled_) {
+    if (enable_account_removal_for_test_) {
+      account_tracker_service_->StopTrackingAccount(account_id);
+    }
     return;
+  }
+
   user_info_requests_.erase(account_id);
 #if defined(OS_ANDROID)
   UpdateChildInfo();

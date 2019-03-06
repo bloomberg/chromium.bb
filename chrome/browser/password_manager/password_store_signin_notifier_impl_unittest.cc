@@ -87,8 +87,7 @@ TEST_F(PasswordStoreSigninNotifierImplTest, SignOutContentArea) {
       signin_metrics::SourceForRefreshTokenOperation::kUnknown);
   // This call is necessary to ensure that the account removal is fully
   // processed in this testing context.
-  identity_test_env()
-      ->EnableOnAccountUpdatedAndOnAccountRemovedWithInfoCallbacks();
+  identity_test_env()->EnableRemovalOfExtendedAccountInfo();
   identity_manager->GetAccountsMutator()->RemoveAccount(
       "secondary_account_id",
       signin_metrics::SourceForRefreshTokenOperation::kUserMenu_RemoveAccount);

@@ -12,18 +12,6 @@
 
 FakeAccountFetcherService::FakeAccountFetcherService() {}
 
-void FakeAccountFetcherService::StartFetchingUserInfo(
-    const std::string& account_id) {
-  // In tests, don't do actual network fetch.
-}
-
-#if defined(OS_ANDROID)
-void FakeAccountFetcherService::StartFetchingChildInfo(
-    const std::string& account_id) {
-  // In tests, don't do actual network fetch.
-}
-#endif
-
 TestImageDecoder::TestImageDecoder() = default;
 
 TestImageDecoder::~TestImageDecoder() = default;

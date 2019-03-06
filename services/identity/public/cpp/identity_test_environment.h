@@ -251,8 +251,11 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   // need to be updated.
   void SetFreshnessOfAccountsInGaiaCookie(bool accounts_are_fresh);
 
-  // Enable interaction with AccountFetcherService in testing context.
-  void EnableOnAccountUpdatedAndOnAccountRemovedWithInfoCallbacks();
+  // By default, extended account info removal is disabled in testing
+  // contexts. This call enables it for tests that require
+  // IdentityManager::Observer::OnExtendedAccountInfoRemoved() to fire as
+  // expected. TODO(https://crbug.com/927687): Enable this unconditionally.
+  void EnableRemovalOfExtendedAccountInfo();
 
   // Simulate account fetching using AccountTrackerService without sending
   // network requests.

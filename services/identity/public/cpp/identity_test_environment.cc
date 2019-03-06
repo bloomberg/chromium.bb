@@ -571,15 +571,8 @@ void IdentityTestEnvironment::SetFreshnessOfAccountsInGaiaCookie(
                                                accounts_are_fresh);
 }
 
-void IdentityTestEnvironment::
-    EnableOnAccountUpdatedAndOnAccountRemovedWithInfoCallbacks() {
-#if defined(OS_ANDROID)
-  // Enabling network fetches in AccountFetcherService in a testing
-  // context will cause a Java exception to go off on Android if the
-  // below call isn't made.
-  ChildAccountInfoFetcherAndroid::InitializeForTests();
-#endif
-  account_fetcher_service_->EnableNetworkFetchesForTest();
+void IdentityTestEnvironment::EnableRemovalOfExtendedAccountInfo() {
+  account_fetcher_service_->EnableAccountRemovalForTest();
 }
 
 void IdentityTestEnvironment::SimulateSuccessfulFetchOfAccountInfo(

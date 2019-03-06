@@ -602,7 +602,7 @@ IN_PROC_BROWSER_TEST_F(ArcAuthServiceAccountManagerTest,
       AccountFetcherServiceFactory::GetForProfile(profile());
   // Necessary to ensure that the OnExtendedAccountInfoRemoved() observer will
   // be sent.
-  account_fetcher_service->EnableNetworkFetchesForTest();
+  account_fetcher_service->EnableAccountRemovalForTest();
   identity_manager->GetAccountsMutator()->RemoveAccount(
       maybe_account_info.value().account_id,
       signin_metrics::SourceForRefreshTokenOperation::kUnknown);

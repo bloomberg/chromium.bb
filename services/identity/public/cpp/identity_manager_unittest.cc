@@ -40,6 +40,10 @@
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_ANDROID)
+#include "components/signin/core/browser/child_account_info_fetcher_android.h"
+#endif
+
 namespace identity {
 namespace {
 
@@ -2501,6 +2505,11 @@ TEST_F(IdentityManagerTest, FindExtendedAccountInfoForAccount) {
 
 #if defined(OS_ANDROID)
 TEST_F(IdentityManagerTest, ForceRefreshOfExtendedAccountInfo) {
+  // The flow of this test results in an interaction with
+  // ChildAccountInfoFetcherAndroid, which requires initialization in order to
+  // avoid a crash.
+  ChildAccountInfoFetcherAndroid::InitializeForTests();
+
   account_fetcher()->OnNetworkInitialized();
   AccountInfo account_info =
       MakeAccountAvailable(identity_manager(), kTestEmail2);
