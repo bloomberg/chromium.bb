@@ -149,6 +149,11 @@ cr.define('policy', function() {
           '.time-since-last-refresh', status.timeSinceLastRefresh, false);
       this.setLabelAndShow_('.refresh-interval', status.refreshInterval, false);
       this.setLabelAndShow_('.status', status.status, false);
+      this.setLabelAndShow_(
+          '.policy-push',
+          loadTimeData.getString(
+              status.policiesPushAvailable ? 'policiesPushOn' :
+                                             'policiesPushOff'));
     },
   };
 
