@@ -13,7 +13,6 @@
 #include "base/scoped_observer.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
-#include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/views/widget/widget.h"
@@ -231,12 +230,6 @@ void WallpaperWidgetController::SetWallpaperBlur(float blur_sigma) {
 
 float WallpaperWidgetController::GetWallpaperBlur() const {
   return active_widget_ ? active_widget_->blur_sigma() : 0.f;
-}
-
-ui::Layer* WallpaperWidgetController::GetLayer() {
-  if (GetAnimatingWidget())
-    return GetAnimatingWidget()->GetNativeWindow()->layer();
-  return GetWidget() ? GetWidget()->GetNativeWindow()->layer() : nullptr;
 }
 
 void WallpaperWidgetController::ResetWidgetsForTesting() {
