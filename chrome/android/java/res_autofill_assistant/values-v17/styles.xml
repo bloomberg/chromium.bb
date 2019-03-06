@@ -16,6 +16,10 @@
     <style name="TextAppearance.AssistantBlackCaption" parent="TextAppearance.BlackCaption">
         <item name="android:fontFamily">@font/accent_font</item>
     </style>
+    <style name="TextAppearance.AssistantGreyCaption" parent="TextAppearance.BlackCaption">
+        <item name="android:textColor">@color/autofill_assistant_caption_grey</item>
+        <item name="android:fontFamily">@font/accent_font</item>
+    </style>
     <style name="TextAppearance.AssistantBlackBody" parent="TextAppearance.BlackBody">
         <item name="android:fontFamily">@font/accent_font</item>
     </style>

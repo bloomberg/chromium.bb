@@ -562,9 +562,11 @@ void UiControllerAndroid::OnDetailsChanged(const Details* details) {
 
   const DetailsProto& proto = details->proto().details();
   const DetailsChangesProto& changes = details->proto().change_flags();
+
   auto jdetails = Java_AssistantDetails_create(
       env, base::android::ConvertUTF8ToJavaString(env, proto.title()),
       base::android::ConvertUTF8ToJavaString(env, proto.image_url()),
+      proto.show_image_placeholder(),
       base::android::ConvertUTF8ToJavaString(env, proto.total_price_label()),
       base::android::ConvertUTF8ToJavaString(env, proto.total_price()),
       base::android::ConvertUTF8ToJavaString(env, details->GetDatetime()),
@@ -574,7 +576,8 @@ void UiControllerAndroid::OnDetailsChanged(const Details* details) {
       base::android::ConvertUTF8ToJavaString(env, proto.description_line_1()),
       base::android::ConvertUTF8ToJavaString(env, proto.description_line_2()),
       changes.user_approval_required(), changes.highlight_title(),
-      changes.highlight_line1(), changes.highlight_line2());
+      changes.highlight_line1(), changes.highlight_line2(),
+      proto.animate_placeholders());
   Java_AssistantDetailsModel_setDetails(env, jmodel, jdetails);
 }
 

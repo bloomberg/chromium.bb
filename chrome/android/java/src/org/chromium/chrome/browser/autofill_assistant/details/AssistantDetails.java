@@ -24,6 +24,7 @@ public class AssistantDetails {
 
     private final String mTitle;
     private final String mImageUrl;
+    private final boolean mShowImagePlaceholder;
     @Nullable
     private final Date mDate;
     private final String mDescriptionLine1;
@@ -37,7 +38,7 @@ public class AssistantDetails {
     /** Whether the second description line should be highlighted. */
     private boolean mHighlightLine2;
     /** Whether empty fields should have the animated placeholder background. */
-    private final boolean mShowPlaceholdersForEmptyFields;
+    private final boolean mAnimatePlaceholders;
     /**
      * The correctly formatted price for the client locale, including the currency.
      * Example: '$20.50' or '20.50 €'.
@@ -46,14 +47,14 @@ public class AssistantDetails {
     /** An optional price label, such as 'Estimated Total incl. VAT'. */
     private final String mTotalPriceLabel;
 
-    public AssistantDetails(String title, String imageUrl, String totalPriceLabel,
-            String totalPrice, @Nullable Date date, String descriptionLine1,
+    public AssistantDetails(String title, String imageUrl, boolean showImagePlaceholder,
+            String totalPriceLabel, String totalPrice, @Nullable Date date, String descriptionLine1,
             String descriptionLine2, boolean userApprovalRequired, boolean highlightTitle,
-            boolean highlightLine1, boolean highlightLine2,
-            boolean showPlaceholdersForEmptyFields) {
+            boolean highlightLine1, boolean highlightLine2, boolean animatePlaceholders) {
         this.mTotalPriceLabel = totalPriceLabel;
         this.mTitle = title;
         this.mImageUrl = imageUrl;
+        this.mShowImagePlaceholder = showImagePlaceholder;
         this.mTotalPrice = totalPrice;
         this.mDate = date;
         this.mDescriptionLine1 = descriptionLine1;
@@ -63,7 +64,7 @@ public class AssistantDetails {
         this.mHighlightTitle = highlightTitle;
         this.mHighlightLine1 = highlightLine1;
         this.mHighlightLine2 = highlightLine2;
-        this.mShowPlaceholdersForEmptyFields = showPlaceholdersForEmptyFields;
+        this.mAnimatePlaceholders = animatePlaceholders;
     }
 
     String getTitle() {
@@ -72,6 +73,10 @@ public class AssistantDetails {
 
     String getImageUrl() {
         return mImageUrl;
+    }
+
+    boolean getShowImagePlaceholder() {
+        return mShowImagePlaceholder;
     }
 
     @Nullable
@@ -111,19 +116,20 @@ public class AssistantDetails {
         return mHighlightLine2;
     }
 
-    boolean getShowPlaceholdersForEmptyFields() {
-        return mShowPlaceholdersForEmptyFields;
+    boolean getAnimatePlaceholders() {
+        return mAnimatePlaceholders;
     }
 
     /**
      * Create details with the given values.
      */
     @CalledByNative
-    private static AssistantDetails create(String title, String imageUrl, String totalPriceLabel,
-            String totalPrice, String datetime, long year, int month, int day, int hour, int minute,
-            int second, String descriptionLine1, String descriptionLine2,
-            boolean userApprovalRequired, boolean highlightTitle, boolean highlightLine1,
-            boolean highlightLine2) {
+    private static AssistantDetails create(String title, String imageUrl,
+            boolean showImagePlaceholder, String totalPriceLabel, String totalPrice,
+            String datetime, long year, int month, int day, int hour, int minute, int second,
+            String descriptionLine1, String descriptionLine2, boolean userApprovalRequired,
+            boolean highlightTitle, boolean highlightLine1, boolean highlightLine2,
+            boolean animatePlaceholders) {
         Date date = null;
         if (year > 0 && month > 0 && day > 0 && hour >= 0 && minute >= 0 && second >= 0) {
             Calendar calendar = Calendar.getInstance();
@@ -142,8 +148,8 @@ public class AssistantDetails {
             }
         }
 
-        return new AssistantDetails(title, imageUrl, totalPriceLabel, totalPrice, date,
-                descriptionLine1, descriptionLine2, userApprovalRequired, highlightTitle,
-                highlightLine1, highlightLine2, /* showPlaceholdersForEmptyFields= */ false);
+        return new AssistantDetails(title, imageUrl, showImagePlaceholder, totalPriceLabel,
+                totalPrice, date, descriptionLine1, descriptionLine2, userApprovalRequired,
+                highlightTitle, highlightLine1, highlightLine2, animatePlaceholders);
     }
 }

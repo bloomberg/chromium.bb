@@ -35,10 +35,8 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 
 /**
  * This class is responsible for pushing updates to the Autofill Assistant details view. These
@@ -86,7 +84,6 @@ class AssistantDetailsViewBinder
     private final int mPulseAnimationStartColor;
     private final int mPulseAnimationEndColor;
 
-    private final Set<View> mViewsToAnimate = new HashSet<>();
     private ValueAnimator mPulseAnimation;
 
     AssistantDetailsViewBinder(Context context) {
@@ -95,8 +92,8 @@ class AssistantDetailsViewBinder
                 R.dimen.autofill_assistant_details_image_size);
         mImageHeight = context.getResources().getDimensionPixelSize(
                 R.dimen.autofill_assistant_details_image_size);
-        mPulseAnimationStartColor = context.getResources().getColor(R.color.modern_grey_100);
-        mPulseAnimationEndColor = context.getResources().getColor(R.color.modern_grey_50);
+        mPulseAnimationStartColor = context.getResources().getColor(R.color.modern_grey_300);
+        mPulseAnimationEndColor = context.getResources().getColor(R.color.modern_grey_200);
     }
 
     @Override
@@ -141,15 +138,15 @@ class AssistantDetailsViewBinder
         viewHolder.mPriceView.setVisibility(
                 details.getTotalPrice().isEmpty() ? View.GONE : View.VISIBLE);
 
-        if (viewHolder.mImageView.getDrawable() == null) {
-            // Set default image if no image was set before.
-            viewHolder.mImageView.setImageDrawable(viewHolder.mDefaultImage);
-        }
-
-        setTextStyles(details, viewHolder);
-
-        // Download image and then set it in the model.
-        if (!details.getImageUrl().isEmpty()) {
+        viewHolder.mImageView.setVisibility(View.VISIBLE);
+        if (details.getImageUrl().isEmpty()) {
+            if (details.getShowImagePlaceholder()) {
+                viewHolder.mImageView.setImageDrawable(viewHolder.mDefaultImage);
+            } else {
+                viewHolder.mImageView.setVisibility(View.GONE);
+            }
+        } else {
+            // Download image and then set it in the view.
             CachedImageFetcher.getInstance().fetchImage(details.getImageUrl(),
                     CachedImageFetcher.ASSISTANT_DETAILS_UMA_CLIENT_NAME, image -> {
                         if (image != null) {
@@ -157,6 +154,8 @@ class AssistantDetailsViewBinder
                         }
                     });
         }
+
+        setTextStyles(details, viewHolder);
     }
 
     private String makeDescriptionLine1Text(AssistantDetails details) {
@@ -208,20 +207,20 @@ class AssistantDetailsViewBinder
         setSubtextStyle(viewHolder.mDescriptionLine2View, details.getUserApprovalRequired(),
                 details.getHighlightLine2(), viewHolder);
 
-        animateIfEmpty(
-                viewHolder.mTitleView, details.getShowPlaceholdersForEmptyFields(), viewHolder);
-        animateIfEmpty(viewHolder.mDescriptionLine1View,
-                details.getShowPlaceholdersForEmptyFields(), viewHolder);
-        animateIfEmpty(viewHolder.mDescriptionLine2View,
-                details.getShowPlaceholdersForEmptyFields(), viewHolder);
+        if (shouldStartOrContinuePlaceholderAnimation(details, viewHolder)) {
+            startOrContinuePlaceholderAnimations(viewHolder);
+        } else {
+            stopPlaceholderAnimations();
+        }
     }
 
-    private void animateIfEmpty(TextView view, boolean animate, ViewHolder viewHolder) {
-        if (animate && view.length() == 0) {
-            addViewToAnimation(view, viewHolder);
-        } else {
-            removeViewFromAnimation(view);
-        }
+    private boolean shouldStartOrContinuePlaceholderAnimation(
+            AssistantDetails details, ViewHolder viewHolder) {
+        boolean isAtLeastOneFieldEmpty = viewHolder.mTitleView.length() == 0
+                || viewHolder.mDescriptionLine1View.length() == 0
+                || viewHolder.mDescriptionLine2View.length() == 0
+                || viewHolder.mImageView.getDrawable() == viewHolder.mDefaultImage;
+        return details.getAnimatePlaceholders() && isAtLeastOneFieldEmpty;
     }
 
     private void setTitleStyle(boolean approvalRequired, boolean highlight, ViewHolder viewHolder) {
@@ -235,7 +234,9 @@ class AssistantDetailsViewBinder
             // Normal style: bold black text.
             ApiCompatibilityUtils.setTextAppearance(
                     titleView, R.style.TextAppearance_BlackCaptionDefault);
-            titleView.setTypeface(titleView.getTypeface(), Typeface.BOLD);
+            if (highlight) {
+                titleView.setTypeface(titleView.getTypeface(), Typeface.BOLD);
+            }
         }
     }
 
@@ -244,7 +245,7 @@ class AssistantDetailsViewBinder
         // Emphasized style.
         if (approvalRequired && highlight) {
             view.setTypeface(view.getTypeface(), Typeface.BOLD_ITALIC);
-        } else if (approvalRequired && !highlight) {
+        } else if (approvalRequired) {
             // De-emphasized style.
             view.setTextColor(ApiCompatibilityUtils.getColor(
                     mContext.getResources(), R.color.modern_grey_300));
@@ -263,39 +264,45 @@ class AssistantDetailsViewBinder
         return roundedBitmap;
     }
 
-    private void addViewToAnimation(View view, ViewHolder viewHolder) {
-        mViewsToAnimate.add(view);
-        if (mPulseAnimation == null) {
-            mPulseAnimation =
-                    ValueAnimator.ofInt(mPulseAnimationStartColor, mPulseAnimationEndColor);
-            mPulseAnimation.setDuration(PULSING_DURATION_MS);
-            mPulseAnimation.setEvaluator(new ArgbEvaluator());
-            mPulseAnimation.setRepeatCount(ValueAnimator.INFINITE);
-            mPulseAnimation.setRepeatMode(ValueAnimator.REVERSE);
-            mPulseAnimation.setInterpolator(CompositorAnimator.ACCELERATE_INTERPOLATOR);
-            mPulseAnimation.addListener(new AnimatorListenerAdapter() {
-                @Override
-                public void onAnimationCancel(Animator animation) {
-                    viewHolder.mTitleView.setBackgroundColor(Color.WHITE);
-                    viewHolder.mDescriptionLine1View.setBackgroundColor(Color.WHITE);
-                    viewHolder.mDescriptionLine2View.setBackgroundColor(Color.WHITE);
-                    viewHolder.mDefaultImage.setColor(mPulseAnimationStartColor);
-                }
-            });
-            mPulseAnimation.addUpdateListener(animation -> {
-                int animatedValue = (int) animation.getAnimatedValue();
-                for (View viewToAnimate : mViewsToAnimate) {
-                    viewToAnimate.setBackgroundColor(animatedValue);
-                }
-                viewHolder.mDefaultImage.setColor(animatedValue);
-            });
-            mPulseAnimation.start();
+    private void startOrContinuePlaceholderAnimations(ViewHolder viewHolder) {
+        if (mPulseAnimation != null) {
+            return;
         }
+        mPulseAnimation = ValueAnimator.ofInt(mPulseAnimationStartColor, mPulseAnimationEndColor);
+        mPulseAnimation.setDuration(PULSING_DURATION_MS);
+        mPulseAnimation.setEvaluator(new ArgbEvaluator());
+        mPulseAnimation.setRepeatCount(ValueAnimator.INFINITE);
+        mPulseAnimation.setRepeatMode(ValueAnimator.REVERSE);
+        mPulseAnimation.setInterpolator(CompositorAnimator.ACCELERATE_INTERPOLATOR);
+        mPulseAnimation.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationCancel(Animator animation) {
+                viewHolder.mTitleView.setBackgroundColor(Color.TRANSPARENT);
+                viewHolder.mDescriptionLine1View.setBackgroundColor(Color.TRANSPARENT);
+                viewHolder.mDescriptionLine2View.setBackgroundColor(Color.TRANSPARENT);
+                viewHolder.mDefaultImage.setColor(Color.TRANSPARENT);
+            }
+        });
+        mPulseAnimation.addUpdateListener(animation -> {
+            int animatedValue = (int) animation.getAnimatedValue();
+            viewHolder.mTitleView.setBackgroundColor(
+                    viewHolder.mTitleView.length() == 0 ? animatedValue : Color.TRANSPARENT);
+            viewHolder.mDescriptionLine1View.setBackgroundColor(
+                    viewHolder.mDescriptionLine1View.length() == 0 ? animatedValue
+                                                                   : Color.TRANSPARENT);
+            viewHolder.mDescriptionLine2View.setBackgroundColor(
+                    viewHolder.mDescriptionLine2View.length() == 0 ? animatedValue
+                                                                   : Color.TRANSPARENT);
+            viewHolder.mDefaultImage.setColor(
+                    viewHolder.mImageView.getDrawable() == viewHolder.mDefaultImage
+                            ? animatedValue
+                            : Color.TRANSPARENT);
+        });
+        mPulseAnimation.start();
     }
 
-    private void removeViewFromAnimation(View view) {
-        mViewsToAnimate.remove(view);
-        if (mViewsToAnimate.isEmpty() && mPulseAnimation != null) {
+    private void stopPlaceholderAnimations() {
+        if (mPulseAnimation != null) {
             mPulseAnimation.cancel();
             mPulseAnimation = null;
         }

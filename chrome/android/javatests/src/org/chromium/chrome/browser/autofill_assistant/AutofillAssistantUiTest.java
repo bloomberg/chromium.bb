@@ -159,13 +159,14 @@ public class AutofillAssistantUiTest {
                         -> assistantCoordinator.getModel().getDetailsModel().set(
                                 AssistantDetailsModel.DETAILS,
                                 new AssistantDetails(movieTitle, /* imageUrl = */ "",
+                                        /* showImage = */ false,
                                         /* totalPriceLabel = */ "",
                                         /* totalPrice = */ "", Calendar.getInstance().getTime(),
                                         descriptionLine1, descriptionLine2,
                                         /* userApprovalRequired= */ false,
                                         /* highlightTitle= */ false, /* highlightLine1= */
                                         false, /* highlightLine1 = */ false,
-                                        /* showPlaceholdersForEmptyFields= */ false)));
+                                        /* animatePlaceholders= */ false)));
         TextView detailsTitle = bottomSheet.findViewById(R.id.details_title);
         TextView detailsLine1 = bottomSheet.findViewById(R.id.details_line1);
         TextView detailsLine2 = bottomSheet.findViewById(R.id.details_line2);
