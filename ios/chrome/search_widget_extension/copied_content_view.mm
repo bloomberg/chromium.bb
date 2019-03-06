@@ -7,7 +7,8 @@
 #import <NotificationCenter/NotificationCenter.h>
 
 #include "base/logging.h"
-#import "ios/chrome/search_widget_extension/ui_util.h"
+#import "ios/chrome/common/ui_util/constraints_ui_util.h"
+#import "ios/chrome/search_widget_extension/search_widget_constants.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -41,12 +42,6 @@ const CGFloat kURLButtonMargin = 10;
 
 @implementation CopiedContentView
 
-@synthesize copiedContentLabel = _copiedContentLabel;
-@synthesize copiedText = _copiedText;
-@synthesize openCopiedContentTitleLabel = _openCopiedContentTitleLabel;
-@synthesize hairlineView = _hairlineView;
-@synthesize copiedButtonView = _copiedButtonView;
-
 - (instancetype)initWithActionTarget:(id)target
                       actionSelector:(SEL)actionSelector {
   DCHECK(target);
@@ -71,8 +66,7 @@ const CGFloat kURLButtonMargin = 10;
          @[ primaryEffectView, secondaryEffectView ]) {
       [self addSubview:effectView];
       effectView.translatesAutoresizingMaskIntoConstraints = NO;
-      [NSLayoutConstraint
-          activateConstraints:ui_util::CreateSameConstraints(self, effectView)];
+      AddSameConstraints(self, effectView);
       effectView.userInteractionEnabled = NO;
     }
 
@@ -109,26 +103,24 @@ const CGFloat kURLButtonMargin = 10;
 
       [_copiedButtonView.leadingAnchor
           constraintEqualToAnchor:self.leadingAnchor
-                         constant:ui_util::kContentMargin],
+                         constant:kContentMargin],
       [_copiedButtonView.trailingAnchor
           constraintEqualToAnchor:self.trailingAnchor
-                         constant:-ui_util::kContentMargin],
-      [_copiedButtonView.topAnchor
-          constraintEqualToAnchor:self.topAnchor
-                         constant:ui_util::kContentMargin],
-      [_copiedButtonView.bottomAnchor
-          constraintEqualToAnchor:self.bottomAnchor
-                         constant:-ui_util::kContentMargin],
+                         constant:-kContentMargin],
+      [_copiedButtonView.topAnchor constraintEqualToAnchor:self.topAnchor
+                                                  constant:kContentMargin],
+      [_copiedButtonView.bottomAnchor constraintEqualToAnchor:self.bottomAnchor
+                                                     constant:-kContentMargin],
 
       [_openCopiedContentTitleLabel.topAnchor
           constraintEqualToAnchor:_copiedButtonView.topAnchor
                          constant:kURLButtonMargin],
       [_openCopiedContentTitleLabel.leadingAnchor
           constraintEqualToAnchor:_copiedButtonView.leadingAnchor
-                         constant:ui_util::kContentMargin],
+                         constant:kContentMargin],
       [_openCopiedContentTitleLabel.trailingAnchor
           constraintEqualToAnchor:_copiedButtonView.trailingAnchor
-                         constant:-ui_util::kContentMargin],
+                         constant:-kContentMargin],
 
       [_copiedContentLabel.topAnchor
           constraintEqualToAnchor:_openCopiedContentTitleLabel.bottomAnchor],

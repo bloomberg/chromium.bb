@@ -39,41 +39,9 @@ NSString* const kXCallbackURLHost = @"x-callback-url";
 @property(nonatomic, assign) BOOL supportsSearchByImage;
 @property(nonatomic, readonly) BOOL copiedContentBehaviorEnabled;
 
-// Updates the widget with latest data from the clipboard. Returns whether any
-// visual updates occurred.
-- (BOOL)updateWidget;
-// Opens the main application with the given |command|.
-- (void)openAppWithCommand:(NSString*)command;
-// Opens the main application with the given |command|, |text|, and |image|.
-- (void)openAppWithCommand:(NSString*)command
-                      text:(NSString*)text
-                 imageData:(NSData*)imageData;
-// Returns the dictionary of commands to pass via user defaults to open the main
-// application for a given |command| and optional |text| and |image|.
-+ (NSDictionary*)dictForCommand:(NSString*)command
-                           text:(NSString*)text
-                      imageData:(NSData*)imageData;
-// Register a display of the widget in the app_group NSUserDefaults.
-// Metrics on the widget usage will be sent (if enabled) on the next Chrome
-// startup.
-- (void)registerWidgetDisplay;
-// Sets the copied content type. |copiedText| should be provided if the content
-// type requires textual data, otherwise it should be nil. Likewise,
-// |copiedImage| should be provided if the content type requires image data.
-// Also saves the data and returns YES if the screen needs updating and NO
-// otherwise.
-- (BOOL)setCopiedContentType:(CopiedContentType)type
-                  copiedText:(NSString*)copiedText
-                 copiedImage:(UIImage*)copiedImage;
-
 @end
 
 @implementation SearchWidgetViewController
-
-@synthesize widgetView = _widgetView;
-@synthesize copiedText = _copiedText;
-@synthesize copiedContentType = _copiedContentType;
-@synthesize clipboardRecentContent = _clipboardRecentContent;
 
 - (instancetype)init {
   self = [super init];
@@ -132,6 +100,9 @@ NSString* const kXCallbackURLHost = @"x-callback-url";
   completionHandler([self updateWidget] ? NCUpdateResultNewData
                                         : NCUpdateResultNoData);
 }
+
+// Updates the widget with latest data from the clipboard. Returns whether any
+// visual updates occurred.
 - (BOOL)updateWidget {
   NSUserDefaults* sharedDefaults = app_group::GetGroupUserDefaults();
   NSString* fieldTrialKey =
@@ -271,10 +242,14 @@ NSString* const kXCallbackURLHost = @"x-callback-url";
 
 #pragma mark - internal
 
+// Opens the main application with the given |command|.
 - (void)openAppWithCommand:(NSString*)command {
   return [self openAppWithCommand:command text:nil imageData:nil];
 }
 
+// Register a display of the widget in the app_group NSUserDefaults.
+// Metrics on the widget usage will be sent (if enabled) on the next Chrome
+// startup.
 - (void)registerWidgetDisplay {
   NSUserDefaults* sharedDefaults = app_group::GetGroupUserDefaults();
   NSInteger numberOfDisplay =
@@ -283,6 +258,7 @@ NSString* const kXCallbackURLHost = @"x-callback-url";
                       forKey:app_group::kSearchExtensionDisplayCount];
 }
 
+// Opens the main application with the given |command|, |text|, and |image|.
 - (void)openAppWithCommand:(NSString*)command
                       text:(NSString*)text
                  imageData:(NSData*)imageData {
@@ -312,6 +288,8 @@ NSString* const kXCallbackURLHost = @"x-callback-url";
   [self.extensionContext openURL:openURL completionHandler:nil];
 }
 
+// Returns the dictionary of commands to pass via user defaults to open the main
+// application for a given |command| and optional |text| and |image|.
 + (NSDictionary*)dictForCommand:(NSString*)command
                            text:(NSString*)text
                       imageData:(NSData*)imageData {
@@ -343,6 +321,11 @@ NSString* const kXCallbackURLHost = @"x-callback-url";
   return baseKeys;
 }
 
+// Sets the copied content type. |copiedText| should be provided if the content
+// type requires textual data, otherwise it should be nil. Likewise,
+// |copiedImage| should be provided if the content type requires image data.
+// Also saves the data and returns YES if the screen needs updating and NO
+// otherwise.
 - (BOOL)setCopiedContentType:(CopiedContentType)type
                   copiedText:(NSString*)copiedText
                  copiedImage:(UIImage*)copiedImage {
