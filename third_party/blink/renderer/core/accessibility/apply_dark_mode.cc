@@ -31,11 +31,24 @@ bool HasLightBackground(const LayoutObject& layout_object) {
 
 }  // namespace
 
-// TODO(https://crbug.com/925949): Call ShouldApplyDarkModeFilterToPage()
-// and return default DarkModeSettings if it returns false.
 DarkModeSettings BuildDarkModeSettings(const Settings& frame_settings,
                                        const LayoutObject& layout_object) {
   DarkModeSettings dark_mode_settings;
+
+  if (!ShouldApplyDarkModeFilterToPage(frame_settings.GetDarkModePagePolicy(),
+                                       layout_object)) {
+    // In theory it should be sufficient to set mode to
+    // kOff (or to just return the default struct) without also setting
+    // image_policy. However, this causes images to be inverted unexpectedly in
+    // some cases (such as when toggling between the site's light and dark theme
+    // on arstechnica.com).
+    //
+    // TODO(gilmanmh): Investigate unexpected image inversion behavior when
+    // image_policy not set to kFilterNone.
+    dark_mode_settings.mode = DarkMode::kOff;
+    dark_mode_settings.image_policy = DarkModeImagePolicy::kFilterNone;
+    return dark_mode_settings;
+  }
   dark_mode_settings.mode = frame_settings.GetHighContrastMode();
   dark_mode_settings.grayscale = frame_settings.GetHighContrastGrayscale();
   dark_mode_settings.contrast = frame_settings.GetHighContrastContrast();

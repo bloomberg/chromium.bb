@@ -915,6 +915,12 @@
       invalidate: "Paint",
     },
     {
+      name: "darkModePagePolicy",
+      initial: "DarkModePagePolicy::kFilterAll",
+      type: "DarkModePagePolicy",
+      invalidate: "Paint",
+    },
+    {
       name: "navigatorPlatformOverride",
       type: "String",
     },
