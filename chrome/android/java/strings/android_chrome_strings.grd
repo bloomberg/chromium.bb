@@ -254,6 +254,9 @@ CHAR-LIMIT guidelines:
       <message name="IDS_CONFIRM" desc="Label for a confirm button. Used in multiple contexts. [CHAR-LIMIT=20]">
         Confirm
       </message>
+      <message name="IDS_SHOW" desc="Label for a show button. Used in multiple contexts. [CHAR-LIMIT=20]">
+        Show
+      </message>
 
       <!-- Main Preferences -->
       <message name="IDS_PREFERENCES" desc="Title for Chrome's Settings.">
@@ -4045,13 +4048,19 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       </message>
       <!-- Usage Stats strings -->
       <message name="IDS_USAGE_STATS_CONSENT_TITLE" desc="Title for activity authorizing Digital Wellbeing to access Chrome usage data">
-        Connect Chrome to Digital Wellbeing?
+        Show your Chrome activity in Digital Wellbeing?
       </message>
       <message name="IDS_USAGE_STATS_CONSENT_PROMPT" desc="Consent prompt when authorizing Digital Wellbeing to access Chrome usage data">
-        Allow Digital Wellbeing to show websites you visited
+       You can see sites you visit in Chrome and set timers for them.\n\nGoogle gets info about the sites you set timers for and how long you visit them. This info is used to make Digital Wellbeing better.
       </message>
-      <message name="IDS_USAGE_STATS_SETTING_TITLE" desc="Title for setting toggling Digital Wellbeing to access Chrome usage data">
-        Connect to Digital Wellbeing
+      <message name="IDS_USAGE_STATS_SETTING_TITLE" desc="Title for setting removing Digital Wellbeing's access to Chrome usage data">
+        Remove your Chrome activity from Digital Wellbeing
+      </message>
+      <message name="IDS_USAGE_STATS_REVOCATION_PROMPT" desc="Prompt for removing Digital Wellbeing's access to Chrome usage data">
+        Remove your Chrome activity from Digital Wellbeing?
+      </message>
+      <message name="IDS_USAGE_STATS_REVOCATION_EXPLANATION" desc="Explanation of the effect of revoking Digital Wellbeing's access to Chrome usage data">
+        Sites you visit in Chrome won't show. All site timers will be deleted.
       </message>
       <message name="IDS_USAGE_STATS_SITE_PAUSED" desc="Message when a website is suspended due to exceeding a user-defined limit">
         Site paused

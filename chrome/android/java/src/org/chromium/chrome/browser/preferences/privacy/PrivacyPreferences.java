@@ -29,6 +29,7 @@ import org.chromium.chrome.browser.preferences.PreferenceUtils;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.SyncAndServicesPreferences;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.usage_stats.UsageStatsConsentDialog;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
 
@@ -141,15 +142,6 @@ public class PrivacyPreferences extends PreferenceFragment
         safeBrowsingPref.setOnPreferenceChangeListener(this);
         safeBrowsingPref.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
 
-        if (BuildInfo.isAtLeastQ()) {
-            ChromeBaseCheckBoxPreference usageStatsPref =
-                    (ChromeBaseCheckBoxPreference) findPreference(PREF_USAGE_STATS);
-            usageStatsPref.setOnPreferenceChangeListener(this);
-            usageStatsPref.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
-        } else {
-            preferenceScreen.removePreference(findPreference(PREF_USAGE_STATS));
-        }
-
         updateSummaries();
     }
 
@@ -252,9 +244,16 @@ public class PrivacyPreferences extends PreferenceFragment
                                                                                  : textOff);
         }
 
-        CheckBoxPreference usageStatsPref = (CheckBoxPreference) findPreference(PREF_USAGE_STATS);
+        Preference usageStatsPref = findPreference(PREF_USAGE_STATS);
         if (usageStatsPref != null) {
-            usageStatsPref.setChecked(prefServiceBridge.getBoolean(Pref.USAGE_STATS_ENABLED));
+            if (BuildInfo.isAtLeastQ() && prefServiceBridge.getBoolean(Pref.USAGE_STATS_ENABLED)) {
+                usageStatsPref.setOnPreferenceClickListener(preference -> {
+                    UsageStatsConsentDialog.create(getActivity(), true, false).show();
+                    return true;
+                });
+            } else {
+                getPreferenceScreen().removePreference(usageStatsPref);
+            }
         }
     }
 
