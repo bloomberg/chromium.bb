@@ -63,11 +63,6 @@ class AXPlatformNodeWinTest : public ui::AXPlatformNodeTest {
   void InitFragmentRoot();
   Microsoft::WRL::ComPtr<IRawElementProviderFragmentRoot> GetFragmentRoot();
 
-  void InitListBox(bool option_1_is_selected,
-                   bool option_2_is_selected,
-                   bool option_3_is_selected,
-                   ax::mojom::State additional_state);
-
   using PatternSet = std::unordered_set<long>;
   PatternSet GetSupportedPatternsFromNodeId(int32_t id);
   std::unique_ptr<AXFragmentRootWin> ax_fragment_root_;

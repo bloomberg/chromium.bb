@@ -3927,6 +3927,19 @@ IFACEMETHODIMP AXPlatformNodeWin::get_HostRawElementProvider(
 }
 
 //
+// IRawElementProviderSimple2 implementation.
+//
+
+IFACEMETHODIMP AXPlatformNodeWin::ShowContextMenu() {
+  UIA_VALIDATE_CALL();
+
+  ui::AXActionData action_data;
+  action_data.action = ax::mojom::Action::kShowContextMenu;
+  delegate_->AccessibilityPerformAction(action_data);
+  return S_OK;
+}
+
+//
 // IServiceProvider implementation.
 //
 

@@ -32,6 +32,9 @@ class TestAXNodeWrapper : public AXPlatformNodeDelegateBase {
   // Set a global coordinate offset for testing.
   static void SetGlobalCoordinateOffset(const gfx::Vector2d& offset);
 
+  // Get the last node which ShowContextMenu was called from for testing.
+  static const AXNode* GetNodeFromLastShowContextMenu();
+
   ~TestAXNodeWrapper() override;
 
   AXPlatformNode* ax_platform_node() const { return platform_node_; }

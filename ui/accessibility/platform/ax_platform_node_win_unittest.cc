@@ -298,51 +298,12 @@ AXPlatformNodeWinTest::GetFragmentRoot() {
   return fragment_root_provider;
 }
 
-void AXPlatformNodeWinTest::InitListBox(
-    bool option_1_is_selected,
-    bool option_2_is_selected,
-    bool option_3_is_selected,
-    ax::mojom::State additional_state = ax::mojom::State::kNone) {
-  AXNodeData listbox;
-  listbox.id = 0;
-  listbox.SetName("ListBox");
-  listbox.role = ax::mojom::Role::kListBox;
-  if (additional_state != ax::mojom::State::kNone)
-    listbox.AddState(additional_state);
-
-  AXNodeData option_1;
-  option_1.id = 1;
-  option_1.SetName("Option1");
-  option_1.role = ax::mojom::Role::kListBoxOption;
-  if (option_1_is_selected)
-    option_1.AddBoolAttribute(ax::mojom::BoolAttribute::kSelected, true);
-  listbox.child_ids.push_back(option_1.id);
-
-  AXNodeData option_2;
-  option_2.id = 2;
-  option_2.SetName("Option2");
-  option_2.role = ax::mojom::Role::kListBoxOption;
-  if (option_2_is_selected)
-    option_2.AddBoolAttribute(ax::mojom::BoolAttribute::kSelected, true);
-  listbox.child_ids.push_back(option_2.id);
-
-  AXNodeData option_3;
-  option_3.id = 3;
-  option_3.SetName("Option3");
-  option_3.role = ax::mojom::Role::kListBoxOption;
-  if (option_3_is_selected)
-    option_3.AddBoolAttribute(ax::mojom::BoolAttribute::kSelected, true);
-  listbox.child_ids.push_back(option_3.id);
-
-  Init(listbox, option_1, option_2, option_3);
-}
-
 AXPlatformNodeWinTest::PatternSet
 AXPlatformNodeWinTest::GetSupportedPatternsFromNodeId(int32_t id) {
   ComPtr<IRawElementProviderSimple> raw_element_provider_simple =
       QueryInterfaceFromNodeId<IRawElementProviderSimple>(id);
   PatternSet supported_patterns;
-  static const std::vector<long> all_supported_patterns_ = {
+  static const std::vector<LONG> all_supported_patterns_ = {
       UIA_TextChildPatternId,  UIA_TextEditPatternId,
       UIA_TextPatternId,       UIA_WindowPatternId,
       UIA_InvokePatternId,     UIA_ExpandCollapsePatternId,
@@ -353,7 +314,7 @@ AXPlatformNodeWinTest::GetSupportedPatternsFromNodeId(int32_t id) {
       UIA_SelectionPatternId,  UIA_TogglePatternId,
       UIA_ValuePatternId,
   };
-  for (long property_id : all_supported_patterns_) {
+  for (LONG property_id : all_supported_patterns_) {
     CComPtr<IUnknown> provider = nullptr;
     if (SUCCEEDED(raw_element_provider_simple->GetPatternProvider(property_id,
                                                                   &provider)) &&
@@ -3114,15 +3075,15 @@ TEST_F(AXPlatformNodeWinTest, TestITableProviderGetColumnHeaders) {
   EXPECT_EQ(sizeof(IRawElementProviderSimple*),
             ::SafeArrayGetElemsize(safearray));
 
-  long array_lbound;
+  LONG array_lbound;
   EXPECT_HRESULT_SUCCEEDED(::SafeArrayGetLBound(safearray, 1, &array_lbound));
   EXPECT_EQ(0, array_lbound);
 
-  long array_ubound;
+  LONG array_ubound;
   EXPECT_HRESULT_SUCCEEDED(::SafeArrayGetUBound(safearray, 1, &array_ubound));
   EXPECT_EQ(0, array_ubound);
 
-  long index = 0;
+  LONG index = 0;
   CComPtr<IRawElementProviderSimple> array_element;
   EXPECT_HRESULT_SUCCEEDED(
       ::SafeArrayGetElement(safearray, &index, &array_element));
@@ -3166,15 +3127,15 @@ TEST_F(AXPlatformNodeWinTest, TestITableProviderGetRowHeaders) {
   EXPECT_EQ(sizeof(IRawElementProviderSimple*),
             ::SafeArrayGetElemsize(safearray));
 
-  long array_lbound;
+  LONG array_lbound;
   EXPECT_HRESULT_SUCCEEDED(::SafeArrayGetLBound(safearray, 1, &array_lbound));
   EXPECT_EQ(0, array_lbound);
 
-  long array_ubound;
+  LONG array_ubound;
   EXPECT_HRESULT_SUCCEEDED(::SafeArrayGetUBound(safearray, 1, &array_ubound));
   EXPECT_EQ(0, array_ubound);
 
-  long index = 0;
+  LONG index = 0;
   CComPtr<IRawElementProviderSimple> array_element;
   EXPECT_HRESULT_SUCCEEDED(
       ::SafeArrayGetElement(safearray, &index, &array_element));
@@ -3735,9 +3696,9 @@ TEST_F(AXPlatformNodeWinTest, TestUIANavigate) {
 }
 
 TEST_F(AXPlatformNodeWinTest, TestISelectionProviderCanSelectMultipleDefault) {
-  InitListBox(/*option_1_is_selected*/ false,
-              /*option_2_is_selected*/ false,
-              /*option_3_is_selected*/ false);
+  Init(BuildListBox(/*option_1_is_selected*/ false,
+                    /*option_2_is_selected*/ false,
+                    /*option_3_is_selected*/ false));
 
   ComPtr<ISelectionProvider> selection_provider(
       QueryInterfaceFromNode<ISelectionProvider>(GetRootNode()));
@@ -3749,10 +3710,10 @@ TEST_F(AXPlatformNodeWinTest, TestISelectionProviderCanSelectMultipleDefault) {
 }
 
 TEST_F(AXPlatformNodeWinTest, TestISelectionProviderCanSelectMultipleTrue) {
-  InitListBox(/*option_1_is_selected*/ false,
-              /*option_2_is_selected*/ false,
-              /*option_3_is_selected*/ false,
-              /*additional_state*/ ax::mojom::State::kMultiselectable);
+  Init(BuildListBox(/*option_1_is_selected*/ false,
+                    /*option_2_is_selected*/ false,
+                    /*option_3_is_selected*/ false,
+                    /*additional_state*/ ax::mojom::State::kMultiselectable));
 
   ComPtr<ISelectionProvider> selection_provider(
       QueryInterfaceFromNode<ISelectionProvider>(GetRootNode()));
@@ -3765,9 +3726,9 @@ TEST_F(AXPlatformNodeWinTest, TestISelectionProviderCanSelectMultipleTrue) {
 
 TEST_F(AXPlatformNodeWinTest,
        TestISelectionProviderIsSelectionRequiredDefault) {
-  InitListBox(/*option_1_is_selected*/ false,
-              /*option_2_is_selected*/ false,
-              /*option_3_is_selected*/ false);
+  Init(BuildListBox(/*option_1_is_selected*/ false,
+                    /*option_2_is_selected*/ false,
+                    /*option_3_is_selected*/ false));
 
   ComPtr<ISelectionProvider> selection_provider(
       QueryInterfaceFromNode<ISelectionProvider>(GetRootNode()));
@@ -3779,10 +3740,10 @@ TEST_F(AXPlatformNodeWinTest,
 }
 
 TEST_F(AXPlatformNodeWinTest, TestISelectionProviderIsSelectionRequiredTrue) {
-  InitListBox(/*option_1_is_selected*/ false,
-              /*option_2_is_selected*/ false,
-              /*option_3_is_selected*/ false,
-              /*additional_state*/ ax::mojom::State::kRequired);
+  Init(BuildListBox(/*option_1_is_selected*/ false,
+                    /*option_2_is_selected*/ false,
+                    /*option_3_is_selected*/ false,
+                    /*additional_state*/ ax::mojom::State::kRequired));
 
   ComPtr<ISelectionProvider> selection_provider(
       QueryInterfaceFromNode<ISelectionProvider>(GetRootNode()));
@@ -3794,9 +3755,9 @@ TEST_F(AXPlatformNodeWinTest, TestISelectionProviderIsSelectionRequiredTrue) {
 }
 
 TEST_F(AXPlatformNodeWinTest, TestISelectionProviderGetSelectionNoneSelected) {
-  InitListBox(/*option_1_is_selected*/ false,
-              /*option_2_is_selected*/ false,
-              /*option_3_is_selected*/ false);
+  Init(BuildListBox(/*option_1_is_selected*/ false,
+                    /*option_2_is_selected*/ false,
+                    /*option_3_is_selected*/ false));
 
   ComPtr<ISelectionProvider> selection_provider(
       QueryInterfaceFromNode<ISelectionProvider>(GetRootNode()));
@@ -3820,9 +3781,9 @@ TEST_F(AXPlatformNodeWinTest, TestISelectionProviderGetSelectionNoneSelected) {
 
 TEST_F(AXPlatformNodeWinTest,
        TestISelectionProviderGetSelectionSingleItemSelected) {
-  InitListBox(/*option_1_is_selected*/ false,
-              /*option_2_is_selected*/ true,
-              /*option_3_is_selected*/ false);
+  Init(BuildListBox(/*option_1_is_selected*/ false,
+                    /*option_2_is_selected*/ true,
+                    /*option_3_is_selected*/ false));
 
   ComPtr<ISelectionProvider> selection_provider(
       QueryInterfaceFromNode<ISelectionProvider>(GetRootNode()));
@@ -3855,9 +3816,9 @@ TEST_F(AXPlatformNodeWinTest,
 
 TEST_F(AXPlatformNodeWinTest,
        TestISelectionProviderGetSelectionMultipleItemsSelected) {
-  InitListBox(/*option_1_is_selected*/ true,
-              /*option_2_is_selected*/ true,
-              /*option_3_is_selected*/ true);
+  Init(BuildListBox(/*option_1_is_selected*/ true,
+                    /*option_2_is_selected*/ true,
+                    /*option_3_is_selected*/ true));
 
   ComPtr<ISelectionProvider> selection_provider(
       QueryInterfaceFromNode<ISelectionProvider>(GetRootNode()));
@@ -3923,12 +3884,47 @@ TEST_F(AXPlatformNodeWinTest, TestComputeUIAControlType) {
       UIA_ControlTypePropertyId, int{UIA_TableControlTypeId});
 }
 
+TEST_F(AXPlatformNodeWinTest, TestIRawElementProviderSimple2ShowContextMenu) {
+  AXNodeData root_data;
+  root_data.id = 0;
+
+  AXNodeData element1_data;
+  element1_data.id = 1;
+  root_data.child_ids.push_back(1);
+
+  AXNodeData element2_data;
+  element2_data.id = 2;
+  root_data.child_ids.push_back(2);
+
+  Init(root_data, element1_data, element2_data);
+
+  AXNode* root_node = GetRootNode();
+  AXNode* element1_node = root_node->children()[0];
+  AXNode* element2_node = root_node->children()[1];
+
+  ComPtr<IRawElementProviderSimple2> root_provider =
+      QueryInterfaceFromNode<IRawElementProviderSimple2>(root_node);
+  ComPtr<IRawElementProviderSimple2> element1_provider =
+      QueryInterfaceFromNode<IRawElementProviderSimple2>(element1_node);
+  ComPtr<IRawElementProviderSimple2> element2_provider =
+      QueryInterfaceFromNode<IRawElementProviderSimple2>(element2_node);
+
+  EXPECT_HRESULT_SUCCEEDED(element1_provider->ShowContextMenu());
+  EXPECT_EQ(element1_node, TestAXNodeWrapper::GetNodeFromLastShowContextMenu());
+  EXPECT_HRESULT_SUCCEEDED(element2_provider->ShowContextMenu());
+  EXPECT_EQ(element2_node, TestAXNodeWrapper::GetNodeFromLastShowContextMenu());
+  EXPECT_HRESULT_SUCCEEDED(root_provider->ShowContextMenu());
+  EXPECT_EQ(root_node, TestAXNodeWrapper::GetNodeFromLastShowContextMenu());
+}
+
 TEST_F(AXPlatformNodeWinTest, TestUIAErrorHandling) {
   AXNodeData root;
   Init(root);
 
   ComPtr<IRawElementProviderSimple> simple_provider =
       GetRootIRawElementProviderSimple();
+  ComPtr<IRawElementProviderSimple2> simple2_provider =
+      QueryInterfaceFromNode<IRawElementProviderSimple2>(GetRootNode());
   ComPtr<IRawElementProviderFragment> fragment_provider =
       GetRootIRawElementProviderFragment();
   ComPtr<IGridItemProvider> grid_item_provider =
@@ -4063,6 +4059,10 @@ TEST_F(AXPlatformNodeWinTest, TestUIAErrorHandling) {
             simple_provider->get_ProviderOptions(&options));
   EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
             simple_provider->get_HostRawElementProvider(&host_provider));
+
+  // IRawElementProviderSimple2
+  EXPECT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
+            simple2_provider->ShowContextMenu());
 
   // IRawElementProviderFragment
   ComPtr<IRawElementProviderFragment> navigated_to_fragment;

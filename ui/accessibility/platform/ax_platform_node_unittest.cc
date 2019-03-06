@@ -350,4 +350,49 @@ AXTreeUpdate AXPlatformNodeTest::BuildAriaColumnAndRowCountGrids() {
   return update;
 }
 
+AXTreeUpdate AXPlatformNodeTest::BuildListBox(
+    bool option_1_is_selected,
+    bool option_2_is_selected,
+    bool option_3_is_selected,
+    ax::mojom::State additional_state /* ax::mojom::State::kNone */) {
+  AXNodeData listbox;
+  listbox.id = 0;
+  listbox.SetName("ListBox");
+  listbox.role = ax::mojom::Role::kListBox;
+  if (additional_state != ax::mojom::State::kNone)
+    listbox.AddState(additional_state);
+
+  AXNodeData option_1;
+  option_1.id = 1;
+  option_1.SetName("Option1");
+  option_1.role = ax::mojom::Role::kListBoxOption;
+  if (option_1_is_selected)
+    option_1.AddBoolAttribute(ax::mojom::BoolAttribute::kSelected, true);
+  listbox.child_ids.push_back(option_1.id);
+
+  AXNodeData option_2;
+  option_2.id = 2;
+  option_2.SetName("Option2");
+  option_2.role = ax::mojom::Role::kListBoxOption;
+  if (option_2_is_selected)
+    option_2.AddBoolAttribute(ax::mojom::BoolAttribute::kSelected, true);
+  listbox.child_ids.push_back(option_2.id);
+
+  AXNodeData option_3;
+  option_3.id = 3;
+  option_3.SetName("Option3");
+  option_3.role = ax::mojom::Role::kListBoxOption;
+  if (option_3_is_selected)
+    option_3.AddBoolAttribute(ax::mojom::BoolAttribute::kSelected, true);
+  listbox.child_ids.push_back(option_3.id);
+
+  AXTreeUpdate update;
+  update.root_id = listbox.id;
+  update.nodes.push_back(listbox);
+  update.nodes.push_back(option_1);
+  update.nodes.push_back(option_2);
+  update.nodes.push_back(option_3);
+  return update;
+}
+
 }  // namespace ui
