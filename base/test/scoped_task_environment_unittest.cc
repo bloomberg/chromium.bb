@@ -14,6 +14,7 @@
 #include "base/synchronization/atomic_flag.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
+#include "base/task/sequence_manager/time_domain.h"
 #include "base/test/mock_callback.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
@@ -37,6 +38,19 @@ namespace base {
 namespace test {
 
 namespace {
+
+class ScopedTaskEnvironmentForTest : public ScopedTaskEnvironment {
+ public:
+  template <
+      class... ArgTypes,
+      class CheckArgumentsAreValid = std::enable_if_t<
+          base::trait_helpers::AreValidTraits<ScopedTaskEnvironment::ValidTrait,
+                                              ArgTypes...>::value>>
+  NOINLINE ScopedTaskEnvironmentForTest(const ArgTypes... args)
+      : ScopedTaskEnvironment(args...) {}
+
+  using ScopedTaskEnvironment::GetTimeDomain;
+};
 
 class ScopedTaskEnvironmentTest
     : public testing::TestWithParam<ScopedTaskEnvironment::MainThreadType> {};
@@ -343,6 +357,46 @@ TEST_F(ScopedTaskEnvironmentTest, FastForwardAdvanceTimeTicks) {
   const TimeTicks start_time = base::TimeTicks::Now();
   scoped_task_environment.FastForwardBy(kDelay);
   EXPECT_EQ(start_time + kDelay, base::TimeTicks::Now());
+}
+
+TEST_F(ScopedTaskEnvironmentTest, MockTimeDomain_MaybeFastForwardToNextTask) {
+  constexpr base::TimeDelta kDelay = TimeDelta::FromSeconds(42);
+  ScopedTaskEnvironmentForTest scoped_task_environment(
+      ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
+      ScopedTaskEnvironment::NowSource::MAIN_THREAD_MOCK_TIME);
+  const TimeTicks start_time = base::TimeTicks::Now();
+  EXPECT_FALSE(
+      scoped_task_environment.GetTimeDomain()->MaybeFastForwardToNextTask(
+          false));
+  EXPECT_EQ(start_time, base::TimeTicks::Now());
+
+  ThreadTaskRunnerHandle::Get()->PostDelayedTask(FROM_HERE, base::DoNothing(),
+                                                 kDelay);
+  EXPECT_TRUE(
+      scoped_task_environment.GetTimeDomain()->MaybeFastForwardToNextTask(
+          false));
+  EXPECT_EQ(start_time + kDelay, base::TimeTicks::Now());
+}
+
+TEST_F(ScopedTaskEnvironmentTest,
+       MockTimeDomain_MaybeFastForwardToNextTask_ImmediateTaskPending) {
+  constexpr base::TimeDelta kDelay = TimeDelta::FromSeconds(42);
+  ScopedTaskEnvironmentForTest scoped_task_environment(
+      ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
+      ScopedTaskEnvironment::NowSource::MAIN_THREAD_MOCK_TIME);
+  const TimeTicks start_time = base::TimeTicks::Now();
+  EXPECT_FALSE(
+      scoped_task_environment.GetTimeDomain()->MaybeFastForwardToNextTask(
+          false));
+  EXPECT_EQ(start_time, base::TimeTicks::Now());
+
+  ThreadTaskRunnerHandle::Get()->PostDelayedTask(FROM_HERE, base::DoNothing(),
+                                                 kDelay);
+  ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, base::DoNothing());
+  EXPECT_FALSE(
+      scoped_task_environment.GetTimeDomain()->MaybeFastForwardToNextTask(
+          false));
+  EXPECT_EQ(start_time, base::TimeTicks::Now());
 }
 
 #if defined(OS_WIN)
