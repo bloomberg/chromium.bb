@@ -344,9 +344,6 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   // Size in bytes for a serialized new token frame
   static size_t GetNewTokenFrameSize(const QuicNewTokenFrame& frame);
 
-  // Size in bytes required for a serialized version negotiation packet
-  static size_t GetVersionNegotiationPacketSize(size_t number_versions);
-
   // Size in bytes required for a serialized stop sending frame.
   static size_t GetStopSendingFrameSize(const QuicStopSendingFrame& frame);
 

@@ -39,9 +39,12 @@ QuicCryptoStream::~QuicCryptoStream() {}
 
 // static
 QuicByteCount QuicCryptoStream::CryptoMessageFramingOverhead(
-    QuicTransportVersion version) {
+    QuicTransportVersion version,
+    QuicConnectionId connection_id) {
+  DCHECK(QuicUtils::IsConnectionIdValidForVersion(connection_id, version));
   return QuicPacketCreator::StreamFramePacketOverhead(
-      version, PACKET_8BYTE_CONNECTION_ID, PACKET_0BYTE_CONNECTION_ID,
+      version, static_cast<QuicConnectionIdLength>(connection_id.length()),
+      PACKET_0BYTE_CONNECTION_ID,
       /*include_version=*/true,
       /*include_diversification_nonce=*/true,
       version > QUIC_VERSION_43 ? PACKET_4BYTE_PACKET_NUMBER
