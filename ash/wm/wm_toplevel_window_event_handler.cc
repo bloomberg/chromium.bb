@@ -515,6 +515,13 @@ bool WmToplevelWindowEventHandler::AttemptToStartDrag(
     ::wm::WindowMoveSource source,
     EndClosure end_closure,
     bool update_gesture_target) {
+  if (gesture_target_ != nullptr && update_gesture_target) {
+    DCHECK_EQ(source, ::wm::WINDOW_MOVE_SOURCE_TOUCH);
+    // Transfer events for gesture if switching to new target.
+    window->env()->gesture_recognizer()->TransferEventsTo(
+        gesture_target_, window, ui::TransferTouchesBehavior::kDontCancel);
+  }
+
   if (!PrepareForDrag(window, point_in_parent, window_component, source)) {
     // Treat failure to start as a revert.
     if (end_closure)
@@ -527,11 +534,6 @@ bool WmToplevelWindowEventHandler::AttemptToStartDrag(
   // |gesture_target_| needs to be updated if the drag originated from a
   // client (i.e. |this| never handled ET_GESTURE_EVENT_BEGIN).
   if (in_gesture_drag_ && (!gesture_target_ || update_gesture_target)) {
-    if (gesture_target_ && gesture_target_ != window) {
-      // Transfer events for gesture if switching to new target.
-      window->env()->gesture_recognizer()->TransferEventsTo(
-          gesture_target_, window, ui::TransferTouchesBehavior::kDontCancel);
-    }
     UpdateGestureTarget(window);
   }
 
