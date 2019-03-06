@@ -400,9 +400,7 @@ proto_library("javascript_parser_proto") {
   sources = [
     "$target_gen_dir/javascript_parser.proto",
   ]
-  deps = [
-    ":gen_javascript_parser_proto",
-  ]
+  proto_deps = [ ":gen_javascript_parser_proto" ]
   proto_out_dir = ""
 }
 
