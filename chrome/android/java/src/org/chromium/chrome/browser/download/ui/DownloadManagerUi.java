@@ -69,7 +69,8 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
 
         DownloadBackendProvider(DiscardableReferencePool referencePool, UIDelegate uiDelegate) {
             mSelectionDelegate = new DownloadItemSelectionDelegate();
-            mThumbnailProvider = new ThumbnailProviderImpl(referencePool);
+            mThumbnailProvider = new ThumbnailProviderImpl(
+                    referencePool, ThumbnailProviderImpl.ClientType.DOWNLOAD_HOME);
             mUIDelegate = uiDelegate;
         }
 
