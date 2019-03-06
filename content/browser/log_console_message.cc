@@ -8,6 +8,27 @@
 
 namespace content {
 
+logging::LogSeverity ConsoleMessageLevelToLogSeverity(
+    blink::mojom::ConsoleMessageLevel level) {
+  logging::LogSeverity log_severity = logging::LOG_VERBOSE;
+  switch (level) {
+    case blink::mojom::ConsoleMessageLevel::kVerbose:
+      log_severity = logging::LOG_VERBOSE;
+      break;
+    case blink::mojom::ConsoleMessageLevel::kInfo:
+      log_severity = logging::LOG_INFO;
+      break;
+    case blink::mojom::ConsoleMessageLevel::kWarning:
+      log_severity = logging::LOG_WARNING;
+      break;
+    case blink::mojom::ConsoleMessageLevel::kError:
+      log_severity = logging::LOG_ERROR;
+      break;
+  }
+
+  return log_severity;
+}
+
 void LogConsoleMessage(int32_t level,
                        const base::string16& message,
                        int32_t line_number,

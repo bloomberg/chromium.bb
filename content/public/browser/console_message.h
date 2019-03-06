@@ -6,6 +6,7 @@
 #define CONTENT_PUBLIC_BROWSER_CONSOLE_MESSAGE_H_
 
 #include "base/strings/string16.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -14,7 +15,7 @@ namespace content {
 // console.
 struct ConsoleMessage {
   ConsoleMessage(int source_identifier,
-                 int message_level,
+                 blink::mojom::ConsoleMessageLevel message_level,
                  const base::string16& message,
                  int line_number,
                  const GURL& source_url)
@@ -27,9 +28,8 @@ struct ConsoleMessage {
   // The type of source this came from. In practice, this maps to
   // blink::MessageSource.
   const int source_identifier;
-  // TODO(devlin): This should use blink::mojom or content's
-  // ConsoleMessageLevel.
-  const int message_level;
+  // The severity of the console message.
+  const blink::mojom::ConsoleMessageLevel message_level;
   // The message that was logged to the console.
   const base::string16 message;
   // The line in the script file that the log was emitted at.

@@ -563,7 +563,7 @@ void ServiceWorkerContextClient::ReportException(
 
 void ServiceWorkerContextClient::ReportConsoleMessage(
     int source,
-    int level,
+    blink::mojom::ConsoleMessageLevel level,
     const blink::WebString& message,
     int line_number,
     const blink::WebString& source_url) {
