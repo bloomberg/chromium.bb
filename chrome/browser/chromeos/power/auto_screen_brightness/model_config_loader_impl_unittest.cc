@@ -27,23 +27,6 @@ namespace auto_screen_brightness {
 
 namespace {
 
-void CheckModelConfig(const ModelConfig& result, const ModelConfig& expected) {
-  EXPECT_DOUBLE_EQ(result.auto_brightness_als_horizon_seconds,
-                   expected.auto_brightness_als_horizon_seconds);
-  EXPECT_EQ(result.log_lux.size(), expected.log_lux.size());
-  for (size_t i = 0; i < result.log_lux.size(); ++i) {
-    EXPECT_DOUBLE_EQ(result.log_lux[i], expected.log_lux[i]);
-  }
-  EXPECT_EQ(result.brightness.size(), expected.brightness.size());
-  for (size_t i = 0; i < result.brightness.size(); ++i) {
-    EXPECT_DOUBLE_EQ(result.brightness[i], expected.brightness[i]);
-  }
-
-  EXPECT_EQ(result.metrics_key, expected.metrics_key);
-  EXPECT_DOUBLE_EQ(result.model_als_horizon_seconds,
-                   expected.model_als_horizon_seconds);
-}
-
 class TestObserver : public ModelConfigLoader::Observer {
  public:
   TestObserver() {}
@@ -158,7 +141,7 @@ TEST_F(ModelConfigLoaderImplTest, ValidModelParamsLoaded) {
   expected_model_config.metrics_key = "abc";
   expected_model_config.model_als_horizon_seconds = 5;
   EXPECT_TRUE(test_observer_->model_config());
-  CheckModelConfig(*test_observer_->model_config(), expected_model_config);
+  EXPECT_EQ(*test_observer_->model_config(), expected_model_config);
 }
 
 TEST_F(ModelConfigLoaderImplTest, ValidModelParamsLoadedThenOverriden) {
@@ -202,7 +185,7 @@ TEST_F(ModelConfigLoaderImplTest, ValidModelParamsLoadedThenOverriden) {
   expected_model_config.metrics_key = "abc";
   expected_model_config.model_als_horizon_seconds = 20.0;
   EXPECT_TRUE(test_observer_->model_config());
-  CheckModelConfig(*test_observer_->model_config(), expected_model_config);
+  EXPECT_EQ(*test_observer_->model_config(), expected_model_config);
 }
 
 TEST_F(ModelConfigLoaderImplTest, InvalidModelParamsLoaded) {
@@ -269,7 +252,7 @@ TEST_F(ModelConfigLoaderImplTest, InvalidModelParamsLoadedThenOverriden) {
   expected_model_config.metrics_key = "abc";
   expected_model_config.model_als_horizon_seconds = 20.0;
   EXPECT_TRUE(test_observer_->model_config());
-  CheckModelConfig(*test_observer_->model_config(), expected_model_config);
+  EXPECT_EQ(*test_observer_->model_config(), expected_model_config);
 }
 
 TEST_F(ModelConfigLoaderImplTest, MissingModelParams) {

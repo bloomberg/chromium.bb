@@ -20,6 +20,8 @@
 #include "chrome/browser/chromeos/power/auto_screen_brightness/als_reader.h"
 #include "chrome/browser/chromeos/power/auto_screen_brightness/als_samples.h"
 #include "chrome/browser/chromeos/power/auto_screen_brightness/brightness_monitor.h"
+#include "chrome/browser/chromeos/power/auto_screen_brightness/model_config.h"
+#include "chrome/browser/chromeos/power/auto_screen_brightness/model_config_loader.h"
 #include "chrome/browser/chromeos/power/auto_screen_brightness/modeller.h"
 #include "chrome/browser/chromeos/power/auto_screen_brightness/trainer.h"
 #include "chrome/browser/chromeos/power/auto_screen_brightness/utils.h"
@@ -40,6 +42,7 @@ namespace auto_screen_brightness {
 class ModellerImpl : public Modeller,
                      public AlsReader::Observer,
                      public BrightnessMonitor::Observer,
+                     public ModelConfigLoader::Observer,
                      public ui::UserActivityObserver {
  public:
   static constexpr char kModelDir[] = "autobrightness";
@@ -49,6 +52,7 @@ class ModellerImpl : public Modeller,
   ModellerImpl(const Profile* profile,
                AlsReader* als_reader,
                BrightnessMonitor* brightness_monitor,
+               ModelConfigLoader* model_config_loader,
                ui::UserActivityDetector* user_activity_detector,
                std::unique_ptr<Trainer> trainer);
   ~ModellerImpl() override;
@@ -67,6 +71,9 @@ class ModellerImpl : public Modeller,
                                double new_brightness_percent) override;
   void OnUserBrightnessChangeRequested() override;
 
+  // ModelConfigLoader::Observer overrides:
+  void OnModelConfigLoaded(base::Optional<ModelConfig> model_config) override;
+
   // ui::UserActivityObserver overrides:
   void OnUserActivity(const ui::Event* event) override;
 
@@ -75,6 +82,7 @@ class ModellerImpl : public Modeller,
       const Profile* profile,
       AlsReader* als_reader,
       BrightnessMonitor* brightness_monitor,
+      ModelConfigLoader* model_config_loader,
       ui::UserActivityDetector* user_activity_detector,
       std::unique_ptr<Trainer> trainer,
       scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
@@ -95,6 +103,8 @@ class ModellerImpl : public Modeller,
 
   base::TimeDelta GetTrainingDelayForTesting() const;
 
+  ModelConfig GetModelConfigForTesting() const;
+
   // Returns the path that will be used to store curves. It also creates
   // intermediate directories if they do not exist. Returns an empty path on
   // failures.
@@ -105,6 +115,7 @@ class ModellerImpl : public Modeller,
   ModellerImpl(const Profile* profile,
                AlsReader* als_reader,
                BrightnessMonitor* brightness_monitor,
+               ModelConfigLoader* model_config_loader,
                ui::UserActivityDetector* user_activity_detector,
                std::unique_ptr<Trainer> trainer,
                scoped_refptr<base::SequencedTaskRunner> task_runner,
@@ -122,6 +133,9 @@ class ModellerImpl : public Modeller,
   // created and |model_status_| is set to |kGlobal|. All observers will be
   // notified about the status and the curve.
   void HandleStatusUpdate();
+
+  // Load customizations from model configs.
+  void RunCustomization();
 
   // Notifies its observers on the status of the model. It will be called either
   // when HandleStatusUpdate is called and |model_status_| is no longer
@@ -184,6 +198,9 @@ class ModellerImpl : public Modeller,
   ScopedObserver<BrightnessMonitor, BrightnessMonitor::Observer>
       brightness_monitor_observer_;
 
+  ScopedObserver<ModelConfigLoader, ModelConfigLoader::Observer>
+      model_config_loader_observer_;
+
   ScopedObserver<ui::UserActivityDetector, ui::UserActivityObserver>
       user_activity_observer_;
 
@@ -200,6 +217,12 @@ class ModellerImpl : public Modeller,
   base::Optional<AlsReader::AlsInitStatus> als_init_status_;
   base::Optional<bool> brightness_monitor_success_;
 
+  // |model_config_exists_| will remain nullopt until |OnModelConfigLoaded| is
+  // called. Its value will then be set to true if the input model config exists
+  // (not nullopt), else its value will be false.
+  base::Optional<bool> model_config_exists_;
+  ModelConfig model_config_;
+
   // Whether this modeller has initialized successfully, including connecting
   // to AlsReader, BrightnessMonitor and loading a Trainer.
   // Initially has no value. Guaranteed to have a value after the completion of
@@ -212,8 +235,11 @@ class ModellerImpl : public Modeller,
   // Trainer and Trainer reported it was valid.
   bool has_initial_personal_curve_ = false;
 
-  // Global curve constructed from predefined params.
-  const MonotoneCubicSpline global_curve_;
+  // Global curve constructed from predefined params. It will remain nullopt
+  // until |OnModelConfigLoaded| is called. If input model config is nullopt
+  // then |global_curve_| will remain nullopt, else it will be created based on
+  // the model config.
+  base::Optional<MonotoneCubicSpline> global_curve_;
 
   // Current personal curve. Initially it could be either the global curve or
   // loaded curve. After training, it will be updated each time trainer
@@ -222,10 +248,6 @@ class ModellerImpl : public Modeller,
 
   // Recent ambient values.
   std::unique_ptr<AmbientLightSampleBuffer> ambient_light_values_;
-
-  // Whether we calculate average log ALS values. This should be the same as
-  // that used by the adapter.
-  bool average_log_als_ = false;
 
   std::vector<TrainingDataPoint> data_cache_;
 

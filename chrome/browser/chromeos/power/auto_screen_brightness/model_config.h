@@ -20,9 +20,12 @@ struct ModelConfig {
   std::vector<double> brightness;
   std::string metrics_key;
   double model_als_horizon_seconds = -1.0;
+
   ModelConfig();
   ModelConfig(const ModelConfig& config);
   ~ModelConfig();
+
+  bool operator==(const ModelConfig& config) const;
 };
 
 bool IsValidModelConfig(const ModelConfig& model_config);
