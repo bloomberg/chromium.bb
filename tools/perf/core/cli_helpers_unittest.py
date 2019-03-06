@@ -63,6 +63,8 @@ class CLIHelpersTest(unittest.TestCase):
 
   @mock.patch('__builtin__.print')
   @mock.patch('__builtin__.raw_input')
+  # https://crbug.com/938575.
+  @decorators.Disabled('chromeos')
   def testAskWithCustomAnswersAndDefault(self, raw_input_mock, print_mock):
     raw_input_mock.side_effect = ['']
     self.assertFalse(
@@ -72,6 +74,8 @@ class CLIHelpersTest(unittest.TestCase):
 
   @mock.patch('__builtin__.print')
   @mock.patch('__builtin__.raw_input')
+  # https://crbug.com/938575.
+  @decorators.Disabled('chromeos')
   def testAskNoDefaultCustomAnswersAsList(self, raw_input_mock, print_mock):
     raw_input_mock.side_effect = ['', 'FoO']
     self.assertEqual(cli_helpers.Ask('Ready?', ['foo', 'bar']), 'foo')
