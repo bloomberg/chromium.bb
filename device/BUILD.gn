@@ -118,6 +118,7 @@ test("device_unittests") {
   }
 
   deps = [
+    "//base",
     "//base/test:test_support",
     "//base/third_party/dynamic_annotations:dynamic_annotations",
     "//components/apdu",
@@ -142,7 +143,13 @@ test("device_unittests") {
     "//testing/gtest",
     "//third_party/blink/public:blink_headers",
     "//tools/usb_gadget",
+    "//ui/base",
     "//url",
+  ]
+
+  data_deps = [
+    "bluetooth/strings:bluetooth_test_strings",
+    "//ui/resources:ui_test_pak_data",
   ]
 
   # U2F:
