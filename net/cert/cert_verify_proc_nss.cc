@@ -770,14 +770,11 @@ bool VerifyEV(CERTCertificate* cert_handle,
   // This second PKIXVerifyCert call could have found a different certification
   // path and one or more of the certificates on this new path, that weren't on
   // the old path, might have been revoked.
-  if (crl_set) {
-    CRLSetResult crl_set_result = CheckRevocationWithCRLSet(
-        cvout[cvout_cert_list_index].value.pointer.chain,
-        cvout[cvout_trust_anchor_index].value.pointer.cert,
-        crl_set);
-    if (crl_set_result == kCRLSetRevoked)
-      return false;
-  }
+  CRLSetResult crl_set_result = CheckRevocationWithCRLSet(
+      cvout[cvout_cert_list_index].value.pointer.chain,
+      cvout[cvout_trust_anchor_index].value.pointer.cert, crl_set);
+  if (crl_set_result == kCRLSetRevoked)
+    return false;
 
   SHA256HashValue fingerprint;
   crypto::SHA256HashString(
@@ -946,27 +943,25 @@ int CertVerifyProcNSS::VerifyInternalImpl(
   }
 
   CRLSetResult crl_set_result = kCRLSetUnknown;
-  if (crl_set) {
-    if (status == SECSuccess) {
-      // Reverify the returned chain; NSS should have already called
-      // CheckChainRevocationWithCRLSet prior to returning, but given the
-      // edge cases (self-signed certs that are trusted; cached chains;
-      // unreadable code), this is more about defense in depth than
-      // functional necessity.
-      crl_set_result = CheckRevocationWithCRLSet(
-          cvout[cvout_cert_list_index].value.pointer.chain,
-          cvout[cvout_trust_anchor_index].value.pointer.cert, crl_set);
-      if (crl_set_result == kCRLSetRevoked) {
-        PORT_SetError(SEC_ERROR_REVOKED_CERTIFICATE);
-        status = SECFailure;
-      }
-    } else if (PORT_GetError() == SEC_ERROR_APPLICATION_CALLBACK_ERROR &&
-               check_chain_revocation_args.was_revoked) {
-      // If a CRLSet was supplied, and the error was an application callback
-      // error, then it was directed through the CRLSet code and that
-      // particular chain was revoked.
+  if (status == SECSuccess) {
+    // Reverify the returned chain; NSS should have already called
+    // CheckChainRevocationWithCRLSet prior to returning, but given the
+    // edge cases (self-signed certs that are trusted; cached chains;
+    // unreadable code), this is more about defense in depth than
+    // functional necessity.
+    crl_set_result = CheckRevocationWithCRLSet(
+        cvout[cvout_cert_list_index].value.pointer.chain,
+        cvout[cvout_trust_anchor_index].value.pointer.cert, crl_set);
+    if (crl_set_result == kCRLSetRevoked) {
       PORT_SetError(SEC_ERROR_REVOKED_CERTIFICATE);
+      status = SECFailure;
     }
+  } else if (PORT_GetError() == SEC_ERROR_APPLICATION_CALLBACK_ERROR &&
+             check_chain_revocation_args.was_revoked) {
+    // If a CRLSet was supplied, and the error was an application callback
+    // error, then it was directed through the CRLSet code and that
+    // particular chain was revoked.
+    PORT_SetError(SEC_ERROR_REVOKED_CERTIFICATE);
   }
 
   if (status != SECSuccess) {

@@ -10,6 +10,7 @@
 #include "net/cert/cert_net_fetcher.h"
 #include "net/cert/cert_verify_proc_android.h"
 #include "net/cert/cert_verify_result.h"
+#include "net/cert/crl_set.h"
 #include "net/cert/internal/test_helpers.h"
 #include "net/cert/test_root_certs.h"
 #include "net/cert/x509_certificate.h"
@@ -182,8 +183,9 @@ TEST_F(CertVerifyProcAndroidTestWithAIAFetching,
   ASSERT_TRUE(
       CreateCertificateChainFromFiles({"target_one_aia.pem", "i.pem"}, &leaf));
   CertVerifyResult verify_result;
-  EXPECT_EQ(OK, proc->Verify(leaf.get(), "target", std::string(), 0, nullptr,
-                             empty_cert_list_, &verify_result));
+  EXPECT_EQ(OK, proc->Verify(leaf.get(), "target", std::string(), 0,
+                             CRLSet::BuiltinCRLSet().get(), empty_cert_list_,
+                             &verify_result));
 }
 
 // Tests that if the certificate does not contain an AIA URL, no AIA fetch
@@ -196,8 +198,9 @@ TEST_F(CertVerifyProcAndroidTestWithAIAFetching, NoAIAURL) {
   ASSERT_TRUE(ReadTestCert("target_no_aia.pem", &cert));
   CertVerifyResult verify_result;
   EXPECT_EQ(ERR_CERT_AUTHORITY_INVALID,
-            proc->Verify(cert.get(), "target", std::string(), 0, nullptr,
-                         empty_cert_list_, &verify_result));
+            proc->Verify(cert.get(), "target", std::string(), 0,
+                         CRLSet::BuiltinCRLSet().get(), empty_cert_list_,
+                         &verify_result));
 }
 
 // Tests that if a certificate contains one file:// URL and one http:// URL,
@@ -225,8 +228,9 @@ TEST_F(CertVerifyProcAndroidTestWithAIAFetching, OneFileAndOneHTTPURL) {
           ByMove(CreateMockRequestFromX509Certificate(OK, intermediate))));
 
   CertVerifyResult verify_result;
-  EXPECT_EQ(OK, proc->Verify(cert.get(), "target", std::string(), 0, nullptr,
-                             empty_cert_list_, &verify_result));
+  EXPECT_EQ(OK, proc->Verify(cert.get(), "target", std::string(), 0,
+                             CRLSet::BuiltinCRLSet().get(), empty_cert_list_,
+                             &verify_result));
 }
 
 // Tests that if an AIA request returns the wrong intermediate, certificate
@@ -247,8 +251,9 @@ TEST_F(CertVerifyProcAndroidTestWithAIAFetching,
 
   CertVerifyResult verify_result;
   EXPECT_EQ(ERR_CERT_AUTHORITY_INVALID,
-            proc->Verify(cert.get(), "target", std::string(), 0, nullptr,
-                         empty_cert_list_, &verify_result));
+            proc->Verify(cert.get(), "target", std::string(), 0,
+                         CRLSet::BuiltinCRLSet().get(), empty_cert_list_,
+                         &verify_result));
 }
 
 // Tests that if an AIA request returns an error, certificate verification
@@ -266,8 +271,9 @@ TEST_F(CertVerifyProcAndroidTestWithAIAFetching,
 
   CertVerifyResult verify_result;
   EXPECT_EQ(ERR_CERT_AUTHORITY_INVALID,
-            proc->Verify(cert.get(), "target", std::string(), 0, nullptr,
-                         empty_cert_list_, &verify_result));
+            proc->Verify(cert.get(), "target", std::string(), 0,
+                         CRLSet::BuiltinCRLSet().get(), empty_cert_list_,
+                         &verify_result));
 }
 
 // Tests that if an AIA request returns an unparseable cert, certificate
@@ -285,8 +291,9 @@ TEST_F(CertVerifyProcAndroidTestWithAIAFetching,
 
   CertVerifyResult verify_result;
   EXPECT_EQ(ERR_CERT_AUTHORITY_INVALID,
-            proc->Verify(cert.get(), "target", std::string(), 0, nullptr,
-                         empty_cert_list_, &verify_result));
+            proc->Verify(cert.get(), "target", std::string(), 0,
+                         CRLSet::BuiltinCRLSet().get(), empty_cert_list_,
+                         &verify_result));
 }
 
 // Tests that if a certificate has two HTTP AIA URLs, they are both fetched. If
@@ -317,8 +324,9 @@ TEST_F(CertVerifyProcAndroidTestWithAIAFetching, TwoHTTPURLs) {
           ByMove(CreateMockRequestFromX509Certificate(OK, intermediate))));
 
   CertVerifyResult verify_result;
-  EXPECT_EQ(OK, proc->Verify(cert.get(), "target", std::string(), 0, nullptr,
-                             empty_cert_list_, &verify_result));
+  EXPECT_EQ(OK, proc->Verify(cert.get(), "target", std::string(), 0,
+                             CRLSet::BuiltinCRLSet().get(), empty_cert_list_,
+                             &verify_result));
 }
 
 // Tests that if an intermediate is fetched via AIA, and the intermediate itself
@@ -350,8 +358,9 @@ TEST_F(CertVerifyProcAndroidTestWithAIAFetching,
   // This chain results in an AUTHORITY_INVALID root because |root_| is not
   // trusted.
   EXPECT_EQ(ERR_CERT_AUTHORITY_INVALID,
-            proc->Verify(cert.get(), "target", std::string(), 0, nullptr,
-                         empty_cert_list_, &verify_result));
+            proc->Verify(cert.get(), "target", std::string(), 0,
+                         CRLSet::BuiltinCRLSet().get(), empty_cert_list_,
+                         &verify_result));
 }
 
 // Tests that if a certificate contains six AIA URLs, only the first five are
@@ -372,8 +381,9 @@ TEST_F(CertVerifyProcAndroidTestWithAIAFetching, MaxAIAFetches) {
 
   CertVerifyResult verify_result;
   EXPECT_EQ(ERR_CERT_AUTHORITY_INVALID,
-            proc->Verify(cert.get(), "target", std::string(), 0, nullptr,
-                         empty_cert_list_, &verify_result));
+            proc->Verify(cert.get(), "target", std::string(), 0,
+                         CRLSet::BuiltinCRLSet().get(), empty_cert_list_,
+                         &verify_result));
 }
 
 // Tests that if the supplied chain contains an intermediate with an AIA URL,
@@ -398,8 +408,9 @@ TEST_F(CertVerifyProcAndroidTestWithAIAFetching, FetchForSuppliedIntermediate) {
   // This chain results in an AUTHORITY_INVALID root because |root_| is not
   // trusted.
   EXPECT_EQ(ERR_CERT_AUTHORITY_INVALID,
-            proc->Verify(leaf.get(), "target", std::string(), 0, nullptr,
-                         empty_cert_list_, &verify_result));
+            proc->Verify(leaf.get(), "target", std::string(), 0,
+                         CRLSet::BuiltinCRLSet().get(), empty_cert_list_,
+                         &verify_result));
 }
 
 }  // namespace net
