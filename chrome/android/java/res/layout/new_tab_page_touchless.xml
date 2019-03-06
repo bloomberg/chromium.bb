@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2019 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center">
+
+  <org.chromium.ui.widget.ButtonCompat android:id="@+id/last_tab_button"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      style="@style/TextButton" />
+
+  <ViewStub android:id="@+id/most_likely_stub"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content" />
+
+  <ViewStub android:id="@+id/feed_stub"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content" />
+</LinearLayout>

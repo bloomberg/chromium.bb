@@ -18,7 +18,6 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.MockSafeBrowsingApiHandler;
-import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ApplicationTestUtils;
@@ -61,7 +60,8 @@ public class NoTouchActivityTest {
     @Test
     @MediumTest
     public void testStartsUpToNewTabPage() throws Throwable {
-        Assert.assertTrue(mActivity.getActivityTab().getNativePage() instanceof NewTabPage);
+        Assert.assertTrue(
+                mActivity.getActivityTab().getNativePage() instanceof TouchlessNewTabPage);
     }
 
     /**
@@ -82,7 +82,7 @@ public class NoTouchActivityTest {
                 mActivity.getActivityTab(), mTestServer.getURL(TEST_PATH));
         ThreadUtils.runOnUiThreadBlocking(() -> mActivity.onBackPressed());
         CriteriaHelper.pollUiThread(
-                () -> mActivity.getActivityTab().getNativePage() instanceof NewTabPage);
+                () -> mActivity.getActivityTab().getNativePage() instanceof TouchlessNewTabPage);
     }
 
     /**
