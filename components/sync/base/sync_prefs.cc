@@ -63,9 +63,6 @@ PrefGroupsMap ComputePrefGroups() {
   pref_groups[PROXY_TABS].Put(FAVICON_IMAGES);
   pref_groups[PROXY_TABS].Put(FAVICON_TRACKING);
 
-  // TODO(zea): Put favicons in the bookmarks group as well once it handles
-  // those favicons.
-
   return pref_groups;
 }
 
@@ -142,51 +139,48 @@ SyncPrefs::~SyncPrefs() {
 // static
 void SyncPrefs::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterStringPref(prefs::kSyncCacheGuid, std::string());
-  registry->RegisterStringPref(prefs::kSyncBirthday, std::string());
-  registry->RegisterStringPref(prefs::kSyncBagOfChips, std::string());
+  // Actual user-controlled preferences.
   registry->RegisterBooleanPref(prefs::kSyncFirstSetupComplete, false);
   registry->RegisterBooleanPref(prefs::kSyncSuppressStart, false);
-  registry->RegisterInt64Pref(prefs::kSyncLastSyncedTime, 0);
-  registry->RegisterInt64Pref(prefs::kSyncLastPollTime, 0);
-  registry->RegisterInt64Pref(prefs::kSyncFirstSyncTime, 0);
-  registry->RegisterInt64Pref(prefs::kSyncShortPollIntervalSeconds, 0);
-  registry->RegisterInt64Pref(prefs::kSyncLongPollIntervalSeconds, 0);
-
-  // All datatypes are on by default, but this gets set explicitly
-  // when you configure sync (when turning it on), in
-  // ProfileSyncService::OnUserChoseDatatypes.
   registry->RegisterBooleanPref(prefs::kSyncKeepEverythingSynced, true);
-
-  RegisterObsoleteUserTypePrefs(registry);
-
-  // All types are set to off by default, which forces a configuration to
-  // explicitly enable them.
   for (ModelType type : UserSelectableTypes()) {
     RegisterDataTypePreferredPref(registry, type);
   }
 
+  // Internal or bookkeeping prefs.
+  registry->RegisterStringPref(prefs::kSyncCacheGuid, std::string());
+  registry->RegisterStringPref(prefs::kSyncBirthday, std::string());
+  registry->RegisterStringPref(prefs::kSyncBagOfChips, std::string());
+  registry->RegisterInt64Pref(prefs::kSyncLastSyncedTime, 0);
+  registry->RegisterInt64Pref(prefs::kSyncLastPollTime, 0);
+  // TODO(crbug.com/938865): Remove this pref.
+  registry->RegisterInt64Pref(prefs::kSyncFirstSyncTime, 0);
+  registry->RegisterInt64Pref(prefs::kSyncShortPollIntervalSeconds, 0);
+  registry->RegisterInt64Pref(prefs::kSyncLongPollIntervalSeconds, 0);
   registry->RegisterBooleanPref(prefs::kSyncManaged, false);
   registry->RegisterStringPref(prefs::kSyncEncryptionBootstrapToken,
                                std::string());
   registry->RegisterStringPref(prefs::kSyncKeystoreEncryptionBootstrapToken,
                                std::string());
 #if defined(OS_CHROMEOS)
+  // TODO(crbug.com/938869): Remove this pref.
   registry->RegisterStringPref(prefs::kSyncSpareBootstrapToken, "");
 #endif
-
-  registry->RegisterBooleanPref(kSyncHasAuthError, false);
   registry->RegisterBooleanPref(prefs::kSyncPassphrasePrompted, false);
   registry->RegisterIntegerPref(prefs::kSyncMemoryPressureWarningCount, -1);
   registry->RegisterBooleanPref(prefs::kSyncShutdownCleanly, false);
   registry->RegisterDictionaryPref(prefs::kSyncInvalidationVersions);
   registry->RegisterStringPref(prefs::kSyncLastRunVersion, std::string());
+  registry->RegisterBooleanPref(prefs::kEnableLocalSyncBackend, false);
+  registry->RegisterFilePathPref(prefs::kLocalSyncBackendDir, base::FilePath());
+
+  // Obsolete prefs that will be removed after a grace period.
+  RegisterObsoleteUserTypePrefs(registry);
   registry->RegisterBooleanPref(kSyncPassphraseEncryptionTransitionInProgress,
                                 false);
   registry->RegisterStringPref(kSyncNigoriStateForPassphraseTransition,
                                std::string());
-  registry->RegisterBooleanPref(prefs::kEnableLocalSyncBackend, false);
-  registry->RegisterFilePathPref(prefs::kLocalSyncBackendDir, base::FilePath());
+  registry->RegisterBooleanPref(kSyncHasAuthError, false);
 }
 
 void SyncPrefs::AddSyncPrefObserver(SyncPrefObserver* sync_pref_observer) {
@@ -201,6 +195,7 @@ void SyncPrefs::RemoveSyncPrefObserver(SyncPrefObserver* sync_pref_observer) {
 
 void SyncPrefs::ClearPreferences() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   pref_service_->ClearPref(prefs::kSyncCacheGuid);
   pref_service_->ClearPref(prefs::kSyncBirthday);
   pref_service_->ClearPref(prefs::kSyncBagOfChips);
@@ -208,7 +203,6 @@ void SyncPrefs::ClearPreferences() {
   pref_service_->ClearPref(prefs::kSyncLastPollTime);
   pref_service_->ClearPref(prefs::kSyncShortPollIntervalSeconds);
   pref_service_->ClearPref(prefs::kSyncLongPollIntervalSeconds);
-  pref_service_->ClearPref(prefs::kSyncFirstSetupComplete);
   pref_service_->ClearPref(prefs::kSyncEncryptionBootstrapToken);
   pref_service_->ClearPref(prefs::kSyncKeystoreEncryptionBootstrapToken);
   pref_service_->ClearPref(prefs::kSyncPassphrasePrompted);
@@ -216,9 +210,14 @@ void SyncPrefs::ClearPreferences() {
   pref_service_->ClearPref(prefs::kSyncShutdownCleanly);
   pref_service_->ClearPref(prefs::kSyncInvalidationVersions);
   pref_service_->ClearPref(prefs::kSyncLastRunVersion);
+  // No need to clear kManaged, kEnableLocalSyncBackend or kLocalSyncBackendDir,
+  // since they're never actually set as user preferences.
 
   // Note: We do *not* clear prefs which are directly user-controlled such as
-  // the set of preferred data types here.
+  // the set of preferred data types here, so that if the user ever chooses to
+  // enable Sync again, they start off with their previous settings by default.
+  // We do however require going through first-time setup again.
+  pref_service_->ClearPref(prefs::kSyncFirstSetupComplete);
 }
 
 bool SyncPrefs::IsFirstSetupComplete() const {
