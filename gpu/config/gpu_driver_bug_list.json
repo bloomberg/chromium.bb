@@ -3183,6 +3183,30 @@
       "features": [
         "disable_direct_composition_layers"
       ]
+    },
+    {
+      "id": 295,
+      "description": "Avoid waiting on a egl fence before swapping buffers and rely on implicit sync on Intel GPUs",
+      "cr_bugs": [938286],
+      "os": {
+        "type": "linux"
+      },
+      "gl_vendor": "Intel.*",
+      "features": [
+        "rely_on_implicit_sync_for_swap_buffers"
+      ]
+    },
+    {
+      "id": 296,
+      "description": "Avoid waiting on a egl fence before swapping buffers and rely on implicit sync on Broadcom GPUs",
+      "cr_bugs": [938286],
+      "os": {
+        "type": "linux"
+      },
+      "gl_vendor": "Broadcom.*",
+      "features": [
+        "rely_on_implicit_sync_for_swap_buffers"
+      ]
     }
   ]
 }

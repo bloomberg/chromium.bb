@@ -53,6 +53,7 @@ class GbmSurfacelessWayland : public gl::SurfacelessEGL {
                           SwapCompletionCallback completion_callback,
                           PresentationCallback presentation_callback) override;
   EGLConfig GetConfig() override;
+  void SetRelyOnImplicitSync() override;
 
  private:
   ~GbmSurfacelessWayland() override;
@@ -95,6 +96,7 @@ class GbmSurfacelessWayland : public gl::SurfacelessEGL {
   std::unique_ptr<PendingFrame> submitted_frame_;
   bool has_implicit_external_sync_;
   bool last_swap_buffers_result_ = true;
+  bool use_egl_fence_sync_ = true;
 
   base::WeakPtrFactory<GbmSurfacelessWayland> weak_factory_;
 
