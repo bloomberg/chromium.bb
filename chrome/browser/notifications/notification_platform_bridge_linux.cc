@@ -631,7 +631,8 @@ class NotificationPlatformBridgeLinuxImpl
       actions.push_back(kDefaultButtonId);
       actions.push_back("Activate");
       // Always add a settings button for web notifications.
-      if (notification_type != NotificationHandler::Type::EXTENSION) {
+      if (notification_type != NotificationHandler::Type::EXTENSION &&
+          notification_type != NotificationHandler::Type::SEND_TAB_TO_SELF) {
         actions.push_back(kSettingsButtonId);
         actions.push_back(
             l10n_util::GetStringUTF8(IDS_NOTIFICATION_BUTTON_SETTINGS));
