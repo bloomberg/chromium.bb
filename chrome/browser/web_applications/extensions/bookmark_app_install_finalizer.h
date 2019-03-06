@@ -8,24 +8,16 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "chrome/browser/web_applications/components/install_finalizer.h"
 
 class Profile;
 
-struct WebApplicationInfo;
-
-namespace content {
-class WebContents;
-}
-
 namespace extensions {
 
 class CrxInstaller;
-class CrxInstallError;
 
 // Class used to actually install the Bookmark App in the system.
+// TODO(loyso): Erase this subclass once crbug.com/877898 fixed.
 class BookmarkAppInstallFinalizer : public web_app::InstallFinalizer {
  public:
   // Constructs a BookmarkAppInstallFinalizer that will install the Bookmark App
@@ -53,17 +45,8 @@ class BookmarkAppInstallFinalizer : public web_app::InstallFinalizer {
       CrxInstallerFactory crx_installer_factory);
 
  private:
-  void OnExtensionInstalled(std::unique_ptr<WebApplicationInfo> web_app_info,
-                            InstallFinalizedCallback callback,
-                            const base::Optional<CrxInstallError>& error);
-
-  scoped_refptr<CrxInstaller> crx_installer_;
   CrxInstallerFactory crx_installer_factory_;
   Profile* profile_;
-
-  // We need a WeakPtr because CrxInstaller is refcounted and it can run its
-  // callback after this class has been destroyed.
-  base::WeakPtrFactory<BookmarkAppInstallFinalizer> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkAppInstallFinalizer);
 };
