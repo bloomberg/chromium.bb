@@ -201,7 +201,7 @@ void AutoscrollController::UpdateDragAndDrop(Node* drop_target_node,
     autoscroll_type_ = kAutoscrollForDragAndDrop;
     autoscroll_layout_object_ = scrollable;
     drag_and_drop_autoscroll_start_time_ = event_time;
-    UseCounter::Count(autoscroll_layout_object_->GetFrame(),
+    UseCounter::Count(drop_target_node->GetDocument(),
                       WebFeature::kDragAndDropScrollStart);
     ScheduleMainThreadAnimation();
   } else if (autoscroll_layout_object_ != scrollable) {

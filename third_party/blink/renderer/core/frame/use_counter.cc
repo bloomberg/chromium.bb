@@ -1375,16 +1375,6 @@ void UseCounter::DidCommitLoad(const LocalFrame* frame) {
   }
 }
 
-// TODO(loonybear): Replace Count(LocalFrame*) by Count(DocumentLoader*).
-void UseCounter::Count(const LocalFrame* frame, WebFeature feature) {
-  if (!frame)
-    return;
-  DocumentLoader* loader = frame->GetDocument()
-                               ? frame->GetDocument()->Loader()
-                               : frame->Loader().GetProvisionalDocumentLoader();
-  UseCounter::Count(loader, feature);
-}
-
 void UseCounter::Count(DocumentLoader* loader, WebFeature feature) {
   if (!loader)
     return;
@@ -1441,7 +1431,7 @@ void UseCounter::CountCrossOriginIframe(const Document& document,
                                         WebFeature feature) {
   LocalFrame* frame = document.GetFrame();
   if (frame && frame->IsCrossOriginSubframe())
-    Count(frame, feature);
+    Count(document, feature);
 }
 
 void UseCounter::ReportAndTraceMeasurementByCSSSampleId(int sample_id,

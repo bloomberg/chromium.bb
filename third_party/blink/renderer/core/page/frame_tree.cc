@@ -59,7 +59,8 @@ const AtomicString& FrameTree::GetName() const {
                         WebFeature::kCrossOriginMainFrameNulledNameAccessed);
       if (!name_.IsEmpty()) {
         UseCounter::Count(
-            frame, WebFeature::kCrossOriginMainFrameNulledNonEmptyNameAccessed);
+            frame->GetDocument(),
+            WebFeature::kCrossOriginMainFrameNulledNonEmptyNameAccessed);
       }
     }
   }

@@ -196,8 +196,7 @@ void WindowPerformance::UpdateLongTaskInstrumentation() {
     return;
 
   if (HasObserverFor(PerformanceEntry::kLongTask)) {
-    UseCounter::Count(&GetFrame()->LocalFrameRoot(),
-                      WebFeature::kLongTaskObserver);
+    UseCounter::Count(GetFrame()->GetDocument(), WebFeature::kLongTaskObserver);
     GetFrame()->GetPerformanceMonitor()->Subscribe(
         PerformanceMonitor::kLongTask, kLongTaskObserverThreshold, this);
   } else {
@@ -423,7 +422,8 @@ void WindowPerformance::DispatchFirstInputTiming(
     return;
   DCHECK_EQ("firstInput", entry->entryType());
   if (HasObserverFor(PerformanceEntry::kFirstInput)) {
-    UseCounter::Count(GetFrame(), WebFeature::kEventTimingExplicitlyRequested);
+    UseCounter::Count(GetFrame()->GetDocument(),
+                      WebFeature::kEventTimingExplicitlyRequested);
     NotifyObserversOfEntry(*entry);
   }
 

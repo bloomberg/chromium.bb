@@ -312,7 +312,7 @@ void TouchEvent::preventDefault() {
           break;
         case PassiveMode::kPassiveForcedDocumentLevel:
           UseCounter::Count(
-              local_frame,
+              local_dom_window->document(),
               WebFeature::
                   kTouchEventPreventedForcedDocumentPassiveNoTouchAction);
           break;

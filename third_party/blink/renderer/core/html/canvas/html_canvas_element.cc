@@ -333,8 +333,7 @@ CanvasRenderingContext* HTMLCanvasElement::GetCanvasRenderingContextInternal(
     // but we need to subscribe to it or else dispatching frames will not work.
     frame_dispatcher_->SetNeedsBeginFrame(GetPage()->IsPageVisible());
 
-    UseCounter::Count(GetDocument().GetFrame(),
-                      WebFeature::kHTMLCanvasElementLowLatency);
+    UseCounter::Count(GetDocument(), WebFeature::kHTMLCanvasElementLowLatency);
   }
 
   SetNeedsCompositingUpdate();

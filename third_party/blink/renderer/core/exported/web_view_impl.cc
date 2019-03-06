@@ -3322,10 +3322,14 @@ void WebViewImpl::RecordWheelAndTouchScrollingCount(
   if (!MainFrameImpl())
     return;
 
-  if (has_scrolled_by_wheel)
-    UseCounter::Count(MainFrameImpl()->GetFrame(), WebFeature::kScrollByWheel);
-  if (has_scrolled_by_touch)
-    UseCounter::Count(MainFrameImpl()->GetFrame(), WebFeature::kScrollByTouch);
+  if (has_scrolled_by_wheel) {
+    UseCounter::Count(MainFrameImpl()->GetDocument(),
+                      WebFeature::kScrollByWheel);
+  }
+  if (has_scrolled_by_touch) {
+    UseCounter::Count(MainFrameImpl()->GetDocument(),
+                      WebFeature::kScrollByTouch);
+  }
 }
 
 Node* WebViewImpl::FindNodeFromScrollableCompositorElementId(

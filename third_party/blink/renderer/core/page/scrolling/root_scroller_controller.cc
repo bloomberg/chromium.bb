@@ -165,8 +165,7 @@ void RootScrollerController::RecomputeEffectiveRootScroller() {
       new_effective_root_scroller = root_scroller_;
     } else if (implicit_root_scroller_) {
       new_effective_root_scroller = implicit_root_scroller_;
-      UseCounter::Count(document_->GetFrame(),
-                        WebFeature::kActivatedImplicitRootScroller);
+      UseCounter::Count(document_, WebFeature::kActivatedImplicitRootScroller);
     }
   }
 
