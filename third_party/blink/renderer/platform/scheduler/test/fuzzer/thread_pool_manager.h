@@ -14,6 +14,7 @@
 #include "base/time/time.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/scheduler/test/fuzzer/proto/sequence_manager_test_description.pb.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace base {
 namespace sequence_manager {
@@ -24,6 +25,8 @@ class ThreadManager;
 // Used by the SequenceManagerFuzzerProcessor to manage threads and synchronize
 // their clocks.
 class PLATFORM_EXPORT ThreadPoolManager {
+  USING_FAST_MALLOC(ThreadPoolManager);
+
  public:
   explicit ThreadPoolManager(SequenceManagerFuzzerProcessor* processor);
   ~ThreadPoolManager();

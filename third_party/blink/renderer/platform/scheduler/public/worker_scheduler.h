@@ -10,6 +10,7 @@
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_or_worker_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 namespace scheduler {
@@ -29,6 +30,8 @@ class PLATFORM_EXPORT WorkerScheduler : public FrameOrWorkerScheduler {
   ~WorkerScheduler() override;
 
   class PLATFORM_EXPORT PauseHandle {
+    USING_FAST_MALLOC(PauseHandle);
+
    public:
     PauseHandle(base::WeakPtr<WorkerScheduler>);
     ~PauseHandle();

@@ -19,12 +19,15 @@
 #include "third_party/blink/renderer/platform/scheduler/test/fuzzer/proto/sequence_manager_test_description.pb.h"
 #include "third_party/blink/renderer/platform/scheduler/test/fuzzer/sequence_manager_fuzzer_processor.h"
 #include "third_party/blink/renderer/platform/scheduler/test/fuzzer/task_queue_with_voters.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace base {
 namespace sequence_manager {
 
 // Used by the SequenceManagerFuzzerProcessor to execute actions on a thread.
 class PLATFORM_EXPORT ThreadManager {
+  USING_FAST_MALLOC(ThreadManager);
+
  public:
   // |initial_time| is the time in which |this| was instantiated.
   ThreadManager(TimeTicks initial_time,
@@ -62,6 +65,8 @@ class PLATFORM_EXPORT ThreadManager {
 
  protected:
   class Task {
+    USING_FAST_MALLOC(Task);
+
    public:
     explicit Task(ThreadManager* thread_manager);
     ~Task() = default;
