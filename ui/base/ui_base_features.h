@@ -27,6 +27,8 @@ extern const base::Feature kSettingsShowsPerKeyboardSettings;
 COMPONENT_EXPORT(UI_BASE_FEATURES)
 extern const base::Feature kInputMethodSettingsUiUpdate;
 COMPONENT_EXPORT(UI_BASE_FEATURES)
+extern const base::Feature kSystemCaptionStyle;
+COMPONENT_EXPORT(UI_BASE_FEATURES)
 extern const base::Feature kSystemKeyboardLock;
 COMPONENT_EXPORT(UI_BASE_FEATURES)
 extern const base::Feature kNotificationIndicator;

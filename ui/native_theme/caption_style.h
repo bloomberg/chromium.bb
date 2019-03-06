@@ -25,10 +25,18 @@ struct NATIVE_THEME_EXPORT CaptionStyle {
   // for testing.
   static CaptionStyle FromSpec(const std::string& spec);
 
+  // Returns a CaptionStyle populated from the System's Settings.
+  static CaptionStyle FromSystemSettings();
+
   std::string text_color;
   std::string background_color;
+  // Holds text size percentage as a css string.
+  std::string text_size;
+  std::string text_shadow;
+  std::string font_family;
+  std::string font_variant;
 };
 
 }  // namespace ui
 
-#endif
+#endif  // UI_NATIVE_THEME_CAPTION_STYLE_H_

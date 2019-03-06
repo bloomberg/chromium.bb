@@ -206,6 +206,15 @@ struct CONTENT_EXPORT WebPreferences {
   std::string text_track_background_color;
   std::string text_track_text_color;
 
+  // These fields specify values for CSS properties used to style WebVTT text
+  // tracks.
+  // Specifies CSS font-size property in percentage.
+  std::string text_track_text_size;
+  std::string text_track_text_shadow;
+  std::string text_track_font_family;
+  // Specifies the value for CSS font-variant property.
+  std::string text_track_font_variant;
+
   // Specifies the margin for WebVTT text tracks as a percentage of media
   // element height/width (for horizontal/vertical text respectively).
   // Cues will not be placed in this margin area.

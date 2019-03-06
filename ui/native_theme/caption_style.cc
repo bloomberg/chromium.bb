@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "ui/native_theme/caption_style.h"
-
 #include "base/json/json_reader.h"
 #include "base/values.h"
+#include "build/build_config.h"
 
 namespace ui {
 
@@ -28,5 +28,11 @@ CaptionStyle CaptionStyle::FromSpec(const std::string& spec) {
 
   return style;
 }
+
+#if !defined(OS_WIN)
+CaptionStyle CaptionStyle::FromSystemSettings() {
+  return CaptionStyle();
+}
+#endif
 
 }  // namespace ui
