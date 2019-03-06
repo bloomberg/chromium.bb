@@ -2620,6 +2620,23 @@ TEST_F(OverviewSessionTest, GridShieldAnimation) {
                    ->is_animating());
 }
 
+// Tests that windows that have a backdrop can still be tapped normally.
+// Regression test for crbug.com/938645.
+TEST_F(OverviewSessionTest, SelectingWindowWithBackdrop) {
+  std::unique_ptr<aura::Window> window(CreateTestWindow(gfx::Rect(500, 200)));
+
+  ToggleOverview();
+  OverviewItem* item = GetWindowItemForWindow(0, window.get());
+  ASSERT_EQ(ScopedOverviewTransformWindow::GridWindowFillMode::kLetterBoxed,
+            item->GetWindowDimensionsType());
+
+  // Tap the target.
+  GetEventGenerator()->set_current_screen_location(
+      gfx::ToRoundedPoint(item->target_bounds().CenterPoint()));
+  GetEventGenerator()->ClickLeftButton();
+  EXPECT_FALSE(IsSelecting());
+}
+
 class SplitViewOverviewSessionTest : public OverviewSessionTest {
  public:
   SplitViewOverviewSessionTest() = default;
