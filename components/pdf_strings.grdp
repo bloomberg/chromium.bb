@@ -98,6 +98,15 @@
       <message name="IDS_PDF_ANNOTATION_ERASER" desc="Button tooltip for selecting a tool that erases strokes that were drawn on top of the PDF document">
         Eraser
       </message>
+      <message name="IDS_PDF_ANNOTATION_UNDO" desc="Button tooltip for undoing an annotation edit (drawing a stroke, erasing a stroke)">
+        Undo
+      </message>
+      <message name="IDS_PDF_ANNOTATION_REDO" desc="Button tooltip for redoing an annotation edit (drawing a stroke, erasing a stroke)">
+        Redo
+      </message>
+      <message name="IDS_PDF_ANNOTATION_EXPAND" desc="Button tooltip for expanding the color palette to show more colors">
+        Expand
+      </message>
 
       <message name="IDS_PDF_ANNOTATION_COLOR_BLACK" desc="Button tooltip for selecting the Black color for drawing on top of the PDF document">
         Black

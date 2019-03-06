@@ -68,6 +68,9 @@ void AddStringsForPdf(base::DictionaryValue* dict) {
   SetL10nString(dict, "annotationPen", IDS_PDF_ANNOTATION_PEN);
   SetL10nString(dict, "annotationHighlighter", IDS_PDF_ANNOTATION_HIGHLIGHTER);
   SetL10nString(dict, "annotationEraser", IDS_PDF_ANNOTATION_ERASER);
+  SetL10nString(dict, "annotationUndo", IDS_PDF_ANNOTATION_UNDO);
+  SetL10nString(dict, "annotationRedo", IDS_PDF_ANNOTATION_REDO);
+  SetL10nString(dict, "annotationExpand", IDS_PDF_ANNOTATION_EXPAND);
   SetL10nString(dict, "annotationColorBlack", IDS_PDF_ANNOTATION_COLOR_BLACK);
   SetL10nString(dict, "annotationColorRed", IDS_PDF_ANNOTATION_COLOR_RED);
   SetL10nString(dict, "annotationColorYellow", IDS_PDF_ANNOTATION_COLOR_YELLOW);
