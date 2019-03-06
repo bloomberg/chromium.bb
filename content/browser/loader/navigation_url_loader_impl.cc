@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
@@ -1315,21 +1316,28 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     UMA_HISTOGRAM_BOOLEAN(
         "Navigation.URLLoaderNetworkService.OnCompleteHasSSLInfo",
         status.ssl_info.has_value());
+
+    // Successful load must have used OnResponseStarted first. In this case, the
+    // URLLoaderClient has already been transferred to the renderer process and
+    // OnComplete is not expected to be called here.
+    if (status.error_code == net::OK) {
+      base::debug::DumpWithoutCrashing();
+      return;
+    }
+
     if (status.ssl_info.has_value()) {
       UMA_HISTOGRAM_MEMORY_KB(
           "Navigation.URLLoaderNetworkService.OnCompleteCertificateChainsSize",
           GetCertificateChainsSizeInKB(status.ssl_info.value()));
     }
 
-    if (status.error_code != net::OK && !received_response_) {
-      // If the default loader (network) was used to handle the URL load
-      // request we need to see if the interceptors want to potentially create a
-      // new loader for the response. e.g. AppCache.
-      if (MaybeCreateLoaderForResponse(network::ResourceResponseHead()))
-        return;
-    }
-    status_ = status;
+    // If the default loader (network) was used to handle the URL load
+    // request we need to see if the interceptors want to potentially create a
+    // new loader for the response. e.g. AppCache.
+    if (MaybeCreateLoaderForResponse(network::ResourceResponseHead()))
+      return;
 
+    status_ = status;
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&NavigationURLLoaderImpl::OnComplete, owner_, status));
@@ -1793,12 +1801,8 @@ void NavigationURLLoaderImpl::OnReceiveRedirect(
 
 void NavigationURLLoaderImpl::OnComplete(
     const network::URLLoaderCompletionStatus& status) {
-  if (status.error_code == net::OK)
-    return;
-
   TRACE_EVENT_ASYNC_END2("navigation", "Navigation timeToResponseStarted", this,
                          "&NavigationURLLoaderImpl", this, "success", false);
-
   delegate_->OnRequestFailed(status);
 }
 
