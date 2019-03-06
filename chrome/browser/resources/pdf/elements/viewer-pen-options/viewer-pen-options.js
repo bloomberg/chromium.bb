@@ -148,14 +148,16 @@ Polymer({
         }),
       ];
     }
-    if (this.expanded_) {
-      for (const animation of this.expandAnimations_) {
-        animation.playbackRate = 1;
-      }
-    } else {
-      for (const animation of this.expandAnimations_) {
-        animation.playbackRate = -1;
-      }
+    for (const animation of this.expandAnimations_) {
+      // TODO(dstockwell): Ideally we would just set playbackRate,
+      // but there appears to be a web-animations bug that
+      // results in the animation getting stuck in the 'pending'
+      // state sometimes. See crbug.com/938857
+      const currentTime = animation.currentTime;
+      animation.cancel();
+      animation.playbackRate = this.expanded_ ? 1 : -1;
+      animation.currentTime = currentTime;
+      animation.play();
     }
     for (const input of colors.querySelectorAll('input:nth-child(n+8)')) {
       if (this.expanded_) {
