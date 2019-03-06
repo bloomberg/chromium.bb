@@ -193,4 +193,9 @@ void MediaStreamAudioSourceNode::SetFormat(uint32_t number_of_channels,
                                                source_sample_rate);
 }
 
+bool MediaStreamAudioSourceNode::HasPendingActivity() const {
+  // As long as the context is running, this node has activity.
+  return (context()->ContextState() == BaseAudioContext::kRunning);
+}
+
 }  // namespace blink
