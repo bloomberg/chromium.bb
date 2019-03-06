@@ -4155,18 +4155,13 @@ void LocalFrameView::BeginLifecycleUpdates() {
           blink::features::kAvoidFlashBetweenNavigation) &&
       document && document->Url().ProtocolIsInHTTPFamily() &&
       document->IsHTMLDocument()) {
-    GetFrame()
-        .GetTaskRunner(TaskType::kInternalDefault)
-        ->PostDelayedTask(FROM_HERE,
-                          WTF::Bind(&LocalFrameView::DeferredCommitsTimerFired,
-                                    WrapWeakPersistent(this)),
-                          GetCommitDelayForAvoidFlashBetweenNavigation());
-    GetFrame().GetPage()->GetChromeClient().StartDeferringCommits();
+    GetFrame().GetPage()->GetChromeClient().StartDeferringCommits(
+        GetCommitDelayForAvoidFlashBetweenNavigation());
   }
   GetFrame().GetPage()->GetChromeClient().BeginLifecycleUpdates();
 }
 
-void LocalFrameView::DeferredCommitsTimerFired() {
+void LocalFrameView::StopDeferringCommits() {
   if (GetFrame().GetPage())
     GetFrame().GetPage()->GetChromeClient().StopDeferringCommits();
 }

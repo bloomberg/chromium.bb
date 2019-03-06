@@ -405,7 +405,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
 
   void DeferMainFrameUpdateForTesting();
 
-  void StartDeferringCommits();
+  void StartDeferringCommits(base::TimeDelta timeout);
   void StopDeferringCommits();
 
  private:

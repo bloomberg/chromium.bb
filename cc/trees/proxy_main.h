@@ -89,7 +89,8 @@ class CC_EXPORT ProxyMain : public Proxy {
   bool RequestedAnimatePending() override;
   void NotifyInputThrottledUntilCommit() override;
   void SetDeferMainFrameUpdate(bool defer_main_frame_update) override;
-  void SetDeferCommits(bool defer_commits) override;
+  void StartDeferringCommits(base::TimeDelta timeout) override;
+  void StopDeferringCommits() override;
   bool CommitRequested() const override;
   void Start() override;
   void Stop() override;
@@ -149,6 +150,9 @@ class CC_EXPORT ProxyMain : public Proxy {
   // of the setting for defer_commits_.
   bool defer_main_frame_update_;
   bool defer_commits_;
+
+  // Only used when defer_commits_ is active and must be set in such cases.
+  base::TimeTicks commits_restart_time_;
 
   // ProxyImpl is created and destroyed on the impl thread, and should only be
   // accessed on the impl thread.
