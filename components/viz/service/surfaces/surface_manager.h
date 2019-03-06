@@ -206,6 +206,11 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
   SurfaceAllocationGroup* GetOrCreateAllocationGroupForSurfaceId(
       const SurfaceId& surface_id);
 
+  // Similar to GetOrCreateAllocationGroupForSurfaceId, but will not attempt to
+  // create the allocation group if it does not already exist.
+  SurfaceAllocationGroup* GetAllocationGroupForSurfaceId(
+      const SurfaceId& surface_id);
+
  private:
   friend class CompositorFrameSinkSupportTest;
   friend class FrameSinkManagerTest;
@@ -233,11 +238,6 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
     bool marked_as_old = false;
   };
 
-  // Returns the latest surface in a FrameSinkId that satisfies |is_valid|.
-  Surface* GetLatestInFlightSurfaceForFrameSinkId(
-      const SurfaceRange& surface_range,
-      const FrameSinkId& sink_id);
-
   // Returns set of live surfaces for |lifetime_manager_| is REFERENCES.
   SurfaceIdSet GetLiveSurfacesForReferences();
 
@@ -253,9 +253,6 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
 
   // Returns whether |surface_id| has a temporary reference or not.
   bool HasTemporaryReference(const SurfaceId& surface_id) const;
-
-  // Returns whether |surface_id| has a Persistent reference or not.
-  bool HasPersistentReference(const SurfaceId& surface_id) const;
 
   // Adds a temporary reference to |surface_id|. The reference will not have an
   // owner initially.
@@ -330,11 +327,6 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
   // the embedding client can use them.
   std::unordered_map<FrameSinkId, std::vector<LocalSurfaceId>, FrameSinkIdHash>
       temporary_reference_ranges_;
-
-  // A list of surfaces with a given FrameSinkId that have a persistent
-  // reference.
-  base::flat_map<FrameSinkId, base::flat_set<LocalSurfaceId>>
-      persistent_references_by_frame_sink_id_;
 
   // A map storing SurfaceIds interested in knowing about activation events
   // happending in FrameSinkId.
