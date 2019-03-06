@@ -79,8 +79,6 @@ class OnceCallback<R(Args...)> : public internal::CallbackBase {
     return *this;
   }
 
-  bool Equals(const OnceCallback& other) const { return EqualsInternal(other); }
-
   R Run(Args... args) const & {
     static_assert(!sizeof(*this),
                   "OnceCallback::Run() may only be invoked on a non-const "
