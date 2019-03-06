@@ -52,7 +52,7 @@ class HttpAuthHandlerNtlmPortableTest : public PlatformTest {
 
     return factory_->CreateAuthHandlerFromString(
         "NTLM", HttpAuth::AUTH_SERVER, null_ssl_info, gurl, NetLogWithSource(),
-        &auth_handler_);
+        nullptr, &auth_handler_);
   }
 
   std::string CreateNtlmAuthHeader(base::span<const uint8_t> buffer) {

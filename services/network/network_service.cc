@@ -499,8 +499,7 @@ void NetworkService::SetUpHttpAuth(
   DCHECK(!http_auth_handler_factory_);
 
   http_auth_handler_factory_ = net::HttpAuthHandlerRegistryFactory::Create(
-      host_resolver_.get(), &http_auth_preferences_,
-      http_auth_static_params->supported_schemes
+      &http_auth_preferences_, http_auth_static_params->supported_schemes
 #if defined(OS_CHROMEOS)
       ,
       http_auth_static_params->allow_gssapi_library_load
@@ -659,7 +658,7 @@ void NetworkService::OnApplicationStateChange(
 net::HttpAuthHandlerFactory* NetworkService::GetHttpAuthHandlerFactory() {
   if (!http_auth_handler_factory_) {
     http_auth_handler_factory_ = net::HttpAuthHandlerFactory::CreateDefault(
-        host_resolver_.get(), &http_auth_preferences_
+        &http_auth_preferences_
 #if defined(OS_ANDROID) && BUILDFLAG(USE_KERBEROS)
         ,
         base::BindRepeating(&CreateAuthSystem, this)

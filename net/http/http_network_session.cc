@@ -18,6 +18,7 @@
 #include "base/trace_event/memory_dump_request_args.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "base/values.h"
+#include "net/dns/host_resolver.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_response_body_drainer.h"
 #include "net/http/http_stream_factory.h"
@@ -190,6 +191,7 @@ HttpNetworkSession::HttpNetworkSession(const Params& params,
       http_server_properties_(context.http_server_properties),
       cert_verifier_(context.cert_verifier),
       http_auth_handler_factory_(context.http_auth_handler_factory),
+      host_resolver_(context.host_resolver),
 #if BUILDFLAG(ENABLE_REPORTING)
       reporting_service_(context.reporting_service),
       network_error_logging_service_(context.network_error_logging_service),

@@ -322,8 +322,7 @@ void IOSIOThread::CreateDefaultAuthHandlerFactory() {
       std::make_unique<net::HttpAuthPreferences>();
   globals_->http_auth_handler_factory =
       net::HttpAuthHandlerRegistryFactory::Create(
-          globals_->host_resolver.get(), globals_->http_auth_preferences.get(),
-          supported_schemes);
+          globals_->http_auth_preferences.get(), supported_schemes);
 }
 
 void IOSIOThread::ClearHostCache() {

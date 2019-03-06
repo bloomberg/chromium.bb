@@ -235,8 +235,7 @@ void URLRequestContextFactory::InitializeSystemContextDependencies() {
   cert_transparency_verifier_.reset(new net::MultiLogCTVerifier());
   ct_policy_enforcer_.reset(new net::DefaultCTPolicyEnforcer());
 
-  http_auth_handler_factory_ =
-      net::HttpAuthHandlerFactory::CreateDefault(host_resolver_.get());
+  http_auth_handler_factory_ = net::HttpAuthHandlerFactory::CreateDefault();
 
   // Use in-memory HttpServerProperties. Disk-based can improve performance
   // but benefit seems small (only helps 1st request to a server).

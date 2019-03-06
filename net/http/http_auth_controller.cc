@@ -129,7 +129,8 @@ HttpAuthController::HttpAuthController(
     HttpAuth::Target target,
     const GURL& auth_url,
     HttpAuthCache* http_auth_cache,
-    HttpAuthHandlerFactory* http_auth_handler_factory)
+    HttpAuthHandlerFactory* http_auth_handler_factory,
+    HostResolver* host_resolver)
     : target_(target),
       auth_url_(auth_url),
       auth_origin_(auth_url.GetOrigin()),
@@ -137,8 +138,8 @@ HttpAuthController::HttpAuthController(
       embedded_identity_used_(false),
       default_credentials_used_(false),
       http_auth_cache_(http_auth_cache),
-      http_auth_handler_factory_(http_auth_handler_factory) {
-}
+      http_auth_handler_factory_(http_auth_handler_factory),
+      host_resolver_(host_resolver) {}
 
 HttpAuthController::~HttpAuthController() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -193,11 +194,11 @@ bool HttpAuthController::SelectPreemptiveAuth(const NetLogWithSource& net_log) {
 
   // Try to create a handler using the previous auth challenge.
   std::unique_ptr<HttpAuthHandler> handler_preemptive;
-  int rv_create = http_auth_handler_factory_->
-      CreatePreemptiveAuthHandlerFromString(entry->auth_challenge(), target_,
-                                            auth_origin_,
-                                            entry->IncrementNonceCount(),
-                                            net_log, &handler_preemptive);
+  int rv_create =
+      http_auth_handler_factory_->CreatePreemptiveAuthHandlerFromString(
+          entry->auth_challenge(), target_, auth_origin_,
+          entry->IncrementNonceCount(), net_log, host_resolver_,
+          &handler_preemptive);
   if (rv_create != OK)
     return false;
 
@@ -288,9 +289,9 @@ int HttpAuthController::HandleAuthChallenge(
   do {
     if (!handler_.get() && can_send_auth) {
       // Find the best authentication challenge that we support.
-      HttpAuth::ChooseBestChallenge(http_auth_handler_factory_, *headers,
-                                    ssl_info, target_, auth_origin_,
-                                    disabled_schemes_, net_log, &handler_);
+      HttpAuth::ChooseBestChallenge(
+          http_auth_handler_factory_, *headers, ssl_info, target_, auth_origin_,
+          disabled_schemes_, net_log, host_resolver_, &handler_);
       if (handler_.get())
         HistogramAuthEvent(handler_.get(), AUTH_EVENT_START);
     }

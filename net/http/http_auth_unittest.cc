@@ -127,7 +127,7 @@ TEST(HttpAuthTest, ChooseBestChallenge) {
   MockAllowHttpAuthPreferences http_auth_preferences;
   std::unique_ptr<HostResolver> host_resolver(new MockHostResolver());
   std::unique_ptr<HttpAuthHandlerRegistryFactory> http_auth_handler_factory(
-      HttpAuthHandlerFactory::CreateDefault(host_resolver.get()));
+      HttpAuthHandlerFactory::CreateDefault());
   http_auth_handler_factory->SetHttpAuthPreferences(kNegotiateAuthScheme,
                                                     &http_auth_preferences);
 
@@ -143,7 +143,7 @@ TEST(HttpAuthTest, ChooseBestChallenge) {
     HttpAuth::ChooseBestChallenge(http_auth_handler_factory.get(), *headers,
                                   null_ssl_info, HttpAuth::AUTH_SERVER, origin,
                                   disabled_schemes, NetLogWithSource(),
-                                  &handler);
+                                  host_resolver.get(), &handler);
 
     if (handler.get()) {
       EXPECT_EQ(tests[i].challenge_scheme, handler->auth_scheme());

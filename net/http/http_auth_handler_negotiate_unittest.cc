@@ -69,7 +69,6 @@ class HttpAuthHandlerNegotiateTest : public PlatformTest,
 #if defined(OS_WIN) || (defined(OS_POSIX) && !defined(OS_ANDROID))
     factory_->set_library(base::WrapUnique(auth_library_));
 #endif
-    factory_->set_host_resolver(resolver_.get());
   }
 
 #if defined(OS_ANDROID)
@@ -226,7 +225,7 @@ class HttpAuthHandlerNegotiateTest : public PlatformTest,
     SSLInfo null_ssl_info;
     int rv = factory_->CreateAuthHandlerFromString(
         "Negotiate", HttpAuth::AUTH_SERVER, null_ssl_info, gurl,
-        NetLogWithSource(), &generic_handler);
+        NetLogWithSource(), resolver_.get(), &generic_handler);
     if (rv != OK)
       return rv;
     HttpAuthHandlerNegotiate* negotiate_handler =
@@ -437,7 +436,6 @@ TEST_F(HttpAuthHandlerNegotiateTest, OverrideAuthSystem) {
                               -> std::unique_ptr<HttpNegotiateAuthSystem> {
         return std::make_unique<TestAuthSystem>();
       }));
-  negotiate_factory->set_host_resolver(resolver());
   negotiate_factory->set_http_auth_preferences(http_auth_preferences());
 #if !defined(OS_ANDROID)
   auto auth_library = std::make_unique<MockAuthLibrary>();
@@ -449,7 +447,7 @@ TEST_F(HttpAuthHandlerNegotiateTest, OverrideAuthSystem) {
   std::unique_ptr<HttpAuthHandler> handler;
   EXPECT_EQ(OK, negotiate_factory->CreateAuthHandlerFromString(
                     "Negotiate", HttpAuth::AUTH_SERVER, SSLInfo(), gurl,
-                    NetLogWithSource(), &handler));
+                    NetLogWithSource(), resolver(), &handler));
   EXPECT_TRUE(handler);
 
   TestCompletionCallback callback;

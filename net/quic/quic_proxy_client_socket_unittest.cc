@@ -5,7 +5,9 @@
 #include "net/quic/quic_proxy_client_socket.h"
 
 #include <memory>
+#include <tuple>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
@@ -145,8 +147,7 @@ class QuicProxyClientSocketTest
         proxy_host_port_(kProxyHost, kProxyPort),
         endpoint_host_port_(kOriginHost, kOriginPort),
         host_resolver_(new MockCachingHostResolver()),
-        http_auth_handler_factory_(
-            HttpAuthHandlerFactory::CreateDefault(host_resolver_.get())) {
+        http_auth_handler_factory_(HttpAuthHandlerFactory::CreateDefault()) {
     IPAddress ip(192, 0, 2, 33);
     peer_addr_ = IPEndPoint(ip, 443);
     clock_.AdvanceTime(quic::QuicTime::Delta::FromMilliseconds(20));
@@ -259,10 +260,10 @@ class QuicProxyClientSocketTest
     sock_.reset(new QuicProxyClientSocket(
         std::move(stream_handle), std::move(session_handle_), user_agent_,
         endpoint_host_port_, net_log_.bound(),
-        new HttpAuthController(HttpAuth::AUTH_PROXY,
-                               GURL("https://" + proxy_host_port_.ToString()),
-                               &http_auth_cache_,
-                               http_auth_handler_factory_.get())));
+        new HttpAuthController(
+            HttpAuth::AUTH_PROXY,
+            GURL("https://" + proxy_host_port_.ToString()), &http_auth_cache_,
+            http_auth_handler_factory_.get(), host_resolver_.get())));
 
     session_->StartReading();
   }

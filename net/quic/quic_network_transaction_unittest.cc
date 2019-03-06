@@ -279,8 +279,7 @@ class QuicNetworkTransactionTest
         cert_transparency_verifier_(new MultiLogCTVerifier()),
         ssl_config_service_(new SSLConfigServiceDefaults),
         proxy_resolution_service_(ProxyResolutionService::CreateDirect()),
-        auth_handler_factory_(
-            HttpAuthHandlerFactory::CreateDefault(&host_resolver_)),
+        auth_handler_factory_(HttpAuthHandlerFactory::CreateDefault()),
         ssl_data_(ASYNC, OK) {
     request_.method = "GET";
     std::string url("https://");
@@ -6452,7 +6451,7 @@ class QuicURLRequestContext : public URLRequestContext {
     storage_.set_ssl_config_service(
         std::make_unique<SSLConfigServiceDefaults>());
     storage_.set_http_auth_handler_factory(
-        HttpAuthHandlerFactory::CreateDefault(host_resolver()));
+        HttpAuthHandlerFactory::CreateDefault());
     storage_.set_http_server_properties(
         std::make_unique<HttpServerPropertiesImpl>());
     storage_.set_job_factory(std::make_unique<URLRequestJobFactoryImpl>());
@@ -6728,8 +6727,7 @@ class QuicNetworkTransactionWithDestinationTest
         cert_transparency_verifier_(new MultiLogCTVerifier()),
         ssl_config_service_(new SSLConfigServiceDefaults),
         proxy_resolution_service_(ProxyResolutionService::CreateDirect()),
-        auth_handler_factory_(
-            HttpAuthHandlerFactory::CreateDefault(&host_resolver_)),
+        auth_handler_factory_(HttpAuthHandlerFactory::CreateDefault()),
         random_generator_(0),
         ssl_data_(ASYNC, OK) {}
 

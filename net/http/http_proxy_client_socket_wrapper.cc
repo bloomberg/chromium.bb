@@ -80,7 +80,8 @@ HttpProxyClientSocketWrapper::HttpProxyClientSocketWrapper(
                        GURL((ssl_params_.get() ? "https://" : "http://") +
                             GetDestination().ToString()),
                        http_auth_cache,
-                       http_auth_handler_factory)
+                       http_auth_handler_factory,
+                       common_connect_job_params_.host_resolver)
                  : nullptr),
       net_log_(NetLogWithSource::Make(
           net_log.net_log(),

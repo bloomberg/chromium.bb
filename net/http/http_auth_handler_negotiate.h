@@ -44,10 +44,8 @@ class NET_EXPORT_PRIVATE HttpAuthHandlerNegotiate : public HttpAuthHandler {
 
   class NET_EXPORT_PRIVATE Factory : public HttpAuthHandlerFactory {
    public:
-    Factory(NegotiateAuthSystemFactory negotiate_auth_system_factory);
+    explicit Factory(NegotiateAuthSystemFactory negotiate_auth_system_factory);
     ~Factory() override;
-
-    void set_host_resolver(HostResolver* host_resolver);
 
 #if !defined(OS_ANDROID)
     // Sets the system library to use, thereby assuming ownership of
@@ -76,11 +74,11 @@ class NET_EXPORT_PRIVATE HttpAuthHandlerNegotiate : public HttpAuthHandler {
                           CreateReason reason,
                           int digest_nonce_count,
                           const NetLogWithSource& net_log,
+                          HostResolver* host_resolver,
                           std::unique_ptr<HttpAuthHandler>* handler) override;
 
    private:
     NegotiateAuthSystemFactory negotiate_auth_system_factory_;
-    HostResolver* resolver_ = nullptr;
 #if defined(OS_WIN)
     ULONG max_token_length_ = 0;
 #endif

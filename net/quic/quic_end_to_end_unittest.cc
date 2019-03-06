@@ -107,8 +107,7 @@ class QuicEndToEndTest : public ::testing::TestWithParam<TestParams>,
         cert_transparency_verifier_(new MultiLogCTVerifier()),
         ssl_config_service_(new SSLConfigServiceDefaults),
         proxy_resolution_service_(ProxyResolutionService::CreateDirect()),
-        auth_handler_factory_(
-            HttpAuthHandlerFactory::CreateDefault(&host_resolver_)),
+        auth_handler_factory_(HttpAuthHandlerFactory::CreateDefault()),
         strike_register_no_startup_period_(false) {
     request_.method = "GET";
     request_.url = GURL("https://test.example.com/");
