@@ -427,7 +427,7 @@ class TestAuthSystem : public HttpNegotiateAuthSystem {
     return net::OK;
   }
 
-  void Delegate() override {}
+  void SetDelegation(HttpAuth::DelegationType delegation_type) override {}
 };
 
 TEST_F(HttpAuthHandlerNegotiateTest, OverrideAuthSystem) {

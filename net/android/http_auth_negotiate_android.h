@@ -84,7 +84,7 @@ class NET_EXPORT_PRIVATE HttpAuthNegotiateAndroid
                         const std::string& channel_bindings,
                         std::string* auth_token,
                         CompletionOnceCallback callback) override;
-  void Delegate() override;
+  void SetDelegation(HttpAuth::DelegationType delegation_type) override;
 
   bool can_delegate() const { return can_delegate_; }
   void set_can_delegate(bool can_delegate) { can_delegate_ = can_delegate; }
@@ -99,15 +99,15 @@ class NET_EXPORT_PRIVATE HttpAuthNegotiateAndroid
  private:
   void SetResultInternal(int result, const std::string& token);
 
-  const HttpAuthPreferences* prefs_;
-  bool can_delegate_;
-  bool first_challenge_;
+  const HttpAuthPreferences* prefs_ = nullptr;
+  bool can_delegate_ = false;
+  bool first_challenge_ = true;
   std::string server_auth_token_;
-  std::string* auth_token_;
+  std::string* auth_token_ = nullptr;
   base::android::ScopedJavaGlobalRef<jobject> java_authenticator_;
   net::CompletionOnceCallback completion_callback_;
 
-  base::WeakPtrFactory<HttpAuthNegotiateAndroid> weak_factory_;
+  base::WeakPtrFactory<HttpAuthNegotiateAndroid> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(HttpAuthNegotiateAndroid);
 };

@@ -15594,7 +15594,7 @@ Called by update_net_error_codes.py.-->
   <int value="525" label="PrintingAllowedPinModes"/>
   <int value="526" label="PrintingPinDefault"/>
   <int value="527" label="VoiceInteractionContextEnabled"/>
-  <int value="528" label="UseKDCConstrainedDelegation"/>
+  <int value="528" label="AuthNegotiateDelegateByKdcPolicy"/>
   <int value="529" label="VoiceInteractionHotwordEnabled"/>
   <int value="530" label="BrowserSwitcherChromePath"/>
   <int value="531" label="BrowserSwitcherChromeParameters"/>

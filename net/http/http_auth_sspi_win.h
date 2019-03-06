@@ -126,7 +126,7 @@ class NET_EXPORT_PRIVATE HttpAuthSSPI : public HttpNegotiateAuthSystem {
                         const std::string& channel_bindings,
                         std::string* auth_token,
                         CompletionOnceCallback callback) override;
-  void Delegate() override;
+  void SetDelegation(HttpAuth::DelegationType delegation_type) override;
 
  private:
   int OnFirstRound(const AuthCredentials* credentials);
@@ -147,7 +147,7 @@ class NET_EXPORT_PRIVATE HttpAuthSSPI : public HttpNegotiateAuthSystem {
   ULONG max_token_length_;
   CredHandle cred_;
   CtxtHandle ctxt_;
-  bool can_delegate_;
+  HttpAuth::DelegationType delegation_type_;
 };
 
 // Splits |combined| into domain and username.

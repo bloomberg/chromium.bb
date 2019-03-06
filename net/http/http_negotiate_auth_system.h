@@ -59,10 +59,10 @@ class NET_EXPORT_PRIVATE HttpNegotiateAuthSystem {
                                 std::string* auth_token,
                                 CompletionOnceCallback callback) = 0;
 
-  // Delegation is allowed on the Kerberos ticket. This allows certain servers
-  // to act as the user, such as an IIS server retrieving data from a
-  // Kerberized MSSQL server.
-  virtual void Delegate() = 0;
+  // Sets the delegation type allowed on the Kerberos ticket. This allows
+  // certain servers to act as the user, such as an IIS server retrieving data
+  // from a Kerberized MSSQL server.
+  virtual void SetDelegation(HttpAuth::DelegationType delegation_type) = 0;
 };
 
 }  // namespace net

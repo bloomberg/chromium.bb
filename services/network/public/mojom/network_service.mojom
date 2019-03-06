@@ -204,6 +204,10 @@ struct HttpAuthDynamicParams {
   // delegation is allowed for NTLM or Negotiate authentication.
   string delegate_whitelist;
 
+  // True if OK-AS-DELEGATE flag from KDC should be used to allow delegation for
+  // Negotiate authentication along with delegate_whitelist;
+  bool delegate_by_kdc_policy = false;
+
   // True if canonical hostnames should be resolved when using Negotiate.
   bool negotiate_disable_cname_lookup = false;
 

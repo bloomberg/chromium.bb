@@ -17,6 +17,8 @@
 
 namespace net {
 
+using DelegationType = HttpAuth::DelegationType;
+
 namespace {
 
 int MapAcquireCredentialsStatusToError(SECURITY_STATUS status,
@@ -247,7 +249,7 @@ HttpAuthSSPI::HttpAuthSSPI(SSPILibrary* library,
       scheme_(scheme),
       security_package_(security_package),
       max_token_length_(max_token_length),
-      can_delegate_(false) {
+      delegation_type_(DelegationType::kNone) {
   DCHECK(library_);
   SecInvalidateHandle(&cred_);
   SecInvalidateHandle(&ctxt_);
@@ -273,8 +275,8 @@ bool HttpAuthSSPI::AllowsExplicitCredentials() const {
   return true;
 }
 
-void HttpAuthSSPI::Delegate() {
-  can_delegate_ = true;
+void HttpAuthSSPI::SetDelegation(DelegationType delegation_type) {
+  delegation_type_ = delegation_type;
 }
 
 void HttpAuthSSPI::ResetSecurityContext() {
@@ -414,8 +416,9 @@ int HttpAuthSSPI::GetNextSecurityToken(const std::string& spn,
 
   DWORD context_flags = 0;
   // Firefox only sets ISC_REQ_DELEGATE, but MSDN documentation indicates that
-  // ISC_REQ_MUTUAL_AUTH must also be set.
-  if (can_delegate_)
+  // ISC_REQ_MUTUAL_AUTH must also be set. On Windows delegation by KDC policy
+  // is always respected.
+  if (delegation_type_ != DelegationType::kNone)
     context_flags |= (ISC_REQ_DELEGATE | ISC_REQ_MUTUAL_AUTH);
 
   // This returns a token that is passed to the remote server.

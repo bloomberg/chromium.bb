@@ -396,7 +396,7 @@
         'EnableAuthNegotiatePort',
         'AuthServerWhitelist',
         'AuthNegotiateDelegateWhitelist',
-        'UseKDCConstrainedDelegation',
+        'AuthNegotiateDelegateByKdcPolicy',
         'GSSAPILibraryName',
         'AuthAndroidNegotiateAccountType',
         'AllowCrossOriginAuthPrompt',
@@ -3290,12 +3290,10 @@
 
           Separate multiple server names with commas. Wildcards (*) are allowed.
 
-          If you leave this policy not set <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will not delegate user credentials even if a server is detected as Intranet.
-
-          This policy is ignored if the 'UseKDCConstrainedDelegation' policy is true.''',
+          If you leave this policy not set <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will not delegate user credentials even if a server is detected as Intranet.''',
     },
     {
-      'name': 'UseKDCConstrainedDelegation',
+      'name': 'AuthNegotiateDelegateByKdcPolicy',
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome.linux:74-','chrome.mac:74-','chrome_os:74-'],
@@ -3305,13 +3303,15 @@
       },
       'example_value': True,
       'id': 528,
-      'caption': '''Use KDC constrained delegation''',
+      'caption': '''Use KDC policy to delegate credentials.''',
       'tags': ['website-sharing'],
-      'desc': '''Controls whether OK-AS-DELEGATE flag from KDC is respected or whether 'AuthNegotiateDelegateWhitelist' is used to constrain delegation of Kerberos tickets.
+      'desc': '''Controls whether approval by KDC policy is respected to decide whether to delegate Kerberos tickets.
 
-          If this policy is true, HTTP authentication respects constrained delegation settings on the KDC. 'AuthNegotiateDelegateWhitelist' policy is ignored in that case. Please see https://tools.ietf.org/html/rfc5896.html for more information.
+          If this policy is true, HTTP authentication respects approval by KDC policy, i.e. Chrome only delegates credentials if the KDC sets OK-AS-DELEGATE on a service ticket. Please see https://tools.ietf.org/html/rfc5896.html for more information. Service should also match 'AuthNegotiateDelegateWhitelist' policy.
 
-          If this policy is not set or set to false, constrained delegation settings from KDC are ignored and 'AuthNegotiateDelegateWhitelist' policy is respected.''',
+          If this policy is not set or set to false, KDC policy is ignored on supported platforms and 'AuthNegotiateDelegateWhitelist' policy only is respected.
+
+          On Windows KDC policy is always respected.''',
     },
     {
       'name': 'GSSAPILibraryName',

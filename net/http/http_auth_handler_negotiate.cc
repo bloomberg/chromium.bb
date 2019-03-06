@@ -27,6 +27,8 @@
 
 namespace net {
 
+using DelegationType = HttpAuth::DelegationType;
+
 namespace {
 
 std::unique_ptr<base::Value> NetLogParameterChannelBindings(
@@ -192,8 +194,7 @@ bool HttpAuthHandlerNegotiate::Init(HttpAuthChallengeTokenizer* challenge,
   if (!AllowsDefaultCredentials())
     return false;
 #endif
-  if (CanDelegate())
-    auth_system_->Delegate();
+  auth_system_->SetDelegation(GetDelegationType());
   auth_scheme_ = HttpAuth::AUTH_SCHEME_NEGOTIATE;
   score_ = 4;
   properties_ = ENCRYPTS_IDENTITY | IS_CONNECTION_BASED;
@@ -387,13 +388,15 @@ int HttpAuthHandlerNegotiate::DoGenerateAuthTokenComplete(int rv) {
   return rv;
 }
 
-bool HttpAuthHandlerNegotiate::CanDelegate() const {
+DelegationType HttpAuthHandlerNegotiate::GetDelegationType() const {
+  if (!http_auth_preferences_)
+    return DelegationType::kNone;
+
   // TODO(cbentzel): Should delegation be allowed on proxies?
   if (target_ == HttpAuth::AUTH_PROXY)
-    return false;
-  if (!http_auth_preferences_)
-    return false;
-  return http_auth_preferences_->CanDelegate(origin_);
+    return DelegationType::kNone;
+
+  return http_auth_preferences_->GetDelegationType(origin_);
 }
 
 }  // namespace net
