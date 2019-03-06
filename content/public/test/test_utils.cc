@@ -244,39 +244,11 @@ void DeprecatedEnableFeatureWithParam(const base::Feature& feature,
       kFakeTrialName, kFakeTrialGroupName, param_values, command_line);
 }
 
-namespace {
-
-// Helper class for CreateAndAttachInnerContents.
-//
-// TODO(lfg): https://crbug.com/821187 Inner webcontentses currently require
-// supplying a BrowserPluginGuestDelegate; however, the oopif architecture
-// doesn't really require it. Refactor this so that we can create an inner
-// contents without any of the guest machinery.
-class InnerWebContentsHelper : public WebContentsObserver {
- public:
-  explicit InnerWebContentsHelper() : WebContentsObserver() {}
-  ~InnerWebContentsHelper() override = default;
-
-  // WebContentsObserver:
-  void WebContentsDestroyed() override { delete this; }
-
-  void SetInnerWebContents(WebContents* inner_web_contents) {
-    Observe(inner_web_contents);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(InnerWebContentsHelper);
-};
-
-}  // namespace
-
 WebContents* CreateAndAttachInnerContents(RenderFrameHost* rfh) {
   WebContents* outer_contents =
       static_cast<RenderFrameHostImpl*>(rfh)->delegate()->GetAsWebContents();
   if (!outer_contents)
     return nullptr;
-
-  auto guest_delegate = std::make_unique<InnerWebContentsHelper>();
 
   WebContents::CreateParams inner_params(outer_contents->GetBrowserContext());
 
@@ -286,9 +258,6 @@ WebContents* CreateAndAttachInnerContents(RenderFrameHost* rfh) {
   // Attach. |inner_contents| becomes owned by |outer_contents|.
   WebContents* inner_contents = inner_contents_ptr.get();
   outer_contents->AttachInnerWebContents(std::move(inner_contents_ptr), rfh);
-
-  // |guest_delegate| becomes owned by |inner_contents|.
-  guest_delegate.release()->SetInnerWebContents(inner_contents);
 
   return inner_contents;
 }
