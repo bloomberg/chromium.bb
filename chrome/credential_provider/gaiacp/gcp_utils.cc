@@ -9,9 +9,10 @@
 #include <winternl.h>
 
 #define _NTDEF_  // Prevent redefition errors, must come after <winternl.h>
-#include <ntsecapi.h>         // For LsaLookupAuthenticationPackage()
-#include <sddl.h>             // For ConvertSidToStringSid()
-#include <security.h>         // For NEGOSSP_NAME_A
+#include <ntsecapi.h>  // For LsaLookupAuthenticationPackage()
+#include <sddl.h>      // For ConvertSidToStringSid()
+#include <security.h>  // For NEGOSSP_NAME_A
+#include <shlobj.h>    // For SHGetKnownFolderPath()
 #include <wbemidl.h>
 
 #include <atlbase.h>
@@ -44,6 +45,9 @@
 #include "chrome/credential_provider/gaiacp/reg_utils.h"
 
 namespace credential_provider {
+
+const wchar_t kDefaultProfilePictureFileExtension[] = L".jpg";
+const wchar_t kCredentialLogoPictureFileExtension[] = L".bmp";
 
 namespace {
 
@@ -632,6 +636,29 @@ base::string16 GetStringResource(int base_message_id) {
   }
 
   return localized_string;
+}
+
+HRESULT GetUserAccountPicturePath(const base::string16& sid,
+                                  base::FilePath* base_path) {
+  DCHECK(base_path);
+  base_path->clear();
+  LPWSTR path;
+  HRESULT hr = ::SHGetKnownFolderPath(FOLDERID_PublicUserTiles, 0, NULL, &path);
+  if (FAILED(hr)) {
+    LOGFN(ERROR) << "SHGetKnownFolderPath=" << putHR(hr);
+    return hr;
+  }
+  *base_path = base::FilePath(path).Append(sid);
+  ::CoTaskMemFree(path);
+  return S_OK;
+}
+
+base::FilePath GetUserSizedAccountPictureFilePath(
+    const base::FilePath& account_picture_path,
+    int size,
+    const base::string16& picture_extension) {
+  return account_picture_path.Append(base::StringPrintf(
+      L"GoogleAccountPicture_%i%ls", size, picture_extension.c_str()));
 }
 
 base::string16 GetSelectedLanguage() {

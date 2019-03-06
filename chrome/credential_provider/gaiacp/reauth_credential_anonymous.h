@@ -39,6 +39,7 @@ class ATL_NO_VTABLE CReauthCredentialAnonymous
   DECLARE_PROTECT_FINAL_CONSTRUCT()
 
   HRESULT GetStringValueImpl(DWORD field_id, wchar_t** value) override;
+  HRESULT GetBitmapValueImpl(DWORD field_id, HBITMAP* phbmp) override;
 };
 
 }  // namespace credential_provider
