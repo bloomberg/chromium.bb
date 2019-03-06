@@ -104,7 +104,7 @@
 #include "content/shell/browser/shell.h"
 #include "content/shell/common/shell_switches.h"
 #include "content/test/content_browser_test_utils_internal.h"
-#include "content/test/frame_host_interceptor.h"
+#include "content/test/did_commit_navigation_interceptor.h"
 #include "ipc/constants.mojom.h"
 #include "ipc/ipc_security_test_util.h"
 #include "media/base/media_switches.h"
@@ -11465,7 +11465,7 @@ namespace {
 // to |deferred_url| after receiving FrameNavigationControl::CommitNavigation;
 // whereas there is a fast cross-site navigation taking place in the same
 // frame which starts second but finishes first.
-class CommitMessageOrderReverser : public FrameHostInterceptor {
+class CommitMessageOrderReverser : public DidCommitNavigationInterceptor {
  public:
   using DidStartDeferringCommitCallback =
       base::OnceCallback<void(RenderFrameHost*)>;
@@ -11474,7 +11474,7 @@ class CommitMessageOrderReverser : public FrameHostInterceptor {
       WebContents* web_contents,
       const GURL& deferred_url,
       DidStartDeferringCommitCallback deferred_url_triggered_action)
-      : FrameHostInterceptor(web_contents),
+      : DidCommitNavigationInterceptor(web_contents),
         deferred_url_(deferred_url),
         deferred_url_triggered_action_(
             std::move(deferred_url_triggered_action)) {}
@@ -11483,8 +11483,9 @@ class CommitMessageOrderReverser : public FrameHostInterceptor {
   void WaitForBothCommits() { outer_run_loop.Run(); }
 
  protected:
-  bool WillDispatchDidCommitProvisionalLoad(
+  bool WillProcessDidCommitNavigation(
       RenderFrameHost* render_frame_host,
+      NavigationRequest* navigation_request,
       ::FrameHostMsg_DidCommitProvisionalLoad_Params* params,
       mojom::DidCommitProvisionalLoadInterfaceParamsPtr* interface_params)
       override {
@@ -12376,10 +12377,10 @@ namespace {
 
 // Helper class to intercept DidCommitProvisionalLoad messages and inject a
 // call to close the current tab right before them.
-class ClosePageBeforeCommitHelper : public FrameHostInterceptor {
+class ClosePageBeforeCommitHelper : public DidCommitNavigationInterceptor {
  public:
   explicit ClosePageBeforeCommitHelper(WebContents* web_contents)
-      : FrameHostInterceptor(web_contents) {}
+      : DidCommitNavigationInterceptor(web_contents) {}
 
   void Wait() {
     run_loop_.reset(new base::RunLoop());
@@ -12388,9 +12389,10 @@ class ClosePageBeforeCommitHelper : public FrameHostInterceptor {
   }
 
  private:
-  // FrameHostInterceptor:
-  bool WillDispatchDidCommitProvisionalLoad(
+  // DidCommitNavigationInterceptor:
+  bool WillProcessDidCommitNavigation(
       RenderFrameHost* render_frame_host,
+      NavigationRequest* navigation_request,
       ::FrameHostMsg_DidCommitProvisionalLoad_Params* params,
       mojom::DidCommitProvisionalLoadInterfaceParamsPtr* interface_params)
       override {

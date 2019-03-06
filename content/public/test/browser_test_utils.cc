@@ -88,7 +88,7 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "content/test/accessibility_browser_test_utils.h"
-#include "content/test/frame_host_interceptor.h"
+#include "content/test/did_commit_navigation_interceptor.h"
 #include "ipc/ipc_security_test_util.h"
 #include "net/base/filename_util.h"
 #include "net/base/io_buffer.h"
@@ -538,13 +538,13 @@ const char kHasVideoInputDevice[] = "has-video-input-device";
 
 // Interceptor that replaces params.url with |new_url| and params.origin with
 // |new_origin| for any commits to |target_url|.
-class CommitOriginInterceptor : public FrameHostInterceptor {
+class CommitOriginInterceptor : public DidCommitNavigationInterceptor {
  public:
   CommitOriginInterceptor(WebContents* web_contents,
                           const GURL& target_url,
                           const GURL& new_url,
                           const url::Origin& new_origin)
-      : FrameHostInterceptor(web_contents),
+      : DidCommitNavigationInterceptor(web_contents),
         target_url_(target_url),
         new_url_(new_url),
         new_origin_(new_origin) {}
@@ -554,8 +554,9 @@ class CommitOriginInterceptor : public FrameHostInterceptor {
   void WebContentsDestroyed() override { delete this; }
 
  protected:
-  bool WillDispatchDidCommitProvisionalLoad(
+  bool WillProcessDidCommitNavigation(
       RenderFrameHost* render_frame_host,
+      NavigationRequest* navigation_request,
       ::FrameHostMsg_DidCommitProvisionalLoad_Params* params,
       mojom::DidCommitProvisionalLoadInterfaceParamsPtr* interface_params)
       override {

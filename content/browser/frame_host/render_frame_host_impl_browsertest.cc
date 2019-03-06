@@ -36,7 +36,7 @@
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/content_browser_test_utils_internal.h"
-#include "content/test/frame_host_interceptor.h"
+#include "content/test/did_commit_navigation_interceptor.h"
 #include "content/test/frame_host_test_interface.mojom.h"
 #include "content/test/test_content_browser_client.h"
 #include "net/dns/mock_host_resolver.h"
@@ -1354,10 +1354,11 @@ namespace {
 // Allows injecting a fake, test-provided |interface_provider_request| into
 // DidCommitProvisionalLoad messages in a given |web_contents| instead of the
 // real one coming from the renderer process.
-class ScopedFakeInterfaceProviderRequestInjector : public FrameHostInterceptor {
+class ScopedFakeInterfaceProviderRequestInjector
+    : public DidCommitNavigationInterceptor {
  public:
   explicit ScopedFakeInterfaceProviderRequestInjector(WebContents* web_contents)
-      : FrameHostInterceptor(web_contents) {}
+      : DidCommitNavigationInterceptor(web_contents) {}
   ~ScopedFakeInterfaceProviderRequestInjector() override = default;
 
   // Sets the fake InterfaceProvider |request| to inject into the next incoming
@@ -1375,8 +1376,9 @@ class ScopedFakeInterfaceProviderRequestInjector : public FrameHostInterceptor {
   }
 
  protected:
-  bool WillDispatchDidCommitProvisionalLoad(
+  bool WillProcessDidCommitNavigation(
       RenderFrameHost* render_frame_host,
+      NavigationRequest* navigation_request,
       ::FrameHostMsg_DidCommitProvisionalLoad_Params* params,
       mojom::DidCommitProvisionalLoadInterfaceParamsPtr* interface_params)
       override {

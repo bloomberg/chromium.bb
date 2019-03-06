@@ -30,7 +30,7 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
-#include "content/test/frame_host_interceptor.h"
+#include "content/test/did_commit_navigation_interceptor.h"
 #include "net/base/filename_util.h"
 #include "net/dns/mock_host_resolver.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -147,17 +147,19 @@ class RenderWidgetHostViewBrowserTest : public ContentBrowserTest {
 
 // Helps to ensure that a navigation is committed after a compositor frame was
 // submitted by the renderer, but before corresponding ACK is sent back.
-class CommitBeforeSwapAckSentHelper : public FrameHostInterceptor {
+class CommitBeforeSwapAckSentHelper : public DidCommitNavigationInterceptor {
  public:
   explicit CommitBeforeSwapAckSentHelper(
       WebContents* web_contents,
       RenderFrameSubmissionObserver* frame_observer)
-      : FrameHostInterceptor(web_contents), frame_observer_(frame_observer) {}
+      : DidCommitNavigationInterceptor(web_contents),
+        frame_observer_(frame_observer) {}
 
  private:
-  // FrameHostInterceptor:
-  bool WillDispatchDidCommitProvisionalLoad(
+  // DidCommitNavigationInterceptor:
+  bool WillProcessDidCommitNavigation(
       RenderFrameHost* render_frame_host,
+      NavigationRequest* navigation_request,
       ::FrameHostMsg_DidCommitProvisionalLoad_Params* params,
       mojom::DidCommitProvisionalLoadInterfaceParamsPtr* interface_params)
       override {
