@@ -5,6 +5,7 @@
 #include "chrome/browser/search/instant_service.h"
 
 #include <stddef.h>
+#include <string>
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
@@ -328,11 +329,6 @@ bool InstantService::ResetCustomLinks() {
 }
 
 void InstantService::UpdateThemeInfo() {
-  // Initialize |theme_info_| if necessary.
-  if (!theme_info_) {
-    BuildThemeInfo();
-  }
-
   ApplyOrResetCustomBackgroundThemeInfo();
 
   NotifyAboutThemeInfo();
@@ -405,6 +401,12 @@ void InstantService::SelectLocalBackgroundImage(const base::FilePath& path) {
       base::BindOnce(&CopyFileToProfilePath, path, profile_->GetPath()),
       base::BindOnce(&InstantService::SetBackgroundToLocalResource,
                      weak_ptr_factory_.GetWeakPtr()));
+}
+
+ThemeBackgroundInfo* InstantService::GetInitializedThemeInfo() {
+  if (!theme_info_)
+    BuildThemeInfo();
+  return theme_info_.get();
 }
 
 void InstantService::SetDarkModeThemeForTesting(ui::NativeTheme* theme) {
@@ -632,7 +634,7 @@ void InstantService::ApplyOrResetCustomBackgroundThemeInfo() {
     std::string time_string = std::to_string(base::Time::Now().ToTimeT());
     std::string local_string(chrome::kChromeSearchLocalNtpBackgroundUrl);
     GURL timestamped_url(local_string + "?ts=" + time_string);
-    theme_info_->custom_background_url = timestamped_url;
+    GetInitializedThemeInfo()->custom_background_url = timestamped_url;
     return;
   }
 
@@ -660,16 +662,16 @@ void InstantService::ApplyCustomBackgroundThemeInfo() {
       background_info->FindKey(kNtpCustomBackgroundAttributionLine2);
   const base::Value* attribution_action_url =
       background_info->FindKey(kNtpCustomBackgroundAttributionActionURL);
-
-  theme_info_->custom_background_url = custom_background_url;
+  ThemeBackgroundInfo* theme_info = GetInitializedThemeInfo();
+  theme_info->custom_background_url = custom_background_url;
 
   if (attribution_line_1) {
-    theme_info_->custom_background_attribution_line_1 =
+    theme_info->custom_background_attribution_line_1 =
         background_info->FindKey(kNtpCustomBackgroundAttributionLine1)
             ->GetString();
   }
   if (attribution_line_2) {
-    theme_info_->custom_background_attribution_line_2 =
+    theme_info->custom_background_attribution_line_2 =
         background_info->FindKey(kNtpCustomBackgroundAttributionLine2)
             ->GetString();
   }
@@ -679,9 +681,9 @@ void InstantService::ApplyCustomBackgroundThemeInfo() {
             ->GetString());
 
     if (!action_url.SchemeIsCryptographic()) {
-      theme_info_->custom_background_attribution_action_url = GURL();
+      theme_info->custom_background_attribution_action_url = GURL();
     } else {
-      theme_info_->custom_background_attribution_action_url = action_url;
+      theme_info->custom_background_attribution_action_url = action_url;
     }
   }
 }
@@ -694,10 +696,11 @@ void InstantService::ResetCustomBackgroundThemeInfo() {
 }
 
 void InstantService::FallbackToDefaultThemeInfo() {
-  theme_info_->custom_background_url = GURL();
-  theme_info_->custom_background_attribution_line_1 = std::string();
-  theme_info_->custom_background_attribution_line_2 = std::string();
-  theme_info_->custom_background_attribution_action_url = GURL();
+  ThemeBackgroundInfo* theme_info = GetInitializedThemeInfo();
+  theme_info->custom_background_url = GURL();
+  theme_info->custom_background_attribution_line_1 = std::string();
+  theme_info->custom_background_attribution_line_2 = std::string();
+  theme_info->custom_background_attribution_action_url = GURL();
 }
 
 bool InstantService::IsCustomBackgroundSet() {

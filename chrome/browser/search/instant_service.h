@@ -134,8 +134,8 @@ class InstantService : public KeyedService,
   // Invoked when a user selected the "Upload an image" option on the NTP.
   void SelectLocalBackgroundImage(const base::FilePath& path);
 
-  // Used for testing.
-  ThemeBackgroundInfo* GetThemeInfoForTesting() { return theme_info_.get(); }
+  // Getter for |theme_info_| that will also initialize it if necessary.
+  ThemeBackgroundInfo* GetInitializedThemeInfo();
 
   // Used for testing.
   void SetDarkModeThemeForTesting(ui::NativeTheme* theme);
@@ -155,6 +155,7 @@ class InstantService : public KeyedService,
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, ProcessIsolation);
   FRIEND_TEST_ALL_PREFIXES(InstantServiceTest, DeleteThumbnailDataIfExists);
   FRIEND_TEST_ALL_PREFIXES(InstantServiceTest, GetNTPTileSuggestion);
+  FRIEND_TEST_ALL_PREFIXES(InstantServiceTest, TestNoThemeInfo);
 
   // KeyedService:
   void Shutdown() override;
