@@ -52,7 +52,6 @@
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
-#include "third_party/blink/renderer/core/dom/element_visibility_observer.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/events/event_queue.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
@@ -83,6 +82,8 @@
 #include "third_party/blink/renderer/core/html/track/video_track_list.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/intersection_observer/intersection_observer.h"
+#include "third_party/blink/renderer/core/intersection_observer/intersection_observer_entry.h"
 #include "third_party/blink/renderer/core/layout/layout_media.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
@@ -512,7 +513,7 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tag_name,
       remote_playback_client_(nullptr),
       media_controls_(nullptr),
       controls_list_(HTMLMediaElementControlsList::Create(this)),
-      lazy_load_visibility_observer_(nullptr) {
+      lazy_load_intersection_observer_(nullptr) {
   DVLOG(1) << "HTMLMediaElement(" << (void*)this << ")";
 
   LocalFrame* frame = document.GetFrame();
@@ -1860,12 +1861,12 @@ void HTMLMediaElement::SetReadyState(ReadyState state) {
     // element actually becomes visible to complete the load.
     if (IsHTMLVideoElement() && web_media_player_->DidLazyLoad() &&
         !is_potentially_playing) {
-      lazy_load_visibility_observer_ =
-          MakeGarbageCollected<ElementVisibilityObserver>(
-              this, WTF::BindRepeating(
-                        &HTMLMediaElement::OnVisibilityChangedForLazyLoad,
-                        WrapWeakPersistent(this)));
-      lazy_load_visibility_observer_->Start();
+      lazy_load_intersection_observer_ = IntersectionObserver::Create(
+          {}, {IntersectionObserver::kMinimumThreshold}, &GetDocument(),
+          WTF::BindRepeating(
+              &HTMLMediaElement::OnIntersectionChangedForLazyLoad,
+              WrapWeakPersistent(this)));
+      lazy_load_intersection_observer_->observe(this);
     }
   }
 
@@ -2445,9 +2446,9 @@ void HTMLMediaElement::PlayInternal() {
   DVLOG(3) << "playInternal(" << (void*)this << ")";
 
   // Playback aborts any lazy loading.
-  if (lazy_load_visibility_observer_) {
-    lazy_load_visibility_observer_->Stop();
-    lazy_load_visibility_observer_ = nullptr;
+  if (lazy_load_intersection_observer_) {
+    lazy_load_intersection_observer_->disconnect();
+    lazy_load_intersection_observer_ = nullptr;
   }
 
   // 4.8.12.8. Playing the media resource
@@ -3456,9 +3457,9 @@ void HTMLMediaElement::UpdatePlayState() {
 void HTMLMediaElement::StopPeriodicTimers() {
   progress_event_timer_.Stop();
   playback_progress_timer_.Stop();
-  if (lazy_load_visibility_observer_) {
-    lazy_load_visibility_observer_->Stop();
-    lazy_load_visibility_observer_ = nullptr;
+  if (lazy_load_intersection_observer_) {
+    lazy_load_intersection_observer_->disconnect();
+    lazy_load_intersection_observer_ = nullptr;
   }
 }
 
@@ -3915,7 +3916,7 @@ void HTMLMediaElement::Trace(Visitor* visitor) {
   visitor->Trace(autoplay_policy_);
   visitor->Trace(media_controls_);
   visitor->Trace(controls_list_);
-  visitor->Trace(lazy_load_visibility_observer_);
+  visitor->Trace(lazy_load_intersection_observer_);
   Supplementable<HTMLMediaElement>::Trace(visitor);
   HTMLElement::Trace(visitor);
   ContextLifecycleStateObserver::Trace(visitor);
@@ -4203,13 +4204,15 @@ void HTMLMediaElement::OnViewportIntersectionChanged(
     web_media_player_->BecameDominantVisibleContent(mostly_filling_viewport_);
 }
 
-void HTMLMediaElement::OnVisibilityChangedForLazyLoad(bool is_visible) {
+void HTMLMediaElement::OnIntersectionChangedForLazyLoad(
+    const HeapVector<Member<IntersectionObserverEntry>>& entries) {
+  bool is_visible = (entries.back()->intersectionRatio() > 0);
   if (!is_visible || !web_media_player_)
     return;
 
   web_media_player_->OnBecameVisible();
-  lazy_load_visibility_observer_->Stop();
-  lazy_load_visibility_observer_ = nullptr;
+  lazy_load_intersection_observer_->disconnect();
+  lazy_load_intersection_observer_ = nullptr;
 }
 
 STATIC_ASSERT_ENUM(WebMediaPlayer::kReadyStateHaveNothing,

@@ -95,8 +95,6 @@ blink_core_sources("dom") {
     "element_rare_data.cc",
     "element_rare_data.h",
     "element_traversal.h",
-    "element_visibility_observer.cc",
-    "element_visibility_observer.h",
     "empty_node_list.cc",
     "empty_node_list.h",
     "events/add_event_listener_options_defaults.h",

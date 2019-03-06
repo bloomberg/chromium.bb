@@ -63,12 +63,13 @@ class CompositorAnimationTimeline;
 class Cursor;
 class DisplayItemClient;
 class DocumentLifecycle;
-class ElementVisibilityObserver;
 class FloatRect;
 class FloatSize;
 class FragmentAnchor;
 class Frame;
 class FrameViewAutoSizeInfo;
+class IntersectionObserver;
+class IntersectionObserverEntry;
 class JSONObject;
 class JankTracker;
 class KURL;
@@ -802,6 +803,8 @@ class CORE_EXPORT LocalFrameView final
   void PrePaint();
   void PaintTree();
   void UpdateStyleAndLayoutIfNeededRecursive();
+  void OnViewportIntersectionChanged(
+      const HeapVector<Member<IntersectionObserverEntry>>& entries);
 
   void PushPaintArtifactToCompositor(
       CompositorElementIdSet& composited_element_ids);
@@ -991,7 +994,7 @@ class CORE_EXPORT LocalFrameView final
 
   bool needs_focus_on_fragment_;
 
-  Member<ElementVisibilityObserver> visibility_observer_;
+  Member<IntersectionObserver> visibility_observer_;
 
   IntRect remote_viewport_intersection_;
 

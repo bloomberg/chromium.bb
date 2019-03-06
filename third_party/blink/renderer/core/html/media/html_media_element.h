@@ -59,7 +59,6 @@ class AudioTrackList;
 class AutoplayPolicy;
 class ContentType;
 class CueTimeline;
-class ElementVisibilityObserver;
 class EnumerationHistogram;
 class Event;
 class EventQueue;
@@ -68,6 +67,8 @@ class HTMLMediaElementControlsList;
 class HTMLMediaSource;
 class HTMLSourceElement;
 class HTMLTrackElement;
+class IntersectionObserver;
+class IntersectionObserverEntry;
 class KURL;
 class MediaError;
 class MediaStreamDescriptor;
@@ -554,7 +555,8 @@ class CORE_EXPORT HTMLMediaElement
 
   EnumerationHistogram& ShowControlsHistogram() const;
 
-  void OnVisibilityChangedForLazyLoad(bool);
+  void OnIntersectionChangedForLazyLoad(
+      const HeapVector<Member<IntersectionObserverEntry>>& entries);
 
   void OnRemovedFromDocumentTimerFired(TimerBase*);
 
@@ -759,7 +761,7 @@ class CORE_EXPORT HTMLMediaElement
   Member<MediaControls> media_controls_;
   Member<HTMLMediaElementControlsList> controls_list_;
 
-  Member<ElementVisibilityObserver> lazy_load_visibility_observer_;
+  Member<IntersectionObserver> lazy_load_intersection_observer_;
 };
 
 inline bool IsHTMLMediaElement(const HTMLElement& element) {

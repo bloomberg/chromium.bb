@@ -9,13 +9,14 @@
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/dom/element_visibility_observer.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/media/autoplay_policy.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
+#include "third_party/blink/renderer/core/intersection_observer/intersection_observer.h"
+#include "third_party/blink/renderer/core/intersection_observer/intersection_observer_entry.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/network/network_state_notifier.h"
@@ -58,9 +59,9 @@ AutoplayUmaHelper* AutoplayUmaHelper::Create(HTMLMediaElement* element) {
 AutoplayUmaHelper::AutoplayUmaHelper(HTMLMediaElement* element)
     : ContextLifecycleObserver(nullptr),
       element_(element),
-      muted_video_play_method_visibility_observer_(nullptr),
+      muted_video_play_method_intersection_observer_(nullptr),
       is_visible_(false),
-      muted_video_offscreen_duration_visibility_observer_(nullptr) {
+      muted_video_offscreen_duration_intersection_observer_(nullptr) {
   element->addEventListener(event_type_names::kLoadstart, this, false);
 }
 
@@ -237,16 +238,19 @@ void AutoplayUmaHelper::DidMoveToNewDocument(Document& old_document) {
   SetContext(&element_->GetDocument());
 }
 
-void AutoplayUmaHelper::OnVisibilityChangedForMutedVideoPlayMethodBecomeVisible(
-    bool is_visible) {
-  if (!is_visible || !muted_video_play_method_visibility_observer_)
+void AutoplayUmaHelper::
+    OnIntersectionChangedForMutedVideoPlayMethodBecomeVisible(
+        const HeapVector<Member<IntersectionObserverEntry>>& entries) {
+  bool is_visible = (entries.back()->intersectionRatio() > 0);
+  if (!is_visible || !muted_video_play_method_intersection_observer_)
     return;
 
   MaybeStopRecordingMutedVideoPlayMethodBecomeVisible(true);
 }
 
-void AutoplayUmaHelper::OnVisibilityChangedForMutedVideoOffscreenDuration(
-    bool is_visible) {
+void AutoplayUmaHelper::OnIntersectionChangedForMutedVideoOffscreenDuration(
+    const HeapVector<Member<IntersectionObserverEntry>>& entries) {
+  bool is_visible = (entries.back()->intersectionRatio() > 0);
   if (is_visible == is_visible_)
     return;
 
@@ -297,28 +301,27 @@ void AutoplayUmaHelper::MaybeStartRecordingMutedVideoPlayMethodBecomeVisible() {
       !element_->IsHTMLVideoElement() || !element_->muted())
     return;
 
-  muted_video_play_method_visibility_observer_ =
-      MakeGarbageCollected<ElementVisibilityObserver>(
-          element_,
-          WTF::BindRepeating(
-              &AutoplayUmaHelper::
-                  OnVisibilityChangedForMutedVideoPlayMethodBecomeVisible,
-              WrapWeakPersistent(this)));
-  muted_video_play_method_visibility_observer_->Start();
+  muted_video_play_method_intersection_observer_ = IntersectionObserver::Create(
+      {}, {IntersectionObserver::kMinimumThreshold}, &element_->GetDocument(),
+      WTF::BindRepeating(
+          &AutoplayUmaHelper::
+              OnIntersectionChangedForMutedVideoPlayMethodBecomeVisible,
+          WrapWeakPersistent(this)));
+  muted_video_play_method_intersection_observer_->observe(element_);
   SetContext(&element_->GetDocument());
 }
 
 void AutoplayUmaHelper::MaybeStopRecordingMutedVideoPlayMethodBecomeVisible(
     bool visible) {
-  if (!muted_video_play_method_visibility_observer_)
+  if (!muted_video_play_method_intersection_observer_)
     return;
 
   DEFINE_STATIC_LOCAL(BooleanHistogram, histogram,
                       ("Media.Video.Autoplay.Muted.PlayMethod.BecomesVisible"));
 
   histogram.Count(visible);
-  muted_video_play_method_visibility_observer_->Stop();
-  muted_video_play_method_visibility_observer_ = nullptr;
+  muted_video_play_method_intersection_observer_->disconnect();
+  muted_video_play_method_intersection_observer_ = nullptr;
   MaybeUnregisterContextDestroyedObserver();
 }
 
@@ -330,19 +333,21 @@ void AutoplayUmaHelper::MaybeStartRecordingMutedVideoOffscreenDuration() {
   // Start recording muted video playing offscreen duration.
   muted_video_autoplay_offscreen_start_time_ = CurrentTimeTicks();
   is_visible_ = false;
-  muted_video_offscreen_duration_visibility_observer_ = MakeGarbageCollected<
-      ElementVisibilityObserver>(
-      element_,
-      WTF::BindRepeating(
-          &AutoplayUmaHelper::OnVisibilityChangedForMutedVideoOffscreenDuration,
-          WrapWeakPersistent(this)));
-  muted_video_offscreen_duration_visibility_observer_->Start();
+  muted_video_offscreen_duration_intersection_observer_ =
+      IntersectionObserver::Create(
+          {}, {IntersectionObserver::kMinimumThreshold},
+          &element_->GetDocument(),
+          WTF::BindRepeating(
+              &AutoplayUmaHelper::
+                  OnIntersectionChangedForMutedVideoOffscreenDuration,
+              WrapWeakPersistent(this)));
+  muted_video_offscreen_duration_intersection_observer_->observe(element_);
   element_->addEventListener(event_type_names::kPause, this, false);
   SetContext(&element_->GetDocument());
 }
 
 void AutoplayUmaHelper::MaybeStopRecordingMutedVideoOffscreenDuration() {
-  if (!muted_video_offscreen_duration_visibility_observer_)
+  if (!muted_video_offscreen_duration_intersection_observer_)
     return;
 
   if (!is_visible_) {
@@ -357,8 +362,8 @@ void AutoplayUmaHelper::MaybeStopRecordingMutedVideoOffscreenDuration() {
       muted_video_autoplay_offscreen_duration_, TimeDelta::FromMilliseconds(1),
       kMaxOffscreenDurationUma, kOffscreenDurationUmaBucketCount);
 
-  muted_video_offscreen_duration_visibility_observer_->Stop();
-  muted_video_offscreen_duration_visibility_observer_ = nullptr;
+  muted_video_offscreen_duration_intersection_observer_->disconnect();
+  muted_video_offscreen_duration_intersection_observer_ = nullptr;
   muted_video_autoplay_offscreen_duration_ = TimeDelta();
   MaybeUnregisterMediaElementPauseListener();
   MaybeUnregisterContextDestroyedObserver();
@@ -371,22 +376,22 @@ void AutoplayUmaHelper::MaybeUnregisterContextDestroyedObserver() {
 }
 
 void AutoplayUmaHelper::MaybeUnregisterMediaElementPauseListener() {
-  if (muted_video_offscreen_duration_visibility_observer_)
+  if (muted_video_offscreen_duration_intersection_observer_)
     return;
   element_->removeEventListener(event_type_names::kPause, this, false);
 }
 
 bool AutoplayUmaHelper::ShouldListenToContextDestroyed() const {
-  return muted_video_play_method_visibility_observer_ ||
-         muted_video_offscreen_duration_visibility_observer_;
+  return muted_video_play_method_intersection_observer_ ||
+         muted_video_offscreen_duration_intersection_observer_;
 }
 
 void AutoplayUmaHelper::Trace(Visitor* visitor) {
   NativeEventListener::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);
   visitor->Trace(element_);
-  visitor->Trace(muted_video_play_method_visibility_observer_);
-  visitor->Trace(muted_video_offscreen_duration_visibility_observer_);
+  visitor->Trace(muted_video_play_method_intersection_observer_);
+  visitor->Trace(muted_video_offscreen_duration_intersection_observer_);
 }
 
 }  // namespace blink

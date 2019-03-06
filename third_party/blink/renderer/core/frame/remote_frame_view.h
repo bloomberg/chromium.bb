@@ -19,8 +19,9 @@ class PaintCanvas;
 
 namespace blink {
 class CullRect;
-class ElementVisibilityObserver;
 class GraphicsContext;
+class IntersectionObserver;
+class IntersectionObserverEntry;
 class LocalFrameView;
 class RemoteFrame;
 
@@ -83,6 +84,8 @@ class RemoteFrameView final : public GarbageCollectedFinalized<RemoteFrameView>,
   // owner.
   LocalFrameView* ParentLocalRootFrameView() const;
 
+  void OnViewportIntersectionChanged(
+      const HeapVector<Member<IntersectionObserverEntry>>& entries);
   void UpdateRenderThrottlingStatus(bool hidden, bool subtree_throttled);
   bool CanThrottleRendering() const;
   void SetupRenderThrottling();
@@ -103,7 +106,7 @@ class RemoteFrameView final : public GarbageCollectedFinalized<RemoteFrameView>,
   blink::mojom::FrameVisibility visibility_ =
       blink::mojom::FrameVisibility::kRenderedInViewport;
 
-  Member<ElementVisibilityObserver> visibility_observer_;
+  Member<IntersectionObserver> visibility_observer_;
   bool subtree_throttled_ = false;
   bool hidden_for_throttling_ = false;
   IntrinsicSizingInfo intrinsic_sizing_info_;

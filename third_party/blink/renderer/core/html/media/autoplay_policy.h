@@ -14,8 +14,9 @@ namespace blink {
 
 class AutoplayUmaHelper;
 class Document;
-class ElementVisibilityObserver;
 class HTMLMediaElement;
+class IntersectionObserver;
+class IntersectionObserverEntry;
 
 // AutoplayPolicy is the class for handles autoplay logics.
 class CORE_EXPORT AutoplayPolicy final
@@ -139,7 +140,8 @@ class CORE_EXPORT AutoplayPolicy final
 
   // Called when the video visibility changes while autoplaying muted, will
   // pause the video when invisible and resume the video when visible.
-  void OnVisibilityChangedForAutoplay(bool is_visible);
+  void OnIntersectionChangedForAutoplay(
+      const HeapVector<Member<IntersectionObserverEntry>>& entries);
 
   // Returns whether the current autoplay policy is
   // kDocumentUserActivationRequired. This is a helper method for readability.
@@ -151,7 +153,7 @@ class CORE_EXPORT AutoplayPolicy final
   bool locked_pending_user_gesture_ : 1;
 
   Member<HTMLMediaElement> element_ = nullptr;
-  Member<ElementVisibilityObserver> autoplay_visibility_observer_ = nullptr;
+  Member<IntersectionObserver> autoplay_intersection_observer_ = nullptr;
 
   Member<AutoplayUmaHelper> autoplay_uma_helper_;
 

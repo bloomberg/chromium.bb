@@ -1818,7 +1818,6 @@ jumbo_source_set("unit_tests") {
     "dom/dom_implementation_test.cc",
     "dom/dom_node_ids_test.cc",
     "dom/element_test.cc",
-    "dom/element_visibility_observer_test.cc",
     "dom/events/event_path_test.cc",
     "dom/events/event_target_test.cc",
     "dom/events/listener_leak_test.cc",
