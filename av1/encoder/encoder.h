@@ -32,6 +32,7 @@
 #include "av1/encoder/context_tree.h"
 #include "av1/encoder/encodemb.h"
 #include "av1/encoder/firstpass.h"
+#include "av1/encoder/level.h"
 #include "av1/encoder/lookahead.h"
 #include "av1/encoder/mbgraph.h"
 #include "av1/encoder/mcomp.h"
@@ -997,6 +998,7 @@ typedef struct AV1_COMP {
   // frame_component_time[] are initialized to zero at beginning of each frame.
   uint64_t frame_component_time[kTimingComponents];
 #endif
+  AV1LevelInfo level_info;
 } AV1_COMP;
 
 typedef struct {

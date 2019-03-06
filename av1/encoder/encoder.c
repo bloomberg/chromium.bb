@@ -61,6 +61,7 @@
 #include "av1/encoder/firstpass.h"
 #include "av1/encoder/grain_test_vectors.h"
 #include "av1/encoder/hash_motion.h"
+#include "av1/encoder/level.h"
 #include "av1/encoder/mbgraph.h"
 #include "av1/encoder/pass2_strategy.h"
 #include "av1/encoder/picklpf.h"
@@ -2557,6 +2558,12 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
   }
 }
 
+static void init_level_info(AV1LevelInfo *level_info) {
+  av1_zero(*level_info);
+
+  level_info->level_spec.level = LEVEL_DISABLED;
+}
+
 AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
                                 BufferPool *const pool) {
   unsigned int i;
@@ -2628,6 +2635,8 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
 #endif
 
   cpi->refresh_alt_ref_frame = 0;
+
+  init_level_info(&cpi->level_info);
 
   cpi->b_calculate_psnr = CONFIG_INTERNAL_STATS;
 #if CONFIG_INTERNAL_STATS
