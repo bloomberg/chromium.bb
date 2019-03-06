@@ -85,10 +85,14 @@ class HttpHandler {
   typedef std::vector<CommandMapping> CommandMap;
 
   Command WrapToCommand(const char* name,
-                        const SessionCommand& session_command);
-  Command WrapToCommand(const char* name, const WindowCommand& window_command);
+                        const SessionCommand& session_command,
+                        bool w3c_standard_command = true);
   Command WrapToCommand(const char* name,
-                        const ElementCommand& element_command);
+                        const WindowCommand& window_command,
+                        bool w3c_standard_command = true);
+  Command WrapToCommand(const char* name,
+                        const ElementCommand& element_command,
+                        bool w3c_standard_command = true);
   void HandleCommand(const net::HttpServerRequestInfo& request,
                      const std::string& trimmed_path,
                      const HttpResponseSenderFunc& send_response_func);
