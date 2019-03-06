@@ -15,6 +15,8 @@ cr.define('nux', function() {
 
   /** @interface */
   class NtpBackgroundProxy {
+    clearBackground() {}
+
     /** @return {!Promise<!Array<!nux.NtpBackgroundData>>} */
     getBackgrounds() {}
 
@@ -30,6 +32,11 @@ cr.define('nux', function() {
 
   /** @implements {nux.NtpBackgroundProxy} */
   class NtpBackgroundProxyImpl {
+    /** @override */
+    clearBackground() {
+      return cr.sendWithPromise('clearBackground');
+    }
+
     /** @override */
     getBackgrounds() {
       return cr.sendWithPromise('getBackgrounds');

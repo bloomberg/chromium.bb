@@ -18,6 +18,7 @@ class NtpBackgroundHandler : public content::WebUIMessageHandler {
   void RegisterMessages() override;
 
   // Callbacks for JS APIs.
+  void HandleClearBackground(const base::ListValue* args);
   void HandleGetBackgrounds(const base::ListValue* args);
   void HandleSetBackground(const base::ListValue* args);
 

@@ -35,6 +35,11 @@ NtpBackgroundHandler::~NtpBackgroundHandler() {}
 
 void NtpBackgroundHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
+      "clearBackground",
+      base::BindRepeating(&NtpBackgroundHandler::HandleClearBackground,
+                          base::Unretained(this)));
+
+  web_ui()->RegisterMessageCallback(
       "getBackgrounds",
       base::BindRepeating(&NtpBackgroundHandler::HandleGetBackgrounds,
                           base::Unretained(this)));
@@ -43,6 +48,12 @@ void NtpBackgroundHandler::RegisterMessages() {
       "setBackground",
       base::BindRepeating(&NtpBackgroundHandler::HandleSetBackground,
                           base::Unretained(this)));
+}
+
+void NtpBackgroundHandler::HandleClearBackground(const base::ListValue* args) {
+  InstantService* instant_service =
+      InstantServiceFactory::GetForProfile(Profile::FromWebUI(web_ui()));
+  instant_service->SetCustomBackgroundURL(GURL(""));
 }
 
 void NtpBackgroundHandler::HandleGetBackgrounds(const base::ListValue* args) {

@@ -168,6 +168,8 @@ Polymer({
   onNextClicked_: function() {
     if (this.selectedBackground_ && this.selectedBackground_.id > -1) {
       this.ntpBackgroundProxy_.setBackground(this.selectedBackground_.id);
+    } else {
+      this.ntpBackgroundProxy_.clearBackground();
     }
     welcome.navigateToNextStep();
   },
