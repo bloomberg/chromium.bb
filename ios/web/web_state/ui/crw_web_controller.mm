@@ -222,12 +222,6 @@ const CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
 @end
 
 @implementation CRWWebControllerPendingNavigationInfo
-@synthesize referrer = _referrer;
-@synthesize MIMEType = _MIMEType;
-@synthesize navigationType = _navigationType;
-@synthesize HTTPMethod = _HTTPMethod;
-@synthesize cancelled = _cancelled;
-@synthesize hasUserGesture = _hasUserGesture;
 
 - (instancetype)init {
   if ((self = [super init])) {
@@ -922,16 +916,6 @@ GURL URLEscapedForHistory(const GURL& url) {
 
 @implementation CRWWebController
 
-@synthesize webUsageEnabled = _webUsageEnabled;
-@synthesize loadPhase = _loadPhase;
-@synthesize webProcessCrashed = _webProcessCrashed;
-@synthesize visible = _visible;
-@synthesize nativeProvider = _nativeProvider;
-@synthesize swipeRecognizerProvider = _swipeRecognizerProvider;
-@synthesize webViewProxy = _webViewProxy;
-@synthesize allowsBackForwardNavigationGestures =
-    _allowsBackForwardNavigationGestures;
-
 - (instancetype)initWithWebState:(WebStateImpl*)webState {
   self = [super init];
   if (self) {
@@ -1030,11 +1014,6 @@ GURL URLEscapedForHistory(const GURL& url) {
     @"canGoForward" : @"webViewBackForwardStateDidChange",
     @"canGoBack" : @"webViewBackForwardStateDidChange"
   };
-}
-
-// NativeControllerDelegate method, called to inform that title has changed.
-- (void)nativeContent:(id)content titleDidChange:(NSString*)title {
-  [self setNavigationItemTitle:title];
 }
 
 - (void)setNativeControllerWebUsageEnabled:(BOOL)webUsageEnabled {
@@ -2449,8 +2428,7 @@ GURL URLEscapedForHistory(const GURL& url) {
   });
 }
 
-#pragma mark -
-#pragma mark CRWWebControllerContainerViewDelegate
+#pragma mark - CRWWebControllerContainerViewDelegate
 
 - (CRWWebViewProxyImpl*)contentViewProxyForContainerView:
         (CRWWebControllerContainerView*)containerView {
@@ -2462,8 +2440,7 @@ GURL URLEscapedForHistory(const GURL& url) {
   return [self.nativeProvider nativeContentInsetForWebState:self.webState];
 }
 
-#pragma mark -
-#pragma mark CRWJSInjectionEvaluator Methods
+#pragma mark - CRWJSInjectionEvaluator Methods
 
 - (void)executeJavaScript:(NSString*)script
         completionHandler:(web::JavaScriptResultBlock)completionHandler {
@@ -2652,8 +2629,7 @@ GURL URLEscapedForHistory(const GURL& url) {
                     senderFrame:senderFrame];
 }
 
-#pragma mark -
-#pragma mark Web frames management
+#pragma mark - Web frames management
 
 - (void)frameBecameAvailableWithMessage:(WKScriptMessage*)message {
   // Validate all expected message components because any frame could falsify
@@ -2727,8 +2703,7 @@ GURL URLEscapedForHistory(const GURL& url) {
   framesManager->RemoveAllWebFrames();
 }
 
-#pragma mark -
-#pragma mark JavaScript message handlers
+#pragma mark - JavaScript message handlers
 
 - (BOOL)handleChromeSendMessage:(base::DictionaryValue*)message
                         context:(NSDictionary*)context {
@@ -3373,8 +3348,7 @@ GURL URLEscapedForHistory(const GURL& url) {
                            transition);
 }
 
-#pragma mark -
-#pragma mark WebUI
+#pragma mark - WebUI
 
 - (void)createWebUIForURL:(const GURL&)URL {
   // |CreateWebUI| will do nothing if |URL| is not a WebUI URL and then
@@ -3391,8 +3365,7 @@ GURL URLEscapedForHistory(const GURL& url) {
   _webUIManager = nil;
 }
 
-#pragma mark -
-#pragma mark Auth Challenge
+#pragma mark - Auth Challenge
 
 - (void)processAuthChallenge:(NSURLAuthenticationChallenge*)challenge
          forCertAcceptPolicy:(web::CertAcceptPolicy)policy
@@ -3469,8 +3442,7 @@ GURL URLEscapedForHistory(const GURL& url) {
                  persistence:NSURLCredentialPersistenceForSession]);
 }
 
-#pragma mark -
-#pragma mark JavaScript Dialog
+#pragma mark - JavaScript Dialog
 
 - (void)runJavaScriptDialogOfType:(web::JavaScriptDialogType)type
                  initiatedByFrame:(WKFrameInfo*)frame
@@ -3494,8 +3466,7 @@ GURL URLEscapedForHistory(const GURL& url) {
       }));
 }
 
-#pragma mark -
-#pragma mark TouchTracking
+#pragma mark - CRWTouchTrackingDelegate
 
 - (void)touched:(BOOL)touched {
   _clickInProgress = touched;
@@ -3547,8 +3518,7 @@ GURL URLEscapedForHistory(const GURL& url) {
           kMaximumDelayForUserInteractionInSeconds);
 }
 
-#pragma mark -
-#pragma mark Session Information
+#pragma mark - Session Information
 
 - (CRWSessionController*)sessionController {
   NavigationManagerImpl* navigationManager = self.navigationManagerImpl;
@@ -3591,8 +3561,7 @@ GURL URLEscapedForHistory(const GURL& url) {
     [_navigationStates removeNavigation:navigation];
 }
 
-#pragma mark -
-#pragma mark CRWWebViewScrollViewProxyObserver
+#pragma mark - CRWWebViewScrollViewProxyObserver
 
 - (void)webViewScrollViewDidZoom:
         (CRWWebViewScrollViewProxy*)webViewScrollViewProxy {
@@ -3634,9 +3603,6 @@ GURL URLEscapedForHistory(const GURL& url) {
   }
 }
 
-#pragma mark -
-#pragma mark CRWWebViewScrollViewProxyObserver
-
 // Under WKWebView, JavaScript can execute asynchronously. User can start
 // scrolling and calls to window.scrollTo executed during scrolling will be
 // treated as "during user interaction" and can cause app to go fullscreen.
@@ -3655,8 +3621,7 @@ GURL URLEscapedForHistory(const GURL& url) {
         completionHandler:nil];
 }
 
-#pragma mark -
-#pragma mark Page State
+#pragma mark - Page State
 
 - (void)recordStateInHistory {
   // Only record the state if:
@@ -3873,8 +3838,7 @@ GURL URLEscapedForHistory(const GURL& url) {
   }
 }
 
-#pragma mark -
-#pragma mark Fullscreen
+#pragma mark - Fullscreen
 
 - (void)optOutScrollsToTopForSubviews {
   NSMutableArray* stack =
@@ -3888,8 +3852,7 @@ GURL URLEscapedForHistory(const GURL& url) {
   }
 }
 
-#pragma mark -
-#pragma mark WebDelegate Calls
+#pragma mark - WebDelegate Calls
 
 - (BOOL)isMainFrameNavigationAction:(WKNavigationAction*)action {
   if (action.targetFrame) {
@@ -4334,8 +4297,7 @@ GURL URLEscapedForHistory(const GURL& url) {
   }
 }
 
-#pragma mark -
-#pragma mark WKUIDelegate Methods
+#pragma mark - WKUIDelegate Methods
 
 - (WKWebView*)webView:(WKWebView*)webView
     createWebViewWithConfiguration:(WKWebViewConfiguration*)configuration
@@ -4474,8 +4436,7 @@ GURL URLEscapedForHistory(const GURL& url) {
       previewingViewController);
 }
 
-#pragma mark -
-#pragma mark WKNavigationDelegate Methods
+#pragma mark - WKNavigationDelegate Methods
 
 - (void)webView:(WKWebView*)webView
     decidePolicyForNavigationAction:(WKNavigationAction*)action
@@ -5476,8 +5437,7 @@ GURL URLEscapedForHistory(const GURL& url) {
   [self webViewWebProcessDidCrash];
 }
 
-#pragma mark -
-#pragma mark CRWSSLStatusUpdater DataSource/Delegate Methods
+#pragma mark - CRWSSLStatusUpdaterDataSource
 
 - (void)SSLStatusUpdater:(CRWSSLStatusUpdater*)SSLStatusUpdater
     querySSLStatusForTrust:(base::ScopedCFTypeRef<SecTrustRef>)trust
@@ -5488,6 +5448,8 @@ GURL URLEscapedForHistory(const GURL& url) {
                                     completionHandler:completionHandler];
 }
 
+#pragma mark - CRWSSLStatusUpdaterDelegate
+
 - (void)SSLStatusUpdater:(CRWSSLStatusUpdater*)SSLStatusUpdater
     didChangeSSLStatusForNavigationItem:(web::NavigationItem*)navigationItem {
   web::NavigationItem* visibleItem =
@@ -5496,8 +5458,7 @@ GURL URLEscapedForHistory(const GURL& url) {
     _webStateImpl->DidChangeVisibleSecurityState();
 }
 
-#pragma mark -
-#pragma mark CRWWebContextMenuControllerDelegate methods
+#pragma mark - CRWContextMenuDelegate methods
 
 - (void)webView:(WKWebView*)webView
     handleContextMenu:(const web::ContextMenuParams&)params {
@@ -5508,8 +5469,11 @@ GURL URLEscapedForHistory(const GURL& url) {
   self.webStateImpl->HandleContextMenu(params);
 }
 
-#pragma mark -
-#pragma mark CRWNativeContentDelegate methods
+#pragma mark - CRWNativeContentDelegate methods
+
+- (void)nativeContent:(id)content titleDidChange:(NSString*)title {
+  [self setNavigationItemTitle:title];
+}
 
 - (void)nativeContent:(id)content
     handleContextMenu:(const web::ContextMenuParams&)params {
@@ -5519,8 +5483,7 @@ GURL URLEscapedForHistory(const GURL& url) {
   self.webStateImpl->HandleContextMenu(params);
 }
 
-#pragma mark -
-#pragma mark CRWSessionControllerDelegate methods
+#pragma mark - CRWSessionControllerDelegate methods
 
 - (web::NavigationItemImpl*)pendingItemForSessionController:
     (CRWSessionController*)sessionController {
@@ -5531,8 +5494,7 @@ GURL URLEscapedForHistory(const GURL& url) {
   return [_navigationStates contextForNavigation:navigation] -> GetItem();
 }
 
-#pragma mark -
-#pragma mark KVO Observation
+#pragma mark - KVO Observation
 
 - (void)observeValueForKeyPath:(NSString*)keyPath
                       ofObject:(id)object
@@ -6202,8 +6164,7 @@ GURL URLEscapedForHistory(const GURL& url) {
       allowsBackForwardNavigationGestures;
 }
 
-#pragma mark -
-#pragma mark Testing-Only Methods
+#pragma mark - Testing-Only Methods
 
 - (void)injectWebViewContentView:(CRWWebViewContentView*)webViewContentView {
   _currentURLLoadWasTrigerred = NO;
