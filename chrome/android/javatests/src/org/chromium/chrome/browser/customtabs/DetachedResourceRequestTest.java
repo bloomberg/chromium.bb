@@ -516,7 +516,7 @@ public class DetachedResourceRequestTest {
 
     private CustomTabsSessionToken prepareSession(Uri origin, CustomTabsCallback callback)
             throws Exception {
-        CustomTabsSession session = CustomTabsTestUtils.bindWithCallback(callback);
+        CustomTabsSession session = CustomTabsTestUtils.bindWithCallback(callback).session;
         Intent intent = (new CustomTabsIntent.Builder(session)).build().intent;
         CustomTabsSessionToken token = CustomTabsSessionToken.getSessionTokenFromIntent(intent);
         Assert.assertTrue(mConnection.newSession(token));
