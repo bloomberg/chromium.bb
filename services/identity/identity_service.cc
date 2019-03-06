@@ -14,12 +14,10 @@ namespace identity {
 
 IdentityService::IdentityService(IdentityManager* identity_manager,
                                  AccountTrackerService* account_tracker,
-                                 ProfileOAuth2TokenService* token_service,
                                  service_manager::mojom::ServiceRequest request)
     : service_binding_(this, std::move(request)),
       identity_manager_(identity_manager),
-      account_tracker_(account_tracker),
-      token_service_(token_service) {
+      account_tracker_(account_tracker) {
   registry_.AddInterface<mojom::IdentityAccessor>(
       base::Bind(&IdentityService::Create, base::Unretained(this)));
 }
@@ -40,7 +38,6 @@ void IdentityService::ShutDown() {
     return;
 
   identity_manager_ = nullptr;
-  token_service_ = nullptr;
   account_tracker_ = nullptr;
 }
 
@@ -54,7 +51,7 @@ void IdentityService::Create(mojom::IdentityAccessorRequest request) {
     return;
 
   IdentityAccessorImpl::Create(std::move(request), identity_manager_,
-                               account_tracker_, token_service_);
+                               account_tracker_);
 }
 
 }  // namespace identity

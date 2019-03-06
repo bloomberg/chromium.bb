@@ -85,8 +85,6 @@
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_ui_util.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate_factory.h"
@@ -1255,9 +1253,7 @@ std::unique_ptr<service_manager::Service> ProfileImpl::HandleServiceRequest(
   if (service_name == identity::mojom::kServiceName) {
     return std::make_unique<identity::IdentityService>(
         IdentityManagerFactory::GetForProfile(this),
-        AccountTrackerServiceFactory::GetForProfile(this),
-        ProfileOAuth2TokenServiceFactory::GetForProfile(this),
-        std::move(request));
+        AccountTrackerServiceFactory::GetForProfile(this), std::move(request));
   }
 
   if (service_name == prefs::mojom::kServiceName) {
