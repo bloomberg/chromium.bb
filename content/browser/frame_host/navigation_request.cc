@@ -1270,6 +1270,7 @@ void NavigationRequest::OnResponseStarted(
 
 void NavigationRequest::OnRequestFailed(
     const network::URLLoaderCompletionStatus& status) {
+  DCHECK_NE(status.error_code, net::OK);
   bool collapse_frame =
       status.extended_error_code ==
       static_cast<int>(blink::ResourceRequestBlockedReason::kCollapsedByClient);
