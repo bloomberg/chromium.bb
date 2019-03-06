@@ -215,6 +215,8 @@ jumbo_split_static_library("ui") {
     "webauthn/authenticator_request_dialog.h",
     "webui/about_ui.cc",
     "webui/about_ui.h",
+    "webui/autofill_internals_ui.cc",
+    "webui/autofill_internals_ui.h",
     "webui/chrome_web_ui_controller_factory.cc",
     "webui/chrome_web_ui_controller_factory.h",
     "webui/components_ui.cc",
