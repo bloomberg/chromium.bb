@@ -600,7 +600,7 @@ void LocalDOMWindow::DispatchMessageEventWithOriginCheck(
           sender, RedirectStatus::kNoRedirect,
           SecurityViolationReportingPolicy::kSuppressReporting)) {
     UseCounter::Count(
-        GetFrame(), WebFeature::kPostMessageIncomingWouldBeBlockedByConnectSrc);
+        document(), WebFeature::kPostMessageIncomingWouldBeBlockedByConnectSrc);
   }
 
   DispatchEvent(*event);

@@ -132,7 +132,7 @@ void DOMWindow::postMessage(v8::Isolate* isolate,
                             const WindowPostMessageOptions* options,
                             ExceptionState& exception_state) {
   LocalDOMWindow* incumbent_window = IncumbentDOMWindow(isolate);
-  UseCounter::Count(incumbent_window->GetFrame(),
+  UseCounter::Count(incumbent_window->document(),
                     WebFeature::kWindowPostMessage);
 
   Transferables transferables;

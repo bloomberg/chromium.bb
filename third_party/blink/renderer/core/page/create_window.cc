@@ -373,7 +373,8 @@ DOMWindow* CreateWindow(const String& url_string,
           ? KURL(g_empty_string)
           : entered_window_frame.GetDocument()->CompleteURL(url_string);
   if (!completed_url.IsEmpty() && !completed_url.IsValid()) {
-    UseCounter::Count(active_frame, WebFeature::kWindowOpenWithInvalidURL);
+    UseCounter::Count(incumbent_window.document(),
+                      WebFeature::kWindowOpenWithInvalidURL);
     exception_state.ThrowDOMException(
         DOMExceptionCode::kSyntaxError,
         "Unable to open a window with invalid URL '" +

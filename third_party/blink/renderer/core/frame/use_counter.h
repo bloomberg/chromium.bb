@@ -100,10 +100,6 @@ class CORE_EXPORT UseCounter {
   };
 
   // "count" sets the bit for this feature to 1. Repeated calls are ignored.
-  // Count(const LocalFrame*) is being deprecated since during a navigation it
-  // may pick the wrong DocumentLoader (will guess and avoid using the
-  // provisional document loader when both loaders are present).
-  static void Count(const LocalFrame*, WebFeature);
   static void Count(DocumentLoader*, WebFeature);
   static void Count(const Document&, WebFeature);
   static void Count(ExecutionContext*, WebFeature);

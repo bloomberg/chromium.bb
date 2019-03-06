@@ -894,10 +894,10 @@ void PointerEventManager::ElementRemoved(Element* target) {
 
 void PointerEventManager::SetPointerCapture(PointerId pointer_id,
                                             Element* target) {
-  UseCounter::Count(frame_, WebFeature::kPointerEventSetCapture);
+  UseCounter::Count(frame_->GetDocument(), WebFeature::kPointerEventSetCapture);
   if (pointer_event_factory_.IsActiveButtonsState(pointer_id)) {
     if (pointer_id != dispatching_pointer_id_) {
-      UseCounter::Count(frame_,
+      UseCounter::Count(frame_->GetDocument(),
                         WebFeature::kPointerEventSetCaptureOutsideDispatch);
     }
     pending_pointer_capture_target_.Set(pointer_id, target);

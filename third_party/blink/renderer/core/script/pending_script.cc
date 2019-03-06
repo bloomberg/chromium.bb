@@ -149,7 +149,8 @@ void PendingScript::ExecuteScriptBlock(const KURL& document_url) {
 
     // TODO(hiroshige): Also do not execute classic scripts.
     // https://crbug.com/721914
-    UseCounter::Count(frame, WebFeature::kEvaluateScriptMovedBetweenDocuments);
+    UseCounter::Count(context_document,
+                      WebFeature::kEvaluateScriptMovedBetweenDocuments);
   }
 
   Script* script = GetSource(document_url);

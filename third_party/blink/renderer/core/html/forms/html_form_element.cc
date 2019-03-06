@@ -498,8 +498,7 @@ void HTMLFormElement::ScheduleFormSubmission(FormSubmission* submission) {
   UseCounter::Count(GetDocument(), WebFeature::kFormsSubmitted);
   if (MixedContentChecker::IsMixedFormAction(GetDocument().GetFrame(),
                                              submission->Action())) {
-    UseCounter::Count(GetDocument().GetFrame(),
-                      WebFeature::kMixedContentFormsSubmitted);
+    UseCounter::Count(GetDocument(), WebFeature::kMixedContentFormsSubmitted);
   }
   if (FastHasAttribute(kDisabledAttr)) {
     UseCounter::Count(GetDocument(),
@@ -567,8 +566,7 @@ void HTMLFormElement::ParseAttribute(
                                        : attributes_.Action());
     if (MixedContentChecker::IsMixedFormAction(GetDocument().GetFrame(),
                                                action_url)) {
-      UseCounter::Count(GetDocument().GetFrame(),
-                        WebFeature::kMixedContentFormPresent);
+      UseCounter::Count(GetDocument(), WebFeature::kMixedContentFormPresent);
     }
   } else if (name == kTargetAttr) {
     attributes_.SetTarget(params.new_value);

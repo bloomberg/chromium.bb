@@ -161,8 +161,7 @@ void LayoutImage::ImageChanged(WrappedImagePtr new_image,
   // https://github.com/igrigorik/http-client-hints/blob/master/draft-grigorik-http-client-hints-01.txt#L255
   if (image_resource_->CachedImage() &&
       image_resource_->CachedImage()->HasDevicePixelRatioHeaderValue()) {
-    UseCounter::Count(&(View()->GetFrameView()->GetFrame()),
-                      WebFeature::kClientHintsContentDPR);
+    UseCounter::Count(GetDocument(), WebFeature::kClientHintsContentDPR);
     image_device_pixel_ratio_ =
         1 / image_resource_->CachedImage()->DevicePixelRatioHeaderValue();
   }
