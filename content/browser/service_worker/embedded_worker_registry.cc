@@ -43,12 +43,6 @@ std::unique_ptr<EmbeddedWorkerInstance> EmbeddedWorkerRegistry::CreateWorker(
   return worker;
 }
 
-void EmbeddedWorkerRegistry::Shutdown() {
-  for (auto it = worker_map_.begin(); it != worker_map_.end(); ++it) {
-    it->second->Stop();
-  }
-}
-
 bool EmbeddedWorkerRegistry::OnWorkerStarted(int process_id,
                                              int embedded_worker_id) {
   if (!base::ContainsKey(worker_process_map_, process_id) ||
@@ -80,9 +74,7 @@ EmbeddedWorkerRegistry::EmbeddedWorkerRegistry(
       initial_embedded_worker_id_(initial_embedded_worker_id) {
 }
 
-EmbeddedWorkerRegistry::~EmbeddedWorkerRegistry() {
-  Shutdown();
-}
+EmbeddedWorkerRegistry::~EmbeddedWorkerRegistry() = default;
 
 void EmbeddedWorkerRegistry::BindWorkerToProcess(int process_id,
                                                  int embedded_worker_id) {

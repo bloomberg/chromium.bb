@@ -46,9 +46,6 @@ class CONTENT_EXPORT EmbeddedWorkerRegistry
   std::unique_ptr<EmbeddedWorkerInstance> CreateWorker(
       ServiceWorkerVersion* owner_version);
 
-  // Stop all running workers, even if they're handling events.
-  void Shutdown();
-
   // Called by EmbeddedWorkerInstance when it starts or stops. This registry
   // keeps track of running workers.
   bool OnWorkerStarted(int process_id, int embedded_worker_id);
