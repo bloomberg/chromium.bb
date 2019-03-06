@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_MPRIS_MPRIS_SERVICE_H_
-#define COMPONENTS_MPRIS_MPRIS_SERVICE_H_
+#ifndef UI_BASE_MPRIS_MPRIS_SERVICE_H_
+#define UI_BASE_MPRIS_MPRIS_SERVICE_H_
 
 #include <string>
 
@@ -137,4 +137,4 @@ class COMPONENT_EXPORT(MPRIS) MprisService {
 
 }  // namespace mpris
 
-#endif  // COMPONENTS_MPRIS_MPRIS_SERVICE_H_
+#endif  // UI_BASE_MPRIS_MPRIS_SERVICE_H_

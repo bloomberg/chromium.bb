@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/mpris/mpris_service.h"
+#include "ui/base/mpris/mpris_service.h"
 
 #include <memory>
 
@@ -11,12 +11,12 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/dbus/dbus_thread_linux.h"
-#include "components/mpris/mpris_service_observer.h"
 #include "dbus/message.h"
 #include "dbus/mock_bus.h"
 #include "dbus/mock_exported_object.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/mpris/mpris_service_observer.h"
 
 using ::testing::_;
 using ::testing::Invoke;
