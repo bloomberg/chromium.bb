@@ -60,11 +60,7 @@ void JavaNegotiateResultWrapper::SetResult(JNIEnv* env,
 
 HttpAuthNegotiateAndroid::HttpAuthNegotiateAndroid(
     const HttpAuthPreferences* prefs)
-    : prefs_(prefs),
-      can_delegate_(false),
-      first_challenge_(true),
-      auth_token_(nullptr),
-      weak_factory_(this) {
+    : prefs_(prefs) {
   JNIEnv* env = AttachCurrentThread();
   java_authenticator_.Reset(Java_HttpNegotiateAuthenticator_create(
       env, ConvertUTF8ToJavaString(env, GetAuthAndroidNegotiateAccountType())));
@@ -136,12 +132,14 @@ int HttpAuthNegotiateAndroid::GenerateAuthToken(
       callback_task_runner, thread_safe_callback);
   Java_HttpNegotiateAuthenticator_getNextAuthToken(
       env, java_authenticator_, reinterpret_cast<intptr_t>(callback_wrapper),
-      java_spn, java_server_auth_token, can_delegate_);
+      java_spn, java_server_auth_token, can_delegate());
   return ERR_IO_PENDING;
 }
 
-void HttpAuthNegotiateAndroid::Delegate() {
-  can_delegate_ = true;
+void HttpAuthNegotiateAndroid::SetDelegation(
+    HttpAuth::DelegationType delegation_type) {
+  DCHECK_NE(delegation_type, HttpAuth::DelegationType::kByKdcPolicy);
+  can_delegate_ = delegation_type == HttpAuth::DelegationType::kUnconstrained;
 }
 
 std::string HttpAuthNegotiateAndroid::GetAuthAndroidNegotiateAccountType()

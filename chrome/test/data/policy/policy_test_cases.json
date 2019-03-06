@@ -930,11 +930,11 @@
     ]
   },
 
-  "UseKDCConstrainedDelegation": {
+  "AuthNegotiateDelegateByKdcPolicy": {
     "os": ["linux", "mac", "chromeos"],
-    "test_policy": { "UseKDCConstrainedDelegation": true },
+    "test_policy": { "AuthNegotiateDelegateByKdcPolicy": true },
     "pref_mappings": [
-      { "pref": "auth.use_kdc_constrained_delegation",
+      { "pref": "auth.negotiate_delegate_by_kdc_policy",
         "local_state": true
       }
     ]

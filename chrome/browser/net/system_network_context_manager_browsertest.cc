@@ -210,6 +210,7 @@ IN_PROC_BROWSER_TEST_F(SystemNetworkContextManagerBrowsertest, AuthParams) {
   EXPECT_EQ(false, dynamic_params->enable_negotiate_port);
   EXPECT_EQ("", dynamic_params->server_whitelist);
   EXPECT_EQ("", dynamic_params->delegate_whitelist);
+  EXPECT_FALSE(dynamic_params->delegate_by_kdc_policy);
 
   PrefService* local_state = g_browser_process->local_state();
 
@@ -220,6 +221,7 @@ IN_PROC_BROWSER_TEST_F(SystemNetworkContextManagerBrowsertest, AuthParams) {
   EXPECT_EQ(false, dynamic_params->enable_negotiate_port);
   EXPECT_EQ("", dynamic_params->server_whitelist);
   EXPECT_EQ("", dynamic_params->delegate_whitelist);
+  EXPECT_FALSE(dynamic_params->delegate_by_kdc_policy);
 
   local_state->SetBoolean(prefs::kEnableAuthNegotiatePort, true);
   dynamic_params =
@@ -228,6 +230,7 @@ IN_PROC_BROWSER_TEST_F(SystemNetworkContextManagerBrowsertest, AuthParams) {
   EXPECT_EQ(true, dynamic_params->enable_negotiate_port);
   EXPECT_EQ("", dynamic_params->server_whitelist);
   EXPECT_EQ("", dynamic_params->delegate_whitelist);
+  EXPECT_FALSE(dynamic_params->delegate_by_kdc_policy);
 
   const char kServerWhiteList[] = "foo";
   local_state->SetString(prefs::kAuthServerWhitelist, kServerWhiteList);
@@ -247,6 +250,18 @@ IN_PROC_BROWSER_TEST_F(SystemNetworkContextManagerBrowsertest, AuthParams) {
   EXPECT_EQ(true, dynamic_params->enable_negotiate_port);
   EXPECT_EQ(kServerWhiteList, dynamic_params->server_whitelist);
   EXPECT_EQ(kDelegateWhiteList, dynamic_params->delegate_whitelist);
+  EXPECT_FALSE(dynamic_params->delegate_by_kdc_policy);
+
+#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+  local_state->SetBoolean(prefs::kAuthNegotiateDelegateByKdcPolicy, true);
+  dynamic_params =
+      SystemNetworkContextManager::GetHttpAuthDynamicParamsForTesting();
+  EXPECT_EQ(true, dynamic_params->negotiate_disable_cname_lookup);
+  EXPECT_EQ(true, dynamic_params->enable_negotiate_port);
+  EXPECT_EQ(kServerWhiteList, dynamic_params->server_whitelist);
+  EXPECT_EQ(kDelegateWhiteList, dynamic_params->delegate_whitelist);
+  EXPECT_TRUE(dynamic_params->delegate_by_kdc_policy);
+#endif  // defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
 }
 
 class SystemNetworkContextManagerStubResolverBrowsertest

@@ -241,7 +241,7 @@ class NET_EXPORT_PRIVATE HttpAuthGSSAPI : public HttpNegotiateAuthSystem {
                         const std::string& channel_bindings,
                         std::string* auth_token,
                         CompletionOnceCallback callback) override;
-  void Delegate() override;
+  void SetDelegation(HttpAuth::DelegationType delegation_type) override;
 
  private:
   int GetNextSecurityToken(const std::string& spn,
@@ -254,7 +254,7 @@ class NET_EXPORT_PRIVATE HttpAuthGSSAPI : public HttpNegotiateAuthSystem {
   GSSAPILibrary* library_;
   std::string decoded_server_auth_token_;
   ScopedSecurityContext scoped_sec_context_;
-  bool can_delegate_;
+  HttpAuth::DelegationType delegation_type_ = HttpAuth::DelegationType::kNone;
 };
 
 }  // namespace net

@@ -191,7 +191,9 @@ class NetworkServiceAuthNegotiateAndroid : public net::HttpNegotiateAuthSystem {
     return net::ERR_IO_PENDING;
   }
 
-  void Delegate() override { auth_negotiate_.Delegate(); }
+  void SetDelegation(net::HttpAuth::DelegationType delegation_type) override {
+    auth_negotiate_.SetDelegation(delegation_type);
+  }
 
  private:
   void Finish(std::string* auth_token_out,
@@ -520,6 +522,8 @@ void NetworkService::ConfigureHttpAuthPrefs(
       http_auth_dynamic_params->server_whitelist);
   http_auth_preferences_.SetDelegateWhitelist(
       http_auth_dynamic_params->delegate_whitelist);
+  http_auth_preferences_.set_delegate_by_kdc_policy(
+      http_auth_dynamic_params->delegate_by_kdc_policy);
   http_auth_preferences_.set_negotiate_disable_cname_lookup(
       http_auth_dynamic_params->negotiate_disable_cname_lookup);
   http_auth_preferences_.set_negotiate_enable_port(

@@ -134,7 +134,7 @@ class NET_EXPORT_PRIVATE HttpAuthHandlerNegotiate : public HttpAuthHandler {
   int DoResolveCanonicalNameComplete(int rv);
   int DoGenerateAuthToken();
   int DoGenerateAuthTokenComplete(int rv);
-  bool CanDelegate() const;
+  HttpAuth::DelegationType GetDelegationType() const;
 
   std::unique_ptr<HttpNegotiateAuthSystem> auth_system_;
   HostResolver* const resolver_;

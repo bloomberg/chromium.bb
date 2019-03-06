@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "net/base/net_export.h"
+#include "net/http/http_auth.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -35,7 +36,14 @@ class NET_EXPORT HttpAuthPreferences {
   virtual std::string AuthAndroidNegotiateAccountType() const;
 #endif
   virtual bool CanUseDefaultCredentials(const GURL& auth_origin) const;
-  virtual bool CanDelegate(const GURL& auth_origin) const;
+  virtual HttpAuth::DelegationType GetDelegationType(
+      const GURL& auth_origin) const;
+
+  void set_delegate_by_kdc_policy(bool delegate_by_kdc_policy) {
+    delegate_by_kdc_policy_ = delegate_by_kdc_policy;
+  }
+
+  bool delegate_by_kdc_policy() const { return delegate_by_kdc_policy_; }
 
   void set_negotiate_disable_cname_lookup(bool negotiate_disable_cname_lookup) {
     negotiate_disable_cname_lookup_ = negotiate_disable_cname_lookup;
@@ -63,6 +71,7 @@ class NET_EXPORT HttpAuthPreferences {
 #endif
 
  private:
+  bool delegate_by_kdc_policy_ = false;
   bool negotiate_disable_cname_lookup_ = false;
   bool negotiate_enable_port_ = false;
 

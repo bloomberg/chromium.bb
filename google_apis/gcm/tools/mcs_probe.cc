@@ -166,7 +166,10 @@ class MCSProbeAuthPreferences : public net::HttpAuthPreferences {
   bool CanUseDefaultCredentials(const GURL& auth_origin) const override {
     return false;
   }
-  bool CanDelegate(const GURL& auth_origin) const override { return false; }
+  net::HttpAuth::DelegationType GetDelegationType(
+      const GURL& auth_origin) const override {
+    return net::HttpAuth::DelegationType::kNone;
+  }
 };
 
 class MCSProbe {

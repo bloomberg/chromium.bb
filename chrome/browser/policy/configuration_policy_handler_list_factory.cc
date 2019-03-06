@@ -327,8 +327,8 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     policy_prefs::kSafeSitesFilterBehavior,
     base::Value::Type::INTEGER},
 #if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
-  { key::kUseKDCConstrainedDelegation,
-    prefs::kUseKDCConstrainedDelegation,
+  { key::kAuthNegotiateDelegateByKdcPolicy,
+    prefs::kAuthNegotiateDelegateByKdcPolicy,
     base::Value::Type::BOOLEAN },
 #endif  // defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
 #if defined(OS_POSIX)
