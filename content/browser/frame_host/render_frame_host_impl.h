@@ -835,7 +835,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // waiting to commit in this RenderFrameHost.
   std::set<int> GetNavigationEntryIdsPendingCommit();
 
-  void DidCommitProvisionalLoadForTesting(
+  void DidCommitNavigationForTesting(
+      NavigationRequest* navigation_request,
       std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params> params,
       mojom::DidCommitProvisionalLoadInterfaceParamsPtr interface_params);
 
@@ -875,6 +876,26 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void VisibilityChanged(blink::mojom::FrameVisibility) override;
 
   blink::mojom::FrameVisibility visibility() const { return visibility_; }
+
+  // A CommitCallbackInterceptor is used to modify parameters for or cancel a
+  // DidCommitNavigation call in tests.
+  // WillProcessDidCommitNavigation will be run right after entering a
+  // navigation callback and if returning false, will return straight away.
+  class CommitCallbackInterceptor {
+   public:
+    CommitCallbackInterceptor() {}
+    virtual ~CommitCallbackInterceptor() {}
+
+    virtual bool WillProcessDidCommitNavigation(
+        NavigationRequest* navigation_request,
+        ::FrameHostMsg_DidCommitProvisionalLoad_Params* params,
+        mojom::DidCommitProvisionalLoadInterfaceParamsPtr*
+            interface_params) = 0;
+  };
+
+  // Sets the specified |interceptor|.
+  void SetCommitCallbackInterceptorForTesting(
+      CommitCallbackInterceptor* interceptor);
 
  protected:
   friend class RenderFrameHostFactory;
@@ -1506,6 +1527,13 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // loaded state) to determine the new state.
   void UpdateFrameFrozenState();
 
+  // Runs interception set up in testing code, if any.
+  // Returns true if we should proceed to the Commit callback, false otherwise.
+  bool MaybeInterceptCommitCallback(
+      NavigationRequest* navigation_request,
+      FrameHostMsg_DidCommitProvisionalLoad_Params* validated_params,
+      mojom::DidCommitProvisionalLoadInterfaceParamsPtr* interface_params);
+
   // For now, RenderFrameHosts indirectly keep RenderViewHosts alive via a
   // refcount that calls Shutdown when it reaches zero.  This allows each
   // RenderFrameHostManager to just care about RenderFrameHosts, while ensuring
@@ -1984,6 +2012,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // in the navigation commit. Setting the value should be based only on
   // browser side state as this value is used in security checks.
   bool is_mhtml_document_ = false;
+
+  // Used to intercept DidCommit* calls in tests.
+  CommitCallbackInterceptor* commit_callback_interceptor_;
 
   // NOTE: This must be the last member.
   base::WeakPtrFactory<RenderFrameHostImpl> weak_ptr_factory_;

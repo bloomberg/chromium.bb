@@ -50,7 +50,7 @@
 #include "content/shell/browser/shell_download_manager_delegate.h"
 #include "content/shell/browser/shell_network_delegate.h"
 #include "content/test/content_browser_test_utils_internal.h"
-#include "content/test/frame_host_interceptor.h"
+#include "content/test/did_commit_navigation_interceptor.h"
 #include "ipc/ipc_security_test_util.h"
 #include "net/base/filename_util.h"
 #include "net/base/load_flags.h"
@@ -65,10 +65,11 @@ namespace content {
 
 namespace {
 
-class InterceptAndCancelDidCommitProvisionalLoad : public FrameHostInterceptor {
+class InterceptAndCancelDidCommitProvisionalLoad
+    : public DidCommitNavigationInterceptor {
  public:
   explicit InterceptAndCancelDidCommitProvisionalLoad(WebContents* web_contents)
-      : FrameHostInterceptor(web_contents) {}
+      : DidCommitNavigationInterceptor(web_contents) {}
   ~InterceptAndCancelDidCommitProvisionalLoad() override {}
 
   void Wait(size_t number_of_messages) {
@@ -76,6 +77,10 @@ class InterceptAndCancelDidCommitProvisionalLoad : public FrameHostInterceptor {
       loop_.reset(new base::RunLoop);
       loop_->Run();
     }
+  }
+
+  const std::vector<NavigationRequest*>& intercepted_navigations() const {
+    return intercepted_navigations_;
   }
 
   const std::vector<::FrameHostMsg_DidCommitProvisionalLoad_Params>&
@@ -99,11 +104,13 @@ class InterceptAndCancelDidCommitProvisionalLoad : public FrameHostInterceptor {
   }
 
  protected:
-  bool WillDispatchDidCommitProvisionalLoad(
+  bool WillProcessDidCommitNavigation(
       RenderFrameHost* render_frame_host,
+      NavigationRequest* navigation_request,
       ::FrameHostMsg_DidCommitProvisionalLoad_Params* params,
       mojom::DidCommitProvisionalLoadInterfaceParamsPtr* interface_params)
       override {
+    intercepted_navigations_.push_back(navigation_request);
     intercepted_messages_.push_back(*params);
     intercepted_requests_.push_back(
         std::move((*interface_params)->interface_provider_request));
@@ -117,6 +124,9 @@ class InterceptAndCancelDidCommitProvisionalLoad : public FrameHostInterceptor {
     return false;
   }
 
+  // Note: Do not dereference the intercepted_navigations_, they are used as
+  // indices in the RenderFrameHostImpl and not for themselves.
+  std::vector<NavigationRequest*> intercepted_navigations_;
   std::vector<::FrameHostMsg_DidCommitProvisionalLoad_Params>
       intercepted_messages_;
   std::vector<::service_manager::mojom::InterfaceProviderRequest>
@@ -1209,7 +1219,9 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
   // 6) The browser receives the first DidCommitProvisionalLoad message. This
   //    should not delete the second navigation. This is the end of the first
   //    navigation.
-  render_frame_host->DidCommitProvisionalLoadForTesting(
+  ASSERT_GE(interceptor.intercepted_navigations().size(), 1u);
+  render_frame_host->DidCommitNavigationForTesting(
+      interceptor.intercepted_navigations()[0],
       std::make_unique<::FrameHostMsg_DidCommitProvisionalLoad_Params>(
           interceptor.intercepted_messages()[0]),
       mojom::DidCommitProvisionalLoadInterfaceParams::New(
@@ -1225,7 +1237,8 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
   //    end of the second navigation.
   interceptor.Wait(2);
   EXPECT_EQ(2u, interceptor.intercepted_messages().size());
-  render_frame_host->DidCommitProvisionalLoadForTesting(
+  render_frame_host->DidCommitNavigationForTesting(
+      interceptor.intercepted_navigations()[1],
       std::make_unique<::FrameHostMsg_DidCommitProvisionalLoad_Params>(
           interceptor.intercepted_messages()[1]),
       mojom::DidCommitProvisionalLoadInterfaceParams::New(

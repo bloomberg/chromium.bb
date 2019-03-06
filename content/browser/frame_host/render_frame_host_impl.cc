@@ -775,6 +775,7 @@ RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
       keep_alive_timeout_(base::TimeDelta::FromSeconds(30)),
       subframe_unload_timeout_(base::TimeDelta::FromMilliseconds(
           RenderViewHostImpl::kUnloadTimeoutMS)),
+      commit_callback_interceptor_(nullptr),
       weak_ptr_factory_(this) {
   frame_tree_->AddRenderViewHostRef(render_view_host_);
   GetProcess()->AddRoute(routing_id_, this);
@@ -1004,10 +1005,12 @@ const base::UnguessableToken& RenderFrameHostImpl::GetOverlayRoutingToken() {
   return *overlay_routing_token_;
 }
 
-void RenderFrameHostImpl::DidCommitProvisionalLoadForTesting(
+void RenderFrameHostImpl::DidCommitNavigationForTesting(
+    NavigationRequest* navigation_request,
     std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params> params,
     mojom::DidCommitProvisionalLoadInterfaceParamsPtr interface_params) {
-  DidCommitProvisionalLoad(std::move(params), std::move(interface_params));
+  DidCommitNavigation(navigation_request, std::move(params),
+                      std::move(interface_params));
 }
 
 void RenderFrameHostImpl::AudioContextPlaybackStarted(int audio_context_id) {
@@ -2152,8 +2155,12 @@ void RenderFrameHostImpl::DidCommitProvisionalLoad(
     std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
         validated_params,
     mojom::DidCommitProvisionalLoadInterfaceParamsPtr interface_params) {
-  DidCommitNavigation(nullptr /* committing_navigation_request */,
-                      std::move(validated_params), std::move(interface_params));
+  if (MaybeInterceptCommitCallback(nullptr, validated_params.get(),
+                                   &interface_params)) {
+    DidCommitNavigation(nullptr /* committing_navigation_request */,
+                        std::move(validated_params),
+                        std::move(interface_params));
+  }
 }
 
 void RenderFrameHostImpl::DidCommitPerNavigationMojoInterfaceNavigation(
@@ -2163,8 +2170,12 @@ void RenderFrameHostImpl::DidCommitPerNavigationMojoInterfaceNavigation(
     mojom::DidCommitProvisionalLoadInterfaceParamsPtr interface_params) {
   DCHECK(committing_navigation_request);
   committing_navigation_request->IgnoreCommitInterfaceDisconnection();
-  DidCommitNavigation(committing_navigation_request,
-                      std::move(validated_params), std::move(interface_params));
+  if (MaybeInterceptCommitCallback(committing_navigation_request,
+                                   validated_params.get(), &interface_params)) {
+    DidCommitNavigation(committing_navigation_request,
+                        std::move(validated_params),
+                        std::move(interface_params));
+  }
 }
 
 void RenderFrameHostImpl::DidCommitSameDocumentNavigation(
@@ -3075,6 +3086,14 @@ void RenderFrameHostImpl::VisibilityChanged(
     blink::mojom::FrameVisibility visibility) {
   visibility_ = visibility;
   UpdateFrameFrozenState();
+}
+
+void RenderFrameHostImpl::SetCommitCallbackInterceptorForTesting(
+    CommitCallbackInterceptor* interceptor) {
+  // This DCHECK's aims to avoid unexpected replacement of an interceptor.
+  // If this becomes a legitimate use case, feel free to remove.
+  DCHECK(!commit_callback_interceptor_ || !interceptor);
+  commit_callback_interceptor_ = interceptor;
 }
 
 void RenderFrameHostImpl::OnDidBlockFramebust(const GURL& url) {
@@ -6632,6 +6651,17 @@ void RenderFrameHostImpl::UpdateFrameFrozenState() {
   } else {
     frame_->SetLifecycleState(blink::mojom::FrameLifecycleState::kRunning);
   }
+}
+
+bool RenderFrameHostImpl::MaybeInterceptCommitCallback(
+    NavigationRequest* navigation_request,
+    FrameHostMsg_DidCommitProvisionalLoad_Params* validated_params,
+    mojom::DidCommitProvisionalLoadInterfaceParamsPtr* interface_params) {
+  if (commit_callback_interceptor_) {
+    return commit_callback_interceptor_->WillProcessDidCommitNavigation(
+        navigation_request, validated_params, interface_params);
+  }
+  return true;
 }
 
 }  // namespace content

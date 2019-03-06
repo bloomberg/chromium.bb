@@ -65,7 +65,7 @@
 #include "content/shell/browser/shell_download_manager_delegate.h"
 #include "content/shell/common/shell_switches.h"
 #include "content/test/content_browser_test_utils_internal.h"
-#include "content/test/frame_host_interceptor.h"
+#include "content/test/did_commit_navigation_interceptor.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -6973,11 +6973,12 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 // renderer has committed a same-process and cross-origin navigation to the
 // given |url|, but before the browser side has had a chance to process the
 // DidCommitProvisionalLoad message.
-class HistoryNavigationBeforeCommitInjector : public FrameHostInterceptor {
+class HistoryNavigationBeforeCommitInjector
+    : public DidCommitNavigationInterceptor {
  public:
   HistoryNavigationBeforeCommitInjector(WebContentsImpl* web_contents,
                                         const GURL& url)
-      : FrameHostInterceptor(web_contents),
+      : DidCommitNavigationInterceptor(web_contents),
         did_trigger_history_navigation_(false),
         url_(url) {}
   ~HistoryNavigationBeforeCommitInjector() override {}
@@ -6987,9 +6988,10 @@ class HistoryNavigationBeforeCommitInjector : public FrameHostInterceptor {
   }
 
  private:
-  // FrameHostInterceptor:
-  bool WillDispatchDidCommitProvisionalLoad(
+  // DidCommitNavigationInterceptor:
+  bool WillProcessDidCommitNavigation(
       RenderFrameHost* render_frame_host,
+      NavigationRequest* navigation_request,
       ::FrameHostMsg_DidCommitProvisionalLoad_Params* params,
       mojom::DidCommitProvisionalLoadInterfaceParamsPtr* interface_params)
       override {

@@ -14,7 +14,7 @@
 
 namespace content {
 
-// Responsible for intercepting DidCommitProvisionalLoad's being disptached to
+// Responsible for intercepting mojom::FrameHost messages being disptached to
 // a given RenderFrameHostImpl.
 class FrameHostInterceptor::FrameAgent
     : public mojom::FrameHostInterceptorForTesting {
@@ -38,17 +38,6 @@ class FrameHostInterceptor::FrameAgent
 
   // mojom::FrameHostInterceptorForTesting:
   FrameHost* GetForwardingInterface() override { return impl_; }
-
-  void DidCommitProvisionalLoad(
-      std::unique_ptr<::FrameHostMsg_DidCommitProvisionalLoad_Params> params,
-      mojom::DidCommitProvisionalLoadInterfaceParamsPtr interface_params)
-      override {
-    if (interceptor_->WillDispatchDidCommitProvisionalLoad(rfhi_, params.get(),
-                                                           &interface_params)) {
-      GetForwardingInterface()->DidCommitProvisionalLoad(
-          std::move(params), std::move(interface_params));
-    }
-  }
 
   void BeginNavigation(
       const CommonNavigationParams& common_params,
@@ -85,13 +74,6 @@ FrameHostInterceptor::FrameHostInterceptor(WebContents* web_contents)
 }
 
 FrameHostInterceptor::~FrameHostInterceptor() = default;
-
-bool FrameHostInterceptor::WillDispatchDidCommitProvisionalLoad(
-    RenderFrameHost* render_frame_host,
-    ::FrameHostMsg_DidCommitProvisionalLoad_Params* params,
-    mojom::DidCommitProvisionalLoadInterfaceParamsPtr* interface_params) {
-  return true;
-}
 
 bool FrameHostInterceptor::WillDispatchBeginNavigation(
     RenderFrameHost* render_frame_host,

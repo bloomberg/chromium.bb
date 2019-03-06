@@ -220,6 +220,8 @@ jumbo_static_library("test_support") {
     "content_browser_sanity_checker.h",
     "content_test_suite.cc",
     "content_test_suite.h",
+    "did_commit_navigation_interceptor.cc",
+    "did_commit_navigation_interceptor.h",
     "dwrite_font_fake_sender_win.cc",
     "dwrite_font_fake_sender_win.h",
     "fake_compositor_dependencies.cc",
