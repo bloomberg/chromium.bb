@@ -93,6 +93,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/session_manager/core/session_manager.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/user.h"
@@ -1288,6 +1289,11 @@ void SigninScreenHandler::HandleAccountPickerReady() {
   WallpaperControllerClient::Get()->IsWallpaperBlurred(
       base::BindOnce(&SigninScreenHandler::OnWallpaperBlurChanged,
                      weak_factory_.GetWeakPtr()));
+
+  // This updates post-OOBE shelf UI. Changes the color of shelf buttons and
+  // displays additional buttons that should only be shown in the login screen.
+  session_manager::SessionManager::Get()->SetSessionState(
+      session_manager::SessionState::LOGIN_PRIMARY);
 
   if (delegate_)
     delegate_->OnSigninScreenReady();
