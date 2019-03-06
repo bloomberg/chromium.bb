@@ -86,6 +86,7 @@ CONTENT_EXPORT extern const base::Feature kPaymentRequestHasEnrolledInstrument;
 CONTENT_EXPORT extern const base::Feature kPdfIsolation;
 CONTENT_EXPORT extern const base::Feature kPerNavigationMojoInterface;
 CONTENT_EXPORT extern const base::Feature kPepper3DImageChromium;
+CONTENT_EXPORT extern const base::Feature kPrioritizeBootstrapTasks;
 CONTENT_EXPORT extern const base::Feature
     kProcessSharingWithStrictSiteInstances;
 CONTENT_EXPORT extern const base::Feature kPurgeAndSuspend;

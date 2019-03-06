@@ -77,6 +77,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &features::kOverscrollHistoryNavigation,
     &features::kPermissionDelegation,
     &features::kPredictivePrefetchingAllowedOnAllConnectionTypes,
+    &features::kPrioritizeBootstrapTasks,
     &features::kServiceWorkerPaymentApps,
     &features::kShowTrustedPublisherURL,
     &features::kSoundContentSetting,

@@ -78,6 +78,7 @@ public class FeatureUtilities {
     private static Boolean sIsAdaptiveToolbarEnabled;
     private static Boolean sShouldInflateToolbarOnBackgroundThread;
     private static Boolean sIsNightModeAvailable;
+    private static Boolean sShouldPrioritizeBootstrapTasks;
 
     private static Boolean sDownloadAutoResumptionEnabledInNative;
 
@@ -195,6 +196,7 @@ public class FeatureUtilities {
         cacheInflateToolbarOnBackgroundThread();
         cacheNightModeAvailable();
         cacheDownloadAutoResumptionEnabledInNative();
+        cachePrioritizeBootstrapTasks();
 
         // Propagate DONT_PREFETCH_LIBRARIES and REACHED_CODE_PROFILER feature values to
         // LibraryLoader. This can't be done in LibraryLoader itself because it lives in //base and
@@ -517,6 +519,30 @@ public class FeatureUtilities {
      */
     public static boolean isNoTouchModeEnabled() {
         return CommandLine.getInstance().hasSwitch(ChromeSwitches.NO_TOUCH_MODE);
+    }
+
+    /**
+     * Cache whether or not bootstrap tasks should be prioritized so on next startup, the value
+     * can be made available immediately.
+     */
+    public static void cachePrioritizeBootstrapTasks() {
+        ChromePreferenceManager.getInstance().writeBoolean(
+                ChromePreferenceManager.PRIORITIZE_BOOTSTRAP_TASKS_KEY,
+                ChromeFeatureList.isEnabled(ChromeFeatureList.PRIORITIZE_BOOTSTRAP_TASKS));
+    }
+
+    /**
+     * @return Whether or not bootstrap tasks should be prioritized (i.e. bootstrap task
+     *         prioritization experiment is enabled).
+     */
+    public static boolean shouldPrioritizeBootstrapTasks() {
+        if (sShouldPrioritizeBootstrapTasks == null) {
+            ChromePreferenceManager prefManager = ChromePreferenceManager.getInstance();
+
+            sShouldPrioritizeBootstrapTasks = prefManager.readBoolean(
+                    ChromePreferenceManager.PRIORITIZE_BOOTSTRAP_TASKS_KEY, false);
+        }
+        return sShouldPrioritizeBootstrapTasks;
     }
 
     private static native void nativeSetCustomTabVisible(boolean visible);
