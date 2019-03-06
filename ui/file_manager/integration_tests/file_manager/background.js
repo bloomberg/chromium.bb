@@ -452,3 +452,20 @@ async function createShortcut(appId, directoryName) {
   await remoteCall.waitForElement(
       appId, `.tree-item[label="${directoryName}"]`);
 }
+
+/**
+ * Expands a tree item by clicking on its expand icon.
+ *
+ * @param {string} appId Files app windowId.
+ * @param {string} treeItem Query to the tree item that should be expanded.
+ * @return {Promise} Promise fulfilled on success.
+ */
+async function expandTreeItem(appId, treeItem) {
+  const expandIcon = treeItem + '> .tree-row[has-children=true] > .expand-icon';
+  await remoteCall.waitForElement(appId, expandIcon);
+  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
+      'fakeMouseClick', appId, [expandIcon]));
+
+  const expandedSubtree = treeItem + '> .tree-children[expanded]';
+  await remoteCall.waitForElement(appId, expandedSubtree);
+}
