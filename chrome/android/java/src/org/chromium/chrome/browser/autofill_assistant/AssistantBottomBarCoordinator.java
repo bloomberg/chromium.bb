@@ -32,6 +32,7 @@ class AssistantBottomBarCoordinator {
     private static final int BOTTOM_BAR_WITHOUT_INDICATOR_PADDING_TOP_DP = 16;
 
     private final ViewGroup mBottomBarView;
+    private final ViewGroup mBottomBarContainerView;
     private final View mSwipeIndicatorView;
     private final BottomSheetBehavior mBottomBarBehavior;
 
@@ -47,6 +48,8 @@ class AssistantBottomBarCoordinator {
 
     AssistantBottomBarCoordinator(Context context, View assistantView, AssistantModel model) {
         mBottomBarView = assistantView.findViewById(R.id.autofill_assistant_bottombar);
+        mBottomBarContainerView =
+                mBottomBarView.findViewById(R.id.autofill_assistant_bottombar_container);
         mSwipeIndicatorView = mBottomBarView.findViewById(R.id.swipe_indicator);
         mBottomBarBehavior = BottomSheetBehavior.from(mBottomBarView);
 
@@ -66,12 +69,10 @@ class AssistantBottomBarCoordinator {
         mActionsCoordinator = new AssistantCarouselCoordinator(context, model.getActionsModel());
 
         // Add child views to bottom bar container.
-        ViewGroup bottomBarContainer =
-                mBottomBarView.findViewById(R.id.autofill_assistant_bottombar_container);
-        bottomBarContainer.addView(mDetailsCoordinator.getView());
-        bottomBarContainer.addView(mPaymentRequestCoordinator.getView());
-        bottomBarContainer.addView(mSuggestionsCoordinator.getView());
-        bottomBarContainer.addView(mActionsCoordinator.getView());
+        mBottomBarContainerView.addView(mDetailsCoordinator.getView());
+        mBottomBarContainerView.addView(mPaymentRequestCoordinator.getView());
+        mBottomBarContainerView.addView(mSuggestionsCoordinator.getView());
+        mBottomBarContainerView.addView(mActionsCoordinator.getView());
 
         // We set the horizontal margins of the details and payment request. We don't set a padding
         // to the container as we want the carousels children to be scrolled at the limit of the
@@ -86,6 +87,13 @@ class AssistantBottomBarCoordinator {
      */
     public ViewGroup getView() {
         return mBottomBarView;
+    }
+
+    /**
+     * Returns the view container inside the bottom bar view.
+     */
+    public ViewGroup getContainerView() {
+        return mBottomBarContainerView;
     }
 
     /**

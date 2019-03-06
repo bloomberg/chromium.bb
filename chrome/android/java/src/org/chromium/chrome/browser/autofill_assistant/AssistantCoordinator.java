@@ -107,7 +107,7 @@ class AssistantCoordinator {
         // Disable swiping for the onboarding because it interferes with letting the user scroll
         // the onboarding contents.
         mBottomBarCoordinator.allowSwipingBottomSheet(false);
-        AssistantOnboardingCoordinator.show(mActivity, mBottomBarCoordinator.getView())
+        AssistantOnboardingCoordinator.show(mActivity, mBottomBarCoordinator.getContainerView())
                 .then(accepted -> {
                     mBottomBarCoordinator.allowSwipingBottomSheet(true);
                     if (!accepted) {
