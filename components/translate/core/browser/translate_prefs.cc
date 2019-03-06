@@ -462,8 +462,10 @@ void TranslatePrefs::UnblockLanguage(const std::string& input_language) {
 
   std::string translate_language = input_language;
   translate::ToTranslateLanguageSynonym(&translate_language);
-
-  RemoveValueFromBlacklist(kPrefTranslateBlockedLanguages, translate_language);
+  if (GetListSize(kPrefTranslateBlockedLanguages) > 1) {
+    RemoveValueFromBlacklist(kPrefTranslateBlockedLanguages,
+                             translate_language);
+  }
 }
 
 bool TranslatePrefs::IsSiteBlacklisted(const std::string& site) const {
@@ -547,7 +549,7 @@ void TranslatePrefs::RemoveLanguagePairFromWhitelist(
 }
 
 bool TranslatePrefs::HasBlockedLanguages() const {
-  return !IsListEmpty(kPrefTranslateBlockedLanguages);
+  return GetListSize(kPrefTranslateBlockedLanguages) != 0;
 }
 
 void TranslatePrefs::ClearBlockedLanguages() {
@@ -938,9 +940,9 @@ void TranslatePrefs::RemoveValueFromBlacklist(const char* pref_id,
   blacklist->Remove(string_value, nullptr);
 }
 
-bool TranslatePrefs::IsListEmpty(const char* pref_id) const {
+size_t TranslatePrefs::GetListSize(const char* pref_id) const {
   const base::ListValue* blacklist = prefs_->GetList(pref_id);
-  return (blacklist == nullptr || blacklist->empty());
+  return blacklist == nullptr ? 0 : blacklist->GetList().size();
 }
 
 bool TranslatePrefs::IsDictionaryEmpty(const char* pref_id) const {

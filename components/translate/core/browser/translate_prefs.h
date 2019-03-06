@@ -236,9 +236,6 @@ class TranslatePrefs {
   void RemoveLanguagePairFromWhitelist(const std::string& original_language,
                                        const std::string& target_language);
 
-  // Will return true if at least one language has been blacklisted.
-  bool HasBlockedLanguages() const;
-
   // Will return true if at least one site has been blacklisted.
   bool HasBlacklistedSites() const;
 
@@ -352,6 +349,9 @@ class TranslatePrefs {
   // Updates the language list of the language settings.
   void UpdateLanguageList(const std::vector<std::string>& languages);
 
+  // Will return true if at least one language has been blocked.
+  bool HasBlockedLanguages() const;
+
   // Merges two language sets to migrate to the language setting UI.
   static void CreateBlockedLanguages(
       std::vector<std::string>* blocked_languages,
@@ -361,12 +361,15 @@ class TranslatePrefs {
   void ClearBlockedLanguages();
   void ClearBlacklistedSites();
   void ClearWhitelistedLanguagePairs();
+
+  // |pref_id| is the name of a list pref.
   bool IsValueBlacklisted(const char* pref_id, const std::string& value) const;
   void BlacklistValue(const char* pref_id, const std::string& value);
   void RemoveValueFromBlacklist(const char* pref_id, const std::string& value);
   bool IsValueInList(const base::ListValue* list,
                      const std::string& value) const;
-  bool IsListEmpty(const char* pref_id) const;
+  size_t GetListSize(const char* pref_id) const;
+
   bool IsDictionaryEmpty(const char* pref_id) const;
   // Removes from the language list any language that isn't supported as an
   // Accept-Language (it's not in kAcceptLanguageList) if and only if there
