@@ -552,6 +552,10 @@ def _CreateParser():
                           api=constants.REEXEC_API_MASTER_BUILD_ID,
                           help='cidb build id of the master build to this '
                                'slave build.')
+  group.add_remote_option('--master-buildbucket-id',
+                          api=constants.REEXEC_API_MASTER_BUILDBUCKET_ID,
+                          help='buildbucket id of the master build to this '
+                               'slave build.')
   group.add_remote_option('--mock-tree-status',
                           help='Override the tree status value that would be '
                                'returned from the the actual tree. Example '
@@ -992,6 +996,9 @@ def main(argv):
     stack.Add(_SetupConnections, options, build_config)
     retry_stats.SetupStats()
 
+    # This will be deleted in CL:1491937.
+    logging.info('master_{build_id, buildbucket_id} is %s, %s',
+                 options.master_build_id, options.master_buildbucket_id)
     timeout_display_message = None
     # For master-slave builds: Update slave's timeout using master's published
     # deadline.
