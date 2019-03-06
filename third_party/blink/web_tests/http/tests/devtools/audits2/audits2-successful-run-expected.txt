@@ -24,15 +24,14 @@ Initializing…
 Running beforePass methods
 Retrieving setup: Scripts
 Retrieving setup: CSSUsage
-Retrieving setup: Viewport
 Retrieving setup: ViewportDimensions
-Retrieving setup: ThemeColor
 Retrieving setup: Manifest
 Retrieving setup: RuntimeExceptions
 Retrieving setup: ChromeConsoleMessages
-Retrieving setup: ImageUsage
 Retrieving setup: Accessibility
+Retrieving setup: ImageElements
 Retrieving setup: LinkElements
+Retrieving setup: MetaElements
 Retrieving setup: AnchorsWithNoRelNoopener
 Retrieving setup: AppCacheManifest
 Retrieving setup: Doctype
@@ -42,10 +41,8 @@ Retrieving setup: OptimizedImages
 Retrieving setup: PasswordInputsWithPreventedPaste
 Retrieving setup: ResponseCompression
 Retrieving setup: TagsBlockingFirstPaint
-Retrieving setup: MetaDescription
 Retrieving setup: FontSize
 Retrieving setup: CrawlableLinks
-Retrieving setup: MetaRobots
 Retrieving setup: Hreflang
 Retrieving setup: EmbeddedContent
 Retrieving setup: Canonical
@@ -55,15 +52,14 @@ Getting browser version
 Running pass methods
 Retrieving in-page: Scripts
 Retrieving in-page: CSSUsage
-Retrieving in-page: Viewport
 Retrieving in-page: ViewportDimensions
-Retrieving in-page: ThemeColor
 Retrieving in-page: Manifest
 Retrieving in-page: RuntimeExceptions
 Retrieving in-page: ChromeConsoleMessages
-Retrieving in-page: ImageUsage
 Retrieving in-page: Accessibility
+Retrieving in-page: ImageElements
 Retrieving in-page: LinkElements
+Retrieving in-page: MetaElements
 Retrieving in-page: AnchorsWithNoRelNoopener
 Retrieving in-page: AppCacheManifest
 Retrieving in-page: Doctype
@@ -73,10 +69,8 @@ Retrieving in-page: OptimizedImages
 Retrieving in-page: PasswordInputsWithPreventedPaste
 Retrieving in-page: ResponseCompression
 Retrieving in-page: TagsBlockingFirstPaint
-Retrieving in-page: MetaDescription
 Retrieving in-page: FontSize
 Retrieving in-page: CrawlableLinks
-Retrieving in-page: MetaRobots
 Retrieving in-page: Hreflang
 Retrieving in-page: EmbeddedContent
 Retrieving in-page: Canonical
@@ -86,15 +80,14 @@ Retrieving devtoolsLog & network records
 Running afterPass methods
 Retrieving: Scripts
 Retrieving: CSSUsage
-Retrieving: Viewport
 Retrieving: ViewportDimensions
-Retrieving: ThemeColor
 Retrieving: Manifest
 Retrieving: RuntimeExceptions
 Retrieving: ChromeConsoleMessages
-Retrieving: ImageUsage
 Retrieving: Accessibility
+Retrieving: ImageElements
 Retrieving: LinkElements
+Retrieving: MetaElements
 Retrieving: AnchorsWithNoRelNoopener
 Retrieving: AppCacheManifest
 Retrieving: Doctype
@@ -104,10 +97,8 @@ Retrieving: OptimizedImages
 Retrieving: PasswordInputsWithPreventedPaste
 Retrieving: ResponseCompression
 Retrieving: TagsBlockingFirstPaint
-Retrieving: MetaDescription
 Retrieving: FontSize
 Retrieving: CrawlableLinks
-Retrieving: MetaRobots
 Retrieving: Hreflang
 Retrieving: EmbeddedContent
 Retrieving: Canonical
@@ -282,7 +273,7 @@ Generating results...
 
 =============== Lighthouse Results ===============
 URL: http://127.0.0.1:8000/devtools/resources/inspected-page.html
-Version: 4.0.0
+Version: 4.1.0
 
 
 accesskeys: manual
