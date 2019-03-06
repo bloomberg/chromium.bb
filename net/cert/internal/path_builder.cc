@@ -4,6 +4,7 @@
 
 #include "net/cert/internal/path_builder.h"
 
+#include <memory>
 #include <set>
 #include <unordered_set>
 
