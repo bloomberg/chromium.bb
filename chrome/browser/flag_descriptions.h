@@ -1633,6 +1633,9 @@ extern const char kHappinessTrackingSurveysForDesktopDescription[];
 extern const char kOmniboxDriveSuggestionsName[];
 extern const char kOmniboxDriveSuggestionsDescriptions[];
 
+extern const char kOmniboxDeduplicateDriveUrlsName[];
+extern const char kOmniboxDeduplicateDriveUrlsDescription[];
+
 extern const char kOmniboxExperimentalKeywordModeName[];
 extern const char kOmniboxExperimentalKeywordModeDescription[];
 
