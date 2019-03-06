@@ -244,10 +244,6 @@ bool GLImageDXGI::ScheduleOverlayPlane(
   return false;
 }
 
-void GLImageDXGI::SetColorSpace(const gfx::ColorSpace& color_space) {
-  color_space_ = color_space;
-}
-
 bool GLImageDXGI::InitializeHandle(base::win::ScopedHandle handle,
                                    uint32_t level,
                                    gfx::BufferFormat format) {

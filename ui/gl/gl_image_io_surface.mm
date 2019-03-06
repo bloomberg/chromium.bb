@@ -453,7 +453,7 @@ GLImage::Type GLImageIOSurface::GetType() const {
 void GLImageIOSurface::SetColorSpace(const gfx::ColorSpace& color_space) {
   if (color_space_ == color_space)
     return;
-  color_space_ = color_space;
+  GLImage::SetColorSpace(color_space);
 
   // Prefer to use data from DisplayICCProfiles, which will give a byte-for-byte
   // match for color spaces of the system displays. Note that DisplayICCProfiles

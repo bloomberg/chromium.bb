@@ -257,6 +257,11 @@ gfx::BufferFormat DisplayResourceProvider::GetBufferFormat(ResourceId id) {
   return BufferFormat(resource->transferable.format);
 }
 
+const gfx::ColorSpace& DisplayResourceProvider::GetColorSpace(ResourceId id) {
+  ChildResource* resource = GetResource(id);
+  return resource->transferable.color_space;
+}
+
 void DisplayResourceProvider::WaitSyncToken(ResourceId id) {
   ChildResource* resource = TryGetResource(id);
   // TODO(ericrk): We should never fail TryGetResource, but we appear to

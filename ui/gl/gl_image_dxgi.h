@@ -48,7 +48,6 @@ class GL_EXPORT GLImageDXGI : public GLImage {
                             const gfx::RectF& crop_rect,
                             bool enable_blend,
                             std::unique_ptr<gfx::GpuFence> gpu_fence) override;
-  void SetColorSpace(const gfx::ColorSpace& color_space) override;
 
   const gfx::ColorSpace& color_space() const { return color_space_; }
   Microsoft::WRL::ComPtr<IDXGIKeyedMutex> keyed_mutex() { return keyed_mutex_; }
@@ -65,7 +64,6 @@ class GL_EXPORT GLImageDXGI : public GLImage {
   ~GLImageDXGI() override;
 
   gfx::BufferFormat buffer_format_ = gfx::BufferFormat::BGRA_8888;
-  gfx::ColorSpace color_space_;
   base::win::ScopedHandle handle_;
   Microsoft::WRL::ComPtr<IDXGIKeyedMutex> keyed_mutex_;
   size_t level_ = 0;

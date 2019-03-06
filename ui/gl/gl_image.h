@@ -100,7 +100,8 @@ class GL_EXPORT GLImage : public base::RefCounted<GLImage> {
       std::unique_ptr<gfx::GpuFence> gpu_fence) = 0;
 
   // Set the color space when image is used as an overlay.
-  virtual void SetColorSpace(const gfx::ColorSpace& color_space) = 0;
+  virtual void SetColorSpace(const gfx::ColorSpace& color_space);
+  const gfx::ColorSpace& color_space() const { return color_space_; }
 
   // Flush any preceding rendering for the image.
   virtual void Flush() = 0;
@@ -139,6 +140,8 @@ class GL_EXPORT GLImage : public base::RefCounted<GLImage> {
 
  protected:
   virtual ~GLImage() {}
+
+  gfx::ColorSpace color_space_;
 
  private:
   friend class base::RefCounted<GLImage>;

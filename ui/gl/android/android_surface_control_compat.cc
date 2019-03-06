@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
+#include "ui/gfx/color_space.h"
 
 extern "C" {
 typedef struct ASurfaceTransactionStats ASurfaceTransactionStats;
@@ -33,6 +34,14 @@ enum {
 enum {
   ASURFACE_TRANSACTION_VISIBILITY_HIDE = 0,
   ASURFACE_TRANSACTION_VISIBILITY_SHOW = 1,
+};
+
+enum {
+  ADATASPACE_UNKNOWN = 0,
+  ADATASPACE_SCRGB_LINEAR = 406913024,
+  ADATASPACE_SRGB = 142671872,
+  ADATASPACE_DISPLAY_P3 = 143261696,
+  ADATASPACE_BT2020_PQ = 163971072,
 };
 
 // ASurfaceTransaction
@@ -66,6 +75,10 @@ using pASurfaceTransaction_setDamageRegion =
              ASurfaceControl* surface,
              const ARect rects[],
              uint32_t count);
+using pASurfaceTransaction_setBufferDataSpace =
+    void (*)(ASurfaceTransaction* transaction,
+             ASurfaceControl* surface,
+             uint64_t data_space);
 
 // ASurfaceTransactionStats
 using pASurfaceTransactionStats_getPresentFenceFd =
@@ -121,6 +134,7 @@ struct SurfaceControlMethods {
     LOAD_FUNCTION(main_dl_handle, ASurfaceTransaction_setGeometry);
     LOAD_FUNCTION(main_dl_handle, ASurfaceTransaction_setBufferTransparency);
     LOAD_FUNCTION(main_dl_handle, ASurfaceTransaction_setDamageRegion);
+    LOAD_FUNCTION(main_dl_handle, ASurfaceTransaction_setBufferDataSpace);
 
     LOAD_FUNCTION(main_dl_handle, ASurfaceTransactionStats_getPresentFenceFd);
     LOAD_FUNCTION(main_dl_handle, ASurfaceTransactionStats_getASurfaceControls);
@@ -150,6 +164,8 @@ struct SurfaceControlMethods {
   pASurfaceTransaction_setBufferTransparency
       ASurfaceTransaction_setBufferTransparencyFn;
   pASurfaceTransaction_setDamageRegion ASurfaceTransaction_setDamageRegionFn;
+  pASurfaceTransaction_setBufferDataSpace
+      ASurfaceTransaction_setBufferDataSpaceFn;
 
   // TransactionStats methods.
   pASurfaceTransactionStats_getPresentFenceFd
@@ -186,6 +202,21 @@ int32_t OverlayTransformToWindowTransform(gfx::OverlayTransform transform) {
   };
   NOTREACHED();
   return ANATIVEWINDOW_TRANSFORM_IDENTITY;
+}
+
+uint64_t ColorSpaceToADataSpace(const gfx::ColorSpace& color_space) {
+  if (!color_space.IsValid() || color_space == gfx::ColorSpace::CreateSRGB())
+    return ADATASPACE_SRGB;
+
+  if (color_space == gfx::ColorSpace::CreateSCRGBLinear())
+    return ADATASPACE_SCRGB_LINEAR;
+
+  if (color_space == gfx::ColorSpace::CreateDisplayP3D65())
+    return ADATASPACE_DISPLAY_P3;
+
+  // TODO(khushalsagar): Check if we can support BT2020 using
+  // ADATASPACE_BT2020_PQ.
+  return ADATASPACE_UNKNOWN;
 }
 
 SurfaceControl::TransactionStats ToTransactionStats(
@@ -246,6 +277,10 @@ bool SurfaceControl::IsSupported() {
     return false;
   }
   return SurfaceControlMethods::Get().supported;
+}
+
+bool SurfaceControl::SupportsColorSpace(const gfx::ColorSpace& color_space) {
+  return ColorSpaceToADataSpace(color_space) != ADATASPACE_UNKNOWN;
 }
 
 SurfaceControl::Surface::Surface() = default;
@@ -332,6 +367,13 @@ void SurfaceControl::Transaction::SetDamageRect(const Surface& surface,
   auto a_rect = RectToARect(rect);
   SurfaceControlMethods::Get().ASurfaceTransaction_setDamageRegionFn(
       transaction_, surface.surface(), &a_rect, 1u);
+}
+
+void SurfaceControl::Transaction::SetColorSpace(
+    const Surface& surface,
+    const gfx::ColorSpace& color_space) {
+  SurfaceControlMethods::Get().ASurfaceTransaction_setBufferDataSpaceFn(
+      transaction_, surface.surface(), ColorSpaceToADataSpace(color_space));
 }
 
 void SurfaceControl::Transaction::SetOnCompleteCb(

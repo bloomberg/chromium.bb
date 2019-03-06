@@ -9,6 +9,7 @@
 #include "components/viz/service/display_embedder/compositor_overlay_candidate_validator_android.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/gl/android/android_surface_control_compat.h"
 
 namespace viz {
 namespace {
@@ -29,6 +30,14 @@ class OverlayCandidateValidatorImpl : public OverlayCandidateValidator {
     // Only update the last candidate that was added to the list. All previous
     // overlays should have already been handled.
     auto& candidate = surfaces->back();
+    if (!gl::SurfaceControl::SupportsColorSpace(candidate.color_space)) {
+      DCHECK(!candidate.use_output_surface_for_resource)
+          << "The main overlay must only use color space supported by the "
+             "device";
+      candidate.overlay_handled = false;
+      return;
+    }
+
     candidate.display_rect =
         gfx::RectF(gfx::ToEnclosingRect(candidate.display_rect));
     candidate.overlay_handled = true;

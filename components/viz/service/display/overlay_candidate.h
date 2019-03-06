@@ -71,6 +71,8 @@ class VIZ_SERVICE_EXPORT OverlayCandidate {
   gfx::OverlayTransform transform;
   // Format of the buffer to scanout.
   gfx::BufferFormat format;
+  // ColorSpace of the buffer for scanout.
+  gfx::ColorSpace color_space;
   // Size of the resource, in pixels.
   gfx::Size resource_size_in_pixels;
   // Rect on the display to position the overlay to. Implementer must convert
