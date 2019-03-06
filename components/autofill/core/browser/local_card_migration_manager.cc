@@ -208,18 +208,24 @@ bool LocalCardMigrationManager::IsCreditCardMigrationEnabled() {
       observer_for_testing_ ||
       ::autofill::IsCreditCardUploadEnabled(
           client_->GetPrefs(), client_->GetSyncService(),
-          client_->GetIdentityManager()->GetPrimaryAccountInfo().email);
+          personal_data_manager_->GetAccountInfoForPaymentsServer().email);
 
   bool has_google_payments_account =
       (payments::GetBillingCustomerId(personal_data_manager_,
                                       payments_client_->GetPrefService()) != 0);
 
-  bool sync_feature_enabled =
-      (personal_data_manager_->GetSyncSigninState() ==
-       AutofillSyncSigninState::kSignedInAndSyncFeature);
+  AutofillSyncSigninState sync_state =
+      personal_data_manager_->GetSyncSigninState();
 
   return migration_experiment_enabled && credit_card_upload_enabled &&
-         has_google_payments_account && sync_feature_enabled;
+         has_google_payments_account &&
+         // User signed-in and turned sync on.
+         (sync_state == AutofillSyncSigninState::kSignedInAndSyncFeature ||
+          // User signed-in but not turned on sync.
+          (sync_state == AutofillSyncSigninState::
+                             kSignedInAndWalletSyncTransportEnabled &&
+           base::FeatureList::IsEnabled(
+               features::kAutofillEnableLocalCardMigrationForNonSyncUser)));
 }
 
 void LocalCardMigrationManager::OnDidGetUploadDetails(

@@ -28,6 +28,7 @@ class TestPersonalDataManager : public PersonalDataManager {
   // for various tests, whether to skip calls to uncreated databases/services,
   // or to make things easier in general to toggle.
   void OnSyncServiceInitialized(syncer::SyncService* sync_service) override;
+  AutofillSyncSigninState GetSyncSigninState() const override;
   void RecordUseOf(const AutofillDataModel& data_model) override;
   std::string SaveImportedProfile(
       const AutofillProfile& imported_profile) override;
@@ -115,6 +116,10 @@ class TestPersonalDataManager : public PersonalDataManager {
 
   void SetSyncFeatureEnabled(bool enabled) { sync_feature_enabled_ = enabled; }
 
+  void SetSyncAndSignInState(AutofillSyncSigninState sync_and_signin_state) {
+    sync_and_signin_state_ = sync_and_signin_state;
+  }
+
   void SetAccountInfoForPayments(const CoreAccountInfo& account_info) {
     account_info_ = account_info;
   }
@@ -129,6 +134,8 @@ class TestPersonalDataManager : public PersonalDataManager {
   base::Optional<bool> autofill_credit_card_enabled_;
   base::Optional<bool> autofill_wallet_import_enabled_;
   bool sync_feature_enabled_ = false;
+  AutofillSyncSigninState sync_and_signin_state_ =
+      AutofillSyncSigninState::kSignedInAndSyncFeature;
   bool sync_service_initialized_ = false;
   CoreAccountInfo account_info_;
 
