@@ -6,6 +6,7 @@
 // inside a macro to generate values. The following line silences a
 // presubmit warning that would otherwise be triggered by this:
 // no-include-guard-because-multiply-included
+// NOLINT(build/header_guard)
 
 // This file contains the list of QUIC protocol flags.
 
