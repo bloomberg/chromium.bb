@@ -132,10 +132,6 @@ static void SetActiveTopLevelFrame(AtkObject* new_top_level_frame) {
   SetWeakGPtrToAtkObject(&g_active_top_level_frame, new_top_level_frame);
 }
 
-static bool IsSentenceEndingPunctuation(wchar_t character) {
-  return character == '.' || character == '!' || character == '?';
-}
-
 }  // namespace
 
 //
@@ -1040,22 +1036,6 @@ static char* AXPlatformNodeAuraLinuxGetTextWithBoundaryType(
   size_t end_offset = static_cast<int>(FindAccessibleTextBoundary(
       text, unused_line_start_offsets, boundary_type, offset,
       FORWARDS_DIRECTION, ax::mojom::TextAffinity::kDownstream));
-
-  // TODO(mrobinson): For the sentence boundary FindAccessibleTextBoundary
-  // doesn't quite return the string fragment that ATK expects. Instead of
-  // returning "A full sentence. " it will return " A full sentence" It's
-  // likely that this behavior isn't correct for other platforms as well, so we
-  // should verify that, correct FindAccessibleTextBoundary, and remove this
-  // code that fixes up the offsets.
-  if (boundary_type == SENTENCE_BOUNDARY) {
-    while (start_offset < end_offset &&
-           base::IsUnicodeWhitespace(text[start_offset]))
-      start_offset++;
-    while (end_offset < text.size() &&
-           (IsSentenceEndingPunctuation(text[end_offset]) ||
-            base::IsUnicodeWhitespace(text[end_offset])))
-      end_offset++;
-  }
 
   *start_offset_ptr = obj->UTF16ToUnicodeOffsetInText(start_offset);
   *end_offset_ptr = obj->UTF16ToUnicodeOffsetInText(end_offset);
