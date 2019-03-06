@@ -5,6 +5,8 @@
 #ifndef FUCHSIA_RUNNERS_CAST_CAST_COMPONENT_H_
 #define FUCHSIA_RUNNERS_CAST_CAST_COMPONENT_H_
 
+#include <fuchsia/modular/cpp/fidl.h>
+#include <fuchsia/sys/cpp/fidl.h>
 #include <lib/fidl/cpp/binding.h>
 #include <memory>
 
@@ -42,6 +44,9 @@ class CastComponent : public WebComponent,
   NamedMessagePortConnector connector_;
   std::unique_ptr<CastChannelBindings> cast_channel_;
   QueryableDataBindings queryable_data_;
+
+  fuchsia::sys::ServiceProviderPtr agent_services_;
+  fuchsia::modular::AgentControllerPtr agent_controller_;
 
   fidl::Binding<chromium::web::NavigationEventObserver>
       navigation_observer_binding_;

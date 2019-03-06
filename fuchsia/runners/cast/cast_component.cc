@@ -16,6 +16,8 @@
 
 namespace {
 constexpr int kBindingsFailureExitCode = 129;
+const char kCastAgentPackageUrl[] =
+    "fuchsia-pkg://fuchsia.com/cast_agent#meta/cast_agent.cmx";
 }  // namespace
 
 CastComponent::CastComponent(
@@ -31,11 +33,23 @@ CastComponent::CastComponent(
       navigation_observer_binding_(this) {
   base::AutoReset<bool> constructor_active_reset(&constructor_active_, true);
 
+  // Fetch the ComponentContext for this instance.
+  fuchsia::modular::ComponentContextPtr component_context;
+  startup_context()->incoming_services()->ConnectToService(
+      component_context.NewRequest());
+
+  // Request to connect to the Cast agent.
+  component_context->ConnectToAgent(kCastAgentPackageUrl,
+                                    agent_services_.NewRequest(),
+                                    agent_controller_.NewRequest());
+
+  // Bind to the CastChannel service provided by the Agent.
+  chromium::cast::CastChannelPtr cast_channel_ptr;
+  agent_services_->ConnectToService(
+      chromium::cast::CastChannel::Name_,
+      cast_channel_ptr.NewRequest().TakeChannel());
   cast_channel_ = std::make_unique<CastChannelBindings>(
-      frame(), &connector_,
-      startup_context()
-          ->incoming_services()
-          ->ConnectToService<chromium::cast::CastChannel>(),
+      frame(), &connector_, std::move(cast_channel_ptr),
       base::BindOnce(&CastComponent::DestroyComponent, base::Unretained(this),
                      kBindingsFailureExitCode,
                      fuchsia::sys::TerminationReason::INTERNAL_ERROR));

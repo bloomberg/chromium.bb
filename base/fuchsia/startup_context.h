@@ -28,6 +28,7 @@ class BASE_EXPORT StartupContext {
 
   // Returns the namespace of services published for use by the component.
   const ServiceDirectoryClient* incoming_services() const {
+    DCHECK(incoming_services_);
     return incoming_services_.get();
   }
 
@@ -42,6 +43,11 @@ class BASE_EXPORT StartupContext {
 
   std::unique_ptr<ServiceDirectoryClient> incoming_services_;
   std::unique_ptr<ServiceDirectory> public_services_;
+
+  // TODO(https://crbug.com/933834): Remove these when we migrate to the new
+  // component manager APIs.
+  ::fuchsia::sys::ServiceProviderPtr additional_services_;
+  std::unique_ptr<ServiceDirectory> additional_services_directory_;
 
   DISALLOW_COPY_AND_ASSIGN(StartupContext);
 };

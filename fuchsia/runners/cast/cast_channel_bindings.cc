@@ -36,7 +36,7 @@ CastChannelBindings::CastChannelBindings(
   DCHECK(frame_);
 
   channel_consumer_.set_error_handler([this](zx_status_t status) mutable {
-    ZX_LOG(ERROR, status) << " Agent disconnected.";
+    ZX_LOG(ERROR, status) << " Agent disconnected";
     std::move(on_error_closure_).Run();
   });
 

@@ -94,7 +94,6 @@ void WebContentRunner::GetWebComponentForTest(
 }
 
 void WebContentRunner::DestroyComponent(WebComponent* component) {
-  LOG(ERROR) << "DestroyComponent " << components_.size();
   components_.erase(components_.find(component));
 
   if (components_.empty())
