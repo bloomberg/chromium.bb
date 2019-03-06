@@ -116,9 +116,6 @@ class CookieManager {
   void HasCookiesCompleted2(base::OnceClosure complete,
                             bool* result,
                             const net::CookieList& cookies);
-  // Determine if cookies can be set for |host|, based on its scheme. This is
-  // based on net::CookieMonster::HasCookieableScheme.
-  bool HasCookieableScheme(const GURL& host);
 
   // This protects the following two bools, as they're used on multiple threads.
   base::Lock accept_file_scheme_cookies_lock_;

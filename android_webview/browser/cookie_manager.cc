@@ -95,10 +95,6 @@ class BoolCookieCallbackHolder {
 
 namespace {
 
-// Copied from net/cookies/cookie_util.h for consistency and backwards
-// compatibility.
-const int kVlogSetCookies = 7;
-
 // TODO(ntfschr): see if we can turn this into OnceCallback.
 // http://crbug.com/932535.
 void MaybeRunCookieCallback(base::RepeatingCallback<void(bool)> callback,
@@ -333,32 +329,14 @@ void CookieManager::SetCookieHelper(
 
   const GURL& new_host = MaybeFixUpSchemeForSecureCookie(host, value);
 
-  // The below is copied from net::CookieMonster::SetCookieWithOptions. We do
-  // this because we have strict requirements to keep behavior identical across
-  // WebView versions.
-
-  // If this scheme is not cookieable, then we should not set a cookie for it.
-  // Instead, invoke the callback and indicate failure.
-  if (!HasCookieableScheme(new_host)) {
-    MaybeRunCookieCallback(std::move(callback), false);
-    return;
-  }
-
-  VLOG(kVlogSetCookies) << "SetCookie() line: " << value;
-
   net::CanonicalCookie::CookieInclusionStatus status;
-
   std::unique_ptr<net::CanonicalCookie> cc(net::CanonicalCookie::Create(
       new_host, value, base::Time::Now(), options, &status));
 
-  if (status != net::CanonicalCookie::CookieInclusionStatus::INCLUDE) {
-    DCHECK(!cc);
-    VLOG(kVlogSetCookies) << "WARNING: Failed to allocate CanonicalCookie";
+  if (!cc) {
     MaybeRunCookieCallback(std::move(callback), false);
     return;
   }
-
-  DCHECK(cc);
 
   // Note: CookieStore and network::CookieManager have different signatures: one
   // accepts a boolean callback while the other (recently) changed to accept a
@@ -376,18 +354,6 @@ void CookieManager::SetCookieHelper(
                                               !options.exclude_httponly(),
                                               StatusToBool(callback));
   }
-}
-
-bool CookieManager::HasCookieableScheme(const GURL& host) {
-  for (int i = 0; i < net::CookieMonster::kDefaultCookieableSchemesCount; ++i) {
-    if (host.SchemeIs(net::CookieMonster::kDefaultCookieableSchemes[i])) {
-      return true;
-    }
-  }
-  if (host.SchemeIsFile() && AllowFileSchemeCookies()) {
-    return true;
-  }
-  return false;
 }
 
 std::string CookieManager::GetCookie(const GURL& host) {
