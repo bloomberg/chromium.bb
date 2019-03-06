@@ -20,7 +20,6 @@ class LayoutObject;
 // mapping. It holds an offset mapping, and provides APIs to modify the mapping
 // step by step until the construction is finished.
 // Design doc: https://goo.gl/CJbxky
-// TODO(xiaochengh): Change the mock implemetation to a real one.
 class CORE_EXPORT NGOffsetMappingBuilder {
   STACK_ALLOCATED();
 
