@@ -31,6 +31,7 @@
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
+#include "third_party/blink/renderer/platform/graphics/dark_mode_settings.h"
 
 namespace blink {
 
@@ -112,10 +113,10 @@ void Settings::SetForceDarkModeEnabled(bool enabled) {
   force_dark_mode_ = enabled;
 
   if (force_dark_mode_) {
-    SetHighContrastMode(HighContrastMode::kInvertLightness);
-    SetHighContrastImagePolicy(HighContrastImagePolicy::kFilterSmart);
+    SetHighContrastMode(DarkMode::kInvertLightness);
+    SetHighContrastImagePolicy(DarkModeImagePolicy::kFilterSmart);
   } else {
-    SetHighContrastMode(HighContrastMode::kOff);
+    SetHighContrastMode(DarkMode::kOff);
   }
 }
 

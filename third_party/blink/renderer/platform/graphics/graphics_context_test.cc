@@ -174,14 +174,14 @@ class GraphicsContextHighConstrastTest : public testing::Test {
 };
 
 // This is just a baseline test, compare against the other variants
-// of the test below, where high contrast mode is enabled.
+// of the test below, where dark mode is enabled.
 // TODO(crbug.com/850782): Reenable this.
 #if defined(OS_ANDROID)
-#define MAYBE_NoHighContrast DISABLED_NoHighContrast
+#define MAYBE_NoDarkMode DISABLED_NoDarkMode
 #else
-#define MAYBE_NoHighContrast NoHighContrast
+#define MAYBE_NoDarkMode NoDarkMode
 #endif
-TEST_F(GraphicsContextHighConstrastTest, MAYBE_NoHighContrast) {
+TEST_F(GraphicsContextHighConstrastTest, MAYBE_NoDarkMode) {
   DrawColorsToContext();
 
   EXPECT_EQ(0xff000000, *bitmap_.getAddr32(0, 0));
@@ -192,16 +192,16 @@ TEST_F(GraphicsContextHighConstrastTest, MAYBE_NoHighContrast) {
 
 // TODO(crbug.com/850782): Reenable this.
 #if defined(OS_ANDROID)
-#define MAYBE_HighContrastOff DISABLED_HighContrastOff
+#define MAYBE_DarkModeOff DISABLED_DarkModeOff
 #else
-#define MAYBE_HighContrastOff HighContrastOff
+#define MAYBE_DarkModeOff DarkModeOff
 #endif
-TEST_F(GraphicsContextHighConstrastTest, MAYBE_HighContrastOff) {
-  HighContrastSettings settings;
-  settings.mode = HighContrastMode::kOff;
+TEST_F(GraphicsContextHighConstrastTest, MAYBE_DarkModeOff) {
+  DarkModeSettings settings;
+  settings.mode = DarkMode::kOff;
   settings.grayscale = false;
   settings.contrast = 0;
-  context_->SetHighContrast(settings);
+  context_->SetDarkMode(settings);
 
   DrawColorsToContext();
 
@@ -220,11 +220,11 @@ TEST_F(GraphicsContextHighConstrastTest, MAYBE_HighContrastOff) {
 #define MAYBE_SimpleInvertForTesting SimpleInvertForTesting
 #endif
 TEST_F(GraphicsContextHighConstrastTest, MAYBE_SimpleInvertForTesting) {
-  HighContrastSettings settings;
-  settings.mode = HighContrastMode::kSimpleInvertForTesting;
+  DarkModeSettings settings;
+  settings.mode = DarkMode::kSimpleInvertForTesting;
   settings.grayscale = false;
   settings.contrast = 0;
-  context_->SetHighContrast(settings);
+  context_->SetDarkMode(settings);
 
   DrawColorsToContext();
 
@@ -242,11 +242,11 @@ TEST_F(GraphicsContextHighConstrastTest, MAYBE_SimpleInvertForTesting) {
 #define MAYBE_InvertBrightness InvertBrightness
 #endif
 TEST_F(GraphicsContextHighConstrastTest, MAYBE_InvertBrightness) {
-  HighContrastSettings settings;
-  settings.mode = HighContrastMode::kInvertBrightness;
+  DarkModeSettings settings;
+  settings.mode = DarkMode::kInvertBrightness;
   settings.grayscale = false;
   settings.contrast = 0;
-  context_->SetHighContrast(settings);
+  context_->SetDarkMode(settings);
 
   DrawColorsToContext();
 
@@ -264,11 +264,11 @@ TEST_F(GraphicsContextHighConstrastTest, MAYBE_InvertBrightness) {
 #define MAYBE_InvertLightness InvertLightness
 #endif
 TEST_F(GraphicsContextHighConstrastTest, MAYBE_InvertLightness) {
-  HighContrastSettings settings;
-  settings.mode = HighContrastMode::kInvertLightness;
+  DarkModeSettings settings;
+  settings.mode = DarkMode::kInvertLightness;
   settings.grayscale = false;
   settings.contrast = 0;
-  context_->SetHighContrast(settings);
+  context_->SetDarkMode(settings);
 
   DrawColorsToContext();
 
@@ -280,11 +280,11 @@ TEST_F(GraphicsContextHighConstrastTest, MAYBE_InvertLightness) {
 
 // Invert lightness plus grayscale.
 TEST_F(GraphicsContextHighConstrastTest, InvertLightnessPlusGrayscale) {
-  HighContrastSettings settings;
-  settings.mode = HighContrastMode::kInvertLightness;
+  DarkModeSettings settings;
+  settings.mode = DarkMode::kInvertLightness;
   settings.grayscale = true;
   settings.contrast = 0;
-  context_->SetHighContrast(settings);
+  context_->SetDarkMode(settings);
 
   DrawColorsToContext();
 
@@ -301,11 +301,11 @@ TEST_F(GraphicsContextHighConstrastTest, InvertLightnessPlusGrayscale) {
 #define MAYBE_InvertLightnessPlusContrast InvertLightnessPlusContrast
 #endif
 TEST_F(GraphicsContextHighConstrastTest, MAYBE_InvertLightnessPlusContrast) {
-  HighContrastSettings settings;
-  settings.mode = HighContrastMode::kInvertLightness;
+  DarkModeSettings settings;
+  settings.mode = DarkMode::kInvertLightness;
   settings.grayscale = false;
   settings.contrast = 0.2;
-  context_->SetHighContrast(settings);
+  context_->SetDarkMode(settings);
 
   DrawColorsToContext();
 

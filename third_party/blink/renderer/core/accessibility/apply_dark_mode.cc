@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/core/accessibility/apply_high_contrast_check.h"
+#include "third_party/blink/renderer/core/accessibility/apply_dark_mode.h"
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
-#include "third_party/blink/renderer/platform/graphics/high_contrast_color_classifier.h"
-#include "third_party/blink/renderer/platform/graphics/high_contrast_settings.h"
+#include "third_party/blink/renderer/platform/graphics/dark_mode_color_classifier.h"
+#include "third_party/blink/renderer/platform/graphics/dark_mode_settings.h"
 
 namespace blink {
 namespace {
@@ -31,27 +31,24 @@ bool HasLightBackground(const LayoutObject& layout_object) {
 
 }  // namespace
 
-// TODO(https://crbug.com/925949): Call ShouldApplyHighContrastFilterToPage()
-// and return default HighContrastSettings if it returns false.
-HighContrastSettings BuildHighContrastSettings(
-    const Settings& frame_settings,
-    const LayoutObject& layout_object) {
-  HighContrastSettings high_contrast_settings;
-  high_contrast_settings.mode = frame_settings.GetHighContrastMode();
-  high_contrast_settings.grayscale = frame_settings.GetHighContrastGrayscale();
-  high_contrast_settings.contrast = frame_settings.GetHighContrastContrast();
-  high_contrast_settings.image_policy =
-      frame_settings.GetHighContrastImagePolicy();
-  return high_contrast_settings;
+// TODO(https://crbug.com/925949): Call ShouldApplyDarkModeFilterToPage()
+// and return default DarkModeSettings if it returns false.
+DarkModeSettings BuildDarkModeSettings(const Settings& frame_settings,
+                                       const LayoutObject& layout_object) {
+  DarkModeSettings dark_mode_settings;
+  dark_mode_settings.mode = frame_settings.GetHighContrastMode();
+  dark_mode_settings.grayscale = frame_settings.GetHighContrastGrayscale();
+  dark_mode_settings.contrast = frame_settings.GetHighContrastContrast();
+  dark_mode_settings.image_policy = frame_settings.GetHighContrastImagePolicy();
+  return dark_mode_settings;
 }
 
-bool ShouldApplyHighContrastFilterToPage(
-    HighContrastPagePolicy policy,
-    const LayoutObject& root_layout_object) {
+bool ShouldApplyDarkModeFilterToPage(DarkModePagePolicy policy,
+                                     const LayoutObject& root_layout_object) {
   switch (policy) {
-    case HighContrastPagePolicy::kFilterAll:
+    case DarkModePagePolicy::kFilterAll:
       return true;
-    case HighContrastPagePolicy::kFilterByBackground:
+    case DarkModePagePolicy::kFilterByBackground:
       return HasLightBackground(root_layout_object);
   }
 }

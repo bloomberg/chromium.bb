@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/platform/graphics/high_contrast_image_classifier.h"
+#include "third_party/blink/renderer/platform/graphics/dark_mode_image_classifier.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/graphics/bitmap_image.h"
@@ -17,7 +17,7 @@ const float kEpsilon = 0.00001;
 
 namespace blink {
 
-class HighContrastImageClassifierTest : public testing::Test {
+class DarkModeImageClassifierTest : public testing::Test {
  public:
   // Loads the image from |file_name|, computes features vector into |features|,
   // and returns the classification result.
@@ -27,7 +27,7 @@ class HighContrastImageClassifierTest : public testing::Test {
     scoped_refptr<BitmapImage> image = LoadImage(file_name);
     classifier_.SetRandomGeneratorForTesting();
     classifier_.ComputeImageFeaturesForTesting(*image.get(), features);
-    return classifier_.ShouldApplyHighContrastFilterToImage(*image.get());
+    return classifier_.ShouldApplyDarkModeFilterToImage(*image.get());
   }
 
   void AssertFeaturesEqual(const std::vector<float>& features,
@@ -39,7 +39,7 @@ class HighContrastImageClassifierTest : public testing::Test {
     }
   }
 
-  HighContrastImageClassifier* classifier() { return &classifier_; }
+  DarkModeImageClassifier* classifier() { return &classifier_; }
 
  protected:
   scoped_refptr<BitmapImage> LoadImage(const std::string& file_name) {
@@ -55,10 +55,10 @@ class HighContrastImageClassifierTest : public testing::Test {
 
   ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
       platform_;
-  HighContrastImageClassifier classifier_;
+  DarkModeImageClassifier classifier_;
 };
 
-TEST_F(HighContrastImageClassifierTest, FeaturesAndClassification) {
+TEST_F(DarkModeImageClassifierTest, FeaturesAndClassification) {
   std::vector<float> features;
 
   // Test Case 1:
@@ -69,7 +69,7 @@ TEST_F(HighContrastImageClassifierTest, FeaturesAndClassification) {
   EXPECT_TRUE(GetFeaturesAndClassification("/images/resources/grid-large.png",
                                            &features));
   EXPECT_EQ(classifier()->ClassifyImageUsingDecisionTreeForTesting(features),
-            HighContrastClassification::kApplyHighContrastFilter);
+            DarkModeClassification::kApplyDarkModeFilter);
   AssertFeaturesEqual(features, {0.0f, 0.1875f, 0.0f, 0.1f});
 
   // Test Case 2:
@@ -80,7 +80,7 @@ TEST_F(HighContrastImageClassifierTest, FeaturesAndClassification) {
   EXPECT_TRUE(GetFeaturesAndClassification("/images/resources/apng08-ref.png",
                                            &features));
   EXPECT_EQ(classifier()->ClassifyImageUsingDecisionTreeForTesting(features),
-            HighContrastClassification::kNotClassified);
+            DarkModeClassification::kNotClassified);
   AssertFeaturesEqual(features, {0.0f, 0.8125f, 0.409f, 0.59f});
 
   // Test Case 3:
@@ -91,7 +91,7 @@ TEST_F(HighContrastImageClassifierTest, FeaturesAndClassification) {
   EXPECT_TRUE(GetFeaturesAndClassification(
       "/images/resources/count-down-color-test.png", &features));
   EXPECT_EQ(classifier()->ClassifyImageUsingDecisionTreeForTesting(features),
-            HighContrastClassification::kApplyHighContrastFilter);
+            DarkModeClassification::kApplyDarkModeFilter);
   AssertFeaturesEqual(features, {1.0f, 0.0134277f, 0.0f, 0.43f});
 
   // Test Case 4:
@@ -102,7 +102,7 @@ TEST_F(HighContrastImageClassifierTest, FeaturesAndClassification) {
   EXPECT_FALSE(GetFeaturesAndClassification(
       "/images/resources/blue-wheel-srgb-color-profile.png", &features));
   EXPECT_EQ(classifier()->ClassifyImageUsingDecisionTreeForTesting(features),
-            HighContrastClassification::kDoNotApplyHighContrastFilter);
+            DarkModeClassification::kDoNotApplyDarkModeFilter);
   AssertFeaturesEqual(features, {1.0f, 0.03027f, 0.0f, 0.24f});
 
   // Test Case 5:
@@ -113,7 +113,7 @@ TEST_F(HighContrastImageClassifierTest, FeaturesAndClassification) {
   EXPECT_TRUE(GetFeaturesAndClassification(
       "/images/resources/ycbcr-444-float.jpg", &features));
   EXPECT_EQ(classifier()->ClassifyImageUsingDecisionTreeForTesting(features),
-            HighContrastClassification::kNotClassified);
+            DarkModeClassification::kNotClassified);
   AssertFeaturesEqual(features, {1.0f, 0.0166016f, 0.0f, 0.59f});
 }
 

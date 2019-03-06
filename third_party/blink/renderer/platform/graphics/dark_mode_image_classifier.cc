@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/platform/graphics/high_contrast_image_classifier.h"
+#include "third_party/blink/renderer/platform/graphics/dark_mode_image_classifier.h"
 
 #include "base/rand_util.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
-#include "third_party/blink/renderer/platform/graphics/highcontrast/highcontrast_classifier.h"
+#include "third_party/blink/renderer/platform/graphics/darkmode/darkmode_classifier.h"
 #include "third_party/skia/include/utils/SkNullCanvas.h"
 
 namespace {
@@ -50,10 +50,10 @@ const float kHighColorCountThreshold[2] = {1, 0.025635};
 
 namespace blink {
 
-HighContrastImageClassifier::HighContrastImageClassifier()
+DarkModeImageClassifier::DarkModeImageClassifier()
     : use_testing_random_generator_(false), testing_random_generator_seed_(0) {}
 
-int HighContrastImageClassifier::GetRandomInt(const int min, const int max) {
+int DarkModeImageClassifier::GetRandomInt(const int min, const int max) {
   if (use_testing_random_generator_) {
     testing_random_generator_seed_ *= 7;
     testing_random_generator_seed_ += 15485863;
@@ -64,31 +64,30 @@ int HighContrastImageClassifier::GetRandomInt(const int min, const int max) {
   return base::RandInt(min, max - 1);
 }
 
-bool HighContrastImageClassifier::ShouldApplyHighContrastFilterToImage(
-    Image& image) {
-  HighContrastClassification result = image.GetHighContrastClassification();
-  if (result != HighContrastClassification::kNotClassified)
-    return result == HighContrastClassification::kApplyHighContrastFilter;
+bool DarkModeImageClassifier::ShouldApplyDarkModeFilterToImage(Image& image) {
+  DarkModeClassification result = image.GetDarkModeClassification();
+  if (result != DarkModeClassification::kNotClassified)
+    return result == DarkModeClassification::kApplyDarkModeFilter;
 
   if (image.width() < kMinImageSizeForClassification1D ||
       image.height() < kMinImageSizeForClassification1D) {
-    result = HighContrastClassification::kApplyHighContrastFilter;
+    result = DarkModeClassification::kApplyDarkModeFilter;
   } else {
     std::vector<float> features;
     if (!ComputeImageFeatures(image, &features))
-      result = HighContrastClassification::kDoNotApplyHighContrastFilter;
+      result = DarkModeClassification::kDoNotApplyDarkModeFilter;
     else
       result = ClassifyImage(features);
   }
 
-  image.SetHighContrastClassification(result);
-  return result == HighContrastClassification::kApplyHighContrastFilter;
+  image.SetDarkModeClassification(result);
+  return result == DarkModeClassification::kApplyDarkModeFilter;
 }
 
 // This function computes a single feature vector based on a sample set of image
 // pixels. Please refer to |GetSamples| function for description of the sampling
 // method, and |GetFeatures| function for description of the features.
-bool HighContrastImageClassifier::ComputeImageFeatures(
+bool DarkModeImageClassifier::ComputeImageFeatures(
     Image& image,
     std::vector<float>* features) {
   SkBitmap bitmap;
@@ -107,7 +106,7 @@ bool HighContrastImageClassifier::ComputeImageFeatures(
   return true;
 }
 
-bool HighContrastImageClassifier::GetBitmap(Image& image, SkBitmap* bitmap) {
+bool DarkModeImageClassifier::GetBitmap(Image& image, SkBitmap* bitmap) {
   if (!image.IsBitmapImage() || !image.width() || !image.height())
     return false;
 
@@ -127,11 +126,10 @@ bool HighContrastImageClassifier::GetBitmap(Image& image, SkBitmap* bitmap) {
 // details). Samples from foreground blocks are collected, and if they are less
 // than 50% of requested samples, the foreground blocks are resampled to get
 // more points.
-void HighContrastImageClassifier::GetSamples(
-    const SkBitmap& bitmap,
-    std::vector<SkColor>* sampled_pixels,
-    float* transparency_ratio,
-    float* background_ratio) {
+void DarkModeImageClassifier::GetSamples(const SkBitmap& bitmap,
+                                         std::vector<SkColor>* sampled_pixels,
+                                         float* transparency_ratio,
+                                         float* background_ratio) {
   int pixels_per_block = kPixelsToSample / (kBlocksCount1D * kBlocksCount1D);
 
   int transparent_pixels = 0;
@@ -195,7 +193,7 @@ void HighContrastImageClassifier::GetSamples(
 
 // Selects random samples from a block of the image. Returns the opaque sampled
 // pixels, and the number of transparent sampled pixels.
-void HighContrastImageClassifier::GetBlockSamples(
+void DarkModeImageClassifier::GetBlockSamples(
     const SkBitmap& bitmap,
     const IntRect& block,
     const int required_samples_count,
@@ -228,7 +226,7 @@ void HighContrastImageClassifier::GetBlockSamples(
 // decides if that block is background or not. If more than 80% of the block is
 // transparent, or the divergence of colors in the block is less than 5%, the
 // block is considered background.
-bool HighContrastImageClassifier::IsBlockBackground(
+bool DarkModeImageClassifier::IsBlockBackground(
     const std::vector<SkColor>& sampled_pixels,
     const int transparent_pixels) {
   if (static_cast<int>(sampled_pixels.size()) <= transparent_pixels / 4)
@@ -259,7 +257,7 @@ bool HighContrastImageClassifier::IsBlockBackground(
 //    possiblities. Color buckets are represented with 4 bits per color channel.
 // 2: Ratio of transparent area to the whole image.
 // 3: Ratio of the background area to the whole image.
-void HighContrastImageClassifier::GetFeatures(
+void DarkModeImageClassifier::GetFeatures(
     const std::vector<SkColor>& sampled_pixels,
     const float transparency_ratio,
     const float background_ratio,
@@ -291,7 +289,7 @@ void HighContrastImageClassifier::GetFeatures(
   (*features)[3] = background_ratio;
 }
 
-float HighContrastImageClassifier::ComputeColorBucketsRatio(
+float DarkModeImageClassifier::ComputeColorBucketsRatio(
     const std::vector<SkColor>& sampled_pixels,
     const ColorMode color_mode) {
   std::set<unsigned> buckets;
@@ -321,8 +319,7 @@ float HighContrastImageClassifier::ComputeColorBucketsRatio(
          max_buckets[color_mode == ColorMode::kColor];
 }
 
-HighContrastClassification
-HighContrastImageClassifier::ClassifyImageUsingDecisionTree(
+DarkModeClassification DarkModeImageClassifier::ClassifyImageUsingDecisionTree(
     const std::vector<float>& features) {
   DCHECK_EQ(features.size(), 4u);
 
@@ -333,31 +330,30 @@ HighContrastImageClassifier::ClassifyImageUsingDecisionTree(
 
   // Very few colors means it's not a photo, apply the filter.
   if (color_count_ratio < low_color_count_threshold)
-    return HighContrastClassification::kApplyHighContrastFilter;
+    return DarkModeClassification::kApplyDarkModeFilter;
 
   // Too many colors means it's probably photorealistic, do not apply it.
   if (color_count_ratio > high_color_count_threshold)
-    return HighContrastClassification::kDoNotApplyHighContrastFilter;
+    return DarkModeClassification::kDoNotApplyDarkModeFilter;
 
   // In-between, decision tree cannot give a precise result.
-  return HighContrastClassification::kNotClassified;
+  return DarkModeClassification::kNotClassified;
 }
 
-HighContrastClassification HighContrastImageClassifier::ClassifyImage(
+DarkModeClassification DarkModeImageClassifier::ClassifyImage(
     const std::vector<float>& features) {
   DCHECK_EQ(features.size(), 4u);
 
-  HighContrastClassification result = ClassifyImageUsingDecisionTree(features);
+  DarkModeClassification result = ClassifyImageUsingDecisionTree(features);
 
   // If decision tree cannot decide, we use a neural network to decide whether
   // to filter or not based on all the features.
-  if (result == HighContrastClassification::kNotClassified) {
-    highcontrast_tfnative_model::FixedAllocations nn_temp;
+  if (result == DarkModeClassification::kNotClassified) {
+    darkmode_tfnative_model::FixedAllocations nn_temp;
     float nn_out;
-    highcontrast_tfnative_model::Inference(&features[0], &nn_out, &nn_temp);
-    result = nn_out > 0
-                 ? HighContrastClassification::kApplyHighContrastFilter
-                 : HighContrastClassification::kDoNotApplyHighContrastFilter;
+    darkmode_tfnative_model::Inference(&features[0], &nn_out, &nn_temp);
+    result = nn_out > 0 ? DarkModeClassification::kApplyDarkModeFilter
+                        : DarkModeClassification::kDoNotApplyDarkModeFilter;
   }
 
   return result;

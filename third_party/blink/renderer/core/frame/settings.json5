@@ -884,29 +884,33 @@
     },
 
     //
-    // High contrast mode
+    // Dark mode
     //
     {
+      // TODO(crbug.com/938511): Rename this to "darkMode" (not "darkModeMode").
       name: "highContrastMode",
-      initial: "HighContrastMode::kOff",
-      type: "HighContrastMode",
+      initial: "DarkMode::kOff",
+      type: "DarkMode",
       invalidate: "Paint",
     },
     {
+      // TODO(crbug.com/938511): Rename this to "darkModeGrayscale".
       name: "highContrastGrayscale",
       initial: false,
       invalidate: "Paint",
     },
     {
+      // TODO(crbug.com/938511): Rename this to "darkModeContrast".
       name: "highContrastContrast",
       initial: 0,
       type: "double",
       invalidate: "Paint",
     },
     {
+      // TODO(crbug.com/938511): Rename this to "darkModeImagePolicy".
       name: "highContrastImagePolicy",
-      initial: "HighContrastImagePolicy::kFilterAll",
-      type: "HighContrastImagePolicy",
+      initial: "DarkModeImagePolicy::kFilterAll",
+      type: "DarkModeImagePolicy",
       invalidate: "Paint",
     },
     {

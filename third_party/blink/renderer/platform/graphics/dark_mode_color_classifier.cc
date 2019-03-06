@@ -2,15 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/platform/graphics/high_contrast_color_classifier.h"
+#include "third_party/blink/renderer/platform/graphics/dark_mode_color_classifier.h"
 
 namespace blink {
 
 // Values below which a color is considered sufficiently transparent that a
 // lighter color behind it would make the final color as seen by the user light.
 // TODO(https://crbug.com/925949): This is a placeholder value. It should be
-// replaced with a better researched value before launching high contrast/dark
-// mode.
+// replaced with a better researched value before launching dark mode.
 const float kOpacityThreshold = 0.4;
 
 // TODO(https://crbug.com/925949): Find a better algorithm for this.

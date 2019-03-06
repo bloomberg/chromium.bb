@@ -236,15 +236,15 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
     return nullptr;
   }
 
-  HighContrastClassification GetHighContrastClassification() {
-    return high_contrast_classification_;
+  DarkModeClassification GetDarkModeClassification() {
+    return dark_mode_classification_;
   }
 
-  // High contrast classification result is cached to be consistent and have
+  // Dark mode classification result is cached to be consistent and have
   // higher performance for future paints.
-  void SetHighContrastClassification(
-      const HighContrastClassification high_contrast_classification) {
-    high_contrast_classification_ = high_contrast_classification;
+  void SetDarkModeClassification(
+      const DarkModeClassification dark_mode_classification) {
+    dark_mode_classification_ = dark_mode_classification;
   }
 
   PaintImage::Id paint_image_id() const { return stable_image_id_; }
@@ -283,7 +283,7 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
   WeakPersistent<ImageObserver> image_observer_;
   PaintImage::Id stable_image_id_;
   const bool is_multipart_;
-  HighContrastClassification high_contrast_classification_;
+  DarkModeClassification dark_mode_classification_;
 
   DISALLOW_COPY_AND_ASSIGN(Image);
 };

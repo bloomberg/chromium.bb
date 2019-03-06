@@ -33,11 +33,11 @@
 #include "base/macros.h"
 #include "cc/paint/node_holder.h"
 #include "third_party/blink/renderer/platform/fonts/font.h"
+#include "third_party/blink/renderer/platform/graphics/dark_mode_image_classifier.h"
+#include "third_party/blink/renderer/platform/graphics/dark_mode_settings.h"
 #include "third_party/blink/renderer/platform/graphics/dash_array.h"
 #include "third_party/blink/renderer/platform/graphics/draw_looper_builder.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context_state.h"
-#include "third_party/blink/renderer/platform/graphics/high_contrast_image_classifier.h"
-#include "third_party/blink/renderer/platform/graphics/high_contrast_settings.h"
 #include "third_party/blink/renderer/platform/graphics/image_orientation.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_filter.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_record.h"
@@ -88,8 +88,8 @@ class PLATFORM_EXPORT GraphicsContext {
 
   bool ContextDisabled() const { return disabled_state_; }
 
-  const HighContrastSettings& high_contrast_settings() const {
-    return high_contrast_settings_;
+  const DarkModeSettings& dark_mode_settings() const {
+    return dark_mode_settings_;
   }
 
   // ---------- State management methods -----------------
@@ -100,7 +100,7 @@ class PLATFORM_EXPORT GraphicsContext {
   unsigned SaveCount() const;
 #endif
 
-  void SetHighContrast(const HighContrastSettings&);
+  void SetDarkMode(const DarkModeSettings&);
 
   float StrokeThickness() const {
     return ImmutableState()->GetStrokeData().Thickness();
@@ -468,9 +468,9 @@ class PLATFORM_EXPORT GraphicsContext {
                                const FloatRoundedRect& rounded_hole_rect,
                                const Color&);
 
-  class HighContrastFlags;
-  bool ShouldApplyHighContrastFilterToImage(Image&);
-  Color ApplyHighContrastFilter(const Color& input) const;
+  class DarkModeFlags;
+  bool ShouldApplyDarkModeFilterToImage(Image&);
+  Color ApplyDarkModeFilter(const Color& input) const;
 
   // null indicates painting is contextDisabled. Never delete this object.
   cc::PaintCanvas* canvas_;
@@ -501,9 +501,9 @@ class PLATFORM_EXPORT GraphicsContext {
 
   float device_scale_factor_;
 
-  HighContrastSettings high_contrast_settings_;
-  sk_sp<SkColorFilter> high_contrast_filter_;
-  HighContrastImageClassifier high_contrast_image_classifier_;
+  DarkModeSettings dark_mode_settings_;
+  sk_sp<SkColorFilter> dark_mode_filter_;
+  DarkModeImageClassifier dark_mode_image_classifier_;
 
   unsigned printing_ : 1;
   unsigned in_drawing_recorder_ : 1;
