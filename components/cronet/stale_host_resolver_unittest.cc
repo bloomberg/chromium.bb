@@ -93,11 +93,11 @@ std::unique_ptr<net::MockDnsClient> CreateHangingMockDnsClient() {
 
   net::MockDnsClientRuleList rules;
   rules.emplace_back(
-      kHostname, net::dns_protocol::kTypeA,
+      kHostname, net::dns_protocol::kTypeA, net::SecureDnsMode::AUTOMATIC,
       net::MockDnsClientRule::Result(net::MockDnsClientRule::FAIL),
       true /* delay */);
   rules.emplace_back(
-      kHostname, net::dns_protocol::kTypeAAAA,
+      kHostname, net::dns_protocol::kTypeAAAA, net::SecureDnsMode::AUTOMATIC,
       net::MockDnsClientRule::Result(net::MockDnsClientRule::FAIL),
       true /* delay */);
 

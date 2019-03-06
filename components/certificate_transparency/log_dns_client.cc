@@ -168,12 +168,15 @@ class AuditProofQueryImpl : public LogDnsClient::AuditProofQuery {
   ~AuditProofQueryImpl() override;
 
   // Begins the process of getting an audit proof for the CT log entry with a
-  // leaf hash of |leaf_hash|. The proof will be for a tree of size |tree_size|.
-  // If it cannot be obtained synchronously, net::ERR_IO_PENDING will be
-  // returned and |callback| will be invoked when the operation has completed
-  // asynchronously. If the operation is cancelled (by deleting the
-  // AuditProofQueryImpl), |cancellation_callback| will be invoked.
+  // leaf hash of |leaf_hash|. If |lookup_securely| is true, only secure DNS
+  // lookups will be performed, otherwise only insecure DNS lookups will be
+  // performed. The proof will be for a tree of size |tree_size|. If the proof
+  // cannot be obtained synchronously, net::ERR_IO_PENDING will be returned and
+  // |callback| will be invoked when the operation has completed asynchronously.
+  // If the operation is cancelled (by deleting the AuditProofQueryImpl),
+  // |cancellation_callback| will be invoked.
   net::Error Start(std::string leaf_hash,
+                   bool lookup_securely,
                    uint64_t tree_size,
                    net::CompletionOnceCallback callback,
                    base::OnceClosure cancellation_callback);
@@ -242,6 +245,8 @@ class AuditProofQueryImpl : public LogDnsClient::AuditProofQuery {
   std::string domain_for_log_;
   // The Merkle leaf hash of the CT log entry an audit proof is required for.
   std::string leaf_hash_;
+  // Whether the DNS request should be sent securely or insecurely.
+  bool lookup_securely_;
   // The audit proof to populate.
   net::ct::MerkleAuditProof proof_;
   // The callback to invoke when the query is complete.
@@ -289,6 +294,7 @@ AuditProofQueryImpl::~AuditProofQueryImpl() {
 // |leaf_hash| is not a const-ref to allow callers to std::move that string into
 // the method, avoiding the need to make a copy.
 net::Error AuditProofQueryImpl::Start(std::string leaf_hash,
+                                      bool lookup_securely,
                                       uint64_t tree_size,
                                       net::CompletionOnceCallback callback,
                                       base::OnceClosure cancellation_callback) {
@@ -297,6 +303,7 @@ net::Error AuditProofQueryImpl::Start(std::string leaf_hash,
   start_time_ = base::TimeTicks::Now();
   proof_.tree_size = tree_size;
   leaf_hash_ = std::move(leaf_hash);
+  lookup_securely_ = lookup_securely;
   callback_ = std::move(callback);
   cancellation_callback_ = std::move(cancellation_callback);
   // The first step in the query is to request the leaf index corresponding to
@@ -480,7 +487,8 @@ bool AuditProofQueryImpl::StartDnsTransaction(const std::string& qname) {
       qname, net::dns_protocol::kTypeTXT,
       base::BindOnce(&AuditProofQueryImpl::OnDnsTransactionComplete,
                      weak_ptr_factory_.GetWeakPtr()),
-      net_log_, net::SecureDnsMode::AUTOMATIC);
+      net_log_,
+      lookup_securely_ ? net::SecureDnsMode::SECURE : net::SecureDnsMode::OFF);
   DCHECK(url_request_context_);
   current_dns_transaction_->SetRequestContext(url_request_context_);
 
@@ -524,6 +532,7 @@ void LogDnsClient::NotifyWhenNotThrottled(base::OnceClosure callback) {
 net::Error LogDnsClient::QueryAuditProof(
     base::StringPiece domain_for_log,
     std::string leaf_hash,
+    bool lookup_securely,
     uint64_t tree_size,
     std::unique_ptr<AuditProofQuery>* out_query,
     const net::CompletionCallback& callback) {
@@ -543,7 +552,7 @@ net::Error LogDnsClient::QueryAuditProof(
 
   ++in_flight_queries_;
 
-  return query->Start(std::move(leaf_hash), tree_size,
+  return query->Start(std::move(leaf_hash), lookup_securely, tree_size,
                       base::BindOnce(&LogDnsClient::QueryAuditProofComplete,
                                      base::Unretained(this), callback),
                       base::BindOnce(&LogDnsClient::QueryAuditProofCancelled,

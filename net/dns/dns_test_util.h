@@ -17,6 +17,7 @@
 #include "net/dns/dns_client.h"
 #include "net/dns/dns_config.h"
 #include "net/dns/dns_response.h"
+#include "net/dns/dns_util.h"
 #include "net/dns/public/dns_protocol.h"
 
 namespace net {
@@ -215,20 +216,25 @@ struct MockDnsClientRule {
     bool secure = false;
   };
 
+  static Result CreateSecureResult(std::unique_ptr<DnsResponse> response);
+
   // If |delay| is true, matching transactions will be delayed until triggered
   // by the consumer.
   MockDnsClientRule(const std::string& prefix_arg,
                     uint16_t qtype_arg,
+                    SecureDnsMode secure_dns_mode,
                     Result result_arg,
                     bool delay)
       : result(std::move(result_arg)),
         prefix(prefix_arg),
         qtype(qtype_arg),
+        secure_dns_mode(secure_dns_mode),
         delay(delay) {}
 
   Result result;
   std::string prefix;
   uint16_t qtype;
+  SecureDnsMode secure_dns_mode;
   bool delay;
 };
 

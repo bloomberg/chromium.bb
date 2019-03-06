@@ -159,8 +159,10 @@ std::unique_ptr<base::Value> NetLogEntryAuditingEventCallback(
 struct SingleTreeTracker::EntryToAudit {
   base::Time sct_timestamp;
   SHA256HashValue leaf_hash;
+  bool lookup_securely;
 
-  explicit EntryToAudit(base::Time timestamp) : sct_timestamp(timestamp) {}
+  explicit EntryToAudit(base::Time timestamp, bool lookup_securely)
+      : sct_timestamp(timestamp), lookup_securely(lookup_securely) {}
 };
 
 // State of a log entry: its audit state and information necessary to
@@ -211,7 +213,9 @@ class SingleTreeTracker::NetworkObserver
 
 // Orders entries by the SCT timestamp. In case of tie, which is very unlikely
 // as it requires two SCTs issued from a log at exactly the same time, order
-// by leaf hash.
+// by leaf hash. There should never be multiple entries that are identical
+// apart from the |lookup_securely| field, so this field can be excluded from
+// the comparator.
 bool SingleTreeTracker::OrderByTimestamp::operator()(
     const EntryToAudit& lhs,
     const EntryToAudit& rhs) const {
@@ -255,19 +259,21 @@ void SingleTreeTracker::OnSCTVerified(base::StringPiece hostname,
   // It's ok to do this now, even though the inclusion check may not happen for
   // some time, because SingleTreeTracker will discard the SCT if the network
   // changes.
-  if (!WasLookedUpOverDNS(hostname)) {
+  bool secure;
+  if (!WasLookedUpOverDNS(hostname, &secure)) {
     LogCanBeCheckedForInclusionToUMA(NOT_AUDITED_NO_DNS_LOOKUP);
     return;
   }
 
-  EntryToAudit entry(sct->timestamp);
+  EntryToAudit entry(sct->timestamp, secure /* lookup_securely */);
   if (!GetLogEntryLeafHash(cert, sct, &entry.leaf_hash)) {
     LogCanBeCheckedForInclusionToUMA(NOT_AUDITED_INVALID_LEAF_HASH);
     return;
   }
 
-  // Avoid queueing multiple instances of the same entry.
-  switch (GetAuditedEntryInclusionStatus(entry)) {
+  // Avoid queueing multiple instances of the same entry, ignoring the value of
+  // the |lookup_securely| field.
+  switch (GetAuditedEntryInclusionStatus(entry, nullptr)) {
     case SCT_NOT_OBSERVED:
       // No need to record UMA, will be done below.
       break;
@@ -379,13 +385,14 @@ void SingleTreeTracker::ResetPendingQueue() {
 }
 
 SingleTreeTracker::SCTInclusionStatus
-SingleTreeTracker::GetLogEntryInclusionStatus(
+SingleTreeTracker::GetLogEntryInclusionStatusForTesting(
     net::X509Certificate* cert,
-    const SignedCertificateTimestamp* sct) {
-  EntryToAudit entry(sct->timestamp);
+    const SignedCertificateTimestamp* sct,
+    bool* pending_lookup_securely) {
+  EntryToAudit entry(sct->timestamp, false /* lookup_securely */);
   if (!GetLogEntryLeafHash(cert, sct, &entry.leaf_hash))
     return SCT_NOT_OBSERVED;
-  return GetAuditedEntryInclusionStatus(entry);
+  return GetAuditedEntryInclusionStatus(entry, pending_lookup_securely);
 }
 
 void SingleTreeTracker::ProcessPendingEntries() {
@@ -401,8 +408,8 @@ void SingleTreeTracker::ProcessPendingEntries() {
         reinterpret_cast<const char*>(it->first.leaf_hash.data),
         crypto::kSHA256Length);
     net::Error result = dns_client_->QueryAuditProof(
-        ct_log_->dns_domain(), leaf_hash, verified_sth_.tree_size,
-        &(it->second.audit_proof_query),
+        ct_log_->dns_domain(), leaf_hash, it->first.lookup_securely,
+        verified_sth_.tree_size, &(it->second.audit_proof_query),
         base::Bind(&SingleTreeTracker::OnAuditProofObtained,
                    base::Unretained(this), it->first));
     // Handling proofs returned synchronously is not implemeted.
@@ -441,7 +448,9 @@ void SingleTreeTracker::ProcessPendingEntries() {
 }
 
 SingleTreeTracker::SCTInclusionStatus
-SingleTreeTracker::GetAuditedEntryInclusionStatus(const EntryToAudit& entry) {
+SingleTreeTracker::GetAuditedEntryInclusionStatus(
+    const EntryToAudit& entry,
+    bool* pending_lookup_securely) {
   const auto checked_entries_iterator = checked_entries_.Get(entry.leaf_hash);
   if (checked_entries_iterator != checked_entries_.end()) {
     return SCT_INCLUDED_IN_LOG;
@@ -451,7 +460,9 @@ SingleTreeTracker::GetAuditedEntryInclusionStatus(const EntryToAudit& entry) {
   if (pending_iterator == pending_entries_.end()) {
     return SCT_NOT_OBSERVED;
   }
-
+  // Found match in |pending_entries_|, so set |pending_lookup_securely|.
+  if (pending_lookup_securely)
+    *pending_lookup_securely = pending_iterator->first.lookup_securely;
   switch (pending_iterator->second.state) {
     case PENDING_NEWER_STH:
       return SCT_PENDING_NEWER_STH;
@@ -525,10 +536,11 @@ void SingleTreeTracker::LogAuditResultToNetLog(const EntryToAudit& entry,
                     net_log_callback);
 }
 
-bool SingleTreeTracker::WasLookedUpOverDNS(base::StringPiece hostname) const {
+bool SingleTreeTracker::WasLookedUpOverDNS(base::StringPiece hostname,
+                                           bool* secure) const {
   net::HostCache::Entry::Source source;
   net::HostCache::EntryStaleness staleness;
-  return host_resolver_->HasCached(hostname, &source, &staleness) &&
+  return host_resolver_->HasCached(hostname, &source, &staleness, secure) &&
          source == net::HostCache::Entry::SOURCE_DNS &&
          staleness.network_changes == 0;
 }

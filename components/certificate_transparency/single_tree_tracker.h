@@ -16,6 +16,7 @@
 #include "net/base/hash_value.h"
 #include "net/base/network_change_notifier.h"
 #include "net/cert/signed_tree_head.h"
+#include "net/dns/host_cache.h"
 #include "net/log/net_log_with_source.h"
 
 namespace net {
@@ -153,13 +154,15 @@ class SingleTreeTracker {
   // Must only be called for STHs issued by the log this instance tracks.
   void NewSTHObserved(const net::ct::SignedTreeHead& sth);
 
-  // Returns the status of a given log entry that is assembled from
-  // |cert| and |sct|. If |cert| and |sct| were not previously observed,
-  // |sct| is not an SCT for |cert| or |sct| is not for this log,
-  // SCT_NOT_OBSERVED will be returned.
-  SCTInclusionStatus GetLogEntryInclusionStatus(
+  // Returns the status of a given log entry that is assembled from |cert| and
+  // |sct|. If |cert| and |sct| were not previously observed, |sct| is not an
+  // SCT for |cert| or |sct| is not for this log, and SCT_NOT_OBSERVED will be
+  // returned. If the assembled entry is pending, |pending_lookup_securely| will
+  // be set to the value of the pending match's |lookup_securely| field.
+  SCTInclusionStatus GetLogEntryInclusionStatusForTesting(
       net::X509Certificate* cert,
-      const net::ct::SignedCertificateTimestamp* sct);
+      const net::ct::SignedCertificateTimestamp* sct,
+      bool* pending_lookup_securely = nullptr);
 
  private:
   struct EntryToAudit;
@@ -180,8 +183,12 @@ class SingleTreeTracker {
 
   // Returns the inclusion status of the given |entry|, similar to
   // GetLogEntryInclusionStatus(). The |entry| is an internal representation of
-  // a certificate + SCT combination.
-  SCTInclusionStatus GetAuditedEntryInclusionStatus(const EntryToAudit& entry);
+  // a certificate + SCT combination, and the |lookup_securely| value in |entry|
+  // is ignored. If |entry| has a pending status, |pending_lookup_securely| will
+  // be set to the value fo the pending match's |lookup_securely| field.
+  SCTInclusionStatus GetAuditedEntryInclusionStatus(
+      const EntryToAudit& entry,
+      bool* pending_lookup_securely);
 
   // Processes the result of obtaining an audit proof for |entry|.
   // * If an audit proof was successfully obtained and validated,
@@ -208,7 +215,7 @@ class SingleTreeTracker {
 
   // Returns true if |hostname| has previously been looked up using DNS, and the
   // network has not changed since.
-  bool WasLookedUpOverDNS(base::StringPiece hostname) const;
+  bool WasLookedUpOverDNS(base::StringPiece hostname, bool* secure) const;
 
   // Holds the latest STH fetched and verified for this log.
   net::ct::SignedTreeHead verified_sth_;
