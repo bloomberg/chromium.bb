@@ -567,9 +567,6 @@ extern const char kEnableWebAuthenticationCableSupportDescription[];
 extern const char kEnableWebUsbName[];
 extern const char kEnableWebUsbDescription[];
 
-extern const char kEnableImageCaptureAPIName[];
-extern const char kEnableImageCaptureAPIDescription[];
-
 extern const char kEnableIncognitoWindowCounterName[];
 extern const char kEnableIncognitoWindowCounterDescription[];
 

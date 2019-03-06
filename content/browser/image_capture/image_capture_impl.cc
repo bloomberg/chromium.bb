@@ -81,9 +81,6 @@ ImageCaptureImpl::~ImageCaptureImpl() {}
 // static
 void ImageCaptureImpl::Create(
     media::mojom::ImageCaptureRequest request) {
-  if (!base::FeatureList::IsEnabled(features::kImageCaptureAPI))
-    return;
-
   mojo::MakeStrongBinding(std::make_unique<ImageCaptureImpl>(),
                           std::move(request));
 }

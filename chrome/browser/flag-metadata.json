@@ -1247,11 +1247,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "enable-image-capture-api",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-implicit-root-scroller",
     "owners": [ "bokan", "input-dev" ],
     "expiry_milestone": 75
