@@ -100,8 +100,6 @@ bindings_core_v8_files =
                     "core/v8/script_source_location_type.h",
                     "core/v8/script_streamer.cc",
                     "core/v8/script_streamer.h",
-                    "core/v8/script_streamer_thread.cc",
-                    "core/v8/script_streamer_thread.h",
                     "core/v8/script_value.cc",
                     "core/v8/script_value.h",
                     "core/v8/serialization/post_message_helper.cc",
