@@ -362,10 +362,9 @@ void ChromeKeyboardControllerClient::OnKeyboardOccludedBoundsChanged(
     const gfx::Rect& screen_bounds) {
   if (!GetKeyboardWindow())
     return;
-  gfx::Rect bounds = BoundsFromScreen(screen_bounds);
-  DVLOG(1) << "OnKeyboardOccludedBoundsChanged: " << bounds.ToString();
+  DVLOG(1) << "OnKeyboardOccludedBoundsChanged: " << screen_bounds.ToString();
   for (auto& observer : observers_)
-    observer.OnKeyboardOccludedBoundsChanged(bounds);
+    observer.OnKeyboardOccludedBoundsChanged(screen_bounds);
 }
 
 void ChromeKeyboardControllerClient::OnLoadKeyboardContentsRequested() {
