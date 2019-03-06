@@ -400,13 +400,11 @@ mojo.internal.Encoder = class {
   }
 
   encodeString(offset, value) {
-    if (!mojo.internal.Message.textEncoder)
-      mojo.internal.Message.textEncoder = new TextEncoder('utf-8');
     if (typeof value !== 'string')
       throw new Error('Unxpected non-string value for string field.');
     this.encodeArray(
         {elementType: mojo.internal.Uint8}, offset,
-        mojo.internal.Message.textEncoder.encode(value));
+        mojo.internal.Encoder.stringToUtf8Bytes(value));
   }
 
   encodeOffset(offset, absoluteOffset) {
@@ -556,10 +554,20 @@ mojo.internal.Encoder = class {
     field['type'].$.encode(
         value[tag], unionEncoder, offset + 8, 0, field['nullable']);
   }
+
+  /**
+   * @param {string} value
+   * @return {!Uint8Array}
+   */
+  static stringToUtf8Bytes(value) {
+    if (!mojo.internal.Encoder.textEncoder)
+      mojo.internal.Encoder.textEncoder = new TextEncoder('utf-8');
+    return mojo.internal.Encoder.textEncoder.encode(value);
+  }
 };
 
 /** @type {TextEncoder} */
-mojo.internal.Message.textEncoder = null;
+mojo.internal.Encoder.textEncoder = null;
 
 /**
  * Helps decode incoming messages. Decoders may be created recursively to
@@ -1161,7 +1169,8 @@ mojo.internal.String = {
     },
     computePayloadSize: function(value, nullable) {
       return mojo.internal.computeTotalArraySize(
-          {elementType: mojo.internal.Uint8}, value);
+          {elementType: mojo.internal.Uint8},
+          mojo.internal.Encoder.stringToUtf8Bytes(value));
     },
     arrayElementSize: nullable => 8,
     isValidObjectKeyType: true,
