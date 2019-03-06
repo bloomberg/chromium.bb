@@ -680,19 +680,29 @@ void TranslateManager::FilterIsTranslatePossible(
     const std::string& page_language_code,
     const std::string& target_lang) {
   // Short-circuit out if not in a state where initiating translation makes
-  // sense (this method may be called muhtiple times for a given page).
+  // sense (this method may be called multiple times for a given page).
   if (!language_state_.page_needs_translation() ||
       language_state_.translation_pending() ||
       language_state_.translation_declined() ||
-      language_state_.IsPageTranslated() ||
-      !base::FeatureList::IsEnabled(translate::kTranslateUI)) {
+      language_state_.IsPageTranslated()) {
     decision->PreventAllTriggering();
+    decision->initiation_statuses.push_back(
+        TranslateBrowserMetrics::INITIATION_STATUS_DOESNT_NEED_TRANSLATION);
+  }
+
+  if (!base::FeatureList::IsEnabled(translate::kTranslateUI)) {
+    decision->PreventAllTriggering();
+    decision->initiation_statuses.push_back(
+        TranslateBrowserMetrics::INITIATION_STATUS_DISABLED_BY_SWITCH);
   }
 
   // Also, skip if the connection is currently offline - initiation doesn't make
   // sense there, either.
-  if (net::NetworkChangeNotifier::IsOffline())
+  if (net::NetworkChangeNotifier::IsOffline()) {
     decision->PreventAllTriggering();
+    decision->initiation_statuses.push_back(
+        TranslateBrowserMetrics::INITIATION_STATUS_NO_NETWORK);
+  }
 
   if (!ignore_missing_key_for_testing_ &&
       !::google_apis::HasAPIKeyConfigured()) {
@@ -976,7 +986,12 @@ void TranslateManager::RecordDecisionMetrics(
   // translate triggering.
   if (!decision.initiation_statuses.empty()) {
     auto status = decision.initiation_statuses[0];
-    TranslateBrowserMetrics::ReportInitiationStatus(status);
+    if (status !=
+        TranslateBrowserMetrics::INITIATION_STATUS_DOESNT_NEED_TRANSLATION) {
+      // Don't record INITIATION_STATUS_DOESNT_NEED_TRANSLATION because it's
+      // very frequent and not important to track.
+      TranslateBrowserMetrics::ReportInitiationStatus(status);
+    }
 
     // The following metrics are logged alongside extra info.
     if (status ==
