@@ -257,6 +257,8 @@ target(link_target_type, "gles2_sources") {
     "webgpu_cmd_validation_implementation_autogen.h",
     "webgpu_decoder.cc",
     "webgpu_decoder.h",
+    "webgpu_decoder_impl.cc",
+    "webgpu_decoder_impl.h",
     "wrapped_sk_image.cc",
     "wrapped_sk_image.h",
   ]
