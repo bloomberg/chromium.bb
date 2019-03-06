@@ -120,6 +120,9 @@ class SurfaceSynchronizationTest : public testing::Test {
   }
 
   FrameSinkManagerImpl& frame_sink_manager() { return frame_sink_manager_; }
+  SurfaceManager* surface_manager() {
+    return frame_sink_manager_.surface_manager();
+  }
 
   // Returns all the references where |surface_id| is the parent.
   const base::flat_set<SurfaceId>& GetChildReferences(
@@ -132,12 +135,6 @@ class SurfaceSynchronizationTest : public testing::Test {
   // Returns true if there is a temporary reference for |surface_id|.
   bool HasTemporaryReference(const SurfaceId& surface_id) {
     return frame_sink_manager().surface_manager()->HasTemporaryReference(
-        surface_id);
-  }
-
-  // Returns true if there is a Persistent reference for |surface_id|.
-  bool HasPersistentReference(const SurfaceId& surface_id) {
-    return frame_sink_manager().surface_manager()->HasPersistentReference(
         surface_id);
   }
 
@@ -2058,9 +2055,11 @@ TEST_F(SurfaceSynchronizationTest, LatestInFlightSurface) {
             GetLatestInFlightSurface(SurfaceRange(child_id1, child_id3)));
 }
 
-// This test verifies that GetLatestInFlightSurface will return nullptr
-// if it has a bogus fallback SurfaceID.
-TEST_F(SurfaceSynchronizationTest, LatestInFlightSurfaceWithBogusFallback) {
+// This test verifies that GetLatestInFlightSurface will return nullptr when the
+// start of the range is newer than its end, even if a surface matching the end
+// exists.
+TEST_F(SurfaceSynchronizationTest,
+       LatestInFlightSurfaceWithInvalidSurfaceRange) {
   const SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
   const SurfaceId child_id1 = MakeSurfaceId(kChildFrameSink1, 1);
   const SurfaceId child_id2 = MakeSurfaceId(kChildFrameSink1, 2);
@@ -2084,12 +2083,11 @@ TEST_F(SurfaceSynchronizationTest, LatestInFlightSurfaceWithBogusFallback) {
 
   const SurfaceId bogus_child_id = MakeSurfaceId(kChildFrameSink1, 10);
 
-  // If primary exists and active return it regardless of the fallback.
-  EXPECT_EQ(GetSurfaceForId(child_id1),
+  // The end exists but don't return it because the start is newer than the end.
+  EXPECT_EQ(nullptr,
             GetLatestInFlightSurface(SurfaceRange(bogus_child_id, child_id1)));
 
-  // If primary is not active and fallback is doesn't exist, we always return
-  // nullptr.
+  // In this case, the end doesn't exist either. Still return nullptr.
   EXPECT_EQ(nullptr,
             GetLatestInFlightSurface(SurfaceRange(bogus_child_id, child_id2)));
 }
@@ -2310,7 +2308,9 @@ TEST_F(SurfaceSynchronizationTest,
 
   // |child_id1| now should have a temporary reference.
   EXPECT_TRUE(HasTemporaryReference(child_id1));
-  EXPECT_FALSE(HasPersistentReference(child_id1));
+  EXPECT_TRUE(surface_manager()
+                  ->GetSurfacesThatReferenceChildForTesting(child_id1)
+                  .empty());
 
   // Activate |child_id2|.
   child_support1().SubmitCompositorFrame(child_id2.local_surface_id(),
@@ -2318,7 +2318,9 @@ TEST_F(SurfaceSynchronizationTest,
 
   // |child_id2| now should have a temporary reference.
   EXPECT_TRUE(HasTemporaryReference(child_id2));
-  EXPECT_FALSE(HasPersistentReference(child_id2));
+  EXPECT_TRUE(surface_manager()
+                  ->GetSurfacesThatReferenceChildForTesting(child_id2)
+                  .empty());
 
   // Create a reference from |parent_id| to |child_id2|.
   parent_support().SubmitCompositorFrame(
@@ -2328,11 +2330,15 @@ TEST_F(SurfaceSynchronizationTest,
 
   // |child_id1| have no references and can be garbage collected.
   EXPECT_FALSE(HasTemporaryReference(child_id1));
-  EXPECT_FALSE(HasPersistentReference(child_id1));
+  EXPECT_TRUE(surface_manager()
+                  ->GetSurfacesThatReferenceChildForTesting(child_id1)
+                  .empty());
 
   // |child_id2| has a persistent references now.
   EXPECT_FALSE(HasTemporaryReference(child_id2));
-  EXPECT_TRUE(HasPersistentReference(child_id2));
+  EXPECT_FALSE(surface_manager()
+                   ->GetSurfacesThatReferenceChildForTesting(child_id2)
+                   .empty());
 
   // Verify that GetLatestInFlightSurface returns |child_id2|.
   EXPECT_EQ(GetSurfaceForId(child_id2),

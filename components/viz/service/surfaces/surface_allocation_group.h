@@ -9,6 +9,7 @@
 
 #include "base/unguessable_token.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
+#include "components/viz/common/surfaces/surface_range.h"
 #include "components/viz/service/viz_service_export.h"
 
 namespace viz {
@@ -41,12 +42,21 @@ class VIZ_SERVICE_EXPORT SurfaceAllocationGroup {
   // allocation group.
   void UnregisterSurface(Surface* surface);
 
+  // Returns the latest active surface in the given range that is a part of this
+  // allocation group. The embed token of at least one end of the range must
+  // match the embed token of this group.
+  Surface* FindLatestActiveSurfaceInRange(const SurfaceRange& range) const;
+
   // Returns the last surface created in this allocation group.
-  Surface* last_created_surface() {
+  Surface* last_created_surface() const {
     return surfaces_.empty() ? nullptr : surfaces_.back();
   }
 
  private:
+  // Helper method for FindLatestActiveSurfaceInRange. Returns the latest active
+  // surface whose SurfaceId is older than or equal to |surface_id|.
+  Surface* FindOlderOrEqual(const SurfaceId& surface_id) const;
+
   // The ID of the FrameSink that is submitting to the surfaces in this
   // allocation group.
   const FrameSinkId submitter_;
