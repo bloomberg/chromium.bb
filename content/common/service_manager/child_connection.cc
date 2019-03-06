@@ -72,6 +72,13 @@ class ChildConnection::IOThreadContext
                                   std::move(process)));
   }
 
+  void ForceCrash() {
+    DCHECK(io_task_runner_);
+    io_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&IOThreadContext::ForceCrashOnIOThread, this));
+  }
+
  private:
   friend class base::RefCountedThreadSafe<IOThreadContext>;
 
@@ -103,6 +110,8 @@ class ChildConnection::IOThreadContext
     pid_receiver_.reset();
     process_ = std::move(process);
   }
+
+  void ForceCrashOnIOThread() { child_->Crash(); }
 
   scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
   // Usable from the IO thread only.
@@ -144,6 +153,10 @@ void ChildConnection::BindInterface(
 
 void ChildConnection::SetProcess(base::Process process) {
   context_->SetProcess(std::move(process));
+}
+
+void ChildConnection::ForceCrash() {
+  context_->ForceCrash();
 }
 
 }  // namespace content

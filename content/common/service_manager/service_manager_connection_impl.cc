@@ -300,6 +300,9 @@ class ServiceManagerConnectionImpl::IOThreadContext
     }
   }
 
+  // mojom::Child:
+  void Crash() override { IMMEDIATE_CRASH(); }
+
   base::ThreadChecker io_thread_checker_;
   bool started_ = false;
 
