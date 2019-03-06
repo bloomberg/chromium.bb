@@ -334,6 +334,8 @@ function init() {
   $(IDS.URL_FIELD).addEventListener('input',
       () => $(IDS.DONE).disabled = ($(IDS.URL_FIELD).value.trim() === ''));
 
+  utils.setPlatformClass(document.body);
+
   $(IDS.EDIT_DIALOG).showModal();
 
   window.addEventListener('message', handlePostMessage);

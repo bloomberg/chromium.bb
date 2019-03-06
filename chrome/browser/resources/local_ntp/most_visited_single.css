@@ -204,7 +204,6 @@ html[darkmode=true] .md-add-icon {
   background-color: rgb(var(--GG600-rgb));
   border-radius: 50%;
   color: white;
-  font-family: 'Segoe UI', 'Roboto', arial, sans-serif;
   font-size: var(--md-fallback-letter-size);
   height: var(--md-favicon-size);
   line-height: var(--md-favicon-size);
@@ -212,9 +211,12 @@ html[darkmode=true] .md-add-icon {
   width: var(--md-favicon-size);
 }
 
+.win .md-fallback-letter {
+  font-weight: 600;
+}
+
 .md-title {
   color: rgb(var(--GG800-rgb));
-  font-family: 'Roboto', arial, sans-serif;
   font-size: var(--md-title-font-size);
   font-weight: 500;
   max-height: var(--md-title-max-height);

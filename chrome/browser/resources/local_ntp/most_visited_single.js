@@ -44,7 +44,8 @@ const IDS = {
 const CLASSES = {
   FAILED_FAVICON: 'failed-favicon',  // Applied when the favicon fails to load.
   REORDER: 'reorder',  // Applied to the tile being moved while reordering.
-  REORDERING: 'reordering',  // Applied while we are reordering.
+  REORDERING: 'reordering',      // Applied while we are reordering.
+  MAC_CHROMEOS: 'mac-chromeos',  // Reduces font weight for MacOS and ChromeOS.
   // Material Design classes.
   MD_EMPTY_TILE: 'md-empty-tile',
   MD_ICON_BACKGROUND: 'md-icon-background',
@@ -331,6 +332,7 @@ var handleCommand = function(data) {
  */
 var showTiles = function(info) {
   logEvent(LOG_TYPE.NTP_ALL_TILES_RECEIVED);
+  utils.setPlatformClass(document.body);
   countLoad();
 };
 
@@ -346,10 +348,11 @@ var updateTheme = function(info) {
   document.documentElement.setAttribute('darkmode', info.isDarkMode);
 
   // Reduce font weight on the default(white) background for Mac and CrOS.
-  document.body.classList.toggle('mac-chromeos',
+  document.body.classList.toggle(
+      CLASSES.MAC_CHROMEOS,
       !info.isThemeDark && !info.isUsingTheme &&
-      (navigator.userAgent.indexOf('Mac') > -1 ||
-      navigator.userAgent.indexOf('CrOS') > -1));
+          (navigator.userAgent.indexOf('Mac') > -1 ||
+           navigator.userAgent.indexOf('CrOS') > -1));
 };
 
 
@@ -752,9 +755,6 @@ function renderMaterialDesignTile(data) {
       let fallbackLetter = document.createElement('div');
       fallbackLetter.className = CLASSES.MD_FALLBACK_LETTER;
       fallbackLetter.textContent = data.title.charAt(0).toUpperCase();
-      if (navigator.userAgent.indexOf('Windows') > -1) {
-        fallbackLetter.style.fontWeight = 600;
-      }
       mdIcon.classList.add(CLASSES.FAILED_FAVICON);
 
       fallbackBackground.appendChild(fallbackLetter);
@@ -784,10 +784,6 @@ function renderMaterialDesignTile(data) {
   let mdTitleTextwrap = document.createElement('span');
   mdTitleTextwrap.innerText = data.title;
   mdTitle.style.direction = data.direction || 'ltr';
-  // Windows font family fallback to Segoe
-  if (navigator.userAgent.indexOf('Windows') > -1) {
-    mdTitle.style.fontFamily = 'Segoe UI';
-  }
   mdTitleContainer.appendChild(mdTitle);
   mdTileInner.appendChild(mdTitleContainer);
   mdTile.appendChild(mdTileInner);

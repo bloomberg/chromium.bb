@@ -17,7 +17,6 @@ body {
   bottom: 0;
   box-shadow: 0 1px 3px 0 rgba(var(--GG800-rgb), 0.3),
       0 4px 8px 3px rgba(var(--GG800-rgb), 0.15);
-  font-family: 'Roboto', arial, sans-serif;
   margin: auto;
   min-width: 320px;
   padding: 16px;
@@ -41,7 +40,6 @@ html[darkmode=true] #edit-link-dialog {
 
 #dialog-title {
   color: rgb(var(--GG900-rgb));
-  font-family: 'Roboto', arial, sans-serif;
   font-size: 15px;
   line-height: 24px;
   margin-bottom: 16px;
@@ -76,7 +74,6 @@ input {
   border-radius: 4px;
   caret-color: rgb(var(--GB600-rgb));
   color: rgb(var(--GG900-rgb));
-  font-family: 'Roboto', arial, sans-serif;
   font-size: 13px;
   height: 32px;
   line-height: 24px;
