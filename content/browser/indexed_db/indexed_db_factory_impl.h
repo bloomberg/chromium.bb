@@ -19,7 +19,6 @@
 #include "base/time/time.h"
 #include "content/browser/indexed_db/indexed_db_factory.h"
 #include "content/browser/indexed_db/leveldb/leveldb_env.h"
-#include "content/browser/indexed_db/scopes/disjoint_range_lock_manager.h"
 
 namespace base {
 struct Feature;
@@ -194,7 +193,6 @@ class CONTENT_EXPORT IndexedDBFactoryImpl : public IndexedDBFactory {
       backing_stores_with_active_blobs_;
   std::set<url::Origin> backends_opened_since_startup_;
 
-  DisjointRangeLockManager lock_manager_;
   base::Clock* clock_;
   base::Time earliest_sweep_;
 
