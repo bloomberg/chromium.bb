@@ -20,7 +20,6 @@ ios_eg_test("ios_web_shell_egtests") {
   sources = [
     "context_menu_egtest.mm",
     "page_state_egtest.mm",
-    "redirect_egtest.mm",
     "service_manager_egtest.mm",
   ]
 
