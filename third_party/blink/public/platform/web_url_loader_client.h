@@ -70,8 +70,8 @@ class BLINK_PLATFORM_EXPORT WebURLLoaderClient {
 
   // Called to report upload progress. The bytes reported correspond to
   // the HTTP message body.
-  virtual void DidSendData(unsigned long long bytes_sent,
-                           unsigned long long total_bytes_to_be_sent) {}
+  virtual void DidSendData(uint64_t bytes_sent,
+                           uint64_t total_bytes_to_be_sent) {}
 
   // Called when response headers are received.
   virtual void DidReceiveResponse(const WebURLResponse&) {}

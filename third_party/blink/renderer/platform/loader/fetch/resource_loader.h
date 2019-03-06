@@ -124,8 +124,8 @@ class PLATFORM_EXPORT ResourceLoader final
       const WebString& new_method,
       const WebURLResponse& passed_redirect_response,
       bool& report_raw_headers) override;
-  void DidSendData(unsigned long long bytes_sent,
-                   unsigned long long total_bytes_to_be_sent) override;
+  void DidSendData(uint64_t bytes_sent,
+                   uint64_t total_bytes_to_be_sent) override;
   void DidReceiveResponse(const WebURLResponse&) override;
   void DidReceiveResponse(const WebURLResponse&,
                           std::unique_ptr<WebDataConsumerHandle>) override;

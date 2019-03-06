@@ -48,8 +48,8 @@ class ResourceTimingInfo;
 
 class CORE_EXPORT ThreadableLoaderClient : public GarbageCollectedMixin {
  public:
-  virtual void DidSendData(unsigned long long /*bytesSent*/,
-                           unsigned long long /*totalBytesToBeSent*/) {}
+  virtual void DidSendData(uint64_t /*bytesSent*/,
+                           uint64_t /*totalBytesToBeSent*/) {}
   // Note that redirects for redirect modes kError and kManual are still
   // notified here. A client must return false in such cases.
   virtual bool WillFollowRedirect(const KURL& new_url,
@@ -66,7 +66,7 @@ class CORE_EXPORT ThreadableLoaderClient : public GarbageCollectedMixin {
   virtual void DidFailRedirectCheck() {}
   virtual void DidReceiveResourceTiming(const ResourceTimingInfo&) {}
 
-  virtual void DidDownloadData(unsigned long long /*dataLength*/) {}
+  virtual void DidDownloadData(uint64_t /*dataLength*/) {}
   // Called for requests that had DownloadToBlob set to true. Can be called with
   // null if creating the blob failed for some reason (but the download itself
   // otherwise succeeded). Could also not be called at all if the downloaded

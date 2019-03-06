@@ -49,8 +49,8 @@ XMLHttpRequestProgressEventThrottle::DeferredEvent::DeferredEvent() {
 
 void XMLHttpRequestProgressEventThrottle::DeferredEvent::Set(
     bool length_computable,
-    unsigned long long loaded,
-    unsigned long long total) {
+    uint64_t loaded,
+    uint64_t total) {
   is_set_ = true;
 
   length_computable_ = length_computable;
@@ -90,8 +90,8 @@ XMLHttpRequestProgressEventThrottle::~XMLHttpRequestProgressEventThrottle() =
 void XMLHttpRequestProgressEventThrottle::DispatchProgressEvent(
     const AtomicString& type,
     bool length_computable,
-    unsigned long long loaded,
-    unsigned long long total) {
+    uint64_t loaded,
+    uint64_t total) {
   // Given that ResourceDispatcher doesn't deliver an event when suspended,
   // we don't have to worry about event dispatching while suspended.
   if (type != event_type_names::kProgress) {

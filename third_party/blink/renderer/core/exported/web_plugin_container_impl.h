@@ -125,8 +125,8 @@ class CORE_EXPORT WebPluginContainerImpl final
   WebDocument GetDocument() override;
   void DispatchProgressEvent(const WebString& type,
                              bool length_computable,
-                             unsigned long long loaded,
-                             unsigned long long total,
+                             uint64_t loaded,
+                             uint64_t total,
                              const WebString& url) override;
   void EnqueueMessageEvent(const WebDOMMessageEvent&) override;
   void Invalidate() override;

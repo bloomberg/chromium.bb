@@ -1302,11 +1302,10 @@ void XMLHttpRequest::DispatchProgressEvent(const AtomicString& type,
                                            long long expected_length) {
   bool length_computable =
       expected_length > 0 && received_length <= expected_length;
-  unsigned long long loaded =
-      received_length >= 0 ? static_cast<unsigned long long>(received_length)
-                           : 0;
-  unsigned long long total =
-      length_computable ? static_cast<unsigned long long>(expected_length) : 0;
+  uint64_t loaded =
+      received_length >= 0 ? static_cast<uint64_t>(received_length) : 0;
+  uint64_t total =
+      length_computable ? static_cast<uint64_t>(expected_length) : 0;
 
   ExecutionContext* context = GetExecutionContext();
   probe::AsyncTask async_task(
@@ -1776,8 +1775,8 @@ void XMLHttpRequest::EndLoading() {
         GetDocument()->GetFrame());
 }
 
-void XMLHttpRequest::DidSendData(unsigned long long bytes_sent,
-                                 unsigned long long total_bytes_to_be_sent) {
+void XMLHttpRequest::DidSendData(uint64_t bytes_sent,
+                                 uint64_t total_bytes_to_be_sent) {
   NETWORK_DVLOG(1) << this << " didSendData(" << bytes_sent << ", "
                    << total_bytes_to_be_sent << ")";
   ScopedEventDispatchProtect protect(&event_dispatch_recursion_level_);
@@ -1920,7 +1919,7 @@ void XMLHttpRequest::DidReceiveData(const char* data, unsigned len) {
   TrackProgress(len);
 }
 
-void XMLHttpRequest::DidDownloadData(unsigned long long data_length) {
+void XMLHttpRequest::DidDownloadData(uint64_t data_length) {
   ScopedEventDispatchProtect protect(&event_dispatch_recursion_level_);
   if (error_)
     return;

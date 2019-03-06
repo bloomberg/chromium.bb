@@ -730,8 +730,8 @@ void ThreadableLoader::RedirectBlocked() {
 }
 
 void ThreadableLoader::DataSent(Resource* resource,
-                                unsigned long long bytes_sent,
-                                unsigned long long total_bytes_to_be_sent) {
+                                uint64_t bytes_sent,
+                                uint64_t total_bytes_to_be_sent) {
   DCHECK(client_);
   DCHECK_EQ(resource, GetResource());
   DCHECK(async_);
@@ -741,7 +741,7 @@ void ThreadableLoader::DataSent(Resource* resource,
 }
 
 void ThreadableLoader::DataDownloaded(Resource* resource,
-                                      unsigned long long data_length) {
+                                      uint64_t data_length) {
   DCHECK(client_);
   DCHECK_EQ(resource, GetResource());
   DCHECK(actual_request_.IsNull());

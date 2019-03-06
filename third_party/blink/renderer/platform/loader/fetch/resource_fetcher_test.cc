@@ -392,9 +392,7 @@ class ServeRequestsOnCompleteClient final
 
   // No callbacks should be received except for the NotifyFinished() triggered
   // by ResourceLoader::Cancel().
-  void DataSent(Resource*, unsigned long long, unsigned long long) override {
-    ASSERT_TRUE(false);
-  }
+  void DataSent(Resource*, uint64_t, uint64_t) override { ASSERT_TRUE(false); }
   void ResponseReceived(Resource*, const ResourceResponse&) override {
     ASSERT_TRUE(false);
   }
@@ -410,9 +408,7 @@ class ServeRequestsOnCompleteClient final
     ADD_FAILURE();
     return true;
   }
-  void DataDownloaded(Resource*, unsigned long long) override {
-    ASSERT_TRUE(false);
-  }
+  void DataDownloaded(Resource*, uint64_t) override { ASSERT_TRUE(false); }
   void DidReceiveResourceTiming(Resource*, const ResourceTimingInfo&) override {
     ASSERT_TRUE(false);
   }

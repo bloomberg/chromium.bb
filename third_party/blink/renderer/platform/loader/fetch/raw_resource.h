@@ -122,9 +122,9 @@ class PLATFORM_EXPORT RawResource final : public Resource {
   void WillNotFollowRedirect() override;
   void ResponseReceived(const ResourceResponse&) override;
   void ResponseBodyReceived(ResponseBodyLoaderDrainableInterface&) override;
-  void DidSendData(unsigned long long bytes_sent,
-                   unsigned long long total_bytes_to_be_sent) override;
-  void DidDownloadData(unsigned long long) override;
+  void DidSendData(uint64_t bytes_sent,
+                   uint64_t total_bytes_to_be_sent) override;
+  void DidDownloadData(uint64_t) override;
   void DidDownloadToBlob(scoped_refptr<BlobDataHandle>) override;
   void ReportResourceTimingToClients(const ResourceTimingInfo&) override;
   bool MatchPreload(const FetchParameters&,
@@ -180,8 +180,8 @@ class PLATFORM_EXPORT RawResourceClient : public ResourceClient {
   //     No callbacks are made after NotifyFinished() or
   //     RemoveClient() is called.
   virtual void DataSent(Resource*,
-                        unsigned long long /* bytesSent */,
-                        unsigned long long /* totalBytesToBeSent */) {}
+                        uint64_t /* bytesSent */,
+                        uint64_t /* totalBytesToBeSent */) {}
   virtual void ResponseBodyReceived(Resource*, BytesConsumer&) {}
   virtual void ResponseReceived(Resource*, const ResourceResponse&) {}
   virtual void SetSerializedCachedMetadata(Resource*, const uint8_t*, size_t) {}
@@ -191,7 +191,7 @@ class PLATFORM_EXPORT RawResourceClient : public ResourceClient {
     return true;
   }
   virtual void RedirectBlocked() {}
-  virtual void DataDownloaded(Resource*, unsigned long long) {}
+  virtual void DataDownloaded(Resource*, uint64_t) {}
   virtual void DidReceiveResourceTiming(Resource*, const ResourceTimingInfo&) {}
   // Called for requests that had DownloadToBlob set to true. Can be called with
   // null if creating the blob failed for some reason (but the download itself

@@ -197,8 +197,8 @@ bool ResourceMultiBufferDataProvider::WillFollowRedirect(
 }
 
 void ResourceMultiBufferDataProvider::DidSendData(
-    unsigned long long bytes_sent,
-    unsigned long long total_bytes_to_be_sent) {
+    uint64_t bytes_sent,
+    uint64_t total_bytes_to_be_sent) {
   NOTIMPLEMENTED();
 }
 
@@ -421,8 +421,7 @@ void ResourceMultiBufferDataProvider::DidReceiveData(const char* data,
   // Beware, this object might be deleted here.
 }
 
-void ResourceMultiBufferDataProvider::DidDownloadData(
-    unsigned long long dataLength) {
+void ResourceMultiBufferDataProvider::DidDownloadData(uint64_t dataLength) {
   NOTIMPLEMENTED();
 }
 
