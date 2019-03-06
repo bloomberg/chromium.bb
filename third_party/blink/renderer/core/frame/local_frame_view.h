@@ -775,9 +775,7 @@ class CORE_EXPORT LocalFrameView final
   void SetupPrintContext();
   void ClearPrintContext();
 
-  // The callback invoked when the timer triggers to stop deferring commits
-  // on navigation.
-  void DeferredCommitsTimerFired();
+  void StopDeferringCommits();
 
   // Returns whether the lifecycle was succesfully updated to the
   // target state.

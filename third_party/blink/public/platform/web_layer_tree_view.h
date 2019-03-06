@@ -135,9 +135,13 @@ class WebLayerTreeView {
     return nullptr;
   }
 
-  // Start and Stop defering commits to the compositor. Defering commits
-  // allows document lifecycle updates but does not commit the layer tree.
-  virtual void StartDeferringCommits() {}
+  // Start defering commits to the compositor, allowing document lifecycle
+  // updates without committing the layer tree. Commits are deferred
+  // until at most the given |timeout| has passed. If multiple calls are made
+  // when deferal is active then the initial timeout applies.
+  virtual void StartDeferringCommits(base::TimeDelta timeout) {}
+
+  // Immediately stop deferring commits.
   virtual void StopDeferringCommits() {}
 
   // Mutations are plumbed back to the layer tree via the mutator client.

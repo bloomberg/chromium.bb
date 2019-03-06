@@ -945,8 +945,8 @@ void ChromeClientImpl::BeginLifecycleUpdates() {
     web_view_->WidgetClient()->ScheduleAnimation();
 }
 
-void ChromeClientImpl::StartDeferringCommits() {
-  web_view_->StartDeferringCommits();
+void ChromeClientImpl::StartDeferringCommits(base::TimeDelta timeout) {
+  web_view_->StartDeferringCommits(timeout);
 }
 
 void ChromeClientImpl::StopDeferringCommits() {

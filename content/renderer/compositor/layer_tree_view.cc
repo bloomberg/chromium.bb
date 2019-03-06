@@ -470,8 +470,8 @@ LayerTreeView::DeferMainFrameUpdate() {
   return layer_tree_host_->DeferMainFrameUpdate();
 }
 
-void LayerTreeView::StartDeferringCommits() {
-  layer_tree_host_->StartDeferringCommits();
+void LayerTreeView::StartDeferringCommits(base::TimeDelta timeout) {
+  layer_tree_host_->StartDeferringCommits(timeout);
 }
 
 void LayerTreeView::StopDeferringCommits() {

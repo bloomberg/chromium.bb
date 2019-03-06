@@ -66,10 +66,14 @@ class CC_EXPORT Proxy {
   // reset. It is only supported when using a scheduler.
   virtual void SetDeferMainFrameUpdate(bool defer_main_frame_update) = 0;
 
-  // Defers commits until reset, but continues to update the document
-  // lifecycle in LayerTreeHost::BeginMainFrameUpdate. It is only supported
-  // when using a scheduler.
-  virtual void SetDeferCommits(bool defer_commits) = 0;
+  // Defers commits until at most the given |timeout| period has passed,
+  // but continues to update the document lifecycle in
+  // LayerTreeHost::BeginMainFrameUpdate. If multiple calls are made when
+  // deferal is active the first |timeout| continues to apply.
+  virtual void StartDeferringCommits(base::TimeDelta timeout) = 0;
+
+  // Immediately stop deferring commits.
+  virtual void StopDeferringCommits() = 0;
 
   virtual bool CommitRequested() const = 0;
 

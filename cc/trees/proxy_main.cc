@@ -230,6 +230,11 @@ void ProxyMain::BeginMainFrame(
   // what this does.
   layer_tree_host_->RequestMainFrameUpdate();
 
+  // Check now if we should stop deferring commits
+  if (defer_commits_ && base::TimeTicks::Now() > commits_restart_time_) {
+    StopDeferringCommits();
+  }
+
   // At this point the main frame may have deferred commits to avoid committing
   // right now, or we may be deferring commits but not deferring main
   // frame updates.
@@ -463,16 +468,26 @@ void ProxyMain::SetDeferMainFrameUpdate(bool defer_main_frame_update) {
                                 defer_main_frame_update));
 }
 
-void ProxyMain::SetDeferCommits(bool defer_commits) {
-  DCHECK(IsMainThread());
-  if (defer_commits_ == defer_commits)
+void ProxyMain::StartDeferringCommits(base::TimeDelta timeout) {
+  DCHECK(task_runner_provider_->IsMainThread());
+
+  // Do nothing if already deferring. The timeout remains as it was from when
+  // we most recently began deferring.
+  if (defer_commits_)
     return;
 
-  defer_commits_ = defer_commits;
-  if (defer_commits_)
-    TRACE_EVENT_ASYNC_BEGIN0("cc", "ProxyMain::SetDeferCommits", this);
-  else
-    TRACE_EVENT_ASYNC_END0("cc", "ProxyMain::SetDeferCommits", this);
+  TRACE_EVENT_ASYNC_BEGIN0("cc", "ProxyMain::SetDeferCommits", this);
+
+  defer_commits_ = true;
+  commits_restart_time_ = base::TimeTicks::Now() + timeout;
+}
+
+void ProxyMain::StopDeferringCommits() {
+  if (!defer_commits_)
+    return;
+  defer_commits_ = false;
+  commits_restart_time_ = base::TimeTicks();
+  TRACE_EVENT_ASYNC_END0("cc", "ProxyMain::SetDeferCommits", this);
 }
 
 bool ProxyMain::CommitRequested() const {

@@ -3473,9 +3473,9 @@ void WebViewImpl::DeferMainFrameUpdateForTesting() {
   scoped_defer_main_frame_update_ = layer_tree_view_->DeferMainFrameUpdate();
 }
 
-void WebViewImpl::StartDeferringCommits() {
+void WebViewImpl::StartDeferringCommits(base::TimeDelta timeout) {
   if (layer_tree_view_)
-    layer_tree_view_->StartDeferringCommits();
+    layer_tree_view_->StartDeferringCommits(timeout);
 }
 
 void WebViewImpl::StopDeferringCommits() {

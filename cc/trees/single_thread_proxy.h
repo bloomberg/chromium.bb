@@ -52,7 +52,8 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   bool RequestedAnimatePending() override;
   void NotifyInputThrottledUntilCommit() override {}
   void SetDeferMainFrameUpdate(bool defer_main_frame_update) override;
-  void SetDeferCommits(bool defer_commits) override;
+  void StartDeferringCommits(base::TimeDelta timeout) override;
+  void StopDeferringCommits() override;
   bool CommitRequested() const override;
   void Start() override;
   void Stop() override;
@@ -176,6 +177,9 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
 
   // Accessed from both threads.
   std::unique_ptr<Scheduler> scheduler_on_impl_thread_;
+
+  // Only used when defer_commits_ is active and must be set in such cases.
+  base::TimeTicks commits_restart_time_;
 
   bool next_frame_is_newly_committed_frame_;
 
