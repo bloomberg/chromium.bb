@@ -35,14 +35,15 @@ ExtensionPort::ExtensionPort(ScriptContext* script_context,
 ExtensionPort::~ExtensionPort() {}
 
 void ExtensionPort::PostExtensionMessage(std::unique_ptr<Message> message) {
-  content::RenderFrame* render_frame = script_context_->GetRenderFrame();
-  // TODO(devlin): What should we do if there's no render frame? Up until now,
-  // we've always just dropped the messages, but we might need to figure this
-  // out for service workers.
-  // TODO(crbug.com/925918): Support Service Worker.
-  if (!render_frame)
-    return;
-  render_frame->Send(new ExtensionHostMsg_PostMessage(id_, *message));
+  if (worker_thread_util::IsWorkerThread()) {
+    DCHECK(!script_context_->GetRenderFrame());
+    GetWorkerThreadIPCMessageSender()->SendPostMessageToPort(id_, *message);
+  } else {
+    content::RenderFrame* render_frame = script_context_->GetRenderFrame();
+    if (!render_frame)
+      return;
+    render_frame->Send(new ExtensionHostMsg_PostMessage(id_, *message));
+  }
 }
 
 void ExtensionPort::Close(bool close_channel) {

@@ -82,6 +82,29 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerMessagingTest, TabToWorkerOneWay) {
   EXPECT_TRUE(test_listener.WaitUntilSatisfied());
 }
 
+// Tests chrome.runtime.sendMessage from content script to SW extension.
+IN_PROC_BROWSER_TEST_P(ServiceWorkerMessagingTest, TabToWorker) {
+  ExtensionTestMessageListener worker_listener("WORKER_RUNNING", false);
+  const Extension* extension = LoadExtension(test_data_dir_.AppendASCII(
+      "service_worker/messaging/send_message_tab_to_worker"));
+  ASSERT_TRUE(extension);
+  EXPECT_TRUE(worker_listener.WaitUntilSatisfied());
+
+  ExtensionTestMessageListener reply_listener("CONTENT_SCRIPT_RECEIVED_REPLY",
+                                              false);
+  reply_listener.set_failure_message("FAILURE");
+
+  {
+    ASSERT_TRUE(StartEmbeddedTestServer());
+    const GURL url =
+        embedded_test_server()->GetURL("/extensions/test_file.html");
+    content::WebContents* new_web_contents = AddTab(browser(), url);
+    EXPECT_TRUE(new_web_contents);
+  }
+
+  EXPECT_TRUE(reply_listener.WaitUntilSatisfied());
+}
+
 INSTANTIATE_TEST_SUITE_P(ServiceWorkerMessagingTestWithNativeBindings,
                          ServiceWorkerMessagingTest,
                          ::testing::Values(NATIVE_BINDINGS));

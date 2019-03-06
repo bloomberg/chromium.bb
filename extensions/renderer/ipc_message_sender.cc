@@ -389,7 +389,7 @@ class WorkerThreadIPCMessageSender : public IPCMessageSender {
 
   void SendPostMessageToPort(const PortId& port_id,
                              const Message& message) override {
-    NOTIMPLEMENTED();
+    dispatcher_->Send(new ExtensionHostMsg_PostMessage(port_id, message));
   }
 
  private:
