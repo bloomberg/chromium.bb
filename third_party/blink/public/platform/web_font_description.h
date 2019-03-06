@@ -87,8 +87,8 @@ struct WebFontDescription {
   Weight weight;
   Smoothing smoothing;
 
-  short letter_spacing;
-  short word_spacing;
+  int16_t letter_spacing;
+  int16_t word_spacing;
 
 #if INSIDE_BLINK
   BLINK_PLATFORM_EXPORT WebFontDescription(const FontDescription&);

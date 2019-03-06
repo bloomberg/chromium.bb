@@ -130,8 +130,8 @@ bool GetNumericType(const Dictionary& dictionary,
 template <>
 bool DictionaryHelper::Get(const Dictionary& dictionary,
                            const StringView& key,
-                           short& value) {
-  return GetNumericType<short>(dictionary, key, value);
+                           int16_t& value) {
+  return GetNumericType<int16_t>(dictionary, key, value);
 }
 
 template <>

@@ -793,11 +793,11 @@ void LayoutThemeMac::SetSearchFieldSize(ComputedStyle& style) const {
   SetSizeFromFont(style, SearchFieldSizes());
 }
 
-const int kSearchFieldBorderWidth = 2;
+const uint8_t kSearchFieldBorderWidth = 2;
 void LayoutThemeMac::AdjustSearchFieldStyle(ComputedStyle& style) const {
   // Override border.
   style.ResetBorder();
-  const short border_width = kSearchFieldBorderWidth * style.EffectiveZoom();
+  const float border_width = kSearchFieldBorderWidth * style.EffectiveZoom();
   style.SetBorderLeftWidth(border_width);
   style.SetBorderLeftStyle(EBorderStyle::kInset);
   style.SetBorderRightWidth(border_width);
