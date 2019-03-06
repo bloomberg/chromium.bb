@@ -403,6 +403,11 @@ struct macroblock {
   // Store the fractional best motion vector during sub/Qpel-pixel motion search
   int_mv fractional_best_mv[3];
 
+  // Ref frames that are selected by square partition blocks within a super-
+  // block, in MI resolution. They can be used to prune ref frames for
+  // rectangular blocks.
+  int picked_ref_frames_mask[32 * 32];
+
   // use default transform and skip transform type search for intra modes
   int use_default_intra_tx_type;
   // use default transform and skip transform type search for inter modes

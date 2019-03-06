@@ -218,8 +218,7 @@ static void set_good_speed_features_framesize_independent(
   // TODO(debargha): Test, tweak and turn on either 1 or 2
   sf->inter_mode_rd_model_estimation = 1;
   sf->two_loop_comp_search = 0;
-
-  sf->prune_ref_frame_for_rect_partitions = !is_boosted_arf2_bwd_type;
+  sf->prune_ref_frame_for_rect_partitions = !boosted;
   sf->less_rectangular_check_level = 1;
   sf->gm_search_type = GM_REDUCED_REF_SEARCH_SKIP_L2_L3;
   sf->gm_disable_recode = 1;
@@ -442,8 +441,7 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
   sf->inter_mode_rd_model_estimation = 0;
   sf->two_loop_comp_search = 0;
 
-  sf->prune_ref_frame_for_rect_partitions =
-      !(boosted || cpi->refresh_bwd_ref_frame || cpi->refresh_alt2_ref_frame);
+  sf->prune_ref_frame_for_rect_partitions = !boosted;
   sf->less_rectangular_check_level = 1;
   sf->gm_search_type = GM_REDUCED_REF_SEARCH_SKIP_L2_L3;
   sf->gm_disable_recode = 1;

@@ -11860,13 +11860,30 @@ static int inter_mode_compatible_skip(const AV1_COMP *cpi, const MACROBLOCK *x,
   return 0;
 }
 
+static int fetch_picked_ref_frames_mask(const MACROBLOCK *const x,
+                                        BLOCK_SIZE bsize, int mib_size,
+                                        int mi_row, int mi_col) {
+  const int sb_size_mask = mib_size - 1;
+  const int mi_row_in_sb = mi_row & sb_size_mask;
+  const int mi_col_in_sb = mi_col & sb_size_mask;
+  const int mi_w = mi_size_wide[bsize];
+  const int mi_h = mi_size_high[bsize];
+  int picked_ref_frames_mask = 0;
+  for (int i = mi_row_in_sb; i < mi_row_in_sb + mi_h; ++i) {
+    for (int j = mi_col_in_sb; j < mi_col_in_sb + mi_w; ++j) {
+      picked_ref_frames_mask |= x->picked_ref_frames_mask[i * 32 + j];
+    }
+  }
+  return picked_ref_frames_mask;
+}
+
 // Case 1: return 0, means don't skip this mode
 // Case 2: return 1, means skip this mode completely
 // Case 3: return 2, means skip compound only, but still try single motion modes
 static int inter_mode_search_order_independent_skip(
-    const AV1_COMP *cpi, const PICK_MODE_CONTEXT *ctx, const MACROBLOCK *x,
-    BLOCK_SIZE bsize, int mode_index, int mi_row, int mi_col,
-    mode_skip_mask_t *mode_skip_mask, InterModeSearchState *search_state) {
+    const AV1_COMP *cpi, const MACROBLOCK *x, BLOCK_SIZE bsize, int mode_index,
+    int mi_row, int mi_col, mode_skip_mask_t *mode_skip_mask,
+    InterModeSearchState *search_state, int skip_ref_frame_mask) {
   const SPEED_FEATURES *const sf = &cpi->sf;
   const AV1_COMMON *const cm = &cpi->common;
   const OrderHintInfo *const order_hint_info = &cm->seq_params.order_hint_info;
@@ -11890,14 +11907,14 @@ static int inter_mode_search_order_independent_skip(
 
   if (mbmi->partition != PARTITION_NONE && mbmi->partition != PARTITION_SPLIT) {
     const int ref_type = av1_ref_frame_type(ref_frame);
-    int skip_ref = ctx->skip_ref_frame_mask & (1 << ref_type);
+    int skip_ref = skip_ref_frame_mask & (1 << ref_type);
     if (ref_type <= ALTREF_FRAME && skip_ref) {
       // Since the compound ref modes depends on the motion estimation result of
       // two single ref modes( best mv of single ref modes as the start point )
       // If current single ref mode is marked skip, we need to check if it will
       // be used in compound ref modes.
       for (int r = ALTREF_FRAME + 1; r < MODE_CTX_REF_FRAMES; ++r) {
-        if (!(ctx->skip_ref_frame_mask & (1 << r))) {
+        if (!(skip_ref_frame_mask & (1 << r))) {
           const MV_REFERENCE_FRAME *rf = ref_frame_map[r - REF_FRAMES];
           if (rf[0] == ref_type || rf[1] == ref_type) {
             // Found a not skipped compound ref mode which contains current
@@ -12694,9 +12711,27 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
 
   av1_invalid_rd_stats(rd_cost);
 
+  // Ref frames that are selected by square partition blocks.
+  int picked_ref_frames_mask = 0;
+  if (cpi->sf.prune_ref_frame_for_rect_partitions &&
+      mbmi->partition != PARTITION_NONE && mbmi->partition != PARTITION_SPLIT) {
+    // Don't enable for vert and horz partition blocks if current frame
+    // will be used as bwd or arf2.
+    if ((!cpi->refresh_bwd_ref_frame && !cpi->refresh_alt2_ref_frame) ||
+        (mbmi->partition != PARTITION_VERT &&
+         mbmi->partition != PARTITION_HORZ)) {
+      picked_ref_frames_mask = fetch_picked_ref_frames_mask(
+          x, bsize, cm->seq_params.mib_size, mi_row, mi_col);
+    }
+  }
+
+  // Skip ref frames that never selected by square blocks.
+  const int skip_ref_frame_mask =
+      picked_ref_frames_mask ? ~picked_ref_frames_mask : 0;
+
   // init params, set frame modes, speed features
   set_params_rd_pick_inter_mode(cpi, x, &args, bsize, mi_row, mi_col,
-                                &mode_skip_mask, ctx->skip_ref_frame_mask,
+                                &mode_skip_mask, skip_ref_frame_mask,
                                 ref_costs_single, ref_costs_comp, yv12_mb);
 
   int64_t best_est_rd = INT64_MAX;
@@ -12774,8 +12809,8 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     if (inter_mode_compatible_skip(cpi, x, bsize, midx)) continue;
 
     const int ret = inter_mode_search_order_independent_skip(
-        cpi, ctx, x, bsize, midx, mi_row, mi_col, &mode_skip_mask,
-        &search_state);
+        cpi, x, bsize, midx, mi_row, mi_col, &mode_skip_mask, &search_state,
+        skip_ref_frame_mask);
     if (ret == 1) continue;
     args.skip_motion_mode = (ret == 2);
 
@@ -13264,9 +13299,27 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
 
   av1_invalid_rd_stats(rd_cost);
 
+  // Ref frames that are selected by square partition blocks.
+  int picked_ref_frames_mask = 0;
+  if (cpi->sf.prune_ref_frame_for_rect_partitions &&
+      mbmi->partition != PARTITION_NONE && mbmi->partition != PARTITION_SPLIT) {
+    // Don't enable for vert and horz partition blocks if current frame
+    // will be used as bwd or arf2.
+    if ((!cpi->refresh_bwd_ref_frame && !cpi->refresh_alt2_ref_frame) ||
+        (mbmi->partition != PARTITION_VERT &&
+         mbmi->partition != PARTITION_HORZ)) {
+      picked_ref_frames_mask = fetch_picked_ref_frames_mask(
+          x, bsize, cm->seq_params.mib_size, mi_row, mi_col);
+    }
+  }
+
+  // Skip ref frames that never selected by square blocks.
+  const int skip_ref_frame_mask =
+      picked_ref_frames_mask ? ~picked_ref_frames_mask : 0;
+
   // init params, set frame modes, speed features
   set_params_nonrd_pick_inter_mode(cpi, x, &args, bsize, mi_row, mi_col,
-                                   &mode_skip_mask, ctx->skip_ref_frame_mask,
+                                   &mode_skip_mask, skip_ref_frame_mask,
                                    ref_costs_single, ref_costs_comp, yv12_mb);
 
   int64_t best_est_rd = INT64_MAX;
@@ -13340,8 +13393,8 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     if (inter_mode_compatible_skip(cpi, x, bsize, midx)) continue;
 
     const int ret = inter_mode_search_order_independent_skip(
-        cpi, ctx, x, bsize, midx, mi_row, mi_col, &mode_skip_mask,
-        &search_state);
+        cpi, x, bsize, midx, mi_row, mi_col, &mode_skip_mask, &search_state,
+        skip_ref_frame_mask);
     if (ret == 1) continue;
     args.skip_motion_mode = (ret == 2);
 
