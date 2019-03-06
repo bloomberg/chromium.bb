@@ -82,6 +82,7 @@ SearchResultTileItemListView::SearchResultTileItemListView(
     SearchResultTileItemView* tile_item = new SearchResultTileItemView(
         view_delegate, nullptr /* pagination model */,
         false /* show_in_apps_page */);
+    tile_item->SetIndexInItemListView(i);
     tile_item->SetParentBackgroundColor(
         AppListConfig::instance().card_background_color());
     tile_views_.push_back(tile_item);

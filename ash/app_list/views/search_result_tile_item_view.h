@@ -39,6 +39,7 @@ class APP_LIST_EXPORT SearchResultTileItemView
   ~SearchResultTileItemView() override;
 
   void OnResultChanged() override;
+  void SetIndexInItemListView(size_t index);
 
   // Informs the SearchResultTileItemView of its parent's background color. The
   // controls within the SearchResultTileItemView will adapt to suit the given
@@ -120,6 +121,9 @@ class APP_LIST_EXPORT SearchResultTileItemView
 
   std::unique_ptr<AppListMenuModelAdapter> context_menu_;
 
+  // The index of this item in the search_result_tile_item_list_view, only used
+  // for logging.
+  int index_in_item_list_view_ = -1;
   base::WeakPtrFactory<SearchResultTileItemView> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchResultTileItemView);

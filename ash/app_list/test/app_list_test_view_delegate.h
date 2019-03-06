@@ -60,7 +60,8 @@ class AppListTestViewDelegate : public AppListViewDelegate,
   void StartSearch(const base::string16& raw_query) override {}
   void OpenSearchResult(const std::string& result_id, int event_flags) override;
   void LogSearchClick(const std::string& result_id,
-                      int suggestion_index) override {}
+                      int suggestion_index,
+                      ash::mojom::AppListLaunchedFrom launched_from) override {}
   void InvokeSearchResultAction(const std::string& result_id,
                                 int action_index,
                                 int event_flags) override {}

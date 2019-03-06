@@ -10,6 +10,7 @@
 #include "ash/app_list/app_list_view_delegate.h"
 #include "ash/app_list/model/search/search_result.h"
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
+#include "ash/public/interfaces/app_list.mojom.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
@@ -71,8 +72,9 @@ void SearchResultSuggestionChipView::ButtonPressed(views::Button* sender,
   RecordSearchResultOpenSource(result(), view_delegate_->GetModel(),
                                view_delegate_->GetSearchModel());
   view_delegate_->OpenSearchResult(result()->id(), event.flags());
-  view_delegate_->LogSearchClick(result()->id(),
-                                 index_in_suggestion_chip_container_);
+  view_delegate_->LogSearchClick(
+      result()->id(), index_in_suggestion_chip_container_,
+      ash::mojom::AppListLaunchedFrom::kLaunchedFromSuggestionChip);
 }
 
 void SearchResultSuggestionChipView::Layout() {

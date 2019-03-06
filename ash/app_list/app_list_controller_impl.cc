@@ -873,10 +873,12 @@ void AppListControllerImpl::OpenSearchResult(const std::string& result_id,
     presenter_.GetView()->CloseOpenedPage();
 }
 
-void AppListControllerImpl::LogSearchClick(const std::string& result_id,
-                                           int suggestion_index) {
+void AppListControllerImpl::LogSearchClick(
+    const std::string& result_id,
+    int suggestion_index,
+    ash::mojom::AppListLaunchedFrom launched_from) {
   if (client_)
-    client_->LogSearchClick(result_id, suggestion_index);
+    client_->LogSearchClick(result_id, suggestion_index, launched_from);
 }
 
 void AppListControllerImpl::InvokeSearchResultAction(

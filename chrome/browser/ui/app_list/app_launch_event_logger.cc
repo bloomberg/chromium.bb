@@ -128,13 +128,22 @@ AppLaunchEventLogger::AppLaunchEventLogger()
 
 AppLaunchEventLogger::~AppLaunchEventLogger() {}
 
-void AppLaunchEventLogger::OnSuggestionChipClicked(const std::string& id,
-                                                   int suggestion_index) {
+void AppLaunchEventLogger::OnSuggestionChipOrSearchBoxClicked(
+    const std::string& id,
+    int suggestion_index,
+    int launched_from) {
   if (!base::FeatureList::IsEnabled(kUkmAppLaunchEventLogging)) {
     return;
   }
   AppLaunchEvent event;
-  event.set_launched_from(AppLaunchEvent_LaunchedFrom_SUGGESTED);
+  AppLaunchEvent_LaunchedFrom from(
+      static_cast<AppLaunchEvent_LaunchedFrom>(launched_from));
+  if (from == AppLaunchEvent_LaunchedFrom_SUGGESTION_CHIP ||
+      from == AppLaunchEvent_LaunchedFrom_SEARCH_BOX) {
+    event.set_launched_from(from);
+  } else {
+    return;
+  }
   event.set_app_id(RemoveScheme(id));
   event.set_index(suggestion_index);
   EnforceLoggingPolicy();
@@ -487,7 +496,9 @@ void AppLaunchEventLogger::Log(AppLaunchEvent app_launch_event) {
   all_clicks_last_24_hours_->Log(duration);
 
   if (app_launch_event.launched_from() ==
-      AppLaunchEvent_LaunchedFrom_SUGGESTED) {
+          AppLaunchEvent_LaunchedFrom_SUGGESTION_CHIP ||
+      app_launch_event.launched_from() ==
+          AppLaunchEvent_LaunchedFrom_SEARCH_BOX) {
     app_launch.SetPositionIndex(app_launch_event.index());
   }
   app_launch.SetAppType(app->second.app_type())

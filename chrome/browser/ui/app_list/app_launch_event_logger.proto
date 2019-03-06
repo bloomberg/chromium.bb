@@ -11,8 +11,9 @@ package app_list;
 message AppLaunchEvent {
   enum LaunchedFrom {
     GRID = 1;
-    SUGGESTED = 2;
+    SUGGESTION_CHIP = 2;
     SHELF = 3;
+    SEARCH_BOX = 4;
   }
   // The component that the user launched the app from.
   optional LaunchedFrom launched_from = 1;

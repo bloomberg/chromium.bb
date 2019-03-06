@@ -47,10 +47,12 @@ class AppLaunchEventLogger {
  public:
   AppLaunchEventLogger();
   ~AppLaunchEventLogger();
-  // Processes a click on an app in the suggestion chip and logs the resulting
-  // metrics in UKM. This method calls EnforceLoggingPolicy() to ensure the
-  // logging policy is complied with.
-  void OnSuggestionChipClicked(const std::string& id, int suggestion_index);
+  // Processes a click on an app in the suggestion chip or search box and logs
+  // the resulting metrics in UKM. This method calls EnforceLoggingPolicy() to
+  // ensure the logging policy is complied with.
+  void OnSuggestionChipOrSearchBoxClicked(const std::string& id,
+                                          int suggestion_index,
+                                          int launched_from);
   // Processes a click on an app located in the grid of apps in the launcher and
   // logs the resulting metrics in UKM. This method calls EnforceLoggingPolicy()
   // to ensure the logging policy is complied with.
