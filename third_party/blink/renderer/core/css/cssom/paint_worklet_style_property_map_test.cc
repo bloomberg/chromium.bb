@@ -131,7 +131,7 @@ class PaintWorkletStylePropertyMapTest : public PageTestBase {
     EXPECT_EQ(values.at("--keyword")->ToCSSStyleValue()->GetType(),
               CSSStyleValue::StyleValueType::kKeywordType);
     EXPECT_EQ(
-        ToCSSKeywordValue(values.at("--keyword")->ToCSSStyleValue())->value(),
+        To<CSSKeywordValue>(values.at("--keyword")->ToCSSStyleValue())->value(),
         "test");
     EXPECT_EQ(values.at("--x")->ToCSSStyleValue()->GetType(),
               CSSStyleValue::StyleValueType::kUnitType);
