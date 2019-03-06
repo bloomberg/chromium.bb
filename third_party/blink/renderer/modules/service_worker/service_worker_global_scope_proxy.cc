@@ -618,8 +618,28 @@ void ServiceWorkerGlobalScopeProxy::ReportConsoleMessage(
     const String& message,
     SourceLocation* location) {
   DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
-  Client().ReportConsoleMessage(source, level, message, location->LineNumber(),
-                                location->Url());
+
+  // TODO(https://crbug.com/937184): This back-and-forth conversion will be
+  // unnecessary once we converge on blink::mojom::ConsoleMessageLevel.
+  blink::mojom::ConsoleMessageLevel console_message_level =
+      blink::mojom::ConsoleMessageLevel::kInfo;
+  switch (level) {
+    case kVerboseMessageLevel:
+      console_message_level = blink::mojom::ConsoleMessageLevel::kVerbose;
+      break;
+    case kInfoMessageLevel:
+      console_message_level = blink::mojom::ConsoleMessageLevel::kInfo;
+      break;
+    case kWarningMessageLevel:
+      console_message_level = blink::mojom::ConsoleMessageLevel::kWarning;
+      break;
+    case kErrorMessageLevel:
+      console_message_level = blink::mojom::ConsoleMessageLevel::kError;
+      break;
+  }
+
+  Client().ReportConsoleMessage(source, console_message_level, message,
+                                location->LineNumber(), location->Url());
 }
 
 void ServiceWorkerGlobalScopeProxy::WillInitializeWorkerContext() {

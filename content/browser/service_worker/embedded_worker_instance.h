@@ -27,6 +27,7 @@
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/embedded_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker.mojom.h"
@@ -111,11 +112,12 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
                                    int line_number,
                                    int column_number,
                                    const GURL& source_url) {}
-    virtual void OnReportConsoleMessage(int source_identifier,
-                                        int message_level,
-                                        const base::string16& message,
-                                        int line_number,
-                                        const GURL& source_url) {}
+    virtual void OnReportConsoleMessage(
+        int source_identifier,
+        blink::mojom::ConsoleMessageLevel message_level,
+        const base::string16& message,
+        int line_number,
+        const GURL& source_url) {}
   };
 
   ~EmbeddedWorkerInstance() override;
@@ -292,7 +294,7 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
                          int column_number,
                          const GURL& source_url) override;
   void OnReportConsoleMessage(int source_identifier,
-                              int message_level,
+                              blink::mojom::ConsoleMessageLevel message_level,
                               const base::string16& message,
                               int line_number,
                               const GURL& source_url) override;

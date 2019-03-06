@@ -1056,11 +1056,12 @@ void ServiceWorkerVersion::OnReportException(
   }
 }
 
-void ServiceWorkerVersion::OnReportConsoleMessage(int source_identifier,
-                                                  int message_level,
-                                                  const base::string16& message,
-                                                  int line_number,
-                                                  const GURL& source_url) {
+void ServiceWorkerVersion::OnReportConsoleMessage(
+    int source_identifier,
+    blink::mojom::ConsoleMessageLevel message_level,
+    const base::string16& message,
+    int line_number,
+    const GURL& source_url) {
   for (auto& observer : observers_) {
     observer.OnReportConsoleMessage(this, source_identifier, message_level,
                                     message, line_number, source_url);

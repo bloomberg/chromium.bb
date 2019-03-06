@@ -1022,7 +1022,7 @@ void EmbeddedWorkerInstance::OnReportException(
 
 void EmbeddedWorkerInstance::OnReportConsoleMessage(
     int source_identifier,
-    int message_level,
+    blink::mojom::ConsoleMessageLevel message_level,
     const base::string16& message,
     int line_number,
     const GURL& source_url) {

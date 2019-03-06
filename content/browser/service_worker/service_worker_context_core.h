@@ -143,7 +143,7 @@ class CONTENT_EXPORT ServiceWorkerContextCore
                        const GURL& source_url) override;
   void OnReportConsoleMessage(ServiceWorkerVersion* version,
                               int source_identifier,
-                              int message_level,
+                              blink::mojom::ConsoleMessageLevel message_level,
                               const base::string16& message,
                               int line_number,
                               const GURL& source_url) override;

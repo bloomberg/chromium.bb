@@ -35,6 +35,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/time/time.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom-shared.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom-shared.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom-shared.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_stream_handle.h"
@@ -163,7 +164,7 @@ class WebServiceWorkerContextClient {
 
   // Called when a console message was written.
   virtual void ReportConsoleMessage(int source,
-                                    int level,
+                                    blink::mojom::ConsoleMessageLevel level,
                                     const WebString& message,
                                     int line_number,
                                     const WebString& source_url) {}

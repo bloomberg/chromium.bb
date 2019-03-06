@@ -836,7 +836,7 @@ void ServiceWorkerContextCore::OnErrorReported(
 void ServiceWorkerContextCore::OnReportConsoleMessage(
     ServiceWorkerVersion* version,
     int source_identifier,
-    int message_level,
+    blink::mojom::ConsoleMessageLevel message_level,
     const base::string16& message,
     int line_number,
     const GURL& source_url) {
@@ -848,8 +848,8 @@ void ServiceWorkerContextCore::OnReportConsoleMessage(
   // BrowserContext and call ContentBrowserClient::IsBuiltinComponent().
   const bool is_builtin_component = HasWebUIScheme(source_url);
 
-  LogConsoleMessage(message_level, message, line_number, is_builtin_component,
-                    wrapper_->is_incognito(),
+  LogConsoleMessage(ConsoleMessageLevelToLogSeverity(message_level), message,
+                    line_number, is_builtin_component, wrapper_->is_incognito(),
                     base::UTF8ToUTF16(source_url.spec()));
 
   observer_list_->Notify(
