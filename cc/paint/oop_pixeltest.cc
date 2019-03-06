@@ -179,12 +179,10 @@ class OopPixelTest : public testing::Test,
     raster_implementation->WaitSyncTokenCHROMIUM(
         sii->GenUnverifiedSyncToken().GetConstData());
 
-    RasterColorSpace color_space(options.color_space, ++color_space_id_);
-
     if (options.preclear) {
       raster_implementation->BeginRasterCHROMIUM(
           options.preclear_color, options.msaa_sample_count,
-          options.use_lcd_text, color_space, mailbox.name);
+          options.use_lcd_text, options.color_space, mailbox.name);
       raster_implementation->EndRasterCHROMIUM();
     }
 
@@ -192,7 +190,7 @@ class OopPixelTest : public testing::Test,
 
     raster_implementation->BeginRasterCHROMIUM(
         options.background_color, options.msaa_sample_count,
-        options.use_lcd_text, color_space, mailbox.name);
+        options.use_lcd_text, options.color_space, mailbox.name);
     raster_implementation->RasterCHROMIUM(
         display_item_list.get(), &image_provider, options.content_size,
         options.full_raster_rect, options.playback_rect, options.post_translate,

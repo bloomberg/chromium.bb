@@ -8,6 +8,8 @@
 #include "cc/paint/scoped_raster_flags.h"
 #include "ui/gfx/skia_util.h"
 
+#include <utility>
+
 namespace cc {
 namespace {
 
@@ -67,7 +69,7 @@ PaintOpBufferSerializer::PaintOpBufferSerializer(
     TransferCacheSerializeHelper* transfer_cache,
     ClientPaintCache* paint_cache,
     SkStrikeServer* strike_server,
-    SkColorSpace* color_space,
+    sk_sp<SkColorSpace> color_space,
     bool can_use_lcd_text,
     bool context_supports_distance_field_text,
     int max_texture_size,
@@ -85,7 +87,7 @@ PaintOpBufferSerializer::PaintOpBufferSerializer(
                         kMaxExtent,
                         ComputeSurfaceProps(can_use_lcd_text),
                         strike_server,
-                        nullptr,  // colorspace
+                        std::move(color_space),
                         MakeCanvasSettings(context_supports_distance_field_text,
                                            max_texture_size,
                                            max_texture_bytes)) {
@@ -398,7 +400,7 @@ SimpleBufferSerializer::SimpleBufferSerializer(
     TransferCacheSerializeHelper* transfer_cache,
     ClientPaintCache* paint_cache,
     SkStrikeServer* strike_server,
-    SkColorSpace* color_space,
+    sk_sp<SkColorSpace> color_space,
     bool can_use_lcd_text,
     bool context_supports_distance_field_text,
     int max_texture_size,
@@ -410,7 +412,7 @@ SimpleBufferSerializer::SimpleBufferSerializer(
           transfer_cache,
           paint_cache,
           strike_server,
-          color_space,
+          std::move(color_space),
           can_use_lcd_text,
           context_supports_distance_field_text,
           max_texture_size,

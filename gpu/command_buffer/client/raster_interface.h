@@ -14,7 +14,6 @@
 namespace cc {
 class DisplayItemList;
 class ImageProvider;
-struct RasterColorSpace;
 }  // namespace cc
 
 namespace gfx {
@@ -51,12 +50,11 @@ class RasterInterface {
                               GLsizei width,
                               GLsizei height) = 0;
   // OOP-Raster
-  virtual void BeginRasterCHROMIUM(
-      GLuint sk_color,
-      GLuint msaa_sample_count,
-      GLboolean can_use_lcd_text,
-      const cc::RasterColorSpace& raster_color_space,
-      const GLbyte* mailbox) = 0;
+  virtual void BeginRasterCHROMIUM(GLuint sk_color,
+                                   GLuint msaa_sample_count,
+                                   GLboolean can_use_lcd_text,
+                                   const gfx::ColorSpace& color_space,
+                                   const GLbyte* mailbox) = 0;
   virtual void RasterCHROMIUM(const cc::DisplayItemList* list,
                               cc::ImageProvider* provider,
                               const gfx::Size& content_size,

@@ -107,9 +107,7 @@ HeadsUpDisplayLayerImpl::HeadsUpDisplayLayerImpl(LayerTreeImpl* tree_impl,
       internal_contents_scale_(1.f),
       fps_graph_(60.0, 80.0),
       paint_time_graph_(16.0, 48.0),
-      fade_step_(0),
-      raster_color_space_(gfx::ColorSpace::CreateSRGB(),
-                          gfx::ColorSpace::GetNextId()) {}
+      fade_step_(0) {}
 
 HeadsUpDisplayLayerImpl::~HeadsUpDisplayLayerImpl() {
   ReleaseResources();
@@ -359,7 +357,7 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
       constexpr GLuint msaa_sample_count = -1;
       constexpr bool can_use_lcd_text = true;
       ri->BeginRasterCHROMIUM(background_color, msaa_sample_count,
-                              can_use_lcd_text, raster_color_space_,
+                              can_use_lcd_text, gfx::ColorSpace::CreateSRGB(),
                               backing->mailbox.name);
       gfx::Vector2dF post_translate(0.f, 0.f);
       DummyImageProvider image_provider;

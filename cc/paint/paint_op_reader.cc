@@ -584,18 +584,16 @@ void PaintOpReader::Read(sk_sp<PaintShader>* shader) {
   auto* entry =
       options_.transfer_cache->GetEntryAs<ServiceShaderTransferCacheEntry>(
           shader_id);
-  // Only consider entries that use the same scale and color space.
-  // This limits the service side transfer cache to only having one entry
-  // per shader but this will hit the common case of enabling Skia reuse.
-  if (entry && entry->shader()->tile_ == ref.tile_ &&
-      entry->raster_color_space_id() == options_.raster_color_space_id) {
+  // Only consider entries that use the same scale.  This limits the service
+  // side transfer cache to only having one entry per shader but this will hit
+  // the common case of enabling Skia reuse.
+  if (entry && entry->shader()->tile_ == ref.tile_) {
     DCHECK(!ref.cached_shader_);
     ref.cached_shader_ = entry->shader()->GetSkShader();
   } else {
     ref.CreateSkShader();
     std::unique_ptr<ServiceShaderTransferCacheEntry> entry(
-        new ServiceShaderTransferCacheEntry(
-            *shader, options_.raster_color_space_id, shader_size));
+        new ServiceShaderTransferCacheEntry(*shader, shader_size));
     options_.transfer_cache->CreateLocalEntry(shader_id, std::move(entry));
   }
 }

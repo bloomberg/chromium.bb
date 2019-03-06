@@ -151,7 +151,7 @@ class CC_PAINT_EXPORT PaintOp {
                      ClientPaintCache* paint_cache,
                      SkCanvas* canvas,
                      SkStrikeServer* strike_server,
-                     SkColorSpace* color_space,
+                     sk_sp<SkColorSpace> color_space,
                      bool can_use_lcd_text,
                      bool context_supports_distance_field_text,
                      int max_texture_size,
@@ -159,6 +159,7 @@ class CC_PAINT_EXPORT PaintOp {
                      const SkMatrix& original_ctm);
     SerializeOptions(const SerializeOptions&);
     SerializeOptions& operator=(const SerializeOptions&);
+    ~SerializeOptions();
 
     // Required.
     ImageProvider* image_provider = nullptr;
@@ -166,7 +167,7 @@ class CC_PAINT_EXPORT PaintOp {
     ClientPaintCache* paint_cache = nullptr;
     SkCanvas* canvas = nullptr;
     SkStrikeServer* strike_server = nullptr;
-    SkColorSpace* color_space = nullptr;
+    sk_sp<SkColorSpace> color_space = nullptr;
     bool can_use_lcd_text = false;
     bool context_supports_distance_field_text = true;
     int max_texture_size = 0;
@@ -187,7 +188,6 @@ class CC_PAINT_EXPORT PaintOp {
     TransferCacheDeserializeHelper* transfer_cache = nullptr;
     ServicePaintCache* paint_cache = nullptr;
     SkStrikeClient* strike_client = nullptr;
-    uint32_t raster_color_space_id = gfx::ColorSpace::kInvalidId;
     // Do a DumpWithoutCrashing when serialization fails.
     bool crash_dump_on_failure = false;
     // Used to memcpy Skia flattenables into to avoid TOCTOU issues.

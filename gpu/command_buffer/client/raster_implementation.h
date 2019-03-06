@@ -124,7 +124,7 @@ class RASTER_EXPORT RasterImplementation : public RasterInterface,
   void BeginRasterCHROMIUM(GLuint sk_color,
                            GLuint msaa_sample_count,
                            GLboolean can_use_lcd_text,
-                           const cc::RasterColorSpace& raster_color_space,
+                           const gfx::ColorSpace& color_space,
                            const GLbyte* mailbox) override;
   void RasterCHROMIUM(const cc::DisplayItemList* list,
                       cc::ImageProvider* provider,

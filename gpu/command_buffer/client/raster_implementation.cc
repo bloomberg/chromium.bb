@@ -1050,28 +1050,15 @@ void RasterImplementation::BeginRasterCHROMIUM(
     GLuint sk_color,
     GLuint msaa_sample_count,
     GLboolean can_use_lcd_text,
-    const cc::RasterColorSpace& raster_color_space,
+    const gfx::ColorSpace& color_space,
     const GLbyte* mailbox) {
   DCHECK(!raster_properties_);
 
-  TransferCacheSerializeHelperImpl transfer_cache_serialize_helper(this);
-  if (!transfer_cache_serialize_helper.LockEntry(
-          cc::TransferCacheEntryType::kColorSpace,
-          raster_color_space.color_space_id)) {
-    transfer_cache_serialize_helper.CreateEntry(
-        cc::ClientColorSpaceTransferCacheEntry(raster_color_space), nullptr);
-  }
-  transfer_cache_serialize_helper.AssertLocked(
-      cc::TransferCacheEntryType::kColorSpace,
-      raster_color_space.color_space_id);
-
-  helper_->BeginRasterCHROMIUMImmediate(
-      sk_color, msaa_sample_count, can_use_lcd_text,
-      raster_color_space.color_space_id, mailbox);
-  transfer_cache_serialize_helper.FlushEntries();
+  helper_->BeginRasterCHROMIUMImmediate(sk_color, msaa_sample_count,
+                                        can_use_lcd_text, mailbox);
 
   raster_properties_.emplace(sk_color, can_use_lcd_text,
-                             raster_color_space.color_space.ToSkColorSpace());
+                             color_space.ToSkColorSpace());
 }
 
 void RasterImplementation::RasterCHROMIUM(const cc::DisplayItemList* list,
@@ -1128,8 +1115,7 @@ void RasterImplementation::RasterCHROMIUM(const cc::DisplayItemList* list,
   cc::PaintOpBufferSerializer serializer(
       serialize_cb, &stashing_image_provider, &transfer_cache_serialize_helper,
       GetOrCreatePaintCache(), font_manager_.strike_server(),
-      raster_properties_->color_space.get(),
-      raster_properties_->can_use_lcd_text,
+      raster_properties_->color_space, raster_properties_->can_use_lcd_text,
       capabilities().context_supports_distance_field_text,
       capabilities().max_texture_size,
       capabilities().glyph_cache_max_texture_bytes);
