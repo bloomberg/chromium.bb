@@ -107,6 +107,8 @@ class SimCompositor final : public content::StubLayerTreeViewDelegate {
 
   base::TimeTicks last_frame_time_;
 
+  SimCanvas::Commands* paint_commands_;
+
   std::unique_ptr<cc::ScopedDeferMainFrameUpdate>
       scoped_defer_main_frame_update_;
 };

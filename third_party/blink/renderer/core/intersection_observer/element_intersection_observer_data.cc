@@ -33,8 +33,10 @@ void ElementIntersectionObserverData::RemoveObservation(
 }
 
 void ElementIntersectionObserverData::ComputeObservations(unsigned flags) {
-  for (auto& observation : intersection_observations_)
-    observation.value->Compute(flags);
+  HeapVector<Member<IntersectionObservation>> observations_to_process;
+  CopyValuesToVector(intersection_observations_, observations_to_process);
+  for (auto& observation : observations_to_process)
+    observation->Compute(flags);
 }
 
 void ElementIntersectionObserverData::Trace(blink::Visitor* visitor) {

@@ -604,10 +604,6 @@ class CORE_EXPORT LocalFrameView final
   bool IsHiddenForThrottling() const { return hidden_for_throttling_; }
   void SetupRenderThrottling();
 
-  // For testing, run pending intersection observer notifications for this
-  // frame.
-  void UpdateRenderThrottlingStatusForTesting();
-
   void BeginLifecycleUpdates();
 
   // Shorthands of LayoutView's corresponding methods.
@@ -868,6 +864,7 @@ class CORE_EXPORT LocalFrameView final
   void ForAllNonThrottledLocalFrameViews(const Function&);
 
   void UpdateViewportIntersectionsForSubtree(unsigned parent_flags) override;
+  void DeliverSynchronousIntersectionObservations();
 
   void UpdateThrottlingStatusForSubtree();
 

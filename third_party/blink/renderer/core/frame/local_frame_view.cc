@@ -1072,6 +1072,7 @@ void LocalFrameView::RunIntersectionObserverSteps() {
 #if DCHECK_IS_ON()
   DCHECK(was_dirty || !NeedsLayout());
 #endif
+  DeliverSynchronousIntersectionObservations();
 }
 
 LayoutSVGRoot* LocalFrameView::EmbeddedReplacedContent() const {
@@ -3661,6 +3662,9 @@ void LocalFrameView::PaintOutsideOfLifecycle(
     const CullRect& cull_rect) {
   DCHECK(PaintOutsideOfLifecycleIsAllowed(context, *this));
 
+  base::AutoReset<bool> past_layout_lifecycle_resetter(
+      &past_layout_lifecycle_update_, true);
+
   ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
     frame_view.Lifecycle().AdvanceTo(DocumentLifecycle::kInPaint);
   });
@@ -3677,6 +3681,9 @@ void LocalFrameView::PaintContentsOutsideOfLifecycle(
     const GlobalPaintFlags global_paint_flags,
     const CullRect& cull_rect) {
   DCHECK(PaintOutsideOfLifecycleIsAllowed(context, *this));
+
+  base::AutoReset<bool> past_layout_lifecycle_resetter(
+      &past_layout_lifecycle_update_, true);
 
   ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
     frame_view.Lifecycle().AdvanceTo(DocumentLifecycle::kInPaint);
@@ -3906,6 +3913,17 @@ void LocalFrameView::UpdateViewportIntersectionsForSubtree(
   }
 }
 
+void LocalFrameView::DeliverSynchronousIntersectionObservations() {
+  if (IntersectionObserverController* controller =
+          GetFrame().GetDocument()->GetIntersectionObserverController()) {
+    controller->DeliverIntersectionObservations(
+        IntersectionObserver::kDeliverDuringPostLifecycleSteps);
+  }
+  ForAllChildLocalFrameViews([](LocalFrameView& frame_view) {
+    frame_view.DeliverSynchronousIntersectionObservations();
+  });
+}
+
 void LocalFrameView::UpdateThrottlingStatusForSubtree() {
   if (!GetFrame().GetDocument()->IsActive())
     return;
@@ -3924,10 +3942,6 @@ void LocalFrameView::UpdateThrottlingStatusForSubtree() {
   ForAllChildLocalFrameViews([](LocalFrameView& child_view) {
     child_view.UpdateThrottlingStatusForSubtree();
   });
-}
-
-void LocalFrameView::UpdateRenderThrottlingStatusForTesting() {
-  visibility_observer_->DeliverObservationsForTesting();
 }
 
 void LocalFrameView::CrossOriginStatusChanged() {

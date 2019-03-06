@@ -32,7 +32,11 @@ class IntersectionObserverController
   virtual ~IntersectionObserverController();
 
   void ScheduleIntersectionObserverForDelivery(IntersectionObserver&);
-  void DeliverIntersectionObservations();
+
+  // Immediately deliver all notifications for all observers for which
+  // (observer->GetDeliveryBehavior() == behavior).
+  void DeliverIntersectionObservations(
+      IntersectionObserver::DeliveryBehavior behavior);
 
   // The flags argument is composed of values from
   // IntersectionObservation::ComputeFlags. They are dirty bits that control

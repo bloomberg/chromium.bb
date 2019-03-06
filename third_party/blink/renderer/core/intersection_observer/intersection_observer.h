@@ -57,6 +57,15 @@ class CORE_EXPORT IntersectionObserver final
   //                         ////////////////////
   enum ThresholdInterpretation { kFractionOfTarget, kFractionOfRoot };
 
+  // Used to specify when callbacks should be invoked with new notifications.
+  // Blink-internal users of IntersectionObserver will have their callbacks
+  // invoked synchronously at the end of a lifecycle update. Javascript
+  // observers will PostTask to invoke their callbacks.
+  enum DeliveryBehavior {
+    kDeliverDuringPostLifecycleSteps,
+    kPostTaskToDeliver
+  };
+
   static IntersectionObserver* Create(const IntersectionObserverInit*,
                                       IntersectionObserverDelegate&,
                                       ExceptionState&);
@@ -125,6 +134,7 @@ class CORE_EXPORT IntersectionObserver final
   const Length& BottomMargin() const { return bottom_margin_; }
   const Length& LeftMargin() const { return left_margin_; }
   void SetNeedsDelivery();
+  DeliveryBehavior GetDeliveryBehavior() const;
   void Deliver();
 
   // Returns false if this observer has an explicit root element which has been

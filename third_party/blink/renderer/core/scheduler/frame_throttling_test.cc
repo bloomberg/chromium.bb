@@ -1041,57 +1041,21 @@ TEST_P(FrameThrottlingTest, ThrottleSubtreeAtomically) {
       "<iframe id=child-frame sandbox src=child-iframe.html></iframe>");
   child_frame_resource.Complete("");
 
-  // Move both frames offscreen, but don't run the intersection observers yet.
+  // Move both frames offscreen. IntersectionObservers will run during
+  // post-lifecycle steps and synchronously update throttling status.
   auto* frame_element =
       ToHTMLIFrameElement(GetDocument().getElementById("frame"));
   auto* child_frame_element = ToHTMLIFrameElement(
       frame_element->contentDocument()->getElementById("child-frame"));
   frame_element->setAttribute(kStyleAttr, "transform: translateY(480px)");
   Compositor().BeginFrame();
-  EXPECT_FALSE(
-      frame_element->contentDocument()->View()->CanThrottleRendering());
-  EXPECT_FALSE(
-      child_frame_element->contentDocument()->View()->CanThrottleRendering());
-
-  // Only run the intersection observer for the parent frame. Both frames
-  // should immediately become throttled. This simulates the case where a task
-  // such as BeginMainFrame runs in the middle of dispatching intersection
-  // observer notifications.
-  frame_element->contentDocument()
-      ->View()
-      ->UpdateRenderThrottlingStatusForTesting();
   EXPECT_TRUE(frame_element->contentDocument()->View()->CanThrottleRendering());
   EXPECT_TRUE(
       child_frame_element->contentDocument()->View()->CanThrottleRendering());
 
-  // Both frames should still be throttled after the second notification.
-  child_frame_element->contentDocument()
-      ->View()
-      ->UpdateRenderThrottlingStatusForTesting();
-  EXPECT_TRUE(frame_element->contentDocument()->View()->CanThrottleRendering());
-  EXPECT_TRUE(
-      child_frame_element->contentDocument()->View()->CanThrottleRendering());
-
-  // Move the frame back on screen but don't update throttling yet.
+  // Move the frame back on screen.
   frame_element->setAttribute(kStyleAttr, "transform: translateY(0px)");
   Compositor().BeginFrame();
-  EXPECT_TRUE(frame_element->contentDocument()->View()->CanThrottleRendering());
-  EXPECT_TRUE(
-      child_frame_element->contentDocument()->View()->CanThrottleRendering());
-
-  // Update throttling for the child. It should remain throttled because the
-  // parent is still throttled.
-  child_frame_element->contentDocument()
-      ->View()
-      ->UpdateRenderThrottlingStatusForTesting();
-  EXPECT_TRUE(frame_element->contentDocument()->View()->CanThrottleRendering());
-  EXPECT_TRUE(
-      child_frame_element->contentDocument()->View()->CanThrottleRendering());
-
-  // Updating throttling on the parent should unthrottle both frames.
-  frame_element->contentDocument()
-      ->View()
-      ->UpdateRenderThrottlingStatusForTesting();
   EXPECT_FALSE(
       frame_element->contentDocument()->View()->CanThrottleRendering());
   EXPECT_FALSE(
