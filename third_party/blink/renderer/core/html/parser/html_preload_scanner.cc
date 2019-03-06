@@ -366,10 +366,9 @@ class TokenPreloadScanner::StartTagScanner {
                Match(attribute_name, kImportanceAttr) &&
                priority_hints_origin_trial_enabled_) {
       SetImportance(attribute_value);
-    } else if (!lazyload_attr_set_to_off_ &&
-               Match(attribute_name, kLazyloadAttr) &&
+    } else if (!lazyload_attr_set_to_off_ && Match(attribute_name, kLoadAttr) &&
                RuntimeEnabledFeatures::LazyImageLoadingEnabled() &&
-               EqualIgnoringASCIICase(attribute_value, "off")) {
+               EqualIgnoringASCIICase(attribute_value, "eager")) {
       lazyload_attr_set_to_off_ = true;
     } else if (!width_attr_small_absolute_ &&
                Match(attribute_name, kWidthAttr) &&

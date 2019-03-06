@@ -79,7 +79,7 @@ bool IsLazyLoadableImage(const LocalFrame* frame,
     return false;
 
   if (EqualIgnoringASCIICase(
-          html_image->FastGetAttribute(html_names::kLazyloadAttr), "off") &&
+          html_image->FastGetAttribute(html_names::kLoadAttr), "eager") &&
       !frame->GetDocument()->IsLazyLoadPolicyEnforced()) {
     return false;
   }

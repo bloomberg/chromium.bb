@@ -355,8 +355,8 @@ bool HTMLFrameOwnerElement::LoadOrRedirectSubframe(
   // attribute value "off" for "lazyload" is ignored (i.e., interpreted as
   // "auto" instead).
   if (should_lazy_load_children_ &&
-      EqualIgnoringASCIICase(FastGetAttribute(html_names::kLazyloadAttr),
-                             "off") &&
+      EqualIgnoringASCIICase(FastGetAttribute(html_names::kLoadAttr),
+                             "eager") &&
       !GetDocument().IsLazyLoadPolicyEnforced()) {
     should_lazy_load_children_ = false;
   }
@@ -415,8 +415,8 @@ bool HTMLFrameOwnerElement::LoadOrRedirectSubframe(
       // URLs like invalid or empty URLs, "about:blank", local file URLs, etc.
       // that it doesn't make sense to lazily load.
       url.ProtocolIsInHTTPFamily() &&
-      (EqualIgnoringASCIICase(FastGetAttribute(html_names::kLazyloadAttr),
-                              "on") ||
+      (EqualIgnoringASCIICase(FastGetAttribute(html_names::kLoadAttr),
+                              "lazy") ||
        (should_lazy_load_children_ &&
         // Disallow lazy loading by default if javascript in the embedding
         // document would be able to access the contents of the frame, since in
@@ -471,11 +471,11 @@ bool HTMLFrameOwnerElement::ShouldLazyLoadChildren() const {
 
 void HTMLFrameOwnerElement::ParseAttribute(
     const AttributeModificationParams& params) {
-  if (params.name == html_names::kLazyloadAttr) {
+  if (params.name == html_names::kLoadAttr) {
     // Note that when the *feature policy* for "lazyload" is disabled, the
     // attribute value "off" for "lazyload" is ignored (i.e., interpreted as
     // "auto" instead).
-    if (EqualIgnoringASCIICase(params.new_value, "off") &&
+    if (EqualIgnoringASCIICase(params.new_value, "eager") &&
         !GetDocument().IsLazyLoadPolicyEnforced()) {
       should_lazy_load_children_ = false;
       if (lazy_load_frame_observer_ &&

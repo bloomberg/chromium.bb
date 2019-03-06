@@ -317,8 +317,8 @@ void HTMLImageElement::ParseAttribute(
     if (intrinsic_size_changed && GetLayoutObject() &&
         GetLayoutObject()->IsLayoutImage())
       ToLayoutImage(GetLayoutObject())->IntrinsicSizeChanged();
-  } else if (name == kLazyloadAttr &&
-             EqualIgnoringASCIICase(params.new_value, "off") &&
+  } else if (name == kLoadAttr &&
+             EqualIgnoringASCIICase(params.new_value, "eager") &&
              !GetDocument().IsLazyLoadPolicyEnforced()) {
     GetImageLoader().LoadDeferredImage(referrer_policy_);
   } else if (name == kImportanceAttr &&
