@@ -532,6 +532,8 @@ class PageLoadMetricsObserver {
   virtual void FrameSizeChanged(content::RenderFrameHost* render_frame_host,
                                 const gfx::Size& frame_size) {}
 
+  virtual void OnFrameDeleted(content::RenderFrameHost* render_frame_host) {}
+
   // Called when the event corresponding to |event_key| occurs in this page
   // load.
   virtual void OnEventOccurred(const void* const event_key) {}

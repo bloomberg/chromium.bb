@@ -13,7 +13,9 @@
 #include "chrome/browser/page_load_metrics/page_load_tracker.h"
 #include "chrome/common/page_load_metrics/page_load_timing.h"
 #include "chrome/common/page_load_metrics/test/page_load_metrics_test_util.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/test/navigation_simulator.h"
+#include "content/public/test/test_utils.h"
 #include "url/gurl.h"
 
 using content::NavigationSimulator;
@@ -205,6 +207,18 @@ TEST_F(AMPPageLoadMetricsObserverTest, GoogleSearchAMPViewerSameDocument) {
       static_cast<base::HistogramBase::Sample>(
           AMPViewType::GOOGLE_SEARCH_AMP_VIEWER),
       2);
+
+  // Verify that subframe metrics aren't recorded without an AMP subframe.
+  histogram_tester().ExpectTotalCount(
+      "PageLoad.Clients.AMP.Experimental.PageTiming.NavigationToInput.Subframe",
+      0);
+  histogram_tester().ExpectTotalCount(
+      "PageLoad.Clients.AMP.Experimental.PageTiming.InputToNavigation.Subframe",
+      0);
+  histogram_tester().ExpectTotalCount(
+      "PageLoad.Clients.AMP.Experimental.PageTiming."
+      "MainFrameToSubFrameNavigationDelta.Subframe",
+      0);
 }
 
 TEST_F(AMPPageLoadMetricsObserverTest, GoogleNewsAMPCacheRedirect) {
@@ -230,4 +244,384 @@ TEST_F(AMPPageLoadMetricsObserverTest, GoogleNewsAMPCacheRedirect) {
       static_cast<base::HistogramBase::Sample>(
           timing_.parse_timing->parse_start.value().InMilliseconds()),
       1);
+}
+
+TEST_F(AMPPageLoadMetricsObserverTest, SubFrameInputBeforeNavigation) {
+  // This emulates the AMP subframe non-prerender flow: first we perform a
+  // same-document navigation in the main frame to the AMP viewer URL, then we
+  // create and navigate the subframe to an AMP cache URL.
+  NavigationSimulator::CreateRendererInitiated(
+      GURL("https://www.google.com/search"), main_rfh())
+      ->Commit();
+
+  NavigationSimulator::CreateRendererInitiated(
+      GURL("https://www.google.com/amp/page"), main_rfh())
+      ->CommitSameDocument();
+
+  NavigationSimulator::NavigateAndCommitFromDocument(
+      GURL("https://cdn.ampproject.org/page"
+           "#viewerUrl=https%3A%2F%2Fwww.google.com%2Famp%2Fpage"),
+      content::RenderFrameHostTester::For(web_contents()->GetMainFrame())
+          ->AppendChild("subframe"));
+
+  // Navigate the main frame to trigger metrics recording.
+  NavigationSimulator::CreateRendererInitiated(
+      GURL("https://www.google.com/amp/other"), main_rfh())
+      ->CommitSameDocument();
+
+  histogram_tester().ExpectTotalCount(
+      "PageLoad.Clients.AMP.Experimental.PageTiming.NavigationToInput.Subframe",
+      0);
+  histogram_tester().ExpectTotalCount(
+      "PageLoad.Clients.AMP.Experimental.PageTiming.InputToNavigation.Subframe",
+      1);
+  histogram_tester().ExpectTotalCount(
+      "PageLoad.Clients.AMP.Experimental.PageTiming."
+      "MainFrameToSubFrameNavigationDelta.Subframe",
+      0);
+}
+
+TEST_F(AMPPageLoadMetricsObserverTest, SubFrameNavigationBeforeInput) {
+  // This emulates the AMP subframe prerender flow: first we create and navigate
+  // the subframe to an AMP cache URL, then we perform a same-document
+  // navigation in the main frame to the AMP viewer URL.
+  NavigationSimulator::CreateRendererInitiated(
+      GURL("https://www.google.com/search"), main_rfh())
+      ->Commit();
+
+  NavigationSimulator::NavigateAndCommitFromDocument(
+      GURL("https://cdn.ampproject.org/page"
+           "#viewerUrl=https%3A%2F%2Fwww.google.com%2Famp%2Fpage"),
+      content::RenderFrameHostTester::For(web_contents()->GetMainFrame())
+          ->AppendChild("subframe"));
+
+  NavigationSimulator::CreateRendererInitiated(
+      GURL("https://www.google.com/amp/page"), main_rfh())
+      ->CommitSameDocument();
+
+  // Navigate the main frame to trigger metrics recording.
+  NavigationSimulator::CreateRendererInitiated(
+      GURL("https://www.google.com/amp/other"), main_rfh())
+      ->CommitSameDocument();
+
+  histogram_tester().ExpectTotalCount(
+      "PageLoad.Clients.AMP.Experimental.PageTiming.NavigationToInput.Subframe",
+      1);
+  histogram_tester().ExpectTotalCount(
+      "PageLoad.Clients.AMP.Experimental.PageTiming.InputToNavigation.Subframe",
+      0);
+  histogram_tester().ExpectTotalCount(
+      "PageLoad.Clients.AMP.Experimental.PageTiming."
+      "MainFrameToSubFrameNavigationDelta.Subframe",
+      0);
+}
+
+TEST_F(AMPPageLoadMetricsObserverTest, SubFrameMetrics) {
+  NavigationSimulator::CreateRendererInitiated(
+      GURL("https://www.google.com/search"), main_rfh())
+      ->Commit();
+
+  NavigationSimulator::CreateRendererInitiated(
+      GURL("https://www.google.com/amp/page"), main_rfh())
+      ->CommitSameDocument();
+
+  content::RenderFrameHost* subframe =
+      NavigationSimulator::NavigateAndCommitFromDocument(
+          GURL("https://cdn.ampproject.org/page"
+               "#viewerUrl=https%3A%2F%2Fwww.google.com%2Famp%2Fpage"),
+          content::RenderFrameHostTester::For(web_contents()->GetMainFrame())
+              ->AppendChild("subframe"));
+
+  page_load_metrics::mojom::PageLoadTiming subframe_timing;
+  page_load_metrics::InitPageLoadTimingForTest(&subframe_timing);
+  subframe_timing.navigation_start = base::Time::FromDoubleT(2);
+  subframe_timing.paint_timing->first_contentful_paint =
+      base::TimeDelta::FromMilliseconds(5);
+  subframe_timing.paint_timing->largest_image_paint_size = 1;
+  subframe_timing.paint_timing->largest_image_paint =
+      base::TimeDelta::FromMilliseconds(10);
+  subframe_timing.interactive_timing->first_input_timestamp =
+      base::TimeDelta::FromMilliseconds(20);
+  subframe_timing.interactive_timing->first_input_delay =
+      base::TimeDelta::FromMilliseconds(3);
+  PopulateRequiredTimingFields(&subframe_timing);
+
+  SimulateTimingUpdate(subframe_timing, subframe);
+
+  // Navigate the main frame to trigger metrics recording.
+  NavigationSimulator::CreateRendererInitiated(
+      GURL("https://www.google.com/amp/other"), main_rfh())
+      ->CommitSameDocument();
+
+  histogram_tester().ExpectTotalCount(
+      "PageLoad.Clients.AMP.PaintTiming.InputToFirstContentfulPaint.Subframe",
+      1);
+  histogram_tester().ExpectTotalCount(
+      "PageLoad.Clients.AMP.PaintTiming.InputToLargestContentPaint.Subframe",
+      1);
+  histogram_tester().ExpectTotalCount(
+      "PageLoad.Clients.AMP.InteractiveTiming.FirstInputDelay3.Subframe", 1);
+}
+
+TEST_F(AMPPageLoadMetricsObserverTest, SubFrameMetricsFullNavigation) {
+  NavigationSimulator::CreateRendererInitiated(
+      GURL("https://www.google.com/amp/page"), main_rfh())
+      ->Commit();
+
+  content::RenderFrameHost* subframe =
+      NavigationSimulator::NavigateAndCommitFromDocument(
+          GURL("https://cdn.ampproject.org/page"
+               "#viewerUrl=https%3A%2F%2Fwww.google.com%2Famp%2Fpage"),
+          content::RenderFrameHostTester::For(web_contents()->GetMainFrame())
+              ->AppendChild("subframe"));
+
+  page_load_metrics::mojom::PageLoadTiming subframe_timing;
+  page_load_metrics::InitPageLoadTimingForTest(&subframe_timing);
+  subframe_timing.navigation_start = base::Time::FromDoubleT(2);
+  subframe_timing.paint_timing->first_contentful_paint =
+      base::TimeDelta::FromMilliseconds(5);
+  subframe_timing.paint_timing->largest_image_paint_size = 1;
+  subframe_timing.paint_timing->largest_image_paint =
+      base::TimeDelta::FromMilliseconds(10);
+  subframe_timing.interactive_timing->first_input_timestamp =
+      base::TimeDelta::FromMilliseconds(20);
+  subframe_timing.interactive_timing->first_input_delay =
+      base::TimeDelta::FromMilliseconds(3);
+  PopulateRequiredTimingFields(&subframe_timing);
+
+  SimulateTimingUpdate(subframe_timing, subframe);
+
+  // Navigate the main frame to trigger metrics recording.
+  NavigationSimulator::CreateRendererInitiated(
+      GURL("https://www.google.com/amp/other"), main_rfh())
+      ->CommitSameDocument();
+
+  histogram_tester().ExpectTotalCount(
+      "PageLoad.Clients.AMP.PaintTiming.InputToFirstContentfulPaint.Subframe."
+      "FullNavigation",
+      1);
+  histogram_tester().ExpectTotalCount(
+      "PageLoad.Clients.AMP.PaintTiming.InputToLargestContentPaint.Subframe."
+      "FullNavigation",
+      1);
+  histogram_tester().ExpectTotalCount(
+      "PageLoad.Clients.AMP.InteractiveTiming.FirstInputDelay3.Subframe."
+      "FullNavigation",
+      1);
+}
+
+TEST_F(AMPPageLoadMetricsObserverTest, SubFrameRecordOnFullNavigation) {
+  NavigationSimulator::CreateRendererInitiated(
+      GURL("https://www.google.com/search"), main_rfh())
+      ->Commit();
+
+  NavigationSimulator::CreateRendererInitiated(
+      GURL("https://www.google.com/amp/page"), main_rfh())
+      ->CommitSameDocument();
+
+  NavigationSimulator::NavigateAndCommitFromDocument(
+      GURL("https://cdn.ampproject.org/page"
+           "#viewerUrl=https%3A%2F%2Fwww.google.com%2Famp%2Fpage"),
+      content::RenderFrameHostTester::For(web_contents()->GetMainFrame())
+          ->AppendChild("subframe"));
+
+  // Navigate the main frame to trigger metrics recording.
+  NavigationSimulator::CreateRendererInitiated(GURL("https://www.example.com/"),
+                                               main_rfh())
+      ->Commit();
+
+  histogram_tester().ExpectTotalCount(
+      "PageLoad.Clients.AMP.Experimental.PageTiming.InputToNavigation.Subframe",
+      1);
+}
+
+TEST_F(AMPPageLoadMetricsObserverTest, SubFrameRecordOnFrameDeleted) {
+  NavigationSimulator::CreateRendererInitiated(
+      GURL("https://www.google.com/search"), main_rfh())
+      ->Commit();
+
+  NavigationSimulator::CreateRendererInitiated(
+      GURL("https://www.google.com/amp/page"), main_rfh())
+      ->CommitSameDocument();
+
+  content::RenderFrameHost* subframe =
+      NavigationSimulator::NavigateAndCommitFromDocument(
+          GURL("https://cdn.ampproject.org/page"
+               "#viewerUrl=https%3A%2F%2Fwww.google.com%2Famp%2Fpage"),
+          content::RenderFrameHostTester::For(web_contents()->GetMainFrame())
+              ->AppendChild("subframe"));
+
+  histogram_tester().ExpectTotalCount(
+      "PageLoad.Clients.AMP.Experimental.PageTiming.InputToNavigation.Subframe",
+      0);
+
+  // Delete the subframe, which should trigger metrics recording.
+  content::RenderFrameHostTester::For(subframe)->Detach();
+
+  histogram_tester().ExpectTotalCount(
+      "PageLoad.Clients.AMP.Experimental.PageTiming.InputToNavigation.Subframe",
+      1);
+}
+
+TEST_F(AMPPageLoadMetricsObserverTest, SubFrameMultipleFrames) {
+  NavigationSimulator::CreateRendererInitiated(
+      GURL("https://www.google.com/search"), main_rfh())
+      ->Commit();
+
+  // Simulate a prerender.
+  NavigationSimulator::NavigateAndCommitFromDocument(
+      GURL("https://cdn.ampproject.org/page2"
+           "#viewerUrl=https%3A%2F%2Fwww.google.com%2Famp%2Fpage2"),
+      content::RenderFrameHostTester::For(web_contents()->GetMainFrame())
+          ->AppendChild("subframe"));
+
+  // Perform a main-frame navigation to a different AMP document (not the
+  // prerender).
+  NavigationSimulator::CreateRendererInitiated(
+      GURL("https://www.google.com/amp/page"), main_rfh())
+      ->CommitSameDocument();
+
+  // Load the associated AMP document in an iframe.
+  NavigationSimulator::NavigateAndCommitFromDocument(
+      GURL("https://cdn.ampproject.org/page"
+           "#viewerUrl=https%3A%2F%2Fwww.google.com%2Famp%2Fpage"),
+      content::RenderFrameHostTester::For(web_contents()->GetMainFrame())
+          ->AppendChild("subframe"));
+
+  // Navigate the main frame to trigger metrics recording - we expect metrics to
+  // have been recorded for 1 AMP page (the non-prerendered page).
+  NavigationSimulator::CreateRendererInitiated(
+      GURL("https://www.google.com/amp/other"), main_rfh())
+      ->CommitSameDocument();
+
+  histogram_tester().ExpectTotalCount(
+      "PageLoad.Clients.AMP.Experimental.PageTiming.NavigationToInput.Subframe",
+      0);
+  histogram_tester().ExpectTotalCount(
+      "PageLoad.Clients.AMP.Experimental.PageTiming.InputToNavigation.Subframe",
+      1);
+  histogram_tester().ExpectTotalCount(
+      "PageLoad.Clients.AMP.Experimental.PageTiming."
+      "MainFrameToSubFrameNavigationDelta.Subframe",
+      0);
+
+  // Now navigate to the main-frame URL for the prerendered AMP document. This
+  // should trigger metrics recording for that document.
+  NavigationSimulator::CreateRendererInitiated(
+      GURL("https://www.google.com/amp/page2"), main_rfh())
+      ->CommitSameDocument();
+
+  // Navigate the main frame to trigger metrics recording.
+  NavigationSimulator::CreateRendererInitiated(
+      GURL("https://www.google.com/amp/other"), main_rfh())
+      ->CommitSameDocument();
+
+  // We now expect one NavigationToInput (for the prerender) and one
+  // InputToNavigation (for the non-prerender).
+  histogram_tester().ExpectTotalCount(
+      "PageLoad.Clients.AMP.Experimental.PageTiming.NavigationToInput.Subframe",
+      1);
+  histogram_tester().ExpectTotalCount(
+      "PageLoad.Clients.AMP.Experimental.PageTiming.InputToNavigation.Subframe",
+      1);
+  histogram_tester().ExpectTotalCount(
+      "PageLoad.Clients.AMP.Experimental.PageTiming."
+      "MainFrameToSubFrameNavigationDelta.Subframe",
+      0);
+}
+
+TEST_F(AMPPageLoadMetricsObserverTest,
+       SubFrameWithNonSameDocumentMainFrameNavigation) {
+  NavigationSimulator::CreateRendererInitiated(
+      GURL("https://www.google.com/amp/page"), main_rfh())
+      ->Commit();
+
+  // Load the associated AMP document in an iframe.
+  NavigationSimulator::NavigateAndCommitFromDocument(
+      GURL("https://cdn.ampproject.org/page"
+           "#viewerUrl=https%3A%2F%2Fwww.google.com%2Famp%2Fpage"),
+      content::RenderFrameHostTester::For(web_contents()->GetMainFrame())
+          ->AppendChild("subframe"));
+
+  // Navigate the main frame to trigger metrics recording - we expect metrics to
+  // have been recorded for 1 AMP page (the non-prerendered page).
+  NavigationSimulator::CreateRendererInitiated(
+      GURL("https://www.google.com/amp/other"), main_rfh())
+      ->CommitSameDocument();
+
+  histogram_tester().ExpectTotalCount(
+      "PageLoad.Clients.AMP.Experimental.PageTiming.NavigationToInput.Subframe",
+      0);
+  histogram_tester().ExpectTotalCount(
+      "PageLoad.Clients.AMP.Experimental.PageTiming.InputToNavigation.Subframe",
+      0);
+  histogram_tester().ExpectTotalCount(
+      "PageLoad.Clients.AMP.Experimental.PageTiming."
+      "MainFrameToSubFrameNavigationDelta.Subframe",
+      1);
+}
+
+TEST_F(AMPPageLoadMetricsObserverTest,
+       NoSubFrameMetricsForSubFrameWithNonAmpUrl) {
+  NavigationSimulator::CreateRendererInitiated(
+      GURL("https://www.google.com/search"), main_rfh())
+      ->Commit();
+
+  NavigationSimulator::CreateRendererInitiated(
+      GURL("https://www.google.com/amp/page"), main_rfh())
+      ->CommitSameDocument();
+
+  // Create a non-AMP subframe document.
+  NavigationSimulator::NavigateAndCommitFromDocument(
+      GURL("https://example.com/"),
+      content::RenderFrameHostTester::For(web_contents()->GetMainFrame())
+          ->AppendChild("subframe"));
+
+  // Navigate the main frame to trigger metrics recording.
+  NavigationSimulator::CreateRendererInitiated(
+      GURL("https://www.google.com/amp/other"), main_rfh())
+      ->CommitSameDocument();
+
+  histogram_tester().ExpectTotalCount(
+      "PageLoad.Clients.AMP.Experimental.PageTiming.NavigationToInput.Subframe",
+      0);
+  histogram_tester().ExpectTotalCount(
+      "PageLoad.Clients.AMP.Experimental.PageTiming.InputToNavigation.Subframe",
+      0);
+  histogram_tester().ExpectTotalCount(
+      "PageLoad.Clients.AMP.Experimental.PageTiming."
+      "MainFrameToSubFrameNavigationDelta.Subframe",
+      0);
+}
+
+TEST_F(AMPPageLoadMetricsObserverTest,
+       NoSubFrameMetricsForSubFrameWithoutViewerUrl) {
+  NavigationSimulator::CreateRendererInitiated(
+      GURL("https://www.google.com/search"), main_rfh())
+      ->Commit();
+
+  NavigationSimulator::CreateRendererInitiated(
+      GURL("https://www.google.com/amp/page"), main_rfh())
+      ->CommitSameDocument();
+
+  NavigationSimulator::NavigateAndCommitFromDocument(
+      GURL("https://cdn.ampproject.org/page"),
+      content::RenderFrameHostTester::For(web_contents()->GetMainFrame())
+          ->AppendChild("subframe"));
+
+  // Navigate the main frame to trigger metrics recording.
+  NavigationSimulator::CreateRendererInitiated(
+      GURL("https://www.google.com/amp/other"), main_rfh())
+      ->CommitSameDocument();
+
+  histogram_tester().ExpectTotalCount(
+      "PageLoad.Clients.AMP.Experimental.PageTiming.NavigationToInput.Subframe",
+      0);
+  histogram_tester().ExpectTotalCount(
+      "PageLoad.Clients.AMP.Experimental.PageTiming.InputToNavigation.Subframe",
+      0);
+  histogram_tester().ExpectTotalCount(
+      "PageLoad.Clients.AMP.Experimental.PageTiming."
+      "MainFrameToSubFrameNavigationDelta.Subframe",
+      0);
 }

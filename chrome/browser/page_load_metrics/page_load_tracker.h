@@ -200,6 +200,7 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client {
                              base::TimeTicks failed_load_time);
   void WebContentsHidden();
   void WebContentsShown();
+  void FrameDeleted(content::RenderFrameHost* rfh);
 
   void OnInputEvent(const blink::WebInputEvent& event);
 

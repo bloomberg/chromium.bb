@@ -149,6 +149,11 @@ void MetricsWebContentsObserver::RenderViewHostChanged(
   RegisterInputEventObserver(new_host);
 }
 
+void MetricsWebContentsObserver::FrameDeleted(content::RenderFrameHost* rfh) {
+  if (committed_load_)
+    committed_load_->FrameDeleted(rfh);
+}
+
 void MetricsWebContentsObserver::MediaStartedPlaying(
     const content::WebContentsObserver::MediaPlayerInfo& video_type,
     const content::WebContentsObserver::MediaPlayerId& id) {

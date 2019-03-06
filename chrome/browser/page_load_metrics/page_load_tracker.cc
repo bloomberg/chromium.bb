@@ -325,6 +325,12 @@ void PageLoadTracker::WebContentsShown() {
   INVOKE_AND_PRUNE_OBSERVERS(observers_, OnShown);
 }
 
+void PageLoadTracker::FrameDeleted(content::RenderFrameHost* rfh) {
+  for (const auto& observer : observers_) {
+    observer->OnFrameDeleted(rfh);
+  }
+}
+
 void PageLoadTracker::WillProcessNavigationResponse(
     content::NavigationHandle* navigation_handle) {
   DCHECK(!navigation_request_id_.has_value());
