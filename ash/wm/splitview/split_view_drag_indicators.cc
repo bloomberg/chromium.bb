@@ -298,8 +298,10 @@ class SplitViewDragIndicators::SplitViewDragIndicatorsView
                                                previous_indicator_state_);
     right_rotated_view_->OnIndicatorTypeChanged(indicator_state,
                                                 previous_indicator_state_);
-    left_highlight_view_->OnIndicatorTypeChanged(indicator_state);
-    right_highlight_view_->OnIndicatorTypeChanged(indicator_state);
+    left_highlight_view_->OnIndicatorTypeChanged(indicator_state,
+                                                 previous_indicator_state_);
+    right_highlight_view_->OnIndicatorTypeChanged(indicator_state,
+                                                  previous_indicator_state_);
 
     if (indicator_state != IndicatorState::kNone)
       Layout(previous_indicator_state_ != IndicatorState::kNone);

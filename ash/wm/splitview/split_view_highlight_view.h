@@ -31,8 +31,10 @@ class ASH_EXPORT SplitViewHighlightView : public views::View {
 
   void SetColor(SkColor color);
 
-  // Called to update the opacity of the highlights view on |indicator_state|.
-  void OnIndicatorTypeChanged(IndicatorState indicator_state);
+  // Called to update the opacity of the highlights view on transition from
+  // |previous_indicator_state| to |indicator_state|.
+  void OnIndicatorTypeChanged(IndicatorState indicator_state,
+                              IndicatorState previous_indicator_state);
 
  private:
   friend class SplitViewHighlightViewTestApi;

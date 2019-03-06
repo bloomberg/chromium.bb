@@ -32,9 +32,10 @@ enum SplitviewAnimationType {
   // highlight is the preview highlight, and the other highlight is the other
   // highlight.
   SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_FADE_OUT,
-  // Used to fade in the preview area highlight which indicates the bounds of
-  // the window that is about to get snapped.
+  // Used to fade in and out the preview area highlight which indicates the
+  // bounds of the window that is about to get snapped.
   SPLITVIEW_ANIMATION_PREVIEW_AREA_FADE_IN,
+  SPLITVIEW_ANIMATION_PREVIEW_AREA_FADE_OUT,
   // Used to fade in and out the label on the overview item which warns users
   // the item cannot be snapped. The label appears on the overview item after
   // another window has been snapped.
