@@ -96,10 +96,6 @@ class BASE_EXPORT Value {
     // Note: Do not add more types. See the file-level comment above for why.
   };
 
-  // Magic IsAlive signature to debug double frees.
-  // TODO(crbug.com/859477): Remove once root cause is found.
-  static constexpr uint32_t kMagicIsAlive = 0x15272f19;
-
   // For situations where you want to keep ownership of your buffer, this
   // factory method creates a new BinaryValue by copying the contents of the
   // buffer that's passed in.
@@ -379,27 +375,99 @@ class BASE_EXPORT Value {
   size_t EstimateMemoryUsage() const;
 
  protected:
-  // TODO(crbug.com/646113): Make these private once DictionaryValue and
-  // ListValue are properly inlined.
-  Type type_;
+  // Magic IsAlive signature to debug double frees.
+  // TODO(crbug.com/859477): Remove once root cause is found.
+  static constexpr uint16_t kMagicIsAlive = 0x2f19;
 
+  // Technical note:
+  // The naive way to implement a tagged union leads to wasted bytes
+  // in the object on CPUs like ARM ones, which impose an 8-byte alignment
+  // for double values. I.e. if one does something like:
+  //
+  //    struct TaggedValue {
+  //      int type_;                    // size = 1, align = 4
+  //      union {
+  //        bool bool_value_;           // size = 1, align = 1
+  //        int int_value_;             // size = 4, align = 4
+  //        double double_value_;       // size = 8, align = 8
+  //        std::string string_value_;  // size = 12, align = 4  (32-bit)
+  //      };
+  //    };
+  //
+  // The end result is that the union will have an alignment of 8, and a size
+  // of 16, due to 4 extra padding bytes following |string_value_| to respect
+  // the alignment requirement.
+  //
+  // As a consequence, the struct TaggedValue will have a size of 24 bytes,
+  // due to the size of the union (16), the size of |type_| (4) and 4 bytes
+  // of padding between |type_| and the union to respect its alignment.
+  //
+  // This means 8 bytes of unused memory per instance on 32-bit ARM!
+  //
+  // To reclaim these, a union of structs is used instead, in order to ensure
+  // that |double_value_| below is always located at an offset that is a
+  // multiple of 8, relative to the start of the overall data structure.
+  //
+  // Each struct must declare its own |type_| and |is_alive_| field, which
+  // must have a different name, to appease the C++ compiler.
+  //
+  // Using this technique sizeof(base::Value) == 16 on 32-bit ARM instead
+  // of 24, without losing any information. Results are unchanged for x86,
+  // x86_64 and arm64 (16, 32 and 32 bytes respectively).
   union {
-    bool bool_value_;
-    int int_value_;
-    double double_value_;
-    std::string string_value_;
-    BlobStorage binary_value_;
-    DictStorage dict_;
-    ListStorage list_;
+    struct {
+      // TODO(crbug.com/646113): Make these private once DictionaryValue and
+      // ListValue are properly inlined.
+      Type type_ : 8;
+
+      // IsAlive member to debug double frees.
+      // TODO(crbug.com/859477): Remove once root cause is found.
+      uint16_t is_alive_ = kMagicIsAlive;
+    };
+    struct {
+      Type bool_type_ : 8;
+      uint16_t bool_is_alive_;
+      bool bool_value_;
+    };
+    struct {
+      Type int_type_ : 8;
+      uint16_t int_is_alive_;
+      int int_value_;
+    };
+    struct {
+      Type double_type_ : 8;
+      uint16_t double_is_alive_;
+      // Subtle: On architectures that require it, the compiler will ensure
+      // that |double_value_|'s offset is a multiple of 8 (e.g. 32-bit ARM).
+      // See technical note above to understand why it is important.
+      double double_value_;
+    };
+    struct {
+      Type string_type_ : 8;
+      uint16_t string_is_alive_;
+      std::string string_value_;
+    };
+    struct {
+      Type binary_type_ : 8;
+      uint16_t binary_is_alive_;
+      BlobStorage binary_value_;
+    };
+    struct {
+      Type dict_type_ : 8;
+      uint16_t dict_is_alive_;
+      DictStorage dict_;
+    };
+    struct {
+      Type list_type_ : 8;
+      uint16_t list_is_alive_;
+      ListStorage list_;
+    };
   };
 
  private:
+  friend class ValuesTest_SizeOfValue_Test;
   void InternalMoveConstructFrom(Value&& that);
   void InternalCleanup();
-
-  // IsAlive member to debug double frees.
-  // TODO(crbug.com/859477): Remove once root cause is found.
-  uint32_t is_alive_ = kMagicIsAlive;
 
   DISALLOW_COPY_AND_ASSIGN(Value);
 };
