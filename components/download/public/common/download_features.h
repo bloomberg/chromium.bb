@@ -11,6 +11,10 @@
 namespace download {
 namespace features {
 
+// Whether offline content provider should be used for the downloads UI..
+COMPONENTS_DOWNLOAD_EXPORT extern const base::Feature
+    kUseDownloadOfflineContentProvider;
+
 // Whether download auto-resumptions are enabled in native.
 COMPONENTS_DOWNLOAD_EXPORT extern const base::Feature
     kDownloadAutoResumptionNative;

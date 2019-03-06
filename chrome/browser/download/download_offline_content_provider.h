@@ -60,6 +60,9 @@ class DownloadOfflineContentProvider
   void OnThumbnailRetrieved(const ContentId& id,
                             VisualsCallback callback,
                             const SkBitmap& bitmap);
+  void AddCompletedDownload(DownloadItem* item);
+  void AddCompletedDownloadDone(DownloadItem* item, int64_t system_download_id);
+  void UpdateObservers(DownloadItem* item);
 
   DownloadManager* manager_;
   download::AllDownloadItemNotifier download_notifier_;

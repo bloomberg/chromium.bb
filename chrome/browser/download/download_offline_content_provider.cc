@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/browser/download/image_thumbnail_request.h"
 #include "chrome/browser/download/offline_item_utils.h"
 #include "chrome/browser/offline_items_collection/offline_content_aggregator_factory.h"
@@ -20,6 +21,10 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+
+#if defined(OS_ANDROID)
+#include "chrome/browser/android/download/download_manager_bridge.h"
+#endif
 
 using OfflineItemFilter = offline_items_collection::OfflineItemFilter;
 using OfflineItemState = offline_items_collection::OfflineItemState;
@@ -182,10 +187,13 @@ void DownloadOfflineContentProvider::OnDownloadUpdated(DownloadManager* manager,
   if (!ShouldShowDownloadItem(item))
     return;
 
-  for (auto& observer : observers_) {
-    observer.OnItemUpdated(
-        OfflineItemUtils::CreateOfflineItem(name_space_, item));
+  if (item->GetState() == DownloadItem::COMPLETE) {
+    // TODO(crbug.com/938152): May be move this to DownloadItem.
+    AddCompletedDownload(item);
+    return;
   }
+
+  UpdateObservers(item);
 }
 
 void DownloadOfflineContentProvider::OnDownloadRemoved(DownloadManager* manager,
@@ -193,7 +201,39 @@ void DownloadOfflineContentProvider::OnDownloadRemoved(DownloadManager* manager,
   if (!ShouldShowDownloadItem(item))
     return;
 
+#if defined(OS_ANDROID)
+  DownloadManagerBridge::RemoveCompletedDownload(item);
+#endif
+
   ContentId contentId(name_space_, item->GetGuid());
   for (auto& observer : observers_)
     observer.OnItemRemoved(contentId);
+}
+
+void DownloadOfflineContentProvider::AddCompletedDownload(DownloadItem* item) {
+#if defined(OS_ANDROID)
+  if (!item->GetTargetFilePath().IsContentUri()) {
+    DownloadManagerBridge::AddCompletedDownload(
+        item, base::BindOnce(
+                  &DownloadOfflineContentProvider::AddCompletedDownloadDone,
+                  weak_ptr_factory_.GetWeakPtr(), item));
+  } else {
+    AddCompletedDownloadDone(item, -1);
+  }
+#else
+  AddCompletedDownloadDone(item, -1);
+#endif
+}
+
+void DownloadOfflineContentProvider::AddCompletedDownloadDone(
+    DownloadItem* item,
+    int64_t system_download_id) {
+  UpdateObservers(item);
+}
+
+void DownloadOfflineContentProvider::UpdateObservers(DownloadItem* item) {
+  for (auto& observer : observers_) {
+    observer.OnItemUpdated(
+        OfflineItemUtils::CreateOfflineItem(name_space_, item));
+  }
 }
