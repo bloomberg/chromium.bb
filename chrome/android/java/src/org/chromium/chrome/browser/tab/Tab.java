@@ -9,8 +9,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
-import android.content.res.Resources;
-import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.net.Uri;
@@ -184,17 +182,6 @@ public class Tab
 
     private boolean mIsClosing;
     private boolean mIsShowingErrorPage;
-
-    private Bitmap mFavicon;
-    private int mFaviconWidth;
-    private int mFaviconHeight;
-    private String mFaviconUrl;
-
-    /**
-     * The size in pixels at which favicons will be drawn. Ideally mFavicon will have this size to
-     * avoid scaling artifacts.
-     */
-    private int mIdealFaviconSize;
 
     /** Whether or not the TabState has changed. */
     private boolean mIsTabStateDirty = true;
@@ -395,9 +382,6 @@ public class Tab
         mWindowAndroid = window;
         mLaunchType = type;
         mLaunchTypeAtCreation = type;
-
-        Resources resources = mThemedApplicationContext.getResources();
-        mIdealFaviconSize = resources.getDimensionPixelSize(R.dimen.default_favicon_size);
 
         TabThemeColorHelper.createForTab(this);
 
@@ -1421,6 +1405,7 @@ public class Tab
             updateInteractableState();
             mWebContentsDelegate = mDelegateFactory.createWebContentsDelegate(this);
             TabWebContentsObserver.from(this);
+            TabFavicon.from(this);
 
             int parentId = getParentId();
             if (parentId != INVALID_TAB_ID) {
@@ -1664,22 +1649,6 @@ public class Tab
     }
 
     /**
-     * @return The bitmap of the favicon scaled to 16x16dp. null if no favicon
-     *         is specified or it requires the default favicon.
-     */
-    public Bitmap getFavicon() {
-        // If we have no content or a native page, return null.
-        if (isNativePage() || getWebContents() == null) return null;
-
-        // Use the cached favicon only if the page wasn't changed.
-        if (mFavicon != null && mFaviconUrl != null && mFaviconUrl.equals(getUrl())) {
-            return mFavicon;
-        }
-
-        return nativeGetFavicon(mNativeTabAndroid);
-    }
-
-    /**
      * Loads the tab if it's not loaded (e.g. because it was killed in background).
      * This will trigger a regular load for tabs with pending lazy first load (tabs opened in
      * background on low-memory devices).
@@ -1902,49 +1871,6 @@ public class Tab
      */
     public TabWebContentsDelegateAndroid getTabWebContentsDelegateAndroid() {
         return mWebContentsDelegate;
-    }
-
-    private boolean isIdealFaviconSize(int width, int height) {
-        return width == mIdealFaviconSize && height == mIdealFaviconSize;
-    }
-
-    /**
-     * @param width new favicon's width.
-     * @param height new favicon's height.
-     * @return true iff the new favicon should replace the current one.
-     */
-    private boolean isBetterFavicon(int width, int height) {
-        if (isIdealFaviconSize(width, height)) return true;
-
-        // Prefer square favicons over rectangular ones
-        if (mFaviconWidth != mFaviconHeight && width == height) return true;
-        if (mFaviconWidth == mFaviconHeight && width != height) return false;
-
-        // Do not update favicon if it's already at least as big as the ideal size in both dimens
-        if (mFaviconWidth >= mIdealFaviconSize && mFaviconHeight >= mIdealFaviconSize) return false;
-
-        // Update favicon if the new one is larger in one dimen, but not smaller in the other
-        return (width > mFaviconWidth && !(height < mFaviconHeight))
-                || (!(width < mFaviconWidth) && height > mFaviconHeight);
-    }
-
-    @CalledByNative
-    protected void onFaviconAvailable(Bitmap icon) {
-        if (icon == null) return;
-        String url = getUrl();
-        boolean pageUrlChanged = !url.equals(mFaviconUrl);
-        // This method will be called multiple times if the page has more than one favicon.
-        // We are trying to use the |mIdealFaviconSize|x|mIdealFaviconSize| DP icon here, or the
-        // first one larger than that received. Bitmap.createScaledBitmap will return the original
-        // bitmap if it is already |mIdealFaviconSize|x|mIdealFaviconSize| DP.
-        if (pageUrlChanged || isBetterFavicon(icon.getWidth(), icon.getHeight())) {
-            mFavicon = Bitmap.createScaledBitmap(icon, mIdealFaviconSize, mIdealFaviconSize, true);
-            mFaviconWidth = icon.getWidth();
-            mFaviconHeight = icon.getHeight();
-            mFaviconUrl = url;
-        }
-
-        for (TabObserver observer : mObservers) observer.onFaviconUpdated(this, icon);
     }
 
     /**
@@ -2626,7 +2552,6 @@ public class Tab
             long intentReceivedTimestamp);
     private native void nativeSetActiveNavigationEntryTitleForUrl(long nativeTabAndroid, String url,
             String title);
-    private native Bitmap nativeGetFavicon(long nativeTabAndroid);
     private native void nativeCreateHistoricalTab(long nativeTabAndroid);
     private native void nativeUpdateBrowserControlsState(
             long nativeTabAndroid, int constraints, int current, boolean animate);

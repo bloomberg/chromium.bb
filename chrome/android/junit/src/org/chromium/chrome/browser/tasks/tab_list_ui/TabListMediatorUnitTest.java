@@ -287,7 +287,6 @@ public class TabListMediatorUnitTest {
         doReturn(id).when(tab).getId();
         doReturn("").when(tab).getUrl();
         doReturn(title).when(tab).getTitle();
-        doReturn(Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)).when(tab).getFavicon();
         return tab;
     }
 }
