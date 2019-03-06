@@ -1894,6 +1894,20 @@ std::unique_ptr<WebContents> WebContentsImpl::DetachFromOuterWebContents() {
   return web_contents;
 }
 
+void WebContentsImpl::RecursivelyRegisterFrameSinkIds() {
+  auto* view = static_cast<RenderWidgetHostViewBase*>(
+      GetRenderManager()->GetRenderWidgetHostView());
+  DCHECK(view);
+  if (!view->IsRenderWidgetHostViewChildFrame())
+    return;
+  static_cast<RenderWidgetHostViewChildFrame*>(view)->RegisterFrameSinkId();
+
+  for (auto* inner_web_contents : node_.GetInnerWebContents()) {
+    static_cast<WebContentsImpl*>(inner_web_contents)
+        ->RecursivelyRegisterFrameSinkIds();
+  }
+}
+
 void WebContentsImpl::ReattachToOuterWebContentsFrame() {
   DCHECK(node_.outer_web_contents());
   auto* render_manager = GetRenderManager();
@@ -1902,9 +1916,7 @@ void WebContentsImpl::ReattachToOuterWebContentsFrame() {
   render_manager->SetRWHViewForInnerContents(
       render_manager->GetRenderWidgetHostView());
 
-  static_cast<RenderWidgetHostViewChildFrame*>(
-      render_manager->GetRenderWidgetHostView())
-      ->RegisterFrameSinkId();
+  RecursivelyRegisterFrameSinkIds();
 
   // Set up the the guest's AX tree to point back at the embedder's AX tree.
   GetMainFrame()->set_browser_plugin_embedder_ax_tree_id(

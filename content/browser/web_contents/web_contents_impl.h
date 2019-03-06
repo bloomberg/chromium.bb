@@ -1301,6 +1301,10 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // These functions are helpers in managing a hierarchy of WebContents
   // involved in rendering inner WebContents.
 
+  // Registers FrameSinkIds for all WebContents in the subtree of
+  // WebContentsTree, rooted at |contents|.
+  void RecursivelyRegisterFrameSinkIds();
+
   // When multiple WebContents are present within a tab or window, a single one
   // is focused and will route keyboard events in most cases to a RenderWidget
   // contained within it. |GetFocusedWebContents()|'s main frame widget will

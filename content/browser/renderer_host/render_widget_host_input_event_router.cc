@@ -331,6 +331,10 @@ size_t RenderWidgetHostInputEventRouter::TouchEventAckQueueLengthForTesting()
   return touch_event_ack_queue_->length_for_testing();
 }
 
+size_t RenderWidgetHostInputEventRouter::RegisteredViewCountForTesting() const {
+  return owner_map_.size();
+}
+
 void RenderWidgetHostInputEventRouter::OnRenderWidgetHostViewBaseDestroyed(
     RenderWidgetHostViewBase* view) {
   // RenderWidgetHostViewBase::RemoveObserver() should only ever be called
