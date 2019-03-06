@@ -24,6 +24,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <stdint.h>
+
 #include "third_party/blink/renderer/platform/wtf/dynamic_annotations.h"
 
 #if defined(WTF_USE_DYNAMIC_ANNOTATIONS) && \
@@ -33,12 +35,12 @@
 // This makes all Annotate* functions different, which prevents the linker from
 // folding them.
 #ifdef __COUNTER__
-#define DYNAMIC_ANNOTATIONS_IMPL                         \
-  volatile short lineno = (__LINE__ << 8) + __COUNTER__; \
+#define DYNAMIC_ANNOTATIONS_IMPL                            \
+  volatile uint16_t lineno = (__LINE__ << 8) + __COUNTER__; \
   (void)lineno;
 #else
-#define DYNAMIC_ANNOTATIONS_IMPL           \
-  volatile short lineno = (__LINE__ << 8); \
+#define DYNAMIC_ANNOTATIONS_IMPL              \
+  volatile uint16_t lineno = (__LINE__ << 8); \
   (void)lineno;
 #endif
 
