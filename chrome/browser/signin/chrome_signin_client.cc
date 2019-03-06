@@ -303,7 +303,8 @@ std::unique_ptr<GaiaAuthFetcher> ChromeSigninClient::CreateGaiaAuthFetcher(
 
 void ChromeSigninClient::VerifySyncToken() {
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
-  if (signin_util::IsForceSigninEnabled())
+  // We only verifiy the token once when Profile is just created.
+  if (signin_util::IsForceSigninEnabled() && !force_signin_verifier_)
     force_signin_verifier_ = std::make_unique<ForceSigninVerifier>(profile_);
 #endif
 }
