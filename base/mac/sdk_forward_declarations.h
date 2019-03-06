@@ -331,6 +331,10 @@ typedef NSString* VNBarcodeSymbology NS_STRING_ENUM;
 
 // VNBarcodeObservation forward declarations.
 @interface VNRectangleObservation : VNDetectedObjectObservation
+@property(readonly, nonatomic, assign) CGPoint topLeft;
+@property(readonly, nonatomic, assign) CGPoint topRight;
+@property(readonly, nonatomic, assign) CGPoint bottomLeft;
+@property(readonly, nonatomic, assign) CGPoint bottomRight;
 @end
 
 @interface VNBarcodeObservation : VNRectangleObservation

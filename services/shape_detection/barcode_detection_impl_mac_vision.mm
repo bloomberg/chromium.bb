@@ -73,6 +73,21 @@ void BarcodeDetectionImplMacVision::OnBarcodesDetected(VNRequest* request,
                    observation.boundingBox.size.height * image_size_.height),
         image_size_.height);
 
+    // Enumerate corner points starting from top-left in clockwise fashion:
+    // https://wicg.github.io/shape-detection-api/#dom-detectedbarcode-cornerpoints
+    barcode->corner_points.emplace_back(
+        observation.topLeft.x * image_size_.width,
+        (1 - observation.topLeft.y) * image_size_.height);
+    barcode->corner_points.emplace_back(
+        observation.topRight.x * image_size_.width,
+        (1 - observation.topRight.y) * image_size_.height);
+    barcode->corner_points.emplace_back(
+        observation.bottomRight.x * image_size_.width,
+        (1 - observation.bottomRight.y) * image_size_.height);
+    barcode->corner_points.emplace_back(
+        observation.bottomLeft.x * image_size_.width,
+        (1 - observation.bottomLeft.y) * image_size_.height);
+
     barcode->raw_value =
         base::SysNSStringToUTF8(observation.payloadStringValue);
 
