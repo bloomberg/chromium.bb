@@ -121,10 +121,33 @@ void WebIDBCursorImpl::CursorContinue(const IDBKey* key,
 
   // Reset all cursor prefetch caches except for this cursor.
   IndexedDBDispatcher::ResetCursorPrefetchCaches(transaction_id_, this);
-
   callbacks->SetState(weak_factory_.GetWeakPtr(), transaction_id_);
-  cursor_->CursorContinue(IDBKey::Clone(key), IDBKey::Clone(primary_key),
-                          GetCallbacksProxy(std::move(callbacks)));
+  cursor_->CursorContinue(
+      IDBKey::Clone(key), IDBKey::Clone(primary_key),
+      WTF::Bind(&WebIDBCursorImpl::CursorContinueCallback,
+                WTF::Unretained(this), std::move(callbacks)));
+}
+
+void WebIDBCursorImpl::CursorContinueCallback(
+    std::unique_ptr<WebIDBCallbacks> callbacks,
+    mojom::blink::IDBErrorPtr error,
+    mojom::blink::IDBCursorValuePtr value) {
+  if (error) {
+    callbacks->Error(error->error_code, error->error_message);
+    callbacks.reset();
+    return;
+  }
+
+  if (!value) {
+    callbacks->SuccessValue(nullptr);
+    callbacks.reset();
+    return;
+  }
+
+  callbacks->SuccessCursorContinue(std::move(value->key),
+                                   std::move(value->primary_key),
+                                   std::move(value->value));
+  callbacks.reset();
 }
 
 void WebIDBCursorImpl::PostSuccessHandlerCallback() {

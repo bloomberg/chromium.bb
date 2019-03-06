@@ -36,6 +36,14 @@ IndexedDBDatabaseError CreateCursorClosedError() {
                                 "The cursor has been closed.");
 }
 
+IndexedDBDatabaseError CreateError(uint16_t code,
+                                   const char* message,
+                                   IndexedDBTransaction* transaction) {
+  DCHECK(transaction);
+  transaction->IncrementNumErrorsSent();
+  return IndexedDBDatabaseError(code, message);
+}
+
 leveldb::Status InvokeOrSucceed(base::WeakPtr<IndexedDBCursor> weak_cursor,
                                 IndexedDBTransaction::Operation operation,
                                 IndexedDBTransaction* transaction) {
@@ -82,24 +90,6 @@ IndexedDBCursor::~IndexedDBCursor() {
   Close();
 }
 
-void IndexedDBCursor::Continue(std::unique_ptr<IndexedDBKey> key,
-                               std::unique_ptr<IndexedDBKey> primary_key,
-                               scoped_refptr<IndexedDBCallbacks> callbacks) {
-  IDB_TRACE("IndexedDBCursor::Continue");
-
-  if (closed_) {
-    callbacks->OnError(CreateCursorClosedError());
-
-    return;
-  }
-
-  transaction_->ScheduleTask(
-      task_type_,
-      BindWeakOperation(&IndexedDBCursor::CursorIterationOperation,
-                        ptr_factory_.GetWeakPtr(), base::Passed(&key),
-                        base::Passed(&primary_key), callbacks));
-}
-
 void IndexedDBCursor::Advance(
     uint32_t count,
     base::WeakPtr<content::IndexedDBDispatcherHost> dispatcher_host,
@@ -107,11 +97,9 @@ void IndexedDBCursor::Advance(
   IDB_TRACE("IndexedDBCursor::Advance");
 
   if (closed_) {
-    const IndexedDBDatabaseError closed_error(CreateCursorClosedError());
-    DCHECK_NE(closed_error.code(), 0);
+    const IndexedDBDatabaseError error(CreateCursorClosedError());
     std::move(callback).Run(
-        CreateIDBError(closed_error.code(),
-                       base::string16(closed_error.message()), transaction_),
+        blink::mojom::IDBError::New(error.code(), error.message()),
         blink::mojom::IDBCursorValuePtr());
     return;
   }
@@ -120,7 +108,7 @@ void IndexedDBCursor::Advance(
       task_type_,
       BindWeakOperation(
           &IndexedDBCursor::CursorAdvanceOperation, ptr_factory_.GetWeakPtr(),
-          count, dispatcher_host,
+          count, std::move(dispatcher_host),
           base::WrapRefCounted(dispatcher_host->context()->TaskRunner()),
           std::move(callback)));
 }
@@ -145,14 +133,14 @@ leveldb::Status IndexedDBCursor::CursorAdvanceOperation(
       return s;
     }
 
-    // CreateIDBError() needs to be called before calling Close() so
+    // CreateError() needs to be called before calling Close() so
     // |transaction_| is alive.
-    auto error = CreateIDBError(blink::kWebIDBDatabaseExceptionUnknownError,
-                                base::ASCIIToUTF16("Error advancing cursor"),
-                                transaction_);
+    auto error = CreateError(blink::kWebIDBDatabaseExceptionUnknownError,
+                             "Error advancing cursor", transaction_);
     Close();
-    std::move(callback).Run(std::move(error),
-                            blink::mojom::IDBCursorValuePtr());
+    std::move(callback).Run(
+        blink::mojom::IDBError::New(error.code(), error.message()),
+        blink::mojom::IDBCursorValuePtr());
     return s;
   }
 
@@ -166,8 +154,9 @@ leveldb::Status IndexedDBCursor::CursorAdvanceOperation(
     if (!IndexedDBCallbacks::CreateAllBlobs(
             dispatcher_host->blob_storage_context(), idb_runner,
             IndexedDBCallbacks::IndexedDBValueBlob::GetIndexedDBValueBlobs(
-                blob_info, &mojo_value->blob_or_file_info)))
+                blob_info, &mojo_value->blob_or_file_info))) {
       return s;
+    }
   } else {
     mojo_value = blink::mojom::IDBValue::New();
   }
@@ -179,13 +168,40 @@ leveldb::Status IndexedDBCursor::CursorAdvanceOperation(
   return s;
 }
 
-leveldb::Status IndexedDBCursor::CursorIterationOperation(
+void IndexedDBCursor::Continue(
+    base::WeakPtr<content::IndexedDBDispatcherHost> dispatcher_host,
     std::unique_ptr<IndexedDBKey> key,
     std::unique_ptr<IndexedDBKey> primary_key,
-    scoped_refptr<IndexedDBCallbacks> callbacks,
+    blink::mojom::IDBCursor::CursorContinueCallback callback) {
+  IDB_TRACE("IndexedDBCursor::Continue");
+  if (closed_) {
+    const IndexedDBDatabaseError error(CreateCursorClosedError());
+    std::move(callback).Run(
+        blink::mojom::IDBError::New(error.code(), error.message()),
+        blink::mojom::IDBCursorValuePtr());
+    return;
+  }
+
+  transaction_->ScheduleTask(
+      task_type_,
+      BindWeakOperation(
+          &IndexedDBCursor::CursorContinueOperation, ptr_factory_.GetWeakPtr(),
+          std::move(dispatcher_host),
+          base::WrapRefCounted(dispatcher_host->context()->TaskRunner()),
+          base::Passed(&key), base::Passed(&primary_key), std::move(callback)));
+}
+
+leveldb::Status IndexedDBCursor::CursorContinueOperation(
+    base::WeakPtr<IndexedDBDispatcherHost> dispatcher_host,
+    scoped_refptr<base::SequencedTaskRunner> idb_runner,
+    std::unique_ptr<IndexedDBKey> key,
+    std::unique_ptr<IndexedDBKey> primary_key,
+    blink::mojom::IDBCursor::CursorContinueCallback callback,
     IndexedDBTransaction* /*transaction*/) {
-  IDB_TRACE("IndexedDBCursor::CursorIterationOperation");
+  IDB_TRACE("IndexedDBCursor::CursorContinueOperation");
   leveldb::Status s = leveldb::Status::OK();
+  if (!dispatcher_host)
+    return s;
 
   if (!cursor_ ||
       !cursor_->Continue(key.get(), primary_key.get(),
@@ -193,18 +209,44 @@ leveldb::Status IndexedDBCursor::CursorIterationOperation(
     cursor_.reset();
     if (s.ok()) {
       // This happens if we reach the end of the iterator and can't continue.
-      callbacks->OnSuccess(nullptr);
+      std::move(callback).Run(blink::mojom::IDBErrorPtr(),
+                              blink::mojom::IDBCursorValuePtr());
       return s;
     }
+
+    // |transaction_| must be valid for CreateError(), so we can't call
+    // Close() until after calling CreateError().
     IndexedDBDatabaseError error =
         CreateError(blink::kWebIDBDatabaseExceptionUnknownError,
                     "Error continuing cursor.", transaction_);
     Close();
-    callbacks->OnError(error);
+    std::move(callback).Run(
+        blink::mojom::IDBError::New(error.code(), error.message()),
+        blink::mojom::IDBCursorValuePtr());
     return s;
   }
 
-  callbacks->OnSuccess(this->key(), this->primary_key(), Value());
+  blink::mojom::IDBValuePtr mojo_value;
+  std::vector<IndexedDBBlobInfo> blob_info;
+  IndexedDBValue* value = Value();
+  if (value) {
+    mojo_value = IndexedDBValue::ConvertAndEraseValue(value);
+    blob_info.swap(value->blob_info);
+
+    if (!IndexedDBCallbacks::CreateAllBlobs(
+            dispatcher_host->blob_storage_context(), idb_runner,
+            IndexedDBCallbacks::IndexedDBValueBlob::GetIndexedDBValueBlobs(
+                blob_info, &mojo_value->blob_or_file_info))) {
+      return s;
+    }
+  } else {
+    mojo_value = blink::mojom::IDBValue::New();
+  }
+
+  blink::mojom::IDBCursorValuePtr cursor_value =
+      blink::mojom::IDBCursorValue::New(this->key(), this->primary_key(),
+                                        std::move(mojo_value));
+  std::move(callback).Run(blink::mojom::IDBErrorPtr(), std::move(cursor_value));
   return s;
 }
 
@@ -254,7 +296,7 @@ leveldb::Status IndexedDBCursor::CursorPrefetchIterationOperation(
           CreateError(blink::kWebIDBDatabaseExceptionUnknownError,
                       "Error continuing cursor.", transaction_);
       Close();
-      callbacks->OnError(error);
+      callbacks->OnError(std::move(error));
       return s;
     }
 
@@ -336,24 +378,6 @@ void IndexedDBCursor::Close() {
   cursor_.reset();
   saved_cursor_.reset();
   transaction_ = nullptr;
-}
-
-IndexedDBDatabaseError IndexedDBCursor::CreateError(
-    uint16_t code,
-    const char* message,
-    IndexedDBTransaction* transaction) {
-  DCHECK(transaction);
-  transaction->IncrementNumErrorsSent();
-  return IndexedDBDatabaseError(code, message);
-}
-
-blink::mojom::IDBErrorPtr IndexedDBCursor::CreateIDBError(
-    uint16_t code,
-    const base::string16& message,
-    IndexedDBTransaction* transaction) {
-  DCHECK(transaction);
-  transaction->IncrementNumErrorsSent();
-  return blink::mojom::IDBError::New(code, message);
 }
 
 }  // namespace content

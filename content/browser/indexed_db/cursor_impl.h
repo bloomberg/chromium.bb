@@ -36,7 +36,7 @@ class CursorImpl : public blink::mojom::IDBCursor {
   void CursorContinue(
       const blink::IndexedDBKey& key,
       const blink::IndexedDBKey& primary_key,
-      blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks) override;
+      blink::mojom::IDBCursor::CursorContinueCallback callback) override;
   void Prefetch(int32_t count,
                 blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks) override;
   void PrefetchReset(int32_t used_prefetches,
