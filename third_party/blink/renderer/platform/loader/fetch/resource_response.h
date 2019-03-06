@@ -42,6 +42,7 @@
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 #include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
@@ -56,6 +57,8 @@ namespace blink {
 //
 // This class is thread-bound. Do not copy/pass an instance across threads.
 class PLATFORM_EXPORT ResourceResponse final {
+  USING_FAST_MALLOC(ResourceResponse);
+
  public:
   enum HTTPVersion : uint8_t {
     kHTTPVersionUnknown,
@@ -78,6 +81,8 @@ class PLATFORM_EXPORT ResourceResponse final {
   };
 
   class PLATFORM_EXPORT SignedCertificateTimestamp final {
+    DISALLOW_NEW();
+
    public:
     SignedCertificateTimestamp(String status,
                                String origin,

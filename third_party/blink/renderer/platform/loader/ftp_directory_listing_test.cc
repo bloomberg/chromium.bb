@@ -12,12 +12,15 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_error.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/icu/source/i18n/unicode/timezone.h"
 
 namespace blink {
 namespace {
 
 class ScopedRestoreDefaultTimezone {
+  STACK_ALLOCATED();
+
  public:
   explicit ScopedRestoreDefaultTimezone(const char* zoneid) {
     original_zone_.reset(icu::TimeZone::createDefault());

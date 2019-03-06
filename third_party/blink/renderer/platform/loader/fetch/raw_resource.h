@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_client.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 class BytesConsumer;
@@ -202,6 +203,8 @@ class PLATFORM_EXPORT RawResourceClient : public ResourceClient {
 // Checks the sequence of callbacks of RawResourceClient. This can be used only
 // when a RawResourceClient is added as a client to at most one RawResource.
 class PLATFORM_EXPORT RawResourceClientStateChecker final {
+  DISALLOW_NEW();
+
  public:
   RawResourceClientStateChecker();
   ~RawResourceClientStateChecker();

@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/integrity_metadata.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -23,6 +24,8 @@ class SecurityOrigin;
 // ScriptFetchOptions corresponds to the spec concept "script fetch options".
 // https://html.spec.whatwg.org/C/#script-fetch-options
 class PLATFORM_EXPORT ScriptFetchOptions final {
+  DISALLOW_NEW();
+
  public:
   // https://html.spec.whatwg.org/C/#default-classic-script-fetch-options
   // "The default classic script fetch options are a script fetch options whose
