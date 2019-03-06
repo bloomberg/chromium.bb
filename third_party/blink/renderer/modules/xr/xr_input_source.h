@@ -19,7 +19,12 @@ class XRInputSource : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  enum Handedness { kHandNone = 0, kHandLeft = 1, kHandRight = 2 };
+  enum Handedness {
+    kHandUninitialized = -1,
+    kHandNone = 0,
+    kHandLeft = 1,
+    kHandRight = 2
+  };
   enum TargetRayMode { kGaze = 1, kTrackedPointer = 2, kScreen = 3 };
 
   XRInputSource(XRSession*, uint32_t source_id);
@@ -51,7 +56,7 @@ class XRInputSource : public ScriptWrappable {
   const Member<XRSession> session_;
   const uint32_t source_id_;
 
-  Handedness handedness_;
+  Handedness handedness_ = kHandUninitialized;
   String handedness_string_;
 
   TargetRayMode target_ray_mode_;

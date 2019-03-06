@@ -65,7 +65,7 @@ let testFunction = (session, t, fakeDeviceController) => new Promise((resolve) =
         t.step( () => {
           assert_equals(input_sources.length, 2);
           assert_equals(input_sources[1].targetRayMode, "gaze");
-          assert_equals(input_sources[1].handedness, "");
+          assert_equals(input_sources[1].handedness, "none");
         });
 
         fakeDeviceController.removeInputSource(input_source_1);
@@ -76,7 +76,7 @@ let testFunction = (session, t, fakeDeviceController) => new Promise((resolve) =
           t.step( () => {
             assert_equals(input_sources.length, 1);
             assert_equals(input_sources[0].targetRayMode, "gaze");
-            assert_equals(input_sources[0].handedness, "");
+            assert_equals(input_sources[0].handedness, "none");
           });
 
           resolve();
