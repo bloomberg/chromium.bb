@@ -21,9 +21,22 @@ namespace content {
 class CONTENT_EXPORT WebRtcVideoTrackSource
     : public rtc::AdaptedVideoTrackSource {
  public:
+  struct FrameAdaptationParams {
+    bool should_drop_frame;
+    int crop_x;
+    int crop_y;
+    int crop_width;
+    int crop_height;
+    int scale_to_width;
+    int scale_to_height;
+  };
+
   WebRtcVideoTrackSource(bool is_screencast,
                          absl::optional<bool> needs_denoising);
   ~WebRtcVideoTrackSource() override;
+
+  void SetCustomFrameAdaptationParamsForTesting(
+      const FrameAdaptationParams& params);
 
   SourceState state() const override;
 
@@ -36,6 +49,18 @@ class CONTENT_EXPORT WebRtcVideoTrackSource
   using webrtc::VideoTrackSourceInterface::RemoveSink;
 
  private:
+  FrameAdaptationParams ComputeAdaptationParams(int width,
+                                                int height,
+                                                int64_t time_us);
+
+  // Delivers |frame| to base class method
+  // rtc::AdaptedVideoTrackSource::OnFrame(). If the cropping (given via
+  // |frame->visible_rect()|) has changed since the last delivered frame, the
+  // whole frame is marked as updated.
+  void DeliverFrame(scoped_refptr<media::VideoFrame> frame,
+                    gfx::Rect update_rect,
+                    int64_t timestamp_us);
+
   // |thread_checker_| is bound to the libjingle worker thread.
   THREAD_CHECKER(thread_checker_);
   media::VideoFramePool scaled_frame_pool_;
@@ -44,6 +69,15 @@ class CONTENT_EXPORT WebRtcVideoTrackSource
 
   const bool is_screencast_;
   const absl::optional<bool> needs_denoising_;
+
+  // Stores the accumulated value of CAPTURE_UPDATE_RECT in case that frames
+  // are dropped.
+  gfx::Rect accumulated_update_rect_;
+  base::Optional<int> previous_capture_counter_;
+  gfx::Rect cropping_rect_of_previous_delivered_frame_;
+
+  absl::optional<FrameAdaptationParams>
+      custom_frame_adaptation_params_for_testing_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRtcVideoTrackSource);
 };
