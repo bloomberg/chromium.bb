@@ -68,6 +68,12 @@ vars = {
   # restricted to Googlers only.
   'checkout_chromium_autofill_test_dependencies': False,
 
+  # By default, do not check out Chromium password manager captured sites test
+  # dependencies. These dependencies include very large numbers of very
+  # large web capture files. Captured sites test dependencies are also
+  # restricted to Googlers only.
+  'checkout_chromium_password_manager_test_dependencies': False,
+
   # Check out and download nacl by default. This can be disabled e.g. with
   # custom_vars.
   'checkout_nacl': True,
@@ -350,6 +356,17 @@ deps = {
       }
     ],
     'condition': 'checkout_chromium_autofill_test_dependencies',
+    'dep_type': 'cipd',
+  },
+
+  'src/chrome/test/data/password/captured_sites': {
+    'packages': [
+      {
+        'package': 'chromium/chrome/test/data/password/captured_sites',
+        'version': 'jYvTM_KjFi4v_BTqCfkAxM1XJ4PkMDSi31FgEDf0z9sC',
+      }
+    ],
+    'condition': 'checkout_chromium_password_manager_test_dependencies',
     'dep_type': 'cipd',
   },
 
