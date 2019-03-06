@@ -502,8 +502,7 @@ bool UserMediaRequest::IsSecureContextUse(String& error_message) {
   Document* document = OwnerDocument();
 
   if (document->IsSecureContext(error_message)) {
-    UseCounter::Count(document->GetFrame(),
-                      WebFeature::kGetUserMediaSecureOrigin);
+    UseCounter::Count(document, WebFeature::kGetUserMediaSecureOrigin);
     UseCounter::CountCrossOriginIframe(
         *document, WebFeature::kGetUserMediaSecureOriginIframe);
 

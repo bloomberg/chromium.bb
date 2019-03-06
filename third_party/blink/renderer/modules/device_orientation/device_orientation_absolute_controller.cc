@@ -42,7 +42,7 @@ void DeviceOrientationAbsoluteController::DidAddEventListener(
   LocalFrame* frame = GetDocument().GetFrame();
   if (frame) {
     if (GetDocument().IsSecureContext()) {
-      UseCounter::Count(frame->GetDocument(),
+      UseCounter::Count(GetDocument(),
                         WebFeature::kDeviceOrientationAbsoluteSecureOrigin);
     } else {
       Deprecation::CountDeprecation(
