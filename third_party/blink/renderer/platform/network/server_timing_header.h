@@ -12,8 +12,10 @@
 namespace blink {
 
 class ServerTimingHeader {
+  USING_FAST_MALLOC(ServerTimingHeader);
+
  public:
-  ServerTimingHeader(const String& name) : name_(name) {}
+  explicit ServerTimingHeader(const String& name) : name_(name) {}
 
   const String& Name() const { return name_; }
   const double& Duration() const { return duration_; }
