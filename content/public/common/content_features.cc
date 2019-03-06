@@ -211,10 +211,6 @@ const base::Feature kHeapCompaction{"HeapCompaction",
 const base::Feature kHistoryManipulationIntervention{
     "HistoryManipulationIntervention", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables/disables the Image Capture API.
-const base::Feature kImageCaptureAPI{"ImageCaptureAPI",
-                                     base::FEATURE_ENABLED_BY_DEFAULT};
-
 // This flag is used to set field parameters to choose predictor we use when
 // kResamplingInputEvents is disabled. It's used for gatherig accuracy metrics
 // on finch and also for choosing predictor type for predictedEvents API without

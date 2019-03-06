@@ -2130,9 +2130,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-brotli", flag_descriptions::kEnableBrotliName,
      flag_descriptions::kEnableBrotliDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kBrotliEncoding)},
-    {"enable-image-capture-api", flag_descriptions::kEnableImageCaptureAPIName,
-     flag_descriptions::kEnableImageCaptureAPIDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kImageCaptureAPI)},
 #if defined(OS_ANDROID)
     {"force-update-menu-type", flag_descriptions::kUpdateMenuTypeName,
      flag_descriptions::kUpdateMenuTypeDescription, kOsAndroid,
