@@ -326,11 +326,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle,
     return std::move(modified_request_headers_);
   }
 
-  // Sets ID of the RenderProcessHost we expect the navigation to commit in.
-  // This is used to inform the RenderProcessHost to expect a navigation to the
-  // url we're navigating to.
-  void SetExpectedProcess(RenderProcessHost* expected_process);
-
   NavigationThrottle* GetDeferringThrottleForTesting() const {
     return throttle_runner_.GetDeferringThrottle();
   }
@@ -392,12 +387,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle,
   // WillStartRequest and WillRedirectRequest to prevent the navigation.
   bool IsSelfReferentialURL();
 
-  // Updates the destination site URL for this navigation. This is called on
-  // redirects. |post_redirect_process| is the renderer process that should
-  // handle the navigation following the redirect if it can be handled by an
-  // existing RenderProcessHost. Otherwise, it should be null.
-  void UpdateSiteURL(RenderProcessHost* post_redirect_process);
-
   // Called if READY_TO_COMMIT -> COMMIT state transition takes an unusually
   // long time.
   void OnCommitTimeout();
@@ -413,7 +402,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle,
   NavigationRequest* navigation_request_;
 
   // See NavigationHandle for a description of those member variables.
-  scoped_refptr<SiteInstanceImpl> starting_site_instance_;
   Referrer sanitized_referrer_;
   net::Error net_error_code_;
   const bool is_same_document_;
@@ -421,9 +409,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle,
   bool did_replace_entry_;
   bool should_update_history_;
   bool subframe_entry_committed_;
-
-  // The site URL of this navigation, as obtained from SiteInstance::GetSiteURL.
-  GURL site_url_;
 
   // The headers used for the request.
   net::HttpRequestHeaders request_headers_;
@@ -498,10 +483,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle,
   GURL previous_url_;
   GURL base_url_;
   NavigationType navigation_type_;
-
-  // Used to inform a RenderProcessHost that we expect this navigation to commit
-  // in it.
-  int expected_render_process_host_id_;
 
   // Which proxy server was used for this navigation, if any.
   net::ProxyServer proxy_server_;

@@ -33,7 +33,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/common/child_process_host.h"
-#include "content/public/common/content_client.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
 #include "net/base/net_errors.h"
@@ -155,7 +154,6 @@ NavigationHandleImpl::NavigationHandleImpl(
       reload_type_(ReloadType::NONE),
       restore_type_(RestoreType::NONE),
       navigation_type_(NAVIGATION_TYPE_UNKNOWN),
-      expected_render_process_host_id_(ChildProcessHost::kInvalidUniqueID),
       is_same_process_(true),
       throttle_runner_(this, this),
       weak_factory_(this) {
@@ -167,12 +165,6 @@ NavigationHandleImpl::NavigationHandleImpl(
   DCHECK(!navigation_request_->common_params().navigation_start.is_null());
   DCHECK(!IsRendererDebugURL(url));
 
-  starting_site_instance_ =
-      frame_tree_node()->current_frame_host()->GetSiteInstance();
-
-  site_url_ = SiteInstanceImpl::GetSiteForURL(
-      starting_site_instance_->GetBrowserContext(),
-      starting_site_instance_->GetIsolationContext(), url);
   if (redirect_chain_.empty())
     redirect_chain_.push_back(url);
 
@@ -230,17 +222,6 @@ NavigationHandleImpl::NavigationHandleImpl(
 }
 
 NavigationHandleImpl::~NavigationHandleImpl() {
-  // Inform the RenderProcessHost to no longer expect a navigation.
-  if (expected_render_process_host_id_ != ChildProcessHost::kInvalidUniqueID) {
-    RenderProcessHost* process =
-        RenderProcessHost::FromID(expected_render_process_host_id_);
-    if (process) {
-      RenderProcessHostImpl::RemoveExpectedNavigationToSite(
-          frame_tree_node()->navigator()->GetController()->GetBrowserContext(),
-          process, site_url_);
-    }
-  }
-
 #if defined(OS_ANDROID)
   navigation_handle_proxy_->DidFinish();
 #endif
@@ -269,7 +250,7 @@ const GURL& NavigationHandleImpl::GetURL() {
 }
 
 SiteInstanceImpl* NavigationHandleImpl::GetStartingSiteInstance() {
-  return starting_site_instance_.get();
+  return navigation_request_->starting_site_instance();
 }
 
 bool NavigationHandleImpl::IsInMainFrame() {
@@ -636,7 +617,7 @@ void NavigationHandleImpl::WillRedirectRequest(
                                "WillRedirectRequest", "url",
                                GetURL().possibly_invalid_spec());
   UpdateStateFollowingRedirect(new_referrer_url, std::move(callback));
-  UpdateSiteURL(post_redirect_process);
+  navigation_request_->UpdateSiteURL(post_redirect_process);
 
   if (IsSelfReferentialURL()) {
     state_ = CANCELING;
@@ -731,7 +712,7 @@ void NavigationHandleImpl::ReadyToCommitNavigation(bool is_error) {
     }
   }
 
-  SetExpectedProcess(GetRenderFrameHost()->GetProcess());
+  navigation_request_->SetExpectedProcess(GetRenderFrameHost()->GetProcess());
 
   if (!IsSameDocument())
     GetDelegate()->ReadyToCommitNavigation(this);
@@ -827,38 +808,6 @@ void NavigationHandleImpl::DidCommitNavigation(
     DCHECK(!is_same_document_ || !frame_tree_node()->is_collapsed());
     frame_tree_node()->SetCollapsed(false);
   }
-}
-
-void NavigationHandleImpl::SetExpectedProcess(
-    RenderProcessHost* expected_process) {
-  if (expected_process &&
-      expected_process->GetID() == expected_render_process_host_id_) {
-    // This |expected_process| has already been informed of the navigation,
-    // no need to update it again.
-    return;
-  }
-
-  // If a RenderProcessHost was expecting this navigation to commit, have it
-  // stop tracking this site.
-  RenderProcessHost* old_process =
-      RenderProcessHost::FromID(expected_render_process_host_id_);
-  if (old_process) {
-    RenderProcessHostImpl::RemoveExpectedNavigationToSite(
-        frame_tree_node()->navigator()->GetController()->GetBrowserContext(),
-        old_process, site_url_);
-  }
-
-  if (expected_process == nullptr) {
-    expected_render_process_host_id_ = ChildProcessHost::kInvalidUniqueID;
-    return;
-  }
-
-  // Keep track of the speculative RenderProcessHost and tell it to expect a
-  // navigation to |site_url_|.
-  expected_render_process_host_id_ = expected_process->GetID();
-  RenderProcessHostImpl::AddExpectedNavigationToSite(
-      frame_tree_node()->navigator()->GetController()->GetBrowserContext(),
-      expected_process, site_url_);
 }
 
 void NavigationHandleImpl::OnNavigationEventProcessed(
@@ -1019,30 +968,6 @@ bool NavigationHandleImpl::IsSelfReferentialURL() {
     }
   }
   return false;
-}
-
-void NavigationHandleImpl::UpdateSiteURL(
-    RenderProcessHost* post_redirect_process) {
-  // TODO(alexmos): Using |starting_site_instance_|'s IsolationContext may not
-  // be correct for cross-BrowsingInstance redirects.
-  GURL new_site_url = SiteInstanceImpl::GetSiteForURL(
-      frame_tree_node()->navigator()->GetController()->GetBrowserContext(),
-      starting_site_instance_->GetIsolationContext(), GetURL());
-  int post_redirect_process_id = post_redirect_process
-                                     ? post_redirect_process->GetID()
-                                     : ChildProcessHost::kInvalidUniqueID;
-  if (new_site_url == site_url_ &&
-      post_redirect_process_id == expected_render_process_host_id_) {
-    return;
-  }
-
-  // Stop expecting a navigation to the current site URL in the current expected
-  // process.
-  SetExpectedProcess(nullptr);
-
-  // Update the site URL and the expected process.
-  site_url_ = new_site_url;
-  SetExpectedProcess(post_redirect_process);
 }
 
 void NavigationHandleImpl::RenderProcessBlockedStateChanged(bool blocked) {
