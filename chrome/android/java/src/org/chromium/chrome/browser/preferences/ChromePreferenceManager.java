@@ -285,6 +285,12 @@ public class ChromePreferenceManager {
             "twa_dialog_number_of_dismissals_on_clear_data";
 
     /**
+     * Whether or not the tab group is enabled.
+     * Default value is false.
+     */
+    public static final String TAB_GROUPS_ANDROID_ENABLED_KEY = "tab_group_android_enabled";
+
+    /**
      * Deprecated keys for Chrome Home.
      */
     private static final String CHROME_HOME_USER_ENABLED_KEY = "chrome_home_user_enabled";
