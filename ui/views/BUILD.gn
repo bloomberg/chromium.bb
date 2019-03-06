@@ -115,6 +115,7 @@ jumbo_component("views") {
     "controls/button/toggle_button.h",
     "controls/combobox/combobox.h",
     "controls/combobox/combobox_listener.h",
+    "controls/editable_combobox/editable_combobox.h",
     "controls/editable_combobox/editable_combobox_listener.h",
     "controls/focus_ring.h",
     "controls/focusable_border.h",
@@ -320,6 +321,7 @@ jumbo_component("views") {
     "controls/button/radio_button.cc",
     "controls/button/toggle_button.cc",
     "controls/combobox/combobox.cc",
+    "controls/editable_combobox/editable_combobox.cc",
     "controls/focus_ring.cc",
     "controls/focusable_border.cc",
     "controls/image_view.cc",
@@ -559,6 +561,10 @@ jumbo_component("views") {
       "linux_ui/status_icon_linux.cc",
     ]
     sources += [ "widget/desktop_aura/desktop_window_tree_host_chromeos.cc" ]
+
+    # TODO(edinkadric): Add EditableCombobox support on ChromeOS.
+    public -= [ "controls/editable_combobox/editable_combobox.h" ]
+    sources -= [ "controls/editable_combobox/editable_combobox.cc" ]
   }
 
   if (is_win) {
@@ -590,6 +596,10 @@ jumbo_component("views") {
       "//third_party/iaccessible2",
       "//third_party/wtl",
     ]
+
+    # TODO(edinkadric): Add EditableCombobox support on Windows.
+    public -= [ "controls/editable_combobox/editable_combobox.h" ]
+    sources -= [ "controls/editable_combobox/editable_combobox.cc" ]
   }
 
   if (use_ozone) {
@@ -766,12 +776,8 @@ jumbo_component("views") {
   }
 
   if (is_mac) {
-    # TODO(edinkadric): Add EditableCombobox support on other OSes and move
-    # editable_combobox_unittest.h and .cc to be included for them as well.
-    public += [ "controls/editable_combobox/editable_combobox.h" ]
     sources -= [ "controls/views_text_services_context_menu.cc" ]
     sources += [
-      "controls/editable_combobox/editable_combobox.cc",
       "controls/menu/menu_pre_target_handler_mac.h",
       "controls/menu/menu_pre_target_handler_mac.mm",
     ]
@@ -1011,6 +1017,7 @@ test("views_unittests") {
     "controls/button/radio_button_unittest.cc",
     "controls/button/toggle_button_unittest.cc",
     "controls/combobox/combobox_unittest.cc",
+    "controls/editable_combobox/editable_combobox_unittest.cc",
     "controls/image_view_unittest.cc",
     "controls/label_unittest.cc",
     "controls/menu/menu_controller_unittest.cc",
@@ -1137,6 +1144,11 @@ test("views_unittests") {
     ]
   }
 
+  if (is_chromeos) {
+    # TODO(edinkadric): Add EditableCombobox support on ChromeOS.
+    sources -= [ "controls/editable_combobox/editable_combobox_unittest.cc" ]
+  }
+
   if (is_win) {
     public_deps = [
       "//build/win:default_exe_manifest",
@@ -1154,6 +1166,9 @@ test("views_unittests") {
       "accessibility/view_ax_platform_node_delegate_win_unittest.cc",
       "win/pen_event_processor_unittest.cc",
     ]
+
+    # TODO(edinkadric): Add EditableCombobox support on Windows.
+    sources -= [ "controls/editable_combobox/editable_combobox_unittest.cc" ]
   }
 
   if (has_native_accessibility) {
@@ -1167,9 +1182,6 @@ test("views_unittests") {
     # views_unittests not yet compiling on Mac. http://crbug.com/378134
     sources -= [ "controls/native/native_view_host_unittest.cc" ]
 
-    # TODO(edinkadric): Add EditableCombobox support on other OSes and enable
-    # editable_combobox_unittest.cc on them.
-    sources += [ "controls/editable_combobox/editable_combobox_unittest.cc" ]
     public_deps = [
       "//ui/accelerated_widget_mac",
       "//ui/views_bridge_mac:views_bridge_mac",

@@ -263,23 +263,24 @@ TEST_F(EditableComboboxTest, EndOrHomeMovesToBeginningOrEndOfText) {
   EXPECT_EQ(ASCIIToUTF16("xabcy"), combobox_->GetText());
 }
 
-TEST_F(EditableComboboxTest, AltLeftOrRightMovesToBeginningOrEndOfText) {
+#if defined(OS_MACOSX)
+
+TEST_F(EditableComboboxTest, AltLeftOrRightMovesToNextWords) {
   InitEditableCombobox();
   combobox_->GetTextfieldForTest()->RequestFocus();
 
-  SendKeyEvent(ui::VKEY_A);
-  SendKeyEvent(ui::VKEY_B);
-  SendKeyEvent(ui::VKEY_C);
+  combobox_->SetTextForTest(ASCIIToUTF16("foo bar foobar"));
+  SendKeyEvent(ui::VKEY_LEFT, /*alt=*/true, /*shift=*/false,
+               /*ctrl_cmd=*/false);
   SendKeyEvent(ui::VKEY_LEFT, /*alt=*/true, /*shift=*/false,
                /*ctrl_cmd=*/false);
   SendKeyEvent(ui::VKEY_X);
   SendKeyEvent(ui::VKEY_RIGHT, /*alt=*/true, /*shift=*/false,
                /*ctrl_cmd=*/false);
   SendKeyEvent(ui::VKEY_Y);
-  EXPECT_EQ(ASCIIToUTF16("xabcy"), combobox_->GetText());
+  EXPECT_EQ(ASCIIToUTF16("foo xbary foobar"), combobox_->GetText());
 }
 
-// TODO(edinkadric): This doesn't work anymore. Fix it before submitting.
 TEST_F(EditableComboboxTest, CtrlLeftOrRightMovesToBeginningOrEndOfText) {
   InitEditableCombobox();
   combobox_->GetTextfieldForTest()->RequestFocus();
@@ -295,6 +296,43 @@ TEST_F(EditableComboboxTest, CtrlLeftOrRightMovesToBeginningOrEndOfText) {
   SendKeyEvent(ui::VKEY_Y);
   EXPECT_EQ(ASCIIToUTF16("xabcy"), combobox_->GetText());
 }
+
+#else
+
+TEST_F(EditableComboboxTest, AltLeftOrRightDoesNothing) {
+  InitEditableCombobox();
+  combobox_->GetTextfieldForTest()->RequestFocus();
+
+  SendKeyEvent(ui::VKEY_A);
+  SendKeyEvent(ui::VKEY_B);
+  SendKeyEvent(ui::VKEY_C);
+  SendKeyEvent(ui::VKEY_LEFT, /*alt=*/true, /*shift=*/false,
+               /*ctrl_cmd=*/false);
+  SendKeyEvent(ui::VKEY_X);
+  SendKeyEvent(ui::VKEY_LEFT);
+  SendKeyEvent(ui::VKEY_RIGHT, /*alt=*/true, /*shift=*/false,
+               /*ctrl_cmd=*/false);
+  SendKeyEvent(ui::VKEY_Y);
+  EXPECT_EQ(ASCIIToUTF16("abcyx"), combobox_->GetText());
+}
+
+TEST_F(EditableComboboxTest, CtrlLeftOrRightMovesToNextWords) {
+  InitEditableCombobox();
+  combobox_->GetTextfieldForTest()->RequestFocus();
+
+  combobox_->SetTextForTest(ASCIIToUTF16("foo bar foobar"));
+  SendKeyEvent(ui::VKEY_LEFT, /*alt=*/false, /*shift=*/false,
+               /*ctrl_cmd=*/true);
+  SendKeyEvent(ui::VKEY_LEFT, /*alt=*/false, /*shift=*/false,
+               /*ctrl_cmd=*/true);
+  SendKeyEvent(ui::VKEY_X);
+  SendKeyEvent(ui::VKEY_RIGHT, /*alt=*/false, /*shift=*/false,
+               /*ctrl_cmd=*/true);
+  SendKeyEvent(ui::VKEY_Y);
+  EXPECT_EQ(ASCIIToUTF16("foo xbary foobar"), combobox_->GetText());
+}
+
+#endif
 
 TEST_F(EditableComboboxTest, ShiftLeftOrRightSelectsCharInTextfield) {
   InitEditableCombobox();
