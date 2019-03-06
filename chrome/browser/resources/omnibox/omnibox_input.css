@@ -51,6 +51,15 @@ select {
   margin-inline-start: var(--input-alignment-indentation);
 }
 
+.buttons-container {
+  display: flex;
+}
+
+.buttons-column {
+  display: flex;
+  flex-direction: column;
+}
+
 /* :hover, :focus, & :active */
 
 input[type=text],

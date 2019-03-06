@@ -96,10 +96,11 @@ document.addEventListener('DOMContentLoaded', () => {
       e => omniboxOutput.updateDisplayInputs(e.detail));
   omniboxInput.addEventListener(
       'filter-input-changed', e => omniboxOutput.updateFilterText(e.detail));
+  omniboxInput.addEventListener('import', e => exportDelegate.import(e.detail));
   omniboxInput.addEventListener(
-      'import-json', e => exportDelegate.importJson(e.detail));
+      'export-clipboard', () => exportDelegate.exportClipboard());
   omniboxInput.addEventListener(
-      'download-json', () => exportDelegate.downloadJson());
+      'export-file', () => exportDelegate.exportFile());
   omniboxInput.addEventListener(
       'response-select',
       e => omniboxOutput.updateSelectedResponseIndex(e.detail));
@@ -121,7 +122,7 @@ class ExportDelegate {
   }
 
   /** @param {OmniboxExport} importData */
-  importJson(importData) {
+  import(importData) {
     if (!validateImportData_(importData)) {
       return;
     }
@@ -132,16 +133,25 @@ class ExportDelegate {
     this.omniboxOutput_.setResponsesHistory(importData.responsesHistory);
   }
 
-  downloadJson() {
-    /** @type {OmniboxExport} */
-    const exportObj = {
+  exportClipboard() {
+    navigator.clipboard.writeText(JSON.stringify(this.exportData_)).catch(
+        error => console.error('unable to export to clipboard:', error));
+  }
+
+  exportFile() {
+    const exportData = this.exportData_;
+    const fileName = `omnibox_debug_export_${exportData.queryInputs.inputText}_
+        ${new Date().toISOString()}.json`;
+    ExportDelegate.download_(exportData, fileName);
+  }
+
+  /** @private @return {OmniboxExport} */
+  get exportData_() {
+    return {
       queryInputs: this.omniboxInput_.queryInputs,
       displayInputs: this.omniboxInput_.displayInputs,
       responsesHistory: this.omniboxOutput_.responsesHistory,
     };
-    const fileName = `omnibox_debug_export_${exportObj.queryInputs.inputText}_${
-        new Date().toISOString()}.json`;
-    ExportDelegate.download_(exportObj, fileName);
   }
 
   /**
