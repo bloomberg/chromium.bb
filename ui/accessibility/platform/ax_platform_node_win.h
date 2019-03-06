@@ -250,7 +250,7 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
                         public IGridProvider,
                         public IRangeValueProvider,
                         public IRawElementProviderFragment,
-                        public IRawElementProviderSimple,
+                        public IRawElementProviderSimple2,
                         public IScrollItemProvider,
                         public IScrollProvider,
                         public ISelectionItemProvider,
@@ -286,6 +286,7 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
     COM_INTERFACE_ENTRY(IRangeValueProvider)
     COM_INTERFACE_ENTRY(IRawElementProviderFragment)
     COM_INTERFACE_ENTRY(IRawElementProviderSimple)
+    COM_INTERFACE_ENTRY(IRawElementProviderSimple2)
     COM_INTERFACE_ENTRY(IScrollItemProvider)
     COM_INTERFACE_ENTRY(IScrollProvider)
     COM_INTERFACE_ENTRY(ISelectionItemProvider)
@@ -879,6 +880,12 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
 
   IFACEMETHODIMP
   get_HostRawElementProvider(IRawElementProviderSimple** provider) override;
+
+  //
+  // IRawElementProviderSimple2 methods.
+  //
+
+  IFACEMETHODIMP ShowContextMenu() override;
 
   //
   // IServiceProvider methods.

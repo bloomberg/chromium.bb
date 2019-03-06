@@ -46,6 +46,12 @@ class AXPlatformNodeTest : public testing::Test {
   AXTreeUpdate Build3X3Table();
   AXTreeUpdate BuildAriaColumnAndRowCountGrids();
 
+  AXTreeUpdate BuildListBox(
+      bool option_1_is_selected,
+      bool option_2_is_selected,
+      bool option_3_is_selected,
+      ax::mojom::State additional_state = ax::mojom::State::kNone);
+
   std::unique_ptr<AXTree> tree_;
 };
 

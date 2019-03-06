@@ -467,4 +467,40 @@ IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest,
 #endif
 }
 
+IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, ShowContextMenu) {
+  NavigateToURL(shell(), GURL(url::kAboutBlankURL));
+
+  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
+                                         ui::kAXModeComplete,
+                                         ax::mojom::Event::kLoadComplete);
+  GURL url(
+      "data:text/html,"
+      "<a href='about:blank'>1</a>"
+      "<a href='about:blank'>2</a>");
+
+  NavigateToURL(shell(), url);
+  waiter.WaitForNotification();
+
+  BrowserAccessibility* target_node = FindNode(ax::mojom::Role::kLink, "2");
+  EXPECT_NE(target_node, nullptr);
+
+  // Register a ContextMenuFilter in the render process to wait for the
+  // ShowContextMenu event to be raised.
+  content::RenderProcessHost* render_process_host =
+      shell()->web_contents()->GetMainFrame()->GetProcess();
+  auto context_menu_filter = base::MakeRefCounted<ContextMenuFilter>();
+  render_process_host->AddFilter(context_menu_filter.get());
+
+  // Raise the ShowContextMenu event from the second link.
+  ui::AXActionData context_menu_action;
+  context_menu_action.action = ax::mojom::Action::kShowContextMenu;
+  target_node->AccessibilityPerformAction(context_menu_action);
+  context_menu_filter->Wait();
+
+  ContextMenuParams context_menu_params = context_menu_filter->get_params();
+  EXPECT_EQ(base::ASCIIToUTF16("2"), context_menu_params.link_text);
+  EXPECT_EQ(ui::MenuSourceType::MENU_SOURCE_NONE,
+            context_menu_params.source_type);
+}
+
 }  // namespace content

@@ -30,6 +30,9 @@ gfx::Vector2d g_offset;
 //     entire tree and if such node is deleted, focus is completely lost.
 std::unordered_map<AXTree*, AXNode*> g_focused_node_in_tree;
 
+// A global indicating the last node which ShowContextMenu was called from.
+AXNode* g_node_from_last_show_context_menu;
+
 // A simple implementation of AXTreeObserver to catch when AXNodes are
 // deleted so we can delete their wrappers.
 class TestAXTreeObserver : public AXTreeObserver {
@@ -66,6 +69,11 @@ TestAXNodeWrapper* TestAXNodeWrapper::GetOrCreate(AXTree* tree, AXNode* node) {
 // static
 void TestAXNodeWrapper::SetGlobalCoordinateOffset(const gfx::Vector2d& offset) {
   g_offset = offset;
+}
+
+// static
+const AXNode* TestAXNodeWrapper::GetNodeFromLastShowContextMenu() {
+  return g_node_from_last_show_context_menu;
 }
 
 TestAXNodeWrapper::~TestAXNodeWrapper() {
@@ -332,40 +340,46 @@ int32_t TestAXNodeWrapper::CellIndexToId(int32_t cell_index) const {
 
 bool TestAXNodeWrapper::AccessibilityPerformAction(
     const ui::AXActionData& data) {
-  if (data.action == ax::mojom::Action::kScrollToPoint) {
-    g_offset = gfx::Vector2d(data.target_point.x(), data.target_point.y());
-    return true;
-  }
+  switch (data.action) {
+    case ax::mojom::Action::kScrollToPoint:
+      g_offset = gfx::Vector2d(data.target_point.x(), data.target_point.y());
+      return true;
 
-  if (data.action == ax::mojom::Action::kScrollToMakeVisible) {
-    auto offset = node_->data().relative_bounds.bounds.OffsetFromOrigin();
-    g_offset = gfx::Vector2d(-offset.x(), -offset.y());
-    return true;
-  }
+    case ax::mojom::Action::kScrollToMakeVisible: {
+      auto offset = node_->data().relative_bounds.bounds.OffsetFromOrigin();
+      g_offset = gfx::Vector2d(-offset.x(), -offset.y());
+      return true;
+    }
 
-  if (GetData().role == ax::mojom::Role::kListBoxOption &&
-      data.action == ax::mojom::Action::kDoDefault) {
-    bool current_value =
-        GetData().GetBoolAttribute(ax::mojom::BoolAttribute::kSelected);
-    ReplaceBoolAttribute(ax::mojom::BoolAttribute::kSelected, !current_value);
-  }
+    case ax::mojom::Action::kDoDefault:
+      if (GetData().role == ax::mojom::Role::kListBoxOption) {
+        bool current_value =
+            GetData().GetBoolAttribute(ax::mojom::BoolAttribute::kSelected);
+        ReplaceBoolAttribute(ax::mojom::BoolAttribute::kSelected,
+                             !current_value);
+      }
+      return true;
 
-  if (data.action == ax::mojom::Action::kSetSelection) {
-    ReplaceIntAttribute(data.anchor_node_id,
-                        ax::mojom::IntAttribute::kTextSelStart,
-                        data.anchor_offset);
-    ReplaceIntAttribute(data.anchor_node_id,
-                        ax::mojom::IntAttribute::kTextSelEnd,
-                        data.focus_offset);
-    return true;
-  }
+    case ax::mojom::Action::kSetSelection:
+      ReplaceIntAttribute(data.anchor_node_id,
+                          ax::mojom::IntAttribute::kTextSelStart,
+                          data.anchor_offset);
+      ReplaceIntAttribute(data.anchor_node_id,
+                          ax::mojom::IntAttribute::kTextSelEnd,
+                          data.focus_offset);
+      return true;
 
-  if (data.action == ax::mojom::Action::kFocus) {
-    g_focused_node_in_tree[tree_] = node_;
-    return true;
-  }
+    case ax::mojom::Action::kFocus:
+      g_focused_node_in_tree[tree_] = node_;
+      return true;
 
-  return true;
+    case ax::mojom::Action::kShowContextMenu:
+      g_node_from_last_show_context_menu = node_;
+      return true;
+
+    default:
+      return true;
+  }
 }
 
 base::string16 TestAXNodeWrapper::GetLocalizedRoleDescriptionForUnlabeledImage()
