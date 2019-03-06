@@ -29,6 +29,7 @@ import org.chromium.chrome.browser.omnibox.UrlBarData;
 import org.chromium.chrome.browser.previews.PreviewsAndroidBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TrustedCdn;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.components.dom_distiller.core.DomDistillerService;
@@ -238,7 +239,7 @@ public class LocationBarModel implements ToolbarDataProvider {
         // If the toolbar shows the publisher URL, it applies its own formatting for emphasis.
         if (mTab == null) return true;
 
-        return !shouldDisplaySearchTerms() && mTab.getTrustedCdnPublisherUrl() == null;
+        return !shouldDisplaySearchTerms() && TrustedCdn.getPublisherUrl(mTab) == null;
     }
 
     /**
@@ -322,8 +323,7 @@ public class LocationBarModel implements ToolbarDataProvider {
     @Override
     public int getSecurityLevel() {
         Tab tab = getTab();
-        return getSecurityLevel(
-                tab, isOfflinePage(), tab == null ? null : tab.getTrustedCdnPublisherUrl());
+        return getSecurityLevel(tab, isOfflinePage(), TrustedCdn.getPublisherUrl(tab));
     }
 
     @Override

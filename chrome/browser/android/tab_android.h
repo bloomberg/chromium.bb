@@ -20,7 +20,6 @@
 #include "components/infobars/core/infobar_manager.h"
 #include "components/omnibox/browser/location_bar_model.h"
 #include "components/sessions/core/session_id.h"
-#include "content/public/browser/web_contents_observer.h"
 
 class GURL;
 class Profile;
@@ -38,7 +37,6 @@ class TabContentManager;
 
 namespace content {
 class DevToolsAgentHost;
-class NavigationHandle;
 class WebContents;
 }
 
@@ -46,7 +44,7 @@ namespace prerender {
 class PrerenderManager;
 }
 
-class TabAndroid : public content::WebContentsObserver {
+class TabAndroid {
  public:
   // A Java counterpart will be generated for this enum.
   // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser
@@ -70,7 +68,7 @@ class TabAndroid : public content::WebContentsObserver {
   static void AttachTabHelpers(content::WebContents* web_contents);
 
   TabAndroid(JNIEnv* env, const base::android::JavaRef<jobject>& obj);
-  ~TabAndroid() override;
+  ~TabAndroid();
 
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
 
@@ -241,9 +239,6 @@ class TabAndroid : public content::WebContentsObserver {
 
   void AttachDetachedTab(JNIEnv* env,
                          const base::android::JavaParamRef<jobject>& obj);
-
-  void DidFinishNavigation(
-      content::NavigationHandle* navigation_handle) override;
 
   bool AreRendererInputEventsIgnored(
       JNIEnv* env,

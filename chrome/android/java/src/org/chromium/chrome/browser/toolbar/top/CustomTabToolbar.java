@@ -57,6 +57,7 @@ import org.chromium.chrome.browser.omnibox.UrlBarData;
 import org.chromium.chrome.browser.page_info.PageInfoController;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TrustedCdn;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
 import org.chromium.chrome.browser.toolbar.ToolbarTabController;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
@@ -350,7 +351,7 @@ public class CustomTabToolbar
         Tab tab = getToolbarDataProvider().getTab();
         if (tab == null) return null;
 
-        String publisherUrl = tab.getTrustedCdnPublisherUrl();
+        String publisherUrl = TrustedCdn.getPublisherUrl(tab);
         if (publisherUrl != null) return extractPublisherFromPublisherUrl(publisherUrl);
 
         // TODO(bauerb): Remove this once trusted CDN publisher URLs have rolled out completely.
@@ -407,14 +408,15 @@ public class CustomTabToolbar
 
     @Override
     public void setUrlToPageUrl() {
-        if (getCurrentTab() == null) {
+        Tab tab = getCurrentTab();
+        if (tab == null) {
             mUrlCoordinator.setUrlBarData(
                     UrlBarData.EMPTY, UrlBar.ScrollType.NO_SCROLL, SelectionState.SELECT_ALL);
             return;
         }
 
-        String publisherUrl = getCurrentTab().getTrustedCdnPublisherUrl();
-        String url = publisherUrl != null ? publisherUrl : getCurrentTab().getUrl().trim();
+        String publisherUrl = TrustedCdn.getPublisherUrl(tab);
+        String url = publisherUrl != null ? publisherUrl : tab.getUrl().trim();
         if (mState == STATE_TITLE_ONLY) {
             if (!TextUtils.isEmpty(getToolbarDataProvider().getTitle())) setTitleToPageTitle();
         }

@@ -51,6 +51,7 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.omnibox.UrlBar;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TrustedCdn;
 import org.chromium.chrome.browser.test.ScreenShooter;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.Features;
@@ -281,7 +282,7 @@ public class TrustedCdnPublisherUrlTest {
         CustomTabActivity customTabActivity = mCustomTabActivityTestRule.getActivity();
         final Tab tab = customTabActivity.getActivityTab();
         PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {
-            Assert.assertEquals(publisherUrl, tab.getTrustedCdnPublisherUrl());
+            Assert.assertEquals(publisherUrl, TrustedCdn.getPublisherUrl(tab));
             customTabActivity.openCurrentUrlInBrowser(true);
             Assert.assertNull(customTabActivity.getActivityTab());
         });
@@ -298,7 +299,7 @@ public class TrustedCdnPublisherUrlTest {
         CriteriaHelper.pollUiThread(() -> newActivity.getActivityTab() == tab, "Tab did not load");
 
         ThreadUtils.runOnUiThreadBlocking(
-                () -> { Assert.assertNull(tab.getTrustedCdnPublisherUrl()); });
+                () -> { Assert.assertNull(TrustedCdn.getPublisherUrl(tab)); });
 
         String testUrl = mWebServer.getResponseUrl("/test.html");
         String expectedUrl = UrlFormatter.formatUrlForDisplayOmitScheme(testUrl);
