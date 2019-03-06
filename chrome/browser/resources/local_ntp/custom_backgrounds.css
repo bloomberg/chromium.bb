@@ -59,6 +59,10 @@ html[dir=rtl] #edit-bg {
   right: auto;
 }
 
+.non-google-page #edit-bg {
+  display: none;
+}
+
 #edit-bg-icon {
   -webkit-mask-image: url(icons/icon_pencil.svg);
   -webkit-mask-position-x: center;
