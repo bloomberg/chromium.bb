@@ -327,8 +327,11 @@ Status InitSessionHelper(const InitSessionParams& bound_params,
       CreateCapabilities(session, capabilities, *desired_caps);
 
   if (session->w3c_compliant) {
+    std::unique_ptr<base::DictionaryValue> capabilities =
+        std::unique_ptr<base::DictionaryValue>(
+            session->capabilities->DeepCopy());
     base::DictionaryValue body;
-    body.SetDictionary("capabilities", std::move(session->capabilities));
+    body.SetDictionary("capabilities", std::move(capabilities));
     body.SetString("sessionId", session->id);
     value->reset(body.DeepCopy());
   } else {
