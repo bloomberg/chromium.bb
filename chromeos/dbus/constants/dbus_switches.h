@@ -10,12 +10,18 @@
 namespace chromeos {
 namespace switches {
 
-COMPONENT_EXPORT(CHROMEOS_DBUS) extern const char kAttestationServer[];
-COMPONENT_EXPORT(CHROMEOS_DBUS) extern const char kDbusStub[];
-COMPONENT_EXPORT(CHROMEOS_DBUS) extern const char kFakeOobeConfiguration[];
-COMPONENT_EXPORT(CHROMEOS_DBUS) extern const char kShillStub[];
-COMPONENT_EXPORT(CHROMEOS_DBUS) extern const char kSmsTestMessages[];
-COMPONENT_EXPORT(CHROMEOS_DBUS) extern const char kSystemDevMode[];
+COMPONENT_EXPORT(CHROMEOS_DBUS_CONSTANTS)
+extern const char kAttestationServer[];
+COMPONENT_EXPORT(CHROMEOS_DBUS_CONSTANTS)
+extern const char kDbusStub[];
+COMPONENT_EXPORT(CHROMEOS_DBUS_CONSTANTS)
+extern const char kFakeOobeConfiguration[];
+COMPONENT_EXPORT(CHROMEOS_DBUS_CONSTANTS)
+extern const char kShillStub[];
+COMPONENT_EXPORT(CHROMEOS_DBUS_CONSTANTS)
+extern const char kSmsTestMessages[];
+COMPONENT_EXPORT(CHROMEOS_DBUS_CONSTANTS)
+extern const char kSystemDevMode[];
 
 }  // namespace switches
 }  // namespace chromeos

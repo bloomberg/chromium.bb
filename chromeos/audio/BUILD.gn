@@ -10,7 +10,7 @@ component("audio") {
   defines = [ "IS_CHROMEOS_AUDIO_IMPL" ]
   deps = [
     "//base",
-    "//chromeos:chromeos_constants",
+    "//chromeos/constants",
     "//chromeos/dbus",
     "//components/prefs",
     "//media/base:video_facing",
@@ -35,7 +35,7 @@ source_set("unit_tests") {
   deps = [
     ":audio",
     "//base/test:test_support",
-    "//chromeos:chromeos_constants",
+    "//chromeos/constants",
     "//chromeos/dbus:test_support",
     "//components/prefs:test_support",
     "//media/base:video_facing",

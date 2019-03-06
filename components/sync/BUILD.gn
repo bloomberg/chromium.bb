@@ -605,7 +605,7 @@ jumbo_static_library("sync") {
 
   if (is_chromeos) {
     # Required by get_session_name.cc on Chrome OS.
-    deps += [ "//chromeos:chromeos_constants" ]
+    deps += [ "//chromeos/constants" ]
   }
 
   if (is_mac) {
@@ -989,7 +989,7 @@ source_set("unit_tests") {
 
   if (is_chromeos) {
     # Required by get_session_name_unittest.cc on Chrome OS.
-    deps += [ "//chromeos:chromeos_constants" ]
+    deps += [ "//chromeos/constants" ]
   }
 
   if (is_ios) {

@@ -82,8 +82,8 @@ static_library("arc") {
     "//ash:ash",
     "//ash/public/cpp",
     "//base",
-    "//chromeos:chromeos_constants",
     "//chromeos/audio",
+    "//chromeos/constants",
     "//chromeos/dbus",
     "//chromeos/dbus:login_manager_proto",
     "//chromeos/dbus:power_manager_proto",
@@ -165,7 +165,7 @@ static_library("arc_base_utils") {
   deps = [
     "//ash/public/cpp",
     "//base",
-    "//chromeos:chromeos_constants",
+    "//chromeos/constants",
     "//chromeos/dbus",
     "//ui/aura",
   ]
@@ -203,7 +203,7 @@ static_library("arc_base") {
   deps = [
     "//ash/public/cpp",
     "//base",
-    "//chromeos:chromeos_constants",
+    "//chromeos/constants",
     "//chromeos/cryptohome",
     "//chromeos/dbus",
     "//chromeos/dbus:login_manager_proto",
@@ -345,7 +345,7 @@ source_set("unit_tests") {
     "//ash/public/cpp",
     "//base",
     "//base/test:test_support",
-    "//chromeos:chromeos_constants",
+    "//chromeos/constants",
     "//chromeos/cryptohome:test_support",
     "//chromeos/dbus:power_manager_proto",
     "//chromeos/dbus:test_support",

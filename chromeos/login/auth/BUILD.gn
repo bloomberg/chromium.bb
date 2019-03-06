@@ -15,7 +15,7 @@ component("auth") {
   deps = [
     "//base",
     "//base:i18n",
-    "//chromeos:chromeos_constants",
+    "//chromeos/constants",
     "//chromeos/cryptohome",
     "//chromeos/dbus",
     "//chromeos/dbus:authpolicy_proto",
@@ -110,7 +110,6 @@ source_set("unit_tests") {
     ":auth",
     "//base",
     "//base:i18n",
-    "//chromeos:chromeos_constants",
     "//chromeos/dbus:authpolicy_proto",
     "//chromeos/dbus:test_support",
     "//testing/gmock",

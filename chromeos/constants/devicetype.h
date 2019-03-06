@@ -5,7 +5,7 @@
 #ifndef CHROMEOS_CONSTANTS_DEVICETYPE_H_
 #define CHROMEOS_CONSTANTS_DEVICETYPE_H_
 
-#include "chromeos/chromeos_export.h"
+#include "base/component_export.h"
 
 namespace chromeos {
 
@@ -18,7 +18,7 @@ enum class DeviceType {
 };
 
 // Returns the current device type, eg, Chromebook, Chromebox.
-CHROMEOS_EXPORT DeviceType GetDeviceType();
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS) DeviceType GetDeviceType();
 
 }  // namespace chromeos
 

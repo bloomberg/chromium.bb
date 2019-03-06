@@ -10,7 +10,7 @@ component("disks") {
   defines = [ "IS_CHROMEOS_DISKS_IMPL" ]
   deps = [
     "//base",
-    "//chromeos:chromeos_constants",
+    "//chromeos/constants",
     "//chromeos/dbus",
     "//chromeos/dbus:power_manager_proto",
   ]
@@ -49,7 +49,7 @@ source_set("unit_tests") {
     ":disks",
     ":test_support",
     "//base/test:test_support",
-    "//chromeos:chromeos_constants",
+    "//chromeos/constants",
     "//chromeos/dbus:power_manager_proto",
     "//chromeos/dbus:test_support",
     "//testing/gmock",

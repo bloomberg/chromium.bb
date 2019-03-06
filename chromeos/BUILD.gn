@@ -26,7 +26,7 @@ component("chromeos") {
     "//build/config/linux/nss:system_nss_no_ssl_config",
   ]
   public_deps = [
-    ":chromeos_constants",
+    "//chromeos/constants",
   ]
   deps = [
     ":account_manager_proto",
@@ -34,6 +34,7 @@ component("chromeos") {
     "//base",
     "//base:i18n",
     "//chromeos/dbus",
+    "//chromeos/dbus/constants",
     "//components/policy/proto",
     "//google_apis",
     "//services/device/public/mojom",
@@ -104,31 +105,6 @@ source_set("chromeos_export") {
   ]
   sources = [
     "chromeos_export.h",
-  ]
-}
-
-source_set("chromeos_constants") {
-  configs += [ ":chromeos_implementation" ]
-  deps = [
-    ":chromeos_export",
-    "//base",
-    "//base:i18n",
-    "//chromeos/dbus:constants",
-    "//third_party/icu",
-  ]
-  sources = [
-    "constants/chromeos_constants.cc",
-    "constants/chromeos_constants.h",
-    "constants/chromeos_features.cc",
-    "constants/chromeos_features.h",
-    "constants/chromeos_paths.cc",
-    "constants/chromeos_paths.h",
-    "constants/chromeos_pref_names.cc",
-    "constants/chromeos_pref_names.h",
-    "constants/chromeos_switches.cc",
-    "constants/chromeos_switches.h",
-    "constants/devicetype.cc",
-    "constants/devicetype.h",
   ]
 }
 

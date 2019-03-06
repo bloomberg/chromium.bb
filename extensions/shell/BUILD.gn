@@ -227,8 +227,8 @@ source_set("app_shell_lib") {
       "browser/shell_screen.h",
     ]
     deps += [
-      "//chromeos:chromeos_constants",
       "//chromeos/audio",
+      "//chromeos/constants",
       "//chromeos/dbus",
       "//chromeos/disks",
       "//chromeos/login/login_state",
@@ -356,8 +356,8 @@ test("app_shell_unittests") {
       "browser/shell_screen_unittest.cc",
     ]
     deps += [
-      "//chromeos:chromeos_constants",
       "//chromeos/audio",
+      "//chromeos/constants",
       "//chromeos/dbus:test_support",
     ]
   }
@@ -428,7 +428,7 @@ source_set("unit_tests") {
 
   if (is_chromeos) {
     deps += [
-      "//chromeos:chromeos_constants",
+      "//chromeos/constants",
       "//components/keyed_service/content",
     ]
   }

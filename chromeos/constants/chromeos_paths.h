@@ -5,7 +5,7 @@
 #ifndef CHROMEOS_CONSTANTS_CHROMEOS_PATHS_H_
 #define CHROMEOS_CONSTANTS_CHROMEOS_PATHS_H_
 
-#include "chromeos/chromeos_export.h"
+#include "base/component_export.h"
 
 namespace base {
 class FilePath;
@@ -19,12 +19,12 @@ namespace chromeos {
 enum {
   PATH_START = 7000,
 
-  FILE_DEFAULT_APP_ORDER,   // Full path to the json file that defines the
-                            // default app order.
-  FILE_MACHINE_INFO,        // Full path to machine hardware info file.
-  FILE_VPD,                 // Full path to VPD file.
-  FILE_UPTIME,              // Full path to the file via which the kernel
-                            // exposes the current device uptime.
+  FILE_DEFAULT_APP_ORDER,  // Full path to the json file that defines the
+                           // default app order.
+  FILE_MACHINE_INFO,       // Full path to machine hardware info file.
+  FILE_VPD,                // Full path to VPD file.
+  FILE_UPTIME,             // Full path to the file via which the kernel
+                           // exposes the current device uptime.
   FILE_UPDATE_REBOOT_NEEDED_UPTIME,  // Full path to a file in which Chrome can
                                      // store the uptime at which an update
                                      // became necessary. The file should be
@@ -57,12 +57,13 @@ enum {
 };
 
 // Call once to register the provider for the path keys defined above.
-CHROMEOS_EXPORT void RegisterPathProvider();
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS) void RegisterPathProvider();
 
 // Overrides some of the paths listed above so that those files can be used
 // when not running on ChromeOS. The stubs files will be relative to
 // |stubs_dir|. It is not valid to call this when running on ChromeOS.
-CHROMEOS_EXPORT void RegisterStubPathOverrides(const base::FilePath& stubs_dir);
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+void RegisterStubPathOverrides(const base::FilePath& stubs_dir);
 
 }  // namespace chromeos
 

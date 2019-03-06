@@ -11,7 +11,7 @@ component("settings") {
   deps = [
     "//base",
     "//base:i18n",
-    "//chromeos:chromeos_constants",
+    "//chromeos/constants",
     "//chromeos/login/login_state",
     "//third_party/icu",
   ]
@@ -36,7 +36,6 @@ source_set("unit_tests") {
     "//base",
     "//base:i18n",
     "//base/test:test_support",
-    "//chromeos:chromeos_constants",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/icu",

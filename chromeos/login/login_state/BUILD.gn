@@ -8,7 +8,7 @@ component("login_state") {
   defines = [ "IS_LOGIN_STATE_IMPL" ]
   deps = [
     "//base",
-    "//chromeos:chromeos_constants",
+    "//chromeos/constants",
     "//components/device_event_log",
   ]
   sources = [
@@ -37,7 +37,7 @@ source_set("unit_tests") {
   deps = [
     ":login_state",
     "//base",
-    "//chromeos:chromeos_constants",
+    "//chromeos/constants",
     "//testing/gmock",
     "//testing/gtest",
   ]
