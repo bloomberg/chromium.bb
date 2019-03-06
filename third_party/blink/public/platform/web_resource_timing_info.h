@@ -46,7 +46,7 @@ struct WebResourceTimingInfo {
 
   WebURLLoadTiming timing;
   base::TimeTicks last_redirect_end_time;
-  base::TimeTicks finish_time;
+  base::TimeTicks response_end;
 
   uint64_t transfer_size;
   uint64_t encoded_body_size;

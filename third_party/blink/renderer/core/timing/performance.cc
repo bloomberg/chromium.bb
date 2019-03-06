@@ -507,7 +507,7 @@ WebResourceTimingInfo Performance::GenerateResourceTiming(
   result.alpn_negotiated_protocol = final_response.AlpnNegotiatedProtocol();
   result.connection_info = final_response.ConnectionInfoString();
   result.timing = final_response.GetResourceLoadTiming();
-  result.finish_time = info.LoadFinishTime();
+  result.response_end = info.LoadResponseEnd();
 
   result.allow_timing_details = PassesTimingAllowCheck(
       final_response, destination_origin, &context_for_use_counter);

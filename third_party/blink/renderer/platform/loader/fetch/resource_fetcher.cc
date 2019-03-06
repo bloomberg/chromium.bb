@@ -574,7 +574,7 @@ void ResourceFetcher::RequestLoadStarted(unsigned long identifier,
     ResourceResponse final_response = resource->GetResponse();
     final_response.SetResourceLoadTiming(nullptr);
     info->SetFinalResponse(final_response);
-    info->SetLoadFinishTime(info->InitialTime());
+    info->SetLoadResponseEnd(info->InitialTime());
     scheduled_resource_timing_reports_.push_back(std::move(info));
     if (!resource_timing_report_timer_.IsActive())
       resource_timing_report_timer_.StartOneShot(TimeDelta(), FROM_HERE);
@@ -1711,7 +1711,7 @@ ArchiveResource* ResourceFetcher::CreateArchive(
 
 void ResourceFetcher::HandleLoaderFinish(
     Resource* resource,
-    TimeTicks finish_time,
+    TimeTicks response_end,
     LoaderFinishType type,
     uint32_t inflight_keepalive_bytes,
     bool should_report_corb_blocking,
@@ -1747,7 +1747,7 @@ void ResourceFetcher::HandleLoaderFinish(
                               : resource->GetResourceRequest()
                                     .GetInitialUrlForResourceTiming());
       info->SetFinalResponse(resource->GetResponse());
-      info->SetLoadFinishTime(finish_time);
+      info->SetLoadResponseEnd(response_end);
       // encodedDataLength == -1 means "not available".
       // TODO(ricea): Find cases where it is not available but the
       // PerformanceResourceTiming spec requires it to be available and fix
@@ -1768,7 +1768,7 @@ void ResourceFetcher::HandleLoaderFinish(
           ResourceTimingInfo::Create(info->InitiatorType(),
                                      timing_info.start_time);
       preflight_info->SetInitialURL(info->InitialURL());
-      preflight_info->SetLoadFinishTime(timing_info.finish_time);
+      preflight_info->SetLoadResponseEnd(timing_info.response_end);
       preflight_info->AddFinalTransferSize(timing_info.transfer_size);
 
       // Set a provisional response to provide possible other information.
@@ -1788,7 +1788,7 @@ void ResourceFetcher::HandleLoaderFinish(
 
   resource->VirtualTimePauser().UnpauseVirtualTime();
   if (type == kDidFinishLoading) {
-    resource->Finish(finish_time, task_runner_.get());
+    resource->Finish(response_end, task_runner_.get());
 
     // Since this resource came from the network stack we only schedule a stale
     // while revalidate request if the network asked us to. If we called
@@ -1818,7 +1818,7 @@ void ResourceFetcher::HandleLoaderFinish(
     }
   }
   Context().DispatchDidFinishLoading(
-      resource->Identifier(), finish_time, encoded_data_length,
+      resource->Identifier(), response_end, encoded_data_length,
       resource->GetResponse().DecodedBodyLength(), should_report_corb_blocking,
       FetchContext::ResourceResponseType::kNotFromMemoryCache);
   resource->ReloadIfLoFiOrPlaceholderImage(this, Resource::kReloadIfNeeded);

@@ -10547,7 +10547,7 @@ TEST_F(WebFrameTest, MaxFramesDetach) {
   web_view_impl->MainFrameImpl()->CollectGarbageForTesting();
 }
 
-TEST_F(WebFrameTest, ImageDocumentLoadFinishTime) {
+TEST_F(WebFrameTest, ImageDocumentLoadResponseEnd) {
   // Loading an image resource directly generates an ImageDocument with
   // the document loader feeding image data into the resource of a generated
   // img tag. We expect the load finish time to be the same for the document
@@ -10566,12 +10566,12 @@ TEST_F(WebFrameTest, ImageDocumentLoadFinishTime) {
   ImageResource* resource = img_document->CachedImageResourceDeprecated();
 
   EXPECT_TRUE(resource);
-  EXPECT_NE(TimeTicks(), resource->LoadFinishTime());
+  EXPECT_NE(TimeTicks(), resource->LoadResponseEnd());
 
   DocumentLoader* loader = document->Loader();
 
   EXPECT_TRUE(loader);
-  EXPECT_EQ(loader->GetTiming().ResponseEnd(), resource->LoadFinishTime());
+  EXPECT_EQ(loader->GetTiming().ResponseEnd(), resource->LoadResponseEnd());
 }
 
 TEST_F(WebFrameTest, CopyImageDocument) {

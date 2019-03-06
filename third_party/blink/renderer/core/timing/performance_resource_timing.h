@@ -118,7 +118,7 @@ class CORE_EXPORT PerformanceResourceTiming : public PerformanceEntry {
   TimeTicks time_origin_;
   scoped_refptr<ResourceLoadTiming> timing_;
   TimeTicks last_redirect_end_time_;
-  TimeTicks finish_time_;
+  TimeTicks response_end_;
   unsigned long long transfer_size_;
   unsigned long long encoded_body_size_;
   unsigned long long decoded_body_size_;

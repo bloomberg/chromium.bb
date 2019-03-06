@@ -499,7 +499,7 @@ void ResourceLoader::DidFinishLoadingBody() {
 
   const ResourceResponse& response = resource_->GetResponse();
   if (deferred_finish_loading_info_) {
-    DidFinishLoading(deferred_finish_loading_info_->finish_time,
+    DidFinishLoading(deferred_finish_loading_info_->response_end,
                      response.EncodedDataLength(), response.EncodedBodyLength(),
                      response.DecodedBodyLength(),
                      deferred_finish_loading_info_->should_report_corb_blocking,
@@ -1114,7 +1114,7 @@ void ResourceLoader::DidFinishLoadingFirstPartInMultipart() {
 }
 
 void ResourceLoader::DidFinishLoading(
-    TimeTicks finish_time,
+    TimeTicks response_end,
     int64_t encoded_data_length,
     int64_t encoded_body_length,
     int64_t decoded_body_length,
@@ -1131,7 +1131,7 @@ void ResourceLoader::DidFinishLoading(
   if ((response_body_loader_ && !has_seen_end_of_body_) ||
       (is_downloading_to_blob_ && !blob_finished_ && blob_response_started_)) {
     deferred_finish_loading_info_ = DeferredFinishLoadingInfo{
-        finish_time, should_report_corb_blocking, cors_preflight_timing_info};
+        response_end, should_report_corb_blocking, cors_preflight_timing_info};
     return;
   }
 
@@ -1151,7 +1151,7 @@ void ResourceLoader::DidFinishLoading(
       "endData", EndResourceLoadData(RequestOutcome::kSuccess));
 
   fetcher_->HandleLoaderFinish(
-      resource_.Get(), finish_time, ResourceFetcher::kDidFinishLoading,
+      resource_.Get(), response_end, ResourceFetcher::kDidFinishLoading,
       inflight_keepalive_bytes_, should_report_corb_blocking,
       cors_preflight_timing_info);
 }
@@ -1383,7 +1383,7 @@ void ResourceLoader::FinishedCreatingBlob(
   blob_finished_ = true;
   if (deferred_finish_loading_info_) {
     const ResourceResponse& response = resource_->GetResponse();
-    DidFinishLoading(deferred_finish_loading_info_->finish_time,
+    DidFinishLoading(deferred_finish_loading_info_->response_end,
                      response.EncodedDataLength(), response.EncodedBodyLength(),
                      response.DecodedBodyLength(),
                      deferred_finish_loading_info_->should_report_corb_blocking,

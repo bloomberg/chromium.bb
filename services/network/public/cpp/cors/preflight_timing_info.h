@@ -26,7 +26,7 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) PreflightTimingInfo {
   ~PreflightTimingInfo();
 
   base::TimeTicks start_time;
-  base::TimeTicks finish_time;
+  base::TimeTicks response_end;
   std::string alpn_negotiated_protocol;
   net::HttpResponseInfo::ConnectionInfo connection_info =
       net::HttpResponseInfo::CONNECTION_INFO_UNKNOWN;

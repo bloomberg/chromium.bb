@@ -288,7 +288,7 @@ class PreflightController::PreflightLoader final {
     FinalizeLoader();
 
     timing_info_.start_time = head.request_start;
-    timing_info_.finish_time = base::TimeTicks::Now();
+    timing_info_.response_end = base::TimeTicks::Now();
     timing_info_.alpn_negotiated_protocol = head.alpn_negotiated_protocol;
     timing_info_.connection_info = head.connection_info;
     auto timing_allow_origin =

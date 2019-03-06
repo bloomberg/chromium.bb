@@ -56,8 +56,8 @@ class PLATFORM_EXPORT ResourceTimingInfo
 
   const AtomicString& InitiatorType() const { return type_; }
 
-  void SetLoadFinishTime(TimeTicks time) { load_finish_time_ = time; }
-  TimeTicks LoadFinishTime() const { return load_finish_time_; }
+  void SetLoadResponseEnd(TimeTicks time) { load_response_end_ = time; }
+  TimeTicks LoadResponseEnd() const { return load_response_end_; }
 
   void SetInitialURL(const KURL& url) { initial_url_ = url; }
   const KURL& InitialURL() const { return initial_url_; }
@@ -95,7 +95,7 @@ class PLATFORM_EXPORT ResourceTimingInfo
 
   AtomicString type_;
   TimeTicks initial_time_;
-  TimeTicks load_finish_time_;
+  TimeTicks load_response_end_;
   KURL initial_url_;
   ResourceResponse final_response_;
   Vector<ResourceResponse> redirect_chain_;

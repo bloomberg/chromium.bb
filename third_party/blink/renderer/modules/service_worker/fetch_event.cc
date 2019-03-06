@@ -202,7 +202,7 @@ void FetchEvent::OnNavigationPreloadComplete(
   scoped_refptr<ResourceTimingInfo> info =
       ResourceTimingInfo::Create("navigation", request_time);
   info->SetNegativeAllowed(true);
-  info->SetLoadFinishTime(completion_time);
+  info->SetLoadResponseEnd(completion_time);
   info->SetInitialURL(request_->url());
   info->SetFinalResponse(resource_response);
   info->AddFinalTransferSize(encoded_data_length);
