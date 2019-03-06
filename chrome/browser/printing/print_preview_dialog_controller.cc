@@ -57,6 +57,12 @@ namespace printing {
 
 namespace {
 
+PrintPreviewUI* GetPrintPreviewUIForDialog(WebContents* dialog) {
+  content::WebUI* web_ui = dialog->GetWebUI();
+  return web_ui ? static_cast<PrintPreviewUI*>(web_ui->GetController())
+                : nullptr;
+}
+
 // A ui::WebDialogDelegate that specifies the print preview dialog appearance.
 class PrintPreviewDialogDelegate : public ui::WebDialogDelegate,
                                    public content::WebContentsObserver {
@@ -85,8 +91,7 @@ class PrintPreviewDialogDelegate : public ui::WebDialogDelegate,
 PrintPreviewDialogDelegate::PrintPreviewDialogDelegate(WebContents* initiator)
     : content::WebContentsObserver(initiator) {}
 
-PrintPreviewDialogDelegate::~PrintPreviewDialogDelegate() {
-}
+PrintPreviewDialogDelegate::~PrintPreviewDialogDelegate() = default;
 
 ui::ModalType PrintPreviewDialogDelegate::GetDialogModalType() const {
   // Not used, returning dummy value.
@@ -167,10 +172,7 @@ bool PrintPreviewDialogDelegate::ShouldShowDialogTitle() const {
 
 }  // namespace
 
-PrintPreviewDialogController::PrintPreviewDialogController()
-    : waiting_for_new_preview_page_(false),
-      is_creating_print_preview_dialog_(false) {
-}
+PrintPreviewDialogController::PrintPreviewDialogController() = default;
 
 // static
 PrintPreviewDialogController* PrintPreviewDialogController::GetInstance() {
@@ -260,11 +262,8 @@ void PrintPreviewDialogController::Observe(
 
 void PrintPreviewDialogController::ForEachPreviewDialog(
     base::Callback<void(content::WebContents*)> callback) {
-  for (PrintPreviewDialogMap::const_iterator it = preview_dialog_map_.begin();
-       it != preview_dialog_map_.end();
-       ++it) {
-    callback.Run(it->first);
-  }
+  for (const auto& it : preview_dialog_map_)
+    callback.Run(it.first);
 }
 
 // static
@@ -283,7 +282,7 @@ void PrintPreviewDialogController::EraseInitiatorInfo(
   preview_dialog_map_[preview_dialog] = nullptr;
 }
 
-PrintPreviewDialogController::~PrintPreviewDialogController() {}
+PrintPreviewDialogController::~PrintPreviewDialogController() = default;
 
 void PrintPreviewDialogController::OnRendererProcessClosed(
     content::RenderProcessHost* rph) {
@@ -291,29 +290,24 @@ void PrintPreviewDialogController::OnRendererProcessClosed(
   // |preview_dialog_map_| because RemoveFoo() can change |preview_dialog_map_|.
   std::vector<WebContents*> closed_initiators;
   std::vector<WebContents*> closed_preview_dialogs;
-  for (auto iter = preview_dialog_map_.begin();
-       iter != preview_dialog_map_.end(); ++iter) {
-    WebContents* preview_dialog = iter->first;
-    WebContents* initiator = iter->second;
-    if (preview_dialog->GetMainFrame()->GetProcess() == rph) {
+  for (auto& it : preview_dialog_map_) {
+    WebContents* preview_dialog = it.first;
+    WebContents* initiator = it.second;
+    if (preview_dialog->GetMainFrame()->GetProcess() == rph)
       closed_preview_dialogs.push_back(preview_dialog);
-    } else if (initiator && initiator->GetMainFrame()->GetProcess() == rph) {
+    else if (initiator && initiator->GetMainFrame()->GetProcess() == rph)
       closed_initiators.push_back(initiator);
-    }
   }
 
-  for (size_t i = 0; i < closed_preview_dialogs.size(); ++i) {
-    RemovePreviewDialog(closed_preview_dialogs[i]);
-    if (content::WebUI* web_ui = closed_preview_dialogs[i]->GetWebUI()) {
-      PrintPreviewUI* print_preview_ui =
-          static_cast<PrintPreviewUI*>(web_ui->GetController());
-      if (print_preview_ui)
-        print_preview_ui->OnPrintPreviewDialogClosed();
-    }
+  for (WebContents* dialog : closed_preview_dialogs) {
+    RemovePreviewDialog(dialog);
+    auto* print_preview_ui = GetPrintPreviewUIForDialog(dialog);
+    if (print_preview_ui)
+      print_preview_ui->OnPrintPreviewDialogClosed();
   }
 
-  for (size_t i = 0; i < closed_initiators.size(); ++i)
-    RemoveInitiator(closed_initiators[i]);
+  for (WebContents* initiator : closed_initiators)
+    RemoveInitiator(initiator);
 }
 
 void PrintPreviewDialogController::OnWebContentsDestroyed(
@@ -430,12 +424,15 @@ WebContents* PrintPreviewDialogController::CreatePrintPreviewDialog(
 void PrintPreviewDialogController::SaveInitiatorTitle(
     WebContents* preview_dialog) {
   WebContents* initiator = GetInitiator(preview_dialog);
-  if (initiator && preview_dialog->GetWebUI()) {
-    PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(
-        preview_dialog->GetWebUI()->GetController());
-    print_preview_ui->SetInitiatorTitle(
-        PrintViewManager::FromWebContents(initiator)->RenderSourceName());
-  }
+  if (!initiator)
+    return;
+
+  auto* print_preview_ui = GetPrintPreviewUIForDialog(preview_dialog);
+  if (!print_preview_ui)
+    return;
+
+  print_preview_ui->SetInitiatorTitle(
+      PrintViewManager::FromWebContents(initiator)->RenderSourceName());
 }
 
 void PrintPreviewDialogController::AddObservers(WebContents* contents) {
@@ -501,13 +498,10 @@ void PrintPreviewDialogController::RemoveInitiator(
 
   PrintViewManager::FromWebContents(initiator)->PrintPreviewDone();
 
-  // initiator is closed. Close the print preview dialog too.
-  if (content::WebUI* web_ui = preview_dialog->GetWebUI()) {
-    PrintPreviewUI* print_preview_ui =
-        static_cast<PrintPreviewUI*>(web_ui->GetController());
-    if (print_preview_ui)
-      print_preview_ui->OnInitiatorClosed();
-  }
+  // Initiator is closed. Close the print preview dialog too.
+  auto* print_preview_ui = GetPrintPreviewUIForDialog(preview_dialog);
+  if (print_preview_ui)
+    print_preview_ui->OnInitiatorClosed();
 }
 
 void PrintPreviewDialogController::RemovePreviewDialog(
