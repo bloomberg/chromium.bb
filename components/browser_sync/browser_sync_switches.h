@@ -7,12 +7,16 @@
 #ifndef COMPONENTS_BROWSER_SYNC_BROWSER_SYNC_SWITCHES_H_
 #define COMPONENTS_BROWSER_SYNC_BROWSER_SYNC_SWITCHES_H_
 
+#include "base/feature_list.h"
+
 namespace switches {
 
 extern const char kDisableSync[];
 extern const char kDisableSyncTypes[];
 extern const char kEnableLocalSyncBackend[];
 extern const char kLocalSyncBackendDir[];
+
+extern const base::Feature kStopSyncInPausedState;
 
 // Returns whether sync is allowed to run based on command-line switches.
 // Profile::IsSyncAllowed() is probably a better signal than this function.

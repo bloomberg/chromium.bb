@@ -644,7 +644,10 @@ TEST_F(ProfileSyncServiceTest, RevokeAccessTokenFromTokenService) {
 
 // Checks that CREDENTIALS_REJECTED_BY_CLIENT resets the access token and stops
 // Sync. Regression test for https://crbug.com/824791.
-TEST_F(ProfileSyncServiceTest, CredentialsRejectedByClient) {
+TEST_F(ProfileSyncServiceTest, CredentialsRejectedByClient_StopSync) {
+  base::test::ScopedFeatureList feature;
+  feature.InitAndEnableFeature(switches::kStopSyncInPausedState);
+
   syncer::SyncCredentials init_credentials;
 
   CreateService(ProfileSyncService::AUTO_START);
@@ -699,6 +702,72 @@ TEST_F(ProfileSyncServiceTest, CredentialsRejectedByClient) {
             service()->GetTransportState());
   EXPECT_TRUE(
       service()->HasDisableReason(syncer::SyncService::DISABLE_REASON_PAUSED));
+
+  service()->RemoveObserver(&observer);
+}
+
+TEST_F(ProfileSyncServiceTest, CredentialsRejectedByClient_DoNotStopSync) {
+  base::test::ScopedFeatureList feature;
+  feature.InitAndDisableFeature(switches::kStopSyncInPausedState);
+
+  syncer::SyncCredentials init_credentials;
+
+  bool invalidate_credentials_called = false;
+  base::RepeatingClosure invalidate_credentials_callback =
+      base::BindRepeating([](bool* called) { *called = true; },
+                          base::Unretained(&invalidate_credentials_called));
+
+  CreateService(ProfileSyncService::AUTO_START);
+  SignIn();
+  EXPECT_CALL(*component_factory(), CreateSyncEngine(_, _, _))
+      .WillOnce(
+          Return(ByMove(std::make_unique<FakeSyncEngineCollectCredentials>(
+              &init_credentials, invalidate_credentials_callback))));
+  InitializeForNthSync();
+  ASSERT_EQ(syncer::SyncService::TransportState::ACTIVE,
+            service()->GetTransportState());
+
+  TestSyncServiceObserver observer;
+  service()->AddObserver(&observer);
+
+  const std::string primary_account_id =
+      identity_manager()->GetPrimaryAccountId();
+
+  // Make sure the expected credentials (correct account_id, empty access token)
+  // were passed to the SyncEngine.
+  ASSERT_EQ(primary_account_id, init_credentials.account_id);
+  ASSERT_TRUE(init_credentials.sync_token.empty());
+
+  // At this point, the real SyncEngine would try to connect to the server, fail
+  // (because it has no access token), and eventually call
+  // OnConnectionStatusChange(CONNECTION_AUTH_ERROR). Since our fake SyncEngine
+  // doesn't do any of this, call that explicitly here.
+  service()->OnConnectionStatusChange(syncer::CONNECTION_AUTH_ERROR);
+
+  base::RunLoop().RunUntilIdle();
+  ASSERT_FALSE(service()->GetAccessTokenForTest().empty());
+  ASSERT_EQ(GoogleServiceAuthError::AuthErrorNone(), service()->GetAuthError());
+  ASSERT_EQ(GoogleServiceAuthError::AuthErrorNone(), observer.auth_error());
+
+  // Simulate the credentials getting locally rejected by the client by setting
+  // the refresh token to a special invalid value.
+  identity_test_env()->SetInvalidRefreshTokenForPrimaryAccount();
+  const GoogleServiceAuthError rejected_by_client =
+      GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
+          GoogleServiceAuthError::InvalidGaiaCredentialsReason::
+              CREDENTIALS_REJECTED_BY_CLIENT);
+  ASSERT_EQ(rejected_by_client,
+            identity_test_env()
+                ->identity_manager()
+                ->GetErrorStateOfRefreshTokenForAccount(primary_account_id));
+  EXPECT_TRUE(service()->GetAccessTokenForTest().empty());
+  EXPECT_TRUE(invalidate_credentials_called);
+
+  // The observer should have been notified of the auth error state.
+  EXPECT_EQ(rejected_by_client, observer.auth_error());
+  // The Sync engine should still be running.
+  EXPECT_EQ(syncer::SyncService::TransportState::ACTIVE,
+            service()->GetTransportState());
 
   service()->RemoveObserver(&observer);
 }

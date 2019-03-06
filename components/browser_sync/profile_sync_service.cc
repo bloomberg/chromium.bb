@@ -681,8 +681,10 @@ int ProfileSyncService::GetDisableReasons() const {
   if (unrecoverable_error_reason_ != ERROR_REASON_UNSET) {
     result = result | DISABLE_REASON_UNRECOVERABLE_ERROR;
   }
-  if (auth_manager_->IsSyncPaused()) {
-    result = result | DISABLE_REASON_PAUSED;
+  if (base::FeatureList::IsEnabled(switches::kStopSyncInPausedState)) {
+    if (auth_manager_->IsSyncPaused()) {
+      result = result | DISABLE_REASON_PAUSED;
+    }
   }
   return result;
 }
