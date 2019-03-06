@@ -194,25 +194,48 @@ template("gcc_toolchain") {
       compiler_prefix = "${analyzer_wrapper} " + compiler_prefix
     }
 
-    if (defined(toolchain_args.coverage_instrumentation_input_file)) {
-      toolchain_coverage_instrumentation_input_file =
-          toolchain_args.coverage_instrumentation_input_file
+    # A specific toolchain may wish to avoid coverage instrumentation, so we
+    # allow the global "use_clang_coverage" arg to be overridden.
+    if (defined(toolchain_args.use_clang_coverage)) {
+      toolchain_use_clang_coverage = toolchain_args.use_clang_coverage
     } else {
-      toolchain_coverage_instrumentation_input_file =
-          coverage_instrumentation_input_file
+      toolchain_use_clang_coverage = use_clang_coverage
     }
-    _use_clang_coverage_wrapper =
-        toolchain_coverage_instrumentation_input_file != ""
-    if (_use_clang_coverage_wrapper) {
+
+    # For a coverage build, we use the wrapper script globally so that it can
+    # remove coverage cflags from files that should not have them.
+    if (toolchain_use_clang_coverage) {
       assert(!use_clang_static_analyzer,
              "Clang static analyzer wrapper and Clang code coverage wrapper " +
                  "cannot be used together.")
 
+      # "coverage_instrumentation_input_file" is set in args.gn, but it can be
+      # overridden by a toolchain config.
+      if (defined(toolchain_args.coverage_instrumentation_input_file)) {
+        toolchain_coverage_instrumentation_input_file =
+            toolchain_args.coverage_instrumentation_input_file
+      } else {
+        toolchain_coverage_instrumentation_input_file =
+            coverage_instrumentation_input_file
+      }
+
       _coverage_wrapper =
           rebase_path("//build/toolchain/clang_code_coverage_wrapper.py",
-                      root_build_dir) + " --files-to-instrument=" +
-          rebase_path(toolchain_coverage_instrumentation_input_file,
                       root_build_dir)
+
+      # The wrapper needs to know what OS we target because it uses that to
+      # select a list of files that should not be instrumented.
+      _coverage_wrapper = _coverage_wrapper + "--target-os=" + target_os
+
+      # We want to instrument everything if there is no input file set.
+      # If there is a file we need to give it to the wrapper script so it can
+      # instrument only those files.
+      if (toolchain_coverage_instrumentation_input_file != "") {
+        _coverage_wrapper =
+            _coverage_wrapper + " --files-to-instrument=" +
+            rebase_path(toolchain_coverage_instrumentation_input_file,
+                        root_build_dir)
+      }
       compiler_prefix = "${_coverage_wrapper} " + compiler_prefix
     }
 
