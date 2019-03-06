@@ -18,7 +18,9 @@ import org.junit.runner.RunWith;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.Feature;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.util.concurrent.CountDownLatch;
 
@@ -133,7 +135,7 @@ public class AwUncaughtExceptionTest {
         expectUncaughtException(
                 mBackgroundThread, RuntimeException.class, msg, () -> { latch.countDown(); });
 
-        ThreadUtils.runOnUiThread(() -> {
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
             mContentsClient = new TestAwContentsClient() {
                 @Override
                 public boolean shouldOverrideUrlLoading(AwWebResourceRequest request) {

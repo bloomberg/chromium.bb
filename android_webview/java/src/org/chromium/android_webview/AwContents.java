@@ -1670,7 +1670,7 @@ public class AwContents implements SmartClipProvider {
                 }
             }
 
-            ThreadUtils.runOnUiThread(() -> {
+            PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
                 if (!isDestroyedOrNoOperation(NO_WARN)) {
                     nativeAddVisitedLinks(mNativeAwContents, value);
                 }
@@ -3379,7 +3379,7 @@ public class AwContents implements SmartClipProvider {
         if (path == null || isDestroyedOrNoOperation(WARN)) {
             if (callback == null) return;
 
-            ThreadUtils.runOnUiThread(() -> callback.onResult(null));
+            PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> callback.onResult(null));
         } else {
             nativeGenerateMHTML(mNativeAwContents, path, callback);
         }
