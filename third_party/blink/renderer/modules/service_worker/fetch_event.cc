@@ -192,10 +192,15 @@ void FetchEvent::OnNavigationPreloadComplete(
   resource_response.SetEncodedDataLength(encoded_data_length);
   resource_response.SetEncodedBodyLength(encoded_body_length);
   resource_response.SetDecodedBodyLength(decoded_body_length);
+
+  ResourceLoadTiming* timing = resource_response.GetResourceLoadTiming();
+  // |timing| can be null, see https://crbug.com/817691.
+  base::TimeTicks request_time =
+      timing ? timing->RequestTime() : base::TimeTicks();
   // According to the Resource Timing spec, the initiator type of
   // navigation preload request is "navigation".
-  scoped_refptr<ResourceTimingInfo> info = ResourceTimingInfo::Create(
-      "navigation", resource_response.GetResourceLoadTiming()->RequestTime());
+  scoped_refptr<ResourceTimingInfo> info =
+      ResourceTimingInfo::Create("navigation", request_time);
   info->SetNegativeAllowed(true);
   info->SetLoadFinishTime(completion_time);
   info->SetInitialURL(request_->url());
