@@ -21,6 +21,7 @@
 
 #include "third_party/blink/renderer/core/paint/theme_painter.h"
 
+#include "build/build_config.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -59,6 +60,33 @@ ui::NativeTheme::State GetFallbackThemeState(const Node* node) {
     return ui::NativeTheme::kHovered;
 
   return ui::NativeTheme::kNormal;
+}
+
+bool IsTemporalInput(const AtomicString& type) {
+  return type == input_type_names::kDate ||
+         type == input_type_names::kDatetimeLocal ||
+         type == input_type_names::kMonth || type == input_type_names::kTime ||
+         type == input_type_names::kWeek;
+}
+
+bool IsMenulistInput(const Node* node) {
+  if (auto* input = ToHTMLInputElement(node)) {
+#if defined(OS_ANDROID)
+    if (IsTemporalInput(input->type()))
+      return true;
+#endif
+    return input->type() == input_type_names::kColor &&
+           input->FastHasAttribute(html_names::kListAttr);
+  }
+  return false;
+}
+
+bool IsMultipleFieldsTemporalInput(const AtomicString& type) {
+#if !defined(OS_ANDROID)
+  return IsTemporalInput(type);
+#else
+  return false;
+#endif
 }
 
 }  // anonymous namespace
@@ -140,7 +168,7 @@ bool ThemePainter::Paint(const LayoutObject& o,
     }
     case kMenulistPart:
       COUNT_APPEARANCE(doc, MenuList);
-      if (!IsHTMLSelectElement(node))
+      if (!IsHTMLSelectElement(node) && !IsMenulistInput(node))
         COUNT_APPEARANCE(doc, MenuListForOthers);
       return PaintMenuList(node, o.GetDocument(), style, paint_info, r);
     case kMeterPart:
@@ -235,17 +263,20 @@ bool ThemePainter::PaintBorderOnly(const Node* node,
       if (node) {
         UseCounter::Count(node->GetDocument(),
                           WebFeature::kCSSValueAppearanceTextFieldRendered);
+        WebFeature feature =
+            WebFeature::kCSSValueAppearanceTextFieldForOthersRendered;
         if (auto* input = ToHTMLInputElementOrNull(node)) {
-          if (input->type() == input_type_names::kSearch) {
-            UseCounter::Count(
-                node->GetDocument(),
-                WebFeature::kCSSValueAppearanceTextFieldForSearch);
+          const AtomicString& type = input->type();
+          if (type == input_type_names::kSearch) {
+            feature = WebFeature::kCSSValueAppearanceTextFieldForSearch;
           } else if (input->IsTextField()) {
-            UseCounter::Count(
-                node->GetDocument(),
-                WebFeature::kCSSValueAppearanceTextFieldForTextField);
+            feature = WebFeature::kCSSValueAppearanceTextFieldForTextField;
+          } else if (IsMultipleFieldsTemporalInput(type)) {
+            feature =
+                WebFeature::kCSSValueAppearanceTextFieldForTemporalRendered;
           }
         }
+        UseCounter::Count(node->GetDocument(), feature);
       }
       return PaintTextField(node, style, paint_info, r);
     case kTextAreaPart:
@@ -298,7 +329,7 @@ bool ThemePainter::PaintDecorations(const Node* node,
   switch (style.Appearance()) {
     case kMenulistButtonPart:
       COUNT_APPEARANCE(document, MenuListButton);
-      if (!IsHTMLSelectElement(node))
+      if (!IsHTMLSelectElement(node) && !IsMenulistInput(node))
         COUNT_APPEARANCE(document, MenuListButtonForOthers);
       return PaintMenuListButton(node, document, style, paint_info, r);
     case kTextFieldPart:
