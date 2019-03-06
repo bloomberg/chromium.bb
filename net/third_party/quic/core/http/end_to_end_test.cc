@@ -3226,8 +3226,7 @@ TEST_P(EndToEndTest, SendStatelessResetTokenInShlo) {
   EXPECT_TRUE(client_->client()->WaitForCryptoHandshakeConfirmed());
   QuicConfig* config = client_->client()->session()->config();
   EXPECT_TRUE(config->HasReceivedStatelessResetToken());
-  // TODO(dschinazi) b/120240679 - convert connection ID to UInt128
-  EXPECT_EQ(TestConnectionIdToUInt64(
+  EXPECT_EQ(QuicUtils::GenerateStatelessResetToken(
                 client_->client()->session()->connection()->connection_id()),
             config->ReceivedStatelessResetToken());
   client_->Disconnect();

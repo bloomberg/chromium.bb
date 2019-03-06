@@ -124,10 +124,9 @@ std::unique_ptr<QuicPacket> BuildUnsizedDataPacket(
   // Re-construct the data packet with data ownership.
   return QuicMakeUnique<QuicPacket>(
       buffer, length, /* owns_buffer */ true,
-      GetIncludedDestinationConnectionIdLength(framer->transport_version(),
-                                               header),
-      GetIncludedSourceConnectionIdLength(framer->transport_version(), header),
-      header.version_flag, header.nonce != nullptr, header.packet_number_length,
+      GetIncludedDestinationConnectionIdLength(header),
+      GetIncludedSourceConnectionIdLength(header), header.version_flag,
+      header.nonce != nullptr, header.packet_number_length,
       header.retry_token_length_length, header.retry_token.length(),
       header.length_length);
 }
@@ -924,10 +923,9 @@ QuicEncryptedPacket* ConstructMisFramedEncryptedPacket(
   reinterpret_cast<unsigned char*>(
       packet->mutable_data())[GetStartOfEncryptedData(
       framer.transport_version(),
-      GetIncludedDestinationConnectionIdLength(framer.transport_version(),
-                                               header),
-      GetIncludedSourceConnectionIdLength(framer.transport_version(), header),
-      version_flag, false /* no diversification nonce */, packet_number_length,
+      GetIncludedDestinationConnectionIdLength(header),
+      GetIncludedSourceConnectionIdLength(header), version_flag,
+      false /* no diversification nonce */, packet_number_length,
       VARIABLE_LENGTH_INTEGER_LENGTH_0, 0, VARIABLE_LENGTH_INTEGER_LENGTH_0)] =
       0x1F;
 

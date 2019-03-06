@@ -17,41 +17,33 @@
 namespace quic {
 
 QuicConnectionIdLength GetIncludedConnectionIdLength(
-    QuicTransportVersion version,
     QuicConnectionId connection_id,
     QuicConnectionIdIncluded connection_id_included) {
   DCHECK(connection_id_included == CONNECTION_ID_PRESENT ||
          connection_id_included == CONNECTION_ID_ABSENT);
-  if (!QuicUtils::VariableLengthConnectionIdAllowedForVersion(version)) {
-    return connection_id_included == CONNECTION_ID_PRESENT
-               ? PACKET_8BYTE_CONNECTION_ID
-               : PACKET_0BYTE_CONNECTION_ID;
-  }
   return connection_id_included == CONNECTION_ID_PRESENT
              ? static_cast<QuicConnectionIdLength>(connection_id.length())
              : PACKET_0BYTE_CONNECTION_ID;
 }
 
 QuicConnectionIdLength GetIncludedDestinationConnectionIdLength(
-    QuicTransportVersion version,
     const QuicPacketHeader& header) {
   return GetIncludedConnectionIdLength(
-      version, header.destination_connection_id,
+      header.destination_connection_id,
       header.destination_connection_id_included);
 }
 
 QuicConnectionIdLength GetIncludedSourceConnectionIdLength(
-    QuicTransportVersion version,
     const QuicPacketHeader& header) {
-  return GetIncludedConnectionIdLength(version, header.source_connection_id,
+  return GetIncludedConnectionIdLength(header.source_connection_id,
                                        header.source_connection_id_included);
 }
 
 size_t GetPacketHeaderSize(QuicTransportVersion version,
                            const QuicPacketHeader& header) {
   return GetPacketHeaderSize(
-      version, GetIncludedDestinationConnectionIdLength(version, header),
-      GetIncludedSourceConnectionIdLength(version, header), header.version_flag,
+      version, GetIncludedDestinationConnectionIdLength(header),
+      GetIncludedSourceConnectionIdLength(header), header.version_flag,
       header.nonce != nullptr, header.packet_number_length,
       header.retry_token_length_length, header.retry_token.length(),
       header.length_length);
@@ -248,8 +240,8 @@ QuicPacket::QuicPacket(QuicTransportVersion version,
     : QuicPacket(buffer,
                  length,
                  owns_buffer,
-                 GetIncludedDestinationConnectionIdLength(version, header),
-                 GetIncludedSourceConnectionIdLength(version, header),
+                 GetIncludedDestinationConnectionIdLength(header),
+                 GetIncludedSourceConnectionIdLength(header),
                  header.version_flag,
                  header.nonce != nullptr,
                  header.packet_number_length,

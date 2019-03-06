@@ -430,7 +430,8 @@ void QuicCryptoServerHandshaker::ProcessClientHello(
       server_designated_connection_id, connection->clock(),
       connection->random_generator(), compressed_certs_cache_,
       crypto_negotiated_params_, signed_config_,
-      QuicCryptoStream::CryptoMessageFramingOverhead(transport_version()),
+      QuicCryptoStream::CryptoMessageFramingOverhead(
+          transport_version(), connection->connection_id()),
       chlo_packet_size_, std::move(done_cb));
 }
 

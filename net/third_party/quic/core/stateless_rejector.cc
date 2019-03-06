@@ -133,8 +133,8 @@ void StatelessRejector::ProcessClientHello(
       version_, versions_,
       /*use_stateless_rejects=*/true, server_designated_connection_id_, clock_,
       random_, compressed_certs_cache_, params_, signed_config_,
-      QuicCryptoStream::CryptoMessageFramingOverhead(
-          version_.transport_version),
+      QuicCryptoStream::CryptoMessageFramingOverhead(version_.transport_version,
+                                                     connection_id_),
       chlo_packet_size_, std::move(cb));
 }
 

@@ -42,7 +42,8 @@ class QUIC_EXPORT_PRIVATE QuicCryptoStream : public QuicStream {
   // Returns the per-packet framing overhead associated with sending a
   // handshake message for |version|.
   static QuicByteCount CryptoMessageFramingOverhead(
-      QuicTransportVersion version);
+      QuicTransportVersion version,
+      QuicConnectionId connection_id);
 
   // QuicStream implementation
   void OnStreamFrame(const QuicStreamFrame& frame) override;

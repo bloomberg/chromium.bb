@@ -35,21 +35,18 @@ struct QuicPacketHeader;
 
 // Number of connection ID bytes that are actually included over the wire.
 QUIC_EXPORT_PRIVATE QuicConnectionIdLength
-GetIncludedConnectionIdLength(QuicTransportVersion version,
-                              QuicConnectionId connection_id,
+GetIncludedConnectionIdLength(QuicConnectionId connection_id,
                               QuicConnectionIdIncluded connection_id_included);
 
 // Number of destination connection ID bytes that are actually included over the
 // wire for this particular header.
 QUIC_EXPORT_PRIVATE QuicConnectionIdLength
-GetIncludedDestinationConnectionIdLength(QuicTransportVersion version,
-                                         const QuicPacketHeader& header);
+GetIncludedDestinationConnectionIdLength(const QuicPacketHeader& header);
 
 // Number of source connection ID bytes that are actually included over the
 // wire for this particular header.
 QUIC_EXPORT_PRIVATE QuicConnectionIdLength
-GetIncludedSourceConnectionIdLength(QuicTransportVersion version,
-                                    const QuicPacketHeader& header);
+GetIncludedSourceConnectionIdLength(const QuicPacketHeader& header);
 
 // Size in bytes of the data packet header.
 QUIC_EXPORT_PRIVATE size_t GetPacketHeaderSize(QuicTransportVersion version,

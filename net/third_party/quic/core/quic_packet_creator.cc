@@ -755,14 +755,18 @@ QuicConnectionIdIncluded QuicPacketCreator::GetSourceConnectionIdIncluded()
 
 QuicConnectionIdLength QuicPacketCreator::GetDestinationConnectionIdLength()
     const {
+  DCHECK(QuicUtils::IsConnectionIdValidForVersion(connection_id_,
+                                                  transport_version()));
   return GetDestinationConnectionIdIncluded() == CONNECTION_ID_PRESENT
-             ? PACKET_8BYTE_CONNECTION_ID
+             ? static_cast<QuicConnectionIdLength>(connection_id_.length())
              : PACKET_0BYTE_CONNECTION_ID;
 }
 
 QuicConnectionIdLength QuicPacketCreator::GetSourceConnectionIdLength() const {
+  DCHECK(QuicUtils::IsConnectionIdValidForVersion(connection_id_,
+                                                  transport_version()));
   return GetSourceConnectionIdIncluded() == CONNECTION_ID_PRESENT
-             ? PACKET_8BYTE_CONNECTION_ID
+             ? static_cast<QuicConnectionIdLength>(connection_id_.length())
              : PACKET_0BYTE_CONNECTION_ID;
 }
 
