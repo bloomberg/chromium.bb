@@ -576,7 +576,9 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("dirCreateWithKeyboard"),
         TestCase("dirCreateWithKeyboard").EnableMyFilesVolume(),
         TestCase("dirCreateWithoutChangingCurrent").EnableMyFilesVolume(),
-        TestCase("dirCreateWithoutChangingCurrent")));
+        TestCase("dirCreateWithoutChangingCurrent"),
+        TestCase("dirContextMenuRecent"),
+        TestCase("dirContextMenuShortcut")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     DriveSpecific, /* drive_specific.js */

@@ -120,35 +120,6 @@ async function navigateToDirectory(appId, directory) {
 }
 
 /**
- * Creates a folder shortcut to |directory| using the context menu. Note the
- * current directory must be a parent of the given |directory|.
- *
- * @param {string} appId Files app windowId.
- * @param {Object} directory Directory of shortcut to be created.
- * @return {Promise} Promise fulfilled on success.
- */
-async function createShortcut(appId, directory) {
-  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
-      'selectFile', appId, [directory.name]));
-
-  await remoteCall.waitForElement(appId, ['.table-row[selected]']);
-  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
-      'fakeMouseRightClick', appId, ['.table-row[selected]']));
-
-
-  await remoteCall.waitForElement(appId, '#file-context-menu:not([hidden])');
-  await remoteCall.waitForElement(
-      appId,
-      '[command="#create-folder-shortcut"]:not([hidden]):not([disabled])');
-  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
-      'fakeMouseClick', appId,
-      ['[command="#create-folder-shortcut"]:not([hidden]):not([disabled])']));
-
-
-  await remoteCall.waitForElement(appId, directory.navItem);
-}
-
-/**
  * Removes the folder shortcut to |directory|. Note the current directory must
  * be a parent of the given |directory|.
  *
@@ -222,13 +193,13 @@ testcase.traverseFolderShortcuts = async () => {
   await expandDirectoryTree(appId);
 
   // Create a shortcut to directory D.
-  await createShortcut(appId, DIRECTORY.D);
+  await createShortcut(appId, DIRECTORY.D.name);
 
   // Navigate to directory B.
   await navigateToDirectory(appId, DIRECTORY.B);
 
   // Create a shortcut to directory C.
-  await createShortcut(appId, DIRECTORY.C);
+  await createShortcut(appId, DIRECTORY.C.name);
 
   // Click the Drive root (My Drive) shortcut.
   await clickShortcut(appId, DIRECTORY.Drive);
@@ -283,7 +254,7 @@ testcase.addRemoveFolderShortcuts = async () => {
   const appId2 = await openFilesAppOnDrive();
 
   // Create a shortcut to D.
-  await createShortcut(appId1, DIRECTORY.D);
+  await createShortcut(appId1, DIRECTORY.D.name);
 
   // Click the shortcut to D.
   await clickShortcut(appId1, DIRECTORY.D);
@@ -292,7 +263,7 @@ testcase.addRemoveFolderShortcuts = async () => {
   await expectSelection(appId1, DIRECTORY.D, DIRECTORY.D);
 
   // Create a shortcut to A from the other window.
-  await createShortcut(appId2, DIRECTORY.A);
+  await createShortcut(appId2, DIRECTORY.A.name);
 
   // Check: current directory and selection should still be D.
   await expectSelection(appId1, DIRECTORY.D, DIRECTORY.D);

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 'use strict';
+(() => {
 
 /**
  * Sets up for directory tree context menu test. In addition to normal setup, we
@@ -57,7 +58,6 @@ async function clickDirectoryTreeContextMenuItem(appId, path, id) {
       !!await remoteCall.callRemoteTestUtil(
           'fakeMouseRightClick', appId, [pathQuery]),
       'fakeMouseRightClick failed');
-
 
   // Check: context menu item |id| should be shown enabled.
   await remoteCall.waitForElement(
@@ -149,7 +149,6 @@ async function createDirectoryFromDirectoryTree(
     useKeyboardShortcut, changeCurrentDirectory) {
   const appId = await setupForDirectoryTreeContextMenuTest();
 
-
   if (changeCurrentDirectory) {
     await remoteCall.navigateWithDirectoryTree(
         appId, RootPath.DOWNLOADS_PATH + '/photos', 'My files/Downloads');
@@ -186,6 +185,79 @@ async function createDirectoryFromDirectoryTree(
   // Confirm that new directory is actually created by navigating to it.
   await remoteCall.navigateWithDirectoryTree(
       appId, RootPath.DOWNLOADS_PATH + '/photos/test', 'My files/Downloads');
+}
+
+/**
+ * Checks all visible items in the context menu for directory tree.
+ * @param {!string} appId
+ * @param {!string} treeItemQuery Query to item to be tested with context menu.
+ * @param {!Array<!Array<string|boolean>>} menuStates Mapping each command to
+ *     it's enabled state.
+ * @param {boolean=} rootsMenu True if the item uses #roots-context-menu instead
+ *     of #directory-tree-context-menu
+ */
+async function checkContextMenu(appId, treeItemQuery, menuStates, rootsMenu) {
+  // Focus the directory tree.
+  chrome.test.assertTrue(
+      !!await remoteCall.callRemoteTestUtil(
+          'focus', appId, ['#directory-tree']),
+      'focus failed: #directory-tree');
+
+  // Right click desired item in the directory tree.
+  chrome.test.assertTrue(
+      !!await remoteCall.callRemoteTestUtil(
+          'fakeMouseRightClick', appId, [treeItemQuery]),
+      'fakeMouseRightClick failed');
+
+  // Selector for a both context menu used on directory tree, only one should be
+  // visible at the time.
+  const menuQuery = rootsMenu ?
+      '#roots-context-menu:not([hidden]) cr-menu-item:not([hidden])' :
+      '#directory-tree-context-menu:not([hidden]) cr-menu-item:not([hidden])';
+
+  // Wait for each menu item to be in the desired state.
+  for (let [command, enabled] of menuStates) {
+    const menuItemQuery = menuQuery +
+        (enabled ? ':not([disabled])' : '[disabled]') +
+        `[command="${command}"]`;
+    await remoteCall.waitForElement(appId, menuItemQuery);
+  }
+
+  function stateString(state) {
+    return state ? 'enabled' : 'disabled';
+  }
+
+  // Grab all commands together and check they are in the expected order and
+  // state.
+  const actualItems = await remoteCall.callRemoteTestUtil(
+      'queryAllElements', appId, [menuQuery]);
+  let isDiff = false;
+  let msg = '\nContext menu in the wrong order/state:';
+  for (let i = 0; i < Math.max(menuStates.length, actualItems.length); i++) {
+    let expectedCommand = undefined;
+    let expectedState = undefined;
+    let actualCommand = undefined;
+    let actualState = undefined;
+    if (menuStates[i]) {
+      expectedCommand = menuStates[i][0];
+      expectedState = menuStates[i][1];
+    }
+    if (actualItems[i]) {
+      actualCommand = actualItems[i].attributes['command'];
+      actualState = actualItems[i].attributes['disabled'] ? false : true;
+    }
+    msg += '\n';
+    if (expectedCommand !== actualCommand || expectedState !== actualState) {
+      isDiff = true;
+    }
+    msg += ` index: ${i}`;
+    msg += `\n\t expected: ${expectedCommand} ${stateString(expectedState)}`;
+    msg += `\n\t      got: ${actualCommand} ${stateString(actualState)}`;
+  }
+
+  if (isDiff) {
+    chrome.test.assertTrue(false, msg);
+  }
 }
 
 /**
@@ -383,7 +455,6 @@ testcase.dirRenameUpdateChildrenBreadcrumbs = async () => {
       await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, enterKey),
       'Enter key failed');
 
-
   // Confirm that current directory is now My files or /Downloads, because it
   // can't find the previously selected folder /Downloads/photos/child-folder,
   // since its path/parent has been renamed.
@@ -476,3 +547,55 @@ testcase.dirCreateWithoutChangingCurrent = () => {
       false /* Do not use keyboard shortcut */,
       false /* Do not change current directory */);
 };
+
+/**
+ * Tests context menu for Recent root, currently it doesn't show context menu.
+ */
+testcase.dirContextMenuRecent = async () => {
+  const query = '#directory-tree [dir-type="FakeItem"][entry-label="Recent"]';
+
+  // Open Files app on Downloads.
+  const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
+
+  // Focus the directory tree.
+  chrome.test.assertTrue(
+      !!await remoteCall.callRemoteTestUtil(
+          'focus', appId, ['#directory-tree']),
+      'focus failed: #directory-tree');
+
+  // Right click Recent root.
+  chrome.test.assertTrue(
+      !!await remoteCall.callRemoteTestUtil(
+          'fakeMouseRightClick', appId, [query]),
+      'fakeMouseRightClick failed');
+
+  // Check that both menus are still hidden.
+  await remoteCall.waitForElement(appId, '#roots-context-menu[hidden]');
+  await remoteCall.waitForElement(
+      appId, '#directory-tree-context-menu[hidden]');
+};
+
+/**
+ * Tests context menu for Shortcut roots.
+ */
+testcase.dirContextMenuShortcut = async () => {
+  const menus = [
+      ['#rename', false],
+      ['#remove-folder-shortcut', true],
+      ['#share-with-linux', true],
+  ];
+  const entry = ENTRIES.directoryD;
+  const query =
+      `#directory-tree [dir-type='ShortcutItem'][label='${entry.nameText}']`;
+
+  // Open Files app on Drive.
+  const appId = await setupAndWaitUntilReady(RootPath.DRIVE, [], [entry]);
+
+  // Create a shortcut to directory D.
+  await createShortcut(appId, entry.nameText);
+
+  // Check the context menu is on desired state.
+  await checkContextMenu(appId, query, menus, true /* rootMenu */);
+};
+
+})();
