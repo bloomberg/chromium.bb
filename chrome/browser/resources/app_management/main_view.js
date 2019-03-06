@@ -22,16 +22,7 @@ Polymer({
      * List of apps displayed before expanding the app list.
      * @private {Array<App>}
      */
-    displayedApps_: {
-      type: Array,
-      value: () => [],
-    },
-
-    /**
-     * List of apps displayed after expanding app list.
-     * @private {Array<App>}
-     */
-    collapsedApps_: {
+    appsList: {
       type: Array,
       value: () => [],
     },
@@ -56,10 +47,7 @@ Polymer({
    * @private
    */
   onAppsChanged_: function() {
-    const appList = Object.values(this.apps_);
-    this.displayedApps_ = appList.slice(0, NUMBER_OF_APPS_DISPLAYED_DEFAULT);
-    this.collapsedApps_ =
-        appList.slice(NUMBER_OF_APPS_DISPLAYED_DEFAULT, appList.length);
+    this.appsList = Object.values(this.apps_);
   },
 
   /** @private */

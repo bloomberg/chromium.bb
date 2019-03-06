@@ -12,6 +12,10 @@
         margin-inline-start: 0;
       }
 
+      app-management-permission-toggle {
+        margin-inline-end: 24px;
+      }
+
       #notification-view-header {
         align-items: center;
         display: flex;
@@ -35,8 +39,17 @@
       <div id="notification-title" class="page-title">$i18n{notifications}</div>
     </div>
     <app-management-expandable-app-list
-        displayed-apps="[[displayedApps_]]"
-        collapsed-apps="[[collapsedApps_]]">
+        apps="[[appsList_]]"
+        collapsed-size="[[getCollapsedSize_(appsList_)]]">
+      <template is="dom-repeat" items="[[appsList_]]"
+                as="app" notify-dom-change>
+        <app-management-app-item app="[[app]]">
+          <app-management-permission-toggle slot="right-content"
+              app="[[app]]"
+              permission-type="CONTENT_SETTINGS_TYPE_NOTIFICATIONS">
+          </app-management-permission-toggle>
+        </app-management-app-item>
+      </template>
     </app-management-expandable-app-list>
   </template>
  <script src="notifications_view.js"></script>

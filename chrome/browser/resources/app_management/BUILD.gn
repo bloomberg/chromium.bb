@@ -116,7 +116,9 @@ if (!is_android) {
   js_library("expandable_app_list") {
     deps = [
       ":app_item",
+      ":constants",
       ":store_client",
+      "//third_party/polymer/v1_0/components-chromium/iron-collapse:iron-collapse-extracted",
     ]
   }
 

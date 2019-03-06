@@ -18,12 +18,18 @@ Polymer({
       observer: 'onAppsChanged_',
     },
 
+    /** @private {!Array<!App>} */
+    appsList_: {
+      type: Array,
+      computed: 'calculateAppsList_(allowed_.*, blocked_.*)',
+    },
+
     /**
      * List of apps with notification permission
      * displayed before expanding the app list.
      * @private {!Array<App>}
      */
-    displayedApps_: {
+    allowed_: {
       type: Array,
       value: () => [],
     },
@@ -33,17 +39,9 @@ Polymer({
      * displayed after expanding app list.
      * @private {!Array<App>}
      */
-    collapsedApps_: {
+    blocked_: {
       type: Array,
       value: () => [],
-    },
-
-    /**
-     * @private {boolean}
-     */
-    listExpanded_: {
-      type: Boolean,
-      value: false,
     },
   },
 
@@ -66,15 +64,10 @@ Polymer({
    */
   onViewLoaded_: function() {
     const state = this.getState();
-    this.displayedApps_ =
+    this.allowed_ =
         Array.from(state.notifications.allowedIds, id => state.apps[id]);
-    this.collapsedApps_ =
+    this.blocked_ =
         Array.from(state.notifications.blockedIds, id => state.apps[id]);
-
-    if (this.displayedApps_.length === 0) {
-      this.displayedApps_ = this.collapsedApps_;
-      this.collapsedApps_ = [];
-    }
   },
 
   /**
@@ -85,10 +78,8 @@ Polymer({
    */
   onAppsChanged_() {
     const unhandledAppIds = new Set(Object.keys(this.apps_));
-    this.displayedApps_ =
-        this.updateAppList_(this.displayedApps_, unhandledAppIds);
-    this.collapsedApps_ =
-        this.updateAppList_(this.collapsedApps_, unhandledAppIds);
+    this.allowed_ = this.updateAppList_(this.allowed_, unhandledAppIds);
+    this.blocked_ = this.updateAppList_(this.blocked_, unhandledAppIds);
 
     // If any new apps have been added, append them to the appropriate list.
     for (const appId of unhandledAppIds) {
@@ -100,11 +91,27 @@ Polymer({
       }
 
       if (allowed === OptionalBool.kTrue) {
-        this.displayedApps_.push(app);
+        this.push('allowed_', app);
       } else {
-        this.collapsedApps_.push(app);
+        this.push('blocked_', app);
       }
     }
+  },
+
+  /**
+   * @private
+   * @return {!Array<!App>}
+   */
+  calculateAppsList_() {
+    return this.allowed_.concat(this.blocked_);
+  },
+
+  /**
+   * @private
+   * @return {number}
+   */
+  getCollapsedSize_() {
+    return this.allowed_.length || this.blocked_.length;
   },
 
   /**
@@ -129,7 +136,6 @@ Polymer({
 
   /** @private */
   onClickBackButton_: function() {
-    this.listExpanded_ = false;
     if (!window.history.state) {
       this.dispatch(app_management.actions.changePage(PageType.MAIN));
     } else {

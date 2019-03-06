@@ -38,11 +38,23 @@
         justify-content: space-between;
         padding: 0 24px;
       }
+
+      .app-management-item-arrow {
+        margin-inline-end: 8px;
+        padding: 12px;
+      }
     </style>
     <app-management-expandable-app-list
-        displayed-apps="[[displayedApps_]]"
-        collapsed-apps="[[collapsedApps_]]"
+        apps="[[appsList]]"
         list-title="$i18n{appListTitle}">
+      <template is="dom-repeat" items="[[appsList]]" as="app" notify-dom-change>
+        <app-management-app-item app="[[app]]">
+          <paper-icon-button-light slot="right-content"
+              class="subpage-arrow app-management-item-arrow" actionable>
+            <button></button>
+          </paper-icon-button-light>
+        </app-management-app-item>
+      </template>
     </app-management-expandable-app-list>
 
     <div class="card-container">

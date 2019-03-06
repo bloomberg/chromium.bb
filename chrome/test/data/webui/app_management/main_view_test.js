@@ -7,22 +7,25 @@
 suite('<app-management-main-view>', function() {
   let mainView;
   let fakeHandler;
-  let appIdCounter;
+  let store;
 
   /**
    * @param {number} numApps
    */
   async function addApps(numApps) {
     for (let i = 0; i < numApps; i++) {
-      await fakeHandler.addApp((appIdCounter++).toString());
+      await fakeHandler.addApp();
     }
   }
 
-  setup(function() {
-    appIdCounter = 0;
+  function getAppItems() {
+    return mainView.$$('app-management-expandable-app-list')
+        .querySelectorAll('app-management-app-item');
+  }
 
+  setup(function() {
     fakeHandler = setupFakeHandler();
-    replaceStore();
+    store = replaceStore();
 
     mainView = document.createElement('app-management-main-view');
     replaceBody(mainView);
@@ -30,41 +33,31 @@ suite('<app-management-main-view>', function() {
 
   test('simple app addition', async function() {
     // Ensure there is no apps initially
-    expectEquals(
-        0,
-        mainView.$$('app-management-expandable-app-list')
-            .root.querySelectorAll('app-management-app-item')
-            .length);
+    expectEquals(0, getAppItems().length);
 
-    const appId = '1';
-    await fakeHandler.addApp(appId);
+    const app = await fakeHandler.addApp();
 
-    let appItems = mainView.$$('app-management-expandable-app-list')
-                       .root.querySelectorAll('app-management-app-item');
+    let appItems = getAppItems();
     expectEquals(1, appItems.length);
+    expectEquals(app.id, appItems[0].app.id);
 
-    expectEquals(appId, appItems[0].app.id);
+    store.setReducersEnabled(false);
+    appItems[0].click();
+    const expected = app_management.actions.changePage(PageType.DETAIL, app.id);
+    assertDeepEquals(expected, store.lastAction);
   });
 
   test('more apps bar visibility', async function() {
     // The more apps bar shouldn't appear when there are 4 apps.
-    await addApps(4);
-    expectEquals(
-        4,
-        mainView.$$('app-management-expandable-app-list')
-            .root.querySelectorAll('app-management-app-item')
-            .length);
+    await addApps(NUMBER_OF_APPS_DISPLAYED_DEFAULT);
+    expectEquals(NUMBER_OF_APPS_DISPLAYED_DEFAULT, getAppItems().length);
     expectTrue(mainView.$$('app-management-expandable-app-list')
                    .$['expander-row']
                    .hidden);
 
     // The more apps bar appears when there are 5 apps.
     await addApps(1);
-    expectEquals(
-        5,
-        mainView.$$('app-management-expandable-app-list')
-            .root.querySelectorAll('app-management-app-item')
-            .length);
+    expectEquals(NUMBER_OF_APPS_DISPLAYED_DEFAULT + 1, getAppItems().length);
     expectFalse(mainView.$$('app-management-expandable-app-list')
                     .$['expander-row']
                     .hidden);
