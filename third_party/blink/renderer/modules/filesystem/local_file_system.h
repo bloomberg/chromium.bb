@@ -49,7 +49,9 @@ namespace blink {
 class AsyncFileSystemCallbacks;
 class FileSystemClient;
 class ExecutionContext;
+class FileSystemCallbacks;
 class KURL;
+class ResolveURICallbacks;
 
 class LocalFileSystem final : public GarbageCollectedFinalized<LocalFileSystem>,
                               public Supplement<LocalFrame>,
@@ -68,12 +70,12 @@ class LocalFileSystem final : public GarbageCollectedFinalized<LocalFileSystem>,
 
   void ResolveURL(ExecutionContext*,
                   const KURL&,
-                  std::unique_ptr<AsyncFileSystemCallbacks>,
+                  std::unique_ptr<ResolveURICallbacks>,
                   SynchronousType sync_type);
   void RequestFileSystem(ExecutionContext*,
                          mojom::blink::FileSystemType,
                          long long size,
-                         std::unique_ptr<AsyncFileSystemCallbacks>,
+                         std::unique_ptr<FileSystemCallbacks>,
                          SynchronousType sync_type);
 
   FileSystemClient& Client() const { return *client_; }
@@ -86,27 +88,25 @@ class LocalFileSystem final : public GarbageCollectedFinalized<LocalFileSystem>,
  private:
   void ResolveURLCallback(ExecutionContext* context,
                           const KURL& file_system_url,
-                          std::unique_ptr<AsyncFileSystemCallbacks> callbacks,
+                          std::unique_ptr<ResolveURICallbacks> callbacks,
                           SynchronousType sync_type,
                           bool allowed);
-  void RequestFileSystemCallback(
-      ExecutionContext* context,
-      mojom::blink::FileSystemType type,
-      std::unique_ptr<AsyncFileSystemCallbacks> callbacks,
-      SynchronousType sync_type,
-      bool allowed);
+  void RequestFileSystemCallback(ExecutionContext* context,
+                                 mojom::blink::FileSystemType type,
+                                 std::unique_ptr<FileSystemCallbacks> callbacks,
+                                 SynchronousType sync_type,
+                                 bool allowed);
   void RequestFileSystemAccessInternal(ExecutionContext*,
                                        base::OnceCallback<void(bool)> callback);
   void FileSystemNotAllowedInternal(ExecutionContext*,
                                     std::unique_ptr<AsyncFileSystemCallbacks>);
-  void FileSystemAllowedInternal(
-      ExecutionContext*,
-      mojom::blink::FileSystemType,
-      std::unique_ptr<AsyncFileSystemCallbacks> callbacks,
-      SynchronousType sync_type);
+  void FileSystemAllowedInternal(ExecutionContext*,
+                                 mojom::blink::FileSystemType,
+                                 std::unique_ptr<FileSystemCallbacks> callbacks,
+                                 SynchronousType sync_type);
   void ResolveURLInternal(ExecutionContext*,
                           const KURL&,
-                          std::unique_ptr<AsyncFileSystemCallbacks>,
+                          std::unique_ptr<ResolveURICallbacks>,
                           SynchronousType sync_type);
 
   const std::unique_ptr<FileSystemClient> client_;

@@ -169,13 +169,12 @@ class EntryCallbacks final : public FileSystemCallbacksBase {
     Member<ScriptPromiseResolver> resolver_;
   };
 
-  static std::unique_ptr<AsyncFileSystemCallbacks> Create(
-      OnDidGetEntryCallback*,
-      ErrorCallbackBase*,
-      ExecutionContext*,
-      DOMFileSystemBase*,
-      const String& expected_path,
-      bool is_directory);
+  static std::unique_ptr<EntryCallbacks> Create(OnDidGetEntryCallback*,
+                                                ErrorCallbackBase*,
+                                                ExecutionContext*,
+                                                DOMFileSystemBase*,
+                                                const String& expected_path,
+                                                bool is_directory);
   void DidSucceed() override;
 
  private:
@@ -203,12 +202,11 @@ class EntriesCallbacks final : public FileSystemCallbacksBase {
     OnDidGetEntriesCallback() = default;
   };
 
-  static std::unique_ptr<AsyncFileSystemCallbacks> Create(
-      OnDidGetEntriesCallback*,
-      ErrorCallbackBase*,
-      ExecutionContext*,
-      DirectoryReaderBase*,
-      const String& base_path);
+  static std::unique_ptr<EntriesCallbacks> Create(OnDidGetEntriesCallback*,
+                                                  ErrorCallbackBase*,
+                                                  ExecutionContext*,
+                                                  DirectoryReaderBase*,
+                                                  const String& base_path);
   void DidReadDirectoryEntry(const String& name, bool is_directory) override;
   void DidReadDirectoryEntries(bool has_more) override;
 
@@ -265,7 +263,7 @@ class FileSystemCallbacks final : public FileSystemCallbacksBase {
     Member<ScriptPromiseResolver> resolver_;
   };
 
-  static std::unique_ptr<AsyncFileSystemCallbacks> Create(
+  static std::unique_ptr<FileSystemCallbacks> Create(
       OnDidOpenFileSystemCallback*,
       ErrorCallbackBase*,
       ExecutionContext*,
@@ -286,8 +284,9 @@ class ResolveURICallbacks final : public FileSystemCallbacksBase {
   using OnDidGetEntryCallback = EntryCallbacks::OnDidGetEntryCallback;
   using OnDidGetEntryV8Impl = EntryCallbacks::OnDidGetEntryV8Impl;
 
-  static std::unique_ptr<AsyncFileSystemCallbacks>
-  Create(OnDidGetEntryCallback*, ErrorCallbackBase*, ExecutionContext*);
+  static std::unique_ptr<ResolveURICallbacks> Create(OnDidGetEntryCallback*,
+                                                     ErrorCallbackBase*,
+                                                     ExecutionContext*);
   void DidResolveURL(const String& name,
                      const KURL& root_url,
                      mojom::blink::FileSystemType,
@@ -331,11 +330,10 @@ class MetadataCallbacks final : public FileSystemCallbacksBase {
     Member<V8PersistentCallbackInterface<V8MetadataCallback>> callback_;
   };
 
-  static std::unique_ptr<AsyncFileSystemCallbacks> Create(
-      OnDidReadMetadataCallback*,
-      ErrorCallbackBase*,
-      ExecutionContext*,
-      DOMFileSystemBase*);
+  static std::unique_ptr<MetadataCallbacks> Create(OnDidReadMetadataCallback*,
+                                                   ErrorCallbackBase*,
+                                                   ExecutionContext*,
+                                                   DOMFileSystemBase*);
   void DidReadMetadata(const FileMetadata&) override;
 
  private:
@@ -377,7 +375,7 @@ class FileWriterCallbacks final : public FileSystemCallbacksBase {
     Member<V8PersistentCallbackInterface<V8FileWriterCallback>> callback_;
   };
 
-  static std::unique_ptr<AsyncFileSystemCallbacks> Create(
+  static std::unique_ptr<FileWriterCallbacks> Create(
       FileWriterBase*,
       OnDidCreateFileWriterCallback*,
       ErrorCallbackBase*,
@@ -486,10 +484,10 @@ class VoidCallbacks final : public FileSystemCallbacksBase {
     Member<ScriptPromiseResolver> resolver_;
   };
 
-  static std::unique_ptr<AsyncFileSystemCallbacks> Create(OnDidSucceedCallback*,
-                                                          ErrorCallbackBase*,
-                                                          ExecutionContext*,
-                                                          DOMFileSystemBase*);
+  static std::unique_ptr<VoidCallbacks> Create(OnDidSucceedCallback*,
+                                               ErrorCallbackBase*,
+                                               ExecutionContext*,
+                                               DOMFileSystemBase*);
   void DidSucceed() override;
 
  private:

@@ -165,7 +165,7 @@ void EntryCallbacks::OnDidGetEntryPromiseImpl::OnSuccess(Entry* entry) {
   resolver_->Resolve(entry->asFileSystemHandle());
 }
 
-std::unique_ptr<AsyncFileSystemCallbacks> EntryCallbacks::Create(
+std::unique_ptr<EntryCallbacks> EntryCallbacks::Create(
     OnDidGetEntryCallback* success_callback,
     ErrorCallbackBase* error_callback,
     ExecutionContext* context,
@@ -202,7 +202,7 @@ void EntryCallbacks::DidSucceed() {
 
 // EntriesCallbacks -----------------------------------------------------------
 
-std::unique_ptr<AsyncFileSystemCallbacks> EntriesCallbacks::Create(
+std::unique_ptr<EntriesCallbacks> EntriesCallbacks::Create(
     OnDidGetEntriesCallback* success_callback,
     ErrorCallbackBase* error_callback,
     ExecutionContext* context,
@@ -278,7 +278,7 @@ void FileSystemCallbacks::OnDidOpenFileSystemPromiseImpl::OnSuccess(
   resolver_->Resolve(file_system->root()->asFileSystemHandle());
 }
 
-std::unique_ptr<AsyncFileSystemCallbacks> FileSystemCallbacks::Create(
+std::unique_ptr<FileSystemCallbacks> FileSystemCallbacks::Create(
     OnDidOpenFileSystemCallback* success_callback,
     ErrorCallbackBase* error_callback,
     ExecutionContext* context,
@@ -308,7 +308,7 @@ void FileSystemCallbacks::DidOpenFileSystem(const String& name,
 
 // ResolveURICallbacks --------------------------------------------------------
 
-std::unique_ptr<AsyncFileSystemCallbacks> ResolveURICallbacks::Create(
+std::unique_ptr<ResolveURICallbacks> ResolveURICallbacks::Create(
     OnDidGetEntryCallback* success_callback,
     ErrorCallbackBase* error_callback,
     ExecutionContext* context) {
@@ -362,7 +362,7 @@ void MetadataCallbacks::OnDidReadMetadataV8Impl::OnSuccess(Metadata* metadata) {
   callback_->InvokeAndReportException(nullptr, metadata);
 }
 
-std::unique_ptr<AsyncFileSystemCallbacks> MetadataCallbacks::Create(
+std::unique_ptr<MetadataCallbacks> MetadataCallbacks::Create(
     OnDidReadMetadataCallback* success_callback,
     ErrorCallbackBase* error_callback,
     ExecutionContext* context,
@@ -403,7 +403,7 @@ void FileWriterCallbacks::OnDidCreateFileWriterV8Impl::OnSuccess(
                                       static_cast<FileWriter*>(file_writer));
 }
 
-std::unique_ptr<AsyncFileSystemCallbacks> FileWriterCallbacks::Create(
+std::unique_ptr<FileWriterCallbacks> FileWriterCallbacks::Create(
     FileWriterBase* file_writer,
     OnDidCreateFileWriterCallback* success_callback,
     ErrorCallbackBase* error_callback,
@@ -510,7 +510,7 @@ void VoidCallbacks::OnDidSucceedPromiseImpl::OnSuccess(ExecutionContext*) {
   resolver_->Resolve();
 }
 
-std::unique_ptr<AsyncFileSystemCallbacks> VoidCallbacks::Create(
+std::unique_ptr<VoidCallbacks> VoidCallbacks::Create(
     OnDidSucceedCallback* success_callback,
     ErrorCallbackBase* error_callback,
     ExecutionContext* context,

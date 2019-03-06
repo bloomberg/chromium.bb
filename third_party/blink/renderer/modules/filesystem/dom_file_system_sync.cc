@@ -162,10 +162,9 @@ FileWriterSync* DOMFileSystemSync::CreateWriter(
 
   FileWriterCallbacksSyncHelper* sync_helper =
       FileWriterCallbacksSyncHelper::Create();
-  std::unique_ptr<AsyncFileSystemCallbacks> callbacks =
-      FileWriterCallbacks::Create(file_writer,
-                                  sync_helper->GetSuccessCallback(),
-                                  sync_helper->GetErrorCallback(), context_);
+  std::unique_ptr<FileWriterCallbacks> callbacks = FileWriterCallbacks::Create(
+      file_writer, sync_helper->GetSuccessCallback(),
+      sync_helper->GetErrorCallback(), context_);
 
   FileSystemDispatcher::From(context_).InitializeFileWriterSync(
       CreateFileSystemURL(file_entry), std::move(callbacks));

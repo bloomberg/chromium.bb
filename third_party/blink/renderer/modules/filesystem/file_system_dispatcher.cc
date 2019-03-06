@@ -48,8 +48,7 @@ class FileSystemDispatcher::WriteListener
 class FileSystemDispatcher::ReadDirectoryListener
     : public mojom::blink::FileSystemOperationListener {
  public:
-  explicit ReadDirectoryListener(
-      std::unique_ptr<AsyncFileSystemCallbacks> callbacks)
+  explicit ReadDirectoryListener(std::unique_ptr<EntriesCallbacks> callbacks)
       : callbacks_(std::move(callbacks)) {}
 
   void ResultsRetrieved(
@@ -113,7 +112,7 @@ mojom::blink::FileSystemManager& FileSystemDispatcher::GetFileSystemManager() {
 void FileSystemDispatcher::OpenFileSystem(
     const SecurityOrigin* origin,
     mojom::blink::FileSystemType type,
-    std::unique_ptr<AsyncFileSystemCallbacks> callbacks) {
+    std::unique_ptr<FileSystemCallbacks> callbacks) {
   GetFileSystemManager().Open(
       origin, type,
       WTF::Bind(&FileSystemDispatcher::DidOpenFileSystem,
@@ -123,7 +122,7 @@ void FileSystemDispatcher::OpenFileSystem(
 void FileSystemDispatcher::OpenFileSystemSync(
     const SecurityOrigin* origin,
     mojom::blink::FileSystemType type,
-    std::unique_ptr<AsyncFileSystemCallbacks> callbacks) {
+    std::unique_ptr<FileSystemCallbacks> callbacks) {
   String name;
   KURL root_url;
   base::File::Error error_code = base::File::FILE_ERROR_FAILED;
@@ -134,7 +133,7 @@ void FileSystemDispatcher::OpenFileSystemSync(
 
 void FileSystemDispatcher::ResolveURL(
     const KURL& filesystem_url,
-    std::unique_ptr<AsyncFileSystemCallbacks> callbacks) {
+    std::unique_ptr<ResolveURICallbacks> callbacks) {
   GetFileSystemManager().ResolveURL(
       filesystem_url,
       WTF::Bind(&FileSystemDispatcher::DidResolveURL, WrapWeakPersistent(this),
@@ -143,7 +142,7 @@ void FileSystemDispatcher::ResolveURL(
 
 void FileSystemDispatcher::ResolveURLSync(
     const KURL& filesystem_url,
-    std::unique_ptr<AsyncFileSystemCallbacks> callbacks) {
+    std::unique_ptr<ResolveURICallbacks> callbacks) {
   mojom::blink::FileSystemInfoPtr info;
   base::FilePath file_path;
   bool is_directory;
@@ -154,48 +153,43 @@ void FileSystemDispatcher::ResolveURLSync(
                 is_directory, error_code);
 }
 
-void FileSystemDispatcher::Move(
-    const KURL& src_path,
-    const KURL& dest_path,
-    std::unique_ptr<AsyncFileSystemCallbacks> callbacks) {
+void FileSystemDispatcher::Move(const KURL& src_path,
+                                const KURL& dest_path,
+                                std::unique_ptr<EntryCallbacks> callbacks) {
   GetFileSystemManager().Move(
       src_path, dest_path,
       WTF::Bind(&FileSystemDispatcher::DidFinish, WrapWeakPersistent(this),
                 std::move(callbacks)));
 }
 
-void FileSystemDispatcher::MoveSync(
-    const KURL& src_path,
-    const KURL& dest_path,
-    std::unique_ptr<AsyncFileSystemCallbacks> callbacks) {
+void FileSystemDispatcher::MoveSync(const KURL& src_path,
+                                    const KURL& dest_path,
+                                    std::unique_ptr<EntryCallbacks> callbacks) {
   base::File::Error error_code = base::File::FILE_ERROR_FAILED;
   GetFileSystemManager().Move(src_path, dest_path, &error_code);
   DidFinish(std::move(callbacks), error_code);
 }
 
-void FileSystemDispatcher::Copy(
-    const KURL& src_path,
-    const KURL& dest_path,
-    std::unique_ptr<AsyncFileSystemCallbacks> callbacks) {
+void FileSystemDispatcher::Copy(const KURL& src_path,
+                                const KURL& dest_path,
+                                std::unique_ptr<EntryCallbacks> callbacks) {
   GetFileSystemManager().Copy(
       src_path, dest_path,
       WTF::Bind(&FileSystemDispatcher::DidFinish, WrapWeakPersistent(this),
                 std::move(callbacks)));
 }
 
-void FileSystemDispatcher::CopySync(
-    const KURL& src_path,
-    const KURL& dest_path,
-    std::unique_ptr<AsyncFileSystemCallbacks> callbacks) {
+void FileSystemDispatcher::CopySync(const KURL& src_path,
+                                    const KURL& dest_path,
+                                    std::unique_ptr<EntryCallbacks> callbacks) {
   base::File::Error error_code = base::File::FILE_ERROR_FAILED;
   GetFileSystemManager().Copy(src_path, dest_path, &error_code);
   DidFinish(std::move(callbacks), error_code);
 }
 
-void FileSystemDispatcher::Remove(
-    const KURL& path,
-    bool recursive,
-    std::unique_ptr<AsyncFileSystemCallbacks> callbacks) {
+void FileSystemDispatcher::Remove(const KURL& path,
+                                  bool recursive,
+                                  std::unique_ptr<VoidCallbacks> callbacks) {
   GetFileSystemManager().Remove(
       path, recursive,
       WTF::Bind(&FileSystemDispatcher::DidFinish, WrapWeakPersistent(this),
@@ -205,7 +199,7 @@ void FileSystemDispatcher::Remove(
 void FileSystemDispatcher::RemoveSync(
     const KURL& path,
     bool recursive,
-    std::unique_ptr<AsyncFileSystemCallbacks> callbacks) {
+    std::unique_ptr<VoidCallbacks> callbacks) {
   base::File::Error error_code = base::File::FILE_ERROR_FAILED;
   GetFileSystemManager().Remove(path, recursive, &error_code);
   DidFinish(std::move(callbacks), error_code);
@@ -213,7 +207,7 @@ void FileSystemDispatcher::RemoveSync(
 
 void FileSystemDispatcher::ReadMetadata(
     const KURL& path,
-    std::unique_ptr<AsyncFileSystemCallbacks> callbacks) {
+    std::unique_ptr<MetadataCallbacks> callbacks) {
   GetFileSystemManager().ReadMetadata(
       path, WTF::Bind(&FileSystemDispatcher::DidReadMetadata,
                       WrapWeakPersistent(this), std::move(callbacks)));
@@ -221,7 +215,7 @@ void FileSystemDispatcher::ReadMetadata(
 
 void FileSystemDispatcher::ReadMetadataSync(
     const KURL& path,
-    std::unique_ptr<AsyncFileSystemCallbacks> callbacks) {
+    std::unique_ptr<MetadataCallbacks> callbacks) {
   base::File::Info file_info;
   base::File::Error error_code = base::File::FILE_ERROR_FAILED;
   GetFileSystemManager().ReadMetadata(path, &file_info, &error_code);
@@ -231,7 +225,7 @@ void FileSystemDispatcher::ReadMetadataSync(
 void FileSystemDispatcher::CreateFile(
     const KURL& path,
     bool exclusive,
-    std::unique_ptr<AsyncFileSystemCallbacks> callbacks) {
+    std::unique_ptr<EntryCallbacks> callbacks) {
   GetFileSystemManager().Create(
       path, exclusive, /*is_directory=*/false, /*is_recursive=*/false,
       WTF::Bind(&FileSystemDispatcher::DidFinish, WrapWeakPersistent(this),
@@ -241,7 +235,7 @@ void FileSystemDispatcher::CreateFile(
 void FileSystemDispatcher::CreateFileSync(
     const KURL& path,
     bool exclusive,
-    std::unique_ptr<AsyncFileSystemCallbacks> callbacks) {
+    std::unique_ptr<EntryCallbacks> callbacks) {
   base::File::Error error_code = base::File::FILE_ERROR_FAILED;
   GetFileSystemManager().Create(path, exclusive, /*is_directory=*/false,
                                 /*is_recursive=*/false, &error_code);
@@ -252,7 +246,7 @@ void FileSystemDispatcher::CreateDirectory(
     const KURL& path,
     bool exclusive,
     bool recursive,
-    std::unique_ptr<AsyncFileSystemCallbacks> callbacks) {
+    std::unique_ptr<EntryCallbacks> callbacks) {
   GetFileSystemManager().Create(
       path, exclusive, /*is_directory=*/true, recursive,
       WTF::Bind(&FileSystemDispatcher::DidFinish, WrapWeakPersistent(this),
@@ -263,17 +257,16 @@ void FileSystemDispatcher::CreateDirectorySync(
     const KURL& path,
     bool exclusive,
     bool recursive,
-    std::unique_ptr<AsyncFileSystemCallbacks> callbacks) {
+    std::unique_ptr<EntryCallbacks> callbacks) {
   base::File::Error error_code = base::File::FILE_ERROR_FAILED;
   GetFileSystemManager().Create(path, exclusive, /*is_directory=*/true,
                                 recursive, &error_code);
   DidFinish(std::move(callbacks), error_code);
 }
 
-void FileSystemDispatcher::Exists(
-    const KURL& path,
-    bool is_directory,
-    std::unique_ptr<AsyncFileSystemCallbacks> callbacks) {
+void FileSystemDispatcher::Exists(const KURL& path,
+                                  bool is_directory,
+                                  std::unique_ptr<EntryCallbacks> callbacks) {
   GetFileSystemManager().Exists(
       path, is_directory,
       WTF::Bind(&FileSystemDispatcher::DidFinish, WrapWeakPersistent(this),
@@ -283,7 +276,7 @@ void FileSystemDispatcher::Exists(
 void FileSystemDispatcher::ExistsSync(
     const KURL& path,
     bool is_directory,
-    std::unique_ptr<AsyncFileSystemCallbacks> callbacks) {
+    std::unique_ptr<EntryCallbacks> callbacks) {
   base::File::Error error_code = base::File::FILE_ERROR_FAILED;
   GetFileSystemManager().Exists(path, is_directory, &error_code);
   DidFinish(std::move(callbacks), error_code);
@@ -291,7 +284,7 @@ void FileSystemDispatcher::ExistsSync(
 
 void FileSystemDispatcher::ReadDirectory(
     const KURL& path,
-    std::unique_ptr<AsyncFileSystemCallbacks> callbacks) {
+    std::unique_ptr<EntriesCallbacks> callbacks) {
   mojom::blink::FileSystemOperationListenerPtr ptr;
   // See https://bit.ly/2S0zRAS for task types
   mojom::blink::FileSystemOperationListenerRequest request = mojo::MakeRequest(
@@ -306,7 +299,7 @@ void FileSystemDispatcher::ReadDirectory(
 
 void FileSystemDispatcher::ReadDirectorySync(
     const KURL& path,
-    std::unique_ptr<AsyncFileSystemCallbacks> callbacks) {
+    std::unique_ptr<EntriesCallbacks> callbacks) {
   Vector<filesystem::mojom::blink::DirectoryEntryPtr> entries;
   base::File::Error result = base::File::FILE_ERROR_FAILED;
   GetFileSystemManager().ReadDirectorySync(path, &entries, &result);
@@ -318,7 +311,7 @@ void FileSystemDispatcher::ReadDirectorySync(
 
 void FileSystemDispatcher::InitializeFileWriter(
     const KURL& path,
-    std::unique_ptr<AsyncFileSystemCallbacks> callbacks) {
+    std::unique_ptr<FileWriterCallbacks> callbacks) {
   GetFileSystemManager().ReadMetadata(
       path, WTF::Bind(&FileSystemDispatcher::InitializeFileWriterCallback,
                       WrapWeakPersistent(this), path, std::move(callbacks)));
@@ -326,7 +319,7 @@ void FileSystemDispatcher::InitializeFileWriter(
 
 void FileSystemDispatcher::InitializeFileWriterSync(
     const KURL& path,
-    std::unique_ptr<AsyncFileSystemCallbacks> callbacks) {
+    std::unique_ptr<FileWriterCallbacks> callbacks) {
   base::File::Info file_info;
   base::File::Error error_code = base::File::FILE_ERROR_FAILED;
   GetFileSystemManager().ReadMetadata(path, &file_info, &error_code);
@@ -456,7 +449,7 @@ void FileSystemDispatcher::CreateSnapshotFileSync(
 }
 
 void FileSystemDispatcher::DidOpenFileSystem(
-    std::unique_ptr<AsyncFileSystemCallbacks> callbacks,
+    std::unique_ptr<FileSystemCallbacks> callbacks,
     const String& name,
     const KURL& root,
     base::File::Error error_code) {
@@ -468,7 +461,7 @@ void FileSystemDispatcher::DidOpenFileSystem(
 }
 
 void FileSystemDispatcher::DidResolveURL(
-    std::unique_ptr<AsyncFileSystemCallbacks> callbacks,
+    std::unique_ptr<ResolveURICallbacks> callbacks,
     mojom::blink::FileSystemInfoPtr info,
     const base::FilePath& file_path,
     bool is_directory,
@@ -492,7 +485,7 @@ void FileSystemDispatcher::DidFinish(
 }
 
 void FileSystemDispatcher::DidReadMetadata(
-    std::unique_ptr<AsyncFileSystemCallbacks> callbacks,
+    std::unique_ptr<MetadataCallbacks> callbacks,
     const base::File::Info& file_info,
     base::File::Error error_code) {
   if (error_code == base::File::Error::FILE_OK) {
@@ -503,7 +496,7 @@ void FileSystemDispatcher::DidReadMetadata(
 }
 
 void FileSystemDispatcher::DidReadDirectory(
-    std::unique_ptr<AsyncFileSystemCallbacks> callbacks,
+    std::unique_ptr<EntriesCallbacks> callbacks,
     Vector<filesystem::mojom::blink::DirectoryEntryPtr> entries,
     base::File::Error error_code) {
   if (error_code == base::File::Error::FILE_OK) {
@@ -520,7 +513,7 @@ void FileSystemDispatcher::DidReadDirectory(
 
 void FileSystemDispatcher::InitializeFileWriterCallback(
     const KURL& path,
-    std::unique_ptr<AsyncFileSystemCallbacks> callbacks,
+    std::unique_ptr<FileWriterCallbacks> callbacks,
     const base::File::Info& file_info,
     base::File::Error error_code) {
   if (error_code == base::File::Error::FILE_OK) {
