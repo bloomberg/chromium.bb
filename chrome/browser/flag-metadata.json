@@ -2935,6 +2935,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "sync-USS-autofill-wallet-metadata",
+    "owners": [ "jkrcal", "//components/sync/OWNERS" ],
+    "expiry_milestone": 76
+  },
+  {
     "name": "sync-standalone-transport",
     "owners": [ "treib", "//components/sync/OWNERS" ],
     "expiry_milestone": 76

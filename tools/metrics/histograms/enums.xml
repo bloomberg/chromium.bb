@@ -31082,6 +31082,7 @@ from previous Chrome versions.
   <int value="-1869845022" label="force-show-update-menu-item"/>
   <int value="-1869432243" label="GoogleBrandedContextMenu:disabled"/>
   <int value="-1868978829" label="spurious-power-button-accel-count"/>
+  <int value="-1868957045" label="SyncUSSAutofillWalletMetadata:enabled"/>
   <int value="-1868284723" label="DirectManipulationStylus:disabled"/>
   <int value="-1867382602" label="WebRTC-H264WithOpenH264FFmpeg:enabled"/>
   <int value="-1867342522" label="MaterialDesignHistory:enabled"/>
@@ -31636,6 +31637,7 @@ from previous Chrome versions.
       label="OmniboxSpeculativeServiceWorkerStartOnQueryInput:disabled"/>
   <int value="-989671895" label="OfflineIndicatorAlwaysHttpProbe:enabled"/>
   <int value="-984052166" label="DoodlesOnLocalNtp:enabled"/>
+  <int value="-981237342" label="SyncUSSAutofillWalletMetadata:disabled"/>
   <int value="-980260493" label="NTPSnippets:disabled"/>
   <int value="-979313250" label="enable-google-branded-context-menu"/>
   <int value="-979057409" label="enable-seccomp-filter-sandbox"/>
