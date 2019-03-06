@@ -126,7 +126,7 @@ class PersonalDataManager : public KeyedService,
   void OnAccountsCookieDeletedByUserAction() override;
 
   // Returns the current sync status.
-  AutofillSyncSigninState GetSyncSigninState() const;
+  virtual AutofillSyncSigninState GetSyncSigninState() const;
 
   // Adds a listener to be notified of PersonalDataManager events.
   virtual void AddObserver(PersonalDataManagerObserver* observer);

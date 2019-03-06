@@ -19,6 +19,10 @@ void TestPersonalDataManager::OnSyncServiceInitialized(
   sync_service_initialized_ = true;
 }
 
+AutofillSyncSigninState TestPersonalDataManager::GetSyncSigninState() const {
+  return sync_and_signin_state_;
+}
+
 void TestPersonalDataManager::RecordUseOf(const AutofillDataModel& data_model) {
   CreditCard* credit_card = GetCreditCardWithGUID(data_model.guid().c_str());
   if (credit_card)

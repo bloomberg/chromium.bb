@@ -96,6 +96,12 @@ const base::Feature kAutofillEnableCompanyName{
 const base::Feature kAutofillEnableIFrameSupportOniOS{
     "AutofillEnableIFrameSupportOniOS", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// When enabled, enable local card migration flow for user who has signed in but
+// has not turned on sync.
+const base::Feature kAutofillEnableLocalCardMigrationForNonSyncUser{
+    "AutofillEnableLocalCardMigrationForNonSyncUser",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // When enabled, no local copy of server card will be saved when upload
 // succeeds.
 const base::Feature kAutofillNoLocalSaveOnUploadSuccess{

@@ -8,6 +8,8 @@
 #include <string>
 
 #include "components/autofill/core/browser/local_card_migration_manager.h"
+#include "components/autofill/core/browser/sync_utils.h"
+#include "components/autofill/core/browser/test_personal_data_manager.h"
 
 namespace autofill {
 
@@ -17,14 +19,13 @@ class TestPaymentsClient;
 
 class AutofillClient;
 class AutofillDriver;
-class PersonalDataManager;
 
 class TestLocalCardMigrationManager : public LocalCardMigrationManager {
  public:
   TestLocalCardMigrationManager(AutofillDriver* driver,
                                 AutofillClient* client,
                                 payments::TestPaymentsClient* payments_client,
-                                PersonalDataManager* personal_data_manager);
+                                TestPersonalDataManager* personal_data_manager);
   ~TestLocalCardMigrationManager() override;
 
   // Override the base function. Checks the existnece of billing customer number
@@ -50,6 +51,10 @@ class TestLocalCardMigrationManager : public LocalCardMigrationManager {
   void OnUserAcceptedMainMigrationDialog(
       const std::vector<std::string>& selected_cards) override;
 
+  // Mock the Chrome Sync state in the LocalCardMigrationManager. If not set,
+  // default to AutofillSyncSigninState::kSignedInAndSyncFeature.
+  void ResetSyncState(AutofillSyncSigninState sync_state);
+
  private:
   void OnDidGetUploadDetails(
       bool is_from_settings_page,
@@ -62,6 +67,8 @@ class TestLocalCardMigrationManager : public LocalCardMigrationManager {
   bool intermediate_prompt_was_shown_ = false;
 
   bool main_prompt_was_shown_ = false;
+
+  TestPersonalDataManager* personal_data_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(TestLocalCardMigrationManager);
 };
