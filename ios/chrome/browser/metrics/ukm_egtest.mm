@@ -402,9 +402,9 @@ void SignOut() {
   // Open sync encryption menu.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"kSettingsSyncId")]
       performAction:grey_scrollToContentEdge(kGREYContentEdgeBottom)];
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(
-                                          l10n_util::GetNSStringWithFixup(
-                                              IDS_IOS_SYNC_ENCRYPTION_TITLE))]
+  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
+
+                                          IDS_IOS_SYNC_ENCRYPTION_TITLE)]
       performAction:grey_tap()];
   // Select passphrase encryption.
   [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
