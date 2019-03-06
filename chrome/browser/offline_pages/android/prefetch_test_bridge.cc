@@ -49,10 +49,9 @@ JNI_EXPORT void JNI_PrefetchTestBridge_InsertIntoCachedImageFetcher(
     const JavaParamRef<jbyteArray>& j_image_data) {
   Profile* profile = ProfileManager::GetLastUsedProfile();
   DCHECK(profile);
-  SimpleFactoryKey* simple_factory_key = Profile::GetSimpleFactoryKey(profile);
   image_fetcher::CachedImageFetcherService* service =
       image_fetcher::CachedImageFetcherServiceFactory::GetForKey(
-          simple_factory_key, profile->GetPrefs());
+          profile->GetSimpleFactoryKey(), profile->GetPrefs());
   DCHECK(service);
   scoped_refptr<image_fetcher::ImageCache> cache =
       service->ImageCacheForTesting();

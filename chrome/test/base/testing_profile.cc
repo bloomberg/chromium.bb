@@ -307,10 +307,8 @@ TestingProfile::TestingProfile(
       delegate_(delegate),
       profile_name_(profile_name),
       policy_service_(policy_service.release()) {
-  if (parent) {
+  if (parent)
     parent->SetOffTheRecordProfile(std::unique_ptr<Profile>(this));
-    off_the_record_key_ = parent->GetOffTheRecordKey();
-  }
 
   // If no profile path was supplied, create one.
   if (profile_path_.empty()) {
@@ -382,11 +380,12 @@ void TestingProfile::Init() {
                           profile_manager->GetSystemProfilePath());
   }
 
-  if (!IsOffTheRecord()) {
-    owned_key_ = std::make_unique<SimpleFactoryKey>(profile_path_);
-    owned_off_the_record_key_ =
-        std::make_unique<SimpleFactoryKey>(profile_path_, owned_key_.get());
-  }
+  if (IsOffTheRecord())
+    key_ = std::make_unique<SimpleFactoryKey>(
+        original_profile_->GetPath(), original_profile_->GetSimpleFactoryKey());
+  else
+    key_ = std::make_unique<SimpleFactoryKey>(profile_path_);
+
   BrowserContext::Initialize(this, profile_path_);
 
 #if defined(OS_ANDROID)
@@ -483,7 +482,7 @@ void TestingProfile::Init() {
 
   // Prefs for incognito profiles are set in CreateIncognitoPrefService() by
   // simulating ProfileImpl::GetOffTheRecordPrefs().
-  SimpleFactoryKey* key = Profile::GetSimpleFactoryKey(this);
+  SimpleFactoryKey* key = GetSimpleFactoryKey();
   if (!IsOffTheRecord()) {
     DCHECK(!original_profile_);
     user_prefs::PrefRegistrySyncable* pref_registry =
@@ -532,9 +531,7 @@ TestingProfile::~TestingProfile() {
   MaybeSendDestroyedNotification();
 
   browser_context_dependency_manager_->DestroyBrowserContextServices(this);
-
-  SimpleFactoryKey* key = Profile::GetSimpleFactoryKey(this);
-  simple_dependency_manager_->DestroyKeyedServices(key);
+  simple_dependency_manager_->DestroyKeyedServices(GetSimpleFactoryKey());
 
   if (host_content_settings_map_.get())
     host_content_settings_map_->ShutdownOnUIThread();
@@ -898,16 +895,9 @@ base::Time TestingProfile::GetStartTime() const {
   return start_time_;
 }
 
-SimpleFactoryKey* TestingProfile::GetOriginalKey() const {
-  if (IsOffTheRecord())
-    return off_the_record_key_->original_key();
-  return owned_key_.get();
-}
-
-SimpleFactoryKey* TestingProfile::GetOffTheRecordKey() const {
-  if (IsOffTheRecord())
-    return off_the_record_key_;
-  return owned_off_the_record_key_.get();
+SimpleFactoryKey* TestingProfile::GetSimpleFactoryKey() const {
+  DCHECK(key_);
+  return key_.get();
 }
 
 base::FilePath TestingProfile::last_selected_directory() {

@@ -138,8 +138,6 @@ class ProfileImpl : public Profile {
 #if !defined(OS_ANDROID)
   ChromeZoomLevelPrefs* GetZoomLevelPrefs() override;
 #endif
-  SimpleFactoryKey* GetOriginalKey() const override;
-  SimpleFactoryKey* GetOffTheRecordKey() const override;
   PrefService* GetOffTheRecordPrefs() override;
   PrefService* GetReadOnlyOffTheRecordPrefs() override;
   net::URLRequestContextGetter* GetRequestContext() override;
@@ -148,6 +146,7 @@ class ProfileImpl : public Profile {
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
   bool IsSameProfile(Profile* profile) override;
   base::Time GetStartTime() const override;
+  SimpleFactoryKey* GetSimpleFactoryKey() const override;
   base::FilePath last_selected_directory() override;
   void set_last_selected_directory(const base::FilePath& path) override;
   GURL GetHomePage() override;
@@ -252,13 +251,12 @@ class ProfileImpl : public Profile {
 
   std::unique_ptr<Profile> off_the_record_profile_;
 
-  // The keys to index KeyedService instances created by
-  // SimpleKeyedServiceFactory.
-  std::unique_ptr<SimpleFactoryKey> key_;
-  std::unique_ptr<SimpleFactoryKey> off_the_record_key_;
-
   // See GetStartTime for details.
   base::Time start_time_;
+
+  // The key to index KeyedService instances created by
+  // SimpleKeyedServiceFactory.
+  std::unique_ptr<SimpleFactoryKey> key_;
 
 #if defined(OS_CHROMEOS)
   std::unique_ptr<chromeos::Preferences> chromeos_preferences_;

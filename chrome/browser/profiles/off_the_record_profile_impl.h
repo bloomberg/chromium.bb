@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_PROFILES_OFF_THE_RECORD_PROFILE_IMPL_H_
 #define CHROME_BROWSER_PROFILES_OFF_THE_RECORD_PROFILE_IMPL_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
@@ -77,8 +78,7 @@ class OffTheRecordProfileImpl : public Profile {
       service_manager::mojom::ServiceRequest request) override;
   bool IsSameProfile(Profile* profile) override;
   base::Time GetStartTime() const override;
-  SimpleFactoryKey* GetOriginalKey() const override;
-  SimpleFactoryKey* GetOffTheRecordKey() const override;
+  SimpleFactoryKey* GetSimpleFactoryKey() const override;
   base::FilePath last_selected_directory() override;
   void set_last_selected_directory(const base::FilePath& path) override;
   bool WasCreatedByVersionOrLater(const std::string& version) override;
@@ -154,9 +154,11 @@ class OffTheRecordProfileImpl : public Profile {
   // Time we were started.
   base::Time start_time_;
 
-  base::FilePath last_selected_directory_;
+  // The key to index KeyedService instances created by
+  // SimpleKeyedServiceFactory.
+  std::unique_ptr<SimpleFactoryKey> key_;
 
-  SimpleFactoryKey* off_the_record_key_;
+  base::FilePath last_selected_directory_;
 
   DISALLOW_COPY_AND_ASSIGN(OffTheRecordProfileImpl);
 };
