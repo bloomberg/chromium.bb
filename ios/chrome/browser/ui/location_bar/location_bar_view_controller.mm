@@ -476,6 +476,10 @@ typedef NS_ENUM(int, TrailingButtonState) {
 
       [menu setTargetRect:self.locationBarSteadyView.frame inView:self.view];
       [menu setMenuVisible:YES animated:YES];
+      // When we present the menu manually, it doesn't get focused by Voiceover.
+      // This notification forces voiceover to select the presented menu.
+      UIAccessibilityPostNotification(UIAccessibilityLayoutChangedNotification,
+                                      menu);
     });
   }
 }
