@@ -363,6 +363,12 @@ const base::Feature kPepper3DImageChromium {
 const base::Feature kProcessSharingWithStrictSiteInstances{
     "ProcessSharingWithStrictSiteInstances", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Under this flag bootstrap (aka startup) tasks will be prioritized. This flag
+// is used by various modules to determine whether special scheduling
+// arrangements need to be made to prioritize certain tasks.
+const base::Feature kPrioritizeBootstrapTasks = {
+    "PrioritizeBootstrapTasks", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables Purge+Throttle on platforms except Android and MacOS.
 // (Android) Purge+Throttle depends on TabManager, but TabManager doesn't
 // support Android. Enable after Android is supported.

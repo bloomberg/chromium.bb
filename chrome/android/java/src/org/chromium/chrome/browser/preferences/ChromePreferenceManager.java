@@ -293,6 +293,12 @@ public class ChromePreferenceManager {
     public static final String CHROME_HOME_INFO_PROMO_SHOWN_KEY = "chrome_home_info_promo_shown";
     public static final String CHROME_HOME_SHARED_PREFERENCES_KEY = "chrome_home_enabled_date";
 
+    /**
+     * Whether or not bootstrap tasks should be prioritized (i.e. bootstrap task prioritization
+     * experiment is enabled). Default value is false.
+     */
+    public static final String PRIORITIZE_BOOTSTRAP_TASKS_KEY = "prioritize_bootstrap_tasks";
+
     private static class LazyHolder {
         static final ChromePreferenceManager INSTANCE = new ChromePreferenceManager();
     }
