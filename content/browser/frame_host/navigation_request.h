@@ -164,6 +164,10 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
 
   int bindings() const { return bindings_; }
 
+  SiteInstanceImpl* starting_site_instance() const {
+    return starting_site_instance_.get();
+  }
+
   bool browser_initiated() const { return browser_initiated_ ; }
 
   bool from_begin_navigation() const { return from_begin_navigation_; }
@@ -212,6 +216,17 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
       const base::Closure& closure) {
     on_start_checks_complete_closure_ = closure;
   }
+
+  // Sets ID of the RenderProcessHost we expect the navigation to commit in.
+  // This is used to inform the RenderProcessHost to expect a navigation to the
+  // url we're navigating to.
+  void SetExpectedProcess(RenderProcessHost* expected_process);
+
+  // Updates the destination site URL for this navigation. This is called on
+  // redirects. |post_redirect_process| is the renderer process that should
+  // handle the navigation following the redirect if it can be handled by an
+  // existing RenderProcessHost. Otherwise, it should be null.
+  void UpdateSiteURL(RenderProcessHost* post_redirect_process);
 
   int nav_entry_id() const { return nav_entry_id_; }
 
@@ -396,6 +411,9 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   // Only used with PerNavigationMojoInterface enabled.
   void IgnoreInterfaceDisconnection();
 
+  // Inform the RenderProcessHost to no longer expect a navigation.
+  void ResetExpectedProcess();
+
   FrameTreeNode* frame_tree_node_;
 
   RenderFrameHostImpl* render_frame_host_ = nullptr;
@@ -442,6 +460,8 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   int bindings_;
   int nav_entry_id_ = 0;
 
+  scoped_refptr<SiteInstanceImpl> starting_site_instance_;
+
   // Whether the navigation should be sent to a renderer a process. This is
   // true, except for 204/205 responses and downloads.
   bool response_should_be_rendered_;
@@ -475,6 +495,13 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   // checks are performed by the NavigationHandle.
   bool has_stale_copy_in_cache_;
   int net_error_;
+
+  // Identifies in which RenderProcessHost this navigation is expected to
+  // commit.
+  int expected_render_process_host_id_;
+
+  // The site URL of this navigation, as obtained from SiteInstance::GetSiteURL.
+  GURL site_url_;
 
   std::unique_ptr<InitiatorCSPContext> initiator_csp_context_;
 

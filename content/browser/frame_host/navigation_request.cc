@@ -496,6 +496,7 @@ NavigationRequest::NavigationRequest(
       from_begin_navigation_(from_begin_navigation),
       has_stale_copy_in_cache_(false),
       net_error_(net::OK),
+      expected_render_process_host_id_(ChildProcessHost::kInvalidUniqueID),
       devtools_navigation_token_(base::UnguessableToken::Create()),
       request_navigation_client_(nullptr),
       commit_navigation_client_(nullptr),
@@ -541,6 +542,18 @@ NavigationRequest::NavigationRequest(
     is_view_source_ = entry->IsViewSourceMode();
     bindings_ = entry->bindings();
   }
+
+  // This is needed to get site URLs and assign the expected RenderProcessHost.
+  // This is not always the same as |source_site_instance|, as it only depends
+  // on the current frame host, and does not depend on |entry|.
+  starting_site_instance_ =
+      frame_tree_node->current_frame_host()->GetSiteInstance();
+
+  // TODO(alexmos): Using |starting_site_instance_|'s IsolationContext may not
+  // be correct for cross-BrowsingInstance redirects.
+  site_url_ = SiteInstanceImpl::GetSiteForURL(
+      starting_site_instance_->GetBrowserContext(),
+      starting_site_instance_->GetIsolationContext(), common_params_.url);
 
   // Update the load flags with cache information.
   UpdateLoadFlagsWithCacheFlags(&begin_params_->load_flags,
@@ -617,6 +630,7 @@ NavigationRequest::NavigationRequest(
 
 NavigationRequest::~NavigationRequest() {
   TRACE_EVENT_ASYNC_END0("navigation", "NavigationRequest", this);
+  ResetExpectedProcess();
   if (state_ == STARTED) {
     devtools_instrumentation::OnNavigationRequestFailed(
         *this, network::URLLoaderCompletionStatus(net::ERR_ABORTED));
@@ -1333,7 +1347,7 @@ void NavigationRequest::OnRequestFailedInternal(
     // TODO(nasko): Investigate whether GetFrameHostForNavigation can properly
     // account for clearing the expected process if it clears the speculative
     // RenderFrameHost. See https://crbug.com/793127.
-    navigation_handle_->SetExpectedProcess(nullptr);
+    ResetExpectedProcess();
     render_frame_host =
         frame_tree_node_->render_manager()->GetFrameHostForNavigation(*this);
   } else {
@@ -1449,7 +1463,7 @@ void NavigationRequest::OnStartChecksComplete(
           : frame_tree_node_->current_frame_host();
   DCHECK(navigating_frame_host);
 
-  navigation_handle_->SetExpectedProcess(navigating_frame_host->GetProcess());
+  SetExpectedProcess(navigating_frame_host->GetProcess());
 
   BrowserContext* browser_context =
       frame_tree_node_->navigator()->GetController()->GetBrowserContext();
@@ -1858,6 +1872,69 @@ void NavigationRequest::CommitNavigation() {
   // if it wasn't done in RenderProcessHostImpl::GetProcessHostForSiteInstance.
   RenderProcessHostImpl::NotifySpareManagerAboutRecentlyUsedBrowserContext(
       render_frame_host_->GetSiteInstance()->GetBrowserContext());
+}
+
+void NavigationRequest::ResetExpectedProcess() {
+  if (expected_render_process_host_id_ == ChildProcessHost::kInvalidUniqueID) {
+    // No expected process is set, nothing to update.
+    return;
+  }
+  RenderProcessHost* process =
+      RenderProcessHost::FromID(expected_render_process_host_id_);
+  if (process) {
+    RenderProcessHostImpl::RemoveExpectedNavigationToSite(
+        frame_tree_node()->navigator()->GetController()->GetBrowserContext(),
+        process, site_url_);
+  }
+  expected_render_process_host_id_ = ChildProcessHost::kInvalidUniqueID;
+}
+
+void NavigationRequest::SetExpectedProcess(
+    RenderProcessHost* expected_process) {
+  if (expected_process &&
+      expected_process->GetID() == expected_render_process_host_id_) {
+    // This |expected_process| has already been informed of the navigation,
+    // no need to update it again.
+    return;
+  }
+
+  ResetExpectedProcess();
+
+  if (expected_process == nullptr) {
+    expected_render_process_host_id_ = ChildProcessHost::kInvalidUniqueID;
+    return;
+  }
+
+  // Keep track of the speculative RenderProcessHost and tell it to expect a
+  // navigation to |site_url_|.
+  expected_render_process_host_id_ = expected_process->GetID();
+  RenderProcessHostImpl::AddExpectedNavigationToSite(
+      frame_tree_node()->navigator()->GetController()->GetBrowserContext(),
+      expected_process, site_url_);
+}
+
+void NavigationRequest::UpdateSiteURL(
+    RenderProcessHost* post_redirect_process) {
+  // TODO(alexmos): Using |starting_site_instance_|'s IsolationContext may not
+  // be correct for cross-BrowsingInstance redirects.
+  GURL new_site_url = SiteInstanceImpl::GetSiteForURL(
+      frame_tree_node()->navigator()->GetController()->GetBrowserContext(),
+      starting_site_instance_->GetIsolationContext(), common_params_.url);
+  int post_redirect_process_id = post_redirect_process
+                                     ? post_redirect_process->GetID()
+                                     : ChildProcessHost::kInvalidUniqueID;
+  if (new_site_url == site_url_ &&
+      post_redirect_process_id == expected_render_process_host_id_) {
+    return;
+  }
+
+  // Stop expecting a navigation to the current site URL in the current expected
+  // process.
+  ResetExpectedProcess();
+
+  // Update the site URL and the expected process.
+  site_url_ = new_site_url;
+  SetExpectedProcess(post_redirect_process);
 }
 
 bool NavigationRequest::IsAllowedByCSPDirective(
