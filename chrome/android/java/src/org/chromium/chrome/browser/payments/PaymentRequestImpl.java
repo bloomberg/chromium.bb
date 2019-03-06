@@ -17,11 +17,15 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.NormalizedAddressRequestDelegate;
+import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
+import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
+import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior.OverviewModeObserver;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
 import org.chromium.chrome.browser.page_info.CertificateChainHelper;
 import org.chromium.chrome.browser.payments.ui.ContactDetailsSection;
@@ -214,6 +218,14 @@ public class PaymentRequestImpl
         }
     };
 
+    /** Monitors changes in the tab overview. */
+    private final OverviewModeObserver mOverviewModeObserver = new EmptyOverviewModeObserver() {
+        @Override
+        public void onOverviewModeStartedShowing(boolean showToolbar) {
+            onDismiss();
+        }
+    };
+
     private final Handler mHandler = new Handler();
     private final RenderFrameHost mRenderFrameHost;
     private final WebContents mWebContents;
@@ -292,6 +304,7 @@ public class PaymentRequestImpl
     private Map<String, CurrencyFormatter> mCurrencyFormatterMap;
     private TabModelSelector mObservedTabModelSelector;
     private TabModel mObservedTabModel;
+    private OverviewModeBehavior mOverviewModeBehavior;
 
     /** Aborts should only be recorded if the Payment Request was shown to the user. */
     private boolean mShouldRecordAbortReason;
@@ -614,6 +627,19 @@ public class PaymentRequestImpl
         mObservedTabModel = chromeActivity.getCurrentTabModel();
         mObservedTabModelSelector.addObserver(mSelectorObserver);
         mObservedTabModel.addObserver(mTabModelObserver);
+
+        // Catch any time the user enters the overview mode and dismiss the payment UI.
+        if (chromeActivity instanceof ChromeTabbedActivity) {
+            mOverviewModeBehavior =
+                    ((ChromeTabbedActivity) chromeActivity).getOverviewModeBehavior();
+            if (mOverviewModeBehavior.overviewVisible()) {
+                mJourneyLogger.setNotShown(NotShownReason.OTHER);
+                disconnectFromClientWithDebugMessage("In tab overview mode");
+                if (sObserverForTest != null) sObserverForTest.onPaymentRequestServiceShowFailed();
+                return;
+            }
+            mOverviewModeBehavior.addOverviewModeObserver(mOverviewModeObserver);
+        }
 
         mIsUserGestureShow = isUserGesture;
         buildUI(chromeActivity);
@@ -1997,6 +2023,11 @@ public class PaymentRequestImpl
         if (mObservedTabModel != null) {
             mObservedTabModel.removeObserver(mTabModelObserver);
             mObservedTabModel = null;
+        }
+
+        if (mOverviewModeBehavior != null) {
+            mOverviewModeBehavior.removeOverviewModeObserver(mOverviewModeObserver);
+            mOverviewModeBehavior = null;
         }
 
         SettingsAutofillAndPaymentsObserver.getInstance().unregisterObserver(this);
