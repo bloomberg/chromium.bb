@@ -269,6 +269,7 @@
           },
           {
             "type": "function",
+            "optional": true,
             "name": "callback",
             "parameters": [
               {

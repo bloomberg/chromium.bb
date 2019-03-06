@@ -297,12 +297,19 @@ fake_json = """// Copyright 2014 The Chromium Authors. All rights reserved.
   {
     "namespace": "fakeJson",
     "description": "Fake JSON API Stuff",
-    "types": [ {
-      "id": "CrazyEnum",
-      "type": "string",
-      "enum": ["camelCaseEnum", "Non-Characters", "5NumFirst", \
+    "types": [
+      {
+        "id": "CrazyEnum",
+        "type": "string",
+        "enum": ["camelCaseEnum", "Non-Characters", "5NumFirst", \
 "3Just-plainOld_MEAN"]
-    } ],
+      },
+      {
+        "id": "CrazyObject",
+        "type": "object",
+        "additionalProperties": {"type": "string"}
+      }
+    ],
     "functions": [ {
       "name": "funcWithInlineObj",
       "type": "function",
@@ -391,6 +398,12 @@ chrome.fakeJson.CrazyEnum = {
   _5NUM_FIRST: '5NumFirst',
   _3JUST_PLAIN_OLD_MEAN: '3Just-plainOld_MEAN',
 };
+
+/**
+ * @typedef {Object}
+ * @see https://developer.chrome.com/extensions/fakeJson#type-CrazyObject
+ */
+chrome.fakeJson.CrazyObject;
 
 /**
  * @param {{
