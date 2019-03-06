@@ -781,7 +781,7 @@ ConsoleMessage* MixedContentChecker::CreateConsoleMessageAboutFetchAutoupgrade(
       "insecure element '%s'. As part of an experiment this request was "
       "automatically upgraded to HTTPS, For more information see "
       "https://chromium.googlesource.com/chromium/src/+/master/docs/security/"
-      "autougprade-mixed.md",
+      "autoupgrade-mixed.md",
       main_resource_url.ElidedString().Utf8().data(),
       mixed_content_url.ElidedString().Utf8().data());
   return ConsoleMessage::Create(kSecurityMessageSource,
@@ -799,7 +799,7 @@ MixedContentChecker::CreateConsoleMessageAboutWebSocketAutoupgrade(
       "experiment this request was automatically upgraded to HTTPS, For more "
       "information see "
       "https://chromium.googlesource.com/chromium/src/+/master/docs/security/"
-      "autougprade-mixed.md",
+      "autoupgrade-mixed.md",
       main_resource_url.ElidedString().Utf8().data(),
       mixed_content_url.ElidedString().Utf8().data());
   return ConsoleMessage::Create(kSecurityMessageSource,
