@@ -6,6 +6,7 @@ package org.chromium.components.content_capture;
 
 import android.view.ViewGroup;
 
+import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.content_public.browser.WebContents;
@@ -17,7 +18,8 @@ import java.util.Arrays;
  */
 public class ContentCaptureReceiverManager {
     private static final String TAG = "ContentCapture";
-    private static final boolean DEBUG = false;
+    private static final String FLAG = "dump-captured-content-to-logcat-for-testing";
+    private static Boolean sDump;
 
     private ContentCaptureConsumer mContentCaptureConsumer;
 
@@ -27,7 +29,9 @@ public class ContentCaptureReceiverManager {
         return manager;
     }
 
-    public ContentCaptureReceiverManager() {}
+    public ContentCaptureReceiverManager() {
+        if (sDump == null) sDump = CommandLine.getInstance().hasSwitch(FLAG);
+    }
 
     public void onContainerViewChanged(ViewGroup containerView) {
         // Reset current consumer, the new consumer that associates with contanerView shall be set
@@ -44,7 +48,7 @@ public class ContentCaptureReceiverManager {
         if (mContentCaptureConsumer != null) {
             mContentCaptureConsumer.onContentCaptured(toFrameSession(session), data);
         }
-        if (DEBUG) Log.i(TAG, "Captured Content: %s", data);
+        if (sDump.booleanValue()) Log.i(TAG, "Captured Content: %s", data);
     }
 
     @CalledByNative
@@ -52,15 +56,16 @@ public class ContentCaptureReceiverManager {
         FrameSession frameSession = toFrameSession(session);
         if (mContentCaptureConsumer != null)
             mContentCaptureConsumer.onContentRemoved(frameSession, data);
-        if (DEBUG)
+        if (sDump.booleanValue()) {
             Log.i(TAG, "Removed Content: %s", frameSession.get(0) + " " + Arrays.toString(data));
+        }
     }
 
     @CalledByNative
     private void didRemoveSession(Object[] session) {
         FrameSession frameSession = toFrameSession(session);
         if (mContentCaptureConsumer != null) mContentCaptureConsumer.onSessionRemoved(frameSession);
-        if (DEBUG) Log.i(TAG, "Removed Session: %s", frameSession.get(0));
+        if (sDump.booleanValue()) Log.i(TAG, "Removed Session: %s", frameSession.get(0));
     }
 
     private FrameSession toFrameSession(Object[] session) {
