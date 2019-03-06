@@ -2466,9 +2466,9 @@ jumbo_source_set("browser") {
 
   if (is_chromeos) {
     deps += [
-      "//chromeos:chromeos_constants",
       "//chromeos/assistant:buildflags",
       "//chromeos/audio",
+      "//chromeos/constants",
       "//chromeos/dbus",
       "//chromeos/dbus:power_manager_proto",
       "//chromeos/network",

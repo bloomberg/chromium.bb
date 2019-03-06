@@ -31,7 +31,7 @@ source_set("pairing") {
   deps = [
     ":proto",
     "//base",
-    "//chromeos:chromeos_constants",
+    "//chromeos/constants",
     "//device/bluetooth",
     "//net",
     "//services/device/public/mojom",

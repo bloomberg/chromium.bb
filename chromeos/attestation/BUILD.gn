@@ -10,7 +10,6 @@ component("attestation") {
   defines = [ "IS_CHROMEOS_ATTESTATION_IMPL" ]
   deps = [
     "//base",
-    "//chromeos:chromeos_constants",
     "//chromeos/cryptohome",
     "//chromeos/dbus",
     "//chromeos/dbus:cryptohome_proto",

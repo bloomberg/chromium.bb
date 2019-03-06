@@ -13,7 +13,7 @@ component("network") {
   deps = [
     "//base",
     "//base:i18n",
-    "//chromeos:chromeos_constants",
+    "//chromeos/constants",
     "//chromeos/dbus",
     "//chromeos/login/login_state",
     "//components/account_id",
@@ -201,8 +201,8 @@ source_set("unit_tests") {
     "//base",
     "//base:i18n",
     "//base/test:test_support",
-    "//chromeos:chromeos_constants",
     "//chromeos:test_utils",
+    "//chromeos/constants",
     "//chromeos/dbus:test_support",
     "//chromeos/login/login_state",
     "//components/onc",

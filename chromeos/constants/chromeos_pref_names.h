@@ -5,19 +5,22 @@
 #ifndef CHROMEOS_CONSTANTS_CHROMEOS_PREF_NAMES_H_
 #define CHROMEOS_CONSTANTS_CHROMEOS_PREF_NAMES_H_
 
-#include "chromeos/chromeos_export.h"
+#include "base/component_export.h"
 
 namespace chromeos {
 namespace prefs {
 
-CHROMEOS_EXPORT extern const char kAudioDevicesMute[];
-CHROMEOS_EXPORT extern const char kAudioDevicesVolumePercent[];
-CHROMEOS_EXPORT extern const char kAudioMute[];
-CHROMEOS_EXPORT extern const char kAudioOutputAllowed[];
-CHROMEOS_EXPORT extern const char kAudioVolumePercent[];
-CHROMEOS_EXPORT extern const char kAudioDevicesState[];
-CHROMEOS_EXPORT extern const char kQuirksClientLastServerCheck[];
-CHROMEOS_EXPORT extern const char kDeviceWiFiFastTransitionEnabled[];
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kAudioDevicesMute[];
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const char kAudioDevicesVolumePercent[];
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kAudioMute[];
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kAudioOutputAllowed[];
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kAudioVolumePercent[];
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kAudioDevicesState[];
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const char kQuirksClientLastServerCheck[];
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const char kDeviceWiFiFastTransitionEnabled[];
 
 }  // namespace prefs
 }  // namespace chromeos

@@ -7,15 +7,19 @@
 #ifndef CHROMEOS_CONSTANTS_CHROMEOS_CONSTANTS_H_
 #define CHROMEOS_CONSTANTS_CHROMEOS_CONSTANTS_H_
 
+#include "base/component_export.h"
 #include "base/files/file_path.h"
-#include "chromeos/chromeos_export.h"
 
 namespace chromeos {
 
-CHROMEOS_EXPORT extern const base::FilePath::CharType kDriveCacheDirname[];
-CHROMEOS_EXPORT extern const base::FilePath::CharType kNssCertDbPath[];
-CHROMEOS_EXPORT extern const base::FilePath::CharType kNssDirPath[];
-CHROMEOS_EXPORT extern const base::FilePath::CharType kNssKeyDbPath[];
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const base::FilePath::CharType kDriveCacheDirname[];
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const base::FilePath::CharType kNssCertDbPath[];
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const base::FilePath::CharType kNssDirPath[];
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const base::FilePath::CharType kNssKeyDbPath[];
 
 }  // namespace chromeos
 
