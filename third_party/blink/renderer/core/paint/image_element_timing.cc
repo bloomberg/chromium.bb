@@ -102,14 +102,9 @@ void ImageElementTiming::NotifyImagePainted(
     return;
   }
 
-  // Compute the |name| for the entry. Use the 'elementtiming' attribute. If
-  // empty, use the ID. If empty, use 'img'.
-  AtomicString name = attr;
-  if (name.IsEmpty())
-    name = element->FastGetAttribute(html_names::kIdAttr);
-  if (name.IsEmpty())
-    name = "img";
-  element_timings_.emplace_back(name, visible_new_visual_rect);
+  element_timings_.emplace_back(AtomicString(cached_image->Url().GetString()),
+                                visible_new_visual_rect,
+                                cached_image->LoadResponseEnd(), attr);
   // Only queue a swap promise when |element_timings_| was empty. All of the
   // records in |element_timings_| will be processed when the promise succeeds
   // or fails, and at that time the vector is cleared.
@@ -128,7 +123,8 @@ void ImageElementTiming::ReportImagePaintSwapTime(WebLayerTreeView::SwapResult,
                       performance->ShouldBufferEntries())) {
     for (const auto& element_timing : element_timings_) {
       performance->AddElementTiming(element_timing.name, element_timing.rect,
-                                    timestamp);
+                                    timestamp, element_timing.response_end,
+                                    element_timing.identifier);
     }
   }
   element_timings_.clear();

@@ -40,6 +40,7 @@ class NullImageResourceInfo final
 
  private:
   const KURL& Url() const override { return url_; }
+  TimeTicks LoadResponseEnd() const override { return TimeTicks(); }
   bool IsSchedulingReload() const override { return false; }
   const ResourceResponse& GetResponse() const override { return response_; }
   bool ShouldShowPlaceholder() const override { return false; }
@@ -613,6 +614,10 @@ ResourceStatus ImageResourceContent::GetContentStatus() const {
 // redirecting to ImageResource.
 const KURL& ImageResourceContent::Url() const {
   return info_->Url();
+}
+
+TimeTicks ImageResourceContent::LoadResponseEnd() const {
+  return info_->LoadResponseEnd();
 }
 
 bool ImageResourceContent::HasCacheControlNoStoreHeader() const {

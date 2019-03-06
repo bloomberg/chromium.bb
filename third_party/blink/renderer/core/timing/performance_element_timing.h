@@ -22,11 +22,15 @@ class CORE_EXPORT PerformanceElementTiming final : public PerformanceEntry {
  public:
   static PerformanceElementTiming* Create(const AtomicString& name,
                                           const IntRect& intersection_rect,
-                                          DOMHighResTimeStamp start_time);
+                                          DOMHighResTimeStamp start_time,
+                                          DOMHighResTimeStamp response_end,
+                                          const AtomicString& identifier);
 
   PerformanceElementTiming(const AtomicString& name,
                            const IntRect& intersection_rect,
-                           DOMHighResTimeStamp start_time);
+                           DOMHighResTimeStamp start_time,
+                           DOMHighResTimeStamp response_end,
+                           const AtomicString& identifier);
   ~PerformanceElementTiming() override;
 
   AtomicString entryType() const override;
@@ -34,12 +38,18 @@ class CORE_EXPORT PerformanceElementTiming final : public PerformanceEntry {
 
   DOMRectReadOnly* intersectionRect() const { return intersection_rect_; }
 
+  DOMHighResTimeStamp responseEnd() const { return response_end_; }
+
+  AtomicString identifier() const { return identifier_; }
+
   void Trace(blink::Visitor*) override;
 
  private:
   void BuildJSONValue(V8ObjectBuilder&) const override;
 
   Member<DOMRectReadOnly> intersection_rect_;
+  DOMHighResTimeStamp response_end_;
+  AtomicString identifier_;
 };
 
 }  // namespace blink

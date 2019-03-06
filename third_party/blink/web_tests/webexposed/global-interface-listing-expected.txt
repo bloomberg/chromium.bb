@@ -5285,7 +5285,9 @@ interface Performance : EventTarget
     setter onresourcetimingbufferfull
 interface PerformanceElementTiming : PerformanceEntry
     attribute @@toStringTag
+    getter identifier
     getter intersectionRect
+    getter responseEnd
     method constructor
     method toJSON
 interface PerformanceEntry

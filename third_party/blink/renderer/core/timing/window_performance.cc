@@ -399,10 +399,13 @@ void WindowPerformance::ReportEventTimings(WebLayerTreeView::SwapResult result,
 
 void WindowPerformance::AddElementTiming(const AtomicString& name,
                                          const IntRect& rect,
-                                         TimeTicks timestamp) {
+                                         TimeTicks start_time,
+                                         TimeTicks response_end,
+                                         const AtomicString& identifier) {
   DCHECK(origin_trials::ElementTimingEnabled(GetExecutionContext()));
   PerformanceElementTiming* entry = PerformanceElementTiming::Create(
-      name, rect, MonotonicTimeToDOMHighResTimeStamp(timestamp));
+      name, rect, MonotonicTimeToDOMHighResTimeStamp(start_time),
+      MonotonicTimeToDOMHighResTimeStamp(response_end), identifier);
   if (HasObserverFor(PerformanceEntry::kElement)) {
     UseCounter::Count(GetFrame()->GetDocument(),
                       WebFeature::kElementTimingExplicitlyRequested);

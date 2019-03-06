@@ -6,6 +6,8 @@
 [OriginTrialEnabled=ElementTiming]
 interface PerformanceElementTiming : PerformanceEntry {
     readonly attribute DOMRectReadOnly intersectionRect;
+    readonly attribute DOMHighResTimeStamp responseEnd;
+    readonly attribute DOMString identifier;
 
     // TODO(peria): toJSON is not in spec. https://crbug.com/736332
     [CallWith=ScriptState, ImplementedAs=toJSONForBinding] object toJSON();
