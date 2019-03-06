@@ -1540,7 +1540,7 @@ TEST_F(PreviewsOptimizationGuideTest, IsBlacklisted) {
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndEnableFeature(features::kLitePageServerPreviews);
 
-  EXPECT_FALSE(
+  EXPECT_TRUE(
       guide()->IsBlacklisted(GURL("https://m.blacklisteddomain.com/path"),
                              PreviewsType::LITE_PAGE_REDIRECT));
 
@@ -1549,7 +1549,7 @@ TEST_F(PreviewsOptimizationGuideTest, IsBlacklisted) {
   EXPECT_TRUE(
       guide()->IsBlacklisted(GURL("https://m.blacklisteddomain.com/path"),
                              PreviewsType::LITE_PAGE_REDIRECT));
-  EXPECT_FALSE(guide()->IsBlacklisted(
+  EXPECT_DCHECK_DEATH(guide()->IsBlacklisted(
       GURL("https://m.blacklisteddomain.com/path"), PreviewsType::NOSCRIPT));
 
   EXPECT_TRUE(guide()->IsBlacklisted(
@@ -1560,6 +1560,22 @@ TEST_F(PreviewsOptimizationGuideTest, IsBlacklisted) {
                                       PreviewsType::LITE_PAGE_REDIRECT));
 }
 
+TEST_F(PreviewsOptimizationGuideTest, LitePageRedirectSkipIsBlacklistedCheck) {
+  base::test::ScopedFeatureList scoped_list;
+  scoped_list.InitAndEnableFeature(features::kLitePageServerPreviews);
+  InitializeWithLitePageRedirectBlacklist();
+
+  EXPECT_TRUE(
+      guide()->IsBlacklisted(GURL("https://m.blacklisteddomain.com/path"),
+                             PreviewsType::LITE_PAGE_REDIRECT));
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kIgnoreLitePageRedirectOptimizationBlacklist);
+
+  EXPECT_FALSE(
+      guide()->IsBlacklisted(GURL("https://m.blacklisteddomain.com/path"),
+                             PreviewsType::LITE_PAGE_REDIRECT));
+}
+
 TEST_F(PreviewsOptimizationGuideTest,
        IsBlacklistedWithLitePageServerPreviewsDisabled) {
   base::test::ScopedFeatureList scoped_list;
@@ -1567,7 +1583,7 @@ TEST_F(PreviewsOptimizationGuideTest,
 
   InitializeWithLitePageRedirectBlacklist();
 
-  EXPECT_FALSE(
+  EXPECT_TRUE(
       guide()->IsBlacklisted(GURL("https://m.blacklisteddomain.com/path"),
                              PreviewsType::LITE_PAGE_REDIRECT));
 }

@@ -260,6 +260,26 @@ TEST_F(PreviewsHintsTest, LogHintCacheMatch) {
       5 /* EFFECTIVE_CONNECTION_TYPE_4G */, 1);
 }
 
+TEST_F(PreviewsHintsTest, IsBlacklistedReturnsTrueIfNoBloomFilter) {
+  base::test::ScopedFeatureList scoped_list;
+  scoped_list.InitAndEnableFeature(features::kLitePageServerPreviews);
+
+  optimization_guide::proto::Configuration config;
+  ParseConfig(config);
+
+  EXPECT_FALSE(HasLitePageRedirectBlacklist());
+
+  EXPECT_FALSE(previews_hints()->IsBlacklisted(GURL("https://black.com/path"),
+                                               PreviewsType::LOFI));
+
+  EXPECT_TRUE(previews_hints()->IsBlacklisted(
+      GURL("https://black.com/path"), PreviewsType::LITE_PAGE_REDIRECT));
+  EXPECT_TRUE(previews_hints()->IsBlacklisted(
+      GURL("https://joe.black.com/path"), PreviewsType::LITE_PAGE_REDIRECT));
+  EXPECT_TRUE(previews_hints()->IsBlacklisted(
+      GURL("https://nonblack.com"), PreviewsType::LITE_PAGE_REDIRECT));
+}
+
 TEST_F(PreviewsHintsTest, IsBlacklisted) {
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndEnableFeature(features::kLitePageServerPreviews);
@@ -280,33 +300,6 @@ TEST_F(PreviewsHintsTest, IsBlacklisted) {
   EXPECT_TRUE(previews_hints()->IsBlacklisted(
       GURL("https://black.com/path"), PreviewsType::LITE_PAGE_REDIRECT));
   EXPECT_TRUE(previews_hints()->IsBlacklisted(
-      GURL("https://joe.black.com/path"), PreviewsType::LITE_PAGE_REDIRECT));
-  EXPECT_FALSE(previews_hints()->IsBlacklisted(
-      GURL("https://nonblack.com"), PreviewsType::LITE_PAGE_REDIRECT));
-}
-
-TEST_F(PreviewsHintsTest, IgnoreLitePageRedirectBlacklist) {
-  base::test::ScopedFeatureList scoped_list;
-  scoped_list.InitAndEnableFeature(features::kLitePageServerPreviews);
-
-  BloomFilter blacklist_bloom_filter(kBlackBlacklistBloomFilterNumHashFunctions,
-                                     kBlackBlacklistBloomFilterNumBits);
-  PopulateBlackBlacklistBloomFilter(&blacklist_bloom_filter);
-
-  optimization_guide::proto::Configuration config;
-  AddBlacklistBloomFilterToConfig(blacklist_bloom_filter,
-                                  kBlackBlacklistBloomFilterNumHashFunctions,
-                                  kBlackBlacklistBloomFilterNumBits, &config);
-  ParseConfig(config);
-
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kIgnoreLitePageRedirectOptimizationBlacklist);
-
-  EXPECT_FALSE(previews_hints()->IsBlacklisted(GURL("https://black.com/path"),
-                                               PreviewsType::LOFI));
-  EXPECT_FALSE(previews_hints()->IsBlacklisted(
-      GURL("https://black.com/path"), PreviewsType::LITE_PAGE_REDIRECT));
-  EXPECT_FALSE(previews_hints()->IsBlacklisted(
       GURL("https://joe.black.com/path"), PreviewsType::LITE_PAGE_REDIRECT));
   EXPECT_FALSE(previews_hints()->IsBlacklisted(
       GURL("https://nonblack.com"), PreviewsType::LITE_PAGE_REDIRECT));
@@ -338,7 +331,7 @@ TEST_F(PreviewsHintsTest, ParseConfigWithInsufficientConfigDetails) {
       "Previews.OptimizationFilterStatus.LitePageRedirect",
       2 /* FAILED_SERVER_BLACKLIST_BAD_CONFIG */, 1);
 
-  EXPECT_FALSE(previews_hints()->IsBlacklisted(
+  EXPECT_TRUE(previews_hints()->IsBlacklisted(
       GURL("https://black.com/path"), PreviewsType::LITE_PAGE_REDIRECT));
 }
 
@@ -370,7 +363,7 @@ TEST_F(PreviewsHintsTest, ParseConfigWithTooLargeBlacklist) {
       "Previews.OptimizationFilterStatus.LitePageRedirect",
       3 /* FAILED_SERVER_BLACKLIST_TOO_BIG */, 1);
 
-  EXPECT_FALSE(previews_hints()->IsBlacklisted(
+  EXPECT_TRUE(previews_hints()->IsBlacklisted(
       GURL("https://black.com/path"), PreviewsType::LITE_PAGE_REDIRECT));
 }
 
