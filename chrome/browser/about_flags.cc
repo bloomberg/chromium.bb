@@ -3671,6 +3671,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSyncUSSAutofillWalletDataDescription, kOsAll,
      FEATURE_VALUE_TYPE(switches::kSyncUSSAutofillWalletData)},
 
+    {"sync-USS-autofill-wallet-metadata",
+     flag_descriptions::kSyncUSSAutofillWalletMetadataName,
+     flag_descriptions::kSyncUSSAutofillWalletMetadataDescription, kOsAll,
+     FEATURE_VALUE_TYPE(switches::kSyncUSSAutofillWalletMetadata)},
+
     {"enable-resampling-input-events",
      flag_descriptions::kEnableResamplingInputEventsName,
      flag_descriptions::kEnableResamplingInputEventsDescription, kOsAll,

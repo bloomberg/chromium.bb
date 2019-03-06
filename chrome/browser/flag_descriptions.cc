@@ -1841,6 +1841,11 @@ const char kSyncUSSAutofillWalletDataName[] =
 const char kSyncUSSAutofillWalletDataDescription[] =
     "Enables the new implementation of autofill walet data sync";
 
+const char kSyncUSSAutofillWalletMetadataName[] =
+    "Enable USS for autofill wallet metadata";
+const char kSyncUSSAutofillWalletMetadataDescription[] =
+    "Enables the new implementation of autofill walet metadata sync";
+
 const char kSyncSandboxName[] = "Use Chrome Sync sandbox";
 const char kSyncSandboxDescription[] =
     "Connects to the testing server for Chrome Sync.";
