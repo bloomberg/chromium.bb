@@ -145,7 +145,7 @@ inline LimitType clampToDirectComparison(ValueType value,
   return (value <= min) ? min : static_cast<LimitType>(value);
 }
 
-// For any floating-point limits, or integral limits smaller than long long, we
+// For any floating-point limits, or integral limits smaller than int64_t, we
 // can cast the limits to double without losing precision; then the only cases
 // where |value| can't be represented accurately as a double are the ones where
 // it's outside the limit range anyway.  So doing all comparisons as doubles
@@ -193,8 +193,8 @@ class ClampToNonLongLongHelper<false, LimitType, ValueType> {
 };
 
 // The unspecialized version of this templated class handles clamping to
-// anything other than [unsigned] long long int limits.  It simply uses the
-// class above to toggle between the "fast" and "safe" clamp implementations.
+// anything other than [u]int64_t limits.  It simply uses the class above
+// to toggle between the "fast" and "safe" clamp implementations.
 template <typename LimitType, typename ValueType>
 class ClampToHelper {
  public:
@@ -224,75 +224,66 @@ class ClampToHelper {
   }
 };
 
-// Clamping to [unsigned] long long int limits requires more care.  These may
-// not be accurately representable as doubles, so instead we cast |value| to the
-// limit type.  But that cast is undefined if |value| is floating point and
+// Clamping to [u]int64_t limits requires more care.  These may not be
+// accurately representable as doubles, so instead we cast |value| to the
+// limit type. But that cast is undefined if |value| is floating point and
 // outside the representable range of the limit type, so we also have to check
 // for that case explicitly.
 template <typename ValueType>
-class ClampToHelper<long long int, ValueType> {
+class ClampToHelper<int64_t, ValueType> {
   STATIC_ONLY(ClampToHelper);
 
  public:
-  static inline long long int clampTo(ValueType value,
-                                      long long int min,
-                                      long long int max) {
+  static inline int64_t clampTo(ValueType value, int64_t min, int64_t max) {
     if (!std::numeric_limits<ValueType>::is_integer) {
       if (value > 0) {
         if (static_cast<double>(value) >=
-            static_cast<double>(std::numeric_limits<long long int>::max()))
+            static_cast<double>(std::numeric_limits<int64_t>::max()))
           return max;
       } else if (static_cast<double>(value) <=
-                 static_cast<double>(
-                     std::numeric_limits<long long int>::min())) {
+                 static_cast<double>(std::numeric_limits<int64_t>::min())) {
         return min;
       }
     }
-    // Note: If |value| were unsigned long long int, it could be larger than
-    // the largest long long int, and this code would be wrong; we handle
-    // this case with a separate full specialization below.
-    return clampToDirectComparison(static_cast<long long int>(value), min, max);
+    // Note: If |value| were uint64_t it could be larger than the largest
+    // int64_t, and this code would be wrong; we handle  this case with
+    // a separate full specialization below.
+    return clampToDirectComparison(static_cast<int64_t>(value), min, max);
   }
 };
 
 // This specialization handles the case where the above partial specialization
 // would be potentially incorrect.
 template <>
-class ClampToHelper<long long int, unsigned long long int> {
+class ClampToHelper<int64_t, uint64_t> {
   STATIC_ONLY(ClampToHelper);
 
  public:
-  static inline long long int clampTo(unsigned long long int value,
-                                      long long int min,
-                                      long long int max) {
-    if (max <= 0 || value >= static_cast<unsigned long long int>(max))
+  static inline int64_t clampTo(uint64_t value, int64_t min, int64_t max) {
+    if (max <= 0 || value >= static_cast<uint64_t>(max))
       return max;
-    const long long int longLongValue = static_cast<long long int>(value);
+    const int64_t longLongValue = static_cast<int64_t>(value);
     return (longLongValue <= min) ? min : longLongValue;
   }
 };
 
-// This is similar to the partial specialization that clamps to long long int,
-// but because the lower-bound check is done for integer value types as well, we
-// don't need a <unsigned long long int, long long int> full specialization.
+// This is similar to the partial specialization that clamps to int64_t, but
+// because the lower-bound check is done for integer value types as well, we
+// don't need a <uint64_t, int64_t> full specialization.
 template <typename ValueType>
-class ClampToHelper<unsigned long long int, ValueType> {
+class ClampToHelper<uint64_t, ValueType> {
   STATIC_ONLY(ClampToHelper);
 
  public:
-  static inline unsigned long long int clampTo(ValueType value,
-                                               unsigned long long int min,
-                                               unsigned long long int max) {
+  static inline uint64_t clampTo(ValueType value, uint64_t min, uint64_t max) {
     if (value <= 0)
       return min;
     if (!std::numeric_limits<ValueType>::is_integer) {
       if (static_cast<double>(value) >=
-          static_cast<double>(
-              std::numeric_limits<unsigned long long int>::max()))
+          static_cast<double>(std::numeric_limits<uint64_t>::max()))
         return max;
     }
-    return clampToDirectComparison(static_cast<unsigned long long int>(value),
-                                   min, max);
+    return clampToDirectComparison(static_cast<uint64_t>(value), min, max);
   }
 };
 
