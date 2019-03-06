@@ -881,6 +881,10 @@ void AppWindow::UpdateNativeAlwaysOnTop() {
   }
 }
 
+void AppWindow::ActivateContents(WebContents* contents) {
+  native_app_window_->Activate();
+}
+
 void AppWindow::CloseContents(WebContents* contents) {
   native_app_window_->Close();
 }
