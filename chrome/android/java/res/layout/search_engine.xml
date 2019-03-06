@@ -9,6 +9,7 @@
     android:background="?android:attr/selectableItemBackground"
     android:gravity="center_vertical"
     android:orientation="horizontal"
+    android:focusable="true"
     android:padding="6dp">
 
     <android.widget.RadioButton
