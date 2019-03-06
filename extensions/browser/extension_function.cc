@@ -594,9 +594,7 @@ void UIThreadExtensionFunction::WriteToConsole(
       ->AddMessageToConsole(level, message);
 }
 
-IOThreadExtensionFunction::IOThreadExtensionFunction()
-    : routing_id_(MSG_ROUTING_NONE) {
-}
+IOThreadExtensionFunction::IOThreadExtensionFunction() {}
 
 IOThreadExtensionFunction::~IOThreadExtensionFunction() {
 }

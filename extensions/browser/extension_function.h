@@ -609,18 +609,14 @@ class IOThreadExtensionFunction : public ExtensionFunction {
   void SetBadMessage() final;
 
   void set_ipc_sender(
-      base::WeakPtr<extensions::IOThreadExtensionMessageFilter> ipc_sender,
-      int routing_id) {
+      base::WeakPtr<extensions::IOThreadExtensionMessageFilter> ipc_sender) {
     ipc_sender_ = ipc_sender;
-    routing_id_ = routing_id;
   }
 
   base::WeakPtr<extensions::IOThreadExtensionMessageFilter> ipc_sender_weak()
       const {
     return ipc_sender_;
   }
-
-  int routing_id() const { return routing_id_; }
 
   void set_extension_info_map(const extensions::InfoMap* extension_info_map) {
     extension_info_map_ = extension_info_map;
@@ -640,7 +636,6 @@ class IOThreadExtensionFunction : public ExtensionFunction {
 
  private:
   base::WeakPtr<extensions::IOThreadExtensionMessageFilter> ipc_sender_;
-  int routing_id_;
 
   scoped_refptr<const extensions::InfoMap> extension_info_map_;
 
