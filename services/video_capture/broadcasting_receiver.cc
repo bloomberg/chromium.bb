@@ -5,6 +5,8 @@
 #include "services/video_capture/broadcasting_receiver.h"
 
 #include "base/bind.h"
+#include "build/build_config.h"
+#include "media/capture/video/shared_memory_handle_provider.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/video_capture/public/mojom/scoped_access_permission.mojom.h"
 
@@ -22,10 +24,46 @@ class ConsumerAccessPermission : public mojom::ScopedAccessPermission {
   base::OnceClosure destruction_cb_;
 };
 
+void CloneSharedBufferHandle(const mojo::ScopedSharedBufferHandle& source,
+                             media::mojom::VideoBufferHandlePtr* target) {
+  // Special behavior here: If the handle was already read-only, the
+  // Clone() call here will maintain that read-only permission. If it was
+  // read-write, the cloned handle will have read-write permission.
+  //
+  // TODO(crbug.com/797470): We should be able to demote read-write to
+  // read-only permissions when Clone()'ing handles. Currently, this
+  // causes a crash.
+  (*target)->set_shared_buffer_handle(
+      source->Clone(mojo::SharedBufferHandle::AccessMode::READ_WRITE));
+}
+
+void CloneSharedBufferToRawFileDescriptorHandle(
+    const mojo::ScopedSharedBufferHandle& source,
+    media::mojom::VideoBufferHandlePtr* target) {
+#if defined(OS_LINUX)
+  media::SharedMemoryHandleProvider provider;
+  provider.InitFromMojoHandle(
+      source->Clone(mojo::SharedBufferHandle::AccessMode::READ_WRITE));
+  auto sub_struct = media::mojom::SharedMemoryViaRawFileDescriptor::New();
+  sub_struct->shared_memory_size_in_bytes = provider.GetMemorySizeInBytes();
+  sub_struct->file_descriptor_handle = mojo::WrapPlatformFile(
+      base::SharedMemory::DuplicateHandle(
+          provider.GetNonOwnedSharedMemoryHandleForLegacyIPC())
+          .GetHandle());
+  (*target)->set_shared_memory_via_raw_file_descriptor(std::move(sub_struct));
+#else
+  NOTREACHED() << "Cannot convert buffer handle to "
+                  "kSharedMemoryViaRawFileDescriptor on non-Linux platform.";
+#endif
+}
+
 }  // anonymous namespace
 
-BroadcastingReceiver::ClientContext::ClientContext(mojom::ReceiverPtr client)
+BroadcastingReceiver::ClientContext::ClientContext(
+    mojom::ReceiverPtr client,
+    media::VideoCaptureBufferType target_buffer_type)
     : client_(std::move(client)),
+      target_buffer_type_(target_buffer_type),
       is_suspended_(false),
       on_started_has_been_called_(false),
       on_started_using_gpu_decode_has_been_called_(false) {}
@@ -83,37 +121,68 @@ bool BroadcastingReceiver::BufferContext::IsStillBeingConsumed() const {
 }
 
 media::mojom::VideoBufferHandlePtr
-BroadcastingReceiver::BufferContext::CloneBufferHandle() {
-  // Unable to use buffer_handle_->Clone(), because shared_buffer does not
-  // support the copy constructor.
+BroadcastingReceiver::BufferContext::CloneBufferHandle(
+    media::VideoCaptureBufferType target_buffer_type) {
   media::mojom::VideoBufferHandlePtr result =
       media::mojom::VideoBufferHandle::New();
-  if (buffer_handle_->is_shared_buffer_handle()) {
-    // Special behavior here: If the handle was already read-only, the Clone()
-    // call here will maintain that read-only permission. If it was read-write,
-    // the cloned handle will have read-write permission.
-    //
-    // TODO(crbug.com/797470): We should be able to demote read-write to
-    // read-only permissions when Clone()'ing handles. Currently, this causes a
-    // crash.
-    result->set_shared_buffer_handle(
-        buffer_handle_->get_shared_buffer_handle()->Clone(
-            mojo::SharedBufferHandle::AccessMode::READ_WRITE));
-  } else if (buffer_handle_->is_mailbox_handles()) {
+
+  // If the source uses mailbox hanldes, i.e. textures, we pass those through
+  // without conversion, no matter what clients requested.
+  if (buffer_handle_->is_mailbox_handles()) {
     result->set_mailbox_handles(buffer_handle_->get_mailbox_handles()->Clone());
-  } else if (buffer_handle_->is_shared_memory_via_raw_file_descriptor()) {
-    auto sub_struct = media::mojom::SharedMemoryViaRawFileDescriptor::New();
-    sub_struct->shared_memory_size_in_bytes =
-        buffer_handle_->get_shared_memory_via_raw_file_descriptor()
-            ->shared_memory_size_in_bytes;
-    sub_struct->file_descriptor_handle = mojo::ScopedHandle(
-        buffer_handle_->get_shared_memory_via_raw_file_descriptor()
-            ->file_descriptor_handle.get());
-    result->set_shared_memory_via_raw_file_descriptor(std::move(sub_struct));
-  } else {
-    NOTREACHED() << "Unexpected video buffer handle type";
+    return result;
+  }
+
+  switch (target_buffer_type) {
+    case media::VideoCaptureBufferType::kMailboxHolder:
+      NOTREACHED() << "Cannot convert buffer type to kMailboxHolder from "
+                      "handle type other than mailbox handles.";
+      break;
+    case media::VideoCaptureBufferType::kSharedMemory:
+      if (buffer_handle_->is_shared_buffer_handle()) {
+        CloneSharedBufferHandle(buffer_handle_->get_shared_buffer_handle(),
+                                &result);
+      } else if (buffer_handle_->is_shared_memory_via_raw_file_descriptor()) {
+        ConvertRawFileDescriptorToSharedBuffer();
+        CloneSharedBufferHandle(buffer_handle_->get_shared_buffer_handle(),
+                                &result);
+      } else {
+        NOTREACHED() << "Unexpected video buffer handle type";
+      }
+      break;
+    case media::VideoCaptureBufferType::kSharedMemoryViaRawFileDescriptor:
+      if (buffer_handle_->is_shared_buffer_handle()) {
+        CloneSharedBufferToRawFileDescriptorHandle(
+            buffer_handle_->get_shared_buffer_handle(), &result);
+      } else if (buffer_handle_->is_shared_memory_via_raw_file_descriptor()) {
+        ConvertRawFileDescriptorToSharedBuffer();
+        CloneSharedBufferToRawFileDescriptorHandle(
+            buffer_handle_->get_shared_buffer_handle(), &result);
+      } else {
+        NOTREACHED() << "Unexpected video buffer handle type";
+      }
+      break;
   }
   return result;
+}
+
+void BroadcastingReceiver::BufferContext::
+    ConvertRawFileDescriptorToSharedBuffer() {
+  DCHECK(buffer_handle_->is_shared_memory_via_raw_file_descriptor());
+
+#if defined(OS_LINUX)
+  media::SharedMemoryHandleProvider provider;
+  provider.InitAsReadOnlyFromRawFileDescriptor(
+      std::move(buffer_handle_->get_shared_memory_via_raw_file_descriptor()
+                    ->file_descriptor_handle),
+      buffer_handle_->get_shared_memory_via_raw_file_descriptor()
+          ->shared_memory_size_in_bytes);
+  buffer_handle_->set_shared_buffer_handle(
+      provider.GetHandleForInterProcessTransit(true /*read_only*/));
+#else
+  NOTREACHED() << "Unable to consume buffer handle of type "
+                  "kSharedMemoryViaRawFileDescriptor on non-Linux platform.";
+#endif
 }
 
 BroadcastingReceiver::BroadcastingReceiver()
@@ -139,10 +208,12 @@ void BroadcastingReceiver::SetOnStoppedHandler(
   on_stopped_handler_ = std::move(on_stopped_handler);
 }
 
-int32_t BroadcastingReceiver::AddClient(mojom::ReceiverPtr client) {
+int32_t BroadcastingReceiver::AddClient(
+    mojom::ReceiverPtr client,
+    media::VideoCaptureBufferType target_buffer_type) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto client_id = next_client_id_++;
-  ClientContext context(std::move(client));
+  ClientContext context(std::move(client), target_buffer_type);
   auto& added_client_context =
       clients_.insert(std::make_pair(client_id, std::move(context)))
           .first->second;
@@ -163,7 +234,9 @@ int32_t BroadcastingReceiver::AddClient(mojom::ReceiverPtr client) {
 
   for (auto& buffer_context : buffer_contexts_) {
     added_client_context.client()->OnNewBuffer(
-        buffer_context.buffer_id(), buffer_context.CloneBufferHandle());
+        buffer_context.buffer_id(),
+        buffer_context.CloneBufferHandle(
+            added_client_context.target_buffer_type()));
   }
   return client_id;
 }
@@ -190,8 +263,9 @@ void BroadcastingReceiver::OnNewBuffer(
   buffer_contexts_.emplace_back(buffer_id, std::move(buffer_handle));
   auto& buffer_context = buffer_contexts_.back();
   for (auto& client : clients_) {
-    client.second.client()->OnNewBuffer(buffer_context.buffer_id(),
-                                        buffer_context.CloneBufferHandle());
+    client.second.client()->OnNewBuffer(
+        buffer_context.buffer_id(),
+        buffer_context.CloneBufferHandle(client.second.target_buffer_type()));
   }
 }
 

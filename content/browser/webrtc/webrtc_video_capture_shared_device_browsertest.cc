@@ -5,6 +5,7 @@
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_manager_connection.h"
@@ -22,6 +23,7 @@
 
 using testing::_;
 using testing::AtLeast;
+using testing::Invoke;
 using testing::InvokeWithoutArgs;
 using testing::Return;
 
@@ -49,7 +51,9 @@ class WebRtcVideoCaptureSharedDeviceBrowserTest : public ContentBrowserTest {
 
   ~WebRtcVideoCaptureSharedDeviceBrowserTest() override {}
 
-  void OpenDeviceViaService(base::OnceClosure done_cb) {
+  void OpenDeviceViaService(
+      media::VideoCaptureBufferType buffer_type_to_request,
+      base::OnceClosure done_cb) {
     connector_->BindInterface(video_capture::mojom::kServiceName,
                               &device_factory_provider_);
     device_factory_provider_->ConnectToVideoSourceProvider(
@@ -57,7 +61,8 @@ class WebRtcVideoCaptureSharedDeviceBrowserTest : public ContentBrowserTest {
 
     video_source_provider_->GetSourceInfos(base::BindOnce(
         &WebRtcVideoCaptureSharedDeviceBrowserTest::OnSourceInfosReceived,
-        weak_factory_.GetWeakPtr(), std::move(done_cb)));
+        weak_factory_.GetWeakPtr(), buffer_type_to_request,
+        std::move(done_cb)));
   }
 
   void OpenDeviceInRendererAndWaitForPlaying() {
@@ -108,6 +113,7 @@ class WebRtcVideoCaptureSharedDeviceBrowserTest : public ContentBrowserTest {
 
  private:
   void OnSourceInfosReceived(
+      media::VideoCaptureBufferType buffer_type_to_request,
       base::OnceClosure done_cb,
       const std::vector<media::VideoCaptureDeviceInfo>& infos) {
     ASSERT_FALSE(infos.empty());
@@ -118,6 +124,7 @@ class WebRtcVideoCaptureSharedDeviceBrowserTest : public ContentBrowserTest {
     ASSERT_FALSE(infos[0].supported_formats.empty());
     requestable_settings.requested_format = infos[0].supported_formats[0];
     requestable_settings.requested_format.frame_size = kVideoSize;
+    requestable_settings.buffer_type = buffer_type_to_request;
 
     video_capture::mojom::PushVideoStreamSubscriptionPtr subscription;
     video_source_->CreatePushSubscription(
@@ -133,8 +140,7 @@ class WebRtcVideoCaptureSharedDeviceBrowserTest : public ContentBrowserTest {
       base::OnceClosure done_cb,
       video_capture::mojom::CreatePushSubscriptionResultCode result_code,
       const media::VideoCaptureParams& params) {
-    ASSERT_EQ(video_capture::mojom::CreatePushSubscriptionResultCode::
-                  kCreatedWithRequestedSettings,
+    ASSERT_NE(video_capture::mojom::CreatePushSubscriptionResultCode::kFailed,
               result_code);
     subscription_->Activate();
     std::move(done_cb).Run();
@@ -151,11 +157,22 @@ class WebRtcVideoCaptureSharedDeviceBrowserTest : public ContentBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(WebRtcVideoCaptureSharedDeviceBrowserTest);
 };
 
-IN_PROC_BROWSER_TEST_F(WebRtcVideoCaptureSharedDeviceBrowserTest,
-                       ReceiveFrameFromServiceAndInRenderer) {
+// Tests that a single fake video capture device can be opened via JavaScript
+// by the Renderer while it is already in use by a direct client of the
+// video capture service.
+IN_PROC_BROWSER_TEST_F(
+    WebRtcVideoCaptureSharedDeviceBrowserTest,
+    ReceiveFrameInRendererWhileDeviceAlreadyInUseViaDirectServiceClient) {
   Initialize();
 
   base::RunLoop receive_frame_from_service_wait_loop;
+  ON_CALL(*mock_receiver_, DoOnNewBuffer(_, _))
+      .WillByDefault(Invoke(
+          [](int32_t, media::mojom::VideoBufferHandlePtr* buffer_handle) {
+            ASSERT_EQ(
+                media::mojom::VideoBufferHandle::Tag::SHARED_BUFFER_HANDLE,
+                (*buffer_handle)->which());
+          }));
   EXPECT_CALL(*mock_receiver_, DoOnFrameReadyInBuffer(_, _, _, _))
       .WillOnce(InvokeWithoutArgs([&receive_frame_from_service_wait_loop]() {
         receive_frame_from_service_wait_loop.Quit();
@@ -163,12 +180,83 @@ IN_PROC_BROWSER_TEST_F(WebRtcVideoCaptureSharedDeviceBrowserTest,
       .WillRepeatedly(Return());
 
   base::RunLoop open_device_via_service_run_loop;
-  OpenDeviceViaService(open_device_via_service_run_loop.QuitClosure());
+  OpenDeviceViaService(media::VideoCaptureBufferType::kSharedMemory,
+                       open_device_via_service_run_loop.QuitClosure());
   open_device_via_service_run_loop.Run();
 
   OpenDeviceInRendererAndWaitForPlaying();
 
   receive_frame_from_service_wait_loop.Run();
 }
+
+#if defined(OS_LINUX)
+
+// Tests that a single fake video capture device can be opened via JavaScript
+// by the Renderer while it is already in use by a direct client of the
+// video capture service that requested to get buffers as raw file handles.
+IN_PROC_BROWSER_TEST_F(
+    WebRtcVideoCaptureSharedDeviceBrowserTest,
+    ReceiveFrameInRendererWhileDeviceAlreadyInUseUsingRawFileHandleBuffers) {
+  Initialize();
+
+  base::RunLoop receive_frame_from_service_wait_loop;
+  ON_CALL(*mock_receiver_, DoOnNewBuffer(_, _))
+      .WillByDefault(Invoke(
+          [](int32_t, media::mojom::VideoBufferHandlePtr* buffer_handle) {
+            ASSERT_EQ(media::mojom::VideoBufferHandle::Tag::
+                          SHARED_MEMORY_VIA_RAW_FILE_DESCRIPTOR,
+                      (*buffer_handle)->which());
+          }));
+  EXPECT_CALL(*mock_receiver_, DoOnFrameReadyInBuffer(_, _, _, _))
+      .WillOnce(InvokeWithoutArgs([&receive_frame_from_service_wait_loop]() {
+        receive_frame_from_service_wait_loop.Quit();
+      }))
+      .WillRepeatedly(Return());
+
+  base::RunLoop open_device_via_service_run_loop;
+  OpenDeviceViaService(
+      media::VideoCaptureBufferType::kSharedMemoryViaRawFileDescriptor,
+      open_device_via_service_run_loop.QuitClosure());
+  open_device_via_service_run_loop.Run();
+
+  OpenDeviceInRendererAndWaitForPlaying();
+
+  receive_frame_from_service_wait_loop.Run();
+}
+
+// Tests that a single fake video capture device can be opened by a direct
+// client of the video capture service that requests to get buffers as raw
+// file handles while it is already in use via JavaScript by the Renderer.
+IN_PROC_BROWSER_TEST_F(
+    WebRtcVideoCaptureSharedDeviceBrowserTest,
+    ReceiveFrameFromServiceViaRawFileHandlesWhileDeviceAlreadyInUseByRenderer) {
+  Initialize();
+
+  OpenDeviceInRendererAndWaitForPlaying();
+
+  base::RunLoop receive_frame_from_service_wait_loop;
+  ON_CALL(*mock_receiver_, DoOnNewBuffer(_, _))
+      .WillByDefault(Invoke(
+          [](int32_t, media::mojom::VideoBufferHandlePtr* buffer_handle) {
+            ASSERT_EQ(media::mojom::VideoBufferHandle::Tag::
+                          SHARED_MEMORY_VIA_RAW_FILE_DESCRIPTOR,
+                      (*buffer_handle)->which());
+          }));
+  EXPECT_CALL(*mock_receiver_, DoOnFrameReadyInBuffer(_, _, _, _))
+      .WillOnce(InvokeWithoutArgs([&receive_frame_from_service_wait_loop]() {
+        receive_frame_from_service_wait_loop.Quit();
+      }))
+      .WillRepeatedly(Return());
+
+  base::RunLoop open_device_via_service_run_loop;
+  OpenDeviceViaService(
+      media::VideoCaptureBufferType::kSharedMemoryViaRawFileDescriptor,
+      open_device_via_service_run_loop.QuitClosure());
+  open_device_via_service_run_loop.Run();
+
+  receive_frame_from_service_wait_loop.Run();
+}
+
+#endif  // defined(OS_LINUX)
 
 }  // namespace content

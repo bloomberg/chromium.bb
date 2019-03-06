@@ -70,7 +70,8 @@ void PushVideoStreamSubscriptionImpl::OnDeviceStartFailed() {
 void PushVideoStreamSubscriptionImpl::Activate() {
   if (status_ != Status::kNotYetActivated)
     return;
-  broadcaster_client_id_ = broadcaster_->AddClient(std::move(subscriber_));
+  broadcaster_client_id_ = broadcaster_->AddClient(
+      std::move(subscriber_), requested_settings_.buffer_type);
   status_ = Status::kActive;
 }
 
