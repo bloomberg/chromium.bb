@@ -50,9 +50,8 @@ class CORE_EXPORT ConsoleMessage final
                                           WorkerThread*);
 
   // Creates a ConsoleMessage from a similar WebConsoleMessage.
-  static ConsoleMessage* CreateFromWebConsoleMessage(
-      const WebConsoleMessage& message,
-      LocalFrame* local_frame);
+  static ConsoleMessage* CreateFromWebConsoleMessage(const WebConsoleMessage&,
+                                                     LocalFrame*);
 
   ConsoleMessage(MessageSource,
                  mojom::ConsoleMessageLevel,
