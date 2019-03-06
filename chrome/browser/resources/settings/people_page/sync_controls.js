@@ -32,6 +32,14 @@ Polymer({
   behaviors: [WebUIListenerBehavior],
 
   properties: {
+    hidden: {
+      type: Boolean,
+      value: false,
+      computed: 'syncControlsHidden_(' +
+          'syncStatus.signedIn, syncStatus.disabled, syncStatus.hasError)',
+      reflectToAttribute: true,
+    },
+
     /**
      * The current sync preferences, supplied by SyncBrowserProxy.
      * @type {settings.SyncPrefs|undefined}
@@ -161,21 +169,29 @@ Polymer({
   },
 
   /** @private */
-  syncStatusChanged_: function(syncStatus) {
-    // When the sync controls are embedded, the parent has to take care of
-    // showing/hiding them.
-    if (settings.getCurrentRoute() != settings.routes.SYNC_ADVANCED ||
-        !syncStatus) {
-      return;
-    }
-
-    // Navigate to main sync page when the sync controls page should *not* be
-    // available.
-    if (!syncStatus.signedIn || syncStatus.disabled ||
-        (syncStatus.hasError &&
-         syncStatus.statusAction !== settings.StatusAction.ENTER_PASSPHRASE)) {
+  syncStatusChanged_: function() {
+    if (settings.getCurrentRoute() == settings.routes.SYNC_ADVANCED &&
+        this.syncControlsHidden_()) {
       settings.navigateTo(settings.routes.SYNC);
     }
+  },
+
+  /**
+   * @return {boolean} Whether the sync controls are hidden.
+   * @private
+   */
+  syncControlsHidden_: function() {
+    if (!this.syncStatus) {
+      // Show sync controls by default.
+      return false;
+    }
+
+    if (!this.syncStatus.signedIn || this.syncStatus.disabled) {
+      return true;
+    }
+
+    return !!this.syncStatus.hasError &&
+        this.syncStatus.statusAction !== settings.StatusAction.ENTER_PASSPHRASE;
   },
 });
 })();
