@@ -262,6 +262,7 @@ void GpuVideoDecodeAcceleratorHost::OnPictureReady(
   Picture picture(params.picture_buffer_id, params.bitstream_buffer_id,
                   params.visible_rect, params.color_space,
                   params.allow_overlay);
+  picture.set_read_lock_fences_enabled(params.read_lock_fences_enabled);
   picture.set_size_changed(params.size_changed);
   picture.set_texture_owner(params.surface_texture);
   picture.set_wants_promotion_hint(params.wants_promotion_hint);

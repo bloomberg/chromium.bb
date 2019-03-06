@@ -220,6 +220,10 @@ class PictureBufferManagerImpl : public PictureBufferManager {
 
     if (picture.allow_overlay())
       frame->metadata()->SetBoolean(VideoFrameMetadata::ALLOW_OVERLAY, true);
+    if (picture.read_lock_fences_enabled()) {
+      frame->metadata()->SetBoolean(
+          VideoFrameMetadata::READ_LOCK_FENCES_ENABLED, true);
+    }
 
     // TODO(sandersd): Provide an API for VDAs to control this.
     frame->metadata()->SetBoolean(VideoFrameMetadata::POWER_EFFICIENT, true);

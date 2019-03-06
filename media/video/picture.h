@@ -94,10 +94,6 @@ class MEDIA_EXPORT Picture {
   // Returns the id of the bitstream buffer from which this frame was decoded.
   int32_t bitstream_buffer_id() const { return bitstream_buffer_id_; }
 
-  void set_bitstream_buffer_id(int32_t bitstream_buffer_id) {
-    bitstream_buffer_id_ = bitstream_buffer_id;
-  }
-
   // Returns the color space of the picture.
   const gfx::ColorSpace& color_space() const { return color_space_; }
 
@@ -107,6 +103,12 @@ class MEDIA_EXPORT Picture {
   gfx::Rect visible_rect() const { return visible_rect_; }
 
   bool allow_overlay() const { return allow_overlay_; }
+
+  bool read_lock_fences_enabled() const { return read_lock_fences_enabled_; }
+
+  void set_read_lock_fences_enabled(bool read_lock_fences_enabled) {
+    read_lock_fences_enabled_ = read_lock_fences_enabled;
+  }
 
   // Returns true when the VDA has adjusted the resolution of this Picture
   // without requesting new PictureBuffers. GpuVideoDecoder should read this
@@ -132,6 +134,7 @@ class MEDIA_EXPORT Picture {
   gfx::Rect visible_rect_;
   gfx::ColorSpace color_space_;
   bool allow_overlay_;
+  bool read_lock_fences_enabled_;
   bool size_changed_;
   bool texture_owner_;
   bool wants_promotion_hint_;
