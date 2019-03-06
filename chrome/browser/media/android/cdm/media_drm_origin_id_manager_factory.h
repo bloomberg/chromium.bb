@@ -36,6 +36,8 @@ class MediaDrmOriginIdManagerFactory
 
   content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const override;
+
+  bool ServiceIsCreatedWithBrowserContext() const override;
 };
 
 #endif  // CHROME_BROWSER_MEDIA_ANDROID_CDM_MEDIA_DRM_ORIGIN_ID_MANAGER_FACTORY_H_
