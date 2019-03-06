@@ -373,9 +373,6 @@ class ProfileSyncService : public syncer::SyncService,
 
   bool IsEngineAllowedToStart() const;
 
-  // Callback for StartupController.
-  bool ShouldStartEngine(bool bypass_first_setup_check) const;
-
   enum UnrecoverableErrorReason {
     ERROR_REASON_UNSET,
     ERROR_REASON_SYNCER,

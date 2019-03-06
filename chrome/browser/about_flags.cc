@@ -3661,11 +3661,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kLookalikeUrlNavigationSuggestionsDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kLookalikeUrlNavigationSuggestionsUI)},
 
-    {"sync-standalone-transport",
-     flag_descriptions::kSyncStandaloneTransportName,
-     flag_descriptions::kSyncStandaloneTransportDescription, kOsAll,
-     FEATURE_VALUE_TYPE(switches::kSyncStandaloneTransport)},
-
     {"sync-USS-autofill-profile",
      flag_descriptions::kSyncUSSAutofillProfileName,
      flag_descriptions::kSyncUSSAutofillProfileDescription, kOsAll,

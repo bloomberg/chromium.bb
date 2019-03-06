@@ -42,38 +42,12 @@ class SyncDisabledByUserChecker : public SingleClientStatusChangeChecker {
 
 class SingleClientStandaloneTransportSyncTest : public SyncTest {
  public:
-  SingleClientStandaloneTransportSyncTest() : SyncTest(SINGLE_CLIENT) {
-    features_.InitAndEnableFeature(switches::kSyncStandaloneTransport);
-  }
+  SingleClientStandaloneTransportSyncTest() : SyncTest(SINGLE_CLIENT) {}
   ~SingleClientStandaloneTransportSyncTest() override {}
 
  private:
-  base::test::ScopedFeatureList features_;
-
   DISALLOW_COPY_AND_ASSIGN(SingleClientStandaloneTransportSyncTest);
 };
-
-class SingleClientStandaloneTransportFeatureDisabledSyncTest : public SyncTest {
- public:
-  SingleClientStandaloneTransportFeatureDisabledSyncTest()
-      : SyncTest(SINGLE_CLIENT) {
-    features_.InitAndDisableFeature(switches::kSyncStandaloneTransport);
-  }
-
- private:
-  base::test::ScopedFeatureList features_;
-};
-
-IN_PROC_BROWSER_TEST_F(SingleClientStandaloneTransportFeatureDisabledSyncTest,
-                       DoesNotStartSyncWithFeatureDisabled) {
-  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
-
-  // Since standalone transport is disabled, signing in should *not* start the
-  // Sync machinery.
-  ASSERT_TRUE(GetClient(0)->SignInPrimaryAccount());
-  EXPECT_EQ(syncer::SyncService::TransportState::WAITING_FOR_START_REQUEST,
-            GetSyncService(0)->GetTransportState());
-}
 
 #if defined(OS_CHROMEOS) || defined(OS_ANDROID)
 IN_PROC_BROWSER_TEST_F(SingleClientStandaloneTransportSyncTest,

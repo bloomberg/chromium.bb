@@ -396,15 +396,28 @@ IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest,
   // exact count.
   ASSERT_GT(GetNumUpdatesDownloadedInLastCycle(), 0);
 
-  // Stop and restart Sync.
+  // Stop Sync and let it start up again in standalone transport mode.
   GetClient(0)->StopSyncServiceWithoutClearingData();
+  ASSERT_TRUE(GetClient(0)->AwaitSyncTransportActive());
+  ASSERT_EQ(syncer::SyncService::TransportState::ACTIVE,
+            GetSyncService(0)->GetTransportState());
+  ASSERT_FALSE(GetSyncService(0)->IsSyncFeatureActive());
+
+  // Now start full Sync again.
+  base::HistogramTester histogram_tester;
   GetClient(0)->StartSyncService();
   ASSERT_TRUE(GetSyncService(0)->IsSyncFeatureActive());
 
   // The bookmark should still be there, *without* having been redownloaded.
+  ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(bookmarks_helper::GetBookmarkModel(0)->IsBookmarked(
       GURL(kSyncedBookmarkURL)));
-  EXPECT_EQ(0, GetNumUpdatesDownloadedInLastCycle());
+  EXPECT_EQ(
+      0, histogram_tester.GetBucketCount("Sync.ModelTypeEntityChange3.BOOKMARK",
+                                         /*REMOTE_NON_INITIAL_UPDATE=*/4));
+  EXPECT_EQ(
+      0, histogram_tester.GetBucketCount("Sync.ModelTypeEntityChange3.BOOKMARK",
+                                         /*REMOTE_INITIAL_UPDATE=*/5));
 }
 
 IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, ClearsPrefsIfClearData) {
@@ -454,59 +467,6 @@ IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, ResendsBagOfChips) {
   sync_pb::ClientToServerMessage message = TriggerGetUpdatesCycleAndWait();
   EXPECT_TRUE(message.has_bag_of_chips());
   EXPECT_EQ(kTestServerChips, message.bag_of_chips().server_chips());
-}
-
-class EnableDisableSingleClientWithStandaloneTransportTest
-    : public EnableDisableSingleClientTest {
- public:
-  EnableDisableSingleClientWithStandaloneTransportTest() {
-    features_.InitAndEnableFeature(switches::kSyncStandaloneTransport);
-  }
-
- private:
-  base::test::ScopedFeatureList features_;
-};
-
-IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientWithStandaloneTransportTest,
-                       DoesNotRedownloadAfterKeepDataWithStandaloneTransport) {
-  ASSERT_TRUE(SetupClients());
-  ASSERT_FALSE(bookmarks_helper::GetBookmarkModel(0)->IsBookmarked(
-      GURL(kSyncedBookmarkURL)));
-
-  // Create a bookmark on the server, then turn on Sync on the client.
-  InjectSyncedBookmark();
-  ASSERT_TRUE(GetClient(0)->SetupSync());
-  ASSERT_TRUE(GetSyncService(0)->IsSyncFeatureActive());
-
-  // Make sure the bookmark got synced down.
-  ASSERT_TRUE(bookmarks_helper::GetBookmarkModel(0)->IsBookmarked(
-      GURL(kSyncedBookmarkURL)));
-  // Note: The response may also contain permanent nodes, so we can't check the
-  // exact count.
-  ASSERT_GT(GetNumUpdatesDownloadedInLastCycle(), 0);
-
-  // Stop Sync and let it start up again in standalone transport mode.
-  GetClient(0)->StopSyncServiceWithoutClearingData();
-  ASSERT_TRUE(GetClient(0)->AwaitSyncTransportActive());
-  ASSERT_EQ(syncer::SyncService::TransportState::ACTIVE,
-            GetSyncService(0)->GetTransportState());
-  ASSERT_FALSE(GetSyncService(0)->IsSyncFeatureActive());
-
-  // Now start full Sync again.
-  base::HistogramTester histogram_tester;
-  GetClient(0)->StartSyncService();
-  ASSERT_TRUE(GetSyncService(0)->IsSyncFeatureActive());
-
-  // The bookmark should still be there, *without* having been redownloaded.
-  ASSERT_TRUE(SetupSync());
-  ASSERT_TRUE(bookmarks_helper::GetBookmarkModel(0)->IsBookmarked(
-      GURL(kSyncedBookmarkURL)));
-  EXPECT_EQ(
-      0, histogram_tester.GetBucketCount("Sync.ModelTypeEntityChange3.BOOKMARK",
-                                         /*REMOTE_NON_INITIAL_UPDATE=*/4));
-  EXPECT_EQ(
-      0, histogram_tester.GetBucketCount("Sync.ModelTypeEntityChange3.BOOKMARK",
-                                         /*REMOTE_INITIAL_UPDATE=*/5));
 }
 
 }  // namespace

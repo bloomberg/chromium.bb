@@ -1086,9 +1086,6 @@ extern const char kSuggestionsWithSubStringMatchDescription[];
 extern const char kSyncSandboxName[];
 extern const char kSyncSandboxDescription[];
 
-extern const char kSyncStandaloneTransportName[];
-extern const char kSyncStandaloneTransportDescription[];
-
 extern const char kSyncSupportSecondaryAccountName[];
 extern const char kSyncSupportSecondaryAccountDescription[];
 

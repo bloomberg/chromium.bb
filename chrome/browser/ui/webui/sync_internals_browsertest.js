@@ -61,22 +61,6 @@ SyncInternalsWebUITest.prototype = {
   }
 };
 
-function SyncInternalsWebUITestWithStandaloneTransport() {}
-
-SyncInternalsWebUITestWithStandaloneTransport.prototype = {
-  __proto__: SyncInternalsWebUITest.prototype,
-
-  featureList: ['switches::kSyncStandaloneTransport', ''],
-};
-
-function SyncInternalsWebUITestWithoutStandaloneTransport() {}
-
-SyncInternalsWebUITestWithoutStandaloneTransport.prototype = {
-  __proto__: SyncInternalsWebUITest.prototype,
-
-  featureList: ['', 'switches::kSyncStandaloneTransport'],
-};
-
 /**
  * Constant hard-coded value to return from mock getAllNodes.
  * @const

@@ -332,9 +332,7 @@ class UkmBrowserTest : public UkmBrowserTestBase,
 class UkmBrowserTestWithSyncTransport : public UkmBrowserTest {
  public:
   UkmBrowserTestWithSyncTransport() {
-    features_.InitWithFeatures({switches::kSyncStandaloneTransport,
-                                switches::kSyncSupportSecondaryAccount},
-                               {});
+    features_.InitAndEnableFeature(switches::kSyncSupportSecondaryAccount);
   }
 
   void SetUpInProcessBrowserTestFixture() override {

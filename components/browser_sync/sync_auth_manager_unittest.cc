@@ -600,10 +600,7 @@ TEST_F(SyncAuthManagerTest, IgnoresCookieJarIfFeatureDisabled) {
 
 TEST_F(SyncAuthManagerTest, UsesCookieJarIfFeatureEnabled) {
   base::test::ScopedFeatureList features;
-  features.InitWithFeatures(
-      /*enabled_features=*/{switches::kSyncStandaloneTransport,
-                            switches::kSyncSupportSecondaryAccount},
-      /*disabled_features=*/{});
+  features.InitAndEnableFeature(switches::kSyncSupportSecondaryAccount);
 
   auto auth_manager = CreateAuthManager();
   auth_manager->RegisterForAuthNotifications();
@@ -624,10 +621,7 @@ TEST_F(SyncAuthManagerTest, UsesCookieJarIfFeatureEnabled) {
 
 TEST_F(SyncAuthManagerTest, DropsAccountWhenCookieGoesAway) {
   base::test::ScopedFeatureList features;
-  features.InitWithFeatures(
-      /*enabled_features=*/{switches::kSyncStandaloneTransport,
-                            switches::kSyncSupportSecondaryAccount},
-      /*disabled_features=*/{});
+  features.InitAndEnableFeature(switches::kSyncSupportSecondaryAccount);
 
   auto auth_manager = CreateAuthManager();
   auth_manager->RegisterForAuthNotifications();
@@ -653,10 +647,7 @@ TEST_F(SyncAuthManagerTest, DropsAccountWhenCookieGoesAway) {
 
 TEST_F(SyncAuthManagerTest, DropsAccountWhenRefreshTokenGoesAway) {
   base::test::ScopedFeatureList features;
-  features.InitWithFeatures(
-      /*enabled_features=*/{switches::kSyncStandaloneTransport,
-                            switches::kSyncSupportSecondaryAccount},
-      /*disabled_features=*/{});
+  features.InitAndEnableFeature(switches::kSyncSupportSecondaryAccount);
 
   auto auth_manager = CreateAuthManager();
   auth_manager->RegisterForAuthNotifications();
@@ -682,10 +673,7 @@ TEST_F(SyncAuthManagerTest, DropsAccountWhenRefreshTokenGoesAway) {
 
 TEST_F(SyncAuthManagerTest, PrefersPrimaryAccountOverCookie) {
   base::test::ScopedFeatureList features;
-  features.InitWithFeatures(
-      /*enabled_features=*/{switches::kSyncStandaloneTransport,
-                            switches::kSyncSupportSecondaryAccount},
-      /*disabled_features=*/{});
+  features.InitAndEnableFeature(switches::kSyncSupportSecondaryAccount);
 
   auto auth_manager = CreateAuthManager();
   auth_manager->RegisterForAuthNotifications();
@@ -711,10 +699,7 @@ TEST_F(SyncAuthManagerTest, PrefersPrimaryAccountOverCookie) {
 
 TEST_F(SyncAuthManagerTest, OnlyUsesFirstCookieAccount) {
   base::test::ScopedFeatureList features;
-  features.InitWithFeatures(
-      /*enabled_features=*/{switches::kSyncStandaloneTransport,
-                            switches::kSyncSupportSecondaryAccount},
-      /*disabled_features=*/{});
+  features.InitAndEnableFeature(switches::kSyncSupportSecondaryAccount);
 
   auto auth_manager = CreateAuthManager();
   auth_manager->RegisterForAuthNotifications();
