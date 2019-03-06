@@ -288,6 +288,7 @@ void GpuVideoDecodeAccelerator::PictureReady(const Picture& picture) {
   params.visible_rect = picture.visible_rect();
   params.color_space = picture.color_space();
   params.allow_overlay = picture.allow_overlay();
+  params.read_lock_fences_enabled = picture.read_lock_fences_enabled();
   params.size_changed = picture.size_changed();
   params.surface_texture = picture.texture_owner();
   params.wants_promotion_hint = picture.wants_promotion_hint();

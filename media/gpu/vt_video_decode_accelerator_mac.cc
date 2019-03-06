@@ -1344,9 +1344,21 @@ bool VTVideoDecodeAccelerator::SendFrame(const Frame& frame) {
 
   DVLOG(3) << "PictureReady(picture_id=" << picture_id << ", "
            << "bitstream_id=" << frame.bitstream_id << ")";
-  client_->PictureReady(Picture(picture_id, frame.bitstream_id,
-                                gfx::Rect(frame.image_size), color_space,
-                                true));
+  Picture picture(picture_id, frame.bitstream_id, gfx::Rect(frame.image_size),
+                  color_space, true);
+  // The GLImageIOSurface keeps the IOSurface alive as long as it exists, but
+  // bound textures do not, and they can outlive the GLImageIOSurface if they
+  // are deleted in the command buffer before they are used by the platform GL
+  // implementation. (https://crbug.com/930479#c69)
+  //
+  // A fence is required whenever a GLImage is bound, but we can't know in
+  // advance whether that will happen.
+  //
+  // TODO(sandersd): Can GLImageIOSurface be responsible for fences, so that
+  // we don't need to use them when the image is never bound? Bindings are
+  // typically only created when WebGL is in use.
+  picture.set_read_lock_fences_enabled(true);
+  client_->PictureReady(std::move(picture));
   return true;
 }
 
