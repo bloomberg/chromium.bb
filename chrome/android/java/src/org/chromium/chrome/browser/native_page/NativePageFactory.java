@@ -24,6 +24,8 @@ import org.chromium.chrome.browser.ntp.RecentTabsPage;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.touchless.TouchlessNewTabPage;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.content_public.browser.LoadUrlParams;
 
 import java.lang.annotation.Retention;
@@ -41,6 +43,10 @@ public class NativePageFactory {
                 TabModelSelector tabModelSelector) {
             if (tab.isIncognito()) {
                 return new IncognitoNewTabPage(activity, new TabShim(tab));
+            }
+
+            if (FeatureUtilities.isNoTouchModeEnabled()) {
+                return new TouchlessNewTabPage(activity, new TabShim(tab));
             }
 
             if (ChromeFeatureList.isEnabled(ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS)) {
