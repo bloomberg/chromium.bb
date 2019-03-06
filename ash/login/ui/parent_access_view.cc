@@ -356,6 +356,8 @@ ParentAccessView::ParentAccessView(const AccountId& account_id,
                                                kArrowSizeDp, SK_ColorWHITE));
   back_button_->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
                                   views::ImageButton::ALIGN_MIDDLE);
+  back_button_->SetAccessibleName(
+      l10n_util::GetStringUTF16(IDS_ASH_LOGIN_BACK_BUTTON_ACCESSIBLE_NAME));
   header->AddChildView(back_button_);
 
   // Main view icon.
@@ -461,6 +463,8 @@ ParentAccessView::ParentAccessView(const AccountId& account_id,
   submit_button_->SetPreferredSize(
       gfx::Size(kArrowButtonSizeDp, kArrowButtonSizeDp));
   submit_button_->SetEnabled(false);
+  submit_button_->SetAccessibleName(
+      l10n_util::GetStringUTF16(IDS_ASH_LOGIN_SUBMIT_BUTTON_ACCESSIBLE_NAME));
   footer->AddChildView(submit_button_);
 
   add_spacer(kSubmitButtonBottomMarginDp);
