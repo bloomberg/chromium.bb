@@ -180,14 +180,14 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
   const SecurityOrigin* GetSecurityOrigin() const;
   SecurityOrigin* GetMutableSecurityOrigin();
 
-  void DidSendData(unsigned long long bytes_sent,
-                   unsigned long long total_bytes_to_be_sent) override;
+  void DidSendData(uint64_t bytes_sent,
+                   uint64_t total_bytes_to_be_sent) override;
   void DidReceiveResponse(unsigned long identifier,
                           const ResourceResponse&) override;
   void DidReceiveData(const char* data, unsigned data_length) override;
   // When responseType is set to "blob", didDownloadData() is called instead
   // of didReceiveData().
-  void DidDownloadData(unsigned long long data_length) override;
+  void DidDownloadData(uint64_t data_length) override;
   void DidDownloadToBlob(scoped_refptr<BlobDataHandle>) override;
   void DidFinishLoading(unsigned long identifier) override;
   void DidFail(const ResourceError&) override;

@@ -209,8 +209,7 @@ class TestWebURLLoaderClient : public blink::WebURLLoaderClient {
     return true;
   }
 
-  void DidSendData(unsigned long long bytesSent,
-                   unsigned long long totalBytesToBeSent) override {
+  void DidSendData(uint64_t bytesSent, uint64_t totalBytesToBeSent) override {
     EXPECT_TRUE(loader_);
   }
 

@@ -151,8 +151,8 @@ class CORE_EXPORT ThreadableLoader final
 
   // RawResourceClient
   void DataSent(Resource*,
-                unsigned long long bytes_sent,
-                unsigned long long total_bytes_to_be_sent) override;
+                uint64_t bytes_sent,
+                uint64_t total_bytes_to_be_sent) override;
   void ResponseReceived(Resource*, const ResourceResponse&) override;
   void ResponseBodyReceived(Resource*, BytesConsumer& body) override;
   void SetSerializedCachedMetadata(Resource*, const uint8_t*, size_t) override;
@@ -161,7 +161,7 @@ class CORE_EXPORT ThreadableLoader final
                         const ResourceRequest&,
                         const ResourceResponse&) override;
   void RedirectBlocked() override;
-  void DataDownloaded(Resource*, unsigned long long) override;
+  void DataDownloaded(Resource*, uint64_t) override;
   void DidReceiveResourceTiming(Resource*, const ResourceTimingInfo&) override;
   void DidDownloadToBlob(Resource*, scoped_refptr<BlobDataHandle>) override;
 

@@ -466,8 +466,8 @@ WebDocument WebPluginContainerImpl::GetDocument() {
 
 void WebPluginContainerImpl::DispatchProgressEvent(const WebString& type,
                                                    bool length_computable,
-                                                   unsigned long long loaded,
-                                                   unsigned long long total,
+                                                   uint64_t loaded,
+                                                   uint64_t total,
                                                    const WebString& url) {
   ProgressEvent* event;
   if (url.IsEmpty()) {

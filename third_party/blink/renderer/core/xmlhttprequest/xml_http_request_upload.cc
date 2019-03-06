@@ -47,8 +47,8 @@ ExecutionContext* XMLHttpRequestUpload::GetExecutionContext() const {
 }
 
 void XMLHttpRequestUpload::DispatchProgressEvent(
-    unsigned long long bytes_sent,
-    unsigned long long total_bytes_to_be_sent) {
+    uint64_t bytes_sent,
+    uint64_t total_bytes_to_be_sent) {
   last_bytes_sent_ = bytes_sent;
   last_total_bytes_to_be_sent_ = total_bytes_to_be_sent;
   probe::AsyncTask async_task(GetExecutionContext(), xml_http_request_,
@@ -57,11 +57,10 @@ void XMLHttpRequestUpload::DispatchProgressEvent(
                                        bytes_sent, total_bytes_to_be_sent));
 }
 
-void XMLHttpRequestUpload::DispatchEventAndLoadEnd(
-    const AtomicString& type,
-    bool length_computable,
-    unsigned long long bytes_sent,
-    unsigned long long total) {
+void XMLHttpRequestUpload::DispatchEventAndLoadEnd(const AtomicString& type,
+                                                   bool length_computable,
+                                                   uint64_t bytes_sent,
+                                                   uint64_t total) {
   DCHECK(type == event_type_names::kLoad || type == event_type_names::kAbort ||
          type == event_type_names::kError ||
          type == event_type_names::kTimeout);

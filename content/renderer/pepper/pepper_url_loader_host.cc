@@ -134,9 +134,8 @@ bool PepperURLLoaderHost::WillFollowRedirect(
   return true;
 }
 
-void PepperURLLoaderHost::DidSendData(
-    unsigned long long bytes_sent,
-    unsigned long long total_bytes_to_be_sent) {
+void PepperURLLoaderHost::DidSendData(uint64_t bytes_sent,
+                                      uint64_t total_bytes_to_be_sent) {
   // TODO(darin): Bounds check input?
   bytes_sent_ = static_cast<int64_t>(bytes_sent);
   total_bytes_to_be_sent_ = static_cast<int64_t>(total_bytes_to_be_sent);
@@ -151,7 +150,7 @@ void PepperURLLoaderHost::DidReceiveResponse(const WebURLResponse& response) {
   SaveResponse(response);
 }
 
-void PepperURLLoaderHost::DidDownloadData(unsigned long long data_length) {
+void PepperURLLoaderHost::DidDownloadData(uint64_t data_length) {
   bytes_received_ += data_length;
   UpdateProgress();
 }

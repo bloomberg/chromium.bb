@@ -132,8 +132,8 @@ class WebAssociatedURLLoaderTest : public testing::Test,
     return true;
   }
 
-  void DidSendData(unsigned long long bytes_sent,
-                   unsigned long long total_bytes_to_be_sent) override {
+  void DidSendData(uint64_t bytes_sent,
+                   uint64_t total_bytes_to_be_sent) override {
     did_send_data_ = true;
   }
 
@@ -145,7 +145,7 @@ class WebAssociatedURLLoaderTest : public testing::Test,
     EXPECT_EQ(expected_response_.HttpStatusCode(), response.HttpStatusCode());
   }
 
-  void DidDownloadData(unsigned long long data_length) override {
+  void DidDownloadData(uint64_t data_length) override {
     did_download_data_ = true;
   }
 

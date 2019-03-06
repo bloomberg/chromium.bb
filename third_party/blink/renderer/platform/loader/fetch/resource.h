@@ -342,9 +342,9 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   // https://fetch.spec.whatwg.org/#concept-request-origin
   const scoped_refptr<const SecurityOrigin>& GetOrigin() const;
 
-  virtual void DidSendData(unsigned long long /* bytesSent */,
-                           unsigned long long /* totalBytesToBeSent */) {}
-  virtual void DidDownloadData(unsigned long long) {}
+  virtual void DidSendData(uint64_t /* bytesSent */,
+                           uint64_t /* totalBytesToBeSent */) {}
+  virtual void DidDownloadData(uint64_t) {}
   virtual void DidDownloadToBlob(scoped_refptr<BlobDataHandle>) {}
 
   TimeTicks LoadResponseEnd() const { return load_response_end_; }

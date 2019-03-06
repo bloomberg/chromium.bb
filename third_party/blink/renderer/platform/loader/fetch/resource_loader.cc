@@ -869,8 +869,8 @@ void ResourceLoader::ClearCachedCode() {
   Platform::Current()->ClearCodeCacheEntry(cache_type, resource_->Url());
 }
 
-void ResourceLoader::DidSendData(unsigned long long bytes_sent,
-                                 unsigned long long total_bytes_to_be_sent) {
+void ResourceLoader::DidSendData(uint64_t bytes_sent,
+                                 uint64_t total_bytes_to_be_sent) {
   resource_->DidSendData(bytes_sent, total_bytes_to_be_sent);
 }
 

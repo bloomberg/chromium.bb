@@ -107,10 +107,10 @@ class WebAssociatedURLLoaderImpl::ClientAdapter final
                 scoped_refptr<base::SingleThreadTaskRunner>);
 
   // ThreadableLoaderClient
-  void DidSendData(unsigned long long /*bytesSent*/,
-                   unsigned long long /*totalBytesToBeSent*/) override;
+  void DidSendData(uint64_t /*bytesSent*/,
+                   uint64_t /*totalBytesToBeSent*/) override;
   void DidReceiveResponse(unsigned long, const ResourceResponse&) override;
-  void DidDownloadData(unsigned long long /*dataLength*/) override;
+  void DidDownloadData(uint64_t /*dataLength*/) override;
   void DidReceiveData(const char*, unsigned /*dataLength*/) override;
   void DidReceiveCachedMetadata(const char*, int /*dataLength*/) override;
   void DidFinishLoading(unsigned long /*identifier*/) override;
@@ -188,8 +188,8 @@ bool WebAssociatedURLLoaderImpl::ClientAdapter::WillFollowRedirect(
 }
 
 void WebAssociatedURLLoaderImpl::ClientAdapter::DidSendData(
-    unsigned long long bytes_sent,
-    unsigned long long total_bytes_to_be_sent) {
+    uint64_t bytes_sent,
+    uint64_t total_bytes_to_be_sent) {
   if (!client_)
     return;
 
@@ -236,7 +236,7 @@ void WebAssociatedURLLoaderImpl::ClientAdapter::DidReceiveResponse(
 }
 
 void WebAssociatedURLLoaderImpl::ClientAdapter::DidDownloadData(
-    unsigned long long data_length) {
+    uint64_t data_length) {
   if (!client_)
     return;
 

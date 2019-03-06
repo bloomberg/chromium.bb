@@ -337,14 +337,14 @@ void RawResource::SetSerializedCachedMetadata(const uint8_t* data,
     c->SetSerializedCachedMetadata(this, data, size);
 }
 
-void RawResource::DidSendData(unsigned long long bytes_sent,
-                              unsigned long long total_bytes_to_be_sent) {
+void RawResource::DidSendData(uint64_t bytes_sent,
+                              uint64_t total_bytes_to_be_sent) {
   ResourceClientWalker<RawResourceClient> w(Clients());
   while (RawResourceClient* c = w.Next())
     c->DataSent(this, bytes_sent, total_bytes_to_be_sent);
 }
 
-void RawResource::DidDownloadData(unsigned long long data_length) {
+void RawResource::DidDownloadData(uint64_t data_length) {
   ResourceClientWalker<RawResourceClient> w(Clients());
   while (RawResourceClient* c = w.Next())
     c->DataDownloaded(this, data_length);
