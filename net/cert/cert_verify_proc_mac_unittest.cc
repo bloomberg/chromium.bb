@@ -165,9 +165,9 @@ TEST(CertVerifyProcMacTest, DISABLED_MacKeychainReordering) {
   int flags = 0;
   CertVerifyResult verify_result;
   scoped_refptr<CertVerifyProc> verify_proc = new CertVerifyProcMac;
-  int error = verify_proc->Verify(cert.get(), "gms.hongleong.com.my",
-                                  std::string(), flags, nullptr /* crl_set */,
-                                  CertificateList(), &verify_result);
+  int error = verify_proc->Verify(
+      cert.get(), "gms.hongleong.com.my", std::string(), flags,
+      CRLSet::BuiltinCRLSet().get(), CertificateList(), &verify_result);
 
   ASSERT_EQ(OK, error);
   EXPECT_FALSE(verify_result.has_sha1);
@@ -213,7 +213,8 @@ TEST(CertVerifyProcMacTest, LargeKey) {
   CertVerifyResult verify_result;
   scoped_refptr<CertVerifyProc> verify_proc = new CertVerifyProcMac;
   int error = verify_proc->Verify(cert.get(), "127.0.0.1", std::string(), flags,
-                                  NULL, CertificateList(), &verify_result);
+                                  CRLSet::BuiltinCRLSet().get(),
+                                  CertificateList(), &verify_result);
   EXPECT_THAT(error, IsError(ERR_CERT_INVALID));
   EXPECT_TRUE(verify_result.cert_status & CERT_STATUS_INVALID);
 }

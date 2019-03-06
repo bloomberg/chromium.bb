@@ -1014,9 +1014,8 @@ int CertVerifyProcWin::VerifyInternal(
   // should have prevented invalid paths from being built, the behaviour and
   // timing of how a Revocation Provider is invoked is not well documented. This
   // is just defense in depth.
-  CRLSetResult crl_set_result = kCRLSetUnknown;
-  if (crl_set)
-    crl_set_result = CheckChainRevocationWithCRLSet(chain_context, crl_set);
+  CRLSetResult crl_set_result =
+      CheckChainRevocationWithCRLSet(chain_context, crl_set);
 
   if (crl_set_result == kCRLSetRevoked) {
     verify_result->cert_status |= CERT_STATUS_REVOKED;

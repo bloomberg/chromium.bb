@@ -305,25 +305,6 @@ void RecordTrustAnchorHistogram(const HashValueVector& spki_hashes,
   }
 }
 
-// Comparison functor used for binary searching whether a given HashValue,
-// which MUST be a SHA-256 hash, is contained with an array of SHA-256
-// hashes.
-struct HashToArrayComparator {
-  template <size_t N>
-  bool operator()(const uint8_t(&lhs)[N], const HashValue& rhs) const {
-    static_assert(N == crypto::kSHA256Length,
-                  "Only SHA-256 hashes are supported");
-    return memcmp(lhs, rhs.data(), crypto::kSHA256Length) < 0;
-  }
-
-  template <size_t N>
-  bool operator()(const HashValue& lhs, const uint8_t(&rhs)[N]) const {
-    static_assert(N == crypto::kSHA256Length,
-                  "Only SHA-256 hashes are supported");
-    return memcmp(lhs.data(), rhs, crypto::kSHA256Length) < 0;
-  }
-};
-
 bool AreSHA1IntermediatesAllowed() {
 #if defined(OS_WIN)
   // TODO(rsleevi): Remove this once https://crbug.com/588789 is resolved
@@ -513,6 +494,7 @@ int CertVerifyProc::Verify(X509Certificate* cert,
     return ERR_CERT_REVOKED;
   }
 
+  DCHECK(crl_set);
   int rv = VerifyInternal(cert, hostname, ocsp_response, flags, crl_set,
                           additional_trust_anchors, verify_result);
 
@@ -531,13 +513,6 @@ int CertVerifyProc::Verify(X509Certificate* cert,
 
   BestEffortCheckOCSP(ocsp_response, *verify_result->verified_cert,
                       &verify_result->ocsp_result);
-
-  // This check is done after VerifyInternal so that VerifyInternal can fill
-  // in the list of public key hashes.
-  if (IsPublicKeyBlacklisted(verify_result->public_key_hashes)) {
-    verify_result->cert_status |= CERT_STATUS_REVOKED;
-    rv = MapCertStatusToNetError(verify_result->cert_status);
-  }
 
   std::vector<std::string> dns_names, ip_addrs;
   cert->GetSubjectAltName(&dns_names, &ip_addrs);
@@ -656,23 +631,6 @@ bool CertVerifyProc::IsBlacklisted(X509Certificate* cert) {
     return true;
   }
 
-  return false;
-}
-
-// static
-bool CertVerifyProc::IsPublicKeyBlacklisted(
-    const HashValueVector& public_key_hashes) {
-// Defines kBlacklistedSPKIs.
-#include "net/cert/cert_verify_proc_blacklist.inc"
-  for (const auto& hash : public_key_hashes) {
-    if (hash.tag() != HASH_VALUE_SHA256)
-      continue;
-    if (std::binary_search(std::begin(kBlacklistedSPKIs),
-                           std::end(kBlacklistedSPKIs), hash,
-                           HashToArrayComparator())) {
-      return true;
-    }
-  }
   return false;
 }
 

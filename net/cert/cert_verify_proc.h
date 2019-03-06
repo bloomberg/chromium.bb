@@ -74,8 +74,9 @@ class NET_EXPORT CertVerifyProc
   // based revocation checking is always enabled, regardless of this flag, if
   // |crl_set| is given.
   //
-  // |crl_set| points to an optional CRLSet structure which can be used to
-  // avoid revocation checks over the network.
+  // |crl_set|, which is required, points to an CRLSet structure which can be
+  // used to avoid revocation checks over the network.  If you do not have one
+  // handy, use CRLSet::BuiltinCRLSet().
   //
   // |additional_trust_anchors| lists certificates that can be trusted when
   // building a certificate chain, in addition to the anchors known to the
@@ -135,10 +136,6 @@ class NET_EXPORT CertVerifyProc
 
   // Returns true if |cert| is explicitly blacklisted.
   static bool IsBlacklisted(X509Certificate* cert);
-
-  // IsPublicKeyBlacklisted returns true iff one of |public_key_hashes| (which
-  // are hashes of SubjectPublicKeyInfo structures) is explicitly blocked.
-  static bool IsPublicKeyBlacklisted(const HashValueVector& public_key_hashes);
 
   // HasNameConstraintsViolation returns true iff one of |public_key_hashes|
   // (which are hashes of SubjectPublicKeyInfo structures) has name constraints

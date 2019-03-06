@@ -778,9 +778,7 @@ int VerifyWithGivenFlags(X509Certificate* cert,
       // solution might be to have CRLSets contain enough knowledge about what
       // the 'desired' path might be, but for the time being, the
       // implementation is kept as 'simple' as it can be.
-      CRLSetResult crl_result = kCRLSetUnknown;
-      if (crl_set)
-        crl_result = CheckRevocationWithCRLSet(temp_chain, crl_set);
+      CRLSetResult crl_result = CheckRevocationWithCRLSet(temp_chain, crl_set);
       bool untrusted = (temp_trust_result != kSecTrustResultUnspecified &&
                         temp_trust_result != kSecTrustResultProceed) ||
                        crl_result == kCRLSetRevoked;
