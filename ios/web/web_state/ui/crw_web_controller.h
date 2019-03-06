@@ -98,6 +98,10 @@ class WebStateImpl;
 // back-forward list navigations.
 @property(nonatomic) BOOL allowsBackForwardNavigationGestures;
 
+// The receiver of JavaScripts.
+@property(nonatomic, strong, readonly)
+    CRWJSInjectionReceiver* jsInjectionReceiver;
+
 // Designated initializer. Initializes web controller with |webState|. The
 // calling code must retain the ownership of |webState|.
 - (instancetype)initWithWebState:(web::WebStateImpl*)webState;
@@ -192,8 +196,6 @@ class WebStateImpl;
 - (void)addGestureRecognizerToWebView:(UIGestureRecognizer*)recognizer;
 // Removes |recognizer| from the web view.
 - (void)removeGestureRecognizerFromWebView:(UIGestureRecognizer*)recognizer;
-
-- (CRWJSInjectionReceiver*)jsInjectionReceiver;
 
 // Returns the native controller (if any) current mananging the content.
 - (id<CRWNativeContent>)nativeController;
