@@ -74,7 +74,7 @@ public class TabGridContainerViewBinderTest extends DummyUiActivityTestCase {
 
     @BeforeClass
     public static void setUpBeforeActivityLaunched() {
-        DummyUiActivity.setTestTheme(R.style.Theme_Chromium_Activity_Fullscreen);
+        DummyUiActivity.setTestLayout(R.layout.tab_list_recycler_view_layout);
     }
 
     @Override
@@ -82,8 +82,6 @@ public class TabGridContainerViewBinderTest extends DummyUiActivityTestCase {
         super.setUpTest();
 
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            getActivity().setContentView(R.layout.tab_list_recycler_view_layout);
-
             mRecyclerView = getActivity().findViewById(R.id.tab_list_view);
         });
 

@@ -18,16 +18,13 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.ui.DummyUiActivity;
 import org.chromium.chrome.test.ui.DummyUiActivityTestCase;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
@@ -77,11 +74,6 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
             };
     private AtomicBoolean mSelectClicked = new AtomicBoolean();
     private boolean mShouldReturnBitmap;
-
-    @BeforeClass
-    public static void setUpBeforeActivityLaunched() {
-        DummyUiActivity.setTestTheme(R.style.Theme_Chromium_Activity_Fullscreen);
-    }
 
     @Override
     public void setUpTest() throws Exception {
