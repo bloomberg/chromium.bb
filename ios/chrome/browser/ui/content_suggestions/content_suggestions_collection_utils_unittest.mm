@@ -87,22 +87,6 @@ class ContentSuggestionsCollectionUtilsTest : public PlatformTest {
   std::unique_ptr<ScopedBlockSwizzler> orientation_swizzler_;
 };
 
-TEST_F(ContentSuggestionsCollectionUtilsTest, centeredTilesMarginIPhone6) {
-  // Setup.
-  SetAsIPhone();
-
-  CGFloat result = centeredTilesMarginForWidth(375);
-  EXPECT_EQ(28, result);
-}
-
-TEST_F(ContentSuggestionsCollectionUtilsTest, centeredTilesMarginIPad) {
-  // Setup.
-  SetAsIPad();
-
-  CGFloat result = centeredTilesMarginForWidth(767);
-  EXPECT_EQ(209, result);
-}
-
 TEST_F(ContentSuggestionsCollectionUtilsTest, doodleFrameIPad) {
   // Setup.
   SetAsIPad();

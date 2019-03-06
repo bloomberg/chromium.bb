@@ -22,6 +22,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller_audience.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_constants.h"
+#import "ios/chrome/browser/ui/ntp_tile_views/ntp_tile_layout_util.h"
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_controller.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_utils.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
@@ -431,8 +432,8 @@ NSString* const kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix =
     parentInset.right = 0;
   } else if ([self.collectionUpdater isMostVisitedSection:section] ||
              [self.collectionUpdater isPromoSection:section]) {
-    CGFloat margin = content_suggestions::centeredTilesMarginForWidth(
-        collectionView.frame.size.width);
+    CGFloat margin = CenteredTilesMarginForWidth(
+        self.traitCollection, collectionView.frame.size.width);
     parentInset.left = margin;
     parentInset.right = margin;
     if ([self.collectionUpdater isMostVisitedSection:section]) {
@@ -455,7 +456,7 @@ NSString* const kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix =
                                             collectionViewLayout
     minimumLineSpacingForSectionAtIndex:(NSInteger)section {
   if ([self.collectionUpdater isMostVisitedSection:section]) {
-    return content_suggestions::verticalSpacingBetweenTiles();
+    return kNtpTilesVerticalSpacing;
   }
   return [super collectionView:collectionView
                                    layout:collectionViewLayout

@@ -15,12 +15,6 @@ typedef NS_ENUM(NSInteger, NTPCollectionShortcutType) {
   NTPCollectionShortcutTypeHistory,
 };
 
-// Returns the size of most visited cell according to current font size.
-CGSize MostVisitedCellSize();
-
-// Returns number of tiles per row based on current system font size.
-NSUInteger NumberOfTilesPerRow();
-
 // Returns a localized title for a given collection shortcut type.
 NSString* TitleForCollectionShortcutType(NTPCollectionShortcutType action);
 // Returns an icon for a given collection shortcut type to be used in an NTP
