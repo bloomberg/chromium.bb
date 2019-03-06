@@ -55,6 +55,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_item.h"
+#include "components/offline_pages/buildflags/buildflags.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
@@ -91,6 +92,12 @@
 #include "chrome/browser/extensions/webstore_installer.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/common/constants.h"
+#endif
+
+#if BUILDFLAG(ENABLE_OFFLINE_PAGES)
+#include "chrome/browser/offline_pages/offline_page_utils.h"
+#include "components/offline_pages/core/client_namespace_constants.h"
+#include "services/network/public/cpp/features.h"
 #endif
 
 using content::BrowserThread;
@@ -579,6 +586,19 @@ bool ChromeDownloadManagerDelegate::InterceptDownloadIfApplicable(
     const std::string& request_origin,
     int64_t content_length,
     content::WebContents* web_contents) {
+#if BUILDFLAG(ENABLE_OFFLINE_PAGES)
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    if (offline_pages::OfflinePageUtils::CanDownloadAsOfflinePage(url,
+                                                                  mime_type)) {
+      offline_pages::OfflinePageUtils::ScheduleDownload(
+          web_contents, offline_pages::kDownloadNamespace, url,
+          offline_pages::OfflinePageUtils::DownloadUIActionFlags::ALL,
+          request_origin);
+      return true;
+    }
+  }
+#endif
   return false;
 }
 
