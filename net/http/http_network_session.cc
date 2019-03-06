@@ -311,23 +311,10 @@ void HttpNetworkSession::RemoveResponseDrainer(
   response_drainers_.erase(drainer);
 }
 
-TransportClientSocketPool* HttpNetworkSession::GetTransportSocketPool(
-    SocketPoolType pool_type) {
-  return GetSocketPoolManager(pool_type)->GetTransportSocketPool();
-}
-
-TransportClientSocketPool* HttpNetworkSession::GetSocketPoolForSOCKSProxy(
+TransportClientSocketPool* HttpNetworkSession::GetSocketPool(
     SocketPoolType pool_type,
-    const ProxyServer& socks_proxy) {
-  return GetSocketPoolManager(pool_type)->GetSocketPoolForSOCKSProxy(
-      socks_proxy);
-}
-
-TransportClientSocketPool* HttpNetworkSession::GetSocketPoolForHTTPLikeProxy(
-    SocketPoolType pool_type,
-    const ProxyServer& http_proxy) {
-  return GetSocketPoolManager(pool_type)->GetSocketPoolForHTTPLikeProxy(
-      http_proxy);
+    const ProxyServer& proxy_server) {
+  return GetSocketPoolManager(pool_type)->GetSocketPool(proxy_server);
 }
 
 std::unique_ptr<base::Value> HttpNetworkSession::SocketPoolInfoToValue() const {

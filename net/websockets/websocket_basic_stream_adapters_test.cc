@@ -98,7 +98,7 @@ class WebSocketClientSocketHandleAdapterTest
             ssl_params_),
         MEDIUM, SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
         callback.callback(), ClientSocketPool::ProxyAuthCallback(),
-        socket_pool_manager_->GetTransportSocketPool(), net_log_);
+        socket_pool_manager_->GetSocketPool(ProxyServer::Direct()), net_log_);
     rv = callback.GetResult(rv);
     return rv == OK;
   }

@@ -296,14 +296,11 @@ class NET_EXPORT HttpNetworkSession {
   // Removes the drainer from the session. Does not dispose of it.
   void RemoveResponseDrainer(HttpResponseBodyDrainer* drainer);
 
-  TransportClientSocketPool* GetTransportSocketPool(SocketPoolType pool_type);
-  // Currently only works for SOCKS proxies.
-  TransportClientSocketPool* GetSocketPoolForSOCKSProxy(
-      SocketPoolType pool_type,
-      const ProxyServer& socks_proxy);
-  TransportClientSocketPool* GetSocketPoolForHTTPLikeProxy(
-      SocketPoolType pool_type,
-      const ProxyServer& http_proxy);
+  // Returns the socket pool of the given type for use with the specified
+  // ProxyServer. Use ProxyServer::Direct() to get the pool for use with direct
+  // connections.
+  TransportClientSocketPool* GetSocketPool(SocketPoolType pool_type,
+                                           const ProxyServer& proxy_server);
 
   CertVerifier* cert_verifier() { return cert_verifier_; }
   ProxyResolutionService* proxy_resolution_service() {

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "net/base/proxy_server.h"
 #include "net/dns/dns_client.h"
 #include "net/dns/dns_config.h"
 #include "net/dns/dns_transaction.h"
@@ -206,7 +207,8 @@ TEST_F(HttpWithDnsOverHttpsTest, EndToEnd) {
   std::string group_name(request_info.url.host() + ":" +
                          request_info.url.port());
   EXPECT_EQ(network_session
-                ->GetTransportSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL)
+                ->GetSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL,
+                                ProxyServer::Direct())
                 ->IdleSocketCountInGroup(group_name),
             1u);
 

@@ -10,7 +10,6 @@
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "net/base/load_flags.h"
-#include "net/base/proxy_server.h"
 #include "net/http/http_proxy_connect_job.h"
 #include "net/http/http_request_info.h"
 #include "net/http/http_stream_factory.h"
@@ -69,12 +68,12 @@ static_assert(base::size(g_max_sockets_per_proxy_server) ==
 
 // The meat of the implementation for the InitSocketHandleForHttpRequest,
 // InitSocketHandleForRawConnect and PreconnectSocketsForHttpRequest methods.
-int InitSocketPoolHelper(
+scoped_refptr<TransportClientSocketPool::SocketParams>
+CreateSocketParamsAndGetGroupName(
     ClientSocketPoolManager::SocketGroupType group_type,
     const HostPortPair& endpoint,
     const HttpRequestHeaders& request_extra_headers,
     int request_load_flags,
-    RequestPriority request_priority,
     HttpNetworkSession* session,
     const ProxyInfo& proxy_info,
     quic::QuicTransportVersion quic_version,
@@ -82,14 +81,8 @@ int InitSocketPoolHelper(
     const SSLConfig& ssl_config_for_proxy,
     bool force_tunnel,
     PrivacyMode privacy_mode,
-    const SocketTag& socket_tag,
-    const NetLogWithSource& net_log,
-    int num_preconnect_streams,
-    ClientSocketHandle* socket_handle,
-    HttpNetworkSession::SocketPoolType socket_pool_type,
     const OnHostResolutionCallback& resolution_callback,
-    CompletionOnceCallback callback,
-    const ClientSocketPool::ProxyAuthCallback& proxy_auth_callback) {
+    std::string* connection_group) {
   scoped_refptr<HttpProxySocketParams> http_proxy_params;
   scoped_refptr<SOCKSSocketParams> socks_params;
 
@@ -108,26 +101,21 @@ int InitSocketPoolHelper(
 
   // Build the string used to uniquely identify connections of this type.
   // Determine the host and port to connect to.
-  std::string connection_group = origin_host_port.ToString();
-  DCHECK(!connection_group.empty());
+  *connection_group = origin_host_port.ToString();
+  DCHECK(!connection_group->empty());
   if (group_type == ClientSocketPoolManager::FTP_GROUP) {
     // Combining FTP with forced SPDY over SSL would be a "path to madness".
     // Make sure we never do that.
     DCHECK(!using_ssl);
-    connection_group = "ftp/" + connection_group;
+    *connection_group = "ftp/" + *connection_group;
   }
   if (using_ssl) {
     std::string prefix = "ssl/";
     if (ssl_config_for_origin.version_interference_probe) {
       prefix += "version-interference-probe/";
     }
-    connection_group = prefix + connection_group;
+    *connection_group = prefix + *connection_group;
   }
-
-  ClientSocketPool::RespectLimits respect_limits =
-      ClientSocketPool::RespectLimits::ENABLED;
-  if ((request_load_flags & LOAD_IGNORE_LIMITS) != 0)
-    respect_limits = ClientSocketPool::RespectLimits::DISABLED;
 
   if (!proxy_info.is_direct()) {
     ProxyServer proxy_server = proxy_info.proxy_server();
@@ -139,9 +127,9 @@ int InitSocketPoolHelper(
       // TODO(mmenke):  Would it be better to split these into two different
       //     socket pools?  And maybe socks4/socks5 as well?
       if (proxy_info.is_http()) {
-        connection_group = "http_proxy/" + connection_group;
+        *connection_group = "http_proxy/" + *connection_group;
       } else {
-        connection_group = "https_proxy/" + connection_group;
+        *connection_group = "https_proxy/" + *connection_group;
       }
 
       std::string user_agent;
@@ -177,8 +165,8 @@ int InitSocketPoolHelper(
         socks_version = '5';
       else
         socks_version = '4';
-      connection_group = base::StringPrintf(
-          "socks%c/%s", socks_version, connection_group.c_str());
+      *connection_group = base::StringPrintf("socks%c/%s", socks_version,
+                                             connection_group->c_str());
 
       socks_params = new SOCKSSocketParams(
           proxy_tcp_params, socks_version == '5', origin_host_port,
@@ -188,108 +176,85 @@ int InitSocketPoolHelper(
 
   // Change group name if privacy mode is enabled.
   if (privacy_mode == PRIVACY_MODE_ENABLED)
-    connection_group = "pm/" + connection_group;
+    *connection_group = "pm/" + *connection_group;
 
   // Deal with SSL - which layers on top of any given proxy.
   if (using_ssl) {
     scoped_refptr<TransportSocketParams> ssl_tcp_params;
     if (proxy_info.is_direct()) {
-      ssl_tcp_params = new TransportSocketParams(
+      ssl_tcp_params = base::MakeRefCounted<TransportSocketParams>(
           origin_host_port, disable_resolver_cache, resolution_callback);
     }
-    scoped_refptr<SSLSocketParams> ssl_params = new SSLSocketParams(
-        ssl_tcp_params, socks_params, http_proxy_params, origin_host_port,
-        ssl_config_for_origin, privacy_mode);
-    TransportClientSocketPool* ssl_pool = nullptr;
-    if (proxy_info.is_direct()) {
-      ssl_pool = session->GetTransportSocketPool(socket_pool_type);
-    } else if (proxy_info.is_socks()) {
-      ssl_pool = session->GetSocketPoolForSOCKSProxy(socket_pool_type,
-                                                     proxy_info.proxy_server());
-    } else {
-      ssl_pool = session->GetSocketPoolForHTTPLikeProxy(
-          socket_pool_type, proxy_info.proxy_server());
-    }
-
-    if (num_preconnect_streams) {
-      RequestSocketsForPool(
-          ssl_pool, connection_group,
-          TransportClientSocketPool::SocketParams::CreateFromSSLSocketParams(
-              ssl_params),
-          num_preconnect_streams, net_log);
-      return OK;
-    }
-
-    return socket_handle->Init(
-        connection_group,
-        TransportClientSocketPool::SocketParams::CreateFromSSLSocketParams(
-            ssl_params),
-        request_priority, socket_tag, respect_limits, std::move(callback),
-        proxy_auth_callback, ssl_pool, net_log);
+    scoped_refptr<SSLSocketParams> ssl_params =
+        base::MakeRefCounted<SSLSocketParams>(
+            ssl_tcp_params, socks_params, http_proxy_params, origin_host_port,
+            ssl_config_for_origin, privacy_mode);
+    return TransportClientSocketPool::SocketParams::CreateFromSSLSocketParams(
+        std::move(ssl_params));
   }
 
-  // Finally, get the connection started.
-
   if (proxy_info.is_http() || proxy_info.is_https()) {
-    TransportClientSocketPool* pool = session->GetSocketPoolForHTTPLikeProxy(
-        socket_pool_type, proxy_info.proxy_server());
-    if (num_preconnect_streams) {
-      RequestSocketsForPool(
-          pool, connection_group,
-          TransportClientSocketPool::SocketParams::
-              CreateFromHttpProxySocketParams(http_proxy_params),
-          num_preconnect_streams, net_log);
-      return OK;
-    }
-
-    return socket_handle->Init(
-        connection_group,
-        TransportClientSocketPool::SocketParams::
-            CreateFromHttpProxySocketParams(http_proxy_params),
-        request_priority, socket_tag, respect_limits, std::move(callback),
-        proxy_auth_callback, pool, net_log);
+    return TransportClientSocketPool::SocketParams::
+        CreateFromHttpProxySocketParams(std::move(http_proxy_params));
   }
 
   if (proxy_info.is_socks()) {
-    TransportClientSocketPool* pool = session->GetSocketPoolForSOCKSProxy(
-        socket_pool_type, proxy_info.proxy_server());
-    if (num_preconnect_streams) {
-      RequestSocketsForPool(
-          pool, connection_group,
-          TransportClientSocketPool::SocketParams::CreateFromSOCKSSocketParams(
-              socks_params),
-          num_preconnect_streams, net_log);
-      return OK;
-    }
-
-    return socket_handle->Init(
-        connection_group,
-        TransportClientSocketPool::SocketParams::CreateFromSOCKSSocketParams(
-            socks_params),
-        request_priority, socket_tag, respect_limits, std::move(callback),
-        proxy_auth_callback, pool, net_log);
+    return TransportClientSocketPool::SocketParams::CreateFromSOCKSSocketParams(
+        socks_params);
   }
 
   DCHECK(proxy_info.is_direct());
   scoped_refptr<TransportSocketParams> tcp_params = new TransportSocketParams(
       origin_host_port, disable_resolver_cache, resolution_callback);
+  return TransportClientSocketPool::SocketParams::
+      CreateFromTransportSocketParams(std::move(tcp_params));
+}
+
+int InitSocketPoolHelper(
+    ClientSocketPoolManager::SocketGroupType group_type,
+    const HostPortPair& endpoint,
+    const HttpRequestHeaders& request_extra_headers,
+    int request_load_flags,
+    RequestPriority request_priority,
+    HttpNetworkSession* session,
+    const ProxyInfo& proxy_info,
+    quic::QuicTransportVersion quic_version,
+    const SSLConfig& ssl_config_for_origin,
+    const SSLConfig& ssl_config_for_proxy,
+    bool force_tunnel,
+    PrivacyMode privacy_mode,
+    const SocketTag& socket_tag,
+    const NetLogWithSource& net_log,
+    int num_preconnect_streams,
+    ClientSocketHandle* socket_handle,
+    HttpNetworkSession::SocketPoolType socket_pool_type,
+    const OnHostResolutionCallback& resolution_callback,
+    CompletionOnceCallback callback,
+    const ClientSocketPool::ProxyAuthCallback& proxy_auth_callback) {
+  std::string connection_group;
+  scoped_refptr<TransportClientSocketPool::SocketParams> socket_params =
+      CreateSocketParamsAndGetGroupName(
+          group_type, endpoint, request_extra_headers, request_load_flags,
+          session, proxy_info, quic_version, ssl_config_for_origin,
+          ssl_config_for_proxy, force_tunnel, privacy_mode, resolution_callback,
+          &connection_group);
+
   TransportClientSocketPool* pool =
-      session->GetTransportSocketPool(socket_pool_type);
+      session->GetSocketPool(socket_pool_type, proxy_info.proxy_server());
+  ClientSocketPool::RespectLimits respect_limits =
+      ClientSocketPool::RespectLimits::ENABLED;
+  if ((request_load_flags & LOAD_IGNORE_LIMITS) != 0)
+    respect_limits = ClientSocketPool::RespectLimits::DISABLED;
+
   if (num_preconnect_streams) {
-    RequestSocketsForPool(
-        pool, connection_group,
-        TransportClientSocketPool::SocketParams::
-            CreateFromTransportSocketParams(std::move(tcp_params)),
-        num_preconnect_streams, net_log);
+    RequestSocketsForPool(pool, connection_group, std::move(socket_params),
+                          num_preconnect_streams, net_log);
     return OK;
   }
 
   return socket_handle->Init(
-      connection_group,
-      TransportClientSocketPool::SocketParams::CreateFromTransportSocketParams(
-          std::move(tcp_params)),
-      request_priority, socket_tag, respect_limits, std::move(callback),
-      proxy_auth_callback, pool, net_log);
+      connection_group, std::move(socket_params), request_priority, socket_tag,
+      respect_limits, std::move(callback), proxy_auth_callback, pool, net_log);
 }
 
 }  // namespace
