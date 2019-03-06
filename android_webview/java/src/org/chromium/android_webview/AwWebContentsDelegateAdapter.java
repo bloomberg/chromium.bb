@@ -8,6 +8,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.media.AudioManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
@@ -152,11 +153,17 @@ class AwWebContentsDelegateAdapter extends AwWebContentsDelegate {
                 Log.w(TAG, "Unknown message level, defaulting to DEBUG");
                 break;
         }
-
+        // Calling onConsoleMessage(...) even that the result is ignored if it's a non-debuggable
+        // app or device as it can be overriden by the user with some custom logic that is expected
+        // to be always run.
         boolean result = mContentsClient.onConsoleMessage(
                 new AwConsoleMessage(message, sourceId, lineNumber, messageLevel));
-        if (result && message != null && message.startsWith("[blocked]")) {
-            Log.e(TAG, "Blocked URL: " + message);
+        boolean isAppDebuggable = mContext.getApplicationInfo().FLAG_DEBUGGABLE != 0;
+        boolean isOsDebuggable = !Build.TYPE.equals("user");
+        // Always return true if not debuggable so js console messages won't be mirrored to logcat
+        // for privacy.
+        if (!isAppDebuggable && !isOsDebuggable) {
+            return true;
         }
         return result;
     }
