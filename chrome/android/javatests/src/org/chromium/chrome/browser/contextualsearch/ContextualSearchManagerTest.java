@@ -205,7 +205,6 @@ public class ContextualSearchManagerTest {
         // TODO(donnd): find a better way to wait for page-ready, or at least reduce the delay!
         Thread.sleep(ACTIVITY_STARTUP_DELAY_MS);
         mManager = mActivityTestRule.getActivity().getContextualSearchManager();
-        mManager.suppressContextualSearchForSmartSelection(false);
 
         Assert.assertNotNull(mManager);
         mPanel = mManager.getContextualSearchPanel();
@@ -3175,49 +3174,6 @@ public class ContextualSearchManagerTest {
     }
 
     /**
-     * Tests that Contextual Search is suppressed on long-press only when Smart Selection is
-     * enabled, and that the Observers always get notified that text was selected.
-     */
-    @Test
-    @SmallTest
-    @Feature({"ContextualSearch"})
-    public void testSmartSelectSuppressesAndNotifiesObservers()
-            throws InterruptedException, TimeoutException {
-        // Mark the user undecided so we won't allow sending surroundings.
-        mPolicy.overrideDecidedStateForTesting(false);
-        TestContextualSearchObserver observer = new TestContextualSearchObserver();
-        mManager.addObserver(observer);
-        mFakeServer.reset();
-
-        longPressNodeWithoutWaiting("search");
-        waitForSelectActionBarVisible();
-        waitForPanelToPeek();
-        Assert.assertEquals(1, observer.getShowRedactedCount());
-        Assert.assertEquals(1, observer.getShowCount());
-        Assert.assertEquals(0, observer.getHideCount());
-        mManager.removeObserver(observer);
-
-        tapBasePageToClosePanel();
-
-        // Tell the ContextualSearchManager that Smart Selection is enabled.
-        mManager.suppressContextualSearchForSmartSelection(true);
-        observer = new TestContextualSearchObserver();
-        mManager.addObserver(observer);
-        mFakeServer.reset();
-
-        longPressNodeWithoutWaiting("search");
-        waitForSelectActionBarVisible();
-        assertPanelClosedOrUndefined();
-        Assert.assertEquals(1, observer.getShowRedactedCount());
-        Assert.assertEquals(1, observer.getShowCount());
-        // Note that this test is flawed because it doesn't wait until the selection is cleared
-        // and verify that a Hide notification is sent.  This is a bug because no hide is ever
-        // sent in this case, but should be.  Details in https://crbug.com/878006.
-        Assert.assertEquals(0, observer.getHideCount());
-        mManager.removeObserver(observer);
-    }
-
-    /**
      * Tests that expanding the selection during a Search Term Resolve notifies the observers before
      * and after the expansion.
      */
@@ -3263,34 +3219,6 @@ public class ContextualSearchManagerTest {
         clickNode("search");
         waitForSelectActionBarVisible();
         closePanel();
-
-        // Sometimes we get an additional Show notification on the second Tap, but not reliably in
-        // tests.  See crbug.com/776541.
-        assertValueIs1or2(observer.getShowCount());
-        Assert.assertEquals(1, observer.getHideCount());
-        mManager.removeObserver(observer);
-    }
-
-    /**
-     * Tests a second Tap when Smart Selection is enabled.
-     */
-    @Test
-    @SmallTest
-    @Feature({"ContextualSearch"})
-    public void testSecondTapWithSmartSelection() throws InterruptedException, TimeoutException {
-        mManager.suppressContextualSearchForSmartSelection(true);
-        TestContextualSearchObserver observer = new TestContextualSearchObserver();
-        mManager.addObserver(observer);
-
-        clickWordNode("search");
-        Assert.assertEquals(1, observer.getShowCount());
-        Assert.assertEquals(0, observer.getHideCount());
-
-        clickNode("search");
-        waitForSelectActionBarVisible();
-
-        // Second Tap closes the panel automatically when Smart Selection is active.
-        waitForPanelToClose();
 
         // Sometimes we get an additional Show notification on the second Tap, but not reliably in
         // tests.  See crbug.com/776541.
