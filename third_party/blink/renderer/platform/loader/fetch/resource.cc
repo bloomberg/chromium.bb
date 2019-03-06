@@ -338,10 +338,10 @@ void Resource::FinishAsError(const ResourceError& error,
   }
 }
 
-void Resource::Finish(TimeTicks load_finish_time,
+void Resource::Finish(TimeTicks load_response_end,
                       base::SingleThreadTaskRunner* task_runner) {
   DCHECK(!is_revalidating_);
-  load_finish_time_ = load_finish_time;
+  load_response_end_ = load_response_end;
   if (!ErrorOccurred())
     status_ = ResourceStatus::kCached;
   loader_ = nullptr;

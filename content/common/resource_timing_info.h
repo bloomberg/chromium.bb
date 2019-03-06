@@ -72,7 +72,7 @@ struct ResourceTimingInfo {
   std::string connection_info;
   base::Optional<ResourceLoadTiming> timing;
   base::TimeTicks last_redirect_end_time;
-  base::TimeTicks finish_time;
+  base::TimeTicks response_end;
   uint64_t transfer_size = 0;
   uint64_t encoded_body_size = 0;
   uint64_t decoded_body_size = 0;

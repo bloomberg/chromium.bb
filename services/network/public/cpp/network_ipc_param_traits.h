@@ -117,7 +117,7 @@ IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(network::cors::PreflightTimingInfo)
   IPC_STRUCT_TRAITS_MEMBER(start_time)
-  IPC_STRUCT_TRAITS_MEMBER(finish_time)
+  IPC_STRUCT_TRAITS_MEMBER(response_end)
   IPC_STRUCT_TRAITS_MEMBER(alpn_negotiated_protocol)
   IPC_STRUCT_TRAITS_MEMBER(connection_info)
   IPC_STRUCT_TRAITS_MEMBER(timing_allow_origin)

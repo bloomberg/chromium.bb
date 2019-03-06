@@ -540,7 +540,7 @@ void DocumentLoader::BodyLoadingFinished(
       navigation_timing_info_->AddFinalTransferSize(
           total_encoded_data_length == -1 ? 0 : total_encoded_data_length);
       if (response_.HttpStatusCode() < 400 && report_timing_info_to_parent_) {
-        navigation_timing_info_->SetLoadFinishTime(completion_time);
+        navigation_timing_info_->SetLoadResponseEnd(completion_time);
         if (state_ >= kCommitted) {
           // Note that we currently lose timing info for empty documents,
           // which will be fixed with synchronous commit.

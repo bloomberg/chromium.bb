@@ -347,7 +347,7 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   virtual void DidDownloadData(unsigned long long) {}
   virtual void DidDownloadToBlob(scoped_refptr<BlobDataHandle>) {}
 
-  TimeTicks LoadFinishTime() const { return load_finish_time_; }
+  TimeTicks LoadResponseEnd() const { return load_response_end_; }
 
   void SetEncodedDataLength(int64_t value) {
     response_.SetEncodedDataLength(value);
@@ -531,7 +531,7 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
 
   base::Optional<ResourceError> error_;
 
-  TimeTicks load_finish_time_;
+  TimeTicks load_response_end_;
 
   unsigned long identifier_;
 

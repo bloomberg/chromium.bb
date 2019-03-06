@@ -53,7 +53,7 @@ PerformanceResourceTiming::PerformanceResourceTiming(
                            info.allow_negative_values),
                        Performance::MonotonicTimeToDOMHighResTimeStamp(
                            time_origin,
-                           info.finish_time,
+                           info.response_end,
                            info.allow_negative_values)),
       initiator_type_(initiator_type.IsEmpty()
                           ? fetch_initiator_type_names::kOther
@@ -64,7 +64,7 @@ PerformanceResourceTiming::PerformanceResourceTiming(
       time_origin_(time_origin),
       timing_(info.timing),
       last_redirect_end_time_(info.last_redirect_end_time),
-      finish_time_(info.finish_time),
+      response_end_(info.response_end),
       transfer_size_(info.transfer_size),
       encoded_body_size_(info.encoded_body_size),
       decoded_body_size_(info.decoded_body_size),
@@ -303,11 +303,11 @@ DOMHighResTimeStamp PerformanceResourceTiming::responseStart() const {
 }
 
 DOMHighResTimeStamp PerformanceResourceTiming::responseEnd() const {
-  if (finish_time_.is_null())
+  if (response_end_.is_null())
     return responseStart();
 
   return Performance::MonotonicTimeToDOMHighResTimeStamp(
-      time_origin_, finish_time_, allow_negative_value_);
+      time_origin_, response_end_, allow_negative_value_);
 }
 
 unsigned long long PerformanceResourceTiming::transferSize() const {
