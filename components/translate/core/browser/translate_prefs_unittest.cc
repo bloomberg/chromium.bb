@@ -391,6 +391,7 @@ TEST_F(TranslatePrefsTest, GetLanguageInfoList) {
 
 TEST_F(TranslatePrefsTest, BlockLanguage) {
   // `en` is a default blocked language, it should be present already.
+  ExpectBlockedLanguageListContent({"en"});
 
   // One language.
   translate_prefs_->BlockLanguage("fr-CA");
@@ -427,17 +428,26 @@ TEST_F(TranslatePrefsTest, BlockLanguage) {
 
 TEST_F(TranslatePrefsTest, UnblockLanguage) {
   // Language in the list.
+  // Should not unblock last language.
   translate_prefs_->UnblockLanguage("en-UK");
-  ExpectBlockedLanguageListContent({});
-
-  // Language not in the list.
-  translate_prefs_->BlockLanguage("en-UK");
-  translate_prefs_->UnblockLanguage("es-AR");
   ExpectBlockedLanguageListContent({"en"});
 
   // Language in the list but with different region.
+  // Should not unblock last language.
   translate_prefs_->UnblockLanguage("en-AU");
-  ExpectBlockedLanguageListContent({});
+  ExpectBlockedLanguageListContent({"en"});
+
+  // Language in the list.
+  translate_prefs_->ClearBlockedLanguages();
+  translate_prefs_->BlockLanguage("fr");
+  translate_prefs_->UnblockLanguage("en-UK");
+  ExpectBlockedLanguageListContent({"fr"});
+
+  // Language in the list but with different region.
+  translate_prefs_->ClearBlockedLanguages();
+  translate_prefs_->BlockLanguage("fr");
+  translate_prefs_->UnblockLanguage("en-AU");
+  ExpectBlockedLanguageListContent({"fr"});
 
   // Multiple languages.
   translate_prefs_->ClearBlockedLanguages();
@@ -517,6 +527,23 @@ TEST_F(TranslatePrefsTest, RemoveFromLanguageListRemovesRemainingUnsupported) {
   ExpectLanguagePrefs("en,en-FOO");
   translate_prefs_->RemoveFromLanguageList("en");
   ExpectLanguagePrefs("");
+}
+
+TEST_F(TranslatePrefsTest, ResetEmptyBlockedLanguagesToDefaults) {
+  ExpectBlockedLanguageListContent({"en"});
+
+  translate_prefs_->ResetEmptyBlockedLanguagesToDefaults();
+  ExpectBlockedLanguageListContent({"en"});
+
+  translate_prefs_->BlockLanguage("fr");
+  translate_prefs_->ResetEmptyBlockedLanguagesToDefaults();
+  ExpectBlockedLanguageListContent({"en", "fr"});
+
+  prefs_->Set(TranslatePrefs::kPrefTranslateBlockedLanguages,
+              base::ListValue());
+  ExpectBlockedLanguageListContent({});
+  translate_prefs_->ResetEmptyBlockedLanguagesToDefaults();
+  ExpectBlockedLanguageListContent({"en"});
 }
 
 TEST_F(TranslatePrefsTest, RemoveFromLanguageListClearsRecentLanguage) {
@@ -931,7 +958,7 @@ TEST_F(TranslatePrefsTest, DefaultBlockedLanguages) {
   // default accept languages for Chrome (resource IDS_ACCEPT_LANGUAGES,
   // provided by components_locale_settings_en-US.pak), and
   // language::kFallbackInputMethodLocale for ChromeOS. For the tests, the
-  // resources are given by .
+  // resources match.
   std::vector<std::string> blocked_languages_expected = {"en"};
   ExpectBlockedLanguageListContent(blocked_languages_expected);
 }
@@ -968,5 +995,4 @@ TEST_F(TranslatePrefsTest, CanTranslateLanguage) {
   EXPECT_TRUE(translate_prefs_->CanTranslateLanguage(
       &translate_accept_languages, "en"));
 }
-
 }  // namespace translate
