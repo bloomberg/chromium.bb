@@ -13,6 +13,7 @@
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/metrics/chrome_metrics_service_client.h"
 #include "chrome/browser/metrics/chrome_metrics_services_manager_client.h"
 #include "chrome/browser/metrics/persistent_histograms.h"
@@ -23,6 +24,8 @@
 #include "components/version_info/version_info.h"
 
 #if defined(OS_ANDROID)
+#include "base/android/library_loader/library_loader_hooks.h"
+#include "base/android/reached_code_profiler.h"
 #include "chrome/browser/chrome_browser_field_trials_mobile.h"
 #else
 #include "chrome/browser/chrome_browser_field_trials_desktop.h"
@@ -83,6 +86,33 @@ void ChromeBrowserFieldTrials::SetupFeatureControllingFieldTrials(
     chromeos::multidevice_setup::CreateFirstRunFieldTrial(feature_list);
 #endif
   }
+}
+
+void ChromeBrowserFieldTrials::RegisterSyntheticTrials() {
+#if defined(OS_ANDROID)
+  static constexpr char kEnabledGroup[] = "Enabled";
+  static constexpr char kDisabledGroup[] = "Disabled";
+
+  static constexpr char kOrderfileOptimizationTrial[] =
+      "AndroidOrderfileOptimization";
+  if (base::android::IsUsingOrderfileOptimization()) {
+    ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
+        kOrderfileOptimizationTrial, kEnabledGroup);
+  } else {
+    ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
+        kOrderfileOptimizationTrial, kDisabledGroup);
+  }
+
+  static constexpr char kReachedCodeProfilerTrial[] =
+      "ReachedCodeProfilerSynthetic";
+  if (base::android::IsReachedCodeProfilerEnabled()) {
+    ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
+        kReachedCodeProfilerTrial, kEnabledGroup);
+  } else {
+    ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
+        kReachedCodeProfilerTrial, kDisabledGroup);
+  }
+#endif  // defined(OS_ANDROID)
 }
 
 void ChromeBrowserFieldTrials::InstantiateDynamicTrials() {

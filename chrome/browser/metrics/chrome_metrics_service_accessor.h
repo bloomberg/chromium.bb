@@ -85,7 +85,7 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
   friend class ::CrashesDOMHandler;
   friend class ::FlashDOMHandler;
   friend void chrome::AttemptRestart();
-  friend void chrome::SetupMobileFieldTrials();
+  friend class ChromeBrowserFieldTrials;
   // For ChromeWinClang.
   friend class ChromeBrowserMainExtraPartsMetrics;
   // For StackSamplingConfiguration.

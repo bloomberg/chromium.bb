@@ -10,7 +10,6 @@
 
 #include "base/macros.h"
 #include "build/build_config.h"
-#include "chrome/browser/chrome_browser_field_trials.h"
 #include "chrome/browser/chrome_process_singleton.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/process_singleton.h"
@@ -137,8 +136,6 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   // CommandLine, so it is misleading keeping a const ref here.
   const base::CommandLine& parsed_command_line_;
   int result_code_;
-
-  ChromeBrowserFieldTrials browser_field_trials_;
 
 #if !defined(OS_ANDROID)
   // Create StartupTimeBomb object for watching jank during startup.

@@ -22,6 +22,7 @@ class ChromeBrowserFieldTrials : public variations::PlatformFieldTrials {
   void SetupFeatureControllingFieldTrials(
       bool has_seed,
       base::FeatureList* feature_list) override;
+  void RegisterSyntheticTrials() override;
 
  private:
   // Instantiates dynamic trials by querying their state, to ensure they get

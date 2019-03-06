@@ -69,6 +69,10 @@ class ChromeFeatureListCreator {
   }
   const std::string& actual_locale() { return actual_locale_; }
 
+  ChromeBrowserFieldTrials* browser_field_trials() {
+    return browser_field_trials_.get();
+  }
+
  private:
   void CreatePrefService();
   void ConvertFlagsToSwitches();
