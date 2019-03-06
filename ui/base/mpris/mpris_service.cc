@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/mpris/mpris_service.h"
+#include "ui/base/mpris/mpris_service.h"
 
 #include <memory>
 #include <utility>
@@ -13,13 +13,13 @@
 #include "base/unguessable_token.h"
 #include "base/values.h"
 #include "components/dbus/dbus_thread_linux.h"
-#include "components/mpris/mpris_service_observer.h"
 #include "dbus/bus.h"
 #include "dbus/exported_object.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
 #include "dbus/property.h"
 #include "dbus/values_util.h"
+#include "ui/base/mpris/mpris_service_observer.h"
 
 namespace mpris {
 

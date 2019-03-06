@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_MPRIS_MPRIS_SERVICE_OBSERVER_H_
-#define COMPONENTS_MPRIS_MPRIS_SERVICE_OBSERVER_H_
+#ifndef UI_BASE_MPRIS_MPRIS_SERVICE_OBSERVER_H_
+#define UI_BASE_MPRIS_MPRIS_SERVICE_OBSERVER_H_
 
 #include "base/component_export.h"
 #include "base/observer_list_types.h"
@@ -29,4 +29,4 @@ class COMPONENT_EXPORT(MPRIS) MprisServiceObserver
 
 }  // namespace mpris
 
-#endif  // COMPONENTS_MPRIS_MPRIS_SERVICE_OBSERVER_H_
+#endif  // UI_BASE_MPRIS_MPRIS_SERVICE_OBSERVER_H_

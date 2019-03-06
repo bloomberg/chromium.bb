@@ -11,6 +11,7 @@ import("//build/config/ui.gni")
 import("//build/util/branding.gni")
 import("//testing/test.gni")
 import("//tools/grit/grit_rule.gni")
+import("//ui/base/mpris/features.gni")
 import("//ui/base/ui_features.gni")
 import("//ui/ozone/ozone.gni")
 
@@ -1048,6 +1049,10 @@ test("ui_base_unittests") {
       "dragdrop/os_exchange_data_provider_aurax11_unittest.cc",
       "x/selection_requestor_unittest.cc",
     ]
+  }
+
+  if (use_mpris) {
+    deps += [ "//ui/base/mpris:unit_tests" ]
   }
 
   if (is_chromeos) {
