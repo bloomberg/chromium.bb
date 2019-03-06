@@ -38,16 +38,20 @@ void IntersectionObserverController::PostTaskToDeliverObservations() {
           FROM_HERE,
           WTF::Bind(
               &IntersectionObserverController::DeliverIntersectionObservations,
-              WrapWeakPersistent(this)));
+              WrapWeakPersistent(this),
+              IntersectionObserver::kPostTaskToDeliver));
 }
 
 void IntersectionObserverController::ScheduleIntersectionObserverForDelivery(
     IntersectionObserver& observer) {
   pending_intersection_observers_.insert(&observer);
-  PostTaskToDeliverObservations();
+  if (observer.GetDeliveryBehavior() ==
+      IntersectionObserver::kPostTaskToDeliver)
+    PostTaskToDeliverObservations();
 }
 
-void IntersectionObserverController::DeliverIntersectionObservations() {
+void IntersectionObserverController::DeliverIntersectionObservations(
+    IntersectionObserver::DeliveryBehavior behavior) {
   ExecutionContext* context = GetExecutionContext();
   if (!context) {
     pending_intersection_observers_.clear();
@@ -56,10 +60,14 @@ void IntersectionObserverController::DeliverIntersectionObservations() {
   // TODO(yukishiino): Remove this CHECK once https://crbug.com/809784 gets
   // resolved.
   CHECK(!context->IsContextDestroyed());
-  CopyToVector(pending_intersection_observers_,
-               intersection_observers_being_invoked_);
-  for (auto& observer : intersection_observers_being_invoked_)
+  for (auto& observer : pending_intersection_observers_) {
+    if (observer->GetDeliveryBehavior() == behavior)
+      intersection_observers_being_invoked_.push_back(observer);
+  }
+  for (auto& observer : intersection_observers_being_invoked_) {
+    pending_intersection_observers_.erase(observer);
     observer->Deliver();
+  }
   intersection_observers_being_invoked_.clear();
 }
 
@@ -69,7 +77,9 @@ void IntersectionObserverController::ComputeTrackedIntersectionObservations(
     TRACE_EVENT0("blink",
                  "IntersectionObserverController::"
                  "computeTrackedIntersectionObservations");
-    for (auto& element : tracked_observation_targets_)
+    HeapVector<Member<Element>> elements_to_process;
+    CopyToVector(tracked_observation_targets_, elements_to_process);
+    for (auto& element : elements_to_process)
       element->ComputeIntersectionObservations(flags);
   }
 }

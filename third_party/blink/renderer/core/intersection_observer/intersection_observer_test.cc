@@ -26,6 +26,12 @@ class TestIntersectionObserverDelegate : public IntersectionObserverDelegate {
  public:
   TestIntersectionObserverDelegate(Document& document)
       : document_(document), call_count_(0) {}
+  // TODO(szager): Add tests for the synchronous delivery code path. There is
+  // already some indirect coverage by unit tests exercising features that rely
+  // on it, but we should have some direct coverage in here.
+  IntersectionObserver::DeliveryBehavior GetDeliveryBehavior() const override {
+    return IntersectionObserver::kPostTaskToDeliver;
+  }
   void Deliver(const HeapVector<Member<IntersectionObserverEntry>>& entries,
                IntersectionObserver&) override {
     call_count_++;

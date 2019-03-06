@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer_entry.h"
-#include "third_party/blink/renderer/core/geometry/dom_rect_read_only.h"
 
 #include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/geometry/dom_rect_read_only.h"
 
 namespace blink {
 

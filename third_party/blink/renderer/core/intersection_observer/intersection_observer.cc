@@ -40,8 +40,12 @@ class IntersectionObserverDelegateImpl final
                                    IntersectionObserver::EventCallback callback)
       : context_(context), callback_(std::move(callback)) {}
 
+  IntersectionObserver::DeliveryBehavior GetDeliveryBehavior() const override {
+    return IntersectionObserver::kDeliverDuringPostLifecycleSteps;
+  }
+
   void Deliver(const HeapVector<Member<IntersectionObserverEntry>>& entries,
-               IntersectionObserver&) override {
+               IntersectionObserver& observer) override {
     callback_.Run(entries);
   }
 
@@ -377,6 +381,11 @@ void IntersectionObserver::SetNeedsDelivery() {
   To<Document>(GetExecutionContext())
       ->EnsureIntersectionObserverController()
       .ScheduleIntersectionObserverForDelivery(*this);
+}
+
+IntersectionObserver::DeliveryBehavior
+IntersectionObserver::GetDeliveryBehavior() const {
+  return delegate_->GetDeliveryBehavior();
 }
 
 void IntersectionObserver::Deliver() {

@@ -31,6 +31,10 @@ class V8IntersectionObserverDelegate final
 
   void Trace(blink::Visitor*) override;
 
+  IntersectionObserver::DeliveryBehavior GetDeliveryBehavior() const override {
+    return IntersectionObserver::kPostTaskToDeliver;
+  }
+
   void Deliver(const HeapVector<Member<IntersectionObserverEntry>>&,
                IntersectionObserver&) override;
 
