@@ -36,6 +36,7 @@
 #include "ios/web/public/test/http_server/data_response_provider.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/test/http_server/http_server_util.h"
+#include "net/base/network_change_notifier.h"
 #include "net/base/url_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -237,6 +238,28 @@ void TestResponseProvider::GetLanguageResponse(
       base::StringPrintf("<html><body>%s</body></html>", kLanguagePathText);
 }
 
+// Simulates a given network connection type for tests.
+// TODO(crbug.com/938598): Refactor this and similar net::NetworkChangeNotifier
+// subclasses for testing into a separate file.
+class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
+ public:
+  FakeNetworkChangeNotifier(
+      net::NetworkChangeNotifier::ConnectionType connection_type_to_return)
+      : connection_type_to_return_(connection_type_to_return) {}
+
+ private:
+  ConnectionType GetCurrentConnectionType() const override {
+    return connection_type_to_return_;
+  }
+
+  // The currently simulated network connection type. If this is set to
+  // CONNECTION_NONE, then NetworkChangeNotifier::IsOffline will return true.
+  net::NetworkChangeNotifier::ConnectionType connection_type_to_return_ =
+      net::NetworkChangeNotifier::CONNECTION_UNKNOWN;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeNetworkChangeNotifier);
+};
+
 }  // namespace
 
 using chrome_test_util::TapWebViewElementWithId;
@@ -302,6 +325,9 @@ using translate::LanguageDetectionController;
 @interface TranslateTestCase : ChromeTestCase {
   std::unique_ptr<translate::LanguageDetectionDetails>
       _language_detection_details;
+  std::unique_ptr<net::NetworkChangeNotifier::DisableForTest>
+      network_change_notifier_disabler_;
+  std::unique_ptr<FakeNetworkChangeNotifier> network_change_notifier_;
 }
 @end
 
@@ -316,6 +342,13 @@ using translate::LanguageDetectionController;
             std::make_unique<translate::LanguageDetectionDetails>(details);
       });
   SetTestingLanguageDetectionCallback(copyDetailsCallback);
+
+  // Disable the net::NetworkChangeNotifier singleton and replace it with a
+  // FakeNetworkChangeNotifier to simulate a WIFI network connection.
+  network_change_notifier_disabler_ =
+      std::make_unique<net::NetworkChangeNotifier::DisableForTest>();
+  network_change_notifier_ = std::make_unique<FakeNetworkChangeNotifier>(
+      net::NetworkChangeNotifier::CONNECTION_WIFI);
 }
 
 - (void)tearDown {

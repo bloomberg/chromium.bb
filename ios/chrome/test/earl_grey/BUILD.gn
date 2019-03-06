@@ -10,7 +10,6 @@ group("all_tests") {
     ":ios_chrome_autofill_automation_egtests",
     ":ios_chrome_bookmarks_egtests",
     ":ios_chrome_device_check_egtests",
-    ":ios_chrome_external_url_egtests",
     ":ios_chrome_flaky_egtests",
     ":ios_chrome_integration_egtests",
     ":ios_chrome_manual_fill_egtests",
@@ -20,6 +19,7 @@ group("all_tests") {
     ":ios_chrome_settings_egtests",
     ":ios_chrome_smoke_egtests",
     ":ios_chrome_tab_grid_egtests",
+    ":ios_chrome_translate_egtests",
     ":ios_chrome_ui_egtests",
     ":ios_chrome_unified_consent_egtests",
     ":ios_chrome_web_egtests",
@@ -195,9 +195,9 @@ chrome_ios_eg_test("ios_chrome_smoke_egtests") {
   libs = [ "XCTest.framework" ]
 }
 
-chrome_ios_eg_test("ios_chrome_external_url_egtests") {
+chrome_ios_eg_test("ios_chrome_translate_egtests") {
   deps = [
-    "//ios/chrome/browser/translate:external_url_eg_tests",
+    "//ios/chrome/browser/translate:eg_tests",
   ]
 }
 
