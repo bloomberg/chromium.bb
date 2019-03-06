@@ -195,7 +195,7 @@ class AutofillControllerTest : public ChromeWebTest {
   void SetUp() override;
   void TearDown() override;
 
-  void SetUpForSuggestions(NSString* data);
+  void SetUpForSuggestions(NSString* data, size_t expected_number_of_forms);
 
   // Adds key value data to the Personal Data Manager and loads test page.
   void SetUpKeyValueData();
@@ -207,7 +207,13 @@ class AutofillControllerTest : public ChromeWebTest {
 
   // Blocks until |expected_size| forms have been fecthed.
   bool WaitForFormFetched(AutofillManager* manager,
-                          size_t expected_size) WARN_UNUSED_RESULT;
+                          size_t expected_number_of_forms) WARN_UNUSED_RESULT;
+
+  // Loads the page and wait until the initial form processing has been done.
+  // This processing must find |expected_size| forms.
+  bool LoadHtmlAndWaitForFormFetched(NSString* html,
+                                     size_t expected_number_of_forms)
+      WARN_UNUSED_RESULT;
 
   // Fails if the specified metric was not registered the given number of times.
   void ExpectMetric(const std::string& histogram_name, int sum);
@@ -303,12 +309,24 @@ void AutofillControllerTest::WaitForSuggestionRetrieval(BOOL wait_for_trigger) {
   });
 }
 
-bool AutofillControllerTest::WaitForFormFetched(AutofillManager* manager,
-                                                size_t expected_size) {
+bool AutofillControllerTest::WaitForFormFetched(
+    AutofillManager* manager,
+    size_t expected_number_of_forms) {
   return base::test::ios::WaitUntilConditionOrTimeout(
       base::test::ios::kWaitForPageLoadTimeout, ^bool {
-        return manager->form_structures().size() == expected_size;
+        return manager->form_structures().size() == expected_number_of_forms;
       });
+}
+
+bool AutofillControllerTest::LoadHtmlAndWaitForFormFetched(
+    NSString* html,
+    size_t expected_number_of_forms) {
+  LoadHtml(html);
+  web::WebFrame* main_frame = web::GetMainWebFrame(web_state());
+  AutofillManager* autofill_manager =
+      AutofillDriverIOS::FromWebStateAndWebFrame(web_state(), main_frame)
+          ->autofill_manager();
+  return WaitForFormFetched(autofill_manager, expected_number_of_forms);
 }
 
 void AutofillControllerTest::ExpectMetric(const std::string& histogram_name,
@@ -324,12 +342,11 @@ void AutofillControllerTest::ExpectHappinessMetric(
 // Checks that viewing an HTML page containing a form results in the form being
 // registered as a FormStructure by the AutofillManager.
 TEST_F(AutofillControllerTest, ReadForm) {
-  LoadHtml(kProfileFormHtml);
+  ASSERT_TRUE(LoadHtmlAndWaitForFormFetched(kProfileFormHtml, 1));
   web::WebFrame* main_frame = web::GetMainWebFrame(web_state());
   AutofillManager* autofill_manager =
       AutofillDriverIOS::FromWebStateAndWebFrame(web_state(), main_frame)
           ->autofill_manager();
-  EXPECT_TRUE(WaitForFormFetched(autofill_manager, 1));
   const auto& forms = autofill_manager->form_structures();
   const auto& form = *(forms.begin()->second);
   CheckField(form, NAME_FULL, "name_1");
@@ -345,12 +362,11 @@ TEST_F(AutofillControllerTest, ReadForm) {
 // the form being registered as a FormStructure by the AutofillManager, and the
 // name is correctly set.
 TEST_F(AutofillControllerTest, ReadFormName) {
-  LoadHtml(kMinimalFormWithNameHtml);
+  ASSERT_TRUE(LoadHtmlAndWaitForFormFetched(kMinimalFormWithNameHtml, 1));
   web::WebFrame* main_frame = web::GetMainWebFrame(web_state());
   AutofillManager* autofill_manager =
       AutofillDriverIOS::FromWebStateAndWebFrame(web_state(), main_frame)
           ->autofill_manager();
-  EXPECT_TRUE(WaitForFormFetched(autofill_manager, 1));
   const auto& forms = autofill_manager->form_structures();
   const auto& form = *(forms.begin()->second);
   EXPECT_EQ(base::UTF8ToUTF16("form1"), form.ToFormData().name);
@@ -365,7 +381,7 @@ TEST_F(AutofillControllerTest, ProfileImport) {
           ios::ChromeBrowserState::FromBrowserState(GetBrowserState()));
   // Check there are no registered profiles already.
   EXPECT_EQ(0U, personal_data_manager->GetProfiles().size());
-  LoadHtml(kProfileFormHtml);
+  ASSERT_TRUE(LoadHtmlAndWaitForFormFetched(kProfileFormHtml, 1));
   ExecuteJavaScript(@"document.forms[0].name.value = 'Homer Simpson'");
   ExecuteJavaScript(@"document.forms[0].address.value = '123 Main Street'");
   ExecuteJavaScript(@"document.forms[0].city.value = 'Springfield'");
@@ -392,7 +408,9 @@ TEST_F(AutofillControllerTest, ProfileImport) {
             profile.GetInfo(AutofillType(ADDRESS_HOME_ZIP), "en-US"));
 }
 
-void AutofillControllerTest::SetUpForSuggestions(NSString* data) {
+void AutofillControllerTest::SetUpForSuggestions(
+    NSString* data,
+    size_t expected_number_of_forms) {
   PersonalDataManager* personal_data_manager =
       PersonalDataManagerFactory::GetForBrowserState(
           ios::ChromeBrowserState::FromBrowserState(GetBrowserState()));
@@ -406,7 +424,7 @@ void AutofillControllerTest::SetUpForSuggestions(NSString* data) {
   personal_data_manager->SaveImportedProfile(profile);
   EXPECT_EQ(1U, personal_data_manager->GetProfiles().size());
 
-  LoadHtml(data);
+  ASSERT_TRUE(LoadHtmlAndWaitForFormFetched(data, expected_number_of_forms));
   WaitForBackgroundTasks();
 }
 
@@ -414,7 +432,7 @@ void AutofillControllerTest::SetUpForSuggestions(NSString* data) {
 // suggestions being sent to the AutofillAgent, once data has been loaded into a
 // test data manager.
 TEST_F(AutofillControllerTest, ProfileSuggestions) {
-  SetUpForSuggestions(kProfileFormHtml);
+  SetUpForSuggestions(kProfileFormHtml, 1);
   ForceViewRendering(web_state()->GetView());
   ExecuteJavaScript(@"document.forms[0].name.focus()");
   WaitForSuggestionRetrieval(/*wait_for_trigger=*/YES);
@@ -429,7 +447,8 @@ TEST_F(AutofillControllerTest, ProfileSuggestions) {
 // there is another anonymous form on the page.
 TEST_F(AutofillControllerTest, ProfileSuggestionsTwoAnonymousForms) {
   SetUpForSuggestions(
-      [NSString stringWithFormat:@"%@%@", kProfileFormHtml, kProfileFormHtml]);
+      [NSString stringWithFormat:@"%@%@", kProfileFormHtml, kProfileFormHtml],
+      2);
   ForceViewRendering(web_state()->GetView());
   ExecuteJavaScript(@"document.forms[0].name.focus()");
   WaitForSuggestionRetrieval(/*wait_for_trigger=*/YES);
@@ -444,7 +463,7 @@ TEST_F(AutofillControllerTest, ProfileSuggestionsTwoAnonymousForms) {
 // in suggestions being sent to the AutofillAgent, once data has been loaded
 // into a test data manager.
 TEST_F(AutofillControllerTest, ProfileSuggestionsFromSelectField) {
-  SetUpForSuggestions(kProfileFormHtml);
+  SetUpForSuggestions(kProfileFormHtml, 1);
   ForceViewRendering(web_state()->GetView());
   ExecuteJavaScript(@"document.forms[0].state.focus()");
   WaitForSuggestionRetrieval(/*wait_for_trigger=*/YES);
@@ -483,9 +502,7 @@ TEST_F(AutofillControllerTest, MultipleProfileSuggestions) {
   profile2.SetRawInfo(ADDRESS_HOME_ZIP, base::UTF8ToUTF16("94043"));
   personal_data_manager->SaveImportedProfile(profile2);
   EXPECT_EQ(2U, personal_data_manager->GetProfiles().size());
-  LoadHtml(kProfileFormHtml);
-  base::TaskScheduler::GetInstance()->FlushForTesting();
-  WaitForBackgroundTasks();
+  EXPECT_TRUE(LoadHtmlAndWaitForFormFetched(kProfileFormHtml, 1));
   ForceViewRendering(web_state()->GetView());
   ExecuteJavaScript(@"document.forms[0].name.focus()");
   WaitForSuggestionRetrieval(/*wait_for_trigger=*/YES);
@@ -498,7 +515,7 @@ TEST_F(AutofillControllerTest, MultipleProfileSuggestions) {
 // with scripts (simulating user form submission) results in data being
 // successfully registered.
 TEST_F(AutofillControllerTest, KeyValueImport) {
-  LoadHtml(kKeyValueFormHtml);
+  ASSERT_TRUE(LoadHtmlAndWaitForFormFetched(kKeyValueFormHtml, 1));
   ExecuteJavaScript(@"document.forms[0].greeting.value = 'Hello'");
   scoped_refptr<AutofillWebDataService> web_data_service =
       ios::WebDataServiceFactory::GetAutofillWebDataForBrowserState(
@@ -540,7 +557,7 @@ void AutofillControllerTest::SetUpKeyValueData() {
   web_data_service->AddFormFields(values);
 
   // Load test page.
-  LoadHtml(kKeyValueFormHtml);
+  ASSERT_TRUE(LoadHtmlAndWaitForFormFetched(kKeyValueFormHtml, 1));
   WaitForBackgroundTasks();
 }
 
@@ -631,7 +648,7 @@ TEST_F(AutofillControllerTest, CreditCardImport) {
 
   // Check there are no registered profiles already.
   EXPECT_EQ(0U, personal_data_manager->GetCreditCards().size());
-  LoadHtml(kCreditCardFormHtml);
+  ASSERT_TRUE(LoadHtmlAndWaitForFormFetched(kCreditCardFormHtml, 1));
   ExecuteJavaScript(@"document.forms[0].name.value = 'Superman'");
   ExecuteJavaScript(@"document.forms[0].CCNo.value = '4000-4444-4444-4444'");
   ExecuteJavaScript(@"document.forms[0].CCExpiresMonth.value = '11'");
