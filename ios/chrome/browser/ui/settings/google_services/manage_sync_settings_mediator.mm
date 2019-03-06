@@ -404,6 +404,12 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
     switch (itemType) {
       case SyncEverythingItemType:
         self.syncSetupService->SetSyncingAllDataTypes(value);
+        if (value) {
+          // When sync everything is turned on, the autocomplete wallet
+          // should be turned on. This code can be removed once
+          // crbug.com/937234 is fixed.
+          self.autocompleteWalletPreference.value = true;
+        }
         break;
       case AutofillDataTypeItemType:
       case BookmarksDataTypeItemType:
