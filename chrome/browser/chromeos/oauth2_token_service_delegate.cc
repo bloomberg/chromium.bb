@@ -314,7 +314,7 @@ void ChromeOSOAuth2TokenServiceDelegate::OnTokenUpserted(
     account_manager_->UpdateEmail(account.key, email);
   }
 
-  std::string account_id = account_tracker_service_->PickAccountIdForAccount(
+  std::string account_id = account_tracker_service_->SeedAccountInfo(
       account.key.id /* gaia_id */, email);
   DCHECK(!account_id.empty());
 
