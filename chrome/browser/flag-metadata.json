@@ -1927,8 +1927,8 @@
   },
   {
     "name": "enable-webnfc",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "rijubrata.bhaumik@intel.com","reillyg" ],
+    "expiry_milestone": 79
   },
   {
     "name": "enable-webrtc-h264-with-openh264-ffmpeg",
