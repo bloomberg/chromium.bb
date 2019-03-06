@@ -39,6 +39,10 @@ GPU_EXPORT extern const base::Feature kDirectCompositionUseNV12DecodeSwapChain;
 
 GPU_EXPORT extern const base::Feature kVaapiJpegImageDecodeAcceleration;
 
+#if defined(OS_ANDROID)
+GPU_EXPORT bool IsAndroidSurfaceControlEnabled();
+#endif
+
 }  // namespace features
 
 #endif  // GPU_CONFIG_GPU_FEATURES_H_

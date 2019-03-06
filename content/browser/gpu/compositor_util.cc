@@ -184,7 +184,7 @@ const GpuFeatureData GetGpuFeatureData(
        SafeGetFeatureStatus(gpu_feature_info,
                             gpu::GPU_FEATURE_TYPE_ANDROID_SURFACE_CONTROL),
 #if defined(OS_ANDROID)
-       !base::FeatureList::IsEnabled(features::kAndroidSurfaceControl),
+       !features::IsAndroidSurfaceControlEnabled(),
 #else
        false,
 #endif

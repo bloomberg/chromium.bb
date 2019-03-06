@@ -56,12 +56,7 @@ bool ShouldEnableAndroidSurfaceControl(const base::CommandLine& cmd_line) {
 #if !defined(OS_ANDROID)
   return false;
 #else
-  if (!features::IsVizDisplayCompositorEnabled())
-    return false;
-  if (!base::FeatureList::IsEnabled(features::kAImageReaderMediaPlayer))
-    return false;
-
-  return base::FeatureList::IsEnabled(features::kAndroidSurfaceControl);
+  return features::IsAndroidSurfaceControlEnabled();
 #endif
 }
 

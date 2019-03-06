@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "build/build_config.h"
 #include "components/viz/common/switches.h"
+#include "gpu/config/gpu_finch_features.h"
 
 namespace features {
 
@@ -58,6 +59,10 @@ bool IsSurfaceSynchronizationEnabled() {
 }
 
 bool IsVizDisplayCompositorEnabled() {
+#if defined(OS_ANDROID)
+  if (features::IsAndroidSurfaceControlEnabled())
+    return true;
+#endif
   return base::FeatureList::IsEnabled(kVizDisplayCompositor);
 }
 

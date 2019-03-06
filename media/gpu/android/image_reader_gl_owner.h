@@ -55,7 +55,7 @@ class MEDIA_GPU_EXPORT ImageReaderGLOwner : public TextureOwner {
   class ScopedHardwareBufferImpl;
 
   ImageReaderGLOwner(std::unique_ptr<gpu::gles2::AbstractTexture> texture,
-                     SecureMode secure_mode);
+                     Mode secure_mode);
   ~ImageReaderGLOwner() override;
 
   // Deletes the current image if it has no pending refs. Returns false on

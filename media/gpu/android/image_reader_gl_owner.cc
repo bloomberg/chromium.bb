@@ -76,7 +76,7 @@ class ImageReaderGLOwner::ScopedHardwareBufferImpl
 
 ImageReaderGLOwner::ImageReaderGLOwner(
     std::unique_ptr<gpu::gles2::AbstractTexture> texture,
-    SecureMode secure_mode)
+    Mode mode)
     : TextureOwner(std::move(texture)),
       current_image_(nullptr),
       loader_(base::android::AndroidImageReader::GetInstance()),
@@ -90,13 +90,13 @@ ImageReaderGLOwner::ImageReaderGLOwner(
   // are/maybe overriden by the producer sending buffers to this imageReader's
   // Surface.
   int32_t width = 1, height = 1, max_images = 4;
-  AIMAGE_FORMATS format = secure_mode == SecureMode::kSecure
+  AIMAGE_FORMATS format = mode == Mode::kAImageReaderSecure
                               ? AIMAGE_FORMAT_PRIVATE
                               : AIMAGE_FORMAT_YUV_420_888;
   AImageReader* reader = nullptr;
   // The usage flag below should be used when the buffer will be read from by
   // the GPU as a texture.
-  const uint64_t usage = secure_mode == SecureMode::kSecure
+  const uint64_t usage = mode == Mode::kAImageReaderSecure
                              ? AHARDWAREBUFFER_USAGE_PROTECTED_CONTENT
                              : AHARDWAREBUFFER_USAGE_GPU_SAMPLED_IMAGE;
 

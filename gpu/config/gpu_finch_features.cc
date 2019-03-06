@@ -3,6 +3,10 @@
 // found in the LICENSE file.
 #include "gpu/config/gpu_finch_features.h"
 
+#if defined(OS_ANDROID)
+#include "ui/gl/android/android_surface_control_compat.h"
+#endif
+
 namespace features {
 #if defined(OS_ANDROID)
 // Use android AImageReader when playing videos with MediaPlayer.
@@ -73,5 +77,12 @@ const base::Feature kDirectCompositionUseNV12DecodeSwapChain{
 // https://crbug.com/868400 is resolved.
 const base::Feature kVaapiJpegImageDecodeAcceleration{
     "VaapiJpegImageDecodeAcceleration", base::FEATURE_DISABLED_BY_DEFAULT};
+
+#if defined(OS_ANDROID)
+bool IsAndroidSurfaceControlEnabled() {
+  return base::FeatureList::IsEnabled(kAndroidSurfaceControl) &&
+         gl::SurfaceControl::IsSupported();
+}
+#endif
 
 }  // namespace features

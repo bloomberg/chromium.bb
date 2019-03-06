@@ -52,8 +52,8 @@ class ImageReaderGLOwnerTest : public testing::Test {
     image_reader_ = TextureOwner::Create(std::move(texture), SecureMode());
   }
 
-  virtual TextureOwner::SecureMode SecureMode() {
-    return TextureOwner::SecureMode::kInsecure;
+  virtual TextureOwner::Mode SecureMode() {
+    return TextureOwner::Mode::kAImageReaderInsecure;
   }
 
   void TearDown() override {
@@ -145,8 +145,8 @@ TEST_F(ImageReaderGLOwnerTest, DestructionWorksWithWrongContext) {
 
 class ImageReaderGLOwnerSecureTest : public ImageReaderGLOwnerTest {
  public:
-  TextureOwner::SecureMode SecureMode() final {
-    return TextureOwner::SecureMode::kSecure;
+  TextureOwner::Mode SecureMode() final {
+    return TextureOwner::Mode::kAImageReaderSecure;
   }
 };
 

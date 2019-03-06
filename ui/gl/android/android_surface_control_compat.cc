@@ -241,15 +241,10 @@ void OnTransactionCompletedOnAnyThread(void* context,
 
 // static
 bool SurfaceControl::IsSupported() {
-#if 0
-  // TODO(khushalsagar): Enable this code when the frame is correctly reporting
-  // SDK version for P+.
-  const int sdk_int = base::android::BuildInfo::GetInstance()->sdk_int();
-  if (sdk_int < 29) {
-    LOG(ERROR) << "SurfaceControl not supported on sdk: " << sdk_int;
+  if (!base::android::BuildInfo::GetInstance()->is_at_least_q()) {
+    LOG(ERROR) << "SurfaceControl requires at least Q";
     return false;
   }
-#endif
   return SurfaceControlMethods::Get().supported;
 }
 
