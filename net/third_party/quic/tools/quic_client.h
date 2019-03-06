@@ -12,20 +12,16 @@
 #include <memory>
 #include <string>
 
-#include "base/command_line.h"
 #include "base/macros.h"
 #include "net/third_party/quic/core/http/quic_client_push_promise_index.h"
 #include "net/third_party/quic/core/http/quic_spdy_client_session.h"
-#include "net/third_party/quic/core/http/quic_spdy_stream.h"
 #include "net/third_party/quic/core/quic_config.h"
 #include "net/third_party/quic/core/quic_packet_reader.h"
 #include "net/third_party/quic/core/quic_process_packet_interface.h"
 #include "net/third_party/quic/platform/api/quic_containers.h"
 #include "net/third_party/quic/platform/api/quic_epoll.h"
-#include "net/third_party/quic/tools/quic_client_base.h"
 #include "net/third_party/quic/tools/quic_client_epoll_network_helper.h"
 #include "net/third_party/quic/tools/quic_spdy_client_base.h"
-#include "net/tools/epoll_server/epoll_server.h"
 
 namespace quic {
 

@@ -404,6 +404,10 @@ class EpollServer {
   virtual void UnregisterAlarm(
       const EpollServer::AlarmRegToken& iterator_token);
 
+  virtual EpollServer::AlarmRegToken ReregisterAlarm(
+      EpollServer::AlarmRegToken iterator_token,
+      int64_t timeout_time_in_us);
+
   ////////////////////////////////////////
 
   // Summary:
@@ -475,11 +479,14 @@ class EpollServer {
 
   // Summary:
   //   Accessor for the current value of timeout_in_us.
-  int timeout_in_us() const { return timeout_in_us_; }
+  int timeout_in_us_for_test() const { return timeout_in_us_; }
 
   // Summary:
   // Returns true when the EpollServer() is being destroyed.
   bool in_shutdown() const { return in_shutdown_; }
+
+  // Compatibility stub.
+  void Shutdown() {}
 
  protected:
   virtual void SetNonblocking(int fd);
@@ -1032,6 +1039,9 @@ class EpollAlarm : public EpollAlarmCallbackInterface {
 
   // If the alarm was registered, unregister it.
   void UnregisterIfRegistered();
+
+  // Reregisters the alarm at specified time.
+  void ReregisterAlarm(int64_t timeout_time_in_us);
 
   bool registered() const { return registered_; }
 

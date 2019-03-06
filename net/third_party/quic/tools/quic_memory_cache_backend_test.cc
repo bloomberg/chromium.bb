@@ -3,8 +3,7 @@
 // found in the LICENSE file.
 
 #include "net/third_party/quic/tools/quic_memory_cache_backend.h"
-#include "base/files/file_path.h"
-#include "base/path_service.h"
+
 #include "net/third_party/quic/platform/api/quic_map_util.h"
 #include "net/third_party/quic/platform/api/quic_str_cat.h"
 #include "net/third_party/quic/platform/api/quic_test.h"
@@ -30,14 +29,7 @@ class QuicMemoryCacheBackendTest : public QuicTest {
     (*headers)[":scheme"] = "https";
   }
 
-  QuicString CacheDirectory() {
-    base::FilePath path;
-    base::PathService::Get(base::DIR_SOURCE_ROOT, &path);
-    path = path.AppendASCII("net").AppendASCII("data").AppendASCII(
-        "quic_http_response_cache_data");
-    // The file path is known to be an ascii string.
-    return path.MaybeAsASCII();
-  }
+  QuicString CacheDirectory() { return QuicGetTestMemoryCachePath(); }
 
   QuicMemoryCacheBackend cache_;
 };

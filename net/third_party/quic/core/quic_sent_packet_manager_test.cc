@@ -2046,8 +2046,7 @@ TEST_P(QuicSentPacketManagerTest, NegotiateNConnectionFromOptions) {
   manager_.SetNumOpenStreams(5);
 }
 
-TEST_F(QuicSentPacketManagerTest,
-       DISABLED_NegotiateNoMinTLPFromOptionsAtServer) {
+TEST_P(QuicSentPacketManagerTest, NegotiateNoMinTLPFromOptionsAtServer) {
   QuicConfig config;
   QuicTagVector options;
 
@@ -2078,8 +2077,7 @@ TEST_F(QuicSentPacketManagerTest,
             QuicSentPacketManagerPeer::GetTailLossProbeDelay(&manager_, 0));
 }
 
-TEST_F(QuicSentPacketManagerTest,
-       DISABLED_NegotiateNoMinTLPFromOptionsAtClient) {
+TEST_P(QuicSentPacketManagerTest, NegotiateNoMinTLPFromOptionsAtClient) {
   QuicConfig client_config;
   QuicTagVector options;
 
@@ -2110,8 +2108,7 @@ TEST_F(QuicSentPacketManagerTest,
             QuicSentPacketManagerPeer::GetTailLossProbeDelay(&manager_, 0));
 }
 
-TEST_F(QuicSentPacketManagerTest,
-       DISABLED_NegotiateIETFTLPFromOptionsAtServer) {
+TEST_P(QuicSentPacketManagerTest, NegotiateIETFTLPFromOptionsAtServer) {
   QuicConfig config;
   QuicTagVector options;
 
@@ -2139,8 +2136,7 @@ TEST_F(QuicSentPacketManagerTest,
             QuicSentPacketManagerPeer::GetTailLossProbeDelay(&manager_, 0));
 }
 
-TEST_F(QuicSentPacketManagerTest,
-       DISABLED_NegotiateIETFTLPFromOptionsAtClient) {
+TEST_P(QuicSentPacketManagerTest, NegotiateIETFTLPFromOptionsAtClient) {
   QuicConfig client_config;
   QuicTagVector options;
 
@@ -2169,8 +2165,7 @@ TEST_F(QuicSentPacketManagerTest,
             QuicSentPacketManagerPeer::GetTailLossProbeDelay(&manager_, 0));
 }
 
-TEST_F(QuicSentPacketManagerTest,
-       DISABLED_NegotiateNoMinRTOFromOptionsAtServer) {
+TEST_P(QuicSentPacketManagerTest, NegotiateNoMinRTOFromOptionsAtServer) {
   QuicConfig config;
   QuicTagVector options;
 
@@ -2194,8 +2189,7 @@ TEST_F(QuicSentPacketManagerTest,
             QuicSentPacketManagerPeer::GetTailLossProbeDelay(&manager_, 0));
 }
 
-TEST_F(QuicSentPacketManagerTest,
-       DISABLED_NegotiateNoMinRTOFromOptionsAtClient) {
+TEST_P(QuicSentPacketManagerTest, NegotiateNoMinRTOFromOptionsAtClient) {
   QuicConfig client_config;
   QuicTagVector options;
 
@@ -2220,7 +2214,7 @@ TEST_F(QuicSentPacketManagerTest,
             QuicSentPacketManagerPeer::GetTailLossProbeDelay(&manager_, 0));
 }
 
-TEST_F(QuicSentPacketManagerTest, DISABLED_NegotiateNoTLPFromOptionsAtServer) {
+TEST_P(QuicSentPacketManagerTest, NegotiateNoTLPFromOptionsAtServer) {
   QuicConfig config;
   QuicTagVector options;
 

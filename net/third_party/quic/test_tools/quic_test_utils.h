@@ -1173,7 +1173,6 @@ inline void MakeIOVector(QuicStringPiece str, struct iovec* iov) {
 // Helper functions for stream ids, to allow test logic to abstract over the
 // HTTP stream numbering scheme (i.e. whether one or two QUIC streams are used
 // per HTTP transaction).
-QuicStreamId NextStreamId(QuicTransportVersion version);
 QuicStreamId GetNthClientInitiatedBidirectionalStreamId(
     QuicTransportVersion version,
     int n);

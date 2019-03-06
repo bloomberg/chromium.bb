@@ -343,6 +343,10 @@ QuicConnection::QuicConnection(
   if (ack_mode_ == ACK_DECIMATION) {
     QUIC_RELOADABLE_FLAG_COUNT(quic_enable_ack_decimation);
   }
+  if (perspective_ == Perspective::IS_SERVER &&
+      supported_versions.size() == 1) {
+    QUIC_RESTART_FLAG_COUNT(quic_no_server_conn_ver_negotiation2);
+  }
   if (packet_generator_.deprecate_ack_bundling_mode()) {
     QUIC_RELOADABLE_FLAG_COUNT(quic_deprecate_ack_bundling_mode);
   }
@@ -2295,9 +2299,6 @@ bool QuicConnection::WritePacket(SerializedPacket* packet) {
   WriteResult result = writer_->WritePacket(
       packet->encrypted_buffer, encrypted_length, self_address().host(),
       peer_address(), per_packet_options_);
-  if (result.error_code == net::ERR_IO_PENDING) {
-    DCHECK_EQ(WRITE_STATUS_BLOCKED_DATA_BUFFERED, result.status);
-  }
 
   QUIC_HISTOGRAM_ENUM(
       "QuicConnection.WritePacketStatus", result.status,

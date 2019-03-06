@@ -240,7 +240,7 @@ QuicErrorCode QuicStreamSequencerBuffer::Readv(const iovec* dest_iov,
   *bytes_read = 0;
   for (size_t i = 0; i < dest_count && ReadableBytes() > 0; ++i) {
     char* dest = reinterpret_cast<char*>(dest_iov[i].iov_base);
-    CHECK_NE(dest, nullptr);
+    DCHECK(dest != nullptr);
     size_t dest_remaining = dest_iov[i].iov_len;
     while (dest_remaining > 0 && ReadableBytes() > 0) {
       size_t block_idx = NextBlockToRead();
@@ -332,7 +332,7 @@ int QuicStreamSequencerBuffer::GetReadableRegions(struct iovec* iov,
   int iov_used = 1;
   size_t block_idx = (start_block_idx + iov_used) % blocks_count_;
   while (block_idx != end_block_idx && iov_used < iov_count) {
-    DCHECK_NE(static_cast<BufferBlock*>(nullptr), blocks_[block_idx]);
+    DCHECK(nullptr != blocks_[block_idx]);
     iov[iov_used].iov_base = blocks_[block_idx]->buffer;
     iov[iov_used].iov_len = GetBlockCapacity(block_idx);
     QUIC_DVLOG(1) << "Got block with index: " << block_idx;
@@ -342,7 +342,7 @@ int QuicStreamSequencerBuffer::GetReadableRegions(struct iovec* iov,
 
   // Deal with last block if |iov| can hold more.
   if (iov_used < iov_count) {
-    DCHECK_NE(static_cast<BufferBlock*>(nullptr), blocks_[block_idx]);
+    DCHECK(nullptr != blocks_[block_idx]);
     iov[iov_used].iov_base = blocks_[end_block_idx]->buffer;
     iov[iov_used].iov_len = end_block_offset + 1;
     QUIC_DVLOG(1) << "Got last block with index: " << end_block_idx;

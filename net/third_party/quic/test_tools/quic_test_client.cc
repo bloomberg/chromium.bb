@@ -27,6 +27,7 @@
 #include "net/third_party/quic/test_tools/quic_spdy_stream_peer.h"
 #include "net/third_party/quic/test_tools/quic_test_utils.h"
 #include "net/third_party/quic/tools/quic_url.h"
+#include "third_party/boringssl/src/include/openssl/x509.h"
 
 namespace quic {
 namespace test {
@@ -60,20 +61,22 @@ class RecordingProofVerifier : public ProofVerifier {
       return QUIC_FAILURE;
     }
 
-    // Convert certs to X509Certificate.
-    std::vector<QuicStringPiece> cert_pieces(certs.size());
-    for (unsigned i = 0; i < certs.size(); i++) {
-      cert_pieces[i] = QuicStringPiece(certs[i]);
+    const uint8_t* data;
+    data = reinterpret_cast<const uint8_t*>(certs[0].data());
+    bssl::UniquePtr<X509> cert(d2i_X509(nullptr, &data, certs[0].size()));
+    if (!cert.get()) {
+      return QUIC_FAILURE;
     }
-    // TODO(rtenneti): Fix after adding support for real certs. Currently,
-    // cert_pieces are "leaf" and "intermediate" and CreateFromDERCertChain
-    // fails to return cert from these cert_pieces.
-    //    bssl::UniquePtr<X509> cert(d2i_X509(nullptr, &data, certs[0].size()));
-    //    if (!cert.get()) {
-    //      return QUIC_FAILURE;
-    //    }
-    //
-    //    common_name_ = cert->subject().GetDisplayName();
+
+    static const unsigned kMaxCommonNameLength = 256;
+    char buf[kMaxCommonNameLength];
+    X509_NAME* subject_name = X509_get_subject_name(cert.get());
+    if (X509_NAME_get_text_by_NID(subject_name, NID_commonName, buf,
+                                  sizeof(buf)) <= 0) {
+      return QUIC_FAILURE;
+    }
+
+    common_name_ = buf;
     cert_sct_ = cert_sct;
 
     if (!verifier_) {
@@ -608,7 +611,7 @@ bool QuicTestClient::HaveActiveStream() {
 
 bool QuicTestClient::WaitUntil(int timeout_ms, std::function<bool()> trigger) {
   int64_t timeout_us = timeout_ms * kNumMicrosPerMilli;
-  int64_t old_timeout_us = epoll_server()->timeout_in_us();
+  int64_t old_timeout_us = epoll_server()->timeout_in_us_for_test();
   if (timeout_us > 0) {
     epoll_server()->set_timeout_in_us(timeout_us);
   }

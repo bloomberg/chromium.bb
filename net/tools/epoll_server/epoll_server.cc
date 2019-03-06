@@ -462,6 +462,14 @@ void EpollServer::UnregisterAlarm(const AlarmRegToken& iterator_token) {
   cb->OnUnregistration();
 }
 
+EpollServer::AlarmRegToken EpollServer::ReregisterAlarm(
+    EpollServer::AlarmRegToken iterator_token,
+    int64_t timeout_time_in_us) {
+  AlarmCB* cb = iterator_token->second;
+  alarm_map_.erase(iterator_token);
+  return alarm_map_.emplace(timeout_time_in_us, cb);
+}
+
 int EpollServer::NumFDsRegistered() const {
   DCHECK_GE(cb_map_.size(), 1u);
   // Omit the internal FD (read_fd_)
@@ -791,6 +799,11 @@ void EpollAlarm::UnregisterIfRegistered() {
     return;
   }
   eps_->UnregisterAlarm(token_);
+}
+
+void EpollAlarm::ReregisterAlarm(int64_t timeout_time_in_us) {
+  DCHECK(registered_);
+  token_ = eps_->ReregisterAlarm(token_, timeout_time_in_us);
 }
 
 }  // namespace net

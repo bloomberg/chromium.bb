@@ -4,8 +4,9 @@
 
 #include "net/third_party/quic/core/quic_epoll_alarm_factory.h"
 
-namespace quic {
+#include "net/third_party/quic/core/quic_arena_scoped_ptr.h"
 
+namespace quic {
 namespace {
 
 class QuicEpollAlarm : public QuicAlarm {
@@ -26,6 +27,16 @@ class QuicEpollAlarm : public QuicAlarm {
   void CancelImpl() override {
     DCHECK(!deadline().IsInitialized());
     epoll_alarm_impl_.UnregisterIfRegistered();
+  }
+
+  void UpdateImpl() override {
+    DCHECK(deadline().IsInitialized());
+    int64_t epoll_deadline = (deadline() - QuicTime::Zero()).ToMicroseconds();
+    if (epoll_alarm_impl_.registered()) {
+      epoll_alarm_impl_.ReregisterAlarm(epoll_deadline);
+    } else {
+      epoll_server_->RegisterAlarm(epoll_deadline, &epoll_alarm_impl_);
+    }
   }
 
  private:

@@ -53,6 +53,7 @@
 #include "net/third_party/quic/core/crypto/quic_encrypter.h"
 #include "net/third_party/quic/core/http/spdy_utils.h"
 #include "net/third_party/quic/core/quic_connection.h"
+#include "net/third_party/quic/core/quic_utils.h"
 #include "net/third_party/quic/core/quic_write_blocked_list.h"
 #include "net/third_party/quic/core/tls_client_handshaker.h"
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
@@ -2317,9 +2318,10 @@ TEST_P(QuicHttpStreamTest, ServerPushVaryCheckFail) {
         DEFAULT_PRIORITY, &header_stream_offset));
   }
   AddWrite(ConstructClientRstStreamVaryMismatchAndRequestHeadersPacket(
-      client_packet_number++, stream_id_ + quic::test::NextStreamId(version_),
-      !kIncludeVersion, kFin, DEFAULT_PRIORITY, promise_id_,
-      &spdy_request_header_frame_length, &header_stream_offset));
+      client_packet_number++,
+      stream_id_ + quic::QuicUtils::StreamIdDelta(version_), !kIncludeVersion,
+      kFin, DEFAULT_PRIORITY, promise_id_, &spdy_request_header_frame_length,
+      &header_stream_offset));
   AddWrite(ConstructClientAckPacket(client_packet_number++, 3, 1, 2));
   AddWrite(ConstructClientRstStreamCancelledPacket(client_packet_number++));
 
@@ -2379,7 +2381,7 @@ TEST_P(QuicHttpStreamTest, ServerPushVaryCheckFail) {
   EXPECT_EQ(
       QuicHttpStreamPeer::GetQuicChromiumClientStream(promised_stream_.get())
           ->id(),
-      stream_id_ + quic::test::NextStreamId(version_));
+      stream_id_ + quic::QuicUtils::StreamIdDelta(version_));
 
   // After rendezvous failure, the push stream has been cancelled.
   EXPECT_EQ(session_->GetPromisedByUrl(promise_url_), nullptr);
@@ -2393,7 +2395,7 @@ TEST_P(QuicHttpStreamTest, ServerPushVaryCheckFail) {
   SetResponse("404 Not Found", string());
   size_t spdy_response_header_frame_length;
   ProcessPacket(InnerConstructResponseHeadersPacket(
-      3, stream_id_ + quic::test::NextStreamId(version_), kFin,
+      3, stream_id_ + quic::QuicUtils::StreamIdDelta(version_), kFin,
       &spdy_response_header_frame_length));
 
   base::RunLoop().RunUntilIdle();
