@@ -11,6 +11,7 @@ from core import cli_helpers
 from telemetry import decorators
 
 
+@decorators.Disabled('android', 'chromeos')
 class CLIHelpersTest(unittest.TestCase):
   def testUnsupportedColor(self):
     with self.assertRaises(AssertionError):
@@ -85,8 +86,6 @@ class CLIHelpersTest(unittest.TestCase):
       mock.call('\033[96mReady? [foo/bar] \033[0m', end=' ')
     ])
 
-  # https://crbug.com/937654.
-  @decorators.Disabled('android', 'chromeos')
   def testAskWithInvalidDefaultAnswer(self):
     with self.assertRaises(ValueError):
       cli_helpers.Ask('Ready?', ['foo', 'bar'], 'baz')
@@ -157,6 +156,16 @@ class CLIHelpersTest(unittest.TestCase):
   def testRunWithNonListCommand(self):
     with self.assertRaises(ValueError):
       cli_helpers.Run('cmd with args')
+
+  @mock.patch('__builtin__.print')
+  @mock.patch('__builtin__.raw_input')
+  def testPrompt(self, raw_input_mock, print_mock):
+    raw_input_mock.side_effect = ['', '42']
+    self.assertEqual(cli_helpers.Prompt(
+        'What is the ultimate meaning of life, universe and everything?'), '42')
+    self.assertEqual(raw_input_mock.call_count, 2)
+    self.assertEqual(print_mock.call_count, 3)
+
 
 
 if __name__ == "__main__":
