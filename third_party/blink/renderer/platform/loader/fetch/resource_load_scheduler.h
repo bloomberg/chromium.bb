@@ -331,8 +331,9 @@ class PLATFORM_EXPORT ResourceLoadScheduler final
            std::set<ClientIdWithPriority, ClientIdWithPriority::Compare>>
       pending_requests_;
 
-  // Remembers times when the top request in each queue is processed.
-  std::map<ThrottleOption, base::TimeTicks> pending_queue_update_times_;
+  // Remembers elapsed times in seconds when the top request in each queue is
+  // processed.
+  std::map<ThrottleOption, double> pending_queue_update_times_;
 
   // Holds an internal class instance to monitor and report traffic.
   std::unique_ptr<TrafficMonitor> traffic_monitor_;
