@@ -736,38 +736,9 @@ void WebLocalFrameImpl::SetIsolatedWorldInfo(int world_id,
 }
 
 void WebLocalFrameImpl::AddMessageToConsole(const WebConsoleMessage& message) {
-  // TODO(devlin): Use WebConsoleMessage::LogWebConsoleMessage here.
-
   DCHECK(GetFrame());
-
-  MessageLevel web_core_message_level = kInfoMessageLevel;
-  switch (message.level) {
-    case mojom::ConsoleMessageLevel::kVerbose:
-      web_core_message_level = kVerboseMessageLevel;
-      break;
-    case mojom::ConsoleMessageLevel::kInfo:
-      web_core_message_level = kInfoMessageLevel;
-      break;
-    case mojom::ConsoleMessageLevel::kWarning:
-      web_core_message_level = kWarningMessageLevel;
-      break;
-    case mojom::ConsoleMessageLevel::kError:
-      web_core_message_level = kErrorMessageLevel;
-      break;
-  }
-
-  MessageSource message_source = message.nodes.empty()
-                                     ? kOtherMessageSource
-                                     : kRecommendationMessageSource;
-  Vector<DOMNodeId> nodes;
-  for (const blink::WebNode& web_node : message.nodes)
-    nodes.push_back(DOMNodeIds::IdForNode(&(*web_node)));
-  ConsoleMessage* console_message = ConsoleMessage::Create(
-      message_source, web_core_message_level, message.text,
-      SourceLocation::Create(message.url, message.line_number,
-                             message.column_number, nullptr));
-  console_message->SetNodes(GetFrame(), std::move(nodes));
-  GetFrame()->GetDocument()->AddConsoleMessage(console_message);
+  GetFrame()->GetDocument()->AddConsoleMessage(
+      ConsoleMessage::CreateFromWebConsoleMessage(message, GetFrame()));
 }
 
 void WebLocalFrameImpl::Alert(const WebString& message) {

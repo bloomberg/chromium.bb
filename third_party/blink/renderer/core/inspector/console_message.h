@@ -18,6 +18,7 @@ class DocumentLoader;
 class LocalFrame;
 class SourceLocation;
 class WorkerThread;
+struct WebConsoleMessage;
 
 class CORE_EXPORT ConsoleMessage final
     : public GarbageCollectedFinalized<ConsoleMessage> {
@@ -46,6 +47,11 @@ class CORE_EXPORT ConsoleMessage final
                                           const String& message,
                                           std::unique_ptr<SourceLocation>,
                                           WorkerThread*);
+
+  // Creates a ConsoleMessage from a similar WebConsoleMessage.
+  static ConsoleMessage* CreateFromWebConsoleMessage(
+      const WebConsoleMessage& message,
+      LocalFrame* local_frame);
 
   ConsoleMessage(MessageSource,
                  MessageLevel,
