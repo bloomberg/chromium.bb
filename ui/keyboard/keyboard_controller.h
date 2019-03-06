@@ -186,7 +186,8 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
 
   // Returns the current bounds that affect the workspace layout. If the
   // keyboard is not shown or if the keyboard mode should not affect the usable
-  // region of the screen, an empty rectangle will be returned.
+  // region of the screen, an empty rectangle will be returned. Bounds are in
+  // screen coordinates.
   gfx::Rect GetWorkspaceOccludedBounds() const;
 
   // Returns the current bounds that affect the window layout of the various

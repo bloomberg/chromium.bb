@@ -60,7 +60,7 @@ class ASH_EXPORT AshKeyboardController
   void DestroyVirtualKeyboard();
 
   // Forwards events to mojo observers.
-  void SendOnKeyboardVisibleBoundsChanged(const gfx::Rect& bounds);
+  void SendOnKeyboardVisibleBoundsChanged(const gfx::Rect& screen_bounds);
   void SendOnLoadKeyboardContentsRequested();
   void SendOnKeyboardUIDestroyed();
 
@@ -113,15 +113,13 @@ class ASH_EXPORT AshKeyboardController
   // keyboard::KeyboardControllerObserver
   void OnKeyboardConfigChanged() override;
   void OnKeyboardVisibilityStateChanged(bool is_visible) override;
-  void OnKeyboardVisibleBoundsChanged(const gfx::Rect& bounds) override;
+  void OnKeyboardVisibleBoundsChanged(const gfx::Rect& screen_bounds) override;
   void OnKeyboardWorkspaceOccludedBoundsChanged(
-      const gfx::Rect& bounds) override;
+      const gfx::Rect& screen_bounds) override;
   void OnKeyboardEnableFlagsChanged(
       std::set<keyboard::mojom::KeyboardEnableFlag>& keyboard_enable_flags)
       override;
   void OnKeyboardEnabledChanged(bool is_enabled) override;
-
-  gfx::Rect BoundsToScreen(const gfx::Rect& bounds);
 
   SessionController* session_controller_;  // unowned
   std::unique_ptr<keyboard::KeyboardUIFactory> keyboard_ui_factory_;

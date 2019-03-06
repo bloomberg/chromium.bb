@@ -80,10 +80,9 @@ void AshKeyboardController::DestroyVirtualKeyboard() {
 }
 
 void AshKeyboardController::SendOnKeyboardVisibleBoundsChanged(
-    const gfx::Rect& bounds) {
-  DVLOG(1) << "OnKeyboardVisibleBoundsChanged: " << bounds.ToString();
+    const gfx::Rect& screen_bounds) {
+  DVLOG(1) << "OnKeyboardVisibleBoundsChanged: " << screen_bounds.ToString();
   // Pass the bounds in screen coordinates over mojo.
-  gfx::Rect screen_bounds = BoundsToScreen(bounds);
   observers_.ForAllPtrs(
       [&screen_bounds](mojom::KeyboardControllerObserver* observer) {
         observer->OnKeyboardVisibleBoundsChanged(screen_bounds);
@@ -274,15 +273,14 @@ void AshKeyboardController::OnKeyboardVisibilityStateChanged(bool is_visible) {
 }
 
 void AshKeyboardController::OnKeyboardVisibleBoundsChanged(
-    const gfx::Rect& bounds) {
-  SendOnKeyboardVisibleBoundsChanged(bounds);
+    const gfx::Rect& screen_bounds) {
+  SendOnKeyboardVisibleBoundsChanged(screen_bounds);
 }
 
 void AshKeyboardController::OnKeyboardWorkspaceOccludedBoundsChanged(
-    const gfx::Rect& bounds) {
-  DVLOG(1) << "OnKeyboardOccludedBoundsChanged: " << bounds.ToString();
+    const gfx::Rect& screen_bounds) {
+  DVLOG(1) << "OnKeyboardOccludedBoundsChanged: " << screen_bounds.ToString();
   // Pass the bounds in screen coordinates over mojo.
-  gfx::Rect screen_bounds = BoundsToScreen(bounds);
   observers_.ForAllPtrs(
       [&screen_bounds](mojom::KeyboardControllerObserver* observer) {
         observer->OnKeyboardOccludedBoundsChanged(screen_bounds);
@@ -303,14 +301,6 @@ void AshKeyboardController::OnKeyboardEnabledChanged(bool is_enabled) {
       [is_enabled](mojom::KeyboardControllerObserver* observer) {
         observer->OnKeyboardEnabledChanged(is_enabled);
       });
-}
-
-gfx::Rect AshKeyboardController::BoundsToScreen(const gfx::Rect& bounds) {
-  DCHECK(keyboard_controller_->GetKeyboardWindow());
-  gfx::Rect screen_bounds(bounds);
-  ::wm::ConvertRectToScreen(keyboard_controller_->GetKeyboardWindow(),
-                            &screen_bounds);
-  return screen_bounds;
 }
 
 }  // namespace ash

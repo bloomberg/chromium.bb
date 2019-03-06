@@ -757,7 +757,10 @@ void KeyboardController::OnWindowBoundsChanged(
     return;
 
   // |window| could be the root window (for detecting screen rotations) or the
-  // keyboard window (for detecting keyboard bounds changes).
+  // keyboard window (for detecting keyboard bounds changes). For the root
+  // window, |new_bounds| is in screen coordinates. For the keyboard window,
+  // |new_bounds| is also in screen coordinates because VK container has
+  // kUsesScreenCoordinatesKey set.
   if (window == GetRootWindow())
     container_behavior_->SetCanonicalBounds(GetKeyboardWindow(), new_bounds);
   else if (window == GetKeyboardWindow())

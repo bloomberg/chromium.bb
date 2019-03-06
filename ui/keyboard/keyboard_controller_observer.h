@@ -47,11 +47,11 @@ class KEYBOARD_EXPORT KeyboardControllerObserver {
 
   // Called when the keyboard bounds have changed in a way that should affect
   // the usable region of the workspace. The user interface should respond to
-  // this event by moving important elements away from |new_bounds| so that they
-  // don't overlap. However, drastic visual changes should be avoided, as the
-  // occluded bounds may change frequently.
+  // this event by moving important elements away from |new_bounds_in_screen|
+  // so that they don't overlap. However, drastic visual changes should be
+  // avoided, as the occluded bounds may change frequently.
   virtual void OnKeyboardWorkspaceOccludedBoundsChanged(
-      const gfx::Rect& new_bounds) {}
+      const gfx::Rect& new_bounds_in_screen) {}
 
   // Called when the keyboard bounds have changed in a way that affects how the
   // workspace should change to not take up the screen space occupied by the

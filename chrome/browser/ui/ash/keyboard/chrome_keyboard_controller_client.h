@@ -51,9 +51,9 @@ class ChromeKeyboardControllerClient
 
     // Forwards the 'OnKeyboardOccludedBoundsChanged' mojo observer method.
     // This is used to update the insets of browser and app windows when the
-    // keyboard is shown. |bounds| is in the frame of reference of the
-    // keyboard window.
-    virtual void OnKeyboardOccludedBoundsChanged(const gfx::Rect& bounds) {}
+    // keyboard is shown.
+    virtual void OnKeyboardOccludedBoundsChanged(
+        const gfx::Rect& screen_bounds) {}
 
     // Notifies observers when the keyboard content (i.e. the extension) has
     // loaded. Note: if the content is already loaded when the observer is
