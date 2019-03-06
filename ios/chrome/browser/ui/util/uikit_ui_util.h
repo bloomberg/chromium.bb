@@ -255,9 +255,4 @@ void TriggerHapticFeedbackForNotification(UINotificationFeedbackType type);
 // more than 99 tabs open.
 NSString* TextForTabCount(long count);
 
-UIFont* PreferredFontForTextStyleWithMaxCategory(
-    UIFontTextStyle style,
-    UIContentSizeCategory currentCategory,
-    UIContentSizeCategory maxCategory);
-
 #endif  // IOS_CHROME_BROWSER_UI_UTIL_UIKIT_UI_UTIL_H_

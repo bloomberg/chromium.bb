@@ -690,20 +690,3 @@ NSString* TextForTabCount(long count) {
     return @":)";
   return [NSString stringWithFormat:@"%ld", count];
 }
-
-UIFont* PreferredFontForTextStyleWithMaxCategory(
-    UIFontTextStyle style,
-    UIContentSizeCategory currentCategory,
-    UIContentSizeCategory maxCategory) {
-  CGFloat maxMultiplier = SystemSuggestedFontSizeMultiplier(maxCategory);
-  CGFloat currentMultiplier =
-      SystemSuggestedFontSizeMultiplier(currentCategory);
-  if (currentMultiplier > maxMultiplier) {
-    return [UIFont
-            preferredFontForTextStyle:style
-        compatibleWithTraitCollection:
-            [UITraitCollection
-                traitCollectionWithPreferredContentSizeCategory:maxCategory]];
-  }
-  return [UIFont preferredFontForTextStyle:style];
-}
