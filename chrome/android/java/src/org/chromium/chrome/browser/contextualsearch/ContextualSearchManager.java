@@ -197,8 +197,8 @@ public class ContextualSearchManager
     // TODO(donnd): replace with a more systematic approach using the InternalStateController.
     private int mSelectWordAroundCaretCounter;
 
-    /** Whether ContextualSearch UI is suppressed for Smart Selection. */
-    private boolean mDoSuppressContextualSearchForSmartSelection;
+    /** Whether Smart Text Selection might be active.  If false, we know it's not active. */
+    private boolean mCouldSmartSelectionBeActive;
 
     /** An observer that reports selected context to GSA for search quality. */
     private ContextualSearchObserver mContextReportingObserver;
@@ -1290,9 +1290,13 @@ public class ContextualSearchManager
         return mContextualSearchSelectionClient;
     }
 
-    /** Notifies Contextual Search whether the UI should be suppressed for Smart Selection. */
-    void suppressContextualSearchForSmartSelection(boolean isSmartSelectionEnabled) {
-        mDoSuppressContextualSearchForSmartSelection = isSmartSelectionEnabled;
+    /**
+     * Notifies Contextual Search whether Smart Selection could be active.
+     * @param isSmartSelectionEnabledInChrome Whether Smart Selection is enabled in Chrome, and
+     *        therefore could be active.
+     */
+    void setCouldSmartSelectionBeActive(boolean isSmartSelectionEnabledInChrome) {
+        mCouldSmartSelectionBeActive = isSmartSelectionEnabledInChrome;
     }
 
     /**
@@ -1571,9 +1575,9 @@ public class ContextualSearchManager
                 };
 
                 boolean isTap = mSelectionController.getSelectionType() == SelectionType.TAP;
-                if (!isTap && mDoSuppressContextualSearchForSmartSelection && mContext != null) {
-                    // If Smart Selection is active we need to work around a race
-                    // condition gathering surrounding text.  See issue 773330.
+                if (!isTap && mCouldSmartSelectionBeActive && mContext != null) {
+                    // If Smart Selection might be active we need to work around a race
+                    // condition gathering surrounding text.  See https://crbug.com/773330.
                     // Instead we just return the selection which is good enough for the assistant.
                     mInternalStateController.notifyStartingWorkOn(
                             InternalState.GATHERING_SURROUNDINGS);
@@ -1717,18 +1721,7 @@ public class ContextualSearchManager
             public void showContextualSearchLongpressUi() {
                 mInternalStateController.notifyStartingWorkOn(
                         InternalState.SHOWING_LONGPRESS_SEARCH);
-                boolean suppressForSmartSelection = mDoSuppressContextualSearchForSmartSelection
-                        && !ContextualSearchFieldTrial.isSuppressForSmartSelectionDisabled();
-                if (suppressForSmartSelection) {
-                    // Make sure we close any existing UX since Smart Select has taken this action.
-                    // Specifically, this happens when the user taps on an existing tap-selection
-                    // and the selection-pins show: The original tap processing may still be in
-                    // progress or may have completed and the Bar is being shown.
-                    hideContextualSearch(StateChangeReason.UNKNOWN);
-                    RecordUserAction.record("ContextualSearch.SmartSelectionSuppressed");
-                } else {
-                    showContextualSearch(StateChangeReason.TEXT_SELECT_LONG_PRESS);
-                }
+                showContextualSearch(StateChangeReason.TEXT_SELECT_LONG_PRESS);
                 mInternalStateController.notifyFinishedWorkOn(
                         InternalState.SHOWING_LONGPRESS_SEARCH);
             }
