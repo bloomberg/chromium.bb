@@ -97,6 +97,8 @@ class DownloadUIControllerTest : public ChromeRenderViewHostTestHarness {
   // delegate results in the DownloadItem* being stored in |notified_item_|.
   std::unique_ptr<DownloadUIController::Delegate> GetTestDelegate();
 
+  DownloadOfflineContentProvider* GetDownloadProvider() { return nullptr; }
+
   MockDownloadManager* manager() { return manager_.get(); }
 
   // Returns the DownloadManager::Observer registered by a test case. This is
@@ -269,7 +271,8 @@ DownloadUIControllerTest::GetTestDelegate() {
 // a non-empty path.  I.e. once the download target has been determined.
 TEST_F(DownloadUIControllerTest, DownloadUIController_NotifyBasic) {
   std::unique_ptr<MockDownloadItem> item(CreateMockInProgressDownload());
-  DownloadUIController controller(manager(), GetTestDelegate());
+  DownloadUIController controller(manager(), GetTestDelegate(),
+                                  GetDownloadProvider());
   EXPECT_CALL(*item, GetTargetFilePath())
       .WillOnce(ReturnRefOfCopy(base::FilePath()));
 
@@ -291,7 +294,8 @@ TEST_F(DownloadUIControllerTest, DownloadUIController_NotifyBasic) {
 // A download that's created in an interrupted state should also be displayed.
 TEST_F(DownloadUIControllerTest, DownloadUIController_NotifyBasic_Interrupted) {
   std::unique_ptr<MockDownloadItem> item = CreateMockInProgressDownload();
-  DownloadUIController controller(manager(), GetTestDelegate());
+  DownloadUIController controller(manager(), GetTestDelegate(),
+                                  GetDownloadProvider());
   EXPECT_CALL(*item, GetState())
       .WillRepeatedly(Return(download::DownloadItem::INTERRUPTED));
 
@@ -305,7 +309,8 @@ TEST_F(DownloadUIControllerTest, DownloadUIController_NotifyBasic_Interrupted) {
 // additional OnDownloadUpdated() notification.
 TEST_F(DownloadUIControllerTest, DownloadUIController_NotifyReadyOnCreate) {
   std::unique_ptr<MockDownloadItem> item(CreateMockInProgressDownload());
-  DownloadUIController controller(manager(), GetTestDelegate());
+  DownloadUIController controller(manager(), GetTestDelegate(),
+                                  GetDownloadProvider());
 
   ASSERT_TRUE(manager_observer());
   manager_observer()->OnDownloadCreated(manager(), item.get());
@@ -314,7 +319,8 @@ TEST_F(DownloadUIControllerTest, DownloadUIController_NotifyReadyOnCreate) {
 
 // The UI shouldn't be notified of downloads that were restored from history.
 TEST_F(DownloadUIControllerTest, DownloadUIController_HistoryDownload) {
-  DownloadUIController controller(manager(), GetTestDelegate());
+  DownloadUIController controller(manager(), GetTestDelegate(),
+                                  GetDownloadProvider());
   // DownloadHistory should already have been created. It performs a query of
   // existing downloads upon creation. We'll use the callback to inject a
   // history download.

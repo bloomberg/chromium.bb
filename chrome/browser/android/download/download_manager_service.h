@@ -165,6 +165,14 @@ class DownloadManagerService
   download::InProgressDownloadManager* RetriveInProgressDownloadManager(
       content::BrowserContext* context);
 
+  // Get all downloads from DownloadManager or InProgressManager.
+  void GetAllDownloads(content::DownloadManager::DownloadVector* all_items,
+                       bool is_off_the_record);
+
+  // Gets a download item from DownloadManager or InProgressManager.
+  download::DownloadItem* GetDownload(const std::string& download_guid,
+                                      bool is_off_the_record);
+
  protected:
   // Called to get the content::DownloadManager instance.
   virtual content::DownloadManager* GetDownloadManager(bool is_off_the_record);
@@ -203,10 +211,6 @@ class DownloadManagerService
   void OnResumptionFailed(const std::string& download_guid);
 
   void OnResumptionFailedInternal(const std::string& download_guid);
-
-  // Gets a download item from DownloadManager or InProgressManager.
-  download::DownloadItem* GetDownload(const std::string& download_guid,
-                                      bool is_off_the_record);
 
   // Creates the InProgressDownloadmanager when running with ServiceManager
   // only mode.

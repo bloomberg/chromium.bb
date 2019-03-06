@@ -24,6 +24,7 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/download/download_manager_bridge.h"
+#include "chrome/browser/android/download/download_manager_service.h"
 #endif
 
 using OfflineItemFilter = offline_items_collection::OfflineItemFilter;
@@ -37,7 +38,7 @@ namespace {
 // Thumbnail size used for generating thumbnails for image files.
 const int kThumbnailSizeInDP = 64;
 
-bool ShouldShowDownloadItem(const download::DownloadItem* item) {
+bool ShouldShowDownloadItem(const DownloadItem* item) {
   return !item->IsTemporary() && !item->IsTransient() && !item->IsDangerous() &&
          !item->GetTargetFilePath().empty();
 }
@@ -45,16 +46,12 @@ bool ShouldShowDownloadItem(const download::DownloadItem* item) {
 }  // namespace
 
 DownloadOfflineContentProvider::DownloadOfflineContentProvider(
-    DownloadManager* manager)
-    : manager_(manager),
-      download_notifier_(manager, this),
+    OfflineContentAggregator* aggregator,
+    const std::string& name_space)
+    : aggregator_(aggregator),
+      name_space_(name_space),
+      manager_(nullptr),
       weak_ptr_factory_(this) {
-  Profile* profile = Profile::FromBrowserContext(manager_->GetBrowserContext());
-  profile = profile->GetOriginalProfile();
-  aggregator_ = OfflineContentAggregatorFactory::GetForBrowserContext(profile);
-  bool incognito = manager_->GetBrowserContext()->IsOffTheRecord();
-  name_space_ = OfflineContentAggregator::CreateUniqueNameSpace(
-      OfflineItemUtils::GetDownloadNamespacePrefix(incognito), incognito);
   aggregator_->RegisterProvider(name_space_, this);
 }
 
@@ -62,35 +59,40 @@ DownloadOfflineContentProvider::~DownloadOfflineContentProvider() {
   aggregator_->UnregisterProvider(name_space_);
 }
 
+void DownloadOfflineContentProvider::SetDownloadManager(
+    DownloadManager* manager) {
+  manager_ = manager;
+}
+
 // TODO(shaktisahu) : Pass DownloadOpenSource.
 void DownloadOfflineContentProvider::OpenItem(LaunchLocation location,
                                               const ContentId& id) {
-  download::DownloadItem* item = manager_->GetDownloadByGuid(id.id);
+  DownloadItem* item = GetDownload(id.id);
   if (item)
     item->OpenDownload();
 }
 
 void DownloadOfflineContentProvider::RemoveItem(const ContentId& id) {
-  download::DownloadItem* item = manager_->GetDownloadByGuid(id.id);
+  DownloadItem* item = GetDownload(id.id);
   if (item)
     item->Remove();
 }
 
 void DownloadOfflineContentProvider::CancelDownload(const ContentId& id) {
-  download::DownloadItem* item = manager_->GetDownloadByGuid(id.id);
+  DownloadItem* item = GetDownload(id.id);
   if (item)
     item->Cancel(true);
 }
 
 void DownloadOfflineContentProvider::PauseDownload(const ContentId& id) {
-  download::DownloadItem* item = manager_->GetDownloadByGuid(id.id);
+  DownloadItem* item = GetDownload(id.id);
   if (item)
     item->Pause();
 }
 
 void DownloadOfflineContentProvider::ResumeDownload(const ContentId& id,
                                                     bool has_user_gesture) {
-  download::DownloadItem* item = manager_->GetDownloadByGuid(id.id);
+  DownloadItem* item = GetDownload(id.id);
   if (item)
     item->Resume(has_user_gesture);
 }
@@ -98,7 +100,7 @@ void DownloadOfflineContentProvider::ResumeDownload(const ContentId& id,
 void DownloadOfflineContentProvider::GetItemById(
     const ContentId& id,
     OfflineContentProvider::SingleItemCallback callback) {
-  DownloadItem* item = manager_->GetDownloadByGuid(id.id);
+  DownloadItem* item = GetDownload(id.id);
   auto offline_item =
       item && ShouldShowDownloadItem(item)
           ? base::make_optional(
@@ -112,7 +114,7 @@ void DownloadOfflineContentProvider::GetItemById(
 void DownloadOfflineContentProvider::GetAllItems(
     OfflineContentProvider::MultipleItemCallback callback) {
   DownloadManager::DownloadVector all_items;
-  manager_->GetAllDownloads(&all_items);
+  GetAllDownloads(&all_items);
 
   std::vector<OfflineItem> items;
   for (auto* item : all_items) {
@@ -130,7 +132,7 @@ void DownloadOfflineContentProvider::GetVisualsForItem(
     const ContentId& id,
     VisualsCallback callback) {
   // TODO(crbug.com/855330) Supply thumbnail if item is visible.
-  DownloadItem* item = manager_->GetDownloadByGuid(id.id);
+  DownloadItem* item = GetDownload(id.id);
   if (!item)
     return;
 
@@ -177,8 +179,14 @@ void DownloadOfflineContentProvider::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
-void DownloadOfflineContentProvider::OnDownloadUpdated(DownloadManager* manager,
-                                                       DownloadItem* item) {
+void DownloadOfflineContentProvider::OnDownloadStarted(DownloadItem* item) {
+  item->RemoveObserver(this);
+  item->AddObserver(this);
+
+  OnDownloadUpdated(item);
+}
+
+void DownloadOfflineContentProvider::OnDownloadUpdated(DownloadItem* item) {
   // Wait until the target path is determined or the download is canceled.
   if (item->GetTargetFilePath().empty() &&
       item->GetState() != DownloadItem::CANCELLED)
@@ -196,8 +204,7 @@ void DownloadOfflineContentProvider::OnDownloadUpdated(DownloadManager* manager,
   UpdateObservers(item);
 }
 
-void DownloadOfflineContentProvider::OnDownloadRemoved(DownloadManager* manager,
-                                                       DownloadItem* item) {
+void DownloadOfflineContentProvider::OnDownloadRemoved(DownloadItem* item) {
   if (!ShouldShowDownloadItem(item))
     return;
 
@@ -229,6 +236,29 @@ void DownloadOfflineContentProvider::AddCompletedDownloadDone(
     DownloadItem* item,
     int64_t system_download_id) {
   UpdateObservers(item);
+}
+
+DownloadItem* DownloadOfflineContentProvider::GetDownload(
+    const std::string& download_guid) {
+#if defined(OS_ANDROID)
+  bool incognito =
+      manager_ ? manager_->GetBrowserContext()->IsOffTheRecord() : false;
+  return DownloadManagerService::GetInstance()->GetDownload(download_guid,
+                                                            incognito);
+#else
+  return manager_->GetDownloadByGuid(download_guid);
+#endif
+}
+
+void DownloadOfflineContentProvider::GetAllDownloads(
+    DownloadManager::DownloadVector* all_items) {
+#if defined(OS_ANDROID)
+  bool incognito =
+      manager_ ? manager_->GetBrowserContext()->IsOffTheRecord() : false;
+  DownloadManagerService::GetInstance()->GetAllDownloads(all_items, incognito);
+#else
+  manager_->GetAllDownloads(all_items);
+#endif
 }
 
 void DownloadOfflineContentProvider::UpdateObservers(DownloadItem* item) {
