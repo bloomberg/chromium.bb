@@ -590,7 +590,8 @@ TEST_F(ProfileAttributesStorageTest, AccessFromElsewhere) {
   EXPECT_EQ(base::ASCIIToUTF16("OtherNewName"), first_entry->GetName());
 }
 
-TEST_F(ProfileAttributesStorageTest, ChooseAvatarIconIndexForNewProfile) {
+TEST_F(ProfileAttributesStorageTest,
+       DISABLED_ChooseAvatarIconIndexForNewProfile) {
   size_t total_icon_count = profiles::GetDefaultAvatarIconCount();
 #if defined(OS_CHROMEOS) || defined(OS_ANDROID)
   size_t generic_icon_count = profiles::GetGenericAvatarIconCount();
