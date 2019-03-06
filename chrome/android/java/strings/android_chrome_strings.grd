@@ -4040,6 +4040,9 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       <message name="IDS_AUTOFILL_ASSISTANT_3RD_PARTY_TERMS_REVIEW" desc="Message that indicates that the user wants to review the terms and conditions of a 3rd party's domain, e.g., 'odeon.co.uk'.">
         Read and agree to the terms &amp; conditions on <ph name="BEGIN_BOLD">&lt;b&gt;</ph><ph name="DOMAIN">%1$s<ex>google.com</ex></ph><ph name="END_BOLD">&lt;/b&gt;</ph> later
       </message>
+      <message name="IDS_AUTOFILL_ASSISTANT_3RD_PARTY_PRIVACY_NOTICE" desc="Privacy notice telling users that autofill assistant will send personal data to a third party’s website.">
+        Chrome will send personal data you selected to <ph name="BEGIN_BOLD">&lt;b&gt;</ph><ph name="DOMAIN">%1$s<ex>google.com</ex></ph><ph name="END_BOLD">&lt;/b&gt;</ph>
+      </message>
       <!-- Usage Stats strings -->
       <message name="IDS_USAGE_STATS_CONSENT_TITLE" desc="Title for activity authorizing Digital Wellbeing to access Chrome usage data">
         Connect Chrome to Digital Wellbeing?
@@ -4050,8 +4053,11 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       <message name="IDS_USAGE_STATS_SETTING_TITLE" desc="Title for setting toggling Digital Wellbeing to access Chrome usage data">
         Connect to Digital Wellbeing
       </message>
-      <message name="IDS_AUTOFILL_ASSISTANT_3RD_PARTY_PRIVACY_NOTICE" desc="Privacy notice telling users that autofill assistant will send personal data to a third party’s website.">
-        Chrome will send personal data you selected to <ph name="BEGIN_BOLD">&lt;b&gt;</ph><ph name="DOMAIN">%1$s<ex>google.com</ex></ph><ph name="END_BOLD">&lt;/b&gt;</ph>
+      <message name="IDS_USAGE_STATS_SITE_PAUSED" desc="Message when a website is suspended due to exceeding a user-defined limit">
+        Site paused
+      </message>
+      <message name="IDS_USAGE_STATS_SITE_PAUSED_EXPLANATION" desc="Message when a website is suspended due to exceeding a user-defined limit">
+        Your <ph name="FQDN">%1$s</ph> timer ran out. It'll start again tomorrow.
       </message>
 
       <!-- Bottom Tab Grid strings -->
