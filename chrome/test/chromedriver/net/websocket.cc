@@ -246,9 +246,9 @@ void WebSocket::OnRead(bool read_again, int code) {
 void WebSocket::OnReadDuringHandshake(const char* data, int len) {
   VLOG(4) << "WebSocket::OnReadDuringHandshake\n" << std::string(data, len);
   handshake_response_ += std::string(data, len);
-  int headers_end = net::HttpUtil::LocateEndOfHeaders(
+  size_t headers_end = net::HttpUtil::LocateEndOfHeaders(
       handshake_response_.data(), handshake_response_.size(), 0);
-  if (headers_end == -1)
+  if (headers_end == std::string::npos)
     return;
 
   const char kMagicKey[] = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";

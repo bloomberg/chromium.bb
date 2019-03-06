@@ -583,10 +583,10 @@ bool ParseMultipartHeadersFromBody(const char* bytes,
                                    wtf_size_t* end) {
   DCHECK(IsMainThread());
 
-  int headers_end_pos =
+  size_t headers_end_pos =
       net::HttpUtil::LocateEndOfAdditionalHeaders(bytes, size, 0);
 
-  if (headers_end_pos < 0)
+  if (headers_end_pos == std::string::npos)
     return false;
 
   *end = static_cast<wtf_size_t>(headers_end_pos);
@@ -597,8 +597,8 @@ bool ParseMultipartHeadersFromBody(const char* bytes,
   headers.append(bytes, headers_end_pos);
 
   scoped_refptr<net::HttpResponseHeaders> response_headers =
-      new net::HttpResponseHeaders(net::HttpUtil::AssembleRawHeaders(
-          headers.data(), static_cast<int>(headers.length())));
+      new net::HttpResponseHeaders(
+          net::HttpUtil::AssembleRawHeaders(headers.data(), headers.length()));
 
   std::string mime_type, charset;
   response_headers->GetMimeTypeAndCharset(&mime_type, &charset);
@@ -627,10 +627,10 @@ bool ParseMultipartFormHeadersFromBody(const char* bytes,
                                        wtf_size_t* end) {
   DCHECK_EQ(0u, header_fields->size());
 
-  int headers_end_pos =
+  size_t headers_end_pos =
       net::HttpUtil::LocateEndOfAdditionalHeaders(bytes, size, 0);
 
-  if (headers_end_pos < 0)
+  if (headers_end_pos == std::string::npos)
     return false;
 
   *end = static_cast<wtf_size_t>(headers_end_pos);
@@ -641,8 +641,8 @@ bool ParseMultipartFormHeadersFromBody(const char* bytes,
   headers.append(bytes, headers_end_pos);
 
   scoped_refptr<net::HttpResponseHeaders> responseHeaders =
-      new net::HttpResponseHeaders(net::HttpUtil::AssembleRawHeaders(
-          headers.data(), static_cast<wtf_size_t>(headers.length())));
+      new net::HttpResponseHeaders(
+          net::HttpUtil::AssembleRawHeaders(headers.data(), headers.length()));
 
   // Copy selected header fields.
   const AtomicString* const headerNamePointers[] = {
