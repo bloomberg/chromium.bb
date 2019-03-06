@@ -272,7 +272,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libc++
   # and whatever else without interference from each other.
-  "libcxx_revision": "22d3f6dd25e5efc59124ba1c00b8f98b14be4201",
+  "libcxx_revision": "9ae8fb4a3c5fef4e9d41e97bbd9397a412932ab0",
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libc++abi
   # and whatever else without interference from each other.
