@@ -16,6 +16,7 @@
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/omnibox/browser/base_search_provider.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
+#include "components/omnibox/common/omnibox_features.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/sync/base/time.h"
 #include "components/variations/net/variations_http_headers.h"

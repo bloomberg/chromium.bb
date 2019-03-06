@@ -15,7 +15,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/memory_usage_estimator.h"
 #include "base/values.h"
-#include "components/omnibox/browser/omnibox_field_trial.h"
 #include "net/base/escape.h"
 #include "url/url_constants.h"
 

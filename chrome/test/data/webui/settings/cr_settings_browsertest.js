@@ -12,7 +12,7 @@ GEN_INCLUDE(
     [ROOT_PATH + 'chrome/test/data/webui/polymer_browser_test_base.js']);
 GEN('#include "chrome/common/chrome_features.h"');
 GEN('#include "components/autofill/core/common/autofill_features.h"');
-GEN('#include "components/omnibox/browser/omnibox_field_trial.h"');
+GEN('#include "components/omnibox/common/omnibox_features.h"');
 
 /**
  * Test fixture for Polymer Settings elements.
