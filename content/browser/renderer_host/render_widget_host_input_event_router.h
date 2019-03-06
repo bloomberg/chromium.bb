@@ -169,6 +169,7 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
   bool HasEventsPendingDispatch() const;
 
   size_t TouchEventAckQueueLengthForTesting() const;
+  size_t RegisteredViewCountForTesting() const;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(BrowserSideFlingBrowserTest,
