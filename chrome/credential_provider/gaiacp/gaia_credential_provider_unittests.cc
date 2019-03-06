@@ -181,12 +181,16 @@ TEST_F(GcpCredentialProviderTest, AddPersonAfterUserRemove) {
   // exists.
   ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmUrl, L"https://mdm.com"));
   ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmSupportsMultiUser, 0));
+  GoogleMdmEnrolledStatusForTesting forced_status(true);
 
   const wchar_t kDummyUsername[] = L"username";
   const wchar_t kDummyPassword[] = L"password";
   CComBSTR sid;
   CreateGCPWUser(kDummyUsername, L"foo@gmail.com", kDummyPassword, L"Full Name",
                  L"Comment", L"gaia-id", &sid);
+
+  // Start token handle refresh threads.
+  associated_user_validator.StartRefreshingTokenHandleValidity();
 
   {
     CComPtr<ICredentialProvider> provider;
@@ -216,8 +220,6 @@ TEST_F(GcpCredentialProviderTest, AddPersonAfterUserRemove) {
   ASSERT_EQ(S_OK,
             fake_os_user_manager()->RemoveUser(kDummyUsername, kDummyPassword));
 
-  // Start token handle refresh threads.
-  associated_user_validator.StartRefreshingTokenHandleValidity();
   {
     CComPtr<ICredentialProvider> provider;
     ASSERT_EQ(S_OK,
@@ -263,8 +265,13 @@ TEST_P(GcpCredentialProviderMdmTest, Basic) {
   const DWORD expected_credential_count =
       config_mdm_url && supports_multi_users != 1 && user_exists ? 0 : 1;
 
-  if (config_mdm_url)
+  bool mdm_enrolled = false;
+  if (config_mdm_url) {
     ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmUrl, L"https://mdm.com"));
+    mdm_enrolled = true;
+  }
+
+  GoogleMdmEnrolledStatusForTesting forced_status(mdm_enrolled);
 
   if (supports_multi_users != 2) {
     ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmSupportsMultiUser,
@@ -281,6 +288,8 @@ TEST_P(GcpCredentialProviderMdmTest, Basic) {
   fake_http_url_fetcher_factory()->SetFakeResponse(
       GURL(AssociatedUserValidator::kTokenInfoUrl),
       FakeWinHttpUrlFetcher::Headers(), "{\"expires_in\":1}");
+
+  associated_user_validator.StartRefreshingTokenHandleValidity();
 
   CComPtr<ICredentialProvider> provider;
   ASSERT_EQ(S_OK,

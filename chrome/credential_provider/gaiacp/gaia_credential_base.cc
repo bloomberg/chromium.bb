@@ -32,6 +32,7 @@
 #include "chrome/credential_provider/common/gcp_strings.h"
 #include "chrome/credential_provider/gaiacp/associated_user_validator.h"
 #include "chrome/credential_provider/gaiacp/auth_utils.h"
+#include "chrome/credential_provider/gaiacp/gaia_credential_provider.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential_provider_i.h"
 #include "chrome/credential_provider/gaiacp/gaia_resources.h"
 #include "chrome/credential_provider/gaiacp/gcp_utils.h"
@@ -1573,10 +1574,17 @@ HRESULT CGaiaCredentialBase::ValidateOrCreateUser(
 
   // New users creation is not allowed during work station unlock. This code
   // prevents users from being created when the "Other User" tile appears on the
-  // lock screen through a combination of system policy. In this situation only
+  // lock screen through certain system policy settings. In this situation only
   // the user who locked the computer is allowed to sign in.
   if (cpus == CPUS_UNLOCK_WORKSTATION) {
     *error_text = AllocErrorString(IDS_INVALID_UNLOCK_WORKSTATION_USER_BASE);
+    return HRESULT_FROM_WIN32(ERROR_LOGON_TYPE_NOT_GRANTED);
+    // This code prevents users from being created when the "Other User" tile
+    // appears on the sign in scenario and only 1 user is allowed to use this
+    // system.
+  } else if (!CGaiaCredentialProvider::CanNewUsersBeCreated(
+                 static_cast<CREDENTIAL_PROVIDER_USAGE_SCENARIO>(cpus))) {
+    *error_text = AllocErrorString(IDS_ADD_USER_DISALLOWED_BASE);
     return HRESULT_FROM_WIN32(ERROR_LOGON_TYPE_NOT_GRANTED);
   }
 
