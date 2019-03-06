@@ -2263,6 +2263,8 @@ jumbo_split_static_library("browser") {
       "android/download/download_location_dialog_bridge.h",
       "android/download/download_location_dialog_bridge_impl.cc",
       "android/download/download_location_dialog_bridge_impl.h",
+      "android/download/download_manager_bridge.cc",
+      "android/download/download_manager_bridge.h",
       "android/download/download_manager_service.cc",
       "android/download/download_manager_service.h",
       "android/download/download_media_parser.cc",

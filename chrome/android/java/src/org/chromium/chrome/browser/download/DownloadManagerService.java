@@ -36,6 +36,7 @@ import org.chromium.base.task.AsyncTask;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.download.DownloadManagerBridge.DownloadEnqueueRequest;
 import org.chromium.chrome.browser.download.DownloadManagerBridge.DownloadEnqueueResponse;
 import org.chromium.chrome.browser.download.DownloadMetrics.DownloadOpenSource;
@@ -329,6 +330,8 @@ public class DownloadManagerService
         DownloadInfo newInfo =
                 DownloadInfo.Builder.fromDownloadInfo(downloadInfo).setMimeType(mimeType).build();
         DownloadItem downloadItem = new DownloadItem(false, newInfo);
+        downloadItem.setSystemDownloadId(
+                DownloadManagerBridge.getDownloadIdForDownloadGuid(downloadInfo.getDownloadGuid()));
         updateDownloadProgress(downloadItem, status);
     }
 
@@ -537,7 +540,9 @@ public class DownloadManagerService
             public Pair<Boolean, Boolean> doInBackground() {
                 boolean success =
                         ContentUriUtils.isContentUri(item.getDownloadInfo().getFilePath());
-                if (!success) {
+                if (!success
+                        && !ChromeFeatureList.isEnabled(
+                                ChromeFeatureList.DOWNLOAD_OFFLINE_CONTENT_PROVIDER)) {
                     long systemDownloadId = DownloadManagerBridge.addCompletedDownload(
                             info.getFileName(), info.getDescription(), info.getMimeType(),
                             info.getFilePath(), info.getBytesReceived(), info.getOriginalUrl(),
@@ -1110,6 +1115,10 @@ public class DownloadManagerService
             nativeRemoveDownload(getNativeDownloadManagerService(), downloadGuid, isOffTheRecord);
             removeDownloadProgress(downloadGuid);
         });
+
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOAD_OFFLINE_CONTENT_PROVIDER)) {
+            return;
+        }
 
         PostTask.postTask(TaskTraits.BEST_EFFORT_MAY_BLOCK, () -> {
             DownloadManagerBridge.removeCompletedDownload(downloadGuid, externallyRemoved);

@@ -17,12 +17,15 @@ import android.text.TextUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
+import org.chromium.base.StrictModeContext;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.task.AsyncTask;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.concurrent.RejectedExecutionException;
 
 /**
  * A wrapper for Android DownloadManager to provide utility functions.
@@ -90,7 +93,9 @@ public class DownloadManagerBridge {
         NotificationManagerCompat notificationManager =
                 NotificationManagerCompat.from(getContext());
         boolean useSystemNotification = !notificationManager.areNotificationsEnabled();
-        long downloadId = -1;
+        long downloadId = getDownloadIdForDownloadGuid(downloadGuid);
+        if (downloadId != DownloadItem.INVALID_DOWNLOAD_ID) return downloadId;
+
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
             Class<?> c = manager.getClass();
             try {
@@ -124,6 +129,7 @@ public class DownloadManagerBridge {
      * @param downloadGuid The GUID of the download.
      * @param externallyRemoved If download is externally removed in other application.
      */
+    @CalledByNative
     public static void removeCompletedDownload(String downloadGuid, boolean externallyRemoved) {
         long downloadId = removeDownloadIdMapping(downloadGuid);
 
@@ -201,6 +207,13 @@ public class DownloadManagerBridge {
         return result;
     }
 
+    /** @return The android DownloadManager's download ID for the given download. */
+    public static long getDownloadIdForDownloadGuid(String downloadGuid) {
+        try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+            return getSharedPreferences().getLong(downloadGuid, INVALID_SYSTEM_DOWNLOAD_ID);
+        }
+    }
+
     /**
      * Inserts a new download ID mapping into the SharedPreferences
      * @param downloadId system download ID from Android DownloadManager.
@@ -235,11 +248,6 @@ public class DownloadManagerBridge {
         return downloadId;
     }
 
-    /** @return The android DownloadManager's download ID for the given download. */
-    private static long getDownloadIdForDownloadGuid(String downloadGuid) {
-        return getSharedPreferences().getLong(downloadGuid, INVALID_SYSTEM_DOWNLOAD_ID);
-    }
-
     /**
      * Lazily retrieve the SharedPreferences when needed. Since download operations are not very
      * frequent, no need to load all SharedPreference entries into a hashmap in the memory.
@@ -252,6 +260,31 @@ public class DownloadManagerBridge {
 
     private static Context getContext() {
         return ContextUtils.getApplicationContext();
+    }
+
+    @CalledByNative
+    private static void addCompletedDownload(String fileName, String description, String mimeType,
+            String filePath, long fileSizeBytes, String originalUrl, String referrer,
+            String downloadGuid, long callbackId) {
+        AsyncTask<Long> task = new AsyncTask<Long>() {
+            @Override
+            protected Long doInBackground() {
+                return addCompletedDownload(fileName, description, mimeType, filePath,
+                        fileSizeBytes, originalUrl, referrer, downloadGuid);
+            }
+
+            @Override
+            protected void onPostExecute(Long downloadId) {
+                nativeOnAddCompletedDownloadDone(callbackId, downloadId);
+            }
+        };
+        try {
+            task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        } catch (RejectedExecutionException e) {
+            // Reaching thread limit, update will be reschduled for the next run.
+            Log.e(TAG, "Thread limit reached, reschedule notification update later.");
+            nativeOnAddCompletedDownloadDone(callbackId, DownloadItem.INVALID_DOWNLOAD_ID);
+        }
     }
 
     private static int getDownloadStatus(int downloadManagerStatus) {
@@ -390,4 +423,6 @@ public class DownloadManagerBridge {
             mCallback.onResult(enqueueResult);
         }
     }
+
+    private static native void nativeOnAddCompletedDownloadDone(long callbackId, long downloadId);
 }

@@ -64,6 +64,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &contextual_suggestions::kContextualSuggestionsIPHReverseScroll,
     &contextual_suggestions::kContextualSuggestionsOptOut,
     &download::features::kDownloadAutoResumptionNative,
+    &download::features::kUseDownloadOfflineContentProvider,
     &features::kAllowStartingServiceManagerOnly,
     &features::kAppNotificationStatusMessaging,
     &features::kClearOldBrowsingData,
