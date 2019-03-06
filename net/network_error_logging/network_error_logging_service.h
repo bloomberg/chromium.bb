@@ -120,6 +120,7 @@ class NET_EXPORT NetworkErrorLoggingService {
 
   static const char kHeaderOutcomeHistogram[];
   static const char kRequestOutcomeHistogram[];
+  static const char kSignedExchangeRequestOutcomeHistogram[];
 
   enum class HeaderOutcome {
     DISCARDED_NO_NETWORK_ERROR_LOGGING_SERVICE = 0,
@@ -146,19 +147,20 @@ class NET_EXPORT NetworkErrorLoggingService {
   };
 
   enum class RequestOutcome {
-    DISCARDED_NO_NETWORK_ERROR_LOGGING_SERVICE = 0,
+    kDiscardedNoNetworkErrorLoggingService = 0,
 
-    DISCARDED_NO_REPORTING_SERVICE = 1,
-    DISCARDED_INSECURE_ORIGIN = 2,
-    DISCARDED_NO_ORIGIN_POLICY = 3,
-    DISCARDED_UNMAPPED_ERROR = 4,
-    DISCARDED_REPORTING_UPLOAD = 5,
-    DISCARDED_UNSAMPLED_SUCCESS = 6,
-    DISCARDED_UNSAMPLED_FAILURE = 7,
-    QUEUED = 8,
-    DISCARDED_NON_DNS_SUBDOMAIN_REPORT = 9,
+    kDiscardedNoReportingService = 1,
+    kDiscardedInsecureOrigin = 2,
+    kDiscardedNoOriginPolicy = 3,
+    kDiscardedUnmappedError = 4,
+    kDiscardedReportingUpload = 5,
+    kDiscardedUnsampledSuccess = 6,
+    kDiscardedUnsampledFailure = 7,
+    kQueued = 8,
+    kDiscardedNonDNSSubdomainReport = 9,
+    kDiscardedIPAddressMismatch = 10,
 
-    MAX
+    kMaxValue = kDiscardedIPAddressMismatch
   };
 
   static void RecordHeaderDiscardedForNoNetworkErrorLoggingService();

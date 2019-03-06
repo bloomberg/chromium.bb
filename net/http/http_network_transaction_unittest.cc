@@ -19340,7 +19340,7 @@ TEST_F(HttpNetworkTransactionNetworkErrorLoggingTest, DontCreateReportHttp) {
   // Insecure request does not generate a report
   histograms.ExpectBucketCount(
       NetworkErrorLoggingService::kRequestOutcomeHistogram,
-      NetworkErrorLoggingService::RequestOutcome::DISCARDED_INSECURE_ORIGIN, 1);
+      NetworkErrorLoggingService::RequestOutcome::kDiscardedInsecureOrigin, 1);
 
   EXPECT_EQ(1u, network_error_logging_service()->errors().size());
 }
@@ -19376,7 +19376,7 @@ TEST_F(HttpNetworkTransactionNetworkErrorLoggingTest,
   // policy for the origin.
   histograms.ExpectBucketCount(
       NetworkErrorLoggingService::kRequestOutcomeHistogram,
-      NetworkErrorLoggingService::RequestOutcome::DISCARDED_INSECURE_ORIGIN, 1);
+      NetworkErrorLoggingService::RequestOutcome::kDiscardedInsecureOrigin, 1);
 
   EXPECT_EQ(1u, network_error_logging_service()->errors().size());
 }
