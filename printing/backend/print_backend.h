@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
+#include "build/build_config.h"
 #include "printing/print_job_constants.h"
 #include "printing/printing_export.h"
 #include "ui/gfx/geometry/size.h"
@@ -67,6 +68,10 @@ struct PRINTING_EXPORT PrinterSemanticCapsAndDefaults {
 
   std::vector<gfx::Size> dpis;
   gfx::Size default_dpi;
+
+#if defined(OS_CHROMEOS)
+  bool pin_supported = false;
+#endif  // defined(OS_CHROMEOS)
 };
 
 struct PRINTING_EXPORT PrinterCapsAndDefaults {

@@ -32,10 +32,15 @@ constexpr char kIppDuplex[] = CUPS_SIDES;
 constexpr char kIppResolution[] = "printer-resolution";  // RFC 2911
 constexpr char kIppDocumentName[] = "document-name";     // RFC 8011
 constexpr char kIppRequestingUserName[] = "requesting-user-name";  // RFC 8011
+constexpr char kIppPin[] = "job-password";                       // PWG 5100.11
+constexpr char kIppPinEncryption[] = "job-password-encryption";  // PWG 5100.11
 
 // collation values
 constexpr char kCollated[] = "collated";
 constexpr char kUncollated[] = "uncollated";
+
+constexpr int kPinMinimumLength = 4;
+constexpr char kPinEncryptionNone[] = "none";
 
 namespace {
 
@@ -308,8 +313,7 @@ void CopiesRange(const CupsOptionProvider& printer,
 bool CollateCapable(const CupsOptionProvider& printer) {
   std::vector<base::StringPiece> values =
       printer.GetSupportedOptionValueStrings(kIppCollate);
-  auto iter = std::find(values.begin(), values.end(), kCollated);
-  return iter != values.end();
+  return base::ContainsValue(values, kCollated);
 }
 
 bool CollateDefault(const CupsOptionProvider& printer) {
@@ -321,6 +325,19 @@ bool CollateDefault(const CupsOptionProvider& printer) {
   return name.compare(kCollated) == 0;
 }
 
+bool PinSupported(const CupsOptionProvider& printer) {
+  ipp_attribute_t* attr = printer.GetSupportedOptionValues(kIppPin);
+  if (!attr)
+    return false;
+  int password_maximum_length_supported = ippGetInteger(attr, 0);
+  if (password_maximum_length_supported < kPinMinimumLength)
+    return false;
+
+  std::vector<base::StringPiece> values =
+      printer.GetSupportedOptionValueStrings(kIppPinEncryption);
+  return base::ContainsValue(values, kPinEncryptionNone);
+}
+
 void CapsAndDefaultsFromPrinter(const CupsOptionProvider& printer,
                                 PrinterSemanticCapsAndDefaults* printer_info) {
   // collate
@@ -330,6 +347,10 @@ void CapsAndDefaultsFromPrinter(const CupsOptionProvider& printer,
   // paper
   printer_info->default_paper = DefaultPaper(printer);
   printer_info->papers = SupportedPapers(printer);
+
+#if defined(OS_CHROMEOS)
+  printer_info->pin_supported = PinSupported(printer);
+#endif  // defined(OS_CHROMEOS)
 
   ExtractCopies(printer, printer_info);
   ExtractColor(printer, printer_info);

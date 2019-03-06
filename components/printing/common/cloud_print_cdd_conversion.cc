@@ -141,6 +141,12 @@ base::Value PrinterSemanticCapsAndDefaultsToCdd(
   orientation.AddOption(OrientationType::AUTO_ORIENTATION);
   orientation.SaveTo(&description);
 
+#if defined(OS_CHROMEOS)
+  PinCapability pin;
+  pin.set_value(semantic_info.pin_supported);
+  pin.SaveTo(&description);
+#endif  // defined(OS_CHROMEOS)
+
   return std::move(description).ToValue();
 }
 

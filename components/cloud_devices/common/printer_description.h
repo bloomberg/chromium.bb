@@ -12,6 +12,7 @@
 
 #include "base/logging.h"
 #include "base/optional.h"
+#include "build/build_config.h"
 #include "components/cloud_devices/common/description_items.h"
 
 // Defines printer options, CDD and CJT items.
@@ -510,6 +511,11 @@ typedef EmptyCapability<class CopiesTraits> CopiesCapability;
 typedef EmptyCapability<class PageRangeTraits> PageRangeCapability;
 typedef BooleanCapability<class CollateTraits> CollateCapability;
 typedef BooleanCapability<class ReverseTraits> ReverseCapability;
+#if defined(OS_CHROMEOS)
+// This capability is not a part of standard CDD description. It's used for
+// providing PIN printing opportunity in Chrome OS native printing.
+typedef ValueCapability<bool, class PinTraits> PinCapability;
+#endif  // defined(OS_CHROMEOS)
 
 typedef TicketItem<PwgRasterConfig, PwgRasterConfigTraits>
     PwgRasterConfigTicketItem;

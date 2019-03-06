@@ -60,6 +60,9 @@ extern const char kOptionRangeCapability[] = "range_cap";
 extern const char kOptionSelectCapability[] = "select_cap";
 extern const char kOptionTypedValueCapability[] = "typed_value_cap";
 extern const char kOptionVendorCapability[] = "vendor_capability";
+#if defined(OS_CHROMEOS)
+extern const char kOptionPin[] = "pin";
+#endif  // defined(OS_CHROMEOS)
 
 const char kMarginBottom[] = "bottom_microns";
 const char kMarginLeft[] = "left_microns";
@@ -85,6 +88,10 @@ const char kPwgRasterRotateAllPages[] = "rotate_all_pages";
 const char kVendorCapabilityMinValue[] = "min";
 const char kVendorCapabilityMaxValue[] = "max";
 const char kVendorCapabilityDefaultValue[] = "default";
+
+#if defined(OS_CHROMEOS)
+const char kPinSupported[] = "supported";
+#endif  // defined(OS_CHROMEOS)
 
 const char kTypeRangeVendorCapabilityFloat[] = "FLOAT";
 const char kTypeRangeVendorCapabilityInteger[] = "INTEGER";
@@ -1346,6 +1353,23 @@ class ReverseTraits : public NoValueValidation,
   }
 };
 
+#if defined(OS_CHROMEOS)
+class PinTraits : public NoValueValidation, public ItemsTraits<kOptionPin> {
+ public:
+  static bool Load(const base::Value& dict, bool* option) {
+    base::Optional<bool> supported = dict.FindBoolKey(kPinSupported);
+    if (!supported)
+      return false;
+    *option = supported.value();
+    return true;
+  }
+
+  static void Save(bool option, base::Value* dict) {
+    dict->SetKey(kPinSupported, base::Value(option));
+  }
+};
+#endif  // defined(OS_CHROMEOS)
+
 }  // namespace printer
 
 using namespace printer;
@@ -1366,6 +1390,9 @@ template class EmptyCapability<class CopiesTraits>;
 template class EmptyCapability<class PageRangeTraits>;
 template class BooleanCapability<class CollateTraits>;
 template class BooleanCapability<class ReverseTraits>;
+#if defined(OS_CHROMEOS)
+template class ValueCapability<bool, class PinTraits>;
+#endif  // defined(OS_CHROMEOS)
 
 template class TicketItem<PwgRasterConfig, PwgRasterConfigTraits>;
 template class TicketItem<Color, ColorTraits>;
