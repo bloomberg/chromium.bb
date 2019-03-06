@@ -1331,11 +1331,17 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
           GetCertificateChainsSizeInKB(status.ssl_info.value()));
     }
 
-    // If the default loader (network) was used to handle the URL load
-    // request we need to see if the interceptors want to potentially create a
-    // new loader for the response. e.g. AppCache.
-    if (MaybeCreateLoaderForResponse(network::ResourceResponseHead()))
+    // If the default loader (network) was used to handle the URL load request
+    // we need to see if the interceptors want to potentially create a new
+    // loader for the response. e.g. AppCache.
+    //
+    // Note: Despite having received a response, the HTTP_NOT_MODIFIED(304) ones
+    //       are ignored using OnComplete(net::ERR_ABORTED). No interceptor must
+    //       be used in this case.
+    if (!received_response_ &&
+        MaybeCreateLoaderForResponse(network::ResourceResponseHead())) {
       return;
+    }
 
     status_ = status;
     base::PostTaskWithTraits(
