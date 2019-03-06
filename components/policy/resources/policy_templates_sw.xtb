@@ -239,13 +239,6 @@ Iwapo sera hii haijawekwa, hali ya juu ya utoafautishaji huzimwa wakati skrini y
       litazimwa. Katika hali hii, mtumiaji hawezi kukiwasha kipengele.</translation>
 <translation id="1474273443907024088">Zima kipengee cha TLS False Start</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
-<translation id="1478485744311397487">Seva ambako huenda <ph name="PRODUCT_NAME" /> imewekewa majukumu.
-
-          Tenganisha majina mengi ya seva kwa koma. Tunaruhusu herufi wakilishi (*).
-
-          Usipoweka sera hii, <ph name="PRODUCT_NAME" /> haitaweza kuweka majukumu ya vitambulisho vya mtumiaji hata ikiwa seva itatambuliwa kuwa Intraneti.
-
-          Sera hii haitumiki ikiwa sera ya 'UseKDCConstrainedDelegation' imewekwa kuwa ndivyo.</translation>
 <translation id="1484146587843605071"><ph name="PRODUCT_NAME" /> itakwepa seva mbadala yoyote ya orodha ya seva pangishi iliyotolewa hapa.
 
           Sera hii itatekelezwa tu ikiwa umechagua mipangilio ya seva mbadala mwenyewe katika 'Chagua jinsi ya kubainisha mipangilio ya seva'.
@@ -908,11 +901,6 @@ Ikiwa sera imewekwa kuwa sivyo au haijawekwa, matukio hayatarekodiwa.</translati
 
       Ukiiwasha mipangilio hii, Onyesho la Kuchungulia la Printa litatumia printa chaguomsingi ya mfumo wa uendeshaji kama uteuzi chaguomsingi.</translation>
 <translation id="2856674246949497058">Rejesha na uendelee kutumia toleo lengwa ikiwa toleo la Mfumo wa Uendeshaji ni jipya zaidi kuliko toleo lengwa. Tekeleza Powerwash katika mchakato huu.</translation>
-<translation id="2858646435735022107">Hudhibiti ikiwa ripoti ya OK-AS-DELEGATE kutoka KDC itazingatiwa au ikiwa 'AuthNegotiateDelegateWhitelist' itatumika kudhibiti majukumu ya tiketi za Kerberos.
-
-          Ikiwa sera hii imewekwa kuwa ndivyo, uthibitishaji wa HTTP utazingatia mipangilio ya majukumu yaliyodhibitiwa kwenye KDC. Sera ya 'AuthNegotiateDelegateWhitelist' haitumiki katika hali hiyo. Tafadhali angalia https://tools.ietf.org/html/rfc5896.html ili upate maelezo zaidi.
-
-          Ikiwa sera haijawekwa au imewekwa kuwa sivyo, mipangilio ya majukumu kutoka KDC haitumiki na sera ya 'AuthNegotiateDelegateWhitelist' itazingatiwa.</translation>
 <translation id="2872961005593481000">Zima</translation>
 <translation id="2873651257716068683">Inabatilisha ukubwa chaguomsingi wa ukurasa wa kuchapisha. Ikiwa ukubwa wa ukurasa haupatikani, sera hii haizingatiwi.</translation>
 <translation id="2874209944580848064">Kidokezo kwa vifaa vya <ph name="PRODUCT_OS_NAME" /> vinavyotumia programu za Android:</translation>
@@ -1676,6 +1664,11 @@ Sera hii ikiwekwa kuwa sivyo au isiwekwe, kibodi itatoa amri za vitufe vya media
 <translation id="4725528134735324213">Washa kipengele cha Android Backup Service</translation>
 <translation id="4725801978265372736">Washa kipengele kinachohitaji kuwa jina la mtumiaji wa ndani na mmiliki wa seva pangishi yenye uwezo wa kufikia kwa mbali vilingane</translation>
 <translation id="4733471537137819387">Sera zinazohusiana na uthibitishaji wa HTTP jumuishi.</translation>
+<translation id="4744190513568488164">Seva ambazo <ph name="PRODUCT_NAME" /> inaweza kuwekea majukumu.
+
+          Tenganisha majina mengi ya seva kwa koma. Herufi wakilishi (*) zinaruhusiwa.
+
+          Ukiacha sera hii bila kuiweka <ph name="PRODUCT_NAME" /> haitaweza kuweka majukumu ya vitambulisho vya mtumiaji hata ikiwa seva itagunduliwa kama Intraneti.</translation>
 <translation id="4752880493649142945">Cheti cha seva teja cha kuunganisha kwenye RemoteAccessHostTokenValidationUrl</translation>
 <translation id="4757671984625088193">Iwapo mipangilio imewekwa kuwa ndivyo au haijawekwa, <ph name="PRODUCT_NAME" /> itapendekeza kurasa zinazohusiana na ukurasa huu.
       Mapendekezo haya yanatafutwa kwa mbali kutoka seva za Google.
@@ -1749,7 +1742,6 @@ Iwapo sera hii haijawekwa, kiteuzi kikubwa kitazimwa mwanzoni lakini kitawashwa 
 <translation id="4986560318567565414">Njia ya kufikia Chrome kwa ajili ya kubadili kutoka kivinjari mbadala.</translation>
 <translation id="4988291787868618635">Hatua ya kuchukua wakati ucheleweshaji wa kutokuwa na shughuli unapofikiwa</translation>
 <translation id="4995548127349206948">Ikiwa uthibishaji wa NTLMv2 umewashwa.</translation>
-<translation id="5022792010322211583">Tumia majukumu yaliyodhibitiwa ya KDC</translation>
 <translation id="5047604665028708335">Ruhusu ufikiaji wa tovuti zilizo nje ya vifurushi vya maudhui</translation>
 <translation id="5052081091120171147">Sera hii inalazimisha historia ya kuvinjari kuletwa kutoka kwenye kivinjari chaguomsingi cha sasa ikiwa imewezeshwa. Ikiwa imewezeshwa, sera hii pia inaathiri kidadisi cha kuleta.
 

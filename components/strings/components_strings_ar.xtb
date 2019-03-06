@@ -51,7 +51,6 @@
 <translation id="1232569758102978740">بلا عنوان</translation>
 <translation id="1240347957665416060">اسم الجهاز</translation>
 <translation id="124116460088058876">مزيد من اللغات</translation>
-<translation id="1246987714874202335">تحديث تاريخ انتهاء الصلاحية</translation>
 <translation id="1250759482327835220">‏للدفع بشكلٍ أسرع في المرة القادمة، يمكنك حفظ البطاقة والاسم وعنوان إرسال الفواتير في حسابك على Google.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />، <ph name="TYPE_2" /> (تمت المزامنة)</translation>
 <translation id="1256368399071562588">‏&lt;p&gt;إذا تعذّر فتح أحد مواقع الويب التي تحاول زيارتها، يمكنك تحرّي الخطأ وإصلاحه باتّباع الخطوات التالية:&lt;/p&gt;
@@ -281,7 +280,6 @@
     يتم تطبيق سياسة الأمان على جميع الطلبات المقدَّمة إليه. لكن
     تعذّر الآن عرض سياسة تمنع المتصفِّح من توصيل 
     طلبك لموقع <ph name="SITE" />.</translation>
-<translation id="2442483081384580286">تحذيرات التصفُّح الآمن</translation>
 <translation id="244665789865330679">يدير <ph name="ENROLLMENT_DOMAIN" /> جهازك وحسابك. وهذا يعني أنه قد يضبط مشرفك جهازك وحسابك عن بُعد.</translation>
 <translation id="2463193859425327265">تغيير الصفحة الرئيسية</translation>
 <translation id="2463739503403862330">ملء</translation>
@@ -611,6 +609,7 @@
 <translation id="4277028893293644418">إعادة تعيين كلمة المرور</translation>
 <translation id="4280429058323657511">، تاريخ انتهاء الصلاحية <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{‏تم حفظ هذه البطاقة في حسابك على Google}zero{‏تم حفظ هذه البطاقات في حسابك على Google}two{‏تم حفظ هاتين البطاقتين في حسابك على Google}few{‏تم حفظ هذه البطاقات في حسابك على Google}many{‏تم حفظ هذه البطاقات في حسابك على Google}other{‏تم حفظ هذه البطاقات في حسابك على Google}}</translation>
+<translation id="42981349822642051">توسيع</translation>
 <translation id="4302965934281694568">‏Chou3 (مغلف)</translation>
 <translation id="4305817255990598646">تبديل</translation>
 <translation id="4312613361423056926">B2</translation>
@@ -881,6 +880,7 @@
 <translation id="5810442152076338065">يتم ترميز اتصالك بالنطاق <ph name="DOMAIN" /> باستخدام مجموعة تشفير قديمة.</translation>
 <translation id="5813119285467412249">إعا&amp;دة الإضافة</translation>
 <translation id="5838278095973806738">يجب عدم إدخال معلومات حسّاسة على هذا الموقع (على سبيل المثال، كلمات المرور أو بطاقات الائتمان)، نظرًا لأنه قد تتم سرقتها من قِبل المهاجمين.</translation>
+<translation id="5860033963881614850">إيقاف</translation>
 <translation id="5863847714970149516">قد تُحاول الصفحة التالية تحصيل رسوم منك</translation>
 <translation id="5866257070973731571">إضافة رقم الهاتف</translation>
 <translation id="5869405914158311789">لا يمكن الوصول إلى موقع الويب هذا</translation>
@@ -889,6 +889,7 @@
 <translation id="5893752035575986141">يتم قبول بطاقات الائتمان.</translation>
 <translation id="5901630391730855834">أصفر</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (تمت المزامنة)</translation>
+<translation id="5916664084637901428">تشغيل</translation>
 <translation id="5919090499915321845">B10</translation>
 <translation id="5921639886840618607">‏هل تريد حفظ البطاقة في حساب Google؟</translation>
 <translation id="5922853866070715753">أوشكْت على الانتهاء.</translation>
@@ -986,6 +987,7 @@
 <translation id="6508722015517270189">‏إعادة تشغيل Chrome</translation>
 <translation id="6529602333819889595">إعادة الح&amp;ذف</translation>
 <translation id="6534179046333460208">اقتراحات الشبكة المادية</translation>
+<translation id="6556866813142980365">إعادة</translation>
 <translation id="6563469144985748109">لم يوافق عليه مديرك حتى الآن</translation>
 <translation id="6569060085658103619">أنت تعرض صفحة إضافة</translation>
 <translation id="6578796323535178455">‏C2 (مغلف)</translation>

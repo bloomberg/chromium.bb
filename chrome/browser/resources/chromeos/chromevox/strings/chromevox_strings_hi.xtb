@@ -16,7 +16,6 @@
 <translation id="106222400312645156">rwhdr</translation>
 <translation id="1065552602950927991">अमान्य इनपुट</translation>
 <translation id="1066085461259044485">जंगल जैसा हरा</translation>
-<translation id="1080471004309605942">इटैलिक समाप्त</translation>
 <translation id="1082209053475788238">कोई पिछला स्‍तर 6 शीर्षक नहीं.</translation>
 <translation id="1087788677726983142">इवेंट स्ट्रीम फ़िल्टर छिपाएं</translation>
 <translation id="1088219014394087294">कोई शीर्षक नहीं.</translation>
@@ -168,7 +167,6 @@
 <translation id="2267945578749931355">अगला वर्ण</translation>
 <translation id="2278490101488436824">तीन उंगलियों से बाईं ओर स्वाइप करें</translation>
 <translation id="2281234842553884450">पिछला स्लाइडर</translation>
-<translation id="2294136146931447363">इटैलिक शुरू</translation>
 <translation id="2311237334957139798">पिछले विवरण ले जाएं</translation>
 <translation id="2318372665160196757">मुख्य</translation>
 <translation id="2329324941084714723">टैब फलक</translation>
@@ -225,12 +223,10 @@
 <translation id="2717271541250958000">tabpnl</translation>
 <translation id="2723001399770238859">ऑडियो</translation>
 <translation id="2732718972699418926">पूर्वाह्न</translation>
-<translation id="2737520612859577214">सुपरस्क्रिप्ट का आखिरी हिस्सा</translation>
 <translation id="2749275490991666823">चेक किया गया</translation>
 <translation id="27527859628328957">अगले फ़ोकस करने योग्‍य आइटम पर जंप करें</translation>
 <translation id="2770781857296573485">समूह अन्‍वेषण डालें</translation>
 <translation id="2777845298774924149">बाहर हो गया</translation>
-<translation id="2781264313200109999">लिंक शुरू</translation>
 <translation id="2784959586797362050">आप हमेशा की तरह Search+a और उसके बाद i दबाकर हमें सीधे सुझाव भेज सकते हैं. हम आपके विचार जानने के लिए बेताब हैं.</translation>
 <translation id="2800204403141299078">कोई और भिन्‍न तत्‍व नहीं.</translation>
 <translation id="2800780099804980316">कोई पिछला स्‍तर 1 शीर्षक नहीं.</translation>
@@ -252,7 +248,6 @@
 <translation id="288178314850623291">सीधे किसी खास तरह के आइटम पर पहुंचने के लिए 'जंप कमांड' का इस्तेमाल करें. एक शीर्षक से दूसरे शीर्षक पर सीधे जाने के लिए, Search + H या पिछले शीर्षक पर वापस जाने के लिए Search + Shift + H दबाएं.</translation>
 <translation id="2894654529758326923">जानकारी</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{बायां कोष्ठक}one{# बाएं कोष्ठक}other{# बाएं कोष्ठक}}</translation>
-<translation id="2909478709401302630">सुपरस्क्रिप्ट का शुरुआती हिस्सा</translation>
 <translation id="2911433807131383493">ChromeVox निर्देश खोलें</translation>
 <translation id="2912405967290226587">तीन उंगलियों से दाईं ओर स्वाइप करें</translation>
 <translation id="2932083475399492303">संरचनात्मक या लेआउट के बीच रेखा प्रकार टॉगल करें</translation>
@@ -313,7 +308,6 @@
 <translation id="3232388865800379423">पॉप-अप बटन</translation>
 <translation id="3241052487511142956">देखा गया पिछला लिंक</translation>
 <translation id="3241638166094654466">हर एक पंक्ति में सेल:</translation>
-<translation id="327361630706777244">आखिरी <ph name="FONT_COLOR" /></translation>
 <translation id="3286372614333682499">पोर्ट्रेट</translation>
 <translation id="3286390186030710347">स्लाइडर</translation>
 <translation id="3299925995433437805">बाद में देखा गया कोई लिंक नहीं.</translation>
@@ -338,7 +332,6 @@
 <translation id="3393605254399152980">जिसे आपने छुआ है उससे जुड़ी जानकारी सुनने के लिए एक उंगली से खींचें और छोड़ें</translation>
 <translation id="3406283310380167331">फ़ॉर्म सूची दिखाएं</translation>
 <translation id="3414400929511680526">एलिस जैसा नीला रंग</translation>
-<translation id="3437941064431741545">आखिरी <ph name="FONT_SIZE" /> आकार</translation>
 <translation id="344800400831402066">हल्का भूरा</translation>
 <translation id="3457000393508828486">आंशिक रूप से दबाया गया</translation>
 <translation id="3458865416877308321"><ph name="NAME" />, बंद करें</translation>
@@ -357,7 +350,6 @@
 <translation id="352577523970648069">संपादन-योग्य लेख फ़ील्ड</translation>
 <translation id="3549141990712742152"><ph name="TEXT" /> को काटें.</translation>
 <translation id="3549680091535286226">कुछ समय तक बोला जाना रोकने के लिए दो उंगलियों से टैप करें</translation>
-<translation id="3555380819397253474">शुरुआती <ph name="FONT_FAMILY" /></translation>
 <translation id="3568702578574425662"><ph name="NAME" />, चेकबॉक्‍स चेक न‍हीं किया गया</translation>
 <translation id="3589661172894441357">शब्दावली</translation>
 <translation id="3591784666823501596">गहरा चमकदार नीला</translation>
@@ -437,7 +429,6 @@
 <translation id="4158704014418536539">केस संवेदी</translation>
 <translation id="4159784952369912983">बैंगनी</translation>
 <translation id="4161663686871496107">ChromeVox बोले जाने वाला फ़ीडैबक तैयार है</translation>
-<translation id="4166192625054637755">सबस्क्रिप्ट का आखिरी हिस्सा</translation>
 <translation id="4173994908659439270">कोई अगला संपादन-योग्य लेख फ़ील्ड नहीं.</translation>
 <translation id="4176463684765177261">अक्षम</translation>
 <translation id="4187322598335821254">लाइन एक-एक करके खिसकाने के लिए ऊपर या नीचे स्वाइप करें</translation>
@@ -538,7 +529,6 @@
 <translation id="4842108708071771135">कोई अगला ब्लॉककोट नहीं.</translation>
 <translation id="4844625982113518938">किसी भी कुंजी का नाम जानने के लिए उसे दबाएं. Ctrl+W से जानें मोड बंद हो जाएगा.</translation>
 <translation id="4846428657345567687">ChromeVox में आपका स्वागत है!</translation>
-<translation id="4846487886195635104">स्ट्राइक-थ्रू समाप्त</translation>
 <translation id="4848993367330139335">tmr</translation>
 <translation id="4850023505158945298">पिछली एलिमेंट कमांड</translation>
 <translation id="4866956062845190338">rdmnuitm</translation>
@@ -612,7 +602,6 @@
 <translation id="5330443287809544590"><ph name="NAME" />, लिंक</translation>
 <translation id="5336381510091010269">autoinl+lst</translation>
 <translation id="5349770431644471053">बैक लिंक</translation>
-<translation id="5350654862897073517">सबस्क्रिप्ट का शुरुआती हिस्सा</translation>
 <translation id="536031132345979795">निरंतर पढ़ने के दौरान पीछे जाएं छोड़ें</translation>
 <translation id="5368000168321181111">ईयरकॉन बंद हैं</translation>
 <translation id="5374320867641260420">कोई अगला बटन नहीं.</translation>
@@ -719,10 +708,8 @@
 <translation id="6037602951055904232">आगे की ओर पैन करें</translation>
 <translation id="6042826534790431634">चालू करने के लिए Search+Space दबाएं.</translation>
 <translation id="6044160928851315051">स्क्रीन गहरी करें</translation>
-<translation id="605761629541007221">बोल्ड समाप्त</translation>
 <translation id="6065293622157674001">व्याकरण गड़बड़ी शुरू</translation>
 <translation id="6082768461603900813">मूलभूत नेविगेशन</translation>
-<translation id="6092707270915298410">लिंक समाप्त</translation>
 <translation id="6118126368611144850">Chrome के लिए Android ऐप. अगर आपके डिवाइस पर Play स्टोर मौजूद है, तो Android ऐप के ज़रिए ChromeVox पर एक नज़र डालें. Play स्टोर से Google Chrome कैनरी डाउनलोड करके प्रयोग के तौर पर दी गई सुविधा को आज़माकर देखें.</translation>
 <translation id="611827076493383239">vtd</translation>
 <translation id="6119955456199054975">सेल के अंत में.</translation>
@@ -770,9 +757,7 @@
 <translation id="6459511626086141404">फ़्लैट कीमैप</translation>
 <translation id="6468049171101508116">अगला बटन</translation>
 <translation id="646954774886932461">इंडेक्स</translation>
-<translation id="6470797302070897045">शुरुआती <ph name="FONT_SIZE" /> आकार</translation>
 <translation id="6493991254603208962">स्‍क्रीन की रोशनी कम करें</translation>
-<translation id="6497864469186228849">आखिरी <ph name="FONT_FAMILY" /></translation>
 <translation id="6501595918865591267">फ़िरोज़ी रंग</translation>
 <translation id="6508059270146105198">ब्रेल प्रदर्शन को पेज के नीचे ले जाएं</translation>
 <translation id="6521550811716689390">गहरा बैंगनी रंग</translation>
@@ -899,7 +884,6 @@
 <translation id="7370432716629432284">{COUNT,plural, =1{ऐम्परसेंड}one{# ऐम्परसेंड}other{# ऐम्परसेंड}}</translation>
 <translation id="737396357417333429">clk</translation>
 <translation id="7374104575779636480">तालिका छोड़ रहे हैं.</translation>
-<translation id="7374188624530452127">शुरुआती <ph name="FONT_COLOR" /></translation>
 <translation id="738899727977260036">स्लेटी नीला</translation>
 <translation id="7392145451309930991">लेख मिलान शुरू</translation>
 <translation id="739763518212184081">पिछली पंक्ति</translation>
@@ -948,9 +932,7 @@
         <ph name="LINE_THROUGH_STRING" />
         <ph name="FONT_FAMILY_STRING" /></translation>
 <translation id="7701196182766842984">autolst</translation>
-<translation id="7712273827621319827">अंडरलाइन शुरू</translation>
 <translation id="7770823902658038748"><ph name="VALUE" />, <ph name="NAME" />, पासवर्ड लेख बॉक्‍स</translation>
-<translation id="7773125101284285285">अंडरलाइन समाप्त</translation>
 <translation id="7776293189010177726">ChromeVox मेनू खोलें</translation>
 <translation id="7800558923657349506">उपसंहार</translation>
 <translation id="7805247615045262757">डिफ़ॉल्ट मार्गदर्शक</translation>
@@ -1102,7 +1084,6 @@
 <translation id="8374154622594089836">महीना</translation>
 <translation id="8378855320830505539">क्षेत्र</translation>
 <translation id="8382679411218029383">स्वत: पूर्णता इनलाइन और सूची</translation>
-<translation id="8384907037845425279">बोल्ड शुरू</translation>
 <translation id="8428603554127842284">स्तर <ph name="DEPTH" /></translation>
 <translation id="842922884199979200">कोई अगला स्‍तर 3 शीर्षक नहीं.</translation>
 <translation id="8430049249787218991">mnubr</translation>
@@ -1211,5 +1192,4 @@
 <translation id="973955474346881951">स्टिकी मोड चालू/बंद करें</translation>
 <translation id="976849232629612000">कोई आइटम नहीं.</translation>
 <translation id="992256792861109788">गुलाबी</translation>
-<translation id="995852680044449248">स्ट्राइक थ्रू शुरू</translation>
 </translationbundle>

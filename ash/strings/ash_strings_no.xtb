@@ -336,6 +336,7 @@
 <translation id="6537270692134705506">Ta skjermdump av skjermen</translation>
 <translation id="6542521951477560771">Caster til <ph name="RECEIVER_NAME" /></translation>
 <translation id="6559976592393364813">Spør administratoren</translation>
+<translation id="6574601967010742428">Enhetsadministratoren kan muligens overvåke aktiviteten din.</translation>
 <translation id="6585808820553845416">Økten slutter om <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Søk + Shift + K</translation>
 <translation id="6650933572246256093">Bluetooth-enheten «<ph name="DEVICE_NAME" />» ber om tillatelse til å koble til. Skriv inn denne tilgangskoden på den aktuelle enheten: <ph name="PASSKEY" /></translation>
@@ -442,7 +443,6 @@
 <translation id="8261506727792406068">Slett</translation>
 <translation id="8297006494302853456">Svak</translation>
 <translation id="8308637677604853869">Forrige meny</translation>
-<translation id="8332664326438198339">Tilbake til appoversikten</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" /><ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Opprett et notat</translation>
 <translation id="8375916635258623388"><ph name="DEVICE_NAME" /> og telefonen din kobles sammen automatisk</translation>

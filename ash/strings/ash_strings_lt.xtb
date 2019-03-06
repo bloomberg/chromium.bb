@@ -337,6 +337,7 @@
 <translation id="6537270692134705506">Užfiksuoti ekrano vaizdą</translation>
 <translation id="6542521951477560771">Perduodama į „<ph name="RECEIVER_NAME" />“</translation>
 <translation id="6559976592393364813">Klausti administratoriaus</translation>
+<translation id="6574601967010742428">Įrenginio administratorius gali stebėti jūsų veiklą.</translation>
 <translation id="6585808820553845416">Sesija baigsis po <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Paieškos klavišas + „Shift“ + K</translation>
 <translation id="6650933572246256093">„Bluetooth“ įrenginys „<ph name="DEVICE_NAME" />“ prašo leidimo susieti. Šiame įrenginyje įveskite šį slaptąjį raktą: <ph name="PASSKEY" /></translation>
@@ -443,7 +444,6 @@
 <translation id="8261506727792406068">Ištrinti</translation>
 <translation id="8297006494302853456">Silpnas</translation>
 <translation id="8308637677604853869">Ankstesnis meniu</translation>
-<translation id="8332664326438198339">Atgal į Paleidimo priemonę</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Sukurti užrašą</translation>
 <translation id="8375916635258623388">Šis „<ph name="DEVICE_NAME" />“ įrenginys ir telefonas bus susieti automatiškai</translation>

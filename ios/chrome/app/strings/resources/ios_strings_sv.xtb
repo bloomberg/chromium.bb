@@ -356,7 +356,6 @@ Din data krypterades med lösenfrasen den <ph name="TIME" />. Ange den om du vil
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> objekt har tagits bort</translation>
 <translation id="6513773942555305766">Föreslaget lösenord: <ph name="SUGGESTED_PASSWORD" /></translation>
 <translation id="6541915733953096570">Senaste timmen</translation>
-<translation id="6548479190262846511">Inga lösenord hittades för den här webbplatsen</translation>
 <translation id="6642362222295953972">Byt till befintlig flik</translation>
 <translation id="6643016212128521049">Rensa</translation>
 <translation id="6656103420185847513">Redigera mapp</translation>

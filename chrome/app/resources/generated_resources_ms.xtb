@@ -104,7 +104,6 @@
 <translation id="1143142264369994168">Penandatangan Sijil</translation>
 <translation id="1145292499998999162">Pemalam disekat</translation>
 <translation id="1145532888383813076">Carian peranti anda, apl dan web.</translation>
-<translation id="1146204723345436916">Import penanda halaman daripada fail HTML...</translation>
 <translation id="114721135501989771">Google pintar di Chrome</translation>
 <translation id="1148097584170732637"><ph name="FILE_COUNT" /> ditemui.
     <ph name="LINE_BREAK1" />
@@ -420,7 +419,6 @@
 <translation id="1608626060424371292">Alih keluar pengguna ini</translation>
 <translation id="1609170755653088773">Segerakkan kata laluan ini ke iPhone anda</translation>
 <translation id="1611584202130317952">Aliran peruntukan terganggu. Sila cuba lagi atau hubungi pemilik atau pentadbir peranti anda.</translation>
-<translation id="1611704746353331382">Eksport Penanda Halaman ke Fail HTML...</translation>
 <translation id="1614511179807650956">Anda mungkin telah menggunakan kesemua peruntukan data mudah alih anda. Lawati portal pengaktifan <ph name="NAME" /> untuk membeli lagi data</translation>
 <translation id="161460670679785907">Tidak dapat mengesan telefon anda</translation>
 <translation id="1616206807336925449">Sambungan ini tidak memerlukan kebenaran khas.</translation>
@@ -651,7 +649,6 @@
 <translation id="1932098463447129402">Bukan Sebelum</translation>
 <translation id="1933345018156373194">Pengalihan gagal, ralat tidak dijangka: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1933809209549026293">Sila sambungkan tetikus atau papan kekunci. Jika anda menggunakan peranti Buetooth, pastikan ia sedia untuk digandingkan.</translation>
-<translation id="1936157145127842922">Paparkan dalam Folder</translation>
 <translation id="1938351510777341717">Perintah Luaran</translation>
 <translation id="1940546824932169984">Peranti yang disambungkan</translation>
 <translation id="1942765061641586207">Peleraian imej</translation>
@@ -1370,7 +1367,6 @@
 <translation id="3009300415590184725">Adakah anda pasti mahu membatalkan proses penyediaan perkhidmatan data mudah alih?</translation>
 <translation id="3009779501245596802">Pangkalan data berindeks</translation>
 <translation id="3010279545267083280">Kata laluan dipadamkan</translation>
-<translation id="3011362742078013760">Buka Semua Penanda Halaman dalam Tetingkap &amp;Inkognito</translation>
 <translation id="3011488081941333749">Kuki daripada <ph name="DOMAIN" /> akan dikosongkan semasa keluar</translation>
 <translation id="3012631534724231212">(iframe)</translation>
 <translation id="3012804260437125868">Sambungan selamat tapak yang sama sahaja</translation>
@@ -2577,7 +2573,6 @@
 <translation id="4881695831933465202">Buka</translation>
 <translation id="4882312758060467256">Boleh mengakses tapak ini</translation>
 <translation id="4882831918239250449">Kawal cara sejarah penyemakan imbas anda digunakan untuk memperibadikan Carian, iklan dan pelbagai lagi</translation>
-<translation id="4883178195103750615">Eksport penanda halaman ke fail HTML...</translation>
 <translation id="4883436287898674711">Semua tapak <ph name="WEBSITE_1" /></translation>
 <translation id="48838266408104654">&amp;Pengurus Tugas</translation>
 <translation id="4884987973312178454">6x</translation>
@@ -2911,7 +2906,6 @@
 <translation id="5376931455988532197">Fail terlalu besar</translation>
 <translation id="537813040452600081">Halaman yang anda lihat dalam tetingkap ini tidak akan dipaparkan dalam sejarah penyemak imbas dan halaman ini tidak akan meninggalkan kesan lain, seperti kuki, pada komputer selepas anda log keluar. Fail yang anda muat turun dan penanda halaman yang anda buat tidak akan disimpan.</translation>
 <translation id="5379140238605961210">Teruskan menyekat akses mikrofon</translation>
-<translation id="5379268888377976432">Buat Asal Pemadaman</translation>
 <translation id="5382591305415226340">Urus pautan yang disokong</translation>
 <translation id="5384883051496921101">Tapak ini akan berkongsi maklumat dengan apl di luar daripada mod inkognito.</translation>
 <translation id="5388885445722491159">Dipasangkan</translation>
@@ -3206,7 +3200,6 @@
 <translation id="5801568494490449797">Keutamaan</translation>
 <translation id="5804241973901381774">Kebenaran</translation>
 <translation id="5805697420284793859">Pengurus tetingkap</translation>
-<translation id="580571955903695899">Aturkan semula mengikut Tajuk</translation>
 <translation id="5811750797187914944">Selesai</translation>
 <translation id="5814126672212206791">Jenis sambungan</translation>
 <translation id="5815645614496570556">Alamat X.400</translation>
@@ -3533,7 +3526,6 @@
 <translation id="6264365405983206840">Pilih &amp;Semua</translation>
 <translation id="6267166720438879315">Pilih sijil untuk mengesahkan dengan sendiri pada <ph name="HOST_NAME" /></translation>
 <translation id="6268252012308737255">Buka menggunakan <ph name="APP" /></translation>
-<translation id="6268747994388690914">Import Penanda Halaman dari Fail HTML...</translation>
 <translation id="6272643420381259437">Terdapat ralat (<ph name="ERROR" />) semasa memuat turun pemalam</translation>
 <translation id="6273677812470008672">Kualiti</translation>
 <translation id="6277105963844135994">Tamat masa rangkaian</translation>
@@ -3608,7 +3600,6 @@
 <translation id="6393156038355142111">Cadangkan kata laluan yang kukuh</translation>
 <translation id="6395575651121294044"><ph name="NUMBER_OF_FILES" /> item</translation>
 <translation id="6397094776139756010">Pilihan penyegerakan dan pemperibadian</translation>
-<translation id="6397592254427394018">Buka semua penanda halaman dalam tetingkap &amp;inkognito</translation>
 <translation id="6398715114293939307">Alih keluar Gedung Google Play</translation>
 <translation id="6398765197997659313">Keluar daripada skrin penuh</translation>
 <translation id="6399774419735315745">Perisik</translation>
@@ -3872,7 +3863,6 @@
 <translation id="6798954102094737107">Pemalam: <ph name="PLUGIN_NAME" /></translation>
 <translation id="6801435275744557998">Tentukur skrin sentuh</translation>
 <translation id="6802031077390104172"><ph name="USAGE" /> (<ph name="OID" />)</translation>
-<translation id="6804671422566312077">Buka Semua Penanda Halaman dalam Tetingkap &amp;Baharu</translation>
 <translation id="6805038906417219576">OK</translation>
 <translation id="6805647936811177813">Sila log masuk ke <ph name="TOKEN_NAME" /> untuk mengimport sijil klien daripada <ph name="HOST_NAME" />.</translation>
 <translation id="680572642341004180">Dayakan pengesan RLZ pada <ph name="SHORT_PRODUCT_OS_NAME" />.</translation>
@@ -3979,7 +3969,6 @@
 <translation id="6970856801391541997">Cetak Halaman Tertentu</translation>
 <translation id="6972180789171089114">Audio/Video</translation>
 <translation id="6972754398087986839">Bermula</translation>
-<translation id="6973630695168034713">Folder</translation>
 <translation id="6974609594866392343">Mod tunjuk cara luar talian</translation>
 <translation id="6977381486153291903">Semakan perisian tegar</translation>
 <translation id="6978121630131642226">Enjin Carian</translation>
@@ -4310,7 +4299,6 @@
 <translation id="7478485216301680444">Aplikasi kios tidak dapat dipasang.</translation>
 <translation id="7481312909269577407">Majukan</translation>
 <translation id="748138892655239008">Kekangan Asas Sijil</translation>
-<translation id="7484964289312150019">Buka semua penanda halaman dalam tetingkap &amp;baharu</translation>
 <translation id="7487067081878637334">Teknologi</translation>
 <translation id="7487099628810939106">Lengahan sebelum klik:</translation>
 <translation id="7487969577036436319">Tiada komponen dipasang</translation>
@@ -4741,7 +4729,6 @@ Simpan fail kunci anda di tempat selamat. Anda akan memerlukannya untuk mencipta
 <translation id="8063235345342641131">Avatar hijau lalai</translation>
 <translation id="8064671687106936412">Kekunci:</translation>
 <translation id="8066773524873206594">Semua pengeditan akan disimpan ke <ph name="DOWNLOADS_FOLDER" />.</translation>
-<translation id="806812017500012252">Aturkan semula mengikut tajuk</translation>
 <translation id="8068253693380742035">Sentuh untuk mengelog masuk</translation>
 <translation id="8069615408251337349">Cetakan Awan Google</translation>
 <translation id="8071432093239591881">Cetak sebagai imej</translation>

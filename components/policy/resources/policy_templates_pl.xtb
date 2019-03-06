@@ -254,13 +254,6 @@
       ujednolicony pulpit jest wyłączony i użytkownik nie może go włączyć.</translation>
 <translation id="1474273443907024088">Wyłącz TLS False Start</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
-<translation id="1478485744311397487">Serwery, którym <ph name="PRODUCT_NAME" /> może przekazywać dane logowania.
-
-          Podając wiele nazw serwerów, rozdziel je przecinkami. Możesz używać symboli wieloznacznych (*).
-
-          Jeśli nie ustawisz tej zasady, <ph name="PRODUCT_NAME" /> nie będzie przekazywać danych logowania użytkowników, nawet gdy serwer działa w intranecie.
-
-          Ta zasada jest ignorowana, gdy zasada „UseKDCConstrainedDelegation” ma wartość Prawda.</translation>
 <translation id="1484146587843605071"><ph name="PRODUCT_NAME" /> będzie pomijać serwer proxy dla hostów z tej listy.
 
           Ta zasada obowiązuje tylko wtedy, gdy w opcji „Wybierz sposób określenia ustawień serwera proxy” wybrano ręczne wprowadzanie ustawień serwera proxy.
@@ -910,11 +903,6 @@ Format jest taki sam jak w słowniku NativePrinters. Dodatkowo w przypadku każd
 
       Jeśli włączysz to ustawienie, w podglądzie wydruku zostanie wybrana domyślna drukarka systemowa.</translation>
 <translation id="2856674246949497058">Przywróć i pozostaw docelową wersję systemu operacyjnego, jeśli zainstalowana jest wersja nowsza niż docelowa. W trakcie tego procesu zostanie wykonana procedura Powerwash.</translation>
-<translation id="2858646435735022107">Określa, czy respektować flagę OK-AS-DELEGATE z KDC, czy stosować zasadę „AuthNegotiateDelegateWhitelist” do ograniczania przekazywania biletów Kerberos.
-
-          Jeśli zasada ma wartość Prawda, podczas uwierzytelniania HTTP respektowane są ustawienia ograniczonego przekazywania w KDC. Zasada „AuthNegotiateDelegateWhitelist” jest wtedy ignorowana. Więcej informacji znajdziesz w dokumencie https://tools.ietf.org/html/rfc5896.html
-
-          Jeśli zasada jest nieskonfigurowana lub ma wartość Fałsz, ustawienia ograniczonego przekazywania z KDC są ignorowane, a respektowana jest zasada „AuthNegotiateDelegateWhitelist”.</translation>
 <translation id="2872961005593481000">Wyłącz</translation>
 <translation id="2873651257716068683">Zastępuje domyślny rozmiar drukowanej strony. Jeśli dany rozmiar strony jest niedostępny, zasada jest ignorowana.</translation>
 <translation id="2874209944580848064">Uwaga dotycząca urządzeń z <ph name="PRODUCT_OS_NAME" /> obsługujących aplikacje na Androida:</translation>
@@ -1664,6 +1652,11 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 <translation id="4725528134735324213">Włącz Android Backup Service</translation>
 <translation id="4725801978265372736">Wymagaj, by nazwa użytkownika lokalnego była taka sama jak właściciela hosta dostępu zdalnego</translation>
 <translation id="4733471537137819387">Zasady dotyczące zintegrowanego uwierzytelniania HTTP.</translation>
+<translation id="4744190513568488164">Serwery, którym <ph name="PRODUCT_NAME" /> może przekazywać dane logowania.
+
+          Nazwy serwerów należy rozdzielić przecinkami. Można używać symboli wieloznacznych (*).
+
+          Jeśli nie ustawisz tej zasady, <ph name="PRODUCT_NAME" /> nie przekazuje danych logowania użytkowników, nawet gdy serwer działa w intranecie.</translation>
 <translation id="4752880493649142945">Certyfikat klienta umożliwiający nawiązanie połączenia z RemoteAccessHostTokenValidationUrl</translation>
 <translation id="4757671984625088193">Jeśli ta zasada ma wartość prawda lub jest nieskonfigurowana, <ph name="PRODUCT_NAME" /> będzie proponować strony powiązane z bieżącą stroną.
       Takie propozycje są pobierane zdalnie z serwerów Google.
@@ -1741,7 +1734,6 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 <translation id="4986560318567565414">Ścieżka Chrome służąca do przełączania z alternatywnej przeglądarki.</translation>
 <translation id="4988291787868618635">Działanie, jakie ma zostać wykonane po osiągnięciu opóźnienia bezczynności</translation>
 <translation id="4995548127349206948">Czy uwierzytelnianie NTLMv2 jest włączone.</translation>
-<translation id="5022792010322211583">Używaj przekazywania danych logowania ograniczanego przez KDC</translation>
 <translation id="5047604665028708335">Zezwalaj na dostęp do witryn spoza pakietów treści</translation>
 <translation id="5052081091120171147">Po włączeniu tej zasady wymuszany jest import historii przeglądania z bieżącej przeglądarki domyślnej. Włączenie zasady ma również wpływ na opcje w oknie dialogowym importowania. W przypadku jej wyłączenia historia przeglądania nie jest importowana. Jeśli zasada nie jest skonfigurowana, użytkownik może zostać zapytany, czy zaimportować historię lub operacja ta zostanie wykonana automatycznie.</translation>
 <translation id="5056708224511062314">Lupa wyłączona</translation>

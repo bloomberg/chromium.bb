@@ -115,7 +115,7 @@
 
       Als een element ${url} bevat, wordt dit vervangen door de URL van de pagina die moet worden geopend.
 
-      Als geen enkel element ${url} bevat, wordt URL toegevoegd aan het einde van de opdrachtregel.
+      Als geen enkel element ${url} bevat, wordt de URL toegevoegd aan het einde van de opdrachtregel.
 
       Omgevingsvariabelen worden uitgevouwen. In Windows wordt %ABC% vervangen door de waarde van de omgevingsvariabele ABC.</translation>
 <translation id="1151353063931113432">Afbeeldingen toestaan op deze sites</translation>
@@ -183,7 +183,7 @@
 <translation id="1363612796557848469">Dit beleid verleent de Google Assistent toegang tot de schermcontext en verzendt deze informatie naar de server.
       Als het beleid is ingeschakeld, heeft de Google Assistent toegang tot de schermcontext.
       Als het beleid is uitgeschakeld, heeft de Google Assistent geen toegang tot de schermcontext.
-      Als het beleid niet is ingesteld, kunnen gebruikers zelf bepalen of ze de Google Assistent wel of geen toegang tot schermcontext willen verlenen</translation>
+      Als het beleid niet is ingesteld, kunnen gebruikers zelf bepalen of ze de Google Assistent wel of geen toegang tot de schermcontext willen verlenen</translation>
 <translation id="1383493480903114193">Met dit beleid wordt afgedwongen dat netwerkcode wordt uitgevoerd in het browserproces.
 
       Dit beleid is standaard uitgeschakeld. Indien ingeschakeld, worden gebruikers blootgesteld aan beveiligingsproblemen wanneer het netwerkproces in een sandbox wordt uitgevoerd.
@@ -258,13 +258,6 @@
       uitgeschakeld. In dit geval kan de gebruiker de functie niet inschakelen.</translation>
 <translation id="1474273443907024088">TLS False Start uitschakelen</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
-<translation id="1478485744311397487">Servers die <ph name="PRODUCT_NAME" /> mag machtigen.
-
-          Gebruik bij meerdere servernamen een komma als scheidingsteken. Jokertekens (*) zijn toegestaan.
-
-          Als je dit beleid niet instelt, machtigt <ph name="PRODUCT_NAME" /> niet voor inloggegevens van gebruikers, zelfs niet als een server wordt gedetecteerd als intranet.
-
-          Dit beleid wordt genegeerd als het beleid UseKDCConstrainedDelegation is ingesteld op True.</translation>
 <translation id="1484146587843605071"><ph name="PRODUCT_NAME" /> omzeilt elke proxy voor de lijst met hosts die hier wordt gespecificeerd.
 
           Dit beleid wordt alleen van kracht als je handmatig proxyinstellingen hebt geselecteerd bij 'Kies hoe je proxyserverinstellingen wilt specificeren'.
@@ -509,11 +502,11 @@
 
       Als de oude add-in 'Ondersteuning voor oudere browsers' voor Internet Explorer niet is geïnstalleerd, heeft dit beleid geen effect.
 
-      Als dit beleid niet is ingesteld, detecteert Internet Explorer automatisch eigen uitvoerbare pad van <ph name="PRODUCT_NAME" /> wanneer <ph name="PRODUCT_NAME" /> wordt gestart vanuit Internet Explorer.
+      Als dit beleid niet is ingesteld, detecteert Internet Explorer automatisch het eigen uitvoerbare pad van <ph name="PRODUCT_NAME" /> wanneer <ph name="PRODUCT_NAME" /> wordt gestart vanaf Internet Explorer.
 
-      Als dit is ingesteld, wordt het gebruikt om <ph name="PRODUCT_NAME" /> te starten wanneer er naar <ph name="PRODUCT_NAME" /> wordt overgeschakeld vanaf Internet Explorer.
+      Als dit beleid is ingesteld, wordt het gebruikt om <ph name="PRODUCT_NAME" /> te starten wanneer er naar <ph name="PRODUCT_NAME" /> wordt overgeschakeld vanaf Internet Explorer.
 
-      Dit beleid kan worden ingesteld op een pad naar een uitvoerbaar bestand of op ${chrome} om de installatielocatie van Chrome automatisch de detecteren.</translation>
+      Dit beleid kan worden ingesteld op een pad naar een uitvoerbaar bestand of op ${chrome} om de installatielocatie van Chrome automatisch te detecteren.</translation>
 <translation id="2024476116966025075">De vereiste domeinnaam configureren voor clients voor externe toegang</translation>
 <translation id="2030905906517501646">Zoekwoord voor standaardzoekprovider</translation>
 <translation id="203096360153626918">Dit beleid is niet van invloed op de Android-apps. Deze hebben toegang tot de modus voor volledig scherm, zelfs als dit beleid is ingesteld op <ph name="FALSE" /> (Onwaar).</translation>
@@ -933,11 +926,6 @@
 
       Als je deze instelling inschakelt, gebruikt Afdrukvoorbeeld de standaardprinter van het besturingssysteem als standaardbestemming.</translation>
 <translation id="2856674246949497058">Herstel en blijf op de doelversie als de OS-versie nieuwer is dan de doelversie. Voer een powerwash uit tijdens het proces.</translation>
-<translation id="2858646435735022107">Bepaalt of de markering OK-AS-DELEGATE van KDC wordt gerespecteerd of dat AuthNegotiateDelegateWhitelist wordt gebruikt om machtiging van Kerberos-tickets te beperken.
-
-          Als dit beleid is ingesteld op True, respecteert HTTP-verificatie instellingen voor beperkte machtiging op de KDC. In dat geval wordt het beleid AuthNegotiateDelegateWhitelist genegeerd. Zie https://tools.ietf.org/html/rfc5896.html voor meer informatie.
-
-          Als dit beleid niet is ingesteld of is ingesteld op False, woorden instellingen voor beperkte machtiging van KDC genegeerd en wordt het beleid AuthNegotiateDelegateWhitelist niet gerespecteerd.</translation>
 <translation id="2872961005593481000">Afsluiten</translation>
 <translation id="2873651257716068683">Hiermee overschrijf je de standaardgrootte voor de afdrukpagina. Als de paginagrootte niet beschikbaar is, wordt dit beleid genegeerd.</translation>
 <translation id="2874209944580848064">Opmerking voor <ph name="PRODUCT_OS_NAME" />-apparaten die Android-apps ondersteunen:</translation>
@@ -1702,6 +1690,11 @@
 <translation id="4725528134735324213">Android Backup Service inschakelen</translation>
 <translation id="4725801978265372736">Vereisen dat de naam van de lokale gebruiker en de eigenaar van de host voor externe toegang met elkaar overeenkomen</translation>
 <translation id="4733471537137819387">Beleid met betrekking tot geïntegreerde HTTP-authenticatie.</translation>
+<translation id="4744190513568488164">Servers waarnaar <ph name="PRODUCT_NAME" /> mag delegeren.
+
+          Scheid meerdere servernamen van elkaar met komma's. Jokertekens (*) zijn toegestaan.
+
+          Als je dit beleid niet instelt, delegeert <ph name="PRODUCT_NAME" /> geen gebruikersreferenties, zelfs niet als een server wordt gedetecteerd als intranet.</translation>
 <translation id="4752880493649142945">Clientcertificaat voor verbinding maken met RemoteAccessHostTokenValidationUrl</translation>
 <translation id="4757671984625088193">Als dit beleid is ingesteld op 'True' of niet is ingesteld, stelt <ph name="PRODUCT_NAME" /> pagina's voor die aan de huidige pagina zijn gerelateerd.
       Deze suggesties worden extern via Google-servers opgehaald.
@@ -1778,7 +1771,6 @@
 <translation id="4986560318567565414">Pad naar Chrome voor overschakeling vanaf de alternatieve browser.</translation>
 <translation id="4988291787868618635">Actie die wordt ondernomen wanneer de inactieve vertraging wordt bereikt</translation>
 <translation id="4995548127349206948">Of NTLMv2-verificatie is ingeschakeld.</translation>
-<translation id="5022792010322211583">Door KDC beperkte machtiging gebruiken</translation>
 <translation id="5047604665028708335">Toegang toestaan tot sites die zich niet in de inhoudspakketten bevinden</translation>
 <translation id="5052081091120171147">Indien ingeschakeld, wordt met dit beleid afgedwongen dat de browsergeschiedenis wordt geïmporteerd uit de huidige standaardbrowser. Als het beleid is ingeschakeld, is dit ook van invloed op het dialoogvenster voor importeren.
 
@@ -3656,7 +3648,7 @@ Als dit beleid niet is ingesteld, worden er geen beperkingen toegepast en kan de
       Als er een lagere waarde wordt ingesteld voor dit beleid, heeft dit een permanent effect: het apparaat kan mogelijk niet terugkeren naar oudere versies, zelfs nadat het beleid weer wordt ingesteld op een hogere waarde.
 
       Welke rollback precies mogelijk is, hangt ook samen met welke patches zijn geïnstalleerd voor het moederbord en voor kritieke risico's.</translation>
-<translation id="9126014181388780690">'Google Assistant toegang verlenen tot schermcontext'</translation>
+<translation id="9126014181388780690">'De Google Assistent toegang verlenen tot schermcontext'</translation>
 <translation id="913195841488580904">Toegang blokkeren voor een lijst met URL's</translation>
 <translation id="9135033364005346124">Proxy voor <ph name="CLOUD_PRINT_NAME" /> inschakelen</translation>
 <translation id="9136399279941091445">Intervallen buiten gebruikstijd wanneer het gespecificeerde apparaatbeleid wordt vrijgegeven</translation>

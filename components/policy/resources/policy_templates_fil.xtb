@@ -260,13 +260,6 @@
       Unified Desktop. Sa sitwasyong ito, hindi mae-enable ng user ang feature.</translation>
 <translation id="1474273443907024088">I-disable ang TLS False Start</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
-<translation id="1478485744311397487">Mga server kung saan maaaring maglaan ang <ph name="PRODUCT_NAME" />.
-
-          Paghiwa-hiwalayin ang maraming pangalan ng server gamit ang mga kuwit. Pinapayagan ang mga wildcard (*).
-
-          Kung hahayaan mong hindi nakatakda ang patakarang ito, hindi maglalaan ng mga kredensyal ng user ang <ph name="PRODUCT_NAME" /> kahit na ma-detect ang isang server bilang Intranet.
-
-          Babalewalain ang patakarang ito kung true ang patakarang 'UseKDCConstrainedDelegation.'</translation>
 <translation id="1484146587843605071">Iba-bypass ng <ph name="PRODUCT_NAME" /> ang anumang proxy para sa listahan ng mga host na ibinigay dito.
 
           Nagkakaroon lang ng epekto ang patakarang ito kung napili mo ang mga manual na setting ng proxy sa 'Piliin kung paano tumukoy ng mga setting ng proxy server'.
@@ -933,11 +926,6 @@
 
       Kung ie-enable mo ang setting na ito, gagamitin ng Preview sa Pag-print ang default na printer ng OS system bilang default na pagpipilian.</translation>
 <translation id="2856674246949497058">Mag-roll back at manatili sa target na bersyon kung mas bago ang bersyon ng OS kaysa sa target. Magsagawa ng powerwash habang nasa proseso.</translation>
-<translation id="2858646435735022107">Nagkokontrol kung susundin ang flag na OK-AS-DELEGATE mula sa KDC o kung gagamitin ba ang 'AuthNegotiateDelegateWhitelist' para limitahan ang paglalaan ng mga ticket ng Kerberos.
-
-          Kung true ang patakarang ito, susundin ng pag-authenticate ng HTTP ang mga setting ng nililimitahang paglalaan sa KDC. Sa ganoong sitwasyon, babalewalain ang patakarang 'AuthNegotiateDelegateWhitelist.' Pakitingnan ang https://tools.ietf.org/html/rfc5896.html para sa higit pang impormasyon.
-
-          Kung hindi nakatakda o nakatakda sa false ang patakarang ito, babalewalain ang mga setting ng nililimitahang paglalaan mula sa KDC at susundin ang patakarang 'AuthNegotiateDelegateWhitelist.'</translation>
 <translation id="2872961005593481000">Shut down</translation>
 <translation id="2873651257716068683">Ino-override ang default na laki ng page ng pag-print. Kung hindi available ang laki ng page, binabalewala ang patakarang ito.</translation>
 <translation id="2874209944580848064">Tala para sa mga <ph name="PRODUCT_OS_NAME" /> device na sumusuporta sa mga Android app:</translation>
@@ -1702,6 +1690,11 @@
 <translation id="4725528134735324213">I-enable ang Android Backup Service</translation>
 <translation id="4725801978265372736">Hilingin na kailangang magkatugma ang pangalan ng lokal na user at ng may-ari ng host ng malayuang pag-access</translation>
 <translation id="4733471537137819387">Mga patakarang kaugnay ng pinagsamang pagpapatotoo ng HTTP.</translation>
+<translation id="4744190513568488164">Ang mga server kung saan maaaring maglaan ang <ph name="PRODUCT_NAME" />.
+
+          Paghiwalayin ang maraming pangalan ng server gamit ang mga kuwit. Pinapayagan ang mga wildcard (*).
+
+          Kung iiwanan mong hindi nakatakda ang patakarang ito, hindi maglalaan ang <ph name="PRODUCT_NAME" /> ng mga kredensyal ng user kahit na na-detect ang isang server bilang Intranet.</translation>
 <translation id="4752880493649142945">Certificate ng client para sa pagkonekta sa RemoteAccessHostTokenValidationUrl</translation>
 <translation id="4757671984625088193">Kung nakatakda ito sa true o hindi ito naitakda, magmumungkahi ang <ph name="PRODUCT_NAME" /> ng mga page na nauugnay sa kasalukuyang page.
       Malayuang kinuha ang mga suhestyong ito sa mga server ng Google.
@@ -1779,7 +1772,6 @@
 <translation id="4986560318567565414">Path sa Chrome para sa paglipat mula sa alternatibong browser.</translation>
 <translation id="4988291787868618635">Pagkilos na gagawin kapag naabot ang idle delay</translation>
 <translation id="4995548127349206948">Kung naka-enable ang pag-authenticate ng NTLMv2.</translation>
-<translation id="5022792010322211583">Gamitin ang paglalaang nililimitahan sa KDC</translation>
 <translation id="5047604665028708335">Payagan ang access sa mga site na nasa labas ng mga pack ng nilalaman</translation>
 <translation id="5052081091120171147">Pinupwersa ng patakarang ito na ma-import mula sa kasalukuyang default na browser ang kasaysayan ng pagba-browse kung pinagana. Kung pinagana, naaapektuhan rin ng patakarang ito ang dialog ng pag-import.
 

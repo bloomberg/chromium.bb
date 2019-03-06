@@ -336,6 +336,7 @@
 <translation id="6537270692134705506">Tangkap layar</translation>
 <translation id="6542521951477560771">Transmisikan ke <ph name="RECEIVER_NAME" /></translation>
 <translation id="6559976592393364813">Tanyakan kepada Administrator</translation>
+<translation id="6574601967010742428">Administrator perangkat mungkin dapat memantau aktivitas Anda.</translation>
 <translation id="6585808820553845416">Sesi berakhir dalam <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Tombol Penelusuran+Shift+K</translation>
 <translation id="6650933572246256093">Perangkat Bluetooth "<ph name="DEVICE_NAME" />" meminta izin untuk bersanding. Masukkan kunci sandi ini pada perangkat tersebut: <ph name="PASSKEY" /></translation>
@@ -442,7 +443,6 @@
 <translation id="8261506727792406068">Hapus</translation>
 <translation id="8297006494302853456">Lemah</translation>
 <translation id="8308637677604853869">Menu sebelumnya</translation>
-<translation id="8332664326438198339">Kembali ke peluncur</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Buat catatan</translation>
 <translation id="8375916635258623388"><ph name="DEVICE_NAME" /> ini dan ponsel Anda akan terhubung otomatis</translation>

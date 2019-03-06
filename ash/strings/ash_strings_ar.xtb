@@ -337,6 +337,7 @@
 <translation id="6537270692134705506">التقاط الشاشة</translation>
 <translation id="6542521951477560771">البث على <ph name="RECEIVER_NAME" /></translation>
 <translation id="6559976592393364813">مطالبة المشرف</translation>
+<translation id="6574601967010742428">قد يتمكَّن مشرف الجهاز من مراقبة نشاطك.</translation>
 <translation id="6585808820553845416">تنتهي الجلسة في <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Search+Shift+K</translation>
 <translation id="6650933572246256093">يريد جهاز بلوتوث "<ph name="DEVICE_NAME" />" الحصول على إذن للإقران. يُرجى إدخال مفتاح المرور هذا في هذا الجهاز: <ph name="PASSKEY" /></translation>
@@ -443,7 +444,6 @@
 <translation id="8261506727792406068">حذف</translation>
 <translation id="8297006494302853456">ضعيفة</translation>
 <translation id="8308637677604853869">القائمة السابقة</translation>
-<translation id="8332664326438198339">الرجوع إلى مشغِّل التطبيقات</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">إنشاء ملاحظة</translation>
 <translation id="8375916635258623388">سيتم الربط تلقائيًا بين جهاز <ph name="DEVICE_NAME" /> هذا وهاتفك.</translation>

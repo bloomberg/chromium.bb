@@ -336,6 +336,7 @@
 <translation id="6537270692134705506">സ്‌ക്രീൻ ക്യാപ്‌ചർ ചെയ്യുക</translation>
 <translation id="6542521951477560771"><ph name="RECEIVER_NAME" /> ഉപകരണത്തിലേക്ക് കാസ്‌റ്റ് ചെയ്യുന്നു</translation>
 <translation id="6559976592393364813">അഡ്‌മിനിസ്‌ട്രേറ്ററോട് ചോദിക്കുക</translation>
+<translation id="6574601967010742428">നിങ്ങളുടെ ആക്‌റ്റിവിറ്റി, ഉപകരണ അഡ്‌മിനിസ്‌ട്രേറ്റർക്ക് നിരീക്ഷിക്കാനായേക്കും.</translation>
 <translation id="6585808820553845416"><ph name="SESSION_TIME_REMAINING" />-നുള്ളിൽ സെഷൻ അവസാനിക്കുന്നു.</translation>
 <translation id="6627638273713273709">തിരയല്‍+Shift+K</translation>
 <translation id="6650933572246256093">"<ph name="DEVICE_NAME" />" എന്ന Bluetooth ഉപകരണം ജോടിയാക്കുന്നതിനുള്ള അനുമതി ആവശ്യപ്പെടുന്നു. ആ ഉപകരണത്തിൽ ഈ പാസ്‌കീ നൽകുക: <ph name="PASSKEY" /></translation>
@@ -442,7 +443,6 @@
 <translation id="8261506727792406068">ഇല്ലാതാക്കുക</translation>
 <translation id="8297006494302853456">ദുര്‍ബലം</translation>
 <translation id="8308637677604853869">മുൻ മെനു</translation>
-<translation id="8332664326438198339">ലോഞ്ചറിലേക്ക് മടങ്ങുക</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">കുറിപ്പ് സൃഷ്‌ടിക്കുക</translation>
 <translation id="8375916635258623388">ഈ <ph name="DEVICE_NAME" /> ഉം നിങ്ങളുടെ ഫോണും സ്വമേധയാ കണക്റ്റ് ചെയ്യും</translation>

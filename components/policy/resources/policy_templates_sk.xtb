@@ -245,13 +245,6 @@ servera, pretože objekty GPO sa znova sťahujú pri každom načítaní pravidi
       bude vypnutý. V tomto prípade ho používateľ nemôže zapnúť.</translation>
 <translation id="1474273443907024088">Zakázať funkciu TLS False Start</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
-<translation id="1478485744311397487">Servery, na ktoré môže <ph name="PRODUCT_NAME" /> delegovať poverenia.
-
-          Ak chcete zadať niekoľko názvov serverov, oddeľte ich čiarkami. Zástupné znaky (*) sú povolené.
-
-          Ak pravidlo nenastavíte, <ph name="PRODUCT_NAME" /> nebude delegovať poverenia používateľov ani v prípade, keď je server na intranete.
-
-          Toto pravidlo sa ignoruje, ak je pravidlo UseKDCConstrainedDelegation nastavené na hodnotu true.</translation>
 <translation id="1484146587843605071">Pri hostiteľoch v uvedenom zozname prehliadač <ph name="PRODUCT_NAME" /> vynechá všetky proxy servery.
 
           Toto pravidlo sa prejaví len v prípade, že ste v časti „Zvoľte spôsob konfigurácie nastavení proxy servera“ vybrali ručné nastavenia proxy servera.
@@ -915,11 +908,6 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 
       Ak povolíte toto zariadenie, Ukážka tlače bude používať predvolenú tlačiareň operačného systému OS ako predvolenú cieľovú možnosť.</translation>
 <translation id="2856674246949497058">Ak je verzia operačného systému novšia ako cieľová, prejdite na cieľovú verziu. Počas tohto procesu vykonajte kompletné obnovenie Powerwash.</translation>
-<translation id="2858646435735022107">Ovláda, či sa bude rešpektovať funkcia OK-AS-DELEGATE z platformy KDC alebo či sa bude používať pravidlo AuthNegotiateDelegateWhitelist na obmedzenie delegovania lístkov Kerberos.
-
-          Ak toto pravidlo nastavíte na hodnotu true, overenie HTTP bude rešpektovať nastavenia obmedzeného delegovania v platforme KDC. V takomto prípade sa bude pravidlo AuthNegotiateDelegateWhitelist ignorovať. Ďalšie informácie nájdete na https://tools.ietf.org/html/rfc5896.html.
-
-          Ak toto pravidlo nenastavíte alebo ho nastavíte na hodnotu false, nastavenia obmedzeného delegovania z platformy KDS sa budú ignorovať a bude sa rešpektovať pravidlo AuthNegotiateDelegateWhitelist.</translation>
 <translation id="2872961005593481000">Vypnúť</translation>
 <translation id="2873651257716068683">Prepíše predvolenú veľkosť tlačenej strany. Ak nie je k dispozícii veľkosť strany, toto pravidlo je ignorované.</translation>
 <translation id="2874209944580848064">Poznámka pre zariadenia so systémom <ph name="PRODUCT_OS_NAME" />, ktoré podporujú aplikácie pre Android:</translation>
@@ -1687,6 +1675,11 @@ Vzory webových adries v tomto pravidle by nemali byť v konflikte s tými, k
 <translation id="4725528134735324213">Povolenie služby Android Backup Service</translation>
 <translation id="4725801978265372736">Vyžadovať, aby sa meno miestneho používateľa a vlastníka hostiteľa vzdialeného prístupu zhodovali</translation>
 <translation id="4733471537137819387">Pravidlá týkajúce sa integrovaného overenia pomocou protokolu HTTP</translation>
+<translation id="4744190513568488164">Servery, na ktoré môže <ph name="PRODUCT_NAME" /> delegovať poverenia.
+
+          Ak chcete zadať niekoľko názvov serverov, oddeľte ich čiarkami. Zástupné znaky (*) sú povolené.
+
+          Ak pravidlo nenastavíte, prehliadač <ph name="PRODUCT_NAME" /> nebude delegovať poverenia používateľov ani v prípade, ak je server v sieti intranet.</translation>
 <translation id="4752880493649142945">Certifikát klienta na pripojenie k adrese RemoteAccessHostTokenValidationUrl</translation>
 <translation id="4757671984625088193">Ak toto pravidlo nastavíte na hodnotu true alebo ho nenastavíte, prehliadač <ph name="PRODUCT_NAME" /> bude navrhovať stránky súvisiace s aktuálnou stránkou.
       Tieto návrhy sa načítajú vzdialene zo serverov Googlu.
@@ -1766,7 +1759,6 @@ Aplikácie ARC bude môcť používať iba proxy server HTTP s najvyššou prio
 <translation id="4986560318567565414">Cesta prepnutia na Chrome v alternatívnom prehliadači</translation>
 <translation id="4988291787868618635">Akcia po určitej dobe nečinnosti</translation>
 <translation id="4995548127349206948">Či je povolené overenie totožnosti NTLMv2</translation>
-<translation id="5022792010322211583">Používanie obmedzeného delegovania poverení KDC</translation>
 <translation id="5047604665028708335">Povoliť prístup ku stránkam mimo balíkov obsahu</translation>
 <translation id="5052081091120171147">Ak je toto pravidlo povolené, história prehliadania bude importovaná z aktuálneho predvoleného prehliadača. Povolenie tohto pravidla má vplyv aj na dialógové okno importu.
 

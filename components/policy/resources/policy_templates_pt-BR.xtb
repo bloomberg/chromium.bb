@@ -251,13 +251,6 @@
       desativada. Nesse caso, não será possível ativar o recurso.</translation>
 <translation id="1474273443907024088">Desativar TLS False Start</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
-<translation id="1478485744311397487">Os servidores que podem ser delegados pelo <ph name="PRODUCT_NAME" />.
-
-          Separe vários nomes de servidor usando vírgulas. Caracteres curinga (*) são permitidos.
-
-          Se a política não for definida, o <ph name="PRODUCT_NAME" /> não delegará credenciais do usuário mesmo que um servidor seja detectado como Intranet.
-
-          Esta política será ignorada se a política "UseKDCConstrainedDelegation" estiver definida como verdadeira.</translation>
 <translation id="1484146587843605071">O <ph name="PRODUCT_NAME" /> ignorará todos os proxies para a lista de hosts apresentada aqui.
 
           Esta política só será válida se você selecionar as configurações de proxy manuais em "Escolher o modo de especificar as configurações do servidor proxy".
@@ -904,11 +897,6 @@
 
       Se você ativar essa configuração, a Visualização de impressão utilizará a impressora padrão do sistema operacional como a escolha padrão.</translation>
 <translation id="2856674246949497058">Faça a reversão e permaneça na versão de destino se a versão do SO for mais recente que a de destino. Execute um Powerwash durante o processo.</translation>
-<translation id="2858646435735022107">Controla se a sinalização OK-AS-DELEGATE do KDC será respeitada ou se a política "AuthNegotiateDelegateWhitelist" será usada para restringir a delegação de tíquetes do Kerberos.
-
-          Se a política for definida como verdadeira, a autenticação HTTP respeitará as configurações de delegação restrita no KDC. Nesse caso, a política "AuthNegotiateDelegateWhitelist" será ignorada. Consulte https://tools.ietf.org/html/rfc5896.htm para ver mais informações.
-
-          Se a política não for definida ou for definida como falsa, as configurações de delegação restrita do KDC serão ignoradas, e a política "AuthNegotiateDelegateWhitelist" será respeitada.</translation>
 <translation id="2872961005593481000">Encerrar</translation>
 <translation id="2873651257716068683">Modifica o tamanho da página de impressão padrão. Se o tamanho da página não estiver disponível, esta política será ignorada.</translation>
 <translation id="2874209944580848064">Observação para dispositivos <ph name="PRODUCT_OS_NAME" /> compatíveis com apps Android:</translation>
@@ -1654,6 +1642,11 @@
 <translation id="4725528134735324213">Ativar o Android Backup Service</translation>
 <translation id="4725801978265372736">Exigir correspondência entre o nome do usuário local e o proprietário do host de acesso remoto</translation>
 <translation id="4733471537137819387">Políticas relacionadas à autenticação integrada de HTTP.</translation>
+<translation id="4744190513568488164">Servidores que podem receber delegações do <ph name="PRODUCT_NAME" />.
+
+          Separe vários nomes de servidor com vírgula. Caracteres curinga (*) são permitidos.
+
+          Se esta política não é definida, o <ph name="PRODUCT_NAME" /> não delega credenciais do usuário mesmo que um servidor seja detectado como Intranet.</translation>
 <translation id="4752880493649142945">Certificado de cliente para conexão a RemoteAccessHostTokenValidationUrl</translation>
 <translation id="4757671984625088193">Se esta política for definida como verdadeira ou não for definida, o <ph name="PRODUCT_NAME" /> sugerirá páginas relacionadas à página atual.
       Essas sugestões são buscadas remotamente nos servidores do Google.
@@ -1731,7 +1724,6 @@
 <translation id="4986560318567565414">Caminho para mudar do navegador alternativo para o Chrome.</translation>
 <translation id="4988291787868618635">Ação a ser realizada quando o intervalo de inatividade for atingido</translation>
 <translation id="4995548127349206948">Se a autenticação NTLMv2 está ativada.</translation>
-<translation id="5022792010322211583">Usar a delegação restrita do KDC</translation>
 <translation id="5047604665028708335">Permitir acesso a sites fora de pacotes de conteúdo</translation>
 <translation id="5052081091120171147">Se ativada, esta política força a importação do histórico de navegação a partir do navegador padrão atual. Se ativada, esta política também afeta a caixa de diálogo de importação. Se desativada, nenhum histórico de navegação é importado. Caso não seja definida, o usuário pode ser solicitado a responder se deseja importar ou permitir a importação automática.</translation>
 <translation id="5056708224511062314">Lupa desativada</translation>

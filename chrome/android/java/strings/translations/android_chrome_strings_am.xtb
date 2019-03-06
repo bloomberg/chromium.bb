@@ -322,7 +322,6 @@
 <translation id="3341058695485821946">ምን ያህል ውሂብ እንዳስቀመጡ ይመልከቱ</translation>
 <translation id="3350687908700087792">ሁሉንም ማንነት የማያሳውቅ ትሮችን ይዝጉ</translation>
 <translation id="3353615205017136254">ቀላል ገጽ በGoogle ቀርቧል። ኦርጂናሉን ገጽ ለመጫን ኦርጂናል ጫን የሚለውን አዝራር መታ ያድርጉ።</translation>
-<translation id="3357505083294783610">Chrome የጣቢያውን ዩአርኤል እና ይዘት ወደ Google ይልካል። ይህን አገልግሎት ለማቅረብ እንዲሁም የእርስዎ ኢሜይል እና የክሬዲት ካርድ አይነት ከChrome ራስ-ሙላ ወደ Google ይላካል። በChrome እና Chrome ራስ-ሙላ ውስጥ Google ረዳትን ለማጥፋት የChrome ቅንብሮችን ይጎብኙ። <ph name="BEGIN_LINK" />የበለጠ ለመረዳት<ph name="END_LINK" /></translation>
 <translation id="3367813778245106622">ስምረትን ለመጀመር እንደገና ይግቡ</translation>
 <translation id="3377025655491224618">የግል ትር</translation>
 <translation id="3384347053049321195">ምስል አጋራ</translation>
@@ -620,7 +619,7 @@
 <translation id="557283862590186398">Chrome ለዚህ ጣቢያ የእርስዎን ማይክራፎን ለመድረስ ፈቃድ ይፈልጋል።</translation>
 <translation id="55737423895878184">አካባቢ እና ማሳወቂያዎች ይፈቀዳሉ</translation>
 <translation id="5578795271662203820">ይህንን ምስል <ph name="SEARCH_ENGINE" /> ላይ ይፈልጉት</translation>
-<translation id="5581519193887989363">በማንኛውም ጊዜ ምን እንደሚያሳምሩ በ<ph name="BEGIN_LINK1" />ቅንብሮች<ph name="END_LINK1" /> ውስጥ መምረጥ ይችላሉ።</translation>
+<translation id="5581519193887989363">በማንኛውም ጊዜ ምን እንደሚያሰምሩ በ<ph name="BEGIN_LINK1" />ቅንብሮች<ph name="END_LINK1" /> ውስጥ መምረጥ ይችላሉ።</translation>
 <translation id="5595485650161345191">አድራሻ አርትዕ</translation>
 <translation id="5596627076506792578">ተጨማሪ አማራጮች</translation>
 <translation id="5620299005957670886">ጣቢያዎች የእርስዎን ዳሳሾች እንዲደርሱበት ይፍቀዱ (የሚመከር)</translation>

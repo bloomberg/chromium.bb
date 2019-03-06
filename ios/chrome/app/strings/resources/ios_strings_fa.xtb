@@ -74,6 +74,7 @@
 <translation id="2000419248597011803">برخی کوکی‌ها و جستجوها را از نوار نشانی و جعبه جستجو به موتور جستجوی پیش‌فرض ارسال می‌کند</translation>
 <translation id="2015722694326466240">برای دیدن گذرنویسه‌ها، اول باید گذرنویسه‌ای برای دستگاه تنظیم کنید.</translation>
 <translation id="2068952045031577364">هفته گذشته</translation>
+<translation id="2074131957428911366">هرزمان خواستید می‌توانید مواردی را که می‌خواهید همگام‌سازی شود در <ph name="BEGIN_LINK" />تنظیمات<ph name="END_LINK" /> انتخاب کنید.</translation>
 <translation id="2079545284768500474">لغو</translation>
 <translation id="209018056901015185">درخواست سایت دسک‌تاپ</translation>
 <translation id="2096012225669085171">همگام‌سازی و شخصی‌سازی در همه دستگاه‌ها</translation>
@@ -199,6 +200,7 @@
 <translation id="4038354071007134711">برنامه‌ای در این دستگاه نمی‌تواند فایل را باز کند.</translation>
 <translation id="4042870976416480368">یافتن در صفحه</translation>
 <translation id="4049507953662678203">مطمئن شوید اتصال شبکه دارید و دوباره امتحان کنید.</translation>
+<translation id="4082688844002261427">کنترل نحوه استفاده از سابقه مرور برای شخصی‌سازی «جستجو»، آگهی‌ها و موارد دیگر</translation>
 <translation id="408404951701638773">اکنون دسترسی به نوار جستجو آسان‌تر است</translation>
 <translation id="4084682180776658562">نشانک</translation>
 <translation id="411254640334432676">بارگیری نشد.</translation>
@@ -354,7 +356,6 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> مورد حذف شد</translation>
 <translation id="6513773942555305766">‏گذرواژه پیشنهادی Chrome: <ph name="SUGGESTED_PASSWORD" /></translation>
 <translation id="6541915733953096570">ساعت گذشته</translation>
-<translation id="6548479190262846511">گذرواژه‌ای برای این سایت پیدا نشد</translation>
 <translation id="6642362222295953972">رفتن به برگه موجود</translation>
 <translation id="6643016212128521049">پاک کردن</translation>
 <translation id="6656103420185847513">ویرایش پوشه</translation>
@@ -396,6 +397,7 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="7203585745079012652">پاسخ گفتاری</translation>
 <translation id="722055596168483966">‏شخصی‌سازی خدمات Google</translation>
 <translation id="7272437679830969316">نمی‌توانیم هویتتان را به تأیید برسانیم. گذرواژه کپی نشد.</translation>
+<translation id="7280856130494094142">برای شروع همگام‌سازی، عبارت عبور را وارد کنید</translation>
 <translation id="7285236536143823449">بله، موافقم</translation>
 <translation id="7291368939935408496">درحال آماده‌سازی گذرواژه‌ها…</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> درصد بارگیری شد</translation>

@@ -51,7 +51,6 @@
 <translation id="1232569758102978740">Unbenannt</translation>
 <translation id="1240347957665416060">Gerätename</translation>
 <translation id="124116460088058876">Weitere Sprachen</translation>
-<translation id="1246987714874202335">Ablaufdatum aktualisieren</translation>
 <translation id="1250759482327835220">Damit Zahlungen zukünftig schneller abgewickelt werden können, speichern Sie Ihre Kreditkartendaten, Ihren Namen und Ihre Rechnungsadresse in Ihrem Google-Konto.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (synchronisiert)</translation>
 <translation id="1256368399071562588">&lt;p&gt;Wenn Sie eine bestimmte Website nicht aufrufen können, versuchen Sie zuerst, das Problem folgendermaßen zu beheben:&lt;/p&gt;
@@ -273,7 +272,6 @@
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat wurde möglicherweise widerrufen. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt.</translation>
 <translation id="2418081434543109369">Der Server <ph name="ORIGIN" />, zu dem Sie gehen, verlangt, dass auf alle an ihn gerichteten Anfragen eine Sicherheitsrichtlinie angewendet wird. Aber er hat keine Richtlinie bereitgestellt, was den Browser daran hindert, Ihre Anfrage für <ph name="SITE" /> auszuführen.</translation>
-<translation id="2442483081384580286">Safe Browsing-Warnmeldungen</translation>
 <translation id="244665789865330679">Ihr Gerät und Ihr Konto werden durch <ph name="ENROLLMENT_DOMAIN" /> verwaltet. Dies bedeutet, dass der Administrator Ihr Gerät und Ihr Konto per Remotezugriff konfigurieren kann.</translation>
 <translation id="2463193859425327265">Startseite ändern</translation>
 <translation id="2463739503403862330">Ausfüllen</translation>
@@ -601,6 +599,7 @@
 <translation id="4277028893293644418">Passwort zurücksetzen</translation>
 <translation id="4280429058323657511">Gültig bis: <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{Diese Karte wurde in Ihrem Google-Konto gespeichert}other{Diese Karten wurden in Ihrem Google-Konto gespeichert}}</translation>
+<translation id="42981349822642051">Maximieren</translation>
 <translation id="4302965934281694568">Chou3 (Umschlag)</translation>
 <translation id="4305817255990598646">Wechseln</translation>
 <translation id="4312613361423056926">B2</translation>
@@ -871,6 +870,7 @@
 <translation id="5810442152076338065">Ihre Verbindung zu <ph name="DOMAIN" /> ist mit einer veralteten Codier-Suite verschlüsselt.</translation>
 <translation id="5813119285467412249">&amp;Hinzufügen wiederholen</translation>
 <translation id="5838278095973806738">Sie sollten keine vertraulichen Informationen wie Passwörter oder Kreditkartennummern auf dieser Website eingeben, da sie von Angreifern gestohlen werden könnten.</translation>
+<translation id="5860033963881614850">Aus</translation>
 <translation id="5863847714970149516">Auf der nächsten Seite wird möglicherweise versucht, Ihnen etwas in Rechnung zu stellen</translation>
 <translation id="5866257070973731571">Telefonnummer hinzufügen</translation>
 <translation id="5869405914158311789">Die Website ist nicht erreichbar</translation>
@@ -879,6 +879,7 @@
 <translation id="5893752035575986141">Kreditkarten werden akzeptiert.</translation>
 <translation id="5901630391730855834">Gelb</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (synchronisiert)</translation>
+<translation id="5916664084637901428">An</translation>
 <translation id="5919090499915321845">B10</translation>
 <translation id="5921639886840618607">Karte im Google-Konto speichern?</translation>
 <translation id="5922853866070715753">Fast fertig</translation>
@@ -976,6 +977,7 @@
 <translation id="6508722015517270189">Chrome neu starten</translation>
 <translation id="6529602333819889595">&amp;Löschen wiederholen</translation>
 <translation id="6534179046333460208">Physical Web-Vorschläge</translation>
+<translation id="6556866813142980365">Wiederholen</translation>
 <translation id="6563469144985748109">Der Administrator hat die Berechtigung noch nicht erteilt</translation>
 <translation id="6569060085658103619">Dies ist eine Erweiterungsseite</translation>
 <translation id="6578796323535178455">C2 (Umschlag)</translation>

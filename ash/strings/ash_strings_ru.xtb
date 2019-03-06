@@ -336,6 +336,7 @@
 <translation id="6537270692134705506">Снимок экрана</translation>
 <translation id="6542521951477560771">Трансляция на устройство "<ph name="RECEIVER_NAME" />"</translation>
 <translation id="6559976592393364813">Обратитесь к администратору</translation>
+<translation id="6574601967010742428">Администратор может отслеживать ваши действия на этом устройстве.</translation>
 <translation id="6585808820553845416">Сеанс закончится через <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Поиск + Shift + K</translation>
 <translation id="6650933572246256093">Устройству <ph name="DEVICE_NAME" /> требуется разрешение на подключение через Bluetooth. Введите на нем код: <ph name="PASSKEY" />.</translation>
@@ -442,7 +443,6 @@
 <translation id="8261506727792406068">Удалить</translation>
 <translation id="8297006494302853456">Слабый</translation>
 <translation id="8308637677604853869">Предыдущее меню</translation>
-<translation id="8332664326438198339">Вернуться к панели запуска</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Создать заметку</translation>
 <translation id="8375916635258623388"><ph name="DEVICE_NAME" /> и телефон будут подключены друг к другу автоматически</translation>

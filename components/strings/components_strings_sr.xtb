@@ -51,7 +51,6 @@
 <translation id="1232569758102978740">Без наслова</translation>
 <translation id="1240347957665416060">Назив уређаја</translation>
 <translation id="124116460088058876">Још језика</translation>
-<translation id="1246987714874202335">Ажурирајте датум истека</translation>
 <translation id="1250759482327835220">Да бисте следећи пут платили брже, сачувајте картицу, име и адресу за обрачун на Google налогу.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (синхронизовано)</translation>
 <translation id="1256368399071562588">&lt;p&gt;Ако посетите веб-сајт и он се не отвори, прво пробајте да отклоните грешку помоћу ових корака за решавање проблема:&lt;/p&gt;
@@ -281,7 +280,6 @@
     да се безбедносне смернице примене на све захтеве ка њему. Међутим, слање
     смерница није успело, па прегледач не може да испуни
     ваш захтев за <ph name="SITE" />.</translation>
-<translation id="2442483081384580286">Упозорења у вези са Безбедним прегледањем</translation>
 <translation id="244665789865330679">Уређајем и налогом управља <ph name="ENROLLMENT_DOMAIN" />. То значи да администратор може даљински да конфигурише уређај и налог.</translation>
 <translation id="2463193859425327265">Промените почетну страницу</translation>
 <translation id="2463739503403862330">Попуни</translation>
@@ -611,6 +609,7 @@
 <translation id="4277028893293644418">Ресетујте лозинку</translation>
 <translation id="4280429058323657511">, истиче <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{Ова картица је сачувана на Google налогу}one{Ове картице су сачуване на Google налогу}few{Ове картице су сачуване на Google налогу}other{Ове картице су сачуване на Google налогу}}</translation>
+<translation id="42981349822642051">Проширите</translation>
 <translation id="4302965934281694568">Chou3 (коверат)</translation>
 <translation id="4305817255990598646">Пређи</translation>
 <translation id="4312613361423056926">B2</translation>
@@ -881,6 +880,7 @@
 <translation id="5810442152076338065">Веза са доменом <ph name="DOMAIN" /> је шифрована помоћу застарелог пакета за шифровање.</translation>
 <translation id="5813119285467412249">&amp;Понови додавање</translation>
 <translation id="5838278095973806738">Немојте да уносите осетљиве информације на овом сајту (на пример, лозинке или кредитне картице) јер нападачи могу да их украду.</translation>
+<translation id="5860033963881614850">Искључено</translation>
 <translation id="5863847714970149516">Следећа страница може да покуша да вам нешто наплати</translation>
 <translation id="5866257070973731571">Додајте број телефона</translation>
 <translation id="5869405914158311789">Овај сајт није доступан</translation>
@@ -889,6 +889,7 @@
 <translation id="5893752035575986141">Прихватају се кредитне картице.</translation>
 <translation id="5901630391730855834">Жута</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (синхронизовано)</translation>
+<translation id="5916664084637901428">Укључено</translation>
 <translation id="5919090499915321845">B10</translation>
 <translation id="5921639886840618607">Желите ли да сачувате картицу на Google налогу?</translation>
 <translation id="5922853866070715753">Скоро је готово</translation>
@@ -985,6 +986,7 @@
 <translation id="6508722015517270189">Поново покрените Chrome</translation>
 <translation id="6529602333819889595">&amp;Понови брисање</translation>
 <translation id="6534179046333460208">Предлози Интернета око нас</translation>
+<translation id="6556866813142980365">Понови</translation>
 <translation id="6563469144985748109">Менаџер га још увек није одобрио</translation>
 <translation id="6569060085658103619">Прегледате страницу додатка.</translation>
 <translation id="6578796323535178455">C2 (коверат)</translation>

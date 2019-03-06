@@ -336,6 +336,7 @@
 <translation id="6537270692134705506">Piga skrini picha</translation>
 <translation id="6542521951477560771">Tuma kwenye <ph name="RECEIVER_NAME" /></translation>
 <translation id="6559976592393364813">Mwulize Msimamizi</translation>
+<translation id="6574601967010742428">Huenda msimamizi wa kifaa hiki atafuatilia shughuli zako.</translation>
 <translation id="6585808820553845416">Kipindi kitakwisha baada ya <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Tafuta+Shift+K</translation>
 <translation id="6650933572246256093">Kifaa cha Bluetooth cha "<ph name="DEVICE_NAME" />" kinaomba idhini ya kuoanisha. Tafadhali weka nenosiri hili kwenye kifaa hicho: <ph name="PASSKEY" /></translation>
@@ -443,7 +444,6 @@ Arifa, madirisha na vidirisha vya baadaye vitagawanywa kati ya maeneo-kazi.</tra
 <translation id="8261506727792406068">Futa</translation>
 <translation id="8297006494302853456">Dhaifu</translation>
 <translation id="8308637677604853869">Menyu ya awali</translation>
-<translation id="8332664326438198339">Rudi kwenye kifungua programu</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Unda kidokezo</translation>
 <translation id="8375916635258623388"><ph name="DEVICE_NAME" /> hii na simu yako zitaunganishwa kiotomatiki</translation>

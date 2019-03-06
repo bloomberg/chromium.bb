@@ -336,6 +336,7 @@
 <translation id="6537270692134705506">Сними екран</translation>
 <translation id="6542521951477560771">Пребацује се на <ph name="RECEIVER_NAME" /></translation>
 <translation id="6559976592393364813">Питајте администратора</translation>
+<translation id="6574601967010742428">Администратор уређаја ће можда моћи да надгледа ваше активности.</translation>
 <translation id="6585808820553845416">Сесија се завршава за <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Тастер за претрагу+Shift+K</translation>
 <translation id="6650933572246256093">Bluetooth уређај „<ph name="DEVICE_NAME" />“ жели дозволу за упаривање. Унесите ову шифру на том уређају: <ph name="PASSKEY" /></translation>
@@ -442,7 +443,6 @@
 <translation id="8261506727792406068">Избриши</translation>
 <translation id="8297006494302853456">Слаб</translation>
 <translation id="8308637677604853869">Претходни мени</translation>
-<translation id="8332664326438198339">Назад на покретач</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Направите белешку</translation>
 <translation id="8375916635258623388">Овај <ph name="DEVICE_NAME" /> и телефон ће се аутоматски повезати</translation>

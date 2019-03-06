@@ -104,7 +104,6 @@
 <translation id="1143142264369994168">Signant del certificat</translation>
 <translation id="1145292499998999162">Connector bloquejat</translation>
 <translation id="1145532888383813076">Cerca al dispositiu, en aplicacions i al web.</translation>
-<translation id="1146204723345436916">Importa les adreces d'interès des d'un fitxer HTML...</translation>
 <translation id="114721135501989771">Eines intel·ligents a Chrome</translation>
 <translation id="1148097584170732637">S'han trobat <ph name="FILE_COUNT" />.
     <ph name="LINE_BREAK1" />
@@ -420,7 +419,6 @@
 <translation id="1608626060424371292">Suprimeix aquest usuari</translation>
 <translation id="1609170755653088773">Sincronitza aquesta contrasenya amb el dispositiu iPhone</translation>
 <translation id="1611584202130317952">S'ha interromput el flux d'aprovisionament. Torna-ho a provar o contacta amb el propietari o l'administrador del dispositiu.</translation>
-<translation id="1611704746353331382">Exporta les adreces d'interès a un fitxer HTML...</translation>
 <translation id="1614511179807650956">És possible que hagis esgotat la quantitat assignada de dades mòbils. Visita el portal d'activació <ph name="NAME" /> per comprar més dades.</translation>
 <translation id="161460670679785907">No es pot detectar el telèfon</translation>
 <translation id="1616206807336925449">Aquesta extensió no requereix cap permís especial.</translation>
@@ -651,7 +649,6 @@
 <translation id="1932098463447129402">No abans</translation>
 <translation id="1933345018156373194">El trasllat ha fallat, s'ha produït un error inesperat: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1933809209549026293">Connecteu un cursor o un teclat. Si feu servir un dispositiu Bluetooth, assegureu-vos que estigui preparat per a la sincronització.</translation>
-<translation id="1936157145127842922">Mostra a la carpeta</translation>
 <translation id="1938351510777341717">Ordre externa</translation>
 <translation id="1940546824932169984">Dispositius connectats</translation>
 <translation id="1942765061641586207">Resolució de la imatge</translation>
@@ -1367,7 +1364,6 @@
 <translation id="3009300415590184725">Confirmeu que voleu cancel·lar el procés de configuració del servei de dades mòbils?</translation>
 <translation id="3009779501245596802">Bases de dades indexades</translation>
 <translation id="3010279545267083280">La contrasenya s'ha suprimit.</translation>
-<translation id="3011362742078013760">Obre totes les adreces d'interès en una &amp;finestra d'incògnit</translation>
 <translation id="3011488081941333749">Les galetes del domini <ph name="DOMAIN" /> s'esborraran en sortir-ne</translation>
 <translation id="3012631534724231212">(iframe)</translation>
 <translation id="3012804260437125868">Només les connexions segures dins del mateix lloc</translation>
@@ -2570,7 +2566,6 @@ Descripció: <ph name="LINUX_DESCRIPTION" /></translation>
 <translation id="4881695831933465202">Obre</translation>
 <translation id="4882312758060467256">Té accés a aquest lloc web</translation>
 <translation id="4882831918239250449">Controla com s'utilitza l'historial de navegació per personalitzar la Cerca, els anuncis i molt més</translation>
-<translation id="4883178195103750615">Exporta les adreces d'interès a un fitxer HTML...</translation>
 <translation id="4883436287898674711">Tots els llocs de <ph name="WEBSITE_1" /></translation>
 <translation id="48838266408104654">&amp;Gestor de tasques</translation>
 <translation id="4884987973312178454">6x</translation>
@@ -2905,7 +2900,6 @@ Descripció: <ph name="LINUX_DESCRIPTION" /></translation>
 <translation id="5376931455988532197">El fitxer és massa gran</translation>
 <translation id="537813040452600081">Les pàgines que visualitzeu en aquesta finestra no es mostraran a l'historial del navegador i no deixaran cap altre rastre a l'ordinador, com ara galetes, després de tancar la sessió. No es conservaran els fitxers que baixeu ni les adreces d'interès.</translation>
 <translation id="5379140238605961210">Continua bloquejant l'accés al micròfon</translation>
-<translation id="5379268888377976432">Desfés la supressió</translation>
 <translation id="5382591305415226340">Gestiona els enllaços admesos</translation>
 <translation id="5384883051496921101">Aquest lloc està a punt de compartir informació amb una aplicació fora del mode d'incògnit.</translation>
 <translation id="5388885445722491159">Vinculat</translation>
@@ -3201,7 +3195,6 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="5801568494490449797">Preferències</translation>
 <translation id="5804241973901381774">Permisos</translation>
 <translation id="5805697420284793859">Gestor de finestres</translation>
-<translation id="580571955903695899">Torna a ordenar per títol</translation>
 <translation id="5811750797187914944">Tot a punt</translation>
 <translation id="5814126672212206791">Tipus de connexió</translation>
 <translation id="5815645614496570556">Adreça X.400</translation>
@@ -3528,7 +3521,6 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="6264365405983206840">Selecciona-ho &amp;tot</translation>
 <translation id="6267166720438879315">Seleccioneu un certificat per autenticar-vos a <ph name="HOST_NAME" /></translation>
 <translation id="6268252012308737255">Obre amb <ph name="APP" /></translation>
-<translation id="6268747994388690914">Importa les adreces d'interès des d'un fitxer HTML...</translation>
 <translation id="6272643420381259437">S'ha produït un error (<ph name="ERROR" />) en baixar el connector</translation>
 <translation id="6273677812470008672">Qualitat</translation>
 <translation id="6277105963844135994">Temps d'espera de la xarxa</translation>
@@ -3603,7 +3595,6 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="6393156038355142111">Suggereix una contrasenya segura</translation>
 <translation id="6395575651121294044"><ph name="NUMBER_OF_FILES" /> elements</translation>
 <translation id="6397094776139756010">Opcions de sincronització i personalització</translation>
-<translation id="6397592254427394018">Obre totes les adreces d'interès en una &amp;finestra d'incògnit</translation>
 <translation id="6398715114293939307">Suprimeix Google Play Store</translation>
 <translation id="6398765197997659313">Surt del mode de pantalla completa</translation>
 <translation id="6399774419735315745">Espia</translation>
@@ -3867,7 +3858,6 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="6798954102094737107">Connector: <ph name="PLUGIN_NAME" /></translation>
 <translation id="6801435275744557998">Calibra la pantalla tàctil</translation>
 <translation id="6802031077390104172"><ph name="USAGE" /> (<ph name="OID" />)</translation>
-<translation id="6804671422566312077">Obre totes les adreces d'interès en una &amp;finestra nova</translation>
 <translation id="6805038906417219576">D'acord</translation>
 <translation id="6805647936811177813">Inicieu la sessió a <ph name="TOKEN_NAME" /> per importar el certificat de client de <ph name="HOST_NAME" />.</translation>
 <translation id="680572642341004180">Activa el seguiment RLZ a <ph name="SHORT_PRODUCT_OS_NAME" />.</translation>
@@ -3974,7 +3964,6 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="6970856801391541997">Imprimeix pàgines específiques</translation>
 <translation id="6972180789171089114">Àudio/Vídeo</translation>
 <translation id="6972754398087986839">Comença</translation>
-<translation id="6973630695168034713">Carpetes</translation>
 <translation id="6974609594866392343">Mode de demostració sense connexió</translation>
 <translation id="6977381486153291903">Revisió de microprogramari</translation>
 <translation id="6978121630131642226">Motors de cerca</translation>
@@ -4305,7 +4294,6 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="7478485216301680444">No s'ha pogut instal·lar l'aplicació de quiosc.</translation>
 <translation id="7481312909269577407">Endavant</translation>
 <translation id="748138892655239008">Restriccions bàsiques de certificats</translation>
-<translation id="7484964289312150019">Obre totes les adreces d'interès en una &amp;finestra nova</translation>
 <translation id="7487067081878637334">Tecnologia</translation>
 <translation id="7487099628810939106">Retard abans de fer clic:</translation>
 <translation id="7487969577036436319">No hi ha cap component instal·lat</translation>
@@ -4734,7 +4722,6 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="8063235345342641131">Avatar verd predeterminat</translation>
 <translation id="8064671687106936412">Clau:</translation>
 <translation id="8066773524873206594">Tots els canvis es desaran a <ph name="DOWNLOADS_FOLDER" />.</translation>
-<translation id="806812017500012252">Torna a ordenar per títol</translation>
 <translation id="8068253693380742035">Toca per iniciar la sessió</translation>
 <translation id="8069615408251337349">Google Cloud Print</translation>
 <translation id="8071432093239591881">Imprimeix com a imatge</translation>

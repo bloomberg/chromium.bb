@@ -51,7 +51,6 @@
 <translation id="1232569758102978740">ಶೀರ್ಷಿಕೆರಹಿತ</translation>
 <translation id="1240347957665416060">ನಿಮ್ಮ ಸಾಧನದ ಹೆಸರು</translation>
 <translation id="124116460088058876">ಹೆಚ್ಚಿನ ಭಾಷೆಗಳು</translation>
-<translation id="1246987714874202335">ಅವಧಿ ಮೀರುವ ದಿನಾಂಕವನ್ನು ಅಪ್‌ಡೇಟ್ ಮಾಡಿ</translation>
 <translation id="1250759482327835220">ಮುಂದಿನ ಬಾರಿ ವೇಗವಾಗಿ ಪಾವತಿಸಲು, ನಿಮ್ಮ ಕಾರ್ಡ್, ಹೆಸರು ಮತ್ತು ಬಿಲ್ಲಿಂಗ್ ವಿಳಾಸವನ್ನು ನಿಮ್ಮ Google ಖಾತೆಯಲ್ಲಿ ಉಳಿಸಿ.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (ಸಿಂಕ್ ಮಾಡಲಾಗಿದೆ)</translation>
 <translation id="1256368399071562588">&lt;p&gt;ನೀವು ವೆಬ್‌ಸೈಟ್ ಅನ್ನು ಭೇಟಿ ಮಾಡಲು ಪ್ರಯತ್ನಿಸುತ್ತಿದ್ದರೆ ಮತ್ತು ಅದು ತೆರೆಯದಿದ್ದರೆ, ಮೊದಲು ಈ ದೋಷ ನಿವಾರಕ ಕ್ರಮಗಳಿಂದ ಆ ದೋಷವನ್ನು ಸರಿಪಡಿಸಲು ಪ್ರಯತ್ನಿಸಿ:&lt;/p&gt;
@@ -279,7 +278,6 @@
 <translation id="2418081434543109369">ನೀವು ಪ್ರವೇಶಿಸುತ್ತಿರುವ ಸರ್ವರ್, <ph name="ORIGIN" />, ತನ್ನ ಎಲ್ಲಾ ವಿನಂತಿಗಳಿಗೆ
     ಅನ್ವಯವಾಗುವ ಸುರಕ್ಷತೆ ನೀತಿಯನ್ನು ವಿನಂತಿಸಿಕೊಂಡಿದೆ. ಅದರೆ ಇದು ಈಗ
     ಕಾರ್ಯನೀತಿಯನ್ನು ಒದಗಿಸಲು ವಿಫಲವಾಗಿದೆ, ಇದರಿಂದಾಗಿ <ph name="SITE" /> ಗೆ ನಿಮ್ಮ ವಿನಂತಿಯನ್ನು ಈಡೇರಿಸದ ಹಾಗೆ ಬ್ರೌಸರ್ ಅನ್ನು ತಡೆಯುತ್ತದೆ.</translation>
-<translation id="2442483081384580286">ಸುರಕ್ಷಿತ ಬ್ರೌಸಿಂಗ್ ಎಚ್ಚರಿಕೆಗಳು</translation>
 <translation id="244665789865330679">ನಿಮ್ಮ ಸಾಧನ ಮತ್ತು ಖಾತೆಯನ್ನು <ph name="ENROLLMENT_DOMAIN" /> ಮೂಲಕ ನಿರ್ವಹಿಸಲಾಗುತ್ತಿದೆ. ಅಂದರೆ, ನಿಮ್ಮ ನಿರ್ವಾಹಕರು ನಿಮ್ಮ ಸಾಧನ ಮತ್ತು ಖಾತೆಯನ್ನು ದೂರದಿಂದಲೇ ಕಾನ್ಫಿಗರ್ ಮಾಡಬಹುದು ಎಂದರ್ಥ.</translation>
 <translation id="2463193859425327265">ಮುಖಪುಟವನ್ನು ಬದಲಾಯಿಸಿ</translation>
 <translation id="2463739503403862330">ಭರ್ತಿ ಮಾಡು</translation>
@@ -606,6 +604,7 @@
 <translation id="4277028893293644418">ಪಾಸ್‌ವರ್ಡ್ ಮರುಹೊಂದಿಸಿ</translation>
 <translation id="4280429058323657511">, ಅವಧಿ ಮುಕ್ತಾಯ <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{ಈ ಕಾರ್ಡ್ ಅನ್ನು ನಿಮ್ಮ Google ಖಾತೆಯಲ್ಲಿ ಉಳಿಸಲಾಗಿದೆ}one{ಈ ಕಾರ್ಡ್‌ಗಳನ್ನು ನಿಮ್ಮ Google ಖಾತೆಯಲ್ಲಿ ಉಳಿಸಲಾಗಿದೆ}other{ಈ ಕಾರ್ಡ್‌ಗಳನ್ನು ನಿಮ್ಮ Google ಖಾತೆಯಲ್ಲಿ ಉಳಿಸಲಾಗಿದೆ}}</translation>
+<translation id="42981349822642051">ವಿಸ್ತರಿಸಿ</translation>
 <translation id="4302965934281694568">Chou3 (Envelope)</translation>
 <translation id="4305817255990598646">ಬದಲಿಸಿ</translation>
 <translation id="4312613361423056926">B2</translation>
@@ -876,6 +875,7 @@
 <translation id="5810442152076338065">ಬಳಕೆಯಲ್ಲಿಲ್ಲದ ಸೈಫರ್ ಸೂಟ್ ಬಳಸುವ ಮೂಲಕ <ph name="DOMAIN" /> ಗೆ ನಿಮ್ಮ ಸಂಪರ್ಕವನ್ನು ಎನ್‌ಕ್ರಿಪ್ಟ್ ಮಾಡಲಾಗಿದೆ.</translation>
 <translation id="5813119285467412249">&amp;ಸೇರಿಸುವುದನ್ನು ಮತ್ತೆಮಾಡು</translation>
 <translation id="5838278095973806738">ಈ ಸೈಟ್‌ನಲ್ಲಿ ನೀವು ಯಾವುದೇ ಸೂಕ್ಷ್ಮ ಮಾಹಿತಿಯನ್ನು (ಉದಾಹರಣೆಗೆ, ಪಾಸ್‌ವರ್ಡ್‌ಗಳು ಅಥವಾ ಕ್ರೆಡಿಟ್ ಕಾರ್ಡ್‌ಗಳು) ನಮೂದಿಸಬಾರದು, ಏಕೆಂದರೆ ಅದು ದಾಳಿಕೋರರ ಮೂಲಕ ಕಳುವಾಗಬಹುದು.</translation>
+<translation id="5860033963881614850">ಆಫ್</translation>
 <translation id="5863847714970149516">ಮುಂದಿನ ಪುಟವು ನಿಮಗೆ ಶುಲ್ಕ ವಿಧಿಸಲು ಪ್ರಯತ್ನಿಸಬಹುದು</translation>
 <translation id="5866257070973731571">ಫೋನ್ ಸಂಖ್ಯೆಯನ್ನು ಸೇರಿಸಿ</translation>
 <translation id="5869405914158311789">ಈ ಸೈಟ್ ತಲುಪಲಾಗುವುದಿಲ್ಲ</translation>
@@ -884,6 +884,7 @@
 <translation id="5893752035575986141">ಕ್ರೆಡಿಟ್‌ ಕಾರ್ಡ್‌ಗಳನ್ನು ಸಮ್ಮತಿಸಲಾಗಿದೆ.</translation>
 <translation id="5901630391730855834">ಹಳದಿ</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (ಸಿಂಕ್‌ ಮಾಡಲಾಗಿದೆ)</translation>
+<translation id="5916664084637901428">ಆನ್‌</translation>
 <translation id="5919090499915321845">B10</translation>
 <translation id="5921639886840618607">Google ಖಾತೆಯಲ್ಲಿ ಕಾರ್ಡ್ ಅನ್ನು ಉಳಿಸಬೇಕೇ?</translation>
 <translation id="5922853866070715753">ಬಹುತೇಕ ಮುಗಿದಿದೆ</translation>
@@ -980,6 +981,7 @@
 <translation id="6508722015517270189">Chrome ಮರುಪ್ರಾರಂಭಿಸಿ</translation>
 <translation id="6529602333819889595">&amp;ಅಳಿಸುವುದನ್ನು ಮತ್ತೆಮಾಡು</translation>
 <translation id="6534179046333460208">ಭೌತಿಕ ವೆಬ್ ಸಲಹೆಗಳು</translation>
+<translation id="6556866813142980365">ಮತ್ತೆಮಾಡು</translation>
 <translation id="6563469144985748109">ನಿಮ್ಮ ಮ್ಯಾನೇಜರ್ ಇನ್ನೂ ಇದನ್ನು ಅಂಗೀಕರಿಸಿಲ್ಲ</translation>
 <translation id="6569060085658103619">ನೀವು ವಿಸ್ತರಣೆ ಪುಟವನ್ನು ವೀಕ್ಷಿಸುತ್ತಿರುವಿರಿ</translation>
 <translation id="6578796323535178455">C2 (Envelope)</translation>

@@ -255,13 +255,6 @@
       ki van kapcsolva. Ekkor a felhasználó nem tudja bekapcsolni a funkciót.</translation>
 <translation id="1474273443907024088">A TLS False Start letiltása</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
-<translation id="1478485744311397487">Szerverek, ahová a <ph name="PRODUCT_NAME" /> delegálhat.
-
-          Több szervernév megadása esetén vesszővel válassza el őket. Helyettesítő karaktereket (*) is használhat.
-
-          Ha nem állítja be ezt a házirendet, a <ph name="PRODUCT_NAME" /> még akkor sem delegál felhasználói hitelesítési adatokat, ha úgy érzékeli, hogy a szerver az intraneten található.
-
-          A böngésző figyelmen kívül hagyja ezt a házirendet, ha a „UseKDCConstrainedDelegation” házirend beállítása igaz.</translation>
 <translation id="1484146587843605071">A(z) <ph name="PRODUCT_NAME" /> figyelmen kívül hagy minden proxyt a listán megadott gazdagépek esetében.
 
           Ez a házirend csak akkor lép érvénybe, ha a manuális proxybeállításokat választotta a „Válassza ki, hogyan adja meg a proxyszerver beállításait” résznél.
@@ -909,11 +902,6 @@
 
       Ha engedélyezi ezt a beállítást, a nyomtatási előnézet az operációs rendszer alapértelmezett nyomtatóját használja alapértelmezettként.</translation>
 <translation id="2856674246949497058">Visszaállítás és a célverzió megtartása, ha az operációs rendszer verziója újabb a célverziónál. A folyamat során powerwash művelet elvégzése.</translation>
-<translation id="2858646435735022107">Azt szabályozza, hogy a KDC OK-AS-DELEGATE jelölőjét figyelembe veszi-e a rendszer, vagy pedig az „AuthNegotiateDelegateWhitelist” házirendet használja-e a Kerberos-jegyek delegálásának korlátozására.
-
-          Ha a házirend beállítása igaz, a HTTP-hitelesítés tiszteletben tartja a felhatalmazottakra vonatkozó korlátozott beállításokat a KDC-ben. A rendszer ebben az esetben figyelmen kívül hagyja az „AuthNegotiateDelegateWhitelist” házirendet. További információ: https://tools.ietf.org/html/rfc5896.html.
-
-          Ha a házirend nincs beállítva, vagy értéke hamis, a rendszer figyelmen kívül hagyja a felhatalmazottakra vonatkozó korlátozott beállításokat, és figyelembe veszi az „AuthNegotiateDelegateWhitelist” házirendet.</translation>
 <translation id="2872961005593481000">Leállítás</translation>
 <translation id="2873651257716068683">Felülbírálja a nyomtatás alapértelmezett oldalméretét. Ha nem áll rendelkezésre az oldalméret, akkor a rendszer figyelmen kívül hagyja ezt a házirendet.</translation>
 <translation id="2874209944580848064">Megjegyzés az Android-alkalmazásokat támogató <ph name="PRODUCT_OS_NAME" /> rendszerű eszközökhöz:</translation>
@@ -1656,6 +1644,11 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="4725528134735324213">Az Android Backup Service engedélyezése</translation>
 <translation id="4725801978265372736">Annak megkövetelése, hogy egyezzen a helyi felhasználónak és a távoli hozzáférésű gazdagép tulajdonosának a neve</translation>
 <translation id="4733471537137819387">Az integrált HTTP-hitelesítéssel kapcsolatos szabályok.</translation>
+<translation id="4744190513568488164">Szerverek, amelyekre a <ph name="PRODUCT_NAME" /> delegálhat.
+
+          Több szervernév megadása esetén azokat vesszővel válassza el. A helyettesítő karakterek (*) engedélyezettek.
+
+          Ha nem állítja be ezt a házirendet, a <ph name="PRODUCT_NAME" /> még akkor sem delegál felhasználói hitelesítési adatokat, ha a szervert az intraneten lévőnek érzékeli.</translation>
 <translation id="4752880493649142945">Klienstanúsítvány a RemoteAccessHostTokenValidationUrl címhez történő csatlakozáshoz</translation>
 <translation id="4757671984625088193">Ha értéke igaz, vagy ha nincs beállítva, a <ph name="PRODUCT_NAME" /> megjeleníti az aktuális oldalhoz kapcsolódó javasolt oldalakat.
       Ezeket a javaslatokat a rendszer a Google szervereiről kéri le távolról.
@@ -1733,7 +1726,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="4986560318567565414">A Chrome elérési útvonala a másik böngészőről való átváltáshoz.</translation>
 <translation id="4988291787868618635">A tétlenségi késleltetés elteltével végzendő művelet</translation>
 <translation id="4995548127349206948">Engedélyezve van-e az NTLMv2 hitelesítés.</translation>
-<translation id="5022792010322211583">KDC által korlátozott felhatalmazás használata</translation>
 <translation id="5047604665028708335">Hozzáférés engedélyezése a tartalomcsomagokon kívüli webhelyekhez</translation>
 <translation id="5052081091120171147">Ez a házirend engedélyezése esetén a böngészési előzmények importálását kényszeríti a jelenlegi alapértelmezett böngészőből. Bekapcsolása esetén a házirend az importálás párbeszédpanelére is hatással van. Ha le van tiltva, nem történik meg a böngészési előzmények importálása. Ha nincs beállítva, akkor előfordulhat, hogy a rendszer a felhasználótól kérdezi meg, hogy megtörténjen-e az importálás, vagy hogy lehet-e automatikus az importálás.</translation>
 <translation id="5056708224511062314">Nagyító kikapcsolva</translation>

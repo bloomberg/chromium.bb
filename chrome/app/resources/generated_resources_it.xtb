@@ -104,7 +104,6 @@
 <translation id="1143142264369994168">Firmatario del certificato</translation>
 <translation id="1145292499998999162">Plug-in bloccato</translation>
 <translation id="1145532888383813076">Cerca sul dispositivo, nelle app e sul Web.</translation>
-<translation id="1146204723345436916">Importa i preferiti da file HTML...</translation>
 <translation id="114721135501989771">Tutta l'intelligenza Google in Chrome</translation>
 <translation id="1148097584170732637">Elementi trovati: <ph name="FILE_COUNT" />.
     <ph name="LINE_BREAK1" />
@@ -420,7 +419,6 @@
 <translation id="1608626060424371292">Rimuovi questo utente</translation>
 <translation id="1609170755653088773">Sincronizza questa password con l'iPhone</translation>
 <translation id="1611584202130317952">Il flusso di provisioning è stato interrotto. Riprova oppure contatta l'amministratore o il proprietario del dispositivo.</translation>
-<translation id="1611704746353331382">Esporta i preferiti in file HTML...</translation>
 <translation id="1614511179807650956">Potresti aver esaurito la tua quota di dati mobili. Visita il portale di attivazione <ph name="NAME" /> per acquistare altri dati.</translation>
 <translation id="161460670679785907">Impossibile rilevare il tuo telefono</translation>
 <translation id="1616206807336925449">Questa estensione non richiede autorizzazioni speciali.</translation>
@@ -651,7 +649,6 @@
 <translation id="1932098463447129402">Non prima</translation>
 <translation id="1933345018156373194">Movimento non riuscito, errore imprevisto: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1933809209549026293">Collega un mouse o una tastiera. Se utilizzi un dispositivo Bluetooth, assicurati che sia pronto per essere accoppiato.</translation>
-<translation id="1936157145127842922">Mostra nella cartella</translation>
 <translation id="1938351510777341717">Comando esterno</translation>
 <translation id="1940546824932169984">Dispositivi collegati</translation>
 <translation id="1942765061641586207">Risoluzione dell'immagine</translation>
@@ -1367,7 +1364,6 @@
 <translation id="3009300415590184725">Annullare la procedura di configurazione del servizio dati mobile?</translation>
 <translation id="3009779501245596802">Indexed databases</translation>
 <translation id="3010279545267083280">Password eliminata</translation>
-<translation id="3011362742078013760">Apri tutti i Preferiti nella finestra di navigazione in &amp;incognito</translation>
 <translation id="3011488081941333749">I cookie di <ph name="DOMAIN" /> verranno cancellati all'uscita</translation>
 <translation id="3012631534724231212">(iframe)</translation>
 <translation id="3012804260437125868">Solo connessioni stesso sito protette</translation>
@@ -2572,7 +2568,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="4881695831933465202">Apri</translation>
 <translation id="4882312758060467256">Ha accesso a questo sito</translation>
 <translation id="4882831918239250449">Controlla il modo in cui la cronologia di navigazione viene utilizzata per personalizzare la Ricerca, gli annunci e altro ancora</translation>
-<translation id="4883178195103750615">Esporta i preferiti in file HTML...</translation>
 <translation id="4883436287898674711">Tutti i siti <ph name="WEBSITE_1" /></translation>
 <translation id="48838266408104654">&amp;Task Manager</translation>
 <translation id="4884987973312178454">6x</translation>
@@ -2905,7 +2900,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="5376931455988532197">File troppo grande</translation>
 <translation id="537813040452600081">Le pagine visualizzate in questa finestra non verranno memorizzate nella cronologia del browser e non lasceranno altre tracce, ad esempio cookie, sul computer dopo l'uscita dall'account. I file scaricati e i Preferiti creati non verranno conservati.</translation>
 <translation id="5379140238605961210">Continua a impedire l'accesso al microfono</translation>
-<translation id="5379268888377976432">Annulla eliminazione</translation>
 <translation id="5382591305415226340">Gestisci i link supportati</translation>
 <translation id="5384883051496921101">Questo sito sta per condividere informazioni con un'app esterna alla modalità di navigazione in incognito.</translation>
 <translation id="5388885445722491159">Accoppiato</translation>
@@ -3200,7 +3194,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="5801568494490449797">Preferenze</translation>
 <translation id="5804241973901381774">Autorizzazioni</translation>
 <translation id="5805697420284793859">Gestione finestre</translation>
-<translation id="580571955903695899">Riordina per titolo</translation>
 <translation id="5811750797187914944">Fatto</translation>
 <translation id="5814126672212206791">Tipo di connessione</translation>
 <translation id="5815645614496570556">Indirizzo X.400</translation>
@@ -3527,7 +3520,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="6264365405983206840">Seleziona &amp;tutto</translation>
 <translation id="6267166720438879315">Seleziona un certificato per autenticarti a <ph name="HOST_NAME" /></translation>
 <translation id="6268252012308737255">Apri con <ph name="APP" /></translation>
-<translation id="6268747994388690914">Importa i preferiti da file HTML...</translation>
 <translation id="6272643420381259437">Si è verificato un errore (<ph name="ERROR" />) durante il download del plug-in</translation>
 <translation id="6273677812470008672">Qualità</translation>
 <translation id="6277105963844135994">Timeout di rete</translation>
@@ -3602,7 +3594,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="6393156038355142111">Suggerisci password efficace</translation>
 <translation id="6395575651121294044"><ph name="NUMBER_OF_FILES" /> elementi</translation>
 <translation id="6397094776139756010">Opzioni di sincronizzazione e personalizzazione</translation>
-<translation id="6397592254427394018">Apri tutti i Preferiti nella finestra di navigazione in &amp;incognito</translation>
 <translation id="6398715114293939307">Rimuovi il Google Play Store</translation>
 <translation id="6398765197997659313">Esci da schermo intero</translation>
 <translation id="6399774419735315745">Spia</translation>
@@ -3866,7 +3857,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="6798954102094737107">Plug-in: <ph name="PLUGIN_NAME" /></translation>
 <translation id="6801435275744557998">Calibra touchscreen</translation>
 <translation id="6802031077390104172"><ph name="USAGE" /> (<ph name="OID" />)</translation>
-<translation id="6804671422566312077">Apri tutti i Preferiti in &amp;un'altra finestra</translation>
 <translation id="6805038906417219576">OK</translation>
 <translation id="6805647936811177813">Accedi a <ph name="TOKEN_NAME" /> per importare il certificato client da <ph name="HOST_NAME" />.</translation>
 <translation id="680572642341004180">Attiva monitoraggio RLZ su <ph name="SHORT_PRODUCT_OS_NAME" />.</translation>
@@ -3973,7 +3963,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="6970856801391541997">Stampa pagine specifiche</translation>
 <translation id="6972180789171089114">Audio/video</translation>
 <translation id="6972754398087986839">Inizia</translation>
-<translation id="6973630695168034713">Cartelle</translation>
 <translation id="6974609594866392343">Modalità demo offline</translation>
 <translation id="6977381486153291903">Revisione firmware</translation>
 <translation id="6978121630131642226">Motori di ricerca</translation>
@@ -4304,7 +4293,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="7478485216301680444">Impossibile installare l'applicazione kiosk.</translation>
 <translation id="7481312909269577407">Avanti</translation>
 <translation id="748138892655239008">Limitazioni di base certificato</translation>
-<translation id="7484964289312150019">Apri tutti i Preferiti in &amp;un'altra finestra</translation>
 <translation id="7487067081878637334">Tecnologia</translation>
 <translation id="7487099628810939106">Ritardo prima del clic:</translation>
 <translation id="7487969577036436319">Nessun componente installato</translation>
@@ -4733,7 +4721,6 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8063235345342641131">Avatar verde predefinito</translation>
 <translation id="8064671687106936412">Chiave:</translation>
 <translation id="8066773524873206594">Tutte le modifiche verranno salvate in <ph name="DOWNLOADS_FOLDER" />.</translation>
-<translation id="806812017500012252">Riordina per titolo</translation>
 <translation id="8068253693380742035">Tocca per accedere</translation>
 <translation id="8069615408251337349">Google Cloud Print</translation>
 <translation id="8071432093239591881">Stampa come immagine</translation>

@@ -94,6 +94,7 @@
 <translation id="4360991593054037559">請輸入有效值。最接近的兩個有效值分別是 <ph name="VALID_VALUE_LOW" /> 和 <ph name="VALID_VALUE_HIGHER" />。</translation>
 <translation id="4384583879834880242">問與答</translation>
 <translation id="4413860115965805769">選單按鈕</translation>
+<translation id="4444765639179266822">圖片上的文字似乎是：<ph name="OCR_TEXT" /></translation>
 <translation id="4446524499724042288">詞彙解釋參考資料</translation>
 <translation id="4522570452068850558">詳細資訊</translation>
 <translation id="4542388879936266156">剩餘時間：<ph name="REMAINING_TIME" /></translation>
@@ -120,6 +121,7 @@
 <translation id="5164977714490026579">值必須大於或等於 <ph name="MINIMUM" />。</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">請輸入「<ph name="ATSIGN" />」後面的部分。「<ph name="INVALIDADDRESS" />」不是完整值。</translation>
+<translation id="5334352251556557839">無法播放媒體。</translation>
 <translation id="5406322316791861025">圖表</translation>
 <translation id="5453733299334684579">樹狀目錄項目</translation>
 <translation id="5466621249238537318">請選取一或多個檔案。</translation>
@@ -146,6 +148,7 @@
 <translation id="6150588977291308318">參考書目</translation>
 <translation id="6164829606128959761">計量器</translation>
 <translation id="6166809985690652833">後記</translation>
+<translation id="6209276755895393898">圖片內容似乎是：<ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">詞彙解釋</translation>
 <translation id="6398862346408813489">顯示月份選取面板</translation>
 <translation id="6404546809543547843">音訊時間點拖曳工具</translation>
@@ -176,6 +179,7 @@
 <translation id="7139483182332611405">前言</translation>
 <translation id="7263440858009898357">請選取一個清單中的項目。</translation>
 <translation id="727747134524199931">欄標題</translation>
+<translation id="7320576522385648310">緩衝處理中</translation>
 <translation id="7353453495576941748">參與名單</translation>
 <translation id="7364796246159120393">選擇檔案</translation>
 <translation id="739024184232394898">其他...</translation>

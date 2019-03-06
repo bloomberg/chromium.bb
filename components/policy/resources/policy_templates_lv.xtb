@@ -248,13 +248,6 @@
       atspējota. Šādā gadījumā lietotājs nevar iespējot šo funkciju.</translation>
 <translation id="1474273443907024088">Funkcijas TLS False Start atspējošana</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
-<translation id="1478485744311397487">Serveri, kuriem produkts <ph name="PRODUCT_NAME" /> var piešķirt pilnvaras.
-
-          Serveru nosaukumus atdaliet ar komatu. Ir atļautas aizstājējzīmes (*).
-
-          Ja šī politika netiks iestatīta, <ph name="PRODUCT_NAME" /> neuzticēs lietotāja akreditācijas datus, pat ja serveris tiks atzīts par iekštīklu.
-
-          Šī politika netiek ievērota, ja “UseKDCConstrainedDelegation” politikai ir iestatīta vērtība “True”.</translation>
 <translation id="1484146587843605071"><ph name="PRODUCT_NAME" /> apies visus šajā sarakstā iekļauto saimniekdatoru starpniekserverus.
 
           Šī politika ir spēkā tikai tad, ja sadaļā “Izvēlieties, kā norādīt starpniekservera iestatījumus” esat atlasījis manuālos starpniekservera iestatījumus.
@@ -926,11 +919,6 @@
 
       Ja iespējosiet šo iestatījumu, drukas priekšskatījumā kā noklusējuma galamērķis tiks izmantots operētājsistēmas noklusējuma printeris.</translation>
 <translation id="2856674246949497058">Veikt atriti un paturēt mērķa versiju, ja operētājsistēmas versija ir jaunāka nekā mērķa versija. Vienlaikus atiestatīt rūpnīcas datus ar funkciju Powerwash.</translation>
-<translation id="2858646435735022107">Kontrolē, vai tiek ievērots OK-AS-DELEGATE karogs no KDC vai arī tiek izmantots “AuthNegotiateDelegateWhitelist”, lai ierobežotu Kerberos biļešu pilnvaras.
-
-          Ja politikai ir iestatīta vērtība “True”, HTTP autentificēšana ievēro ierobežotos pilnvaras iestatījumus sadaļā KDC. Šādā gadījumā “AuthNegotiateDelegateWhitelist” politika tiek ignorēta. Vairāk informācijas skatiet vietnē https://tools.ietf.org/html/rfc5896.html.
-
-          Ja politikas vērtība nav iestatīta vai ir iestatīta kā “False”, ierobežotie pilnvaras iestatījumi no KDC tiek ignorēti un tiek ievērota “AuthNegotiateDelegateWhitelis” politika.</translation>
 <translation id="2872961005593481000">Beidzēt</translation>
 <translation id="2873651257716068683">Tiek ignorēts noklusējuma drukāšanas lapas izmērs. Ja lapas izmērs nav pieejams, šī politika tiek ignorēta.</translation>
 <translation id="2874209944580848064">Piezīme par <ph name="PRODUCT_OS_NAME" /> ierīcēm, kurās tiek atbalstītas Android lietotnes:</translation>
@@ -1689,6 +1677,11 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="4725528134735324213">Iespējot pakalpojumu Android Backup Service</translation>
 <translation id="4725801978265372736">Lokālā lietotāja vārda un attālās piekļuves saimniekdatora īpašnieka vārda atbilstības pieprasīšana</translation>
 <translation id="4733471537137819387">Ar integrēto HTTP autentifikāciju saistītās politikas</translation>
+<translation id="4744190513568488164">Serveri, kuriem pārlūks <ph name="PRODUCT_NAME" /> var uzticēt informāciju
+
+          Serveru nosaukumus atdaliet ar komatu. Ir atļautas aizstājējzīmes (*).
+
+          Ja šī politika netiks iestatīta, pārlūks <ph name="PRODUCT_NAME" /> neuzticēs lietotāja akreditācijas datus, pat ja serveris tiks atzīts par iekštīklu.</translation>
 <translation id="4752880493649142945">Klienta sertifikāts savienojuma izveidei ar “RemoteAccessHostTokenValidationUrl”</translation>
 <translation id="4757671984625088193">Ja šīs politikas iestatījums ir “True” vai tā nav iestatīta, <ph name="PRODUCT_NAME" /> ieteiks lapas, kas ir saistītas ar pašreizējo lapu.
       Šie ieteikumi tiek izgūti attāli no Google serveriem.
@@ -1766,7 +1759,6 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="4986560318567565414">Ceļš uz pārlūku Chrome, lai pārslēgtos no cita pārlūka.</translation>
 <translation id="4988291787868618635">Darbība, kas ir jāveic, kad ir aizritējis laiks līdz dīkstāvei</translation>
 <translation id="4995548127349206948">Vai ir iespējota NTLMv2 autentifikācija.</translation>
-<translation id="5022792010322211583">Izmantojiet KDC ierobežoto pilnvaru</translation>
 <translation id="5047604665028708335">Atļaut piekļuvi vietnēm, kas nav iekļautas satura pakotnēs.</translation>
 <translation id="5052081091120171147">Šī politika (ja tā ir iespējota) liek importēt pārlūkošanas vēsturi no pašreizējā noklusējuma pārlūka. Ja šī politika ir iespējota, tā arī maina importēšanas dialoglodziņu.
 
@@ -2038,7 +2030,7 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 
       Ja šīs politikas vērtība nav norādīta, variantu sākotnējās vērtības URL netiks modificēts.</translation>
 <translation id="5561811616825571914">Automātiski atlasa klientu sertifikātus šīm vietnēm pierakstīšanās ekrānā</translation>
-<translation id="5566210228171064229">Atļaut drukāšana gan ar, gan bez PIN koda</translation>
+<translation id="5566210228171064229">Atļaut drukāšana gan ar PIN kodu, gan bez tā</translation>
 <translation id="556941986578702361">Kontrolējiet <ph name="PRODUCT_OS_NAME" /> plaukta automātisko slēpšanu.
 
       Ja šai politikai tiks izvēlēts iestatījums “AlwaysAutoHideShelf”, plaukts vienmēr tiks automātiski slēpts.
@@ -2951,10 +2943,10 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
           Ja politika ir iestatīta, sākotnējais ekrāna spilgtums tiek pielāgots politikas vērtībai, bet vēlāk to var mainīt lietotājs. Automātiskā spilgtuma funkcijas ir atspējotas.
           Ja politika nav iestatīta, lietotāja ekrāna vadīklas un automātiskā spilgtuma funkcijas netiek ietekmētas.
           Politikas vērtībām ir jābūt norādītām procentos diapazonā 0–100.</translation>
-<translation id="7517846421386644905">Ļauj administratoram kontrolēt, vai wilco diagnostikas un telemetrijas kontrolierim (DTC) telemetrijas un diagnostikas dati ir jāievāc, jāapstrādā un jāziņo.
+<translation id="7517846421386644905">Ļauj administratoram kontrolēt, vai wilco diagnostikas un telemetrijas kontrolierim (DTC) telemetrijas un diagnostikas dati ir jāapkopo, jāapstrādā un jādara zināmi.
 
-      Ja politikai ir iestatīta vērtība “False” vai nav iestatīta vispār, DTC tiek izslēgts un nevar ievākt, apstrādāt un ziņot telemetrijas un diagnostikas datus no ierīces.
-      Ja attiecīgajā ierīcē ir pieejams wilco DTC un politikai ir iestatīta vērtība “True”, telemetrijas un diagnostikas datu vākšana, apstrāde un ziņošana tiek ieslēgta.</translation>
+      Ja politikai ir iestatīta vērtība “False” vai nav iestatīta vispār, DTC tiek izslēgts un nevar apkopot, apstrādāt un ziņot telemetrijas un diagnostikas datus no ierīces.
+      Ja attiecīgajā ierīcē ir pieejams wilco DTC un politikai ir iestatīta vērtība “True”, telemetrijas un diagnostikas datu apkopošana, apstrāde un ziņošana tiek ieslēgta.</translation>
 <translation id="7519251620064708155">Atļaut atslēgu ģenerēšanu šajās vietnēs</translation>
 <translation id="7529100000224450960">Ļauj iestatīt URL rakstu sarakstu, kurā ir norādītas vietnes, kurām ir atļauts atvērt uznirstošos logus.
 

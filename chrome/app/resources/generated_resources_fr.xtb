@@ -104,7 +104,6 @@
 <translation id="1143142264369994168">Signataire du certificat </translation>
 <translation id="1145292499998999162">Plug-in bloqué</translation>
 <translation id="1145532888383813076">Effectuez des recherches sur votre appareil, dans vos applications et sur le Web.</translation>
-<translation id="1146204723345436916">Importer les favoris depuis un fichier HTML...</translation>
 <translation id="114721135501989771">Profitez des fonctionnalités intelligentes de Google dans Chrome</translation>
 <translation id="1148097584170732637"><ph name="FILE_COUNT" /> trouvées.
     <ph name="LINE_BREAK1" />
@@ -420,7 +419,6 @@
 <translation id="1608626060424371292">Supprimer cet utilisateur</translation>
 <translation id="1609170755653088773">Synchroniser ce mot de passe avec votre iPhone</translation>
 <translation id="1611584202130317952">Flux d'accès interrompu. Veuillez réessayer ou contacter le propriétaire/l'administrateur de l'appareil.</translation>
-<translation id="1611704746353331382">Exporter les favoris vers un fichier HTML…</translation>
 <translation id="1614511179807650956">Il semble que vous ayez utilisé l'intégralité de votre quota de données mobiles. Accédez au portail d'activation <ph name="NAME" /> pour acheter des données supplémentaires</translation>
 <translation id="161460670679785907">Impossible de détecter votre téléphone</translation>
 <translation id="1616206807336925449">Cette extension ne nécessite aucune autorisation spéciale.</translation>
@@ -651,7 +649,6 @@
 <translation id="1932098463447129402">Pas avant le</translation>
 <translation id="1933345018156373194">Échec du transfert en raison d'une erreur inattendue : <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1933809209549026293">Connectez une souris ou un clavier. Si vous utilisez un périphérique Bluetooth, assurez-vous qu'il est prêt à être associé.</translation>
-<translation id="1936157145127842922">Afficher dans le dossier</translation>
 <translation id="1938351510777341717">Commande externe</translation>
 <translation id="1940546824932169984">Appareils connectés</translation>
 <translation id="1942765061641586207">Résolution de l'image</translation>
@@ -1369,7 +1366,6 @@
 <translation id="3009300415590184725">Voulez-vous vraiment annuler la configuration du service Internet mobile ?</translation>
 <translation id="3009779501245596802">Bases de données indexées</translation>
 <translation id="3010279545267083280">Mot de passe supprimé</translation>
-<translation id="3011362742078013760">Ouvrir tous les favoris dans une fenêtre de &amp;navigation privée</translation>
 <translation id="3011488081941333749">Les cookies de <ph name="DOMAIN" /> seront effacés lorsque vous quitterez votre session de navigation</translation>
 <translation id="3012631534724231212">(iframe)</translation>
 <translation id="3012804260437125868">Uniquement les connexions sécurisées au même site</translation>
@@ -2576,7 +2572,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4881695831933465202">Ouvrir</translation>
 <translation id="4882312758060467256">A accès à ce site</translation>
 <translation id="4882831918239250449">Contrôler la manière dont votre historique de navigation est utilisé pour personnaliser la recherche, les annonces, etc.</translation>
-<translation id="4883178195103750615">Exporter les favoris vers un fichier HTML...</translation>
 <translation id="4883436287898674711">Tous les sites <ph name="WEBSITE_1" /></translation>
 <translation id="48838266408104654">&amp;Gestionnaire de tâches</translation>
 <translation id="4884987973312178454">6x</translation>
@@ -2910,7 +2905,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="5376931455988532197">Fichier trop volumineux.</translation>
 <translation id="537813040452600081">Les pages que vous consultez dans cette fenêtre ne sont pas consignées dans l'historique du navigateur et ne laissent aucune autre trace sur votre ordinateur (des cookies, par exemple), une fois que vous vous êtes déconnecté. Les fichiers téléchargés et vos favoris ne sont pas conservés.</translation>
 <translation id="5379140238605961210">Continuer à bloquer l'accès au micro</translation>
-<translation id="5379268888377976432">Annuler la suppression</translation>
 <translation id="5382591305415226340">Gérer les liens compatibles</translation>
 <translation id="5384883051496921101">Ce site s'apprête à partager des informations avec une application en dehors du mode navigation privée.</translation>
 <translation id="5388885445722491159">Associé</translation>
@@ -3206,7 +3200,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="5801568494490449797">Préférences</translation>
 <translation id="5804241973901381774">Autorisations</translation>
 <translation id="5805697420284793859">Gestionnaire de fenêtres</translation>
-<translation id="580571955903695899">Trier par nom</translation>
 <translation id="5811750797187914944">Tout est prêt</translation>
 <translation id="5814126672212206791">Type de connexion</translation>
 <translation id="5815645614496570556">Adresse X.400</translation>
@@ -3533,7 +3526,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6264365405983206840">Tout &amp;sélectionner</translation>
 <translation id="6267166720438879315">Sélectionnez un certificat pour vous authentifier sur <ph name="HOST_NAME" />.</translation>
 <translation id="6268252012308737255">Ouvrir avec <ph name="APP" /></translation>
-<translation id="6268747994388690914">Importer les favoris depuis un fichier HTML…</translation>
 <translation id="6272643420381259437">Une erreur (<ph name="ERROR" />) s'est produite lors du téléchargement du plug-in.</translation>
 <translation id="6273677812470008672">Qualité</translation>
 <translation id="6277105963844135994">Délai d'expiration du réseau dépassé.</translation>
@@ -3608,7 +3600,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6393156038355142111">Suggérer un mot de passe sécurisé</translation>
 <translation id="6395575651121294044"><ph name="NUMBER_OF_FILES" /> éléments</translation>
 <translation id="6397094776139756010">Options de synchronisation et de personnalisation</translation>
-<translation id="6397592254427394018">Ouvrir tous les favoris dans une fenêtre de &amp;navigation privée</translation>
 <translation id="6398715114293939307">Supprimer le Google Play Store</translation>
 <translation id="6398765197997659313">Quitter le mode plein écran</translation>
 <translation id="6399774419735315745">Espionne</translation>
@@ -3872,7 +3863,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6798954102094737107">Plug-in : <ph name="PLUGIN_NAME" /></translation>
 <translation id="6801435275744557998">Calibrer l'écran tactile</translation>
 <translation id="6802031077390104172"><ph name="USAGE" /> (<ph name="OID" />)</translation>
-<translation id="6804671422566312077">Ouvrir tous les favoris dans une &amp;nouvelle fenêtre</translation>
 <translation id="6805038906417219576">OK</translation>
 <translation id="6805647936811177813">Connectez-vous à <ph name="TOKEN_NAME" /> pour importer le certificat client de <ph name="HOST_NAME" /></translation>
 <translation id="680572642341004180">Activer le suivi RLZ pour <ph name="SHORT_PRODUCT_OS_NAME" /></translation>
@@ -3979,7 +3969,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6970856801391541997">Imprimer des pages spécifiques</translation>
 <translation id="6972180789171089114">Audio/Vidéo</translation>
 <translation id="6972754398087986839">Démarrer</translation>
-<translation id="6973630695168034713">Dossiers</translation>
 <translation id="6974609594866392343">Mode de démonstration hors connexion</translation>
 <translation id="6977381486153291903">Version du micrologiciel</translation>
 <translation id="6978121630131642226">Moteurs de recherche</translation>
@@ -4310,7 +4299,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="7478485216301680444">Impossible d'installer l'application kiosque.</translation>
 <translation id="7481312909269577407">Avancer</translation>
 <translation id="748138892655239008">Contraintes de base du certificat</translation>
-<translation id="7484964289312150019">Ouvrir tous les favoris dans une &amp;nouvelle fenêtre</translation>
 <translation id="7487067081878637334">Technologie</translation>
 <translation id="7487099628810939106">Délai avant un clic :</translation>
 <translation id="7487969577036436319">Aucun composant installé</translation>
@@ -4741,7 +4729,6 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8063235345342641131">Avatar vert par défaut</translation>
 <translation id="8064671687106936412">Clé :</translation>
 <translation id="8066773524873206594">Toutes les modifications seront enregistrées dans <ph name="DOWNLOADS_FOLDER" />.</translation>
-<translation id="806812017500012252">Trier par nom</translation>
 <translation id="8068253693380742035">Appuyez pour vous connecter</translation>
 <translation id="8069615408251337349">Google Cloud Print</translation>
 <translation id="8071432093239591881">Imprimer en tant qu'image</translation>

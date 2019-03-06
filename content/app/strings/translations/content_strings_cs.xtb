@@ -94,6 +94,7 @@
 <translation id="4360991593054037559">Zadejte platnou hodnotu. Dvě nejbližší hodnoty jsou <ph name="VALID_VALUE_LOW" /> a <ph name="VALID_VALUE_HIGHER" />.</translation>
 <translation id="4384583879834880242">Dotazy</translation>
 <translation id="4413860115965805769">tlačítko nabídky</translation>
+<translation id="4444765639179266822">Vypadá jako: <ph name="OCR_TEXT" /></translation>
 <translation id="4446524499724042288">odkaz na glosář</translation>
 <translation id="4522570452068850558">Podrobnosti</translation>
 <translation id="4542388879936266156">zbývající čas: <ph name="REMAINING_TIME" /></translation>
@@ -120,6 +121,7 @@
 <translation id="5164977714490026579">Hodnota musí být větší nebo rovna <ph name="MINIMUM" />.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">Zadejte část před znakem <ph name="ATSIGN" />. Adresa <ph name="INVALIDADDRESS" /> není úplná.</translation>
+<translation id="5334352251556557839">Médium nelze přehrát.</translation>
 <translation id="5406322316791861025">číslice</translation>
 <translation id="5453733299334684579">položka stromu</translation>
 <translation id="5466621249238537318">Vyberte prosím jeden nebo více souborů.</translation>
@@ -146,6 +148,7 @@
 <translation id="6150588977291308318">bibliografie</translation>
 <translation id="6164829606128959761">měřič</translation>
 <translation id="6166809985690652833">doslov</translation>
+<translation id="6209276755895393898">Vypadá jako: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">glosář</translation>
 <translation id="6398862346408813489">Zobrazit panel pro výběr měsíců</translation>
 <translation id="6404546809543547843">posuvník času zvuku</translation>
@@ -176,6 +179,7 @@
 <translation id="7139483182332611405">předmluva</translation>
 <translation id="7263440858009898357">Vyberte prosím v seznamu některou položku.</translation>
 <translation id="727747134524199931">záhlaví sloupce</translation>
+<translation id="7320576522385648310">načítání do vyrovnávací paměti</translation>
 <translation id="7353453495576941748">poděkování</translation>
 <translation id="7364796246159120393">Vybrat soubor</translation>
 <translation id="739024184232394898">Jiné…</translation>

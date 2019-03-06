@@ -51,7 +51,6 @@
 <translation id="1232569758102978740">Không tên</translation>
 <translation id="1240347957665416060">Tên thiết bị của bạn</translation>
 <translation id="124116460088058876">Ngôn ngữ khác</translation>
-<translation id="1246987714874202335">Cập nhật ngày hết hạn</translation>
 <translation id="1250759482327835220">Để thanh toán nhanh hơn vào lần tới, hãy lưu địa chỉ thanh toán, tên và thẻ vào Tài khoản Google của bạn.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (được đồng bộ hóa)</translation>
 <translation id="1256368399071562588">&lt;p&gt;Nếu bạn cố truy cập vào một trang web nhưng vẫn không mở được, trước tiên, hãy tìm cách khắc phục lỗi này bằng các bước khắc phục sự cố dưới đây:&lt;/p&gt;
@@ -281,7 +280,6 @@
     một chính sách bảo mật cho tất cả các yêu cầu được gửi tới máy chủ đó. Tuy nhiên, hiện máy chủ đó
     không cung cấp được chính sách, điều này khiến cho trình duyệt không hoàn tất được
     yêu cầu truy cập vào <ph name="SITE" /> của bạn.</translation>
-<translation id="2442483081384580286">Các cảnh báo của dịch vụ Duyệt web an toàn</translation>
 <translation id="244665789865330679"><ph name="ENROLLMENT_DOMAIN" /> quản lý thiết bị và tài khoản của bạn. Điều này có nghĩa là quản trị viên có thể định cấu hình thiết bị và tài khoản của bạn từ xa.</translation>
 <translation id="2463193859425327265">Thay đổi trang chủ</translation>
 <translation id="2463739503403862330">Điền</translation>
@@ -611,6 +609,7 @@
 <translation id="4277028893293644418">Đặt lại mật khẩu</translation>
 <translation id="4280429058323657511">, hết hạn <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{Đã lưu thẻ này vào Tài khoản Google của bạn}other{Đã lưu các thẻ này vào Tài khoản Google của bạn}}</translation>
+<translation id="42981349822642051">Mở rộng</translation>
 <translation id="4302965934281694568">Chou3 (Phong bì)</translation>
 <translation id="4305817255990598646">Chuyển</translation>
 <translation id="4312613361423056926">B2</translation>
@@ -881,6 +880,7 @@
 <translation id="5810442152076338065">Kết nối của bạn tới <ph name="DOMAIN" /> được mã hóa bằng bộ số 0 đã lỗi thời.</translation>
 <translation id="5813119285467412249">&amp;Làm lại thêm</translation>
 <translation id="5838278095973806738">Bạn không nên nhập bất kỳ thông tin nhạy cảm nào trên trang web này (ví dụ: mật khẩu hoặc thẻ tín dụng), vì những kẻ tấn công có thể đánh cắp thông tin đó.</translation>
+<translation id="5860033963881614850">Tắt</translation>
 <translation id="5863847714970149516">Trang phía trước có thể tìm cách tính phí bạn</translation>
 <translation id="5866257070973731571">Thêm số điện thoại</translation>
 <translation id="5869405914158311789">Không thể truy cập trang web này</translation>
@@ -889,6 +889,7 @@
 <translation id="5893752035575986141">Thẻ tín dụng được chấp nhận.</translation>
 <translation id="5901630391730855834">Vàng</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (được đồng bộ hóa)</translation>
+<translation id="5916664084637901428">Bật</translation>
 <translation id="5919090499915321845">B10</translation>
 <translation id="5921639886840618607">Bạn có muốn lưu thẻ vào Tài khoản Google không?</translation>
 <translation id="5922853866070715753">Sắp hoàn tất</translation>
@@ -986,6 +987,7 @@
 <translation id="6508722015517270189">Khởi động lại Chrome</translation>
 <translation id="6529602333819889595">&amp;Làm lại xóa</translation>
 <translation id="6534179046333460208">Đề xuất Web trong cuộc sống</translation>
+<translation id="6556866813142980365">Làm lại</translation>
 <translation id="6563469144985748109">Người quản lý của bạn chưa phê duyệt trang web</translation>
 <translation id="6569060085658103619">Bạn đang xem trang tiện ích</translation>
 <translation id="6578796323535178455">C2 (Phong bì)</translation>

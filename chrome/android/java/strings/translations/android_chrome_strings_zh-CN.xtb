@@ -11,11 +11,13 @@
 <translation id="1068672505746868501">一律不翻译源语言为<ph name="SOURCE_LANGUAGE" />的网页</translation>
 <translation id="1080790410959514870">您要退出某个由 <ph name="DOMAIN_NAME" /> 管理的帐号。这会导致系统删除此设备上存储的 Chrome 数据，但这些数据仍会保留在您的 Google 帐号中。</translation>
 <translation id="1099080783256647258">开启流量节省程序后，Chrome 会使用 Google 服务器加快网页的加载速度并压缩加载的网页。在加载速度特别慢的网页上，流量节省程序会重写网页以仅加载必要内容。流量节省程序不会优化在无痕模式下加载的网页。</translation>
+<translation id="1100066534610197918">在群组内的新标签页中打开</translation>
 <translation id="1105960400813249514">屏幕截图</translation>
 <translation id="1111673857033749125">您在其他设备上保存的书签将列在此处。</translation>
 <translation id="1113597929977215864">显示简化版视图</translation>
 <translation id="1121094540300013208">使用情况统计信息和崩溃报告</translation>
 <translation id="1129510026454351943">错误详情：<ph name="ERROR_DESCRIPTION" /></translation>
+<translation id="1135993792949700405">Chrome 会将您选择的个人数据发送到 <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
 <translation id="1141800923049248244">{FILE_COUNT,plural, =1{有 1 项下载尚待处理。}other{有 # 项下载尚待处理。}}</translation>
 <translation id="1145536944570833626">删除现有数据。</translation>
 <translation id="1146678959555564648">进入 VR</translation>
@@ -36,6 +38,7 @@
 <translation id="123724288017357924">重新加载当前网页（忽略缓存的内容）</translation>
 <translation id="124116460088058876">更多语言</translation>
 <translation id="124678866338384709">关闭当前标签页</translation>
+<translation id="125153950246128346">点按即可查看另一标签页</translation>
 <translation id="1258753120186372309">Google 涂鸦：<ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">搜索内容与浏览相关建议</translation>
 <translation id="1264974993859112054">体育</translation>
@@ -112,6 +115,7 @@
 <translation id="1853692000353488670">打开新的无痕式标签页</translation>
 <translation id="1856325424225101786">重置精简模式？</translation>
 <translation id="1868024384445905608">Chrome 现可更快速地下载文件</translation>
+<translation id="1869137256605757565">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> 个标签页}other{<ph name="TABS_COUNT_MANY" /> 个标签页}}</translation>
 <translation id="1880072593381090678">Chrome 中的热门网页</translation>
 <translation id="1883903952484604915">我的文件</translation>
 <translation id="1887786770086287077">此设备的位置信息使用权已关闭；若想开启这项权限，请转到 <ph name="BEGIN_LINK" />Android 设置<ph name="END_LINK" />。</translation>
@@ -120,6 +124,7 @@
 <translation id="1919345977826869612">广告</translation>
 <translation id="1919950603503897840">选择联系人</translation>
 <translation id="1923695749281512248">已下载 <ph name="BYTES_DOWNLOADED_WITH_UNITS" />，共 <ph name="FILE_SIZE_WITH_UNITS" /></translation>
+<translation id="19288952978244135">重新打开 Chrome。</translation>
 <translation id="1933845786846280168">所选的标签页</translation>
 <translation id="194341124344773587">在 <ph name="BEGIN_LINK" />Android 设置<ph name="END_LINK" />中为 Chrome 启用这项权限。</translation>
 <translation id="1943432128510653496">保存密码</translation>
@@ -130,6 +135,7 @@
 <translation id="1974060860693918893">高级</translation>
 <translation id="1984705450038014246">同步 Chrome 数据</translation>
 <translation id="1984937141057606926">允许（第三方除外）</translation>
+<translation id="1986685561493779662">名称已存在</translation>
 <translation id="1987739130650180037"><ph name="MESSAGE" /> <ph name="LINK_NAME" />按钮</translation>
 <translation id="1989112275319619282">浏览</translation>
 <translation id="1993768208584545658"><ph name="SITE" /> 希望与以下所选设备配对：</translation>
@@ -247,6 +253,7 @@
 <translation id="2818669890320396765">要将您的书签同步到您的所有设备上，请登录您的帐号并开启同步功能</translation>
 <translation id="2836148919159985482">触摸“返回”按钮即可退出全屏模式。</translation>
 <translation id="2842985007712546952">父文件夹</translation>
+<translation id="2845873210977809562">已关闭“已打开的标签页”工作表</translation>
 <translation id="2870560284913253234">网站</translation>
 <translation id="2874939134665556319">上一曲</translation>
 <translation id="2876764156902388290">Chrome 向您显示此网页时消耗的数据流量更少</translation>
@@ -309,6 +316,7 @@
 <translation id="3298243779924642547">精简版</translation>
 <translation id="3303414029551471755">要开始下载该内容吗？</translation>
 <translation id="3306398118552023113">此应用正在 Chrome 中运行</translation>
+<translation id="3315103659806849044">您正在自定义您的“同步功能和 Google 服务”设置。要完成开启同步功能的操作，请点按屏幕底部附近的“确认”按钮。转到上一层级</translation>
 <translation id="3328801116991980348">网站信息</translation>
 <translation id="3333961966071413176">所有联系人</translation>
 <translation id="3341058695485821946">查看您已节省多少数据流量</translation>
@@ -476,6 +484,7 @@
 <translation id="4616150815774728855">打开<ph name="WEBAPK_NAME" /></translation>
 <translation id="4634124774493850572">使用密码</translation>
 <translation id="4645575059429386691">由您父母管理</translation>
+<translation id="4648718555153979859">您的标签页会列在此处以构成一组</translation>
 <translation id="4660011489602794167">显示键盘</translation>
 <translation id="4663756553811254707">已删除 <ph name="NUMBER_OF_BOOKMARKS" /> 个书签</translation>
 <translation id="4665282149850138822"><ph name="NAME" />已添加到您的主屏幕</translation>
@@ -540,6 +549,7 @@
 <translation id="5039804452771397117">允许</translation>
 <translation id="5040262127954254034">隐私设置</translation>
 <translation id="5063480226653192405">使用情况</translation>
+<translation id="5082793167783849073">通过分组快速比较网页。为此，请先轻触并按住某个链接。</translation>
 <translation id="5087580092889165836">添加新卡</translation>
 <translation id="5100237604440890931">已收起 - 点击此处即可展开。</translation>
 <translation id="510275257476243843">还剩 1 小时</translation>
@@ -592,6 +602,7 @@
 <translation id="548278423535722844">在地图应用中打开</translation>
 <translation id="5487521232677179737">清除数据</translation>
 <translation id="5494752089476963479">禁止会展示侵扰性或误导性广告的网站显示广告</translation>
+<translation id="5497272504048921382">已打开的标签页</translation>
 <translation id="550684401320795253">正在更新 Chrome…</translation>
 <translation id="5512137114520586844">该帐号由 <ph name="PARENT_NAME" /> 管理。</translation>
 <translation id="5514904542973294328">已被此设备的管理员停用</translation>
@@ -608,6 +619,7 @@
 <translation id="557283862590186398">Chrome 需要获得相应权限，才能允许此网站使用您的麦克风。</translation>
 <translation id="55737423895878184">允许使用位置信息以及显示通知</translation>
 <translation id="5578795271662203820">在<ph name="SEARCH_ENGINE" />中搜索此图片</translation>
+<translation id="5581519193887989363">您始终可在<ph name="BEGIN_LINK1" />设置<ph name="END_LINK1" />中选择要同步的内容。</translation>
 <translation id="5595485650161345191">修改地址</translation>
 <translation id="5596627076506792578">更多选项</translation>
 <translation id="5620299005957670886">允许网站使用您的传感器（推荐）</translation>
@@ -641,6 +653,7 @@
 <translation id="5817918615728894473">配对</translation>
 <translation id="583281660410589416">未知</translation>
 <translation id="5833984609253377421">分享链接</translation>
+<translation id="5836192821815272682">正在下载 Chrome 更新…</translation>
 <translation id="584427517463557805">所选的私密标签页</translation>
 <translation id="5853623416121554550">已暂停</translation>
 <translation id="5854790677617711513">30 天之前的</translation>
@@ -725,6 +738,7 @@
 <translation id="6416782512398055893">已下载 <ph name="MBS" /> MB</translation>
 <translation id="6433501201775827830">选择您的搜索引擎</translation>
 <translation id="6437478888915024427">网页信息</translation>
+<translation id="6441734959916820584">名称太长</translation>
 <translation id="6444421004082850253">{FILE_COUNT,plural, =1{# 张图片}other{# 张图片}}</translation>
 <translation id="6447842834002726250">Cookie</translation>
 <translation id="6448273550210938826">搜索和网址建议</translation>
@@ -773,6 +787,7 @@
 <translation id="6782111308708962316">阻止第三方网站保存和读取 Cookie 数据</translation>
 <translation id="6790428901817661496">播放</translation>
 <translation id="679325081238418596">可让您在所有设备上使用您的书签、历史记录、密码和其他设置</translation>
+<translation id="6803423358608456383">已半屏打开“已打开的标签页”工作表</translation>
 <translation id="6811034713472274749">页面已可供查看</translation>
 <translation id="6818926723028410516">选择内容</translation>
 <translation id="6820607729870073286">您没有已保存的网站设置。</translation>
@@ -811,6 +826,7 @@
 <translation id="7031882061095297553">同步到</translation>
 <translation id="7032663816368481562">当您在地址栏中点按“更多类似内容”图标 <ph name="ICON" /> 时，系统会显示指向相关页面的快速链接。您所访问的网页的网址会被发送给 Google。</translation>
 <translation id="7034608350006174882">Google Pay 中存储的卡片和地址信息</translation>
+<translation id="7037082443972906537">名称不可用</translation>
 <translation id="7053983685419859001">禁止</translation>
 <translation id="7055152154916055070">已阻止重定向：</translation>
 <translation id="7062545763355031412">接受并切换帐号</translation>
@@ -908,6 +924,7 @@
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026以及另外 <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> 种付款方式}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026以及另外 <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> 种付款方式}}</translation>
 <translation id="7781829728241885113">昨天</translation>
 <translation id="7791543448312431591">添加</translation>
+<translation id="7801690601263273422">在群组内创建新标签页</translation>
 <translation id="780301667611848630">不用了，谢谢</translation>
 <translation id="7810647596859435254">打开方式…</translation>
 <translation id="7821588508402923572">您的数据流量节省情况将显示在这里</translation>
@@ -1016,6 +1033,7 @@
 <translation id="8571213806525832805">近 4 周</translation>
 <translation id="857509777403223202">我们很快将会为您奉上更多文章，伴您度过美好的夜晚时光！</translation>
 <translation id="857943718398505171">已允许（推荐）</translation>
+<translation id="8582216581279205169">已全屏打开“已打开的标签页”工作表</translation>
 <translation id="8583805026567836021">清除帐号数据</translation>
 <translation id="860043288473659153">持卡人姓名</translation>
 <translation id="8609465669617005112">上移</translation>
@@ -1060,6 +1078,7 @@
 <translation id="8958424370300090006">阻止特定网站使用 Cookie。</translation>
 <translation id="8959122750345127698">无法访问 <ph name="URL" /></translation>
 <translation id="8965591936373831584">待下载</translation>
+<translation id="8970887620466824814">出了点问题。</translation>
 <translation id="8972098258593396643">是否下载到默认文件夹？</translation>
 <translation id="8981454092730389528">Google 活动控件</translation>
 <translation id="8983677657449185470">帮助我们改进安全浏览功能</translation>

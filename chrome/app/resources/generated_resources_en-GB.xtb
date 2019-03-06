@@ -104,7 +104,6 @@
 <translation id="1143142264369994168">Certificate Signer</translation>
 <translation id="1145292499998999162">Plug-in blocked</translation>
 <translation id="1145532888383813076">Search your device, apps and web.</translation>
-<translation id="1146204723345436916">Import bookmarks from HTML file...</translation>
 <translation id="114721135501989771">Get Google smarts in Chrome</translation>
 <translation id="1148097584170732637"><ph name="FILE_COUNT" /> found.
     <ph name="LINE_BREAK1" />
@@ -420,7 +419,6 @@
 <translation id="1608626060424371292">Remove this user</translation>
 <translation id="1609170755653088773">Sync this password to your iPhone</translation>
 <translation id="1611584202130317952">Provisioning flow was interrupted. Please try again or contact your device owner or administrator.</translation>
-<translation id="1611704746353331382">Export Bookmarks to HTML File...</translation>
 <translation id="1614511179807650956">You may have used up your mobile data allowance. Visit the <ph name="NAME" /> activation portal to buy more data</translation>
 <translation id="161460670679785907">Unable to detect your phone</translation>
 <translation id="1616206807336925449">This extension requires no special permissions.</translation>
@@ -651,7 +649,6 @@
 <translation id="1932098463447129402">Not Before</translation>
 <translation id="1933345018156373194">Move failed, unexpected error: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1933809209549026293">Please connect a mouse or a keyboard. If you are using a Bluetooth device, make sure that it is ready to pair.</translation>
-<translation id="1936157145127842922">Show in Folder</translation>
 <translation id="1938351510777341717">External Command</translation>
 <translation id="1940546824932169984">Connected devices</translation>
 <translation id="1942765061641586207">Image resolution</translation>
@@ -1368,7 +1365,6 @@
 <translation id="3009300415590184725">Are you sure you want to cancel the mobile data service set-up process?</translation>
 <translation id="3009779501245596802">Indexed Databases</translation>
 <translation id="3010279545267083280">Password deleted</translation>
-<translation id="3011362742078013760">Open All Bookmarks in &amp;Incognito Window</translation>
 <translation id="3011488081941333749">Cookies from <ph name="DOMAIN" /> will be cleared on exit</translation>
 <translation id="3012631534724231212">(iframe)</translation>
 <translation id="3012804260437125868">Secure same-site connections only</translation>
@@ -2575,7 +2571,6 @@
 <translation id="4881695831933465202">Open</translation>
 <translation id="4882312758060467256">Has access to this site</translation>
 <translation id="4882831918239250449">Control how your browsing history is used to personalise Search, ads and more</translation>
-<translation id="4883178195103750615">Export bookmarks to HTML file...</translation>
 <translation id="4883436287898674711">All <ph name="WEBSITE_1" /> sites</translation>
 <translation id="48838266408104654">&amp;Task Manager</translation>
 <translation id="4884987973312178454">6x</translation>
@@ -2909,7 +2904,6 @@
 <translation id="5376931455988532197">File too large</translation>
 <translation id="537813040452600081">Pages that you view in this window won’t appear in the browser history and they won’t leave other traces, like cookies, on the computer after you sign out. Files that you download and bookmarks that you create won’t be preserved.</translation>
 <translation id="5379140238605961210">Continue blocking microphone access</translation>
-<translation id="5379268888377976432">Undo Delete</translation>
 <translation id="5382591305415226340">Manage supported links</translation>
 <translation id="5384883051496921101">This site is about to share information with an app outside of incognito mode.</translation>
 <translation id="5388885445722491159">Paired</translation>
@@ -3204,7 +3198,6 @@
 <translation id="5801568494490449797">Preferences</translation>
 <translation id="5804241973901381774">Permissions</translation>
 <translation id="5805697420284793859">Window manager</translation>
-<translation id="580571955903695899">Reorder by Title</translation>
 <translation id="5811750797187914944">All set</translation>
 <translation id="5814126672212206791">Connection type</translation>
 <translation id="5815645614496570556">X.400 Address</translation>
@@ -3531,7 +3524,6 @@
 <translation id="6264365405983206840">Select &amp;All</translation>
 <translation id="6267166720438879315">Select a certificate to which you want to authenticate <ph name="HOST_NAME" /></translation>
 <translation id="6268252012308737255">Open with <ph name="APP" /></translation>
-<translation id="6268747994388690914">Import Bookmarks from HTML File...</translation>
 <translation id="6272643420381259437">There was an error (<ph name="ERROR" />) while downloading the plug-in</translation>
 <translation id="6273677812470008672">Quality</translation>
 <translation id="6277105963844135994">Network timeout</translation>
@@ -3606,7 +3598,6 @@
 <translation id="6393156038355142111">Suggest strong password</translation>
 <translation id="6395575651121294044"><ph name="NUMBER_OF_FILES" /> items</translation>
 <translation id="6397094776139756010">Sync and personalisation options</translation>
-<translation id="6397592254427394018">Open all bookmarks in &amp;Incognito window</translation>
 <translation id="6398715114293939307">Remove Google Play Store</translation>
 <translation id="6398765197997659313">Exit full screen</translation>
 <translation id="6399774419735315745">Spy</translation>
@@ -3870,7 +3861,6 @@
 <translation id="6798954102094737107">Plug-in: <ph name="PLUGIN_NAME" /></translation>
 <translation id="6801435275744557998">Calibrate touchscreen</translation>
 <translation id="6802031077390104172"><ph name="USAGE" /> (<ph name="OID" />)</translation>
-<translation id="6804671422566312077">Open All Bookmarks in &amp;New Window</translation>
 <translation id="6805038906417219576">OK</translation>
 <translation id="6805647936811177813">Please sign in to <ph name="TOKEN_NAME" /> to import client certificate from <ph name="HOST_NAME" />.</translation>
 <translation id="680572642341004180">Enable RLZ tracking on <ph name="SHORT_PRODUCT_OS_NAME" />.</translation>
@@ -3977,7 +3967,6 @@
 <translation id="6970856801391541997">Print Specific Pages</translation>
 <translation id="6972180789171089114">Audio/Video</translation>
 <translation id="6972754398087986839">Get Started</translation>
-<translation id="6973630695168034713">Folders</translation>
 <translation id="6974609594866392343">Offline demo mode</translation>
 <translation id="6977381486153291903">Firmware revision</translation>
 <translation id="6978121630131642226">Search Engines</translation>
@@ -4308,7 +4297,6 @@
 <translation id="7478485216301680444">Kiosk application could not be installed.</translation>
 <translation id="7481312909269577407">Forward</translation>
 <translation id="748138892655239008">Certificate Basic Constraints</translation>
-<translation id="7484964289312150019">Open all bookmarks in &amp;new window</translation>
 <translation id="7487067081878637334">Technology</translation>
 <translation id="7487099628810939106">Delay before click:</translation>
 <translation id="7487969577036436319">No components are installed</translation>
@@ -4739,7 +4727,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8063235345342641131">Default green avatar</translation>
 <translation id="8064671687106936412">Key:</translation>
 <translation id="8066773524873206594">All edits will be saved to <ph name="DOWNLOADS_FOLDER" />.</translation>
-<translation id="806812017500012252">Reorder by title</translation>
 <translation id="8068253693380742035">Touch to sign in</translation>
 <translation id="8069615408251337349">Google Cloud Print</translation>
 <translation id="8071432093239591881">Print as image</translation>

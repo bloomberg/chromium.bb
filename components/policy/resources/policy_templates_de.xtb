@@ -253,13 +253,6 @@ Bei verwalteten Geräten sind standardmäßig keine Modi für das schnelle Entsp
       wird Unified Desktop deaktiviert und kann vom Nutzer nicht aktiviert werden.</translation>
 <translation id="1474273443907024088">TLS-Funktion "False Start" deaktivieren</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
-<translation id="1478485744311397487">Server, an die <ph name="PRODUCT_NAME" /> weiterleiten kann.
-
-          Trennen Sie mehrere Servernamen durch Kommas. Platzhalter (*) sind zulässig.
-
-          Wenn Sie diese Richtlinie nicht konfigurieren, leitet <ph name="PRODUCT_NAME" /> keine Anmeldedaten von Nutzern weiter, auch nicht an Server innerhalb des Intranets.
-
-          Diese Richtlinie wird ignoriert, wenn die Richtlinie "UseKDCConstrainedDelegation" auf "true" gesetzt ist.</translation>
 <translation id="1484146587843605071"><ph name="PRODUCT_NAME" /> umgeht für die Liste der hier angegebenen Hosts alle Proxys. Diese Richtlinie tritt nur dann in Kraft, wenn Sie bei "Auswählen, wie Proxyserver-Einstellungen angegeben werden" manuelle Proxy-Einstellungen angegeben haben. Sie sollten diese Richtlinie nicht konfigurieren, wenn Sie sich für eine andere Methode zur Festlegung der Proxy-Richtlinien entschieden haben. Ausführliche Beispiele erhalten Sie unter <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="1502843533062797703">Blockieren von Codeeinschleusungen durch Drittanbieter-Software aktivieren</translation>
 <translation id="1504431521196476721">Remote-Bestätigung</translation>
@@ -901,11 +894,6 @@ Wenn Sie "Letzte Sitzung wiederherstellen" wählen, werden die URLs, die beim le
 
       Ist diese Einstellung aktiviert, wird für die Druckvorschau der Standarddrucker des Betriebssystems als Standarddrucker ausgewählt.</translation>
 <translation id="2856674246949497058">Führen Sie ein Rollback durch und bleiben Sie bei der Zielversion, falls die Version des Betriebssystems neuer ist als die der Zielversion. Außerdem sollten Sie während des Vorgangs einen Powerwash durchführen.</translation>
-<translation id="2858646435735022107">Hiermit wird festgelegt, ob das Flag OK-AS-DELEGATE von KDC beachtet wird oder ob "AuthNegotiateDelegateWhitelist" verwendet wird, um die Weitergabe von Kerberos-Tickets einzuschränken.
-
-          Wenn diese Richtlinien auf "true" gesetzt ist, werden die eingeschränkten Weitergabeeinstellungen im KDF bei der HTTP-Authentifizierung beachtet. Die Richtlinie "AuthNegotiateDelegateWhitelist" wird in diesem Fall ignoriert. Weitere Informationen finden Sie unter https://tools.ietf.org/html/rfc5896.html.
-
-          Wenn diese Richtlinie nicht konfiguriert oder auf "false" gesetzt ist, werden die Weitergabeeinstellungen vom KDC ignoriert und die Richtlinie "AuthNegotiateDelegateWhitelist" wird beachtet.</translation>
 <translation id="2872961005593481000">Herunterfahren</translation>
 <translation id="2873651257716068683">Dadurch wird die standardmäßige Druckseitengröße überschrieben. Wenn die Seitengröße nicht verfügbar ist, wird die Richtlinie ignoriert.</translation>
 <translation id="2874209944580848064">Hinweis für <ph name="PRODUCT_OS_NAME" />-Geräte, die Android-Apps unterstützen:</translation>
@@ -1645,6 +1633,11 @@ Wenn die Richtlinie auf "FALSE" gesetzt oder nicht festgelegt wird, führt die T
 <translation id="4725528134735324213">Android Backup Service aktivieren</translation>
 <translation id="4725801978265372736">Verlangen, dass der Name des lokalen Nutzers und des Host-Inhabers des Remotezugriffs übereinstimmen</translation>
 <translation id="4733471537137819387">Strategien im Hinblick auf die integrierte HTTP-Authentifizierung</translation>
+<translation id="4744190513568488164">Server, auf die <ph name="PRODUCT_NAME" /> zur Authentifizierung verweisen darf.
+
+          Fügen Sie zwischen verschiedenen Servernamen ein Komma als Trennzeichen ein. Platzhalter (*) sind erlaubt.
+
+          Wenn Sie diese Richtlinie nicht konfigurieren, leitet <ph name="PRODUCT_NAME" /> keine Anmeldedaten von Nutzern weiter, auch nicht an Server innerhalb des Intranets.</translation>
 <translation id="4752880493649142945">Clientzertifikat zur Herstellung einer Verbindung zu RemoteAccessHostTokenValidationUrl</translation>
 <translation id="4757671984625088193">Wenn diese Richtlinie auf "true" gesetzt oder nicht konfiguriert ist, schlägt <ph name="PRODUCT_NAME" /> Seiten vor, die der aktuellen ähnlich sind.
       Diese Vorschläge werden per Fernzugriff von den Google-Servern abgerufen.
@@ -1723,7 +1716,6 @@ alle Proxy-Optionen, die in der Eingabeaufforderung angegeben werden.
 <translation id="4986560318567565414">Pfad, um vom alternativen Browser zu Chrome zu wechseln.</translation>
 <translation id="4988291787868618635">Auszuführende Aktion bei Erreichen der Inaktivitätsverzögerung</translation>
 <translation id="4995548127349206948">Steuerung der Aktivierung der NTLMv2-Authentifizierung.</translation>
-<translation id="5022792010322211583">KDC-beschränkte Weitergabe verwenden</translation>
 <translation id="5047604665028708335">Zugriff auf Websites außerhalb von Inhaltspaketen erlauben</translation>
 <translation id="5052081091120171147">Diese Richtlinie erzwingt, sofern aktiv, den Import des Browserverlaufs aus dem aktuellen Standardbrowser. Ist die Richtlinie aktiviert, wirkt sie sich auch auf den Importdialog aus. Wenn sie deaktiviert ist, erfolgt kein Import des Browserverlaufs. Sollte sie nicht konfiguriert sein, so wird der Nutzer möglicherweise gefragt, ob ein Import erfolgen soll, oder der Import findet automatisch statt.</translation>
 <translation id="5056708224511062314">Lupe deaktiviert</translation>

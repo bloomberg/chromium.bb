@@ -246,13 +246,6 @@
       es desactivarà. En aquest cas, l'usuari no pot activar la funció.</translation>
 <translation id="1474273443907024088">Desactiva False Start de TLS</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
-<translation id="1478485744311397487">Servidors en què <ph name="PRODUCT_NAME" /> pot delegar les credencials de l'usuari.
-
-          Separa els noms dels servidors amb comes. Pots utilitzar comodins (*).
-
-          Si deixes aquesta política sense definir, <ph name="PRODUCT_NAME" /> no delegarà les credencials de l'usuari, encara que es detecti un servidor com a intranet.
-
-          Si la política UseKDCConstrainedDelegation s'estableix en "true", AuthNegotiateDelegateWhitelist s'ignorarà.</translation>
 <translation id="1484146587843605071"><ph name="PRODUCT_NAME" /> evitarà qualsevol servidor intermediari de la llista d'amfitrions proporcionada.
 
           Aquesta política només es fa efectiva si has seleccionat la configuració manual del servidor intermediari a Tria com vols especificar la configuració del servidor intermediari.
@@ -896,11 +889,6 @@ Cada entrada de la llista especifica un identificador, que s'utilitza internamen
 
       Si actives aquesta opció de configuració, a Previsualització de la impressió s'utilitzarà la impressora predeterminada del sistema operatiu com a opció de destinació predeterminada.</translation>
 <translation id="2856674246949497058">Torna a la versió de destinació si la versió del sistema operatiu és més recent que la de destinació. Executa la funció Powerwash durant el procés.</translation>
-<translation id="2858646435735022107">Controla si es respecta la marca OK-AS-DELEGATE de KDC o si s'utilitza AuthNegotiateDelegateWhitelist per limitar la delegació de tiquets de Kerberos.
-
-          Si aquesta política s'estableix en "true", l'autenticació HTTP respecta la configuració de delegació limitada de KDC. En aquest cas, s'ignora la política AuthNegotiateDelegateWhitelist. Per obtenir més informació, consulta https://tools.ietf.org/html/rfc5896.html.
-
-          Si no s'estableix aquesta política o s'estableix en "false", s'ignora la configuració de delegació limitada de KDC i es respecta la política AuthNegotiateDelegateWhitelist.</translation>
 <translation id="2872961005593481000">Apaga</translation>
 <translation id="2873651257716068683">Substitueix la mida de la pàgina d'impressió predeterminada. Si la mida de la pàgina no està disponible, aquesta política s'ignora.</translation>
 <translation id="2874209944580848064">Nota per als dispositius <ph name="PRODUCT_OS_NAME" /> que admeten aplicacions per a Android:</translation>
@@ -1645,6 +1633,11 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 <translation id="4725528134735324213">Activa Android Backup Service</translation>
 <translation id="4725801978265372736">Requereix que el nom de l'usuari local i del propietari de l'amfitrió d'accés remot coincideixin</translation>
 <translation id="4733471537137819387">Les polítiques relacionades amb l'autenticació HTTP integrada.</translation>
+<translation id="4744190513568488164">Servidors en què <ph name="PRODUCT_NAME" /> pot delegar les credencials de l'usuari.
+
+          Separeu els diversos noms de servidor amb comes. Es permet l'ús de caràcters comodins (*).
+
+          Si deixeu aquesta política sense definir, <ph name="PRODUCT_NAME" /> no delegarà les credencials de l'usuari, encara que es detecti una intranet com a servidor.</translation>
 <translation id="4752880493649142945">Certificat de client per connectar-se a RemoteAccessHostTokenValidationUrl</translation>
 <translation id="4757671984625088193">Si s'estableix en "true" o no s'estableix, <ph name="PRODUCT_NAME" /> suggerirà pàgines relacionades amb la pàgina actual.
       Aquests suggeriments s'obtenen dels servidors de Google de manera remota.
@@ -1722,7 +1715,6 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 <translation id="4986560318567565414">Camí a Chrome per canviar des del navegador alternatiu.</translation>
 <translation id="4988291787868618635">Acció que cal dur a terme quan s'arriba al retard d'inactivitat</translation>
 <translation id="4995548127349206948">Si l'autenticació NTLMv2 està activada.</translation>
-<translation id="5022792010322211583">Utilitza la delegació limitada de KDC</translation>
 <translation id="5047604665028708335">Permet l'accés a llocs situats fora de paquets de contingut.</translation>
 <translation id="5052081091120171147">Si està activada, aquesta política fa que l'historial de navegació s'importi des del navegador predeterminat actual. Si està activada, aquesta política també afecta el diàleg d'importació. Si està desactivada, no s'importarà cap historial de navegació. Si no es defineix, pot ser que es demani a l'usuari si vol importar o bé la importació es pot produir de manera automàtica.</translation>
 <translation id="5056708224511062314">Lupa desactivada</translation>

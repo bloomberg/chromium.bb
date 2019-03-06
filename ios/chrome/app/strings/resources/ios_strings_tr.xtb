@@ -74,6 +74,7 @@
 <translation id="2000419248597011803">Adres çubuğundan ve arama kutusundan bazı çerezleri ve aramaları varsayılan arama motorunuza gönderir</translation>
 <translation id="2015722694326466240">Şifreleri görmek için öncelikle cihazınızda bir şifre kodu ayarlamanız gerekir.</translation>
 <translation id="2068952045031577364">Geçen Hafta</translation>
+<translation id="2074131957428911366">Neyin senkronize edileceğini istediğiniz zaman <ph name="BEGIN_LINK" />ayarlardan<ph name="END_LINK" /> seçebilirsiniz.</translation>
 <translation id="2079545284768500474">Geri al</translation>
 <translation id="209018056901015185">Masaüstü Sitesi İste</translation>
 <translation id="2096012225669085171">Cihazlar arasında senkronizasyon ve kişiselleştirme</translation>
@@ -199,6 +200,7 @@
 <translation id="4038354071007134711">Bu cihazdaki hiçbir uygulama dosyayı açamıyor.</translation>
 <translation id="4042870976416480368">Sayfada Bul</translation>
 <translation id="4049507953662678203">Ağ bağlantınız olduğundan emin olun ve tekrar deneyin.</translation>
+<translation id="4082688844002261427">Tarama geçmişinizin Arama, reklamlar ve diğer hizmetleri kişiselleştirmek için nasıl kullanıldığını kontrol edin</translation>
 <translation id="408404951701638773">Arama çubuğuna artık daha kolay erişilebilir</translation>
 <translation id="4084682180776658562">Yer İşareti</translation>
 <translation id="411254640334432676">İndirme başarısız oldu.</translation>
@@ -354,7 +356,6 @@ Verileriniz <ph name="TIME" /> tarihinde senkronizasyon parolanızla şifrelendi
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> öğe silindi</translation>
 <translation id="6513773942555305766">Chrome Tarafından Önerilen Şifre: <ph name="SUGGESTED_PASSWORD" /></translation>
 <translation id="6541915733953096570">Son 1 Saat</translation>
-<translation id="6548479190262846511">Bu site için şifre bulunamadı</translation>
 <translation id="6642362222295953972">Mevcut sekmeye geçiş yapın</translation>
 <translation id="6643016212128521049">Temizle</translation>
 <translation id="6656103420185847513">Klasörü Düzenleyin</translation>
@@ -396,6 +397,7 @@ Verileriniz <ph name="TIME" /> tarihinde senkronizasyon parolanızla şifrelendi
 <translation id="7203585745079012652">Yanıtı Sesli Söyle</translation>
 <translation id="722055596168483966">Google hizmetlerini kişiselleştirme</translation>
 <translation id="7272437679830969316">Kimliğiniz doğrulanamıyor. Şifre kopyalanmadı.</translation>
+<translation id="7280856130494094142">Senkronizasyonu başlatmak için parola girin</translation>
 <translation id="7285236536143823449">EVET, İSTİYORUM</translation>
 <translation id="7291368939935408496">Şifreler Hazırlanıyor...</translation>
 <translation id="7336264872878993241">Yüzde <ph name="PERCENT" /> indirildi</translation>

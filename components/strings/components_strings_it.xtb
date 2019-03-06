@@ -51,7 +51,6 @@
 <translation id="1232569758102978740">Senza titolo</translation>
 <translation id="1240347957665416060">Il nome del tuo dispositivo</translation>
 <translation id="124116460088058876">Altre lingue</translation>
-<translation id="1246987714874202335">Aggiorna data di scadenza</translation>
 <translation id="1250759482327835220">Per pagare più velocemente la prossima volta, salva la carta, il nome e l'indirizzo di fatturazione sul tuo account Google.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (sincronizzati)</translation>
 <translation id="1256368399071562588">&lt;p&gt;Se il sito web che intendi visitare non si apre, prova innanzitutto a correggere l'errore con questi passaggi per la risoluzione dei problemi:&lt;/p&gt;
@@ -281,7 +280,6 @@
     l'applicazione di una norma di sicurezza per tutte le richieste. Ma adesso non
     è riuscito a pubblicare una norma e ciò impedisce al browser
     di soddisfare la tua richiesta per il sito <ph name="SITE" />.</translation>
-<translation id="2442483081384580286">Avvisi di Navigazione sicura</translation>
 <translation id="244665789865330679">Il tuo dispositivo e il tuo account sono gestiti da <ph name="ENROLLMENT_DOMAIN" />. L'amministratore può configurare da remoto il dispositivo e l'account.</translation>
 <translation id="2463193859425327265">Cambia la pagina iniziale</translation>
 <translation id="2463739503403862330">Compila</translation>
@@ -608,6 +606,7 @@
 <translation id="4277028893293644418">Reimposta password</translation>
 <translation id="4280429058323657511">, scad.: <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{Questa carta è stata salvata nel tuo Account Google}other{Queste carte sono state salvate nel tuo Account Google}}</translation>
+<translation id="42981349822642051">Espandi</translation>
 <translation id="4302965934281694568">Chou3 (Envelope)</translation>
 <translation id="4305817255990598646">Cambia</translation>
 <translation id="4312613361423056926">B2</translation>
@@ -878,6 +877,7 @@
 <translation id="5810442152076338065">La connessione a <ph name="DOMAIN" /> è criptata tramite un pacchetto di crittografia obsoleto.</translation>
 <translation id="5813119285467412249">&amp;Ripeti aggiunta</translation>
 <translation id="5838278095973806738">Non dovresti inserire dati sensibili in questo sito (ad esempio password o carte di credito) perché potrebbero essere intercettati da utenti malintenzionati.</translation>
+<translation id="5860033963881614850">Off</translation>
 <translation id="5863847714970149516">La pagina che segue potrebbe tentare di addebitarti dei costi</translation>
 <translation id="5866257070973731571">Aggiungi numero di telefono</translation>
 <translation id="5869405914158311789">Impossibile raggiungere il sito</translation>
@@ -886,6 +886,7 @@
 <translation id="5893752035575986141">Le carte di credito sono accettate.</translation>
 <translation id="5901630391730855834">Giallo</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (sincronizzati)</translation>
+<translation id="5916664084637901428">On</translation>
 <translation id="5919090499915321845">B10</translation>
 <translation id="5921639886840618607">Vuoi salvare la carta nell'Account Google?</translation>
 <translation id="5922853866070715753">Hai quasi finito.</translation>
@@ -982,6 +983,7 @@
 <translation id="6508722015517270189">Riavvia Chrome</translation>
 <translation id="6529602333819889595">&amp;Ripeti eliminazione</translation>
 <translation id="6534179046333460208">Suggerimenti relativi al Physical Web</translation>
+<translation id="6556866813142980365">Ripeti</translation>
 <translation id="6563469144985748109">Il tuo gestore non ha ancora approvato la richiesta</translation>
 <translation id="6569060085658103619">È visualizzata la pagina di un'estensione</translation>
 <translation id="6578796323535178455">C2 (Envelope)</translation>

@@ -337,6 +337,7 @@
 <translation id="6537270692134705506">Capturer l'écran</translation>
 <translation id="6542521951477560771">Diffusion vers <ph name="RECEIVER_NAME" />…</translation>
 <translation id="6559976592393364813">Se renseigner auprès de l'administrateur</translation>
+<translation id="6574601967010742428">Il est possible que l'administrateur de l'appareil puisse surveiller votre activité.</translation>
 <translation id="6585808820553845416">Fin de la session dans <ph name="SESSION_TIME_REMAINING" /></translation>
 <translation id="6627638273713273709">Rechercher+Maj+K</translation>
 <translation id="6650933572246256093">L'appareil Bluetooth "<ph name="DEVICE_NAME" />" demande l'autorisation de s'associer. Veuillez saisir le code d'authentification suivant sur l'appareil : <ph name="PASSKEY" />.</translation>
@@ -443,7 +444,6 @@
 <translation id="8261506727792406068">Supprimer</translation>
 <translation id="8297006494302853456">Faible</translation>
 <translation id="8308637677604853869">Menu précédent</translation>
-<translation id="8332664326438198339">Retour au Lanceur d'applications</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Créer une note</translation>
 <translation id="8375916635258623388">L'appareil <ph name="DEVICE_NAME" /> et votre téléphone seront associés automatiquement</translation>

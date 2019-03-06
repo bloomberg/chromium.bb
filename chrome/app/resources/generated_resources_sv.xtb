@@ -104,7 +104,6 @@
 <translation id="1143142264369994168">Certifikatsignerare</translation>
 <translation id="1145292499998999162">Pluginprogrammet har blockerats</translation>
 <translation id="1145532888383813076">Sök på enheten, i appar och på webben.</translation>
-<translation id="1146204723345436916">Importera bokmärken från HTML-filen...</translation>
 <translation id="114721135501989771">Få Google-teknik i Chrome</translation>
 <translation id="1148097584170732637"><ph name="FILE_COUNT" /> hittades.
     <ph name="LINE_BREAK1" />
@@ -420,7 +419,6 @@
 <translation id="1608626060424371292">Ta bort den här användaren</translation>
 <translation id="1609170755653088773">Synkronisera det här lösenordet med iPhone</translation>
 <translation id="1611584202130317952">Administrationsflödet avbröts. Försök igen eller kontakta enhetens ägare eller administratör.</translation>
-<translation id="1611704746353331382">Exportera bokmärken till HTML-fil ...</translation>
 <translation id="1614511179807650956">Du kan ha använt din tillåtna mängd mobildata. Besök aktiveringsportalen <ph name="NAME" /> om du vill köpa mer data</translation>
 <translation id="161460670679785907">Mobilen hittades inte</translation>
 <translation id="1616206807336925449">Det här tillägget kräver inga särskilda behörigheter.</translation>
@@ -650,7 +648,6 @@
 <translation id="1932098463447129402">Inte före</translation>
 <translation id="1933345018156373194">Flytten misslyckades. Oväntat fel: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1933809209549026293">Anslut en mus eller ett tangentbord. Om du använder en Bluetooth-enhet kontrollerar du att den är klar att kopplas.</translation>
-<translation id="1936157145127842922">Visa i mapp</translation>
 <translation id="1938351510777341717">Extern kommandotangent</translation>
 <translation id="1940546824932169984">Anslutna enheter</translation>
 <translation id="1942765061641586207">Bildupplösning</translation>
@@ -1368,7 +1365,6 @@
 <translation id="3009300415590184725">Är du säker på att du vill avbryta konfigurationen av den mobila datatjänsten?</translation>
 <translation id="3009779501245596802">Indexerade databaser</translation>
 <translation id="3010279545267083280">Lösenordet har tagits bort</translation>
-<translation id="3011362742078013760">Öppna alla bokmärken i ett &amp;inkognitofönster</translation>
 <translation id="3011488081941333749">Cookies från <ph name="DOMAIN" /> rensas vid avslut</translation>
 <translation id="3012631534724231212">(iframe)</translation>
 <translation id="3012804260437125868">Endast säkra anslutningar på samma webbplats</translation>
@@ -2575,7 +2571,6 @@
 <translation id="4881695831933465202">Öppna</translation>
 <translation id="4882312758060467256">Har åtkomst till webbplatsen</translation>
 <translation id="4882831918239250449">Styr hur Sök, annonser och annat ska anpassas utifrån webbhistoriken</translation>
-<translation id="4883178195103750615">Exportera bokmärken till HTML-fil...</translation>
 <translation id="4883436287898674711">Alla <ph name="WEBSITE_1" />-webbplatser</translation>
 <translation id="48838266408104654">&amp;Aktivitetshanteraren</translation>
 <translation id="4884987973312178454">6x</translation>
@@ -2909,7 +2904,6 @@
 <translation id="5376931455988532197">Filen är för stor</translation>
 <translation id="537813040452600081">Sidor du visar i det här fönstret syns inte i webbläsarhistoriken och de lämnar inga andra spår efter sig (till exempel cookies) på datorn när du har loggat ut till. Filer som du laddar ned och bokmärken du skapar sparas inte.</translation>
 <translation id="5379140238605961210">Fortsätt att blockera mikrofonåtkomsten</translation>
-<translation id="5379268888377976432">Ångra borttagning</translation>
 <translation id="5382591305415226340">Hantera länkar som stöds</translation>
 <translation id="5384883051496921101">Data på den här webbplatsen delas med en app utanför inkognitoläget.</translation>
 <translation id="5388885445722491159">Kopplad</translation>
@@ -3204,7 +3198,6 @@
 <translation id="5801568494490449797">Inställningar</translation>
 <translation id="5804241973901381774">Behörigheter</translation>
 <translation id="5805697420284793859">Fönsterhanterare</translation>
-<translation id="580571955903695899">Ordna efter titel</translation>
 <translation id="5811750797187914944">Klart</translation>
 <translation id="5814126672212206791">Anslutningstyp</translation>
 <translation id="5815645614496570556">X.400-adress</translation>
@@ -3531,7 +3524,6 @@
 <translation id="6264365405983206840">Markera &amp;alla</translation>
 <translation id="6267166720438879315">Välj ett certifikat för att styrka din identitet för <ph name="HOST_NAME" /></translation>
 <translation id="6268252012308737255">Öppna med <ph name="APP" /></translation>
-<translation id="6268747994388690914">Importera bokmärken från HTML-filen ...</translation>
 <translation id="6272643420381259437">Ett fel (<ph name="ERROR" />) inträffade när pluginprogrammet laddades ned.</translation>
 <translation id="6273677812470008672">Kvalitet</translation>
 <translation id="6277105963844135994">Tidsgräns för nätverket</translation>
@@ -3606,7 +3598,6 @@
 <translation id="6393156038355142111">Föreslå ett starkt lösenord</translation>
 <translation id="6395575651121294044"><ph name="NUMBER_OF_FILES" /> objekt</translation>
 <translation id="6397094776139756010">Alternativ för synkronisering och anpassning</translation>
-<translation id="6397592254427394018">Öppna alla bokmärken i ett &amp;inkognitofönster</translation>
 <translation id="6398715114293939307">Ta bort Google Play Butik</translation>
 <translation id="6398765197997659313">Avsluta helskärmsläge</translation>
 <translation id="6399774419735315745">Spion</translation>
@@ -3870,7 +3861,6 @@
 <translation id="6798954102094737107">Pluginprogram: <ph name="PLUGIN_NAME" /></translation>
 <translation id="6801435275744557998">Kalibrera pekskärmen</translation>
 <translation id="6802031077390104172"><ph name="USAGE" /> (<ph name="OID" />)</translation>
-<translation id="6804671422566312077">Öppna alla bokmärken i &amp;nytt fönster</translation>
 <translation id="6805038906417219576">OK</translation>
 <translation id="6805647936811177813">Logga in på <ph name="TOKEN_NAME" /> om du vill importera klientcertifikat från <ph name="HOST_NAME" />.</translation>
 <translation id="680572642341004180">Aktivera RLZ-spårning på <ph name="SHORT_PRODUCT_OS_NAME" />.</translation>
@@ -3977,7 +3967,6 @@
 <translation id="6970856801391541997">Skriv ut vissa sidor</translation>
 <translation id="6972180789171089114">Ljud/video</translation>
 <translation id="6972754398087986839">Komma igång</translation>
-<translation id="6973630695168034713">Mappar</translation>
 <translation id="6974609594866392343">Demoläge offline</translation>
 <translation id="6977381486153291903">Revision av firmware</translation>
 <translation id="6978121630131642226">Sökmotorer</translation>
@@ -4308,7 +4297,6 @@
 <translation id="7478485216301680444">Det gick inte att installera kioskappen.</translation>
 <translation id="7481312909269577407">Framåt</translation>
 <translation id="748138892655239008">Grundbegränsningar för certifikat</translation>
-<translation id="7484964289312150019">Öppna alla bokmärken i &amp;nytt fönster</translation>
 <translation id="7487067081878637334">Teknik</translation>
 <translation id="7487099628810939106">Fördröjning före klick:</translation>
 <translation id="7487969577036436319">Det finns inga installerade komponenter</translation>
@@ -4739,7 +4727,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8063235345342641131">Grön standardavatar</translation>
 <translation id="8064671687106936412">Nyckel:</translation>
 <translation id="8066773524873206594">Alla ändringar sparas i <ph name="DOWNLOADS_FOLDER" />.</translation>
-<translation id="806812017500012252">Ordna efter titel</translation>
 <translation id="8068253693380742035">Tryck här om du vill logga in</translation>
 <translation id="8069615408251337349">Google Cloud Print</translation>
 <translation id="8071432093239591881">Skriv ut som bild</translation>

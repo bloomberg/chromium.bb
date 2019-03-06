@@ -74,6 +74,7 @@
 <translation id="2000419248597011803">Pošilja nekatere piškotke in iskanja iz naslovne vrstice ter iskalnega polja privzetemu iskalniku</translation>
 <translation id="2015722694326466240">Če si želite ogledati gesla, morate najprej nastaviti geslo v napravi.</translation>
 <translation id="2068952045031577364">Past Week</translation>
+<translation id="2074131957428911366">V <ph name="BEGIN_LINK" />nastavitvah<ph name="END_LINK" /> lahko kadar koli izberete, kaj želite sinhronizirati.</translation>
 <translation id="2079545284768500474">Razveljavi</translation>
 <translation id="209018056901015185">Zahtevaj spletno mesto za nam. računalnik</translation>
 <translation id="2096012225669085171">Sinhronizacija in prilagajanje med napravami</translation>
@@ -198,6 +199,7 @@
 <translation id="4038354071007134711">Nobena aplikacija v tej napravi ne more odpreti datoteke.</translation>
 <translation id="4042870976416480368">Najdi na strani</translation>
 <translation id="4049507953662678203">Make sure you have a network connection, and try again.</translation>
+<translation id="4082688844002261427">Nadziranje, kako se zgodovina brskanja uporabi za prilagajanje Iskanja Google, oglasov in drugega</translation>
 <translation id="408404951701638773">Vrstico za iskanje je zdaj preprosteje doseči</translation>
 <translation id="4084682180776658562">Zaznamek</translation>
 <translation id="411254640334432676">Prenos ni uspel.</translation>
@@ -352,7 +354,6 @@ Podatki so bili šifrirani z vašim geslom za sinhronizacijo <ph name="TIME" />.
 <translation id="6482629121755362506">Št. izbrisanih elementov: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="6513773942555305766">Geslo, ki ga predlaga Chrome: <ph name="SUGGESTED_PASSWORD" /></translation>
 <translation id="6541915733953096570">Past Hour</translation>
-<translation id="6548479190262846511">Ni gesel za to spletno mesto</translation>
 <translation id="6642362222295953972">Preklop na obstoječi zavihek</translation>
 <translation id="6643016212128521049">Počisti</translation>
 <translation id="6656103420185847513">Urejanje mape</translation>
@@ -394,6 +395,7 @@ Podatki so bili šifrirani z vašim geslom za sinhronizacijo <ph name="TIME" />.
 <translation id="7203585745079012652">Izgovorjava odgovorov</translation>
 <translation id="722055596168483966">Prilagajanje Googlovih storitev</translation>
 <translation id="7272437679830969316">Identitete ni mogoče preveriti. Geslo ni kopirano.</translation>
+<translation id="7280856130494094142">Vnesite geslo, če želite začeti sinhronizacijo</translation>
 <translation id="7285236536143823449">DA, SEM ZA</translation>
 <translation id="7291368939935408496">Pripravljanje gesel ...</translation>
 <translation id="7336264872878993241">Preneseno: <ph name="PERCENT" /> %</translation>

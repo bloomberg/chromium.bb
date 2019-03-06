@@ -1607,6 +1607,11 @@
 <translation id="4725528134735324213">Android バックアップ サービスを有効にする</translation>
 <translation id="4725801978265372736">ローカル ユーザーの名前とリモート アクセス ホストの所有者が一致していることを要件とする</translation>
 <translation id="4733471537137819387">統合された HTTP 認証に関連するポリシーです。</translation>
+<translation id="4744190513568488164"><ph name="PRODUCT_NAME" /> が委任するサーバーです。
+
+          複数のサーバー名を入力するときはカンマで区切ります。ワイルドカード（*）を使用できます。
+
+          このポリシーが未設定の場合、サーバーがイントラネット上で検出されたとしても、<ph name="PRODUCT_NAME" /> はユーザーの認証情報を委任しません。</translation>
 <translation id="4752880493649142945">RemoteAccessHostTokenValidationUrl への接続用のクライアント証明書</translation>
 <translation id="4757671984625088193">このポリシーが true に設定されているか未設定の場合、<ph name="PRODUCT_NAME" /> では現在のページに関連するおすすめのページが表示されます。
       こうしたおすすめのページは、Google のサーバーからリモートで取得されます。

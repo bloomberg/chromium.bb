@@ -104,7 +104,6 @@
 <translation id="1143142264369994168">Podmiot podpisujący certyfikat</translation>
 <translation id="1145292499998999162">Wtyczka została zablokowana</translation>
 <translation id="1145532888383813076">Przeszukaj urządzenie, aplikacje i internet.</translation>
-<translation id="1146204723345436916">Importuj zakładki z pliku HTML...</translation>
 <translation id="114721135501989771">Inteligentne rozwiązania Google w Chrome</translation>
 <translation id="1148097584170732637">Znaleziono <ph name="FILE_COUNT" />.
     <ph name="LINE_BREAK1" />
@@ -420,7 +419,6 @@
 <translation id="1608626060424371292">Usuń tego użytkownika</translation>
 <translation id="1609170755653088773">Zsynchronizuj to hasło ze swoim iPhonem</translation>
 <translation id="1611584202130317952">Przepływ obsługi administracyjnej został przerwany. Spróbuj ponownie lub skontaktuj się z właścicielem lub administratorem urządzenia.</translation>
-<translation id="1611704746353331382">Eksportuj zakładki do pliku HTML</translation>
 <translation id="1614511179807650956">Możliwe, że masz już wykorzystany limit mobilnej transmisji danych. Odwiedź portal aktywacji <ph name="NAME" />, by kupić dodatkowy pakiet danych.</translation>
 <translation id="161460670679785907">Nie można wykryć telefonu</translation>
 <translation id="1616206807336925449">To rozszerzenie nie wymaga specjalnych uprawnień.</translation>
@@ -651,7 +649,6 @@
 <translation id="1932098463447129402">Nie wcześniej niż</translation>
 <translation id="1933345018156373194">Przenoszenie nie powiodło się z powodu nieoczekiwanego błędu: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1933809209549026293">Podłącz mysz lub klawiaturę. Jeśli używasz urządzenia Bluetooth, upewnij się, że jest ono gotowe do sparowania.</translation>
-<translation id="1936157145127842922">Pokaż w folderze</translation>
 <translation id="1938351510777341717">Polecenie zewnętrzne</translation>
 <translation id="1940546824932169984">Połączone urządzenia</translation>
 <translation id="1942765061641586207">Rozdzielczość grafiki</translation>
@@ -1369,7 +1366,6 @@
 <translation id="3009300415590184725">Czy na pewno chcesz anulować konfigurowanie komórkowej usługi transmisji danych?</translation>
 <translation id="3009779501245596802">Zindeksowane bazy danych</translation>
 <translation id="3010279545267083280">Hasło usunięte</translation>
-<translation id="3011362742078013760">Otwórz wszystkie zakładki w oknie &amp;incognito</translation>
 <translation id="3011488081941333749">Pliki cookie ze strony <ph name="DOMAIN" /> będą usuwane przy zamykaniu</translation>
 <translation id="3012631534724231212">(iframe)</translation>
 <translation id="3012804260437125868">Tylko bezpieczne połączenia z tą samą witryną</translation>
@@ -2576,7 +2572,6 @@
 <translation id="4881695831933465202">Otwórz</translation>
 <translation id="4882312758060467256">Ma dostęp do tej strony</translation>
 <translation id="4882831918239250449">Zarządzaj personalizacją wyszukiwarki, reklam i innych funkcji na podstawie historii przeglądania</translation>
-<translation id="4883178195103750615">Eksportuj zakładki do pliku HTML...</translation>
 <translation id="4883436287898674711">Wszystkie strony <ph name="WEBSITE_1" /></translation>
 <translation id="48838266408104654">&amp;Menedżer zadań</translation>
 <translation id="4884987973312178454">6x</translation>
@@ -2910,7 +2905,6 @@
 <translation id="5376931455988532197">Plik jest za duży</translation>
 <translation id="537813040452600081">Strony wyświetlane w tym oknie nie pojawią się w historii przeglądarki. Po wylogowaniu się nie zostanie po nich na komputerze żaden ślad (np. w postaci plików cookie). Nie zostaną też zachowane pobrane pliki ani utworzone zakładki.</translation>
 <translation id="5379140238605961210">Nadal blokuj dostęp do mikrofonu</translation>
-<translation id="5379268888377976432">Cofnij usunięcie</translation>
 <translation id="5382591305415226340">Zarządzaj obsługiwanymi linkami</translation>
 <translation id="5384883051496921101">Ta strona zamierza udostępnić informacje aplikacji poza trybem incognito.</translation>
 <translation id="5388885445722491159">Sparowane</translation>
@@ -3205,7 +3199,6 @@
 <translation id="5801568494490449797">Ustawienia</translation>
 <translation id="5804241973901381774">Uprawnienia</translation>
 <translation id="5805697420284793859">Menedżer okien</translation>
-<translation id="580571955903695899">Uporządkuj według tytułu</translation>
 <translation id="5811750797187914944">Wszystko gotowe</translation>
 <translation id="5814126672212206791">Typ połączenia</translation>
 <translation id="5815645614496570556">Adres X.400</translation>
@@ -3532,7 +3525,6 @@
 <translation id="6264365405983206840">Wybierz &amp;wszystko</translation>
 <translation id="6267166720438879315">Wybierz certyfikat, aby uwierzytelnić się na serwerze <ph name="HOST_NAME" /></translation>
 <translation id="6268252012308737255">Otwórz w <ph name="APP" /></translation>
-<translation id="6268747994388690914">Importuj zakładki z pliku HTML</translation>
 <translation id="6272643420381259437">Podczas pobierania wtyczki wystąpił błąd (<ph name="ERROR" />)</translation>
 <translation id="6273677812470008672">Jakość</translation>
 <translation id="6277105963844135994">Przekroczono czas oczekiwania na sieć</translation>
@@ -3607,7 +3599,6 @@
 <translation id="6393156038355142111">Zaproponuj silne hasło</translation>
 <translation id="6395575651121294044">Elementy: <ph name="NUMBER_OF_FILES" /></translation>
 <translation id="6397094776139756010">Opcje synchronizacji i personalizacji</translation>
-<translation id="6397592254427394018">Otwórz wszystkie zakładki w oknie &amp;incognito</translation>
 <translation id="6398715114293939307">Usuń Sklep Google Play</translation>
 <translation id="6398765197997659313">Zamknij pełny ekran</translation>
 <translation id="6399774419735315745">Szpieg</translation>
@@ -3871,7 +3862,6 @@
 <translation id="6798954102094737107">Wtyczka: <ph name="PLUGIN_NAME" /></translation>
 <translation id="6801435275744557998">Skalibruj ekran dotykowy</translation>
 <translation id="6802031077390104172"><ph name="USAGE" /> (<ph name="OID" />)</translation>
-<translation id="6804671422566312077">Otwórz wszystkie zakładki w &amp;nowym oknie</translation>
 <translation id="6805038906417219576">OK</translation>
 <translation id="6805647936811177813">Zaloguj się do urządzenia <ph name="TOKEN_NAME" />, aby zaimportować certyfikat klienta z witryny <ph name="HOST_NAME" />.</translation>
 <translation id="680572642341004180">Włącz monitorowanie RLZ w <ph name="SHORT_PRODUCT_OS_NAME" />.</translation>
@@ -3978,7 +3968,6 @@
 <translation id="6970856801391541997">Drukuj wybrane strony</translation>
 <translation id="6972180789171089114">Audio/wideo</translation>
 <translation id="6972754398087986839">Rozpocznij</translation>
-<translation id="6973630695168034713">Foldery</translation>
 <translation id="6974609594866392343">Tryb demo offline</translation>
 <translation id="6977381486153291903">Wersja oprogramowania</translation>
 <translation id="6978121630131642226">Wyszukiwarki</translation>
@@ -4309,7 +4298,6 @@
 <translation id="7478485216301680444">Nie można zainstalować aplikacji kiosku.</translation>
 <translation id="7481312909269577407">Dalej</translation>
 <translation id="748138892655239008">Podstawowe ograniczenia certyfikatu</translation>
-<translation id="7484964289312150019">Otwórz wszystkie zakładki w &amp;nowym oknie</translation>
 <translation id="7487067081878637334">Technologia</translation>
 <translation id="7487099628810939106">Opóźnienie przed kliknięciem:</translation>
 <translation id="7487969577036436319">Nie zainstalowano żadnych komponentów</translation>
@@ -4740,7 +4728,6 @@ Przechowuj plik klucza w bezpiecznym miejscu. Będzie on potrzebny do utworzenia
 <translation id="8063235345342641131">Domyślny zielony awatar</translation>
 <translation id="8064671687106936412">Klucz:</translation>
 <translation id="8066773524873206594">Wszystkie zmiany zostaną zapisane w folderze <ph name="DOWNLOADS_FOLDER" />.</translation>
-<translation id="806812017500012252">Uporządkuj według tytułu</translation>
 <translation id="8068253693380742035">Kliknij, by się zalogować</translation>
 <translation id="8069615408251337349">Google Cloud Print</translation>
 <translation id="8071432093239591881">Drukuj jako grafikę</translation>

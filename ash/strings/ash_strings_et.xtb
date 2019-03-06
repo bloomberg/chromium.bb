@@ -337,6 +337,7 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="6537270692134705506">Jäädvusta ekraanikuva</translation>
 <translation id="6542521951477560771">Ülekandmine seadmesse <ph name="RECEIVER_NAME" /></translation>
 <translation id="6559976592393364813">Küsige administraatorilt</translation>
+<translation id="6574601967010742428">Seadme haldur võib saada teie tegevust jälgida.</translation>
 <translation id="6585808820553845416">Seansi lõpuni on jäänud <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Otsing + Tõstuklahv + K</translation>
 <translation id="6650933572246256093">Bluetoothi seade „<ph name="DEVICE_NAME" />” küsib luba sidumiseks. Sisestage seadmesse see parool: <ph name="PASSKEY" /></translation>
@@ -443,7 +444,6 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="8261506727792406068">Kustuta</translation>
 <translation id="8297006494302853456">Nõrk</translation>
 <translation id="8308637677604853869">Eelmine menüü</translation>
-<translation id="8332664326438198339">Tagasi käivitaja juurde</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" /> <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Märkme loomine</translation>
 <translation id="8375916635258623388">See <ph name="DEVICE_NAME" /> ja teie telefon ühendatakse automaatselt</translation>

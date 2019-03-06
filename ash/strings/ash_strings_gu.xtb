@@ -336,6 +336,7 @@
 <translation id="6537270692134705506">સ્ક્રીનને કૅપ્ચર કરો</translation>
 <translation id="6542521951477560771"><ph name="RECEIVER_NAME" /> પર કાસ્ટ કરી રહ્યાં છીએ</translation>
 <translation id="6559976592393364813">વ્યવસ્થાપકને પૂછો</translation>
+<translation id="6574601967010742428">ડિવાઇસના વ્યવસ્થાપક તમારી પ્રવૃત્તિને મૉનિટર કરી શકે છે.</translation>
 <translation id="6585808820553845416"><ph name="SESSION_TIME_REMAINING" /> માં સત્ર સમાપ્ત થાય છે.</translation>
 <translation id="6627638273713273709">શોધ+Shift+K</translation>
 <translation id="6650933572246256093">Bluetooth ડિવાઇસ "<ph name="DEVICE_NAME" />" ને જોડી બનાવવા માટે પરવાનગી જોઈએ છે. કૃપા કરીને તે ડિવાઇસ પર આ પાસકીને દાખલ કરો: <ph name="PASSKEY" /></translation>
@@ -442,7 +443,6 @@
 <translation id="8261506727792406068">ડિલીટ કરો</translation>
 <translation id="8297006494302853456">નબળું</translation>
 <translation id="8308637677604853869">પાછલું મેનૂ</translation>
-<translation id="8332664326438198339">લૉન્ચર પર પાછા જાઓ</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">નોંધ બનાવો</translation>
 <translation id="8375916635258623388">આ <ph name="DEVICE_NAME" /> અને તમારો ફોન ઑટોમૅટિક રીતે કનેક્ટ થશે</translation>

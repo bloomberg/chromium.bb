@@ -336,6 +336,7 @@
 <translation id="6537270692134705506">Snimi zaslon</translation>
 <translation id="6542521951477560771">Emitiranje na uređaj <ph name="RECEIVER_NAME" /></translation>
 <translation id="6559976592393364813">Pitajte administratora</translation>
+<translation id="6574601967010742428">Administrator uređaja možda može nadzirati vašu aktivnost.</translation>
 <translation id="6585808820553845416">Sesija će završiti za <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Pretraži + Shift + K</translation>
 <translation id="6650933572246256093">Bluetooth uređaj "<ph name="DEVICE_NAME" />" traži dopuštenje za uparivanje. Unesite ovaj pristupni ključ na tom uređaju: <ph name="PASSKEY" /></translation>
@@ -442,7 +443,6 @@
 <translation id="8261506727792406068">Izbriši</translation>
 <translation id="8297006494302853456">Slab</translation>
 <translation id="8308637677604853869">Prethodni izbornik</translation>
-<translation id="8332664326438198339">Natrag na pokretač</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Izrada bilješke</translation>
 <translation id="8375916635258623388">Ovaj uređaj <ph name="DEVICE_NAME" /> i vaš telefon povezat će se automatski</translation>

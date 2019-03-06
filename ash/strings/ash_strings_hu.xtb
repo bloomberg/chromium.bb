@@ -337,6 +337,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="6537270692134705506">Képernyőkép rögzítése</translation>
 <translation id="6542521951477560771">Küldés ide: <ph name="RECEIVER_NAME" /></translation>
 <translation id="6559976592393364813">Érdeklődjön a rendszergazdánál</translation>
+<translation id="6574601967010742428">Lehetséges, hogy tevékenységeit megfigyelheti az eszköz adminisztrátora.</translation>
 <translation id="6585808820553845416">A munkamenet <ph name="SESSION_TIME_REMAINING" /> múlva véget ér.</translation>
 <translation id="6627638273713273709">Keresés+Shift+K</translation>
 <translation id="6650933572246256093">A(z) „<ph name="DEVICE_NAME" />” Bluetooth-eszköz engedélyt kér a párosításra. Kérjük, adja meg ezt a biztonsági kódot azon az eszközön: <ph name="PASSKEY" /></translation>
@@ -443,7 +444,6 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="8261506727792406068">Törlés</translation>
 <translation id="8297006494302853456">Gyenge</translation>
 <translation id="8308637677604853869">Előző menü</translation>
-<translation id="8332664326438198339">Vissza az indítóhoz</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Jegyzet létrehozása</translation>
 <translation id="8375916635258623388">A(z) <ph name="DEVICE_NAME" /> eszköz és a telefon automatikusan csatlakozik majd egymáshoz</translation>

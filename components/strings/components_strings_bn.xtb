@@ -50,7 +50,6 @@
 <translation id="1228893227497259893">ভুল সত্তা সনাক্তকারী</translation>
 <translation id="1232569758102978740">শিরোনামহীন</translation>
 <translation id="124116460088058876">আরও ভাষা</translation>
-<translation id="1246987714874202335">মেয়াদ শেষ হওয়ার তারিখ আপডেট করুন</translation>
 <translation id="1250759482327835220">পরেরবার আরও দ্রুত পেমেন্ট করা জন্য আপনার কার্ড, নাম এবং বিলিং ঠিকানাটি Google অ্যাকাউন্টে সেভ করে রাখুন।</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (সিঙ্ক হয়েছে)</translation>
 <translation id="1256368399071562588">&lt;p&gt;আপনি যে ওয়েবসাইটে যেতে চান সেটি যদি না খোলে তাহলে প্রথমে এই ধাপগুলি অনুসরণ করে সমস্যাটির সমাধান করার চেষ্টা করুন:&lt;/p&gt;
@@ -603,6 +602,7 @@
 <translation id="4277028893293644418">পাসওয়ার্ড রিসেট করুন</translation>
 <translation id="4280429058323657511">, মেয়াদ শেষ <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{এই কার্ডটি আপনার Google অ্যাকাউন্টে সেভ করা হয়েছে}one{এই কার্ডগুলি আপনার Google অ্যাকাউন্টে সেভ করা হয়েছে}other{এই কার্ডগুলি আপনার Google অ্যাকাউন্টে সেভ করা হয়েছে}}</translation>
+<translation id="42981349822642051">প্রসারিত করুন</translation>
 <translation id="4302965934281694568">Chou3 (Envelope)</translation>
 <translation id="4305817255990598646">পাল্টান</translation>
 <translation id="4312613361423056926">B2</translation>
@@ -863,6 +863,7 @@
 <translation id="5810442152076338065"><ph name="DOMAIN" />-এ আপনার সংযোগ একটি অপ্রচলিত সাইফার স্যুট ব্যবহার করে এনক্রিপ্ট করা হয়েছে৷</translation>
 <translation id="5813119285467412249">&amp;যোগ করাকে পুনরায় করুন</translation>
 <translation id="5838278095973806738">এই সাইটে আপনার কোনো সংবেদনশীল তথ্য দেওয়া উচিত হবে না (উদাহরণস্বরূপ, পাসওয়ার্ড বা ক্রেডিট কার্ড) কারণ আক্রমণকারীরা এগুলি চুরি করতে পারে।</translation>
+<translation id="5860033963881614850">বন্ধ করুন</translation>
 <translation id="5863847714970149516">পরের পৃষ্ঠাতে আপনাকে চার্জ করা হতে পারে</translation>
 <translation id="5866257070973731571">ফোন নম্বর যোগ করুন</translation>
 <translation id="5869405914158311789">এই সাইটটিতে পৌছানো যাচ্ছে না</translation>
@@ -871,6 +872,7 @@
 <translation id="5893752035575986141">ক্রেডিট কার্ড গ্রহণ করা হয়।</translation>
 <translation id="5901630391730855834">হলুদ</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (সিঙ্ক হয়েছে)</translation>
+<translation id="5916664084637901428">চালু</translation>
 <translation id="5919090499915321845">B10</translation>
 <translation id="5921639886840618607">Google অ্যাকাউন্টে কার্ড সেভ করবেন?</translation>
 <translation id="5922853866070715753">প্রায় শেষ</translation>
@@ -966,6 +968,7 @@
 <translation id="6508722015517270189">Chrome পুনরায় চালু করুন</translation>
 <translation id="6529602333819889595">&amp;মুছে ফেলাকে আবার করুন</translation>
 <translation id="6534179046333460208">বাস্তবিক ওয়েব প্রস্তাবনাগুলি</translation>
+<translation id="6556866813142980365">আবার করুন</translation>
 <translation id="6563469144985748109">আপনার পরিচালক এখনও এটি অনুমোদন করেন নি</translation>
 <translation id="6569060085658103619">আপনি একটি এক্সটেনশন পৃষ্ঠা দেখছেন</translation>
 <translation id="6578796323535178455">C2 (Envelope)</translation>

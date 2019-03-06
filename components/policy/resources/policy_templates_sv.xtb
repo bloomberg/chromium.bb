@@ -260,13 +260,6 @@
       enhetligt skrivbord. I så fall kan användaren inte aktivera funktionen.</translation>
 <translation id="1474273443907024088">Inaktivera falsk start i TLS</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
-<translation id="1478485744311397487">Servrar som <ph name="PRODUCT_NAME" /> kan delegera till.
-
-          Avgränsa flera servernamn med komma. Jokertecken (*) får användas.
-
-          Om den här principen saknar inställning kommer <ph name="PRODUCT_NAME" /> inte att delegera användaruppgifter även om en server identifieras som ett intranät.
-
-          Den här principen ignoreras om principen UseKDCConstrainedDelegation är inställd på sant.</translation>
 <translation id="1484146587843605071"><ph name="PRODUCT_NAME" /> förbigår proxyn för listan med värdenheter som anges här.
 
           Den här principen används bara om du har valt manuella proxyinställningar i Välj hur inställningar för proxyserver ska anges.
@@ -402,9 +395,9 @@
 
           Den här policyn följs endast om policyn DefaultSearchProviderEnabled är aktiverad.</translation>
 <translation id="1852294065645015766">Tillåt automatisk uppspelning av media</translation>
-<translation id="1857152770025485173">Principen förhindrar att användaren läser in webbsidor från svartlistade webbadresser. Svartlistan är en lista med webbadressmallar som anger vilka webbadresser som inte är tillåtna.
+<translation id="1857152770025485173">Principen förhindrar att användaren läser in webbsidor från svartlistade webbadresser. Svartlistan är en lista med webbadressmönster som anger vilka webbadresser som inte är tillåtna.
 
-      Webbadressmallen ska ha det format som anges i https://www.chromium.org/administrators/url-blacklist-filter-format.
+      Webbadressmönstret ska ha det format som anges i https://www.chromium.org/administrators/url-blacklist-filter-format.
 
       Undantag kan definieras i principen för vitlistade webbadresser. De här principerna kan innehålla högst 1000 poster. Alla poster utöver det ignoreras.
 
@@ -906,7 +899,7 @@
 
       Om principen används är bara de skrivare vars id matchar något av principens värden tillgängliga för användaren. Id:na måste svara mot id- eller guid-fälten i den fil som angetts i <ph name="DEVICE_PRINTERS_POLICY" />.
       </translation>
-<translation id="2842152347010310843">Styr vitlistan med webbadressmallar där automatisk uppspelning alltid ska vara aktiverat.
+<translation id="2842152347010310843">Styr vitlistan med webbadressmönster där automatisk uppspelning alltid ska vara aktiverat.
 
       Om automatisk uppspelning har aktiverats kan videor spelas upp automatiskt (utan att användaren har godkänt det) med ljud i<ph name="PRODUCT_NAME" />.
 
@@ -928,7 +921,7 @@
 
       Om principen AutoplayAllowed är inställd på Sant har den här principen ingen funktion.
 
-      Om principen AutoplayAllowed är inställd på Falskt tillåts automatisk uppspelning fortfarande för alla webbadressmallar som angetts i den här principen.
+      Om principen AutoplayAllowed är inställd på Falskt tillåts automatisk uppspelning fortfarande för alla webbadressmönster som angetts i den här principen.
 
       Observera att om principen ändras medan <ph name="PRODUCT_NAME" /> körs gäller principen bara för nya flikar som öppnas. Därför kan vissa flikar fortfarande fungera som de gjorde innan.</translation>
 <translation id="285480231336205327">Aktivera läge för hög kontrast</translation>
@@ -938,11 +931,6 @@
 
       Om du aktiverar den här inställningen används operativsystemets standardskrivare som standardval för Förhandsgranskning.</translation>
 <translation id="2856674246949497058">Återställ till målversionen om operativsystemet är nyare än målversionen. Utför powerwash i samband med detta.</translation>
-<translation id="2858646435735022107">Styr om flaggan OK-AS-DELEGATE från KDC ska följas eller om AuthNegotiateDelegateWhitelist ska användas för att begränsa delegering av Kerberos-ärenden.
-
-          Om den här principen är inställd på sant följer HTTP-autentiseringen inställningarna för begränsad delegering på KDC. Principen AuthNegotiateDelegateWhitelist ignoreras i detta fall. Mer information finns på https://tools.ietf.org/html/rfc5896.html.
-
-          Om den här principen saknar inställning eller ställs in på falskt ignoreras inställningarna för begränsad delegering från KDC och AuthNegotiateDelegateWhitelist följs.</translation>
 <translation id="2872961005593481000">Stäng av</translation>
 <translation id="2873651257716068683">Åsidosätter standardpappersformatet för utskrift. Om pappersformatet inte är tillgängligt ignoreras principen.</translation>
 <translation id="2874209944580848064">Tänk på detta för <ph name="PRODUCT_OS_NAME" />-enheter som stöder Android-appar:</translation>
@@ -1708,6 +1696,11 @@
 <translation id="4725528134735324213">Aktivera säkerhetskopieringstjänsten för Android</translation>
 <translation id="4725801978265372736">Kräv att namnet på den lokala användaren och namnet på ägaren av fjärråtkomstvärden överensstämmer</translation>
 <translation id="4733471537137819387">Policyer som gäller integrerad HTTP-autentisering</translation>
+<translation id="4744190513568488164">Servrar som <ph name="PRODUCT_NAME" /> kan delegera till.
+
+          Avgränsa flera servernamn med kommatecken. Jokertecken (*) tillåts.
+
+          Om du inte anger principen kommer <ph name="PRODUCT_NAME" /> inte att delegera användaruppgifter även om en server identifieras som ett intranät.</translation>
 <translation id="4752880493649142945">Klientcertifikat för att ansluta till RemoteAccessHostTokenValidationUrl</translation>
 <translation id="4757671984625088193">Om principen är inställd på sant eller inte inställd alls får du förslag på sidor relaterade till den aktuella sidan från <ph name="PRODUCT_NAME" />.
       Förslagen fjärrhämtas från Googles servrar.
@@ -1785,7 +1778,6 @@
 <translation id="4986560318567565414">Sökväg till Chrome för att byta från den alternativa webbläsaren.</translation>
 <translation id="4988291787868618635">Åtgärd som ska vidtas när inaktivitetstiden har gått</translation>
 <translation id="4995548127349206948">Om autentisering med NTLMv2 har aktiverats eller inte</translation>
-<translation id="5022792010322211583">Använd KDC-begränsad delegering</translation>
 <translation id="5047604665028708335">Tillåt åtkomst till webbplatser utanför innehållspaket</translation>
 <translation id="5052081091120171147">Om den här policyn är aktiverad gör den att webbhistoriken måste importeras från den nuvarande standardwebbläsaren. Den påverkar då även importfönstret.
 

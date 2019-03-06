@@ -51,7 +51,6 @@
 <translation id="1232569758102978740">Bez tytułu</translation>
 <translation id="1240347957665416060">Nazwa urządzenia</translation>
 <translation id="124116460088058876">Więcej języków</translation>
-<translation id="1246987714874202335">Zaktualizuj datę ważności</translation>
 <translation id="1250759482327835220">Aby następnym razem zapłacić szybciej, zapisz kartę oraz imię, nazwisko i adres rozliczeniowy na swoim koncie Google.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (zsynchronizowane)</translation>
 <translation id="1256368399071562588">&lt;p&gt;Jeśli nie udaje się otworzyć strony, spróbuj wykonać najpierw te czynności, aby rozwiązać problem:&lt;/p&gt;
@@ -281,7 +280,6 @@
     zasady bezpieczeństwa do wszystkich swoich żądań. Jednak nie dostarczył zasad,
     co uniemożliwia przeglądarce zrealizowanie
     Twojego żądania dotyczącego strony <ph name="SITE" />.</translation>
-<translation id="2442483081384580286">Ostrzeżenia Bezpiecznego przeglądania</translation>
 <translation id="244665789865330679">Twoim urządzeniem i kontem zarządza <ph name="ENROLLMENT_DOMAIN" />. Oznacza to, że administrator może zdalnie konfigurować Twoje urządzenie i konto.</translation>
 <translation id="2463193859425327265">Zmień stronę główną</translation>
 <translation id="2463739503403862330">Wpisz</translation>
@@ -611,6 +609,7 @@
 <translation id="4277028893293644418">Resetuj hasło</translation>
 <translation id="4280429058323657511">, ważna do: <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{Ta karta została zapisana na Twoim koncie Google}few{Te karty zostały zapisane na Twoim koncie Google}many{Te karty zostały zapisane na Twoim koncie Google}other{Te karty zostały zapisane na Twoim koncie Google}}</translation>
+<translation id="42981349822642051">Rozwiń</translation>
 <translation id="4302965934281694568">Chou3 (koperta)</translation>
 <translation id="4305817255990598646">Przełącz</translation>
 <translation id="4312613361423056926">B2</translation>
@@ -881,6 +880,7 @@
 <translation id="5810442152076338065">Połączenie z <ph name="DOMAIN" /> jest szyfrowane przy użyciu przestarzałego zestawu szyfrów.</translation>
 <translation id="5813119285467412249">&amp;Ponów dodanie</translation>
 <translation id="5838278095973806738">Nie podawaj żadnych informacji poufnych (takich jak hasła czy karty kredytowe) w tej witrynie, bo osoby atakujące będą mogły je wykraść.</translation>
+<translation id="5860033963881614850">Wyłączone</translation>
 <translation id="5863847714970149516">Otwierana strona może próbować obciążyć Cię płatnością</translation>
 <translation id="5866257070973731571">Dodaj numer telefonu</translation>
 <translation id="5869405914158311789">Ta witryna jest nieosiągalna</translation>
@@ -889,6 +889,7 @@
 <translation id="5893752035575986141">Karty kredytowe są akceptowane.</translation>
 <translation id="5901630391730855834">Żółty</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (zsynchronizowane)</translation>
+<translation id="5916664084637901428">Włączone</translation>
 <translation id="5919090499915321845">B10</translation>
 <translation id="5921639886840618607">Zapisać kartę na koncie Google?</translation>
 <translation id="5922853866070715753">Prawie gotowe</translation>
@@ -986,6 +987,7 @@
 <translation id="6508722015517270189">Uruchom ponownie Chrome</translation>
 <translation id="6529602333819889595">&amp;Ponów usunięcie</translation>
 <translation id="6534179046333460208">Sugestie dotyczące internetu rzeczy</translation>
+<translation id="6556866813142980365">Ponów</translation>
 <translation id="6563469144985748109">Twój menedżer jeszcze na to nie zezwolił</translation>
 <translation id="6569060085658103619">Przeglądasz stronę rozszerzenia</translation>
 <translation id="6578796323535178455">C2 (koperta)</translation>

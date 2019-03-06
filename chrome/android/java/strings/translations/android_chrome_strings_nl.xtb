@@ -11,7 +11,7 @@
 <translation id="1068672505746868501">Pagina's in het <ph name="SOURCE_LANGUAGE" /> nooit vertalen</translation>
 <translation id="1080790410959514870">Je logt uit van een account dat wordt beheerd door <ph name="DOMAIN_NAME" />. Hiermee worden de Chrome-gegevens verwijderd die zijn opgeslagen op dit apparaat, maar de gegevens blijven bewaard in je Google-account.</translation>
 <translation id="1099080783256647258">Wanneer Databesparing is ingeschakeld, maakt Chrome gebruik van Google-servers om pagina's te comprimeren voordat deze worden geladen. Op zeer trage pagina's herschrijft Databesparing de pagina zodat alleen essentiële content wordt geladen. Databesparing optimaliseert geen pagina's die in de incognitomodus worden geladen.</translation>
-<translation id="1100066534610197918">Openen in nieuw tabblad in groep</translation>
+<translation id="1100066534610197918">Open in nieuw tabblad in groep</translation>
 <translation id="1105960400813249514">Schermopname</translation>
 <translation id="1111673857033749125">Bladwijzers die je op andere apparaten hebt opgeslagen, worden hier weergegeven.</translation>
 <translation id="1113597929977215864">Vereenvoudigde weergave tonen</translation>
@@ -322,7 +322,6 @@
 <translation id="3341058695485821946">Bekijk hoeveel data je hebt bespaard</translation>
 <translation id="3350687908700087792">Alle incognitotabbladen sluiten</translation>
 <translation id="3353615205017136254">Lite-pagina geleverd door Google. Tik om de knop 'Origineel laden' om de originele pagina te laden.</translation>
-<translation id="3357505083294783610">Chrome verzendt de URL en content van de site naar Google. Je e-mailadres en creditcardtype uit de functie 'Automatisch aanvullen' van Chrome worden ook naar Google verzonden om deze service te leveren. Ga naar de instellingen van Chrome om de Google Assistent in Chrome en de functie 'Automatisch aanvullen' uit te schakelen. <ph name="BEGIN_LINK" />Meer informatie<ph name="END_LINK" /></translation>
 <translation id="3367813778245106622">Log opnieuw in om de synchronisatie te starten</translation>
 <translation id="3377025655491224618">Privétabblad</translation>
 <translation id="3384347053049321195">Afbeelding delen</translation>

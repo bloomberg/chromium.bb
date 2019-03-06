@@ -104,7 +104,6 @@
 <translation id="1143142264369994168">சான்றிதழ் கையொப்பமிடுநர்</translation>
 <translation id="1145292499998999162">செருகுநிரல் தடுக்கப்பட்டது</translation>
 <translation id="1145532888383813076">சாதனம், ஆப்ஸ், இணையம் ஆகியவற்றில் தேடவும்.</translation>
-<translation id="1146204723345436916">HTML கோப்பிலிருந்து புக்மார்க்குகளை இறக்குமதி செய்க...</translation>
 <translation id="114721135501989771">Chromeமில் Google ஸ்மார்ட்களை பெறுக</translation>
 <translation id="1148097584170732637"><ph name="FILE_COUNT" /> உள்ளது.
     <ph name="LINE_BREAK1" />
@@ -420,7 +419,6 @@
 <translation id="1608626060424371292">இவரை அகற்று</translation>
 <translation id="1609170755653088773">இந்தக் கடவுச்சொல்லை iPhone உடன் ஒத்திசைக்கவும்</translation>
 <translation id="1611584202130317952">ஒதுக்கீடு செய்வதற்கான செயல்முறையில் குறுக்கீடு ஏற்பட்டது. மீண்டும் முயலவும் அல்லது உங்கள் சாதன உரிமையாளர்/நிர்வாகியைத் தொடர்புகொள்ளவும்.</translation>
-<translation id="1611704746353331382">புக்மார்க்குகளை HTML கோப்பாக ஏற்றுமதி செய்க...</translation>
 <translation id="1614511179807650956">உங்களுக்கு அனுமதிக்கப்பட்ட மொபைல் டேட்டா முடிந்திருக்கலாம். கூடுதல் டேட்டாவை வாங்க, <ph name="NAME" /> செயல்பாட்டுப் போர்ட்டலுக்குச் செல்லவும்</translation>
 <translation id="161460670679785907">உங்கள் மொபைலைக் கண்டறிய முடியவில்லை</translation>
 <translation id="1616206807336925449">இந்த நீட்டிப்பிற்குச் சிறப்பு அனுமதிகள் தேவையில்லை.</translation>
@@ -651,7 +649,6 @@
 <translation id="1932098463447129402">இதற்குமுன் அல்ல</translation>
 <translation id="1933345018156373194">நகர்த்த முடியவில்லை, எதிர்பாராத பிழை: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1933809209549026293">சுட்டி அல்லது விசைப்பலகையை இணைக்கவும். புளூடூத் சாதனத்தைப் பயன்படுத்துகிறீர்கள் எனில், அது இணைப்பதற்குத் தயாராக உள்ளது என்பதை உறுதிசெய்யவும்.</translation>
-<translation id="1936157145127842922">கோப்புறையில் காண்பி</translation>
 <translation id="1938351510777341717">வெளிக் கட்டளை</translation>
 <translation id="1940546824932169984">இணைத்துள்ள சாதனங்கள்</translation>
 <translation id="1942765061641586207">படத் தெளிவுத்திறன்</translation>
@@ -1370,7 +1367,6 @@
 <translation id="3009300415590184725">மொபைல் டேட்டா சேவை அமைப்பு செயலாக்கத்தை நிச்சயம் ரத்துசெய்ய வேண்டுமா?</translation>
 <translation id="3009779501245596802">அட்டவணைப்படுத்திய தரவுத்தளங்கள்</translation>
 <translation id="3010279545267083280">கடவுச்சொல் நீக்கப்பட்டது</translation>
-<translation id="3011362742078013760">&amp;மறைநிலை சாளரத்தில் எல்லா புக்மார்க்ஸையும் திற</translation>
 <translation id="3011488081941333749"><ph name="DOMAIN" /> இன் குக்கீகள், வெளியேறும்போது அழிக்கப்படும்</translation>
 <translation id="3012631534724231212">(iframe)</translation>
 <translation id="3012804260437125868">பாதுகாப்பான ஒரே தள இணைப்புகள் மட்டும்</translation>
@@ -2576,7 +2572,6 @@
 <translation id="4881695831933465202">திற</translation>
 <translation id="4882312758060467256">இந்தத் தளத்திற்கு அணுகலைப் பெற்றுள்ளது</translation>
 <translation id="4882831918239250449">தேடல், விளம்பரங்கள் மற்றும் பலவற்றைத் தனிப்பயனாக்க உங்கள் உலாவல் வரலாறு எப்படிப் பயன்படுத்தப்படுகிறது என்பதைக் கட்டுப்படுத்துதல்</translation>
-<translation id="4883178195103750615">புக்மார்க்குகளை HTML கோப்பாக ஏற்றுமதி செய்க...</translation>
 <translation id="4883436287898674711">எல்லா <ph name="WEBSITE_1" /> தளங்களும்</translation>
 <translation id="48838266408104654">&amp;பணி நிர்வாகி</translation>
 <translation id="4884987973312178454">6x</translation>
@@ -2910,7 +2905,6 @@
 <translation id="5376931455988532197">மிகப் பெரிய கோப்பு</translation>
 <translation id="537813040452600081">இந்தச் சாளரத்தில் நீங்கள் பார்க்கும் பக்கங்கள், உலாவி வரலாற்றில் தோன்றாது, மேலும் நீங்கள் வெளியேறிய பிறகு, பிற தடங்களான குக்கீகள் போன்றவற்றை கணினியில் விட்டுச் செல்லாது. நீங்கள் பதிவிறக்கிய கோப்புகள் மற்றும் உருவாக்கிய புக்மார்க்குகள் பாதுகாக்கப்படாது.</translation>
 <translation id="5379140238605961210">மைக்ரோஃபோன் அணுகலை தொடர்ந்து தடு</translation>
-<translation id="5379268888377976432">நீக்கியதை செயல்தவிர்</translation>
 <translation id="5382591305415226340">ஆதரிக்கப்படும் இணைப்புகளை நிர்வகி</translation>
 <translation id="5384883051496921101">இந்தத் தளமானது மறைநிலைக்கு வெளியே உள்ள பயன்பாட்டுடன் தகவலைப் பகிரவிருக்கிறது.</translation>
 <translation id="5388885445722491159">சேர்க்கப்பட்டவை</translation>
@@ -3206,7 +3200,6 @@
 <translation id="5801568494490449797">விருப்பத்தேர்வுகள்</translation>
 <translation id="5804241973901381774">அனுமதிகள்</translation>
 <translation id="5805697420284793859">சாளர நிர்வாகி</translation>
-<translation id="580571955903695899">தலைப்பின்படி மறுவரிசைப்படுத்து</translation>
 <translation id="5811750797187914944">முடிந்தது</translation>
 <translation id="5814126672212206791">இணைப்பு வகை</translation>
 <translation id="5815645614496570556">X.400 முகவரி</translation>
@@ -3533,7 +3526,6 @@
 <translation id="6264365405983206840">அ&amp;னைத்தையும் தேர்ந்தெடு</translation>
 <translation id="6267166720438879315"><ph name="HOST_NAME" /> க்கு உங்களை அங்கீகரிக்க ஒரு சான்றிதழைத் தேர்ந்தெடுங்கள்</translation>
 <translation id="6268252012308737255"><ph name="APP" /> இல் திற</translation>
-<translation id="6268747994388690914">HTML கோப்பிலிருந்து புக்மார்க்குகளை இறக்குமதி செய்...</translation>
 <translation id="6272643420381259437">செருகுநிரலைப் பதிவிறக்கும் போது, பிழை (<ph name="ERROR" />) ஏற்பட்டது</translation>
 <translation id="6273677812470008672">தரம்</translation>
 <translation id="6277105963844135994">நெட்வொர்க் டைம்அவுட்</translation>
@@ -3608,7 +3600,6 @@
 <translation id="6393156038355142111">வலுவான கடவுச்சொல்லைப் பரிந்துரை</translation>
 <translation id="6395575651121294044"><ph name="NUMBER_OF_FILES" /> கோப்புகள்</translation>
 <translation id="6397094776139756010">ஒத்திசைவு மற்றும் தனிப்பயனாக்க விருப்பங்கள்</translation>
-<translation id="6397592254427394018">&amp;மறைநிலை சாளரத்தில் எல்லா புக்மார்க்ஸையும் திற</translation>
 <translation id="6398715114293939307">Google Play ஸ்டோரை அகற்று</translation>
 <translation id="6398765197997659313">முழுத்திரையிலிருந்து வெளியேறு</translation>
 <translation id="6399774419735315745">உளவாளி</translation>
@@ -3872,7 +3863,6 @@
 <translation id="6798954102094737107">செருகுநிரல்: <ph name="PLUGIN_NAME" /></translation>
 <translation id="6801435275744557998">டச்ஸ்கிரீனை அளவுத்திருத்தம் செய்</translation>
 <translation id="6802031077390104172"><ph name="USAGE" /> (<ph name="OID" />)</translation>
-<translation id="6804671422566312077">&amp;புதிய சாளரத்தில் எல்லா புக்மார்க்ஸையும் திற</translation>
 <translation id="6805038906417219576">சரி</translation>
 <translation id="6805647936811177813"><ph name="HOST_NAME" /> இல் இருந்து கிளையண்ட் சான்றிதழை இறக்குமதி செய்ய <ph name="TOKEN_NAME" /> இல் தயவுசெய்து உள்நுழைக.</translation>
 <translation id="680572642341004180"><ph name="SHORT_PRODUCT_OS_NAME" /> இல் RLZ கண்காணிப்பை இயக்கு.</translation>
@@ -3979,7 +3969,6 @@
 <translation id="6970856801391541997">குறிப்பிட்ட பக்கங்களை அச்சிடு</translation>
 <translation id="6972180789171089114">ஆடியோ/வீடியோ</translation>
 <translation id="6972754398087986839">தொடங்குக</translation>
-<translation id="6973630695168034713">கோப்புறைகள்</translation>
 <translation id="6974609594866392343">ஆஃப்லைன் டெமோ பயன்முறை</translation>
 <translation id="6977381486153291903">நிலைபொருள் பதிப்பு</translation>
 <translation id="6978121630131642226">தேடல் இன்ஜின்கள்</translation>
@@ -4310,7 +4299,6 @@
 <translation id="7478485216301680444">Kiosk பயன்பாட்டை நிறுவ முடியவில்லை.</translation>
 <translation id="7481312909269577407">அடுத்த பக்கம்</translation>
 <translation id="748138892655239008">சான்றிதழ் அடிப்படை கட்டுப்பாடுகள்</translation>
-<translation id="7484964289312150019">&amp;புதிய சாளரத்தில் எல்லா புக்மார்க்ஸையும் திற</translation>
 <translation id="7487067081878637334">தொழில்நுட்பம்</translation>
 <translation id="7487099628810939106">கிளிக் செய்யுமுன் தாமதிக்க:</translation>
 <translation id="7487969577036436319">கூறுகள் எதுவும் நிறுவப்படவில்லை</translation>
@@ -4743,7 +4731,6 @@
 <translation id="8063235345342641131">இயல்பு பச்சைநிற அவதார்</translation>
 <translation id="8064671687106936412">திறவுச்சொல்:</translation>
 <translation id="8066773524873206594">அனைத்து மாற்றங்களும் <ph name="DOWNLOADS_FOLDER" /> கோப்புறையில் சேமிக்கப்படும்.</translation>
-<translation id="806812017500012252">தலைப்பின்படி மறுவரிசைப்படுத்து</translation>
 <translation id="8068253693380742035">உள்நுழைய, தொடவும்</translation>
 <translation id="8069615408251337349">Google கிளவுடு அச்சு</translation>
 <translation id="8071432093239591881">படமாக அச்சிடு</translation>

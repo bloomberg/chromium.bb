@@ -51,7 +51,6 @@
 <translation id="1232569758102978740">Névtelen</translation>
 <translation id="1240347957665416060">Az eszköze neve</translation>
 <translation id="124116460088058876">További nyelvek…</translation>
-<translation id="1246987714874202335">A lejárati dátum frissítése</translation>
 <translation id="1250759482327835220">A következő alkalommal gyorsabban fizethet, ha elmenti kártyáját, nevét és számlázási címét a Google-fiókjába.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (szinkronizálva)</translation>
 <translation id="1256368399071562588">&lt;p&gt;Ha nem nyílik meg a felkeresni kívánt webhely, először próbálja meg kijavítani a hibát a következő problémamegoldó lépések végrehajtásával:&lt;/p&gt;
@@ -281,7 +280,6 @@
     alkalmazását kérte az összes hozzá irányuló kérés esetében. De most nem sikerült
     bemutatnia a házirendet, így a böngésző nem tudja teljesíteni
     a(z) <ph name="SITE" /> webhelyre irányuló kérelmet.</translation>
-<translation id="2442483081384580286">A Biztonságos böngészés figyelmeztetései</translation>
 <translation id="244665789865330679">Eszközét és fiókját a(z) <ph name="ENROLLMENT_DOMAIN" /> kezeli. A rendszergazda távolról módosíthatja az eszköz és a fiók beállításait.</translation>
 <translation id="2463193859425327265">Kezdőlap módosítása</translation>
 <translation id="2463739503403862330">Kitöltés</translation>
@@ -609,6 +607,7 @@
 <translation id="4277028893293644418">Jelszó visszaállítása</translation>
 <translation id="4280429058323657511">, lejár: <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{A kártyát mentettük a Google-fiókjába.}other{Ezeket a kártyákat mentettük a Google-fiókjába.}}</translation>
+<translation id="42981349822642051">Kibontás</translation>
 <translation id="4302965934281694568">Chou3 (boríték)</translation>
 <translation id="4305817255990598646">Váltás</translation>
 <translation id="4312613361423056926">B2</translation>
@@ -879,6 +878,7 @@
 <translation id="5810442152076338065">A(z) <ph name="DOMAIN" /> domainnel való kapcsolata elavult kriptográfiával van titkosítva.</translation>
 <translation id="5813119285467412249">&amp;Hozzáadás újra</translation>
 <translation id="5838278095973806738">Ne írjon be semmilyen bizalmas adatot (például jelszót vagy hitelkártyaadatot) a webhelyen, mivel a támadók ellophatják.</translation>
+<translation id="5860033963881614850">Kikapcsolva</translation>
 <translation id="5863847714970149516">Előfordulhat, hogy a következő oldal megpróbál pénzt felszámolni Önnek</translation>
 <translation id="5866257070973731571">Telefonszám hozzáadása</translation>
 <translation id="5869405914158311789">A webhely nem érhető el</translation>
@@ -887,6 +887,7 @@
 <translation id="5893752035575986141">Elfogadott hitelkártyák.</translation>
 <translation id="5901630391730855834">Sárga</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (szinkronizálva)</translation>
+<translation id="5916664084637901428">Be</translation>
 <translation id="5919090499915321845">B10</translation>
 <translation id="5921639886840618607">Menti a kártyát a Google-fiókjába?</translation>
 <translation id="5922853866070715753">Majdnem kész</translation>
@@ -984,6 +985,7 @@
 <translation id="6508722015517270189">Indítsa újra a Chrome-ot</translation>
 <translation id="6529602333819889595">&amp;Törlés újra</translation>
 <translation id="6534179046333460208">Fizikai web – javaslatok</translation>
+<translation id="6556866813142980365">Újra</translation>
 <translation id="6563469144985748109">A kezelő még nem hagyta jóvá</translation>
 <translation id="6569060085658103619">Jelenleg bővítményoldalt tekint meg</translation>
 <translation id="6578796323535178455">C2 (boríték)</translation>

@@ -336,6 +336,7 @@
 <translation id="6537270692134705506">स्क्रीन कॅप्चर करा</translation>
 <translation id="6542521951477560771"><ph name="RECEIVER_NAME" /> वर कास्ट करत आहे</translation>
 <translation id="6559976592393364813">अ‍ॅडमिनिस्ट्रेटरला विचारा</translation>
+<translation id="6574601967010742428">डिव्हाइस अॅडमिनिस्ट्रेटर कदाचित तुमची अॅक्टिव्हिटी नियंत्रित करू शकेल.</translation>
 <translation id="6585808820553845416"><ph name="SESSION_TIME_REMAINING" /> मध्ये सत्र समाप्त होते.</translation>
 <translation id="6627638273713273709">Search+Shift+K</translation>
 <translation id="6650933572246256093">"<ph name="DEVICE_NAME" />" ब्लूटूथ डिव्हाइस पेअरिंगसाठी परवानगी घेऊ इच्छिते. कृपया त्या डिव्हाइसवर ही पासकी एंटर करा: <ph name="PASSKEY" /></translation>
@@ -442,7 +443,6 @@
 <translation id="8261506727792406068">हटवा</translation>
 <translation id="8297006494302853456">कमकुवत</translation>
 <translation id="8308637677604853869">मागील मेनू</translation>
-<translation id="8332664326438198339">लाँचरवर परत जा</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">टीप तयार करा</translation>
 <translation id="8375916635258623388">हे <ph name="DEVICE_NAME" />आणि तुमचा फोन आपोआप कनेक्ट होतील</translation>

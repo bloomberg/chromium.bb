@@ -243,13 +243,6 @@ Secara default, tidak ada mode buka kunci cepat yang tersedia untuk perangkat ya
       dinonaktifkan. Dalam kasus ini, pengguna tidak dapat mengaktifkan fitur tersebut.</translation>
 <translation id="1474273443907024088">Nonaktifkan TLS False Start</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
-<translation id="1478485744311397487">Server yang mungkin didelegasikan <ph name="PRODUCT_NAME" />.
-
-          Pisahkan beberapa nama server dengan koma. Karakter pengganti (*) diizinkan.
-
-          Jika Anda membiarkan kebijakan ini tidak disetel, <ph name="PRODUCT_NAME" /> tidak akan mendelegasikan kredensial pengguna meskipun server terdeteksi sebagai Intranet.
-
-          Kebijakan ini akan diabaikan jika kebijakan 'UseKDCConstrainedDelegation' disetel ke True.</translation>
 <translation id="1484146587843605071"><ph name="PRODUCT_NAME" /> akan mengabaikan semua proxy pada daftar host yang diberikan di sini.
 
           Kebijakan ini hanya berpengaruh jika Anda telah memilih setelan proxy manual di 'Pilih cara menentukan setelan server proxy'.
@@ -898,11 +891,6 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
 
       Jika setelan ini diaktifkan, Pratinjau Cetak akan menggunakan printer default sistem OS sebagai pilihan tujuan default.</translation>
 <translation id="2856674246949497058">Rollback dan tetap menggunakan versi target jika versi OS lebih baru dari target. Lakukan powerwash selama prosesnya.</translation>
-<translation id="2858646435735022107">Mengontrol apakah tanda OK-AS-DELEGATE dari KDC diikuti atau apakah 'AuthNegotiateDelegateWhitelist' digunakan untuk membatasi delegasi tiket Kerberos.
-
-          Jika kebijakan ini disetel ke True, autentikasi HTTP akan mengikuti setelan delegasi yang dibatasi di KDC. Dalam kasus tersebut, kebijakan 'AuthNegotiateDelegateWhitelist' akan diabaikan. Lihat https://tools.ietf.org/html/rfc5896.html untuk mengetahui informasi selengkapnya.
-
-          Jika kebijakan ini tidak disetel atau disetel ke False, setelan delegasi yang dibatasi dari KDC akan diabaikan dan kebijakan 'AuthNegotiateDelegateWhitelist' akan diikuti.</translation>
 <translation id="2872961005593481000">Matikan</translation>
 <translation id="2873651257716068683">Mengganti ukuran halaman pencetakan default. Jika ukuran halaman tidak tersedia, kebijakan ini akan diabaikan.</translation>
 <translation id="2874209944580848064">Catatan untuk perangkat <ph name="PRODUCT_OS_NAME" /> yang mendukung aplikasi Android:</translation>
@@ -1645,6 +1633,11 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 <translation id="4725528134735324213">Aktifkan Android Backup Service</translation>
 <translation id="4725801978265372736">Wajibkan pencocokan nama pengguna lokal dengan pemilik host akses jarak jauh</translation>
 <translation id="4733471537137819387">Kebijakan yang terkait dengan autentikasi HTTP terintegrasi.</translation>
+<translation id="4744190513568488164">Server yang dapat dijadikan tempat pendelegasian <ph name="PRODUCT_NAME" />.
+
+          Memisahkan beberapa nama server dengan koma. Karakter pengganti (*) diizinkan.
+
+          Jika Anda membiarkan kebijakan ini tidak disetel, <ph name="PRODUCT_NAME" /> tidak akan mendelegasikan kredensial pengguna meskipun server terdeteksi sebagai Intranet.</translation>
 <translation id="4752880493649142945">Sertifikat klien untuk menyambung ke RemoteAccessHostTokenValidationUrl</translation>
 <translation id="4757671984625088193">Jika disetel ke true atau tidak disetel, <ph name="PRODUCT_NAME" /> akan menyarankan halaman yang terkait dengan halaman saat ini.
       Saran ini diambil dari jarak jauh dari server Google.
@@ -1722,7 +1715,6 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 <translation id="4986560318567565414">Jalur ke Chrome untuk beralih dari browser alternatif.</translation>
 <translation id="4988291787868618635">Tindakan yang akan diambil saat penundaan waktu menganggur tercapai</translation>
 <translation id="4995548127349206948">Apakah autentikasi NTLMv2 diaktifkan atau tidak.</translation>
-<translation id="5022792010322211583">Gunakan delegasi yang dibatasi KDC</translation>
 <translation id="5047604665028708335">Memungkinkan akses ke situs di luar paket konten</translation>
 <translation id="5052081091120171147">Kebijakan ini memaksa histori browseran diimpor dari browser default saat ini, jika diaktifkan. Jika diaktifkan, kebijakan ini juga memengaruhi dialog impor. Jika dinonaktifkan, tidak ada histori browseran yang diimpor. Jika tidak disetel, pengguna mungkin ditanya apakah akan mengimpor, atau pengimporan dapat terjadi secara otomatis.</translation>
 <translation id="5056708224511062314">Lup dinonaktifkan</translation>

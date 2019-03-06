@@ -94,6 +94,7 @@
 <translation id="4360991593054037559">Введіть дійсне значення. Два найближчі дійсні значення: <ph name="VALID_VALUE_LOW" /> і <ph name="VALID_VALUE_HIGHER" />.</translation>
 <translation id="4384583879834880242">Запитання</translation>
 <translation id="4413860115965805769">кнопка меню</translation>
+<translation id="4444765639179266822">Схоже, на зображенні написано "<ph name="OCR_TEXT" />"</translation>
 <translation id="4446524499724042288">посилання на глосарій</translation>
 <translation id="4522570452068850558">Деталі</translation>
 <translation id="4542388879936266156">залишилося часу: <ph name="REMAINING_TIME" /></translation>
@@ -120,6 +121,7 @@
 <translation id="5164977714490026579">Значення має бути більшим або дорівнювати <ph name="MINIMUM" />.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> Пб</translation>
 <translation id="5307600278924710095">Введіть частину електронної адреси до знака "<ph name="ATSIGN" />". Електронна адреса "<ph name="INVALIDADDRESS" />" неповна.</translation>
+<translation id="5334352251556557839">Не вдалося відтворити медіавміст.</translation>
 <translation id="5406322316791861025">фігура</translation>
 <translation id="5453733299334684579">елемент дерева</translation>
 <translation id="5466621249238537318">Виберіть один або декілька файлів.</translation>
@@ -146,6 +148,7 @@
 <translation id="6150588977291308318">бібліографія</translation>
 <translation id="6164829606128959761">вимірювач</translation>
 <translation id="6166809985690652833">післямова</translation>
+<translation id="6209276755895393898">Схоже, на цьому зображенні <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">глосарій</translation>
 <translation id="6398862346408813489">Показати панель вибору місяців</translation>
 <translation id="6404546809543547843">повзунок часу відтворення аудіо</translation>
@@ -176,6 +179,7 @@
 <translation id="7139483182332611405">передмова</translation>
 <translation id="7263440858009898357">Виберіть елемент зі списку.</translation>
 <translation id="727747134524199931">заголовок стовпця</translation>
+<translation id="7320576522385648310">буферизація</translation>
 <translation id="7353453495576941748">подяка</translation>
 <translation id="7364796246159120393">Вибрати файл</translation>
 <translation id="739024184232394898">Інші...</translation>

@@ -104,7 +104,6 @@
 <translation id="1143142264369994168">חותם על אישור </translation>
 <translation id="1145292499998999162">הפלאגין חסום</translation>
 <translation id="1145532888383813076">אפשר לחפש במכשיר, באפליקציות ובאינטרנט.</translation>
-<translation id="1146204723345436916">‏יבוא סימניות מקובץ HTML...</translation>
 <translation id="114721135501989771">‏תכונות חכמות של Google</translation>
 <translation id="1148097584170732637">נמצאו <ph name="FILE_COUNT" />.
     <ph name="LINE_BREAK1" />
@@ -417,7 +416,6 @@
 <translation id="1608626060424371292">הסר את המשתמש הזה</translation>
 <translation id="1609170755653088773">‏סנכרון הסיסמה הזו עם מכשיר iPhone שלך</translation>
 <translation id="1611584202130317952">תהליך הקצאת הגישה הופסק. יש לנסות שוב, או לפנות לבעלי המכשיר או למנהל המערכת.</translation>
-<translation id="1611704746353331382">‏יצוא סימניות לקובץ HTML...</translation>
 <translation id="1614511179807650956">ייתכן שניצלת את כל חבילת הגלישה שלך. בפורטל ההפעלה של <ph name="NAME" /> ניתן לשלם על הרחבת החבילה</translation>
 <translation id="161460670679785907">לא ניתן לזהות את הטלפון שלך</translation>
 <translation id="1616206807336925449">אין צורך בהרשאות מיוחדות כדי להשתמש בתוסף זה.</translation>
@@ -648,7 +646,6 @@
 <translation id="1932098463447129402">לא לפני</translation>
 <translation id="1933345018156373194">ההעברה נכשלה, שגיאה לא צפויה: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1933809209549026293">‏חבר עכבר או מקלדת. אם ברצונך להשתמש במכשיר Bluetooth, ודא שהוא מוכן להתאמה.</translation>
-<translation id="1936157145127842922">הצג בתיקייה</translation>
 <translation id="1938351510777341717">‏מקש Command חיצוני</translation>
 <translation id="1940546824932169984">מכשירים מחוברים</translation>
 <translation id="1942765061641586207">רזולוציית תמונה</translation>
@@ -1366,7 +1363,6 @@
 <translation id="3009300415590184725">האם אתה בטוח שברצונך לבטל את תהליך ההתקנה של שירות הנתונים לנייד?</translation>
 <translation id="3009779501245596802">מסדי נתונים שנוספו לאינדקס</translation>
 <translation id="3010279545267083280">הסיסמה נמחקה</translation>
-<translation id="3011362742078013760">פתח את כל הסימניות בחלון &amp;גלישה בסתר</translation>
 <translation id="3011488081941333749">‏קובצי Cookie מ-<ph name="DOMAIN" /> יימחקו בעת היציאה</translation>
 <translation id="3012631534724231212">(iframe)</translation>
 <translation id="3012804260437125868">חיבורים מאובטחים מאותו אתר בלבד</translation>
@@ -2573,7 +2569,6 @@
 <translation id="4881695831933465202">פתח</translation>
 <translation id="4882312758060467256">יש גישה לאתר הזה</translation>
 <translation id="4882831918239250449">הגדרת השימוש בהיסטוריית הגלישה לצורך התאמה אישית של החיפוש, המודעות ועוד</translation>
-<translation id="4883178195103750615">‏יצוא סימניות לקובץ HTML...</translation>
 <translation id="4883436287898674711">כל אתרי <ph name="WEBSITE_1" /></translation>
 <translation id="48838266408104654">&amp;מנהל המשימות</translation>
 <translation id="4884987973312178454">6x</translation>
@@ -2908,7 +2903,6 @@
 <translation id="5376931455988532197">הקובץ גדול מדי</translation>
 <translation id="537813040452600081">‏דפים שתעיין בהם בחלון זה לא יופיעו בהיסטוריה של הדפדפן, והם לא ישאירו במחשב עקבות אחרים, כגון קובצי Cookie, לאחר שתצא. קבצים שתוריד וסימניות שתיצור לא יישמרו.</translation>
 <translation id="5379140238605961210">המשך לחסום גישה למיקרופון</translation>
-<translation id="5379268888377976432">בטל מחיקה</translation>
 <translation id="5382591305415226340">נהל קישורים נתמכים</translation>
 <translation id="5384883051496921101">אתר זה עומד לשתף מידע עם אפליקציה מחוץ למצב גלישה בסתר.</translation>
 <translation id="5388885445722491159">מתואם</translation>
@@ -3203,7 +3197,6 @@
 <translation id="5801568494490449797">העדפות</translation>
 <translation id="5804241973901381774">הרשאות</translation>
 <translation id="5805697420284793859">מנהל החלונות</translation>
-<translation id="580571955903695899">סדר מחדש לפי כותרת</translation>
 <translation id="5811750797187914944">סיימת</translation>
 <translation id="5814126672212206791">סוג חיבור</translation>
 <translation id="5815645614496570556">‏כתובת X.400</translation>
@@ -3530,7 +3523,6 @@
 <translation id="6264365405983206840">בחר &amp;הכל</translation>
 <translation id="6267166720438879315">בחר אישור כדי לאמת את עצמך מול <ph name="HOST_NAME" /></translation>
 <translation id="6268252012308737255">פתח באמצעות <ph name="APP" /></translation>
-<translation id="6268747994388690914">‏יבוא סימניות מקובץ HTML...</translation>
 <translation id="6272643420381259437">אירעה שגיאה (<ph name="ERROR" />) במהלך הורדת הפלאגין</translation>
 <translation id="6273677812470008672">איכות</translation>
 <translation id="6277105963844135994">תם הזמן הקצוב לתפוגה של הרשת</translation>
@@ -3577,6 +3569,7 @@
 <translation id="6341850831632289108">לזהות את המיקום הפיזי שלך</translation>
 <translation id="6344170822609224263">גישה לרשימת החיבורים לרשת</translation>
 <translation id="6346310558342052870">גישה מוגבלת</translation>
+<translation id="6349101878882523185">התקן את  <ph name="APP_NAME" /></translation>
 <translation id="6349170655202535379">הסנכרון לא פועל. נסה לצאת ולהיכנס שוב.</translation>
 <translation id="6351063337294363751">בתפריט זה ניתן לנקות את נתוני הגלישה</translation>
 <translation id="6352773953037195952">הגבוה ביותר</translation>
@@ -3605,7 +3598,6 @@
 <translation id="6393156038355142111">הצעת סיסמה חזקה</translation>
 <translation id="6395575651121294044"><ph name="NUMBER_OF_FILES" /> פריטים</translation>
 <translation id="6397094776139756010">אפשרויות סינכרון והתאמה אישית</translation>
-<translation id="6397592254427394018">פתח את כל הסימניות בחלון &amp;גלישה בסתר</translation>
 <translation id="6398715114293939307">‏הסרה של חנות Google Play</translation>
 <translation id="6398765197997659313">צא ממסך מלא</translation>
 <translation id="6399774419735315745">מרגלת</translation>
@@ -3869,7 +3861,6 @@
 <translation id="6798954102094737107">פלאגין: <ph name="PLUGIN_NAME" /></translation>
 <translation id="6801435275744557998">כייל את מסך המגע</translation>
 <translation id="6802031077390104172"><ph name="USAGE" /> (<ph name="OID" />)</translation>
-<translation id="6804671422566312077">פתח את כל הסימניות ב&amp;חלון חדש</translation>
 <translation id="6805038906417219576">אישור</translation>
 <translation id="6805647936811177813">היכנס אל <ph name="TOKEN_NAME" /> כדי לייבא אישור לקוח מ-<ph name="HOST_NAME" />.</translation>
 <translation id="680572642341004180">‏הפעל מעקב RLZ ב-<ph name="SHORT_PRODUCT_OS_NAME" />.</translation>
@@ -3976,7 +3967,6 @@
 <translation id="6970856801391541997">הדפסת דפים ספציפיים</translation>
 <translation id="6972180789171089114">אודיו/וידאו</translation>
 <translation id="6972754398087986839">תחילת העבודה</translation>
-<translation id="6973630695168034713">תיקיות</translation>
 <translation id="6974609594866392343">מצב הדגמה לא מקוון</translation>
 <translation id="6977381486153291903">שכתוב קושחה</translation>
 <translation id="6978121630131642226">מנועי חיפוש</translation>
@@ -4307,7 +4297,6 @@
 <translation id="7478485216301680444">לא ניתן היה להתקין את יישום הקיוסק.</translation>
 <translation id="7481312909269577407">קדימה</translation>
 <translation id="748138892655239008">מגבלות בסיסיות של אישור </translation>
-<translation id="7484964289312150019">פתח את כל הסימניות ב&amp;חלון חדש</translation>
 <translation id="7487067081878637334">טכנולוגיה</translation>
 <translation id="7487099628810939106">השהיה לפני לחיצה:</translation>
 <translation id="7487969577036436319">לא מותקנים רכיבים</translation>
@@ -4735,7 +4724,6 @@
 <translation id="8063235345342641131">דמות ברירת מחדל ירוקה</translation>
 <translation id="8064671687106936412">מפתח:</translation>
 <translation id="8066773524873206594">כל העריכות יישמרו בתיקייה <ph name="DOWNLOADS_FOLDER" />.</translation>
-<translation id="806812017500012252">סדר מחדש לפי כותרת</translation>
 <translation id="8068253693380742035">גע כדי להיכנס</translation>
 <translation id="8069615408251337349">Google Cloud Print</translation>
 <translation id="8071432093239591881">הדפסה כתמונה</translation>

@@ -166,6 +166,7 @@
 <translation id="7879499977785298635">不要封鎖</translation>
 <translation id="7907591526440419938">開啟檔案</translation>
 <translation id="7969046989155602842">Command 鍵</translation>
+<translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{超過 1 則未讀通知}other{超過 # 則未讀通知}}</translation>
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" /> + <ph name="KEY_COMBO_NAME" /> 鍵</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{1 小時前}other{# 小時前}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{還剩 1 秒}other{還剩 # 秒}}</translation>

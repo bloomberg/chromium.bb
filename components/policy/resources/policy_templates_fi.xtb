@@ -104,6 +104,19 @@
       Määrittää ajan, jonka kuluttua kirjautumisruudulla näytetään näytönsäästäjä jälleenmyyntitilassa olevilla laitteilla.
 
       Käytännön arvo määrittää ajan millisekunteina.</translation>
+<translation id="1141767714195601945">Tämä käytäntö määrittää Chromen komentoriviparametrit Internet Explorerista.
+
+      Jos Internet Explorerin Vanhojen selaimien tuki ‑laajennusta ei ole asennettu, tällä käytännöllä ei ole vaikutusta.
+
+      Jos tätä käytäntöä ei ole määritetty, Internet Explorer välittää Chromelle komentoriviparametrina vain URL-osoitteen.
+
+      Jos tämän käytännön arvo on merkkijonoluettelo, merkkijonot liitetään toisiinsa välilyönneillä ja välitetään Chromelle komentoriviparametreina.
+
+      Jos luettelokohdassa on ${url}, se korvataan avattavan URL-sivun osoitteella.
+
+      Jos ${url} ei kuulu luettelokohtiin, URL-osoite lisätään komentorivin loppuun.
+
+      Ympäristömuuttujat näytetään laajennettuina. Windowsissa %ABC% korvataan ABC-ympäristön muuttuja-arvolla.</translation>
 <translation id="1151353063931113432">Salli kuvat näissä sivustoissa</translation>
 <translation id="1152117524387175066">Ilmoita laitteen kehittäjätila uudelleenkäynnistyksen yhteydessä.
 
@@ -167,6 +180,10 @@
 
       Jos tämän käytännön arvoksi asetetaan Epätosi, <ph name="PRODUCT_NAME" /> ei salli kirjautumista vierasprofiililla.</translation>
 <translation id="1363275621236827384">Salli laiteprofiilien lähettää kyselyitä Quirks Serverille</translation>
+<translation id="1363612796557848469">Tämä käytäntö antaa Google Assistantille luvan käyttää näytön kontekstia ja lähettää tietoja palvelimelle.
+      Jos käytäntö on käytössä, Google Assistant saa käyttää näytön kontekstia.
+      Jos käytäntö ei ole käytössä, Google Assistant ei saa käyttää näytön kontekstia.
+      Jos käytäntöä ei ole määritetty, käyttäjä voi valita, saako Google Assistant käyttää näytön kontekstia.</translation>
 <translation id="1383493480903114193">Käytäntö pakottaa verkostokoodin suorittamisen selainprosessin osana.
 
       Käytäntö on oletuksena pois käytöstä. Jos se on käytössä, käyttäjät voivat altistua tietoturvaongelmille, kun verkkoprosessi tapahtuu hiekkalaatikossa.
@@ -286,6 +303,12 @@
       Saat lisätietoja Selaussuojasta osoitteesta https://developers.google.com/safe-browsing.</translation>
 <translation id="1583248206450240930">Käytä tuotetta <ph name="PRODUCT_FRAME_NAME" /> oletuksena</translation>
 <translation id="1599424828227887013">Ota sivuston eristäminen käyttöön tiettyjen alkuperien kohdalla Android-laitteilla</translation>
+<translation id="1608259529294767544">Tämä käytäntö antaa Google Assistantille luvan kuunnella puhekomennon.
+
+      Jos käytäntö on käytössä, Google Assistant kuuntelee puhekomennon.
+      Jos käytäntö ei ole käytössä, Google Assistant ei kuuntele puhekomentoa.
+      Jos käytäntöä ei ole määritetty, käyttäjä voi päättää, saako Google Assistant kuunnella puhekomennon.
+      </translation>
 <translation id="1608755754295374538">URL-osoitteet, joille on myönnetty pääsy äänikaappauslaitteisiin ilman erillisen luvan pyytämistä</translation>
 <translation id="1615221548356595305">Salli HTTP/2-yhteyksien yhdistäminen näille isännille, vaikka käyttöoikeusvarmenteet olisivat käytössä</translation>
 <translation id="1617235075406854669">Salli selaus- ja lataushistorian poistaminen</translation>
@@ -337,6 +360,7 @@
       Tämän käytännön arvoksi määritetään URL-osoite, josta <ph name="PRODUCT_OS_NAME" /> voi ladata käyttöehdot. Käyttöehtojen täytyy olla tavallista tekstiä (MIME-tyyppi text/plain). Muotoilua ei sallita.</translation>
 <translation id="1750315445671978749">Estä kaikki lataukset</translation>
 <translation id="1781356041596378058">Tämä käytäntö hallinnoi myös Android-kehittäjäasetusten käyttöä. Jos tämän käytännön arvoksi määritetään tosi, käyttäjät eivät voi käyttää kehittäjäasetuksia. Jos tämän käytännön arvoksi määritetään epätosi tai sitä ei määritetä ollenkaan, käyttäjät voivat käyttää kehittäjäasetuksia koskettamalla Android-asetukset-sovelluksessa olevaa versionumeroa seitsemän kertaa.</translation>
+<translation id="1793346220873697538">Poista PIN-tulostus oletuksena käytöstä</translation>
 <translation id="1797233582739332495">Näytä käyttäjälle toistuva kehote vaaditusta uudelleenkäynnistyksestä</translation>
 <translation id="1798559516913615713">Ryhmäkäytäntöobjektien välimuistin käyttöikä</translation>
 <translation id="1803646570632580723">Luettelo kiinnitetyistä sovelluksista, jotka näytetään käynnistyspalkissa</translation>
@@ -360,6 +384,7 @@
 <translation id="1843117931376765605">Käyttäjäkäytännön päivitystiheys</translation>
 <translation id="1844620919405873871">Määrittää lukituksen pika-avaamiseen liittyviä käytäntöjä</translation>
 <translation id="1845405905602899692">Kioskiasetukset</translation>
+<translation id="1845429996559814839">Rajoita PIN-tulostustilaa</translation>
 <translation id="1847960418907100918">Määrittää parametrit, joita käytetään tehtäessä pikahakuja POST-metodin avulla. Se koostuu pilkuilla erotetuista nimi/arvo-pareista. Jos arvo on malliparametri kuten yllä olevan esimerkin {searchTerms}, se korvataan oikeilla hakusanatiedoilla.
 
           Tämä käytäntö on valinnainen. Jos sitä ei ole määritetty, pikahakupyyntö lähetetään GET-metodin avulla.
@@ -468,6 +493,15 @@
       Jos tätä käytäntöä ei määritetä, <ph name="PRODUCT_NAME" /> käyttää 3 tunnin oletusarvoa.
 
       Huom. Jos ympäristö tukee käytäntöilmoituksia, päivitysviiveeksi määritetään 24 tuntia (tämän käytännön oletus- ja muut arvot ohitetaan), sillä todennäköisesti käytäntöilmoitus pakottaa sovelluksen suorittamaan päivityksen käytännön muuttuessa. Tästä syystä päivityksiä ei tarvitse suorittaa useammin.</translation>
+<translation id="2024149678078029009">Tämä käytäntö määrittää komennon, jolla avataan URL-osoitteita (<ph name="PRODUCT_NAME" />) siirryttäessä Internet Explorerista.
+
+      Jos Internet Explorerin Vanhojen selaimien tuki ‑laajennusta ei ole asennettu, tällä käytännöllä ei ole vaikutusta.
+
+      Jos tätä käytäntöä ei ole määritetty, Internet Explorer havaitsee automaattisesti suoritettavan polun (<ph name="PRODUCT_NAME" />), kun <ph name="PRODUCT_NAME" /> käynnistetään Internet Explorerista.
+
+      Jos tämä käytäntö on määritetty, <ph name="PRODUCT_NAME" /> käynnistetään sen avulla, kun käynnistys (<ph name="PRODUCT_NAME" />) siirretään Internet Explorerista.
+
+      Tämän käytännön arvoksi voidaan määrittää suoritettava tiedostopolku tai ${chrome}, joka havaitsee automaattisesti Chromen asennuksen sijainnin.</translation>
 <translation id="2024476116966025075">Määritä pakollinen verkkotunnuksen nimi etäkäytön asiakassovelluksia varten.</translation>
 <translation id="2030905906517501646">Oletushakupalvelun avainsana</translation>
 <translation id="203096360153626918">Tällä käytännöllä ei ole mitään vaikutusta Android-sovelluksiin. Ne voivat avautua koko näytön tilaan, vaikka tämän käytännön arvoksi olisi määritetty <ph name="FALSE" />.</translation>
@@ -485,6 +519,7 @@
 <translation id="209586405398070749">Vakaa versio</translation>
 <translation id="2098658257603918882">Ota käyttö- ja kaatumistietojen raportointi käyttöön</translation>
 <translation id="2104418465060359056">Raportoi laajennusten tietoja</translation>
+<translation id="2106627642643925514">Ohittaa PIN-tulostuksen oletustilan. Jos tila ei ole käytettävissä, tämä käytäntö ohitetaan.</translation>
 <translation id="2107601598727098402">
         Tämä käytäntö on poistettu käytöstä versiossa M72. Käytä tämän sijaan CloudManagementEnrollmentToken-käytäntöä.
         </translation>
@@ -502,6 +537,7 @@
       Jos käytännön arvo on epätosi, käyttäjien tunnistetietoja ei kerätä.
 
       Käytäntö on voimassa vain, kun <ph name="CHROME_REPORTING_EXTENSION_NAME" /> on käytössä ja koneella on käytössä <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
+<translation id="2126178089984117495">Rajoittaa PIN-tulostustilaa. Määrittämätön käytäntö tulkitaan rajoituksen puuttumiseksi. Jos tila ei ole käytettävissä, tämä käytäntö ohitetaan.</translation>
 <translation id="2127599828444728326">Salli ilmoitukset näillä sivustoilla</translation>
 <translation id="2131902621292742709">Ruudun himmennyksen viive käytettäessä laitetta akkuvirralla</translation>
 <translation id="2134437727173969994">Salli näytön lukitseminen</translation>
@@ -522,6 +558,7 @@
 <translation id="2156132677421487971">Määrittää <ph name="PRODUCT_NAME" /> ‑käytäntöjä. Ominaisuuden avulla välilehtien, sivustojen tai työpöydän sisältö voidaan lähettää selaimesta ulkoisiin näyttöihin ja äänentoistolaitteisiin.</translation>
 <translation id="2166472654199325139">Älä suodata vain aikuisille suunnattua sisältöä sivustoilta</translation>
 <translation id="2168397434410358693">Käyttämättömyysaika käytettäessä laitetta verkkovirralla</translation>
+<translation id="217013996107840632">Toisesta selaimesta siirtymisen komentoriviparametrit</translation>
 <translation id="2170233653554726857">Ota WPAD-optimointi käyttöön</translation>
 <translation id="2176565653304920879">Kun tämä käytäntö on määritetty, aikavyöhykkeen automaattinen tunnistaminen tapahtuu jollakin seuraavista tavoista, määritetystä arvosta riippuen:
 
@@ -764,6 +801,7 @@ Jos tämä asetus ei ole käytössä, käyttäjät eivät voi tulostaa tuotteest
 <translation id="267596348720209223">Määrittää hakupalvelun tukemat merkkikoodaukset. Koodaukset ovat koodisivun nimiä, kuten UTF-8, GB2312 ja ISO-8859-1. Koodauksia yritetään käyttää määritetyssä järjestyksessä. Tämä käytäntö on valinnainen, ja jos sitä ei ole määritetty, käytetään oletusasetusta (UTF-8). Tämä käytäntö on voimassa vain, jos DefaultSearchProviderEnabled-käytäntö on käytössä.</translation>
 <translation id="268577405881275241">Ota käyttöön tietojen pakkauksen välitysominaisuus</translation>
 <translation id="2693108589792503178">Määritä salasanan vaihdon URL-osoite.</translation>
+<translation id="2706708761587205154">Salli tulostus vain PIN-koodilla</translation>
 <translation id="2731627323327011390">Estä ARC-sovelluksia käyttämästä <ph name="PRODUCT_OS_NAME" /> -varmenteita</translation>
 <translation id="2742843273354638707">Piilota Chrome Web Store -sovellus ja linkki Uusi välilehti -sivulla sekä tuotteen <ph name="PRODUCT_OS_NAME" /> sovellusten käynnistysohjelmassa.
 
@@ -1448,6 +1486,7 @@ ylläpitäjän tai SyncDisabled-käytännön estämä. BrowserGuestModeEnabled-k
           Tämä käytäntö on valinnainen. Jos sitä ei ole määritetty, kuvahakupyyntö lähetetään GET-metodin avulla.
 
           Käytäntö on voimassa vain, jos käytäntö DefaultSearchProviderEnabled on käytössä.</translation>
+<translation id="427706009709857238">"Salli Google Assistantin kuunnella puhekomento"</translation>
 <translation id="4285674129118156176">Salli ulkopuolisten käyttäjien käyttää ARC:tä</translation>
 <translation id="4298509794364745131">Määrittää luettelon sovelluksia, jotka <ph name="PRODUCT_OS_NAME" /> voi näyttää lukitusnäytöllä muistiinpanosovelluksina.
 
@@ -1521,6 +1560,7 @@ ylläpitäjän tai SyncDisabled-käytännön estämä. BrowserGuestModeEnabled-k
 <translation id="4483649828988077221">Poista automaattinen päivitys käytöstä</translation>
 <translation id="4485425108474077672">Määritä Uusi välilehti ‑sivun URL-osoite</translation>
 <translation id="4492287494009043413">Estä kuvakaappauksien ottaminen</translation>
+<translation id="4494132853995232608">Wilco-DTC</translation>
 <translation id="449423975179525290">Määritä laajennukseen <ph name="PLUGIN_VM_NAME" /> liittyvät käytännöt.</translation>
 <translation id="450537894712826981">Määrittää sen välimuistin koon, jota <ph name="PRODUCT_NAME" /> käyttää välimuistiin tallennettujen tiedostojen tallentamiseen.
 
@@ -1613,6 +1653,11 @@ ylläpitäjän tai SyncDisabled-käytännön estämä. BrowserGuestModeEnabled-k
 <translation id="4725528134735324213">Ota käyttöön Android Backup Service</translation>
 <translation id="4725801978265372736">Edellytä, että paikallisen käyttäjän ja etäkäytön isännän omistajan nimet täsmäävät</translation>
 <translation id="4733471537137819387">Integroituun HTTP-todennukseen liittyvät käytännöt.</translation>
+<translation id="4744190513568488164">Palvelimet, joille <ph name="PRODUCT_NAME" /> voi siirtää käyttöoikeustietoja.
+
+          Erota palvelinten nimet pilkuilla. Jokerimerkit (*) sallitaan.
+
+          Jos et määritä käytäntöä, <ph name="PRODUCT_NAME" /> ei siirrä käyttöoikeustietoja, vaikka palvelin sijaitsisi sisäverkossa.</translation>
 <translation id="4752880493649142945">Asiakasvarmenne yhteyden muodostamiseksi osoitteeseen RemoteAccessHostTokenValidationUrl</translation>
 <translation id="4757671984625088193">Jos käytännön arvoksi on asetettu Tosi tai sille ei aseteta mitään arvoa, <ph name="PRODUCT_NAME" /> ehdottaa nykyiseen sivuun liittyviä sivuja.
       Ehdotukset haetaan Googlen palvelimilta.
@@ -1686,6 +1731,7 @@ ylläpitäjän tai SyncDisabled-käytännön estämä. BrowserGuestModeEnabled-k
 <translation id="4978405676361550165">Jos OffHours-käytäntö on määritetty, valitut laitekäytännöt ohitetaan (tällöin käytössä ovat niiden oletusasetukset) määritettyjen ajanjaksojen aikana. Chrome ottaa laitekäytännöt uudelleen käyttöön aina, kun OffHours-ajanjakso alkaa tai päättyy. Käyttäjä saa ilmoituksen ja pakotetaan kirjautumaan ulos, kun OffHours-ajan päättymiseen ja laitekäytäntöihin liittyviä asetuksia muutetaan (esimerkiksi silloin, kun käyttäjä ei ole kirjautuneena sisään sallitulla tilillä).</translation>
 <translation id="4980635395568992380">Tietotyyppi:</translation>
 <translation id="4983201894483989687">Salli vanhentuneiden laajennuksien käyttö</translation>
+<translation id="4986560318567565414">Polku Chromeen vaihdettaessa toisesta selaimesta</translation>
 <translation id="4988291787868618635">Toiminto, joka suoritetaan käyttämättömyysajan kuluttua</translation>
 <translation id="4995548127349206948">Onko NTLMv2-todennus käytössä</translation>
 <translation id="5047604665028708335">Salli sisältöpaketteihin kuulumattomien sivustojen käyttö</translation>
@@ -1933,6 +1979,7 @@ ylläpitäjän tai SyncDisabled-käytännön estämä. BrowserGuestModeEnabled-k
 
       Jos käytäntöä ei määritetä, Variations-siemenarvon URL-osoitetta ei muokata.</translation>
 <translation id="5561811616825571914">Valitse automaattisesti näiden sivustojen asiakasvarmenteet kirjautumisnäytöltä</translation>
+<translation id="5566210228171064229">Salli tulostus PIN-koodilla ja ilman sitä</translation>
 <translation id="556941986578702361">Hallinnoi <ph name="PRODUCT_OS_NAME" /> -hyllyn automaattista piilottamista.
 
 Jos tämän käytännön arvo on AlwaysAutoHideShelf, hylly piilotetaan aina automaattisesti.
@@ -1952,6 +1999,15 @@ Jos käytäntöä ei määritetä, käyttäjät voivat valita, tuleeko hylly pii
       Käytäntö on voimassa vain, kun <ph name="CHROME_REPORTING_EXTENSION_NAME" /> on käytössä ja koneella on käytössä <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="5584132346604748282">Hallinnoi Androidin Google-sijaintipalveluiden käyttöä</translation>
 <translation id="5586942249556966598">Ei toimia</translation>
+<translation id="5590494712401018042">Määrittää prosenttiosuuden, jolla näytön himmennyksen viive kerrotaan, kun laite on esitystilassa.
+
+          Jos tämä käytäntö määritetään, se määrittää prosenttiosuuden, jolla näytön himmennyksen viive kerrotaan, kun laite on esitystilassa. Kun himmennyksen viive on kerrottu, näytön sammuttamisen, lukituksen ja käyttämättömyysajan viiveet säädetään samassa suhteessa näytön himmennyksen viiveeseen kuin missä ne on alun perin määritetty.
+
+          Jos tätä käytäntöä ei ole määritetty, se käyttää oletusarvoista kerrointa.
+
+          Tämä käytäntö on voimassa vain, jos <ph name="POWER_SMART_DIM_ENABLED_POLICY_NAME" /> on poistettu käytöstä. Muussa tapauksessa tämä käytäntö ohitetaan, koska näytön himmennyksen viive perustuu koneoppimisen malliin.
+
+          Kertoimen arvon on oltava vähintään 100 %. Siinä ei sallita arvoja, jotka lyhentäisivät näytön himmennyksen viivettä esitystilassa tavalliseen tilaan nähden.</translation>
 <translation id="5592242031005200087">
       Jos tämä käytäntö on käytössä, jokainen pilkuilla erotetussa luettelossa
       nimetty alkuperäkohde suorittaa oman prosessinsa. Tällöin myös nimettyjen
@@ -2162,6 +2218,7 @@ Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento 
 
       Jos tätä käytäntöä ei määritetä, irrotettavien USB-laitteiden luettelo on tyhjä.</translation>
 <translation id="6083631234867522991">Windows (Windows-asiakkaat):</translation>
+<translation id="6089679180657323464">Määrittää wilco-diagnostiikka- ja telemetriaohjaimen asetukset</translation>
 <translation id="6091233616732024397">Pakota käyttäjät kirjautumaan selaimelle</translation>
 <translation id="6093156968240188330">Salli etätukea antavien etäkäyttäjien käyttää järjestelmänvalvojan oikeuksia edellyttäviä ikkunoita</translation>
 <translation id="6095999036251797924">Määrittää ajan, jonka jälkeen näyttö lukitaan verkko- tai akkuvirtaa käytettäessä, jos käyttäjä ei tee mitään.
@@ -2433,6 +2490,7 @@ Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento 
 <translation id="6770454900105963262">Aktiivisten kioskikäyttökertojen tietojen raportointi</translation>
 <translation id="6786747875388722282">Laajennukset</translation>
 <translation id="6786967369487349613">Määritä roaming-profiilihakemisto</translation>
+<translation id="6795485990775913659">Salli vain tulostus ilman PIN-koodia</translation>
 <translation id="6810445994095397827">Estä JavaScript näissä sivustoissa</translation>
 <translation id="6813263547126514821">Virta ja sammuttaminen</translation>
 <translation id="681446116407619279">Tuetut todennusjärjestelmät</translation>
@@ -2547,6 +2605,7 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 
       Tätä käytäntöä sovelletaan vain jos Linux-sovelluksia tuetaan.</translation>
 <translation id="69525503251220566">Parametri, joka tarjoaa kuvan perusteella haku -ominaisuuden oletushakupalvelulle</translation>
+<translation id="6953102253399571439">Salli PIN-tulostus oletuksena</translation>
 <translation id="6956272732789158625">Älä salli sivustojen käyttää avainten luomistoimintoa.</translation>
 <translation id="6965859329738616662">Määrittää, saako älykäs himmennysmalli pidentää näytön himmennysaikaa
 
@@ -2598,6 +2657,15 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
           Jos tätä käytäntöä ei ole määritetty, kaikkiin sivustoihin sovelletaan DefaultWebUsbGuardSetting-käytäntöä (jos se on määritetty) tai käyttäjän omien asetusten mukaista yleistä oletusarvoa.
 
           Tämän käytännön URL-osoitemallien on sovittava yhteen WebUsbAskForUrlsin kautta määritettyjen kanssa. Jos URL-osoite sopii yhteen kummankin kanssa, etusijan ottavaa käytäntöä ei ole määritetty.</translation>
+<translation id="7086677522575756117">Määrittää prosenttiosuuden, jolla näytön himmennyksen viive kerrotaan, kun käyttäjän toimintaa havaitaan näytön ollessa himmennetty tai pian näytön sammuttamisen jälkeen.
+
+          Jos tämä käytäntö on määritetty, se määrittää prosenttiosuuden, jolla näytön himmennyksen viive kerrotaan, kun käyttäjän toimintaa havaitaan näytön ollessa himmennetty tai pian näytön sammuttamisen jälkeen. Kun himmennyksen viive on kerrottu, näytön sammuttamisen, lukituksen ja käyttämättömyysajan viiveet säädetään samassa suhteessa näytön himmennyksen viiveeseen kuin missä ne on alun perin määritetty.
+
+          Jos tätä käytäntöä ei ole määritetty, se käyttää oletusarvoista kerrointa.
+
+          Tämä käytäntö tulee voimaan vain, jos <ph name="POWER_SMART_DIM_ENABLED_POLICY_NAME" /> ei ole käytössä. Muussa tapauksessa tämä käytäntö ohitetaan, koska näytön himmennyksen viive perustuu koneoppimisen malliin.
+
+          Kertoimen arvon on oltava vähintään 100 %.</translation>
 <translation id="7106631983877564505">Ota lukitus käyttöön, kun tuotetta <ph name="PRODUCT_OS_NAME" /> käyttävä laite on käyttämättömänä tai virransäästötilassa.
 
       Jos otat tämän asetuksen käyttöön, käyttäjältä pyydetään salasanaa laitteen herättämiseksi virransäästötilasta.
@@ -2634,6 +2702,7 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
       Käytännön arvo voi olla "konservatiivinen" tai "tehokkuus", joilla valitaan tietty tehtävien ajoitusmääritys korostaen joko vakautta tai tehokkuutta.
 
       Jos käytännölle ei ole määritetty arvoa, käyttäjä voi valita määrityksen itse.</translation>
+<translation id="7145335384492396213">PIN-tulostuksen oletustila</translation>
 <translation id="7158064522994309072">Käytännöllä valitaan, millä komennolla avataan URL-osoitteita vaihtoehtoisessa selaimessa.
 
       Jos käytäntöä ei ole määritetty, käytetään käyttöjärjestelmän oletusvaihtoehtoa, joka on Windowsissa Internet Explorer ja Mac OS X:ssä Safari. Linuxissa vaihtoehtoisen selaimen käynnistys ei onnistu, jos käytäntöä ei ole määritetty.
@@ -2700,6 +2769,7 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 
       Jos tämän käytännön arvoksi asetetaan tosi, muita kuin IPPS-, USB- tai IPP-USB-protokollia käyttävät tulostimet poistetaan käytöstä, sillä käyttäjänimiä ja tiedostonimiä ei saa lähettää verkossa avoimesti.</translation>
 <translation id="7258823566580374486">Ota etäisäntien verhoaminen käyttöön</translation>
+<translation id="7260204423892780600">Määrittää Google Assistantin asetukset</translation>
 <translation id="7260277299188117560">Automaattinen p2p-päivitys käytössä</translation>
 <translation id="7261252191178797385">Laitteen taustakuva</translation>
 <translation id="7264704483008663819">Tämä käytäntö poistetaan käytöstä M68:ssa, käytä sen sijaan DeveloperToolsAvailability-käytäntöä.
@@ -2807,10 +2877,15 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
           Käytännön määrittämisen yhteydessä näytön kirkkaus muuttuu käytännön arvon mukaiseksi, mutta käyttäjä voi muokata sitä myöhemmin. Automaattiset kirkkaudensäädöt poistetaan käytöstä.
           Jos tätä käytäntöä ei määritetä, käyttäjän näytönhallinta tai automaattiset kirkkaudensäädöt eivät muutu.
           Käytännön arvon tulee olla prosentti väliltä 0–100.</translation>
+<translation id="7517846421386644905">Sallii järjestelmänvalvojan hallita telemetria- ja diagnostiikkadatan keräämistä, käsittelyä ja raportointia wilco-diagnostiikka- ja telemetriaohjaimella (DTC).
+
+      Jos käytännön arvo on epätosi tai määrittämättä, DTC ei ole käytössä eikä voi kerätä, käsitellä tai raportoida laitteen telemetria- ja diagnostiikkadataa.
+      Jos wilco-DTC on käytettävissä laitteella ja käytännön arvoksi on asetettu tosi, telemetria- ja diagnostiikkadatan keräys, käsittely ja raportointi on käytössä.</translation>
 <translation id="7519251620064708155">Salli avainten luominen näillä sivustoilla.</translation>
 <translation id="7529100000224450960">Voit määrittää luettelon URL-malleja, joissa määritetään sivustot, jotka saavat avata ponnahdusikkunoita. Jos tätä käytäntöä ei ole määritetty, kaikille sivustoille käytetään joko DefaultPopupsSetting-käytännön yleistä oletusarvoa, jos se on asetettu, tai käyttäjän henkilökohtaisia määrityksiä.</translation>
 <translation id="7529144158022474049">Hajontatekijän automaattinen päivitys</translation>
 <translation id="7534199150025803530">Tällä käytännöllä ei ole vaikutusta Androidin Google Drive ‑sovellukseen. Jos haluat estää Google Driven käytön mobiiliyhteyden kautta, sinun on estettävä Androidin Google Drive ‑sovelluksen asennus.</translation>
+<translation id="7540622499178214923">Sallii wilco-diagnostiikka- ja telemetriaohjaimen</translation>
 <translation id="7547549430720182663">Yhdistä</translation>
 <translation id="7553535237300701827">Kun tämä käytäntö on määritetty, kirjautumistodennuksen työnkulku riippuu asetuksen arvosta jollain seuraavista tavoista:
 
@@ -3504,6 +3579,7 @@ Jos tämän käytännön arvoksi on määritetty Tosi, käyttäjän on suoritett
       Tämän käytännön määrittäminen pienempään arvoon vaikuttaa pysyvästi: laitetta ei EHKÄ voi palauttaa aiempiin versioihin, vaikka käytäntöön palautettaisiin suurempi arvo.
 
       Todelliset palautusmahdollisuudet voivat riippua myös levystä ja kriittisten haavoittuvuuksien korjauksista.</translation>
+<translation id="9126014181388780690">"Salli Google Assistantin käyttää näytön kontekstia"</translation>
 <translation id="913195841488580904">Estää URL-osoiteluettelon käytön</translation>
 <translation id="9135033364005346124">Ota välityspalvelin <ph name="CLOUD_PRINT_NAME" /> käyttöön</translation>
 <translation id="9136399279941091445">Ei-aktiivinen aika tiettyjen laitekäytäntöjen julkaisemisen yhteydessä</translation>

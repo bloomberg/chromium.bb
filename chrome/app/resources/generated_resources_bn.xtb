@@ -104,7 +104,6 @@
 <translation id="1143142264369994168">সার্টিফিকেট স্বাক্ষরকারী</translation>
 <translation id="1145292499998999162">প্লাগ ইন অবরুদ্ধ রয়েছে</translation>
 <translation id="1145532888383813076">আপনার ডিভাইস, অ্যাপ এবং ওয়েব সার্চ করুন</translation>
-<translation id="1146204723345436916">HTML ফাইল থেকে বুকমার্কগুলি আমদানি করুন...</translation>
 <translation id="114721135501989771">Chrome-এ Google স্মার্ট পান</translation>
 <translation id="1148097584170732637"><ph name="FILE_COUNT" />টি পাওয়া গেছে।
     <ph name="LINE_BREAK1" />
@@ -416,7 +415,6 @@
 <translation id="1608626060424371292">এই ব্যবহারকারীকে সরান</translation>
 <translation id="1609170755653088773">এই পাসওয়ার্ডটি আপনার iPhone এ সিঙ্ক করুন</translation>
 <translation id="1611584202130317952">প্রভিশনিং ফ্লো তে বিঘ্ন ঘটেছে। অনুগ্রহ করে আবার চেষ্টা করুন অথবা আপনার ডিভাইসের মালিক বা প্রশাসকের সাথে যোগাযোগ করুন।</translation>
-<translation id="1611704746353331382">বুকমার্কগুলিকে HTML ফাইলে রপ্তানি করুন...</translation>
 <translation id="1614511179807650956">আপনি হয়ত সমস্ত মোবাইল ডেটা ব্যবহার করে ফেলেছেন৷ আরও ডেটা কিনতে <ph name="NAME" /> অ্যাক্টিভেশন পোর্টালে যান</translation>
 <translation id="161460670679785907">আপনার ফোনটি শনাক্ত করা যায়নি</translation>
 <translation id="1616206807336925449">এই এক্সটেনশনটির কোনও বিশেষ অনুমতির প্রয়োজন নেই।</translation>
@@ -645,7 +643,6 @@
 <translation id="1932098463447129402">আগে কখনও নয়</translation>
 <translation id="1933345018156373194">স্থানান্তরিত করা যায়নি, অপ্রত্যাশিত সমস্যা হয়েছে: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1933809209549026293">দয়া করে একটি মাউস বা কীবোর্ড সংযোগ করুন৷ যদি আপনি একটি ব্লুটুথ ডিভাইস ব্যবহার করে থাকেন তবে এটি যুক্ত করার জন্য তৈরি কিনা নিশ্চিত করুন৷</translation>
-<translation id="1936157145127842922">ফোল্ডারে দেখান</translation>
 <translation id="1938351510777341717">এক্সটার্নাল কমান্ড</translation>
 <translation id="1940546824932169984">সংযুক্ত ডিভাইস</translation>
 <translation id="1942765061641586207">চিত্রের রেজোলিউশন</translation>
@@ -1362,7 +1359,6 @@
 <translation id="3009300415590184725">আপনি কি মোবাইল ডেটা পরিষেবা সেটআপ প্রক্রিয়া বাতিল করার ব্যাপারে নিশ্চিত?</translation>
 <translation id="3009779501245596802">সূচিবদ্ধ ডেটাবেস</translation>
 <translation id="3010279545267083280">পাসওয়ার্ড মোছা হয়েছে</translation>
-<translation id="3011362742078013760">ছ্দ্মবেশী উইন্ডোতে সকল &amp;বুকমার্ক খুলুন</translation>
 <translation id="3011488081941333749"><ph name="DOMAIN" /> ছেড়ে যাওয়ার সময় কুকি মুছে ফেলা হবে</translation>
 <translation id="3012631534724231212">(আইফ্রেম)</translation>
 <translation id="3012804260437125868">শুধুমাত্র সুরক্ষিত একই-সাইটের সংযোগগুলি</translation>
@@ -2560,7 +2556,6 @@
 <translation id="4881695831933465202">খুলুন</translation>
 <translation id="4882312758060467256">এই সাইটে অ্যাক্সেস আছে</translation>
 <translation id="4882831918239250449">সার্চ, বিজ্ঞাপনসহ আরও অনেক কিছু ব্যক্তিগতকৃত করার জন্য আপনার ব্রাউজিং ইতিহাস কীভাবে ব্যবহার হবে তা নিয়ন্ত্রণ করুন</translation>
-<translation id="4883178195103750615">বুকমার্কগুলিকে HTML ফাইলে রপ্তানি করুন...</translation>
 <translation id="4883436287898674711">সব <ph name="WEBSITE_1" /> সাইট</translation>
 <translation id="48838266408104654">&amp;কার্য পরিচালক</translation>
 <translation id="4884987973312178454">৬x</translation>
@@ -2892,7 +2887,6 @@
 <translation id="5376931455988532197">ফাইল অত্যন্ত বড়</translation>
 <translation id="537813040452600081">এই উইন্ডোতে আপনি যে পৃষ্ঠাগুলি দেখেন তা ব্রাউজারের ইতিহাসে দেখাবে না এবং আপনি কম্পিউটার থেকে সাইন-আউটের পরে এটি কম্পিউটারে কুকিজের মতো অন্য কোনো রকম চিহ্ন রেখে যাবে না। আপনার ডাউনলোড করা ফাইল এবং বুকমার্কগুলি সংরক্ষিত হবে না।</translation>
 <translation id="5379140238605961210">মাইক্রোফোন অ্যাক্সেসের অবরোধ করা অবিরত রাখুন</translation>
-<translation id="5379268888377976432">মোছা পূর্বাবস্থায় ফিরুন</translation>
 <translation id="5382591305415226340">সমর্থিত লিঙ্কগুলি পরিচালনা করুন</translation>
 <translation id="5384883051496921101">এই সাইটটি ছদ্মবেশী মোডের বাইরের একটি অ্যাপের সাথে তথ্য শেয়ার করতে চলেছে।</translation>
 <translation id="5388885445722491159">জোড়া</translation>
@@ -3187,7 +3181,6 @@
 <translation id="5801568494490449797">অভিরুচিসমূহ</translation>
 <translation id="5804241973901381774">অনুমতিগুলি</translation>
 <translation id="5805697420284793859">উইন্ডো ম্যানেজার</translation>
-<translation id="580571955903695899">শিরোনাম অনুসারে পুনঃক্রম করুন</translation>
 <translation id="5811750797187914944">সব সেট করা হয়ে গেছে</translation>
 <translation id="5814126672212206791">সংযোগের প্রকার</translation>
 <translation id="5815645614496570556">X.400 ঠিকানা</translation>
@@ -3514,7 +3507,6 @@
 <translation id="6264365405983206840">&amp;সকল বেছে নিন</translation>
 <translation id="6267166720438879315">নিজেকে <ph name="HOST_NAME" /> এ প্রমাণীকৃত করতে একটি সার্টিফিকেট বেছে নিন</translation>
 <translation id="6268252012308737255"><ph name="APP" /> দিয়ে খুলুন</translation>
-<translation id="6268747994388690914">HTML ফাইল থেকে বুকমার্ক আমদানি করুন...</translation>
 <translation id="6272643420381259437">প্লাগ ইনটি ডাউনলোড করার সময় একটি ত্রুটি (<ph name="ERROR" />) ঘটেছে</translation>
 <translation id="6273677812470008672">গুণমান</translation>
 <translation id="6277105963844135994">নেটওয়ার্কের সময় শেষ হয়েছে</translation>
@@ -3589,7 +3581,6 @@
 <translation id="6393156038355142111">শক্তিশালী পাসওয়ার্ড সাজেস্ট করুন</translation>
 <translation id="6395575651121294044"><ph name="NUMBER_OF_FILES" />টি আইটেম</translation>
 <translation id="6397094776139756010">সিঙ্ক এবং নিজের মতো সাজিয়ে নেওয়ার বিকল্পগুলি</translation>
-<translation id="6397592254427394018">ছ্দ্মবেশী উইন্ডোতে &amp;সকল বুকমার্ক খুলুন</translation>
 <translation id="6398715114293939307">Google Play স্টোর সরান</translation>
 <translation id="6398765197997659313">পূর্ণ স্ক্রীণ বন্ধ করুন</translation>
 <translation id="6399774419735315745">গুপ্তচর</translation>
@@ -3851,7 +3842,6 @@
 <translation id="6798954102094737107">প্ল্যাগ ইন: <ph name="PLUGIN_NAME" /></translation>
 <translation id="6801435275744557998">টাচস্ক্রীন ক্রমাঙ্কন করুন</translation>
 <translation id="6802031077390104172"><ph name="USAGE" /> (<ph name="OID" />)</translation>
-<translation id="6804671422566312077">নতুন উইন্ডোতে স&amp;কল বুকমার্ক খুলুন</translation>
 <translation id="6805038906417219576">ঠিক আছে</translation>
 <translation id="6805647936811177813"><ph name="HOST_NAME" /> থেকে ক্লায়েন্ট সার্টিফিকেট আমদানি করতে দয়া করে <ph name="TOKEN_NAME" />-এ প্রবেশ করুন৷</translation>
 <translation id="680572642341004180"><ph name="SHORT_PRODUCT_OS_NAME" /> এ RLZ নজর রাখা সক্ষম করুন৷</translation>
@@ -3958,7 +3948,6 @@
 <translation id="6970856801391541997">প্রিন্ট নির্দিষ্ট পৃষ্ঠাসমূহ</translation>
 <translation id="6972180789171089114">অডিও/ভিডিও</translation>
 <translation id="6972754398087986839">শুরু করুন</translation>
-<translation id="6973630695168034713">ফোল্ডারগুলি</translation>
 <translation id="6974609594866392343">অফলাইন ডেমো মোড</translation>
 <translation id="6977381486153291903">ফার্মওয়ের পুনর্বিবেচনাগুলি</translation>
 <translation id="6978121630131642226">সার্চ ইঞ্জিনসমূহ</translation>
@@ -4285,7 +4274,6 @@
 <translation id="7478485216301680444">Kiosk অ্যাপ্লিকেশান ইনস্টল করা যাবে না৷</translation>
 <translation id="7481312909269577407">ফরওয়ার্ড</translation>
 <translation id="748138892655239008">সার্টিফিকেট প্রাথমিক বাধ্যবাধকতা</translation>
-<translation id="7484964289312150019">নতুন উইন্ডোতে স&amp;কল বুকমার্ক খুলুন</translation>
 <translation id="7487067081878637334">প্রযুক্তি</translation>
 <translation id="7487099628810939106">ক্লিক করার আগে দেরি:</translation>
 <translation id="7487969577036436319">কোন উপাদান ইনস্টল ইনস্টল নেই</translation>
@@ -4712,7 +4700,6 @@
 <translation id="8063235345342641131">ডিফল্ট সবুজ অবতার</translation>
 <translation id="8064671687106936412">কী:</translation>
 <translation id="8066773524873206594">সব এডিট <ph name="DOWNLOADS_FOLDER" />-এ সেভ করা হবে।</translation>
-<translation id="806812017500012252">শিরোনাম অনুসারে পুনঃক্রম করুন</translation>
 <translation id="8068253693380742035">প্রবেশ করতে স্পর্শ করুন</translation>
 <translation id="8069615408251337349">Google ক্লাউড প্রিন্ট</translation>
 <translation id="8071432093239591881">ছবি হিসেবে প্রিন্ট করুন</translation>

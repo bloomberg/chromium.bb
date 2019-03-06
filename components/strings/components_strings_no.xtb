@@ -51,7 +51,6 @@
 <translation id="1232569758102978740">Uten tittel</translation>
 <translation id="1240347957665416060">Navnet på enheten din</translation>
 <translation id="124116460088058876">Flere språk</translation>
-<translation id="1246987714874202335">Oppdater utløpsdatoen</translation>
 <translation id="1250759482327835220">For å betale raskere neste gang, lagre kortet og faktureringsadressen i Google-kontoen din.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" /> og <ph name="TYPE_2" /> (synkronisert)</translation>
 <translation id="1256368399071562588">&lt;p&gt;Hvis du prøver å gå til et nettsted og det ikke åpnes, bør du først prøve å løse feilen med disse feilsøkingstrinnene:&lt;/p&gt;
@@ -281,7 +280,6 @@
     en sikkerhetsregel brukes for alle forespørsler som sendes til den. Men nå har tjeneren
     ikke klart å sende en regel, og dette forhindrer nettleseren fra å utføre
     forespørselen din til <ph name="SITE" />.</translation>
-<translation id="2442483081384580286">Safe Browsing-advarsler</translation>
 <translation id="244665789865330679">Enheten og kontoen din administreres av <ph name="ENROLLMENT_DOMAIN" />. Det betyr at administratoren kan konfigurere enheten og kontoen din eksternt.</translation>
 <translation id="2463193859425327265">Endre startsiden</translation>
 <translation id="2463739503403862330">Fyll ut</translation>
@@ -611,6 +609,7 @@
 <translation id="4277028893293644418">Tilbakestill passordet</translation>
 <translation id="4280429058323657511">, utløper <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{Dette kortet er lagret i Google-kontoen din}other{Disse kortene er lagret i Google-kontoen din}}</translation>
+<translation id="42981349822642051">Vis</translation>
 <translation id="4302965934281694568">Chou3 (konvolutt)</translation>
 <translation id="4305817255990598646">Bytt</translation>
 <translation id="4312613361423056926">B2</translation>
@@ -881,6 +880,7 @@
 <translation id="5810442152076338065">Tilkoblingen til <ph name="DOMAIN" /> er kryptert med en foreldet chifferserie.</translation>
 <translation id="5813119285467412249">&amp;Legg til likevel</translation>
 <translation id="5838278095973806738">Du bør ikke oppgi sensitiv informasjon på dette nettstedet (for eksempel passord eller kredittkort) fordi den kan bli stjålet av angripere.</translation>
+<translation id="5860033963881614850">Av</translation>
 <translation id="5863847714970149516">Den neste siden kan prøve å belaste deg for penger</translation>
 <translation id="5866257070973731571">Legg til telefonnummer</translation>
 <translation id="5869405914158311789">Dette nettstedet er ikke tilgjengelig</translation>
@@ -889,6 +889,7 @@
 <translation id="5893752035575986141">Kredittkort godtas.</translation>
 <translation id="5901630391730855834">Gul</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (synkronisert)</translation>
+<translation id="5916664084637901428">På</translation>
 <translation id="5919090499915321845">B10</translation>
 <translation id="5921639886840618607">Vil du lagre kortet i Google-kontoen?</translation>
 <translation id="5922853866070715753">Nesten ferdig</translation>
@@ -986,6 +987,7 @@
 <translation id="6508722015517270189">Start Chrome på nytt</translation>
 <translation id="6529602333819889595">&amp;Slett likevel</translation>
 <translation id="6534179046333460208">Fysisk nett-forslag</translation>
+<translation id="6556866813142980365">Gjør om</translation>
 <translation id="6563469144985748109">Administratoren din har ikke godkjent det ennå</translation>
 <translation id="6569060085658103619">Du ser på en utvidelsesside</translation>
 <translation id="6578796323535178455">C2 (konvolutt)</translation>

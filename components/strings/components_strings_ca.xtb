@@ -51,7 +51,6 @@
 <translation id="1232569758102978740">Sense títol</translation>
 <translation id="1240347957665416060">Nom del teu dispositiu</translation>
 <translation id="124116460088058876">Més idiomes</translation>
-<translation id="1246987714874202335">Actualitza la data de caducitat</translation>
 <translation id="1250759482327835220">Perquè la propera vegada puguis pagar més ràpidament, desa la targeta, el nom i l'adreça de facturació al Compte de Google.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (informació sincronitzada)</translation>
 <translation id="1256368399071562588">&lt;p&gt;Si proveu de visitar un lloc web i no s'obre, en primer lloc mireu de resoldre el problema amb aquests passos:&lt;/p&gt;
@@ -273,7 +272,6 @@
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">El servidor no ha pogut comprovar que sigui <ph name="DOMAIN" /> perquè és possible que el seu certificat de seguretat s'hagi revocat. Això pot ser a causa d'una configuració incorrecta o d'un atacant que intercepta la vostra connexió.</translation>
 <translation id="2418081434543109369">El servidor de destinació, <ph name="ORIGIN" />, ha sol·licitat que s'apliqui una política de seguretat a totes les sol·licituds que rebi. Però no ha proporcionat cap política, de manera que el navegador no pot completar la sol·licitud que has fet per a <ph name="SITE" />.</translation>
-<translation id="2442483081384580286">Advertiments de Navegació segura</translation>
 <translation id="244665789865330679">El dispositiu i el compte estan gestionats per <ph name="ENROLLMENT_DOMAIN" />. Això vol dir que l'administrador pot configurar el dispositiu i el compte de manera remota.</translation>
 <translation id="2463193859425327265">Canvia la pàgina d'inici</translation>
 <translation id="2463739503403862330">Emplena</translation>
@@ -603,6 +601,7 @@
 <translation id="4277028893293644418">Restableix la contrasenya</translation>
 <translation id="4280429058323657511">, caduca el dia <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{Aquesta targeta s'ha desat al Compte de Google}other{Aquestes targetes s'han desat al Compte de Google}}</translation>
+<translation id="42981349822642051">Desplega</translation>
 <translation id="4302965934281694568">Chou3 (sobre)</translation>
 <translation id="4305817255990598646">Canvia</translation>
 <translation id="4312613361423056926">B2</translation>
@@ -873,6 +872,7 @@
 <translation id="5810442152076338065">La connexió a <ph name="DOMAIN" /> s'ha encriptat amb un sistema de xifratge obsolet.</translation>
 <translation id="5813119285467412249">&amp;Refés l'addició</translation>
 <translation id="5838278095973806738">No introdueixis informació sensible en aquest lloc (com ara contrasenyes o targetes de crèdit), ja que alguns atacants podrien robar-la.</translation>
+<translation id="5860033963881614850">Desactivat</translation>
 <translation id="5863847714970149516">És possible que la pàgina següent provi de fer-te algun càrrec</translation>
 <translation id="5866257070973731571">Afegeix un número de telèfon</translation>
 <translation id="5869405914158311789">No es pot accedir a aquest lloc</translation>
@@ -881,6 +881,7 @@
 <translation id="5893752035575986141">S'accepten targetes de crèdit.</translation>
 <translation id="5901630391730855834">Groc</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (informació sincronitzada)</translation>
+<translation id="5916664084637901428">Activat</translation>
 <translation id="5919090499915321845">B10</translation>
 <translation id="5921639886840618607">Vols desar la targeta al Compte de Google?</translation>
 <translation id="5922853866070715753">Ja queda poc</translation>
@@ -978,6 +979,7 @@
 <translation id="6508722015517270189">Reinicia Chrome</translation>
 <translation id="6529602333819889595">&amp;Refés la supressió</translation>
 <translation id="6534179046333460208">Suggeriments del Web físic</translation>
+<translation id="6556866813142980365">Refés</translation>
 <translation id="6563469144985748109">El teu gestor encara no ho ha aprovat</translation>
 <translation id="6569060085658103619">Estàs consultant la pàgina d'una extensió</translation>
 <translation id="6578796323535178455">C2 (sobre)</translation>

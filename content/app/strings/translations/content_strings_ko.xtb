@@ -94,6 +94,7 @@
 <translation id="4360991593054037559">유효한 값을 입력해 주세요. 가장 근접한 유효 값 2개는 <ph name="VALID_VALUE_LOW" /> 및 <ph name="VALID_VALUE_HIGHER" />입니다.</translation>
 <translation id="4384583879834880242">Q&amp;A</translation>
 <translation id="4413860115965805769">메뉴 버튼</translation>
+<translation id="4444765639179266822">텍스트가 <ph name="OCR_TEXT" />인 것으로 보입니다</translation>
 <translation id="4446524499724042288">용어 참조</translation>
 <translation id="4522570452068850558">세부정보</translation>
 <translation id="4542388879936266156">남은 시간: <ph name="REMAINING_TIME" /></translation>
@@ -120,6 +121,7 @@
 <translation id="5164977714490026579">값은 <ph name="MINIMUM" /> 이상이어야 합니다.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" />PB</translation>
 <translation id="5307600278924710095">'<ph name="ATSIGN" />' 앞 부분을 입력해 주세요. '<ph name="INVALIDADDRESS" />'(이)가 완전하지 않습니다.</translation>
+<translation id="5334352251556557839">미디어를 재생할 수 없습니다.</translation>
 <translation id="5406322316791861025">그림</translation>
 <translation id="5453733299334684579">트리 항목</translation>
 <translation id="5466621249238537318">파일을 한 개 이상 선택하세요.</translation>
@@ -146,6 +148,7 @@
 <translation id="6150588977291308318">참고문헌</translation>
 <translation id="6164829606128959761">미터</translation>
 <translation id="6166809985690652833">후기</translation>
+<translation id="6209276755895393898"><ph name="DESCRIPTION" /> 같습니다</translation>
 <translation id="6213469881011901533">용어설명</translation>
 <translation id="6398862346408813489">월 선택 패널 표시</translation>
 <translation id="6404546809543547843">오디오 시간 스크러버</translation>
@@ -176,6 +179,7 @@
 <translation id="7139483182332611405">머리말</translation>
 <translation id="7263440858009898357">목록에서 항목을 선택하세요.</translation>
 <translation id="727747134524199931">열 헤더</translation>
+<translation id="7320576522385648310">버퍼링</translation>
 <translation id="7353453495576941748">크레딧</translation>
 <translation id="7364796246159120393">파일 선택</translation>
 <translation id="739024184232394898">다른 주...</translation>

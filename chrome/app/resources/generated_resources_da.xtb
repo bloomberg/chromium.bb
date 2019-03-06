@@ -104,7 +104,6 @@
 <translation id="1143142264369994168">Certifikatunderskriver</translation>
 <translation id="1145292499998999162">Pluginnet blev blokeret</translation>
 <translation id="1145532888383813076">Søg på din enhed, i apps og på nettet.</translation>
-<translation id="1146204723345436916">Importer bogmærker fra HTML-fil...</translation>
 <translation id="114721135501989771">Få Googles smarte funktioner i Chrome</translation>
 <translation id="1148097584170732637">Der blev fundet <ph name="FILE_COUNT" />.
     <ph name="LINE_BREAK1" />
@@ -420,7 +419,6 @@
 <translation id="1608626060424371292">Fjern denne bruger</translation>
 <translation id="1609170755653088773">Synkroniser denne adgangskode på din iPhone</translation>
 <translation id="1611584202130317952">Provisioneringsflowet blev afbrudt. Prøv igen, eller kontakt enhedsejeren eller administratoren.</translation>
-<translation id="1611704746353331382">Eksportér bogmærker til HTML-fil...</translation>
 <translation id="1614511179807650956">Du har muligvis opbrugt den tilladte mobildatamængde. Gå til aktiveringsportalen for <ph name="NAME" /> for at købe mere data.</translation>
 <translation id="161460670679785907">Din telefon kan ikke registreres</translation>
 <translation id="1616206807336925449">Denne udvidelse kræver ikke nogen særlige tilladelser.</translation>
@@ -648,7 +646,6 @@
 <translation id="1932098463447129402">Ikke før</translation>
 <translation id="1933345018156373194">Flytningen mislykkedes. Uventet fejl: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1933809209549026293">Tilslut en mus eller et tastatur. Hvis du bruger en Bluetooth-enhed, skal du kontrollere, at den er parat til parring.</translation>
-<translation id="1936157145127842922">Vis i mappe</translation>
 <translation id="1938351510777341717">Ekstern kommando</translation>
 <translation id="1940546824932169984">Tilsluttede enheder</translation>
 <translation id="1942765061641586207">Billedopløsning</translation>
@@ -1367,7 +1364,6 @@
 <translation id="3009300415590184725">Er du sikker på, at du vil annullere konfigurationen af en mobildatatjeneste?</translation>
 <translation id="3009779501245596802">Indekserede databaser</translation>
 <translation id="3010279545267083280">Adgangskoden er slettet</translation>
-<translation id="3011362742078013760">Åbn alle bogmærker i &amp;inkognitovindue</translation>
 <translation id="3011488081941333749">Cookies fra <ph name="DOMAIN" /> ryddes ved lukning</translation>
 <translation id="3012631534724231212">(iframe)</translation>
 <translation id="3012804260437125868">Kun sikre forbindelser på samme website</translation>
@@ -2574,7 +2570,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4881695831933465202">Åbn</translation>
 <translation id="4882312758060467256">Udvidelsen har adgang til dette website.</translation>
 <translation id="4882831918239250449">Styr, hvordan din browserhistorik anvendes til at tilpasse søgeresultater, annoncer og meget mere</translation>
-<translation id="4883178195103750615">Eksporter bogmærker til HTML-fil...</translation>
 <translation id="4883436287898674711">Alle websites på <ph name="WEBSITE_1" /></translation>
 <translation id="48838266408104654">&amp;Jobliste</translation>
 <translation id="4884987973312178454">6x</translation>
@@ -2908,7 +2903,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5376931455988532197">Filen er for stor</translation>
 <translation id="537813040452600081">De sider, du ser i dette vindue, vises ikke i browserhistorikken, og de efterlader ikke andre spor som f.eks. cookies på computeren, når du logger ud. De filer, du downloader, og bogmærker, du opretter, bliver ikke gemt.</translation>
 <translation id="5379140238605961210">Fortsæt blokeringen af mikrofonadgang</translation>
-<translation id="5379268888377976432">Fortryd sletning</translation>
 <translation id="5382591305415226340">Administrer understøttede links</translation>
 <translation id="5384883051496921101">Dette website skal til at dele oplysninger med en app uden for inkognitotilstand.</translation>
 <translation id="5388885445722491159">Parret</translation>
@@ -3203,7 +3197,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5801568494490449797">Præferencer</translation>
 <translation id="5804241973901381774">Tilladelser</translation>
 <translation id="5805697420284793859">Vinduesadministrator</translation>
-<translation id="580571955903695899">Omorganiser efter titel</translation>
 <translation id="5811750797187914944">Udført</translation>
 <translation id="5814126672212206791">Forbindelsestype</translation>
 <translation id="5815645614496570556">X.400-adresse</translation>
@@ -3531,7 +3524,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6264365405983206840">Vælg &amp;alle</translation>
 <translation id="6267166720438879315">Vælg et certifikat til at bekræfte dig selv over for <ph name="HOST_NAME" /></translation>
 <translation id="6268252012308737255">Åbn med <ph name="APP" /></translation>
-<translation id="6268747994388690914">Importér bogmærker fra HTML-fil...</translation>
 <translation id="6272643420381259437">Der opstod en fejl (<ph name="ERROR" />) under download af pluginnet</translation>
 <translation id="6273677812470008672">Kvalitet</translation>
 <translation id="6277105963844135994">Netværkstimeout</translation>
@@ -3578,6 +3570,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6341850831632289108">Find din fysiske placering</translation>
 <translation id="6344170822609224263">Få adgang til listen over netværksforbindelser</translation>
 <translation id="6346310558342052870">Begrænset adgang</translation>
+<translation id="6349101878882523185">Installer <ph name="APP_NAME" /></translation>
 <translation id="6349170655202535379">Synkronisering virker ikke. Prøv at logge ud og ind igen.</translation>
 <translation id="6351063337294363751">Du kan rydde dine browserdata fra denne menu</translation>
 <translation id="6352773953037195952">Højeste</translation>
@@ -3606,7 +3599,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6393156038355142111">Foreslå en stærk adgangskode</translation>
 <translation id="6395575651121294044"><ph name="NUMBER_OF_FILES" /> elementer</translation>
 <translation id="6397094776139756010">Muligheder for synkronisering og tilpasning</translation>
-<translation id="6397592254427394018">Åbn alle bogmærker i &amp;inkognitovindue</translation>
 <translation id="6398715114293939307">Fjern Google Play Butik</translation>
 <translation id="6398765197997659313">Afslut fuld skærm</translation>
 <translation id="6399774419735315745">Spion</translation>
@@ -3870,7 +3862,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6798954102094737107">Plugin: <ph name="PLUGIN_NAME" /></translation>
 <translation id="6801435275744557998">Kalibrer touchskærm</translation>
 <translation id="6802031077390104172"><ph name="USAGE" /> (<ph name="OID" />)</translation>
-<translation id="6804671422566312077">Åbn alle bogmærker i &amp;nyt vindue</translation>
 <translation id="6805038906417219576">OK</translation>
 <translation id="6805647936811177813">Log ind på <ph name="TOKEN_NAME" /> for at importere klientcertifikatet fra <ph name="HOST_NAME" />.</translation>
 <translation id="680572642341004180">Aktivér RLZ-sporing i <ph name="SHORT_PRODUCT_OS_NAME" />.</translation>
@@ -3977,7 +3968,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6970856801391541997">Udskriv bestemte sider</translation>
 <translation id="6972180789171089114">Lyd/video</translation>
 <translation id="6972754398087986839">Kom godt i gang</translation>
-<translation id="6973630695168034713">Mapper</translation>
 <translation id="6974609594866392343">Offline demotilstand</translation>
 <translation id="6977381486153291903">Firmwarerevision</translation>
 <translation id="6978121630131642226">Søgemaskiner</translation>
@@ -4308,7 +4298,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7478485216301680444">Kioskapplikationen kunne ikke installeres.</translation>
 <translation id="7481312909269577407">Frem</translation>
 <translation id="748138892655239008">Grundlæggende begrænsninger for certifikat</translation>
-<translation id="7484964289312150019">Åbn alle bogmærker i nyt vindue</translation>
 <translation id="7487067081878637334">Teknologi</translation>
 <translation id="7487099628810939106">Forsinkelse før klik:</translation>
 <translation id="7487969577036436319">Der er ikke installeret nogen komponenter</translation>
@@ -4738,7 +4727,6 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8063235345342641131">Grøn standardavatar</translation>
 <translation id="8064671687106936412">Nøgle:</translation>
 <translation id="8066773524873206594">Alle redigeringer gemmes i <ph name="DOWNLOADS_FOLDER" />.</translation>
-<translation id="806812017500012252">Omorganiser efter titel</translation>
 <translation id="8068253693380742035">Tryk for at logge ind</translation>
 <translation id="8069615408251337349">Google Cloudprinter</translation>
 <translation id="8071432093239591881">Udskriv i billedformat</translation>

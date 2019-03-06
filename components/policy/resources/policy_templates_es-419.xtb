@@ -104,6 +104,19 @@
       Permite determinar el tiempo que debe transcurrir antes de que se muestre el protector de pantalla en la página de inicio de sesión para dispositivos que se encuentren en el modo de venta.
 
       El valor de la política debe especificarse en milisegundos.</translation>
+<translation id="1141767714195601945">Esta política controla los parámetros de la línea de comandos para Chrome desde Internet Explorer.
+
+      Si el complemento "Compatibilidad con navegadores heredados" para Internet Explorer no está instalado, no se aplicará esta política.
+
+      Si no se configura esta política, Internet Explorer solo enviará la URL a Chrome como parámetro de la línea de comandos.
+
+      Si se establece esta política como una lista de strings, estas se unirán con espacios y se enviarán a Chrome como parámetros de la línea de comandos.
+
+      Si un elemento contiene ${url}, se reemplazará con la dirección URL de la página que se abrirá.
+
+      Si ningún elemento contiene ${url}, se agregará la dirección URL al final de la línea de comandos.
+
+      Se expanden las variables del entorno. En Windows, %ABC% se reemplaza con el valor de la variable del entorno ABC.</translation>
 <translation id="1151353063931113432">Permitir imágenes en estos sitios</translation>
 <translation id="1152117524387175066">Informa sobre el estado del conmutador de dispositivo cuando este se inicia.
 
@@ -167,6 +180,10 @@
 
       Si esta política se establece en false, <ph name="PRODUCT_NAME" /> no permitirá que se inicien perfiles de invitado.</translation>
 <translation id="1363275621236827384">Habilitar las consultas a Quirks Server para perfiles de hardware</translation>
+<translation id="1363612796557848469">Esta política le otorga permiso al Asistente de Google para acceder al contexto de pantalla y enviar la información al servidor.
+      Si se habilita la política, el Asistente de Google podrá acceder a este contexto.
+      Si se inhabilita la política, el Asistente de Google no podrá acceder a este contexto.
+      Si no se configura, los usuarios podrán decidir la acción del Asistente de Google.</translation>
 <translation id="1383493480903114193">Esta política fuerza la ejecución del código de red en el proceso de navegación.
 
       Está inhabilitada de forma predeterminada, pero, si se habilita, deja a los usuarios desprotegidos frente a problemas de seguridad una vez que el proceso de red se encuentre en la zona de pruebas.
@@ -285,6 +302,12 @@
       Para obtener más información sobre la Navegación segura, consulta https://developers.google.com/safe-browsing.</translation>
 <translation id="1583248206450240930">Utilizar <ph name="PRODUCT_FRAME_NAME" /> de manera predeterminada</translation>
 <translation id="1599424828227887013">Habilitar el aislamiento de sitios para orígenes específicos en dispositivos Android</translation>
+<translation id="1608259529294767544">Esta política le otorga permiso al Asistente de Google para escuchar la frase de activación de voz.
+
+      Si se habilita la política, el Asistente de Google escuchará la frase de activación de voz.
+      Si se inhabilita la política, el Asistente de Google no escuchará la frase de activación de voz.
+      Si no se configura, los usuarios podrán decidir la acción del Asistente de Google.
+      </translation>
 <translation id="1608755754295374538">Las URL que recibirán acceso a dispositivos de captura de audio sin solicitarlo</translation>
 <translation id="1615221548356595305">Permitir la integración de conexiones HTTP/2 para estos hosts incluso cuando se usan certificados de cliente</translation>
 <translation id="1617235075406854669">Habilita la eliminación del historial de descargas y del navegador.</translation>
@@ -336,6 +359,7 @@
       La política debe establecerse en una URL de la cual <ph name="PRODUCT_OS_NAME" /> pueda descargar las Condiciones del servicio. Estas deberán estar en texto sin formato y ofrecerse como texto sin formato tipo MIME. No se permiten marcas.</translation>
 <translation id="1750315445671978749">Bloquear todas las descargas</translation>
 <translation id="1781356041596378058">Esta política también controla el acceso a las Opciones para programador de Android. Si habilitas esta política, los usuarios no podrán acceder a las Opciones para programador. Si estableces esta política como falsa o no la estableces, los usuarios podrán acceder a las Opciones para programador al presionar siete veces el número de compilación en la app de Configuración de Android.</translation>
+<translation id="1793346220873697538">Desactiva la impresión con PIN de forma predeterminada</translation>
 <translation id="1797233582739332495">Mostrar un mensaje recurrente al usuario para indicarle que se debe realizar un reinicio</translation>
 <translation id="1798559516913615713">Duración de la caché de GPO</translation>
 <translation id="1803646570632580723">Lista de aplicaciones fijas para mostrar en el menú de aplicaciones</translation>
@@ -359,6 +383,7 @@
 <translation id="1843117931376765605">Frecuencia de actualización de la política de usuario</translation>
 <translation id="1844620919405873871">Configura políticas relacionadas con el desbloqueo rápido.</translation>
 <translation id="1845405905602899692">Configuración del kiosco</translation>
+<translation id="1845429996559814839">Restringe el modo de impresión con PIN</translation>
 <translation id="1847960418907100918">Especifica los parámetros utilizados al realizar búsquedas instantáneas con POST. Se compone de pares de nombre/valor separados por coma. Si un valor es un parámetro de plantilla, como {searchTerms} en el ejemplo anterior, se reemplazará por datos de términos de búsqueda reales.
 
           Esta política es opcional. Si no se establece, la solicitud de búsqueda instantánea se enviará mediante el método GET.
@@ -467,6 +492,15 @@
       Si no estableces esta política, <ph name="PRODUCT_NAME" /> usará el valor predeterminado de 3 horas.
 
       Ten en cuenta que, si la plataforma es compatible con las notificaciones de política, el retraso de actualización se establecerá en 24 horas (se ignoran todos los valores predeterminados y el valor de esta política), ya que se espera que las notificaciones de política fuercen una actualización de forma automática cada vez que la política cambie. Esto hace que las actualizaciones frecuentes no sean necesarias.</translation>
+<translation id="2024149678078029009">Esta política controla el comando que se usará en URL abiertas en <ph name="PRODUCT_NAME" /> cuando cambias de Internet Explorer.
+
+      Si el complemento "Compatibilidad con navegadores heredados" para Internet Explorer no está instalado, no se aplicará esta política.
+
+      Si no se configura esta política, Internet Explorer detectará de forma automática la ruta ejecutable de <ph name="PRODUCT_NAME" /> cuando ejecute <ph name="PRODUCT_NAME" /> desde Internet Explorer.
+
+      Si se configura esta política, se usará para ejecutar <ph name="PRODUCT_NAME" /> al cambiar la ejecución de <ph name="PRODUCT_NAME" /> desde Internet Explorer.
+
+      Esta política se puede configurar como una ruta de un archivo ejecutable o ${chrome} para detectar de forma automática la ubicación donde está instalado Chrome.</translation>
 <translation id="2024476116966025075">Configurar el nombre de dominio requerido para los clientes de acceso remoto</translation>
 <translation id="2030905906517501646">Palabra clave del proveedor de búsqueda predeterminado</translation>
 <translation id="203096360153626918">Esta política no tiene efecto en las apps de Android. Podrán implementar el modo de pantalla completa, incluso si esta política se establece como <ph name="FALSE" />.</translation>
@@ -485,6 +519,7 @@
 <translation id="209586405398070749">Canal estable</translation>
 <translation id="2098658257603918882">Habilitar informes de uso y datos relacionados con bloqueos</translation>
 <translation id="2104418465060359056">Enviar información de extensiones y complementos</translation>
+<translation id="2106627642643925514">Anula el modo de impresión con PIN predeterminado. Si el modo no está disponible, se ignorará esta política.</translation>
 <translation id="2107601598727098402">
         Esta política quedó obsoleta a partir de M72. En su lugar, utiliza CloudManagementEnrollmentToken.
         </translation>
@@ -502,6 +537,7 @@
       Si se configura como falsa, no se recopilará esta información.
 
       Esta política solo es válida si se habilita <ph name="CHROME_REPORTING_EXTENSION_NAME" />, y la máquina está inscrita en <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
+<translation id="2126178089984117495">Restringe el modo de impresión con PIN. Si no se configura la política, no se aplicará ninguna restricción. Si el modo no está disponible, se ignorará esta política.</translation>
 <translation id="2127599828444728326">Permitir notificaciones en estos sitios</translation>
 <translation id="2131902621292742709">Demora de atenuación de pantalla con batería</translation>
 <translation id="2134437727173969994">Permite bloquear la pantalla</translation>
@@ -515,6 +551,7 @@
 <translation id="2156132677421487971">Configura las políticas para <ph name="PRODUCT_NAME" />, una función que permite que los usuarios envíen el contenido de las pestañas, los sitios o el escritorio del navegador a pantallas y sistemas de sonido remotos.</translation>
 <translation id="2166472654199325139">No aplicar filtros de contenido para adultos a los sitios</translation>
 <translation id="2168397434410358693">Demora de inactividad con alimentación de CA</translation>
+<translation id="217013996107840632">Parámetros de la línea de comandos para cambiar del navegador alternativo</translation>
 <translation id="2170233653554726857">Habilitar optimización de WPAD</translation>
 <translation id="2176565653304920879">Cuando se establece esta política, la detección automática de la zona horaria se llevará a cabo de las siguientes formas, según el valor de la configuración:
 
@@ -757,6 +794,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="267596348720209223">Especifica la codificación de caracteres admitida por el proveedor de búsqueda. Las codificaciones son nombres de páginas de códigos, como UTF-8, GB2312 e ISO-8859-1. Se prueban en el orden dado. Esta política es opcional. Si no se configura, se usará el valor predeterminado, que es UTF-8. Esta política solo se respeta si la política "DefaultSearchProviderEnabled" está habilitada.</translation>
 <translation id="268577405881275241">Habilitar la función del proxy de compresión de datos</translation>
 <translation id="2693108589792503178">Configura la URL de cambio de contraseña.</translation>
+<translation id="2706708761587205154">Permite la impresión solo con PIN</translation>
 <translation id="2731627323327011390">Inhabilitar el uso de certificados de <ph name="PRODUCT_OS_NAME" /> para apps de ARC</translation>
 <translation id="2742843273354638707">Permite ocultar la aplicación Chrome Web Store y el vínculo de la parte inferior de la página Nueva pestaña y del Selector de aplicaciones de <ph name="PRODUCT_OS_NAME" />.
 
@@ -1439,6 +1477,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
           Esta política es opcional. Si no se establece, la solicitud de búsqueda de imágenes se enviará mediante el método GET.
 
           Esta política solo se respeta si se habilita la política "DefaultSearchProviderEnabled".</translation>
+<translation id="427706009709857238">"Permite el acceso del Asistente de Google para que escuche la frase de activación de voz"</translation>
 <translation id="4285674129118156176">Permitir que los usuarios no afiliados usen ARC</translation>
 <translation id="4298509794364745131">Especifica una lista de las apps que se pueden habilitar como una app para tomar notas en la pantalla bloqueada de <ph name="PRODUCT_OS_NAME" />.
 
@@ -1512,6 +1551,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="4483649828988077221">Inhabilitar la actualización automática</translation>
 <translation id="4485425108474077672">Configurar la URL de la página Nueva pestaña</translation>
 <translation id="4492287494009043413">Inhabilitar la toma de capturas de pantalla</translation>
+<translation id="4494132853995232608">DTC wilco</translation>
 <translation id="449423975179525290">Configura las políticas relacionadas con <ph name="PLUGIN_VM_NAME" />.</translation>
 <translation id="450537894712826981">Configura el tamaño de caché que utilizará <ph name="PRODUCT_NAME" /> para almacenar archivos multimedia en caché en el disco.
 
@@ -1604,6 +1644,11 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="4725528134735324213">Habilitar Android Backup Service</translation>
 <translation id="4725801978265372736">Solicitar que el nombre del usuario local y el propietario del host de acceso remoto coincidan</translation>
 <translation id="4733471537137819387">Políticas relacionadas con la autenticación de HTTP integrada</translation>
+<translation id="4744190513568488164">Servidores a los que <ph name="PRODUCT_NAME" /> puede delegar las credenciales de usuarios
+
+          Separa los distintos nombres de servidor con comas. Se permite el uso de caracteres comodín (*).
+
+          Si esta política no se establece, <ph name="PRODUCT_NAME" /> no delegará las credenciales de usuario aunque un servidor se detecte como intranet.</translation>
 <translation id="4752880493649142945">Certificado de cliente para conectarse a RemoteAccessHostTokenValidationUrl</translation>
 <translation id="4757671984625088193">Si se establece como verdadera o no se establece esta política, <ph name="PRODUCT_NAME" /> sugerirá páginas relacionadas con la página actual.
       Estas sugerencias se obtienen de forma remota de los servidores de Google.
@@ -1678,6 +1723,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="4978405676361550165">Si se establece la política "OffHours", se ignorarán las políticas de dispositivo especificadas (se usará la configuración predeterminada de estas políticas) durante los intervalos definidos. Chrome vuelve a aplicar las políticas de dispositivo en todos los eventos cuando comienza y finaliza el período de "OffHours". Se le notificará al usuario y se lo obligará a salir de su cuenta cuando finalice el tiempo de "OffHours" y se modifique la configuración de las políticas de dispositivo (p. ej., cuando el usuario accede con una cuenta no habilitada).</translation>
 <translation id="4980635395568992380">Tipo de datos:</translation>
 <translation id="4983201894483989687">Permitir la ejecución de complementos desactualizados</translation>
+<translation id="4986560318567565414">Ruta a Chrome para el cambio desde el navegador alternativo</translation>
 <translation id="4988291787868618635">Acción que se realiza cuando se alcanza la demora de inactividad</translation>
 <translation id="4995548127349206948">Controla si está habilitada la autenticación NTLMv2.</translation>
 <translation id="5047604665028708335">Permite el acceso a sitios fuera de los paquetes de contenido.</translation>
@@ -1920,6 +1966,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
       Si no se especifica, no se modificará la URL del valor de inicialización de las variaciones.</translation>
 <translation id="5561811616825571914">Seleccionar automáticamente certificados de cliente para estos sitios en la pantalla de acceso</translation>
+<translation id="5566210228171064229">Permite la impresión con y sin PIN</translation>
 <translation id="556941986578702361">Permite controlar la opción para ocultar automáticamente los archivos de <ph name="PRODUCT_OS_NAME" />.
 
       Si esta política se establece en "AlwaysAutoHideShelf", los archivos se ocultarán automáticamente.
@@ -1939,6 +1986,15 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       Esta política solo es válida si se habilita <ph name="CHROME_REPORTING_EXTENSION_NAME" />, y la máquina está inscrita en <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="5584132346604748282">Controla los servicios de ubicación de Google para Android</translation>
 <translation id="5586942249556966598">No hacer nada</translation>
+<translation id="5590494712401018042">Indica el porcentaje en el que debe ajustarse la demora de atenuación de la pantalla en el modo de presentación.
+
+          Si se configura esta política, especificará el porcentaje en el que debe ajustarse la demora de atenuación de la pantalla cuando el dispositivo está en el modo de presentación. Cuando se ajusta la demora de atenuación de la pantalla, se modifican el apagado de la pantalla, el bloqueo de pantalla y las demoras de inactividad para mantener las mismas distancias desde la demora de atenuación de la pantalla, como se configuraron en un primer momento.
+
+          Si no se configura esta política, se usa el factor de ajuste predeterminado.
+
+          Esta política solo tendrá efecto si no se habilita la política <ph name="POWER_SMART_DIM_ENABLED_POLICY_NAME" />. De lo contrario, se ignorará esta política, ya que un modelo de aprendizaje automático determinará la demora de atenuación de la pantalla.
+
+          El factor de ajuste debe ser 100% o más. No se permiten los valores que harían que la duración de la demora de atenuación de la pantalla en el modo de presentación sea más breve que esta demora en la pantalla común.</translation>
 <translation id="5592242031005200087">
       Si se habilita la política, cada origen designado en una lista de elementos
       separados por comas se ejecutará en su propio proceso. Esta acción
@@ -2152,6 +2208,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
       Si esta política no se configura, la lista de dispositivos USB que se pueden separar está vacía.</translation>
 <translation id="6083631234867522991">Windows (clientes de Windows):</translation>
+<translation id="6089679180657323464">Supervisa la configuración del controlador de telemetría y diagnósticos wilco.</translation>
 <translation id="6091233616732024397">Forzar a los usuarios a acceder para usar el navegador</translation>
 <translation id="6093156968240188330">Permitir que los usuarios remotos interactúen con las ventanas con permisos elevados en sesiones de asistencia remota</translation>
 <translation id="6095999036251797924">Especifica el tiempo que debe transcurrir sin que el usuario realice una acción antes de que la pantalla se bloquee cuando se utiliza CA o batería.
@@ -2424,6 +2481,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="6770454900105963262">Informar datos sobre las sesiones de kiosco activas</translation>
 <translation id="6786747875388722282">Extensiones</translation>
 <translation id="6786967369487349613">Establecer el directorio del perfil de itinerancia</translation>
+<translation id="6795485990775913659">Permitir la impresión solo sin PIN</translation>
 <translation id="6810445994095397827">Bloquear JavaScript en estos sitios</translation>
 <translation id="6813263547126514821">Encendido y apagado</translation>
 <translation id="681446116407619279">Esquemas de autenticación compatibles</translation>
@@ -2539,6 +2597,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
       Se aplicará esta política solo si está habilitado el soporte para las apps de Linux.</translation>
 <translation id="69525503251220566">Parámetro que proporciona una función de búsqueda por imagen para el proveedor de búsquedas predeterminado</translation>
+<translation id="6953102253399571439">Habilita la impresión con PIN de forma predeterminada</translation>
 <translation id="6956272732789158625">No permitir que los sitios utilicen la generación de claves</translation>
 <translation id="6965859329738616662">Especifica si se permite que un modelo de atenuación inteligente extienda el tiempo de atenuación de la pantalla.
 
@@ -2590,6 +2649,15 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
           Si no se establece esta política, se usará el valor predeterminado global para todos los sitios, ya sea desde la política "DefaultWebUsbGuardSetting" (si se establece) o desde otro tipo de configuración personal del usuario.
 
           Los patrones de URL en esta política no deben entrar en conflicto con los que se configuren a través de WebUsbAskForUrls. No se especifica cuál de las dos políticas tiene prioridad si una URL coincide con ambas.</translation>
+<translation id="7086677522575756117">Indica el porcentaje en que debe ajustarse la demora de atenuación de la pantalla cuando se observa que la actividad del usuario con la pantalla oscurecida o poco después de que esta se haya desactivado.
+
+          Si se establece esta política, se especificará el porcentaje de ajuste de la demora de atenuación de la pantalla cuando se observa la actividad del usuario con la pantalla oscurecida o poco después de que esta se haya desactivado. Cuando se ajusta la demora de atenuación, se modifican el apagado de la pantalla, el bloqueo de pantalla y las demoras de inactividad para mantener las mismas distancias desde la demora de atenuación de la pantalla, como se configuraron en un primer momento.
+
+          Si no se configura esta política, se usa el factor de ajuste predeterminado.
+
+          Esta política solo tendrá efecto si no se activa la política <ph name="POWER_SMART_DIM_ENABLED_POLICY_NAME" />. De lo contrario, se ignorará esta política, ya que un modelo de aprendizaje automático determinará la demora de atenuación de la pantalla.
+
+          El factor de ajuste debe ser 100% o más.</translation>
 <translation id="7106631983877564505">Habilitar el bloqueo cuando los dispositivos <ph name="PRODUCT_OS_NAME" /> están inactivos o suspendidos
 
       Si habilitas esta configuración, los usuarios deberán ingresar una contraseña para que los dispositivos salgan del modo de suspensión.
@@ -2626,6 +2694,7 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
       Esta política se puede configurar con los valores "conservador" y "rendimiento" para darle prioridad a la estabilidad o el máximo rendimiento del programador de tareas respectivamente.
 
       Si la política no se configura, el usuario puede tomar su propia decisión.</translation>
+<translation id="7145335384492396213">Modo de impresión con PIN predeterminado</translation>
 <translation id="7158064522994309072">Esta política controla el comando que se utiliza para abrir las URL en un navegador alternativo.
 
       Si no se establece esta política, se utiliza una opción predeterminada específica de la plataforma: Internet Explorer para Windows o Safari para Mac OS X. En Linux, si no se establece la política, se producirá un error cuando se inicie un navegador alternativo.
@@ -2693,6 +2762,7 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 
       Si se configura esta política como verdadera, también se inhabilitan las impresoras que usen protocolos que no sean IPPS, USB o IPP por USB, dado que los nombres de usuario y de archivo no deben enviarse a través de la red de forma abierta.</translation>
 <translation id="7258823566580374486">Habilitar modo de cortina en hosts de acceso remoto</translation>
+<translation id="7260204423892780600">Controla la configuración del Asistente de Google.</translation>
 <translation id="7260277299188117560">Conexión P2P de actualizaciones automáticas habilitada</translation>
 <translation id="7261252191178797385">Imagen de fondo de pantalla del dispositivo</translation>
 <translation id="7264704483008663819">Esta política está obsoleta en M68; usa DeveloperToolsAvailability en su lugar.
@@ -2800,10 +2870,15 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
           Si se establece esta política, se ajustará el brillo de pantalla inicial conforme al valor de la política, pero el usuario podrá cambiar este valor en cualquier momento. Se inhabilitan las funciones de brillo automático.
           Si no se establece esta política, no se modifican los controles de pantalla del usuario ni las funciones de brillo automático.
           Los valores de la política deben especificarse como porcentaje en el rango de 0 a 100.</translation>
+<translation id="7517846421386644905">Permite que un administrador supervise si el controlador de diagnósticos y telemetría (DTC) wilco debe recopilar, procesar e informar datos de diagnósticos y telemetría.
+
+      Si se configura la política como falsa o no se configura, el DTC se desactivará y no podrá recopilar, procesar ni informar este tipo de datos desde el dispositivo.
+      Si el DTC wilco está disponible en el dispositivo indicado, y se establece la política como verdadera, se activará la recopilación, procesamiento y envío de estos datos.</translation>
 <translation id="7519251620064708155">Permitir la generación de claves en estos sitios</translation>
 <translation id="7529100000224450960">Te permite configurar una lista de patrones de URL que especifican los sitios que no están autorizados a abrir ventanas emergentes. Si esta política no se configura, se usará el valor global predeterminado para todos los sitios ya sea de la política "DefaultPopupsSetting", si está configurada, o de otro tipo de configuración personal del usuario.</translation>
 <translation id="7529144158022474049">Actualizar de forma automática el factor de dispersión</translation>
 <translation id="7534199150025803530">Esta política no tiene efecto en la app de Google Drive de Android. Si quieres evitar el uso de Google Drive con conexiones móviles, debes inhabilitar la instalación de su app.</translation>
+<translation id="7540622499178214923">Permite el controlador de telemetría y diagnósticos wilco</translation>
 <translation id="7547549430720182663">Combinar</translation>
 <translation id="7553535237300701827">Según el valor que se establezca para esta política, el flujo de autenticación de acceso será una de las siguientes opciones:
 
@@ -3511,6 +3586,7 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
       Si configuras esta política con un valor más bajo, el efecto será permanente: ES POSIBLE que el dispositivo no pueda implementar la reversión a versiones anteriores incluso después de que se restablezca la política con un valor más alto.
 
       Las posibilidades reales de reversión también dependen de los parches de vulnerabilidad críticos y de la placa.</translation>
+<translation id="9126014181388780690">"Permite que el Asistente de Google acceda al contexto de pantalla"</translation>
 <translation id="913195841488580904">Bloquear el acceso a una lista de las URL</translation>
 <translation id="9135033364005346124">Habilitar el proxy de <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="9136399279941091445">Intervalos de horas inactivas cuando se ejecutan las políticas de dispositivo especificadas</translation>

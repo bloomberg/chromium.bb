@@ -51,7 +51,6 @@
 <translation id="1232569758102978740">ללא שם</translation>
 <translation id="1240347957665416060">שם המכשיר שלך</translation>
 <translation id="124116460088058876">שפות נוספות</translation>
-<translation id="1246987714874202335">עדכון תאריך התפוגה</translation>
 <translation id="1250759482327835220">‏כדי לשלם מהר יותר בפעם הבאה, אפשר לשמור בחשבון Google את פרטי הכרטיס, השם והכתובת לחיוב.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (מסונכרנים)</translation>
 <translation id="1256368399071562588">‏&lt;p&gt;אם אתם מנסים להיכנס לאתר והוא לא נפתח, קודם נסו לפתור את הבעיה בעזרת השלבים הבאים:&lt;/p&gt;
@@ -273,7 +272,6 @@
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">השרת הזה לא הצליח להוכיח שהוא <ph name="DOMAIN" />. ייתכן שאישור האבטחה שלו בוטל. הסיבה לכך עשויה להיות הגדרה שגויה או תוקף המיירט את החיבור שלך.</translation>
 <translation id="2418081434543109369">השרת שאליו ביקשת לעבור, <ph name="ORIGIN" />, ביקש להחיל מדיניות אבטחה על כל הבקשות הנשלחות אליו. עם זאת, עכשיו הוא לא הצליח לספק מדיניות, ומצב זה מונע מהדפדפן למלא את הבקשה לעבור אל <ph name="SITE" />.</translation>
-<translation id="2442483081384580286">אזהרות גלישה בטוחה</translation>
 <translation id="244665789865330679">המכשיר והחשבון מנוהלים על-ידי <ph name="ENROLLMENT_DOMAIN" />. המשמעות היא שמנהל המערכת יכול להגדיר מרחוק את תצורת המכשיר והחשבון.</translation>
 <translation id="2463193859425327265">שינוי דף הבית</translation>
 <translation id="2463739503403862330">מלא</translation>
@@ -603,6 +601,7 @@
 <translation id="4277028893293644418">איפוס סיסמה</translation>
 <translation id="4280429058323657511">, בתוקף עד <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{‏הכרטיס הזה נשמר בחשבון Google שלך}two{‏הכרטיסים האלה נשמרו בחשבון Google שלך}many{‏הכרטיסים האלה נשמרו בחשבון Google שלך}other{‏הכרטיסים האלה נשמרו בחשבון Google שלך}}</translation>
+<translation id="42981349822642051">הרחבה</translation>
 <translation id="4302965934281694568">Chou3 (Envelope)‎</translation>
 <translation id="4305817255990598646">מעבר</translation>
 <translation id="4312613361423056926">B2</translation>
@@ -878,6 +877,7 @@ Del</translation>
 <translation id="5810442152076338065">החיבור שלך אל <ph name="DOMAIN" /> מוצפן באמצעות חבילת צופן מיושנת.</translation>
 <translation id="5813119285467412249">&amp;ביצוע מחדש של הוספה</translation>
 <translation id="5838278095973806738">אין להזין מידע רגיש באתר הזה (כמו סיסמאות או מספרי כרטיסי אשראי), מאחר שתוקפים עלולים לקבל אליו גישה.</translation>
+<translation id="5860033963881614850">כבוי</translation>
 <translation id="5863847714970149516">בדף הבא עשויה להיות דרישה לתשלום</translation>
 <translation id="5866257070973731571">הוספת מספר טלפון</translation>
 <translation id="5869405914158311789">לא ניתן לגשת לאתר הזה</translation>
@@ -886,6 +886,7 @@ Del</translation>
 <translation id="5893752035575986141">אפשר לשלם באמצעות כרטיסי אשראי.</translation>
 <translation id="5901630391730855834">צהוב</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (מסונכרנים)</translation>
+<translation id="5916664084637901428">פועל</translation>
 <translation id="5919090499915321845">B10</translation>
 <translation id="5921639886840618607">‏לשמור את הכרטיס בחשבון Google?</translation>
 <translation id="5922853866070715753">עוד רגע מסיימים</translation>
@@ -983,6 +984,7 @@ Del</translation>
 <translation id="6508722015517270189">‏הפעלה מחדש של Chrome</translation>
 <translation id="6529602333819889595">&amp;ביצוע מחדש של מחיקה</translation>
 <translation id="6534179046333460208">הצעות לאינטרנט הפיזי</translation>
+<translation id="6556866813142980365">בצע מחדש</translation>
 <translation id="6563469144985748109">המנהל שלך עדיין לא אישר זאת</translation>
 <translation id="6569060085658103619">אתה מציג דף של תוסף</translation>
 <translation id="6578796323535178455">C2 (Envelope)‎</translation>
