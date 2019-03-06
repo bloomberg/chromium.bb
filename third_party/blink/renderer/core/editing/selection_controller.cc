@@ -547,7 +547,7 @@ void SelectionController::UpdateSelectionForMouseDrag(
   const bool selection_is_directional =
       should_extend_selection ? Selection().IsDirectional() : false;
   SetNonDirectionalSelectionIfNeeded(
-      adjusted_selection,
+      CreateVisibleSelection(adjusted_selection).AsSelection(),
       SetSelectionOptions::Builder()
           .SetGranularity(Selection().Granularity())
           .SetIsDirectional(selection_is_directional)
@@ -581,13 +581,13 @@ bool SelectionController::UpdateSelectionForMouseDownDispatchingSelectStart(
 
   if (visible_selection.IsRange()) {
     selection_state_ = SelectionState::kExtendedSelection;
-    SetNonDirectionalSelectionIfNeeded(selection, set_selection_options,
+    SetNonDirectionalSelectionIfNeeded(visible_selection, set_selection_options,
                                        kDoNotAdjustEndpoints);
     return true;
   }
 
   selection_state_ = SelectionState::kPlacedCaret;
-  SetNonDirectionalSelectionIfNeeded(selection, set_selection_options,
+  SetNonDirectionalSelectionIfNeeded(visible_selection, set_selection_options,
                                      kDoNotAdjustEndpoints);
   return true;
 }
@@ -792,15 +792,11 @@ void SelectionController::SelectClosestWordOrLinkFromMouseEvent(
 // We should rename this function to appropriate name because
 // set_selection_options has selection directional value in few cases.
 void SelectionController::SetNonDirectionalSelectionIfNeeded(
-    const SelectionInFlatTree& passed_selection,
+    const SelectionInFlatTree& new_selection,
     const SetSelectionOptions& set_selection_options,
     EndPointsAdjustmentMode endpoints_adjustment_mode) {
-  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
-  // needs to be audited.  See http://crbug.com/590369 for more details.
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  DCHECK(!GetDocument().NeedsLayoutTreeUpdate());
 
-  const SelectionInFlatTree new_selection =
-      CreateVisibleSelection(passed_selection).AsSelection();
   // TODO(editing-dev): We should use |PositionWithAffinity| to pass affinity
   // to |CreateVisiblePosition()| for |original_base|.
   const PositionInFlatTree& base_position =
