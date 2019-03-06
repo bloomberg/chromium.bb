@@ -320,7 +320,9 @@ AutofillWalletMetadataSyncBridge::AutofillWalletMetadataSyncBridge(
   LoadDataCacheAndMetadata();
 }
 
-AutofillWalletMetadataSyncBridge::~AutofillWalletMetadataSyncBridge() {}
+AutofillWalletMetadataSyncBridge::~AutofillWalletMetadataSyncBridge() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
 
 void AutofillWalletMetadataSyncBridge::OnWalletDataTrackingStateChanged(
     bool is_tracking) {
@@ -338,6 +340,7 @@ base::Optional<syncer::ModelError>
 AutofillWalletMetadataSyncBridge::MergeSyncData(
     std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
     syncer::EntityChangeList entity_data) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // First upload local entities that are not mentioned in |entity_data|.
   UploadInitialLocalData(metadata_change_list.get(), entity_data);
 
@@ -349,6 +352,7 @@ base::Optional<syncer::ModelError>
 AutofillWalletMetadataSyncBridge::ApplySyncChanges(
     std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
     syncer::EntityChangeList entity_data) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return MergeRemoteChanges(std::move(metadata_change_list),
                             std::move(entity_data));
 }
@@ -369,6 +373,7 @@ void AutofillWalletMetadataSyncBridge::GetAllDataForDebugging(
 
 std::string AutofillWalletMetadataSyncBridge::GetClientTag(
     const syncer::EntityData& entity_data) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   const WalletMetadataSpecifics& remote_metadata =
       entity_data.specifics.wallet_metadata();
   return GetClientTagForSpecificsId(remote_metadata.type(),
@@ -377,6 +382,7 @@ std::string AutofillWalletMetadataSyncBridge::GetClientTag(
 
 std::string AutofillWalletMetadataSyncBridge::GetStorageKey(
     const syncer::EntityData& entity_data) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return GetStorageKeyForWalletMetadataTypeAndSpecificsId(
       entity_data.specifics.wallet_metadata().type(),
       entity_data.specifics.wallet_metadata().id());
