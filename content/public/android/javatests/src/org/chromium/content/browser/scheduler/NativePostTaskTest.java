@@ -61,13 +61,10 @@ public class NativePostTaskTest {
                 }
             }
         });
+
         synchronized (lock) {
-            try {
-                while (!taskExecuted.get()) {
-                    lock.wait();
-                }
-            } catch (InterruptedException ie) {
-                ie.printStackTrace();
+            while (!taskExecuted.get()) {
+                lock.wait();
             }
         }
     }
@@ -88,16 +85,12 @@ public class NativePostTaskTest {
         Assert.assertFalse(taskExecuted.get());
         startNativeScheduler();
 
-        try {
-            // The task should now be scheduled at some point after the delay, so the test shouldn't
-            // time out.
-            synchronized (lock) {
-                while (!taskExecuted.get()) {
-                    lock.wait();
-                }
+        // The task should now be scheduled at some point after the delay, so the test shouldn't
+        // time out.
+        synchronized (lock) {
+            while (!taskExecuted.get()) {
+                lock.wait();
             }
-        } catch (InterruptedException ie) {
-            ie.printStackTrace();
         }
     }
 
@@ -169,9 +162,9 @@ public class NativePostTaskTest {
     public void testCreateTaskRunnerMigrationToNative() throws Exception {
         final Object lock = new Object();
         final AtomicBoolean taskExecuted = new AtomicBoolean();
-        TaskRunner taskQueue = PostTask.createSequencedTaskRunner(new TaskTraits());
+        TaskRunner taskQueue = PostTask.createTaskRunner(new TaskTraits());
 
-        taskQueue.postDelayedTask(new Runnable() {
+        postRepeatingTaskAndStartNativeSchedulerThenWaitForTaskToRun(taskQueue, new Runnable() {
             @Override
             public void run() {
                 synchronized (lock) {
@@ -179,23 +172,18 @@ public class NativePostTaskTest {
                     lock.notify();
                 }
             }
-        }, 1);
-        taskQueue.destroy();
-
-        // We verify that the task didn't get scheduled before the native scheduler is initialised
-        Assert.assertFalse(taskExecuted.get());
-        startNativeScheduler();
+        });
 
         try {
-            // The task should now be scheduled at some point after the delay, so the test shouldn't
+            // The task should run at some point after the migration, so the test shouldn't
             // time out.
             synchronized (lock) {
                 while (!taskExecuted.get()) {
                     lock.wait();
                 }
             }
-        } catch (InterruptedException ie) {
-            ie.printStackTrace();
+        } finally {
+            taskQueue.destroy();
         }
     }
 
@@ -258,12 +246,8 @@ public class NativePostTaskTest {
         nativeSchedulerStarted.set(true);
 
         synchronized (lock) {
-            try {
-                while (!taskRun.get()) {
-                    lock.wait();
-                }
-            } catch (InterruptedException ie) {
-                ie.printStackTrace();
+            while (!taskRun.get()) {
+                lock.wait();
             }
         }
     }
