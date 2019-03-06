@@ -62,7 +62,7 @@ class StartupControllerTest : public testing::Test {
 
  private:
   ModelTypeSet GetPreferredDataTypes() { return preferred_types_; }
-  bool ShouldStart(bool force_immediate) { return should_start_; }
+  bool ShouldStart() { return should_start_; }
   void FakeStartBackend() { started_ = true; }
 
   ModelTypeSet preferred_types_;

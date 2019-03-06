@@ -93,11 +93,6 @@ extern const char kSyncPseudoUSSSupervisedUsersDescription[];
 extern const char kSyncSandboxName[];
 extern const char kSyncSandboxDescription[];
 
-// Title and description for the flag to control if Chrome Sync can start up in
-// standalone transport mode.
-extern const char kSyncStandaloneTransportName[];
-extern const char kSyncStandaloneTransportDescription[];
-
 // Title and description for the flag to control if Chrome Sync (in standalone
 // transport mode) supports non-primary accounts.
 extern const char kSyncSupportSecondaryAccountName[];

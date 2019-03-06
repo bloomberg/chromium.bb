@@ -357,8 +357,7 @@ syncer::SyncAccountInfo SyncAuthManager::DetermineAccountToUse() const {
   DCHECK(registered_for_auth_notifications_);
   return syncer::DetermineAccountToUse(
       identity_manager_,
-      base::FeatureList::IsEnabled(switches::kSyncStandaloneTransport) &&
-          base::FeatureList::IsEnabled(switches::kSyncSupportSecondaryAccount));
+      base::FeatureList::IsEnabled(switches::kSyncSupportSecondaryAccount));
 }
 
 bool SyncAuthManager::UpdateSyncAccountIfNecessary() {

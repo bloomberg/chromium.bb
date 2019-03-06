@@ -298,32 +298,6 @@ class ProfileSyncServiceTest : public ::testing::Test {
   std::unique_ptr<ProfileSyncService> service_;
 };
 
-class ProfileSyncServiceWithStandaloneTransportTest
-    : public ProfileSyncServiceTest {
- protected:
-  ProfileSyncServiceWithStandaloneTransportTest() {
-    feature_list_.InitAndEnableFeature(switches::kSyncStandaloneTransport);
-  }
-
-  ~ProfileSyncServiceWithStandaloneTransportTest() override {}
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-class ProfileSyncServiceWithoutStandaloneTransportTest
-    : public ProfileSyncServiceTest {
- protected:
-  ProfileSyncServiceWithoutStandaloneTransportTest() {
-    feature_list_.InitAndDisableFeature(switches::kSyncStandaloneTransport);
-  }
-
-  ~ProfileSyncServiceWithoutStandaloneTransportTest() override {}
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
 // Verify that the server URLs are sane.
 TEST_F(ProfileSyncServiceTest, InitialState) {
   CreateService(ProfileSyncService::AUTO_START);
@@ -363,41 +337,8 @@ TEST_F(ProfileSyncServiceTest, SuccessfulLocalBackendInitialization) {
 }
 
 // Verify that an initialization where first setup is not complete does not
-// start up the backend.
-TEST_F(ProfileSyncServiceWithoutStandaloneTransportTest, NeedsConfirmation) {
-  SignIn();
-  CreateService(ProfileSyncService::MANUAL_START);
-
-  syncer::SyncPrefs sync_prefs(prefs());
-  base::Time now = base::Time::Now();
-  sync_prefs.SetLastSyncedTime(now);
-  sync_prefs.SetDataTypesConfiguration(/*keep_everything_synced=*/true,
-                                       syncer::UserTypes(),
-                                       syncer::UserSelectableTypes());
-  service()->Initialize();
-
-  EXPECT_EQ(syncer::SyncService::DISABLE_REASON_NONE,
-            service()->GetDisableReasons());
-  // Note: At this point the engine *can* start, but nothing has kicked it off
-  // (usually that happens via getting and then releasing a
-  // SyncSetupInProgressHandle), so the state is still WAITING_FOR_START_REQUEST
-  // and not PENDING_DESIRED_CONFIGURATION.
-  EXPECT_EQ(syncer::SyncService::TransportState::WAITING_FOR_START_REQUEST,
-            service()->GetTransportState());
-
-  // Once we kick off initialization by getting and releasing a setup handle,
-  // the state goes to PENDING_DESIRED_CONFIGURATION.
-  service()->GetSetupInProgressHandle();
-  EXPECT_EQ(syncer::SyncService::TransportState::PENDING_DESIRED_CONFIGURATION,
-            service()->GetTransportState());
-
-  // The last sync time shouldn't be cleared.
-  // TODO(zea): figure out a way to check that the directory itself wasn't
-  // cleared.
-  EXPECT_EQ(now, sync_prefs.GetLastSyncedTime());
-}
-
-TEST_F(ProfileSyncServiceWithStandaloneTransportTest, NeedsConfirmation) {
+// start up Sync-the-feature.
+TEST_F(ProfileSyncServiceTest, NeedsConfirmation) {
   SignIn();
   CreateService(ProfileSyncService::MANUAL_START);
 
@@ -521,39 +462,7 @@ TEST_F(ProfileSyncServiceTest, AbortedByShutdown) {
 }
 
 // Test SetSyncRequested(false) before we've initialized the backend.
-TEST_F(ProfileSyncServiceWithoutStandaloneTransportTest, EarlyRequestStop) {
-  CreateService(ProfileSyncService::AUTO_START);
-  // Set up a fake sync engine that will not immediately finish initialization.
-  EXPECT_CALL(*component_factory(), CreateSyncEngine(_, _, _))
-      .WillOnce(ReturnNewFakeSyncEngineNoReturn());
-  SignIn();
-  InitializeForNthSync();
-
-  ASSERT_EQ(syncer::SyncService::TransportState::INITIALIZING,
-            service()->GetTransportState());
-
-  // Request stop. Sync should get disabled.
-  service()->GetUserSettings()->SetSyncRequested(false);
-  EXPECT_EQ(syncer::SyncService::DISABLE_REASON_USER_CHOICE,
-            service()->GetDisableReasons());
-  EXPECT_EQ(syncer::SyncService::TransportState::DISABLED,
-            service()->GetTransportState());
-  EXPECT_FALSE(service()->IsSyncFeatureEnabled());
-
-  // Request start again, this time with an engine that does get initialized.
-  // Sync should become active.
-  EXPECT_CALL(*component_factory(), CreateSyncEngine(_, _, _))
-      .WillOnce(ReturnNewFakeSyncEngine());
-  service()->GetUserSettings()->SetSyncRequested(true);
-  EXPECT_EQ(syncer::SyncService::DISABLE_REASON_NONE,
-            service()->GetDisableReasons());
-  EXPECT_EQ(syncer::SyncService::TransportState::ACTIVE,
-            service()->GetTransportState());
-  EXPECT_TRUE(service()->IsSyncFeatureActive());
-  EXPECT_TRUE(service()->IsSyncFeatureEnabled());
-}
-
-TEST_F(ProfileSyncServiceWithStandaloneTransportTest, EarlyRequestStop) {
+TEST_F(ProfileSyncServiceTest, EarlyRequestStop) {
   CreateService(ProfileSyncService::AUTO_START);
   // Set up a fake sync engine that will not immediately finish initialization.
   EXPECT_CALL(*component_factory(), CreateSyncEngine(_, _, _))
@@ -587,43 +496,7 @@ TEST_F(ProfileSyncServiceWithStandaloneTransportTest, EarlyRequestStop) {
 }
 
 // Test SetSyncRequested(false) after we've initialized the backend.
-TEST_F(ProfileSyncServiceWithoutStandaloneTransportTest,
-       DisableAndEnableSyncTemporarily) {
-  CreateService(ProfileSyncService::AUTO_START);
-  SignIn();
-  InitializeForNthSync();
-
-  ASSERT_FALSE(prefs()->GetBoolean(syncer::prefs::kSyncSuppressStart));
-  ASSERT_EQ(syncer::SyncService::DISABLE_REASON_NONE,
-            service()->GetDisableReasons());
-  ASSERT_EQ(syncer::SyncService::TransportState::ACTIVE,
-            service()->GetTransportState());
-  ASSERT_TRUE(service()->IsSyncFeatureActive());
-  ASSERT_TRUE(service()->IsSyncFeatureEnabled());
-
-  testing::Mock::VerifyAndClearExpectations(component_factory());
-
-  service()->GetUserSettings()->SetSyncRequested(false);
-  EXPECT_TRUE(prefs()->GetBoolean(syncer::prefs::kSyncSuppressStart));
-  EXPECT_EQ(syncer::SyncService::DISABLE_REASON_USER_CHOICE,
-            service()->GetDisableReasons());
-  EXPECT_EQ(syncer::SyncService::TransportState::DISABLED,
-            service()->GetTransportState());
-  EXPECT_FALSE(service()->IsSyncFeatureActive());
-  EXPECT_FALSE(service()->IsSyncFeatureEnabled());
-
-  service()->GetUserSettings()->SetSyncRequested(true);
-  EXPECT_FALSE(prefs()->GetBoolean(syncer::prefs::kSyncSuppressStart));
-  EXPECT_EQ(syncer::SyncService::DISABLE_REASON_NONE,
-            service()->GetDisableReasons());
-  EXPECT_EQ(syncer::SyncService::TransportState::ACTIVE,
-            service()->GetTransportState());
-  EXPECT_TRUE(service()->IsSyncFeatureActive());
-  EXPECT_TRUE(service()->IsSyncFeatureEnabled());
-}
-
-TEST_F(ProfileSyncServiceWithStandaloneTransportTest,
-       DisableAndEnableSyncTemporarily) {
+TEST_F(ProfileSyncServiceTest, DisableAndEnableSyncTemporarily) {
   CreateService(ProfileSyncService::AUTO_START);
   SignIn();
   InitializeForNthSync();
@@ -876,28 +749,7 @@ TEST_F(ProfileSyncServiceTest, SignOutRevokeAccessToken) {
 #endif
 
 // Verify that LastSyncedTime and local DeviceInfo is cleared on sign out.
-TEST_F(ProfileSyncServiceWithoutStandaloneTransportTest, ClearDataOnSignOut) {
-  SignIn();
-  CreateService(ProfileSyncService::AUTO_START);
-  InitializeForNthSync();
-  ASSERT_EQ(syncer::SyncService::TransportState::ACTIVE,
-            service()->GetTransportState());
-  ASSERT_LT(base::Time::Now() - service()->GetLastSyncedTime(),
-            base::TimeDelta::FromMinutes(1));
-  ASSERT_TRUE(local_device_info_provider()->GetLocalDeviceInfo());
-
-  // Sign out.
-  service()->StopAndClear();
-
-  EXPECT_EQ(syncer::SyncService::TransportState::DISABLED,
-            service()->GetTransportState());
-  EXPECT_FALSE(service()->IsSyncFeatureEnabled());
-
-  EXPECT_TRUE(service()->GetLastSyncedTime().is_null());
-  EXPECT_FALSE(local_device_info_provider()->GetLocalDeviceInfo());
-}
-
-TEST_F(ProfileSyncServiceWithStandaloneTransportTest, ClearDataOnSignOut) {
+TEST_F(ProfileSyncServiceTest, ClearDataOnSignOut) {
   SignIn();
   CreateService(ProfileSyncService::AUTO_START);
   InitializeForNthSync();
@@ -921,7 +773,7 @@ TEST_F(ProfileSyncServiceWithStandaloneTransportTest, ClearDataOnSignOut) {
   EXPECT_TRUE(local_device_info_provider()->GetLocalDeviceInfo());
 }
 
-TEST_F(ProfileSyncServiceWithStandaloneTransportTest, CancelSyncAfterSignOut) {
+TEST_F(ProfileSyncServiceTest, CancelSyncAfterSignOut) {
   SignIn();
   CreateService(ProfileSyncService::AUTO_START);
   InitializeForNthSync();
@@ -1185,44 +1037,7 @@ TEST_F(ProfileSyncServiceTest, ResetSyncData) {
 
 // Test that when ProfileSyncService receives actionable error
 // DISABLE_SYNC_ON_CLIENT it disables sync and signs out.
-TEST_F(ProfileSyncServiceWithoutStandaloneTransportTest, DisableSyncOnClient) {
-  SignIn();
-  CreateService(ProfileSyncService::AUTO_START);
-  InitializeForNthSync();
-
-  ASSERT_EQ(syncer::SyncService::TransportState::ACTIVE,
-            service()->GetTransportState());
-  ASSERT_LT(base::Time::Now() - service()->GetLastSyncedTime(),
-            base::TimeDelta::FromMinutes(1));
-  ASSERT_TRUE(local_device_info_provider()->GetLocalDeviceInfo());
-
-  syncer::SyncProtocolError client_cmd;
-  client_cmd.action = syncer::DISABLE_SYNC_ON_CLIENT;
-  service()->OnActionableError(client_cmd);
-
-#if defined(OS_CHROMEOS)
-  // ChromeOS does not support signout.
-  EXPECT_TRUE(identity_manager()->HasPrimaryAccount());
-  EXPECT_EQ(syncer::SyncService::DISABLE_REASON_USER_CHOICE,
-            service()->GetDisableReasons());
-  EXPECT_EQ(syncer::SyncService::TransportState::DISABLED,
-            service()->GetTransportState());
-#else
-  EXPECT_FALSE(identity_manager()->HasPrimaryAccount());
-  EXPECT_EQ(syncer::SyncService::DISABLE_REASON_NOT_SIGNED_IN |
-                syncer::SyncService::DISABLE_REASON_USER_CHOICE,
-            service()->GetDisableReasons());
-  EXPECT_EQ(syncer::SyncService::TransportState::DISABLED,
-            service()->GetTransportState());
-  EXPECT_TRUE(service()->GetLastSyncedTime().is_null());
-  EXPECT_FALSE(local_device_info_provider()->GetLocalDeviceInfo());
-#endif
-
-  EXPECT_FALSE(service()->IsSyncFeatureEnabled());
-  EXPECT_FALSE(service()->IsSyncFeatureActive());
-}
-
-TEST_F(ProfileSyncServiceWithStandaloneTransportTest, DisableSyncOnClient) {
+TEST_F(ProfileSyncServiceTest, DisableSyncOnClient) {
   SignIn();
   CreateService(ProfileSyncService::AUTO_START);
   InitializeForNthSync();

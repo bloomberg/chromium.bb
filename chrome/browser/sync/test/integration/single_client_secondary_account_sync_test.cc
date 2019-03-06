@@ -30,10 +30,7 @@ syncer::ModelTypeSet AllowedTypesInStandaloneTransportMode() {
 class SingleClientSecondaryAccountSyncTest : public SyncTest {
  public:
   SingleClientSecondaryAccountSyncTest() : SyncTest(SINGLE_CLIENT) {
-    features_.InitWithFeatures(
-        /*enabled_features=*/{switches::kSyncStandaloneTransport,
-                              switches::kSyncSupportSecondaryAccount},
-        /*disabled_features=*/{});
+    features_.InitAndEnableFeature(switches::kSyncSupportSecondaryAccount);
   }
   ~SingleClientSecondaryAccountSyncTest() override {}
 
@@ -59,30 +56,6 @@ class SingleClientSecondaryAccountSyncTest : public SyncTest {
 
   DISALLOW_COPY_AND_ASSIGN(SingleClientSecondaryAccountSyncTest);
 };
-
-class SingleClientSecondaryAccountWithoutStandaloneTransportSyncTest
-    : public SingleClientSecondaryAccountSyncTest {
- public:
-  SingleClientSecondaryAccountWithoutStandaloneTransportSyncTest() {
-    features_.InitAndDisableFeature(switches::kSyncStandaloneTransport);
-  }
-
- private:
-  base::test::ScopedFeatureList features_;
-};
-
-IN_PROC_BROWSER_TEST_F(
-    SingleClientSecondaryAccountWithoutStandaloneTransportSyncTest,
-    DoesNotStartSyncWithStandaloneTransportDisabled) {
-  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
-
-  // Since standalone transport is disabled, just signing in (without making the
-  // account Chrome's primary one) should *not* start the Sync machinery.
-  secondary_account_helper::SignInSecondaryAccount(
-      profile(), &test_url_loader_factory_, "user@email.com");
-  EXPECT_EQ(syncer::SyncService::TransportState::DISABLED,
-            GetSyncService(0)->GetTransportState());
-}
 
 class SingleClientSecondaryAccountWithoutSecondaryAccountSupportSyncTest
     : public SingleClientSecondaryAccountSyncTest {

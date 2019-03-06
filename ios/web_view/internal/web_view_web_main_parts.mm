@@ -53,7 +53,6 @@ void WebViewWebMainParts::PreCreateThreads() {
   std::string enable_features = base::JoinString(
       {autofill::features::kAutofillEnableAccountWalletStorage.name,
        autofill::features::kAutofillAlwaysShowServerCardsInSyncTransport.name,
-       switches::kSyncStandaloneTransport.name,
        switches::kSyncSupportSecondaryAccount.name,
        switches::kSyncUSSAutofillWalletData.name},
       ",");
