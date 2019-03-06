@@ -517,6 +517,8 @@ class HWTestConfig(object):
     suite_args: Arguments passed to the suite.  This should be a dict
                 representing keyword arguments.  The value is marshalled
                 using repr(), so the dict values should be basic types.
+    quota_account: If specified, the quotascheduler account to use for all
+                   tests in this suite.
 
   Some combinations of member settings are invalid:
     * A suite config may not specify both blocking and async.
@@ -556,7 +558,8 @@ class HWTestConfig(object):
                suite_min_duts=0,
                suite_args=None,
                offload_failures_only=False,
-               enable_skylab=True):
+               enable_skylab=True,
+               quota_account=None):
     """Constructor -- see members above."""
 
     assert not async or not blocking, "%s is async and blocking" % suite
@@ -580,6 +583,7 @@ class HWTestConfig(object):
     # in build config. But for some particular suites, we want to exclude them
     # from Skylab even if the build config is migrated to Skylab.
     self.enable_skylab = enable_skylab
+    self.quota_account = quota_account
 
   def _SetCommonBranchedValues(self):
     """Set the common values for branched builds."""
