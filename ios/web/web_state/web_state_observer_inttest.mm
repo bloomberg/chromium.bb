@@ -1895,7 +1895,12 @@ TEST_P(WebStateObserverTest, ForwardPostNavigation) {
 
 // Tests server redirect navigation.
 TEST_P(WebStateObserverTest, RedirectNavigation) {
-  const GURL url = test_server_->GetURL("/server-redirect?echoall");
+  const GURL url = test_server_->GetURL("/server-redirect-301?"
+                                        "server-redirect-302?"
+                                        "server-redirect-303?"
+                                        "server-redirect-307?"
+                                        "server-redirect-308?"
+                                        "echoall");
   const GURL redirect_url = test_server_->GetURL("/echoall");
 
   // Load url which replies with redirect.
@@ -1912,14 +1917,17 @@ TEST_P(WebStateObserverTest, RedirectNavigation) {
       .WillOnce(VerifyPageStartedContext(
           web_state(), url, ui::PageTransition::PAGE_TRANSITION_TYPED, &context,
           &nav_id));
-  // Second ShouldAllowRequest call is for redirect_url.
+
+  // 5 calls on ShouldAllowRequest for redirections.
   WebStatePolicyDecider::RequestInfo expected_redirect_request_info(
       ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT,
       /*target_main_frame=*/true, /*has_user_gesture=*/false);
   EXPECT_CALL(
       *decider_,
       ShouldAllowRequest(_, RequestInfoMatch(expected_redirect_request_info)))
-      .WillOnce(Return(true));
+      .Times(5)
+      .WillRepeatedly(Return(true));
+
   EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true))
       .WillOnce(Return(true));
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
