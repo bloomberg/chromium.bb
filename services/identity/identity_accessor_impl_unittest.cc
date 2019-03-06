@@ -64,7 +64,6 @@ class IdentityAccessorImplTest : public testing::Test {
         service_(
             identity_test_environment_.identity_manager(),
             &account_tracker_,
-            &token_service_,
             test_connector_factory_.RegisterInstance(mojom::kServiceName)) {
     AccountTrackerService::RegisterPrefs(pref_service_.registry());
     AccountFetcherService::RegisterPrefs(pref_service_.registry());

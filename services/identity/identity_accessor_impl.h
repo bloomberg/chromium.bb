@@ -25,44 +25,36 @@ class IdentityAccessorImpl : public mojom::IdentityAccessor,
  public:
   static void Create(mojom::IdentityAccessorRequest request,
                      IdentityManager* identity_manager,
-                     AccountTrackerService* account_tracker,
-                     ProfileOAuth2TokenService* token_service);
+                     AccountTrackerService* account_tracker);
 
   IdentityAccessorImpl(mojom::IdentityAccessorRequest request,
                        IdentityManager* identity_manager,
-                       AccountTrackerService* account_tracker,
-                       ProfileOAuth2TokenService* token_service);
+                       AccountTrackerService* account_tracker);
   ~IdentityAccessorImpl() override;
 
  private:
-  // Makes an access token request to the OAuth2TokenService on behalf of a
+  // Makes an access token request to the IdentityManager on behalf of a
   // given consumer that has made the request to the Identity Service.
-  class AccessTokenRequest : public OAuth2TokenService::Consumer {
+  class AccessTokenRequest {
    public:
     AccessTokenRequest(const std::string& account_id,
                        const ScopeSet& scopes,
                        const std::string& consumer_id,
                        GetAccessTokenCallback consumer_callback,
-                       ProfileOAuth2TokenService* token_service,
                        IdentityAccessorImpl* manager);
-    ~AccessTokenRequest() override;
+    ~AccessTokenRequest();
 
    private:
-    // OAuth2TokenService::Consumer:
-    void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
-                           const OAuth2AccessTokenConsumer::TokenResponse&
-                               token_response) override;
-    void OnGetTokenFailure(const OAuth2TokenService::Request* request,
-                           const GoogleServiceAuthError& error) override;
+    // Invoked after access token request completes (successful or not).
+    void OnTokenRequestCompleted(GoogleServiceAuthError error,
+                                 AccessTokenInfo access_token_info);
 
     // Completes the pending access token request by calling back the consumer.
-    void OnRequestCompleted(const OAuth2TokenService::Request* request,
-                            const base::Optional<std::string>& access_token,
+    void OnRequestCompleted(const base::Optional<std::string>& access_token,
                             base::Time expiration_time,
                             const GoogleServiceAuthError& error);
 
-    ProfileOAuth2TokenService* token_service_;
-    std::unique_ptr<OAuth2TokenService::Request> token_service_request_;
+    std::unique_ptr<AccessTokenFetcher> access_token_fetcher_;
     GetAccessTokenCallback consumer_callback_;
     IdentityAccessorImpl* manager_;
   };
@@ -103,7 +95,6 @@ class IdentityAccessorImpl : public mojom::IdentityAccessor,
   mojo::Binding<mojom::IdentityAccessor> binding_;
   IdentityManager* identity_manager_;
   AccountTrackerService* account_tracker_;
-  ProfileOAuth2TokenService* token_service_;
 
   // The set of pending requests for access tokens.
   AccessTokenRequests access_token_requests_;

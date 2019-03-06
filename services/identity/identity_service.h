@@ -14,7 +14,6 @@
 #include "services/service_manager/public/mojom/service.mojom.h"
 
 class AccountTrackerService;
-class ProfileOAuth2TokenService;
 
 namespace identity {
 
@@ -22,7 +21,6 @@ class IdentityService : public service_manager::Service {
  public:
   IdentityService(IdentityManager* identity_manager,
                   AccountTrackerService* account_tracker,
-                  ProfileOAuth2TokenService* token_service,
                   service_manager::mojom::ServiceRequest request);
   ~IdentityService() override;
 
@@ -44,7 +42,6 @@ class IdentityService : public service_manager::Service {
 
   IdentityManager* identity_manager_;
   AccountTrackerService* account_tracker_;
-  ProfileOAuth2TokenService* token_service_;
 
   service_manager::BinderRegistry registry_;
 
