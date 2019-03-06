@@ -143,8 +143,6 @@ static_library("dav1d_entrypoints") {
   ]
 
   sources = entry_point_sources
-
-  # TODO(dalecurtis): Fix arm compiler options...
   cflags = dav1d_copts
   if (is_win) {
     sources += [ "libdav1d/src/win32/thread.c" ]
@@ -166,12 +164,11 @@ static_library("dav1d_8bit") {
   if (current_cpu == "x86" || current_cpu == "x64") {
     sources += x86_template_sources
   } else if (current_cpu == "arm") {
-    sources += arm_template_sources + arm32_asm_sources
+    sources += arm_template_sources
   } else if (current_cpu == "arm64") {
-    sources += arm_template_sources + arm64_asm_sources
+    sources += arm_template_sources
   }
 
-  # TODO(dalecurtis): Fix arm compiler options...
   cflags = dav1d_copts
   cflags += [ "-DBITDEPTH=8" ]
 }
@@ -187,12 +184,11 @@ static_library("dav1d_10bit") {
   if (current_cpu == "x86" || current_cpu == "x64") {
     sources += x86_template_sources
   } else if (current_cpu == "arm") {
-    sources += arm_template_sources + arm32_asm_sources
+    sources += arm_template_sources
   } else if (current_cpu == "arm64") {
-    sources += arm_template_sources + arm64_asm_sources
+    sources += arm_template_sources
   }
 
-  # TODO(dalecurtis): Fix arm compiler options...
   cflags = dav1d_copts
   cflags += [ "-DBITDEPTH=16" ]
 }
@@ -216,13 +212,20 @@ if (current_cpu == "x86" || current_cpu == "x64") {
       "libdav1d/src/arm/cpu.c",
       "libdav1d/src/arm/cpu.h",
     ]
+
+    # These are not template based so should only be built once.
+    if (current_cpu == "arm") {
+      sources += arm32_asm_sources
+    } else if (current_cpu == "arm64") {
+      sources += arm64_asm_sources
+    }
+
     configs -= [ "//build/config/compiler:chromium_code" ]
     configs += [
       "//build/config/compiler:no_chromium_code",
       ":dav1d_config",
     ]
 
-    # TODO(dalecurtis): Fix arm compiler options...
     cflags = dav1d_copts
   }
 }
