@@ -1035,9 +1035,13 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkTextSentenceGranularity) {
   AtkText* atk_text = ATK_TEXT(root_obj);
 
   static GetTextSegmentTest tests[] = {
-      {0, "A short sentence. ", 0, 18}, {20, "Another sentence.     ", 18, 40},
-      {37, "A third...", 40, 50},       {-1, nullptr, -1, -1},
-      {-1000, nullptr, -1, -1},         {1000, nullptr, -1, -1},
+      {0, "A short sentence. ", 0, 18},
+      {20, "Another sentence.     ", 18, 40},
+      {37, "Another sentence.     ", 18, 40},
+      {49, "A third...", 40, 50},
+      {-1, nullptr, -1, -1},
+      {-1000, nullptr, -1, -1},
+      {1000, nullptr, -1, -1},
   };
 
   for (unsigned i = 0; i < G_N_ELEMENTS(tests); i++) {

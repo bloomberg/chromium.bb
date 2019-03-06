@@ -6,12 +6,35 @@
 
 #include "base/i18n/break_iterator.h"
 #include "base/logging.h"
+#include "base/optional.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/strings/grit/ui_strings.h"
 
 namespace ui {
+
+namespace {
+
+// TODO(accessibility): Extend this or switch to using ICU in order to handle
+// languages other than English.
+bool IsSentenceEndingPunctuation(base::char16 character) {
+  return character == '.' || character == '!' || character == '?';
+}
+
+bool IsInterSentenceWordCharacter(base::char16 character) {
+  return !base::IsUnicodeWhitespace(character) &&
+         !IsSentenceEndingPunctuation(character);
+}
+
+bool AlreadyPastSentenceEndingPunctuation(const base::string16& text,
+                                          size_t start_offset) {
+  auto i = text.rbegin() + (text.size() - start_offset);
+  auto found = std::find_if_not(i, text.rend(), base::IsUnicodeWhitespace);
+  return found != text.rend() && IsSentenceEndingPunctuation(*found);
+}
+
+}  // namespace
 
 // line_breaks is a Misnomer. Blink provides the start offsets of each line
 // not the line breaks.
@@ -65,6 +88,35 @@ size_t FindAccessibleTextBoundary(const base::string16& text,
     }
   }
 
+  // Given the string "One sentence. Two sentences.   Three sentences.", the
+  // boundaries of the middle sentence should give a string like "Two
+  // sentences.   " This means there are two different starting situations when
+  // searching forwards for the sentence boundary:
+  //
+  // The first situation is when the starting index is somewhere in the
+  // whitespace between the last sentence-ending punctuation of a sentence and
+  // before the start of the next sentence. Since this part of the string is
+  // considered part of the previous sentence, we need to scan forward for the
+  // first non-whitespace and non-punctuation character.
+  //
+  // The second situation is when the starting index is somewhere on or before
+  // the first sentence-ending punctuation that ends the sentence, but still
+  // after the first non-whitespace character. In this case, we need to find
+  // the first sentence-ending punctuation and then to follow the procedure for
+  // the first situation.
+  //
+  // In order to know what situation we are in, we first need to scan backward
+  // to see if we are already past the first sentence-ending punctuation.
+  bool already_past_sentence_ending_punctuation = false;
+  if (boundary == SENTENCE_BOUNDARY && direction == FORWARDS_DIRECTION)
+    already_past_sentence_ending_punctuation =
+        AlreadyPastSentenceEndingPunctuation(text, start_offset);
+
+  // When searching backward for the start of a sentence we need to look for
+  // the punctuation that ended the previous sentence and then return the first
+  // non-whitespace character that follows.
+  base::Optional<size_t> offset_of_last_seen_word_character = base::nullopt;
+
   size_t result = start_offset;
   for (;;) {
     size_t pos;
@@ -96,10 +148,18 @@ size_t FindAccessibleTextBoundary(const base::string16& text,
           return result;
         break;
       case SENTENCE_BOUNDARY:
-        if ((text[pos] == '.' || text[pos] == '!' || text[pos] == '?') &&
-            (pos == text_size - 1 ||
-             base::IsUnicodeWhitespace(text[pos + 1]))) {
-          return result;
+        if (direction == FORWARDS_DIRECTION) {
+          if (already_past_sentence_ending_punctuation &&
+              IsInterSentenceWordCharacter(text[pos]))
+            return result;
+          if (IsSentenceEndingPunctuation(text[pos]))
+            already_past_sentence_ending_punctuation = true;
+        } else if (direction == BACKWARDS_DIRECTION) {
+          if (IsInterSentenceWordCharacter(text[pos]))
+            offset_of_last_seen_word_character = pos;
+          if (offset_of_last_seen_word_character.has_value() &&
+              IsSentenceEndingPunctuation(text[pos]))
+            return *offset_of_last_seen_word_character;
         }
         break;
       case ALL_BOUNDARY:

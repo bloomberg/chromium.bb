@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -127,6 +128,58 @@ TEST(AXTextUtils, FindAccessibleTextBoundaryLine) {
                                       15, FORWARDS_DIRECTION,
                                       ax::mojom::TextAffinity::kDownstream);
   EXPECT_EQ(text_length, result);
+}
+
+TEST(AXTextUtils, FindAccessibleTextBoundarySentence) {
+  auto find_sentence_boundaries_at_offset = [](const base::string16& text,
+                                               int offset) {
+    std::vector<int> line_start_offsets;
+    size_t backwards = FindAccessibleTextBoundary(
+        text, line_start_offsets, SENTENCE_BOUNDARY, offset,
+        BACKWARDS_DIRECTION, ax::mojom::TextAffinity::kDownstream);
+    size_t forwards = FindAccessibleTextBoundary(
+        text, line_start_offsets, SENTENCE_BOUNDARY, offset, FORWARDS_DIRECTION,
+        ax::mojom::TextAffinity::kDownstream);
+    return std::make_pair(backwards, forwards);
+  };
+
+  const base::string16 text =
+      base::UTF8ToUTF16("Sentence 1. Sentence 2...\n\tSentence 3! Sentence 4");
+  std::pair<size_t, size_t> boundaries =
+      find_sentence_boundaries_at_offset(text, 5);
+  EXPECT_EQ(0UL, boundaries.first);
+  EXPECT_EQ(12UL, boundaries.second);
+
+  // When a sentence ends with multiple punctuation, we should look for the
+  // first word character that follows.
+  boundaries = find_sentence_boundaries_at_offset(text, 16);
+  EXPECT_EQ(12UL, boundaries.first);
+  EXPECT_EQ(27UL, boundaries.second);
+
+  // This is also true if we start in the middle of that punctuation.
+  boundaries = find_sentence_boundaries_at_offset(text, 23);
+  EXPECT_EQ(12UL, boundaries.first);
+  EXPECT_EQ(27UL, boundaries.second);
+
+  // When the offset is in the whitespace between two sentences, the boundaries
+  // should be those of the previous sentence to the beginning of the first
+  // non-whitespace character of the next one.
+  boundaries = find_sentence_boundaries_at_offset(text, 38);
+  EXPECT_EQ(27UL, boundaries.first);
+  EXPECT_EQ(39UL, boundaries.second);
+
+  // The end of the string should be considered the end of the last sentence
+  // regardless of whether or not there is punctuation.
+  boundaries = find_sentence_boundaries_at_offset(text, 44);
+  EXPECT_EQ(39UL, boundaries.first);
+  EXPECT_EQ(49UL, boundaries.second);
+
+  // The sentence should include whitespace all the way until the end of the
+  // string.
+  const base::string16 text2 = base::UTF8ToUTF16("A sentence . \n\n\t\t\n");
+  boundaries = find_sentence_boundaries_at_offset(text2, 10);
+  EXPECT_EQ(0UL, boundaries.first);
+  EXPECT_EQ(18UL, boundaries.second);
 }
 
 }  // namespace ui
