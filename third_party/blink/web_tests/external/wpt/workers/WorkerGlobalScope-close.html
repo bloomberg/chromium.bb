@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <title>Test WorkerGlobalScope.close functionality.</title>
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
 <script>
 setup({ allow_uncaught_exception: true });
 
 async_test(function(t) {
-  var worker = new Worker('resources/worker-close.js');
+  var worker = new Worker('support/WorkerGlobalScope-close.js');
   worker.postMessage("typeofClose");
     worker.onmessage = t.step_func_done(function(evt) {
     assert_equals(evt.data, "typeof close: function");
@@ -14,7 +14,7 @@ async_test(function(t) {
 }, 'Test type of close function.');
 
 async_test(function(t) {
-  var worker = new Worker('resources/worker-close.js');  
+  var worker = new Worker('support/WorkerGlobalScope-close.js');
   worker.postMessage("ping");
     worker.onmessage = t.step_func(function(evt) {
     assert_equals(evt.data, "pong");
@@ -32,7 +32,7 @@ async_test(function(t) {
 }, 'Test sending a message after closing.');
 
 async_test(function(t) {
-  var worker = new Worker('resources/worker-close.js');
+  var worker = new Worker('support/WorkerGlobalScope-close.js');
   worker.postMessage("closeWithError");
   worker.onerror = function(event) {
     t.done()
@@ -40,7 +40,7 @@ async_test(function(t) {
 }, 'Test errors are delivered after close.');
 
 async_test(function(t) {
-  var worker = new Worker('resources/worker-close.js');
+  var worker = new Worker('support/WorkerGlobalScope-close.js');
   worker.postMessage("closeWithPendingEvents");
   worker.onmessage = t.step_func(function(evt) {
     assert_unreached("Pending events should not fire: " + evt.data);
@@ -52,7 +52,7 @@ async_test(function(t) {
 }, 'Test workers do not deliver pending events.');
 
 async_test(function(t) {
-  var worker = new Worker('resources/worker-close.js');
+  var worker = new Worker('support/WorkerGlobalScope-close.js');
   worker.postMessage("close");
   worker.onmessage = function(evt) {
     assert_equals(evt.data, "Should be delivered");

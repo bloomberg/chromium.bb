@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <title>Test Worker constructor functionality.</title>
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
 <script>
 
 test(() => {
@@ -51,7 +51,7 @@ async_test(t => {
 }, 'Test not existent script URL.');
 
 test(() => {
-  var worker = new Worker('resources/worker-common.js');
+  var worker = new Worker('../../support/Worker-common.js');
   assert_true('postMessage' in worker,
               'worker.postMessage did not exist.');
   assert_true('addEventListener' in worker,

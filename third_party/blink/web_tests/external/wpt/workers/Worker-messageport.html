@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <title>Test that pages and workers can send MessagePorts to one another.</title>
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
 <script>
 async_test(function(t) {
-  var worker = new Worker("resources/worker-messageport.js");
+  var worker = new Worker("support/Worker-messageport.js");
 
   // Send messages with and without ports to the worker to make sure it gets them.
   worker.postMessage("noport");
@@ -14,7 +14,7 @@ async_test(function(t) {
 }, 'Test sending messages to workers with no port.');
 
 async_test(function(t) {
-  var worker = new Worker("resources/worker-messageport.js");
+  var worker = new Worker("support/Worker-messageport.js");
   var channel = new MessageChannel();
 
   worker.postMessage("port", [channel.port1]);
@@ -33,7 +33,7 @@ async_test(function(t) {
 }, 'Test sending message to a worker on a port.');
 
 async_test(function(t) {
-  var worker = new Worker("resources/worker-messageport.js");
+  var worker = new Worker("support/Worker-messageport.js");
   var channel = new MessageChannel();
 
   worker.onmessage = t.step_func(evt => {
@@ -50,7 +50,7 @@ async_test(function(t) {
 }, 'Test getting messages from a worker on a port.');
 
 async_test(function(t) {
-  var worker = new Worker("resources/worker-messageport.js");
+  var worker = new Worker("support/Worker-messageport.js");
   var channel = new MessageChannel();
   worker.onmessage = t.step_func(evt => { gotSpam(channel.port1); });
   worker.postMessage("spam", [channel.port2]);
