@@ -43,7 +43,6 @@ class GURL;
 
 namespace web {
 class NavigationItem;
-class WebState;
 class WebStateImpl;
 }
 
@@ -65,8 +64,6 @@ class WebStateImpl;
 @property(nonatomic, weak) id<CRWNativeContentProvider> nativeProvider;
 @property(nonatomic, weak) id<CRWSwipeRecognizerProvider>
     swipeRecognizerProvider;
-@property(nonatomic, readonly) web::WebState* webState;
-@property(nonatomic, readonly) web::WebStateImpl* webStateImpl;
 
 // The container view used to display content.  If the view has been purged due
 // to low memory, this will recreate it.
@@ -89,9 +86,6 @@ class WebStateImpl;
 // The fraction of the page load that has completed as a number between 0.0
 // (nothing loaded) and 1.0 (fully loaded).
 @property(nonatomic, readonly) double loadingProgress;
-
-// Returns the x, y offset the content has been scrolled.
-@property(nonatomic, readonly) CGPoint scrollPosition;
 
 // YES if the web process backing WebView is believed to currently be crashed.
 @property(nonatomic, assign, getter=isWebProcessCrashed) BOOL webProcessCrashed;
@@ -153,9 +147,6 @@ class WebStateImpl;
 // Reloads web view. |isRendererInitiated| is YES for renderer-initiated
 // navigation. |isRendererInitiated| is NO for browser-initiated navigation.
 - (void)reloadWithRendererInitiatedNavigation:(BOOL)isRendererInitiated;
-
-// Stops web view loading.
-- (void)stopLoading;
 
 // Loads the URL indicated by current session state.
 - (void)loadCurrentURLWithRendererInitiatedNavigation:(BOOL)rendererInitiated;
@@ -234,6 +225,9 @@ class WebStateImpl;
 #pragma mark Testing
 
 @interface CRWWebController (UsedOnlyForTesting)  // Testing or internal API.
+
+@property(nonatomic, readonly) web::WebState* webState;
+@property(nonatomic, readonly) web::WebStateImpl* webStateImpl;
 
 // Returns whether the user is interacting with the page.
 @property(nonatomic, readonly) BOOL userIsInteracting;
