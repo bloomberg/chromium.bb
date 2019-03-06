@@ -751,6 +751,11 @@ void GraphicsLayer::SetContentsOpaque(bool opaque) {
     contents_layer_->SetContentsOpaque(opaque);
 }
 
+void GraphicsLayer::setDefaultLCDBackgroundColor(const Color& color) {
+  layer_->SetDefaultLCDBackgroundColor(color.Rgb());
+  layer_->SetContentsOpaqueForLCDText(color.Alpha() == 255);
+}
+
 void GraphicsLayer::SetMaskLayer(GraphicsLayer* mask_layer,
                                  bool is_rounded_corner_mask) {
   if (mask_layer == mask_layer_)
