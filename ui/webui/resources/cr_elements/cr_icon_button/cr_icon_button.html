@@ -9,11 +9,12 @@
     <style>
       :host {
         --cr-icon-button-color: var(--google-grey-refresh-700);
-        --cr-icon-button-icon-padding: 8px;
+        --cr-icon-button-default-icon-padding: 8px;
         --cr-icon-button-icon-size: 20px;
         --cr-icon-button-ripple-color: var(--google-grey-900);
         --cr-icon-button-ripple-size: calc(var(--cr-icon-button-icon-size) +
-            2 * var(--cr-icon-button-icon-padding));
+            2 * var(--cr-icon-button-icon-padding,
+                    var(--cr-icon-button-default-icon-padding)));
         --cr-icon-button-size: var(--cr-icon-button-ripple-size);
         background-position: center;
         background-repeat: no-repeat;
@@ -62,7 +63,8 @@
       iron-icon {
         --iron-icon-height: var(--cr-icon-button-icon-size);
         --iron-icon-width: var(--cr-icon-button-icon-size);
-        padding: var(--cr-icon-button-icon-padding);
+        padding: var(--cr-icon-button-icon-padding,
+                     var(--cr-icon-button-default-icon-padding));
       }
     </style>
     <div id="icon"></div>
