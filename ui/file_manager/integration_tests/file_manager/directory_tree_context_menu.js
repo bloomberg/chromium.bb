@@ -204,6 +204,7 @@ async function checkContextMenu(appId, treeItemQuery, menuStates, rootsMenu) {
       'focus failed: #directory-tree');
 
   // Right click desired item in the directory tree.
+  await remoteCall.waitForElement(appId, treeItemQuery);
   chrome.test.assertTrue(
       !!await remoteCall.callRemoteTestUtil(
           'fakeMouseRightClick', appId, [treeItemQuery]),
@@ -596,6 +597,149 @@ testcase.dirContextMenuShortcut = async () => {
 
   // Check the context menu is on desired state.
   await checkContextMenu(appId, query, menus, true /* rootMenu */);
+};
+
+/**
+ * Tests context menu for MyFiles, Downloads and sub-folder.
+ */
+testcase.dirContextMenuMyFiles = async () => {
+  const myFilesMenus = [
+    ['#share-with-linux', true],
+  ];
+  const downloadsMenus = [
+    ['#share-with-linux', true],
+    ['#new-folder', true],
+  ];
+  const photosMenus = [
+    ['#cut', true],
+    ['#copy', true],
+    ['#paste-into-folder', false],
+    ['#share-with-linux', true],
+    ['#rename', true],
+    ['#delete', true],
+    ['#new-folder', true],
+  ];
+  const myFilesQuery = '#directory-tree [entry-label="My files"]';
+  const downloadsQuery = '#directory-tree [entry-label="Downloads"]';
+  const photosQuery =
+      '#directory-tree [full-path-for-testing="/Downloads/photos"]';
+
+  // Open Files app on local Downloads.
+  const appId = await setupAndWaitUntilReady(
+      RootPath.DOWNLOADS, [ENTRIES.beautiful, ENTRIES.photos], []);
+
+  // Check the context menu is on desired state for MyFiles.
+  await checkContextMenu(
+      appId, myFilesQuery, myFilesMenus, true /* rootMenu */);
+
+  // Check the context menu for MyFiles>Downloads.
+  await checkContextMenu(
+      appId, downloadsQuery, downloadsMenus, false /* rootMenu */);
+
+  // Expand Downloads to display photos folder.
+  await expandTreeItem(appId, downloadsQuery);
+
+  // Check the context menu for MyFiles>Downloads>photos.
+  await checkContextMenu(appId, photosQuery, photosMenus, false /* rootMenu */);
+};
+
+/**
+ * Tests context menu for Crostini real root.
+ * TODO(lucmult): Check menus for a crostini folder.
+ */
+testcase.dirContextMenuCrostini = async () => {
+  const linuxMenus = [
+    ['#new-folder', true],
+  ];
+  const linuxQuery = '#directory-tree [entry-label="Linux files"]';
+
+  // Open Files app on local Downloads.
+  const appId = await setupAndWaitUntilReady(
+      RootPath.DOWNLOADS, [ENTRIES.beautiful], []);
+
+  // Select Crostini, because the first right click doesn't show any context
+  // menu, just actually mounts crostini converting the tree item from fake to
+  // real root.
+  chrome.test.assertTrue(
+      !!await remoteCall.callRemoteTestUtil(
+          'fakeMouseClick', appId, [linuxQuery]),
+      'fakeMouseClick failed');
+
+  // Wait for the real root to appear.
+  await remoteCall.waitForElement(
+      appId,
+      '#directory-tree ' +
+          '[dir-type="SubDirectoryItem"][entry-label="Linux files"]');
+
+  // Check the context menu for Linux files.
+  await checkContextMenu(appId, linuxQuery, linuxMenus, false /* rootMenu */);
+};
+
+/**
+ * Tests context menu for ARC++/Play files root.
+ * TODO(lucmult): Check menus for a Play folder.
+ */
+testcase.dirContextMenuPlayFiles = async () => {
+  const playFilesMenus = [
+    ['#share-with-linux', true],
+    ['#new-folder', false],
+  ];
+  const playFilesQuery = '#directory-tree [entry-label="Play files"]';
+
+  // Open Files app on local Downloads.
+  const appId = await setupAndWaitUntilReady(
+      RootPath.DOWNLOADS, [ENTRIES.beautiful], []);
+
+  // Check the context menu for Play files.
+  await checkContextMenu(
+      appId, playFilesQuery, playFilesMenus, false /* rootMenu */);
+};
+
+/**
+ * Tests context menu for USB root (single and multiple partitions).
+ * TODO(lucmult): Check menus for a USB folder.
+ */
+testcase.dirContextMenuUsbs = async () => {
+  const singleUsbMenus = [
+    ['#unmount', true],
+    ['#format', true],
+    ['#rename', false],
+    ['#share-with-linux', true],
+  ];
+  const partitionsRootMenus = [
+    ['#unmount', true],
+    ['#format', false],
+    ['#share-with-linux', true],
+  ];
+  const partition1Menus = [
+    ['#share-with-linux', true],
+    ['#rename', false],
+    ['#new-folder', true],
+  ];
+
+  const singleUsbQuery = '#directory-tree [entry-label="fake-usb"]';
+  const partitionsRootQuery = '#directory-tree [entry-label="Drive Label"]';
+  const partition1Query = '#directory-tree [entry-label="partition-1"]';
+
+  // Mount removable volumes.
+  await sendTestMessage({name: 'mountUsbWithPartitions'});
+  await sendTestMessage({name: 'mountFakeUsb'});
+
+  // Open Files app on local Downloads.
+  const appId =
+      await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.beautiful], []);
+
+  // Check the context menu for single partition USB.
+  await checkContextMenu(
+      appId, singleUsbQuery, singleUsbMenus, true /* rootMenu */);
+
+  // Check the context menu for multiple partitions USB (root).
+  await checkContextMenu(
+      appId, partitionsRootQuery, partitionsRootMenus, true /* rootMenu */);
+  //
+  // Check the context menu for multiple partitions USB (actual partition).
+  await checkContextMenu(
+      appId, partition1Query, partition1Menus, false /* rootMenu */);
 };
 
 })();

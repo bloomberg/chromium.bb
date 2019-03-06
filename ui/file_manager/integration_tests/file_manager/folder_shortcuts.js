@@ -72,35 +72,16 @@ const DIRECTORY = {
 };
 
 /**
- * Expands a directory tree item by clicking on its expand icon.
- *
- * @param {string} appId Files app windowId.
- * @param {Object} directory Directory whose tree item should be expanded.
- * @return {Promise} Promise fulfilled on success.
- */
-async function expandTreeItem(appId, directory) {
-  const expandIcon =
-      directory.treeItem + '> .tree-row[has-children=true] > .expand-icon';
-  await remoteCall.waitForElement(appId, expandIcon);
-  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
-      'fakeMouseClick', appId, [expandIcon]));
-
-
-  const expandedSubtree = directory.treeItem + '> .tree-children[expanded]';
-  await remoteCall.waitForElement(appId, expandedSubtree);
-}
-
-/**
  * Expands whole directory tree under DIRECTORY.Drive.
  *
  * @param {string} appId Files app windowId.
  * @return {Promise} Promise fulfilled on success.
  */
 async function expandDirectoryTree(appId) {
-  await expandTreeItem(appId, DIRECTORY.Drive);
-  await expandTreeItem(appId, DIRECTORY.A);
-  await expandTreeItem(appId, DIRECTORY.B);
-  await expandTreeItem(appId, DIRECTORY.D);
+  await expandTreeItem(appId, DIRECTORY.Drive.treeItem);
+  await expandTreeItem(appId, DIRECTORY.A.treeItem);
+  await expandTreeItem(appId, DIRECTORY.B.treeItem);
+  await expandTreeItem(appId, DIRECTORY.D.treeItem);
 }
 
 /**

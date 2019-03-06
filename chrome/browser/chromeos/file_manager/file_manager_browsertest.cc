@@ -578,6 +578,10 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("dirCreateWithoutChangingCurrent").EnableMyFilesVolume(),
         TestCase("dirCreateWithoutChangingCurrent"),
         TestCase("dirContextMenuRecent"),
+        TestCase("dirContextMenuMyFiles").EnableMyFilesVolume(),
+        TestCase("dirContextMenuCrostini"),
+        TestCase("dirContextMenuPlayFiles"),
+        TestCase("dirContextMenuUsbs"),
         TestCase("dirContextMenuShortcut")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
