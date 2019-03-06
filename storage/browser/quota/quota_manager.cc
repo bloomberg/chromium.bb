@@ -296,6 +296,7 @@ class QuotaManager::UsageAndQuotaHelper : public QuotaTask {
                              host_quota, std::move(host_usage_breakdown_));
     if (type_ == StorageType::kTemporary && !is_incognito_ && !is_unlimited_) {
       UMA_HISTOGRAM_MBYTES("Quota.QuotaForOrigin", host_quota);
+      UMA_HISTOGRAM_MBYTES("Quota.UsageByOrigin", host_usage_);
       if (host_quota > 0) {
         UMA_HISTOGRAM_PERCENTAGE("Quota.PercentUsedByOrigin",
             std::min(100, static_cast<int>((host_usage_ * 100) / host_quota)));
@@ -1481,8 +1482,18 @@ void QuotaManager::ReportHistogram() {
 void QuotaManager::DidGetTemporaryGlobalUsageForHistogram(
     int64_t usage,
     int64_t unlimited_usage) {
+  GetStorageCapacity(
+      base::BindOnce(&QuotaManager::DidGetStorageCapacityForHistogram,
+                     weak_factory_.GetWeakPtr(), usage));
+}
+
+void QuotaManager::DidGetStorageCapacityForHistogram(int64_t usage,
+                                                     int64_t total_space,
+                                                     int64_t available_space) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   UMA_HISTOGRAM_MBYTES("Quota.GlobalUsageOfTemporaryStorage", usage);
+  UMA_HISTOGRAM_PERCENTAGE("Quota.PercentUsedForTemporaryStorage2",
+                           static_cast<int>((usage * 100) / total_space));
 
   std::set<url::Origin> origins;
   GetCachedOrigins(StorageType::kTemporary, &origins);

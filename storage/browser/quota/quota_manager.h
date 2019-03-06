@@ -370,6 +370,9 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManager
   void ReportHistogram();
   void DidGetTemporaryGlobalUsageForHistogram(int64_t usage,
                                               int64_t unlimited_usage);
+  void DidGetStorageCapacityForHistogram(int64_t usage,
+                                         int64_t total_space,
+                                         int64_t available_space);
   void DidGetPersistentGlobalUsageForHistogram(int64_t usage,
                                                int64_t unlimited_usage);
   void DidDumpOriginInfoTableForHistogram(
