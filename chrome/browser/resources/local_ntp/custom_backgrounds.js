@@ -822,12 +822,6 @@ customBackgrounds.init = function(
     }
   };
 
-  // Handle focus state for the gear icon.
-  $(customBackgrounds.IDS.EDIT_BG).onmousedown = function() {
-    $(customBackgrounds.IDS.EDIT_BG)
-        .classList.add(customBackgrounds.CLASSES.MOUSE_NAV);
-  };
-
   // Interactions to close the customization option dialog.
   let editDialogInteraction = function() {
     editDialog.close();
