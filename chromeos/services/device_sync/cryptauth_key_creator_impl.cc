@@ -4,21 +4,13 @@
 
 #include "chromeos/services/device_sync/cryptauth_key_creator_impl.h"
 
-#include <memory>
-#include <string>
-#include <utility>
-
 #include "base/base64.h"
 #include "base/bind.h"
-#include "base/containers/flat_map.h"
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
-#include "base/optional.h"
 #include "base/strings/string_util.h"
-#include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/components/multidevice/secure_message_delegate_impl.h"
 #include "chromeos/services/device_sync/cryptauth_constants.h"
-#include "chromeos/services/device_sync/cryptauth_key.h"
 #include "chromeos/services/device_sync/proto/cryptauth_common.pb.h"
 #include "crypto/hkdf.h"
 #include "crypto/random.h"
@@ -165,29 +157,41 @@ void CryptAuthKeyCreatorImpl::OnDiffieHellmanHandshakeSecretDerived(
 
 void CryptAuthKeyCreatorImpl::StartKeyCreation() {
   for (const auto& key_to_create : keys_to_create_) {
+    const CryptAuthKeyBundle::Name& bundle_name = key_to_create.first;
+    const CreateKeyData& key_data = key_to_create.second;
+
     // If the key to create is symmetric, derive a symmetric key from the
     // Diffie-Hellman handshake secrect using HKDF. The CryptAuth v2
     // Enrollment protocol specifies that the salt should be "CryptAuth
     // Enrollment" and the info should be the key handle. This process is
     // synchronous, unlike SecureMessageDelegate calls.
-    if (IsValidSymmetricKeyType(key_to_create.second.type)) {
-      std::string handle = key_to_create.second.handle.has_value()
-                               ? *key_to_create.second.handle
-                               : CreateRandomHandle();
-      std::string derived_symmetric_key_material = crypto::HkdfSha256(
-          dh_handshake_secret_->symmetric_key(),
-          kCryptAuthSymmetricKeyDerivationSalt, handle,
-          NumBytesForSymmetricKeyType(key_to_create.second.type));
+    if (IsValidSymmetricKeyType(key_data.type)) {
+      std::string handle =
+          key_data.handle ? *key_data.handle : CreateRandomHandle();
+      std::string derived_symmetric_key_material =
+          crypto::HkdfSha256(dh_handshake_secret_->symmetric_key(),
+                             kCryptAuthSymmetricKeyDerivationSalt, handle,
+                             NumBytesForSymmetricKeyType(key_data.type));
 
-      OnSymmetricKeyDerived(key_to_create.first, derived_symmetric_key_material,
+      OnSymmetricKeyDerived(bundle_name, derived_symmetric_key_material,
                             handle);
-    } else {
-      DCHECK(IsValidAsymmetricKeyType(key_to_create.second.type));
 
-      secure_message_delegate_->GenerateKeyPair(
-          base::Bind(&CryptAuthKeyCreatorImpl::OnAsymmetricKeyPairGenerated,
-                     base::Unretained(this), key_to_create.first));
+      continue;
     }
+
+    DCHECK(IsValidAsymmetricKeyType(key_data.type));
+
+    // If the key material was explicitly set in CreateKeyData, bypass the
+    // standard key creation.
+    if (key_data.public_key && key_data.private_key) {
+      OnAsymmetricKeyPairGenerated(bundle_name, *key_data.public_key,
+                                   *key_data.private_key);
+      continue;
+    }
+
+    secure_message_delegate_->GenerateKeyPair(
+        base::Bind(&CryptAuthKeyCreatorImpl::OnAsymmetricKeyPairGenerated,
+                   base::Unretained(this), key_to_create.first));
   }
 }
 
