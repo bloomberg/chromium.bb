@@ -1977,6 +1977,17 @@ are declared in tools/grit/grit_rule.gni.
           Add <ph name="APP_NAME">$1<ex>Google Maps</ex></ph> to Home screen
         </message>
       </if>
+
+      <!-- Desktop omnibox PWA install icon -->
+      <if expr="not is_android">
+        <message name="IDS_OMNIBOX_PWA_INSTALL_ICON_LABEL" desc="String for the omnibox icon label promoting an app installation">
+          Install
+        </message>
+        <message name="IDS_OMNIBOX_PWA_INSTALL_ICON_TOOLTIP" desc="Tooltip for the omnibox icon label promoting an app installation">
+          Install <ph name="APP_NAME">$1<ex>Google Maps</ex></ph>
+        </message>
+      </if>
+
       <!-- Bookmark app bubble -->
       <if expr="use_titlecase">
         <message name="IDS_ADD_TO_OS_LAUNCH_SURFACE_BUBBLE_TITLE" desc="In Title Case: Title of the bubble for adding a bookmark app shortcut to the operating system.">

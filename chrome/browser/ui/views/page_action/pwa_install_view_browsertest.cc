@@ -134,3 +134,27 @@ IN_PROC_BROWSER_TEST_F(PwaInstallViewBrowserTest,
   ASSERT_FALSE(app_banner_manager->WaitForInstallableCheck());
   EXPECT_FALSE(pwa_install_view->visible());
 }
+
+// Tests that the plus icon animates its label when the installability check
+// passes but doesn't animate more than once for the same installability check.
+IN_PROC_BROWSER_TEST_F(PwaInstallViewBrowserTest, LabelAnimation) {
+  PageActionIconView* pwa_install_view = GetPwaInstallView();
+  EXPECT_FALSE(pwa_install_view->visible());
+
+  content::WebContents* web_contents = GetCurrentTab();
+  auto* app_banner_manager =
+      banners::TestAppBannerManagerDesktop::CreateForWebContents(web_contents);
+
+  ui_test_utils::NavigateToURL(browser(), GetInstallableAppURL());
+  EXPECT_FALSE(pwa_install_view->visible());
+  ASSERT_TRUE(app_banner_manager->WaitForInstallableCheck());
+  EXPECT_TRUE(pwa_install_view->visible());
+  EXPECT_TRUE(pwa_install_view->is_animating_label());
+
+  chrome::NewTab(browser());
+  EXPECT_FALSE(pwa_install_view->visible());
+
+  chrome::SelectPreviousTab(browser());
+  EXPECT_TRUE(pwa_install_view->visible());
+  EXPECT_FALSE(pwa_install_view->is_animating_label());
+}

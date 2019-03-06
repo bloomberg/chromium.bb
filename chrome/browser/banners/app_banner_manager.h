@@ -144,9 +144,13 @@ class AppBannerManager : public content::WebContentsObserver,
   static base::string16 GetInstallableAppName(
       content::WebContents* web_contents);
 
-  // Returns whether the |web_contents| has passed installability checks (e.g.
-  // having a service worker fetch event).
-  static bool IsWebContentsInstallable(content::WebContents* web_contents);
+  // Returns whether installability checks have passed (e.g. having a service
+  // worker fetch event).
+  bool IsInstallable() const;
+
+  // Each successful installability check gets to show one animation prompt,
+  // this returns and consumes the animation prompt if it is available.
+  bool MaybeConsumeInstallAnimation();
 
   // Requests an app banner. If |is_debug_mode| is true, any failure in the
   // pipeline will be reported to the devtools console.
@@ -388,6 +392,7 @@ class AppBannerManager : public content::WebContentsObserver,
   bool triggered_by_devtools_;
 
   std::unique_ptr<StatusReporter> status_reporter_;
+  bool install_animation_pending_;
   Installable installable_;
 
   base::ObserverList<Observer, true> observer_list_;
