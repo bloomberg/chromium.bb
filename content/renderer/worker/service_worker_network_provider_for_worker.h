@@ -26,8 +26,7 @@ struct NavigationResponseOverrideParameters;
 class ServiceWorkerNetworkProviderForWorker final
     : public blink::WebServiceWorkerNetworkProvider {
  public:
-  // Creates a new instance. Some params might only be used in S13nServiceWorker
-  // or PlzSharedWorker.
+  // Creates a new instance.
   // - |info|: provider info from the browser
   // - |script_loader_factory_info|: the factory for loading the worker's
   //   scripts

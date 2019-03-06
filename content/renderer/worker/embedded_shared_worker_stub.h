@@ -127,8 +127,7 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
   const int appcache_host_id_;
   WebApplicationCacheHostImpl* app_cache_host_ = nullptr;  // Not owned.
 
-  // S13nServiceWorker: The info needed to connect to the
-  // ServiceWorkerProviderHost on the browser.
+  // The info needed to connect to the ServiceWorkerProviderHost on the browser.
   blink::mojom::ServiceWorkerProviderInfoForWorkerPtr
       service_worker_provider_info_;
 
@@ -139,8 +138,7 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
   // NetworkService:
   blink::mojom::ControllerServiceWorkerInfoPtr controller_info_;
 
-  // S13nServiceWorker: The factory bundle used for loading subresources for
-  // this shared worker.
+  // The factory bundle used for loading subresources for this shared worker.
   scoped_refptr<HostChildURLLoaderFactoryBundle> subresource_loader_factories_;
 
   // NetworkService (PlzWorker): The response override parameters used for

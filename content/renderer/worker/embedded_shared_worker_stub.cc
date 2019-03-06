@@ -20,7 +20,6 @@
 #include "content/renderer/loader/navigation_response_override_parameters.h"
 #include "content/renderer/loader/tracked_child_url_loader_factory_bundle.h"
 #include "content/renderer/loader/web_worker_fetch_context_impl.h"
-#include "content/renderer/render_thread_impl.h"
 #include "content/renderer/renderer_blink_platform_impl.h"
 #include "content/renderer/service_worker/service_worker_provider_context.h"
 #include "content/renderer/worker/service_worker_network_provider_for_worker.h"
@@ -31,7 +30,6 @@
 #include "third_party/blink/public/common/loader/url_loader_factory_bundle.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "third_party/blink/public/common/privacy_preferences.h"
-#include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom.h"
@@ -113,6 +111,7 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
       renderer_preferences_(renderer_preferences),
       preference_watcher_request_(std::move(preference_watcher_request)),
       appcache_host_id_(appcache_host_id) {
+  DCHECK(factory_bundle);
   // The ID of the precreated AppCacheHost can be valid only when the
   // NetworkService is enabled.
   DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService) ||
@@ -141,45 +140,25 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
   main_script_loader_factory_ = std::move(main_script_loader_factory);
   controller_info_ = std::move(controller_info);
 
-  // |factory_bundle| is provided in the
-  // ServiceWorkerServicification or NetworkService case.
-  DCHECK(factory_bundle ||
-         !blink::ServiceWorkerUtils::IsServicificationEnabled());
+  // If the network service crashes, then self-destruct so clients don't get
+  // stuck with a worker with a broken loader. Self-destruction is effectively
+  // the same as the worker's process crashing.
+  if (IsOutOfProcessNetworkService()) {
+    default_factory_connection_error_handler_holder_.Bind(
+        std::move(factory_bundle->default_factory_info()));
+    default_factory_connection_error_handler_holder_->Clone(
+        mojo::MakeRequest(&factory_bundle->default_factory_info()));
+    default_factory_connection_error_handler_holder_
+        .set_connection_error_handler(base::BindOnce(
+            &EmbeddedSharedWorkerStub::Terminate, base::Unretained(this)));
+  }
 
-  // Make the factory bundle.
   subresource_loader_factories_ =
       base::MakeRefCounted<HostChildURLLoaderFactoryBundle>(
           impl_->GetTaskRunner(blink::TaskType::kInternalLoading));
-
-  // If NetworkService or S13nSW is enabled, the default factory must be
-  // given as a |factory_bundle|.
-  // In some tests |render_thread| could be null.
-  RenderThreadImpl* render_thread = RenderThreadImpl::current();
-  if (render_thread && !blink::ServiceWorkerUtils::IsServicificationEnabled()) {
-    subresource_loader_factories_->Update(
-        render_thread->blink_platform_impl()
-            ->CreateDefaultURLLoaderFactoryBundle()
-            ->PassInterface());
-  }
-
-  if (factory_bundle) {
-    // If the network service crashes, then self-destruct so clients don't get
-    // stuck with a worker with a broken loader. Self-destruction is effectively
-    // the same as the worker's process crashing.
-    if (IsOutOfProcessNetworkService()) {
-      default_factory_connection_error_handler_holder_.Bind(
-          std::move(factory_bundle->default_factory_info()));
-      default_factory_connection_error_handler_holder_->Clone(
-          mojo::MakeRequest(&factory_bundle->default_factory_info()));
-      default_factory_connection_error_handler_holder_
-          .set_connection_error_handler(base::BindOnce(
-              &EmbeddedSharedWorkerStub::Terminate, base::Unretained(this)));
-    }
-
-    subresource_loader_factories_->Update(
-        std::make_unique<ChildURLLoaderFactoryBundleInfo>(
-            std::move(factory_bundle)));
-  }
+  subresource_loader_factories_->Update(
+      std::make_unique<ChildURLLoaderFactoryBundleInfo>(
+          std::move(factory_bundle)));
 
   impl_->StartWorkerContext(
       url_, blink::WebString::FromUTF8(name_),
