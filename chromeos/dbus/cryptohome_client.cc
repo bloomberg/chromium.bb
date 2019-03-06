@@ -1006,6 +1006,21 @@ class CryptohomeClientImpl : public CryptohomeClient {
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
+  void LockToSingleUserMountUntilReboot(
+      const cryptohome::LockToSingleUserMountUntilRebootRequest& request,
+      DBusMethodCallback<cryptohome::BaseReply> callback) override {
+    const char* method_name =
+        cryptohome::kCryptohomeLockToSingleUserMountUntilReboot;
+    dbus::MethodCall method_call(cryptohome::kCryptohomeInterface, method_name);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendProtoAsArrayOfBytes(request);
+
+    proxy_->CallMethod(
+        &method_call, kTpmDBusTimeoutMs,
+        base::BindOnce(&CryptohomeClientImpl::OnBaseReplyMethod,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
  protected:
   void Init(dbus::Bus* bus) override {
     dbus::ObjectProxy* proxy = bus->GetObjectProxy(
