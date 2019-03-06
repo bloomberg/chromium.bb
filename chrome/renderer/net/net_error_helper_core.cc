@@ -510,6 +510,8 @@ bool NetErrorHelperCore::IsReloadableError(
          // Do not trigger for blacklisted URLs.
          // https://crbug.com/803839
          info.error.reason() != net::ERR_BLOCKED_BY_ADMINISTRATOR &&
+         // Do not trigger for requests that were blocked by the browser itself.
+         info.error.reason() != net::ERR_BLOCKED_BY_CLIENT &&
          !info.was_failed_post &&
          // Don't auto-reload non-http/https schemas.
          // https://crbug.com/471713
