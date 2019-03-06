@@ -90,26 +90,28 @@ public class ContextualSuggestionsPreference
         if (!isUnifiedConsentEnabled || !isSignedIn
                 || (!ProfileSyncService.get().isUrlKeyedDataCollectionEnabled(false)
                            && !ProfileSyncService.get().isUrlKeyedDataCollectionEnabled(true))) {
-            final NoUnderlineClickableSpan span = new NoUnderlineClickableSpan((widget) -> {
-                if (isUnifiedConsentEnabled) {
-                    if (isSignedIn) {
-                        PreferencesLauncher.launchSettingsPage(context,
-                                SyncAndServicesPreferences.class,
-                                SyncAndServicesPreferences.createArguments(false));
-                    } else {
-                        startActivity(SigninActivity.createIntentForPromoChooseAccountFlow(
-                                context, SigninAccessPoint.SETTINGS, null));
-                    }
-                } else {
-                    if (isSignedIn) {
-                        PreferencesLauncher.launchSettingsPage(
-                                context, SyncCustomizationFragment.class);
-                    } else {
-                        startActivity(AccountSigninActivity.createIntentForDefaultSigninFlow(
-                                context, SigninAccessPoint.SETTINGS, false));
-                    }
-                }
-            });
+            final NoUnderlineClickableSpan span =
+                    new NoUnderlineClickableSpan(context.getResources(), (widget) -> {
+                        if (isUnifiedConsentEnabled) {
+                            if (isSignedIn) {
+                                PreferencesLauncher.launchSettingsPage(context,
+                                        SyncAndServicesPreferences.class,
+                                        SyncAndServicesPreferences.createArguments(false));
+                            } else {
+                                startActivity(SigninActivity.createIntentForPromoChooseAccountFlow(
+                                        context, SigninAccessPoint.SETTINGS, null));
+                            }
+                        } else {
+                            if (isSignedIn) {
+                                PreferencesLauncher.launchSettingsPage(
+                                        context, SyncCustomizationFragment.class);
+                            } else {
+                                startActivity(
+                                        AccountSigninActivity.createIntentForDefaultSigninFlow(
+                                                context, SigninAccessPoint.SETTINGS, false));
+                            }
+                        }
+                    });
             final SpannableString spannable = SpanApplier.applySpans(
                     getResources().getString(isUnifiedConsentEnabled
                                     ? R.string.contextual_suggestions_message_unified_consent

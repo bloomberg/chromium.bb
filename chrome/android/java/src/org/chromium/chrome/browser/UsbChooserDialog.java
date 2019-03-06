@@ -68,14 +68,15 @@ public class UsbChooserDialog implements ItemChooserDialog.ItemSelectedCallback 
         String noneFound = activity.getString(R.string.usb_chooser_dialog_no_devices_found_prompt);
         SpannableString statusActive = SpanApplier.applySpans(
                 activity.getString(R.string.usb_chooser_dialog_footnote_text),
-                new SpanInfo("<link>", "</link>", new NoUnderlineClickableSpan((view) -> {
-                    if (mNativeUsbChooserDialogPtr == 0) return;
+                new SpanInfo("<link>", "</link>",
+                        new NoUnderlineClickableSpan(activity.getResources(), (view) -> {
+                            if (mNativeUsbChooserDialogPtr == 0) return;
 
-                    nativeLoadUsbHelpPage(mNativeUsbChooserDialogPtr);
+                            nativeLoadUsbHelpPage(mNativeUsbChooserDialogPtr);
 
-                    // Get rid of the highlight background on selection.
-                    view.invalidate();
-                })));
+                            // Get rid of the highlight background on selection.
+                            view.invalidate();
+                        })));
         SpannableString statusIdleNoneFound = statusActive;
         SpannableString statusIdleSomeFound = statusActive;
         String positiveButton = activity.getString(R.string.usb_chooser_dialog_connect_button_text);

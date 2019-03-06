@@ -341,15 +341,17 @@ public class AccountSigninView extends FrameLayout {
         mConsentTextTracker.setText(mMoreButton, R.string.more);
 
         // The clickable "Settings" link.
-        NoUnderlineClickableSpan settingsSpan = new NoUnderlineClickableSpan((widget) -> {
-            if (mSelectedAccountName == null) return;
-            mListener.onAccountSelected(mSelectedAccountName, mIsDefaultAccountSelected, true);
-            RecordUserAction.record("Signin_Signin_WithAdvancedSyncSettings");
+        NoUnderlineClickableSpan settingsSpan =
+                new NoUnderlineClickableSpan(getResources(), (widget) -> {
+                    if (mSelectedAccountName == null) return;
+                    mListener.onAccountSelected(
+                            mSelectedAccountName, mIsDefaultAccountSelected, true);
+                    RecordUserAction.record("Signin_Signin_WithAdvancedSyncSettings");
 
-            // Record the fact that the user consented to the consent text by clicking
-            // on |mSigninSettingsControl|.
-            recordConsent((TextView) widget, mSelectedAccountName);
-        });
+                    // Record the fact that the user consented to the consent text by clicking
+                    // on |mSigninSettingsControl|.
+                    recordConsent((TextView) widget, mSelectedAccountName);
+                });
         mConsentTextTracker.setText(mSigninSettingsControl,
                 getSettingsControlDescription(mChildAccountStatus), input -> {
                     return SpanApplier.applySpans(input.toString(),

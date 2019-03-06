@@ -176,7 +176,8 @@ public class BookmarkWidgetService extends RemoteViewsService {
                     Profile.getLastUsedProfile().getOriginalProfile());
             mMinIconSizeDp = (int) res.getDimension(R.dimen.default_favicon_min_size);
             mDisplayedIconSize = res.getDimensionPixelSize(R.dimen.default_favicon_size);
-            mIconGenerator = ViewUtils.createDefaultRoundedIconGenerator(false);
+            mIconGenerator =
+                    ViewUtils.createDefaultRoundedIconGenerator(context.getResources(), false);
 
             mRemainingTaskCount = 1;
             mBookmarkModel = new BookmarkModel();

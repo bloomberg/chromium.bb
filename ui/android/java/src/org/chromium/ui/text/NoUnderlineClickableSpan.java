@@ -4,6 +4,7 @@
 
 package org.chromium.ui.text;
 
+import android.content.res.Resources;
 import android.support.annotation.ColorRes;
 import android.text.TextPaint;
 import android.text.style.ClickableSpan;
@@ -11,7 +12,6 @@ import android.view.View;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
-import org.chromium.base.ContextUtils;
 import org.chromium.ui.R;
 
 /**
@@ -21,13 +21,22 @@ public class NoUnderlineClickableSpan extends ClickableSpan {
     private final int mColor;
     private final Callback<View> mOnClick;
 
-    public NoUnderlineClickableSpan(Callback<View> onClickCallback) {
-        this(R.color.default_text_color_blue, onClickCallback);
+    /**
+     * @param resources The {@link Resources} used for accessing colors.
+     * @param onClickCallback The callback notified when the span is clicked.
+     */
+    public NoUnderlineClickableSpan(Resources resources, Callback<View> onClickCallback) {
+        this(resources, R.color.default_text_color_link, onClickCallback);
     }
 
-    public NoUnderlineClickableSpan(@ColorRes int colorResId, Callback<View> onClickCallback) {
-        mColor = ApiCompatibilityUtils.getColor(
-                ContextUtils.getApplicationContext().getResources(), colorResId);
+    /**
+     * @param resources The {@link Resources} used for accessing colors.
+     * @param colorResId The {@link ColorRes} of this clickable span.
+     * @param onClickCallback The callback notified when the span is clicked.
+     */
+    public NoUnderlineClickableSpan(
+            Resources resources, @ColorRes int colorResId, Callback<View> onClickCallback) {
+        mColor = ApiCompatibilityUtils.getColor(resources, colorResId);
         mOnClick = onClickCallback;
     }
 

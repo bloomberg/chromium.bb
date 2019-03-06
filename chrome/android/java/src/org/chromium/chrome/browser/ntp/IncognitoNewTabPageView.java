@@ -341,7 +341,7 @@ public class IncognitoNewTabPageView extends HistoryNavigationLayout {
         concatenatedText.append(getContext().getResources().getString(R.string.learn_more));
         SpannableString textWithLearnMoreLink = new SpannableString(concatenatedText.toString());
 
-        NoUnderlineClickableSpan span = new NoUnderlineClickableSpan(
+        NoUnderlineClickableSpan span = new NoUnderlineClickableSpan(getResources(),
                 R.color.modern_blue_300, (view) -> getManager().loadIncognitoLearnMore());
         textWithLearnMoreLink.setSpan(
                 span, subtitleText.length() + 1, textWithLearnMoreLink.length(), 0 /* flags */);

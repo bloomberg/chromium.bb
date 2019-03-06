@@ -177,12 +177,13 @@ public class ViewUtils {
 
     /**
      * Creates a {@link RoundedIconGenerator} that uses default styles.
+     * @param resources The {@link Resources} for accessing color and dimen resources.
      * @param circularIcon Whether the generated icons should be circles.
      * @return A {@link RoundedIconGenerator} that uses the default rounded icon style. Intended for
      *         monograms, e.g. a rounded rectangle or a circle with character(s) in the center.
      */
-    public static RoundedIconGenerator createDefaultRoundedIconGenerator(boolean circularIcon) {
-        Resources resources = ContextUtils.getApplicationContext().getResources();
+    public static RoundedIconGenerator createDefaultRoundedIconGenerator(
+            Resources resources, boolean circularIcon) {
         int iconColor =
                 ApiCompatibilityUtils.getColor(resources, R.color.default_favicon_background_color);
         int displayedIconSize;
