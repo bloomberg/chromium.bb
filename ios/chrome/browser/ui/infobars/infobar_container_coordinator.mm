@@ -9,6 +9,7 @@
 #import "base/mac/foundation_util.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
+#import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller_factory.h"
 #import "ios/chrome/browser/ui/infobars/coordinators/infobar_coordinating.h"
 #import "ios/chrome/browser/ui/infobars/infobar_container_consumer.h"
@@ -39,6 +40,8 @@
     LegacyInfobarContainerViewController* legacyContainerViewController;
 // The mediator for this Coordinator.
 @property(nonatomic, strong) InfobarContainerMediator* mediator;
+// The dispatcher for this Coordinator.
+@property(nonatomic, weak) id<ApplicationCommands> dispatcher;
 
 @end
 
@@ -120,6 +123,23 @@
   return NO;
 }
 
+#pragma mark - Accessors
+
+- (void)setCommandDispatcher:(CommandDispatcher*)commandDispatcher {
+  if (commandDispatcher == self.commandDispatcher) {
+    return;
+  }
+
+  if (self.commandDispatcher) {
+    [self.commandDispatcher stopDispatchingToTarget:self];
+  }
+
+  [commandDispatcher startDispatchingToTarget:self
+                                  forSelector:@selector(displayModalInfobar)];
+  _commandDispatcher = commandDispatcher;
+  self.dispatcher = static_cast<id<ApplicationCommands>>(_commandDispatcher);
+}
+
 #pragma mark - InfobarConsumer
 
 - (void)addInfoBarWithDelegate:(id<InfobarUIDelegate>)infoBarDelegate
@@ -148,6 +168,12 @@
   DCHECK(IsInfobarUIRebootEnabled());
   // TODO(crbug.com/927064): NO-OP - This shouldn't be needed in the new UI
   // since we use autolayout for the contained Infobars.
+}
+
+#pragma mark - InfobarCommands
+
+- (void)displayModalInfobar {
+  // TODO(crbug.com/911864): To be implemented.
 }
 
 #pragma mark - UIViewControllerTransitioningDelegate

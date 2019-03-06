@@ -15,6 +15,7 @@
 @protocol ActivityServiceCommands;
 @protocol ApplicationCommands;
 @protocol BrowserCommands;
+@protocol InfobarCommands;
 @protocol LocationBarOffsetProvider;
 @protocol LoadQueryCommands;
 
@@ -43,8 +44,9 @@
 
 // The dispatcher for the share button, voice search, and long press actions.
 @property(nonatomic, weak) id<ActivityServiceCommands,
-                              BrowserCommands,
                               ApplicationCommands,
+                              BrowserCommands,
+                              InfobarCommands,
                               LoadQueryCommands>
     dispatcher;
 
