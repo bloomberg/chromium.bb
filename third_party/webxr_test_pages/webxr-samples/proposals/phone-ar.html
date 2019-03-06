@@ -131,12 +131,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             xrButton.setSession(session);
             onSessionStarted(session);
         }).catch(() => {
-            let legacyCanvas = makeCanvas();
-            let legacyCtx = legacyCanvas.getContext('xrpresent');
-            navigator.xr.requestSession({ mode: 'legacy-inline-ar',
-                                          outputContext: legacyCtx
-                                        }).then((session) => {
-                document.body.appendChild(legacyCanvas);
+            navigator.xr.requestSession({ mode: 'legacy-inline-ar'})
+              .then((session) => {
                 xrButton.setSession(session);
                 onSessionStarted(session);
             });
@@ -156,7 +152,11 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           scene.setRenderer(renderer);
         }
 
-        session.updateRenderState({ baseLayer: new XRWebGLLayer(session, gl) });
+        let outputCanvas = makeCanvas();
+        document.body.appendChild(outputCanvas);
+
+        session.updateRenderState({ baseLayer: new XRWebGLLayer(session, gl),
+          outputContext: outputCanvas.getContext('xrpresent')});
 
         session.requestReferenceSpace({ type: 'stationary', subtype: 'eye-level' }).then((refSpace) => {
           xrRefSpace = refSpace;
@@ -169,10 +169,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       }
 
       function onSessionEnded(event) {
-        if (event.session.mode.startsWith('legacy')) {
-          document.body.removeChild(document.querySelector('#legacy-canvas'));
-        }
         xrButton.setSession(null);
+        if (event.session.renderState.outputContext) {
+          document.body.removeChild(event.session.renderState.outputContext.canvas);
+        }
       }
 
       // Called every time a XRSession requests that a new frame be drawn.
