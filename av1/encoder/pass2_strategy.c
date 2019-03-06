@@ -1127,10 +1127,6 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
   }
 }
 
-// Threshold for use of the lagging second reference frame. High second ref
-// usage may point to a transient event like a flash or occlusion rather than
-// a real scene cut.
-#define SECOND_REF_USEAGE_THRESH 0.1
 // Minimum % intra coding observed in first pass (1.0 = 100%)
 #define MIN_INTRA_LEVEL 0.25
 // Minimum ratio between the % of intra coding and inter coding in the first
@@ -1153,20 +1149,40 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
 #define II_IMPROVEMENT_THRESHOLD 3.5
 #define KF_II_MAX 128.0
 
+// Threshold for use of the lagging second reference frame. High second ref
+// usage may point to a transient event like a flash or occlusion rather than
+// a real scene cut.
+// We adapt the threshold based on number of frames in this key-frame group so
+// far.
+static double get_second_ref_usage_thresh(int frame_count_so_far) {
+  const int adapt_upto = 32;
+  const double min_second_ref_usage_thresh = 0.085;
+  const double second_ref_usage_thresh_max_delta = 0.035;
+  if (frame_count_so_far >= adapt_upto) {
+    return min_second_ref_usage_thresh + second_ref_usage_thresh_max_delta;
+  }
+  return min_second_ref_usage_thresh +
+         ((double)frame_count_so_far / (adapt_upto - 1)) *
+             second_ref_usage_thresh_max_delta;
+}
+
 static int test_candidate_kf(TWO_PASS *twopass,
                              const FIRSTPASS_STATS *last_frame,
                              const FIRSTPASS_STATS *this_frame,
-                             const FIRSTPASS_STATS *next_frame) {
+                             const FIRSTPASS_STATS *next_frame,
+                             int frame_count_so_far) {
   int is_viable_kf = 0;
   double pcnt_intra = 1.0 - this_frame->pcnt_inter;
   double modified_pcnt_inter =
       this_frame->pcnt_inter - this_frame->pcnt_neutral;
+  const double second_ref_usage_thresh =
+      get_second_ref_usage_thresh(frame_count_so_far);
 
   // Does the frame satisfy the primary criteria of a key frame?
   // See above for an explanation of the test criteria.
   // If so, then examine how well it predicts subsequent frames.
-  if ((this_frame->pcnt_second_ref < SECOND_REF_USEAGE_THRESH) &&
-      (next_frame->pcnt_second_ref < SECOND_REF_USEAGE_THRESH) &&
+  if ((this_frame->pcnt_second_ref < second_ref_usage_thresh) &&
+      (next_frame->pcnt_second_ref < second_ref_usage_thresh) &&
       ((this_frame->pcnt_inter < VERY_LOW_INTER_THRESH) ||
        ((pcnt_intra > MIN_INTRA_LEVEL) &&
         (pcnt_intra > (INTRA_VS_INTER_THRESH * modified_pcnt_inter)) &&
@@ -1305,8 +1321,8 @@ static void find_next_key_frame(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
       double loop_decay_rate;
 
       // Check for a scene cut.
-      if (test_candidate_kf(twopass, &last_frame, this_frame,
-                            twopass->stats_in))
+      if (test_candidate_kf(twopass, &last_frame, this_frame, twopass->stats_in,
+                            rc->frames_to_key))
         break;
 
       // How fast is the prediction quality decaying?
