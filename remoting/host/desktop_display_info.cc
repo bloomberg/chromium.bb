@@ -46,6 +46,13 @@ bool DesktopDisplayInfo::operator!=(const DesktopDisplayInfo& other) {
 webrtc::DesktopSize DesktopDisplayInfo::CalcSizeDips(webrtc::DesktopSize size,
                                                      int dpi_x,
                                                      int dpi_y) {
+  // Guard against invalid input.
+  // TODO: Replace with a DCHECK, once crbug.com/938648 is fixed.
+  if (dpi_x == 0)
+    dpi_x = kDefaultDpi;
+  if (dpi_y == 0)
+    dpi_y = kDefaultDpi;
+
   webrtc::DesktopSize size_dips(size.width() * kDefaultDpi / dpi_x,
                                 size.height() * kDefaultDpi / dpi_y);
   return size_dips;
