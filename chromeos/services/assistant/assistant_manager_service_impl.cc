@@ -70,6 +70,10 @@ constexpr base::Feature kChromeOSAssistantDogfood{
 constexpr char kServersideDogfoodExperimentId[] = "20347368";
 constexpr char kServersideOpenAppExperimentId[] = "39651593";
 
+// The screen context query is locale independent. That is the same query
+// applies to all locales.
+constexpr char kScreenContextQuery[] = "screen context";
+
 constexpr float kDefaultSliderStep = 0.1f;
 
 bool IsScreenContextAllowed(ash::AssistantStateBase* assistant_state) {
@@ -305,6 +309,8 @@ void AssistantManagerServiceImpl::StartTextInteraction(const std::string& query,
   if (base::FeatureList::IsEnabled(
           assistant::features::kEnableTextQueriesWithClientDiscourseContext) &&
       assistant_extra_ && assistant_tree_) {
+    // We don't send the screenshot, because the backend only needs the
+    // view hierarchy to resolve contextual queries such as "Who is he?".
     assistant_manager_internal_->SendTextQueryWithClientDiscourseContext(
         query,
         CreateContextProto(
@@ -1160,6 +1166,19 @@ void AssistantManagerServiceImpl::SendScreenContextRequest(
     ax::mojom::AssistantExtra* assistant_extra,
     ui::AssistantTree* assistant_tree,
     const std::vector<uint8_t>& assistant_screenshot) {
+  if (assistant::features::IsScreenContextQueryEnabled()) {
+    assistant_client::VoicelessOptions options;
+    options.is_user_initiated = true;
+
+    assistant_manager_internal_->SendTextQueryWithClientDiscourseContext(
+        kScreenContextQuery,
+        CreateContextProto(
+            AssistantBundle{assistant_extra_.get(), assistant_tree_.get()},
+            assistant_screenshot),
+        options);
+    return;
+  }
+
   std::vector<std::string> context_protos;
 
   // Screen context can have the assistant_extra and assistant_tree set to
