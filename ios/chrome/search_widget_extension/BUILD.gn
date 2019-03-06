@@ -50,12 +50,12 @@ source_set("search_widget") {
     "copied_content_view.mm",
     "search_action_view.h",
     "search_action_view.mm",
+    "search_widget_constants.h",
+    "search_widget_constants.mm",
     "search_widget_view.h",
     "search_widget_view.mm",
     "search_widget_view_controller.h",
     "search_widget_view_controller.mm",
-    "ui_util.h",
-    "ui_util.mm",
   ]
 
   deps = [

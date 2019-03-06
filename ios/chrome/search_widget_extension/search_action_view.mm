@@ -7,7 +7,8 @@
 #import <NotificationCenter/NotificationCenter.h>
 
 #include "base/logging.h"
-#import "ios/chrome/search_widget_extension/ui_util.h"
+#import "ios/chrome/common/ui_util/constraints_ui_util.h"
+#import "ios/chrome/search_widget_extension/search_widget_constants.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -45,8 +46,7 @@ const CGFloat kIconSize = 35;
       [self addSubview:effectView];
       effectView.translatesAutoresizingMaskIntoConstraints = NO;
       effectView.userInteractionEnabled = NO;
-      [NSLayoutConstraint
-          activateConstraints:ui_util::CreateSameConstraints(self, effectView)];
+      AddSameConstraints(self, effectView);
     }
 
     UIView* circleView = [[UIView alloc] initWithFrame:CGRectZero];
@@ -66,12 +66,11 @@ const CGFloat kIconSize = 35;
     UIStackView* stack = [[UIStackView alloc]
         initWithArrangedSubviews:@[ circleView, labelView ]];
     stack.axis = UILayoutConstraintAxisVertical;
-    stack.spacing = ui_util::kIconSpacing;
+    stack.spacing = kIconSpacing;
     stack.alignment = UIStackViewAlignmentCenter;
     stack.translatesAutoresizingMaskIntoConstraints = NO;
     [secondaryEffectView.contentView addSubview:stack];
-    [NSLayoutConstraint activateConstraints:ui_util::CreateSameConstraints(
-                                                secondaryEffectView, stack)];
+    AddSameConstraints(secondaryEffectView, stack);
     UIImage* iconImage = [UIImage imageNamed:imageName];
     iconImage =
         [iconImage imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
