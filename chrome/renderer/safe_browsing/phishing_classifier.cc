@@ -5,6 +5,7 @@
 #include "chrome/renderer/safe_browsing/phishing_classifier.h"
 
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -99,9 +100,8 @@ bool PhishingClassifier::is_ready() const {
   return scorer_ != NULL;
 }
 
-void PhishingClassifier::BeginClassification(
-    const base::string16* page_text,
-    const DoneCallback& done_callback) {
+void PhishingClassifier::BeginClassification(const base::string16* page_text,
+                                             DoneCallback done_callback) {
   DCHECK(is_ready());
 
   // The RenderView should have called CancelPendingClassification() before
@@ -112,7 +112,7 @@ void PhishingClassifier::BeginClassification(
   CancelPendingClassification();
 
   page_text_ = page_text;
-  done_callback_ = done_callback;
+  done_callback_ = std::move(done_callback);
 
   // For consistency, we always want to invoke the DoneCallback
   // asynchronously, rather than directly from this method.  To ensure that
@@ -154,8 +154,8 @@ void PhishingClassifier::BeginFeatureExtraction() {
   // in several chunks of work and invokes the callback when finished.
   dom_extractor_->ExtractFeatures(
       frame->GetDocument(), features_.get(),
-      base::Bind(&PhishingClassifier::DOMExtractionFinished,
-                 base::Unretained(this)));
+      base::BindOnce(&PhishingClassifier::DOMExtractionFinished,
+                     base::Unretained(this)));
 }
 
 void PhishingClassifier::CancelPendingClassification() {
@@ -174,11 +174,9 @@ void PhishingClassifier::DOMExtractionFinished(bool success) {
     // Term feature extraction can take awhile, so it runs asynchronously
     // in several chunks of work and invokes the callback when finished.
     term_extractor_->ExtractFeatures(
-        page_text_,
-        features_.get(),
-        shingle_hashes_.get(),
-        base::Bind(&PhishingClassifier::TermExtractionFinished,
-                   base::Unretained(this)));
+        page_text_, features_.get(), shingle_hashes_.get(),
+        base::BindOnce(&PhishingClassifier::TermExtractionFinished,
+                       base::Unretained(this)));
   } else {
     RunFailureCallback();
   }
@@ -225,7 +223,7 @@ void PhishingClassifier::CheckNoPendingClassification() {
 }
 
 void PhishingClassifier::RunCallback(const ClientPhishingRequest& verdict) {
-  done_callback_.Run(verdict);
+  std::move(done_callback_).Run(verdict);
   Clear();
 }
 

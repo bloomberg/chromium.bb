@@ -41,8 +41,7 @@ class MockPhishingClassifier : public PhishingClassifier {
 
   ~MockPhishingClassifier() override {}
 
-  MOCK_METHOD2(BeginClassification,
-               void(const base::string16*, const DoneCallback&));
+  MOCK_METHOD2(BeginClassification, void(const base::string16*, DoneCallback));
   MOCK_METHOD0(CancelPendingClassification, void());
 
  private:

@@ -161,8 +161,8 @@ class PhishingDOMFeatureExtractorTest : public ChromeRenderViewTest {
 
     extractor_->ExtractFeatures(
         GetMainFrame()->GetDocument(), features,
-        base::Bind(&PhishingDOMFeatureExtractorTest::AnotherExtractionDone,
-                   weak_factory_.GetWeakPtr()));
+        base::BindOnce(&PhishingDOMFeatureExtractorTest::AnotherExtractionDone,
+                       weak_factory_.GetWeakPtr()));
     message_loop_->Run();
   }
 
@@ -174,8 +174,8 @@ class PhishingDOMFeatureExtractorTest : public ChromeRenderViewTest {
 
     extractor_->ExtractFeatures(
         GetMainFrame()->GetDocument(), features,
-        base::Bind(&PhishingDOMFeatureExtractorTest::AnotherExtractionDone,
-                   weak_factory_.GetWeakPtr()));
+        base::BindOnce(&PhishingDOMFeatureExtractorTest::AnotherExtractionDone,
+                       weak_factory_.GetWeakPtr()));
     message_loop_->Run();
   }
 

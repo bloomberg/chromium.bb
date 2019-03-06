@@ -125,8 +125,9 @@ class PhishingClassifierTest : public ChromeRenderViewTest {
     feature_map_.Clear();
 
     classifier_->BeginClassification(
-        page_text, base::Bind(&PhishingClassifierTest::ClassificationFinished,
-                              base::Unretained(this)));
+        page_text,
+        base::BindOnce(&PhishingClassifierTest::ClassificationFinished,
+                       base::Unretained(this)));
     base::RunLoop().RunUntilIdle();
   }
 
