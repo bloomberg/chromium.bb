@@ -393,16 +393,21 @@ ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
   }
 
   // Search Engine sync is enabled by default.  Register unless explicitly
-  // disabled.
+  // disabled. The service can be null in tests.
+  TemplateURLService* template_url_service =
+      TemplateURLServiceFactory::GetForProfile(profile_);
   if (!disabled_types.Has(syncer::SEARCH_ENGINES)) {
-    if (base::FeatureList::IsEnabled(switches::kSyncPseudoUSSSearchEngines)) {
+    // TODO(mastiz): For the null case exercised in some tests, we should also
+    // exercise the new controller (which currently requires a non-null
+    // service).
+    if (base::FeatureList::IsEnabled(switches::kSyncPseudoUSSSearchEngines) &&
+        template_url_service) {
       controllers.push_back(std::make_unique<SearchEngineModelTypeController>(
           dump_stack, GetModelTypeStoreService()->GetStoreFactory(),
-          TemplateURLServiceFactory::GetForProfile(profile_)));
+          template_url_service));
     } else {
       controllers.push_back(std::make_unique<SearchEngineDataTypeController>(
-          dump_stack, sync_service, this,
-          TemplateURLServiceFactory::GetForProfile(profile_)));
+          dump_stack, sync_service, this, template_url_service));
     }
   }
 #endif  // !defined(OS_ANDROID)
