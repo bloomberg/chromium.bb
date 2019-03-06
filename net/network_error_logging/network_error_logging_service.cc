@@ -169,8 +169,14 @@ void RecordHeaderOutcome(NetworkErrorLoggingService::HeaderOutcome outcome) {
 
 void RecordRequestOutcome(NetworkErrorLoggingService::RequestOutcome outcome) {
   UMA_HISTOGRAM_ENUMERATION(
-      NetworkErrorLoggingService::kRequestOutcomeHistogram, outcome,
-      NetworkErrorLoggingService::RequestOutcome::MAX);
+      NetworkErrorLoggingService::kRequestOutcomeHistogram, outcome);
+}
+
+void RecordSignedExchangeRequestOutcome(
+    NetworkErrorLoggingService::RequestOutcome outcome) {
+  UMA_HISTOGRAM_ENUMERATION(
+      NetworkErrorLoggingService::kSignedExchangeRequestOutcomeHistogram,
+      outcome);
 }
 
 class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
@@ -226,7 +232,7 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
       return;
 
     if (!reporting_service_) {
-      RecordRequestOutcome(RequestOutcome::DISCARDED_NO_REPORTING_SERVICE);
+      RecordRequestOutcome(RequestOutcome::kDiscardedNoReportingService);
       return;
     }
 
@@ -236,7 +242,7 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
     auto report_origin = url::Origin::Create(details.uri);
     const OriginPolicy* policy = FindPolicyForOrigin(report_origin);
     if (!policy) {
-      RecordRequestOutcome(RequestOutcome::DISCARDED_NO_ORIGIN_POLICY);
+      RecordRequestOutcome(RequestOutcome::kDiscardedNoOriginPolicy);
       return;
     }
 
@@ -264,7 +270,7 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
     // meaningful if it only includes reports that otherwise could have been
     // uploaded.
     if (details.reporting_upload_depth > kMaxNestedReportDepth) {
-      RecordRequestOutcome(RequestOutcome::DISCARDED_REPORTING_UPLOAD);
+      RecordRequestOutcome(RequestOutcome::kDiscardedReportingUpload);
       return;
     }
 
@@ -284,7 +290,7 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
     // errors.
     if (phase_string != kDnsPhase &&
         IsMismatchingSubdomainReport(*policy, report_origin)) {
-      RecordRequestOutcome(RequestOutcome::DISCARDED_NON_DNS_SUBDOMAIN_REPORT);
+      RecordRequestOutcome(RequestOutcome::kDiscardedNonDNSSubdomainReport);
       return;
     }
 
@@ -293,8 +299,8 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
         SampleAndReturnFraction(*policy, success);
     if (!sampling_fraction.has_value()) {
       RecordRequestOutcome(success
-                               ? RequestOutcome::DISCARDED_UNSAMPLED_SUCCESS
-                               : RequestOutcome::DISCARDED_UNSAMPLED_FAILURE);
+                               ? RequestOutcome::kDiscardedUnsampledSuccess
+                               : RequestOutcome::kDiscardedUnsampledFailure);
       return;
     }
 
@@ -307,7 +313,7 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
         CreateReportBody(phase_string, type_string, sampling_fraction.value(),
                          details),
         details.reporting_upload_depth);
-    RecordRequestOutcome(RequestOutcome::QUEUED);
+    RecordRequestOutcome(RequestOutcome::kQueued);
   }
 
   void QueueSignedExchangeReport(
@@ -316,41 +322,51 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
       return;
 
     if (!reporting_service_) {
-      RecordRequestOutcome(RequestOutcome::DISCARDED_NO_REPORTING_SERVICE);
+      RecordSignedExchangeRequestOutcome(
+          RequestOutcome::kDiscardedNoReportingService);
       return;
     }
     if (!details.outer_url.SchemeIsCryptographic()) {
-      RecordHeaderOutcome(HeaderOutcome::DISCARDED_INSECURE_ORIGIN);
+      RecordSignedExchangeRequestOutcome(
+          RequestOutcome::kDiscardedInsecureOrigin);
       return;
     }
     const auto report_origin = url::Origin::Create(details.outer_url);
     const OriginPolicy* policy = FindPolicyForOrigin(report_origin);
     if (!policy) {
-      RecordRequestOutcome(RequestOutcome::DISCARDED_NO_ORIGIN_POLICY);
+      RecordSignedExchangeRequestOutcome(
+          RequestOutcome::kDiscardedNoOriginPolicy);
       return;
     }
     if (IsMismatchingSubdomainReport(*policy, report_origin)) {
-      RecordRequestOutcome(RequestOutcome::DISCARDED_NON_DNS_SUBDOMAIN_REPORT);
+      RecordSignedExchangeRequestOutcome(
+          RequestOutcome::kDiscardedNonDNSSubdomainReport);
       return;
     }
     // Don't send the report when the IP addresses of the server and the policy
     // don’t match. This case is coverd by OnRequest() while processing the HTTP
     // response.
-    if (details.server_ip_address != policy->received_ip_address)
+    // This happens if the server has set the NEL policy previously, but doesn't
+    // set the NEL policy for the signed exchange response, and the IP address
+    // has changed due to DNS round robin.
+    if (details.server_ip_address != policy->received_ip_address) {
+      RecordSignedExchangeRequestOutcome(
+          RequestOutcome::kDiscardedIPAddressMismatch);
       return;
+    }
     const base::Optional<double> sampling_fraction =
         SampleAndReturnFraction(*policy, details.success);
     if (!sampling_fraction.has_value()) {
-      RecordRequestOutcome(details.success
-                               ? RequestOutcome::DISCARDED_UNSAMPLED_SUCCESS
-                               : RequestOutcome::DISCARDED_UNSAMPLED_FAILURE);
+      RecordSignedExchangeRequestOutcome(
+          details.success ? RequestOutcome::kDiscardedUnsampledSuccess
+                          : RequestOutcome::kDiscardedUnsampledFailure);
       return;
     }
     reporting_service_->QueueReport(
         details.outer_url, details.user_agent, policy->report_to, kReportType,
         CreateSignedExchangeReportBody(details, sampling_fraction.value()),
         0 /* depth */);
-    RecordRequestOutcome(RequestOutcome::QUEUED);
+    RecordSignedExchangeRequestOutcome(RequestOutcome::kQueued);
   }
 
   void RemoveBrowsingData(const base::RepeatingCallback<bool(const GURL&)>&
@@ -670,6 +686,10 @@ const char NetworkErrorLoggingService::kHeaderOutcomeHistogram[] =
 const char NetworkErrorLoggingService::kRequestOutcomeHistogram[] =
     "Net.NetworkErrorLogging.RequestOutcome";
 
+const char
+    NetworkErrorLoggingService::kSignedExchangeRequestOutcomeHistogram[] =
+        "Net.NetworkErrorLogging.SignedExchangeRequestOutcome";
+
 // Allow NEL reports on regular requests, plus NEL reports on Reporting uploads
 // containing only regular requests, but do not allow NEL reports on Reporting
 // uploads containing Reporting uploads.
@@ -721,13 +741,12 @@ void NetworkErrorLoggingService::
 // static
 void NetworkErrorLoggingService::
     RecordRequestDiscardedForNoNetworkErrorLoggingService() {
-  RecordRequestOutcome(
-      RequestOutcome::DISCARDED_NO_NETWORK_ERROR_LOGGING_SERVICE);
+  RecordRequestOutcome(RequestOutcome::kDiscardedNoNetworkErrorLoggingService);
 }
 
 // static
 void NetworkErrorLoggingService::RecordRequestDiscardedForInsecureOrigin() {
-  RecordRequestOutcome(RequestOutcome::DISCARDED_INSECURE_ORIGIN);
+  RecordRequestOutcome(RequestOutcome::kDiscardedInsecureOrigin);
 }
 
 // static

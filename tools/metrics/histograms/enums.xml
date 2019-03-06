@@ -37227,6 +37227,7 @@ Called by update_net_error_codes.py.-->
   <int value="7" label="Discarded: unsampled failure"/>
   <int value="8" label="Queued"/>
   <int value="9" label="Discarded: include_subdomains without DNS error"/>
+  <int value="10" label="Discarded: IP address mismatch"/>
 </enum>
 
 <enum name="NetPreconnectUtilization">
