@@ -32,7 +32,7 @@ QueryableDataBindings::QueryableDataBindings(
   CHECK(base::PathService::Get(base::DIR_ASSETS, &assets_path));
   InjectJavaScriptFileIntoFrame(assets_path.AppendASCII(kBindingsPath), frame_);
 
-  service_->GetAllEntries(
+  service_->GetChangedEntries(
       fit::bind_member(this, &QueryableDataBindings::OnEntriesReceived));
 }
 
@@ -75,4 +75,7 @@ void QueryableDataBindings::OnEntriesReceived(
 
   InjectJavaScriptBufferIntoFrame(std::move(initialize_values_js_buffer),
                                   frame_);
+
+  // TODO(crbug.com/929291): Handle change events by calling and waiting on
+  // GetChangedEntries() here.
 }
