@@ -95,8 +95,12 @@ namespace {
 const CGFloat kAccountProfilePhotoDimension = 40.0f;
 
 NSString* const kSyncAndGoogleServicesImageName = @"sync_and_google_services";
-NSString* const kSyncAndGoogleServicesErrorImageName =
-    @"google_services_sync_error";
+NSString* const kSyncAndGoogleServicesSyncErrorImageName =
+    @"sync_and_google_services_sync_error";
+NSString* const kSyncAndGoogleServicesSyncOffImageName =
+    @"sync_and_google_services_sync_off";
+NSString* const kSyncAndGoogleServicesSyncOnImageName =
+    @"sync_and_google_services_sync_on";
 NSString* const kSettingsSearchEngineImageName = @"settings_search_engine";
 NSString* const kSettingsPasswordsImageName = @"settings_passwords";
 NSString* const kSettingsAutofillCreditCardImageName =
@@ -1032,11 +1036,7 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
 // Updates the Google services item to display the right icon and status message
 // in the detail text of the cell.
 - (void)updateGoogleServicesItem:(TableViewImageItem*)googleServicesItem {
-  // TODO(crbug.com/889470): Needs to include sync off, sync on, and error sync
-  // badges.
   googleServicesItem.detailTextColor = nil;
-  googleServicesItem.image =
-      [UIImage imageNamed:kSyncAndGoogleServicesImageName];
   SyncSetupService* syncSetupService =
       SyncSetupServiceFactory::GetForBrowserState(_browserState);
   AuthenticationService* authService =
@@ -1044,22 +1044,31 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
   if (!authService->IsAuthenticated()) {
     // No sync status when the user is not signed-in.
     googleServicesItem.detailText = nil;
+    googleServicesItem.image =
+        [UIImage imageNamed:kSyncAndGoogleServicesImageName];
   } else if (!syncSetupService->HasFinishedInitialSetup()) {
     googleServicesItem.detailText =
         l10n_util::GetNSString(IDS_IOS_SYNC_SETUP_IN_PROGRESS);
+    googleServicesItem.image =
+        [UIImage imageNamed:kSyncAndGoogleServicesSyncOnImageName];
   } else if (!IsTransientSyncError(syncSetupService->GetSyncServiceState())) {
     googleServicesItem.detailTextColor = UIColor.redColor;
     googleServicesItem.detailText =
         GetSyncErrorDescriptionForSyncSetupService(syncSetupService);
     googleServicesItem.image =
-        [UIImage imageNamed:kSyncAndGoogleServicesErrorImageName];
+        [UIImage imageNamed:kSyncAndGoogleServicesSyncErrorImageName];
   } else if (syncSetupService->IsSyncEnabled()) {
     googleServicesItem.detailText =
         l10n_util::GetNSString(IDS_IOS_SIGN_IN_TO_CHROME_SETTING_SYNC_ON);
+    googleServicesItem.image =
+        [UIImage imageNamed:kSyncAndGoogleServicesSyncOnImageName];
   } else {
     googleServicesItem.detailText =
         l10n_util::GetNSString(IDS_IOS_SIGN_IN_TO_CHROME_SETTING_SYNC_OFF);
+    googleServicesItem.image =
+        [UIImage imageNamed:kSyncAndGoogleServicesSyncOffImageName];
   }
+  DCHECK(googleServicesItem.image);
 }
 
 // Updates and reloads the Google service cell.
