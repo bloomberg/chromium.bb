@@ -1095,6 +1095,9 @@ deps = {
   'src/third_party/openmax_dl':
     Var('webrtc_git') + '/deps/third_party/openmax.git' + '@' +  Var('openmax_dl_revision'),
 
+  'src/third_party/openscreen/src':
+    Var('chromium_git') + '/openscreen' + '@' + 'b1d095ba4f8f3ec1efd90dbd5cb0a37e5b4b21f7',
+
   'src/third_party/ow2_asm': {
       'packages': [
           {
@@ -2868,6 +2871,7 @@ hooks = [
 recursedeps = [
   # ANGLE manages DEPS that it also owns the build files for, such as dEQP.
   "src/third_party/angle",
+  'src/third_party/openscreen/src',
   # src-internal has its own DEPS file to pull additional internal repos
   'src-internal',
 ]
