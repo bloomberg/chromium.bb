@@ -432,18 +432,18 @@
     "args": ["--enable-print-browser"]
   },
   {
-    "prefix": "high-contrast-mode",
-    "base": "paint/high-contrast-mode/image-filter-all",
+    "prefix": "dark-mode",
+    "base": "paint/dark-mode/image-filter-all",
     "args": ["--blink-settings=highContrastMode=3,highContrastImagePolicy=0"]
   },
   {
-    "prefix": "high-contrast-mode",
-    "base": "paint/high-contrast-mode/image-filter-none",
+    "prefix": "dark-mode",
+    "base": "paint/dark-mode/image-filter-none",
     "args": ["--blink-settings=highContrastMode=3,highContrastImagePolicy=1"]
   },
   {
-    "prefix": "high-contrast-mode",
-    "base": "paint/high-contrast-mode/image-filter-smart",
+    "prefix": "dark-mode",
+    "base": "paint/dark-mode/image-filter-smart",
     "args": ["--blink-settings=highContrastMode=3,highContrastImagePolicy=2"]
   },
   {
