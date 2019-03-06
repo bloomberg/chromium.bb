@@ -209,8 +209,11 @@ void AXEventGenerator::OnStringAttributeChanged(AXTree* tree,
         AddEvent(node, Event::LIVE_REGION_CREATED);
       break;
     case ax::mojom::StringAttribute::kAutoComplete:
-      LOG(ERROR) << "auto!";
       AddEvent(node, Event::AUTO_COMPLETE_CHANGED);
+      break;
+    case ax::mojom::StringAttribute::kImageAnnotation:
+      // The image annotation is reported as part of the accessible name.
+      AddEvent(node, Event::NAME_CHANGED);
       break;
     default:
       AddEvent(node, Event::OTHER_ATTRIBUTE_CHANGED);
@@ -246,6 +249,10 @@ void AXEventGenerator::OnIntAttributeChanged(AXTree* tree,
     case ax::mojom::IntAttribute::kScrollX:
     case ax::mojom::IntAttribute::kScrollY:
       AddEvent(node, Event::SCROLL_POSITION_CHANGED);
+      break;
+    case ax::mojom::IntAttribute::kImageAnnotationStatus:
+      // The image annotation is reported as part of the accessible name.
+      AddEvent(node, Event::NAME_CHANGED);
       break;
     default:
       AddEvent(node, Event::OTHER_ATTRIBUTE_CHANGED);
