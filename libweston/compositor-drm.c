@@ -5045,6 +5045,8 @@ drm_output_init_egl(struct drm_output *output, struct drm_backend *b)
 	struct drm_plane *plane = output->scanout_plane;
 	unsigned int i;
 
+	assert(output->gbm_surface == NULL);
+
 	for (i = 0; i < plane->count_formats; i++) {
 		if (plane->formats[i].format == output->gbm_format)
 			break;
@@ -5094,6 +5096,7 @@ drm_output_init_egl(struct drm_output *output, struct drm_backend *b)
 					      n_formats) < 0) {
 		weston_log("failed to create gl renderer output state\n");
 		gbm_surface_destroy(output->gbm_surface);
+		output->gbm_surface = NULL;
 		return -1;
 	}
 
@@ -5120,6 +5123,7 @@ drm_output_fini_egl(struct drm_output *output)
 
 	gl_renderer->output_destroy(&output->base);
 	gbm_surface_destroy(output->gbm_surface);
+	output->gbm_surface = NULL;
 	drm_output_fini_cursor_egl(output);
 }
 
