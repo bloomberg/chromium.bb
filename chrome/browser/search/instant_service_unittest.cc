@@ -46,6 +46,15 @@ base::DictionaryValue GetBackgroundInfoAsDict(const GURL& background_url) {
   return background_info;
 }
 
+class MockInstantService : public InstantService {
+ public:
+  explicit MockInstantService(Profile* profile) : InstantService(profile) {}
+  ~MockInstantService() override = default;
+
+  MOCK_METHOD0(ResetCustomLinks, bool());
+  MOCK_METHOD0(ResetCustomBackgroundThemeInfo, void());
+};
+
 }  // namespace
 
 using InstantServiceTest = InstantUnitTestBase;
@@ -438,6 +447,13 @@ TEST_F(InstantServiceTest, TestNoThemeInfo) {
   // otherwise the test should crash.
   instant_service_->FallbackToDefaultThemeInfo();
   EXPECT_NE(nullptr, instant_service_->theme_info_);
+}
+
+TEST_F(InstantServiceTest, TestResetToDefault) {
+  MockInstantService mock_instant_service_(profile());
+  EXPECT_CALL(mock_instant_service_, ResetCustomLinks());
+  EXPECT_CALL(mock_instant_service_, ResetCustomBackgroundThemeInfo());
+  mock_instant_service_.ResetToDefault();
 }
 
 class InstantServiceThemeTest : public InstantServiceTest {
