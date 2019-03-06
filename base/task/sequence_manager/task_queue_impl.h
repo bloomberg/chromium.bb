@@ -146,7 +146,7 @@ class BASE_EXPORT TaskQueueImpl {
   // Used to check if we need to generate notifications about delayed work.
   bool HasPendingImmediateWork();
   bool HasPendingImmediateWorkLocked()
-      EXCLUSIVE_LOCKS_REQUIRED(immediate_incoming_queue_lock_);
+      EXCLUSIVE_LOCKS_REQUIRED(any_thread_lock_);
 
   bool has_pending_high_resolution_tasks() const {
     return main_thread_only()
@@ -282,18 +282,6 @@ class BASE_EXPORT TaskQueueImpl {
     const int task_type_;
   };
 
-  struct AnyThread {
-    explicit AnyThread(TimeDomain* time_domain);
-    ~AnyThread();
-
-    // TimeDomain is maintained in two copies: inside AnyThread and inside
-    // MainThreadOnly. It can be changed only from main thread, so it should be
-    // locked before accessing from other threads.
-    TimeDomain* time_domain;
-
-    bool unregistered = false;
-  };
-
   // A queue for holding delayed tasks before their delay has expired.
   struct DelayedIncomingQueue {
    public:
@@ -376,7 +364,8 @@ class BASE_EXPORT TaskQueueImpl {
 
   void ScheduleDelayedWorkTask(Task pending_task);
 
-  void MoveReadyImmediateTasksToImmediateWorkQueueLocked();
+  void MoveReadyImmediateTasksToImmediateWorkQueueLocked()
+      EXCLUSIVE_LOCKS_REQUIRED(any_thread_lock_);
 
   // LazilyDeallocatedDeque use TimeTicks to figure out when to resize.  We
   // should use real time here always.
@@ -409,9 +398,9 @@ class BASE_EXPORT TaskQueueImpl {
   // Activate a delayed fence if a time has come.
   void ActivateDelayedFenceIfNeeded(TimeTicks now);
 
-  // Updates state protected by immediate_incoming_queue_lock_.
+  // Updates state protected by any_thread_lock_.
   void UpdateCrossThreadQueueStateLocked()
-      EXCLUSIVE_LOCKS_REQUIRED(immediate_incoming_queue_lock_);
+      EXCLUSIVE_LOCKS_REQUIRED(any_thread_lock_);
 
   const char* name_;
   SequenceManagerImpl* const sequence_manager_;
@@ -421,15 +410,27 @@ class BASE_EXPORT TaskQueueImpl {
   const scoped_refptr<GuardedTaskPoster> task_poster_;
 
   mutable Lock any_thread_lock_;
-  AnyThread any_thread_;
-  struct AnyThread& any_thread() {
-    any_thread_lock_.AssertAcquired();
-    return any_thread_;
-  }
-  const struct AnyThread& any_thread() const {
-    any_thread_lock_.AssertAcquired();
-    return any_thread_;
-  }
+
+  struct AnyThread {
+    explicit AnyThread(TimeDomain* time_domain);
+    ~AnyThread();
+
+    // TimeDomain is maintained in two copies: inside AnyThread and inside
+    // MainThreadOnly. It can be changed only from main thread, so it should be
+    // locked before accessing from other threads.
+    TimeDomain* time_domain;
+
+    TaskDeque immediate_incoming_queue;
+
+    // True if main_thread_only().immediate_work_queue is empty.
+    bool immediate_work_queue_empty = true;
+
+    bool post_immediate_task_should_schedule_work = true;
+
+    bool unregistered = false;
+  };
+
+  AnyThread any_thread_ GUARDED_BY(any_thread_lock_);
 
   MainThreadOnly main_thread_only_;
   MainThreadOnly& main_thread_only() {
@@ -440,15 +441,6 @@ class BASE_EXPORT TaskQueueImpl {
     DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
     return main_thread_only_;
   }
-
-  mutable Lock immediate_incoming_queue_lock_;
-  TaskDeque immediate_incoming_queue_
-      GUARDED_BY(immediate_incoming_queue_lock_);
-  // True if main_thread_only().immediate_work_queue is empty.
-  bool immediate_work_queue_empty_ GUARDED_BY(immediate_incoming_queue_lock_) =
-      true;
-  bool post_immediate_task_should_schedule_work_
-      GUARDED_BY(immediate_incoming_queue_lock_) = true;
 
   // Handle to our entry within the SequenceManagers |empty_queues_to_reload_|
   // atomic flag set. Used to signal that this queue needs to be reloaded.
