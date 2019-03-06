@@ -3182,7 +3182,7 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(
          security_state::features::kMarkHttpAsFeature,
          kMarkHttpAsFeatureVariations,
-         "HTTPBadPhase3")},
+         "HTTPReallyBadFinal")},
 
 #if !defined(OS_ANDROID)
     {"enable-web-authentication-testing-api",
