@@ -39,8 +39,7 @@ class SyncedPrintersManager : public KeyedService {
     virtual void OnConfiguredPrintersChanged(
         const std::vector<Printer>& printers) = 0;
     virtual void OnEnterprisePrintersChanged(
-        const std::vector<Printer>& printers,
-        bool enterprise_printers_are_ready) {}
+        const std::vector<Printer>& printers) = 0;
   };
 
   static std::unique_ptr<SyncedPrintersManager> Create(
@@ -54,9 +53,8 @@ class SyncedPrintersManager : public KeyedService {
   // Returns the printers that are saved in preferences.
   virtual std::vector<Printer> GetConfiguredPrinters() const = 0;
 
-  // Replaces given vector with vector of printers from enterprise policy.
-  // Returns true if the enterprise policy was loaded and is valid.
-  virtual bool GetEnterprisePrinters(std::vector<Printer>& printers) const = 0;
+  // Returns printers from enterprise policy.
+  virtual std::vector<Printer> GetEnterprisePrinters() const = 0;
 
   // Returns the printer with id |printer_id|, or nullptr if no such printer
   // exists.  Searches both Configured and Enterprise printers.

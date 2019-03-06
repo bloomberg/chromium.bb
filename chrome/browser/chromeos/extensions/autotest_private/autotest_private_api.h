@@ -382,24 +382,14 @@ class AutotestPrivateTakeScreenshotFunction : public UIThreadExtensionFunction {
                        scoped_refptr<base::RefCountedMemory> png_data);
 };
 
-class AutotestPrivateGetPrinterListFunction
-    : public UIThreadExtensionFunction,
-      public chromeos::CupsPrintersManager::Observer {
+class AutotestPrivateGetPrinterListFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.getPrinterList",
                              AUTOTESTPRIVATE_GETPRINTERLIST)
-  AutotestPrivateGetPrinterListFunction();
 
  private:
   ~AutotestPrivateGetPrinterListFunction() override;
   ResponseAction Run() override;
-  void RespondWithTimeoutError();
-  void RespondWithSuccess();
-  // chromeos::CupsPrintersManager::Observer
-  void OnEnterprisePrintersInitialized() override;
-  std::unique_ptr<base::Value> results_;
-  std::unique_ptr<chromeos::CupsPrintersManager> printers_manager_;
-  base::OneShotTimer timeout_timer_;
 };
 
 class AutotestPrivateUpdatePrinterFunction : public UIThreadExtensionFunction {
