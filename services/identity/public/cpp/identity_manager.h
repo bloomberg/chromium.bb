@@ -451,6 +451,12 @@ class IdentityManager : public SigninManagerBase::Observer,
   // OAuth2TokenService.java has no more client usage.
   base::android::ScopedJavaLocalRef<jobject>
   LegacyGetOAuth2TokenServiceJavaObject();
+
+  // This method has the contractual assumption that the account is a known
+  // account and has as its semantics that it fetches the account info for the
+  // account, triggering an OnExtendedAccountInfoUpdated() callback if the info
+  // was successfully fetched.
+  void ForceRefreshOfExtendedAccountInfo(const std::string& refresh_token);
 #endif
 
   // Methods to register or remove observers.
