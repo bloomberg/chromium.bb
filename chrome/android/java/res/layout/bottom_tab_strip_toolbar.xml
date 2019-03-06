@@ -20,20 +20,19 @@
             android:id="@+id/toolbar_left_button"
             android:layout_width="@dimen/bottom_tab_grid_toolbar_icon_size"
             android:layout_height="match_parent"
-            android:src="@drawable/ic_expand_more_black_24dp"
+            android:src="@drawable/ic_expand_less_black_24dp"
             app:tint="@color/standard_mode_tint"
             android:background="?attr/selectableItemBackground"
-            android:contentDescription="@string/accessibility_collapse_section_header" />
-         <TextView
-             android:id="@+id/title"
-             android:layout_height="wrap_content"
-             android:layout_width="0dp"
-             android:layout_weight="1"
-             android:singleLine="true"
-             android:ellipsize="end"
-             android:textAppearance="@style/TextAppearance.BlackTitle1"
-             android:gravity="center"
-             android:focusableInTouchMode="true" />
+            android:contentDescription="@string/accessibility_expand_section_header" />
+
+        <FrameLayout
+            android:id="@+id/toolbar_container_view"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@android:color/holo_orange_dark"
+            android:orientation="horizontal" />
+
         <org.chromium.chrome.browser.widget.ListMenuButton
             android:id="@+id/toolbar_right_button"
             android:layout_width="@dimen/bottom_tab_grid_toolbar_icon_size"

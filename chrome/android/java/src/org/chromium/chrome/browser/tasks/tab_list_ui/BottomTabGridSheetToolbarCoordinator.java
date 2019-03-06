@@ -19,7 +19,7 @@ import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
  * grid when presented inside the bottom sheet. {@link BottomTabGridCoordinator}
  */
 class BottomTabGridSheetToolbarCoordinator implements Destroyable {
-    private final BottomTabGridSheetToolbarView mToolbarView;
+    private final BottomTabListToolbarView mToolbarView;
     private final PropertyModelChangeProcessor mModelChangeProcessor;
 
     /**
@@ -33,7 +33,7 @@ class BottomTabGridSheetToolbarCoordinator implements Destroyable {
      */
     BottomTabGridSheetToolbarCoordinator(
             Context context, ViewGroup parentView, PropertyModel toolbarPropertyModel) {
-        mToolbarView = (BottomTabGridSheetToolbarView) LayoutInflater.from(context).inflate(
+        mToolbarView = (BottomTabListToolbarView) LayoutInflater.from(context).inflate(
                 R.layout.bottom_tab_grid_toolbar, parentView, false);
         mModelChangeProcessor = PropertyModelChangeProcessor.create(
                 toolbarPropertyModel, mToolbarView, BottomTabGridSheetToolbarViewBinder::bind);

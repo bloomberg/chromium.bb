@@ -22,11 +22,11 @@ class BottomTabGridSheetToolbarViewBinder {
      * @param propertyKey The key for the property to update for.
      */
     public static void bind(
-            PropertyModel model, BottomTabGridSheetToolbarView view, PropertyKey propertyKey) {
+            PropertyModel model, BottomTabListToolbarView view, PropertyKey propertyKey) {
         if (COLLAPSE_CLICK_LISTENER == propertyKey) {
-            view.setCollapseButtonOnClickListener(model.get(COLLAPSE_CLICK_LISTENER));
+            view.setLeftButtonOnClickListener(model.get(COLLAPSE_CLICK_LISTENER));
         } else if (ADD_CLICK_LISTENER == propertyKey) {
-            view.setAddButtonOnClickListener(model.get(ADD_CLICK_LISTENER));
+            view.setRightButtonOnClickListener(model.get(ADD_CLICK_LISTENER));
         } else if (HEADER_TITLE == propertyKey) {
             view.setTitle(model.get(HEADER_TITLE));
         }
