@@ -125,6 +125,10 @@ class ATL_NO_VTABLE CGaiaCredentialBase
   // Gets the string value for the given credential UI field.
   virtual HRESULT GetStringValueImpl(DWORD field_id, wchar_t** value);
 
+  // Can be overridden to change the icon used for anonymous tiles when they are
+  // shown in the selection list on the side and when they are selected.
+  virtual HRESULT GetBitmapValueImpl(DWORD field_id, HBITMAP* phbmp);
+
   // Resets the state of the credential, forgetting any username or password
   // that may have been set previously.  Derived classes may override to
   // perform more state resetting if needed, but should always call the base

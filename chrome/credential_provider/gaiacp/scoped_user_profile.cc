@@ -4,16 +4,34 @@
 
 #include "chrome/credential_provider/gaiacp/scoped_user_profile.h"
 
+// Must appear before gdiplus.h
+// gdiplus.h requires global functions min and max to exist. But the usage of
+// these functions occurs in the Gdiplus namespace only so we just declare
+// std::min and std::max in this namespace so that gdiplus can find them.
+// This is similar to what was done in:
+// https://cs.chromium.org/chromium/src/third_party/pdfium/core/fxge/win32/fx_win32_gdipext.cpp?type=cs&q=gdiplus.h&g=0&l=29
+namespace Gdiplus {
+using std::max;
+using std::min;
+}  // namespace Gdiplus
+
 #include <Windows.h>
 
+#include <atlcomcli.h>
 #include <atlconv.h>
 #include <dpapi.h>
+#include <gdiplus.h>
+#include <objidl.h>
 #include <security.h>
 #include <shlobj.h>
+#include <shlwapi.h>
 #include <userenv.h>
 
+#include "base/bind.h"
+#include "base/callback.h"
 #include "base/files/file_util.h"
 #include "base/stl_util.h"
+#include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/registry.h"
@@ -35,9 +53,8 @@ namespace {
 // retrying would not be needed, but this notification does not exist.
 const int kWaitForProfileCreationRetryCount = 30;
 
-constexpr wchar_t kDefaultProfilePictureFileExtension[] = L".jpg";
-
-constexpr int kProfilePictureSizes[] = {32, 40, 48, 96, 192, 240, 448};
+constexpr int kProfilePictureSizes[] = {
+    32, 40, 48, 96, 192, 240, kLargestProfilePictureSize};
 
 std::string GetEncryptedRefreshToken(
     base::win::ScopedHandle::Handle logon_handle,
@@ -78,18 +95,137 @@ std::string GetEncryptedRefreshToken(
   return encrypted_data;
 }
 
-HRESULT GetBaseAccountPicturePath(base::FilePath* base_path) {
-  DCHECK(base_path);
-  base_path->clear();
-  LPWSTR path;
-  HRESULT hr = ::SHGetKnownFolderPath(FOLDERID_PublicUserTiles, 0, NULL, &path);
+HRESULT GetEncoderClsidByExtension(const base::string16& desired_extension,
+                                   CLSID* clsid_out) {
+  DCHECK(clsid_out);
+  // Number of image encoders.
+  UINT num = 0;
+  // Size of the image encoder array in bytes.
+  UINT size = 0;
+
+  Gdiplus::ImageCodecInfo* image_codec_info = nullptr;
+
+  Gdiplus::GetImageEncodersSize(&num, &size);
+  if (size == 0)
+    return E_FAIL;
+
+  std::unique_ptr<char[]> encoder_buffer(new char[size]);
+
+  image_codec_info =
+      reinterpret_cast<Gdiplus::ImageCodecInfo*>(encoder_buffer.get());
+
+  if (image_codec_info == nullptr)
+    return E_FAIL;
+
+  Gdiplus::GetImageEncoders(num, size, image_codec_info);
+
+  for (UINT j = 0; j < num; ++j) {
+    // FilenameExtension is a semicolon separated list of extensions recognized
+    // by the codec. Each extension is in the format "*.{ext}" so the * needs to
+    // be removed to get the real extension.
+    std::vector<base::string16> codec_extensions = base::SplitString(
+        base::StringPiece16(image_codec_info[j].FilenameExtension), L";",
+        base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+
+    for (auto& extension : codec_extensions) {
+      size_t first_period = extension.find_last_of('.');
+      if (first_period != base::string16::npos &&
+          base::EqualsCaseInsensitiveASCII(extension.substr(first_period),
+                                           desired_extension)) {
+        *clsid_out = image_codec_info[j].Clsid;
+        return S_OK;
+      }
+    }
+  }
+
+  return E_FAIL;
+}
+
+HRESULT ConvertImageToDesiredFormat(const std::vector<char>& image_buffer,
+                                    const base::FilePath& converted_path) {
+  // Only support conversion to |kCredentialLogoPictureFileExtension| for now.
+  DCHECK(base::EqualsCaseInsensitiveASCII(converted_path.Extension(),
+                                          kCredentialLogoPictureFileExtension));
+
+  // Initialize GDI+.
+  Gdiplus::GdiplusStartupInput gdiplus_startup_input;
+  ULONG_PTR gdiplus_token;
+  Gdiplus::GdiplusStartup(&gdiplus_token, &gdiplus_startup_input, NULL);
+
+  // Load the image stream into memory. Gdiplus::Image can automatically detect
+  // the file type and load the correct contents. Note that gaia returns a
+  // picture url with a .jpg extension but when the url is downloaded the image
+  // is actually a .png format and the Image class can handle this case
+  // correctly here.
+  CComPtr<IStream> buffer_stream;
+  buffer_stream.Attach(::SHCreateMemStream(
+      reinterpret_cast<const BYTE*>(image_buffer.data()), image_buffer.size()));
+  std::unique_ptr<Gdiplus::Image> image =
+      std::make_unique<Gdiplus::Image>(buffer_stream);
+
+  if (image->GetType() == Gdiplus::ImageTypeUnknown) {
+    LOGFN(ERROR) << "Unknown image type when loading image stream";
+    Gdiplus::GdiplusShutdown(gdiplus_token);
+    return E_FAIL;
+  }
+
+  // Get the CLSID of the encoder to the desired file type.
+  CLSID encoder_clsid;
+  HRESULT hr =
+      GetEncoderClsidByExtension(converted_path.Extension(), &encoder_clsid);
   if (FAILED(hr)) {
-    LOGFN(ERROR) << "SHGetKnownFolderPath=" << putHR(hr);
+    LOGFN(ERROR) << "GetEncoderClsid hr=" << putHR(hr);
+    Gdiplus::GdiplusShutdown(gdiplus_token);
     return hr;
   }
-  *base_path = base::FilePath(path);
-  ::CoTaskMemFree(path);
+
+  Gdiplus::Status stat =
+      image->Save(converted_path.value().c_str(), &encoder_clsid, nullptr);
+  Gdiplus::GdiplusShutdown(gdiplus_token);
+
+  if (stat != Gdiplus::Ok) {
+    LOGFN(ERROR) << "image->Save stat=" << stat;
+    return E_FAIL;
+  }
+
   return S_OK;
+}
+
+using ImageProcessor =
+    base::OnceCallback<HRESULT(const base::FilePath& picture_path,
+                               const std::vector<char>& picture_buffer)>;
+
+HRESULT SaveProcessedProfilePictureToDisk(
+    const base::FilePath& picture_path,
+    const std::vector<char>& picture_buffer,
+    ImageProcessor processor_function) {
+  DCHECK(processor_function);
+
+  // Make the file visible in case it is hidden or else WriteFile will fail
+  // to overwrite the existing file.
+  DWORD file_attributes = ::GetFileAttributes(picture_path.value().c_str());
+  if (file_attributes != INVALID_FILE_ATTRIBUTES) {
+    if (!::SetFileAttributes(picture_path.value().c_str(),
+                             file_attributes & ~FILE_ATTRIBUTE_HIDDEN)) {
+      LOGFN(ERROR) << "SetFileAttributes(remove hidden) err="
+                   << ::GetLastError();
+    }
+  }
+
+  HRESULT hr = std::move(processor_function).Run(picture_path, picture_buffer);
+  if (SUCCEEDED(hr)) {
+    // Make the picture file hidden just like the system would normally.
+    file_attributes = ::GetFileAttributes(picture_path.value().c_str());
+    if (file_attributes != INVALID_FILE_ATTRIBUTES) {
+      if (!::SetFileAttributes(picture_path.value().c_str(),
+                               file_attributes | FILE_ATTRIBUTE_HIDDEN)) {
+        LOGFN(ERROR) << "SetFileAttributes(add hidden) err="
+                     << ::GetLastError();
+      }
+    }
+  }
+
+  return hr;
 }
 
 HRESULT UpdateProfilePicturesForWindows8AndNewer(
@@ -102,7 +238,7 @@ HRESULT UpdateProfilePicturesForWindows8AndNewer(
 
   // Try to download profile pictures of all required sizes for windows.
   // Needed profile picture sizes are in |kProfilePictureSizes|.
-  // The way Windows8+ stores sets profile pictures is the following:
+  // The way Windows8+ stores profile pictures is the following:
   // In |reg_utils.cc:kAccountPicturesRootRegKey| there is a registry key
   // for each resolution of profile picture needed. The keys are names
   // "Image[x]" where [x] is the resolution of the picture.
@@ -116,15 +252,12 @@ HRESULT UpdateProfilePicturesForWindows8AndNewer(
     return E_FAIL;
   }
 
-  base::FilePath account_picture_base_path;
-  HRESULT hr = GetBaseAccountPicturePath(&account_picture_base_path);
+  base::FilePath account_picture_path;
+  HRESULT hr = GetUserAccountPicturePath(sid, &account_picture_path);
   if (FAILED(hr)) {
     LOGFN(ERROR) << "Failed to get account picture known folder=" << putHR(hr);
     return E_FAIL;
   }
-
-  base::FilePath account_picture_path =
-      account_picture_base_path.Append(sid.c_str());
 
   if (!base::PathExists(account_picture_path) &&
       !base::CreateDirectory(account_picture_path)) {
@@ -133,24 +266,25 @@ HRESULT UpdateProfilePicturesForWindows8AndNewer(
     return E_FAIL;
   }
 
-  constexpr wchar_t kBasePictureFilename[] = L"GoogleAccountPicture";
-
   base::string16 base_picture_extension = kDefaultProfilePictureFileExtension;
-  base::string16 base_picture_filename = kBasePictureFilename;
-  base_picture_filename += L"_";
 
   size_t last_period = picture_url_path.find_last_of('.');
-  if (last_period != std::string::npos) {
+  if (last_period != std::string::npos)
     base_picture_extension = picture_url_path.substr(last_period);
-  }
 
   for (auto image_size : kProfilePictureSizes) {
-    base::string16 image_size_postfix = base::StringPrintf(L"%i", image_size);
-    base::FilePath target_picture_path = account_picture_path.Append(
-        base_picture_filename + image_size_postfix + base_picture_extension);
+    base::FilePath target_picture_path = GetUserSizedAccountPictureFilePath(
+        account_picture_path, image_size, base_picture_extension);
+    base::FilePath bmp_picture_path = target_picture_path.ReplaceExtension(
+        kCredentialLogoPictureFileExtension);
+    bool needs_to_save_original =
+        force_update || !base::PathExists(target_picture_path);
+    bool needs_to_save_bitmap =
+        force_update || (image_size == kLargestProfilePictureSize &&
+                         !base::PathExists(bmp_picture_path));
 
     // Skip if the file already exists and an update is not forced.
-    if (!force_update && base::PathExists(target_picture_path)) {
+    if (!needs_to_save_original && !needs_to_save_bitmap) {
       // Update the reg string for the image if it is not up to date.
       wchar_t old_picture_path[MAX_PATH];
       ULONG path_size = base::size(old_picture_path);
@@ -181,33 +315,48 @@ HRESULT UpdateProfilePicturesForWindows8AndNewer(
       continue;
     }
 
-    // Make the file visible in case it is hidden or else WriteFile will fail
-    // to overwrite the existing file.
-    DWORD file_attributes =
-        ::GetFileAttributes(target_picture_path.value().c_str());
-    if (file_attributes != INVALID_FILE_ATTRIBUTES) {
-      ::SetFileAttributes(target_picture_path.value().c_str(),
-                          file_attributes & ~FILE_ATTRIBUTE_HIDDEN);
-    }
-    if (base::WriteFile(target_picture_path, response.data(),
-                        response.size()) != static_cast<int>(response.size())) {
-      LOGFN(ERROR) << "Failed to write profile picture to file="
-                   << target_picture_path;
-      continue;
+    if (needs_to_save_original) {
+      SaveProcessedProfilePictureToDisk(
+          target_picture_path, response,
+          base::BindOnce(
+              [](const base::string16& sid, int image_size,
+                 const base::FilePath& picture_path,
+                 const std::vector<char>& picture_buffer) {
+                HRESULT hr = S_OK;
+                if (base::WriteFile(picture_path, picture_buffer.data(),
+                                    picture_buffer.size()) !=
+                    static_cast<int>(picture_buffer.size())) {
+                  LOGFN(ERROR) << "Failed to write profile picture to file="
+                               << picture_path;
+                  hr = HRESULT_FROM_WIN32(::GetLastError());
+                } else {
+                  // Finally update the registry to point to this profile
+                  // picture.
+                  HRESULT reg_hr = SetAccountPictureRegString(
+                      sid, image_size, picture_path.value());
+                  if (FAILED(reg_hr))
+                    LOGFN(ERROR) << "SetAccountPictureRegString(pic) hr="
+                                 << putHR(reg_hr);
+                }
+                return hr;
+              },
+              sid, image_size));
     }
 
-    // Make the picture file hidden just like the system would normally.
-    file_attributes = ::GetFileAttributes(target_picture_path.value().c_str());
-    if (file_attributes != INVALID_FILE_ATTRIBUTES) {
-      ::SetFileAttributes(target_picture_path.value().c_str(),
-                          file_attributes | FILE_ATTRIBUTE_HIDDEN);
-    }
+    if (needs_to_save_bitmap) {
+      SaveProcessedProfilePictureToDisk(
+          bmp_picture_path, response,
+          base::BindOnce([](const base::FilePath& picture_path,
+                            const std::vector<char>& picture_buffer) {
+            HRESULT hr =
+                ConvertImageToDesiredFormat(picture_buffer, picture_path);
+            if (FAILED(hr))
+              LOGFN(ERROR) << "ConvertImageToDesiredFormat(pic) hr="
+                           << putHR(hr);
 
-    // Finally update the registry to point to this profile picture.
-    hr = SetAccountPictureRegString(sid, image_size,
-                                    target_picture_path.value());
-    if (FAILED(hr))
-      LOGFN(ERROR) << "SetAccountPictureRegString(pic) hr=" << putHR(hr);
+            return hr;
+          }));
+    }
   }
 
   return S_OK;

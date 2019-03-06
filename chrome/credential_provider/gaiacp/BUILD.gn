@@ -141,6 +141,7 @@ config("gaiacp_config") {
     "advapi32.lib",  # For LookupAccountSid()
     "credui.lib",  # For CredPackAuthenticationBufferW()
     "crypt32.lib",  # For CryptProtectData()
+    "gdiplus.lib",  # To convert profile pictures to bmp.
     "netapi32.lib",  # For NetUserXXX()
     "userenv.lib",  # For GetUserProfileDirectoryW()
     "winhttp.lib",  # For WinHttpXXX()
