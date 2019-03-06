@@ -2405,18 +2405,27 @@ def PostSubmitBuilders(site_config, boards_dict, ge_build_config):
 
   # Create a postsubmit builder for every important release builder.
   postsubmit_boards = set()
+  release_boards_importance = {}
   for child_name in site_config['master-release'].slave_configs:
     child_config = site_config[child_name]
+    for b in child_config.boards:
+      release_boards_importance[b] = child_config.important
     if child_config.important:
       postsubmit_boards.update(child_config.boards)
 
+  paladin_boards_importance = {}
   for child_name in site_config['master-paladin'].slave_configs:
     child_config = site_config[child_name]
+    for b in child_config.boards:
+      paladin_boards_importance[b] = child_config.important
     if child_config.important:
       postsubmit_boards.update(child_config.boards)
 
+  pre_cq_boards_importance = {}
   for child_name in constants.PRE_CQ_DEFAULT_CONFIGS:
     config = site_config[child_name]
+    for b in config.boards:
+      pre_cq_boards_importance[b] = config.important
     postsubmit_boards.update(config.boards)
 
   site_config.AddTemplate(
@@ -2470,6 +2479,12 @@ def PostSubmitBuilders(site_config, boards_dict, ge_build_config):
       )
 
     if board in postsubmit_boards:
+      # Mark unimportant for postsubmit iff at least one of release, paladin,
+      # or pre_cq had it marked unimportant.
+      important = (release_boards_importance.get(board, True)
+                   and paladin_boards_importance.get(board, True)
+                   and pre_cq_boards_importance.get(board, True))
+      config.update(important=important)
       master_config.AddSlave(config)
 
 
