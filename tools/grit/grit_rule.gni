@@ -467,6 +467,10 @@ template("grit") {
       ":$grit_custom_target",
     ]
 
+    deps = [
+      "//base",
+    ]
+
     if (defined(invoker.public_configs)) {
       public_configs += invoker.public_configs
     }
