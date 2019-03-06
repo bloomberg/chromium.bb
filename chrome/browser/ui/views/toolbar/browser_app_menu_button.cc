@@ -148,10 +148,6 @@ BrowserAppMenuButton::BrowserAppMenuButton(ToolbarView* toolbar_view)
 
   md_observer_.Add(ui::MaterialDesignController::GetInstance());
 
-  // Because we're using the internal padding to keep track of the changes we
-  // make to the leading margin to handle Fitts' Law, it's easier to just
-  // allocate the property once and modify the value.
-  SetProperty(views::kInternalPaddingKey, new gfx::Insets());
   UpdateBorder();
 }
 
@@ -319,13 +315,6 @@ void BrowserAppMenuButton::UpdateBorder() {
                            *GetProperty(views::kInternalPaddingKey);
   if (!border() || border()->GetInsets() != new_insets)
     SetBorder(views::CreateEmptyBorder(new_insets));
-}
-
-void BrowserAppMenuButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
-  // TODO(pbos): Consolidate with ToolbarButton::OnBoundsChanged.
-  SetToolbarButtonHighlightPath(this, *GetProperty(views::kInternalPaddingKey));
-
-  AppMenuButton::OnBoundsChanged(previous_bounds);
 }
 
 gfx::Rect BrowserAppMenuButton::GetAnchorBoundsInScreen() const {

@@ -30,6 +30,7 @@ class AppMenuButton : public views::MenuButton {
   ~AppMenuButton() override;
 
   // views::MenuButton:
+  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   SkColor GetInkDropBaseColor() const override;
 
   void AddObserver(AppMenuButtonObserver* observer);
