@@ -107,6 +107,13 @@ message StartVmRequest {
 
   // Enable GPU in the started Vm.
   bool enable_gpu = 8;
+
+  // Provide a software-based virtual Trusted Platform Module to the VM. The TPM
+  // is backed by libtpm2's TPM simulator and does not interact with any
+  // physical TPM on the host device. TPM state does not persist across VM
+  // launches. In order for the VM to see the virtual TPM, the guest kernel must
+  // contain a virtio TPM driver.
+  bool software_tpm = 9;
 }
 
 // Information that must be included with every StartPluginVm request.
