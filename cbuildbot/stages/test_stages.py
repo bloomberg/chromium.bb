@@ -324,7 +324,8 @@ class SkylabHWTestStage(HWTestStage):
         retry=self.suite_config.retry,
         max_retries=self.suite_config.max_retries,
         suite_args=self.suite_config.suite_args,
-        job_keyvals=self.GetJobKeyvals())
+        job_keyvals=self.GetJobKeyvals(),
+        quota_account=self.suite_config.quota_account)
 
     if cmd_result.to_raise:
       raise cmd_result.to_raise
