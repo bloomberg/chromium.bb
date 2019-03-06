@@ -772,10 +772,18 @@ bool LayoutFlexibleBox::CrossAxisLengthIsDefinite(const LayoutBox& child,
 void LayoutFlexibleBox::CacheChildMainSize(const LayoutBox& child) {
   DCHECK(!child.NeedsLayout());
   LayoutUnit main_size;
-  if (MainAxisIsInlineAxis(child))
+  if (MainAxisIsInlineAxis(child)) {
     main_size = child.MaxPreferredLogicalWidth();
-  else
-    main_size = child.LogicalHeight();
+  } else {
+    if (FlexBasisForChild(child).IsPercentOrCalc() &&
+        !MainAxisLengthIsDefinite(child, FlexBasisForChild(child))) {
+      main_size = child.IntrinsicContentLogicalHeight() +
+                  child.BorderAndPaddingLogicalHeight() +
+                  child.ScrollbarLogicalHeight();
+    } else {
+      main_size = child.LogicalHeight();
+    }
+  }
   intrinsic_size_along_main_axis_.Set(&child, main_size);
   relaid_out_children_.insert(&child);
 }
