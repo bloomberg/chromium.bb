@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.firstrun;
 
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.annotation.StringRes;
 import android.text.method.LinkMovementMethod;
@@ -59,12 +60,13 @@ public class LightweightFirstRunActivity extends FirstRunActivityBase {
         setContentView(LayoutInflater.from(LightweightFirstRunActivity.this)
                                .inflate(R.layout.lightweight_fre_tos, null));
 
+        final Resources resources = getResources();
         NoUnderlineClickableSpan clickableTermsSpan = new NoUnderlineClickableSpan(
-                (view) -> showInfoPage(R.string.chrome_terms_of_service_url));
+                resources, (view) -> showInfoPage(R.string.chrome_terms_of_service_url));
         NoUnderlineClickableSpan clickablePrivacySpan = new NoUnderlineClickableSpan(
-                (view) -> showInfoPage(R.string.chrome_privacy_notice_url));
+                resources, (view) -> showInfoPage(R.string.chrome_privacy_notice_url));
         NoUnderlineClickableSpan clickableFamilyLinkPrivacySpan = new NoUnderlineClickableSpan(
-                (view) -> showInfoPage(R.string.family_link_privacy_policy_url));
+                resources, (view) -> showInfoPage(R.string.family_link_privacy_policy_url));
         String associatedAppName =
                 IntentUtils.safeGetStringExtra(getIntent(), EXTRA_ASSOCIATED_APP_NAME);
         if (associatedAppName == null) {

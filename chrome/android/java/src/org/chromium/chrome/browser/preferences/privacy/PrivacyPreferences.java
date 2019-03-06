@@ -100,11 +100,12 @@ public class PrivacyPreferences extends PreferenceFragment
             preferenceScreen.addPreference(networkPredictionPref);
 
             Preference syncAndServicesLink = findPreference(PREF_SYNC_AND_SERVICES_LINK);
-            NoUnderlineClickableSpan linkSpan = new NoUnderlineClickableSpan(view -> {
-                PreferencesLauncher.launchSettingsPage(getActivity(),
-                        SyncAndServicesPreferences.class,
-                        SyncAndServicesPreferences.createArguments(false));
-            });
+            NoUnderlineClickableSpan linkSpan =
+                    new NoUnderlineClickableSpan(getResources(), view -> {
+                        PreferencesLauncher.launchSettingsPage(getActivity(),
+                                SyncAndServicesPreferences.class,
+                                SyncAndServicesPreferences.createArguments(false));
+                    });
             syncAndServicesLink.setSummary(
                     SpanApplier.applySpans(getString(R.string.privacy_sync_and_services_link),
                             new SpanApplier.SpanInfo("<link>", "</link>", linkSpan)));

@@ -8,6 +8,7 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -377,8 +378,20 @@ public class Tab
         mId = TabIdManager.getInstance().generateValidId(id);
         mParentId = parentId;
         mIncognito = incognito;
-        mThemedApplicationContext = new ContextThemeWrapper(
+
+        // Override the configuration for night mode to always stay in light mode until all UIs in
+        // Tab are inflated from activity context instead of application context. This is to avoid
+        // getting the wrong night mode state when application context inherits a system UI mode
+        // different from the UI mode we need.
+        // TODO(https://crbug.com/938641): Remove this once Tab UIs are all inflated from activity.
+        ContextThemeWrapper themeWrapper = new ContextThemeWrapper(
                 ContextUtils.getApplicationContext(), ChromeActivity.getThemeId());
+        Configuration config = new Configuration();
+        config.uiMode = Configuration.UI_MODE_NIGHT_NO
+                | (config.uiMode & ~Configuration.UI_MODE_NIGHT_MASK);
+        themeWrapper.applyOverrideConfiguration(config);
+        mThemedApplicationContext = themeWrapper;
+
         mWindowAndroid = window;
         mLaunchType = type;
         mLaunchTypeAtCreation = type;

@@ -1023,8 +1023,8 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
             message = mContext.getString(R.string.payments_card_and_address_settings_signed_out);
         }
 
-        NoUnderlineClickableSpan settingsSpan =
-                new NoUnderlineClickableSpan((widget) -> mClient.onCardAndAddressSettingsClicked());
+        NoUnderlineClickableSpan settingsSpan = new NoUnderlineClickableSpan(
+                mContext.getResources(), (widget) -> mClient.onCardAndAddressSettingsClicked());
         SpannableString spannableMessage = SpanApplier.applySpans(
                 message, new SpanInfo("BEGIN_LINK", "END_LINK", settingsSpan));
 

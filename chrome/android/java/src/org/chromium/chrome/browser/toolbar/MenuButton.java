@@ -245,7 +245,8 @@ public class MenuButton extends FrameLayout implements TintObserver {
                         ViewCompat.getPaddingEnd(mMenuImageButton),
                         mMenuImageButton.getPaddingBottom());
             }
-            mHighlightDrawable.setUseLightPulseColor(mUseLightDrawables);
+            mHighlightDrawable.setUseLightPulseColor(
+                    getContext().getResources(), mUseLightDrawables);
             setBackground(mHighlightDrawable);
             mHighlightDrawable.start();
         } else {

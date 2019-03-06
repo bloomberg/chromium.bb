@@ -85,7 +85,7 @@ public class ColorUtils {
     /**
      * Returns the icon tint resource to use based on the current parameters and whether the app is
      * in night mode.
-     * @param useLight Whether or not the icon tint should be light.
+     * @param useLight Whether or not the icon tint should be light when not in night mode.
      * @return The {@link ColorRes} for the icon tint.
      */
     public static @ColorRes int getIconTintRes(boolean useLight) {
@@ -96,7 +96,7 @@ public class ColorUtils {
      * Returns the icon tint to use based on the current parameters and whether the app is in night
      * mode.
      * @param context The {@link Context} used to retrieve colors.
-     * @param useLight Whether or not the icon tint should be light.
+     * @param useLight Whether or not the icon tint should be light when not in night mode.
      * @return The {@link ColorStateList} for the icon tint.
      */
     public static ColorStateList getIconTint(Context context, boolean useLight) {

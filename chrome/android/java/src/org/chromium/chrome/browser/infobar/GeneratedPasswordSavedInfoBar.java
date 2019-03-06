@@ -46,7 +46,8 @@ public class GeneratedPasswordSavedInfoBar extends ConfirmInfoBar {
         super.createContent(layout);
         InfoBarControlLayout detailsMessageLayout = layout.addControlLayout();
         SpannableString detailsMessageWithLink = new SpannableString(mDetailsMessage);
-        detailsMessageWithLink.setSpan(new NoUnderlineClickableSpan((view) -> onLinkClicked()),
+        detailsMessageWithLink.setSpan(
+                new NoUnderlineClickableSpan(layout.getResources(), (view) -> onLinkClicked()),
                 mInlineLinkRangeStart, mInlineLinkRangeEnd, Spanned.SPAN_INCLUSIVE_INCLUSIVE);
         detailsMessageLayout.addDescription(detailsMessageWithLink);
     }

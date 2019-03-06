@@ -36,7 +36,7 @@ class AssistantOnboardingCoordinator {
         String termsString = context.getApplicationContext().getString(
                 R.string.autofill_assistant_google_terms_description);
 
-        NoUnderlineClickableSpan termsSpan = new NoUnderlineClickableSpan(
+        NoUnderlineClickableSpan termsSpan = new NoUnderlineClickableSpan(context.getResources(),
                 (widget)
                         -> CustomTabActivity.showInfoPage(context.getApplicationContext(),
                                 context.getApplicationContext().getString(

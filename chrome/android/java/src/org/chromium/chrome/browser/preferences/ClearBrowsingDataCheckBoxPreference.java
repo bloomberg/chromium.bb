@@ -123,8 +123,8 @@ public class ClearBrowsingDataCheckBoxPreference extends ChromeBaseCheckBoxPrefe
         }
         // Linkify <link></link> span.
         final SpannableString summaryWithLink = SpanApplier.applySpans(summaryString,
-                new SpanApplier.SpanInfo(
-                        "<link>", "</link>", new NoUnderlineClickableSpan((widget) -> {
+                new SpanApplier.SpanInfo("<link>", "</link>",
+                        new NoUnderlineClickableSpan(getContext().getResources(), (widget) -> {
                             if (mLinkClickDelegate != null) mLinkClickDelegate.run();
                         })));
 

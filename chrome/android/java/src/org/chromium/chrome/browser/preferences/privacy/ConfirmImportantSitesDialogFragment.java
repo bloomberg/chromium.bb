@@ -65,7 +65,7 @@ public class ConfirmImportantSitesDialogFragment extends DialogFragment {
             mDomains = domains;
             mFaviconURLs = faviconURLs;
             mFaviconSize = resources.getDimensionPixelSize(R.dimen.default_favicon_size);
-            mIconGenerator = ViewUtils.createDefaultRoundedIconGenerator(false);
+            mIconGenerator = ViewUtils.createDefaultRoundedIconGenerator(getResources(), false);
         }
 
         @Override

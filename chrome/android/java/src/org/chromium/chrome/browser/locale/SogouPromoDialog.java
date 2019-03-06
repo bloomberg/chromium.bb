@@ -51,11 +51,7 @@ public class SogouPromoDialog extends PromoDialog {
     private final Callback<Boolean> mOnDismissedCallback;
 
     private final LocaleManager mLocaleManager;
-    private final ClickableSpan mSpan = new NoUnderlineClickableSpan((widget) -> {
-        mChoice = UserChoice.SETTINGS;
-        PreferencesLauncher.launchSettingsPage(getContext(), SearchEnginePreference.class);
-        dismiss();
-    });
+    private final ClickableSpan mSpan;
 
     @UserChoice
     private int mChoice = UserChoice.BACK_KEY;
@@ -67,6 +63,11 @@ public class SogouPromoDialog extends PromoDialog {
             @Nullable Callback<Boolean> onDismissed) {
         super(activity);
         mLocaleManager = localeManager;
+        mSpan = new NoUnderlineClickableSpan(activity.getResources(), (widget) -> {
+            mChoice = UserChoice.SETTINGS;
+            PreferencesLauncher.launchSettingsPage(getContext(), SearchEnginePreference.class);
+            dismiss();
+        });
         setOnDismissListener(this);
         setCanceledOnTouchOutside(false);
         mOnDismissedCallback = onDismissed;

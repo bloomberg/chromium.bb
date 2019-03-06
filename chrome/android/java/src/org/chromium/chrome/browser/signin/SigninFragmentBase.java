@@ -320,8 +320,9 @@ public abstract class SigninFragmentBase
     }
 
     private void updateSigninDetailsDescription(boolean addSettingsLink) {
-        final @Nullable Object settingsLinkSpan =
-                addSettingsLink ? new NoUnderlineClickableSpan(this::onSettingsLinkClicked) : null;
+        final @Nullable Object settingsLinkSpan = addSettingsLink
+                ? new NoUnderlineClickableSpan(getResources(), this::onSettingsLinkClicked)
+                : null;
         final SpanApplier.SpanInfo spanInfo =
                 new SpanApplier.SpanInfo(SETTINGS_LINK_OPEN, SETTINGS_LINK_CLOSE, settingsLinkSpan);
         mConsentTextTracker.setText(mView.getDetailsDescriptionView(),

@@ -311,7 +311,8 @@ public class BluetoothChooserDialog
     }
 
     private NoUnderlineClickableSpan createLinkSpan(@LinkType int linkType) {
-        return new NoUnderlineClickableSpan((view) -> onBluetoothLinkClick(view, linkType));
+        return new NoUnderlineClickableSpan(
+                mActivity.getResources(), (view) -> onBluetoothLinkClick(view, linkType));
     }
 
     private void onBluetoothLinkClick(View view, @LinkType int linkType) {

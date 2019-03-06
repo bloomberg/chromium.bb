@@ -503,7 +503,7 @@ public final class InfoBarLayout extends ViewGroup implements View.OnClickListen
     }
 
     private NoUnderlineClickableSpan createClickableSpan() {
-        return new NoUnderlineClickableSpan((view) -> mInfoBarView.onLinkClicked());
+        return new NoUnderlineClickableSpan(getResources(), (view) -> mInfoBarView.onLinkClicked());
     }
 
     /**
