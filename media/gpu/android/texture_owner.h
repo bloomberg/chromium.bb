@@ -45,12 +45,16 @@ class MEDIA_GPU_EXPORT TextureOwner
   // new TextureOwner attached to it. Returns null on failure.
   // |texture| should be either from CreateAbstractTexture() or a mock.  The
   // corresponding GL context must be current.
-  // SecureMode indicates whether the video textures created using this owner
-  // should be hardware protected.
-  enum class SecureMode { kSecure, kInsecure };
+  // Mode indicates which framework API to use and whether the video textures
+  // created using this owner should be hardware protected.
+  enum class Mode {
+    kAImageReaderSecure,
+    kAImageReaderInsecure,
+    kSurfaceTextureInsecure
+  };
   static scoped_refptr<TextureOwner> Create(
       std::unique_ptr<gpu::gles2::AbstractTexture> texture,
-      SecureMode secure_mode);
+      Mode mode);
 
   // Create a texture that's appropriate for a TextureOwner.
   static std::unique_ptr<gpu::gles2::AbstractTexture> CreateTexture(

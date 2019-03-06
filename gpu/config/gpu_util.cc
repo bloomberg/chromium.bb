@@ -51,9 +51,7 @@ GpuFeatureStatus GetAndroidSurfaceControlFeatureStatus(
   if (!gpu_preferences.enable_android_surface_control)
     return kGpuFeatureStatusDisabled;
 
-  if (!gl::SurfaceControl::IsSupported())
-    return kGpuFeatureStatusDisabled;
-
+  DCHECK(gl::SurfaceControl::IsSupported());
   return kGpuFeatureStatusEnabled;
 #endif
 }

@@ -35,4 +35,7 @@ specific_include_rules = {
     "+gpu/ipc/gl_in_process_context.h",
     "+gpu/ipc/test_gpu_thread_holder.h",
   ],
+  "features.cc" : [
+    "+gpu/config/gpu_finch_features.h",
+  ],
 }

@@ -4,6 +4,7 @@
 
 #include "media/gpu/android/video_frame_factory_impl.h"
 
+#include "base/android/android_image_reader_compat.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
@@ -18,6 +19,7 @@
 #include "gpu/ipc/service/command_buffer_stub.h"
 #include "gpu/ipc/service/gpu_channel.h"
 #include "media/base/bind_to_current_loop.h"
+#include "media/base/media_switches.h"
 #include "media/base/video_frame.h"
 #include "media/gpu/android/codec_image.h"
 #include "media/gpu/android/codec_image_group.h"
@@ -33,6 +35,30 @@ namespace {
 
 bool MakeContextCurrent(gpu::CommandBufferStub* stub) {
   return stub && stub->decoder_context()->MakeCurrent();
+}
+
+TextureOwner::Mode GetTextureOwnerMode(
+    VideoFrameFactory::OverlayMode overlay_mode) {
+  const bool a_image_reader_supported =
+      base::android::AndroidImageReader::GetInstance().IsSupported();
+
+  switch (overlay_mode) {
+    case VideoFrameFactory::OverlayMode::kDontRequestPromotionHints:
+    case VideoFrameFactory::OverlayMode::kRequestPromotionHints:
+      return a_image_reader_supported && base::FeatureList::IsEnabled(
+                                             media::kAImageReaderVideoOutput)
+                 ? TextureOwner::Mode::kAImageReaderInsecure
+                 : TextureOwner::Mode::kSurfaceTextureInsecure;
+    case VideoFrameFactory::OverlayMode::kSurfaceControlSecure:
+      DCHECK(a_image_reader_supported);
+      return TextureOwner::Mode::kAImageReaderSecure;
+    case VideoFrameFactory::OverlayMode::kSurfaceControlInsecure:
+      DCHECK(a_image_reader_supported);
+      return TextureOwner::Mode::kAImageReaderInsecure;
+  }
+
+  NOTREACHED();
+  return TextureOwner::Mode::kSurfaceTextureInsecure;
 }
 
 }  // namespace
@@ -143,12 +169,9 @@ scoped_refptr<TextureOwner> GpuVideoFrameFactory::Initialize(
 
   decoder_helper_ = GLES2DecoderHelper::Create(stub_->decoder_context());
 
-  auto secure_mode =
-      overlay_mode_ == VideoFrameFactory::OverlayMode::kSurfaceControlSecure
-          ? TextureOwner::SecureMode::kSecure
-          : TextureOwner::SecureMode::kInsecure;
   return TextureOwner::Create(
-      TextureOwner::CreateTexture(stub_->decoder_context()), secure_mode);
+      TextureOwner::CreateTexture(stub_->decoder_context()),
+      GetTextureOwnerMode(overlay_mode_));
 }
 
 void GpuVideoFrameFactory::CreateVideoFrame(
