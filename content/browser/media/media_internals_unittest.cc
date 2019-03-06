@@ -258,7 +258,15 @@ class MediaInternalsAudioLogTest
   const content::TestBrowserThreadBundle thread_bundle_;
 };
 
-TEST_P(MediaInternalsAudioLogTest, AudioLogCreateStartStopErrorClose) {
+#if defined(OS_LINUX) || defined(OS_FUCHSIA) || defined(OS_ANDROID)
+#define MAYBE_AudioLogCreateStartStopErrorClose \
+  DISABLED_AudioLogCreateStartStopErrorClose
+#else
+#define MAYBE_AudioLogCreateStartStopErrorClose \
+  AudioLogCreateStartStopErrorClose
+#endif
+
+TEST_P(MediaInternalsAudioLogTest, MAYBE_AudioLogCreateStartStopErrorClose) {
   audio_log_->OnCreated(test_params_, kTestDeviceID);
   base::RunLoop().RunUntilIdle();
 
