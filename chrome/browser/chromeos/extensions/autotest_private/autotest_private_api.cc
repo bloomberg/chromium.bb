@@ -1065,69 +1065,32 @@ void AutotestPrivateTakeScreenshotFunction::ScreenshotTaken(
 // AutotestPrivateGetPrinterListFunction
 ///////////////////////////////////////////////////////////////////////////////
 
-AutotestPrivateGetPrinterListFunction::AutotestPrivateGetPrinterListFunction()
-    : results_(std::make_unique<base::Value>(base::Value::Type::LIST)) {}
-
 AutotestPrivateGetPrinterListFunction::
-    ~AutotestPrivateGetPrinterListFunction() {
-  printers_manager_->RemoveObserver(this);
-}
+    ~AutotestPrivateGetPrinterListFunction() = default;
 
 ExtensionFunction::ResponseAction AutotestPrivateGetPrinterListFunction::Run() {
   DVLOG(1) << "AutotestPrivateGetPrinterListFunction";
 
+  auto values = std::make_unique<base::ListValue>();
   Profile* profile = Profile::FromBrowserContext(browser_context());
-  printers_manager_ = chromeos::CupsPrintersManager::Create(profile);
-  printers_manager_->AddObserver(this);
-
-  // Set up a timer to finish waiting after 10 seconds
-  timeout_timer_.Start(
-      FROM_HERE, base::TimeDelta::FromSeconds(10),
-      base::BindOnce(
-          &AutotestPrivateGetPrinterListFunction::RespondWithTimeoutError,
-          this));
-
-  return RespondLater();
-}
-
-void AutotestPrivateGetPrinterListFunction::RespondWithTimeoutError() {
-  if (did_respond())
-    return;
-  Respond(Error("Timeout occured before Enterprise printers were initialized"));
-}
-
-void AutotestPrivateGetPrinterListFunction::RespondWithSuccess() {
-  if (did_respond())
-    return;
-  Respond(OneArgument(std::move(results_)));
-}
-
-void AutotestPrivateGetPrinterListFunction::OnEnterprisePrintersInitialized() {
-  // We are ready to get the list of printers and finish.
+  std::unique_ptr<chromeos::CupsPrintersManager> printers_manager =
+      chromeos::CupsPrintersManager::Create(profile);
   std::vector<chromeos::CupsPrintersManager::PrinterClass> printer_type = {
       chromeos::CupsPrintersManager::PrinterClass::kConfigured,
       chromeos::CupsPrintersManager::PrinterClass::kEnterprise,
       chromeos::CupsPrintersManager::PrinterClass::kAutomatic};
-  base::Value::ListStorage& vresults = results_->GetList();
   for (const auto& type : printer_type) {
     std::vector<chromeos::Printer> printer_list =
-        printers_manager_->GetPrinters(type);
+        printers_manager->GetPrinters(type);
     for (const auto& printer : printer_list) {
-      vresults.push_back(base::Value(base::Value::Type::DICTIONARY));
-      base::Value& result = vresults.back();
-      result.SetKey("printerName", base::Value(printer.display_name()));
-      result.SetKey("printerId", base::Value(printer.id()));
-      result.SetKey("printerType", base::Value(GetPrinterType(type)));
+      auto result = std::make_unique<base::DictionaryValue>();
+      result->SetString("printerName", printer.display_name());
+      result->SetString("printerId", printer.id());
+      result->SetString("printerType", GetPrinterType(type));
+      values->Append(std::move(result));
     }
   }
-  // We have to respond in separate task, because it will cause a destruction of
-  // CupsPrintersManager
-  const bool posted = PostTask(
-      FROM_HERE,
-      base::BindOnce(&AutotestPrivateGetPrinterListFunction::RespondWithSuccess,
-                     this));
-  if (posted)
-    timeout_timer_.AbandonAndStop();
+  return RespondNow(OneArgument(std::move(values)));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

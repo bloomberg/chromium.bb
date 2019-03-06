@@ -52,8 +52,8 @@
 #include "chrome/browser/chromeos/login/users/supervised_user_manager_impl.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_network_configuration_updater.h"
-#include "chrome/browser/chromeos/printing/bulk_printers_calculator.h"
-#include "chrome/browser/chromeos/printing/bulk_printers_calculator_factory.h"
+#include "chrome/browser/chromeos/printing/external_printers.h"
+#include "chrome/browser/chromeos/printing/external_printers_factory.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/session_length_limiter.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -194,9 +194,9 @@ policy::MinimumVersionPolicyHandler* GetMinimumVersionPolicyHandler() {
       ->GetMinimumVersionPolicyHandler();
 }
 
-base::WeakPtr<BulkPrintersCalculator> GetBulkPrintersCalculator(
+base::WeakPtr<ExternalPrinters> GetExternalPrinters(
     const AccountId& account_id) {
-  return BulkPrintersCalculatorFactory::Get()->GetForAccountId(account_id);
+  return ExternalPrintersFactory::Get()->GetForAccountId(account_id);
 }
 
 // Starts bluetooth logging service for accounts ending with |kGoogleDotCom|
@@ -466,7 +466,7 @@ void ChromeUserManagerImpl::Shutdown() {
   wallpaper_policy_observer_.reset();
   // Remove the observer before shutting down the printer policy objects.
   printers_policy_observer_.reset();
-  BulkPrintersCalculatorFactory::Get()->ShutdownProfiles();
+  ExternalPrintersFactory::Get()->Shutdown();
   registrar_.RemoveAll();
 }
 
@@ -712,7 +712,7 @@ void ChromeUserManagerImpl::OnExternalDataSet(const std::string& policy,
   if (policy == policy::key::kUserAvatarImage)
     GetUserImageManager(account_id)->OnExternalDataSet(policy);
   else if (policy == policy::key::kNativePrintersBulkConfiguration)
-    GetBulkPrintersCalculator(account_id)->ClearData();
+    GetExternalPrinters(account_id)->ClearData();
   else if (policy != policy::key::kWallpaperImage)
     NOTREACHED();
 }
@@ -724,7 +724,7 @@ void ChromeUserManagerImpl::OnExternalDataCleared(const std::string& policy,
   if (policy == policy::key::kUserAvatarImage)
     GetUserImageManager(account_id)->OnExternalDataCleared(policy);
   else if (policy == policy::key::kNativePrintersBulkConfiguration)
-    GetBulkPrintersCalculator(account_id)->ClearData();
+    GetExternalPrinters(account_id)->ClearData();
   else if (policy == policy::key::kWallpaperImage)
     WallpaperControllerClient::Get()->RemovePolicyWallpaper(account_id);
   else
@@ -742,7 +742,7 @@ void ChromeUserManagerImpl::OnExternalDataFetched(
     GetUserImageManager(account_id)
         ->OnExternalDataFetched(policy, std::move(data));
   } else if (policy == policy::key::kNativePrintersBulkConfiguration) {
-    GetBulkPrintersCalculator(account_id)->SetData(std::move(data));
+    GetExternalPrinters(account_id)->SetData(std::move(data));
   } else if (policy == policy::key::kWallpaperImage) {
     WallpaperControllerClient::Get()->SetPolicyWallpaper(account_id,
                                                          std::move(data));
@@ -1163,7 +1163,7 @@ void ChromeUserManagerImpl::RemoveNonCryptohomeData(
   // |known_user::RemovePrefs|. See https://crbug.com/778077.
   WallpaperControllerClient::Get()->RemoveUserWallpaper(account_id);
   GetUserImageManager(account_id)->DeleteUserImage();
-  BulkPrintersCalculatorFactory::Get()->RemoveForUserId(account_id);
+  ExternalPrintersFactory::Get()->RemoveForUserId(account_id);
   // TODO(tbarzic): Forward data removal request to ash::HammerDeviceHandler,
   // instead of removing the prefs value here.
   if (GetLocalState()->FindPreference(ash::prefs::kDetachableBaseDevices)) {

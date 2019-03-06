@@ -111,9 +111,8 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
     // Prime the printer cache with the configured and enterprise printers.
     printers_[kConfigured] = synced_printers_manager_->GetConfiguredPrinters();
     RebuildConfiguredPrintersIndex();
+    printers_[kEnterprise] = synced_printers_manager_->GetEnterprisePrinters();
     synced_printers_manager_observer_.Add(synced_printers_manager_);
-    enterprise_printers_are_ready_ =
-        synced_printers_manager_->GetEnterprisePrinters(printers_[kEnterprise]);
 
     // Callbacks may ensue immediately when the observer proxies are set up, so
     // these instantiations must come after everything else is initialized.
@@ -198,9 +197,6 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
   void AddObserver(CupsPrintersManager::Observer* observer) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
     observer_list_.AddObserver(observer);
-    if (enterprise_printers_are_ready_) {
-      observer->OnEnterprisePrintersInitialized();
-    }
   }
 
   // Public API function.
@@ -262,16 +258,9 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
 
   // SyncedPrintersManager::Observer implementation
   void OnEnterprisePrintersChanged(
-      const std::vector<Printer>& printers,
-      bool enterprise_printers_are_ready) override {
+      const std::vector<Printer>& printers) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
     printers_[kEnterprise] = printers;
-    if (enterprise_printers_are_ready && !enterprise_printers_are_ready_) {
-      enterprise_printers_are_ready_ = true;
-      for (auto& observer : observer_list_) {
-        observer.OnEnterprisePrintersInitialized();
-      }
-    }
     NotifyObservers({kEnterprise});
   }
 
@@ -558,13 +547,6 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
 
   // Categorized printers.  This is indexed by PrinterClass.
   std::vector<std::vector<Printer>> printers_;
-
-  // Equals true if the list of enterprise printers and related policies
-  // is initialized and configured correctly.
-  bool enterprise_printers_are_ready_ = false;
-
-  // Printer ids that occur in one of our categories or printers.
-  std::unordered_set<std::string> known_printer_ids_;
 
   // This is a dual-purpose structure.  The keys in the map are printer ids.
   // If an entry exists in this map it means we have received a response from
