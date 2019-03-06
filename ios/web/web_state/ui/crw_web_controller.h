@@ -56,8 +56,7 @@ class WebStateImpl;
 // TODO(stuartmorgan): Move all of the navigation APIs out of this class.
 @interface CRWWebController : NSObject <CRWJSInjectionEvaluator,
                                         CRWSessionControllerDelegate,
-                                        CRWTouchTrackingDelegate,
-                                        UIGestureRecognizerDelegate>
+                                        CRWTouchTrackingDelegate>
 
 // Whether or not a UIWebView is allowed to exist in this CRWWebController.
 // Defaults to NO; this should be enabled before attempting to access the view.
