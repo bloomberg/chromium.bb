@@ -43,7 +43,6 @@ class DebugDaemonClient;
 class DiagnosticsdClient;
 class EasyUnlockClient;
 class GsmSMSClient;
-class HammerdClient;
 class ImageBurnerClient;
 class ImageLoaderClient;
 class LorgnetteManagerClient;
@@ -150,7 +149,6 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) DBusThreadManager {
   DiagnosticsdClient* GetDiagnosticsdClient();
   EasyUnlockClient* GetEasyUnlockClient();
   GsmSMSClient* GetGsmSMSClient();
-  HammerdClient* GetHammerdClient();
   ImageBurnerClient* GetImageBurnerClient();
   ImageLoaderClient* GetImageLoaderClient();
   LorgnetteManagerClient* GetLorgnetteManagerClient();
@@ -214,7 +212,6 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) DBusThreadManagerSetter {
   void SetCrosDisksClient(std::unique_ptr<CrosDisksClient> client);
   void SetCryptohomeClient(std::unique_ptr<CryptohomeClient> client);
   void SetDebugDaemonClient(std::unique_ptr<DebugDaemonClient> client);
-  void SetHammerdClient(std::unique_ptr<HammerdClient> client);
   void SetImageBurnerClient(std::unique_ptr<ImageBurnerClient> client);
   void SetImageLoaderClient(std::unique_ptr<ImageLoaderClient> client);
   void SetMediaAnalyticsClient(std::unique_ptr<MediaAnalyticsClient> client);

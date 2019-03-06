@@ -2,15 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/dbus/fake_hammerd_client.h"
+#include "chromeos/dbus/hammerd/fake_hammerd_client.h"
 
 namespace chromeos {
 
-FakeHammerdClient::FakeHammerdClient() = default;
+namespace {
+FakeHammerdClient* g_instance = nullptr;
+}
 
-FakeHammerdClient::~FakeHammerdClient() = default;
+FakeHammerdClient::FakeHammerdClient() {
+  CHECK(!g_instance);
+  g_instance = this;
+}
 
-void FakeHammerdClient::Init(dbus::Bus* bus) {}
+FakeHammerdClient::~FakeHammerdClient() {
+  CHECK_EQ(g_instance, this);
+  g_instance = nullptr;
+}
+
+// static
+FakeHammerdClient* FakeHammerdClient::Get() {
+  CHECK(g_instance);
+  return g_instance;
+}
 
 void FakeHammerdClient::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);

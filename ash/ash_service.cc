@@ -17,6 +17,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/hammerd/hammerd_client.h"
 #include "chromeos/dbus/power_policy_controller.h"
 #include "chromeos/dbus/system_clock/system_clock_client.h"
 #include "chromeos/network/network_connect.h"
@@ -80,15 +81,19 @@ AshService::~AshService() {
   Shell::DeleteInstance();
 
   statistics_provider_.reset();
-  // NOTE: PowerStatus is shutdown by Shell.
-  chromeos::CrasAudioHandler::Shutdown();
+
   chromeos::NetworkConnect::Shutdown();
   network_connect_delegate_.reset();
   chromeos::NetworkHandler::Shutdown();
   device::BluetoothAdapterFactory::Shutdown();
   bluez::BluezDBusManager::Shutdown();
   chromeos::PowerPolicyController::Shutdown();
+
+  chromeos::SystemClockClient::Shutdown();
   chromeos::PowerManagerClient::Shutdown();
+  chromeos::HammerdClient::Shutdown();
+  chromeos::CrasAudioHandler::Shutdown();
+
   chromeos::DBusThreadManager::Shutdown();
 
   // |gpu_host_| must be completely destroyed before Env as GpuHost depends on
@@ -154,9 +159,13 @@ void AshService::InitializeDBusClients() {
   // dbus::Thread, dbus::Bus and required clients directly.
   chromeos::DBusThreadManager::Initialize(chromeos::DBusThreadManager::kShared);
   dbus::Bus* bus = chromeos::DBusThreadManager::Get()->GetSystemBus();
+
+  // TODO(jamescook): Initialize real audio handler.
+  chromeos::CrasAudioHandler::InitializeForTesting();
+  chromeos::HammerdClient::Initialize(bus);
+  chromeos::PowerManagerClient::Initialize(bus);
   chromeos::SystemClockClient::Initialize(bus);
 
-  chromeos::PowerManagerClient::Initialize(bus);
   chromeos::PowerPolicyController::Initialize(
       chromeos::PowerManagerClient::Get());
 
@@ -168,9 +177,6 @@ void AshService::InitializeDBusClients() {
   chromeos::NetworkHandler::Initialize();
   network_connect_delegate_ = std::make_unique<NetworkConnectDelegateMus>();
   chromeos::NetworkConnect::Initialize(network_connect_delegate_.get());
-
-  // TODO(jamescook): Initialize real audio handler.
-  chromeos::CrasAudioHandler::InitializeForTesting();
 }
 
 void AshService::OnStart() {
