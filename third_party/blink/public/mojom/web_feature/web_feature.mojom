@@ -2251,6 +2251,10 @@ enum WebFeature {
   kCSSValueAppearanceProgressBarForOthersRendered = 2817,
   kCSSValueAppearancePushButton = 2818,
   kCSSValueAppearanceSquareButton = 2819,
+  kCSSValueAppearanceSearchCancel = 2820,
+  kCSSValueAppearanceTextarea = 2821,
+  kCSSValueAppearanceTextFieldForOthersRendered = 2822,
+  kCSSValueAppearanceTextFieldForTemporalRendered = 2823,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

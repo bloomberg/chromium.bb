@@ -21782,6 +21782,10 @@ Called by update_net_error_codes.py.-->
   <int value="2817" label="CSSValueAppearanceProgressBarForOthersRendered"/>
   <int value="2818" label="CSSValueAppearancePushButton"/>
   <int value="2819" label="CSSValueAppearanceSquareButton"/>
+  <int value="2820" label="CSSValueAppearanceSearchCancel"/>
+  <int value="2821" label="CSSValueAppearanceTextarea"/>
+  <int value="2822" label="CSSValueAppearanceTextFieldForOthersRendered"/>
+  <int value="2823" label="CSSValueAppearanceTextFieldForTemporalRendered"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">
