@@ -63,6 +63,10 @@ base::Value Details::GetDebugContext() const {
 
 bool Details::UpdateFromParameters(
     const std::map<std::string, std::string>& parameters) {
+  // Whenever details are updated from parameters we want to animate missing
+  // data.
+  proto_.mutable_details()->set_animate_placeholders(true);
+  proto_.mutable_details()->set_show_image_placeholder(true);
   if (MaybeUpdateFromDetailsParameters(parameters)) {
     return true;
   }
@@ -136,7 +140,6 @@ bool Details::MaybeUpdateFromDetailsParameters(
       continue;
     }
   }
-
   return details_updated;
 }
 

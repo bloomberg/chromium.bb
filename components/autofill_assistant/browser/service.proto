@@ -707,7 +707,11 @@ message DetailsChangesProto {
 message DetailsProto {
   optional string title = 1;
 
-  optional string image_url = 2;
+  oneof image {
+    string image_url = 2;
+    // When set to true shows placeholder in place of an image.
+    bool show_image_placeholder = 10;
+  }
 
   // Optional label to provide additional price information.
   optional string total_price_label = 9;
@@ -722,6 +726,15 @@ message DetailsProto {
   // these fields when the backend starts setting description_line_1 and 2.
   optional DateTimeProto datetime = 3;
   optional string description = 4;
+
+  // Asks the UI to show animated placeholders for missing fields.
+  // The placeholder will be shown on effectively missing:
+  // * title
+  // * image
+  // * description line (1 or 2)
+  // TODO(crbug.com/806868): Make the fields for displaying placeholders
+  // configurable by the server.
+  optional bool animate_placeholders = 11;
 
   // Deprecated, no longer supported.
   reserved 5;
