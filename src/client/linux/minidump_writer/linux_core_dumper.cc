@@ -43,6 +43,7 @@
 #include <asm/reg.h>
 #endif
 
+#include "common/linux/elf_gnu_compat.h"
 #include "common/linux/linux_libc_support.h"
 
 namespace google_breakpad {
