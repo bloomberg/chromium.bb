@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
+<script src="file:///gen/device/vr/public/mojom/vr_service.mojom.js"></script>
+<script src="../external/wpt/resources/chromium/webxr-test.js"></script>
+<script src="../external/wpt/webxr/resources/webxr_test_constants.js"></script>
+<script src="../xr/resources/xr-internal-device-mocking.js"></script>
+<script src="../xr/resources/xr-test-utils.js"></script>
+<canvas id="webgl-canvas"></canvas>
+
+<script>
+
+let testName = "XRInputSources properly communicate their handedness";
+
+let fakeDeviceInitParams = { supportsImmersive: true };
+
+let requestSessionOptions =  [{ mode: 'immersive-vr' }];
+
+let testFunction =
+  (session, t, fakeDeviceController) => new Promise((resolve) => {
+    // Session must have a baseLayer or frame requests will be ignored.
+    session.updateRenderState({ baseLayer: new XRWebGLLayer(session, gl) });
+
+    // Need to have a valid pose or input events don't process.
+    fakeDeviceController.setXRPresentationFrameData(VALID_POSE_MATRIX, [{
+        eye:"left",
+        projectionMatrix: VALID_PROJECTION_MATRIX,
+        viewMatrix: VALID_VIEW_MATRIX
+      }, {
+        eye:"right",
+        projectionMatrix: VALID_PROJECTION_MATRIX,
+        viewMatrix: VALID_VIEW_MATRIX
+      }]);
+
+    let input_source = new MockXRInputSource();
+    input_source.targetRayMode = "tracked-pointer";
+
+    fakeDeviceController.addInputSource(input_source);
+
+    function CheckNone(time, xrFrame) {
+      let source = session.getInputSources()[0];
+
+      t.step( () => {
+        assert_not_equals(source, null);
+        // Handedness should be "none" by default.
+        assert_equals(source.handedness, "none");
+      });
+
+      input_source.handedness = "right"
+
+      session.requestAnimationFrame(CheckRight);
+    }
+
+    function CheckRight(time, xrFrame) {
+      let source = session.getInputSources()[0];
+
+      t.step( () => {
+        assert_not_equals(source, null);
+        // Handedness was set to "right", make sure it propegates.
+        assert_equals(source.handedness, "right");
+      });
+
+      input_source.handedness = "left";
+
+      session.requestAnimationFrame(CheckLeft);
+    }
+
+    function CheckLeft(time, xrFrame) {
+      let source = session.getInputSources()[0];
+
+      t.step( () => {
+        assert_not_equals(source, null);
+        // Handedness was set to "left", make sure it propegates.
+        assert_equals(source.handedness, "left");
+      });
+
+      input_source.handedness = "none";
+
+      session.requestAnimationFrame(CheckNoneAgain);
+    }
+
+    function CheckNoneAgain(time, xrFrame) {
+      let source = session.getInputSources()[0];
+
+      t.step( () => {
+        assert_not_equals(source, null);
+        // Handedness was set to "none" again, make sure it propegates.
+        assert_equals(source.handedness, "none");
+      });
+
+      resolve();
+    }
+
+    // Handedness only updates during an XR frame.
+    session.requestAnimationFrame(CheckNone);
+  });
+
+xr_session_promise_test(
+  testFunction, fakeDeviceInitParams, requestSessionOptions, testName);
+
+</script>
