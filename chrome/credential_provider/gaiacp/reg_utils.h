@@ -51,9 +51,6 @@ HRESULT SetGlobalFlagForTesting(const base::string16& name,
                                 const base::string16& value);
 HRESULT SetGlobalFlagForTesting(const base::string16& name, DWORD value);
 
-// Gets the number of users assoicated with this credential provider.
-HRESULT GetUserCount(DWORD* count);
-
 // Gets DWORD property set for the given user.
 HRESULT GetUserProperty(const base::string16& sid,
                         const base::string16& name,

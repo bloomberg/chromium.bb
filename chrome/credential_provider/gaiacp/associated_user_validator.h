@@ -68,7 +68,8 @@ class AssociatedUserValidator {
 
   // Fills |associated_sids| with the sids of all valid associated users
   // found on this system.
-  void GetAssociatedSids(std::set<base::string16>* associated_sids);
+  std::set<base::string16> GetUpdatedAssociatedSids();
+  size_t GetAssociatedUsersCount() { return GetUpdatedAssociatedSids().size(); }
 
  protected:
   explicit AssociatedUserValidator(base::TimeDelta validation_timeout);
@@ -80,6 +81,8 @@ class AssociatedUserValidator {
   void StartTokenValidityQuery(const base::string16& sid,
                                const base::string16& token_handle,
                                base::TimeDelta timeout);
+  HRESULT UpdateAssociatedSids(
+      std::map<base::string16, base::string16>* sid_to_handle);
 
   // Returns the storage used for the instance pointer.
   static AssociatedUserValidator** GetInstanceStorage();

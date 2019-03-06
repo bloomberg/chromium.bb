@@ -543,6 +543,52 @@ TEST_F(GcpGaiaCredentialBaseTest, NewUserDisabledThroughUsageScenario) {
       GetStringResource(IDS_INVALID_UNLOCK_WORKSTATION_USER_BASE).c_str());
 }
 
+TEST_F(GcpGaiaCredentialBaseTest, NewUserDisabledThroughMdm) {
+  USES_CONVERSION;
+  FakeAssociatedUserValidator validator;
+  FakeInternetAvailabilityChecker internet_checker;
+
+  // Enforce single user mode for MDM.
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmUrl, L"https://mdm.com"));
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmSupportsMultiUser, 0));
+  GoogleMdmEnrolledStatusForTesting force_success(true);
+
+  // Create a fake user that is already associated so when the user tries to
+  // sign on and create a new user, it fails.
+  CComBSTR sid;
+  ASSERT_EQ(S_OK, fake_os_user_manager()->CreateTestOSUser(
+                      L"foo_registered", L"password", L"name", L"comment",
+                      L"gaia-id-registered", base::string16(), &sid));
+
+  FakeGaiaCredentialProvider provider;
+
+  // Populate the associated users list, token handle validity does not matter
+  // in this test.
+  validator.StartRefreshingTokenHandleValidity();
+
+  // Start logon.
+  CComPtr<IGaiaCredential> gaia_cred;
+  CComPtr<ICredentialProviderCredential> cred;
+  ASSERT_EQ(S_OK, CreateCredentialWithProvider(&provider, &gaia_cred, &cred));
+
+  CComPtr<ITestCredential> test;
+  ASSERT_EQ(S_OK, cred.QueryInterface(&test));
+
+  ASSERT_EQ(S_OK, run_helper()->StartLogonProcessAndWait(cred));
+
+  ASSERT_EQ(S_OK, gaia_cred->Terminate());
+
+  // Check that values were not propagated to the provider.
+  EXPECT_EQ(0u, provider.username().Length());
+  EXPECT_EQ(0u, provider.password().Length());
+  EXPECT_EQ(0u, provider.sid().Length());
+  EXPECT_EQ(FALSE, provider.credentials_changed_fired());
+
+  // Sign in should fail with an error stating that no new users can be created.
+  ASSERT_STREQ(test->GetErrorText(),
+               GetStringResource(IDS_ADD_USER_DISALLOWED_BASE).c_str());
+}
+
 TEST_F(GcpGaiaCredentialBaseTest, InvalidUserUnlockedAfterSignin) {
   // Enforce token handle verification with user locking when the token handle
   // is not valid.

@@ -122,39 +122,6 @@ bool WaitForQueryResult(const base::win::ScopedHandle& thread_handle,
   return token_handle_validity;
 }
 
-HRESULT CleanupStaleUsersAndGetTokenHandles(
-    std::map<base::string16, base::string16>* sid_to_handle) {
-  DCHECK(sid_to_handle);
-  std::map<base::string16, UserTokenHandleInfo> sids_to_handle_info;
-
-  HRESULT hr = GetUserTokenHandles(&sids_to_handle_info);
-  if (FAILED(hr)) {
-    LOGFN(ERROR) << "GetUserAssociationInfo hr=" << putHR(hr);
-    return hr;
-  }
-
-  OSUserManager* manager = OSUserManager::Get();
-  for (const auto& sid_to_association : sids_to_handle_info) {
-    const base::string16& sid = sid_to_association.first;
-    const UserTokenHandleInfo& info = sid_to_association.second;
-    if (info.gaia_id.empty()) {
-      RemoveAllUserProperties(sid);
-      continue;
-    }
-    HRESULT hr = manager->FindUserBySID(sid.c_str(), nullptr, 0, nullptr, 0);
-    if (hr == HRESULT_FROM_WIN32(ERROR_NONE_MAPPED)) {
-      RemoveAllUserProperties(sid);
-      continue;
-    } else if (FAILED(hr)) {
-      LOGFN(ERROR) << "manager->FindUserBySID hr=" << putHR(hr);
-    }
-
-    sid_to_handle->emplace(sid, info.token_handle);
-  }
-
-  return S_OK;
-}
-
 HRESULT ModifyUserAccess(const std::unique_ptr<ScopedLsaPolicy>& policy,
                          const base::string16& sid,
                          bool allow) {
@@ -242,13 +209,53 @@ bool AssociatedUserValidator::HasInternetConnection() const {
   return InternetAvailabilityChecker::Get()->HasInternetConnection();
 }
 
-void AssociatedUserValidator::GetAssociatedSids(
-    std::set<base::string16>* associated_sids) {
-  DCHECK(associated_sids);
+HRESULT AssociatedUserValidator::UpdateAssociatedSids(
+    std::map<base::string16, base::string16>* sid_to_handle) {
+  std::map<base::string16, UserTokenHandleInfo> sids_to_handle_info;
 
-  associated_sids->clear();
+  HRESULT hr = GetUserTokenHandles(&sids_to_handle_info);
+  if (FAILED(hr)) {
+    LOGFN(ERROR) << "GetUserTokenHandles hr=" << putHR(hr);
+    return hr;
+  }
+
+  std::set<base::string16> users_to_delete;
+  OSUserManager* manager = OSUserManager::Get();
+  for (const auto& sid_to_association : sids_to_handle_info) {
+    const base::string16& sid = sid_to_association.first;
+    const UserTokenHandleInfo& info = sid_to_association.second;
+    if (info.gaia_id.empty()) {
+      users_to_delete.insert(sid_to_association.first);
+      continue;
+    }
+    HRESULT hr = manager->FindUserBySID(sid.c_str(), nullptr, 0, nullptr, 0);
+    if (hr == HRESULT_FROM_WIN32(ERROR_NONE_MAPPED)) {
+      users_to_delete.insert(sid_to_association.first);
+      continue;
+    } else if (FAILED(hr)) {
+      LOGFN(ERROR) << "manager->FindUserBySID hr=" << putHR(hr);
+    }
+
+    if (sid_to_handle)
+      sid_to_handle->emplace(sid, info.token_handle);
+  }
+
+  for (const auto& to_delete : users_to_delete) {
+    user_to_token_handle_info_.erase(to_delete);
+    RemoveAllUserProperties(to_delete);
+  }
+
+  return S_OK;
+}
+
+std::set<base::string16> AssociatedUserValidator::GetUpdatedAssociatedSids() {
+  UpdateAssociatedSids(nullptr);
+
+  std::set<base::string16> associated_sids;
   for (const auto& it : user_to_token_handle_info_)
-    associated_sids->insert(it.first);
+    associated_sids.insert(it.first);
+
+  return associated_sids;
 }
 
 bool AssociatedUserValidator::IsUserAccessBlockingEnforced(
@@ -270,18 +277,16 @@ void AssociatedUserValidator::DenySigninForUsersWithInvalidTokenHandles(
   if (!IsUserAccessBlockingEnforced(cpus))
     return;
 
-  std::map<base::string16, UserTokenHandleInfo> sids_to_association;
-
-  HRESULT hr = GetUserTokenHandles(&sids_to_association);
+  HRESULT hr = UpdateAssociatedSids(nullptr);
   if (FAILED(hr)) {
-    LOGFN(ERROR) << "GetUserAssociationInfo hr=" << putHR(hr);
+    LOGFN(ERROR) << "GetUserTokenHandles hr=" << putHR(hr);
     return;
   }
 
   auto policy = ScopedLsaPolicy::Create(POLICY_ALL_ACCESS);
 
-  for (const auto& sid_to_association : sids_to_association) {
-    const base::string16& sid = sid_to_association.first;
+  for (const auto& user_info : user_to_token_handle_info_) {
+    const base::string16& sid = user_info.first;
     if (locked_user_sids_.find(sid) != locked_user_sids_.end())
       continue;
 
@@ -319,10 +324,10 @@ void AssociatedUserValidator::AllowSigninForUsersWithInvalidTokenHandles() {
 
 void AssociatedUserValidator::StartRefreshingTokenHandleValidity() {
   std::map<base::string16, base::string16> sid_to_handle;
-  HRESULT hr = CleanupStaleUsersAndGetTokenHandles(&sid_to_handle);
+  HRESULT hr = UpdateAssociatedSids(&sid_to_handle);
 
   if (FAILED(hr)) {
-    LOGFN(ERROR) << "CleanupStaleUsersAndGetTokenHandles hr=" << putHR(hr);
+    LOGFN(ERROR) << "UpdateAssociatedSids hr=" << putHR(hr);
     return;
   }
 

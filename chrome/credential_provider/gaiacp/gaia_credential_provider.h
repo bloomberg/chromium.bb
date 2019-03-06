@@ -43,12 +43,16 @@ class ATL_NO_VTABLE CGaiaCredentialProvider
   HRESULT FinalConstruct();
   void FinalRelease();
 
+  // Returns true if the given usage scenario is supported by GCPW. Currently
+  // only CPUS_LOGON and CPUS_UNLOCK_WORKSTATION are supported.
   static bool IsUsageScenarioSupported(CREDENTIAL_PROVIDER_USAGE_SCENARIO cpus);
 
- private:
-  // Checks whether an anonymous credential (CGaiaCredential) should be created.
-  bool ShouldCreateAnonymousCredential();
+  // Returns true if a new user can be added in the current usage scenario. This
+  // function also checks other settings controlled by registry settings to
+  // determine the result of this query.
+  static bool CanNewUsersBeCreated(CREDENTIAL_PROVIDER_USAGE_SCENARIO cpus);
 
+ private:
   // Checks whether anonymous reauth credentials should be created given the
   // usage scenario and also whether an "Other User" tile exists on the sign on
   // screen.

@@ -112,29 +112,6 @@ void CGaiaCredentialProvider::FinalRelease() {
   AssociatedUserValidator::Get()->AllowSigninForUsersWithInvalidTokenHandles();
 }
 
-bool CGaiaCredentialProvider::ShouldCreateAnonymousCredential() {
-  // When in an unlock usage, only the user that locked the computer will be
-  // allowed to sign in, so no new users can be added.
-  if (cpus_ == CPUS_UNLOCK_WORKSTATION)
-    return false;
-
-  // If MDM enrollment is required and multiple users is not supported, only
-  // create the Gaia credential if there does not yet exist an OS user created
-  // from a Google account.  Otherwise we always create the Gaia credential.
-  if (MdmEnrollmentEnabled()) {
-    DWORD multi_user_supported = 0;
-    HRESULT hr = GetGlobalFlag(kRegMdmSupportsMultiUser, &multi_user_supported);
-    if (FAILED(hr) || multi_user_supported == 0) {
-      DWORD user_count;
-      hr = GetUserCount(&user_count);
-      if (SUCCEEDED(hr) && user_count > 0)
-        return false;
-    }
-  }
-
-  return true;
-}
-
 bool CGaiaCredentialProvider::ShouldCreateAnonymousReauthCredential(
     bool other_user_credential_exists) {
   // If user lockout is not enforced, no need to create anonymous reauth
@@ -197,7 +174,7 @@ HRESULT CGaiaCredentialProvider::CreateAnonymousCredentialIfNeeded(
   if (showing_other_user) {
     hr = CComCreator<CComObject<COtherUserGaiaCredential>>::CreateInstance(
         nullptr, IID_IGaiaCredential, reinterpret_cast<void**>(&cred));
-  } else if (ShouldCreateAnonymousCredential()) {
+  } else if (CanNewUsersBeCreated(cpus_)) {
     hr = CComCreator<CComObject<CGaiaCredential>>::CreateInstance(
         nullptr, IID_IGaiaCredential, reinterpret_cast<void**>(&cred));
   } else {
@@ -308,8 +285,8 @@ HRESULT CGaiaCredentialProvider::CreateAnonymousReauthCredentialsIfNeeded(
   if (!ShouldCreateAnonymousReauthCredential(showing_other_user))
     return S_OK;
 
-  std::set<base::string16> associated_sids;
-  AssociatedUserValidator::Get()->GetAssociatedSids(&associated_sids);
+  std::set<base::string16> associated_sids =
+      AssociatedUserValidator::Get()->GetUpdatedAssociatedSids();
 
   OSUserManager* manager = OSUserManager::Get();
 
@@ -366,6 +343,29 @@ HRESULT CGaiaCredentialProvider::CreateAnonymousReauthCredentialsIfNeeded(
 bool CGaiaCredentialProvider::IsUsageScenarioSupported(
     CREDENTIAL_PROVIDER_USAGE_SCENARIO cpus) {
   return cpus == CPUS_LOGON || cpus == CPUS_UNLOCK_WORKSTATION;
+}
+
+// Static.
+bool CGaiaCredentialProvider::CanNewUsersBeCreated(
+    CREDENTIAL_PROVIDER_USAGE_SCENARIO cpus) {
+  // When in an unlock usage, only the user that locked the computer will be
+  // allowed to sign in, so no new users can be added.
+  if (cpus == CPUS_UNLOCK_WORKSTATION)
+    return false;
+
+  // If MDM enrollment is required and multiple users is not supported, only
+  // allow a new associated user to be created if there does not yet exist an
+  // OS user created from a Google account.
+  if (MdmEnrollmentEnabled()) {
+    DWORD multi_user_supported = 0;
+    HRESULT hr = GetGlobalFlag(kRegMdmSupportsMultiUser, &multi_user_supported);
+    if (FAILED(hr) || multi_user_supported == 0) {
+      if (AssociatedUserValidator::Get()->GetAssociatedUsersCount() > 0)
+        return false;
+    }
+  }
+
+  return true;
 }
 
 // IGaiaCredentialProvider ////////////////////////////////////////////////////

@@ -177,17 +177,6 @@ HRESULT SetGlobalFlagForTesting(const base::string16& name, DWORD value) {
   return SetMachineRegDWORD(kGcpRootKeyName, name, value);
 }
 
-HRESULT GetUserCount(DWORD* count) {
-  DCHECK(count);
-
-  wchar_t key_name[128];
-  swprintf_s(key_name, base::size(key_name), L"%s\\Users", kGcpRootKeyName);
-
-  base::win::RegistryKeyIterator iter(HKEY_LOCAL_MACHINE, key_name);
-  *count = iter.SubkeyCount();
-  return S_OK;
-}
-
 HRESULT GetUserProperty(const base::string16& sid,
                         const base::string16& name,
                         DWORD* value) {

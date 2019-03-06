@@ -115,6 +115,9 @@
       <message name="IDS_INVALID_UNLOCK_WORKSTATION_USER" desc="">
         Only the user that locked this workstation is currently allowed sign in to the system.
       </message>
+      <message name="IDS_ADD_USER_DISALLOWED" desc="">
+        Failed to create new registered Google user. This system only allows one registered Google user to be created.
+      </message>
     </messages>
   </release>
 </grit>
