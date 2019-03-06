@@ -36,6 +36,8 @@ void JSONTraceExporter::OnTraceData(std::vector<perfetto::TracePacket> packets,
                                     bool has_more) {
   DCHECK(!packets.empty() || !has_more);
 
+  // TODO(eseckler): |label_filter_| seems broken for anything but
+  // "traceEvents" (e.g. "systemTraceEvents" will output invalid JSON).
   if (label_filter_.empty() && !has_output_json_preamble_) {
     out_ += "{\"traceEvents\":[";
     has_output_json_preamble_ = true;
@@ -77,10 +79,10 @@ void JSONTraceExporter::OnTraceData(std::vector<perfetto::TracePacket> packets,
         base::JSONWriter::Write(*metadata_, &json_value);
         out_ += json_value;
       }
-    }
 
-    // Finish the json object we started in the preamble.
-    out_ += "}";
+      // Finish the json object we started in the preamble.
+      out_ += "}";
+    }
   }
 
   // Send any remaining data. There is no harm issuing the callback with an
