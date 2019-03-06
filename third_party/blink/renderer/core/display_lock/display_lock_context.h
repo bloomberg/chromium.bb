@@ -50,6 +50,15 @@ class CORE_EXPORT DisplayLockContext final
     kDefault = kYieldBetweenLifecyclePhases
   };
 
+  // The current state of the lock. Note that the order of these matters.
+  enum State {
+    kLocked,
+    kUpdating,
+    kCommitting,
+    kUnlocked,
+    kPendingAcquire,
+  };
+
   // See GetScopedPendingFrameRect() for description.
   class ScopedPendingFrameRect {
     STACK_ALLOCATED();
@@ -161,15 +170,6 @@ class CORE_EXPORT DisplayLockContext final
   friend class DisplayLockContextTest;
   friend class DisplayLockSuspendedHandle;
   friend class DisplayLockBudget;
-
-  // The current state of the lock. Note that the order of these matters.
-  enum State {
-    kLocked,
-    kUpdating,
-    kCommitting,
-    kUnlocked,
-    kPendingAcquire,
-  };
 
   class StateChangeHelper {
     DISALLOW_NEW();

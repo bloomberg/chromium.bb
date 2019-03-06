@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/core/display_lock/display_lock_context.h"
 
+#include <string>
+
 #include "base/memory/ptr_util.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_options.h"
 #include "third_party/blink/renderer/core/display_lock/strict_yielding_display_lock_budget.h"
@@ -36,6 +38,24 @@ const char* kContainmentNotSatisfied =
 const char* kElementIsDisconnected = "Element is disconnected.";
 const char* kLockCommitted = "Lock commit was requested.";
 }  // namespace rejection_names
+
+// Helper function to convert a display locking state to a string. Used in
+// traces.
+std::string StateToString(DisplayLockContext::State state) {
+  switch (state) {
+    case DisplayLockContext::kLocked:
+      return "kLocked";
+    case DisplayLockContext::kUpdating:
+      return "kUpdating";
+    case DisplayLockContext::kCommitting:
+      return "kCommitting";
+    case DisplayLockContext::kUnlocked:
+      return "kUnlocked";
+    case DisplayLockContext::kPendingAcquire:
+      return "kPendingAcquire";
+  }
+  return "";
+}
 
 // Helper function that returns an immediately rejected promise.
 ScriptPromise GetRejectedPromise(ScriptState* script_state,
@@ -120,6 +140,7 @@ bool DisplayLockContext::HasPendingActivity() const {
 
 ScriptPromise DisplayLockContext::acquire(ScriptState* script_state,
                                           DisplayLockOptions* options) {
+  TRACE_EVENT0("blink", "DisplayLockContext::acquire()");
   double timeout_ms = (options && options->hasTimeout())
                           ? options->timeout()
                           : kDefaultLockTimeoutMs;
@@ -167,6 +188,7 @@ ScriptPromise DisplayLockContext::acquire(ScriptState* script_state,
 }
 
 ScriptPromise DisplayLockContext::update(ScriptState* script_state) {
+  TRACE_EVENT0("blink", "DisplayLockContext::update()");
   // Reject if we're unlocked or disconnected.
   if (state_ == kUnlocked || state_ == kPendingAcquire ||
       !element_->isConnected()) {
@@ -187,6 +209,7 @@ ScriptPromise DisplayLockContext::update(ScriptState* script_state) {
 }
 
 ScriptPromise DisplayLockContext::commit(ScriptState* script_state) {
+  TRACE_EVENT0("blink", "DisplayLockContext::commit()");
   // Resolve if we're already unlocked.
   if (state_ == kUnlocked)
     return GetResolvedPromise(script_state);
@@ -214,6 +237,8 @@ ScriptPromise DisplayLockContext::commit(ScriptState* script_state) {
 }
 
 ScriptPromise DisplayLockContext::updateAndCommit(ScriptState* script_state) {
+  TRACE_EVENT0("blink", "DisplayLockContext::updateAndCommit()");
+
   // Resolve if we're already unlocked.
   if (state_ == kUnlocked)
     return GetResolvedPromise(script_state);
@@ -802,10 +827,20 @@ operator=(State new_state) {
   if (new_state == state_)
     return *this;
 
+  if (state_ == kUnlocked) {
+    TRACE_EVENT_ASYNC_BEGIN0("blink", "LockedDisplayLock", this);
+  } else if (new_state == kUnlocked) {
+    TRACE_EVENT_ASYNC_END0("blink", "LockedDisplayLock", this);
+  }
+
   bool was_activatable = context_->IsActivatable();
   bool was_locked = context_->IsLocked();
 
   state_ = new_state;
+  if (state_ != kUnlocked) {
+    TRACE_EVENT_ASYNC_STEP_INTO0("blink", "LockedDisplayLock", this,
+                                 StateToString(state_));
+  }
 
   if (!context_->document_)
     return *this;
