@@ -105,7 +105,12 @@ void BlobURLStoreImpl::Revoke(const GURL& url) {
     mojo::ReportBadMessage("Invalid scheme passed to BlobURLStore::Revoke");
     return;
   }
-  if (!delegate_->CanCommitURL(url)) {
+  // Only report errors when we don't have permission to commit and
+  // the process is valid. The process check is a temporary solution to
+  // handle cases where this method is run after the
+  // process associated with |delegate_| has been destroyed.
+  // See https://crbug.com/933089 for details.
+  if (!delegate_->CanCommitURL(url) && delegate_->IsProcessValid()) {
     mojo::ReportBadMessage(
         "Non committable URL passed to BlobURLStore::Revoke");
     return;

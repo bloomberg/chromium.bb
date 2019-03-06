@@ -38,6 +38,11 @@ class BindingDelegate : public storage::BlobRegistryImpl::Delegate {
         ChildProcessSecurityPolicyImpl::GetInstance();
     return security_policy->CanCommitURL(process_id_, url);
   }
+  bool IsProcessValid() override {
+    ChildProcessSecurityPolicyImpl* security_policy =
+        ChildProcessSecurityPolicyImpl::GetInstance();
+    return security_policy->HasSecurityState(process_id_);
+  }
 
  private:
   const int process_id_;

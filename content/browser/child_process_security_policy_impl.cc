@@ -1558,6 +1558,11 @@ void ChildProcessSecurityPolicyImpl::RemoveIsolatedOriginForTesting(
     isolated_origins_.erase(key);
 }
 
+bool ChildProcessSecurityPolicyImpl::HasSecurityState(int child_id) {
+  base::AutoLock lock(lock_);
+  return GetSecurityState(child_id) != nullptr;
+}
+
 ChildProcessSecurityPolicyImpl::SecurityState*
 ChildProcessSecurityPolicyImpl::GetSecurityState(int child_id) {
   auto itr = security_state_.find(child_id);
