@@ -326,7 +326,8 @@ bool LayoutSVGText::NodeAtPoint(HitTestResult& result,
                                             LocalToSVGParentTransform());
   if (!local_location)
     return false;
-  if (!SVGLayoutSupport::IntersectsClipPath(*this, *local_location))
+  if (!SVGLayoutSupport::IntersectsClipPath(*this, ObjectBoundingBox(),
+                                            *local_location))
     return false;
 
   if (LayoutBlock::NodeAtPoint(result, *local_location, accumulated_offset,

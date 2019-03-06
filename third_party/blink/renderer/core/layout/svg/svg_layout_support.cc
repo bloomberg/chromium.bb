@@ -418,11 +418,11 @@ bool SVGLayoutSupport::HasFilterResource(const LayoutObject& object) {
 }
 
 bool SVGLayoutSupport::IntersectsClipPath(const LayoutObject& object,
+                                          const FloatRect& reference_box,
                                           const HitTestLocation& location) {
   ClipPathOperation* clip_path_operation = object.StyleRef().ClipPath();
   if (!clip_path_operation)
     return true;
-  const FloatRect& reference_box = object.ObjectBoundingBox();
   if (clip_path_operation->GetType() == ClipPathOperation::SHAPE) {
     ShapeClipPathOperation& clip_path =
         ToShapeClipPathOperation(*clip_path_operation);

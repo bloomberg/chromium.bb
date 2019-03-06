@@ -369,7 +369,8 @@ bool LayoutSVGShape::NodeAtPoint(HitTestResult& result,
                                             LocalToSVGParentTransform());
   if (!local_location)
     return false;
-  if (!SVGLayoutSupport::IntersectsClipPath(*this, *local_location))
+  if (!SVGLayoutSupport::IntersectsClipPath(*this, fill_bounding_box_,
+                                            *local_location))
     return false;
 
   if (HitTestShape(result.GetHitTestRequest(), *local_location, hit_rules)) {
