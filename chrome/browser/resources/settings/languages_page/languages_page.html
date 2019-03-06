@@ -25,6 +25,7 @@
 <link rel="import" href="../settings_page/settings_animated_pages.html">
 <link rel="import" href="../settings_page/settings_subpage.html">
 <link rel="import" href="../settings_shared_css.html">
+<link rel="import" href="../settings_vars_css.html">
 
 <if expr="not is_macosx">
 <link rel="import" href="edit_dictionary_page.html">
@@ -45,6 +46,10 @@
         color: var(--google-green-refresh-700);
         font-weight: initial;
         margin-top: 4px;
+      }
+
+      :host-context([dark]) .explain-selected {
+        color: var(--google-green-refresh-300);
       }
 
       cr-action-menu.complex .dropdown-item {
@@ -94,13 +99,18 @@
       }
 
       .name-with-error-list div {
+        /* TODO(dbeam): does this need to differ from --settings-error-color? */
         color: var(--google-red-500);
         margin-top: 8px;
       }
 
+      :host-context([dark]) .name-with-error-list div {
+        color: var(--settings-error-color);
+      }
+
       iron-icon[icon='cr:error'] {
         @apply --cr-icon-height-width;
-        --iron-icon-fill-color: var(--google-red-700);
+        --iron-icon-fill-color: var(--settings-error-color);
         margin-inline-end: 8px;
       }
 
