@@ -261,9 +261,6 @@ TEST(SurfaceLayerImplTest, SurfaceLayerImplWithMatchingPrimaryAndFallback) {
   EXPECT_EQ(SK_ColorBLUE, surface_draw_quad1->default_background_color);
 }
 
-}  // namespace
-
-// This test is outside the anonymous namespace so that it can be a friend.
 TEST(SurfaceLayerImplTest, GetEnclosingRectInTargetSpace) {
   gfx::Size layer_size(902, 1000);
   gfx::Size viewport_size(902, 1000);
@@ -289,4 +286,5 @@ TEST(SurfaceLayerImplTest, GetEnclosingRectInTargetSpace) {
             surface_layer_impl->GetEnclosingRectInTargetSpace());
 }
 
+}  // namespace
 }  // namespace cc
