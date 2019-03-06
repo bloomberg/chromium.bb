@@ -10,6 +10,7 @@ jumbo_component("native_theme") {
   sources = [
     "caption_style.cc",
     "caption_style.h",
+    "caption_style_win.cc",
     "common_theme.cc",
     "common_theme.h",
     "native_theme.cc",
@@ -109,6 +110,10 @@ test("native_theme_unittests") {
 
   if (is_mac) {
     sources += [ "native_theme_mac_unittest.cc" ]
+  }
+
+  if (is_win) {
+    sources += [ "caption_style_win_unittest.cc" ]
   }
 
   deps = [

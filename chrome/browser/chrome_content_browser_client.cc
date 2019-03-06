@@ -3326,6 +3326,10 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
       ui::NativeTheme::GetInstanceForWeb()->GetSystemCaptionStyle();
   web_prefs->text_track_background_color = style.background_color;
   web_prefs->text_track_text_color = style.text_color;
+  web_prefs->text_track_text_size = style.text_size;
+  web_prefs->text_track_text_shadow = style.text_shadow;
+  web_prefs->text_track_font_family = style.font_family;
+  web_prefs->text_track_font_variant = style.font_variant;
 
   for (size_t i = 0; i < extra_parts_.size(); ++i)
     extra_parts_[i]->OverrideWebkitPrefs(rvh, web_prefs);
