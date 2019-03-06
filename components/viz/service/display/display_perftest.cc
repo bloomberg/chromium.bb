@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/test/null_task_runner.h"
 #include "base/time/time.h"
-#include "cc/base/lap_timer.h"
+#include "base/timer/lap_timer.h"
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/draw_quad.h"
@@ -290,7 +290,7 @@ class RemoveOverdrawQuadPerfTest : public testing::Test {
 
  private:
   CompositorFrame frame_;
-  cc::LapTimer timer_;
+  base::LapTimer timer_;
   StubBeginFrameSource begin_frame_source_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   ServerSharedBitmapManager bitmap_manager_;

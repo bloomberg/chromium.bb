@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/strings/utf_string_conversions.h"
-#include "cc/base/lap_timer.h"
+#include "base/timer/lap_timer.h"
 #include "chrome/browser/vr/elements/text.h"
 #include "chrome/browser/vr/skia_surface_provider_factory.h"
 #include "chrome/browser/vr/test/constants.h"
@@ -43,7 +43,7 @@ class TextPerfTest : public testing::Test {
  protected:
   void PrintResults(const std::string& name) {
     perf_test::PrintResult("TextPerfTest", ".render_time_avg", name,
-                           timer_.MsPerLap(), "ms", true);
+                           timer_.TimePerLap().InMillisecondsF(), "ms", true);
     perf_test::PrintResult("TextPerfTest", ".number_of_runs", name,
                            static_cast<size_t>(timer_.NumLaps()), "runs", true);
   }
@@ -57,7 +57,7 @@ class TextPerfTest : public testing::Test {
   }
 
   std::unique_ptr<Text> text_element_;
-  cc::LapTimer timer_;
+  base::LapTimer timer_;
 
  private:
   std::unique_ptr<SkiaSurfaceProvider> provider_;

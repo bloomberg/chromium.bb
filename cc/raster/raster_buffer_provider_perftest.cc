@@ -8,8 +8,8 @@
 #include "base/macros.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/time/time.h"
+#include "base/timer/lap_timer.h"
 #include "build/build_config.h"
-#include "cc/base/lap_timer.h"
 #include "cc/raster/bitmap_raster_buffer_provider.h"
 #include "cc/raster/gpu_raster_buffer_provider.h"
 #include "cc/raster/one_copy_raster_buffer_provider.h"
@@ -340,7 +340,7 @@ class RasterBufferProviderPerfTestBase {
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   std::unique_ptr<ResourcePool> resource_pool_;
   std::unique_ptr<SynchronousTaskGraphRunner> task_graph_runner_;
-  LapTimer timer_;
+  base::LapTimer timer_;
 };
 
 class RasterBufferProviderPerfTest
