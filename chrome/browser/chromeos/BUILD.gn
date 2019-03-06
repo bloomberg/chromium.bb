@@ -1692,6 +1692,8 @@ source_set("chromeos") {
     "power/auto_screen_brightness/fake_als_reader.h",
     "power/auto_screen_brightness/fake_brightness_monitor.cc",
     "power/auto_screen_brightness/fake_brightness_monitor.h",
+    "power/auto_screen_brightness/fake_model_config_loader.cc",
+    "power/auto_screen_brightness/fake_model_config_loader.h",
     "power/auto_screen_brightness/gaussian_trainer.cc",
     "power/auto_screen_brightness/gaussian_trainer.h",
     "power/auto_screen_brightness/metrics_reporter.cc",
