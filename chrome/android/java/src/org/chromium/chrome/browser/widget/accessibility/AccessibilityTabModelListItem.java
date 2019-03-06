@@ -35,6 +35,7 @@ import org.chromium.base.annotations.UsedByReflection;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabFavicon;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.util.ColorUtils;
 
@@ -333,7 +334,7 @@ public class AccessibilityTabModelListItem extends FrameLayout implements OnClic
 
     private void updateFavicon() {
         if (mTab != null) {
-            Bitmap bitmap = mTab.getFavicon();
+            Bitmap bitmap = TabFavicon.getBitmap(mTab);
             if (bitmap != null) {
                 // Don't tint favicon bitmaps.
                 ApiCompatibilityUtils.setImageTintList(mFaviconView, null);

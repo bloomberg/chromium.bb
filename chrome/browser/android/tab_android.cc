@@ -50,7 +50,6 @@
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/bookmarks/managed/managed_bookmark_service.h"
 #include "components/dom_distiller/core/url_utils.h"
-#include "components/favicon/content/content_favicon_driver.h"
 #include "components/navigation_interception/intercept_navigation_delegate.h"
 #include "components/navigation_interception/navigation_params.h"
 #include "components/sessions/content/content_live_tab.h"
@@ -71,17 +70,11 @@
 #include "jni/Tab_jni.h"
 #include "net/base/escape.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
-#include "skia/ext/image_operations.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "ui/android/view_android.h"
 #include "ui/android/window_android.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/window_open_disposition.h"
-#include "ui/display/display.h"
-#include "ui/display/screen.h"
-#include "ui/gfx/android/java_bitmap.h"
-#include "ui/gfx/favicon_size.h"
-#include "ui/gfx/image/image_skia.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertUTF8ToJavaString;
@@ -310,25 +303,6 @@ bool TabAndroid::HasPrerenderedUrl(GURL gurl) {
   return false;
 }
 
-void TabAndroid::OnFaviconUpdated(favicon::FaviconDriver* favicon_driver,
-                                  NotificationIconType notification_icon_type,
-                                  const GURL& icon_url,
-                                  bool icon_url_changed,
-                                  const gfx::Image& image) {
-  if (notification_icon_type != NON_TOUCH_LARGEST &&
-      notification_icon_type != TOUCH_LARGEST) {
-    return;
-  }
-
-  SkBitmap favicon = image.AsImageSkia().GetRepresentation(1.0f).GetBitmap();
-  if (favicon.empty())
-    return;
-
-  JNIEnv* env = base::android::AttachCurrentThread();
-  Java_Tab_onFaviconAvailable(env, weak_java_tab_.get(env),
-                              gfx::ConvertToJavaBitmap(&favicon));
-}
-
 bool TabAndroid::IsCurrentlyACustomTab() {
   JNIEnv* env = base::android::AttachCurrentThread();
   return Java_Tab_isCurrentlyACustomTab(env, weak_java_tab_.get(env));
@@ -365,12 +339,6 @@ void TabAndroid::InitWebContents(
           env, jweb_contents_delegate);
   web_contents_delegate_->LoadProgressChanged(web_contents(), 0);
   web_contents()->SetDelegate(web_contents_delegate_.get());
-
-  favicon::FaviconDriver* favicon_driver =
-      favicon::ContentFaviconDriver::FromWebContents(web_contents_.get());
-
-  if (favicon_driver)
-    favicon_driver->AddObserver(this);
 
   synced_tab_delegate_->SetWebContents(web_contents(), jparent_tab_id);
 
@@ -410,12 +378,6 @@ void TabAndroid::DestroyWebContents(JNIEnv* env,
     web_contents()->GetNativeView()->GetLayer()->RemoveFromParent();
 
   WebContentsObserver::Observe(nullptr);
-
-  favicon::FaviconDriver* favicon_driver =
-      favicon::ContentFaviconDriver::FromWebContents(web_contents_.get());
-
-  if (favicon_driver)
-    favicon_driver->RemoveObserver(this);
 
   web_contents()->SetDelegate(nullptr);
 
@@ -581,36 +543,6 @@ void TabAndroid::SetActiveNavigationEntryTitleForUrl(
       web_contents()->GetController().GetVisibleEntry();
   if (entry && url == entry->GetVirtualURL().spec())
     entry->SetTitle(title);
-}
-
-ScopedJavaLocalRef<jobject> TabAndroid::GetFavicon(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  ScopedJavaLocalRef<jobject> bitmap;
-  favicon::FaviconDriver* favicon_driver =
-      favicon::ContentFaviconDriver::FromWebContents(web_contents_.get());
-
-  if (!favicon_driver)
-    return bitmap;
-
-  // Always return the default favicon in Android.
-  SkBitmap favicon = favicon_driver->GetFavicon().AsBitmap();
-  if (!favicon.empty()) {
-    const float device_scale_factor =
-        display::Screen::GetScreen()->GetPrimaryDisplay().device_scale_factor();
-    int target_size_dip = device_scale_factor * gfx::kFaviconSize;
-    if (favicon.width() != target_size_dip ||
-        favicon.height() != target_size_dip) {
-      favicon =
-          skia::ImageOperations::Resize(favicon,
-                                        skia::ImageOperations::RESIZE_BEST,
-                                        target_size_dip,
-                                        target_size_dip);
-    }
-
-    bitmap = gfx::ConvertToJavaBitmap(&favicon);
-  }
-  return bitmap;
 }
 
 prerender::PrerenderManager* TabAndroid::GetPrerenderManager() const {

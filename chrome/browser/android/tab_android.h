@@ -17,7 +17,6 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/android/tab_state.h"
 #include "chrome/browser/sync/glue/synced_tab_delegate_android.h"
-#include "components/favicon/core/favicon_driver_observer.h"
 #include "components/infobars/core/infobar_manager.h"
 #include "components/omnibox/browser/location_bar_model.h"
 #include "components/sessions/core/session_id.h"
@@ -47,8 +46,7 @@ namespace prerender {
 class PrerenderManager;
 }
 
-class TabAndroid : public favicon::FaviconDriverObserver,
-                   public content::WebContentsObserver {
+class TabAndroid : public content::WebContentsObserver {
  public:
   // A Java counterpart will be generated for this enum.
   // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser
@@ -114,13 +112,6 @@ class TabAndroid : public favicon::FaviconDriverObserver,
   void HandlePopupNavigation(NavigateParams* params);
 
   bool HasPrerenderedUrl(GURL gurl);
-
-  // Overridden from favicon::FaviconDriverObserver:
-  void OnFaviconUpdated(favicon::FaviconDriver* favicon_driver,
-                        NotificationIconType notification_icon_type,
-                        const GURL& icon_url,
-                        bool icon_url_changed,
-                        const gfx::Image& image) override;
 
   // Returns true if this tab is currently presented in the context of custom
   // tabs. Tabs can be moved between different activities so the returned value
