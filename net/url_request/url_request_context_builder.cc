@@ -196,32 +196,7 @@ URLRequestContextBuilder::HttpCacheParams::HttpCacheParams()
       max_size(0) {}
 URLRequestContextBuilder::HttpCacheParams::~HttpCacheParams() = default;
 
-URLRequestContextBuilder::URLRequestContextBuilder()
-    : enable_brotli_(false),
-      network_quality_estimator_(nullptr),
-      data_enabled_(false),
-#if !BUILDFLAG(DISABLE_FILE_SUPPORT)
-      file_enabled_(false),
-#endif
-#if !BUILDFLAG(DISABLE_FTP_SUPPORT)
-      ftp_enabled_(false),
-#endif
-      http_cache_enabled_(true),
-      throttling_enabled_(false),
-      cookie_store_set_by_client_(false),
-      net_log_(nullptr),
-      shared_host_resolver_(nullptr),
-      pac_quick_check_enabled_(true),
-      pac_sanitize_url_policy_(ProxyResolutionService::SanitizeUrlPolicy::SAFE),
-      shared_proxy_delegate_(nullptr),
-      shared_http_auth_handler_factory_(nullptr),
-#if BUILDFLAG(ENABLE_REPORTING)
-      shared_cert_verifier_(nullptr),
-      network_error_logging_enabled_(false) {
-#else   // !BUILDFLAG(ENABLE_REPORTING)
-      shared_cert_verifier_(nullptr){
-#endif  // !BUILDFLAG(ENABLE_REPORTING)
-}
+URLRequestContextBuilder::URLRequestContextBuilder() = default;
 
 URLRequestContextBuilder::~URLRequestContextBuilder() = default;
 
@@ -536,8 +511,10 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
         std::move(proxy_config_service_), context.get(),
         context->host_resolver(), context->network_delegate(),
         context->net_log());
-    proxy_resolution_service_->set_quick_check_enabled(pac_quick_check_enabled_);
-    proxy_resolution_service_->set_sanitize_url_policy(pac_sanitize_url_policy_);
+    proxy_resolution_service_->set_quick_check_enabled(
+        pac_quick_check_enabled_);
+    proxy_resolution_service_->set_sanitize_url_policy(
+        pac_sanitize_url_policy_);
   }
   ProxyResolutionService* proxy_resolution_service =
       proxy_resolution_service_.get();
