@@ -88,7 +88,6 @@ import org.chromium.content_public.browser.WebContentsAccessibility;
 import org.chromium.content_public.common.BrowserControlsState;
 import org.chromium.content_public.common.Referrer;
 import org.chromium.content_public.common.ResourceRequestBody;
-import org.chromium.ui.base.LocalizationUtils;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.mojom.WindowOpenDisposition;
@@ -264,15 +263,9 @@ public class Tab
     private long mTimestampMillis = INVALID_TIMESTAMP;
 
     /**
-     * Title of the ContentViews webpage.Always update mTitle through updateTitle() so that it also
-     * updates mIsTitleDirectionRtl correctly.
+     * Title of the ContentViews webpage.
      */
     private String mTitle;
-
-    /**
-     * Indicates if mTitle should be displayed from right to left.
-     */
-    private boolean mIsTitleDirectionRtl;
 
     /**
      * The mInterceptNavigationDelegate will be consulted for top-level frame navigations. This
@@ -441,9 +434,6 @@ public class Tab
 
         TabThemeColorHelper.get(this).updateFromTabState(state);
         mTitle = state.getDisplayTitleFromState();
-        mIsTitleDirectionRtl = mTitle != null
-                && LocalizationUtils.getFirstStrongCharacterDirection(mTitle)
-                        == LocalizationUtils.RIGHT_TO_LEFT;
         mLaunchTypeAtCreation = state.tabLaunchTypeAtCreation;
         mRootId = state.rootId == Tab.INVALID_TAB_ID ? mId : state.rootId;
     }
@@ -1610,8 +1600,6 @@ public class Tab
 
         mIsTabStateDirty = true;
         mTitle = title;
-        mIsTitleDirectionRtl = LocalizationUtils.getFirstStrongCharacterDirection(title)
-                == LocalizationUtils.RIGHT_TO_LEFT;
         notifyPageTitleChanged();
     }
 
@@ -1635,13 +1623,6 @@ public class Tab
         while (observers.hasNext()) {
             observers.next().onFaviconUpdated(this, null);
         }
-    }
-
-    /**
-     * @return True if the tab title should be displayed from right to left.
-     */
-    public boolean isTitleDirectionRtl() {
-        return mIsTitleDirectionRtl;
     }
 
     /**
