@@ -181,6 +181,12 @@ webrtc::EncodedImageCallback::Result WebrtcDummyVideoEncoder::SendEncodedFrame(
     vp9_info->num_spatial_layers = 1;
     vp9_info->gof_idx = webrtc::kNoGofIdx;
     vp9_info->temporal_idx = webrtc::kNoTemporalIdx;
+    vp9_info->flexible_mode = false;
+    vp9_info->temporal_up_switch = true;
+    vp9_info->inter_layer_predicted = false;
+    vp9_info->first_frame_in_picture = true;
+    vp9_info->end_of_picture = true;
+    vp9_info->spatial_layer_resolution_present = false;
   } else if (frame.codec == webrtc::kVideoCodecH264) {
 #if defined(USE_H264_ENCODER)
     webrtc::CodecSpecificInfoH264* h264_info =
