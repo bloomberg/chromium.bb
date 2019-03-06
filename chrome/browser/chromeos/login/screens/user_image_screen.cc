@@ -353,7 +353,6 @@ void UserImageScreen::ExitScreen() {
   sync_timer_.reset();
   if (UserImageSyncObserver* sync_observer = GetSyncObserver())
     sync_observer->RemoveObserver(this);
-  Finish(ScreenExitCode::USER_IMAGE_SELECTED);
 }
 
 void UserImageScreen::ReportSyncResult(SyncResult timed_out) const {

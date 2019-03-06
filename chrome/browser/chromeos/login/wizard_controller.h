@@ -25,6 +25,7 @@
 #include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
 #include "chrome/browser/chromeos/login/screens/eula_screen.h"
 #include "chrome/browser/chromeos/login/screens/hid_detection_screen.h"
+#include "chrome/browser/chromeos/login/screens/kiosk_autolaunch_screen.h"
 #include "chrome/browser/chromeos/login/screens/network_screen.h"
 #include "chrome/browser/chromeos/login/screens/reset_screen.h"
 #include "chrome/browser/chromeos/login/screens/update_screen.h"
@@ -51,8 +52,7 @@ struct TimeZoneResponseData;
 // Class that manages control flow between wizard screens. Wizard controller
 // interacts with screen controllers to move the user between screens.
 class WizardController : public BaseScreenDelegate,
-                         public WelcomeScreen::Delegate,
-                         public HIDDetectionScreen::Delegate {
+                         public WelcomeScreen::Delegate {
  public:
   WizardController();
   ~WizardController() override;
@@ -118,10 +118,6 @@ class WizardController : public BaseScreenDelegate,
   // Skip update, go straight to enrollment after EULA is accepted.
   void SkipUpdateEnrollAfterEula();
 
-  // TODO(antrim) : temporary hack. Should be removed once screen system is
-  // reworked at hackaton.
-  void EnableUserImageScreenReturnToPreviousHack();
-
   // Returns current DemoSetupController if demo setup flow is in progress or
   // nullptr otherwise.
   DemoSetupController* demo_setup_controller() const {
@@ -158,7 +154,6 @@ class WizardController : public BaseScreenDelegate,
   // Show specific screen.
   void ShowWelcomeScreen();
   void ShowNetworkScreen();
-  void ShowUserImageScreen();
   void ShowEulaScreen();
   void ShowEnrollmentScreen();
   void ShowDemoModeSetupScreen();
@@ -207,8 +202,6 @@ class WizardController : public BaseScreenDelegate,
   void OnEnrollmentDone();
   void OnHIDDetectionCompleted();
   void OnWelcomeContinued();
-  void OnConnectionFailed();
-  void OnUserImageSelected();
   void OnDeviceModificationCanceled();
   void OnKioskAutolaunchCanceled();
   void OnKioskAutolaunchConfirmed();
@@ -229,7 +222,6 @@ class WizardController : public BaseScreenDelegate,
   void OnDemoSetupCanceled();
   void OnDemoPreferencesContinued();
   void OnDemoPreferencesCanceled();
-  void OnWaitForContainerReadyFinished();
   void OnSupervisionTransitionFinished();
   void OnAssistantOptInFlowFinished();
   void OnMultiDeviceSetupFinished();
@@ -267,8 +259,7 @@ class WizardController : public BaseScreenDelegate,
   // Override from WelcomeScreen::Delegate:
   void OnEnableDebuggingScreenRequested() override;
 
-  // Override from HIDDetectionScreen::Delegate
-  void OnHIDScreenNecessityCheck(bool screen_needed) override;
+  void OnHIDScreenNecessityCheck(bool screen_needed);
 
   // Notification of a change in the state of an accessibility setting.
   void OnAccessibilityStatusChanged(

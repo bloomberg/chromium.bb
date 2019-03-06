@@ -48,12 +48,6 @@ class HIDDetectionScreen : public BaseScreen,
   using InputDeviceInfoPtr = device::mojom::InputDeviceInfoPtr;
   using DeviceMap = std::map<std::string, InputDeviceInfoPtr>;
 
-  class Delegate {
-   public:
-    virtual ~Delegate() {}
-    virtual void OnHIDScreenNecessityCheck(bool screen_needed) = 0;
-  };
-
   HIDDetectionScreen(BaseScreenDelegate* base_screen_delegate,
                      HIDDetectionView* view);
   ~HIDDetectionScreen() override;

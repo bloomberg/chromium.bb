@@ -30,7 +30,6 @@ class EncryptionMigrationScreen
   void Hide() override;
 
   // EncryptionMigrationScreenView::Delegate implementation:
-  void OnExit() override;
   void OnViewDestroyed(EncryptionMigrationScreenView* view) override;
 
   // Sets the UserContext for a user whose cryptohome should be migrated.

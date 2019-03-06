@@ -37,10 +37,6 @@ void EncryptionMigrationScreen::Hide() {
     view_->Hide();
 }
 
-void EncryptionMigrationScreen::OnExit() {
-  Finish(ScreenExitCode::ENCRYPTION_MIGRATION_FINISHED);
-}
-
 void EncryptionMigrationScreen::OnViewDestroyed(
     EncryptionMigrationScreenView* view) {
   if (view_ == view)
