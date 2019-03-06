@@ -284,6 +284,9 @@
   "RemoteAccessHostAllowUiAccessForRemoteAssistance": {
   },
 
+  "RemoteAccessHostAllowFileTransfer": {
+  },
+
   "PrintingEnabled": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "PrintingEnabled": false },

@@ -321,6 +321,9 @@ class PolicyWatcherTest : public testing::Test {
     dict.SetBoolean(key::kRemoteAccessHostAllowGnubbyAuth, true);
     dict.SetBoolean(key::kRemoteAccessHostAllowUiAccessForRemoteAssistance,
                     false);
+#if !defined(OS_CHROMEOS)
+    dict.SetBoolean(key::kRemoteAccessHostAllowFileTransfer, true);
+#endif
 
     ASSERT_THAT(&dict, IsPolicies(&GetDefaultValues()))
         << "Sanity check that defaults expected by the test code "

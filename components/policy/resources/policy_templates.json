@@ -349,6 +349,7 @@
         'RemoteAccessHostTokenValidationCertificateIssuer',
         'RemoteAccessHostDebugOverridePolicies',
         'RemoteAccessHostAllowUiAccessForRemoteAssistance',
+        'RemoteAccessHostAllowFileTransfer',
       ],
     },
     {
@@ -1825,6 +1826,23 @@
       'desc': '''If this setting is enabled, the remote assistance host will be run in a process with <ph name="UIACCESS_PERMISSION_NAME">uiAccess</ph> permissions.  This will allow remote users to interact with elevated windows on the local user's desktop.
 
           If this setting is disabled or not configured, the remote assistance host will run in the user's context and remote users cannot interact with elevated windows on the desktop.''',
+    },
+    {
+      'name': 'RemoteAccessHostAllowFileTransfer',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.*:74-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'example_value': False,
+      'id': 534,
+      'caption': '''Allow remote access users to transfer files to/from the host''',
+      'tags': [],
+      'desc': '''Controls the ability of a user connected to a remote access host to transfer files between the client and the host. This does not apply to remote assistance connections, which do not support file transfer.
+
+          If this setting is disabled, file transfer will not be allowed. If this setting is enabled or not set, file transfer will be allowed.''',
     },
     {
       'name': 'PrintingEnabled',
@@ -15122,5 +15140,5 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   },
   'placeholders': [],
   'deleted_policy_ids': [412],
-  'highest_id_currently_used':  533
+  'highest_id_currently_used':  534
 }

@@ -183,6 +183,9 @@ std::unique_ptr<base::DictionaryValue> PolicyWatcher::GetDefaultPolicies() {
   result->SetString(key::kRemoteAccessHostUdpPortRange, "");
   result->SetBoolean(key::kRemoteAccessHostAllowUiAccessForRemoteAssistance,
                      false);
+#if !defined(OS_CHROMEOS)
+  result->SetBoolean(key::kRemoteAccessHostAllowFileTransfer, true);
+#endif
   return result;
 }
 
