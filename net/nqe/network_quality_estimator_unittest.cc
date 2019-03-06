@@ -2791,8 +2791,6 @@ TEST_F(NetworkQualityEstimatorTest, MaybeComputeECTAfterNSamples) {
 
 // Tests that the hanging request is correctly detected.
 TEST_F(NetworkQualityEstimatorTest, HangingRequestUsingHttpOnly) {
-  base::HistogramTester histogram_tester;
-
   std::map<std::string, std::string> variation_params;
   variation_params["add_default_platform_observations"] = "false";
   variation_params["hanging_request_http_rtt_upper_bound_http_rtt_multiplier"] =
@@ -2814,34 +2812,19 @@ TEST_F(NetworkQualityEstimatorTest, HangingRequestUsingHttpOnly) {
 
   const struct {
     base::TimeDelta observed_http_rtt;
-    std::string histogram_name;
   } tests[] = {
-      {base::TimeDelta::FromMilliseconds(10),
-       "NQE.RTT.NotAHangingRequest.HttpRTT"},
-      {base::TimeDelta::FromMilliseconds(100),
-       "NQE.RTT.NotAHangingRequest.MinHttpBound"},
-      {base::TimeDelta::FromMilliseconds(hanging_request_threshold - 1),
-       "NQE.RTT.NotAHangingRequest.MinHttpBound"},
-      {base::TimeDelta::FromMilliseconds(hanging_request_threshold + 1),
-       "NQE.RTT.HangingRequest"},
-      {base::TimeDelta::FromMilliseconds(1000), "NQE.RTT.HangingRequest"},
+      {base::TimeDelta::FromMilliseconds(10)},
+      {base::TimeDelta::FromMilliseconds(100)},
+      {base::TimeDelta::FromMilliseconds(hanging_request_threshold - 1)},
+      {base::TimeDelta::FromMilliseconds(hanging_request_threshold + 1)},
+      {base::TimeDelta::FromMilliseconds(1000)},
   };
 
   for (const auto& test : tests) {
     EXPECT_EQ(
         test.observed_http_rtt.InMilliseconds() >= hanging_request_threshold,
         estimator.IsHangingRequest(test.observed_http_rtt));
-    histogram_tester.ExpectBucketCount(
-        test.histogram_name, test.observed_http_rtt.InMilliseconds(), 1);
   }
-
-  // Verify total sample count in all histograms.
-  histogram_tester.ExpectTotalCount("NQE.RTT.NotAHangingRequest.TransportRTT",
-                                    0);
-  histogram_tester.ExpectTotalCount("NQE.RTT.NotAHangingRequest.HttpRTT", 1);
-  histogram_tester.ExpectTotalCount("NQE.RTT.NotAHangingRequest.MinHttpBound",
-                                    2);
-  histogram_tester.ExpectTotalCount("NQE.RTT.HangingRequest", 2);
 }
 
 // Tests that the hanging request is correctly detected using end-to-end RTT.
@@ -2869,39 +2852,34 @@ TEST_F(NetworkQualityEstimatorTest, HangingRequestEndToEndUsingHttpOnly) {
     base::TimeDelta observed_http_rtt;
     bool is_end_to_end_rtt_sample_count_enough;
     bool expect_hanging_request;
-    std::string histogram_name;
   } tests[] = {
-      {base::TimeDelta::FromMilliseconds(10), true, false,
-       "NQE.RTT.NotAHangingRequest.EndToEndRTT"},
-      {base::TimeDelta::FromMilliseconds(10), false, false,
-       "NQE.RTT.NotAHangingRequest.HttpRTT"},
-      {base::TimeDelta::FromMilliseconds(100), true, false,
-       "NQE.RTT.NotAHangingRequest.EndToEndRTT"},
+      {base::TimeDelta::FromMilliseconds(10), true, false},
+      {base::TimeDelta::FromMilliseconds(10), false, false},
+      {base::TimeDelta::FromMilliseconds(100), true, false},
       // |observed_http_rtt| is not large enough. Request is expected to be
       // classified as not hanging.
       {base::TimeDelta::FromMilliseconds(
            (end_to_end_rtt_milliseconds *
             hanging_request_http_rtt_upper_bound_transport_rtt_multiplier) -
            1),
-       true, false, "NQE.RTT.NotAHangingRequest.EndToEndRTT"},
+       true, false},
       // |observed_http_rtt| is large. Request is expected to be classified as
       // hanging.
       {base::TimeDelta::FromMilliseconds(
            (end_to_end_rtt_milliseconds *
             hanging_request_http_rtt_upper_bound_transport_rtt_multiplier) +
            1),
-       true, true, "NQE.RTT.HangingRequest"},
+       true, true},
       // Not enough end-to-end RTT samples. Request is expected to be classified
       // as hanging.
       {base::TimeDelta::FromMilliseconds(
            end_to_end_rtt_milliseconds *
                hanging_request_http_rtt_upper_bound_transport_rtt_multiplier -
            1),
-       false, true, "NQE.RTT.HangingRequest"},
+       false, true},
   };
 
   for (const auto& test : tests) {
-    base::HistogramTester histogram_tester;
     if (test.is_end_to_end_rtt_sample_count_enough) {
       estimator.set_start_time_null_end_to_end_rtt_observation_count(
           estimator.params()->http_rtt_transport_rtt_min_count());
@@ -2911,14 +2889,10 @@ TEST_F(NetworkQualityEstimatorTest, HangingRequestEndToEndUsingHttpOnly) {
     }
     EXPECT_EQ(test.expect_hanging_request,
               estimator.IsHangingRequest(test.observed_http_rtt));
-    histogram_tester.ExpectBucketCount(
-        test.histogram_name, test.observed_http_rtt.InMilliseconds(), 1);
   }
 }
 
 TEST_F(NetworkQualityEstimatorTest, HangingRequestUsingTransportAndHttpOnly) {
-  base::HistogramTester histogram_tester;
-
   std::map<std::string, std::string> variation_params;
   variation_params["add_default_platform_observations"] = "false";
   variation_params
@@ -2953,34 +2927,19 @@ TEST_F(NetworkQualityEstimatorTest, HangingRequestUsingTransportAndHttpOnly) {
 
   const struct {
     base::TimeDelta observed_http_rtt;
-    std::string histogram_name;
   } tests[] = {
-      {base::TimeDelta::FromMilliseconds(100),
-       "NQE.RTT.NotAHangingRequest.TransportRTT"},
-      {base::TimeDelta::FromMilliseconds(500),
-       "NQE.RTT.NotAHangingRequest.TransportRTT"},
-      {base::TimeDelta::FromMilliseconds(hanging_request_threshold - 1),
-       "NQE.RTT.NotAHangingRequest.TransportRTT"},
-      {base::TimeDelta::FromMilliseconds(hanging_request_threshold + 1),
-       "NQE.RTT.HangingRequest"},
-      {base::TimeDelta::FromMilliseconds(1000), "NQE.RTT.HangingRequest"},
+      {base::TimeDelta::FromMilliseconds(100)},
+      {base::TimeDelta::FromMilliseconds(500)},
+      {base::TimeDelta::FromMilliseconds(hanging_request_threshold - 1)},
+      {base::TimeDelta::FromMilliseconds(hanging_request_threshold + 1)},
+      {base::TimeDelta::FromMilliseconds(1000)},
   };
 
   for (const auto& test : tests) {
     EXPECT_EQ(
         test.observed_http_rtt.InMilliseconds() >= hanging_request_threshold,
         estimator.IsHangingRequest(test.observed_http_rtt));
-    histogram_tester.ExpectBucketCount(
-        test.histogram_name, test.observed_http_rtt.InMilliseconds(), 1);
   }
-
-  // Verify total sample count in all histograms.
-  histogram_tester.ExpectTotalCount("NQE.RTT.NotAHangingRequest.TransportRTT",
-                                    3);
-  histogram_tester.ExpectTotalCount("NQE.RTT.NotAHangingRequest.HttpRTT", 0);
-  histogram_tester.ExpectTotalCount("NQE.RTT.NotAHangingRequest.MinHttpBound",
-                                    0);
-  histogram_tester.ExpectTotalCount("NQE.RTT.HangingRequest", 2);
 }
 
 }  // namespace net

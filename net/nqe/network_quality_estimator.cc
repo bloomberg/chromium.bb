@@ -293,8 +293,6 @@ bool NetworkQualityEstimator::IsHangingRequest(
       observed_http_rtt <
           params_->hanging_request_http_rtt_upper_bound_transport_rtt_multiplier() *
               end_to_end_rtt_.value()) {
-    UMA_HISTOGRAM_TIMES("NQE.RTT.NotAHangingRequest.EndToEndRTT",
-                        observed_http_rtt);
     return false;
   }
 
@@ -309,8 +307,6 @@ bool NetworkQualityEstimator::IsHangingRequest(
            GetTransportRTT().value_or(base::TimeDelta::FromSeconds(10)))) {
     // If there are sufficient number of transport RTT samples available, use
     // the transport RTT estimate to determine if the request is hanging.
-    UMA_HISTOGRAM_TIMES("NQE.RTT.NotAHangingRequest.TransportRTT",
-                        observed_http_rtt);
     return false;
   }
 
@@ -321,18 +317,13 @@ bool NetworkQualityEstimator::IsHangingRequest(
       params_->hanging_request_http_rtt_upper_bound_http_rtt_multiplier() *
           GetHttpRTT().value_or(base::TimeDelta::FromSeconds(10))) {
     // Use the HTTP RTT estimate to determine if the request is hanging.
-    UMA_HISTOGRAM_TIMES("NQE.RTT.NotAHangingRequest.HttpRTT",
-                        observed_http_rtt);
     return false;
   }
 
   if (observed_http_rtt <=
       params_->hanging_request_upper_bound_min_http_rtt()) {
-    UMA_HISTOGRAM_TIMES("NQE.RTT.NotAHangingRequest.MinHttpBound",
-                        observed_http_rtt);
     return false;
   }
-  UMA_HISTOGRAM_TIMES("NQE.RTT.HangingRequest", observed_http_rtt);
   return true;
 }
 
