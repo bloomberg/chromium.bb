@@ -829,19 +829,22 @@ class WorkspaceDebugSymbolsStageTest(WorkspaceStageBase):
     self.assertEqual(
         self.tarball_mock.call_args_list,
         [
-            mock.call(self.workspace,
-                      'board',
-                      os.path.join(self.build_root,
-                                   'buildbot_archive/test-factorybranch',
-                                   'R10-infra-tag'),
-                      True),
-            mock.call(self.workspace,
-                      'board',
-                      os.path.join(self.build_root,
-                                   'buildbot_archive/test-factorybranch',
-                                   'R10-infra-tag'),
-                      False,
-                      archive_name='debug_breakpad.tar.xz'),
+            mock.call(buildroot=self.workspace,
+                      board='board',
+                      archive_path=os.path.join(
+                          self.build_root,
+                          'buildbot_archive/test-factorybranch/R10-infra-tag'),
+                      gdb_symbols=True,
+                      archive_name='debug.tgz',
+                      chroot_compression=False),
+            mock.call(buildroot=self.workspace,
+                      board='board',
+                      archive_path=os.path.join(
+                          self.build_root,
+                          'buildbot_archive/test-factorybranch/R10-infra-tag'),
+                      gdb_symbols=False,
+                      archive_name='debug_breakpad.tar.xz',
+                      chroot_compression=False),
         ],
     )
 

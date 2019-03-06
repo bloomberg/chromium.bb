@@ -2158,7 +2158,8 @@ def GenerateAndroidBreakpadSymbols(
 
 
 def GenerateDebugTarball(buildroot, board, archive_path, gdb_symbols,
-                         archive_name='debug.tgz'):
+                         archive_name='debug.tgz',
+                         chroot_compression=True):
   """Generates a debug tarball in the archive_dir.
 
   Args:
@@ -2167,6 +2168,8 @@ def GenerateDebugTarball(buildroot, board, archive_path, gdb_symbols,
     archive_path: Directory where tarball should be stored.
     gdb_symbols: Include *.debug files for debugging core files with gdb.
     archive_name: Name of the tarball to generate.
+    chroot_compression: Whether to use compression tools in the chroot if
+                        they're available.
 
   Returns:
     The filename of the created debug tarball.
@@ -2187,10 +2190,14 @@ def GenerateDebugTarball(buildroot, board, archive_path, gdb_symbols,
   else:
     inputs = ['debug/breakpad']
 
+  compression_chroot = None
+  if chroot_compression:
+    compression_chroot = chroot
+
   compression = cros_build_lib.CompressionExtToType(debug_tarball)
   cros_build_lib.CreateTarball(
       debug_tarball, board_dir, sudo=True, compression=compression,
-      chroot=chroot, inputs=inputs, extra_args=extra_args)
+      chroot=compression_chroot, inputs=inputs, extra_args=extra_args)
 
   # Fix permissions and ownership on debug tarball.
   cros_build_lib.SudoRunCommand(['chown', str(os.getuid()), debug_tarball])

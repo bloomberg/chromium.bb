@@ -267,8 +267,6 @@ class FactoryArchiveStage(WorkspaceArchiveBase):
     This depends on the WorkspaceBuildImage stage having previously created
     chromiumos_test_image.bin.
     """
-    chroot = os.path.join(self._build_root, constants.DEFAULT_CHROOT_DIR)
-
     with osutils.TempDir(prefix='test_image_dir') as tempdir:
       target = os.path.join(tempdir, constants.TEST_IMAGE_TAR)
 
@@ -277,8 +275,7 @@ class FactoryArchiveStage(WorkspaceArchiveBase):
           inputs=[constants.TEST_IMAGE_BIN],
           cwd=self.GetImageDirSymlink(pointer='latest',
                                       buildroot=self._build_root),
-          compression=cros_build_lib.COMP_GZIP,
-          chroot=chroot)
+          compression=cros_build_lib.COMP_GZIP)
 
       self.UploadDummyArtifact(target)
 

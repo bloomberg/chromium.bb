@@ -634,18 +634,23 @@ class WorkspaceDebugSymbolsStage(WorkspaceStageBase,
   def UploadDebugTarball(self):
     """Generate and upload the debug tarball."""
     filename = commands.GenerateDebugTarball(
-        self._build_root, self._current_board, self.archive_path,
-        self._run.config.archive_build_debug)
+        buildroot=self._build_root,
+        board=self._current_board,
+        archive_path=self.archive_path,
+        gdb_symbols=self._run.config.archive_build_debug,
+        archive_name='debug.tgz',
+        chroot_compression=False)
     self.UploadArtifact(filename, archive=False)
 
   def UploadDebugBreakpadTarball(self):
     """Generate and upload the debug tarball with only breakpad files."""
     filename = commands.GenerateDebugTarball(
-        self._build_root,
-        self._current_board,
-        self.archive_path,
-        False,
-        archive_name='debug_breakpad.tar.xz')
+        buildroot=self._build_root,
+        board=self._current_board,
+        archive_path=self.archive_path,
+        gdb_symbols=False,
+        archive_name='debug_breakpad.tar.xz',
+        chroot_compression=False)
     self.UploadArtifact(filename, archive=False)
 
   def UploadSymbols(self, buildroot, board):
