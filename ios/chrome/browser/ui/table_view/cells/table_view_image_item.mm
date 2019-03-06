@@ -79,6 +79,7 @@
               reuseIdentifier:(NSString*)reuseIdentifier {
   self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
   if (self) {
+    self.isAccessibilityElement = YES;
     _imageView = [[UIImageView alloc] init];
     // The favicon image is smaller than its UIImageView's bounds, so center it.
     _imageView.contentMode = UIViewContentModeCenter;
@@ -178,6 +179,16 @@
           previousTraitCollection.preferredContentSizeCategory)) {
     [self configureTextLabelForAccessibility:isCurrentCategoryAccessibility];
   }
+}
+
+#pragma mark - UIAccessibility
+
+- (NSString*)accessibilityLabel {
+  if (self.detailTextLabel.text) {
+    return [NSString stringWithFormat:@"%@, %@", self.titleLabel.text,
+                                      self.detailTextLabel.text];
+  }
+  return self.titleLabel.text;
 }
 
 @end
