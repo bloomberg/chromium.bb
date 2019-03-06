@@ -8,10 +8,9 @@ suite('<app-management-pwa-permission-view>', function() {
   let pwaPermissionView;
   let fakeHandler;
 
-  const TEST_APP_ID = '1';
-
-  function getToggleFromPermissionItem(permissionItemId) {
-    return pwaPermissionView.root.getElementById(permissionItemId)
+  function getPermissionToggleByType(permissionType) {
+    return pwaPermissionView.root
+        .querySelector('[permission-type=' + permissionType + ']')
         .root.querySelector('app-management-permission-toggle')
         .root.querySelector('cr-toggle');
   }
@@ -21,8 +20,8 @@ suite('<app-management-pwa-permission-view>', function() {
         pwaPermissionView.app_, permissionType);
   }
 
-  async function clickToggle(permissionItemId) {
-    getToggleFromPermissionItem(permissionItemId).click();
+  async function clickToggle(permissionType) {
+    getPermissionToggleByType(permissionType).click();
     await fakeHandler.$.flushForTesting();
   }
 
@@ -31,9 +30,10 @@ suite('<app-management-pwa-permission-view>', function() {
     replaceStore();
 
     // Add an app, and make it the currently selected app.
-    await fakeHandler.addApp(TEST_APP_ID);
+    const app = await fakeHandler.addApp();
     app_management.Store.getInstance().dispatch(
-        app_management.actions.changePage(PageType.DETAIL, TEST_APP_ID));
+        app_management.actions.changePage(PageType.DETAIL, app.id));
+
     pwaPermissionView =
         document.createElement('app-management-pwa-permission-view');
     replaceBody(pwaPermissionView);
@@ -45,22 +45,25 @@ suite('<app-management-pwa-permission-view>', function() {
         pwaPermissionView.app_.id);
   });
 
-  test(
-      'Clicking the permission toggle changes the permission of the app',
-      async function() {
-        let checkToggle = async function(permissionType, permissionId) {
-          assertTrue(getPermissionBoolByType(permissionType));
-          assertTrue(getToggleFromPermissionItem(permissionId).checked);
-          await clickToggle(permissionId);
-          assertFalse(getPermissionBoolByType(permissionType));
-          assertFalse(getToggleFromPermissionItem(permissionId).checked);
-        };
+  test('toggle permissions', async function() {
+    let checkToggle = async function(permissionType) {
+      assertTrue(getPermissionBoolByType(permissionType));
+      assertTrue(getPermissionToggleByType(permissionType).checked);
 
-        await checkToggle(
-            'CONTENT_SETTINGS_TYPE_NOTIFICATIONS', 'notifications');
-        await checkToggle('CONTENT_SETTINGS_TYPE_GEOLOCATION', 'location');
-        await checkToggle('CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA', 'camera');
-        await checkToggle(
-            'CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC', 'microphone');
-      });
+      // Toggle off.
+      await clickToggle(permissionType);
+      assertFalse(getPermissionBoolByType(permissionType));
+      assertFalse(getPermissionToggleByType(permissionType).checked);
+
+      // Toggle on.
+      await clickToggle(permissionType);
+      assertTrue(getPermissionBoolByType(permissionType));
+      assertTrue(getPermissionToggleByType(permissionType).checked);
+    };
+
+    await checkToggle('CONTENT_SETTINGS_TYPE_NOTIFICATIONS');
+    await checkToggle('CONTENT_SETTINGS_TYPE_GEOLOCATION');
+    await checkToggle('CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA');
+    await checkToggle('CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC');
+  });
 });

@@ -66,7 +66,6 @@ Polymer({
    * @private
    */
   getNewPermissionBoolean_: function(app, permissionType) {
-    /** @type {number} */
     let newPermissionValue;
 
     switch (app_management.util.getPermission(app, permissionType).value) {
@@ -80,9 +79,10 @@ Polymer({
         assertNotReached();
     }
 
+    assert(newPermissionValue !== undefined);
     return app_management.util.createPermission(
         app_management.util.permissionTypeHandle(app, permissionType),
-        PermissionValueType.kBool, assert(newPermissionValue));
+        PermissionValueType.kBool, newPermissionValue);
   },
 
   /**
@@ -112,8 +112,9 @@ Polymer({
         assertNotReached();
     }
 
+    assert(newPermissionValue !== undefined);
     return app_management.util.createPermission(
         app_management.util.permissionTypeHandle(app, permissionType),
-        PermissionValueType.kTriState, assert(newPermissionValue));
+        PermissionValueType.kTriState, newPermissionValue);
   },
 });
