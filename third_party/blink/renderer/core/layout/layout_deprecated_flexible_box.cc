@@ -161,10 +161,10 @@ static int GetHeightForLineCount(const LayoutBlockFlow* block_flow,
     for (RootInlineBox* box = block_flow->FirstRootBox(); box;
          box = box->NextRootBox()) {
       if (++count == line_count)
-        return (box->LineBottom() + (include_bottom
-                                         ? (block_flow->BorderBottom() +
-                                            block_flow->PaddingBottom())
-                                         : LayoutUnit()))
+        return (box->LineBottomWithLeading() +
+                (include_bottom ? (block_flow->BorderBottom() +
+                                   block_flow->PaddingBottom())
+                                : LayoutUnit()))
             .ToInt();
     }
     return -1;
