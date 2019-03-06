@@ -5999,5 +5999,8 @@ crbug.com/937902 [ Linux Debug ] virtual/disable-blink-gen-property-trees/compos
 crbug.com/937991 [ Win7 Release ] http/tests/devtools/cache-storage/cache-data.js [ Pass Timeout ]
 
 # Sheriff 2019-03-05
-crbug.com/938200 http/tests/devtools/network/network-blocked-reason.js [ Timeout Pass ] http/tests/devtools/network/network-blocked-reason.js
+crbug.com/938200 http/tests/devtools/network/network-blocked-reason.js [ Timeout Pass ]
 crbug.com/938780 [ Mac ] external/wpt/animation-worklet/worklet-animation-with-scroll-timeline-root-scroller.https.html [ Failure ]
+
+# Sheriff 2019-03-06
+crbug.com/938591 [ Linux ] fast/events/middleClickAutoscroll-nested-divs-forbidden.html [ Failure Pass ]
