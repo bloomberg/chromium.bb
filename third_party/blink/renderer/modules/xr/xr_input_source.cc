@@ -42,16 +42,13 @@ void XRInputSource::SetHandedness(Handedness handedness) {
 
   switch (handedness_) {
     case kHandNone:
-      handedness_string_ = "none";
+      handedness_string_ = "";
       return;
     case kHandLeft:
       handedness_string_ = "left";
       return;
     case kHandRight:
       handedness_string_ = "right";
-      return;
-    case kHandUninitialized:
-      NOTREACHED() << "Cannot set handedness to uninitialized";
       return;
   }
 
