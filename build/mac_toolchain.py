@@ -25,18 +25,12 @@ import sys
 
 # This can be changed after running:
 #    mac_toolchain upload -xcode-path path/to/Xcode.app
-MAC_TOOLCHAIN_VERSION = '8E2002'
+MAC_TOOLCHAIN_VERSION = '9E501'
 
 # The toolchain will not be downloaded if the minimum OS version is not met.
-# 16 is the major version number for macOS 10.12.
-MAC_MINIMUM_OS_VERSION = 16
-
-# The toolchain will not be downloaded if the maximum OS version is exceeded.
-# 17 is the major version number for macOS 10.13. Xcode 8 does not run on macOS
-# 10.14.
-# TODO(https://crbug.com/780980): Once we build with 10.13 SDK, Xcode 9, we
-# should be able to remove this upper bound.
-MAC_MAXIMUM_OS_VERSION = 17
+# 17 is the major version number for macOS 10.13.
+# 9E145 (Xcode 9.3) only runs on 10.13.2 and newer.
+MAC_MINIMUM_OS_VERSION = 17
 
 MAC_TOOLCHAIN_INSTALLER = 'mac_toolchain'
 
@@ -54,8 +48,7 @@ STAMP_FILE = os.path.join(TOOLCHAIN_ROOT, 'toolchain_build_revision')
 
 def PlatformMeetsHermeticXcodeRequirements():
   major_version = int(platform.release().split('.')[0])
-  return (major_version >= MAC_MINIMUM_OS_VERSION and
-          major_version <= MAC_MAXIMUM_OS_VERSION)
+  return major_version >= MAC_MINIMUM_OS_VERSION
 
 
 def _UseHermeticToolchain():
