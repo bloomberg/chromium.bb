@@ -343,43 +343,6 @@ TEST_F(EmbeddedWorkerInstanceTest, StopWhenDevToolsAttached) {
   EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, worker->status());
 }
 
-// Test that the removal of a worker from the registry doesn't remove
-// other workers in the same process.
-TEST_F(EmbeddedWorkerInstanceTest, RemoveWorkerInSharedProcess) {
-  const GURL scope("http://example.com/");
-  const GURL url("http://example.com/worker.js");
-
-  RegistrationAndVersionPair pair1 = PrepareRegistrationAndVersion(scope, url);
-  std::unique_ptr<EmbeddedWorkerInstance> worker1 =
-      embedded_worker_registry()->CreateWorker(pair1.second.get());
-  RegistrationAndVersionPair pair2 = PrepareRegistrationAndVersion(scope, url);
-  std::unique_ptr<EmbeddedWorkerInstance> worker2 =
-      embedded_worker_registry()->CreateWorker(pair2.second.get());
-
-  int process_id = helper_->mock_render_process_id();
-
-  // Start workers.
-  StartWorker(worker1.get(), CreateStartParams(pair1.second));
-  StartWorker(worker2.get(), CreateStartParams(pair2.second));
-
-  // The two workers share the same process.
-  EXPECT_EQ(worker1->process_id(), worker2->process_id());
-
-  // Destroy worker1. It removes itself from the registry.
-  int worker1_id = worker1->embedded_worker_id();
-  worker1->Stop();
-  worker1.reset();
-
-  // Only worker1 should be removed from the registry's process_map.
-  EmbeddedWorkerRegistry* registry =
-      helper_->context()->embedded_worker_registry();
-  EXPECT_EQ(0UL, registry->worker_process_map_[process_id].count(worker1_id));
-  EXPECT_EQ(1UL, registry->worker_process_map_[process_id].count(
-                     worker2->embedded_worker_id()));
-
-  worker2->Stop();
-}
-
 TEST_F(EmbeddedWorkerInstanceTest, DetachDuringProcessAllocation) {
   const GURL scope("http://example.com/");
   const GURL url("http://example.com/worker.js");
@@ -583,21 +546,12 @@ TEST_F(EmbeddedWorkerInstanceTest, Detach) {
   RegistrationAndVersionPair pair = PrepareRegistrationAndVersion(scope, url);
   std::unique_ptr<EmbeddedWorkerInstance> worker =
       embedded_worker_registry()->CreateWorker(pair.second.get());
-  worker->AddObserver(this);
 
   // Start the worker.
-  base::RunLoop run_loop;
   StartWorker(worker.get(), CreateStartParams(pair.second));
 
   // Detach.
-  int process_id = worker->process_id();
   worker->Detach();
-  EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, worker->status());
-
-  // Send the registry a message from the detached worker. Nothing should
-  // happen.
-  embedded_worker_registry()->OnWorkerStarted(process_id,
-                                              worker->embedded_worker_id());
   EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, worker->status());
 }
 

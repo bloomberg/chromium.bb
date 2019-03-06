@@ -687,7 +687,7 @@ EmbeddedWorkerInstance::~EmbeddedWorkerInstance() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   devtools_proxy_.reset();
   if (registry_->GetWorker(embedded_worker_id_))
-    registry_->RemoveWorker(process_id(), embedded_worker_id_);
+    registry_->RemoveWorker(embedded_worker_id_);
   ReleaseProcess();
 }
 
@@ -846,7 +846,6 @@ void EmbeddedWorkerInstance::SendStartWorker(
   params->provider_info->cache_storage = std::move(cache_storage);
 
   client_->StartWorker(std::move(params));
-  registry_->BindWorkerToProcess(process_id(), embedded_worker_id());
 
   starting_phase_ = is_script_streaming ? SCRIPT_STREAMING : SENT_START_WORKER;
   for (auto& observer : listener_list_)
@@ -944,8 +943,6 @@ void EmbeddedWorkerInstance::OnStarted(
   if (!devtools_attached_)
     lifetime_tracker_ = std::make_unique<ScopedLifetimeTracker>();
 
-  if (!registry_->OnWorkerStarted(process_id(), embedded_worker_id_))
-    return;
   // Stop was requested before OnStarted was sent back from the worker. Just
   // pretend startup didn't happen, so observers don't try to use the running
   // worker as it will stop soon.
@@ -981,8 +978,6 @@ void EmbeddedWorkerInstance::OnStarted(
 }
 
 void EmbeddedWorkerInstance::OnStopped() {
-  registry_->OnWorkerStopped(process_id(), embedded_worker_id_);
-
   EmbeddedWorkerStatus old_status = status_;
   ReleaseProcess();
   for (auto& observer : listener_list_)
@@ -993,7 +988,6 @@ void EmbeddedWorkerInstance::Detach() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (status() == EmbeddedWorkerStatus::STOPPED)
     return;
-  registry_->DetachWorker(process_id(), embedded_worker_id());
 
   EmbeddedWorkerStatus old_status = status_;
   ReleaseProcess();
