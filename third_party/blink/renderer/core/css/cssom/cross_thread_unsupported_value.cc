@@ -12,4 +12,11 @@ CSSStyleValue* CrossThreadUnsupportedValue::ToCSSStyleValue() {
   return CSSUnsupportedStyleValue::Create(value_);
 }
 
+bool CrossThreadUnsupportedValue::operator==(
+    const CrossThreadStyleValue& other) const {
+  if (auto* o = DynamicTo<CrossThreadUnsupportedValue>(other))
+    return value_ == o->value_;
+  return false;
+}
+
 }  // namespace blink

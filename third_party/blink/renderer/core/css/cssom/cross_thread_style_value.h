@@ -16,9 +16,18 @@ class CSSStyleValue;
 // passed cross threads.
 class CORE_EXPORT CrossThreadStyleValue {
  public:
+  enum class StyleValueType {
+    kUnknownType,
+    kKeywordType,
+    kUnitType,
+  };
+
   virtual ~CrossThreadStyleValue() = default;
 
+  virtual StyleValueType GetType() const = 0;
   virtual CSSStyleValue* ToCSSStyleValue() = 0;
+
+  virtual bool operator==(const CrossThreadStyleValue&) const = 0;
 
  protected:
   CrossThreadStyleValue() = default;

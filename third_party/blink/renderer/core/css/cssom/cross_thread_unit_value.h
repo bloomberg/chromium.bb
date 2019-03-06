@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/css/cssom/cross_thread_style_value.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -20,7 +21,10 @@ class CORE_EXPORT CrossThreadUnitValue final : public CrossThreadStyleValue {
       : value_(value), unit_(unit) {}
   ~CrossThreadUnitValue() override = default;
 
+  StyleValueType GetType() const override { return StyleValueType::kUnitType; }
   CSSStyleValue* ToCSSStyleValue() override;
+
+  bool operator==(const CrossThreadStyleValue&) const override;
 
  private:
   friend class CrossThreadStyleValueTest;
@@ -28,6 +32,14 @@ class CORE_EXPORT CrossThreadUnitValue final : public CrossThreadStyleValue {
   double value_;
   CSSPrimitiveValue::UnitType unit_;
   DISALLOW_COPY_AND_ASSIGN(CrossThreadUnitValue);
+};
+
+template <>
+struct DowncastTraits<CrossThreadUnitValue> {
+  static bool AllowFrom(const CrossThreadStyleValue& unit_value) {
+    return unit_value.GetType() ==
+           CrossThreadStyleValue::StyleValueType::kUnitType;
+  }
 };
 
 }  // namespace blink
