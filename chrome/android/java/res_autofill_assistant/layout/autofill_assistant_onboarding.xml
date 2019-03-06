@@ -21,8 +21,6 @@
             android:layout_height="wrap_content"
             android:gravity="center_horizontal"
             android:orientation="vertical"
-            android:paddingTop="20dp"
-            android:paddingBottom="20dp"
             android:paddingStart="24dp"
             android:paddingEnd="24dp">
 
@@ -33,7 +31,6 @@
                 android:layout_height="141dp"
                 android:scaleType="centerCrop"
                 android:src="@drawable/onboarding_background"
-                android:paddingTop="10dp"
                 android:paddingBottom="15dp"/>
 
             <!-- Title (e.g., 'Fast Checkout')-->
@@ -129,5 +126,4 @@
         android:text="@string/init_ok"
         style="FilledButton" />
     </LinearLayout>
-    <Space android:layout_width="0dp" android:layout_height="24dp"/>
 </LinearLayout>
