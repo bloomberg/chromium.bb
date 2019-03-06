@@ -2249,6 +2249,21 @@
             ]
         }
     ],
+    "ImprovedGeolanguageReplacement": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ImprovedGeoLanguageData"
+                    ]
+                }
+            ]
+        }
+    ],
     "ImprovedRecoveryComponent": [
         {
             "platforms": [
