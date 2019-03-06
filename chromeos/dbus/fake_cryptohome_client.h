@@ -175,6 +175,9 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCryptohomeClient
                const cryptohome::AuthorizationRequest& auth,
                const cryptohome::MountRequest& request,
                DBusMethodCallback<cryptohome::BaseReply> callback) override;
+  void LockToSingleUserMountUntilReboot(
+      const cryptohome::LockToSingleUserMountUntilRebootRequest& request,
+      DBusMethodCallback<cryptohome::BaseReply> callback) override;
   void AddKeyEx(const cryptohome::AccountIdentifier& cryptohome_id,
                 const cryptohome::AuthorizationRequest& auth,
                 const cryptohome::AddKeyRequest& request,
