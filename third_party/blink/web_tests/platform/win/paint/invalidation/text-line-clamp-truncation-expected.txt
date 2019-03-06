@@ -19,7 +19,7 @@
       "paintInvalidations": [
         {
           "object": "LayoutDeprecatedFlexibleBox DIV id='container' class='folded'",
-          "rect": [8, 8, 285, 21],
+          "rect": [8, 8, 285, 24],
           "reason": "chunk disappeared"
         },
         {
