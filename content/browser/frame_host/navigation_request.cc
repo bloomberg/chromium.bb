@@ -815,11 +815,6 @@ void NavigationRequest::CreateNavigationHandle(bool is_for_commit) {
   navigation_handle_ = std::move(navigation_handle);
 }
 
-std::unique_ptr<NavigationHandleImpl>
-NavigationRequest::TakeNavigationHandle() {
-  return std::move(navigation_handle_);
-}
-
 void NavigationRequest::ResetForCrossDocumentRestart() {
   DCHECK(
       FrameMsg_Navigate_Type::IsSameDocument(common_params_.navigation_type));

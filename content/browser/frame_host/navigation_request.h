@@ -209,9 +209,6 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   // happens for renderer-initiated same-document navigations).
   void CreateNavigationHandle(bool is_for_commit);
 
-  // Returns ownership of the navigation handle.
-  std::unique_ptr<NavigationHandleImpl> TakeNavigationHandle();
-
   void set_on_start_checks_complete_closure_for_testing(
       const base::Closure& closure) {
     on_start_checks_complete_closure_ = closure;
