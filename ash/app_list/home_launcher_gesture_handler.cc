@@ -458,9 +458,8 @@ void HomeLauncherGestureHandler::OnImplicitAnimationsCompleted() {
 
   // Return the app list to its original opacity and transform without
   // animation.
-  DCHECK(display_.is_valid());
   app_list_controller_->presenter()->UpdateYPositionAndOpacityForHomeLauncher(
-      display_.work_area().y(), app_list_opacity, base::NullCallback());
+      0, app_list_opacity, base::NullCallback());
 
   if (!window1_) {
     RemoveObserversAndStopTracking();
@@ -550,8 +549,8 @@ void HomeLauncherGestureHandler::UpdateWindows(double progress, bool animate) {
   // Update full screen applist.
   DCHECK(display_.is_valid());
   const gfx::Rect work_area = display_.work_area();
-  const int y_position =
-      gfx::Tween::IntValueBetween(progress, work_area.bottom(), work_area.y());
+  const int y_position = gfx::Tween::IntValueBetween(
+      progress, work_area.bottom(), display_.bounds().y());
   const float opacity = gfx::Tween::FloatValueBetween(progress, 0.f, 1.f);
   app_list_controller_->presenter()->UpdateYPositionAndOpacityForHomeLauncher(
       y_position, opacity,
