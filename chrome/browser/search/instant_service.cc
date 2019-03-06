@@ -714,6 +714,11 @@ bool InstantService::IsCustomBackgroundSet() {
   return true;
 }
 
+void InstantService::ResetToDefault() {
+  ResetCustomLinks();
+  ResetCustomBackgroundThemeInfo();
+}
+
 bool InstantService::IsCustomBackgroundPrefValid(GURL& custom_background_url) {
   const base::DictionaryValue* background_info =
       profile_->GetPrefs()->GetDictionary(prefs::kNtpCustomBackgroundDict);

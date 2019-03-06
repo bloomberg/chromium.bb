@@ -29,6 +29,7 @@
 #include "chrome/browser/profile_resetter/profile_reset_report.pb.h"
 #include "chrome/browser/profile_resetter/profile_resetter_test_base.h"
 #include "chrome/browser/profile_resetter/resettable_settings_snapshot.h"
+#include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
@@ -320,6 +321,14 @@ void ShortcutHandler::Delete() {
 }
 #endif  // defined(OS_WIN)
 
+// MockInstantService
+class MockInstantService : public InstantService {
+ public:
+  explicit MockInstantService(Profile* profile) : InstantService(profile) {}
+  ~MockInstantService() override = default;
+
+  MOCK_METHOD0(ResetToDefault, void());
+};
 
 // helper functions -----------------------------------------------------------
 
@@ -1016,6 +1025,14 @@ TEST_F(ProfileResetterTest, DestroySnapshotFast) {
   // Running remaining tasks shouldn't trigger the callback to be called as
   // |deleted_snapshot| was deleted before it could run.
   base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(ProfileResetterTest, ResetNTPCustomizationsTest) {
+  MockInstantService mock_ntp_service(profile());
+  resetter_->ntp_service_ = &mock_ntp_service;
+
+  EXPECT_CALL(mock_ntp_service, ResetToDefault());
+  ResetAndWait(ProfileResetter::NTP_CUSTOMIZATIONS);
 }
 
 }  // namespace
