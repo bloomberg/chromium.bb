@@ -74,7 +74,7 @@ class MODULES_EXPORT EventSource final
   String url() const;
   bool withCredentials() const;
 
-  enum State : short { kConnecting = 0, kOpen = 1, kClosed = 2 };
+  enum State : int16_t { kConnecting = 0, kOpen = 1, kClosed = 2 };
 
   State readyState() const;
 
