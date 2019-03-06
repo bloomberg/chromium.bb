@@ -57,7 +57,8 @@ class NET_EXPORT MappedHostResolver : public HostResolver {
   HostCache* GetHostCache() override;
   bool HasCached(base::StringPiece hostname,
                  HostCache::Entry::Source* source_out,
-                 HostCache::EntryStaleness* stale_out) const override;
+                 HostCache::EntryStaleness* stale_out,
+                 bool* secure_out) const override;
   std::unique_ptr<base::Value> GetDnsConfigAsValue() const override;
   void SetNoIPv6OnWifi(bool no_ipv6_on_wifi) override;
   bool GetNoIPv6OnWifi() override;

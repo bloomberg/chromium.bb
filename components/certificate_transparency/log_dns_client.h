@@ -78,6 +78,10 @@ class LogDnsClient : public net::NetworkChangeNotifier::DNSObserver {
   // The |leaf_hash| is the SHA-256 Merkle leaf hash (see RFC6962, section 2.1).
   // The size of the CT log tree, for which the proof is requested, must be
   // provided in |tree_size|.
+  // The field |lookup_securely| specifies whether DNS lookups should be
+  // performed securely or insecurely. This value should be set according to
+  // whether the hostname lookup was resolved securely or not in order to
+  // help achieve resolver consistency between the hostname and proof lookups.
   // A handle to the query will be placed in |out_query|. The audit proof can be
   // obtained from that once the query completes. Deleting this handle before
   // the query completes will cancel it. It must not outlive the LogDnsClient.
@@ -96,6 +100,7 @@ class LogDnsClient : public net::NetworkChangeNotifier::DNSObserver {
   //   not a SHA-256 hash.
   net::Error QueryAuditProof(base::StringPiece domain_for_log,
                              std::string leaf_hash,
+                             bool lookup_securely,
                              uint64_t tree_size,
                              std::unique_ptr<AuditProofQuery>* out_query,
                              const net::CompletionCallback& callback);

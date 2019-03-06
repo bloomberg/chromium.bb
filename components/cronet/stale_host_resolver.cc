@@ -444,11 +444,12 @@ StaleHostResolver::CreateRequest(
       optional_parameters.value_or(ResolveHostParameters()), tick_clock_);
 }
 
-bool StaleHostResolver::HasCached(
-    base::StringPiece hostname,
-    net::HostCache::Entry::Source* source_out,
-    net::HostCache::EntryStaleness* stale_out) const {
-  return inner_resolver_->HasCached(hostname, source_out, stale_out);
+bool StaleHostResolver::HasCached(base::StringPiece hostname,
+                                  net::HostCache::Entry::Source* source_out,
+                                  net::HostCache::EntryStaleness* stale_out,
+                                  bool* secure_out) const {
+  return inner_resolver_->HasCached(hostname, source_out, stale_out,
+                                    secure_out);
 }
 
 void StaleHostResolver::SetDnsClientEnabled(bool enabled) {

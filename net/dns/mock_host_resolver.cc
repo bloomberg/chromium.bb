@@ -288,14 +288,18 @@ HostCache* MockHostResolverBase::GetHostCache() {
   return cache_.get();
 }
 
-bool MockHostResolverBase::HasCached(
-    base::StringPiece hostname,
-    HostCache::Entry::Source* source_out,
-    HostCache::EntryStaleness* stale_out) const {
+bool MockHostResolverBase::HasCached(base::StringPiece hostname,
+                                     HostCache::Entry::Source* source_out,
+                                     HostCache::EntryStaleness* stale_out,
+                                     bool* secure_out) const {
   if (!cache_)
     return false;
 
-  return !!cache_->GetMatchingKey(hostname, source_out, stale_out);
+  const HostCache::Key* key =
+      cache_->GetMatchingKey(hostname, source_out, stale_out);
+  if (key && secure_out != nullptr)
+    *secure_out = key->secure;
+  return !!key;
 }
 
 int MockHostResolverBase::LoadIntoCache(
@@ -918,10 +922,10 @@ HangingHostResolver::CreateRequest(
                                        is_local_only);
 }
 
-bool HangingHostResolver::HasCached(
-    base::StringPiece hostname,
-    HostCache::Entry::Source* source_out,
-    HostCache::EntryStaleness* stale_out) const {
+bool HangingHostResolver::HasCached(base::StringPiece hostname,
+                                    HostCache::Entry::Source* source_out,
+                                    HostCache::EntryStaleness* stale_out,
+                                    bool* secure_out) const {
   return false;
 }
 

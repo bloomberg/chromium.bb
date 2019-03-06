@@ -2273,11 +2273,16 @@ HostCache* HostResolverImpl::GetHostCache() {
 
 bool HostResolverImpl::HasCached(base::StringPiece hostname,
                                  HostCache::Entry::Source* source_out,
-                                 HostCache::EntryStaleness* stale_out) const {
+                                 HostCache::EntryStaleness* stale_out,
+                                 bool* secure_out) const {
   if (!cache_)
     return false;
 
-  return !!cache_->GetMatchingKey(hostname, source_out, stale_out);
+  const HostCache::Key* key =
+      cache_->GetMatchingKey(hostname, source_out, stale_out);
+  if (key && secure_out != nullptr)
+    *secure_out = key->secure;
+  return !!key;
 }
 
 std::unique_ptr<base::Value> HostResolverImpl::GetDnsConfigAsValue() const {

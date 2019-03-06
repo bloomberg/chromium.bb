@@ -85,7 +85,8 @@ class StaleHostResolver : public net::HostResolver {
   net::HostCache* GetHostCache() override;
   bool HasCached(base::StringPiece hostname,
                  net::HostCache::Entry::Source* source_out,
-                 net::HostCache::EntryStaleness* stale_out) const override;
+                 net::HostCache::EntryStaleness* stale_out,
+                 bool* secure_out) const override;
   std::unique_ptr<base::Value> GetDnsConfigAsValue() const override;
 
  private:
