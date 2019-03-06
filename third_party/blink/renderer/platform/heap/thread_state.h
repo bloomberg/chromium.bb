@@ -120,6 +120,8 @@ class ThreadStateFor;
   using UsingPreFinalizerMacroNeedsTrailingSemiColon = char
 
 class PLATFORM_EXPORT BlinkGCObserver {
+  USING_FAST_MALLOC(BlinkGCObserver);
+
  public:
   // The constructor automatically register this object to ThreadState's
   // observer lists. The argument must not be null.
@@ -407,6 +409,8 @@ class PLATFORM_EXPORT ThreadState final
   // USING_PRE_FINALIZER().
   template <typename T>
   class PrefinalizerRegistration final {
+    DISALLOW_NEW();
+
    public:
     PrefinalizerRegistration(T* self) {
       static_assert(sizeof(&T::InvokePreFinalizer) > 0,

@@ -7,6 +7,8 @@
 
 #include <atomic>
 
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+
 namespace blink {
 
 // A flag which provides a fast check whether a scope may be entered on the
@@ -27,6 +29,8 @@ namespace blink {
 // And so if a thread observes zero, it must be because it has observed an equal
 // number of exits as entries.
 class AtomicEntryFlag {
+  DISALLOW_NEW();
+
  public:
   inline void Enter() { entries_.fetch_add(1, std::memory_order_relaxed); }
   inline void Exit() { entries_.fetch_sub(1, std::memory_order_relaxed); }

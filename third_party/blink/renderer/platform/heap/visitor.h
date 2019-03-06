@@ -75,6 +75,8 @@ struct TraceMethodDelegate {
 
 // Visitor is used to traverse Oilpan's object graph.
 class PLATFORM_EXPORT Visitor {
+  USING_FAST_MALLOC(Visitor);
+
  public:
   explicit Visitor(ThreadState* state) : state_(state) {}
   virtual ~Visitor() = default;

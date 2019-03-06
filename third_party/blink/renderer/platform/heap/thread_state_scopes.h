@@ -92,6 +92,8 @@ class ThreadState::GCForbiddenScope final {
 
 // Used to mark when we are in an atomic pause for GC.
 class ThreadState::AtomicPauseScope final {
+  STACK_ALLOCATED();
+
  public:
   explicit AtomicPauseScope(ThreadState* thread_state)
       : thread_state_(thread_state), gc_forbidden_scope(thread_state) {
