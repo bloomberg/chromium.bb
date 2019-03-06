@@ -140,6 +140,35 @@ public class UiThreadSchedulerTest {
         }
     }
 
+    @Test
+    @MediumTest
+    public void testRunOrPostTask() throws InterruptedException {
+        final Object lock = new Object();
+        final AtomicBoolean taskExecuted = new AtomicBoolean();
+        List<Integer> orderList = new ArrayList<>();
+        PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {
+            // We are running on the UI thread now. First, we post a task on the
+            // UI thread; it will not run immediately because the UI thread is
+            // busy running the current code:
+            PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {
+                orderList.add(1);
+                synchronized (lock) {
+                    taskExecuted.set(true);
+                    lock.notify();
+                }
+            });
+            // Now, we runOrPost a task on the UI thread. We are on the UI thread,
+            // so it will run immediately.
+            PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> { orderList.add(2); });
+        });
+        synchronized (lock) {
+            while (!taskExecuted.get()) {
+                lock.wait();
+            }
+        }
+        assertThat(orderList, contains(2, 1));
+    }
+
     private void startContentMainOnUiThread() {
         final Object lock = new Object();
         final AtomicBoolean uiThreadInitalized = new AtomicBoolean();

@@ -52,4 +52,9 @@ class DefaultTaskExecutor implements TaskExecutor {
             runner.postDelayedTask(task, delay);
         }
     }
+
+    @Override
+    public boolean canRunTaskImmediately(TaskTraits traits) {
+        return false;
+    }
 }

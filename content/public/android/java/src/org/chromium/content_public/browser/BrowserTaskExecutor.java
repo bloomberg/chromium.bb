@@ -16,6 +16,8 @@ import org.chromium.content.browser.UiThreadTaskTraitsImpl;
 
 import java.util.WeakHashMap;
 
+import javax.annotation.concurrent.GuardedBy;
+
 /**
  * This {@link TaskExecutor} is for tasks posted with {@link UiThreadTaskTraits}. It maps directly
  * to content::BrowserTaskExecutor except only UI thread posting is supported from java.
@@ -58,6 +60,11 @@ public class BrowserTaskExecutor implements TaskExecutor {
         createSingleThreadTaskRunner(taskTraits).postDelayedTask(task, delay);
     }
 
+    @Override
+    public boolean canRunTaskImmediately(TaskTraits traits) {
+        return createSingleThreadTaskRunner(traits).belongsToCurrentThread();
+    }
+
     public static void register() {
         // In some tests we will get called multiple times.
         if (sRegistered) return;
@@ -67,6 +74,7 @@ public class BrowserTaskExecutor implements TaskExecutor {
                 UiThreadTaskTraitsImpl.DESCRIPTOR.getId(), new BrowserTaskExecutor());
     }
 
+    @GuardedBy("mTaskRunners")
     private final WeakHashMap<TaskTraits, SingleThreadTaskRunner> mTaskRunners =
             new WeakHashMap<>();
 
