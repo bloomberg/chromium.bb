@@ -736,10 +736,32 @@ testcase.dirContextMenuUsbs = async () => {
   // Check the context menu for multiple partitions USB (root).
   await checkContextMenu(
       appId, partitionsRootQuery, partitionsRootMenus, true /* rootMenu */);
-  //
+
   // Check the context menu for multiple partitions USB (actual partition).
   await checkContextMenu(
       appId, partition1Query, partition1Menus, false /* rootMenu */);
+};
+
+/**
+ * Tests context menu for FSP root.
+ * TODO(lucmult): Check menus for a FSP.
+ */
+testcase.dirContextMenuFsp = async () => {
+  const fspMenus = [
+    ['#unmount', true],
+  ];
+  const fspQuery = '#directory-tree [entry-label="Test (1)"]';
+
+  // Install a FSP.
+  const manifest = 'manifest_source_file.json';
+  await sendTestMessage({name: 'launchProviderExtension', manifest: manifest});
+
+  // Open Files app on local Downloads.
+  const appId =
+      await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.beautiful], []);
+
+  // Check the context menu for FSP.
+  await checkContextMenu(appId, fspQuery, fspMenus, true /* rootMenu */);
 };
 
 })();
