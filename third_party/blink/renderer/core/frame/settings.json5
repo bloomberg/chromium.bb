@@ -574,6 +574,7 @@
     {
       name: "forceAndroidOverlayScrollbar",
       initial: false,
+      invalidate: "ScrollbarLayout",
     },
 
     // Set the timeout seconds of the network-quiet timers in IdlenessDetector.
