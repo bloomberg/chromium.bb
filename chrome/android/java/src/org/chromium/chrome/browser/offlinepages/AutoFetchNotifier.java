@@ -262,28 +262,31 @@ public class AutoFetchNotifier {
      * If the notification is tapped, it opens the offline page in Chrome.
      *
      * @param pageTitle     The title of the page. This is displayed on the notification.
-     * @param originalUrl   The originally requested URL (before any redirection).
+     * @param finalUrl      The requested URL (after any redirection).
      * @param tabId         ID of the tab where the auto-fetch occurred. This tab is used, if
      *                      available, to open the offline page when the notification is tapped.
      * @param offlineId     The offlineID for the offline page that was just saved.
      */
     @CalledByNative
     private static void showCompleteNotification(
-            String pageTitle, String originalUrl, int tabId, long offlineId) {
+            String pageTitle, String finalUrl, int tabId, long offlineId) {
         Context context = ContextUtils.getApplicationContext();
         OfflinePageUtils.getLoadUrlParamsForOpeningOfflineVersion(
-                originalUrl, offlineId, LaunchLocation.NOTIFICATION, (params) -> {
+                finalUrl, offlineId, LaunchLocation.NOTIFICATION, (params) -> {
                     showCompleteNotificationWithParams(
-                            pageTitle, tabId, offlineId, originalUrl, params);
+                            pageTitle, tabId, offlineId, finalUrl, params);
                 });
     }
 
     private static void showCompleteNotificationWithParams(
-            String pageTitle, int tabId, long offlineId, String originalUrl, LoadUrlParams params) {
+            String pageTitle, int tabId, long offlineId, String finalUrl, LoadUrlParams params) {
         Context context = ContextUtils.getApplicationContext();
         // Create an intent to handle tapping the notification.
         Intent clickIntent = new Intent(context, CompleteNotificationReceiver.class);
-        clickIntent.putExtra(EXTRA_URL, originalUrl);
+        // TODO(crbug.com/937581): We're using the final URL here so that redirects can't break
+        // the page load. This will result in opening a new tab if there was a redirect (because
+        // the URL doesn't match the old dino page), which is not ideal.
+        clickIntent.putExtra(EXTRA_URL, finalUrl);
         IntentHandler.setIntentExtraHeaders(params.getExtraHeaders(), clickIntent);
         clickIntent.putExtra(TabOpenType.REUSE_TAB_MATCHING_ID_STRING, tabId);
         clickIntent.putExtra(Browser.EXTRA_APPLICATION_ID, context.getPackageName());

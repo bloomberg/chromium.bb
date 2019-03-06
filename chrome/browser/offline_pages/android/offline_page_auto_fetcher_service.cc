@@ -173,10 +173,7 @@ void OfflinePageAutoFetcherService::AutoFetchComplete(
   if (!metadata)
     return;
 
-  const GURL& url =
-      page->original_url.is_empty() ? page->url : page->original_url;
-
-  delegate_->ShowAutoFetchCompleteNotification(page->title, url.spec(),
+  delegate_->ShowAutoFetchCompleteNotification(page->title, page->url.spec(),
                                                metadata.value().android_tab_id,
                                                page->offline_id);
 }
