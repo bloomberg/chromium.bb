@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.browserservices.trustedwebactivityui.view;
 
 import static org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityModel.TOOLBAR_HIDDEN;
 
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityModel;
 import org.chromium.chrome.browser.customtabs.CustomTabBrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
@@ -27,21 +28,27 @@ public class TrustedWebActivityToolbarView implements
     private final Lazy<ChromeFullscreenManager> mFullscreenManager;
     private final CustomTabBrowserControlsVisibilityDelegate mControlsVisibilityDelegate;
     private final TrustedWebActivityModel mModel;
+    private final ChromeActivity mActivity;
 
     private int mControlsHidingToken = FullscreenManager.INVALID_TOKEN;
 
     @Inject
     public TrustedWebActivityToolbarView(Lazy<ChromeFullscreenManager> fullscreenManager,
             CustomTabBrowserControlsVisibilityDelegate controlsVisibilityDelegate,
-            TrustedWebActivityModel model) {
+            TrustedWebActivityModel model, ChromeActivity activity) {
         mFullscreenManager = fullscreenManager;
         mControlsVisibilityDelegate = controlsVisibilityDelegate;
         mModel = model;
+        mActivity = activity;
         mModel.addObserver(this);
     }
 
     @Override
     public void onPropertyChanged(PropertyObservable<PropertyKey> observable, PropertyKey key) {
+        if (mActivity.isActivityFinishingOrDestroyed()) {
+            assert false : "Tried to change toolbar visibility when activity is destroyed";
+            return;
+        }
         if (key != TOOLBAR_HIDDEN) return;
 
         boolean hide = mModel.get(TOOLBAR_HIDDEN);

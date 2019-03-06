@@ -773,7 +773,9 @@ public class VrShell extends GvrLayout
             removeVrRootView();
         }
 
-        mActivity.getFullscreenManager().exitPersistentFullscreenMode();
+        if (!mActivity.isActivityFinishingOrDestroyed()) {
+            mActivity.getFullscreenManager().exitPersistentFullscreenMode();
+        }
         reparentAllTabs(mActivity.getWindowAndroid());
         if (mNativeVrShell != 0) {
             nativeDestroy(mNativeVrShell);
