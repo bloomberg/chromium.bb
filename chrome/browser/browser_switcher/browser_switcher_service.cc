@@ -30,6 +30,9 @@ namespace {
 // the sitelist fetch.
 const base::TimeDelta kFetchSitelistDelay = base::TimeDelta::FromSeconds(60);
 
+// How long to wait after a fetch to re-fetch the sitelist to keep it fresh.
+const base::TimeDelta kRefreshSitelistDelay = base::TimeDelta::FromMinutes(30);
+
 // How many times to re-try fetching the XML file for the sitelist.
 const int kFetchNumRetries = 1;
 
@@ -80,8 +83,7 @@ RulesetSource::~RulesetSource() = default;
 
 XmlDownloader::XmlDownloader(Profile* profile,
                              std::vector<RulesetSource> sources,
-                             base::OnceCallback<void()> all_done_callback,
-                             base::TimeDelta delay)
+                             base::OnceCallback<void()> all_done_callback)
     : sources_(std::move(sources)),
       all_done_callback_(std::move(all_done_callback)),
       weak_ptr_factory_(this) {
@@ -90,10 +92,7 @@ XmlDownloader::XmlDownloader(Profile* profile,
   other_url_factory_ =
       content::BrowserContext::GetDefaultStoragePartition(profile)
           ->GetURLLoaderFactoryForBrowserProcess();
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(&XmlDownloader::FetchXml, weak_ptr_factory_.GetWeakPtr()),
-      delay);
+  FetchXml();
 }
 
 XmlDownloader::~XmlDownloader() = default;
@@ -153,10 +152,11 @@ BrowserSwitcherService::BrowserSwitcherService(Profile* profile)
       driver_(new AlternativeBrowserDriverImpl(&prefs_)),
       sitelist_(new BrowserSwitcherSitelistImpl(&prefs_)),
       weak_ptr_factory_(this) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&BrowserSwitcherService::StartDownload,
-                                weak_ptr_factory_.GetWeakPtr(),
-                                base::Unretained(profile)));
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&BrowserSwitcherService::StartDownload,
+                     weak_ptr_factory_.GetWeakPtr(), base::Unretained(profile)),
+      fetch_delay_);
 }
 
 BrowserSwitcherService::~BrowserSwitcherService() = default;
@@ -167,9 +167,14 @@ void BrowserSwitcherService::StartDownload(Profile* profile) {
     sitelist_downloader_ = std::make_unique<XmlDownloader>(
         profile, std::move(sources),
         base::BindOnce(&BrowserSwitcherService::OnAllRulesetsParsed,
-                       base::Unretained(this)),
-        fetch_delay_);
+                       base::Unretained(this)));
   }
+  // Refresh in 30 minutes, so the sitelists are never too stale.
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&BrowserSwitcherService::StartDownload,
+                     weak_ptr_factory_.GetWeakPtr(), base::Unretained(profile)),
+      refresh_delay_);
 }
 
 void BrowserSwitcherService::Shutdown() {
@@ -225,10 +230,15 @@ void BrowserSwitcherService::OnExternalSitelistParsed(ParsedXml xml) {
 }
 
 base::TimeDelta BrowserSwitcherService::fetch_delay_ = kFetchSitelistDelay;
+base::TimeDelta BrowserSwitcherService::refresh_delay_ = kRefreshSitelistDelay;
 
 // static
 void BrowserSwitcherService::SetFetchDelayForTesting(base::TimeDelta delay) {
   fetch_delay_ = delay;
+}
+
+void BrowserSwitcherService::SetRefreshDelayForTesting(base::TimeDelta delay) {
+  refresh_delay_ = delay;
 }
 
 }  // namespace browser_switcher

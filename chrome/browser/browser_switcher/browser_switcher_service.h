@@ -51,8 +51,7 @@ class XmlDownloader {
   // |all_done_callback| once all the rulesets have been processed.
   XmlDownloader(Profile* profile,
                 std::vector<RulesetSource> sources,
-                base::OnceCallback<void()> all_done_callback,
-                base::TimeDelta delay);
+                base::OnceCallback<void()> all_done_callback);
   virtual ~XmlDownloader();
 
  private:
@@ -93,6 +92,7 @@ class BrowserSwitcherService : public KeyedService {
   void SetSitelistForTesting(std::unique_ptr<BrowserSwitcherSitelist> sitelist);
 
   static void SetFetchDelayForTesting(base::TimeDelta delay);
+  static void SetRefreshDelayForTesting(base::TimeDelta delay);
 
  protected:
   // Return a platform-specific list of URLs to download 1 minute after startup,
@@ -103,6 +103,7 @@ class BrowserSwitcherService : public KeyedService {
 
   // Delay for the IEEM/external XML fetch tasks, launched from the constructor.
   static base::TimeDelta fetch_delay_;
+  static base::TimeDelta refresh_delay_;
 
  private:
   void StartDownload(Profile* profile);
