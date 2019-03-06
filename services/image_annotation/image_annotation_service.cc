@@ -12,7 +12,9 @@
 
 namespace image_annotation {
 
-constexpr base::Feature ImageAnnotationService::kExperiment;
+// static
+const base::Feature ImageAnnotationService::kExperiment{
+    "ImageAnnotationServiceExperimental", base::FEATURE_DISABLED_BY_DEFAULT};
 constexpr base::FeatureParam<std::string> ImageAnnotationService::kServerUrl;
 constexpr base::FeatureParam<std::string> ImageAnnotationService::kApiKey;
 constexpr base::FeatureParam<int> ImageAnnotationService::kThrottleMs;

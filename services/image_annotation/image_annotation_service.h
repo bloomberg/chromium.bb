@@ -23,9 +23,8 @@ namespace image_annotation {
 
 class ImageAnnotationService : public service_manager::Service {
  public:
-  // Whether or not to enable service logic for experimentation.
-  static constexpr base::Feature kExperiment{
-      "ImageAnnotationServiceExperimental", base::FEATURE_DISABLED_BY_DEFAULT};
+  // Whether or not to override service parameters for experimentation.
+  static const base::Feature kExperiment;
 
   ImageAnnotationService(
       service_manager::mojom::ServiceRequest request,
@@ -36,10 +35,9 @@ class ImageAnnotationService : public service_manager::Service {
  private:
   // Service params:
 
-  // The service will fail gracefully (i.e. return error codes) when this param
-  // is empty. This ensures graceful behavior when |kExperiment| is disabled.
-  static constexpr base::FeatureParam<std::string> kServerUrl{&kExperiment,
-                                                              "server_url", ""};
+  static constexpr base::FeatureParam<std::string> kServerUrl{
+      &kExperiment, "server_url",
+      "https://ckintersect-pa.googleapis.com/v1/intersect/pixels"};
   // An override Google API key. If empty, the API key with which the browser
   // was built (if any) will be used instead.
   static constexpr base::FeatureParam<std::string> kApiKey{&kExperiment,
