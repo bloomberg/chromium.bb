@@ -37,6 +37,9 @@ class BASE_EXPORT ServiceProviderImpl : public ::fuchsia::sys::ServiceProvider {
   void SetOnLastClientDisconnectedClosure(
       base::OnceClosure on_last_client_disconnected);
 
+  // Returns true if one or more clients are connected.
+  bool has_clients() const { return bindings_.size() != 0; }
+
  private:
   // fuchsia::sys::ServiceProvider implementation.
   void ConnectToService(std::string service_name,

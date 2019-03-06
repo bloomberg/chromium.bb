@@ -20,11 +20,22 @@ AgentImpl::ComponentStateBase::ComponentStateBase(
 
   // Tear down this instance when the client disconnects from the directory.
   service_provider_->SetOnLastClientDisconnectedClosure(base::BindOnce(
-      &ComponentStateBase::OnComponentDisconnected, base::Unretained(this)));
+      &ComponentStateBase::TeardownIfUnused, base::Unretained(this)));
 }
 
-void AgentImpl::ComponentStateBase::OnComponentDisconnected() {
+void AgentImpl::ComponentStateBase::TeardownIfUnused() {
   DCHECK(agent_impl_);
+
+  // Don't teardown if the ServiceProvider has client(s).
+  if (service_provider_->has_clients())
+    return;
+
+  // Don't teardown if caller-specified bindings still have clients.
+  for (auto& keepalive_callback : keepalive_callbacks_) {
+    if (keepalive_callback.Run())
+      return;
+  }
+
   agent_impl_->DeleteComponentState(component_id_);
   // Do not touch |this|, since it is already gone.
 }
