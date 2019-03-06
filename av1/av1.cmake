@@ -453,13 +453,13 @@ function(setup_av1_targets)
 
   if(HAVE_NEON)
     if(AOM_AV1_COMMON_INTRIN_NEON)
-      add_intrinsics_object_library("${AOM_INTRIN_NEON_FLAG}" "neon"
+      add_intrinsics_object_library("${AOM_NEON_INTRIN_FLAG}" "neon"
                                     "aom_av1_common"
                                     "AOM_AV1_COMMON_INTRIN_NEON" "aom")
     endif()
 
     if(AOM_AV1_ENCODER_INTRIN_NEON)
-      add_intrinsics_object_library("${AOM_INTRIN_NEON_FLAG}" "neon"
+      add_intrinsics_object_library("${AOM_NEON_INTRIN_FLAG}" "neon"
                                     "aom_av1_encoder"
                                     "AOM_AV1_ENCODER_INTRIN_NEON" "aom")
     endif()
