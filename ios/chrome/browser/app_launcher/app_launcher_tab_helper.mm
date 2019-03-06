@@ -17,6 +17,7 @@
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #import "ios/chrome/browser/tabs/legacy_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab.h"
+#import "ios/chrome/browser/u2f/u2f_tab_helper.h"
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/url_scheme_util.h"
@@ -191,7 +192,6 @@ bool AppLauncherTabHelper::ShouldAllowRequest(
   if (!IsValidAppUrl(request_url))
     return false;
 
-  Tab* tab = LegacyTabHelper::GetTabForWebState(web_state_);
 
   // If this is a Universal 2nd Factor (U2F) call, the origin needs to be
   // checked to make sure it's secure and then update the |request_url| with
@@ -201,7 +201,8 @@ bool AppLauncherTabHelper::ShouldAllowRequest(
                       ->GetLastCommittedItem()
                       ->GetURL()
                       .GetOrigin();
-    request_url = [tab XCallbackFromRequestURL:request_url originURL:origin];
+    U2FTabHelper* u2f_helper = U2FTabHelper::FromWebState(web_state_);
+    request_url = u2f_helper->GetXCallbackUrl(request_url, origin);
     // If the URL was rejected by the U2F handler, |request_url| will be empty.
     if (!request_url.is_valid())
       return false;
@@ -214,6 +215,8 @@ bool AppLauncherTabHelper::ShouldAllowRequest(
       pending_item ? pending_item->GetOriginalRequestURL() : GURL::EmptyGURL();
   bool is_link_transition = ui::PageTransitionTypeIncludingQualifiersIs(
       request_info.transition_type, ui::PAGE_TRANSITION_LINK);
+
+  Tab* tab = LegacyTabHelper::GetTabForWebState(web_state_);
 
   if (base::FeatureList::IsEnabled(kAppLauncherRefresh)) {
     if (!is_link_transition && original_pending_url.is_valid()) {

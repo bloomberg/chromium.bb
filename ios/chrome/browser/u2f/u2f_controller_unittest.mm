@@ -64,32 +64,6 @@ class U2FControllerTest : public PlatformTest {
   U2FController* _U2FController;
 };
 
-TEST_F(U2FControllerTest, IsU2FURLTest) {
-  GURL U2FURL("chromium://u2f-callback?isU2F=1");
-  EXPECT_TRUE([U2FController isU2FURL:U2FURL]);
-
-  GURL wrongU2FURL("chromium://u2f-callback?isU2F=0");
-  EXPECT_FALSE([U2FController isU2FURL:wrongU2FURL]);
-
-  GURL nonU2FURL("chromium://u2f-callback");
-  EXPECT_FALSE([U2FController isU2FURL:nonU2FURL]);
-
-  GURL invalidURL;
-  EXPECT_FALSE([U2FController isU2FURL:invalidURL]);
-}
-
-TEST_F(U2FControllerTest, TabIDFromResponseURLTest) {
-  NSString* tabID = @"B05B1860-18BA-43EA-B7DC-470D9F918FF5";
-  GURL correctURL(
-      "chromium://"
-      "u2f-callback?tabID=B05B1860-18BA-43EA-B7DC-470D9F918FF5");
-  EXPECT_TRUE(
-      [[U2FController tabIDFromResponseURL:correctURL] isEqualToString:tabID]);
-
-  GURL wrongURL("chromium://u2fdemo.appspot.com");
-  EXPECT_EQ(nil, [U2FController tabIDFromResponseURL:wrongURL]);
-}
-
 TEST_F(U2FControllerTest, XCallbackFromRequestURLWithCorrectFlowTest) {
   // Test when request is legal and properly formatted.
   GURL requestURL("u2f://accounts.google.com?data=abc&def%26ghi");

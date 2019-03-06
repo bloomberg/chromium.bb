@@ -14,13 +14,9 @@ class WebState;
 }  // namespace web
 
 // This class provides methods needed to handle FIDO U2F calls.
+// U2FController shouldn't be used outside of this directory. Instead all users
+// should use U2FTabHelper.
 @interface U2FController : NSObject
-
-// Checks if the given URL is U2F callback.
-+ (BOOL)isU2FURL:(const GURL&)URL;
-
-// Returns the tabID in the U2F callback. Returns nil if tabID not found.
-+ (NSString*)tabIDFromResponseURL:(const GURL&)URL;
 
 // Generates the x-callback GURL for making FIDO U2F requests. Returns empty
 // GURL if origin is not secure.

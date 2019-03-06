@@ -61,22 +61,6 @@ const char kRequestIDKey[] = "requestId";
   return self;
 }
 
-+ (BOOL)isU2FURL:(const GURL&)URL {
-  std::string isU2F;
-  if (net::GetValueForKeyInQuery(URL, std::string(kIsU2FKey), &isU2F)) {
-    return isU2F == "1";
-  }
-  return NO;
-}
-
-+ (NSString*)tabIDFromResponseURL:(const GURL&)URL {
-  std::string tabID;
-  if (net::GetValueForKeyInQuery(URL, std::string(kTabIDKey), &tabID)) {
-    return base::SysUTF8ToNSString(tabID);
-  }
-  return nil;
-}
-
 - (GURL)XCallbackFromRequestURL:(const GURL&)requestURL
                       originURL:(const GURL&)originURL
                          tabURL:(const GURL&)tabURL
