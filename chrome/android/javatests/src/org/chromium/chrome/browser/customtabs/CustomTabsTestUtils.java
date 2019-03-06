@@ -34,6 +34,18 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public class CustomTabsTestUtils {
 
+    /** A plain old data class that holds the return value from {@link #bindWithCallback}. */
+    public static class ClientAndSession {
+        public final CustomTabsClient client;
+        public final CustomTabsSession session;
+
+        /** Creates and populates the class. */
+        public ClientAndSession(CustomTabsClient client, CustomTabsSession session) {
+            this.client = client;
+            this.session = session;
+        }
+    }
+
     /**
      * Creates the simplest intent that is sufficient to let {@link ChromeLauncherActivity} launch
      * the {@link CustomTabActivity}.
@@ -61,9 +73,10 @@ public class CustomTabsTestUtils {
         ThreadUtils.runOnUiThreadBlocking(connection::cleanupAll);
     }
 
-    public static CustomTabsSession bindWithCallback(final CustomTabsCallback callback)
+    public static ClientAndSession bindWithCallback(final CustomTabsCallback callback)
             throws InterruptedException, TimeoutException {
-        final AtomicReference<CustomTabsSession> sessionReference = new AtomicReference<>(null);
+        final AtomicReference<CustomTabsSession> sessionReference = new AtomicReference<>();
+        final AtomicReference<CustomTabsClient> clientReference = new AtomicReference<>();
         final CallbackHelper waitForConnection = new CallbackHelper();
         CustomTabsClient.bindCustomTabsService(InstrumentationRegistry.getContext(),
                 InstrumentationRegistry.getTargetContext().getPackageName(),
@@ -74,12 +87,13 @@ public class CustomTabsTestUtils {
                     @Override
                     public void onCustomTabsServiceConnected(
                             ComponentName name, CustomTabsClient client) {
+                        clientReference.set(client);
                         sessionReference.set(client.newSession(callback));
                         waitForConnection.notifyCalled();
                     }
                 });
         waitForConnection.waitForCallback(0);
-        return sessionReference.get();
+        return new ClientAndSession(clientReference.get(), sessionReference.get());
     }
 
     /** Calls warmup() and waits for all the tasks to complete. Fails the test otherwise. */
@@ -94,7 +108,7 @@ public class CustomTabsTestUtils {
                     startupCallbackHelper.notifyCalled();
                 }
             }
-        });
+        }).session;
         Assert.assertTrue(connection.warmup(0));
         startupCallbackHelper.waitForCallback(0);
         return connection;

@@ -757,7 +757,7 @@ public class CustomTabActivityTest {
                     callbackTriggered.notifyCalled();
                 }
             }
-        });
+        }).session;
 
         Intent intent = new CustomTabsIntent.Builder(session).build().intent;
         intent.setData(Uri.parse(mTestPage));
@@ -1302,7 +1302,7 @@ public class CustomTabActivityTest {
                     navigationFinishedSemaphore.release();
                 }
             }
-        });
+        }).session;
         Intent intent = new CustomTabsIntent.Builder(session).build().intent;
         intent.setData(Uri.parse(mTestPage));
         intent.setComponent(new ComponentName(
@@ -1361,7 +1361,7 @@ public class CustomTabActivityTest {
             public void onNavigationEvent(int navigationEvent, Bundle extras) {
                 if (navigationEvent == CustomTabsCallback.NAVIGATION_FINISHED) semaphore.release();
             }
-        });
+        }).session;
         Intent intent = new CustomTabsIntent.Builder(session).build().intent;
         intent.setData(Uri.parse(mTestPage));
         intent.setComponent(new ComponentName(
@@ -1602,7 +1602,7 @@ public class CustomTabActivityTest {
                     public void onPostMessage(String message, Bundle extras) {
                         onPostMessageHelper.notifyCalled();
                     }
-                });
+                }).session;
         session.requestPostMessageChannel(null);
         Intent intent = new CustomTabsIntent.Builder(session).build().intent;
         intent.setData(Uri.parse(url));
@@ -1642,7 +1642,7 @@ public class CustomTabActivityTest {
                     public void onPostMessage(String message, Bundle extras) {
                         onPostMessageHelper.notifyCalled();
                     }
-                });
+                }).session;
 
         Intent intent = new CustomTabsIntent.Builder(session).build().intent;
         intent.setData(Uri.parse(url));
@@ -1719,7 +1719,7 @@ public class CustomTabActivityTest {
                     public void onMessageChannelReady(Bundle extras) {
                         messageChannelHelper.notifyCalled();
                     }
-                });
+                }).session;
 
         Intent intent = new CustomTabsIntent.Builder(session).build().intent;
         intent.setData(Uri.parse(url));
@@ -2618,7 +2618,7 @@ public class CustomTabActivityTest {
             }
         };
 
-        CustomTabsSession session = CustomTabsTestUtils.bindWithCallback(cb);
+        CustomTabsSession session = CustomTabsTestUtils.bindWithCallback(cb).session;
         Intent intent = new CustomTabsIntent.Builder(session).build().intent;
 
         if (allowMetrics) {
