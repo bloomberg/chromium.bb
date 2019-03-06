@@ -130,9 +130,9 @@ class TestHttpClient {
  private:
   bool IsCompleteResponse(const std::string& response) {
     // Check end of headers first.
-    int end_of_headers =
+    size_t end_of_headers =
         net::HttpUtil::LocateEndOfHeaders(response.data(), response.size());
-    if (end_of_headers < 0)
+    if (end_of_headers == std::string::npos)
       return false;
 
     // Return true if response has data equal to or more than content length.

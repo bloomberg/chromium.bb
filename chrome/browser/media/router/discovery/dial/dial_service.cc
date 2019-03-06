@@ -321,9 +321,9 @@ void DialServiceImpl::DialSocket::HandleResponse(int bytes_read) {
 bool DialServiceImpl::DialSocket::ParseResponse(const std::string& response,
                                                 const base::Time& response_time,
                                                 DialDeviceData* device) {
-  int headers_end =
+  size_t headers_end =
       HttpUtil::LocateEndOfHeaders(response.c_str(), response.size());
-  if (headers_end < 1) {
+  if (headers_end == 0 || headers_end == std::string::npos) {
     VLOG(1) << "Headers invalid or empty, ignoring: " << response;
     return false;
   }

@@ -228,8 +228,8 @@ class NET_EXPORT_PRIVATE HttpStreamParser {
   int read_buf_unused_offset_;
 
   // The amount beyond |read_buf_unused_offset_| where the status line starts;
-  // -1 if not found yet.
-  int response_header_start_offset_;
+  // std::string::npos if not found yet.
+  size_t response_header_start_offset_;
 
   // The amount of received data.  If connection is reused then intermediate
   // value may be bigger than final.
