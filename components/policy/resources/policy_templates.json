@@ -14651,7 +14651,10 @@
     {
       'name': 'PluginVmLicenseKey',
       'type': 'string',
-      'schema': { 'type': 'string' },
+      'schema': {
+        'sensitiveValue': True,
+        'type': 'string'
+      },
       'supported_on': ['chrome_os:73-'],
       'device_only': True,
       'features': {
