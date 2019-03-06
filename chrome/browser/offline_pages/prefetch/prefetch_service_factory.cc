@@ -106,8 +106,7 @@ KeyedService* PrefetchServiceFactory::BuildServiceInstanceFor(
     suggested_articles_observer = std::make_unique<SuggestedArticlesObserver>();
     thumbnail_fetcher = std::make_unique<ThumbnailFetcherImpl>();
   } else {
-    SimpleFactoryKey* simple_factory_key =
-        Profile::GetSimpleFactoryKey(profile);
+    SimpleFactoryKey* simple_factory_key = profile->GetSimpleFactoryKey();
     image_fetcher::CachedImageFetcherService* image_fetcher_service =
         image_fetcher::CachedImageFetcherServiceFactory::GetForKey(
             simple_factory_key, profile->GetPrefs());

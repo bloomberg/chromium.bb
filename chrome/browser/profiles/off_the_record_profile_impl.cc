@@ -137,7 +137,11 @@ void NotifyOTRProfileDestroyedOnIOThread(void* original_profile,
 }  // namespace
 
 OffTheRecordProfileImpl::OffTheRecordProfileImpl(Profile* real_profile)
-    : profile_(real_profile), start_time_(base::Time::Now()) {
+    : profile_(real_profile),
+      start_time_(base::Time::Now()),
+      key_(
+          std::make_unique<SimpleFactoryKey>(profile_->GetPath(),
+                                             profile_->GetSimpleFactoryKey())) {
   // Must happen before we ask for prefs as prefs needs the connection to the
   // service manager, which is set up in Initialize.
   BrowserContext::Initialize(this, profile_->GetPath());
@@ -148,7 +152,6 @@ OffTheRecordProfileImpl::OffTheRecordProfileImpl(Profile* real_profile)
           ->CreateDelegate());
   // Register on BrowserContext.
   user_prefs::UserPrefs::Set(this, prefs_.get());
-  off_the_record_key_ = profile_->GetOffTheRecordKey();
 }
 
 void OffTheRecordProfileImpl::Init() {
@@ -228,7 +231,7 @@ OffTheRecordProfileImpl::~OffTheRecordProfileImpl() {
   // in the BrowserContextDependencyManager's dependency graph can depend on the
   // ones in the SimpleDependencyManager's graph.
   SimpleDependencyManager::GetInstance()->DestroyKeyedServices(
-      GetOffTheRecordKey());
+      GetSimpleFactoryKey());
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   base::PostTaskWithTraits(
@@ -549,12 +552,9 @@ base::Time OffTheRecordProfileImpl::GetStartTime() const {
   return start_time_;
 }
 
-SimpleFactoryKey* OffTheRecordProfileImpl::GetOriginalKey() const {
-  return off_the_record_key_->original_key();
-}
-
-SimpleFactoryKey* OffTheRecordProfileImpl::GetOffTheRecordKey() const {
-  return off_the_record_key_;
+SimpleFactoryKey* OffTheRecordProfileImpl::GetSimpleFactoryKey() const {
+  DCHECK(key_);
+  return key_.get();
 }
 
 void OffTheRecordProfileImpl::SetExitType(ExitType exit_type) {

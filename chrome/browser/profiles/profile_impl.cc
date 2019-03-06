@@ -468,6 +468,7 @@ ProfileImpl::ProfileImpl(
       io_data_(this),
       last_session_exit_type_(EXIT_NORMAL),
       start_time_(base::Time::Now()),
+      key_(std::make_unique<SimpleFactoryKey>(GetPath())),
       delegate_(delegate),
       reporting_permissions_checker_factory_(this),
       shared_cors_origin_access_list_(
@@ -476,11 +477,8 @@ ProfileImpl::ProfileImpl(
   DCHECK(!path.empty()) << "Using an empty path will attempt to write "
                         << "profile files to the root directory!";
 
-  // TODO(hanxi): get |key_| and |off_the_record_key_ |from the startup data if
-  // they have been created when this profile is created.
-  key_ = std::make_unique<SimpleFactoryKey>(GetPath());
-  off_the_record_key_ =
-      std::make_unique<SimpleFactoryKey>(GetPath(), key_.get());
+  // TODO(hanxi): get |key_| from the startup data if it has already been
+  // created when this profile is created.
 
 #if defined(OS_CHROMEOS)
   if (!chromeos::ProfileHelper::IsSigninProfile(this) &&
@@ -793,7 +791,7 @@ ProfileImpl::~ProfileImpl() {
   // in the BrowserContextDependencyManager's dependency graph can depend on the
   // ones in the SimpleDependencyManager's graph.
   SimpleDependencyManager::GetInstance()->DestroyKeyedServices(
-      GetOriginalKey());
+      GetSimpleFactoryKey());
 
   // This causes the Preferences file to be written to disk.
   if (prefs_loaded)
@@ -836,14 +834,6 @@ scoped_refptr<base::SequencedTaskRunner> ProfileImpl::GetIOTaskRunner() {
 
 bool ProfileImpl::IsOffTheRecord() const {
   return false;
-}
-
-SimpleFactoryKey* ProfileImpl::GetOriginalKey() const {
-  return key_.get();
-}
-
-SimpleFactoryKey* ProfileImpl::GetOffTheRecordKey() const {
-  return off_the_record_key_.get();
 }
 
 Profile* ProfileImpl::GetOffTheRecordProfile() {
@@ -1339,6 +1329,11 @@ bool ProfileImpl::IsSameProfile(Profile* profile) {
 
 base::Time ProfileImpl::GetStartTime() const {
   return start_time_;
+}
+
+SimpleFactoryKey* ProfileImpl::GetSimpleFactoryKey() const {
+  DCHECK(key_);
+  return key_.get();
 }
 
 #if BUILDFLAG(ENABLE_SESSION_SERVICE)

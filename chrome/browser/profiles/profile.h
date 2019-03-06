@@ -121,9 +121,6 @@ class Profile : public content::BrowserContext {
   // Returns the profile corresponding to the given WebUI.
   static Profile* FromWebUI(content::WebUI* web_ui);
 
-  // Returns the SimpleFactoryKey asscociated with this |profile|.
-  static SimpleFactoryKey* GetSimpleFactoryKey(Profile* profile);
-
   // content::BrowserContext implementation ------------------------------------
 
   // Typesafe upcast.
@@ -225,12 +222,9 @@ class Profile : public content::BrowserContext {
   // the user started chrome.
   virtual base::Time GetStartTime() const = 0;
 
-  // Returns the key used by the original profile to index KeyedService
-  // instances created by a SimpleKeyedServiceFactory.
-  virtual SimpleFactoryKey* GetOriginalKey() const = 0;
-  // Returns the key used by an incognito profile to index KeyedService
-  // instances created by a SimpleKeyedServiceFactory.
-  virtual SimpleFactoryKey* GetOffTheRecordKey() const = 0;
+  // Returns the key used to index KeyedService instances created by a
+  // SimpleKeyedServiceFactory.
+  virtual SimpleFactoryKey* GetSimpleFactoryKey() const = 0;
 
   // Returns the last directory that was chosen for uploading or opening a file.
   virtual base::FilePath last_selected_directory() = 0;

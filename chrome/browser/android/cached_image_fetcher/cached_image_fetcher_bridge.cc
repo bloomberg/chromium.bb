@@ -65,7 +65,7 @@ jlong JNI_CachedImageFetcherBridge_Init(
     JNIEnv* j_env,
     const JavaParamRef<jobject>& j_profile) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
-  SimpleFactoryKey* simple_factory_key = Profile::GetSimpleFactoryKey(profile);
+  SimpleFactoryKey* simple_factory_key = profile->GetSimpleFactoryKey();
   base::FilePath file_path =
       CachedImageFetcherServiceFactory::GetCachePath(simple_factory_key)
           .Append(kPathPostfix);
