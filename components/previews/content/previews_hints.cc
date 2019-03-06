@@ -6,7 +6,6 @@
 
 #include <unordered_set>
 
-#include "base/command_line.h"
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/metrics/histogram_functions.h"
@@ -484,14 +483,13 @@ bool PreviewsHints::IsBlacklisted(const GURL& url, PreviewsType type) const {
   // Check large scale blacklists received from the server.
   // (At some point, we may have blacklisting to check in HintCache as well.)
   if (type == PreviewsType::LITE_PAGE_REDIRECT) {
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kIgnoreLitePageRedirectOptimizationBlacklist)) {
-      return false;
+    // If no bloom filter blacklist is provided by the component update, assume
+    // a server error and return true.
+    if (!lite_page_redirect_blacklist_) {
+      return true;
     }
 
-    if (lite_page_redirect_blacklist_) {
-      return lite_page_redirect_blacklist_->ContainsHostSuffix(url);
-    }
+    return lite_page_redirect_blacklist_->ContainsHostSuffix(url);
   }
 
   return false;

@@ -138,6 +138,7 @@ class PreviewsLitePageServerBrowserTest
     cmd->AppendSwitchASCII("force-variation-ids", "42");
     cmd->AppendSwitchASCII("host-rules", "MAP * 127.0.0.1");
     cmd->AppendSwitch("enable-data-reduction-proxy-force-pingback");
+    cmd->AppendSwitch("ignore-litepage-redirect-optimization-blacklist");
   }
 
   void SetUp() override {
@@ -1475,6 +1476,7 @@ class PreviewsLitePageServerDataSaverBrowserTest
     cmd->AppendSwitch(previews::switches::kIgnorePreviewsBlacklist);
     cmd->AppendSwitchASCII("force-effective-connection-type", "Slow-2G");
     cmd->AppendSwitchASCII("host-rules", "MAP * 127.0.0.1");
+    cmd->AppendSwitch("ignore-litepage-redirect-optimization-blacklist");
   }
 };
 
@@ -1509,6 +1511,7 @@ class PreviewsLitePageServerNoDataSaverHeaderBrowserTest
     cmd->AppendSwitch("enable-spdy-proxy-auth");
     cmd->AppendSwitchASCII("force-effective-connection-type", "Slow-2G");
     cmd->AppendSwitchASCII("host-rules", "MAP * 127.0.0.1");
+    cmd->AppendSwitch("ignore-litepage-redirect-optimization-blacklist");
   }
 };
 
@@ -1612,6 +1615,7 @@ class PreviewsLitePageNotificationDSDisabledBrowserTest
     cmd->AppendSwitch(previews::switches::kIgnorePreviewsBlacklist);
     cmd->AppendSwitchASCII("force-effective-connection-type", "Slow-2G");
     cmd->AppendSwitchASCII("host-rules", "MAP * 127.0.0.1");
+    cmd->AppendSwitch("ignore-litepage-redirect-optimization-blacklist");
   }
 };
 

@@ -129,11 +129,22 @@ bool PreviewsOptimizationGuide::IsWhitelisted(
 bool PreviewsOptimizationGuide::IsBlacklisted(const GURL& url,
                                               PreviewsType type) const {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
-  if (!hints_) {
-    return false;
+
+  if (type == PreviewsType::LITE_PAGE_REDIRECT) {
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kIgnoreLitePageRedirectOptimizationBlacklist)) {
+      return false;
+    }
+
+    if (!hints_)
+      return true;
+
+    return hints_->IsBlacklisted(url, PreviewsType::LITE_PAGE_REDIRECT);
   }
 
-  return hints_->IsBlacklisted(url, type);
+  // This function is only used by lite page redirect.
+  NOTREACHED();
+  return false;
 }
 
 void PreviewsOptimizationGuide::OnLoadedHint(
