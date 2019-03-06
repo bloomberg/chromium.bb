@@ -18,7 +18,6 @@ import android.content.Context;
 import android.os.Bundle;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -154,9 +153,7 @@ public class PrefetchBackgroundTaskUnitTest {
     /**
      * Tests that the background task is scheduled when limitless prefetching is enabled:
      * the waiting delay is shorter but the provided backoff time should be respected.
-     * TODO(https://crbug.com/803584): fix limitless mode or fully remove it.
      */
-    @Ignore
     @Test
     public void scheduleTaskLimitless() {
         final int additionalDelaySeconds = 20;
@@ -215,9 +212,7 @@ public class PrefetchBackgroundTaskUnitTest {
     /**
      * Tests that the background task is correctly started when conditions are sufficient for
      * limitless prefetching.
-     * TODO(https://crbug.com/803584): fix limitless mode or fully remove it.
      */
-    @Ignore
     @Test
     public void createNativeTaskLimitless() {
         final ArrayList<Boolean> reschedules = new ArrayList<>();
@@ -310,9 +305,7 @@ public class PrefetchBackgroundTaskUnitTest {
     /**
      * Tests that the background task is not started (rescheduled) when there's no connection and
      * limitless prefetching is enabled.
-     * TODO(https://crbug.com/803584): fix limitless mode or fully remove it.
      */
-    @Ignore
     @Test
     public void testNoNetworkLimitless() throws Exception {
         // Setup no network conditions.
