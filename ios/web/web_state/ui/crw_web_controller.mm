@@ -385,12 +385,6 @@ const CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
 @property(nonatomic, readwrite) web::PageDisplayState pageDisplayState;
 // The currently displayed native controller, if any.
 @property(weak, nonatomic, readwrite) id<CRWNativeContent> nativeController;
-// Returns NavigationManager's session controller.
-@property(weak, nonatomic, readonly) CRWSessionController* sessionController;
-// The associated NavigationManagerImpl.
-@property(nonatomic, readonly) NavigationManagerImpl* navigationManagerImpl;
-// Whether the associated WebState has an opener.
-@property(nonatomic, readonly) BOOL hasOpener;
 // Dictionary where keys are the names of WKWebView properties and values are
 // selector names which should be called when a corresponding property has
 // changed. e.g. @{ @"URL" : @"webViewURLDidChange" } means that
@@ -419,6 +413,24 @@ const CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
 // Facade for Mojo API.
 @property(nonatomic, readonly) web::MojoFacade* mojoFacade;
 
+// YES if a user interaction has been registered at any time since the page has
+// loaded.
+@property(nonatomic, readwrite) BOOL userInteractionRegistered;
+
+@property(nonatomic, readonly) web::WebState* webState;
+@property(nonatomic, readonly) web::WebStateImpl* webStateImpl;
+
+// Returns the x, y offset the content has been scrolled.
+@property(nonatomic, readonly) CGPoint scrollPosition;
+
+// Session Information
+// -------------------
+// Returns NavigationManager's session controller.
+@property(weak, nonatomic, readonly) CRWSessionController* sessionController;
+// The associated NavigationManagerImpl.
+@property(nonatomic, readonly) NavigationManagerImpl* navigationManagerImpl;
+// Whether the associated WebState has an opener.
+@property(nonatomic, readonly) BOOL hasOpener;
 // TODO(crbug.com/692871): Remove these functions and replace with more
 // appropriate NavigationItem getters.
 // Returns the navigation item for the current page.
@@ -430,16 +442,6 @@ const CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
 // The HTTP headers associated with the current navigation item. These are nil
 // unless the request was a POST.
 @property(weak, nonatomic, readonly) NSDictionary* currentHTTPHeaders;
-
-// YES if a user interaction has been registered at any time since the page has
-// loaded.
-@property(nonatomic, readwrite) BOOL userInteractionRegistered;
-
-@property(nonatomic, readonly) web::WebState* webState;
-@property(nonatomic, readonly) web::WebStateImpl* webStateImpl;
-
-// Returns the x, y offset the content has been scrolled.
-@property(nonatomic, readonly) CGPoint scrollPosition;
 
 // Called when the web page has changed document and/or URL, and so the page
 // navigation should be reported to the delegate, and internal state updated to
@@ -697,8 +699,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 // Sets scroll offset value for webview scroll view from |scrollState|.
 - (void)applyWebViewScrollOffsetFromScrollState:
     (const web::PageScrollState&)scrollState;
-// Returns the referrer for the current page.
-- (web::Referrer)currentReferrer;
 // Adds a new NavigationItem with the given URL and state object to the history
 // stack. A state object is a serialized generic JavaScript object that contains
 // details of the UI's state for a given NavigationItem/URL.
@@ -1027,6 +1027,214 @@ GURL URLEscapedForHistory(const GURL& url) {
   _allowsBackForwardNavigationGestures = allowsBackForwardNavigationGestures;
   _webView.allowsBackForwardNavigationGestures =
       allowsBackForwardNavigationGestures;
+}
+
+#pragma mark - Private properties accessors
+
+- (WKWebView*)webView {
+  return _webView;
+}
+
+- (UIScrollView*)webScrollView {
+  return [_webView scrollView];
+}
+
+- (web::PageDisplayState)pageDisplayState {
+  web::PageDisplayState displayState;
+  // If a native controller is present, record its display state instead of that
+  // of the underlying placeholder webview.
+  if (self.nativeController) {
+    if ([self.nativeController respondsToSelector:@selector(contentOffset)]) {
+      displayState.scroll_state().set_content_offset(
+          [self.nativeController contentOffset]);
+    }
+    if ([self.nativeController respondsToSelector:@selector(contentInset)]) {
+      displayState.scroll_state().set_content_inset(
+          [self.nativeController contentInset]);
+    }
+  } else if (_webView) {
+    displayState.set_scroll_state(web::PageScrollState(
+        self.scrollPosition, self.webScrollView.contentInset));
+    UIScrollView* scrollView = self.webScrollView;
+    displayState.zoom_state().set_minimum_zoom_scale(
+        scrollView.minimumZoomScale);
+    displayState.zoom_state().set_maximum_zoom_scale(
+        scrollView.maximumZoomScale);
+    displayState.zoom_state().set_zoom_scale(scrollView.zoomScale);
+  }
+  return displayState;
+}
+
+- (void)setPageDisplayState:(web::PageDisplayState)displayState {
+  if (!displayState.IsValid())
+    return;
+  if (_webView) {
+    // Page state is restored after a page load completes.  If the user has
+    // scrolled or changed the zoom scale while the page is still loading, don't
+    // restore any state since it will confuse the user.
+    web::PageDisplayState currentPageDisplayState = self.pageDisplayState;
+    if (currentPageDisplayState.scroll_state() ==
+            _displayStateOnStartLoading.scroll_state() &&
+        !_pageHasZoomed) {
+      [self applyPageDisplayState:displayState];
+    }
+  }
+}
+
+- (id<CRWNativeContent>)nativeController {
+  return [_containerView nativeController];
+}
+
+- (void)setNativeController:(id<CRWNativeContent>)nativeController {
+  // Check for pointer equality.
+  if (self.nativeController == nativeController)
+    return;
+
+  // Unset the delegate on the previous instance.
+  if ([self.nativeController respondsToSelector:@selector(setDelegate:)])
+    [self.nativeController setDelegate:nil];
+
+  [_containerView displayNativeContent:nativeController];
+  [self setNativeControllerWebUsageEnabled:_webUsageEnabled];
+}
+
+- (NSDictionary*)WKWebViewObservers {
+  return @{
+    @"serverTrust" : @"webViewSecurityFeaturesDidChange",
+    @"estimatedProgress" : @"webViewEstimatedProgressDidChange",
+    @"hasOnlySecureContent" : @"webViewSecurityFeaturesDidChange",
+    @"title" : @"webViewTitleDidChange",
+    @"loading" : @"webViewLoadingStateDidChange",
+    @"URL" : @"webViewURLDidChange",
+    @"canGoForward" : @"webViewBackForwardStateDidChange",
+    @"canGoBack" : @"webViewBackForwardStateDidChange"
+  };
+}
+
+- (GURL)currentURL {
+  web::URLVerificationTrustLevel trustLevel =
+      web::URLVerificationTrustLevel::kNone;
+  return [self currentURLWithTrustLevel:&trustLevel];
+}
+
+- (web::Referrer)currentReferrer {
+  // Referrer string doesn't include the fragment, so in cases where the
+  // previous URL is equal to the current referrer plus the fragment the
+  // previous URL is returned as current referrer.
+  NSString* referrerString = _currentReferrerString;
+
+  // In case of an error evaluating the JavaScript simply return empty string.
+  if ([referrerString length] == 0)
+    return web::Referrer();
+
+  web::NavigationItem* item = self.currentNavItem;
+  GURL navigationURL = item ? item->GetVirtualURL() : GURL::EmptyGURL();
+  NSString* previousURLString = base::SysUTF8ToNSString(navigationURL.spec());
+  // Check if the referrer is equal to the previous URL minus the hash symbol.
+  // L'#' is used to convert the char '#' to a unichar.
+  if ([previousURLString length] > [referrerString length] &&
+      [previousURLString hasPrefix:referrerString] &&
+      [previousURLString characterAtIndex:[referrerString length]] == L'#') {
+    referrerString = previousURLString;
+  }
+  // Since referrer is being extracted from the destination page, the correct
+  // policy from the origin has *already* been applied. Since the extracted URL
+  // is the post-policy value, and the source policy is no longer available,
+  // the policy is set to Always so that whatever WebKit decided to send will be
+  // re-sent when replaying the entry.
+  // TODO(stuartmorgan): When possible, get the real referrer and policy in
+  // advance and use that instead. https://crbug.com/227769.
+  return web::Referrer(GURL(base::SysNSStringToUTF8(referrerString)),
+                       web::ReferrerPolicyAlways);
+}
+
+- (BOOL)userClickedRecently {
+  // Scrolling generates a pair of touch on/off event which causes
+  // _lastUserInteraction to register that there was user interaction.
+  // Checks for scrolling first to override time-based click heuristics.
+  BOOL scrolling = [[self webScrollView] isDragging] ||
+                   [[self webScrollView] isDecelerating];
+  if (scrolling)
+    return NO;
+  if (!_lastUserInteraction)
+    return NO;
+  return _clickInProgress ||
+         ((CFAbsoluteTimeGetCurrent() - _lastUserInteraction->time) <
+          kMaximumDelayForUserInteractionInSeconds);
+}
+
+- (web::UserAgentType)userAgentType {
+  web::NavigationItem* item = self.currentNavItem;
+  return item ? item->GetUserAgentType() : web::UserAgentType::MOBILE;
+}
+
+- (web::MojoFacade*)mojoFacade {
+  if (!_mojoFacade) {
+    service_manager::mojom::InterfaceProvider* interfaceProvider =
+        _webStateImpl->GetWebStateInterfaceProvider();
+    _mojoFacade.reset(new web::MojoFacade(interfaceProvider, self));
+  }
+  return _mojoFacade.get();
+}
+
+- (BOOL)userInteractionRegistered {
+  return _userInteractionRegistered;
+}
+
+- (void)setUserInteractionRegistered:(BOOL)flag {
+  _userInteractionRegistered = flag;
+  if (flag)
+    _interactionRegisteredSinceLastURLChange = YES;
+}
+
+- (WebState*)webState {
+  return _webStateImpl;
+}
+
+- (WebStateImpl*)webStateImpl {
+  return _webStateImpl;
+}
+
+- (CGPoint)scrollPosition {
+  return self.webScrollView.contentOffset;
+}
+
+#pragma mark Session Information
+
+- (CRWSessionController*)sessionController {
+  NavigationManagerImpl* navigationManager = self.navigationManagerImpl;
+  return navigationManager ? navigationManager->GetSessionController() : nil;
+}
+
+- (NavigationManagerImpl*)navigationManagerImpl {
+  return _webStateImpl ? &(_webStateImpl->GetNavigationManagerImpl()) : nil;
+}
+
+- (BOOL)hasOpener {
+  return _webStateImpl ? _webStateImpl->HasOpener() : NO;
+}
+
+- (web::NavigationItemImpl*)currentNavItem {
+  return self.navigationManagerImpl
+             ? self.navigationManagerImpl->GetCurrentItemImpl()
+             : nullptr;
+}
+
+- (ui::PageTransition)currentTransition {
+  if (self.currentNavItem)
+    return self.currentNavItem->GetTransitionType();
+  else
+    return ui::PageTransitionFromInt(0);
+}
+
+- (web::Referrer)currentNavItemReferrer {
+  web::NavigationItem* currentItem = self.currentNavItem;
+  return currentItem ? currentItem->GetReferrer() : web::Referrer();
+}
+
+- (NSDictionary*)currentHTTPHeaders {
+  web::NavigationItem* currentItem = self.currentNavItem;
+  return currentItem ? currentItem->GetHttpRequestHeaders() : nil;
 }
 
 #pragma mark - ** Public Methods **
@@ -1440,10 +1648,6 @@ GURL URLEscapedForHistory(const GURL& url) {
   return _jsInjectionReceiver;
 }
 
-- (id<CRWNativeContent>)nativeController {
-  return [_containerView nativeController];
-}
-
 - (void)didFinishGoToIndexSameDocumentNavigationWithType:
             (web::NavigationInitiationType)type
                                           hasUserGesture:(BOOL)hasUserGesture {
@@ -1607,44 +1811,6 @@ GURL URLEscapedForHistory(const GURL& url) {
 
 #pragma mark -
 
-- (WebState*)webState {
-  return _webStateImpl;
-}
-
-- (WebStateImpl*)webStateImpl {
-  return _webStateImpl;
-}
-
-- (CGPoint)scrollPosition {
-  return self.webScrollView.contentOffset;
-}
-
-- (void)setNativeController:(id<CRWNativeContent>)nativeController {
-  // Check for pointer equality.
-  if (self.nativeController == nativeController)
-    return;
-
-  // Unset the delegate on the previous instance.
-  if ([self.nativeController respondsToSelector:@selector(setDelegate:)])
-    [self.nativeController setDelegate:nil];
-
-  [_containerView displayNativeContent:nativeController];
-  [self setNativeControllerWebUsageEnabled:_webUsageEnabled];
-}
-
-- (NSDictionary*)WKWebViewObservers {
-  return @{
-    @"serverTrust" : @"webViewSecurityFeaturesDidChange",
-    @"estimatedProgress" : @"webViewEstimatedProgressDidChange",
-    @"hasOnlySecureContent" : @"webViewSecurityFeaturesDidChange",
-    @"title" : @"webViewTitleDidChange",
-    @"loading" : @"webViewLoadingStateDidChange",
-    @"URL" : @"webViewURLDidChange",
-    @"canGoForward" : @"webViewBackForwardStateDidChange",
-    @"canGoBack" : @"webViewBackForwardStateDidChange"
-  };
-}
-
 - (void)setNativeControllerWebUsageEnabled:(BOOL)webUsageEnabled {
   if ([self.nativeController
           respondsToSelector:@selector(setWebUsageEnabled:)]) {
@@ -1671,51 +1837,6 @@ GURL URLEscapedForHistory(const GURL& url) {
       [NSStringFromClass([topView class]) containsString:@"Warning"] &&
       topView.subviews.count > 0 &&
       [topView.subviews[0].subviews.lastObject isKindOfClass:[UIButton class]];
-}
-
-- (WKWebView*)webView {
-  return _webView;
-}
-
-- (UIScrollView*)webScrollView {
-  return [_webView scrollView];
-}
-
-- (GURL)currentURL {
-  web::URLVerificationTrustLevel trustLevel =
-      web::URLVerificationTrustLevel::kNone;
-  return [self currentURLWithTrustLevel:&trustLevel];
-}
-
-- (web::Referrer)currentReferrer {
-  // Referrer string doesn't include the fragment, so in cases where the
-  // previous URL is equal to the current referrer plus the fragment the
-  // previous URL is returned as current referrer.
-  NSString* referrerString = _currentReferrerString;
-
-  // In case of an error evaluating the JavaScript simply return empty string.
-  if ([referrerString length] == 0)
-    return web::Referrer();
-
-  web::NavigationItem* item = self.currentNavItem;
-  GURL navigationURL = item ? item->GetVirtualURL() : GURL::EmptyGURL();
-  NSString* previousURLString = base::SysUTF8ToNSString(navigationURL.spec());
-  // Check if the referrer is equal to the previous URL minus the hash symbol.
-  // L'#' is used to convert the char '#' to a unichar.
-  if ([previousURLString length] > [referrerString length] &&
-      [previousURLString hasPrefix:referrerString] &&
-      [previousURLString characterAtIndex:[referrerString length]] == L'#') {
-    referrerString = previousURLString;
-  }
-  // Since referrer is being extracted from the destination page, the correct
-  // policy from the origin has *already* been applied. Since the extracted URL
-  // is the post-policy value, and the source policy is no longer available,
-  // the policy is set to Always so that whatever WebKit decided to send will be
-  // re-sent when replaying the entry.
-  // TODO(stuartmorgan): When possible, get the real referrer and policy in
-  // advance and use that instead. https://crbug.com/227769.
-  return web::Referrer(GURL(base::SysNSStringToUTF8(referrerString)),
-                       web::ReferrerPolicyAlways);
 }
 
 - (void)pushStateWithPageURL:(const GURL&)pageURL
@@ -2622,20 +2743,6 @@ GURL URLEscapedForHistory(const GURL& url) {
   return rendererInitiatedWithoutInteraction || noNavigationItems;
 }
 
-- (web::UserAgentType)userAgentType {
-  web::NavigationItem* item = self.currentNavItem;
-  return item ? item->GetUserAgentType() : web::UserAgentType::MOBILE;
-}
-
-- (web::MojoFacade*)mojoFacade {
-  if (!_mojoFacade) {
-    service_manager::mojom::InterfaceProvider* interfaceProvider =
-        _webStateImpl->GetWebStateInterfaceProvider();
-    _mojoFacade.reset(new web::MojoFacade(interfaceProvider, self));
-  }
-  return _mojoFacade.get();
-}
-
 - (void)updateDesktopUserAgentForItem:(web::NavigationItem*)item
                 previousUserAgentType:(web::UserAgentType)userAgentType {
   if (!item)
@@ -3222,16 +3329,6 @@ GURL URLEscapedForHistory(const GURL& url) {
          url.SchemeIs(url::kBlobScheme);
 }
 
-- (void)setUserInteractionRegistered:(BOOL)flag {
-  _userInteractionRegistered = flag;
-  if (flag)
-    _interactionRegisteredSinceLastURLChange = YES;
-}
-
-- (BOOL)userInteractionRegistered {
-  return _userInteractionRegistered;
-}
-
 - (void)cachePOSTDataForRequest:(NSURLRequest*)request
                inNavigationItem:(web::NavigationItemImpl*)item {
   NSUInteger maxPOSTDataSizeInBytes = 4096;
@@ -3651,64 +3748,6 @@ GURL URLEscapedForHistory(const GURL& url) {
   return [self userClickedRecently];
 }
 
-- (BOOL)userClickedRecently {
-  // Scrolling generates a pair of touch on/off event which causes
-  // _lastUserInteraction to register that there was user interaction.
-  // Checks for scrolling first to override time-based click heuristics.
-  BOOL scrolling = [[self webScrollView] isDragging] ||
-                   [[self webScrollView] isDecelerating];
-  if (scrolling)
-    return NO;
-  if (!_lastUserInteraction)
-    return NO;
-  return _clickInProgress ||
-         ((CFAbsoluteTimeGetCurrent() - _lastUserInteraction->time) <
-          kMaximumDelayForUserInteractionInSeconds);
-}
-
-#pragma mark - Session Information
-
-- (CRWSessionController*)sessionController {
-  NavigationManagerImpl* navigationManager = self.navigationManagerImpl;
-  return navigationManager ? navigationManager->GetSessionController() : nil;
-}
-
-- (NavigationManagerImpl*)navigationManagerImpl {
-  return _webStateImpl ? &(_webStateImpl->GetNavigationManagerImpl()) : nil;
-}
-
-- (BOOL)hasOpener {
-  return _webStateImpl ? _webStateImpl->HasOpener() : NO;
-}
-
-- (web::NavigationItemImpl*)currentNavItem {
-  return self.navigationManagerImpl
-             ? self.navigationManagerImpl->GetCurrentItemImpl()
-             : nullptr;
-}
-
-- (ui::PageTransition)currentTransition {
-  if (self.currentNavItem)
-    return self.currentNavItem->GetTransitionType();
-  else
-    return ui::PageTransitionFromInt(0);
-}
-
-- (web::Referrer)currentNavItemReferrer {
-  web::NavigationItem* currentItem = self.currentNavItem;
-  return currentItem ? currentItem->GetReferrer() : web::Referrer();
-}
-
-- (NSDictionary*)currentHTTPHeaders {
-  web::NavigationItem* currentItem = self.currentNavItem;
-  return currentItem ? currentItem->GetHttpRequestHeaders() : nil;
-}
-
-- (void)forgetNullWKNavigation:(WKNavigation*)navigation {
-  if (!navigation)
-    [_navigationStates removeNavigation:navigation];
-}
-
 #pragma mark - CRWWebViewScrollViewProxyObserver
 
 - (void)webViewScrollViewDidZoom:
@@ -3775,48 +3814,6 @@ GURL URLEscapedForHistory(const GURL& url) {
   web::NavigationItem* item = self.currentNavItem;
   if (item)
     self.pageDisplayState = item->GetPageDisplayState();
-}
-
-- (web::PageDisplayState)pageDisplayState {
-  web::PageDisplayState displayState;
-  // If a native controller is present, record its display state instead of that
-  // of the underlying placeholder webview.
-  if (self.nativeController) {
-    if ([self.nativeController respondsToSelector:@selector(contentOffset)]) {
-      displayState.scroll_state().set_content_offset(
-          [self.nativeController contentOffset]);
-    }
-    if ([self.nativeController respondsToSelector:@selector(contentInset)]) {
-      displayState.scroll_state().set_content_inset(
-          [self.nativeController contentInset]);
-    }
-  } else if (_webView) {
-    displayState.set_scroll_state(web::PageScrollState(
-        self.scrollPosition, self.webScrollView.contentInset));
-    UIScrollView* scrollView = self.webScrollView;
-    displayState.zoom_state().set_minimum_zoom_scale(
-        scrollView.minimumZoomScale);
-    displayState.zoom_state().set_maximum_zoom_scale(
-        scrollView.maximumZoomScale);
-    displayState.zoom_state().set_zoom_scale(scrollView.zoomScale);
-  }
-  return displayState;
-}
-
-- (void)setPageDisplayState:(web::PageDisplayState)displayState {
-  if (!displayState.IsValid())
-    return;
-  if (_webView) {
-    // Page state is restored after a page load completes.  If the user has
-    // scrolled or changed the zoom scale while the page is still loading, don't
-    // restore any state since it will confuse the user.
-    web::PageDisplayState currentPageDisplayState = self.pageDisplayState;
-    if (currentPageDisplayState.scroll_state() ==
-            _displayStateOnStartLoading.scroll_state() &&
-        !_pageHasZoomed) {
-      [self applyPageDisplayState:displayState];
-    }
-  }
 }
 
 - (void)extractViewportTagWithCompletion:(ViewportStateCompletion)completion {
@@ -5473,6 +5470,11 @@ GURL URLEscapedForHistory(const GURL& url) {
   _certVerificationErrors->Clear();
   [self removeAllWebFrames];
   [self webViewWebProcessDidCrash];
+}
+
+- (void)forgetNullWKNavigation:(WKNavigation*)navigation {
+  if (!navigation)
+    [_navigationStates removeNavigation:navigation];
 }
 
 #pragma mark - CRWSSLStatusUpdaterDataSource
