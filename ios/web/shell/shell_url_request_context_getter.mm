@@ -121,7 +121,7 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
         net::HostResolver::CreateDefaultResolver(
             url_request_context_->net_log()));
     storage_->set_http_auth_handler_factory(
-        net::HttpAuthHandlerFactory::CreateDefault(host_resolver.get()));
+        net::HttpAuthHandlerFactory::CreateDefault());
     storage_->set_host_resolver(std::move(host_resolver));
 
     net::HttpNetworkSession::Context network_session_context;

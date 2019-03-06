@@ -26,7 +26,6 @@
 #include "net/base/host_mapping_rules.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_export.h"
-#include "net/dns/host_resolver.h"
 #include "net/http/http_auth_cache.h"
 #include "net/http/http_stream_factory.h"
 #include "net/net_buildflags.h"
@@ -324,6 +323,7 @@ class NET_EXPORT HttpNetworkSession {
   NetLog* net_log() {
     return net_log_;
   }
+  HostResolver* host_resolver() { return host_resolver_; }
 #if BUILDFLAG(ENABLE_REPORTING)
   ReportingService* reporting_service() const { return reporting_service_; }
   NetworkErrorLoggingService* network_error_logging_service() const {
@@ -390,6 +390,7 @@ class NET_EXPORT HttpNetworkSession {
   HttpServerProperties* const http_server_properties_;
   CertVerifier* const cert_verifier_;
   HttpAuthHandlerFactory* const http_auth_handler_factory_;
+  HostResolver* const host_resolver_;
 
 #if BUILDFLAG(ENABLE_REPORTING)
   ReportingService* const reporting_service_;

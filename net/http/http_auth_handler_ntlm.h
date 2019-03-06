@@ -27,6 +27,7 @@
 #include "net/ntlm/ntlm_client.h"
 #endif
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -56,6 +57,7 @@ class NET_EXPORT_PRIVATE HttpAuthHandlerNTLM : public HttpAuthHandler {
                           CreateReason reason,
                           int digest_nonce_count,
                           const NetLogWithSource& net_log,
+                          HostResolver* host_resolver,
                           std::unique_ptr<HttpAuthHandler>* handler) override;
 #if defined(NTLM_SSPI)
     // Set the SSPILibrary to use. Typically the only callers which need to use
@@ -66,6 +68,7 @@ class NET_EXPORT_PRIVATE HttpAuthHandlerNTLM : public HttpAuthHandler {
       sspi_library_.reset(sspi_library);
     }
 #endif  // defined(NTLM_SSPI)
+
    private:
 #if defined(NTLM_SSPI)
     ULONG max_token_length_;

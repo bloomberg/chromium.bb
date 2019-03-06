@@ -7,6 +7,7 @@
 #include "base/run_loop.h"
 #include "build/build_config.h"
 #include "net/base/request_priority.h"
+#include "net/dns/mock_host_resolver.h"
 #include "net/http/http_auth_challenge_tokenizer.h"
 #include "net/http/http_auth_handler.h"
 #include "net/http/http_auth_handler_factory.h"
@@ -50,6 +51,7 @@ class MockHttpAuthHandlerFactory : public HttpAuthHandlerFactory {
                         CreateReason reason,
                         int nonce_count,
                         const NetLogWithSource& net_log,
+                        HostResolver* host_resolver,
                         std::unique_ptr<HttpAuthHandler>* handler) override {
     handler->reset();
 
@@ -75,6 +77,8 @@ class URLRequestContextBuilderTest : public PlatformTest,
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
   }
 
+  std::unique_ptr<HostResolver> host_resolver_ =
+      std::make_unique<MockHostResolver>();
   EmbeddedTestServer test_server_;
   URLRequestContextBuilder builder_;
 };
@@ -119,7 +123,7 @@ TEST_F(URLRequestContextBuilderTest, DefaultHttpAuthHandlerFactory) {
   EXPECT_EQ(OK,
             context->http_auth_handler_factory()->CreateAuthHandlerFromString(
                 "basic", HttpAuth::AUTH_SERVER, null_ssl_info, gurl,
-                NetLogWithSource(), &handler));
+                NetLogWithSource(), host_resolver_.get(), &handler));
 }
 
 TEST_F(URLRequestContextBuilderTest, CustomHttpAuthHandlerFactory) {
@@ -135,19 +139,19 @@ TEST_F(URLRequestContextBuilderTest, CustomHttpAuthHandlerFactory) {
   EXPECT_EQ(kBasicReturnCode,
             context->http_auth_handler_factory()->CreateAuthHandlerFromString(
                 "ExtraScheme", HttpAuth::AUTH_SERVER, null_ssl_info, gurl,
-                NetLogWithSource(), &handler));
+                NetLogWithSource(), host_resolver_.get(), &handler));
 
   // Verify that the default basic handler isn't present
   EXPECT_EQ(ERR_UNSUPPORTED_AUTH_SCHEME,
             context->http_auth_handler_factory()->CreateAuthHandlerFromString(
                 "basic", HttpAuth::AUTH_SERVER, null_ssl_info, gurl,
-                NetLogWithSource(), &handler));
+                NetLogWithSource(), host_resolver_.get(), &handler));
 
   // Verify that a handler isn't returned for a bogus scheme.
   EXPECT_EQ(ERR_UNSUPPORTED_AUTH_SCHEME,
             context->http_auth_handler_factory()->CreateAuthHandlerFromString(
                 "Bogus", HttpAuth::AUTH_SERVER, null_ssl_info, gurl,
-                NetLogWithSource(), &handler));
+                NetLogWithSource(), host_resolver_.get(), &handler));
 }
 
 #if BUILDFLAG(ENABLE_REPORTING)

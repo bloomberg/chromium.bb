@@ -94,7 +94,7 @@ void TestURLRequestContext::Init() {
   }
   if (!http_auth_handler_factory()) {
     context_storage_.set_http_auth_handler_factory(
-        HttpAuthHandlerFactory::CreateDefault(host_resolver()));
+        HttpAuthHandlerFactory::CreateDefault());
   }
   if (!http_server_properties()) {
     context_storage_.set_http_server_properties(

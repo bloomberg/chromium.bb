@@ -17,6 +17,7 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
 #include "net/cert/x509_util.h"
+#include "net/dns/host_resolver.h"
 #include "net/http/http_auth_filter.h"
 #include "net/http/http_auth_preferences.h"
 #include "net/log/net_log_capture_mode.h"
@@ -74,11 +75,6 @@ HttpAuthHandlerNegotiate::Factory::Factory(
 
 HttpAuthHandlerNegotiate::Factory::~Factory() = default;
 
-void HttpAuthHandlerNegotiate::Factory::set_host_resolver(
-    HostResolver* resolver) {
-  resolver_ = resolver;
-}
-
 #if !defined(OS_ANDROID) && defined(OS_POSIX)
 const std::string& HttpAuthHandlerNegotiate::Factory::GetLibraryNameForTesting()
     const {
@@ -94,6 +90,7 @@ int HttpAuthHandlerNegotiate::Factory::CreateAuthHandler(
     CreateReason reason,
     int digest_nonce_count,
     const NetLogWithSource& net_log,
+    HostResolver* host_resolver,
     std::unique_ptr<HttpAuthHandler>* handler) {
 #if defined(OS_WIN)
   if (is_unsupported_ || reason == CREATE_PREEMPTIVE)
@@ -111,7 +108,7 @@ int HttpAuthHandlerNegotiate::Factory::CreateAuthHandler(
   std::unique_ptr<HttpAuthHandler> tmp_handler(new HttpAuthHandlerNegotiate(
       CreateAuthSystem(auth_library_.get(), max_token_length_,
                        http_auth_preferences(), negotiate_auth_system_factory_),
-      http_auth_preferences(), resolver_));
+      http_auth_preferences(), host_resolver));
 #elif defined(OS_ANDROID)
   if (is_unsupported_ || !http_auth_preferences() ||
       http_auth_preferences()->AuthAndroidNegotiateAccountType().empty() ||
@@ -121,7 +118,7 @@ int HttpAuthHandlerNegotiate::Factory::CreateAuthHandler(
   //                 method and only constructing when valid.
   std::unique_ptr<HttpAuthHandler> tmp_handler(new HttpAuthHandlerNegotiate(
       CreateAuthSystem(http_auth_preferences(), negotiate_auth_system_factory_),
-      http_auth_preferences(), resolver_));
+      http_auth_preferences(), host_resolver));
 #elif defined(OS_POSIX)
   if (is_unsupported_ || !allow_gssapi_library_load_)
     return ERR_UNSUPPORTED_AUTH_SCHEME;
@@ -134,7 +131,7 @@ int HttpAuthHandlerNegotiate::Factory::CreateAuthHandler(
   std::unique_ptr<HttpAuthHandler> tmp_handler(new HttpAuthHandlerNegotiate(
       CreateAuthSystem(auth_library_.get(), http_auth_preferences(),
                        negotiate_auth_system_factory_),
-      http_auth_preferences(), resolver_));
+      http_auth_preferences(), host_resolver));
 #endif
   if (!tmp_handler->InitFromChallenge(challenge, target, ssl_info, origin,
                                       net_log))

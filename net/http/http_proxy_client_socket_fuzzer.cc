@@ -55,7 +55,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   scoped_refptr<net::HttpAuthController> auth_controller(
       new net::HttpAuthController(net::HttpAuth::AUTH_PROXY,
                                   GURL("http://proxy:42/"), &auth_cache,
-                                  &auth_handler_factory));
+                                  &auth_handler_factory, nullptr));
   // Determine if the HttpProxyClientSocket should be told the underlying socket
   // is HTTPS.
   bool is_https_proxy = data_provider.ConsumeBool();

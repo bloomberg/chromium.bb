@@ -947,11 +947,9 @@ int HttpNetworkTransaction::DoGenerateProxyAuthToken() {
     return OK;
   HttpAuth::Target target = HttpAuth::AUTH_PROXY;
   if (!auth_controllers_[target].get())
-    auth_controllers_[target] =
-        new HttpAuthController(target,
-                               AuthURL(target),
-                               session_->http_auth_cache(),
-                               session_->http_auth_handler_factory());
+    auth_controllers_[target] = new HttpAuthController(
+        target, AuthURL(target), session_->http_auth_cache(),
+        session_->http_auth_handler_factory(), session_->host_resolver());
   return auth_controllers_[target]->MaybeGenerateAuthToken(request_,
                                                            io_callback_,
                                                            net_log_);
@@ -968,11 +966,9 @@ int HttpNetworkTransaction::DoGenerateServerAuthToken() {
   next_state_ = STATE_GENERATE_SERVER_AUTH_TOKEN_COMPLETE;
   HttpAuth::Target target = HttpAuth::AUTH_SERVER;
   if (!auth_controllers_[target].get()) {
-    auth_controllers_[target] =
-        new HttpAuthController(target,
-                               AuthURL(target),
-                               session_->http_auth_cache(),
-                               session_->http_auth_handler_factory());
+    auth_controllers_[target] = new HttpAuthController(
+        target, AuthURL(target), session_->http_auth_cache(),
+        session_->http_auth_handler_factory(), session_->host_resolver());
     if (request_->load_flags & LOAD_DO_NOT_USE_EMBEDDED_IDENTITY)
       auth_controllers_[target]->DisableEmbeddedIdentity();
   }

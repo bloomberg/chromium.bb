@@ -42,6 +42,7 @@
 #include "net/base/cache_type.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cookies/cookie_store.h"
+#include "net/dns/host_resolver.h"
 #include "net/dns/mapped_host_resolver.h"
 #include "net/http/http_auth_filter.h"
 #include "net/http/http_auth_handler_factory.h"
@@ -320,8 +321,7 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
       new net::MappedHostResolver(
           net::HostResolver::CreateDefaultResolver(nullptr)));
   ApplyCmdlineOverridesToHostResolver(host_resolver.get());
-  builder.SetHttpAuthHandlerFactory(
-      CreateAuthHandlerFactory(host_resolver.get()));
+  builder.SetHttpAuthHandlerFactory(CreateAuthHandlerFactory());
   builder.set_host_resolver(std::move(host_resolver));
 
   url_request_context_ = builder.Build();
@@ -385,10 +385,7 @@ void AwURLRequestContextGetter::SetHandlersAndInterceptors(
 }
 
 std::unique_ptr<net::HttpAuthHandlerFactory>
-AwURLRequestContextGetter::CreateAuthHandlerFactory(
-    net::HostResolver* resolver) {
-  DCHECK(resolver);
-
+AwURLRequestContextGetter::CreateAuthHandlerFactory() {
   // In Chrome this is configurable via the AuthSchemes policy. For WebView
   // there is no interest to have it available so far.
   std::vector<std::string> supported_schemes = {"basic", "digest", "ntlm",
@@ -399,7 +396,7 @@ AwURLRequestContextGetter::CreateAuthHandlerFactory(
   UpdateAndroidAuthNegotiateAccountType();
 
   return net::HttpAuthHandlerRegistryFactory::Create(
-      resolver, http_auth_preferences_.get(), supported_schemes);
+      http_auth_preferences_.get(), supported_schemes);
 }
 
 void AwURLRequestContextGetter::UpdateServerWhitelist() {
