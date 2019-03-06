@@ -152,6 +152,11 @@ bool SurfaceLayerImpl::is_surface_layer() const {
   return true;
 }
 
+gfx::Rect SurfaceLayerImpl::GetEnclosingRectInTargetSpace() const {
+  return GetScaledEnclosingRectInTargetSpace(
+      layer_tree_impl()->device_scale_factor());
+}
+
 viz::SurfaceDrawQuad* SurfaceLayerImpl::CreateSurfaceDrawQuad(
     viz::RenderPass* render_pass,
     const viz::SurfaceRange& surface_range) {

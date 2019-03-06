@@ -262,4 +262,31 @@ TEST(SurfaceLayerImplTest, SurfaceLayerImplWithMatchingPrimaryAndFallback) {
 }
 
 }  // namespace
+
+// This test is outside the anonymous namespace so that it can be a friend.
+TEST(SurfaceLayerImplTest, GetEnclosingRectInTargetSpace) {
+  gfx::Size layer_size(902, 1000);
+  gfx::Size viewport_size(902, 1000);
+  LayerTestCommon::LayerImplTest impl;
+  SurfaceLayerImpl* surface_layer_impl =
+      impl.AddChildToRoot<SurfaceLayerImpl>();
+  surface_layer_impl->SetBounds(layer_size);
+  surface_layer_impl->SetDrawsContent(true);
+
+  // A device scale of 1.33 and transform of 1.5 were chosen as they produce
+  // different results when rounding at each stage, vs applying a single
+  // transform.
+  gfx::Transform transform;
+  transform.Scale(1.5, 1.5);
+  impl.host_impl()->active_tree()->SetDeviceScaleFactor(1.33);
+  impl.CalcDrawProps(viewport_size);
+  surface_layer_impl->draw_properties().target_space_transform = transform;
+
+  // GetEnclosingRectInTargetSpace() and GetScaledEnclosingRectInTargetSpace()
+  // should return the same value, otherwise we may not damage the right
+  // pixels.
+  EXPECT_EQ(surface_layer_impl->GetScaledEnclosingRectInTargetSpace(1.33),
+            surface_layer_impl->GetEnclosingRectInTargetSpace());
+}
+
 }  // namespace cc

@@ -71,6 +71,10 @@ bool CalculateQuadSpaceDamageRect(
 
 }  // namespace
 
+std::string SurfaceAggregator::ClipData::ToString() const {
+  return is_clipped ? "clip " + rect.ToString() : "no clip";
+}
+
 SurfaceAggregator::SurfaceAggregator(SurfaceManager* manager,
                                      DisplayResourceProvider* provider,
                                      bool aggregate_only_damaged)

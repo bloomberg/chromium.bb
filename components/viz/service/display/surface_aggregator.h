@@ -6,6 +6,7 @@
 #define COMPONENTS_VIZ_SERVICE_DISPLAY_SURFACE_AGGREGATOR_H_
 
 #include <memory>
+#include <string>
 #include <unordered_map>
 
 #include "base/containers/flat_map.h"
@@ -63,6 +64,8 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
     ClipData() : is_clipped(false) {}
     ClipData(bool is_clipped, const gfx::Rect& rect)
         : is_clipped(is_clipped), rect(rect) {}
+
+    std::string ToString() const;
 
     bool is_clipped;
     gfx::Rect rect;
