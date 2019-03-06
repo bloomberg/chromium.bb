@@ -4733,12 +4733,6 @@ GURL URLEscapedForHistory(const GURL& url) {
     _webStateImpl->OnHttpResponseHeadersReceived(headers.get(), responseURL);
   }
 
-  if (WKResponse.forMainFrame) {
-    web::NavigationContextImpl* context =
-        [self contextForPendingMainFrameNavigationWithURL:responseURL];
-    context->SetMimeType(WKResponse.response.MIMEType);
-  }
-
   // The page will not be changed until this navigation is committed, so the
   // retrieved state will be pending until |didCommitNavigation| callback.
   [self updatePendingNavigationInfoFromNavigationResponse:WKResponse];
@@ -5015,6 +5009,9 @@ GURL URLEscapedForHistory(const GURL& url) {
     // TODO(crbug.com/826013): Remove this workaround.
     webViewURL = currentWKItemURL;
   }
+
+  if (_pendingNavigationInfo.MIMEType)
+    context->SetMimeType(_pendingNavigationInfo.MIMEType);
 
   // Don't show webview for placeholder navigation to avoid covering the native
   // content, which may have already been shown.
