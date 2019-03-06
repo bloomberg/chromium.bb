@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_HIGH_CONTRAST_IMAGE_CLASSIFIER_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_HIGH_CONTRAST_IMAGE_CLASSIFIER_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_DARK_MODE_IMAGE_CLASSIFIER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_DARK_MODE_IMAGE_CLASSIFIER_H_
 
 #include <vector>
 
@@ -15,15 +15,15 @@ namespace blink {
 
 class IntRect;
 
-class PLATFORM_EXPORT HighContrastImageClassifier {
+class PLATFORM_EXPORT DarkModeImageClassifier {
   DISALLOW_NEW();
 
  public:
-  HighContrastImageClassifier();
-  ~HighContrastImageClassifier() = default;
+  DarkModeImageClassifier();
+  ~DarkModeImageClassifier() = default;
 
-  // Decides if a high contrast filter should be applied to the image or not.
-  bool ShouldApplyHighContrastFilterToImage(Image&);
+  // Decides if a dark mode filter should be applied to the image or not.
+  bool ShouldApplyDarkModeFilterToImage(Image&);
 
   bool ComputeImageFeaturesForTesting(Image& image,
                                       std::vector<float>* features) {
@@ -32,7 +32,7 @@ class PLATFORM_EXPORT HighContrastImageClassifier {
 
   void SetRandomGeneratorForTesting() { use_testing_random_generator_ = true; }
 
-  HighContrastClassification ClassifyImageUsingDecisionTreeForTesting(
+  DarkModeClassification ClassifyImageUsingDecisionTreeForTesting(
       const std::vector<float>& features) {
     return ClassifyImageUsingDecisionTree(features);
   }
@@ -61,7 +61,7 @@ class PLATFORM_EXPORT HighContrastImageClassifier {
                    std::vector<float>* features);
 
   // Makes a decision about the image given its features.
-  HighContrastClassification ClassifyImage(const std::vector<float>&);
+  DarkModeClassification ClassifyImage(const std::vector<float>&);
 
   // Receives sampled pixels and color mode, and returns the ratio of color
   // buckets count to all possible color buckets. If image is in color, a color
@@ -87,7 +87,7 @@ class PLATFORM_EXPORT HighContrastImageClassifier {
   // Decides if the filter should be applied to the image or not, only using the
   // decision tree. Returns 'kNotClassified' if decision tree cannot give a
   // trustable answer.
-  HighContrastClassification ClassifyImageUsingDecisionTree(
+  DarkModeClassification ClassifyImageUsingDecisionTree(
       const std::vector<float>&);
 
   bool use_testing_random_generator_;
@@ -96,4 +96,4 @@ class PLATFORM_EXPORT HighContrastImageClassifier {
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_HIGH_CONTRAST_IMAGE_CLASSIFIER_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_DARK_MODE_IMAGE_CLASSIFIER_H_

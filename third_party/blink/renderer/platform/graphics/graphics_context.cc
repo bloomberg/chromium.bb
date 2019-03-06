@@ -59,24 +59,24 @@
 
 namespace blink {
 
-class GraphicsContext::HighContrastFlags final {
+class GraphicsContext::DarkModeFlags final {
   STACK_ALLOCATED();
 
  public:
   // This helper's lifetime should never exceed |flags|'.
-  HighContrastFlags(const GraphicsContext* gc, const PaintFlags& flags) {
-    if (!gc->high_contrast_filter_) {
+  DarkModeFlags(const GraphicsContext* gc, const PaintFlags& flags) {
+    if (!gc->dark_mode_filter_) {
       flags_ = &flags;
     } else {
-      high_contrast_flags_ = flags;
+      dark_mode_flags_ = flags;
       if (flags.HasShader()) {
-        high_contrast_flags_->setColorFilter(gc->high_contrast_filter_);
+        dark_mode_flags_->setColorFilter(gc->dark_mode_filter_);
       } else {
-        high_contrast_flags_->setColor(
-            gc->high_contrast_filter_->filterColor(flags.getColor()));
+        dark_mode_flags_->setColor(
+            gc->dark_mode_filter_->filterColor(flags.getColor()));
       }
 
-      flags_ = &high_contrast_flags_.value();
+      flags_ = &dark_mode_flags_.value();
     }
   }
 
@@ -84,7 +84,7 @@ class GraphicsContext::HighContrastFlags final {
 
  private:
   const PaintFlags* flags_;
-  base::Optional<PaintFlags> high_contrast_flags_;
+  base::Optional<PaintFlags> dark_mode_flags_;
 };
 
 GraphicsContext::GraphicsContext(PaintController& paint_controller,
@@ -170,36 +170,36 @@ unsigned GraphicsContext::SaveCount() const {
 }
 #endif
 
-void GraphicsContext::SetHighContrast(const HighContrastSettings& settings) {
-  high_contrast_settings_ = settings;
+void GraphicsContext::SetDarkMode(const DarkModeSettings& settings) {
+  dark_mode_settings_ = settings;
 
   SkHighContrastConfig config;
-  switch (high_contrast_settings_.mode) {
-    case HighContrastMode::kOff:
-      high_contrast_filter_.reset(nullptr);
+  switch (dark_mode_settings_.mode) {
+    case DarkMode::kOff:
+      dark_mode_filter_.reset(nullptr);
       return;
-    case HighContrastMode::kSimpleInvertForTesting: {
+    case DarkMode::kSimpleInvertForTesting: {
       uint8_t identity[256], invert[256];
       for (int i = 0; i < 256; ++i) {
         identity[i] = i;
         invert[i] = 255 - i;
       }
-      high_contrast_filter_ =
+      dark_mode_filter_ =
           SkTableColorFilter::MakeARGB(identity, invert, invert, invert);
       return;
     }
-    case HighContrastMode::kInvertBrightness:
+    case DarkMode::kInvertBrightness:
       config.fInvertStyle =
           SkHighContrastConfig::InvertStyle::kInvertBrightness;
       break;
-    case HighContrastMode::kInvertLightness:
+    case DarkMode::kInvertLightness:
       config.fInvertStyle = SkHighContrastConfig::InvertStyle::kInvertLightness;
       break;
   }
 
-  config.fGrayscale = high_contrast_settings_.grayscale;
-  config.fContrast = high_contrast_settings_.contrast;
-  high_contrast_filter_ = SkHighContrastFilter::Make(config);
+  config.fGrayscale = dark_mode_settings_.grayscale;
+  config.fContrast = dark_mode_settings_.contrast;
+  dark_mode_filter_ = SkHighContrastFilter::Make(config);
 }
 
 void GraphicsContext::SaveLayer(const SkRect* bounds, const PaintFlags* flags) {
@@ -415,15 +415,13 @@ int GraphicsContext::FocusRingOutsetExtent(int offset,
 void GraphicsContext::DrawFocusRingPath(const SkPath& path,
                                         const Color& color,
                                         float width) {
-  DrawPlatformFocusRing(path, canvas_, ApplyHighContrastFilter(color).Rgb(),
-                        width);
+  DrawPlatformFocusRing(path, canvas_, ApplyDarkModeFilter(color).Rgb(), width);
 }
 
 void GraphicsContext::DrawFocusRingRect(const SkRect& rect,
                                         const Color& color,
                                         float width) {
-  DrawPlatformFocusRing(rect, canvas_, ApplyHighContrastFilter(color).Rgb(),
-                        width);
+  DrawPlatformFocusRing(rect, canvas_, ApplyDarkModeFilter(color).Rgb(), width);
 }
 
 void GraphicsContext::DrawFocusRing(const Path& focus_ring_path,
@@ -498,7 +496,7 @@ void GraphicsContext::DrawInnerShadow(const FloatRoundedRect& rect,
   if (ContextDisabled())
     return;
 
-  Color shadow_color = ApplyHighContrastFilter(orig_shadow_color);
+  Color shadow_color = ApplyDarkModeFilter(orig_shadow_color);
 
   FloatRect hole_rect(rect.Rect());
   hole_rect.Inflate(-shadow_spread);
@@ -668,7 +666,7 @@ void GraphicsContext::DrawLine(const IntPoint& point1, const IntPoint& point2) {
   // probably worth the speed up of no square root, which also won't be exact.
   FloatSize disp = p2 - p1;
   int length = SkScalarRoundToInt(disp.Width() + disp.Height());
-  const HighContrastFlags flags(this, ImmutableState()->StrokeFlags(length));
+  const DarkModeFlags flags(this, ImmutableState()->StrokeFlags(length));
 
   if (pen_style == kDottedStroke) {
     if (StrokeData::StrokeIsDashed(width, pen_style)) {
@@ -774,7 +772,7 @@ void GraphicsContext::DrawTextInternal(const Font& font,
     return;
 
   font.DrawText(canvas_, text_info, point, device_scale_factor_, node_holder,
-                HighContrastFlags(this, flags));
+                DarkModeFlags(this, flags));
 }
 
 void GraphicsContext::DrawText(const Font& font,
@@ -823,7 +821,7 @@ void GraphicsContext::DrawTextInternal(const Font& font,
   DrawTextPasses(
       [&font, &text_info, &point, this, node_holder](const PaintFlags& flags) {
         font.DrawText(canvas_, text_info, point, device_scale_factor_,
-                      node_holder, HighContrastFlags(this, flags));
+                      node_holder, DarkModeFlags(this, flags));
       });
 }
 
@@ -849,12 +847,11 @@ void GraphicsContext::DrawEmphasisMarksInternal(const Font& font,
   if (ContextDisabled())
     return;
 
-  DrawTextPasses(
-      [&font, &text_info, &mark, &point, this](const PaintFlags& flags) {
-        font.DrawEmphasisMarks(canvas_, text_info, mark, point,
-                               device_scale_factor_,
-                               HighContrastFlags(this, flags));
-      });
+  DrawTextPasses([&font, &text_info, &mark, &point,
+                  this](const PaintFlags& flags) {
+    font.DrawEmphasisMarks(canvas_, text_info, mark, point,
+                           device_scale_factor_, DarkModeFlags(this, flags));
+  });
 }
 
 void GraphicsContext::DrawEmphasisMarks(const Font& font,
@@ -884,7 +881,7 @@ void GraphicsContext::DrawBidiText(
                   this](const PaintFlags& flags) {
     if (font.DrawBidiText(canvas_, run_info, point,
                           custom_font_not_ready_action, device_scale_factor_,
-                          HighContrastFlags(this, flags)))
+                          DarkModeFlags(this, flags)))
       paint_controller_.SetTextPainted();
   });
 }
@@ -919,8 +916,8 @@ void GraphicsContext::DrawImage(
   image_flags.setBlendMode(op);
   image_flags.setColor(SK_ColorBLACK);
   image_flags.setFilterQuality(ComputeFilterQuality(image, dest, src));
-  if (ShouldApplyHighContrastFilterToImage(*image))
-    image_flags.setColorFilter(high_contrast_filter_);
+  if (ShouldApplyDarkModeFilterToImage(*image))
+    image_flags.setColorFilter(dark_mode_filter_);
   image->Draw(canvas_, image_flags, dest, src, should_respect_image_orientation,
               Image::kClampImageToSourceRect, decode_mode);
   paint_controller_.SetImagePainted();
@@ -1023,7 +1020,7 @@ void GraphicsContext::DrawOval(const SkRect& oval, const PaintFlags& flags) {
     return;
   DCHECK(canvas_);
 
-  canvas_->drawOval(oval, HighContrastFlags(this, flags));
+  canvas_->drawOval(oval, DarkModeFlags(this, flags));
 }
 
 void GraphicsContext::DrawPath(const SkPath& path, const PaintFlags& flags) {
@@ -1031,7 +1028,7 @@ void GraphicsContext::DrawPath(const SkPath& path, const PaintFlags& flags) {
     return;
   DCHECK(canvas_);
 
-  canvas_->drawPath(path, HighContrastFlags(this, flags));
+  canvas_->drawPath(path, DarkModeFlags(this, flags));
 }
 
 void GraphicsContext::DrawRect(const SkRect& rect, const PaintFlags& flags) {
@@ -1039,7 +1036,7 @@ void GraphicsContext::DrawRect(const SkRect& rect, const PaintFlags& flags) {
     return;
   DCHECK(canvas_);
 
-  canvas_->drawRect(rect, HighContrastFlags(this, flags));
+  canvas_->drawRect(rect, DarkModeFlags(this, flags));
 }
 
 void GraphicsContext::DrawRRect(const SkRRect& rrect, const PaintFlags& flags) {
@@ -1047,7 +1044,7 @@ void GraphicsContext::DrawRRect(const SkRRect& rrect, const PaintFlags& flags) {
     return;
   DCHECK(canvas_);
 
-  canvas_->drawRRect(rrect, HighContrastFlags(this, flags));
+  canvas_->drawRRect(rrect, DarkModeFlags(this, flags));
 }
 
 void GraphicsContext::FillPath(const Path& path_to_fill) {
@@ -1163,7 +1160,7 @@ void GraphicsContext::FillDRRect(const FloatRoundedRect& outer,
       canvas_->drawDRRect(outer, inner, ImmutableState()->FillFlags());
     } else {
       PaintFlags flags(ImmutableState()->FillFlags());
-      flags.setColor(ApplyHighContrastFilter(color).Rgb());
+      flags.setColor(ApplyDarkModeFilter(color).Rgb());
       canvas_->drawDRRect(outer, inner, flags);
     }
 
@@ -1176,7 +1173,7 @@ void GraphicsContext::FillDRRect(const FloatRoundedRect& outer,
   stroke_r_rect.inset(stroke_width / 2, stroke_width / 2);
 
   PaintFlags stroke_flags(ImmutableState()->FillFlags());
-  stroke_flags.setColor(ApplyHighContrastFilter(color).Rgb());
+  stroke_flags.setColor(ApplyDarkModeFilter(color).Rgb());
   stroke_flags.setStyle(PaintFlags::kStroke_Style);
   stroke_flags.setStrokeWidth(stroke_width);
 
@@ -1371,7 +1368,7 @@ void GraphicsContext::FillRectWithRoundedHole(
     return;
 
   PaintFlags flags(ImmutableState()->FillFlags());
-  flags.setColor(ApplyHighContrastFilter(color).Rgb());
+  flags.setColor(ApplyDarkModeFilter(color).Rgb());
   canvas_->drawDRRect(SkRRect::MakeRect(rect), rounded_hole_rect, flags);
 }
 
@@ -1417,25 +1414,25 @@ sk_sp<SkColorFilter> GraphicsContext::WebCoreColorFilterToSkiaColorFilter(
   return nullptr;
 }
 
-bool GraphicsContext::ShouldApplyHighContrastFilterToImage(Image& image) {
-  if (!high_contrast_filter_)
+bool GraphicsContext::ShouldApplyDarkModeFilterToImage(Image& image) {
+  if (!dark_mode_filter_)
     return false;
 
-  switch (high_contrast_settings_.image_policy) {
-    case HighContrastImagePolicy::kFilterSmart:
-      return high_contrast_image_classifier_
-          .ShouldApplyHighContrastFilterToImage(image);
-    case HighContrastImagePolicy::kFilterAll:
+  switch (dark_mode_settings_.image_policy) {
+    case DarkModeImagePolicy::kFilterSmart:
+      return dark_mode_image_classifier_.ShouldApplyDarkModeFilterToImage(
+          image);
+    case DarkModeImagePolicy::kFilterAll:
       return true;
     default:
       return false;
   }
 }
 
-Color GraphicsContext::ApplyHighContrastFilter(const Color& input) const {
-  if (!high_contrast_filter_)
+Color GraphicsContext::ApplyDarkModeFilter(const Color& input) const {
+  if (!dark_mode_filter_)
     return input;
-  return Color(high_contrast_filter_->filterColor(input.Rgb()));
+  return Color(dark_mode_filter_->filterColor(input.Rgb()));
 }
 
 }  // namespace blink
