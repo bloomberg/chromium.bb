@@ -33,8 +33,7 @@ base::string16 GetSyncedStateStatusLabel(const syncer::SyncService* service) {
     // User is signed in, but sync is disabled.
     return l10n_util::GetStringUTF16(IDS_SIGNED_IN_WITH_SYNC_DISABLED);
   }
-  if (service->HasDisableReason(
-          syncer::SyncService::DISABLE_REASON_USER_CHOICE)) {
+  if (!service->GetUserSettings()->IsSyncRequested()) {
     // User is signed in, but sync has been stopped.
     return l10n_util::GetStringUTF16(IDS_SIGNED_IN_WITH_SYNC_SUPPRESSED);
   }
@@ -49,26 +48,34 @@ base::string16 GetSyncedStateStatusLabel(const syncer::SyncService* service) {
           : IDS_SYNC_ACCOUNT_SYNCING_CUSTOM_DATA_TYPES);
 }
 
-void GetStatusForActionableError(syncer::ClientAction action,
+// Returns whether there is a non-empty status for the given |action|.
+bool GetStatusForActionableError(syncer::ClientAction action,
                                  base::string16* status_label,
                                  base::string16* link_label,
                                  ActionType* action_type) {
-  DCHECK(status_label);
-  DCHECK(link_label);
+  DCHECK(action_type);
   switch (action) {
     case syncer::UPGRADE_CLIENT:
-      *status_label = l10n_util::GetStringUTF16(IDS_SYNC_UPGRADE_CLIENT);
-      *link_label =
-          l10n_util::GetStringUTF16(IDS_SYNC_UPGRADE_CLIENT_LINK_LABEL);
+      if (status_label) {
+        *status_label = l10n_util::GetStringUTF16(IDS_SYNC_UPGRADE_CLIENT);
+      }
+      if (link_label) {
+        *link_label =
+            l10n_util::GetStringUTF16(IDS_SYNC_UPGRADE_CLIENT_LINK_LABEL);
+      }
       *action_type = UPGRADE_CLIENT;
-      break;
+      return true;
     case syncer::ENABLE_SYNC_ON_ACCOUNT:
-      *status_label =
-          l10n_util::GetStringUTF16(IDS_SYNC_STATUS_ENABLE_SYNC_ON_ACCOUNT);
-      break;
+      if (status_label) {
+        *status_label =
+            l10n_util::GetStringUTF16(IDS_SYNC_STATUS_ENABLE_SYNC_ON_ACCOUNT);
+      }
+      return true;
     default:
-      *status_label = base::string16();
-      break;
+      if (status_label) {
+        *status_label = base::string16();
+      }
+      return false;
   }
 }
 
@@ -80,8 +87,8 @@ void GetStatusForUnrecoverableError(bool is_user_signout_allowed,
   // Unrecoverable error is sometimes accompanied by actionable error.
   // If status message is set display that message, otherwise show generic
   // unrecoverable error message.
-  GetStatusForActionableError(action, status_label, link_label, action_type);
-  if (status_label->empty()) {
+  if (!GetStatusForActionableError(action, status_label, link_label,
+                                   action_type)) {
     *action_type = REAUTHENTICATE;
     *link_label = l10n_util::GetStringUTF16(IDS_SYNC_RELOGIN_LINK_LABEL);
 
@@ -148,6 +155,10 @@ MessageType GetStatusLabelsImpl(
     return PRE_SYNCED;
   }
 
+  // If local Sync were enabled, then the SyncService shouldn't report having a
+  // primary (or any) account.
+  DCHECK(!service->IsLocalSyncEnabled());
+
   syncer::SyncStatus status;
   service->QueryDetailedSyncStatus(&status);
 
@@ -164,10 +175,9 @@ MessageType GetStatusLabelsImpl(
   // TODO(crbug.com/911153): What's the intended meaning of this condition?
   // Should other disable reasons also be checked?
   if (service->GetUserSettings()->IsFirstSetupComplete() ||
+      !service->GetUserSettings()->IsSyncRequested() ||
       service->HasDisableReason(
-          syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY) ||
-      service->HasDisableReason(
-          syncer::SyncService::DISABLE_REASON_USER_CHOICE)) {
+          syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY)) {
     // The order or priority is going to be:
     // 1. Auth errors. 2. Actionable protocol errors. 3. Passphrase errors.
 
@@ -181,14 +191,9 @@ MessageType GetStatusLabelsImpl(
     }
 
     // We don't have an auth error. Check for an actionable protocol error.
-    // TODO(crbug.com/911153): Here the behavior (returned value) depends on
-    // whether the |status_label| param is null. That seems like a bug.
-    if (status_label && link_label) {
-      GetStatusForActionableError(status.sync_protocol_error.action,
-                                  status_label, link_label, action_type);
-      if (!status_label->empty()) {
-        return SYNC_ERROR;
-      }
+    if (GetStatusForActionableError(status.sync_protocol_error.action,
+                                    status_label, link_label, action_type)) {
+      return SYNC_ERROR;
     }
 
     // Check for a passphrase error.
@@ -209,8 +214,7 @@ MessageType GetStatusLabelsImpl(
 
     // Check to see if sync has been disabled via the dasboard and needs to be
     // set up once again.
-    if (service->HasDisableReason(
-            syncer::SyncService::DISABLE_REASON_USER_CHOICE) &&
+    if (!service->GetUserSettings()->IsSyncRequested() &&
         status.sync_protocol_error.error_type == syncer::NOT_MY_BIRTHDAY) {
       return PRE_SYNCED;
     }
@@ -236,27 +240,16 @@ MessageType GetStatusLabelsImpl(
     return PRE_SYNCED;
   }
 
-  if (ShouldRequestSyncConfirmation(service)) {
-    if (status_label && link_label) {
-      *status_label =
-          l10n_util::GetStringUTF16(IDS_SYNC_SETTINGS_NOT_CONFIRMED);
-      *link_label = l10n_util::GetStringUTF16(
-          IDS_SYNC_ERROR_USER_MENU_CONFIRM_SYNC_SETTINGS_BUTTON);
-    }
-    *action_type = CONFIRM_SYNC_SETTINGS;
-    return SYNC_ERROR;
+  // At this point we've ruled out all other cases - all that's left is a
+  // missing Sync confirmation.
+  DCHECK(ShouldRequestSyncConfirmation(service));
+  if (status_label && link_label) {
+    *status_label = l10n_util::GetStringUTF16(IDS_SYNC_SETTINGS_NOT_CONFIRMED);
+    *link_label = l10n_util::GetStringUTF16(
+        IDS_SYNC_ERROR_USER_MENU_CONFIRM_SYNC_SETTINGS_BUTTON);
   }
-
-  // TODO(crbug.com/906995): This code is only reachable if IsLocalSyncEnabled()
-  // is true. That should probably be handled more explicitly, and anyway this
-  // doesn't seem like an appropriate message for that case.
-  // The user is signed in, but sync has been stopped.
-  if (status_label) {
-    *status_label =
-        l10n_util::GetStringUTF16(IDS_SIGNED_IN_WITH_SYNC_SUPPRESSED);
-  }
-
-  return PRE_SYNCED;
+  *action_type = CONFIRM_SYNC_SETTINGS;
+  return SYNC_ERROR;
 }
 
 }  // namespace
