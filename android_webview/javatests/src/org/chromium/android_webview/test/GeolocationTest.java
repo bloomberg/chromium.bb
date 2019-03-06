@@ -20,6 +20,7 @@ import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwGeolocationPermissions;
 import org.chromium.android_webview.AwSettings;
 import org.chromium.android_webview.test.AwActivityTestRule.TestDependencyFactory;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.content_public.common.ContentUrlConstants;
@@ -156,11 +157,15 @@ public class GeolocationTest {
                 mContentsClient.getOnPageFinishedHelper(), RAW_HTML, "text/html", false,
                 "https://google.com/", ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
 
-        mAwContents.evaluateJavaScriptForTests("initiate_getCurrentPosition();", null);
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> mAwContents.evaluateJavaScriptForTests(
+                        "initiate_getCurrentPosition();", null));
 
         AwActivityTestRule.pollInstrumentationThread(() -> getPositionCountFromJS() == 1);
 
-        mAwContents.evaluateJavaScriptForTests("initiate_getCurrentPosition();", null);
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> mAwContents.evaluateJavaScriptForTests(
+                        "initiate_getCurrentPosition();", null));
         AwActivityTestRule.pollInstrumentationThread(() -> getPositionCountFromJS() == 2);
     }
 
@@ -177,7 +182,8 @@ public class GeolocationTest {
                 mContentsClient.getOnPageFinishedHelper(), RAW_HTML, "text/html", false,
                 "https://google.com/", ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
 
-        mAwContents.evaluateJavaScriptForTests("initiate_watchPosition();", null);
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> mAwContents.evaluateJavaScriptForTests("initiate_watchPosition();", null));
 
         AwActivityTestRule.pollInstrumentationThread(() -> getPositionCountFromJS() > 1);
     }
@@ -192,7 +198,8 @@ public class GeolocationTest {
                 mContentsClient.getOnPageFinishedHelper(), RAW_HTML, "text/html", false,
                 "https://google.com/", ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
 
-        mAwContents.evaluateJavaScriptForTests("initiate_watchPosition();", null);
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> mAwContents.evaluateJavaScriptForTests("initiate_watchPosition();", null));
 
         AwActivityTestRule.pollInstrumentationThread(() -> getPositionCountFromJS() > 1);
 
@@ -229,7 +236,8 @@ public class GeolocationTest {
                 mContentsClient.getOnPageFinishedHelper(), RAW_HTML, "text/html", false,
                 "https://google.com/", ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
 
-        mAwContents.evaluateJavaScriptForTests("initiate_watchPosition();", null);
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> mAwContents.evaluateJavaScriptForTests("initiate_watchPosition();", null));
 
         Assert.assertEquals(0, getPositionCountFromJS());
 
@@ -268,7 +276,9 @@ public class GeolocationTest {
                 mContentsClient.getOnPageFinishedHelper(), RAW_HTML, "text/html", false,
                 "https://google.com/", ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
 
-        mAwContents.evaluateJavaScriptForTests("initiate_getCurrentPosition();", null);
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> mAwContents.evaluateJavaScriptForTests(
+                        "initiate_getCurrentPosition();", null));
 
         AwActivityTestRule.pollInstrumentationThread(new Callable<Boolean>() {
             @Override
@@ -290,7 +300,9 @@ public class GeolocationTest {
                 mContentsClient.getOnPageFinishedHelper(), RAW_HTML, "text/html", false,
                 "http://google.com/", ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
 
-        mAwContents.evaluateJavaScriptForTests("initiate_getCurrentPosition();", null);
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> mAwContents.evaluateJavaScriptForTests(
+                        "initiate_getCurrentPosition();", null));
 
         AwActivityTestRule.pollInstrumentationThread(new Callable<Boolean>() {
             @Override
@@ -310,7 +322,9 @@ public class GeolocationTest {
                 mContentsClient.getOnPageFinishedHelper(), RAW_HTML, "text/html", false,
                 "http://google.com/", ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
 
-        mAwContents.evaluateJavaScriptForTests("initiate_getCurrentPosition();", null);
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> mAwContents.evaluateJavaScriptForTests(
+                        "initiate_getCurrentPosition();", null));
 
         AwActivityTestRule.pollInstrumentationThread(() -> getPositionCountFromJS() > 0);
     }
