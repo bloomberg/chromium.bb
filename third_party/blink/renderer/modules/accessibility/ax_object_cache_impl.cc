@@ -730,7 +730,9 @@ void AXObjectCacheImpl::FocusableChanged(Element* element) {
     ChildrenChanged(element->parentNode());
   } else {
     // Refresh the focusable state on the exposed object.
-    MarkAXObjectDirty(obj, false);
+    // TODO(accessibility) find out why using MarkAXObjectDirty(obj, false)
+    // regresses Slack performance, see https://crbug.com/936944.
+    PostNotification(obj, ax::mojom::Event::kValueChanged);
   }
 }
 
