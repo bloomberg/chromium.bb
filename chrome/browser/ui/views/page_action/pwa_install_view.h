@@ -21,6 +21,7 @@ class PwaInstallView : public PageActionIconView {
   bool Update() override;
   void OnExecuting(PageActionIconView::ExecuteSource source) override;
   views::BubbleDialogDelegateView* GetBubble() const override;
+  bool ShouldShowSeparator() const override;
   const gfx::VectorIcon& GetVectorIcon() const override;
   base::string16 GetTextForTooltipAndAccessibleName() const override;
 

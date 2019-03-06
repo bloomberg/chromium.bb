@@ -245,6 +245,7 @@ AppBannerManager::AppBannerManager(content::WebContents* web_contents)
       load_finished_(false),
       triggered_by_devtools_(false),
       status_reporter_(std::make_unique<NullStatusReporter>()),
+      install_animation_pending_(false),
       installable_(Installable::UNKNOWN),
       weak_factory_(this) {
   DCHECK(manager_);
@@ -465,6 +466,8 @@ void AppBannerManager::SetInstallable(Installable installable) {
     return;
 
   installable_ = installable;
+  install_animation_pending_ = IsInstallable();
+
   for (Observer& observer : observer_list_)
     observer.OnInstallabilityUpdated();
 }
@@ -635,16 +638,21 @@ bool AppBannerManager::IsExperimentalAppBannersEnabled() {
 base::string16 AppBannerManager::GetInstallableAppName(
     content::WebContents* web_contents) {
   AppBannerManager* manager = FromWebContents(web_contents);
-  if (!manager || manager->installable_ != Installable::INSTALLABLE_YES)
+  if (!manager || !manager->IsInstallable())
     return base::string16();
   return manager->GetAppName();
 }
 
-// static
-bool AppBannerManager::IsWebContentsInstallable(
-    content::WebContents* web_contents) {
-  AppBannerManager* manager = FromWebContents(web_contents);
-  return manager && manager->installable_ == Installable::INSTALLABLE_YES;
+bool AppBannerManager::IsInstallable() const {
+  return installable_ == Installable::INSTALLABLE_YES;
+}
+
+bool AppBannerManager::MaybeConsumeInstallAnimation() {
+  DCHECK(IsInstallable());
+  if (!install_animation_pending_)
+    return false;
+  install_animation_pending_ = false;
+  return true;
 }
 
 void AppBannerManager::RecordCouldShowBanner() {
