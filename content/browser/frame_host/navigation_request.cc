@@ -1058,6 +1058,9 @@ void NavigationRequest::OnResponseStarted(
     NavigationDownloadPolicy download_policy,
     bool is_stream,
     base::Optional<SubresourceLoaderParams> subresource_loader_params) {
+  // The |loader_|'s job is finished. It must not call the NavigationRequest
+  // anymore from now.
+  loader_ = nullptr;
   is_download_ = is_download && IsNavigationDownloadAllowed(download_policy);
   is_stream_ = is_stream;
   request_id_ = request_id;
@@ -1285,6 +1288,11 @@ void NavigationRequest::OnResponseStarted(
 void NavigationRequest::OnRequestFailed(
     const network::URLLoaderCompletionStatus& status) {
   DCHECK_NE(status.error_code, net::OK);
+
+  // The |loader_|'s job is finished. It must not call the NavigationRequest
+  // anymore from now.
+  loader_ = nullptr;
+
   bool collapse_frame =
       status.extended_error_code ==
       static_cast<int>(blink::ResourceRequestBlockedReason::kCollapsedByClient);
