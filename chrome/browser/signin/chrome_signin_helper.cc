@@ -51,6 +51,7 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/signin/account_management_screen_helper.h"
+#include "ui/android/view_android.h"
 #else
 #include "chrome/browser/ui/browser_commands.h"
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
@@ -235,7 +236,8 @@ void ProcessMirrorHeaderUIThread(
   } else {
     signin_metrics::LogAccountReconcilorStateOnGaiaResponse(
         account_reconcilor->GetState());
-    AccountManagementScreenHelper::OpenAccountManagementScreen(profile,
+    auto* window = web_contents->GetNativeView()->GetWindowAndroid();
+    AccountManagementScreenHelper::OpenAccountManagementScreen(window,
                                                                service_type);
   }
 #endif  // defined(OS_CHROMEOS)

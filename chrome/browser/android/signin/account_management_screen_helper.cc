@@ -9,19 +9,17 @@
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "jni/AccountManagementScreenHelper_jni.h"
+#include "ui/android/window_android.h"
 
 using base::android::JavaParamRef;
 
 // static
 void AccountManagementScreenHelper::OpenAccountManagementScreen(
-    Profile* profile,
+    ui::WindowAndroid* window,
     signin::GAIAServiceType service_type) {
-  DCHECK(profile);
-  DCHECK(ProfileAndroid::FromProfile(profile));
-
+  DCHECK(window);
   Java_AccountManagementScreenHelper_openAccountManagementScreen(
-      base::android::AttachCurrentThread(),
-      ProfileAndroid::FromProfile(profile)->GetJavaObject(),
+      base::android::AttachCurrentThread(), window->GetJavaObject(),
       static_cast<int>(service_type));
 }
 

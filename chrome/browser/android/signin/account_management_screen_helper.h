@@ -8,13 +8,15 @@
 #include "base/macros.h"
 #include "components/signin/core/browser/signin_header_helper.h"
 
-class Profile;
+namespace ui {
+class WindowAndroid;
+}
 
 // The glue for Java-side implementation of AccountManagementScreenHelper.
 class AccountManagementScreenHelper {
  public:
   // Opens the account management screen.
-  static void OpenAccountManagementScreen(Profile* profile,
+  static void OpenAccountManagementScreen(ui::WindowAndroid* profile,
                                           signin::GAIAServiceType service_type);
 
  private:
