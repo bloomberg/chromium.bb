@@ -61,6 +61,8 @@ class WebRunnerSmokeTest : public testing::Test {
   net::EmbeddedTestServer test_server_;
 
   base::RunLoop run_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebRunnerSmokeTest);
 };
 
 TEST_F(WebRunnerSmokeTest, RequestHtmlAndImage) {

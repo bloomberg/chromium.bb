@@ -11,6 +11,8 @@
 #include <string>
 #include <utility>
 
+#include "base/strings/string_piece.h"
+
 namespace cr_fuchsia {
 
 // Used to test interactions with an Agent in unit-tests for a component.
@@ -26,17 +28,20 @@ class FakeComponentContext
   explicit FakeComponentContext(
       AgentImpl::CreateComponentStateCallback create_component_state_callback,
       base::fuchsia::ServiceDirectory* service_directory,
-      std::string component_url);
+      base::StringPiece component_url);
   ~FakeComponentContext() override;
 
-  // fuchsia::modular::ComponentContext implementation.
+  // fuchsia::modular::ComponentContext_TestBase implementation.
   void ConnectToAgent(
       std::string agent_url,
       fidl::InterfaceRequest<::fuchsia::sys::ServiceProvider> services,
       fidl::InterfaceRequest<fuchsia::modular::AgentController> controller)
       override;
+  void NotImplemented_(const std::string& name) override;
 
  private:
+  base::fuchsia::ScopedServiceBinding<fuchsia::modular::ComponentContext>
+      binding_;
   AgentImpl agent_impl_;
   const std::string component_url_;
 

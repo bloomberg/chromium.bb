@@ -53,6 +53,7 @@ source_set("cast_runner_core") {
     "//base",
     "//fuchsia:web_fidl",
     "//fuchsia/base",
+    "//third_party/fuchsia-sdk/sdk:modular",
     "//url",
   ]
   public_deps = [

@@ -13,6 +13,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/test_timeouts.h"
+#include "fuchsia/base/agent_impl.h"
+#include "fuchsia/base/fake_component_context.h"
 #include "fuchsia/base/fit_adapter.h"
 #include "fuchsia/base/result_receiver.h"
 #include "fuchsia/engine/test/test_common.h"
@@ -38,37 +40,62 @@ void ComponentErrorHandler(zx_status_t status) {
 
 class FakeCastChannel : public chromium::cast::CastChannel {
  public:
-  FakeCastChannel() = default;
+  explicit FakeCastChannel(base::fuchsia::ServiceDirectory* directory)
+      : binding_(directory, this) {}
 
-  // chromium::web::CastChannel implementation.
-  void OnOpened(fidl::InterfaceHandle<chromium::web::MessagePort> channel,
-                OnOpenedCallback callback_ignored) override {
-    // |callback_ignored| is dropped because these tests don't exercise multiple
-    // channel lifetimes.
-    connected_channel_ = channel.Bind();
+  // Returns null if the Cast channel is not open.
+  const chromium::web::MessagePortPtr& port() const { return port_; }
 
-    if (on_channel_connected_)
-      std::move(on_channel_connected_).Run();
-  }
-
-  chromium::web::MessagePort* connected_channel() const {
-    // Return nullptr if |connected_channel_| is not currently bound.
-    return connected_channel_ ? connected_channel_.get() : nullptr;
-  }
-
-  void set_on_channel_connected(base::OnceClosure on_channel_connected) {
-    on_channel_connected_ = std::move(on_channel_connected);
+  void set_on_opened(base::OnceClosure on_opened) {
+    on_opened_ = std::move(on_opened);
   }
 
  protected:
-  // The connected Cast Channel.
-  chromium::web::MessagePortPtr connected_channel_;
+  // chromium::web::CastChannel implementation.
+  void OnOpened(fidl::InterfaceHandle<chromium::web::MessagePort> channel,
+                OnOpenedCallback callback_ignored) override {
+    port_ = channel.Bind();
 
-  // A pending on-connect callback, to be invoked once a Cast Channel is
-  // received.
-  base::OnceClosure on_channel_connected_;
+    if (on_opened_)
+      std::move(on_opened_).Run();
+
+    callback_ignored();
+  }
+
+  const base::fuchsia::ScopedServiceBinding<chromium::cast::CastChannel>
+      binding_;
+
+  // Null until the Cast app connects to the Cast channel.
+  chromium::web::MessagePortPtr port_;
+
+  // Invoked when the contect opens a new Cast channel, if set.
+  base::OnceClosure on_opened_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeCastChannel);
+};
+
+class FakeComponentState : public cr_fuchsia::AgentImpl::ComponentStateBase {
+ public:
+  explicit FakeComponentState(base::StringPiece component_url)
+      : ComponentStateBase(component_url),
+        cast_channel_(std::make_unique<FakeCastChannel>(service_directory())) {}
+  ~FakeComponentState() override {
+    if (on_delete_)
+      std::move(on_delete_).Run();
+  }
+
+  void set_on_delete(base::OnceClosure on_delete) {
+    on_delete_ = std::move(on_delete);
+  }
+
+  FakeCastChannel* cast_channel() { return cast_channel_.get(); }
+  void ClearCastChannel() { cast_channel_.reset(); }
+
+ protected:
+  std::unique_ptr<FakeCastChannel> cast_channel_;
+  base::OnceClosure on_delete_;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeComponentState);
 };
 
 }  // namespace
@@ -120,27 +147,28 @@ class CastRunnerIntegrationTest : public testing::Test {
   }
 
   void WaitUntilCastChannelOpened() {
-    if (cast_channel_.connected_channel())
+    if (component_state_->cast_channel()->port())
       return;
 
     base::RunLoop run_loop;
-    cast_channel_.set_on_channel_connected(run_loop.QuitClosure());
+    component_state_->cast_channel()->set_on_opened(run_loop.QuitClosure());
     run_loop.Run();
 
-    DCHECK(cast_channel_.connected_channel());
+    DCHECK(component_state_->cast_channel()->port());
   }
 
   fuchsia::sys::ComponentControllerPtr StartCastComponent(
       base::StringPiece component_url) {
-    DCHECK(!component_services_);
+    DCHECK(!component_state_);
 
-    // Create a ServiceDirectory and publish the CastChannel into it.
+    // Create a ServiceDirectory and publish the ComponentContext into it.
     fidl::InterfaceHandle<fuchsia::io::Directory> directory;
     component_services_ = std::make_unique<base::fuchsia::ServiceDirectory>(
         directory.NewRequest());
-    cast_channel_binding_ = std::make_unique<
-        base::fuchsia::ScopedServiceBinding<chromium::cast::CastChannel>>(
-        component_services_.get(), &cast_channel_);
+    component_context_ = std::make_unique<cr_fuchsia::FakeComponentContext>(
+        base::BindRepeating(&CastRunnerIntegrationTest::OnComponentConnect,
+                            base::Unretained(this)),
+        component_services_.get(), component_url);
 
     // Configure the Runner, including a service directory channel to publish
     // services to.
@@ -165,6 +193,13 @@ class CastRunnerIntegrationTest : public testing::Test {
   }
 
  protected:
+  std::unique_ptr<cr_fuchsia::AgentImpl::ComponentStateBase> OnComponentConnect(
+      base::StringPiece component_url) {
+    auto component_state = std::make_unique<FakeComponentState>(component_url);
+    component_state_ = component_state.get();
+    return component_state;
+  }
+
   const base::RunLoop::ScopedRunTimeoutForTest run_timeout_;
   base::MessageLoopForIO message_loop_;
   net::EmbeddedTestServer test_server_;
@@ -173,12 +208,10 @@ class CastRunnerIntegrationTest : public testing::Test {
   FakeApplicationConfigManager app_config_manager_;
   fidl::Binding<chromium::cast::ApplicationConfigManager> app_config_binding_;
 
-  // Incoming service directory, CastChannel and service bindings.
+  // Incoming service directory, ComponentContext and per-component state.
   std::unique_ptr<base::fuchsia::ServiceDirectory> component_services_;
-  FakeCastChannel cast_channel_;
-  std::unique_ptr<
-      base::fuchsia::ScopedServiceBinding<chromium::cast::CastChannel>>
-      cast_channel_binding_;
+  std::unique_ptr<cr_fuchsia::FakeComponentContext> component_context_;
+  FakeComponentState* component_state_ = nullptr;
 
   // ServiceDirectory into which the CastRunner will publish itself.
   std::unique_ptr<base::fuchsia::ServiceDirectory> public_services_;
@@ -230,18 +263,18 @@ TEST_F(CastRunnerIntegrationTest, BasicRequest) {
   }
 
   // Verify that the component is torn down when |component_controller| is
-  // unbound, by observing the destruction of its child Interfaces.
-  base::RunLoop destruction_run_loop;
-  nav_controller.set_error_handler(
-      [&destruction_run_loop](zx_status_t) { destruction_run_loop.Quit(); });
+  // unbound.
+  base::RunLoop run_loop;
+  component_state_->set_on_delete(run_loop.QuitClosure());
   component_controller.Unbind();
-  destruction_run_loop.Run();
+  run_loop.Run();
 }
 
 TEST_F(CastRunnerIntegrationTest, IncorrectCastAppId) {
   // Launch the a component with an invalid Cast app Id.
   fuchsia::sys::ComponentControllerPtr component_controller =
       StartCastComponent("cast:99999999");
+  component_controller.set_error_handler(&ComponentErrorHandler);
 
   // Run the loop until the ComponentController is dropped, or a WebComponent is
   // created.
@@ -302,17 +335,17 @@ TEST_F(CastRunnerIntegrationTest, CastChannel) {
     base::RunLoop run_loop;
     cr_fuchsia::ResultReceiver<chromium::web::WebMessage> message(
         run_loop.QuitClosure());
-    cast_channel_.connected_channel()->ReceiveMessage(
+    component_state_->cast_channel()->port()->ReceiveMessage(
         cr_fuchsia::CallbackToFitFunction(message.GetReceiveCallback()));
     run_loop.Run();
 
     EXPECT_EQ(cr_fuchsia::StringFromMemBufferOrDie(message->data), expected);
   }
 
-  // Shutdown the component and wait for the CastChannel to close.
-  component_controller.Unbind();
+  // Shutdown the component and wait for the teardown of its state.
   base::RunLoop run_loop;
-  cast_channel_binding_->SetOnLastClientCallback(run_loop.QuitClosure());
+  component_state_->set_on_delete(run_loop.QuitClosure());
+  component_controller.Unbind();
   run_loop.Run();
 }
 
@@ -326,15 +359,25 @@ TEST_F(CastRunnerIntegrationTest, CastChannelConsumerDropped) {
   fuchsia::sys::ComponentControllerPtr component_controller =
       StartCastComponent(base::StringPrintf("cast:%s", kCastChannelAppId));
 
-  // Expect that disconnecting the Cast Channel consumer service will trigger
-  // the destruction of the Cast Component.
-  cast_channel_binding_.reset();
-  base::RunLoop run_loop;
-  component_controller.set_error_handler(
-      [&run_loop](zx_status_t) { run_loop.Quit(); });
-  run_loop.Run();
+  // Spin the message loop to handle creation of the component state.
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(component_state_);
 
+  // Disconnecting the CastChannel should trigger the component to teardown,
+  // resulting in our ComponentControllerPtr being dropped, and the component
+  // state held by the agent being deleted.
+  component_state_->set_on_delete(base::MakeExpectedRunClosure(FROM_HERE));
+  component_state_->ClearCastChannel();
+  base::RunLoop run_loop;
+  component_controller.set_error_handler([&run_loop](zx_status_t status) {
+    EXPECT_EQ(status, ZX_ERR_PEER_CLOSED);
+    run_loop.Quit();
+  });
+  run_loop.Run();
   EXPECT_FALSE(component_controller.is_bound());
+
+  // Give the fake agent an opportunity to perform teardown cleanup.
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(CastRunnerIntegrationTest, CastChannelComponentControllerDropped) {
@@ -347,12 +390,15 @@ TEST_F(CastRunnerIntegrationTest, CastChannelComponentControllerDropped) {
   fuchsia::sys::ComponentControllerPtr component_controller =
       StartCastComponent(base::StringPrintf("cast:%s", kCastChannelAppId));
 
-  // Expect that disconnecting the ComponentController will kill the Cast
-  // Component, which we verify indirectly by listening for the disconnection
-  // of one of its CastChannel FIDL client.
-  component_controller.Unbind();
+  // Spin the message loop to handle creation of the component state.
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(component_state_);
+
+  // Expect that disconnecting the ComponentController will destroy the Cast
+  // component.
   base::RunLoop run_loop;
-  cast_channel_binding_->SetOnLastClientCallback(run_loop.QuitClosure());
+  component_state_->set_on_delete(run_loop.QuitClosure());
+  component_controller.Unbind();
   run_loop.Run();
 }
 

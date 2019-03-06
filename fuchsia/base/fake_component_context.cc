@@ -9,21 +9,30 @@
 #include <string>
 #include <utility>
 
+#include "base/logging.h"
+
 namespace cr_fuchsia {
 
 FakeComponentContext::FakeComponentContext(
     AgentImpl::CreateComponentStateCallback create_component_state_callback,
     base::fuchsia::ServiceDirectory* service_directory,
-    std::string component_url)
-    : agent_impl_(service_directory,
+    base::StringPiece component_url)
+    : binding_(service_directory, this),
+      // Publishing the Agent to |service_directory| is not necessary, but
+      // also shouldn't do any harm.
+      agent_impl_(service_directory,
                   std::move(create_component_state_callback)),
-      component_url_(component_url) {}
+      component_url_(component_url.as_string()) {}
 
 void FakeComponentContext::ConnectToAgent(
     std::string agent_url,
     fidl::InterfaceRequest<::fuchsia::sys::ServiceProvider> services,
     fidl::InterfaceRequest<fuchsia::modular::AgentController> controller) {
   agent_impl_.Connect(component_url_, std::move(services));
+}
+
+void FakeComponentContext::NotImplemented_(const std::string& name) {
+  NOTIMPLEMENTED() << " API: " << name;
 }
 
 FakeComponentContext::~FakeComponentContext() = default;

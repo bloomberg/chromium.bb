@@ -26,7 +26,7 @@ StartupContext::StartupContext(::fuchsia::sys::StartupInfo startup_info)
     }
   }
 
-  // TODO(https://crbug.com/933834): Remove this workaround when we migrate to
+  // TODO(https://crbug.com/933834): Remove these workarounds when we migrate to
   // the new component manager.
   if (!incoming_services_ && startup_info_.launch_info.flat_namespace) {
     LOG(WARNING) << "Falling back to LaunchInfo namespace";
@@ -39,6 +39,28 @@ StartupContext::StartupContext(::fuchsia::sys::StartupInfo startup_info)
         break;
       }
     }
+  }
+  if (!incoming_services_ && startup_info_.launch_info.additional_services) {
+    LOG(WARNING) << "Falling back to additional ServiceList services";
+
+    // Construct a ServiceDirectory and publish the additional services into it.
+    fidl::InterfaceHandle<::fuchsia::io::Directory> incoming_directory;
+    additional_services_.Bind(
+        std::move(startup_info_.launch_info.additional_services->provider));
+    additional_services_directory_ =
+        std::make_unique<base::fuchsia::ServiceDirectory>(
+            incoming_directory.NewRequest());
+    for (auto& name : startup_info_.launch_info.additional_services->names) {
+      additional_services_directory_->AddServiceUnsafe(
+          name, base::BindRepeating(
+                    &::fuchsia::sys::ServiceProvider::ConnectToService,
+                    base::Unretained(additional_services_.get()), name));
+    }
+
+    // Publish those services to the caller as |incoming_services_|.
+    incoming_services_ = std::make_unique<ServiceDirectoryClient>(
+        fidl::InterfaceHandle<::fuchsia::io::Directory>(
+            std::move(incoming_directory)));
   }
 }
 
