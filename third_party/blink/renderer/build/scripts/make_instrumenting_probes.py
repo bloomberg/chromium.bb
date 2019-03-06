@@ -165,7 +165,7 @@ class Parameter(object):
 
 
 def build_param_name(param_type):
-    return "param" + re.match(r"(const |scoped_refptr<)?(\w*)", param_type).group(2)
+    return "param_" + NameStyleConverter(re.match(r"(const |scoped_refptr<)?(\w*)", param_type).group(2)).to_snake_case()
 
 
 def load_config(file_name):
