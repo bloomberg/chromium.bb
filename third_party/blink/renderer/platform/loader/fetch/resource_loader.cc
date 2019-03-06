@@ -71,6 +71,7 @@
 #include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
 #include "third_party/blink/renderer/platform/weborigin/security_violation_reporting_policy.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -167,6 +168,8 @@ bool CanHandleDataURLRequestLocally(const ResourceRequest& request) {
 // if the response wasn't received.  One CodeCacheRequest handles only one
 // request. On a restart new CodeCacheRequest is created.
 class ResourceLoader::CodeCacheRequest {
+  USING_FAST_MALLOC(ResourceLoader::CodeCacheRequest);
+
  public:
   CodeCacheRequest(std::unique_ptr<CodeCacheLoader> code_cache_loader,
                    const KURL& url,

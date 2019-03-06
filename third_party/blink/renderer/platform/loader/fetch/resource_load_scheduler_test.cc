@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/test/fake_frame_scheduler.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 namespace {
@@ -23,6 +24,8 @@ class MockClient final : public GarbageCollectedFinalized<MockClient>,
  public:
   // A delegate that can be used to determine the order clients were run in.
   class MockClientDelegate {
+    DISALLOW_NEW();
+
    public:
     MockClientDelegate() = default;
     ~MockClientDelegate() = default;

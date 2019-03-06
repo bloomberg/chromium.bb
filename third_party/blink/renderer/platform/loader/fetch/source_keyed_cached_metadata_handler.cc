@@ -74,6 +74,8 @@ class SourceKeyedCachedMetadataHandler::SingleKeyHandler final
 };
 
 class SourceKeyedCachedMetadataHandler::KeyHash {
+  STATIC_ONLY(KeyHash);
+
  public:
   static unsigned GetHash(const Key& key) {
     return StringHasher::ComputeHash(key.data(),

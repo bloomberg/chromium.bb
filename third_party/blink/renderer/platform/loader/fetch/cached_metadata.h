@@ -34,6 +34,7 @@
 #include <stdint.h>
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
@@ -51,6 +52,8 @@ constexpr size_t kCachedMetaDataStart = kCacheDataTypeStart + sizeof(uint32_t);
 // Serialized data is NOT portable across architectures. However, reading the
 // data type ID will reject data generated with a different byte-order.
 class PLATFORM_EXPORT CachedMetadata : public RefCounted<CachedMetadata> {
+  USING_FAST_MALLOC(CachedMetadata);
+
  public:
   static scoped_refptr<CachedMetadata> Create(uint32_t data_type_id,
                                               const uint8_t* data,

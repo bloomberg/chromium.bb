@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
@@ -22,6 +23,8 @@ class WebProcessMemoryDump;
 // A callback for sending the serialized data of cached metadata back to the
 // platform.
 class PLATFORM_EXPORT CachedMetadataSender {
+  USING_FAST_MALLOC(CachedMetadataSender);
+
  public:
   static std::unique_ptr<CachedMetadataSender> Create(
       const ResourceResponse&,

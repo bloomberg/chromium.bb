@@ -22,6 +22,8 @@ class PLATFORM_EXPORT SubresourceIntegrity final {
 
  public:
   class PLATFORM_EXPORT ReportInfo final {
+    DISALLOW_NEW();
+
    public:
     enum class UseCounterFeature {
       kSRIElementWithMatchingIntegrityAttribute,
