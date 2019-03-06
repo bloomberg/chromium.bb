@@ -4,17 +4,8 @@
 
 #include "content/browser/service_worker/embedded_worker_registry.h"
 
-#include "base/bind_helpers.h"
-#include "base/metrics/histogram_macros.h"
-#include "base/stl_util.h"
-#include "content/browser/renderer_host/render_widget_helper.h"
 #include "content/browser/service_worker/embedded_worker_instance.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
-#include "content/browser/service_worker/service_worker_context_wrapper.h"
-#include "content/browser/service_worker/service_worker_dispatcher_host.h"
-#include "content/public/browser/browser_thread.h"
-#include "ipc/ipc_message.h"
-#include "ipc/ipc_sender.h"
 
 namespace content {
 
@@ -43,21 +34,6 @@ std::unique_ptr<EmbeddedWorkerInstance> EmbeddedWorkerRegistry::CreateWorker(
   return worker;
 }
 
-bool EmbeddedWorkerRegistry::OnWorkerStarted(int process_id,
-                                             int embedded_worker_id) {
-  if (!base::ContainsKey(worker_process_map_, process_id) ||
-      !base::ContainsKey(worker_process_map_[process_id], embedded_worker_id)) {
-    return false;
-  }
-
-  return true;
-}
-
-void EmbeddedWorkerRegistry::OnWorkerStopped(int process_id,
-                                             int embedded_worker_id) {
-  worker_process_map_[process_id].erase(embedded_worker_id);
-}
-
 EmbeddedWorkerInstance* EmbeddedWorkerRegistry::GetWorker(
     int embedded_worker_id) {
   auto found = worker_map_.find(embedded_worker_id);
@@ -76,32 +52,9 @@ EmbeddedWorkerRegistry::EmbeddedWorkerRegistry(
 
 EmbeddedWorkerRegistry::~EmbeddedWorkerRegistry() = default;
 
-void EmbeddedWorkerRegistry::BindWorkerToProcess(int process_id,
-                                                 int embedded_worker_id) {
-  DCHECK(GetWorker(embedded_worker_id));
-  DCHECK_EQ(GetWorker(embedded_worker_id)->process_id(), process_id);
-  DCHECK(
-      !base::ContainsKey(worker_process_map_, process_id) ||
-      !base::ContainsKey(worker_process_map_[process_id], embedded_worker_id));
-
-  worker_process_map_[process_id].insert(embedded_worker_id);
-}
-
-void EmbeddedWorkerRegistry::RemoveWorker(int process_id,
-                                          int embedded_worker_id) {
+void EmbeddedWorkerRegistry::RemoveWorker(int embedded_worker_id) {
   DCHECK(base::ContainsKey(worker_map_, embedded_worker_id));
-  DetachWorker(process_id, embedded_worker_id);
   worker_map_.erase(embedded_worker_id);
-}
-
-void EmbeddedWorkerRegistry::DetachWorker(int process_id,
-                                          int embedded_worker_id) {
-  DCHECK(base::ContainsKey(worker_map_, embedded_worker_id));
-  if (!base::ContainsKey(worker_process_map_, process_id))
-    return;
-  worker_process_map_[process_id].erase(embedded_worker_id);
-  if (worker_process_map_[process_id].empty())
-    worker_process_map_.erase(process_id);
 }
 
 }  // namespace content
