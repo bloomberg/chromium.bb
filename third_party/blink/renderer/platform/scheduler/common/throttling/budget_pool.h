@@ -13,6 +13,7 @@
 #include "base/task/sequence_manager/lazy_now.h"
 #include "base/time/time.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace base {
 namespace sequence_manager {
@@ -33,6 +34,8 @@ enum class QueueBlockType;
 // on a resource. This limit applies when task queues are already throttled
 // by TaskQueueThrottler.
 class PLATFORM_EXPORT BudgetPool {
+  USING_FAST_MALLOC(BudgetPool);
+
  public:
   virtual ~BudgetPool();
 

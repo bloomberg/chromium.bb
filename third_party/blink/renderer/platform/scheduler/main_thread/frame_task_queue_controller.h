@@ -14,6 +14,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_task_queue.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
@@ -38,6 +39,8 @@ class MainThreadSchedulerImpl;
 // MainThreadTaskQueues for non-loading queues, for accessing task queues and
 // their related voters, and for creating new task queues.
 class PLATFORM_EXPORT FrameTaskQueueController {
+  USING_FAST_MALLOC(FrameTaskQueueController);
+
  public:
   using TaskQueueAndEnabledVoterPair =
       std::pair<MainThreadTaskQueue*,

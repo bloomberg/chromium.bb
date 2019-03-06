@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_task_queue.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_status.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 namespace scheduler {
@@ -20,6 +21,8 @@ namespace scheduler {
 // Records the expected queueing time for a high priority task occurring
 // randomly during each interval of length equal to window's duration.
 class PLATFORM_EXPORT QueueingTimeEstimator {
+  DISALLOW_NEW();
+
  public:
   class PLATFORM_EXPORT Client {
    public:
@@ -36,6 +39,8 @@ class PLATFORM_EXPORT QueueingTimeEstimator {
   };
 
   class RunningAverage {
+    DISALLOW_NEW();
+
    public:
     explicit RunningAverage(int steps_per_window);
     int GetStepsPerWindow() const;
@@ -50,6 +55,8 @@ class PLATFORM_EXPORT QueueingTimeEstimator {
   };
 
   class PLATFORM_EXPORT Calculator {
+    DISALLOW_NEW();
+
    public:
     explicit Calculator(int steps_per_window);
 

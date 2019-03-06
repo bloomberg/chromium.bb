@@ -45,6 +45,7 @@
 #include "third_party/blink/renderer/platform/scheduler/main_thread/use_case.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/user_model.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace base {
 namespace trace_event {
@@ -455,6 +456,8 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   };
 
   class Policy {
+    DISALLOW_NEW();
+
    public:
     Policy();
     ~Policy() = default;
@@ -546,24 +549,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
     std::array<TaskQueuePolicy,
                static_cast<size_t>(MainThreadTaskQueue::QueueClass::kCount)>
         policies_;
-  };
-
-  class PollableNeedsUpdateFlag {
-   public:
-    explicit PollableNeedsUpdateFlag(base::Lock* write_lock);
-    ~PollableNeedsUpdateFlag();
-
-    // Set the flag. May only be called if |write_lock| is held.
-    void SetWhileLocked(bool value);
-
-    // Returns true iff the flag is set to true.
-    bool IsSet() const;
-
-   private:
-    base::subtle::Atomic32 flag_;
-    base::Lock* write_lock_;  // Not owned.
-
-    DISALLOW_COPY_AND_ASSIGN(PollableNeedsUpdateFlag);
   };
 
   class TaskDurationMetricTracker;

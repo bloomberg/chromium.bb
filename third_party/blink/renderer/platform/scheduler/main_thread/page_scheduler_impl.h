@@ -22,6 +22,7 @@
 #include "third_party/blink/renderer/platform/scheduler/public/page_lifecycle_state.h"
 #include "third_party/blink/renderer/platform/scheduler/public/page_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace base {
 namespace trace_event {
@@ -155,6 +156,8 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
   };
 
   class PageLifecycleStateTracker {
+    USING_FAST_MALLOC(PageLifecycleStateTracker);
+
    public:
     explicit PageLifecycleStateTracker(PageSchedulerImpl*, PageLifecycleState);
     ~PageLifecycleStateTracker() = default;

@@ -12,6 +12,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -19,6 +20,8 @@ namespace blink {
 // PostCancellableDelayedTask() and cancels the associated task on
 // TaskHandle::cancel() call or on TaskHandle destruction.
 class PLATFORM_EXPORT TaskHandle {
+  DISALLOW_NEW();
+
  public:
   class Runner;
 
