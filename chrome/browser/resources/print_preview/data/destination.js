@@ -146,8 +146,8 @@ print_preview.VendorCapability;
  *   dpi: ({
  *     option: !Array<{
  *       vendor_id: (string|undefined),
- *       height_microns: number,
- *       width_microns: number,
+ *       horizontal_dpi: number,
+ *       vertical_dpi: number,
  *       is_default: (boolean|undefined)
  *     }>
  *   }|undefined)
