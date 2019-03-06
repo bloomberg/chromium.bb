@@ -136,6 +136,12 @@ function PDFViewer(browserApi) {
   /** @private {boolean} */
   this.hasEnteredAnnotationMode_ = false;
 
+  /** @private {boolean} */
+  this.hadPassword_ = false;
+
+  /** @private {boolean} */
+  this.canSerializeDocument_ = false;
+
   PDFMetrics.record(PDFMetrics.UserAction.DOCUMENT_OPENED);
 
   // Parse open pdf parameters.
@@ -1074,6 +1080,8 @@ PDFViewer.prototype = {
     // If the password screen isn't up, put it up. Otherwise we're
     // responding to an incorrect password so deny it.
     if (!this.passwordScreen_.active) {
+      this.hadPassword_ = true;
+      this.updateAnnotationAvailable_();
       this.passwordScreen_.show();
     } else {
       this.passwordScreen_.deny();
@@ -1119,8 +1127,9 @@ PDFViewer.prototype = {
    * Sets document metadata from the current controller.
    * @param {string} title
    * @param {Array} bookmarks
+   * @param {boolean} canSerializeDocument
    */
-  setDocumentMetadata: function(title, bookmarks) {
+  setDocumentMetadata: function(title, bookmarks, canSerializeDocument) {
     if (title) {
       document.title = title;
     } else {
@@ -1131,6 +1140,8 @@ PDFViewer.prototype = {
       this.toolbar_.docTitle = document.title;
       this.toolbar_.bookmarks = this.bookmarks;
     }
+    this.canSerializeDocument_ = canSerializeDocument;
+    this.updateAnnotationAvailable_();
   },
 
   /**
@@ -1225,6 +1236,12 @@ PDFViewer.prototype = {
   updateAnnotationAvailable_() {
     let annotationAvailable = true;
     if (this.viewport_.getClockwiseRotations() != 0) {
+      annotationAvailable = false;
+    }
+    if (this.hadPassword_) {
+      annotationAvailable = false;
+    }
+    if (!this.canSerializeDocument_) {
       annotationAvailable = false;
     }
     this.toolbar_.annotationAvailable = annotationAvailable;
@@ -1563,7 +1580,8 @@ class PluginController extends ContentController {
         break;
       case 'metadata':
         this.viewer_.setDocumentMetadata(
-            message.data.title, message.data.bookmarks);
+            message.data.title, message.data.bookmarks,
+            message.data.canSerializeDocument);
         break;
       case 'setIsSelecting':
         this.viewer_.setIsSelecting(message.data.isSelecting);

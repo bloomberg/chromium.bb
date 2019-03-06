@@ -91,6 +91,7 @@ constexpr char kJSPreviewLoadedType[] = "printPreviewLoaded";
 constexpr char kJSMetadataType[] = "metadata";
 constexpr char kJSBookmarks[] = "bookmarks";
 constexpr char kJSTitle[] = "title";
+constexpr char kJSCanSerializeDocument[] = "canSerializeDocument";
 // Get password (Plugin -> Page)
 constexpr char kJSGetPasswordType[] = "getPassword";
 // Get password complete arguments (Page -> Plugin)
@@ -1654,6 +1655,9 @@ void OutOfProcessInstance::DocumentLoadComplete(
     metadata_message.Set(pp::Var(kJSTitle), pp::Var(title));
     HistogramEnumeration("PDF.DocumentFeature", HAS_TITLE, FEATURES_COUNT);
   }
+  metadata_message.Set(
+      pp::Var(kJSCanSerializeDocument),
+      pp::Var(engine_->GetLoadedByteSize() <= kMaximumSavedFileSize));
 
   pp::VarArray bookmarks = engine_->GetBookmarks();
   metadata_message.Set(pp::Var(kJSBookmarks), bookmarks);
