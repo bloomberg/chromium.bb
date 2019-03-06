@@ -45,29 +45,29 @@ const base::Feature kSyncAllowWalletDataInTransportModeWithCustomPassphrase{
 // For each below, if enabled, the SyncableService implementation of the
 // corresponding datatype(s) is wrapped within the USS architecture.
 const base::Feature kSyncPseudoUSSAppList{"SyncPseudoUSSAppList",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kSyncPseudoUSSApps{"SyncPseudoUSSApps",
-                                       base::FEATURE_DISABLED_BY_DEFAULT};
+                                       base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kSyncPseudoUSSDictionary{"SyncPseudoUSSDictionary",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kSyncPseudoUSSExtensionSettings{
-    "SyncPseudoUSSExtensionSettings", base::FEATURE_DISABLED_BY_DEFAULT};
+    "SyncPseudoUSSExtensionSettings", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kSyncPseudoUSSExtensions{"SyncPseudoUSSExtensions",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kSyncPseudoUSSFavicons{"SyncPseudoUSSFavicons",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
+                                           base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kSyncPseudoUSSHistoryDeleteDirectives{
-    "SyncPseudoUSSHistoryDeleteDirectives", base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kSyncPseudoUSSPreferences{
-    "SyncPseudoUSSPreferences", base::FEATURE_DISABLED_BY_DEFAULT};
+    "SyncPseudoUSSHistoryDeleteDirectives", base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kSyncPseudoUSSPreferences{"SyncPseudoUSSPreferences",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kSyncPseudoUSSPriorityPreferences{
-    "SyncPseudoUSSPriorityPreferences", base::FEATURE_DISABLED_BY_DEFAULT};
+    "SyncPseudoUSSPriorityPreferences", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kSyncPseudoUSSSearchEngines{
-    "SyncPseudoUSSSearchEngines", base::FEATURE_DISABLED_BY_DEFAULT};
+    "SyncPseudoUSSSearchEngines", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kSyncPseudoUSSSupervisedUsers{
-    "SyncPseudoUSSSupervisedUsers", base::FEATURE_DISABLED_BY_DEFAULT};
+    "SyncPseudoUSSSupervisedUsers", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kSyncPseudoUSSThemes{"SyncPseudoUSSThemes",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
+                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether a user can send tabs between synced devices
 const base::Feature kSyncSendTabToSelf{"SyncSendTabToSelf",
