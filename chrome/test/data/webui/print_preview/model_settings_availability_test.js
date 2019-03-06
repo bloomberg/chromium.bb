@@ -173,7 +173,11 @@ cr.define('model_settings_availability_test', function() {
       });
 
       // Each of these settings should make the setting available, with the
-      // default value given by expectedValue.
+      // default value given by expectedValue. Note: Normally, changing the
+      // printer capabilities will keep the setting the same when possible
+      // (see ModelTest.ChangeDestination), but in this test, we never set
+      // model.initialized_ to true, to verify that setting the default value
+      // at startup works correctly for different possible printers.
       [{
         colorCap: {
           option: [

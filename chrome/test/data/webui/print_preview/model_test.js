@@ -10,6 +10,7 @@ cr.define('model_test', function() {
     GetPrintTicket: 'get print ticket',
     GetCloudPrintTicket: 'get cloud print ticket',
     UpdateRecentDestinations: 'update recent destinations',
+    ChangeDestination: 'change destination'
   };
 
   const suiteName = 'ModelTest';
@@ -33,7 +34,7 @@ cr.define('model_test', function() {
         version: 2,
         recentDestinations: [],
         dpi: {},
-        mediaSize: {width_microns: 215900, height_microns: 279400},
+        mediaSize: {},
         marginsType: 0, /* default */
         customScaling: false,
         scaling: '100',
@@ -149,18 +150,18 @@ cr.define('model_test', function() {
       assertTrue(model.settings.headerFooter.value);
     });
 
-    function toggleSettings() {
+    /** @param {!print_preview.Destination} testDestination */
+    function toggleSettings(testDestination) {
       // Some non default setting values to change to.
+      // Manually set fit to page to available so it can be toggled.
+      model.settings.fitToPage.available = true;
       const settingsChange = {
         pages: [2],
         copies: '2',
         collate: false,
         layout: true,
         color: false,
-        mediaSize: {
-          width_microns: 240000,
-          height_microns: 200000,
-        },
+        mediaSize: testDestination.capabilities.printer.media_size.option[1],
         margins: print_preview.ticket_items.MarginsTypeValue.CUSTOM,
         customMargins: {
           marginTop: 100,
@@ -172,17 +173,17 @@ cr.define('model_test', function() {
           horizontal_dpi: 100,
           vertical_dpi: 100,
         },
-        fitToPage: true,
+        fitToPage: false,
         customScaling: true,
         scaling: '90',
-        duplex: false,
+        duplex: true,
         cssBackground: true,
         selectionOnly: true,
         headerFooter: false,
         rasterize: true,
         vendorItems: {
-          paperType: 1,
           printArea: 6,
+          paperType: 1,
         },
         ranges: [{from: 2, to: 2}],
       };
@@ -203,7 +204,6 @@ cr.define('model_test', function() {
         pageCount: 3,
         title: 'title',
       };
-
       model.pageSize = new print_preview.Size(612, 792);
 
       // Update pages accordingly.
@@ -232,16 +232,17 @@ cr.define('model_test', function() {
               .capabilities;
 
       initializeModel();
+      model.destination = testDestination;
       const defaultTicket =
           model.createPrintTicket(testDestination, false, false);
       const expectedDefaultTicket = JSON.stringify({
-        mediaSize: {width_microns: 215900, height_microns: 279400},
+        mediaSize: testDestination.capabilities.printer.media_size.option[0],
         pageCount: 3,
         landscape: false,
         color: testDestination.getNativeColorModel(true),
         headerFooterEnabled: false,  // Only used in print preview
         marginsType: print_preview.ticket_items.MarginsTypeValue.DEFAULT,
-        duplex: print_preview_new.DuplexMode.LONG_EDGE,
+        duplex: print_preview_new.DuplexMode.SIMPLEX,
         copies: 1,
         collate: true,
         shouldPrintBackgrounds: false,
@@ -257,9 +258,9 @@ cr.define('model_test', function() {
         pagesPerSheet: 1,
         dpiHorizontal: 200,
         dpiVertical: 200,
-        dpiDefault: false,
+        dpiDefault: true,
         deviceName: 'FooDevice',
-        fitToPageEnabled: false,
+        fitToPageEnabled: true,
         pageWidth: 612,
         pageHeight: 792,
         showSystemDialog: false,
@@ -267,16 +268,16 @@ cr.define('model_test', function() {
       expectEquals(expectedDefaultTicket, defaultTicket);
 
       // Toggle all the values and create a new print ticket.
-      toggleSettings();
+      toggleSettings(testDestination);
       const newTicket = model.createPrintTicket(testDestination, false, false);
       const expectedNewTicket = JSON.stringify({
-        mediaSize: {width_microns: 240000, height_microns: 200000},
+        mediaSize: testDestination.capabilities.printer.media_size.option[1],
         pageCount: 1,
         landscape: true,
         color: testDestination.getNativeColorModel(false),
         headerFooterEnabled: false,
         marginsType: print_preview.ticket_items.MarginsTypeValue.CUSTOM,
-        duplex: print_preview_new.DuplexMode.SIMPLEX,
+        duplex: print_preview_new.DuplexMode.LONG_EDGE,
         copies: 2,
         collate: false,
         shouldPrintBackgrounds: true,
@@ -294,7 +295,7 @@ cr.define('model_test', function() {
         dpiVertical: 100,
         dpiDefault: false,
         deviceName: 'FooDevice',
-        fitToPageEnabled: true,
+        fitToPageEnabled: false,
         pageWidth: 612,
         pageHeight: 792,
         showSystemDialog: false,
@@ -323,6 +324,7 @@ cr.define('model_test', function() {
       testDestination.capabilities =
           print_preview_test_utils.getCddTemplateWithAdvancedSettings(2)
               .capabilities;
+      model.destination = testDestination;
 
       const defaultTicket = model.createCloudJobTicket(testDestination);
       const expectedDefaultTicket = JSON.stringify({
@@ -333,7 +335,7 @@ cr.define('model_test', function() {
             type: testDestination.getSelectedColorOption(true).type,
           },
           copies: {copies: 1},
-          duplex: {type: 'LONG_EDGE'},
+          duplex: {type: 'NO_DUPLEX'},
           media_size: {
             width_microns: 215900,
             height_microns: 279400,
@@ -344,15 +346,15 @@ cr.define('model_test', function() {
             vertical_dpi: 200,
           },
           vendor_ticket_item: [
-            {id: 'paperType', value: 0},
             {id: 'printArea', value: 4},
+            {id: 'paperType', value: 0},
           ],
         },
       });
       expectEquals(expectedDefaultTicket, defaultTicket);
 
       // Toggle all the values and create a new cloud job ticket.
-      toggleSettings();
+      toggleSettings(testDestination);
       const newTicket = model.createCloudJobTicket(testDestination);
       const expectedNewTicket = JSON.stringify({
         version: '1.0',
@@ -362,10 +364,10 @@ cr.define('model_test', function() {
             type: testDestination.getSelectedColorOption(false).type,
           },
           copies: {copies: 2},
-          duplex: {type: 'NO_DUPLEX'},
+          duplex: {type: 'LONG_EDGE'},
           media_size: {
-            width_microns: 240000,
-            height_microns: 200000,
+            width_microns: 215900,
+            height_microns: 215900,
           },
           page_orientation: {type: 'LANDSCAPE'},
           dpi: {
@@ -373,8 +375,8 @@ cr.define('model_test', function() {
             vertical_dpi: 100,
           },
           vendor_ticket_item: [
-            {id: 'paperType', value: 1},
             {id: 'printArea', value: 6},
+            {id: 'paperType', value: 1},
           ],
         },
       });
@@ -428,6 +430,111 @@ cr.define('model_test', function() {
       // Select a fourth destination. List does not grow.
       model.destination = destinations[3];
       assertRecentDestinations(['ID4', 'ID3', 'ID1']);
+    });
+
+    test(assert(TestNames.ChangeDestination), function() {
+      const testDestination = new print_preview.Destination(
+          'FooDevice', print_preview.DestinationType.LOCAL,
+          print_preview.DestinationOrigin.LOCAL, 'FooName',
+          print_preview.DestinationConnectionStatus.ONLINE);
+      testDestination.capabilities =
+          print_preview_test_utils.getCddTemplateWithAdvancedSettings(2)
+              .capabilities;
+      // Make black and white printing the default.
+      testDestination.capabilities.printer.color = {
+        option: [
+          {type: 'STANDARD_COLOR'},
+          {type: 'STANDARD_MONOCHROME', is_default: true}
+        ]
+      };
+
+      const testDestination2 = new print_preview.Destination(
+          'BarDevice', print_preview.DestinationType.LOCAL,
+          print_preview.DestinationOrigin.LOCAL, 'BarName',
+          print_preview.DestinationConnectionStatus.ONLINE);
+      testDestination2.capabilities =
+          Object.assign({}, testDestination.capabilities);
+
+      // Initialize
+      initializeModel();
+      model.destination = testDestination;
+      model.applyStickySettings();
+
+      // Confirm some defaults.
+      assertEquals(false, model.getSettingValue('color'));
+      assertEquals('NA_LETTER', model.getSettingValue('mediaSize').name);
+      assertEquals(200, model.getSettingValue('dpi').horizontal_dpi);
+      assertEquals(false, model.getSettingValue('duplex'));
+
+      // Toggle some printer specified settings.
+      model.setSetting('duplex', true);
+      model.setSetting(
+          'mediaSize',
+          testDestination.capabilities.printer.media_size.option[1]);
+      model.setSetting('color', true);
+      model.setSetting(
+          'dpi', testDestination.capabilities.printer.dpi.option[1]);
+
+      // Confirm toggles.
+      assertEquals(true, model.getSettingValue('color'));
+      assertEquals('CUSTOM_SQUARE', model.getSettingValue('mediaSize').name);
+      assertEquals(100, model.getSettingValue('dpi').horizontal_dpi);
+      assertEquals(true, model.getSettingValue('duplex'));
+
+      // Set to a new destination with the same capabilities. Confirm that
+      // everything stays the same.
+      const oldSettings = JSON.stringify(model.settings);
+      model.destination = testDestination2;
+      const newSettings = JSON.stringify(model.settings);
+
+      // Should be the same (same printer capabilities).
+      assertEquals(oldSettings, newSettings);
+
+      // Create a printer with different capabilities.
+      const testDestination3 = new print_preview.Destination(
+          'Device1', print_preview.DestinationType.LOCAL,
+          print_preview.DestinationOrigin.LOCAL, 'One',
+          print_preview.DestinationConnectionStatus.ONLINE);
+      testDestination3.capabilities =
+          Object.assign({}, testDestination.capabilities);
+      testDestination3.capabilities.printer.media_size = {
+        option: [
+          {
+            name: 'ISO_A4',
+            width_microns: 210000,
+            height_microns: 297000,
+            custom_display_name: 'A4',
+            is_default: true,
+          },
+        ]
+      };
+      testDestination3.capabilities.printer.color = {
+        option: [
+          {type: 'STANDARD_MONOCHROME', is_default: true},
+        ]
+      };
+      testDestination3.capabilities.printer.duplex = {
+        option: [
+          {type: 'NO_DUPLEX', is_default: true},
+        ]
+      };
+      testDestination3.capabilities.printer.dpi = {
+        option: [
+          {horizontal_dpi: 400, vertical_dpi: 400, is_default: true},
+          {horizontal_dpi: 800, vertical_dpi: 800},
+        ]
+      };
+
+      model.destination = testDestination3;
+      Polymer.dom.flush();
+
+      // Verify things changed.
+      const updatedSettings = JSON.stringify(model.settings);
+      assertNotEquals(oldSettings, updatedSettings);
+      assertEquals(false, model.getSettingValue('color'));
+      assertEquals('ISO_A4', model.getSettingValue('mediaSize').name);
+      assertEquals(400, model.getSettingValue('dpi').horizontal_dpi);
+      assertEquals(false, model.getSettingValue('duplex'));
     });
   });
 

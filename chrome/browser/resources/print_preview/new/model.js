@@ -110,6 +110,9 @@ Polymer({
     /**
      * Object containing current settings of Print Preview, for use by Polymer
      * controls.
+     * Initialize settings that are only available on some printers to
+     * unavailable, and settings that are provided by PDF generation to
+     * available.
      * @type {!print_preview_new.Settings}
      */
     settings: {
@@ -153,18 +156,18 @@ Polymer({
             value: true, /* color */
             unavailableValue: false,
             valid: true,
-            available: true,
+            available: false,
             setByPolicy: false,
             key: 'isColorEnabled',
           },
           mediaSize: {
-            value: {
+            value: {},
+            unavailableValue: {
               width_microns: 215900,
               height_microns: 279400,
             },
-            unavailableValue: {},
             valid: true,
-            available: true,
+            available: false,
             setByPolicy: false,
             key: 'mediaSize',
           },
@@ -189,7 +192,7 @@ Polymer({
             value: {},
             unavailableValue: {},
             valid: true,
-            available: true,
+            available: false,
             setByPolicy: false,
             key: 'dpi',
           },
@@ -221,7 +224,7 @@ Polymer({
             value: true,
             unavailableValue: false,
             valid: true,
-            available: true,
+            available: false,
             setByPolicy: false,
             key: 'isDuplexEnabled',
           },
@@ -261,7 +264,7 @@ Polymer({
             value: {},
             unavailableValue: {},
             valid: true,
-            available: true,
+            available: false,
             setByPolicy: false,
             key: 'vendorOptions',
           },
@@ -549,19 +552,40 @@ Polymer({
    */
   updateSettingsValues_: function(caps) {
     if (this.settings.mediaSize.available) {
-      const defaultOption = caps.media_size.option.find(o => !!o.is_default);
-      this.setSetting('mediaSize', defaultOption);
+      const defaultOption = caps.media_size.option.find(o => !!o.is_default) ||
+          caps.media_size.option[0];
+      let matchingOption = null;
+      // If the setting does not have a valid value, the UI has just started so
+      // do not try to get a matching value; just set the printer default in
+      // case the user doesn't have sticky settings.
+      if (this.settings.mediaSize.value.height_microns !== undefined) {
+        const currentMediaSize = this.getSettingValue('mediaSize');
+        matchingOption = caps.media_size.option.find(o => {
+          return o.height_microns === currentMediaSize.height_microns &&
+              o.width_microns === currentMediaSize.width_microns;
+        });
+      }
+      this.setSetting('mediaSize', matchingOption || defaultOption);
     }
 
     if (this.settings.dpi.available) {
-      const defaultOption = caps.dpi.option.find(o => !!o.is_default);
-      this.setSetting('dpi', defaultOption);
+      const defaultOption =
+          caps.dpi.option.find(o => !!o.is_default) || caps.dpi.option[0];
+      let matchingOption = null;
+      if (this.settings.dpi.value.horizontal_dpi !== undefined) {
+        const currentDpi = this.getSettingValue('dpi');
+        matchingOption = caps.dpi.option.find(o => {
+          return o.horizontal_dpi === currentDpi.horizontal_dpi &&
+              o.vertical_dpi === currentDpi.vertical_dpi;
+        });
+      }
+      this.setSetting('dpi', matchingOption || defaultOption);
     } else if (
         caps && caps.dpi && caps.dpi.option && caps.dpi.option.length > 0) {
       this.set('settings.dpi.unavailableValue', caps.dpi.option[0]);
     }
 
-    if (this.settings.color.available) {
+    if (!this.initialized_ && this.settings.color.available) {
       const defaultOption = this.destination.defaultColorOption;
       if (defaultOption) {
         this.setSetting(
@@ -570,22 +594,24 @@ Polymer({
                 defaultOption.type));
       }
     } else if (
-        this.destination.id ===
-            print_preview.Destination.GooglePromotedId.DOCS ||
-        this.destination.type === print_preview.DestinationType.MOBILE) {
+        !this.settings.color.available &&
+        (this.destination.id ===
+             print_preview.Destination.GooglePromotedId.DOCS ||
+         this.destination.type === print_preview.DestinationType.MOBILE)) {
       this.set('settings.color.unavailableValue', true);
     } else if (
-        caps && caps.color && caps.color.option &&
-        caps.color.option.length > 0) {
+        !this.settings.color.available && caps && caps.color &&
+        caps.color.option && caps.color.option.length > 0) {
       this.set(
           'settings.color.unavailableValue',
           !['STANDARD_MONOCHROME', 'CUSTOM_MONOCHROME'].includes(
               caps.color.option[0].type));
-    } else {  // if no color capability is reported, assume black and white.
+    } else if (!this.settings.color.available) {
+      // if no color capability is reported, assume black and white.
       this.set('settings.color.unavailableValue', false);
     }
 
-    if (this.settings.duplex.available) {
+    if (!this.initialized_ && this.settings.duplex.available) {
       const defaultOption = caps.duplex.option.find(o => !!o.is_default);
       this.setSetting(
           'duplex',
@@ -593,13 +619,15 @@ Polymer({
               defaultOption.type == print_preview_new.DuplexType.LONG_EDGE :
               false);
     } else if (
-        caps && caps.duplex && caps.duplex.option &&
+        !this.settings.duplex.available && caps && caps.duplex &&
+        caps.duplex.option &&
         !caps.duplex.option.some(
             o => o.type != print_preview_new.DuplexType.LONG_EDGE)) {
       // If the only option available is long edge, the value should always be
       // true.
       this.set('settings.duplex.unavailableValue', true);
-    } else {  // If no duplex capability is reported, assume false.
+    } else if (!this.settings.duplex.available) {
+      // If no duplex capability is reported, assume false.
       this.set('settings.duplex.unavailableValue', false);
     }
 

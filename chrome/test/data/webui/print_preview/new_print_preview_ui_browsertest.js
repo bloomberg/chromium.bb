@@ -295,6 +295,10 @@ TEST_F('PrintPreviewModelTest', 'UpdateRecentDestinations', function() {
   this.runMochaTest(model_test.TestNames.UpdateRecentDestinations);
 });
 
+TEST_F('PrintPreviewModelTest', 'ChangeDestination', function() {
+  this.runMochaTest(model_test.TestNames.ChangeDestination);
+});
+
 PrintPreviewModelSettingsAvailabilityTest = class extends NewPrintPreviewTest {
   /** @override */
   get browsePreload() {
