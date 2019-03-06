@@ -27,13 +27,14 @@ function setupFakeHandler() {
 }
 
 /**
- * Replace the app management store instance with a new, empty store.
+ * Replace the app management store instance with a new, empty TestStore.
+ * @return {app_management.TestStore}
  */
 function replaceStore() {
-  app_management.Store.instance_ = new app_management.Store();
-
-  app_management.Store.getInstance().init(
-      app_management.util.createEmptyState());
+  let store = new app_management.TestStore();
+  store.setReducersEnabled(true);
+  store.replaceSingleton();
+  return store;
 }
 
 /**

@@ -19,9 +19,8 @@ suite('<app-management-router>', function() {
 
   setup(async function() {
     fakeHandler = setupFakeHandler();
-    store = new app_management.TestStore();
+    store = replaceStore();
     await fakeHandler.addApp('1');
-    store.replaceSingleton();
     router = document.createElement('app-management-router');
     replaceBody(router);
   });
