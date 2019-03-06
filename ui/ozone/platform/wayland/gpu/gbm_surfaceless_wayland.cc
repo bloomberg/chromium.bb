@@ -103,6 +103,12 @@ void GbmSurfacelessWayland::SwapBuffersAsync(
   frame->presentation_callback = std::move(presentation_callback);
   unsubmitted_frames_.push_back(std::make_unique<PendingFrame>());
 
+  if (!use_egl_fence_sync_) {
+    frame->ready = true;
+    SubmitFrame();
+    return;
+  }
+
   // TODO: the following should be replaced by a per surface flush as it gets
   // implemented in GL drivers.
   EGLSyncKHR fence = InsertFence(has_implicit_external_sync_);
@@ -154,6 +160,10 @@ EGLConfig GbmSurfacelessWayland::GetConfig() {
     config_ = ChooseEGLConfig(GetDisplay(), config_attribs);
   }
   return config_;
+}
+
+void GbmSurfacelessWayland::SetRelyOnImplicitSync() {
+  use_egl_fence_sync_ = false;
 }
 
 GbmSurfacelessWayland::~GbmSurfacelessWayland() {
