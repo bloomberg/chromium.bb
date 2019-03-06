@@ -10,7 +10,6 @@
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_cell.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_constants.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_constants.h"
-#import "ios/chrome/browser/ui/ntp_tile_views/ntp_tile_constants.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_utils.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/browser/ui/util/dynamic_type_util.h"
@@ -25,11 +24,6 @@
 #endif
 
 namespace {
-
-// Spacing between tiles.
-const CGFloat kHorizontalSpacingRegularXRegular = 19;
-const CGFloat kHorizontalSpacingOther = 9;
-const CGFloat kVerticalSpacing = 16;
 
 // Width of search field.
 const CGFloat kSearchFieldLarge = 432;
@@ -71,32 +65,6 @@ namespace content_suggestions {
 
 const int kSearchFieldBackgroundColor = 0xF1F3F4;
 const CGFloat kHintTextScale = 0.15;
-
-CGFloat horizontalSpacingBetweenTiles() {
-  return (!IsCompactWidth() && !IsCompactHeight())
-             ? kHorizontalSpacingRegularXRegular
-             : kHorizontalSpacingOther;
-}
-
-CGFloat verticalSpacingBetweenTiles() {
-  return kVerticalSpacing;
-}
-
-CGFloat centeredTilesMarginForWidth(CGFloat width) {
-  CGFloat horizontalSpace = horizontalSpacingBetweenTiles();
-  NSUInteger columns = NumberOfTilesPerRow();
-  CGFloat whitespace =
-      width -
-      (columns * [ContentSuggestionsMostVisitedCell defaultSize].width) -
-      ((columns - 1) * horizontalSpace);
-  CGFloat margin = AlignValueToPixel(whitespace / 2);
-  // Allow for less spacing as an edge case on smaller devices.
-  if (margin < horizontalSpace) {
-    DCHECK(width < 400);  // For now this is only expected on small widths.
-    return fmaxf(margin, 0);
-  }
-  return margin;
-}
 
 CGFloat doodleHeight(BOOL logoIsShowing) {
   if (!IsRegularXRegularSizeClass() && !logoIsShowing)

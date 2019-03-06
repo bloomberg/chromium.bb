@@ -11,6 +11,7 @@
 #import "ios/chrome/browser/ui/ntp_tile_views/ntp_most_visited_tile_view.h"
 #import "ios/chrome/browser/ui/ntp_tile_views/ntp_shortcut_tile_view.h"
 #import "ios/chrome/browser/ui/ntp_tile_views/ntp_tile_constants.h"
+#import "ios/chrome/browser/ui/ntp_tile_views/ntp_tile_layout_util.h"
 #import "ios/chrome/browser/ui/omnibox/popup/shortcuts/collection_shortcut_cell.h"
 #import "ios/chrome/browser/ui/omnibox/popup/shortcuts/most_visited_shortcut_cell.h"
 #import "ios/chrome/browser/ui/omnibox/popup/shortcuts/shortcuts_view_controller_delegate.h"
@@ -24,8 +25,6 @@
 
 namespace {
 const NSInteger kNumberOfItemsPerRow = 4;
-const CGFloat kLineSpacing = 30;
-const CGFloat kItemSpacing = 10;
 const CGFloat kTopInset = 10;
 
 const NSInteger kMostVisitedSection = 0;
@@ -72,10 +71,8 @@ const NSInteger kCollectionShortcutSection = 1;
 - (void)viewDidAppear:(BOOL)animated {
   [super viewDidAppear:animated];
   // Calculate insets to center the items in the view.
-  CGFloat widthInsets = (self.view.bounds.size.width -
-                         MostVisitedCellSize().width * NumberOfTilesPerRow() -
-                         kItemSpacing * (kNumberOfItemsPerRow - 1)) /
-                        2;
+  CGFloat widthInsets = CenteredTilesMarginForWidth(
+      self.traitCollection, self.view.bounds.size.width);
   self.layout.sectionInset =
       UIEdgeInsetsMake(kTopInset, widthInsets, 0, widthInsets);
 }
@@ -108,8 +105,11 @@ const NSInteger kCollectionShortcutSection = 1;
   }
 
   _layout = [[UICollectionViewFlowLayout alloc] init];
-  _layout.minimumLineSpacing = kLineSpacing;
-  _layout.itemSize = MostVisitedCellSize();
+  _layout.minimumLineSpacing = kNtpTilesVerticalSpacing;
+  _layout.minimumInteritemSpacing =
+      NtpTilesHorizontalSpacing(self.traitCollection);
+  _layout.itemSize =
+      MostVisitedCellSize(self.traitCollection.preferredContentSizeCategory);
   return _layout;
 }
 
