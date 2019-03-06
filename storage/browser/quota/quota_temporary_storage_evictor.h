@@ -74,7 +74,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaTemporaryStorageEvictor {
 
   QuotaTemporaryStorageEvictor(QuotaEvictionHandler* quota_eviction_handler,
                                int64_t interval_ms);
-  virtual ~QuotaTemporaryStorageEvictor();
+  ~QuotaTemporaryStorageEvictor();
 
   void GetStatistics(std::map<std::string, int64_t>* statistics);
   void ReportPerRoundHistogram();
