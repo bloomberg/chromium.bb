@@ -335,6 +335,18 @@ static bool NeedsIsolationNodes(const LayoutObject& object) {
   if (!object.HasLayer())
     return false;
 
+  // Non-SVG replaced content should not have isolation nodes. Specifically if
+  // these nodes generate a replaced content transform, they don't update the
+  // current transform (See UpdateReplacedContentTransform()). This means that
+  // if we put isolation nodes, which isolate the current transform, then while
+  // getting FragmentData::PostScrollTranslation(), we return a wrong transform
+  // chain (isolation -> "current" transform, instead of replaced transform ->
+  // "current" transform). Note that using ReplacedContentTransform() and
+  // isolating that would violate the condition that the replaced content
+  // transform should not update the current transform (in the non-svg case).
+  if (NeedsReplacedContentTransform(object) && !object.IsSVGRoot())
+    return false;
+
   // Paint containment establishes isolation.
   // Style & Layout containment also establish isolation.
   if (object.ShouldApplyPaintContainment() ||

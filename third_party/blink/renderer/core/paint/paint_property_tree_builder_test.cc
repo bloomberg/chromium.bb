@@ -3421,6 +3421,28 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowClipContentsTreeState) {
   CHECK_EXACT_VISUAL_RECT(LayoutRect(0, 0, 500, 600), child, clipper);
 }
 
+TEST_P(PaintPropertyTreeBuilderTest, ReplacedSvgContentWithIsolation) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    body { margin 0px; }
+    </style>
+    <svg id='replacedsvg'
+        style='contain:paint; will-change:transform;' width="100px" height="200px"
+        viewBox='50 50 100 100'>
+    </svg>
+  )HTML");
+
+  LayoutBoxModelObject* svg =
+      ToLayoutBoxModelObject(GetLayoutObjectByElementId("replacedsvg"));
+  const ObjectPaintProperties* svg_properties =
+      svg->FirstFragment().PaintProperties();
+
+  EXPECT_TRUE(svg_properties->TransformIsolationNode());
+  EXPECT_TRUE(svg_properties->ReplacedContentTransform());
+  EXPECT_EQ(svg_properties->TransformIsolationNode()->Parent(),
+            svg_properties->ReplacedContentTransform());
+}
+
 TEST_P(PaintPropertyTreeBuilderTest, ContainPaintOrStyleLayoutTreeState) {
   for (const char* containment : {"paint", "style layout"}) {
     SCOPED_TRACE(containment);
