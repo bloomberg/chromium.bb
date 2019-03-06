@@ -76,18 +76,18 @@ class OmniboxInput extends OmniboxElement {
     this.$$('#filter-text')
         .addEventListener('input', this.onFilterInputsChanged_.bind(this));
 
-    this.$$('#download-json')
-        .addEventListener('click', this.onDownloadJson_.bind(this));
-
-    ['#import-json', '#import-clipboard'].forEach(query => {
+    this.$$('#export-clipboard')
+        .addEventListener('click', this.onExportClipboard_.bind(this));
+    this.$$('#export-file')
+        .addEventListener('click', this.onExportFile_.bind(this));
+    this.$$('#import-clipboard')
+        .addEventListener('click', this.onImportClipboard_.bind(this));
+    this.$$('#import-file-input')
+        .addEventListener('input', this.onImportFile_.bind(this));
+    ['#import-clipboard', '#import-file'].forEach(query => {
       this.setupDragListeners_(this.$$(query));
       this.$$(query).addEventListener('drop', this.onImportDropped_.bind(this));
     });
-
-    this.$$('#import-json-input')
-        .addEventListener('input', this.onImportFileSelected_.bind(this));
-    this.$$('#import-clipboard')
-        .addEventListener('click', this.onImportClipboard_.bind(this));
   }
 
   /**
@@ -232,8 +232,23 @@ class OmniboxInput extends OmniboxElement {
   }
 
   /** @private */
-  onDownloadJson_() {
-    this.dispatchEvent(new CustomEvent('download-json'));
+  onExportClipboard_() {
+    this.dispatchEvent(new CustomEvent('export-clipboard'));
+  }
+
+  /** @private */
+  onExportFile_() {
+    this.dispatchEvent(new CustomEvent('export-file'));
+  }
+
+  /** @private */
+  async onImportClipboard_() {
+    this.import_(await navigator.clipboard.readText());
+  }
+
+  /** @private @param {!Event} event */
+  onImportFile_(event) {
+    this.importFile_(event.target.files[0]);
   }
 
   /** @private @param {!Event} event */
@@ -244,11 +259,6 @@ class OmniboxInput extends OmniboxElement {
     } else if (event.dataTransfer.files[0]) {
       this.importFile_(event.dataTransfer.files[0]);
     }
-  }
-
-  /** @private @param {!Event} event */
-  onImportFileSelected_(event) {
-    this.importFile_(event.target.files[0]);
   }
 
   /** @private @param {!File} file */
@@ -264,16 +274,12 @@ class OmniboxInput extends OmniboxElement {
     reader.readAsText(file);
   }
 
-  async onImportClipboard_() {
-    this.import_(await navigator.clipboard.readText());
-  }
-
   /** @private @param {string} importString */
   import_(importString) {
     try {
       const importData = JSON.parse(importString);
       this.$$('#imported-warning').hidden = false;
-      this.dispatchEvent(new CustomEvent('import-json', {detail: importData}));
+      this.dispatchEvent(new CustomEvent('import', {detail: importData}));
     } catch (error) {
       console.error('error during import, invalid json:', error);
     }

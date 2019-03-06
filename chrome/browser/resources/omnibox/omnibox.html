@@ -65,10 +65,10 @@
         </div>
         <div class="row">
           <label class="checkbox-container">
-            <input id="lock-cursor-position" type="checkbox" accesskey="c">
+            <input id="lock-cursor-position" type="checkbox" accesskey="x">
             <span>
-              Lock <span class="accesskey">c</span>ursor
-              position to end of input
+              Lock cursor position to end of input
+              [<span class="accesskey">x</span>]
             </span>
           </label>
         </div>
@@ -166,26 +166,37 @@
                autocomplete="off"
                placeholder="Enter filter (e.g. 'google', 'is:star', 'not:del') [Alt+G]"
                title="Checks each cell individually; i.e. filter text should not span multiple columns. Supports fuzzyness; each character of filter text must be present in the cell, either adjacent to the previous matched character, or at the start of a new word. Words are defined as being delimited by either capital letters, groups of digits, or non alpha characters. E.g. 'abc' matches 'abc', 'a big cat', 'a-bigCat', 'a very big cat', and 'an amBer cat'; but does not match 'abigcat' or 'an amber cat'. 'green rainbow' is matched by 'gre rain', but not by 'gre bow'. One exception is the first character, which may be matched mid-word. E.g. 'een rain' can also match 'green rainbow'. Boolean properties can be searched for via the property name prefixed by 'is:' or 'not:'. Boolean property names are: 'Can Be Default', 'Starred', 'Has Tab Match', 'Del', 'Prev', and 'Done'.">
-        <div>
-          <span id="download-json" class="row button" accesskey="n"
-                title="Download responses in JSON format. This is not affected by the visibility of output and will include responses in their entirety as well as query and display inputs.">
-            <i class="icon copy-icon"></i>
-            <span>Dow<span class="accesskey">n</span>load as JSON</span>
-          </span>
-        </div>
-        <div>
-          <label id="import-json" class="row icon-button button drag-container"
-                 accesskey="m" title="Import JSON">
-            <input id="import-json-input" type="file" accept=".json">
-            <i class="icon copy-icon"></i>
-            <span>I<span class="accesskey">m</span>port JSON</span>
-          </label>
-          <label id="import-clipboard"
-                 class="row icon-button button drag-container" accesskey="b"
-                 title="Import JSON from clipboard">
-            <i class="icon copy-icon"></i>
-            <span>Import clip<span class="accesskey">b</span>oard</span>
-          </label>
+        <div class="buttons-container">
+          <div class="buttons-column">
+            <span id="export-clipboard" class="row button" accesskey="c"
+                  tabindex="0"
+                  title="Copy responses in JSON format. This is not affected by the visibility of output and will include responses in their entirety as well as query and display inputs.">
+              <i class="icon copy-icon"></i>
+              <span><span class="accesskey">C</span>opy</span>
+            </span>
+            <span id="export-file" class="row button" accesskey="n" tabindex="0"
+                  title="Download responses in JSON format. This is not affected by the visibility of output and will include responses in their entirety as well as query and display inputs.">
+              <i class="icon copy-icon"></i>
+              <span>Dow<span class="accesskey">n</span>load</span>
+            </span>
+          </div>
+          <div class="buttons-column">
+            <label id="import-clipboard"
+                   class="row icon-button button drag-container" accesskey="v"
+                   tabindex="0"
+                   title="Import JSON from clipboard. Accepts dragged text and files as well.">
+              <i class="icon copy-icon"></i>
+              <span>Paste [<span class="accesskey">v</span>]</span>
+            </label>
+            <label id="import-file"
+                   class="row icon-button button drag-container" accesskey="m"
+                   tabindex="0"
+                   title="Upload previously downloaded responses. Accepts dragged text and files as well.">
+              <input id="import-file-input" type="file" accept=".json">
+              <i class="icon copy-icon"></i>
+              <span>Upload [<span class="accesskey">m</span>]</span>
+            </label>
+          </div>
         </div>
         <div id="imported-warning" class="row" hidden>
           <span class="warning-text"
