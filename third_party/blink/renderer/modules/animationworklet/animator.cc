@@ -31,11 +31,9 @@ void Animator::Trace(blink::Visitor* visitor) {
 }
 
 bool Animator::Animate(
-    ScriptState* script_state,
+    v8::Isolate* isolate,
     double current_time,
     AnimationWorkletDispatcherOutput::AnimationState* output) {
-  v8::Isolate* isolate = script_state->GetIsolate();
-
   v8::Local<v8::Value> instance = instance_.NewLocal(isolate);
   if (IsUndefinedOrNull(instance))
     return false;

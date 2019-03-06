@@ -17,7 +17,6 @@
 namespace blink {
 
 class AnimatorDefinition;
-class ScriptState;
 
 // Represents an animator instance. It owns the underlying |v8::Object| for the
 // instance and knows how to invoke the |animate| function on it.
@@ -36,9 +35,9 @@ class Animator final : public GarbageCollectedFinalized<Animator>,
   // Returns true if it successfully invoked animate callback in JS. It receives
   // latest state coming from |AnimationHost| as input and fills
   // the output state with new updates.
-  bool Animate(ScriptState*,
+  bool Animate(v8::Isolate* isolate,
                double current_time,
-               AnimationWorkletDispatcherOutput::AnimationState*);
+               AnimationWorkletDispatcherOutput::AnimationState* output);
   std::vector<base::Optional<TimeDelta>> GetLocalTimes() const;
   bool IsStateful() const;
 

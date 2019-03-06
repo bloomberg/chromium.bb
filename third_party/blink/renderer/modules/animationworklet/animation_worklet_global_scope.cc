@@ -24,13 +24,13 @@ namespace blink {
 
 namespace {
 
-void UpdateAnimation(Animator* animator,
-                     ScriptState* script_state,
+void UpdateAnimation(v8::Isolate* isolate,
+                     Animator* animator,
                      WorkletAnimationId id,
                      double current_time,
                      AnimationWorkletDispatcherOutput* result) {
   AnimationWorkletDispatcherOutput::AnimationState animation_output(id);
-  if (animator->Animate(script_state, current_time, &animation_output)) {
+  if (animator->Animate(isolate, current_time, &animation_output)) {
     result->animations.push_back(std::move(animation_output));
   }
 }
@@ -112,6 +112,7 @@ void AnimationWorkletGlobalScope::UpdateAnimators(
   DCHECK(IsContextThread());
 
   ScriptState* script_state = ScriptController()->GetScriptState();
+  v8::Isolate* isolate = script_state->GetIsolate();
   ScriptState::Scope scope(script_state);
 
   for (const auto& animation : input.added_and_updated_animations) {
@@ -123,7 +124,7 @@ void AnimationWorkletGlobalScope::UpdateAnimators(
     if (!animator || !predicate(animator))
       continue;
 
-    UpdateAnimation(animator, script_state, animation.worklet_animation_id,
+    UpdateAnimation(isolate, animator, animation.worklet_animation_id,
                     animation.current_time, output);
   }
 
@@ -134,7 +135,7 @@ void AnimationWorkletGlobalScope::UpdateAnimators(
     if (!animator || !predicate(animator))
       continue;
 
-    UpdateAnimation(animator, script_state, animation.worklet_animation_id,
+    UpdateAnimation(isolate, animator, animation.worklet_animation_id,
                     animation.current_time, output);
   }
 
