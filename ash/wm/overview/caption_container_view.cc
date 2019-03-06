@@ -315,6 +315,7 @@ void CaptionContainerView::SetBackdropVisibility(bool visible) {
 
   if (!backdrop_view_) {
     backdrop_view_ = new RoundedRectView(kBackdropRoundingDp, kBackdropColor);
+    backdrop_view_->set_can_process_events_within_subtree(false);
     AddChildWithLayer(this, backdrop_view_);
     Layout();
   }
