@@ -11,6 +11,7 @@ const tooltipQueryVisible = 'files-tooltip[visible=true]';
 const searchButton = '#search-button[has-tooltip]';
 const viewButton = '#view-button[has-tooltip]';
 const breadcrumbs = '#breadcrumb-path-0';
+const cancelButton = '#cancel-selection-button[has-tooltip]';
 
 /**
  * Tests that tooltip is displayed when focusing an element with tooltip.
@@ -46,6 +47,20 @@ testcase.filesTooltipFocus = async () => {
 
   // The tooltip should be hidden.
   tooltip = await remoteCall.waitForElement(appId, tooltipQueryHidden);
+
+  // Select all the files to enable the cancel selection button.
+  const ctrlA = ['#file-list', 'a', true, false, false];
+  await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, ctrlA);
+
+  // Focus the cancel selection button.
+  chrome.test.assertTrue(
+      await remoteCall.callRemoteTestUtil('focus', appId, [cancelButton]));
+
+  // The tooltip should be visible.
+  tooltip = await remoteCall.waitForElement(appId, tooltipQueryVisible);
+  label =
+      await remoteCall.waitForElement(appId, [tooltipQueryVisible, '#label']);
+  chrome.test.assertEq('Cancel selection', label.text);
 };
 
 /**
@@ -106,7 +121,7 @@ testcase.filesTooltipClickHides = async () => {
   chrome.test.assertTrue(
       await remoteCall.callRemoteTestUtil('fakeMouseClick', appId, ['body']));
 
-  // The tooltip should be visible.
+  // The tooltip should be hidden.
   tooltip = await remoteCall.waitForElement(appId, tooltipQueryHidden);
 };
 })();
