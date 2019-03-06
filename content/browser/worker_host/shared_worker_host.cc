@@ -29,7 +29,6 @@
 #include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/common/loader/url_loader_factory_bundle.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
-#include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "third_party/blink/public/mojom/renderer_preference_watcher.mojom.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom.h"
@@ -178,19 +177,17 @@ void SharedWorkerHost::Start(
 #if DCHECK_IS_ON()
   // Verify the combination of the given args based on the flags. See the
   // function comment for details.
+  DCHECK(service_worker_provider_info);
+  DCHECK(subresource_loader_factories);
   if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     // NetworkService (PlzWorker):
-    DCHECK(service_worker_provider_info);
     DCHECK(!main_script_loader_factory);
     DCHECK(main_script_load_params);
-    DCHECK(subresource_loader_factories);
     DCHECK(!subresource_loader_factories->default_factory_info());
   } else {
     // non-NetworkService:
-    DCHECK(service_worker_provider_info);
     DCHECK(main_script_loader_factory);
     DCHECK(!main_script_load_params);
-    DCHECK(subresource_loader_factories);
     DCHECK(subresource_loader_factories->default_factory_info());
     DCHECK(!controller);
     DCHECK(!controller_service_worker_object_host);
@@ -237,7 +234,7 @@ void SharedWorkerHost::Start(
       mojo::MakeRequest(&interface_provider)));
 
   // Set the default factory to the bundle for subresource loading to pass to
-  // the renderer when NetworkService is on. When S13nServiceWorker is on, the
+  // the renderer when NetworkService is on. When NetworkService is off, the
   // default factory is already provided by
   // WorkerScriptFetchInitiator::CreateFactoryBundle().
   if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {

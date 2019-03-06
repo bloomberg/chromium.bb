@@ -37,7 +37,6 @@
 #include "services/network/loader_util.h"
 #include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
-#include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 #include "third_party/blink/public/mojom/worker/shared_worker_client.mojom.h"
 #include "third_party/blink/public/mojom/worker/shared_worker_info.mojom.h"
@@ -195,39 +194,25 @@ void SharedWorkerServiceImpl::CreateWorker(
   auto weak_host = host->AsWeakPtr();
   worker_hosts_.insert(std::move(host));
 
-  if (blink::ServiceWorkerUtils::IsServicificationEnabled()) {
-    // NetworkService (PlzWorker):
-    // An appcache interceptor is available only when the network service is
-    // enabled.
-    AppCacheNavigationHandleCore* appcache_handle_core = nullptr;
-    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-      auto appcache_handle = std::make_unique<AppCacheNavigationHandle>(
-          appcache_service_.get(), process_id);
-      appcache_handle_core = appcache_handle->core();
-      weak_host->SetAppCacheHandle(std::move(appcache_handle));
-    }
-
-    WorkerScriptFetchInitiator::Start(
-        process_id, weak_host->instance()->url(),
-        weak_host->instance()->constructor_origin(),
-        RESOURCE_TYPE_SHARED_WORKER, service_worker_context_,
-        appcache_handle_core, std::move(blob_url_loader_factory),
-        storage_partition_,
-        base::BindOnce(&SharedWorkerServiceImpl::DidCreateScriptLoader,
-                       weak_factory_.GetWeakPtr(), std::move(instance),
-                       weak_host, std::move(client), process_id, frame_id,
-                       message_port));
-    return;
+  // NetworkService (PlzWorker):
+  // An appcache interceptor is available only when the network service is
+  // enabled.
+  AppCacheNavigationHandleCore* appcache_handle_core = nullptr;
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    auto appcache_handle = std::make_unique<AppCacheNavigationHandle>(
+        appcache_service_.get(), process_id);
+    appcache_handle_core = appcache_handle->core();
+    weak_host->SetAppCacheHandle(std::move(appcache_handle));
   }
 
-  // Legacy case (to be deprecated):
-  StartWorker(std::move(instance), weak_host, std::move(client), process_id,
-              frame_id, message_port,
-              nullptr /* service_worker_provider_info */,
-              {} /* main_script_loader_factory */,
-              nullptr /* subresource_loader_factories */,
-              nullptr /* main_script_load_params */, nullptr /* controller */,
-              nullptr /* controller_service_worker_object_host */);
+  WorkerScriptFetchInitiator::Start(
+      process_id, weak_host->instance()->url(),
+      weak_host->instance()->constructor_origin(), RESOURCE_TYPE_SHARED_WORKER,
+      service_worker_context_, appcache_handle_core,
+      std::move(blob_url_loader_factory), storage_partition_,
+      base::BindOnce(&SharedWorkerServiceImpl::DidCreateScriptLoader,
+                     weak_factory_.GetWeakPtr(), std::move(instance), weak_host,
+                     std::move(client), process_id, frame_id, message_port));
 }
 
 void SharedWorkerServiceImpl::DidCreateScriptLoader(
@@ -249,7 +234,6 @@ void SharedWorkerServiceImpl::DidCreateScriptLoader(
         controller_service_worker_object_host,
     bool success) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
 
   // NetworkService (PlzWorker):
   // If the script fetcher fails to load shared worker's main script, notify the
