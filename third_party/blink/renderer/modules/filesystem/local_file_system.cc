@@ -47,6 +47,7 @@
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/modules/filesystem/async_file_system_callbacks.h"
 #include "third_party/blink/renderer/modules/filesystem/dom_file_system.h"
+#include "third_party/blink/renderer/modules/filesystem/file_system_callbacks.h"
 #include "third_party/blink/renderer/modules/filesystem/file_system_client.h"
 #include "third_party/blink/renderer/modules/filesystem/file_system_dispatcher.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -65,11 +66,10 @@ void ReportFailure(std::unique_ptr<AsyncFileSystemCallbacks> callbacks,
 
 LocalFileSystem::~LocalFileSystem() = default;
 
-void LocalFileSystem::ResolveURL(
-    ExecutionContext* context,
-    const KURL& file_system_url,
-    std::unique_ptr<AsyncFileSystemCallbacks> callbacks,
-    SynchronousType type) {
+void LocalFileSystem::ResolveURL(ExecutionContext* context,
+                                 const KURL& file_system_url,
+                                 std::unique_ptr<ResolveURICallbacks> callbacks,
+                                 SynchronousType type) {
   RequestFileSystemAccessInternal(
       context,
       WTF::Bind(&LocalFileSystem::ResolveURLCallback,
@@ -80,7 +80,7 @@ void LocalFileSystem::ResolveURL(
 void LocalFileSystem::ResolveURLCallback(
     ExecutionContext* context,
     const KURL& file_system_url,
-    std::unique_ptr<AsyncFileSystemCallbacks> callbacks,
+    std::unique_ptr<ResolveURICallbacks> callbacks,
     SynchronousType sync_type,
     bool allowed) {
   if (allowed) {
@@ -95,7 +95,7 @@ void LocalFileSystem::RequestFileSystem(
     ExecutionContext* context,
     mojom::blink::FileSystemType type,
     long long size,
-    std::unique_ptr<AsyncFileSystemCallbacks> callbacks,
+    std::unique_ptr<FileSystemCallbacks> callbacks,
     SynchronousType sync_type) {
   RequestFileSystemAccessInternal(
       context,
@@ -107,7 +107,7 @@ void LocalFileSystem::RequestFileSystem(
 void LocalFileSystem::RequestFileSystemCallback(
     ExecutionContext* context,
     mojom::blink::FileSystemType type,
-    std::unique_ptr<AsyncFileSystemCallbacks> callbacks,
+    std::unique_ptr<FileSystemCallbacks> callbacks,
     SynchronousType sync_type,
     bool allowed) {
   if (allowed) {
@@ -143,7 +143,7 @@ void LocalFileSystem::FileSystemNotAllowedInternal(
 void LocalFileSystem::FileSystemAllowedInternal(
     ExecutionContext* context,
     mojom::blink::FileSystemType type,
-    std::unique_ptr<AsyncFileSystemCallbacks> callbacks,
+    std::unique_ptr<FileSystemCallbacks> callbacks,
     SynchronousType sync_type) {
   FileSystemDispatcher& dispatcher = FileSystemDispatcher::From(context);
   if (sync_type == kSynchronous) {
@@ -158,7 +158,7 @@ void LocalFileSystem::FileSystemAllowedInternal(
 void LocalFileSystem::ResolveURLInternal(
     ExecutionContext* context,
     const KURL& file_system_url,
-    std::unique_ptr<AsyncFileSystemCallbacks> callbacks,
+    std::unique_ptr<ResolveURICallbacks> callbacks,
     SynchronousType sync_type) {
   FileSystemDispatcher& dispatcher = FileSystemDispatcher::From(context);
   if (sync_type == kSynchronous) {

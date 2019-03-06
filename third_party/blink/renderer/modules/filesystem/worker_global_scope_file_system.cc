@@ -103,10 +103,9 @@ DOMFileSystemSync* WorkerGlobalScopeFileSystem::webkitRequestFileSystemSync(
 
   FileSystemCallbacksSyncHelper* sync_helper =
       FileSystemCallbacksSyncHelper::Create();
-  std::unique_ptr<AsyncFileSystemCallbacks> callbacks =
-      FileSystemCallbacks::Create(sync_helper->GetSuccessCallback(),
-                                  sync_helper->GetErrorCallback(), &worker,
-                                  file_system_type);
+  std::unique_ptr<FileSystemCallbacks> callbacks = FileSystemCallbacks::Create(
+      sync_helper->GetSuccessCallback(), sync_helper->GetErrorCallback(),
+      &worker, file_system_type);
 
   LocalFileSystem::From(worker)->RequestFileSystem(
       &worker, file_system_type, size, std::move(callbacks),
@@ -168,7 +167,7 @@ EntrySync* WorkerGlobalScopeFileSystem::webkitResolveLocalFileSystemSyncURL(
   }
 
   EntryCallbacksSyncHelper* sync_helper = EntryCallbacksSyncHelper::Create();
-  std::unique_ptr<AsyncFileSystemCallbacks> callbacks =
+  std::unique_ptr<ResolveURICallbacks> callbacks =
       ResolveURICallbacks::Create(sync_helper->GetSuccessCallback(),
                                   sync_helper->GetErrorCallback(), &worker);
 

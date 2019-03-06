@@ -146,9 +146,8 @@ void DOMFileSystem::CreateWriter(
   DCHECK(file_entry);
 
   FileWriter* file_writer = FileWriter::Create(GetExecutionContext());
-  std::unique_ptr<AsyncFileSystemCallbacks> callbacks =
-      FileWriterCallbacks::Create(file_writer, success_callback, error_callback,
-                                  context_);
+  std::unique_ptr<FileWriterCallbacks> callbacks = FileWriterCallbacks::Create(
+      file_writer, success_callback, error_callback, context_);
   FileSystemDispatcher::From(context_).InitializeFileWriter(
       CreateFileSystemURL(file_entry), std::move(callbacks));
 }
