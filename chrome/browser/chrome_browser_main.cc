@@ -661,6 +661,9 @@ void ChromeBrowserMainParts::SetupMetrics() {
       variations::SyntheticTrialsActiveGroupIdProvider::GetInstance());
   // Now that field trials have been created, initializes metrics recording.
   metrics->InitializeMetricsRecordingState();
+
+  chrome_feature_list_creator_->browser_field_trials()
+      ->RegisterSyntheticTrials();
 }
 
 void ChromeBrowserMainParts::StartMetricsRecording() {
