@@ -130,11 +130,11 @@ class PrintPreviewDialogController
 
   // True if the controller is waiting for a new preview dialog via
   // content::NAVIGATION_TYPE_NEW_PAGE.
-  bool waiting_for_new_preview_page_;
+  bool waiting_for_new_preview_page_ = false;
 
   // Whether the PrintPreviewDialogController is in the middle of creating a
   // print preview dialog.
-  bool is_creating_print_preview_dialog_;
+  bool is_creating_print_preview_dialog_ = false;
 
   // How many web contents (dialogs and initiators) are watching a given render
   // process host. Used to determine when a render process host's
