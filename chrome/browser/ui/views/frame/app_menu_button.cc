@@ -11,13 +11,23 @@
 #include "chrome/browser/ui/views/frame/app_menu_button_observer.h"
 #include "chrome/browser/ui/views/toolbar/app_menu.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
+#include "ui/views/view_class_properties.h"
 
 AppMenuButton::AppMenuButton(views::MenuButtonListener* menu_button_listener)
     : views::MenuButton(base::string16(),
                         menu_button_listener,
-                        CONTEXT_TOOLBAR_BUTTON) {}
+                        CONTEXT_TOOLBAR_BUTTON) {
+  SetProperty(views::kInternalPaddingKey, new gfx::Insets());
+}
 
 AppMenuButton::~AppMenuButton() {}
+
+void AppMenuButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  // TODO(pbos): Consolidate with ToolbarButton::OnBoundsChanged.
+  SetToolbarButtonHighlightPath(this, *GetProperty(views::kInternalPaddingKey));
+
+  views::MenuButton::OnBoundsChanged(previous_bounds);
+}
 
 SkColor AppMenuButton::GetInkDropBaseColor() const {
   return GetToolbarInkDropBaseColor(this);

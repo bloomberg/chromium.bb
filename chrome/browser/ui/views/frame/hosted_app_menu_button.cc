@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/hosted_app_button_container.h"
 #include "chrome/browser/ui/views/toolbar/app_menu.h"
+#include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -22,6 +23,7 @@
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/menu_button.h"
+#include "ui/views/view_class_properties.h"
 #include "ui/views/window/hit_test_utils.h"
 
 HostedAppMenuButton::HostedAppMenuButton(BrowserView* browser_view)
@@ -44,6 +46,9 @@ HostedAppMenuButton::HostedAppMenuButton(BrowserView* browser_view)
   int size = GetLayoutConstant(HOSTED_APP_MENU_BUTTON_SIZE);
   SetMinSize(gfx::Size(size, size));
   SetHorizontalAlignment(gfx::ALIGN_CENTER);
+
+  constexpr gfx::Insets kInkDropInsets(2);
+  *GetProperty(views::kInternalPaddingKey) = kInkDropInsets;
 }
 
 HostedAppMenuButton::~HostedAppMenuButton() {}
