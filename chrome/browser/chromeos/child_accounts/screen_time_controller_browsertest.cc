@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/child_accounts/child_account_test_utils.h"
 #include "chrome/browser/chromeos/child_accounts/screen_time_controller.h"
 #include "chrome/browser/chromeos/child_accounts/screen_time_controller_factory.h"
+#include "chrome/browser/chromeos/child_accounts/time_limit_override.h"
 #include "chrome/browser/chromeos/child_accounts/time_limit_test_utils.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker_tester.h"
@@ -162,7 +163,9 @@ IN_PROC_BROWSER_TEST_P(ScreenTimeControllerTest, LockOverride) {
   // Set new policy.
   std::unique_ptr<base::DictionaryValue> policy_content =
       utils::CreateTimeLimitPolicy(utils::CreateTime(6, 0));
-  utils::AddOverride(policy_content.get(), utils::kLock, task_runner_->Now());
+  utils::AddOverride(policy_content.get(),
+                     usage_time_limit::TimeLimitOverride::Action::kLock,
+                     task_runner_->Now());
 
   auto policy = std::make_unique<base::DictionaryValue>();
   policy->SetKey("UsageTimeLimit",
@@ -205,7 +208,9 @@ IN_PROC_BROWSER_TEST_P(ScreenTimeControllerTest, UnlockBedtime) {
   EXPECT_FALSE(IsAuthEnabled());
 
   // Create unlock override and update the policy.
-  utils::AddOverride(policy_content.get(), utils::kUnlock, task_runner_->Now());
+  utils::AddOverride(policy_content.get(),
+                     usage_time_limit::TimeLimitOverride::Action::kUnlock,
+                     task_runner_->Now());
   auto policy_two = std::make_unique<base::DictionaryValue>();
   policy_two->SetKey("UsageTimeLimit",
                      base::Value(utils::PolicyToString(policy_content.get())));

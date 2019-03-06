@@ -12,10 +12,15 @@
 #include <memory>
 #include <unordered_map>
 
+#include "base/macros.h"
 #include "base/optional.h"
 #include "base/time/time.h"
-#include "base/values.h"
 #include "chromeos/settings/timezone_settings.h"
+
+namespace base {
+class DictionaryValue;
+class Value;
+}  // namespace base
 
 namespace chromeos {
 namespace usage_time_limit {
@@ -89,24 +94,6 @@ class TimeUsageLimit {
  private:
   DISALLOW_COPY_AND_ASSIGN(TimeUsageLimit);
 };
-
-class TimeLimitOverride {
- public:
-  enum class Action { kLock, kUnlock };
-
-  explicit TimeLimitOverride(const base::Value& override_dict);
-  ~TimeLimitOverride();
-  TimeLimitOverride(TimeLimitOverride&&);
-  TimeLimitOverride& operator=(TimeLimitOverride&&);
-
-  Action action;
-  base::Time created_at;
-  base::Optional<base::TimeDelta> duration;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TimeLimitOverride);
-};
-
 }  // namespace internal
 
 enum class ActivePolicies {
