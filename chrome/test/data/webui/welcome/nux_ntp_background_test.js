@@ -91,14 +91,6 @@ cr.define('onboarding_ntp_background_test', function() {
       });
     });
 
-    test('test disabling and enabling of the next button', function() {
-      const nextButton = testElement.shadowRoot.querySelector('.action-button');
-      assertTrue(nextButton.disabled);
-      testElement.shadowRoot.querySelectorAll('.ntp-background-grid-button')[1]
-          .click();
-      assertFalse(nextButton.disabled);
-    });
-
     test('test activating a background', function() {
       const options = testElement.shadowRoot.querySelectorAll(
           '.ntp-background-grid-button');
@@ -121,6 +113,15 @@ cr.define('onboarding_ntp_background_test', function() {
       return testNtpBackgroundProxy.whenCalled('setBackground').then((id) => {
         assertEquals(backgrounds[0].id, id);
       });
+    });
+
+    test('test clearing the background when default is selected', function() {
+      // select the default option and hit 'Next'
+      const options = testElement.shadowRoot.querySelectorAll(
+          '.ntp-background-grid-button');
+      options[0].click();
+      testElement.$$('.action-button').click();
+      return testNtpBackgroundProxy.whenCalled('clearBackground');
     });
   });
 });

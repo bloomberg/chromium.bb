@@ -6,6 +6,7 @@
 class TestNtpBackgroundProxy extends TestBrowserProxy {
   constructor() {
     super([
+      'clearBackground',
       'getBackgrounds',
       'preloadImage',
       'setBackground',
@@ -13,6 +14,11 @@ class TestNtpBackgroundProxy extends TestBrowserProxy {
 
     /** @private {!Array<!nux.NtpBackgroundData} */
     this.backgroundsList_ = [];
+  }
+
+  /** @override */
+  clearBackground() {
+    this.methodCalled('clearBackground');
   }
 
   /** @override */
