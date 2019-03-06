@@ -27,6 +27,11 @@
         padding: 0 20px;
       }
 
+      :host cr-expand-button {
+        margin-inline-end: 4px;
+        --cr-icon-button-icon-padding: 4px;
+      }
+
       :host([hidden]) {
         display: none;
       }
@@ -34,10 +39,7 @@
       #label {
         color: var(--google-grey-900);
         flex: 1;
-      }
-
-      :host-context([dir=rtl]) #label {
-        text-align: right;
+        text-align: start;
       }
 
       :host([disabled]) #label {
