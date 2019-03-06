@@ -165,4 +165,93 @@ TEST_F(CrossThreadStyleValueTest, CrossThreadUnitValueToCSSStyleValue) {
   EXPECT_EQ(static_cast<CSSUnitValue*>(style_value)->unit(), "deg");
 }
 
+TEST_F(CrossThreadStyleValueTest, ComparingNullValues) {
+  // Two null values are equal to each other.
+  std::unique_ptr<CrossThreadStyleValue> null_value1(nullptr);
+  std::unique_ptr<CrossThreadStyleValue> null_value2(nullptr);
+  EXPECT_TRUE(DataEquivalent(null_value1, null_value2));
+
+  // If one argument is null and the other isn't they are never equal.
+  std::unique_ptr<CrossThreadStyleValue> keyword_value(
+      new CrossThreadKeywordValue("keyword"));
+  std::unique_ptr<CrossThreadStyleValue> unit_value(
+      new CrossThreadUnitValue(1, CSSPrimitiveValue::UnitType::kDegrees));
+  std::unique_ptr<CrossThreadStyleValue> unsupported_value(
+      new CrossThreadUnsupportedValue("unsupported"));
+
+  EXPECT_FALSE(DataEquivalent(null_value1, keyword_value));
+  EXPECT_FALSE(DataEquivalent(null_value1, unit_value));
+  EXPECT_FALSE(DataEquivalent(null_value1, unsupported_value));
+  EXPECT_FALSE(DataEquivalent(keyword_value, null_value1));
+  EXPECT_FALSE(DataEquivalent(unit_value, null_value1));
+  EXPECT_FALSE(DataEquivalent(unsupported_value, null_value1));
+}
+
+TEST_F(CrossThreadStyleValueTest, ComparingDifferentTypes) {
+  // Mismatching types are never equal.
+  std::unique_ptr<CrossThreadStyleValue> keyword_value(
+      new CrossThreadKeywordValue("keyword"));
+  std::unique_ptr<CrossThreadStyleValue> unit_value(
+      new CrossThreadUnitValue(1, CSSPrimitiveValue::UnitType::kDegrees));
+  std::unique_ptr<CrossThreadStyleValue> unsupported_value(
+      new CrossThreadUnsupportedValue("unsupported"));
+
+  EXPECT_FALSE(DataEquivalent(keyword_value, unit_value));
+  EXPECT_FALSE(DataEquivalent(keyword_value, unsupported_value));
+  EXPECT_FALSE(DataEquivalent(unit_value, unsupported_value));
+  EXPECT_FALSE(DataEquivalent(unit_value, keyword_value));
+  EXPECT_FALSE(DataEquivalent(unsupported_value, keyword_value));
+  EXPECT_FALSE(DataEquivalent(unsupported_value, unit_value));
+}
+
+TEST_F(CrossThreadStyleValueTest, ComparingCrossThreadKeywordValue) {
+  // CrossThreadKeywordValues are compared on their keyword; if it is equal then
+  // so are they.
+  std::unique_ptr<CrossThreadStyleValue> keyword_value_1(
+      new CrossThreadKeywordValue("keyword"));
+  std::unique_ptr<CrossThreadStyleValue> keyword_value_2(
+      new CrossThreadKeywordValue("keyword"));
+  std::unique_ptr<CrossThreadStyleValue> keyword_value_3(
+      new CrossThreadKeywordValue("different"));
+
+  EXPECT_TRUE(DataEquivalent(keyword_value_1, keyword_value_2));
+  EXPECT_FALSE(DataEquivalent(keyword_value_1, keyword_value_3));
+}
+
+TEST_F(CrossThreadStyleValueTest, ComparingCrossThreadUnitValue) {
+  // CrossThreadUnitValues are compared based on their value and unit type; both
+  // have to match. There are a lot of unit types; we just test a single sample.
+  std::unique_ptr<CrossThreadStyleValue> unit_value_1(
+      new CrossThreadUnitValue(1, CSSPrimitiveValue::UnitType::kDegrees));
+
+  // Same value, same unit.
+  std::unique_ptr<CrossThreadStyleValue> unit_value_2(
+      new CrossThreadUnitValue(1, CSSPrimitiveValue::UnitType::kDegrees));
+  EXPECT_TRUE(DataEquivalent(unit_value_1, unit_value_2));
+
+  // Same value, different unit.
+  std::unique_ptr<CrossThreadStyleValue> unit_value_3(
+      new CrossThreadUnitValue(1, CSSPrimitiveValue::UnitType::kPoints));
+  EXPECT_FALSE(DataEquivalent(unit_value_1, unit_value_3));
+
+  // Different value, same unit.
+  std::unique_ptr<CrossThreadStyleValue> unit_value_4(
+      new CrossThreadUnitValue(2, CSSPrimitiveValue::UnitType::kDegrees));
+  EXPECT_FALSE(DataEquivalent(unit_value_1, unit_value_4));
+}
+
+TEST_F(CrossThreadStyleValueTest, ComparingCrossThreadUnsupportedValue) {
+  // CrossThreadUnsupportedValues are compared on their value; if it is equal
+  // then so are they.
+  std::unique_ptr<CrossThreadStyleValue> unsupported_value_1(
+      new CrossThreadUnsupportedValue("value"));
+  std::unique_ptr<CrossThreadStyleValue> unsupported_value_2(
+      new CrossThreadUnsupportedValue("value"));
+  std::unique_ptr<CrossThreadStyleValue> unsupported_value_3(
+      new CrossThreadUnsupportedValue("different"));
+
+  EXPECT_TRUE(DataEquivalent(unsupported_value_1, unsupported_value_2));
+  EXPECT_FALSE(DataEquivalent(unsupported_value_1, unsupported_value_3));
+}
+
 }  // namespace blink
