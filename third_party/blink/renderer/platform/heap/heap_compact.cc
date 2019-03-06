@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/platform/heap/sparse_heap_bitmap.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
@@ -28,6 +29,8 @@ bool HeapCompact::force_compaction_gc_ = false;
 // The "fixups" object is created and maintained for the lifetime of one
 // heap compaction-enhanced GC.
 class HeapCompact::MovableObjectFixups final {
+  USING_FAST_MALLOC(HeapCompact::MovableObjectFixups);
+
  public:
   static std::unique_ptr<MovableObjectFixups> Create(ThreadHeap* heap) {
     return base::WrapUnique(new MovableObjectFixups(heap));

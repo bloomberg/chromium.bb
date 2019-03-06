@@ -39,6 +39,8 @@ class Worklist {
   using EntryType = _EntryType;
 
   class View {
+    DISALLOW_NEW();
+
    public:
     View(WorklistType* worklist, int task_id)
         : worklist_(worklist), task_id_(task_id) {}
@@ -259,6 +261,8 @@ class Worklist {
   };
 
   class GlobalPool {
+    DISALLOW_NEW();
+
    public:
     GlobalPool() : top_(nullptr) {}
 

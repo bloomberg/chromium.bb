@@ -56,6 +56,7 @@
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/hash_traits.h"
 #include "third_party/blink/renderer/platform/wtf/linked_hash_set.h"
 
@@ -113,6 +114,8 @@ static_assert(WTF::IsTraceable<HeapHashMap<int, IntWrapper>>::value,
               "HeapHashMap<int, IntWrapper> must be traceable.");
 
 class KeyWithCopyingMoveConstructor final {
+  DISALLOW_NEW();
+
  public:
   struct Hash final {
     STATIC_ONLY(Hash);
@@ -163,6 +166,8 @@ static_assert(sizeof(Persistent<IntWrapper>) <= sizeof(SameSizeAsPersistent),
               "Persistent handle should stay small");
 
 class ThreadMarker {
+  DISALLOW_NEW();
+
  public:
   ThreadMarker()
       : creating_thread_(reinterpret_cast<ThreadState*>(0)), num_(0) {}
@@ -361,6 +366,8 @@ struct HashTraits<blink::KeyWithCopyingMoveConstructor>
 namespace blink {
 
 class TestGCCollectGarbageScope {
+  STACK_ALLOCATED();
+
  public:
   explicit TestGCCollectGarbageScope(BlinkGC::StackState state) {
     DCHECK(ThreadState::Current()->CheckThread());
@@ -468,6 +475,8 @@ class HeapAllocatedArray : public GarbageCollected<HeapAllocatedArray> {
 };
 
 class OffHeapInt : public RefCounted<OffHeapInt> {
+  USING_FAST_MALLOC(OffHeapInt);
+
  public:
   static scoped_refptr<OffHeapInt> Create(int x) {
     return base::AdoptRef(new OffHeapInt(x));
@@ -3366,6 +3375,8 @@ TEST(HeapTest, HeapWeakLinkedHashSet) {
 }
 
 class ThingWithDestructor {
+  DISALLOW_NEW();
+
  public:
   ThingWithDestructor() : x_(kEmptyValue) { live_things_with_destructor_++; }
 

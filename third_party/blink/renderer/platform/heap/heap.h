@@ -77,6 +77,8 @@ using WeakCallbackWorklist =
     Worklist<CustomCallbackItem, 256 /* local entries */>;
 
 class PLATFORM_EXPORT HeapAllocHooks {
+  STATIC_ONLY(HeapAllocHooks);
+
  public:
   // TODO(hajimehoshi): Pass a type name of the allocated object.
   typedef void AllocationHook(Address, size_t, const char*);
@@ -157,6 +159,8 @@ class ObjectAliveTrait<T, true> {
 }  // namespace internal
 
 class PLATFORM_EXPORT ThreadHeap {
+  USING_FAST_MALLOC(ThreadHeap);
+
  public:
   explicit ThreadHeap(ThreadState*);
   ~ThreadHeap();
