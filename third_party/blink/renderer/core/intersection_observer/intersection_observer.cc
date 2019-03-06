@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer.h"
 
 #include <algorithm>
+#include <limits>
 
 #include "base/macros.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_intersection_observer_callback.h"
@@ -139,6 +140,8 @@ void ParseThresholds(const DoubleOrDoubleSequence& threshold_parameter,
 }  // anonymous namespace
 
 static bool throttle_delay_enabled = true;
+const float IntersectionObserver::kMinimumThreshold =
+    std::numeric_limits<float>::min();
 
 void IntersectionObserver::SetThrottleDelayEnabledForTesting(bool enabled) {
   throttle_delay_enabled = enabled;

@@ -14,12 +14,13 @@
 #include "third_party/blink/public/web/web_settings.h"
 #include "third_party/blink/public/web/web_user_media_client.h"
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/dom/element_visibility_observer.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/media/autoplay_uma_helper.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/intersection_observer/intersection_observer.h"
+#include "third_party/blink/renderer/core/intersection_observer/intersection_observer_entry.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/network/network_state_notifier.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -195,23 +196,22 @@ void AutoplayPolicy::StartAutoplayMutedWhenVisible() {
   // We might end up in a situation where the previous
   // observer didn't had time to fire yet. We can avoid
   // creating a new one in this case.
-  if (autoplay_visibility_observer_)
+  if (autoplay_intersection_observer_)
     return;
 
-  autoplay_visibility_observer_ =
-      MakeGarbageCollected<ElementVisibilityObserver>(
-          element_,
-          WTF::BindRepeating(&AutoplayPolicy::OnVisibilityChangedForAutoplay,
-                             WrapWeakPersistent(this)));
-  autoplay_visibility_observer_->Start();
+  autoplay_intersection_observer_ = IntersectionObserver::Create(
+      {}, {IntersectionObserver::kMinimumThreshold}, &element_->GetDocument(),
+      WTF::BindRepeating(&AutoplayPolicy::OnIntersectionChangedForAutoplay,
+                         WrapWeakPersistent(this)));
+  autoplay_intersection_observer_->observe(element_);
 }
 
 void AutoplayPolicy::StopAutoplayMutedWhenVisible() {
-  if (!autoplay_visibility_observer_)
+  if (!autoplay_intersection_observer_)
     return;
 
-  autoplay_visibility_observer_->Stop();
-  autoplay_visibility_observer_ = nullptr;
+  autoplay_intersection_observer_->disconnect();
+  autoplay_intersection_observer_ = nullptr;
 }
 
 bool AutoplayPolicy::RequestAutoplayUnmute() {
@@ -339,7 +339,9 @@ void AutoplayPolicy::EnsureAutoplayInitiatedSet() {
   autoplay_initiated_ = false;
 }
 
-void AutoplayPolicy::OnVisibilityChangedForAutoplay(bool is_visible) {
+void AutoplayPolicy::OnIntersectionChangedForAutoplay(
+    const HeapVector<Member<IntersectionObserverEntry>>& entries) {
+  bool is_visible = (entries.back()->intersectionRatio() > 0);
   if (!is_visible) {
     if (element_->can_autoplay_ && element_->Autoplay()) {
       element_->PauseInternal();
@@ -401,7 +403,7 @@ bool AutoplayPolicy::ShouldAutoplay() {
 
 void AutoplayPolicy::Trace(Visitor* visitor) {
   visitor->Trace(element_);
-  visitor->Trace(autoplay_visibility_observer_);
+  visitor->Trace(autoplay_intersection_observer_);
   visitor->Trace(autoplay_uma_helper_);
 }
 

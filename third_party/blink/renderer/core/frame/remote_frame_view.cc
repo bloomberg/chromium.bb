@@ -6,12 +6,12 @@
 
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/dom/element_visibility_observer.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/remote_frame.h"
 #include "third_party/blink/renderer/core/frame/remote_frame_client.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
+#include "third_party/blink/renderer/core/intersection_observer/intersection_observer.h"
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer_entry.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
@@ -341,6 +341,13 @@ void RemoteFrameView::UpdateVisibility(bool scroll_visible) {
   remote_frame_->Client()->VisibilityChanged(visibility);
 }
 
+void RemoteFrameView::OnViewportIntersectionChanged(
+    const HeapVector<Member<IntersectionObserverEntry>>& entries) {
+  bool is_visible = entries.back()->intersectionRatio() > 0;
+  UpdateVisibility(is_visible);
+  UpdateRenderThrottlingStatus(!is_visible, subtree_throttled_);
+}
+
 void RemoteFrameView::SetupRenderThrottling() {
   if (visibility_observer_)
     return;
@@ -349,15 +356,12 @@ void RemoteFrameView::SetupRenderThrottling() {
   if (!target_element)
     return;
 
-  visibility_observer_ = MakeGarbageCollected<ElementVisibilityObserver>(
-      target_element, WTF::BindRepeating(
-                          [](RemoteFrameView* remote_view, bool is_visible) {
-                            remote_view->UpdateVisibility(is_visible);
-                            remote_view->UpdateRenderThrottlingStatus(
-                                !is_visible, remote_view->subtree_throttled_);
-                          },
-                          WrapWeakPersistent(this)));
-  visibility_observer_->Start();
+  visibility_observer_ = IntersectionObserver::Create(
+      {}, {IntersectionObserver::kMinimumThreshold},
+      &target_element->GetDocument(),
+      WTF::BindRepeating(&RemoteFrameView::OnViewportIntersectionChanged,
+                         WrapWeakPersistent(this)));
+  visibility_observer_->observe(target_element);
 }
 
 void RemoteFrameView::UpdateRenderThrottlingStatus(bool hidden,

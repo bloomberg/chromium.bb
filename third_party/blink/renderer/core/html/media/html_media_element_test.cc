@@ -128,7 +128,7 @@ class HTMLMediaElementTest : public testing::TestWithParam<MediaTestParam> {
   }
 
   bool HasLazyLoadObserver() const {
-    return !!Media()->lazy_load_visibility_observer_;
+    return !!Media()->lazy_load_intersection_observer_;
   }
 
   ExecutionContext* GetExecutionContext() const {

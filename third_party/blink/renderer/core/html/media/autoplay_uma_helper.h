@@ -47,8 +47,9 @@ enum AutoplayBlockedReason {
 };
 
 class Document;
-class ElementVisibilityObserver;
 class HTMLMediaElement;
+class IntersectionObserver;
+class IntersectionObserverEntry;
 
 class CORE_EXPORT AutoplayUmaHelper : public NativeEventListener,
                                       public ContextLifecycleObserver {
@@ -96,8 +97,10 @@ class CORE_EXPORT AutoplayUmaHelper : public NativeEventListener,
   void MaybeStartRecordingMutedVideoOffscreenDuration();
   void MaybeStopRecordingMutedVideoOffscreenDuration();
 
-  void OnVisibilityChangedForMutedVideoOffscreenDuration(bool is_visibile);
-  void OnVisibilityChangedForMutedVideoPlayMethodBecomeVisible(bool is_visible);
+  void OnIntersectionChangedForMutedVideoOffscreenDuration(
+      const HeapVector<Member<IntersectionObserverEntry>>& entries);
+  void OnIntersectionChangedForMutedVideoPlayMethodBecomeVisible(
+      const HeapVector<Member<IntersectionObserverEntry>>& entries);
 
   bool ShouldListenToContextDestroyed() const;
 
@@ -110,8 +113,7 @@ class CORE_EXPORT AutoplayUmaHelper : public NativeEventListener,
   // The observer is used to observe whether a muted video autoplaying by play()
   // method become visible at some point.
   // The UMA is pending for recording as long as this observer is non-null.
-  Member<ElementVisibilityObserver>
-      muted_video_play_method_visibility_observer_;
+  Member<IntersectionObserver> muted_video_play_method_intersection_observer_;
 
   // -----------------------------------------------------------------------
   // Variables used for recording the duration of autoplay muted video playing
@@ -131,8 +133,8 @@ class CORE_EXPORT AutoplayUmaHelper : public NativeEventListener,
   // The observer is used to observer an autoplaying muted video changing it's
   // visibility, which is used for offscreen duration UMA.  The UMA is pending
   // for recording as long as this observer is non-null.
-  Member<ElementVisibilityObserver>
-      muted_video_offscreen_duration_visibility_observer_;
+  Member<IntersectionObserver>
+      muted_video_offscreen_duration_intersection_observer_;
 
   TimeTicks load_start_time_;
 };

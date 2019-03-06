@@ -13,7 +13,8 @@ namespace blink {
 
 class DeviceOrientationEvent;
 class HTMLVideoElement;
-class ElementVisibilityObserver;
+class IntersectionObserver;
+class IntersectionObserverEntry;
 
 // MediaControlsRotateToFullscreenDelegate automatically enters and exits
 // fullscreen when the device is rotated whilst watching a <video>. It is meant
@@ -45,7 +46,8 @@ class MediaControlsRotateToFullscreenDelegate final
   enum class SimpleOrientation { kPortrait, kLandscape, kUnknown };
 
   void OnStateChange();
-  void OnVisibilityChange(bool is_visible);
+  void OnIntersectionChange(
+      const HeapVector<Member<IntersectionObserverEntry>>& entries);
   void OnDeviceOrientationAvailable(DeviceOrientationEvent*);
   void OnScreenOrientationChange();
 
@@ -56,12 +58,12 @@ class MediaControlsRotateToFullscreenDelegate final
 
   SimpleOrientation current_screen_orientation_ = SimpleOrientation::kUnknown;
 
-  // Only valid when visibility_observer_ is active and the first
-  // OnVisibilityChanged has been received; otherwise assume video is hidden.
+  // Only valid when intersection_observer_ is active and the first
+  // OnIntersectionChanged has been received; otherwise assume video is hidden.
   bool is_visible_ = false;
 
   // This is null whenever we're not listening.
-  Member<ElementVisibilityObserver> visibility_observer_ = nullptr;
+  Member<IntersectionObserver> intersection_observer_ = nullptr;
 
   // `video_element_` owns MediaControlsImpl that owns |this|.
   Member<HTMLVideoElement> video_element_;
