@@ -42,6 +42,9 @@ class ModulatorImplBase : public Modulator {
 
   bool IsScriptingDisabled() const override;
 
+  bool BuiltInModuleInfraEnabled() const override;
+  bool BuiltInModuleEnabled(blink::layered_api::Module) const override;
+
   ScriptModuleResolver* GetScriptModuleResolver() override {
     return script_module_resolver_.Get();
   }

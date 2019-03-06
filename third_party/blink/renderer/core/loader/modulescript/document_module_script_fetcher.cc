@@ -7,7 +7,6 @@
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/script/layered_api.h"
 #include "third_party/blink/renderer/platform/bindings/parkable_string.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -15,13 +14,15 @@ namespace blink {
 void DocumentModuleScriptFetcher::Fetch(
     FetchParameters& fetch_params,
     ResourceFetcher* fetch_client_settings_object_fetcher,
+    const Modulator* modulator_for_built_in_modules,
     ModuleGraphLevel level,
     ModuleScriptFetcher::Client* client) {
   DCHECK(fetch_client_settings_object_fetcher);
   DCHECK(!client_);
   client_ = client;
 
-  if (FetchIfLayeredAPI(fetch_params))
+  if (modulator_for_built_in_modules &&
+      FetchIfLayeredAPI(*modulator_for_built_in_modules, fetch_params))
     return;
 
   ScriptResource::Fetch(fetch_params, fetch_client_settings_object_fetcher,
@@ -52,8 +53,9 @@ void DocumentModuleScriptFetcher::Trace(blink::Visitor* visitor) {
 }
 
 bool DocumentModuleScriptFetcher::FetchIfLayeredAPI(
+    const Modulator& modulator_for_built_in_modules,
     FetchParameters& fetch_params) {
-  if (!RuntimeEnabledFeatures::BuiltInModuleInfraEnabled())
+  if (!modulator_for_built_in_modules.BuiltInModuleInfraEnabled())
     return false;
 
   KURL layered_api_url = blink::layered_api::GetInternalURL(fetch_params.Url());
@@ -61,7 +63,8 @@ bool DocumentModuleScriptFetcher::FetchIfLayeredAPI(
   if (layered_api_url.IsNull())
     return false;
 
-  String source_text = blink::layered_api::GetSourceText(layered_api_url);
+  String source_text = blink::layered_api::GetSourceText(
+      modulator_for_built_in_modules, layered_api_url);
 
   if (source_text.IsNull()) {
     HeapVector<Member<ConsoleMessage>> error_messages;

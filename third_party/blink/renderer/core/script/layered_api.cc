@@ -6,6 +6,7 @@
 
 #include "base/stl_util.h"
 #include "third_party/blink/renderer/core/script/layered_api_resources.h"
+#include "third_party/blink/renderer/core/script/modulator.h"
 #include "third_party/blink/renderer/platform/data_resource_helper.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
@@ -22,17 +23,18 @@ static const char kImportScheme[] = "import";
 
 constexpr char kBuiltinSpecifierPrefix[] = "@std/";
 
-int GetResourceIDFromPath(const String& path) {
+int GetResourceIDFromPath(const Modulator& modulator, const String& path) {
   for (size_t i = 0; i < base::size(kLayeredAPIResources); ++i) {
-    if (path == kLayeredAPIResources[i].path) {
+    if (modulator.BuiltInModuleEnabled(kLayeredAPIResources[i].module) &&
+        path == kLayeredAPIResources[i].path) {
       return kLayeredAPIResources[i].resource_id;
     }
   }
   return -1;
 }
 
-bool IsImplemented(const String& name) {
-  return GetResourceIDFromPath(name + "/index.js") >= 0;
+bool IsImplemented(const Modulator& modulator, const String& name) {
+  return GetResourceIDFromPath(modulator, name + "/index.js") >= 0;
 }
 
 }  // namespace
@@ -49,7 +51,7 @@ String GetBuiltinPath(const KURL& url) {
 }
 
 // https://github.com/drufball/layered-apis/blob/master/spec.md#user-content-layered-api-fetching-url
-KURL ResolveFetchingURL(const KURL& url) {
+KURL ResolveFetchingURL(const Modulator& modulator, const KURL& url) {
   // <spec step="1">If url's scheme is not "std", return url.</spec>
   // <spec step="2">Let path be url's path[0].</spec>
   // Note: Also accepts "import:@std/x".
@@ -61,7 +63,7 @@ KURL ResolveFetchingURL(const KURL& url) {
   // <spec step="5">If the layered API identified by path is implemented by this
   // user agent, return the result of parsing the concatenation of "std:" with
   // identifier.</spec>
-  if (IsImplemented(path)) {
+  if (IsImplemented(modulator, path)) {
     StringBuilder url_string;
     url_string.Append(kStdScheme);
     url_string.Append(":");
@@ -90,7 +92,7 @@ KURL GetInternalURL(const KURL& url) {
   return NullURL();
 }
 
-String GetSourceText(const KURL& url) {
+String GetSourceText(const Modulator& modulator, const KURL& url) {
   if (!url.ProtocolIs(kInternalScheme))
     return String();
 
@@ -102,7 +104,7 @@ String GetSourceText(const KURL& url) {
     path = path.Substring(2);
   }
 
-  int resource_id = GetResourceIDFromPath(path);
+  int resource_id = GetResourceIDFromPath(modulator, path);
   if (resource_id < 0)
     return String();
 

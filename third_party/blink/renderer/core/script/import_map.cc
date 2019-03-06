@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 #include "third_party/blink/renderer/core/script/layered_api.h"
+#include "third_party/blink/renderer/core/script/modulator.h"
 #include "third_party/blink/renderer/core/script/parsed_specifier.h"
 #include "third_party/blink/renderer/platform/json/json_parser.h"
 #include "third_party/blink/renderer/platform/json/json_values.h"
@@ -92,7 +93,8 @@ KURL GetValue(const String& key,
 // ignored, except that they are reported to the console |logger|.
 // TODO(hiroshige): Handle errors in a spec-conformant way once specified.
 // https://github.com/WICG/import-maps/issues/100
-ImportMap* ImportMap::Create(const String& text,
+ImportMap* ImportMap::Create(const Modulator& modulator_for_built_in_modules,
+                             const String& text,
                              const KURL& base_url,
                              ConsoleLogger& logger) {
   HashMap<String, Vector<KURL>> modules_map;
@@ -101,21 +103,24 @@ ImportMap* ImportMap::Create(const String& text,
   if (!root) {
     logger.AddErrorMessage(ConsoleLogger::Source::kOther,
                            "Failed to parse import map: invalid JSON");
-    return MakeGarbageCollected<ImportMap>(modules_map);
+    return MakeGarbageCollected<ImportMap>(modulator_for_built_in_modules,
+                                           modules_map);
   }
 
   std::unique_ptr<JSONObject> root_object = JSONObject::From(std::move(root));
   if (!root_object) {
     logger.AddErrorMessage(ConsoleLogger::Source::kOther,
                            "Failed to parse import map: not an object");
-    return MakeGarbageCollected<ImportMap>(modules_map);
+    return MakeGarbageCollected<ImportMap>(modulator_for_built_in_modules,
+                                           modules_map);
   }
 
   JSONObject* modules = root_object->GetJSONObject("imports");
   if (!modules) {
     logger.AddErrorMessage(ConsoleLogger::Source::kOther,
                            "Failed to parse import map: no \"imports\" entry.");
-    return MakeGarbageCollected<ImportMap>(modules_map);
+    return MakeGarbageCollected<ImportMap>(modulator_for_built_in_modules,
+                                           modules_map);
   }
 
   for (wtf_size_t i = 0; i < modules->size(); ++i) {
@@ -196,8 +201,14 @@ ImportMap* ImportMap::Create(const String& text,
 
   // TODO(crbug.com/927181): Process "scopes" entry.
 
-  return MakeGarbageCollected<ImportMap>(modules_map);
+  return MakeGarbageCollected<ImportMap>(modulator_for_built_in_modules,
+                                         modules_map);
 }
+
+ImportMap::ImportMap(const Modulator& modulator_for_built_in_modules,
+                     const HashMap<String, Vector<KURL>>& imports)
+    : imports_(imports),
+      modulator_for_built_in_modules_(&modulator_for_built_in_modules) {}
 
 base::Optional<KURL> ImportMap::Resolve(const ParsedSpecifier& parsed_specifier,
                                         String* debug_message) const {
@@ -211,7 +222,9 @@ base::Optional<KURL> ImportMap::Resolve(const ParsedSpecifier& parsed_specifier,
   }
 
   for (const auto& candidate_url : it->value) {
-    if (blink::layered_api::ResolveFetchingURL(candidate_url).IsValid()) {
+    if (blink::layered_api::ResolveFetchingURL(*modulator_for_built_in_modules_,
+                                               candidate_url)
+            .IsValid()) {
       *debug_message = "Import Map: \"" + key + "\" matches with \"" + it->key +
                        "\" and is mapped to " + candidate_url.ElidedString();
       return candidate_url;
@@ -239,6 +252,10 @@ String ImportMap::ToString() const {
   }
   builder.Append("}\n");
   return builder.ToString();
+}
+
+void ImportMap::Trace(Visitor* visitor) {
+  visitor->Trace(modulator_for_built_in_modules_);
 }
 
 }  // namespace blink

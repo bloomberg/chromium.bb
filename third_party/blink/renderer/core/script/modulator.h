@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_module.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_code_cache.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/script/layered_api_module.h"
 #include "third_party/blink/renderer/core/script/module_import_meta.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
@@ -119,6 +120,9 @@ class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
   // https://html.spec.whatwg.org/C/#concept-bc-noscript
   // "scripting is disabled for settings's responsible browsing context"
   virtual bool IsScriptingDisabled() const = 0;
+
+  virtual bool BuiltInModuleInfraEnabled() const = 0;
+  virtual bool BuiltInModuleEnabled(blink::layered_api::Module) const = 0;
 
   // https://html.spec.whatwg.org/C/#fetch-a-module-script-tree
   // https://html.spec.whatwg.org/C/#fetch-a-module-worker-script-tree
