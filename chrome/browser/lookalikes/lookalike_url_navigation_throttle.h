@@ -11,8 +11,10 @@
 
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/engagement/site_engagement_details.mojom.h"
+#include "chrome/browser/lookalikes/lookalike_url_interstitial_page.h"
 #include "components/url_formatter/url_formatter.h"
 #include "content/public/browser/navigation_throttle.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 
 namespace content {
 class NavigationHandle;
@@ -37,18 +39,6 @@ class LookalikeUrlNavigationThrottle : public content::NavigationThrottle {
     // Append new items to the end of the list above; do not modify or
     // replace existing values. Comment out obsolete items.
     kMaxValue = kMatchEditDistance,
-  };
-
-  // Used for UKM. There is only a single MatchType per navigation.
-  enum class MatchType {
-    kNone = 0,
-    kTopSite = 1,
-    kSiteEngagement = 2,
-    kEditDistance = 3,
-
-    // Append new items to the end of the list above; do not modify or replace
-    // existing values. Comment out obsolete items.
-    kMaxValue = kEditDistance,
   };
 
   struct DomainInfo {
@@ -102,7 +92,7 @@ class LookalikeUrlNavigationThrottle : public content::NavigationThrottle {
   bool GetMatchingDomain(const DomainInfo& navigated_domain,
                          const std::set<GURL>& engaged_sites,
                          std::string* matched_domain,
-                         MatchType* match_type);
+                         LookalikeUrlInterstitialPage::MatchType* match_type);
 
   // Returns if the Levenshtein distance between |str1| and |str2| is at most 1.
   // This has O(max(n,m)) complexity as opposed to O(n*m) of the usual edit
@@ -114,8 +104,11 @@ class LookalikeUrlNavigationThrottle : public content::NavigationThrottle {
   // to |domain_and_registry|.
   static std::string GetSimilarDomainFromTop500(const DomainInfo& domain_info);
 
-  ThrottleCheckResult ShowInterstitial(const GURL& safe_domain,
-                                       const GURL& url);
+  ThrottleCheckResult ShowInterstitial(
+      const GURL& safe_domain,
+      const GURL& url,
+      ukm::SourceId source_id,
+      LookalikeUrlInterstitialPage::MatchType match_type);
 
   bool interstitials_enabled_;
 
