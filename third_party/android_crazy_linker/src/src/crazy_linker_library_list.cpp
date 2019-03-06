@@ -17,12 +17,13 @@
 #include "crazy_linker_system_linker.h"
 #include "crazy_linker_util.h"
 
+#ifdef __ANDROID__
+#include "crazy_linker_system_android.h"
+#endif
+
 namespace crazy {
 
 namespace {
-
-// From android.os.Build.VERSION_CODES.LOLLIPOP.
-static const int SDK_VERSION_CODE_LOLLIPOP = 21;
 
 // A helper struct used when looking up symbols in libraries.
 struct SymbolLookupState {
@@ -55,10 +56,8 @@ struct SymbolLookupState {
 }  // namespace
 
 LibraryList::LibraryList() {
-  // NOTE: This constructor is called from the Globals::Globals() constructor,
-  // hence it is important that Globals::sdk_build_version is a static member
-  // that can be set before Globals::Get() is called for the first time.
-  const int sdk_build_version = Globals::sdk_build_version;
+#ifdef __ANDROID__
+  const int sdk_build_version = GetAndroidDeviceApiLevel();
 
   // If SDK version is Lollipop or earlier, we need to load anything
   // listed in LD_PRELOAD explicitly, because dlsym() on the main executable
@@ -77,8 +76,9 @@ LibraryList::LibraryList() {
   //
   // For more, see:
   //   https://code.google.com/p/android/issues/detail?id=74255
-  if (sdk_build_version <= SDK_VERSION_CODE_LOLLIPOP)
+  if (sdk_build_version <= ANDROID_SDK_VERSION_CODE_LOLLIPOP)
     LoadPreloads();
+#endif  // __ANDROID__
 }
 
 LibraryList::~LibraryList() {

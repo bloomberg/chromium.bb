@@ -121,10 +121,6 @@ crazy_status_t crazy_add_search_path_for_address(void* address) _CRAZY_PUBLIC;
 // crazy_context_add_search_path_for_address().
 void crazy_reset_search_paths(void) _CRAZY_PUBLIC;
 
-// Pass the platform's SDK build version to the crazy linker. The value is
-// from android.os.Build.VERSION.SDK_INT.
-void crazy_set_sdk_build_version(int sdk_build_version);
-
 // Opaque handle to a library as seen/loaded by the crazy linker.
 typedef struct crazy_library_t crazy_library_t;
 

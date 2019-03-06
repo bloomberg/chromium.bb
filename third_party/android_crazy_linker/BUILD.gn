@@ -100,6 +100,8 @@ if (is_android) {
         "src/src/crazy_linker_shared_library.h",
         "src/src/crazy_linker_system.cpp",
         "src/src/crazy_linker_system.h",
+        "src/src/crazy_linker_system_android.cpp",
+        "src/src/crazy_linker_system_android.h",
         "src/src/crazy_linker_system_linker.cpp",
         "src/src/crazy_linker_system_linker.h",
         "src/src/crazy_linker_thread_data.cpp",
@@ -542,7 +544,7 @@ if (is_android) {
 # cd $CHROMIUM_SRC_DIR
 # mkdir out/Fuzz
 # gn gen out/Fuzz '--args=use_libfuzzer=true is_asan=true is_debug=false'
-# gn out/Fuzz android_crazy_linker_zip_fuzzer
+# ninja -C out/Fuzz android_crazy_linker_zip_fuzzer
 # out/Fuzz/android_crazy_linker_zip_fuzzer out/Release/apks
 #
 fuzzer_test("android_crazy_linker_zip_fuzzer") {

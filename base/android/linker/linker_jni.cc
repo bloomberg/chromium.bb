@@ -131,47 +131,6 @@ bool InitFieldId(JNIEnv* env,
   return true;
 }
 
-// Initialize a jfieldID corresponding to the static field of a given |clazz|,
-// with name |field_name| and signature |field_sig|.
-// |env| is the current JNI environment handle.
-// On success, return true and set |*field_id|.
-bool InitStaticFieldId(JNIEnv* env,
-                       jclass clazz,
-                       const char* field_name,
-                       const char* field_sig,
-                       jfieldID* field_id) {
-  *field_id = env->GetStaticFieldID(clazz, field_name, field_sig);
-  if (!*field_id) {
-    LOG_ERROR("Could not find ID for static field '%s'", field_name);
-    return false;
-  }
-  LOG_INFO("Found ID %p for static field '%s'", *field_id, field_name);
-  return true;
-}
-
-// Initialize a jint corresponding to the static integer field of a class
-// with class name |class_name| and field name |field_name|.
-// |env| is the current JNI environment handle.
-// On success, return true and set |*value|.
-bool InitStaticInt(JNIEnv* env,
-                   const char* class_name,
-                   const char* field_name,
-                   jint* value) {
-  jclass clazz;
-  if (!InitClassReference(env, class_name, &clazz))
-    return false;
-
-  jfieldID field_id;
-  if (!InitStaticFieldId(env, clazz, field_name, "I", &field_id))
-    return false;
-
-  *value = env->GetStaticIntField(clazz, field_id);
-  LOG_INFO("Found value %d for class '%s', static field '%s'",
-           *value, class_name, field_name);
-
-  return true;
-}
-
 // A class used to model the field IDs of the org.chromium.base.Linker
 // LibInfo inner class, used to communicate data with the Java side
 // of the linker.
@@ -289,22 +248,6 @@ class ScopedLibrary {
  private:
   crazy_library_t* lib_;
 };
-
-// Retrieve the SDK build version and pass it into the crazy linker. This
-// needs to be done early in initialization, before any other crazy linker
-// code is run.
-// |env| is the current JNI environment handle.
-// On success, return true.
-bool InitSDKVersionInfo(JNIEnv* env) {
-  jint value = 0;
-  if (!InitStaticInt(env, "android/os/Build$VERSION", "SDK_INT", &value))
-    return false;
-
-  crazy_set_sdk_build_version(static_cast<int>(value));
-  LOG_INFO("Set SDK build version to %d", static_cast<int>(value));
-
-  return true;
-}
 
 }  // namespace
 
@@ -505,11 +448,6 @@ Java_org_chromium_base_library_1loader_Linker_nativeUseSharedRelro(
 
 static bool LinkerJNIInit(JavaVM* vm, JNIEnv* env) {
   LOG_INFO("Entering");
-
-  // Initialize SDK version info.
-  LOG_INFO("Retrieving SDK version info");
-  if (!InitSDKVersionInfo(env))
-    return false;
 
   // Find LibInfo field ids.
   LOG_INFO("Caching field IDs");

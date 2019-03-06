@@ -41,12 +41,6 @@ struct crazy_context_t {
 
 extern "C" {
 
-void crazy_set_sdk_build_version(int sdk_build_version) {
-  // NOTE: This must be called before creating the Globals instance,
-  // so do not use Globals::Get() or a ScopedLockedGlobals instance here.
-  Globals::sdk_build_version = sdk_build_version;
-}
-
 crazy_context_t* crazy_context_create() {
   return new crazy_context_t();
 }
