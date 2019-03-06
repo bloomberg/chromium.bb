@@ -276,6 +276,9 @@ class WorkspaceSyncChromeStage(WorkspaceStageBase):
   """Stage that syncs Chrome sources if needed."""
   category = constants.PRODUCT_CHROME_STAGE
 
+  # 4 hours in seconds should be long enough to fetch Chrome. I hope.
+  SYNC_CHROME_TIMEOUT = 4 * 60 * 60
+
   def DetermineChromeVersion(self):
     cpv = portage_util.PortageqBestVisible(constants.CHROME_CP,
                                            cwd=self._build_root)
@@ -309,8 +312,9 @@ class WorkspaceSyncChromeStage(WorkspaceStageBase):
         cmd += ['--internal']
 
       cmd += [self._run.options.chrome_root]
-      retry_util.RunCommandWithRetries(
-          constants.SYNC_RETRIES, cmd, cwd=self._build_root)
+      with timeout_util.Timeout(self.SYNC_CHROME_TIMEOUT):
+        retry_util.RunCommandWithRetries(
+            constants.SYNC_RETRIES, cmd, cwd=self._build_root)
 
 
 class WorkspaceUprevAndPublishStage(WorkspaceStageBase):
