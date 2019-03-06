@@ -239,10 +239,6 @@ class ResourceBundleFileLoader : public network::mojom::URLLoader {
   void OnMimeTypeRead(scoped_refptr<base::RefCountedMemory> data,
                       std::string* read_mime_type,
                       bool read_result) {
-    if (!read_result) {
-      client_->OnComplete(network::URLLoaderCompletionStatus(net::ERR_FAILED));
-      return;
-    }
     network::ResourceResponseHead head;
     head.request_start = base::TimeTicks::Now();
     head.response_start = base::TimeTicks::Now();
