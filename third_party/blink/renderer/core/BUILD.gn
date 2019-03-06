@@ -1753,6 +1753,7 @@ jumbo_source_set("unit_tests") {
     "css/css_selector_watch_test.cc",
     "css/css_style_declaration_test.cc",
     "css/css_style_sheet_test.cc",
+    "css/css_syntax_string_parser_test.cc",
     "css/css_test_helpers.cc",
     "css/css_test_helpers.h",
     "css/css_value_test_helper.h",

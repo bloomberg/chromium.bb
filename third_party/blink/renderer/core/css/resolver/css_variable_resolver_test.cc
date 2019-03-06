@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/css/resolver/css_variable_resolver.h"
 #include "third_party/blink/renderer/core/css/css_custom_property_declaration.h"
+#include "third_party/blink/renderer/core/css/css_syntax_string_parser.h"
 #include "third_party/blink/renderer/core/css/css_variable_reference_value.h"
 #include "third_party/blink/renderer/core/css/document_style_environment_variables.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
@@ -253,17 +254,19 @@ TEST_F(CSSVariableResolverTest, NeedsResolutionClearedByResolver) {
   const auto* prop3 = CreateCustomProperty("--prop3", "var(--prop2)");
 
   // Register prop3 to make it non-inherited.
-  CSSSyntaxDescriptor token_syntax("*");
+  base::Optional<CSSSyntaxDescriptor> token_syntax =
+      CSSSyntaxStringParser("*").Parse();
+  ASSERT_TRUE(token_syntax);
   String initial_value_str("foo");
   const auto tokens = CSSTokenizer(initial_value_str).TokenizeToEOF();
   const CSSParserContext* context = CSSParserContext::Create(GetDocument());
   const CSSValue* initial_value =
-      token_syntax.Parse(CSSParserTokenRange(tokens), context, false);
+      token_syntax->Parse(CSSParserTokenRange(tokens), context, false);
   ASSERT_TRUE(initial_value);
   ASSERT_TRUE(initial_value->IsVariableReferenceValue());
   PropertyRegistration* registration =
       MakeGarbageCollected<PropertyRegistration>(
-          "--prop3", token_syntax, false, initial_value,
+          "--prop3", *token_syntax, false, initial_value,
           ToCSSVariableReferenceValue(*initial_value).VariableDataValue());
   ASSERT_TRUE(GetDocument().GetPropertyRegistry());
   GetDocument().GetPropertyRegistry()->RegisterProperty("--prop3",

@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_paint_rendering_context_2d_settings.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/css_syntax_descriptor.h"
+#include "third_party/blink/renderer/core/css/css_syntax_string_parser.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -56,12 +57,13 @@ bool ParseInputArguments(v8::Local<v8::Context> context,
         return false;
 
       for (const auto& type : argument_types) {
-        CSSSyntaxDescriptor syntax_descriptor(type);
-        if (!syntax_descriptor.IsValid()) {
+        base::Optional<CSSSyntaxDescriptor> syntax_descriptor =
+            CSSSyntaxStringParser(type).Parse();
+        if (!syntax_descriptor) {
           exception_state->ThrowTypeError("Invalid argument types.");
           return false;
         }
-        input_argument_types->push_back(std::move(syntax_descriptor));
+        input_argument_types->push_back(std::move(*syntax_descriptor));
       }
     }
   }

@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/css/css_syntax_descriptor.h"
 
+#include <utility>
 #include "third_party/blink/renderer/core/css/css_custom_property_declaration.h"
 #include "third_party/blink/renderer/core/css/css_syntax_component.h"
 #include "third_party/blink/renderer/core/css/css_uri_value.h"
@@ -16,141 +17,6 @@
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
-
-void ConsumeWhitespace(const String& string, wtf_size_t& offset) {
-  while (IsHTMLSpace(string[offset]))
-    offset++;
-}
-
-bool ConsumeCharacterAndWhitespace(const String& string,
-                                   char character,
-                                   wtf_size_t& offset) {
-  if (string[offset] != character)
-    return false;
-  offset++;
-  ConsumeWhitespace(string, offset);
-  return true;
-}
-
-CSSSyntaxType ParseSyntaxType(String type) {
-  // TODO(timloh): Are these supposed to be case sensitive?
-  if (type == "length")
-    return CSSSyntaxType::kLength;
-  if (type == "number")
-    return CSSSyntaxType::kNumber;
-  if (type == "percentage")
-    return CSSSyntaxType::kPercentage;
-  if (type == "length-percentage")
-    return CSSSyntaxType::kLengthPercentage;
-  if (type == "color")
-    return CSSSyntaxType::kColor;
-  if (RuntimeEnabledFeatures::CSSVariables2ImageValuesEnabled()) {
-    if (type == "image")
-      return CSSSyntaxType::kImage;
-  }
-  if (type == "url")
-    return CSSSyntaxType::kUrl;
-  if (type == "integer")
-    return CSSSyntaxType::kInteger;
-  if (type == "angle")
-    return CSSSyntaxType::kAngle;
-  if (type == "time")
-    return CSSSyntaxType::kTime;
-  if (type == "resolution")
-    return CSSSyntaxType::kResolution;
-  if (RuntimeEnabledFeatures::CSSVariables2TransformValuesEnabled()) {
-    if (type == "transform-function")
-      return CSSSyntaxType::kTransformFunction;
-    if (type == "transform-list")
-      return CSSSyntaxType::kTransformList;
-  }
-  if (type == "custom-ident")
-    return CSSSyntaxType::kCustomIdent;
-  // Not an Ident, just used to indicate failure
-  return CSSSyntaxType::kIdent;
-}
-
-bool ConsumeSyntaxType(const String& input,
-                       wtf_size_t& offset,
-                       CSSSyntaxType& type) {
-  DCHECK_EQ(input[offset], '<');
-  offset++;
-  wtf_size_t type_start = offset;
-  while (offset < input.length() && input[offset] != '>')
-    offset++;
-  if (offset == input.length())
-    return false;
-  type = ParseSyntaxType(input.Substring(type_start, offset - type_start));
-  if (type == CSSSyntaxType::kIdent)
-    return false;
-  offset++;
-  return true;
-}
-
-bool ConsumeSyntaxIdent(const String& input,
-                        wtf_size_t& offset,
-                        String& ident) {
-  wtf_size_t ident_start = offset;
-  while (IsNameCodePoint(input[offset]))
-    offset++;
-  if (offset == ident_start)
-    return false;
-  ident = input.Substring(ident_start, offset - ident_start);
-  return !css_property_parser_helpers::IsCSSWideKeyword(ident);
-}
-
-CSSSyntaxDescriptor::CSSSyntaxDescriptor(const String& input) {
-  wtf_size_t offset = 0;
-  ConsumeWhitespace(input, offset);
-
-  if (ConsumeCharacterAndWhitespace(input, '*', offset)) {
-    if (offset != input.length())
-      return;
-    syntax_components_.push_back(CSSSyntaxComponent(
-        CSSSyntaxType::kTokenStream, g_empty_string, CSSSyntaxRepeat::kNone));
-    return;
-  }
-
-  do {
-    CSSSyntaxType type;
-    String ident;
-    bool success;
-
-    if (input[offset] == '<') {
-      success = ConsumeSyntaxType(input, offset, type);
-    } else {
-      type = CSSSyntaxType::kIdent;
-      success = ConsumeSyntaxIdent(input, offset, ident);
-    }
-
-    if (!success) {
-      syntax_components_.clear();
-      return;
-    }
-
-    CSSSyntaxRepeat repeat = CSSSyntaxRepeat::kNone;
-
-    if (ConsumeCharacterAndWhitespace(input, '+', offset))
-      repeat = CSSSyntaxRepeat::kSpaceSeparated;
-    else if (ConsumeCharacterAndWhitespace(input, '#', offset))
-      repeat = CSSSyntaxRepeat::kCommaSeparated;
-
-    // <transform-list> is already a space separated list,
-    // <transform-list>+ is invalid.
-    // TODO(andruud): Is <transform-list># invalid?
-    if (type == CSSSyntaxType::kTransformList &&
-        repeat != CSSSyntaxRepeat::kNone) {
-      syntax_components_.clear();
-      return;
-    }
-    ConsumeWhitespace(input, offset);
-    syntax_components_.push_back(CSSSyntaxComponent(type, ident, repeat));
-
-  } while (ConsumeCharacterAndWhitespace(input, '|', offset));
-
-  if (offset != input.length())
-    syntax_components_.clear();
-}
 
 const CSSValue* ConsumeSingleType(const CSSSyntaxComponent& syntax,
                                   CSSParserTokenRange& range,
@@ -260,6 +126,18 @@ const CSSValue* CSSSyntaxDescriptor::Parse(CSSParserTokenRange range,
   }
   return CSSVariableParser::ParseRegisteredPropertyValue(range, *context, true,
                                                          is_animation_tainted);
+}
+
+CSSSyntaxDescriptor::CSSSyntaxDescriptor(Vector<CSSSyntaxComponent> components)
+    : syntax_components_(std::move(components)) {
+  DCHECK(syntax_components_.size());
+}
+
+CSSSyntaxDescriptor CSSSyntaxDescriptor::CreateUniversal() {
+  Vector<CSSSyntaxComponent> components;
+  components.push_back(CSSSyntaxComponent(
+      CSSSyntaxType::kTokenStream, g_empty_string, CSSSyntaxRepeat::kNone));
+  return CSSSyntaxDescriptor(std::move(components));
 }
 
 }  // namespace blink
