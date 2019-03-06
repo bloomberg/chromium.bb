@@ -368,6 +368,9 @@ void SetIndividualRuntimeFeatures(
   WebRuntimeFeatures::EnableModernMediaControls(
       base::FeatureList::IsEnabled(media::kUseModernMediaControls));
 
+  WebRuntimeFeatures::EnableScheduledScriptStreaming(
+      base::FeatureList::IsEnabled(features::kScheduledScriptStreaming));
+
   WebRuntimeFeatures::EnableScriptStreamingOnPreload(
       base::FeatureList::IsEnabled(features::kScriptStreamingOnPreload));
 

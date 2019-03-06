@@ -46139,7 +46139,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="8" label="FileThread"/>
   <int value="9" label="DatabaseThread"/>
   <int value="10" label="WebAudioThread"/>
-  <int value="11" label="ScriptStreamerThread (obsolete)"/>
+  <int value="11" label="ScriptStreamerThread"/>
   <int value="12" label="OfflineAudioRenderThread"/>
   <int value="13" label="ReverbConvolutionBackgroundThread"/>
   <int value="14" label="HRTFDatabaseLoaderThread"/>
