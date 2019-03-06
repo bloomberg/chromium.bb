@@ -43,6 +43,7 @@ class WorkletModuleResponsesMapTest : public testing::Test {
     WorkletModuleScriptFetcher* module_fetcher =
         MakeGarbageCollected<WorkletModuleScriptFetcher>(map_.Get());
     module_fetcher->Fetch(fetch_params, fetcher_.Get(),
+                          nullptr /* modulator_for_built_in_modules */,
                           ModuleGraphLevel::kTopLevelModuleFetch, client);
   }
 

@@ -21,6 +21,7 @@ WorkerModuleScriptFetcher::WorkerModuleScriptFetcher(
 void WorkerModuleScriptFetcher::Fetch(
     FetchParameters& fetch_params,
     ResourceFetcher* fetch_client_settings_object_fetcher,
+    const Modulator* modulator_for_built_in_modules,
     ModuleGraphLevel level,
     ModuleScriptFetcher::Client* client) {
   DCHECK(global_scope_->IsContextThread());

@@ -15,6 +15,7 @@
 namespace blink {
 
 class ConsoleLogger;
+class Modulator;
 class ParsedSpecifier;
 
 // Import maps.
@@ -22,12 +23,12 @@ class ParsedSpecifier;
 // https://github.com/WICG/import-maps/blob/master/spec.md
 class ImportMap final : public GarbageCollectedFinalized<ImportMap> {
  public:
-  static ImportMap* Create(const String& text,
+  static ImportMap* Create(const Modulator& modulator_for_built_in_modules,
+                           const String& text,
                            const KURL& base_url,
                            ConsoleLogger& logger);
 
-  explicit ImportMap(const HashMap<String, Vector<KURL>>& imports)
-      : imports_(imports) {}
+  ImportMap(const Modulator&, const HashMap<String, Vector<KURL>>& imports);
 
   // Returns nullopt when not mapped by |this| import map (i.e. the import map
   // doesn't have corresponding keys).
@@ -37,10 +38,11 @@ class ImportMap final : public GarbageCollectedFinalized<ImportMap> {
 
   String ToString() const;
 
-  void Trace(Visitor*) {}
+  void Trace(Visitor*);
 
  private:
   HashMap<String, Vector<KURL>> imports_;
+  Member<const Modulator> modulator_for_built_in_modules_;
 };
 
 }  // namespace blink

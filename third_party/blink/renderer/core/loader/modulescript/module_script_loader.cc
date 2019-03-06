@@ -222,7 +222,7 @@ void ModuleScriptLoader::FetchInternal(
   // [spec text]
   module_fetcher_ = modulator_->CreateModuleScriptFetcher(custom_fetch_type);
   module_fetcher_->Fetch(fetch_params, fetch_client_settings_object_fetcher,
-                         level, this);
+                         modulator_, level, this);
 }
 
 void ModuleScriptLoader::NotifyFetchFinished(

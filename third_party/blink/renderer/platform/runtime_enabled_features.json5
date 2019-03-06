@@ -187,12 +187,14 @@
     },
     {
       name: "BuiltInModuleInfra",
+      origin_trial_feature_name: "BuiltInModuleInfra",
       implied_by: ["ExperimentalProductivityFeatures",
                    "BuiltInModuleAll",
                    "BuiltInModuleKvStorage"],
     },
     {
       name: "BuiltInModuleKvStorage",
+      origin_trial_feature_name: "BuiltInModuleKvStorage",
       implied_by: ["ExperimentalProductivityFeatures"],
     },
     {

@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_fetch_request.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_tree_linker.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_tree_linker_registry.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/core/script/dynamic_module_resolver.h"
 #include "third_party/blink/renderer/core/script/import_map.h"
 #include "third_party/blink/renderer/core/script/module_map.h"
@@ -43,6 +44,25 @@ ModulatorImplBase::~ModulatorImplBase() {}
 
 bool ModulatorImplBase::IsScriptingDisabled() const {
   return !GetExecutionContext()->CanExecuteScripts(kAboutToExecuteScript);
+}
+
+bool ModulatorImplBase::BuiltInModuleInfraEnabled() const {
+  return origin_trials::BuiltInModuleInfraEnabled(GetExecutionContext());
+}
+
+bool ModulatorImplBase::BuiltInModuleEnabled(
+    blink::layered_api::Module module) const {
+  DCHECK(BuiltInModuleInfraEnabled());
+  switch (module) {
+    case blink::layered_api::Module::kBlank:
+      return true;
+    case blink::layered_api::Module::kVirtualScroller:
+      return RuntimeEnabledFeatures::BuiltInModuleAllEnabled();
+    case blink::layered_api::Module::kKvStorage:
+      return RuntimeEnabledFeatures::BuiltInModuleAllEnabled() ||
+             origin_trials::BuiltInModuleKvStorageEnabled(
+                 GetExecutionContext());
+  }
 }
 
 // <specdef label="fetch-a-module-script-tree"
@@ -161,7 +181,7 @@ KURL ModulatorImplBase::ResolveModuleSpecifier(const String& specifier,
 
     case ParsedSpecifier::Type::kBare:
       // Allow |@std/x| specifiers if Layered API is enabled.
-      if (RuntimeEnabledFeatures::BuiltInModuleInfraEnabled()) {
+      if (BuiltInModuleInfraEnabled()) {
         if (parsed_specifier.GetImportMapKeyString().StartsWith("@std/")) {
           return KURL("import:" + parsed_specifier.GetImportMapKeyString());
         }
@@ -190,7 +210,7 @@ void ModulatorImplBase::RegisterImportMap(const ImportMap* import_map) {
     return;
   }
 
-  if (!RuntimeEnabledFeatures::BuiltInModuleInfraEnabled()) {
+  if (!BuiltInModuleInfraEnabled()) {
     GetExecutionContext()->AddErrorMessage(
         ConsoleLogger::Source::kOther,
         "Import maps are disabled when Layered API Infra is disabled.");

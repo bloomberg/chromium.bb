@@ -58,6 +58,14 @@ bool DummyModulator::IsScriptingDisabled() const {
   return false;
 }
 
+bool DummyModulator::BuiltInModuleInfraEnabled() const {
+  return false;
+}
+
+bool DummyModulator::BuiltInModuleEnabled(blink::layered_api::Module) const {
+  return false;
+}
+
 ScriptModuleResolver* DummyModulator::GetScriptModuleResolver() {
   return resolver_.Get();
 }

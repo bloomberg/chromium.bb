@@ -180,7 +180,7 @@ ShouldFireErrorEvent ParseAndRegisterImportMap(ScriptElementBase& element) {
 
   // If import maps are not enabled, we do nothing and return here, and also
   // do not fire error events.
-  if (!RuntimeEnabledFeatures::BuiltInModuleInfraEnabled())
+  if (!modulator->BuiltInModuleInfraEnabled())
     return ShouldFireErrorEvent::kDoNotFire;
 
   if (!modulator->IsAcquiringImportMaps()) {
@@ -199,8 +199,8 @@ ShouldFireErrorEvent ParseAndRegisterImportMap(ScriptElementBase& element) {
   }
 
   KURL base_url = element_document.BaseURL();
-  ImportMap* import_map =
-      ImportMap::Create(element.TextFromChildren(), base_url, element_document);
+  ImportMap* import_map = ImportMap::Create(
+      *modulator, element.TextFromChildren(), base_url, element_document);
 
   if (!import_map)
     return ShouldFireErrorEvent::kShouldFire;
