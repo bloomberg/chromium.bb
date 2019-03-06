@@ -55,6 +55,7 @@
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/browser/chromeos/login/screens/eula_screen.h"
 #include "chrome/browser/chromeos/login/screens/fingerprint_setup_screen.h"
+#include "chrome/browser/chromeos/login/screens/hid_detection_screen.h"
 #include "chrome/browser/chromeos/login/screens/hid_detection_view.h"
 #include "chrome/browser/chromeos/login/screens/kiosk_autolaunch_screen.h"
 #include "chrome/browser/chromeos/login/screens/kiosk_enable_screen.h"
@@ -69,7 +70,6 @@
 #include "chrome/browser/chromeos/login/screens/terms_of_service_screen.h"
 #include "chrome/browser/chromeos/login/screens/update_required_screen.h"
 #include "chrome/browser/chromeos/login/screens/update_screen.h"
-#include "chrome/browser/chromeos/login/screens/user_image_screen.h"
 #include "chrome/browser/chromeos/login/screens/welcome_view.h"
 #include "chrome/browser/chromeos/login/screens/wrong_hwid_screen.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
@@ -386,8 +386,6 @@ std::unique_ptr<BaseScreen> WizardController::CreateScreen(OobeScreen screen) {
         this, oobe_ui->GetUpdateView(),
         base::BindRepeating(&WizardController::OnUpdateScreenExit,
                             weak_factory_.GetWeakPtr()));
-  } else if (screen == OobeScreen::SCREEN_USER_IMAGE_PICKER) {
-    return std::make_unique<UserImageScreen>(this, oobe_ui->GetUserImageView());
   } else if (screen == OobeScreen::SCREEN_OOBE_EULA) {
     return std::make_unique<EulaScreen>(
         this, oobe_ui->GetEulaView(),
@@ -514,15 +512,6 @@ void WizardController::ShowLoginScreen(const LoginScreenContext& context) {
 void WizardController::ShowPreviousScreen() {
   DCHECK(previous_screen_);
   SetCurrentScreen(previous_screen_);
-}
-
-void WizardController::ShowUserImageScreen() {
-  VLOG(1) << "Showing user image screen.";
-  // Status area has been already shown at sign in screen so it
-  // doesn't make sense to hide it here and then show again at user session as
-  // this produces undesired UX transitions.
-  UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_USER_IMAGE_PICKER);
-  SetCurrentScreen(GetScreen(OobeScreen::SCREEN_USER_IMAGE_PICKER));
 }
 
 void WizardController::ShowEulaScreen() {
@@ -933,11 +922,6 @@ void WizardController::OnWelcomeContinued() {
   ShowNetworkScreen();
 }
 
-void WizardController::OnConnectionFailed() {
-  // TODO(dpolukhin): show error message after login screen is displayed.
-  ShowLoginScreen(LoginScreenContext());
-}
-
 void WizardController::OnChangedMetricsReportingState(bool enabled) {
   StatsReportingController::Get()->SetEnabled(
       ProfileManager::GetActiveUserProfile(), enabled);
@@ -948,10 +932,6 @@ void WizardController::OnChangedMetricsReportingState(bool enabled) {
       FROM_HERE, {base::MayBlock()},
       base::BindOnce(&breakpad::InitCrashReporter, std::string()));
 #endif
-}
-
-void WizardController::OnUserImageSelected() {
-  OnOobeFlowFinished();
 }
 
 void WizardController::OnDeviceModificationCanceled() {
@@ -1356,8 +1336,6 @@ void WizardController::AdvanceToScreen(OobeScreen screen) {
     ShowLoginScreen(LoginScreenContext());
   } else if (screen == OobeScreen::SCREEN_OOBE_UPDATE) {
     InitiateOOBEUpdate();
-  } else if (screen == OobeScreen::SCREEN_USER_IMAGE_PICKER) {
-    ShowUserImageScreen();
   } else if (screen == OobeScreen::SCREEN_OOBE_EULA) {
     ShowEulaScreen();
   } else if (screen == OobeScreen::SCREEN_OOBE_RESET) {
@@ -1455,12 +1433,6 @@ void WizardController::OnExit(ScreenExitCode exit_code) {
       break;
     case ScreenExitCode::WELCOME_CONTINUED:
       OnWelcomeContinued();
-      break;
-    case ScreenExitCode::CONNECTION_FAILED:
-      OnConnectionFailed();
-      break;
-    case ScreenExitCode::USER_IMAGE_SELECTED:
-      OnUserImageSelected();
       break;
     case ScreenExitCode::ENABLE_DEBUGGING_CANCELED:
       OnDeviceModificationCanceled();

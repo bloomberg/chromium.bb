@@ -14,7 +14,7 @@ std::string ExitCodeToString(ScreenExitCode code) {
       return "WELCOME_CONTINUED";
     case ScreenExitCode::HID_DETECTION_COMPLETED:
       return "HID_DETECTION_COMPLETED";
-    case ScreenExitCode::CONNECTION_FAILED:
+    case ScreenExitCode::DEPRECATED_CONNECTION_FAILED:
       return "CONNECTION_FAILED";
     case ScreenExitCode::DEPRECATED_UPDATE_INSTALLED:
       return "UPDATE_INSTALLED";
@@ -24,7 +24,7 @@ std::string ExitCodeToString(ScreenExitCode code) {
       return "UPDATE_ERROR_CHECKING_FOR_UPDATE";
     case ScreenExitCode::DEPRECATED_UPDATE_ERROR_UPDATING:
       return "UPDATE_ERROR_UPDATING";
-    case ScreenExitCode::USER_IMAGE_SELECTED:
+    case ScreenExitCode::DEPRECATED_USER_IMAGE_SELECTED:
       return "USER_IMAGE_SELECTED";
     case ScreenExitCode::DEPRECATED_EULA_ACCEPTED:
       return "EULA_ACCEPTED";
