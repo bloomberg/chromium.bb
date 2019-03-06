@@ -64,7 +64,8 @@ function shouldIgnoreKeyEvents(activeElement) {
   }
 
   return (
-      activeElement.isContentEditable || activeElement.tagName == 'INPUT' ||
+      activeElement.isContentEditable ||
+      (activeElement.tagName == 'INPUT' && activeElement.type != 'radio') ||
       activeElement.tagName == 'TEXTAREA');
 }
 
