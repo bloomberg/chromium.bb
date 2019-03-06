@@ -26,11 +26,10 @@ class MockLevelDBWrapper : public blink::mojom::StoragePartitionService,
 
   // StoragePartitionService implementation:
   void OpenLocalStorage(const url::Origin& origin,
-                        blink::mojom::StorageAreaRequest database,
-                        OpenLocalStorageCallback done) override;
-  void OpenSessionStorage(const std::string& namespace_id,
-                          blink::mojom::SessionStorageNamespaceRequest request,
-                          OpenSessionStorageCallback done) override;
+                        blink::mojom::StorageAreaRequest database) override;
+  void OpenSessionStorage(
+      const std::string& namespace_id,
+      blink::mojom::SessionStorageNamespaceRequest request) override;
 
   // StorageArea implementation:
   void AddObserver(

@@ -109,7 +109,7 @@ LocalStorageCachedArea::LocalStorageCachedArea(
   DCHECK(namespace_id_.empty());
   blink::mojom::StorageAreaPtrInfo wrapper_ptr_info;
   storage_partition_service->OpenLocalStorage(
-      origin_, mojo::MakeRequest(&wrapper_ptr_info), base::DoNothing());
+      origin_, mojo::MakeRequest(&wrapper_ptr_info));
   leveldb_.Bind(std::move(wrapper_ptr_info),
                 main_thread_scheduler->IPCTaskRunner());
   blink::mojom::StorageAreaObserverAssociatedPtrInfo ptr_info;

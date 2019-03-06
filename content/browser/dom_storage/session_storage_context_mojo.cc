@@ -128,14 +128,12 @@ void SessionStorageContextMojo::OpenSessionStorage(
     int process_id,
     const std::string& namespace_id,
     mojo::ReportBadMessageCallback bad_message_callback,
-    blink::mojom::SessionStorageNamespaceRequest request,
-    base::OnceClosure bind_done) {
+    blink::mojom::SessionStorageNamespaceRequest request) {
   if (connection_state_ != CONNECTION_FINISHED) {
     RunWhenConnected(
         base::BindOnce(&SessionStorageContextMojo::OpenSessionStorage,
                        weak_ptr_factory_.GetWeakPtr(), process_id, namespace_id,
-                       std::move(bad_message_callback), std::move(request),
-                       std::move(bind_done)));
+                       std::move(bad_message_callback), std::move(request)));
     return;
   }
   auto found = namespaces_.find(namespace_id);
@@ -152,7 +150,6 @@ void SessionStorageContextMojo::OpenSessionStorage(
 
   PurgeUnusedAreasIfNeeded();
   found->second->Bind(std::move(request), process_id);
-  std::move(bind_done).Run();
 
   size_t total_cache_size, unused_area_count;
   GetStatistics(&total_cache_size, &unused_area_count);
