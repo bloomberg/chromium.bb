@@ -13,17 +13,23 @@ namespace blink {
 PerformanceElementTiming* PerformanceElementTiming::Create(
     const AtomicString& name,
     const IntRect& intersection_rect,
-    DOMHighResTimeStamp start_time) {
-  return MakeGarbageCollected<PerformanceElementTiming>(name, intersection_rect,
-                                                        start_time);
+    DOMHighResTimeStamp start_time,
+    DOMHighResTimeStamp response_end,
+    const AtomicString& identifier) {
+  return MakeGarbageCollected<PerformanceElementTiming>(
+      name, intersection_rect, start_time, response_end, identifier);
 }
 
 PerformanceElementTiming::PerformanceElementTiming(
     const AtomicString& name,
     const IntRect& intersection_rect,
-    DOMHighResTimeStamp start_time)
+    DOMHighResTimeStamp start_time,
+    DOMHighResTimeStamp response_end,
+    const AtomicString& identifier)
     : PerformanceEntry(name, start_time, start_time),
-      intersection_rect_(DOMRectReadOnly::FromIntRect(intersection_rect)) {}
+      intersection_rect_(DOMRectReadOnly::FromIntRect(intersection_rect)),
+      response_end_(response_end),
+      identifier_(identifier) {}
 
 PerformanceElementTiming::~PerformanceElementTiming() = default;
 

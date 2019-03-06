@@ -89,6 +89,9 @@ class ImageResource::ImageResourceInfoImpl final
 
  private:
   const KURL& Url() const override { return resource_->Url(); }
+  TimeTicks LoadResponseEnd() const override {
+    return resource_->LoadResponseEnd();
+  }
   bool IsSchedulingReload() const override {
     return resource_->is_scheduling_reload_;
   }

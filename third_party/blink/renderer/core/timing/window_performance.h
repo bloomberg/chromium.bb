@@ -82,7 +82,9 @@ class CORE_EXPORT WindowPerformance final : public Performance,
 
   void AddElementTiming(const AtomicString& name,
                         const IntRect& rect,
-                        TimeTicks timestamp);
+                        TimeTicks start_time,
+                        TimeTicks response_end,
+                        const AtomicString& identifier);
 
   void AddLayoutJankFraction(double jank_fraction);
 

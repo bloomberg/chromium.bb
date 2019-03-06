@@ -52,10 +52,19 @@ class CORE_EXPORT ImageElementTiming final
 
   // Struct containing information about image element timing.
   struct ElementTimingInfo {
+    ElementTimingInfo(const AtomicString& name,
+                      IntRect rect,
+                      TimeTicks response_end,
+                      const AtomicString& identifier)
+        : name(name),
+          rect(rect),
+          response_end(response_end),
+          identifier(identifier) {}
+
     AtomicString name;
     IntRect rect;
-    ElementTimingInfo(AtomicString name, IntRect rect)
-        : name(name), rect(rect) {}
+    TimeTicks response_end;
+    AtomicString identifier;
   };
   // Vector containing the element timing infos that will be reported during the
   // next swap promise callback.
