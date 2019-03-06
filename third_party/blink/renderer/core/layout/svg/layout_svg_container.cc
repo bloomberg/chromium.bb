@@ -184,7 +184,8 @@ bool LayoutSVGContainer::NodeAtPoint(
                                             LocalToSVGParentTransform());
   if (!local_location)
     return false;
-  if (!SVGLayoutSupport::IntersectsClipPath(*this, *local_location))
+  if (!SVGLayoutSupport::IntersectsClipPath(*this, object_bounding_box_,
+                                            *local_location))
     return false;
 
   if (SVGLayoutSupport::HitTestChildren(LastChild(), result, *local_location,

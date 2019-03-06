@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <title>Hit-test of clip-path objectBoundingBox &lt;clipPath> with additional transform</title>
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script>
+<link rel="help" href="https://drafts.fxtf.org/css-masking/#the-clip-path">
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
 <style>
 body {
   margin: 0;
@@ -22,14 +23,14 @@ body {
 </svg>
 <script>
 function assert_element_at(element, pointlist) {
-  for (var point of pointlist) {
-    var result = document.elementFromPoint(point[0], point[1]);
+  for (let point of pointlist) {
+    let result = document.elementFromPoint(point[0], point[1]);
     assert_equals(result, element, point.join(','));
   }
 }
 
 test(function() {
-  var div = document.querySelector('.box');
+  let div = document.querySelector('.box');
 
   // Points inside clip-path.
   assert_element_at(div, [[150, 150], [150, 125], [150, 175], [125, 150], [175, 150]]);

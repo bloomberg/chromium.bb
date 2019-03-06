@@ -72,8 +72,13 @@ class CORE_EXPORT SVGLayoutSupport {
   // Determine if the LayoutObject references a filter resource object.
   static bool HasFilterResource(const LayoutObject&);
 
-  // Determine whether the passed location intersects the clip path of |object|.
-  static bool IntersectsClipPath(const LayoutObject&, const HitTestLocation&);
+  // Determine whether the passed location intersects a clip path referenced by
+  // the passed LayoutObject.
+  // |reference_box| is used to resolve 'objectBoundingBox' units/percentages,
+  // and can differ from the reference box of the passed LayoutObject.
+  static bool IntersectsClipPath(const LayoutObject&,
+                                 const FloatRect& reference_box,
+                                 const HitTestLocation&);
 
   // Shared child hit-testing code between LayoutSVGRoot/LayoutSVGContainer.
   static bool HitTestChildren(LayoutObject* last_child,

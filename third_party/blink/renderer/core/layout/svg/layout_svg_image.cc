@@ -195,7 +195,8 @@ bool LayoutSVGImage::NodeAtPoint(HitTestResult& result,
                                             LocalToSVGParentTransform());
   if (!local_location)
     return false;
-  if (!SVGLayoutSupport::IntersectsClipPath(*this, *local_location))
+  if (!SVGLayoutSupport::IntersectsClipPath(*this, object_bounding_box_,
+                                            *local_location))
     return false;
 
   if (hit_rules.can_hit_fill || hit_rules.can_hit_bounding_box) {
