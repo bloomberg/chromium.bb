@@ -389,9 +389,15 @@ bool HungRendererDialogView::Cancel() {
   content::RenderProcessHost* rph =
       hung_pages_table_model_->GetRenderWidgetHost()->GetProcess();
   if (rph) {
+#if defined(OS_LINUX)
+    // A generic |CrashDumpHungChildProcess()| is not implemented for Linux.
+    // Instead we send an explicit IPC to crash on the renderer's IO thread.
+    rph->ForceCrash();
+#else
     // Try to generate a crash report for the hung process.
     CrashDumpHungChildProcess(rph->GetProcess().Handle());
     rph->Shutdown(content::RESULT_CODE_HUNG);
+#endif
   }
   return true;
 }

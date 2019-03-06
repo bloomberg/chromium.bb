@@ -486,6 +486,9 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // be posted back on the UI thread).
   void PostTaskWhenProcessIsReady(base::OnceClosure task);
 
+  // Forces the renderer process to crash ASAP.
+  virtual void ForceCrash() {}
+
   // Controls whether the destructor of RenderProcessHost*Impl* will end up
   // cleaning the memory used by the exception added via
   // RenderProcessHostImpl::AddCorbExceptionForPlugin.

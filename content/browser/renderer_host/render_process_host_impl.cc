@@ -1989,6 +1989,10 @@ void RenderProcessHostImpl::BindIndexedDB(
                                 std::move(request), origin));
 }
 
+void RenderProcessHostImpl::ForceCrash() {
+  child_connection_->ForceCrash();
+}
+
 void RenderProcessHostImpl::BindFileSystemManager(
     blink::mojom::FileSystemManagerRequest request) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

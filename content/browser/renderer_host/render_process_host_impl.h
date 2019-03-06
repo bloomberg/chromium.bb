@@ -237,6 +237,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
                         const url::Origin& origin) override;
   void BindIndexedDB(blink::mojom::IDBFactoryRequest request,
                      const url::Origin& origin) override;
+  void ForceCrash() override;
   void CleanupCorbExceptionForPluginUponDestruction() override;
 
   mojom::RouteProvider* GetRemoteRouteProvider();
