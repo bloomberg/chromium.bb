@@ -94,7 +94,7 @@ body {
 }
 
 .content .text-field-container > input[type=checkbox] {
-  margin-right: 9px;
+  margin-inline-end: 9px;
 }
 
 .content .checkbox-field-container {
@@ -140,7 +140,7 @@ body {
   color: #969696;
   font-size: 12px;
   line-height: 20px;
-  margin-bottom: 20px;
+  margin-bottom: 0;
   margin-top: 20px;
   text-align: justify;
   text-justify: inter-word;
@@ -157,6 +157,18 @@ body {
 
 .content .top-buttons {
   position: absolute;
+}
+
+#bottom-buttons-container {
+  margin: 0;
+}
+
+.content .bottom-buttons {
+  margin-bottom: 20px;
+  margin-inline-end: 20px;
+  margin-inline-start: 20px;
+  margin-top: 0;
+  position: static;
 }
 
 .content .remove-file-button {
