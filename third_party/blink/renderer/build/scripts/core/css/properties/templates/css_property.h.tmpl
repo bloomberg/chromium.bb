@@ -123,7 +123,7 @@ class CSSProperty : public CSSUnresolvedProperty {
     switch (style_value->GetType()) {
       case CSSStyleValue::StyleValueType::kKeywordType:
         return std::make_unique<CrossThreadKeywordValue>(
-            ToCSSKeywordValue(style_value)->value().IsolatedCopy());
+            To<CSSKeywordValue>(style_value)->value().IsolatedCopy());
       case CSSStyleValue::StyleValueType::kUnitType:
         return std::make_unique<CrossThreadUnitValue>(
             To<CSSUnitValue>(style_value)->value(),

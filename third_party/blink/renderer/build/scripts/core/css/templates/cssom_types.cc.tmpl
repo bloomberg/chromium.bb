@@ -108,9 +108,8 @@ bool CSSOMTypes::PropertyCanTake(CSSPropertyID id,
     return match != nullptr;
   }
 
-  if (value.GetType() == CSSStyleValue::kKeywordType) {
-    return CSSOMKeywords::ValidKeywordForProperty(
-        id, ToCSSKeywordValue(value));
+  if (auto* css_keyword_value = DynamicTo<CSSKeywordValue>(value)) {
+    return CSSOMKeywords::ValidKeywordForProperty(id, *css_keyword_value);
   }
   if (auto* unsupported_style_value =
           DynamicTo<CSSUnsupportedStyleValue>(value)) {
