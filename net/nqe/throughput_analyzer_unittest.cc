@@ -332,37 +332,6 @@ TEST_F(ThroughputAnalyzerTest, TestHangingRequests) {
 
     EXPECT_EQ(test.expect_throughput_observation,
               throughput_analyzer.throughput_observations_received() > 0);
-
-    // Verify metrics recording.
-    if (test.hanging_request_duration_http_rtt_multiplier < 0) {
-      histogram_tester.ExpectTotalCount(
-          "NQE.ThroughputAnalyzer.HangingRequests.Erased", 0);
-      histogram_tester.ExpectTotalCount(
-          "NQE.ThroughputAnalyzer.HangingRequests.NotErased", 0);
-    } else {
-      if (!test.expect_throughput_observation) {
-        histogram_tester.ExpectBucketCount(
-            "NQE.ThroughputAnalyzer.HangingRequests.Erased", num_requests, 1);
-        // A sample is recorded everytime a request starts.
-        histogram_tester.ExpectBucketCount(
-            "NQE.ThroughputAnalyzer.HangingRequests.Erased", 0, num_requests);
-        histogram_tester.ExpectTotalCount(
-            "NQE.ThroughputAnalyzer.HangingRequests.Erased", num_requests + 1);
-
-        histogram_tester.ExpectTotalCount(
-            "NQE.ThroughputAnalyzer.HangingRequests.NotErased",
-            num_requests + 1);
-      } else {
-        // One sample is recorded when request starts, and another when the
-        // request completes.
-        histogram_tester.ExpectUniqueSample(
-            "NQE.ThroughputAnalyzer.HangingRequests.Erased", 0,
-            num_requests * 2);
-        histogram_tester.ExpectTotalCount(
-            "NQE.ThroughputAnalyzer.HangingRequests.NotErased",
-            num_requests * 2);
-      }
-    }
   }
 }
 

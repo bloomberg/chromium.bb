@@ -438,11 +438,6 @@ void ThroughputAnalyzer::EraseHangingRequests(const URLRequest& request) {
     }
   }
 
-  UMA_HISTOGRAM_COUNTS_100("NQE.ThroughputAnalyzer.HangingRequests.Erased",
-                           count_request_erased);
-  UMA_HISTOGRAM_COUNTS_100("NQE.ThroughputAnalyzer.HangingRequests.NotErased",
-                           requests_.size());
-
   if (count_request_erased > 0) {
     // End the observation window since there is at least one hanging GET in
     // flight, which may lead to inaccuracies in the throughput estimate
