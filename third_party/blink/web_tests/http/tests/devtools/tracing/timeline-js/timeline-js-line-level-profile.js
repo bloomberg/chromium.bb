@@ -48,7 +48,7 @@
     var url = frame.uiSourceCode().url();
     TestRunner.addResult(TestRunner.formatters.formatAsURL(url));
     cpuProfile.nodes.forEach(n => n.callFrame.url = url);
-    var lineProfile = PerfUI.LineLevelProfile.instance();
+    var lineProfile = PerfUI.LineLevelProfile.Performance.instance();
     lineProfile.appendCPUProfile(new SDK.CPUProfileDataModel(cpuProfile));
     setTimeout(() => TestRunner.completeTest(), 0);
   }
