@@ -74,7 +74,8 @@ void TextFinder::FindMatch::Trace(Visitor* visitor) {
 
 static void ScrollToVisible(Range* match) {
   const Node& first_node = *match->FirstNode();
-  if (InvisibleDOM::ActivateRangeIfNeeded(EphemeralRangeInFlatTree(match)))
+  if (RuntimeEnabledFeatures::InvisibleDOMEnabled() &&
+      InvisibleDOM::ActivateRangeIfNeeded(EphemeralRangeInFlatTree(match)))
     first_node.GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
   Settings* settings = first_node.GetDocument().GetSettings();
   bool smooth_find_enabled =
