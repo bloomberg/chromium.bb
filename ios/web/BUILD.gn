@@ -176,6 +176,7 @@ test("ios_web_unittests") {
     "//ios/testing:http_server_bundle_data",
     "//ios/web/browsing_data:browsing_data_unittests",
     "//ios/web/download:download_unittests",
+    "//ios/web/find_in_page:find_in_page_unittests",
     "//ios/web/interstitials:interstitials_unittests",
   ]
 
@@ -379,6 +380,7 @@ source_set("ios_web_web_state_unittests") {
     "//ios/net",
     "//ios/testing:ocmock_support",
     "//ios/web",
+    "//ios/web/find_in_page",
     "//ios/web/interstitials",
     "//ios/web/navigation",
     "//ios/web/navigation:wk_navigation_util",

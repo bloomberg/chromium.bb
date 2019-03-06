@@ -20,3 +20,22 @@ source_set("find_in_page") {
 
   configs += [ "//build/config/compiler:enable_arc" ]
 }
+
+source_set("find_in_page_unittests") {
+  testonly = true
+  deps = [
+    ":find_in_page",
+    "//base",
+    "//base/test:test_support",
+    "//ios/web/public",
+    "//ios/web/public/test",
+    "//ios/web/public/test/fakes",
+    "//testing/gtest",
+  ]
+
+  sources = [
+    "find_in_page_manger_impl_unittest.mm",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
