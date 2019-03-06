@@ -219,7 +219,7 @@ class PLATFORM_EXPORT PersistentRegion final {
 };
 
 // Protected by ProcessHeap::CrossThreadPersistentMutex.
-class CrossThreadPersistentRegion final {
+class PLATFORM_EXPORT CrossThreadPersistentRegion final {
   USING_FAST_MALLOC(CrossThreadPersistentRegion);
 
  public:

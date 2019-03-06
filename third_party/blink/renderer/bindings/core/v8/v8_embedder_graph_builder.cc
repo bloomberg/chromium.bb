@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable_visitor.h"
 #include "third_party/blink/renderer/platform/bindings/wrapper_type_info.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
@@ -129,14 +130,30 @@ EmbedderNode* NodeBuilder::GraphNode(Traceable traceable,
   return node;
 }
 
-}  // namespace
-
-class V8EmbedderGraphBuilder
+// V8EmbedderGraphBuilder is used to build heap snapshots of Blink's managed
+// object graph. On a high level, the following operations are performed:
+// - Objects are classified as attached, detached, or unknown.
+// - Depending an implicit mode, objects are classified as relevant or internal.
+//   This classification happens based on NameTrait and the fact that all
+//   ScriptWrappable objects (those that can have JS properties) are using that
+//   trait.
+// - Not relevant objects are filtered where possible, e.g., sub graphs of
+//   internals are filtered and not reported.
+//
+// The algorithm performs a single pass on the graph, starting from V8-to-Blink
+// references that identify attached nodes. Each object then starts a recursion
+// into its own subgraph to identify and filter subgraphs that only consist of
+// internals. Roots, which are potentially Blink only, are transitively
+// traversed after handling JavaScript related objects.
+class GC_PLUGIN_IGNORE(
+    "This class is not managed by Oilpan but GC plugin recognizes it as such "
+    "due to Trace methods.") V8EmbedderGraphBuilder
     : public Visitor,
       public v8::PersistentHandleVisitor,
       public v8::EmbedderHeapTracer::TracedGlobalHandleVisitor {
  public:
   V8EmbedderGraphBuilder(v8::Isolate*, Graph*, NodeBuilder*);
+  ~V8EmbedderGraphBuilder() override;
 
   void BuildEmbedderGraph();
 
@@ -150,15 +167,13 @@ class V8EmbedderGraphBuilder
 
   // Visitor overrides.
   void Visit(const TraceWrapperV8Reference<v8::Value>&) final;
-  void VisitWithWrappers(void*, TraceDescriptor) final;
+  void Visit(void*, TraceDescriptor) final;
   void VisitBackingStoreStrongly(void* object,
                                  void** object_slot,
                                  TraceDescriptor desc) final;
 
   // Unused Visitor overrides.
-  void Visit(void* object, TraceDescriptor desc) final {
-    // TODO(mlippautz): Implement for unified heap snapshots.
-  }
+  void VisitWithWrappers(void* object, TraceDescriptor desc) final {}
   void VisitWeak(void* object,
                  void** object_slot,
                  TraceDescriptor desc,
@@ -178,10 +193,9 @@ class V8EmbedderGraphBuilder
     STACK_ALLOCATED();
 
    public:
-    ParentScope(V8EmbedderGraphBuilder* visitor, EmbedderNode* parent)
+    ParentScope(V8EmbedderGraphBuilder* visitor, Traceable traceable)
         : visitor_(visitor) {
-      DCHECK_EQ(visitor->current_parent_, nullptr);
-      visitor->current_parent_ = parent;
+      visitor->current_parent_ = traceable;
     }
     ~ParentScope() { visitor_->current_parent_ = nullptr; }
 
@@ -189,38 +203,176 @@ class V8EmbedderGraphBuilder
     V8EmbedderGraphBuilder* const visitor_;
   };
 
-  struct WorklistItem {
-    EmbedderNode* node;
-    Traceable traceable;
-    TraceCallback trace_callback;
+  class State final {
+   public:
+    State(Traceable traceable, const char* name, DomTreeState dom_tree_state)
+        : traceable_(traceable), name_(name), dom_tree_state_(dom_tree_state) {}
+    explicit State(EmbedderNode* node)
+        : node_(node), dom_tree_state_(node->GetDomTreeState()) {}
+
+    bool IsVisited() const { return visited_; }
+    void MarkVisited() { visited_ = true; }
+
+    bool IsPending() const { return pending_; }
+    void MarkPending() { pending_ = true; }
+    void UnmarkPending() { pending_ = false; }
+
+    bool HasNode() const { return node_; }
+    EmbedderNode* GetOrCreateNode(NodeBuilder* builder) {
+      if (!node_) {
+        DCHECK(name_);
+        node_ = builder->GraphNode(traceable_, name_, nullptr, dom_tree_state_);
+      }
+      return node_;
+    }
+
+    DomTreeState GetDomTreeState() const { return dom_tree_state_; }
+    void UpdateDomTreeState(DomTreeState parent_dom_tree_state) {
+      // If the child's state is unknown, then take the parent's state.
+      // If the parent is attached, then the child is also attached.
+      if (dom_tree_state_ == DomTreeState::kUnknown ||
+          parent_dom_tree_state == DomTreeState::kAttached) {
+        dom_tree_state_ = parent_dom_tree_state;
+      }
+      if (node_)
+        node_->UpdateDomTreeState(dom_tree_state_);
+    }
+
+   private:
+    EmbedderNode* node_ = nullptr;
+    Traceable traceable_ = nullptr;
+    const char* name_ = nullptr;
+    DomTreeState dom_tree_state_;
+    bool visited_ = false;
+    bool pending_ = false;
   };
+
+  // WorklistItemBase is used for different kinds of items that require
+  // processing the regular worklist.
+  class WorklistItemBase {
+   public:
+    explicit WorklistItemBase(State* parent, State* to_process)
+        : parent_(parent), to_process_(to_process) {}
+    virtual ~WorklistItemBase() = default;
+    virtual void Process(V8EmbedderGraphBuilder*) = 0;
+
+    State* to_process() const { return to_process_; }
+    State* parent() const { return parent_; }
+
+   private:
+    State* const parent_;
+    State* const to_process_;
+  };
+
+  // A VisitationItem processes a given object and visits all its children.
+  class VisitationItem final : public WorklistItemBase {
+   public:
+    VisitationItem(State* parent,
+                   State* to_process,
+                   Traceable traceable,
+                   TraceCallback trace_callback)
+        : WorklistItemBase(parent, to_process),
+          traceable_(traceable),
+          trace_callback_(trace_callback) {}
+
+    void Process(V8EmbedderGraphBuilder* builder) final {
+      // Post-order traversal as parent needs the full information on child.
+      builder->worklist_.push_back(std::unique_ptr<WorklistItemBase>{
+          new VisitationDoneItem(parent(), to_process())});
+      to_process()->MarkPending();
+      DCHECK(to_process()->IsPending());
+      DCHECK(to_process()->IsVisited());
+      ParentScope parent_scope(builder, traceable_);
+      trace_callback_(builder, const_cast<void*>(traceable_));
+    }
+
+   private:
+    Traceable traceable_;
+    TraceCallback trace_callback_;
+  };
+
+  // A VisitationDoneItem unmarks the pending state of an object and creates an
+  // edge from a parent in case there is one.
+  class VisitationDoneItem final : public WorklistItemBase {
+   public:
+    VisitationDoneItem(State* parent, State* to_process)
+        : WorklistItemBase(parent, to_process) {}
+
+    void Process(V8EmbedderGraphBuilder* builder) final {
+      if (parent() && to_process()->HasNode()) {
+        NodeBuilder* node_builder = builder->node_builder_;
+        builder->graph_->AddEdge(parent()->GetOrCreateNode(node_builder),
+                                 to_process()->GetOrCreateNode(node_builder));
+      }
+      to_process()->UnmarkPending();
+    }
+  };
+
+  State* GetOrCreateState(Traceable traceable,
+                          const char* name,
+                          DomTreeState dom_tree_state) {
+    if (!states_.Contains(traceable)) {
+      states_.insert(traceable, new State(traceable, name, dom_tree_state));
+    }
+    return states_.at(traceable);
+  }
+
+  State* GetStateNotNull(Traceable traceable) {
+    CHECK(states_.Contains(traceable));
+    return states_.at(traceable);
+  }
+
+  State* EnsureState(Traceable traceable, EmbedderNode* node) {
+    if (!states_.Contains(traceable)) {
+      states_.insert(traceable, new State(node));
+    }
+    return states_.at(traceable);
+  }
+
+  void EnsureRootState(EmbedderNode* node) {
+    CHECK(!states_.Contains(node));
+    states_.insert(node, new State(node));
+  }
 
   void VisitPersistentHandleInternal(v8::Local<v8::Object>, uint16_t);
 
-  WorklistItem ToWorklistItem(EmbedderNode*, const TraceDescriptor&) const;
-
   void VisitPendingActivities();
+  void VisitBlinkRoots();
   void VisitTransitiveClosure();
 
-  // Push the item to the default worklist if item.traceable was not
+  // Push a VisitatonItem to the main worklist in case the State has not been
   // already visited.
-  void PushToWorklist(WorklistItem);
+  void CreateAndPushVisitationItem(State* parent,
+                                   State* to_process,
+                                   Traceable traceable,
+                                   TraceCallback trace_callback) {
+    DCHECK(!to_process->IsVisited());
+    to_process->MarkVisited();
+    worklist_.push_back(std::unique_ptr<WorklistItemBase>{
+        new VisitationItem(parent, to_process, traceable, trace_callback)});
+  }
+
+  void PushVisitationItem(std::unique_ptr<VisitationItem> item) {
+    if (!item->to_process()->IsVisited()) {
+      item->to_process()->MarkVisited();
+      worklist_.push_back(std::move(item));
+    }
+  }
 
   v8::Isolate* const isolate_;
   Graph* const graph_;
   NodeBuilder* const node_builder_;
 
-  EmbedderNode* current_parent_ = nullptr;
-
-  HashSet<Traceable> visited_;
+  Traceable current_parent_ = nullptr;
+  HashMap<Traceable, State*> states_;
   // The default worklist that is used to visit transitive closure.
-  Deque<WorklistItem> worklist_;
+  Deque<std::unique_ptr<WorklistItemBase>> worklist_;
   // The worklist that collects detached Nodes during persistent handle
   // iteration.
-  Deque<WorklistItem> detached_worklist_;
+  Deque<std::unique_ptr<VisitationItem>> detached_worklist_;
   // The worklist that collects ScriptWrappables with unknown information
   // about attached/detached state during persistent handle iteration.
-  Deque<WorklistItem> unknown_worklist_;
+  Deque<std::unique_ptr<VisitationItem>> unknown_worklist_;
 };
 
 V8EmbedderGraphBuilder::V8EmbedderGraphBuilder(v8::Isolate* isolate,
@@ -235,6 +387,12 @@ V8EmbedderGraphBuilder::V8EmbedderGraphBuilder(v8::Isolate* isolate,
   CHECK_EQ(isolate, ThreadState::Current()->GetIsolate());
 }
 
+V8EmbedderGraphBuilder::~V8EmbedderGraphBuilder() {
+  for (const auto& kvp : states_) {
+    delete kvp.value;
+  }
+}
+
 void V8EmbedderGraphBuilder::BuildEmbedderGraph() {
   isolate_->VisitHandlesWithClassIds(this);
   v8::EmbedderHeapTracer* tracer =
@@ -244,14 +402,14 @@ void V8EmbedderGraphBuilder::BuildEmbedderGraph() {
 // At this point we collected ScriptWrappables in three groups:
 // attached, detached, and unknown.
 #if DCHECK_IS_ON()
-  for (const WorklistItem& item : worklist_) {
-    DCHECK_EQ(DomTreeState::kAttached, item.node->GetDomTreeState());
+  for (auto const& item : worklist_) {
+    DCHECK_EQ(DomTreeState::kAttached, item->to_process()->GetDomTreeState());
   }
-  for (const WorklistItem& item : detached_worklist_) {
-    DCHECK_EQ(DomTreeState::kDetached, item.node->GetDomTreeState());
+  for (auto const& item : detached_worklist_) {
+    DCHECK_EQ(DomTreeState::kDetached, item->to_process()->GetDomTreeState());
   }
-  for (const WorklistItem& item : unknown_worklist_) {
-    DCHECK_EQ(DomTreeState::kUnknown, item.node->GetDomTreeState());
+  for (auto const& item : unknown_worklist_) {
+    DCHECK_EQ(DomTreeState::kUnknown, item->to_process()->GetDomTreeState());
   }
 #endif
   // We need to propagate attached/detached information to ScriptWrappables
@@ -273,18 +431,20 @@ void V8EmbedderGraphBuilder::BuildEmbedderGraph() {
   VisitTransitiveClosure();
   // Stage 2: find transitive closure of the detached nodes.
   while (!detached_worklist_.empty()) {
-    auto item = detached_worklist_.back();
+    auto item = std::move(detached_worklist_.back());
     detached_worklist_.pop_back();
-    PushToWorklist(item);
+    PushVisitationItem(std::move(item));
   }
   VisitTransitiveClosure();
   // Stage 3: find transitive closure of the unknown nodes.
   // Nodes reachable only via pending activities are treated as unknown.
   VisitPendingActivities();
+  if (RuntimeEnabledFeatures::HeapUnifiedGarbageCollectionEnabled())
+    VisitBlinkRoots();
   while (!unknown_worklist_.empty()) {
-    auto item = unknown_worklist_.back();
+    auto item = std::move(unknown_worklist_.back());
     unknown_worklist_.pop_back();
-    PushToWorklist(item);
+    PushVisitationItem(std::move(item));
   }
   VisitTransitiveClosure();
   DCHECK(worklist_.empty());
@@ -303,18 +463,23 @@ void V8EmbedderGraphBuilder::VisitPersistentHandleInternal(
       DomTreeStateFromWrapper(isolate_, class_id, v8_value);
   EmbedderNode* graph_node = node_builder_->GraphNode(
       traceable, traceable->NameInHeapSnapshot(), wrapper, dom_tree_state);
+  State* const to_process_state = EnsureState(traceable, graph_node);
   const TraceDescriptor& descriptor =
       TraceDescriptorFor<ScriptWrappable>(traceable);
-  WorklistItem item = ToWorklistItem(graph_node, descriptor);
   switch (graph_node->GetDomTreeState()) {
     case DomTreeState::kAttached:
-      PushToWorklist(item);
+      CreateAndPushVisitationItem(nullptr, to_process_state, traceable,
+                                  descriptor.callback);
       break;
     case DomTreeState::kDetached:
-      detached_worklist_.push_back(item);
+      detached_worklist_.push_back(
+          std::unique_ptr<VisitationItem>{new VisitationItem(
+              nullptr, to_process_state, traceable, descriptor.callback)});
       break;
     case DomTreeState::kUnknown:
-      unknown_worklist_.push_back(item);
+      unknown_worklist_.push_back(
+          std::unique_ptr<VisitationItem>{new VisitationItem(
+              nullptr, to_process_state, traceable, descriptor.callback)});
       break;
   }
 }
@@ -344,26 +509,49 @@ void V8EmbedderGraphBuilder::Visit(
   // Add an edge from the current parent to the V8 object.
   v8::Local<v8::Value> v8_value = traced_wrapper.NewLocal(isolate_);
   if (!v8_value.IsEmpty()) {
-    graph_->AddEdge(current_parent_, node_builder_->GraphNode(v8_value));
+    State* parent = GetStateNotNull(current_parent_);
+    graph_->AddEdge(parent->GetOrCreateNode(node_builder_),
+                    node_builder_->GraphNode(v8_value));
   }
 }
 
-void V8EmbedderGraphBuilder::VisitWithWrappers(
-    void* object,
-    TraceDescriptor wrapper_descriptor) {
-  // Add an edge from the current parent to this object.
-  // Also push the object to the worklist in order to process its members.
+void V8EmbedderGraphBuilder::Visit(void* object,
+                                   TraceDescriptor wrapper_descriptor) {
   const void* traceable = wrapper_descriptor.base_object_payload;
-  const char* name =
-      GCInfoTable::Get()
-          .GCInfoFromIndex(
-              HeapObjectHeader::FromPayload(traceable)->GcInfoIndex())
-          ->name(traceable)
-          .value;
-  EmbedderNode* graph_node = node_builder_->GraphNode(
-      traceable, name, nullptr, current_parent_->GetDomTreeState());
-  graph_->AddEdge(current_parent_, graph_node);
-  PushToWorklist(ToWorklistItem(graph_node, wrapper_descriptor));
+  const GCInfo* info = GCInfoTable::Get().GCInfoFromIndex(
+      HeapObjectHeader::FromPayload(traceable)->GcInfoIndex());
+  HeapObjectName name = info->name(traceable);
+
+  State* const parent = GetStateNotNull(current_parent_);
+  State* const current =
+      GetOrCreateState(traceable, name.value, parent->GetDomTreeState());
+  if (current->IsPending()) {
+    if (parent->HasNode()) {
+      // Backedge in currently processed graph.
+      graph_->AddEdge(parent->GetOrCreateNode(node_builder_),
+                      current->GetOrCreateNode(node_builder_));
+    }
+    return;
+  }
+
+  // Immediately materialize the node if it is not hidden.
+  if (!name.name_is_hidden) {
+    current->GetOrCreateNode(node_builder_);
+  }
+
+  // Propagate the parent's DomTreeState down to the current state.
+  current->UpdateDomTreeState(parent->GetDomTreeState());
+
+  if (!current->IsVisited()) {
+    CreateAndPushVisitationItem(parent, current, traceable, info->trace);
+  } else {
+    // Edge into an already processed subgraph.
+    if (current->HasNode()) {
+      // Create an edge in case the current node has already been visited.
+      graph_->AddEdge(parent->GetOrCreateNode(node_builder_),
+                      current->GetOrCreateNode(node_builder_));
+    }
+  }
 }
 
 void V8EmbedderGraphBuilder::VisitBackingStoreStrongly(void* object,
@@ -379,32 +567,40 @@ void V8EmbedderGraphBuilder::VisitPendingActivities() {
   EmbedderNode* root =
       static_cast<EmbedderNode*>(graph_->AddNode(std::unique_ptr<Graph::Node>(
           new EmbedderRootNode("Pending activities"))));
+  EnsureRootState(root);
   ParentScope parent(this, root);
   ActiveScriptWrappableBase::TraceActiveScriptWrappables(isolate_, this);
 }
 
-V8EmbedderGraphBuilder::WorklistItem V8EmbedderGraphBuilder::ToWorklistItem(
-    EmbedderNode* node,
-    const TraceDescriptor& descriptor) const {
-  return {node, descriptor.base_object_payload, descriptor.callback};
-}
-
-void V8EmbedderGraphBuilder::PushToWorklist(WorklistItem item) {
-  if (!visited_.Contains(item.traceable)) {
-    visited_.insert(item.traceable);
-    worklist_.push_back(item);
+void V8EmbedderGraphBuilder::VisitBlinkRoots() {
+  {
+    EmbedderNode* root = static_cast<EmbedderNode*>(graph_->AddNode(
+        std::unique_ptr<Graph::Node>(new EmbedderRootNode("Blink roots"))));
+    EnsureRootState(root);
+    ParentScope parent(this, root);
+    ThreadState::Current()->GetPersistentRegion()->TracePersistentNodes(this);
+  }
+  {
+    EmbedderNode* root =
+        static_cast<EmbedderNode*>(graph_->AddNode(std::unique_ptr<Graph::Node>(
+            new EmbedderRootNode("Blink cross-thread roots"))));
+    EnsureRootState(root);
+    ParentScope parent(this, root);
+    MutexLocker persistent_lock(ProcessHeap::CrossThreadPersistentMutex());
+    ProcessHeap::GetCrossThreadPersistentRegion().TracePersistentNodes(this);
   }
 }
 
 void V8EmbedderGraphBuilder::VisitTransitiveClosure() {
   // Depth-first search.
   while (!worklist_.empty()) {
-    auto item = worklist_.back();
+    std::unique_ptr<WorklistItemBase> item = std::move(worklist_.back());
     worklist_.pop_back();
-    ParentScope parent(this, item.node);
-    item.trace_callback(this, const_cast<void*>(item.traceable));
+    item->Process(this);
   }
 }
+
+}  // namespace
 
 void EmbedderGraphBuilder::BuildEmbedderGraphCallback(v8::Isolate* isolate,
                                                       v8::EmbedderGraph* graph,
