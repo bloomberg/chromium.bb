@@ -1211,7 +1211,7 @@ function init() {
   }
 
   utils.setPlatformClass(document.body);
-
+  utils.disableOutlineOnMouseClick($(customBackgrounds.IDS.EDIT_BG));
   document.body.classList.add(CLASSES.INITED);
 }
 

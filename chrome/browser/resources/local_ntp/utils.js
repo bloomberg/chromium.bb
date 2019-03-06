@@ -8,9 +8,11 @@
  * @const
  */
 const CLASSES = {
-  MAC: 'mac',  // Applies MacOS specific properties.
-  WIN: 'win',  // Applies Windows specific properties.
+  MAC: 'mac',                            // Applies MacOS specific properties.
+  WIN: 'win',                            // Applies Windows specific properties.
+  MOUSE_NAVIGATION: 'mouse-navigation',  // Removes blue focus ring.
 };
+
 
 /**
  * Alias for document.getElementById.
@@ -35,9 +37,9 @@ let utils = {};
  */
 utils.disableOutlineOnMouseClick = function(element) {
   element.addEventListener('mousedown', () => {
-    element.classList.add('mouse-navigation');
+    element.classList.add(CLASSES.MOUSE_NAVIGATION);
     element.addEventListener('blur', () => {
-      element.classList.remove('mouse-navigation');
+      element.classList.remove(CLASSES.MOUSE_NAVIGATION);
     }, {once: true});
   });
 };

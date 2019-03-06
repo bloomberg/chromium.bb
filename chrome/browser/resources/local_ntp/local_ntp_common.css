@@ -63,3 +63,8 @@ body {
   /* Default font families for MacOS */
   font-family: system-ui, BlinkMacSystemFont, 'Roboto', arial, sans-serif;
 }
+
+/* Removes blue focus ring on mouse navigation */
+.mouse-navigation {
+  outline: none;
+}
