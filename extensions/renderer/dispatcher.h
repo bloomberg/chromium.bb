@@ -61,7 +61,9 @@ class DispatcherDelegate;
 class ExtensionBindingsSystem;
 class IPCMessageSender;
 class ScriptContext;
+class ScriptContextSetIterable;
 class ScriptInjectionManager;
+class WorkerScriptContextSet;
 struct EventFilteringInfo;
 struct Message;
 struct PortId;
@@ -74,8 +76,16 @@ class Dispatcher : public content::RenderThreadObserver,
   explicit Dispatcher(std::unique_ptr<DispatcherDelegate> delegate);
   ~Dispatcher() override;
 
+  // Returns Service Worker ScriptContexts belonging to current worker thread.
+  static WorkerScriptContextSet* GetWorkerScriptContextSet();
+
   const ScriptContextSet& script_context_set() const {
     return *script_context_set_;
+  }
+
+  // Returns iterator to iterate over all main thread ScriptContexts.
+  ScriptContextSetIterable* script_context_set_iterator() {
+    return script_context_set_.get();
   }
 
   V8SchemaRegistry* v8_schema_registry() { return v8_schema_registry_.get(); }

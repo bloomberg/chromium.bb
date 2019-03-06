@@ -18,6 +18,7 @@
 #include "extensions/renderer/native_renderer_messaging_service.h"
 #include "extensions/renderer/runtime_hooks_delegate.h"
 #include "extensions/renderer/script_context.h"
+#include "extensions/renderer/script_context_set.h"
 #include "extensions/renderer/send_message_tester.h"
 
 namespace extensions {
@@ -195,7 +196,7 @@ TEST_F(ExtensionHooksDelegateTest, SendRequestChannelLeftOpenToReplyAsync) {
   // Open a receiver for the message.
   EXPECT_CALL(*ipc_message_sender(),
               SendOpenMessagePort(MSG_ROUTING_NONE, port_id));
-  messaging_service()->DispatchOnConnect(*script_context_set(), port_id,
+  messaging_service()->DispatchOnConnect(script_context_set(), port_id,
                                          kChannel, tab_connection_info,
                                          external_connection_info, nullptr);
   ::testing::Mock::VerifyAndClearExpectations(ipc_message_sender());
@@ -204,7 +205,7 @@ TEST_F(ExtensionHooksDelegateTest, SendRequestChannelLeftOpenToReplyAsync) {
 
   // Post the message to the receiver. Since the receiver doesn't respond, the
   // channel should remain open.
-  messaging_service()->DeliverMessage(*script_context_set(), port_id,
+  messaging_service()->DeliverMessage(script_context_set(), port_id,
                                       Message("\"message\"", false), nullptr);
   ::testing::Mock::VerifyAndClearExpectations(ipc_message_sender());
   EXPECT_TRUE(

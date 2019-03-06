@@ -10,10 +10,22 @@
 #include "extensions/common/api/messaging/port_context.h"
 #include "extensions/common/api/messaging/port_id.h"
 #include "extensions/common/extension_messages.h"
+#include "extensions/renderer/extension_bindings_system.h"
+#include "extensions/renderer/ipc_message_sender.h"
 #include "extensions/renderer/script_context.h"
+#include "extensions/renderer/worker_thread_dispatcher.h"
 #include "extensions/renderer/worker_thread_util.h"
 
 namespace extensions {
+
+namespace {
+
+IPCMessageSender* GetWorkerThreadIPCMessageSender() {
+  DCHECK(worker_thread_util::IsWorkerThread());
+  return WorkerThreadDispatcher::GetBindingsSystem()->GetIPCMessageSender();
+}
+
+}  // namespace
 
 ExtensionPort::ExtensionPort(ScriptContext* script_context,
                              const PortId& id,
@@ -34,14 +46,18 @@ void ExtensionPort::PostExtensionMessage(std::unique_ptr<Message> message) {
 }
 
 void ExtensionPort::Close(bool close_channel) {
-  // TODO(crbug.com/925918): Support Service Worker.
-  DCHECK(!worker_thread_util::IsWorkerThread());
-
-  content::RenderFrame* render_frame = script_context_->GetRenderFrame();
-  if (!render_frame)
-    return;
-  render_frame->Send(new ExtensionHostMsg_CloseMessagePort(
-      PortContext::ForFrame(render_frame->GetRoutingID()), id_, close_channel));
+  if (worker_thread_util::IsWorkerThread()) {
+    DCHECK(!script_context_->GetRenderFrame());
+    GetWorkerThreadIPCMessageSender()->SendCloseMessagePort(MSG_ROUTING_NONE,
+                                                            id_, close_channel);
+  } else {
+    content::RenderFrame* render_frame = script_context_->GetRenderFrame();
+    if (!render_frame)
+      return;
+    render_frame->Send(new ExtensionHostMsg_CloseMessagePort(
+        PortContext::ForFrame(render_frame->GetRoutingID()), id_,
+        close_channel));
+  }
 }
 
 }  // namespace extensions

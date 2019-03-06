@@ -273,6 +273,8 @@ jumbo_source_set("renderer") {
     "script_context.h",
     "script_context_set.cc",
     "script_context_set.h",
+    "script_context_set_iterable.cc",
+    "script_context_set_iterable.h",
     "script_injection.cc",
     "script_injection.h",
     "script_injection_callback.cc",

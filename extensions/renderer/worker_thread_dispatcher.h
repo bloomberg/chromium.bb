@@ -5,6 +5,10 @@
 #ifndef EXTENSIONS_RENDERER_WORKER_THREAD_DISPATCHER_H_
 #define EXTENSIONS_RENDERER_WORKER_THREAD_DISPATCHER_H_
 
+#include <map>
+#include <memory>
+#include <string>
+
 #include "base/synchronization/lock.h"
 #include "base/threading/platform_thread.h"
 #include "content/public/renderer/render_thread_observer.h"
@@ -21,10 +25,15 @@ class RenderThread;
 }
 
 struct ExtensionMsg_DispatchEvent_Params;
+struct ExtensionMsg_TabConnectionInfo;
+struct ExtensionMsg_ExternalConnectionInfo;
+
 namespace extensions {
 class ExtensionBindingsSystem;
 class ScriptContext;
 class V8SchemaRegistry;
+struct Message;
+struct PortId;
 
 // Sends and receives IPC in an extension Service Worker.
 // TODO(lazyboy): This class should really be a combination of the following
@@ -86,6 +95,18 @@ class WorkerThreadDispatcher : public content::RenderThreadObserver,
                         const std::string& error);
   void OnDispatchEvent(const ExtensionMsg_DispatchEvent_Params& params,
                        const base::ListValue& event_args);
+  void OnValidateMessagePort(int worker_thread_id, const PortId& id);
+  void OnDispatchOnConnect(int worker_thread_id,
+                           const PortId& target_port_id,
+                           const std::string& channel_name,
+                           const ExtensionMsg_TabConnectionInfo& source,
+                           const ExtensionMsg_ExternalConnectionInfo& info);
+  void OnDeliverMessage(int worker_thread_id,
+                        const PortId& target_port_id,
+                        const Message& message);
+  void OnDispatchOnDisconnect(int worker_thread_id,
+                              const PortId& port_id,
+                              const std::string& error_message);
 
   // IPC sender. Belongs to the render thread, but thread safe.
   scoped_refptr<IPC::SyncMessageFilter> message_filter_;

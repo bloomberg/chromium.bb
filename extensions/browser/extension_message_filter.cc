@@ -445,27 +445,22 @@ void ExtensionMessageFilter::OnOpenChannelToTab(
 void ExtensionMessageFilter::OnOpenMessagePort(const PortContext& source,
                                                const PortId& port_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // TODO(crbug.com/925918): Support messages from Service Worker.
-  DCHECK(source.is_for_render_frame());
   if (!browser_context_)
     return;
 
   MessageService::Get(browser_context_)
-      ->OpenPort(port_id, render_process_id_, source.frame->routing_id);
+      ->OpenPort(port_id, render_process_id_, source);
 }
 
 void ExtensionMessageFilter::OnCloseMessagePort(const PortContext& port_context,
                                                 const PortId& port_id,
                                                 bool force_close) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // TODO(crbug.com/925918): Support messages from Service Worker.
-  DCHECK(port_context.is_for_render_frame());
   if (!browser_context_)
     return;
 
   MessageService::Get(browser_context_)
-      ->ClosePort(port_id, render_process_id_, port_context.frame->routing_id,
-                  force_close);
+      ->ClosePort(port_id, render_process_id_, port_context, force_close);
 }
 
 void ExtensionMessageFilter::OnPostMessage(const PortId& port_id,
