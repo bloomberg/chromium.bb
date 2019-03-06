@@ -129,7 +129,7 @@ class SkiaOutputSurfaceImpl::PromiseTextureHelper {
           TextureStorageFormat(resource_format_);
       backend_format = GrBackendFormat::MakeGL(
           gl::GetInternalFormat(version_info, texture_storage_format),
-          GL_TEXTURE_2D);
+          render_pass_id_ ? GL_TEXTURE_2D : mailbox_holder_.texture_target);
     } else {
 #if BUILDFLAG(ENABLE_VULKAN)
       backend_format = GrBackendFormat::MakeVk(ToVkFormat(resource_format_));
