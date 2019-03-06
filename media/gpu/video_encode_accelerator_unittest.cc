@@ -106,6 +106,8 @@ const double kDefaultSubsequentFramerateRatio = 0.1;
 const double kBitrateTolerance = 0.1;
 // Minimum required FPS throughput for the basic performance test.
 const uint32_t kMinPerfFPS = 30;
+// The frame size for 2160p (UHD 4K) video in pixels.
+const int k2160PSizeInPixels = 3840 * 2160;
 // Minimum (arbitrary) number of frames required to enforce bitrate requirements
 // over. Streams shorter than this may be too short to realistically require
 // an encoder to be able to converge to the requested bitrate over.
@@ -2207,8 +2209,19 @@ void VEAClient::FlushTimeout() {
 
 void VEAClient::VerifyMinFPS() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (test_perf_)
-    EXPECT_GE(frames_per_second(), kMinPerfFPS);
+  if (test_perf_) {
+    if (input_coded_size_.GetArea() >= k2160PSizeInPixels) {
+      // When |input_coded_size_| is 2160p or more, it is expected that the
+      // calculated FPS might be lower than kMinPerfFPS. Log as warning instead
+      // of failing the test in this case.
+      if (frames_per_second() < kMinPerfFPS) {
+        LOG(WARNING) << "Measured FPS: " << frames_per_second()
+                     << " is below min required: " << kMinPerfFPS << " FPS.";
+      }
+    } else {
+      EXPECT_GE(frames_per_second(), kMinPerfFPS);
+    }
+  }
 }
 
 void VEAClient::VerifyStreamProperties() {
