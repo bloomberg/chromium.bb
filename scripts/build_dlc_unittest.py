@@ -16,6 +16,7 @@ from chromite.lib import osutils
 from chromite.lib import partial_mock
 
 from chromite.scripts import build_dlc
+from chromite.scripts import cros_set_lsb_release
 
 
 _FS_TYPE_SQUASHFS = 'squashfs'
@@ -49,6 +50,10 @@ class DlcGeneratorTest(cros_test_lib.RunCommandTempDirTestCase):
     osutils.SafeMakedirs(src_dir)
 
     sysroot = os.path.join(self.tempdir, 'build_root')
+    osutils.WriteFile(os.path.join(sysroot, build_dlc.LSB_RELEASE),
+                      '%s=%s\n' % (cros_set_lsb_release.LSB_KEY_APPID_RELEASE,
+                                   'foo'),
+                      makedirs=True)
     ue_conf = os.path.join(sysroot, 'etc', 'update_engine.conf')
     osutils.WriteFile(ue_conf, 'foo-content', makedirs=True)
 
@@ -114,8 +119,14 @@ class DlcGeneratorTest(cros_test_lib.RunCommandTempDirTestCase):
 
     generator.PrepareLsbRelease(dlc_dir)
 
+    expected_lsb_release = '\n'.join([
+        'DLC_ID=%s' % _ID,
+        'DLC_NAME=%s' % _NAME,
+        'DLC_RELEASE_APPID=foo_%s' % _ID,
+    ]) + '\n'
+
     self.assertEqual(osutils.ReadFile(os.path.join(dlc_dir, 'etc/lsb-release')),
-                     'DLC_ID=%s\nDLC_NAME=%s\n' %  (_ID, _NAME))
+                     expected_lsb_release)
 
   def testCollectExtraResources(self):
     """Tests that extra resources are collected correctly."""
