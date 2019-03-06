@@ -1092,7 +1092,11 @@ Output.prototype = {
 
     // Display.
     if (this.speechCategory_ != cvox.TtsCategory.LIVE)
-      chrome.accessibilityPrivate.setFocusRing(this.locations_);
+      chrome.accessibilityPrivate.setFocusRings([{
+        rects: this.locations_,
+        type: chrome.accessibilityPrivate.FocusType.GLOW,
+        color: constants.FOCUS_COLOR
+      }]);
   },
 
   /**

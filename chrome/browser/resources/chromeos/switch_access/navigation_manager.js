@@ -313,7 +313,12 @@ class NavigationManager {
     if (!removedByRWA && treeChange.target !== this.node_)
       return;
 
-    chrome.accessibilityPrivate.setFocusRing([]);
+    chrome.accessibilityPrivate.setFocusRings([{
+      id: SAConstants.PRIMARY_FOCUS,
+      rects: [],
+      type: chrome.accessibilityPrivate.FocusType.GLOW,
+      color: NavigationManager.Color.LEAF
+    }]);
 
     // Current node not invalid until after treeChange callback, so move to
     // valid node after callback. Delay added to prevent moving to another
@@ -402,7 +407,12 @@ class NavigationManager {
       color = NavigationManager.Color.LEAF;
 
     color = opt_color || color;
-    chrome.accessibilityPrivate.setFocusRing([this.node_.location], color);
+    chrome.accessibilityPrivate.setFocusRings([{
+      id: SAConstants.PRIMARY_FOCUS,
+      rects: [this.node_.location],
+      type: chrome.accessibilityPrivate.FocusType.GLOW,
+      color: color
+    }]);
   }
 
   /**
