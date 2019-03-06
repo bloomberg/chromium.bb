@@ -118,6 +118,11 @@ template("js2gtest") {
                              "visibility",
                            ])
     sources = get_target_outputs(":$action_name")
+
+    # This empty public header is intentional to remove unnecessary build
+    # dependency.
+    public = []
+
     deps = [
       ":$action_name",
 
