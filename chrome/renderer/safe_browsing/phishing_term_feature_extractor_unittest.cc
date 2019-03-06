@@ -97,11 +97,9 @@ class PhishingTermFeatureExtractorTest : public ::testing::Test {
                        std::set<uint32_t>* shingle_hashes) {
     success_ = false;
     extractor_->ExtractFeatures(
-        page_text,
-        features,
-        shingle_hashes,
-        base::Bind(&PhishingTermFeatureExtractorTest::ExtractionDone,
-                   base::Unretained(this)));
+        page_text, features, shingle_hashes,
+        base::BindOnce(&PhishingTermFeatureExtractorTest::ExtractionDone,
+                       base::Unretained(this)));
     active_run_loop_ = std::make_unique<base::RunLoop>();
     active_run_loop_->Run();
     return success_;
@@ -111,11 +109,9 @@ class PhishingTermFeatureExtractorTest : public ::testing::Test {
                               FeatureMap* features,
                               std::set<uint32_t>* shingle_hashes) {
     extractor_->ExtractFeatures(
-        page_text,
-        features,
-        shingle_hashes,
-        base::Bind(&PhishingTermFeatureExtractorTest::ExtractionDone,
-                   base::Unretained(this)));
+        page_text, features, shingle_hashes,
+        base::BindOnce(&PhishingTermFeatureExtractorTest::ExtractionDone,
+                       base::Unretained(this)));
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(&PhishingTermFeatureExtractorTest::QuitExtraction,

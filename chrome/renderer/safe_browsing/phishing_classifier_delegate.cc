@@ -278,8 +278,8 @@ void PhishingClassifierDelegate::MaybeStartClassification() {
   is_classifying_ = true;
   classifier_->BeginClassification(
       &classifier_page_text_,
-      base::Bind(&PhishingClassifierDelegate::ClassificationDone,
-                 base::Unretained(this)));
+      base::BindOnce(&PhishingClassifierDelegate::ClassificationDone,
+                     base::Unretained(this)));
 }
 
 void PhishingClassifierDelegate::OnDestruct() {

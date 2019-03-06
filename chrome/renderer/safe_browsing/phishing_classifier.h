@@ -49,7 +49,7 @@ class PhishingClassifier {
   // is true, the page is considered phishy by the client-side model,
   // and the browser should ping back to get a final verdict.  The
   // verdict.client_score() is set to kInvalidScore if classification failed.
-  typedef base::Callback<void(const ClientPhishingRequest& /* verdict */)>
+  typedef base::OnceCallback<void(const ClientPhishingRequest& /* verdict */)>
       DoneCallback;
 
   static const float kInvalidScore;
@@ -88,7 +88,7 @@ class PhishingClassifier {
   // It is an error to call BeginClassification if the classifier is not yet
   // ready.
   virtual void BeginClassification(const base::string16* page_text,
-                                   const DoneCallback& callback);
+                                   DoneCallback callback);
 
   // Called by the RenderView (on the render thread) when a page is unloading
   // or the RenderView is being destroyed.  This cancels any extraction that
