@@ -1630,7 +1630,8 @@ void AppListView::OnScreenKeyboardShown(bool shown) {
   } else {
     // If the keyboard is closing or a folder isn't being shown, reset
     // the app list's position
-    OffsetYPositionOfAppList(0);
+    const int work_area_offset = GetDisplayNearestView().work_area().y();
+    OffsetYPositionOfAppList(shown ? work_area_offset : -work_area_offset);
   }
 }
 
