@@ -753,7 +753,6 @@ cr.define('omnibox_output', function() {
     render_() {
       this.icon_.classList.toggle('check-mark', !!this.value);
       this.icon_.classList.toggle('x-mark', !this.value);
-      this.icon_.textContent = this.value;
     }
 
     get text() {
