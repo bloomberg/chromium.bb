@@ -183,11 +183,13 @@ void DisplayResolutionHandler::OnSettingUpdate() {
   // We should reset locally stored settings and clear list of already updated
   // displays if any of the policy values were updated.
   bool should_reset_settings = false;
-  should_reset_settings |= !new_external_config ||
-                           !external_display_settings_ ||
+  should_reset_settings |=
+      bool{new_external_config} != bool{external_display_settings_};
+  should_reset_settings |= new_external_config && external_display_settings_ &&
                            *new_external_config != *external_display_settings_;
-  should_reset_settings |= !new_internal_config ||
-                           !internal_display_settings_ ||
+  should_reset_settings |=
+      bool{new_internal_config} != bool{internal_display_settings_};
+  should_reset_settings |= new_internal_config && internal_display_settings_ &&
                            *new_internal_config != *internal_display_settings_;
   should_reset_settings |= recommended_ != new_recommended;
 
