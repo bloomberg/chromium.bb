@@ -32,9 +32,10 @@ class CONTENT_EXPORT IndexedDBCursor {
   void Advance(uint32_t count,
                base::WeakPtr<IndexedDBDispatcherHost> dispatcher_host,
                blink::mojom::IDBCursor::AdvanceCallback callback);
-  void Continue(std::unique_ptr<blink::IndexedDBKey> key,
+  void Continue(base::WeakPtr<IndexedDBDispatcherHost> dispatcher_host,
+                std::unique_ptr<blink::IndexedDBKey> key,
                 std::unique_ptr<blink::IndexedDBKey> primary_key,
-                scoped_refptr<IndexedDBCallbacks> callbacks);
+                blink::mojom::IDBCursor::CursorContinueCallback callback);
   void PrefetchContinue(int number_to_fetch,
                         scoped_refptr<IndexedDBCallbacks> callbacks);
   leveldb::Status PrefetchReset(int used_prefetches, int unused_prefetches);
@@ -55,10 +56,12 @@ class CONTENT_EXPORT IndexedDBCursor {
   void RemoveBinding();
   void Close();
 
-  leveldb::Status CursorIterationOperation(
+  leveldb::Status CursorContinueOperation(
+      base::WeakPtr<IndexedDBDispatcherHost> dispatcher_host,
+      scoped_refptr<base::SequencedTaskRunner> idb_runner,
       std::unique_ptr<blink::IndexedDBKey> key,
       std::unique_ptr<blink::IndexedDBKey> primary_key,
-      scoped_refptr<IndexedDBCallbacks> callbacks,
+      blink::mojom::IDBCursor::CursorContinueCallback callback,
       IndexedDBTransaction* transaction);
   leveldb::Status CursorAdvanceOperation(
       uint32_t count,
@@ -69,14 +72,6 @@ class CONTENT_EXPORT IndexedDBCursor {
   leveldb::Status CursorPrefetchIterationOperation(
       int number_to_fetch,
       scoped_refptr<IndexedDBCallbacks> callbacks,
-      IndexedDBTransaction* transaction);
-
-  static IndexedDBDatabaseError CreateError(uint16_t code,
-                                            const char* message,
-                                            IndexedDBTransaction* transaction);
-  static blink::mojom::IDBErrorPtr CreateIDBError(
-      uint16_t code,
-      const base::string16& message,
       IndexedDBTransaction* transaction);
 
  private:

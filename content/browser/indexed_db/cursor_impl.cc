@@ -24,9 +24,10 @@ class CursorImpl::IDBSequenceHelper {
   void Advance(uint32_t count,
                base::WeakPtr<IndexedDBDispatcherHost> dispatcher_host,
                blink::mojom::IDBCursor::AdvanceCallback callback);
-  void Continue(const IndexedDBKey& key,
+  void Continue(base::WeakPtr<IndexedDBDispatcherHost> dispatcher_host,
+                const IndexedDBKey& key,
                 const IndexedDBKey& primary_key,
-                scoped_refptr<IndexedDBCallbacks> callbacks);
+                blink::mojom::IDBCursor::CursorContinueCallback callback);
   void Prefetch(int32_t count, scoped_refptr<IndexedDBCallbacks> callbacks);
   void PrefetchReset(int32_t used_prefetches, int32_t unused_prefetches);
 
@@ -66,12 +67,10 @@ void CursorImpl::Advance(uint32_t count,
 void CursorImpl::CursorContinue(
     const IndexedDBKey& key,
     const IndexedDBKey& primary_key,
-    blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info) {
+    blink::mojom::IDBCursor::CursorContinueCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  scoped_refptr<IndexedDBCallbacks> callbacks(
-      new IndexedDBCallbacks(dispatcher_host_->AsWeakPtr(), origin_,
-                             std::move(callbacks_info), idb_runner_));
-  helper_->Continue(key, primary_key, std::move(callbacks));
+  helper_->Continue(dispatcher_host_->AsWeakPtr(), key, primary_key,
+                    std::move(callback));
 }
 
 void CursorImpl::Prefetch(
@@ -116,15 +115,17 @@ void CursorImpl::IDBSequenceHelper::Advance(
 }
 
 void CursorImpl::IDBSequenceHelper::Continue(
+    base::WeakPtr<content::IndexedDBDispatcherHost> dispatcher_host,
     const IndexedDBKey& key,
     const IndexedDBKey& primary_key,
-    scoped_refptr<IndexedDBCallbacks> callbacks) {
+    blink::mojom::IDBCursor::CursorContinueCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   cursor_->Continue(
+      std::move(dispatcher_host),
       key.IsValid() ? std::make_unique<IndexedDBKey>(key) : nullptr,
       primary_key.IsValid() ? std::make_unique<IndexedDBKey>(primary_key)
                             : nullptr,
-      std::move(callbacks));
+      std::move(callback));
 }
 
 void CursorImpl::IDBSequenceHelper::Prefetch(
