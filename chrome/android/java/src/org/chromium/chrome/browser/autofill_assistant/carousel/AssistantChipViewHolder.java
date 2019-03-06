@@ -31,6 +31,7 @@ class AssistantChipViewHolder extends ViewHolder {
             case AssistantChip.Type.CHIP_ASSISTIVE:
                 resId = R.layout.autofill_assistant_chip_assistive;
                 break;
+            case AssistantChip.Type.BUTTON_FILLED_DISABLED:
             case AssistantChip.Type.BUTTON_FILLED_BLUE:
                 resId = R.layout.autofill_assistant_button_filled;
                 break;
@@ -40,8 +41,13 @@ class AssistantChipViewHolder extends ViewHolder {
             default:
                 assert false : "Unsupported view type " + viewType;
         }
-        return new AssistantChipViewHolder(
-                (TextView) layoutInflater.inflate(resId, /* root= */ null));
+
+        TextView view = (TextView) layoutInflater.inflate(resId, /* root= */ null);
+        if (viewType == AssistantChip.Type.BUTTON_FILLED_DISABLED) {
+            view.setEnabled(false);
+        }
+
+        return new AssistantChipViewHolder(view);
     }
 
     public void bind(AssistantChip chip) {
