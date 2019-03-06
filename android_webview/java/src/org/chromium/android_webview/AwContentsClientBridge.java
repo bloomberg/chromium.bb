@@ -11,10 +11,11 @@ import android.os.Handler;
 import android.util.Log;
 
 import org.chromium.base.Callback;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.CalledByNativeUnchecked;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.task.PostTask;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.net.NetError;
 
 import java.security.Principal;
@@ -77,15 +78,16 @@ public class AwContentsClientBridge {
         }
 
         public void proceed(final PrivateKey privateKey, final X509Certificate[] chain) {
-            ThreadUtils.runOnUiThread(() -> proceedOnUiThread(privateKey, chain));
+            PostTask.runOrPostTask(
+                    UiThreadTaskTraits.DEFAULT, () -> proceedOnUiThread(privateKey, chain));
         }
 
         public void ignore() {
-            ThreadUtils.runOnUiThread(() -> ignoreOnUiThread());
+            PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> ignoreOnUiThread());
         }
 
         public void cancel() {
-            ThreadUtils.runOnUiThread(() -> cancelOnUiThread());
+            PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> cancelOnUiThread());
         }
 
         private void proceedOnUiThread(PrivateKey privateKey, X509Certificate[] chain) {
@@ -157,8 +159,9 @@ public class AwContentsClientBridge {
             return false;
         }
         final SslError sslError = SslUtil.sslErrorFromNetErrorCode(certError, cert, url);
-        final Callback<Boolean> callback =
-                value -> ThreadUtils.runOnUiThread(() -> proceedSslError(value.booleanValue(), id));
+        final Callback<Boolean> callback = value
+                -> PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
+                        () -> proceedSslError(value.booleanValue(), id));
         // Post the application callback back to the current thread to ensure the application
         // callback is executed without any native code on the stack. This so that any exception
         // thrown by the application callback won't have to be propagated through a native call
@@ -327,7 +330,7 @@ public class AwContentsClientBridge {
         // TODO(ntfschr): remove clang-format directives once crbug/764582 is resolved
         // clang-format off
         Callback<AwSafeBrowsingResponse> callback =
-                response -> ThreadUtils.runOnUiThread(
+                response -> PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
                         () -> nativeTakeSafeBrowsingAction(mNativeContentsClientBridge,
                                 response.action(), response.reporting(), requestId));
         // clang-format on

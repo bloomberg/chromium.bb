@@ -17,8 +17,10 @@ import org.junit.runner.RunWith;
 import org.chromium.android_webview.AwContents;
 import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.io.File;
 import java.util.concurrent.Semaphore;
@@ -67,7 +69,8 @@ public class ArchiveTest {
         };
 
         // Generate MHTML and wait for completion
-        ThreadUtils.runOnUiThread(() -> contents.saveWebArchive(path, autoName, callback));
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
+                () -> contents.saveWebArchive(path, autoName, callback));
         Assert.assertTrue(s.tryAcquire(TEST_TIMEOUT, TimeUnit.MILLISECONDS));
 
         Assert.assertEquals(expectedPath, msgPath.get());
@@ -178,7 +181,7 @@ public class ArchiveTest {
 
     private void saveWebArchiveAndWaitForUiPost(
             final String path, boolean autoname, final Callback<String> callback) {
-        ThreadUtils.runOnUiThread(
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
                 () -> mTestContainerView.getAwContents().saveWebArchive(path, false, callback));
         ThreadUtils.runOnUiThreadBlocking(() -> {
             // Just wait for this task to having been posted on the UI thread.

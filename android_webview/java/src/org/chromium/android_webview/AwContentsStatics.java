@@ -11,6 +11,8 @@ import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.task.PostTask;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.util.List;
 
@@ -105,7 +107,7 @@ public class AwContentsStatics {
         // API.
         Callback<Boolean> wrapperCallback = b -> {
             if (callback != null) {
-                ThreadUtils.runOnUiThread(() -> callback.onResult(b));
+                PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> callback.onResult(b));
             }
         };
 
