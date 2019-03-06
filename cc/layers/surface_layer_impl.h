@@ -69,6 +69,7 @@ class CC_EXPORT SurfaceLayerImpl : public LayerImpl {
   void AppendQuads(viz::RenderPass* render_pass,
                    AppendQuadsData* append_quads_data) override;
   bool is_surface_layer() const override;
+  gfx::Rect GetEnclosingRectInTargetSpace() const override;
 
  protected:
   SurfaceLayerImpl(LayerTreeImpl* tree_impl, int id, UpdateSubmissionStateCB);

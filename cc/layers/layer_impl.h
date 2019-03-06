@@ -126,6 +126,10 @@ class CC_EXPORT LayerImpl {
 
   void PopulateSharedQuadState(viz::SharedQuadState* state,
                                bool contents_opaque) const;
+
+  // If using this, you need to override GetEnclosingRectInTargetSpace() to
+  // use GetScaledEnclosingRectInTargetSpace(). To do otherwise may result in
+  // inconsistent values, and drawing/clipping problems.
   void PopulateScaledSharedQuadState(viz::SharedQuadState* state,
                                      float layer_to_content_scale_x,
                                      float layer_to_content_scale_y,
@@ -425,6 +429,10 @@ class CC_EXPORT LayerImpl {
   // for layers that provide it.
   virtual Region GetInvalidationRegionForDebugging();
 
+  // If you override this, and are making use of
+  // PopulateScaledSharedQuadState(), make sure you call
+  // GetScaledEnclosingRectInTargetSpace(). See comment for
+  // PopulateScaledSharedQuadState().
   virtual gfx::Rect GetEnclosingRectInTargetSpace() const;
 
   void UpdatePropertyTreeForAnimationIfNeeded(ElementId element_id);
@@ -476,6 +484,10 @@ class CC_EXPORT LayerImpl {
                              SkColor color,
                              float width) const;
 
+  // Returns the bounds of this layer in target space when scaled by |scale|.
+  // This function scales in the same way as
+  // PopulateScaledSharedQuadStateQuadState(). See
+  // PopulateScaledSharedQuadStateQuadState() for more details.
   gfx::Rect GetScaledEnclosingRectInTargetSpace(float scale) const;
 
  private:
@@ -551,6 +563,8 @@ class CC_EXPORT LayerImpl {
   DrawMode current_draw_mode_;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(SurfaceLayerImplTest, GetEnclosingRectInTargetSpace);
+
   PropertyTrees* GetPropertyTrees() const;
   ClipTree& GetClipTree() const;
   EffectTree& GetEffectTree() const;
