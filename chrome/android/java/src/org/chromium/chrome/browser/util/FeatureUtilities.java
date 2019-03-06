@@ -79,6 +79,7 @@ public class FeatureUtilities {
     private static Boolean sShouldInflateToolbarOnBackgroundThread;
     private static Boolean sIsNightModeAvailable;
     private static Boolean sShouldPrioritizeBootstrapTasks;
+    private static Boolean sIsTabGroupsAndroidEnabled;
 
     private static Boolean sDownloadAutoResumptionEnabledInNative;
 
@@ -197,6 +198,8 @@ public class FeatureUtilities {
         cacheNightModeAvailable();
         cacheDownloadAutoResumptionEnabledInNative();
         cachePrioritizeBootstrapTasks();
+
+        if (isDeviceEligibleForTabGroups()) cacheTabGroupsAndroidEnabled();
 
         // Propagate DONT_PREFETCH_LIBRARIES and REACHED_CODE_PROFILER feature values to
         // LibraryLoader. This can't be done in LibraryLoader itself because it lives in //base and
@@ -495,14 +498,33 @@ public class FeatureUtilities {
                 && ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID);
     }
 
+    private static void cacheTabGroupsAndroidEnabled() {
+        ChromePreferenceManager.getInstance().writeBoolean(
+                ChromePreferenceManager.TAB_GROUPS_ANDROID_ENABLED_KEY,
+                ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_GROUPS_ANDROID));
+    }
+
     /**
-     * @param activityContext The context for the containing {@link android.app.Activity}.
      * @return Whether the tab group feature is enabled and available for use.
      */
-    public static boolean isTabGroupsEnabled(Context activityContext) {
-        return !DeviceFormFactor.isNonMultiDisplayContextOnTablet(activityContext)
-                && !SysUtils.isLowEndDevice() && !DeviceClassManager.enableAccessibilityLayout()
-                && ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_GROUPS_ANDROID);
+    public static boolean isTabGroupsAndroidEnabled() {
+        if (!isDeviceEligibleForTabGroups()) return false;
+
+        if (sIsTabGroupsAndroidEnabled == null) {
+            ChromePreferenceManager preferenceManager = ChromePreferenceManager.getInstance();
+
+            sIsTabGroupsAndroidEnabled = preferenceManager.readBoolean(
+                    ChromePreferenceManager.TAB_GROUPS_ANDROID_ENABLED_KEY, false);
+        }
+
+        return sIsTabGroupsAndroidEnabled;
+    }
+
+    private static boolean isDeviceEligibleForTabGroups() {
+        return !SysUtils.isLowEndDevice()
+                && !DeviceFormFactor.isNonMultiDisplayContextOnTablet(
+                        ContextUtils.getApplicationContext())
+                && !DeviceClassManager.enableAccessibilityLayout();
     }
 
     /**
