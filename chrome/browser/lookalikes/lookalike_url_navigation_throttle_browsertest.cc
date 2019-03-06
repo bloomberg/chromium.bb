@@ -39,6 +39,9 @@ using UkmEntry = ukm::builders::LookalikeUrl_NavigationSuggestion;
 using NavigationSuggestionEvent =
     LookalikeUrlNavigationThrottle::NavigationSuggestionEvent;
 
+using MatchType = LookalikeUrlInterstitialPage::MatchType;
+using UserAction = LookalikeUrlInterstitialPage::UserAction;
+
 enum class UIEnabled { kDisabled, kEnabled };
 
 // An engagement score above MEDIUM.
@@ -158,17 +161,20 @@ class LookalikeUrlNavigationThrottleBrowserTest
                                           "/server-redirect?" + mid.spec());
   }
 
-  // Checks that UKM recorded a metric for each URL in |navigated_urls|.
+  // Checks that UKM recorded an event for each URL in |navigated_urls| with the
+  // given metric value.
+  template <typename T>
   void CheckUkm(const std::vector<GURL>& navigated_urls,
-                LookalikeUrlNavigationThrottle::MatchType match_type) {
+                const std::string& metric_name,
+                T metric_value) {
     auto entries = test_ukm_recorder()->GetEntriesByName(UkmEntry::kEntryName);
     ASSERT_EQ(navigated_urls.size(), entries.size());
     int entry_count = 0;
     for (const auto* const entry : entries) {
       test_ukm_recorder()->ExpectEntrySourceHasUrl(entry,
                                                    navigated_urls[entry_count]);
-      test_ukm_recorder()->ExpectEntryMetric(entry, "MatchType",
-                                             static_cast<int>(match_type));
+      test_ukm_recorder()->ExpectEntryMetric(entry, metric_name,
+                                             static_cast<int>(metric_value));
       entry_count++;
     }
   }
@@ -455,6 +461,22 @@ class LookalikeUrlInterstitialPageBrowserTest
     EXPECT_FALSE(IsUrlShowing(browser));
   }
 
+  // Load the given URL and verify that it loaded an interstitial.
+  void LoadInterstitialAt(const GURL& navigated_url) {
+    content::WebContents* web_contents =
+        browser()->tab_strip_model()->GetActiveWebContents();
+
+    EXPECT_EQ(nullptr, GetCurrentInterstitial(web_contents));
+    {
+      content::TestNavigationObserver navigation_observer(web_contents, 1);
+      NavigateToURL(browser(), navigated_url);
+      navigation_observer.Wait();
+    }
+
+    EXPECT_EQ(LookalikeUrlInterstitialPage::kTypeForTesting,
+              GetInterstitialType(web_contents));
+  }
+
  protected:
   bool ui_enabled() const override { return true; }
 };
@@ -507,8 +529,7 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
       browser(), &histograms, kNavigatedUrl, kExpectedSuggestedUrl,
       NavigationSuggestionEvent::kMatchTopSite);
 
-  CheckUkm({kNavigatedUrl},
-           LookalikeUrlNavigationThrottle::MatchType::kTopSite);
+  CheckUkm({kNavigatedUrl}, "MatchType", MatchType::kTopSite);
 }
 
 // The navigated domain itself is a top domain or a subdomain of a top domain.
@@ -553,8 +574,7 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
       browser(), &histograms, kNavigatedUrl, kExpectedSuggestedUrl,
       NavigationSuggestionEvent::kMatchEditDistance);
 
-  CheckUkm({kNavigatedUrl},
-           LookalikeUrlNavigationThrottle::MatchType::kEditDistance);
+  CheckUkm({kNavigatedUrl}, "MatchType", MatchType::kEditDistance);
 }
 
 // Tests negative examples for the edit distance.
@@ -629,8 +649,7 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
         NavigationSuggestionEvent::kMatchSiteEngagement);
 
     ukm_urls.push_back(kNavigatedUrl);
-    CheckUkm(ukm_urls,
-             LookalikeUrlNavigationThrottle::MatchType::kSiteEngagement);
+    CheckUkm(ukm_urls, "MatchType", MatchType::kSiteEngagement);
   }
 }
 
@@ -662,8 +681,7 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
         NavigationSuggestionEvent::kMatchSiteEngagement);
 
     ukm_urls.push_back(kNavigatedUrl);
-    CheckUkm(ukm_urls,
-             LookalikeUrlNavigationThrottle::MatchType::kSiteEngagement);
+    CheckUkm(ukm_urls, "MatchType", MatchType::kSiteEngagement);
   }
 
   // Incognito shouldn't record metrics because there are no engaged sites.
@@ -689,8 +707,7 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
         incognito, &histograms, kNavigatedUrl, kEngagedUrl,
         NavigationSuggestionEvent::kMatchSiteEngagement);
     ukm_urls.push_back(kNavigatedUrl);
-    CheckUkm(ukm_urls,
-             LookalikeUrlNavigationThrottle::MatchType::kSiteEngagement);
+    CheckUkm(ukm_urls, "MatchType", MatchType::kSiteEngagement);
   }
 
   // Main profile shouldn't record metrics because there are no engaged sites.
@@ -768,8 +785,7 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
       browser(), &histograms, kNavigatedUrl,
       NavigationSuggestionEvent::kMatchEditDistance);
 
-  CheckUkm({kNavigatedUrl},
-           LookalikeUrlNavigationThrottle::MatchType::kEditDistance);
+  CheckUkm({kNavigatedUrl}, "MatchType", MatchType::kEditDistance);
 }
 
 // Navigate to lookalike domains that redirect to benign domains. Ensure that
@@ -790,6 +806,75 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
     SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
     TestOnlyInterstitialShown(browser(), kNavigatedUrl);
   }
+}
+
+// Verify that the user action in UKM is recorded properly when the interstitial
+// is not shown.
+IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
+                       UkmRecordedWhenNoInterstitialShown) {
+  // UI tests are handled explicitly below.
+  if (ui_enabled())
+    return;
+
+  const GURL navigated_url = GetURL("goooglé.com");
+
+  TestInterstitialNotShown(browser(), navigated_url);
+
+  CheckUkm({navigated_url}, "UserAction", UserAction::kInterstitialNotShown);
+}
+
+// Verify that the user action in UKM is recorded even when we navigate away
+// from the interstitial without interacting with it.
+IN_PROC_BROWSER_TEST_F(LookalikeUrlInterstitialPageBrowserTest,
+                       UkmRecordedAfterNavigateAway) {
+  const GURL navigated_url = GetURL("goooglé.com");
+  const GURL subsequent_url = GetURL("example.com");
+
+  LoadInterstitialAt(navigated_url);
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  content::TestNavigationObserver navigation_observer(web_contents, 1);
+  ui_test_utils::NavigateToURL(browser(), subsequent_url);
+  navigation_observer.Wait();
+
+  CheckUkm({navigated_url}, "UserAction", UserAction::kCloseOrBack);
+}
+
+// Verify that the user action in UKM is recorded properly when the user accepts
+// the navigation suggestion.
+IN_PROC_BROWSER_TEST_F(LookalikeUrlInterstitialPageBrowserTest,
+                       UkmRecordedAfterSuggestionAccepted) {
+  const GURL navigated_url = GetURL("goooglé.com");
+
+  LoadInterstitialAt(navigated_url);
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  content::TestNavigationObserver navigation_observer(web_contents, 1);
+  SendInterstitialCommand(web_contents,
+                          SecurityInterstitialCommand::CMD_DONT_PROCEED);
+  navigation_observer.Wait();
+
+  CheckUkm({navigated_url}, "UserAction", UserAction::kAcceptSuggestion);
+}
+
+// Verify that the user action in UKM is recorded properly when the user ignores
+// the navigation suggestion.
+IN_PROC_BROWSER_TEST_F(LookalikeUrlInterstitialPageBrowserTest,
+                       UkmRecordedAfterSuggestionIgnored) {
+  const GURL navigated_url = GetURL("goooglé.com");
+
+  LoadInterstitialAt(navigated_url);
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  content::TestNavigationObserver navigation_observer(web_contents, 1);
+  SendInterstitialCommand(web_contents,
+                          SecurityInterstitialCommand::CMD_PROCEED);
+  navigation_observer.Wait();
+
+  CheckUkm({navigated_url}, "UserAction", UserAction::kClickThrough);
 }
 
 // Verify that the URL shows normally on pages after a lookalike interstitial.

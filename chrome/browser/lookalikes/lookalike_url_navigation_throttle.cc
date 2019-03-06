@@ -28,12 +28,11 @@
 #include "components/url_formatter/top_domains/top_domain_util.h"
 #include "content/public/browser/navigation_handle.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
-#include "services/metrics/public/cpp/ukm_builders.h"
-#include "services/metrics/public/cpp/ukm_recorder.h"
 
 namespace {
 
-using MatchType = LookalikeUrlNavigationThrottle::MatchType;
+using MatchType = LookalikeUrlInterstitialPage::MatchType;
+using UserAction = LookalikeUrlInterstitialPage::UserAction;
 using NavigationSuggestionEvent =
     LookalikeUrlNavigationThrottle::NavigationSuggestionEvent;
 typedef content::NavigationThrottle::ThrottleCheckResult ThrottleCheckResult;
@@ -234,7 +233,9 @@ const char* LookalikeUrlNavigationThrottle::GetNameForLogging() {
 
 ThrottleCheckResult LookalikeUrlNavigationThrottle::ShowInterstitial(
     const GURL& safe_url,
-    const GURL& url) {
+    const GURL& url,
+    ukm::SourceId source_id,
+    MatchType match_type) {
   content::NavigationHandle* handle = navigation_handle();
   content::WebContents* web_contents = handle->GetWebContents();
 
@@ -242,8 +243,8 @@ ThrottleCheckResult LookalikeUrlNavigationThrottle::ShowInterstitial(
       web_contents, url, safe_url);
 
   std::unique_ptr<LookalikeUrlInterstitialPage> blocking_page(
-      new LookalikeUrlInterstitialPage(web_contents, safe_url,
-                                       std::move(controller)));
+      new LookalikeUrlInterstitialPage(web_contents, safe_url, source_id,
+                                       match_type, std::move(controller)));
 
   base::Optional<std::string> error_page_contents =
       blocking_page->GetHTMLContents();
@@ -324,17 +325,15 @@ ThrottleCheckResult LookalikeUrlNavigationThrottle::PerformChecks(
   replace_host.SetHostStr(matched_domain);
   const GURL suggested_url = url.ReplaceComponents(replace_host);
 
-  ukm::UkmRecorder* ukm_recorder = ukm::UkmRecorder::Get();
-  CHECK(ukm_recorder);
   ukm::SourceId source_id = ukm::ConvertToSourceId(
       navigation_handle()->GetNavigationId(), ukm::SourceIdType::NAVIGATION_ID);
-  ukm::builders::LookalikeUrl_NavigationSuggestion(source_id)
-      .SetMatchType(static_cast<int>(match_type))
-      .Record(ukm_recorder);
 
   if (interstitials_enabled_) {
-    return ShowInterstitial(suggested_url, url);
+    return ShowInterstitial(suggested_url, url, source_id, match_type);
   }
+
+  LookalikeUrlInterstitialPage::RecordUkmEvent(
+      source_id, match_type, UserAction::kInterstitialNotShown);
 
   return content::NavigationThrottle::PROCEED;
 }

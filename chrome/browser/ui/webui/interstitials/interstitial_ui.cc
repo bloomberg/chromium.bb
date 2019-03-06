@@ -43,6 +43,7 @@
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util.h"
 #include "net/ssl/ssl_info.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/web_ui_util.h"
 
@@ -260,7 +261,8 @@ LookalikeUrlInterstitialPage* CreateLookalikeInterstitialPage(
   GURL safe_url("https://example.com");
 
   return new LookalikeUrlInterstitialPage(
-      web_contents, safe_url,
+      web_contents, safe_url, ukm::kInvalidSourceId,
+      LookalikeUrlInterstitialPage::MatchType::kNone,
       std::make_unique<LookalikeUrlControllerClient>(web_contents, request_url,
                                                      safe_url));
 }
