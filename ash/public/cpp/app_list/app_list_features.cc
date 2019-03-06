@@ -35,6 +35,8 @@ const base::Feature kEnableAppReinstallZeroState{
     "EnableAppReinstallZeroState", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kEnableEmbeddedAssistantUI{
     "EnableEmbeddedAssistantUI", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kEnableAppGridGhost{"EnableAppGridGhost",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool IsAnswerCardEnabled() {
   // Not using local static variable to allow tests to change this value.
@@ -87,6 +89,10 @@ bool IsAppReinstallZeroStateEnabled() {
 bool IsEmbeddedAssistantUIEnabled() {
   return chromeos::switches::IsAssistantEnabled() &&
          base::FeatureList::IsEnabled(kEnableEmbeddedAssistantUI);
+}
+
+bool IsAppGridGhostEnabled() {
+  return base::FeatureList::IsEnabled(kEnableAppGridGhost);
 }
 
 std::string AnswerServerUrl() {

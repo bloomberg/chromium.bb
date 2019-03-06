@@ -57,6 +57,8 @@ component("app_list") {
     "views/folder_header_view.cc",
     "views/folder_header_view.h",
     "views/folder_header_view_delegate.h",
+    "views/ghost_image_view.cc",
+    "views/ghost_image_view.h",
     "views/horizontal_page.cc",
     "views/horizontal_page.h",
     "views/horizontal_page_container.cc",
