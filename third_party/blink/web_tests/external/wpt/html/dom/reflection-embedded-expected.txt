@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 7087 tests; 6958 PASS, 129 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 7085 tests; 6956 PASS, 129 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS picture.title: 32 tests
 PASS picture.lang: 32 tests
 PASS picture.dir: 62 tests
@@ -20,8 +20,8 @@ PASS img.srcset: 32 tests
 PASS img.crossOrigin: 52 tests
 PASS img.useMap: 32 tests
 PASS img.isMap: 33 tests
-PASS img.width: 9 tests
-PASS img.height: 9 tests
+PASS img.width: 8 tests
+PASS img.height: 8 tests
 PASS img.referrerPolicy: 27 tests
 FAIL img.referrerPolicy: setAttribute() to "same-origin" assert_equals: IDL get expected "same-origin" but got ""
 PASS img.referrerPolicy: 3 tests
