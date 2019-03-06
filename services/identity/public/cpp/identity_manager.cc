@@ -353,6 +353,12 @@ IdentityManager::LegacyGetOAuth2TokenServiceJavaObject() {
           token_service_->GetDelegate());
   return delegate->GetJavaObject();
 }
+
+void IdentityManager::ForceRefreshOfExtendedAccountInfo(
+    const std::string& account_id) {
+  DCHECK(HasAccountWithRefreshToken(account_id));
+  account_fetcher_service_->ForceRefreshOfAccountInfo(account_id);
+}
 #endif
 
 void IdentityManager::AddObserver(Observer* observer) {

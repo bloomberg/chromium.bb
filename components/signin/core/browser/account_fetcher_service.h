@@ -66,7 +66,7 @@ class AccountFetcherService : public KeyedService,
   // there are still unfininshed fetchers.
   virtual bool IsAllUserInfoFetched() const;
 
-  void FetchUserInfoBeforeSignin(const std::string& account_id);
+  void ForceRefreshOfAccountInfo(const std::string& account_id);
 
   AccountTrackerService* account_tracker_service() const {
     return account_tracker_service_;

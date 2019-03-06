@@ -5,6 +5,7 @@
 #include "components/signin/core/browser/fake_account_fetcher_service.h"
 
 #include "base/values.h"
+#include "build/build_config.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "ui/gfx/image/image_unittest_util.h"
@@ -15,6 +16,13 @@ void FakeAccountFetcherService::StartFetchingUserInfo(
     const std::string& account_id) {
   // In tests, don't do actual network fetch.
 }
+
+#if defined(OS_ANDROID)
+void FakeAccountFetcherService::StartFetchingChildInfo(
+    const std::string& account_id) {
+  // In tests, don't do actual network fetch.
+}
+#endif
 
 TestImageDecoder::TestImageDecoder() = default;
 

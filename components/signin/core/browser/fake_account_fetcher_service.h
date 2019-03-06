@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "components/image_fetcher/core/image_decoder.h"
 #include "components/signin/core/browser/account_fetcher_service.h"
 
@@ -22,6 +23,9 @@ class FakeAccountFetcherService : public AccountFetcherService {
 
  private:
   void StartFetchingUserInfo(const std::string& account_id) override;
+#if defined(OS_ANDROID)
+  void StartFetchingChildInfo(const std::string& account_id) override;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(FakeAccountFetcherService);
 };

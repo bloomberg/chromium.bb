@@ -99,7 +99,7 @@ bool AccountFetcherService::IsAllUserInfoFetched() const {
   return user_info_requests_.empty();
 }
 
-void AccountFetcherService::FetchUserInfoBeforeSignin(
+void AccountFetcherService::ForceRefreshOfAccountInfo(
     const std::string& account_id) {
   DCHECK(network_fetches_enabled_);
   RefreshAccountInfo(account_id, false);

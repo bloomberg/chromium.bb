@@ -52,6 +52,14 @@ const char kTestEmail[] = "me@gmail.com";
 const char kTestEmail2[] = "me2@gmail.com";
 const char kTestEmail3[] = "me3@gmail.com";
 
+#if defined(OS_ANDROID)
+const char kTestHostedDomain[] = "example.com";
+const char kTestFullName[] = "full_name";
+const char kTestGivenName[] = "given_name";
+const char kTestLocale[] = "locale";
+const char kTestPictureUrl[] = "http://picture.example.com/picture.jpg";
+#endif
+
 #if defined(OS_CHROMEOS)
 const char kTestEmailWithPeriod[] = "m.e@gmail.com";
 #endif
@@ -2490,5 +2498,38 @@ TEST_F(IdentityManagerTest, FindExtendedAccountInfoForAccount) {
   EXPECT_EQ(account_info.email, extended_account_info.value().email);
   EXPECT_EQ(account_info.account_id, extended_account_info.value().account_id);
 }
+
+#if defined(OS_ANDROID)
+TEST_F(IdentityManagerTest, ForceRefreshOfExtendedAccountInfo) {
+  account_fetcher()->OnNetworkInitialized();
+  AccountInfo account_info =
+      MakeAccountAvailable(identity_manager(), kTestEmail2);
+
+  identity_manager()->ForceRefreshOfExtendedAccountInfo(
+      account_info.account_id);
+
+  base::DictionaryValue user_info;
+  user_info.SetString("id", account_info.account_id);
+  user_info.SetString("email", account_info.email);
+  user_info.SetString("hd", kTestHostedDomain);
+  user_info.SetString("name", kTestFullName);
+  user_info.SetString("given_name", kTestGivenName);
+  user_info.SetString("locale", kTestLocale);
+  user_info.SetString("picture", kTestPictureUrl);
+  account_tracker()->SetAccountInfoFromUserInfo(account_info.account_id,
+                                                &user_info);
+
+  const AccountInfo& refreshed_account_info =
+      identity_manager_observer()->AccountFromAccountUpdatedCallback();
+  EXPECT_EQ(account_info.account_id, refreshed_account_info.account_id);
+  EXPECT_EQ(account_info.email, refreshed_account_info.email);
+  EXPECT_EQ(account_info.gaia, refreshed_account_info.gaia);
+  EXPECT_EQ(kTestHostedDomain, refreshed_account_info.hosted_domain);
+  EXPECT_EQ(kTestFullName, refreshed_account_info.full_name);
+  EXPECT_EQ(kTestGivenName, refreshed_account_info.given_name);
+  EXPECT_EQ(kTestLocale, refreshed_account_info.locale);
+  EXPECT_EQ(kTestPictureUrl, refreshed_account_info.picture_url);
+}
+#endif
 
 }  // namespace identity
