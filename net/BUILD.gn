@@ -5747,7 +5747,6 @@ test("net_unittests") {
       "http/http_content_disposition_unittest.cc",
       "http/http_network_transaction_unittest.cc",
       "http/http_proxy_client_socket_pool_unittest.cc",
-      "socket/ssl_client_socket_pool_unittest.cc",
       "spdy/spdy_network_transaction_unittest.cc",
       "spdy/spdy_proxy_client_socket_unittest.cc",
       "url_request/url_request_job_unittest.cc",
