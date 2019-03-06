@@ -293,3 +293,6 @@ vs-chromium-project.txt
 
 # Ignore any Android RenderTest goldens
 **/render_tests/*.png
+
+# Ignore IntelliJ files.
+.idea/
