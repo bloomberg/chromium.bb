@@ -798,7 +798,7 @@ expect_error_recv(int sockfd, uint32_t expected_error)
  * However, running under Valgrind would point out invalid reads and use of
  * uninitialized values.
  */
-FAIL_TEST(request_bogus_size)
+TEST(request_bogus_size)
 {
 	struct wl_display *display;
 	struct wl_client *client;
