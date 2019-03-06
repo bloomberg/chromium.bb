@@ -54,6 +54,7 @@
 #include "base/task/post_task.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/cdm/browser/cdm_message_filter_android.h"
+#include "components/content_capture/browser/content_capture_receiver_manager.h"
 #include "components/crash/content/browser/crash_handler_host_linux.h"
 #include "components/navigation_interception/intercept_navigation_delegate.h"
 #include "components/policy/content/policy_blacklist_navigation_throttle.h"
@@ -753,6 +754,13 @@ bool AwContentBrowserClient::BindAssociatedInterfaceRequestFromFrame(
   if (interface_name == autofill::mojom::AutofillDriver::Name_) {
     autofill::ContentAutofillDriverFactory::BindAutofillDriver(
         autofill::mojom::AutofillDriverAssociatedRequest(std::move(*handle)),
+        render_frame_host);
+    return true;
+  } else if (interface_name ==
+             content_capture::mojom::ContentCaptureReceiver::Name_) {
+    content_capture::ContentCaptureReceiverManager::BindContentCaptureReceiver(
+        content_capture::mojom::ContentCaptureReceiverAssociatedRequest(
+            std::move(*handle)),
         render_frame_host);
     return true;
   }

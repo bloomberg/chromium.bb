@@ -192,6 +192,7 @@
 #include "components/cdm/browser/cdm_message_filter_android.h"
 #include "components/certificate_matching/certificate_principal_pattern.h"
 #include "components/cloud_devices/common/cloud_devices_switches.h"
+#include "components/content_capture/browser/content_capture_receiver_manager.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -3720,6 +3721,13 @@ bool ChromeContentBrowserClient::BindAssociatedInterfaceRequestFromFrame(
   if (interface_name == autofill::mojom::AutofillDriver::Name_) {
     autofill::ContentAutofillDriverFactory::BindAutofillDriver(
         autofill::mojom::AutofillDriverAssociatedRequest(std::move(*handle)),
+        render_frame_host);
+    return true;
+  } else if (interface_name ==
+             content_capture::mojom::ContentCaptureReceiver::Name_) {
+    content_capture::ContentCaptureReceiverManager::BindContentCaptureReceiver(
+        content_capture::mojom::ContentCaptureReceiverAssociatedRequest(
+            std::move(*handle)),
         render_frame_host);
     return true;
   }

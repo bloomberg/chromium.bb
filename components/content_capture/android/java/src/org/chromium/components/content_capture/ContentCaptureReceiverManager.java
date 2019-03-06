@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 
 import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.content_public.browser.WebContents;
 
 import java.util.Arrays;
 
@@ -19,6 +20,12 @@ public class ContentCaptureReceiverManager {
     private static final boolean DEBUG = false;
 
     private ContentCaptureConsumer mContentCaptureConsumer;
+
+    public static ContentCaptureReceiverManager create(WebContents webContents) {
+        ContentCaptureReceiverManager manager = new ContentCaptureReceiverManager();
+        manager.nativeInit(webContents);
+        return manager;
+    }
 
     public ContentCaptureReceiverManager() {}
 
@@ -61,4 +68,6 @@ public class ContentCaptureReceiverManager {
         for (Object s : session) frameSession.add((ContentCaptureData) s);
         return frameSession;
     }
+
+    private native void nativeInit(WebContents webContents);
 }
