@@ -252,6 +252,11 @@ Dispatcher::Dispatcher(std::unique_ptr<DispatcherDelegate> delegate)
 Dispatcher::~Dispatcher() {
 }
 
+// static
+WorkerScriptContextSet* Dispatcher::GetWorkerScriptContextSet() {
+  return &(g_worker_script_context_set.Get());
+}
+
 void Dispatcher::OnRenderThreadStarted(content::RenderThread* thread) {
   thread->RegisterExtension(extensions::SafeBuiltins::CreateV8Extension());
 }
@@ -932,7 +937,7 @@ void Dispatcher::OnDeliverMessage(int worker_thread_id,
                                   const PortId& target_port_id,
                                   const Message& message) {
   bindings_system_->GetMessagingService()->DeliverMessage(
-      *script_context_set_, target_port_id, message,
+      script_context_set_.get(), target_port_id, message,
       NULL);  // All render frames.
 }
 
@@ -946,7 +951,7 @@ void Dispatcher::OnDispatchOnConnect(
   DCHECK(!target_port_id.is_opener);
 
   bindings_system_->GetMessagingService()->DispatchOnConnect(
-      *script_context_set_, target_port_id, channel_name, source, info,
+      script_context_set_.get(), target_port_id, channel_name, source, info,
       NULL);  // All render frames.
 }
 
@@ -955,7 +960,7 @@ void Dispatcher::OnDispatchOnDisconnect(int worker_thread_id,
                                         const std::string& error_message) {
   DCHECK_EQ(kMainThreadId, worker_thread_id);
   bindings_system_->GetMessagingService()->DispatchOnDisconnect(
-      *script_context_set_, port_id, error_message,
+      script_context_set_.get(), port_id, error_message,
       NULL);  // All render frames.
 }
 
@@ -1308,9 +1313,10 @@ void Dispatcher::EnableCustomElementWhiteList() {
 }
 
 void Dispatcher::UpdateBindings(const std::string& extension_id) {
-  script_context_set().ForEach(extension_id,
-                               base::Bind(&Dispatcher::UpdateBindingsForContext,
-                                          base::Unretained(this)));
+  script_context_set_iterator()->ForEach(
+      extension_id, base::BindRepeating(&Dispatcher::UpdateBindingsForContext,
+                                        // Called synchronously.
+                                        base::Unretained(this)));
 }
 
 void Dispatcher::UpdateBindingsForContext(ScriptContext* context) {

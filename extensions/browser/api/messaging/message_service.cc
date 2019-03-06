@@ -40,6 +40,7 @@
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/api/messaging/messaging_endpoint.h"
+#include "extensions/common/api/messaging/port_context.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/background_info.h"
@@ -66,6 +67,15 @@ const char kProhibitedByPoliciesError[] =
     "Access to the native messaging host was disabled by the system "
     "administrator.";
 #endif
+
+LazyContextId LazyContextIdFor(content::BrowserContext* browser_context,
+                               const Extension* extension) {
+  if (BackgroundInfo::HasLazyBackgroundPage(extension))
+    return LazyContextId(browser_context, extension->id());
+
+  DCHECK(BackgroundInfo::IsServiceWorkerBased(extension));
+  return LazyContextId(browser_context, extension->id(), extension->url());
+}
 
 }  // namespace
 
@@ -386,7 +396,8 @@ void MessageService::OpenChannelToNativeApp(
 
   std::unique_ptr<MessageChannel> channel = std::make_unique<MessageChannel>();
   channel->opener = std::move(opener_port);
-  channel->opener->OpenPort(source_process_id, source_routing_id);
+  channel->opener->OpenPort(source_process_id,
+                            PortContext::ForFrame(source_routing_id));
 
   std::string error = kReceivingEndDoesntExistError;
   const PortId receiver_port_id = source_port_id.GetOppositePortId();
@@ -514,8 +525,11 @@ void MessageService::OpenChannelImpl(BrowserContext* browser_context,
     return;
   }
 
-  params->opener_port->OpenPort(params->source_process_id,
-                                params->source_routing_id);
+  // TODO(crbug.com/925918): Implement opening channel from from a Service
+  // Worker context.
+  params->opener_port->OpenPort(
+      params->source_process_id,
+      PortContext::ForFrame(params->source_routing_id));
   params->opener_port->RevalidatePort();
 
   params->receiver->RemoveCommonFrames(*params->opener_port);
@@ -591,12 +605,12 @@ void MessageService::AddChannel(std::unique_ptr<MessageChannel> channel,
   ChannelId channel_id = receiver_port_id.GetChannelId();
   CHECK(channels_.find(channel_id) == channels_.end());
   channels_[channel_id] = std::move(channel);
-  pending_lazy_background_page_channels_.erase(channel_id);
+  pending_lazy_context_channels_.erase(channel_id);
 }
 
 void MessageService::OpenPort(const PortId& port_id,
                               int process_id,
-                              int routing_id) {
+                              const PortContext& port_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!port_id.is_opener);
 
@@ -605,27 +619,32 @@ void MessageService::OpenPort(const PortId& port_id,
   if (it == channels_.end())
     return;
 
-  it->second->receiver->OpenPort(process_id, routing_id);
+  it->second->receiver->OpenPort(process_id, port_context);
 }
 
 void MessageService::ClosePort(const PortId& port_id,
                                int process_id,
-                               int routing_id,
+                               const PortContext& context,
                                bool force_close) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  ClosePortImpl(port_id, process_id, routing_id, force_close, std::string());
+  int routing_id = context.frame ? context.frame->routing_id : MSG_ROUTING_NONE;
+  int worker_thread_id =
+      context.worker ? context.worker->thread_id : kMainThreadId;
+  ClosePortImpl(port_id, process_id, routing_id, worker_thread_id, force_close,
+                std::string());
 }
 
 void MessageService::CloseChannel(const PortId& port_id,
                                   const std::string& error_message) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   ClosePortImpl(port_id, content::ChildProcessHost::kInvalidUniqueID,
-                MSG_ROUTING_NONE, true, error_message);
+                MSG_ROUTING_NONE, kMainThreadId, true, error_message);
 }
 
 void MessageService::ClosePortImpl(const PortId& port_id,
                                    int process_id,
                                    int routing_id,
+                                   int worker_thread_id,
                                    bool force_close,
                                    const std::string& error_message) {
   // Note: The channel might be not yet created (if the opener became invalid
@@ -634,14 +653,15 @@ void MessageService::ClosePortImpl(const PortId& port_id,
   ChannelId channel_id = port_id.GetChannelId();
   auto it = channels_.find(channel_id);
   if (it == channels_.end()) {
-    auto pending = pending_lazy_background_page_channels_.find(channel_id);
-    if (pending != pending_lazy_background_page_channels_.end()) {
+    auto pending = pending_lazy_context_channels_.find(channel_id);
+    if (pending != pending_lazy_context_channels_.end()) {
       const LazyContextId& context_id = pending->second;
       context_id.GetTaskQueue()->AddPendingTask(
           context_id,
-          base::BindOnce(&MessageService::PendingLazyBackgroundPageClosePort,
+          base::BindOnce(&MessageService::PendingLazyContextClosePort,
                          weak_factory_.GetWeakPtr(), port_id, process_id,
-                         routing_id, force_close, error_message));
+                         routing_id, worker_thread_id, force_close,
+                         error_message));
     }
     return;
   }
@@ -652,9 +672,9 @@ void MessageService::ClosePortImpl(const PortId& port_id,
   if (force_close) {
     CloseChannelImpl(it, port_id, error_message, true);
   } else if (port_id.is_opener) {
-    it->second->opener->ClosePort(process_id, routing_id);
+    it->second->opener->ClosePort(process_id, routing_id, worker_thread_id);
   } else {
-    it->second->receiver->ClosePort(process_id, routing_id);
+    it->second->receiver->ClosePort(process_id, routing_id, worker_thread_id);
   }
 }
 
@@ -708,8 +728,7 @@ void MessageService::EnqueuePendingMessage(const PortId& source_port_id,
         PendingMessage(source_port_id, message));
     // A channel should only be holding pending messages because it is in one
     // of these states.
-    DCHECK(
-        !base::ContainsKey(pending_lazy_background_page_channels_, channel_id));
+    DCHECK(!base::ContainsKey(pending_lazy_context_channels_, channel_id));
     return;
   }
   EnqueuePendingMessageForLazyBackgroundLoad(source_port_id,
@@ -723,12 +742,12 @@ void MessageService::EnqueuePendingMessageForLazyBackgroundLoad(
     const Message& message) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  auto pending = pending_lazy_background_page_channels_.find(channel_id);
-  if (pending != pending_lazy_background_page_channels_.end()) {
+  auto pending = pending_lazy_context_channels_.find(channel_id);
+  if (pending != pending_lazy_context_channels_.end()) {
     const LazyContextId& context_id = pending->second;
     context_id.GetTaskQueue()->AddPendingTask(
         context_id,
-        base::BindOnce(&MessageService::PendingLazyBackgroundPagePostMessage,
+        base::BindOnce(&MessageService::PendingLazyContextPostMessage,
                        weak_factory_.GetWeakPtr(), source_port_id, message));
   }
 }
@@ -745,7 +764,7 @@ void MessageService::DispatchMessage(const PortId& source_port_id,
   dest_port->DispatchOnMessage(message);
 }
 
-bool MessageService::MaybeAddPendingLazyBackgroundPageOpenChannelTask(
+bool MessageService::MaybeAddPendingLazyContextOpenChannelTask(
     BrowserContext* context,
     const Extension* extension,
     std::unique_ptr<OpenChannelParams>* params,
@@ -753,7 +772,11 @@ bool MessageService::MaybeAddPendingLazyBackgroundPageOpenChannelTask(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(ExtensionsBrowserClient::Get()->IsSameContext(context, context_));
 
-  if (!BackgroundInfo::HasLazyBackgroundPage(extension))
+  const bool is_event_page = BackgroundInfo::HasLazyBackgroundPage(extension);
+  bool is_worker_based = false;
+  if (!is_event_page)
+    is_worker_based = BackgroundInfo::IsServiceWorkerBased(extension);
+  if (!is_worker_based && !is_event_page)
     return false;
 
   // If the extension uses spanning incognito mode, make sure we're always
@@ -762,19 +785,18 @@ bool MessageService::MaybeAddPendingLazyBackgroundPageOpenChannelTask(
   if (!IncognitoInfo::IsSplitMode(extension))
     context = ExtensionsBrowserClient::Get()->GetOriginalContext(context);
 
-  const LazyContextId context_id(context, extension->id());
+  const LazyContextId context_id = LazyContextIdFor(context, extension);
   LazyContextTaskQueue* task_queue = context_id.GetTaskQueue();
   if (!task_queue->ShouldEnqueueTask(context, extension))
     return false;
 
   ChannelId channel_id = (*params)->receiver_port_id.GetChannelId();
-  pending_lazy_background_page_channels_.emplace(channel_id, context_id);
+  pending_lazy_context_channels_.emplace(channel_id, context_id);
   int source_id = (*params)->source_process_id;
   task_queue->AddPendingTask(
-      context_id,
-      base::BindOnce(&MessageService::PendingLazyBackgroundPageOpenChannel,
-                     weak_factory_.GetWeakPtr(), base::Passed(params),
-                     source_id));
+      context_id, base::BindOnce(&MessageService::PendingLazyContextOpenChannel,
+                                 weak_factory_.GetWeakPtr(),
+                                 base::Passed(params), source_id));
 
   for (const PendingMessage& message : pending_messages) {
     EnqueuePendingMessageForLazyBackgroundLoad(message.first, channel_id,
@@ -844,18 +866,18 @@ void MessageService::OnOpenChannelAllowed(
     return;
   }
 
-  // The target might be a lazy background page. In that case, we have to check
-  // if it is loaded and ready, and if not, queue up the task and load the
-  // page.
-  if (!MaybeAddPendingLazyBackgroundPageOpenChannelTask(
-          context, target_extension, &params, pending_messages)) {
+  // The target might be a lazy background page or a Service Worker. In that
+  // case, we have to check if it is loaded and ready, and if not, queue up the
+  // task and load the page.
+  if (!MaybeAddPendingLazyContextOpenChannelTask(context, target_extension,
+                                                 &params, pending_messages)) {
     OpenChannelImpl(context, std::move(params), target_extension,
                     false /* did_enqueue */);
     DispatchPendingMessages(pending_messages, channel_id);
   }
 }
 
-void MessageService::PendingLazyBackgroundPageOpenChannel(
+void MessageService::PendingLazyContextOpenChannel(
     std::unique_ptr<OpenChannelParams> params,
     int source_process_id,
     std::unique_ptr<LazyContextTaskQueue::ContextInfo> context_info) {

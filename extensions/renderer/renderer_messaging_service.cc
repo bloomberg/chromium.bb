@@ -24,7 +24,7 @@
 #include "extensions/renderer/ipc_message_sender.h"
 #include "extensions/renderer/messaging_util.h"
 #include "extensions/renderer/script_context.h"
-#include "extensions/renderer/script_context_set.h"
+#include "extensions/renderer/script_context_set_iterable.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_scoped_user_gesture.h"
@@ -40,7 +40,7 @@ RendererMessagingService::RendererMessagingService(
 RendererMessagingService::~RendererMessagingService() {}
 
 void RendererMessagingService::ValidateMessagePort(
-    const ScriptContextSet& context_set,
+    ScriptContextSetIterable* context_set,
     const PortId& port_id,
     content::RenderFrame* render_frame) {
   // TODO(devlin): In practice, |render_frame| should never be null here (unlike
@@ -53,7 +53,7 @@ void RendererMessagingService::ValidateMessagePort(
   bool has_port = false;
   // The base::Unretained() below is safe since ScriptContextSet::ForEach is
   // synchronous.
-  context_set.ForEach(
+  context_set->ForEach(
       render_frame,
       base::Bind(&RendererMessagingService::ValidateMessagePortInContext,
                  base::Unretained(this), port_id, &has_port));
@@ -67,7 +67,7 @@ void RendererMessagingService::ValidateMessagePort(
 }
 
 void RendererMessagingService::DispatchOnConnect(
-    const ScriptContextSet& context_set,
+    ScriptContextSetIterable* context_set,
     const PortId& target_port_id,
     const std::string& channel_name,
     const ExtensionMsg_TabConnectionInfo& source,
@@ -78,7 +78,7 @@ void RendererMessagingService::DispatchOnConnect(
                        ? restrict_to_render_frame->GetRoutingID()
                        : MSG_ROUTING_NONE;
   bool port_created = false;
-  context_set.ForEach(
+  context_set->ForEach(
       info.target_id, restrict_to_render_frame,
       base::Bind(&RendererMessagingService::DispatchOnConnectToScriptContext,
                  base::Unretained(this), target_port_id, channel_name, &source,
@@ -94,22 +94,22 @@ void RendererMessagingService::DispatchOnConnect(
 }
 
 void RendererMessagingService::DeliverMessage(
-    const ScriptContextSet& context_set,
+    ScriptContextSetIterable* context_set,
     const PortId& target_port_id,
     const Message& message,
     content::RenderFrame* restrict_to_render_frame) {
-  context_set.ForEach(
+  context_set->ForEach(
       restrict_to_render_frame,
       base::Bind(&RendererMessagingService::DeliverMessageToScriptContext,
                  base::Unretained(this), message, target_port_id));
 }
 
 void RendererMessagingService::DispatchOnDisconnect(
-    const ScriptContextSet& context_set,
+    ScriptContextSetIterable* context_set,
     const PortId& port_id,
     const std::string& error_message,
     content::RenderFrame* restrict_to_render_frame) {
-  context_set.ForEach(
+  context_set->ForEach(
       restrict_to_render_frame,
       base::Bind(&RendererMessagingService::DispatchOnDisconnectToScriptContext,
                  base::Unretained(this), port_id, error_message));

@@ -8,6 +8,7 @@
 
 #include "base/guid.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/optional.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/worker_thread.h"
@@ -343,17 +344,47 @@ class WorkerThreadIPCMessageSender : public IPCMessageSender {
                               const MessageTarget& target,
                               const std::string& channel_name,
                               bool include_tls_channel_id) override {
-    NOTIMPLEMENTED();
+    DCHECK(!script_context->GetRenderFrame());
+    const Extension* extension = script_context->extension();
+
+    switch (target.type) {
+      case MessageTarget::EXTENSION: {
+        ExtensionMsg_ExternalConnectionInfo info;
+        // TODO(crbug.com/925918): Support extension Service Worker to extension
+        // messaging.
+        DCHECK_EQ(Feature::CONTENT_SCRIPT_CONTEXT,
+                  script_context->context_type());
+        if (extension && !extension->is_hosted_app()) {
+          info.source_endpoint =
+              MessagingEndpoint::ForExtension(extension->id());
+        }
+        info.target_id = *target.extension_id;
+        info.source_url = script_context->url();
+        dispatcher_->Send(new ExtensionHostMsg_OpenChannelToExtension(
+            PortContextForCurrentWorker(), info, channel_name, port_id));
+        break;
+      }
+      case MessageTarget::TAB:
+        NOTIMPLEMENTED() << "https://crbug.com/925918.";
+        break;
+      case MessageTarget::NATIVE_APP:
+        NOTIMPLEMENTED() << "https://crbug.com/925918.";
+        break;
+    }
   }
 
   void SendOpenMessagePort(int routing_id, const PortId& port_id) override {
-    NOTIMPLEMENTED();
+    DCHECK_EQ(MSG_ROUTING_NONE, routing_id);
+    dispatcher_->Send(new ExtensionHostMsg_OpenMessagePort(
+        PortContextForCurrentWorker(), port_id));
   }
 
   void SendCloseMessagePort(int routing_id,
                             const PortId& port_id,
                             bool close_channel) override {
-    NOTIMPLEMENTED();
+    DCHECK_EQ(MSG_ROUTING_NONE, routing_id);
+    dispatcher_->Send(new ExtensionHostMsg_CloseMessagePort(
+        PortContextForCurrentWorker(), port_id, close_channel));
   }
 
   void SendPostMessageToPort(const PortId& port_id,
@@ -362,8 +393,20 @@ class WorkerThreadIPCMessageSender : public IPCMessageSender {
   }
 
  private:
+  const ExtensionId& GetExtensionId() {
+    if (!extension_id_)
+      extension_id_ = dispatcher_->GetScriptContext()->extension()->id();
+    return *extension_id_;
+  }
+
+  PortContext PortContextForCurrentWorker() {
+    return PortContext::ForWorker(content::WorkerThread::GetCurrentId(),
+                                  service_worker_version_id_, GetExtensionId());
+  }
+
   WorkerThreadDispatcher* const dispatcher_;
   const int64_t service_worker_version_id_;
+  base::Optional<ExtensionId> extension_id_;
 
   // request id -> GUID map for each outstanding requests.
   std::map<int, std::string> request_id_to_guid_;

@@ -103,7 +103,7 @@ ScriptContext* ScriptContextSet::GetMainWorldContextForFrame(
 void ScriptContextSet::ForEach(
     const std::string& extension_id,
     content::RenderFrame* render_frame,
-    const base::Callback<void(ScriptContext*)>& callback) const {
+    const base::RepeatingCallback<void(ScriptContext*)>& callback) {
   // We copy the context list, because calling into javascript may modify it
   // out from under us.
   std::set<ScriptContext*> contexts_copy = contexts_;
@@ -128,8 +128,9 @@ void ScriptContextSet::ForEach(
 }
 
 void ScriptContextSet::OnExtensionUnloaded(const std::string& extension_id) {
-  ForEach(extension_id,
-          base::Bind(&ScriptContextSet::Remove, base::Unretained(this)));
+  ScriptContextSetIterable::ForEach(
+      extension_id,
+      base::BindRepeating(&ScriptContextSet::Remove, base::Unretained(this)));
 }
 
 void ScriptContextSet::AddForTesting(std::unique_ptr<ScriptContext> context) {

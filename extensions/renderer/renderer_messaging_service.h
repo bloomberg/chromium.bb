@@ -20,7 +20,7 @@ class RenderFrame;
 namespace extensions {
 class ExtensionBindingsSystem;
 class ScriptContext;
-class ScriptContextSet;
+class ScriptContextSetIterable;
 struct Message;
 struct PortId;
 
@@ -31,14 +31,14 @@ class RendererMessagingService {
 
   // Checks whether the port exists in the given frame. If it does not, a reply
   // is sent back to the browser.
-  void ValidateMessagePort(const ScriptContextSet& context_set,
+  void ValidateMessagePort(ScriptContextSetIterable* context_set,
                            const PortId& port_id,
                            content::RenderFrame* render_frame);
 
   // Dispatches the onConnect content script messaging event to some contexts
   // in |context_set|. If |restrict_to_render_frame| is specified, only contexts
   // in that render frame will receive the message.
-  void DispatchOnConnect(const ScriptContextSet& context_set,
+  void DispatchOnConnect(ScriptContextSetIterable* context_set,
                          const PortId& target_port_id,
                          const std::string& channel_name,
                          const ExtensionMsg_TabConnectionInfo& source,
@@ -48,13 +48,13 @@ class RendererMessagingService {
   // Delivers a message sent using content script messaging to some of the
   // contexts in |bindings_context_set|. If |restrict_to_render_frame| is
   // specified, only contexts in that render view will receive the message.
-  void DeliverMessage(const ScriptContextSet& context_set,
+  void DeliverMessage(ScriptContextSetIterable* context_set,
                       const PortId& target_port_id,
                       const Message& message,
                       content::RenderFrame* restrict_to_render_frame);
 
   // Dispatches the onDisconnect event in response to the channel being closed.
-  void DispatchOnDisconnect(const ScriptContextSet& context_set,
+  void DispatchOnDisconnect(ScriptContextSetIterable* context_set,
                             const PortId& port_id,
                             const std::string& error_message,
                             content::RenderFrame* restrict_to_render_frame);
