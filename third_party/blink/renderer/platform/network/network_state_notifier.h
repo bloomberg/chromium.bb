@@ -313,6 +313,8 @@ class PLATFORM_EXPORT NetworkStateNotifier {
   // thread.  Note that ScopedNotifier must be destroyed when not holding a lock
   // so that onLine notifications can be dispatched without a deadlock.
   class ScopedNotifier {
+    STACK_ALLOCATED();
+
    public:
     explicit ScopedNotifier(NetworkStateNotifier&);
     ~ScopedNotifier();

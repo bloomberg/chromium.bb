@@ -117,6 +117,8 @@ inline bool operator!=(const FormDataElement& a, const FormDataElement& b) {
 }
 
 class PLATFORM_EXPORT EncodedFormData : public RefCounted<EncodedFormData> {
+  USING_FAST_MALLOC(EncodedFormData);
+
  public:
   enum EncodingType {
     kFormURLEncoded,    // for application/x-www-form-urlencoded
