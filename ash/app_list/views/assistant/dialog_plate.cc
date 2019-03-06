@@ -335,10 +335,20 @@ void DialogPlate::InitVoiceLayoutContainer() {
   layout_manager->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_CENTER);
 
+  // Offset.
+  // To make the |animated_voice_input_toggle_| horizontally centered in the
+  // dialog plate we need to offset by the difference in width between the
+  // |molecule_icon_| and the |keyboard_input_toggle_|.
+  constexpr int difference =
+      /*keyboard_input_toggle_width=*/kButtonSizeDip -
+      /*molecule_icon_width=*/kIconSizeDip;
+  views::View* offset = new views::View();
+  offset->SetPreferredSize(gfx::Size(difference, 1));
+  voice_layout_container_->AddChildView(offset);
+
   // Spacer.
   views::View* spacer = new views::View();
   voice_layout_container_->AddChildView(spacer);
-
   layout_manager->SetFlexForView(spacer, 1);
 
   // Animated voice input toggle.
@@ -351,18 +361,7 @@ void DialogPlate::InitVoiceLayoutContainer() {
   // Spacer.
   spacer = new views::View();
   voice_layout_container_->AddChildView(spacer);
-
   layout_manager->SetFlexForView(spacer, 1);
-
-  // Spacer.
-  // To make the mic icon in the center of the |assistant_page_view_|
-  // compensate for the width of molecule icon and keyboard input toggle.
-  spacer = new views::View();
-  constexpr int spacing =
-      /*molecule_icon_width=*/kIconSizeDip -
-      /*keyboard_input_toggle_width*/ kButtonSizeDip;
-  spacer->SetPreferredSize(gfx::Size(spacing, 1));
-  voice_layout_container_->AddChildView(spacer);
 
   // Keyboard input toggle.
   keyboard_input_toggle_ = ash::AssistantButton::Create(
