@@ -249,7 +249,7 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
                                  TransformNode* parent_node);
   void UndoSnapping(TransformNode* node);
   void UpdateSnapping(TransformNode* node);
-  void UpdateNodeAndAncestorsHaveIntegerTranslations(
+  void UpdateNodeAndAncestorsHaveAxisAlignedTransforms(
       TransformNode* node,
       TransformNode* parent_node);
   bool NeedsSourceToParentUpdate(TransformNode* node);
