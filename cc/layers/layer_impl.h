@@ -435,6 +435,12 @@ class CC_EXPORT LayerImpl {
   // PopulateScaledSharedQuadState().
   virtual gfx::Rect GetEnclosingRectInTargetSpace() const;
 
+  // Returns the bounds of this layer in target space when scaled by |scale|.
+  // This function scales in the same way as
+  // PopulateScaledSharedQuadStateQuadState(). See
+  // PopulateScaledSharedQuadStateQuadState() for more details.
+  gfx::Rect GetScaledEnclosingRectInTargetSpace(float scale) const;
+
   void UpdatePropertyTreeForAnimationIfNeeded(ElementId element_id);
 
   float GetIdealContentsScale() const;
@@ -483,12 +489,6 @@ class CC_EXPORT LayerImpl {
                              AppendQuadsData* append_quads_data,
                              SkColor color,
                              float width) const;
-
-  // Returns the bounds of this layer in target space when scaled by |scale|.
-  // This function scales in the same way as
-  // PopulateScaledSharedQuadStateQuadState(). See
-  // PopulateScaledSharedQuadStateQuadState() for more details.
-  gfx::Rect GetScaledEnclosingRectInTargetSpace(float scale) const;
 
  private:
   void ValidateQuadResourcesInternal(viz::DrawQuad* quad) const;
@@ -563,8 +563,6 @@ class CC_EXPORT LayerImpl {
   DrawMode current_draw_mode_;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(SurfaceLayerImplTest, GetEnclosingRectInTargetSpace);
-
   PropertyTrees* GetPropertyTrees() const;
   ClipTree& GetClipTree() const;
   EffectTree& GetEffectTree() const;
