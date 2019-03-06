@@ -52,6 +52,10 @@ content::WebUIDataSource* CreatePolicyUIHtmlSource() {
   source->AddLocalizedString("labelRefreshInterval",
                              IDS_POLICY_LABEL_REFRESH_INTERVAL);
   source->AddLocalizedString("labelStatus", IDS_POLICY_LABEL_STATUS);
+  source->AddLocalizedString("labelPoliciesPush",
+                             IDS_POLICY_LABEL_PUSH_POLICIES);
+  source->AddLocalizedString("policiesPushOn", IDS_POLICY_PUSH_POLICIES_ON);
+  source->AddLocalizedString("policiesPushOff", IDS_POLICY_PUSH_POLICIES_OFF);
   source->AddLocalizedString("showUnset", IDS_POLICY_SHOW_UNSET);
   source->AddLocalizedString("noPoliciesSet", IDS_POLICY_NO_POLICIES_SET);
   source->AddLocalizedString("showMore", IDS_POLICY_SHOW_MORE);
