@@ -894,7 +894,7 @@ bool SkiaRenderer::CalculateRPDQParams(sk_sp<SkImage> content,
     if (dst_rect.IsEmpty())
       return false;
 
-    params->image_filter = filter;
+    params->image_filter = filter->makeWithLocalMatrix(local_matrix);
   }
   return true;
 }
