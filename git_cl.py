@@ -5066,12 +5066,15 @@ def CMDweb(parser, args):
   # allows to hide "Created new window in existing browser session." message
   # from Chrome. Based on https://stackoverflow.com/a/2323563.
   saved_stdout = os.dup(1)
+  saved_stderr = os.dup(2)
   os.close(1)
+  os.close(2)
   os.open(os.devnull, os.O_RDWR)
   try:
     webbrowser.open(issue_url)
   finally:
     os.dup2(saved_stdout, 1)
+    os.dup2(saved_stderr, 2)
   return 0
 
 
