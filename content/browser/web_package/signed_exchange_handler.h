@@ -99,6 +99,8 @@ class CONTENT_EXPORT SignedExchangeHandler {
       base::RepeatingCallback<int(void)> frame_tree_node_id_getter);
   ~SignedExchangeHandler();
 
+  int64_t GetExchangeHeaderLength() const { return exchange_header_length_; }
+
  protected:
   SignedExchangeHandler();
 
@@ -143,6 +145,7 @@ class CONTENT_EXPORT SignedExchangeHandler {
   scoped_refptr<net::IOBuffer> header_buf_;
   // Wrapper around |header_buf_| to progressively read fixed-size data.
   scoped_refptr<net::DrainableIOBuffer> header_read_buf_;
+  int64_t exchange_header_length_ = 0;
 
   signed_exchange_prologue::BeforeFallbackUrl prologue_before_fallback_url_;
   signed_exchange_prologue::FallbackUrlAndAfter
