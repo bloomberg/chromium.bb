@@ -151,4 +151,55 @@ TEST_F(BookmarkAppInstallFinalizerTest, BasicInstallFails) {
   EXPECT_TRUE(callback_called);
 }
 
+TEST_F(BookmarkAppInstallFinalizerTest, ConcurrentInstallSucceeds) {
+  BookmarkAppInstallFinalizer finalizer(profile());
+
+  base::RunLoop run_loop;
+
+  const GURL url1("https://foo1.example");
+  const GURL url2("https://foo2.example");
+
+  bool callback1_called = false;
+  bool callback2_called = false;
+
+  // Start install finalization for the 1st app
+  {
+    WebApplicationInfo web_application_info;
+    web_application_info.app_url = url1;
+
+    finalizer.FinalizeInstall(
+        web_application_info,
+        base::BindLambdaForTesting([&](const web_app::AppId& installed_app_id,
+                                       web_app::InstallResultCode code) {
+          EXPECT_EQ(web_app::InstallResultCode::kSuccess, code);
+          EXPECT_EQ(installed_app_id, web_app::GenerateAppIdFromURL(url1));
+          callback1_called = true;
+          if (callback2_called)
+            run_loop.Quit();
+        }));
+  }
+
+  // Start install finalization for the 2nd app
+  {
+    WebApplicationInfo web_application_info;
+    web_application_info.app_url = url2;
+
+    finalizer.FinalizeInstall(
+        web_application_info,
+        base::BindLambdaForTesting([&](const web_app::AppId& installed_app_id,
+                                       web_app::InstallResultCode code) {
+          EXPECT_EQ(web_app::InstallResultCode::kSuccess, code);
+          EXPECT_EQ(installed_app_id, web_app::GenerateAppIdFromURL(url2));
+          callback2_called = true;
+          if (callback1_called)
+            run_loop.Quit();
+        }));
+  }
+
+  run_loop.Run();
+
+  EXPECT_TRUE(callback1_called);
+  EXPECT_TRUE(callback2_called);
+}
+
 }  // namespace extensions
