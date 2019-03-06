@@ -105,10 +105,9 @@ TEST_F(RasterInProcessCommandBufferTest,
   ri_->WaitSyncTokenCHROMIUM(sii->GenUnverifiedSyncToken().GetConstData());
 
   // Call BeginRasterCHROMIUM.
-  cc::RasterColorSpace raster_color_space(color_space, 0);
   ri_->BeginRasterCHROMIUM(/*sk_color=*/0, /*msaa_sample_count=*/0,
-                           /*can_use_lcd_text=*/false,
-                           raster_color_space, mailbox.name);
+                           /*can_use_lcd_text=*/false, color_space,
+                           mailbox.name);
   EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), ri_->GetError());
 
   // Should flag an error this command is not allowed between a Begin and

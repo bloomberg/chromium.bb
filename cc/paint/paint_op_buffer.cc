@@ -329,7 +329,7 @@ PaintOp::SerializeOptions::SerializeOptions(
     ClientPaintCache* paint_cache,
     SkCanvas* canvas,
     SkStrikeServer* strike_server,
-    SkColorSpace* color_space,
+    sk_sp<SkColorSpace> color_space,
     bool can_use_lcd_text,
     bool context_supports_distance_field_text,
     int max_texture_size,
@@ -340,7 +340,7 @@ PaintOp::SerializeOptions::SerializeOptions(
       paint_cache(paint_cache),
       canvas(canvas),
       strike_server(strike_server),
-      color_space(color_space),
+      color_space(std::move(color_space)),
       can_use_lcd_text(can_use_lcd_text),
       context_supports_distance_field_text(
           context_supports_distance_field_text),
@@ -351,6 +351,7 @@ PaintOp::SerializeOptions::SerializeOptions(
 PaintOp::SerializeOptions::SerializeOptions(const SerializeOptions&) = default;
 PaintOp::SerializeOptions& PaintOp::SerializeOptions::operator=(
     const SerializeOptions&) = default;
+PaintOp::SerializeOptions::~SerializeOptions() = default;
 
 PaintOp::DeserializeOptions::DeserializeOptions(
     TransferCacheDeserializeHelper* transfer_cache,

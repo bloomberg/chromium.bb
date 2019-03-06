@@ -1072,8 +1072,7 @@ error::Error DoBeginRasterCHROMIUM(GLuint texture_id,
                                    GLuint sk_color,
                                    GLuint msaa_sample_count,
                                    GLboolean can_use_lcd_text,
-                                   GLint color_type,
-                                   GLuint color_space_transfer_cache_id);
+                                   GLint color_type);
 error::Error DoRasterCHROMIUM(GLuint raster_shm_id,
                               GLuint raster_shm_offset,
                               GLsizeiptr raster_shm_size,

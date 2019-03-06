@@ -3384,18 +3384,10 @@ TEST(PaintOpBufferTest, RecordShadersCached) {
   // Several deserialization test cases:
   // (0) deserialize once, verify cached is the same as deserialized version
   // (1) deserialize again, verify shader gets reused
-  // (2) change color space, verify shader is new
-  // (3) change scale, verify shader is new
-  // (4) sanity check, same new scale + same new colorspace, shader is reused.
-  for (size_t i = 0; i < 5; ++i) {
+  // (2) change scale, verify shader is new
+  // (3) sanity check, same new scale + same new colorspace, shader is reused.
+  for (size_t i = 0; i < 4; ++i) {
     if (i < 2) {
-      // arbitrary color space ids
-      deserialize_options.raster_color_space_id = 23;
-    } else {
-      deserialize_options.raster_color_space_id = 34;
-    }
-
-    if (i < 3) {
       records[i] = PaintOpBuffer::MakeFromMemory(memory.get(), memory_written,
                                                  deserialize_options);
     } else {
@@ -3406,9 +3398,7 @@ TEST(PaintOpBufferTest, RecordShadersCached) {
     auto* entry =
         transfer_cache->GetEntryAs<ServiceShaderTransferCacheEntry>(shader_id);
     ASSERT_TRUE(entry);
-    EXPECT_EQ(entry->raster_color_space_id(),
-              deserialize_options.raster_color_space_id);
-    if (i < 3)
+    if (i < 2)
       EXPECT_EQ(records[i]->size(), 1u);
     else
       EXPECT_EQ(records[i]->size(), 2u);
@@ -3433,9 +3423,6 @@ TEST(PaintOpBufferTest, RecordShadersCached) {
           EXPECT_NE(op_skshader, last_shader);
           break;
         case 3:
-          EXPECT_NE(op_skshader, last_shader);
-          break;
-        case 4:
           EXPECT_EQ(op_skshader, last_shader);
           break;
       }

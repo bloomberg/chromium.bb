@@ -441,7 +441,6 @@ class RasterDecoderImpl final : public RasterDecoder,
   void DoBeginRasterCHROMIUM(GLuint sk_color,
                              GLuint msaa_sample_count,
                              GLboolean can_use_lcd_text,
-                             GLuint color_space_transfer_cache_id,
                              const volatile GLbyte* key);
   void DoRasterCHROMIUM(GLuint raster_shm_id,
                         GLuint raster_shm_offset,
@@ -577,7 +576,6 @@ class RasterDecoderImpl final : public RasterDecoder,
 
   std::unique_ptr<SkDeferredDisplayListRecorder> recorder_;
   SkCanvas* raster_canvas_ = nullptr;  // ptr into recorder_ or sk_surface_
-  uint32_t raster_color_space_id_;
   std::vector<SkDiscardableHandleId> locked_handles_;
 
   // Tracing helpers.
@@ -2008,7 +2006,6 @@ void RasterDecoderImpl::DoBeginRasterCHROMIUM(
     GLuint sk_color,
     GLuint msaa_sample_count,
     GLboolean can_use_lcd_text,
-    GLuint color_space_transfer_cache_id,
     const volatile GLbyte* key) {
   // Workaround for https://crbug.com/906453: Flush before BeginRaster (the
   // commands between BeginRaster and EndRaster will not flush).
@@ -2069,19 +2066,6 @@ void RasterDecoderImpl::DoBeginRasterCHROMIUM(
     return;
   }
 
-  TransferCacheDeserializeHelperImpl transfer_cache_deserializer(
-      raster_decoder_id_, transfer_cache());
-  auto* color_space_entry =
-      transfer_cache_deserializer
-          .GetEntryAs<cc::ServiceColorSpaceTransferCacheEntry>(
-              color_space_transfer_cache_id);
-  if (!color_space_entry || !color_space_entry->color_space().IsValid()) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBeginRasterCHROMIUM",
-                       "failed to find valid color space");
-    shared_image_.reset();
-    return;
-  }
-
   if (use_ddl_) {
     SkSurfaceCharacterization characterization;
     bool result = sk_surface_->characterize(&characterization);
@@ -2092,8 +2076,6 @@ void RasterDecoderImpl::DoBeginRasterCHROMIUM(
   } else {
     raster_canvas_ = sk_surface_->getCanvas();
   }
-
-  raster_color_space_id_ = color_space_transfer_cache_id;
 
   // All or nothing clearing, as no way to validate the client's input on what
   // is the "used" part of the texture.
