@@ -72,6 +72,8 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabReparentingParams;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
+import org.chromium.components.content_capture.ContentCaptureFeatures;
+import org.chromium.components.content_capture.ContentCaptureReceiverManager;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.components.embedder_support.view.ContentView;
 import org.chromium.components.navigation_interception.InterceptNavigationDelegate;
@@ -1456,6 +1458,10 @@ public class Tab
 
             setInterceptNavigationDelegate(mDelegateFactory.createInterceptNavigationDelegate(
                     this));
+            if (ContentCaptureFeatures.isEnabled()) {
+                // The created object is held by native side.
+                ContentCaptureReceiverManager.create(getWebContents());
+            }
         } finally {
             TraceEvent.end("ChromeTab.initBrowserComponents");
         }

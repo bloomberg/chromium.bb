@@ -4,6 +4,8 @@ include_rules = [
   "+components/autofill/content/renderer",
   "+components/autofill/core/common",
   "+components/cdm/renderer",
+  "+components/content_capture/common",
+  "+components/content_capture/renderer",
   "+components/content_settings/core/common",
   "+components/contextual_search/content/renderer",
   "+components/crash/core/common/crash_key.h",

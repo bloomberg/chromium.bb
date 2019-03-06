@@ -13,6 +13,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/content/renderer/autofill_agent.h"
 #include "components/autofill/content/renderer/password_autofill_agent.h"
+#include "components/content_capture/common/content_capture_features.h"
+#include "components/content_capture/renderer/content_capture_sender.h"
 #include "content/public/renderer/document_state.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
@@ -156,6 +158,8 @@ AwRenderFrameExt::AwRenderFrameExt(content::RenderFrame* render_frame)
       new autofill::PasswordAutofillAgent(render_frame, &registry_);
   new autofill::AutofillAgent(render_frame, password_autofill_agent, nullptr,
                               &registry_);
+  if (content_capture::features::IsContentCaptureEnabled())
+    new content_capture::ContentCaptureSender(render_frame);
 
   // Add myself to the RenderFrame => AwRenderFrameExt register.
   render_frame_ext_map.Get().emplace(render_frame, this);

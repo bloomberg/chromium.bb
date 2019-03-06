@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "base/android/jni_weak_ref.h"
+#include "base/android/scoped_java_ref.h"
 #include "components/content_capture/browser/content_capture_receiver_manager.h"
 
 namespace content_capture {
@@ -32,7 +32,7 @@ class ContentCaptureReceiverManagerAndroid
       content::WebContents* web_contents,
       const base::android::JavaRef<jobject>& jcaller);
 
-  JavaObjectWeakGlobalRef java_ref_;
+  base::android::ScopedJavaGlobalRef<jobject> java_ref_;
 };
 
 }  // namespace content_capture
