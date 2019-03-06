@@ -452,10 +452,10 @@ void WorkletAnimation::setPlaybackRate(ScriptState* script_state,
   // support is in.
   if (!playback_rate) {
     if (document_->GetFrame() && ExecutionContext::From(script_state)) {
-      document_->GetFrame()->Console().AddMessage(
-          ConsoleMessage::Create(kJSMessageSource, kWarningMessageLevel,
-                                 "WorkletAnimation currently does not support "
-                                 "playback rate of Zero."));
+      document_->GetFrame()->Console().AddMessage(ConsoleMessage::Create(
+          kJSMessageSource, mojom::ConsoleMessageLevel::kWarning,
+          "WorkletAnimation currently does not support "
+          "playback rate of Zero."));
     }
     return;
   }

@@ -68,7 +68,7 @@ AtomicString V8CustomXPathNSResolver::lookupNamespaceURI(const String& prefix) {
     LocalFrame* frame = ToLocalFrameIfNotDetached(script_state_->GetContext());
     if (frame)
       frame->Console().AddMessage(ConsoleMessage::Create(
-          kJSMessageSource, kErrorMessageLevel,
+          kJSMessageSource, mojom::ConsoleMessageLevel::kError,
           "XPathNSResolver does not have a lookupNamespaceURI method."));
     return g_null_atom;
   }

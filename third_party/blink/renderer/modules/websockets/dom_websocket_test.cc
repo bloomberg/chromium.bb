@@ -66,9 +66,12 @@ class MockWebSocketChannel : public WebSocketChannel {
   }
   MOCK_CONST_METHOD0(BufferedAmount, unsigned());
   MOCK_METHOD2(Close, void(int, const String&));
-  MOCK_METHOD3(FailMock, void(const String&, MessageLevel, SourceLocation*));
+  MOCK_METHOD3(FailMock,
+               void(const String&,
+                    mojom::ConsoleMessageLevel,
+                    SourceLocation*));
   void Fail(const String& reason,
-            MessageLevel level,
+            mojom::ConsoleMessageLevel level,
             std::unique_ptr<SourceLocation> location) override {
     FailMock(reason, level, location.get());
   }
@@ -485,7 +488,7 @@ TEST(DOMWebSocketTest, closeWhenConnecting) {
         websocket_scope.Channel(),
         FailMock(
             String("WebSocket is closed before the connection is established."),
-            kWarningMessageLevel, _));
+            mojom::ConsoleMessageLevel::kWarning, _));
   }
   websocket_scope.Socket().Connect("ws://example.com/", Vector<String>(),
                                    scope.GetExceptionState());

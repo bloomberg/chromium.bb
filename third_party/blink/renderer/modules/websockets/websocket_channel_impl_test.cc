@@ -799,7 +799,8 @@ TEST_F(WebSocketChannelImplTest, failFromWebSocket) {
                  WebSocketChannel::kCloseEventCodeAbnormalClosure, String()));
   }
 
-  Channel()->Fail("fail message from WebSocket", kErrorMessageLevel,
+  Channel()->Fail("fail message from WebSocket",
+                  mojom::ConsoleMessageLevel::kError,
                   SourceLocation::Create(String(), 0, 0, nullptr));
 }
 
@@ -876,7 +877,8 @@ TEST_F(WebSocketChannelImplHandshakeThrottleTest, FailDuringThrottle) {
     EXPECT_CALL(checkpoint, Call(1));
   }
   Channel()->Connect(url(), "");
-  Channel()->Fail("close during handshake", kWarningMessageLevel,
+  Channel()->Fail("close during handshake",
+                  mojom::ConsoleMessageLevel::kWarning,
                   SourceLocation::Create(String(), 0, 0, nullptr));
   checkpoint.Call(1);
 }
@@ -896,7 +898,8 @@ TEST_F(WebSocketChannelImplHandshakeThrottleTest,
   }
   Channel()->Connect(url(), "");
   HandleClient()->DidConnect(Handle(), String("a"), String("b"));
-  Channel()->Fail("close during handshake", kWarningMessageLevel,
+  Channel()->Fail("close during handshake",
+                  mojom::ConsoleMessageLevel::kWarning,
                   SourceLocation::Create(String(), 0, 0, nullptr));
   checkpoint.Call(1);
 }

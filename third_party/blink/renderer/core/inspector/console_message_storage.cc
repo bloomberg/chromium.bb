@@ -52,7 +52,7 @@ void TraceConsoleMessageEvent(ConsoleMessage* message) {
   // Change in this function requires adjustment of Catapult/Telemetry metric
   // tracing/tracing/metrics/console_error_metric.html.
   // See https://crbug.com/880432
-  if (message->Level() == kErrorMessageLevel) {
+  if (message->Level() == mojom::ConsoleMessageLevel::kError) {
     TRACE_EVENT_INSTANT1("blink.console", "ConsoleMessage::Error",
                          TRACE_EVENT_SCOPE_THREAD, "source",
                          MessageSourceToString(message->Source()));

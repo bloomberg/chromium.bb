@@ -216,9 +216,9 @@ FetchRespondWithObserver* FetchRespondWithObserver::Create(
 void FetchRespondWithObserver::OnResponseRejected(
     ServiceWorkerResponseError error) {
   DCHECK(GetExecutionContext());
-  GetExecutionContext()->AddConsoleMessage(
-      ConsoleMessage::Create(kJSMessageSource, kWarningMessageLevel,
-                             GetMessageForResponseError(error, request_url_)));
+  GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
+      kJSMessageSource, mojom::ConsoleMessageLevel::kWarning,
+      GetMessageForResponseError(error, request_url_)));
 
   // The default value of WebServiceWorkerResponse's status is 0, which maps
   // to a network error.

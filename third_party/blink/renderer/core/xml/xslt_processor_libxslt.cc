@@ -65,18 +65,18 @@ void XSLTProcessor::ParseErrorFunc(void* user_data, xmlError* error) {
   if (!console)
     return;
 
-  MessageLevel level;
+  mojom::ConsoleMessageLevel level;
   switch (error->level) {
     case XML_ERR_NONE:
-      level = kVerboseMessageLevel;
+      level = mojom::ConsoleMessageLevel::kVerbose;
       break;
     case XML_ERR_WARNING:
-      level = kWarningMessageLevel;
+      level = mojom::ConsoleMessageLevel::kWarning;
       break;
     case XML_ERR_ERROR:
     case XML_ERR_FATAL:
     default:
-      level = kErrorMessageLevel;
+      level = mojom::ConsoleMessageLevel::kError;
       break;
   }
 

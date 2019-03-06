@@ -418,7 +418,8 @@ void HTMLMediaElementEncryptedMedia::Encrypted(
     event = CreateEncryptedEvent(WebEncryptedMediaInitDataType::kUnknown,
                                  nullptr, 0);
     media_element_->GetExecutionContext()->AddConsoleMessage(
-        ConsoleMessage::Create(kJSMessageSource, kWarningMessageLevel,
+        ConsoleMessage::Create(kJSMessageSource,
+                               mojom::ConsoleMessageLevel::kWarning,
                                "Media element must be CORS-same-origin with "
                                "the embedding page. If cross-origin, you "
                                "should use the `crossorigin` attribute and "

@@ -309,7 +309,7 @@ bool ChromeClientImpl::ShouldReportDetailedMessageForSource(
 
 void ChromeClientImpl::AddMessageToConsole(LocalFrame* local_frame,
                                            MessageSource source,
-                                           MessageLevel level,
+                                           mojom::ConsoleMessageLevel level,
                                            const String& message,
                                            unsigned line_number,
                                            const String& source_id,

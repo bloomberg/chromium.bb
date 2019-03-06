@@ -32,7 +32,7 @@ class CORE_EXPORT ThreadedObjectProxyBase : public WorkerReportingProxy {
   void CountFeature(WebFeature) override;
   void CountDeprecation(WebFeature) override;
   void ReportConsoleMessage(MessageSource,
-                            MessageLevel,
+                            mojom::ConsoleMessageLevel,
                             const String& message,
                             SourceLocation*) override;
   void DidCloseWorkerGlobalScope() override;

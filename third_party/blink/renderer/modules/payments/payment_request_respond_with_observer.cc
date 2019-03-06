@@ -56,11 +56,11 @@ void PaymentRequestRespondWithObserver::OnResponseFulfilled(
 
   // Check payment response validity.
   if (!response->hasMethodName() || !response->hasDetails()) {
-    GetExecutionContext()->AddConsoleMessage(
-        ConsoleMessage::Create(kJSMessageSource, kErrorMessageLevel,
-                               "'PaymentHandlerResponse.methodName' and "
-                               "'PaymentHandlerResponse.details' must not "
-                               "be empty in payment response."));
+    GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
+        kJSMessageSource, mojom::ConsoleMessageLevel::kError,
+        "'PaymentHandlerResponse.methodName' and "
+        "'PaymentHandlerResponse.details' must not "
+        "be empty in payment response."));
     OnResponseRejected(mojom::ServiceWorkerResponseError::kUnknown);
     return;
   }
@@ -73,7 +73,7 @@ void PaymentRequestRespondWithObserver::OnResponseFulfilled(
                            response->details().V8Value().As<v8::Object>())
            .ToLocal(&details_value)) {
     GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
-        kJSMessageSource, kErrorMessageLevel,
+        kJSMessageSource, mojom::ConsoleMessageLevel::kError,
         "Failed to stringify PaymentHandlerResponse.details in payment "
         "response."));
     OnResponseRejected(mojom::ServiceWorkerResponseError::kUnknown);

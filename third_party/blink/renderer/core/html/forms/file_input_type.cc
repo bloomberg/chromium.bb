@@ -165,7 +165,7 @@ void FileInputType::HandleDOMActivateEvent(Event& event) {
     String message =
         "File chooser dialog can only be shown with a user activation.";
     document.AddConsoleMessage(ConsoleMessage::Create(
-        kJSMessageSource, kWarningMessageLevel, message));
+        kJSMessageSource, mojom::ConsoleMessageLevel::kWarning, message));
     return;
   }
 

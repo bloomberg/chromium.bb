@@ -180,7 +180,8 @@ void DeviceOrientationController::LogToConsolePolicyFeaturesDisabled(
       "features.md#sensor-features",
       event_name.Ascii().data());
   ConsoleMessage* console_message = ConsoleMessage::Create(
-      kJSMessageSource, kWarningMessageLevel, std::move(message));
+      kJSMessageSource, mojom::ConsoleMessageLevel::kWarning,
+      std::move(message));
   frame->Console().AddMessage(console_message);
 }
 

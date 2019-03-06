@@ -252,7 +252,7 @@ PerformanceEntryVector Performance::getEntriesByType(
     PerformanceEntryVector empty_entries;
     String message = "Deprecated API for given entry type.";
     GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
-        kJSMessageSource, kWarningMessageLevel, message));
+        kJSMessageSource, mojom::ConsoleMessageLevel::kWarning, message));
     return empty_entries;
   }
   return getEntriesByTypeInternal(type);

@@ -54,10 +54,11 @@ void SharedWorkerReportingProxy::ReportException(
   // https://html.spec.whatwg.org/C/#runtime-script-errors-2
 }
 
-void SharedWorkerReportingProxy::ReportConsoleMessage(MessageSource,
-                                                      MessageLevel,
-                                                      const String& message,
-                                                      SourceLocation*) {
+void SharedWorkerReportingProxy::ReportConsoleMessage(
+    MessageSource,
+    mojom::ConsoleMessageLevel,
+    const String& message,
+    SourceLocation*) {
   DCHECK(!IsMainThread());
   // Not supported in SharedWorker.
 }

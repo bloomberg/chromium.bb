@@ -159,9 +159,9 @@ void SVGElement::ReportAttributeParsingError(SVGParsingError error,
   // Don't report any errors on attribute removal.
   if (value.IsNull())
     return;
-  GetDocument().AddConsoleMessage(
-      ConsoleMessage::Create(kRenderingMessageSource, kErrorMessageLevel,
-                             "Error: " + error.Format(tagName(), name, value)));
+  GetDocument().AddConsoleMessage(ConsoleMessage::Create(
+      kRenderingMessageSource, mojom::ConsoleMessageLevel::kError,
+      "Error: " + error.Format(tagName(), name, value)));
 }
 
 String SVGElement::title() const {

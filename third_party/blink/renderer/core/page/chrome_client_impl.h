@@ -94,7 +94,7 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
                                             const String&) override;
   void AddMessageToConsole(LocalFrame*,
                            MessageSource,
-                           MessageLevel,
+                           mojom::ConsoleMessageLevel,
                            const String& message,
                            unsigned line_number,
                            const String& source_id,

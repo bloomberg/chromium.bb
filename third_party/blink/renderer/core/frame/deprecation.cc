@@ -711,8 +711,9 @@ void Deprecation::WarnOnDeprecatedProperties(
   String message = DeprecationMessage(unresolved_property);
   if (!message.IsEmpty()) {
     page->GetDeprecation().Suppress(unresolved_property);
-    ConsoleMessage* console_message = ConsoleMessage::Create(
-        kDeprecationMessageSource, kWarningMessageLevel, message);
+    ConsoleMessage* console_message =
+        ConsoleMessage::Create(kDeprecationMessageSource,
+                               mojom::ConsoleMessageLevel::kWarning, message);
     frame->Console().AddMessage(console_message);
   }
 }
@@ -795,7 +796,8 @@ void Deprecation::GenerateReport(const LocalFrame* frame, WebFeature feature) {
   // Send the deprecation message to the console as a warning.
   DCHECK(!info.message.IsEmpty());
   ConsoleMessage* console_message = ConsoleMessage::Create(
-      kDeprecationMessageSource, kWarningMessageLevel, info.message);
+      kDeprecationMessageSource, mojom::ConsoleMessageLevel::kWarning,
+      info.message);
   frame->Console().AddMessage(console_message);
 
   if (!frame || !frame->Client())

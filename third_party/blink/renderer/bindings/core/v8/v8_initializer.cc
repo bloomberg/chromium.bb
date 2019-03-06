@@ -196,21 +196,21 @@ static String ExtractMessageForConsole(v8::Isolate* isolate,
 }
 
 namespace {
-MessageLevel MessageLevelFromNonFatalErrorLevel(int error_level) {
-  MessageLevel level = kErrorMessageLevel;
+mojom::ConsoleMessageLevel MessageLevelFromNonFatalErrorLevel(int error_level) {
+  mojom::ConsoleMessageLevel level = mojom::ConsoleMessageLevel::kError;
   switch (error_level) {
     case v8::Isolate::kMessageDebug:
-      level = kVerboseMessageLevel;
+      level = mojom::ConsoleMessageLevel::kVerbose;
       break;
     case v8::Isolate::kMessageLog:
     case v8::Isolate::kMessageInfo:
-      level = kInfoMessageLevel;
+      level = mojom::ConsoleMessageLevel::kInfo;
       break;
     case v8::Isolate::kMessageWarning:
-      level = kWarningMessageLevel;
+      level = mojom::ConsoleMessageLevel::kWarning;
       break;
     case v8::Isolate::kMessageError:
-      level = kInfoMessageLevel;
+      level = mojom::ConsoleMessageLevel::kInfo;
       break;
     default:
       NOTREACHED();

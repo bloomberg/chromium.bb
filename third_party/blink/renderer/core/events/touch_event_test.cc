@@ -24,7 +24,7 @@ class ConsoleCapturingChromeClient : public EmptyChromeClient {
   // ChromeClient methods:
   void AddMessageToConsole(LocalFrame*,
                            MessageSource message_source,
-                           MessageLevel,
+                           mojom::ConsoleMessageLevel,
                            const String& message,
                            unsigned line_number,
                            const String& source_id,

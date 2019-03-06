@@ -197,7 +197,8 @@ static void SrcsetError(Document* document, String message) {
     error_message.Append("Failed parsing 'srcset' attribute value since ");
     error_message.Append(message);
     document->GetFrame()->Console().AddMessage(ConsoleMessage::Create(
-        kOtherMessageSource, kErrorMessageLevel, error_message.ToString()));
+        kOtherMessageSource, mojom::ConsoleMessageLevel::kError,
+        error_message.ToString()));
   }
 }
 
@@ -327,7 +328,7 @@ static void ParseImageCandidatesFromSrcsetAttribute(
           UseCounter::Count(document, WebFeature::kSrcsetDroppedCandidate);
           if (document->GetFrame()) {
             document->GetFrame()->Console().AddMessage(ConsoleMessage::Create(
-                kOtherMessageSource, kErrorMessageLevel,
+                kOtherMessageSource, mojom::ConsoleMessageLevel::kError,
                 String("Dropped srcset candidate ") +
                     JSONValue::QuoteString(
                         String(image_url_start,

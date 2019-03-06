@@ -80,8 +80,8 @@ bool Document::execCommand(const String& command_name,
     String message =
         "We don't execute document.execCommand() this time, because it is "
         "called recursively.";
-    AddConsoleMessage(ConsoleMessage::Create(kJSMessageSource,
-                                             kWarningMessageLevel, message));
+    AddConsoleMessage(ConsoleMessage::Create(
+        kJSMessageSource, mojom::ConsoleMessageLevel::kWarning, message));
     return false;
   }
   base::AutoReset<bool> execute_scope(&is_running_exec_command_, true);

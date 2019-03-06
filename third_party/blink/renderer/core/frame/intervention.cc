@@ -27,7 +27,7 @@ void Intervention::GenerateReport(const LocalFrame* frame,
   // Send the message to the console.
   Document* document = frame->GetDocument();
   document->AddConsoleMessage(ConsoleMessage::Create(
-      kInterventionMessageSource, kErrorMessageLevel, message));
+      kInterventionMessageSource, mojom::ConsoleMessageLevel::kError, message));
 
   if (!frame->Client())
     return;

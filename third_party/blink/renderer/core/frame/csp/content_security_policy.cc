@@ -1198,7 +1198,7 @@ void ContentSecurityPolicy::ReportUnsupportedDirective(const String& name) {
 
   String message =
       "Unrecognized Content-Security-Policy directive '" + name + "'.\n";
-  MessageLevel level = kErrorMessageLevel;
+  mojom::ConsoleMessageLevel level = mojom::ConsoleMessageLevel::kError;
   if (EqualIgnoringASCIICase(name, kAllow)) {
     message = kAllowMessage;
   } else if (EqualIgnoringASCIICase(name, kOptions)) {
@@ -1208,7 +1208,7 @@ void ContentSecurityPolicy::ReportUnsupportedDirective(const String& name) {
   } else if (GetDirectiveType(name) != DirectiveType::kUndefined) {
     message = "The Content-Security-Policy directive '" + name +
               "' is implemented behind a flag which is currently disabled.\n";
-    level = kInfoMessageLevel;
+    level = mojom::ConsoleMessageLevel::kInfo;
   }
 
   LogToConsole(message, level);
@@ -1317,7 +1317,7 @@ void ContentSecurityPolicy::ReportMissingReportURI(const String& policy) {
 }
 
 void ContentSecurityPolicy::LogToConsole(const String& message,
-                                         MessageLevel level) {
+                                         mojom::ConsoleMessageLevel level) {
   LogToConsole(ConsoleMessage::Create(kSecurityMessageSource, level, message));
 }
 

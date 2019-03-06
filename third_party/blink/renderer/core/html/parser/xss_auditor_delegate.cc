@@ -106,7 +106,8 @@ void XSSAuditorDelegate::DidBlockScript(const XSSInfo& xss_info) {
                                    : WebFeature::kXSSAuditorBlockedScript);
 
   document_->AddConsoleMessage(ConsoleMessage::Create(
-      kJSMessageSource, kErrorMessageLevel, xss_info.BuildConsoleError()));
+      kJSMessageSource, mojom::ConsoleMessageLevel::kError,
+      xss_info.BuildConsoleError()));
 
   LocalFrame* local_frame = document_->GetFrame();
   FrameLoader& frame_loader = local_frame->Loader();

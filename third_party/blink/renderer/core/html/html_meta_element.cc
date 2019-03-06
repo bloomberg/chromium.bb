@@ -129,8 +129,9 @@ void HTMLMetaElement::ParseContentAttribute(
     String message =
         "Error parsing a meta element's content: ';' is not a valid key-value "
         "pair separator. Please use ',' instead.";
-    document->AddConsoleMessage(ConsoleMessage::Create(
-        kRenderingMessageSource, kWarningMessageLevel, message));
+    document->AddConsoleMessage(
+        ConsoleMessage::Create(kRenderingMessageSource,
+                               mojom::ConsoleMessageLevel::kWarning, message));
   }
 }
 
@@ -402,7 +403,8 @@ static const char* ViewportErrorMessageTemplate(ViewportErrorCode error_code) {
   return kErrors[error_code];
 }
 
-static MessageLevel ViewportErrorMessageLevel(ViewportErrorCode error_code) {
+static mojom::ConsoleMessageLevel ViewportErrorMessageLevel(
+    ViewportErrorCode error_code) {
   switch (error_code) {
     case kTruncatedViewportArgumentValueError:
     case kTargetDensityDpiUnsupported:
@@ -410,11 +412,11 @@ static MessageLevel ViewportErrorMessageLevel(ViewportErrorCode error_code) {
     case kUnrecognizedViewportArgumentValueError:
     case kMaximumScaleTooLargeError:
     case kViewportFitUnsupported:
-      return kWarningMessageLevel;
+      return mojom::ConsoleMessageLevel::kWarning;
   }
 
   NOTREACHED();
-  return kErrorMessageLevel;
+  return mojom::ConsoleMessageLevel::kError;
 }
 
 void HTMLMetaElement::ReportViewportWarning(Document* document,

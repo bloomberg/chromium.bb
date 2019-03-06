@@ -7384,7 +7384,7 @@ void WebGLRenderingContextBase::PrintWarningToConsole(const String& message) {
   if (!canvas())
     return;
   canvas()->GetDocument().AddConsoleMessage(ConsoleMessage::Create(
-      kRenderingMessageSource, kWarningMessageLevel, message));
+      kRenderingMessageSource, mojom::ConsoleMessageLevel::kWarning, message));
 }
 
 bool WebGLRenderingContextBase::ValidateFramebufferFuncParameters(

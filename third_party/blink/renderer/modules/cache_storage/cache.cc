@@ -246,7 +246,8 @@ class Cache::BarrierCallbackForPut final
                 resolver->Resolve();
                 if (message) {
                   context->AddConsoleMessage(ConsoleMessage::Create(
-                      kJSMessageSource, kWarningMessageLevel, message));
+                      kJSMessageSource, mojom::ConsoleMessageLevel::kWarning,
+                      message));
 
                   // If the message indicates there were duplicate requests in
                   // the batch argument list, but the operation succeeded
@@ -887,7 +888,8 @@ ScriptPromise Cache::DeleteImpl(ScriptState* script_state,
             }
             if (report_to_console && message) {
               context->AddConsoleMessage(ConsoleMessage::Create(
-                  kJSMessageSource, kWarningMessageLevel, message));
+                  kJSMessageSource, mojom::ConsoleMessageLevel::kWarning,
+                  message));
             }
           },
           WrapPersistent(resolver), base::TimeTicks::Now(),

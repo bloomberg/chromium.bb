@@ -254,8 +254,8 @@ DOMWebSocket::~DOMWebSocket() {
 
 void DOMWebSocket::LogError(const String& message) {
   if (GetExecutionContext()) {
-    GetExecutionContext()->AddConsoleMessage(
-        ConsoleMessage::Create(kJSMessageSource, kErrorMessageLevel, message));
+    GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
+        kJSMessageSource, mojom::ConsoleMessageLevel::kError, message));
   }
 }
 
@@ -613,7 +613,7 @@ void DOMWebSocket::CloseInternal(int code,
   if (state_ == kConnecting) {
     state_ = kClosing;
     channel_->Fail("WebSocket is closed before the connection is established.",
-                   kWarningMessageLevel,
+                   mojom::ConsoleMessageLevel::kWarning,
                    SourceLocation::Create(String(), 0, 0, nullptr));
     return;
   }

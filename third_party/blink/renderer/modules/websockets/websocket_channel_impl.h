@@ -106,7 +106,7 @@ class MODULES_EXPORT WebSocketChannelImpl final
   // argument to omit payload.
   void Close(int code, const String& reason) override;
   void Fail(const String& reason,
-            MessageLevel,
+            mojom::ConsoleMessageLevel,
             std::unique_ptr<SourceLocation>) override;
   void Disconnect() override;
 
@@ -141,7 +141,8 @@ class MODULES_EXPORT WebSocketChannelImpl final
   void FlowControlIfNecessary();
   void InitialFlowControl();
   void FailAsError(const String& reason) {
-    Fail(reason, kErrorMessageLevel, location_at_construction_->Clone());
+    Fail(reason, mojom::ConsoleMessageLevel::kError,
+         location_at_construction_->Clone());
   }
   void AbortAsyncOperations();
   void HandleDidClose(bool was_clean, uint16_t code, const String& reason);

@@ -15,19 +15,22 @@ ConsoleLoggerImplBase::~ConsoleLoggerImplBase() = default;
 void ConsoleLoggerImplBase::AddInfoMessage(Source source,
                                            const String& message) {
   AddConsoleMessage(ConsoleMessage::Create(GetMessageSourceFromSource(source),
-                                           kInfoMessageLevel, message));
+                                           mojom::ConsoleMessageLevel::kInfo,
+                                           message));
 }
 
 void ConsoleLoggerImplBase::AddWarningMessage(Source source,
                                               const String& message) {
   AddConsoleMessage(ConsoleMessage::Create(GetMessageSourceFromSource(source),
-                                           kWarningMessageLevel, message));
+                                           mojom::ConsoleMessageLevel::kWarning,
+                                           message));
 }
 
 void ConsoleLoggerImplBase::AddErrorMessage(Source source,
                                             const String& message) {
   AddConsoleMessage(ConsoleMessage::Create(GetMessageSourceFromSource(source),
-                                           kErrorMessageLevel, message));
+                                           mojom::ConsoleMessageLevel::kError,
+                                           message));
 }
 
 MessageSource ConsoleLoggerImplBase::GetMessageSourceFromSource(Source source) {

@@ -63,7 +63,7 @@ void RemoteFrame::ScheduleNavigation(Document& origin_document,
                                      UserGestureStatus user_gesture_status) {
   if (!origin_document.GetSecurityOrigin()->CanDisplay(url)) {
     origin_document.AddConsoleMessage(ConsoleMessage::Create(
-        kSecurityMessageSource, kErrorMessageLevel,
+        kSecurityMessageSource, mojom::ConsoleMessageLevel::kError,
         "Not allowed to load local resource: " + url.ElidedString()));
     return;
   }

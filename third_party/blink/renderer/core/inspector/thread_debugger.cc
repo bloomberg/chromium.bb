@@ -48,23 +48,23 @@ ThreadDebugger* ThreadDebugger::From(v8::Isolate* isolate) {
 }
 
 // static
-MessageLevel ThreadDebugger::V8MessageLevelToMessageLevel(
+mojom::ConsoleMessageLevel ThreadDebugger::V8MessageLevelToMessageLevel(
     v8::Isolate::MessageErrorLevel level) {
-  MessageLevel result = kInfoMessageLevel;
+  mojom::ConsoleMessageLevel result = mojom::ConsoleMessageLevel::kInfo;
   switch (level) {
     case v8::Isolate::kMessageDebug:
-      result = kVerboseMessageLevel;
+      result = mojom::ConsoleMessageLevel::kVerbose;
       break;
     case v8::Isolate::kMessageWarning:
-      result = kWarningMessageLevel;
+      result = mojom::ConsoleMessageLevel::kWarning;
       break;
     case v8::Isolate::kMessageError:
-      result = kErrorMessageLevel;
+      result = mojom::ConsoleMessageLevel::kError;
       break;
     case v8::Isolate::kMessageLog:
     case v8::Isolate::kMessageInfo:
     default:
-      result = kInfoMessageLevel;
+      result = mojom::ConsoleMessageLevel::kInfo;
       break;
   }
   return result;
@@ -136,7 +136,8 @@ unsigned ThreadDebugger::PromiseRejected(
     message = message.Substring(0, 8) + " (in promise)" + message.Substring(8);
 
   ReportConsoleMessage(ToExecutionContext(context), kJSMessageSource,
-                       kErrorMessageLevel, message, location.get());
+                       mojom::ConsoleMessageLevel::kError, message,
+                       location.get());
   String url = location->Url();
   return GetV8Inspector()->exceptionThrown(
       context, ToV8InspectorStringView(default_message), exception,

@@ -151,9 +151,9 @@ static bool CheckShapeImageOrigin(Document& document,
 
   const KURL& url = image_resource.Url();
   String url_string = url.IsNull() ? "''" : url.ElidedString();
-  document.AddConsoleMessage(
-      ConsoleMessage::Create(kSecurityMessageSource, kErrorMessageLevel,
-                             "Unsafe attempt to load URL " + url_string + "."));
+  document.AddConsoleMessage(ConsoleMessage::Create(
+      kSecurityMessageSource, mojom::ConsoleMessageLevel::kError,
+      "Unsafe attempt to load URL " + url_string + "."));
 
   return false;
 }

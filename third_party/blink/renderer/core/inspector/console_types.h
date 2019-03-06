@@ -23,13 +23,6 @@ enum MessageSource {
   kInterventionMessageSource,
   kRecommendationMessageSource
 };
-
-enum MessageLevel {
-  kVerboseMessageLevel,
-  kInfoMessageLevel,
-  kWarningMessageLevel,
-  kErrorMessageLevel
-};
 }
 
 #endif  // !defined(ConsoleTypes_h)

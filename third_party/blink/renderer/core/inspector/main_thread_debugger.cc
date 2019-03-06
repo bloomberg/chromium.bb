@@ -105,7 +105,7 @@ MainThreadDebugger::~MainThreadDebugger() {
 
 void MainThreadDebugger::ReportConsoleMessage(ExecutionContext* context,
                                               MessageSource source,
-                                              MessageLevel level,
+                                              mojom::ConsoleMessageLevel level,
                                               const String& message,
                                               SourceLocation* location) {
   if (LocalFrame* frame = ToFrame(context))
@@ -188,9 +188,9 @@ void MainThreadDebugger::ExceptionThrown(ExecutionContext* context,
     NOTREACHED();
   }
 
-  frame->Console().ReportMessageToClient(kJSMessageSource, kErrorMessageLevel,
-                                         event->MessageForConsole(),
-                                         event->Location());
+  frame->Console().ReportMessageToClient(
+      kJSMessageSource, mojom::ConsoleMessageLevel::kError,
+      event->MessageForConsole(), event->Location());
 
   const String default_message = "Uncaught";
   if (script_state && script_state->ContextIsValid()) {
