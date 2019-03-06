@@ -476,8 +476,7 @@ class IdentityTestWithSignin : public AsyncExtensionBrowserTest {
 
     // This test requires these callbacks to be fired on account
     // update/removal.
-    identity_test_env()
-        ->EnableOnAccountUpdatedAndOnAccountRemovedWithInfoCallbacks();
+    identity_test_env()->EnableRemovalOfExtendedAccountInfo();
   }
 
   void TearDownOnMainThread() override {

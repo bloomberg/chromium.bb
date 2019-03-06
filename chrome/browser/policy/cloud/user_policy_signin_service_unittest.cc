@@ -768,8 +768,7 @@ TEST_F(UserPolicySigninServiceTest, SignOutThenSignInAgain) {
   // Explicitly forcing this call is necessary for the clearing of the primary
   // account to result in the account being fully removed in this testing
   // context
-  identity_test_env()
-      ->EnableOnAccountUpdatedAndOnAccountRemovedWithInfoCallbacks();
+  identity_test_env()->EnableRemovalOfExtendedAccountInfo();
 
   ASSERT_NO_FATAL_FAILURE(TestSuccessfulSignin());
 

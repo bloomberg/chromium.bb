@@ -76,7 +76,16 @@ class AccountFetcherService : public KeyedService,
   // initialized. See http://crbug.com/441399 for more context.
   void OnNetworkInitialized();
 
+  // Force-enables network fetches. For use in testing contexts. Use this only
+  // if also controlling the URLLoaderFactory used to make network requests
+  // (via |signin_client|).
   void EnableNetworkFetchesForTest();
+
+  // Force-enables account removals in response to refresh token revocations.
+  // For use in testing contexts. Safer to use than
+  // EnableNetworkFetchesForTest(), as invoking this method does not result in
+  // network requests.
+  void EnableAccountRemovalForTest();
 
 #if defined(OS_ANDROID)
   // Called by ChildAccountInfoFetcherAndroid.
@@ -106,9 +115,9 @@ class AccountFetcherService : public KeyedService,
   // Virtual so that tests can override the network fetching behaviour.
   // Further the two fetches are managed by a different refresh logic and
   // thus, can not be combined.
-  virtual void StartFetchingUserInfo(const std::string& account_id);
+  void StartFetchingUserInfo(const std::string& account_id);
 #if defined(OS_ANDROID)
-  virtual void StartFetchingChildInfo(const std::string& account_id);
+  void StartFetchingChildInfo(const std::string& account_id);
 
   // If there is more than one account in a profile, we forcibly reset the
   // child status for an account to be false.
@@ -140,6 +149,7 @@ class AccountFetcherService : public KeyedService,
   bool network_initialized_ = false;
   bool refresh_tokens_loaded_ = false;
   bool shutdown_called_ = false;
+  bool enable_account_removal_for_test_ = false;
   base::Time last_updated_;
   base::OneShotTimer timer_;
 

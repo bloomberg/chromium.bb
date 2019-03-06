@@ -349,8 +349,7 @@ TEST_F(AdvancedProtectionStatusManagerTest, AccountRemoval) {
 
   // This call is necessary to ensure that the account removal is fully
   // processed in this testing context.
-  identity_test_env()
-      ->EnableOnAccountUpdatedAndOnAccountRemovedWithInfoCallbacks();
+  identity_test_env()->EnableRemovalOfExtendedAccountInfo();
   identity_test_env()->identity_manager()->GetAccountsMutator()->RemoveAccount(
       account_id,
       signin_metrics::SourceForRefreshTokenOperation::kUserMenu_RemoveAccount);
