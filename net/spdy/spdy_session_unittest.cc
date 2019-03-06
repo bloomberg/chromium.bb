@@ -3535,9 +3535,8 @@ TEST_F(SpdySessionTest, CloseOneIdleConnection) {
 
   CreateNetworkSession();
 
-  TransportClientSocketPool* pool =
-      http_session_->GetTransportSocketPool(
-          HttpNetworkSession::NORMAL_SOCKET_POOL);
+  TransportClientSocketPool* pool = http_session_->GetSocketPool(
+      HttpNetworkSession::NORMAL_SOCKET_POOL, ProxyServer::Direct());
 
   // Create an idle SPDY session.
   CreateSpdySession();
@@ -3597,9 +3596,8 @@ TEST_F(SpdySessionTest, CloseOneIdleConnectionWithAlias) {
 
   CreateNetworkSession();
 
-  TransportClientSocketPool* pool =
-      http_session_->GetTransportSocketPool(
-          HttpNetworkSession::NORMAL_SOCKET_POOL);
+  TransportClientSocketPool* pool = http_session_->GetSocketPool(
+      HttpNetworkSession::NORMAL_SOCKET_POOL, ProxyServer::Direct());
 
   // Create an idle SPDY session.
   SpdySessionKey key1(HostPortPair("www.example.org", 80),
@@ -3684,9 +3682,8 @@ TEST_F(SpdySessionTest, CloseSessionOnIdleWhenPoolStalled) {
 
   CreateNetworkSession();
 
-  TransportClientSocketPool* pool =
-      http_session_->GetTransportSocketPool(
-          HttpNetworkSession::NORMAL_SOCKET_POOL);
+  TransportClientSocketPool* pool = http_session_->GetSocketPool(
+      HttpNetworkSession::NORMAL_SOCKET_POOL, ProxyServer::Direct());
 
   // Create a SPDY session.
   CreateSpdySession();

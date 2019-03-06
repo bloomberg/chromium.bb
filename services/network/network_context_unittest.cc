@@ -50,6 +50,7 @@
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_change_notifier.h"
+#include "net/base/proxy_server.h"
 #include "net/base/test_completion_callback.h"
 #include "net/cert/cert_verify_result.h"
 #include "net/cert/mock_cert_verifier.h"
@@ -294,8 +295,9 @@ class NetworkContextTest : public testing::Test,
     context->url_request_context()
         ->http_transaction_factory()
         ->GetSession()
-        ->GetTransportSocketPool(
-            net::HttpNetworkSession::SocketPoolType::NORMAL_SOCKET_POOL)
+        ->GetSocketPool(
+            net::HttpNetworkSession::SocketPoolType::NORMAL_SOCKET_POOL,
+            net::ProxyServer::Direct())
         ->GetInfoAsValue("", "")
         ->GetInteger(name, &value);
     return value;
@@ -307,8 +309,9 @@ class NetworkContextTest : public testing::Test,
         context->url_request_context()
             ->http_transaction_factory()
             ->GetSession()
-            ->GetTransportSocketPool(
-                net::HttpNetworkSession::SocketPoolType::NORMAL_SOCKET_POOL)
+            ->GetSocketPool(
+                net::HttpNetworkSession::SocketPoolType::NORMAL_SOCKET_POOL,
+                net::ProxyServer::Direct())
             ->GetInfoAsValue("", "");
 
     int count = 0;

@@ -21,23 +21,15 @@ class MockClientSocketPoolManager : public ClientSocketPoolManager {
   MockClientSocketPoolManager();
   ~MockClientSocketPoolManager() override;
 
-  // Sets "override" socket pools that get used instead.
-  void SetTransportSocketPool(TransportClientSocketPool* pool);
-  // Currently only works for SOCKS proxies.
-  void SetSocketPoolForProxy(const ProxyServer& proxy_server,
-                             std::unique_ptr<TransportClientSocketPool> pool);
-  void SetSocketPoolForHTTPProxy(
-      const ProxyServer& http_proxy,
-      std::unique_ptr<TransportClientSocketPool> pool);
+  // Sets socket pool that gets used for the specified ProxyServer.
+  void SetSocketPool(const ProxyServer& proxy_server,
+                     std::unique_ptr<TransportClientSocketPool> pool);
 
   // ClientSocketPoolManager methods:
   void FlushSocketPoolsWithError(int error) override;
   void CloseIdleSockets() override;
-  TransportClientSocketPool* GetTransportSocketPool() override;
-  TransportClientSocketPool* GetSocketPoolForSOCKSProxy(
-      const ProxyServer& socks_proxy) override;
-  TransportClientSocketPool* GetSocketPoolForHTTPLikeProxy(
-      const ProxyServer& http_proxy) override;
+  TransportClientSocketPool* GetSocketPool(
+      const ProxyServer& proxy_server) override;
   std::unique_ptr<base::Value> SocketPoolInfoToValue() const override;
   void DumpMemoryStats(
       base::trace_event::ProcessMemoryDump* pmd,
@@ -47,9 +39,7 @@ class MockClientSocketPoolManager : public ClientSocketPoolManager {
   using TransportClientSocketPoolMap =
       std::map<ProxyServer, std::unique_ptr<TransportClientSocketPool>>;
 
-  std::unique_ptr<TransportClientSocketPool> transport_socket_pool_;
-  TransportClientSocketPoolMap proxy_socket_pools_;
-  TransportClientSocketPoolMap http_proxy_socket_pools_;
+  TransportClientSocketPoolMap socket_pools_;
 
   DISALLOW_COPY_AND_ASSIGN(MockClientSocketPoolManager);
 };

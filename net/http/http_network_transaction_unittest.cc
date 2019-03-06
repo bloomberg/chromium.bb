@@ -152,12 +152,16 @@ const char kAlternativeServiceHttpHeader[] =
     "Alt-Svc: h2=\"mail.example.org:443\"\r\n";
 
 int GetIdleSocketCountInTransportSocketPool(HttpNetworkSession* session) {
-  return session->GetTransportSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL)
+  return session
+      ->GetSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL,
+                      ProxyServer::Direct())
       ->IdleSocketCount();
 }
 
 bool IsTransportSocketPoolStalled(HttpNetworkSession* session) {
-  return session->GetTransportSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL)
+  return session
+      ->GetSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL,
+                      ProxyServer::Direct())
       ->IsStalled();
 }
 
@@ -5108,7 +5112,7 @@ TEST_F(HttpNetworkTransactionTest, SameDestinationForDifferentProxyTypes) {
     // pass.
     EXPECT_EQ(test_case.expected_idle_socks4_sockets,
               session
-                  ->GetSocketPoolForSOCKSProxy(
+                  ->GetSocketPool(
                       HttpNetworkSession::NORMAL_SOCKET_POOL,
                       ProxyServer(ProxyServer::SCHEME_SOCKS4,
                                   SameProxyWithDifferentSchemesProxyResolver::
@@ -5116,7 +5120,7 @@ TEST_F(HttpNetworkTransactionTest, SameDestinationForDifferentProxyTypes) {
                   ->IdleSocketCount());
     EXPECT_EQ(test_case.expected_idle_socks5_sockets,
               session
-                  ->GetSocketPoolForSOCKSProxy(
+                  ->GetSocketPool(
                       HttpNetworkSession::NORMAL_SOCKET_POOL,
                       ProxyServer(ProxyServer::SCHEME_SOCKS5,
                                   SameProxyWithDifferentSchemesProxyResolver::
@@ -5124,7 +5128,7 @@ TEST_F(HttpNetworkTransactionTest, SameDestinationForDifferentProxyTypes) {
                   ->IdleSocketCount());
     EXPECT_EQ(test_case.expected_idle_http_sockets,
               session
-                  ->GetSocketPoolForHTTPLikeProxy(
+                  ->GetSocketPool(
                       HttpNetworkSession::NORMAL_SOCKET_POOL,
                       ProxyServer(ProxyServer::SCHEME_HTTP,
                                   SameProxyWithDifferentSchemesProxyResolver::
@@ -5132,7 +5136,7 @@ TEST_F(HttpNetworkTransactionTest, SameDestinationForDifferentProxyTypes) {
                   ->IdleSocketCount());
     EXPECT_EQ(test_case.expected_idle_https_sockets,
               session
-                  ->GetSocketPoolForHTTPLikeProxy(
+                  ->GetSocketPool(
                       HttpNetworkSession::NORMAL_SOCKET_POOL,
                       ProxyServer(ProxyServer::SCHEME_HTTPS,
                                   SameProxyWithDifferentSchemesProxyResolver::
@@ -5140,7 +5144,7 @@ TEST_F(HttpNetworkTransactionTest, SameDestinationForDifferentProxyTypes) {
                   ->IdleSocketCount());
     EXPECT_EQ(test_case.expected_idle_trusted_https_sockets,
               session
-                  ->GetSocketPoolForHTTPLikeProxy(
+                  ->GetSocketPool(
                       HttpNetworkSession::NORMAL_SOCKET_POOL,
                       ProxyServer(ProxyServer::SCHEME_HTTPS,
                                   SameProxyWithDifferentSchemesProxyResolver::
@@ -11242,7 +11246,8 @@ TEST_F(HttpNetworkTransactionTest, GroupNameForDirectConnections) {
     CaptureGroupNameTransportSocketPool* transport_conn_pool =
         new CaptureGroupNameTransportSocketPool(nullptr, nullptr);
     auto mock_pool_manager = std::make_unique<MockClientSocketPoolManager>();
-    mock_pool_manager->SetTransportSocketPool(transport_conn_pool);
+    mock_pool_manager->SetSocketPool(ProxyServer::Direct(),
+                                     base::WrapUnique(transport_conn_pool));
     peer.SetClientSocketPoolManager(std::move(mock_pool_manager));
 
     EXPECT_EQ(ERR_IO_PENDING,
@@ -11291,8 +11296,8 @@ TEST_F(HttpNetworkTransactionTest, GroupNameForHTTPProxyConnections) {
     CaptureGroupNameTransportSocketPool* http_proxy_pool =
         new CaptureGroupNameTransportSocketPool(NULL, NULL);
     auto mock_pool_manager = std::make_unique<MockClientSocketPoolManager>();
-    mock_pool_manager->SetSocketPoolForHTTPProxy(
-        proxy_server, base::WrapUnique(http_proxy_pool));
+    mock_pool_manager->SetSocketPool(proxy_server,
+                                     base::WrapUnique(http_proxy_pool));
     peer.SetClientSocketPoolManager(std::move(mock_pool_manager));
 
     EXPECT_EQ(ERR_IO_PENDING,
@@ -11354,8 +11359,8 @@ TEST_F(HttpNetworkTransactionTest, GroupNameForSOCKSConnections) {
     CaptureGroupNameTransportSocketPool* socks_conn_pool =
         new CaptureGroupNameTransportSocketPool(NULL, NULL);
     auto mock_pool_manager = std::make_unique<MockClientSocketPoolManager>();
-    mock_pool_manager->SetSocketPoolForProxy(proxy_server,
-                                             base::WrapUnique(socks_conn_pool));
+    mock_pool_manager->SetSocketPool(proxy_server,
+                                     base::WrapUnique(socks_conn_pool));
     peer.SetClientSocketPoolManager(std::move(mock_pool_manager));
 
     HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
@@ -14380,7 +14385,8 @@ TEST_F(HttpNetworkTransactionTest, MultiRoundAuth) {
       nullptr /* socket_performance_watcher_factory */,
       nullptr /* network_quality_estimator */, session_deps_.net_log);
   auto mock_pool_manager = std::make_unique<MockClientSocketPoolManager>();
-  mock_pool_manager->SetTransportSocketPool(transport_pool);
+  mock_pool_manager->SetSocketPool(ProxyServer::Direct(),
+                                   base::WrapUnique(transport_pool));
   session_peer.SetClientSocketPoolManager(std::move(mock_pool_manager));
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
