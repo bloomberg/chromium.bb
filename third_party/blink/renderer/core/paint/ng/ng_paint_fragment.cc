@@ -83,9 +83,9 @@ NGLogicalRect ExpandedSelectionRectForSoftLineBreakIfNeeded(
   // this fragment is at the end of line.
   if (selection_status.line_break == SelectSoftLineBreak::kNotSelected)
     return rect;
-  if (paint_fragment.GetLayoutObject()
-          ->ContainingNGBlockFlow()
-          ->ShouldTruncateOverflowingText())
+  LayoutBlockFlow* layout_block_flow =
+      paint_fragment.GetLayoutObject()->ContainingNGBlockFlow();
+  if (layout_block_flow && layout_block_flow->ShouldTruncateOverflowingText())
     return rect;
   // Copy from InlineTextBoxPainter::PaintSelection.
   const LayoutUnit space_width(paint_fragment.Style().GetFont().SpaceWidth());
