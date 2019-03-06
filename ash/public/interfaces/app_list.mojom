@@ -101,6 +101,15 @@ enum AppListModelStatus {
   kStatusSyncing,  // Syncing apps or installing synced apps.
 };
 
+// The UI component the user launched the app from. Must match
+// chrome/browser/ui/app_list/app_launch_event_logger.proto.
+enum AppListLaunchedFrom {
+  kLaunchedFromGrid = 1,
+  kLaunchedFromSuggestionChip,
+  kLaunchedFromShelf,
+  kLaunchedFromSearchBox,
+};
+
 // How the result should be displayed. Do not change the order of these as
 // they are used for metrics.
 enum SearchResultDisplayType {
@@ -320,7 +329,11 @@ interface AppListClient {
   // Logs a click on the search result.
   // |result_id|: the id of the search result that was clicked on.
   // |suggestion_index|: the position of the result in the suggestion chip.
-  LogSearchClick(string result_id, int32 suggestion_index);
+  // |launched_from|: where the app was launched.
+  LogSearchClick(
+      string result_id,
+      int32 suggestion_index,
+      AppListLaunchedFrom launched_from);
   // Invokes a custom action on a result with |result_id|.
   // |action_index| corresponds to the index of an action on the search result,
   // for example, installing. They are stored in SearchResult::actions_.

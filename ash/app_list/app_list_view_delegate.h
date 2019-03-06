@@ -10,6 +10,7 @@
 
 #include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/public/cpp/ash_public_export.h"
+#include "ash/public/interfaces/app_list.mojom.h"
 #include "ash/public/interfaces/menu.mojom.h"
 #include "base/callback_forward.h"
 #include "base/strings/string16.h"
@@ -51,9 +52,13 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
   virtual void OpenSearchResult(const std::string& result_id,
                                 int event_flags) = 0;
   // Called to log a click on the search result with |result_id| located at
-  // position |suggestion_index| in the suggestion chip.
-  virtual void LogSearchClick(const std::string& result_id,
-                              int suggestion_index) = 0;
+  // position |suggestion_index|. Logged for the suggestion chip and the tile
+  // item view. |launched_from| values must match the LaunchedFrom enum in
+  // chrome/browser/ui/app_list/app_launch_event_logger.proto.
+  virtual void LogSearchClick(
+      const std::string& result_id,
+      int suggestion_index,
+      ash::mojom::AppListLaunchedFrom launched_from) = 0;
 
   // Called to invoke a custom action on a result with |result_id|.
   // |action_index| corresponds to the index of an icon in

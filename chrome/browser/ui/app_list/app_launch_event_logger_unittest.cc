@@ -169,7 +169,8 @@ TEST_F(AppLaunchEventLoggerTest, CheckMultipleClicks) {
                                                 packages.get());
   app_launch_event_logger_.OnGridClicked(kPhotosPWAApp);
   app_launch_event_logger_.OnGridClicked(kMapsArcApp);
-  app_launch_event_logger_.OnSuggestionChipClicked(kPhotosPWAApp, 2);
+  app_launch_event_logger_.OnSuggestionChipOrSearchBoxClicked(kPhotosPWAApp, 3,
+                                                              2);
   app_launch_event_logger_.OnGridClicked(kPhotosPWAApp);
 
   scoped_task_environment_.RunUntilIdle();
@@ -226,7 +227,8 @@ TEST_F(AppLaunchEventLoggerTest, CheckUkmCodeSuggestionChip) {
 
   AppLaunchEventLogger app_launch_event_logger_;
   app_launch_event_logger_.SetAppDataForTesting(&registry, nullptr, nullptr);
-  app_launch_event_logger_.OnSuggestionChipClicked(kPhotosPWAApp, 2);
+  app_launch_event_logger_.OnSuggestionChipOrSearchBoxClicked(kPhotosPWAApp, 3,
+                                                              2);
 
   scoped_task_environment_.RunUntilIdle();
 
@@ -234,7 +236,31 @@ TEST_F(AppLaunchEventLoggerTest, CheckUkmCodeSuggestionChip) {
   ASSERT_EQ(1ul, entries.size());
   const auto* entry = entries.back();
   test_ukm_recorder_.ExpectEntrySourceHasUrl(entry, url);
-  test_ukm_recorder_.ExpectEntryMetric(entry, "PositionIndex", 2);
+  test_ukm_recorder_.ExpectEntryMetric(entry, "PositionIndex", 3);
+  test_ukm_recorder_.ExpectEntryMetric(entry, "LaunchedFrom", 2);
+}
+
+TEST_F(AppLaunchEventLoggerTest, CheckUkmCodeSearchBox) {
+  extensions::ExtensionRegistry registry(nullptr);
+  scoped_refptr<const extensions::Extension> extension =
+      extensions::ExtensionBuilder("test").SetID(kPhotosPWAApp).Build();
+  registry.AddEnabled(extension);
+
+  GURL url("https://photos.google.com/");
+
+  AppLaunchEventLogger app_launch_event_logger_;
+  app_launch_event_logger_.SetAppDataForTesting(&registry, nullptr, nullptr);
+  app_launch_event_logger_.OnSuggestionChipOrSearchBoxClicked(kPhotosPWAApp, 3,
+                                                              4);
+
+  scoped_task_environment_.RunUntilIdle();
+
+  const auto entries = test_ukm_recorder_.GetEntriesByName("AppListAppLaunch");
+  ASSERT_EQ(1ul, entries.size());
+  const auto* entry = entries.back();
+  test_ukm_recorder_.ExpectEntrySourceHasUrl(entry, url);
+  test_ukm_recorder_.ExpectEntryMetric(entry, "PositionIndex", 3);
+  test_ukm_recorder_.ExpectEntryMetric(entry, "LaunchedFrom", 4);
 }
 
 }  // namespace app_list

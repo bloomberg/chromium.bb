@@ -16,6 +16,7 @@
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/vector_icons/vector_icons.h"
+#include "ash/public/interfaces/app_list.mojom.h"
 #include "base/bind.h"
 #include "base/i18n/number_formatting.h"
 #include "base/metrics/histogram_macros.h"
@@ -239,6 +240,10 @@ void SearchResultTileItemView::OnResultChanged() {
   SetAccessibleName(accessible_name);
 }
 
+void SearchResultTileItemView::SetIndexInItemListView(size_t index) {
+  index_in_item_list_view_ = index;
+}
+
 void SearchResultTileItemView::SetParentBackgroundColor(SkColor color) {
   parent_background_color_ = color;
   UpdateBackgroundColor();
@@ -252,6 +257,9 @@ void SearchResultTileItemView::ButtonPressed(views::Button* sender,
   RecordSearchResultOpenSource(result(), view_delegate_->GetModel(),
                                view_delegate_->GetSearchModel());
   view_delegate_->OpenSearchResult(result()->id(), event.flags());
+  view_delegate_->LogSearchClick(
+      result()->id(), index_in_item_list_view_,
+      ash::mojom::AppListLaunchedFrom::kLaunchedFromSearchBox);
 }
 
 void SearchResultTileItemView::GetAccessibleNodeData(
