@@ -98,14 +98,14 @@ class LoginUtilsTest : public OobeBaseTest {
 };
 
 #if defined(GOOGLE_CHROME_BUILD)
-class LoginUtilsContainedShellTest : public LoginUtilsTest {
+class LoginUtilsKioskNextShellTest : public LoginUtilsTest {
  public:
   void SetUp() override {
     feature_list_.InitAndEnableFeature(ash::features::kKioskNextShell);
     LoginUtilsTest::SetUp();
   }
 
-  void LoginAndSetContainedShellPref(bool contained_shell_pref_value) {
+  void LoginAndSetKioskNextShellPref(bool kiosk_next_shell_pref_value) {
     extensions::ComponentLoader::EnableBackgroundExtensionsForTesting();
 
     WaitForSigninScreen();
@@ -115,19 +115,19 @@ class LoginUtilsContainedShellTest : public LoginUtilsTest {
     // Take some time to finish login and register user prefs.
     base::RunLoop().RunUntilIdle();
 
-    // Update the now registered Contained Shell pref.
+    // Update the now registered Kiosk Next Shell pref.
     ProfileHelper::Get()
         ->GetProfileByUser(user_manager::UserManager::Get()->GetActiveUser())
         ->GetPrefs()
         ->SetBoolean(ash::prefs::kKioskNextShellEnabled,
-                     contained_shell_pref_value);
+                     kiosk_next_shell_pref_value);
   }
 
  private:
   base::test::ScopedFeatureList feature_list_;
 };
 
-// This observer is used by LoginUtilsContainedShellTest to keep track of
+// This observer is used by LoginUtilsKioskNextShellTest to keep track of
 // whether a Fullscreen window was launched by ash during the test run.
 class FullscreenWindowEnvObserver : public aura::EnvObserver,
                                     public aura::WindowObserver {
@@ -162,13 +162,13 @@ class FullscreenWindowEnvObserver : public aura::EnvObserver,
   DISALLOW_COPY_AND_ASSIGN(FullscreenWindowEnvObserver);
 };
 
-IN_PROC_BROWSER_TEST_F(LoginUtilsContainedShellTest, PRE_ContainedShellLaunch) {
-  LoginAndSetContainedShellPref(true);
+IN_PROC_BROWSER_TEST_F(LoginUtilsKioskNextShellTest, PRE_KioskNextShellLaunch) {
+  LoginAndSetKioskNextShellPref(true);
 }
 
 // Checks that the Contained Experience window is launched on sign-in when the
 // feature is enabled and its pref allows it.
-IN_PROC_BROWSER_TEST_F(LoginUtilsContainedShellTest, ContainedShellLaunch) {
+IN_PROC_BROWSER_TEST_F(LoginUtilsKioskNextShellTest, KioskNextShellLaunch) {
   // Enable all component extensions.
   extensions::ComponentLoader::EnableBackgroundExtensionsForTesting();
 
@@ -188,15 +188,15 @@ IN_PROC_BROWSER_TEST_F(LoginUtilsContainedShellTest, ContainedShellLaunch) {
   EXPECT_TRUE(fullscreen_observer.did_fullscreen_window_launch());
 }
 
-IN_PROC_BROWSER_TEST_F(LoginUtilsContainedShellTest,
-                       PRE_ContainedShellDoesntLaunchWhenPrefIsDisabled) {
-  LoginAndSetContainedShellPref(false);
+IN_PROC_BROWSER_TEST_F(LoginUtilsKioskNextShellTest,
+                       PRE_KioskNextShellDoesntLaunchWhenPrefIsDisabled) {
+  LoginAndSetKioskNextShellPref(false);
 }
 
 // Checks that the Contained Experience window does not launch in sign-in when
 // its pref is disabled
-IN_PROC_BROWSER_TEST_F(LoginUtilsContainedShellTest,
-                       ContainedShellDoesntLaunchWhenPrefIsDisabled) {
+IN_PROC_BROWSER_TEST_F(LoginUtilsKioskNextShellTest,
+                       KioskNextShellDoesntLaunchWhenPrefIsDisabled) {
   // Enable all component extensions.
   extensions::ComponentLoader::EnableBackgroundExtensionsForTesting();
 
