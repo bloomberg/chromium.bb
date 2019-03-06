@@ -115,6 +115,8 @@ print_preview.VendorCapability;
 
 /**
  * Capabilities of a print destination represented in a CDD.
+ * Pin capability is not a part of standard CDD description and is defined only
+ * on Chrome OS.
  *
  * @typedef {{
  *   vendor_capability: !Array<!print_preview.VendorCapability>,
@@ -150,7 +152,8 @@ print_preview.VendorCapability;
  *       vertical_dpi: number,
  *       is_default: (boolean|undefined)
  *     }>
- *   }|undefined)
+ *   }|undefined),
+ *   pin: ({supported: (boolean|undefined)}|undefined)
  * }}
  */
 print_preview.CddCapabilities;

@@ -519,6 +519,18 @@ const char kSeveralInnerCapabilitiesVendorCapabilityCdd[] =
     "  }"
     "}";
 
+#if defined(OS_CHROMEOS)
+const char kPinOnlyCdd[] =
+    "{"
+    "  'version': '1.0',"
+    "  'printer': {"
+    "    'pin': {"
+    "      'supported': true"
+    "    }"
+    "  }"
+    "}";
+#endif  // defined(OS_CHROMEOS)
+
 const char kCjt[] =
     "{"
     "  'version': '1.0',"
@@ -1082,6 +1094,34 @@ TEST(PrinterDescriptionTest, CddSetVendorCapability) {
   EXPECT_EQ(NormalizeJson(kVendorCapabilityOnlyCdd),
             NormalizeJson(description.ToString()));
 }
+
+#if defined(OS_CHROMEOS)
+TEST(PrinterDescriptionTest, CddGetPin) {
+  {
+    CloudDeviceDescription description;
+    ASSERT_TRUE(description.InitFromString(NormalizeJson(kPinOnlyCdd)));
+
+    PinCapability pin_capability;
+    EXPECT_TRUE(pin_capability.LoadFrom(description));
+    EXPECT_TRUE(pin_capability.value());
+  }
+  {
+    CloudDeviceDescription description;
+    ASSERT_TRUE(description.InitFromString(NormalizeJson(kDefaultCdd)));
+    PinCapability pin_capability;
+    EXPECT_FALSE(pin_capability.LoadFrom(description));
+  }
+}
+
+TEST(PrinterDescriptionTest, CddSetPin) {
+  CloudDeviceDescription description;
+
+  PinCapability pin_capability;
+  pin_capability.set_value(true);
+  pin_capability.SaveTo(&description);
+  EXPECT_EQ(NormalizeJson(kPinOnlyCdd), NormalizeJson(description.ToString()));
+}
+#endif  // defined(OS_CHROMEOS)
 
 TEST(PrinterDescriptionTest, CddGetAll) {
   CloudDeviceDescription description;
