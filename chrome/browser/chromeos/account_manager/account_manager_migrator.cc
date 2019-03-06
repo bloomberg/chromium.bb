@@ -114,14 +114,6 @@ class AccountMigrationBaseStep : public AccountMigrationRunner::Step {
       return;
     }
 
-    // |IdentityManager::LegacySeedAccountInfo| must be called before
-    // |AccountManager::UpsertToken|. |AccountManager| observers will need to
-    // translate |AccountManager::AccountKey| to other formats using
-    // |IdentityManager| and hence |IdentityManager| should be updated first.
-    AccountInfo account_info;
-    account_info.email = email;
-    account_info.gaia = gaia_id;
-    identity_manager_->LegacySeedAccountInfo(account_info);
     account_manager_->UpsertAccount(
         AccountManager::AccountKey{
             gaia_id, account_manager::AccountType::ACCOUNT_TYPE_GAIA},
