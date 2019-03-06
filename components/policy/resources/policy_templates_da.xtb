@@ -245,13 +245,6 @@ Hvis denne politik ikke er angivet, benyttes standardreglen, hvor ingen HTTP/2-f
       deaktiveret. Hvis det er tilfældet, kan brugeren ikke aktivere denne funktion.</translation>
 <translation id="1474273443907024088">Deaktiver TLS False Start</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
-<translation id="1478485744311397487">Servere, som <ph name="PRODUCT_NAME" /> kan overdrage til.
-
-          Adskil flere servernavne med kommaer. Jokertegn (*) er tilladt.
-
-          Hvis politikken ikke er konfigureret, overdrager <ph name="PRODUCT_NAME" /> ikke brugerloginoplysninger, heller ikke selvom en server registreres som intranet.
-
-          Denne politik ignoreres, hvis politikken "UseKDCConstrainedDelegation" er angivet som Sand.</translation>
 <translation id="1484146587843605071"><ph name="PRODUCT_NAME" /> vil omgå alle proxyer for den hostliste, der vises her.
 
           Denne politik træder kun i kraft, hvis du har valgt indstillinger for manuel proxy under "Vælg, hvordan du vil angive indstillinger for proxyserver".
@@ -900,11 +893,6 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 
       Hvis du aktiverer denne indstilling, benytter Vis udskrift operativsystemets standardprinter som standarddestination.</translation>
 <translation id="2856674246949497058">Træk udgivelsen tilbage, og behold målversionen, hvis OS-versionen er nyere end målversionen. Foretag en Powerwash under processen.</translation>
-<translation id="2858646435735022107">Bestemmer, om rapporteringen OK-AS-DELEGATE fra KDC overholdes, eller om "AuthNegotiateDelegateWhitelist" anvendes til at begrænse overdragelsen af Kerberos-sager.
-
-          Hvis politikken er angivet som Sand, overholder HTTP-godkendelsen indstillingerne for begrænset overdragelse for KDC. Hvis det er tilfældet, ignoreres politikken "AuthNegotiateDelegateWhitelist". Få flere oplysninger på https://tools.ietf.org/html/rfc5896.html.
-
-          Hvis politikken ikke er konfigureret eller er angivet som Falsk, ignoreres indstillingerne for begrænset overdragelse fra KDC, og politikken "AuthNegotiateDelegateWhitelist" overholdes.</translation>
 <translation id="2872961005593481000">Sluk</translation>
 <translation id="2873651257716068683">Tilsidesætter størrelsen på udskriftsiden. Hvis sidestørrelsen ikke er tilgængelig, ignoreres denne politik.</translation>
 <translation id="2874209944580848064">Bemærkning om <ph name="PRODUCT_OS_NAME" />-enheder, der understøtter Android-apps:</translation>
@@ -1653,6 +1641,11 @@ Mens selve politikken understøttes på ovenstående platforme, kan den funktion
 <translation id="4725528134735324213">Aktivér Android-tjenesten til sikkerhedskopiering</translation>
 <translation id="4725801978265372736">Kræv, at navnet på den lokale bruger og ejeren af hosten for fjernadgang stemmer overens</translation>
 <translation id="4733471537137819387">Politikker i forbindelse med integreret HTTP-godkendelse.</translation>
+<translation id="4744190513568488164">Servere, som <ph name="PRODUCT_NAME" /> kan overdrage til.
+
+          Adskil servernavne med kommaer. Jokertegn (*) er tilladt.
+
+          Hvis du ikke indstiller denne politik, vil <ph name="PRODUCT_NAME" /> ikke overdrage brugeroplysninger, heller ikke selvom en server registreres som intranet.</translation>
 <translation id="4752880493649142945">Klientcertifikat for etablering af forbindelse til RemoteAccessHostTokenValidationUrl</translation>
 <translation id="4757671984625088193">Hvis indstillingen er angivet som Sand eller ikke er angivet, anbefaler <ph name="PRODUCT_NAME" /> sider, der er relateret til den aktuelle side.
       Disse forslag hentes fra Googles servere.
@@ -1731,7 +1724,6 @@ Mens selve politikken understøttes på ovenstående platforme, kan den funktion
 <translation id="4986560318567565414">Sti til Chrome ved skift fra den alternative browser.</translation>
 <translation id="4988291787868618635">Påkrævet handling for inaktivitetsforsinkelse</translation>
 <translation id="4995548127349206948">Om NTLMv2-godkendelse er aktiveret.</translation>
-<translation id="5022792010322211583">Brug KDC-begrænset overdragelse</translation>
 <translation id="5047604665028708335">Tillad adgang til websites uden for indholdspakker.</translation>
 <translation id="5052081091120171147">Denne politik tvinger import af browserhistorikken fra den aktuelle standardbrowser, hvis den er aktiveret. Hvis denne politik er aktiveret, påvirker den også dialogboksen for import. Hvis den er deaktiveret, importeres der ikke nogen browserdata. Hvis den ikke er angivet, kan brugeren blive spurgt, om der skal importeres, ellers sker importen automatisk.</translation>
 <translation id="5056708224511062314">Luppen er deaktiveret</translation>

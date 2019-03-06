@@ -104,7 +104,6 @@
 <translation id="1143142264369994168">Sertifikat-signatar</translation>
 <translation id="1145292499998999162">Et programtillegg ble blokkert</translation>
 <translation id="1145532888383813076">Søk på enheten din, appene dine og på nettet.</translation>
-<translation id="1146204723345436916">Importér bokmerker fra HTML-fil</translation>
 <translation id="114721135501989771">Få Googles smarte funksjoner i Chrome</translation>
 <translation id="1148097584170732637"><ph name="FILE_COUNT" /> ble funnet.
     <ph name="LINE_BREAK1" />
@@ -417,7 +416,6 @@
 <translation id="1608626060424371292">Fjern denne brukeren</translation>
 <translation id="1609170755653088773">Synkroniser dette passordet med iPhonen din</translation>
 <translation id="1611584202130317952">Leveringsflyten ble avbrutt. Prøv igjen, eller kontakt enhetseieren eller administratoren.</translation>
-<translation id="1611704746353331382">Eksportér bokmerker til HTML-fil</translation>
 <translation id="1614511179807650956">Du kan ha brukt opp mobildatakvoten din. Gå til aktiveringsportalen for <ph name="NAME" /> for å kjøpe mer data.</translation>
 <translation id="161460670679785907">Finner ikke telefonen din</translation>
 <translation id="1616206807336925449">Denne utvidelsen krever ingen spesielle tillatelser.</translation>
@@ -648,7 +646,6 @@
 <translation id="1932098463447129402">Ikke før</translation>
 <translation id="1933345018156373194">Flyttingen mislyktes på grunn av en uventet feil: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1933809209549026293">Du må koble til en mus eller et tastatur. Hvis du bruker en Bluetooth-enhet, må du sjekke at den er klar til å kobles til.</translation>
-<translation id="1936157145127842922">Vis i mappe</translation>
 <translation id="1938351510777341717">Ekstern kommando</translation>
 <translation id="1940546824932169984">Tilkoblede enheter</translation>
 <translation id="1942765061641586207">Bildeoppløsning</translation>
@@ -1365,7 +1362,6 @@
 <translation id="3009300415590184725">Er du sikker på at du vil avbryte konfigurasjonsprosessen for mobildatatjenesten?</translation>
 <translation id="3009779501245596802">Indekserte databaser</translation>
 <translation id="3010279545267083280">Passordet er slettet</translation>
-<translation id="3011362742078013760">Åpne alle bokmerker i &amp;inkognitovindu</translation>
 <translation id="3011488081941333749">Informasjonskapsler fra <ph name="DOMAIN" /> blir slettet ved avslutning</translation>
 <translation id="3012631534724231212">(iframe)</translation>
 <translation id="3012804260437125868">Bare sikre tilkoblinger til samme nettsted</translation>
@@ -2569,7 +2565,6 @@
 <translation id="4881695831933465202">Åpne</translation>
 <translation id="4882312758060467256">Har tilgang til dette nettstedet</translation>
 <translation id="4882831918239250449">Kontrollér hvordan nettleserloggen din brukes til personlig tilpasning av søk, annonser med mer</translation>
-<translation id="4883178195103750615">Eksportér bokmerker til HTML-fil</translation>
 <translation id="4883436287898674711">Alle <ph name="WEBSITE_1" />-nettsteder</translation>
 <translation id="48838266408104654">&amp;Oppgavebehandling</translation>
 <translation id="4884987973312178454">6x</translation>
@@ -2903,7 +2898,6 @@
 <translation id="5376931455988532197">Filen er for stor</translation>
 <translation id="537813040452600081">Sider i dette vinduet vises ikke i nettleserloggen, og de legger ikke igjen andre spor (f.eks. informasjonskapsler) på datamaskinen etter at du har logget av. Filer du laster ned og bokmerker du oppretter, lagres ikke.</translation>
 <translation id="5379140238605961210">Fortsett blokkering av mikrofontilgang</translation>
-<translation id="5379268888377976432">Angre sletting</translation>
 <translation id="5382591305415226340">Administrer støttede linker</translation>
 <translation id="5384883051496921101">Dette nettstedet er i ferd med å dele informasjon med en app utenfor inkognitomodus.</translation>
 <translation id="5388885445722491159">Sammenkoblet</translation>
@@ -3198,7 +3192,6 @@
 <translation id="5801568494490449797">Innstillinger</translation>
 <translation id="5804241973901381774">Tillatelser</translation>
 <translation id="5805697420284793859">Window Manager</translation>
-<translation id="580571955903695899">Sortér etter tittel</translation>
 <translation id="5811750797187914944">Ferdig</translation>
 <translation id="5814126672212206791">Tilkoblingstype</translation>
 <translation id="5815645614496570556">X.400-adresse</translation>
@@ -3525,7 +3518,6 @@
 <translation id="6264365405983206840">Velg &amp;alle</translation>
 <translation id="6267166720438879315">Velg sertifikat for å autentisere deg selv til <ph name="HOST_NAME" /></translation>
 <translation id="6268252012308737255">Åpne med <ph name="APP" /></translation>
-<translation id="6268747994388690914">Importér bokmerker fra HTML-fil</translation>
 <translation id="6272643420381259437">Det oppsto en feil (<ph name="ERROR" />) under nedlasting av programtillegget</translation>
 <translation id="6273677812470008672">Kvalitet</translation>
 <translation id="6277105963844135994">Tidsavbrudd for nettverket</translation>
@@ -3600,7 +3592,6 @@
 <translation id="6393156038355142111">Foreslå et sterkt passord</translation>
 <translation id="6395575651121294044"><ph name="NUMBER_OF_FILES" /> elementer</translation>
 <translation id="6397094776139756010">Alternativer for synkronisering og personlig tilpasning</translation>
-<translation id="6397592254427394018">Åpne alle bokmerker i &amp;inkognitovindu</translation>
 <translation id="6398715114293939307">Fjern Google Play-butikken</translation>
 <translation id="6398765197997659313">Avslutt fullskjerm</translation>
 <translation id="6399774419735315745">Spion</translation>
@@ -3864,7 +3855,6 @@
 <translation id="6798954102094737107">Programtillegg: <ph name="PLUGIN_NAME" /></translation>
 <translation id="6801435275744557998">Kalibrer berøringsskjermen</translation>
 <translation id="6802031077390104172"><ph name="USAGE" /> (<ph name="OID" />)</translation>
-<translation id="6804671422566312077">Åpne alle bokmerker i &amp;nytt vindu</translation>
 <translation id="6805038906417219576">OK</translation>
 <translation id="6805647936811177813">Logg på <ph name="TOKEN_NAME" /> for å importere klientsertifikat fra <ph name="HOST_NAME" />.</translation>
 <translation id="680572642341004180">Aktiver RLZ-sporing for <ph name="SHORT_PRODUCT_OS_NAME" />.</translation>
@@ -3971,7 +3961,6 @@
 <translation id="6970856801391541997">Skriv ut bestemte sider</translation>
 <translation id="6972180789171089114">Lyd og video</translation>
 <translation id="6972754398087986839">Kom i gang</translation>
-<translation id="6973630695168034713">Mapper</translation>
 <translation id="6974609594866392343">Demomodus uten nett</translation>
 <translation id="6977381486153291903">Fastvareversjon</translation>
 <translation id="6978121630131642226">Søkemotorer</translation>
@@ -4057,7 +4046,7 @@
 <translation id="7088674813905715446">Administratoren har gitt denne enheten status som «ikke klargjort». For å aktivere den for registrering, må du be administratoren gi enheten status som «ventende».</translation>
 <translation id="7092474863625458670">Med Voice Match kan du åpne assistenten ved å bruke stemmen.
     <ph name="BR" />
-<ph name="BEGIN_BOLD" />Vær oppmerksom på dette:<ph name="END_BOLD" /> Lignende stemmer eller opptak av stemmen din kan kanskje også brukes for å få tilgang til assistenten din. Du kan fjerne Voice Match-tillatelsen senere ved å slå den av i Assistent-innstillingene.</translation>
+    <ph name="BEGIN_BOLD" />Vær oppmerksom på dette:<ph name="END_BOLD" /> Lignende stemmer eller opptak av stemmen din kan kanskje også brukes for å få tilgang til assistenten din. Du kan fjerne Voice Match-tillatelsen senere ved å slå den av i Assistent-innstillingene.</translation>
 <translation id="7093434536568905704">GTK+</translation>
 <translation id="7093866338626856921">Utveksle data med enhetene <ph name="HOSTNAMES" /></translation>
 <translation id="7098389117866926363">USB-C-enhet (venstre port på baksiden)</translation>
@@ -4302,7 +4291,6 @@
 <translation id="7478485216301680444">Kiosk-appen kunne ikke installeres.</translation>
 <translation id="7481312909269577407">Frem</translation>
 <translation id="748138892655239008">Hovedbegrensninger for sertifikat</translation>
-<translation id="7484964289312150019">Åpne alle bokmerker i &amp;nytt vindu</translation>
 <translation id="7487067081878637334">Teknologi</translation>
 <translation id="7487099628810939106">Forsinkelse før klikk:</translation>
 <translation id="7487969577036436319">Ingen komponenter er installert</translation>
@@ -4731,7 +4719,6 @@ Oppbevar nøkkelfilen på et trygt sted. Du får bruk for den når du skal oppre
 <translation id="8063235345342641131">Grønt standardbrukerbilde</translation>
 <translation id="8064671687106936412">Nøkkel:</translation>
 <translation id="8066773524873206594">Alle endringer lagres i <ph name="DOWNLOADS_FOLDER" />.</translation>
-<translation id="806812017500012252">Sortér etter tittel</translation>
 <translation id="8068253693380742035">Trykk for å logge på</translation>
 <translation id="8069615408251337349">Google Cloud Print</translation>
 <translation id="8071432093239591881">Skriv ut som bilde</translation>

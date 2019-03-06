@@ -74,6 +74,7 @@
 <translation id="2000419248597011803">将一些 Cookie 以及地址栏和搜索框中的搜索字词发送给您的默认搜索引擎</translation>
 <translation id="2015722694326466240">要想查看密码，您必须先在设备上设置密码。</translation>
 <translation id="2068952045031577364">过去 1 周</translation>
+<translation id="2074131957428911366">您始终可在<ph name="BEGIN_LINK" />设置<ph name="END_LINK" />中选择要同步的内容。</translation>
 <translation id="2079545284768500474">撤消</translation>
 <translation id="209018056901015185">请求切换到桌面版网站</translation>
 <translation id="2096012225669085171">在所有设备上保持同步并进行个性化设置</translation>
@@ -199,6 +200,7 @@
 <translation id="4038354071007134711">此设备上没有可以打开该文件的应用。</translation>
 <translation id="4042870976416480368">在网页上查找</translation>
 <translation id="4049507953662678203">请确保已连接到网络，然后重试。</translation>
+<translation id="4082688844002261427">控制 Google 如何利用您的浏览记录为您提供个性化的搜索、广告和其他服务</translation>
 <translation id="408404951701638773">现在可以更方便地使用搜索栏</translation>
 <translation id="4084682180776658562">已保存的书签</translation>
 <translation id="411254640334432676">下载失败。</translation>
@@ -354,7 +356,6 @@
 <translation id="6482629121755362506">删除了<ph name="NUMBER_OF_SELECTED_BOOKMARKS" />项</translation>
 <translation id="6513773942555305766">Chrome 建议的密码：<ph name="SUGGESTED_PASSWORD" /></translation>
 <translation id="6541915733953096570">过去 1 小时</translation>
-<translation id="6548479190262846511">未找到任何用于此网站的密码</translation>
 <translation id="6642362222295953972">切换到已打开的标签页</translation>
 <translation id="6643016212128521049">清除</translation>
 <translation id="6656103420185847513">修改文件夹</translation>
@@ -396,6 +397,7 @@
 <translation id="7203585745079012652">说出答案</translation>
 <translation id="722055596168483966">对 Google 服务进行个性化设置</translation>
 <translation id="7272437679830969316">无法验证您的身份。未复制密码。</translation>
+<translation id="7280856130494094142">输入密码即可开始同步</translation>
 <translation id="7285236536143823449">立即启用</translation>
 <translation id="7291368939935408496">正在准备密码…</translation>
 <translation id="7336264872878993241">已下载<ph name="PERCENT" />%</translation>

@@ -51,7 +51,6 @@
 <translation id="1232569758102978740">अशीर्षकांकित</translation>
 <translation id="1240347957665416060">तुमच्या डिव्हाइसचे नाव</translation>
 <translation id="124116460088058876">आणखी भाषा...</translation>
-<translation id="1246987714874202335">एक्स्पायर होण्याची तारीख अपडेट करा</translation>
 <translation id="1250759482327835220">पुढील वेळेस जलद पेमेंट करण्यासाठी, तुमच्या Google खात्यावर तुमचे कार्ड आणि बिलिंग पत्ता सेव्ह करा.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (सिंक केलेले)</translation>
 <translation id="1256368399071562588">&lt;p&gt;जर तुम्ही एखाद्या वेबसाइटला भेट देण्याचा प्रयत्न केला आणि ती उघडली नाही, तर सगळ्यात आधी ट्रबलशूटिंग पायऱ्यांद्वारे या एररवर उपाय काढण्याचा प्रयत्न करा:&lt;/p&gt;
@@ -281,7 +280,6 @@
     सुरक्षितता धोरण त्याच्या सर्व विनंत्यांना लागू होईल. परंतु त्याला आता
     धोरण डिलिव्हर करण्यात अपयश आले आहे, जे ब्राउझरला तुमच्या <ph name="SITE" /> साठीच्या विनंतीची
     पूर्तता करण्यापासून रोखते.</translation>
-<translation id="2442483081384580286">सुरक्षित ब्राउझिंग चेतावणी</translation>
 <translation id="244665789865330679">तुमचे डिव्हाइस आणि खाते <ph name="ENROLLMENT_DOMAIN" /> कडून व्यवस्थापित केले जाते. याचा अर्थ तुमचा अ‍ॅडमिनिस्ट्रेटर तुमचे डिव्हाइस आणि खाते रिमोट पद्धतीने कॉन्फिगर करू शकतो.</translation>
 <translation id="2463193859425327265">होम पेज बदला</translation>
 <translation id="2463739503403862330">भरून टाका</translation>
@@ -610,6 +608,7 @@
 <translation id="4277028893293644418">पासवर्ड रीसेट करा</translation>
 <translation id="4280429058323657511">, कालबाह्यता <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{हे कार्ड तुमच्या Google खात्यात सेव्ह केले गेले}one{हे कार्ड तुमच्या Google खात्यात सेव्ह केले गेले}other{ही कार्डे तुमच्या Google खात्यात सेव्ह केली गेली}}</translation>
+<translation id="42981349822642051">विस्तृत करा</translation>
 <translation id="4302965934281694568">Chou3 (Envelope)</translation>
 <translation id="4305817255990598646">स्विच</translation>
 <translation id="4312613361423056926">B2</translation>
@@ -880,6 +879,7 @@
 <translation id="5810442152076338065">तुमचे <ph name="DOMAIN" /> वरील कनेक्शन अॉब्सोलीट सायफर सूट वापरून एंक्रिप्ट केलेले आहे.</translation>
 <translation id="5813119285467412249">&amp;जोडा पुन्हा करा</translation>
 <translation id="5838278095973806738">या साइटवर कोणतीही संवेदनशील माहिती (उदाहरणार्थ, पासवर्ड किंवा क्रेडिट कार्ड) एंटर करू नका, कारण आक्रमणकर्ते ती चोरू शकतात.</translation>
+<translation id="5860033963881614850">बंद</translation>
 <translation id="5863847714970149516">पुढील पेजवर तुमच्याकडून शुल्क आकारले जाऊ शकते</translation>
 <translation id="5866257070973731571">फोन नंबर जोडा</translation>
 <translation id="5869405914158311789">या साइटवर पोहचणे शक्य नाही</translation>
@@ -888,6 +888,7 @@
 <translation id="5893752035575986141">क्रेडिट कार्डे स्वीकारली जातात.</translation>
 <translation id="5901630391730855834">पिवळा</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (सिंक केलेले)</translation>
+<translation id="5916664084637901428">चालू</translation>
 <translation id="5919090499915321845">B10</translation>
 <translation id="5921639886840618607">Google खात्यात कार्ड सेव्ह करायचे?</translation>
 <translation id="5922853866070715753">जवळजवळ पूर्ण झाले</translation>
@@ -986,6 +987,7 @@
 <translation id="6508722015517270189">Chrome रीस्टार्ट करा</translation>
 <translation id="6529602333819889595">&amp;पुन्हा करा हटवा</translation>
 <translation id="6534179046333460208">वास्तविक वेब सूचना</translation>
+<translation id="6556866813142980365">पुन्हा करा</translation>
 <translation id="6563469144985748109">आपल्या व्यवस्थापकाने अद्याप ती मंजूर केली नाही</translation>
 <translation id="6569060085658103619">तुम्ही एक विस्तार पृष्ठ पाहत आहात</translation>
 <translation id="6578796323535178455">C2 (Envelope)</translation>

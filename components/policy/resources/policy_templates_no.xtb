@@ -245,13 +245,6 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
       skrivebordet slått av. I så fall kan ikke brukeren slå på denne funksjonen.</translation>
 <translation id="1474273443907024088">Slå av falsk start av TLS</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
-<translation id="1478485744311397487">Tjenere som <ph name="PRODUCT_NAME" /> kan delegere til.
-
-          Skill tjenernavn med komma. Jokertegn (*) er tillatt.
-
-          Hvis du ikke angir denne regelen, delegerer ikke <ph name="PRODUCT_NAME" /> brukerlegitimasjon selv om en tjener registreres som intranett.
-
-          Denne regelen ignoreres hvis regelen «UseKDCConstrainedDelegation» er satt til «true» (sann).</translation>
 <translation id="1484146587843605071"><ph name="PRODUCT_NAME" /> går forbi alle proxy-tjenere for listen over verter som er angitt her.
 
           Denne regelen trer bare i kraft hvis du har valgt manuelle innstillinger for proxy-tjenere under «Velg hvordan innstillinger for proxy-tjener angis».
@@ -301,7 +294,7 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 <translation id="1608259529294767544">Denne regelen gir Google-assistenten tillatelse til å lytte etter frasen for taleaktivering.
 
       Hvis regelen er aktivert, lytter Google-assistenten etter frasen for taleaktivering.
-      Hvis regelen er deaktivert, lytter Google-assistenten ikke etter frasen for taleaktivering.
+      Hvis regelen er deaktivert, lytter ikke Google-assistenten etter frasen for taleaktivering.
       Hvis regelen ikke er angitt, kan brukere velge om de vil tillate at Google-assistenten lytter etter frasen for taleaktivering.
       </translation>
 <translation id="1608755754295374538">Nettadresser som uten forespørsel blir gitt tilgang til enheter med lydopptak</translation>
@@ -912,11 +905,6 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 
       Hvis du aktiverer denne innstillingen, brukes skriveren som er standard for OS-et, som standard destinasjonsvalg.</translation>
 <translation id="2856674246949497058">Rull tilbake og behold målversjonen hvis OS-versjonen er nyere enn målet. Utfør en powerwash i løpet av prosessen.</translation>
-<translation id="2858646435735022107">Styrer om OK-AS-DELEGATE-flagget fra KDC overholdes, eller om «AuthNegotiateDelegateWhitelist» brukes for å begrense delegering av Kerberos-saker.
-
-          Hvis denne regelen er satt til «true» (sann), overholder HTTP-autentiseringen innstillinger for begrenset delegering i KDC. I så fall ignoreres «AuthNegotiateDelegateWhitelist»-regelen. Se https://tools.ietf.org/html/rfc5896.html for mer informasjon.
-
-          Hvis denne regelen ikke er angitt eller er satt til «false» (usann), ignoreres innstillinger for begrenset delegering fra KDC, og «AuthNegotiateDelegateWhitelist»-regelen overholdes.</translation>
 <translation id="2872961005593481000">Slå av</translation>
 <translation id="2873651257716068683">Overstyrer standard sidestørrelse for utskrift. Hvis sidestørrelsen ikke er tilgjengelig, ignoreres regelen.</translation>
 <translation id="2874209944580848064">Merknad for <ph name="PRODUCT_OS_NAME" />-enheter som støtter Android-apper:</translation>
@@ -1672,6 +1660,12 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 <translation id="4725528134735324213">Slå på Android Backup Service</translation>
 <translation id="4725801978265372736">Krev at navnet på den lokale brukeren samsvarer med verten for ekstern tilgang</translation>
 <translation id="4733471537137819387">Retningslinjer knyttet til integrert HTTP-autentisering.</translation>
+<translation id="4744190513568488164">Tjenere <ph name="PRODUCT_NAME" /> kan delegere til.
+
+          Atskill tjenernavnene med komma. Jokertegn (*) er tillatt.
+
+
+          Hvis du ikke spesifiserer denne regelen, delegerer ikke <ph name="PRODUCT_NAME" /> brukerlegitimasjon selv om en tjener registreres som intranett.</translation>
 <translation id="4752880493649142945">Klientsertifikatet for tilkobling til RemoteAccessHostTokenValidationUrl</translation>
 <translation id="4757671984625088193">Hvis denne regelen er angitt som sann eller ikke er angitt, foreslår <ph name="PRODUCT_NAME" /> sider som er relatert til den aktive siden.
       Forslagene hentes fra Googles tjenere.
@@ -1750,7 +1744,6 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 <translation id="4986560318567565414">Banen til Chrome for å bytte fra den alternative nettleseren.</translation>
 <translation id="4988291787868618635">Handling som skal utføres når inaktivitetsforsinkelsen blir overskredet</translation>
 <translation id="4995548127349206948">Om NTLMv2-autentisering er aktivert eller ikke.</translation>
-<translation id="5022792010322211583">Bruk KDC-begrenset delegering</translation>
 <translation id="5047604665028708335">Gi tilgang til nettsteder som ikke inngår i innholdspakker</translation>
 <translation id="5052081091120171147">Denne retningslinjen tvinger import av nettleserloggen fra den aktuelle standardnettleseren hvis den er aktivert. Hvis den er aktivert, påvirker denne retningslinjen også importdialogen. Hvis den er deaktivert, importeres ingen nettleserlogg. Hvis den ikke er angitt, er det mulig at brukeren får spørsmål om hvorvidt vedkommende ønsker å importere, eller så kan importeringen skje automatisk.</translation>
 <translation id="5056708224511062314">Skjermforstørrelse deaktivert</translation>

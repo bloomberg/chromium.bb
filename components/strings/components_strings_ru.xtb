@@ -51,7 +51,6 @@
 <translation id="1232569758102978740">Без имени</translation>
 <translation id="1240347957665416060">Название вашего устройства</translation>
 <translation id="124116460088058876">Другие языки</translation>
-<translation id="1246987714874202335">Обновите дату окончания срока действия</translation>
 <translation id="1250759482327835220">Чтобы ускорить процесс оплаты в будущем, сохраните карту, свое имя и платежный адрес в аккаунте Google.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (данные синхронизируются)</translation>
 <translation id="1256368399071562588">&lt;p&gt;Если сайт не открывается, выполните следующие действия:&lt;/p&gt;
@@ -273,7 +272,6 @@
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">Не удалось подтвердить, что это сервер <ph name="DOMAIN" />. Его сертификат безопасности может быть отозван. Возможно, сервер настроен неправильно или кто-то пытается перехватить ваши данные.</translation>
 <translation id="2418081434543109369">Ко всем запросам, отправляемым на сервер <ph name="ORIGIN" />, применяются . Однако серверу не удалось отправить правила, поэтому браузер не может выполнить ваш запрос для сайта <ph name="SITE" />.</translation>
-<translation id="2442483081384580286">Предупреждения Безопасного просмотра</translation>
 <translation id="244665789865330679">Ваше устройство и аккаунт находятся под управлением домена <ph name="ENROLLMENT_DOMAIN" />. Администратор этого домена может удаленно изменять настройки вашего устройства и аккаунта.</translation>
 <translation id="2463193859425327265">Изменить главную страницу</translation>
 <translation id="2463739503403862330">Заполнить</translation>
@@ -602,6 +600,7 @@
 <translation id="4277028893293644418">Сбросить пароль</translation>
 <translation id="4280429058323657511">, действует до <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{Карта сохранена в аккаунте Google.}one{Карты сохранены в аккаунте Google.}few{Карты сохранены в аккаунте Google.}many{Карты сохранены в аккаунте Google.}other{Карты сохранены в аккаунте Google.}}</translation>
+<translation id="42981349822642051">Развернуть</translation>
 <translation id="4302965934281694568">Chou3 (конверт)</translation>
 <translation id="4305817255990598646">Переключиться</translation>
 <translation id="4312613361423056926">B2</translation>
@@ -872,6 +871,7 @@
 <translation id="5810442152076338065">Соединение с <ph name="DOMAIN" /> зашифровано с помощью устаревшего набора шифров.</translation>
 <translation id="5813119285467412249">&amp;Повторить добавление</translation>
 <translation id="5838278095973806738">Не сообщайте этому сайту конфиденциальную информацию (например, пароли и номера банковских карт). К ней могут получить доступ злоумышленники.</translation>
+<translation id="5860033963881614850">Выкл.</translation>
 <translation id="5863847714970149516">При открытии этой страницы с вашего счета могут быть списаны средства</translation>
 <translation id="5866257070973731571">Добавьте номер телефона</translation>
 <translation id="5869405914158311789">Не удается получить доступ к сайту</translation>
@@ -880,6 +880,7 @@
 <translation id="5893752035575986141">Принимаются кредитные карты.</translation>
 <translation id="5901630391730855834">Желтый</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (данные синхронизируются)</translation>
+<translation id="5916664084637901428">ВКЛ</translation>
 <translation id="5919090499915321845">B10</translation>
 <translation id="5921639886840618607">Сохранить карту в аккаунте Google?</translation>
 <translation id="5922853866070715753">Почти готово…</translation>
@@ -977,6 +978,7 @@
 <translation id="6508722015517270189">Перезапустите Google Chrome.</translation>
 <translation id="6529602333819889595">&amp;Повторить удаление</translation>
 <translation id="6534179046333460208">Интернет вокруг нас: рекомендации</translation>
+<translation id="6556866813142980365">Повторить</translation>
 <translation id="6563469144985748109">Ещё не одобрено администратором</translation>
 <translation id="6569060085658103619">Вы просматриваете страницу расширения</translation>
 <translation id="6578796323535178455">C2 (конверт)</translation>

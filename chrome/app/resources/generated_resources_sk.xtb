@@ -104,7 +104,6 @@
 <translation id="1143142264369994168">Podpisovateľ certifikátu</translation>
 <translation id="1145292499998999162">Doplnok je blokovaný</translation>
 <translation id="1145532888383813076">Vyhľadávajte v zariadení, aplikáciách a na webe.</translation>
-<translation id="1146204723345436916">Importovať záložky zo súboru HTML ...</translation>
 <translation id="114721135501989771">Získajte inteligentné doplnky Googlu v Chrome</translation>
 <translation id="1148097584170732637">Počet nájdených: <ph name="FILE_COUNT" />.
     <ph name="LINE_BREAK1" />
@@ -420,7 +419,6 @@
 <translation id="1608626060424371292">Odstrániť tohto používateľa</translation>
 <translation id="1609170755653088773">Synchronizujte si toto heslo do zariadenia iPhone</translation>
 <translation id="1611584202130317952">Tok poskytovania bol prerušený. Skúste to znova alebo kontaktujte vlastníka či správcu zariadenia.</translation>
-<translation id="1611704746353331382">Exportovať záložky do súboru HTML...</translation>
 <translation id="1614511179807650956">Možno ste dosiahli povolený limit mobilných dát. Ďalšie dáta si môžete zakúpiť na aktivačnom portáli <ph name="NAME" /></translation>
 <translation id="161460670679785907">Telefón sa nedarí nájsť</translation>
 <translation id="1616206807336925449">Toto rozšírenie nevyžaduje žiadne špeciálne povolenia.</translation>
@@ -651,7 +649,6 @@
 <translation id="1932098463447129402">Nie pred</translation>
 <translation id="1933345018156373194">Presun zlyhal, neočakávaná chyba: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1933809209549026293">Pripojte myš alebo klávesnicu. Ak používate zariadenie Bluetooth, uistite sa, že je pripravené na párovanie.</translation>
-<translation id="1936157145127842922">Zobraziť v priečinku</translation>
 <translation id="1938351510777341717">Externý príkaz</translation>
 <translation id="1940546824932169984">Pripojené zariadenia</translation>
 <translation id="1942765061641586207">Rozlíšenie obrázka</translation>
@@ -1367,7 +1364,6 @@
 <translation id="3009300415590184725">Naozaj chcete zrušiť proces nastavenia mobilnej dátovej služby?</translation>
 <translation id="3009779501245596802">Indexované databázy</translation>
 <translation id="3010279545267083280">Heslo bolo odstránené</translation>
-<translation id="3011362742078013760">Otvoriť všetky záložky v okne &amp;inkognito</translation>
 <translation id="3011488081941333749">Súbory cookie z domény <ph name="DOMAIN" /> sa vymažú pri ukončení relácie</translation>
 <translation id="3012631534724231212">(iframe)</translation>
 <translation id="3012804260437125868">Iba zabezpečené pripojenia z rovnakého webu</translation>
@@ -2574,7 +2570,6 @@
 <translation id="4881695831933465202">Otvoriť</translation>
 <translation id="4882312758060467256">Má prístup k tomuto webu</translation>
 <translation id="4882831918239250449">Ovládajte, ako sa pomocou histórie prehliadania prispôsobuje Vyhľadávanie, reklamy a ďalší obsah</translation>
-<translation id="4883178195103750615">Exportovať záložky do súboru HTML ...</translation>
 <translation id="4883436287898674711">Všetky weby <ph name="WEBSITE_1" /></translation>
 <translation id="48838266408104654">&amp;Správca úloh</translation>
 <translation id="4884987973312178454">6x</translation>
@@ -2908,7 +2903,6 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="5376931455988532197">Súbor je príliš veľký</translation>
 <translation id="537813040452600081">Stránky otvorené v tomto okne sa nezobrazia v histórii prehliadača a po odhlásení nezanechajú na počítači žiadne stopy, ako napríklad súbory cookie. Nezachovajú sa ani stiahnuté súbory a záložky.</translation>
 <translation id="5379140238605961210">Aj naďalej blokovať prístup k mikrofónu</translation>
-<translation id="5379268888377976432">Vrátiť späť odstránenie</translation>
 <translation id="5382591305415226340">Spravovať podporované odkazy</translation>
 <translation id="5384883051496921101">Tento web chce zdieľať informácie s aplikáciou mimo režimu inkognito.</translation>
 <translation id="5388885445722491159">Spárované</translation>
@@ -3203,7 +3197,6 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="5801568494490449797">Predvoľby</translation>
 <translation id="5804241973901381774">Povolenia</translation>
 <translation id="5805697420284793859">Správca okien</translation>
-<translation id="580571955903695899">Zoradiť podľa názvu</translation>
 <translation id="5811750797187914944">Hotovo</translation>
 <translation id="5814126672212206791">Typ pripojenia</translation>
 <translation id="5815645614496570556">Adresa X.400</translation>
@@ -3530,7 +3523,6 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="6264365405983206840">Vybrať &amp;všetko</translation>
 <translation id="6267166720438879315">Vyberte certifikát, ktorý overí vašu osobu pre <ph name="HOST_NAME" /></translation>
 <translation id="6268252012308737255">Otvoriť pomocou aplikácie <ph name="APP" /></translation>
-<translation id="6268747994388690914">Importovať záložky zo súboru HTML...</translation>
 <translation id="6272643420381259437">Pri sťahovaní doplnku došlo k chybe (<ph name="ERROR" />)</translation>
 <translation id="6273677812470008672">Kvalita</translation>
 <translation id="6277105963844135994">Časový limit siete</translation>
@@ -3605,7 +3597,6 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="6393156038355142111">Navrhnúť silné heslo</translation>
 <translation id="6395575651121294044">Počet položiek: <ph name="NUMBER_OF_FILES" /></translation>
 <translation id="6397094776139756010">Možnosti synchronizácie a prispôsobenia</translation>
-<translation id="6397592254427394018">Otvoriť všetky záložky v &amp;okne inkognito</translation>
 <translation id="6398715114293939307">Odstrániť Obchod Google Play</translation>
 <translation id="6398765197997659313">Ukončiť zobrazenie na celú obrazovku</translation>
 <translation id="6399774419735315745">Špión</translation>
@@ -3869,7 +3860,6 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="6798954102094737107">Doplnok: <ph name="PLUGIN_NAME" /></translation>
 <translation id="6801435275744557998">Kalibrovať dotykovú obrazovku</translation>
 <translation id="6802031077390104172"><ph name="USAGE" /> (<ph name="OID" />)</translation>
-<translation id="6804671422566312077">Otvoriť všetky záložky v &amp;novom okne</translation>
 <translation id="6805038906417219576">OK</translation>
 <translation id="6805647936811177813">Ak chcete importovať certifikát klienta z adresy <ph name="HOST_NAME" />, prihláste sa do <ph name="TOKEN_NAME" />.</translation>
 <translation id="680572642341004180">Povoliť v aplikácii <ph name="SHORT_PRODUCT_OS_NAME" /> sledovanie RLZ.</translation>
@@ -3976,7 +3966,6 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="6970856801391541997">Vytlačiť konkrétne stránky</translation>
 <translation id="6972180789171089114">Zvuk / video</translation>
 <translation id="6972754398087986839">Začať</translation>
-<translation id="6973630695168034713">Priečinky</translation>
 <translation id="6974609594866392343">Offline režim ukážky</translation>
 <translation id="6977381486153291903">Revízia firmvéru</translation>
 <translation id="6978121630131642226">Vyhľadávače</translation>
@@ -4307,7 +4296,6 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="7478485216301680444">Aplikáciu pre režim kiosku sa nepodarilo nainštalovať.</translation>
 <translation id="7481312909269577407">Dopredu</translation>
 <translation id="748138892655239008">Základné obmedzenia certifikátu</translation>
-<translation id="7484964289312150019">Otvoriť všetky záložky v &amp;novom okne</translation>
 <translation id="7487067081878637334">Technológia</translation>
 <translation id="7487099628810939106">Oneskorenie pred kliknutím:</translation>
 <translation id="7487969577036436319">Nie sú nainštalované žiadne komponenty</translation>
@@ -4738,7 +4726,6 @@ Súbor kľúča uložte na bezpečné miesto. Budete ho potrebovať na vytvoreni
 <translation id="8063235345342641131">Predvolený zelený avatar</translation>
 <translation id="8064671687106936412">Kľúč:</translation>
 <translation id="8066773524873206594">Všetky úpravy sa uložia do priečnika <ph name="DOWNLOADS_FOLDER" />.</translation>
-<translation id="806812017500012252">Zoradiť podľa názvu</translation>
 <translation id="8068253693380742035">Dotykom sa prihlásite</translation>
 <translation id="8069615408251337349">Google Cloud Print</translation>
 <translation id="8071432093239591881">Vytlačiť ako obrázok</translation>

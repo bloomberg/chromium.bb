@@ -51,7 +51,6 @@
 <translation id="1232569758102978740">Tidak Bertajuk</translation>
 <translation id="1240347957665416060">Nama peranti anda</translation>
 <translation id="124116460088058876">Lagi bahasa</translation>
-<translation id="1246987714874202335">Kemas kini tarikh tamat tempoh</translation>
 <translation id="1250759482327835220">Untuk membayar dengan lebih cepat selepas ini, simpan kad, nama dan alamat pengebilan anda ke Akaun Google.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (disegerakkan)</translation>
 <translation id="1256368399071562588">&lt;p&gt;Jika anda cuba melawati tapak web tetapi tapak itu tidak dibuka, cuba selesaikan ralat tersebut dengan langkah penyelesaian masalah berikut terlebih dahulu:&lt;/p&gt;
@@ -274,7 +273,6 @@
 <translation id="2413528052993050574">Pelayan ini tidak dapat membuktikan bahawa domainnya ialah <ph name="DOMAIN" />; sijil keselamatannya mungkin dibatalkan. Ini mungkin disebabkan oleh kesilapan konfigurasi atau penyerang yang memintasi sambungan anda.</translation>
 <translation id="2418081434543109369">Pelayan destinasi anda, <ph name="ORIGIN" />, telah meminta agar
     dasar keselamatan dikenakan pada semua permintaan yang diterimanya. Akan tetapi kini pelayan itu gagal menyampaikan dasar, yang menghalang penyemak imbas daripada memenuhi permintaan anda untuk <ph name="SITE" />.</translation>
-<translation id="2442483081384580286">Amaran Penyemakan Imbas Selamat</translation>
 <translation id="244665789865330679">Peranti dan akaun anda diurus oleh <ph name="ENROLLMENT_DOMAIN" />. Ini bermakna pentadbir anda boleh mengkonfigurasikan peranti dan akaun anda dari jauh.</translation>
 <translation id="2463193859425327265">Tukar Halaman Utama</translation>
 <translation id="2463739503403862330">Isi</translation>
@@ -605,6 +603,7 @@
 <translation id="4277028893293644418">Tetapkan semula kata laluan</translation>
 <translation id="4280429058323657511">, tamat tempoh <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{Kad ini telah disimpan ke Akaun Google anda}other{Kad ini telah disimpan ke Akaun Google anda}}</translation>
+<translation id="42981349822642051">Kembangkan</translation>
 <translation id="4302965934281694568">Chou3 (Sampul Surat)</translation>
 <translation id="4305817255990598646">Tukar</translation>
 <translation id="4312613361423056926">B2</translation>
@@ -875,6 +874,7 @@
 <translation id="5810442152076338065">Sambungan anda ke <ph name="DOMAIN" /> disulitkan menggunakan suit sifer yang sudah usang.</translation>
 <translation id="5813119285467412249">&amp;Buat Semula Tambahkan</translation>
 <translation id="5838278095973806738">Anda tidak seharusnya memasukkan sebarang maklumat sensitif pada tapak ini (contohnya, kata laluan atau maklumat kad kredit) kerana maklumat ini boleh dicuri oleh penyerang.</translation>
+<translation id="5860033963881614850">Dimatikan</translation>
 <translation id="5863847714970149516">Halaman yang seterusnya mungkin cuba mengenakan bayaran kepada anda</translation>
 <translation id="5866257070973731571">Tambahkan Nombor Telefon</translation>
 <translation id="5869405914158311789">Tapak ini tidak dapat dicapai</translation>
@@ -883,6 +883,7 @@
 <translation id="5893752035575986141">Kad kredit diterima.</translation>
 <translation id="5901630391730855834">Kuning</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (disegerakkan)</translation>
+<translation id="5916664084637901428">Hidupkan</translation>
 <translation id="5919090499915321845">B10</translation>
 <translation id="5921639886840618607">Simpan kad ke Akaun Google?</translation>
 <translation id="5922853866070715753">Hampir selesai</translation>
@@ -980,6 +981,7 @@
 <translation id="6508722015517270189">Mulakan semula Chrome</translation>
 <translation id="6529602333819889595">&amp;Buat Semula Pemadaman</translation>
 <translation id="6534179046333460208">Cadangan Web Fizikal</translation>
+<translation id="6556866813142980365">Buat semula</translation>
 <translation id="6563469144985748109">Pengurus anda belum meluluskannya</translation>
 <translation id="6569060085658103619">Anda sedang melihat halaman sambungan</translation>
 <translation id="6578796323535178455">C2 (Sampul Surat)</translation>

@@ -51,7 +51,6 @@
 <translation id="1232569758102978740">Namnlös</translation>
 <translation id="1240347957665416060">Ditt enhetsnamn</translation>
 <translation id="124116460088058876">Fler språk</translation>
-<translation id="1246987714874202335">Uppdatera sista giltighetsdatum</translation>
 <translation id="1250759482327835220">Spara kortet, faktureringsadressen och ditt namn i Google-kontot så går det snabbare att betala nästa gång.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (synkroniserade)</translation>
 <translation id="1256368399071562588">&lt;p&gt;Om det inte går att öppna en webbplats testar du först att åtgärda felet med hjälp av dessa felsökningssteg:&lt;/p&gt;
@@ -281,7 +280,6 @@
     säkerhetsprincip ska gälla varje gång den svarar på en begäran. Men den skickade
     ingen princip, och därför går det inte att slutföra begäran
     om <ph name="SITE" /> i webbläsaren.</translation>
-<translation id="2442483081384580286">Varningar från Säker webbsökning</translation>
 <translation id="244665789865330679">Enheten och kontot hanteras av <ph name="ENROLLMENT_DOMAIN" />. Detta innebär att administratören kan fjärrkonfigurera enheten och kontot.</translation>
 <translation id="2463193859425327265">Ändra startsida</translation>
 <translation id="2463739503403862330">Fyll i</translation>
@@ -611,6 +609,7 @@
 <translation id="4277028893293644418">Återställ lösenord</translation>
 <translation id="4280429058323657511">, utgångsdatum <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{Det här kortet har sparats i ditt Google-konto}other{De här korten har sparats i ditt Google-konto}}</translation>
+<translation id="42981349822642051">Expandera</translation>
 <translation id="4302965934281694568">Chou3 (kuvert)</translation>
 <translation id="4305817255990598646">Byt</translation>
 <translation id="4312613361423056926">B2</translation>
@@ -881,6 +880,7 @@
 <translation id="5810442152076338065">Anslutningen till <ph name="DOMAIN" /> är krypterad med en gammal krypteringssvit.</translation>
 <translation id="5813119285467412249">&amp;Gör om Lägg till</translation>
 <translation id="5838278095973806738">Du bör inte ange några känsliga uppgifter på den här webbplatsen (till exempel lösenord eller kreditkortsuppgifter) eftersom hackare kan stjäla dem.</translation>
+<translation id="5860033963881614850">Av</translation>
 <translation id="5863847714970149516">Sidan du är på väg till kan försöka debitera dig</translation>
 <translation id="5866257070973731571">Ange telefonnummer</translation>
 <translation id="5869405914158311789">Webbplatsen kan inte nås</translation>
@@ -889,6 +889,7 @@
 <translation id="5893752035575986141">Kreditkort får användas.</translation>
 <translation id="5901630391730855834">Gul</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (synkroniserade)</translation>
+<translation id="5916664084637901428">På</translation>
 <translation id="5919090499915321845">B10</translation>
 <translation id="5921639886840618607">Vill du spara kortet i Google-kontot?</translation>
 <translation id="5922853866070715753">Nästan klart</translation>
@@ -986,6 +987,7 @@
 <translation id="6508722015517270189">Starta om Chrome</translation>
 <translation id="6529602333819889595">&amp;Gör om Ta bort</translation>
 <translation id="6534179046333460208">Förslag från Physical Web</translation>
+<translation id="6556866813142980365">Upprepa</translation>
 <translation id="6563469144985748109">Den ansvarige har inte godkänt den ännu</translation>
 <translation id="6569060085658103619">Du visar en tilläggssida</translation>
 <translation id="6578796323535178455">C2 (kuvert)</translation>

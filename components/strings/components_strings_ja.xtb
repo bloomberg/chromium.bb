@@ -50,7 +50,6 @@
 <translation id="1228893227497259893">エンティティ識別子が正しくありません</translation>
 <translation id="1232569758102978740">無題</translation>
 <translation id="124116460088058876">その他の言語</translation>
-<translation id="1246987714874202335">有効期限の更新</translation>
 <translation id="1250759482327835220">カード、お名前、請求先住所を Google アカウントに保存すると、次回のお支払いが簡単になります。</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />、<ph name="TYPE_2" />（同期済み）</translation>
 <translation id="1256368399071562588">&lt;p&gt;ウェブサイトにアクセスしようとしてもサイトが開かない場合は、まず次の解決方法を行って、エラーが解消されるかご確認ください。&lt;/p&gt;
@@ -594,6 +593,7 @@
 <translation id="4277028893293644418">パスワードを再設定</translation>
 <translation id="4280429058323657511">、有効期限: <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{このカードを Google アカウントに保存しました}other{これらのカードを Google アカウントに保存しました}}</translation>
+<translation id="42981349822642051">展開</translation>
 <translation id="4302965934281694568">長3（封筒）</translation>
 <translation id="4305817255990598646">切り替え</translation>
 <translation id="4312613361423056926">B2</translation>
@@ -854,6 +854,7 @@
 <translation id="5810442152076338065"><ph name="DOMAIN" /> への接続は古い暗号スイートにより暗号化されています。</translation>
 <translation id="5813119285467412249">追加のやり直し（&amp;R）</translation>
 <translation id="5838278095973806738">このサイトでは機密情報（パスワード、クレジット カードなど）を入力しないでください。悪意のあるユーザーに情報が盗まれる恐れがあります。</translation>
+<translation id="5860033963881614850">オフ</translation>
 <translation id="5863847714970149516">表示しようとしているページでは課金される恐れがあります</translation>
 <translation id="5866257070973731571">電話番号の追加</translation>
 <translation id="5869405914158311789">このサイトにアクセスできません</translation>
@@ -862,6 +863,7 @@
 <translation id="5893752035575986141">クレジット カードをご利用いただけます。</translation>
 <translation id="5901630391730855834">黄</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" />（同期済み）</translation>
+<translation id="5916664084637901428">オン</translation>
 <translation id="5919090499915321845">B10</translation>
 <translation id="5921639886840618607">カードを Google アカウントに保存しますか？</translation>
 <translation id="5922853866070715753">ほぼ完了です</translation>
@@ -958,6 +960,7 @@
 <translation id="6508722015517270189">Chrome を再起動する</translation>
 <translation id="6529602333819889595">削除のやり直し（&amp;R）</translation>
 <translation id="6534179046333460208">フィジカル ウェブからの URL</translation>
+<translation id="6556866813142980365">やり直す</translation>
 <translation id="6563469144985748109">管理者がまだサイトを開くことを許可していません</translation>
 <translation id="6569060085658103619">拡張機能のページを表示しています</translation>
 <translation id="6578796323535178455">C2（封筒）</translation>

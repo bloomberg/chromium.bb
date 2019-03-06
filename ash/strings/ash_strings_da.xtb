@@ -337,6 +337,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6537270692134705506">Tag screenshot</translation>
 <translation id="6542521951477560771">Caster til <ph name="RECEIVER_NAME" /></translation>
 <translation id="6559976592393364813">Spørg din administrator</translation>
+<translation id="6574601967010742428">Enhedsadministratoren kan muligvis overvåge din aktivitet.</translation>
 <translation id="6585808820553845416">Sessionen slutter om <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Søgetast+Shift+K</translation>
 <translation id="6650933572246256093">Bluetooth-enheden "<ph name="DEVICE_NAME" />" vil gerne have parringstilladelse. Angiv din adgangsnøgle på enheden: <ph name="PASSKEY" /></translation>
@@ -443,7 +444,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="8261506727792406068">Slet</translation>
 <translation id="8297006494302853456">Svag</translation>
 <translation id="8308637677604853869">Forrige menu</translation>
-<translation id="8332664326438198339">Gå tilbage til Appliste</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Opret note</translation>
 <translation id="8375916635258623388">Denne <ph name="DEVICE_NAME" /> og din telefon forbindes automatisk</translation>

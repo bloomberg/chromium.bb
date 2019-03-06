@@ -16,7 +16,6 @@
 <translation id="106222400312645156">rwhdr</translation>
 <translation id="1065552602950927991">Entrada no válida</translation>
 <translation id="1066085461259044485">Verde selvático</translation>
-<translation id="1080471004309605942">Fin del texto en cursiva</translation>
 <translation id="1082209053475788238">No hay ningún encabezado de nivel 6 anterior.</translation>
 <translation id="1087788677726983142">Ocultar filtros para la transmisión de eventos</translation>
 <translation id="1088219014394087294">No hay encabezados.</translation>
@@ -168,7 +167,6 @@ Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerr
 <translation id="2267945578749931355">Carácter siguiente</translation>
 <translation id="2278490101488436824">Deslizar tres dedos hacia la izquierda</translation>
 <translation id="2281234842553884450">Control deslizante anterior</translation>
-<translation id="2294136146931447363">Inicio del texto en cursiva</translation>
 <translation id="2311237334957139798">Ir al gesto del nivel de detalle anterior</translation>
 <translation id="2318372665160196757">Principales</translation>
 <translation id="2329324941084714723">Panel de pestañas</translation>
@@ -225,12 +223,10 @@ Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerr
 <translation id="2717271541250958000">tabpnl</translation>
 <translation id="2723001399770238859">audio</translation>
 <translation id="2732718972699418926">a. m.</translation>
-<translation id="2737520612859577214">Final del superíndice</translation>
 <translation id="2749275490991666823">Seleccionado</translation>
 <translation id="27527859628328957">Saltar al siguiente elemento enfocable</translation>
 <translation id="2770781857296573485">Ingresar exploración de grupos</translation>
 <translation id="2777845298774924149">Salió.</translation>
-<translation id="2781264313200109999">Comienzo de un vínculo</translation>
 <translation id="2784959586797362050">Como siempre, si deseas enviarnos comentarios, presiona la tecla Buscar + a, luego, i. Esperamos tus mensajes.</translation>
 <translation id="2800204403141299078">No hay más elementos diferentes.</translation>
 <translation id="2800780099804980316">No hay ningún encabezado de nivel 1 anterior.</translation>
@@ -252,7 +248,6 @@ Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerr
 <translation id="288178314850623291">Usa los comandos de navegación para ir directamente a tipos de elementos específicos. Para avanzar entre encabezados, presiona Búsqueda + H; para ir hacia atrás, presiona Búsqueda + mayúscula + H.</translation>
 <translation id="2894654529758326923">Información</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{llave de apertura}other{# llaves de apertura}}</translation>
-<translation id="2909478709401302630">Inicio del superíndice</translation>
 <translation id="2911433807131383493">Abrir tutorial de ChromeVox</translation>
 <translation id="2912405967290226587">Deslizar tres dedos hacia la derecha</translation>
 <translation id="2932083475399492303">Alternar entre líneas estructurales y líneas de diseño</translation>
@@ -313,7 +308,6 @@ Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerr
 <translation id="3232388865800379423">Un botón con ventana emergente</translation>
 <translation id="3241052487511142956">Vínculo visitado anterior</translation>
 <translation id="3241638166094654466">Celdas en cada línea:</translation>
-<translation id="327361630706777244">Final de <ph name="FONT_COLOR" /></translation>
 <translation id="3286372614333682499">vertical</translation>
 <translation id="3286390186030710347">Control deslizante</translation>
 <translation id="3299925995433437805">No hay ningún vínculo visitado posterior.</translation>
@@ -338,7 +332,6 @@ Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerr
 <translation id="3393605254399152980">Arrastra un dedo para escuchar lo que tocas</translation>
 <translation id="3406283310380167331">Mostrar lista de formularios</translation>
 <translation id="3414400929511680526">Azul Alicia</translation>
-<translation id="3437941064431741545">Final del tamaño <ph name="FONT_SIZE" /></translation>
 <translation id="344800400831402066">Perú</translation>
 <translation id="3457000393508828486">Presionado parcialmente</translation>
 <translation id="3458865416877308321"><ph name="NAME" />, desactivar</translation>
@@ -357,7 +350,6 @@ Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerr
 <translation id="352577523970648069">Un campo de texto editable</translation>
 <translation id="3549141990712742152">Cortar <ph name="TEXT" /></translation>
 <translation id="3549680091535286226">Presiona con 2 dedos para silenciar la voz temporalmente</translation>
-<translation id="3555380819397253474">Comienzo de <ph name="FONT_FAMILY" /></translation>
 <translation id="3568702578574425662"><ph name="NAME" />, casilla de verificación no marcada</translation>
 <translation id="3589661172894441357">Glosario</translation>
 <translation id="3591784666823501596">Azul real</translation>
@@ -437,7 +429,6 @@ Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerr
 <translation id="4158704014418536539">Distingue mayúsculas de minúsculas.</translation>
 <translation id="4159784952369912983">Púrpura</translation>
 <translation id="4161663686871496107">Los comentarios por voz de ChromeVox están listos.</translation>
-<translation id="4166192625054637755">Final del superíndice</translation>
 <translation id="4173994908659439270">No hay ningún campo de texto editable posterior.</translation>
 <translation id="4176463684765177261">Deshabilitado</translation>
 <translation id="4187322598335821254">Desliza hacia arriba o abajo para desplazarte entre las líneas</translation>
@@ -538,7 +529,6 @@ Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerr
 <translation id="4842108708071771135">No hay ningún bloque entrecomillado posterior.</translation>
 <translation id="4844625982113518938">Presiona cualquier tecla para aprender su nombre. Para cerrar el modo de aprendizaje, presiona Ctrl + W.</translation>
 <translation id="4846428657345567687">¡Te damos la bienvenida a ChromeVox!</translation>
-<translation id="4846487886195635104">Fin del texto tachado</translation>
 <translation id="4848993367330139335">tmprz</translation>
 <translation id="4850023505158945298">Elemento anterior similar</translation>
 <translation id="4866956062845190338">rdmnuitm</translation>
@@ -612,7 +602,6 @@ Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerr
 <translation id="5330443287809544590"><ph name="NAME" />, vínculo</translation>
 <translation id="5336381510091010269">autoinl+lst</translation>
 <translation id="5349770431644471053">Retrovínculo</translation>
-<translation id="5350654862897073517">Inicio del superíndice</translation>
 <translation id="536031132345979795">Saltar atrás durante la lectura continua</translation>
 <translation id="5368000168321181111">Sonido desactivado</translation>
 <translation id="5374320867641260420">No hay ningún botón posterior.</translation>
@@ -719,10 +708,8 @@ Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerr
 <translation id="6037602951055904232">Desplazar hacia delante</translation>
 <translation id="6042826534790431634">Presiona la tecla de búsqueda+barra espaciadora para activar una opción.</translation>
 <translation id="6044160928851315051">Oscurece la pantalla</translation>
-<translation id="605761629541007221">Fin del texto en negrita</translation>
 <translation id="6065293622157674001">Inicio del error gramatical</translation>
 <translation id="6082768461603900813">Navegación básica</translation>
-<translation id="6092707270915298410">Final de un vínculo</translation>
 <translation id="6118126368611144850">Apps de Android para Chrome. Si tienes Play Store en tu dispositivo, conoce ChromeVox con las apps de Android. Descarga Google Chrome Canary desde Play Store.</translation>
 <translation id="611827076493383239">vtd</translation>
 <translation id="6119955456199054975">Fin de celda</translation>
@@ -770,9 +757,7 @@ Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerr
 <translation id="6459511626086141404">Mapa de teclado plano</translation>
 <translation id="6468049171101508116">Botón Siguiente</translation>
 <translation id="646954774886932461">Índice</translation>
-<translation id="6470797302070897045">Comienzo del tamaño <ph name="FONT_SIZE" /></translation>
 <translation id="6493991254603208962">Disminuir brillo</translation>
-<translation id="6497864469186228849">Final de <ph name="FONT_FAMILY" /></translation>
 <translation id="6501595918865591267">Turquesa</translation>
 <translation id="6508059270146105198">Mover la pantalla de braille a la parte inferior de la página</translation>
 <translation id="6521550811716689390">Violeta oscuro</translation>
@@ -899,7 +884,6 @@ Para abrir el menú del navegador Chrome, presiona Alt + F.</translation>
 <translation id="7370432716629432284">{COUNT,plural, =1{et}other{# signos et}}</translation>
 <translation id="737396357417333429">clk</translation>
 <translation id="7374104575779636480">Saliendo de la tabla…</translation>
-<translation id="7374188624530452127">Comienzo de <ph name="FONT_COLOR" /></translation>
 <translation id="738899727977260036">Azul pizarra</translation>
 <translation id="7392145451309930991">Inicio de la coincidencia de texto</translation>
 <translation id="739763518212184081">Línea anterior</translation>
@@ -948,9 +932,7 @@ Para abrir el menú del navegador Chrome, presiona Alt + F.</translation>
         <ph name="LINE_THROUGH_STRING" />
         <ph name="FONT_FAMILY_STRING" /></translation>
 <translation id="7701196182766842984">autolst</translation>
-<translation id="7712273827621319827">Inicio del texto subrayado</translation>
 <translation id="7770823902658038748"><ph name="VALUE" />, <ph name="NAME" />, cuadro de texto de la contraseña</translation>
-<translation id="7773125101284285285">Fin del texto subrayado</translation>
 <translation id="7776293189010177726">Abre los menús de ChromeVox</translation>
 <translation id="7800558923657349506">Epílogo</translation>
 <translation id="7805247615045262757">navegación predeterminada</translation>
@@ -1102,7 +1084,6 @@ Para abrir el menú del navegador Chrome, presiona Alt + F.</translation>
 <translation id="8374154622594089836">mes</translation>
 <translation id="8378855320830505539">Región</translation>
 <translation id="8382679411218029383">Autocompletados integrados y lista de autocompletados</translation>
-<translation id="8384907037845425279">Inicio del texto en negrita</translation>
 <translation id="8428603554127842284">Nivel <ph name="DEPTH" /></translation>
 <translation id="842922884199979200">No hay ningún encabezado de nivel 3 posterior.</translation>
 <translation id="8430049249787218991">mnubr</translation>
@@ -1211,5 +1192,4 @@ Para abrir el menú del navegador Chrome, presiona Alt + F.</translation>
 <translation id="973955474346881951">Habilitar/inhabilitar modo permanente</translation>
 <translation id="976849232629612000">Sin elementos</translation>
 <translation id="992256792861109788">Rosa</translation>
-<translation id="995852680044449248">Inicio del texto tachado</translation>
 </translationbundle>

@@ -200,7 +200,7 @@
 <translation id="4038354071007134711">Ingen apper på denne enheten kan åpne filen.</translation>
 <translation id="4042870976416480368">Finn på siden</translation>
 <translation id="4049507953662678203">Sørg for at du er koblet til et nettverk, og prøv igjen.</translation>
-<translation id="4082688844002261427">Kontrollér hvordan nettleserloggen din brukes til personlig tilpasning av søk, annonser med mer</translation>
+<translation id="4082688844002261427">Kontrollér hvordan nettleserloggen din brukes til personlig tilpasning av blant annet søk og annonser</translation>
 <translation id="408404951701638773">Søkefeltet er nå enklere å finne</translation>
 <translation id="4084682180776658562">Legg til bokmerke</translation>
 <translation id="411254640334432676">Nedlastingen mislyktes.</translation>
@@ -356,7 +356,6 @@ Dataene dine er kryptert med passordfrasen din for synkronisering <ph name="TIME
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elementer slettet</translation>
 <translation id="6513773942555305766">Passordforslag fra Chrome: <ph name="SUGGESTED_PASSWORD" /></translation>
 <translation id="6541915733953096570">Den siste timen</translation>
-<translation id="6548479190262846511">Fant ingen passord for dette nettstedet</translation>
 <translation id="6642362222295953972">Bytt til den eksisterende fanen</translation>
 <translation id="6643016212128521049">Tøm</translation>
 <translation id="6656103420185847513">Mapperedigering</translation>

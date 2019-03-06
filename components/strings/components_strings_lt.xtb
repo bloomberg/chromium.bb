@@ -51,7 +51,6 @@
 <translation id="1232569758102978740">Be pavadinimo</translation>
 <translation id="1240347957665416060">Įrenginio pavadinimas</translation>
 <translation id="124116460088058876">Daugiau kalbų</translation>
-<translation id="1246987714874202335">Galiojimo laiko pabaigos datos atnaujinimas</translation>
 <translation id="1250759482327835220">Kad kitą kartą galėtumėte greičiau atlikti mokėjimą, išsaugokite kortelę, vardą bei pavardę ir atsiskaitymo adresą „Google“ paskyroje.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (sinchronizuota)</translation>
 <translation id="1256368399071562588">&lt;p&gt;Jei bandote apsilankyti svetainėje, bet nepavyksta jos atidaryti, pirma pabandykite ištaisyti klaidą atlikdami toliau nurodytus trikčių šalinimo veiksmus.&lt;/p&gt;
@@ -281,7 +280,6 @@
     taikyti saugos politiką visoms jam teikiamoms užklausoms. Bet dabar jam
     nepavyko pateikti politikos, neleidžiančios naršyklei vykdyti
     svetainės <ph name="SITE" /> užklausos.</translation>
-<translation id="2442483081384580286">Saugaus naršymo įspėjimai</translation>
 <translation id="244665789865330679">Jūsų įrenginį ir paskyrą tvarko <ph name="ENROLLMENT_DOMAIN" />. Tai reiškia, kad administratorius gali nuotoliniu būdu juos konfigūruoti.</translation>
 <translation id="2463193859425327265">Keisti pagrindinį puslapį</translation>
 <translation id="2463739503403862330">Užpildyti</translation>
@@ -612,6 +610,7 @@
 <translation id="4277028893293644418">Iš naujo nustatyti slaptažodį</translation>
 <translation id="4280429058323657511">, gal. pab. <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{Ši kortelė išsaugota jūsų „Google“ paskyroje}one{Šios kortelės išsaugotos jūsų „Google“ paskyroje}few{Šios kortelės išsaugotos jūsų „Google“ paskyroje}many{Šios kortelės išsaugotos jūsų „Google“ paskyroje}other{Šios kortelės išsaugotos jūsų „Google“ paskyroje}}</translation>
+<translation id="42981349822642051">Išskleisti</translation>
 <translation id="4302965934281694568">„Chou3“ (vokas)</translation>
 <translation id="4305817255990598646">Perjungti</translation>
 <translation id="4312613361423056926">B2</translation>
@@ -882,6 +881,7 @@
 <translation id="5810442152076338065">Ryšys su <ph name="DOMAIN" /> užšifruotas naudojant pasenusį šifravimo paketą.</translation>
 <translation id="5813119285467412249">&amp;Pridėti dar kartą</translation>
 <translation id="5838278095973806738">Šioje svetainėje neturėtumėte pateikti neskelbtinos informacijos (pvz., slaptažodžių ar kredito kortelių numerių), nes ją gali pavogti užpuolikai.</translation>
+<translation id="5860033963881614850">Išjungta</translation>
 <translation id="5863847714970149516">Toliau pateiktame puslapyje gali būti bandoma jus apmokestinti</translation>
 <translation id="5866257070973731571">Telefono numerio pridėjimas</translation>
 <translation id="5869405914158311789">Nepavyksta pasiekti šios svetainės</translation>
@@ -890,6 +890,7 @@
 <translation id="5893752035575986141">Kredito kortelės tinkamos.</translation>
 <translation id="5901630391730855834">Geltona</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (sinchronizuota)</translation>
+<translation id="5916664084637901428">Įjungta</translation>
 <translation id="5919090499915321845">B10</translation>
 <translation id="5921639886840618607">Išsaugoti kortelę „Google“ paskyroje?</translation>
 <translation id="5922853866070715753">Beveik atlikta</translation>
@@ -987,6 +988,7 @@
 <translation id="6508722015517270189">Iš naujo paleiskite „Chrome“</translation>
 <translation id="6529602333819889595">&amp;Ištrinti dar kartą</translation>
 <translation id="6534179046333460208">Fizinio žiniatinklio pasiūlymai</translation>
+<translation id="6556866813142980365">Grąžinti</translation>
 <translation id="6563469144985748109">Jūsų valdytojas dar jos nepatvirtino</translation>
 <translation id="6569060085658103619">Peržiūrite plėtinio puslapį</translation>
 <translation id="6578796323535178455">C2 (vokas)</translation>

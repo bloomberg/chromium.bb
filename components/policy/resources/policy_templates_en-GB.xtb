@@ -260,13 +260,6 @@
       disabled. In this case, the user cannot enable the feature.</translation>
 <translation id="1474273443907024088">Disable TLS False Start</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
-<translation id="1478485744311397487">Servers to which <ph name="PRODUCT_NAME" /> may delegate.
-
-          Separate multiple server names with commas. Wildcards (*) are allowed.
-
-          If you leave this policy not set, <ph name="PRODUCT_NAME" /> will not delegate user credentials even if a server is detected as Intranet.
-
-          This policy is ignored if the 'UseKDCConstrainedDelegation' policy is true.</translation>
 <translation id="1484146587843605071"><ph name="PRODUCT_NAME" /> will bypass any proxy for the list of hosts given here.
 
           This policy only takes effect if you have selected manual proxy settings at 'Choose how to specify proxy server settings'.
@@ -937,11 +930,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 
       If you enable this setting, Print Preview will use the OS system default printer as the default destination choice.</translation>
 <translation id="2856674246949497058">Roll back and stay on target version if OS version is newer than target. Do a powerwash during the process.</translation>
-<translation id="2858646435735022107">Controls whether OK-AS-DELEGATE flag from KDC is respected or whether 'AuthNegotiateDelegateWhitelist' is used to constrain delegation of Kerberos tickets.
-
-          If this policy is true, HTTP authentication respects constrained delegation settings on the KDC. 'AuthNegotiateDelegateWhitelist' policy is ignored in that case. Please see https://tools.ietf.org/html/rfc5896.html for more information.
-
-          If this policy is not set or set to false, constrained delegation settings from KDC are ignored and 'AuthNegotiateDelegateWhitelist' policy is respected.</translation>
 <translation id="2872961005593481000">Shut down</translation>
 <translation id="2873651257716068683">Overrides default printing page size. If the page size is unavailable, this policy is ignored.</translation>
 <translation id="2874209944580848064">Note for <ph name="PRODUCT_OS_NAME" /> devices supporting Android apps:</translation>
@@ -1707,6 +1695,11 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="4725528134735324213">Enable Android Backup Service</translation>
 <translation id="4725801978265372736">Require that the name of the local user and the remote access host owner match</translation>
 <translation id="4733471537137819387">Policies related to integrated HTTP authentication.</translation>
+<translation id="4744190513568488164">Servers that <ph name="PRODUCT_NAME" /> may delegate to.
+
+          Separate multiple server names with commas. Wildcards (*) are allowed.
+
+          If you leave this policy unset <ph name="PRODUCT_NAME" /> will not delegate user credentials even if a server is detected as Intranet.</translation>
 <translation id="4752880493649142945">Client certificate for connecting to RemoteAccessHostTokenValidationUrl</translation>
 <translation id="4757671984625088193">If this is set to true or unset, <ph name="PRODUCT_NAME" /> will suggest pages related to the current page.
       These suggestions are fetched remotely from Google servers.
@@ -1784,7 +1777,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="4986560318567565414">Path to Chrome for switching from the alternative browser.</translation>
 <translation id="4988291787868618635">Action to take when the idle delay is reached</translation>
 <translation id="4995548127349206948">Whether NTLMv2 authentication is enabled.</translation>
-<translation id="5022792010322211583">Use KDC constrained delegation</translation>
 <translation id="5047604665028708335">Allow access to sites outside of content packs</translation>
 <translation id="5052081091120171147">This policy forces the browsing history to be imported from the current default browser, if enabled. If enabled, this policy also affects the import dialogue.
 

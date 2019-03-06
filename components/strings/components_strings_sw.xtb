@@ -51,7 +51,6 @@
 <translation id="1232569758102978740">Hakina Jina</translation>
 <translation id="1240347957665416060">Jina la kifaa chako</translation>
 <translation id="124116460088058876">Lugha zaidi</translation>
-<translation id="1246987714874202335">Sasisha tarehe ya mwisho wa matumizi</translation>
 <translation id="1250759482327835220">Ili ulipe kwa haraka wakati ujao, hifadhi anwani ya kutuma bili, jina na maelezo ya kadi yako kwenye Akaunti yako ya Google.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (zimesawazishwa)</translation>
 <translation id="1256368399071562588">&lt;p&gt;Ukijaribu kutembelea tovuti na haifunguki, jaribu kwanza kurekebisha hitilafu kwa kutumia hatua hizi za utatuzi:&lt;/p&gt;
@@ -281,7 +280,6 @@
     sera ya usalama itatumika katika maombi yake yote. Lakini kwa sasa
     imeshindwa kuwasilisha sera inayozuia kivinjari kutimiza
     ombi lako la <ph name="SITE" />.</translation>
-<translation id="2442483081384580286">Maonyo kuhusu Kuvinjari Salama</translation>
 <translation id="244665789865330679">Akaunti na kifaa chako kinadhibitiwa na<ph name="ENROLLMENT_DOMAIN" />. Hii inamaanisha kwamba msimamizi wako anaweza kuweka mipangilio ya akaunti na kifaa chako kwa mbali.</translation>
 <translation id="2463193859425327265">Badilisha Ukurasa wa Kwanza</translation>
 <translation id="2463739503403862330">Jaza</translation>
@@ -611,6 +609,7 @@
 <translation id="4277028893293644418">Badilisha nenosiri</translation>
 <translation id="4280429058323657511">, muda wa kutumika utakwisha <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{Kadi hii imehifadhiwa kwenye Akaunti yako ya Google}other{Kadi hizi zimehifadhiwa kwenye Akaunti yako ya Google}}</translation>
+<translation id="42981349822642051">Panua</translation>
 <translation id="4302965934281694568">Chou3 (Bahasha)</translation>
 <translation id="4305817255990598646">Badilisha</translation>
 <translation id="4312613361423056926">B2</translation>
@@ -881,6 +880,7 @@
 <translation id="5810442152076338065">Muunganisho wako kwenye <ph name="DOMAIN" /> umesimbwa kwa njia fiche kwa kutumia mipangilio ya kriptografia ya zamani.</translation>
 <translation id="5813119285467412249">Rudia Kuongeza</translation>
 <translation id="5838278095973806738">Hupaswi kuweka maelezo nyeti kwenye tovuti hii (kwa mfano, manenosiri au kadi za mikopo), kwa sababu wavamizi wanaweza kuyaiba.</translation>
+<translation id="5860033963881614850">Kimezimwa</translation>
 <translation id="5863847714970149516">Huenda ukurasa unaofuata ukajaribu kukutoza pesa</translation>
 <translation id="5866257070973731571">Ongeza Nambari ya Simu</translation>
 <translation id="5869405914158311789">Imeshindwa kufungua tovuti hii</translation>
@@ -889,6 +889,7 @@
 <translation id="5893752035575986141">Kadi za mikopo zinakubaliwa.</translation>
 <translation id="5901630391730855834">Manjano</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (imesawazishwa)</translation>
+<translation id="5916664084637901428">Imewashwa</translation>
 <translation id="5919090499915321845">B10</translation>
 <translation id="5921639886840618607">Ungependa kuhifadhi kadi kwenye Akaunti ya Google?</translation>
 <translation id="5922853866070715753">Unakaribia kumaliza</translation>
@@ -986,6 +987,7 @@
 <translation id="6508722015517270189">Zima na uwashe Chrome</translation>
 <translation id="6529602333819889595">Rudia Kufuta</translation>
 <translation id="6534179046333460208">Mapendekezo ya Wavuti kila Mahali</translation>
+<translation id="6556866813142980365">Rudia</translation>
 <translation id="6563469144985748109">Msimamizi wako bado hajaiidhinisha</translation>
 <translation id="6569060085658103619">Unaangalia ukurasa wa kiendelezi</translation>
 <translation id="6578796323535178455">C2 (Bahasha)</translation>

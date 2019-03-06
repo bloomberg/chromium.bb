@@ -104,7 +104,6 @@
 <translation id="1143142264369994168">సర్టిఫికెట్ సంతకందారు</translation>
 <translation id="1145292499998999162">ప్లగ్ఇన్‌ బ్లాక్ చేయబడింది</translation>
 <translation id="1145532888383813076">మీ పరికరం, యాప్‌లు మరియు వెబ్‌ను శోధించండి.</translation>
-<translation id="1146204723345436916">HTML ఫైల్ నుండి బుక్‌మార్క్‌లను దిగుమతి చేయి...</translation>
 <translation id="114721135501989771">Chromeలో Google స్మార్ట్‌లను పొందండి</translation>
 <translation id="1148097584170732637"><ph name="FILE_COUNT" /> కనుగొనబడ్డాయి.
     <ph name="LINE_BREAK1" />
@@ -420,7 +419,6 @@
 <translation id="1608626060424371292">ఈ వినియోగదారుని తీసివేయండి</translation>
 <translation id="1609170755653088773">ఈ పాస్‌వర్డ్‌ను మీ iPhoneకు సమకాలీకరించండి</translation>
 <translation id="1611584202130317952">కేటాయింపు విధానానికి అంతరాయం ఏర్పడింది. దయచేసి మళ్లీ ప్రయత్నించండి లేదా మీ పరికర యజమాని లేదా నిర్వాహకులను సంప్రదించండి.</translation>
-<translation id="1611704746353331382">HTML ఫైల్‌కి బుక్‌మార్క్‌లను ఎగుమతి చేయి...</translation>
 <translation id="1614511179807650956">మీరు మీకు అనుమతించిన మొబైల్ డేటాను పూర్తిగా ఉపయోగించి ఉండవచ్చు. మరింత డేటాను కొనుగోలు చేయడానికి <ph name="NAME" /> యాక్టివేషన్ పోర్టల్‌ను సందర్శించండి</translation>
 <translation id="161460670679785907">మీ ఫోన్‌ను గుర్తించడం సాధ్యపడలేదు</translation>
 <translation id="1616206807336925449">ఈ పొడిగింపుకు ప్రత్యేక అనుమతులు ఏవీ అవసరం లేదు.</translation>
@@ -651,7 +649,6 @@
 <translation id="1932098463447129402">ముందు కాదు</translation>
 <translation id="1933345018156373194">తరలింపు విఫలమైంది, తెలియని ఎర్రర్: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1933809209549026293">దయచేసి మౌస్ లేదా కీబోర్డ్‌ను కనెక్ట్ చేయండి. మీరు బ్లూటూత్ పరికరాన్ని ఉపయోగిస్తుంటే, అది జత చేయడానికి సిద్ధంగా ఉందని నిర్ధారించుకోండి.</translation>
-<translation id="1936157145127842922">ఫోల్డర్‌లో చూపించు</translation>
 <translation id="1938351510777341717">బాహ్య ఆదేశం</translation>
 <translation id="1940546824932169984">కనెక్ట్ చేయబడిన పరికరాలు</translation>
 <translation id="1942765061641586207">చిత్ర రిజల్యూషన్</translation>
@@ -1368,7 +1365,6 @@
 <translation id="3009300415590184725">మొబైల్ డేటా సేవ సెటప్ ప్రాసెస్‌ను మీరు ఖచ్చితంగా రద్దు చేయాలనుకుంటున్నారా?</translation>
 <translation id="3009779501245596802">సూచికలోని డేటాబేస్‌లు</translation>
 <translation id="3010279545267083280">పాస్‌వర్డ్ తొలగించబడింది</translation>
-<translation id="3011362742078013760">అన్ని బుక్‌మార్క్‌లను &amp;అజ్ఞాత విండోలో తెరువు</translation>
 <translation id="3011488081941333749">నిష్క్రమించేటప్పుడు <ph name="DOMAIN" /> నుండి కుక్కీలు తీసివేయబడతాయి</translation>
 <translation id="3012631534724231212">(iframe)</translation>
 <translation id="3012804260437125868">సురక్షితమైన ఒకే సైట్ కనెక్షన్‌లు మాత్రమే</translation>
@@ -2575,7 +2571,6 @@
 <translation id="4881695831933465202">తెరువు</translation>
 <translation id="4882312758060467256">ఈ సైట్‌కు యాక్సెస్‌ను కలిగి ఉంది</translation>
 <translation id="4882831918239250449">శోధన, ప్రకటనలు మరియు మరిన్నింటిని వ్యక్తిగతీకరించడానికి మీ బ్రౌజింగ్ చరిత్ర ఎలా ఉపయోగించబడుతుందో నియంత్రించండి</translation>
-<translation id="4883178195103750615">బుక్‌మార్క్‌లను HTML ఫైల్‌కి ఎగుమతి చేయండి...</translation>
 <translation id="4883436287898674711">అన్ని <ph name="WEBSITE_1" /> వెబ్‌సైట్‌లు</translation>
 <translation id="48838266408104654">విధి సంచాలకులు</translation>
 <translation id="4884987973312178454">6x</translation>
@@ -2909,7 +2904,6 @@
 <translation id="5376931455988532197">ఫైల్ చాలా పెద్దదిగా ఉంది</translation>
 <translation id="537813040452600081">మీరు ఈ విండోలో వీక్షించే పేజీలు బ్రౌజర్ చరిత్రలో కనిపించవు. మీరు సైన్ అవుట్ చేసిన తర్వాత కంప్యూటర్‌లో అవి కుక్కీల వంటి ఇతర జాడలను వదిలిపెట్టవు. మీరు డౌన్‌లోడ్ చేసే ఫైల్స్, సృష్టించే బుక్‌మార్క్‌లు భద్రపరచబడవు.</translation>
 <translation id="5379140238605961210">మైక్రోఫోన్ యాక్సెస్‌ను బ్లాక్ చేయడాన్ని కొనసాగించు</translation>
-<translation id="5379268888377976432">తొలగింపు చర్య రద్దు చేయండి</translation>
 <translation id="5382591305415226340">మద్దతు గల లింక్‌లను నిర్వహించండి</translation>
 <translation id="5384883051496921101">ఈ సైట్ అజ్ఞాత మోడ్ వెలుపల ఉన్న ఒక యాప్‌తో సమాచారాన్ని షేర్ చేయబోతోంది.</translation>
 <translation id="5388885445722491159">జత చేయబడింది</translation>
@@ -3204,7 +3198,6 @@
 <translation id="5801568494490449797">ప్రాధాన్యతలు</translation>
 <translation id="5804241973901381774">అనుమతులు</translation>
 <translation id="5805697420284793859">విండో మేనేజర్</translation>
-<translation id="580571955903695899">శీర్షిక ద్వారా క్రమాన్ని మార్చు</translation>
 <translation id="5811750797187914944">అంతా ఒకే</translation>
 <translation id="5814126672212206791">కనెక్షన్ రకం</translation>
 <translation id="5815645614496570556">X.400 చిరునామా</translation>
@@ -3531,7 +3524,6 @@
 <translation id="6264365405983206840">&amp;అన్నీ ఎంచుకోండి</translation>
 <translation id="6267166720438879315"><ph name="HOST_NAME" />కు మిమ్మల్ని మీరు ప్రమాణీకరించడానికి ఒక సర్టిఫికెట్‌ను ఎంచుకోండి</translation>
 <translation id="6268252012308737255"><ph name="APP" />తో తెరువు</translation>
-<translation id="6268747994388690914">HTML ఫైల్ నుండి బుక్‌మార్క్‌లను దిగుమతి చేయి...</translation>
 <translation id="6272643420381259437">ప్లగ్ఇన్‌‌ను డౌన్‌లోడ్ చేస్తున్నప్పుడు ఎర్రర్ (<ph name="ERROR" />) ఏర్పడింది</translation>
 <translation id="6273677812470008672">నాణ్యత</translation>
 <translation id="6277105963844135994">నెట్‌వర్క్ సమయం ముగిసింది</translation>
@@ -3606,7 +3598,6 @@
 <translation id="6393156038355142111">శక్తివంతమైన పాస్‌వర్డ్‌ని సూచించు</translation>
 <translation id="6395575651121294044"><ph name="NUMBER_OF_FILES" /> అంశాలు</translation>
 <translation id="6397094776139756010">సమకాలీకరణ మరియు వ్యక్తిగతీకరణ ఎంపికలు</translation>
-<translation id="6397592254427394018">అన్ని బుక్‌మార్క్‌లను &amp;అజ్ఞాత విండోలో తెరువు</translation>
 <translation id="6398715114293939307">Google Play స్టోర్‌ని తీసివేయండి</translation>
 <translation id="6398765197997659313">పూర్తి స్క్రీన్ నుండి నిష్క్రమించు</translation>
 <translation id="6399774419735315745">గూఢచారి</translation>
@@ -3870,7 +3861,6 @@
 <translation id="6798954102094737107">ప్లగ్ఇన్‌: <ph name="PLUGIN_NAME" /></translation>
 <translation id="6801435275744557998">టచ్‌స్క్రీన్‌ను క్రమాంకనం చేయి</translation>
 <translation id="6802031077390104172"><ph name="USAGE" /> (<ph name="OID" />)</translation>
-<translation id="6804671422566312077">అన్ని బుక్‌మార్క్‌లను &amp;క్రొత్త విండోలో తెరువు</translation>
 <translation id="6805038906417219576">సరే</translation>
 <translation id="6805647936811177813"><ph name="HOST_NAME" /> నుండి క్లయింట్ సర్టిఫికెట్‌ను దిగుమతి చేయడానికి, దయచేసి <ph name="TOKEN_NAME" />కు సైన్ ఇన్ చేయండి.</translation>
 <translation id="680572642341004180"><ph name="SHORT_PRODUCT_OS_NAME" />లో RLZ ట్రాకింగ్‌ను ప్రారంభించు.</translation>
@@ -3977,7 +3967,6 @@
 <translation id="6970856801391541997">నిర్దిష్ట పేజీలను ముద్రించు</translation>
 <translation id="6972180789171089114">ఆడియో/వీడియో</translation>
 <translation id="6972754398087986839">ప్రారంభించండి</translation>
-<translation id="6973630695168034713">ఫోల్డర్‌లు</translation>
 <translation id="6974609594866392343">ఆఫ్‌లైన్ డెమో మోడ్</translation>
 <translation id="6977381486153291903">ఫర్మ్‌వేర్ పునర్విమర్శ</translation>
 <translation id="6978121630131642226">శోధన ఇంజిన్‌లు</translation>
@@ -4308,7 +4297,6 @@
 <translation id="7478485216301680444">కియోస్క్ అప్లికేషన్‌ను ఇన్‌స్టాల్ చేయడం సాధ్యపడలేదు.</translation>
 <translation id="7481312909269577407">ఫార్వర్డ్</translation>
 <translation id="748138892655239008">సర్టిఫికెట్ ఆధార పరిమితులు</translation>
-<translation id="7484964289312150019">అన్ని బుక్‌మార్క్‌లను &amp;క్రొత్త విండోలో తెరువు</translation>
 <translation id="7487067081878637334">సాంకేతికం</translation>
 <translation id="7487099628810939106">క్లిక్ చేయడానికి ముందు జరగాల్సిన ఆలస్యం:</translation>
 <translation id="7487969577036436319">భాగాలు ఇన్‌స్టాల్ చేయబడలేదు</translation>
@@ -4735,7 +4723,6 @@
 <translation id="8063235345342641131">డిఫాల్ట్ ఆకుపచ్చ రంగు అవతార్</translation>
 <translation id="8064671687106936412">కీలకమైన:</translation>
 <translation id="8066773524873206594">అన్ని సవరణలు <ph name="DOWNLOADS_FOLDER" />లో సేవ్ చేయబడతాయి.</translation>
-<translation id="806812017500012252">శీర్షిక ద్వారా క్రమాన్ని మార్చు</translation>
 <translation id="8068253693380742035">సైన్ ఇన్ చేయడానికి తాకండి</translation>
 <translation id="8069615408251337349">Google క్లౌడ్ ప్రింట్</translation>
 <translation id="8071432093239591881">చిత్రం లాగా ముద్రించు</translation>

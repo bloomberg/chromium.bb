@@ -94,6 +94,7 @@
 <translation id="4360991593054037559">โปรดป้อนค่าที่ถูกต้อง ค่าใกล้เคียงที่สุดที่ถูกต้องสองรายการคือ <ph name="VALID_VALUE_LOW" /> และ <ph name="VALID_VALUE_HIGHER" /></translation>
 <translation id="4384583879834880242">ถามและตอบ</translation>
 <translation id="4413860115965805769">ปุ่มเมนู</translation>
+<translation id="4444765639179266822">ดูเหมือนจะพูดว่า <ph name="OCR_TEXT" /></translation>
 <translation id="4446524499724042288">ข้อมูลอ้างอิงอภิธานศัพท์</translation>
 <translation id="4522570452068850558">รายละเอียด</translation>
 <translation id="4542388879936266156">เวลาที่เหลือ: <ph name="REMAINING_TIME" /></translation>
@@ -120,6 +121,7 @@
 <translation id="5164977714490026579">ค่าต้องมากกว่าหรือเท่ากับ <ph name="MINIMUM" /></translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">โปรดป้อนส่วนหนึ่งโดยตามด้วย "<ph name="ATSIGN" />" "<ph name="INVALIDADDRESS" />" นั้นไม่สมบูรณ์</translation>
+<translation id="5334352251556557839">เล่นสื่อไม่ได้</translation>
 <translation id="5406322316791861025">ตัวเลข</translation>
 <translation id="5453733299334684579">รายการแบบต้นไม้</translation>
 <translation id="5466621249238537318">โปรดเลือกอย่างน้อยหนึ่งไฟล์</translation>
@@ -146,6 +148,7 @@
 <translation id="6150588977291308318">บรรณานุกรม</translation>
 <translation id="6164829606128959761">เมตร</translation>
 <translation id="6166809985690652833">คำแถลงท้ายเล่ม</translation>
+<translation id="6209276755895393898">ดูเหมือนเป็น<ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">อภิธานศัพท์</translation>
 <translation id="6398862346408813489">แสดงแผงการเลือกเดือน</translation>
 <translation id="6404546809543547843">ตัวควบคุมเวลาของเสียง</translation>
@@ -176,6 +179,7 @@
 <translation id="7139483182332611405">ส่วนนำ</translation>
 <translation id="7263440858009898357">โปรดเลือกรายการจากหน้ารายการ</translation>
 <translation id="727747134524199931">ส่วนหัวคอลัมน์</translation>
+<translation id="7320576522385648310">กำลังบัฟเฟอร์</translation>
 <translation id="7353453495576941748">เครดิต</translation>
 <translation id="7364796246159120393">เลือกไฟล์</translation>
 <translation id="739024184232394898">อื่นๆ...</translation>

@@ -51,7 +51,6 @@
 <translation id="1232569758102978740">Fără titlu</translation>
 <translation id="1240347957665416060">Numele dispozitivului tău</translation>
 <translation id="124116460088058876">Mai multe limbi</translation>
-<translation id="1246987714874202335">Actualizează data expirării</translation>
 <translation id="1250759482327835220">Pentru a plăti mai rapid data viitoare, salvează cardul, numele și adresa de facturare în Contul Google.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (sincronizate)</translation>
 <translation id="1256368399071562588">&lt;p&gt;Dacă încerci să vizitezi un site, iar acesta nu se deschide, mai întâi încearcă să remediezi eroarea urmând acești pași:&lt;/p&gt;
@@ -281,7 +280,6 @@
     ca o politică de securitate să fie aplicată tuturor solicitărilor către el. Dar acum
     nu a reușit să livreze o politică, ceea ce împiedică browserul să îți îndeplinească
     solicitarea pentru <ph name="SITE" />.</translation>
-<translation id="2442483081384580286">Avertizări privind navigarea sigură</translation>
 <translation id="244665789865330679">Dispozitivul și contul tău sunt administrate de <ph name="ENROLLMENT_DOMAIN" />. Administratorul poate să-ți configureze dispozitivul și contul de la distanță.</translation>
 <translation id="2463193859425327265">Schimbă Pagina principală</translation>
 <translation id="2463739503403862330">Completează</translation>
@@ -611,6 +609,7 @@
 <translation id="4277028893293644418">Resetează parola</translation>
 <translation id="4280429058323657511">data expirării: <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{Acest card a fost salvat în Contul tău Google}few{Aceste carduri au fost salvate în Contul tău Google}other{Aceste carduri au fost salvate în Contul tău Google}}</translation>
+<translation id="42981349822642051">Extinde</translation>
 <translation id="4302965934281694568">Chou3 (Plic)</translation>
 <translation id="4305817255990598646">Comută</translation>
 <translation id="4312613361423056926">B2</translation>
@@ -881,6 +880,7 @@
 <translation id="5810442152076338065">Conexiunea la <ph name="DOMAIN" /> este criptată folosind o suită de codificare învechită.</translation>
 <translation id="5813119285467412249">&amp;Repetați adăugarea</translation>
 <translation id="5838278095973806738">Nu ar trebui să introduci informații sensibile pe acest site (de exemplu, parole sau carduri de credit), deoarece ar putea fi furate de atacatori.</translation>
+<translation id="5860033963881614850">Dezactivat</translation>
 <translation id="5863847714970149516">Următoarea pagină poate să genereze costuri</translation>
 <translation id="5866257070973731571">Adaugă un număr de telefon</translation>
 <translation id="5869405914158311789">Acest site nu poate fi accesat</translation>
@@ -889,6 +889,7 @@
 <translation id="5893752035575986141">Se acceptă carduri de credit.</translation>
 <translation id="5901630391730855834">Galben</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (sincronizat)</translation>
+<translation id="5916664084637901428">Activat</translation>
 <translation id="5919090499915321845">B10</translation>
 <translation id="5921639886840618607">Salvezi cardul în Contul Google?</translation>
 <translation id="5922853866070715753">Aproape finalizat</translation>
@@ -986,6 +987,7 @@
 <translation id="6508722015517270189">repornește Chrome;</translation>
 <translation id="6529602333819889595">&amp;Repetați ștergerea</translation>
 <translation id="6534179046333460208">Sugestii pentru Webul material</translation>
+<translation id="6556866813142980365">Repetă</translation>
 <translation id="6563469144985748109">Administratorul nu l-a aprobat încă</translation>
 <translation id="6569060085658103619">Se afișează pagina unei extensii</translation>
 <translation id="6578796323535178455">C2 (Plic)</translation>

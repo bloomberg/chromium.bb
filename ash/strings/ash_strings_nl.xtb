@@ -336,6 +336,7 @@
 <translation id="6537270692134705506">Screenshot maken</translation>
 <translation id="6542521951477560771">Er wordt gecast naar <ph name="RECEIVER_NAME" /></translation>
 <translation id="6559976592393364813">Vraag het de beheerder</translation>
+<translation id="6574601967010742428">De beheerder van het apparaat kan je activiteit mogelijk bekijken.</translation>
 <translation id="6585808820553845416">Sessie loopt af over <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Zoeken+Shift+K</translation>
 <translation id="6650933572246256093">Bluetooth-apparaat '<ph name="DEVICE_NAME" />' wil toestemming om te koppelen. Voer de volgende toegangscode in op dat apparaat: <ph name="PASSKEY" /></translation>
@@ -442,7 +443,6 @@
 <translation id="8261506727792406068">Verwijderen</translation>
 <translation id="8297006494302853456">Zwak</translation>
 <translation id="8308637677604853869">Vorig menu</translation>
-<translation id="8332664326438198339">Terug naar Launcher</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Notitie maken</translation>
 <translation id="8375916635258623388">Deze <ph name="DEVICE_NAME" /> en je telefoon maken automatisch verbinding</translation>

@@ -16,7 +16,6 @@
 <translation id="106222400312645156">rwhdr</translation>
 <translation id="1065552602950927991">ఇన్‌పుట్ చెల్లదు</translation>
 <translation id="1066085461259044485">అరణ్యపు ఆకుపచ్చ రంగు</translation>
-<translation id="1080471004309605942">ఇటాలిక్ ముగింపు</translation>
 <translation id="1082209053475788238">మునుపటి స్థాయి 6 శీర్షిక లేదు.</translation>
 <translation id="1087788677726983142">ఈవెంట్ ప్రసార ఫిల్టర్‌లను దాచు</translation>
 <translation id="1088219014394087294">శీర్షికలు లేవు.</translation>
@@ -168,7 +167,6 @@
 <translation id="2267945578749931355">తరువాత అక్షరం</translation>
 <translation id="2278490101488436824">మూడు వేళ్లతో ఎడమవైపునకు స్వైప్ చేయండి</translation>
 <translation id="2281234842553884450">మునుపటి స్లయిడర్</translation>
-<translation id="2294136146931447363">ఇటాలిక్ ప్రారంభం</translation>
 <translation id="2311237334957139798">వివరాల స్థాయి వద్ద మునుపటి దానికి తరలించండి</translation>
 <translation id="2318372665160196757">ప్రధానం</translation>
 <translation id="2329324941084714723">ట్యాబ్ ప్యానెల్</translation>
@@ -225,12 +223,10 @@
 <translation id="2717271541250958000">tabpnl</translation>
 <translation id="2723001399770238859">ఆడియో</translation>
 <translation id="2732718972699418926">AM</translation>
-<translation id="2737520612859577214">సూపర్‌స్క్రిప్ట్ ముగింపు</translation>
 <translation id="2749275490991666823">తనిఖీ చేయబడింది</translation>
 <translation id="27527859628328957">తరువాత ఫోకస్ చేయగల అంశానికి వెళ్లండి</translation>
 <translation id="2770781857296573485">సమూహ విశ్లేషణలోకి ప్రవేశించండి</translation>
 <translation id="2777845298774924149">నిష్క్రమించింది</translation>
-<translation id="2781264313200109999">లింక్ ప్రారంభం</translation>
 <translation id="2784959586797362050">ఎప్పటి లాగానే, మీరు శోధన+a, ఆపై i నొక్కడం ద్వారా నేరుగా మాకు అభిప్రాయాన్ని పంపవచ్చు. మేము మీ అభిప్రాయాన్ని తెలుసుకోవాలనుకుంటున్నాము.</translation>
 <translation id="2800204403141299078">ఇక విభిన్న మూలకాలు లేవు.</translation>
 <translation id="2800780099804980316">మునుపటి స్థాయి 1 శీర్షిక లేదు.</translation>
@@ -252,7 +248,6 @@
 <translation id="288178314850623291">నిర్దిష్ట రకాల మూలకాలకు దాటవేయడానికి దాటవేసే ఆదేశాలను ఉపయోగించండి. ముఖ్య శీర్షికల మధ్య ముందుకు మారడానికి, శోధన + H నొక్కండి లేదా వెనుకకు వెళ్లడానికి, శోధన + Shift + H నొక్కండి.</translation>
 <translation id="2894654529758326923">సమాచారం</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{ఎడమ ధనుర్బంధ గుర్తు}other{# ఎడమ ధనుర్బంధ గుర్తులు}}</translation>
-<translation id="2909478709401302630">సూపర్‌స్క్రిప్ట్ ప్రారంభం</translation>
 <translation id="2911433807131383493">ChromeVox ట్యుటోరియల్‌ను తెరవండి</translation>
 <translation id="2912405967290226587">మూడు వేళ్లతో కుడివైపునకు స్వైప్ చేయండి</translation>
 <translation id="2932083475399492303">ఆకృతీకరణ లేదా లేఅవుట్ మధ్య లైన్‌ రకాన్ని టోగుల్ చేయండి</translation>
@@ -313,7 +308,6 @@
 <translation id="3232388865800379423">పాప్ అప్ బటన్</translation>
 <translation id="3241052487511142956">మునుపు సందర్శించిన లింక్</translation>
 <translation id="3241638166094654466">ప్రతి పంక్తిలో గడులు:</translation>
-<translation id="327361630706777244"><ph name="FONT_COLOR" /> ముగింపు</translation>
 <translation id="3286372614333682499">పోర్ట్రెయిట్‌లో ఉంది</translation>
 <translation id="3286390186030710347">స్లయిడర్</translation>
 <translation id="3299925995433437805">తర్వాత సందర్శించిన లింక్ ఏదీ లేదు.</translation>
@@ -338,7 +332,6 @@
 <translation id="3393605254399152980">మీరు తాకిన దానిని వినడం కోసం ఒక వేలితో లాగండి</translation>
 <translation id="3406283310380167331">ఫారమ్‌ల జాబితాను చూపండి</translation>
 <translation id="3414400929511680526">లేత లేజాయ నీలి రంగు</translation>
-<translation id="3437941064431741545">పరిమాణం <ph name="FONT_SIZE" /> ముగింపు</translation>
 <translation id="344800400831402066">నారింజ ఛాయల రంగు</translation>
 <translation id="3457000393508828486">పాక్షికంగా నొక్కబడింది</translation>
 <translation id="3458865416877308321"><ph name="NAME" />, ఆఫ్‌లో ఉంది</translation>
@@ -357,7 +350,6 @@
 <translation id="352577523970648069">సవరించగల వచన ఫీల్డ్</translation>
 <translation id="3549141990712742152"><ph name="TEXT" />ని కత్తిరించండి.</translation>
 <translation id="3549680091535286226">తాత్కాలికంగా ప్రసంగాన్ని ఆపడం కోసం 2 వేళ్లతో నొక్కండి</translation>
-<translation id="3555380819397253474"><ph name="FONT_FAMILY" /> ప్రారంభం</translation>
 <translation id="3568702578574425662"><ph name="NAME" />, చెక్‌బాక్స్ ఎంచుకోబడలేదు</translation>
 <translation id="3589661172894441357">పదకోశం</translation>
 <translation id="3591784666823501596">దివ్యమైన నీలం రంగు</translation>
@@ -437,7 +429,6 @@
 <translation id="4158704014418536539">కేస్ ఆధారితం.</translation>
 <translation id="4159784952369912983">వంగపండు రంగు</translation>
 <translation id="4161663686871496107">ChromeVox చదివి వినిపించే అభిప్రాయం సిద్ధంగా ఉంది</translation>
-<translation id="4166192625054637755">సబ్‌స్క్రిప్ట్ ముగింపు</translation>
 <translation id="4173994908659439270">సవరించగల వచన ఫీల్డ్ ఏదీ తర్వాత లేదు.</translation>
 <translation id="4176463684765177261">ఆపివేయబడింది</translation>
 <translation id="4187322598335821254">పంక్తుల వారీగా వెళ్లడం కోసం ఎగువకు లేదా దిగువకు స్వైప్ చేయండి</translation>
@@ -538,7 +529,6 @@
 <translation id="4842108708071771135">తరువాత బ్లాక్‌కోట్ లేదు.</translation>
 <translation id="4844625982113518938">దీని పేరు తెలుసుకోవడానికి ఏదైనా కీని నొక్కండి. Ctrl+W నొక్కడం వలన తెలుసుకునే మోడ్ మూసివేయబడుతుంది.</translation>
 <translation id="4846428657345567687">ChromeVoxకి స్వాగతం!</translation>
-<translation id="4846487886195635104">కొట్టివేత ముగింపు</translation>
 <translation id="4848993367330139335">tmr</translation>
 <translation id="4850023505158945298">మునుపటి సారూప్య మూలకం.</translation>
 <translation id="4866956062845190338">rdmnuitm</translation>
@@ -612,7 +602,6 @@
 <translation id="5330443287809544590"><ph name="NAME" />, లింక్</translation>
 <translation id="5336381510091010269">autoinl+lst</translation>
 <translation id="5349770431644471053">వెనుకకు తీసుకువెళ్లే లింక్‌</translation>
-<translation id="5350654862897073517">సబ్‌స్క్రిప్ట్ ప్రారంభం</translation>
 <translation id="536031132345979795">నిరంతరంగా చదివేటప్పుడు వెనుకకు దాటవేయండి</translation>
 <translation id="5368000168321181111">శబ్ద హెచ్చరికలు ఆపివేయబడ్డాయి</translation>
 <translation id="5374320867641260420">తర్వాతి బటన్ లేదు.</translation>
@@ -719,10 +708,8 @@
 <translation id="6037602951055904232">ముందుకు ప్యాన్ చేయండి</translation>
 <translation id="6042826534790431634">యాక్టివేట్ చేయడం కోసం శోధన+స్పేస్ నొక్కండి.</translation>
 <translation id="6044160928851315051">స్క్రీన్‌ను కాంతిహీనంగా చేస్తుంది</translation>
-<translation id="605761629541007221">బోల్డ్ ముగింపు</translation>
 <translation id="6065293622157674001">వ్యాకరణ దోషం ప్రారంభం</translation>
 <translation id="6082768461603900813">ప్రాథమిక నావిగేషన్</translation>
-<translation id="6092707270915298410">లింక్ ముగింపు</translation>
 <translation id="6118126368611144850">Chrome కోసం Android యాప్‌లు. మీ పరికరంలో Play స్టోర్ ఉన్నట్లయితే, Android యాప్‌లతో ChromeVoxను పరిశీలించండి. Play స్టోర్ నుండి Google Chrome Canaryని డౌన్‌లోడ్ చేయడం ద్వారా ప్రయోగాత్మక మద్దతును ప్రయత్నించండి.</translation>
 <translation id="611827076493383239">vtd</translation>
 <translation id="6119955456199054975">సెల్ ముగింపు.</translation>
@@ -770,9 +757,7 @@
 <translation id="6459511626086141404">సమతల కీమ్యాప్</translation>
 <translation id="6468049171101508116">తర్వాతి బటన్</translation>
 <translation id="646954774886932461">సూచిక</translation>
-<translation id="6470797302070897045">పరిమాణం <ph name="FONT_SIZE" /> ప్రారంభం</translation>
 <translation id="6493991254603208962">ప్రకాశాన్ని తగ్గిస్తుంది</translation>
-<translation id="6497864469186228849"><ph name="FONT_FAMILY" /> ముగింపు</translation>
 <translation id="6501595918865591267">నీలమణి రంగు</translation>
 <translation id="6508059270146105198">బ్రెయిలీ డిస్‌ప్లేను పేజీ దిగువకు తరలించండి</translation>
 <translation id="6521550811716689390">ముదురు ఊదా రంగు</translation>
@@ -899,7 +884,6 @@ Chrome బ్రౌజర్ మెనూను తెరవడానికి, 
 <translation id="7370432716629432284">{COUNT,plural, =1{ఆంపర్సండ్ గుర్తు}other{# ఆంపర్సండ్ గుర్తులు}}</translation>
 <translation id="737396357417333429">clk</translation>
 <translation id="7374104575779636480">పట్టికను వ‌దిలిపెడుతున్నారు.</translation>
-<translation id="7374188624530452127"><ph name="FONT_COLOR" /> ప్రారంభం</translation>
 <translation id="738899727977260036">మేఘ వర్ణపు నీలం రంగు</translation>
 <translation id="7392145451309930991">వచన సరిపోలిక ప్రారంభం</translation>
 <translation id="739763518212184081">మునుపటి పంక్తి</translation>
@@ -948,9 +932,7 @@ Chrome బ్రౌజర్ మెనూను తెరవడానికి, 
         <ph name="LINE_THROUGH_STRING" />
         <ph name="FONT_FAMILY_STRING" /></translation>
 <translation id="7701196182766842984">autolst</translation>
-<translation id="7712273827621319827">క్రిందిగీత ప్రారంభం</translation>
 <translation id="7770823902658038748"><ph name="VALUE" />, <ph name="NAME" />, పాస్‌వర్డ్ వచన పెట్టె</translation>
-<translation id="7773125101284285285">క్రిందిగీత ముగింపు</translation>
 <translation id="7776293189010177726">ChromeVox మెనులను తెరుస్తుంది</translation>
 <translation id="7800558923657349506">ఉపసంహారం</translation>
 <translation id="7805247615045262757">డిఫాల్ట్ నావిగేషన్</translation>
@@ -1102,7 +1084,6 @@ Chrome బ్రౌజర్ మెనూను తెరవడానికి, 
 <translation id="8374154622594089836">నెల</translation>
 <translation id="8378855320830505539">ప్రాంతం</translation>
 <translation id="8382679411218029383">స్వీయపూర్తి ఇన్‌లైన్ మరియు జాబితా</translation>
-<translation id="8384907037845425279">బోల్డ్ ప్రారంభం</translation>
 <translation id="8428603554127842284">స్థాయి <ph name="DEPTH" /></translation>
 <translation id="842922884199979200">తరువాత స్థాయి 3 శీర్షిక లేదు.</translation>
 <translation id="8430049249787218991">mnubr</translation>
@@ -1211,5 +1192,4 @@ Chrome బ్రౌజర్ మెనూను తెరవడానికి, 
 <translation id="973955474346881951">స్టిక్కీ మోడ్‌ను ప్రారంభించండి/నిలిపివేయండి</translation>
 <translation id="976849232629612000">అంశాలు లేవు.</translation>
 <translation id="992256792861109788">గులాబి రంగు</translation>
-<translation id="995852680044449248">కొట్టివేత ప్రారంభం</translation>
 </translationbundle>

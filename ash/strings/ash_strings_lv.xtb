@@ -336,6 +336,7 @@
 <translation id="6537270692134705506">Uzņemt ekrāna attēlu</translation>
 <translation id="6542521951477560771">Notiek apraide uz ierīci <ph name="RECEIVER_NAME" /></translation>
 <translation id="6559976592393364813">Jautājiet administratoram</translation>
+<translation id="6574601967010742428">Jūsu darbības var pārraudzīt ierīces pārvaldnieks.</translation>
 <translation id="6585808820553845416">Atlikušais laiks līdz šīs sesijas beigām: <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Meklēšana+Shift+K</translation>
 <translation id="6650933572246256093">Bluetooth ierīce “<ph name="DEVICE_NAME" />” vēlas saņemt atļauju, lai izveidotu savienojumu pārī. Lūdzu, ievadiet ierīcē šo ieejas atslēgu: <ph name="PASSKEY" />.</translation>
@@ -442,7 +443,6 @@
 <translation id="8261506727792406068">Dzēst</translation>
 <translation id="8297006494302853456">Vājš</translation>
 <translation id="8308637677604853869">Iepriekšējā izvēlne</translation>
-<translation id="8332664326438198339">Atgriezties palaišanas stāvoklī</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Izveidot piezīmi</translation>
 <translation id="8375916635258623388">Tiks automātiski izveidots šīs ierīces <ph name="DEVICE_NAME" /> un jūsu tālruņa savienojums</translation>

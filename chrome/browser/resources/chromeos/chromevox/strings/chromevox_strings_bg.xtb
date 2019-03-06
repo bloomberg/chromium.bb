@@ -16,7 +16,6 @@
 <translation id="106222400312645156">rwhdr</translation>
 <translation id="1065552602950927991">Въвеждане на невалидни данни</translation>
 <translation id="1066085461259044485">горскозелено</translation>
-<translation id="1080471004309605942">Край на текста с курсив</translation>
 <translation id="1082209053475788238">Няма предишно заглавие от шесто ниво.</translation>
 <translation id="1087788677726983142">Скриване на филтрите за потоци на събития</translation>
 <translation id="1088219014394087294">Няма заглавия.</translation>
@@ -167,7 +166,6 @@
 <translation id="2267945578749931355">Следващият знак</translation>
 <translation id="2278490101488436824">Прекарайте три пръста наляво</translation>
 <translation id="2281234842553884450">Предишният плъзгач</translation>
-<translation id="2294136146931447363">Начало на текста с курсив</translation>
 <translation id="2311237334957139798">Преминаване към предишното ниво на детайлност</translation>
 <translation id="2318372665160196757">Основен елемент</translation>
 <translation id="2329324941084714723">Панел на раздел</translation>
@@ -224,12 +222,10 @@
 <translation id="2717271541250958000">tabpnl</translation>
 <translation id="2723001399770238859">звук</translation>
 <translation id="2732718972699418926">AM</translation>
-<translation id="2737520612859577214">Край на горния индекс</translation>
 <translation id="2749275490991666823">С отметка</translation>
 <translation id="27527859628328957">Преминаване към следващия елемент, който може да получи фокус</translation>
 <translation id="2770781857296573485">Влизане в режим за разглеждане на група</translation>
 <translation id="2777845298774924149">Излязохте</translation>
-<translation id="2781264313200109999">Начало на връзката</translation>
 <translation id="2784959586797362050">Както винаги, можете да ни изпратите отзив директно, като натиснете клавиша „търсене“ + „a“ и след това – „i“. С нетърпение очакваме мнението ви.</translation>
 <translation id="2800204403141299078">Няма повече различни елементи.</translation>
 <translation id="2800780099804980316">Няма предишно заглавие от първо ниво.</translation>
@@ -251,7 +247,6 @@
 <translation id="288178314850623291">Използвайте команди за преход, за да преминете направо към конкретни типове елементи. За преход по заглавията напред натиснете „търсене“ + H, а за преход назад натиснете „търсене“ + Shift + H.</translation>
 <translation id="2894654529758326923">Информация</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{лява фигурна скоба}other{# леви фигурни скоби}}</translation>
-<translation id="2909478709401302630">Начало на горния индекс</translation>
 <translation id="2911433807131383493">Отваряне на урока за ChromeVox</translation>
 <translation id="2912405967290226587">Прекарайте три пръста надясно</translation>
 <translation id="2932083475399492303">Превключване между структурен или тип ред за оформление</translation>
@@ -312,7 +307,6 @@
 <translation id="3232388865800379423">Бутон с изскачащ прозорец</translation>
 <translation id="3241052487511142956">Предишна посетена връзка</translation>
 <translation id="3241638166094654466">Клетки във всеки ред:</translation>
-<translation id="327361630706777244">Край на текста с цвят <ph name="FONT_COLOR" /></translation>
 <translation id="3286372614333682499">вертикална ориентация</translation>
 <translation id="3286390186030710347">Плъзгач</translation>
 <translation id="3299925995433437805">Няма следваща посетена връзка.</translation>
@@ -337,7 +331,6 @@
 <translation id="3393605254399152980">Плъзнете с един пръст, за да чуете какво докосвате</translation>
 <translation id="3406283310380167331">Показване на списъка с формуляри</translation>
 <translation id="3414400929511680526">избеляло синьо</translation>
-<translation id="3437941064431741545">Край на текста с размер <ph name="FONT_SIZE" /></translation>
 <translation id="344800400831402066">перуанско оранжево</translation>
 <translation id="3457000393508828486">Частично натиснато</translation>
 <translation id="3458865416877308321">„<ph name="NAME" />“ в изключено състояние</translation>
@@ -356,7 +349,6 @@
 <translation id="352577523970648069">Текстово поле, което може да се редактира</translation>
 <translation id="3549141990712742152">изрязване на <ph name="TEXT" />.</translation>
 <translation id="3549680091535286226">Докоснете с 2 пръста, за да спрете временно говора</translation>
-<translation id="3555380819397253474">Начало на текста с шрифт <ph name="FONT_FAMILY" /></translation>
 <translation id="3568702578574425662">„<ph name="NAME" />“, квадратче без отметка</translation>
 <translation id="3589661172894441357">Терминологичен речник</translation>
 <translation id="3591784666823501596">кралскосиньо</translation>
@@ -436,7 +428,6 @@
 <translation id="4158704014418536539">Регистърът на буквите е от значение.</translation>
 <translation id="4159784952369912983">лилаво</translation>
 <translation id="4161663686871496107">Обратната връзка с говор от ChromeVox е в готовност</translation>
-<translation id="4166192625054637755">Край на долния индекс</translation>
 <translation id="4173994908659439270">Няма следващо текстово поле, което може да се редактира.</translation>
 <translation id="4176463684765177261">Деактивирано</translation>
 <translation id="4187322598335821254">Прекарайте пръст нагоре или надолу, за да се придвижите на ниво ред</translation>
@@ -537,7 +528,6 @@
 <translation id="4842108708071771135">Няма следващ блоков цитат.</translation>
 <translation id="4844625982113518938">Натиснете клавиш, за да научите името му. С Ctrl + W се изключва режимът за изговаряне.</translation>
 <translation id="4846428657345567687">Добре дошли в ChromeVox!</translation>
-<translation id="4846487886195635104">Край на зачеркнатия текст</translation>
 <translation id="4848993367330139335">таймер</translation>
 <translation id="4850023505158945298">Предишният подобен елемент.</translation>
 <translation id="4866956062845190338">rdmnuitm</translation>
@@ -611,7 +601,6 @@
 <translation id="5330443287809544590">„<ph name="NAME" />“, връзка</translation>
 <translation id="5336381510091010269">autoinl+lst</translation>
 <translation id="5349770431644471053">Препратка</translation>
-<translation id="5350654862897073517">Начало на долния индекс</translation>
 <translation id="536031132345979795">Превъртане назад при непрекъснато четене</translation>
 <translation id="5368000168321181111">Звуковите сигнали са изключени</translation>
 <translation id="5374320867641260420">Няма следващ бутон.</translation>
@@ -718,10 +707,8 @@
 <translation id="6037602951055904232">Панорамно придвижване напред</translation>
 <translation id="6042826534790431634">За активиране натиснете клавиша „търсене“ + интервал.</translation>
 <translation id="6044160928851315051">Потъмняване на екрана</translation>
-<translation id="605761629541007221">Край на удебеления текст</translation>
 <translation id="6065293622157674001">Начало на граматичната грешка</translation>
 <translation id="6082768461603900813">Основна навигация</translation>
-<translation id="6092707270915298410">Край на връзката</translation>
 <translation id="6118126368611144850">Приложения за Android в Chrome: Ако имате Google Play Магазин на устройството си, изтеглете Google Chrome Canary оттам, за да изпробвате експерименталната поддръжка за ChromeVox в приложения за Android.</translation>
 <translation id="611827076493383239">vtd</translation>
 <translation id="6119955456199054975">Край на клетката.</translation>
@@ -769,9 +756,7 @@
 <translation id="6459511626086141404">Фиксирана клавиатурна подредба</translation>
 <translation id="6468049171101508116">Следващият бутон</translation>
 <translation id="646954774886932461">Показалец</translation>
-<translation id="6470797302070897045">Начало на текста с размер <ph name="FONT_SIZE" /></translation>
 <translation id="6493991254603208962">намаляване на яркостта</translation>
-<translation id="6497864469186228849">Край на текста с шрифт <ph name="FONT_FAMILY" /></translation>
 <translation id="6501595918865591267">тюркоазено</translation>
 <translation id="6508059270146105198">Преместване на брайловия дисплей в долната част на страницата</translation>
 <translation id="6521550811716689390">тъмновиолетово</translation>
@@ -898,7 +883,6 @@
 <translation id="7370432716629432284">{COUNT,plural, =1{амперсанд}other{# амперсанда}}</translation>
 <translation id="737396357417333429">clk</translation>
 <translation id="7374104575779636480">Напускате таблицата.</translation>
-<translation id="7374188624530452127">Начало на текста с цвят <ph name="FONT_COLOR" /></translation>
 <translation id="738899727977260036">шистовосиньо</translation>
 <translation id="7392145451309930991">Начало на съответстващия текст</translation>
 <translation id="739763518212184081">Предишният ред</translation>
@@ -947,9 +931,7 @@
         <ph name="LINE_THROUGH_STRING" />
         <ph name="FONT_FAMILY_STRING" /></translation>
 <translation id="7701196182766842984">autolst</translation>
-<translation id="7712273827621319827">Начало на подчертания текст</translation>
 <translation id="7770823902658038748"><ph name="VALUE" />, „<ph name="NAME" />“, текстово поле за парола</translation>
-<translation id="7773125101284285285">Край на подчертания текст</translation>
 <translation id="7776293189010177726">Отваряне на менютата на ChromeVox</translation>
 <translation id="7800558923657349506">Епилог</translation>
 <translation id="7805247615045262757">навигиране по подразбиране</translation>
@@ -1101,7 +1083,6 @@
 <translation id="8374154622594089836">месец</translation>
 <translation id="8378855320830505539">Област</translation>
 <translation id="8382679411218029383">Автоматично довършване – вградено и в списък</translation>
-<translation id="8384907037845425279">Начало на удебеления текст</translation>
 <translation id="8428603554127842284">ниво <ph name="DEPTH" /></translation>
 <translation id="842922884199979200">Няма следващо заглавие от трето ниво.</translation>
 <translation id="8430049249787218991">mnubr</translation>
@@ -1210,5 +1191,4 @@
 <translation id="973955474346881951">Активиране/деактивиране на фиксирания режим</translation>
 <translation id="976849232629612000">Няма елементи.</translation>
 <translation id="992256792861109788">розово</translation>
-<translation id="995852680044449248">Начало на зачеркнатия текст</translation>
 </translationbundle>

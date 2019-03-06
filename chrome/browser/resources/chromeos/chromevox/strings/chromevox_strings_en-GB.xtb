@@ -16,7 +16,6 @@
 <translation id="106222400312645156">rwhdr</translation>
 <translation id="1065552602950927991">Invalid input</translation>
 <translation id="1066085461259044485">Forest Green</translation>
-<translation id="1080471004309605942">Italic end</translation>
 <translation id="1082209053475788238">No previous level 6 heading.</translation>
 <translation id="1087788677726983142">Hide event stream filters</translation>
 <translation id="1088219014394087294">No headings.</translation>
@@ -168,7 +167,6 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="2267945578749931355">Next Character</translation>
 <translation id="2278490101488436824">Swipe three fingers left</translation>
 <translation id="2281234842553884450">Previous slider</translation>
-<translation id="2294136146931447363">Italic start</translation>
 <translation id="2311237334957139798">Move to previous at granularity</translation>
 <translation id="2318372665160196757">Main</translation>
 <translation id="2329324941084714723">Tab panel</translation>
@@ -225,12 +223,10 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="2717271541250958000">tabpnl</translation>
 <translation id="2723001399770238859">audio</translation>
 <translation id="2732718972699418926">a.m.</translation>
-<translation id="2737520612859577214">Superscript end</translation>
 <translation id="2749275490991666823">Ticked</translation>
 <translation id="27527859628328957">Jump to next focusable item</translation>
 <translation id="2770781857296573485">Enter group exploration</translation>
 <translation id="2777845298774924149">Exited</translation>
-<translation id="2781264313200109999">Link start</translation>
 <translation id="2784959586797362050">As always, you can send us feedback directly by pressing Search+a then i. We're eager to hear from you.</translation>
 <translation id="2800204403141299078">No more different elements.</translation>
 <translation id="2800780099804980316">No previous level 1 heading.</translation>
@@ -252,7 +248,6 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="288178314850623291">Use jump commands to skip to specific types of elements. To jump forward between headings, press Search + H, or to jump backward, press Search + Shift + H.</translation>
 <translation id="2894654529758326923">Information</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{left brace}other{# left braces}}</translation>
-<translation id="2909478709401302630">Superscript start</translation>
 <translation id="2911433807131383493">Open ChromeVox tutorial</translation>
 <translation id="2912405967290226587">Swipe three fingers right</translation>
 <translation id="2932083475399492303">Toggle line type between structural or layout</translation>
@@ -313,7 +308,6 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="3232388865800379423">A pop-up button</translation>
 <translation id="3241052487511142956">Previous visited link</translation>
 <translation id="3241638166094654466">Cells in each line:</translation>
-<translation id="327361630706777244"><ph name="FONT_COLOR" /> end</translation>
 <translation id="3286372614333682499">portrait</translation>
 <translation id="3286390186030710347">Slider</translation>
 <translation id="3299925995433437805">No next visited link.</translation>
@@ -338,7 +332,6 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="3393605254399152980">Drag one finger to hear what you touch</translation>
 <translation id="3406283310380167331">Show forms list</translation>
 <translation id="3414400929511680526">Alice Blue</translation>
-<translation id="3437941064431741545">Size <ph name="FONT_SIZE" /> end</translation>
 <translation id="344800400831402066">Peru</translation>
 <translation id="3457000393508828486">Partially pressed</translation>
 <translation id="3458865416877308321"><ph name="NAME" />, switch off</translation>
@@ -357,7 +350,6 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="352577523970648069">An editable text field</translation>
 <translation id="3549141990712742152">cut <ph name="TEXT" />.</translation>
 <translation id="3549680091535286226">Tap with 2 fingers to temporarily stop speech</translation>
-<translation id="3555380819397253474"><ph name="FONT_FAMILY" /> start</translation>
 <translation id="3568702578574425662"><ph name="NAME" />, tick box not ticked</translation>
 <translation id="3589661172894441357">Glossary</translation>
 <translation id="3591784666823501596">Royal Blue</translation>
@@ -437,7 +429,6 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="4158704014418536539">Case sensitive.</translation>
 <translation id="4159784952369912983">Purple</translation>
 <translation id="4161663686871496107">ChromeVox spoken feedback is ready</translation>
-<translation id="4166192625054637755">Subscript end</translation>
 <translation id="4173994908659439270">No next editable text field.</translation>
 <translation id="4176463684765177261">Disabled</translation>
 <translation id="4187322598335821254">Swipe up or down to move by line</translation>
@@ -538,7 +529,6 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="4842108708071771135">No next block quote.</translation>
 <translation id="4844625982113518938">Press any key to learn its name. Ctrl+W will close learn mode.</translation>
 <translation id="4846428657345567687">Welcome to ChromeVox!</translation>
-<translation id="4846487886195635104">Strike through end</translation>
 <translation id="4848993367330139335">tmr</translation>
 <translation id="4850023505158945298">Previous similar element.</translation>
 <translation id="4866956062845190338">rdmnuitm</translation>
@@ -612,7 +602,6 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="5330443287809544590"><ph name="NAME" />, link</translation>
 <translation id="5336381510091010269">autoinl+lst</translation>
 <translation id="5349770431644471053">Back link</translation>
-<translation id="5350654862897073517">Subscript start</translation>
 <translation id="536031132345979795">Skip backward during continuous reading</translation>
 <translation id="5368000168321181111">Earcons off</translation>
 <translation id="5374320867641260420">No next button.</translation>
@@ -719,10 +708,8 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="6037602951055904232">Pan forward</translation>
 <translation id="6042826534790431634">Press Search+Space to activate.</translation>
 <translation id="6044160928851315051">Darken screen</translation>
-<translation id="605761629541007221">Bold end</translation>
 <translation id="6065293622157674001">Grammar error start</translation>
 <translation id="6082768461603900813">Basic Navigation</translation>
-<translation id="6092707270915298410">Link end</translation>
 <translation id="6118126368611144850">Android apps for Chrome. If you have Play Store on your device, get a sneak peek at ChromeVox with Android apps. Try the experimental support by downloading Google Chrome Canary from the Play Store.</translation>
 <translation id="611827076493383239">vtd</translation>
 <translation id="6119955456199054975">End of cell.</translation>
@@ -770,9 +757,7 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="6459511626086141404">Flat keymap</translation>
 <translation id="6468049171101508116">Next button</translation>
 <translation id="646954774886932461">Index</translation>
-<translation id="6470797302070897045">Size <ph name="FONT_SIZE" /> start</translation>
 <translation id="6493991254603208962">Brightness down</translation>
-<translation id="6497864469186228849"><ph name="FONT_FAMILY" /> end</translation>
 <translation id="6501595918865591267">Turquoise</translation>
 <translation id="6508059270146105198">Move braille display to bottom of page</translation>
 <translation id="6521550811716689390">Dark Violet</translation>
@@ -899,7 +884,6 @@ To open the Chrome browser menu, press Alt+F.</translation>
 <translation id="7370432716629432284">{COUNT,plural, =1{ampersand}other{# ampersands}}</translation>
 <translation id="737396357417333429">clk</translation>
 <translation id="7374104575779636480">Leaving table.</translation>
-<translation id="7374188624530452127"><ph name="FONT_COLOR" /> start</translation>
 <translation id="738899727977260036">Slate Blue</translation>
 <translation id="7392145451309930991">Text match start</translation>
 <translation id="739763518212184081">Previous Line</translation>
@@ -948,9 +932,7 @@ To open the Chrome browser menu, press Alt+F.</translation>
         <ph name="LINE_THROUGH_STRING" />
         <ph name="FONT_FAMILY_STRING" /></translation>
 <translation id="7701196182766842984">autolst</translation>
-<translation id="7712273827621319827">Underline start</translation>
 <translation id="7770823902658038748"><ph name="VALUE" />, <ph name="NAME" />, password text box</translation>
-<translation id="7773125101284285285">Underline end</translation>
 <translation id="7776293189010177726">Open ChromeVox menus</translation>
 <translation id="7800558923657349506">Epilogue</translation>
 <translation id="7805247615045262757">default navigation</translation>
@@ -1102,7 +1084,6 @@ To open the Chrome browser menu, press Alt+F.</translation>
 <translation id="8374154622594089836">month</translation>
 <translation id="8378855320830505539">Region</translation>
 <translation id="8382679411218029383">Auto-completion inline and list</translation>
-<translation id="8384907037845425279">Bold start</translation>
 <translation id="8428603554127842284">level <ph name="DEPTH" /></translation>
 <translation id="842922884199979200">No next level 3 heading.</translation>
 <translation id="8430049249787218991">mnubr</translation>
@@ -1211,5 +1192,4 @@ To open the Chrome browser menu, press Alt+F.</translation>
 <translation id="973955474346881951">Enable / Disable sticky mode</translation>
 <translation id="976849232629612000">No items.</translation>
 <translation id="992256792861109788">Pink</translation>
-<translation id="995852680044449248">Strike through start</translation>
 </translationbundle>

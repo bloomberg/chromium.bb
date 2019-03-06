@@ -94,6 +94,7 @@
 <translation id="4360991593054037559">Lütfen geçerli bir değer girin. En yakın iki geçerli değer şunlardır: <ph name="VALID_VALUE_LOW" /> ve <ph name="VALID_VALUE_HIGHER" />.</translation>
 <translation id="4384583879834880242">Soru-Cevap</translation>
 <translation id="4413860115965805769">menü düğmesi</translation>
+<translation id="4444765639179266822">Şöyle diyor olabilir: <ph name="OCR_TEXT" /></translation>
 <translation id="4446524499724042288">terimler sözlüğü referansı</translation>
 <translation id="4522570452068850558">Ayrıntılar</translation>
 <translation id="4542388879936266156">kalan süre: <ph name="REMAINING_TIME" /></translation>
@@ -120,6 +121,7 @@
 <translation id="5164977714490026579">Değer <ph name="MINIMUM" /> veya daha büyük olmalıdır.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">Lütfen başına "<ph name="ATSIGN" />" ekleyin. "<ph name="INVALIDADDRESS" />" adresi eksik.</translation>
+<translation id="5334352251556557839">Medya oynatılamıyor.</translation>
 <translation id="5406322316791861025">figür</translation>
 <translation id="5453733299334684579">ağaç öğesi</translation>
 <translation id="5466621249238537318">Lütfen bir veya daha fazla dosya seçin.</translation>
@@ -146,6 +148,7 @@
 <translation id="6150588977291308318">kaynakça</translation>
 <translation id="6164829606128959761">ölçüm aracı</translation>
 <translation id="6166809985690652833">sonsöz</translation>
+<translation id="6209276755895393898">Resimdeki şu olabilir: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">terimler sözlüğü</translation>
 <translation id="6398862346408813489">Ay seçim panelini göster</translation>
 <translation id="6404546809543547843">ses zaman çizelgesi temizleyici</translation>
@@ -176,6 +179,7 @@
 <translation id="7139483182332611405">önsöz</translation>
 <translation id="7263440858009898357">Lütfen listeden bir öğe seçin.</translation>
 <translation id="727747134524199931">sütun başlığı</translation>
+<translation id="7320576522385648310">arabelleğe alınıyor</translation>
 <translation id="7353453495576941748">katkıda bulunan</translation>
 <translation id="7364796246159120393">Dosya Seç</translation>
 <translation id="739024184232394898">Diğer...</translation>

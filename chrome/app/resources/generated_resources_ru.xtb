@@ -104,7 +104,6 @@
 <translation id="1143142264369994168">Подписчик сертификата</translation>
 <translation id="1145292499998999162">Плагин заблокирован</translation>
 <translation id="1145532888383813076">Введите запрос для поиска на устройстве, в приложениях и Интернете.</translation>
-<translation id="1146204723345436916">Импортировать закладки из файла HTML...</translation>
 <translation id="114721135501989771">Интеллектуальные функции Google в Chrome</translation>
 <translation id="1148097584170732637">Обнаружены файлы (<ph name="FILE_COUNT" />).
     <ph name="LINE_BREAK1" />
@@ -419,7 +418,6 @@
 <translation id="1608626060424371292">Удалить профиль</translation>
 <translation id="1609170755653088773">Синхронизируйте этот пароль с iPhone</translation>
 <translation id="1611584202130317952">Синхронизация прервана. Повторите попытку либо свяжитесь с владельцем устройства или администратором.</translation>
-<translation id="1611704746353331382">Экспорт закладок в файл HTML</translation>
 <translation id="1614511179807650956">Вероятно, вы израсходовали весь доступный мобильный трафик. Приобрести дополнительный объем трафика можно на портале активации <ph name="NAME" />.</translation>
 <translation id="161460670679785907">Не удалось обнаружить телефон</translation>
 <translation id="1616206807336925449">Расширению не требуются особые разрешения.</translation>
@@ -650,7 +648,6 @@
 <translation id="1932098463447129402">Не ранее</translation>
 <translation id="1933345018156373194">Произошла непредвиденная ошибка. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1933809209549026293">Подключите мышь или клавиатуру. Если вы используете Bluetooth-устройство, убедитесь, что оно готово к установке соединения.</translation>
-<translation id="1936157145127842922">Показать в папке</translation>
 <translation id="1938351510777341717">Внешняя клавиша Command</translation>
 <translation id="1940546824932169984">Подключенные устройства</translation>
 <translation id="1942765061641586207">Разрешение изображения</translation>
@@ -1369,7 +1366,6 @@
 <translation id="3009300415590184725">Отменить настройку мобильной передачи данных?</translation>
 <translation id="3009779501245596802">Индексированные базы данных</translation>
 <translation id="3010279545267083280">Пароль удален</translation>
-<translation id="3011362742078013760">Открыть все закладки в режиме &amp;инкогнито</translation>
 <translation id="3011488081941333749">Файлы сookie c сайта <ph name="DOMAIN" /> будут удалены при завершении сеанса.</translation>
 <translation id="3012631534724231212">(окно iframe)</translation>
 <translation id="3012804260437125868">Только безопасные соединения с тем же сайтом</translation>
@@ -2576,7 +2572,6 @@
 <translation id="4881695831933465202">Открыть</translation>
 <translation id="4882312758060467256">У расширения есть доступ к этому сайту</translation>
 <translation id="4882831918239250449">Использование данных о посещенных страницах для персонализации Поиска, рекламы и т. д.</translation>
-<translation id="4883178195103750615">Экспортировать закладки в файл HTML...</translation>
 <translation id="4883436287898674711">Все сайты <ph name="WEBSITE_1" /></translation>
 <translation id="48838266408104654">Диспетчер задач</translation>
 <translation id="4884987973312178454">6x</translation>
@@ -2910,7 +2905,6 @@
 <translation id="5376931455988532197">Слишком большой файл</translation>
 <translation id="537813040452600081">Страницы, открытые в этом окне, не сохранятся в истории браузера. Они не оставят на компьютере следов, таких как файлы cookie, после того как вы выйдете из аккаунта. Скачанные вами файлы и добавленные закладки будут удалены.</translation>
 <translation id="5379140238605961210">Всегда блокировать доступ к микрофону</translation>
-<translation id="5379268888377976432">Отменить удаление</translation>
 <translation id="5382591305415226340">Управление поддерживаемыми ссылками</translation>
 <translation id="5384883051496921101">Этот сайт передает информацию стороннему приложению, пока вы в режиме инкогнито.</translation>
 <translation id="5388885445722491159">Пара создана</translation>
@@ -3205,7 +3199,6 @@
 <translation id="5801568494490449797">Настройки</translation>
 <translation id="5804241973901381774">Разрешения</translation>
 <translation id="5805697420284793859">Менеджер окон</translation>
-<translation id="580571955903695899">Упорядочить по заголовкам</translation>
 <translation id="5811750797187914944">Готово</translation>
 <translation id="5814126672212206791">Тип подключения</translation>
 <translation id="5815645614496570556">Адрес X.400</translation>
@@ -3532,7 +3525,6 @@
 <translation id="6264365405983206840">Выделить все</translation>
 <translation id="6267166720438879315">Выберите сертификат для аутентификации на <ph name="HOST_NAME" /></translation>
 <translation id="6268252012308737255">Открыть в приложении <ph name="APP" /></translation>
-<translation id="6268747994388690914">Импорт закладок из файла HTML</translation>
 <translation id="6272643420381259437">При скачивании плагина произошла ошибка (<ph name="ERROR" />)</translation>
 <translation id="6273677812470008672">Качество</translation>
 <translation id="6277105963844135994">Время ожидания сети истекло</translation>
@@ -3607,7 +3599,6 @@
 <translation id="6393156038355142111">Сгенерировать надежный пароль</translation>
 <translation id="6395575651121294044">Объектов: <ph name="NUMBER_OF_FILES" /></translation>
 <translation id="6397094776139756010">Настройки синхронизации и персонализации</translation>
-<translation id="6397592254427394018">Открыть все закладки в режиме &amp;инкогнито</translation>
 <translation id="6398715114293939307">Удалить Google Play Маркет</translation>
 <translation id="6398765197997659313">Обычный режим</translation>
 <translation id="6399774419735315745">Шпион</translation>
@@ -3872,7 +3863,6 @@
 <translation id="6798954102094737107">Плагин: <ph name="PLUGIN_NAME" /></translation>
 <translation id="6801435275744557998">Откалибровать сенсорный экран</translation>
 <translation id="6802031077390104172"><ph name="USAGE" /> (<ph name="OID" />)</translation>
-<translation id="6804671422566312077">Открыть все закладки в &amp;новом окне</translation>
 <translation id="6805038906417219576">ОК</translation>
 <translation id="6805647936811177813">Чтобы импортировать сертификат с <ph name="HOST_NAME" />, войдите в <ph name="TOKEN_NAME" />.</translation>
 <translation id="680572642341004180">Включить отслеживание RLZ-идентификатора для <ph name="SHORT_PRODUCT_OS_NAME" />.</translation>
@@ -3979,7 +3969,6 @@
 <translation id="6970856801391541997">Печать выбранных страниц</translation>
 <translation id="6972180789171089114">Аудио/видео</translation>
 <translation id="6972754398087986839">Начать</translation>
-<translation id="6973630695168034713">Папки</translation>
 <translation id="6974609594866392343">Демонстрационный офлайн-режим</translation>
 <translation id="6977381486153291903">Версия встроенного ПО</translation>
 <translation id="6978121630131642226">Поисковые системы</translation>
@@ -4310,7 +4299,6 @@
 <translation id="7478485216301680444">Не удалось установить киоск-приложение.</translation>
 <translation id="7481312909269577407">Вперед</translation>
 <translation id="748138892655239008">Базовые ограничения сертификата</translation>
-<translation id="7484964289312150019">Открыть все закладки в &amp;новом окне</translation>
 <translation id="7487067081878637334">Технологии</translation>
 <translation id="7487099628810939106">Задержка перед нажатием:</translation>
 <translation id="7487969577036436319">Компоненты не установлены</translation>
@@ -4741,7 +4729,6 @@
 <translation id="8063235345342641131">Аватар по умолчанию (зеленый)</translation>
 <translation id="8064671687106936412">Ключ:</translation>
 <translation id="8066773524873206594">Изменения будут сохранены здесь: <ph name="DOWNLOADS_FOLDER" />.</translation>
-<translation id="806812017500012252">Упорядочить по заголовкам</translation>
 <translation id="8068253693380742035">Нажмите, чтобы войти</translation>
 <translation id="8069615408251337349">Виртуальный принтер Google</translation>
 <translation id="8071432093239591881">Печатать как изображение</translation>

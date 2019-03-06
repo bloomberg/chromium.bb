@@ -51,7 +51,6 @@
 <translation id="1232569758102978740">Sem título</translation>
 <translation id="1240347957665416060">O nome do seu dispositivo</translation>
 <translation id="124116460088058876">Mais idiomas</translation>
-<translation id="1246987714874202335">Atualizar data de validade</translation>
 <translation id="1250759482327835220">Para agilizar o pagamento na próxima vez, salve o cartão, seu nome e o endereço de faturamento na sua Conta do Google.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (sincronizados)</translation>
 <translation id="1256368399071562588">&lt;p&gt;Se você tentar visitar um site e ele não abrir, primeiro tente corrigir o erro com estas etapas de solução de problemas:&lt;/p&gt;
@@ -281,7 +280,6 @@
     uma política de segurança seja aplicada a todas as solicitações. Porém, agora ele
     deixou de carregar uma política, o que impede que o navegador execute
     sua solicitação para <ph name="SITE" />.</translation>
-<translation id="2442483081384580286">Avisos do Navegação segura</translation>
 <translation id="244665789865330679">Seu dispositivo e sua conta são gerenciados por <ph name="ENROLLMENT_DOMAIN" />. Isso significa que seu administrador pode configurá-los remotamente.</translation>
 <translation id="2463193859425327265">Alterar a página inicial</translation>
 <translation id="2463739503403862330">Preencher</translation>
@@ -611,6 +609,7 @@
 <translation id="4277028893293644418">Redefinir senha</translation>
 <translation id="4280429058323657511">, validade <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{Esse cartão foi adicionado à sua Conta do Google}one{Esse cartão foi adicionado à sua Conta do Google}other{Esses cartões foram adicionados à sua Conta do Google}}</translation>
+<translation id="42981349822642051">Expandir</translation>
 <translation id="4302965934281694568">Chou3 (Envelope)</translation>
 <translation id="4305817255990598646">Alternar</translation>
 <translation id="4312613361423056926">B2</translation>
@@ -881,6 +880,7 @@
 <translation id="5810442152076338065">Sua conexão com <ph name="DOMAIN" /> está criptografada com um pacote de criptografia obsoleto.</translation>
 <translation id="5813119285467412249">&amp;Refazer adicionar</translation>
 <translation id="5838278095973806738">Você não deve fornecer nenhuma informação confidencial nesse site (por exemplo, senhas ou cartões de crédito), porque elas podem ser roubadas por invasores.</translation>
+<translation id="5860033963881614850">Desativado</translation>
 <translation id="5863847714970149516">A página adiante pode tentar cobrar pagamento em dinheiro</translation>
 <translation id="5866257070973731571">Adicione um Número de Telefone</translation>
 <translation id="5869405914158311789">Não é possível acessar esse site</translation>
@@ -889,6 +889,7 @@
 <translation id="5893752035575986141">Cartões de crédito são aceitos.</translation>
 <translation id="5901630391730855834">Amarelo</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (sincronizado)</translation>
+<translation id="5916664084637901428">Ativado</translation>
 <translation id="5919090499915321845">B10</translation>
 <translation id="5921639886840618607">Salvar cartão na Conta do Google?</translation>
 <translation id="5922853866070715753">Quase pronto</translation>
@@ -986,6 +987,7 @@
 <translation id="6508722015517270189">Reiniciar o Chrome</translation>
 <translation id="6529602333819889595">&amp;Refazer excluir</translation>
 <translation id="6534179046333460208">Sugestões da Web física</translation>
+<translation id="6556866813142980365">Refazer</translation>
 <translation id="6563469144985748109">Seu administrador ainda não o aprovou</translation>
 <translation id="6569060085658103619">Você está vendo uma página de extensões</translation>
 <translation id="6578796323535178455">C2 (Envelope)</translation>

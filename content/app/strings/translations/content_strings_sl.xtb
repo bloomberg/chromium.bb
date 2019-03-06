@@ -94,6 +94,7 @@
 <translation id="4360991593054037559">Vnesite veljavno vrednost. Najbližji veljavni vrednosti sta <ph name="VALID_VALUE_LOW" /> in <ph name="VALID_VALUE_HIGHER" />.</translation>
 <translation id="4384583879834880242">Vprašanja</translation>
 <translation id="4413860115965805769">menijski gumb</translation>
+<translation id="4444765639179266822">Videti je, da piše: <ph name="OCR_TEXT" /></translation>
 <translation id="4446524499724042288">vnos v glosarju</translation>
 <translation id="4522570452068850558">Podrobnosti</translation>
 <translation id="4542388879936266156">preostali čas: <ph name="REMAINING_TIME" /></translation>
@@ -120,6 +121,7 @@
 <translation id="5164977714490026579">Vrednost mora biti večja od <ph name="MINIMUM" /> ali enaka.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">Vnesite nekaj in nato <ph name="ATSIGN" />. Naslov »<ph name="INVALIDADDRESS" />« je nepopoln.</translation>
+<translation id="5334352251556557839">Predstavnosti ni mogoče predvajati.</translation>
 <translation id="5406322316791861025">številka</translation>
 <translation id="5453733299334684579">element drevesa</translation>
 <translation id="5466621249238537318">Izberite eno ali več datotek.</translation>
@@ -146,6 +148,7 @@
 <translation id="6150588977291308318">bibliografija</translation>
 <translation id="6164829606128959761">merilnik</translation>
 <translation id="6166809985690652833">spremna beseda</translation>
+<translation id="6209276755895393898">Videti je kot: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">glosar</translation>
 <translation id="6398862346408813489">Prikaz podokna za izbiro meseca</translation>
 <translation id="6404546809543547843">časovni krmilnik za predvajanje zvoka</translation>
@@ -176,6 +179,7 @@
 <translation id="7139483182332611405">predgovor</translation>
 <translation id="7263440858009898357">Izberite element s seznama.</translation>
 <translation id="727747134524199931">glava stolpca</translation>
+<translation id="7320576522385648310">medpomnjenje</translation>
 <translation id="7353453495576941748">zasluga</translation>
 <translation id="7364796246159120393">Izberite datoteko</translation>
 <translation id="739024184232394898">Drugo ...</translation>

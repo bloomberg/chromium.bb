@@ -81,7 +81,7 @@
 <translation id="2103075008456228677">Открыть history.google.com</translation>
 <translation id="2116625576999540962">Перемещено закладок: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="213900355088104901">Чтобы просматривать сайты анонимно, откройте вкладку в режиме инкогнито</translation>
-<translation id="2139867232736819575">Поиск по скопированному тексту</translation>
+<translation id="2139867232736819575">Поиск скопированного текста</translation>
 <translation id="2149973817440762519">Закладка</translation>
 <translation id="2198757192731523470">Google может использовать вашу историю, чтобы персонализировать рекламу, а также Поиск и другие сервисы.</translation>
 <translation id="2207590065820824892">Число непрочитанных статей в Списке для чтения: <ph name="UNREAD_COUNT" />.</translation>
@@ -91,7 +91,7 @@
 <translation id="2267753748892043616">Добавить аккаунт</translation>
 <translation id="2268044343513325586">Уточнить</translation>
 <translation id="2273327106802955778">Меню "Ещё"</translation>
-<translation id="2316709634732130529">Использовать пароль</translation>
+<translation id="2316709634732130529">Использовать предложенный пароль</translation>
 <translation id="2320166752086256636">Скрыть клавиатуру</translation>
 <translation id="2339560363438331454">Синхронизация сервисов Google</translation>
 <translation id="2351097562818989364">Настройки перевода сброшены</translation>
@@ -356,7 +356,6 @@
 <translation id="6482629121755362506">Удалено закладок: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="6513773942555305766">Предложенный пароль: <ph name="SUGGESTED_PASSWORD" /></translation>
 <translation id="6541915733953096570">За последний час</translation>
-<translation id="6548479190262846511">Нет паролей для этого сайта</translation>
 <translation id="6642362222295953972">Переключиться на открытую ранее вкладку</translation>
 <translation id="6643016212128521049">Очистить</translation>
 <translation id="6656103420185847513">Редактировать папку</translation>

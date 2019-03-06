@@ -104,7 +104,6 @@
 <translation id="1143142264369994168">Ondertekenaar van het certificaat</translation>
 <translation id="1145292499998999162">Plug-in geblokkeerd</translation>
 <translation id="1145532888383813076">Zoek op je apparaat, in apps en op internet.</translation>
-<translation id="1146204723345436916">Bladwijzers importeren uit HTML-bestand...</translation>
 <translation id="114721135501989771">Google-functies in Chrome</translation>
 <translation id="1148097584170732637"><ph name="FILE_COUNT" /> gevonden.
     <ph name="LINE_BREAK1" />
@@ -122,7 +121,7 @@
 <translation id="1164899421101904659">Pukcode opgeven</translation>
 <translation id="1165039591588034296">Fout</translation>
 <translation id="1166212789817575481">Tabbladen aan de rechterkant sluiten</translation>
-<translation id="1167199480815330007">Zoek naar de zescijferige pincode achter op je beveiligingssleutel</translation>
+<translation id="1167199480815330007">Zoek de zescijferige pincode achter op je beveiligingssleutel</translation>
 <translation id="1168020859489941584">Openen in <ph name="TIME_REMAINING" />...</translation>
 <translation id="1168100932582989117">Google-naamservers</translation>
 <translation id="1171135284592304528">Markeer het object met toetsenbordfocus wanneer dit wordt gewijzigd</translation>
@@ -420,7 +419,6 @@
 <translation id="1608626060424371292">Deze gebruiker verwijderen</translation>
 <translation id="1609170755653088773">Dit wachtwoord synchroniseren met je iPhone</translation>
 <translation id="1611584202130317952">Het registratieproces is onderbroken. Probeer het opnieuw of neem contact op met de eigenaar of beheerder van het apparaat.</translation>
-<translation id="1611704746353331382">Bladwijzers exporteren naar HTML-bestand...</translation>
 <translation id="1614511179807650956">Je hebt mogelijk je quotum voor mobiele data verbruikt. Ga naar de activeringsportal van <ph name="NAME" /> om meer data te kopen.</translation>
 <translation id="161460670679785907">Je telefoon kan niet worden gedetecteerd</translation>
 <translation id="1616206807336925449">De extensie vereist geen speciale rechten.</translation>
@@ -651,7 +649,6 @@
 <translation id="1932098463447129402">Niet vóór</translation>
 <translation id="1933345018156373194">Verplaatsen mislukt. Onverwachte fout: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1933809209549026293">Sluit een muis of een toetsenbord aan. Als je een Bluetooth-apparaat gebruikt, zorg je ervoor dat dit kan worden gekoppeld.</translation>
-<translation id="1936157145127842922">Weergeven in map</translation>
 <translation id="1938351510777341717">Externe opdracht</translation>
 <translation id="1940546824932169984">Verbonden apparaten</translation>
 <translation id="1942765061641586207">Afbeeldingsresolutie</translation>
@@ -1369,7 +1366,6 @@
 <translation id="3009300415590184725">Weet je zeker dat je het instellen van een mobiele dataservice wilt annuleren?</translation>
 <translation id="3009779501245596802">Geïndexeerde databases</translation>
 <translation id="3010279545267083280">Wachtwoord verwijderd</translation>
-<translation id="3011362742078013760">Alle bladwijzers openen in &amp;incognitovenster</translation>
 <translation id="3011488081941333749">Cookies van <ph name="DOMAIN" /> worden gewist bij het afsluiten</translation>
 <translation id="3012631534724231212">(iframe)</translation>
 <translation id="3012804260437125868">Alleen beveiligde verbindingen binnen dezelfde site</translation>
@@ -2576,7 +2572,6 @@
 <translation id="4881695831933465202">Openen</translation>
 <translation id="4882312758060467256">Heeft toegang tot deze site</translation>
 <translation id="4882831918239250449">Beheren hoe je browsegeschiedenis wordt gebruikt om Google Zoeken, advertenties en meer te personaliseren</translation>
-<translation id="4883178195103750615">Bladwijzers exporteren naar HTML-bestand...</translation>
 <translation id="4883436287898674711">Alle sites op <ph name="WEBSITE_1" /></translation>
 <translation id="48838266408104654">&amp;Taakbeheer</translation>
 <translation id="4884987973312178454">6x</translation>
@@ -2911,7 +2906,6 @@
 <translation id="5376931455988532197">Bestand is te groot</translation>
 <translation id="537813040452600081">Pagina's die je in dit venster bekijkt, worden niet in de browser- of zoekgeschiedenis vermeld en laten geen sporen (zoals cookies) achter op de computer nadat je bent uitgelogd. Bestanden die je downloadt en bladwijzers die je instelt, worden niet bewaard. Meer informatie over de gastmodus.</translation>
 <translation id="5379140238605961210">Microfoontoegang blijven blokkeren</translation>
-<translation id="5379268888377976432">Verwijderen ongedaan maken</translation>
 <translation id="5382591305415226340">Ondersteunde links beheren</translation>
 <translation id="5384883051496921101">Deze site staat op het punt buiten de incognitomodus informatie met een app te delen.</translation>
 <translation id="5388885445722491159">Gekoppeld</translation>
@@ -3206,7 +3200,6 @@
 <translation id="5801568494490449797">Voorkeuren</translation>
 <translation id="5804241973901381774">Rechten</translation>
 <translation id="5805697420284793859">Vensterbeheer</translation>
-<translation id="580571955903695899">Sorteren op titel</translation>
 <translation id="5811750797187914944">Klaar</translation>
 <translation id="5814126672212206791">Verbindingstype</translation>
 <translation id="5815645614496570556">X.400-adres</translation>
@@ -3533,7 +3526,6 @@
 <translation id="6264365405983206840">&amp;Alles selecteren</translation>
 <translation id="6267166720438879315">Selecteer een certificaat om je identiteit te verifiëren voor <ph name="HOST_NAME" /></translation>
 <translation id="6268252012308737255">Openen met <ph name="APP" /></translation>
-<translation id="6268747994388690914">Bladwijzers importeren uit HTML-bestand...</translation>
 <translation id="6272643420381259437">Er is een fout (<ph name="ERROR" />) opgetreden tijdens het downloaden van de plug-in.</translation>
 <translation id="6273677812470008672">Kwaliteit</translation>
 <translation id="6277105963844135994">Time-out van netwerk</translation>
@@ -3608,7 +3600,6 @@
 <translation id="6393156038355142111">Sterk wachtwoord voorstellen</translation>
 <translation id="6395575651121294044"><ph name="NUMBER_OF_FILES" /> items</translation>
 <translation id="6397094776139756010">Synchronisatie- en personalisatieopties</translation>
-<translation id="6397592254427394018">Alle bladwijzers openen in &amp;incognitovenster</translation>
 <translation id="6398715114293939307">Google Play Store verwijderen</translation>
 <translation id="6398765197997659313">Volledig scherm sluiten</translation>
 <translation id="6399774419735315745">Spionne</translation>
@@ -3872,7 +3863,6 @@
 <translation id="6798954102094737107">Plug-in: <ph name="PLUGIN_NAME" /></translation>
 <translation id="6801435275744557998">Touchscreen kalibreren</translation>
 <translation id="6802031077390104172"><ph name="USAGE" /> (<ph name="OID" />)</translation>
-<translation id="6804671422566312077">Alle bladwijzers openen in een &amp;nieuw venster</translation>
 <translation id="6805038906417219576">OK</translation>
 <translation id="6805647936811177813">Log in bij <ph name="TOKEN_NAME" /> om het klantcertificaat van <ph name="HOST_NAME" /> te importeren.</translation>
 <translation id="680572642341004180">Bijhouden met RLZ inschakelen voor <ph name="SHORT_PRODUCT_OS_NAME" />.</translation>
@@ -3979,7 +3969,6 @@
 <translation id="6970856801391541997">Specifieke pagina's afdrukken</translation>
 <translation id="6972180789171089114">Audio/video</translation>
 <translation id="6972754398087986839">Aan de slag</translation>
-<translation id="6973630695168034713">Mappen</translation>
 <translation id="6974609594866392343">Offline demomodus</translation>
 <translation id="6977381486153291903">Firmwarerevisie</translation>
 <translation id="6978121630131642226">Zoekmachines</translation>
@@ -4065,7 +4054,7 @@
 <translation id="7088674813905715446">Dit apparaat is uit bedrijf genomen door de beheerder. Vraag je beheerder om het apparaat op 'in behandeling' in te stellen, zodat het kan worden aangemeld.</translation>
 <translation id="7092474863625458670">Met Voice Match krijg je rechtstreeks met je stem toegang tot de Assistent.
     <ph name="BR" />
-    <ph name="BEGIN_BOLD" />Houd rekening met het volgende:<ph name="END_BOLD" /> Een vergelijkbare stem of opname kan mogelijk ook toegang krijgen tot deze je Assistent. Je kunt je toestemming voor Voice Match intrekken door de functie uit te schakelen in de Instellingen voor Assistent.</translation>
+    <ph name="BEGIN_BOLD" />Houd rekening met het volgende:<ph name="END_BOLD" /> Een vergelijkbare stem of opname kan mogelijk ook toegang krijgen tot deze je Assistent. Je kunt je toestemming voor Voice Match intrekken door de functie uit te schakelen in de Instellingen voor de Assistent.</translation>
 <translation id="7093434536568905704">GTK+</translation>
 <translation id="7093866338626856921">Gegevens uitwisselen met de apparaten met de naam: <ph name="HOSTNAMES" /></translation>
 <translation id="7098389117866926363">USB-C-apparaat (poort links aan de achterkant)</translation>
@@ -4310,7 +4299,6 @@
 <translation id="7478485216301680444">Kiosk-app kan niet worden geïnstalleerd.</translation>
 <translation id="7481312909269577407">Vooruit</translation>
 <translation id="748138892655239008">Basisvereisten voor certificaten</translation>
-<translation id="7484964289312150019">Alle bladwijzers openen in een &amp;nieuw venster</translation>
 <translation id="7487067081878637334">Technologie</translation>
 <translation id="7487099628810939106">Vertragen vóór klikken:</translation>
 <translation id="7487969577036436319">Er zijn geen componenten geïnstalleerd</translation>
@@ -4740,7 +4728,6 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="8063235345342641131">Standaard groene avatar</translation>
 <translation id="8064671687106936412">Sleutel:</translation>
 <translation id="8066773524873206594">Alle bewerkingen worden opgeslagen in <ph name="DOWNLOADS_FOLDER" />.</translation>
-<translation id="806812017500012252">Sorteren op titel</translation>
 <translation id="8068253693380742035">Tik om in te loggen</translation>
 <translation id="8069615408251337349">Google Cloudprinter</translation>
 <translation id="8071432093239591881">Afdrukken als afbeelding</translation>

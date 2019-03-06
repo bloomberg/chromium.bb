@@ -104,7 +104,6 @@
 <translation id="1143142264369994168">Penandatangan Sertifikat</translation>
 <translation id="1145292499998999162">Plugin diblokir</translation>
 <translation id="1145532888383813076">Telusuri perangkat, aplikasi, dan web.</translation>
-<translation id="1146204723345436916">Impor bookmark dari file HTML...</translation>
 <translation id="114721135501989771">Dapatkan kecanggihan Google di Chrome</translation>
 <translation id="1148097584170732637"><ph name="FILE_COUNT" /> ditemukan.
     <ph name="LINE_BREAK1" />
@@ -420,7 +419,6 @@
 <translation id="1608626060424371292">Hapus pengguna ini</translation>
 <translation id="1609170755653088773">Sinkronkan sandi ini ke iPhone Anda</translation>
 <translation id="1611584202130317952">Proses provisioning terganggu. Harap coba lagi atau hubungi administrator atau pemilik perangkat.</translation>
-<translation id="1611704746353331382">Ekspor Bookmark ke file HTML...</translation>
 <translation id="1614511179807650956">Kuota Anda yang diizinkan mungkin telah habis. Kunjungi portal aktivasi <ph name="NAME" /> untuk membeli kuota lagi</translation>
 <translation id="161460670679785907">Tidak dapat mendeteksi ponsel Anda</translation>
 <translation id="1616206807336925449">Ekstensi ini tidak memerlukan izin khusus.</translation>
@@ -651,7 +649,6 @@
 <translation id="1932098463447129402">Tidak Sebelum</translation>
 <translation id="1933345018156373194">Pemindahan gagal, terjadi error: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1933809209549026293">Sambungkan mouse atau keyboard. Jika Anda menggunakan perangkat Bluetooth, pastikan perangkat siap disandingkan.</translation>
-<translation id="1936157145127842922">Tampilkan dalam Folder</translation>
 <translation id="1938351510777341717">External Command</translation>
 <translation id="1940546824932169984">Perangkat yang terhubung</translation>
 <translation id="1942765061641586207">Resolusi gambar</translation>
@@ -1369,7 +1366,6 @@
 <translation id="3009300415590184725">Yakin ingin membatalkan proses penyiapan layanan data seluler?</translation>
 <translation id="3009779501245596802">Basis data yang diindeks</translation>
 <translation id="3010279545267083280">Sandi dihapus</translation>
-<translation id="3011362742078013760">Buka Semua Bookmark di &amp;Jendela Penyamaran</translation>
 <translation id="3011488081941333749">Cookie dari <ph name="DOMAIN" /> akan dihapus saat keluar</translation>
 <translation id="3012631534724231212">(iframe)</translation>
 <translation id="3012804260437125868">Hanya sambungan situs serupa yang aman</translation>
@@ -2574,7 +2570,6 @@
 <translation id="4881695831933465202">Buka</translation>
 <translation id="4882312758060467256">Memiliki akses ke situs ini</translation>
 <translation id="4882831918239250449">Kontrol cara histori browsing digunakan untuk mempersonalisasi Penelusuran, iklan, dan lainnya</translation>
-<translation id="4883178195103750615">Ekspor bookmark ke file HTML...</translation>
 <translation id="4883436287898674711">Semua situs <ph name="WEBSITE_1" /></translation>
 <translation id="48838266408104654">Pengelola &amp;Tugas</translation>
 <translation id="4884987973312178454">6x</translation>
@@ -2908,7 +2903,6 @@
 <translation id="5376931455988532197">File terlalu besar</translation>
 <translation id="537813040452600081">Halaman yang Anda lihat di jendela ini tidak akan muncul di histori browser dan tidak akan meninggalkan jejak lain, seperti cookie, di komputer setelah Anda keluar. File yang didownload dan bookmark yang dibuat tidak akan disimpan.</translation>
 <translation id="5379140238605961210">Terus blokir akses mikrofon</translation>
-<translation id="5379268888377976432">Urungkan Menghapus</translation>
 <translation id="5382591305415226340">Kelola link yang didukung</translation>
 <translation id="5384883051496921101">Situs ini akan membagikan informasi dengan aplikasi di luar mode penyamaran.</translation>
 <translation id="5388885445722491159">Disandingkan</translation>
@@ -3203,7 +3197,6 @@
 <translation id="5801568494490449797">Preferensi</translation>
 <translation id="5804241973901381774">Izin</translation>
 <translation id="5805697420284793859">Window manager</translation>
-<translation id="580571955903695899">Susun Ulang menurut Judul</translation>
 <translation id="5811750797187914944">Semua siap</translation>
 <translation id="5814126672212206791">Jenis sambungan</translation>
 <translation id="5815645614496570556">X.400 Address</translation>
@@ -3530,7 +3523,6 @@
 <translation id="6264365405983206840">Pilih Semu&amp;a</translation>
 <translation id="6267166720438879315">Pilih sertifikat untuk membuktikan diri Anda ke <ph name="HOST_NAME" /></translation>
 <translation id="6268252012308737255">Buka dengan <ph name="APP" /></translation>
-<translation id="6268747994388690914">Impor Bookmark dari file HTML...</translation>
 <translation id="6272643420381259437">Terjadi kesalahan (<ph name="ERROR" />) saat mendownload plugin</translation>
 <translation id="6273677812470008672">Kualitas</translation>
 <translation id="6277105963844135994">Waktu tunggu jaringan habis</translation>
@@ -3605,7 +3597,6 @@
 <translation id="6393156038355142111">Sarankan sandi yang kuat</translation>
 <translation id="6395575651121294044"><ph name="NUMBER_OF_FILES" /> item</translation>
 <translation id="6397094776139756010">Opsi sinkronisasi dan personalisasi</translation>
-<translation id="6397592254427394018">Buka semua bookmark di &amp;jendela penyamaran</translation>
 <translation id="6398715114293939307">Hapus Google Play Store</translation>
 <translation id="6398765197997659313">Keluar dari tampilan layar penuh</translation>
 <translation id="6399774419735315745">Mata-mata</translation>
@@ -3869,7 +3860,6 @@
 <translation id="6798954102094737107">Plugin: <ph name="PLUGIN_NAME" /></translation>
 <translation id="6801435275744557998">Sesuaikan layar sentuh</translation>
 <translation id="6802031077390104172"><ph name="USAGE" /> (<ph name="OID" />)</translation>
-<translation id="6804671422566312077">Buka Semua Bookmark di &amp;Jendela Baru</translation>
 <translation id="6805038906417219576">Oke</translation>
 <translation id="6805647936811177813">Harap masuk ke <ph name="TOKEN_NAME" /> untuk mengimpor sertifikat dari <ph name="HOST_NAME" />.</translation>
 <translation id="680572642341004180">Aktifkan pelacakan RLZ pada <ph name="SHORT_PRODUCT_OS_NAME" />.</translation>
@@ -3976,7 +3966,6 @@
 <translation id="6970856801391541997">Cetak Halaman Khusus</translation>
 <translation id="6972180789171089114">Audio/Video</translation>
 <translation id="6972754398087986839">Mulai</translation>
-<translation id="6973630695168034713">Folder</translation>
 <translation id="6974609594866392343">Mode demo offline</translation>
 <translation id="6977381486153291903">Revisi firmware</translation>
 <translation id="6978121630131642226">Mesin Telusur</translation>
@@ -4307,7 +4296,6 @@
 <translation id="7478485216301680444">Aplikasi kios tidak dapat dipasang.</translation>
 <translation id="7481312909269577407">Maju</translation>
 <translation id="748138892655239008">Kendala Dasar Sertifikat</translation>
-<translation id="7484964289312150019">Buka semua bookmark di &amp;jendela baru</translation>
 <translation id="7487067081878637334">Teknologi</translation>
 <translation id="7487099628810939106">Penundaan sebelum klik:</translation>
 <translation id="7487969577036436319">Tidak ada komponen yang dipasang</translation>
@@ -4738,7 +4726,6 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="8063235345342641131">Avatar hijau default</translation>
 <translation id="8064671687106936412">Kunci:</translation>
 <translation id="8066773524873206594">Semua pengeditan akan disimpan ke <ph name="DOWNLOADS_FOLDER" />.</translation>
-<translation id="806812017500012252">Susun ulang menurut judul</translation>
 <translation id="8068253693380742035">Sentuh untuk login</translation>
 <translation id="8069615408251337349">Google Cloud Print</translation>
 <translation id="8071432093239591881">Cetak sebagai gambar</translation>

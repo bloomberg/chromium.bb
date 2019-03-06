@@ -95,6 +95,19 @@
       決定螢幕保護程式顯示前的閒置時間是否要顯示在零售模式下的裝置登入畫面上。
 
       應以毫秒數指定政策值。</translation>
+<translation id="1141767714195601945">這項政策可從 Internet Explorer 控管 Chrome 的指令列參數。
+
+      如果 Internet Explorer 未安裝「舊版瀏覽器支援」增益集，那麼這項政策不會生效。
+
+      如果不設定這項政策，Internet Explorer 僅會將網址傳到 Chrome 作為指令列參數。
+
+      如果將這項政策設為字串清單，系統會將字串以空格連接起來，並傳送到 Chrome 作為指令列參數。
+
+      如果有元素包含 ${url}，系統會以要開啟的網頁網址取代該元素。
+
+      如果沒有元素包含 ${url}，則網址會附加在指令列結尾。
+
+      系統會展開環境變數。在 Windows 上，系統會將 %ABC% 取代為 ABC 環境變數的值。</translation>
 <translation id="1151353063931113432">允許這些網站的圖片</translation>
 <translation id="1152117524387175066">回報裝置的開發人員模式切換設定在開機時的狀態。
 
@@ -158,6 +171,10 @@
 
       如果將這項政策設為 False，<ph name="PRODUCT_NAME" /> 將會禁止啟動訪客設定檔。</translation>
 <translation id="1363275621236827384">允許在 Quirks Server 中查詢硬體設定檔</translation>
+<translation id="1363612796557848469">這項政策可讓 Google 助理存取畫面內容，並將內容資訊傳送給伺服器。
+      如果啟用這項政策，Google 助理將可以存取畫面內容。
+      如果停用這項政策，Google 助理將無法存取畫面內容。
+      如果不設定這項政策，使用者可自行決定是否要允許 Google 助理存取畫面內容</translation>
 <translation id="1383493480903114193">這項政策會強制網路程式碼在瀏覽器程序中執行。
 
       這項政策預設為停用；如果你啟用政策，當網路程序受到沙箱保護時，使用者就可能會遇到安全性問題。
@@ -276,6 +293,12 @@
       如要進一步瞭解安全瀏覽功能，請前往 https://developers.google.com/safe-browsing。</translation>
 <translation id="1583248206450240930">根據預設使用 <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="1599424828227887013">在 Android 裝置上為指定來源啟用網站隔離</translation>
+<translation id="1608259529294767544">這項政策可讓 Google 助理偵聽語音啟動字詞。
+
+      如果啟用這項政策，Google 助理將偵聽語音啟動字詞。
+      如果停用這項政策，Google 助理將不會偵聽語音啟動字詞。
+      如果不設定這項政策，使用者可以決定是否要允許 Google 助理偵聽語音啟動字詞。
+      </translation>
 <translation id="1608755754295374538">系統會直接授權存取音訊擷取裝置而不需提示的網址</translation>
 <translation id="1615221548356595305">即使在用戶端憑證已有人使用的情況下，仍允許這些主機合併 HTTP/2 連線</translation>
 <translation id="1617235075406854669">啟用刪除瀏覽器和下載記錄</translation>
@@ -327,6 +350,7 @@
       你需將政策設為可供 <ph name="PRODUCT_OS_NAME" /> 下載《服務條款》的網址。《服務條款》需為純文字內容，以 MIME 類型 text/plain 提供。不允許任何標記。</translation>
 <translation id="1750315445671978749">封鎖所有下載作業</translation>
 <translation id="1781356041596378058">這項政策也可以控制 Android 開發人員選項的存取權。如果將這項政策設為 true，使用者將無法存取開發人員選項。如果將這項政策設為 false 或不予設定，使用者只要在 Android 設定應用程式中輕觸版本號碼 7 次，即可存取開發人員選項。</translation>
+<translation id="1793346220873697538">預設為停用 PIN 碼列印模式</translation>
 <translation id="1797233582739332495">顯示週期性提示，要求使用者重新啟動瀏覽器</translation>
 <translation id="1798559516913615713">GPO 快取生命週期</translation>
 <translation id="1803646570632580723">要顯示在啟動器中的固定應用程式清單</translation>
@@ -350,6 +374,7 @@
 <translation id="1843117931376765605">使用者政策的重新整理頻率</translation>
 <translation id="1844620919405873871">設定快速解鎖相關政策。</translation>
 <translation id="1845405905602899692">資訊站設定</translation>
+<translation id="1845429996559814839">限制 PIN 碼列印模式</translation>
 <translation id="1847960418907100918">指定使用 POST 執行互動智慧搜尋時所用的參數，其包含以逗號分隔的名稱/數值配對。如果數值為範本參數 (例如上例中的 {searchTerms})，系統將會以實際的搜尋字詞資料替代這個數值。
 
           這項政策是選擇性的，如果未設定，系統將使用 GET 方法傳送互動智慧搜尋要求。
@@ -457,6 +482,15 @@
       如未設定這項政策，<ph name="PRODUCT_NAME" /> 會使用預設值 (3 小時)。
 
       請注意，如果平台支援政策通知，由於政策通知通常會在政策變更時自動強制更新 (不需更高的更新頻率)，所以更新延遲時間會設為 24 小時 (忽略所有預設值和這項政策的值)。</translation>
+<translation id="2024149678078029009">這個政策可管控從 Internet Explorer 切換到 Chrome 時，要用什麼指令在 <ph name="PRODUCT_NAME" /> 中開啟網址。
+
+      如果 Internet Explorer 未安裝「舊版瀏覽器支援」增益集，那麼這項政策不會生效。
+
+      如果不設定這項政策，當系統從 Internet Explorer 啟動 <ph name="PRODUCT_NAME" /> 時，Internet Explorer 會自動偵測 <ph name="PRODUCT_NAME" /> 的執行檔路徑。
+
+      如果設定這項政策，當系統從 Internet Explorer 切換到 <ph name="PRODUCT_NAME" /> 時，會使用這個指令來啟動 <ph name="PRODUCT_NAME" />。
+
+      你可以將這項政策設為執行檔路徑，或設為 ${chrome}，讓系統自動偵測 Chrome 的安裝位置。</translation>
 <translation id="2024476116966025075">設定遠端存取用戶端的網域名稱 (必要)</translation>
 <translation id="2030905906517501646">預設搜尋引擎關鍵字</translation>
 <translation id="203096360153626918">這項政策對 Android 應用程式沒有影響。即使將這項政策設為 <ph name="FALSE" />，Android 應用程式仍可進入全螢幕模式。</translation>
@@ -475,6 +509,7 @@
 <translation id="209586405398070749">穩定版</translation>
 <translation id="2098658257603918882">啟用使用量和當機相關資料的報告功能</translation>
 <translation id="2104418465060359056">回報擴充功能和外掛程式資訊</translation>
+<translation id="2106627642643925514">覆寫預設的 PIN 碼列印模式。如果設定的模式不適用，系統會忽略這項政策。</translation>
 <translation id="2107601598727098402">
         這項政策已於 M72 淘汰。請改用 CloudManagementEnrollmentToken。
         </translation>
@@ -492,6 +527,7 @@
       如果將這項政策設為 False，系統就不會收集可用於辨識使用者身分的資訊。
 
       只有在已啟用 <ph name="CHROME_REPORTING_EXTENSION_NAME" /> 且已透過 <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> 註冊電腦的情況下，這項政策才有作用。</translation>
+<translation id="2126178089984117495">限制 PIN 碼列印模式。系統會將未設定的政策視為未設限制。如果設定的模式不適用，系統會忽略這項政策。</translation>
 <translation id="2127599828444728326">允許這些網站的通知</translation>
 <translation id="2131902621292742709">在電池供電環境下執行時的螢幕調暗延遲時間</translation>
 <translation id="2134437727173969994">允許鎖定畫面</translation>
@@ -511,6 +547,7 @@
 <translation id="2156132677421487971">設定「<ph name="PRODUCT_NAME" />」的各項政策。這項功能可讓使用者透過瀏覽器將分頁、網站或桌面內容傳送至遠端的螢幕和音響設備。</translation>
 <translation id="2166472654199325139">不要針對成人內容篩選網站。</translation>
 <translation id="2168397434410358693">在 AC 供電環境下執行時的閒置延遲時間</translation>
+<translation id="217013996107840632">從替代瀏覽器切換到 Chrome 所使用的指令列參數。</translation>
 <translation id="2170233653554726857">啟用 WPAD 最佳化功能</translation>
 <translation id="2176565653304920879">設定這項政策後，系統會根據設定值採用下列其中一種方式執行自動偵測時區流程：
 
@@ -755,6 +792,7 @@
 <translation id="267596348720209223">指定搜尋引擎支援的字元編碼。編碼就是 UTF-8、GB2312 和 ISO-8859-1 等字碼頁名稱。系統會以提供的順序來測試。這項政策是選擇性的，如果未設定，預設會使用的是 UTF-8。只有在啟用「DefaultSearchProviderEnabled」政策時，系統才會遵循這項政策。</translation>
 <translation id="268577405881275241">啟用資料壓縮 Proxy 功能</translation>
 <translation id="2693108589792503178">設定變更密碼網址。</translation>
+<translation id="2706708761587205154">只在 PIN 碼啟用時允許列印</translation>
 <translation id="2731627323327011390">禁止 ARC 應用程式使用「<ph name="PRODUCT_OS_NAME" />」憑證</translation>
 <translation id="2742843273354638707">在新分頁和 <ph name="PRODUCT_OS_NAME" />應用程式啟動畫面中隱藏 Chrome 線上應用程式商店和底端連結。
 
@@ -1420,6 +1458,7 @@
           這項政策是選擇性的，如果未設定，系統將使用 GET 方法圖片搜尋要求。
 
           只有在啟用「DefaultSearchProviderEnabled」時，系統才會遵循這項政策。</translation>
+<translation id="427706009709857238">「允許 Google 存取助理偵聽語音啟動字詞」</translation>
 <translation id="4285674129118156176">允許無關聯的使用者使用 ARC</translation>
 <translation id="4298509794364745131">指定可在「<ph name="PRODUCT_OS_NAME" />」螢幕鎖定畫面中做為筆記應用程式使用的應用程式清單。
 
@@ -1491,6 +1530,7 @@
 <translation id="4483649828988077221">停用自動更新</translation>
 <translation id="4485425108474077672">設定新分頁網址</translation>
 <translation id="4492287494009043413">停用螢幕畫面擷取功能</translation>
+<translation id="4494132853995232608">Wilco DTC</translation>
 <translation id="449423975179525290">設定 <ph name="PLUGIN_VM_NAME" /> 的相關政策。</translation>
 <translation id="450537894712826981">設定快取大小，供 <ph name="PRODUCT_NAME" /> 在磁碟中儲存快取媒體檔案時套用。
 
@@ -1583,6 +1623,11 @@
 <translation id="4725528134735324213">啟用 Android 備份服務</translation>
 <translation id="4725801978265372736">要求比對本機使用者和遠端存取主機擁有者的名稱</translation>
 <translation id="4733471537137819387">與整合 HTTP 驗證相關的政策。</translation>
+<translation id="4744190513568488164"><ph name="PRODUCT_NAME" /> 要委派的目標伺服器。
+
+          請以逗號分隔多個伺服器名稱。可使用萬用字元 (*)。
+
+          如果你未設定這項政策，則即使 <ph name="PRODUCT_NAME" /> 已偵測到位於內部網路的伺服器，也不會委派使用者憑證。</translation>
 <translation id="4752880493649142945">用於連線至 RemoteAccessHostTokenValidationUrl 的用戶端憑證</translation>
 <translation id="4757671984625088193">如果將這項政策設為 true 或未設定這項政策，<ph name="PRODUCT_NAME" /> 會建議與目前網頁相關的網頁。
       這些建議是從遠端向 Google 伺服器擷取而來。
@@ -1657,6 +1702,7 @@
 <translation id="4978405676361550165">如果設定了「OffHours」政策，系統會在指定的時間間隔忽略特定裝置政策 (採用這些政策的預設設定)。Chrome 會在「OffHours」期間開始或結束時，為所有事件重新套用裝置政策。系統會通知使用者，並強制使用者在「OffHours」時間結束以及裝置政策設定變更時 (也就是使用者登入未受到允許的帳戶時) 登出。</translation>
 <translation id="4980635395568992380">資料類型：</translation>
 <translation id="4983201894483989687">允許執行過舊的外掛程式</translation>
+<translation id="4986560318567565414">從替代瀏覽器切換到 Chrome 所使用的路徑。</translation>
 <translation id="4988291787868618635">在達到閒置延遲時間時要採取的動作</translation>
 <translation id="4995548127349206948">是否啟用 NTLMv2 驗證功能。</translation>
 <translation id="5047604665028708335">允許存取內容套件以外的網站</translation>
@@ -1902,6 +1948,7 @@
 
       如果未指定這項政策，則系統不會修改變異版本種子網址。</translation>
 <translation id="5561811616825571914">在登入畫面自動為這些網站選取用戶端憑證</translation>
+<translation id="5566210228171064229">不論是否使用 PIN 碼，都允許列印</translation>
 <translation id="556941986578702361">設定 <ph name="PRODUCT_OS_NAME" /> 檔案櫃的自動隱藏功能。
 
       如果你將這項政策設為「AlwaysAutoHideShelf」，檔案櫃就會一律自動隱藏。
@@ -1921,6 +1968,15 @@
       只有在已啟用 <ph name="CHROME_REPORTING_EXTENSION_NAME" /> 且已透過 <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" /> 註冊電腦的情況下，這項政策才會有作用。</translation>
 <translation id="5584132346604748282">控制 Android Google 定位服務</translation>
 <translation id="5586942249556966598">不要處理</translation>
+<translation id="5590494712401018042">指定當裝置處於簡報模式時，要將螢幕調暗延遲時間延長多少百分比。
+
+          如果設定這項政策，當裝置處於簡報模式時，將按這項政策的百分比值延長螢幕調暗延遲時間。一旦延長了螢幕調暗延遲時間，螢幕關閉、螢幕鎖定和閒置狀態的延遲時間也會隨之調整，以維持與原先設定相同的間隔時間。
+
+          如果不設定這項政策，系統會使用預設的比例因數。
+
+          這項政策只有在 <ph name="POWER_SMART_DIM_ENABLED_POLICY_NAME" /> 停用時才會生效。否則，螢幕調暗延遲時間會由機器學習模型決定，系統會因此忽略這項政策。
+
+          比例因數必須為 100% 以上的值。系統不接受任何低於 100% 的值，以免簡報模式中的螢幕調暗延遲時間比一般螢幕調暗延遲時間還短。</translation>
 <translation id="5592242031005200087">
       如果啟用這項政策，逗號分隔清單中指明的每個來源將各自以獨立程序執行。
       這也會將指明的來源依子網域隔離；比方說，如果指定 https://example.com/，https://foo.example.com/ 也會因為隸屬 https://example.com/ 網站而遭到隔離。
@@ -2130,6 +2186,7 @@
 
       如果未設定這項政策，卸離式 USB 裝置清單就不會顯示任何項目。</translation>
 <translation id="6083631234867522991">Windows (Windows 用戶端)：</translation>
+<translation id="6089679180657323464">控管 wilco 診斷與遙測控制器設定。</translation>
 <translation id="6091233616732024397">強制使用者登入才能使用瀏覽器</translation>
 <translation id="6093156968240188330">允許遠端使用者在遠端協助工作階段中操控權限較高的視窗</translation>
 <translation id="6095999036251797924">指定時間長度，如果系統在 AC 電源或電池供電環境下執行，且未偵測到使用者輸入行為，就會在這段時間過後鎖定螢幕。
@@ -2389,6 +2446,7 @@
 <translation id="6770454900105963262">回報運作中資訊站工作階段相關資訊</translation>
 <translation id="6786747875388722282">擴充功能</translation>
 <translation id="6786967369487349613">設定漫遊設定檔目錄</translation>
+<translation id="6795485990775913659">只在 PIN 碼停用時允許列印</translation>
 <translation id="6810445994095397827">封鎖這些網站的 JavaScript</translation>
 <translation id="6813263547126514821">電源與關機</translation>
 <translation id="681446116407619279">支援的驗證機制</translation>
@@ -2500,6 +2558,7 @@
 
       必須啟用 Linux 應用程式支援功能才可套用這項政策。</translation>
 <translation id="69525503251220566">為預設搜尋引擎提供圖片搜尋功能的參數</translation>
+<translation id="6953102253399571439">預設為啟用 PIN 碼列印模式</translation>
 <translation id="6956272732789158625">不允許任何網站使用金鑰產生功能</translation>
 <translation id="6965859329738616662">指定是否允許智慧型調光模式延長使用時間，直到螢幕變暗為止。
 
@@ -2552,6 +2611,15 @@
           如未設定這項政策，系統會根據「DefaultWebUsbGuardSetting」政策 (如有設定) 或使用者的個人設定，將通用預設值套用至所有網站。
 
           透過這項政策設定的網址模式與透過 WebUsbBlockedForUrls 設定的網址模式不可衝突，否則系統將無法判定應優先遵循哪一項政策。</translation>
+<translation id="7086677522575756117">指定當系統在螢幕調暗或畫面關閉後不久便偵測到使用者活動時，要將螢幕調暗延遲時間延長多少百分比。
+
+          如果設定這項政策，當系統在螢幕調暗或畫面關閉後不久便偵測到使用者活動時，將按這項政策的百分比值延長螢幕調暗延遲時間。一旦延長了螢幕調暗延遲時間，螢幕關閉、螢幕鎖定和閒置狀態的延遲時間也會隨之調整，以維持與原先設定相同的間隔時間。
+
+          如果不設定這項政策，系統會使用預設的比例因數。
+
+          這項政策只有在 <ph name="POWER_SMART_DIM_ENABLED_POLICY_NAME" /> 政策停用時才會生效。否則，螢幕調暗延遲時間會由機器學習模型決定，系統會因此忽略這項政策。
+
+          比例因數必須為 100% 以上的值。</translation>
 <translation id="7106631983877564505">在 <ph name="PRODUCT_OS_NAME" /> 裝置進入閒置或暫停狀態時啟用鎖定功能。
 
       如果啟用這項設定，使用者必須輸入密碼，才能將裝置從休眠狀態解除鎖定。
@@ -2583,6 +2651,7 @@
       你可以將這項政策設為「conservative」或「performance」，讓系統選取以穩定性或效能最佳化為主的工作排程器設定。
 
       如果不設定這項政策，使用者將可自行選取偏好設定。</translation>
+<translation id="7145335384492396213">預設 PIN 碼列印模式</translation>
 <translation id="7158064522994309072">這項政策可控管要使用哪一個指令在替代瀏覽器中開啟網址。
 
       如果不設定這項政策，系統會使用平台專屬的預設值：Windows 使用 Internet Explorer、Mac OS X 使用 Safari。在 Linux 上，未設定這項政策時將無法啟動替代瀏覽器。
@@ -2647,6 +2716,7 @@
 
       如果將這項政策設為 True，Chrome 會一併停用通訊協定並非 IPPS、USB 或 USB 型 IPP 的印表機，避免使用者名稱和檔案名稱透過網路公開傳送。</translation>
 <translation id="7258823566580374486">啟用遠端存取主機遮幕</translation>
+<translation id="7260204423892780600">控管 Google 助理的設定。</translation>
 <translation id="7260277299188117560">已啟用自動更新 P2P</translation>
 <translation id="7261252191178797385">裝置桌布圖片</translation>
 <translation id="7264704483008663819">這項政策自 M68 起已淘汰，請改用 DeveloperToolsAvailability。
@@ -2754,10 +2824,15 @@
           如果這項政策設定了數值，螢幕初始亮度將調整為該政策值，但使用者之後可進行變更。自動調整亮度功能在這種情況下會停用。
           如果這項政策未設定數值，則使用者螢幕控制選項和自動調整亮度功能不會受到影響。
           指定政策值時，需以百分比形式填入 0 至 100 之間的數值。</translation>
+<translation id="7517846421386644905">這項政策可讓系統管理員控管是否要由 wilco 診斷與遙測控制器 (DTC) 收集、處理及回報遙測和診斷資料。
+
+      如果將這項政策設為 False 或不設定，系統會關閉 DTC，DTC 就無法收集、處理和回報裝置上的遙測和診斷資料。
+      如果相關裝置可以使用 Wilco DTC，且這項政策設為 True，那麼系統就會開啟遙測和診斷資料的收集、處理和回報功能。</translation>
 <translation id="7519251620064708155">允許在這些網站上使用金鑰產生功能</translation>
 <translation id="7529100000224450960">允許你設定網址模式清單，指定可以開啟彈出式視窗的網站。如果未設定這項政策，系統會從「DefaultPopupsSetting」政策 (如果有設定的話) 或使用者的個人設定，將通用預設值套用至所有網站。</translation>
 <translation id="7529144158022474049">自動更新分散係數</translation>
 <translation id="7534199150025803530">這項政策對 Android Google 雲端硬碟應用程式沒有影響。如要禁止透過行動網路連線使用 Google 雲端硬碟，則必須禁止安裝 Android Google 雲端硬碟應用程式。</translation>
+<translation id="7540622499178214923">允許使用 wilco 診斷與遙測控制器</translation>
 <translation id="7547549430720182663">合併</translation>
 <translation id="7553535237300701827">設定這項政策後，系統會根據設定值採用下列其中一種登入驗證流程：
 
@@ -3412,6 +3487,7 @@
       調降這項政策的值所造成的影響為永久性的，即使之後再次調高設定值，裝置仍「可能」無法復原至較早的版本。
 
       實際上能否復原也可能會受到裝置型號和重大漏洞修補程式的影響。</translation>
+<translation id="9126014181388780690">「允許 Google 助理存取畫面內容」</translation>
 <translation id="913195841488580904">禁止存取清單中的網址</translation>
 <translation id="9135033364005346124">啟用 <ph name="CLOUD_PRINT_NAME" /> Proxy</translation>
 <translation id="9136399279941091445">發佈指定裝置政策時的停機時間間隔</translation>

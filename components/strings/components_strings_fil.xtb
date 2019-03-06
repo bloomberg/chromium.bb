@@ -51,7 +51,6 @@
 <translation id="1232569758102978740">Walang pamagat</translation>
 <translation id="1240347957665416060">Ang pangalan ng iyong device</translation>
 <translation id="124116460088058876">Higit pang wika</translation>
-<translation id="1246987714874202335">I-update ang petsa ng pag-expire</translation>
 <translation id="1250759482327835220">Para mas mabilis na makapagbayad sa susunod, i-save ang iyong card, pangalan, at billing address sa Google Account mo.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (naka-sync)</translation>
 <translation id="1256368399071562588">&lt;p&gt;Kung sinubukan mong bisitahin ang isang website at hindi ito bumukas, subukan munang ayusin ang error gamit ang mga hakbang sa pag-troubleshoot na ito:&lt;/p&gt;
@@ -281,7 +280,6 @@
     ilapat ang isang patakaran sa seguridad sa lahat ng kahilingan dito. Ngunit hindi ito
     nakapaghatid ng patakaran ngayon, na pinipigilan ang browser na tuparin ang
     ang iyong kahilingan para sa <ph name="SITE" />.</translation>
-<translation id="2442483081384580286">Mga babala sa Ligtas na Pag-browse</translation>
 <translation id="244665789865330679">Pinapamahalaan ng <ph name="ENROLLMENT_DOMAIN" /> ang iyong device at account. Nangangahulugan itong maaaring malayuang i-configure ng iyong administrator ang device at account mo.</translation>
 <translation id="2463193859425327265">Baguhin ang Home Page</translation>
 <translation id="2463739503403862330">Punan</translation>
@@ -611,6 +609,7 @@
 <translation id="4277028893293644418">I-reset ang password</translation>
 <translation id="4280429058323657511">, exp <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{Na-save na ang card na ito sa iyong Google Account}one{Na-save na ang mga card na ito sa iyong Google Account}other{Na-save na ang mga card na ito sa iyong Google Account}}</translation>
+<translation id="42981349822642051">Palawakin</translation>
 <translation id="4302965934281694568">Chou3 (Envelope)</translation>
 <translation id="4305817255990598646">Lumipat</translation>
 <translation id="4312613361423056926">B2</translation>
@@ -881,6 +880,7 @@
 <translation id="5810442152076338065">Naka-encrypt ang iyong koneksyon sa <ph name="DOMAIN" /> gamit ang isang hindi na ginagamit na cipher suite.</translation>
 <translation id="5813119285467412249">&amp;Gawing Muli ang Pagdagdag</translation>
 <translation id="5838278095973806738">Hindi ka dapat maglagay ng anumang sensitibong impormasyon sa site na ito (halimbawa, mga password o credit card), dahil maaari itong nakawin ng mga umaatake.</translation>
+<translation id="5860033963881614850">Naka-off</translation>
 <translation id="5863847714970149516">Maaari kang singilin sa susunod na page</translation>
 <translation id="5866257070973731571">Magdagdag ng Numero ng Telepono</translation>
 <translation id="5869405914158311789">Hindi makakonekta sa site na ito</translation>
@@ -889,6 +889,7 @@
 <translation id="5893752035575986141">Tinatanggap ang mga credit card.</translation>
 <translation id="5901630391730855834">Dilaw</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (naka-sync)</translation>
+<translation id="5916664084637901428">Naka-on</translation>
 <translation id="5919090499915321845">B10</translation>
 <translation id="5921639886840618607">I-save ang card sa Google Account?</translation>
 <translation id="5922853866070715753">Malapit nang matapos</translation>
@@ -986,6 +987,7 @@
 <translation id="6508722015517270189">I-restart ang Chrome</translation>
 <translation id="6529602333819889595">&amp;Gawing Muli ang Pagtanggal</translation>
 <translation id="6534179046333460208">Mga suhestyon sa Pisikal na Web</translation>
+<translation id="6556866813142980365">Redo</translation>
 <translation id="6563469144985748109">Hindi pa ito inaaprubahan ng iyong manager</translation>
 <translation id="6569060085658103619">Isang page ng extension ang tinitingnan mo</translation>
 <translation id="6578796323535178455">C2 (Envelope)</translation>

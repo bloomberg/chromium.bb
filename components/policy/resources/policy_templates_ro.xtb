@@ -245,13 +245,6 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       va fi dezactivat. În acest caz, utilizatorul nu poate activa funcția.</translation>
 <translation id="1474273443907024088">Dezactivează optimizarea False Start pentru TLS</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
-<translation id="1478485744311397487">Servere la care <ph name="PRODUCT_NAME" /> poate delega.
-
-          Separă mai multe nume de servere cu virgule. Metacaracterele (*) sunt permise.
-
-          Dacă politica nu este configurată, <ph name="PRODUCT_NAME" /> nu va delega datele de conectare ale utilizatorului, chiar dacă detectează un server ca fiind în intranet.
-
-          Politica este ignorată dacă politica „UseKDCConstrainedDelegation” este activată.</translation>
 <translation id="1484146587843605071"><ph name="PRODUCT_NAME" /> va ocoli toate proxy-urile pentru lista de gazde indicată aici.
 
           Această politică are efect doar dacă ai selectat manual setările de proxy la „Alege modul de specificare a setărilor serverului proxy”.
@@ -902,11 +895,6 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 
       Dacă activezi această setare, funcția Previzualizare înainte de printare va folosi imprimanta prestabilită pentru sistemul de operare ca opțiune de destinație prestabilită.</translation>
 <translation id="2856674246949497058">Revino și rămâi la versiunea țintă dacă versiunea SO este mai nouă decât ținta. Efectuează un Powerwash în timpul procesului.</translation>
-<translation id="2858646435735022107">Stabilește dacă semnalul OK-AS-DELEGATE din KDC este respectat sau dacă „AuthNegotiateDelegateWhitelist” este folosită pentru a limita delegarea tichetelor Kerberos.
-
-          Dacă politica este activată, autentificarea HTTP respectă setările delegării limitate pe KDC. Politica „AuthNegotiateDelegateWhitelist” este ignorată în acest caz. Consultă https://tools.ietf.org/html/rfc5896.html pentru mai multe informații.
-
-          Dacă această politică nu este configurată sau este dezactivată, setările delegării limitate din KDC sunt ignorate, iar politica „AuthNegotiateDelegateWhitelist” este respectată.</translation>
 <translation id="2872961005593481000">Închide</translation>
 <translation id="2873651257716068683">Modifică dimensiunea prestabilită a paginii de printare. Dacă dimensiunea paginii nu este disponibilă, această politică este ignorată.</translation>
 <translation id="2874209944580848064">Notă pentru dispozitivele <ph name="PRODUCT_OS_NAME" /> care acceptă aplicațiile Android:</translation>
@@ -1657,6 +1645,11 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="4725528134735324213">Activează Android Backup Service</translation>
 <translation id="4725801978265372736">Solicită ca numele utilizatorului local și numele proprietarului gazdei de acces la distanță să corespundă</translation>
 <translation id="4733471537137819387">Politici referitoare la autentificarea integrată HTTP.</translation>
+<translation id="4744190513568488164">Servere spre care <ph name="PRODUCT_NAME" /> poate delega.
+
+          Separă numele serverelor prin virgulă. Sunt permise metacaracterele (*).
+
+          Dacă politica nu este configurată, <ph name="PRODUCT_NAME" /> nu va delega datele de conectare ale utilizatorului, chiar dacă detectează un server ca fiind în intranet.</translation>
 <translation id="4752880493649142945">Certificat de client pentru conectarea la RemoteAccessHostTokenValidationUrl</translation>
 <translation id="4757671984625088193">Dacă politica este activată sau nu este configurată, <ph name="PRODUCT_NAME" /> va sugera pagini legate de cea actuală.
       Aceste sugestii vor fi preluate de la distanță de pe serverele Google.
@@ -1734,7 +1727,6 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="4986560318567565414">Calea către Chrome pentru comutarea de la browserul secundar.</translation>
 <translation id="4988291787868618635">Măsura care se va lua la atingerea intervalului maxim de inactivitate</translation>
 <translation id="4995548127349206948">Dacă este activată autentificarea NTLMv2.</translation>
-<translation id="5022792010322211583">Folosește delegarea limitată de KDC</translation>
 <translation id="5047604665028708335">Se permite accesul la site-urile din afara pachetelor de conținut</translation>
 <translation id="5052081091120171147">Dacă este activată, această politică forțează importarea istoricului de navigare din browserul prestabilit actual. Dacă este activată, această politică afectează, de asemenea, caseta de dialog de importare. Dacă este dezactivată, istoricul de navigare nu va fi importat. În cazul în care nu este setată, utilizatorul poate fi întrebat dacă dorește importarea sau aceasta poate avea loc în mod automat.</translation>
 <translation id="5056708224511062314">Lupă ecran dezactivată</translation>

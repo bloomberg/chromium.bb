@@ -262,13 +262,6 @@
       keelatud. Sel juhul ei saa kasutaja funktsiooni lubada.</translation>
 <translation id="1474273443907024088">TLS-i valekäivitamise keelamine</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
-<translation id="1478485744311397487">Serverid, millele <ph name="PRODUCT_NAME" /> võib volituse anda.
-
-          Eraldage serverinimed komadega. Metamärgid (*) on lubatud.
-
-          Kui jätate reegli määramata, ei volita <ph name="PRODUCT_NAME" /> kasutajamandaate ka juhul, kui server tuvastatakse intranetina.
-
-          Reeglit eiratakse, kui reegel „UseKDCConstrainedDelegation” on seatud väärtusele Tõene.</translation>
 <translation id="1484146587843605071">Rakendus <ph name="PRODUCT_NAME" /> möödub siin loetletud hostide puhul kõikidest puhverserveritest.
 
           Reegel kehtib vaid juhul, kui valisite jaotises „Puhverserveri seadete määramise viisi valimine” puhverserveri käsitsi seadistamise.
@@ -939,11 +932,6 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli SitePerPr
 
       Kui lubate selle seade, kasutab printimise eelvaade vaikesihtkohana operatsioonisüsteemi vaikeprinterit.</translation>
 <translation id="2856674246949497058">Võimaldab naasta ja jääda sihtversioonile, kui operatsioonisüsteemi versioon on uuem kui sihtversioon. Tehke protsessi käigus Powerwash.</translation>
-<translation id="2858646435735022107">Määrab, kas Kerberose piletite volitamise piiramisel järgitakse KDC lippu OK-AS-DELEGATE või kasutatakse reeglit „AuthNegotiateDelegateWhitelist”.
-
-          Kui reegel on seatud väärtusele Tõene, järgib HTTP autentimine KDC piiratud volitamise seadeid. Sel juhul eiratakse reeglit „AuthNegotiateDelegateWhitelist”. Vaadake lisateavet aadressilt https://tools.ietf.org/html/rfc5896.html.
-
-          Kui reegel on määramata või seatud väärtusele Väär, eiratakse KDC piiratud volitamise seadeid ning järgitakse reeglit „'AuthNegotiateDelegateWhitelist”.</translation>
 <translation id="2872961005593481000">Lülita välja</translation>
 <translation id="2873651257716068683">Alistab prinditava lehe vaikesuuruse. Reeglit eiratakse, kui lehe suurus ei ole saadaval.</translation>
 <translation id="2874209944580848064">Märkus Androidi rakendusi toetavate operatsioonisüsteemiga <ph name="PRODUCT_OS_NAME" /> seadmete kohta.</translation>
@@ -1704,6 +1692,11 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli SitePerPr
 <translation id="4725528134735324213">Androidi varundusteenuse lubamine</translation>
 <translation id="4725801978265372736">Kohaliku kasutaja ja kaugjuurdepääsuhosti omaniku nimede ühtimise nõudmine</translation>
 <translation id="4733471537137819387">Integreeritud HTTP autentimisega seotud reeglid</translation>
+<translation id="4744190513568488164">Serverid, kuhu toode <ph name="PRODUCT_NAME" /> võib delegeerida.
+
+          Eraldage serverite nimed komadega. Metamärgid (*) on lubatud.
+
+          Kui jätate selle reegli määramata, ei delegeeri <ph name="PRODUCT_NAME" /> kasutaja mandaate isegi siis, kui server tuvastatakse intranetis olevana.</translation>
 <translation id="4752880493649142945">Kliendi sertifikaat ühendamiseks reegliga RemoteAccessHostTokenValidationUrl</translation>
 <translation id="4757671984625088193">Kui reegel on määramata või seatud väärtusele Tõene, soovitab teenus <ph name="PRODUCT_NAME" /> praeguse lehega seotud lehti.
       Need soovitused tuuakse kaugühenduse kaudu Google'i serveritest.
@@ -1782,7 +1775,6 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli SitePerPr
 <translation id="4986560318567565414">Chrome'i tee alternatiivselt brauserilt üleminemiseks.</translation>
 <translation id="4988291787868618635">Tehtav toiming, kui möödub jõudeoleku viiteaeg</translation>
 <translation id="4995548127349206948">Kas NTLMv2 autentimine on lubatud või mitte.</translation>
-<translation id="5022792010322211583">KDC piiratud volitamise kasutamine</translation>
 <translation id="5047604665028708335">Sisupakettidest väljaspool olevatele saitidele juurdepääsu lubamine</translation>
 <translation id="5052081091120171147">Selle reegli lubamisel imporditakse sirvimisajalugu praegusest vaikebrauserist. Lubamisel mõjutab reegel ka importimisdialoogi.
 

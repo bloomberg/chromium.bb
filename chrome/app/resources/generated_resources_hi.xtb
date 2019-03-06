@@ -104,7 +104,6 @@
 <translation id="1143142264369994168">प्रमाणपत्र हस्ताक्षरकर्ता</translation>
 <translation id="1145292499998999162">प्लग इन अवरोधित</translation>
 <translation id="1145532888383813076">अपने डिवाइस, ऐप और वेब पर खोजें.</translation>
-<translation id="1146204723345436916">HTML फ़ाइल से बुकमार्क आयात करें...</translation>
 <translation id="114721135501989771">Chrome में Google स्मार्ट पाएं</translation>
 <translation id="1148097584170732637"><ph name="FILE_COUNT" /> मिलीं.
     <ph name="LINE_BREAK1" />
@@ -416,7 +415,6 @@
 <translation id="1608626060424371292">इस उपयोगकर्ता को हटाएं</translation>
 <translation id="1609170755653088773">इस पासवर्ड को अपने iPhone से सिंक करें</translation>
 <translation id="1611584202130317952">प्रावधान प्रवाह में रुकावट आई थी. कृपया फिर से कोशिश करें या अपने डिवाइस मालिक या व्यवस्थापक से संपर्क करें.</translation>
-<translation id="1611704746353331382">HTML फ़ाइल में बुकमार्क नि‍र्यात करें...</translation>
 <translation id="1614511179807650956">आपने शायद तय सीमा तक मोबाइल डेटा का इस्तेमाल कर लिया है. और डेटा खरीदने के लिए <ph name="NAME" /> ऐक्टिवेशन पोर्टल पर जाएं</translation>
 <translation id="161460670679785907">आपका फ़ोन नहीं मिल पा रहा है</translation>
 <translation id="1616206807336925449">इस एक्‍सटेंशन को किसी विशेष अनुमति की आवश्‍यकता नहीं है.</translation>
@@ -646,7 +644,6 @@
 <translation id="1932098463447129402">पहले नहीं</translation>
 <translation id="1933345018156373194">नहीं ले जाया जा सका, अनचाही गड़बड़ी : <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1933809209549026293">कृपया माउस या कीबोर्ड कनेक्ट करें. यदि आप ब्लूटूथ डिवाइस का उपयोग कर रहे हैं, तो सुनिश्चित करें कि वह युग्मित किए जाने के लिए तैयार है.</translation>
-<translation id="1936157145127842922">फ़ोल्डर में दिखाएं</translation>
 <translation id="1938351510777341717">बाहरी निर्देश</translation>
 <translation id="1940546824932169984">कनेक्ट किए गए डिवाइस</translation>
 <translation id="1942765061641586207">चित्र रिज़ॉल्यूशन</translation>
@@ -1362,7 +1359,6 @@
 <translation id="3009300415590184725">क्‍या आप वाकई मोबाइल डेटा सेवा सेटअप प्रक्रिया को रद्द करना चाहते हैं?</translation>
 <translation id="3009779501245596802">अनुक्रमित डेटाबेस</translation>
 <translation id="3010279545267083280">पासवर्ड हटा दिया गया</translation>
-<translation id="3011362742078013760">सभी बुकमार्क &amp;गुप्त विंडो में खोलें</translation>
 <translation id="3011488081941333749">बाहर निकलने पर <ph name="DOMAIN" /> की कुकी साफ़ कर दी जाएंगी</translation>
 <translation id="3012631534724231212">(iframe)</translation>
 <translation id="3012804260437125868">केवल समान-साइट कनेक्शन को सुरक्षित बनाएं</translation>
@@ -2563,7 +2559,6 @@
 <translation id="4881695831933465202">खोलें</translation>
 <translation id="4882312758060467256">इस साइट का एक्सेस है</translation>
 <translation id="4882831918239250449">यह नियंत्रित करें कि खोज, विज्ञापनों वगैरह को मनमुताबिक बनाने के लिए आपके ब्राउज़िंग इतिहास का इस्तेमाल कैसे किया जाए</translation>
-<translation id="4883178195103750615">HTML फ़ाइल में बुकमार्क नि‍र्यात करें...</translation>
 <translation id="4883436287898674711">सभी <ph name="WEBSITE_1" /> साइटें</translation>
 <translation id="48838266408104654">&amp;कार्य प्रबंधक</translation>
 <translation id="4884987973312178454">6x</translation>
@@ -2896,7 +2891,6 @@
 <translation id="5376931455988532197">फ़ाइल बहुत बड़ी है</translation>
 <translation id="537813040452600081">प्रस्थान करने के बाद, आपके द्वारा देखे गए पेज ब्राउज़र इतिहास में दिखाई नहीं देंगे और वे कंप्यूटर पर कुकी जैसे अन्य चिह्न नहीं छोड़ेंगे. आपके द्वारा डाउनलोड की जाने वाली फ़ाइलें और आपके द्वारा बनाए जाने वाले बुकमार्क संरक्षित नहीं किए जाएंगे.</translation>
 <translation id="5379140238605961210">माइक्रोफ़ोन की एक्सेस अवरुद्ध करना जारी रखें</translation>
-<translation id="5379268888377976432">हटाना वापस लाएं</translation>
 <translation id="5382591305415226340">समर्थित लिंक प्रबंधित करें</translation>
 <translation id="5384883051496921101">यह साइट गुप्त मोड से बाहर के ऐप्लिकेशन के साथ जानकारी शेयर करने वाली है.</translation>
 <translation id="5388885445722491159">युग्मित</translation>
@@ -3190,7 +3184,6 @@
 <translation id="5801568494490449797">प्राथमिकताएं</translation>
 <translation id="5804241973901381774">अनुमतियां</translation>
 <translation id="5805697420284793859">विंडो मैनेजर</translation>
-<translation id="580571955903695899">शीर्षक द्वारा फिर से क्रमित करें</translation>
 <translation id="5811750797187914944">पूरी तरह तैयार है</translation>
 <translation id="5814126672212206791">कनेक्शन का प्रकार</translation>
 <translation id="5815645614496570556">X.400 पता</translation>
@@ -3516,7 +3509,6 @@
 <translation id="6264365405983206840">&amp;सभी को चुनें</translation>
 <translation id="6267166720438879315"><ph name="HOST_NAME" /> पर अपना प्रमाणन करने के लिए किसी प्रमाणपत्र को चुनें</translation>
 <translation id="6268252012308737255"><ph name="APP" /> में खोलें</translation>
-<translation id="6268747994388690914">HTML फ़ाइल से बुकमार्क आयात करें...</translation>
 <translation id="6272643420381259437">प्लग इन को डाउनलोड करते समय एक गड़बड़ी (<ph name="ERROR" />) हुई थी</translation>
 <translation id="6273677812470008672">गुणवत्ता</translation>
 <translation id="6277105963844135994">नेटवर्क समय समाप्त</translation>
@@ -3591,7 +3583,6 @@
 <translation id="6393156038355142111">मज़बूत पासवर्ड सुझाएं</translation>
 <translation id="6395575651121294044"><ph name="NUMBER_OF_FILES" /> आइटम</translation>
 <translation id="6397094776139756010">सिंक करने और मनमुताबिक बनाने के विकल्प</translation>
-<translation id="6397592254427394018">सभी बुकमार्क &amp;गुप्त विंडो में खोलें</translation>
 <translation id="6398715114293939307">Google Play स्टोर निकालें</translation>
 <translation id="6398765197997659313">पूर्ण स्क्रीन से बाहर निकलें</translation>
 <translation id="6399774419735315745">जासूस</translation>
@@ -3853,7 +3844,6 @@
 <translation id="6798954102094737107">प्‍लग इन: <ph name="PLUGIN_NAME" /></translation>
 <translation id="6801435275744557998">टचस्क्रीन कैलिब्रेट करें</translation>
 <translation id="6802031077390104172"><ph name="USAGE" /> (<ph name="OID" />)</translation>
-<translation id="6804671422566312077">सभी बुकमार्क &amp;नई विंडो में खोलें</translation>
 <translation id="6805038906417219576">ठीक है</translation>
 <translation id="6805647936811177813"><ph name="HOST_NAME" /> से क्लाइंट प्रमाणपत्र आयात करने के लिए, कृपया <ph name="TOKEN_NAME" /> में साइन इन करें.</translation>
 <translation id="680572642341004180"><ph name="SHORT_PRODUCT_OS_NAME" /> पर RLZ ट्रैकिंग सक्षम करें.</translation>
@@ -3960,7 +3950,6 @@
 <translation id="6970856801391541997">विशेष पेज प्रिंट करें</translation>
 <translation id="6972180789171089114">ऑडियो/वीडियो</translation>
 <translation id="6972754398087986839">आरंभ करें</translation>
-<translation id="6973630695168034713">फ़ोल्डर</translation>
 <translation id="6974609594866392343">ऑफ़लाइन डेमो मोड</translation>
 <translation id="6977381486153291903">फ़र्मवेयर पुनरीक्षण</translation>
 <translation id="6978121630131642226">खोज इंजन</translation>
@@ -4287,7 +4276,6 @@
 <translation id="7478485216301680444">कियोस्क ऐप्स  इंस्टॉल नहीं किया जा सका.</translation>
 <translation id="7481312909269577407">आगे जाएं</translation>
 <translation id="748138892655239008">प्रमाणपत्र मूल बाध्यताएं</translation>
-<translation id="7484964289312150019">सभी बुकमार्क &amp;नई विंडो में खोलें</translation>
 <translation id="7487067081878637334">तकनीक</translation>
 <translation id="7487099628810939106">क्‍लिक से पहले विलंब:</translation>
 <translation id="7487969577036436319">कोई घटक इंस्टॉल नहीं हैं</translation>
@@ -4715,7 +4703,6 @@
 <translation id="8063235345342641131">डिफ़ॉल्ट हरा अवतार</translation>
 <translation id="8064671687106936412">कुंजी:</translation>
 <translation id="8066773524873206594">सभी नए बदलाव <ph name="DOWNLOADS_FOLDER" /> में सेव कर लिए जाएंगे.</translation>
-<translation id="806812017500012252">शीर्षक द्वारा फिर से क्रमित करें</translation>
 <translation id="8068253693380742035">प्रवेश करने के लिए स्पर्श करें</translation>
 <translation id="8069615408251337349">Google क्लाउड प्रिंट</translation>
 <translation id="8071432093239591881">चित्र के रूप में प्रिंट करें</translation>

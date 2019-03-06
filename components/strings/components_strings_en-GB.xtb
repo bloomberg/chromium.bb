@@ -51,7 +51,6 @@
 <translation id="1232569758102978740">Untitled</translation>
 <translation id="1240347957665416060">Your device name</translation>
 <translation id="124116460088058876">More languages</translation>
-<translation id="1246987714874202335">Update expiry date</translation>
 <translation id="1250759482327835220">To pay faster next time, save your card, name and billing address to your Google account.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (synced)</translation>
 <translation id="1256368399071562588">&lt;p&gt;If you try to visit a website and it doesn’t open, first try to fix the error with these troubleshooting steps:&lt;/p&gt;
@@ -273,7 +272,6 @@
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">This server could not prove that it is <ph name="DOMAIN" />; its security certificate might be revoked. This may be caused by a misconfiguration or an attacker intercepting your connection.</translation>
 <translation id="2418081434543109369">The server that you are going to, <ph name="ORIGIN" />, has requested that a security policy will be applied to all requests to it. But it has now failed to deliver a policy, which prevents the browser from fulfilling your request for <ph name="SITE" />.</translation>
-<translation id="2442483081384580286">Safe Browsing warnings</translation>
 <translation id="244665789865330679">Your device and account is managed by <ph name="ENROLLMENT_DOMAIN" />. This means that your administrator may remotely configure your device and account.</translation>
 <translation id="2463193859425327265">Change home page</translation>
 <translation id="2463739503403862330">Fill in</translation>
@@ -603,6 +601,7 @@
 <translation id="4277028893293644418">Reset password</translation>
 <translation id="4280429058323657511">, exp <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{This card has been saved in your Google account}other{These cards have been saved in your Google account}}</translation>
+<translation id="42981349822642051">Expand</translation>
 <translation id="4302965934281694568">Chou3 (Envelope)</translation>
 <translation id="4305817255990598646">Switch</translation>
 <translation id="4312613361423056926">B2</translation>
@@ -873,6 +872,7 @@
 <translation id="5810442152076338065">Your connection to <ph name="DOMAIN" /> is encrypted using an obsolete cipher suite.</translation>
 <translation id="5813119285467412249">&amp;Redo Add</translation>
 <translation id="5838278095973806738">You should not enter any sensitive information on this site (for example, passwords or credit cards), because it could be stolen by attackers.</translation>
+<translation id="5860033963881614850">Off</translation>
 <translation id="5863847714970149516">The page ahead may try to charge you money</translation>
 <translation id="5866257070973731571">Add Phone Number</translation>
 <translation id="5869405914158311789">This site can’t be reached</translation>
@@ -881,6 +881,7 @@
 <translation id="5893752035575986141">Credit cards are accepted.</translation>
 <translation id="5901630391730855834">Yellow</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (synced)</translation>
+<translation id="5916664084637901428">On</translation>
 <translation id="5919090499915321845">B10</translation>
 <translation id="5921639886840618607">Save card to Google account?</translation>
 <translation id="5922853866070715753">Almost finished</translation>
@@ -978,6 +979,7 @@
 <translation id="6508722015517270189">Restart Chrome</translation>
 <translation id="6529602333819889595">&amp;Redo Delete</translation>
 <translation id="6534179046333460208">Physical Web suggestions</translation>
+<translation id="6556866813142980365">Redo</translation>
 <translation id="6563469144985748109">Your manager hasn't approved it yet</translation>
 <translation id="6569060085658103619">You're viewing an extension page</translation>
 <translation id="6578796323535178455">C2 (Envelope)</translation>

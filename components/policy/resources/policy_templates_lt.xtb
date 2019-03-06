@@ -260,13 +260,6 @@
       išjungtas. Tokiu atveju naudotojas negalės įgalinti funkcijos.</translation>
 <translation id="1474273443907024088">TLS klaidingo paleidimo išjungimas</translation>
 <translation id="1477934438414550161">1.2 versijos TLS</translation>
-<translation id="1478485744311397487">Serveriai, kuriuos „<ph name="PRODUCT_NAME" />“ gali įgalioti.
-
-          Kelis serverių pavadinimus atskirkite kableliais. Leidžiama naudoti pakaitos simbolius (*).
-
-          Jei nenustatysite šios politikos, „<ph name="PRODUCT_NAME" />“ neperduos naudotojo prisijungimo duomenų, net jei aptinkama, kad serveris yra intranete.
-
-          Šios politikos nepaisoma, jei politika „UseKDCConstrainedDelegation“ nustatyta kaip „Tiesa“.</translation>
 <translation id="1484146587843605071">„<ph name="PRODUCT_NAME" />“ nepaisys tarpinio serverio iš čia pateikto prieglobos serverių sąrašo.
 
           Ši politika galioja, tik jei pasirinkote neautomatinius tarpinio serverio nustatymus skiltyje „Pasirinkti, kaip nurodyti tarpinio serverio nustatymus“.
@@ -937,11 +930,6 @@
 
       Įjungus šį nustatymą funkcija „Spaudinio peržiūra“ naudos OS sistemos numatytąjį spausdintuvą kaip numatytąją paskirties vietos parinktį.</translation>
 <translation id="2856674246949497058">Grąžinti ir palikti tikslinę versiją, jei OS versija naujesnė nei tikslinė. Atlikti „Powerwash“ vykdant procesą.</translation>
-<translation id="2858646435735022107">Valdoma, ar atsižvelgiama į žymą OK-AS-DELEGATE iš KDC ar naudojama „AuthNegotiateDelegateWhitelist“ norint apriboti „Kerberos“ bilietų perdavimą.
-
-          Jei ši politika nustatyta kaip „Tiesa“, taikant HTTP autentifikavimą atsižvelgiama į KDC apriboto perdavimo nustatymus. Tokiu atveju nepaisoma politikos „AuthNegotiateDelegateWhitelist“. Daugiau informacijos žr. https://tools.ietf.org/html/rfc5896.html.
-
-          Jei ši politika nenustatyta arba nustatyta kaip „Netiesa“, nepaisoma KDC apriboto perdavimo nustatymų ir atsižvelgiama į politiką „AuthNegotiateDelegateWhitelist“.</translation>
 <translation id="2872961005593481000">Stabdyti</translation>
 <translation id="2873651257716068683">Nepaisoma numatytojo spausdinamo puslapio dydžio. Jei puslapio dydis nepasiekiamas, šios politikos nepaisoma.</translation>
 <translation id="2874209944580848064">„<ph name="PRODUCT_OS_NAME" />“ įrenginiams, kuriuose palaikomos „Android“ programos, skirta pastaba:</translation>
@@ -1705,6 +1693,11 @@
 <translation id="4725528134735324213">„Android“ atsarginio kopijavimo paslaugos įgalinimas</translation>
 <translation id="4725801978265372736">Reikalauti, kad atitiktų vietinio naudotojo ir nuotolinės prieigos prieglobos serverio savininko vardai</translation>
 <translation id="4733471537137819387">Politika, susijusi su integruotuoju HTTP tapatumo nustatymu.</translation>
+<translation id="4744190513568488164">Serveriai, į kuriuos „<ph name="PRODUCT_NAME" />“ gali pervesti.
+
+          Kelis serverių pavadinimus atskirkite kableliais. Leidžiama naudoti pakaitos simbolius (*).
+
+          Jei nenustatysite šios politikos, „<ph name="PRODUCT_NAME" />“ neperduos naudotojo prisijungimo duomenų, net jei aptinkama, kad serveris yra intranete.</translation>
 <translation id="4752880493649142945">Kliento sertifikatas, skirtas prisijungti prie „RemoteAccessHostTokenValidationUrl“</translation>
 <translation id="4757671984625088193">Jei šis nustatymas nustatytas kaip „true“ arba nenustatytas, „<ph name="PRODUCT_NAME" />“ siūlys puslapius, susijusius su dabartiniu.
       Šie siūlymai gaunami nuotoliniu būdu iš „Google“ serverių.
@@ -1781,7 +1774,6 @@
 <translation id="4986560318567565414">Perjungimo iš alternatyvios naršyklės kelias į „Chrome“.</translation>
 <translation id="4988291787868618635">Veiksmas, kuris bus atliktas, kai bus pasiektas neveikos delsos laikas</translation>
 <translation id="4995548127349206948">Ar įgalintas „NTLMv2“ autentifikavimas.</translation>
-<translation id="5022792010322211583">KDC apriboto įgaliojimo naudojimas</translation>
 <translation id="5047604665028708335">Leisti pasiekti svetaines, nesančias turinio paketuose</translation>
 <translation id="5052081091120171147">Pagal šią politiką naršymo istorija priverstinai importuojama iš esamos numatytosios naršyklės (jei įgalinta). Be to, jei įgalinta, ši politika turi įtakos importavimo dialogo langui.
 

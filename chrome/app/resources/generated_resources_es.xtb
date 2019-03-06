@@ -104,7 +104,6 @@
 <translation id="1143142264369994168">Titular del certificado</translation>
 <translation id="1145292499998999162">Complemento bloqueado</translation>
 <translation id="1145532888383813076">Busca en el dispositivo, las aplicaciones y la Web.</translation>
-<translation id="1146204723345436916">Importar marcadores desde archivo HTML...</translation>
 <translation id="114721135501989771">Obtén funciones inteligentes en Chrome</translation>
 <translation id="1148097584170732637">Se han encontrado <ph name="FILE_COUNT" /> archivos.
     <ph name="LINE_BREAK1" />
@@ -420,7 +419,6 @@
 <translation id="1608626060424371292">Eliminar este usuario</translation>
 <translation id="1609170755653088773">Sincronizar esta contraseña con tu iPhone</translation>
 <translation id="1611584202130317952">Se ha interrumpido el flujo de aprovisionamiento. Vuelve a intentarlo más tarde o ponte en contacto con el propietario o el administrador del dispositivo.</translation>
-<translation id="1611704746353331382">Exportar marcadores a archivo HTML...</translation>
 <translation id="1614511179807650956">Es posible que hayas agotado los datos de tu plan de datos móviles. Visita el portal de activación de <ph name="NAME" /> para comprar más datos.</translation>
 <translation id="161460670679785907">No se puede detectar tu teléfono</translation>
 <translation id="1616206807336925449">Esta extensión no requiere permisos especiales.</translation>
@@ -651,7 +649,6 @@
 <translation id="1932098463447129402">Posterior a</translation>
 <translation id="1933345018156373194">No se ha podido mover el archivo porque se ha producido un error inesperado: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1933809209549026293">Conecta un ratón o un teclado. Si utilizas un dispositivo Bluetooth, asegúrate de que esté listo para la vinculación.</translation>
-<translation id="1936157145127842922">Mostrar en carpeta</translation>
 <translation id="1938351510777341717">Tecla Comando externa</translation>
 <translation id="1940546824932169984">Dispositivos conectados</translation>
 <translation id="1942765061641586207">Resolución de imagen</translation>
@@ -1369,7 +1366,6 @@ y su configuración no se sincronizan en otros dispositivos con la función de s
 <translation id="3009300415590184725">¿Seguro que quieres cancelar el proceso de configuración del servicio de datos para móviles?</translation>
 <translation id="3009779501245596802">Bases de datos indexadas</translation>
 <translation id="3010279545267083280">Contraseña eliminada</translation>
-<translation id="3011362742078013760">Abrir todos los marcadores en una ventana de &amp;incógnito</translation>
 <translation id="3011488081941333749">Las cookies de <ph name="DOMAIN" /> se borrarán al cerrar la página</translation>
 <translation id="3012631534724231212">(iframe)</translation>
 <translation id="3012804260437125868">Solo conexiones seguras al mismo sitio web</translation>
@@ -2573,7 +2569,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="4881695831933465202">Abrir</translation>
 <translation id="4882312758060467256">Tiene acceso a este sitio web</translation>
 <translation id="4882831918239250449">Controlar cómo se utiliza el historial de navegación para personalizar la Búsqueda, los anuncios y mucho más</translation>
-<translation id="4883178195103750615">Exportar marcadores a archivo HTML...</translation>
 <translation id="4883436287898674711">Todos los sitios de <ph name="WEBSITE_1" /></translation>
 <translation id="48838266408104654">&amp;Administrador de tareas</translation>
 <translation id="4884987973312178454">6x</translation>
@@ -2907,7 +2902,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="5376931455988532197">El archivo es demasiado grande.</translation>
 <translation id="537813040452600081">Las páginas que aparezcan en esta ventana no se mostrarán en el historial del navegador y no dejarán otros rastros, como cookies, en el ordenador después de cerrar sesión. No se conservarán los archivos que descargues ni los marcadores que crees.</translation>
 <translation id="5379140238605961210">Seguir bloqueando el acceso al micrófono</translation>
-<translation id="5379268888377976432">Deshacer eliminación</translation>
 <translation id="5382591305415226340">Administrar enlaces compatibles</translation>
 <translation id="5384883051496921101">Este sitio web va a compartir información con una aplicación con la que no se utilizará el modo de incógnito.</translation>
 <translation id="5388885445722491159">Sincronizado</translation>
@@ -3202,7 +3196,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="5801568494490449797">Preferencias</translation>
 <translation id="5804241973901381774">Permisos</translation>
 <translation id="5805697420284793859">Administrador de ventanas</translation>
-<translation id="580571955903695899">Reordenar por título</translation>
 <translation id="5811750797187914944">Listo</translation>
 <translation id="5814126672212206791">Tipo de conexión</translation>
 <translation id="5815645614496570556">Dirección X.400</translation>
@@ -3529,7 +3522,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6264365405983206840">Seleccionar &amp;todo</translation>
 <translation id="6267166720438879315">Selecciona un certificado para autenticar tu identidad en <ph name="HOST_NAME" />.</translation>
 <translation id="6268252012308737255">Abrir con <ph name="APP" /></translation>
-<translation id="6268747994388690914">Importar marcadores desde archivo HTML...</translation>
 <translation id="6272643420381259437">Se ha producido un error (<ph name="ERROR" />) al descargar el complemento</translation>
 <translation id="6273677812470008672">Calidad</translation>
 <translation id="6277105963844135994">Tiempo de espera de red agotado</translation>
@@ -3604,7 +3596,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6393156038355142111">Sugerir contraseña segura</translation>
 <translation id="6395575651121294044"><ph name="NUMBER_OF_FILES" /> elementos</translation>
 <translation id="6397094776139756010">Opciones de sincronización y personalización</translation>
-<translation id="6397592254427394018">Abrir todos los marcadores en una ventana de &amp;incógnito</translation>
 <translation id="6398715114293939307">Quitar Google Play Store</translation>
 <translation id="6398765197997659313">Salir del modo de pantalla completa</translation>
 <translation id="6399774419735315745">Espía</translation>
@@ -3868,7 +3859,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6798954102094737107">Complemento: <ph name="PLUGIN_NAME" /></translation>
 <translation id="6801435275744557998">Calibrar la pantalla táctil</translation>
 <translation id="6802031077390104172"><ph name="USAGE" /> (<ph name="OID" />)</translation>
-<translation id="6804671422566312077">Abrir todos los marcadores en una &amp;ventana nueva</translation>
 <translation id="6805038906417219576">Aceptar</translation>
 <translation id="6805647936811177813">Inicia sesión en <ph name="TOKEN_NAME" /> para importar el certificado de cliente de <ph name="HOST_NAME" />.</translation>
 <translation id="680572642341004180">Habilitar seguimiento de RLZ en <ph name="SHORT_PRODUCT_OS_NAME" /></translation>
@@ -3975,7 +3965,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6970856801391541997">Imprimir páginas específicas</translation>
 <translation id="6972180789171089114">Audio/Vídeo</translation>
 <translation id="6972754398087986839">Empezar</translation>
-<translation id="6973630695168034713">Carpetas</translation>
 <translation id="6974609594866392343">Modo de demostración sin conexión</translation>
 <translation id="6977381486153291903">Revisión del firmware</translation>
 <translation id="6978121630131642226">Buscadores</translation>
@@ -4306,7 +4295,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7478485216301680444">No se ha podido instalar la aplicación del kiosco.</translation>
 <translation id="7481312909269577407">Adelante</translation>
 <translation id="748138892655239008">Restricciones básicas del certificado</translation>
-<translation id="7484964289312150019">Abrir todos los marcadores en una &amp;ventana nueva</translation>
 <translation id="7487067081878637334">Tecnología</translation>
 <translation id="7487099628810939106">Pausa antes del clic:</translation>
 <translation id="7487969577036436319">No hay componentes instalados</translation>
@@ -4737,7 +4725,6 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8063235345342641131">Avatar verde predeterminado</translation>
 <translation id="8064671687106936412">Clave:</translation>
 <translation id="8066773524873206594">Todos los cambios se guardarán en <ph name="DOWNLOADS_FOLDER" />.</translation>
-<translation id="806812017500012252">Reordenar por título</translation>
 <translation id="8068253693380742035">Toca para iniciar sesión</translation>
 <translation id="8069615408251337349">Google Cloud Print</translation>
 <translation id="8071432093239591881">Imprimir como imagen</translation>

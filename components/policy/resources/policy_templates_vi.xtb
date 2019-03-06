@@ -260,13 +260,6 @@
       sẽ bị tắt. Trong trường hợp này, người dùng không thể bật tính năng đó.</translation>
 <translation id="1474273443907024088">Tắt Khởi động giả TLS</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
-<translation id="1478485744311397487">Các máy chủ mà <ph name="PRODUCT_NAME" /> có thể ủy quyền.
-
-          Phân tách tên của các máy chủ bằng dấu phẩy. Cho phép sử dụng ký tự đại diện (*).
-
-          Nếu bạn không đặt chính sách này, thì <ph name="PRODUCT_NAME" /> sẽ không ủy quyền thông tin xác thực người dùng ngay cả khi máy chủ đó là mạng nội bộ.
-
-          Chính sách này bị bỏ qua nếu chính sách 'UseKDCConstrainedDelegation' là đúng.</translation>
 <translation id="1484146587843605071"><ph name="PRODUCT_NAME" /> sẽ bỏ qua mọi proxy cho danh sách các máy chủ được cung cấp ở đây.
 
           Chính sách này chỉ có hiệu lực nếu bạn đã chọn cài đặt proxy theo cách thủ công tại 'Chọn cách chỉ định cài đặt máy chủ proxy'.
@@ -936,11 +929,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
       Nếu bạn bật cài đặt này, tính năng Xem trước bản in sẽ chọn máy in có sẵn trong hệ điều hành làm máy in mặc định.</translation>
 <translation id="2856674246949497058">Hạ cấp và tiếp tục sử dụng phiên bản đích nếu phiên bản hệ điều hành mới hơn phiên bản đích. Thực hiện powerwash trong quá trình này.</translation>
-<translation id="2858646435735022107">Kiểm soát việc có tuân thủ cờ OK-AS-DELEGATE từ KDC hay không hoặc có dùng 'AuthNegotiateDelegateWhitelist' để hạn chế việc ủy quyền vé Kerberos hay không.
-
-          Nếu bạn đặt chính sách này là true, thì quá trình xác thực HTTP sẽ tuân thủ các tùy chọn cài đặt ủy quyền có hạn chế trên KDC. Trong trường hợp đó, chính sách 'AuthNegotiateDelegateWhitelist' bị bỏ qua. Vui lòng tham khảo thêm thông tin tại địa chỉ https://tools.ietf.org/html/rfc5896.html.
-
-          Nếu bạn không đặt chính sách này hoặc đặt là false, thì tùy chọn cài đặt ủy quyền có hạn chế từ KDC bị bỏ qua và sẽ tuân thủ chính sách 'AuthNegotiateDelegateWhitelist'.</translation>
 <translation id="2872961005593481000">Tắt</translation>
 <translation id="2873651257716068683">Ghi đè kích thước trang in mặc định. Nếu không có kích thước trang in này thì chính sách sẽ bị bỏ qua.</translation>
 <translation id="2874209944580848064">Lưu ý dành cho thiết bị <ph name="PRODUCT_OS_NAME" /> hỗ trợ ứng dụng Android:</translation>
@@ -1703,6 +1691,11 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="4725528134735324213">Bật Android Backup Service</translation>
 <translation id="4725801978265372736">Yêu cầu tên của người dùng cục bộ và chủ sở hữu máy chủ truy cập từ xa phải khớp với nhau</translation>
 <translation id="4733471537137819387">Các chính sách liên quan đến xác thực HTTP tích hợp.</translation>
+<translation id="4744190513568488164">Các máy chủ mà <ph name="PRODUCT_NAME" /> có thể ủy quyền.
+
+          Phân tách tên của nhiều máy chủ bằng dấu phẩy. Cho phép ký tự đại diện (*).
+
+          Nếu bạn không đặt chính sách này, <ph name="PRODUCT_NAME" /> sẽ không ủy quyền thông tin xác thực cho người dùng ngay cả khi máy chủ được phát hiện là mạng nội bộ.</translation>
 <translation id="4752880493649142945">Chứng chỉ ứng dụng để kết nối với RemoteAccessHostTokenValidationUrl</translation>
 <translation id="4757671984625088193">Nếu bạn đặt mục này thành true hoặc không đặt, thì <ph name="PRODUCT_NAME" /> sẽ đề xuất các trang liên quan đến trang hiện tại.
       Những nội dung đề xuất này sẽ được tìm nạp từ xa từ máy chủ của Google.
@@ -1779,7 +1772,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="4986560318567565414">Đường dẫn tới Chrome để chuyển từ trình duyệt thay thế.</translation>
 <translation id="4988291787868618635">Hành động cần thực hiện khi đạt tới độ trễ khi không sử dụng</translation>
 <translation id="4995548127349206948">Cho dù có bật xác thực NTLMv2 hay không.</translation>
-<translation id="5022792010322211583">Sử dụng ủy quyền có giới hạn về KDC</translation>
 <translation id="5047604665028708335">Cho phép truy cập vào các trang web nằm ngoài gói nội dung</translation>
 <translation id="5052081091120171147">Chính sách này nếu được bật sẽ buộc lịch sử web phải được nhập từ trình duyệt mặc định hiện tại. Nếu được bật, chính sách này cũng ảnh hưởng đến hộp thoại nhập.
 

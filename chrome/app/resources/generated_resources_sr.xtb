@@ -104,7 +104,6 @@
 <translation id="1143142264369994168">Потписник сертификата</translation>
 <translation id="1145292499998999162">Додатна компонента је блокирана</translation>
 <translation id="1145532888383813076">Претражите уређај, апликације и веб.</translation>
-<translation id="1146204723345436916">Увоз облеживача из HTML датотеке...</translation>
 <translation id="114721135501989771">Паметне Google функције</translation>
 <translation id="1148097584170732637">Пронађене су датотеке (<ph name="FILE_COUNT" />).
     <ph name="LINE_BREAK1" />
@@ -417,7 +416,6 @@
 <translation id="1608626060424371292">Уклони овог корисника</translation>
 <translation id="1609170755653088773">Синхронизујте ову лозинку са iPhone уређајем</translation>
 <translation id="1611584202130317952">Ток доделе је прекинут. Пробајте поново или контактирајте власника или администратора уређаја.</translation>
-<translation id="1611704746353331382">Извези обележиваче у HTML датотеку...</translation>
 <translation id="1614511179807650956">Можда сте искористили дозвољену количину података за мобилне уређаје. Посетите портал за активацију <ph name="NAME" /> да бисте купили још података</translation>
 <translation id="161460670679785907">Нисмо успели да откријемо телефон</translation>
 <translation id="1616206807336925449">Овај додатак не захтева никакве специјалне дозволе.</translation>
@@ -648,7 +646,6 @@
 <translation id="1932098463447129402">Не пре</translation>
 <translation id="1933345018156373194">Премештање није успело, неочекивана грешка: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1933809209549026293">Повежите миша или тастатуру. Ако користите Bluetooth уређај, проверите да ли је спреман за упаривање.</translation>
-<translation id="1936157145127842922">Прикажи у директоријуму</translation>
 <translation id="1938351510777341717">Спољна команда</translation>
 <translation id="1940546824932169984">Повезани уређаји</translation>
 <translation id="1942765061641586207">Резолуција слике</translation>
@@ -1365,7 +1362,6 @@
 <translation id="3009300415590184725">Да ли сте сигурни да желите да откажете процес подешавања услуге мобилног преноса података?</translation>
 <translation id="3009779501245596802">Индексиране базе података</translation>
 <translation id="3010279545267083280">Лозинка је избрисана</translation>
-<translation id="3011362742078013760">Отвори све обележиваче у &amp;прозору без архивирања</translation>
 <translation id="3011488081941333749">Колачићи са домена <ph name="DOMAIN" /> ће бити обрисани при затварању</translation>
 <translation id="3012631534724231212">(iframe)</translation>
 <translation id="3012804260437125868">Само безбедне везе са истим сајтом</translation>
@@ -2572,7 +2568,6 @@
 <translation id="4881695831933465202">Отвори</translation>
 <translation id="4882312758060467256">Може да приступа овом сајту</translation>
 <translation id="4882831918239250449">Контролишите начин на који се историја прегледања користи за персонализацију Претраге, огласа и других услуга</translation>
-<translation id="4883178195103750615">Извоз обележивача у HTML датотеку...</translation>
 <translation id="4883436287898674711">Сви <ph name="WEBSITE_1" /> сајтови</translation>
 <translation id="48838266408104654">&amp;Менаџер задатака</translation>
 <translation id="4884987973312178454">6x</translation>
@@ -2906,7 +2901,6 @@
 <translation id="5376931455988532197">Датотека је превелика</translation>
 <translation id="537813040452600081">Странице које видите у овом прозору се неће појављивати у историји прегледача и неће остављати друге трагове, попут колачића, на рачунару после одјављивања. Датотеке које преузмете и обележивачи које направите неће бити сачувани.</translation>
 <translation id="5379140238605961210">Настави да блокираш приступ микрофону</translation>
-<translation id="5379268888377976432">Опозови брисање</translation>
 <translation id="5382591305415226340">Управљај подржаним линковима</translation>
 <translation id="5384883051496921101">Овај сајт ће делити информације са апликацијом изван режима без архивирања.</translation>
 <translation id="5388885445722491159">Упарено</translation>
@@ -3203,7 +3197,6 @@
 <translation id="5801568494490449797">Подешавања</translation>
 <translation id="5804241973901381774">Дозволе</translation>
 <translation id="5805697420284793859">Менаџер прозора</translation>
-<translation id="580571955903695899">Поређај према наслову</translation>
 <translation id="5811750797187914944">То је то</translation>
 <translation id="5814126672212206791">Тип везе</translation>
 <translation id="5815645614496570556">X.400 адреса</translation>
@@ -3530,7 +3523,6 @@
 <translation id="6264365405983206840">Изабери &amp;све</translation>
 <translation id="6267166720438879315">Изаберите сертификат да бисте потврдили идентитет хосту <ph name="HOST_NAME" /></translation>
 <translation id="6268252012308737255">Отвори помоћу апликације <ph name="APP" /></translation>
-<translation id="6268747994388690914">Увези обележиваче из HTML датотеке...</translation>
 <translation id="6272643420381259437">Дошло је до грешке (<ph name="ERROR" />) при преузимању додатне компоненте</translation>
 <translation id="6273677812470008672">Квалитет</translation>
 <translation id="6277105963844135994">Временско ограничење мреже</translation>
@@ -3605,7 +3597,6 @@
 <translation id="6393156038355142111">Предложи јаку лозинку</translation>
 <translation id="6395575651121294044">Ставки: <ph name="NUMBER_OF_FILES" /></translation>
 <translation id="6397094776139756010">Опције синхронизације и персонализације</translation>
-<translation id="6397592254427394018">Отвори све обележиваче у &amp;прозору без архивирања</translation>
 <translation id="6398715114293939307">Уклоните Google Play продавницу</translation>
 <translation id="6398765197997659313">Изађи из режима целог екрана</translation>
 <translation id="6399774419735315745">Шпијунка</translation>
@@ -3869,7 +3860,6 @@
 <translation id="6798954102094737107">Додатна компонента: <ph name="PLUGIN_NAME" /></translation>
 <translation id="6801435275744557998">Калибрација додирног екрана</translation>
 <translation id="6802031077390104172"><ph name="USAGE" /> (<ph name="OID" />)</translation>
-<translation id="6804671422566312077">Отвори све обележиваче у &amp;новом прозору</translation>
 <translation id="6805038906417219576">Потврди</translation>
 <translation id="6805647936811177813">Пријавите се на <ph name="TOKEN_NAME" /> да бисте увезли сертификат клијента са <ph name="HOST_NAME" />.</translation>
 <translation id="680572642341004180">Омогући RLZ праћење у производу <ph name="SHORT_PRODUCT_OS_NAME" />.</translation>
@@ -3976,7 +3966,6 @@
 <translation id="6970856801391541997">Штампање посебних страница</translation>
 <translation id="6972180789171089114">Аудио/видео</translation>
 <translation id="6972754398087986839">Започнимо</translation>
-<translation id="6973630695168034713">Директоријуми</translation>
 <translation id="6974609594866392343">Офлајн режим демонстрације</translation>
 <translation id="6977381486153291903">Ревизија фирмвера</translation>
 <translation id="6978121630131642226">Претраживачи</translation>
@@ -4307,7 +4296,6 @@
 <translation id="7478485216301680444">Није могуће инсталирати киоск апликацију.</translation>
 <translation id="7481312909269577407">Проследи</translation>
 <translation id="748138892655239008">Основна ограничења сертификата</translation>
-<translation id="7484964289312150019">Отвори све обележиваче у &amp;новом прозору</translation>
 <translation id="7487067081878637334">Технологија</translation>
 <translation id="7487099628810939106">Одлагање клика:</translation>
 <translation id="7487969577036436319">Није инсталирана ниједна компонента</translation>
@@ -4738,7 +4726,6 @@
 <translation id="8063235345342641131">Подразумевани зелени аватар</translation>
 <translation id="8064671687106936412">Кључ:</translation>
 <translation id="8066773524873206594">Све измене биће сачуване у: <ph name="DOWNLOADS_FOLDER" />.</translation>
-<translation id="806812017500012252">Поређај према наслову</translation>
 <translation id="8068253693380742035">Додирните да бисте се пријавили</translation>
 <translation id="8069615408251337349">Google Cloud штампање</translation>
 <translation id="8071432093239591881">Одштампај као слику</translation>

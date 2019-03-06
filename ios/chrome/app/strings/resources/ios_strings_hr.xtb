@@ -356,7 +356,6 @@ Vaši su podaci šifrirani vašom šifrom za sinkronizaciju <ph name="TIME" />. 
 <translation id="6482629121755362506">Broj izbrisanih stavki: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="6513773942555305766">Chromeova predložena zaporka: <ph name="SUGGESTED_PASSWORD" /></translation>
 <translation id="6541915733953096570">Od proteklog sata</translation>
-<translation id="6548479190262846511">Nije pronađena nijedna zaporka za ovu web-lokaciju</translation>
 <translation id="6642362222295953972">Prijeđite na postojeću karticu</translation>
 <translation id="6643016212128521049">Izbriši</translation>
 <translation id="6656103420185847513">Uređivanje mape</translation>

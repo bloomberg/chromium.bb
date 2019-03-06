@@ -51,7 +51,6 @@
 <translation id="1232569758102978740">Pealkirjata</translation>
 <translation id="1240347957665416060">Teie seadme nimi</translation>
 <translation id="124116460088058876">Rohkem keeli</translation>
-<translation id="1246987714874202335">Aegumiskuupäeva värskendamine</translation>
 <translation id="1250759482327835220">Kui soovite järgmisel korral kiiremini maksta, salvestage kaart, nimi ja arveldusaadress oma Google'i kontole.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (sünkroonitud)</translation>
 <translation id="1256368399071562588">&lt;p&gt;Kui üritate külastada veebisaiti ja see ei avane, proovige vea parandamiseks esmalt neid veaotsingu toiminguid.&lt;/p&gt;
@@ -281,7 +280,6 @@
     turvalisuse reeglit kohaldatakse igale sisenemistaotlusele. Reegli saatmine aga
     ebaõnnestus, mis takistab brauseril täitmast
     teie sisenemistaotlust saidile <ph name="SITE" />.</translation>
-<translation id="2442483081384580286">Ohutu sirvimise hoiatused</translation>
 <translation id="244665789865330679">Teie seadet ja kontot hallatakse domeenilt <ph name="ENROLLMENT_DOMAIN" />. See tähendab, et administraator saab teie seadet ja kontot kaugühenduse teel seadistada.</translation>
 <translation id="2463193859425327265">Muuda avalehte</translation>
 <translation id="2463739503403862330">Täida</translation>
@@ -611,6 +609,7 @@
 <translation id="4277028893293644418">Lähtesta parool</translation>
 <translation id="4280429058323657511">, aegub <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{See kaart salvestati teie Google'i kontole}other{Need kaardid salvestati teie Google'i kontole}}</translation>
+<translation id="42981349822642051">Laienda</translation>
 <translation id="4302965934281694568">Chou3 (ümbrik)</translation>
 <translation id="4305817255990598646">Lüliti</translation>
 <translation id="4312613361423056926">B2</translation>
@@ -881,6 +880,7 @@
 <translation id="5810442152076338065">Teie ühendus domeeniga <ph name="DOMAIN" /> on krüpteeritud aegunud šifreerimiskomplektiga.</translation>
 <translation id="5813119285467412249">&amp;Lisa uuesti</translation>
 <translation id="5838278095973806738">Te ei tohiks sellele saidile sisestada tundlikku teavet (nt paroolid või krediitkaardid), kuna ründajad võivad selle varastada.</translation>
+<translation id="5860033963881614850">Väljas</translation>
 <translation id="5863847714970149516">Järgmisel lehel võidakse teilt üritada tasu võtta</translation>
 <translation id="5866257070973731571">Telefoninumbri lisamine</translation>
 <translation id="5869405914158311789">Selle saidiga ei saa ühendust</translation>
@@ -889,6 +889,7 @@
 <translation id="5893752035575986141">Kaupmees aktsepteerib krediitkaarte.</translation>
 <translation id="5901630391730855834">Kollane</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (sünkroonitud)</translation>
+<translation id="5916664084637901428">Sees</translation>
 <translation id="5919090499915321845">B10</translation>
 <translation id="5921639886840618607">Kas salvestada kaart Google'i kontole?</translation>
 <translation id="5922853866070715753">Peaaegu valmis</translation>
@@ -986,6 +987,7 @@
 <translation id="6508722015517270189">Taaskäivitage Chrome</translation>
 <translation id="6529602333819889595">&amp;Kustuta uuesti</translation>
 <translation id="6534179046333460208">Füüsilise veebi soovitused</translation>
+<translation id="6556866813142980365">Tee uuesti</translation>
 <translation id="6563469144985748109">Haldur ei ole seda veel kinnitanud</translation>
 <translation id="6569060085658103619">Vaatate laienduse lehte</translation>
 <translation id="6578796323535178455">C2 (ümbrik)</translation>

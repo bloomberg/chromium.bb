@@ -104,7 +104,6 @@
 <translation id="1143142264369994168">Tagapaglagda ng Certificate</translation>
 <translation id="1145292499998999162">Na-block ang plugin</translation>
 <translation id="1145532888383813076">Maghanap sa iyong device, mga app, at web.</translation>
-<translation id="1146204723345436916">Mag-import ng mga bookmark mula sa file na HTML...</translation>
 <translation id="114721135501989771">Magkaroon ng mga smart na feature ng Google sa Chrome</translation>
 <translation id="1148097584170732637"><ph name="FILE_COUNT" /> ang nakita.
     <ph name="LINE_BREAK1" />
@@ -420,7 +419,6 @@
 <translation id="1608626060424371292">Alisin ang user na ito</translation>
 <translation id="1609170755653088773">I-sync ang password na ito sa iyong iPhone</translation>
 <translation id="1611584202130317952">Nagambala ang daloy ng provisioning. Pakisubukang muli o makipag-ugnayan sa may-ari o administrator ng iyong device.</translation>
-<translation id="1611704746353331382">Mag-export ng Mga Bookmark sa HTML File...</translation>
 <translation id="1614511179807650956">Maaaring naubos mo na ang iyong allowance sa mobile data. Bisitahin ang portal sa pag-activate ng <ph name="NAME" /> para bumili ng higit pang data</translation>
 <translation id="161460670679785907">Hindi makita ang iyong telepono</translation>
 <translation id="1616206807336925449">Hindi nangangailangan ang extension na ito ng mga espesyal na pahintulot.</translation>
@@ -651,7 +649,6 @@
 <translation id="1932098463447129402">Hindi Bago</translation>
 <translation id="1933345018156373194">Hindi nailipat, nagkaroon ng hindi inaasahang error: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1933809209549026293">Mangyaring magkonekta ng isang mouse o keyboard. Kung gumagamit ka ng Bluetooth device, tiyakin na ito ay handa na upang ipares.</translation>
-<translation id="1936157145127842922">Ipakita sa Folder</translation>
 <translation id="1938351510777341717">External na Command</translation>
 <translation id="1940546824932169984">Mga nakakonektang device</translation>
 <translation id="1942765061641586207">Resolution ng larawan</translation>
@@ -1369,7 +1366,6 @@
 <translation id="3009300415590184725">Sigurado ka bang gusto mong kanselahin ang proseso ng pag-setup ng serbisyo ng mobile data?</translation>
 <translation id="3009779501245596802">Mga naka-index na database</translation>
 <translation id="3010279545267083280">Tinanggal ang password</translation>
-<translation id="3011362742078013760">Buksan ang Lahat ng Bookmark sa &amp;Incognito Window</translation>
 <translation id="3011488081941333749">Iki-clear ang cookies mula sa <ph name="DOMAIN" /> sa paglabas</translation>
 <translation id="3012631534724231212">(iframe)</translation>
 <translation id="3012804260437125868">Mga ligtas na koneksyon sa iisang site lang</translation>
@@ -2576,7 +2572,6 @@
 <translation id="4881695831933465202">Buksan</translation>
 <translation id="4882312758060467256">May access sa site na ito</translation>
 <translation id="4882831918239250449">Kontrolin kung paano ginagamit ang iyong history ng pag-browse para i-personalize ang Paghahanap, mga ad, at iba pa</translation>
-<translation id="4883178195103750615">I-export ang mga bookmark sa file na HTML...</translation>
 <translation id="4883436287898674711">Lahat ng site ng <ph name="WEBSITE_1" /></translation>
 <translation id="48838266408104654">&amp;Task Manager</translation>
 <translation id="4884987973312178454">6x</translation>
@@ -2910,7 +2905,6 @@
 <translation id="5376931455988532197">Masyadong malaki ang file</translation>
 <translation id="537813040452600081">Hindi lalabas sa history ng browser ang mga page na tiningnan mo sa window na ito at hindi mag-iiwan ang mga ito ng iba pang mga palatandaan, tulad ng cookies, sa computer pagkatapos mong mag-sign out. Hindi papanatilihin ang iyong mga na-download na file at ginawang bookmark.</translation>
 <translation id="5379140238605961210">Magpatuloy sa pag-block ng access sa mikropono</translation>
-<translation id="5379268888377976432">I-undo ang pagtanggal</translation>
 <translation id="5382591305415226340">Pamahalaan ang mga sinusuportahang link</translation>
 <translation id="5384883051496921101">Magbabahagi ang site na ito ng impormasyon sa isang app sa labas ng incognito mode.</translation>
 <translation id="5388885445722491159">Ipinares</translation>
@@ -3205,7 +3199,6 @@
 <translation id="5801568494490449797">Mga Kagustuhan</translation>
 <translation id="5804241973901381774">Mga Pahintulot</translation>
 <translation id="5805697420284793859">Window manager</translation>
-<translation id="580571955903695899">Muling Ayusin ayon sa Pamagat</translation>
 <translation id="5811750797187914944">Handa na ang lahat</translation>
 <translation id="5814126672212206791">Uri ng koneksyon</translation>
 <translation id="5815645614496570556">Address na X.400</translation>
@@ -3532,7 +3525,6 @@
 <translation id="6264365405983206840">Piliin &amp;Lahat</translation>
 <translation id="6267166720438879315">Pumili ng certificate upang patunayan ang iyong sarili sa <ph name="HOST_NAME" /></translation>
 <translation id="6268252012308737255">Buksan sa <ph name="APP" /></translation>
-<translation id="6268747994388690914">Mag-import ng Mga Bookmark mula sa HTML File...</translation>
 <translation id="6272643420381259437">Nagkaroon ng error (<ph name="ERROR" />) habang dina-download ang plugin</translation>
 <translation id="6273677812470008672">Kalidad</translation>
 <translation id="6277105963844135994">Nag-timeout ang network</translation>
@@ -3607,7 +3599,6 @@
 <translation id="6393156038355142111">Magmungkahi ng malakas na password</translation>
 <translation id="6395575651121294044"><ph name="NUMBER_OF_FILES" /> (na) item</translation>
 <translation id="6397094776139756010">Mga opsyon sa pag-sync at pag-personalize</translation>
-<translation id="6397592254427394018">Buksan ang lahat ng bookmark sa &amp;incognito window</translation>
 <translation id="6398715114293939307">Alisin ang Google Play Store</translation>
 <translation id="6398765197997659313">Lumabas sa buong screen</translation>
 <translation id="6399774419735315745">Espiya</translation>
@@ -3871,7 +3862,6 @@
 <translation id="6798954102094737107">Plugin: <ph name="PLUGIN_NAME" /></translation>
 <translation id="6801435275744557998">I-calibrate ang touchscreen</translation>
 <translation id="6802031077390104172"><ph name="USAGE" /> (<ph name="OID" />)</translation>
-<translation id="6804671422566312077">Buksan ang Lahat ng Bookmark sa &amp;Bagong Window</translation>
 <translation id="6805038906417219576">OK</translation>
 <translation id="6805647936811177813">Mangyaring mag-sign in sa <ph name="TOKEN_NAME" /> upang i-import ang certificate ng client mula sa <ph name="HOST_NAME" />.</translation>
 <translation id="680572642341004180">Paganahin ang pagsubaybay ng RLZ sa <ph name="SHORT_PRODUCT_OS_NAME" />.</translation>
@@ -3978,7 +3968,6 @@
 <translation id="6970856801391541997">I-print ang Mga Tiyak na Pahina</translation>
 <translation id="6972180789171089114">Audio/Video</translation>
 <translation id="6972754398087986839">Magsimula</translation>
-<translation id="6973630695168034713">Mga Folder</translation>
 <translation id="6974609594866392343">Offline na demo mode</translation>
 <translation id="6977381486153291903">Rebisyon ng firmware</translation>
 <translation id="6978121630131642226">Mga Search Engine</translation>
@@ -4309,7 +4298,6 @@
 <translation id="7478485216301680444">Hindi ma-install ang kiosk application.</translation>
 <translation id="7481312909269577407">Sumulong</translation>
 <translation id="748138892655239008">Mga Limitasyon sa Pangunahing Certificate</translation>
-<translation id="7484964289312150019">Buksan ang lahat ng bookmark sa &amp;bagong window</translation>
 <translation id="7487067081878637334">Teknolohiya</translation>
 <translation id="7487099628810939106">Pagkaantala bago ang pag-click:</translation>
 <translation id="7487969577036436319">Walang naka-install na mga bahagi</translation>
@@ -4740,7 +4728,6 @@ Ilagay ang iyong key file sa ligtas na lugar. Kailangan mo ito upang lumikha ng 
 <translation id="8063235345342641131">Default na berdeng avatar</translation>
 <translation id="8064671687106936412">Key:</translation>
 <translation id="8066773524873206594">Mase-save ang lahat ng pag-edit sa <ph name="DOWNLOADS_FOLDER" />.</translation>
-<translation id="806812017500012252">Muling ayusin ayon sa pamagat</translation>
 <translation id="8068253693380742035">Pindutin upang mag-sign in</translation>
 <translation id="8069615408251337349">Google Cloud Print</translation>
 <translation id="8071432093239591881">I-print bilang larawan</translation>

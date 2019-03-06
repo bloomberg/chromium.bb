@@ -104,7 +104,6 @@
 <translation id="1143142264369994168">Υπηρεσία υπογραφής πιστοποιητικού</translation>
 <translation id="1145292499998999162">Η προσθήκη αποκλείστηκε</translation>
 <translation id="1145532888383813076">Κάντε αναζήτηση στη συσκευή, στις εφαρμογές και στον ιστό.</translation>
-<translation id="1146204723345436916">Εισαγωγή σελιδοδεικτών από αρχείο HTML...</translation>
 <translation id="114721135501989771">Έξυπνες λειτουργίες Google στο Chrome</translation>
 <translation id="1148097584170732637">Βρέθηκαν <ph name="FILE_COUNT" /> αρχεία.
     <ph name="LINE_BREAK1" />
@@ -420,7 +419,6 @@
 <translation id="1608626060424371292">Κατάργηση αυτού του χρήστη</translation>
 <translation id="1609170755653088773">Συγχρονισμός αυτού του κωδικού πρόσβασης με το iPhone σας</translation>
 <translation id="1611584202130317952">Η ροή παροχής διακόπηκε. Δοκιμάστε ξανά ή επικοινωνήστε με τον κάτοχο ή τον διαχειριστή της συσκευής σας.</translation>
-<translation id="1611704746353331382">Εξαγωγή σελιδοδεικτών σε αρχείο HTML...</translation>
 <translation id="1614511179807650956">Μπορεί να έχετε εξαντλήσει τα διαθέσιμα δεδομένα κινητής τηλεφωνίας. Επισκεφτείτε την πύλη ενεργοποίησης <ph name="NAME" />, για να αγοράσετε περισσότερα δεδομένα</translation>
 <translation id="161460670679785907">Δεν ήταν δυνατός ο εντοπισμός του τηλεφώνου σας</translation>
 <translation id="1616206807336925449">Αυτή η επέκταση δεν απαιτεί ειδικά δικαιώματα.</translation>
@@ -651,7 +649,6 @@
 <translation id="1932098463447129402">Όχι πριν από</translation>
 <translation id="1933345018156373194">Αποτυχία μετακίνησης, μη αναμενόμενο σφάλμα: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1933809209549026293">Συνδέστε ένα ποντίκι ή ένα πληκτρολόγιο. Εάν χρησιμοποιείτε συσκευή Bluetooth, βεβαιωθείτε ότι είναι έτοιμη για σύζευξη.</translation>
-<translation id="1936157145127842922">Εμφάνιση στο φάκελο</translation>
 <translation id="1938351510777341717">Εξωτερικό πλήκτρο Command</translation>
 <translation id="1940546824932169984">Συνδεδεμένες συσκευές</translation>
 <translation id="1942765061641586207">Ανάλυση εικόνας</translation>
@@ -1369,7 +1366,6 @@
 <translation id="3009300415590184725">Είστε βέβαιοι ότι θέλετε να ακυρώσετε τη διαδικασία ρύθμισης της υπηρεσίας δεδομένων κινητής τηλεφωνίας;</translation>
 <translation id="3009779501245596802">Ευρετηριασμένες βάσεις δεδομένων</translation>
 <translation id="3010279545267083280">Ο κωδικός πρόσβασης διαγράφηκε</translation>
-<translation id="3011362742078013760">Άνοιγμα Όλων των Σελιδοδεικτών σε Παράθυρο για &amp;Ανώνυμη Περιήγηση</translation>
 <translation id="3011488081941333749">Τυχόν cookie που προέρχονται από τον τομέα <ph name="DOMAIN" /> θα διαγραφούν κατά την έξοδο</translation>
 <translation id="3012631534724231212">(iframe)</translation>
 <translation id="3012804260437125868">Μόνο ασφαλείς συνδέσεις στον ίδιο ιστότοπο</translation>
@@ -2576,7 +2572,6 @@
 <translation id="4881695831933465202">Άνοιγμα</translation>
 <translation id="4882312758060467256">Έχει πρόσβαση σε αυτόν τον ιστότοπο</translation>
 <translation id="4882831918239250449">Ελέγξτε τον τρόπο με τον οποίο το ιστορικό περιήγησής σας χρησιμοποιείται για την εξατομίκευση της Αναζήτησης, των διαφημίσεων και άλλων στοιχείων</translation>
-<translation id="4883178195103750615">Εξαγωγή σελιδοδεικτών σε αρχείο HTML...</translation>
 <translation id="4883436287898674711">Όλοι οι ιστότοποι <ph name="WEBSITE_1" /></translation>
 <translation id="48838266408104654">&amp;Διαχείριση Εργασιών</translation>
 <translation id="4884987973312178454">6x</translation>
@@ -2910,7 +2905,6 @@
 <translation id="5376931455988532197">Το αρχείο είναι πολύ μεγάλο</translation>
 <translation id="537813040452600081">Οι σελίδες που προβάλλονται σε αυτό το παράθυρο δεν θα εμφανίζονται στο ιστορικό του προγράμματος περιήγησης και δεν θα αφήνουν άλλα ίχνη, όπως cookie, στον υπολογιστή μετά την έξοδό σας. Τα αρχεία που κατεβάζετε και οι σελιδοδείκτες που δημιουργείτε δεν θα φυλάσσονται.</translation>
 <translation id="5379140238605961210">Να συνεχιστεί ο αποκλεισμός πρόσβασης στο μικρόφωνο</translation>
-<translation id="5379268888377976432">Αναίρεση διαγραφής</translation>
 <translation id="5382591305415226340">Διαχείριση υποστηριζόμενων συνδέσμων</translation>
 <translation id="5384883051496921101">Αυτός ο ιστότοπος πρόκειται να κοινοποιήσει πληροφορίες με μια εφαρμογή εκτός της κατάστασης ανώνυμης περιήγησης.</translation>
 <translation id="5388885445722491159">Με σύζευξη</translation>
@@ -3206,7 +3200,6 @@
 <translation id="5801568494490449797">Προτιμήσεις</translation>
 <translation id="5804241973901381774">Άδειες</translation>
 <translation id="5805697420284793859">Διαχείριση παραθύρου</translation>
-<translation id="580571955903695899">Αναδιοργάνωση κατά τίτλο</translation>
 <translation id="5811750797187914944">Όλα είναι έτοιμα</translation>
 <translation id="5814126672212206791">Τύπος σύνδεσης</translation>
 <translation id="5815645614496570556">Διεύθυνση X.400</translation>
@@ -3533,7 +3526,6 @@
 <translation id="6264365405983206840">Επιλογή Όλ&amp;ων</translation>
 <translation id="6267166720438879315">Επιλέξτε ένα πιστοποιητικό για την επαλήθευση της ταυτότητάς σας στον κεντρικό υπολογιστή <ph name="HOST_NAME" /></translation>
 <translation id="6268252012308737255">Άνοιγμα με <ph name="APP" /></translation>
-<translation id="6268747994388690914">Εισαγωγή σελιδοδεικτών από αρχείο HTML...</translation>
 <translation id="6272643420381259437">Παρουσιάστηκε κάποιο σφάλμα (<ph name="ERROR" />) κατά τη λήψη της προσθήκης</translation>
 <translation id="6273677812470008672">Ποιότητα</translation>
 <translation id="6277105963844135994">Χρονικό όριο δικτύου</translation>
@@ -3608,7 +3600,6 @@
 <translation id="6393156038355142111">Πρόταση ισχυρού κωδικού πρόσβασης</translation>
 <translation id="6395575651121294044"><ph name="NUMBER_OF_FILES" /> στοιχεία</translation>
 <translation id="6397094776139756010">Επιλογές συγχρονισμού και εξατομίκευσης</translation>
-<translation id="6397592254427394018">Άνοιγμα όλων των σελιδοδεικτών σε παράθυρο για &amp;ανώνυμη περιήγηση</translation>
 <translation id="6398715114293939307">Κατάργηση Google Play Store</translation>
 <translation id="6398765197997659313">Έξοδος από πλήρη οθόνη</translation>
 <translation id="6399774419735315745">Κατάσκοπος</translation>
@@ -3872,7 +3863,6 @@
 <translation id="6798954102094737107">Προσθήκη: <ph name="PLUGIN_NAME" /></translation>
 <translation id="6801435275744557998">Βαθμονόμηση οθόνης αφής</translation>
 <translation id="6802031077390104172"><ph name="USAGE" /> (<ph name="OID" />)</translation>
-<translation id="6804671422566312077">Άνοιγμα Όλων των Σελιδοδεικτών σε Νέο &amp;Παράθυρο</translation>
 <translation id="6805038906417219576">OK</translation>
 <translation id="6805647936811177813">Συνδεθείτε στο <ph name="TOKEN_NAME" /> για εισαγωγή του πιστοποιητικού πελάτη από το <ph name="HOST_NAME" />.</translation>
 <translation id="680572642341004180">Ενεργοποίηση παρακολούθησης RLZ στο <ph name="SHORT_PRODUCT_OS_NAME" />.</translation>
@@ -3979,7 +3969,6 @@
 <translation id="6970856801391541997">Εκτύπωση συγκεκριμένων σελίδων</translation>
 <translation id="6972180789171089114">Ήχος/Βίντεο</translation>
 <translation id="6972754398087986839">Έναρξη</translation>
-<translation id="6973630695168034713">Φάκελοι</translation>
 <translation id="6974609594866392343">Λειτουργία επίδειξης εκτός σύνδεσης</translation>
 <translation id="6977381486153291903">Έκδοση υλικολογισμικού</translation>
 <translation id="6978121630131642226">Μηχανές αναζήτησης</translation>
@@ -4310,7 +4299,6 @@
 <translation id="7478485216301680444">Δεν ήταν δυνατή η εγκατάσταση της εφαρμογής Kiosk.</translation>
 <translation id="7481312909269577407">Προώθηση</translation>
 <translation id="748138892655239008">Βασικοί περιορισμοί πιστοποιητικού</translation>
-<translation id="7484964289312150019">Άνοιγμα όλων των σελιδοδεικτών σε νέο &amp;παράθυρο</translation>
 <translation id="7487067081878637334">Τεχνολογία</translation>
 <translation id="7487099628810939106">Καθυστέρηση πριν από το κλικ:</translation>
 <translation id="7487969577036436319">Δεν έχουν εγκατασταθεί στοιχεία</translation>
@@ -4741,7 +4729,6 @@
 <translation id="8063235345342641131">Προεπιλεγμένο πράσινο avatar</translation>
 <translation id="8064671687106936412">Κλειδί:</translation>
 <translation id="8066773524873206594">Όλες οι τροποποιήσεις θα αποθηκευτούν στο <ph name="DOWNLOADS_FOLDER" />.</translation>
-<translation id="806812017500012252">Αναδιάταξη ανά τίτλο</translation>
 <translation id="8068253693380742035">Αγγίξτε για να συνδεθείτε</translation>
 <translation id="8069615408251337349">Google Cloud Print</translation>
 <translation id="8071432093239591881">Εκτύπωση ως εικόνα</translation>

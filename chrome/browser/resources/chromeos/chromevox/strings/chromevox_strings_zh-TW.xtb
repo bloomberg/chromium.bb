@@ -16,7 +16,6 @@
 <translation id="106222400312645156">rwhdr</translation>
 <translation id="1065552602950927991">輸入無效</translation>
 <translation id="1066085461259044485">森林綠</translation>
-<translation id="1080471004309605942">斜體結尾</translation>
 <translation id="1082209053475788238">沒有上一個第 6 階標題。</translation>
 <translation id="1087788677726983142">隱藏活動訊息串篩選器</translation>
 <translation id="1088219014394087294">沒有標題。</translation>
@@ -168,7 +167,6 @@
 <translation id="2267945578749931355">下一個字元</translation>
 <translation id="2278490101488436824">以三指向左滑動</translation>
 <translation id="2281234842553884450">上一個滑桿</translation>
-<translation id="2294136146931447363">斜體開頭</translation>
 <translation id="2311237334957139798">移至較低的精細度等級</translation>
 <translation id="2318372665160196757">主要元素</translation>
 <translation id="2329324941084714723">分頁面板</translation>
@@ -225,12 +223,10 @@
 <translation id="2717271541250958000">tabpnl</translation>
 <translation id="2723001399770238859">音訊</translation>
 <translation id="2732718972699418926">AM</translation>
-<translation id="2737520612859577214">上標的結尾</translation>
 <translation id="2749275490991666823">已勾選</translation>
 <translation id="27527859628328957">跳至下一個可選擇的項目</translation>
 <translation id="2770781857296573485">輸入群組探索</translation>
 <translation id="2777845298774924149">結束</translation>
-<translation id="2781264313200109999">連結開頭</translation>
 <translation id="2784959586797362050">和以前一樣，我們竭誠歡迎你提供意見。只要直接按下搜尋鍵 + A 鍵，再按下 I 鍵即可暢所欲言。</translation>
 <translation id="2800204403141299078">已無其他元素。</translation>
 <translation id="2800780099804980316">沒有上一個第 1 階標題。</translation>
@@ -252,7 +248,6 @@
 <translation id="288178314850623291">使用跳轉指令可直接在特定類型的元素之間移動。如要跳到下一個標題，請按下搜尋鍵 + H 鍵；如要跳到下一個標題，請按下搜尋鍵 + Shift 鍵 + H 鍵。</translation>
 <translation id="2894654529758326923">資訊</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{左大括弧}other{# 個左大括弧}}</translation>
-<translation id="2909478709401302630">上標的開頭</translation>
 <translation id="2911433807131383493">開啟 ChromeVox 教學課程</translation>
 <translation id="2912405967290226587">以三指向右滑動</translation>
 <translation id="2932083475399492303">切換行類型 (結構化或版面配置)</translation>
@@ -313,7 +308,6 @@
 <translation id="3232388865800379423">彈出式按鈕</translation>
 <translation id="3241052487511142956">上一個造訪過的連結</translation>
 <translation id="3241638166094654466">各行儲存格數目：</translation>
-<translation id="327361630706777244"><ph name="FONT_COLOR" /> 結束</translation>
 <translation id="3286372614333682499">縱向</translation>
 <translation id="3286390186030710347">滑桿</translation>
 <translation id="3299925995433437805">沒有下一個造訪過的連結。</translation>
@@ -338,7 +332,6 @@
 <translation id="3393605254399152980">用單指拖曳即可聽取你輕觸到的內容</translation>
 <translation id="3406283310380167331">顯示表單清單</translation>
 <translation id="3414400929511680526">愛麗絲藍</translation>
-<translation id="3437941064431741545">大小 <ph name="FONT_SIZE" /> 結束</translation>
 <translation id="344800400831402066">秘魯色</translation>
 <translation id="3457000393508828486">部分已按下</translation>
 <translation id="3458865416877308321"><ph name="NAME" />，已關閉</translation>
@@ -357,7 +350,6 @@
 <translation id="352577523970648069">可編輯的文字欄位</translation>
 <translation id="3549141990712742152">剪下<ph name="TEXT" />。</translation>
 <translation id="3549680091535286226">用雙指輕觸即可暫停朗讀功能</translation>
-<translation id="3555380819397253474"><ph name="FONT_FAMILY" /> 開始</translation>
 <translation id="3568702578574425662"><ph name="NAME" />，未勾選的核取方塊</translation>
 <translation id="3589661172894441357">詞彙解釋</translation>
 <translation id="3591784666823501596">皇家藍</translation>
@@ -437,7 +429,6 @@
 <translation id="4158704014418536539">區分大小寫。</translation>
 <translation id="4159784952369912983">紫色</translation>
 <translation id="4161663686871496107">ChromeVox 互動朗讀已啟用</translation>
-<translation id="4166192625054637755">下標的結尾</translation>
 <translation id="4173994908659439270">沒有可編輯的文字欄位。</translation>
 <translation id="4176463684765177261">已停用</translation>
 <translation id="4187322598335821254">向上或向下滑動即可逐行瀏覽</translation>
@@ -538,7 +529,6 @@
 <translation id="4842108708071771135">沒有下一個引用標記。</translation>
 <translation id="4844625982113518938">按下任何按鍵即可聽到該按鍵的名稱，按下 Ctrl 鍵 + W 鍵即可關閉學習模式。</translation>
 <translation id="4846428657345567687">歡迎使用 ChromeVox！</translation>
-<translation id="4846487886195635104">刪除線結尾</translation>
 <translation id="4848993367330139335">計時器</translation>
 <translation id="4850023505158945298">上一個相似的元素。</translation>
 <translation id="4866956062845190338">rdmnuitm</translation>
@@ -612,7 +602,6 @@
 <translation id="5330443287809544590"><ph name="NAME" />，連結</translation>
 <translation id="5336381510091010269">autoinl+lst</translation>
 <translation id="5349770431644471053">反向連結</translation>
-<translation id="5350654862897073517">下標的開頭</translation>
 <translation id="536031132345979795">在連續朗讀時向後跳過</translation>
 <translation id="5368000168321181111">聽覺標示已關閉</translation>
 <translation id="5374320867641260420">沒有下一個按鈕。</translation>
@@ -719,10 +708,8 @@
 <translation id="6037602951055904232">向前平移</translation>
 <translation id="6042826534790431634">按下搜尋鍵和空格鍵即可啟動。</translation>
 <translation id="6044160928851315051">調暗螢幕</translation>
-<translation id="605761629541007221">粗體結尾</translation>
 <translation id="6065293622157674001">文法錯誤開頭</translation>
 <translation id="6082768461603900813">基本瀏覽操作</translation>
-<translation id="6092707270915298410">連結結尾</translation>
 <translation id="6118126368611144850">Android 應用程式 Chrome 版：如果你的裝置上有 Play 商店，可透過 Android 應用程式搶先體驗 ChromeVox。只要從 Play 商店下載 Google Chrome Canary 版，即可體驗實驗功能。</translation>
 <translation id="611827076493383239">vtd</translation>
 <translation id="6119955456199054975">儲存格結尾。</translation>
@@ -770,9 +757,7 @@
 <translation id="6459511626086141404">一般按鍵對應配置</translation>
 <translation id="6468049171101508116">下一個按鈕</translation>
 <translation id="646954774886932461">索引</translation>
-<translation id="6470797302070897045">大小 <ph name="FONT_SIZE" /> 開始</translation>
 <translation id="6493991254603208962">調低亮度</translation>
-<translation id="6497864469186228849"><ph name="FONT_FAMILY" /> 結束</translation>
 <translation id="6501595918865591267">綠松石色</translation>
 <translation id="6508059270146105198">將點字顯示畫面移至頁面底部</translation>
 <translation id="6521550811716689390">深紫</translation>
@@ -899,7 +884,6 @@
 <translation id="7370432716629432284">{COUNT,plural, =1{&amp; 符號}other{# 個 &amp; 符號}}</translation>
 <translation id="737396357417333429">clk</translation>
 <translation id="7374104575779636480">離開表格。</translation>
-<translation id="7374188624530452127"><ph name="FONT_COLOR" /> 開始</translation>
 <translation id="738899727977260036">岩藍</translation>
 <translation id="7392145451309930991">相符文字開頭</translation>
 <translation id="739763518212184081">上一行</translation>
@@ -948,9 +932,7 @@
         <ph name="LINE_THROUGH_STRING" />
         <ph name="FONT_FAMILY_STRING" /></translation>
 <translation id="7701196182766842984">autolst</translation>
-<translation id="7712273827621319827">底線開頭</translation>
 <translation id="7770823902658038748"><ph name="VALUE" />，<ph name="NAME" />，密碼文字方塊</translation>
-<translation id="7773125101284285285">底線結尾</translation>
 <translation id="7776293189010177726">開啟 ChromeVox 選單</translation>
 <translation id="7800558923657349506">結語</translation>
 <translation id="7805247615045262757">預設導覽</translation>
@@ -1102,7 +1084,6 @@
 <translation id="8374154622594089836">月</translation>
 <translation id="8378855320830505539">區域</translation>
 <translation id="8382679411218029383">自動即時查詢內嵌元素和清單</translation>
-<translation id="8384907037845425279">粗體開頭</translation>
 <translation id="8428603554127842284">第 <ph name="DEPTH" /> 階</translation>
 <translation id="842922884199979200">沒有下一個第 3 階標題。</translation>
 <translation id="8430049249787218991">mnubr</translation>
@@ -1211,5 +1192,4 @@
 <translation id="973955474346881951">啟用/停用固定模式</translation>
 <translation id="976849232629612000">沒有選單項目。</translation>
 <translation id="992256792861109788">粉紅色</translation>
-<translation id="995852680044449248">刪除線開頭</translation>
 </translationbundle>

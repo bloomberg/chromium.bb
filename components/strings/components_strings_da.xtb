@@ -51,7 +51,6 @@
 <translation id="1232569758102978740">Unavngivet</translation>
 <translation id="1240347957665416060">Navnet på din enhed</translation>
 <translation id="124116460088058876">Flere sprog</translation>
-<translation id="1246987714874202335">Opdater udløbsdatoen</translation>
 <translation id="1250759482327835220">Gem dit kort, dit navn og din faktureringsadresse på din Google-konto for at betale hurtigere næste gang.</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (synkroniseret)</translation>
 <translation id="1256368399071562588">&lt;p&gt;Hvis du forsøger at besøge et website, og det ikke åbnes, kan du starte med at prøve at rette fejlen med følgende fejlfindingstrin:&lt;/p&gt;
@@ -281,7 +280,6 @@
     der anvendes en sikkerhedspolitik for alle anmodninger, der sendes til den. Det er dog nu
     mislykkedes at levere en politik, hvilket forhindrer browseren i at opfylde
     din anmodning til <ph name="SITE" />.</translation>
-<translation id="2442483081384580286">Advarsler fra Beskyttet browsing</translation>
 <translation id="244665789865330679">Din enhed og konto administreres af <ph name="ENROLLMENT_DOMAIN" />. Dette betyder, at din administrator kan konfigurere din enhed og konto via fjernadgang.</translation>
 <translation id="2463193859425327265">Skift startside</translation>
 <translation id="2463739503403862330">Udfyld</translation>
@@ -611,6 +609,7 @@
 <translation id="4277028893293644418">Nulstil adgangskoden</translation>
 <translation id="4280429058323657511">udløber <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{Kortet er gemt på din Google-konto}one{Kortet er gemt på din Google-konto}other{Kortene er gemt på din Google-konto}}</translation>
+<translation id="42981349822642051">Udvid</translation>
 <translation id="4302965934281694568">Chou3 (Envelope)</translation>
 <translation id="4305817255990598646">Skift</translation>
 <translation id="4312613361423056926">B2</translation>
@@ -881,6 +880,7 @@
 <translation id="5810442152076338065">Din forbindelse til <ph name="DOMAIN" /> er krypteret ved hjælp af en forældet krypteringspakke.</translation>
 <translation id="5813119285467412249">&amp;Annuller fortryd tilføjelse</translation>
 <translation id="5838278095973806738">Du bør ikke indtaste følsomme oplysninger på dette website (f.eks. adgangskoder eller kreditkortoplysninger), da de kan blive stjålet af hackere.</translation>
+<translation id="5860033963881614850">Fra</translation>
 <translation id="5863847714970149516">Siden forude kan forsøge at opkræve dig penge</translation>
 <translation id="5866257070973731571">Tilføj telefonnummer</translation>
 <translation id="5869405914158311789">Der kan ikke oprettes forbindelse til dette website</translation>
@@ -889,6 +889,7 @@
 <translation id="5893752035575986141">Kreditkort accepteres.</translation>
 <translation id="5901630391730855834">Gul</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (synkroniseret)</translation>
+<translation id="5916664084637901428">Til</translation>
 <translation id="5919090499915321845">B10</translation>
 <translation id="5921639886840618607">Vil du gemme kortet på din Google-konto?</translation>
 <translation id="5922853866070715753">Næsten færdig</translation>
@@ -986,6 +987,7 @@
 <translation id="6508722015517270189">Genstart Chrome</translation>
 <translation id="6529602333819889595">&amp;Annuller fortryd slet</translation>
 <translation id="6534179046333460208">Forslag til Fysisk web</translation>
+<translation id="6556866813142980365">Gør det igen</translation>
 <translation id="6563469144985748109">Din administrator har ikke godkendt det endnu</translation>
 <translation id="6569060085658103619">Du ser en udvidelsesside</translation>
 <translation id="6578796323535178455">C2 (Envelope)</translation>
