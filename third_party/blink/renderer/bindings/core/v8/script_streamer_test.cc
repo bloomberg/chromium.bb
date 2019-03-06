@@ -13,6 +13,7 @@
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/renderer/bindings/core/v8/referrer_script_info.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_streamer_thread.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_code_cache.h"
@@ -122,6 +123,13 @@ class ScriptStreamingTest : public testing::Test {
   }
 
   void ProcessTasksUntilStreamingComplete() {
+    if (!RuntimeEnabledFeatures::ScheduledScriptStreamingEnabled()) {
+      while (ScriptStreamerThread::Shared()->IsRunningTask()) {
+        test::RunPendingTasks();
+      }
+    }
+    // Once more, because the "streaming complete" notification might only
+    // now be in the task queue.
     test::RunPendingTasks();
   }
 
