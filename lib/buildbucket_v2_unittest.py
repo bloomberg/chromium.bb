@@ -89,6 +89,16 @@ class StaticFunctionsTest(cros_test_lib.MockTestCase):
     self.underlying_function.assert_called_with('unibuild', True)
     buildbucket_v2.UpdateSelfCommonBuildProperties(suite_scheduling=True)
     self.underlying_function.assert_called_with('suite_scheduling', True)
+    buildbucket_v2.UpdateSelfCommonBuildProperties(board='grunt')
+    self.underlying_function.assert_called_with('board', 'grunt')
+    buildbucket_v2.UpdateSelfCommonBuildProperties(
+        main_firmware_version='Google_Grunt.11031.62.0')
+    self.underlying_function.assert_called_with(
+        'main_firmware_version', 'Google_Grunt.11031.62.0')
+    buildbucket_v2.UpdateSelfCommonBuildProperties(
+        ec_firmware_version='aleena_v2.1.108-9ca28c388')
+    self.underlying_function.assert_called_with(
+        'ec_firmware_version', 'aleena_v2.1.108-9ca28c388')
 
   def testUpdateBuildMetadata(self):
     fake_dict = {'version': {'chrome': 'chrome_version',

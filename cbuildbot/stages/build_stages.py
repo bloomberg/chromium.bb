@@ -743,11 +743,11 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
                                                        update_dict)
 
       # Write board metadata update to cidb
-      build_identifier, db = self._run.GetCIDBHandle()
+      build_identifier, _ = self._run.GetCIDBHandle()
       build_id = build_identifier.cidb_id
-      if db:
-        db.UpdateBoardPerBuildMetadata(build_id, self._current_board,
-                                       update_dict)
+      if self.buildstore.AreClientsReady():
+        self.buildstore.InsertBoardPerBuild(build_id, self._current_board,
+                                            update_dict)
 
       # Get a list of models supported by this board.
       models = commands.GetModels(

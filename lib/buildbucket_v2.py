@@ -43,7 +43,8 @@ def UpdateSelfBuildPropertiesNonBlocking(key, value):
 def UpdateSelfCommonBuildProperties(
     critical=None, chrome_version=None, milestone_version=None,
     platform_version=None, full_version=None, toolchain_url=None,
-    build_type=None, unibuild=None, suite_scheduling=None):
+    build_type=None, unibuild=None, suite_scheduling=None,
+    board=None, main_firmware_version=None, ec_firmware_version=None):
   """Update build.output.properties for the current build.
 
   Sends the property values to buildbucket via
@@ -60,6 +61,9 @@ def UpdateSelfCommonBuildProperties(
     build_type: (Optional) One of ('paladin', 'full', 'canary', 'pre_cq',...).
     unibuild: (Optional) Boolean indicating whether build is unibuild.
     suite_scheduling: (Optional)
+    board: (Optional) board of the build.
+    main_firmware_version: (Optional) main firmware version of the build.
+    ec_firmware_version: (Optional) ec_firmware version of the build.
   """
   if critical is not None:
     UpdateSelfBuildPropertiesNonBlocking('critical', critical)
@@ -79,6 +83,14 @@ def UpdateSelfCommonBuildProperties(
     UpdateSelfBuildPropertiesNonBlocking('unibuild', unibuild)
   if suite_scheduling is not None:
     UpdateSelfBuildPropertiesNonBlocking('suite_scheduling', suite_scheduling)
+  if board is not None:
+    UpdateSelfBuildPropertiesNonBlocking('board', board)
+  if main_firmware_version is not None:
+    UpdateSelfBuildPropertiesNonBlocking('main_firmware_version',
+                                         main_firmware_version)
+  if ec_firmware_version is not None:
+    UpdateSelfBuildPropertiesNonBlocking('ec_firmware_version',
+                                         ec_firmware_version)
 
 def UpdateBuildMetadata(metadata):
   """Update build.output.properties from a CBuildbotMetadata instance.

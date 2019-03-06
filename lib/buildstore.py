@@ -408,6 +408,35 @@ class BuildStore(object):
     if self._write_to_cidb:
       return self.cidb_conn.FinishBuildStage(build_stage_id, status)
 
+  def InsertBoardPerBuild(self, build_id, board, board_metadata=None):
+    """Inserts board-per-build into the database.
+
+    This function redirects both InsertBoardPerBuild and
+    UpdateBoardPerBuildMetadata of CIDB.
+
+    Args:
+      build_id: CIDB id of the build.
+      board: Board of the build.
+      board_metadata: A dict with keys - 'main-firmware-version' and
+      'ec-firmware-version'.
+    """
+    if not self.InitializeClients():
+      raise BuildStoreException('BuildStore clients could not be initialized.')
+    if self._write_to_cidb:
+      if board_metadata is None:
+        self.cidb_conn.InsertBoardPerBuild(build_id, board)
+      else:
+        self.cidb_conn.UpdateBoardPerBuildMetadata(build_id, board,
+                                                   board_metadata)
+    if self._write_to_bb:
+      if board_metadata is None:
+        buildbucket_v2.UpdateSelfCommonBuildProperties(board=board)
+      else:
+        buildbucket_v2.UpdateSelfCommonBuildProperties(
+            board=board,
+            main_firmware_version=board_metadata.get('main-firmware-version'),
+            ec_firmware_version=board_metadata.get('ec-firmware-version'))
+
   def UpdateMetadata(self, build_id, metadata):
     """Update the given metadata row in database.
 
@@ -600,6 +629,9 @@ class FakeBuildStore(object):
 
   def FinishBuildStage(self, build_stage_id, status):
     return build_stage_id
+
+  def InsertBoardPerBuild(self, build_id, board, board_metadata=None):
+    pass
 
   def UpdateMetadata(self, build_id, metadata):
     return

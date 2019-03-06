@@ -338,6 +338,50 @@ class TestBuildStore(cros_test_lib.MockTestCase):
     with self.assertRaises(buildstore.BuildStoreException):
       bs.FinishChildConfig(constants.MOCK_BUILD_ID, child_config, status=status)
 
+  def testInsertBoardPerBuildWithoutMetadata(self):
+    """Tests the InsertBoardPerBuild function when metadata isn't available."""
+    self.PatchObject(BuildStore, 'InitializeClients',
+                     return_value=True)
+    bs = BuildStore(_write_to_cidb=True, _write_to_bb=True)
+    bs.cidb_conn = mock.MagicMock()
+    buildbucket_v2.UpdateSelfCommonBuildProperties = mock.MagicMock()
+    build_id = 1234
+    board = 'grunt'
+    bs.InsertBoardPerBuild(build_id, board)
+    bs.cidb_conn.InsertBoardPerBuild.assert_called_once_with(
+        build_id, board)
+    buildbucket_v2.UpdateSelfCommonBuildProperties.assert_called_once_with(
+        board=board)
+
+  def testInsertBoardPerBuildWithMetadata(self):
+    """Tests the InsertBoardPerBuild function when metadata is available."""
+    self.PatchObject(BuildStore, 'InitializeClients',
+                     return_value=True)
+    bs = BuildStore(_write_to_cidb=True, _write_to_bb=True)
+    bs.cidb_conn = mock.MagicMock()
+    buildbucket_v2.UpdateSelfCommonBuildProperties = mock.MagicMock()
+    build_id = 1234
+    board = 'grunt'
+    fake_metadata = {'main-firmware-version': '1.2.3.4',
+                     'ec-firmware-version': '2.3.4.5'}
+    bs.InsertBoardPerBuild(build_id, board, fake_metadata)
+    bs.cidb_conn.UpdateBoardPerBuildMetadata.assert_called_once_with(
+        build_id, board, fake_metadata)
+    buildbucket_v2.UpdateSelfCommonBuildProperties.assert_called_with(
+        board=board,
+        main_firmware_version=fake_metadata['main-firmware-version'],
+        ec_firmware_version=fake_metadata['ec-firmware-version'])
+
+  def testInsertBoardPerBuildWithoutRequisiteClients(self):
+    """Tests the redirect for InsertBoardPerBuild function."""
+    self.PatchObject(BuildStore, 'InitializeClients',
+                     return_value=False)
+    build_id = 1234
+    board = 'grunt'
+    bs = BuildStore(_write_to_cidb=True, _write_to_bb=True)
+    with self.assertRaises(buildstore.BuildStoreException):
+      bs.InsertBoardPerBuild(build_id, board)
+
   def testUpdateMetadata(self):
     """Tests the redirect for UpdateMetadata function."""
     init = self.PatchObject(BuildStore, 'InitializeClients',

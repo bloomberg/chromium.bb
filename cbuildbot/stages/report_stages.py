@@ -527,9 +527,9 @@ class BuildReexecutionFinishedStage(generic_stages.BuilderStage,
       # is resolved
       per_board_dict = self._run.attrs.metadata.GetDict()['board-metadata']
       for board, board_metadata in per_board_dict.items():
-        db.InsertBoardPerBuild(build_id, board)
+        self.buildstore.InsertBoardPerBuild(build_id, board)
         if board_metadata:
-          db.UpdateBoardPerBuildMetadata(build_id, board, board_metadata)
+          self.buildstore.InsertBoardPerBuild(build_id, board, board_metadata)
 
     # Abort previous hw test suites. This happens after reexecution as it
     # requires chromite/third_party/swarming.client, which is not available
