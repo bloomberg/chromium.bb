@@ -10,6 +10,7 @@ import static org.hamcrest.Matchers.instanceOf;
 
 import android.annotation.TargetApi;
 import android.os.Build;
+import android.os.SystemClock;
 import android.support.test.espresso.contrib.RecyclerViewActions;
 import android.support.test.filters.SmallTest;
 import android.support.v7.widget.RecyclerView;
@@ -106,6 +107,9 @@ public class ExploreSitesPageTest {
         onView(instanceOf(RecyclerView.class)).perform(RecyclerViewActions.scrollToPosition(2));
 
         mRenderTestRule.render(mRecyclerView, "recycler_layout");
+        // TODO(https://crbug.com/938519): Remove this sleep in favor of actually waiting for the
+        // scroll bar to disappear.
+        SystemClock.sleep(3000);
         mActivityTestRule.loadUrl("about:blank");
         ThreadUtils.runOnUiThreadBlocking(() -> mActivityTestRule.getActivity().onBackPressed());
         mRenderTestRule.render(mRecyclerView, "recycler_layout_back");
