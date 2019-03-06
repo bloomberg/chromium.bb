@@ -96,15 +96,23 @@ unsigned FindBuffer::Results::CountForTesting() {
 }
 
 void FindBuffer::InvisibleLayoutScope::EnsureRecalc(Node& block_root) {
+  if (!RuntimeEnabledFeatures::InvisibleDOMEnabled())
+    return;
   if (did_recalc_)
     return;
   did_recalc_ = true;
   DCHECK(block_root.GetDocument().Lifecycle().GetState() >=
          DocumentLifecycle::kStyleClean);
+  // If we're in an invisible subtree, we should recalc style from the invisible
+  // root/the highest ancestor of |block_root| with the invisible attribute,
+  // otherwise we should recalc from |block_root|.
+  // InvisibleRoot is always non-null when IsInsideInvisibleSubtree is true.
   if (InvisibleDOM::IsInsideInvisibleSubtree(block_root))
     invisible_root_ = InvisibleDOM::InvisibleRoot(block_root);
   else
     invisible_root_ = &ToElement(block_root);
+
+  DCHECK(invisible_root_);
   invisible_root_->GetDocument().SetFindInPageRoot(invisible_root_);
   invisible_root_->SetNeedsStyleRecalc(
       kSubtreeStyleChange,
@@ -117,6 +125,8 @@ void FindBuffer::InvisibleLayoutScope::EnsureRecalc(Node& block_root) {
 }
 
 FindBuffer::InvisibleLayoutScope::~InvisibleLayoutScope() {
+  if (!RuntimeEnabledFeatures::InvisibleDOMEnabled())
+    return;
   if (!did_recalc_)
     return;
   invisible_root_->GetDocument().SetFindInPageRoot(nullptr);
@@ -319,7 +329,8 @@ void FindBuffer::CollectTextUntilBlockBoundary(
 
   // Calculate layout tree and style for invisible nodes inside the whole
   // subtree of |block_ancestor|.
-  if (node && InvisibleDOM::IsInsideInvisibleSubtree(*node))
+  if (RuntimeEnabledFeatures::InvisibleDOMEnabled() && node &&
+      InvisibleDOM::IsInsideInvisibleSubtree(*node))
     invisible_layout_scope_.EnsureRecalc(block_ancestor);
 
   // Collect all text under |block_ancestor| to |buffer_|,
@@ -352,7 +363,8 @@ void FindBuffer::CollectTextUntilBlockBoundary(
       node = FlatTreeTraversal::NextSkippingChildren(*node);
       continue;
     }
-    if (node->IsElementNode() && ToElement(node)->HasInvisibleAttribute() &&
+    if (RuntimeEnabledFeatures::InvisibleDOMEnabled() &&
+        node->IsElementNode() && ToElement(node)->HasInvisibleAttribute() &&
         !invisible_layout_scope_.DidRecalc()) {
       // We found and invisible node. Calculate the layout & style for the whole
       // block at once, and we need to recalculate the NGOffsetMapping and start

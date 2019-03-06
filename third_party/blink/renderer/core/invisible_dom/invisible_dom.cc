@@ -10,6 +10,8 @@
 
 namespace blink {
 bool InvisibleDOM::IsInsideInvisibleSubtree(const Node& node) {
+  if (!RuntimeEnabledFeatures::InvisibleDOMEnabled())
+    return false;
   if (!node.CanParticipateInFlatTree())
     return false;
   for (Node& ancestor : FlatTreeTraversal::InclusiveAncestorsOf(node)) {
@@ -22,6 +24,8 @@ bool InvisibleDOM::IsInsideInvisibleSubtree(const Node& node) {
 }
 
 Element* InvisibleDOM::InvisibleRoot(const Node& node) {
+  if (!RuntimeEnabledFeatures::InvisibleDOMEnabled())
+    return nullptr;
   Element* root = nullptr;
   for (Node& ancestor : FlatTreeTraversal::InclusiveAncestorsOf(node)) {
     if (ancestor.IsElementNode() &&
@@ -34,6 +38,8 @@ Element* InvisibleDOM::InvisibleRoot(const Node& node) {
 
 bool InvisibleDOM::ActivateRangeIfNeeded(
     const EphemeralRangeInFlatTree& range) {
+  if (!RuntimeEnabledFeatures::InvisibleDOMEnabled())
+    return false;
   if (range.IsNull() || range.IsCollapsed())
     return false;
   HeapVector<Member<Element>> elements_to_activate;

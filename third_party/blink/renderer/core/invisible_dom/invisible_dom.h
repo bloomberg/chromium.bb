@@ -21,6 +21,7 @@ class CORE_EXPORT InvisibleDOM {
   static bool IsInsideInvisibleSubtree(const Node& node);
 
   // Highest inclusive ancestor that has the invisible attribute.
+  // Will always return non-null value if IsInsideInvisibleSubtree() is true.
   static Element* InvisibleRoot(const Node&);
 
   // Activates all the nodes within |range|. Returns true if at least one
