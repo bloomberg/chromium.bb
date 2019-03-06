@@ -5,15 +5,34 @@
 #ifndef CHROME_BROWSER_ANDROID_TRUSTED_CDN_H_
 #define CHROME_BROWSER_ANDROID_TRUSTED_CDN_H_
 
-class GURL;
+#include "base/android/scoped_java_ref.h"
+#include "content/public/browser/web_contents_observer.h"
 
-namespace trusted_cdn {
+namespace content {
+class NavigationHandle;
+}
 
-// Returns whether the given URL is hosted by a trusted CDN. This can be turned
-// off via a Feature, and the base URL to trust can be set via a command line
-// flag for testing.
-bool IsTrustedCDN(const GURL& url);
+// Native part of Trusted CDN publisher URL provider. Managed by Java layer.
+class TrustedCdn : public content::WebContentsObserver {
+ public:
+  TrustedCdn(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
+  ~TrustedCdn() override;
 
-}  // namespace trusted_cdn
+  void SetWebContents(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jobject>& jweb_contents);
+  void ResetWebContents(JNIEnv* env,
+                        const base::android::JavaParamRef<jobject>& obj);
+  void OnDestroyed(JNIEnv* env,
+                   const base::android::JavaParamRef<jobject>& obj);
+
+  // content::WebContentsObserver
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override;
+
+ private:
+  base::android::ScopedJavaGlobalRef<jobject> jobj_;
+};
 
 #endif  // CHROME_BROWSER_ANDROID_TRUSTED_CDN_H_

@@ -293,11 +293,6 @@ public class Tab
 
     private FullscreenManager mFullscreenManager;
 
-    /**
-     * The publisher URL for pages hosted on a trusted CDN, or null otherwise.
-     */
-    private @Nullable String mTrustedCdnPublisherUrl;
-
     /** The current browser controls constraints. -1 if not set. */
     private @BrowserControlsState int mBrowserConstrolsConstraints = -1;
 
@@ -1430,6 +1425,7 @@ public class Tab
             InfoBarContainer.from(this);
 
             SwipeRefreshHandler.from(this);
+            TrustedCdn.from(this);
 
             notifyContentChanged();
 
@@ -2516,22 +2512,6 @@ public class Tab
      */
     public boolean areRendererInputEventsIgnored() {
         return nativeAreRendererInputEventsIgnored(mNativeTabAndroid);
-    }
-
-    /**
-     * @return The publisher URL if the current page is hosted on a trusted CDN, or null otherwise.
-     */
-    public @Nullable String getTrustedCdnPublisherUrl() {
-        ChromeActivity activity = getActivity();
-        if (activity == null) return null;
-        if (!activity.canShowTrustedCdnPublisherUrl()) return null;
-        if (getSecurityLevel() == ConnectionSecurityLevel.DANGEROUS) return null;
-        return mTrustedCdnPublisherUrl;
-    }
-
-    @CalledByNative
-    private void setTrustedCdnPublisherUrl(@Nullable String url) {
-        mTrustedCdnPublisherUrl = url;
     }
 
     private native void nativeInit();

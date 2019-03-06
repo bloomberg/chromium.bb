@@ -18,13 +18,11 @@
 #include "chrome/browser/android/metrics/uma_utils.h"
 #include "chrome/browser/android/tab_printer.h"
 #include "chrome/browser/android/tab_web_contents_delegate_android.h"
-#include "chrome/browser/android/trusted_cdn.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/managed_bookmark_service_factory.h"
 #include "chrome/browser/browser_about_handler.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/infobars/infobar_service.h"
-#include "chrome/browser/offline_pages/offline_page_utils.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
@@ -117,35 +115,6 @@ class TabAndroidHelper : public content::WebContentsUserData<TabAndroidHelper> {
 };
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(TabAndroidHelper)
-
-GURL GetPublisherURLForTrustedCDN(
-    content::NavigationHandle* navigation_handle) {
-  if (!trusted_cdn::IsTrustedCDN(navigation_handle->GetURL()))
-    return GURL();
-
-  // Offline pages don't have headers when they are loaded.
-  // TODO(bauerb): Consider storing the publisher URL on the offline page item.
-  if (offline_pages::OfflinePageUtils::GetOfflinePageFromWebContents(
-          navigation_handle->GetWebContents())) {
-    return GURL();
-  }
-
-  const net::HttpResponseHeaders* headers =
-      navigation_handle->GetResponseHeaders();
-  if (!headers) {
-    // TODO(https://crbug.com/829323): In some cases other than offline pages
-    // we don't have headers.
-    LOG(WARNING) << "No headers for navigation to "
-                 << navigation_handle->GetURL();
-    return GURL();
-  }
-
-  std::string publisher_url;
-  if (!headers->GetNormalizedHeader("x-amp-cache", &publisher_url))
-    return GURL();
-
-  return GURL(publisher_url);
-}
 
 }  // namespace
 
@@ -326,7 +295,6 @@ void TabAndroid::InitWebContents(
 
   TabAndroidHelper::SetTabForWebContents(web_contents(), this);
   AttachTabHelpers(web_contents_.get());
-  WebContentsObserver::Observe(web_contents_.get());
 
   SetWindowSessionID(session_window_id_);
 
@@ -376,8 +344,6 @@ void TabAndroid::DestroyWebContents(JNIEnv* env,
 
   if (web_contents()->GetNativeView())
     web_contents()->GetNativeView()->GetLayer()->RemoveFromParent();
-
-  WebContentsObserver::Observe(nullptr);
 
   web_contents()->SetDelegate(nullptr);
 
@@ -756,26 +722,6 @@ void TabAndroid::ClearThumbnailPlaceholder(JNIEnv* env,
                                            const JavaParamRef<jobject>& obj) {
   if (tab_content_manager_)
     tab_content_manager_->NativeRemoveTabThumbnail(GetAndroidId());
-}
-
-void TabAndroid::DidFinishNavigation(
-    content::NavigationHandle* navigation_handle) {
-  // Skip subframe, same-document, or non-committed navigations (downloads or
-  // 204/205 responses).
-  if (!navigation_handle->IsInMainFrame() ||
-      navigation_handle->IsSameDocument() ||
-      !navigation_handle->HasCommitted()) {
-    return;
-  }
-
-  GURL publisher_url = GetPublisherURLForTrustedCDN(navigation_handle);
-  JNIEnv* env = base::android::AttachCurrentThread();
-  base::android::ScopedJavaLocalRef<jstring> j_publisher_url;
-  if (publisher_url.is_valid())
-    j_publisher_url = ConvertUTF8ToJavaString(env, publisher_url.spec());
-
-  Java_Tab_setTrustedCdnPublisherUrl(env, weak_java_tab_.get(env),
-                                     j_publisher_url);
 }
 
 bool TabAndroid::AreRendererInputEventsIgnored(
