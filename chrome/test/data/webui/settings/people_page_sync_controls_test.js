@@ -105,6 +105,40 @@ cr.define('settings_people_page_sync_controls', function() {
       }
       return browserProxy.whenCalled('setSyncDatatypes').then(verifyPrefs);
     });
+
+    test('SignedIn', function() {
+      // Controls are available by default.
+      assertFalse(syncControls.hidden);
+
+      syncControls
+          .syncStatus = {disabled: false, hasError: false, signedIn: true};
+      // Controls are available when signed in and there is no error.
+      assertFalse(syncControls.hidden);
+    });
+
+    test('SyncDisabled', function() {
+      syncControls
+          .syncStatus = {disabled: true, hasError: false, signedIn: true};
+      // Controls are hidden when sync is disabled.
+      assertTrue(syncControls.hidden);
+    });
+
+    test('SyncError', function() {
+      syncControls
+          .syncStatus = {disabled: false, hasError: true, signedIn: true};
+      // Controls are hidden when there is an error but it's not a
+      // passphrase error.
+      assertTrue(syncControls.hidden);
+
+      syncControls.syncStatus = {
+        disabled: false,
+        hasError: true,
+        signedIn: true,
+        statusAction: settings.StatusAction.ENTER_PASSPHRASE
+      };
+      // Controls are available when there is a passphrase error.
+      assertFalse(syncControls.hidden);
+    });
   });
 
   suite('SyncControlsSubpageTest', function() {
