@@ -137,10 +137,13 @@ void LayerImpl::SetScrollTreeIndex(int index) {
 
 void LayerImpl::PopulateSharedQuadState(viz::SharedQuadState* state,
                                         bool contents_opaque) const {
+  EffectNode* effect_node = GetEffectTree().Node(effect_tree_index_);
   state->SetAll(draw_properties_.target_space_transform, gfx::Rect(bounds()),
                 draw_properties_.visible_layer_rect, draw_properties_.clip_rect,
                 draw_properties_.is_clipped, contents_opaque,
-                draw_properties_.opacity, SkBlendMode::kSrcOver,
+                draw_properties_.opacity,
+                effect_node->has_render_surface ? SkBlendMode::kSrcOver
+                                                : effect_node->blend_mode,
                 GetSortingContextId());
 }
 

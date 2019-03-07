@@ -25,6 +25,7 @@
 #include "cc/paint/display_item_list.h"
 #include "cc/tiles/tile_manager.h"
 #include "cc/tiles/tiling_set_raster_queue_all.h"
+#include "cc/trees/effect_node.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/occlusion.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
@@ -285,11 +286,13 @@ void PictureLayerImpl::AppendQuads(viz::RenderPass* render_pass,
     if (mask_type_ == Layer::LayerMaskType::NOT_MASK) {
       occlusion = draw_properties().occlusion_in_content_space;
     }
+
+    EffectNode* effect_node = GetEffectTree().Node(effect_tree_index());
     SolidColorLayerImpl::AppendSolidQuads(
         render_pass, occlusion, shared_quad_state, scaled_visible_layer_rect,
         raster_source_->GetSolidColor(),
         !layer_tree_impl()->settings().enable_edge_anti_aliasing,
-        append_quads_data);
+        effect_node->blend_mode, append_quads_data);
     return;
   }
 
