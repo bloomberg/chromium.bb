@@ -550,6 +550,7 @@ views::View* ProfileChooserView::CreateIncognitoWindowCountView() {
                               content_list_vert_spacing);
   layout->AddView(new views::Separator());
 
+  layout->AddPaddingRow(1.0, content_list_vert_spacing);
   users_button_ = new HoverButton(
       this, gfx::CreateVectorIcon(kCloseAllIcon, 16, gfx::kChromeIconGrey),
       l10n_util::GetStringUTF16(IDS_INCOGNITO_PROFILE_MENU_CLOSE_BUTTON));
@@ -557,6 +558,10 @@ views::View* ProfileChooserView::CreateIncognitoWindowCountView() {
   layout->StartRowWithPadding(1.0, 0, views::GridLayout::kFixedSize,
                               content_list_vert_spacing);
   layout->AddView(users_button_);
+
+  const int small_vertical_spacing =
+      provider->GetDistanceMetric(DISTANCE_RELATED_CONTROL_VERTICAL_SMALL);
+  layout->AddPaddingRow(1.0, small_vertical_spacing);
 
   return view;
 }
