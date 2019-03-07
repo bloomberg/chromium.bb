@@ -45,11 +45,6 @@ void VideoDecoderProxy::CreateDefaultRenderer(
     const std::string& audio_device_id,
     media::mojom::RendererRequest request) {}
 
-// TODO(https://crbug.com/936528): remove this method.
-void VideoDecoderProxy::CreateRenderer(media::mojom::HostedRendererType type,
-                                       const std::string& audio_device_id,
-                                       media::mojom::RendererRequest request) {}
-
 #if defined(OS_ANDROID)
 void VideoDecoderProxy::CreateFlingingRenderer(
     const std::string& audio_device_id,
