@@ -261,6 +261,14 @@ void InputHandlerProxy::DispatchSingleInputEvent(
     std::unique_ptr<EventWithCallback> event_with_callback,
     const base::TimeTicks now) {
   ui::LatencyInfo monitored_latency_info = event_with_callback->latency_info();
+
+  if (event_with_callback->event().GetType() ==
+      WebInputEvent::kGestureScrollUpdate) {
+    monitored_latency_info.set_scroll_update_delta(
+        static_cast<const WebGestureEvent&>(event_with_callback->event())
+            .data.scroll_update.delta_y);
+  }
+
   std::unique_ptr<cc::SwapPromiseMonitor> latency_info_swap_promise_monitor =
       input_handler_->CreateLatencyInfoSwapPromiseMonitor(
           &monitored_latency_info);
