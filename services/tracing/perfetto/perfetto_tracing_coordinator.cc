@@ -32,12 +32,11 @@ namespace tracing {
 // vs. proto).
 class PerfettoTracingCoordinator::TracingSession : public perfetto::Consumer {
  public:
-  TracingSession(const std::string& config,
+  TracingSession(const base::trace_event::TraceConfig& chrome_config,
                  base::OnceClosure tracing_over_callback)
       : tracing_over_callback_(std::move(tracing_over_callback)) {
-    base::trace_event::TraceConfig chrome_trace_config_obj(config);
     json_trace_exporter_ = std::make_unique<ChromeEventBundleJsonExporter>(
-        chrome_trace_config_obj.IsArgumentFilterEnabled(),
+        chrome_config.IsArgumentFilterEnabled(),
         base::BindRepeating(&TracingSession::OnJSONTraceEventCallback,
                             base::Unretained(this)));
     perfetto::TracingService* service =
@@ -45,55 +44,8 @@ class PerfettoTracingCoordinator::TracingSession : public perfetto::Consumer {
     consumer_endpoint_ = service->ConnectConsumer(this, /*uid=*/0);
 
     // Start tracing.
-    perfetto::TraceConfig trace_config;
-    size_t size_limit = chrome_trace_config_obj.GetTraceBufferSizeInKb();
-    if (size_limit == 0) {
-      size_limit = 100 * 1024;
-    }
-    trace_config.add_buffers()->set_size_kb(size_limit);
-
-    // Perfetto uses clock_gettime for its internal snapshotting, which gets
-    // blocked by the sandboxed and isn't needed for Chrome regardless.
-    trace_config.set_disable_clock_snapshotting(true);
-
-    auto* trace_event_data_source = trace_config.add_data_sources();
-    for (auto& enabled_pid : chrome_trace_config_obj.process_filter_config()
-                                 .included_process_ids()) {
-      *trace_event_data_source->add_producer_name_filter() =
-          base::StrCat({mojom::kPerfettoProducerName, ".",
-                        base::NumberToString(enabled_pid)});
-    }
-
-    auto* trace_event_config = trace_event_data_source->mutable_config();
-    trace_event_config->set_name(mojom::kTraceEventDataSourceName);
-    trace_event_config->set_target_buffer(0);
-    auto* chrome_config = trace_event_config->mutable_chrome_config();
-    chrome_config->set_trace_config(config);
-
-// Only CrOS and Cast support system tracing.
-#if defined(OS_CHROMEOS) || (defined(IS_CHROMECAST) && defined(OS_LINUX))
-    auto* system_trace_config =
-        trace_config.add_data_sources()->mutable_config();
-    system_trace_config->set_name(mojom::kSystemTraceDataSourceName);
-    system_trace_config->set_target_buffer(0);
-    auto* system_chrome_config = system_trace_config->mutable_chrome_config();
-    system_chrome_config->set_trace_config(config);
-#endif
-
-#if defined(OS_CHROMEOS)
-    auto* arc_trace_config = trace_config.add_data_sources()->mutable_config();
-    arc_trace_config->set_name(mojom::kArcTraceDataSourceName);
-    arc_trace_config->set_target_buffer(0);
-    auto* arc_chrome_config = arc_trace_config->mutable_chrome_config();
-    arc_chrome_config->set_trace_config(config);
-#endif
-
-    auto* trace_metadata_config =
-        trace_config.add_data_sources()->mutable_config();
-    trace_metadata_config->set_name(mojom::kMetaDataSourceName);
-    trace_metadata_config->set_target_buffer(0);
-
-    consumer_endpoint_->EnableTracing(trace_config);
+    auto perfetto_config = CreatePerfettoConfiguration(chrome_config);
+    consumer_endpoint_->EnableTracing(perfetto_config);
   }
 
   ~TracingSession() override {
@@ -103,6 +55,86 @@ class PerfettoTracingCoordinator::TracingSession : public perfetto::Consumer {
     }
 
     stream_.reset();
+  }
+
+  void ChangeTraceConfig(const base::trace_event::TraceConfig& chrome_config) {
+    auto perfetto_config = CreatePerfettoConfiguration(chrome_config);
+    consumer_endpoint_->ChangeTraceConfig(perfetto_config);
+  }
+
+  perfetto::TraceConfig CreatePerfettoConfiguration(
+      const base::trace_event::TraceConfig& chrome_config) {
+    perfetto::TraceConfig perfetto_config;
+    size_t size_limit = chrome_config.GetTraceBufferSizeInKb();
+    if (size_limit == 0) {
+      size_limit = 100 * 1024;
+    }
+    perfetto_config.add_buffers()->set_size_kb(size_limit);
+
+    // Perfetto uses clock_gettime for its internal snapshotting, which gets
+    // blocked by the sandboxed and isn't needed for Chrome regardless.
+    perfetto_config.set_disable_clock_snapshotting(true);
+
+    auto* trace_event_data_source = perfetto_config.add_data_sources();
+    for (auto& enabled_pid :
+         chrome_config.process_filter_config().included_process_ids()) {
+      *trace_event_data_source->add_producer_name_filter() =
+          base::StrCat({mojom::kPerfettoProducerName, ".",
+                        base::NumberToString(enabled_pid)});
+    }
+
+    // We strip the process filter from the config string we send to Perfetto,
+    // so perfetto doesn't reject it from a future
+    // TracingService::ChangeTraceConfig call due to being an unsupported
+    // update.
+    base::trace_event::TraceConfig processfilter_stripped_config(chrome_config);
+    processfilter_stripped_config.SetProcessFilterConfig(
+        base::trace_event::TraceConfig::ProcessFilterConfig());
+
+#if DCHECK_IS_ON()
+    // Ensure that the process filter is the only thing that gets changed
+    // in a configuration during a tracing session.
+    DCHECK((last_config_for_perfetto_.ToString() ==
+            base::trace_event::TraceConfig().ToString()) ||
+           (last_config_for_perfetto_.ToString() ==
+            processfilter_stripped_config.ToString()));
+    last_config_for_perfetto_ = processfilter_stripped_config;
+#endif
+
+    auto* trace_event_config = trace_event_data_source->mutable_config();
+    trace_event_config->set_name(mojom::kTraceEventDataSourceName);
+    trace_event_config->set_target_buffer(0);
+    auto* chrome_proto_config = trace_event_config->mutable_chrome_config();
+    chrome_proto_config->set_trace_config(
+        processfilter_stripped_config.ToString());
+
+// Only CrOS and Cast support system tracing.
+#if defined(OS_CHROMEOS) || (defined(IS_CHROMECAST) && defined(OS_LINUX))
+    auto* system_trace_config =
+        perfetto_config.add_data_sources()->mutable_config();
+    system_trace_config->set_name(mojom::kSystemTraceDataSourceName);
+    system_trace_config->set_target_buffer(0);
+    auto* system_chrome_config = system_trace_config->mutable_chrome_config();
+    system_chrome_config->set_trace_config(
+        processfilter_stripped_config.ToString());
+#endif
+
+#if defined(OS_CHROMEOS)
+    auto* arc_trace_config =
+        perfetto_config.add_data_sources()->mutable_config();
+    arc_trace_config->set_name(mojom::kArcTraceDataSourceName);
+    arc_trace_config->set_target_buffer(0);
+    auto* arc_chrome_config = arc_trace_config->mutable_chrome_config();
+    arc_chrome_config->set_trace_config(
+        processfilter_stripped_config.ToString());
+#endif
+
+    auto* trace_metadata_config =
+        perfetto_config.add_data_sources()->mutable_config();
+    trace_metadata_config->set_name(mojom::kMetaDataSourceName);
+    trace_metadata_config->set_target_buffer(0);
+
+    return perfetto_config;
   }
 
   void StopAndFlush(mojo::ScopedDataPipeProducerHandle stream,
@@ -191,6 +223,10 @@ class PerfettoTracingCoordinator::TracingSession : public perfetto::Consumer {
   base::OnceClosure tracing_over_callback_;
   RequestBufferUsageCallback request_buffer_usage_callback_;
 
+#if DCHECK_IS_ON()
+  base::trace_event::TraceConfig last_config_for_perfetto_;
+#endif
+
   // Keep last to avoid edge-cases where its callbacks come in mid-destruction.
   std::unique_ptr<perfetto::TracingService::ConsumerEndpoint>
       consumer_endpoint_;
@@ -231,9 +267,14 @@ void PerfettoTracingCoordinator::StartTracing(const std::string& config,
                                               StartTracingCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   parsed_config_ = base::trace_event::TraceConfig(config);
-  tracing_session_ = std::make_unique<TracingSession>(
-      config, base::BindOnce(&PerfettoTracingCoordinator::OnTracingOverCallback,
-                             weak_factory_.GetWeakPtr()));
+  if (!tracing_session_) {
+    tracing_session_ = std::make_unique<TracingSession>(
+        parsed_config_,
+        base::BindOnce(&PerfettoTracingCoordinator::OnTracingOverCallback,
+                       weak_factory_.GetWeakPtr()));
+  } else {
+    tracing_session_->ChangeTraceConfig(parsed_config_);
+  }
 
   agent_registry_->SetAgentInitializationCallback(
       base::BindRepeating(&PerfettoTracingCoordinator::PingAgent,
