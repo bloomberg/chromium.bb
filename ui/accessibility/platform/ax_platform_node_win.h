@@ -1067,6 +1067,10 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   // of |AXNode| ids.
   SAFEARRAY* CreateUIAElementsArrayFromIdVector(std::vector<int32_t>& ids);
 
+  // Return an array that contains the center x, y coordinates of the
+  // clickable point.
+  SAFEARRAY* CreateClickablePointArray();
+
   // Returns the scroll offsets to which UI Automation should scroll an
   // accessible object, given the horizontal and vertical scroll amounts.
   gfx::Vector2d CalculateUIAScrollPoint(
