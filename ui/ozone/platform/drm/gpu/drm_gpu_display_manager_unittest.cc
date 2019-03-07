@@ -4,6 +4,7 @@
 
 #include "ui/ozone/platform/drm/gpu/drm_gpu_display_manager.h"
 
+#include <xf86drm.h>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -76,7 +77,9 @@ DrmGpuDisplayManagerTestHelper::GetAvailableDisplayControllerInfos(
   // reallocation. It can help to test the code block of crtc reallocation.
   for (auto connector_iter = connector_resources_.rbegin();
        connector_iter != connector_resources_.rend(); connector_iter++) {
-    drmModeConnectorPtr connector = new drmModeConnector;
+    drmModeConnectorPtr connector = nullptr;
+    connector = static_cast<drmModeConnectorPtr>(drmMalloc(sizeof(*connector)));
+    DCHECK(connector);
     connector->connector_id = *connector_iter;
     connector->encoders = nullptr;
     connector->prop_values = nullptr;
@@ -85,7 +88,8 @@ DrmGpuDisplayManagerTestHelper::GetAvailableDisplayControllerInfos(
 
     drmModeCrtcPtr crtc = nullptr;
     if (crtc_iter != crtc_resources_.rend()) {
-      crtc = new drmModeCrtc;
+      crtc = static_cast<drmModeCrtcPtr>(drmMalloc(sizeof(*crtc)));
+      DCHECK(crtc);
       crtc->crtc_id = *crtc_iter;
       intermediate_mappings_[connector->connector_id] = crtc->crtc_id;
       crtc_iter++;
@@ -213,13 +217,7 @@ void DrmGpuDisplayManagerTest::SetUp() {
       screen_manager_.get(), device_manager_.get()));
 }
 
-// Crashes on ChromeOS ASan LSan. https://crbug.com/937638.
-#if defined(OS_CHROMEOS)
-#define MAYBE_GetDisplays DISABLED_GetDisplays
-#else
-#define MAYBE_GetDisplays GetDisplays
-#endif
-TEST_F(DrmGpuDisplayManagerTest, MAYBE_GetDisplays) {
+TEST_F(DrmGpuDisplayManagerTest, GetDisplays) {
   const uint32_t display_id1 = 1, display_id2 = 2, display_id3 = 3;
 
   // Connect two displays with device then update |hardware_infos_|.
