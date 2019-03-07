@@ -396,7 +396,7 @@ class GpuImageDecodeCacheTest
       return new_draw_image;
     }
 
-    return draw_image;
+    return std::move(draw_image);
   }
 
   sk_sp<SkImage> GetLastTransferredImage() {
