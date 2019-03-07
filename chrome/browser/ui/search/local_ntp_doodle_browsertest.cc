@@ -254,7 +254,8 @@ class LocalNTPDoodleTest : public InProcessBrowserTest {
  private:
   void SetUp() override {
     feature_list_.InitWithFeatures(
-        {features::kUseGoogleLocalNtp, features::kDoodlesOnLocalNtp}, {});
+        {features::kUseGoogleLocalNtp, features::kDoodlesOnLocalNtp},
+        {features::kRemoveNtpFakebox});
     InProcessBrowserTest::SetUp();
   }
 
