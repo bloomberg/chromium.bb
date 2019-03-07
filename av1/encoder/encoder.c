@@ -2413,6 +2413,9 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
   assert(IMPLIES(seq_params->profile <= PROFILE_1,
                  seq_params->bit_depth <= AOM_BITS_10));
 
+  cpi->target_seq_level_idx = (AV1_LEVEL)oxcf->target_seq_level_idx;
+  cpi->keep_level_stats = cpi->target_seq_level_idx != LEVEL_DISABLED;
+
   cm->timing_info_present = oxcf->timing_info_present;
   cm->timing_info.num_units_in_display_tick =
       oxcf->timing_info.num_units_in_display_tick;
@@ -5438,7 +5441,6 @@ static void compute_internal_stats(AV1_COMP *cpi, int frame_bytes) {
   }
 }
 #endif  // CONFIG_INTERNAL_STATS
-
 int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
                             size_t *size, uint8_t *dest, int64_t *time_stamp,
                             int64_t *time_end, int flush,
@@ -5495,6 +5497,8 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
       generate_psnr_packet(cpi);
     }
   }
+  if (cpi->keep_level_stats && oxcf->pass != 1 && !cm->show_existing_frame)
+    av1_update_level_info(cpi, *size, *time_stamp, *time_end);
 
 #if CONFIG_INTERNAL_STATS
   if (oxcf->pass != 1) {

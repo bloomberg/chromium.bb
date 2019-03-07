@@ -998,6 +998,9 @@ typedef struct AV1_COMP {
   // frame_component_time[] are initialized to zero at beginning of each frame.
   uint64_t frame_component_time[kTimingComponents];
 #endif
+  // level info and flags
+  AV1_LEVEL target_seq_level_idx;
+  int keep_level_stats;
   AV1LevelInfo level_info;
 } AV1_COMP;
 
