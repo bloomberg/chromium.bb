@@ -443,8 +443,8 @@ TEST_F(PeopleHandlerTest,
       .WillByDefault(Return(true));
   // Sync engine is stopped initially, and will start up.
   ON_CALL(*mock_pss_, GetTransportState())
-      .WillByDefault(Return(
-          syncer::SyncService::TransportState::WAITING_FOR_START_REQUEST));
+      .WillByDefault(
+          Return(syncer::SyncService::TransportState::START_DEFERRED));
   EXPECT_CALL(*mock_pss_->GetUserSettingsMock(), SetSyncRequested(true));
   SetDefaultExpectationsForConfigPage();
 
