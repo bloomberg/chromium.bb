@@ -79,23 +79,10 @@ class LOCKABLE SchedulerLock : public Lock {
 #endif  // DCHECK_IS_ON()
 
 // Provides the same functionality as base::AutoLock for SchedulerLock.
-class SCOPED_LOCKABLE AutoSchedulerLock {
- public:
-  explicit AutoSchedulerLock(SchedulerLock& lock) EXCLUSIVE_LOCK_FUNCTION(lock)
-      : lock_(lock) {
-    lock_.Acquire();
-  }
+using AutoSchedulerLock = internal::BasicAutoLock<SchedulerLock>;
 
-  ~AutoSchedulerLock() UNLOCK_FUNCTION() {
-    lock_.AssertAcquired();
-    lock_.Release();
-  }
-
- private:
-  SchedulerLock& lock_;
-
-  DISALLOW_COPY_AND_ASSIGN(AutoSchedulerLock);
-};
+// Provides the same functionality as base::AutoUnlock for SchedulerLock.
+using AutoSchedulerUnlock = internal::BasicAutoUnlock<SchedulerLock>;
 
 // Informs the clang thread safety analysis that an aliased lock is acquired.
 // Because the clang thread safety analysis doesn't understand aliased locks
