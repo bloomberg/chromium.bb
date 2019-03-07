@@ -285,6 +285,30 @@ bool GetDeviceProperty(const base::FilePath& device_path,
 
 }  // namespace
 
+///////////////////////////////////////////////////////////////////////////////
+
+EventRewriterChromeOS::MutableKeyState::MutableKeyState()
+    : MutableKeyState(0, ui::DomCode::NONE, 0, ui::KeyboardCode::VKEY_NONAME) {}
+
+EventRewriterChromeOS::MutableKeyState::MutableKeyState(
+    const ui::KeyEvent* key_event)
+    : MutableKeyState(key_event->flags(),
+                      key_event->code(),
+                      key_event->GetDomKey(),
+                      key_event->key_code()) {}
+
+EventRewriterChromeOS::MutableKeyState::MutableKeyState(
+    int input_flags,
+    ui::DomCode input_code,
+    ui::DomKey::Base input_key,
+    ui::KeyboardCode input_key_code)
+    : flags(input_flags),
+      code(input_code),
+      key(input_key),
+      key_code(input_key_code) {}
+
+///////////////////////////////////////////////////////////////////////////////
+
 EventRewriterChromeOS::EventRewriterChromeOS(
     Delegate* delegate,
     ui::EventRewriter* sticky_keys_controller)
@@ -365,8 +389,11 @@ ui::EventRewriteStatus EventRewriterChromeOS::RewriteEvent(
     std::unique_ptr<ui::Event>* rewritten_event) {
   if ((event.type() == ui::ET_KEY_PRESSED) ||
       (event.type() == ui::ET_KEY_RELEASED)) {
-    return RewriteKeyEvent(static_cast<const ui::KeyEvent&>(event),
-                           rewritten_event);
+    ui::EventRewriteStatus status =
+        RewriteKeyEvent(*((&event)->AsKeyEvent()), rewritten_event);
+    RewriteKeyEventInContext(*((&event)->AsKeyEvent()), rewritten_event,
+                             &status);
+    return status;
   }
   if ((event.type() == ui::ET_MOUSE_PRESSED) ||
       (event.type() == ui::ET_MOUSE_RELEASED)) {
@@ -392,6 +419,15 @@ ui::EventRewriteStatus EventRewriterChromeOS::RewriteEvent(
 ui::EventRewriteStatus EventRewriterChromeOS::NextDispatchEvent(
     const ui::Event& last_event,
     std::unique_ptr<ui::Event>* new_event) {
+  if (dispatched_key_events_.size()) {
+    *new_event = std::move(dispatched_key_events_.back());
+    dispatched_key_events_.pop_back();
+
+    if (dispatched_key_events_.size())
+      return ui::EVENT_REWRITE_DISPATCH_ANOTHER;
+    return ui::EVENT_REWRITE_REWRITTEN;
+  }
+
   if (sticky_keys_controller_) {
     // In the case of sticky keys, we know what the events obtained here are:
     // modifier key releases that match the ones previously discarded. So, we
@@ -1218,6 +1254,123 @@ int EventRewriterChromeOS::RewriteModifierClick(
     return ui::EF_RIGHT_MOUSE_BUTTON;
   }
   return ui::EF_NONE;
+}
+
+void EventRewriterChromeOS::RewriteKeyEventInContext(
+    const ui::KeyEvent& key_event,
+    std::unique_ptr<ui::Event>* rewritten_event,
+    ui::EventRewriteStatus* status) {
+  DCHECK(status);
+
+  if (*status == EventRewriteStatus::EVENT_REWRITE_DISCARD)
+    return;
+
+  MutableKeyState current_key_state;
+  auto key_state_comparator =
+      [&current_key_state](
+          const std::pair<MutableKeyState, MutableKeyState>& key_state) {
+        return (current_key_state.code == key_state.first.code) &&
+               (current_key_state.key == key_state.first.key) &&
+               (current_key_state.key_code == key_state.first.key_code);
+      };
+
+  const int mapped_flag = ModifierDomKeyToEventFlag(key_event.GetDomKey());
+
+  if (key_event.type() == ET_KEY_PRESSED) {
+    current_key_state = MutableKeyState(
+        rewritten_event->get()
+            ? static_cast<const ui::KeyEvent*>(rewritten_event->get())
+            : &key_event);
+    MutableKeyState original_key_state(&key_event);
+    auto iter = std::find_if(pressed_key_states_.begin(),
+                             pressed_key_states_.end(), key_state_comparator);
+
+    // When a key is pressed, store |current_key_state| if it is not stored
+    // before.
+    if (iter == pressed_key_states_.end()) {
+      pressed_key_states_.push_back(
+          std::make_pair(current_key_state, original_key_state));
+    }
+
+    return;
+  }
+
+  DCHECK_EQ(key_event.type(), ET_KEY_RELEASED);
+
+  if (mapped_flag != EF_NONE) {
+    // The released key is a modifier
+
+    DomKey::Base current_key = key_event.GetDomKey();
+    auto key_state_iter = pressed_key_states_.begin();
+    int event_flags = rewritten_event->get() ? (*rewritten_event)->flags()
+                                             : key_event.flags();
+    rewritten_event->reset();
+
+    // Iterate the keys being pressed. Release the key events which satisfy one
+    // of the following conditions:
+    // (1) the key event's original key code (before key event rewriting if
+    // any) is the same with the key to be released.
+    // (2) the key event is rewritten and its original flags are influenced by
+    // the key to be released.
+    // Example: Press the Launcher button, Press the Up Arrow button, Release
+    // the Launcher button. When Launcher is released: the key event whose key
+    // code is Launcher should be released because it satisfies the condition 1;
+    // the key event whose key code is PageUp should be released because it
+    // satisfies the condition 2.
+    while (key_state_iter != pressed_key_states_.end()) {
+      const bool is_rewritten =
+          (key_state_iter->first.key != key_state_iter->second.key);
+      const bool flag_affected = key_state_iter->second.flags & mapped_flag;
+      const bool should_release = key_state_iter->second.key == current_key ||
+                                  (flag_affected && is_rewritten);
+
+      if (should_release) {
+        // If the key should be released, create a key event for it.
+        std::unique_ptr<ui::KeyEvent> dispatched_event =
+            std::make_unique<ui::KeyEvent>(
+                key_event.type(), key_state_iter->first.key_code,
+                key_state_iter->first.code, event_flags,
+                key_state_iter->first.key, key_event.time_stamp());
+        if (!rewritten_event->get())
+          *rewritten_event = std::move(dispatched_event);
+        else
+          dispatched_key_events_.push_back(std::move(dispatched_event));
+
+        key_state_iter = pressed_key_states_.erase(key_state_iter);
+        continue;
+      }
+      key_state_iter++;
+    }
+
+    if (dispatched_key_events_.empty()) {
+      *status = rewritten_event->get()
+                    ? EventRewriteStatus::EVENT_REWRITE_REWRITTEN
+                    : EventRewriteStatus::EVENT_REWRITE_DISCARD;
+    } else {
+      *status = EventRewriteStatus::EVENT_REWRITE_DISPATCH_ANOTHER;
+    }
+  } else {
+    // The released key is not a modifier
+
+    current_key_state = MutableKeyState(
+        rewritten_event->get()
+            ? static_cast<const ui::KeyEvent*>(rewritten_event->get())
+            : &key_event);
+    auto iter = std::find_if(pressed_key_states_.begin(),
+                             pressed_key_states_.end(), key_state_comparator);
+    if (iter != pressed_key_states_.end()) {
+      pressed_key_states_.erase(iter);
+    } else {
+      // Event rewriting may create a meaningless key event.
+      // For example: press the Up Arrow button, press the Launcher button,
+      // release the Up Arrow. When the Up Arrow button is released, key event
+      // rewriting happens. However, the rewritten event is not among
+      // |pressed_key_states_|. So it should be blocked and the original event
+      // should be propagated.
+      rewritten_event->reset();
+      *status = EventRewriteStatus::EVENT_REWRITE_CONTINUE;
+    }
+  }
 }
 
 void EventRewriterChromeOS::KeyboardDeviceAddedInternal(

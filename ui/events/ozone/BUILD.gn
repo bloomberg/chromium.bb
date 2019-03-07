@@ -188,8 +188,6 @@ component("events_ozone_layout") {
     "layout/keyboard_layout_engine.h",
     "layout/keyboard_layout_engine_manager.cc",
     "layout/keyboard_layout_engine_manager.h",
-    "layout/layout_util.cc",
-    "layout/layout_util.h",
     "layout/no/no_keyboard_layout_engine.cc",
     "layout/no/no_keyboard_layout_engine.h",
     "layout/stub/stub_keyboard_layout_engine.cc",

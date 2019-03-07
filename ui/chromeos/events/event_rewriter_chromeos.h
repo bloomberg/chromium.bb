@@ -5,10 +5,13 @@
 #ifndef UI_CHROMEOS_EVENTS_EVENT_REWRITER_CHROMEOS_H_
 #define UI_CHROMEOS_EVENTS_EVENT_REWRITER_CHROMEOS_H_
 
+#include <list>
 #include <map>
 #include <memory>
 #include <set>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
@@ -64,6 +67,13 @@ class EventRewriterChromeOS : public ui::EventRewriter {
 
   // Things that keyboard-related rewriter phases can change about an Event.
   struct MutableKeyState {
+    MutableKeyState();
+    explicit MutableKeyState(const ui::KeyEvent* key_event);
+    MutableKeyState(int input_flags,
+                    ui::DomCode input_code,
+                    ui::DomKey::Base input_key,
+                    ui::KeyboardCode input_key_code);
+
     int flags;
     ui::DomCode code;
     ui::DomKey::Base key;
@@ -215,6 +225,13 @@ class EventRewriterChromeOS : public ui::EventRewriter {
   void RewriteLocatedEvent(const ui::Event& event, int* flags);
   int RewriteModifierClick(const ui::MouseEvent& event, int* flags);
 
+  // Take the keys being pressed into consideration, in contrast to
+  // RewriteKeyEvent which computes the rewritten event and event rewrite status
+  // in stateless way.
+  void RewriteKeyEventInContext(const ui::KeyEvent& event,
+                                std::unique_ptr<ui::Event>* rewritten_event,
+                                ui::EventRewriteStatus* status);
+
   // A set of device IDs whose press event has been rewritten.
   // This is to ensure that press and release events are rewritten consistently.
   std::set<int> pressed_device_ids_;
@@ -228,6 +245,14 @@ class EventRewriterChromeOS : public ui::EventRewriter {
   ::chromeos::input_method::ImeKeyboard* ime_keyboard_for_testing_;
 
   Delegate* const delegate_;
+
+  // For each pair, the first element is the rewritten key state and the second
+  // one is the original key state. If no key event rewriting happens, the first
+  // element and the second element are identical.
+  std::list<std::pair<MutableKeyState, MutableKeyState>> pressed_key_states_;
+
+  // Store key events when there are more than one key events to be dispatched.
+  std::vector<std::unique_ptr<ui::KeyEvent>> dispatched_key_events_;
 
   // The sticky keys controller is not owned here;
   // at time of writing it is a singleton in ash::Shell.

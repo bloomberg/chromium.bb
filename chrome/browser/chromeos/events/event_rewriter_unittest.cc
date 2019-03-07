@@ -1038,13 +1038,12 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapToEscape) {
     CheckKeyTestCase(rewriter_, test);
 }
 
-TEST_F(EventRewriterTest, TestRewriteModifiersRemapMany) {
+TEST_F(EventRewriterTest, TestRewriteModifiersRemapEscapeToAlt) {
   // Remap Escape to Alt.
   chromeos::Preferences::RegisterProfilePrefs(prefs()->registry());
   IntegerPrefMember escape;
   InitModifierKeyPref(&escape, prefs::kLanguageRemapEscapeKeyTo,
                       ui::chromeos::ModifierKey::kAltKey);
-
   rewriter_->KeyboardDeviceAddedForTesting(kKeyboardDeviceId, "PC Keyboard");
 
   KeyTestCase e2a_tests[] = {
@@ -1061,13 +1060,17 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapMany) {
 
   for (const auto& test : e2a_tests)
     CheckKeyTestCase(rewriter_, test);
+}
 
+TEST_F(EventRewriterTest, TestRewriteModifiersRemapAltToControl) {
   // Remap Alt to Control.
+  chromeos::Preferences::RegisterProfilePrefs(prefs()->registry());
   IntegerPrefMember alt;
   InitModifierKeyPref(&alt, prefs::kLanguageRemapAltKeyTo,
                       ui::chromeos::ModifierKey::kControlKey);
+  rewriter_->KeyboardDeviceAddedForTesting(kKeyboardDeviceId, "PC Keyboard");
 
-  KeyTestCase a2c_tests[] = {
+  std::vector<KeyTestCase> a2c_tests = {
       // Press left Alt. Confirm the event is now VKEY_CONTROL.
       {ui::ET_KEY_PRESSED,
        {ui::VKEY_MENU, ui::DomCode::ALT_LEFT, ui::EF_ALT_DOWN, ui::DomKey::ALT},
@@ -1091,13 +1094,29 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapMany) {
 
   for (const auto& test : a2c_tests)
     CheckKeyTestCase(rewriter_, test);
+}
+
+TEST_F(EventRewriterTest, TestRewriteModifiersRemapUnderEscapeControlAlt) {
+  chromeos::Preferences::RegisterProfilePrefs(prefs()->registry());
+
+  // Remap Escape to Alt.
+  IntegerPrefMember escape;
+  InitModifierKeyPref(&escape, prefs::kLanguageRemapEscapeKeyTo,
+                      ui::chromeos::ModifierKey::kAltKey);
+
+  // Remap Alt to Control.
+  IntegerPrefMember alt;
+  InitModifierKeyPref(&alt, prefs::kLanguageRemapAltKeyTo,
+                      ui::chromeos::ModifierKey::kControlKey);
 
   // Remap Control to Search.
   IntegerPrefMember control;
   InitModifierKeyPref(&control, prefs::kLanguageRemapControlKeyTo,
                       ui::chromeos::ModifierKey::kSearchKey);
 
-  KeyTestCase c2s_tests[] = {
+  rewriter_->KeyboardDeviceAddedForTesting(kKeyboardDeviceId, "PC Keyboard");
+
+  std::vector<KeyTestCase> c2s_tests = {
       // Press left Control. Confirm the event is now VKEY_LWIN.
       {ui::ET_KEY_PRESSED,
        {ui::VKEY_CONTROL, ui::DomCode::CONTROL_LEFT, ui::EF_CONTROL_DOWN,
@@ -1136,15 +1155,46 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapMany) {
 
   for (const auto& test : c2s_tests)
     CheckKeyTestCase(rewriter_, test);
+}
+
+TEST_F(EventRewriterTest,
+       TestRewriteModifiersRemapUnderEscapeControlAltSearch) {
+  chromeos::Preferences::RegisterProfilePrefs(prefs()->registry());
+
+  // Remap Escape to Alt.
+  IntegerPrefMember escape;
+  InitModifierKeyPref(&escape, prefs::kLanguageRemapEscapeKeyTo,
+                      ui::chromeos::ModifierKey::kAltKey);
+
+  // Remap Alt to Control.
+  IntegerPrefMember alt;
+  InitModifierKeyPref(&alt, prefs::kLanguageRemapAltKeyTo,
+                      ui::chromeos::ModifierKey::kControlKey);
+
+  // Remap Control to Search.
+  IntegerPrefMember control;
+  InitModifierKeyPref(&control, prefs::kLanguageRemapControlKeyTo,
+                      ui::chromeos::ModifierKey::kSearchKey);
 
   // Remap Search to Backspace.
   IntegerPrefMember search;
   InitModifierKeyPref(&search, prefs::kLanguageRemapSearchKeyTo,
                       ui::chromeos::ModifierKey::kBackspaceKey);
 
-  KeyTestCase s2b_tests[] = {
+  rewriter_->KeyboardDeviceAddedForTesting(kKeyboardDeviceId, "PC Keyboard");
+
+  std::vector<KeyTestCase> s2b_tests = {
       // Release Control and Escape, as Search and Alt would transform Backspace
       // to Delete.
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_CONTROL, ui::DomCode::CONTROL_LEFT, ui::EF_NONE,
+        ui::DomKey::CONTROL},
+       {ui::VKEY_LWIN, ui::DomCode::META_LEFT, ui::EF_COMMAND_DOWN,
+        ui::DomKey::META}},
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_ESCAPE, ui::DomCode::ESCAPE, ui::EF_NONE, ui::DomKey::ESCAPE},
+       {ui::VKEY_MENU, ui::DomCode::ALT_LEFT, ui::EF_ALT_DOWN,
+        ui::DomKey::ALT}},
       {ui::ET_KEY_RELEASED,
        {ui::VKEY_CONTROL, ui::DomCode::CONTROL_LEFT, ui::EF_NONE,
         ui::DomKey::CONTROL},
@@ -1163,13 +1213,18 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapMany) {
 
   for (const auto& test : s2b_tests)
     CheckKeyTestCase(rewriter_, test);
+}
 
+TEST_F(EventRewriterTest, TestRewriteModifiersRemapBackspaceToEscape) {
   // Remap Backspace to Escape.
+  chromeos::Preferences::RegisterProfilePrefs(prefs()->registry());
   IntegerPrefMember backspace;
   InitModifierKeyPref(&backspace, prefs::kLanguageRemapBackspaceKeyTo,
                       ui::chromeos::ModifierKey::kEscapeKey);
 
-  KeyTestCase b2e_tests[] = {
+  rewriter_->KeyboardDeviceAddedForTesting(kKeyboardDeviceId, "PC Keyboard");
+
+  std::vector<KeyTestCase> b2e_tests = {
       // Press Backspace. Confirm the event is now VKEY_ESCAPE.
       {ui::ET_KEY_PRESSED,
        {ui::VKEY_BACK, ui::DomCode::BACKSPACE, ui::EF_NONE,
@@ -2156,8 +2211,15 @@ class EventRewriterAshTest : public ChromeAshTestBase {
                     ui::KeyboardCode key_code,
                     ui::DomCode code,
                     ui::DomKey key) {
-    ui::KeyEvent press(type, key_code, code, ui::EF_NONE, key,
-                       ui::EventTimeForNow());
+    SendKeyEvent(type, key_code, code, key, ui::EF_NONE);
+  }
+
+  void SendKeyEvent(ui::EventType type,
+                    ui::KeyboardCode key_code,
+                    ui::DomCode code,
+                    ui::DomKey key,
+                    int flags) {
+    ui::KeyEvent press(type, key_code, code, flags, key, ui::EventTimeForNow());
     ui::EventDispatchDetails details = Send(&press);
     CHECK(!details.dispatcher_destroyed);
   }
@@ -2531,6 +2593,55 @@ TEST_F(EventRewriterAshTest, MouseWheelEventModifiersRewritten) {
   EXPECT_TRUE(events[0]->IsMouseWheelEvent());
   EXPECT_FALSE(events[0]->flags() & ui::EF_CONTROL_DOWN);
   EXPECT_TRUE(events[0]->flags() & ui::EF_ALT_DOWN);
+}
+
+// Tests edge cases of key event rewriting (see https://crbug.com/913209).
+TEST_F(EventRewriterAshTest, KeyEventRewritingEdgeCases) {
+  std::vector<std::unique_ptr<ui::Event>> events;
+
+  // Edge case 1: Press the Launcher button first. Then press the Up Arrow
+  // button.
+  SendKeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_COMMAND, ui::DomCode::META_LEFT,
+               ui::DomKey::META);
+  SendKeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_UP, ui::DomCode::ARROW_UP,
+               ui::DomKey::ARROW_UP, ui::EF_COMMAND_DOWN);
+
+  PopEvents(&events);
+  EXPECT_EQ(2u, events.size());
+  events.clear();
+
+  SendKeyEvent(ui::ET_KEY_RELEASED, ui::VKEY_COMMAND, ui::DomCode::META_LEFT,
+               ui::DomKey::META);
+  PopEvents(&events);
+
+  // When releasing the Launcher button, the rewritten event should be released
+  // as well.
+  EXPECT_EQ(2u, events.size());
+  EXPECT_EQ(ui::VKEY_COMMAND,
+            static_cast<ui::KeyEvent*>(events[0].get())->key_code());
+  EXPECT_EQ(ui::VKEY_PRIOR,
+            static_cast<ui::KeyEvent*>(events[1].get())->key_code());
+
+  events.clear();
+
+  // Edge case 2: Press the Up Arrow button first. Then press the Launch button.
+  SendKeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_UP, ui::DomCode::ARROW_UP,
+               ui::DomKey::ARROW_UP);
+  SendKeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_COMMAND, ui::DomCode::META_LEFT,
+               ui::DomKey::META);
+
+  PopEvents(&events);
+  EXPECT_EQ(2u, events.size());
+  events.clear();
+
+  SendKeyEvent(ui::ET_KEY_RELEASED, ui::VKEY_UP, ui::DomCode::ARROW_UP,
+               ui::DomKey::ARROW_UP, ui::EF_COMMAND_DOWN);
+  PopEvents(&events);
+
+  // When releasing the Up Arrow button, the rewritten event should be blocked.
+  EXPECT_EQ(1u, events.size());
+  EXPECT_EQ(ui::VKEY_UP,
+            static_cast<ui::KeyEvent*>(events[0].get())->key_code());
 }
 
 class StickyKeysOverlayTest : public EventRewriterAshTest {
