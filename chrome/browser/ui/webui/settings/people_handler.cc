@@ -498,10 +498,11 @@ base::Value PeopleHandler::GetStoredAccountsList() {
     // If dice is disabled (and unified consent enabled), show only the primary
     // account.
     auto* identity_manager = IdentityManagerFactory::GetForProfile(profile_);
-    if (identity_manager->HasPrimaryAccount()) {
-      accounts_list.push_back(
-          GetAccountValue(identity_manager->GetPrimaryAccountInfo()));
-    }
+    base::Optional<AccountInfo> primary_account_info =
+        identity_manager->FindExtendedAccountInfoForAccount(
+            identity_manager->GetPrimaryAccountInfo());
+    if (primary_account_info.has_value())
+      accounts_list.push_back(GetAccountValue(primary_account_info.value()));
   }
 
   return accounts;
@@ -766,7 +767,9 @@ void PeopleHandler::HandlePauseSync(const base::ListValue* args) {
   auto* identity_manager = IdentityManagerFactory::GetForProfile(profile_);
   DCHECK(identity_manager->HasPrimaryAccount());
 
-  AccountInfo primary_account_info = identity_manager->GetPrimaryAccountInfo();
+  CoreAccountInfo primary_account_info =
+      identity_manager->GetPrimaryAccountInfo();
+
   identity_manager->GetAccountsMutator()->AddOrUpdateAccount(
       primary_account_info.gaia, primary_account_info.email,
       OAuth2TokenServiceDelegate::kInvalidRefreshToken,
