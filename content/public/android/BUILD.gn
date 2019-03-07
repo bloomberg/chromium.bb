@@ -93,6 +93,7 @@ android_library("content_java") {
     ":generate_sandboxed_service_srcjar",
     ":is_ready_to_pay_service_aidl",
     ":content_public_android_java_enums_srcjar",
+    ":content_public_android_java_switches_srcjar",
     "//content/browser/accessibility:content_browser_accessibility_java_enums_srcjar",
     "//ui/touch_selection:ui_touch_selection_enums_srcjar",
     "//ui/touch_selection:ui_touch_handle_orientation_srcjar",
@@ -284,7 +285,6 @@ android_library("content_java") {
     "java/src/org/chromium/content_public/browser/WebContentsObserver.java",
     "java/src/org/chromium/content_public/browser/WebContentsStatics.java",
     "java/src/org/chromium/content_public/common/ContentProcessInfo.java",
-    "java/src/org/chromium/content_public/common/ContentSwitches.java",
     "java/src/org/chromium/content_public/common/ContentUrlConstants.java",
     "java/src/org/chromium/content_public/common/Referrer.java",
     "java/src/org/chromium/content_public/common/ResourceRequestBody.java",
@@ -366,6 +366,13 @@ java_cpp_enum("content_public_android_java_enums_srcjar") {
     "//content/public/common/console_message_level.h",
     "//content/public/common/screen_orientation_values.h",
   ]
+}
+
+java_cpp_strings("content_public_android_java_switches_srcjar") {
+  sources = [
+    "//content/public/common/content_switches.cc",
+  ]
+  template = "//content/common/android/java_templates/ContentSwitches.java.tmpl"
 }
 
 generate_jar_jni("jar_jni") {

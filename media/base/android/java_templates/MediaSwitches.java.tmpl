@@ -7,7 +7,7 @@ package org.chromium.media;
 /**
  * Contains command line switches that are specific to the media layer.
  */
-public abstract class MediaSwitches {
+public abstract class MediaSwitches {{
     // Set the autoplay policy to ignore user gesture requirements
     public static final String AUTOPLAY_NO_GESTURE_REQUIRED_POLICY =
             "autoplay-policy=no-user-gesture-required";
@@ -15,6 +15,8 @@ public abstract class MediaSwitches {
     // TODO(819383): Remove this and its usage.
     public static final String USE_MODERN_MEDIA_CONTROLS = "UseModernMediaControls";
 
+{NATIVE_STRINGS}
+
     // Prevents instantiation.
-    private MediaSwitches() {}
-}
+    private MediaSwitches() {{}}
+}}

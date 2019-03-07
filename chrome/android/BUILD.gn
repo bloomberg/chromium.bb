@@ -355,6 +355,7 @@ android_library("chrome_java") {
 
   srcjar_deps = [
     ":chrome_android_java_enums_srcjar",
+    ":chrome_android_java_switches_srcjar",
     ":chrome_android_java_google_api_keys_srcjar",
     ":photo_picker_aidl",
     ":resource_id_javagen",
@@ -494,6 +495,13 @@ java_cpp_enum("chrome_vr_android_java_enums_srcjar") {
     "//chrome/browser/vr/ui_test_input.h",
     "//chrome/browser/vr/ui_unsupported_mode.h",
   ]
+}
+
+java_cpp_strings("chrome_android_java_switches_srcjar") {
+  sources = [
+    "//chrome/common/chrome_switches.cc",
+  ]
+  template = "//chrome/android/java_templates/ChromeSwitches.java.tmpl"
 }
 
 proto_java_library("document_tab_model_info_proto_java") {
@@ -718,6 +726,7 @@ android_library("chrome_test_java") {
     "//components/web_restrictions:provider_java",
     "//content/public/android:content_java",
     "//content/public/test/android:content_java_test_support",
+    "//media/base/android:java_switches",
     "//media/base/android:media_java",
     "//mojo/public/java:bindings_java",
     "//mojo/public/java:system_java",
