@@ -7,11 +7,19 @@
 
 #include "base/files/file_path.h"
 
+namespace content {
+class BrowserContext;
+}
+
+class DownloadOfflineContentProvider;
+
 // Native side of DownloadUtils.java.
 class DownloadUtils {
  public:
   static base::FilePath GetUriStringForPath(const base::FilePath& file_path);
   static int GetAutoResumptionSizeLimit();
+  static DownloadOfflineContentProvider* GetDownloadOfflineContentProvider(
+      content::BrowserContext* browser_context);
 };
 
 #endif  // CHROME_BROWSER_ANDROID_DOWNLOAD_DOWNLOAD_UTILS_H_

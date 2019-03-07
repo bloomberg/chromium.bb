@@ -8,21 +8,30 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/android/chrome_feature_list.h"
+#include "chrome/browser/download/download_offline_content_provider.h"
 #include "chrome/browser/download/offline_item_utils.h"
+#include "chrome/browser/offline_items_collection/offline_content_aggregator_factory.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/download/public/common/download_utils.h"
+#include "components/offline_items_collection/core/offline_content_aggregator.h"
+#include "content/public/browser/browser_context.h"
 #include "jni/DownloadUtils_jni.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using base::android::ConvertUTF16ToJavaString;
 using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
+using OfflineContentAggregator =
+    offline_items_collection::OfflineContentAggregator;
 
 namespace {
 // If received bytes is more than the size limit and resumption will restart
 // from the beginning, throttle it.
 int kDefaultAutoResumptionSizeLimit = 10 * 1024 * 1024;  // 10 MB
 const char kAutoResumptionSizeLimitParamName[] = "AutoResumptionSizeLimit";
+
+static DownloadOfflineContentProvider* g_download_provider = nullptr;
+static DownloadOfflineContentProvider* g_download_provider_incognito = nullptr;
 
 }  // namespace
 
@@ -67,4 +76,31 @@ int DownloadUtils::GetAutoResumptionSizeLimit() {
   return base::StringToInt(value, &size_limit)
              ? size_limit
              : kDefaultAutoResumptionSizeLimit;
+}
+
+// static
+DownloadOfflineContentProvider*
+DownloadUtils::GetDownloadOfflineContentProvider(
+    content::BrowserContext* browser_context) {
+  OfflineContentAggregator* aggregator =
+      OfflineContentAggregatorFactory::GetForBrowserContext(browser_context);
+  bool is_off_the_record =
+      browser_context ? browser_context->IsOffTheRecord() : false;
+
+  if (!g_download_provider) {
+    std::string name_space = OfflineContentAggregator::CreateUniqueNameSpace(
+        OfflineItemUtils::GetDownloadNamespacePrefix(false), false);
+    g_download_provider =
+        new DownloadOfflineContentProvider(aggregator, name_space);
+  }
+
+  if (!g_download_provider_incognito) {
+    std::string name_space = OfflineContentAggregator::CreateUniqueNameSpace(
+        OfflineItemUtils::GetDownloadNamespacePrefix(true), true);
+    g_download_provider_incognito =
+        new DownloadOfflineContentProvider(aggregator, name_space);
+  }
+
+  return is_off_the_record ? g_download_provider_incognito
+                           : g_download_provider;
 }

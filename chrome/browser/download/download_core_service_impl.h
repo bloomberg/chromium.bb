@@ -55,6 +55,8 @@ class DownloadCoreServiceImpl : public DownloadCoreService {
   void Shutdown() override;
 
  private:
+  DownloadOfflineContentProvider* CreateDownloadOfflineContentProvider();
+
   bool download_manager_created_;
   Profile* profile_;
 
