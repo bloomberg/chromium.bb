@@ -473,6 +473,7 @@ void SiteSettingsHandler::OnGetUsageInfo() {
   // Site Details Page does not display the number of cookies for the origin.
   const CookieTreeNode* root = cookies_tree_model_->GetRoot();
   std::string usage_string = "";
+  std::string cookie_string = "";
   for (int i = 0; i < root->child_count(); ++i) {
     const CookieTreeNode* site = root->GetChild(i);
     std::string title = base::UTF16ToUTF8(site->GetTitle());
@@ -481,10 +482,16 @@ void SiteSettingsHandler::OnGetUsageInfo() {
     int64_t size = site->InclusiveSize();
     if (size != 0)
       usage_string = base::UTF16ToUTF8(ui::FormatBytes(size));
+    int num_cookies = site->NumberOfCookies();
+    if (num_cookies != 0) {
+      cookie_string = base::UTF16ToUTF8(l10n_util::GetPluralStringFUTF16(
+          IDS_SETTINGS_SITE_SETTINGS_NUM_COOKIES, num_cookies));
+    }
     break;
   }
   CallJavascriptFunction("settings.WebsiteUsagePrivateApi.returnUsageTotal",
-                         base::Value(usage_host_), base::Value(usage_string));
+                         base::Value(usage_host_), base::Value(usage_string),
+                         base::Value(cookie_string));
 }
 
 #if defined(OS_CHROMEOS)
@@ -586,7 +593,7 @@ void SiteSettingsHandler::HandleFetchUsageTotal(
     cookies_tree_model_->RemoveCookiesTreeObserver(this);
     cookies_tree_model_.reset();
   }
-  EnsureCookiesTreeModelCreated(/*omit_cookies=*/true);
+  EnsureCookiesTreeModelCreated();
 }
 
 void SiteSettingsHandler::HandleClearUsage(
@@ -783,12 +790,12 @@ base::Value SiteSettingsHandler::PopulateCookiesAndUsageData(Profile* profile) {
         origin_info.SetKey("usage", base::Value(size_info_it->second));
       const auto& origin_cookie_num_it =
           origin_cookie_map.find(GURL(origin).host());
-      // Add cookies numbers for origins that isn't an eTLD+1.
-      if (GURL(origin).host() != etld_plus1 &&
-          origin_cookie_num_it != origin_cookie_map.end()) {
+      if (origin_cookie_num_it != origin_cookie_map.end()) {
         origin_info.SetKey(kNumCookies,
                            base::Value(origin_cookie_num_it->second));
-        cookie_num += origin_cookie_num_it->second;
+        // Add cookies numbers for origins that isn't an eTLD+1.
+        if (GURL(origin).host() != etld_plus1)
+          cookie_num += origin_cookie_num_it->second;
       }
     }
     site_group.SetKey(kNumCookies, base::Value(cookie_num));
@@ -1348,11 +1355,10 @@ void SiteSettingsHandler::HandleSetBlockAutoplayEnabled(
   profile_->GetPrefs()->SetBoolean(prefs::kBlockAutoplayEnabled, value);
 }
 
-void SiteSettingsHandler::EnsureCookiesTreeModelCreated(bool omit_cookies) {
+void SiteSettingsHandler::EnsureCookiesTreeModelCreated() {
   if (cookies_tree_model_)
     return;
-  cookies_tree_model_ =
-      CookiesTreeModel::CreateForProfile(profile_, omit_cookies);
+  cookies_tree_model_ = CookiesTreeModel::CreateForProfile(profile_);
   cookies_tree_model_->AddCookiesTreeObserver(this);
 }
 

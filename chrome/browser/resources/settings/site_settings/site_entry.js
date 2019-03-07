@@ -115,8 +115,12 @@ Polymer({
    * @private
    */
   grouped_: function(siteGroup) {
-    if (siteGroup) {
-      return siteGroup.origins.length != 1;
+    if (!siteGroup) {
+      return false;
+    }
+    if (siteGroup.origins.length > 1 ||
+        siteGroup.numCookies > siteGroup.origins[0].numCookies) {
+      return true;
     }
     return false;
   },

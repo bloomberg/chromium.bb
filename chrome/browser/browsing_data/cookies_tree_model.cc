@@ -1957,16 +1957,14 @@ void CookiesTreeModel::MaybeNotifyBatchesEnded() {
 }
 // static
 std::unique_ptr<CookiesTreeModel> CookiesTreeModel::CreateForProfile(
-    Profile* profile,
-    bool omit_cookies) {
+    Profile* profile) {
   auto* storage_partition =
       content::BrowserContext::GetDefaultStoragePartition(profile);
   auto* file_system_context = storage_partition->GetFileSystemContext();
-  auto* cookie_helper =
-      omit_cookies ? nullptr : new BrowsingDataCookieHelper(storage_partition);
 
   auto container = std::make_unique<LocalDataContainer>(
-      cookie_helper, new BrowsingDataDatabaseHelper(profile),
+      new BrowsingDataCookieHelper(storage_partition),
+      new BrowsingDataDatabaseHelper(profile),
       new BrowsingDataLocalStorageHelper(profile),
       /*session_storage_helper=*/nullptr,
       new BrowsingDataAppCacheHelper(profile),

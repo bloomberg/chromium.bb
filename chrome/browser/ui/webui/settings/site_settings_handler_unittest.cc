@@ -778,7 +778,7 @@ TEST_F(SiteSettingsHandlerTest, OnStorageFetched) {
             origin_info->FindKey("origin")->GetString());
   EXPECT_EQ(0, origin_info->FindKey("engagement")->GetDouble());
   EXPECT_EQ(0, origin_info->FindKey("usage")->GetDouble());
-  EXPECT_EQ(0, origin_info->FindKey("numCookies")->GetDouble());
+  EXPECT_EQ(1, origin_info->FindKey("numCookies")->GetDouble());
 }
 
 TEST_F(SiteSettingsHandlerTest, Origins) {

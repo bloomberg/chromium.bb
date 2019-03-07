@@ -27,6 +27,9 @@
         padding-inline-end: 0;
       }
 
+      #storageText {
+        display: flex;
+      }
       /* When 'Usage' is omitted, subheadings are removed. Reduce the start
        * padding allowed for lists without headings and add back vertical space
        * that would normally be provided by the subheading. */
@@ -81,12 +84,19 @@
         </div>
         <div class="list-frame">
           <div class="list-item" id="noStorage"
-              hidden$="[[hasUsage_(storedData_)]]">
+              hidden$="[[hasUsage_(storedData_, numCookies_)]]">
             <div class="start">$i18n{siteSettingsUsageNone}</div>
           </div>
-          <div class="list-item" id="storage" hidden$="[[!storedData_]]">
-            <div class="start">[[storedData_]]</div>
-            <paper-button class="secondary-button" id="clearStorage" 
+          <div class="list-item" id="storage"
+              hidden$="[[!hasUsage_(storedData_, numCookies_)]]">
+            <div class="start" id="storageText">
+              <div hidden$="[[!storedData_]]">[[storedData_]]</div>
+              <div hidden$="[[!hasDataAndCookies_(storedData_, numCookies_)]]">
+                &nbsp;&middot;&nbsp;
+              </div>
+              <div hidden$="[[!numCookies_]]">[[numCookies_]]</div>
+            </div>
+            <paper-button class="secondary-button" id="clearStorage"
                 role="button" aria-disabled="false"
                 on-click="onConfirmClearStorage_"
                 aria-label="$i18n{siteSettingsDelete}">
@@ -207,7 +217,8 @@
       </div>
     </template>
     <website-usage-private-api id="usageApi"
-        website-data-usage="{{storedData_}}">
+        website-data-usage="{{storedData_}}"
+        website-cookie-usage="{{numCookies_}}">
     </website-usage-private-api>
   </template>
   <script src="site_details.js"></script>

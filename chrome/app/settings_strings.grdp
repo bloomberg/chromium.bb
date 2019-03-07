@@ -3207,11 +3207,11 @@
   <message name="IDS_SETTINGS_SITE_SETTINGS_SITE_RESET_CONFIRMATION" desc="Text for the dialog that warns about resetting all permissions for a site.">
     Reset site permissions for <ph name="SITE">$1<ex>www.example.com</ex></ph>?
   </message>
-  <message name="IDS_SETTINGS_SITE_SETTINGS_SITE_CLEAR_STORAGE_DIALOG_TITLE" desc="Title of the dialog that warns about clearing storage used by a site (excluding cookies).">
+  <message name="IDS_SETTINGS_SITE_SETTINGS_SITE_CLEAR_STORAGE_DIALOG_TITLE" desc="Title of the dialog that warns about clearing storage used by a site.">
     Clear site data?
   </message>
-  <message name="IDS_SETTINGS_SITE_SETTINGS_SITE_CLEAR_STORAGE_CONFIRMATION" desc="Text for the dialog that warns about clearing storage used by a site (excluding cookies).">
-    All data stored by <ph name="SITE">$1<ex>www.example.com</ex></ph> will be deleted, except for cookies.
+  <message name="IDS_SETTINGS_SITE_SETTINGS_SITE_CLEAR_STORAGE_CONFIRMATION" desc="Text for the dialog that warns about clearing storage used by a site.">
+    All data stored by <ph name="SITE">$1<ex>www.example.com</ex></ph> will be deleted.
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_SITE_GROUP_RESET_DIALOG_TITLE" desc="Title of the dialog that warns about resetting all permissions for a group of sites.">
     Reset site permissions?

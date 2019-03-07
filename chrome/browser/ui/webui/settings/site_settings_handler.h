@@ -123,7 +123,7 @@ class SiteSettingsHandler : public SettingsPageUIHandler,
                            HandleClearEtldPlus1DataAndCookies);
 
   // Creates the CookiesTreeModel if necessary.
-  void EnsureCookiesTreeModelCreated(bool omit_cookies = false);
+  void EnsureCookiesTreeModelCreated();
 
   // Add or remove this class as an observer for content settings and chooser
   // contexts corresponding to |profile|.
