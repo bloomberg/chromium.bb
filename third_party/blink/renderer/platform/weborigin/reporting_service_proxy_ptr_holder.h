@@ -9,10 +9,13 @@
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
 class ReportingServiceProxyPtrHolder {
+  USING_FAST_MALLOC(ReportingServiceProxyPtrHolder);
+
  public:
   ReportingServiceProxyPtrHolder() {
     Platform::Current()->GetInterfaceProvider()->GetInterface(
