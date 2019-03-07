@@ -780,6 +780,24 @@ void StreamMixer::RemoveAudioOutputRedirectorOnThread(
   audio_output_redirectors_.erase(redirector);
 }
 
+void StreamMixer::ModifyAudioOutputRedirection(
+    AudioOutputRedirector* redirector,
+    std::vector<std::pair<AudioContentType, std::string>>
+        stream_match_patterns) {
+  POST_THROUGH_INPUT_THREAD(&StreamMixer::ModifyAudioOutputRedirectionOnThread,
+                            redirector, std::move(stream_match_patterns));
+}
+
+void StreamMixer::ModifyAudioOutputRedirectionOnThread(
+    AudioOutputRedirector* redirector,
+    std::vector<std::pair<AudioContentType, std::string>>
+        stream_match_patterns) {
+  auto it = audio_output_redirectors_.find(redirector);
+  if (it != audio_output_redirectors_.end()) {
+    it->second->UpdatePatterns(std::move(stream_match_patterns));
+  }
+}
+
 void StreamMixer::PostLoopbackData(int64_t expected_playback_time,
                                    SampleFormat format,
                                    int sample_rate,

@@ -9,6 +9,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/containers/flat_map.h"
@@ -100,6 +101,10 @@ class StreamMixer {
   void AddAudioOutputRedirector(
       std::unique_ptr<AudioOutputRedirector> redirector);
   void RemoveAudioOutputRedirector(AudioOutputRedirector* redirector);
+  void ModifyAudioOutputRedirection(
+      AudioOutputRedirector* redirector,
+      std::vector<std::pair<AudioContentType, std::string>>
+          stream_match_patterns);
 
   // Sets the volume multiplier for the given content |type|.
   void SetVolume(AudioContentType type, float level);
@@ -194,6 +199,10 @@ class StreamMixer {
   void AddAudioOutputRedirectorOnThread(
       std::unique_ptr<AudioOutputRedirector> redirector);
   void RemoveAudioOutputRedirectorOnThread(AudioOutputRedirector* redirector);
+  void ModifyAudioOutputRedirectionOnThread(
+      AudioOutputRedirector* redirector,
+      std::vector<std::pair<AudioContentType, std::string>>
+          stream_match_patterns);
 
   void PostLoopbackData(int64_t expected_playback_time,
                         SampleFormat sample_format,

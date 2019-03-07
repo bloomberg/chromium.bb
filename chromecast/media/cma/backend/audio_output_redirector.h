@@ -8,6 +8,7 @@
 #include <cstdint>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/containers/flat_map.h"
@@ -60,6 +61,12 @@ class AudioOutputRedirector : public AudioOutputRedirectorToken {
   void AddInput(MixerInput* mixer_input);
   void RemoveInput(MixerInput* mixer_input);
 
+  // Updates the set of patterns used to determine which inputs should be
+  // redirected by this AudioOutputRedirector. Any inputs which no longer match
+  // will stop being redirected.
+  void UpdatePatterns(
+      std::vector<std::pair<AudioContentType, std::string>> patterns);
+
   // Indicates that mixer output is starting at the given sample rate of
   // |output_samples_per_second|.
   void Start(int output_samples_per_second);
@@ -88,7 +95,7 @@ class AudioOutputRedirector : public AudioOutputRedirectorToken {
 
   bool ApplyToInput(MixerInput* mixer_input);
 
-  const AudioOutputRedirectionConfig config_;
+  AudioOutputRedirectionConfig config_;
   const std::unique_ptr<RedirectedAudioOutput> output_;
 
   int next_num_frames_ = 0;
@@ -99,6 +106,7 @@ class AudioOutputRedirector : public AudioOutputRedirectorToken {
   std::vector<float*> channel_data_;
 
   base::flat_map<MixerInput*, std::unique_ptr<InputImpl>> inputs_;
+  base::flat_set<MixerInput*> non_redirected_inputs_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioOutputRedirector);
 };
