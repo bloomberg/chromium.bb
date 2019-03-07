@@ -113,6 +113,7 @@
 #include "chromeos/services/multidevice_setup/public/cpp/prefs.h"
 #include "components/arc/arc_util.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/chromeos/resources/grit/ui_chromeos_resources.h"
 #else  // !defined(OS_CHROMEOS)
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/ui/webui/settings/settings_default_browser_handler.h"
@@ -312,9 +313,15 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
   html_source->AddBoolean(
       "quickUnlockDisabledByPolicy",
       chromeos::quick_unlock::IsPinDisabledByPolicy(profile->GetPrefs()));
-  html_source->AddBoolean(
-      "fingerprintUnlockEnabled",
-      chromeos::quick_unlock::IsFingerprintEnabled(profile));
+  const bool fingerprint_unlock_enabled =
+      chromeos::quick_unlock::IsFingerprintEnabled(profile);
+  html_source->AddBoolean("fingerprintUnlockEnabled",
+                          fingerprint_unlock_enabled);
+  if (fingerprint_unlock_enabled) {
+    html_source->AddBoolean(
+        "isFingerprintReaderOnKeyboard",
+        chromeos::quick_unlock::IsFingerprintReaderOnKeyboard());
+  }
   html_source->AddBoolean("lockScreenNotificationsEnabled",
                           ash::features::IsLockScreenNotificationsEnabled());
   html_source->AddBoolean(

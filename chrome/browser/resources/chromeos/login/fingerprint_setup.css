@@ -3,7 +3,7 @@
  * found in the LICENSE file. */
 
 [slot='subtitle'] {
-  color: #5F6368;
+  color: rgb(95, 99, 104);
   font-weight: 400; /* roboto-regular */
 }
 
@@ -27,7 +27,7 @@
 
 #sensorLocation {
   background-image:
-      url(chrome://theme/IDR_LOGIN_FINGERPRINT_SCANNER_ANIMATION);
+      url(chrome://oobe/fingerprint_scanner_animation.png);
   background-size: 352px 242px;
   height: 242px;
   width: 352px;

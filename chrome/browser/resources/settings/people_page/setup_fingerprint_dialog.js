@@ -300,5 +300,17 @@ Polymer({
 
     this.$.arc.setProgress(oldValue, newValue, newValue === 100);
   },
+
+  /**
+   * Returns the class name for fingerprint scanner animation.
+   * @private
+   */
+  getFingerprintScannerAnimationClass_: function() {
+    if (loadTimeData.getBoolean('fingerprintUnlockEnabled') &&
+        loadTimeData.getBoolean('isFingerprintReaderOnKeyboard')) {
+      return 'fingerprint-scanner-laptop';
+    }
+    return 'fingerprint-scanner-tablet';
+  },
 });
 })();
