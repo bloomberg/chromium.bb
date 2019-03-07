@@ -151,10 +151,9 @@ void OutputJSONFromArgumentValue(
 }  // namespace
 
 ChromeEventBundleJsonExporter::ChromeEventBundleJsonExporter(
-    JSONTraceExporter::ArgumentFilterPredicate argument_filter_predicate,
+    bool filter_args,
     JSONTraceExporter::OnTraceEventJSONCallback callback)
-    : JSONTraceExporter(std::move(argument_filter_predicate),
-                        std::move(callback)) {}
+    : JSONTraceExporter(filter_args, std::move(callback)) {}
 
 void ChromeEventBundleJsonExporter::ProcessPackets(
     const std::vector<perfetto::TracePacket>& packets) {

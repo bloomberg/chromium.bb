@@ -37,7 +37,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/crash_keys.h"
 #include "chrome/common/logging_chrome.h"
-#include "chrome/common/trace_event_args_whitelist.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/gpu/chrome_content_gpu_client.h"
 #include "chrome/renderer/chrome_content_renderer_client.h"
@@ -597,9 +596,6 @@ bool ChromeMainDelegate::BasicStartupComplete(int* exit_code) {
 #endif
 
   content::Profiling::ProcessStarted();
-
-  base::trace_event::TraceLog::GetInstance()->SetArgumentFilterPredicate(
-      base::Bind(&IsTraceEventArgsWhitelisted));
 
   // Setup tracing sampler profiler as early as possible at startup if needed.
   tracing_sampler_profiler_ =

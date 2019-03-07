@@ -171,6 +171,10 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
       const ArgumentFilterPredicate& argument_filter_predicate);
   ArgumentFilterPredicate GetArgumentFilterPredicate() const;
 
+  void SetMetadataFilterPredicate(
+      const MetadataFilterPredicate& metadata_filter_predicate);
+  MetadataFilterPredicate GetMetadataFilterPredicate() const;
+
   // Flush all collected events to the given output callback. The callback will
   // be called one or more times either synchronously or asynchronously from
   // the current thread with IPC-bite-size chunks. The string format is
@@ -527,6 +531,7 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
   OutputCallback flush_output_callback_;
   scoped_refptr<SequencedTaskRunner> flush_task_runner_;
   ArgumentFilterPredicate argument_filter_predicate_;
+  MetadataFilterPredicate metadata_filter_predicate_;
   subtle::AtomicWord generation_;
   bool use_worker_thread_;
   std::atomic<AddTraceEventOverrideCallback> add_trace_event_override_;

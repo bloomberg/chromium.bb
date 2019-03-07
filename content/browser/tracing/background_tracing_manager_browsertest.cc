@@ -400,30 +400,11 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
   EXPECT_TRUE(trace_receiver_helper.trace_received());
 }
 
-namespace {
-
-bool IsTraceEventArgsWhitelisted(
-    const char* category_group_name,
-    const char* event_name,
-    base::trace_event::ArgumentNameFilterPredicate* arg_filter) {
-  if (base::MatchPattern(category_group_name, "benchmark") &&
-      base::MatchPattern(event_name, "whitelisted")) {
-    return true;
-  }
-
-  return false;
-}
-
-}  // namespace
-
 // This tests that non-whitelisted args get stripped if required.
 IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
-                       NoWhitelistedArgsStripped) {
+                       NotWhitelistedArgsStripped) {
   TestTraceReceiverHelper trace_receiver_helper;
   TestBackgroundTracingHelper background_tracing_helper;
-
-  TraceLog::GetInstance()->SetArgumentFilterPredicate(
-      base::Bind(&IsTraceEventArgsWhitelisted));
 
   std::unique_ptr<BackgroundTracingConfig> config = CreatePreemptiveConfig();
 
@@ -440,8 +421,8 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
   background_tracing_helper.WaitForTracingEnabled();
 
   {
-    TRACE_EVENT1("benchmark", "whitelisted", "find_this", 1);
-    TRACE_EVENT1("benchmark", "not_whitelisted", "this_not_found", 1);
+    TRACE_EVENT1("benchmark", "TestWhitelist", "test_whitelist", "abc");
+    TRACE_EVENT1("benchmark", "TestNotWhitelist", "test_not_whitelist", "abc");
   }
 
   TestTriggerHelper trigger_helper;
@@ -454,8 +435,9 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
 
   EXPECT_TRUE(trace_receiver_helper.trace_received());
   EXPECT_TRUE(trace_receiver_helper.TraceHasMatchingString("{"));
-  EXPECT_TRUE(trace_receiver_helper.TraceHasMatchingString("find_this"));
-  EXPECT_FALSE(trace_receiver_helper.TraceHasMatchingString("this_not_found"));
+  EXPECT_TRUE(trace_receiver_helper.TraceHasMatchingString("test_whitelist"));
+  EXPECT_FALSE(
+      trace_receiver_helper.TraceHasMatchingString("test_not_whitelist"));
 }
 
 // This tests that browser metadata gets included in the trace.
@@ -463,9 +445,6 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
                        TraceMetadataInTrace) {
   TestBackgroundTracingHelper background_tracing_helper;
   TestTraceReceiverHelper trace_receiver_helper;
-
-  TraceLog::GetInstance()->SetArgumentFilterPredicate(
-      base::BindRepeating(&IsTraceEventArgsWhitelisted));
 
   std::unique_ptr<BackgroundTracingConfig> config = CreatePreemptiveConfig();
 
@@ -505,9 +484,6 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
                        DISABLED_CrashWhenSubprocessWithoutArgumentFilter) {
   TestBackgroundTracingHelper background_tracing_helper;
   TestTraceReceiverHelper trace_receiver_helper;
-
-  TraceLog::GetInstance()->SetArgumentFilterPredicate(
-      base::Bind(&IsTraceEventArgsWhitelisted));
 
   std::unique_ptr<BackgroundTracingConfig> config = CreatePreemptiveConfig();
 
@@ -1494,8 +1470,6 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest, RunStartupTracing) {
   BackgroundStartupTracingObserver::GetInstance()
       ->SetPreferenceManagerForTesting(std::move(preferences_moved));
   preferences->SetBackgroundStartupTracingEnabled(true);
-  TraceLog::GetInstance()->SetArgumentFilterPredicate(
-      base::BindRepeating(&IsTraceEventArgsWhitelisted));
 
   base::DictionaryValue dict;
   std::unique_ptr<base::ListValue> rules_list(new base::ListValue());

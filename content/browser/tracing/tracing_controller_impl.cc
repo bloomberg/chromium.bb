@@ -306,10 +306,10 @@ TracingControllerImpl::GenerateMetadataDict() const {
   // TODO(crbug.com/737049): The central controller doesn't know about
   // metadata filters, so we temporarily filter here as the controller is
   // what assembles the full trace data.
-  MetadataFilterPredicate metadata_filter;
+  base::trace_event::MetadataFilterPredicate metadata_filter;
   if (trace_config_ && trace_config_->IsArgumentFilterEnabled()) {
-    if (delegate_)
-      metadata_filter = delegate_->GetMetadataFilterPredicate();
+    metadata_filter = base::trace_event::TraceLog::GetInstance()
+                          ->GetMetadataFilterPredicate();
   }
 
   if (!metadata_filter.is_null()) {
@@ -480,10 +480,10 @@ void TracingControllerImpl::OnDataComplete() {
 void TracingControllerImpl::OnMetadataAvailable(base::Value metadata) {
   DCHECK(!filtered_metadata_);
   is_metadata_available_ = true;
-  MetadataFilterPredicate metadata_filter;
+  base::trace_event::MetadataFilterPredicate metadata_filter;
   if (trace_config_->IsArgumentFilterEnabled()) {
-    if (delegate_)
-      metadata_filter = delegate_->GetMetadataFilterPredicate();
+    metadata_filter = base::trace_event::TraceLog::GetInstance()
+                          ->GetMetadataFilterPredicate();
   }
   if (metadata_filter.is_null()) {
     filtered_metadata_ = base::DictionaryValue::From(

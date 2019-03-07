@@ -189,8 +189,6 @@ static_library("common") {
     "stack_sampling_configuration.h",
     "thread_profiler.cc",
     "thread_profiler.h",
-    "trace_event_args_whitelist.cc",
-    "trace_event_args_whitelist.h",
     "tts_messages.h",
     "tts_utterance_request.cc",
     "tts_utterance_request.h",

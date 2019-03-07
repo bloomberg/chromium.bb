@@ -11,6 +11,7 @@
 #include "base/json/json_writer.h"
 #include "base/json/string_escape.h"
 #include "base/trace_event/trace_event.h"
+#include "services/tracing/public/cpp/trace_event_args_whitelist.h"
 #include "third_party/perfetto/include/perfetto/tracing/core/trace_packet.h"
 #include "third_party/perfetto/protos/perfetto/trace/chrome/chrome_trace_event.pbzero.h"
 #include "third_party/perfetto/protos/perfetto/trace/chrome/chrome_trace_packet.pb.h"
@@ -23,12 +24,11 @@ constexpr size_t kTraceEventBufferSizeInBytes = 100 * 1024;
 
 }  // namespace
 
-JSONTraceExporter::JSONTraceExporter(
-    ArgumentFilterPredicate argument_filter_predicate,
-    OnTraceEventJSONCallback callback)
+JSONTraceExporter::JSONTraceExporter(bool filter_args,
+                                     OnTraceEventJSONCallback callback)
     : out_(callback),
       metadata_(std::make_unique<base::DictionaryValue>()),
-      argument_filter_predicate_(std::move(argument_filter_predicate)) {}
+      filter_args_(filter_args) {}
 
 JSONTraceExporter::~JSONTraceExporter() = default;
 
@@ -194,8 +194,8 @@ JSONTraceExporter::AddTraceEvent(const char* name,
                                  int32_t tid) {
   DCHECK(ShouldOutputTraceEvents());
   return JSONTraceExporter::ScopedJSONTraceEventAppender(
-      AddJSONTraceEvent(), argument_filter_predicate_, name, categories, phase,
-      timestamp, pid, tid);
+      AddJSONTraceEvent(), filter_args_, name, categories, phase, timestamp,
+      pid, tid);
 }
 
 JSONTraceExporter::StringBuffer* JSONTraceExporter::AddJSONTraceEvent() {
@@ -279,16 +279,14 @@ void JSONTraceExporter::StringBuffer::MaybeRunCallback() {
 }
 
 JSONTraceExporter::ArgumentBuilder::ArgumentBuilder(
-    const ArgumentFilterPredicate& argument_filter_predicate,
+    bool filter_args,
     const char* name,
     const char* category_group_name,
     StringBuffer* out)
     : out_(out) {
-  JSONTraceExporter::ArgumentNameFilterPredicate argument_name_filter_predicate;
-  strip_args_ =
-      !argument_filter_predicate.is_null() &&
-      !argument_filter_predicate.Run(category_group_name, name,
-                                     &argument_name_filter_predicate_);
+  strip_args_ = filter_args &&
+                !IsTraceEventArgsWhitelisted(category_group_name, name,
+                                             &argument_name_filter_predicate_);
   *out_ += ",\"args\":";
 }
 
@@ -343,7 +341,7 @@ bool JSONTraceExporter::ArgumentBuilder::SkipBecauseStripped(
 
 JSONTraceExporter::ScopedJSONTraceEventAppender::ScopedJSONTraceEventAppender(
     JSONTraceExporter::StringBuffer* out,
-    JSONTraceExporter::ArgumentFilterPredicate argument_filter_predicate,
+    bool filter_args,
     const char* name,
     const char* categories,
     int32_t phase,
@@ -355,7 +353,7 @@ JSONTraceExporter::ScopedJSONTraceEventAppender::ScopedJSONTraceEventAppender(
       out_(out),
       event_name_(name),
       category_group_name_(categories),
-      argument_filter_predicate_(std::move(argument_filter_predicate)) {
+      filter_args_(filter_args) {
   out_->AppendF("{\"pid\":%i,\"tid\":%i,\"ts\":%" PRId64
                 ",\"ph\":\"%c\",\"cat\":\"%s\",\"name\":",
                 pid, tid, timestamp, phase_, categories);
@@ -366,7 +364,7 @@ JSONTraceExporter::ScopedJSONTraceEventAppender::ScopedJSONTraceEventAppender(
     JSONTraceExporter::ScopedJSONTraceEventAppender&& move) {
   out_ = move.out_;
   phase_ = move.phase_;
-  argument_filter_predicate_ = std::move(move.argument_filter_predicate_);
+  filter_args_ = move.filter_args_;
   // We null out the string so that the destructor knows not to append the
   // closing brace for the json.
   move.out_ = nullptr;
@@ -477,7 +475,7 @@ std::unique_ptr<JSONTraceExporter::ArgumentBuilder>
 JSONTraceExporter::ScopedJSONTraceEventAppender::BuildArgs() {
   DCHECK(!added_args_);
   added_args_ = true;
-  return std::make_unique<ArgumentBuilder>(
-      argument_filter_predicate_, event_name_, category_group_name_, out_);
+  return std::make_unique<ArgumentBuilder>(filter_args_, event_name_,
+                                           category_group_name_, out_);
 }
 }  // namespace tracing

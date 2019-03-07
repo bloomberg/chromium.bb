@@ -215,6 +215,8 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   // as is the case by default in aw_tracing_controller.cc
   base::trace_event::TraceLog::GetInstance()->SetArgumentFilterPredicate(
       base::BindRepeating(&IsTraceEventArgsWhitelisted));
+  base::trace_event::TraceLog::GetInstance()->SetMetadataFilterPredicate(
+      base::BindRepeating(&IsTraceMetadataWhitelisted));
 
   // The TLS slot used by the memlog allocator shim needs to be initialized
   // early to ensure that it gets assigned a low slot number. If it gets
