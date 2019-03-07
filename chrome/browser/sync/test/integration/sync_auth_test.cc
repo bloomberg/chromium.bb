@@ -329,13 +329,13 @@ IN_PROC_BROWSER_TEST_F(SyncAuthTest, SyncPausedState) {
   // Enter the "Sync paused" state.
   GetClient(0)->EnterSyncPausedStateForPrimaryAccount();
   ASSERT_TRUE(GetSyncService(0)->GetAuthError().IsPersistentError());
+  ASSERT_TRUE(AttemptToTriggerAuthError());
 
-  // Sync should have shut itself down.
+  // While Sync itself is still considered active, the active data types should
+  // now be empty.
+  EXPECT_TRUE(GetSyncService(0)->IsSyncFeatureActive());
   EXPECT_EQ(GetSyncService(0)->GetTransportState(),
-            syncer::SyncService::TransportState::DISABLED);
-  EXPECT_TRUE(GetSyncService(0)->HasDisableReason(
-      syncer::SyncService::DISABLE_REASON_PAUSED));
-  EXPECT_TRUE(GetSyncService(0)->GetActiveDataTypes().Empty());
+            syncer::SyncService::TransportState::ACTIVE);
 
   // Clear the "Sync paused" state again.
   GetClient(0)->ExitSyncPausedStateForPrimaryAccount();
@@ -343,10 +343,8 @@ IN_PROC_BROWSER_TEST_F(SyncAuthTest, SyncPausedState) {
   // access token again, so wait for that to happen.
   NoAuthErrorChecker(GetSyncService(0)).Wait();
   ASSERT_FALSE(GetSyncService(0)->GetAuthError().IsPersistentError());
-  // Once the auth error is gone, wait for Sync to start up again.
-  GetClient(0)->AwaitSyncSetupCompletion();
 
-  // Now Sync should be active again.
+  // Now the active data types should be back.
   EXPECT_TRUE(GetSyncService(0)->IsSyncFeatureActive());
   EXPECT_EQ(GetSyncService(0)->GetTransportState(),
             syncer::SyncService::TransportState::ACTIVE);
