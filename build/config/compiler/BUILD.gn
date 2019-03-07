@@ -1590,7 +1590,6 @@ config("chromium_code") {
 
     # TODO(thakis): Enable this for more platforms, https://crbug.com/926235
     # Fuchsia: https://crbug.com/935588
-    # iOS: https://crbug.com/936211
     has_dchecks = is_debug || dcheck_always_on
     if (has_dchecks && !is_fuchsia) {
       cflags += [ "-Wextra-semi" ]
