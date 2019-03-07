@@ -64,14 +64,14 @@ void PlatformNotificationContextImpl::Initialize() {
     return;
   }
 
+  ukm_callback_ = base::BindRepeating(
+      &PlatformNotificationService::RecordNotificationUkmEvent,
+      base::Unretained(service), browser_context_);
+
   service->GetDisplayedNotifications(
       browser_context_,
       base::BindOnce(&PlatformNotificationContextImpl::DidGetNotifications,
                      this));
-
-  ukm_callback_ = base::BindRepeating(
-      &PlatformNotificationService::RecordNotificationUkmEvent,
-      base::Unretained(service), browser_context_);
 }
 
 void PlatformNotificationContextImpl::DidGetNotifications(
@@ -84,18 +84,42 @@ void PlatformNotificationContextImpl::DidGetNotifications(
   // because flakiness may cause a platform to inform Chrome of a notification
   // that has since been closed, or because the platform does not support
   // notifications that exceed the lifetime of the browser process.
-
-  // TODO(peter): Synchronizing the actual notifications will be done when the
-  // persistent notification ids are stable. For M44 we need to support the
-  // case where there may be no notifications after a Chrome restart.
-
-  if (supports_synchronization && displayed_notifications.empty()) {
-    prune_database_on_open_ = true;
+  if (supports_synchronization) {
+    LazyInitialize(
+        base::BindOnce(&PlatformNotificationContextImpl::DoSyncNotificationData,
+                       this, std::move(displayed_notifications)));
   }
 
   // |service_worker_context_| may be NULL in tests.
   if (service_worker_context_)
     service_worker_context_->AddObserver(this);
+}
+
+void PlatformNotificationContextImpl::DoSyncNotificationData(
+    std::set<std::string> displayed_notifications,
+    bool initialized) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  if (!initialized)
+    return;
+
+  // Iterate over all notifications and delete all expired ones. Passing |this|
+  // as Unretained is safe as this is synchronous.
+  NotificationDatabase::Status status =
+      database_->ForEachNotificationData(base::BindRepeating(
+          &PlatformNotificationContextImpl::DoHandleSyncNotification,
+          base::Unretained(this), displayed_notifications));
+
+  // Blow away the database if reading data failed due to corruption.
+  if (status == NotificationDatabase::STATUS_ERROR_CORRUPTED)
+    DestroyDatabase();
+}
+
+void PlatformNotificationContextImpl::DoHandleSyncNotification(
+    const std::set<std::string>& displayed_notifications,
+    const NotificationDatabaseData& data) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  if (!displayed_notifications.count(data.notification_id))
+    database_->DeleteNotificationData(data.notification_id, data.origin);
 }
 
 void PlatformNotificationContextImpl::Shutdown() {
@@ -547,18 +571,6 @@ void PlatformNotificationContextImpl::OpenDatabase(
 
   UMA_HISTOGRAM_ENUMERATION("Notifications.Database.OpenResult", status,
                             NotificationDatabase::STATUS_COUNT);
-
-  // TODO(peter): Do finer-grained synchronization here.
-  if (prune_database_on_open_) {
-    prune_database_on_open_ = false;
-    DestroyDatabase();
-
-    database_.reset(new NotificationDatabase(GetDatabasePath(), ukm_callback_));
-    status = database_->Open(/* create_if_missing= */ true);
-
-    // TODO(peter): Find the appropriate UMA to cover in regards to
-    // synchronizing notifications after the implementation is complete.
-  }
 
   // When the database could not be opened due to corruption, destroy it, blow
   // away the contents of the directory and try re-opening the database.

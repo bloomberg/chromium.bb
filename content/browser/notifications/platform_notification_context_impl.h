@@ -139,6 +139,17 @@ class CONTENT_EXPORT PlatformNotificationContextImpl
                                    ReadResourcesResultCallback callback,
                                    bool initialized);
 
+  // Synchronize displayed notifications. This removes all non-displayed
+  // notifications from the database.
+  void DoSyncNotificationData(std::set<std::string> displayed_notifications,
+                              bool initialized);
+
+  // Checks if the given notification is still valid, otherwise deletes it from
+  // the database.
+  void DoHandleSyncNotification(
+      const std::set<std::string>& displayed_notifications,
+      const NotificationDatabaseData& data);
+
   // Updates the database (and the result callback) based on
   // |displayed_notifications| if |supports_synchronization|.
   void SynchronizeDisplayedNotificationsForServiceWorkerRegistration(
@@ -207,9 +218,6 @@ class CONTENT_EXPORT PlatformNotificationContextImpl
   std::unique_ptr<NotificationDatabase> database_;
 
   NotificationIdGenerator notification_id_generator_;
-
-  // Indicates whether the database should be pruned when it's opened.
-  bool prune_database_on_open_ = false;
 
   // The notification services are owned by the platform context, and will be
   // removed when either this class is destroyed or the Mojo pipe disconnects.
