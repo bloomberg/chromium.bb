@@ -197,3 +197,10 @@ able to look at its content (with `unzip -l`), or install it manually with:
       --apks=/tmp/BundleFoo.apks \
       --adb=$(which adb)
 ```
+
+The task of examining the manifest is simplified by running the following,
+which dumps the application manifest as XML to stdout:
+
+```sh
+  build/android/gyp/bundletool.py dump-manifest
+```

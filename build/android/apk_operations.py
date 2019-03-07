@@ -1471,6 +1471,17 @@ class _BuildBundleApks(_Command):
         mode=self.args.build_mode)
 
 
+class _ManifestCommand(_Command):
+  name = 'dump-manifest'
+  description = 'Dump the android manifest from this bundle, as XML, to stdout.'
+  need_device_args = False
+
+  def Run(self):
+    bundletool.RunBundleTool([
+        'dump', 'manifest', '--bundle', self.bundle_generation_info.bundle_path
+    ])
+
+
 # Shared commands for regular APKs and app bundles.
 _COMMANDS = [
     _DevicesCommand,
@@ -1494,6 +1505,7 @@ _COMMANDS = [
 # Commands specific to app bundles.
 _BUNDLE_COMMANDS = [
     _BuildBundleApks,
+    _ManifestCommand,
 ]
 
 
