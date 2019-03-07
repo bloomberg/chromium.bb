@@ -105,10 +105,6 @@ struct FrameMsg_TextTrackSettings_Params;
 struct FrameHostMsg_ShowPopup_Params;
 #endif
 
-namespace base {
-class ListValue;
-}
-
 namespace blink {
 class AssociatedInterfaceProvider;
 class AssociatedInterfaceRegistry;
@@ -1046,7 +1042,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnSwapOutACK();
   void OnRenderProcessGone(int status, int error_code);
   void OnContextMenu(const ContextMenuParams& params);
-  void OnJavaScriptExecuteResponse(int id, const base::ListValue& result);
   void OnVisualStateResponse(uint64_t id);
   void OnRunJavaScriptDialog(const base::string16& message,
                              const base::string16& default_prompt,
@@ -1149,6 +1144,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
           validated_params,
       mojom::DidCommitProvisionalLoadInterfaceParamsPtr interface_params)
       override;
+  void JavaScriptExecuteResponse(int id, base::Value result) override;
 
   // This function mimics DidCommitProvisionalLoad but is a direct mojo
   // callback from NavigationClient::CommitNavigation.

@@ -870,36 +870,6 @@ IPC_MESSAGE_ROUTED2(FrameMsg_AddMessageToConsole,
                     content::ConsoleMessageLevel /* level */,
                     std::string /* message */)
 
-// Request for the renderer to execute JavaScript in the frame's context.
-//
-// javascript is the string containing the JavaScript to be executed in the
-// target frame's context.
-//
-// If the third parameter is true the result is sent back to the browser using
-// the message FrameHostMsg_JavaScriptExecuteResponse.
-// FrameHostMsg_JavaScriptExecuteResponse is passed the ID parameter so that the
-// host can uniquely identify the request.
-IPC_MESSAGE_ROUTED3(FrameMsg_JavaScriptExecuteRequest,
-                    base::string16,  /* javascript */
-                    int,  /* ID */
-                    bool  /* if true, a reply is requested */)
-
-// ONLY FOR TESTS: Same as above but adds a fake UserGestureindicator around
-// execution. (crbug.com/408426)
-IPC_MESSAGE_ROUTED4(FrameMsg_JavaScriptExecuteRequestForTests,
-                    base::string16,  /* javascript */
-                    int,  /* ID */
-                    bool, /* if true, a reply is requested */
-                    bool  /* if true, a user gesture indicator is created */)
-
-// Same as FrameMsg_JavaScriptExecuteRequest above except the script is
-// run in the isolated world specified by the fourth parameter.
-IPC_MESSAGE_ROUTED4(FrameMsg_JavaScriptExecuteRequestInIsolatedWorld,
-                    base::string16, /* javascript */
-                    int, /* ID */
-                    bool, /* if true, a reply is requested */
-                    int /* world_id */)
-
 // Tells the renderer to reload the frame, optionally bypassing the cache while
 // doing so.
 IPC_MESSAGE_ROUTED1(FrameMsg_Reload,
@@ -1510,15 +1480,6 @@ IPC_MESSAGE_ROUTED3(FrameHostMsg_SelectionChanged,
                     base::string16 /* text covers the selection range */,
                     uint32_t /* the offset of the text in the document */,
                     gfx::Range /* selection range in the document */)
-
-// Response for FrameMsg_JavaScriptExecuteRequest, sent when a reply was
-// requested. The ID is the parameter supplied to
-// FrameMsg_JavaScriptExecuteRequest. The result has the value returned by the
-// script as its only element, one of Null, Boolean, Integer, Real, Date, or
-// String.
-IPC_MESSAGE_ROUTED2(FrameHostMsg_JavaScriptExecuteResponse,
-                    int  /* id */,
-                    base::ListValue  /* result */)
 
 // A request to run a JavaScript dialog.
 IPC_SYNC_MESSAGE_ROUTED3_2(FrameHostMsg_RunJavaScriptDialog,

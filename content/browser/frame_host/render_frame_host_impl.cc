@@ -1197,51 +1197,50 @@ void RenderFrameHostImpl::AddMessageToConsole(ConsoleMessageLevel level,
 
 void RenderFrameHostImpl::ExecuteJavaScript(
     const base::string16& javascript) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   CHECK(CanExecuteJavaScript());
-  Send(new FrameMsg_JavaScriptExecuteRequest(routing_id_,
-                                             javascript,
-                                             0, false));
+  GetNavigationControl()->JavaScriptExecuteRequest(javascript, 0, false);
 }
 
 void RenderFrameHostImpl::ExecuteJavaScript(
      const base::string16& javascript,
      const JavaScriptResultCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   CHECK(CanExecuteJavaScript());
   int key = g_next_javascript_callback_id++;
-  Send(new FrameMsg_JavaScriptExecuteRequest(routing_id_,
-                                             javascript,
-                                             key, true));
+  GetNavigationControl()->JavaScriptExecuteRequest(javascript, key, true);
   javascript_callbacks_.emplace(key, callback);
 }
 
 void RenderFrameHostImpl::ExecuteJavaScriptForTests(
     const base::string16& javascript) {
-  Send(new FrameMsg_JavaScriptExecuteRequestForTests(routing_id_,
-                                                     javascript,
-                                                     0, false, false));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  GetNavigationControl()->JavaScriptExecuteRequestForTests(javascript, 0, false,
+                                                           false);
 }
 
 void RenderFrameHostImpl::ExecuteJavaScriptForTests(
-     const base::string16& javascript,
-     const JavaScriptResultCallback& callback) {
+    const base::string16& javascript,
+    const JavaScriptResultCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   int key = g_next_javascript_callback_id++;
-  Send(new FrameMsg_JavaScriptExecuteRequestForTests(routing_id_, javascript,
-                                                     key, true, false));
+  GetNavigationControl()->JavaScriptExecuteRequestForTests(javascript, key,
+                                                           true, false);
   javascript_callbacks_.emplace(key, callback);
 }
-
 
 void RenderFrameHostImpl::ExecuteJavaScriptWithUserGestureForTests(
     const base::string16& javascript) {
-  Send(new FrameMsg_JavaScriptExecuteRequestForTests(routing_id_,
-                                                     javascript,
-                                                     0, false, true));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  GetNavigationControl()->JavaScriptExecuteRequestForTests(javascript, 0, false,
+                                                           true);
 }
 
 void RenderFrameHostImpl::ExecuteJavaScriptInIsolatedWorld(
     const base::string16& javascript,
     const JavaScriptResultCallback& callback,
     int world_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (world_id <= ISOLATED_WORLD_ID_GLOBAL ||
       world_id > ISOLATED_WORLD_ID_MAX) {
     // Return if the world_id is not valid.
@@ -1257,8 +1256,8 @@ void RenderFrameHostImpl::ExecuteJavaScriptInIsolatedWorld(
     javascript_callbacks_.emplace(key, callback);
   }
 
-  Send(new FrameMsg_JavaScriptExecuteRequestInIsolatedWorld(
-      routing_id_, javascript, key, request_reply, world_id));
+  GetNavigationControl()->JavaScriptExecuteRequestInIsolatedWorld(
+      javascript, key, request_reply, world_id);
 }
 
 void RenderFrameHostImpl::CopyImageAt(int x, int y) {
@@ -1388,8 +1387,6 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_BeforeUnload_ACK, OnBeforeUnloadACK)
     IPC_MESSAGE_HANDLER(FrameHostMsg_SwapOut_ACK, OnSwapOutACK)
     IPC_MESSAGE_HANDLER(FrameHostMsg_ContextMenu, OnContextMenu)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_JavaScriptExecuteResponse,
-                        OnJavaScriptExecuteResponse)
     IPC_MESSAGE_HANDLER(FrameHostMsg_VisualStateResponse,
                         OnVisualStateResponse)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(FrameHostMsg_RunJavaScriptDialog,
@@ -2640,18 +2637,11 @@ void RenderFrameHostImpl::OnContextMenu(const ContextMenuParams& params) {
   delegate_->ShowContextMenu(this, validated_params);
 }
 
-void RenderFrameHostImpl::OnJavaScriptExecuteResponse(
-    int id, const base::ListValue& result) {
-  const base::Value* result_value;
-  if (!result.Get(0, &result_value)) {
-    // Programming error or rogue renderer.
-    NOTREACHED() << "Got bad arguments for OnJavaScriptExecuteResponse";
-    return;
-  }
-
+void RenderFrameHostImpl::JavaScriptExecuteResponse(int id,
+                                                    base::Value result) {
   auto it = javascript_callbacks_.find(id);
   if (it != javascript_callbacks_.end()) {
-    it->second.Run(result_value);
+    it->second.Run(&result);
     javascript_callbacks_.erase(it);
   } else {
     NOTREACHED() << "Received script response for unknown request";

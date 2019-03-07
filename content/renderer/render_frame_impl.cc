@@ -2128,12 +2128,6 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_CopyImageAt, OnCopyImageAt)
     IPC_MESSAGE_HANDLER(FrameMsg_SaveImageAt, OnSaveImageAt)
     IPC_MESSAGE_HANDLER(FrameMsg_AddMessageToConsole, OnAddMessageToConsole)
-    IPC_MESSAGE_HANDLER(FrameMsg_JavaScriptExecuteRequest,
-                        OnJavaScriptExecuteRequest)
-    IPC_MESSAGE_HANDLER(FrameMsg_JavaScriptExecuteRequestForTests,
-                        OnJavaScriptExecuteRequestForTests)
-    IPC_MESSAGE_HANDLER(FrameMsg_JavaScriptExecuteRequestInIsolatedWorld,
-                        OnJavaScriptExecuteRequestInIsolatedWorld)
     IPC_MESSAGE_HANDLER(FrameMsg_VisualStateRequest,
                         OnVisualStateRequest)
     IPC_MESSAGE_HANDLER(FrameMsg_Reload, OnReload)
@@ -2431,11 +2425,10 @@ void RenderFrameImpl::OnAddMessageToConsole(ConsoleMessageLevel level,
   AddMessageToConsole(level, message);
 }
 
-void RenderFrameImpl::OnJavaScriptExecuteRequest(
-    const base::string16& jscript,
-    int id,
-    bool notify_result) {
-  TRACE_EVENT_INSTANT0("test_tracing", "OnJavaScriptExecuteRequest",
+void RenderFrameImpl::JavaScriptExecuteRequest(const base::string16& jscript,
+                                               int id,
+                                               bool notify_result) {
+  TRACE_EVENT_INSTANT0("test_tracing", "JavaScriptExecuteRequest",
                        TRACE_EVENT_SCOPE_THREAD);
 
   v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
@@ -2445,12 +2438,12 @@ void RenderFrameImpl::OnJavaScriptExecuteRequest(
   HandleJavascriptExecutionResult(jscript, id, notify_result, result);
 }
 
-void RenderFrameImpl::OnJavaScriptExecuteRequestForTests(
+void RenderFrameImpl::JavaScriptExecuteRequestForTests(
     const base::string16& jscript,
     int id,
     bool notify_result,
     bool has_user_gesture) {
-  TRACE_EVENT_INSTANT0("test_tracing", "OnJavaScriptExecuteRequestForTests",
+  TRACE_EVENT_INSTANT0("test_tracing", "JavaScriptExecuteRequestForTests",
                        TRACE_EVENT_SCOPE_THREAD);
 
   // A bunch of tests expect to run code in the context of a user gesture, which
@@ -2464,13 +2457,13 @@ void RenderFrameImpl::OnJavaScriptExecuteRequestForTests(
   HandleJavascriptExecutionResult(jscript, id, notify_result, result);
 }
 
-void RenderFrameImpl::OnJavaScriptExecuteRequestInIsolatedWorld(
+void RenderFrameImpl::JavaScriptExecuteRequestInIsolatedWorld(
     const base::string16& jscript,
     int id,
     bool notify_result,
     int world_id) {
   TRACE_EVENT_INSTANT0("test_tracing",
-                       "OnJavaScriptExecuteRequestInIsolatedWorld",
+                       "JavaScriptExecuteRequestInIsolatedWorld",
                        TRACE_EVENT_SCOPE_THREAD);
 
   if (world_id <= ISOLATED_WORLD_ID_GLOBAL ||
@@ -2484,7 +2477,7 @@ void RenderFrameImpl::OnJavaScriptExecuteRequestInIsolatedWorld(
   v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
   WebScriptSource script = WebScriptSource(WebString::FromUTF16(jscript));
   JavaScriptIsolatedWorldRequest* request = new JavaScriptIsolatedWorldRequest(
-      id, notify_result, routing_id_, weak_factory_.GetWeakPtr());
+      id, notify_result, weak_factory_.GetWeakPtr());
   frame_->RequestExecuteScriptInIsolatedWorld(
       world_id, &script, 1, false, WebLocalFrame::kSynchronous, request);
 }
@@ -2492,11 +2485,9 @@ void RenderFrameImpl::OnJavaScriptExecuteRequestInIsolatedWorld(
 RenderFrameImpl::JavaScriptIsolatedWorldRequest::JavaScriptIsolatedWorldRequest(
     int id,
     bool notify_result,
-    int routing_id,
     base::WeakPtr<RenderFrameImpl> render_frame_impl)
     : id_(id),
       notify_result_(notify_result),
-      routing_id_(routing_id),
       render_frame_impl_(render_frame_impl) {
 }
 
@@ -2511,7 +2502,7 @@ void RenderFrameImpl::JavaScriptIsolatedWorldRequest::Completed(
   }
 
   if (notify_result_) {
-    base::ListValue list;
+    base::Value value;
     if (!result.empty()) {
       // It's safe to always use the main world context when converting
       // here. V8ValueConverterImpl shouldn't actually care about the
@@ -2523,17 +2514,14 @@ void RenderFrameImpl::JavaScriptIsolatedWorldRequest::Completed(
       V8ValueConverterImpl converter;
       converter.SetDateAllowed(true);
       converter.SetRegExpAllowed(true);
-      for (const auto& value : result) {
-        std::unique_ptr<base::Value> result_value(
-            converter.FromV8Value(value, context));
-        list.Append(result_value ? std::move(result_value)
-                                 : std::make_unique<base::Value>());
+      std::unique_ptr<base::Value> new_value =
+          converter.FromV8Value(*result.begin(), context);
+      if (new_value) {
+        value = std::move(*new_value);
       }
-    } else {
-      list.Set(0, std::make_unique<base::Value>());
     }
-    render_frame_impl_.get()->Send(
-        new FrameHostMsg_JavaScriptExecuteResponse(routing_id_, id_, list));
+    render_frame_impl_->GetFrameHost()->JavaScriptExecuteResponse(
+        id_, std::move(value));
   }
 
   delete this;
@@ -2545,21 +2533,20 @@ void RenderFrameImpl::HandleJavascriptExecutionResult(
     bool notify_result,
     v8::Local<v8::Value> result) {
   if (notify_result) {
-    base::ListValue list;
+    base::Value value;
     if (!result.IsEmpty()) {
       v8::Local<v8::Context> context = frame_->MainWorldScriptContext();
       v8::Context::Scope context_scope(context);
       V8ValueConverterImpl converter;
       converter.SetDateAllowed(true);
       converter.SetRegExpAllowed(true);
-      std::unique_ptr<base::Value> result_value(
-          converter.FromV8Value(result, context));
-      list.Set(0, result_value ? std::move(result_value)
-                               : std::make_unique<base::Value>());
-    } else {
-      list.Set(0, std::make_unique<base::Value>());
+      std::unique_ptr<base::Value> new_value =
+          converter.FromV8Value(result, context);
+      if (new_value) {
+        value = std::move(*new_value);
+      }
     }
-    Send(new FrameHostMsg_JavaScriptExecuteResponse(routing_id_, id, list));
+    GetFrameHost()->JavaScriptExecuteResponse(id, std::move(value));
   }
 }
 
@@ -3032,7 +3019,7 @@ void RenderFrameImpl::LoadErrorPage(int reason) {
 }
 
 void RenderFrameImpl::ExecuteJavaScript(const base::string16& javascript) {
-  OnJavaScriptExecuteRequest(javascript, 0, false);
+  JavaScriptExecuteRequest(javascript, 0, false);
 }
 
 void RenderFrameImpl::BindLocalInterface(

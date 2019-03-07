@@ -620,6 +620,18 @@ class CONTENT_EXPORT RenderFrameImpl
       blink::mojom::DevToolsAgentHostAssociatedPtrInfo host,
       blink::mojom::DevToolsAgentAssociatedRequest request) override;
 
+  void JavaScriptExecuteRequest(const base::string16& javascript,
+                                int id,
+                                bool notify_result) override;
+  void JavaScriptExecuteRequestForTests(const base::string16& javascript,
+                                        int id,
+                                        bool notify_result,
+                                        bool has_user_gesture) override;
+  void JavaScriptExecuteRequestInIsolatedWorld(const base::string16& jscript,
+                                               int id,
+                                               bool notify_result,
+                                               int world_id) override;
+
   // mojom::FullscreenVideoElementHandler implementation:
   void RequestFullscreenVideoElement() override;
 
@@ -984,7 +996,6 @@ class CONTENT_EXPORT RenderFrameImpl
     JavaScriptIsolatedWorldRequest(
         int id,
         bool notify_result,
-        int routing_id,
         base::WeakPtr<RenderFrameImpl> render_frame_impl);
     void Completed(
         const blink::WebVector<v8::Local<v8::Value>>& result) override;
@@ -994,7 +1005,6 @@ class CONTENT_EXPORT RenderFrameImpl
 
     int id_;
     bool notify_result_;
-    int routing_id_;
     base::WeakPtr<RenderFrameImpl> render_frame_impl_;
 
     DISALLOW_COPY_AND_ASSIGN(JavaScriptIsolatedWorldRequest);
@@ -1086,17 +1096,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnSaveImageAt(int x, int y);
   void OnAddMessageToConsole(ConsoleMessageLevel level,
                              const std::string& message);
-  void OnJavaScriptExecuteRequest(const base::string16& javascript,
-                                  int id,
-                                  bool notify_result);
-  void OnJavaScriptExecuteRequestForTests(const base::string16& javascript,
-                                          int id,
-                                          bool notify_result,
-                                          bool has_user_gesture);
-  void OnJavaScriptExecuteRequestInIsolatedWorld(const base::string16& jscript,
-                                                 int id,
-                                                 bool notify_result,
-                                                 int world_id);
   void OnVisualStateRequest(uint64_t key);
   void OnReload(bool bypass_cache);
   void OnReloadLoFiImages();
