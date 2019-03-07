@@ -512,16 +512,17 @@ enum aome_enc_control_id {
    */
   AV1E_SET_RENDER_SIZE,
 
-  /*!\brief Codec control function to set target level.
-   *
-   * 255: off (default); 0: only keep level stats; 10: target for level 1.0;
-   * 11: target for level 1.1; ... 62: target for level 6.2
+  /*!\brief Control to set target sequence level index
+   * Possible values are:
+   * -1: Not enabled (default)
+   * 0~23: Target for the given sequence level index
+   * 31: Passively measure the level of the encoded bitstream
    */
-  AV1E_SET_TARGET_LEVEL,
+  AV1E_SET_TARGET_SEQ_LEVEL_IDX,
 
-  /*!\brief Codec control function to get bitstream level.
+  /*!\brief Codec control function to get sequence level index.
    */
-  AV1E_GET_LEVEL,
+  AV1E_GET_SEQ_LEVEL_IDX,
 
   /*!\brief Codec control function to set intended superblock size.
    *
@@ -1012,14 +1013,6 @@ enum aome_enc_control_id {
    * 2: Update at tile level
    */
   AV1E_SET_MODE_COST_UPD_FREQ,
-
-  /*!\brief Control to set target sequence level index
-   * Possible values are:
-   * -1: Not enabled (default)
-   * 0~23: Target for the given sequence level index
-   * 31: Passively measure the level of the encoded bitstream
-   */
-  AV1E_SET_TARGET_SEQ_LEVEL_IDX,
 };
 
 /*!\brief aom 1-D scaling mode
@@ -1351,11 +1344,8 @@ AOM_CTRL_USE_TYPE(AV1E_SET_RENDER_SIZE, int *)
 AOM_CTRL_USE_TYPE(AV1E_SET_SUPERBLOCK_SIZE, unsigned int)
 #define AOM_CTRL_AV1E_SET_SUPERBLOCK_SIZE
 
-AOM_CTRL_USE_TYPE(AV1E_SET_TARGET_LEVEL, unsigned int)
-#define AOM_CTRL_AV1E_SET_TARGET_LEVEL
-
-AOM_CTRL_USE_TYPE(AV1E_GET_LEVEL, int *)
-#define AOM_CTRL_AV1E_GET_LEVEL
+AOM_CTRL_USE_TYPE(AV1E_GET_SEQ_LEVEL_IDX, int *)
+#define AOM_CTRL_AV1E_GET_SEQ_LEVEL_IDX
 
 AOM_CTRL_USE_TYPE(AV1E_SET_SINGLE_TILE_DECODING, unsigned int)
 #define AOM_CTRL_AV1E_SET_SINGLE_TILE_DECODING
