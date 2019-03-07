@@ -188,11 +188,6 @@ var tests = [
     // Copy the fooNode.
     doCopy([fooNode.id]);
 
-    // Ensure canPaste is now true.
-    bookmarkManager.canPaste('1', pass(function(result) {
-      assertTrue(result, 'Should be able to paste now');
-    }));
-
     // Paste it.
     doPaste('1');
 
@@ -217,11 +212,6 @@ var tests = [
     bookmarks.getChildren('1', pass(function(result) {
       count -= 2;
       assertEq(count, result.length);
-    }));
-
-    // Ensure canPaste is still true.
-    bookmarkManager.canPaste('1', pass(function(result) {
-      assertTrue(result, 'Should be able to paste now');
     }));
   },
 
@@ -260,11 +250,6 @@ var tests = [
     // Copy it.
     doCopy([emptyFolder.id]);
 
-    // Ensure canPaste is now true.
-    bookmarkManager.canPaste('1', pass(function(result) {
-      assertTrue(result, 'Should be able to paste now');
-    }));
-
     // Paste it at the end of a multiple selection.
     doPaste('1', [barNode.id, fooNode2.id]);
 
@@ -300,100 +285,9 @@ var tests = [
 
       // Pasting to a managed folder is not allowed.
       assertTrue(result[1].url === undefined);
-      bookmarkManager.canPaste(result[1].id, pass(function(result) {
-        assertFalse(result, 'Should not be able to paste to managed folders.');
-      }));
-
       bookmarkManager.paste(result[1].id, fail(error));
     }));
   },
-
-  function canEdit() {
-    bookmarkManager.canEdit(pass(function(result) {
-      assertTrue(result, 'Should be able to edit bookmarks');
-    }));
-  },
-
-  function getSetMetaInfo() {
-    bookmarkManager.getMetaInfo(nodeA.id, 'meta', pass(function(result) {
-      assertTrue(!result);
-    }));
-    chrome.test.listenOnce(bookmarkManager.onMetaInfoChanged, pass(
-        function(id, changes) {
-      assertEq(nodeA.id, id);
-      assertEq({meta: 'bla'}, changes);
-    }));
-    bookmarkManager.setMetaInfo(nodeA.id, 'meta', 'bla');
-    bookmarkManager.setMetaInfo(nodeA.id, 'meta2', 'foo');
-    bookmarkManager.getMetaInfo(nodeA.id, 'meta', pass(function(result) {
-      assertEq('bla', result);
-    }));
-
-    bookmarkManager.getMetaInfo(nodeA.id, pass(function(result) {
-      assertEq({meta: 'bla', meta2: 'foo'}, result);
-    }));
-  },
-
-  function setMetaInfoPermanent() {
-    bookmarks.getTree(pass(function(nodes) {
-      var unmodifiableFolder = nodes[0].children[0];
-      bookmarkManager.setMetaInfo(unmodifiableFolder.id, 'meta', 'foo', fail(
-          "Can't modify the root bookmark folders."));
-      bookmarkManager.updateMetaInfo(unmodifiableFolder.id, {a: 'a', b: 'b'},
-          fail("Can't modify the root bookmark folders."));
-    }));
-  },
-
-  function setMetaInfoManaged() {
-    bookmarks.getChildren('4', pass(function(result) {
-      assertTrue(result.length > 0);
-      bookmarkManager.setMetaInfo(result[0].id, 'meta', 'foo', fail(
-          "Can't modify managed bookmarks."));
-      bookmarkManager.updateMetaInfo(result[0].id, {a: 'a', b: 'b'},
-          fail("Can't modify managed bookmarks."));
-    }));
-  },
-
-  function updateMetaInfo() {
-    bookmarkManager.getMetaInfo(nodeB.id, pass(function(result){
-      assertEq({}, result);
-    }));
-
-    chrome.test.listenOnce(bookmarkManager.onMetaInfoChanged, pass(
-        function(id, changes) {
-      assertEq(nodeB.id, id);
-      assertEq({a: 'a', b: 'b', c: 'c'}, changes);
-    }));
-    bookmarkManager.updateMetaInfo(nodeB.id, {a: 'a', b: 'b', c: 'c'}, pass(
-        function() {
-      chrome.test.listenOnce(bookmarkManager.onMetaInfoChanged, pass(
-          function(id, changes) {
-        assertEq(nodeB.id, id);
-        assertEq({a: 'aa', d: 'd'}, changes);
-      }));
-      bookmarkManager.updateMetaInfo(nodeB.id, {a: 'aa', b: 'b', d: 'd'});
-      bookmarkManager.getMetaInfo(nodeB.id, pass(function(result) {
-        assertEq({a: 'aa', b: 'b', c: 'c', d: 'd'}, result);
-      }));
-    }));
-  },
-
-  function createWithMetaInfo() {
-    var node = {title: 'title', url: 'http://www.google.com/'};
-    var metaInfo = {a: 'a', b: 'b'};
-    chrome.test.listenOnce(bookmarks.onCreated, pass(function(id, created) {
-      assertEq(node.title, created.title);
-      assertEq(node.url, created.url);
-      bookmarkManager.getMetaInfo(id, pass(function(result) {
-        assertEq(metaInfo, result);
-      }));
-    }));
-    bookmarkManager.createWithMetaInfo(node, metaInfo, pass(
-        function(createdNode) {
-      assertEq(node.title, createdNode.title);
-      assertEq(node.url, createdNode.url);
-    }));
-  }
 ];
 
 chrome.test.runTests(tests);
