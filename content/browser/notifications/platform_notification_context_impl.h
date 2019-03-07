@@ -186,6 +186,10 @@ class CONTENT_EXPORT PlatformNotificationContextImpl
       bool supports_synchronization,
       bool initialized);
 
+  // Checks if the number of notifications scheduled for |origin| does not
+  // exceed the quota.
+  bool DoCheckNotificationTriggerQuota(const GURL& origin);
+
   // Actually writes the notification database to the database. Must only be
   // called on the |task_runner_| thread. |callback| will be invoked on the
   // UI thread when the operation has completed.

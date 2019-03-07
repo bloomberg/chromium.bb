@@ -85,4 +85,16 @@ void PlatformNotificationServiceProxy::DisplayNotification(
               weak_ptr_factory_.GetWeakPtr(), data, std::move(callback))));
 }
 
+void PlatformNotificationServiceProxy::CloseNotification(
+    const std::string& notification_id) {
+  if (!notification_service_)
+    return;
+
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
+      base::BindOnce(&PlatformNotificationService::ClosePersistentNotification,
+                     base::Unretained(notification_service_), browser_context_,
+                     notification_id));
+}
+
 }  // namespace content

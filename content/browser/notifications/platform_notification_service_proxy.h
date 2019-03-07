@@ -45,6 +45,9 @@ class CONTENT_EXPORT PlatformNotificationServiceProxy {
   void DisplayNotification(const NotificationDatabaseData& data,
                            DisplayResultCallback callback);
 
+  // Closes the notification with |notification_id|.
+  void CloseNotification(const std::string& notification_id);
+
  private:
   // Actually calls |notification_service_| to display the notification after
   // verifying the |service_worker_scope|.

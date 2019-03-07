@@ -8,6 +8,7 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
+#include "content/browser/notifications/notification_trigger_constants.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/public/browser/notification_database_data.h"
@@ -82,14 +83,15 @@ class PlatformNotificationContextTriggerTest : public ::testing::Test {
   }
 
  protected:
-  void WriteNotificationData(const std::string& tag, Time timestamp) {
+  void WriteNotificationData(const std::string& tag,
+                             base::Optional<base::Time> timestamp) {
     ASSERT_TRUE(
         TryWriteNotificationData("https://example.com", tag, timestamp));
   }
 
   bool TryWriteNotificationData(const std::string& url,
                                 const std::string& tag,
-                                Time timestamp) {
+                                base::Optional<base::Time> timestamp) {
     GURL origin(url);
     NotificationDatabaseData notification_database_data;
     notification_database_data.origin = origin;
@@ -192,6 +194,59 @@ TEST_F(PlatformNotificationContextTriggerTest,
   // Overwrites a displayed notification with a trigger timestamp in the past.
   WriteNotificationData("1", Time::Now() - TimeDelta::FromSeconds(10));
   ASSERT_EQ(1u, GetDisplayedNotifications().size());
+}
+
+TEST_F(PlatformNotificationContextTriggerTest,
+       OverwriteDisplayedNotificationToFuture) {
+  WriteNotificationData("1", Time::Now() + TimeDelta::FromSeconds(10));
+  thread_bundle_.FastForwardBy(TimeDelta::FromSeconds(10));
+
+  // Overwrites a displayed notification which hides it until the trigger
+  // timestamp is reached.
+  WriteNotificationData("1", Time::Now() + TimeDelta::FromSeconds(10));
+
+  ASSERT_EQ(0u, GetDisplayedNotifications().size());
+
+  thread_bundle_.FastForwardBy(TimeDelta::FromSeconds(10));
+  ASSERT_EQ(1u, GetDisplayedNotifications().size());
+}
+
+TEST_F(PlatformNotificationContextTriggerTest,
+       LimitsNumberOfScheduledNotificationsPerOrigin) {
+  for (int i = 1; i <= kMaximumScheduledNotificationsPerOrigin; ++i) {
+    WriteNotificationData(std::to_string(i),
+                          Time::Now() + TimeDelta::FromSeconds(i));
+  }
+
+  ASSERT_FALSE(TryWriteNotificationData(
+      "https://example.com",
+      std::to_string(kMaximumScheduledNotificationsPerOrigin + 1),
+      Time::Now() +
+          TimeDelta::FromSeconds(kMaximumScheduledNotificationsPerOrigin + 1)));
+
+  ASSERT_TRUE(TryWriteNotificationData(
+      "https://example2.com",
+      std::to_string(kMaximumScheduledNotificationsPerOrigin + 1),
+      Time::Now() +
+          TimeDelta::FromSeconds(kMaximumScheduledNotificationsPerOrigin + 1)));
+}
+
+TEST_F(PlatformNotificationContextTriggerTest, EnforcesLimitOnUpdate) {
+  for (int i = 1; i <= kMaximumScheduledNotificationsPerOrigin; ++i) {
+    WriteNotificationData(std::to_string(i),
+                          Time::Now() + TimeDelta::FromSeconds(i));
+  }
+
+  ASSERT_TRUE(TryWriteNotificationData(
+      "https://example.com",
+      std::to_string(kMaximumScheduledNotificationsPerOrigin + 1),
+      base::nullopt));
+
+  ASSERT_FALSE(TryWriteNotificationData(
+      "https://example.com",
+      std::to_string(kMaximumScheduledNotificationsPerOrigin + 1),
+      Time::Now() +
+          TimeDelta::FromSeconds(kMaximumScheduledNotificationsPerOrigin + 1)));
 }
 
 }  // namespace content
