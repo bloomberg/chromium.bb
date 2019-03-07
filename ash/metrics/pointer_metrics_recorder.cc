@@ -29,16 +29,36 @@ int GetDestination(views::Widget* target) {
 
 // Find the input type, form factor and destination combination of the down
 // event. Used to get the UMA histogram bucket.
-DownEventMetric FindCombination(DownEventSource input_type,
-                                DownEventFormFactor form_factor,
-                                int destination) {
+DownEventMetric FindCombinationDeprecated(DownEventSource input_type,
+                                          DownEventFormFactor form_factor,
+                                          int destination) {
+  if (destination == static_cast<int>(AppType::CROSTINI_APP))
+    destination = static_cast<int>(AppType::OTHERS);
+  constexpr int kAppCountDeprecated = kAppCount - 1;
   int num_combination_per_input =
-      kAppCount * static_cast<int>(DownEventFormFactor::kFormFactorCount);
+      kAppCountDeprecated *
+      static_cast<int>(DownEventFormFactor::kFormFactorCount);
   int result = static_cast<int>(input_type) * num_combination_per_input +
-               static_cast<int>(form_factor) * kAppCount + destination;
+               static_cast<int>(form_factor) * kAppCountDeprecated +
+               destination;
   DCHECK(result >= 0 &&
          result < static_cast<int>(DownEventMetric::kCombinationCount));
   return static_cast<DownEventMetric>(result);
+}
+
+DownEventMetric2 FindCombination(int destination,
+                                 DownEventSource input_type,
+                                 DownEventFormFactor form_factor) {
+  constexpr int kNumCombinationPerDestination =
+      static_cast<int>(DownEventSource::kSourceCount) *
+      static_cast<int>(DownEventFormFactor::kFormFactorCount);
+  int result = destination * kNumCombinationPerDestination +
+               static_cast<int>(DownEventFormFactor::kFormFactorCount) *
+                   static_cast<int>(input_type) +
+               static_cast<int>(form_factor);
+  DCHECK(result >= 0 &&
+         result <= static_cast<int>(DownEventMetric2::kMaxValue));
+  return static_cast<DownEventMetric2>(result);
 }
 
 void RecordUMA(ui::EventPointerType type, ui::EventTarget* event_target) {
@@ -79,8 +99,13 @@ void RecordUMA(ui::EventPointerType type, ui::EventTarget* event_target) {
 
   UMA_HISTOGRAM_ENUMERATION(
       "Event.DownEventCount.PerInputFormFactorDestinationCombination",
-      FindCombination(input_type, form_factor, GetDestination(target)),
+      FindCombinationDeprecated(input_type, form_factor,
+                                GetDestination(target)),
       DownEventMetric::kCombinationCount);
+
+  UMA_HISTOGRAM_ENUMERATION(
+      "Event.DownEventCount.PerInputFormFactorDestinationCombination2",
+      FindCombination(GetDestination(target), input_type, form_factor));
 }
 
 }  // namespace

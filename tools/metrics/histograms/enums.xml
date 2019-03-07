@@ -12186,6 +12186,187 @@ Called by update_net_error_codes.py.-->
              is ARC app(Android app in ChromeOS)"/>
 </enum>
 
+<enum name="DownEventInputFormFactorDestinationCombination2">
+  <int value="0"
+      label="Unknown input in clamshell mode, destination is
+             others(everything except browser and apps)"/>
+  <int value="1"
+      label="Unknown input in touchview mode landscape orientation,
+             destination is others(everything except browser and apps)"/>
+  <int value="2"
+      label="Unknown input in touchview mode portrait orientation,
+             destination is others(everything except browser and apps)"/>
+  <int value="3"
+      label="Mouse input in clamshell mode, destination is others(everything
+             except browser and apps)"/>
+  <int value="4"
+      label="Mouse input in touchview mode landscape orientation, destination
+             is others(everything except browser and apps)"/>
+  <int value="5"
+      label="Mouse input in touchview mode portrait orientation, destination
+             is others(everything except browser and apps)"/>
+  <int value="6"
+      label="Stylus input in clamshell mode, destination is others(everything
+             except browser and apps)"/>
+  <int value="7"
+      label="Stylus input in touchview mode landscape orientation,
+             destination is others(everything except browser and apps)"/>
+  <int value="8"
+      label="Stylus input in touchview mode portrait orientation, destination
+             is others(everything except browser and apps)"/>
+  <int value="9"
+      label="Touch input in clamshell mode, destination is others(everything
+             except browser and apps)"/>
+  <int value="10"
+      label="Touch input in touchview mode landscape orientation, destination
+             is others(everything except browser and apps)"/>
+  <int value="11"
+      label="Touch input in touchview mode portrait orientation, destination
+             is others(everything except browser and apps)"/>
+  <int value="12"
+      label="Unknown input in clamshell mode, destination is inside the
+             browser frame"/>
+  <int value="13"
+      label="Unknown input in touchview mode landscape orientation,
+             destination is inside the browser frame"/>
+  <int value="14"
+      label="Unknown input in touchview mode portrait orientation,
+             destination is inside the browser frame"/>
+  <int value="15"
+      label="Mouse input in clamshell mode, destination is inside the browser
+             frame"/>
+  <int value="16"
+      label="Mouse input in touchview mode landscape orientation, destination
+             is inside the browser frame"/>
+  <int value="17"
+      label="Mouse input in touchview mode portrait orientation, destination
+             is inside the browser frame"/>
+  <int value="18"
+      label="Stylus input in clamshell mode, destination is inside the
+             browser frame"/>
+  <int value="19"
+      label="Stylus input in touchview mode landscape orientation,
+             destination is inside the browser frame"/>
+  <int value="20"
+      label="Stylus input in touchview mode portrait orientation, destination
+             is inside the browser frame"/>
+  <int value="21"
+      label="Touch input in clamshell mode, destination is inside the browser
+             frame"/>
+  <int value="22"
+      label="Touch input in touchview mode landscape orientation, destination
+             is inside the browser frame"/>
+  <int value="23"
+      label="Touch input in touchview mode portrait orientation, destination
+             is inside the browser frame"/>
+  <int value="24"
+      label="Unknown input in clamshell mode, destination is regular chrome
+             app"/>
+  <int value="25"
+      label="Unknown input in touchview mode landscape orientation,
+             destination is regular chrome app"/>
+  <int value="26"
+      label="Unknown input in touchview mode portrait orientation,
+             destination is regular chrome app"/>
+  <int value="27"
+      label="Mouse input in clamshell mode, destination is regular chrome app"/>
+  <int value="28"
+      label="Mouse input in touchview mode landscape orientation, destination
+             is regular chrome app"/>
+  <int value="29"
+      label="Mouse input in touchview mode portrait orientation, destination
+             is regular chrome app"/>
+  <int value="30"
+      label="Stylus input in clamshell mode, destination is regular chrome
+             app"/>
+  <int value="31"
+      label="Stylus input in touchview mode landscape orientation,
+             destination is regular chrome app"/>
+  <int value="32"
+      label="Stylus input in touchview mode portrait orientation, destination
+             is regular chrome app"/>
+  <int value="33"
+      label="Touch input in clamshell mode, destination is regular chrome app"/>
+  <int value="34"
+      label="Touch input in touchview mode landscape orientation, destination
+             is regular chrome app"/>
+  <int value="35"
+      label="Touch input in touchview mode portrait orientation, destination
+             is regular chrome app"/>
+  <int value="36"
+      label="Unknown input in clamshell mode, destination is ARC app(Android
+             app in ChromeOS)"/>
+  <int value="37"
+      label="Unknown input in touchview mode landscape orientation,
+             destination is ARC app(Android app in ChromeOS)"/>
+  <int value="38"
+      label="Unknown input in touchview mode portrait orientation,
+             destination is ARC app(Android app in ChromeOS)"/>
+  <int value="39"
+      label="Mouse input in clamshell mode, destination is ARC app(Android
+             app in ChromeOS)"/>
+  <int value="40"
+      label="Mouse input in touchview mode landscape orientation, destination
+             is ARC app(Android app in ChromeOS)"/>
+  <int value="41"
+      label="Mouse input in touchview mode portrait orientation, destination
+             is ARC app(Android app in ChromeOS)"/>
+  <int value="42"
+      label="Stylus input in clamshell mode, destination is ARC app(Android
+             app in ChromeOS)"/>
+  <int value="43"
+      label="Stylus input in touchview mode landscape orientation,
+             destination is ARC app(Android app in ChromeOS)"/>
+  <int value="44"
+      label="Stylus input in touchview mode portrait orientation, destination
+             is ARC app(Android app in ChromeOS)"/>
+  <int value="45"
+      label="Touch input in clamshell mode, destination is ARC app(Android
+             app in ChromeOS)"/>
+  <int value="46"
+      label="Touch input in touchview mode landscape orientation, destination
+             is ARC app(Android app in ChromeOS)"/>
+  <int value="47"
+      label="Touch input in touchview mode portrait orientation, destination
+             is ARC app(Android app in ChromeOS)"/>
+  <int value="48"
+      label="Unknown input in clamshell mode, destination is Crostini
+             app(Linux app in ChromeOS)"/>
+  <int value="49"
+      label="Unknown input in touchview mode landscape orientation,
+             destination is Crostini app(Linux app in ChromeOS)"/>
+  <int value="50"
+      label="Unknown input in touchview mode portrait orientation,
+             destination is Crostini app(Linux app in ChromeOS)"/>
+  <int value="51"
+      label="Mouse input in clamshell mode, destination is Crostini app(Linux
+             app in ChromeOS)"/>
+  <int value="52"
+      label="Mouse input in touchview mode landscape orientation, destination
+             is Crostini app(Linux app in ChromeOS)"/>
+  <int value="53"
+      label="Mouse input in touchview mode portrait orientation, destination
+             is Crostini app(Linux app in ChromeOS)"/>
+  <int value="54"
+      label="Stylus input in clamshell mode, destination is Crostini
+             app(Linux app in ChromeOS)"/>
+  <int value="55"
+      label="Stylus input in touchview mode landscape orientation,
+             destination is Crostini app(Linux app in ChromeOS)"/>
+  <int value="56"
+      label="Stylus input in touchview mode portrait orientation, destination
+             is Crostini app(Linux app in ChromeOS)"/>
+  <int value="57"
+      label="Touch input in clamshell mode, destination is Crostini app(Linux
+             app in ChromeOS)"/>
+  <int value="58"
+      label="Touch input in touchview mode landscape orientation, destination
+             is Crostini app(Linux app in ChromeOS)"/>
+  <int value="59"
+      label="Touch input in touchview mode portrait orientation, destination
+             is Crostini app(Linux app in ChromeOS)"/>
+</enum>
+
 <enum name="DownEventSource">
   <int value="0" label="Unknown"/>
   <int value="1" label="Mouse"/>
