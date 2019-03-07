@@ -851,8 +851,6 @@ void GtkUi::UpdateColors() {
   colors_[ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON] = tab_text_color;
   colors_[ThemeProperties::COLOR_TAB_TEXT] = tab_text_color;
   colors_[ThemeProperties::COLOR_BOOKMARK_TEXT] = tab_text_color;
-  colors_[ThemeProperties::COLOR_BOOKMARK_BAR_INSTRUCTIONS_TEXT] =
-      tab_text_color;
 
   colors_[ThemeProperties::COLOR_BACKGROUND_TAB] = SK_ColorTRANSPARENT;
   colors_[ThemeProperties::COLOR_BACKGROUND_TAB_INACTIVE] = SK_ColorTRANSPARENT;
