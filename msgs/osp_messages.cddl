@@ -176,7 +176,7 @@ presentation-connection-message = [
 presentation-receiver-status-event = {
   timestamp
   friendly-name: text
-  presentations: [* presentation-status]
+  presentations: [1* presentation-status]
 }
 
 presentation-status = {

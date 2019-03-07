@@ -87,6 +87,7 @@ CppType::~CppType() {
 
 void CppType::InitVector() {
   which = Which::kVector;
+  new (&vector_type) Vector();
 }
 
 void CppType::InitEnum() {
@@ -244,8 +245,48 @@ bool AnalyzeGroupEntry(CddlSymbolTable* table,
   // If it's an occurance operator (so the entry is optional), mark it as such
   // and proceed to the next the node.
   if (node->type == AstNode::Type::kOccur) {
-    entry->opt_occurrence = std::string(node->text);
+    if (node->text == "?") {
+      entry->opt_occurrence_min = CddlGroup::Entry::kOccurrenceMinUnbounded;
+      entry->opt_occurrence_max = 1;
+    } else if (node->text == "+") {
+      entry->opt_occurrence_min = 1;
+      entry->opt_occurrence_max = CddlGroup::Entry::kOccurrenceMaxUnbounded;
+    } else {
+      auto index = node->text.find('*');
+      if (index == std::string::npos) {
+        return false;
+      }
+
+      int lower_bound = CddlGroup::Entry::kOccurrenceMinUnbounded;
+      std::string first_half = node->text.substr(0, index);
+      if ((first_half.length() != 1 || first_half.at(0) != '0') &&
+          first_half.length() != 0) {
+        lower_bound = std::atoi(first_half.c_str());
+        if (!lower_bound) {
+          return false;
+        }
+      }
+
+      int upper_bound = CddlGroup::Entry::kOccurrenceMaxUnbounded;;
+      std::string second_half =
+          index >= node->text.length() ? "" : node->text.substr(index + 1);
+      if ((second_half.length() != 1 || second_half.at(0) != '0') &&
+          second_half.length() != 0) {
+        upper_bound = std::atoi(second_half.c_str());
+        if (!upper_bound) {
+          return false;
+        }
+      }
+
+      entry->opt_occurrence_min = lower_bound;
+      entry->opt_occurrence_max = upper_bound;
+    }
+    entry->occurrence_specified = true;
     node = node->sibling;
+  } else {
+      entry->opt_occurrence_min = 1;
+      entry->opt_occurrence_max = 1;
+      entry->occurrence_specified = false;
   }
 
   // If it's a member key (key in a map), save it and go to next node.
@@ -325,15 +366,20 @@ void DumpGroup(CddlGroup* group, int indent_level) {
         break;
       case CddlGroup::Entry::Which::kType:
         printf("kType:");
-        if (!entry->opt_occurrence.empty())
-          printf(" %s", entry->opt_occurrence.c_str());
+        if (entry->HasOccurrenceOperator())
+          printf("minOccurance: %d maxOccurance: %d",
+                 entry->opt_occurrence_min,
+                 entry->opt_occurrence_max);
         if (!entry->type.opt_key.empty())
           printf(" %s =>", entry->type.opt_key.c_str());
         printf("\n");
         DumpType(entry->type.value, indent_level + 1);
         break;
       case CddlGroup::Entry::Which::kGroup:
-        printf("kGroup: %s\n", entry->opt_occurrence.c_str());
+        if (entry->HasOccurrenceOperator())
+          printf("minOccurance: %d maxOccurance: %d",
+                 entry->opt_occurrence_min,
+                 entry->opt_occurrence_max);
         DumpGroup(entry->group, indent_level + 1);
         break;
     }
@@ -416,7 +462,7 @@ bool IncludeGroupMembersInEnum(CppSymbolTable* table,
                                CppType* cpp_type,
                                const CddlGroup& group) {
   for (const auto& x : group.entries) {
-    if (!x->opt_occurrence.empty() ||
+    if (x->HasOccurrenceOperator() ||
         x->which != CddlGroup::Entry::Which::kType) {
       return false;
     }
@@ -426,8 +472,9 @@ bool IncludeGroupMembersInEnum(CppSymbolTable* table,
           x->type.opt_key, atoi(x->type.value->value.c_str()));
     } else if (x->type.value->which == CddlType::Which::kId) {
       auto group_entry = cddl_table.group_map.find(x->type.value->id);
-      if (group_entry == cddl_table.group_map.end())
+      if (group_entry == cddl_table.group_map.end()) {
         return false;
+      }
       if (group_entry->second->entries.size() != 1 ||
           group_entry->second->entries[0]->which !=
               CddlGroup::Entry::Which::kGroup) {
@@ -468,7 +515,7 @@ bool AddMembersToStruct(
         // it must have an inner type that is based on the user input. If this
         // one looks as expected, process it recursively.
         if (x->type.value->which != CddlType::Which::kId ||
-            !x->opt_occurrence.empty()) {
+            x->HasOccurrenceOperator()) {
           return false;
         }
         auto group_entry = cddl_table.group_map.find(x->type.value->id);
@@ -494,9 +541,10 @@ bool AddMembersToStruct(
           return false;
         if (member_type->name.empty())
           member_type->name = x->type.opt_key;
-        if (x->opt_occurrence == "?") {
+        if (x->opt_occurrence_min == CddlGroup::Entry::kOccurrenceMinUnbounded &&
+            x->opt_occurrence_max == 1) {
           // Create an "optional" type, with sub-type being the type that is
-          // optional.
+          // optional. This corresponds with occurrence operator '?'.
           table->cpp_types.emplace_back(new CppType);
           CppType* optional_type = table->cpp_types.back().get();
           optional_type->which = CppType::Which::kOptional;
@@ -547,9 +595,13 @@ CppType* MakeCppType(CppSymbolTable* table,
     } break;
     case CddlType::Which::kArray: {
       cpp_type = GetCppType(table, name);
-      if (type.array->entries.size() == 1 ||
-          type.array->entries[0]->opt_occurrence == "*") {
+      if (type.array->entries.size() == 1 &&
+          type.array->entries[0]->HasOccurrenceOperator()) {
         cpp_type->InitVector();
+        cpp_type->vector_type.min_length =
+          type.array->entries[0]->opt_occurrence_min;
+        cpp_type->vector_type.max_length =
+          type.array->entries[0]->opt_occurrence_max;
         cpp_type->vector_type.element_type =
             GetCppType(table, type.array->entries[0]->type.value->id);
       } else {

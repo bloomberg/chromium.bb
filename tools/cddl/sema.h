@@ -79,12 +79,31 @@ struct CddlGroup {
     Entry();
     ~Entry();
 
-    std::string opt_occurrence;
+    // Minimum number of times that this entry can be repeated.
+    uint32_t opt_occurrence_min;
+
+    // Maximum number of times that this entry can be repeated.
+    uint32_t opt_occurrence_max;
+
+    // Signifies whether an occurrence opperator is present or not.
+    bool occurrence_specified;
+
+    // Value to represent when opt_occurrence_min is unbounded.
+    static constexpr uint32_t kOccurrenceMinUnbounded = 0;
+
+    // Value to represent when opt_occurrence_max is unbounded.
+    static constexpr uint32_t kOccurrenceMaxUnbounded =
+        std::numeric_limits<uint32_t>::max();
+
     Which which = Which::kUninitialized;
     union {
       EntryType type;
       CddlGroup* group;
     };
+
+    bool HasOccurrenceOperator() const {
+      return occurrence_specified;
+    }
   };
 
   std::vector<std::unique_ptr<Entry>> entries;
@@ -126,6 +145,20 @@ struct CppType {
 
   struct Vector {
     CppType* element_type;
+
+    // Minimum length for the vector.
+    uint32_t min_length;
+
+    // Maximum length for the vector.
+    uint32_t max_length;
+
+    // Value to represent when opt_occurrence_min is unbounded.
+    static constexpr uint32_t kMinLengthUnbounded =
+        CddlGroup::Entry::kOccurrenceMinUnbounded;
+
+    // Value to represent when opt_occurrence_max is unbounded.
+    static constexpr uint32_t kMaxLengthUnbounded =
+        CddlGroup::Entry::kOccurrenceMaxUnbounded;
   };
 
   struct Enum {

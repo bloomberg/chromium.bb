@@ -58,6 +58,10 @@ bool IsNewline(char x) {
   return x == '\r' || x == '\n';
 }
 
+bool IsWhitespaceOrSemicolon(char c) {
+  return c == ' ' || c == ';' || c == '\r' || c == '\n';
+}
+
 absl::string_view SkipNewline(absl::string_view view) {
   size_t index = 0;
   while (IsNewline(view[index])) {
@@ -84,10 +88,6 @@ absl::string_view SkipComment(absl::string_view view) {
   }
 
   return view.substr(index);
-}
-
-bool IsWhitespace(char c) {
-  return c == ' ' || c == ';' || c == '\r' || c == '\n';
 }
 
 void SkipWhitespace(Parser* p, bool skip_comments = true) {
@@ -234,15 +234,27 @@ AstNode* ParseValue(Parser* p) {
   return node;
 }
 
-// Looks for an occurance indicator (such as '*' or '?') prefacing the group
-// definition and parses it into a node if found.
+
+// Determines whether an occurrence operator (such as '*' or '?') prefacing
+// the group definition occurs before the next whitespace character, and
+// creates a new Occurrence node if so.
 AstNode* ParseOccur(Parser* p) {
-  if (p->data[0] != '*' && p->data[0] != '?') {
-    return nullptr;
+  Parser p_speculative{p->data};
+
+  if (*p_speculative.data == '?'|| *p_speculative.data == '+') {
+    p_speculative.data++;
+  } else {
+    SkipUint(&p_speculative);
+    if (*p_speculative.data++ != '*') {
+      return nullptr;
+    }
+    SkipUint(&p_speculative);
   }
+
   AstNode* node =
-      AddNode(p, AstNode::Type::kOccur, absl::string_view(p->data, 1));
-  ++p->data;
+      AddNode(p, AstNode::Type::kOccur,
+              absl::string_view(p->data, p_speculative.data - p->data));
+  p->data = p_speculative.data;
   return node;
 }
 
