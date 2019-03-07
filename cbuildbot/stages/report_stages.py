@@ -530,8 +530,6 @@ class BuildReexecutionFinishedStage(generic_stages.BuilderStage,
         db.InsertBoardPerBuild(build_id, board)
         if board_metadata:
           db.UpdateBoardPerBuildMetadata(build_id, board, board_metadata)
-      for child_config in self._run.attrs.metadata.GetValue('child-configs'):
-        db.InsertChildConfigPerBuild(build_id, child_config['name'])
 
     # Abort previous hw test suites. This happens after reexecution as it
     # requires chromite/third_party/swarming.client, which is not available
@@ -1004,12 +1002,6 @@ class ReportStage(generic_stages.BuilderStage,
 
     if self.buildstore.AreClientsReady():
       status_for_db = final_status
-
-      child_metadatas = self._run.attrs.metadata.GetDict().get(
-          'child-configs', [])
-      for child_metadata in child_metadatas:
-        self.buildstore.FinishChildConfig(build_id, child_metadata['name'],
-                                          child_metadata['status'])
 
       # TODO(pprabhu): After BuildData and CBuildbotMetdata are merged, remove
       # this extra temporary object creation.
