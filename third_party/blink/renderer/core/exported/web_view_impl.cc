@@ -1979,12 +1979,13 @@ WebLocalFrameImpl* WebViewImpl::MainFrameImpl() const {
 }
 
 void WebViewImpl::DidAttachLocalMainFrame(WebWidgetClient* client) {
-  DCHECK(does_composite_);
   DCHECK(MainFrameImpl());
 
   AsWidget().client = client;
-  // When attaching a local main frame, set up any state on the compositor.
-  AsWidget().client->SetBackgroundColor(BackgroundColor());
+  if (does_composite_) {
+    // When attaching a local main frame, set up any state on the compositor.
+    AsWidget().client->SetBackgroundColor(BackgroundColor());
+  }
 }
 
 void WebViewImpl::DidAttachRemoteMainFrame(WebWidgetClient* client) {

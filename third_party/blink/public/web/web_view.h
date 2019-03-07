@@ -98,8 +98,8 @@ class WebView {
   // After this call MainFrameImpl() will return a valid frame until it is
   // detached. It receives the WebWidgetClient* that provides input/compositing
   // services for the attached main frame.
-  // This is only called for composited WebViews. Non-composited WebViews do not
-  // have a WebWidgetClient.
+  // This must be called for composited WebViews. Non-composited WebViews do not
+  // require a WebWidgetClient, but must call this in order to establish one.
   virtual void DidAttachLocalMainFrame(WebWidgetClient*) = 0;
 
   // Called to inform WebViewImpl that it has an initial remote main frame. This
@@ -111,8 +111,8 @@ class WebView {
   // TODO(danakj): Remove this method when WebViewImpl does not need a
   // WebWidgetClient without a local main frame. At that point it should
   // also drop the WebWidgetClient when a local main frame is detached.
-  // This is only called for composited WebViews. Non-composited WebViews do not
-  // have a WebWidgetClient.
+  // This must only be called for composited WebViews. Non-composited WebViews
+  // do not require a WebWidgetClient.
   virtual void DidAttachRemoteMainFrame(WebWidgetClient*) = 0;
 
   // Initializes the various client interfaces.
