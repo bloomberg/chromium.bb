@@ -275,6 +275,11 @@ WebViewPlugin::WebViewHelper::WebViewHelper(WebViewPlugin* plugin,
       mojo::MakeRequest(&document_interface_broker).PassMessagePipe(), nullptr);
   // The created WebFrameWidget is owned by the |web_frame|.
   WebFrameWidget::CreateForMainFrame(this, web_frame);
+
+  // The WebFrame created here was already attached to the Page as its
+  // main frame, and the WebFrameWidget has been initialized, so we can call
+  // WebViewImpl's DidAttachLocalMainFrame().
+  web_view_->DidAttachLocalMainFrame(this);
 }
 
 WebViewPlugin::WebViewHelper::~WebViewHelper() {
