@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/clang_coverage_buildflags.h"
 #include "base/command_line.h"
 #include "base/debug/debugger.h"
 #include "base/logging.h"
@@ -55,6 +56,9 @@ void InitializeTimeout(const char* switch_name, int min_value, int* value) {
   constexpr int kTimeoutMultiplier = 3;
 #elif defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER)
   constexpr int kTimeoutMultiplier = 2;
+#elif BUILDFLAG(CLANG_COVERAGE)
+  // On coverage build, tests run 3x slower.
+  constexpr int kTimeoutMultiplier = 3;
 #else
   constexpr int kTimeoutMultiplier = 1;
 #endif

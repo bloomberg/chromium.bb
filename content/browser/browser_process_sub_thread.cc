@@ -5,6 +5,7 @@
 #include "content/browser/browser_process_sub_thread.h"
 
 #include "base/bind.h"
+#include "base/clang_coverage_buildflags.h"
 #include "base/compiler_specific.h"
 #include "base/debug/alias.h"
 #include "base/metrics/histogram_macros.h"
@@ -193,7 +194,13 @@ void BrowserProcessSubThread::IOThreadCleanUp() {
         service_manager::SANDBOX_TYPE_NETWORK) {
       // This ensures that cookies and cache are flushed to disk on shutdown.
       // https://crbug.com/841001
+#if BUILDFLAG(CLANG_COVERAGE)
+      // On coverage build, browser_tests runs 10x slower.
+      const int kMaxSecondsToWaitForNetworkProcess = 100;
+#else
       const int kMaxSecondsToWaitForNetworkProcess = 10;
+#endif
+
       ChildProcessHostImpl* child_process =
           static_cast<ChildProcessHostImpl*>(it.GetHost());
       auto& process = child_process->peer_process();

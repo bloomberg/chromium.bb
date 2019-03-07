@@ -20,6 +20,7 @@ static_library("test_config") {
   ]
   deps = [
     "//base",
+    "//base:clang_coverage_buildflags",
   ]
 }
 
