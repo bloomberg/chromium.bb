@@ -26,6 +26,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.JavaScriptUtils;
+import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.net.test.util.TestWebServer;
 
 import java.util.ArrayList;
@@ -102,8 +103,6 @@ public class CookieManagerTest {
             String responseStr =
                     "<html><head><title>TEST!</title></head><body>HELLO!</body></html>";
             String url = webServer.setResponse(path, responseStr, null);
-
-            url = webServer.setResponse(path, responseStr, null);
             mActivityTestRule.loadUrlSync(
                     mAwContents, mContentsClient.getOnPageFinishedHelper(), url);
             final String jsCookieName = "js-test" + cookieSuffix;
@@ -164,6 +163,42 @@ public class CookieManagerTest {
 
     @Test
     @MediumTest
+    @Feature({"AndroidWebView", "Privacy"})
+    public void testAcceptCookie_falseDoNotSendCookies() throws Throwable {
+        mCookieManager.setAcceptCookie(false);
+        AwActivityTestRule.enableJavaScriptOnUiThread(mAwContents);
+
+        EmbeddedTestServer embeddedTestServer = EmbeddedTestServer.createAndStartServer(
+                InstrumentationRegistry.getInstrumentation().getContext());
+        try {
+            final String url = embeddedTestServer.getURL("/echoheader?Cookie");
+            String cookieName = "java-test";
+            mCookieManager.setCookie(url, cookieName + "=should-not-work");
+
+            String cookie = mCookieManager.getCookie(url);
+            Assert.assertNotNull(
+                    "Setting cookies should still affect the CookieManager itself", cookie);
+
+            mActivityTestRule.loadUrlSync(
+                    mAwContents, mContentsClient.getOnPageFinishedHelper(), url);
+            String jsValue = getCookieWithJavaScript(cookieName);
+            String message =
+                    "WebView should not expose cookies to JavaScript (with setAcceptCookie "
+                    + "disabled)";
+            Assert.assertEquals(message, "\"\"", jsValue);
+
+            final String cookieHeader = mActivityTestRule.getJavaScriptResultBodyTextContent(
+                    mAwContents, mContentsClient);
+            message = "WebView should not expose cookies via the Cookie header (with "
+                    + "setAcceptCookie disabled)";
+            Assert.assertEquals(message, "None", cookieHeader);
+        } finally {
+            embeddedTestServer.stopAndDestroyServer();
+        }
+    }
+
+    @Test
+    @MediumTest
     @Feature({"AndroidWebView"})
     public void testEmbedderCanSeeRestrictedCookies() throws Throwable {
         TestWebServer webServer = TestWebServer.start();
@@ -196,6 +231,12 @@ public class CookieManagerTest {
                         + "expirationDate.setDate(expirationDate.getDate() + 5);"
                         + "document.cookie='" + name + "=" + value
                         + "; expires=' + expirationDate.toUTCString();");
+    }
+
+    private String getCookieWithJavaScript(final String name) throws Throwable {
+        return JSUtils.executeJavaScriptAndWaitForResult(
+                InstrumentationRegistry.getInstrumentation(), mAwContents,
+                mContentsClient.getOnEvaluateJavaScriptResultHelper(), "document.cookie");
     }
 
     @Test
@@ -877,13 +918,15 @@ public class CookieManagerTest {
 
     private void validateCookies(String responseCookie, String... expectedCookieNames) {
         String[] cookies = responseCookie.split(";");
-        Set<String> foundCookieNames = new HashSet<String>();
+        // Convert to sets, since Set#equals() hooks in nicely with assertEquals()
+        Set<String> foundCookieNamesSet = new HashSet<String>();
         for (String cookie : cookies) {
-            foundCookieNames.add(cookie.substring(0, cookie.indexOf("=")).trim());
+            foundCookieNamesSet.add(cookie.substring(0, cookie.indexOf("=")).trim());
         }
-        List<String> expectedCookieNamesList = Arrays.asList(expectedCookieNames);
-        Assert.assertEquals(expectedCookieNamesList.size(), foundCookieNames.size());
-        Assert.assertTrue(foundCookieNames.containsAll(expectedCookieNamesList));
+        Set<String> expectedCookieNamesSet =
+                new HashSet<String>(Arrays.asList(expectedCookieNames));
+        Assert.assertEquals("Found cookies list differs from expected list", expectedCookieNamesSet,
+                foundCookieNamesSet);
     }
 
     private String makeExpiringCookie(String cookie, int secondsTillExpiry) {
