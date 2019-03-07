@@ -32,7 +32,7 @@ bool TestWebClient::IsAppSpecificURL(const GURL& url) const {
   return url.SchemeIs(kTestWebUIScheme) ||
          url.SchemeIs(kTestNativeContentScheme) ||
          url.SchemeIs(kTestAppSpecificScheme);
-};
+}
 
 base::string16 TestWebClient::GetPluginNotSupportedText() const {
   return plugin_not_supported_text_;

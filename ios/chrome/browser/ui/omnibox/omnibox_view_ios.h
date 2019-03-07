@@ -149,8 +149,8 @@ class OmniboxViewIOS : public OmniboxView,
   void EmphasizeURLComponents() override;
 
  private:
-  void SetEmphasis(bool emphasize, const gfx::Range& range) override{};
-  void UpdateSchemeStyle(const gfx::Range& scheme_range) override{};
+  void SetEmphasis(bool emphasize, const gfx::Range& range) override {}
+  void UpdateSchemeStyle(const gfx::Range& scheme_range) override {}
 
   // Calculates text attributes according to |display_text| and
   // returns them in an autoreleased object.
