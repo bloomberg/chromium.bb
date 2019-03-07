@@ -70,7 +70,7 @@ bool IsTemporalInput(const AtomicString& type) {
 }
 
 bool IsMenulistInput(const Node* node) {
-  if (auto* input = ToHTMLInputElement(node)) {
+  if (auto* input = ToHTMLInputElementOrNull(node)) {
 #if defined(OS_ANDROID)
     if (IsTemporalInput(input->type()))
       return true;
