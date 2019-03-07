@@ -56,6 +56,13 @@ public abstract class ContentUriUtils {
         }
     }
 
+    /**
+     * Get a URI for |file| which has the image capture. This function assumes that path of |file|
+     * is based on the result of UiUtils.getDirectoryForImageCapture().
+     *
+     * @param file image capture file.
+     * @return URI for |file|.
+     */
     public static Uri getContentUriFromFile(File file) {
         synchronized (sLock) {
             if (sFileProviderUtil != null) {

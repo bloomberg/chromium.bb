@@ -318,8 +318,7 @@ public class SuggestionsBinder {
 
     private void setFaviconOnView(Drawable drawable, int faviconSizePx) {
         drawable.setBounds(0, 0, faviconSizePx, faviconSizePx);
-        ApiCompatibilityUtils.setCompoundDrawablesRelative(
-                mPublisherTextView, drawable, null, null, null);
+        mPublisherTextView.setCompoundDrawablesRelative(drawable, null, null, null);
         mPublisherTextView.setVisibility(View.VISIBLE);
     }
 

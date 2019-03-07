@@ -202,7 +202,7 @@ public final class DualControlLayout extends ViewGroup {
         int rightPadding = getPaddingRight();
 
         int width = right - left;
-        boolean isRtl = ApiCompatibilityUtils.isLayoutRtl(this);
+        boolean isRtl = getLayoutDirection() == LAYOUT_DIRECTION_RTL;
         boolean isPrimaryOnRight = (isRtl && mAlignment == DualControlLayoutAlignment.START)
                 || (!isRtl
                            && (mAlignment == DualControlLayoutAlignment.APART

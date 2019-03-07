@@ -38,6 +38,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Callback;
+import org.chromium.base.ContentUriUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.StreamUtil;
@@ -322,7 +323,7 @@ public class ShareHelper {
                         fOut.write(jpegImageData);
                         fOut.flush();
 
-                        return ApiCompatibilityUtils.getUriForImageCaptureFile(saveFile);
+                        return ContentUriUtils.getContentUriFromFile(saveFile);
                     } else {
                         Log.w(TAG, "Share failed -- Unable to create share image directory.");
                     }
@@ -377,7 +378,7 @@ public class ShareHelper {
             new AsyncTask<Uri>() {
                 @Override
                 protected Uri doInBackground() {
-                    return ApiCompatibilityUtils.getUriForImageCaptureFile(new File(path));
+                    return ContentUriUtils.getContentUriFromFile(new File(path));
                 }
 
                 @Override

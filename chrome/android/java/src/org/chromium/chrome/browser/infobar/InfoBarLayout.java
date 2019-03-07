@@ -23,7 +23,6 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.widget.DualControlLayout;
 import org.chromium.ui.UiUtils;
@@ -305,7 +304,7 @@ public final class InfoBarLayout extends ViewGroup implements View.OnClickListen
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
         // Place all the views in the positions already determined during onMeasure().
         int width = right - left;
-        boolean isRtl = ApiCompatibilityUtils.isLayoutRtl(this);
+        boolean isRtl = getLayoutDirection() == LAYOUT_DIRECTION_RTL;
 
         for (int i = 0; i < getChildCount(); i++) {
             View child = getChildAt(i);

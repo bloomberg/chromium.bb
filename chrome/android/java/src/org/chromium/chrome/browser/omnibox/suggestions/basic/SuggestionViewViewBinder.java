@@ -100,7 +100,7 @@ public class SuggestionViewViewBinder {
             view.getTextLine1().setTextColor(
                     model.get(SuggestionViewProperties.TEXT_LINE_1_TEXT_COLOR));
         } else if (SuggestionViewProperties.TEXT_LINE_1_TEXT_DIRECTION.equals(propertyKey)) {
-            ApiCompatibilityUtils.setTextDirection(view.getTextLine1(),
+            view.getTextLine1().setTextDirection(
                     model.get(SuggestionViewProperties.TEXT_LINE_1_TEXT_DIRECTION));
         } else if (SuggestionViewProperties.TEXT_LINE_1_TEXT.equals(propertyKey)) {
             view.getTextLine1().setText(model.get(SuggestionViewProperties.TEXT_LINE_1_TEXT).text);
@@ -115,7 +115,7 @@ public class SuggestionViewViewBinder {
             view.getTextLine2().setTextColor(
                     model.get(SuggestionViewProperties.TEXT_LINE_2_TEXT_COLOR));
         } else if (SuggestionViewProperties.TEXT_LINE_2_TEXT_DIRECTION.equals(propertyKey)) {
-            ApiCompatibilityUtils.setTextDirection(view.getTextLine2(),
+            view.getTextLine2().setTextDirection(
                     model.get(SuggestionViewProperties.TEXT_LINE_2_TEXT_DIRECTION));
         } else if (SuggestionViewProperties.TEXT_LINE_2_TEXT.equals(propertyKey)) {
             Spannable line2Text = model.get(SuggestionViewProperties.TEXT_LINE_2_TEXT).text;

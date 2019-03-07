@@ -15,7 +15,6 @@ import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityManager;
 import android.widget.TextView;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
@@ -144,7 +143,7 @@ public class LanguageListPreference extends Preference {
         mView = super.onCreateView(parent);
 
         mAddLanguageButton = (TextView) mView.findViewById(R.id.add_language);
-        ApiCompatibilityUtils.setCompoundDrawablesRelativeWithIntrinsicBounds(mAddLanguageButton,
+        mAddLanguageButton.setCompoundDrawablesRelativeWithIntrinsicBounds(
                 TintedDrawable.constructTintedDrawable(
                         getContext(), R.drawable.plus, R.color.pref_accent_color),
                 null, null, null);

@@ -18,6 +18,7 @@ import android.content.res.Resources;
 import android.graphics.Rect;
 import android.os.Build;
 import android.provider.Browser;
+import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.text.Spanned;
 import android.text.TextUtils;
@@ -34,7 +35,6 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.textclassifier.TextClassifier;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.BuildInfo;
 import org.chromium.base.Log;
 import org.chromium.base.UserData;
@@ -364,7 +364,7 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
 
         if (hasSelection()) {
             // Device is not provisioned, don't trigger SelectionClient logic at all.
-            boolean blockSelectionClient = !ApiCompatibilityUtils.isDeviceProvisioned(mContext);
+            boolean blockSelectionClient = !isDeviceProvisioned(mContext);
 
             // Disable SelectionClient logic if it's incognito.
             blockSelectionClient |= isIncognito();
@@ -1564,6 +1564,13 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
         assert Build.VERSION.SDK_INT >= Build.VERSION_CODES.O;
         SelectionClient client = getSelectionClient();
         return client == null ? null : client.getCustomTextClassifier();
+    }
+
+    private static boolean isDeviceProvisioned(Context context) {
+        if (context == null || context.getContentResolver() == null) return true;
+        return Settings.Global.getInt(
+                       context.getContentResolver(), Settings.Global.DEVICE_PROVISIONED, 0)
+                != 0;
     }
 
     @CalledByNative

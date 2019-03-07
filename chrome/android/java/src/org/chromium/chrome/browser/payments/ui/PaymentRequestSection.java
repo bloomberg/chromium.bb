@@ -374,7 +374,7 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
         mSummaryRightTextView = new TextView(getContext());
         ApiCompatibilityUtils.setTextAppearance(
                 mSummaryRightTextView, R.style.TextAppearance_BlackTitle1);
-        ApiCompatibilityUtils.setTextAlignment(mSummaryRightTextView, TEXT_ALIGNMENT_TEXT_END);
+        mSummaryRightTextView.setTextAlignment(TEXT_ALIGNMENT_TEXT_END);
 
         // The main TextView sucks up all the available space.
         LinearLayout.LayoutParams leftLayoutParams = new LinearLayout.LayoutParams(
@@ -602,7 +602,7 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
                     mUpdatedView, R.style.TextAppearance_BlackTitle1);
             LinearLayout.LayoutParams updatedLayoutParams = new LinearLayout.LayoutParams(
                     LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-            ApiCompatibilityUtils.setTextAlignment(mUpdatedView, TEXT_ALIGNMENT_TEXT_END);
+            mUpdatedView.setTextAlignment(TEXT_ALIGNMENT_TEXT_END);
             mUpdatedView.setTextColor(ApiCompatibilityUtils.getColor(
                     context.getResources(), R.color.google_green_700));
             MarginLayoutParamsCompat.setMarginStart(updatedLayoutParams,

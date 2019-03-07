@@ -197,8 +197,9 @@ public class ListMenuButton
 
                 // Set the compound drawable at the end for items with a valid endIconId,
                 // otherwise clear the compound drawable if the endIconId is 0.
-                ApiCompatibilityUtils.setCompoundDrawablesRelativeWithIntrinsicBounds(
-                        (TextView) view, 0, 0, items[position].getEndIconId(), 0);
+                ((TextView) view)
+                        .setCompoundDrawablesRelativeWithIntrinsicBounds(
+                                0, 0, items[position].getEndIconId(), 0);
 
                 return view;
             }

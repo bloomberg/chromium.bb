@@ -18,6 +18,7 @@ import android.os.Bundle;
 import android.os.SystemClock;
 import android.provider.Browser;
 import android.provider.MediaStore;
+import android.provider.Settings;
 import android.speech.RecognizerResultsIntent;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
@@ -1006,8 +1007,7 @@ public class IntentHandler {
         if (isChromeToken(token)) {
             return true;
         }
-        if (ExternalAuthUtils.getInstance().isGoogleSigned(
-                    ApiCompatibilityUtils.getCreatorPackage(token))) {
+        if (ExternalAuthUtils.getInstance().isGoogleSigned(token.getCreatorPackage())) {
             return true;
         }
         return false;
@@ -1019,9 +1019,16 @@ public class IntentHandler {
         // i.e. the user will see what is going on.
         Context appContext = ContextUtils.getApplicationContext();
         if (!ApiCompatibilityUtils.isInteractive(appContext)) return false;
-        if (!ApiCompatibilityUtils.isDeviceProvisioned(appContext)) return true;
+        if (!isDeviceProvisioned(appContext)) return true;
         return !((KeyguardManager) appContext.getSystemService(Context.KEYGUARD_SERVICE))
                 .inKeyguardRestrictedInputMode();
+    }
+
+    private static boolean isDeviceProvisioned(Context context) {
+        if (context == null || context.getContentResolver() == null) return true;
+        return Settings.Global.getInt(
+                       context.getContentResolver(), Settings.Global.DEVICE_PROVISIONED, 0)
+                != 0;
     }
 
     /*

@@ -356,7 +356,7 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
                 if (!mIsByPermanentButton) offsets[1] += padding.bottom;
             }
 
-            if (!ApiCompatibilityUtils.isLayoutRtl(anchorView.getRootView())) {
+            if (anchorView.getRootView().getLayoutDirection() != View.LAYOUT_DIRECTION_RTL) {
                 offsets[0] = anchorView.getWidth() - popupWidth;
             }
         }

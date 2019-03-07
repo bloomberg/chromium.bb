@@ -16,7 +16,6 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout.LayoutParams;
 import android.widget.ImageView;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
@@ -144,7 +143,7 @@ public class ViewAndroidDelegate {
         int heightInt = Math.round(height);
         int startMargin;
 
-        if (ApiCompatibilityUtils.isLayoutRtl(containerView)) {
+        if (containerView.getLayoutDirection() == View.LAYOUT_DIRECTION_RTL) {
             startMargin = containerView.getMeasuredWidth() - Math.round(width + x);
         } else {
             startMargin = leftMargin;

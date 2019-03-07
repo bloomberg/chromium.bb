@@ -19,7 +19,6 @@ import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.webkit.MimeTypeMap;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContentUriUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
@@ -468,8 +467,7 @@ public class SelectFileDialog
         public Uri doInBackground() {
             try {
                 Context context = ContextUtils.getApplicationContext();
-                return ApiCompatibilityUtils.getUriForImageCaptureFile(
-                        getFileForImageCapture(context));
+                return ContentUriUtils.getContentUriFromFile(getFileForImageCapture(context));
             } catch (IOException e) {
                 Log.e(TAG, "Cannot retrieve content uri from file", e);
                 return null;

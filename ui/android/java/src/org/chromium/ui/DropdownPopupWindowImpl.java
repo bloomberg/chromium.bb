@@ -148,8 +148,8 @@ class DropdownPopupWindowImpl
         }
         mAnchoredPopupWindow.show();
         mListView.setDividerHeight(0);
-        ApiCompatibilityUtils.setLayoutDirection(
-                mListView, mRtl ? View.LAYOUT_DIRECTION_RTL : View.LAYOUT_DIRECTION_LTR);
+        int layoutDirection = mRtl ? View.LAYOUT_DIRECTION_RTL : View.LAYOUT_DIRECTION_LTR;
+        mListView.setLayoutDirection(layoutDirection);
         if (!wasShowing) {
             mListView.setContentDescription(mDescription);
             mListView.sendAccessibilityEvent(AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED);

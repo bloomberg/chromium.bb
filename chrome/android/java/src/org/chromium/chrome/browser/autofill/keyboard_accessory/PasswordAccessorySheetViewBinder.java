@@ -20,7 +20,6 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetTabModel.AccessorySheetDataPiece;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetTabViewBinder.ElementViewHolder;
@@ -148,7 +147,7 @@ class PasswordAccessorySheetViewBinder {
                 icon.setBounds(0, 0, mIconSize, mIconSize);
             }
             text.setCompoundDrawablePadding(mPadding);
-            ApiCompatibilityUtils.setCompoundDrawablesRelative(text, icon, null, null, null);
+            text.setCompoundDrawablesRelative(icon, null, null, null);
         }
     }
 
