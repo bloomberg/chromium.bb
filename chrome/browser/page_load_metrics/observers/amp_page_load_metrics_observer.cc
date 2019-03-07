@@ -16,6 +16,9 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "net/base/url_util.h"
+#include "services/metrics/public/cpp/metrics_utils.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
 #include "url/gurl.h"
 
 namespace {
@@ -341,10 +344,12 @@ void AMPPageLoadMetricsObserver::ProcessMainFrameNavigation(
     }
   }
 
-  current_main_frame_nav_info_ = base::WrapUnique(
-      new MainFrameNavigationInfo{navigation_handle->GetURL(), subframe_rfh,
-                                  navigation_handle->NavigationStart(),
-                                  navigation_handle->IsSameDocument()});
+  current_main_frame_nav_info_ = base::WrapUnique(new MainFrameNavigationInfo{
+      navigation_handle->GetURL(),
+      ukm::ConvertToSourceId(navigation_handle->GetNavigationId(),
+                             ukm::SourceIdType::NAVIGATION_ID),
+      subframe_rfh, navigation_handle->NavigationStart(),
+      navigation_handle->IsSameDocument()});
 }
 
 void AMPPageLoadMetricsObserver::MaybeRecordAmpDocumentMetrics() {
@@ -371,6 +376,11 @@ void AMPPageLoadMetricsObserver::MaybeRecordAmpDocumentMetrics() {
   base::TimeDelta navigation_input_delta =
       current_main_frame_nav_info_->navigation_start -
       subframe_info.navigation_start;
+
+  ukm::builders::AmpPageLoad builder(
+      current_main_frame_nav_info_->ukm_source_id);
+  builder.SetSubFrame_MainFrameToSubFrameNavigationDelta(
+      -navigation_input_delta.InMilliseconds());
 
   if (!current_main_frame_nav_info_->is_same_document_navigation) {
     // For non same document navigations, we expect the main frame navigation
@@ -402,6 +412,10 @@ void AMPPageLoadMetricsObserver::MaybeRecordAmpDocumentMetrics() {
   if (!subframe_info.timing.is_null()) {
     if (subframe_info.timing->paint_timing->first_contentful_paint
             .has_value()) {
+      builder.SetSubFrame_PaintTiming_NavigationToFirstContentfulPaint(
+          subframe_info.timing->paint_timing->first_contentful_paint.value()
+              .InMilliseconds());
+
       base::TimeDelta first_contentful_paint = ClampToZero(
           subframe_info.timing->paint_timing->first_contentful_paint.value() -
           navigation_input_delta);
@@ -425,6 +439,9 @@ void AMPPageLoadMetricsObserver::MaybeRecordAmpDocumentMetrics() {
     if (AssignTimeAndSizeForLargestContentfulPaint(
             subframe_info.timing->paint_timing, &largest_content_paint_time,
             &largest_content_paint_size, &largest_content_type)) {
+      builder.SetSubFrame_PaintTiming_NavigationToLargestContentPaint(
+          largest_content_paint_time.value().InMilliseconds());
+
       // Adjust by the navigation_input_delta.
       largest_content_paint_time = ClampToZero(
           largest_content_paint_time.value() - navigation_input_delta);
@@ -443,6 +460,10 @@ void AMPPageLoadMetricsObserver::MaybeRecordAmpDocumentMetrics() {
 
     if (subframe_info.timing->interactive_timing->first_input_delay
             .has_value()) {
+      builder.SetSubFrame_InteractiveTiming_FirstInputDelay3(
+          subframe_info.timing->interactive_timing->first_input_delay.value()
+              .InMilliseconds());
+
       if (current_main_frame_nav_info_->is_same_document_navigation) {
         UMA_HISTOGRAM_CUSTOM_TIMES(
             std::string(kHistogramPrefix)
@@ -460,6 +481,8 @@ void AMPPageLoadMetricsObserver::MaybeRecordAmpDocumentMetrics() {
       }
     }
   }
+
+  builder.Record(ukm::UkmRecorder::Get());
 }
 
 // static

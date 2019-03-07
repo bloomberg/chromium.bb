@@ -136,6 +136,39 @@ be describing additional metrics about the same event.
       site-wide framework and not a reader experience.
     </summary>
   </metric>
+  <metric name="SubFrame.InteractiveTiming.FirstInputDelay3">
+    <summary>
+      Measures First Input Delay, the duration between the hardware timestamp
+      and the start of event processing on the main thread for the first
+      meaningful input per navigation, in the AMP subframe. See
+      https://goo.gl/tr1oTZ for a detailed explanation. In milliseconds.
+    </summary>
+  </metric>
+  <metric name="SubFrame.MainFrameToSubFrameNavigationDelta">
+    <summary>
+      Measures the time in milliseconds from the navigation in the main frame to
+      the navigation in the AMP subframe. Will be negative in cases where the
+      AMP subframe was prerendered. Will be positive in cases where the main
+      frame was a non-same-document navigation. Should be near-zero when the
+      main frame navigation is a same-document navigation and the AMP subframe
+      was not prerendered.
+    </summary>
+  </metric>
+  <metric name="SubFrame.PaintTiming.NavigationToFirstContentfulPaint">
+    <summary>
+      Measures the time in milliseconds from navigation timing's navigation
+      start to the time when the page first paints content, in the AMP subframe.
+      A contentful paint includes a paint of text, image, SVG, or canvas.
+    </summary>
+  </metric>
+  <metric name="SubFrame.PaintTiming.NavigationToLargestContentPaint">
+    <summary>
+      Measures the time in milliseconds from navigation timing's navigation
+      start to the time when the page first paints the largest content (text or
+      image) within viewport, in the AMP subframe. See
+      http://bit.ly/largest_contentful_paint_explainer for more details.
+    </summary>
+  </metric>
   <metric name="SubFrameAmpPageLoad">
     <summary>
       True if the page loaded in any subframe is an AMP document (has an amp
