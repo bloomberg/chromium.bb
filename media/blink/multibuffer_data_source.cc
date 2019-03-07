@@ -289,6 +289,10 @@ bool MultibufferDataSource::IsCorsCrossOrigin() const {
   return url_data_->is_cors_cross_origin();
 }
 
+bool MultibufferDataSource::HasAccessControl() const {
+  return url_data_->has_access_control();
+}
+
 UrlData::CorsMode MultibufferDataSource::cors_mode() const {
   return url_data_->cors_mode();
 }
