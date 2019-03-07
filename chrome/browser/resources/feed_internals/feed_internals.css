@@ -10,6 +10,7 @@ h2 {
 }
 
 table {
+  table-layout: fixed;
   width: 100%;
 }
 
@@ -19,9 +20,14 @@ table > tbody > tr:nth-child(odd) {
 
 table td {
   width: 50%;
+  word-wrap: break-word;
 }
 
 button {
   display: block;
   min-height: 30px;
+}
+
+#current-content table td:first-child {
+  width: 15%;
 }

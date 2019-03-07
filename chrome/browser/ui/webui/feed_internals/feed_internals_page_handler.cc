@@ -10,10 +10,12 @@
 #include "base/time/time.h"
 #include "chrome/browser/android/feed/feed_lifecycle_bridge.h"
 #include "components/feed/content/feed_host_service.h"
+#include "components/feed/content/feed_offline_host.h"
 #include "components/feed/core/feed_scheduler_host.h"
 #include "components/feed/core/pref_names.h"
 #include "components/feed/core/user_classifier.h"
 #include "components/feed/feed_feature_list.h"
+#include "components/offline_pages/core/prefetch/suggestions_provider.h"
 #include "components/prefs/pref_service.h"
 
 namespace {
@@ -31,7 +33,9 @@ FeedInternalsPageHandler::FeedInternalsPageHandler(
     PrefService* pref_service)
     : binding_(this, std::move(request)),
       feed_scheduler_host_(feed_host_service->GetSchedulerHost()),
-      pref_service_(pref_service) {}
+      feed_offline_host_(feed_host_service->GetOfflineHost()),
+      pref_service_(pref_service),
+      weak_ptr_factory_(this) {}
 
 FeedInternalsPageHandler::~FeedInternalsPageHandler() = default;
 
@@ -83,4 +87,30 @@ void FeedInternalsPageHandler::ClearUserClassifierProperties() {
 
 void FeedInternalsPageHandler::ClearCachedDataAndRefreshFeed() {
   feed::FeedLifecycleBridge::ClearCachedData();
+}
+
+void FeedInternalsPageHandler::GetCurrentContent(
+    GetCurrentContentCallback callback) {
+  feed_offline_host_->GetCurrentArticleSuggestions(base::BindOnce(
+      &FeedInternalsPageHandler::OnGetCurrentArticleSuggestionsDone,
+      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void FeedInternalsPageHandler::OnGetCurrentArticleSuggestionsDone(
+    GetCurrentContentCallback callback,
+    std::vector<offline_pages::PrefetchSuggestion> results) {
+  std::vector<feed_internals::mojom::SuggestionPtr> suggestions;
+
+  for (offline_pages::PrefetchSuggestion result : results) {
+    auto suggestion = feed_internals::mojom::Suggestion::New();
+    suggestion->title = std::move(result.article_title);
+    suggestion->url = result.article_url.spec();
+    suggestion->publisher_name = std::move(result.article_attribution);
+    suggestion->image_url = result.thumbnail_url.spec();
+    suggestion->favicon_url = result.favicon_url.spec();
+
+    suggestions.push_back(std::move(suggestion));
+  }
+
+  std::move(callback).Run(std::move(suggestions));
 }

@@ -226,7 +226,7 @@ class FeedSchedulerHost : web_resource::EulaAcceptedNotifier::Observer {
       throttlers_;
 
   // Status of the last fetch for debugging.
-  int last_fetch_status_;
+  int last_fetch_status_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(FeedSchedulerHost);
 };

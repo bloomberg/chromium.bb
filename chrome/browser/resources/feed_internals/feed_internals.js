@@ -51,6 +51,48 @@ function updatePageWithLastFetchProperties() {
 }
 
 /**
+ * Get and display last known content.
+ */
+function updatePageWithCurrentContent() {
+  pageHandler.getCurrentContent().then(response => {
+    const before = $('current-content');
+    const after = before.cloneNode(false);
+
+    /** @type {!Array<feedInternals.mojom.Suggestion>} */
+    const suggestions = response.suggestions;
+
+    for (const suggestion of suggestions) {
+      // Create new content item from template.
+      const item = document.importNode($('suggestion-template').content, true);
+
+      // Populate template with text metadata.
+      item.querySelector('.title').textContent = suggestion.title;
+      item.querySelector('.publisher').textContent = suggestion.publisherName;
+
+      // Populate template with link metadata.
+      setLinkNode(item.querySelector('a.url'), suggestion.url);
+      setLinkNode(item.querySelector('a.image'), suggestion.imageUrl);
+      setLinkNode(item.querySelector('a.favicon'), suggestion.faviconUrl);
+
+      after.appendChild(item);
+    }
+
+    before.replaceWith(after);
+  });
+}
+
+/**
+ * Populate <a> node with hyperlinked URL.
+ *
+ * @param {Element} node
+ * @param {string} url
+ */
+function setLinkNode(node, url) {
+  node.textContent = url;
+  node.href = url;
+}
+
+/**
  * Convert time to string for display.
  *
  * @param {feedInternals.mojom.Time|undefined} time
@@ -78,6 +120,7 @@ function setupEventListeners() {
     // consider adding backend->frontend mojo communication to listen for
     // updates, rather than waiting an arbitrary period of time.
     setTimeout(updatePageWithLastFetchProperties, 1000);
+    setTimeout(updatePageWithCurrentContent, 1000);
   });
 }
 
@@ -88,6 +131,7 @@ document.addEventListener('DOMContentLoaded', function() {
   updatePageWithProperties();
   updatePageWithUserClass();
   updatePageWithLastFetchProperties();
+  updatePageWithCurrentContent();
 
   setupEventListeners();
 });
