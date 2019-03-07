@@ -248,7 +248,7 @@ const base::Feature kEnableIncognitoWindowCounter{
 #if defined(OS_CHROMEOS)
 // Enables event-based status reporting for child accounts in Chrome OS.
 const base::Feature kEventBasedStatusReporting{
-    "EventBasedStatusReporting", base::FEATURE_DISABLED_BY_DEFAULT};
+    "EventBasedStatusReporting", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 // An experimental way of showing app banners, which has modal banners and gives
