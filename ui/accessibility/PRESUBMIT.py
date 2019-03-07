@@ -159,7 +159,11 @@ def GetConstexprFromFile(fullpath):
     # Look for lines of the form "static constexpr <type> NAME "
     m = re.search('static constexpr [\w]+ ([\w]+)', line)
     if m:
-      values.append(m.group(1))
+      value = m.group(1)
+      # Skip first/last sentinels
+      if value == 'kFirstModeFlag' or value == 'kLastModeFlag':
+        continue
+      values.append(value)
 
   return values
 

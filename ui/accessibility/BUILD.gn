@@ -48,6 +48,7 @@ jumbo_component("accessibility") {
     "ax_event_generator.h",
     "ax_export.h",
     "ax_language_info.h",
+    "ax_mode.cc",
     "ax_mode.h",
     "ax_mode_observer.h",
     "ax_node.cc",

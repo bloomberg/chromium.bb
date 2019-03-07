@@ -70,8 +70,7 @@ ui::AXMode AccessibilityLabelsService::GetAXMode() {
 
   // Hidden behind a feature flag.
   if (base::FeatureList::IsEnabled(
-          features::kExperimentalAccessibilityLabels) &&
-      accessibility_state_utils::IsScreenReaderEnabled()) {
+          features::kExperimentalAccessibilityLabels)) {
     bool enabled = profile_->GetPrefs()->GetBoolean(
         prefs::kAccessibilityImageLabelsEnabled);
     ax_mode.set_mode(ui::AXMode::kLabelImages, enabled);
