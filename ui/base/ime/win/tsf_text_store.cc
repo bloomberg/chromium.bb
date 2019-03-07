@@ -219,7 +219,8 @@ STDMETHODIMP TSFTextStore::GetStatus(TS_STATUS* status) {
 
   status->dwDynamicFlags = 0;
   // We don't support hidden text.
-  status->dwStaticFlags = TS_SS_NOHIDDENTEXT;
+  // TODO(IME): Remove TS_SS_TRANSITORY to support Korean reconversion
+  status->dwStaticFlags = TS_SS_TRANSITORY | TS_SS_NOHIDDENTEXT;
 
   return S_OK;
 }
@@ -1201,7 +1202,6 @@ void TSFTextStore::CommitTextAndEndCompositionIfAny(size_t old_size,
     const base::string16& new_committed_string = string_buffer_document_.substr(
         new_committed_string_offset, new_committed_string_size);
     text_input_client_->InsertText(new_committed_string);
-    text_input_client_->SetEditableSelectionRange(selection_);
   }
 }
 
