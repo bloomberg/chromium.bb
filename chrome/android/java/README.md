@@ -63,17 +63,31 @@ attention or the expected file needs updating.
 
 ### Fixing build failures
 
-1. Ensure your args.gn contains these args:
-```
-enable_chrome_android_internal = false
-is_java_debug = false
-```
+1. Ensure that:
+
+   * Your args.gn contains these args:
+
+   ```
+   enable_chrome_android_internal = false
+   is_java_debug = false
+   ```
+
+   * Your local branch is up-to-date with master
+
 
 2. Run:
 
-```
-autoninja -C $CHROMIUM_OUTPUT_DIR monochrome_public_apk
-```
+   For AndroidManifest failures:
+
+   ```
+   autoninja -C $CHROMIUM_OUTPUT_DIR monochrome_public_apk__merge_manifests
+   ```
+
+   For Proguard flags failures:
+
+   ```
+   autoninja -C $CHROMIUM_OUTPUT_DIR monochrome_public_apk
+   ```
 
 3. Run the command suggested in the error message to copy the contents of the
    generated file to the expected file path
