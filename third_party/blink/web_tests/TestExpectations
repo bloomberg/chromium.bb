@@ -23,7 +23,9 @@ crbug.com/807686 crbug.com/24182 jquery/manipulation.html [ Timeout Pass ]
 ## Next 18 can be viewed in this run, by clicking on "Did not pass 11183":
 ## https://test-results.appspot.com/data/layout_results/linux-blink-rel/1237/webkit_layout_tests%20%28with%20patch%29/layout-test-results/results.html
 crbug.com/891427 virtual/threaded/animations/responsive/viewport-unit-transform-responsive.html [ Timeout ]
+crbug.com/891427 virtual/disable-blink-gen-property-trees/animations/responsive/viewport-unit-transform-responsive.html [ Skip ]
 crbug.com/891427 virtual/threaded/animations/responsive/viewport-unit-translate-responsive.html [ Timeout ]
+crbug.com/891427 virtual/disable-blink-gen-property-trees/animations/responsive/viewport-unit-translate-responsive.html [ Skip ]
 crbug.com/891427 virtual/fractional_scrolling/fast/scrolling/editor-command-scroll-page-scale.html [ Pass Failure ]
 crbug.com/891427 fast/replaced/replaced-breaking.html [ Failure ]
 crbug.com/891427 virtual/android/fullscreen/rendering/backdrop-video.html [ Failure ]
@@ -32,6 +34,7 @@ crbug.com/891427 virtual/android/rootscroller/set-rootscroller-before-load.html 
 crbug.com/891427 virtual/android/url-bar/bottom-and-top-fixed-sticks-to-top.html [ Failure ]
 ## Next 4 here: https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux_chromium_rel_ng/216317
 crbug.com/891427 virtual/threaded/animations/timing/animation-duration-infinite.html [ Failure ]
+crbug.com/891427 virtual/disable-blink-gen-property-trees/animations/timing/animation-duration-infinite.html [ Skip ]
 crbug.com/891427 editing/selection/drag-in-iframe.html [ Failure ]
 crbug.com/891427 fast/overflow/transformed-frame-scrollIntoView.html [ Crash ]
 
@@ -382,12 +385,14 @@ crbug.com/887000 virtual/prefer_compositing_to_lcd_text/scrollbars/hidden-scroll
 crbug.com/882975 virtual/threaded/fast/events/pinch/gesture-pinch-zoom-prevent-in-handler.html [ Failure Pass ]
 crbug.com/882975 virtual/threaded/fast/events/pinch/scroll-visual-viewport-send-boundary-events.html [ Failure Pass ]
 crbug.com/884239 virtual/threaded/animations/animationworklet/worklet-animation-local-time-undefined.html [ Failure Pass ]
+crbug.com/884239 virtual/disable-blink-gen-property-trees/animations/animationworklet/worklet-animation-local-time-undefined.html [ Skip ]
 # Subpixel rounding differences that are incorrect.
 crbug.com/836886 virtual/prefer_compositing_to_lcd_text/compositing/overflow/scaled-overflow.html [ Failure ]
 crbug.com/836886 compositing/overflow/scaled-overflow.html [ Failure ]
 crbug.com/836886 compositing/scrollbars/nested-overlay-scrollbars.html [ Failure ]
 # Flaky subpixel AA difference (not necessarily incorrect, but flaky)
 crbug.com/921105 virtual/threaded/animations/skew-notsequential-compositor.html [ Failure Pass ]
+crbug.com/921105 virtual/disable-blink-gen-property-trees/animations/skew-notsequential-compositor.html [ Skip ]
 # Occasionally timeout, but the test coverage is still good
 crbug.com/919789 paint/invalidation/window-resize/ [ Timeout Pass ]
 
@@ -2009,6 +2014,7 @@ crbug.com/518987 virtual/outofblink-cors/http/tests/xmlhttprequest/navigation-ab
 crbug.com/432129 html/marquee/marquee-scroll.html [ Failure Pass ]
 crbug.com/326139 crbug.com/390125 media/video-frame-accurate-seek.html [ Failure Pass ]
 crbug.com/936462 virtual/threaded/animations/stability/animation-iteration-event-destroy-renderer.html [ Pass Timeout ]
+crbug.com/936462 virtual/disable-blink-gen-property-trees/animations/stability/animation-iteration-event-destroy-renderer.html [ Skip ]
 crbug.com/421283 html/marquee/marquee-scrollamount.html [ Pass Failure ]
 
 # TODO(oshima): Mac Android are currently not supported.
@@ -5824,8 +5830,11 @@ crbug.com/922951 virtual/feature-policy-for-sandbox/http/tests/security/offscree
 crbug.com/922951 virtual/prefer_compositing_to_lcd_text/scrollbars/resize-scales-with-dpi-150.html [ Skip ]
 crbug.com/922951 virtual/scalefactor150/fast/events/synthetic-events/tap-on-scaled-screen.html [ Skip ]
 crbug.com/922951 virtual/threaded/animations/direction-and-fill/fill-mode-iteration-count-non-integer.html [ Skip ]
+crbug.com/922951 virtual/disable-blink-gen-property-trees/animations/direction-and-fill/fill-mode-iteration-count-non-integer.html [ Skip ]
 crbug.com/922951 virtual/threaded/animations/direction-and-fill/fill-mode-missing-from-to-keyframes.html [ Skip ]
+crbug.com/922951 virtual/disable-blink-gen-property-trees/animations/direction-and-fill/fill-mode-missing-from-to-keyframes.html [ Skip ]
 crbug.com/922951 virtual/threaded/animations/direction-and-fill/fill-mode.html [ Skip ]
+crbug.com/922951 virtual/disable-blink-gen-property-trees/animations/direction-and-fill/fill-mode.html [ Skip ]
 crbug.com/922951 virtual/threaded/http/tests/devtools/tracing/console-timeline.js [ Skip ]
 crbug.com/922951 virtual/threaded/http/tests/devtools/tracing/frame-model-instrumentation.js [ Skip ]
 crbug.com/922951 virtual/threaded/http/tests/devtools/tracing/timeline-layout/timeline-layout-reason.js [ Skip ]
