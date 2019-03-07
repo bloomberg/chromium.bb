@@ -244,10 +244,12 @@ std::unique_ptr<base::Value> NetLogQuicCryptoHandshakeMessageCallback(
 
 std::unique_ptr<base::Value> NetLogQuicOnConnectionClosedCallback(
     quic::QuicErrorCode error,
+    string error_details,
     quic::ConnectionCloseSource source,
     NetLogCaptureMode /* capture_mode */) {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetInteger("quic_error", error);
+  dict->SetString("details", error_details);
   dict->SetBoolean("from_peer", source == quic::ConnectionCloseSource::FROM_PEER
                                     ? true
                                     : false);
@@ -797,9 +799,9 @@ void QuicConnectionLogger::OnConnectionClosed(
     quic::ConnectionCloseSource source) {
   if (!net_log_is_capturing_)
     return;
-  net_log_.AddEvent(
-      NetLogEventType::QUIC_SESSION_CLOSED,
-      base::Bind(&NetLogQuicOnConnectionClosedCallback, error, source));
+  net_log_.AddEvent(NetLogEventType::QUIC_SESSION_CLOSED,
+                    base::Bind(&NetLogQuicOnConnectionClosedCallback, error,
+                               error_details, source));
 }
 
 void QuicConnectionLogger::OnSuccessfulVersionNegotiation(

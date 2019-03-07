@@ -1989,7 +1989,9 @@ EVENT_TYPE(QUIC_SESSION_PUSH_PROMISE_RECEIVED)
 // Session was closed, either remotely or by the peer.
 //   {
 //     "quic_error": <quic::QuicErrorCode which caused the connection to be
-//     closed>, "from_peer":  <True if the peer closed the connection>
+//                    closed>,
+//     "details": <The error details string in the connection close.>,
+//     "from_peer":  <True if the peer closed the connection>
 //   }
 EVENT_TYPE(QUIC_SESSION_CLOSED)
 
