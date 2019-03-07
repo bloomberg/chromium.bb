@@ -1413,8 +1413,8 @@
   },
   {
     "name": "enable-notification-indicator",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "newcomer" ],
+    "expiry_milestone": 78
   },
   {
     "name": "enable-ntlm-v2",
