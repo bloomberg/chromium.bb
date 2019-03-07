@@ -236,10 +236,13 @@ TEST_F(PaintWorkletStylePropertyMapTest, PassValuesCrossThread) {
   UpdateAllLifecyclePhasesForTest();
   Node* node = PageNode();
 
+  CrossThreadPersistent<PaintWorkletStylePropertyMap> style_map =
+      MakeGarbageCollected<PaintWorkletStylePropertyMap>(
+          GetDocument(), node->ComputedStyleRef(), node, native_properties,
+          custom_properties);
   scoped_refptr<PaintWorkletInput> input =
-      base::MakeRefCounted<PaintWorkletInput>(
-          "test", FloatSize(100, 100), 1.0f, GetDocument(),
-          node->ComputedStyleRef(), node, native_properties, custom_properties);
+      base::MakeRefCounted<PaintWorkletInput>("test", FloatSize(100, 100), 1.0f,
+                                              style_map);
   DCHECK(input);
 
   thread_ = WebThreadSupportingGC::Create(

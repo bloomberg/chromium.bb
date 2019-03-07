@@ -10,19 +10,10 @@ PaintWorkletInput::PaintWorkletInput(
     const std::string& name,
     const FloatSize& container_size,
     float effective_zoom,
-    const Document& document,
-    const ComputedStyle& style,
-    Node* styled_node,
-    const Vector<CSSPropertyID>& native_properties,
-    const Vector<AtomicString>& custom_properties)
+    CrossThreadPersistent<PaintWorkletStylePropertyMap> style_map)
     : name_(name),
       container_size_(container_size),
       effective_zoom_(effective_zoom),
-      style_map_(MakeGarbageCollected<PaintWorkletStylePropertyMap>(
-          document,
-          style,
-          styled_node,
-          native_properties,
-          custom_properties)) {}
+      style_map_(style_map) {}
 
 }  // namespace blink
