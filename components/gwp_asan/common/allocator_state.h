@@ -140,7 +140,7 @@ class AllocatorState {
   // Pointer to an array of metadata about every allocation, including its size,
   // offset, and pointers to the allocation/deallocation stack traces (if
   // present.)
-  uintptr_t slot_metadata = 0;
+  uintptr_t metadata_addr = 0;
 
   // Set to the address of a double freed allocation if a double free occurred.
   uintptr_t double_free_address = 0;

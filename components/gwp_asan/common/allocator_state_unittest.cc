@@ -33,7 +33,7 @@ class AllocatorStateTest : public testing::Test {
         end_addr_offset + base + page_size * (total_pages * 2 + 1);
 
     // An invalid address, but it's never dereferenced in AllocatorState.
-    state_.slot_metadata = 0x1234;
+    state_.metadata_addr = 0x1234;
   }
 
   AllocatorState state_;

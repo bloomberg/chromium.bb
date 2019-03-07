@@ -124,7 +124,7 @@ class GWP_ASAN_EXPORT GuardedPageAllocator {
 
   // We dynamically allocate the SlotMetadata array to avoid allocating
   // extraneous memory for when total_pages < kGpaMaxPages.
-  std::unique_ptr<AllocatorState::SlotMetadata[]> slots_;
+  std::unique_ptr<AllocatorState::SlotMetadata[]> metadata_;
 
   // Required for a singleton to access the constructor.
   friend base::NoDestructor<GuardedPageAllocator>;
