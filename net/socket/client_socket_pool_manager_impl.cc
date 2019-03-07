@@ -107,7 +107,6 @@ TransportClientSocketPool* ClientSocketPoolManagerImpl::GetSocketPool(
         ssl_client_session_cache_privacy_mode_, ssl_config_service_,
         network_quality_estimator_, websocket_endpoint_lock_manager_, net_log_);
   } else {
-    // TODO(mmenke): Can the SOCKS check be removed?
     new_pool = std::make_unique<TransportClientSocketPool>(
         sockets_per_proxy_server, sockets_per_group,
         unused_idle_socket_timeout(pool_type_), socket_factory_, host_resolver_,
@@ -115,8 +114,8 @@ TransportClientSocketPool* ClientSocketPoolManagerImpl::GetSocketPool(
         transport_security_state_, cert_transparency_verifier_,
         ct_policy_enforcer_, ssl_client_session_cache_,
         ssl_client_session_cache_privacy_mode_, ssl_config_service_,
-        proxy_server.is_socks() ? nullptr : socket_performance_watcher_factory_,
-        network_quality_estimator_, net_log_);
+        socket_performance_watcher_factory_, network_quality_estimator_,
+        net_log_);
   }
 
   std::pair<TransportSocketPoolMap::iterator, bool> ret =
