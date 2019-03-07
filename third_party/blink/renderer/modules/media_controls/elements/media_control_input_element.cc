@@ -61,25 +61,28 @@ HTMLElement* MediaControlInputElement::CreateOverflowElement(
   overflow_menu_text_->setInnerText(button->GetOverflowMenuString(),
                                     ASSERT_NO_EXCEPTION);
 
-  HTMLLabelElement* element = HTMLLabelElement::Create(GetDocument());
-  element->SetShadowPseudoId(
+  overflow_label_element_ = HTMLLabelElement::Create(GetDocument());
+  overflow_label_element_->SetShadowPseudoId(
       AtomicString("-internal-media-controls-overflow-menu-list-item"));
-  element->setAttribute(html_names::kRoleAttr, "menuitem");
+  overflow_label_element_->setAttribute(html_names::kRoleAttr, "menuitem");
   // Appending a button to a label element ensures that clicks on the label
   // are passed down to the button, performing the action we'd expect.
-  element->ParserAppendChild(button);
+  overflow_label_element_->ParserAppendChild(button);
 
   // Allows to focus the list entry instead of the button.
-  element->setTabIndex(0);
+  overflow_label_element_->setTabIndex(0);
   button->setTabIndex(-1);
 
   if (MediaControlsImpl::IsModern()) {
     overflow_menu_container_ = HTMLDivElement::Create(GetDocument());
     overflow_menu_container_->ParserAppendChild(overflow_menu_text_);
+    overflow_menu_container_->setAttribute(html_names::kAriaHiddenAttr, "true");
+    aria_label_ = button->getAttribute(html_names::kAriaLabelAttr) + " " +
+                  button->GetOverflowMenuString();
     UpdateOverflowSubtitleElement(button->GetOverflowMenuSubtitleString());
-    element->ParserAppendChild(overflow_menu_container_);
+    overflow_label_element_->ParserAppendChild(overflow_menu_container_);
   } else {
-    element->ParserAppendChild(overflow_menu_text_);
+    overflow_label_element_->ParserAppendChild(overflow_menu_text_);
   }
 
   // Initialize the internal states of the main element and the overflow one.
@@ -89,10 +92,11 @@ HTMLElement* MediaControlInputElement::CreateOverflowElement(
   // Keeping the element hidden by default. This is setting the style in
   // addition of calling ShouldShowButtonInOverflowMenu() to guarantee that the
   // internal state matches the CSS state.
-  element->SetInlineStyleProperty(CSSPropertyDisplay, CSSValueNone);
+  overflow_label_element_->SetInlineStyleProperty(CSSPropertyDisplay,
+                                                  CSSValueNone);
   SetOverflowElementIsWanted(false);
 
-  return element;
+  return overflow_label_element_;
 }
 
 void MediaControlInputElement::UpdateOverflowSubtitleElement(String text) {
@@ -101,6 +105,7 @@ void MediaControlInputElement::UpdateOverflowSubtitleElement(String text) {
   if (!text) {
     // If setting the text to null, we want to remove the element.
     RemoveOverflowSubtitleElement();
+    UpdateOverflowLabelAriaLabel("");
     return;
   }
 
@@ -117,6 +122,7 @@ void MediaControlInputElement::UpdateOverflowSubtitleElement(String text) {
     overflow_menu_container_->setAttribute(
         "class", kOverflowContainerWithSubtitleCSSClass);
   }
+  UpdateOverflowLabelAriaLabel(text);
 }
 
 void MediaControlInputElement::RemoveOverflowSubtitleElement() {
@@ -136,6 +142,12 @@ void MediaControlInputElement::SetOverflowElementIsWanted(bool wanted) {
   if (!overflow_element_)
     return;
   overflow_element_->SetIsWanted(wanted);
+}
+
+void MediaControlInputElement::UpdateOverflowLabelAriaLabel(String subtitle) {
+  String full_aria_label = aria_label_ + " " + subtitle;
+  overflow_label_element_->setAttribute(html_names::kAriaLabelAttr,
+                                        WTF::AtomicString(full_aria_label));
 }
 
 void MediaControlInputElement::MaybeRecordDisplayed() {
@@ -292,6 +304,7 @@ void MediaControlInputElement::Trace(blink::Visitor* visitor) {
   visitor->Trace(overflow_menu_container_);
   visitor->Trace(overflow_menu_text_);
   visitor->Trace(overflow_menu_subtitle_);
+  visitor->Trace(overflow_label_element_);
 }
 
 }  // namespace blink

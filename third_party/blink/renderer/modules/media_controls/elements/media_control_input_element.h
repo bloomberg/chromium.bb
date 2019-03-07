@@ -99,6 +99,9 @@ class MODULES_EXPORT MediaControlInputElement : public HTMLInputElement,
   // Remove the subtitle text from the overflow element.
   void RemoveOverflowSubtitleElement();
 
+  // Updates aria label on overflow_label_element_.
+  void UpdateOverflowLabelAriaLabel(String);
+
   // Used for histograms, do not reorder.
   enum class CTREvent {
     kDisplayed = 0,
@@ -113,6 +116,9 @@ class MODULES_EXPORT MediaControlInputElement : public HTMLInputElement,
   // Setting this pointer is optional so it may be null.
   Member<MediaControlInputElement> overflow_element_;
 
+  // The overflow label element for the overflow_element_;
+  Member<HTMLLabelElement> overflow_label_element_;
+
   // Contains the overflow text and its subtitle (if exists).
   Member<HTMLDivElement> overflow_menu_container_;
 
@@ -121,6 +127,9 @@ class MODULES_EXPORT MediaControlInputElement : public HTMLInputElement,
 
   // The subtitle of the text within the overflow menu.
   Member<HTMLSpanElement> overflow_menu_subtitle_;
+
+  // The aria label for the overflow element without subtitle text.
+  String aria_label_;
 
   // Keeps track if the button was created for the purpose of the overflow menu.
   bool is_overflow_element_ = false;
