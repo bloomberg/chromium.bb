@@ -38,9 +38,20 @@ LearningTaskControllerImpl::LearningTaskControllerImpl(
 
 LearningTaskControllerImpl::~LearningTaskControllerImpl() = default;
 
-LearningTaskController::SetTargetValueCB
-LearningTaskControllerImpl::BeginObservation(const FeatureVector& features) {
-  return helper_->BeginObservation(features);
+void LearningTaskControllerImpl::BeginObservation(
+    ObservationId id,
+    const FeatureVector& features) {
+  helper_->BeginObservation(id, features);
+}
+
+void LearningTaskControllerImpl::CompleteObservation(
+    ObservationId id,
+    const ObservationCompletion& completion) {
+  helper_->CompleteObservation(id, completion);
+}
+
+void LearningTaskControllerImpl::CancelObservation(ObservationId id) {
+  helper_->CancelObservation(id);
 }
 
 void LearningTaskControllerImpl::AddFinishedExample(LabelledExample example) {

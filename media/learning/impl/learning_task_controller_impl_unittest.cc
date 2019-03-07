@@ -113,8 +113,10 @@ class LearningTaskControllerImplTest : public testing::Test {
   }
 
   void AddExample(const LabelledExample& example) {
-    std::move(controller_->BeginObservation(example.features))
-        .Run(example.target_value, example.weight);
+    LearningTaskController::ObservationId id = 1;
+    controller_->BeginObservation(id, example.features);
+    controller_->CompleteObservation(
+        id, ObservationCompletion(example.target_value, example.weight));
   }
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;

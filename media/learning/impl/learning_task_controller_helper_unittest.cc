@@ -87,6 +87,8 @@ class LearningTaskControllerHelperTest : public testing::Test {
 
   LearningTask task_;
 
+  LearningTaskController::ObservationId id_ = 1;
+
   LabelledExample example_;
 };
 
@@ -94,10 +96,10 @@ TEST_F(LearningTaskControllerHelperTest, AddingAnExampleWithoutFPWorks) {
   // A helper that doesn't use a FeatureProvider should forward examples as soon
   // as they're done.
   CreateClient(false);
-  auto cb = helper_->BeginObservation(example_.features);
+  helper_->BeginObservation(id_, example_.features);
   EXPECT_EQ(pending_example_count(), 1u);
-  EXPECT_TRUE(cb);
-  std::move(cb).Run(example_.target_value, example_.weight);
+  helper_->CompleteObservation(
+      id_, ObservationCompletion(example_.target_value, example_.weight));
   EXPECT_TRUE(most_recent_example_);
   EXPECT_EQ(*most_recent_example_, example_);
   EXPECT_EQ(most_recent_example_->weight, example_.weight);
@@ -107,11 +109,9 @@ TEST_F(LearningTaskControllerHelperTest, AddingAnExampleWithoutFPWorks) {
 TEST_F(LearningTaskControllerHelperTest, DropTargetValueWithoutFPWorks) {
   // Verify that we can drop an example without labelling it.
   CreateClient(false);
-  auto cb = helper_->BeginObservation(example_.features);
-  EXPECT_TRUE(cb);
+  helper_->BeginObservation(id_, example_.features);
   EXPECT_EQ(pending_example_count(), 1u);
-  // Drop the callback, which should forget the pending example.
-  cb.Reset();
+  helper_->CancelObservation(id_);
   scoped_task_environment_.RunUntilIdle();
   EXPECT_FALSE(most_recent_example_);
   EXPECT_EQ(pending_example_count(), 0u);
@@ -120,15 +120,15 @@ TEST_F(LearningTaskControllerHelperTest, DropTargetValueWithoutFPWorks) {
 TEST_F(LearningTaskControllerHelperTest, AddTargetValueBeforeFP) {
   // Verify that an example is added if the target value arrives first.
   CreateClient(true);
-  auto cb = helper_->BeginObservation(example_.features);
+  helper_->BeginObservation(id_, example_.features);
   EXPECT_EQ(pending_example_count(), 1u);
-  EXPECT_TRUE(cb);
   scoped_task_environment_.RunUntilIdle();
   // The feature provider should know about the example.
   EXPECT_EQ(fp_features_, example_.features);
 
   // Add the targe value and verify that the example wasn't added yet.
-  std::move(cb).Run(example_.target_value, example_.weight);
+  helper_->CompleteObservation(
+      id_, ObservationCompletion(example_.target_value, example_.weight));
   EXPECT_FALSE(most_recent_example_);
   EXPECT_EQ(pending_example_count(), 1u);
 
@@ -145,15 +145,14 @@ TEST_F(LearningTaskControllerHelperTest, AddTargetValueBeforeFP) {
 TEST_F(LearningTaskControllerHelperTest, DropTargetValueBeforeFP) {
   // Verify that an example is correctly dropped before the FP adds features.
   CreateClient(true);
-  auto cb = helper_->BeginObservation(example_.features);
+  helper_->BeginObservation(id_, example_.features);
   EXPECT_EQ(pending_example_count(), 1u);
-  EXPECT_TRUE(cb);
   scoped_task_environment_.RunUntilIdle();
   // The feature provider should know about the example.
   EXPECT_EQ(fp_features_, example_.features);
 
-  // Drop the TargetValue cb.
-  cb.Reset();
+  // Cancel the observation.
+  helper_->CancelObservation(id_);
   // We don't care if the example is still queued or not, only that we can
   // add features and have it be zero by then.
 
@@ -169,9 +168,8 @@ TEST_F(LearningTaskControllerHelperTest, DropTargetValueBeforeFP) {
 TEST_F(LearningTaskControllerHelperTest, AddTargetValueAfterFP) {
   // Verify that an example is added if the target value arrives second.
   CreateClient(true);
-  auto cb = helper_->BeginObservation(example_.features);
+  helper_->BeginObservation(id_, example_.features);
   EXPECT_EQ(pending_example_count(), 1u);
-  EXPECT_TRUE(cb);
   scoped_task_environment_.RunUntilIdle();
   // The feature provider should know about the example.
   EXPECT_EQ(fp_features_, example_.features);
@@ -185,7 +183,8 @@ TEST_F(LearningTaskControllerHelperTest, AddTargetValueAfterFP) {
   EXPECT_EQ(pending_example_count(), 1u);
 
   // Add the targe value and verify that the example is added.
-  std::move(cb).Run(example_.target_value, example_.weight);
+  helper_->CompleteObservation(
+      id_, ObservationCompletion(example_.target_value, example_.weight));
   EXPECT_TRUE(most_recent_example_);
   EXPECT_EQ(*most_recent_example_, example_);
   EXPECT_EQ(most_recent_example_->weight, example_.weight);
@@ -193,11 +192,10 @@ TEST_F(LearningTaskControllerHelperTest, AddTargetValueAfterFP) {
 }
 
 TEST_F(LearningTaskControllerHelperTest, DropTargetValueAfterFP) {
-  // Verify that we can drop the TargetValue cb after sending features.
+  // Verify that we can cancel the observationc after sending features.
   CreateClient(true);
-  auto cb = helper_->BeginObservation(example_.features);
+  helper_->BeginObservation(id_, example_.features);
   EXPECT_EQ(pending_example_count(), 1u);
-  EXPECT_TRUE(cb);
   scoped_task_environment_.RunUntilIdle();
   // The feature provider should know about the example.
   EXPECT_EQ(fp_features_, example_.features);
@@ -212,9 +210,9 @@ TEST_F(LearningTaskControllerHelperTest, DropTargetValueAfterFP) {
   EXPECT_FALSE(most_recent_example_);
   EXPECT_EQ(pending_example_count(), 1u);
 
-  // Delete the SetTargetValueCB, and verify that the pending example has been
+  // Cancel the observation, and verify that the pending example has been
   // removed, and no example was sent to us.
-  cb.Reset();
+  helper_->CancelObservation(id_);
   scoped_task_environment_.RunUntilIdle();
   EXPECT_FALSE(most_recent_example_);
   EXPECT_EQ(pending_example_count(), 0u);
