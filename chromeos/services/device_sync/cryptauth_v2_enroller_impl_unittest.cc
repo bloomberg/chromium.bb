@@ -529,10 +529,8 @@ class DeviceSyncCryptAuthV2EnrollerImplTest
         enroll_keys_request()->enroll_single_key_requests(
             GetKeyBundleIndex(bundle_name));
 
-    std::string bundle_name_str =
-        CryptAuthKeyBundle::KeyBundleNameEnumToString(bundle_name);
-
-    EXPECT_EQ(bundle_name_str, single_request_user_key_pair.key_name());
+    EXPECT_EQ(CryptAuthKeyBundle::KeyBundleNameEnumToString(bundle_name),
+              single_request_user_key_pair.key_name());
 
     EXPECT_EQ(new_key.handle(), single_request_user_key_pair.new_key_handle());
 
@@ -544,7 +542,7 @@ class DeviceSyncCryptAuthV2EnrollerImplTest
     EXPECT_EQ(CryptAuthKeyProofComputerImpl::Factory::Get()
                   ->BuildInstance()
                   ->ComputeKeyProof(new_key, kRandomSessionId,
-                                    kCryptAuthKeyProofSalt, bundle_name_str),
+                                    kCryptAuthKeyProofSalt),
               single_request_user_key_pair.key_proof());
   }
 
