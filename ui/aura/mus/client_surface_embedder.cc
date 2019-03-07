@@ -10,6 +10,21 @@
 #include "ui/gfx/geometry/dip_util.h"
 
 namespace aura {
+namespace {
+
+// Returns the target visibility respecting the window hierarchy. It returns
+// true only when the target visibility of the window and all its ancestors are
+// true. This can check if the window is going to be drawn without the effect
+// of LayerAnimator.
+bool GetTargetVisibility(aura::Window* window) {
+  if (!window)
+    return false;
+  while (window && window->TargetVisibility())
+    window = window->parent();
+  return window == nullptr;
+}
+
+}  // namespace
 
 ClientSurfaceEmbedder::ClientSurfaceEmbedder(Window* window)
     : window_(window),
@@ -20,6 +35,7 @@ ClientSurfaceEmbedder::ClientSurfaceEmbedder(Window* window)
   // The frame provided by the parent window->layer() needs to show through
   // the surface layer.
   surface_layer_owner_->layer()->SetFillsBoundsOpaquely(false);
+  surface_layer_owner_->layer()->SetVisible(GetTargetVisibility(window_));
 
   window_->layer()->Add(surface_layer_owner_->layer());
 
@@ -27,9 +43,12 @@ ClientSurfaceEmbedder::ClientSurfaceEmbedder(Window* window)
   // this is the case with window decorations provided by Window Manager.
   // This content should appear underneath the content of the embedded client.
   window_->layer()->StackAtTop(surface_layer_owner_->layer());
+  window_->AddObserver(this);
 }
 
-ClientSurfaceEmbedder::~ClientSurfaceEmbedder() = default;
+ClientSurfaceEmbedder::~ClientSurfaceEmbedder() {
+  window_->RemoveObserver(this);
+}
 
 void ClientSurfaceEmbedder::SetSurfaceId(const viz::SurfaceId& surface_id) {
   // Set the background to transparent to avoid a flash of color before the
@@ -46,6 +65,12 @@ void ClientSurfaceEmbedder::SetSurfaceId(const viz::SurfaceId& surface_id) {
 viz::SurfaceId ClientSurfaceEmbedder::GetSurfaceId() const {
   const viz::SurfaceId* id = surface_layer_owner_->layer()->GetSurfaceId();
   return id ? *id : viz::SurfaceId();
+}
+
+void ClientSurfaceEmbedder::OnWindowVisibilityChanged(Window* window,
+                                                      bool visible) {
+  if (window->Contains(window_))
+    surface_layer_owner_->layer()->SetVisible(GetTargetVisibility(window_));
 }
 
 }  // namespace aura
