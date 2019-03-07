@@ -230,9 +230,10 @@ DesktopAutomationHandler.prototype = {
    * @param {!AutomationEvent} evt
    */
   onAriaAttributeChanged: function(evt) {
-    // Don't report changes on non-focused, richly editables.
-    if (evt.target.state[StateType.RICHLY_EDITABLE] &&
-        !evt.target.state[StateType.FOCUSED])
+    // Don't report changes on editable nodes since they interfere with text
+    // selection changes. Users can query via Search+k for the current state of
+    // the text field (which would also report the entire value).
+    if (evt.target.state[StateType.EDITABLE])
       return;
 
     // Only report attribute changes on some *Option roles if it is selected.
