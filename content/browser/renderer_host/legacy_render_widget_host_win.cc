@@ -248,25 +248,11 @@ LRESULT LegacyRenderWidgetHostHWND::OnGetObject(UINT message,
       BrowserAccessibilityStateImpl::GetInstance()->EnableAccessibility();
     }
 
-    RenderWidgetHostImpl* rwhi =
-        RenderWidgetHostImpl::From(host_->GetRenderWidgetHost());
-    if (!rwhi)
+    gfx::NativeViewAccessible root = GetOrCreateWindowRootAccessible();
+    if (root == nullptr)
       return static_cast<LRESULT>(0L);
-
-    BrowserAccessibilityManagerWin* manager =
-        static_cast<BrowserAccessibilityManagerWin*>(
-            rwhi->GetRootBrowserAccessibilityManager());
-    if (!manager || !manager->GetRoot())
-      return static_cast<LRESULT>(0L);
-
-    BrowserAccessibilityComWin* root =
-        ToBrowserAccessibilityWin(manager->GetRoot())->GetCOM();
 
     if (is_uia_request) {
-      if (!ax_fragment_root_)
-        ax_fragment_root_ =
-            std::make_unique<ui::AXFragmentRootWin>(hwnd(), root);
-
       Microsoft::WRL::ComPtr<IRawElementProviderSimple> root_uia;
       ax_fragment_root_->GetNativeViewAccessible()->QueryInterface(
           IID_PPV_ARGS(&root_uia));
@@ -552,6 +538,34 @@ void LegacyRenderWidgetHostHWND::PollForNextEvent() {
 
   if (!direct_manipulation_helper_->PollForNextEvent())
     DestroyAnimationObserver();
+}
+
+gfx::NativeViewAccessible
+LegacyRenderWidgetHostHWND::GetOrCreateWindowRootAccessible() {
+  RenderWidgetHostImpl* rwhi =
+      RenderWidgetHostImpl::From(host_->GetRenderWidgetHost());
+  if (!rwhi)
+    return nullptr;
+
+  BrowserAccessibilityManagerWin* manager =
+      static_cast<BrowserAccessibilityManagerWin*>(
+          rwhi->GetOrCreateRootBrowserAccessibilityManager());
+  if (!manager || !manager->GetRoot())
+    return nullptr;
+
+  BrowserAccessibilityComWin* root =
+      ToBrowserAccessibilityWin(manager->GetRoot())->GetCOM();
+
+  if (::switches::IsExperimentalAccessibilityPlatformUIAEnabled()) {
+    if (!ax_fragment_root_) {
+      ax_fragment_root_ = std::make_unique<ui::AXFragmentRootWin>(hwnd(), root);
+      ax_fragment_root_->SetParent(host_->GetParentNativeViewAccessible());
+    }
+
+    return ax_fragment_root_->GetNativeViewAccessible();
+  }
+
+  return root->GetNativeViewAccessible();
 }
 
 void LegacyRenderWidgetHostHWND::CreateAnimationObserver() {

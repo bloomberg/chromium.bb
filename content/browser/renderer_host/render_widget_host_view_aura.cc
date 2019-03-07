@@ -569,10 +569,15 @@ gfx::NativeViewAccessible RenderWidgetHostViewAura::GetNativeViewAccessible() {
   aura::WindowTreeHost* window_host = window_->GetHost();
   if (!window_host)
     return static_cast<gfx::NativeViewAccessible>(NULL);
+
+  if (legacy_render_widget_host_HWND_)
+    return legacy_render_widget_host_HWND_->GetOrCreateWindowRootAccessible();
+
   BrowserAccessibilityManager* manager =
       host()->GetOrCreateRootBrowserAccessibilityManager();
   if (manager)
     return ToBrowserAccessibilityWin(manager->GetRoot())->GetCOM();
+
 #elif defined(USE_X11)
   BrowserAccessibilityManager* manager =
       host()->GetOrCreateRootBrowserAccessibilityManager();
@@ -879,6 +884,16 @@ void RenderWidgetHostViewAura::UpdateMouseLockRegion() {
 void RenderWidgetHostViewAura::OnLegacyWindowDestroyed() {
   legacy_render_widget_host_HWND_ = nullptr;
   legacy_window_destroyed_ = true;
+}
+
+gfx::NativeViewAccessible
+RenderWidgetHostViewAura::GetParentNativeViewAccessible() {
+  if (window_->parent()) {
+    return window_->parent()->GetProperty(
+        aura::client::kParentNativeViewAccessibleKey);
+  }
+
+  return nullptr;
 }
 #endif
 

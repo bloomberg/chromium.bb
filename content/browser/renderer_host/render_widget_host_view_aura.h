@@ -307,6 +307,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
   // Notification that the LegacyRenderWidgetHostHWND was destroyed.
   void OnLegacyWindowDestroyed();
+
+  gfx::NativeViewAccessible GetParentNativeViewAccessible();
 #endif
 
   // Method to indicate if this instance is shutting down or closing.
@@ -371,12 +373,14 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
  private:
   friend class DelegatedFrameHostClientAura;
+  friend class FakeRenderWidgetHostViewAura;
   friend class InputMethodAuraTestBase;
   friend class RenderWidgetHostViewAuraTest;
   friend class RenderWidgetHostViewAuraBrowserTest;
   friend class RenderWidgetHostViewAuraCopyRequestTest;
   friend class TestInputMethodObserver;
 #if defined(OS_WIN)
+  friend class AccessibilityTreeLinkageWinBrowserTest;
   friend class DirectManipulationBrowserTest;
 #endif
   FRIEND_TEST_ALL_PREFIXES(InputMethodResultAuraTest,

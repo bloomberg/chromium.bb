@@ -41,6 +41,10 @@ class AX_EXPORT AXFragmentRootWin : public ui::AXPlatformNodeDelegateBase {
   // Return the NativeViewAccessible for this fragment root.
   gfx::NativeViewAccessible GetNativeViewAccessible();
 
+  // The legacy window needs to provide navigation to its parent for tree
+  // linkage to be correct.
+  void SetParent(gfx::NativeViewAccessible parent);
+
   // The sole child of a fragment root is permitted to change during the
   // fragment root's lifetime. This will happen, for example, on a web content
   // navigation.
@@ -48,6 +52,7 @@ class AX_EXPORT AXFragmentRootWin : public ui::AXPlatformNodeDelegateBase {
 
  private:
   // AXPlatformNodeDelegate overrides.
+  gfx::NativeViewAccessible GetParent() override;
   int GetChildCount() override;
   gfx::NativeViewAccessible ChildAtIndex(int index) override;
   gfx::NativeViewAccessible HitTestSync(int x, int y) override;
@@ -56,6 +61,7 @@ class AX_EXPORT AXFragmentRootWin : public ui::AXPlatformNodeDelegateBase {
   gfx::AcceleratedWidget GetTargetForNativeAccessibilityEvent() override;
 
   Microsoft::WRL::ComPtr<ui::AXFragmentRootPlatformNodeWin> platform_node_;
+  Microsoft::WRL::ComPtr<ui::AXPlatformNodeWin> parent_;
   Microsoft::WRL::ComPtr<ui::AXPlatformNodeWin> child_;
   ui::AXUniqueId unique_id_;
   gfx::AcceleratedWidget widget_;
