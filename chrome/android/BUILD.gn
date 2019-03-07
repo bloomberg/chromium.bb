@@ -144,14 +144,6 @@ android_resources("chrome_download_java_resources") {
   custom_package = "org.chromium.chrome.download"
 }
 
-android_resources("chrome_autofill_assistant_java_resources") {
-  resource_dirs = [ "//chrome/android/java/res_autofill_assistant" ]
-  deps = [
-    ":chrome_app_java_resources",
-  ]
-  custom_package = "org.chromium.chrome.autofill_assistant"
-}
-
 java_strings_grd("chrome_strings_grd") {
   defines = chrome_grit_defines
   grd_file = "java/strings/android_chrome_strings.grd"
@@ -240,7 +232,6 @@ java_cpp_template("vr_build_config") {
 android_library("chrome_java") {
   deps = [
     ":chrome_app_java_resources",
-    ":chrome_autofill_assistant_java_resources",
     ":chrome_download_java_resources",
     ":chrome_public_android_manifest",
     ":chrome_public_apk_template_resources",
@@ -442,6 +433,7 @@ android_library("chrome_java") {
 java_group("chrome_all_java") {
   deps = [
     ":chrome_java",
+    "//chrome/android/features/autofill_assistant:java",
     "//chrome/android/features/media_router:java",
   ]
 
@@ -1820,6 +1812,7 @@ chrome_test_apk_tmpl("chrome_public_test_apk") {
   deps = [
     ":chrome_test_apk_template_resources",
     ":chrome_test_java",
+    "//chrome/android/features/autofill_assistant:test_java",
     "//chrome/android/features/media_router:test_java",
     "//chrome/android/features/touchless:touchless_java_test",
     "//chrome/android/webapk/libs/runtime_library:runtime_library_javatests",
@@ -2089,6 +2082,16 @@ monochrome_public_bundle_tmpl("trichrome_chrome_bundle") {
 
 generate_jni("jni_headers") {
   sources = [
+    "features/autofill_assistant/java/src/org/chromium/chrome/browser/autofill_assistant/AssistantModel.java",
+    "features/autofill_assistant/java/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantUiController.java",
+    "features/autofill_assistant/java/src/org/chromium/chrome/browser/autofill_assistant/details/AssistantDetails.java",
+    "features/autofill_assistant/java/src/org/chromium/chrome/browser/autofill_assistant/details/AssistantDetailsModel.java",
+    "features/autofill_assistant/java/src/org/chromium/chrome/browser/autofill_assistant/header/AssistantHeaderDelegate.java",
+    "features/autofill_assistant/java/src/org/chromium/chrome/browser/autofill_assistant/header/AssistantHeaderModel.java",
+    "features/autofill_assistant/java/src/org/chromium/chrome/browser/autofill_assistant/overlay/AssistantOverlayDelegate.java",
+    "features/autofill_assistant/java/src/org/chromium/chrome/browser/autofill_assistant/overlay/AssistantOverlayModel.java",
+    "features/autofill_assistant/java/src/org/chromium/chrome/browser/autofill_assistant/payment/AssistantPaymentRequestDelegate.java",
+    "features/autofill_assistant/java/src/org/chromium/chrome/browser/autofill_assistant/payment/AssistantPaymentRequestModel.java",
     "features/media_router/java/src/org/chromium/chrome/browser/media/router/ChromeMediaRouter.java",
     "features/media_router/java/src/org/chromium/chrome/browser/media/router/ChromeMediaRouterDialogController.java",
     "features/media_router/java/src/org/chromium/chrome/browser/media/router/FlingingControllerBridge.java",
@@ -2126,17 +2129,7 @@ generate_jni("jni_headers") {
     "java/src/org/chromium/chrome/browser/autofill/PersonalDataManager.java",
     "java/src/org/chromium/chrome/browser/autofill/PhoneNumberUtil.java",
     "java/src/org/chromium/chrome/browser/autofill/keyboard_accessory/ManualFillingBridge.java",
-    "java/src/org/chromium/chrome/browser/autofill_assistant/AssistantModel.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantClient.java",
-    "java/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantUiController.java",
-    "java/src/org/chromium/chrome/browser/autofill_assistant/details/AssistantDetails.java",
-    "java/src/org/chromium/chrome/browser/autofill_assistant/details/AssistantDetailsModel.java",
-    "java/src/org/chromium/chrome/browser/autofill_assistant/header/AssistantHeaderDelegate.java",
-    "java/src/org/chromium/chrome/browser/autofill_assistant/header/AssistantHeaderModel.java",
-    "java/src/org/chromium/chrome/browser/autofill_assistant/overlay/AssistantOverlayDelegate.java",
-    "java/src/org/chromium/chrome/browser/autofill_assistant/overlay/AssistantOverlayModel.java",
-    "java/src/org/chromium/chrome/browser/autofill_assistant/payment/AssistantPaymentRequestDelegate.java",
-    "java/src/org/chromium/chrome/browser/autofill_assistant/payment/AssistantPaymentRequestModel.java",
     "java/src/org/chromium/chrome/browser/background_sync/BackgroundSyncBackgroundTask.java",
     "java/src/org/chromium/chrome/browser/background_sync/BackgroundSyncBackgroundTaskScheduler.java",
     "java/src/org/chromium/chrome/browser/banners/AppBannerManager.java",
