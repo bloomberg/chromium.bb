@@ -159,6 +159,8 @@
 #include "chrome/browser/ui/webui/log_web_ui_url.h"
 #include "chrome/browser/usb/usb_tab_helper.h"
 #include "chrome/browser/vr/vr_tab_helper.h"
+#include "chrome/browser/web_applications/components/app_registrar.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/webauthn/authenticator_request_scheduler.h"
 #include "chrome/browser/webauthn/chrome_authenticator_request_delegate.h"
 #include "chrome/common/buildflags.h"
@@ -501,8 +503,6 @@
 #include "chrome/browser/extensions/bookmark_app_navigation_throttle.h"
 #include "chrome/browser/extensions/chrome_content_browser_client_extensions_part.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
-#include "chrome/browser/extensions/convert_web_app.h"
-#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/user_script_listener.h"
 #include "chrome/browser/media/cast_transport_host_filter.h"
 #include "chrome/browser/speech/extension_api/tts_engine_extension_api.h"
@@ -3174,24 +3174,27 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
       web_prefs->web_app_scope = tab_android->GetWebappManifestScope();
 #elif BUILDFLAG(ENABLE_EXTENSIONS)
     {
-      const extensions::Extension* extension = nullptr;
+      web_prefs->web_app_scope = GURL();
+      // Set |web_app_scope| based on the app associated with the app window if
+      // any. Note that the app associated with the window never changes, even
+      // if the app navigates off scope. This is not a problem because we still
+      // want to use the scope of the app associated with the window, not the
+      // WebContents.
       Browser* browser = chrome::FindBrowserWithWebContents(contents);
       if (base::FeatureList::IsEnabled(features::kDesktopPWAWindowing) &&
           browser && browser->hosted_app_controller() &&
           browser->hosted_app_controller()->created_for_installed_pwa()) {
-        // When a new window is created to host a PWA, this method will return
-        // the scope of the given PWA. It will stay the same for the PWA as
-        // scopes never change after the window was created. It is not
-        // guaranteed that this method will be called on every navigation but
-        // this is not required for things to work, we only need it to be called
-        // at the window creation time.
-        extension = extensions::util::GetInstalledPwaForUrl(
-            contents->GetBrowserContext(), contents->GetLastCommittedURL());
+        // HostedApps that are PWAs are always created through WebAppProvider
+        // or BookmarkAppHelper for profiles that support them, so we should
+        // always be able to retrieve a WebAppProvider from the Profile.
+        //
+        // Similarly, if a Hosted Apps is a PWA, it will always have a scope
+        // so there is no need to test for HasScope().
+        web_prefs->web_app_scope =
+            web_app::WebAppProvider::Get(profile)
+                ->registrar()
+                .GetScopeUrlForApp(browser->hosted_app_controller()->app_id());
       }
-
-      web_prefs->web_app_scope =
-          extension ? extensions::GetScopeURLFromBookmarkApp(extension)
-                    : GURL();
     }
 #endif
 

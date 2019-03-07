@@ -63,6 +63,8 @@ class WebAppProvider : public KeyedService,
   // Start registry. All subsystems depend on it.
   void StartRegistry();
 
+  AppRegistrar& registrar() { return *registrar_; }
+
   // UIs can use InstallManager for user-initiated Web Apps install.
   InstallManager& install_manager() { return *install_manager_; }
 

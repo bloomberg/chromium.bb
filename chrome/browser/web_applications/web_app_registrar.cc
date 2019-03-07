@@ -84,4 +84,14 @@ bool WebAppRegistrar::WasExternalAppUninstalledByUser(
   return false;
 }
 
+bool WebAppRegistrar::HasScopeUrl(const AppId& app_id) const {
+  NOTIMPLEMENTED();
+  return false;
+}
+
+GURL WebAppRegistrar::GetScopeUrlForApp(const AppId& app_id) const {
+  NOTIMPLEMENTED();
+  return GURL();
+}
+
 }  // namespace web_app

@@ -6,6 +6,7 @@
 
 #include "base/callback.h"
 #include "base/stl_util.h"
+#include "url/gurl.h"
 
 namespace web_app {
 
@@ -36,6 +37,16 @@ bool TestAppRegistrar::IsInstalled(const AppId& app_id) const {
 bool TestAppRegistrar::WasExternalAppUninstalledByUser(
     const AppId& app_id) const {
   return base::ContainsKey(uninstalled_external_apps_, app_id);
+}
+
+bool TestAppRegistrar::HasScopeUrl(const AppId& app_id) const {
+  NOTIMPLEMENTED();
+  return false;
+}
+
+GURL TestAppRegistrar::GetScopeUrlForApp(const AppId& app_id) const {
+  NOTIMPLEMENTED();
+  return GURL();
 }
 
 }  // namespace web_app

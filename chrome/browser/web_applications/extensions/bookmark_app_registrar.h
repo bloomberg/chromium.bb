@@ -12,6 +12,8 @@ class Profile;
 
 namespace extensions {
 
+class Extension;
+
 class BookmarkAppRegistrar : public web_app::AppRegistrar {
  public:
   explicit BookmarkAppRegistrar(Profile* profile);
@@ -22,8 +24,12 @@ class BookmarkAppRegistrar : public web_app::AppRegistrar {
   bool IsInstalled(const web_app::AppId& app_id) const override;
   bool WasExternalAppUninstalledByUser(
       const web_app::AppId& app_id) const override;
+  bool HasScopeUrl(const web_app::AppId& app_id) const override;
+  GURL GetScopeUrlForApp(const web_app::AppId& app_id) const override;
 
  private:
+  const Extension* GetExtension(const web_app::AppId& app_id) const;
+
   Profile* profile_;
 };
 

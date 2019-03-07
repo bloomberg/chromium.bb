@@ -30,6 +30,8 @@ class TestAppRegistrar : public AppRegistrar {
   void Init(base::OnceClosure callback) override;
   bool IsInstalled(const AppId& app_id) const override;
   bool WasExternalAppUninstalledByUser(const AppId& app_id) const override;
+  bool HasScopeUrl(const AppId& app_id) const override;
+  GURL GetScopeUrlForApp(const AppId& app_id) const override;
 
  private:
   std::set<AppId> installed_apps_;
