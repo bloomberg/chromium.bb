@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/apps/app_service/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/icon_key_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
 #include "chrome/services/app_service/public/mojom/app_service.mojom.h"
@@ -72,6 +73,7 @@ class CrostiniApps : public KeyedService,
                       int32_t size_hint_in_dip,
                       bool allow_placeholder_icon,
                       ui::ScaleFactor scale_factor,
+                      IconEffects icon_effects,
                       LoadIconCallback callback);
 
   apps::mojom::AppPtr Convert(

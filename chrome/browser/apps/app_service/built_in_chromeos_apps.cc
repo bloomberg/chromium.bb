@@ -40,7 +40,8 @@ apps::mojom::AppPtr Convert(const app_list::InternalApp& internal_app) {
 
   app->icon_key = apps::mojom::IconKey::New(
       apps::mojom::AppType::kBuiltIn,
-      static_cast<uint64_t>(internal_app.icon_resource_id), std::string(), 0);
+      static_cast<uint64_t>(internal_app.icon_resource_id), std::string(),
+      apps::IconEffects::kNone);
 
   app->last_launch_time = base::Time();
   app->install_time = base::Time();
@@ -120,8 +121,9 @@ void BuiltInChromeOsApps::LoadIcon(
   if (!icon_key.is_null() && (icon_key->u_key != 0) &&
       (icon_key->u_key <= INT_MAX)) {
     int resource_id = static_cast<int>(icon_key->u_key);
-    LoadIconFromResource(icon_compression, size_hint_in_dip, resource_id,
-                         is_placeholder_icon, std::move(callback));
+    LoadIconFromResource(
+        icon_compression, size_hint_in_dip, resource_id, is_placeholder_icon,
+        static_cast<IconEffects>(icon_key->icon_effects), std::move(callback));
     return;
   }
   // On failure, we still run the callback, with the zero IconValue.

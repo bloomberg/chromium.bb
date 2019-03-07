@@ -11,6 +11,7 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/apps/app_service/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/launch_util.h"
+#include "chrome/browser/chromeos/extensions/gfx_utils.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -37,10 +38,6 @@
 // be able to show download progress in the UI, a la ExtensionAppModelBuilder.
 // This might involve using an extensions::InstallTracker. It might also need
 // the equivalent of a LauncherExtensionAppUpdater.
-
-// TODO(crbug.com/826982): ExtensionAppItem's can be 'badged', which means that
-// it's an extension app that has its Android analog installed. We should cater
-// for that here.
 
 // TODO(crbug.com/826982): do we also need to watch prefs, the same as
 // ExtensionAppModelBuilder?
@@ -129,8 +126,9 @@ void ExtensionApps::LoadIcon(apps::mojom::IconKeyPtr icon_key,
                              bool allow_placeholder_icon,
                              LoadIconCallback callback) {
   if (!icon_key.is_null() && !icon_key->s_key.empty()) {
-    LoadIconFromExtension(icon_compression, size_hint_in_dip, profile_,
-                          icon_key->s_key, std::move(callback));
+    LoadIconFromExtension(
+        icon_compression, size_hint_in_dip, profile_, icon_key->s_key,
+        static_cast<IconEffects>(icon_key->icon_effects), std::move(callback));
     return;
   }
   // On failure, we still run the callback, with the zero IconValue.
@@ -423,7 +421,21 @@ apps::mojom::AppPtr ExtensionApps::Convert(
   app->name = extension->name();
   app->short_name = extension->short_name();
 
-  static constexpr uint32_t icon_effects = 0;
+  IconEffects icon_effects = IconEffects::kNone;
+#if defined(OS_CHROMEOS)
+  icon_effects =
+      static_cast<IconEffects>(icon_effects | IconEffects::kResizeAndPad);
+  if (extensions::util::ShouldApplyChromeBadge(profile_, extension->id())) {
+    icon_effects = static_cast<IconEffects>(icon_effects | IconEffects::kBadge);
+  }
+#endif
+  if (!extensions::util::IsAppLaunchable(extension->id(), profile_)) {
+    icon_effects = static_cast<IconEffects>(icon_effects | IconEffects::kGray);
+  }
+  if (extension->from_bookmark()) {
+    icon_effects =
+        static_cast<IconEffects>(icon_effects | IconEffects::kRoundCorners);
+  }
   app->icon_key =
       icon_key_factory_.MakeIconKey(app_type_, extension->id(), icon_effects);
 

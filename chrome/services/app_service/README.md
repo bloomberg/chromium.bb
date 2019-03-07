@@ -256,8 +256,12 @@ Icon data (even compressed as a PNG) is bulky, relative to the rest of the
 especially as the desired icon resolutions (e.g. 64dip or 256dip) aren't known
 up-front. Instead of sending an icon at all possible resolutions, the
 `Publisher` sends an `IconKey`: enough information to load the icon at given
-resoultions. The `IconKey` is an `AppType app_type` plus additional data
-(`uint64 u_key` and `string s_key`) whose semantics depend on the `app_type`.
+resolutions.
+
+The `IconKey` is an `AppType app_type` and a `uint32 icon_effects` bitmask
+(whether to apply various image processing effects such as desaturation to
+gray), plus additional data (`uint64 u_key` and `string s_key`) whose semantics
+depend on the `app_type`.
 
 For example, some icons are statically built into the Chrome or Chrome OS
 binary, as PNG-formatted resources, and can be loaded (synchronously, without
@@ -266,6 +270,14 @@ dynamically (and asynchronously) loaded from the extension database on disk.
 They can be loaded from the `s_key` app ID, with the `u_key` serving as a
 (monotonically increasing) epoch number so that an icon update results in a
 different `u_key` and hence a different `IconKey`.
+
+Grouping the `IconKey` with the other `LoadIcon` arguments, the combination
+identifies a static (unchanging, but possibly obsolete) image: if a new version
+of an app results in a new icon, or if a change in app state results in a
+grayed out icon, this is represented by a different `IconKey`, such as a
+different `u_key` or `icon_effects` value. As a consequence, the combined
+`LoadIcon` arguments can be used to key a cache or map of `IconValue`s, or to
+recognize and coalesce multiple concurrent requests to the same combination.
 
 Consumers (via the `AppServiceProxy`) can always ask the `AppService` to load
 an icon. As an optimization, if the `AppServiceProxy` knows how to load an icon
@@ -300,6 +312,9 @@ statically built resource ID.
       // The semantics of u_key and s_key depend on the app_type.
       uint64 u_key;
       string s_key;
+      // A bitmask of icon post-processing effects, such as desaturation to
+      // gray and rounding the corners.
+      uint32 icon_effects;
     };
 
     enum IconCompression {
@@ -314,9 +329,6 @@ statically built resource ID.
       array<uint8>? compressed;
       bool is_placeholder_icon;
     };
-
-TBD: post-processing effects like rounded corners, badges or grayed out (for
-disabled apps) icons.
 
 
 ## Placeholder Icons
@@ -405,4 +417,4 @@ TBD: details.
 
 ---
 
-Updated on 2019-03-02.
+Updated on 2019-03-07.
