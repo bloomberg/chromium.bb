@@ -32,7 +32,8 @@ BloatedRendererDetector::OnNearV8HeapLimitOnMainThreadImpl() {
     }
   }
   last_detection_time_ = now;
-  RendererResourceCoordinator::Get().OnRendererIsBloated();
+  if (auto* renderer_resource_coordinator = RendererResourceCoordinator::Get())
+    renderer_resource_coordinator->OnRendererIsBloated();
   return NearV8HeapLimitHandling::kForwardedToBrowser;
 }
 

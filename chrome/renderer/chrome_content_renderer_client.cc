@@ -1520,6 +1520,10 @@ void ChromeContentRendererClient::RunScriptsAtDocumentIdle(
 
 void ChromeContentRendererClient::
     SetRuntimeFeaturesDefaultsBeforeBlinkInitialization() {
+  // The performance manager service interfaces are provided by the chrome
+  // embedder only.
+  blink::WebRuntimeFeatures::EnablePerformanceManagerInstrumentation(true);
+
 // Web Share is shipped on Android, experimental otherwise. It is enabled here,
 // in chrome/, to avoid it being made available in other clients of content/
 // that do not have a Web Share Mojo implementation.

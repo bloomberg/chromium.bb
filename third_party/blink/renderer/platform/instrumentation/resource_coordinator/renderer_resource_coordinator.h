@@ -20,8 +20,9 @@ class PLATFORM_EXPORT RendererResourceCoordinator {
   USING_FAST_MALLOC(RendererResourceCoordinator);
 
  public:
-  static void Initialize();
-  static RendererResourceCoordinator& Get();
+  // Only initializes if the instrumentation runtime feature is enabled.
+  static void MaybeInitialize();
+  static RendererResourceCoordinator* Get();
 
   // Used to switch the current renderer resource coordinator only for testing.
   static void SetCurrentRendererResourceCoordinatorForTesting(
