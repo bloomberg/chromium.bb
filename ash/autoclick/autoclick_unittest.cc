@@ -515,8 +515,7 @@ TEST_F(AutoclickTest, AutoclickRevertsToLeftClick) {
   EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & events[1].flags());
 }
 
-// TODO(crbug.com/935651): The test has flaky crashes.
-TEST_F(AutoclickTest, DISABLED_WaitsToDrawAnimationAfterDwellBegins) {
+TEST_F(AutoclickTest, WaitsToDrawAnimationAfterDwellBegins) {
   float ratio = GetAutoclickController()->GetStartGestureDelayRatioForTesting();
   int full_delay = ceil(1.0 / ratio) * 5;
   int animation_delay = 5;
@@ -626,9 +625,8 @@ TEST_F(AutoclickTest, LeftClicksOnTrayButtonWhenInDifferentModes) {
   Shell::Get()->accessibility_controller()->SetAutoclickEnabled(false);
 }
 
-TEST_F(
-    AutoclickTest,
-    DISABLED_StartsGestureOnTrayButtonButDoesNotClickIfMouseMovedWhenPaused) {
+TEST_F(AutoclickTest,
+       StartsGestureOnTrayButtonButDoesNotClickIfMouseMovedWhenPaused) {
   Shell::Get()->accessibility_controller()->SetAutoclickEnabled(true);
   GetAutoclickController()->set_revert_to_left_click(false);
   GetAutoclickController()->SetAutoclickEventType(
