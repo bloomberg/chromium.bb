@@ -18,6 +18,7 @@
 #include "base/strings/string_util.h"
 #include "content/browser/devtools/devtools_instrumentation.h"
 #include "content/browser/frame_host/frame_tree.h"
+#include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
@@ -578,6 +579,9 @@ bool FrameTreeNode::NotifyUserActivation() {
       }
     }
   }
+
+  static_cast<NavigationControllerImpl*>(navigator()->GetController())
+      ->NotifyUserActivation();
 
   return true;
 }
