@@ -424,6 +424,7 @@ DOMWindow* CreateWindow(const String& url_string,
   // createWindow(LocalFrame& openerFrame, ...).
   // This value will be set in ResourceRequest loaded in a new LocalFrame.
   bool has_user_gesture = LocalFrame::HasTransientUserActivation(&opener_frame);
+  opener_frame.MaybeLogAdClickNavigation();
 
   // We pass the opener frame for the lookupFrame in case the active frame is
   // different from the opener frame, and the name references a frame relative

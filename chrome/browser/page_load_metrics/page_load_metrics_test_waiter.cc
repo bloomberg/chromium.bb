@@ -65,6 +65,11 @@ bool PageLoadMetricsTestWaiter::DidObserveInPage(TimingField field) const {
   return observed_page_fields_.IsSet(field);
 }
 
+bool PageLoadMetricsTestWaiter::DidObserveWebFeature(
+    blink::mojom::WebFeature feature) const {
+  return observed_web_features_.test(static_cast<size_t>(feature));
+}
+
 void PageLoadMetricsTestWaiter::Wait() {
   if (ExpectationsSatisfied())
     return;

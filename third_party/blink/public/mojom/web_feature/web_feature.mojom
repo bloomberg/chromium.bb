@@ -2257,6 +2257,7 @@ enum WebFeature {
   kCSSValueAppearanceTextFieldForTemporalRendered = 2823,
   kBuiltInModuleKvStorage = 2824,
   kBuiltInModuleVirtualScroller = 2825,
+  kAdClickNavigation = 2826,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

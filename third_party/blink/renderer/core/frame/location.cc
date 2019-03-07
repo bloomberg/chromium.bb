@@ -321,6 +321,8 @@ void Location::SetLocation(const String& url,
   WebFrameLoadType frame_load_type = WebFrameLoadType::kStandard;
   if (set_location_policy == SetLocationPolicy::kReplaceThisFrame)
     frame_load_type = WebFrameLoadType::kReplaceCurrentItem;
+
+  current_window->GetFrame()->MaybeLogAdClickNavigation();
   dom_window_->GetFrame()->ScheduleNavigation(*current_window->document(),
                                               completed_url, frame_load_type,
                                               UserGestureStatus::kNone);
