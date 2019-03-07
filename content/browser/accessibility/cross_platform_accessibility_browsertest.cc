@@ -132,9 +132,8 @@ bool CrossPlatformAccessibilityBrowserTest::GetBoolAttr(
   return false;
 }
 
-// Marked flaky per http://crbug.com/101984
 IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
-                       DISABLED_WebpageAccessibility) {
+                       WebpageAccessibility) {
   // Create a data url and load it.
   const char url_str[] =
       "data:text/html,"
@@ -161,7 +160,7 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
   // Check properties of the BODY element.
   ASSERT_EQ(1, root->child_count());
   const ui::AXNode* body = root->ChildAtIndex(0);
-  EXPECT_EQ(ax::mojom::Role::kGroup, body->data().role);
+  EXPECT_EQ(ax::mojom::Role::kGenericContainer, body->data().role);
   EXPECT_STREQ("body",
                GetAttr(body, ax::mojom::StringAttribute::kHtmlTag).c_str());
   EXPECT_STREQ("block",
