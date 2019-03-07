@@ -10,6 +10,7 @@ import android.text.TextUtils;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
+import org.chromium.chrome.browser.util.UrlUtilities;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -27,6 +28,7 @@ class ContextualSearchRequest {
     private boolean mIsLowPriority;
     private boolean mHasFailedLowPriorityLoad;
     private boolean mIsTranslationForced;
+    private boolean mIsFullSearchUrlProvided;
 
     private static final String GWS_LOW_PRIORITY_SEARCH_PATH = "s";
     private static final String GWS_SEARCH_NO_SUGGESTIONS_PARAM = "sns";
@@ -49,26 +51,48 @@ class ContextualSearchRequest {
      * @param searchTerm The resolved search term.
      */
     ContextualSearchRequest(String searchTerm) {
-        this(searchTerm, null, null, false);
+        this(searchTerm, false);
     }
 
     /**
-     * Creates a search request for the given search term with the given alternate term and
-     * low-priority loading capability.
+     * Creates a search request for the given search term without any alternate term and
+     * for low-priority loading capability if specified in the second parameter.
+     * @param searchTerm The resolved search term.
+     * @param isLowPriorityEnabled Whether the request can be made at a low priority.
+     */
+    ContextualSearchRequest(String searchTerm, boolean isLowPriorityEnabled) {
+        this(searchTerm, null, null, isLowPriorityEnabled, null, null);
+    }
+
+    /**
+     * Creates a search request for the given search term, unless the full search URL is provided
+     * in the {@code searchUrlFull}.  When the full URL is not provided the request also uses the
+     * given alternate term, mid, and low-priority loading capability. <p>
+     * If the {@code searchUrlPreload} is provided then the {@code searchUrlFull} should also be
+     * provided.
      * @param searchTerm The resolved search term.
      * @param alternateTerm The alternate search term.
      * @param mid The MID for an entity to use to trigger a Knowledge Panel, or an empty string.
      *            A MID is a unique identifier for an entity in the Search Knowledge Graph.
      * @param isLowPriorityEnabled Whether the request can be made at a low priority.
+     * @param searchUrlFull The URL for the full search to present in the overlay, or empty.
+     * @param searchUrlPreload The URL for the search to preload into the overlay, or empty.
      */
     ContextualSearchRequest(String searchTerm, @Nullable String alternateTerm, @Nullable String mid,
-            boolean isLowPriorityEnabled) {
+            boolean isLowPriorityEnabled, @Nullable String searchUrlFull,
+            @Nullable String searchUrlPreload) {
         mWasPrefetch = isLowPriorityEnabled;
-        mNormalPriorityUri = getUriTemplate(searchTerm, alternateTerm, mid, false);
+        mIsFullSearchUrlProvided = isGoogleUrl(searchUrlFull);
+        mNormalPriorityUri = mIsFullSearchUrlProvided
+                ? Uri.parse(searchUrlFull)
+                : getUriTemplate(searchTerm, alternateTerm, mid, false);
         if (isLowPriorityEnabled) {
-            // TODO(donnd): Call TemplateURL once we have an API for 3rd-party providers.
-            Uri baseLowPriorityUri = getUriTemplate(searchTerm, alternateTerm, mid, true);
-            mLowPriorityUri = makeLowPriorityUri(baseLowPriorityUri);
+            if (isGoogleUrl(searchUrlPreload)) {
+                mLowPriorityUri = Uri.parse(searchUrlPreload);
+            } else {
+                Uri baseLowPriorityUri = getUriTemplate(searchTerm, alternateTerm, mid, true);
+                mLowPriorityUri = makeLowPriorityUri(baseLowPriorityUri);
+            }
         } else {
             mLowPriorityUri = null;
         }
@@ -140,8 +164,8 @@ class ContextualSearchRequest {
 
         URL url;
         try {
-            url = new URL(searchUrl.replaceAll(CTXS_PARAM_PATTERN, CTXR_PARAM)
-                    .replaceAll(PF_PARAM, ""));
+            url = new URL(
+                    searchUrl.replaceAll(CTXS_PARAM_PATTERN, CTXR_PARAM).replaceAll(PF_PARAM, ""));
         } catch (MalformedURLException e) {
             url = null;
         }
@@ -156,6 +180,9 @@ class ContextualSearchRequest {
      */
     void forceTranslation(String sourceLanguage, String targetLanguage) {
         mIsTranslationForced = true;
+        // If the server is providing a full URL then we shouldn't alter it.
+        if (mIsFullSearchUrlProvided) return;
+
         if (mLowPriorityUri != null) {
             mLowPriorityUri = makeTranslateUri(mLowPriorityUri, sourceLanguage, targetLanguage);
         }
@@ -172,7 +199,7 @@ class ContextualSearchRequest {
     }
 
     /**
-     * @return Whether translation was forced for this request.
+     * @return Whether translation was forced for this request (for testing only).
      */
     @VisibleForTesting
     boolean isTranslationForced() {
@@ -197,6 +224,16 @@ class ContextualSearchRequest {
                 query, alternateTerm, shouldPrefetch, CTXS_TWO_REQUEST_PROTOCOL));
         if (!TextUtils.isEmpty(mid)) uri = makeKPTriggeringUri(uri, mid);
         return uri;
+    }
+
+    /**
+     * Judges if the given URL looks like a Google URL.
+     * @param someUrl A URL to judge.
+     * @return Whether it's pointing to Google infrastructure or not.
+     */
+    @VisibleForTesting
+    boolean isGoogleUrl(@Nullable String someUrl) {
+        return !TextUtils.isEmpty(someUrl) && UrlUtilities.nativeIsGoogleDomainUrl(someUrl, true);
     }
 
     /**
