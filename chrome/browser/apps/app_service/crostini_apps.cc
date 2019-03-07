@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "chrome/browser/apps/app_service/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/dip_px_util.h"
 #include "chrome/browser/apps/app_service/launch_util.h"
@@ -80,18 +79,21 @@ void CrostiniApps::LoadIcon(apps::mojom::IconKeyPtr icon_key,
       LoadIconFromFileWithFallback(
           icon_compression, size_hint_in_dip,
           registry_->GetIconPath(icon_key->s_key, scale_factor),
-          std::move(callback),
+          static_cast<IconEffects>(icon_key->icon_effects), std::move(callback),
           base::BindOnce(&CrostiniApps::LoadIconFromVM,
                          weak_ptr_factory_.GetWeakPtr(), icon_key->s_key,
                          icon_compression, size_hint_in_dip,
-                         allow_placeholder_icon, scale_factor));
+                         allow_placeholder_icon, scale_factor,
+                         static_cast<IconEffects>(icon_key->icon_effects)));
       return;
 
     } else if ((icon_key->u_key != 0) && (icon_key->u_key <= INT_MAX)) {
       int resource_id = static_cast<int>(icon_key->u_key);
       constexpr bool is_placeholder_icon = false;
       LoadIconFromResource(icon_compression, size_hint_in_dip, resource_id,
-                           is_placeholder_icon, std::move(callback));
+                           is_placeholder_icon,
+                           static_cast<IconEffects>(icon_key->icon_effects),
+                           std::move(callback));
       return;
     }
   }
@@ -150,6 +152,7 @@ void CrostiniApps::LoadIconFromVM(const std::string icon_key_s_key,
                                   int32_t size_hint_in_dip,
                                   bool allow_placeholder_icon,
                                   ui::ScaleFactor scale_factor,
+                                  IconEffects icon_effects,
                                   LoadIconCallback callback) {
   if (!allow_placeholder_icon) {
     // Treat this as failure. We still run the callback, with the zero
@@ -162,7 +165,7 @@ void CrostiniApps::LoadIconFromVM(const std::string icon_key_s_key,
   constexpr bool is_placeholder_icon = true;
   LoadIconFromResource(icon_compression, size_hint_in_dip,
                        IDR_LOGO_CROSTINI_DEFAULT_192, is_placeholder_icon,
-                       std::move(callback));
+                       icon_effects, std::move(callback));
 
   // Ask the VM to load the icon (and write a cached copy to the file system).
   // The "Maybe" is because multiple requests for the same icon will be merged,

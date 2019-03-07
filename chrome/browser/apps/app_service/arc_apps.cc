@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
-#include "chrome/browser/apps/app_service/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/arc_apps_factory.h"
 #include "chrome/browser/apps/app_service/dip_px_util.h"
@@ -183,6 +182,7 @@ void ArcApps::LoadIcon(apps::mojom::IconKeyPtr icon_key,
     // Android app and before bringing up an Android VM for the first time.
     if (icon_key->s_key == arc::kPlayStoreAppId) {
       LoadPlayStoreIcon(icon_compression, size_hint_in_dip,
+                        static_cast<IconEffects>(icon_key->icon_effects),
                         std::move(callback));
       return;
     }
@@ -192,10 +192,11 @@ void ArcApps::LoadIcon(apps::mojom::IconKeyPtr icon_key,
     LoadIconFromFileWithFallback(
         icon_compression, size_hint_in_dip,
         GetCachedIconFilePath(icon_key->s_key, size_hint_in_dip),
-        std::move(callback),
+        static_cast<IconEffects>(icon_key->icon_effects), std::move(callback),
         base::BindOnce(&ArcApps::LoadIconFromVM, weak_ptr_factory_.GetWeakPtr(),
                        icon_key->s_key, icon_compression, size_hint_in_dip,
-                       allow_placeholder_icon));
+                       allow_placeholder_icon,
+                       static_cast<IconEffects>(icon_key->icon_effects)));
     return;
   }
 
@@ -390,12 +391,13 @@ void ArcApps::LoadIconFromVM(const std::string icon_key_s_key,
                              apps::mojom::IconCompression icon_compression,
                              int32_t size_hint_in_dip,
                              bool allow_placeholder_icon,
+                             IconEffects icon_effects,
                              LoadIconCallback callback) {
   if (allow_placeholder_icon) {
     constexpr bool is_placeholder_icon = true;
     LoadIconFromResource(icon_compression, size_hint_in_dip,
                          IDR_APP_DEFAULT_ICON, is_placeholder_icon,
-                         std::move(callback));
+                         icon_effects, std::move(callback));
     return;
   }
 
@@ -424,6 +426,7 @@ void ArcApps::LoadIconFromVM(const std::string icon_key_s_key,
 
 void ArcApps::LoadPlayStoreIcon(apps::mojom::IconCompression icon_compression,
                                 int32_t size_hint_in_dip,
+                                IconEffects icon_effects,
                                 LoadIconCallback callback) {
   // Use overloaded Chrome icon for Play Store that is adapted to Chrome style.
   int size_hint_in_px = apps_util::ConvertDipToPx(size_hint_in_dip);
@@ -431,7 +434,7 @@ void ArcApps::LoadPlayStoreIcon(apps::mojom::IconCompression icon_compression,
                                             : IDR_ARC_SUPPORT_ICON_192;
   constexpr bool is_placeholder_icon = false;
   LoadIconFromResource(icon_compression, size_hint_in_dip, resource_id,
-                       is_placeholder_icon, std::move(callback));
+                       is_placeholder_icon, icon_effects, std::move(callback));
 }
 
 apps::mojom::AppPtr ArcApps::Convert(const std::string& app_id,
