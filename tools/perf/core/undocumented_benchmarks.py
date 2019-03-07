@@ -19,8 +19,6 @@ UNDOCUMENTED_BENCHMARKS = {
   'media.mobile',
   'media_perftests',
   'memory.desktop',
-  'memory.long_running_idle_gmail_background_tbmv2',
-  'memory.long_running_idle_gmail_tbmv2',
   'memory.top_10_mobile',
   'net_perftests',
   'octane',

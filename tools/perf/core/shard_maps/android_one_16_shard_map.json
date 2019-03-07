@@ -50,7 +50,6 @@
             "wasm": {},
             "dummy_benchmark.histogram_benchmark_1": {},
             "speedometer": {},
-            "memory.long_running_idle_gmail_tbmv2": {},
             "octane": {},
             "dummy_benchmark.noisy_benchmark_1": {},
             "blink_perf.svg": {},
@@ -105,7 +104,6 @@
             "blink_perf.layout": {
                 "begin": 4
             },
-            "memory.long_running_idle_gmail_background_tbmv2": {},
             "tab_switching.typical_25": {},
             "blink_perf.dom": {},
             "media.mobile": {},

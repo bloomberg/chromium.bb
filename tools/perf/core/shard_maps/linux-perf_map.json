@@ -74,8 +74,6 @@
             "memory.desktop": {
                 "begin": 4
             },
-            "memory.long_running_idle_gmail_background_tbmv2": {},
-            "memory.long_running_idle_gmail_tbmv2": {},
             "octane": {},
             "power.desktop": {
                 "end": 6
