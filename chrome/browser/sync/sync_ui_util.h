@@ -50,7 +50,8 @@ enum AvatarSyncErrorType {
 
 // Returns the high-level sync status, and populates status and link label
 // strings for the current sync status by querying |profile|.
-// |status_label| and |link_label| must either be both null or both non-null.
+// Any of |status_label|, |link_label|, and |action_type| may be null if the
+// caller isn't interested in it.
 MessageType GetStatusLabels(Profile* profile,
                             base::string16* status_label,
                             base::string16* link_label,
