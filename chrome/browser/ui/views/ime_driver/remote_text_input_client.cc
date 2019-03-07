@@ -4,9 +4,21 @@
 
 #include "chrome/browser/ui/views/ime_driver/remote_text_input_client.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "ui/events/event_dispatcher.h"
+
+struct RemoteTextInputClient::QueuedEvent {
+  QueuedEvent(std::unique_ptr<ui::Event> event,
+              DispatchKeyEventPostIMECallback callback)
+      : event(std::move(event)), callback(std::move(callback)) {}
+
+  std::unique_ptr<ui::Event> event;
+  DispatchKeyEventPostIMECallback callback;
+};
 
 RemoteTextInputClient::RemoteTextInputClient(
     ws::mojom::TextInputClientPtr client,
@@ -14,7 +26,7 @@ RemoteTextInputClient::RemoteTextInputClient(
     : remote_client_(std::move(client)), details_(std::move(details)) {}
 
 RemoteTextInputClient::~RemoteTextInputClient() {
-  while (!pending_callbacks_.empty()) {
+  while (!queued_events_.empty()) {
     RunNextPendingCallback(/* handled */ false,
                            /* stopped_propagation */ false);
   }
@@ -38,6 +50,7 @@ void RemoteTextInputClient::OnDispatchKeyEventPostIMECompleted(
     bool handled,
     bool stopped_propagation) {
   RunNextPendingCallback(handled, stopped_propagation);
+  DispatchQueuedEvent();
 }
 
 void RemoteTextInputClient::SetCompositionText(
@@ -201,20 +214,30 @@ bool RemoteTextInputClient::ShouldDoLearning() {
 ui::EventDispatchDetails RemoteTextInputClient::DispatchKeyEventPostIME(
     ui::KeyEvent* event,
     DispatchKeyEventPostIMECallback callback) {
-  pending_callbacks_.push(std::move(callback));
+  const bool is_first_event = queued_events_.empty();
+  queued_events_.emplace(ui::Event::Clone(*event), std::move(callback));
+  if (is_first_event)
+    DispatchQueuedEvent();
+  return ui::EventDispatchDetails();
+}
+
+void RemoteTextInputClient::DispatchQueuedEvent() {
+  if (queued_events_.empty())
+    return;
+
+  DCHECK(queued_events_.front().event);
   remote_client_->DispatchKeyEventPostIME(
-      ui::Event::Clone(*event),
+      std::move(queued_events_.front().event),
       base::BindOnce(&RemoteTextInputClient::OnDispatchKeyEventPostIMECompleted,
                      weak_ptr_factory_.GetWeakPtr()));
-  return ui::EventDispatchDetails();
 }
 
 void RemoteTextInputClient::RunNextPendingCallback(bool handled,
                                                    bool stopped_propagation) {
-  DCHECK(!pending_callbacks_.empty());
+  DCHECK(!queued_events_.empty());
   DispatchKeyEventPostIMECallback callback =
-      std::move(pending_callbacks_.front());
-  pending_callbacks_.pop();
+      std::move(queued_events_.front().callback);
+  queued_events_.pop();
   if (callback)
     std::move(callback).Run(handled, stopped_propagation);
 }

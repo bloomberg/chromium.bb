@@ -28,6 +28,8 @@ class RemoteTextInputClient : public ui::TextInputClient,
   void SetTextInputClientData(ws::mojom::TextInputClientDataPtr data);
 
  private:
+  struct QueuedEvent;
+
   // See |pending_callbacks_| for details.
   void OnDispatchKeyEventPostIMECompleted(bool handled,
                                           bool stopped_propagation);
@@ -70,20 +72,25 @@ class RemoteTextInputClient : public ui::TextInputClient,
       ui::KeyEvent* event,
       DispatchKeyEventPostIMECallback callback) override;
 
-  // Removes the callback at the front of |pending_callbacks_| and runs it with
-  // |handled| and |stopped_propagation| as arguments.
+  // Dispatches the first queued event.
+  void DispatchQueuedEvent();
+
+  // Removes the queue event at the front of |queued_events_| and runs its
+  // callback with |handled| and |stopped_propagation| as arguments.
   void RunNextPendingCallback(bool handled, bool stopped_propagation);
 
   ws::mojom::TextInputClientPtr remote_client_;
   ws::mojom::SessionDetailsPtr details_;
 
-  // Callbacks supplied to DispatchKeyEventPostIME() are added here. When the
-  // response from the remote side is received
-  // (OnDispatchKeyEventPostIMECompleted()), the callback is removed and run.
-  // This is done to ensure if we are destroyed all the callbacks are run.
-  // This is necessary as the callbacks may have originated from a remote
-  // client.
-  base::queue<DispatchKeyEventPostIMECallback> pending_callbacks_;
+  // Events to be dispatched with DispatchKeyEventPostIME(). Only one event is
+  // dispatched at a time and others are queued here until the current one
+  // finished processing, i.e. the response from the remote side is received
+  // (OnDispatchKeyEventPostIMECompleted()), the dispatched event is removed
+  // from the queue and its callback is invoked. This is done to avoid
+  // overlapping of key events processing (https://crbug.com/938808).
+  // Note that when we are destroyed all the callbacks needs to run. This is
+  // necessary as the callbacks may have originated from a remote client.
+  base::queue<QueuedEvent> queued_events_;
 
   base::WeakPtrFactory<RemoteTextInputClient> weak_ptr_factory_{this};
 
