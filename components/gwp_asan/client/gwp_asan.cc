@@ -23,26 +23,35 @@ namespace gwp_asan {
 namespace internal {
 namespace {
 
+constexpr int kDefaultMaxAllocations = 7;
+constexpr int kDefaultTotalPages = 30;
+constexpr int kDefaultAllocationSamplingFrequency = 1000;
+constexpr double kDefaultProcessSamplingProbability = 1.0;
+constexpr int kDefaultIncreasedMemoryMultiplier = 4;
+
 const base::Feature kGwpAsan{"GwpAsanMalloc",
                              base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::FeatureParam<int> kMaxAllocationsParam{&kGwpAsan, "MaxAllocations",
-                                                   7};
+                                                   kDefaultMaxAllocations};
 
-const base::FeatureParam<int> kTotalPagesParam{&kGwpAsan, "TotalPages", 30};
+const base::FeatureParam<int> kTotalPagesParam{&kGwpAsan, "TotalPages",
+                                               kDefaultTotalPages};
 
 const base::FeatureParam<int> kAllocationSamplingParam{
-    &kGwpAsan, "AllocationSamplingFrequency", 1000};
+    &kGwpAsan, "AllocationSamplingFrequency",
+    kDefaultAllocationSamplingFrequency};
 
 const base::FeatureParam<double> kProcessSamplingParam{
-    &kGwpAsan, "ProcessSamplingProbability", 1.0};
+    &kGwpAsan, "ProcessSamplingProbability",
+    kDefaultProcessSamplingProbability};
 
 // The multiplier to increase MaxAllocations/TotalPages in scenarios where we
 // want to perform additional testing (e.g. on canary/dev builds or in the
 // browser process.) The multiplier increase is cumulative when multiple
 // conditions apply.
 const base::FeatureParam<int> kIncreasedMemoryMultiplierParam{
-    &kGwpAsan, "IncreasedMemoryMultiplier", 4};
+    &kGwpAsan, "IncreasedMemoryMultiplier", kDefaultIncreasedMemoryMultiplier};
 
 bool EnableForMalloc(bool is_canary_dev, bool is_browser_process) {
   if (!base::FeatureList::IsEnabled(kGwpAsan))
