@@ -59,8 +59,7 @@ class CryptAuthKeyCreatorImpl : public CryptAuthKeyCreator {
                                     const std::string& public_key,
                                     const std::string& private_key);
   void OnSymmetricKeyDerived(CryptAuthKeyBundle::Name bundle_name,
-                             const std::string& symmetric_key,
-                             const std::string& handle);
+                             const std::string& symmetric_key);
 
   base::flat_map<CryptAuthKeyBundle::Name, CreateKeyData> keys_to_create_;
   base::flat_map<CryptAuthKeyBundle::Name, CryptAuthKey> new_keys_;
