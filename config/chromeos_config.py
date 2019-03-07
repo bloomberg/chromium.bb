@@ -2945,7 +2945,6 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
       'nocturne',
       'nyan_big',
       'peach_pit',
-      'peppy',
       'reef',
       'scarlet',
       'terra',
@@ -2955,9 +2954,12 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
   ])
 
   _chrome_pfq_experimental_boards = frozenset([
+      # crbug/938664 : Being migrated to Skylab.
+      'peppy',
   ])
 
   _chrome_pfq_skylab_boards = frozenset([
+      'peppy',
       'reef',
   ])
 
@@ -2986,10 +2988,21 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
   master_config.AddSlaves(
       site_config.AddForBoards(
           'chrome-pfq',
-          _chrome_pfq_skylab_boards,
+          _chrome_pfq_skylab_boards & _chrome_pfq_important_boards,
           internal_board_configs,
           site_config.templates.chrome_pfq,
           enable_skylab_hw_tests=True,
+      )
+  )
+
+  master_config.AddSlaves(
+      site_config.AddForBoards(
+          'chrome-pfq',
+          _chrome_pfq_skylab_boards & _chrome_pfq_experimental_boards,
+          internal_board_configs,
+          site_config.templates.chrome_pfq,
+          enable_skylab_hw_tests=True,
+          important=False,
       )
   )
 
