@@ -75,6 +75,7 @@ L10nUtilTest::L10nUtilTest()
 }
 
 L10nUtilTest::~L10nUtilTest() {
+  chromeos::system::StatisticsProvider::GetInstance()->Shutdown();
   chromeos::input_method::Shutdown();
 }
 
