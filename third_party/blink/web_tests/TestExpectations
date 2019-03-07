@@ -2903,6 +2903,8 @@ crbug.com/808834 [ Win ] external/wpt/css/css-pseudo/first-letter-001.html [ Fai
 
 crbug.com/723741 virtual/threaded/http/tests/devtools/tracing/idle-callback.js [ Failure Crash Pass Timeout ]
 
+# Sheriff 2019-03-07
+crbug.com/939406 external/wpt/html/browsers/windows/embedded-opener-remove-frame.html [ Failure ]
 
 # Untriaged failures after https://crrev.com/c/543695/.
 # These need to be updated but appear not to be related to that change.
