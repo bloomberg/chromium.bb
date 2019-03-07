@@ -12,8 +12,10 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
+#include "absl/algorithm/container.h"
 #include "absl/strings/numbers.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
@@ -810,4 +812,26 @@ std::pair<bool, CppSymbolTable> BuildCppTypes(
 
   result.first = true;
   return result;
+}
+
+bool VerifyUniqueKeysInMember(std::unordered_set<std::string>* keys,
+                              const CppType::Struct::CppMember& member) {
+  return keys->insert(member.name).second &&
+         (!member.integer_key.has_value() ||
+          keys->insert(std::to_string(member.integer_key.value())).second);
+}
+
+bool HasUniqueKeys(const CppType& type) {
+  std::unordered_set<std::string> keys;
+  return type.which != CppType::Which::kStruct ||
+         absl::c_all_of(type.struct_type.members,
+                        [&keys](const CppType::Struct::CppMember& member) {
+                          return VerifyUniqueKeysInMember(&keys, member);
+                        });
+}
+
+bool ValidateCppTypes(const CppSymbolTable& cpp_symbols) {
+  return absl::c_all_of(
+      cpp_symbols.cpp_types,
+      [](const std::unique_ptr<CppType>& ptr) { return HasUniqueKeys(*ptr); });
 }

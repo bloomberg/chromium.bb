@@ -162,6 +162,11 @@ int main(int argc, char** argv) {
     return 1;
   }
 
+  // Validate that the provided CDDL doesnt have duplicated indices.
+  if (!ValidateCppTypes(cpp_result.second)) {
+    return 1;
+  }
+
   // Create the C++ files from the Symbol table.
   if (!WriteHeaderPrologue(header_fd, args.header_filename) ||
       !WriteTypeDefinitions(header_fd, cpp_result.second) ||
