@@ -14,22 +14,8 @@ async function verifyRecents(appId, expectedRecents = RECENT_ENTRY_SET) {
   await remoteCall.waitForFiles(appId, files);
 
   // Select all the files and check that the delete button isn't visible.
-  // First, wait for the gear menu button to appear.
-  await remoteCall.waitForElement(appId, '#gear-button');
-
-  // Click the gear menu button.
-  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
-      'fakeMouseClick', appId, ['#gear-button']));
-  // Check: #select-all command is shown, and enabled (there are files).
-  await remoteCall.waitForElement(
-      appId,
-      '#gear-menu:not([hidden]) cr-menu-item' +
-          '[command=\'#select-all\']' +
-          ':not([disabled]):not([hidden])');
-
-  // Click on the #gear-menu-select-all item.
-  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
-      'fakeMouseClick', appId, ['#gear-menu-select-all']));
+  const ctrlA = ['#file-list', 'a', true, false, false];
+  await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, ctrlA);
 
   // Check: the file-list should be selected.
   await remoteCall.waitForElement(appId, '#file-list li[selected]');
