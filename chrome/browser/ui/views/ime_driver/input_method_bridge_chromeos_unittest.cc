@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -53,6 +54,23 @@ class TestTextInputClient : public ws::mojom::TextInputClient {
     return result;
   }
 
+  void set_manual_ack_dispatch_key_event_post_ime_callback(bool manual) {
+    manual_ack_dispatch_key_event_post_ime_callback_ = manual;
+  }
+
+  void AckDispatchKeyEventPostIMECallback() {
+    DCHECK(manual_ack_dispatch_key_event_post_ime_callback_);
+
+    if (!pending_dispatch_key_event_post_ime_callback_) {
+      pending_dispatch_key_event_post_ime_callback_wait_loop_ =
+          std::make_unique<base::RunLoop>();
+      pending_dispatch_key_event_post_ime_callback_wait_loop_->Run();
+      pending_dispatch_key_event_post_ime_callback_wait_loop_.reset();
+    }
+
+    std::move(pending_dispatch_key_event_post_ime_callback_).Run(false, false);
+  }
+
  private:
   void SetCompositionText(const ui::CompositionText& composition) override {
     CompositionEvent ev = {CompositionEventType::SET, composition.text, 0};
@@ -89,6 +107,15 @@ class TestTextInputClient : public ws::mojom::TextInputClient {
   void DispatchKeyEventPostIME(
       std::unique_ptr<ui::Event> event,
       DispatchKeyEventPostIMECallback callback) override {
+    if (manual_ack_dispatch_key_event_post_ime_callback_) {
+      // Only one pending callback is expected.
+      EXPECT_FALSE(pending_dispatch_key_event_post_ime_callback_);
+      pending_dispatch_key_event_post_ime_callback_ = std::move(callback);
+      if (pending_dispatch_key_event_post_ime_callback_wait_loop_)
+        pending_dispatch_key_event_post_ime_callback_wait_loop_->Quit();
+      return;
+    }
+
     std::move(callback).Run(false, false);
   }
   void EnsureCaretNotInRect(const gfx::Rect& rect) override {}
@@ -102,6 +129,11 @@ class TestTextInputClient : public ws::mojom::TextInputClient {
   mojo::Binding<ws::mojom::TextInputClient> binding_;
   std::unique_ptr<base::RunLoop> run_loop_;
   base::Optional<CompositionEvent> receieved_event_;
+
+  bool manual_ack_dispatch_key_event_post_ime_callback_ = false;
+  DispatchKeyEventPostIMECallback pending_dispatch_key_event_post_ime_callback_;
+  std::unique_ptr<base::RunLoop>
+      pending_dispatch_key_event_post_ime_callback_wait_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(TestTextInputClient);
 };
@@ -216,4 +248,28 @@ TEST_F(InputMethodBridgeChromeOSTest, ClipboardAccelerators) {
                                                ui::EF_CONTROL_DOWN, 'X')));
   EXPECT_FALSE(ProcessKeyEvent(UnicodeKeyPress(ui::VKEY_V, ui::DomCode::US_V,
                                                ui::EF_CONTROL_DOWN, 'V')));
+}
+
+// Test that multiple DispatchKeyEventPostIME calls are handled serially.
+TEST_F(InputMethodBridgeChromeOSTest, SerialDispatchKeyEventPostIME) {
+  client_->set_manual_ack_dispatch_key_event_post_ime_callback(true);
+
+  // Send multiple key events.
+  input_method_->ProcessKeyEvent(
+      std::make_unique<ui::KeyEvent>(ui::ET_KEY_PRESSED, ui::VKEY_A,
+                                     ui::EF_NONE),
+      base::DoNothing());
+  input_method_->ProcessKeyEvent(
+      std::make_unique<ui::KeyEvent>(ui::ET_KEY_RELEASED, ui::VKEY_A,
+                                     ui::EF_NONE),
+      base::DoNothing());
+
+  // TestTextInputClient::DispatchKeyEventPostIME is called via mojo.
+  // RemoteTextInputClient should make the calls serially. Spin message loop to
+  // see whether |client_| complains about more than one call at a time.
+  base::RunLoop().RunUntilIdle();
+
+  // Ack the pending key events.
+  client_->AckDispatchKeyEventPostIMECallback();
+  client_->AckDispatchKeyEventPostIMECallback();
 }
