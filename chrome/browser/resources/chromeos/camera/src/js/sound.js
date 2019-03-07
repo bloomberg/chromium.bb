@@ -30,7 +30,7 @@ cca.sound.play = function(selector) {
         setTimeout(resolve, parseInt(element.dataset.timeout || 0), 10);
     cancel = () => {
       clearTimeout(timeout);
-      reject();
+      reject(new Error('cancel'));
     };
     element.currentTime = 0;
     element.play();
