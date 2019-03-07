@@ -44,7 +44,6 @@ static_library("browser") {
     "//components/safe_browsing/db:database_manager",
     "//components/safe_browsing/db:util",
     "//components/subresource_filter/content/common",
-    "//components/subresource_filter/content/mojom",
     "//components/subresource_filter/core/browser",
     "//components/subresource_filter/core/common",
     "//components/subresource_filter/core/mojom",
@@ -56,6 +55,7 @@ static_library("browser") {
     "//url",
   ]
   public_deps = [
+    "//components/subresource_filter/content/mojom",
     "//third_party/flatbuffers:flatbuffers",
     "//ui/base",
   ]
@@ -106,7 +106,6 @@ source_set("unit_tests") {
     "//components/prefs:test_support",
     "//components/safe_browsing/db:util",
     "//components/subresource_filter/content/common",
-    "//components/subresource_filter/content/mojom",
     "//components/subresource_filter/core/browser",
     "//components/subresource_filter/core/browser:test_support",
     "//components/subresource_filter/core/common",
@@ -117,5 +116,8 @@ source_set("unit_tests") {
     "//ipc",
     "//ipc:test_support",
     "//testing/gtest",
+  ]
+  public_deps = [
+    "//components/subresource_filter/content/mojom",
   ]
 }
