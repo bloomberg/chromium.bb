@@ -35,18 +35,11 @@ void IdentityAccessorImpl::AccessTokenRequest::OnTokenRequestCompleted(
     GoogleServiceAuthError error,
     AccessTokenInfo access_token_info) {
   if (error.state() == GoogleServiceAuthError::NONE) {
-    OnRequestCompleted(access_token_info.token,
-                       access_token_info.expiration_time, error);
+    std::move(consumer_callback_)
+        .Run(access_token_info.token, access_token_info.expiration_time, error);
   } else {
-    OnRequestCompleted(base::nullopt, base::Time(), error);
+    std::move(consumer_callback_).Run(base::nullopt, base::Time(), error);
   }
-}
-
-void IdentityAccessorImpl::AccessTokenRequest::OnRequestCompleted(
-    const base::Optional<std::string>& access_token,
-    base::Time expiration_time,
-    const GoogleServiceAuthError& error) {
-  std::move(consumer_callback_).Run(access_token, expiration_time, error);
 
   // Causes |this| to be deleted.
   manager_->AccessTokenRequestCompleted(this);
