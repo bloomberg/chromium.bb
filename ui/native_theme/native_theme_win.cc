@@ -587,6 +587,11 @@ bool NativeThemeWin::UsesHighContrastColors() const {
 }
 
 bool NativeThemeWin::SystemDarkModeEnabled() const {
+  // Windows high contrast modes are entirely different themes,
+  // so let them take priority over dark mode.
+  // ...unless --force-dark-mode was specified in which case caveat emptor.
+  if (UsesHighContrastColors() && !NativeTheme::SystemDarkModeEnabled())
+    return false;
   bool fDarkModeEnabled = false;
   if (hkcu_themes_regkey_.Valid()) {
     DWORD apps_use_light_theme = 1;

@@ -35,11 +35,11 @@ constexpr char kDefaultMonospacedTypeface[] = "DejaVu Sans Mono";
 #endif
 constexpr char kUnspecifiedTypeface[] = "";
 
-// If the default foreground color from the native theme isn't black, the rest
-// of the Harmony spec isn't going to work. Also skip Harmony if a Windows
-// High Contrast theme is enabled. One of the four standard High Contrast themes
-// in Windows 10 still has black text, but (since the user wants high contrast)
-// the grey text shades in Harmony should not be used.
+// If the default foreground color from the native theme isn't black and dark
+// mode is not on the rest of the Harmony spec isn't going to work. Also skip
+// Harmony if a Windows High Contrast theme is enabled. One of the four standard
+// High Contrast themes in Windows 10 still has black text, but (since the user
+// wants high contrast) the grey text shades in Harmony should not be used.
 bool ShouldIgnoreHarmonySpec(const ui::NativeTheme& theme) {
   // Mac provides users limited ways to customize the UI, including dark and
   // high contrast modes; all these are addressed elsewhere, so there's no need
@@ -50,6 +50,8 @@ bool ShouldIgnoreHarmonySpec(const ui::NativeTheme& theme) {
 #else
   if (theme.UsesHighContrastColors())
     return true;
+  if (theme.SystemDarkModeEnabled())
+    return false;
 
   // TODO(pbos): Revisit this check. Both GG900 and black are considered
   // "default black" as the common theme uses GG900 as primary color.
