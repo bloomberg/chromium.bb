@@ -141,7 +141,17 @@ struct State {
 
 // Returns the current state of the user session with the given usage time limit
 // policy.
+// |time_limit| dictionary with UsageTimeLimit policy data.
+// |local_override| dictionary with data of the last local override (authorized
+//                  by parent access code).
+// |used_time| time used in the current day.
+// |usage_timestamp| when was |used_time| data collected. Usually differs from
+//                   |current_time| by milliseconds.
+// |previous_state| state previously returned by UsageTimeLimitProcessor.
+// TODO(agawronska): Passing unique_ptr by const ref is strange and advised
+// against by style guide. Probably should be refactorred.
 State GetState(const std::unique_ptr<base::DictionaryValue>& time_limit,
+               const base::Value* local_override,
                const base::TimeDelta& used_time,
                const base::Time& usage_timestamp,
                const base::Time& current_time,
@@ -149,14 +159,23 @@ State GetState(const std::unique_ptr<base::DictionaryValue>& time_limit,
                const base::Optional<State>& previous_state);
 
 // Returns the expected time that the used time stored should be reset.
+// |time_limit| dictionary with UsageTimeLimit policy data.
+// |local_override| dictionary with data of the last local override (authorized
+//                  by parent access code).
 base::Time GetExpectedResetTime(
     const std::unique_ptr<base::DictionaryValue>& time_limit,
+    const base::Value* local_override,
     base::Time current_time,
     const icu::TimeZone* const time_zone);
 
 // Returns the remaining time usage if the time usage limit is enabled.
+// |time_limit| dictionary with UsageTimeLimit policy data.
+// |local_override| dictionary with data of the last local override (authorized
+//                  by parent access code).
+// |used_time| time used in the current day.
 base::Optional<base::TimeDelta> GetRemainingTimeUsage(
     const std::unique_ptr<base::DictionaryValue>& time_limit,
+    const base::Value* local_override,
     const base::Time current_time,
     const base::TimeDelta& used_time,
     const icu::TimeZone* const time_zone);

@@ -162,6 +162,7 @@ void AddOverride(base::DictionaryValue* policy,
         policy->SetKey(usage_time_limit::TimeLimitOverride::kOverridesDictKey,
                        base::Value(base::Value::Type::LIST));
   }
+
   usage_time_limit::TimeLimitOverride new_override(action, created_at,
                                                    base::nullopt);
   overrides->GetList().push_back(new_override.ToDictionary());

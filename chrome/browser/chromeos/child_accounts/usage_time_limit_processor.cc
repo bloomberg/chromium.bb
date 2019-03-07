@@ -76,6 +76,7 @@ class UsageTimeLimitProcessor {
       base::Optional<internal::TimeWindowLimit> time_window_limit,
       base::Optional<internal::TimeUsageLimit> time_usage_limit,
       base::Optional<TimeLimitOverride> time_limit_override,
+      base::Optional<TimeLimitOverride> local_time_limit_override,
       const base::TimeDelta& used_time,
       const base::Time& usage_timestamp,
       const base::Time& current_time,
@@ -192,6 +193,9 @@ class UsageTimeLimitProcessor {
   // The policy override object.
   base::Optional<TimeLimitOverride> time_limit_override_;
 
+  // The local override object.
+  base::Optional<TimeLimitOverride> local_time_limit_override_;
+
   // How long the user has used the device.
   const base::TimeDelta used_time_;
 
@@ -239,6 +243,7 @@ UsageTimeLimitProcessor::UsageTimeLimitProcessor(
     base::Optional<internal::TimeWindowLimit> time_window_limit,
     base::Optional<internal::TimeUsageLimit> time_usage_limit,
     base::Optional<TimeLimitOverride> time_limit_override,
+    base::Optional<TimeLimitOverride> local_time_limit_override,
     const base::TimeDelta& used_time,
     const base::Time& usage_timestamp,
     const base::Time& current_time,
@@ -246,7 +251,6 @@ UsageTimeLimitProcessor::UsageTimeLimitProcessor(
     const base::Optional<State>& previous_state)
     : time_window_limit_(std::move(time_window_limit)),
       time_usage_limit_(std::move(time_usage_limit)),
-      time_limit_override_(std::move(time_limit_override)),
       used_time_(used_time),
       usage_timestamp_(usage_timestamp),
       current_time_(current_time),
@@ -254,6 +258,18 @@ UsageTimeLimitProcessor::UsageTimeLimitProcessor(
       current_weekday_(GetCurrentWeekday()),
       previous_state_(previous_state),
       enabled_time_usage_limit_(GetEnabledTimeUsageLimit()) {
+  // Use local override if it is newer than policy override, otherwise ignore
+  // local override.
+  // Note: |time_limit_override_| needs to be set before calculating
+  // |active_time_window_limit_| and |active_time_usage_limit_|.
+  bool should_use_local_override = local_time_limit_override.has_value() &&
+                                   (!time_limit_override.has_value() ||
+                                    local_time_limit_override->created_at() >
+                                        time_limit_override->created_at());
+  time_limit_override_ = should_use_local_override
+                             ? std::move(local_time_limit_override)
+                             : std::move(time_limit_override);
+
   // This will also set overridden_window_limit_ to true if applicable.
   // TODO: refactor GetActiveTimeWindowLimit to stop updating the state on a
   // getter method.
@@ -645,7 +661,6 @@ bool UsageTimeLimitProcessor::HasActiveOverride() {
   }
 
   bool has_valid_lock_override =
-      time_limit_override_->IsLock() &&
       time_limit_override_->created_at() > last_reset_time &&
       !override_cancelled_by_window_limit;
 
@@ -1181,6 +1196,7 @@ base::Optional<TimeLimitOverride> OverrideFromPolicy(
 }
 
 State GetState(const std::unique_ptr<base::DictionaryValue>& time_limit,
+               const base::Value* local_override,
                const base::TimeDelta& used_time,
                const base::Time& usage_timestamp,
                const base::Time& current_time,
@@ -1192,15 +1208,20 @@ State GetState(const std::unique_ptr<base::DictionaryValue>& time_limit,
       TimeUsageLimitFromPolicy(time_limit);
   base::Optional<TimeLimitOverride> time_limit_override =
       OverrideFromPolicy(time_limit);
+  base::Optional<TimeLimitOverride> local_time_limit_override =
+      TimeLimitOverride::FromDictionary(local_override);
+  // TODO(agawronska): Pass |usage_timestamp| instead of second |current_time|.
   return internal::UsageTimeLimitProcessor(
              std::move(time_window_limit), std::move(time_usage_limit),
-             std::move(time_limit_override), used_time, current_time,
+             std::move(time_limit_override),
+             std::move(local_time_limit_override), used_time, current_time,
              current_time, time_zone, previous_state)
       .GetState();
 }
 
 base::Time GetExpectedResetTime(
     const std::unique_ptr<base::DictionaryValue>& time_limit,
+    const base::Value* local_override,
     const base::Time current_time,
     const icu::TimeZone* const time_zone) {
   base::Optional<internal::TimeWindowLimit> time_window_limit =
@@ -1209,15 +1230,20 @@ base::Time GetExpectedResetTime(
       TimeUsageLimitFromPolicy(time_limit);
   base::Optional<TimeLimitOverride> time_limit_override =
       OverrideFromPolicy(time_limit);
+  base::Optional<TimeLimitOverride> local_time_limit_override =
+      TimeLimitOverride::FromDictionary(local_override);
   return internal::UsageTimeLimitProcessor(
              std::move(time_window_limit), std::move(time_usage_limit),
-             std::move(time_limit_override), base::TimeDelta::FromMinutes(0),
-             base::Time(), current_time, time_zone, base::nullopt)
+             std::move(time_limit_override),
+             std::move(local_time_limit_override),
+             base::TimeDelta::FromMinutes(0), base::Time(), current_time,
+             time_zone, base::nullopt)
       .GetExpectedResetTime();
 }
 
 base::Optional<base::TimeDelta> GetRemainingTimeUsage(
     const std::unique_ptr<base::DictionaryValue>& time_limit,
+    const base::Value* local_override,
     const base::Time current_time,
     const base::TimeDelta& used_time,
     const icu::TimeZone* const time_zone) {
@@ -1227,9 +1253,12 @@ base::Optional<base::TimeDelta> GetRemainingTimeUsage(
       TimeUsageLimitFromPolicy(time_limit);
   base::Optional<TimeLimitOverride> time_limit_override =
       OverrideFromPolicy(time_limit);
+  base::Optional<TimeLimitOverride> local_time_limit_override =
+      TimeLimitOverride::FromDictionary(local_override);
   return internal::UsageTimeLimitProcessor(
              std::move(time_window_limit), std::move(time_usage_limit),
-             std::move(time_limit_override), used_time, base::Time(),
+             std::move(time_limit_override),
+             std::move(local_time_limit_override), used_time, base::Time(),
              current_time, time_zone, base::nullopt)
       .GetRemainingTimeUsage();
 }
