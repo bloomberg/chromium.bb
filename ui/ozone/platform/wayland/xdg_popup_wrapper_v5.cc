@@ -37,6 +37,10 @@ bool XDGPopupWrapperV5::Initialize(WaylandConnection* connection,
 
   xdg_popup_add_listener(xdg_popup_.get(), &xdg_popup_listener, this);
 
+  // xdg_popup_v5 does not support configure events. Thus, manually call it to
+  // propagate final bounds.
+  wayland_window_->HandlePopupConfigure(bounds);
+
   return true;
 }
 

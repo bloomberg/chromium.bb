@@ -134,6 +134,7 @@ class WaylandWindow : public PlatformWindow,
                               bool is_maximized,
                               bool is_fullscreen,
                               bool is_activated);
+  void HandlePopupConfigure(const gfx::Rect& bounds);
 
   void OnCloseRequest();
 
@@ -172,6 +173,11 @@ class WaylandWindow : public PlatformWindow,
   void RemoveEnteredOutputId(struct wl_output* output);
 
   void UpdateCursorPositionFromEvent(std::unique_ptr<Event> event);
+
+  // Returns bounds with origin relative to parent window's origin.
+  gfx::Rect AdjustPopupWindowPosition() const;
+
+  WaylandWindow* GetTopLevelWindow();
 
   // wl_surface_listener
   static void Enter(void* data,
