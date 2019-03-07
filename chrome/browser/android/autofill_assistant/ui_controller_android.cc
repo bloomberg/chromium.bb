@@ -26,6 +26,7 @@
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill_assistant/browser/controller.h"
+#include "components/autofill_assistant/browser/features.h"
 #include "components/autofill_assistant/browser/metrics.h"
 #include "components/autofill_assistant/browser/rectf.h"
 #include "components/signin/core/browser/account_info.h"
@@ -79,7 +80,10 @@ UiControllerAndroid::UiControllerAndroid(
       payment_request_delegate_(this),
       weak_ptr_factory_(this) {
   java_object_ = Java_AutofillAssistantUiController_create(
-      env, jactivity, reinterpret_cast<intptr_t>(this));
+      env, jactivity,
+      /* allowTabSwitching= */
+      base::FeatureList::IsEnabled(features::kAutofillAssistantChromeEntry),
+      reinterpret_cast<intptr_t>(this));
 
   // Register overlay_delegate_ as delegate for the overlay.
   Java_AssistantOverlayModel_setDelegate(env, GetOverlayModel(),
