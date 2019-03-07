@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "ash/public/cpp/ash_features.h"
@@ -23,6 +24,7 @@
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/login/enrollment/auto_enrollment_check_screen_view.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen_view.h"
+#include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
 #include "chrome/browser/chromeos/login/screens/demo_preferences_screen_view.h"
 #include "chrome/browser/chromeos/login/screens/demo_setup_screen_view.h"
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
@@ -103,6 +105,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/webui/web_ui_util.h"
+#include "ui/chromeos/resources/grit/ui_chromeos_resources.h"
 #include "ui/display/display.h"
 #include "ui/events/devices/input_device.h"
 #include "ui/events/devices/input_device_manager.h"
@@ -196,6 +199,16 @@ void AddEnterpriseEnrollmentResources(content::WebUIDataSource* source) {
   source->AddResourcePath(kEnrollmentJSPath, IDR_OOBE_ENROLLMENT_JS);
 }
 
+void AddFingerprintResources(content::WebUIDataSource* source) {
+  if (quick_unlock::IsFingerprintReaderOnKeyboard()) {
+    source->AddResourcePath("fingerprint_scanner_animation.png",
+                            IDR_LOGIN_FINGERPRINT_SCANNER_LAPTOP_ANIMATION);
+  } else {
+    source->AddResourcePath("fingerprint_scanner_animation.png",
+                            IDR_LOGIN_FINGERPRINT_SCANNER_TABLET_ANIMATION);
+  }
+}
+
 // Default and non-shared resource definition for kOobeDisplay display type.
 // chrome://oobe/oobe
 void AddOobeDisplayTypeDefaultResources(content::WebUIDataSource* source) {
@@ -251,6 +264,7 @@ content::WebUIDataSource* CreateOobeUIDataSource(
   // Configure shared resources
   AddProductLogoResources(source);
 
+  AddFingerprintResources(source);
   AddSyncConsentResources(source);
   AddArcScreensResources(source);
   AddEnterpriseEnrollmentResources(source);
