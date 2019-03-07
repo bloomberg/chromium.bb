@@ -75,6 +75,10 @@ TextIteratorBehavior EmitsCharactersBetweenAllVisiblePositionsBehavior() {
       .Build();
 }
 
+TextIteratorBehavior EmitsSpaceForNbspBehavior() {
+  return TextIteratorBehavior::Builder().SetEmitsSpaceForNbsp(true).Build();
+}
+
 struct DOMTree : NodeTraversal {
   using PositionType = Position;
   using TextIteratorType = TextIterator;
@@ -1149,6 +1153,11 @@ TEST_P(TextIteratorTest, TextOffsetMappingAndFlatTree) {
   EXPECT_EQ(
       "[foo ][,][ bar]",
       Iterate<FlatTree>(EmitsCharactersBetweenAllVisiblePositionsBehavior()));
+}
+
+TEST_P(TextIteratorTest, EmitsSpaceForNbsp) {
+  SetBodyContent("foo &nbsp;bar");
+  EXPECT_EQ("[foo  bar]", Iterate<DOMTree>(EmitsSpaceForNbspBehavior()));
 }
 
 }  // namespace text_iterator_test
