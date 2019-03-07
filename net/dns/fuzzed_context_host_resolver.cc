@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/dns/fuzzed_host_resolver.h"
+#include "net/dns/fuzzed_context_host_resolver.h"
 
 #include <stdint.h>
 #include <algorithm>
@@ -29,8 +29,11 @@
 #include "net/dns/dns_client.h"
 #include "net/dns/dns_config.h"
 #include "net/dns/dns_hosts.h"
+#include "net/dns/host_resolver_impl.h"
+#include "net/dns/host_resolver_proc.h"
 #include "net/dns/mdns_client.h"
 #include "net/dns/public/util.h"
+#include "net/log/net_log.h"
 #include "net/log/net_log_with_source.h"
 #include "net/socket/datagram_server_socket.h"
 
@@ -294,33 +297,69 @@ class FuzzedMdnsSocketFactory : public MDnsSocketFactory {
   base::FuzzedDataProvider* const data_provider_;
 };
 
+class FuzzedHostResolverImpl : public HostResolverImpl {
+ public:
+  // |data_provider| and |net_log| must outlive the FuzzedHostResolver.
+  FuzzedHostResolverImpl(const Options& options,
+                         NetLog* net_log,
+                         base::FuzzedDataProvider* data_provider)
+      : HostResolverImpl(options, net_log),
+        data_provider_(data_provider),
+        is_ipv6_reachable_(data_provider->ConsumeBool()),
+        data_provider_weak_factory_(data_provider) {
+    ProcTaskParams proc_task_params(
+        new FuzzedHostResolverProc(data_provider_weak_factory_.GetWeakPtr()),
+        // Retries are only used when the original request hangs, which this
+        // class currently can't simulate.
+        0 /* max_retry_attempts */);
+    set_proc_params_for_test(proc_task_params);
+    SetTaskRunnerForTesting(base::SequencedTaskRunnerHandle::Get());
+    SetMdnsSocketFactoryForTesting(
+        std::make_unique<FuzzedMdnsSocketFactory>(data_provider_));
+  }
+
+  ~FuzzedHostResolverImpl() override = default;
+
+ private:
+  // HostResolverImpl implementation:
+  bool IsGloballyReachable(const IPAddress& dest,
+                           const NetLogWithSource& net_log) override {
+    return is_ipv6_reachable_;
+  }
+
+  void RunLoopbackProbeJob() override {
+    SetHaveOnlyLoopbackAddresses(data_provider_->ConsumeBool());
+  }
+
+  base::FuzzedDataProvider* const data_provider_;
+
+  // Fixed value to be returned by IsIPv6Reachable.
+  const bool is_ipv6_reachable_;
+
+  base::WeakPtrFactory<base::FuzzedDataProvider> data_provider_weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(FuzzedHostResolverImpl);
+};
+
 }  // namespace
 
-FuzzedHostResolver::FuzzedHostResolver(const Options& options,
-                                       NetLog* net_log,
-                                       base::FuzzedDataProvider* data_provider)
-    : HostResolverImpl(options, net_log),
+FuzzedContextHostResolver::FuzzedContextHostResolver(
+    const Options& options,
+    NetLog* net_log,
+    base::FuzzedDataProvider* data_provider)
+    : ContextHostResolver(
+          std::make_unique<FuzzedHostResolverImpl>(options,
+                                                   net_log,
+                                                   data_provider)),
       data_provider_(data_provider),
       socket_factory_(data_provider),
-      is_ipv6_reachable_(data_provider->ConsumeBool()),
-      net_log_(net_log),
-      data_provider_weak_factory_(data_provider) {
-  HostResolverImpl::ProcTaskParams proc_task_params(
-      new FuzzedHostResolverProc(data_provider_weak_factory_.GetWeakPtr()),
-      // Retries are only used when the original request hangs, which this class
-      // currently can't simulate.
-      0 /* max_retry_attempts */);
-  set_proc_params_for_test(proc_task_params);
-  SetTaskRunnerForTesting(base::SequencedTaskRunnerHandle::Get());
-  SetMdnsSocketFactoryForTesting(
-      std::make_unique<FuzzedMdnsSocketFactory>(data_provider_));
-}
+      net_log_(net_log) {}
 
-FuzzedHostResolver::~FuzzedHostResolver() = default;
+FuzzedContextHostResolver::~FuzzedContextHostResolver() = default;
 
-void FuzzedHostResolver::SetDnsClientEnabled(bool enabled) {
+void FuzzedContextHostResolver::SetDnsClientEnabled(bool enabled) {
   if (!enabled) {
-    HostResolverImpl::SetDnsClientEnabled(false);
+    ContextHostResolver::SetDnsClientEnabled(false);
     return;
   }
 
@@ -382,16 +421,7 @@ void FuzzedHostResolver::SetDnsClientEnabled(bool enabled) {
       base::Bind(&base::FuzzedDataProvider::ConsumeIntegralInRange<int32_t>,
                  base::Unretained(data_provider_)));
   dns_client->SetConfig(config);
-  SetDnsClient(std::move(dns_client));
-}
-
-bool FuzzedHostResolver::IsGloballyReachable(const IPAddress& dest,
-                                             const NetLogWithSource& net_log) {
-  return is_ipv6_reachable_;
-}
-
-void FuzzedHostResolver::RunLoopbackProbeJob() {
-  SetHaveOnlyLoopbackAddresses(data_provider_->ConsumeBool());
+  SetDnsClientForTesting(std::move(dns_client));
 }
 
 }  // namespace net

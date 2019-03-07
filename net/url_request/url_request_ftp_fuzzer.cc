@@ -11,7 +11,7 @@
 #include "base/run_loop.h"
 #include "base/test/fuzzed_data_provider.h"
 #include "net/base/request_priority.h"
-#include "net/dns/fuzzed_host_resolver.h"
+#include "net/dns/fuzzed_context_host_resolver.h"
 #include "net/ftp/ftp_network_transaction.h"
 #include "net/ftp/ftp_transaction_factory.h"
 #include "net/socket/client_socket_factory.h"
@@ -60,8 +60,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   url_request_context.set_client_socket_factory(&fuzzed_socket_factory);
 
   // Need to fuzz the HostResolver to select between IPv4 and IPv6.
-  net::FuzzedHostResolver host_resolver(net::HostResolver::Options(), nullptr,
-                                        &data_provider);
+  net::FuzzedContextHostResolver host_resolver(net::HostResolver::Options(),
+                                               nullptr, &data_provider);
   url_request_context.set_host_resolver(&host_resolver);
 
   net::URLRequestJobFactoryImpl job_factory;

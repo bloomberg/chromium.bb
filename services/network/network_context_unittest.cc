@@ -58,8 +58,8 @@
 #include "net/cookies/cookie_options.h"
 #include "net/cookies/cookie_store.h"
 #include "net/disk_cache/disk_cache.h"
+#include "net/dns/context_host_resolver.h"
 #include "net/dns/dns_test_util.h"
-#include "net/dns/host_resolver_impl.h"
 #include "net/dns/host_resolver_source.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/dns/public/dns_query_type.h"
@@ -2917,8 +2917,8 @@ TEST_F(NetworkContextTest, ResolveHost_CloseClient) {
             network_context->GetNumOutstandingResolveHostRequestsForTesting());
 }
 
-// Test factory of net::HostResolvers. Creates standard net::HostResolverImpl.
-// Keeps pointers to all created resolvers.
+// Test factory of net::HostResolvers. Creates standard
+// net::ContextHostResolver. Keeps pointers to all created resolvers.
 class TestResolverFactory : public net::HostResolver::Factory {
  public:
   static TestResolverFactory* CreateAndSetFactory(NetworkContext* context) {
@@ -2931,18 +2931,18 @@ class TestResolverFactory : public net::HostResolver::Factory {
   std::unique_ptr<net::HostResolver> CreateResolver(
       const net::HostResolver::Options& options,
       net::NetLog* net_log) override {
-    std::unique_ptr<net::HostResolverImpl> resolver =
+    std::unique_ptr<net::ContextHostResolver> resolver =
         net::HostResolver::CreateSystemResolverImpl(options, net_log);
     resolvers_.push_back(resolver.get());
     return resolver;
   }
 
-  const std::vector<net::HostResolverImpl*>& resolvers() const {
+  const std::vector<net::ContextHostResolver*>& resolvers() const {
     return resolvers_;
   }
 
  private:
-  std::vector<net::HostResolverImpl*> resolvers_;
+  std::vector<net::ContextHostResolver*> resolvers_;
 };
 
 TEST_F(NetworkContextTest, CreateHostResolver) {
@@ -3091,7 +3091,7 @@ TEST_F(NetworkContextTest, CreateHostResolverWithConfigOverrides) {
   // Should create 1 private resolver with a DnsClient (if DnsClient is
   // enablable for the build config).
   ASSERT_EQ(1u, factory->resolvers().size());
-  net::HostResolverImpl* internal_resolver = factory->resolvers().front();
+  net::ContextHostResolver* internal_resolver = factory->resolvers().front();
 #if defined(ENABLE_BUILT_IN_DNS)
   EXPECT_TRUE(internal_resolver->GetDnsConfigAsValue());
 #endif
@@ -3115,7 +3115,7 @@ TEST_F(NetworkContextTest, CreateHostResolverWithConfigOverrides) {
   auto mock_dns_client =
       std::make_unique<net::MockDnsClient>(net::DnsConfig(), std::move(rules));
   auto* mock_dns_client_ptr = mock_dns_client.get();
-  internal_resolver->SetDnsClient(std::move(mock_dns_client));
+  internal_resolver->SetDnsClientForTesting(std::move(mock_dns_client));
 
   // Force the base configuration to ensure consistent overriding.
   net::DnsConfig base_configuration;

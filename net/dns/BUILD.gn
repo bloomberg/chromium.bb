@@ -31,6 +31,8 @@ source_set("dns") {
     sources += [
       "address_sorter.h",
       "address_sorter_win.cc",
+      "context_host_resolver.cc",
+      "context_host_resolver.h",
       "dns_config.cc",
       "dns_config_overrides.cc",
       "dns_config_service.cc",
@@ -433,8 +435,8 @@ source_set("test_support") {
 source_set("fuzzer_test_support") {
   testonly = true
   sources = [
-    "fuzzed_host_resolver.cc",
-    "fuzzed_host_resolver.h",
+    "fuzzed_context_host_resolver.cc",
+    "fuzzed_context_host_resolver.h",
   ]
   deps = [
     "//base",

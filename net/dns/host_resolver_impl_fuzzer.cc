@@ -17,10 +17,11 @@
 #include "net/base/address_list.h"
 #include "net/base/net_errors.h"
 #include "net/base/request_priority.h"
-#include "net/dns/fuzzed_host_resolver.h"
+#include "net/dns/fuzzed_context_host_resolver.h"
 #include "net/dns/host_resolver.h"
 #include "net/log/net_log_with_source.h"
 #include "net/log/test_net_log.h"
+#include "net/net_buildflags.h"
 
 namespace {
 
@@ -206,7 +207,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     options.max_concurrent_resolves =
         data_provider.ConsumeIntegralInRange(1, 8);
     options.enable_caching = data_provider.ConsumeBool();
-    net::FuzzedHostResolver host_resolver(options, &net_log, &data_provider);
+    net::FuzzedContextHostResolver host_resolver(options, &net_log,
+                                                 &data_provider);
     host_resolver.SetDnsClientEnabled(data_provider.ConsumeBool());
 
     std::vector<std::unique_ptr<DnsRequest>> dns_requests;

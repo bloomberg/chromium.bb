@@ -2,18 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_DNS_FUZZED_HOST_RESOLVER_H_
-#define NET_DNS_FUZZED_HOST_RESOLVER_H_
+#ifndef NET_DNS_FUZZED_CONTEXT_HOST_RESOLVER_H_
+#define NET_DNS_FUZZED_CONTEXT_HOST_RESOLVER_H_
 
 #include <stdint.h>
 
 #include <memory>
 
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
-#include "net/base/address_family.h"
+#include "net/dns/context_host_resolver.h"
 #include "net/dns/host_resolver.h"
-#include "net/dns/host_resolver_impl.h"
 #include "net/socket/fuzzed_socket_factory.h"
 
 namespace base {
@@ -22,12 +20,10 @@ class FuzzedDataProvider;
 
 namespace net {
 
-class AddressList;
-class DnsClient;
 class NetLog;
 
 // HostResolver that uses a fuzzer to determine what results to return. It
-// inherits from HostResolverImpl, unlike MockHostResolver, so more closely
+// inherits from ContextHostResolver, unlike MockHostResolver, so more closely
 // matches real behavior.
 //
 // By default uses a mocked out system resolver, though can be configured to
@@ -43,40 +39,28 @@ class NetLog;
 //
 // The async DNS client can make system calls in AddressSorterPosix, but other
 // methods that make system calls are stubbed out.
-class FuzzedHostResolver : public HostResolverImpl {
+class FuzzedContextHostResolver : public ContextHostResolver {
  public:
-  // |data_provider| and |net_log| must outlive the FuzzedHostResolver.
-  FuzzedHostResolver(const Options& options,
-                     NetLog* net_log,
-                     base::FuzzedDataProvider* data_provider);
-  ~FuzzedHostResolver() override;
+  FuzzedContextHostResolver(const Options& options,
+                            NetLog* net_log,
+                            base::FuzzedDataProvider* data_provider);
+  ~FuzzedContextHostResolver() override;
 
   // Enable / disable the async resolver. When enabled, installs a
-  // DnsClient with fuzzed UDP and TCP sockets. Overrides
-  // HostResolverImpl method of the same name.
+  // DnsClient with fuzzed UDP and TCP sockets.
   void SetDnsClientEnabled(bool enabled) override;
 
  private:
-  // HostResolverImpl implementation:
-  bool IsGloballyReachable(const IPAddress& dest,
-                           const NetLogWithSource& net_log) override;
-  void RunLoopbackProbeJob() override;
-
-  base::FuzzedDataProvider* data_provider_;
+  base::FuzzedDataProvider* const data_provider_;
 
   // Used for UDP and TCP sockets if the async resolver is enabled.
   FuzzedSocketFactory socket_factory_;
 
-  // Fixed value to be returned by IsIPv6Reachable.
-  const bool is_ipv6_reachable_;
+  NetLog* const net_log_;
 
-  NetLog* net_log_;
-
-  base::WeakPtrFactory<base::FuzzedDataProvider> data_provider_weak_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(FuzzedHostResolver);
+  DISALLOW_COPY_AND_ASSIGN(FuzzedContextHostResolver);
 };
 
 }  // namespace net
 
-#endif  // NET_DNS_FUZZED_HOST_RESOLVER_H_
+#endif  // NET_DNS_FUZZED_CONTEXT_HOST_RESOLVER_H_

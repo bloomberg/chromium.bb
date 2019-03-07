@@ -12,18 +12,21 @@
 #include "base/time/default_tick_clock.h"
 #include "net/base/completion_once_callback.h"
 #include "net/dns/host_resolver.h"
-#include "net/dns/host_resolver_impl.h"
 
 namespace base {
 class TickClock;
 }  // namespace base
+
+namespace net {
+class ContextHostResolver;
+}  // namespace net
 
 namespace cronet {
 namespace {
 class StaleHostResolverTest;
 }  // namespace
 
-// A HostResolver that wraps a HostResolverImpl and uses it to make requests,
+// A HostResolver that wraps a ContextHostResolver and uses it to make requests,
 // but "impatiently" returns stale data (if available and usable) after a delay,
 // to reduce DNS latency at the expense of accuracy.
 class StaleHostResolver : public net::HostResolver {
@@ -60,7 +63,7 @@ class StaleHostResolver : public net::HostResolver {
   // Creates a StaleHostResolver that uses |inner_resolver| for actual
   // resolution, but potentially returns stale data according to
   // |stale_options|.
-  StaleHostResolver(std::unique_ptr<net::HostResolverImpl> inner_resolver,
+  StaleHostResolver(std::unique_ptr<net::ContextHostResolver> inner_resolver,
                     const StaleOptions& stale_options);
 
   ~StaleHostResolver() override;
@@ -107,9 +110,9 @@ class StaleHostResolver : public net::HostResolver {
   // Set |tick_clock_| for testing. Must be set before issuing any requests.
   void SetTickClockForTesting(const base::TickClock* tick_clock);
 
-  // The underlying HostResolverImpl that will be used to make cache and network
-  // requests.
-  std::unique_ptr<net::HostResolverImpl> inner_resolver_;
+  // The underlying ContextHostResolver that will be used to make cache and
+  // network requests.
+  std::unique_ptr<net::ContextHostResolver> inner_resolver_;
 
   // Shared instance of tick clock, overridden for testing.
   const base::TickClock* tick_clock_ = base::DefaultTickClock::GetInstance();

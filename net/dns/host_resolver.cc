@@ -15,6 +15,7 @@
 #include "base/values.h"
 #include "net/base/address_list.h"
 #include "net/base/net_errors.h"
+#include "net/dns/context_host_resolver.h"
 #include "net/dns/dns_client.h"
 #include "net/dns/dns_util.h"
 #include "net/dns/host_cache.h"
@@ -144,15 +145,15 @@ HostResolver::GetDnsOverHttpsServersForTesting() const {
 std::unique_ptr<HostResolver> HostResolver::CreateSystemResolver(
     const Options& options,
     NetLog* net_log) {
-  return std::unique_ptr<HostResolver>(
-      CreateSystemResolverImpl(options, net_log).release());
+  return CreateSystemResolverImpl(options, net_log);
 }
 
 // static
-std::unique_ptr<HostResolverImpl> HostResolver::CreateSystemResolverImpl(
+std::unique_ptr<ContextHostResolver> HostResolver::CreateSystemResolverImpl(
     const Options& options,
     NetLog* net_log) {
-  return std::make_unique<HostResolverImpl>(options, net_log);
+  return std::make_unique<ContextHostResolver>(
+      std::make_unique<HostResolverImpl>(options, net_log));
 }
 
 // static
@@ -162,7 +163,7 @@ std::unique_ptr<HostResolver> HostResolver::CreateDefaultResolver(
 }
 
 // static
-std::unique_ptr<HostResolverImpl> HostResolver::CreateDefaultResolverImpl(
+std::unique_ptr<ContextHostResolver> HostResolver::CreateDefaultResolverImpl(
     NetLog* net_log) {
   return CreateSystemResolverImpl(Options(), net_log);
 }

@@ -17,6 +17,7 @@
 #include "base/values.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
+#include "net/dns/context_host_resolver.h"
 #include "net/dns/dns_util.h"
 #include "net/dns/host_resolver_source.h"
 #include "net/log/net_log_with_source.h"
@@ -422,7 +423,7 @@ StaleHostResolver::StaleOptions::StaleOptions()
       use_stale_on_name_not_resolved(false) {}
 
 StaleHostResolver::StaleHostResolver(
-    std::unique_ptr<net::HostResolverImpl> inner_resolver,
+    std::unique_ptr<net::ContextHostResolver> inner_resolver,
     const StaleOptions& stale_options)
     : inner_resolver_(std::move(inner_resolver)),
       options_(stale_options),
