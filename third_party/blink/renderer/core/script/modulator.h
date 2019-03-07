@@ -123,6 +123,7 @@ class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
 
   virtual bool BuiltInModuleInfraEnabled() const = 0;
   virtual bool BuiltInModuleEnabled(blink::layered_api::Module) const = 0;
+  virtual void BuiltInModuleUseCount(blink::layered_api::Module) const = 0;
 
   // https://html.spec.whatwg.org/C/#fetch-a-module-script-tree
   // https://html.spec.whatwg.org/C/#fetch-a-module-worker-script-tree

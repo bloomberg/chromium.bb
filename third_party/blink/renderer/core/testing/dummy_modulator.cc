@@ -66,6 +66,8 @@ bool DummyModulator::BuiltInModuleEnabled(blink::layered_api::Module) const {
   return false;
 }
 
+void DummyModulator::BuiltInModuleUseCount(blink::layered_api::Module) const {}
+
 ScriptModuleResolver* DummyModulator::GetScriptModuleResolver() {
   return resolver_.Get();
 }

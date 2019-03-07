@@ -23,18 +23,21 @@ static const char kImportScheme[] = "import";
 
 constexpr char kBuiltinSpecifierPrefix[] = "@std/";
 
-int GetResourceIDFromPath(const Modulator& modulator, const String& path) {
+constexpr char kTopLevelScriptPostfix[] = "/index.js";
+
+const LayeredAPIResource* GetResourceFromPath(const Modulator& modulator,
+                                              const String& path) {
   for (size_t i = 0; i < base::size(kLayeredAPIResources); ++i) {
     if (modulator.BuiltInModuleEnabled(kLayeredAPIResources[i].module) &&
         path == kLayeredAPIResources[i].path) {
-      return kLayeredAPIResources[i].resource_id;
+      return &kLayeredAPIResources[i];
     }
   }
-  return -1;
+  return nullptr;
 }
 
 bool IsImplemented(const Modulator& modulator, const String& name) {
-  return GetResourceIDFromPath(modulator, name + "/index.js") >= 0;
+  return GetResourceFromPath(modulator, name + kTopLevelScriptPostfix);
 }
 
 }  // namespace
@@ -104,11 +107,15 @@ String GetSourceText(const Modulator& modulator, const KURL& url) {
     path = path.Substring(2);
   }
 
-  int resource_id = GetResourceIDFromPath(modulator, path);
-  if (resource_id < 0)
+  const LayeredAPIResource* resource = GetResourceFromPath(modulator, path);
+  if (!resource)
     return String();
 
-  return UncompressResourceAsString(resource_id);
+  // Only count the use of top-level scripts of each built-in module.
+  if (path.EndsWith(kTopLevelScriptPostfix))
+    modulator.BuiltInModuleUseCount(resource->module);
+
+  return UncompressResourceAsString(resource->resource_id);
 }
 
 }  // namespace layered_api
