@@ -2952,7 +2952,6 @@
   mistral-pre-cq
   mistral-release-tryjob
   mistral-unittest-stress
-  mixed-wificell-pre-cq
   moblab-generic-vm-chromium-pfq-tryjob
   moblab-generic-vm-compile-only-pre-cq
   moblab-generic-vm-full-tryjob

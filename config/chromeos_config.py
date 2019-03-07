@@ -1274,36 +1274,21 @@ def PreCqBuilders(site_config, boards_dict, ge_build_config):
       description='WiFi tests acting as pre-cq for WiFi related changes',
   )
 
-  site_config.AddGroup(
-      'mixed-wificell-pre-cq',
-      site_config.Add(
-          'winky-wificell-pre-cq',
-          site_config.templates.wificell_pre_cq,
-          board_configs['winky']),
-      site_config.Add(
-          'veyron_speedy-wificell-pre-cq',
-          site_config.templates.wificell_pre_cq,
-          board_configs['veyron_speedy']),
-      site_config.Add(
-          'veyron_jerry-wificell-pre-cq',
-          site_config.templates.wificell_pre_cq,
-          board_configs['veyron_jerry']),
-      site_config.Add(
-          'daisy-wificell-pre-cq',
-          site_config.templates.wificell_pre_cq,
-          board_configs['daisy']),
-      site_config.Add(
-          'lulu-wificell-pre-cq',
-          site_config.templates.wificell_pre_cq,
-          board_configs['lulu']),
-      site_config.Add(
-          'cyan-wificell-pre-cq',
-          site_config.templates.wificell_pre_cq,
-          board_configs['cyan']),
-      site_config.Add(
-          'elm-wificell-pre-cq',
-          site_config.templates.wificell_pre_cq,
-          board_configs['elm']),
+  _wifi_boards = frozenset([
+      'winky',
+      'veyron_speedy',
+      'veyron_jerry',
+      'daisy',
+      'lulu',
+      'cyan',
+      'elm',
+  ])
+
+  site_config.AddForBoards(
+      'wificell-pre-cq',
+      _wifi_boards,
+      board_configs,
+      site_config.templates.wificell_pre_cq,
   )
 
   # Bluestreak specific PreCQ.
