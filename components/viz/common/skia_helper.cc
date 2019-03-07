@@ -6,6 +6,7 @@
 #include "cc/base/math_util.h"
 #include "third_party/skia/include/effects/SkOverdrawColorFilter.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
+#include "third_party/skia/include/gpu/GrContext.h"
 #include "ui/gfx/skia_util.h"
 
 namespace viz {
