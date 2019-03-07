@@ -25,6 +25,7 @@ source_set("lib") {
 
   if (enable_cros_ime_decoder) {
     sources += [
+      "//chromeos/services/ime/public/cpp/shared_lib:interfaces",
       "decoder/decoder_engine.cc",
       "decoder/decoder_engine.h",
     ]
