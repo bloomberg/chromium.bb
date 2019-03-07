@@ -792,8 +792,8 @@ bool DesktopNativeWidgetAura::IsVisible() const {
   // platform code might show the desktop window tree host early, meaning we
   // aren't fully visible as we haven't shown the content window. Callers may
   // short-circuit a call to show this widget if they think its already visible.
-  return content_window_ && content_window_->IsVisible() &&
-      desktop_window_tree_host_->IsVisible();
+  return content_window_ && content_window_->TargetVisibility() &&
+         desktop_window_tree_host_->IsVisible();
 }
 
 void DesktopNativeWidgetAura::Activate() {

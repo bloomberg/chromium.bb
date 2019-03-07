@@ -16,6 +16,7 @@
 #include "base/timer/timer.h"
 #include "base/win/windows_version.h"
 #include "build/build_config.h"
+#include "ui/aura/window.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -41,7 +42,6 @@
 #include "ui/wm/public/activation_client.h"
 
 #if defined(OS_WIN)
-#include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 #include "ui/views/win/hwnd_util.h"
@@ -1419,38 +1419,32 @@ TEST_F(DesktopWidgetTestInteractive, RestoreAfterMinimize) {
 }
 
 #if defined(OS_WIN)
-// Tests that widget visibility toggles correctly when minimized and maximized
-// on Windows. Test using both the widget API as well as native win32 functions
-// that operate directly on the underlying HWND. Behavior should be the same.
+// TODO(davidbienvenu): Get this test to pass on Linux and ChromeOS by hiding
+// the root window when desktop widget is minimized.
+// Tests that root window visibility toggles correctly when the desktop widget
+// is minimized and maximized on Windows, and the Widget remains visible.
 TEST_F(DesktopWidgetTestInteractive, RestoreAndMinimizeVisibility) {
   Widget* widget = CreateWidget();
+  aura::Window* root_window = GetRootWindow(widget);
   ShowSync(widget);
   ASSERT_FALSE(widget->IsMinimized());
+  EXPECT_TRUE(root_window->IsVisible());
 
   PropertyWaiter minimize_widget_waiter(
-      base::Bind(&Widget::IsMinimized, base::Unretained(widget)), true);
+      base::BindRepeating(&Widget::IsMinimized, base::Unretained(widget)),
+      true);
   widget->Minimize();
   EXPECT_TRUE(minimize_widget_waiter.Wait());
-  EXPECT_FALSE(widget->IsVisible());
+  EXPECT_TRUE(widget->IsVisible());
+  EXPECT_FALSE(root_window->IsVisible());
 
   PropertyWaiter restore_widget_waiter(
-      base::Bind(&Widget::IsMinimized, base::Unretained(widget)), false);
+      base::BindRepeating(&Widget::IsMinimized, base::Unretained(widget)),
+      false);
   widget->Restore();
   EXPECT_TRUE(restore_widget_waiter.Wait());
   EXPECT_TRUE(widget->IsVisible());
-
-  PropertyWaiter minimize_hwnd_waiter(
-      base::Bind(&Widget::IsMinimized, base::Unretained(widget)), true);
-  CloseWindow(HWNDForWidget(widget));
-  EXPECT_TRUE(minimize_hwnd_waiter.Wait());
-  EXPECT_FALSE(widget->IsVisible());
-
-  PropertyWaiter restore_hwnd_waiter(
-      base::Bind(&Widget::IsMinimized, base::Unretained(widget)), false);
-  OpenIcon(HWNDForWidget(widget));
-  EXPECT_TRUE(restore_hwnd_waiter.Wait());
-  EXPECT_TRUE(widget->IsVisible());
-
+  EXPECT_TRUE(root_window->IsVisible());
   widget->CloseNow();
 }
 #endif  // defined(OS_WIN)
