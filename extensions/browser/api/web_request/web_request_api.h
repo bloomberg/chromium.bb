@@ -446,6 +446,8 @@ class ExtensionWebRequestEventRouter {
                       const std::string& event_name,
                       const std::string& sub_event_name,
                       uint64_t request_id,
+                      int embedder_process_id,
+                      int web_view_instance_id,
                       EventResponse* response);
 
   // Adds a listener to the given event. |event_name| specifies the event being
@@ -790,6 +792,8 @@ class WebRequestInternalEventHandledFunction
       const std::string& event_name,
       const std::string& sub_event_name,
       uint64_t request_id,
+      int embedder_process_id,
+      int web_view_instance_id,
       std::unique_ptr<ExtensionWebRequestEventRouter::EventResponse> response);
 
   // ExtensionFunction:

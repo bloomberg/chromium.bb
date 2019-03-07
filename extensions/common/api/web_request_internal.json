@@ -52,6 +52,7 @@
           {"type": "string", "name": "eventName"},
           {"type": "string", "name": "subEventName"},
           {"type": "string", "name": "requestId"},
+          {"type": "integer", "name": "webViewInstanceId"},
           {
             "$ref": "webRequest.BlockingResponse",
             "optional": true,

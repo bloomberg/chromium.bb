@@ -113,7 +113,7 @@ static void EventHandledOnIOThread(
     ExtensionWebRequestEventRouter::EventResponse* response) {
   ExtensionWebRequestEventRouter::GetInstance()->OnEventHandled(
       profile, extension_id, event_name, sub_event_name, request_id,
-      response);
+      0 /* embedder_process_id */, 0 /* web_view_instance_id */, response);
 }
 
 // Returns whether |warnings| contains an extension for |extension_id|.
@@ -1081,7 +1081,8 @@ TEST_F(ExtensionWebRequestTest, BlockedRequestsAreRemoved) {
   response->cancel = true;
   ExtensionWebRequestEventRouter::GetInstance()->OnEventHandled(
       &profile_, extension_id, kEventName, kEventName + "/1",
-      request->identifier(), response);
+      request->identifier(), 0 /* embedder_process_id */,
+      0 /* web_view_instance_id */, response);
   {
     base::RunLoop run_loop;
     run_loop.RunUntilIdle();
