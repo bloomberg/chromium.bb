@@ -318,8 +318,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Passthrough command decoder
     self.Fail('conformance/misc/webgl-specific-stencil-settings.html',
         ['passthrough'], bug=844349)
-    self.Fail('conformance2/extensions/ext-float-blend.html',
-        ['passthrough'], bug=930993)
 
     # Passthrough command decoder / OpenGL
     self.Fail('conformance2/misc/uninitialized-test-2.html',

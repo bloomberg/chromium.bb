@@ -375,14 +375,14 @@ void FramebufferManager::CreateFramebuffer(
   DCHECK(result.second);
 }
 
-Framebuffer::Framebuffer(
-    FramebufferManager* manager, GLuint service_id)
+Framebuffer::Framebuffer(FramebufferManager* manager, GLuint service_id)
     : manager_(manager),
       deleted_(false),
       service_id_(service_id),
       has_been_bound_(false),
       framebuffer_complete_state_count_id_(0),
       draw_buffer_type_mask_(0u),
+      draw_buffer_float32_mask_(0u),
       draw_buffer_bound_mask_(0u),
       adjusted_draw_buffer_bound_mask_(0u),
       read_buffer_(GL_COLOR_ATTACHMENT0) {
@@ -639,16 +639,8 @@ bool Framebuffer::HasStencilAttachment() const {
   return attachments_.find(GL_STENCIL_ATTACHMENT) != attachments_.end();
 }
 
-bool Framebuffer::HasFloatColorAttachment() const {
-  for (AttachmentMap::const_iterator it = attachments_.begin();
-       it != attachments_.end(); ++it) {
-    if (it->first != GL_DEPTH_ATTACHMENT &&
-        it->first != GL_STENCIL_ATTACHMENT &&
-        it->second->texture_type() == GL_FLOAT) {
-      return true;
-    }
-  }
-  return false;
+bool Framebuffer::HasActiveFloat32ColorAttachment() const {
+  return draw_buffer_float32_mask_ != 0u;
 }
 
 GLenum Framebuffer::GetReadBufferInternalFormat() const {
@@ -955,6 +947,7 @@ void Framebuffer::UnbindTexture(
 
 void Framebuffer::UpdateDrawBufferMasks() {
   draw_buffer_type_mask_ = 0u;
+  draw_buffer_float32_mask_ = 0u;
   draw_buffer_bound_mask_ = 0u;
   for (uint32_t index = 0; index < manager_->max_color_attachments_; ++index) {
     GLenum draw_buffer = draw_buffers_[index];
@@ -976,6 +969,10 @@ void Framebuffer::UpdateDrawBufferMasks() {
     size_t shift_bits = index * 2;
     draw_buffer_type_mask_ |= base_type << shift_bits;
     draw_buffer_bound_mask_ |= 0x3 << shift_bits;
+
+    if (GLES2Util::IsFloat32Format(internal_format)) {
+      draw_buffer_float32_mask_ |= 0x3 << shift_bits;
+    }
   }
 }
 
