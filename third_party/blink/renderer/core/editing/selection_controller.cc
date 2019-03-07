@@ -494,8 +494,10 @@ void SelectionController::UpdateSelectionForMouseDrag(
                 Selection().ComputeVisibleSelectionInDOMTree().Start(),
                 hit_test_result.LocalPoint(), target)
           : PositionWithAffinity();
-  VisiblePositionInFlatTree target_position = CreateVisiblePosition(
-      FromPositionInDOMTree<EditingInFlatTreeStrategy>(raw_target_position));
+  const PositionInFlatTreeWithAffinity target_position =
+      CreateVisiblePosition(
+          FromPositionInDOMTree<EditingInFlatTreeStrategy>(raw_target_position))
+          .ToPositionWithAffinity();
   // Don't modify the selection if we're not on a node.
   if (target_position.IsNull())
     return;
@@ -534,9 +536,9 @@ void SelectionController::UpdateSelectionForMouseDrag(
   }
 
   const PositionInFlatTreeWithAffinity adjusted_position =
-      AdjustPositionRespectUserSelectAll(
-          target, visible_selection.Start(), visible_selection.End(),
-          target_position.ToPositionWithAffinity());
+      AdjustPositionRespectUserSelectAll(target, visible_selection.Start(),
+                                         visible_selection.End(),
+                                         target_position);
   const SelectionInFlatTree& adjusted_selection =
       should_extend_selection
           ? ExtendSelectionAsDirectional(adjusted_position,
