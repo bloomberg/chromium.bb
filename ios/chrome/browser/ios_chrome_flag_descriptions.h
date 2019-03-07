@@ -111,6 +111,11 @@ extern const char kAppLauncherRefreshDescription[];
 extern const char kAutofillDynamicFormsName[];
 extern const char kAutofillDynamicFormsDescription[];
 
+// Title and description for the flag to control saving FULL_SERVER_CARDS upon
+// success of credit card upload.
+extern const char kAutofillNoLocalSaveOnUploadSuccessName[];
+extern const char kAutofillNoLocalSaveOnUploadSuccessDescription[];
+
 // Title and description for the flag to control the dynamic autofill.
 extern const char kAutofillPrefilledFieldsName[];
 extern const char kAutofillPrefilledFieldsDescription[];
