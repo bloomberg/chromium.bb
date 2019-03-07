@@ -425,9 +425,6 @@ const char kGuestWallpaperLarge[] = "guest-wallpaper-large";
 // JPEG file).
 const char kGuestWallpaperSmall[] = "guest-wallpaper-small";
 
-// If true, the Chromebook has a keyboard with a diamond key.
-const char kHasChromeOSDiamondKey[] = "has-chromeos-diamond-key";
-
 // If set, the system is a Chromebook with a "standard Chrome OS keyboard",
 // which generally means one with a Search key in the standard Caps Lock
 // location above the Left Shift key. It should be unset for Chromebooks with

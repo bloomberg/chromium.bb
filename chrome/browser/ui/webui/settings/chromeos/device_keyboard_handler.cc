@@ -140,13 +140,9 @@ void KeyboardHandler::UpdateShowKeys() {
                              keyboards_state.has_external_non_apple_keyboard ||
                              !base::CommandLine::ForCurrentProcess()->HasSwitch(
                                  chromeos::switches::kHasChromeOSKeyboard);
-  const bool has_diamond_key =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kHasChromeOSDiamondKey);
 
   base::Value keyboard_params(base::Value::Type::DICTIONARY);
   keyboard_params.SetKey("showCapsLock", base::Value(has_caps_lock));
-  keyboard_params.SetKey("showDiamondKey", base::Value(has_diamond_key));
   keyboard_params.SetKey(
       "showExternalMetaKey",
       base::Value(keyboards_state.has_external_non_apple_keyboard));

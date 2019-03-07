@@ -501,8 +501,6 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_api::PrefType::PREF_TYPE_NUMBER;
   (*s_whitelist)[::prefs::kLanguageRemapEscapeKeyTo] =
       settings_api::PrefType::PREF_TYPE_NUMBER;
-  (*s_whitelist)[::prefs::kLanguageRemapDiamondKeyTo] =
-      settings_api::PrefType::PREF_TYPE_NUMBER;
   (*s_whitelist)[::prefs::kLanguageRemapExternalCommandKeyTo] =
       settings_api::PrefType::PREF_TYPE_NUMBER;
   (*s_whitelist)[::prefs::kLanguageRemapExternalMetaKeyTo] =

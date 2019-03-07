@@ -319,11 +319,6 @@ cr.define('device_page_tests', function() {
             type: chrome.settingsPrivate.PrefType.NUMBER,
             value: 4,
           },
-          remap_diamond_key_to: {
-            key: 'settings.language.remap_diamond_key_to',
-            type: chrome.settingsPrivate.PrefType.NUMBER,
-            value: 3,
-          },
           remap_escape_key_to: {
             key: 'settings.language.remap_escape_key_to',
             type: chrome.settingsPrivate.PrefType.NUMBER,
@@ -602,12 +597,10 @@ cr.define('device_page_tests', function() {
             keyboardPage = page;
             // Initially, the optional keys are hidden.
             expectFalse(!!keyboardPage.$$('#capsLockKey'));
-            expectFalse(!!keyboardPage.$$('#diamondKey'));
 
-            // Pretend the diamond key is available, and no internal keyboard.
+            // Pretend no internal keyboard is available.
             let keyboardParams = {
               'showCapsLock': false,
-              'showDiamondKey': true,
               'showExternalMetaKey': false,
               'showAppleCommandKey': false,
               'hasInternalKeyboard': false,
@@ -616,7 +609,6 @@ cr.define('device_page_tests', function() {
             Polymer.dom.flush();
             expectFalse(!!keyboardPage.$$('#internalSearchKey'));
             expectFalse(!!keyboardPage.$$('#capsLockKey'));
-            expectTrue(!!keyboardPage.$$('#diamondKey'));
             expectFalse(!!keyboardPage.$$('#externalMetaKey'));
             expectFalse(!!keyboardPage.$$('#externalCommandKey'));
 
@@ -626,7 +618,6 @@ cr.define('device_page_tests', function() {
             Polymer.dom.flush();
             expectFalse(!!keyboardPage.$$('#internalSearchKey'));
             expectTrue(!!keyboardPage.$$('#capsLockKey'));
-            expectTrue(!!keyboardPage.$$('#diamondKey'));
             expectFalse(!!keyboardPage.$$('#externalMetaKey'));
             expectFalse(!!keyboardPage.$$('#externalCommandKey'));
 
@@ -636,7 +627,6 @@ cr.define('device_page_tests', function() {
             Polymer.dom.flush();
             expectFalse(!!keyboardPage.$$('#internalSearchKey'));
             expectTrue(!!keyboardPage.$$('#capsLockKey'));
-            expectTrue(!!keyboardPage.$$('#diamondKey'));
             expectTrue(!!keyboardPage.$$('#externalMetaKey'));
             expectFalse(!!keyboardPage.$$('#externalCommandKey'));
 
@@ -646,7 +636,6 @@ cr.define('device_page_tests', function() {
             Polymer.dom.flush();
             expectFalse(!!keyboardPage.$$('#internalSearchKey'));
             expectTrue(!!keyboardPage.$$('#capsLockKey'));
-            expectTrue(!!keyboardPage.$$('#diamondKey'));
             expectTrue(!!keyboardPage.$$('#externalMetaKey'));
             expectTrue(!!keyboardPage.$$('#externalCommandKey'));
 
@@ -656,7 +645,6 @@ cr.define('device_page_tests', function() {
             Polymer.dom.flush();
             expectTrue(!!keyboardPage.$$('#internalSearchKey'));
             expectTrue(!!keyboardPage.$$('#capsLockKey'));
-            expectTrue(!!keyboardPage.$$('#diamondKey'));
             expectTrue(!!keyboardPage.$$('#externalMetaKey'));
             expectTrue(!!keyboardPage.$$('#externalCommandKey'));
 
