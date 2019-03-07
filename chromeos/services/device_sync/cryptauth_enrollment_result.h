@@ -79,9 +79,6 @@ class CryptAuthEnrollmentResult {
     kErrorKeyActionsDoNotSpecifyAnActiveKey,
     // KeyCreation instructions specify an unsupported KeyType.
     kErrorKeyCreationKeyTypeNotSupported,
-    // Invalid key-creation instructions for user key pair. It must be P256 and
-    // active.
-    kErrorUserKeyPairCreationInstructionsInvalid,
     // Cannot create a symmetric key without the server's Diffie-Hellman key.
     kErrorSymmetricKeyCreationMissingServerDiffieHellman,
     // Failed to compute at least one key proof.

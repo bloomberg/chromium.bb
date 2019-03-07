@@ -120,17 +120,6 @@ class CryptAuthV2EnrollerImpl : public CryptAuthV2Enroller {
       base::flat_map<CryptAuthKeyBundle::Name, cryptauthv2::KeyDirective>*
           new_key_directives);
 
-  // A function to help ProcessSingleKeyResponse() handle the key-creation
-  // instructions.
-  base::Optional<CryptAuthEnrollmentResult::ResultCode>
-  ProcessKeyCreationInstructions(
-      const CryptAuthKeyBundle::Name& bundle_name,
-      const cryptauthv2::SyncKeysResponse::SyncSingleKeyResponse&
-          single_key_response,
-      const std::string& server_ephemeral_dh,
-      base::Optional<CryptAuthKeyCreator::CreateKeyData>* new_key_to_create,
-      base::Optional<cryptauthv2::KeyDirective>* new_key_directive);
-
   void OnSyncKeysFailure(NetworkRequestError error);
 
   void OnKeysCreated(

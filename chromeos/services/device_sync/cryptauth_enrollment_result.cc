@@ -116,11 +116,7 @@ std::ostream& operator<<(
       stream << "[Error: KeyActions do not specify an active key]";
       break;
     case ResultCode::kErrorKeyCreationKeyTypeNotSupported:
-      stream << "[Error: Key-creation instructions specify unsupported "
-             << "KeyType]";
-      break;
-    case ResultCode::kErrorUserKeyPairCreationInstructionsInvalid:
-      stream << "[Error: Key-creation instructions for user key pair invalid]";
+      stream << "[Error: KeyCreation instructions specify unsupported KeyType]";
       break;
     case ResultCode::kErrorSymmetricKeyCreationMissingServerDiffieHellman:
       stream << "[Error: Cannot create symmetric key; missing server "
