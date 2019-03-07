@@ -18,6 +18,14 @@ or bugs that can be deduced via static analysis.
 
 ## Setting Up
 
+### Automatic Setup
+
+The script [clang_tidy_tool.py](../tools/clang/scripts/clang_tidy_tool.py) will
+automatically fetch, build, and invoke `clang-tidy`. To do this manually, follow
+the steps in the next section.
+
+### Manual Setup
+
 In addition to a full Chromium checkout, you need the clang-tidy binary. We
 recommend checking llvm's clang source and building the clang-tidy binary
 directly. Instructions for getting started with clang are available from
@@ -28,7 +36,10 @@ process.
 
 Instead of building with `"Unix Makefiles"`, generate build files for Ninja with
 ```
-cmake -GNinja -DCMAKE_BUILD_TYPE=Release ../llvm
+cmake -GNinja \
+    -DLLVM_ENABLE_PROJECTS=clang;clang-tools-extra \
+    -DCMAKE_BUILD_TYPE=Release \
+    ../llvm
 ```
 
 Then, instead of using `make`, use ninja to build the clang-tidy binary with
