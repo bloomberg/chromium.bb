@@ -7,21 +7,63 @@
 #include <memory>
 #include <set>
 
+#include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/address_form_label_formatter.h"
+#include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/contact_form_label_formatter.h"
+#include "components/autofill/core/browser/validation.h"
 
 namespace autofill {
 namespace {
 
-// Returns true if |type| belongs to the NAME FieldTypeGroup. Note that billing
-// ServerFieldTypes are converted to their non-billing types.
-bool FieldTypeIsName(const ServerFieldType& type) {
-  FieldTypeGroup focused_field_group =
-      AutofillType(AutofillType(type).GetStorableType()).group();
-  return focused_field_group == NAME;
+bool ContainsName(uint32_t groups) {
+  return groups & label_formatter_groups::kName;
+}
+
+bool ContainsAddress(uint32_t groups) {
+  return groups & label_formatter_groups::kAddress;
+}
+
+bool ContainsEmail(uint32_t groups) {
+  return groups & label_formatter_groups::kEmail;
+}
+
+bool ContainsPhone(uint32_t groups) {
+  return groups & label_formatter_groups::kPhone;
+}
+
+std::set<FieldTypeGroup> GetFieldTypeGroups(uint32_t groups) {
+  std::set<FieldTypeGroup> field_type_groups;
+  if (ContainsName(groups)) {
+    field_type_groups.insert(NAME);
+  }
+  if (ContainsAddress(groups)) {
+    field_type_groups.insert(ADDRESS_HOME);
+  }
+  if (ContainsEmail(groups)) {
+    field_type_groups.insert(EMAIL);
+  }
+  if (ContainsPhone(groups)) {
+    field_type_groups.insert(PHONE_HOME);
+  }
+  return field_type_groups;
 }
 
 }  // namespace
+
+std::vector<ServerFieldType> FilterFieldTypes(
+    const std::vector<ServerFieldType>& field_types) {
+  std::vector<ServerFieldType> filtered_field_types;
+  for (const ServerFieldType& field_type : field_types) {
+    const FieldTypeGroup group =
+        AutofillType(AutofillType(field_type).GetStorableType()).group();
+    if (group == NAME || group == ADDRESS_HOME || group == EMAIL ||
+        group == PHONE_HOME) {
+      filtered_field_types.push_back(field_type);
+    }
+  }
+  return filtered_field_types;
+}
 
 uint32_t DetermineGroups(const std::vector<ServerFieldType>& field_types) {
   uint32_t group_bitmask = 0;
@@ -42,7 +84,7 @@ uint32_t DetermineGroups(const std::vector<ServerFieldType>& field_types) {
         group_bitmask |= label_formatter_groups::kPhone;
         break;
       default:
-        group_bitmask |= label_formatter_groups::kUnsupported;
+        break;
     }
   }
   return group_bitmask;
@@ -52,34 +94,22 @@ std::unique_ptr<LabelFormatter> Create(
     const std::string& app_locale,
     ServerFieldType focused_field_type,
     const std::vector<ServerFieldType>& field_types) {
-  if (!FieldTypeIsName(focused_field_type)) {
+  const uint32_t groups = DetermineGroups(field_types);
+
+  if (!ContainsName(groups)) {
     return nullptr;
   }
-
-  std::vector<ServerFieldType> filtered_field_types;
-  for (const ServerFieldType& field_type : field_types) {
-    // NO_SERVER_DATA fields are frequently found in the collection of field
-    // types sent from the frontend. UKNOWN_TYPE fields represent various form
-    // elements, e.g. checkboxes. Neither field type is useful to the formatter,
-    // so they are excluded from its collection of field types.
-    if (field_type != NO_SERVER_DATA && field_type != UNKNOWN_TYPE) {
-      filtered_field_types.push_back(field_type);
-    }
-  }
-
-  const uint32_t groups = DetermineGroups(filtered_field_types);
-  if (groups ==
-      (label_formatter_groups::kName | label_formatter_groups::kAddress)) {
+  if (ContainsAddress(groups) && !ContainsEmail(groups) &&
+      !ContainsPhone(groups)) {
     return std::make_unique<AddressFormLabelFormatter>(
-        app_locale, focused_field_type, filtered_field_types);
+        app_locale, focused_field_type, FilterFieldTypes(field_types));
   }
-
-  if (groups ==
-      (label_formatter_groups::kName | label_formatter_groups::kPhone |
-       label_formatter_groups::kEmail)) {
+  if (ContainsEmail(groups) || ContainsPhone(groups)) {
     return std::make_unique<ContactFormLabelFormatter>(
-        app_locale, focused_field_type, filtered_field_types);
+        app_locale, focused_field_type, FilterFieldTypes(field_types),
+        GetFieldTypeGroups(groups));
   }
   return nullptr;
 }
+
 }  // namespace autofill

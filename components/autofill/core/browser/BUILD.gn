@@ -129,6 +129,7 @@ jumbo_static_library("browser") {
     "form_structure.h",
     "form_types.cc",
     "form_types.h",
+    "label_formatter.cc",
     "label_formatter.h",
     "label_formatter_utils.cc",
     "label_formatter_utils.h",

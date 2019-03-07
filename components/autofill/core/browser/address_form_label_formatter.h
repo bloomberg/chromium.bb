@@ -19,33 +19,19 @@ namespace autofill {
 // with name and address fields and without email or phone fields.
 class AddressFormLabelFormatter : public LabelFormatter {
  public:
-  explicit AddressFormLabelFormatter(
-      const std::string& app_locale,
-      ServerFieldType focused_field_type,
-      const std::vector<ServerFieldType>& field_types);
+  AddressFormLabelFormatter(const std::string& app_locale,
+                            ServerFieldType focused_field_type,
+                            const std::vector<ServerFieldType>& field_types);
+
   ~AddressFormLabelFormatter() override;
 
   std::vector<base::string16> GetLabels(
       const std::vector<AutofillProfile*>& profiles) const override;
 
  private:
-  // The locale for which to generate labels. This reflects the language and
-  // country for which the application is translated, e.g. en_AU for Austalian
-  // English.
-  std::string app_locale_;
-
-  // The field on which the user is currently focused.
-  ServerFieldType focused_field_type_;
-
-  // A collection of meaningful field types in the form with which the user is
-  // interacting. The NO_SERVER_DATA and UNKNOWN_TYPE field types are not
-  // considered meaningful.
-  std::vector<ServerFieldType> field_types_;
-
-  // A collection of meaningful field types excluding the focused_field_type_
-  // and ADDRESS_HOME_COUNTRY and ADDRESS_BILLING_COUNTRY. These types are used
-  // to construct the labels.
-  std::vector<ServerFieldType> filtered_field_types_;
+  // A collection of field types that can be used to make labels. This
+  // collection excludes the focused_field_type_ and address countries.
+  std::vector<ServerFieldType> field_types_for_labels_;
 };
 
 }  // namespace autofill
