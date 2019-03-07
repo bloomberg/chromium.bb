@@ -6,19 +6,20 @@ import("//third_party/closure_compiler/compile_js.gni")
 
 js_type_check("closure_compile") {
   deps = [
+    ":device_page",
     ":usb_internals",
   ]
 }
 
 js_library("usb_internals") {
-  sources = [
-    "usb_internals.js",
-  ]
-
   deps = [
+    ":device_page"
     "//chrome/browser/ui/webui/usb_internals:mojo_bindings_js_library_for_compile",
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js:util",
     "//ui/webui/resources/js/cr/ui:tabs",
   ]
+}
+
+js_library("devices_page") {
 }
