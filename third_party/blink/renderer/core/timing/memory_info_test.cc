@@ -54,6 +54,12 @@ TEST(MemoryInfo, quantizeMemorySize) {
   EXPECT_EQ(10000000u, QuantizeMemorySize(3));
   EXPECT_EQ(10000000u, QuantizeMemorySize(1));
   EXPECT_EQ(10000000u, QuantizeMemorySize(0));
+  // Rounding differences between OS's may affect the precise value of the last
+  // bucket.
+  EXPECT_LE(3760000000u,
+            QuantizeMemorySize(std::numeric_limits<size_t>::max()));
+  EXPECT_GT(4000000000u,
+            QuantizeMemorySize(std::numeric_limits<size_t>::max()));
 }
 
 static constexpr int kModForBucketizationCheck = 100000;
