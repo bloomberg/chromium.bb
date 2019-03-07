@@ -1,6 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 
@@ -8,6 +8,7 @@
   <template>
     <style>
       :host {
+        display: inline-block;
         position: relative;
         text-align: start;
         --dropdown-width: 260px;
@@ -43,20 +44,37 @@
         padding: 6px 0 4px 0;
       }
 
-      #icon {
+      #button {
+        border-radius: 4px;
         cursor: pointer;
         display: inline-block;
+        height: 32px;
+        margin: 0;
+        min-width: 48px;
+        opacity: 0.38;
+        padding-bottom: 6px;
+        padding-inline-end: 2px;
+        padding-inline-start: 6px;
+        padding-top: 6px;
+        width: 48px;
       }
 
-      :host([dropdown-open]) #icon,
-      :host([selected]) #icon {
-        background-color: var(--dropdown-open-background, rgb(25, 27, 29));
-        border-radius: 4px;
+      #button:focus {
+        background-color: rgba(255, 255, 255, 0.24);
+        opacity: 1;
       }
 
-      #arrow {
-        margin-inline-start: -8px;
-        padding-inline-end: 4px;
+      #button:hover {
+        background-color: rgba(255, 255, 255, 0.08);
+        opacity: 1;
+      }
+
+      :host([selected]) #button {
+        opacity: 1;
+
+      }
+      :host([dropdown-open]) #button {
+        background-color: rgba(255, 255, 255, 0.24);
       }
 
       h1 {
@@ -67,12 +85,11 @@
         padding: 14px 28px;
       }
     </style>
-    <div on-click="toggleDropdown" id="icon">
-      <paper-icon-button id="main-icon" icon="[[dropdownIcon]]"
+    <paper-button on-click="toggleDropdown" id="button"
          aria-label$="{{header}}" title$="{{header}}">
-      </paper-icon-button>
-      <iron-icon icon="cr:arrow-drop-down" id="arrow"></iron-icon>
-    </div>
+      <iron-icon icon="[[dropdownIcon]]"></iron-icon>
+      <iron-icon icon="cr:arrow-drop-down"></iron-icon>
+    </paper-button>
 
     <div id="container">
       <div id="dropdown" style="display: none">

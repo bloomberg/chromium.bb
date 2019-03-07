@@ -50,11 +50,20 @@
       }
 
       paper-icon-button {
-        margin-inline-end: 12px;
+        height: 36px;
+        margin: 6px;
+        padding: 8px;
+        width: 36px;
       }
 
-      viewer-toolbar-dropdown {
-        margin-inline-end: 4px;
+      paper-icon-button:hover {
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 50%;
+      }
+
+      paper-icon-button:focus {
+        --paper-icon-button-ink-color:white;
+        --paper-ripple-opacity: 0.24;
       }
 
       paper-progress {
@@ -100,33 +109,45 @@
         --dropdown-width: 346px;
       }
 
-      #eraser:not([selected]),
-      #pen:not([selected]),
-      #highlighter:not([selected]) {
-        --pen-tip-fill: currentcolor !important;
-        --pen-tip-border: currentcolor !important;
-      }
-
       #pen,
       #highlighter {
         --dropdown-open-background: rgb(50, 54, 57);
       }
 
-      #eraser[selected] {
-        background-color: rgb(50, 54, 57);
-        border-radius: 4px;
+      #eraser {
+        opacity: 0.38;
+      }
+
+      #eraser[selected],
+      #eraser:focus,
+      #eraser:hover {
+        opacity: 1;
       }
 
       #annotation-separator {
-        background: rgb(151, 152, 152);
+        background: white;
         height: 30px;
         margin-inline-end: 12px;
+        margin-inline-start: 12px;
+        opacity: 0.38;
         width: 1px;
       }
 
       :host([annotation-mode]) #annotate {
-        background-color: rgb(25, 27, 29);
-        border-radius: 4px;
+        background-color: rgba(255, 255, 255, 0.24);
+        border-radius: 50%;
+      }
+
+      #bookmarks {
+        margin-inline-start: 8px;
+      }
+
+      #pen {
+        margin-inline-end: 10px;
+      }
+
+      #highlighter {
+        margin-inline-end: 6px;
       }
 
       .invisible {
@@ -200,6 +221,7 @@
           </paper-icon-button>
 
           <viewer-toolbar-dropdown id="bookmarks"
+                                   selected
                                    metrics-id="bookmarks"
                                    hidden$="[[!bookmarks.length]]"
                                    open-icon="pdf:bookmark"
