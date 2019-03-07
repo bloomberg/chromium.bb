@@ -221,6 +221,8 @@ apps::mojom::AppPtr CrostiniApps::Convert(
 apps::mojom::IconKeyPtr CrostiniApps::NewIconKey(const std::string& app_id) {
   DCHECK(!app_id.empty());
 
+  static constexpr uint32_t icon_effects = 0;
+
   // Treat the Crostini Terminal as a special case, loading an icon defined by
   // a resource instead of asking the Crostini VM (or the cache of previous
   // responses from the Crostini VM). Presumably this is for bootstrapping: the
@@ -229,10 +231,12 @@ apps::mojom::IconKeyPtr CrostiniApps::NewIconKey(const std::string& app_id) {
   // app and before bringing up an Crostini VM for the first time.
   if (app_id == crostini::kCrostiniTerminalId) {
     return apps::mojom::IconKey::New(apps::mojom::AppType::kCrostini,
-                                     IDR_LOGO_CROSTINI_TERMINAL, std::string());
+                                     IDR_LOGO_CROSTINI_TERMINAL, std::string(),
+                                     icon_effects);
   }
 
-  return icon_key_factory_.MakeIconKey(apps::mojom::AppType::kCrostini, app_id);
+  return icon_key_factory_.MakeIconKey(apps::mojom::AppType::kCrostini, app_id,
+                                       icon_effects);
 }
 
 void CrostiniApps::PublishAppID(const std::string& app_id,
