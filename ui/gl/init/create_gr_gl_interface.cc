@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ui/gl/init/create_gr_gl_interface.h"
+#include "build/build_config.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_version_info.h"
 #include "ui/gl/progress_reporter.h"
@@ -38,6 +39,20 @@ GrGLFunction<R GR_GL_FUNCTION_TYPE(Args...)> bind_slow(
     ScopedProgressReporter scoped_reporter(progress_reporter);
     return func(args...);
   };
+}
+
+template <typename R, typename... Args>
+GrGLFunction<R GR_GL_FUNCTION_TYPE(Args...)> bind_with_flush_on_mac(
+    R(GL_BINDING_CALL* func)(Args...)) {
+#if defined(OS_MACOSX)
+  return [func](Args... args) {
+    glFlush();
+    func(args...);
+    glFlush();
+  };
+#else
+  return func;
+#endif
 }
 
 const GLubyte* GetStringHook(const char* version_string, GLenum name) {
@@ -300,7 +315,8 @@ sk_sp<GrGLInterface> CreateGrGLInterface(
       gl->glGetFramebufferAttachmentParameterivEXTFn;
   functions->fGetRenderbufferParameteriv =
       gl->glGetRenderbufferParameterivEXTFn;
-  functions->fBindFramebuffer = gl->glBindFramebufferEXTFn;
+  functions->fBindFramebuffer =
+      bind_with_flush_on_mac(gl->glBindFramebufferEXTFn);
   functions->fFramebufferTexture2D = gl->glFramebufferTexture2DEXTFn;
   functions->fCheckFramebufferStatus = gl->glCheckFramebufferStatusEXTFn;
   functions->fDeleteFramebuffers =
