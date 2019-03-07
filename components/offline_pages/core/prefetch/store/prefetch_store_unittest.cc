@@ -17,6 +17,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace offline_pages {
+namespace {
+using InitializationStatus = SqlStoreBase::InitializationStatus;
 
 class PrefetchStoreTest : public testing::Test {
  public:
@@ -88,17 +90,19 @@ TEST_F(PrefetchStoreTest, CloseStore) {
   PrefetchItem item1(
       item_generator()->CreateItem(PrefetchItemState::NEW_REQUEST));
   EXPECT_TRUE(store_util()->InsertPrefetchItem(item1));
-  EXPECT_EQ(InitializationStatus::SUCCESS, store()->initialization_status());
+  EXPECT_EQ(InitializationStatus::kSuccess,
+            store()->initialization_status_for_testing());
 
   task_runner()->FastForwardBy(PrefetchStore::kClosingDelay);
-  EXPECT_EQ(InitializationStatus::NOT_INITIALIZED,
-            store()->initialization_status());
+  EXPECT_EQ(InitializationStatus::kNotInitialized,
+            store()->initialization_status_for_testing());
 
   // Should initialize the store again.
   PrefetchItem item2(
       item_generator()->CreateItem(PrefetchItemState::NEW_REQUEST));
   EXPECT_TRUE(store_util()->InsertPrefetchItem(item2));
-  EXPECT_EQ(InitializationStatus::SUCCESS, store()->initialization_status());
+  EXPECT_EQ(InitializationStatus::kSuccess,
+            store()->initialization_status_for_testing());
 }
 
 TEST_F(PrefetchStoreTest, CloseStorePostponed) {
@@ -106,30 +110,35 @@ TEST_F(PrefetchStoreTest, CloseStorePostponed) {
   PrefetchItem item1(
       item_generator()->CreateItem(PrefetchItemState::NEW_REQUEST));
   EXPECT_TRUE(store_util()->InsertPrefetchItem(item1));
-  EXPECT_EQ(InitializationStatus::SUCCESS, store()->initialization_status());
+  EXPECT_EQ(InitializationStatus::kSuccess,
+            store()->initialization_status_for_testing());
 
   task_runner()->FastForwardBy(PrefetchStore::kClosingDelay / 2);
-  EXPECT_EQ(InitializationStatus::SUCCESS, store()->initialization_status());
+  EXPECT_EQ(InitializationStatus::kSuccess,
+            store()->initialization_status_for_testing());
 
   // Should postpone closing.
   PrefetchItem item2(
       item_generator()->CreateItem(PrefetchItemState::NEW_REQUEST));
   EXPECT_TRUE(store_util()->InsertPrefetchItem(item2));
-  EXPECT_EQ(InitializationStatus::SUCCESS, store()->initialization_status());
+  EXPECT_EQ(InitializationStatus::kSuccess,
+            store()->initialization_status_for_testing());
 
   // This adds up to more than kClosingDelay after the first call, which means
   // the closing would trigger, it does not however, since second call caused it
   // to be postponed.
   task_runner()->FastForwardBy(2 * PrefetchStore::kClosingDelay / 3);
   // Store should still be initialized.
-  EXPECT_EQ(InitializationStatus::SUCCESS, store()->initialization_status());
+  EXPECT_EQ(InitializationStatus::kSuccess,
+            store()->initialization_status_for_testing());
   // There is still a pending task to close the store.
   EXPECT_TRUE(task_runner()->HasPendingTask());
 
   // After this step the store should be closed.
   task_runner()->FastForwardBy(PrefetchStore::kClosingDelay);
-  EXPECT_EQ(InitializationStatus::NOT_INITIALIZED,
-            store()->initialization_status());
+  EXPECT_EQ(InitializationStatus::kNotInitialized,
+            store()->initialization_status_for_testing());
 }
 
+}  // namespace
 }  // namespace offline_pages

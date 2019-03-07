@@ -91,7 +91,8 @@ TEST_F(GetThumbnailTaskTest, DbConnectionIsNull) {
         called = true;
         EXPECT_FALSE(result);
       });
-  store()->SetStateForTesting(StoreState::FAILED_LOADING, true);
+  store()->SetInitializationStatusForTesting(
+      SqlStoreBase::InitializationStatus::kFailure, true);
 
   RunTask(std::make_unique<GetThumbnailTask>(store(), 1, std::move(callback)));
 

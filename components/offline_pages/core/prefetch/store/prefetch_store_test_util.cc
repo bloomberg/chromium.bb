@@ -344,7 +344,8 @@ bool PrefetchStoreTestUtil::SetPrefetchQuota(int64_t available_quota) {
 }
 
 void PrefetchStoreTestUtil::SimulateInitializationError() {
-  store_->initialization_status_ = InitializationStatus::FAILURE;
+  store_->SetInitializationStatusForTesting(
+      SqlStoreBase::InitializationStatus::kFailure, false);
 }
 
 }  // namespace offline_pages
