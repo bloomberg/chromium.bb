@@ -916,7 +916,7 @@
     },
     {
       name: "darkModePagePolicy",
-      initial: "DarkModePagePolicy::kFilterAll",
+      initial: "DarkModePagePolicy::kFilterByBackground",
       type: "DarkModePagePolicy",
       invalidate: "Paint",
     },
