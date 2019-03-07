@@ -16,18 +16,26 @@
   <script src="chrome://resources/js/cr/ui/tabs.js"></script>
   <script src="chrome://resources/js/mojo_bindings_lite.js"></script>
   <script src="chrome://resources/js/util.js"></script>
-  <script src="url/mojom/url.mojom-lite.js"></script>
-  <script src="device/usb/public/mojom/device_manager_test.mojom-lite.js">
-  </script>
-  <script
-    src="chrome/browser/ui/webui/usb_internals/usb_internals.mojom-lite.js">
-  </script>
+  <script src="chrome://resources/js/big_buffer.mojom-lite.js"></script>
+  <script src="chrome://resources/js/file.mojom-lite.js"></script>
+  <script src="chrome://resources/js/string16.mojom-lite.js"></script>
+
+  <script src="url.mojom-lite.js"></script>
+  <script src="device.mojom-lite.js"></script>
+  <script src="device_manager_client.mojom-lite.js"></script>
+  <script src="device_enumeration_options.mojom-lite.js"></script>
+  <script src="device_manager.mojom-lite.js"></script>
+  <script src="device_manager_test.mojom-lite.js"></script>
+  <script src="usb_internals.mojom-lite.js"></script>
+
+  <script src="devices_page.js"></script>
 </head>
 
 <body>
   <tabbox>
     <tabs>
       <tab>Test Devices</tab>
+      <tab>Devices</tab>
     </tabs>
     <tabpanels>
       <tabpanel>
@@ -81,6 +89,40 @@
             <span id="add-test-device-result"></span>
           </form>
         </div>
+      </tabpanel>
+
+      <tabpanel>
+        <!-- Devices -->
+        <h2>Devices</h2>
+        <table class="styled-table">
+          <thead>
+            <tr>
+              <th>Bus Number</th>
+              <th>Port Number</th>
+              <th>Vendor Id</th>
+              <th>Product Id</th>
+              <th>Manufacturer Name</th>
+              <th>Product Name</th>
+              <th>Serial Number</th>
+              <th>
+            </tr>
+          </thead>
+          <tbody id="device-list"></tbody>
+
+          <template id="device-row">
+            <tr>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td><button>Inspect</button></td>
+            </tr>
+          </template>
+
+        </table>
       </tabpanel>
     </tabpanels>
   </tabbox>
