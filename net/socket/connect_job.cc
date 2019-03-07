@@ -18,7 +18,6 @@
 namespace net {
 
 CommonConnectJobParams::CommonConnectJobParams(
-    const std::string& group_name,
     const SocketTag& socket_tag,
     ClientSocketFactory* client_socket_factory,
     HostResolver* host_resolver,
@@ -29,8 +28,7 @@ CommonConnectJobParams::CommonConnectJobParams(
     NetworkQualityEstimator* network_quality_estimator,
     NetLog* net_log,
     WebSocketEndpointLockManager* websocket_endpoint_lock_manager)
-    : group_name(group_name),
-      socket_tag(socket_tag),
+    : socket_tag(socket_tag),
       client_socket_factory(client_socket_factory),
       host_resolver(host_resolver),
       proxy_delegate(proxy_delegate),
@@ -40,9 +38,7 @@ CommonConnectJobParams::CommonConnectJobParams(
       socket_performance_watcher_factory(socket_performance_watcher_factory),
       network_quality_estimator(network_quality_estimator),
       net_log(net_log),
-      websocket_endpoint_lock_manager(websocket_endpoint_lock_manager) {
-  DCHECK(!group_name.empty());
-}
+      websocket_endpoint_lock_manager(websocket_endpoint_lock_manager) {}
 
 CommonConnectJobParams::CommonConnectJobParams(
     const CommonConnectJobParams& other) = default;
@@ -70,12 +66,8 @@ ConnectJob::ConnectJob(RequestPriority priority,
                                             net_log_source_type)),
       net_log_connect_event_type_(net_log_connect_event_type) {
   DCHECK(delegate);
-  if (top_level_job_) {
-    net_log_.BeginEvent(
-        NetLogEventType::CONNECT_JOB,
-        NetLog::StringCallback("group_name",
-                               &common_connect_job_params.group_name));
-  }
+  if (top_level_job_)
+    net_log_.BeginEvent(NetLogEventType::CONNECT_JOB);
 }
 
 ConnectJob::~ConnectJob() {

@@ -73,7 +73,7 @@ class SOCKSConnectJobTest : public testing::Test,
   CommonConnectJobParams CreateCommonParams() {
     // Group name doesn't matter.
     return CommonConnectJobParams(
-        "group_name", SocketTag(), &client_socket_factory_, &host_resolver_,
+        SocketTag(), &client_socket_factory_, &host_resolver_,
         nullptr /* proxy_delegate */, SSLClientSocketContext(),
         SSLClientSocketContext(),
         nullptr /* socket_performance_watcher_factory */,

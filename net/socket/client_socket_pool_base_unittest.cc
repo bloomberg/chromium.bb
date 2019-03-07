@@ -306,7 +306,6 @@ class TestConnectJob : public ConnectJob {
   static const int kPendingConnectDelay = 2;
 
   TestConnectJob(JobType job_type,
-                 const std::string& group_name,
                  const TestClientSocketPoolBase::Request& request,
                  base::TimeDelta timeout_duration,
                  ConnectJob::Delegate* delegate,
@@ -315,7 +314,6 @@ class TestConnectJob : public ConnectJob {
       : ConnectJob(request.priority(),
                    timeout_duration,
                    CommonConnectJobParams(
-                       group_name,
                        request.socket_tag(),
                        nullptr /* client_socket_factory */,
                        nullptr /* host_resolver */,
@@ -557,7 +555,6 @@ class TestConnectJobFactory
   // ConnectJobFactory implementation.
 
   std::unique_ptr<ConnectJob> NewConnectJob(
-      const std::string& group_name,
       const TestClientSocketPoolBase::Request& request,
       ConnectJob::Delegate* delegate) const override {
     EXPECT_TRUE(!job_types_ || !job_types_->empty());
@@ -567,8 +564,8 @@ class TestConnectJobFactory
       job_types_->pop_front();
     }
     return std::unique_ptr<ConnectJob>(
-        new TestConnectJob(job_type, group_name, request, timeout_duration_,
-                           delegate, client_socket_factory_, net_log_));
+        new TestConnectJob(job_type, request, timeout_duration_, delegate,
+                           client_socket_factory_, net_log_));
   }
 
  private:

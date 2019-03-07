@@ -138,15 +138,14 @@ TransportClientSocketPool::TransportConnectJobFactory::
 
 std::unique_ptr<ConnectJob>
 TransportClientSocketPool::TransportConnectJobFactory::NewConnectJob(
-    const std::string& group_name,
     const PoolBase::Request& request,
     ConnectJob::Delegate* delegate) const {
   return request.params()->create_connect_job_callback().Run(
       request.priority(),
       CommonConnectJobParams(
-          group_name, request.socket_tag(),
-          client_socket_factory_, host_resolver_, proxy_delegate_,
-          ssl_client_socket_context_, ssl_client_socket_context_privacy_mode_,
+          request.socket_tag(), client_socket_factory_, host_resolver_,
+          proxy_delegate_, ssl_client_socket_context_,
+          ssl_client_socket_context_privacy_mode_,
           socket_performance_watcher_factory_, network_quality_estimator_,
           net_log_, nullptr /* websocket_endpoint_lock_manager */),
       delegate);

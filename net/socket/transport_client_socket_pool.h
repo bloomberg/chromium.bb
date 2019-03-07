@@ -181,7 +181,6 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
     // ClientSocketPoolBase::ConnectJobFactory methods.
 
     std::unique_ptr<ConnectJob> NewConnectJob(
-        const std::string& group_name,
         const PoolBase::Request& request,
         ConnectJob::Delegate* delegate) const override;
 

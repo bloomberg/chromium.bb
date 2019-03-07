@@ -43,7 +43,6 @@ class WebSocketEndpointLockManager;
 // those.
 struct NET_EXPORT_PRIVATE CommonConnectJobParams {
   CommonConnectJobParams(
-      const std::string& group_name,
       const SocketTag& socket_tag,
       ClientSocketFactory* client_socket_factory,
       HostResolver* host_resolver,
@@ -58,11 +57,6 @@ struct NET_EXPORT_PRIVATE CommonConnectJobParams {
   ~CommonConnectJobParams();
 
   CommonConnectJobParams& operator=(const CommonConnectJobParams& other);
-
-  // Socket pool group name, used for logging and identying the group in a
-  // socket pool.
-  // TODO(mmenke): Remove the latter use.
-  std::string group_name;
 
   // Tag applied to any created socket.
   SocketTag socket_tag;
@@ -134,9 +128,6 @@ class NET_EXPORT_PRIVATE ConnectJob {
   virtual ~ConnectJob();
 
   // Accessors
-  const std::string& group_name() const {
-    return common_connect_job_params_.group_name;
-  }
   const NetLogWithSource& net_log() { return net_log_; }
   RequestPriority priority() const { return priority_; }
 
