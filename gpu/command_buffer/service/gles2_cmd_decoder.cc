@@ -4959,7 +4959,7 @@ bool GLES2DecoderImpl::CheckBoundDrawFramebufferValid(
     // only is true when called by DoMultiDrawArrays or DoMultiDrawElements
     if (framebuffer && state_.GetEnabled(GL_BLEND) &&
         !features().ext_float_blend) {
-      if (framebuffer->HasFloatColorAttachment()) {
+      if (framebuffer->HasActiveFloat32ColorAttachment()) {
         LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, func_name,
                            "GL_BLEND with floating-point color attachments "
                            "requires the EXT_float_blend extension");
