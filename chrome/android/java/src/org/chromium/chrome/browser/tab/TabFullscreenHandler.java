@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.tab;
 
+import org.chromium.base.UserData;
+import org.chromium.base.UserDataHost;
 import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
 import org.chromium.content_public.browser.SelectionPopupController;
 import org.chromium.content_public.common.BrowserControlsState;
@@ -11,9 +13,31 @@ import org.chromium.content_public.common.BrowserControlsState;
 /**
  * {@link TabObserver} for basic fullscreen operations for {@link Tab}.
  */
-public final class TabFullscreenHandler extends EmptyTabObserver {
+public final class TabFullscreenHandler extends EmptyTabObserver implements UserData {
+    private static final Class<TabFullscreenHandler> USER_DATA_KEY = TabFullscreenHandler.class;
+
+    private final Tab mTab;
+
     /** A runnable to delay the enabling of fullscreen mode if necessary. */
     private Runnable mEnterFullscreenRunnable;
+
+    public static void createForTab(Tab tab) {
+        UserDataHost host = tab.getUserDataHost();
+        assert host.getUserData(USER_DATA_KEY) == null;
+        host.setUserData(USER_DATA_KEY, new TabFullscreenHandler(tab));
+    }
+
+    private TabFullscreenHandler(Tab tab) {
+        mTab = tab;
+        mTab.addObserver(this);
+    }
+
+    // UserData
+
+    @Override
+    public void destroy() {
+        mTab.removeObserver(this);
+    }
 
     @Override
     public void onSSLStateUpdated(Tab tab) {
@@ -80,5 +104,10 @@ public final class TabFullscreenHandler extends EmptyTabObserver {
         } else {
             tab.updateBrowserControlsState(BrowserControlsState.SHOWN, false);
         }
+    }
+
+    @Override
+    public void onPageLoadFinished(Tab tab, String url) {
+        tab.updateFullscreenEnabledState();
     }
 }
