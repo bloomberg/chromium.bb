@@ -14,8 +14,6 @@ import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 
-import org.chromium.base.ApiCompatibilityUtils;
-
 /**
  * Displays the data provided by the {@link AccessorySheetViewBinder}.
  */
@@ -37,8 +35,8 @@ class AccessorySheetView extends FrameLayout {
         mTopShadow = findViewById(org.chromium.chrome.R.id.accessory_sheet_shadow);
 
         // Ensure that sub components of the sheet use the RTL direction:
-        ApiCompatibilityUtils.setLayoutDirection(
-                mViewPager, isLayoutRtl() ? View.LAYOUT_DIRECTION_RTL : View.LAYOUT_DIRECTION_LTR);
+        int layoutDirection = isLayoutRtl() ? View.LAYOUT_DIRECTION_RTL : View.LAYOUT_DIRECTION_LTR;
+        mViewPager.setLayoutDirection(layoutDirection);
     }
 
     void setAdapter(PagerAdapter adapter) {

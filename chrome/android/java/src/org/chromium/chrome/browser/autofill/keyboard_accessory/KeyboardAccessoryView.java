@@ -16,7 +16,6 @@ import android.view.View;
 import android.view.accessibility.AccessibilityEvent;
 import android.widget.LinearLayout;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 
@@ -67,10 +66,9 @@ class KeyboardAccessoryView extends LinearLayout {
         initializeHorizontalRecyclerView(mBarItemsView);
 
         // Apply RTL layout changes to the view's children:
-        ApiCompatibilityUtils.setLayoutDirection(findViewById(R.id.accessory_bar_contents),
-                isLayoutRtl() ? View.LAYOUT_DIRECTION_RTL : View.LAYOUT_DIRECTION_LTR);
-        ApiCompatibilityUtils.setLayoutDirection(mBarItemsView,
-                isLayoutRtl() ? View.LAYOUT_DIRECTION_RTL : View.LAYOUT_DIRECTION_LTR);
+        int layoutDirection = isLayoutRtl() ? View.LAYOUT_DIRECTION_RTL : View.LAYOUT_DIRECTION_LTR;
+        findViewById(R.id.accessory_bar_contents).setLayoutDirection(layoutDirection);
+        mBarItemsView.setLayoutDirection(layoutDirection);
 
         // Set listener's to touch/click events so they are not propagated to the page below.
         setOnTouchListener((view, motionEvent) -> {

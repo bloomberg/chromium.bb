@@ -9,7 +9,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -167,7 +166,7 @@ public class AutofillAssistantFacade {
         if (pendingIntent == null) {
             return false;
         }
-        String packageName = ApiCompatibilityUtils.getCreatorPackage(pendingIntent);
+        String packageName = pendingIntent.getCreatorPackage();
         for (String whitelistedPackage : whitelist) {
             if (whitelistedPackage.equals(packageName)) {
                 return true;

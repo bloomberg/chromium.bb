@@ -8,13 +8,11 @@ import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.ActivityOptions;
-import android.app.PendingIntent;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
-import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.content.res.Resources.NotFoundException;
 import android.graphics.Bitmap;
@@ -56,7 +54,7 @@ import java.io.File;
 import java.io.UnsupportedEncodingException;
 
 /**
- * Utility class to use new APIs that were added after ICS (API level 14).
+ * Utility class to use new APIs that were added after KitKat (API level 19).
  */
 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
 public class ApiCompatibilityUtils {
@@ -115,32 +113,6 @@ public class ApiCompatibilityUtils {
     }
 
     /**
-     * Returns true if view's layout direction is right-to-left.
-     *
-     * @param view the View whose layout is being considered
-     */
-    public static boolean isLayoutRtl(View view) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            return view.getLayoutDirection() == View.LAYOUT_DIRECTION_RTL;
-        } else {
-            // All layouts are LTR before JB MR1.
-            return false;
-        }
-    }
-
-    /**
-     * @see Configuration#getLayoutDirection()
-     */
-    public static int getLayoutDirection(Configuration configuration) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            return configuration.getLayoutDirection();
-        } else {
-            // All layouts are LTR before JB MR1.
-            return View.LAYOUT_DIRECTION_LTR;
-        }
-    }
-
-    /**
      * @return True if the running version of the Android supports printing.
      */
     public static boolean isPrintingSupported() {
@@ -153,116 +125,6 @@ public class ApiCompatibilityUtils {
      */
     public static boolean isElevationSupported() {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP;
-    }
-
-    /**
-     * @see android.view.View#setLayoutDirection(int)
-     */
-    public static void setLayoutDirection(View view, int layoutDirection) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            view.setLayoutDirection(layoutDirection);
-        } else {
-            // Do nothing. RTL layouts aren't supported before JB MR1.
-        }
-    }
-
-    /**
-     * @see android.view.View#setTextAlignment(int)
-     */
-    public static void setTextAlignment(View view, int textAlignment) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            view.setTextAlignment(textAlignment);
-        } else {
-            // Do nothing. RTL text isn't supported before JB MR1.
-        }
-    }
-
-    /**
-     * @see android.view.View#setTextDirection(int)
-     */
-    public static void setTextDirection(View view, int textDirection) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            view.setTextDirection(textDirection);
-        } else {
-            // Do nothing. RTL text isn't supported before JB MR1.
-        }
-    }
-
-    /**
-     * See {@link android.view.View#setLabelFor(int)}.
-     */
-    public static void setLabelFor(View labelView, int id) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            labelView.setLabelFor(id);
-        } else {
-            // Do nothing. #setLabelFor() isn't supported before JB MR1.
-        }
-    }
-
-    /**
-     * @see android.widget.TextView#getCompoundDrawablesRelative()
-     */
-    public static Drawable[] getCompoundDrawablesRelative(TextView textView) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            return textView.getCompoundDrawablesRelative();
-        } else {
-            return textView.getCompoundDrawables();
-        }
-    }
-
-    /**
-     * @see android.widget.TextView#setCompoundDrawablesRelative(Drawable, Drawable, Drawable,
-     *      Drawable)
-     */
-    public static void setCompoundDrawablesRelative(TextView textView, Drawable start, Drawable top,
-            Drawable end, Drawable bottom) {
-        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            // On JB MR1, due to a platform bug, setCompoundDrawablesRelative() is a no-op if the
-            // view has ever been measured. As a workaround, use setCompoundDrawables() directly.
-            // See: http://crbug.com/368196 and http://crbug.com/361709
-            boolean isRtl = isLayoutRtl(textView);
-            textView.setCompoundDrawables(isRtl ? end : start, top, isRtl ? start : end, bottom);
-        } else if (Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            textView.setCompoundDrawablesRelative(start, top, end, bottom);
-        } else {
-            textView.setCompoundDrawables(start, top, end, bottom);
-        }
-    }
-
-    /**
-     * @see android.widget.TextView#setCompoundDrawablesRelativeWithIntrinsicBounds(Drawable,
-     *      Drawable, Drawable, Drawable)
-     */
-    public static void setCompoundDrawablesRelativeWithIntrinsicBounds(TextView textView,
-            Drawable start, Drawable top, Drawable end, Drawable bottom) {
-        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            // Work around the platform bug described in setCompoundDrawablesRelative() above.
-            boolean isRtl = isLayoutRtl(textView);
-            textView.setCompoundDrawablesWithIntrinsicBounds(isRtl ? end : start, top,
-                    isRtl ? start : end, bottom);
-        } else if (Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            textView.setCompoundDrawablesRelativeWithIntrinsicBounds(start, top, end, bottom);
-        } else {
-            textView.setCompoundDrawablesWithIntrinsicBounds(start, top, end, bottom);
-        }
-    }
-
-    /**
-     * @see android.widget.TextView#setCompoundDrawablesRelativeWithIntrinsicBounds(int, int, int,
-     *      int)
-     */
-    public static void setCompoundDrawablesRelativeWithIntrinsicBounds(TextView textView,
-            int start, int top, int end, int bottom) {
-        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            // Work around the platform bug described in setCompoundDrawablesRelative() above.
-            boolean isRtl = isLayoutRtl(textView);
-            textView.setCompoundDrawablesWithIntrinsicBounds(isRtl ? end : start, top,
-                    isRtl ? start : end, bottom);
-        } else if (Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            textView.setCompoundDrawablesRelativeWithIntrinsicBounds(start, top, end, bottom);
-        } else {
-            textView.setCompoundDrawablesWithIntrinsicBounds(start, top, end, bottom);
-        }
     }
 
     /**
@@ -279,30 +141,6 @@ public class ApiCompatibilityUtils {
     }
 
     // These methods have a new name, and the old name is deprecated.
-
-    /**
-     * @see android.app.PendingIntent#getCreatorPackage()
-     */
-    @SuppressWarnings("deprecation")
-    public static String getCreatorPackage(PendingIntent intent) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            return intent.getCreatorPackage();
-        } else {
-            return intent.getTargetPackage();
-        }
-    }
-
-    /**
-     * @see android.provider.Settings.Global#DEVICE_PROVISIONED
-     */
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
-    public static boolean isDeviceProvisioned(Context context) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1) return true;
-        if (context == null) return true;
-        if (context.getContentResolver() == null) return true;
-        return Settings.Global.getInt(
-                context.getContentResolver(), Settings.Global.DEVICE_PROVISIONED, 0) != 0;
-    }
 
     /**
      * @see android.app.Activity#finishAndRemoveTask()
@@ -659,19 +497,6 @@ public class ApiCompatibilityUtils {
         } else {
             return inputMethodSubType.getLocale();
         }
-    }
-
-    /**
-     * Get a URI for |file| which has the image capture. This function assumes that path of |file|
-     * is based on the result of UiUtils.getDirectoryForImageCapture().
-     *
-     * @param file image capture file.
-     * @return URI for |file|.
-     */
-    public static Uri getUriForImageCaptureFile(File file) {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2
-                ? ContentUriUtils.getContentUriFromFile(file)
-                : Uri.fromFile(file);
     }
 
     /**

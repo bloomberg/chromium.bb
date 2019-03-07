@@ -155,7 +155,7 @@ public class SuggestionView extends ViewGroup implements OnClickListener {
         if (getMeasuredWidth() == 0) return;
 
         boolean refineVisible = mRefineView.getVisibility() == VISIBLE;
-        boolean isRtl = ApiCompatibilityUtils.isLayoutRtl(this);
+        boolean isRtl = getLayoutDirection() == LAYOUT_DIRECTION_RTL;
         int contentsViewOffsetX = isRtl && refineVisible ? mRefineWidth : 0;
         mContentsView.layout(contentsViewOffsetX, 0,
                 contentsViewOffsetX + mContentsView.getMeasuredWidth(),
@@ -378,7 +378,7 @@ public class SuggestionView extends ViewGroup implements OnClickListener {
         SuggestionContentsContainer(Context context, Drawable backgroundDrawable) {
             super(context);
 
-            ApiCompatibilityUtils.setLayoutDirection(this, View.LAYOUT_DIRECTION_INHERIT);
+            setLayoutDirection(View.LAYOUT_DIRECTION_INHERIT);
 
             setBackground(backgroundDrawable);
             setClickable(true);
@@ -405,7 +405,7 @@ public class SuggestionView extends ViewGroup implements OnClickListener {
             mTextLine1.setLayoutParams(
                     new LayoutParams(LayoutParams.WRAP_CONTENT, mSuggestionHeight));
             mTextLine1.setSingleLine();
-            ApiCompatibilityUtils.setTextAlignment(mTextLine1, TEXT_ALIGNMENT_VIEW_START);
+            mTextLine1.setTextAlignment(TEXT_ALIGNMENT_VIEW_START);
             addView(mTextLine1);
 
             mTextLine2 = new TextView(context);
@@ -413,7 +413,7 @@ public class SuggestionView extends ViewGroup implements OnClickListener {
                     new LayoutParams(LayoutParams.WRAP_CONTENT, mSuggestionHeight));
             mTextLine2.setSingleLine();
             mTextLine2.setVisibility(INVISIBLE);
-            ApiCompatibilityUtils.setTextAlignment(mTextLine2, TEXT_ALIGNMENT_VIEW_START);
+            mTextLine2.setTextAlignment(TEXT_ALIGNMENT_VIEW_START);
             addView(mTextLine2);
 
             mAnswerImage = new ImageView(context);
@@ -430,7 +430,7 @@ public class SuggestionView extends ViewGroup implements OnClickListener {
                 canvas.save();
                 float suggestionIconLeft =
                         (mSuggestionIconWidthPx - mSuggestionIcon.getIntrinsicWidth()) / 2f;
-                if (ApiCompatibilityUtils.isLayoutRtl(this)) {
+                if (getLayoutDirection() == LAYOUT_DIRECTION_RTL) {
                     suggestionIconLeft += getMeasuredWidth() - mSuggestionIconWidthPx;
                 }
                 float suggestionIconTop =
@@ -500,7 +500,7 @@ public class SuggestionView extends ViewGroup implements OnClickListener {
                     mSuggestionDelegate.getAdditionalTextLine1StartPadding(
                             mTextLine1, r - l - mSuggestionStartOffsetPx);
 
-            if (ApiCompatibilityUtils.isLayoutRtl(this)) {
+            if (getLayoutDirection() == LAYOUT_DIRECTION_RTL) {
                 int rightStartPos = r - l - mSuggestionStartOffsetPx;
                 mTextLine1.layout(
                         0, line1Top, rightStartPos - line1AdditionalStartPadding, line1Bottom);

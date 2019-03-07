@@ -7,7 +7,6 @@ package org.chromium.ui.base;
 import android.content.res.Configuration;
 import android.view.View;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.LocaleUtils;
 import org.chromium.base.VisibleForTesting;
@@ -55,8 +54,8 @@ public class LocalizationUtils {
         if (sIsLayoutRtl == null) {
             Configuration configuration =
                     ContextUtils.getApplicationContext().getResources().getConfiguration();
-            sIsLayoutRtl = Boolean.valueOf(ApiCompatibilityUtils.getLayoutDirection(configuration)
-                    == View.LAYOUT_DIRECTION_RTL);
+            sIsLayoutRtl = Boolean.valueOf(
+                    configuration.getLayoutDirection() == View.LAYOUT_DIRECTION_RTL);
         }
 
         return sIsLayoutRtl.booleanValue();

@@ -12,7 +12,6 @@ import android.util.Pair;
 import android.view.View;
 import android.widget.FrameLayout;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.util.MathUtils;
@@ -97,7 +96,7 @@ public class TileGridLayout extends FrameLayout {
         // Arrange the visible children in a grid.
         int numRows = (visibleChildCount + numColumns - 1) / numColumns;
         int paddingTop = getPaddingTop();
-        boolean isRtl = ApiCompatibilityUtils.isLayoutRtl(this);
+        boolean isRtl = getLayoutDirection() == LAYOUT_DIRECTION_RTL;
 
         for (int i = 0; i < visibleChildCount; i++) {
             View child = getChildAt(i);

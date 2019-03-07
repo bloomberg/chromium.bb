@@ -611,7 +611,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
 
         if (mLayoutLocationBarWithoutExtraButton) {
             float offset = getLocationBarWidthOffsetForExperimentalButton();
-            if (ApiCompatibilityUtils.isLayoutRtl(this)) leftMargin -= (int) offset;
+            if (getLayoutDirection() == LAYOUT_DIRECTION_RTL) leftMargin -= (int) offset;
             width += (int) offset;
         }
 
@@ -644,7 +644,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
      */
     private int getFocusedLocationBarLeftMargin(int priorVisibleWidth) {
         int baseMargin = mToolbarSidePadding;
-        if (ApiCompatibilityUtils.isLayoutRtl(mLocationBar)) {
+        if (mLocationBar.getLayoutDirection() == LAYOUT_DIRECTION_RTL) {
             return baseMargin;
         } else {
             return baseMargin - priorVisibleWidth;
@@ -661,7 +661,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
         // and the layout values have not yet been set.
         if (visualState == VisualState.NEW_TAB_NORMAL && mTabSwitcherState == STATIC_TAB) {
             return mToolbarSidePadding;
-        } else if (ApiCompatibilityUtils.isLayoutRtl(this)) {
+        } else if (getLayoutDirection() == LAYOUT_DIRECTION_RTL) {
             return getBoundsAfterAccountingForRightButtons();
         } else {
             return getBoundsAfterAccountingForLeftButton();
@@ -689,7 +689,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
         // and the layout values have not yet been set.
         if (visualState == VisualState.NEW_TAB_NORMAL && mTabSwitcherState == STATIC_TAB) {
             return getMeasuredWidth() - mToolbarSidePadding;
-        } else if (ApiCompatibilityUtils.isLayoutRtl(this)) {
+        } else if (getLayoutDirection() == LAYOUT_DIRECTION_RTL) {
             return getMeasuredWidth() - getBoundsAfterAccountingForLeftButton();
         } else {
             return getMeasuredWidth() - getBoundsAfterAccountingForRightButtons();
@@ -830,7 +830,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
                 (int) MathUtils.interpolate(getViewBoundsLeftOfLocationBar(visualState),
                         getFocusedLeftPositionOfLocationBarBackground(), expansion);
 
-        if (mExperimentalButtonAnimationRunning && ApiCompatibilityUtils.isLayoutRtl(this)) {
+        if (mExperimentalButtonAnimationRunning && getLayoutDirection() == LAYOUT_DIRECTION_RTL) {
             leftViewPosition -= getLocationBarBackgroundOffsetForExperimentalButton();
         }
 
@@ -855,7 +855,8 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
                 (int) MathUtils.interpolate(getViewBoundsRightOfLocationBar(visualState),
                         getFocusedRightPositionOfLocationBarBackground(), expansion);
 
-        if (mExperimentalButtonAnimationRunning && !ApiCompatibilityUtils.isLayoutRtl(this)) {
+        if (mExperimentalButtonAnimationRunning
+                && !(getLayoutDirection() == LAYOUT_DIRECTION_RTL)) {
             rightViewPosition += getLocationBarBackgroundOffsetForExperimentalButton();
         }
 
@@ -972,7 +973,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
                     getViewBoundsLeftOfLocationBar(mVisualState) - mUnfocusedLocationBarLayoutLeft;
         }
 
-        boolean isLocationBarRtl = ApiCompatibilityUtils.isLayoutRtl(mLocationBar);
+        boolean isLocationBarRtl = mLocationBar.getLayoutDirection() == LAYOUT_DIRECTION_RTL;
         if (isLocationBarRtl) {
             locationBarBaseTranslationX += mUnfocusedLocationBarLayoutWidth - currentWidth;
         }
@@ -1047,7 +1048,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
      */
     private float getUrlActionsTranslationXForExpansionAnimation(
             boolean isLocationBarRtl, float locationBarBaseTranslationX) {
-        boolean isRtl = ApiCompatibilityUtils.isLayoutRtl(this);
+        boolean isRtl = getLayoutDirection() == LAYOUT_DIRECTION_RTL;
         float urlActionsTranslationX = 0;
         if (!isLocationBarRtl || isRtl) {
             // Negate the location bar translation to keep the URL action container in the same
@@ -1444,7 +1445,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
                 // When the defocus animation is running, the location bar padding needs to be
                 // subtracted from the clip bounds so that the location bar text width in the last
                 // frame of the animation matches the text width of the unfocused location bar.
-                if (ApiCompatibilityUtils.isLayoutRtl(mLocationBar)) {
+                if (mLocationBar.getLayoutDirection() == LAYOUT_DIRECTION_RTL) {
                     locationBarClipLeft +=
                             ViewCompat.getPaddingStart(mLocationBar) * inversePercent;
                 } else {
@@ -1452,7 +1453,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
                 }
             }
             if (mExperimentalButtonAnimationRunning) {
-                if (ApiCompatibilityUtils.isLayoutRtl(mLocationBar)) {
+                if (mLocationBar.getLayoutDirection() == LAYOUT_DIRECTION_RTL) {
                     locationBarClipLeft += ViewCompat.getPaddingStart(mLocationBar);
                 } else {
                     locationBarClipRight -= ViewCompat.getPaddingEnd(mLocationBar);
@@ -1874,7 +1875,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
             @Override
             public void set(TextView view, Integer scrollX) {
                 if (mRtlStateInvalid) return;
-                boolean rtl = ApiCompatibilityUtils.isLayoutRtl(containerView);
+                boolean rtl = containerView.getLayoutDirection() == LAYOUT_DIRECTION_RTL;
                 if (rtl != isContainerRtl) {
                     mRtlStateInvalid = true;
                     if (!rtl || mUrlBar.getLayout() != null) {
@@ -1906,7 +1907,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
         }
 
         float density = getContext().getResources().getDisplayMetrics().density;
-        boolean isRtl = ApiCompatibilityUtils.isLayoutRtl(this);
+        boolean isRtl = getLayoutDirection() == LAYOUT_DIRECTION_RTL;
         float toolbarButtonTranslationX =
                 MathUtils.flipSignIf(URL_FOCUS_TOOLBAR_BUTTONS_TRANSLATION_X_DP, isRtl) * density;
 
@@ -2457,7 +2458,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
             if (!isMenuButtonPresent()) mExperimentalButton.setPadding(0, 0, 0, 0);
             mExperimentalButtonTranslation = getResources().getDimensionPixelSize(
                     R.dimen.toolbar_optional_button_animation_translation);
-            if (ApiCompatibilityUtils.isLayoutRtl(this)) mExperimentalButtonTranslation *= -1;
+            if (getLayoutDirection() == LAYOUT_DIRECTION_RTL) mExperimentalButtonTranslation *= -1;
         } else {
             if (mExperimentalButtonAnimationRunning) {
                 mExperimentalButtonAnimator.end();
