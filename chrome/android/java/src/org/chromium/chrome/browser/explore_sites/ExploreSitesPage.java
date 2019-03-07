@@ -61,6 +61,70 @@ public class ExploreSitesPage extends BasicNativePage {
             .ReadableObjectPropertyKey<ListModel<ExploreSitesCategory>> CATEGORY_LIST_KEY =
             new PropertyModel.ReadableObjectPropertyKey<>();
 
+    /**
+     * Custom layout manager that fixes the scrollbar size based on number of items
+     * to provide a scrollbar utility that will not shift as a recylcer view scrolls
+     * between items of different heights.
+     */
+    private class StableScrollLayoutManager extends LinearLayoutManager {
+        // Fixes the scrollbar size so it will not resize.
+        private int mScrollValue;
+
+        StableScrollLayoutManager(Context context) {
+            super(context);
+            setSmoothScrollbarEnabled(false);
+        }
+
+        @Override
+        public int computeVerticalScrollExtent(RecyclerView.State state) {
+            final int count = getItemCount();
+            if (count > 0) {
+                mScrollValue = getHeight() / count;
+                return mScrollValue;
+            }
+            return 0;
+        }
+
+        @Override
+        public int computeVerticalScrollRange(RecyclerView.State state) {
+            // Fix the scroll range.
+            return Math.max((getItemCount() - 1) * mScrollValue, 0);
+        }
+
+        @Override
+        public int computeVerticalScrollOffset(RecyclerView.State state) {
+            final int count = getChildCount();
+            // If this was called before the recycler view fully initialized itself, return 0.
+            if (count <= 0) return 0;
+
+            // Snap to bottom if we scrolled to the bottom.
+            if (findLastCompletelyVisibleItemPosition() == getItemCount() - 1) {
+                return Math.max((getItemCount() - 1) * mScrollValue, 0);
+            }
+
+            // Find the first visible view and check that views are properly initialized.
+            // This includes if a view was recycled or swapped out just now.
+            int firstPos = findFirstVisibleItemPosition();
+            if (firstPos == RecyclerView.NO_POSITION) return 0;
+            View view = findViewByPosition(firstPos);
+            if (view == null) return 0;
+
+            // Top of the view in pixels
+            final int top = getDecoratedTop(view);
+            int height = getDecoratedMeasuredHeight(view);
+            int heightOfScreen;
+            if (height <= 0) {
+                heightOfScreen = 0;
+            } else {
+                heightOfScreen = Math.abs(mScrollValue * top / height);
+            }
+            if (heightOfScreen == 0 && firstPos > 0) {
+                return mScrollValue * firstPos - 1;
+            }
+            return (mScrollValue * firstPos) + heightOfScreen;
+        }
+    }
+
     @IntDef({CatalogLoadingState.LOADING, CatalogLoadingState.SUCCESS, CatalogLoadingState.ERROR})
     @Retention(RetentionPolicy.SOURCE)
     public @interface CatalogLoadingState {
@@ -109,7 +173,7 @@ public class ExploreSitesPage extends BasicNativePage {
                          .build();
 
         Context context = mView.getContext();
-        mLayoutManager = new LinearLayoutManager(context);
+        mLayoutManager = new StableScrollLayoutManager(context);
         int iconSizePx = context.getResources().getDimensionPixelSize(R.dimen.tile_view_icon_size);
         RoundedIconGenerator iconGenerator = new RoundedIconGenerator(iconSizePx, iconSizePx,
                 iconSizePx / 2,
