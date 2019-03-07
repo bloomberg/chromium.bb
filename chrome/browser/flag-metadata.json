@@ -2203,8 +2203,12 @@
   },
   {
     "name": "load-media-router-component-extension",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "mfoltz", "media-dev" ],
+    // This flag has two purposes: in-team development/Q&A, and allowing
+    // Chromium users to load this extension, which isn't normally distributed
+    // with Chromium. It can be removed once the extension is removed, which has
+    // external dependencies.
+    "expiry_milestone": -1
   },
   {
     "name": "lsd-permission-prompt",
