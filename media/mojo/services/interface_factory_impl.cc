@@ -95,15 +95,6 @@ void InterfaceFactoryImpl::CreateVideoDecoder(
 #endif  // BUILDFLAG(ENABLE_MOJO_VIDEO_DECODER)
 }
 
-// TODO(https://crbug.com/936528) : remove this method.
-void InterfaceFactoryImpl::CreateRenderer(
-    mojom::HostedRendererType type,
-    const std::string& audio_device_id,
-    media::mojom::RendererRequest renderer) {
-  DCHECK_EQ(type, mojom::HostedRendererType::kDefault);
-  CreateDefaultRenderer(audio_device_id, std::move(renderer));
-}
-
 void InterfaceFactoryImpl::CreateDefaultRenderer(
     const std::string& audio_device_id,
     mojo::InterfaceRequest<mojom::Renderer> request) {

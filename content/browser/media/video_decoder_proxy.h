@@ -31,10 +31,6 @@ class VideoDecoderProxy : public media::mojom::InterfaceFactory {
   void CreateVideoDecoder(media::mojom::VideoDecoderRequest request) final;
   void CreateDefaultRenderer(const std::string& audio_device_id,
                              media::mojom::RendererRequest request) final;
-  // TODO(https://crbug.com/936528) : remove this method.
-  void CreateRenderer(media::mojom::HostedRendererType type,
-                      const std::string& audio_device_id,
-                      media::mojom::RendererRequest request) final;
 #if defined(OS_ANDROID)
   void CreateMediaPlayerRenderer(media::mojom::RendererRequest request) final;
   void CreateFlingingRenderer(const std::string& presentation_id,

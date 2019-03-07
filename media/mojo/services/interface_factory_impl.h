@@ -42,10 +42,6 @@ class InterfaceFactoryImpl : public DeferredDestroy<mojom::InterfaceFactory> {
   void CreateVideoDecoder(mojom::VideoDecoderRequest request) final;
   void CreateDefaultRenderer(const std::string& audio_device_id,
                              mojom::RendererRequest request) final;
-  // TODO(https://crbug.com/936528) : remove this method.
-  void CreateRenderer(mojom::HostedRendererType type,
-                      const std::string& audio_device_id,
-                      media::mojom::RendererRequest renderer) final;
 #if defined(OS_ANDROID)
   void CreateMediaPlayerRenderer(mojom::RendererRequest request) final;
   void CreateFlingingRenderer(const std::string& presentation_id,

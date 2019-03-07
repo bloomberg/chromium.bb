@@ -152,15 +152,6 @@ void MediaInterfaceProxy::CreateVideoDecoder(
     factory->CreateVideoDecoder(std::move(request));
 }
 
-// TODO(https://crbug.com/936528) : remove this method.
-void MediaInterfaceProxy::CreateRenderer(
-    media::mojom::HostedRendererType type,
-    const std::string& audio_device_id,
-    media::mojom::RendererRequest renderer) {
-  DCHECK_EQ(type, media::mojom::HostedRendererType::kDefault);
-  CreateDefaultRenderer(audio_device_id, std::move(renderer));
-}
-
 void MediaInterfaceProxy::CreateDefaultRenderer(
     const std::string& audio_device_id,
     media::mojom::RendererRequest request) {
