@@ -142,6 +142,13 @@ const char kAutofillDynamicFormsName[] = "Autofill dynamic forms";
 const char kAutofillDynamicFormsDescription[] =
     "Refills forms that dynamically change after an initial fill";
 
+const char kAutofillNoLocalSaveOnUploadSuccessName[] =
+    "Disable saving local copy of uploaded card when credit card upload "
+    "succeeds";
+const char kAutofillNoLocalSaveOnUploadSuccessDescription[] =
+    "When enabled, no local copy of server card will be saved when credit card "
+    "upload succeeds.";
+
 const char kAutofillPrefilledFieldsName[] = "Autofill prefilled forms";
 const char kAutofillPrefilledFieldsDescription[] =
     "Fills forms that contain a programmatically filled value.";

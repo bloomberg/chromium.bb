@@ -115,7 +115,8 @@ const char kAutofillDynamicFormsDescription[] =
     "Allows autofill to fill dynamically changing forms";
 
 const char kAutofillNoLocalSaveOnUploadSuccessName[] =
-    "Disable locally saving card when credit card upload succeeds";
+    "Disable saving local copy of uploaded card when credit card upload "
+    "succeeds";
 const char kAutofillNoLocalSaveOnUploadSuccessDescription[] =
     "When enabled, no local copy of server card will be saved when credit card "
     "upload succeeds.";
