@@ -108,6 +108,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.test.ScreenShooter;
 import org.chromium.chrome.browser.toolbar.top.CustomTabToolbar;
 import org.chromium.chrome.browser.util.ColorUtils;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeTabUtils;
@@ -2306,6 +2307,46 @@ public class CustomTabActivityTest {
         });
 
         ApplicationStatus.unregisterActivityStateListener(listener);
+    }
+
+    @Test
+    @SmallTest
+    public void testLaunchCustomTabWithColorSchemeDark() throws Exception {
+        FeatureUtilities.setNightModeForCustomTabsAvailableForTesting(true);
+
+        Intent intent = createMinimalCustomTabIntent();
+        addColorSchemeToIntent(intent, CustomTabsIntent.COLOR_SCHEME_DARK);
+
+        mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
+
+        final CustomTabActivity cctActivity = mCustomTabActivityTestRule.getActivity();
+
+        Assert.assertNotNull(cctActivity.getNightModeStateProvider());
+        Assert.assertTrue(cctActivity.getNightModeStateProvider().isInNightMode());
+
+        FeatureUtilities.setNightModeForCustomTabsAvailableForTesting(null);
+    }
+
+    @Test
+    @SmallTest
+    public void testLaunchCustomTabWithColorSchemeLight() throws Exception {
+        FeatureUtilities.setNightModeForCustomTabsAvailableForTesting(true);
+
+        Intent intent = createMinimalCustomTabIntent();
+        addColorSchemeToIntent(intent, CustomTabsIntent.COLOR_SCHEME_LIGHT);
+
+        mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
+
+        final CustomTabActivity cctActivity = mCustomTabActivityTestRule.getActivity();
+
+        Assert.assertNotNull(cctActivity.getNightModeStateProvider());
+        Assert.assertFalse(cctActivity.getNightModeStateProvider().isInNightMode());
+
+        FeatureUtilities.setNightModeForCustomTabsAvailableForTesting(null);
+    }
+
+    private void addColorSchemeToIntent(Intent intent, int colorScheme) {
+        intent.putExtra(CustomTabsIntent.EXTRA_COLOR_SCHEME, colorScheme);
     }
 
     @Test

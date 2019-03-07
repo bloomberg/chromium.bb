@@ -198,6 +198,12 @@ public class ChromePreferenceManager {
     public static final String NIGHT_MODE_AVAILABLE_KEY = "night_mode_available";
 
     /**
+     * Whether or not night mode is available for custom tabs.
+     * Default value is false.
+     */
+    public static final String NIGHT_MODE_CCT_AVAILABLE_KEY = "night_mode_cct_available";
+
+    /**
      * Whether or not night mode is enabled from user settings.
      * Default value is false.
      */
