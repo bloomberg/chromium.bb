@@ -220,8 +220,10 @@ NonClientFrameView* DialogDelegate::CreateDialogFrameView(Widget* widget) {
   DialogDelegate* delegate = widget->widget_delegate()->AsDialogDelegate();
   if (delegate) {
     if (delegate->ShouldHaveRoundCorners()) {
-      const int corner_radius = provider->GetCornerRadiusMetric(EMPHASIS_HIGH);
-      border->SetCornerRadius(corner_radius);
+      // TODO(sajadm): Remove when fixing https://crbug.com/822075 and use
+      // EMPHASIS_HIGH metric values from the LayoutProvider to get the
+      // corner radius.
+      border->SetCornerRadius(2);
     }
     frame->SetFootnoteView(delegate->CreateFootnoteView());
   }
