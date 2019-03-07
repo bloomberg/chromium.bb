@@ -133,8 +133,10 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
   LOGFN(INFO) << "Module: " << gcp_setup_exe_path;
   LOGFN(INFO) << "Args: " << lpCmdLine;
   LOGFN(INFO) << "Version: " << TEXT(CHROME_VERSION_STRING);
+
   LOGFN(INFO) << "Windows: "
-              << base::win::OSInfo::GetInstance()->Kernel32BaseVersion();
+              << base::win::OSInfo::GetInstance()->Kernel32BaseVersion()
+              << " Version:" << credential_provider::GetWindowsVersion();
 
   // If running from omaha, make sure machine install is used.
   if (IsPerUserInstallFromGoogleUpdate()) {

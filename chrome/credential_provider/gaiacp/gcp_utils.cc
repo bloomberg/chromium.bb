@@ -246,7 +246,7 @@ void ScopedStartupInfo::Shutdown() {
 }
 
 // Waits for a process to terminate while capturing output from |output_handle|
-// to the buffer |output_buffer| of size |buffer_size|. The buffer is expected
+// to the buffer |output_buffer| of length |buffer_size|. The buffer is expected
 // to be relatively small.  The exit code of the process is written to
 // |exit_code|.
 HRESULT WaitForProcess(base::win::ScopedHandle::Handle process_handle,
@@ -697,6 +697,18 @@ base::FilePath::StringType GetInstallParentDirectoryName() {
 #else
   return FILE_PATH_LITERAL("Chromium");
 #endif
+}
+
+base::string16 GetWindowsVersion() {
+  wchar_t release_id[32];
+  ULONG length = base::size(release_id) * sizeof(release_id[0]);
+  HRESULT hr =
+      GetMachineRegString(L"SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion",
+                          L"ReleaseId", release_id, &length);
+  if (SUCCEEDED(hr))
+    return release_id;
+
+  return L"Unknown";
 }
 
 FakesForTesting::FakesForTesting() {}

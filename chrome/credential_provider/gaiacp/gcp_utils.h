@@ -239,6 +239,11 @@ std::string GetDictStringUTF8(
     const std::unique_ptr<base::DictionaryValue>& dict,
     const char* name);
 
+// Returns the major build version of Windows by reading the registry.
+// See:
+// https://stackoverflow.com/questions/31072543/reliable-way-to-get-windows-version-from-registry
+base::string16 GetWindowsVersion();
+
 class OSUserManager;
 class OSProcessManager;
 
