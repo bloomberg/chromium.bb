@@ -140,6 +140,7 @@ class ProfileProviderTest : public testing::Test {
   void TearDown() override {
     profile_provider_.reset();
     chromeos::PowerManagerClient::Shutdown();
+    chromeos::LoginState::Shutdown();
   }
 
  protected:
