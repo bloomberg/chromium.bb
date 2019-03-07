@@ -363,6 +363,7 @@ URLRequestHttpJob::URLRequestHttpJob(
     NetworkDelegate* network_delegate,
     const HttpUserAgentSettings* http_user_agent_settings)
     : URLRequestJob(request, network_delegate),
+      num_cookie_lines_left_(0),
       priority_(DEFAULT_PRIORITY),
       response_info_(nullptr),
       proxy_auth_state_(AUTH_STATE_DONT_NEED_AUTH),
@@ -474,6 +475,7 @@ void URLRequestHttpJob::NotifyBeforeSendHeadersCallback(
 
 void URLRequestHttpJob::NotifyHeadersComplete() {
   DCHECK(!response_info_);
+  DCHECK_EQ(0, num_cookie_lines_left_);
 
   response_info_ = transaction_->GetResponseInfo();
 
@@ -487,6 +489,10 @@ void URLRequestHttpJob::NotifyHeadersComplete() {
   // The ordering of these calls is not important.
   ProcessStrictTransportSecurityHeader();
   ProcessExpectCTHeader();
+
+  // Clear |cs_status_list_| after any processing in case
+  // SaveCookiesAndNotifyHeadersComplete is called again.
+  cs_status_list_.clear();
 
   // The HTTP transaction may be restarted several times for the purposes
   // of sending authorization information. Each time it restarts, we get
@@ -723,6 +729,9 @@ void URLRequestHttpJob::SetCookieHeaderAndStart(
 }
 
 void URLRequestHttpJob::SaveCookiesAndNotifyHeadersComplete(int result) {
+  DCHECK(cs_status_list_.empty());
+  DCHECK_EQ(0, num_cookie_lines_left_);
+
   // End of the call started in OnStartCompleted.
   OnCallToDelegateComplete();
 
@@ -734,34 +743,82 @@ void URLRequestHttpJob::SaveCookiesAndNotifyHeadersComplete(int result) {
     return;
   }
 
+  if ((request_info_.load_flags & LOAD_DO_NOT_SAVE_COOKIES) ||
+      !request_->context()->cookie_store()) {
+    NotifyHeadersComplete();
+    return;
+  }
+
   base::Time response_date;
   if (!GetResponseHeaders()->GetDateValue(&response_date))
     response_date = base::Time();
 
-  if (!(request_info_.load_flags & LOAD_DO_NOT_SAVE_COOKIES) &&
-      request_->context()->cookie_store()) {
-    CookieOptions options;
-    options.set_include_httponly();
-    options.set_server_time(response_date);
+  CookieOptions options;
+  options.set_include_httponly();
+  options.set_server_time(response_date);
 
-    // Set all cookies, without waiting for them to be set. Any subsequent read
-    // will see the combined result of all cookie operation.
-    const base::StringPiece name("Set-Cookie");
-    std::string cookie_line;
-    size_t iter = 0;
-    HttpResponseHeaders* headers = GetResponseHeaders();
-    while (headers->EnumerateHeader(&iter, name, &cookie_line)) {
-      std::unique_ptr<CanonicalCookie> cookie = net::CanonicalCookie::Create(
-          request_->url(), cookie_line, base::Time::Now(), options);
-      if (!cookie || !CanSetCookie(*cookie, &options))
-        continue;
-      request_->context()->cookie_store()->SetCookieWithOptionsAsync(
-          request_->url(), cookie_line, options,
-          CookieStore::SetCookiesCallback());
+  // Set all cookies, without waiting for them to be set. Any subsequent read
+  // will see the combined result of all cookie operation.
+  const base::StringPiece name("Set-Cookie");
+  std::string cookie_string;
+  size_t iter = 0;
+  HttpResponseHeaders* headers = GetResponseHeaders();
+
+  // NotifyHeadersComplete needs to be called once and only once after the
+  // list has been fully processed, and it can either be called in the
+  // callback or after the loop is called, depending on how the last element
+  // was handled. |num_cookie_lines_left_| keeps track of how many async
+  // callbacks are currently out (starting from 1 to make sure the loop runs all
+  // the way through before trying to exit). If there are any callbacks still
+  // waiting when the loop ends, then NotifyHeadersComplete will be called when
+  // it reaches 0 in the callback itself.
+  num_cookie_lines_left_ = 1;
+  while (headers->EnumerateHeader(&iter, name, &cookie_string)) {
+    CanonicalCookie::CookieInclusionStatus returned_status;
+
+    num_cookie_lines_left_++;
+
+    std::unique_ptr<CanonicalCookie> cookie = net::CanonicalCookie::Create(
+        request_->url(), cookie_string, base::Time::Now(), options,
+        &returned_status);
+
+    if (returned_status != CanonicalCookie::CookieInclusionStatus::INCLUDE) {
+      OnSetCookieResult(std::move(cookie_string), returned_status);
+      continue;
     }
-  }
 
-  NotifyHeadersComplete();
+    if (!CanSetCookie(*cookie, &options)) {
+      OnSetCookieResult(
+          std::move(cookie_string),
+          CanonicalCookie::CookieInclusionStatus::EXCLUDE_THIRD_PARTY_POLICY);
+      continue;
+    }
+
+    request_->context()->cookie_store()->SetCookieWithOptionsAsync(
+        request_->url(), cookie_string, options,
+        base::BindOnce(&URLRequestHttpJob::OnSetCookieResult,
+                       weak_factory_.GetWeakPtr(), cookie_string));
+  }
+  // Removing the 1 that |num_cookie_lines_left| started with, signifing that
+  // loop has been exited.
+  num_cookie_lines_left_--;
+
+  if (num_cookie_lines_left_ == 0)
+    NotifyHeadersComplete();
+}
+
+void URLRequestHttpJob::OnSetCookieResult(
+    std::string cookie_string,
+    CanonicalCookie::CookieInclusionStatus status) {
+  if (status != CanonicalCookie::CookieInclusionStatus::INCLUDE)
+    cs_status_list_.emplace_back(std::move(cookie_string), status);
+
+  num_cookie_lines_left_--;
+
+  // If all the cookie lines have been handled, |cs_status_list_| now reflects
+  // the result of all Set-Cookie lines, and the request can be continued.
+  if (num_cookie_lines_left_ == 0)
+    NotifyHeadersComplete();
 }
 
 void URLRequestHttpJob::ProcessStrictTransportSecurityHeader() {

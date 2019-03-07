@@ -376,6 +376,9 @@ std::unique_ptr<HttpResponse> HandleAuthBasic(const HttpRequest& request) {
     return std::move(http_response);
   }
 
+  if (query.find("set-cookie-if-not-challenged") != query.end())
+    http_response->AddCustomHeader("Set-Cookie", "got_challenged=true");
+
   if (request.headers.find("If-None-Match") != request.headers.end() &&
       request.headers.at("If-None-Match") == kEtag) {
     http_response->set_code(HTTP_NOT_MODIFIED);
