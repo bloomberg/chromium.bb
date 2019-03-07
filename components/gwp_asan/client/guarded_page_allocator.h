@@ -101,8 +101,8 @@ class GWP_ASAN_EXPORT GuardedPageAllocator {
   // encapsulates the logic for updating the stack traces and metadata for a
   // given slot.
   ALWAYS_INLINE
-  void RecordAllocationInSlot(size_t slot, size_t size, void* ptr);
-  ALWAYS_INLINE void RecordDeallocationInSlot(size_t slot);
+  void RecordAllocationMetadata(size_t slot, size_t size, void* ptr);
+  ALWAYS_INLINE void RecordDeallocationMetadata(size_t slot);
 
   // Allocator state shared with with the crash analyzer.
   AllocatorState state_;
