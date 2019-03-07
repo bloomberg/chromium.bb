@@ -4,14 +4,18 @@
 
 package org.chromium.chrome.browser.tasks.tab_list_ui;
 
+import android.app.Activity;
 import android.content.Context;
 
+import org.chromium.base.ApplicationStatus;
+import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.tasks.tab_groups.TabGroupUtils;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -42,6 +46,7 @@ public class BottomTabGridCoordinator implements Destroyable {
         mMediator =
                 new BottomTabGridMediator(mContext, bottomSheetController, this::resetWithTabModel,
                         mToolbarPropertyModel, tabModelSelector, tabCreatorManager);
+        startObservingForCreationIPH();
     }
 
     /**
@@ -88,5 +93,13 @@ public class BottomTabGridCoordinator implements Destroyable {
                 mToolbarCoordinator.destroy();
             }
         }
+    }
+
+    private void startObservingForCreationIPH() {
+        Activity activity = ApplicationStatus.getLastTrackedFocusedActivity();
+        if (!(activity instanceof ChromeTabbedActivity)) return;
+
+        TabGroupUtils.startObservingForTabGroupsIPH(
+                ((ChromeTabbedActivity) activity).getTabModelSelector());
     }
 }
