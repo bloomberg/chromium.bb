@@ -3633,8 +3633,11 @@ void RenderFrameImpl::CommitFailedNavigationInternal(
       }
       Send(new FrameHostMsg_DidStopLoading(routing_id_));
     } else {
-      if (callback)
+      if (callback) {
         std::move(callback).Run(blink::mojom::CommitResult::Ok);
+      } else {
+        navigation_client_impl_.reset();
+      }
     }
     browser_side_navigation_pending_ = false;
     browser_side_navigation_pending_url_ = GURL();
