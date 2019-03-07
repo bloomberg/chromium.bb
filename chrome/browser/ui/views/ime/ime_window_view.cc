@@ -172,10 +172,6 @@ base::string16 ImeWindowView::GetWindowTitle() const {
   return base::UTF8ToUTF16(ime_window_->title());
 }
 
-gfx::ImageSkia ImeWindowView::GetWindowAppIcon() {
-  return GetWindowIcon();
-}
-
 gfx::ImageSkia ImeWindowView::GetWindowIcon() {
   return ime_window_->icon() ? ime_window_->icon()->image_skia()
                              : gfx::ImageSkia();
