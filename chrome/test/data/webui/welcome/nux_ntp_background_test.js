@@ -97,11 +97,8 @@ cr.define('onboarding_ntp_background_test', function() {
 
       options[1].click();
       assertFalse(options[0].hasAttribute('active'));
-      assertEquals(options[0].getAttribute('aria-pressed'), 'false');
       assertTrue(options[1].hasAttribute('active'));
-      assertEquals(options[1].getAttribute('aria-pressed'), 'true');
       assertFalse(options[2].hasAttribute('active'));
-      assertEquals(options[2].getAttribute('aria-pressed'), 'false');
     });
 
     test('test setting the background when hitting next', function() {

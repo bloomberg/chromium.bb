@@ -55,14 +55,6 @@ Polymer({
   },
 
   /**
-   * @param {!nux.NtpBackgroundData} background
-   * @private
-   */
-  getAriaPressedValue_: function(background) {
-    return this.isSelectedBackground_(background).toString();
-  },
-
-  /**
    * @return {boolean}
    * @private
    */
