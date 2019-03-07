@@ -32,20 +32,25 @@ class LearningSessionImplTest : public testing::Test {
       }
     }
 
-    SetTargetValueCB BeginObservation(const FeatureVector& features) override {
-      return base::BindOnce(&FakeLearningTaskController::AddExample,
-                            base::Unretained(this), features);
+    void BeginObservation(ObservationId id,
+                          const FeatureVector& features) override {
+      id_ = id;
+      features_ = features;
     }
 
-    void AddExample(FeatureVector features,
-                    TargetValue target,
-                    WeightType weight) {
-      example_.features = std::move(features);
-      example_.target_value = target;
-      example_.weight = weight;
+    void CompleteObservation(ObservationId id,
+                             const ObservationCompletion& completion) override {
+      EXPECT_EQ(id_, id);
+      example_.features = std::move(features_);
+      example_.target_value = completion.target_value;
+      example_.weight = completion.weight;
     }
+
+    void CancelObservation(ObservationId id) override { ASSERT_TRUE(false); }
 
     SequenceBoundFeatureProvider feature_provider_;
+    ObservationId id_ = 0;
+    FeatureVector features_;
     LabelledExample example_;
   };
 

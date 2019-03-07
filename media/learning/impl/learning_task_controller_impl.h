@@ -44,7 +44,11 @@ class COMPONENT_EXPORT(LEARNING_IMPL) LearningTaskControllerImpl
   ~LearningTaskControllerImpl() override;
 
   // LearningTaskController
-  SetTargetValueCB BeginObservation(const FeatureVector& features) override;
+  void BeginObservation(ObservationId id,
+                        const FeatureVector& features) override;
+  void CompleteObservation(ObservationId id,
+                           const ObservationCompletion& completion) override;
+  void CancelObservation(ObservationId id) override;
 
  private:
   // Add |example| to the training data, and process it.
