@@ -9,6 +9,7 @@
 #include "base/android/library_loader/anchor_functions_buildflags.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/process/process_metrics.h"
@@ -71,6 +72,30 @@ uint32_t CalculatePrivateFootprintKb(const mojom::RawOSMemDump& os_dump,
 }
 
 #if BUILDFLAG(SUPPORTS_CODE_ORDERING)
+void LogNativeCodeResidentPages(const std::set<size_t>& accessed_pages_set) {
+  // |SUPPORTS_CODE_ORDERING| can only be enabled on Android.
+  const auto kResidentPagesPath = base::FilePath(
+      "/data/local/tmp/chrome/native-library-resident-pages.txt");
+
+  auto file = base::File(kResidentPagesPath, base::File::FLAG_CREATE_ALWAYS |
+                                                 base::File::FLAG_WRITE);
+
+  if (!file.IsValid()) {
+    DLOG(ERROR) << "Could not open " << kResidentPagesPath;
+    return;
+  }
+
+  for (size_t page : accessed_pages_set) {
+    std::string page_str = base::StringPrintf("%" PRIuS "\n", page);
+
+    if (file.WriteAtCurrentPos(page_str.c_str(),
+                               static_cast<int>(page_str.size())) < 0) {
+      DLOG(WARNING) << "Error while dumping Resident pages";
+      return;
+    }
+  }
+}
+
 size_t ReportGlobalNativeCodeResidentMemoryKb(
     const std::map<base::ProcessId, mojom::RawOSMemDump*>& pid_to_pmd) {
   std::vector<uint8_t> common_map;
@@ -97,6 +122,11 @@ size_t ReportGlobalNativeCodeResidentMemoryKb(
       if (common_map[i] & (1 << j))
         accessed_pages_set.insert(i * 8 + j);
     }
+  }
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          "log-native-library-residency")) {
+    LogNativeCodeResidentPages(accessed_pages_set);
   }
 
   const size_t kPageSize = base::GetPageSize();
