@@ -21,6 +21,7 @@
 #include "ui/aura/mus/window_mus.h"
 #include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/mus/window_tree_client_test_observer.h"
+#include "ui/aura/mus/window_tree_host_mus.h"
 #include "ui/aura/test/mus/change_completion_waiter.h"
 #include "ui/aura/test/mus/test_window_tree.h"
 #include "ui/aura/test/mus/window_tree_client_test_api.h"
@@ -1162,6 +1163,25 @@ TEST_F(DesktopWindowTreeHostMusTestFractionalDPI2,
   widget->SetBounds(bounds);
   EXPECT_EQ(bounds, widget->GetWindowBoundsInScreen());
   EXPECT_EQ(bounds, widget->GetNativeWindow()->GetBoundsInScreen());
+}
+
+TEST_F(DesktopWindowTreeHostMusTest, ServerBoundsChangeIngoresMinMax) {
+  gfx::Size min_size(100, 100);
+  gfx::Size max_size(200, 200);
+  auto* delegate = new StaticSizedWidgetDelegate(min_size, max_size);
+  std::unique_ptr<Widget> widget = CreateWidget(delegate);
+  widget->Show();
+
+  // Setting the bounds to a size bigger than max should result in going to
+  // max.
+  widget->SetBounds(gfx::Rect(0, 0, 250, 250));
+  EXPECT_EQ(gfx::Size(200, 200), widget->GetWindowBoundsInScreen().size());
+
+  // Changes to the bounds from the server should not consider the min/max.
+  const gfx::Rect server_bounds(1, 2, 250, 251);
+  static_cast<aura::WindowTreeHostMus*>(widget->GetNativeWindow()->GetHost())
+      ->SetBoundsFromServer(server_bounds, viz::LocalSurfaceIdAllocation());
+  EXPECT_EQ(server_bounds, widget->GetWindowBoundsInScreen());
 }
 
 }  // namespace views
