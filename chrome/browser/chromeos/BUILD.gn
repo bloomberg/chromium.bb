@@ -2587,6 +2587,7 @@ source_set("unit_tests") {
     ":arc_test_support",
     ":attestation_proto",
     ":test_support",
+    ":time_limit_tests",
     ":user_activity_event_proto",
     "//ash",
     "//ash/system/message_center/arc:test_support",
@@ -2756,4 +2757,36 @@ fuzzer_test("smb_url_fuzzer") {
   dict = "smb_client/fuzzer_data/smb_url_fuzzer.dict"
 
   seed_corpus = "smb_client/fuzzer_data/smb_url_corpus"
+}
+
+# Build target related to the time limit processor tests. Must be kept
+# separated from the other unit tests because it is the only one allowed
+# to use the :protobuf_full dependency.
+source_set("time_limit_tests") {
+  testonly = true
+  check_includes = false
+
+  sources = [
+    "child_accounts/time_limit_consistency_test/consistency_golden_loader.cc",
+    "child_accounts/time_limit_consistency_test/consistency_golden_loader_unittest.cc",
+  ]
+  deps = [
+    ":chromeos",
+    ":consistency_golden_proto",
+    "//base",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//third_party/protobuf:protobuf_full",
+  ]
+  data = [
+    "child_accounts/time_limit_consistency_test/goldens/",
+    "child_accounts/time_limit_consistency_test/test_goldens/",
+  ]
+}
+
+proto_library("consistency_golden_proto") {
+  sources = [
+    "child_accounts/time_limit_consistency_test/goldens/consistency_golden.proto",
+  ]
+  generate_python = false
 }
