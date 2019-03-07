@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
@@ -228,12 +227,6 @@ class BackgroundFetchBrowserTest : public InProcessBrowserTest {
       : offline_content_provider_observer_(
             std::make_unique<OfflineContentProviderObserver>()) {}
   ~BackgroundFetchBrowserTest() override = default;
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    // Background Fetch is available as an experimental Web Platform feature.
-    command_line->AppendSwitch(
-        switches::kEnableExperimentalWebPlatformFeatures);
-  }
 
   void SetUpOnMainThread() override {
     https_server_ = std::make_unique<net::EmbeddedTestServer>(
