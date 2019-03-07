@@ -42,6 +42,7 @@
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
 #include "components/policy/core/common/cloud/cloud_policy_service.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
+#include "components/policy/core/common/policy_types.h"
 #include "components/policy/core/common/remote_commands/remote_commands_factory.h"
 #include "components/policy/core/common/schema_registry.h"
 #include "components/policy/proto/device_management_backend.pb.h"
@@ -287,7 +288,8 @@ void DeviceCloudPolicyManagerChromeOS::StartConnection(
     CHECK(signin_profile_forwarding_schema_registry_);
     CreateComponentCloudPolicyService(
         dm_protocol::kChromeSigninExtensionPolicyType,
-        component_policy_cache_dir, client_to_connect.get(),
+        component_policy_cache_dir, POLICY_SOURCE_CLOUD,
+        client_to_connect.get(),
         signin_profile_forwarding_schema_registry_.get());
   }
 
