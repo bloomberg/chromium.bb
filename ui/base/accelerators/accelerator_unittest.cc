@@ -62,4 +62,9 @@ TEST(AcceleratorTest, GetShortcutText) {
   }
 }
 
+TEST(AcceleratorTest, ShortcutTextForUnknownKey) {
+  const Accelerator accelerator(VKEY_UNKNOWN, EF_NONE);
+  EXPECT_EQ(base::string16(), accelerator.GetShortcutText());
+}
+
 }  // namespace ui
