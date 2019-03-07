@@ -792,6 +792,14 @@ void CryptohomeAuthenticator::OnOldEncryptionDetected(
   }
 }
 
+// Callback invoked when UnmountEx returns.
+void CryptohomeAuthenticator::OnUnmountEx(
+    base::Optional<cryptohome::BaseReply> reply) {
+  if (BaseReplyToMountError(reply) != cryptohome::MOUNT_ERROR_NONE)
+    LOGIN_LOG(ERROR) << "Couldn't unmount user's homedir";
+  OnAuthFailure(AuthFailure(AuthFailure::OWNER_REQUIRED));
+}
+
 void CryptohomeAuthenticator::OnAuthFailure(const AuthFailure& error) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
@@ -855,14 +863,6 @@ void CryptohomeAuthenticator::OnOwnershipChecked(bool is_owner) {
   user_can_login_ = is_owner;
   owner_is_verified_ = true;
   Resolve();
-}
-
-void CryptohomeAuthenticator::OnUnmount(base::Optional<bool> success) {
-  if (!success.has_value() || !success.value()) {
-    // Maybe we should reboot immediately here?
-    LOGIN_LOG(ERROR) << "Couldn't unmount users home!";
-  }
-  OnAuthFailure(AuthFailure(AuthFailure::OWNER_REQUIRED));
 }
 
 void CryptohomeAuthenticator::Resolve() {
@@ -984,8 +984,9 @@ void CryptohomeAuthenticator::Resolve() {
       break;
     case OWNER_REQUIRED: {
       current_state_->ResetCryptohomeStatus();
-      DBusThreadManager::Get()->GetCryptohomeClient()->Unmount(
-          base::BindOnce(&CryptohomeAuthenticator::OnUnmount, this));
+      DBusThreadManager::Get()->GetCryptohomeClient()->UnmountEx(
+          cryptohome::UnmountRequest(),
+          base::BindOnce(&CryptohomeAuthenticator::OnUnmountEx, this));
       break;
     }
     case FAILED_OLD_ENCRYPTION:

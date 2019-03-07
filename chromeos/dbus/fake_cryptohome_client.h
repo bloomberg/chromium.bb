@@ -36,7 +36,8 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCryptohomeClient
   void WaitForServiceToBeAvailable(
       WaitForServiceToBeAvailableCallback callback) override;
   void IsMounted(DBusMethodCallback<bool> callback) override;
-  void Unmount(DBusMethodCallback<bool> callback) override;
+  void UnmountEx(const cryptohome::UnmountRequest& request,
+                 DBusMethodCallback<cryptohome::BaseReply> callback) override;
   void MigrateKeyEx(
       const cryptohome::AccountIdentifier& account,
       const cryptohome::AuthorizationRequest& auth_request,

@@ -39,6 +39,7 @@ class RemoveFirmwareManagementParametersRequest;
 class RemoveKeyRequest;
 class SetBootAttributeRequest;
 class SetFirmwareManagementParametersRequest;
+class UnmountRequest;
 class UpdateKeyRequest;
 
 }  // namespace cryptohome
@@ -147,8 +148,11 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) CryptohomeClient : public DBusClient {
   // Calls IsMounted method and returns true when the call succeeds.
   virtual void IsMounted(DBusMethodCallback<bool> callback) = 0;
 
-  // Calls Unmount method and returns true when the call succeeds.
-  virtual void Unmount(DBusMethodCallback<bool> callback) = 0;
+  // Calls UnmountEx method. |callback| is called after the method call
+  // succeeds.
+  virtual void UnmountEx(
+      const cryptohome::UnmountRequest& request,
+      DBusMethodCallback<cryptohome::BaseReply> callback) = 0;
 
   // Calls MigrateKeyEx method. |callback| is called after the method call
   // succeeds.

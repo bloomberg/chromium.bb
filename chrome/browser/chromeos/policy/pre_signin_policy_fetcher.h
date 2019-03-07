@@ -102,7 +102,7 @@ class PreSigninPolicyFetcher : public CloudPolicyClient::Observer {
   void OnUnmountTemporaryUserHome(
       RetrievePolicyResponseType retrieve_policy_response,
       const std::string& policy_blob,
-      base::Optional<bool> unmount_success);
+      base::Optional<cryptohome::BaseReply> reply);
 
   void OnCachedPolicyValidated(UserCloudPolicyValidator* validator);
 

@@ -85,9 +85,10 @@ void FakeCryptohomeClient::IsMounted(DBusMethodCallback<bool> callback) {
       FROM_HERE, base::BindOnce(std::move(callback), true));
 }
 
-void FakeCryptohomeClient::Unmount(DBusMethodCallback<bool> callback) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), unmount_result_));
+void FakeCryptohomeClient::UnmountEx(
+    const cryptohome::UnmountRequest& request,
+    DBusMethodCallback<cryptohome::BaseReply> callback) {
+  ReturnProtobufMethodCallback(cryptohome::BaseReply(), std::move(callback));
 }
 
 void FakeCryptohomeClient::MigrateKeyEx(

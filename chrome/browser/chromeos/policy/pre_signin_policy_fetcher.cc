@@ -130,16 +130,18 @@ void PreSigninPolicyFetcher::OnCachedPolicyRetrieved(
 void PreSigninPolicyFetcher::OnPolicyKeyLoaded(
     RetrievePolicyResponseType retrieve_policy_response,
     const std::string& policy_blob) {
-  cryptohome_client_->Unmount(base::BindOnce(
-      &PreSigninPolicyFetcher::OnUnmountTemporaryUserHome,
-      weak_ptr_factory_.GetWeakPtr(), retrieve_policy_response, policy_blob));
+  cryptohome_client_->UnmountEx(
+      cryptohome::UnmountRequest(),
+      base::BindOnce(&PreSigninPolicyFetcher::OnUnmountTemporaryUserHome,
+                     weak_ptr_factory_.GetWeakPtr(), retrieve_policy_response,
+                     policy_blob));
 }
 
 void PreSigninPolicyFetcher::OnUnmountTemporaryUserHome(
     RetrievePolicyResponseType retrieve_policy_response,
     const std::string& policy_blob,
-    base::Optional<bool> unmount_success) {
-  if (!unmount_success.has_value() || !unmount_success.value()) {
+    base::Optional<cryptohome::BaseReply> reply) {
+  if (BaseReplyToMountError(reply) != cryptohome::MOUNT_ERROR_NONE) {
     // The temporary userhome mount could not be unmounted. Log an error and
     // continue, and hope that the unmount will be successful on the next mount
     // (temporary user homes are automatically unmounted by cryptohomed on every
