@@ -47,6 +47,7 @@ class SVGFEGaussianBlurElement final
  private:
   void SvgAttributeChanged(const QualifiedName&) override;
   FilterEffect* Build(SVGFilterBuilder*, Filter*) override;
+  bool TaintsOrigin() const override { return false; }
 
   Member<SVGAnimatedNumberOptionalNumber> std_deviation_;
   Member<SVGAnimatedString> in1_;

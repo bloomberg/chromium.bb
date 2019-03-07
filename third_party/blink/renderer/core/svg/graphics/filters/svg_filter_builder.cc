@@ -192,7 +192,7 @@ void SVGFilterBuilder::BuildGraph(Filter* filter,
         effect_element, filter_color_interpolation);
     effect->SetOperatingInterpolationSpace(
         ResolveInterpolationSpace(color_interpolation));
-    if (effect_element.TaintsOrigin(effect->InputsTaintOrigin()))
+    if (effect->InputsTaintOrigin() || effect_element.TaintsOrigin())
       effect->SetOriginTainted();
 
     Add(AtomicString(effect_element.result()->CurrentValue()->Value()), effect);

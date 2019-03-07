@@ -106,8 +106,4 @@ FilterEffect* SVGFEColorMatrixElement::Build(SVGFilterBuilder* filter_builder,
   return effect;
 }
 
-bool SVGFEColorMatrixElement::TaintsOrigin(bool inputs_taint_origin) const {
-  return inputs_taint_origin;
-}
-
 }  // namespace blink

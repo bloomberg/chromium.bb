@@ -57,6 +57,7 @@ class SVGFEDiffuseLightingElement final
   bool SetFilterEffectAttribute(FilterEffect*, const QualifiedName&) override;
   void SvgAttributeChanged(const QualifiedName&) override;
   FilterEffect* Build(SVGFilterBuilder*, Filter*) override;
+  bool TaintsOrigin() const override;
 
   Member<SVGAnimatedNumber> diffuse_constant_;
   Member<SVGAnimatedNumber> surface_scale_;

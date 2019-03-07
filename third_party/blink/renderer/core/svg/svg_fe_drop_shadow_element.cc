@@ -115,4 +115,12 @@ FilterEffect* SVGFEDropShadowElement::Build(SVGFilterBuilder* filter_builder,
   return effect;
 }
 
+bool SVGFEDropShadowElement::TaintsOrigin() const {
+  const ComputedStyle* style = GetComputedStyle();
+  // TaintsOrigin() is only called after a successful call to Build()
+  // (see above), so we should have a ComputedStyle here.
+  DCHECK(style);
+  return style->SvgStyle().FloodColor().IsCurrentColor();
+}
+
 }  // namespace blink

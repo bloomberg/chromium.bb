@@ -41,6 +41,7 @@ class SVGFETileElement final : public SVGFilterPrimitiveStandardAttributes {
  private:
   void SvgAttributeChanged(const QualifiedName&) override;
   FilterEffect* Build(SVGFilterBuilder*, Filter*) override;
+  bool TaintsOrigin() const override { return false; }
 
   Member<SVGAnimatedString> in1_;
 };
