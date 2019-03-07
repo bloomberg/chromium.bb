@@ -29,6 +29,11 @@ public class TriStateSiteSettingsPreference
 
     public TriStateSiteSettingsPreference(Context context, AttributeSet attrs) {
         super(context, attrs);
+        // Make unselectable, otherwise TriStateSiteSettingsPreference is treated as one
+        // selectable Preference, instead of three selectable radio buttons.
+        // Allows radio buttons to be selected via Bluetooth keyboard (key events).
+        // See: crbug.com/936143
+        setSelectable(false);
     }
 
     /**
