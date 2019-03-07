@@ -49423,6 +49423,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="Fresh index with cache updated since backend start"/>
 </enum>
 
+<enum name="SimulcastApiVersion">
+  <int value="0" label="Simulcast is not used"/>
+  <int value="1" label="Legacy SDP munging"/>
+  <int value="2" label="Spec compliant"/>
+</enum>
+
 <enum name="SinglePageAppNavigationType">
   <int value="0" label="History push state or replace state"/>
   <int value="1" label="Same document backward or forward"/>
