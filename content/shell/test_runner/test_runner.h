@@ -136,20 +136,19 @@ class TestRunner : public WebTestRunner {
   bool animation_requires_raster() const { return animation_requires_raster_; }
   void SetAnimationRequiresRaster(bool do_raster);
 
-  // To be called when |frame| starts loading - TestRunner will check if
-  // there is currently no top-loading-frame being tracked and if so, then it
-  // will return true and start tracking |frame| as the top-loading-frame.
-  bool tryToSetTopLoadingFrame(blink::WebFrame* frame);
+  // To be called when |frame| starts loading - TestRunner will check if there
+  // is currently no top-loading-frame being tracked and if so, then it will
+  // start tracking |frame| as the top-loading-frame.
+  void tryToSetTopLoadingFrame(blink::WebFrame* frame);
 
   // To be called when |frame| finishes loading - TestRunner will check if
-  // |frame| is currently tracked as the top-loading-frame, and if yes, then it
-  // will return true, stop top-loading-frame tracking, and potentially finish
-  // the test (unless testRunner.waitUntilDone() was called and/or there are
-  // pending load requests in WorkQueue).
-  bool tryToClearTopLoadingFrame(blink::WebFrame*);
+  // |frame| is currently tracked as the top-loading-frame, if yes, stop
+  // top-loading-frame tracking, and potentially finish the test (unless
+  // testRunner.waitUntilDone() was called and/or there are pending load
+  // requests in WorkQueue).
+  void tryToClearTopLoadingFrame(blink::WebFrame*);
 
   blink::WebFrame* mainFrame() const;
-  blink::WebFrame* topLoadingFrame() const;
   void policyDelegateDone();
   bool policyDelegateEnabled() const;
   bool policyDelegateIsPermissive() const;

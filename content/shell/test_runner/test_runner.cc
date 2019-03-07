@@ -1446,7 +1446,7 @@ TestRunner::WorkQueue::~WorkQueue() {
 }
 
 void TestRunner::WorkQueue::ProcessWorkSoon() {
-  if (controller_->topLoadingFrame())
+  if (controller_->top_loading_frame_)
     return;
 
   if (!queue_.empty()) {
@@ -1488,7 +1488,7 @@ void TestRunner::WorkQueue::ProcessWork() {
   }
 
   if (!controller_->web_test_runtime_flags_.wait_until_done() &&
-      !controller_->topLoadingFrame())
+      !controller_->top_loading_frame_)
     controller_->delegate_->TestFinished();
 }
 
@@ -1833,25 +1833,24 @@ bool TestRunner::IsFramePartOfMainTestWindow(blink::WebFrame* frame) const {
   return test_is_running_ && frame->Top()->View() == main_view_;
 }
 
-bool TestRunner::tryToSetTopLoadingFrame(blink::WebFrame* frame) {
+void TestRunner::tryToSetTopLoadingFrame(blink::WebFrame* frame) {
   if (!IsFramePartOfMainTestWindow(frame))
-    return false;
+    return;
 
   if (top_loading_frame_ || web_test_runtime_flags_.have_top_loading_frame())
-    return false;
+    return;
 
   top_loading_frame_ = frame;
   web_test_runtime_flags_.set_have_top_loading_frame(true);
   OnWebTestRuntimeFlagsChanged();
-  return true;
 }
 
-bool TestRunner::tryToClearTopLoadingFrame(blink::WebFrame* frame) {
+void TestRunner::tryToClearTopLoadingFrame(blink::WebFrame* frame) {
   if (!IsFramePartOfMainTestWindow(frame))
-    return false;
+    return;
 
   if (frame != top_loading_frame_)
-    return false;
+    return;
 
   top_loading_frame_ = nullptr;
   DCHECK(web_test_runtime_flags_.have_top_loading_frame());
@@ -1859,11 +1858,6 @@ bool TestRunner::tryToClearTopLoadingFrame(blink::WebFrame* frame) {
   OnWebTestRuntimeFlagsChanged();
 
   LocationChangeDone();
-  return true;
-}
-
-blink::WebFrame* TestRunner::topLoadingFrame() const {
-  return top_loading_frame_;
 }
 
 blink::WebFrame* TestRunner::mainFrame() const {
@@ -2599,7 +2593,7 @@ void TestRunner::CheckResponseMimeType() {
 }
 
 void TestRunner::NotifyDone() {
-  if (web_test_runtime_flags_.wait_until_done() && !topLoadingFrame() &&
+  if (web_test_runtime_flags_.wait_until_done() && !top_loading_frame_ &&
       work_queue_.is_empty())
     delegate_->TestFinished();
   web_test_runtime_flags_.set_wait_until_done(false);
