@@ -13,7 +13,7 @@ Running: testPseudoSectionPropertyEdit
 element.style { ()
 
 [expanded] 
-article, aside, footer, header, hgroup, main, nav, section { (user agent stylesheet)
+section { (user agent stylesheet)
     display: block;
 
 ======== Inherited from html ========
