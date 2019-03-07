@@ -180,7 +180,8 @@ TreeScopeEventContext* EventPath::EnsureTreeScopeEventContext(
   TreeScopeEventContext* tree_scope_event_context =
       GetTreeScopeEventContext(*tree_scope);
   if (!tree_scope_event_context) {
-    tree_scope_event_context = TreeScopeEventContext::Create(*tree_scope);
+    tree_scope_event_context =
+        MakeGarbageCollected<TreeScopeEventContext>(*tree_scope);
     tree_scope_event_contexts_.push_back(tree_scope_event_context);
 
     TreeScopeEventContext* parent_tree_scope_event_context =
