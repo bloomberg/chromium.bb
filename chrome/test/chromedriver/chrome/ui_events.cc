@@ -23,6 +23,7 @@ MouseEvent::MouseEvent(MouseEventType type,
       modifiers(modifiers),
       buttons(buttons),
       click_count(click_count),
+      origin(kViewPort),
       element_id(std::string()),
       pointer_type(kMouse) {}
 
@@ -34,12 +35,14 @@ TouchEvent::TouchEvent(TouchEventType type, int x, int y)
     : type(type),
       x(x),
       y(y),
+      origin(kViewPort),
       radiusX(1.0),
       radiusY(1.0),
       rotationAngle(0.0),
       force(1.0),
       id(0),
-      element_id(std::string()) {}
+      element_id(std::string()),
+      dispatch(true) {}
 
 TouchEvent::TouchEvent(const TouchEvent& other) = default;
 
