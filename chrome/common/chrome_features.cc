@@ -381,6 +381,15 @@ const base::Feature kAcknowledgeNtpOverrideOnDeactivate{
     "AcknowledgeNtpOverrideOnDeactivate", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
+#if defined(OS_CHROMEOS)
+// Enables or disables notification which pop-ups after managed guest session
+// autolaunch
+// TODO(owner:raleksandrov): Remove this when message will be confirmed.
+// https://crbug.com/927331
+const base::Feature kManagedGuestSessionNotification{
+    "ManagedGuestSessionNotification", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 // Enables or disables modal permission prompts.
 // TODO(https://crbug.com/935900): Remove this.
 const base::Feature kModalPermissionPrompts{"ModalPermissionPrompts",
