@@ -4244,6 +4244,9 @@ test("unit_tests") {
       "//components/safe_browsing/db:v4_test_util",
       "//components/safe_browsing/renderer:websocket_sb_handshake_throttle_unittest",
     ]
+  } else if (safe_browsing_mode == 2) {
+    sources += [ "../browser/safe_browsing/telemetry/android/android_telemetry_service_unittest.cc" ]
+    deps += []
   }
 
   if (enable_plugins) {
