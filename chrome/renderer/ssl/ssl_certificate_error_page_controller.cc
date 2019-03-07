@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/security_interstitials/security_interstitial_page_controller.h"
+#include "chrome/renderer/ssl/ssl_certificate_error_page_controller.h"
 
 #include "components/security_interstitials/core/controller_client.h"
 #include "content/public/renderer/render_frame.h"
@@ -11,12 +11,12 @@
 #include "third_party/blink/public/web/blink.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 
-gin::WrapperInfo SecurityInterstitialPageController::kWrapperInfo = {
+gin::WrapperInfo SSLCertificateErrorPageController::kWrapperInfo = {
     gin::kEmbedderNativeGin};
 
-SecurityInterstitialPageController::Delegate::~Delegate() {}
+SSLCertificateErrorPageController::Delegate::~Delegate() {}
 
-void SecurityInterstitialPageController::Install(
+void SSLCertificateErrorPageController::Install(
     content::RenderFrame* render_frame,
     base::WeakPtr<Delegate> delegate) {
   v8::Isolate* isolate = blink::MainThreadIsolate();
@@ -28,9 +28,8 @@ void SecurityInterstitialPageController::Install(
 
   v8::Context::Scope context_scope(context);
 
-  gin::Handle<SecurityInterstitialPageController> controller =
-      gin::CreateHandle(isolate,
-                        new SecurityInterstitialPageController(delegate));
+  gin::Handle<SSLCertificateErrorPageController> controller = gin::CreateHandle(
+      isolate, new SSLCertificateErrorPageController(delegate));
   if (controller.IsEmpty())
     return;
 
@@ -39,76 +38,76 @@ void SecurityInterstitialPageController::Install(
               controller.ToV8());
 }
 
-SecurityInterstitialPageController::SecurityInterstitialPageController(
+SSLCertificateErrorPageController::SSLCertificateErrorPageController(
     base::WeakPtr<Delegate> delegate)
     : delegate_(delegate) {}
 
-SecurityInterstitialPageController::~SecurityInterstitialPageController() {}
+SSLCertificateErrorPageController::~SSLCertificateErrorPageController() {}
 
-void SecurityInterstitialPageController::DontProceed() {
+void SSLCertificateErrorPageController::DontProceed() {
   SendCommand(
       security_interstitials::SecurityInterstitialCommand::CMD_DONT_PROCEED);
 }
 
-void SecurityInterstitialPageController::Proceed() {
+void SSLCertificateErrorPageController::Proceed() {
   SendCommand(security_interstitials::SecurityInterstitialCommand::CMD_PROCEED);
 }
 
-void SecurityInterstitialPageController::ShowMoreSection() {
+void SSLCertificateErrorPageController::ShowMoreSection() {
   SendCommand(security_interstitials::SecurityInterstitialCommand::
                   CMD_SHOW_MORE_SECTION);
 }
 
-void SecurityInterstitialPageController::OpenHelpCenter() {
+void SSLCertificateErrorPageController::OpenHelpCenter() {
   SendCommand(security_interstitials::SecurityInterstitialCommand::
                   CMD_OPEN_HELP_CENTER);
 }
 
-void SecurityInterstitialPageController::OpenDiagnostic() {
+void SSLCertificateErrorPageController::OpenDiagnostic() {
   SendCommand(
       security_interstitials::SecurityInterstitialCommand::CMD_OPEN_DIAGNOSTIC);
 }
 
-void SecurityInterstitialPageController::Reload() {
+void SSLCertificateErrorPageController::Reload() {
   SendCommand(security_interstitials::SecurityInterstitialCommand::CMD_RELOAD);
 }
 
-void SecurityInterstitialPageController::OpenDateSettings() {
+void SSLCertificateErrorPageController::OpenDateSettings() {
   SendCommand(security_interstitials::SecurityInterstitialCommand::
                   CMD_OPEN_DATE_SETTINGS);
 }
 
-void SecurityInterstitialPageController::OpenLogin() {
+void SSLCertificateErrorPageController::OpenLogin() {
   SendCommand(
       security_interstitials::SecurityInterstitialCommand::CMD_OPEN_LOGIN);
 }
 
-void SecurityInterstitialPageController::DoReport() {
+void SSLCertificateErrorPageController::DoReport() {
   SendCommand(
       security_interstitials::SecurityInterstitialCommand::CMD_DO_REPORT);
 }
 
-void SecurityInterstitialPageController::DontReport() {
+void SSLCertificateErrorPageController::DontReport() {
   SendCommand(
       security_interstitials::SecurityInterstitialCommand::CMD_DONT_REPORT);
 }
 
-void SecurityInterstitialPageController::OpenReportingPrivacy() {
+void SSLCertificateErrorPageController::OpenReportingPrivacy() {
   SendCommand(security_interstitials::SecurityInterstitialCommand::
                   CMD_OPEN_REPORTING_PRIVACY);
 }
 
-void SecurityInterstitialPageController::OpenWhitepaper() {
+void SSLCertificateErrorPageController::OpenWhitepaper() {
   SendCommand(
       security_interstitials::SecurityInterstitialCommand::CMD_OPEN_WHITEPAPER);
 }
 
-void SecurityInterstitialPageController::ReportPhishingError() {
+void SSLCertificateErrorPageController::ReportPhishingError() {
   SendCommand(security_interstitials::SecurityInterstitialCommand::
                   CMD_REPORT_PHISHING_ERROR);
 }
 
-void SecurityInterstitialPageController::SendCommand(
+void SSLCertificateErrorPageController::SendCommand(
     security_interstitials::SecurityInterstitialCommand command) {
   if (delegate_) {
     delegate_->SendCommand(command);
@@ -116,31 +115,30 @@ void SecurityInterstitialPageController::SendCommand(
 }
 
 gin::ObjectTemplateBuilder
-SecurityInterstitialPageController::GetObjectTemplateBuilder(
+SSLCertificateErrorPageController::GetObjectTemplateBuilder(
     v8::Isolate* isolate) {
-  return gin::Wrappable<SecurityInterstitialPageController>::
+  return gin::Wrappable<SSLCertificateErrorPageController>::
       GetObjectTemplateBuilder(isolate)
           .SetMethod("dontProceed",
-                     &SecurityInterstitialPageController::DontProceed)
-          .SetMethod("proceed", &SecurityInterstitialPageController::Proceed)
+                     &SSLCertificateErrorPageController::DontProceed)
+          .SetMethod("proceed", &SSLCertificateErrorPageController::Proceed)
           .SetMethod("showMoreSection",
-                     &SecurityInterstitialPageController::ShowMoreSection)
+                     &SSLCertificateErrorPageController::ShowMoreSection)
           .SetMethod("openHelpCenter",
-                     &SecurityInterstitialPageController::OpenHelpCenter)
+                     &SSLCertificateErrorPageController::OpenHelpCenter)
           .SetMethod("openDiagnostic",
-                     &SecurityInterstitialPageController::OpenDiagnostic)
-          .SetMethod("reload", &SecurityInterstitialPageController::Reload)
+                     &SSLCertificateErrorPageController::OpenDiagnostic)
+          .SetMethod("reload", &SSLCertificateErrorPageController::Reload)
           .SetMethod("openDateSettings",
-                     &SecurityInterstitialPageController::OpenDateSettings)
-          .SetMethod("openLogin",
-                     &SecurityInterstitialPageController::OpenLogin)
-          .SetMethod("doReport", &SecurityInterstitialPageController::DoReport)
+                     &SSLCertificateErrorPageController::OpenDateSettings)
+          .SetMethod("openLogin", &SSLCertificateErrorPageController::OpenLogin)
+          .SetMethod("doReport", &SSLCertificateErrorPageController::DoReport)
           .SetMethod("dontReport",
-                     &SecurityInterstitialPageController::DontReport)
+                     &SSLCertificateErrorPageController::DontReport)
           .SetMethod("openReportingPrivacy",
-                     &SecurityInterstitialPageController::OpenReportingPrivacy)
+                     &SSLCertificateErrorPageController::OpenReportingPrivacy)
           .SetMethod("openWhitepaper",
-                     &SecurityInterstitialPageController::OpenWhitepaper)
+                     &SSLCertificateErrorPageController::OpenWhitepaper)
           .SetMethod("reportPhishingError",
-                     &SecurityInterstitialPageController::ReportPhishingError);
+                     &SSLCertificateErrorPageController::ReportPhishingError);
 }

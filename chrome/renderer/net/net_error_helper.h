@@ -18,7 +18,7 @@
 #include "chrome/common/supervised_user_commands.mojom.h"
 #include "chrome/renderer/net/net_error_helper_core.h"
 #include "chrome/renderer/net/net_error_page_controller.h"
-#include "chrome/renderer/security_interstitials/security_interstitial_page_controller.h"
+#include "chrome/renderer/ssl/ssl_certificate_error_page_controller.h"
 #include "chrome/renderer/supervised_user/supervised_user_error_page_controller.h"
 #include "chrome/renderer/supervised_user/supervised_user_error_page_controller_delegate.h"
 #include "components/error_page/common/net_error_info.h"
@@ -55,7 +55,7 @@ class NetErrorHelper
       public content::RenderThreadObserver,
       public NetErrorHelperCore::Delegate,
       public NetErrorPageController::Delegate,
-      public SecurityInterstitialPageController::Delegate,
+      public SSLCertificateErrorPageController::Delegate,
       public SupervisedUserErrorPageControllerDelegate,
       public chrome::mojom::NetworkDiagnosticsClient,
       public chrome::mojom::NavigationCorrector {
@@ -75,7 +75,7 @@ class NetErrorHelper
   void UpdateEasterEggHighScore(int high_score) override;
   void ResetEasterEggHighScore() override;
 
-  // SecurityInterstitialPageController::Delegate implementation
+  // SSLCertificateErrorPageController::Delegate implementation
   void SendCommand(
       security_interstitials::SecurityInterstitialCommand command) override;
 
@@ -130,7 +130,7 @@ class NetErrorHelper
       bool* auto_fetch_allowed,
       std::string* html) const override;
   void LoadErrorPage(const std::string& html, const GURL& failed_url) override;
-  void EnablePageHelperFunctions() override;
+  void EnablePageHelperFunctions(net::Error net_error) override;
   void UpdateErrorPage(const error_page::Error& error,
                        bool is_failed_post,
                        bool can_use_local_diagnostics_service) override;
@@ -207,8 +207,8 @@ class NetErrorHelper
   base::WeakPtrFactory<NetErrorPageController::Delegate>
       weak_controller_delegate_factory_;
 
-  base::WeakPtrFactory<SecurityInterstitialPageController::Delegate>
-      weak_security_interstitial_controller_delegate_factory_;
+  base::WeakPtrFactory<SSLCertificateErrorPageController::Delegate>
+      weak_ssl_error_controller_delegate_factory_;
 
   base::WeakPtrFactory<SupervisedUserErrorPageControllerDelegate>
       weak_supervised_user_error_controller_delegate_factory_;

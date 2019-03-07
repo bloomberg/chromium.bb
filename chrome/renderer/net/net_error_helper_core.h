@@ -80,7 +80,7 @@ class NetErrorHelperCore {
 
     // Create extra Javascript bindings in the error page. Will only be invoked
     // after an error page has finished loading.
-    virtual void EnablePageHelperFunctions() = 0;
+    virtual void EnablePageHelperFunctions(net::Error net_error) = 0;
 
     // Updates the currently displayed error page with a new error code.  The
     // currently displayed error page must have finished loading, and must have
