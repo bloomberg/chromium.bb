@@ -603,8 +603,30 @@ testcase.checkContextMenuForTeamDriveRoot = () => {
 /**
  * Checks that mutating context menu items are not present for a root within
  * My files.
+ * @param {string} itemName Name of item inside MyFiles that should be checked.
+ * @param {!Object<string, boolean>} commandStates Commands that should be
+ *     enabled for the checked item.
  */
-async function checkMyFilesRootItemContextMenu(itemName) {
+async function checkMyFilesRootItemContextMenu(itemName, commandStates) {
+  const validCmds = {
+    'copy': true,
+    'cut': true,
+    'delete': true,
+    'rename': true,
+    'zip-selection': true,
+  };
+
+  const enabledCmds = [];
+  const disabledCmds = [];
+  for (let [cmd, enabled] of Object.entries(commandStates)) {
+    chrome.test.assertTrue(cmd in validCmds, cmd + ' is not a valid command.');
+    if (enabled) {
+      enabledCmds.push(cmd);
+    } else {
+      disabledCmds.push(cmd);
+    }
+  }
+
   // Open FilesApp on Downloads.
   const appId =
       await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.photos], []);
@@ -636,11 +658,17 @@ async function checkMyFilesRootItemContextMenu(itemName) {
   // Wait for the context menu to appear.
   await remoteCall.waitForElement(appId, '#file-context-menu:not([hidden])');
 
-  // Check that the commands are neither visible nor enabled.
-  for (const commandId
-           of ['delete', 'copy', 'cut', 'zip-selection', 'rename']) {
+  // Check the enabled commands.
+  for (const commandId of enabledCmds) {
     let query = `#file-context-menu:not([hidden]) [command="#${
-        commandId}"][disabled][hidden]`;
+        commandId}"]:not([disabled])`;
+    await remoteCall.waitForElement(appId, query);
+  }
+
+  // Check the disabled commands.
+  for (const commandId of disabledCmds) {
+    let query =
+        `#file-context-menu:not([hidden]) [command="#${commandId}"][disabled]`;
     await remoteCall.waitForElement(appId, query);
   }
 
@@ -654,7 +682,14 @@ async function checkMyFilesRootItemContextMenu(itemName) {
  * files.
  */
 testcase.checkDownloadsContextMenu = () => {
-  return checkMyFilesRootItemContextMenu('Downloads');
+  const commands = {
+    copy: true,
+    cut: false,
+    delete: false,
+    rename: false,
+    'zip-selection': true,
+  };
+  return checkMyFilesRootItemContextMenu('Downloads', commands);
 };
 
 /**
@@ -662,7 +697,14 @@ testcase.checkDownloadsContextMenu = () => {
  * files.
  */
 testcase.checkPlayFilesContextMenu = () => {
-  return checkMyFilesRootItemContextMenu('Play files');
+  const commands = {
+    copy: false,
+    cut: false,
+    delete: false,
+    rename: false,
+    'zip-selection': false,
+  };
+  return checkMyFilesRootItemContextMenu('Play files', commands);
 };
 
 /**
@@ -670,7 +712,14 @@ testcase.checkPlayFilesContextMenu = () => {
  * My files.
  */
 testcase.checkLinuxFilesContextMenu = () => {
-  return checkMyFilesRootItemContextMenu('Linux files');
+  const commands = {
+    copy: false,
+    cut: false,
+    delete: false,
+    rename: false,
+    'zip-selection': false,
+  };
+  return checkMyFilesRootItemContextMenu('Linux files', commands);
 };
 
 /**

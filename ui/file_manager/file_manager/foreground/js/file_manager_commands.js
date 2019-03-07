@@ -31,7 +31,7 @@ const CommandUtil = {};
  * Extracts entry on which command event was dispatched.
  *
  * @param {EventTarget} element Element which is the command event's target.
- * @return {Entry} Entry of the found node.
+ * @return {Entry|FakeEntry} Entry of the found node.
  */
 CommandUtil.getCommandEntry = element => {
   const entries = CommandUtil.getCommandEntries(element);
@@ -272,7 +272,8 @@ CommandUtil.isFromSelectionMenu = event => {
 };
 
 /**
- * If entry is fake/invalid/root, we don't show menu items for regular entries.
+ * If entry is fake/invalid/root, we don't show menu items intended for regular
+ * entries.
  * @param {!VolumeManager} volumeManager
  * @param {(!Entry|!FakeEntry)} entry Entry or a fake entry.
  * @return {boolean} True if we should show the menu items for regular entries.
@@ -293,15 +294,8 @@ CommandUtil.shouldShowMenuItemsForEntry = (volumeManager, entry) => {
     return false;
   }
 
-  // If the file is /Downloads within My files, hide context menu entries.
-  if (util.isMyFilesVolumeEnabled() &&
-      volumeInfo.volumeType === VolumeManagerCommon.RootType.DOWNLOADS &&
-      entry.fullPath === '/Downloads') {
-    return false;
-  }
-
-  // If the entry is root entry of its volume (but not a team drive root), hide
-  // context menu entries.
+  // If the entry is root entry of its volume (but not a team drive root),
+  // hide context menu entries.
   if (CommandUtil.isRootEntry(volumeManager, entry) &&
       !util.isTeamDriveRoot(entry)) {
     return false;
@@ -312,6 +306,38 @@ CommandUtil.shouldShowMenuItemsForEntry = (volumeManager, entry) => {
   }
 
   return true;
+};
+
+/**
+ * If entry is MyFiles/Downloads, we don't allow cut/delete/rename.
+ * @param {!VolumeManager} volumeManager
+ * @param {(Entry|FakeEntry)} entry Entry or a fake entry.
+ * @return {boolean}
+ */
+CommandUtil.isDownloads = (volumeManager, entry) => {
+  if (!entry) {
+    return false;
+  }
+  if (util.isFakeEntry(entry)) {
+    return false;
+  }
+
+  // If the entry is not a valid entry.
+  if (!volumeManager) {
+    return false;
+  }
+
+  const volumeInfo = volumeManager.getVolumeInfo(entry);
+  if (!volumeInfo) {
+    return false;
+  }
+
+  if (util.isMyFilesVolumeEnabled() &&
+      volumeInfo.volumeType === VolumeManagerCommon.RootType.DOWNLOADS &&
+      entry.fullPath === '/Downloads') {
+    return true;
+  }
+  return false;
 };
 
 /**
@@ -1033,6 +1059,8 @@ CommandHandler.COMMANDS_['delete'] = (() => {
     },
 
     /**
+     * Returns True if any entry belongs to a read-only volume or is
+     * MyFiles>Downloads.
      * @param {!Array<!Entry>} entries
      * @param {!CommandHandlerDeps} fileManager
      * @return {boolean} True if entries contain read only entry.
@@ -1040,7 +1068,8 @@ CommandHandler.COMMANDS_['delete'] = (() => {
     containsReadOnlyEntry_: function(entries, fileManager) {
       return entries.some(entry => {
         const locationInfo = fileManager.volumeManager.getLocationInfo(entry);
-        return locationInfo && locationInfo.isReadOnly;
+        return (locationInfo && locationInfo.isReadOnly) ||
+            CommandUtil.isDownloads(fileManager.volumeManager, entry);
       });
     }
   };
@@ -1194,10 +1223,13 @@ CommandHandler.COMMANDS_['rename'] = /** @type {Command} */ ({
    * @param {!CommandHandlerDeps} fileManager CommandHandlerDeps to use.
    */
   execute: function(event, fileManager) {
+    const entry = CommandUtil.getCommandEntry(event.target);
+    if (CommandUtil.isDownloads(fileManager.volumeManager, entry)) {
+      return;
+    }
     if (event.target instanceof DirectoryTree ||
         event.target instanceof DirectoryItem) {
       let isRemovableRoot = false;
-      const entry = CommandUtil.getCommandEntry(event.target);
       let volumeInfo = null;
       if (entry) {
         volumeInfo = fileManager.volumeManager.getVolumeInfo(entry);
@@ -1265,7 +1297,9 @@ CommandHandler.COMMANDS_['rename'] = /** @type {Command} */ ({
     const entries = CommandUtil.getCommandEntries(renameTarget);
     if (entries.length === 0 ||
         !CommandUtil.shouldShowMenuItemsForEntry(
-            fileManager.volumeManager, entries[0])) {
+            fileManager.volumeManager, entries[0]) ||
+        entries.some(
+            CommandUtil.isDownloads.bind(null, fileManager.volumeManager))) {
       event.canExecute = false;
       event.command.setHidden(true);
       return;

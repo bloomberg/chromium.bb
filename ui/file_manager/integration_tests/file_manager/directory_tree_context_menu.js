@@ -605,9 +605,14 @@ testcase.dirContextMenuShortcut = async () => {
 testcase.dirContextMenuMyFiles = async () => {
   const myFilesMenus = [
     ['#share-with-linux', true],
+    ['#new-folder', true],
   ];
   const downloadsMenus = [
+    ['#cut', false],
+    ['#copy', true],
+    ['#paste-into-folder', false],
     ['#share-with-linux', true],
+    ['#delete', false],
     ['#new-folder', true],
   ];
   const photosMenus = [
@@ -630,7 +635,7 @@ testcase.dirContextMenuMyFiles = async () => {
 
   // Check the context menu is on desired state for MyFiles.
   await checkContextMenu(
-      appId, myFilesQuery, myFilesMenus, true /* rootMenu */);
+      appId, myFilesQuery, myFilesMenus, false /* rootMenu */);
 
   // Check the context menu for MyFiles>Downloads.
   await checkContextMenu(
