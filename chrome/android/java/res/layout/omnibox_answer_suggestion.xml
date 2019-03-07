@@ -60,7 +60,7 @@
     <ImageView
         android:background="?attr/selectableItemBackground"
         android:clickable="true"
-        android:contentDescription="@null"
+        android:contentDescription="@string/accessibility_omnibox_btn_refine"
         android:focusable="true"
         android:id="@id/omnibox_answer_refine_icon"
         android:layout_alignBottom="@id/omnibox_answer"
