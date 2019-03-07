@@ -196,8 +196,6 @@ class AssistantManagerServiceImpl
       const action::InteractionInfo& interaction,
       std::vector<mojom::AndroidAppInfoPtr> apps_info);
 
-  void HandleLaunchMediaIntentResponse(bool app_opened);
-
   void OnConversationTurnStartedOnMainThread(bool is_mic_open);
   void OnConversationTurnFinishedOnMainThread(
       assistant_client::ConversationStateListener::Resolution resolution);
@@ -218,8 +216,6 @@ class AssistantManagerServiceImpl
   void OnRespondingStartedOnMainThread(bool is_error_response);
   void OnSpeechLevelUpdatedOnMainThread(const float speech_level);
   void OnModifySettingsAction(const std::string& modify_setting_args_proto);
-  void OnOpenMediaAndroidIntent(const std::string play_media_args_proto,
-                                action::AndroidAppInfo* android_app_info);
 
   void RegisterFallbackMediaHandler();
 
