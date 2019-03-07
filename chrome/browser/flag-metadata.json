@@ -2901,7 +2901,7 @@
   },
   {
     "name": "smart-text-selection",
-    // "owners": [ "your-team" ],
+    "owners": [ "djacobo", "linben" ],
     "expiry_milestone": 76
   },
   {
