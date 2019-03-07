@@ -707,27 +707,21 @@
         },
       },
       'CrWinAsan': {
+        'mixins': [
+          'x86-64',
+          'win10',
+        ],
         'test_suites': {
           'gtest_tests': 'chromium_win_gtests',
-        },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'os': 'Windows-10-15063',
-            },
-          ],
         },
       },
       'CrWinAsan(dll)': {
+        'mixins': [
+          'x86-64',
+          'win10',
+        ],
         'test_suites': {
           'gtest_tests': 'chromium_win_gtests',
-        },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'os': 'Windows-10-15063',
-            },
-          ],
         },
       },
       'ToTAndroid': {
@@ -884,16 +878,28 @@
         },
       },
       'ToTWin64': {
+        'mixins': [
+          'x86-64',
+          'win10',
+        ],
         'test_suites': {
           'gtest_tests': 'chromium_win_gtests',
         },
       },
       'ToTWin64(dbg)': {
+        'mixins': [
+          'x86-64',
+          'win10',
+        ],
         'test_suites': {
           'gtest_tests': 'chromium_win_gtests',
         },
       },
       'ToTWin64(dll)': {
+        'mixins': [
+          'x86-64',
+          'win10',
+        ],
         'test_suites': {
           'gtest_tests': 'chromium_win_gtests',
         },
