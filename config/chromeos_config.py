@@ -2071,6 +2071,10 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'eve',
       'gale',
       'nyan_blaze',
+      'nyan_big',
+      'nyan_kitty',
+      'peach_pit',
+      'peppy',
       'reef',
       'scarlet',
   ])
