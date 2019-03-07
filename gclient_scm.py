@@ -657,18 +657,14 @@ class GitWrapper(SCMWrapper):
         raise gclient_utils.Error('Invalid Upstream: %s' % upstream_branch)
 
     self._SetFetchConfig(options)
+    self._Fetch(options, prune=options.force)
 
-    # Fetch upstream if we don't already have |revision|.
     if not scm.GIT.IsValidRevision(self.checkout_path, revision, sha_only=True):
-      self._Fetch(options, prune=options.force)
-
-      if not scm.GIT.IsValidRevision(self.checkout_path, revision,
-                                     sha_only=True):
-        # Update the remotes first so we have all the refs.
-        remote_output = scm.GIT.Capture(['remote'] + verbose + ['update'],
-                cwd=self.checkout_path)
-        if verbose:
-          self.Print(remote_output)
+      # Update the remotes first so we have all the refs.
+      remote_output = scm.GIT.Capture(['remote'] + verbose + ['update'],
+              cwd=self.checkout_path)
+      if verbose:
+        self.Print(remote_output)
 
     revision = self._AutoFetchRef(options, revision)
 
