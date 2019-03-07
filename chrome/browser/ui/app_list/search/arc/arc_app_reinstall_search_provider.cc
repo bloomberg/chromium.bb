@@ -34,6 +34,8 @@ constexpr base::TimeDelta kRefresh = base::TimeDelta::FromMinutes(30);
 
 constexpr char kAppListLatency[] = "Apps.AppListRecommendedResponse.Latency";
 constexpr char kAppListCounts[] = "Apps.AppListRecommendedResponse.Count";
+constexpr char kAppListImpressionsBeforeOpen[] =
+    "Apps.AppListRecommendedImpResultCountAfterOpen";
 
 // Fields for working with pref syncable state.
 
@@ -444,6 +446,10 @@ void ArcAppReinstallSearchProvider::SetTimerForTesting(
 
 void ArcAppReinstallSearchProvider::OnOpened(const std::string& id) {
   UpdateStateTime(profile_, id, kOpenTime);
+  int64_t impression_count;
+  if (GetStateInt64(profile_, id, kImpressionCount, &impression_count)) {
+    UMA_HISTOGRAM_COUNTS_100(kAppListImpressionsBeforeOpen, impression_count);
+  }
   UpdateResults();
 }
 
