@@ -394,10 +394,5 @@ float VolumeControl::DbFSToVolume(float db) {
   return GetVolumeControl().DbFSToVolumeCached(AudioContentType::kMedia, db);
 }
 
-// static
-void VolumeControl::SetPowerSaveMode(bool power_save_on) {
-  // Ignored.
-}
-
 }  // namespace media
 }  // namespace chromecast

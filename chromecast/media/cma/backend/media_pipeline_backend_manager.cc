@@ -144,9 +144,11 @@ void MediaPipelineBackendManager::UpdatePlayingAudioCount(
                             &MediaPipelineBackendManager::EnterPowerSaveMode);
   } else if (!had_playing_audio_streams && new_playing_audio_streams > 0) {
     power_save_timer_.Stop();
-    metrics::CastMetricsHelper::GetInstance()->RecordSimpleAction(
-        "Cast.Platform.VolumeControl.PowerSaveOff");
-    VolumeControl::SetPowerSaveMode(false);
+    if (VolumeControl::SetPowerSaveMode) {
+      metrics::CastMetricsHelper::GetInstance()->RecordSimpleAction(
+          "Cast.Platform.VolumeControl.PowerSaveOff");
+      VolumeControl::SetPowerSaveMode(false);
+    }
   }
 
   if (sfx) {
@@ -185,8 +187,7 @@ int MediaPipelineBackendManager::TotalPlayingNoneffectsAudioStreamsCount() {
 
 void MediaPipelineBackendManager::EnterPowerSaveMode() {
   DCHECK_EQ(TotalPlayingAudioStreamsCount(), 0);
-  DCHECK(VolumeControl::SetPowerSaveMode);
-  if (!power_save_enabled_) {
+  if (!VolumeControl::SetPowerSaveMode || !power_save_enabled_) {
     return;
   }
   metrics::CastMetricsHelper::GetInstance()->RecordSimpleAction(
@@ -264,7 +265,7 @@ void MediaPipelineBackendManager::RemoveAudioDecoder(
 void MediaPipelineBackendManager::SetPowerSaveEnabled(bool power_save_enabled) {
   MAKE_SURE_MEDIA_THREAD(SetPowerSaveEnabled, power_save_enabled);
   power_save_enabled_ = power_save_enabled;
-  if (!power_save_enabled_) {
+  if (VolumeControl::SetPowerSaveMode && !power_save_enabled_) {
     VolumeControl::SetPowerSaveMode(false);
   }
 }

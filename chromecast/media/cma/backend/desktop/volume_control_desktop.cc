@@ -215,8 +215,5 @@ float VolumeControl::DbFSToVolume(float db) {
   return (db - kMinVolumeDbfs) / (kMaxVolumeDbfs - kMinVolumeDbfs);
 }
 
-// static
-void VolumeControl::SetPowerSaveMode(bool power_save_on) {}
-
 }  // namespace media
 }  // namespace chromecast
