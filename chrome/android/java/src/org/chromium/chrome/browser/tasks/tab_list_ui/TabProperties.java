@@ -39,5 +39,5 @@ public class TabProperties {
                     THUMBNAIL_FETCHER, TITLE, IS_SELECTED};
 
     public static final PropertyKey[] ALL_KEYS_TAB_STRIP = new PropertyKey[] {
-            TAB_ID, TAB_SELECTED_LISTENER, TAB_CLOSED_LISTENER, FAVICON, IS_SELECTED};
+            TAB_ID, TAB_SELECTED_LISTENER, TAB_CLOSED_LISTENER, FAVICON, IS_SELECTED, TITLE};
 }
