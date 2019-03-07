@@ -7,7 +7,10 @@
 #include "base/command_line.h"
 #include "build/build_config.h"
 #include "components/viz/common/switches.h"
-#include "gpu/config/gpu_finch_features.h"
+
+#if defined(OS_ANDROID)
+#include "gpu/config/gpu_finch_features.h"  // nogncheck
+#endif
 
 namespace features {
 
