@@ -358,8 +358,8 @@ const CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
 }
 
 // If |contentView_| contains a web view, this is the web view it contains.
-// If not, it's nil.
-@property(weak, nonatomic, readonly) WKWebView* webView;
+// If not, it's nil. When setting the property, it performs basic setup.
+@property(weak, nonatomic) WKWebView* webView;
 // The scroll view of |webView|.
 @property(weak, nonatomic, readonly) UIScrollView* webScrollView;
 // The current page state of the web view. Writing to this property
@@ -447,8 +447,6 @@ const CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
 // been registered for a non-document-changing URL change. Updates internal
 // state not specific to web pages.
 - (void)didStartLoading;
-// Returns YES if the URL looks like it is one CRWWebController can show.
-+ (BOOL)webControllerCanShow:(const GURL&)url;
 // Creates a container view if it's not yet created.
 - (void)ensureContainerViewCreated;
 // Creates a web view if it's not yet created.
@@ -457,8 +455,6 @@ const CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
 - (void)ensureWebViewCreatedWithConfiguration:(WKWebViewConfiguration*)config;
 // Returns a new autoreleased web view created with given configuration.
 - (WKWebView*)webViewWithConfiguration:(WKWebViewConfiguration*)config;
-// Sets the value of the webView property, and performs its basic setup.
-- (void)setWebView:(WKWebView*)webView;
 // Wraps the web view in a CRWWebViewContentView and adds it to the container
 // view.
 - (void)displayWebView;
@@ -485,8 +481,6 @@ const CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
 // TODO(crbug.com/740987): Remove |loadPOSTRequest:| workaround once iOS 10 is
 // dropped.
 - (WKNavigation*)loadPOSTRequest:(NSMutableURLRequest*)request;
-// Loads the HTML into the page at the given URL.
-- (void)loadHTML:(NSString*)html forURL:(const GURL&)url;
 
 // Extracts navigation info from WKNavigationAction and sets it as a pending.
 // Some pieces of navigation information are only known in
@@ -983,6 +977,63 @@ GURL URLEscapedForHistory(const GURL& url) {
 }
 
 #pragma mark - Private properties accessors
+
+- (void)setWebView:(WKWebView*)webView {
+  DCHECK_NE(_webView, webView);
+
+  // Unwind the old web view.
+  // TODO(crbug.com/543374): Remove CRWWKScriptMessageRouter once
+  // crbug.com/543374 is fixed.
+  CRWWKScriptMessageRouter* messageRouter =
+      [self webViewConfigurationProvider].GetScriptMessageRouter();
+  if (_webView) {
+    [messageRouter removeAllScriptMessageHandlersForWebView:_webView];
+  }
+  [_webView setNavigationDelegate:nil];
+  [_webView setUIDelegate:nil];
+  for (NSString* keyPath in self.WKWebViewObservers) {
+    [_webView removeObserver:self forKeyPath:keyPath];
+  }
+
+  _webView = webView;
+
+  // Set up the new web view.
+  if (webView) {
+    __weak CRWWebController* weakSelf = self;
+    [messageRouter
+        setScriptMessageHandler:^(WKScriptMessage* message) {
+          [weakSelf didReceiveScriptMessage:message];
+        }
+                           name:kScriptMessageName
+                        webView:webView];
+
+    [messageRouter
+        setScriptMessageHandler:^(WKScriptMessage* message) {
+          [weakSelf frameBecameAvailableWithMessage:message];
+        }
+                           name:kFrameBecameAvailableMessageName
+                        webView:webView];
+    [messageRouter
+        setScriptMessageHandler:^(WKScriptMessage* message) {
+          [weakSelf frameBecameUnavailableWithMessage:message];
+        }
+                           name:kFrameBecameUnavailableMessageName
+                        webView:webView];
+
+    _windowIDJSManager = [[CRWJSWindowIDManager alloc] initWithWebView:webView];
+  } else {
+    _windowIDJSManager = nil;
+  }
+  [_webView setNavigationDelegate:self];
+  [_webView setUIDelegate:self];
+  for (NSString* keyPath in self.WKWebViewObservers) {
+    [_webView addObserver:self forKeyPath:keyPath options:0 context:nullptr];
+  }
+  _webView.allowsBackForwardNavigationGestures =
+      _allowsBackForwardNavigationGestures;
+  _injectedScriptManagers = [[NSMutableSet alloc] init];
+  [self setDocumentURL:_defaultURL context:nullptr];
+}
 
 - (UIScrollView*)webScrollView {
   return self.webView.scrollView;
@@ -1519,6 +1570,55 @@ GURL URLEscapedForHistory(const GURL& url) {
 - (void)loadHTML:(NSString*)HTML forAppSpecificURL:(const GURL&)URL {
   CHECK(web::GetWebClient()->IsAppSpecificURL(URL));
   [self loadHTML:HTML forURL:URL];
+}
+
+// Loads the HTML into the page at the given URL. Extracted from
+// loadHTML:forAppSpecificURL: for testing purpose.
+- (void)loadHTML:(NSString*)HTML forURL:(const GURL&)URL {
+  DCHECK(HTML.length);
+  // Remove the transient content view.
+  self.webStateImpl->ClearTransientContent();
+
+  _loadPhase = web::LOAD_REQUESTED;
+
+  // Web View should not be created for App Specific URLs.
+  if (!web::GetWebClient()->IsAppSpecificURL(URL)) {
+    [self ensureWebViewCreated];
+    DCHECK(self.webView) << "self.webView null while trying to load HTML";
+  }
+  WKNavigation* navigation =
+      [self.webView loadHTMLString:HTML baseURL:net::NSURLWithGURL(URL)];
+  [_navigationStates setState:web::WKNavigationState::REQUESTED
+                forNavigation:navigation];
+  std::unique_ptr<web::NavigationContextImpl> context;
+  const ui::PageTransition loadHTMLTransition =
+      ui::PageTransition::PAGE_TRANSITION_TYPED;
+  if (self.webStateImpl->HasWebUI()) {
+    // WebUI uses |loadHTML:forURL:| to feed the content to web view. This
+    // should not be treated as a navigation, but WKNavigationDelegate callbacks
+    // still expect a valid context.
+    context = web::NavigationContextImpl::CreateNavigationContext(
+        self.webStateImpl, URL, /*has_user_gesture=*/true, loadHTMLTransition,
+        /*is_renderer_initiated=*/false);
+    context->SetNavigationItemUniqueID(self.currentNavItem->GetUniqueID());
+    if (web::features::StorePendingItemInContext()) {
+      // Transfer pending item ownership to NavigationContext.
+      // NavigationManager owns pending item after navigation is requested and
+      // until navigation context is created.
+      context->SetItem([self.sessionController releasePendingItem]);
+    }
+  } else {
+    context = [self registerLoadRequestForURL:URL
+                                     referrer:web::Referrer()
+                                   transition:loadHTMLTransition
+                       sameDocumentNavigation:NO
+                               hasUserGesture:YES
+                            rendererInitiated:NO
+                        placeholderNavigation:NO];
+  }
+  context->SetLoadingHtmlString(true);
+  context->SetMimeType(@"text/html");
+  [_navigationStates setContext:std::move(context) forNavigation:navigation];
 }
 
 - (void)executeUserJavaScript:(NSString*)script
@@ -3521,13 +3621,6 @@ GURL URLEscapedForHistory(const GURL& url) {
   _pageHasZoomed = NO;
 }
 
-+ (BOOL)webControllerCanShow:(const GURL&)url {
-  return web::UrlHasWebScheme(url) ||
-         web::GetWebClient()->IsAppSpecificURL(url) ||
-         url.SchemeIs(url::kFileScheme) || url.SchemeIs(url::kAboutScheme) ||
-         url.SchemeIs(url::kBlobScheme);
-}
-
 - (void)cachePOSTDataForRequest:(NSURLRequest*)request
                inNavigationItem:(web::NavigationItemImpl*)item {
   NSUInteger maxPOSTDataSizeInBytes = 4096;
@@ -4392,60 +4485,6 @@ GURL URLEscapedForHistory(const GURL& url) {
                              [self userAgentType]);
 }
 
-- (void)setWebView:(WKWebView*)webView {
-  DCHECK_NE(_webView, webView);
-
-  // Unwind the old web view.
-  // TODO(eugenebut): Remove CRWWKScriptMessageRouter once crbug.com/543374 is
-  // fixed.
-  CRWWKScriptMessageRouter* messageRouter =
-      [self webViewConfigurationProvider].GetScriptMessageRouter();
-  if (_webView) {
-    [messageRouter removeAllScriptMessageHandlersForWebView:_webView];
-  }
-  [_webView setNavigationDelegate:nil];
-  [_webView setUIDelegate:nil];
-  for (NSString* keyPath in self.WKWebViewObservers) {
-    [_webView removeObserver:self forKeyPath:keyPath];
-  }
-
-  _webView = webView;
-
-  // Set up the new web view.
-  if (webView) {
-    __weak CRWWebController* weakSelf = self;
-    [messageRouter setScriptMessageHandler:^(WKScriptMessage* message) {
-      [weakSelf didReceiveScriptMessage:message];
-    }
-                                      name:kScriptMessageName
-                                   webView:webView];
-
-    [messageRouter setScriptMessageHandler:^(WKScriptMessage* message) {
-      [weakSelf frameBecameAvailableWithMessage:message];
-    }
-                                      name:kFrameBecameAvailableMessageName
-                                   webView:webView];
-    [messageRouter setScriptMessageHandler:^(WKScriptMessage* message) {
-      [weakSelf frameBecameUnavailableWithMessage:message];
-    }
-                                      name:kFrameBecameUnavailableMessageName
-                                   webView:webView];
-
-    _windowIDJSManager = [[CRWJSWindowIDManager alloc] initWithWebView:webView];
-  } else {
-    _windowIDJSManager = nil;
-  }
-  [_webView setNavigationDelegate:self];
-  [_webView setUIDelegate:self];
-  for (NSString* keyPath in self.WKWebViewObservers) {
-    [_webView addObserver:self forKeyPath:keyPath options:0 context:nullptr];
-  }
-  _webView.allowsBackForwardNavigationGestures =
-      _allowsBackForwardNavigationGestures;
-  _injectedScriptManagers = [[NSMutableSet alloc] init];
-  [self setDocumentURL:_defaultURL context:nullptr];
-}
-
 - (void)displayWebView {
   if (!self.webView || [_containerView webViewContentView])
     return;
@@ -4514,53 +4553,6 @@ GURL URLEscapedForHistory(const GURL& url) {
         else
           self.webStateImpl->SetContentsMimeType("text/html");
       }];
-}
-
-- (void)loadHTML:(NSString*)HTML forURL:(const GURL&)URL {
-  DCHECK(HTML.length);
-  // Remove the transient content view.
-  self.webStateImpl->ClearTransientContent();
-
-  _loadPhase = web::LOAD_REQUESTED;
-
-  // Web View should not be created for App Specific URLs.
-  if (!web::GetWebClient()->IsAppSpecificURL(URL)) {
-    [self ensureWebViewCreated];
-    DCHECK(self.webView) << "self.webView null while trying to load HTML";
-  }
-  WKNavigation* navigation =
-      [self.webView loadHTMLString:HTML baseURL:net::NSURLWithGURL(URL)];
-  [_navigationStates setState:web::WKNavigationState::REQUESTED
-                forNavigation:navigation];
-  std::unique_ptr<web::NavigationContextImpl> context;
-  const ui::PageTransition loadHTMLTransition =
-      ui::PageTransition::PAGE_TRANSITION_TYPED;
-  if (self.webStateImpl->HasWebUI()) {
-    // WebUI uses |loadHTML:forURL:| to feed the content to web view. This
-    // should not be treated as a navigation, but WKNavigationDelegate callbacks
-    // still expect a valid context.
-    context = web::NavigationContextImpl::CreateNavigationContext(
-        self.webStateImpl, URL, /*has_user_gesture=*/true, loadHTMLTransition,
-        /*is_renderer_initiated=*/false);
-    context->SetNavigationItemUniqueID(self.currentNavItem->GetUniqueID());
-    if (web::features::StorePendingItemInContext()) {
-      // Transfer pending item ownership to NavigationContext.
-      // NavigationManager owns pending item after navigation is requested and
-      // until navigation context is created.
-      context->SetItem([self.sessionController releasePendingItem]);
-    }
-  } else {
-    context = [self registerLoadRequestForURL:URL
-                                     referrer:web::Referrer()
-                                   transition:loadHTMLTransition
-                       sameDocumentNavigation:NO
-                               hasUserGesture:YES
-                            rendererInitiated:NO
-                        placeholderNavigation:NO];
-  }
-  context->SetLoadingHtmlString(true);
-  context->SetMimeType(@"text/html");
-  [_navigationStates setContext:std::move(context) forNavigation:navigation];
 }
 
 #pragma mark - WKUIDelegate Methods
@@ -4879,7 +4871,13 @@ GURL URLEscapedForHistory(const GURL& url) {
     // If the URL doesn't look like one that can be shown as a web page, it may
     // handled by the embedder. In that case, update the web controller to
     // correctly reflect the current state.
-    if (![CRWWebController webControllerCanShow:requestURL]) {
+    BOOL webControllerCanShow =
+        web::UrlHasWebScheme(requestURL) ||
+        web::GetWebClient()->IsAppSpecificURL(requestURL) ||
+        requestURL.SchemeIs(url::kFileScheme) ||
+        requestURL.SchemeIs(url::kAboutScheme) ||
+        requestURL.SchemeIs(url::kBlobScheme);
+    if (!webControllerCanShow) {
       // Stop load if navigation is believed to be happening on the main frame.
       if ([self isMainFrameNavigationAction:action])
         [self stopLoading];
