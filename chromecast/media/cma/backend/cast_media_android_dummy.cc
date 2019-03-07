@@ -90,7 +90,5 @@ float VolumeControl::DbFSToVolume(float db) {
   return 0.0f;
 }
 
-void VolumeControl::SetPowerSaveMode(bool power_save_on) {}
-
 }  // namespace media
 }  // namespace chromecast

@@ -82,9 +82,12 @@ cast_source_set("dummy") {
   ]
 
   deps = [
+    ":audio_buildflags",
     "//chromecast/public",
   ]
 }
+
+volume_control_in_media_shlib = !cast_volume_control_in_avsettings
 
 buildflag_header("audio_buildflags") {
   header = "audio_buildflags.h"
@@ -92,6 +95,7 @@ buildflag_header("audio_buildflags") {
   flags = [
     "MEDIA_CLOCK_MONOTONIC_RAW=$media_clock_monotonic_raw",
     "SYSTEM_OWNS_VOLUME=$system_owns_volume",
+    "VOLUME_CONTROL_IN_MEDIA_SHLIB=$volume_control_in_media_shlib",
   ]
 }
 

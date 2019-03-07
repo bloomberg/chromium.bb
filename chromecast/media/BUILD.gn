@@ -37,6 +37,10 @@ group("libcast_media") {
     deps = [
       "//chromecast/media/cma/backend:libcast_media_1.0",
     ]
+
+    if (cast_volume_control_in_avsettings) {
+      deps += [ "//chromecast/media/avsettings:libcast_avsettings_1.0" ]
+    }
   }
 }
 

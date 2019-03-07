@@ -7,6 +7,10 @@
 
 #include <stdint.h>
 
+#include <string>
+#include <vector>
+
+#include "chromecast_export.h"
 #include "output_restrictions.h"
 #include "task_runner.h"
 
@@ -351,6 +355,12 @@ class AvSettings {
   // Non-HDMI devices should return false.
   virtual bool IsHdrOutputSupportedByCurrentHdmiVideoMode(
       HdrOutputType output_type) = 0;
+};
+
+// Entrypoint for overridable AvSettings shared library.
+class CHROMECAST_EXPORT AvSettingsShlib {
+ public:
+  static AvSettings* Create(const std::vector<std::string>& argv);
 };
 
 }  // namespace chromecast
