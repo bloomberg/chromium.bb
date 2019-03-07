@@ -128,16 +128,6 @@ base::LazyInstance<NavigationURLLoaderImpl::BeginNavigationInterceptor>::Leaky
 base::LazyInstance<NavigationURLLoaderImpl::URLLoaderFactoryInterceptor>::Leaky
     g_loader_factory_interceptor = LAZY_INSTANCE_INITIALIZER;
 
-// Returns true if interception by NavigationLoaderInterceptors is enabled.
-// Both ServiceWorkerServicification and SignedExchange require the loader
-// interception. So even if NetworkService is not enabled, returns true when one
-// of them is enabled.
-bool IsLoaderInterceptionEnabled() {
-  return base::FeatureList::IsEnabled(network::features::kNetworkService) ||
-         blink::ServiceWorkerUtils::IsServicificationEnabled() ||
-         signed_exchange_utils::IsSignedExchangeHandlingEnabled();
-}
-
 size_t GetCertificateChainsSizeInKB(const net::SSLInfo& ssl_info) {
   base::Pickle cert_pickle;
   ssl_info.cert->Persist(&cert_pickle);
@@ -268,13 +258,11 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
   return new_request;
 }
 
-// Used only when NetworkService is disabled but IsLoaderInterceptionEnabled()
-// is true.
+// Used only when NetworkService is disabled.
 std::unique_ptr<NavigationRequestInfo> CreateNavigationRequestInfoForRedirect(
     const NavigationRequestInfo& previous_request_info,
     const network::ResourceRequest& updated_resource_request) {
   DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
-  DCHECK(IsLoaderInterceptionEnabled());
 
   CommonNavigationParams new_common_params =
       previous_request_info.common_params;
@@ -766,7 +754,6 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
 
   // This could be called multiple times to follow a chain of redirects.
   void Restart() {
-    DCHECK(IsLoaderInterceptionEnabled());
     // Clear |url_loader_| if it's not the default one (network). This allows
     // the restarted request to use a new loader, instead of, e.g., reusing the
     // AppCache or service worker loader. For an optimization, we keep and reuse
@@ -795,7 +782,6 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       NavigationLoaderInterceptor* interceptor,
       SingleRequestURLLoaderFactory::RequestHandler single_request_handler) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    DCHECK(IsLoaderInterceptionEnabled());
     DCHECK(started_);
 
     if (single_request_handler) {
@@ -1031,11 +1017,6 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       common_params->method = redirect_info_.new_method;
     }
 
-    if (!IsLoaderInterceptionEnabled()) {
-      url_loader_->FollowRedirect(removed_headers, modified_headers);
-      return;
-    }
-
     // Update |resource_request_| and call Restart to give our |interceptors_| a
     // chance at handling the new location. If no interceptor wants to take
     // over, we'll use the existing url_loader to follow the redirect, see
@@ -1114,38 +1095,36 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
 
     std::unique_ptr<NavigationData> cloned_navigation_data;
 
-    if (IsLoaderInterceptionEnabled()) {
-      bool must_download = download_utils::MustDownload(
-          url_, head.headers.get(), head.mime_type);
-      bool known_mime_type = blink::IsSupportedMimeType(head.mime_type);
+    bool must_download =
+        download_utils::MustDownload(url_, head.headers.get(), head.mime_type);
+    bool known_mime_type = blink::IsSupportedMimeType(head.mime_type);
 
 #if BUILDFLAG(ENABLE_PLUGINS)
-      if (!head.intercepted_by_plugin && !must_download && !known_mime_type) {
-        // No plugin throttles intercepted the response. Ask if the plugin
-        // registered to PluginService wants to handle the request.
-        CheckPluginAndContinueOnReceiveResponse(
-            head, std::move(url_loader_client_endpoints),
-            true /* is_download_if_not_handled_by_plugin */,
-            std::vector<WebPluginInfo>());
-        return;
-      }
+    if (!head.intercepted_by_plugin && !must_download && !known_mime_type) {
+      // No plugin throttles intercepted the response. Ask if the plugin
+      // registered to PluginService wants to handle the request.
+      CheckPluginAndContinueOnReceiveResponse(
+          head, std::move(url_loader_client_endpoints),
+          true /* is_download_if_not_handled_by_plugin */,
+          std::vector<WebPluginInfo>());
+      return;
+    }
 #endif
 
-      // When a plugin intercepted the response, we don't want to download it.
-      is_download =
-          !head.intercepted_by_plugin && (must_download || !known_mime_type);
-      is_stream = false;
+    // When a plugin intercepted the response, we don't want to download it.
+    is_download =
+        !head.intercepted_by_plugin && (must_download || !known_mime_type);
+    is_stream = false;
 
-      // If NetworkService is on, or an interceptor handled the request, the
-      // request doesn't use ResourceDispatcherHost so
-      // CallOnReceivedResponse and return here.
-      if (base::FeatureList::IsEnabled(network::features::kNetworkService) ||
-          !default_loader_used_) {
-        CallOnReceivedResponse(head, std::move(url_loader_client_endpoints),
-                               std::move(cloned_navigation_data), is_download,
-                               is_stream);
-        return;
-      }
+    // If NetworkService is on, or an interceptor handled the request, the
+    // request doesn't use ResourceDispatcherHost so
+    // CallOnReceivedResponse and return here.
+    if (base::FeatureList::IsEnabled(network::features::kNetworkService) ||
+        !default_loader_used_) {
+      CallOnReceivedResponse(head, std::move(url_loader_client_endpoints),
+                             std::move(cloned_navigation_data), is_download,
+                             is_stream);
+      return;
     }
 
     // NetworkService is off and an interceptor didn't handle the request,
@@ -1353,9 +1332,6 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
   // different response. For e.g. AppCache may have fallback content.
   bool MaybeCreateLoaderForResponse(
       const network::ResourceResponseHead& response) {
-    if (!IsLoaderInterceptionEnabled())
-      return false;
-
     if (!default_loader_used_)
       return false;
 
@@ -1508,7 +1484,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
   // Generator of a request handler for sending request to the network. This
   // captures all of parameters to create a
   // SingleRequestURLLoaderFactory::RequestHandler. Used only when
-  // NetworkService is disabled but IsLoaderInterceptionEnabled() is true.
+  // NetworkService is disabled.
   // Set |was_request_intercepted| to true if the request was intercepted by an
   // interceptor and the request is falling back to the network. In that case,
   // any interceptors won't intercept the request.
