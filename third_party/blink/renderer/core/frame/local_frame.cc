@@ -364,7 +364,7 @@ void LocalFrame::DetachImpl(FrameDetachType type) {
   }
   idleness_detector_->Shutdown();
   if (inspector_trace_events_)
-    probe_sink_->removeInspectorTraceEvents(inspector_trace_events_);
+    probe_sink_->RemoveInspectorTraceEvents(inspector_trace_events_);
   inspector_task_runner_->Dispose();
 
   PluginScriptForbiddenScope forbid_plugin_destructor_scripting;
@@ -983,7 +983,7 @@ inline LocalFrame::LocalFrame(LocalFrameClient* client,
     probe_sink_ = MakeGarbageCollected<CoreProbeSink>();
     performance_monitor_ = MakeGarbageCollected<PerformanceMonitor>(this);
     inspector_trace_events_ = MakeGarbageCollected<InspectorTraceEvents>();
-    probe_sink_->addInspectorTraceEvents(inspector_trace_events_);
+    probe_sink_->AddInspectorTraceEvents(inspector_trace_events_);
     if (RuntimeEnabledFeatures::AdTaggingEnabled()) {
       ad_tracker_ = MakeGarbageCollected<AdTracker>(this);
     }

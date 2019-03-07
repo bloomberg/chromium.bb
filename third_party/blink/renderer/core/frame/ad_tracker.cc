@@ -33,7 +33,7 @@ bool IsKnownAdExecutionContext(ExecutionContext* execution_context) {
 }  // namespace
 
 AdTracker::AdTracker(LocalFrame* local_root) : local_root_(local_root) {
-  local_root_->GetProbeSink()->addAdTracker(this);
+  local_root_->GetProbeSink()->AddAdTracker(this);
 }
 
 AdTracker::~AdTracker() {
@@ -43,7 +43,7 @@ AdTracker::~AdTracker() {
 void AdTracker::Shutdown() {
   if (!local_root_)
     return;
-  local_root_->GetProbeSink()->removeAdTracker(this);
+  local_root_->GetProbeSink()->RemoveAdTracker(this);
   local_root_ = nullptr;
 }
 

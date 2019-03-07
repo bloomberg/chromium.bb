@@ -1328,12 +1328,12 @@ void InspectorNetworkAgent::Enable() {
   enabled_.Set(true);
   resources_data_->SetResourcesDataSizeLimits(total_buffer_size_.Get(),
                                               resource_buffer_size_.Get());
-  instrumenting_agents_->addInspectorNetworkAgent(this);
+  instrumenting_agents_->AddInspectorNetworkAgent(this);
 }
 
 Response InspectorNetworkAgent::disable() {
   DCHECK(!pending_request_type_);
-  instrumenting_agents_->removeInspectorNetworkAgent(this);
+  instrumenting_agents_->RemoveInspectorNetworkAgent(this);
   agent_state_.ClearAllFields();
   resources_data_->Clear();
   return Response::OK();

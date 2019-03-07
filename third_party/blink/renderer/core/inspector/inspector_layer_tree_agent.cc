@@ -266,7 +266,7 @@ void InspectorLayerTreeAgent::Restore() {
 }
 
 Response InspectorLayerTreeAgent::enable() {
-  instrumenting_agents_->addInspectorLayerTreeAgent(this);
+  instrumenting_agents_->AddInspectorLayerTreeAgent(this);
   Document* document = inspected_frames_->Root()->GetDocument();
   if (!document)
     return Response::Error("The root frame doesn't have document");
@@ -283,7 +283,7 @@ Response InspectorLayerTreeAgent::enable() {
 }
 
 Response InspectorLayerTreeAgent::disable() {
-  instrumenting_agents_->removeInspectorLayerTreeAgent(this);
+  instrumenting_agents_->RemoveInspectorLayerTreeAgent(this);
   snapshot_by_id_.clear();
   return Response::OK();
 }

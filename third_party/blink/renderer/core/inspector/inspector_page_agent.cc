@@ -526,7 +526,7 @@ void InspectorPageAgent::Restore() {
 
 Response InspectorPageAgent::enable() {
   enabled_.Set(true);
-  instrumenting_agents_->addInspectorPageAgent(this);
+  instrumenting_agents_->AddInspectorPageAgent(this);
   return Response::OK();
 }
 
@@ -534,7 +534,7 @@ Response InspectorPageAgent::disable() {
   agent_state_.ClearAllFields();
   script_to_evaluate_on_load_once_ = String();
   pending_script_to_evaluate_on_load_once_ = String();
-  instrumenting_agents_->removeInspectorPageAgent(this);
+  instrumenting_agents_->RemoveInspectorPageAgent(this);
   inspector_resource_content_loader_->Cancel(
       resource_content_loader_client_id_);
 

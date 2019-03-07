@@ -45,7 +45,7 @@ InspectorApplicationCacheAgent::InspectorApplicationCacheAgent(
 
 void InspectorApplicationCacheAgent::InnerEnable() {
   enabled_.Set(true);
-  instrumenting_agents_->addInspectorApplicationCacheAgent(this);
+  instrumenting_agents_->AddInspectorApplicationCacheAgent(this);
   GetFrontend()->networkStateUpdated(GetNetworkStateNotifier().OnLine());
 }
 
@@ -62,7 +62,7 @@ Response InspectorApplicationCacheAgent::enable() {
 
 Response InspectorApplicationCacheAgent::disable() {
   enabled_.Clear();
-  instrumenting_agents_->removeInspectorApplicationCacheAgent(this);
+  instrumenting_agents_->RemoveInspectorApplicationCacheAgent(this);
   return Response::OK();
 }
 

@@ -128,7 +128,7 @@ void InspectorEmulationAgent::Restore() {
 
 Response InspectorEmulationAgent::disable() {
   if (enabled_)
-    instrumenting_agents_->removeInspectorEmulationAgent(this);
+    instrumenting_agents_->RemoveInspectorEmulationAgent(this);
   setUserAgentOverride(String(), protocol::Maybe<String>(),
                        protocol::Maybe<String>());
   if (!web_local_frame_)
@@ -464,7 +464,7 @@ void InspectorEmulationAgent::InnerEnable() {
   if (enabled_)
     return;
   enabled_ = true;
-  instrumenting_agents_->addInspectorEmulationAgent(this);
+  instrumenting_agents_->AddInspectorEmulationAgent(this);
 }
 
 Response InspectorEmulationAgent::AssertPage() {

@@ -165,7 +165,7 @@ void InspectorLogAgent::ConsoleMessageAdded(ConsoleMessage* message) {
 }
 
 void InspectorLogAgent::InnerEnable() {
-  instrumenting_agents_->addInspectorLogAgent(this);
+  instrumenting_agents_->AddInspectorLogAgent(this);
   if (storage_->ExpiredCount()) {
     std::unique_ptr<protocol::Log::LogEntry> expired =
         protocol::Log::LogEntry::create()
@@ -195,7 +195,7 @@ Response InspectorLogAgent::disable() {
     return Response::OK();
   enabled_.Clear();
   stopViolationsReport();
-  instrumenting_agents_->removeInspectorLogAgent(this);
+  instrumenting_agents_->RemoveInspectorLogAgent(this);
   return Response::OK();
 }
 

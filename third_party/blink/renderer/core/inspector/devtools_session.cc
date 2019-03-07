@@ -147,7 +147,7 @@ DevToolsSession::DevToolsSession(
   bool restore = !!session_state_.ReattachState();
   v8_session_state_.InitFrom(&session_state_);
   agent_->client_->AttachSession(this, restore);
-  agent_->probe_sink_->addDevToolsSession(this);
+  agent_->probe_sink_->AddDevToolsSession(this);
   if (restore) {
     for (wtf_size_t i = 0; i < agents_.size(); i++)
       agents_[i]->Restore();
@@ -183,7 +183,7 @@ void DevToolsSession::Detach() {
   host_ptr_.reset();
   io_session_->DeleteSoon();
   io_session_ = nullptr;
-  agent_->probe_sink_->removeDevToolsSession(this);
+  agent_->probe_sink_->RemoveDevToolsSession(this);
   inspector_backend_dispatcher_.reset();
   for (wtf_size_t i = agents_.size(); i > 0; i--)
     agents_[i - 1]->Dispose();

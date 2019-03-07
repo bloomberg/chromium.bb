@@ -55,7 +55,7 @@ void InspectorAnimationAgent::Restore() {
 
 Response InspectorAnimationAgent::enable() {
   enabled_.Set(true);
-  instrumenting_agents_->addInspectorAnimationAgent(this);
+  instrumenting_agents_->AddInspectorAnimationAgent(this);
   return Response::OK();
 }
 
@@ -64,7 +64,7 @@ Response InspectorAnimationAgent::disable() {
   for (const auto& clone : id_to_animation_clone_.Values())
     clone->cancel();
   enabled_.Clear();
-  instrumenting_agents_->removeInspectorAnimationAgent(this);
+  instrumenting_agents_->RemoveInspectorAnimationAgent(this);
   id_to_animation_.clear();
   id_to_animation_type_.clear();
   id_to_animation_clone_.clear();

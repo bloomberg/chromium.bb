@@ -728,7 +728,7 @@ void InspectorCSSAgent::ResourceContentLoaded(
 }
 
 void InspectorCSSAgent::CompleteEnabled() {
-  instrumenting_agents_->addInspectorCSSAgent(this);
+  instrumenting_agents_->AddInspectorCSSAgent(this);
   dom_agent_->SetDOMListener(this);
   HeapVector<Member<Document>> documents = dom_agent_->Documents();
   for (Document* document : documents)
@@ -739,7 +739,7 @@ void InspectorCSSAgent::CompleteEnabled() {
 Response InspectorCSSAgent::disable() {
   Reset();
   dom_agent_->SetDOMListener(nullptr);
-  instrumenting_agents_->removeInspectorCSSAgent(this);
+  instrumenting_agents_->RemoveInspectorCSSAgent(this);
   enable_completed_ = false;
   enable_requested_.Set(false);
   resource_content_loader_->Cancel(resource_content_loader_client_id_);
