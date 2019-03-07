@@ -319,10 +319,9 @@ void SyncableServiceBasedBridge::OnSyncStarting(
     return;
   }
 
-  std::move(store_factory_)
-      .Run(type_, base::BindOnce(&SyncableServiceBasedBridge::OnStoreCreated,
-                                 weak_ptr_factory_.GetWeakPtr()));
-  DCHECK(!store_factory_);
+  syncable_service_->WaitUntilReadyToSync(
+      base::BindOnce(&SyncableServiceBasedBridge::OnSyncableServiceReady,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 base::Optional<ModelError> SyncableServiceBasedBridge::MergeSyncData(
@@ -454,6 +453,15 @@ SyncableServiceBasedBridge::CreateLocalChangeProcessorForTesting(
   return std::make_unique<LocalChangeProcessor>(
       type, /*error_callback=*/base::DoNothing(), store, in_memory_store,
       other);
+}
+
+void SyncableServiceBasedBridge::OnSyncableServiceReady() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  std::move(store_factory_)
+      .Run(type_, base::BindOnce(&SyncableServiceBasedBridge::OnStoreCreated,
+                                 weak_ptr_factory_.GetWeakPtr()));
+  DCHECK(!store_factory_);
 }
 
 void SyncableServiceBasedBridge::OnStoreCreated(

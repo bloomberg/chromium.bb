@@ -120,6 +120,17 @@ bool ArcPackageSyncableService::IsPackageSyncing(
       pending_install_items_.end();
 }
 
+void ArcPackageSyncableService::WaitUntilReadyToSync(base::OnceClosure done) {
+  if (prefs_->package_list_initial_refreshed()) {
+    std::move(done).Run();
+    return;
+  }
+
+  // Wait until the initial list is loaded, handled in
+  // OnPackageListInitialRefreshed().
+  wait_until_ready_to_sync_cb_ = std::move(done);
+}
+
 syncer::SyncMergeResult ArcPackageSyncableService::MergeDataAndStartSyncing(
     syncer::ModelType type,
     const syncer::SyncDataList& initial_sync_data,
@@ -320,6 +331,11 @@ void ArcPackageSyncableService::OnPackageModified(
   }
 
   SendSyncChange(package_info, SyncChange::ACTION_UPDATE);
+}
+
+void ArcPackageSyncableService::OnPackageListInitialRefreshed() {
+  if (wait_until_ready_to_sync_cb_)
+    std::move(wait_until_ready_to_sync_cb_).Run();
 }
 
 void ArcPackageSyncableService::SendSyncChange(

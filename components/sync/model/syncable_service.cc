@@ -4,10 +4,16 @@
 
 #include "components/sync/model/syncable_service.h"
 
+#include <utility>
+
 namespace syncer {
 
 SyncableService::SyncableService() {}
 
 SyncableService::~SyncableService() {}
+
+void SyncableService::WaitUntilReadyToSync(base::OnceClosure done) {
+  std::move(done).Run();
+}
 
 }  // namespace syncer

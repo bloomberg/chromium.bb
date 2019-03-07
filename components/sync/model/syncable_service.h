@@ -43,6 +43,12 @@ class SyncableService : public base::SupportsWeakPtr<SyncableService> {
   // make pptimizations or tradeoffs by type, etc.
   using StartSyncFlare = base::Callback<void(ModelType)>;
 
+  // Allows the SyncableService to delay sync events (all below) until the model
+  // becomes ready to sync.
+  // TODO(crbug.com/939329): Make this pure to enforce discussion on all
+  // subclasses.
+  virtual void WaitUntilReadyToSync(base::OnceClosure done);
+
   // Informs the service to begin syncing the specified synced datatype |type|.
   // The service should then merge |initial_sync_data| into it's local data,
   // calling |sync_processor|'s ProcessSyncChanges as necessary to reconcile the

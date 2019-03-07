@@ -100,17 +100,19 @@ void DataTypeManagerImpl::ReenableType(ModelType type) {
 }
 
 void DataTypeManagerImpl::ReadyForStartChanged(ModelType type) {
-  const auto& dtc_iter = controllers_->find(type);
-  if (dtc_iter == controllers_->end())
+  if (!UpdateUnreadyTypeError(type)) {
+    // Nothing changed.
     return;
+  }
 
-  if (dtc_iter->second->ReadyForStart()) {
-    ForceReconfiguration();
-  } else {
+  if (data_type_status_table_.GetUnreadyErrorTypes().Has(type)) {
     model_association_manager_.StopDatatype(
         type, DISABLE_SYNC,
         SyncError(FROM_HERE, syncer::SyncError::UNREADY_ERROR,
                   "Data type is unready.", type));
+  } else if (last_requested_types_.Has(type)) {
+    // Only reconfigure if the type is both ready and desired.
+    ForceReconfiguration();
   }
 }
 
@@ -347,26 +349,34 @@ TypeSetPriorityList DataTypeManagerImpl::PrioritizeTypes(
 void DataTypeManagerImpl::UpdateUnreadyTypeErrors(
     const ModelTypeSet& desired_types) {
   for (ModelType type : desired_types) {
-    const auto& iter = controllers_->find(type);
-    if (iter == controllers_->end())
-      continue;
-    const DataTypeController* dtc = iter->second.get();
-    bool unready_status =
-        data_type_status_table_.GetUnreadyErrorTypes().Has(type);
-    if (dtc->ReadyForStart() != (unready_status == false)) {
-      // Adjust data_type_status_table_ if unready state in it doesn't match
-      // DataTypeController::ReadyForStart().
-      if (dtc->ReadyForStart()) {
-        data_type_status_table_.ResetUnreadyErrorFor(type);
-      } else {
-        SyncError error(FROM_HERE, SyncError::UNREADY_ERROR,
-                        "Datatype not ready at config time.", type);
-        std::map<ModelType, SyncError> errors;
-        errors[type] = error;
-        data_type_status_table_.UpdateFailedDataTypes(errors);
-      }
-    }
+    UpdateUnreadyTypeError(type);
   }
+}
+
+bool DataTypeManagerImpl::UpdateUnreadyTypeError(ModelType type) {
+  const auto& iter = controllers_->find(type);
+  if (iter == controllers_->end())
+    return false;
+
+  const DataTypeController* dtc = iter->second.get();
+  bool unready_status =
+      data_type_status_table_.GetUnreadyErrorTypes().Has(type);
+  if (dtc->ReadyForStart() == (unready_status == false))
+    return false;
+
+  // Adjust data_type_status_table_ if unready state in it doesn't match
+  // DataTypeController::ReadyForStart().
+  if (dtc->ReadyForStart()) {
+    data_type_status_table_.ResetUnreadyErrorFor(type);
+  } else {
+    SyncError error(FROM_HERE, SyncError::UNREADY_ERROR,
+                    "Datatype not ready at config time.", type);
+    std::map<ModelType, SyncError> errors;
+    errors[type] = error;
+    data_type_status_table_.UpdateFailedDataTypes(errors);
+  }
+
+  return true;
 }
 
 void DataTypeManagerImpl::ProcessReconfigure() {

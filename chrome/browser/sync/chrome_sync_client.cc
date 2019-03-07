@@ -125,6 +125,7 @@
 #include "chrome/browser/chromeos/printing/synced_printers_manager.h"
 #include "chrome/browser/chromeos/printing/synced_printers_manager_factory.h"
 #include "chrome/browser/ui/app_list/arc/arc_package_sync_data_type_controller.h"
+#include "chrome/browser/ui/app_list/arc/arc_package_sync_model_type_controller.h"
 #include "chrome/browser/ui/app_list/arc/arc_package_syncable_service.h"
 #include "components/arc/arc_util.h"
 #endif  // defined(OS_CHROMEOS)
@@ -448,8 +449,16 @@ ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
 #if defined(OS_CHROMEOS)
   if (arc::IsArcAllowedForProfile(profile_) &&
       !arc::IsArcAppSyncFlowDisabled()) {
-    controllers.push_back(std::make_unique<ArcPackageSyncDataTypeController>(
-        syncer::ARC_PACKAGE, dump_stack, sync_service, this, profile_));
+    if (base::FeatureList::IsEnabled(switches::kSyncPseudoUSSArcPackage)) {
+      controllers.push_back(std::make_unique<ArcPackageSyncModelTypeController>(
+          GetModelTypeStoreService()->GetStoreFactory(),
+          base::BindOnce(&ChromeSyncClient::GetSyncableServiceForType,
+                         base::Unretained(this), syncer::ARC_PACKAGE),
+          dump_stack, sync_service, profile_));
+    } else {
+      controllers.push_back(std::make_unique<ArcPackageSyncDataTypeController>(
+          syncer::ARC_PACKAGE, dump_stack, sync_service, this, profile_));
+    }
   }
 #endif  // defined(OS_CHROMEOS)
 
