@@ -3799,6 +3799,7 @@ test("unit_tests") {
       "../browser/extensions/api/identity/identity_api_unittest.cc",
       "../browser/extensions/api/identity/identity_mint_queue_unittest.cc",
       "../browser/extensions/api/image_writer_private/destroy_partitions_operation_unittest.cc",
+      "../browser/extensions/api/image_writer_private/image_writer_private_api_unittest.cc",
       "../browser/extensions/api/image_writer_private/operation_manager_unittest.cc",
       "../browser/extensions/api/image_writer_private/operation_unittest.cc",
       "../browser/extensions/api/image_writer_private/removable_storage_provider_chromeos_unittest.cc",
