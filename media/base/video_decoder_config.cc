@@ -83,6 +83,11 @@ VideoDecoderConfig::VideoDecoderConfig(const VideoDecoderConfig& other) =
 
 VideoDecoderConfig::~VideoDecoderConfig() = default;
 
+void VideoDecoderConfig::set_color_space_info(
+    const VideoColorSpace& color_space) {
+  color_space_info_ = color_space;
+}
+
 const VideoColorSpace& VideoDecoderConfig::color_space_info() const {
   return color_space_info_;
 }

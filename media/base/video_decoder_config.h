@@ -137,6 +137,7 @@ class MEDIA_EXPORT VideoDecoderConfig {
   }
 
   // Color space of the image data.
+  void set_color_space_info(const VideoColorSpace& color_space);
   const VideoColorSpace& color_space_info() const;
 
   // Dynamic range of the image data.

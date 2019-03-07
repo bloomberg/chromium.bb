@@ -71,8 +71,7 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
   int32_t GetCommandBufferRouteId() override;
   std::unique_ptr<media::VideoDecoder> CreateVideoDecoder(
       media::MediaLog* media_log,
-      const media::RequestOverlayInfoCB& request_overlay_info_cb,
-      const gfx::ColorSpace& target_color_space) override;
+      const media::RequestOverlayInfoCB& request_overlay_info_cb) override;
   bool IsDecoderConfigSupported(
       const media::VideoDecoderConfig& config) override;
   std::unique_ptr<media::VideoDecodeAccelerator> CreateVideoDecodeAccelerator()

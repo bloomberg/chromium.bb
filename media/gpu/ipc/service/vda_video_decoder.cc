@@ -277,11 +277,17 @@ void VdaVideoDecoder::Initialize(const VideoDecoderConfig& config,
       false;
 #endif
 
+  // Hardware decoders require ColorSpace to be set beforehand to provide
+  // correct HDR output.
+  const bool is_hdr_color_space_change =
+      config_.profile() == media::VP9PROFILE_PROFILE2 &&
+      config_.color_space_info() != config.color_space_info();
+
   // The configuration is supported.
   config_ = config;
 
   if (reinitializing) {
-    if (is_profile_change) {
+    if (is_profile_change || is_hdr_color_space_change) {
       MEDIA_LOG(INFO, media_log_) << "Reinitializing video decode accelerator "
                                   << "for profile change";
       gpu_task_runner_->PostTask(

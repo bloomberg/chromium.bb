@@ -89,8 +89,7 @@ class MEDIA_EXPORT GpuVideoAcceleratorFactories {
 
   virtual std::unique_ptr<media::VideoDecoder> CreateVideoDecoder(
       MediaLog* media_log,
-      const RequestOverlayInfoCB& request_overlay_info_cb,
-      const gfx::ColorSpace& target_color_space) = 0;
+      const RequestOverlayInfoCB& request_overlay_info_cb) = 0;
 
   // Caller owns returned pointer, but should call Destroy() on it (instead of
   // directly deleting) for proper destruction, as per the
