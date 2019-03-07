@@ -60,29 +60,31 @@ enum ModelType {
   FIRST_USER_MODEL_TYPE = BOOKMARKS,  // Declared 2nd, for debugger prettiness.
   FIRST_REAL_MODEL_TYPE = FIRST_USER_MODEL_TYPE,
 
-  // A preference object.
+  // A preference object, a.k.a. "Settings".
   PREFERENCES,
   // A password object.
   PASSWORDS,
-  // An AutofillProfile Object
+  // An autofill_profile object, i.e. an address.
   AUTOFILL_PROFILE,
-  // An autofill object.
+  // An autofill object, i.e. an autocomplete entry keyed to an HTML form field.
   AUTOFILL,
-  // Credit cards and addresses synced from the user's account. These are
-  // read-only on the client.
+  // Credit cards and addresses from the user's account. These are read-only on
+  // the client.
   AUTOFILL_WALLET_DATA,
   // Usage counts and last use dates for Wallet cards and addresses. This data
   // is both readable and writable.
   AUTOFILL_WALLET_METADATA,
-  // A themes object.
+  // A theme object.
   THEMES,
-  // A typed_url object.
+  // A typed_url object, i.e. a URL the user has typed into the Omnibox.
   TYPED_URLS,
   // An extension object.
   EXTENSIONS,
   // An object representing a custom search engine.
   SEARCH_ENGINES,
-  // An object representing a browser session.
+  // An object representing a browser session, e.g. an open tab. This is used
+  // for both "History" (together with TYPED_URLS) and "Tabs" (depending on
+  // PROXY_TABS).
   SESSIONS,
   // An app object.
   APPS,
@@ -90,19 +92,18 @@ enum ModelType {
   APP_SETTINGS,
   // An extension setting from the extension settings API.
   EXTENSION_SETTINGS,
-  // App notifications. Deprecated.
+  // Deprecated.
   DEPRECATED_APP_NOTIFICATIONS,
-  // History delete directives.
+  // History delete directives, used to propagate history deletions (e.g. based
+  // on a time range).
   HISTORY_DELETE_DIRECTIVES,
-  // Synced push notifications. Deprecated.
   DEPRECATED_SYNCED_NOTIFICATIONS,
-  // Synced Notification app info. Deprecated.
   DEPRECATED_SYNCED_NOTIFICATION_APP_INFO,
-  // Custom spelling dictionary.
+  // Custom spelling dictionary entries.
   DICTIONARY,
-  // Favicon images.
+  // Favicon images, including both the image URL and the actual pixels.
   FAVICON_IMAGES,
-  // Favicon tracking information.
+  // Favicon tracking information, i.e. metadata such as last visit date.
   FAVICON_TRACKING,
   // Client-specific metadata, synced before other user types.
   DEVICE_INFO,
@@ -111,24 +112,20 @@ enum ModelType {
   PRIORITY_PREFERENCES,
   // Supervised user settings. Cannot be encrypted.
   SUPERVISED_USER_SETTINGS,
-  // Deprecated supervised user types that are not used anymore.
   DEPRECATED_SUPERVISED_USERS,
   DEPRECATED_SUPERVISED_USER_SHARED_SETTINGS,
-  // Distilled articles.
   DEPRECATED_ARTICLES,
-  // App List items
+  // App List items, used by the ChromeOS app launcher.
   APP_LIST,
-  // WiFi credentials. Each item contains the information for connecting to one
-  // WiFi network. This includes, e.g., network name and password.
   DEPRECATED_WIFI_CREDENTIALS,
   // Supervised user whitelists. Each item contains a CRX ID (like an extension
   // ID) and a name.
   SUPERVISED_USER_WHITELISTS,
-  // ARC Package items.
+  // ARC package items, i.e. Android apps on ChromeOS.
   ARC_PACKAGE,
-  // Printer device information.
+  // Printer device information. ChromeOS only.
   PRINTERS,
-  // Reading list items.
+  // Reading list items. iOS only.
   READING_LIST,
   // Commit only user events.
   USER_EVENTS,
