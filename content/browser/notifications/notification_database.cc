@@ -5,6 +5,7 @@
 #include "content/browser/notifications/notification_database.h"
 
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
@@ -269,6 +270,13 @@ NotificationDatabase::ReadNotificationDataAndRecordInteraction(
   return status;
 }
 
+NotificationDatabase::Status NotificationDatabase::ForEachNotificationData(
+    ReadAllNotificationsCallback callback) const {
+  return ForEachNotificationDataInternal(
+      GURL() /* origin */, blink::mojom::kInvalidServiceWorkerRegistrationId,
+      std::move(callback));
+}
+
 NotificationDatabase::Status NotificationDatabase::ReadAllNotificationData(
     std::vector<NotificationDatabaseData>* notification_data_vector) const {
   return ReadAllNotificationDataInternal(
@@ -402,6 +410,21 @@ NotificationDatabase::ReadAllNotificationDataInternal(
   DCHECK(sequence_checker_.CalledOnValidSequence());
   DCHECK(notification_data_vector);
 
+  return ForEachNotificationDataInternal(
+      origin, service_worker_registration_id,
+      base::BindRepeating(
+          [](std::vector<NotificationDatabaseData>* datas,
+             const NotificationDatabaseData& data) { datas->push_back(data); },
+          notification_data_vector));
+}
+
+NotificationDatabase::Status
+NotificationDatabase::ForEachNotificationDataInternal(
+    const GURL& origin,
+    int64_t service_worker_registration_id,
+    ReadAllNotificationsCallback callback) const {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
+
   const std::string prefix = CreateDataPrefix(origin);
 
   leveldb::Slice prefix_slice(prefix);
@@ -425,7 +448,7 @@ NotificationDatabase::ReadAllNotificationDataInternal(
       continue;
     }
 
-    notification_data_vector->push_back(notification_database_data);
+    callback.Run(notification_database_data);
   }
 
   return LevelDBStatusToNotificationDatabaseStatus(iter->status());
