@@ -129,6 +129,10 @@ class ASH_EXPORT LoginShelfView : public views::View,
   // policy updates, session state changes etc.
   void UpdateUi();
 
+  // Updates the color of all buttons. Uses dark colors if |use_dark_colors| is
+  // true, light colors otherwise.
+  void UpdateButtonColors(bool use_dark_colors);
+
   // Updates the total bounds of all buttons.
   void UpdateButtonUnionBounds();
 
