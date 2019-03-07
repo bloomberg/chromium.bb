@@ -31,7 +31,7 @@ AllocatorState::GetMetadataReturnType AllocatorState::GetMetadataForAddress(
   if (slot_idx >= kGpaMaxPages)
     return GetMetadataReturnType::kErrorBadSlot;
 
-  *slot_address = slot_metadata + (slot_idx * sizeof(SlotMetadata));
+  *slot_address = metadata_addr + (slot_idx * sizeof(SlotMetadata));
   return GetMetadataReturnType::kGwpAsanCrash;
 }
 
@@ -53,7 +53,7 @@ bool AllocatorState::IsValid() const {
       pages_end_addr - pages_base_addr != page_size * (total_pages * 2 + 1))
     return false;
 
-  if (!slot_metadata)
+  if (!metadata_addr)
     return false;
 
   return true;

@@ -76,8 +76,8 @@ void GuardedPageAllocator::Init(size_t max_alloced_pages, size_t total_pages) {
                         std::next(free_slot_ring_buffer_.begin(), total_pages));
   }
 
-  slots_ = std::make_unique<AllocatorState::SlotMetadata[]>(total_pages);
-  state_.slot_metadata = reinterpret_cast<uintptr_t>(slots_.get());
+  metadata_ = std::make_unique<AllocatorState::SlotMetadata[]>(total_pages);
+  state_.metadata_addr = reinterpret_cast<uintptr_t>(metadata_.get());
 }
 
 GuardedPageAllocator::~GuardedPageAllocator() {
@@ -128,13 +128,13 @@ void GuardedPageAllocator::Deallocate(void* ptr) {
 
   // Check for a call to free() with an incorrect pointer (e.g. the pointer does
   // not match the allocated pointer.)
-  if (addr != slots_[slot].alloc_ptr) {
+  if (addr != metadata_[slot].alloc_ptr) {
     state_.free_invalid_address = addr;
     __builtin_trap();
   }
 
   // Check for double free.
-  if (slots_[slot].deallocation_occurred.exchange(true)) {
+  if (metadata_[slot].deallocation_occurred.exchange(true)) {
     state_.double_free_address = addr;
     // TODO(https://crbug.com/925447): The other thread may not be done writing
     // a stack trace so we could spin here until it's read; however, it's also
@@ -156,8 +156,8 @@ size_t GuardedPageAllocator::GetRequestedSize(const void* ptr) const {
   CHECK(PointerIsMine(ptr));
   const uintptr_t addr = reinterpret_cast<uintptr_t>(ptr);
   size_t slot = state_.AddrToSlot(state_.GetPageAddr(addr));
-  DCHECK_EQ(addr, slots_[slot].alloc_ptr);
-  return slots_[slot].alloc_size;
+  DCHECK_EQ(addr, metadata_[slot].alloc_ptr);
+  return metadata_[slot].alloc_size;
 }
 
 size_t GuardedPageAllocator::RegionSize() const {
@@ -194,34 +194,35 @@ void GuardedPageAllocator::FreeSlot(size_t slot) {
 void GuardedPageAllocator::RecordAllocationMetadata(size_t slot,
                                                     size_t size,
                                                     void* ptr) {
-  slots_[slot].alloc_size = size;
-  slots_[slot].alloc_ptr = reinterpret_cast<uintptr_t>(ptr);
+  metadata_[slot].alloc_size = size;
+  metadata_[slot].alloc_ptr = reinterpret_cast<uintptr_t>(ptr);
 
   void* trace[AllocatorState::kMaxStackFrames];
   size_t len =
       base::debug::CollectStackTrace(trace, AllocatorState::kMaxStackFrames);
-  slots_[slot].alloc.trace_len = Pack(reinterpret_cast<uintptr_t*>(trace), len,
-                                      slots_[slot].alloc.packed_trace,
-                                      sizeof(slots_[slot].alloc.packed_trace));
-  slots_[slot].alloc.tid = ReportTid();
-  slots_[slot].alloc.trace_collected = true;
+  metadata_[slot].alloc.trace_len =
+      Pack(reinterpret_cast<uintptr_t*>(trace), len,
+           metadata_[slot].alloc.packed_trace,
+           sizeof(metadata_[slot].alloc.packed_trace));
+  metadata_[slot].alloc.tid = ReportTid();
+  metadata_[slot].alloc.trace_collected = true;
 
-  slots_[slot].dealloc.tid = base::kInvalidThreadId;
-  slots_[slot].dealloc.trace_len = 0;
-  slots_[slot].dealloc.trace_collected = false;
-  slots_[slot].deallocation_occurred = false;
+  metadata_[slot].dealloc.tid = base::kInvalidThreadId;
+  metadata_[slot].dealloc.trace_len = 0;
+  metadata_[slot].dealloc.trace_collected = false;
+  metadata_[slot].deallocation_occurred = false;
 }
 
 void GuardedPageAllocator::RecordDeallocationMetadata(size_t slot) {
   void* trace[AllocatorState::kMaxStackFrames];
   size_t len =
       base::debug::CollectStackTrace(trace, AllocatorState::kMaxStackFrames);
-  slots_[slot].dealloc.trace_len =
+  metadata_[slot].dealloc.trace_len =
       Pack(reinterpret_cast<uintptr_t*>(trace), len,
-           slots_[slot].dealloc.packed_trace,
-           sizeof(slots_[slot].dealloc.packed_trace));
-  slots_[slot].dealloc.tid = ReportTid();
-  slots_[slot].dealloc.trace_collected = true;
+           metadata_[slot].dealloc.packed_trace,
+           sizeof(metadata_[slot].dealloc.packed_trace));
+  metadata_[slot].dealloc.tid = ReportTid();
+  metadata_[slot].dealloc.trace_collected = true;
 }
 
 uintptr_t GuardedPageAllocator::GetCrashKeyAddress() const {
