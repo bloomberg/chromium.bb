@@ -10,10 +10,10 @@
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/signin/core/browser/account_tracker_service.h"
-#include "components/signin/core/browser/fake_account_fetcher_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "components/signin/core/browser/test_image_decoder.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "google_apis/gaia/oauth2_access_token_consumer.h"
@@ -50,7 +50,7 @@ class IdentityManagerDependenciesOwner {
 
   AccountTrackerService* account_tracker_service();
 
-  FakeAccountFetcherService* account_fetcher_service();
+  AccountFetcherService* account_fetcher_service();
 
   SigninManagerBase* signin_manager();
 
@@ -73,7 +73,7 @@ class IdentityManagerDependenciesOwner {
   TestSigninClient* raw_signin_client_ = nullptr;
 
   AccountTrackerService account_tracker_;
-  FakeAccountFetcherService account_fetcher_;
+  AccountFetcherService account_fetcher_;
   FakeProfileOAuth2TokenService token_service_;
 #if defined(OS_CHROMEOS)
   SigninManagerBase signin_manager_;
@@ -148,7 +148,7 @@ IdentityManagerDependenciesOwner::account_tracker_service() {
   return &account_tracker_;
 }
 
-FakeAccountFetcherService*
+AccountFetcherService*
 IdentityManagerDependenciesOwner::account_fetcher_service() {
   return &account_fetcher_;
 }
@@ -205,7 +205,7 @@ IdentityTestEnvironment::IdentityTestEnvironment(
 IdentityTestEnvironment::IdentityTestEnvironment(
     PrefService* pref_service,
     AccountTrackerService* account_tracker_service,
-    FakeAccountFetcherService* account_fetcher_service,
+    AccountFetcherService* account_fetcher_service,
     FakeProfileOAuth2TokenService* token_service,
     SigninManagerBase* signin_manager,
     GaiaCookieManagerService* gaia_cookie_manager_service,
@@ -223,7 +223,7 @@ IdentityTestEnvironment::IdentityTestEnvironment(
 IdentityTestEnvironment::IdentityTestEnvironment(
     PrefService* pref_service,
     AccountTrackerService* account_tracker_service,
-    FakeAccountFetcherService* account_fetcher_service,
+    AccountFetcherService* account_fetcher_service,
     FakeProfileOAuth2TokenService* token_service,
     SigninManagerBase* signin_manager,
     GaiaCookieManagerService* gaia_cookie_manager_service,
@@ -242,7 +242,7 @@ IdentityTestEnvironment::IdentityTestEnvironment(
 IdentityTestEnvironment::IdentityTestEnvironment(
     PrefService* pref_service,
     AccountTrackerService* account_tracker_service,
-    FakeAccountFetcherService* account_fetcher_service,
+    AccountFetcherService* account_fetcher_service,
     FakeProfileOAuth2TokenService* token_service,
     SigninManagerBase* signin_manager,
     GaiaCookieManagerService* gaia_cookie_manager_service,

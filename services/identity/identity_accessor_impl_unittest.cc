@@ -8,9 +8,9 @@
 #include "build/build_config.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/account_tracker_service.h"
-#include "components/signin/core/browser/fake_account_fetcher_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "components/signin/core/browser/test_image_decoder.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "services/identity/identity_service.h"
@@ -179,7 +179,7 @@ class IdentityAccessorImplTest : public testing::Test {
  private:
   sync_preferences::TestingPrefServiceSyncable pref_service_;
   AccountTrackerService account_tracker_;
-  FakeAccountFetcherService account_fetcher_;
+  AccountFetcherService account_fetcher_;
   TestSigninClient signin_client_;
   FakeProfileOAuth2TokenService token_service_;
 #if defined(OS_CHROMEOS)

@@ -18,11 +18,11 @@
 #include "build/build_config.h"
 #include "components/signin/core/browser/account_consistency_method.h"
 #include "components/signin/core/browser/account_tracker_service.h"
-#include "components/signin/core/browser/fake_account_fetcher_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/list_accounts_test_utils.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_switches.h"
+#include "components/signin/core/browser/test_image_decoder.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -367,7 +367,7 @@ class IdentityManagerTest : public testing::Test {
     return identity_manager_diagnostics_observer_.get();
   }
   AccountTrackerServiceForTest* account_tracker() { return &account_tracker_; }
-  FakeAccountFetcherService* account_fetcher() { return &account_fetcher_; }
+  AccountFetcherService* account_fetcher() { return &account_fetcher_; }
   SigninManagerBase* signin_manager() { return signin_manager_.get(); }
   CustomFakeProfileOAuth2TokenService* token_service() {
     return &token_service_;
@@ -486,7 +486,7 @@ class IdentityManagerTest : public testing::Test {
   base::MessageLoop message_loop_;
   sync_preferences::TestingPrefServiceSyncable pref_service_;
   AccountTrackerServiceForTest account_tracker_;
-  FakeAccountFetcherService account_fetcher_;
+  AccountFetcherService account_fetcher_;
   TestSigninClient signin_client_;
   CustomFakeProfileOAuth2TokenService token_service_;
   network::TestURLLoaderFactory test_url_loader_factory_;
