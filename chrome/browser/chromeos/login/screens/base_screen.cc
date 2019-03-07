@@ -97,10 +97,6 @@ void BaseScreen::CommitContextChanges() {
   channel_->CommitContextChanges(diff);
 }
 
-void BaseScreen::Finish(ScreenExitCode exit_code) {
-  base_screen_delegate_->OnExit(exit_code);
-}
-
 void BaseScreen::OnUserAction(const std::string& action_id) {
   LOG(WARNING) << "Unhandled user action: action_id=" << action_id;
 }

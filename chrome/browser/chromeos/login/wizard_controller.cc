@@ -1541,9 +1541,6 @@ void WizardController::SimulateDemoModeSetupForTesting(
 
 ///////////////////////////////////////////////////////////////////////////////
 // WizardController, BaseScreenDelegate overrides:
-void WizardController::OnExit(ScreenExitCode exit_code) {
-}
-
 void WizardController::ShowErrorScreen() {
   VLOG(1) << "Showing error screen.";
   SetCurrentScreen(GetScreen(OobeScreen::SCREEN_ERROR_MESSAGE));

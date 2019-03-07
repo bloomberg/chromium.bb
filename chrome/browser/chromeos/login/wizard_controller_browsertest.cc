@@ -723,10 +723,6 @@ class WizardControllerFlowTest : public WizardControllerTest {
         default_network->guid(), online_state);
   }
 
-  void OnExit(ScreenExitCode exit_code) {
-    WizardController::default_controller()->OnExit(exit_code);
-  }
-
   chromeos::SimpleGeolocationProvider* GetGeolocationProvider() {
     return WizardController::default_controller()->geolocation_provider_.get();
   }
@@ -2761,10 +2757,6 @@ class WizardControllerOobeResumeTest : public WizardControllerTest {
                                 base::Unretained(wizard_controller))));
   }
 
-  void OnExit(ScreenExitCode exit_code) {
-    WizardController::default_controller()->OnExit(exit_code);
-  }
-
   OobeScreen GetFirstScreen() {
     return WizardController::default_controller()->first_screen();
   }
@@ -2913,8 +2905,5 @@ IN_PROC_BROWSER_TEST_F(WizardControllerOobeConfigurationTest,
 // TODO(alemate): Add tests for Marketing Opt-In.
 
 // TODO(khorimoto): Add tests for MultiDevice Setup UI.
-
-static_assert(static_cast<int>(ScreenExitCode::EXIT_CODES_COUNT) == 51,
-              "tests for new control flow are missing");
 
 }  // namespace chromeos

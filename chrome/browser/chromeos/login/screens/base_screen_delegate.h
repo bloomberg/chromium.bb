@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_BASE_SCREEN_DELEGATE_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_BASE_SCREEN_DELEGATE_H_
 
-#include "chrome/browser/chromeos/login/screens/screen_exit_code.h"
-
 namespace chromeos {
 
 class BaseScreen;
@@ -16,9 +14,6 @@ class ErrorScreen;
 // screens.
 class BaseScreenDelegate {
  public:
-  // Method called by a screen when user's done with it.
-  virtual void OnExit(ScreenExitCode exit_code) = 0;
-
   // Forces current screen showing.
   virtual void ShowCurrentScreen() = 0;
 
