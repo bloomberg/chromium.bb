@@ -570,10 +570,6 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
 // appearing, and that the Reading List entry is present in the Reading List.
 // Loads online version by tapping on entry.
 - (void)testSavingToReadingListAndLoadNormal {
-  // TODO(crbug.com/874649): re-enable this test.
-  if (base::FeatureList::IsEnabled(web::features::kSlimNavigationManager))
-    EARL_GREY_TEST_DISABLED(@"Test disabled on SlimNavigationManager.");
-
   auto network_change_disabler =
       std::make_unique<net::NetworkChangeNotifier::DisableForTest>();
   auto wifi_network = std::make_unique<WifiNetworkChangeNotifier>();
@@ -611,14 +607,6 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
 // appearing, and that the Reading List entry is present in the Reading List.
 // Loads offline version by tapping on entry without web server.
 - (void)testSavingToReadingListAndLoadNoNetwork {
-  // TODO(crbug.com/874649): re-enable this test.
-  if (base::FeatureList::IsEnabled(web::features::kSlimNavigationManager))
-    EARL_GREY_TEST_DISABLED(@"Test disabled on SlimNavigationManager.");
-
-  // TODO(crbug.com/936773): re-enable this test.
-  if (reading_list::IsOfflinePageWithoutNativeContentEnabled())
-    EARL_GREY_TEST_DISABLED(@"Test disabled on SlimNavigationManager.");
-
   auto network_change_disabler =
       std::make_unique<net::NetworkChangeNotifier::DisableForTest>();
   auto wifi_network = std::make_unique<WifiNetworkChangeNotifier>();
@@ -666,14 +654,6 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
 // appearing, and that the Reading List entry is present in the Reading List.
 // Loads offline version by tapping on entry with delayed web server.
 - (void)testSavingToReadingListAndLoadBadNetwork {
-  // TODO(crbug.com/905839): re-enable this test.
-  if (base::FeatureList::IsEnabled(web::features::kSlimNavigationManager))
-    EARL_GREY_TEST_DISABLED(@"Test disabled on SlimNavigationManager.");
-
-  // TODO(crbug.com/936773): re-enable this test.
-  if (reading_list::IsOfflinePageWithoutNativeContentEnabled())
-    EARL_GREY_TEST_DISABLED(@"Test disabled on SlimNavigationManager.");
-
   auto network_change_disabler =
       std::make_unique<net::NetworkChangeNotifier::DisableForTest>();
   auto wifi_network = std::make_unique<WifiNetworkChangeNotifier>();
