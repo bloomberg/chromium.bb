@@ -65,8 +65,10 @@ void InitializeGcpwCrashReporting(GcpCrashReporterClient* crash_client) {
   if (crash_dir.empty() ||
       (!base::PathExists(crash_dir) && !base::CreateDirectory(crash_dir))) {
     HRESULT hr = HRESULT_FROM_WIN32(::GetLastError());
-    LOGFN(ERROR) << "Failed to create directory for crash dumps: " << crash_dir
-                 << " hr=" << putHR(hr);
+    if (hr != HRESULT_FROM_WIN32(ERROR_ALREADY_EXISTS)) {
+      LOGFN(ERROR) << "Failed to create directory for crash dumps: "
+                   << crash_dir << " hr=" << putHR(hr);
+    }
   }
 }
 

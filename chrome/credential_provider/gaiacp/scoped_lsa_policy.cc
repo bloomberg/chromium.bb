@@ -98,11 +98,8 @@ HRESULT ScopedLsaPolicy::RetrievePrivateData(const wchar_t* key,
   LSA_UNICODE_STRING* lsa_value;
 
   NTSTATUS sts = ::LsaRetrievePrivateData(handle_, &lsa_key, &lsa_value);
-  if (sts != STATUS_SUCCESS) {
-    HRESULT hr = HRESULT_FROM_NT(sts);
-    LOGFN(ERROR) << "LsaRetrievePrivateData hr=" << putHR(hr);
-    return hr;
-  }
+  if (sts != STATUS_SUCCESS)
+    return HRESULT_FROM_NT(sts);
 
   errno_t err = wcscpy_s(value, length, lsa_value->Buffer);
   ::LsaFreeMemory(lsa_value);
