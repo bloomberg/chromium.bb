@@ -1624,6 +1624,9 @@ extern const char kEnableWebAuthenticationTestingAPIDescription[];
 extern const char kHappinessTrackingSurveysForDesktopName[];
 extern const char kHappinessTrackingSurveysForDesktopDescription[];
 
+extern const char kLinkManagedNoticeToChromeUIManagementURLName[];
+extern const char kLinkManagedNoticeToChromeUIManagementURLDescription[];
+
 extern const char kOmniboxDriveSuggestionsName[];
 extern const char kOmniboxDriveSuggestionsDescriptions[];
 

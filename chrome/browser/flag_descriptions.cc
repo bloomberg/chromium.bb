@@ -2764,6 +2764,12 @@ const char kHappinessTrackingSurveysForDesktopName[] =
 const char kHappinessTrackingSurveysForDesktopDescription[] =
     "Enable showing Happiness Tracking Surveys to users on Desktop";
 
+const char kLinkManagedNoticeToChromeUIManagementURLName[] =
+    "Link managed notice to the management page";
+const char kLinkManagedNoticeToChromeUIManagementURLDescription[] =
+    "Makes the managed notice 'Managed by your organization' a link to "
+    "chrome://management";
+
 const char kOmniboxDriveSuggestionsName[] =
     "Omnibox Google Drive Document suggestions";
 const char kOmniboxDriveSuggestionsDescriptions[] =
