@@ -68,8 +68,6 @@ base::Optional<SkColor> GetIncognitoColor(int id) {
       return gfx::kGoogleGrey600;
     case ThemeProperties::COLOR_CONTROL_BACKGROUND:
       return SK_ColorWHITE;
-    case ThemeProperties::COLOR_BOOKMARK_BAR_INSTRUCTIONS_TEXT:
-      return SkColorSetA(SK_ColorWHITE, 0x8A);
     case ThemeProperties::COLOR_TOOLBAR_CONTENT_AREA_SEPARATOR:
       return SkColorSetRGB(0x28, 0x28, 0x28);
     default:
@@ -251,8 +249,6 @@ SkColor ThemeProperties::GetDefaultColor(int id, bool incognito) {
       return gfx::kGoogleBlue600;
     case COLOR_CONTROL_BACKGROUND:
       return SK_ColorWHITE;
-    case COLOR_BOOKMARK_BAR_INSTRUCTIONS_TEXT:
-      return SkColorSetRGB(0x64, 0x64, 0x64);
     case COLOR_DETACHED_BOOKMARK_BAR_SEPARATOR:
       // We shouldn't reach this case because the color is calculated from
       // others.

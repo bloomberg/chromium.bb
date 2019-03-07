@@ -111,9 +111,6 @@ class ThemeProperties {
     // shelf.
     COLOR_TOOLBAR_VERTICAL_SEPARATOR,
 
-    // The color of the "instructions text" in an empty bookmarks bar.
-    COLOR_BOOKMARK_BAR_INSTRUCTIONS_TEXT,
-
     // Colors used for the detached (NTP) bookmark bar.
     COLOR_DETACHED_BOOKMARK_BAR_BACKGROUND,
     COLOR_DETACHED_BOOKMARK_BAR_SEPARATOR,

@@ -555,10 +555,6 @@ SkColor ThemeService::GetDefaultColor(int id, bool incognito) const {
           GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON, incognito),
           0x4D);
     }
-    case ThemeProperties::COLOR_BOOKMARK_BAR_INSTRUCTIONS_TEXT:
-      if (UsingDefaultTheme())
-        break;
-      return GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT, incognito);
     case ThemeProperties::COLOR_TOOLBAR_CONTENT_AREA_SEPARATOR:
       if (UsingDefaultTheme())
         break;
