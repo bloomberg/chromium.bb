@@ -7,6 +7,103 @@ option optimize_for = LITE_RUNTIME;
 
 package optimization_guide.proto;
 
+// Information about the hint that the client already has for a host.
+message MatchedHintInfo {
+  // Describes the granularity of the key field.
+  optional KeyRepresentation key_representation = 1;
+  // The key of the hint currently used for the host.
+  optional string key = 2;
+  // The version of the hint for this key already stored on the client.
+  optional int64 version = 3;
+}
+
+message HostInfo {
+  // Host that the client is requesting information for.
+  optional string host = 1;
+  // Information about the hint that the client already has for the host.
+  optional MatchedHintInfo matched_hint = 2;
+}
+
+// Request to return a set of hints that guide what optimizations to perform
+// on those hosts.
+message GetHintsRequest {
+  // Information about the set of hosts to retrieve hints for.
+  repeated HostInfo hosts = 1;
+
+  // The set of optimization types that the requesting client can support
+  // and perform.
+  //
+  // It is guaranteed that the response will only contain hints for
+  // optimizations present in this set.
+  repeated OptimizationType supported_optimizations = 2;
+
+  // Context in which this request is made.
+  optional RequestContext context = 3;
+}
+
+// Response to the GetHints request.
+message GetHintsResponse {
+  // An ordered list containing hints for key/optimization combinations.
+  //
+  // It is guaranteed that there will only be a single hint per key and key
+  // representation combination. These hints are intended to apply to a full
+  // page. It is expected that the client will use the Hint record with the
+  // most specific key that matches the main frame URL.
+  //
+  // Note, this list may contain multiple hints that apply to a page. For
+  // example, if there are hints for (HOST_SUFFIX,cnn.com) and
+  // (HOST_SUFFIX,sports.cnn.com), these may both apply to
+  // sports.cnn.com/foo. In this case, the client is expected to use the
+  // hints from (HOST_SUFFIX,sports.cnn.com).
+  repeated Hint hints = 1;
+
+  // The maximum duration in which the hints provided in this response should
+  // be retained in the client cache.
+  optional Duration max_cache_duration = 2;
+
+  // A set of hint keys to remove from the client cache.
+  //
+  // It is guaranteed that all entries in this list were provided by the client
+  // in the corresponding request's |hosts.matched_hint| fields.
+  //
+  // It is expected for the client to immediately stop using all hints contained
+  // in this field. Hints that are not present in |hints| or in this field
+  // should adhere to the client cache's existing expiration policy.
+  repeated MatchedHintInfo hints_to_remove = 3;
+}
+
+// A Duration represents a signed, fixed-length span of time represented
+// as a count of seconds and fractions of seconds at nanosecond
+// resolution. It is independent of any calendar and concepts like "day"
+// or "month". It is related to Timestamp in that the difference between
+// two Timestamp values is a Duration and it can be added or subtracted
+// from a Timestamp. Range is approximately +-10,000 years.
+// This is local definition matching server side duration.proto definition.
+message Duration {
+  // Signed seconds of the span of time. Must be from -315,576,000,000
+  // to +315,576,000,000 inclusive.
+  optional int64 seconds = 1;
+
+  // Signed fractions of a second at nanosecond resolution of the span
+  // of time. Durations less than one second are represented with a 0
+  // `seconds` field and a positive or negative `nanos` field. For durations
+  // of one second or more, a non-zero value for the `nanos` field must be
+  // of the same sign as the `seconds` field. Must be from -999,999,999
+  // to +999,999,999 inclusive.
+  optional int32 nanos = 2;
+}
+
+// Context in which the hints are requested.
+enum RequestContext {
+  reserved 1;
+  // Context not specified.
+  CONTEXT_UNSPECIFIED = 0;
+  // Requesting hints on page navigation.
+  CONTEXT_PAGE_NAVIGATION = 2;
+  // Requesting hints as part of a batch update.
+  CONTEXT_BATCH_UPDATE = 3;
+}
+
 enum OptimizationType {
   TYPE_UNSPECIFIED = 0;
   // This optimization blocks JavaScript on the page.

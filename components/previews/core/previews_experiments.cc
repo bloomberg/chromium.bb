@@ -111,6 +111,11 @@ size_t MaxInMemoryHostsInBlackList() {
                               "max_hosts_in_blacklist", 100);
 }
 
+size_t MaxOnePlatformUpdateHosts() {
+  return GetFieldTrialParamByFeatureAsInt(features::kPreviewsOnePlatformHints,
+                                          "max_oneplatform_update_hosts", 30);
+}
+
 int PerHostBlackListOptOutThreshold() {
   return GetParamValueAsInt(kClientSidePreviewsFieldTrial,
                             "per_host_opt_out_threshold", 2);
@@ -325,6 +330,10 @@ size_t GetMaxPageHintsInMemoryThreshhold() {
 
 bool IsOptimizationHintsEnabled() {
   return base::FeatureList::IsEnabled(features::kOptimizationHints);
+}
+
+bool IsOnePlatformHintsEnabled() {
+  return base::FeatureList::IsEnabled(features::kPreviewsOnePlatformHints);
 }
 
 int NoScriptPreviewsInflationPercent() {

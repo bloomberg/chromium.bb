@@ -8,7 +8,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_macros_local.h"
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
 #include "components/optimization_guide/hints_component_info.h"
@@ -17,6 +17,7 @@
 #include "components/previews/content/hint_cache_leveldb_store.h"
 #include "components/previews/content/previews_hints.h"
 #include "components/previews/content/previews_hints_util.h"
+#include "components/previews/content/previews_top_host_provider.h"
 #include "components/previews/content/previews_user_data.h"
 #include "components/previews/core/previews_constants.h"
 #include "components/previews/core/previews_switches.h"
@@ -81,7 +82,8 @@ ParseHintsProtoFromCommandLine() {
 PreviewsOptimizationGuide::PreviewsOptimizationGuide(
     optimization_guide::OptimizationGuideService* optimization_guide_service,
     const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
-    const base::FilePath& profile_path)
+    const base::FilePath& profile_path,
+    PreviewsTopHostProvider* previews_top_host_provider)
     : optimization_guide_service_(optimization_guide_service),
       ui_task_runner_(ui_task_runner),
       background_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
@@ -89,6 +91,7 @@ PreviewsOptimizationGuide::PreviewsOptimizationGuide(
       hint_cache_(std::make_unique<HintCache>(
           std::make_unique<HintCacheLevelDBStore>(profile_path,
                                                   background_task_runner_))),
+      previews_top_host_provider_(previews_top_host_provider),
       ui_weak_ptr_factory_(this) {
   DCHECK(optimization_guide_service_);
   hint_cache_->Initialize(
@@ -216,6 +219,20 @@ void PreviewsOptimizationGuide::OnHintCacheInitialized() {
                     hint_cache_->MaybeCreateComponentUpdateData(
                         base::Version(kManualConfigComponentVersion))));
   }
+
+  // If user is eligible for platform hints, currently controlled by a feature
+  // flag |kPreviewsOnePlatformHints|, start the OnePlatform client request.
+  // TODO(mcrouse): Add a check for user specific state in addition to the
+  // feature state:
+  // (1) Data saver should be enabled
+  // (2) Infobar notification does not need to be shown to the user.
+  if (previews::params::IsOnePlatformHintsEnabled()) {
+    // TODO(mcrouse): We will likely need to an async call and likely
+    // within a timer that will call GetOnePlatformClientHints().
+    // This is a temporary call for testing.
+    GetOnePlatformClientHints();
+  }
+
   // Register as an observer regardless of hint proto override usage. This is
   // needed as a signal during testing.
   optimization_guide_service_->AddObserver(this);
@@ -246,6 +263,22 @@ void PreviewsOptimizationGuide::OnHintsComponentAvailable(
       base::BindOnce(&PreviewsOptimizationGuide::UpdateHints,
                      ui_weak_ptr_factory_.GetWeakPtr(),
                      std::move(next_update_closure_)));
+}
+
+void PreviewsOptimizationGuide::GetOnePlatformClientHints() {
+  std::vector<std::string> top_hosts = previews_top_host_provider_->GetTopHosts(
+      previews::params::MaxOnePlatformUpdateHosts());
+  DCHECK_GE(previews::params::MaxOnePlatformUpdateHosts(), top_hosts.size());
+
+  LOCAL_HISTOGRAM_COUNTS_100("Previews.HintsFetcher.GetHintsRequest.HostCount",
+                             top_hosts.size());
+
+  // TODO(mcrouse) to build SimpleURLLoader to perform request from service
+  // for per-user client hints.
+  // Pass callback for when URLLoader request is successful to call
+  // PreviewOptimizationGuide::OnOnePlatformClientHintsReceived().
+
+  OnOnePlatformHintsReceived();
 }
 
 void PreviewsOptimizationGuide::UpdateHints(
@@ -282,6 +315,11 @@ void PreviewsOptimizationGuide::ListenForNextUpdateForTesting(
   DCHECK(next_update_closure_.is_null())
       << "Only one update closure is supported at a time";
   next_update_closure_ = std::move(next_update_closure);
+}
+
+void PreviewsOptimizationGuide::OnOnePlatformHintsReceived() {
+  // TODO(mcrouse):  Once hints reseponse received from server, will need to
+  // update the cache and store.
 }
 
 }  // namespace previews

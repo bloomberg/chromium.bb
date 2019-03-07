@@ -110,5 +110,9 @@ const base::Feature kDataSaverLiteModeRebranding{
 const base::Feature kPreviewsReloadsAreSoftOptOuts{
     "PreviewsReloadsAreSoftOptOuts", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables using the OnePlatform Client Hints requests.
+const base::Feature kPreviewsOnePlatformHints{
+    "PreviewsOnePlatformHints", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace previews

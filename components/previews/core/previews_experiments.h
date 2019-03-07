@@ -68,6 +68,10 @@ size_t MaxStoredHistoryLengthForHostIndifferentBlackList();
 // The maximum number of hosts allowed in the in memory black list.
 size_t MaxInMemoryHostsInBlackList();
 
+// The maximum number of hosts requested by the client to the OnePlatform
+// Service.
+size_t MaxOnePlatformUpdateHosts();
+
 // The number of recent navigations that were opted out of for a given host that
 // would trigger that host to be blacklisted.
 int PerHostBlackListOptOutThreshold();
@@ -166,6 +170,10 @@ size_t GetMaxPageHintsInMemoryThreshhold();
 
 // Whether server optimization hints are enabled.
 bool IsOptimizationHintsEnabled();
+
+// Returns true if the feature to fetch user-specific hints using
+// the OnePlatform API is enabled.
+bool IsOnePlatformHintsEnabled();
 
 // For estimating NoScript data savings, this is the percentage factor to
 // multiple by the network bytes for inflating the original_bytes count.
