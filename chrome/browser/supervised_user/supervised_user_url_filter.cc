@@ -26,6 +26,7 @@
 #include "chrome/browser/supervised_user/experimental/supervised_user_blacklist.h"
 #include "components/policy/core/browser/url_blacklist_manager.h"
 #include "components/policy/core/browser/url_util.h"
+#include "components/safe_search_api/safe_search/safe_search_url_checker_client.h"
 #include "components/url_matcher/url_matcher.h"
 #include "components/variations/service/variations_service.h"
 #include "content/public/browser/browser_thread.h"
@@ -551,7 +552,8 @@ void SupervisedUserURLFilter::InitAsyncURLChecker(
       country = variations_service->GetLatestCountry();
   }
   async_url_checker_ = std::make_unique<safe_search_api::URLChecker>(
-      std::move(url_loader_factory), traffic_annotation, country);
+      std::make_unique<safe_search_api::SafeSearchURLCheckerClient>(
+          std::move(url_loader_factory), traffic_annotation, country));
 }
 
 void SupervisedUserURLFilter::ClearAsyncURLChecker() {
