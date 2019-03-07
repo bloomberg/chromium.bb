@@ -3022,10 +3022,11 @@ crbug.com/893480 external/wpt/infrastructure/testdriver/actions/multiDevice.html
 
 # Hit a DCHECK
 crbug.com/918664 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/sizing/block-size-with-min-or-max-content-table-1a.html [ Failure Pass ]
+crbug.com/939181 external/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects.html [ Failure Crash ]
+crbug.com/939181 virtual/not-site-per-process/external/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects.html [ Failure Timeout ]
 
 # ====== New tests from wpt-importer added here ======
-crbug.com/626703 [ Mac10.10 ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-with-scroll-timeline-root-scroller.https.html [ Failure ]
-crbug.com/626703 [ Mac10.11 ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-with-scroll-timeline-root-scroller.https.html [ Failure ]
+crbug.com/626703 external/wpt/screen-orientation/onchange-event.html [ Timeout ]
 crbug.com/626703 external/wpt/html/semantics/forms/the-fieldset-element/accessibility/fieldset-div-display-contents-manual.html [ Skip ]
 crbug.com/626703 external/wpt/html/semantics/forms/the-fieldset-element/accessibility/role-manual.html [ Skip ]
 crbug.com/626703 external/wpt/html/semantics/forms/the-fieldset-element/accessibility/shadow-dom-manual.html [ Skip ]
