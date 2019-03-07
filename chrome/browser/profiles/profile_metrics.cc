@@ -15,6 +15,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
+#include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/chrome_signin_helper.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -236,7 +237,6 @@ void ProfileMetrics::LogProfileAddNewUser(ProfileAdd metric) {
 }
 
 void ProfileMetrics::LogProfileAvatarSelection(size_t icon_index) {
-  DCHECK(icon_index < NUM_PROFILE_AVATAR_METRICS);
   ProfileAvatar icon_name = AVATAR_UNKNOWN;
   switch (icon_index) {
     case 0:
@@ -320,11 +320,12 @@ void ProfileMetrics::LogProfileAvatarSelection(size_t icon_index) {
     case 26:
       icon_name = AVATAR_PLACEHOLDER;
       break;
-    case 28:
+    case SIZE_MAX:
       icon_name = AVATAR_GAIA;
       break;
-    default:  // We should never actually get here.
-      NOTREACHED();
+    default:
+      DCHECK(profiles::IsModernAvatarIconIndex(icon_index));
+      // TODO(crbug.com/937834): Log modern avatar selection.
       break;
   }
   UMA_HISTOGRAM_ENUMERATION("Profile.Avatar", icon_name,
@@ -391,7 +392,7 @@ void ProfileMetrics::LogProfileSwitch(
 
 void ProfileMetrics::LogProfileSwitchGaia(ProfileGaia metric) {
   if (metric == GAIA_OPT_IN)
-    LogProfileAvatarSelection(AVATAR_GAIA);
+    LogProfileAvatarSelection(SIZE_MAX);
   UMA_HISTOGRAM_ENUMERATION("Profile.SwitchGaiaPhotoSettings",
                             metric,
                             NUM_PROFILE_GAIA_METRICS);

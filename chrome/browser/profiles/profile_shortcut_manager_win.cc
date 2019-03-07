@@ -86,10 +86,10 @@ const int kProfileAvatarBadgeSize = kShortcutIconSize / 2;
 // Incrementing this number will cause profile icons to be regenerated on
 // profile startup (it should be incremented whenever the product/avatar icons
 // change, etc).
-const int kCurrentProfileIconVersion = 5;
+const int kCurrentProfileIconVersion = 6;
 
-// 2x sized profile avatar icons. Mirrors |kDefaultAvatarIconResources| in
-// profile_info_cache.cc.
+// 2x sized versions of the old profile avatar icons.
+// TODO(crbug.com/937834): Clean this up.
 const int kProfileAvatarIconResources2x[] = {
     IDR_PROFILE_AVATAR_2X_0,  IDR_PROFILE_AVATAR_2X_1,
     IDR_PROFILE_AVATAR_2X_2,  IDR_PROFILE_AVATAR_2X_3,
@@ -807,9 +807,6 @@ std::unique_ptr<ProfileShortcutManager> ProfileShortcutManager::Create(
 
 ProfileShortcutManagerWin::ProfileShortcutManagerWin(ProfileManager* manager)
     : profile_manager_(manager) {
-  DCHECK_EQ(base::size(kProfileAvatarIconResources2x),
-            profiles::GetDefaultAvatarIconCount());
-
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CREATED,
                  content::NotificationService::AllSources());
 
@@ -999,11 +996,18 @@ void ProfileShortcutManagerWin::CreateOrUpdateShortcutsForProfileAtPath(
       const size_t icon_index = entry->GetAvatarIconIndex();
       const int resource_id_1x =
           profiles::GetDefaultAvatarIconResourceIDAtIndex(icon_index);
-      const int resource_id_2x = kProfileAvatarIconResources2x[icon_index];
-      // Make a copy of the SkBitmaps to ensure that we can safely use the image
-      // data on the thread we post to.
+      // Make a copy of the SkBitmap to ensure that we can safely use the
+      // image data on the thread we post to.
       params.avatar_image_1x = GetImageResourceSkBitmapCopy(resource_id_1x);
-      params.avatar_image_2x = GetImageResourceSkBitmapCopy(resource_id_2x);
+
+      if (profiles::IsModernAvatarIconIndex(icon_index)) {
+        // Modern avatars are large(192px) by default, which makes them big
+        // enough for 2x.
+        params.avatar_image_2x = params.avatar_image_1x;
+      } else {
+        const int resource_id_2x = kProfileAvatarIconResources2x[icon_index];
+        params.avatar_image_2x = GetImageResourceSkBitmapCopy(resource_id_2x);
+      }
     }
   }
   base::CreateCOMSTATaskRunnerWithTraits({base::MayBlock()})

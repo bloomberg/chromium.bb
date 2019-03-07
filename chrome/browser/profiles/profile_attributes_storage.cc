@@ -195,7 +195,9 @@ base::string16 ProfileAttributesStorage::ChooseNameForNewProfile(
     name = l10n_util::GetStringFUTF16(IDS_NEW_NUMBERED_PROFILE_NAME,
                                       base::NumberToString16(name_index));
 #else
-    if (icon_index < profiles::GetGenericAvatarIconCount()) {
+    // TODO(crbug.com/937834): Clean up this code.
+    if (icon_index < profiles::GetGenericAvatarIconCount() ||
+        profiles::IsModernAvatarIconIndex(icon_index)) {
       name = l10n_util::GetStringFUTF16Int(IDS_NUMBERED_PROFILE_NAME,
                                            name_index);
     } else {

@@ -168,8 +168,8 @@ JNI_ProfileDownloader_GetCachedAvatarForPrimaryAccount(
           GetProfileAttributesWithPath(profile->GetPath(), &entry)) {
     gfx::Image avatar_image = entry->GetAvatarIcon();
     if (!avatar_image.IsEmpty() &&
-        avatar_image.Width() > profiles::kAvatarIconWidth &&
-        avatar_image.Height() > profiles::kAvatarIconHeight &&
+        avatar_image.Width() > profiles::kAvatarIconSize &&
+        avatar_image.Height() > profiles::kAvatarIconSize &&
         avatar_image.AsImageSkia().bitmap()) {
       jbitmap = gfx::ConvertToJavaBitmap(avatar_image.AsImageSkia().bitmap());
     }
