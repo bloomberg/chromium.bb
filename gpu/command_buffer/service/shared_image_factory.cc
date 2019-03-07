@@ -30,6 +30,8 @@
 #include "gpu/command_buffer/service/external_vk_image_factory.h"
 #elif defined(OS_ANDROID) && BUILDFLAG(ENABLE_VULKAN)
 #include "gpu/command_buffer/service/shared_image_backing_factory_ahardwarebuffer.h"
+#elif defined(OS_MACOSX)
+#include "gpu/command_buffer/service/shared_image_backing_factory_iosurface.h"
 #endif
 
 namespace gpu {
@@ -77,6 +79,11 @@ SharedImageFactory::SharedImageFactory(
           std::make_unique<SharedImageBackingFactoryAHB>(workarounds,
                                                          gpu_feature_info,
                                                          context_state)),
+#elif defined(OS_MACOSX)
+      interop_backing_factory_(
+          std::make_unique<SharedImageBackingFactoryIOSurface>(
+              workarounds,
+              gpu_feature_info)),
 #endif
       wrapped_sk_image_factory_(
           gpu_preferences.enable_raster_to_sk_image

@@ -332,8 +332,14 @@ target(link_target_type, "gles2_sources") {
   }
 
   if (is_mac) {
+    sources += [
+      "shared_image_backing_factory_iosurface.h",
+      "shared_image_backing_factory_iosurface.mm",
+    ]
+
     # Required by gles2_cmd_decoder.cc on Mac.
     libs = [
+      "Cocoa.framework",
       "IOSurface.framework",
       "OpenGL.framework",
     ]

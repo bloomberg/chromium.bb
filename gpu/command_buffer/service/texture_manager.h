@@ -43,6 +43,9 @@ class SharedImageBackingAHB;
 class SharedImageRepresentationGLTexture;
 class SharedImageRepresentationGLTextureAHB;
 class SharedImageRepresentationSkiaGLAHB;
+class SharedImageBackingIOSurface;
+class SharedImageRepresentationGLTextureIOSurface;
+class SharedImageRepresentationSkiaIOSurface;
 
 namespace gles2 {
 class GLStreamTextureImage;
@@ -375,6 +378,9 @@ class GPU_GLES2_EXPORT Texture final : public TextureBase {
   friend class gpu::SharedImageBackingAHB;
   friend class gpu::SharedImageRepresentationGLTextureAHB;
   friend class gpu::SharedImageRepresentationSkiaGLAHB;
+  friend class gpu::SharedImageBackingIOSurface;
+  friend class gpu::SharedImageRepresentationGLTextureIOSurface;
+  friend class gpu::SharedImageRepresentationSkiaIOSurface;
   friend class TextureDefinition;
   friend class TextureManager;
   friend class TextureRef;
