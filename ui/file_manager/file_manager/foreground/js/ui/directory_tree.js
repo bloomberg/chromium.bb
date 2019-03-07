@@ -918,7 +918,7 @@ EntryListItem.prototype.updateSubDirectories = function(
   const onSuccess = (entries) => {
     this.entries_ = entries;
     this.updateSubElementsFromList(recursive);
-    if (this.entries_.length > 0 && this.selected) {
+    if (this.entries_.length > 0) {
       this.expanded = true;
     }
     opt_successCallback && opt_successCallback();

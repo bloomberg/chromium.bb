@@ -931,8 +931,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("myFilesFolderRename"),
         TestCase("myFilesFolderRename").EnableMyFilesVolume(),
         TestCase("myFilesUpdatesChildren"),
-        TestCase("myFilesUpdatesChildren").EnableMyFilesVolume(),
-        TestCase("myFilesExpandWhenSelected").EnableMyFilesVolume()));
+        TestCase("myFilesUpdatesChildren").EnableMyFilesVolume()));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     InstallLinuxPackageDialog, /* install_linux_package_dialog.js */

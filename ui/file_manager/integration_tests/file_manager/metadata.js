@@ -121,7 +121,7 @@ testcase.metadataDrive = async () => {
   // Navigate 2 folders deep, because navigating in directory tree might
   // trigger further metadata fetches.
   await remoteCall.navigateWithDirectoryTree(
-      appId, '/root/photos1/folder1', 'My Drive', 'drive');
+      appId, '/root/photos1/folder1', 'My Drive');
 
   // Fetch the metadata stats.
   const metadataStats =
@@ -216,12 +216,11 @@ testcase.metadataLargeDrive = async () => {
 
   // Open Files app on Drive.
   const appId = await setupAndWaitUntilReady(RootPath.DRIVE, entries, entries);
-  console.log('setupAndWaitUntilReady finished!');
 
   // Navigate only 1 folder deep,which is slightly different from
   // metadatatDrive test.
   await remoteCall.navigateWithDirectoryTree(
-      appId, '/root/folder1', 'My Drive', 'drive');
+      appId, '/root/folder1', 'My Drive');
 
   // Wait for the metadata stats to reach the desired count.
   // File list component, doesn't display all files at once for performance
@@ -288,7 +287,7 @@ testcase.metadataTeamDrives = async () => {
 
   // Navigate to Team Drives root.
   await remoteCall.navigateWithDirectoryTree(
-      appId, '/team_drives', 'Team Drives', 'drive');
+      appId, '/team_drives', 'Team Drives');
 
   // Expand Team Drives, because expanding might need metadata.
   const expandIcon = teamDriveTreeItem + ' > .tree-row > .expand-icon';
