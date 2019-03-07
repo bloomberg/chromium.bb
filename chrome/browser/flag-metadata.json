@@ -495,8 +495,8 @@
   },
   {
     "name": "debug-packed-apps",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "benwells", "raymes" ],
+    "expiry_milestone": 88
   },
   {
     "name": "device-discovery-notifications",
