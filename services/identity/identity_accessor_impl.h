@@ -46,13 +46,9 @@ class IdentityAccessorImpl : public mojom::IdentityAccessor,
 
    private:
     // Invoked after access token request completes (successful or not).
+    // Completes the pending access token request by calling back the consumer.
     void OnTokenRequestCompleted(GoogleServiceAuthError error,
                                  AccessTokenInfo access_token_info);
-
-    // Completes the pending access token request by calling back the consumer.
-    void OnRequestCompleted(const base::Optional<std::string>& access_token,
-                            base::Time expiration_time,
-                            const GoogleServiceAuthError& error);
 
     std::unique_ptr<AccessTokenFetcher> access_token_fetcher_;
     GetAccessTokenCallback consumer_callback_;
