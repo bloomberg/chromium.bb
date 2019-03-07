@@ -48,7 +48,7 @@ cca.views.camera.timertick.start = function() {
         tickTimeout = null;
       }
       cca.util.animateCancel(tickMsg);
-      reject();
+      reject(new Error('cancel'));
     };
 
     var tickCounter = cca.state.get('_10sec') ? 10 : 3;

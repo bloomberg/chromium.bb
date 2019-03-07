@@ -240,42 +240,54 @@ body.tablet-landscape .actions-group button {
   margin: 8px 0;
 }
 
-#shutter {
-  background-image: url(../images/camera_shutter_photo_start.svg);
+button.shutter {
+  display: none;
   height: 72px;
   width: 72px;
   z-index: 1;  /* On top of transforming switch-mode buttons. */
 }
 
-#shutter:hover {
+body.record-mode:not(.taking) #start-recordvideo,
+body.record-mode.taking #stop-recordvideo,
+body:not(.taking):not(.record-mode) #start-takephoto,
+body:not(.timer):not(.record-mode) #start-takephoto,
+body.taking.timer:not(.record-mode) #stop-takephoto {
+  display: inline-block;
+}
+
+#start-takephoto {
+  background-image: url(../images/camera_shutter_photo_start.svg);
+}
+
+#start-takephoto:hover {
   background-image: url(../images/camera_shutter_photo_start_hover.svg);
 }
 
-#shutter:active {
+#start-takephoto:active {
   background-image: url(../images/camera_shutter_photo_start_active.svg);
 }
 
-body.taking.timer #shutter {
+#stop-takephoto {
   background-image: url(../images/camera_shutter_photo_stop.svg);
 }
 
-body.taking.timer #shutter:hover {
+#stop-takephoto:hover {
   background-image: url(../images/camera_shutter_photo_stop_hover.svg);
 }
 
-body.record-mode #shutter {
+#start-recordvideo {
   background-image: url(../images/camera_shutter_recording_start.svg);
 }
 
-body.record-mode #shutter:hover {
+#start-recordvideo:hover {
   background-image: url(../images/camera_shutter_recording_start_hover.svg);
 }
 
-body.record-mode.taking #shutter {
+#stop-recordvideo {
   background-image: url(../images/camera_shutter_recording_stop.svg);
 }
 
-body.record-mode.taking #shutter:hover {
+#stop-recordvideo:hover {
   background-image: url(../images/camera_shutter_recording_stop_hover.svg);
 }
 
