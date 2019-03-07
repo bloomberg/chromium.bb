@@ -4,19 +4,24 @@
 
 #include "services/image_annotation/annotator.h"
 
+#include <cstring>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/optional.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"
 #include "services/data_decoder/public/cpp/test_data_decoder_service.h"
 #include "services/data_decoder/public/mojom/constants.mojom.h"
 #include "services/data_decoder/public/mojom/json_parser.mojom.h"
+#include "services/image_annotation/image_annotation_metrics.h"
 #include "services/image_annotation/public/mojom/image_annotation.mojom.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader.mojom-shared.h"
@@ -30,10 +35,12 @@ namespace image_annotation {
 
 namespace {
 
+using base::Bucket;
 using testing::ElementsAre;
 using testing::Eq;
 using testing::IsEmpty;
 using testing::SizeIs;
+using testing::UnorderedElementsAre;
 
 constexpr char kTestServerUrl[] = "https://ia-pa.googleapis.com/v1/annotation";
 
@@ -97,6 +104,7 @@ constexpr char kSuccessResponse[] = R"(
     {
       "imageId": "https://www.example.com/image1.jpg",
       "engineResults": [{
+        "status": {},
         "ocrEngine": {
           "ocrRegions": [
             {
@@ -140,7 +148,8 @@ constexpr char kErrorResponse[] = R"(
       "status": {
         "code": 8,
         "message": "Resource exhaused"
-      }
+      },
+      "ocrEngine": {}
     }]
   }]
 }
@@ -156,6 +165,7 @@ constexpr char kBatchResponse[] = R"(
     {
       "imageId": "https://www.example.com/image2.jpg",
       "engineResults": [{
+        "status": {},
         "ocrEngine": {
           "ocrRegions": [{
             "words": [{
@@ -169,6 +179,7 @@ constexpr char kBatchResponse[] = R"(
     {
       "imageId": "https://www.example.com/image1.jpg",
       "engineResults": [{
+        "status": {},
         "ocrEngine": {
           "ocrRegions": [{
             "words": [{
@@ -185,7 +196,8 @@ constexpr char kBatchResponse[] = R"(
         "status": {
           "code": 8,
           "message": "Resource exhaused"
-        }
+        },
+        "ocrEngine": {}
       }]
     }
   ]
@@ -347,6 +359,7 @@ TEST(AnnotatorTest, SuccessAndCache) {
   TestServerURLLoaderFactory test_url_factory(
       "https://ia-pa.googleapis.com/v1/");
   data_decoder::TestDataDecoderService test_dd_service;
+  base::HistogramTester histogram_tester;
 
   Annotator annotator(
       GURL(kTestServerUrl), std::string() /* api_key */, kThrottle,
@@ -378,15 +391,40 @@ TEST(AnnotatorTest, SuccessAndCache) {
     test_task_env.RunUntilIdle();
 
     // HTTP request should have been made.
+    const std::string request =
+        ReformatJson(base::StringPrintf(kTemplateRequest, kImage1Url, "AQID"));
     test_url_factory.ExpectRequestAndSimulateResponse(
-        "annotation", {} /* expected_headers */,
-        ReformatJson(base::StringPrintf(kTemplateRequest, kImage1Url, "AQID")),
-        kSuccessResponse, net::HTTP_OK);
+        "annotation", {} /* expected_headers */, request, kSuccessResponse,
+        net::HTTP_OK);
     test_task_env.RunUntilIdle();
 
     // HTTP response should have completed and callback should have been called.
     ASSERT_THAT(error, Eq(base::nullopt));
     EXPECT_THAT(ocr_text, Eq("Region 1\nRegion 2"));
+
+    // Metrics should have been logged for the major actions of the service.
+    histogram_tester.ExpectUniqueSample(metrics_internal::kCacheHit, false, 1);
+    histogram_tester.ExpectUniqueSample(metrics_internal::kPixelFetchSuccess,
+                                        true, 1);
+    histogram_tester.ExpectUniqueSample(metrics_internal::kPixelFetchSuccess,
+                                        true, 1);
+    histogram_tester.ExpectUniqueSample(metrics_internal::kServerRequestSize,
+                                        request.size() / 1024, 1);
+    histogram_tester.ExpectUniqueSample(metrics_internal::kServerNetError,
+                                        net::Error::OK, 1);
+    histogram_tester.ExpectUniqueSample(
+        metrics_internal::kServerHttpResponseCode, net::HTTP_OK, 1);
+    histogram_tester.ExpectUniqueSample(metrics_internal::kServerResponseSize,
+                                        std::strlen(kSuccessResponse), 1);
+    histogram_tester.ExpectUniqueSample(
+        base::StringPrintf(metrics_internal::kAnnotationStatus, "Ocr"),
+        0 /* OK RPC status */, 1);
+    histogram_tester.ExpectUniqueSample(
+        base::StringPrintf(metrics_internal::kAnnotationConfidence, "Ocr"), 100,
+        1);
+    histogram_tester.ExpectUniqueSample(
+        base::StringPrintf(metrics_internal::kAnnotationEmpty, "Ocr"), false,
+        1);
   }
 
   // Second call uses cached results.
@@ -404,6 +442,10 @@ TEST(AnnotatorTest, SuccessAndCache) {
     // Results should have been directly returned without any server call.
     ASSERT_THAT(error, Eq(base::nullopt));
     EXPECT_THAT(ocr_text, Eq("Region 1\nRegion 2"));
+
+    // Metrics should have been logged for a cache hit.
+    EXPECT_THAT(histogram_tester.GetAllSamples(metrics_internal::kCacheHit),
+                UnorderedElementsAre(Bucket(false, 1), Bucket(true, 1)));
   }
 }
 
@@ -414,6 +456,7 @@ TEST(AnnotatorTest, HttpError) {
   TestServerURLLoaderFactory test_url_factory(
       "https://ia-pa.googleapis.com/v1/");
   data_decoder::TestDataDecoderService test_dd_service;
+  base::HistogramTester histogram_tester;
 
   Annotator annotator(
       GURL(kTestServerUrl), std::string() /* api_key */, kThrottle,
@@ -451,6 +494,14 @@ TEST(AnnotatorTest, HttpError) {
   // HTTP response should have completed and callback should have been called.
   EXPECT_THAT(error, Eq(mojom::AnnotateImageError::kFailure));
   EXPECT_THAT(ocr_text, Eq(base::nullopt));
+
+  // Metrics about the HTTP request failure should have been logged.
+  histogram_tester.ExpectUniqueSample(metrics_internal::kServerNetError,
+                                      net::Error::ERR_FAILED, 1);
+  histogram_tester.ExpectUniqueSample(metrics_internal::kServerHttpResponseCode,
+                                      net::HTTP_INTERNAL_SERVER_ERROR, 1);
+  histogram_tester.ExpectUniqueSample(metrics_internal::kClientResult,
+                                      ClientResult::kFailed, 1);
 }
 
 // Test that backend failure is gracefully handled.
@@ -460,6 +511,7 @@ TEST(AnnotatorTest, BackendError) {
   TestServerURLLoaderFactory test_url_factory(
       "https://ia-pa.googleapis.com/v1/");
   data_decoder::TestDataDecoderService test_dd_service;
+  base::HistogramTester histogram_tester;
 
   Annotator annotator(
       GURL(kTestServerUrl), std::string() /* api_key */, kThrottle,
@@ -498,6 +550,17 @@ TEST(AnnotatorTest, BackendError) {
   // with an error status.
   EXPECT_THAT(error, Eq(mojom::AnnotateImageError::kFailure));
   EXPECT_THAT(ocr_text, Eq(base::nullopt));
+
+  // Metrics about the backend failure should have been logged.
+  histogram_tester.ExpectUniqueSample(metrics_internal::kServerNetError,
+                                      net::Error::OK, 1);
+  histogram_tester.ExpectUniqueSample(metrics_internal::kServerHttpResponseCode,
+                                      net::HTTP_OK, 1);
+  histogram_tester.ExpectUniqueSample(
+      base::StringPrintf(metrics_internal::kAnnotationStatus, "Ocr"),
+      8 /* Failed RPC status */, 1);
+  histogram_tester.ExpectUniqueSample(metrics_internal::kClientResult,
+                                      ClientResult::kFailed, 1);
 }
 
 // Test that server failure (i.e. nonsense response) is gracefully handled.
@@ -507,6 +570,7 @@ TEST(AnnotatorTest, ServerError) {
   TestServerURLLoaderFactory test_url_factory(
       "https://ia-pa.googleapis.com/v1/");
   data_decoder::TestDataDecoderService test_dd_service;
+  base::HistogramTester histogram_tester;
 
   Annotator annotator(
       GURL(kTestServerUrl), std::string() /* api_key */, kThrottle,
@@ -545,6 +609,16 @@ TEST(AnnotatorTest, ServerError) {
   // with an error status.
   EXPECT_THAT(error, Eq(mojom::AnnotateImageError::kFailure));
   EXPECT_THAT(ocr_text, Eq(base::nullopt));
+
+  // Metrics about the invalid response format should have been logged.
+  histogram_tester.ExpectUniqueSample(metrics_internal::kServerNetError,
+                                      net::Error::OK, 1);
+  histogram_tester.ExpectUniqueSample(metrics_internal::kServerHttpResponseCode,
+                                      net::HTTP_OK, 1);
+  histogram_tester.ExpectUniqueSample(metrics_internal::kJsonParseSuccess,
+                                      false, 1);
+  histogram_tester.ExpectUniqueSample(metrics_internal::kClientResult,
+                                      ClientResult::kFailed, 1);
 }
 
 // Test that work is reassigned if a processor fails.
@@ -554,6 +628,7 @@ TEST(AnnotatorTest, ProcessorFails) {
   TestServerURLLoaderFactory test_url_factory(
       "https://ia-pa.googleapis.com/v1/");
   data_decoder::TestDataDecoderService test_dd_service;
+  base::HistogramTester histogram_tester;
 
   Annotator annotator(
       GURL(kTestServerUrl), std::string() /* api_key */, kThrottle,
@@ -609,6 +684,15 @@ TEST(AnnotatorTest, ProcessorFails) {
                                  base::nullopt, base::nullopt));
   EXPECT_THAT(ocr_text, ElementsAre(base::nullopt, "Region 1\nRegion 2",
                                     "Region 1\nRegion 2"));
+
+  // Metrics about the pixel fetch failure should have been logged.
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples(metrics_internal::kPixelFetchSuccess),
+      UnorderedElementsAre(Bucket(false, 1), Bucket(true, 1)));
+  EXPECT_THAT(histogram_tester.GetAllSamples(metrics_internal::kClientResult),
+              UnorderedElementsAre(
+                  Bucket(static_cast<int32_t>(ClientResult::kFailed), 1),
+                  Bucket(static_cast<int32_t>(ClientResult::kSucceeded), 2)));
 }
 
 // Test that work is reassigned if processor dies.
@@ -618,6 +702,7 @@ TEST(AnnotatorTest, ProcessorDies) {
   TestServerURLLoaderFactory test_url_factory(
       "https://ia-pa.googleapis.com/v1/");
   data_decoder::TestDataDecoderService test_dd_service;
+  base::HistogramTester histogram_tester;
 
   Annotator annotator(
       GURL(kTestServerUrl), std::string() /* api_key */, kThrottle,
@@ -672,6 +757,12 @@ TEST(AnnotatorTest, ProcessorDies) {
                                  base::nullopt, base::nullopt));
   EXPECT_THAT(ocr_text, ElementsAre(base::nullopt, "Region 1\nRegion 2",
                                     "Region 1\nRegion 2"));
+
+  // Metrics about the client cancelation should have been logged.
+  EXPECT_THAT(histogram_tester.GetAllSamples(metrics_internal::kClientResult),
+              UnorderedElementsAre(
+                  Bucket(static_cast<int32_t>(ClientResult::kCanceled), 1),
+                  Bucket(static_cast<int32_t>(ClientResult::kSucceeded), 2)));
 }
 
 // Test that multiple concurrent requests are handled in the same batch.
@@ -681,6 +772,7 @@ TEST(AnnotatorTest, ConcurrentSameBatch) {
   TestServerURLLoaderFactory test_url_factory(
       "https://ia-pa.googleapis.com/v1/");
   data_decoder::TestDataDecoderService test_dd_service;
+  base::HistogramTester histogram_tester;
 
   Annotator annotator(
       GURL(kTestServerUrl), std::string() /* api_key */, kThrottle,
@@ -734,6 +826,26 @@ TEST(AnnotatorTest, ConcurrentSameBatch) {
   ASSERT_THAT(error, ElementsAre(base::nullopt, base::nullopt,
                                  mojom::AnnotateImageError::kFailure));
   EXPECT_THAT(ocr_text, ElementsAre("1", "2", base::nullopt));
+
+  // Metrics should have been logged for a single server response with multiple
+  // results included.
+  histogram_tester.ExpectUniqueSample(metrics_internal::kServerNetError,
+                                      net::Error::OK, 1);
+  histogram_tester.ExpectUniqueSample(metrics_internal::kServerHttpResponseCode,
+                                      net::HTTP_OK, 1);
+  EXPECT_THAT(histogram_tester.GetAllSamples(base::StringPrintf(
+                  metrics_internal::kAnnotationStatus, "Ocr")),
+              UnorderedElementsAre(Bucket(8 /* Failed RPC status */, 1),
+                                   Bucket(0 /* OK RPC status */, 2)));
+  histogram_tester.ExpectUniqueSample(
+      base::StringPrintf(metrics_internal::kAnnotationConfidence, "Ocr"), 100,
+      2);
+  histogram_tester.ExpectUniqueSample(
+      base::StringPrintf(metrics_internal::kAnnotationEmpty, "Ocr"), false, 2);
+  EXPECT_THAT(histogram_tester.GetAllSamples(metrics_internal::kClientResult),
+              UnorderedElementsAre(
+                  Bucket(static_cast<int32_t>(ClientResult::kFailed), 1),
+                  Bucket(static_cast<int32_t>(ClientResult::kSucceeded), 2)));
 }
 
 // Test that multiple concurrent requests are handled in separate batches.
@@ -743,6 +855,7 @@ TEST(AnnotatorTest, ConcurrentSeparateBatches) {
   TestServerURLLoaderFactory test_url_factory(
       "https://ia-pa.googleapis.com/v1/");
   data_decoder::TestDataDecoderService test_dd_service;
+  base::HistogramTester histogram_tester;
 
   Annotator annotator(
       GURL(kTestServerUrl), std::string() /* api_key */, kThrottle,
@@ -798,6 +911,7 @@ TEST(AnnotatorTest, ConcurrentSeparateBatches) {
            "results": [{
              "imageId": "https://www.example.com/image1.jpg",
              "engineResults": [{
+               "status": {},
                "ocrEngine": {
                  "ocrRegions": [{
                    "words": [{
@@ -822,6 +936,7 @@ TEST(AnnotatorTest, ConcurrentSeparateBatches) {
            "results": [{
              "imageId": "https://www.example.com/image2.jpg",
              "engineResults": [{
+               "status": {},
                "ocrEngine": {
                  "ocrRegions": [{
                    "words": [{
@@ -840,6 +955,22 @@ TEST(AnnotatorTest, ConcurrentSeparateBatches) {
   // Annotator should have called each callback with its corresponding text.
   ASSERT_THAT(error, ElementsAre(base::nullopt, base::nullopt));
   EXPECT_THAT(ocr_text, ElementsAre("1", "2"));
+
+  // Metrics should have been logged for two server responses.
+  histogram_tester.ExpectUniqueSample(metrics_internal::kServerNetError,
+                                      net::Error::OK, 2);
+  histogram_tester.ExpectUniqueSample(metrics_internal::kServerHttpResponseCode,
+                                      net::HTTP_OK, 2);
+  histogram_tester.ExpectUniqueSample(
+      base::StringPrintf(metrics_internal::kAnnotationStatus, "Ocr"),
+      0 /* OK RPC status */, 2);
+  histogram_tester.ExpectUniqueSample(
+      base::StringPrintf(metrics_internal::kAnnotationConfidence, "Ocr"), 100,
+      2);
+  histogram_tester.ExpectUniqueSample(
+      base::StringPrintf(metrics_internal::kAnnotationEmpty, "Ocr"), false, 2);
+  histogram_tester.ExpectUniqueSample(metrics_internal::kClientResult,
+                                      ClientResult::kSucceeded, 2);
 }
 
 // Test that work is not duplicated if it is already ongoing.
@@ -849,6 +980,7 @@ TEST(AnnotatorTest, DuplicateWork) {
   TestServerURLLoaderFactory test_url_factory(
       "https://ia-pa.googleapis.com/v1/");
   data_decoder::TestDataDecoderService test_dd_service;
+  base::HistogramTester histogram_tester;
 
   Annotator annotator(
       GURL(kTestServerUrl), std::string() /* api_key */, kThrottle,
@@ -933,6 +1065,10 @@ TEST(AnnotatorTest, DuplicateWork) {
   EXPECT_THAT(ocr_text,
               ElementsAre("Region 1\nRegion 2", "Region 1\nRegion 2",
                           "Region 1\nRegion 2", "Region 1\nRegion 2"));
+
+  // Metrics should have been logged for a single pixel fetch.
+  histogram_tester.ExpectUniqueSample(metrics_internal::kPixelFetchSuccess,
+                                      true, 1);
 }
 
 // Test that the specified API key is sent, but only to Google-associated server

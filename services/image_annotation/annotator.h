@@ -115,7 +115,7 @@ class Annotator : public mojom::Annotator {
   // image processor had some ongoing.
   void RemoveRequestInfo(const std::string& source_id,
                          RequestInfoList::iterator request_info_it,
-                         mojom::AnnotateImageError error);
+                         bool canceled);
 
   // Called when a local handler returns compressed image data for the given
   // source ID.

@@ -8,6 +8,7 @@
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "services/image_annotation/image_annotation_metrics.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 
@@ -37,6 +38,11 @@ std::vector<uint8_t> ScaleAndEncodeImage(const SkBitmap& image,
                                          const int max_pixels,
                                          const int jpg_quality) {
   const int num_pixels = image.width() * image.height();
+  ReportSourcePixelCount(num_pixels);
+
+  if (num_pixels == 0)
+    return {};
+
   const SkBitmap scaled_image =
       num_pixels <= max_pixels
           ? image
@@ -45,6 +51,7 @@ std::vector<uint8_t> ScaleAndEncodeImage(const SkBitmap& image,
   std::vector<uint8_t> encoded;
   if (!gfx::JPEGCodec::Encode(scaled_image, jpg_quality, &encoded))
     encoded.clear();
+  ReportEncodedJpegSize(encoded.size());
 
   return encoded;
 }
