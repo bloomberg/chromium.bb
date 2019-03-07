@@ -678,6 +678,7 @@ _ANDROID_SPECIFIC_PYDEPS_FILES = [
     'build/android/gyp/generate_linker_version_script.pydeps',
     'build/android/gyp/ijar.pydeps',
     'build/android/gyp/java_cpp_enum.pydeps',
+    'build/android/gyp/java_cpp_strings.pydeps',
     'build/android/gyp/javac.pydeps',
     'build/android/gyp/jinja_template.pydeps',
     'build/android/gyp/lint.pydeps',

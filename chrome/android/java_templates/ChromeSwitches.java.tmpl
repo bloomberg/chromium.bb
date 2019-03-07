@@ -8,13 +8,9 @@ package org.chromium.chrome.browser;
  * Contains all of the command line switches that are specific to the chrome/
  * portion of Chromium on Android.
  */
-public abstract class ChromeSwitches {
+public abstract class ChromeSwitches {{
     // Switches used from Java.  Please continue switch style used Chrome where
     // options-have-hyphens and are_not_split_with_underscores.
-
-    /** Mimic a low end device */
-    public static final String ENABLE_ACCESSIBILITY_TAB_SWITCHER =
-            "enable-accessibility-tab-switcher";
 
     /** Whether fullscreen support is disabled (auto hiding controls, etc...). */
     public static final String DISABLE_FULLSCREEN = "disable-fullscreen";
@@ -68,28 +64,13 @@ public abstract class ChromeSwitches {
     public static final String DISABLE_LOFI_SNACKBAR = "disable-lo-fi-snackbar";
 
     /**
-     * Forces the update state to be set to the given state if the value is {@link
-     * org.chromium.chrome.browser.omaha.UpdateMenuItemHelper#NONE_SWITCH_VALUE}, {@link
-     * org.chromium.chrome.browser.omaha.UpdateMenuItemHelper#UPDATE_AVAILABLE_SWITCH_VALUE},
-     * {@link
-     * org.chromium.chrome.browser.omaha.UpdateMenuItemHelper#UNSUPPORTED_OS_VERSION_SWITCH_VALUE}.
+     * Forces the update state to be set to the given state if the value is {{@link
+     * org.chromium.chrome.browser.omaha.UpdateMenuItemHelper#NONE_SWITCH_VALUE}}, {{@link
+     * org.chromium.chrome.browser.omaha.UpdateMenuItemHelper#UPDATE_AVAILABLE_SWITCH_VALUE}},
+     * {{@link
+     * org.chromium.chrome.browser.omaha.UpdateMenuItemHelper#UNSUPPORTED_OS_VERSION_SWITCH_VALUE}}.
      */
     public static final String FORCE_UPDATE_MENU_UPDATE_TYPE = "force-update-menu-type";
-
-    /**
-     * Forces the update menu badge to show. This requires the update type to be valid as well.
-     *
-     * @see #FORCE_UPDATE_MENU_UPDATE_TYPE
-     */
-    public static final String FORCE_SHOW_UPDATE_MENU_BADGE = "force-show-update-menu-badge";
-
-    /**
-     * Sets the market URL for Chrome for use in testing. This requires setting {@link
-     * #FORCE_UPDATE_MENU_UPDATE_TYPE} to {@link
-     * org.chromium.chrome.browser.omaha.UpdateMenuItemHelper#UPDATE_AVAILABLE_SWITCH_VALUE}.
-     * @see #FORCE_UPDATE_MENU_UPDATE_TYPE
-     */
-    public static final String MARKET_URL_FOR_TESTING = "market-url-for-testing";
 
     /**
      * Disable multiwindow tab merging for testing.
@@ -120,18 +101,6 @@ public abstract class ChromeSwitches {
      * Native switch - switches::kGoogleBaseURL.
      */
     public static final String GOOGLE_BASE_URL = "google-base-url";
-
-    /**
-     * Disable domain reliability
-     * Native switch - switches::kDisableDomainReliability
-     */
-    public static final String DISABLE_DOMAIN_RELIABILITY = "disable-domain-reliability";
-
-    /**
-     * Specifies Android phone page loading progress bar animation.
-     * Native switch - switches::kProgressBarAnimation
-     */
-    public static final String PROGRESS_BAR_ANIMATION = "progress-bar-animation";
 
     /**
      * Enables overscroll of the on screen keyboard. With this flag on, the OSK will only resize the
@@ -229,6 +198,8 @@ public abstract class ChromeSwitches {
     public static final String DISABLE_GOOGLE_PLAY_SERVICES_FOR_TESTING =
             "disable-google-play-services-for-testing";
 
+{NATIVE_STRINGS}
+
     // Prevent instantiation.
-    private ChromeSwitches() {}
-}
+    private ChromeSwitches() {{}}
+}}

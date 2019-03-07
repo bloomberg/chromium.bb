@@ -8,7 +8,7 @@ package org.chromium.content_public.common;
  * Contains all of the command line switches that are specific to the content/
  * portion of Chromium on Android.
  */
-public final class ContentSwitches {
+public final class ContentSwitches {{
     // Tell Java to use the official command line, loaded from the
     // official-command-line.xml files.  WARNING this is not done
     // immediately on startup, so early running Java code will not see
@@ -27,9 +27,6 @@ public final class ContentSwitches {
     // Change the url of the JavaScript that gets injected when accessibility mode is enabled.
     public static final String ACCESSIBILITY_JAVASCRIPT_URL = "accessibility-js-url";
 
-    // Sets the ISO country code that will be used for phone number detection.
-    public static final String NETWORK_COUNTRY_ISO = "network-country-iso";
-
     // How much of the browser controls need to be shown before they will auto show.
     public static final String TOP_CONTROLS_SHOW_THRESHOLD = "top-controls-show-threshold";
 
@@ -39,15 +36,8 @@ public final class ContentSwitches {
     // Native switch - chrome_switches::kDisablePopupBlocking
     public static final String DISABLE_POPUP_BLOCKING = "disable-popup-blocking";
 
-    // Native switch kDisableGestureRequirementForPresentation
-    public static final String DISABLE_GESTURE_REQUIREMENT_FOR_PRESENTATION =
-            "disable-gesture-requirement-for-presentation";
-
     // Native switch kRendererProcessLimit
     public static final String RENDER_PROCESS_LIMIT = "renderer-process-limit";
-
-    // Native switch kInProcessGPU
-    public static final String IN_PROCESS_GPU = "in-process-gpu";
 
     // Native switch kProcessType
     public static final String SWITCH_PROCESS_TYPE = "type";
@@ -74,6 +64,8 @@ public final class ContentSwitches {
     // Native switch value kNetworkSandbox
     public static final String NETWORK_SANDBOX_TYPE = "network";
 
+{NATIVE_STRINGS}
+
     // Prevent instantiation.
-    private ContentSwitches() {}
-}
+    private ContentSwitches() {{}}
+}}

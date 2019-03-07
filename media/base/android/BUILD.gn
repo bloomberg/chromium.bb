@@ -154,6 +154,13 @@ if (is_android) {
     ]
   }
 
+  java_cpp_strings("java_switches") {
+    sources = [
+      "//media/base/media_switches.cc",
+    ]
+    template = "//media/base/android/java_templates/MediaSwitches.java.tmpl"
+  }
+
   android_resources("media_java_resources") {
     custom_package = "org.chromium.media"
     resource_dirs = [ "java/res" ]
@@ -167,6 +174,7 @@ if (is_android) {
     ]
     srcjar_deps = [
       ":java_enums",
+      ":java_switches",
       "//media/base:java_enums",
     ]
     java_files = [
@@ -187,7 +195,6 @@ if (is_android) {
       "java/src/org/chromium/media/MediaPlayerBridge.java",
       "java/src/org/chromium/media/MediaPlayerListener.java",
       "java/src/org/chromium/media/MediaServerCrashListener.java",
-      "java/src/org/chromium/media/MediaSwitches.java",
     ]
   }
 

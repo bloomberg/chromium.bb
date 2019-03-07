@@ -129,24 +129,27 @@ UBSAN_OPTIONS = (
 
 # TODO(jbudorick): Rework this into testing/buildbot/
 PYTHON_UNIT_TEST_SUITES = {
-  'pylib_py_unittests': {
-    'path': os.path.join(DIR_SOURCE_ROOT, 'build', 'android'),
-    'test_modules': [
-      'devil.android.device_utils_test',
-      'devil.android.md5sum_test',
-      'devil.utils.cmd_helper_test',
-      'pylib.results.json_results_test',
-      'pylib.utils.proguard_test',
-    ]
-  },
-  'gyp_py_unittests': {
-    'path': os.path.join(DIR_SOURCE_ROOT, 'build', 'android', 'gyp'),
-    'test_modules': [
-      'java_cpp_enum_tests',
-      'java_google_api_keys_tests',
-      'extract_unwind_tables_tests',
-    ]
-  },
+    'pylib_py_unittests': {
+        'path':
+        os.path.join(DIR_SOURCE_ROOT, 'build', 'android'),
+        'test_modules': [
+            'devil.android.device_utils_test',
+            'devil.android.md5sum_test',
+            'devil.utils.cmd_helper_test',
+            'pylib.results.json_results_test',
+            'pylib.utils.proguard_test',
+        ]
+    },
+    'gyp_py_unittests': {
+        'path':
+        os.path.join(DIR_SOURCE_ROOT, 'build', 'android', 'gyp'),
+        'test_modules': [
+            'java_cpp_enum_tests',
+            'java_cpp_strings_tests',
+            'java_google_api_keys_tests',
+            'extract_unwind_tables_tests',
+        ]
+    },
 }
 
 LOCAL_MACHINE_TESTS = ['junit', 'python']
