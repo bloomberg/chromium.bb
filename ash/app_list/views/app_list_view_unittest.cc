@@ -40,10 +40,12 @@
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/icu_test_util.h"
 #include "base/test/scoped_feature_list.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "services/content/public/cpp/test/fake_navigable_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/models/simple_menu_model.h"
@@ -346,6 +348,34 @@ class AppListViewFocusTest : public views::ViewsTestBase,
     RunPendingMessages();
   }
 
+  // Add search results for test on embedded Assistant UI.
+  void SetUpSearchResultsForAssistantUI(int list_results_num,
+                                        int index_open_assistant_ui) {
+    SearchModel::SearchResults* results =
+        delegate_->GetSearchModel()->results();
+    results->DeleteAll();
+    double display_score = list_results_num;
+    for (int i = 0; i < list_results_num; ++i) {
+      // Set the display score of the results in decreasing order
+      // (so the earlier groups have higher display score, and therefore appear
+      // first).
+      display_score -= 1;
+      std::unique_ptr<TestSearchResult> result =
+          std::make_unique<TestSearchResult>();
+      result->set_display_type(ash::SearchResultDisplayType::kList);
+      result->set_display_score(display_score);
+      result->set_title(base::ASCIIToUTF16("Test" + base::NumberToString(i)));
+      result->set_result_id("Test" + base::NumberToString(i));
+      if (i == index_open_assistant_ui)
+        result->set_is_omnibox_search(true);
+
+      results->Add(std::move(result));
+    }
+
+    // Adding results will schedule Update().
+    RunPendingMessages();
+  }
+
   void ClearSearchResults() {
     delegate_->GetSearchModel()->results()->DeleteAll();
   }
@@ -370,6 +400,10 @@ class AppListViewFocusTest : public views::ViewsTestBase,
 
   int GetTotalOpenSearchResultCount() {
     return delegate_->open_search_result_count();
+  }
+
+  int GetTotalOpenAssistantUICount() {
+    return delegate_->open_assistant_ui_count();
   }
 
   // Test focus traversal across all the views in |view_list|. The initial focus
@@ -2097,6 +2131,129 @@ TEST_F(AppListViewTest, BackAction) {
   contents_view()->Back();
   EXPECT_EQ(AppListViewState::FULLSCREEN_ALL_APPS, view_->app_list_state());
   EXPECT_EQ(0, apps_grid_view()->pagination_model()->selected_page());
+}
+
+// Tests selecting search result to show embedded Assistant UI.
+TEST_F(AppListViewFocusTest, ShowEmbeddedAssistantUI) {
+  scoped_feature_list_.InitWithFeatures(
+      {chromeos::switches::kAssistantFeature,
+       app_list_features::kEnableEmbeddedAssistantUI},
+      {});
+  Show();
+
+  // Initially the search box is inactive, hitting Enter to activate it.
+  EXPECT_FALSE(search_box_view()->is_search_box_active());
+  SimulateKeyPress(ui::VKEY_RETURN, false);
+  EXPECT_TRUE(search_box_view()->is_search_box_active());
+
+  // Type something in search box to transition to HALF state and populate
+  // fake list results. Then hit Enter key.
+  search_box_view()->search_box()->InsertText(base::UTF8ToUTF16("test"));
+  const int kListResults = 2;
+  const int kIndexOpenAssistantUi = 1;
+  SetUpSearchResultsForAssistantUI(kListResults, kIndexOpenAssistantUi);
+  SimulateKeyPress(ui::VKEY_RETURN, false);
+  EXPECT_EQ(1, GetOpenFirstSearchResultCount());
+  EXPECT_EQ(1, GetTotalOpenSearchResultCount());
+  EXPECT_EQ(0, GetTotalOpenAssistantUICount());
+
+  SearchResultListView* list_view =
+      contents_view()->search_result_list_view_for_test();
+  ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_RETURN, ui::EF_NONE);
+  list_view->GetResultViewAt(kIndexOpenAssistantUi)->OnKeyEvent(&key_event);
+  EXPECT_EQ(1, GetOpenFirstSearchResultCount());
+  EXPECT_EQ(2, GetTotalOpenSearchResultCount());
+  EXPECT_EQ(1, GetTotalOpenAssistantUICount());
+}
+
+// Tests that no answer card view when kEnableEmbeddedAssistantUI is enabled.
+TEST_F(AppListViewTest, NoAnswerCardWhenEmbeddedAssistantUIEnabled) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {chromeos::switches::kAssistantFeature,
+       app_list_features::kEnableEmbeddedAssistantUI},
+      {});
+  ASSERT_TRUE(app_list_features::IsEmbeddedAssistantUIEnabled());
+
+  Initialize(0, false, false);
+  Show();
+
+  EXPECT_FALSE(contents_view()->search_result_answer_card_view_for_test());
+}
+
+// Tests that pressing escape when in embedded Assistant UI to search page view.
+TEST_F(AppListViewTest, EscapeKeyEmbeddedAssistantUIToSearch) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {chromeos::switches::kAssistantFeature,
+       app_list_features::kEnableEmbeddedAssistantUI},
+      {});
+  ASSERT_TRUE(app_list_features::IsEmbeddedAssistantUIEnabled());
+
+  Initialize(0, false, false);
+  Show();
+
+  // Set search_box_view active.
+  ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_RETURN, ui::EF_NONE);
+  view_->GetWidget()->OnKeyEvent(&key_event);
+
+  contents_view()->ShowEmbeddedAssistantUI(true);
+  EXPECT_TRUE(contents_view()->IsShowingEmbeddedAssistantUI());
+
+  view_->AcceleratorPressed(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
+  EXPECT_TRUE(contents_view()->IsShowingSearchResults());
+}
+
+// Tests that clicking empty region in AppListview when showing Assistant UI
+// should go back to peeking state.
+TEST_F(AppListViewTest, ClickOutsideEmbeddedAssistantUIToPeeking) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {chromeos::switches::kAssistantFeature,
+       app_list_features::kEnableEmbeddedAssistantUI},
+      {});
+  ASSERT_TRUE(app_list_features::IsEmbeddedAssistantUIEnabled());
+
+  Initialize(0, false, false);
+  Show();
+
+  // Set search_box_view active.
+  ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_RETURN, ui::EF_NONE);
+  view_->GetWidget()->OnKeyEvent(&key_event);
+
+  contents_view()->ShowEmbeddedAssistantUI(true);
+  EXPECT_TRUE(contents_view()->IsShowingEmbeddedAssistantUI());
+
+  // Click on the same empty region, the AppList should be peeking state.
+  const gfx::Point empty_region = view_->GetBoundsInScreen().origin();
+  ui::MouseEvent mouse_click(ui::ET_MOUSE_PRESSED, empty_region, empty_region,
+                             base::TimeTicks(), 0, 0);
+  ui::Event::DispatcherApi mouse_click_dispatcher_api(
+      static_cast<ui::Event*>(&mouse_click));
+  mouse_click_dispatcher_api.set_target(view_);
+  view_->OnMouseEvent(&mouse_click);
+  EXPECT_EQ(AppListViewState::PEEKING, view_->app_list_state());
+}
+
+// Tests that expand arrow is not visible when showing embedded Assistant UI.
+TEST_F(AppListViewTest, ExpandArrowNotVisibleInEmbeddedAssistantUI) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {chromeos::switches::kAssistantFeature,
+       app_list_features::kEnableEmbeddedAssistantUI},
+      {});
+  ASSERT_TRUE(app_list_features::IsEmbeddedAssistantUIEnabled());
+
+  Initialize(0, false, false);
+  Show();
+
+  // Set search_box_view active.
+  ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_RETURN, ui::EF_NONE);
+  view_->GetWidget()->OnKeyEvent(&key_event);
+
+  contents_view()->ShowEmbeddedAssistantUI(true);
+  EXPECT_TRUE(contents_view()->IsShowingEmbeddedAssistantUI());
+  EXPECT_TRUE(contents_view()->expand_arrow_view()->layer()->opacity() == 0.0f);
 }
 
 }  // namespace test

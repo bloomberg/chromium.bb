@@ -229,6 +229,7 @@ test("app_list_unittests") {
     "//ash/public/cpp/app_list/vector_icons",
     "//base",
     "//base/test:test_support",
+    "//chromeos/constants",
     "//mojo/core/embedder",
     "//mojo/public/cpp/bindings",
     "//services/content/public/cpp",

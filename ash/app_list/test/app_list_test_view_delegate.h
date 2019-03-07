@@ -35,6 +35,7 @@ class AppListTestViewDelegate : public AppListViewDelegate,
 
   int dismiss_count() const { return dismiss_count_; }
   int open_search_result_count() const { return open_search_result_count_; }
+  int open_assistant_ui_count() const { return open_assistant_ui_count_; }
   std::map<size_t, int>& open_search_result_counts() {
     return open_search_result_counts_;
   }
@@ -108,6 +109,7 @@ class AppListTestViewDelegate : public AppListViewDelegate,
 
   int dismiss_count_ = 0;
   int open_search_result_count_ = 0;
+  int open_assistant_ui_count_ = 0;
   int next_profile_app_count_ = 0;
   int show_wallpaper_context_menu_count_ = 0;
   std::map<size_t, int> open_search_result_counts_;
