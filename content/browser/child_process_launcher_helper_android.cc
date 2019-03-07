@@ -250,6 +250,14 @@ base::File OpenFileToShare(const base::FilePath& path,
   return base::File(base::android::OpenApkAsset(path.value(), region));
 }
 
+void ChildProcessLauncherHelper::DumpProcessStack(
+    const base::Process& process) {
+  JNIEnv* env = AttachCurrentThread();
+  DCHECK(env);
+  return Java_ChildProcessLauncherHelperImpl_dumpProcessStack(env, java_peer_,
+                                                              process.Handle());
+}
+
 // Called from ChildProcessLauncher.java when the ChildProcess was started.
 // |handle| is the processID of the child process as originated in Java, 0 if
 // the ChildProcess could not be created.

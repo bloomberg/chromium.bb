@@ -110,6 +110,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   void RemovePriorityClient(PriorityClient* priority_client) override;
 #if defined(OS_ANDROID)
   ChildProcessImportance GetEffectiveImportance() override;
+  void DumpProcessStack() override;
 #endif
   void SetSuddenTerminationAllowed(bool allowed) override;
   bool SuddenTerminationAllowed() override;

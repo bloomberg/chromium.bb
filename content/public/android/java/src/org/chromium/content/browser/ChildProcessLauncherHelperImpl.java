@@ -520,6 +520,20 @@ public final class ChildProcessLauncherHelperImpl {
         }
     }
 
+    /**
+     * Dumps the stack of the child process with |pid|  without crashing it.
+     * @param pid Process id of the child process.
+     */
+    @CalledByNative
+    private void dumpProcessStack(int pid) {
+        assert LauncherThread.runningOnLauncherThread();
+        ChildProcessLauncherHelperImpl launcher = getByPid(pid);
+        if (launcher != null) {
+            ChildProcessConnection connection = launcher.mLauncher.getConnection();
+            connection.dumpProcessStack();
+        }
+    }
+
     // Can be called on a number of threads, including launcher, and binder.
     private static native void nativeOnChildProcessStarted(
             long nativeChildProcessLauncherHelper, int pid);

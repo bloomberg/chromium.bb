@@ -210,6 +210,10 @@ class CONTENT_EXPORT ChildProcessLauncher {
   // support multiple shell context creation in unit_tests.
   static void ResetRegisteredFilesForTesting();
 
+#if defined(OS_ANDROID)
+  // Dumps the stack of the child process without crashing it.
+  void DumpProcessStack();
+#endif
  private:
   friend class internal::ChildProcessLauncherHelper;
 

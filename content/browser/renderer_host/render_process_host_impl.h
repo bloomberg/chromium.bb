@@ -185,6 +185,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void RemovePriorityClient(PriorityClient* priority_client) override;
 #if defined(OS_ANDROID)
   ChildProcessImportance GetEffectiveImportance() override;
+  void DumpProcessStack() override;
 #endif
   void SetSuddenTerminationAllowed(bool enabled) override;
   bool SuddenTerminationAllowed() override;
