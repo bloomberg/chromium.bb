@@ -79,10 +79,12 @@ class PulsingInkDropMask : public gfx::AnimationDelegate,
  public:
   PulsingInkDropMask(views::View* layer_container,
                      const gfx::Size& layer_size,
+                     const gfx::Insets& margins,
                      float normal_corner_radius,
                      float max_inset)
       : views::InkDropMask(layer_size),
         layer_container_(layer_container),
+        margins_(margins),
         normal_corner_radius_(normal_corner_radius),
         max_inset_(max_inset),
         throb_animation_(this) {
@@ -101,6 +103,7 @@ class PulsingInkDropMask : public gfx::AnimationDelegate,
     ui::PaintRecorder recorder(context, layer()->size());
 
     gfx::RectF bounds(layer()->bounds());
+    bounds.Inset(margins_);
 
     const float current_inset =
         throb_animation_.CurrentValueBetween(0.0f, max_inset_);
@@ -125,6 +128,11 @@ class PulsingInkDropMask : public gfx::AnimationDelegate,
   // The View that contains the InkDrop layer we're masking. This must outlive
   // our instance.
   views::View* const layer_container_;
+
+  // Margins between the layer bounds and the visible ink drop. We use this
+  // because sometimes the View we're masking is larger than the ink drop we
+  // want to show.
+  const gfx::Insets margins_;
 
   // Normal corner radius of the ink drop without animation. This is also the
   // corner radius at the largest instant of the animation.
@@ -394,10 +402,16 @@ std::unique_ptr<views::InkDropMask> BrowserAppMenuButton::CreateInkDropMask()
     const {
 #if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
   if (promo_feature_) {
-    const float corner_radius = height() / 2.0f;
+    // This gets the latest ink drop insets. |SetTrailingMargin()| is called
+    // whenever our margins change (i.e. due to the window maximizing or
+    // minimizing) and updates our internal padding property accordingly.
+    const gfx::Insets ink_drop_insets =
+        GetToolbarInkDropInsets(this, *GetProperty(views::kInternalPaddingKey));
+    const float corner_radius =
+        (height() - ink_drop_insets.top() - ink_drop_insets.bottom()) / 2.0f;
     return std::make_unique<PulsingInkDropMask>(
-        ink_drop_container(), ink_drop_container()->size(), corner_radius,
-        kFeaturePromoPulseInsetDip);
+        ink_drop_container(), ink_drop_container()->size(), ink_drop_insets,
+        corner_radius, kFeaturePromoPulseInsetDip);
   }
 #endif
 
