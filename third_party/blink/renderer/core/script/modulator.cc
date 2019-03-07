@@ -42,20 +42,22 @@ Modulator* Modulator::From(ScriptState* script_state) {
     // See comment in LocalDOMWindow::modulator_ for this workaround.
     LocalDOMWindow* window = document->ExecutingWindow();
     window->SetModulator(modulator);
-  } else if (auto* scope = DynamicTo<WorkletGlobalScope>(execution_context)) {
+  } else if (auto* worklet_scope =
+                 DynamicTo<WorkletGlobalScope>(execution_context)) {
     modulator = WorkletModulatorImpl::Create(script_state);
     Modulator::SetModulator(script_state, modulator);
 
     // See comment in WorkerOrWorkletGlobalScope::modulator_ for this
     // workaround.
-    scope->SetModulator(modulator);
-  } else if (auto* scope = DynamicTo<WorkerGlobalScope>(execution_context)) {
+    worklet_scope->SetModulator(modulator);
+  } else if (auto* worker_scope =
+                 DynamicTo<WorkerGlobalScope>(execution_context)) {
     modulator = WorkerModulatorImpl::Create(script_state);
     Modulator::SetModulator(script_state, modulator);
 
     // See comment in WorkerOrWorkletGlobalScope::modulator_ for this
     // workaround.
-    scope->SetModulator(modulator);
+    worker_scope->SetModulator(modulator);
   } else {
     NOTREACHED();
   }

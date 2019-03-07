@@ -285,9 +285,8 @@ bool AccessibleNode::GetProperty(Element* element,
   for (wtf_size_t i = 0; i < node_list->length(); ++i) {
     AccessibleNode* accessible_node = node_list->item(i);
     if (accessible_node) {
-      Element* element = accessible_node->element();
-      if (element)
-        targets.push_back(element);
+      if (Element* target_element = accessible_node->element())
+        targets.push_back(target_element);
     }
   }
 

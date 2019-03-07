@@ -46,9 +46,9 @@ bool InvisibleDOM::ActivateRangeIfNeeded(
   for (Node& node : range.Nodes()) {
     if (!InvisibleDOM::IsInsideInvisibleSubtree(node))
       continue;
-    for (Node& node : FlatTreeTraversal::AncestorsOf(node)) {
-      if (node.IsElementNode()) {
-        elements_to_activate.push_back(ToElement(node));
+    for (Node& ancestor_node : FlatTreeTraversal::AncestorsOf(node)) {
+      if (ancestor_node.IsElementNode()) {
+        elements_to_activate.push_back(ToElement(ancestor_node));
         break;
       }
     }
