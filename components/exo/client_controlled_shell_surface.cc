@@ -923,10 +923,19 @@ bool ClientControlledShellSurface::OnPreWidgetCommit() {
     decorator_.reset();  // Remove rounded corners.
   }
 
+  bool wasPip = window_state->IsPip();
+
   if (client_controlled_state_->EnterNextState(window_state,
                                                pending_window_state_)) {
     client_controlled_state_->set_next_bounds_change_animation_type(
         animation_type);
+  }
+
+  if (wasPip && !window_state->IsMinimized()) {
+    // As Android doesn't activate PIP tasks after they are expanded, we need
+    // to do it here explicitly.
+    // TODO(937738): Investigate if we can activate PIP windows inside commit.
+    window_state->Activate();
   }
 
   return true;
