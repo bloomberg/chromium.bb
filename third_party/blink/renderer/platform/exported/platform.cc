@@ -220,7 +220,7 @@ void Platform::InitializeCommon(Platform* platform,
       ParkableStringManagerDumpProvider::Instance(), "ParkableStrings",
       base::ThreadTaskRunnerHandle::Get());
 
-  RendererResourceCoordinator::Initialize();
+  RendererResourceCoordinator::MaybeInitialize();
 }
 
 void Platform::SetCurrentPlatformForTesting(Platform* platform) {

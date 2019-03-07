@@ -1350,7 +1350,7 @@ FrameResourceCoordinator* LocalFrame::GetFrameResourceCoordinator() {
     auto* local_frame_client = Client();
     if (!local_frame_client)
       return nullptr;
-    frame_resource_coordinator_ = FrameResourceCoordinator::Create(
+    frame_resource_coordinator_ = FrameResourceCoordinator::MaybeCreate(
         local_frame_client->GetInterfaceProvider());
   }
   return frame_resource_coordinator_.get();

@@ -576,15 +576,18 @@ void MainThreadMetricsHelper::ReportLowThreadLoadForPageAlmostIdleSignal(
   static const int main_thread_task_load_low_threshold =
       ::resource_coordinator::GetMainThreadTaskLoadLowThreshold();
 
-  // Avoid sending duplicate IPCs when the state doesn't change.
-  if (load_percentage <= main_thread_task_load_low_threshold &&
-      main_thread_task_load_state_ != MainThreadTaskLoadState::kLow) {
-    RendererResourceCoordinator::Get().SetMainThreadTaskLoadIsLow(true);
-    main_thread_task_load_state_ = MainThreadTaskLoadState::kLow;
-  } else if (load_percentage > main_thread_task_load_low_threshold &&
-             main_thread_task_load_state_ != MainThreadTaskLoadState::kHigh) {
-    RendererResourceCoordinator::Get().SetMainThreadTaskLoadIsLow(false);
-    main_thread_task_load_state_ = MainThreadTaskLoadState::kHigh;
+  if (auto* renderer_resource_coordinator =
+          RendererResourceCoordinator::Get()) {
+    // Avoid sending duplicate IPCs when the state doesn't change.
+    if (load_percentage <= main_thread_task_load_low_threshold &&
+        main_thread_task_load_state_ != MainThreadTaskLoadState::kLow) {
+      renderer_resource_coordinator->SetMainThreadTaskLoadIsLow(true);
+      main_thread_task_load_state_ = MainThreadTaskLoadState::kLow;
+    } else if (load_percentage > main_thread_task_load_low_threshold &&
+               main_thread_task_load_state_ != MainThreadTaskLoadState::kHigh) {
+      renderer_resource_coordinator->SetMainThreadTaskLoadIsLow(false);
+      main_thread_task_load_state_ = MainThreadTaskLoadState::kHigh;
+    }
   }
 }
 

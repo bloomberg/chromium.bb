@@ -2537,8 +2537,11 @@ void MainThreadSchedulerImpl::OnQueueingTimeForWindowEstimated(
                  "estimated_queueing_time_for_window",
                  queueing_time.InMillisecondsF());
 
-  RendererResourceCoordinator::Get().SetExpectedTaskQueueingDuration(
-      queueing_time);
+  if (auto* renderer_resource_coordinator =
+          RendererResourceCoordinator::Get()) {
+    renderer_resource_coordinator->SetExpectedTaskQueueingDuration(
+        queueing_time);
+  }
 }
 
 void MainThreadSchedulerImpl::OnReportFineGrainedExpectedQueueingTime(

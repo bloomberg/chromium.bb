@@ -5,6 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_INSTRUMENTATION_RESOURCE_COORDINATOR_FRAME_RESOURCE_COORDINATOR_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_INSTRUMENTATION_RESOURCE_COORDINATOR_FRAME_RESOURCE_COORDINATOR_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "services/resource_coordinator/public/mojom/coordination_unit.mojom-blink.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
@@ -20,7 +22,8 @@ class PLATFORM_EXPORT FrameResourceCoordinator final {
   USING_FAST_MALLOC(FrameResourceCoordinator);
 
  public:
-  static std::unique_ptr<FrameResourceCoordinator> Create(
+  // Returns nullptr if instrumentation is not enabled.
+  static std::unique_ptr<FrameResourceCoordinator> MaybeCreate(
       service_manager::InterfaceProvider*);
   ~FrameResourceCoordinator();
 
