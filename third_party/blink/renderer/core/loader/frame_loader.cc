@@ -893,8 +893,8 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
                              ->ExperimentalFeaturesEnabled()) {
     initiator_csp = origin_document->GetContentSecurityPolicy()
                         ->ExposeForNavigationalChecks();
-    auto request = mojo::MakeRequest(&navigation_initiator);
-    origin_document->BindNavigationInitiatorRequest(std::move(request));
+    auto mojo_request = mojo::MakeRequest(&navigation_initiator);
+    origin_document->BindNavigationInitiatorRequest(std::move(mojo_request));
   }
 
   if (origin_document && origin_document->GetContentSecurityPolicy()) {

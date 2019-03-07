@@ -355,17 +355,18 @@ void FileReaderLoader::OnDataPipeReadable(MojoResult result) {
   while (true) {
     uint32_t num_bytes;
     const void* buffer;
-    MojoResult result = consumer_handle_->BeginReadData(
+    MojoResult pipe_result = consumer_handle_->BeginReadData(
         &buffer, &num_bytes, MOJO_READ_DATA_FLAG_NONE);
-    if (result == MOJO_RESULT_SHOULD_WAIT) {
+    if (pipe_result == MOJO_RESULT_SHOULD_WAIT) {
       if (!IsSyncLoad())
         return;
 
-      result = mojo::Wait(consumer_handle_.get(), MOJO_HANDLE_SIGNAL_READABLE);
-      if (result == MOJO_RESULT_OK)
+      pipe_result =
+          mojo::Wait(consumer_handle_.get(), MOJO_HANDLE_SIGNAL_READABLE);
+      if (pipe_result == MOJO_RESULT_OK)
         continue;
     }
-    if (result == MOJO_RESULT_FAILED_PRECONDITION) {
+    if (pipe_result == MOJO_RESULT_FAILED_PRECONDITION) {
       // Pipe closed.
       if (!received_all_data_) {
         Failed(FileErrorCode::kNotReadableErr,
@@ -373,7 +374,7 @@ void FileReaderLoader::OnDataPipeReadable(MojoResult result) {
       }
       return;
     }
-    if (result != MOJO_RESULT_OK) {
+    if (pipe_result != MOJO_RESULT_OK) {
       Failed(FileErrorCode::kNotReadableErr,
              FailureType::kMojoPipeUnexpectedReadError);
       return;
