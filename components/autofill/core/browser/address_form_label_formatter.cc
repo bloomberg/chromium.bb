@@ -10,13 +10,11 @@ AddressFormLabelFormatter::AddressFormLabelFormatter(
     const std::string& app_locale,
     ServerFieldType focused_field_type,
     const std::vector<ServerFieldType>& field_types)
-    : app_locale_(app_locale),
-      focused_field_type_(focused_field_type),
-      field_types_(field_types) {
+    : LabelFormatter(app_locale, focused_field_type, field_types) {
   for (const ServerFieldType& type : field_types) {
-    if ((type != ADDRESS_HOME_COUNTRY) && (type != ADDRESS_BILLING_COUNTRY) &&
-        (type != focused_field_type_)) {
-      filtered_field_types_.push_back(type);
+    if (type != focused_field_type && type != ADDRESS_HOME_COUNTRY &&
+        type != ADDRESS_BILLING_COUNTRY) {
+      field_types_for_labels_.push_back(type);
     }
   }
 }

@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_CONTACT_FORM_LABEL_FORMATTER_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_CONTACT_FORM_LABEL_FORMATTER_H_
 
+#include <set>
 #include <string>
 #include <vector>
 
@@ -19,32 +20,28 @@ namespace autofill {
 // containing name and phone or email fields.
 class ContactFormLabelFormatter : public LabelFormatter {
  public:
-  explicit ContactFormLabelFormatter(
-      const std::string& app_locale,
-      ServerFieldType focused_field_type,
-      const std::vector<ServerFieldType>& field_types);
+  ContactFormLabelFormatter(const std::string& app_locale,
+                            ServerFieldType focused_field_type,
+                            const std::vector<ServerFieldType>& field_types,
+                            const std::set<FieldTypeGroup>& field_type_groups);
+
   ~ContactFormLabelFormatter() override;
 
   std::vector<base::string16> GetLabels(
       const std::vector<AutofillProfile*>& profiles) const override;
 
  private:
-  // The locale for which to generate labels. This reflects the language and
-  // country for which the application is translated, e.g. en_AU for Austalian
-  // English.
-  std::string app_locale_;
+  // A collection of field types that can be used to make labels. This
+  // collection excludes the focused_field_type_.
+  std::vector<ServerFieldType> field_types_for_labels_;
 
-  // The field on which the user is currently focused.
-  ServerFieldType focused_field_type_;
+  // A collection of meaningful FieldTypeGroups in the form with which the user
+  // is interacting.
+  std::set<FieldTypeGroup> field_type_groups_;
 
-  // A collection of meaningful field types in the form with which the user is
-  // interacting. The NO_SERVER_DATA and UNKNOWN_TYPE field types are not
-  // considered meaningful.
-  std::vector<ServerFieldType> field_types_;
-
-  // A collection of meaningful field types excluding the focused_field_type_.
-  // These types are used to construct the labels.
-  std::vector<ServerFieldType> filtered_field_types_;
+  // A collection of meaningful FieldTypeGroups in the form with which the user
+  // is interacting minus the focused field's corresponding FieldTypeGroup.
+  std::set<FieldTypeGroup> filtered_field_type_groups_;
 };
 
 }  // namespace autofill

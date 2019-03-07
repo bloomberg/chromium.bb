@@ -17,11 +17,35 @@ namespace autofill {
 // Handles the creation of Suggestions' disambiguating labels.
 class LabelFormatter {
  public:
-  virtual ~LabelFormatter() = default;
+  LabelFormatter(const std::string& app_locale,
+                 ServerFieldType focused_field_type,
+                 const std::vector<ServerFieldType>& field_types);
+  virtual ~LabelFormatter();
+
   // Returns a collection of |labels| formed by extracting useful disambiguating
   // information from a collection of |profiles|.
   virtual std::vector<base::string16> GetLabels(
       const std::vector<AutofillProfile*>& profiles) const = 0;
+
+ protected:
+  const std::string& app_locale() const { return app_locale_; }
+  ServerFieldType focused_field_type() const { return focused_field_type_; }
+  const std::vector<ServerFieldType>& field_types() const {
+    return field_types_;
+  }
+
+ private:
+  // The locale for which to generate labels. This reflects the language and
+  // country for which the application is translated, e.g. en_AU for Austalian
+  // English.
+  std::string app_locale_;
+
+  // The field on which the user is currently focused.
+  ServerFieldType focused_field_type_;
+
+  // A collection of meaningful field types in the form with which the user is
+  // interacting.
+  std::vector<ServerFieldType> field_types_;
 };
 
 }  // namespace autofill
