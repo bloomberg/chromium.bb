@@ -1295,6 +1295,9 @@
                     "name": "Enabled",
                     "enable_features": [
                         "CompressParkableStringsInForeground"
+                    ],
+                    "disable_features": [
+                        "CompressParkableStringsInBackground"
                     ]
                 }
             ]
