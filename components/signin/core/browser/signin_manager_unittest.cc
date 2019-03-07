@@ -22,12 +22,12 @@
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/device_id_helper.h"
 #include "components/signin/core/browser/fake_account_fetcher_service.h"
-#include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
+#include "google_apis/gaia/fake_oauth2_token_service_delegate.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/cookies/cookie_monster.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -69,7 +69,8 @@ class SigninManagerTest : public testing::Test {
  public:
   SigninManagerTest()
       : test_signin_client_(&user_prefs_),
-        token_service_(&user_prefs_),
+        token_service_(&user_prefs_,
+                       std::make_unique<FakeOAuth2TokenServiceDelegate>()),
         cookie_manager_service_(&token_service_, &test_signin_client_),
         account_consistency_(signin::AccountConsistencyMethod::kDisabled) {
     AccountFetcherService::RegisterPrefs(user_prefs_.registry());
@@ -145,7 +146,7 @@ class SigninManagerTest : public testing::Test {
   sync_preferences::TestingPrefServiceSyncable user_prefs_;
   TestingPrefServiceSimple local_state_;
   TestSigninClient test_signin_client_;
-  FakeProfileOAuth2TokenService token_service_;
+  ProfileOAuth2TokenService token_service_;
   AccountTrackerService account_tracker_;
   GaiaCookieManagerService cookie_manager_service_;
   FakeAccountFetcherService account_fetcher_;

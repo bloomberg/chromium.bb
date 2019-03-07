@@ -103,6 +103,12 @@ class ProfileOAuth2TokenService : public OAuth2TokenService,
     all_credentials_loaded_ = loaded;
   }
 
+  // Exposes the ability to update auth errors to tests.
+  void UpdateAuthErrorForTesting(const std::string& account_id,
+                                 const GoogleServiceAuthError& error) {
+    UpdateAuthError(account_id, error);
+  }
+
  private:
   friend class identity::IdentityManager;
 
