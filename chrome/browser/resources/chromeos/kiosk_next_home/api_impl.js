@@ -3,18 +3,18 @@
 // found in the LICENSE file.
 
 /**
- * @fileoverview ContainedHome implementation.
+ * @fileoverview Kiosk Next Home API implementation.
  */
 
-/** @implements {containedHome.Bridge} */
-class ContainedHomeBridge {
+/** @implements {kioskNextHome.Bridge} */
+class KioskNextHomeBridge {
   constructor() {
-    /** @type {!Array<!containedHome.Listener>} */
+    /** @type {!Array<!kioskNextHome.Listener>} */
     this.listeners = [];
 
     chrome.arcAppsPrivate.onInstalled.addListener(installedApp => {
       const app = {
-        appType: containedHome.AppType.ARC,
+        appType: kioskNextHome.AppType.ARC,
         appId: installedApp.packageName,
         displayName: installedApp.packageName,
         suspended: false,
@@ -22,7 +22,7 @@ class ContainedHomeBridge {
       };
       for (const listener of this.listeners) {
         listener.onInstalledAppChanged(
-            app, containedHome.AppEventType.INSTALLED);
+            app, kioskNextHome.AppEventType.INSTALLED);
       }
     });
   }
@@ -52,7 +52,7 @@ class ContainedHomeBridge {
         const installedApps = [];
         for (const launchableApp of launchableApps) {
           installedApps.push({
-            appType: containedHome.AppType.ARC,
+            appType: kioskNextHome.AppType.ARC,
             appId: launchableApp.packageName,
             displayName: launchableApp.packageName,
             suspended: false,
@@ -66,7 +66,7 @@ class ContainedHomeBridge {
 
   /** @override */
   launchContent(contentSource, contentId, opt_params) {
-    if (contentSource === containedHome.ContentSource.ARC_INTENT) {
+    if (contentSource === kioskNextHome.ContentSource.ARC_INTENT) {
       // TODO(brunoad): create and migrate to a more generic API.
       chrome.arcAppsPrivate.launchApp(contentId);
     }
@@ -76,9 +76,9 @@ class ContainedHomeBridge {
 
 /**
  * Provides bridge implementation.
- * @return {!containedHome.Bridge} Bridge instance that can be used to interact
+ * @return {!kioskNextHome.Bridge} Bridge instance that can be used to interact
  *     with ChromeOS.
  */
-containedHome.getChromeOsBridge = function() {
-  return new ContainedHomeBridge();
+kioskNextHome.getChromeOsBridge = function() {
+  return new KioskNextHomeBridge();
 };

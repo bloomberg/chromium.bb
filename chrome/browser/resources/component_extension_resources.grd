@@ -91,8 +91,8 @@
         <include name="IDR_ARC_SUPPORT_RECOMMEND_APP_LIST_VIEW_JS" file="chromeos/arc_support/recommend_app_list_view.js" type="BINDATA" />
         <include name="IDR_ARC_SUPPORT_RECOMMEND_APP_LIST_VIEW_HTML" file="chromeos/arc_support/recommend_app_list_view.html" type="chrome_html" flattenhtml="true" />
         <if expr="_google_chrome">
-          <part file="chromeos/contained_home/contained_home_resources.grdp" />
-          <part file="chromeos/contained_home/contained_home_resources_internal.grdp" />
+          <part file="chromeos/kiosk_next_home/kiosk_next_resources.grdp" />
+          <part file="chromeos/kiosk_next_home/kiosk_next_resources_internal.grdp" />
         </if>
       </if>
       <if expr="enable_plugins">

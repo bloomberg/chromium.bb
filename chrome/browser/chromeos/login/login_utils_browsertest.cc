@@ -166,7 +166,7 @@ IN_PROC_BROWSER_TEST_F(LoginUtilsKioskNextShellTest, PRE_KioskNextShellLaunch) {
   LoginAndSetKioskNextShellPref(true);
 }
 
-// Checks that the Contained Experience window is launched on sign-in when the
+// Checks that the Kiosk Next Home window is launched on sign-in when the
 // feature is enabled and its pref allows it.
 IN_PROC_BROWSER_TEST_F(LoginUtilsKioskNextShellTest, KioskNextShellLaunch) {
   // Enable all component extensions.
@@ -182,7 +182,7 @@ IN_PROC_BROWSER_TEST_F(LoginUtilsKioskNextShellTest, KioskNextShellLaunch) {
   apps::AppWindowWaiter waiter(
       extensions::AppWindowRegistry::Get(ProfileHelper::Get()->GetProfileByUser(
           user_manager::UserManager::Get()->GetActiveUser())),
-      extension_misc::kContainedHomeAppId);
+      extension_misc::kKioskNextHomeAppId);
   EXPECT_NE(nullptr,
             waiter.WaitForShownWithTimeout(TestTimeouts::action_timeout()));
   EXPECT_TRUE(fullscreen_observer.did_fullscreen_window_launch());
@@ -193,7 +193,7 @@ IN_PROC_BROWSER_TEST_F(LoginUtilsKioskNextShellTest,
   LoginAndSetKioskNextShellPref(false);
 }
 
-// Checks that the Contained Experience window does not launch in sign-in when
+// Checks that the Kiosk Next Home window does not launch in sign-in when
 // its pref is disabled
 IN_PROC_BROWSER_TEST_F(LoginUtilsKioskNextShellTest,
                        KioskNextShellDoesntLaunchWhenPrefIsDisabled) {
@@ -208,7 +208,7 @@ IN_PROC_BROWSER_TEST_F(LoginUtilsKioskNextShellTest,
   apps::AppWindowWaiter waiter(
       extensions::AppWindowRegistry::Get(ProfileHelper::Get()->GetProfileByUser(
           user_manager::UserManager::Get()->GetActiveUser())),
-      extension_misc::kContainedHomeAppId);
+      extension_misc::kKioskNextHomeAppId);
   EXPECT_EQ(nullptr,
             waiter.WaitForShownWithTimeout(TestTimeouts::action_timeout()));
 }
