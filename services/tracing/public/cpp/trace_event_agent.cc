@@ -20,6 +20,7 @@
 #include "build/build_config.h"
 #include "services/tracing/public/cpp/perfetto/producer_client.h"
 #include "services/tracing/public/cpp/perfetto/trace_event_data_source.h"
+#include "services/tracing/public/cpp/trace_event_args_whitelist.h"
 #include "services/tracing/public/cpp/tracing_features.h"
 
 namespace {
@@ -43,6 +44,17 @@ TraceEventAgent::TraceEventAgent()
       enabled_tracing_modes_(0),
       weak_ptr_factory_(this) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  // These filters are used by TraceLog in the legacy tracing system and JSON
+  // exporter (only in tracing service) in perfetto bcakend.
+  if (base::trace_event::TraceLog::GetInstance()
+          ->GetArgumentFilterPredicate()
+          .is_null()) {
+    base::trace_event::TraceLog::GetInstance()->SetArgumentFilterPredicate(
+        base::BindRepeating(&IsTraceEventArgsWhitelisted));
+    base::trace_event::TraceLog::GetInstance()->SetMetadataFilterPredicate(
+        base::BindRepeating(&IsMetadataWhitelisted));
+  }
 
   base::trace_event::TraceLog::GetInstance()->AddAsyncEnabledStateObserver(
       weak_ptr_factory_.GetWeakPtr());

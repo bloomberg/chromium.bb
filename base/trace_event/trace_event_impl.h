@@ -30,12 +30,16 @@
 namespace base {
 namespace trace_event {
 
-typedef base::Callback<bool(const char* arg_name)> ArgumentNameFilterPredicate;
+typedef base::RepeatingCallback<bool(const char* arg_name)>
+    ArgumentNameFilterPredicate;
 
-typedef base::Callback<bool(const char* category_group_name,
-                            const char* event_name,
-                            ArgumentNameFilterPredicate*)>
+typedef base::RepeatingCallback<bool(const char* category_group_name,
+                                     const char* event_name,
+                                     ArgumentNameFilterPredicate*)>
     ArgumentFilterPredicate;
+
+typedef base::RepeatingCallback<bool(const std::string& metadata_name)>
+    MetadataFilterPredicate;
 
 struct TraceEventHandle {
   uint32_t chunk_seq;

@@ -38,33 +38,6 @@ namespace content {
 
 namespace {
 
-const char* kMetadataWhitelist[] = {
-  "cpu-brand",
-  "network-type",
-  "os-name",
-  "user-agent"
-};
-
-bool IsMetadataWhitelisted(const std::string& metadata_name) {
-  for (auto* key : kMetadataWhitelist) {
-    if (base::MatchPattern(metadata_name, key)) {
-      return true;
-    }
-  }
-  return false;
-}
-
-bool IsTraceEventArgsWhitelisted(
-    const char* category_group_name,
-    const char* event_name,
-    base::trace_event::ArgumentNameFilterPredicate* arg_filter) {
-  if (base::MatchPattern(category_group_name, "benchmark") &&
-      base::MatchPattern(event_name, "whitelisted")) {
-    return true;
-  }
-  return false;
-}
-
 bool KeyEquals(const base::Value* value,
                const char* key_name,
                const char* expected) {
@@ -124,9 +97,6 @@ class TestTracingDelegate : public TracingDelegate {
   std::unique_ptr<TraceUploader> GetTraceUploader(
       scoped_refptr<network::SharedURLLoaderFactory>) override {
     return nullptr;
-  }
-  MetadataFilterPredicate GetMetadataFilterPredicate() override {
-    return base::BindRepeating(IsMetadataWhitelisted);
   }
 };
 
@@ -249,9 +219,6 @@ class TracingControllerTest : public ContentBrowserTest {
         std::make_unique<TestTracingDelegate>());
 
     Navigate(shell());
-
-    base::trace_event::TraceLog::GetInstance()->SetArgumentFilterPredicate(
-        base::Bind(&IsTraceEventArgsWhitelisted));
 
     TracingControllerImpl* controller = TracingControllerImpl::GetInstance();
     tracing::TraceEventAgent::GetInstance()->AddMetadataGeneratorFunction(
@@ -452,7 +419,7 @@ IN_PROC_BROWSER_TEST_F(TracingControllerTest, NotWhitelistedMetadataStripped) {
   EXPECT_TRUE(KeyNotEquals(metadata_json, "user-agent", "__stripped__"));
 
   // The following field is not whitelisted and is supposed to be stripped.
-  EXPECT_TRUE(KeyEquals(metadata_json, "chrome-bitness", "__stripped__"));
+  EXPECT_TRUE(KeyEquals(metadata_json, "v8-version", "__stripped__"));
 
   // TODO(770017): This test is currently broken since metadata filtering is
   // only done in |TracingControllerImpl::GenerateMetadataDict()|. Metadata

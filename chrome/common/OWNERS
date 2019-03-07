@@ -53,11 +53,6 @@ per-file autocomplete_match_type.*=pkasting@chromium.org
 per-file autocomplete_match_type.*=sky@chromium.org
 per-file crash_keys*=rsesek@chromium.org
 
-# Tracing
-per-file trace_event_args_whitelist*=nduca@chromium.org
-per-file trace_event_args_whitelist*=dsinclair@chromium.org
-per-file trace_event_args_whitelist*=oysteine@chromium.org
-
 # WebUI. See also chrome/browser/ui/webui/OWNERS.
 per-file webui_url_constants.cc=file://ui/webui/PLATFORM_OWNERS
 per-file webui_url_constants.h=file://ui/webui/PLATFORM_OWNERS

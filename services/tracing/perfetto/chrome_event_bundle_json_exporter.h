@@ -25,9 +25,8 @@ namespace tracing {
 // Conversion happens on-the-fly as new trace packets are received.
 class ChromeEventBundleJsonExporter : public JSONTraceExporter {
  public:
-  ChromeEventBundleJsonExporter(
-      ArgumentFilterPredicate argument_filter_predicate,
-      OnTraceEventJSONCallback callback);
+  ChromeEventBundleJsonExporter(bool filter_args,
+                                OnTraceEventJSONCallback callback);
   ~ChromeEventBundleJsonExporter() override = default;
 
  protected:

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/trace_event_args_whitelist.h"
+#include "services/tracing/public/cpp/trace_event_args_whitelist.h"
 
 #include "base/bind.h"
 #include "base/strings/pattern.h"
@@ -10,11 +10,17 @@
 #include "base/strings/string_util.h"
 #include "base/trace_event/trace_event.h"
 
+namespace tracing {
 namespace {
 
+// Each whitelist entry is used to whitelist an array arguments for a
+// single or group of trace events.
 struct WhitelistEntry {
+  // Category name of the intertested trace event.
   const char* category_name;
+  // Pattern to match the intertested trace event name.
   const char* event_name;
+  // List of patterns that match the whitelisted arguements.
   const char* const* arg_name_filter;
 };
 
@@ -37,6 +43,7 @@ const WhitelistEntry kEventArgsWhitelist[] = {
     {"__metadata", "stackFrames", nullptr},
     {"__metadata", "typeNames", nullptr},
     {"base", "ScopedBlockingCall*", kScopedBlockingCallAllowedArgs},
+    {"benchmark", "TestWhitelist*", nullptr},
     {"browser", "KeyedServiceFactory::GetServiceForContext", nullptr},
     {"GPU", "*", kGPUAllowedArgs},
     {"ipc", "GpuChannelHost::Send", nullptr},
@@ -74,7 +81,8 @@ const char* kMetadataWhitelist[] = {"chrome-bitness",
                                     "product-version",
                                     "scenario_name",
                                     "trace-config",
-                                    "user-agent"};
+                                    "user-agent",
+                                    nullptr};
 
 }  // namespace
 
@@ -106,8 +114,8 @@ bool IsTraceEventArgsWhitelisted(
                              whitelist_entry.category_name) &&
           base::MatchPattern(event_name, whitelist_entry.event_name)) {
         if (whitelist_entry.arg_name_filter) {
-          *arg_name_filter = base::Bind(&IsTraceArgumentNameWhitelisted,
-                                        whitelist_entry.arg_name_filter);
+          *arg_name_filter = base::BindRepeating(
+              &IsTraceArgumentNameWhitelisted, whitelist_entry.arg_name_filter);
         }
         return true;
       }
@@ -118,10 +126,12 @@ bool IsTraceEventArgsWhitelisted(
 }
 
 bool IsMetadataWhitelisted(const std::string& metadata_name) {
-  for (auto* key : kMetadataWhitelist) {
-    if (base::MatchPattern(metadata_name, key)) {
+  for (size_t i = 0; kMetadataWhitelist[i] != nullptr; ++i) {
+    if (base::MatchPattern(metadata_name, kMetadataWhitelist[i])) {
       return true;
     }
   }
   return false;
 }
+
+}  // namespace tracing
