@@ -34,7 +34,6 @@ namespace storage {
 QuotaTemporaryStorageEvictor::EvictionRoundStatistics::EvictionRoundStatistics()
     : in_round(false),
       is_initialized(false),
-      usage_overage_at_round(-1),
       diskspace_shortage_at_round(-1),
       usage_on_beginning_of_round(-1),
       usage_on_end_of_round(-1),
@@ -83,8 +82,6 @@ void QuotaTemporaryStorageEvictor::ReportPerRoundHistogram() {
   if (!time_of_end_of_last_round_.is_null())
     UMA_HISTOGRAM_MINUTES("Quota.TimeDeltaOfEvictionRounds",
                           now - time_of_end_of_last_round_);
-  UMA_HISTOGRAM_MBYTES("Quota.UsageOverageOfTemporaryGlobalStorage",
-                       round_statistics_.usage_overage_at_round);
   UMA_HISTOGRAM_MBYTES("Quota.DiskspaceShortage",
                        round_statistics_.diskspace_shortage_at_round);
   UMA_HISTOGRAM_MBYTES("Quota.EvictedBytesPerRound",
@@ -195,7 +192,6 @@ void QuotaTemporaryStorageEvictor::OnGotEvictionRoundInfo(
   }
 
   if (!round_statistics_.is_initialized) {
-    round_statistics_.usage_overage_at_round = usage_overage;
     round_statistics_.diskspace_shortage_at_round = diskspace_shortage;
     round_statistics_.usage_on_beginning_of_round = current_usage;
     round_statistics_.is_initialized = true;

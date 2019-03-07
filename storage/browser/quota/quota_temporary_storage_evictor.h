@@ -64,7 +64,6 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaTemporaryStorageEvictor {
     bool is_initialized;
 
     base::Time start_time;
-    int64_t usage_overage_at_round;
     int64_t diskspace_shortage_at_round;
 
     int64_t usage_on_beginning_of_round;
