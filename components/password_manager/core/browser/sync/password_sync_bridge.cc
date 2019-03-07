@@ -390,19 +390,35 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::MergeSyncData(
 
       PasswordStoreChangeList changes = password_store_sync_->AddLoginSync(
           PasswordFromEntityChange(entity_change, /*sync_time=*/time_now));
-      DCHECK_LE(changes.size(), 1U);
 
+      // TODO(crbug.com/939302): It's not yet clear if the DCHECK_LE below is
+      // legit. However, recent crashes suggest that 2 changes are returned
+      // when trying to AddLoginSync (details are in the bug). Once this is
+      // resolved, we should update the call the UpdateStorageKey() if
+      // necessary and remove unnecessary DCHECKs below.
+      // DCHECK_LE(changes.size(), 1U);
+      DCHECK_LE(changes.size(), 2U);
       if (changes.empty()) {
         return syncer::ModelError(
             FROM_HERE, "Failed to add an entry in the password store.");
       }
 
+      if (changes.size() == 1) {
+        DCHECK_EQ(changes[0].type(), PasswordStoreChange::ADD);
+      } else {
+        // There must be 2 changes.
+        DCHECK_EQ(changes[0].type(), PasswordStoreChange::REMOVE);
+        DCHECK_EQ(changes[1].type(), PasswordStoreChange::ADD);
+      }
+
       change_processor()->UpdateStorageKey(
           entity_change.data(),
           /*storage_key=*/
-          base::NumberToString(changes[0].primary_key()),
+          base::NumberToString(changes.back().primary_key()),
           metadata_change_list.get());
-      password_store_changes.push_back(changes[0]);
+
+      password_store_changes.insert(password_store_changes.end(),
+                                    changes.begin(), changes.end());
     }
 
     // Persist the metadata changes.
@@ -456,12 +472,25 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::ApplySyncChanges(
             return syncer::ModelError(
                 FROM_HERE, "Failed to add an entry to the password store.");
           }
-          DCHECK_EQ(1U, changes.size());
-          DCHECK_EQ(PasswordStoreChange::ADD, changes[0].type());
+          // TODO(crbug.com/939302): It's not yet clear if the DCHECK_LE below
+          // is legit. However, recent crashes suggest that 2 changes are
+          // returned when trying to AddLoginSync (details are in the bug). Once
+          // this is resolved, we should update the call the UpdateStorageKey()
+          // if necessary and remove unnecessary DCHECKs below.
+          // DCHECK_EQ(1U, changes.size());
+          DCHECK_LE(changes.size(), 2U);
+          if (changes.size() == 1) {
+            DCHECK_EQ(changes[0].type(), PasswordStoreChange::ADD);
+          } else {
+            // There must be 2 changes.
+            DCHECK_EQ(changes[0].type(), PasswordStoreChange::REMOVE);
+            DCHECK_EQ(changes[1].type(), PasswordStoreChange::ADD);
+          }
+
           change_processor()->UpdateStorageKey(
               entity_change.data(),
               /*storage_key=*/
-              base::NumberToString(changes[0].primary_key()),
+              base::NumberToString(changes.back().primary_key()),
               metadata_change_list.get());
           break;
         case syncer::EntityChange::ACTION_UPDATE:
@@ -489,7 +518,8 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::ApplySyncChanges(
           break;
         }
       }
-      password_store_changes.push_back(changes[0]);
+      password_store_changes.insert(password_store_changes.end(),
+                                    changes.begin(), changes.end());
     }
 
     // Persist the metadata changes.
