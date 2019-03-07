@@ -123,7 +123,8 @@ void WebAppInstallFinalizer::PinAppToShelf(const AppId& app_id) {
   NOTIMPLEMENTED();
 }
 
-bool WebAppInstallFinalizer::CanReparentTab(bool shortcut_created) const {
+bool WebAppInstallFinalizer::CanReparentTab(const AppId& app_id,
+                                            bool shortcut_created) const {
   // TODO(loyso): Implement it.
   NOTIMPLEMENTED();
   return true;

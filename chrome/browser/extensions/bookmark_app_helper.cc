@@ -490,12 +490,14 @@ void BookmarkAppHelper::OnShortcutCreationCompleted(
     BookmarkAppPinToShelf(extension);
 
   // If there is a browser, it means that the app is being installed in the
-  // foreground: window reparenting needed.
+  // foreground.
   const bool reparent_tab =
       (chrome::FindBrowserWithWebContents(contents_) != nullptr);
+
   // TODO(loyso): Reparenting must be implemented in
   // chrome/browser/ui/web_applications/ UI layer as a post-install step.
-  if (reparent_tab && CanBookmarkAppReparentTab(shortcut_created)) {
+  if (reparent_tab &&
+      CanBookmarkAppReparentTab(profile_, extension, shortcut_created)) {
     DCHECK(!profile_->IsOffTheRecord());
     BookmarkAppReparentTab(contents_, extension);
     if (CanBookmarkAppRevealAppShim())

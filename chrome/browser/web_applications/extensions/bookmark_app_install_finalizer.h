@@ -33,7 +33,8 @@ class BookmarkAppInstallFinalizer : public web_app::InstallFinalizer {
                          CreateOsShortcutsCallback callback) override;
   bool CanPinAppToShelf() const override;
   void PinAppToShelf(const web_app::AppId& app_id) override;
-  bool CanReparentTab(bool shortcut_created) const override;
+  bool CanReparentTab(const web_app::AppId& app_id,
+                      bool shortcut_created) const override;
   void ReparentTab(const web_app::AppId& app_id,
                    content::WebContents* web_contents) override;
   bool CanRevealAppShim() const override;

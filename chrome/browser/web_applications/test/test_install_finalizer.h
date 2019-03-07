@@ -28,7 +28,8 @@ class TestInstallFinalizer final : public InstallFinalizer {
                          CreateOsShortcutsCallback callback) override;
   bool CanPinAppToShelf() const override;
   void PinAppToShelf(const AppId& app_id) override;
-  bool CanReparentTab(bool shortcut_created) const override;
+  bool CanReparentTab(const AppId& app_id,
+                      bool shortcut_created) const override;
   void ReparentTab(const AppId& app_id,
                    content::WebContents* web_contents) override;
   bool CanRevealAppShim() const override;

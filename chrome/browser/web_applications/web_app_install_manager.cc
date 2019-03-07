@@ -245,7 +245,7 @@ void WebAppInstallManager::OnShortcutsCreated(
 
   // TODO(loyso): Implement |reparent_tab| to skip tab reparenting logic.
   if (web_app_info->open_as_window &&
-      install_finalizer_->CanReparentTab(shortcut_created)) {
+      install_finalizer_->CanReparentTab(app_id, shortcut_created)) {
     install_finalizer_->ReparentTab(app_id, web_contents());
   }
 

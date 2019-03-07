@@ -41,7 +41,8 @@ class InstallFinalizer {
   virtual bool CanPinAppToShelf() const = 0;
   virtual void PinAppToShelf(const AppId& app_id) = 0;
 
-  virtual bool CanReparentTab(bool shortcut_created) const = 0;
+  virtual bool CanReparentTab(const AppId& app_id,
+                              bool shortcut_created) const = 0;
   virtual void ReparentTab(const AppId& app_id,
                            content::WebContents* web_contents) = 0;
 
