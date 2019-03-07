@@ -102,6 +102,35 @@ class FeedLoggingBridge {
       const base::android::JavaRef<jobject>& j_this,
       const base::android::JavaRef<jintArray>& j_piet_error_codes);
 
+  void OnInternalError(JNIEnv* j_env,
+                       const base::android::JavaRef<jobject>& j_this,
+                       const jint j_internal_error);
+
+  void OnTokenCompleted(JNIEnv* j_env,
+                        const base::android::JavaRef<jobject>& j_this,
+                        const jboolean j_was_synthetic,
+                        const jint j_content_count,
+                        const jint j_token_count);
+
+  void OnTokenFailedToComplete(JNIEnv* j_env,
+                               const base::android::JavaRef<jobject>& j_this,
+                               const jboolean j_was_synthetic,
+                               const jint j_failure_count);
+
+  void OnServerRequest(JNIEnv* j_env,
+                       const base::android::JavaRef<jobject>& j_this,
+                       const jint j_request_reason);
+
+  void OnZeroStateShown(JNIEnv* j_env,
+                        const base::android::JavaRef<jobject>& j_this,
+                        const jint j_zero_state_show_reason);
+
+  void OnZeroStateRefreshCompleted(
+      JNIEnv* j_env,
+      const base::android::JavaRef<jobject>& j_this,
+      const jint j_new_content_count,
+      const jint j_new_token_count);
+
   void OnContentTargetVisited(JNIEnv* j_env,
                               const base::android::JavaRef<jobject>& j_this,
                               const jlong visit_time_ms,
