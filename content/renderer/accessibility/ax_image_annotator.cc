@@ -49,6 +49,15 @@ std::string AXImageAnnotator::GetImageAnnotation(
   return std::string();
 }
 
+ax::mojom::ImageAnnotationStatus AXImageAnnotator::GetImageAnnotationStatus(
+    blink::WebAXObject& image) const {
+  DCHECK(!image.IsDetached());
+  const auto lookup = image_annotations_.find(image.AxID());
+  if (lookup != image_annotations_.end())
+    return lookup->second.status();
+  return ax::mojom::ImageAnnotationStatus::kNone;
+}
+
 bool AXImageAnnotator::HasAnnotationInCache(blink::WebAXObject& image) const {
   DCHECK(!image.IsDetached());
   if (!HasImageInCache(image))
@@ -157,6 +166,7 @@ void AXImageAnnotator::MarkAllImagesDirty() {
 AXImageAnnotator::ImageInfo::ImageInfo(const blink::WebAXObject& image)
     : image_processor_(
           base::BindRepeating(&AXImageAnnotator::GetImageData, image)),
+      status_(ax::mojom::ImageAnnotationStatus::kAnnotationPending),
       annotation_(base::nullopt) {}
 
 AXImageAnnotator::ImageInfo::~ImageInfo() = default;
@@ -167,7 +177,24 @@ AXImageAnnotator::ImageInfo::GetImageProcessor() {
 }
 
 bool AXImageAnnotator::ImageInfo::HasAnnotation() const {
-  return annotation_.has_value();
+  switch (status_) {
+    case ax::mojom::ImageAnnotationStatus::kNone:
+    case ax::mojom::ImageAnnotationStatus::kIneligibleForAnnotation:
+    // The user hasn't requested an annotation yet, or a previously pending
+    // annotation request had been cancelled.
+    case ax::mojom::ImageAnnotationStatus::kEligibleForAnnotation:
+    case ax::mojom::ImageAnnotationStatus::kAnnotationPending:
+      return false;
+    case ax::mojom::ImageAnnotationStatus::kAnnotationSucceeded:
+      DCHECK(annotation_.has_value());
+      return true;
+    case ax::mojom::ImageAnnotationStatus::kAnnotationEmpty:
+    // Image has been classified as adult content.
+    case ax::mojom::ImageAnnotationStatus::kAnnotationAdult:
+    case ax::mojom::ImageAnnotationStatus::kAnnotationProcessFailed:
+      DCHECK(!annotation_.has_value());
+      return true;
+  }
 }
 
 // static
@@ -186,16 +213,43 @@ SkBitmap AXImageAnnotator::GetImageData(const blink::WebAXObject& image) {
 void AXImageAnnotator::OnImageAnnotated(
     const blink::WebAXObject& image,
     image_annotation::mojom::AnnotateImageResultPtr result) {
-  if (image.IsDetached())
-    return;
   if (!base::ContainsKey(image_annotations_, image.AxID()))
     return;
-  // TODO(nektar): Set the image annotation status on this image to Error.
-  if (result->is_error_code())
+
+  if (image.IsDetached()) {
+    image_annotations_.at(image.AxID())
+        .set_status(ax::mojom::ImageAnnotationStatus::kIneligibleForAnnotation);
+    // We should not mark dirty a detached object.
     return;
+  }
+
+  if (result->is_error_code()) {
+    DLOG(WARNING) << "Image annotation error.";
+    switch (result->get_error_code()) {
+      case image_annotation::mojom::AnnotateImageError::kCanceled:
+        image_annotations_.at(image.AxID())
+            .set_status(
+                ax::mojom::ImageAnnotationStatus::kEligibleForAnnotation);
+        break;
+      case image_annotation::mojom::AnnotateImageError::kFailure:
+        image_annotations_.at(image.AxID())
+            .set_status(
+                ax::mojom::ImageAnnotationStatus::kAnnotationProcessFailed);
+        break;
+      case image_annotation::mojom::AnnotateImageError::kAdult:
+        image_annotations_.at(image.AxID())
+            .set_status(ax::mojom::ImageAnnotationStatus::kAnnotationAdult);
+        break;
+    }
+    render_accessibility_->MarkWebAXObjectDirty(image, false /* subtree */);
+    return;
+  }
 
   if (!result->is_annotations()) {
     DLOG(WARNING) << "No image annotation results.";
+    image_annotations_.at(image.AxID())
+        .set_status(ax::mojom::ImageAnnotationStatus::kAnnotationEmpty);
+    render_accessibility_->MarkWebAXObjectDirty(image, false /* subtree */);
     return;
   }
 
@@ -229,9 +283,15 @@ void AXImageAnnotator::OnImageAnnotated(
     }
   }
 
-  if (contextualized_strings.empty())
+  if (contextualized_strings.empty()) {
+    image_annotations_.at(image.AxID())
+        .set_status(ax::mojom::ImageAnnotationStatus::kAnnotationEmpty);
+    render_accessibility_->MarkWebAXObjectDirty(image, false /* subtree */);
     return;
+  }
 
+  image_annotations_.at(image.AxID())
+      .set_status(ax::mojom::ImageAnnotationStatus::kAnnotationSucceeded);
   // TODO(accessibility): join two sentences together in a more i18n-friendly
   // way. Since this is intended for a screen reader, though, a period
   // probably works in almost all languages.

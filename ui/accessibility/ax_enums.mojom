@@ -558,6 +558,9 @@ enum IntAttribute {
 
   kHasPopup,
 
+  // Image annotation status, of type ImageAnnotationStatus.
+  kImageAnnotationStatus,
+
    // Indicates if a form control has invalid input or
    // if an element has an aria-invalid attribute.
   kInvalidState,
@@ -577,9 +580,6 @@ enum IntAttribute {
    // Focus traversal in views and Android.
   kPreviousFocusId,
   kNextFocusId,
-
-   // Image annotation status, of type ImageAnnotationStatus.
-  kImageAnnotationStatus,
 };
 
 enum FloatAttribute {
