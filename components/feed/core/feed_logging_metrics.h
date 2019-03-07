@@ -89,6 +89,18 @@ class FeedLoggingMetrics {
 
   void OnPietFrameRenderingEvent(std::vector<int> piet_error_codes);
 
+  void OnInternalError(int internal_error);
+
+  void OnTokenCompleted(bool was_synthetic, int content_count, int token_count);
+
+  void OnTokenFailedToComplete(bool was_synthetic, int failure_count);
+
+  void OnServerRequest(int request_reason);
+
+  void OnZeroStateShown(int zero_state_show_reason);
+
+  void OnZeroStateRefreshCompleted(int new_content_count, int new_token_count);
+
   void ReportScrolledAfterOpen();
 
  private:

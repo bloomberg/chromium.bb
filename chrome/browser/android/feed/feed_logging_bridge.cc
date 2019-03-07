@@ -171,6 +171,54 @@ void FeedLoggingBridge::OnPietFrameRenderingEvent(
   feed_logging_metrics_->OnPietFrameRenderingEvent(std::move(piet_error_codes));
 }
 
+void FeedLoggingBridge::OnInternalError(JNIEnv* j_env,
+                                        const JavaRef<jobject>& j_this,
+                                        const jint j_internal_error) {
+  feed_logging_metrics_->OnInternalError(j_internal_error);
+}
+
+void FeedLoggingBridge::OnTokenCompleted(
+    JNIEnv* j_env,
+    const base::android::JavaRef<jobject>& j_this,
+    const jboolean j_was_synthetic,
+    const jint j_content_count,
+    const jint j_token_count) {
+  feed_logging_metrics_->OnTokenCompleted(j_was_synthetic, j_content_count,
+                                          j_token_count);
+}
+
+void FeedLoggingBridge::OnTokenFailedToComplete(
+    JNIEnv* j_env,
+    const base::android::JavaRef<jobject>& j_this,
+    const jboolean j_was_synthetic,
+    const jint j_failure_count) {
+  feed_logging_metrics_->OnTokenFailedToComplete(j_was_synthetic,
+                                                 j_failure_count);
+}
+
+void FeedLoggingBridge::OnServerRequest(
+    JNIEnv* j_env,
+    const base::android::JavaRef<jobject>& j_this,
+    const jint j_request_reason) {
+  feed_logging_metrics_->OnServerRequest(j_request_reason);
+}
+
+void FeedLoggingBridge::OnZeroStateShown(
+    JNIEnv* j_env,
+    const base::android::JavaRef<jobject>& j_this,
+    const jint j_zero_state_show_reason) {
+  feed_logging_metrics_->OnZeroStateShown(j_zero_state_show_reason);
+}
+
+void FeedLoggingBridge::OnZeroStateRefreshCompleted(
+    JNIEnv* j_env,
+    const base::android::JavaRef<jobject>& j_this,
+    const jint j_new_content_count,
+    const jint j_new_token_count) {
+  feed_logging_metrics_->OnZeroStateRefreshCompleted(j_new_content_count,
+                                                     j_new_token_count);
+}
+
 void FeedLoggingBridge::OnContentTargetVisited(JNIEnv* j_env,
                                                const JavaRef<jobject>& j_this,
                                                const jlong visit_time_ms,

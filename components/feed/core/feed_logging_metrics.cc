@@ -28,7 +28,11 @@ namespace {
 // identical bucket sizes and names with Zine is for comparing Feed with Zine
 // easily. After Zine is deprecated, we can change the values if we needed.
 
+// Constants used as max sample sizes for histograms.
+const int kMaxContentCount = 50;
+const int kMaxFailureCount = 10;
 const int kMaxSuggestionsTotal = 50;
+const int kMaxTokenCount = 10;
 
 // Keep in sync with MAX_SUGGESTIONS_PER_SECTION in NewTabPageUma.java.
 const int kMaxSuggestionsForArticle = 20;
@@ -333,6 +337,70 @@ void FeedLoggingMetrics::OnPietFrameRenderingEvent(
     base::UmaHistogramSparse(
         "ContentSuggestions.Feed.Piet.FrameRenderingErrorCode", error_code);
   }
+}
+
+void FeedLoggingMetrics::OnInternalError(int internal_error) {
+  // TODO(https://crbug.com/935602): The max value here is fragile, figure out
+  // some way to test the @IntDef size.
+  UMA_HISTOGRAM_ENUMERATION("ContentSuggestions.Feed.InternalError",
+                            internal_error, 10);
+}
+
+void FeedLoggingMetrics::OnTokenCompleted(bool was_synthetic,
+                                          int content_count,
+                                          int token_count) {
+  if (was_synthetic) {
+    UMA_HISTOGRAM_EXACT_LINEAR(
+        "ContentSuggestions.Feed.TokenCompleted.ContentCount.Synthetic",
+        content_count, kMaxFailureCount);
+    UMA_HISTOGRAM_EXACT_LINEAR(
+        "ContentSuggestions.Feed.TokenCompleted.TokenCount.Synthetic",
+        token_count, kMaxTokenCount);
+  } else {
+    UMA_HISTOGRAM_EXACT_LINEAR(
+        "ContentSuggestions.Feed.TokenCompleted.ContentCount.Nonsynthetic",
+        content_count, kMaxContentCount);
+    UMA_HISTOGRAM_EXACT_LINEAR(
+        "ContentSuggestions.Feed.TokenCompleted.TokenCount.Nonsynthetic",
+        token_count, kMaxTokenCount);
+  }
+}
+
+void FeedLoggingMetrics::OnTokenFailedToComplete(bool was_synthetic,
+                                                 int failure_count) {
+  if (was_synthetic) {
+    UMA_HISTOGRAM_EXACT_LINEAR(
+        "ContentSuggestions.Feed.TokenFailedToCompleted.Synthetic",
+        failure_count, kMaxFailureCount);
+  } else {
+    UMA_HISTOGRAM_EXACT_LINEAR(
+        "ContentSuggestions.Feed.TokenFailedToCompleted.Nonsynthetic",
+        failure_count, kMaxFailureCount);
+  }
+}
+
+void FeedLoggingMetrics::OnServerRequest(int request_reason) {
+  // TODO(https://crbug.com/935602): The max value here is fragile, figure out
+  // some way to test the @IntDef size.
+  UMA_HISTOGRAM_ENUMERATION("ContentSuggestions.Feed.ServerRequest.Reason",
+                            request_reason, 8);
+}
+
+void FeedLoggingMetrics::OnZeroStateShown(int zero_state_show_reason) {
+  // TODO(https://crbug.com/935602): The max value here is fragile, figure out
+  // some way to test the @IntDef size.
+  UMA_HISTOGRAM_ENUMERATION("ContentSuggestions.Feed.ZeroStateShown.Reason",
+                            zero_state_show_reason, 3);
+}
+
+void FeedLoggingMetrics::OnZeroStateRefreshCompleted(int new_content_count,
+                                                     int new_token_count) {
+  UMA_HISTOGRAM_EXACT_LINEAR(
+      "ContentSuggestions.Feed.ZeroStateRefreshCompleted.ContentCount",
+      new_content_count, kMaxContentCount);
+  UMA_HISTOGRAM_EXACT_LINEAR(
+      "ContentSuggestions.Feed.ZeroStateRefreshCompleted.TokenCount",
+      new_token_count, kMaxTokenCount);
 }
 
 void FeedLoggingMetrics::ReportScrolledAfterOpen() {

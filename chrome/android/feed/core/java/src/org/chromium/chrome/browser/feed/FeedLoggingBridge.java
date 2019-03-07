@@ -228,32 +228,38 @@ public class FeedLoggingBridge implements BasicLoggingApi {
 
     @Override
     public void onInternalError(@InternalFeedError int internalError) {
-        // TODO(https://crbug.com/924739): Implementation.
+        if (mNativeFeedLoggingBridge == 0) return;
+        nativeOnInternalError(mNativeFeedLoggingBridge, internalError);
     }
 
     @Override
     public void onTokenCompleted(boolean wasSynthetic, int contentCount, int tokenCount) {
-        // TODO(https://crbug.com/924739): Implementation.
+        if (mNativeFeedLoggingBridge == 0) return;
+        nativeOnTokenCompleted(mNativeFeedLoggingBridge, wasSynthetic, contentCount, tokenCount);
     }
 
     @Override
     public void onTokenFailedToComplete(boolean wasSynthetic, int failureCount) {
-        // TODO(https://crbug.com/924739): Implementation.
+        if (mNativeFeedLoggingBridge == 0) return;
+        nativeOnTokenFailedToComplete(mNativeFeedLoggingBridge, wasSynthetic, failureCount);
     }
 
     @Override
     public void onServerRequest(@RequestReason int requestReason) {
-        // TODO(https://crbug.com/924739): Implementation.
+        if (mNativeFeedLoggingBridge == 0) return;
+        nativeOnServerRequest(mNativeFeedLoggingBridge, requestReason);
     }
 
     @Override
     public void onZeroStateShown(@ZeroStateShowReason int zeroStateShowReason) {
-        // TODO(https://crbug.com/924739): Implementation.
+        if (mNativeFeedLoggingBridge == 0) return;
+        nativeOnZeroStateShown(mNativeFeedLoggingBridge, zeroStateShowReason);
     }
 
     @Override
     public void onZeroStateRefreshCompleted(int newContentCount, int newTokenCount) {
-        // TODO(https://crbug.com/924739): Implementation.
+        if (mNativeFeedLoggingBridge == 0) return;
+        nativeOnZeroStateRefreshCompleted(mNativeFeedLoggingBridge, newContentCount, newTokenCount);
     }
 
     @Override
@@ -377,6 +383,16 @@ public class FeedLoggingBridge implements BasicLoggingApi {
             long nativeFeedLoggingBridge, long spinnerShownTimeMs, int spinnerType);
     private native void nativeOnPietFrameRenderingEvent(
             long nativeFeedLoggingBridge, int[] pietErrorCodes);
+    private native void nativeOnInternalError(long nativeFeedLoggingBridge, int internalError);
+    private native void nativeOnTokenCompleted(
+            long nativeFeedLoggingBridge, boolean wasSynthetic, int contentCount, int tokenCount);
+    private native void nativeOnTokenFailedToComplete(
+            long nativeFeedLoggingBridge, boolean wasSynthetic, int failureCount);
+    private native void nativeOnServerRequest(long nativeFeedLoggingBridge, int requestReason);
+    private native void nativeOnZeroStateShown(
+            long nativeFeedLoggingBridge, int zeroStateShowReason);
+    private native void nativeOnZeroStateRefreshCompleted(
+            long nativeFeedLoggingBridge, int newContentCount, int newTokenCount);
     private native void nativeOnContentTargetVisited(
             long nativeFeedLoggingBridge, long visitTimeMs, boolean isOffline, boolean returnToNtp);
     private native void nativeReportScrolledAfterOpen(long nativeFeedLoggingBridge);
