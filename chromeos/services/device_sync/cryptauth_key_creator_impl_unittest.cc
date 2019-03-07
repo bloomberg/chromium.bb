@@ -138,7 +138,7 @@ class DeviceSyncCryptAuthKeyCreatorImplTest : public testing::Test {
 
     std::string expected_symmetric_key_material = crypto::HkdfSha256(
         expected_handshake_secret, kCryptAuthSymmetricKeyDerivationSalt,
-        key_to_create.handle ? *key_to_create.handle : "",
+        CryptAuthKeyBundle::KeyBundleNameEnumToString(bundle_name),
         NumBytesForSymmetricKeyType(key_to_create.type));
 
     return CryptAuthKey(expected_symmetric_key_material, key_to_create.status,

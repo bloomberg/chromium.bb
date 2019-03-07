@@ -4,7 +4,6 @@
 
 #include "chromeos/services/device_sync/cryptauth_key_creator_impl.h"
 
-#include "base/base64.h"
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
@@ -13,7 +12,6 @@
 #include "chromeos/services/device_sync/cryptauth_constants.h"
 #include "chromeos/services/device_sync/proto/cryptauth_common.pb.h"
 #include "crypto/hkdf.h"
-#include "crypto/random.h"
 
 namespace chromeos {
 
@@ -55,17 +53,6 @@ size_t NumBytesForSymmetricKeyType(cryptauthv2::KeyType key_type) {
       NOTREACHED();
       return 0u;
   }
-}
-
-// Creates a handle by base64-encoding 32 random bytes.
-std::string CreateRandomHandle() {
-  std::string bytes(32, '\0');
-  crypto::RandBytes(base::WriteInto(&bytes, bytes.size()), bytes.size());
-
-  std::string handle;
-  base::Base64Encode(bytes, &handle);
-
-  return handle;
 }
 
 }  // namespace
@@ -166,15 +153,13 @@ void CryptAuthKeyCreatorImpl::StartKeyCreation() {
     // Enrollment" and the info should be the key handle. This process is
     // synchronous, unlike SecureMessageDelegate calls.
     if (IsValidSymmetricKeyType(key_data.type)) {
-      std::string handle =
-          key_data.handle ? *key_data.handle : CreateRandomHandle();
-      std::string derived_symmetric_key_material =
-          crypto::HkdfSha256(dh_handshake_secret_->symmetric_key(),
-                             kCryptAuthSymmetricKeyDerivationSalt, handle,
-                             NumBytesForSymmetricKeyType(key_data.type));
+      std::string derived_symmetric_key_material = crypto::HkdfSha256(
+          dh_handshake_secret_->symmetric_key(),
+          kCryptAuthSymmetricKeyDerivationSalt,
+          CryptAuthKeyBundle::KeyBundleNameEnumToString(bundle_name),
+          NumBytesForSymmetricKeyType(key_data.type));
 
-      OnSymmetricKeyDerived(bundle_name, derived_symmetric_key_material,
-                            handle);
+      OnSymmetricKeyDerived(bundle_name, derived_symmetric_key_material);
 
       continue;
     }
@@ -216,8 +201,7 @@ void CryptAuthKeyCreatorImpl::OnAsymmetricKeyPairGenerated(
 
 void CryptAuthKeyCreatorImpl::OnSymmetricKeyDerived(
     CryptAuthKeyBundle::Name bundle_name,
-    const std::string& symmetric_key,
-    const std::string& handle) {
+    const std::string& symmetric_key) {
   DCHECK(keys_to_create_.size() > 0);
   DCHECK(!symmetric_key.empty());
 
@@ -225,7 +209,7 @@ void CryptAuthKeyCreatorImpl::OnSymmetricKeyDerived(
       keys_to_create_.find(bundle_name)->second;
 
   new_keys_.try_emplace(bundle_name, symmetric_key, create_key_data.status,
-                        create_key_data.type, handle);
+                        create_key_data.type, create_key_data.handle);
 
   keys_to_create_.erase(bundle_name);
   if (keys_to_create_.empty())
