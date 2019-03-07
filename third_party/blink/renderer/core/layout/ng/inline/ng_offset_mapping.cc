@@ -503,7 +503,7 @@ PositionWithAffinity NGOffsetMapping::GetPositionWithAffinity(
     return PositionWithAffinity(GetLastPosition(position.index),
                                 TextAffinity::kDownstream);
   }
-  return PositionWithAffinity(GetLastPosition(position.index + 1),
+  return PositionWithAffinity(GetFirstPosition(position.index + 1),
                               TextAffinity::kUpstream);
 }
 
