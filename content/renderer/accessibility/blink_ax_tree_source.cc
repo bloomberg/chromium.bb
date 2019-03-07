@@ -1062,6 +1062,8 @@ void BlinkAXTreeSource::AddImageAnnotations(blink::WebAXObject src,
   // unloaded images where the size is unknown.
   if (dst->relative_bounds.bounds.width() < kMinImageAnnotationWidth ||
       dst->relative_bounds.bounds.height() < kMinImageAnnotationHeight) {
+    dst->SetImageAnnotationStatus(
+        ax::mojom::ImageAnnotationStatus::kIneligibleForAnnotation);
     return;
   }
 
@@ -1075,7 +1077,7 @@ void BlinkAXTreeSource::AddImageAnnotations(blink::WebAXObject src,
     dst->AddStringAttribute(ax::mojom::StringAttribute::kImageAnnotation,
                             image_annotator_->GetImageAnnotation(src));
     dst->SetImageAnnotationStatus(
-        ax::mojom::ImageAnnotationStatus::kAnnotationSucceeded);
+        image_annotator_->GetImageAnnotationStatus(src));
   } else if (image_annotator_->HasImageInCache(src)) {
     image_annotator_->OnImageUpdated(src);
     dst->SetImageAnnotationStatus(

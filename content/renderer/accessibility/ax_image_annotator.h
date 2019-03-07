@@ -18,6 +18,7 @@
 #include "services/image_annotation/public/cpp/image_processor.h"
 #include "services/image_annotation/public/mojom/image_annotation.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 
 namespace blink {
 
@@ -42,6 +43,8 @@ class CONTENT_EXPORT AXImageAnnotator : public base::CheckedObserver {
   void Destroy();
 
   std::string GetImageAnnotation(blink::WebAXObject& image) const;
+  ax::mojom::ImageAnnotationStatus GetImageAnnotationStatus(
+      blink::WebAXObject& image) const;
   bool HasAnnotationInCache(blink::WebAXObject& image) const;
   bool HasImageInCache(const blink::WebAXObject& image) const;
 
@@ -59,6 +62,13 @@ class CONTENT_EXPORT AXImageAnnotator : public base::CheckedObserver {
     image_annotation::mojom::ImageProcessorPtr GetImageProcessor();
     bool HasAnnotation() const;
 
+    ax::mojom::ImageAnnotationStatus status() const { return status_; }
+
+    void set_status(ax::mojom::ImageAnnotationStatus status) {
+      DCHECK_NE(status, ax::mojom::ImageAnnotationStatus::kNone);
+      status_ = status;
+    }
+
     std::string annotation() const {
       DCHECK(annotation_.has_value());
       return annotation_.value_or("");
@@ -68,6 +78,7 @@ class CONTENT_EXPORT AXImageAnnotator : public base::CheckedObserver {
 
    private:
     image_annotation::ImageProcessor image_processor_;
+    ax::mojom::ImageAnnotationStatus status_;
     base::Optional<std::string> annotation_;
   };
 
