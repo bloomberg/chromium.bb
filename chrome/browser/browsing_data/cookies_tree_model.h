@@ -372,9 +372,7 @@ class CookiesTreeModel : public ui::TreeNodeModel<CookieTreeNode> {
   void SetBatchExpectation(int batches_expected, bool reset);
 
   // Create CookiesTreeModel by profile info.
-  static std::unique_ptr<CookiesTreeModel> CreateForProfile(
-      Profile* profile,
-      bool omit_cookies = false);
+  static std::unique_ptr<CookiesTreeModel> CreateForProfile(Profile* profile);
 
  private:
   enum CookieIconIndex { COOKIE = 0, DATABASE = 1 };

@@ -45,6 +45,15 @@ Polymer({
       value: '',
     },
 
+    /**
+     * The number of cookies stored for the origin.
+     * @private
+     */
+    numCookies_: {
+      type: String,
+      value: '',
+    },
+
     /** @private */
     enableSiteSettings_: {
       type: Boolean,
@@ -254,8 +263,18 @@ Polymer({
    *     disk or battery).
    * @private
    */
-  hasUsage_: function(storage) {
-    return storage != '';
+  hasUsage_: function(storage, cookies) {
+    return storage != '' || cookies != '';
+  },
+
+  /**
+   * Checks whether this site has both storage and cookies information to show.
+   * @return {boolean} Whether there are both storage and cookies information to
+   *     show.
+   * @private
+   */
+  hasDataAndCookies_: function(storage, cookies) {
+    return storage != '' && cookies != '';
   },
 
   /** @private */
