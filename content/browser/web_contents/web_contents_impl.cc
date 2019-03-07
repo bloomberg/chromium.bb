@@ -1299,11 +1299,20 @@ bool WebContentsImpl::ShouldOverrideUserAgentInNewTabs() {
 }
 
 void WebContentsImpl::EnableWebContentsOnlyAccessibilityMode() {
-  if (!GetAccessibilityMode().is_mode_off()) {
+  // If accessibility is already enabled, we'll need to force a reset
+  // in order to ensure new observers of accessibility events get the
+  // full accessibility tree from scratch.
+  bool need_reset = GetAccessibilityMode().has_mode(ui::AXMode::kWebContents);
+
+  ui::AXMode desired_mode =
+      GetContentClient()->browser()->GetAXModeForBrowserContext(
+          GetBrowserContext());
+  desired_mode |= ui::kAXModeWebContentsOnly;
+  AddAccessibilityMode(desired_mode);
+
+  if (need_reset) {
     for (RenderFrameHost* rfh : GetAllFrames())
       ResetAccessibility(rfh);
-  } else {
-    AddAccessibilityMode(ui::kAXModeWebContentsOnly);
   }
 }
 
