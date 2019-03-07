@@ -67,14 +67,6 @@ class CORE_EXPORT CSSUnsupportedStyleValue final : public CSSStyleValue {
   DISALLOW_COPY_AND_ASSIGN(CSSUnsupportedStyleValue);
 };
 
-DEFINE_TYPE_CASTS(CSSUnsupportedStyleValue,
-                  CSSStyleValue,
-                  value,
-                  value->GetType() ==
-                      CSSStyleValue::StyleValueType::kUnknownType,
-                  value.GetType() ==
-                      CSSStyleValue::StyleValueType::kUnknownType);
-
 template <>
 struct DowncastTraits<CSSUnsupportedStyleValue> {
   static bool AllowFrom(const CSSStyleValue& value) {
