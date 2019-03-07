@@ -54,9 +54,9 @@ void StreamFactory::CreateInputStream(
   CHECK_EQ(magic_bytes_, 0x600DC0DEu);
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
   SetStateForCrashing("creating input stream");
-  TRACE_EVENT_NESTABLE_ASYNC_INSTANT2(
+  TRACE_EVENT_NESTABLE_ASYNC_INSTANT1(
       "audio", "CreateInputStream", bindings_.dispatch_context().id_for_trace(),
-      "device id", device_id, "params", params.AsHumanReadableString());
+      "device id", device_id);
 
   if (processing_config && processing_config->settings.requires_apm() &&
       params.GetBufferDuration() != base::TimeDelta::FromMilliseconds(10)) {
@@ -112,10 +112,10 @@ void StreamFactory::CreateOutputStream(
   CHECK_EQ(magic_bytes_, 0x600DC0DEu);
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
   SetStateForCrashing("creating output stream");
-  TRACE_EVENT_NESTABLE_ASYNC_INSTANT2(
+  TRACE_EVENT_NESTABLE_ASYNC_INSTANT1(
       "audio", "CreateOutputStream",
       bindings_.dispatch_context().id_for_trace(), "device id",
-      output_device_id, "params", params.AsHumanReadableString());
+      output_device_id);
 
   media::mojom::AudioOutputStreamObserverAssociatedPtr observer;
   observer.Bind(std::move(observer_info));
@@ -183,11 +183,10 @@ void StreamFactory::CreateLoopbackStream(
   CHECK_EQ(magic_bytes_, 0x600DC0DEu);
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
   SetStateForCrashing("creating loopback stream");
-  TRACE_EVENT_NESTABLE_ASYNC_INSTANT2(
+  TRACE_EVENT_NESTABLE_ASYNC_INSTANT1(
       "audio", "CreateLoopbackStream",
       bindings_.dispatch_context().id_for_trace(), "group id",
-      group_id.GetLowForSerialization(), "params",
-      params.AsHumanReadableString());
+      group_id.GetLowForSerialization());
 
   auto stream = std::make_unique<LoopbackStream>(
       std::move(created_callback),
