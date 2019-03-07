@@ -86,8 +86,18 @@ void* SystemAllocPagesInternal(void* hint,
 #endif
 
   int access_flag = GetAccessFlags(accessibility);
+  int map_flags = MAP_ANONYMOUS | MAP_PRIVATE;
+
+  // TODO(https://crbug.com/927411): Remove once Fuchsia uses a native page
+  // allocator, rather than relying on POSIX compatibility.
+#if defined(OS_FUCHSIA)
+  if (page_tag == PageTag::kV8) {
+    map_flags |= MAP_JIT;
+  }
+#endif
+
   void* ret =
-      mmap(hint, length, access_flag, MAP_ANONYMOUS | MAP_PRIVATE, fd, 0);
+      mmap(hint, length, access_flag, map_flags, fd, 0);
   if (ret == MAP_FAILED) {
     s_allocPageErrorCode = errno;
     ret = nullptr;
