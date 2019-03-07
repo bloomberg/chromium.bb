@@ -49,7 +49,18 @@ AURA_EXPORT extern const WindowProperty<bool>* const kAlwaysOnTopKey;
 AURA_EXPORT extern const WindowProperty<bool>* const kAnimationsDisabledKey;
 
 // A property key to store the app icon, typically larger for shelf icons, etc.
+// This is not transported to the window service.
 AURA_EXPORT extern const WindowProperty<gfx::ImageSkia*>* const kAppIconKey;
+
+// A property key to store a large version of the app icon, which is
+// transported to the window service.
+AURA_EXPORT extern const WindowProperty<gfx::ImageSkia*>* const
+    kAppIconLargeKey;
+
+// A property key to store a smaller version of the app icon, which is
+// transported to the window service.
+AURA_EXPORT extern const WindowProperty<gfx::ImageSkia*>* const
+    kAppIconSmallKey;
 
 // A property key to store the type of window that will be used to record
 // pointer metrics. See AppType in ash/public/cpp/app_types.h for more details.

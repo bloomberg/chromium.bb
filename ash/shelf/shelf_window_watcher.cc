@@ -65,7 +65,9 @@ void UpdateShelfItemForWindow(ShelfItem* item, aura::Window* window) {
   }
 
   // Prefer app icons over window icons, they're typically larger.
-  gfx::ImageSkia* image = window->GetProperty(aura::client::kAppIconKey);
+  gfx::ImageSkia* image = window->GetProperty(aura::client::kAppIconLargeKey);
+  if (!image || image->isNull())
+    image = window->GetProperty(aura::client::kAppIconKey);
   if (!image || image->isNull())
     image = window->GetProperty(aura::client::kWindowIconKey);
   if (!image || image->isNull()) {
