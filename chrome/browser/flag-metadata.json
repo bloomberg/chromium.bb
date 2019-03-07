@@ -378,7 +378,7 @@
   },
   {
     "name": "composited-layer-borders",
-    // "owners": [ "your-team" ],
+    "owners": [ "ccameron" ],
     "expiry_milestone": 76
   },
   {
@@ -3042,7 +3042,7 @@
   },
   {
     "name": "ui-show-composited-layer-borders",
-    // "owners": [ "your-team" ],
+    "owners": [ "ccameron" ],
     "expiry_milestone": 76
   },
   {
