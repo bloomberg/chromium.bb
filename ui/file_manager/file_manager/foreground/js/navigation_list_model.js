@@ -659,29 +659,42 @@ class NavigationListModel extends cr.EventTarget {
 
       // Multiple partitions found.
       let removableModel;
+      let removableEntry;
       if (this.removableModels_.has(devicePath)) {
         // Removable model has been seen before. Use the same reference.
         removableModel = this.removableModels_.get(devicePath);
+        removableEntry = removableModel.entry;
       } else {
         // Create an EntryList for new removable group.
         const rootLabel = removableGroup[0].volumeInfo.driveLabel ?
             removableGroup[0].volumeInfo.driveLabel :
             /*default*/ 'External Drive';
-        const removableEntry = new EntryList(
+        removableEntry = new EntryList(
             rootLabel, VolumeManagerCommon.RootType.REMOVABLE, devicePath);
         removableModel = new NavigationModelFakeItem(
             removableEntry.label, NavigationModelItemType.ENTRY_LIST,
             removableEntry);
         removableModel.section = NavigationSection.REMOVABLE;
-        // Add partitions as entries.
-        for (const partition of removableGroup) {
-          // Only add partition if it doesn't exist as a child already.
-          if (removableEntry.findIndexByVolumeInfo(partition.volumeInfo) ===
-              -1) {
-            removableEntry.addEntry(new VolumeEntry(partition.volumeInfo));
-          }
+      }
+
+      // Remove partitions that aren't available anymore.
+      const existingVolumeIds =
+          new Set(removableGroup.map(p => p.volumeInfo.volumeId));
+      for (const partition of removableEntry.getUIChildren()) {
+        if (!existingVolumeIds.has(partition.volumeInfo.volumeId)) {
+          removableEntry.removeChildEntry(partition);
         }
       }
+
+      // Add partitions as entries.
+      for (const partition of removableGroup) {
+        // Only add partition if it doesn't exist as a child already.
+        if (removableEntry.findIndexByVolumeInfo(partition.volumeInfo) ===
+            -1) {
+          removableEntry.addEntry(new VolumeEntry(partition.volumeInfo));
+        }
+      }
+
       removableModels.set(devicePath, removableModel);
       this.navigationItems_.push(removableModel);
     }
