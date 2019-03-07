@@ -6,11 +6,11 @@ import("//third_party/closure_compiler/compile_js.gni")
 
 js_type_check("closure_compile") {
   deps = [
-    ":contained_home_api",
+    ":kiosk_next_api",
   ]
 }
 
-js_library("contained_home_api") {
+js_library("kiosk_next_api") {
   sources = [
     "api.js",
     "api_impl.js",

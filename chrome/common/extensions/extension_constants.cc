@@ -73,7 +73,7 @@ const char kZipArchiverExtensionPath[] = "chromeos/zip_archiver";
 const char kChromeCameraAppId[] = "hfhhnacclhffhdffklopdkcgdhifgngh";
 const char kChromeCameraAppDevId[] = "flgnmkgjffmkephdokeeliiopbjaafpm";
 const char kChromeCameraAppPath[] = "chromeos/camera";
-const char kContainedHomeAppId[] = "nbaolgedfgoedkjbfmpediclncanmpbc";
+const char kKioskNextHomeAppId[] = "nbaolgedfgoedkjbfmpediclncanmpbc";
 #endif
 
 const char kAppStateNotInstalled[] = "not_installed";

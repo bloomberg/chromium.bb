@@ -3,24 +3,24 @@
 // found in the LICENSE file.
 
 /**
- * @fileoverview Chrome OS Contained Home API definition.
+ * @fileoverview Chrome OS Kiosk Next Home API definition.
  */
 
 /**
- * Namespace for the contained home bridge and related data.
+ * Namespace for the Kiosk Next Home bridge and related data.
  * @const
  */
-var containedHome = {};
+var kioskNextHome = {};
 
 /**
- * System bridge API for the contained home experience.
+ * System bridge API for the Kiosk Next Home.
  *
  * @interface
  */
-containedHome.Bridge = class {
+kioskNextHome.Bridge = class {
   /**
    * Adds listener for system events.
-   * @param {!containedHome.Listener} listener Listener for system events.
+   * @param {!kioskNextHome.Listener} listener Listener for system events.
    */
   addListener(listener) {}
 
@@ -34,14 +34,14 @@ containedHome.Bridge = class {
 
   /**
    * Returns a list of apps installed in the user session.
-   * @return {!Promise<!Array<!containedHome.InstalledApp>>} Promise for the
+   * @return {!Promise<!Array<!kioskNextHome.InstalledApp>>} Promise for the
    *     list of apps.
    */
   getInstalledApps() {}
 
   /**
    * Launches a content (app, video, etc).
-   * @param {!containedHome.ContentSource} contentSource
+   * @param {!kioskNextHome.ContentSource} contentSource
    * @param {string} contentId
    * @param {?Object=} opt_params Optional params to locate the content.
    * @return {!Promise<boolean>} Promise that is resolved after the content is
@@ -56,7 +56,7 @@ containedHome.Bridge = class {
  * A "Content Source" describes how to launch/view the content.
  * @enum {string}
  */
-containedHome.ContentSource = {
+kioskNextHome.ContentSource = {
   /** The content is, or is hosted inside, an ARC++ app. */
   ARC_INTENT: 'arc_intent',
 };
@@ -65,7 +65,7 @@ containedHome.ContentSource = {
  * Types of installed apps on ChromeOS.
  * @enum {string}
  */
-containedHome.AppType = {
+kioskNextHome.AppType = {
   /** The app is an ARC++ app (Android app). */
   ARC: 'arc',
 };
@@ -74,9 +74,9 @@ containedHome.AppType = {
  * A record representing an installed app on the system.
  * @record
  */
-containedHome.InstalledApp = class {
+kioskNextHome.InstalledApp = class {
   constructor() {
-    /** @type {!containedHome.AppType} The type of app. */
+    /** @type {!kioskNextHome.AppType} The type of app. */
     this.appType;
     /**
      * @type {string} Stable, unique identifier for the app. For ARC++ apps,
@@ -96,22 +96,22 @@ containedHome.InstalledApp = class {
  * Different ways an installed app can change.
  * @enum {string}
  */
-containedHome.AppEventType = {
+kioskNextHome.AppEventType = {
   INSTALLED: 'installed',
   UNINSTALLED: 'uninstalled',
 };
 
 /**
  * Interface for a listener of system events, subscribed via
- * {!containedHome.Bridge}.
+ * {!kioskNextHome.Bridge}.
  *
  * @interface
  */
-containedHome.Listener = class {
+kioskNextHome.Listener = class {
   /**
    * Called when an app state change.
-   * @param {!containedHome.InstalledApp} app The app whose state changed.
-   * @param {!containedHome.AppEventType} appEventType Type of the event
+   * @param {!kioskNextHome.InstalledApp} app The app whose state changed.
+   * @param {!kioskNextHome.AppEventType} appEventType Type of the event
    *     indicating what changed for the app.
    */
   onInstalledAppChanged(app, appEventType) {}
@@ -119,7 +119,7 @@ containedHome.Listener = class {
 
 /**
  * Provides bridge implementation.
- * @return {!containedHome.Bridge} Bridge instance that can be used to interact
+ * @return {!kioskNextHome.Bridge} Bridge instance that can be used to interact
  *     with ChromeOS.
  */
-containedHome.getChromeOsBridge = function() {};
+kioskNextHome.getChromeOsBridge = function() {};

@@ -38,7 +38,7 @@ void KioskNextShellClient::LaunchKioskNextShell(const AccountId& account_id) {
       chromeos::ProfileHelper::Get()->GetProfileByAccountId(account_id);
   const extensions::Extension* app =
       extensions::ExtensionRegistry::Get(profile)->GetInstalledExtension(
-          extension_misc::kContainedHomeAppId);
+          extension_misc::kKioskNextHomeAppId);
   DCHECK(app);
   apps::LaunchPlatformApp(profile, app,
                           extensions::AppLaunchSource::SOURCE_CHROME_INTERNAL);

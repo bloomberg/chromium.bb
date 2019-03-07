@@ -555,8 +555,8 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
     }
 
     if (base::FeatureList::IsEnabled(ash::features::kKioskNextShell)) {
-      Add(IDR_CONTAINED_HOME_MANIFEST,
-          base::FilePath(FILE_PATH_LITERAL("chromeos/contained_home")));
+      Add(IDR_KIOSK_NEXT_HOME_MANIFEST,
+          base::FilePath(FILE_PATH_LITERAL("chromeos/kiosk_next_home")));
     }
 #endif  // defined(GOOGLE_CHROME_BUILD)
 
