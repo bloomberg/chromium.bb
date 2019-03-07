@@ -56,6 +56,8 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
                                    const gfx::Size& frame_size_in_pixels,
                                    const gfx::Rect& damage_rect,
                                    base::TimeTicks expected_display_time)>;
+  using PresentationFeedbackMap =
+      base::flat_map<uint32_t, gfx::PresentationFeedback>;
 
   static const uint64_t kFrameIndexStart = 2;
 
@@ -80,10 +82,11 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
 
   FrameSinkManagerImpl* frame_sink_manager() { return frame_sink_manager_; }
 
-  const base::flat_map<uint32_t, gfx::PresentationFeedback>&
-  presentation_feedbacks() {
+  const PresentationFeedbackMap& presentation_feedbacks() {
     return presentation_feedbacks_;
   }
+
+  PresentationFeedbackMap TakePresentationFeedbacks() WARN_UNUSED_RESULT;
 
   // Viz hit-test setup is only called when |is_root_| is true (except on
   // android webview).
@@ -304,7 +307,7 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   bool callback_received_receive_ack_ = true;
   uint32_t trace_sequence_ = 0;
 
-  base::flat_map<uint32_t, gfx::PresentationFeedback> presentation_feedbacks_;
+  PresentationFeedbackMap presentation_feedbacks_;
 
   LocalSurfaceId::ParentComponent last_evicted_parent_component_;
 
