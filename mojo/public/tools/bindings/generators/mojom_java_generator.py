@@ -134,7 +134,9 @@ def GetNameForElement(element):
     if name in _java_reserved_types:
       return name + '_'
     return name
-  if mojom.IsInterfaceRequestKind(element) or mojom.IsAssociatedKind(element):
+  if (mojom.IsInterfaceRequestKind(element) or
+      mojom.IsAssociatedKind(element) or mojom.IsPendingRemoteKind(element) or
+      mojom.IsPendingReceiverKind(element)):
     return GetNameForElement(element.kind)
   if isinstance(element, (mojom.Method,
                           mojom.Parameter,
@@ -199,8 +201,12 @@ def AppendEncodeDecodeParams(initial_params, context, kind, bit):
     params.append(GetArrayExpectedLength(kind))
   if mojom.IsInterfaceKind(kind):
     params.append('%s.MANAGER' % GetJavaType(context, kind))
+  if mojom.IsPendingRemoteKind(kind):
+    params.append('%s.MANAGER' % GetJavaType(context, kind.kind))
   if mojom.IsArrayKind(kind) and mojom.IsInterfaceKind(kind.kind):
     params.append('%s.MANAGER' % GetJavaType(context, kind.kind))
+  if mojom.IsArrayKind(kind) and mojom.IsPendingRemoteKind(kind.kind):
+    params.append('%s.MANAGER' % GetJavaType(context, kind.kind.kind))
   return params
 
 
@@ -211,9 +217,9 @@ def DecodeMethod(context, kind, offset, bit):
       return _DecodeMethodName(kind.kind) + 's'
     if mojom.IsEnumKind(kind):
       return _DecodeMethodName(mojom.INT32)
-    if mojom.IsInterfaceRequestKind(kind):
+    if mojom.IsInterfaceRequestKind(kind) or mojom.IsPendingReceiverKind(kind):
       return 'readInterfaceRequest'
-    if mojom.IsInterfaceKind(kind):
+    if mojom.IsInterfaceKind(kind) or mojom.IsPendingRemoteKind(kind):
       return 'readServiceInterface'
     if mojom.IsAssociatedInterfaceRequestKind(kind):
       return 'readAssociatedInterfaceRequestNotSupported'
@@ -271,7 +277,9 @@ def GetJavaType(context, kind, boxed=False, with_generics=True):
       mojom.IsInterfaceKind(kind) or
       mojom.IsUnionKind(kind)):
     return GetNameForKind(context, kind)
-  if mojom.IsInterfaceRequestKind(kind):
+  if mojom.IsPendingRemoteKind(kind):
+    return GetNameForKind(context, kind.kind)
+  if mojom.IsInterfaceRequestKind(kind) or mojom.IsPendingReceiverKind(kind):
     return ('org.chromium.mojo.bindings.InterfaceRequest<%s>' %
             GetNameForKind(context, kind.kind))
   if mojom.IsAssociatedInterfaceKind(kind):
