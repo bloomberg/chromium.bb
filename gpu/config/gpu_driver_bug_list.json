@@ -3207,6 +3207,18 @@
       "features": [
         "rely_on_implicit_sync_for_swap_buffers"
       ]
+    },
+    {
+      "id": 297,
+      "cr_bugs": [938678],
+      "description": "Needed to pass dEQP-EGL.functional.robustness.reset_context.shaders.infinite_loop.*",
+      "os": {
+        "type" : "chromeos"
+      },
+      "vendor_id": "0x1002",
+      "features": [
+        "exit_on_context_lost"
+      ]
     }
   ]
 }
