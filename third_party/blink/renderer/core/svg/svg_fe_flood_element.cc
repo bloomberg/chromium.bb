@@ -61,4 +61,12 @@ FilterEffect* SVGFEFloodElement::Build(SVGFilterBuilder*, Filter* filter) {
   return FEFlood::Create(filter, color, opacity);
 }
 
+bool SVGFEFloodElement::TaintsOrigin() const {
+  const ComputedStyle* style = GetComputedStyle();
+  // TaintsOrigin() is only called after a successful call to Build()
+  // (see above), so we should have a ComputedStyle here.
+  DCHECK(style);
+  return style->SvgStyle().FloodColor().IsCurrentColor();
+}
+
 }  // namespace blink

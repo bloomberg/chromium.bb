@@ -50,7 +50,7 @@ class SVGFEColorMatrixElement final
   bool SetFilterEffectAttribute(FilterEffect*, const QualifiedName&) override;
   void SvgAttributeChanged(const QualifiedName&) override;
   FilterEffect* Build(SVGFilterBuilder*, Filter*) override;
-  bool TaintsOrigin(bool inputs_taint_origin) const override;
+  bool TaintsOrigin() const override { return false; }
 
   Member<SVGAnimatedNumberList> values_;
   Member<SVGAnimatedString> in1_;

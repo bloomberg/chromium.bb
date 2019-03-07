@@ -161,4 +161,12 @@ FilterEffect* SVGFEDiffuseLightingElement::Build(
   return effect;
 }
 
+bool SVGFEDiffuseLightingElement::TaintsOrigin() const {
+  const ComputedStyle* style = GetComputedStyle();
+  // TaintsOrigin() is only called after a successful call to Build()
+  // (see above), so we should have a ComputedStyle here.
+  DCHECK(style);
+  return style->SvgStyle().LightingColor().IsCurrentColor();
+}
+
 }  // namespace blink

@@ -46,7 +46,7 @@ class SVGFilterPrimitiveStandardAttributes : public SVGElement {
   // Returns true, if the new value is different from the old one.
   virtual bool SetFilterEffectAttribute(FilterEffect*, const QualifiedName&);
 
-  virtual bool TaintsOrigin(bool inputs_taint_origin) const { return true; }
+  virtual bool TaintsOrigin() const { return true; }
 
   // JS API
   SVGAnimatedLength* x() const { return x_.Get(); }

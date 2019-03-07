@@ -64,7 +64,7 @@ class SVGFETurbulenceElement final
 
   // Turbulence takes no inputs and doesn't taint origin, so we can always
   // return false.
-  bool TaintsOrigin(bool inputs_taint_origin) const override { return false; }
+  bool TaintsOrigin() const override { return false; }
 
  private:
   bool SetFilterEffectAttribute(FilterEffect*,
