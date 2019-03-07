@@ -20,6 +20,7 @@
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/policy/core/common/policy_types.h"
 #include "components/policy/policy_constants.h"
+#include "components/prefs/pref_service.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace em = enterprise_management;
@@ -71,9 +72,12 @@ void UserCloudPolicyManager::Connect(
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory =
       client->GetURLLoaderFactory();
 
-  CreateComponentCloudPolicyService(dm_protocol::kChromeExtensionPolicyType,
-                                    component_policy_cache_path_, client.get(),
-                                    schema_registry());
+  CreateComponentCloudPolicyService(
+      dm_protocol::kChromeExtensionPolicyType, component_policy_cache_path_,
+      (local_state->GetBoolean(policy_prefs::kCloudPolicyOverridesMachinePolicy)
+           ? POLICY_SOURCE_PRIORITY_CLOUD
+           : POLICY_SOURCE_CLOUD),
+      client.get(), schema_registry());
   core()->Connect(std::move(client));
   core()->StartRefreshScheduler();
   core()->TrackRefreshDelayPref(local_state,

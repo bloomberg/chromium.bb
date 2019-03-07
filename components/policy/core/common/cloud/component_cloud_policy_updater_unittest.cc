@@ -121,7 +121,8 @@ void ComponentCloudPolicyUpdaterTest::SetUp() {
                                            task_env_.GetMainThreadTaskRunner(),
                                            /* max_cache_size */ base::nullopt);
   store_ = std::make_unique<ComponentCloudPolicyStore>(
-      &store_delegate_, cache_.get(), dm_protocol::kChromeExtensionPolicyType);
+      &store_delegate_, cache_.get(), dm_protocol::kChromeExtensionPolicyType,
+      POLICY_SOURCE_CLOUD);
   store_->SetCredentials(PolicyBuilder::GetFakeAccountIdForTesting(),
                          PolicyBuilder::kFakeToken,
                          PolicyBuilder::kFakeDeviceId, public_key_,

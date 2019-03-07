@@ -22,7 +22,6 @@
 #include "components/policy/core/common/cloud/resource_cache.h"
 #include "components/policy/core/common/external_data_fetcher.h"
 #include "components/policy/core/common/policy_map.h"
-#include "components/policy/core/common/policy_types.h"
 #include "components/policy/proto/chrome_extension_policy.pb.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "crypto/sha2.h"
@@ -87,14 +86,18 @@ ComponentCloudPolicyStore::Delegate::~Delegate() {}
 ComponentCloudPolicyStore::ComponentCloudPolicyStore(
     Delegate* delegate,
     ResourceCache* cache,
-    const std::string& policy_type)
+    const std::string& policy_type,
+    PolicySource policy_source)
     : delegate_(delegate),
       cache_(cache),
-      domain_constants_(GetDomainConstantsForType(policy_type)) {
+      domain_constants_(GetDomainConstantsForType(policy_type)),
+      policy_source_(policy_source) {
   // Allow the store to be created on a different thread than the thread that
   // will end up using it.
   DETACH_FROM_SEQUENCE(sequence_checker_);
   DCHECK(domain_constants_);
+  DCHECK(policy_source == POLICY_SOURCE_CLOUD ||
+         policy_source == POLICY_SOURCE_PRIORITY_CLOUD);
 }
 
 ComponentCloudPolicyStore::~ComponentCloudPolicyStore() {
@@ -433,7 +436,7 @@ bool ComponentCloudPolicyStore::ParsePolicy(const std::string& data,
       level = POLICY_LEVEL_RECOMMENDED;
     }
 
-    policy->Set(it.key(), level, domain_constants_->scope, POLICY_SOURCE_CLOUD,
+    policy->Set(it.key(), level, domain_constants_->scope, policy_source_,
                 std::move(value), nullptr);
   }
 

@@ -15,6 +15,7 @@
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
 #include "components/policy/core/common/cloud/component_cloud_policy_service.h"
 #include "components/policy/core/common/configuration_policy_provider.h"
+#include "components/policy/core/common/policy_types.h"
 #include "components/policy/policy_export.h"
 #include "components/prefs/pref_member.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
@@ -79,6 +80,7 @@ class POLICY_EXPORT CloudPolicyManager
   void CreateComponentCloudPolicyService(
       const std::string& policy_type,
       const base::FilePath& policy_cache_path,
+      PolicySource policy_source,
       CloudPolicyClient* client,
       SchemaRegistry* schema_registry);
 
