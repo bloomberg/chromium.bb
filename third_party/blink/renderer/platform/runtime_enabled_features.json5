@@ -1489,6 +1489,10 @@
       status: "test",
     },
     {
+      name: "WebHID",
+      status: "experimental",
+    },
+    {
       name: "WebNFC",
       status: "experimental",
     },

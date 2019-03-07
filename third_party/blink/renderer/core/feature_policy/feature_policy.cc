@@ -354,6 +354,9 @@ const FeatureNameMap& GetDefaultFeatureNameMap() {
       default_feature_name_map.Set("top-navigation",
                                    mojom::FeaturePolicyFeature::kTopNavigation);
     }
+    if (RuntimeEnabledFeatures::WebHIDEnabled()) {
+      default_feature_name_map.Set("hid", mojom::FeaturePolicyFeature::kHid);
+    }
     if (RuntimeEnabledFeatures::PaymentRequestEnabled()) {
       default_feature_name_map.Set("payment",
                                    mojom::FeaturePolicyFeature::kPayment);

@@ -2356,6 +2356,9 @@ interface Gyroscope : Sensor
     getter y
     getter z
     method constructor
+interface HID : EventTarget
+    attribute @@toStringTag
+    method constructor
 interface HTMLAllCollection
     attribute @@toStringTag
     getter length
@@ -4823,6 +4826,7 @@ interface Navigator
     getter doNotTrack
     getter geolocation
     getter hardwareConcurrency
+    getter hid
     getter idle
     getter keyboard
     getter language

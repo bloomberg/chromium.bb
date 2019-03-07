@@ -21835,6 +21835,7 @@ Called by update_net_error_codes.py.-->
   <int value="40" label="Presentation"/>
   <int value="41" label="Frobulate"/>
   <int value="42" label="Serial"/>
+  <int value="43" label="Hid"/>
 </enum>
 
 <enum name="FeedbackSource">
