@@ -58,7 +58,7 @@ void FCMInvalidationListener::UpdateRegisteredTopics(const TopicSet& topics) {
 
 void FCMInvalidationListener::Ready(InvalidationClient* client) {
   DCHECK_EQ(client, invalidation_client_.get());
-  subscription_channel_state_ = INVALIDATIONS_ENABLED;
+  subscription_channel_state_ = SubscriptionChannelState::ENABLED;
   EmitStateChange();
   DoRegistrationUpdate();
 }
@@ -199,25 +199,22 @@ void FCMInvalidationListener::Stop() {
   }
   per_user_topic_registration_manager_.reset();
 
-  subscription_channel_state_ = DEFAULT_INVALIDATION_ERROR;
+  subscription_channel_state_ = SubscriptionChannelState::NOT_STARTED;
   fcm_network_state_ = FcmChannelState::NOT_STARTED;
 }
 
 InvalidatorState FCMInvalidationListener::GetState() const {
-  if (subscription_channel_state_ == INVALIDATION_CREDENTIALS_REJECTED) {
-    // If either the ticl or the push client rejected our credentials,
-    // return INVALIDATION_CREDENTIALS_REJECTED.
+  if (subscription_channel_state_ ==
+      SubscriptionChannelState::ACCESS_TOKEN_FAILURE) {
     return INVALIDATION_CREDENTIALS_REJECTED;
   }
-  if (subscription_channel_state_ == INVALIDATIONS_ENABLED &&
+  if (subscription_channel_state_ == SubscriptionChannelState::ENABLED &&
       fcm_network_state_ == FcmChannelState::ENABLED) {
     // If the ticl is ready and the push client notifications are
     // enabled, return INVALIDATIONS_ENABLED.
     return INVALIDATIONS_ENABLED;
   }
-  if (subscription_channel_state_ == SUBSCRIPTION_FAILURE) {
-    return SUBSCRIPTION_FAILURE;
-  }
+
   // Otherwise, we have a transient error.
   return TRANSIENT_INVALIDATION_ERROR;
 }
@@ -232,8 +229,8 @@ void FCMInvalidationListener::OnFCMChannelStateChanged(FcmChannelState state) {
 }
 
 void FCMInvalidationListener::OnSubscriptionChannelStateChanged(
-    InvalidatorState invalidator_state) {
-  subscription_channel_state_ = invalidator_state;
+    SubscriptionChannelState state) {
+  subscription_channel_state_ = state;
   EmitStateChange();
 }
 
@@ -242,8 +239,9 @@ base::DictionaryValue FCMInvalidationListener::CollectDebugData() const {
       per_user_topic_registration_manager_->CollectDebugData();
   status.SetString("InvalidationListener.FCM-channel-state",
                    FcmChannelStateToString(fcm_network_state_));
-  status.SetString("InvalidationListener.Subscription-channel-state",
-                   InvalidatorStateToString(subscription_channel_state_));
+  status.SetString(
+      "InvalidationListener.Subscription-channel-state",
+      SubscriptionChannelStateToString(subscription_channel_state_));
   for (const Topic& topic : registered_topics_) {
     if (!status.HasKey(topic)) {
       status.SetString(topic, "Unregistered");

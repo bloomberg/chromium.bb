@@ -95,14 +95,15 @@ network::URLLoaderCompletionStatus CreateStatusForTest(
 class RegistrationManagerStateObserver
     : public PerUserTopicRegistrationManager::Observer {
  public:
-  void OnSubscriptionChannelStateChanged(InvalidatorState state) override {
+  void OnSubscriptionChannelStateChanged(
+      SubscriptionChannelState state) override {
     state_ = state;
   }
 
-  InvalidatorState observed_state() const { return state_; }
+  SubscriptionChannelState observed_state() const { return state_; }
 
  private:
-  InvalidatorState state_ = TRANSIENT_INVALIDATION_ERROR;
+  SubscriptionChannelState state_ = SubscriptionChannelState::NOT_STARTED;
 };
 
 class PerUserTopicRegistrationManagerTest : public testing::Test {
@@ -138,7 +139,9 @@ class PerUserTopicRegistrationManagerTest : public testing::Test {
 
   TestingPrefServiceSimple* pref_service() { return &pref_service_; }
 
-  InvalidatorState observed_state() { return state_observer_.observed_state(); }
+  SubscriptionChannelState observed_state() {
+    return state_observer_.observed_state();
+  }
 
   void AddCorrectSubscriptionResponce(
       const std::string& private_topic = std::string(),
@@ -416,7 +419,7 @@ TEST_F(
       ids, kFakeInstanceIdToken);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(ids, per_user_topic_registration_manager->GetRegisteredIds());
-  EXPECT_EQ(observed_state(), INVALIDATIONS_ENABLED);
+  EXPECT_EQ(observed_state(), SubscriptionChannelState::ENABLED);
 
   // Disable some ids.
   TopicSet disabled_ids = GetSequenceOfTopics(3);
@@ -434,7 +437,7 @@ TEST_F(
       FullSubscriptionUrl(kFakeInstanceIdToken).spec(),
       std::string() /* content */, net::HTTP_NOT_FOUND);
 
-  EXPECT_EQ(observed_state(), INVALIDATIONS_ENABLED);
+  EXPECT_EQ(observed_state(), SubscriptionChannelState::ENABLED);
 }
 
 TEST_F(PerUserTopicRegistrationManagerTest,
@@ -453,7 +456,7 @@ TEST_F(PerUserTopicRegistrationManagerTest,
       ids, kFakeInstanceIdToken);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(ids, per_user_topic_registration_manager->GetRegisteredIds());
-  EXPECT_EQ(observed_state(), INVALIDATIONS_ENABLED);
+  EXPECT_EQ(observed_state(), SubscriptionChannelState::ENABLED);
 
   // Disable some ids.
   TopicSet disabled_ids = GetSequenceOfTopics(3);
@@ -472,14 +475,14 @@ TEST_F(PerUserTopicRegistrationManagerTest,
   per_user_topic_registration_manager->UpdateRegisteredTopics(
       ids, kFakeInstanceIdToken);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(observed_state(), SUBSCRIPTION_FAILURE);
+  EXPECT_EQ(observed_state(), SubscriptionChannelState::SUBSCRIPTION_FAILURE);
 
   // Configure correct response and retry.
   AddCorrectSubscriptionResponce();
   per_user_topic_registration_manager->UpdateRegisteredTopics(
       ids, kFakeInstanceIdToken);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(observed_state(), INVALIDATIONS_ENABLED);
+  EXPECT_EQ(observed_state(), SubscriptionChannelState::ENABLED);
 }
 
 }  // namespace syncer
