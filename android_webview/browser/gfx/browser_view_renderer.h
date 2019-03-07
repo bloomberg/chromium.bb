@@ -179,7 +179,6 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
   void ReturnResourceFromParent(
       CompositorFrameConsumer* compositor_frame_consumer);
   void ReleaseHardware();
-  gfx::Rect ComputeViewportRectForTilePriority();
 
   gfx::Vector2d max_scroll_offset() const;
 

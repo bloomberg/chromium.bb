@@ -143,8 +143,7 @@ void HardwareRenderer::DrawGL(HardwareRendererDrawParams* params) {
   // Need to post the new transform matrix back to child compositor
   // because there is no onDraw during a Render Thread animation, and child
   // compositor might not have the tiles rasterized as the animation goes on.
-  ParentCompositorDrawConstraints draw_constraints(params->is_layer, transform,
-                                                   viewport.IsEmpty());
+  ParentCompositorDrawConstraints draw_constraints(viewport, transform);
   if (!child_frame_.get() || draw_constraints.NeedUpdate(*child_frame_)) {
     render_thread_manager_->PostExternalDrawConstraintsToChildCompositorOnRT(
         draw_constraints);

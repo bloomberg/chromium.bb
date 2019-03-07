@@ -14,17 +14,14 @@ namespace android_webview {
 ChildFrame::ChildFrame(
     scoped_refptr<content::SynchronousCompositor::FrameFuture> frame_future,
     const CompositorID& compositor_id,
-    bool viewport_rect_for_tile_priority_empty,
+    const gfx::Size& viewport_size_for_tile_priority,
     const gfx::Transform& transform_for_tile_priority,
-    bool offscreen_pre_raster,
-    bool is_layer)
+    bool offscreen_pre_raster)
     : frame_future(std::move(frame_future)),
       compositor_id(compositor_id),
-      viewport_rect_for_tile_priority_empty(
-          viewport_rect_for_tile_priority_empty),
+      viewport_size_for_tile_priority(viewport_size_for_tile_priority),
       transform_for_tile_priority(transform_for_tile_priority),
-      offscreen_pre_raster(offscreen_pre_raster),
-      is_layer(is_layer) {}
+      offscreen_pre_raster(offscreen_pre_raster) {}
 
 ChildFrame::~ChildFrame() {
 }

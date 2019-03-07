@@ -161,10 +161,12 @@ void BrowserViewRenderer::UpdateMemoryPolicy() {
   if (g_memory_override_in_bytes) {
     bytes_limit = static_cast<size_t>(g_memory_override_in_bytes);
   } else {
-    gfx::Rect interest_rect =
-        offscreen_pre_raster_ || external_draw_constraints_.is_layer
-            ? gfx::Rect(size_)
-            : last_on_draw_global_visible_rect_;
+    // Note we are using |last_on_draw_global_visible_rect_| rather than
+    // |external_draw_constraints_.viewport_size|. This is to reduce budget
+    // for a webview that's much smaller than the surface it's rendering.
+    gfx::Rect interest_rect = offscreen_pre_raster_
+                                  ? gfx::Rect(size_)
+                                  : last_on_draw_global_visible_rect_;
     size_t width = interest_rect.width();
     size_t height = interest_rect.height();
     bytes_limit = kMemoryMultiplier * kBytesPerPixel * width * height;
@@ -226,33 +228,22 @@ bool BrowserViewRenderer::OnDrawHardware() {
   gfx::Transform transform_for_tile_priority =
       external_draw_constraints_.transform;
 
-  gfx::Rect viewport_rect_for_tile_priority =
-      ComputeViewportRectForTilePriority();
+  // Do not override (ie leave empty) for offscreen raster.
+  gfx::Size viewport_size_for_tile_priority =
+      offscreen_pre_raster_ ? gfx::Size()
+                            : external_draw_constraints_.viewport_size;
 
   scoped_refptr<content::SynchronousCompositor::FrameFuture> future =
-      compositor_->DemandDrawHwAsync(size_, viewport_rect_for_tile_priority,
+      compositor_->DemandDrawHwAsync(size_,
+                                     gfx::Rect(viewport_size_for_tile_priority),
                                      transform_for_tile_priority);
   std::unique_ptr<ChildFrame> child_frame = std::make_unique<ChildFrame>(
-      std::move(future), compositor_id_,
-      viewport_rect_for_tile_priority.IsEmpty(), transform_for_tile_priority,
-      offscreen_pre_raster_, external_draw_constraints_.is_layer);
+      std::move(future), compositor_id_, viewport_size_for_tile_priority,
+      transform_for_tile_priority, offscreen_pre_raster_);
 
   ReturnUnusedResource(
       current_compositor_frame_consumer_->SetFrameOnUI(std::move(child_frame)));
   return true;
-}
-
-gfx::Rect BrowserViewRenderer::ComputeViewportRectForTilePriority() {
-  // If the WebView is on a layer, WebView does not know what transform is
-  // applied onto the layer so global visible rect does not make sense here.
-  // In this case, just use the surface rect for tiling.
-  // Leave viewport_rect_for_tile_priority empty if offscreen_pre_raster_ is on.
-  gfx::Rect viewport_rect_for_tile_priority;
-
-  if (!offscreen_pre_raster_ && !external_draw_constraints_.is_layer) {
-    viewport_rect_for_tile_priority = last_on_draw_global_visible_rect_;
-  }
-  return viewport_rect_for_tile_priority;
 }
 
 void BrowserViewRenderer::OnParentDrawConstraintsUpdated(
