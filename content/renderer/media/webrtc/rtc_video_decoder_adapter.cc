@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <functional>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -22,10 +23,10 @@
 #include "build/build_config.h"
 #include "content/renderer/media/render_media_log.h"
 #include "content/renderer/media/webrtc/webrtc_video_frame_adapter.h"
+#include "content/renderer/media/webrtc/webrtc_video_utils.h"
 #include "media/base/media_log.h"
 #include "media/base/media_util.h"
 #include "media/base/overlay_info.h"
-#include "media/base/video_decoder_config.h"
 #include "media/base/video_types.h"
 #include "media/video/gpu_video_accelerator_factories.h"
 #include "third_party/webrtc/api/video/video_frame.h"
@@ -159,7 +160,8 @@ std::unique_ptr<RTCVideoDecoderAdapter> RTCVideoDecoderAdapter::Create(
 
   // Synchronously verify that the decoder can be initialized.
   std::unique_ptr<RTCVideoDecoderAdapter> rtc_video_decoder_adapter =
-      base::WrapUnique(new RTCVideoDecoderAdapter(gpu_factories, format));
+      base::WrapUnique(
+          new RTCVideoDecoderAdapter(gpu_factories, config, format));
   if (!rtc_video_decoder_adapter->InitializeSync(config)) {
     gpu_factories->GetTaskRunner()->DeleteSoon(
         FROM_HERE, std::move(rtc_video_decoder_adapter));
@@ -171,10 +173,12 @@ std::unique_ptr<RTCVideoDecoderAdapter> RTCVideoDecoderAdapter::Create(
 
 RTCVideoDecoderAdapter::RTCVideoDecoderAdapter(
     media::GpuVideoAcceleratorFactories* gpu_factories,
+    const media::VideoDecoderConfig& config,
     const webrtc::SdpVideoFormat& format)
     : media_task_runner_(gpu_factories->GetTaskRunner()),
       gpu_factories_(gpu_factories),
       format_(format),
+      config_(config),
       weak_this_factory_(this) {
   DVLOG(1) << __func__;
   DETACH_FROM_THREAD(decoding_thread_checker_);
@@ -189,7 +193,8 @@ RTCVideoDecoderAdapter::~RTCVideoDecoderAdapter() {
 bool RTCVideoDecoderAdapter::InitializeSync(
     const media::VideoDecoderConfig& config) {
   DVLOG(3) << __func__;
-  DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
+  // Can be called on |worker_thread_| or |decoding_thread_|.
+  DCHECK(!media_task_runner_->BelongsToCurrentThread());
 
   bool result = false;
   base::WaitableEvent waiter(base::WaitableEvent::ResetPolicy::MANUAL,
@@ -249,6 +254,15 @@ int32_t RTCVideoDecoderAdapter::Decode(
   buffer->set_timestamp(
       base::TimeDelta::FromMicroseconds(input_image.Timestamp()));
 
+  if (ShouldReinitializeForSettingHDRColorSpace(input_image)) {
+    config_.set_color_space_info(
+        WebRtcToMediaVideoColorSpace(*input_image.ColorSpace()));
+    if (!ReinitializeSync(config_))
+      return WEBRTC_VIDEO_CODEC_FALLBACK_SOFTWARE;
+    if (input_image._frameType != webrtc::kVideoFrameKey)
+      return WEBRTC_VIDEO_CODEC_ERROR;
+  }
+
   // Queue for decoding.
   {
     base::AutoLock auto_lock(lock_);
@@ -306,17 +320,20 @@ void RTCVideoDecoderAdapter::InitializeOnMediaThread(
   DVLOG(3) << __func__;
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
-  // TODO(sandersd): Plumb a real log sink here so that we can contribute to the
-  // media-internals UI. The current log just discards all messages.
-  media_log_ = std::make_unique<media::NullMediaLog>();
-
-  video_decoder_ = gpu_factories_->CreateVideoDecoder(
-      media_log_.get(), base::BindRepeating(&OnRequestOverlayInfo),
-      gfx::ColorSpace());
+  // On ReinitializeSync() calls, |video_decoder_| may already be set.
   if (!video_decoder_) {
-    media_task_runner_->PostTask(FROM_HERE,
-                                 base::BindRepeating(init_cb, false));
-    return;
+    // TODO(sandersd): Plumb a real log sink here so that we can contribute to
+    // the media-internals UI. The current log just discards all messages.
+    media_log_ = std::make_unique<media::NullMediaLog>();
+
+    video_decoder_ = gpu_factories_->CreateVideoDecoder(
+        media_log_.get(), base::BindRepeating(&OnRequestOverlayInfo));
+
+    if (!video_decoder_) {
+      media_task_runner_->PostTask(FROM_HERE,
+                                   base::BindRepeating(init_cb, false));
+      return;
+    }
   }
 
   // In practice this is ignored by hardware decoders.
@@ -405,6 +422,69 @@ void RTCVideoDecoderAdapter::OnOutput(
   DCHECK(decode_complete_callback_);
   decode_complete_callback_->Decoded(rtc_frame);
   consecutive_error_count_ = 0;
+}
+
+bool RTCVideoDecoderAdapter::ShouldReinitializeForSettingHDRColorSpace(
+    const webrtc::EncodedImage& input_image) const {
+  DCHECK_CALLED_ON_VALID_THREAD(decoding_thread_checker_);
+
+  if (config_.profile() == media::VP9PROFILE_PROFILE2 &&
+      input_image.ColorSpace()) {
+    const media::VideoColorSpace& new_color_space =
+        WebRtcToMediaVideoColorSpace(*input_image.ColorSpace());
+    if (!config_.color_space_info().IsSpecified() ||
+        new_color_space != config_.color_space_info()) {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool RTCVideoDecoderAdapter::ReinitializeSync(
+    const media::VideoDecoderConfig& config) {
+  DCHECK_CALLED_ON_VALID_THREAD(decoding_thread_checker_);
+
+  bool result = false;
+  base::WaitableEvent waiter(base::WaitableEvent::ResetPolicy::MANUAL,
+                             base::WaitableEvent::InitialState::NOT_SIGNALED);
+  media::VideoDecoder::InitCB init_cb =
+      base::BindRepeating(&FinishWait, &waiter, &result);
+  FlushDoneCB flush_success_cb =
+      base::BindOnce(&RTCVideoDecoderAdapter::InitializeOnMediaThread,
+                     weak_this_, std::cref(config), std::cref(init_cb));
+  FlushDoneCB flush_fail_cb =
+      base::BindOnce(&FinishWait, &waiter, &result, false);
+  if (media_task_runner_->PostTask(
+          FROM_HERE, base::BindOnce(&RTCVideoDecoderAdapter::FlushOnMediaThread,
+                                    weak_this_, std::move(flush_success_cb),
+                                    std::move(flush_fail_cb)))) {
+    waiter.Wait();
+  }
+  return result;
+}
+
+void RTCVideoDecoderAdapter::FlushOnMediaThread(FlushDoneCB flush_success_cb,
+                                                FlushDoneCB flush_fail_cb) {
+  DCHECK(media_task_runner_->BelongsToCurrentThread());
+
+  // Remove any pending tasks.
+  {
+    base::AutoLock auto_lock(lock_);
+    pending_buffers_.clear();
+  }
+
+  // Send EOS frame for flush.
+  video_decoder_->Decode(
+      media::DecoderBuffer::CreateEOSBuffer(),
+      base::BindRepeating(
+          [](FlushDoneCB flush_success, FlushDoneCB flush_fail,
+             media::DecodeStatus status) {
+            if (status == media::DecodeStatus::OK)
+              std::move(flush_success).Run();
+            else
+              std::move(flush_fail).Run();
+          },
+          base::Passed(&flush_success_cb), base::Passed(&flush_fail_cb)));
 }
 
 }  // namespace content

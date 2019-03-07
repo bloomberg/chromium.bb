@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include <stdint.h>
@@ -30,6 +31,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/webrtc/api/video_codecs/video_codec.h"
+#include "third_party/webrtc/media/base/vp9_profile.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -91,6 +93,8 @@ class RTCVideoDecoderAdapterTest : public ::testing::Test {
   RTCVideoDecoderAdapterTest()
       : media_thread_("Media Thread"),
         gpu_factories_(nullptr),
+        sdp_format_(webrtc::SdpVideoFormat(
+            webrtc::CodecTypeToPayloadString(webrtc::kVideoCodecVP9))),
         decoded_image_callback_(decoded_cb_.Get()) {
     media_thread_.Start();
 
@@ -105,15 +109,14 @@ class RTCVideoDecoderAdapterTest : public ::testing::Test {
         .WillByDefault(Return(true));
     EXPECT_CALL(gpu_factories_, IsDecoderConfigSupported(_)).Times(AtLeast(0));
 
-    ON_CALL(gpu_factories_, CreateVideoDecoder(_, _, _))
+    ON_CALL(gpu_factories_, CreateVideoDecoder(_, _))
         .WillByDefault(
             [this](media::MediaLog* media_log,
-                   const media::RequestOverlayInfoCB& request_overlay_info_cb,
-                   const gfx::ColorSpace& target_color_space) {
+                   const media::RequestOverlayInfoCB& request_overlay_info_cb) {
               DCHECK(this->owned_video_decoder_);
               return std::move(this->owned_video_decoder_);
             });
-    EXPECT_CALL(gpu_factories_, CreateVideoDecoder(_, _, _)).Times(AtLeast(0));
+    EXPECT_CALL(gpu_factories_, CreateVideoDecoder(_, _)).Times(AtLeast(0));
   }
 
   ~RTCVideoDecoderAdapterTest() {
@@ -144,12 +147,10 @@ class RTCVideoDecoderAdapterTest : public ::testing::Test {
 
   bool CreateAndInitialize(bool init_cb_result = true) {
     EXPECT_CALL(*video_decoder_, Initialize(_, _, _, _, _, _))
-        .WillOnce(DoAll(SaveArg<4>(&output_cb_),
+        .WillOnce(DoAll(SaveArg<0>(&vda_config_), SaveArg<4>(&output_cb_),
                         media::RunCallback<3>(init_cb_result)));
-    rtc_video_decoder_adapter_ = RTCVideoDecoderAdapter::Create(
-        &gpu_factories_,
-        webrtc::SdpVideoFormat(
-            webrtc::CodecTypeToPayloadString(webrtc::kVideoCodecVP9)));
+    rtc_video_decoder_adapter_ =
+        RTCVideoDecoderAdapter::Create(&gpu_factories_, sdp_format_);
     return !!rtc_video_decoder_adapter_;
   }
 
@@ -194,6 +195,25 @@ class RTCVideoDecoderAdapterTest : public ::testing::Test {
 
   int32_t Release() { return rtc_video_decoder_adapter_->Release(); }
 
+  webrtc::EncodedImage GetEncodedImageWithColorSpace(uint8_t* buf,
+                                                     uint32_t timestamp) {
+    webrtc::EncodedImage input_image(buf, 1, 1);
+    input_image._completeFrame = true;
+    input_image._frameType = webrtc::kVideoFrameKey;
+    input_image.SetTimestamp(timestamp);
+    webrtc::ColorSpace webrtc_color_space;
+    webrtc_color_space.set_primaries_from_uint8(1);
+    webrtc_color_space.set_transfer_from_uint8(1);
+    webrtc_color_space.set_matrix_from_uint8(1);
+    webrtc_color_space.set_range_from_uint8(1);
+    input_image.SetColorSpace(webrtc_color_space);
+    return input_image;
+  }
+
+  void SetSdpFormat(const webrtc::SdpVideoFormat& sdp_format) {
+    sdp_format_ = sdp_format;
+  }
+
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   base::Thread media_thread_;
 
@@ -205,9 +225,11 @@ class RTCVideoDecoderAdapterTest : public ::testing::Test {
       decoded_cb_;
 
   StrictMock<media::MockGpuVideoAcceleratorFactories> gpu_factories_;
+  media::VideoDecoderConfig vda_config_;
   std::unique_ptr<RTCVideoDecoderAdapter> rtc_video_decoder_adapter_;
 
  private:
+  webrtc::SdpVideoFormat sdp_format_;
   std::unique_ptr<StrictMock<MockVideoDecoder>> owned_video_decoder_;
   DecodedImageCallback decoded_image_callback_;
   media::VideoDecoder::OutputCB output_cb_;
@@ -299,6 +321,82 @@ TEST_F(RTCVideoDecoderAdapterTest, Decode_Hang_Long) {
   }
 
   FAIL();
+}
+
+TEST_F(RTCVideoDecoderAdapterTest, ReinitializesForHDRColorSpaceInitially) {
+  SetSdpFormat(webrtc::SdpVideoFormat(
+      "VP9", {{webrtc::kVP9FmtpProfileId,
+               webrtc::VP9ProfileToString(webrtc::VP9Profile::kProfile2)}}));
+  ASSERT_TRUE(BasicSetup());
+  EXPECT_EQ(media::VP9PROFILE_PROFILE2, vda_config_.profile());
+  EXPECT_FALSE(vda_config_.color_space_info().IsSpecified());
+  uint8_t buf[] = {0};
+
+  // Decode() is expected to be called for EOS flush as well.
+  EXPECT_CALL(*video_decoder_, Decode(_, _))
+      .Times(3)
+      .WillRepeatedly(media::RunCallback<1>(media::DecodeStatus::OK));
+  EXPECT_CALL(decoded_cb_, Run(_)).Times(2);
+
+  // First Decode() should cause a reinitialize as new color space is given.
+  EXPECT_CALL(*video_decoder_, Initialize(_, _, _, _, _, _))
+      .WillOnce(DoAll(SaveArg<0>(&vda_config_), media::RunCallback<3>(true)));
+  webrtc::EncodedImage first_input_image =
+      GetEncodedImageWithColorSpace(&buf[0], 0);
+  ASSERT_EQ(
+      rtc_video_decoder_adapter_->Decode(first_input_image, false, nullptr, 0),
+      WEBRTC_VIDEO_CODEC_OK);
+  media_thread_.FlushForTesting();
+  EXPECT_TRUE(vda_config_.color_space_info().IsSpecified());
+  FinishDecode(0);
+  media_thread_.FlushForTesting();
+
+  // Second Decode() with same params should happen normally.
+  webrtc::EncodedImage second_input_image =
+      GetEncodedImageWithColorSpace(&buf[0], 1);
+  ASSERT_EQ(
+      rtc_video_decoder_adapter_->Decode(second_input_image, false, nullptr, 0),
+      WEBRTC_VIDEO_CODEC_OK);
+  FinishDecode(1);
+  media_thread_.FlushForTesting();
+}
+
+TEST_F(RTCVideoDecoderAdapterTest, HandlesReinitializeFailure) {
+  SetSdpFormat(webrtc::SdpVideoFormat(
+      "VP9", {{webrtc::kVP9FmtpProfileId,
+               webrtc::VP9ProfileToString(webrtc::VP9Profile::kProfile2)}}));
+  ASSERT_TRUE(BasicSetup());
+  EXPECT_EQ(media::VP9PROFILE_PROFILE2, vda_config_.profile());
+  EXPECT_FALSE(vda_config_.color_space_info().IsSpecified());
+  uint8_t buf[] = {0};
+  webrtc::EncodedImage input_image = GetEncodedImageWithColorSpace(&buf[0], 0);
+
+  // Decode() is expected to be called for EOS flush as well.
+  EXPECT_CALL(*video_decoder_, Decode(_, _))
+      .WillOnce(media::RunCallback<1>(media::DecodeStatus::OK));
+
+  // Set Initialize() to fail.
+  EXPECT_CALL(*video_decoder_, Initialize(_, _, _, _, _, _))
+      .WillOnce(media::RunCallback<3>(false));
+  ASSERT_EQ(rtc_video_decoder_adapter_->Decode(input_image, false, nullptr, 0),
+            WEBRTC_VIDEO_CODEC_FALLBACK_SOFTWARE);
+}
+
+TEST_F(RTCVideoDecoderAdapterTest, HandlesFlushFailure) {
+  SetSdpFormat(webrtc::SdpVideoFormat(
+      "VP9", {{webrtc::kVP9FmtpProfileId,
+               webrtc::VP9ProfileToString(webrtc::VP9Profile::kProfile2)}}));
+  ASSERT_TRUE(BasicSetup());
+  EXPECT_EQ(media::VP9PROFILE_PROFILE2, vda_config_.profile());
+  EXPECT_FALSE(vda_config_.color_space_info().IsSpecified());
+  uint8_t buf[] = {0};
+  webrtc::EncodedImage input_image = GetEncodedImageWithColorSpace(&buf[0], 0);
+
+  // Decode() is expected to be called for EOS flush, set to fail.
+  EXPECT_CALL(*video_decoder_, Decode(_, _))
+      .WillOnce(media::RunCallback<1>(media::DecodeStatus::ABORTED));
+  ASSERT_EQ(rtc_video_decoder_adapter_->Decode(input_image, false, nullptr, 0),
+            WEBRTC_VIDEO_CODEC_FALLBACK_SOFTWARE);
 }
 
 }  // namespace content

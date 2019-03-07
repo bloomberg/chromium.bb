@@ -18,6 +18,7 @@
 #include "media/base/decode_status.h"
 #include "media/base/video_codecs.h"
 #include "media/base/video_decoder.h"
+#include "media/base/video_decoder_config.h"
 #include "third_party/webrtc/api/video_codecs/sdp_video_format.h"
 #include "third_party/webrtc/modules/video_coding/include/video_codec_interface.h"
 #include "ui/gfx/geometry/size.h"
@@ -30,7 +31,6 @@ namespace media {
 class DecoderBuffer;
 class GpuVideoAcceleratorFactories;
 class MediaLog;
-class VideoDecoderConfig;
 class VideoFrame;
 }  // namespace media
 
@@ -81,9 +81,11 @@ class CONTENT_EXPORT RTCVideoDecoderAdapter : public webrtc::VideoDecoder {
   using CreateVideoDecoderCB =
       base::RepeatingCallback<std::unique_ptr<media::VideoDecoder>(
           media::MediaLog*)>;
+  using FlushDoneCB = base::OnceCallback<void()>;
 
   // Called on the worker thread.
   RTCVideoDecoderAdapter(media::GpuVideoAcceleratorFactories* gpu_factories,
+                         const media::VideoDecoderConfig& config,
                          const webrtc::SdpVideoFormat& format);
 
   bool InitializeSync(const media::VideoDecoderConfig& config);
@@ -93,10 +95,17 @@ class CONTENT_EXPORT RTCVideoDecoderAdapter : public webrtc::VideoDecoder {
   void OnDecodeDone(media::DecodeStatus status);
   void OnOutput(const scoped_refptr<media::VideoFrame>& frame);
 
+  bool ShouldReinitializeForSettingHDRColorSpace(
+      const webrtc::EncodedImage& input_image) const;
+  bool ReinitializeSync(const media::VideoDecoderConfig& config);
+  void FlushOnMediaThread(FlushDoneCB flush_success_cb,
+                          FlushDoneCB flush_fail_cb);
+
   // Construction parameters.
   scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
   media::GpuVideoAcceleratorFactories* gpu_factories_;
   webrtc::SdpVideoFormat format_;
+  media::VideoDecoderConfig config_;
 
   // Media thread members.
   // |media_log_| must outlive |video_decoder_| because it is passed as a raw
