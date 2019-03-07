@@ -75,8 +75,8 @@ class CORE_EXPORT PointerEventManager
 
   void ElementRemoved(Element*);
 
-  void SetPointerCapture(PointerId, Element*);
-  void ReleasePointerCapture(PointerId, Element*);
+  bool SetPointerCapture(PointerId, Element*);
+  bool ReleasePointerCapture(PointerId, Element*);
   void ReleaseMousePointerCapture();
 
   // See Element::hasPointerCapture(PointerId).
