@@ -13,6 +13,8 @@
 
 namespace ash {
 
+DEFINE_UI_CLASS_PROPERTY_KEY(bool, kDisallowReparentKey, false)
+
 AlwaysOnTopController::AlwaysOnTopController(
     aura::Window* always_on_top_container,
     aura::Window* pip_container)
@@ -56,6 +58,10 @@ void AlwaysOnTopController::SetLayoutManagerForTest(
   always_on_top_container_->SetLayoutManager(layout_manager.release());
 }
 
+void AlwaysOnTopController::SetDisallowReparent(aura::Window* window) {
+  window->SetProperty(kDisallowReparentKey, true);
+}
+
 void AlwaysOnTopController::AddWindow(aura::Window* window) {
   window->AddObserver(this);
   wm::GetWindowState(window)->AddObserver(this);
@@ -70,7 +76,8 @@ void AlwaysOnTopController::ReparentWindow(aura::Window* window) {
   DCHECK(window->type() == aura::client::WINDOW_TYPE_NORMAL ||
          window->type() == aura::client::WINDOW_TYPE_POPUP);
   aura::Window* container = GetContainer(window);
-  if (window->parent() != container)
+  if (window->parent() != container &&
+      !window->GetProperty(ash::kDisallowReparentKey))
     container->AddChild(window);
 }
 

@@ -18,6 +18,7 @@
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/wallpaper/wallpaper_controller.h"
+#include "ash/wm/always_on_top_controller.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
@@ -231,6 +232,9 @@ void BackdropController::EnsureBackdropWidget() {
   backdrop_->Init(params);
   backdrop_window_ = backdrop_->GetNativeWindow();
   backdrop_window_->SetName("Backdrop");
+  // The backdrop window in always on top container can be reparented without
+  // this when the window is set to fullscreen.
+  AlwaysOnTopController::SetDisallowReparent(backdrop_window_);
   ::wm::SetWindowVisibilityAnimationType(
       backdrop_window_, ::wm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);
   backdrop_window_->layer()->SetColor(SK_ColorBLACK);
