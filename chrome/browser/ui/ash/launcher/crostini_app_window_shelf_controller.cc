@@ -6,6 +6,7 @@
 #include <string>
 #include <utility>
 
+#include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
@@ -252,6 +253,8 @@ void CrostiniAppWindowShelfController::OnWindowVisibilityChanging(
 void CrostiniAppWindowShelfController::RegisterAppWindow(
     aura::Window* window,
     const std::string& shelf_app_id) {
+  window->SetProperty(aura::client::kAppType,
+                      static_cast<int>(ash::AppType::CROSTINI_APP));
   const ash::ShelfID shelf_id(shelf_app_id);
   views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window);
   aura_window_to_app_window_[window] =
