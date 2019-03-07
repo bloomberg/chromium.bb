@@ -297,6 +297,7 @@ CommandHandler.onCommand = function(command) {
   var skipSync = false;
   var didNavigate = false;
   var tryScrolling = true;
+  var skipSettingSelection = false;
   switch (command) {
     case 'nextCharacter':
       didNavigate = true;
@@ -379,10 +380,12 @@ CommandHandler.onCommand = function(command) {
       dir = Dir.BACKWARD;
       pred = AutomationPredicate.image;
       predErrorMsg = 'no_previous_graphic';
+      skipSettingSelection = true;
       break;
     case 'nextGraphic':
       pred = AutomationPredicate.image;
       predErrorMsg = 'no_next_graphic';
+      skipSettingSelection = true;
       break;
     case 'nextHeading':
       pred = AutomationPredicate.heading;
@@ -1024,8 +1027,10 @@ CommandHandler.onCommand = function(command) {
     }
   }
 
-  if (current)
-    ChromeVoxState.instance.navigateToRange(current, undefined, speechProps);
+  if (current) {
+    ChromeVoxState.instance.navigateToRange(
+        current, undefined, speechProps, skipSettingSelection);
+  }
 
   return false;
 };
