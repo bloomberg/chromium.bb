@@ -88,18 +88,28 @@
       }
 
       .ntp-background-grid-button {
-        @apply --cr-card-elevation;
         align-items: stretch;
         background: var(--cr-card-background-color);
-        border: 0;
+        border: solid 1px var(--google-grey-refresh-300);
+        border-radius: 4px;
         color: var(--cr-secondary-text-color);
         cursor: pointer;
         display: flex;
         flex-direction: column;
         height: 100%;
+        overflow: hidden;
         padding: 0;
         text-align: start;
+        transition: border-color 400ms, box-shadow 500ms;
         width: 100%;
+      }
+
+      #backgroundPreview.active + .content .ntp-background-grid-button {
+        border-color: var(--google-grey-refresh-700);
+      }
+
+      .ntp-background-grid-button:hover {
+        box-shadow: 0 3px 6px 2px rgba(0, 36, 100, .1);
       }
 
       /* Remove outline when button is focused using the mouse. */
