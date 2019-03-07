@@ -50,7 +50,8 @@ TEST_F(HasThumbnailTaskTest, DbConnectionIsNull) {
   RunTask(
       std::make_unique<StoreThumbnailTask>(store(), thumb, base::DoNothing()));
 
-  store()->SetStateForTesting(StoreState::FAILED_LOADING, true);
+  store()->SetInitializationStatusForTesting(
+      SqlStoreBase::InitializationStatus::kFailure, true);
   base::MockCallback<ThumbnailExistsCallback> exists_callback;
   EXPECT_CALL(exists_callback, Run(false));
   RunTask(std::make_unique<HasThumbnailTask>(store(), thumb.offline_id,

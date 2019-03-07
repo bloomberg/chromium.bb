@@ -22,6 +22,7 @@
 using offline_pages::TaskTestBase;
 
 namespace explore_sites {
+using InitializationStatus = ExploreSitesStore::InitializationStatus;
 
 class ExploreSitesGetImagesTaskTest : public TaskTestBase {
  public:
@@ -89,7 +90,8 @@ VALUES
 }
 
 TEST_F(ExploreSitesGetImagesTaskTest, StoreFailure) {
-  store()->SetInitializationStatusForTest(InitializationStatus::FAILURE);
+  store()->SetInitializationStatusForTesting(InitializationStatus::kFailure,
+                                             false);
 
   GetImagesTask task(store(), 1, StoreResult());
   RunTask(&task);

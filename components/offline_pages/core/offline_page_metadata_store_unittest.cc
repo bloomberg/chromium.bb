@@ -34,6 +34,7 @@
 namespace offline_pages {
 
 namespace {
+using InitializationStatus = SqlStoreBase::InitializationStatus;
 
 #define OFFLINE_PAGES_TABLE_V1 "offlinepages_v1"
 
@@ -789,28 +790,28 @@ TEST_F(OfflinePageMetadataStoreTest, GetOfflinePagesFromInvalidStore) {
 
   // Because execute method is self-healing this part of the test expects a
   // positive results now.
-  store->SetStateForTesting(StoreState::NOT_LOADED, false);
+  store->SetInitializationStatusForTesting(
+      InitializationStatus::kNotInitialized, false);
   EXPECT_EQ(0UL, GetOfflinePages(store.get()).size());
-  EXPECT_EQ(StoreState::LOADED, store->GetStateForTesting());
+  EXPECT_EQ(InitializationStatus::kSuccess,
+            store->initialization_status_for_testing());
 
-  store->SetStateForTesting(StoreState::FAILED_LOADING, false);
+  store->SetInitializationStatusForTesting(InitializationStatus::kFailure,
+                                           false);
   EXPECT_EQ(0UL, GetOfflinePages(store.get()).size());
-  EXPECT_EQ(StoreState::FAILED_LOADING, store->GetStateForTesting());
+  EXPECT_EQ(InitializationStatus::kFailure,
+            store->initialization_status_for_testing());
 
-  store->SetStateForTesting(StoreState::FAILED_RESET, false);
-  EXPECT_EQ(0UL, GetOfflinePages(store.get()).size());
-  EXPECT_EQ(StoreState::FAILED_RESET, store->GetStateForTesting());
-
-  store->SetStateForTesting(StoreState::LOADED, true);
-  EXPECT_EQ(0UL, GetOfflinePages(store.get()).size());
-
-  store->SetStateForTesting(StoreState::NOT_LOADED, true);
+  store->SetInitializationStatusForTesting(InitializationStatus::kSuccess,
+                                           true);
   EXPECT_EQ(0UL, GetOfflinePages(store.get()).size());
 
-  store->SetStateForTesting(StoreState::FAILED_LOADING, false);
+  store->SetInitializationStatusForTesting(
+      InitializationStatus::kNotInitialized, true);
   EXPECT_EQ(0UL, GetOfflinePages(store.get()).size());
 
-  store->SetStateForTesting(StoreState::FAILED_RESET, false);
+  store->SetInitializationStatusForTesting(InitializationStatus::kFailure,
+                                           false);
   EXPECT_EQ(0UL, GetOfflinePages(store.get()).size());
 }
 

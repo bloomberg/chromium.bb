@@ -69,7 +69,8 @@ TEST_F(StoreThumbnailTaskTest, AlreadyExists) {
 }
 
 TEST_F(StoreThumbnailTaskTest, DbConnectionIsNull) {
-  store()->SetStateForTesting(StoreState::FAILED_LOADING, true);
+  store()->SetInitializationStatusForTesting(
+      SqlStoreBase::InitializationStatus::kFailure, true);
   OfflinePageThumbnail thumb;
   thumb.offline_id = 1;
   thumb.expiration = store_utils::FromDatabaseTime(1234);
