@@ -275,6 +275,7 @@ extern const char kTextToSpeechLangToVoiceName[];
 extern const char kTextToSpeechRate[];
 extern const char kTextToSpeechPitch[];
 extern const char kTextToSpeechVolume[];
+extern const char kTimeLimitLocalOverride[];
 extern const char kUsageTimeLimit[];
 extern const char kScreenTimeLastState[];
 extern const char kEnableSyncConsent[];

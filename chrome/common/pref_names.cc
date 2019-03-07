@@ -847,6 +847,10 @@ const char kTextToSpeechPitch[] = "settings.tts.speech_pitch";
 // system volume, and higher than 1.0 is louder.
 const char kTextToSpeechVolume[] = "settings.tts.speech_volume";
 
+// A dictionary containing the latest Time Limits override authorized by parent
+// access code.
+const char kTimeLimitLocalOverride[] = "screen_time.local_override";
+
 // A dictionary preference holding the usage time limit definitions for a user.
 const char kUsageTimeLimit[] = "screen_time.limit";
 
