@@ -11,8 +11,8 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
+#include "net/dns/context_host_resolver.h"
 #include "net/dns/host_resolver.h"
-#include "net/dns/host_resolver_impl.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/log/test_net_log.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -119,20 +119,20 @@ TEST(NetworkQualityEstimatorUtilTest, Localhost) {
       std::make_unique<BoundTestNetLog>();
   BoundTestNetLog* net_log_ptr = net_log.get();
 
-  net::HostResolver::Options options;
-  // Use HostResolverImpl since MockCachingHostResolver does not determine the
-  // correct answer for localhosts.
-  HostResolverImpl resolver(options, net_log_ptr->bound().net_log());
+  // Use actual HostResolver since MockCachingHostResolver does not determine
+  // the correct answer for localhosts.
+  std::unique_ptr<ContextHostResolver> resolver =
+      HostResolver::CreateDefaultResolverImpl(net_log_ptr->bound().net_log());
 
   scoped_refptr<net::RuleBasedHostResolverProc> rules(
       new net::RuleBasedHostResolverProc(nullptr));
 
-  EXPECT_TRUE(IsPrivateHost(&resolver, HostPortPair("localhost", 443)));
-  EXPECT_TRUE(IsPrivateHost(&resolver, HostPortPair("localhost6", 443)));
-  EXPECT_TRUE(IsPrivateHost(&resolver, HostPortPair("127.0.0.1", 80)));
-  EXPECT_TRUE(IsPrivateHost(&resolver, HostPortPair("0.0.0.0", 80)));
-  EXPECT_TRUE(IsPrivateHost(&resolver, HostPortPair("::1", 80)));
-  EXPECT_FALSE(IsPrivateHost(&resolver, HostPortPair("google.com", 80)));
+  EXPECT_TRUE(IsPrivateHost(resolver.get(), HostPortPair("localhost", 443)));
+  EXPECT_TRUE(IsPrivateHost(resolver.get(), HostPortPair("localhost6", 443)));
+  EXPECT_TRUE(IsPrivateHost(resolver.get(), HostPortPair("127.0.0.1", 80)));
+  EXPECT_TRUE(IsPrivateHost(resolver.get(), HostPortPair("0.0.0.0", 80)));
+  EXPECT_TRUE(IsPrivateHost(resolver.get(), HostPortPair("::1", 80)));
+  EXPECT_FALSE(IsPrivateHost(resolver.get(), HostPortPair("google.com", 80)));
 }
 
 }  // namespace

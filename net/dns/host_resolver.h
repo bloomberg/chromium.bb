@@ -30,22 +30,21 @@ class Value;
 namespace net {
 
 class AddressList;
+class ContextHostResolver;
 class DnsClient;
 struct DnsConfigOverrides;
-class HostResolverImpl;
 class NetLog;
 class NetLogWithSource;
 class URLRequestContext;
 
 // This class represents the task of resolving hostnames (or IP address
-// literal) to an AddressList object.
+// literal) to an AddressList object (or other DNS-style results).
 //
-// HostResolver can handle multiple requests at a time, so when cancelling a
-// request the RequestHandle that was returned by Resolve() needs to be
-// given.  A simpler alternative for consumers that only have 1 outstanding
-// request at a time is to create a SingleRequestHostResolver wrapper around
-// HostResolver (which will automatically cancel the single request when it
-// goes out of scope).
+// Typically implemented by ContextHostResolver or wrappers thereof. See
+// HostResolver::Create[...]() methods for construction or URLRequestContext for
+// retrieval.
+//
+// See mock_host_resolver.h for test implementations.
 class NET_EXPORT HostResolver {
  public:
   // Handler for an individual host resolution request. Created by
@@ -284,6 +283,8 @@ class NET_EXPORT HostResolver {
   // read from the system for DnsClient resolution.
   virtual void SetDnsConfigOverrides(const DnsConfigOverrides& overrides);
 
+  // Sets the URLRequestContext to be used for underlying requests made at the
+  // HTTP level (e.g. DNS over HTTPS requests).
   virtual void SetRequestContext(URLRequestContext* request_context) {}
 
   // Returns the currently configured DNS over HTTPS servers. Returns nullptr if
@@ -297,26 +298,26 @@ class NET_EXPORT HostResolver {
   static std::unique_ptr<HostResolver> CreateSystemResolver(
       const Options& options,
       NetLog* net_log);
-  // Same, but explicitly returns the HostResolverImpl. Only used by
-  // StaleHostResolver in cronet.
-  static std::unique_ptr<HostResolverImpl> CreateSystemResolverImpl(
+  // Same, but explicitly returns the implementing ContextHostResolver. Only
+  // used by tests.
+  static std::unique_ptr<ContextHostResolver> CreateSystemResolverImpl(
       const Options& options,
       NetLog* net_log);
 
   // As above, but uses default parameters.
   static std::unique_ptr<HostResolver> CreateDefaultResolver(NetLog* net_log);
-  // Same, but explicitly returns the HostResolverImpl. Only used by
-  // StaleHostResolver in cronet.
-  static std::unique_ptr<HostResolverImpl> CreateDefaultResolverImpl(
+  // Same, but explicitly returns the implementing ContextHostResolver. Only
+  // used by tests and by StaleHostResolver in Cronet.
+  static std::unique_ptr<ContextHostResolver> CreateDefaultResolverImpl(
       NetLog* net_log);
-
- protected:
-  HostResolver();
 
   // Helpers for interacting with HostCache and ProcResolver.
   static AddressFamily DnsQueryTypeToAddressFamily(DnsQueryType query_type);
   static HostResolverFlags ParametersToHostResolverFlags(
       const ResolveHostParameters& parameters);
+
+ protected:
+  HostResolver();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HostResolver);

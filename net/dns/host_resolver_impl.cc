@@ -100,10 +100,6 @@ namespace net {
 
 namespace {
 
-// Default delay between calls to the system resolver for the same hostname.
-// (Can be overridden by field trial.)
-const int64_t kDnsDefaultUnresponsiveDelayMs = 6000;
-
 // Limit the size of hostnames that will be resolved to combat issues in
 // some platform's resolvers.
 const size_t kMaxHostLength = 4096;
@@ -509,7 +505,8 @@ class HostResolverImpl::RequestImpl
         request_host_(request_host),
         parameters_(optional_parameters ? optional_parameters.value()
                                         : ResolveHostParameters()),
-        host_resolver_flags_(ParametersToHostResolverFlags(parameters_)),
+        host_resolver_flags_(
+            HostResolver::ParametersToHostResolverFlags(parameters_)),
         priority_(parameters_.initial_priority),
         job_(nullptr),
         resolver_(resolver),
@@ -791,7 +788,8 @@ class HostResolverImpl::ProcTask {
     AddressList results;
     int os_error = 0;
     int error = resolver_proc->Resolve(
-        key.hostname, DnsQueryTypeToAddressFamily(key.dns_query_type),
+        key.hostname,
+        HostResolver::DnsQueryTypeToAddressFamily(key.dns_query_type),
         key.host_resolver_flags, &results, &os_error);
 
     network_task_runner->PostTask(
@@ -2124,25 +2122,6 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
 
 //-----------------------------------------------------------------------------
 
-HostResolverImpl::ProcTaskParams::ProcTaskParams(
-    HostResolverProc* resolver_proc,
-    size_t max_retry_attempts)
-    : resolver_proc(resolver_proc),
-      max_retry_attempts(max_retry_attempts),
-      unresponsive_delay(
-          base::TimeDelta::FromMilliseconds(kDnsDefaultUnresponsiveDelayMs)),
-      retry_factor(2) {
-  // Maximum of 4 retry attempts for host resolution.
-  static const size_t kDefaultMaxRetryAttempts = 4u;
-  if (max_retry_attempts == HostResolver::kDefaultRetryAttempts)
-    max_retry_attempts = kDefaultMaxRetryAttempts;
-}
-
-HostResolverImpl::ProcTaskParams::ProcTaskParams(const ProcTaskParams& other) =
-    default;
-
-HostResolverImpl::ProcTaskParams::~ProcTaskParams() = default;
-
 HostResolverImpl::HostResolverImpl(const Options& options, NetLog* net_log)
     : max_queued_jobs_(0),
       proc_params_(NULL, options.max_retry_attempts),
@@ -2660,7 +2639,7 @@ base::Optional<HostCache::Entry> HostResolverImpl::ServeLocalhost(
     //   to lack of detected IPv6 support. (See SystemHostResolverCall for
     //   rationale).
     if (key.dns_query_type == DnsQueryType::UNSPECIFIED ||
-        DnsQueryTypeToAddressFamily(key.dns_query_type) ==
+        HostResolver::DnsQueryTypeToAddressFamily(key.dns_query_type) ==
             address.GetFamily() ||
         (address.GetFamily() == ADDRESS_FAMILY_IPV6 &&
          key.dns_query_type == DnsQueryType::A &&
@@ -2909,8 +2888,7 @@ void HostResolverImpl::OnConnectionTypeChanged(
   proc_params_.unresponsive_delay =
       GetTimeDeltaForConnectionTypeFromFieldTrialOrDefault(
           "DnsUnresponsiveDelayMsByConnectionType",
-          base::TimeDelta::FromMilliseconds(kDnsDefaultUnresponsiveDelayMs),
-          type);
+          ProcTaskParams::kDnsDefaultUnresponsiveDelay, type);
 }
 
 void HostResolverImpl::OnInitialDNSConfigRead() {

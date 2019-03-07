@@ -30,6 +30,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/network_change_notifier.h"
 #include "net/cert/cert_verifier.h"
+#include "net/dns/context_host_resolver.h"
 #include "net/dns/dns_config.h"
 #include "net/dns/dns_hosts.h"
 #include "net/dns/dns_test_util.h"
@@ -171,14 +172,15 @@ class StaleHostResolverTest : public testing::Test {
     mock_proc_ = new MockHostResolverProc(result);
   }
 
-  std::unique_ptr<net::HostResolverImpl> CreateMockInnerResolverWithDnsClient(
+  std::unique_ptr<net::ContextHostResolver>
+  CreateMockInnerResolverWithDnsClient(
       std::unique_ptr<net::DnsClient> dns_client) {
-    std::unique_ptr<net::HostResolverImpl> inner_resolver(
+    std::unique_ptr<net::ContextHostResolver> inner_resolver(
         net::HostResolver::CreateDefaultResolverImpl(nullptr));
 
-    net::HostResolverImpl::ProcTaskParams proc_params(mock_proc_.get(), 1u);
-    inner_resolver->set_proc_params_for_test(proc_params);
-    inner_resolver->SetDnsClient(std::move(dns_client));
+    net::ProcTaskParams proc_params(mock_proc_.get(), 1u);
+    inner_resolver->SetProcParamsForTesting(proc_params);
+    inner_resolver->SetDnsClientForTesting(std::move(dns_client));
     return inner_resolver;
   }
 

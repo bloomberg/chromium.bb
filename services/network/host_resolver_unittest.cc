@@ -20,10 +20,10 @@
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
+#include "net/dns/context_host_resolver.h"
 #include "net/dns/dns_config.h"
 #include "net/dns/dns_test_util.h"
 #include "net/dns/host_resolver.h"
-#include "net/dns/host_resolver_impl.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/dns/public/dns_protocol.h"
 #include "net/log/net_log.h"
@@ -1145,9 +1145,9 @@ TEST_F(HostResolverTest, TextResults) {
       std::make_unique<net::MockDnsClient>(net::DnsConfig(), std::move(rules));
 
   net::NetLog net_log;
-  std::unique_ptr<net::HostResolverImpl> inner_resolver =
+  std::unique_ptr<net::ContextHostResolver> inner_resolver =
       net::HostResolver::CreateDefaultResolverImpl(&net_log);
-  inner_resolver->SetDnsClient(std::move(dns_client));
+  inner_resolver->SetDnsClientForTesting(std::move(dns_client));
   inner_resolver->SetBaseDnsConfigForTesting(CreateValidDnsConfig());
 
   HostResolver resolver(inner_resolver.get(), &net_log);
@@ -1183,9 +1183,9 @@ TEST_F(HostResolverTest, HostResults) {
       std::make_unique<net::MockDnsClient>(net::DnsConfig(), std::move(rules));
 
   net::NetLog net_log;
-  std::unique_ptr<net::HostResolverImpl> inner_resolver =
+  std::unique_ptr<net::ContextHostResolver> inner_resolver =
       net::HostResolver::CreateDefaultResolverImpl(&net_log);
-  inner_resolver->SetDnsClient(std::move(dns_client));
+  inner_resolver->SetDnsClientForTesting(std::move(dns_client));
   inner_resolver->SetBaseDnsConfigForTesting(CreateValidDnsConfig());
 
   HostResolver resolver(inner_resolver.get(), &net_log);

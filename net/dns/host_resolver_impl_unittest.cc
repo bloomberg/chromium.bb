@@ -82,9 +82,8 @@ HostResolver::Options DefaultOptions() {
   return options;
 }
 
-HostResolverImpl::ProcTaskParams DefaultParams(
-    HostResolverProc* resolver_proc) {
-  return HostResolverImpl::ProcTaskParams(resolver_proc, kMaxRetryAttempts);
+ProcTaskParams DefaultParams(HostResolverProc* resolver_proc) {
+  return ProcTaskParams(resolver_proc, kMaxRetryAttempts);
 }
 
 // A HostResolverProc that pushes each host mapped into a list and allows
@@ -479,7 +478,7 @@ class HostResolverImplTest : public TestWithScopedTaskEnvironment {
   // This HostResolverImpl will only allow 1 outstanding resolve at a time and
   // perform no retries.
   void CreateSerialResolver() {
-    HostResolverImpl::ProcTaskParams params = DefaultParams(proc_.get());
+    ProcTaskParams params = DefaultParams(proc_.get());
     params.max_retry_attempts = 0u;
     CreateResolverWithLimitsAndParams(1u, params, true /* ipv6_reachable */);
   }
@@ -494,10 +493,9 @@ class HostResolverImplTest : public TestWithScopedTaskEnvironment {
     EXPECT_FALSE(proc_->HasBlockedRequests());
   }
 
-  virtual void CreateResolverWithLimitsAndParams(
-      size_t max_concurrent_resolves,
-      const HostResolverImpl::ProcTaskParams& params,
-      bool ipv6_reachable) {
+  virtual void CreateResolverWithLimitsAndParams(size_t max_concurrent_resolves,
+                                                 const ProcTaskParams& params,
+                                                 bool ipv6_reachable) {
     HostResolverImpl::Options options = DefaultOptions();
     options.max_concurrent_resolves = max_concurrent_resolves;
     resolver_.reset(new TestHostResolverImpl(options, NULL, ipv6_reachable));
@@ -1775,7 +1773,7 @@ TEST_F(HostResolverImplTest, MultipleAttempts) {
       new LookupAttemptHostResolverProc(NULL, kAttemptNumberToResolve,
                                         kTotalAttempts));
 
-  HostResolverImpl::ProcTaskParams params = DefaultParams(resolver_proc.get());
+  ProcTaskParams params = DefaultParams(resolver_proc.get());
   base::TimeDelta unresponsive_delay = params.unresponsive_delay;
   int retry_factor = params.retry_factor;
 
@@ -2816,10 +2814,9 @@ class HostResolverImplDnsTest : public HostResolverImplTest {
   }
 
   // HostResolverImplTest implementation:
-  void CreateResolverWithLimitsAndParams(
-      size_t max_concurrent_resolves,
-      const HostResolverImpl::ProcTaskParams& params,
-      bool ipv6_reachable) override {
+  void CreateResolverWithLimitsAndParams(size_t max_concurrent_resolves,
+                                         const ProcTaskParams& params,
+                                         bool ipv6_reachable) override {
     HostResolverImpl::Options options = DefaultOptions();
     options.max_concurrent_resolves = max_concurrent_resolves;
     resolver_.reset(new TestHostResolverImpl(options, NULL, ipv6_reachable));

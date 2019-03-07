@@ -14,6 +14,7 @@
 #include "net/base/sys_addrinfo.h"
 #include "net/dns/dns_reloader.h"
 #include "net/dns/dns_util.h"
+#include "net/dns/host_resolver.h"
 
 #if defined(OS_OPENBSD)
 #define AI_ADDRCONFIG 0
@@ -274,5 +275,24 @@ int SystemHostResolverProc::Resolve(const std::string& hostname,
 }
 
 SystemHostResolverProc::~SystemHostResolverProc() = default;
+
+const base::TimeDelta ProcTaskParams::kDnsDefaultUnresponsiveDelay =
+    base::TimeDelta::FromSeconds(6);
+
+ProcTaskParams::ProcTaskParams(HostResolverProc* resolver_proc,
+                               size_t max_retry_attempts)
+    : resolver_proc(resolver_proc),
+      max_retry_attempts(max_retry_attempts),
+      unresponsive_delay(kDnsDefaultUnresponsiveDelay),
+      retry_factor(2) {
+  // Maximum of 4 retry attempts for host resolution.
+  static const size_t kDefaultMaxRetryAttempts = 4u;
+  if (max_retry_attempts == HostResolver::kDefaultRetryAttempts)
+    max_retry_attempts = kDefaultMaxRetryAttempts;
+}
+
+ProcTaskParams::ProcTaskParams(const ProcTaskParams& other) = default;
+
+ProcTaskParams::~ProcTaskParams() = default;
 
 }  // namespace net
