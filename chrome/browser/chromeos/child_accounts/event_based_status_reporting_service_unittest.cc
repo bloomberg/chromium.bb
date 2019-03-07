@@ -124,6 +124,7 @@ class EventBasedStatusReportingServiceTest : public testing::Test {
     service_->Shutdown();
     arc_test_.TearDown();
     profile_.reset();
+    SystemClockClient::Shutdown();
     PowerManagerClient::Shutdown();
   }
 
