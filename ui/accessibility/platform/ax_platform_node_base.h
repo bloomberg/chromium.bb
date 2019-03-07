@@ -222,6 +222,7 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   AXPlatformNodeDelegate* delegate_;
 
  protected:
+  bool IsDocument() const;
   bool IsTextOnlyObject() const;
   bool IsPlainTextField() const;
   // Is in a focused textfield with a related suggestion popup available,

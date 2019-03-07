@@ -88,6 +88,13 @@ const AXTreeData& TestAXNodeWrapper::GetTreeData() const {
   return tree_->data();
 }
 
+AXNodePosition::AXPositionInstance TestAXNodeWrapper::CreateTextPositionAt(
+    int offset,
+    ax::mojom::TextAffinity affinity) const {
+  return ui::AXNodePosition::CreateTextPosition(GetTreeData().tree_id,
+                                                node_->id(), offset, affinity);
+}
+
 gfx::NativeViewAccessible TestAXNodeWrapper::GetParent() {
   TestAXNodeWrapper* parent_wrapper = GetOrCreate(tree_, node_->parent());
   return parent_wrapper ?

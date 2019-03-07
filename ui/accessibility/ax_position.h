@@ -460,8 +460,9 @@ class AXPosition {
     int adjusted_offset = AsTextPosition()->text_offset_;
     AXPositionInstance child_position = tree_position->CreateChildPositionAt(0);
     DCHECK(child_position);
-    for (int i = 1; i <= tree_position->child_index_ &&
-                    i < tree_position->AnchorChildCount();
+    for (int i = 1;
+         i <= tree_position->child_index_ &&
+         i < tree_position->AnchorChildCount() && adjusted_offset > 0;
          ++i) {
       adjusted_offset -= child_position->MaxTextOffsetInParent();
       child_position = tree_position->CreateChildPositionAt(i);
@@ -482,8 +483,9 @@ class AXPosition {
       case AXPositionKind::NULL_POSITION:
         return CreateNullPosition();
       case AXPositionKind::TREE_POSITION:
-        if (!AnchorChildCount())
+        if (!AnchorChildCount()) {
           return CreateTreePosition(tree_id_, anchor_id_, BEFORE_TEXT);
+        }
         return CreateTreePosition(tree_id_, anchor_id_, 0 /* child_index */);
       case AXPositionKind::TEXT_POSITION:
         return CreateTextPosition(tree_id_, anchor_id_, 0 /* text_offset */,

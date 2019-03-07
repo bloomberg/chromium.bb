@@ -18,6 +18,7 @@
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/common/accessibility_messages.h"
 #include "content/public/common/content_client.h"
+#include "ui/accessibility/ax_node_position.h"
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/accessibility/ax_text_utils.h"
 #include "ui/accessibility/platform/ax_unique_id.h"
@@ -1057,6 +1058,15 @@ const ui::AXTreeData& BrowserAccessibility::GetTreeData() const {
     return manager()->GetTreeData();
   else
     return *empty_data;
+}
+
+ui::AXNodePosition::AXPositionInstance
+BrowserAccessibility::CreateTextPositionAt(
+    int offset,
+    ax::mojom::TextAffinity affinity) const {
+  DCHECK(manager_);
+  return ui::AXNodePosition::CreateTextPosition(manager_->ax_tree_id(), GetId(),
+                                                offset, affinity);
 }
 
 gfx::NativeViewAccessible BrowserAccessibility::GetNSWindow() {

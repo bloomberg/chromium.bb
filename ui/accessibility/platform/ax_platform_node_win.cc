@@ -25,11 +25,13 @@
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_mode_observer.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/accessibility/ax_node_position.h"
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/accessibility/ax_text_utils.h"
 #include "ui/accessibility/ax_tree_data.h"
 #include "ui/accessibility/platform/ax_fragment_root_win.h"
 #include "ui/accessibility/platform/ax_platform_node_delegate.h"
+#include "ui/accessibility/platform/ax_platform_node_textprovider_win.h"
 #include "ui/accessibility/platform/ax_platform_relation_win.h"
 #include "ui/base/win/atl_module.h"
 #include "ui/display/win/screen_win.h"
@@ -3573,6 +3575,14 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPatternProvider(PATTERNID pattern_id,
       }
       break;
 
+    case UIA_TextEditPatternId:
+    case UIA_TextPatternId:
+      if (IsTextOnlyObject() || IsDocument() ||
+          HasBoolAttribute(ax::mojom::BoolAttribute::kEditableRoot)) {
+        return AXPlatformNodeTextProviderWin::Create(this, result);
+      }
+      break;
+
     case UIA_TogglePatternId:
       if (SupportsToggle(data.role)) {
         AddRef();
@@ -3604,8 +3614,6 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPatternProvider(PATTERNID pattern_id,
     case UIA_SpreadsheetItemPatternId:
     case UIA_StylesPatternId:
     case UIA_TextChildPatternId:
-    case UIA_TextEditPatternId:
-    case UIA_TextPatternId:
     case UIA_TextPattern2Id:
     case UIA_TransformPattern2Id:
     case UIA_VirtualizedItemPatternId:

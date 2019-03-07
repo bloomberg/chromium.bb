@@ -28,6 +28,13 @@ const AXTreeData& AXPlatformNodeDelegateBase::GetTreeData() const {
   return *empty_data;
 }
 
+AXNodePosition::AXPositionInstance
+AXPlatformNodeDelegateBase::CreateTextPositionAt(
+    int offset,
+    ax::mojom::TextAffinity affinity) const {
+  return AXNodePosition::CreateNullPosition();
+}
+
 gfx::NativeViewAccessible AXPlatformNodeDelegateBase::GetNSWindow() {
   return nullptr;
 }

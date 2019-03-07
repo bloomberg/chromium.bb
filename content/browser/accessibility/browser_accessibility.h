@@ -21,8 +21,10 @@
 #include "content/browser/accessibility/browser_accessibility_position.h"
 #include "content/common/content_export.h"
 #include "third_party/blink/public/web/web_ax_enums.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/accessibility/ax_node_position.h"
 #include "ui/accessibility/ax_range.h"
 #include "ui/accessibility/ax_text_utils.h"
 #include "ui/accessibility/platform/ax_platform_node.h"
@@ -346,6 +348,10 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   // AXPlatformNodeDelegate.
   const ui::AXNodeData& GetData() const override;
   const ui::AXTreeData& GetTreeData() const override;
+  ui::AXNodePosition::AXPositionInstance CreateTextPositionAt(
+      int offset,
+      ax::mojom::TextAffinity affinity =
+          ax::mojom::TextAffinity::kDownstream) const override;
   gfx::NativeViewAccessible GetNSWindow() override;
   gfx::NativeViewAccessible GetParent() override;
   int GetChildCount() override;
