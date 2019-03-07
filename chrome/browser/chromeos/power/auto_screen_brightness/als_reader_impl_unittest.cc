@@ -109,12 +109,9 @@ TEST_F(AlsReaderImplTest, ErrorMetrics) {
   histogram_tester_.ExpectBucketCount(
       histogram, static_cast<int>(AlsReader::AlsInitStatus::kDisabled), 1);
   histogram_tester_.ExpectBucketCount(
-      histogram, static_cast<int>(AlsReader::AlsInitStatus::kIncorrectConfig),
-      1);
-  histogram_tester_.ExpectBucketCount(
       histogram, static_cast<int>(AlsReader::AlsInitStatus::kMissingPath), 1);
-  // Expect 3 errors from above + 1 success from before |FailForTesting|.
-  histogram_tester_.ExpectTotalCount(histogram, 4);
+  // Expect 2 errors from above + 1 success from before |FailForTesting|.
+  histogram_tester_.ExpectTotalCount(histogram, 3);
 }
 
 TEST_F(AlsReaderImplTest, OneAlsValue) {
