@@ -55,9 +55,12 @@ class UploadDataStream;
 class QuicHttpProxyBackend;
 
 // An adapter for making HTTP requests to net::URLRequest.
+//
+// TODO(https://crbug.com/937621):  This class does not appear to be thread
+// safe, so all its tests are disabled.
 class QuicHttpProxyBackendStream : public net::URLRequest::Delegate {
  public:
-  QuicHttpProxyBackendStream(QuicHttpProxyBackend* context);
+  explicit QuicHttpProxyBackendStream(QuicHttpProxyBackend* context);
   ~QuicHttpProxyBackendStream() override;
 
   static const std::set<std::string> kHopHeaders;
