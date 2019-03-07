@@ -240,7 +240,7 @@ public class ContactsPickerDialogTest
         Assert.assertNotNull(topView);
         TextView explanation = (TextView) topView.findViewById(R.id.explanation);
         Assert.assertNotNull(explanation);
-        Assert.assertEquals(explanation.getText(),
+        Assert.assertEquals(explanation.getText().toString(),
                 "The contacts you select below will be shared with the website example.com.");
 
         dismissDialog();
