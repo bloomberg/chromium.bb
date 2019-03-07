@@ -31,7 +31,6 @@
 namespace media {
 class AudioBus;
 class AudioParameters;
-class EchoInformation;
 }  // namespace media
 
 namespace webrtc {
@@ -214,10 +213,6 @@ class CONTENT_EXPORT MediaStreamAudioProcessor
   size_t unsupported_buffer_size_log_count_ = 0;
   size_t apm_playout_error_code_log_count_ = 0;
   size_t large_delay_log_count_ = 0;
-
-  // Object for logging UMA stats for echo information when the AEC is enabled.
-  // Accessed on the main render thread.
-  std::unique_ptr<media::EchoInformation> echo_information_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamAudioProcessor);
 };

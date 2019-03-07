@@ -1199,9 +1199,6 @@ extern const char kWebglDraftExtensionsDescription[];
 extern const char kWebMidiName[];
 extern const char kWebMidiDescription[];
 
-extern const char kWebrtcEchoCanceller3Name[];
-extern const char kWebrtcEchoCanceller3Description[];
-
 extern const char kWebrtcH264WithOpenh264FfmpegName[];
 extern const char kWebrtcH264WithOpenh264FfmpegDescription[];
 

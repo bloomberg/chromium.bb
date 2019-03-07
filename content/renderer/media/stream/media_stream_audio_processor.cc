@@ -32,7 +32,6 @@
 #include "media/base/audio_fifo.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/channel_layout.h"
-#include "media/webrtc/echo_information.h"
 #include "media/webrtc/webrtc_switches.h"
 #include "third_party/webrtc/api/audio/echo_canceller3_config.h"
 #include "third_party/webrtc/api/audio/echo_canceller3_config_json.h"
@@ -104,13 +103,6 @@ base::Optional<int> GetStartupMinVolumeForAgc() {
     return base::Optional<int>();
   }
   return base::Optional<int>(startup_min_volume);
-}
-
-// Checks if the AEC's refined adaptive filter tuning was enabled on the command
-// line.
-bool UseAecRefinedAdaptiveFilter() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kAecRefinedAdaptiveFilter);
 }
 
 }  // namespace
@@ -392,9 +384,6 @@ void MediaStreamAudioProcessor::Stop() {
     playout_data_source_->RemovePlayoutSink(this);
     playout_data_source_ = nullptr;
   }
-
-  if (echo_information_)
-    echo_information_->ReportAndResetAecDivergentFilterStats();
 }
 
 const media::AudioParameters& MediaStreamAudioProcessor::InputFormat() const {
@@ -573,15 +562,6 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
 
   // Experimental options provided at creation.
   webrtc::Config config;
-  config.Set<webrtc::ExtendedFilter>(
-      new webrtc::ExtendedFilter(goog_experimental_aec));
-  config.Set<webrtc::ExperimentalNs>(new webrtc::ExperimentalNs(
-      properties.goog_experimental_noise_suppression));
-  config.Set<webrtc::DelayAgnostic>(new webrtc::DelayAgnostic(true));
-  if (UseAecRefinedAdaptiveFilter()) {
-    config.Set<webrtc::RefinedAdaptiveFilter>(
-        new webrtc::RefinedAdaptiveFilter(true));
-  }
 
   // If the experimental AGC is enabled, check for overridden config params.
   if (properties.goog_experimental_auto_gain_control) {
@@ -607,8 +587,7 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
             ->WebRTCPlatformSpecificAudioProcessingConfiguration();
   }
   webrtc::AudioProcessingBuilder ap_builder;
-  if (properties.echo_cancellation_type ==
-      EchoCancellationType::kEchoCancellationAec3) {
+  if (properties.EchoCancellationIsWebRtcProvided()) {
     webrtc::EchoCanceller3Config aec3_config;
     if (audio_processing_platform_config_json) {
       aec3_config = webrtc::Aec3ConfigFromJsonString(
@@ -631,14 +610,6 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
 
   if (properties.EchoCancellationIsWebRtcProvided()) {
     EnableEchoCancellation(audio_processing_.get());
-
-    // Prepare for logging echo information. Do not log any echo information
-    // when AEC3 is active, as the echo information then will not be properly
-    // updated.
-    if (properties.echo_cancellation_type !=
-        EchoCancellationType::kEchoCancellationAec3) {
-      echo_information_ = std::make_unique<media::EchoInformation>();
-    }
   }
 
   if (properties.goog_noise_suppression)
@@ -831,9 +802,6 @@ int MediaStreamAudioProcessor::ProcessData(const float* const* process_ptrs,
 
 void MediaStreamAudioProcessor::UpdateAecStats() {
   DCHECK(main_thread_runner_->BelongsToCurrentThread());
-  if (echo_information_)
-    echo_information_->UpdateAecStats(
-        audio_processing_->GetStatistics(true /* has_remote_tracks */));
 }
 
 }  // namespace content
