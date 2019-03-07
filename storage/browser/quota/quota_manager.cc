@@ -87,25 +87,6 @@ bool IsSupportedIncognitoType(StorageType type) {
   return type == StorageType::kTemporary || type == StorageType::kPersistent;
 }
 
-void CountOriginType(const std::set<url::Origin>& origins,
-                     SpecialStoragePolicy* policy,
-                     size_t* protected_origins,
-                     size_t* unlimited_origins) {
-  DCHECK(protected_origins);
-  DCHECK(unlimited_origins);
-  *protected_origins = 0;
-  *unlimited_origins = 0;
-  if (!policy)
-    return;
-  for (const auto& origin : origins) {
-    const GURL url = origin.GetURL();
-    if (policy->IsStorageProtected(url))
-      ++*protected_origins;
-    if (policy->IsStorageUnlimited(url))
-      ++*unlimited_origins;
-  }
-}
-
 bool GetPersistentHostQuotaOnDBThread(const std::string& host,
                                       int64_t* quota,
                                       QuotaDatabase* database) {
@@ -1495,22 +1476,6 @@ void QuotaManager::DidGetStorageCapacityForHistogram(int64_t usage,
   UMA_HISTOGRAM_PERCENTAGE("Quota.PercentUsedForTemporaryStorage2",
                            static_cast<int>((usage * 100) / total_space));
 
-  std::set<url::Origin> origins;
-  GetCachedOrigins(StorageType::kTemporary, &origins);
-
-  size_t num_origins = origins.size();
-  size_t protected_origins = 0;
-  size_t unlimited_origins = 0;
-  CountOriginType(origins,
-                  special_storage_policy_.get(),
-                  &protected_origins,
-                  &unlimited_origins);
-  UMA_HISTOGRAM_COUNTS_1M("Quota.NumberOfTemporaryStorageOrigins", num_origins);
-  UMA_HISTOGRAM_COUNTS_1M("Quota.NumberOfProtectedTemporaryStorageOrigins",
-                          protected_origins);
-  UMA_HISTOGRAM_COUNTS_1M("Quota.NumberOfUnlimitedTemporaryStorageOrigins",
-                          unlimited_origins);
-
   GetGlobalUsage(
       StorageType::kPersistent,
       base::BindOnce(&QuotaManager::DidGetPersistentGlobalUsageForHistogram,
@@ -1522,23 +1487,6 @@ void QuotaManager::DidGetPersistentGlobalUsageForHistogram(
     int64_t unlimited_usage) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   UMA_HISTOGRAM_MBYTES("Quota.GlobalUsageOfPersistentStorage", usage);
-
-  std::set<url::Origin> origins;
-  GetCachedOrigins(StorageType::kPersistent, &origins);
-
-  size_t num_origins = origins.size();
-  size_t protected_origins = 0;
-  size_t unlimited_origins = 0;
-  CountOriginType(origins,
-                  special_storage_policy_.get(),
-                  &protected_origins,
-                  &unlimited_origins);
-  UMA_HISTOGRAM_COUNTS_1M("Quota.NumberOfPersistentStorageOrigins",
-                          num_origins);
-  UMA_HISTOGRAM_COUNTS_1M("Quota.NumberOfProtectedPersistentStorageOrigins",
-                          protected_origins);
-  UMA_HISTOGRAM_COUNTS_1M("Quota.NumberOfUnlimitedPersistentStorageOrigins",
-                          unlimited_origins);
 
   // We DumpOriginInfoTable last to ensure the trackers caches are loaded.
   DumpOriginInfoTable(
