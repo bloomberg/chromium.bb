@@ -141,7 +141,7 @@ void LayoutNGBlockFlow::UpdateOutOfFlowBlockLayout() {
   scoped_refptr<const NGLayoutResult> result =
       container_builder.ToBoxFragment();
   // These are the unpositioned OOF descendants of the current OOF block.
-  for (NGOutOfFlowPositionedDescendant descendant :
+  for (const NGOutOfFlowPositionedDescendant& descendant :
        result->OutOfFlowPositionedDescendants())
     descendant.node.UseOldOutOfFlowPositioning();
 
