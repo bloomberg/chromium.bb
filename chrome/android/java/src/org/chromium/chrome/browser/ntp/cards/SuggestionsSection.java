@@ -338,7 +338,7 @@ public class SuggestionsSection extends InnerNode<NewTabPageViewHolder, PartialB
         int numberOfSuggestionsExposed = getNumberOfSuggestionsExposed();
         if (!canUpdateSuggestions(numberOfSuggestionsExposed)) {
             mIsDataStale = true;
-            Log.d(TAG, "updateSuggestions: Category %d is stale, it can't replace suggestions.",
+            Log.d(TAG, "updateModels: Category %d is stale, it can't replace suggestions.",
                     getCategory());
             return;
         }
@@ -354,8 +354,7 @@ public class SuggestionsSection extends InnerNode<NewTabPageViewHolder, PartialB
 
         if (numberOfSuggestionsExposed > 0) {
             mIsDataStale = true;
-            Log.d(TAG,
-                    "updateSuggestions: Category %d is stale, will keep already seen suggestions.",
+            Log.d(TAG, "updateModels: Category %d is stale, will keep already seen suggestions.",
                     getCategory());
         }
         appendSuggestions(suggestions, /* keepSectionSize = */ true,
@@ -377,8 +376,7 @@ public class SuggestionsSection extends InnerNode<NewTabPageViewHolder, PartialB
 
         int numberOfSuggestionsExposed = getNumberOfSuggestionsExposed();
         if (keepSectionSize) {
-            Log.d(TAG, "updateSuggestions: keeping the first %d suggestion",
-                    numberOfSuggestionsExposed);
+            Log.d(TAG, "updateModels: keeping the first %d suggestion", numberOfSuggestionsExposed);
             int numSuggestionsToAppend =
                     Math.max(0, suggestions.size() - numberOfSuggestionsExposed);
             int itemCount = mSuggestions.size();
@@ -432,7 +430,7 @@ public class SuggestionsSection extends InnerNode<NewTabPageViewHolder, PartialB
         if (!hasSuggestions()) return true; // If we don't have any, we always accept updates.
 
         if (CardsVariationParameters.ignoreUpdatesForExistingSuggestions()) {
-            Log.d(TAG, "updateSuggestions: replacing existing suggestion disabled");
+            Log.d(TAG, "updateModels: replacing existing suggestion disabled");
             NewTabPageUma.recordUIUpdateResult(
                     NewTabPageUma.ContentSuggestionsUIUpdateResult.FAIL_DISABLED);
             return false;
@@ -441,7 +439,7 @@ public class SuggestionsSection extends InnerNode<NewTabPageViewHolder, PartialB
         if (numberOfSuggestionsExposed >= getSuggestionsCount() || mHasAppended) {
             // In case that suggestions got removed, we assume they already were seen. This might
             // be over-simplifying things, but given the rare occurences it should be good enough.
-            Log.d(TAG, "updateSuggestions: replacing existing suggestion not possible, all seen");
+            Log.d(TAG, "updateModels: replacing existing suggestion not possible, all seen");
             NewTabPageUma.recordUIUpdateResult(
                     NewTabPageUma.ContentSuggestionsUIUpdateResult.FAIL_ALL_SEEN);
             return false;

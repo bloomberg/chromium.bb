@@ -36,7 +36,7 @@ public class ModelListAdapter extends BaseAdapter {
     }
 
     private final Context mContext;
-    private final List<Pair<Integer, PropertyModel>> mSuggestionItems = new ArrayList<>();
+    private final List<Pair<Integer, PropertyModel>> mModelList = new ArrayList<>();
     private final SparseArray<Pair<ViewBuilder, PropertyModelChangeProcessor.ViewBinder>>
             mViewBuilderMap = new SparseArray<>();
 
@@ -45,22 +45,22 @@ public class ModelListAdapter extends BaseAdapter {
     }
 
     /**
-     * Update the visible omnibox suggestions.
+     * Update the visible models (list items).
      */
-    public void updateSuggestions(List<Pair<Integer, PropertyModel>> suggestionModels) {
-        mSuggestionItems.clear();
-        mSuggestionItems.addAll(suggestionModels);
+    public void updateModels(List<Pair<Integer, PropertyModel>> models) {
+        mModelList.clear();
+        mModelList.addAll(models);
         notifyDataSetChanged();
     }
 
     @Override
     public int getCount() {
-        return mSuggestionItems.size();
+        return mModelList.size();
     }
 
     @Override
     public Object getItem(int position) {
-        return mSuggestionItems.get(position);
+        return mModelList.get(position);
     }
 
     @Override
@@ -83,7 +83,7 @@ public class ModelListAdapter extends BaseAdapter {
 
     @Override
     public int getItemViewType(int position) {
-        return mSuggestionItems.get(position).first;
+        return mModelList.get(position).first;
     }
 
     @Override
@@ -96,33 +96,33 @@ public class ModelListAdapter extends BaseAdapter {
     public View getView(int position, View convertView, ViewGroup parent) {
         if (convertView == null || convertView.getTag(R.id.view_type) == null
                 || (int) convertView.getTag(R.id.view_type) != getItemViewType(position)) {
-            int suggestionTypeId = mSuggestionItems.get(position).first;
-            convertView = mViewBuilderMap.get(suggestionTypeId).first.buildView();
+            int modelTypeId = mModelList.get(position).first;
+            convertView = mViewBuilderMap.get(modelTypeId).first.buildView();
 
             // Since the view type returned by getView is not guaranteed to return a view of that
             // type, we need a means of checking it. The "view_type" tag is attached to the views
             // and identify what type the view is. This should allow lists that aren't necessarily
             // recycler views to work correctly with heterogeneous lists.
-            convertView.setTag(R.id.view_type, suggestionTypeId);
+            convertView.setTag(R.id.view_type, modelTypeId);
         }
 
-        PropertyModel suggestionModel = mSuggestionItems.get(position).second;
+        PropertyModel model = mModelList.get(position).second;
         PropertyModel viewModel =
-                getOrCreateModelFromExisting(convertView, mSuggestionItems.get(position));
-        for (PropertyKey key : suggestionModel.getAllSetProperties()) {
+                getOrCreateModelFromExisting(convertView, mModelList.get(position));
+        for (PropertyKey key : model.getAllSetProperties()) {
             if (key instanceof WritableIntPropertyKey) {
                 WritableIntPropertyKey intKey = (WritableIntPropertyKey) key;
-                viewModel.set(intKey, suggestionModel.get(intKey));
+                viewModel.set(intKey, model.get(intKey));
             } else if (key instanceof WritableBooleanPropertyKey) {
                 WritableBooleanPropertyKey booleanKey = (WritableBooleanPropertyKey) key;
-                viewModel.set(booleanKey, suggestionModel.get(booleanKey));
+                viewModel.set(booleanKey, model.get(booleanKey));
             } else if (key instanceof WritableFloatPropertyKey) {
                 WritableFloatPropertyKey floatKey = (WritableFloatPropertyKey) key;
-                viewModel.set(floatKey, suggestionModel.get(floatKey));
+                viewModel.set(floatKey, model.get(floatKey));
             } else if (key instanceof WritableObjectPropertyKey<?>) {
                 @SuppressWarnings({"unchecked", "rawtypes"})
                 WritableObjectPropertyKey objectKey = (WritableObjectPropertyKey) key;
-                viewModel.set(objectKey, suggestionModel.get(objectKey));
+                viewModel.set(objectKey, model.get(objectKey));
             } else {
                 assert false : "Unexpected key received";
             }
