@@ -153,8 +153,10 @@ NonClientFrameView* BubbleDialogDelegateView::CreateNonClientFrameView(
   std::unique_ptr<BubbleBorder> border =
       std::make_unique<BubbleBorder>(adjusted_arrow, GetShadow(), color());
   if (CustomShadowsSupported() && ShouldHaveRoundCorners()) {
-    const int corner_radius = provider->GetCornerRadiusMetric(EMPHASIS_HIGH);
-    border->SetCornerRadius(corner_radius);
+    // TODO(sajadm): Remove when fixing https://crbug.com/822075 and use
+    // EMPHASIS_HIGH metric values from the LayoutProvider to get the
+    // corner radius.
+    border->SetCornerRadius(2);
   }
 
   frame->SetBubbleBorder(std::move(border));

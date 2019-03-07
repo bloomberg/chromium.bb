@@ -38,13 +38,10 @@ ProfileMenuViewBase::ProfileMenuViewBase(views::Button* anchor_button,
       menu_width_(0),
       anchor_button_(anchor_button),
       close_bubble_helper_(this, browser) {
-  // Because the contents are in a ScrollView (see ShowView) they won't be
-  // clipped by the rounded corners like normal. To work around this, we add
-  // extra margins on the top and bottom so the scroll view is entirely
-  // inside the rectangular area of the bubble.
-  const int corner_radius =
-      ChromeLayoutProvider::Get()->GetCornerRadiusMetric(views::EMPHASIS_HIGH);
-  set_margins(gfx::Insets(corner_radius, 0, corner_radius, 0));
+  // TODO(sajadm): Remove when fixing https://crbug.com/822075
+  // The sign in webview will be clipped on the bottom corners without these
+  // margins, see related bug <http://crbug.com/593203>.
+  set_margins(gfx::Insets(0, 0, 2, 0));
   if (anchor_button) {
     anchor_button->AnimateInkDrop(views::InkDropState::ACTIVATED, nullptr);
   } else {
@@ -106,10 +103,7 @@ int ProfileMenuViewBase::GetMaxHeight() const {
       display::Screen::GetScreen()
           ->GetDisplayNearestPoint(anchor_rect.CenterPoint())
           .work_area();
-  const int top_margin =
-      ChromeLayoutProvider::Get()->GetCornerRadiusMetric(views::EMPHASIS_HIGH);
-  int available_space =
-      screen_space.bottom() - anchor_rect.bottom() - top_margin;
+  int available_space = screen_space.bottom() - anchor_rect.bottom();
 #if defined(OS_WIN)
   // On Windows the bubble can also be show to the top of the anchor.
   available_space =
