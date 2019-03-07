@@ -39,7 +39,6 @@ class TestConnectJob : public ConnectJob {
       : ConnectJob(DEFAULT_PRIORITY,
                    timeout_duration,
                    CommonConnectJobParams(
-                       "group_name",
                        SocketTag(),
                        nullptr /* client_socket_factory */,
                        nullptr /* host_resolver */,

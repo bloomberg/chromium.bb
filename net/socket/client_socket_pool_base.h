@@ -73,8 +73,7 @@ namespace internal {
 // ClientSocketPoolBaseHelper.  This class is not for external use, please use
 // ClientSocketPoolBase instead.
 class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
-    : public ConnectJob::Delegate,
-      public NetworkChangeNotifier::IPAddressObserver {
+    : public NetworkChangeNotifier::IPAddressObserver {
  public:
   using Flags = uint32_t;
 
@@ -155,7 +154,6 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
     virtual ~ConnectJobFactory() {}
 
     virtual std::unique_ptr<ConnectJob> NewConnectJob(
-        const std::string& group_name,
         const Request& request,
         ConnectJob::Delegate* delegate) const = 0;
 
@@ -292,13 +290,6 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
 
   void EnableConnectBackupJobs();
 
-  // ConnectJob::Delegate methods:
-  void OnConnectJobComplete(int result, ConnectJob* job) override;
-  void OnNeedsProxyAuth(const HttpResponseInfo& response,
-                        HttpAuthController* auth_controller,
-                        base::OnceClosure restart_with_auth_callback,
-                        ConnectJob* job) override;
-
   // NetworkChangeNotifier::IPAddressObserver methods:
   void OnIPAddressChanged() override;
 
@@ -347,12 +338,20 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
   // SanityCheck() will always be true, except during the invocation of a
   // method.  So all public methods expect the Group to pass SanityCheck() when
   // invoked.
-  class NET_EXPORT_PRIVATE Group {
+  class NET_EXPORT_PRIVATE Group : public ConnectJob::Delegate {
    public:
     using JobList = std::list<std::unique_ptr<ConnectJob>>;
 
-    Group();
-    ~Group();
+    Group(const std::string& group_name,
+          ClientSocketPoolBaseHelper* client_socket_pool_base_helper);
+    ~Group() override;
+
+    // ConnectJob::Delegate methods:
+    void OnConnectJobComplete(int result, ConnectJob* job) override;
+    void OnNeedsProxyAuth(const HttpResponseInfo& response,
+                          HttpAuthController* auth_controller,
+                          base::OnceClosure restart_with_auth_callback,
+                          ConnectJob* job) override;
 
     bool IsEmpty() const {
       return active_socket_count_ == 0 && idle_sockets_.empty() &&
@@ -389,8 +388,7 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
 
     // Set a timer to create a backup job if it takes too long to
     // create one and if a timer isn't already running.
-    void StartBackupJobTimer(const std::string& group_name,
-                             ClientSocketPoolBaseHelper* pool);
+    void StartBackupJobTimer(const std::string& group_name);
 
     bool BackupJobTimerIsRunning() const;
 
@@ -471,6 +469,7 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
     bool RequestWithHandleHasJobForTesting(
         const ClientSocketHandle* handle) const;
 
+    const std::string& group_name() { return group_name_; }
     size_t unassigned_job_count() const { return unassigned_jobs_.size(); }
     const JobList& jobs() const { return jobs_; }
     const std::list<IdleSocket>& idle_sockets() const { return idle_sockets_; }
@@ -545,9 +544,7 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
     void TransferJobBetweenRequests(Request* source, Request* dest);
 
     // Called when the backup socket timer fires.
-    void OnBackupJobTimerFired(
-        std::string group_name,
-        ClientSocketPoolBaseHelper* pool);
+    void OnBackupJobTimerFired(std::string group_name);
 
     // Checks that:
     //  - |unassigned_jobs_| is empty iff there are at least as many requests
@@ -560,6 +557,9 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
     //  - All entries in |unassigned_jobs_| are also in |jobs_|.
     //  - There are no duplicate entries in |unassigned_jobs_|.
     void SanityCheck() const;
+
+    const std::string group_name_;
+    ClientSocketPoolBaseHelper* const client_socket_pool_base_helper_;
 
     // Total number of ConnectJobs that have never been assigned to a Request.
     // Since jobs use late binding to requests, which ConnectJobs have or have
@@ -687,6 +687,15 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
                                int rv,
                                const SocketTag& socket_tag);
 
+  // These correspond to ConnectJob::Delegate methods, and are invoked by the
+  // Group a ConnectJob belongs to.
+  void OnConnectJobComplete(Group* group, int result, ConnectJob* job);
+  void OnNeedsProxyAuth(Group* group,
+                        const HttpResponseInfo& response,
+                        HttpAuthController* auth_controller,
+                        base::OnceClosure restart_with_auth_callback,
+                        ConnectJob* job);
+
   // Invokes the user callback for |handle|.  By the time this task has run,
   // it's possible that the request has been cancelled, so |handle| may not
   // exist in |pending_callback_map_|.  We look up the callback and result code
@@ -780,7 +789,6 @@ class ClientSocketPoolBase {
     virtual ~ConnectJobFactory() {}
 
     virtual std::unique_ptr<ConnectJob> NewConnectJob(
-        const std::string& group_name,
         const Request& request,
         ConnectJob::Delegate* delegate) const = 0;
 
@@ -893,10 +901,6 @@ class ClientSocketPoolBase {
     return helper_.DumpMemoryStats(pmd, parent_dump_absolute_name);
   }
 
-  virtual void OnConnectJobComplete(int result, ConnectJob* job) {
-    return helper_.OnConnectJobComplete(result, job);
-  }
-
   size_t NumNeverAssignedConnectJobsInGroup(
       const std::string& group_name) const {
     return helper_.NumNeverAssignedConnectJobsInGroup(group_name);
@@ -955,12 +959,10 @@ class ClientSocketPoolBase {
     ~ConnectJobFactoryAdaptor() override {}
 
     std::unique_ptr<ConnectJob> NewConnectJob(
-        const std::string& group_name,
         const internal::ClientSocketPoolBaseHelper::Request& request,
         ConnectJob::Delegate* delegate) const override {
       const Request& casted_request = static_cast<const Request&>(request);
-      return connect_job_factory_->NewConnectJob(
-          group_name, casted_request, delegate);
+      return connect_job_factory_->NewConnectJob(casted_request, delegate);
     }
 
     const std::unique_ptr<ConnectJobFactory> connect_job_factory_;

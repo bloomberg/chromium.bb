@@ -53,7 +53,6 @@ const int kMaxSockets = 32;
 const int kMaxSocketsPerGroup = 6;
 constexpr base::TimeDelta kUnusedIdleSocketTimeout =
     base::TimeDelta::FromSeconds(10);
-const char kGroupName[] = "a";
 
 // Just check that all connect times are set to base::TimeTicks::Now(), for
 // tests that don't update the mocked out time.
@@ -157,7 +156,7 @@ class SSLConnectJobTest : public WithScopedTaskEnvironment,
     return std::make_unique<SSLConnectJob>(
         priority,
         CommonConnectJobParams(
-            kGroupName, SocketTag(), &socket_factory_, &host_resolver_,
+            SocketTag(), &socket_factory_, &host_resolver_,
             nullptr /* proxy_delegate */, ssl_client_socket_context_,
             ssl_client_socket_context_,
             nullptr /* socket_performance_watcher */,

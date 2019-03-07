@@ -157,9 +157,9 @@ int WebSocketTransportClientSocketPool::RequestSocket(
   std::unique_ptr<ConnectJob> connect_job =
       casted_params->create_connect_job_callback().Run(
           priority,
-          CommonConnectJobParams(group_name, SocketTag(),
-                                 client_socket_factory_, host_resolver_,
-                                 proxy_delegate_, ssl_client_socket_context_,
+          CommonConnectJobParams(SocketTag(), client_socket_factory_,
+                                 host_resolver_, proxy_delegate_,
+                                 ssl_client_socket_context_,
                                  ssl_client_socket_context_privacy_mode_,
                                  nullptr /* SocketPerformanceWatcherFactory */,
                                  network_quality_estimator_, pool_net_log_,
