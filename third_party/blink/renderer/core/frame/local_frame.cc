@@ -1828,4 +1828,9 @@ void LocalFrame::SetLifecycleState(mojom::FrameLifecycleState state) {
   }
 }
 
+void LocalFrame::MaybeLogAdClickNavigation() {
+  if (HasTransientUserActivation() && IsAdSubframe())
+    UseCounter::Count(GetDocument(), WebFeature::kAdClickNavigation);
+}
+
 }  // namespace blink

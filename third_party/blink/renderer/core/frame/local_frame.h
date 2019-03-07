@@ -437,6 +437,15 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   void SetLifecycleState(mojom::FrameLifecycleState state);
 
+  // For a navigation initiated from this LocalFrame with user gesture, record
+  // the UseCounter AdClickNavigation if this frame is an adframe.
+  //
+  // TODO(crbug.com/939370): Currently this is called in a couple of sites,
+  // which is fragile and prone to break. If we have the ad status in
+  // RemoteFrame, we could call it at FrameLoader::StartNavigation where all
+  // navigations go through.
+  void MaybeLogAdClickNavigation();
+
  private:
   friend class FrameNavigationDisabler;
 

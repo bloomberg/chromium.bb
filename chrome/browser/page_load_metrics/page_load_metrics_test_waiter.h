@@ -58,6 +58,9 @@ class PageLoadMetricsTestWaiter
   // Whether the given TimingField was observed in the page.
   bool DidObserveInPage(TimingField field) const;
 
+  // Whether the given WebFeature was observed in the page.
+  bool DidObserveWebFeature(blink::mojom::WebFeature feature) const;
+
   // Waits for PageLoadMetrics events that match the fields set by the add
   // expectation methods. All matching fields must be set to end this wait.
   void Wait();

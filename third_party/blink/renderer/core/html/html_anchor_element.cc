@@ -462,6 +462,8 @@ void HTMLAnchorElement::HandleClick(Event& event) {
   frame_request.SetInputStartTime(event.PlatformTimeStamp());
   // TODO(japhet): Link clicks can be emulated via JS without a user gesture.
   // Why doesn't this go through NavigationScheduler?
+
+  frame->MaybeLogAdClickNavigation();
   frame->Loader().StartNavigation(frame_request, WebFrameLoadType::kStandard,
                                   NavigationPolicyFromEvent(&event));
 }
