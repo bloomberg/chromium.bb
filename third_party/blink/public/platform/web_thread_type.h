@@ -21,7 +21,7 @@ enum class WebThreadType {
   kFileThread = 8,
   kDatabaseThread = 9,
   kWebAudioThread = 10,
-  kScriptStreamerThread = 11,
+  // 11 was kScriptStreamerThread, which was deleted
   kOfflineAudioRenderThread = 12,
   kReverbConvolutionBackgroundThread = 13,
   kHRTFDatabaseLoaderThread = 14,

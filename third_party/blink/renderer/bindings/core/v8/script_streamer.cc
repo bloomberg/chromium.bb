@@ -8,7 +8,6 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "third_party/blink/renderer/bindings/core/v8/script_streamer_thread.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_code_cache.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
@@ -352,21 +351,6 @@ void RunScriptStreamingTask(
   streamer->StreamingCompleteOnBackgroundThread();
 }
 
-void RunBlockingScriptStreamingTask(
-    std::unique_ptr<v8::ScriptCompiler::ScriptStreamingTask> task,
-    ScriptStreamer* streamer,
-    std::atomic_flag* blocking_task_started_or_cancelled) {
-  if (blocking_task_started_or_cancelled->test_and_set())
-    return;
-  RunScriptStreamingTask(std::move(task), streamer);
-}
-
-void RunNonBlockingScriptStreamingTask(
-    std::unique_ptr<v8::ScriptCompiler::ScriptStreamingTask> task,
-    ScriptStreamer* streamer) {
-  RunScriptStreamingTask(std::move(task), streamer);
-}
-
 }  // namespace
 
 bool ScriptStreamer::HasEnoughDataForStreaming(size_t resource_buffer_size) {
@@ -415,16 +399,6 @@ void ScriptStreamer::NotifyAppendData() {
       }
     }
 
-    if (!RuntimeEnabledFeatures::ScheduledScriptStreamingEnabled() &&
-        ScriptStreamerThread::Shared()->IsRunningTask()) {
-      // If scheduled script streaming is disabled, we only have one thread for
-      // running the tasks. A new task shouldn't be queued before the running
-      // task completes, because the running task can block and wait for data
-      // from the network.
-      SuppressStreaming(kThreadBusy);
-      return;
-    }
-
     DCHECK(!stream_);
     DCHECK(!source_);
     stream_ = new SourceStream;
@@ -451,31 +425,16 @@ void ScriptStreamer::NotifyAppendData() {
         inspector_parse_script_event::Data(this->ScriptResourceIdentifier(),
                                            this->ScriptURLString()));
 
-    if (RuntimeEnabledFeatures::ScheduledScriptStreamingEnabled()) {
-      // Script streaming tasks are high priority, as they can block the parser,
-      // and they can (and probably will) block during their own execution as
-      // they wait for more input.
-      //
-      // Pass through the atomic cancellation token which is set to true by the
-      // task when it is started, or set to true by the streamer if it wants to
-      // cancel the task.
-      //
-      // TODO(leszeks): Decrease the priority of these tasks where possible.
-      worker_pool::PostTaskWithTraits(
-          FROM_HERE, {base::TaskPriority::USER_BLOCKING, base::MayBlock()},
-          CrossThreadBind(RunBlockingScriptStreamingTask,
-                          WTF::Passed(std::move(script_streaming_task)),
-                          WrapCrossThreadPersistent(this),
-                          WTF::CrossThreadUnretained(
-                              &blocking_task_started_or_cancelled_)));
-    } else {
-      blocking_task_started_or_cancelled_.test_and_set();
-      ScriptStreamerThread::Shared()->PostTask(
-          CrossThreadBind(&ScriptStreamerThread::RunScriptStreamingTask,
-                          WTF::Passed(std::move(script_streaming_task)),
-                          WrapCrossThreadPersistent(this)));
-    }
-
+    // Script streaming tasks are high priority, as they can block the parser,
+    // and they can (and probably will) block during their own execution as
+    // they wait for more input.
+    //
+    // TODO(leszeks): Decrease the priority of these tasks where possible.
+    worker_pool::PostTaskWithTraits(
+        FROM_HERE, {base::TaskPriority::USER_BLOCKING, base::MayBlock()},
+        CrossThreadBind(RunScriptStreamingTask,
+                        WTF::Passed(std::move(script_streaming_task)),
+                        WrapCrossThreadPersistent(this)));
   }
   if (stream_)
     stream_->DidReceiveData(script_resource_, this);
@@ -492,34 +451,7 @@ void ScriptStreamer::NotifyFinished() {
   }
 
   if (stream_) {
-    // Mark the stream as finished loading before potentially re-posting the
-    // task to avoid a race between this finish and the task's first read.
     stream_->DidFinishLoading();
-
-    // If the corresponding blocking task hasn't started yet, cancel it and post
-    // a non-blocking task, since we know now that all the data is received and
-    // we will no longer block.
-    //
-    // TODO(874080): Remove this once blocking and non-blocking pools are
-    // merged.
-    if (RuntimeEnabledFeatures::ScheduledScriptStreamingEnabled() &&
-        !RuntimeEnabledFeatures::MergeBlockingNonBlockingPoolsEnabled() &&
-        !blocking_task_started_or_cancelled_.test_and_set()) {
-      std::unique_ptr<v8::ScriptCompiler::ScriptStreamingTask>
-          script_streaming_task(
-              base::WrapUnique(v8::ScriptCompiler::StartStreamingScript(
-                  V8PerIsolateData::MainThreadIsolate(), source_.get(),
-                  compile_options_)));
-
-      // The task creation shouldn't fail, since it didn't fail before during
-      // NotifyAppendData.
-      CHECK(script_streaming_task);
-      worker_pool::PostTaskWithTraits(
-          FROM_HERE, {base::TaskPriority::USER_BLOCKING},
-          CrossThreadBind(RunNonBlockingScriptStreamingTask,
-                          WTF::Passed(std::move(script_streaming_task)),
-                          WrapCrossThreadPersistent(this)));
-    }
   }
   loading_finished_ = true;
 
