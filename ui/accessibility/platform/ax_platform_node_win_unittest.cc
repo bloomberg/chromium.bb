@@ -71,6 +71,31 @@ ScopedVariant SELF(CHILDID_SELF);
     EXPECT_EQ(expectedVariant.ptr()->boolVal, actual.ptr()->boolVal); \
   }
 
+#define EXPECT_UIA_DOUBLE_ARRAY_EQ(node, array_property_id,                 \
+                                   expected_property_values)                \
+  {                                                                         \
+    ScopedVariant array;                                                    \
+    ASSERT_HRESULT_SUCCEEDED(                                               \
+        node->GetPropertyValue(array_property_id, array.Receive()));        \
+    ASSERT_EQ(VT_ARRAY | VT_R8, array.type());                              \
+    ASSERT_EQ(1u, SafeArrayGetDim(array.ptr()->parray));                    \
+    LONG array_lower_bound;                                                 \
+    ASSERT_HRESULT_SUCCEEDED(                                               \
+        SafeArrayGetLBound(array.ptr()->parray, 1, &array_lower_bound));    \
+    LONG array_upper_bound;                                                 \
+    ASSERT_HRESULT_SUCCEEDED(                                               \
+        SafeArrayGetUBound(array.ptr()->parray, 1, &array_upper_bound));    \
+    double* array_data;                                                     \
+    ASSERT_HRESULT_SUCCEEDED(::SafeArrayAccessData(                         \
+        array.ptr()->parray, reinterpret_cast<void**>(&array_data)));       \
+    size_t count = array_upper_bound - array_lower_bound + 1;               \
+    ASSERT_EQ(expected_property_values.size(), count);                      \
+    for (size_t i = 0; i < count; ++i) {                                    \
+      EXPECT_EQ(array_data[i], expected_property_values[i]);                \
+    }                                                                       \
+    ASSERT_HRESULT_SUCCEEDED(::SafeArrayUnaccessData(array.ptr()->parray)); \
+  }
+
 #define EXPECT_UIA_INT_EQ(node, property_id, expected)              \
   {                                                                 \
     ScopedVariant expectedVariant(expected, VT_I4);                 \
@@ -3221,6 +3246,23 @@ TEST_F(AXPlatformNodeWinTest, TestUIAGetPropertySimple) {
       QueryInterfaceFromNode<IRawElementProviderSimple>(
           GetRootNode()->children()[0]);
   EXPECT_UIA_INT_EQ(child_node1, UIA_PositionInSetPropertyId, 1);
+}
+
+TEST_F(AXPlatformNodeWinTest, TestUIAGetPropertyValueClickablePoint) {
+  AXNodeData root;
+  root.id = 0;
+  root.role = ax::mojom::Role::kButton;
+  root.relative_bounds.bounds = gfx::RectF(20, 30, 100, 200);
+  Init(root);
+
+  ComPtr<IRawElementProviderSimple> raw_element_provider_simple =
+      GetRootIRawElementProviderSimple();
+
+  // The clickable point of a rectangle {20, 30, 100, 200} is the rectangle's
+  // center, with coordinates {x: 70, y: 130}.
+  std::vector<double> expected_values = {70, 130};
+  EXPECT_UIA_DOUBLE_ARRAY_EQ(raw_element_provider_simple,
+                             UIA_ClickablePointPropertyId, expected_values);
 }
 
 TEST_F(AXPlatformNodeWinTest, TestUIAGetDescribedByPropertyId) {

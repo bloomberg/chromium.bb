@@ -397,6 +397,21 @@ SAFEARRAY* AXPlatformNodeWin::CreateUIAElementsArrayFromIdVector(
   return uia_array;
 }
 
+SAFEARRAY* AXPlatformNodeWin::CreateClickablePointArray() {
+  SAFEARRAY* clickable_point_array = SafeArrayCreateVector(VT_R8, 0, 2);
+  gfx::Point center =
+      GetDelegate()->GetUnclippedScreenBoundsRect().CenterPoint();
+
+  double* double_array;
+  SafeArrayAccessData(clickable_point_array,
+                      reinterpret_cast<void**>(&double_array));
+  double_array[0] = center.x();
+  double_array[1] = center.y();
+  SafeArrayUnaccessData(clickable_point_array);
+
+  return clickable_point_array;
+}
+
 gfx::Vector2d AXPlatformNodeWin::CalculateUIAScrollPoint(
     const ScrollAmount horizontal_amount,
     const ScrollAmount vertical_amount) const {
@@ -3635,7 +3650,8 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
       break;
 
     case UIA_ClickablePointPropertyId:
-      // TODO(suproteem)
+      result->vt = VT_ARRAY | VT_R8;
+      result->parray = CreateClickablePointArray();
       break;
 
     case UIA_ControllerForPropertyId:
