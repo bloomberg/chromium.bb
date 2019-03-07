@@ -27,7 +27,7 @@ public class TabSwitcherBottomToolbarViewBinder
      * Build a binder that handles interaction between the model and the tab switcher bottom toolbar
      * view.
      */
-    public TabSwitcherBottomToolbarViewBinder(ViewGroup topRoot, ViewGroup bottomRoot) {
+    TabSwitcherBottomToolbarViewBinder(ViewGroup topRoot, ViewGroup bottomRoot) {
         mTopRoot = topRoot;
         mBottomRoot = bottomRoot;
     }
@@ -43,8 +43,6 @@ public class TabSwitcherBottomToolbarViewBinder
                     .setBackgroundColor(model.get(TabSwitcherBottomToolbarModel.PRIMARY_COLOR));
         } else if (TabSwitcherBottomToolbarModel.SHOW_ON_TOP == propertyKey) {
             final boolean showOnTop = model.get(TabSwitcherBottomToolbarModel.SHOW_ON_TOP);
-            view.findViewById(R.id.bottom_toolbar_top_shadow)
-                    .setVisibility(showOnTop ? View.GONE : View.VISIBLE);
             view.findViewById(R.id.bottom_toolbar_bottom_shadow)
                     .setVisibility(showOnTop ? View.VISIBLE : View.GONE);
             reparentView(view, showOnTop ? mTopRoot : mBottomRoot);

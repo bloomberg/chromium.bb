@@ -13,7 +13,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ThemeColorProvider;
 import org.chromium.chrome.browser.appmenu.AppMenuButtonHelper;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
-import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.toolbar.IncognitoStateProvider;
 import org.chromium.chrome.browser.toolbar.MenuButton;
 import org.chromium.chrome.browser.toolbar.TabCountProvider;
@@ -48,17 +47,15 @@ public class TabSwitcherBottomToolbarCoordinator {
      *                               close all tabs button is clicked.
      * @param menuButtonHelper An {@link AppMenuButtonHelper} that is triggered when the
      *                         menu button is clicked.
-     * @param tabModelSelector A {@link TabModelSelector} that incognito toggle tab layout uses to
-     *                         switch between normal and incognito tabs.
      * @param overviewModeBehavior The overview mode manager.
      * @param tabCountProvider Updates the tab count number in the tab switcher button and in the
      *                         incognito toggle tab layout.
      */
-    public TabSwitcherBottomToolbarCoordinator(ViewStub stub, ViewGroup topToolbarRoot,
+    TabSwitcherBottomToolbarCoordinator(ViewStub stub, ViewGroup topToolbarRoot,
             IncognitoStateProvider incognitoStateProvider, ThemeColorProvider themeColorProvider,
             OnClickListener newTabClickListener, OnClickListener closeTabsClickListener,
-            AppMenuButtonHelper menuButtonHelper, TabModelSelector tabModelSelector,
-            OverviewModeBehavior overviewModeBehavior, TabCountProvider tabCountProvider) {
+            AppMenuButtonHelper menuButtonHelper, OverviewModeBehavior overviewModeBehavior,
+            TabCountProvider tabCountProvider) {
         final View root = stub.inflate();
 
         TabSwitcherBottomToolbarModel model = new TabSwitcherBottomToolbarModel();
@@ -90,7 +87,7 @@ public class TabSwitcherBottomToolbarCoordinator {
     /**
      * @param showOnTop Whether to show the tab switcher bottom toolbar on the top of the screen.
      */
-    public void showToolbarOnTop(boolean showOnTop) {
+    void showToolbarOnTop(boolean showOnTop) {
         mMediator.showToolbarOnTop(showOnTop);
     }
 

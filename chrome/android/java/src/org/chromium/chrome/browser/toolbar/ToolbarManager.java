@@ -84,7 +84,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
-import org.chromium.chrome.browser.toolbar.bottom.BottomToolbarCoordinator;
+import org.chromium.chrome.browser.toolbar.bottom.BottomControlsCoordinator;
 import org.chromium.chrome.browser.toolbar.top.ActionModeController;
 import org.chromium.chrome.browser.toolbar.top.ActionModeController.ActionBarDelegate;
 import org.chromium.chrome.browser.toolbar.top.Toolbar;
@@ -177,7 +177,7 @@ public class ToolbarManager
     private TopToolbarCoordinator mToolbar;
     private final ToolbarControlContainer mControlContainer;
 
-    private BottomToolbarCoordinator mBottomToolbarCoordinator;
+    private BottomControlsCoordinator mBottomControlsCoordinator;
     private TabModelSelector mTabModelSelector;
     private TabModelSelectorObserver mTabModelSelectorObserver;
     private TabModelObserver mTabModelObserver;
@@ -782,11 +782,12 @@ public class ToolbarManager
             mActivity.onShareMenuItemSelected(false, isIncognito);
         };
 
-        mBottomToolbarCoordinator = new BottomToolbarCoordinator(mActivity.getFullscreenManager(),
-                mActivity.findViewById(R.id.bottom_toolbar_stub),
+        mBottomControlsCoordinator = new BottomControlsCoordinator(mActivity.getFullscreenManager(),
+                mActivity.findViewById(R.id.bottom_controls_stub),
                 mActivity.getActivityTabProvider(), homeButtonListener, searchAcceleratorListener,
                 shareButtonListener);
-        mBottomToolbarCoordinator.setBottomToolbarVisible(mIsBottomToolbarVisible);
+        mBottomControlsCoordinator.setBottomControlsVisible(mIsBottomToolbarVisible);
+
         Toast.setGlobalExtraYOffset(
                 mActivity.getResources().getDimensionPixelSize(R.dimen.bottom_toolbar_height));
     }
@@ -826,8 +827,8 @@ public class ToolbarManager
     /**
      * @return The coordinator for the bottom toolbar if it exists.
      */
-    public BottomToolbarCoordinator getBottomToolbarCoordinator() {
-        return mBottomToolbarCoordinator;
+    public BottomControlsCoordinator getBottomToolbarCoordinator() {
+        return mBottomControlsCoordinator;
     }
 
     private void showMenuIPHTextBubble(ChromeActivity activity, Tracker tracker, String featureName,
@@ -964,7 +965,7 @@ public class ToolbarManager
                 mLayoutManager.addSceneChangeObserver(mSceneChangeObserver);
             }
 
-            if (mBottomToolbarCoordinator != null) {
+            if (mBottomControlsCoordinator != null) {
                 final OnClickListener closeTabsClickListener = v -> {
                     recordBottomToolbarUseForIPH();
                     final boolean isIncognito = mTabModelSelector.isIncognitoSelected();
@@ -977,14 +978,14 @@ public class ToolbarManager
                     mTabModelSelector.getModel(isIncognito).closeAllTabs();
                 };
                 mAppMenuButtonHelper.setOnClickRunnable(() -> recordBottomToolbarUseForIPH());
-                mBottomToolbarCoordinator.initializeWithNative(
+                mBottomControlsCoordinator.initializeWithNative(
                         mActivity.getCompositorViewHolder().getResourceManager(),
                         mActivity.getCompositorViewHolder().getLayoutManager(),
                         wrapBottomToolbarClickListenerForIPH(tabSwitcherClickHandler),
                         wrapBottomToolbarClickListenerForIPH(newTabClickHandler),
-                        closeTabsClickListener, mAppMenuButtonHelper, mTabModelSelector,
-                        mOverviewModeBehavior, mActivity.getWindowAndroid(), mTabCountProvider,
-                        mIncognitoStateProvider, mActivity.findViewById(R.id.control_container));
+                        closeTabsClickListener, mAppMenuButtonHelper, mOverviewModeBehavior,
+                        mActivity.getWindowAndroid(), mTabCountProvider, mIncognitoStateProvider,
+                        mActivity.findViewById(R.id.control_container));
 
                 // Allow the bottom toolbar to be focused in accessibility after the top toolbar.
                 ApiCompatibilityUtils.setAccessibilityTraversalBefore(
@@ -1007,8 +1008,8 @@ public class ToolbarManager
      */
     public void showAppMenuUpdateBadge() {
         mToolbar.showAppMenuUpdateBadge();
-        if (mBottomToolbarCoordinator != null) {
-            mBottomToolbarCoordinator.showAppMenuUpdateBadge();
+        if (mBottomControlsCoordinator != null) {
+            mBottomControlsCoordinator.showAppMenuUpdateBadge();
         }
     }
 
@@ -1018,8 +1019,8 @@ public class ToolbarManager
      */
     public void removeAppMenuUpdateBadge(boolean animate) {
         mToolbar.removeAppMenuUpdateBadge(animate);
-        if (mBottomToolbarCoordinator != null) {
-            mBottomToolbarCoordinator.removeAppMenuUpdateBadge();
+        if (mBottomControlsCoordinator != null) {
+            mBottomControlsCoordinator.removeAppMenuUpdateBadge();
         }
     }
 
@@ -1028,8 +1029,8 @@ public class ToolbarManager
      * TODO(amaralp): Only the top or bottom menu should be visible.
      */
     public boolean isShowingAppMenuUpdateBadge() {
-        if (mBottomToolbarCoordinator != null
-                && mBottomToolbarCoordinator.isShowingAppMenuUpdateBadge()) {
+        if (mBottomControlsCoordinator != null
+                && mBottomControlsCoordinator.isShowingAppMenuUpdateBadge()) {
             return true;
         }
         return mToolbar.isShowingAppMenuUpdateBadge();
@@ -1093,8 +1094,8 @@ public class ToolbarManager
      * @return The view containing the pop up menu button.
      */
     public @Nullable View getMenuButton() {
-        if (mBottomToolbarCoordinator != null && isMenuButtonInBottomToolbar()) {
-            return mBottomToolbarCoordinator.getMenuButtonWrapper().getImageButton();
+        if (mBottomControlsCoordinator != null && isMenuButtonInBottomToolbar()) {
+            return mBottomControlsCoordinator.getMenuButtonWrapper().getImageButton();
         }
         return mToolbar.getMenuButton();
     }
@@ -1164,9 +1165,9 @@ public class ToolbarManager
             mLayoutManager = null;
         }
 
-        if (mBottomToolbarCoordinator != null) {
-            mBottomToolbarCoordinator.destroy();
-            mBottomToolbarCoordinator = null;
+        if (mBottomControlsCoordinator != null) {
+            mBottomControlsCoordinator.destroy();
+            mBottomControlsCoordinator = null;
         }
 
         if (mOmniboxStartupMetrics != null) {
@@ -1206,11 +1207,11 @@ public class ToolbarManager
     public void onOrientationChange() {
         if (mActionModeController != null) mActionModeController.showControlsOnOrientationChange();
 
-        if (mBottomToolbarCoordinator != null && FeatureUtilities.isAdaptiveToolbarEnabled()) {
+        if (mBottomControlsCoordinator != null && FeatureUtilities.isAdaptiveToolbarEnabled()) {
             mIsBottomToolbarVisible = mActivity.getResources().getConfiguration().orientation
                     != Configuration.ORIENTATION_LANDSCAPE;
             mToolbar.onBottomToolbarVisibilityChanged(mIsBottomToolbarVisible);
-            mBottomToolbarCoordinator.setBottomToolbarVisible(mIsBottomToolbarVisible);
+            mBottomControlsCoordinator.setBottomControlsVisible(mIsBottomToolbarVisible);
             if (mAppMenuButtonHelper != null) {
                 mAppMenuButtonHelper.setMenuShowsFromBottom(mIsBottomToolbarVisible);
             }
@@ -1345,8 +1346,8 @@ public class ToolbarManager
 
     @Nullable
     private MenuButton getMenuButtonWrapper() {
-        if (mBottomToolbarCoordinator != null) {
-            return mBottomToolbarCoordinator.getMenuButtonWrapper();
+        if (mBottomControlsCoordinator != null) {
+            return mBottomControlsCoordinator.getMenuButtonWrapper();
         }
 
         return mToolbar.getMenuButtonWrapper();
