@@ -35,6 +35,10 @@ const GURL kTestUrl2("http://other.page.com");
 const int64_t kTestOfflineIdNoMatch = 20170905LL;
 const ClientId kTestClientIdNoMatch(kTestNamespace, "20170905");
 
+GURL OriginalUrl() {
+  return GURL("http://original.com");
+}
+
 }  // namespace
 
 class DeletePageTaskTest : public ModelTaskTestBase {
@@ -91,6 +95,36 @@ DeletePageTaskTest::delete_page_callback() {
 bool DeletePageTaskTest::CheckPageDeleted(const OfflinePageItem& page) {
   auto stored_page = store_test_util()->GetPageByOfflineId(page.offline_id);
   return !base::PathExists(page.file_path) && !stored_page;
+}
+
+// Delete a page and verify all the information in DeletedPageInfo is accurate.
+TEST_F(DeletePageTaskTest, DeletedPageInfoIsPopulated) {
+  generator()->SetNamespace(kTestNamespace);
+  OfflinePageItem page1 = generator()->CreateItemWithTempFile();
+  page1.url = kTestUrl1;
+  page1.original_url_if_different = OriginalUrl();
+  page1.request_origin = "test-origin";
+  page1.system_download_id = 1234;
+  store_test_util()->InsertItem(page1);
+
+  // Run DeletePageTask for to delete the page.
+  std::vector<int64_t> offline_ids({page1.offline_id});
+  auto task = DeletePageTask::CreateTaskMatchingOfflineIds(
+      store(), delete_page_callback(), offline_ids);
+  RunTask(std::move(task));
+
+  EXPECT_EQ(DeletePageResult::SUCCESS, last_delete_page_result());
+  EXPECT_EQ(1UL, last_deleted_page_infos().size());
+
+  // Verify original_url is returned via DeletedPageInfo.
+  const DeletedPageInfo& info = last_deleted_page_infos()[0];
+  EXPECT_EQ(page1.url, info.url);
+  EXPECT_EQ(page1.client_id, info.client_id);
+  EXPECT_EQ(page1.request_origin, info.request_origin);
+  EXPECT_EQ(page1.system_download_id, info.system_download_id);
+  EXPECT_EQ(page1.offline_id, info.offline_id);
+  EXPECT_EQ(OriginalUrl(), info.original_url_if_different);
+  EXPECT_EQ(OriginalUrl(), info.GetOriginalUrl());
 }
 
 TEST_F(DeletePageTaskTest, DeletePageByOfflineId) {

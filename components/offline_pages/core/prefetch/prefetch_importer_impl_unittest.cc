@@ -110,7 +110,8 @@ TEST_F(PrefetchImporterImplTest, ImportSuccess) {
   EXPECT_EQ(kTestOfflineID, offline_page_model()->last_added_page().offline_id);
   EXPECT_EQ(kTestClientID, offline_page_model()->last_added_page().client_id);
   EXPECT_EQ(kTestFinalURL, offline_page_model()->last_added_page().url);
-  EXPECT_EQ(kTestURL, offline_page_model()->last_added_page().original_url);
+  EXPECT_EQ(kTestURL,
+            offline_page_model()->last_added_page().original_url_if_different);
   EXPECT_EQ(kTestTitle, offline_page_model()->last_added_page().title);
   EXPECT_EQ(kTestFileSize, offline_page_model()->last_added_page().file_size);
 }

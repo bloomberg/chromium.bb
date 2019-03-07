@@ -49,6 +49,11 @@ struct OfflinePageItem {
   bool operator==(const OfflinePageItem& other) const;
   bool operator<(const OfflinePageItem& other) const;
 
+  const GURL& GetOriginalUrl() const {
+    return original_url_if_different.is_empty() ? url
+                                                : original_url_if_different;
+  }
+
   // The URL of the page. This is the last committed URL. In the case that
   // redirects occur, access |original_url| for the original URL.
   GURL url;
@@ -76,7 +81,7 @@ struct OfflinePageItem {
   Flags flags;
   // The original URL of the page if not empty. Otherwise, this is set to empty
   // and |url| should be accessed instead.
-  GURL original_url;
+  GURL original_url_if_different;
   // The app, if any, that the item was saved on behalf of.
   // Empty string implies Chrome.
   std::string request_origin;

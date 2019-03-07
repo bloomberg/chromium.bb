@@ -4,6 +4,8 @@
 
 #include "components/offline_pages/core/model/delete_page_task.h"
 
+#include <iterator>
+
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -41,14 +43,18 @@ namespace {
 // in the SQL query and the result of it can be simply fetched by calling
 // statement.Column*(INFO_WRAPPER_COUNT), as it's the last column. For example,
 // please take a look at GetCachedDeletedPageInfoWrappersByUrlPredicateSync.
-#define INFO_WRAPPER_FIELDS                                                  \
-  "offline_id, system_download_id, client_namespace, client_id, file_path, " \
-  "request_origin, access_count, creation_time, online_url"
-#define INFO_WRAPPER_FIELD_COUNT 8
+#define INFO_WRAPPER_FIELDS                                             \
+  "offline_id,system_download_id,client_namespace,client_id,file_path," \
+  "request_origin,access_count,creation_time,online_url,original_url"
+#define INFO_WRAPPER_FIELD_COUNT 10
 
 struct DeletedPageInfoWrapper {
-  DeletedPageInfoWrapper();
-  DeletedPageInfoWrapper(const DeletedPageInfoWrapper& other);
+  DeletedPageInfoWrapper() = default;
+  // Move-only to avoid copies.
+  DeletedPageInfoWrapper(const DeletedPageInfoWrapper& other) = delete;
+  DeletedPageInfoWrapper(DeletedPageInfoWrapper&& other) = default;
+  DeletedPageInfoWrapper& operator=(DeletedPageInfoWrapper&& other) = default;
+
   int64_t offline_id;
   int64_t system_download_id;
   ClientId client_id;
@@ -58,7 +64,21 @@ struct DeletedPageInfoWrapper {
   int access_count;
   base::Time creation_time;
   GURL url;
+  GURL original_url_if_different;
 };
+
+// Consumes |wrapper| and returns an |OfflinePageModel::DeletePageInfo|.
+OfflinePageModel::DeletedPageInfo ExtractPageInfo(
+    DeletedPageInfoWrapper&& wrapper) {
+  OfflinePageModel::DeletedPageInfo info;
+  info.offline_id = wrapper.offline_id;
+  info.system_download_id = wrapper.system_download_id;
+  info.client_id = std::move(wrapper.client_id);
+  info.request_origin = std::move(wrapper.request_origin);
+  info.url = std::move(wrapper.url);
+  info.original_url_if_different = std::move(wrapper.original_url_if_different);
+  return info;
+}
 
 DeletedPageInfoWrapper CreateInfoWrapper(const sql::Statement& statement) {
   DeletedPageInfoWrapper info_wrapper;
@@ -73,12 +93,9 @@ DeletedPageInfoWrapper CreateInfoWrapper(const sql::Statement& statement) {
   info_wrapper.creation_time =
       store_utils::FromDatabaseTime(statement.ColumnInt64(7));
   info_wrapper.url = GURL(statement.ColumnString(8));
+  info_wrapper.original_url_if_different = GURL(statement.ColumnString(9));
   return info_wrapper;
 }
-
-DeletedPageInfoWrapper::DeletedPageInfoWrapper() = default;
-DeletedPageInfoWrapper::DeletedPageInfoWrapper(
-    const DeletedPageInfoWrapper& other) = default;
 
 void ReportDeletePageHistograms(
     const std::vector<DeletedPageInfoWrapper>& info_wrappers) {
@@ -121,7 +138,7 @@ bool DeletePageEntryByOfflineIdSync(sql::Database* db, int64_t offline_id) {
 // file is deleted successfully, there will be no such issue.
 DeletePageTaskResult DeletePagesByDeletedPageInfoWrappersSync(
     sql::Database* db,
-    const std::vector<DeletedPageInfoWrapper>& info_wrappers) {
+    std::vector<DeletedPageInfoWrapper> info_wrappers) {
   std::vector<OfflinePageModel::DeletedPageInfo> deleted_page_infos;
 
   // If there's no page to delete, return an empty list with SUCCESS.
@@ -131,14 +148,11 @@ DeletePageTaskResult DeletePagesByDeletedPageInfoWrappersSync(
   ReportDeletePageHistograms(info_wrappers);
 
   bool any_archive_deleted = false;
-  for (const auto& info_wrapper : info_wrappers) {
+  for (auto& info_wrapper : info_wrappers) {
     if (DeleteArchiveSync(info_wrapper.file_path)) {
       any_archive_deleted = true;
       if (DeletePageEntryByOfflineIdSync(db, info_wrapper.offline_id)) {
-        deleted_page_infos.emplace_back(
-            info_wrapper.offline_id, info_wrapper.system_download_id,
-            info_wrapper.client_id, info_wrapper.request_origin,
-            info_wrapper.url);
+        deleted_page_infos.push_back(ExtractPageInfo(std::move(info_wrapper)));
       }
     }
   }
@@ -185,10 +199,10 @@ DeletePageTaskResult DeletePagesByOfflineIdsSync(
   for (int64_t offline_id : offline_ids) {
     DeletedPageInfoWrapper info;
     if (GetDeletedPageInfoWrapperByOfflineIdSync(db, offline_id, &info))
-      infos.push_back(info);
+      infos.push_back(std::move(info));
   }
   DeletePageTaskResult result =
-      DeletePagesByDeletedPageInfoWrappersSync(db, infos);
+      DeletePagesByDeletedPageInfoWrappersSync(db, std::move(infos));
 
   if (!transaction.Commit())
     return DeletePageTaskResult(DeletePageResult::STORE_FAILURE, {});
@@ -231,11 +245,12 @@ DeletePageTaskResult DeletePagesByClientIdsSync(
   for (ClientId client_id : client_ids) {
     std::vector<DeletedPageInfoWrapper> temp_infos =
         GetDeletedPageInfoWrappersByClientIdSync(db, client_id);
-    infos.insert(infos.end(), temp_infos.begin(), temp_infos.end());
+    infos.insert(infos.end(), std::make_move_iterator(temp_infos.begin()),
+                 std::make_move_iterator(temp_infos.end()));
   }
 
   DeletePageTaskResult result =
-      DeletePagesByDeletedPageInfoWrappersSync(db, infos);
+      DeletePagesByDeletedPageInfoWrappersSync(db, std::move(infos));
 
   if (!transaction.Commit())
     return DeletePageTaskResult(DeletePageResult::STORE_FAILURE, {});
@@ -282,11 +297,12 @@ DeletePageTaskResult DeletePagesByClientIdsAndOriginSync(
     std::vector<DeletedPageInfoWrapper> temp_infos =
         GetDeletedPageInfoWrappersByClientIdAndOriginSync(db, client_id,
                                                           origin);
-    infos.insert(infos.end(), temp_infos.begin(), temp_infos.end());
+    infos.insert(infos.end(), std::make_move_iterator(temp_infos.begin()),
+                 std::make_move_iterator(temp_infos.end()));
   }
 
   DeletePageTaskResult result =
-      DeletePagesByDeletedPageInfoWrappersSync(db, infos);
+      DeletePagesByDeletedPageInfoWrappersSync(db, std::move(infos));
 
   if (!transaction.Commit())
     return DeletePageTaskResult(DeletePageResult::STORE_FAILURE, {});
@@ -315,7 +331,7 @@ GetCachedDeletedPageInfoWrappersByUrlPredicateSync(
               GURL(statement.ColumnString(INFO_WRAPPER_FIELD_COUNT))))
         continue;
       DeletedPageInfoWrapper info_wrapper = CreateInfoWrapper(statement);
-      info_wrappers.push_back(info_wrapper);
+      info_wrappers.push_back(std::move(info_wrapper));
     }
   }
   return info_wrappers;
@@ -331,11 +347,11 @@ DeletePageTaskResult DeleteCachedPagesByUrlPredicateSync(
   if (!transaction.Begin())
     return DeletePageTaskResult(DeletePageResult::STORE_FAILURE, {});
 
-  const std::vector<DeletedPageInfoWrapper>& infos =
+  std::vector<DeletedPageInfoWrapper> infos =
       GetCachedDeletedPageInfoWrappersByUrlPredicateSync(db, namespaces,
                                                          predicate);
   DeletePageTaskResult result =
-      DeletePagesByDeletedPageInfoWrappersSync(db, infos);
+      DeletePagesByDeletedPageInfoWrappersSync(db, std::move(infos));
 
   if (!transaction.Commit())
     return DeletePageTaskResult(DeletePageResult::STORE_FAILURE, {});
@@ -363,7 +379,7 @@ GetDeletedPageInfoWrappersForPageLimitDeletion(sql::Database* db,
 
   while (statement.Step()) {
     DeletedPageInfoWrapper info_wrapper = CreateInfoWrapper(statement);
-    info_wrappers.push_back(info_wrapper);
+    info_wrappers.push_back(std::move(info_wrapper));
   }
 
   // Since the page information was selected by ascending order of last access
@@ -389,11 +405,11 @@ DeletePageTaskResult DeletePagesForPageLimit(const GURL& url,
   if (!transaction.Begin())
     return DeletePageTaskResult(DeletePageResult::STORE_FAILURE, {});
 
-  const std::vector<DeletedPageInfoWrapper>& infos =
+  std::vector<DeletedPageInfoWrapper> infos =
       GetDeletedPageInfoWrappersForPageLimitDeletion(db, url, name_space,
                                                      limit);
   DeletePageTaskResult result =
-      DeletePagesByDeletedPageInfoWrappersSync(db, infos);
+      DeletePagesByDeletedPageInfoWrappersSync(db, std::move(infos));
 
   if (!transaction.Commit())
     return DeletePageTaskResult(DeletePageResult::STORE_FAILURE, {});

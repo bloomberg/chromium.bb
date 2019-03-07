@@ -54,7 +54,7 @@ OfflinePageItem MakeOfflinePageItem(sql::Statement* statement) {
   item.last_access_time = last_access_time;
   item.access_count = access_count;
   item.title = title;
-  item.original_url = original_url;
+  item.original_url_if_different = original_url;
   item.request_origin = request_origin;
   item.system_download_id = system_download_id;
   item.file_missing_time = file_missing_time;
@@ -187,8 +187,8 @@ ReadResult ReadPagesByUrlSync(const GURL& url, sql::Database* db) {
   while (statement.Step()) {
     OfflinePageItem temp_item = MakeOfflinePageItem(&statement);
     if (temp_item.url.ReplaceComponents(remove_fragment) == url_to_match ||
-        temp_item.original_url.ReplaceComponents(remove_fragment) ==
-            url_to_match) {
+        temp_item.original_url_if_different.ReplaceComponents(
+            remove_fragment) == url_to_match) {
       result.pages.push_back(temp_item);
     }
   }

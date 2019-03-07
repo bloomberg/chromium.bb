@@ -57,7 +57,7 @@ class TestOfflinePageModel : public StubOfflinePageModel {
                        std::string name_space) {
     OfflinePageItem item;
     item.url = GURL(url);
-    item.original_url = GURL(original_url);
+    item.original_url_if_different = GURL(original_url);
     item.offline_id = offline_id;
     item.creation_time = creation_time;
     item.client_id = offline_pages::ClientId(name_space, "");
@@ -373,7 +373,7 @@ TEST_F(FeedOfflineHostTest, GetCurrentArticleSuggestionsMultiple) {
 TEST_F(FeedOfflineHostTest, OfflinePageAdded) {
   OfflinePageItem added_page;
   added_page.url = GURL(kUrl1);
-  added_page.original_url = GURL(kUrl2);
+  added_page.original_url_if_different = GURL(kUrl2);
   added_page.offline_id = 4;
 
   host()->OfflinePageAdded(nullptr, added_page);

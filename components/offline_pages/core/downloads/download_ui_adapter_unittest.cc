@@ -158,7 +158,7 @@ class MockOfflinePageModel : public StubOfflinePageModel {
       if (page.second.client_id.id == guid) {
         DeletedPageInfo info(page.second.offline_id, kSystemDownloadId,
                              page.second.client_id, page.second.request_origin,
-                             page.second.original_url);
+                             page.second.original_url_if_different);
         observer_->OfflinePageDeleted(info);
         pages.erase(page.first);
         return;

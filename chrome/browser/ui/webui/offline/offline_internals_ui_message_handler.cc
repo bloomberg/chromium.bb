@@ -166,7 +166,8 @@ void OfflineInternalsUIMessageHandler::HandleStoredPagesCallback(
     offline_page->SetDouble("creationTime", page.creation_time.ToJsTime());
     offline_page->SetDouble("lastAccessTime", page.last_access_time.ToJsTime());
     offline_page->SetInteger("accessCount", page.access_count);
-    offline_page->SetString("originalUrl", page.original_url.spec());
+    offline_page->SetString("originalUrl",
+                            page.original_url_if_different.spec());
     offline_page->SetString("requestOrigin", page.request_origin);
     results.Append(std::move(offline_page));
   }
