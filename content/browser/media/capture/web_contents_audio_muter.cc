@@ -38,14 +38,15 @@ class AudioDiscarder : public media::AudioOutputStream {
  public:
   explicit AudioDiscarder(const media::AudioParameters& params)
       : worker_(media::AudioManager::Get()->GetWorkerTaskRunner(), params),
+        fixed_data_delay_(
+            media::FakeAudioWorker::ComputeFakeOutputDelay(params)),
         audio_bus_(media::AudioBus::Create(params)) {}
 
   // AudioOutputStream implementation.
   bool Open() override { return true; }
   void Start(AudioSourceCallback* callback) override {
-    worker_.Start(base::Bind(&AudioDiscarder::FetchAudioData,
-                             base::Unretained(this),
-                             callback));
+    worker_.Start(base::BindRepeating(&AudioDiscarder::FetchAudioData,
+                                      base::Unretained(this), callback));
   }
   void Stop() override { worker_.Stop(); }
   void SetVolume(double volume) override {}
@@ -55,14 +56,19 @@ class AudioDiscarder : public media::AudioOutputStream {
  private:
   ~AudioDiscarder() override {}
 
-  void FetchAudioData(AudioSourceCallback* callback) {
-    callback->OnMoreData(base::TimeDelta(), base::TimeTicks::Now(), 0,
+  void FetchAudioData(AudioSourceCallback* callback,
+                      base::TimeTicks ideal_time,
+                      base::TimeTicks now) {
+    // Real streams provide small tweaks to their delay values, alongside the
+    // current system time; and so the same is done here.
+    callback->OnMoreData(fixed_data_delay_ + (ideal_time - now), now, 0,
                          audio_bus_.get());
   }
 
   // Calls FetchAudioData() at regular intervals and discards the data.
   media::FakeAudioWorker worker_;
-  std::unique_ptr<media::AudioBus> audio_bus_;
+  const base::TimeDelta fixed_data_delay_;
+  const std::unique_ptr<media::AudioBus> audio_bus_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioDiscarder);
 };
