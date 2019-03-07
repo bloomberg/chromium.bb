@@ -507,6 +507,11 @@ class GitWrapper(SCMWrapper):
       verbose = ['--verbose']
       printed_path = True
 
+    if revision.startswith('refs/branch-heads'):
+      options.with_branch_heads = True
+    if revision.startswith('refs/tags'):
+      options.with_tags = True
+
     remote_ref = scm.GIT.RefToRemoteRef(revision, self.remote)
     if remote_ref:
       # Rewrite remote refs to their local equivalents.
