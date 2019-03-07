@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/paint/image_element_timing.h"
 
 #include "third_party/blink/renderer/core/layout/layout_image.h"
+#include "third_party/blink/renderer/core/layout/svg/layout_svg_image.h"
 #include "third_party/blink/renderer/core/loader/resource/image_resource_content.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
@@ -24,8 +25,17 @@ class ImageElementTimingTest : public RenderingTest {
     return layout_image;
   }
 
-  const ImageElementTiming& GetImageElementTiming() {
-    return ImageElementTiming::From(*GetDocument().domWindow());
+  // Similar to above but for a LayoutSVGImage.
+  LayoutSVGImage* SetSVGImageResource(const char* id, int width, int height) {
+    ImageResourceContent* content = CreateImageForTest(width, height);
+    auto* layout_image = ToLayoutSVGImage(GetLayoutObjectByElementId(id));
+    layout_image->ImageResource()->SetImageResource(content);
+    return layout_image;
+  }
+
+  const WTF::HashSet<const LayoutObject*>& GetImagesNotified() {
+    return ImageElementTiming::From(*GetDocument().domWindow())
+        .images_notified_;
   }
 
  private:
@@ -59,9 +69,44 @@ TEST_F(ImageElementTimingTest, ImageInsideSVG) {
   // Enable compositing and also update document lifecycle.
   EnableCompositing();
 
-  const ImageElementTiming& timing = GetImageElementTiming();
   // |layout_image| should have had its paint notified to ImageElementTiming.
-  EXPECT_TRUE(timing.images_notified_.Contains(layout_image));
+  EXPECT_TRUE(GetImagesNotified().Contains(layout_image));
+}
+
+TEST_F(ImageElementTimingTest, ImageRemoved) {
+  EnableCompositing();
+  GetDocument().SetBaseURLOverride(KURL("http://test.com"));
+  SetBodyInnerHTML(R"HTML(
+    <img id="target" style='width: 100px; height: 100px;'/>
+  )HTML");
+  LayoutImage* layout_image = SetImageResource("target", 5, 5);
+  ASSERT_TRUE(layout_image);
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_TRUE(GetImagesNotified().Contains(layout_image));
+
+  GetDocument().getElementById("target")->remove();
+  // |layout_image| should no longer be part of |images_notified| since it will
+  // be destroyed.
+  EXPECT_TRUE(GetImagesNotified().IsEmpty());
+}
+
+TEST_F(ImageElementTimingTest, SVGImageRemoved) {
+  EnableCompositing();
+  GetDocument().SetBaseURLOverride(KURL("http://test.com"));
+  SetBodyInnerHTML(R"HTML(
+    <svg>
+      <image id="target" style='width: 100px; height: 100px;'/>
+    </svg>
+  )HTML");
+  LayoutSVGImage* layout_image = SetSVGImageResource("target", 5, 5);
+  ASSERT_TRUE(layout_image);
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_TRUE(GetImagesNotified().Contains(layout_image));
+
+  GetDocument().getElementById("target")->remove();
+  // |layout_image| should no longer be part of |images_notified| since it will
+  // be destroyed.
+  EXPECT_TRUE(GetImagesNotified().IsEmpty());
 }
 
 }  // namespace blink
