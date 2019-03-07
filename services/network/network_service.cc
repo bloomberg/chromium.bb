@@ -335,7 +335,9 @@ NetworkService::~NetworkService() {
     file_net_log_observer_->StopObserving(nullptr /*polled_data*/,
                                           base::OnceClosure());
   }
-  trace_net_log_observer_.StopWatchForTraceStart();
+
+  if (initialized_)
+    trace_net_log_observer_.StopWatchForTraceStart();
 }
 
 void NetworkService::set_os_crypt_is_configured() {
@@ -707,8 +709,10 @@ void NetworkService::DestroyNetworkContexts() {
   // The SetDnsConfigOverrides() call will will fail any in-progress DNS
   // lookups, but only if there are current config overrides (which there will
   // be if DNS over HTTPS is currently enabled).
-  host_resolver_->SetDnsConfigOverrides(net::DnsConfigOverrides());
-  host_resolver_->SetRequestContext(nullptr);
+  if (host_resolver_) {
+    host_resolver_->SetDnsConfigOverrides(net::DnsConfigOverrides());
+    host_resolver_->SetRequestContext(nullptr);
+  }
 
   DCHECK_LE(owned_network_contexts_.size(), 1u);
   owned_network_contexts_.clear();
