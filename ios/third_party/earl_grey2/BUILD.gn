@@ -6,7 +6,10 @@ import("//build/config/ios/ios_sdk.gni")
 import("//build/config/ios/rules.gni")
 
 config("config") {
-  include_dirs = [ "//ios/third_party/earl_grey2/src" ]
+  include_dirs = [
+    "//ios/third_party/earl_grey2/src",
+    "//ios/third_party/edo/src",
+  ]
 }
 
 group("earl_grey2") {
