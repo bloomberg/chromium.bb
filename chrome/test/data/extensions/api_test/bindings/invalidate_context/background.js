@@ -6,6 +6,7 @@ var frame;
 var frameRuntime;
 var frameStorage;
 var frameTabs;
+var nativeBindingsEnabled;
 
 function createFrame() {
   frame = document.createElement('iframe');
@@ -16,7 +17,7 @@ function createFrame() {
   });
 }
 
-function testPort(port) {
+function testPort(port, expectEventsValid) {
   var result = {
     disconnectThrow: false,
     postMessageThrow: false,
@@ -39,7 +40,7 @@ function testPort(port) {
   }
 
   try {
-    result.onDisconnect = port.onDisconnect;
+    result.onDisconnectEvent = port.onDisconnect;
   } catch (e) {
     result.getOnDisconnectThrow = true;
   }
@@ -52,13 +53,27 @@ function testPort(port) {
 
   chrome.test.assertTrue(result.postMessageThrow);
   chrome.test.assertTrue(result.disconnectThrow);
-  chrome.test.assertTrue(result.getOnMessageThrow);
-  chrome.test.assertTrue(result.getOnDisconnectThrow);
-  chrome.test.assertFalse(!!result.onMessageEvent);
-  chrome.test.assertFalse(!!result.onDisconnectEvent);
+
+  // With native bindings, the event object instantiated on a Port is set as a
+  // lazy data property, and thus is safe to access even after the context has
+  // been removed. JS bindings always throw errors when trying to access them
+  // after context invalidation.
+  expectEventsValid &= nativeBindingsEnabled;
+
+  if (expectEventsValid) {
+    chrome.test.assertFalse(result.getOnMessageThrow);
+    chrome.test.assertFalse(result.getOnDisconnectThrow);
+    chrome.test.assertTrue(!!result.onMessageEvent);
+    chrome.test.assertTrue(!!result.onDisconnectEvent);
+  } else {
+    chrome.test.assertTrue(result.getOnMessageThrow);
+    chrome.test.assertTrue(result.getOnDisconnectThrow);
+    chrome.test.assertEq(undefined, result.onMessageEvent);
+    chrome.test.assertEq(undefined, result.onDisconnectEvent);
+  }
 }
 
-chrome.test.runTests([
+const tests = [
   function useFrameStorageAndRuntime() {
     createFrame().then(() => {
       frameRuntime = frame.contentWindow.chrome.runtime;
@@ -104,7 +119,7 @@ chrome.test.runTests([
       port.postMessage;
       document.body.removeChild(frame);
 
-      testPort(port);
+      testPort(port, false);
       chrome.test.succeed();
     });
   },
@@ -117,7 +132,7 @@ chrome.test.runTests([
       port.disconnect();
       document.body.removeChild(frame);
 
-      testPort(port);
+      testPort(port, false);
       chrome.test.succeed();
     });
   },
@@ -131,8 +146,13 @@ chrome.test.runTests([
       port.onDisconnect;
       document.body.removeChild(frame);
 
-      testPort(port);
+      testPort(port, true);
       chrome.test.succeed();
     });
   },
-]);
+];
+
+chrome.test.getConfig((config) => {
+  nativeBindingsEnabled = config.nativeCrxBindingsEnabled;
+  chrome.test.runTests(tests);
+});
