@@ -83,7 +83,6 @@ const char* const kLanguageRemapPrefs[] = {
     prefs::kLanguageRemapCapsLockKeyTo,
     prefs::kLanguageRemapEscapeKeyTo,
     prefs::kLanguageRemapBackspaceKeyTo,
-    prefs::kLanguageRemapDiamondKeyTo,
     prefs::kLanguageRemapExternalCommandKeyTo,
     prefs::kLanguageRemapExternalMetaKeyTo};
 
@@ -386,10 +385,6 @@ void Preferences::RegisterProfilePrefs(
   registry->RegisterIntegerPref(
       prefs::kLanguageRemapBackspaceKeyTo,
       static_cast<int>(ui::chromeos::ModifierKey::kBackspaceKey),
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
-  registry->RegisterIntegerPref(
-      prefs::kLanguageRemapDiamondKeyTo,
-      static_cast<int>(ui::chromeos::ModifierKey::kControlKey),
       user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
   // The Command key on external Apple keyboards is remapped by default to Ctrl
   // until the user changes it from the keyboard settings.

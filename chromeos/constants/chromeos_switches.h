@@ -173,7 +173,6 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kGoldenScreenshotsDir[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kGuestSession[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kGuestWallpaperLarge[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kGuestWallpaperSmall[];
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kHasChromeOSDiamondKey[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kHasChromeOSKeyboard[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kHideAndroidFilesInFilesApp[];

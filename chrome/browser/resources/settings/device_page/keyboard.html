@@ -36,15 +36,6 @@
           menu-options="[[keyMapTargets_]]">
       </settings-dropdown-menu>
     </div>
-    <template is="dom-if" if="[[showDiamondKey_]]">
-      <div class="settings-box" id="diamondKey">
-        <div class="start">$i18n{keyboardKeyDiamond}</div>
-        <settings-dropdown-menu label="$i18n{keyboardKeyDiamond}"
-            pref="{{prefs.settings.language.remap_diamond_key_to}}"
-            menu-options="[[keyMapTargets_]]">
-        </settings-dropdown-menu>
-      </div>
-    </template>
     <div class="settings-box">
       <div class="start">$i18n{keyboardKeyEscape}</div>
       <settings-dropdown-menu label="$i18n{keyboardKeyEscape}"

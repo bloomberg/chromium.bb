@@ -65,8 +65,7 @@ const struct ModifierRemapping {
   const char* pref_name;
   EventRewriterChromeOS::MutableKeyState result;
 } kModifierRemappings[] = {
-    {// kModifierRemappingCtrl references this entry by index.
-     ui::EF_CONTROL_DOWN,
+    {ui::EF_CONTROL_DOWN,
      ui::chromeos::ModifierKey::kControlKey,
      prefs::kLanguageRemapControlKeyTo,
      {ui::EF_CONTROL_DOWN, ui::DomCode::CONTROL_LEFT, ui::DomKey::CONTROL,
@@ -108,13 +107,8 @@ const struct ModifierRemapping {
      ui::chromeos::ModifierKey::kAssistantKey,
      prefs::kLanguageRemapAssistantKeyTo,
      {ui::EF_NONE, ui::DomCode::LAUNCH_ASSISTANT, ui::DomKey::LAUNCH_ASSISTANT,
-      ui::VKEY_ASSISTANT}},
-    {ui::EF_NONE,
-     ui::chromeos::ModifierKey::kNumModifierKeys,
-     prefs::kLanguageRemapDiamondKeyTo,
-     {ui::EF_NONE, ui::DomCode::F15, ui::DomKey::F15, ui::VKEY_F15}}};
+      ui::VKEY_ASSISTANT}}};
 
-const ModifierRemapping* kModifierRemappingCtrl = &kModifierRemappings[0];
 const ModifierRemapping* kModifierRemappingNeoMod3 = &kModifierRemappings[1];
 
 // Gets a remapped key for |pref_name| key. For example, to find out which
@@ -164,11 +158,6 @@ const ModifierRemapping* GetSearchRemappedKey(
   }
 
   return GetRemappedKey(pref_name, delegate);
-}
-
-bool HasDiamondKey() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      ::chromeos::switches::kHasChromeOSDiamondKey);
 }
 
 bool IsISOLevel5ShiftUsedByCurrentInputMethod() {
@@ -749,22 +738,6 @@ bool EventRewriterChromeOS::RewriteModifierKeys(const ui::KeyEvent& key_event,
   const ModifierRemapping* remapped_key = nullptr;
   // Remapping based on DomKey.
   switch (incoming.key) {
-    // On Chrome OS, F15 (XF86XK_Launch6) with NumLock (Mod2Mask) is sent
-    // when Diamond key is pressed.
-    case ui::DomKey::F15:
-      // When diamond key is not available, the configuration UI for Diamond
-      // key is not shown. Therefore, ignore the kLanguageRemapDiamondKeyTo
-      // syncable pref.
-      if (HasDiamondKey())
-        remapped_key =
-            GetRemappedKey(prefs::kLanguageRemapDiamondKeyTo, delegate_);
-      // Default behavior of F15 is Control, even if --has-chromeos-diamond-key
-      // is absent, according to unit test comments.
-      if (!remapped_key) {
-        DCHECK_EQ(ui::VKEY_CONTROL, kModifierRemappingCtrl->result.key_code);
-        remapped_key = kModifierRemappingCtrl;
-      }
-      break;
     case ui::DomKey::ALT_GRAPH:
       // The Neo2 codes modifiers such that CapsLock appears as VKEY_ALTGR,
       // but AltGraph (right Alt) also appears as VKEY_ALTGR in Neo2,
