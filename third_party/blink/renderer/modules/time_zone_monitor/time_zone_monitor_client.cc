@@ -25,7 +25,7 @@ namespace {
 // Notify V8 that the date/time configuration of the system might have changed.
 void NotifyTimezoneChangeToV8(v8::Isolate* isolate) {
   DCHECK(isolate);
-  v8::Date::DateTimeConfigurationChangeNotification(isolate);
+  isolate->DateTimeConfigurationChangeNotification();
 }
 
 void NotifyTimezoneChangeOnWorkerThread(WorkerThread* worker_thread) {
