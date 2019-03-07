@@ -37,8 +37,7 @@ namespace blink {
 class ExceptionState;
 class Performance;
 
-typedef unsigned long long (
-    PerformanceTiming::*NavigationTimingFunction)() const;
+typedef uint64_t (PerformanceTiming::*NavigationTimingFunction)() const;
 using PerformanceEntryMap = HeapHashMap<AtomicString, PerformanceEntryVector>;
 
 class UserTiming final : public GarbageCollected<UserTiming> {

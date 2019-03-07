@@ -235,12 +235,12 @@ TEST_F(ResourceFetcherTest, ResourceTimingInfo) {
   auto info = ResourceTimingInfo::Create(fetch_initiator_type_names::kDocument,
                                          CurrentTimeTicks());
   info->AddFinalTransferSize(5);
-  EXPECT_EQ(info->TransferSize(), 5);
+  EXPECT_EQ(info->TransferSize(), static_cast<uint64_t>(5));
   ResourceResponse redirect_response(KURL("https://example.com/original"));
   redirect_response.SetHttpStatusCode(200);
   redirect_response.SetEncodedDataLength(7);
   info->AddRedirect(redirect_response, KURL("https://example.com/redirect"));
-  EXPECT_EQ(info->TransferSize(), 12);
+  EXPECT_EQ(info->TransferSize(), static_cast<uint64_t>(12));
 }
 
 TEST_F(ResourceFetcherTest, VaryOnBack) {
