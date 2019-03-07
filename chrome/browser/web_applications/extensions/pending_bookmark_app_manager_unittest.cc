@@ -21,6 +21,7 @@
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_installation_task.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_registrar.h"
+#include "chrome/browser/web_applications/test/test_app_registrar.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/crx_file/id_util.h"
@@ -118,15 +119,15 @@ class TestExtensionRegistryObserver : public ExtensionRegistryObserver {
   DISALLOW_COPY_AND_ASSIGN(TestExtensionRegistryObserver);
 };
 
-}  // namespace
-
 class TestBookmarkAppInstallationTask : public BookmarkAppInstallationTask {
  public:
   TestBookmarkAppInstallationTask(Profile* profile,
+                                  web_app::TestAppRegistrar* registrar,
                                   web_app::PendingAppManager::AppInfo app_info,
                                   bool succeeds)
       : BookmarkAppInstallationTask(profile, std::move(app_info)),
         profile_(profile),
+        registrar_(registrar),
         succeeds_(succeeds),
         extension_ids_map_(profile_->GetPrefs()) {}
   ~TestBookmarkAppInstallationTask() override = default;
@@ -142,6 +143,7 @@ class TestBookmarkAppInstallationTask : public BookmarkAppInstallationTask {
           CreateDummyExtension(app_id));
       extension_ids_map_.Insert(app_info().url, app_id,
                                 app_info().install_source);
+      registrar_->AddAsInstalled(app_id);
     }
 
     std::move(on_install_called_).Run();
@@ -155,6 +157,7 @@ class TestBookmarkAppInstallationTask : public BookmarkAppInstallationTask {
 
  private:
   Profile* profile_;
+  web_app::TestAppRegistrar* registrar_;
   bool succeeds_;
   web_app::ExtensionIdsMap extension_ids_map_;
 
@@ -162,6 +165,8 @@ class TestBookmarkAppInstallationTask : public BookmarkAppInstallationTask {
 
   DISALLOW_COPY_AND_ASSIGN(TestBookmarkAppInstallationTask);
 };
+
+}  // namespace
 
 class PendingBookmarkAppManagerTest : public ChromeRenderViewHostTestHarness {
  public:
@@ -192,7 +197,7 @@ class PendingBookmarkAppManagerTest : public ChromeRenderViewHostTestHarness {
         std::make_unique<TestExtensionRegistryObserver>(
             ExtensionRegistry::Get(profile()));
 
-    registrar_ = std::make_unique<extensions::BookmarkAppRegistrar>(profile());
+    registrar_ = std::make_unique<web_app::TestAppRegistrar>();
   }
 
   void TearDown() override {
@@ -213,7 +218,7 @@ class PendingBookmarkAppManagerTest : public ChromeRenderViewHostTestHarness {
       web_app::PendingAppManager::AppInfo app_info,
       bool succeeds) {
     auto task = std::make_unique<TestBookmarkAppInstallationTask>(
-        profile, std::move(app_info), succeeds);
+        profile, registrar_.get(), std::move(app_info), succeeds);
     auto* task_ptr = task.get();
     task->SetOnInstallCalled(base::BindLambdaForTesting([task_ptr, this]() {
       ++installation_task_run_count_;
@@ -328,6 +333,8 @@ class PendingBookmarkAppManagerTest : public ChromeRenderViewHostTestHarness {
     return test_extension_registry_observer_->uninstalled_extension_ids();
   }
 
+  web_app::TestAppRegistrar* registrar() { return registrar_.get(); }
+
  private:
   content::WebContentsTester* web_contents_tester_ = nullptr;
   base::Optional<GURL> install_callback_url_;
@@ -344,7 +351,7 @@ class PendingBookmarkAppManagerTest : public ChromeRenderViewHostTestHarness {
   PendingBookmarkAppManager::TaskFactory successful_installation_task_creator_;
   PendingBookmarkAppManager::TaskFactory failing_installation_task_creator_;
 
-  std::unique_ptr<web_app::AppRegistrar> registrar_;
+  std::unique_ptr<web_app::TestAppRegistrar> registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(PendingBookmarkAppManagerTest);
 };
@@ -942,7 +949,7 @@ TEST_F(PendingBookmarkAppManagerTest, ExtensionUninstalled) {
 
   // Simulate the extension for the app getting uninstalled.
   const std::string app_id = GenerateFakeAppId(GURL(kFooWebAppUrl));
-  ExtensionRegistry::Get(profile())->RemoveEnabled(app_id);
+  registrar()->RemoveAsInstalled(app_id);
 
   // Trying to uninstall the app should fail and have no effect.
   pending_app_manager->UninstallApps(
@@ -985,9 +992,8 @@ TEST_F(PendingBookmarkAppManagerTest, ExternalExtensionUninstalled) {
 
   // Simulate external extension for the app getting uninstalled by the user.
   const std::string app_id = GenerateFakeAppId(GURL(kFooWebAppUrl));
-  ExtensionRegistry::Get(profile())->RemoveEnabled(app_id);
-  ExtensionPrefs::Get(profile())->OnExtensionUninstalled(
-      app_id, Manifest::EXTERNAL_POLICY, false /* external_uninstall */);
+  registrar()->AddAsExternalAppUninstalledByUser(app_id);
+  registrar()->RemoveAsInstalled(app_id);
 
   // Trying to uninstall the app should fail and have no effect.
   pending_app_manager->UninstallApps(

@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_APP_REGISTRAR_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_APP_REGISTRAR_H_
 
+#include "base/callback_forward.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 
 namespace web_app {
