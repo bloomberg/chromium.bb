@@ -1752,6 +1752,10 @@ IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest,
   helper->GetSecurityInfo(&security_info);
   EXPECT_EQ(security_state::DANGEROUS, security_info.security_level);
   EXPECT_EQ(blink::kWebSecurityStyleInsecure, observer.latest_security_style());
+  const content::SecurityStyleExplanations& http_explanation =
+      observer.latest_explanations();
+  EXPECT_EQ(l10n_util::GetStringUTF8(IDS_HTTP_NONSECURE_SUMMARY),
+            http_explanation.summary);
 }
 
 // Visit a valid HTTPS page, then a broken HTTPS page, and then go back,
@@ -2027,6 +2031,10 @@ IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest,
   // Verify that the security state degrades as expected.
   helper->GetSecurityInfo(&security_info);
   EXPECT_EQ(security_state::DANGEROUS, security_info.security_level);
+  const content::SecurityStyleExplanations& http_explanation =
+      observer.latest_explanations();
+  EXPECT_EQ(l10n_util::GetStringUTF8(IDS_HTTP_NONSECURE_SUMMARY),
+            http_explanation.summary);
 
   // Verify security state stays degraded after same-page navigation.
   ui_test_utils::NavigateToURL(
