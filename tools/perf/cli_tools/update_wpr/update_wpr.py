@@ -18,12 +18,9 @@ import time
 import webbrowser
 
 from core import cli_helpers
-from core import path_util
-
-path_util.AddSoundwaveToPath()
-from services import luci_auth  # pylint: disable=import-error
-from services import pinpoint_service  # pylint: disable=import-error
-from services import request  # pylint: disable=import-error
+from core.services import luci_auth
+from core.services import pinpoint_service
+from core.services import request
 
 
 SRC_ROOT = os.path.abspath(

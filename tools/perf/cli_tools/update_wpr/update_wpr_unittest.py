@@ -9,11 +9,8 @@ import unittest
 
 import mock
 
-from core import path_util
 from cli_tools.update_wpr import update_wpr
-
-path_util.AddSoundwaveToPath()
-from services import request  # pylint: disable=import-error
+from core.services import request
 
 
 WPR_UPDATER = 'cli_tools.update_wpr.update_wpr.'
@@ -325,7 +322,7 @@ class UpdateWprTest(unittest.TestCase):
         WPR_UPDATER + 'WprUpdater._GetBranchIssueUrl',
         return_value='<issue-url>').start()
     new_job = mock.patch(
-        'services.pinpoint_service.NewJob',
+        'core.services.pinpoint_service.NewJob',
         return_value={'jobUrl': '<url>'}).start()
     self.assertEqual(
         self.wpr_updater.StartPinpointJobs(),
@@ -348,8 +345,9 @@ class UpdateWprTest(unittest.TestCase):
         return_value='<issue-url>').start()
     self.wpr_updater.device_id = '<serial>'
     new_job = mock.patch(
-        'services.pinpoint_service.NewJob', side_effect=request.ServerError(
-          mock.Mock(), mock.Mock(status=500), '')).start()
+        'core.services.pinpoint_service.NewJob',
+        side_effect=request.ServerError(
+            mock.Mock(), mock.Mock(status=500), '')).start()
     self.assertEqual(
         self.wpr_updater.StartPinpointJobs(['<config>']), ([], ['<config>']))
     new_job.assert_called_once_with(
