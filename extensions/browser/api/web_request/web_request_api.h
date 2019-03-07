@@ -562,6 +562,7 @@ class ExtensionWebRequestEventRouter {
   using Listeners = std::vector<std::unique_ptr<EventListener>>;
   using ListenerMapForBrowserContext = std::map<std::string, Listeners>;
   using ListenerMap = std::map<void*, ListenerMapForBrowserContext>;
+  using ExtraHeadersListenerCountMap = std::map<void*, int>;
   using BlockedRequestMap = std::map<uint64_t, BlockedRequest>;
   // Map of request_id -> bit vector of EventTypes already signaled
   using SignaledRequestMap = std::map<uint64_t, int>;
@@ -715,9 +716,15 @@ class ExtensionWebRequestEventRouter {
   size_t GetListenerCountForTesting(void* browser_context,
                                     const std::string& event_name);
 
+  // TODO(karandeepb): The below code should be refactored to have a single map
+  // to store per-browser-context data.
+
   // A map for each browser_context that maps an event name to a set of
   // extensions that are listening to that event.
   ListenerMap listeners_;
+
+  // Count of listeners per browser context which request extra headers.
+  ExtraHeadersListenerCountMap extra_headers_listener_count_;
 
   // A map of network requests that are waiting for at least one event handler
   // to respond.
