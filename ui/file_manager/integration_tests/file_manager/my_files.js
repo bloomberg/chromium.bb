@@ -294,3 +294,40 @@ testcase.myFilesFolderRename = async () => {
       appId, expectedRows2,
       {ignoreFileSize: true, ignoreLastModifiedTime: true});
 };
+
+/**
+ * Tests that MyFiles doesn't expand when it isn't selected.
+ */
+testcase.myFilesExpandWhenSelected = async () => {
+  // Open Files app on local Downloads.
+  const appId = await setupAndWaitUntilReady(
+      RootPath.DOWNLOADS, [ENTRIES.photos], [ENTRIES.beautiful]);
+
+  // Collapse MyFiles.
+  const myFiles = '#directory-tree [entry-label="My files"]';
+  let expandIcon = myFiles + '[expanded] > .tree-row > .expand-icon';
+  await remoteCall.waitAndClickElement(appId, expandIcon);
+  await remoteCall.waitForElement(appId, myFiles + ':not([expanded])');
+
+  // Expand Google Drive.
+  const driveGrandRoot = '#directory-tree [entry-label="Google Drive"]';
+  expandIcon = driveGrandRoot + ' > .tree-row > .expand-icon';
+  await remoteCall.waitAndClickElement(appId, expandIcon);
+
+  // Wait for its subtree to expand and display its children.
+  const expandedSubItems =
+      driveGrandRoot + ' > .tree-children[expanded] > .tree-item';
+  await remoteCall.waitForElement(appId, expandedSubItems);
+
+  // Click on My Drive
+  const myDrive = '#directory-tree [entry-label="My Drive"]';
+  await remoteCall.waitAndClickElement(appId, myDrive);
+
+  // Wait for My Drive to selected.
+  await remoteCall.waitForFiles(
+      appId, [ENTRIES.beautiful.getExpectedRow()],
+      {ignoreFileSize: true, ignoreLastModifiedTime: true});
+
+  // Check that MyFiles is still collapsed.
+  await remoteCall.waitForElement(appId, myFiles + ':not([expanded])');
+};
