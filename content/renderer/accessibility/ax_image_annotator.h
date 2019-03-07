@@ -70,7 +70,6 @@ class CONTENT_EXPORT AXImageAnnotator : public base::CheckedObserver {
     }
 
     std::string annotation() const {
-      DCHECK(annotation_.has_value());
       return annotation_.value_or("");
     }
 
