@@ -16,7 +16,6 @@
 
 @class AutofillController;
 @class CastController;
-@class ExternalAppLauncher;
 class GURL;
 @class OpenInController;
 @class OverscrollActionsController;
@@ -26,10 +25,6 @@ class GURL;
 @class FormSuggestionController;
 @protocol TabDialogDelegate;
 @class Tab;
-
-namespace ios {
-class ChromeBrowserState;
-}
 
 namespace web {
 class WebState;
@@ -68,9 +63,6 @@ extern NSString* const kProxyPassthroughHeaderValue;
 // delegate for the WebState in order to process info about pages having
 // loaded.
 @interface Tab : NSObject
-
-// Browser state associated with this Tab.
-@property(nonatomic, readonly) ios::ChromeBrowserState* browserState;
 
 // The Webstate associated with this Tab.
 @property(nonatomic, readonly) web::WebState* webState;

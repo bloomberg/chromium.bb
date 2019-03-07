@@ -116,6 +116,7 @@ NSString* const kTabClosingCurrentDocumentNotificationForCrashReporting =
 NSString* const kTabUrlKey = @"url";
 
 @interface Tab ()<CRWWebStateObserver> {
+  // Browser state associated with this Tab.
   ios::ChromeBrowserState* _browserState;
 
   OpenInController* _openInController;
@@ -142,7 +143,6 @@ NSString* const kTabUrlKey = @"url";
 
 @implementation Tab
 
-@synthesize browserState = _browserState;
 @synthesize overscrollActionsController = _overscrollActionsController;
 @synthesize overscrollActionsControllerDelegate =
     overscrollActionsControllerDelegate_;
@@ -207,7 +207,7 @@ NSString* const kTabUrlKey = @"url";
   [_overscrollActionsController setStyle:style];
   [_overscrollActionsController
       setDelegate:overscrollActionsControllerDelegate];
-  [_overscrollActionsController setBrowserState:self.browserState];
+  [_overscrollActionsController setBrowserState:_browserState];
   overscrollActionsControllerDelegate_ = overscrollActionsControllerDelegate;
 }
 
