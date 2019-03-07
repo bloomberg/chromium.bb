@@ -42,17 +42,17 @@
     cell.imageView.hidden = YES;
   }
 
-  cell.titleLabel.text = self.title;
+  cell.textLabel.text = self.title;
   cell.detailTextLabel.text = self.detailText;
   UIColor* cellBackgroundColor = styler.cellBackgroundColor
                                      ? styler.cellBackgroundColor
                                      : styler.tableViewBackgroundColor;
   cell.imageView.backgroundColor = cellBackgroundColor;
-  cell.titleLabel.backgroundColor = cellBackgroundColor;
+  cell.textLabel.backgroundColor = cellBackgroundColor;
   if (self.textColor) {
-    cell.titleLabel.textColor = self.textColor;
+    cell.textLabel.textColor = self.textColor;
   } else if (styler.cellTitleColor) {
-    cell.titleLabel.textColor = styler.cellTitleColor;
+    cell.textLabel.textColor = styler.cellTitleColor;
   } else {
     cell.textLabel.textColor = UIColor.blackColor;
   }
@@ -72,6 +72,7 @@
 
 // These properties overrides the ones from UITableViewCell, so this @synthesize
 // cannot be removed.
+@synthesize textLabel = _textLabel;
 @synthesize detailTextLabel = _detailTextLabel;
 @synthesize imageView = _imageView;
 
@@ -87,10 +88,10 @@
                                   forAxis:UILayoutConstraintAxisHorizontal];
 
     // Set font size using dynamic type.
-    _titleLabel = [[UILabel alloc] init];
-    _titleLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
-    _titleLabel.adjustsFontForContentSizeCategory = YES;
-    [_titleLabel
+    _textLabel = [[UILabel alloc] init];
+    _textLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
+    _textLabel.adjustsFontForContentSizeCategory = YES;
+    [_textLabel
         setContentCompressionResistancePriority:UILayoutPriorityDefaultLow
                                         forAxis:
                                             UILayoutConstraintAxisHorizontal];
@@ -101,7 +102,7 @@
     _detailTextLabel.numberOfLines = 0;
 
     UIStackView* verticalStack = [[UIStackView alloc]
-        initWithArrangedSubviews:@[ _titleLabel, _detailTextLabel ]];
+        initWithArrangedSubviews:@[ _textLabel, _detailTextLabel ]];
     verticalStack.translatesAutoresizingMaskIntoConstraints = NO;
     verticalStack.axis = UILayoutConstraintAxisVertical;
     verticalStack.spacing = 0;
@@ -185,10 +186,10 @@
 
 - (NSString*)accessibilityLabel {
   if (self.detailTextLabel.text) {
-    return [NSString stringWithFormat:@"%@, %@", self.titleLabel.text,
+    return [NSString stringWithFormat:@"%@, %@", self.textLabel.text,
                                       self.detailTextLabel.text];
   }
-  return self.titleLabel.text;
+  return self.textLabel.text;
 }
 
 @end
