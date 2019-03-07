@@ -21,7 +21,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/log_console_message.h"
-#include "content/browser/service_worker/embedded_worker_registry.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_consts.h"
 #include "content/browser/service_worker/service_worker_context_core_observer.h"
@@ -297,7 +296,6 @@ ServiceWorkerContextCore::ServiceWorkerContextCore(
   storage_ = ServiceWorkerStorage::Create(
       user_data_directory, AsWeakPtr(), std::move(database_task_runner),
       quota_manager_proxy, special_storage_policy);
-  embedded_worker_registry_ = EmbeddedWorkerRegistry::Create(AsWeakPtr());
   job_coordinator_ = std::make_unique<ServiceWorkerJobCoordinator>(AsWeakPtr());
 }
 
@@ -311,15 +309,13 @@ ServiceWorkerContextCore::ServiceWorkerContextCore(
       was_service_worker_registered_(
           old_context->was_service_worker_registered_),
       observer_list_(old_context->observer_list_),
+      next_embedded_worker_id_(old_context->next_embedded_worker_id_),
       weak_factory_(this) {
   DCHECK(observer_list_);
 
   // These get a WeakPtr from |weak_factory_|, so must be set after
   // |weak_factory_| is initialized.
   storage_ = ServiceWorkerStorage::Create(AsWeakPtr(), old_context->storage());
-  embedded_worker_registry_ = EmbeddedWorkerRegistry::Create(
-      AsWeakPtr(),
-      old_context->embedded_worker_registry());
   job_coordinator_ = std::make_unique<ServiceWorkerJobCoordinator>(AsWeakPtr());
 }
 
@@ -539,6 +535,10 @@ void ServiceWorkerContextCore::DidGetRegistrationsForDeleteForOrigin(
     job_coordinator_->Abort(registration->scope());
     UnregisterServiceWorker(registration->scope(), barrier);
   }
+}
+
+int ServiceWorkerContextCore::GetNextEmbeddedWorkerId() {
+  return next_embedded_worker_id_++;
 }
 
 ServiceWorkerContextCore::ProviderMap*

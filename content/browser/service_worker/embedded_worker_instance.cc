@@ -19,7 +19,6 @@
 #include "content/browser/bad_message.h"
 #include "content/browser/devtools/service_worker_devtools_manager.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
-#include "content/browser/service_worker/embedded_worker_registry.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_content_settings_proxy_impl.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
@@ -686,8 +685,6 @@ class EmbeddedWorkerInstance::StartTask {
 EmbeddedWorkerInstance::~EmbeddedWorkerInstance() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   devtools_proxy_.reset();
-  if (registry_->GetWorker(embedded_worker_id_))
-    registry_->RemoveWorker(embedded_worker_id_);
   ReleaseProcess();
 }
 
@@ -773,13 +770,10 @@ void EmbeddedWorkerInstance::ResumeAfterDownload() {
 }
 
 EmbeddedWorkerInstance::EmbeddedWorkerInstance(
-    base::WeakPtr<ServiceWorkerContextCore> context,
-    ServiceWorkerVersion* owner_version,
-    int embedded_worker_id)
-    : context_(context),
-      registry_(context->embedded_worker_registry()),
+    ServiceWorkerVersion* owner_version)
+    : context_(owner_version->context()),
       owner_version_(owner_version),
-      embedded_worker_id_(embedded_worker_id),
+      embedded_worker_id_(context_->GetNextEmbeddedWorkerId()),
       status_(EmbeddedWorkerStatus::STOPPED),
       starting_phase_(NOT_STARTING),
       restart_count_(0),
@@ -790,6 +784,7 @@ EmbeddedWorkerInstance::EmbeddedWorkerInstance(
       foreground_notified_(false),
       weak_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(context_);
 }
 
 void EmbeddedWorkerInstance::OnProcessAllocated(

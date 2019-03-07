@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/simple_test_tick_clock.h"
-#include "content/browser/service_worker/embedded_worker_registry.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/fake_embedded_worker_instance_client.h"
 #include "content/browser/service_worker/service_worker_context_core.h"

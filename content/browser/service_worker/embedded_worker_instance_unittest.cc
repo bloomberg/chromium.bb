@@ -16,7 +16,6 @@
 #include "base/stl_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
-#include "content/browser/service_worker/embedded_worker_registry.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/fake_embedded_worker_instance_client.h"
@@ -207,11 +206,6 @@ class EmbeddedWorkerInstanceTest : public testing::Test,
 
   ServiceWorkerContextCore* context() { return helper_->context(); }
 
-  EmbeddedWorkerRegistry* embedded_worker_registry() {
-    DCHECK(context());
-    return context()->embedded_worker_registry();
-  }
-
   // Mojo endpoints.
   std::vector<blink::mojom::ServiceWorkerPtr> service_workers_;
   std::vector<blink::mojom::ControllerServiceWorkerPtr> controllers_;
@@ -234,8 +228,7 @@ TEST_F(EmbeddedWorkerInstanceTest, StartAndStop) {
   const GURL url("http://example.com/worker.js");
 
   RegistrationAndVersionPair pair = PrepareRegistrationAndVersion(scope, url);
-  std::unique_ptr<EmbeddedWorkerInstance> worker =
-      embedded_worker_registry()->CreateWorker(pair.second.get());
+  auto worker = std::make_unique<EmbeddedWorkerInstance>(pair.second.get());
   EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, worker->status());
   worker->AddObserver(this);
 
@@ -274,8 +267,7 @@ TEST_F(EmbeddedWorkerInstanceTest, ForceNewProcess) {
 
   RegistrationAndVersionPair pair = PrepareRegistrationAndVersion(scope, url);
   const int64_t service_worker_version_id = pair.second->version_id();
-  std::unique_ptr<EmbeddedWorkerInstance> worker =
-      embedded_worker_registry()->CreateWorker(pair.second.get());
+  auto worker = std::make_unique<EmbeddedWorkerInstance>(pair.second.get());
   EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, worker->status());
 
   {
@@ -311,8 +303,7 @@ TEST_F(EmbeddedWorkerInstanceTest, StopWhenDevToolsAttached) {
   const GURL url("http://example.com/worker.js");
 
   RegistrationAndVersionPair pair = PrepareRegistrationAndVersion(scope, url);
-  std::unique_ptr<EmbeddedWorkerInstance> worker =
-      embedded_worker_registry()->CreateWorker(pair.second.get());
+  auto worker = std::make_unique<EmbeddedWorkerInstance>(pair.second.get());
   EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, worker->status());
 
   // Start the worker and then call StopIfNotAttachedToDevTools().
@@ -348,8 +339,7 @@ TEST_F(EmbeddedWorkerInstanceTest, DetachDuringProcessAllocation) {
   const GURL url("http://example.com/worker.js");
 
   RegistrationAndVersionPair pair = PrepareRegistrationAndVersion(scope, url);
-  std::unique_ptr<EmbeddedWorkerInstance> worker =
-      embedded_worker_registry()->CreateWorker(pair.second.get());
+  auto worker = std::make_unique<EmbeddedWorkerInstance>(pair.second.get());
   worker->AddObserver(this);
 
   // Run the start worker sequence and detach during process allocation.
@@ -377,8 +367,7 @@ TEST_F(EmbeddedWorkerInstanceTest, DetachAfterSendingStartWorkerMessage) {
   const GURL url("http://example.com/worker.js");
 
   RegistrationAndVersionPair pair = PrepareRegistrationAndVersion(scope, url);
-  std::unique_ptr<EmbeddedWorkerInstance> worker =
-      embedded_worker_registry()->CreateWorker(pair.second.get());
+  auto worker = std::make_unique<EmbeddedWorkerInstance>(pair.second.get());
   worker->AddObserver(this);
 
   auto* client = helper_->AddNewPendingInstanceClient<
@@ -407,8 +396,7 @@ TEST_F(EmbeddedWorkerInstanceTest, StopDuringProcessAllocation) {
   const GURL url("http://example.com/worker.js");
 
   RegistrationAndVersionPair pair = PrepareRegistrationAndVersion(scope, url);
-  std::unique_ptr<EmbeddedWorkerInstance> worker =
-      embedded_worker_registry()->CreateWorker(pair.second.get());
+  auto worker = std::make_unique<EmbeddedWorkerInstance>(pair.second.get());
   worker->AddObserver(this);
 
   // Stop the start worker sequence before a process is allocated.
@@ -471,8 +459,7 @@ TEST_F(EmbeddedWorkerInstanceTest, StopDuringPausedAfterDownload) {
           helper_.get(), &was_resume_after_download_called));
 
   RegistrationAndVersionPair pair = PrepareRegistrationAndVersion(scope, url);
-  std::unique_ptr<EmbeddedWorkerInstance> worker =
-      embedded_worker_registry()->CreateWorker(pair.second.get());
+  auto worker = std::make_unique<EmbeddedWorkerInstance>(pair.second.get());
   worker->AddObserver(this);
 
   // Run the start worker sequence until pause after download.
@@ -500,8 +487,7 @@ TEST_F(EmbeddedWorkerInstanceTest, StopAfterSendingStartWorkerMessage) {
   const GURL url("http://example.com/worker.js");
 
   RegistrationAndVersionPair pair = PrepareRegistrationAndVersion(scope, url);
-  std::unique_ptr<EmbeddedWorkerInstance> worker =
-      embedded_worker_registry()->CreateWorker(pair.second.get());
+  auto worker = std::make_unique<EmbeddedWorkerInstance>(pair.second.get());
   worker->AddObserver(this);
 
   auto* client = helper_->AddNewPendingInstanceClient<
@@ -544,8 +530,7 @@ TEST_F(EmbeddedWorkerInstanceTest, Detach) {
   const GURL url("http://example.com/worker.js");
 
   RegistrationAndVersionPair pair = PrepareRegistrationAndVersion(scope, url);
-  std::unique_ptr<EmbeddedWorkerInstance> worker =
-      embedded_worker_registry()->CreateWorker(pair.second.get());
+  auto worker = std::make_unique<EmbeddedWorkerInstance>(pair.second.get());
 
   // Start the worker.
   StartWorker(worker.get(), CreateStartParams(pair.second));
@@ -564,8 +549,7 @@ TEST_F(EmbeddedWorkerInstanceTest, FailToSendStartIPC) {
   helper_->AddPendingInstanceClient(nullptr);
 
   RegistrationAndVersionPair pair = PrepareRegistrationAndVersion(scope, url);
-  std::unique_ptr<EmbeddedWorkerInstance> worker =
-      embedded_worker_registry()->CreateWorker(pair.second.get());
+  auto worker = std::make_unique<EmbeddedWorkerInstance>(pair.second.get());
   worker->AddObserver(this);
 
   // Attempt to start the worker. From the browser process's point of view, the
@@ -594,8 +578,7 @@ TEST_F(EmbeddedWorkerInstanceTest, RemoveRemoteInterface) {
   const GURL url("http://example.com/worker.js");
 
   RegistrationAndVersionPair pair = PrepareRegistrationAndVersion(scope, url);
-  std::unique_ptr<EmbeddedWorkerInstance> worker =
-      embedded_worker_registry()->CreateWorker(pair.second.get());
+  auto worker = std::make_unique<EmbeddedWorkerInstance>(pair.second.get());
   worker->AddObserver(this);
 
   // Attempt to start the worker.
@@ -653,8 +636,7 @@ TEST_F(EmbeddedWorkerInstanceTest, AddMessageToConsole) {
   const GURL scope("http://example.com/");
   const GURL url("http://example.com/worker.js");
   RegistrationAndVersionPair pair = PrepareRegistrationAndVersion(scope, url);
-  std::unique_ptr<EmbeddedWorkerInstance> worker =
-      embedded_worker_registry()->CreateWorker(pair.second.get());
+  auto worker = std::make_unique<EmbeddedWorkerInstance>(pair.second.get());
   worker->AddObserver(this);
 
   auto* client =
@@ -722,8 +704,7 @@ TEST_F(EmbeddedWorkerInstanceTest, CacheStorageOptimization) {
   const GURL url("http://example.com/worker.js");
 
   RegistrationAndVersionPair pair = PrepareRegistrationAndVersion(scope, url);
-  std::unique_ptr<EmbeddedWorkerInstance> worker =
-      embedded_worker_registry()->CreateWorker(pair.second.get());
+  auto worker = std::make_unique<EmbeddedWorkerInstance>(pair.second.get());
 
   // First, test a worker without pause after download.
   {
@@ -780,8 +761,7 @@ TEST_F(EmbeddedWorkerInstanceTest, CacheStorageOptimizationIsDisabled) {
   const GURL url("http://example.com/worker.js");
 
   RegistrationAndVersionPair pair = PrepareRegistrationAndVersion(scope, url);
-  std::unique_ptr<EmbeddedWorkerInstance> worker =
-      embedded_worker_registry()->CreateWorker(pair.second.get());
+  auto worker = std::make_unique<EmbeddedWorkerInstance>(pair.second.get());
 
   // First, test a worker without pause after download.
   {
@@ -852,8 +832,7 @@ TEST_F(EmbeddedWorkerInstanceTest, AbruptCompletion) {
   const GURL scope("http://example.com/");
   const GURL url("http://example.com/worker.js");
   RegistrationAndVersionPair pair = PrepareRegistrationAndVersion(scope, url);
-  std::unique_ptr<EmbeddedWorkerInstance> worker =
-      embedded_worker_registry()->CreateWorker(pair.second.get());
+  auto worker = std::make_unique<EmbeddedWorkerInstance>(pair.second.get());
   EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, worker->status());
   worker->AddObserver(this);
 
@@ -876,8 +855,7 @@ TEST_F(EmbeddedWorkerInstanceTest, Lifetime) {
   const GURL url("http://example.com/worker.js");
 
   RegistrationAndVersionPair pair = PrepareRegistrationAndVersion(scope, url);
-  std::unique_ptr<EmbeddedWorkerInstance> worker =
-      embedded_worker_registry()->CreateWorker(pair.second.get());
+  auto worker = std::make_unique<EmbeddedWorkerInstance>(pair.second.get());
 
   base::HistogramTester metrics;
 
@@ -901,8 +879,7 @@ TEST_F(EmbeddedWorkerInstanceTest, Lifetime_DevToolsAttachedAfterStart) {
   const GURL url("http://example.com/worker.js");
 
   RegistrationAndVersionPair pair = PrepareRegistrationAndVersion(scope, url);
-  std::unique_ptr<EmbeddedWorkerInstance> worker =
-      embedded_worker_registry()->CreateWorker(pair.second.get());
+  auto worker = std::make_unique<EmbeddedWorkerInstance>(pair.second.get());
 
   base::HistogramTester metrics;
 
@@ -932,8 +909,7 @@ TEST_F(EmbeddedWorkerInstanceTest, Lifetime_DevToolsAttachedDuringStart) {
   const GURL url("http://example.com/worker.js");
 
   RegistrationAndVersionPair pair = PrepareRegistrationAndVersion(scope, url);
-  std::unique_ptr<EmbeddedWorkerInstance> worker =
-      embedded_worker_registry()->CreateWorker(pair.second.get());
+  auto worker = std::make_unique<EmbeddedWorkerInstance>(pair.second.get());
 
   base::HistogramTester metrics;
 
