@@ -40,7 +40,7 @@ apps::mojom::AppPtr Convert(const app_list::InternalApp& internal_app) {
 
   app->icon_key = apps::mojom::IconKey::New(
       apps::mojom::AppType::kBuiltIn,
-      static_cast<uint64_t>(internal_app.icon_resource_id), std::string());
+      static_cast<uint64_t>(internal_app.icon_resource_id), std::string(), 0);
 
   app->last_launch_time = base::Time();
   app->install_time = base::Time();

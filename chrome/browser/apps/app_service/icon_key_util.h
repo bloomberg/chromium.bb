@@ -22,17 +22,13 @@ namespace apps_util {
 // publish such IconKeys whenever an app's icon changes, even though the App ID
 // itself doesn't change, and App Service app subscribers will notice (and
 // reload) the new icon from the new (changed) icon key.
-//
-// The low 8 bits (a uint8_t) of the resultant IconKey's u_key are reserved for
-// caller-specific flags. For example, colorful/gray icons for enabled/disabled
-// states of the same app can be distinguished in one of those bits.
 class IncrementingIconKeyFactory {
  public:
   IncrementingIconKeyFactory();
 
   apps::mojom::IconKeyPtr MakeIconKey(apps::mojom::AppType app_type,
                                       const std::string& s_key,
-                                      uint8_t flags = 0);
+                                      uint32_t icon_effects);
 
  private:
   uint64_t u_key_;

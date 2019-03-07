@@ -89,6 +89,9 @@ struct IconKey {
   // The semantics of u_key and s_key depend on the app_type.
   uint64 u_key;
   string s_key;
+  // A bitmask of icon post-processing effects, such as desaturation to gray
+  // and rounding the corners.
+  uint32 icon_effects;
 };
 
 enum IconCompression {
