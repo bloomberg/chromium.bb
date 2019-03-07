@@ -603,7 +603,7 @@ public class SuggestionsSectionTest {
     /**
      * Tests that the More button appends new suggestions after dismissing all items. The tricky
      * condition is that if a section is empty, we issue a fetch instead of a fetch-more. This means
-     * we are using the 'updateSuggestions()' flow to append to the list the user is looking at.
+     * we are using the 'updateModels()' flow to append to the list the user is looking at.
      */
     @Test
     @Feature({"Ntp"})
