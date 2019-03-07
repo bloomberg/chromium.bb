@@ -79,12 +79,6 @@ const AtomicString& TouchEventNameForPointerEventType(
   }
 }
 
-enum TouchEventDispatchResultType {
-  kUnhandledTouches,  // Unhandled touch events.
-  kHandledTouches,    // Handled touch events.
-  kTouchEventDispatchResultTypeMax,
-};
-
 WebTouchPoint::State TouchPointStateFromPointerEventType(
     WebInputEvent::Type type,
     bool stale) {
