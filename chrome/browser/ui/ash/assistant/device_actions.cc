@@ -139,6 +139,9 @@ void DeviceActions::OpenAndroidApp(AndroidAppInfoPtr app_info,
   arc::mojom::ActivityNamePtr activity = arc::mojom::ActivityName::New();
   activity->package_name = package_name;
   auto intent = arc::mojom::IntentInfo::New();
+  if (!app_info->action.empty())
+    intent->action = app_info->action;
+
   if (!app_info->intent.empty()) {
     intent->data = app_info->intent;
   } else {
