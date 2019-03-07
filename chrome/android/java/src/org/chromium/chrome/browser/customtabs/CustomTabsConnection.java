@@ -1454,19 +1454,29 @@ public class CustomTabsConnection {
             CustomTabsSessionToken session, String url, String origin, int referrerPolicy,
             @DetachedResourceRequestMotivation int motivation);
 
-    public ModuleLoader getModuleLoader(ComponentName componentName, int resourceId) {
+    // TODO(amalova): remove this method as soon as it is safe to do
+    public ModuleLoader getModuleLoader(ComponentName componentName, int dexResourceId) {
+        return getModuleLoader(componentName, null);
+    }
+
+    public ModuleLoader getModuleLoader(ComponentName componentName, @Nullable String assetName) {
         if (!ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_MODULE_DEX_LOADING)) {
-            resourceId = 0;
+            assetName = null;
         }
 
-        if (mModuleLoader != null &&
-                (!componentName.equals(mModuleLoader.getComponentName()) ||
-                resourceId != mModuleLoader.getDexResourceId())) {
-            mModuleLoader.destroyModule(ModuleMetrics.DestructionReason.MODULE_LOADER_CHANGED);
-            mModuleLoader = null;
+        if (mModuleLoader != null) {
+            boolean isComponentNameChanged =
+                    !componentName.equals(mModuleLoader.getComponentName());
+            boolean isAssetNameChanged =
+                    !TextUtils.equals(assetName, mModuleLoader.getDexAssetName());
+
+            if (isComponentNameChanged || isAssetNameChanged) {
+                mModuleLoader.destroyModule(ModuleMetrics.DestructionReason.MODULE_LOADER_CHANGED);
+                mModuleLoader = null;
+            }
         }
 
-        if (mModuleLoader == null) mModuleLoader = new ModuleLoader(componentName, resourceId);
+        if (mModuleLoader == null) mModuleLoader = new ModuleLoader(componentName, assetName);
 
         return mModuleLoader;
     }

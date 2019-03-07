@@ -48,9 +48,9 @@ public class CustomTabsDynamicModuleTestUtils {
             FAKE_MODULE_PACKAGE_NAME, FAKE_MODULE_CLASS_NAME);
 
     /**
-     * A resource ID used to load {@link #FAKE_MODULE_DEX}.
+     * A asset name used to load {@link #FAKE_MODULE_DEX}.
      */
-    /* package */ final static int FAKE_MODULE_DEX_RESOURCE_ID = 42;
+    /* package */ final static String FAKE_MODULE_DEX_RESOURCE_ID = "42";
 
     /**
      * A fake "dex file" that consists of couple of bytes.
@@ -307,9 +307,9 @@ public class CustomTabsDynamicModuleTestUtils {
         private int mCallCount;
 
         @Override
-        public InputStream createInputStream(int dexResourceId, Context moduleContext) {
-            if (dexResourceId != FAKE_MODULE_DEX_RESOURCE_ID) {
-                throw new RuntimeException("Unknown resource ID: " + dexResourceId);
+        public InputStream createInputStream(@Nullable String dexAssetName, Context moduleContext) {
+            if (!FAKE_MODULE_DEX_RESOURCE_ID.equals(dexAssetName)) {
+                throw new RuntimeException("Unknown resource ID: " + dexAssetName);
             }
 
             mCallCount++;

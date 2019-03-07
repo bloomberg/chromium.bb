@@ -49,7 +49,7 @@ public class ModuleLoader {
 
     /** Specifies the module package name and entry point class name. */
     private final ComponentName mComponentName;
-    private final int mDexResourceId;
+    private final String mDexAssetName;
     private final DexInputStreamProvider mDexInputStreamProvider;
     private final DexClassLoaderProvider mDexClassLoaderProvider;
     private final long mModuleLastUpdateTime;
@@ -89,20 +89,20 @@ public class ModuleLoader {
     /**
      * Instantiates a new {@link ModuleLoader}.
      * @param componentName Specifies the module package name and entry point class name.
-     * @param dexResourceId Identifier for the resource that contains the dex file to load the
-     *         module from. {@code 0} if the module should not be loaded from a dex file.
+     * @param dexAssetName Identifier for the asset that contains the dex file to load the
+     *         module from. {@code null} if the module should not be loaded from a dex file.
      */
-    public ModuleLoader(ComponentName componentName, int dexResourceId) {
-        this(componentName, dexResourceId, new DexInputStreamProviderImpl(),
+    public ModuleLoader(ComponentName componentName, @Nullable String dexAssetName) {
+        this(componentName, dexAssetName, new DexInputStreamProviderImpl(),
                 new DexClassLoaderProviderImpl());
     }
 
     @VisibleForTesting
-    /* package */ ModuleLoader(ComponentName componentName, int dexResourceId,
+    /* package */ ModuleLoader(ComponentName componentName, @Nullable String dexAssetName,
             DexInputStreamProvider dexInputStreamProvider,
             DexClassLoaderProvider dexClassLoaderProvider) {
         mComponentName = componentName;
-        mDexResourceId = dexResourceId;
+        mDexAssetName = dexAssetName;
         mDexInputStreamProvider = dexInputStreamProvider;
         mDexClassLoaderProvider = dexClassLoaderProvider;
         String packageName = componentName.getPackageName();
@@ -128,8 +128,9 @@ public class ModuleLoader {
         return mComponentName;
     }
 
-    public int getDexResourceId() {
-        return mDexResourceId;
+    @Nullable
+    public String getDexAssetName() {
+        return mDexAssetName;
     }
 
     /**
@@ -146,7 +147,7 @@ public class ModuleLoader {
         }
 
         Context moduleContext = createModuleContext(
-                mComponentName.getPackageName(), /* resourcesOnly = */ mDexResourceId != 0);
+                mComponentName.getPackageName(), /* resourcesOnly = */ mDexAssetName != null);
         if (moduleContext == null) {
             runAndClearCallbacks();
             return;
@@ -360,7 +361,7 @@ public class ModuleLoader {
             String dexLastUpdateTimePref = getDexLastUpdateTimePrefName();
             long localDexLastUpdateTime = preferences.getLong(dexLastUpdateTimePref, -1);
 
-            if (mDexResourceId == 0) {
+            if (mDexAssetName == null) {
                 if (localDexLastUpdateTime != -1) {
                     // The module had a dex before but now it doesn't. Clean up previous local dex.
                     cleanUpLocalDex();
@@ -368,7 +369,7 @@ public class ModuleLoader {
                 return false;
             } else if (localDexLastUpdateTime != mModuleLastUpdateTime) {
                 try {
-                    copyDexToDisk(mDexResourceId);
+                    copyDexToDisk(mDexAssetName);
                     preferences.edit()
                             .putLong(dexLastUpdateTimePref, mModuleLastUpdateTime)
                             .apply();
@@ -383,17 +384,17 @@ public class ModuleLoader {
         }
 
         /**
-         * Copies the dex file with the given {@code dexResourceId} from the module's context
+         * Copies the dex file with the given {@code dexAssetName} from the module's context
          * into the local storage.
          */
-        private void copyDexToDisk(int dexResourceId) throws IOException {
+        private void copyDexToDisk(String dexAssetName) throws IOException {
             InputStream in =
-                    mDexInputStreamProvider.createInputStream(dexResourceId, mModuleContext);
+                    mDexInputStreamProvider.createInputStream(dexAssetName, mModuleContext);
             FileUtils.copyFileStreamAtomicWithBuffer(in, getDexFile(), new byte[BUFFER_SIZE]);
         }
 
         private ClassLoader getModuleClassLoader(boolean loadFromDex) {
-            if (mDexResourceId == 0 || !loadFromDex) {
+            if (mDexAssetName == null || !loadFromDex) {
                 // Load directly from the APK if an extra dex file is not provided.
                 return mModuleContext.getClassLoader();
             }
@@ -496,13 +497,15 @@ public class ModuleLoader {
      */
     @VisibleForTesting
     public interface DexInputStreamProvider {
-        InputStream createInputStream(int dexResourceId, Context moduleContext);
+        InputStream createInputStream(@Nullable String dexAssetName, Context moduleContext)
+                throws IOException;
     }
 
     private static class DexInputStreamProviderImpl implements DexInputStreamProvider {
         @Override
-        public InputStream createInputStream(int dexResourceId, Context moduleContext) {
-            return moduleContext.getResources().openRawResource(dexResourceId);
+        public InputStream createInputStream(@Nullable String dexAssetName, Context moduleContext)
+                throws IOException {
+            return moduleContext.getResources().getAssets().open(dexAssetName);
         }
     }
 
