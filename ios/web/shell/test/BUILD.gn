@@ -124,8 +124,6 @@ source_set("eg_test_support+eg2") {
     "earl_grey/web_shell_test_case.mm",
   ]
 
-  include_dirs = [ "//ios/third_party/edo/src" ]
-
   deps = [
     "//ios/testing/earl_grey:eg_test_support+eg2",
     "//ios/third_party/earl_grey2:test_lib",
@@ -143,8 +141,6 @@ source_set("eg_tests+eg2") {
   sources = [
     "web_shell_sample_egtest.mm",
   ]
-
-  include_dirs = [ "//ios/third_party/edo/src" ]
 
   deps = [
     ":eg_test_support+eg2",

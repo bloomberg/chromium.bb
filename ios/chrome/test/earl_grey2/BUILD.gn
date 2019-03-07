@@ -51,11 +51,6 @@ source_set("eg_app_support+eg2") {
   public_deps = [
     ":shared_helper_headers",
   ]
-
-  include_dirs = [
-    "//ios/third_party/earl_grey2/src",
-    "//ios/third_party/edo/src",
-  ]
 }
 
 group("eg_test_support+eg2") {
@@ -75,8 +70,6 @@ source_set("eg2_tests") {
   sources = [
     "smoke_egtest.mm",
   ]
-
-  include_dirs = [ "//ios/third_party/edo/src" ]
 
   deps = [
     ":eg_test_support+eg2",
