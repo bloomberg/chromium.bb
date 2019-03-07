@@ -2817,6 +2817,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="12" label="User requested to provide cardholder name"/>
   <int value="13" label="Max strikes, did not show infobar (mobile only)"/>
   <int value="14" label="User requested to provide expiration date"/>
+  <int value="15" label="Card was not in a supported bin range"/>
 </enum>
 
 <enum name="AutofillCreditCardInfoBar">
