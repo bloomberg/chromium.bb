@@ -43,7 +43,8 @@ class RealtimeAudioDestinationHandler final : public AudioDestinationHandler,
  public:
   static scoped_refptr<RealtimeAudioDestinationHandler> Create(
       AudioNode&,
-      const WebAudioLatencyHint&);
+      const WebAudioLatencyHint&,
+      base::Optional<float> sample_rate);
   ~RealtimeAudioDestinationHandler() override;
 
   // For AudioHandler.
@@ -80,7 +81,8 @@ class RealtimeAudioDestinationHandler final : public AudioDestinationHandler,
 
  private:
   explicit RealtimeAudioDestinationHandler(AudioNode&,
-                                           const WebAudioLatencyHint&);
+                                           const WebAudioLatencyHint&,
+                                           base::Optional<float> sample_rate);
 
   void CreatePlatformDestination();
   void StartPlatformDestination();
@@ -90,17 +92,22 @@ class RealtimeAudioDestinationHandler final : public AudioDestinationHandler,
 
   // Holds the audio device thread that runs the real time audio context.
   scoped_refptr<AudioDestination> platform_destination_;
+
+  base::Optional<float> sample_rate_;
 };
 
 // -----------------------------------------------------------------------------
 
 class RealtimeAudioDestinationNode final : public AudioDestinationNode {
  public:
-  static RealtimeAudioDestinationNode* Create(AudioContext*,
-                                              const WebAudioLatencyHint&);
+  static RealtimeAudioDestinationNode* Create(
+      AudioContext*,
+      const WebAudioLatencyHint&,
+      base::Optional<float> sample_rate);
 
   explicit RealtimeAudioDestinationNode(AudioContext&,
-                                        const WebAudioLatencyHint&);
+                                        const WebAudioLatencyHint&,
+                                        base::Optional<float> sample_rate);
 };
 
 }  // namespace blink
