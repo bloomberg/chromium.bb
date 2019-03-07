@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/test/fuzzed_data_provider.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -15,6 +16,8 @@ namespace blink {
 // This class simply wraps //base/test/fuzzed_data_provider and vends Blink
 // friendly types.
 class FuzzedDataProvider {
+  DISALLOW_NEW();
+
  public:
   FuzzedDataProvider(const uint8_t* bytes, size_t num_bytes);
 

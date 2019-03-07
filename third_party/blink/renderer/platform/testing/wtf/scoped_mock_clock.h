@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_WTF_SCOPED_MOCK_CLOCK_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_WTF_SCOPED_MOCK_CLOCK_H_
 
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace WTF {
@@ -13,6 +14,8 @@ namespace WTF {
 // stack resets mock time to the zero point for WTF::Time and WTF::TimeTicks.
 // Mock time may only flow forwards, not backwards.
 class ScopedMockClock {
+  USING_FAST_MALLOC(ScopedMockClock);
+
  public:
   ScopedMockClock();
   ~ScopedMockClock();
