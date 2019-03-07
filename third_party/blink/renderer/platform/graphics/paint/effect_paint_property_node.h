@@ -188,6 +188,11 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
   bool HasDirectCompositingReasons() const {
     return DirectCompositingReasons() != CompositingReason::kNone;
   }
+
+  // The difference between the following two functions is that the former
+  // is also true for animations that the compositor are not aware of (e.g.
+  // paused animations and worklet animations), while the latter is true only if
+  // the compositor is handling the animation.
   bool HasActiveOpacityAnimation() const {
     return DirectCompositingReasons() &
            CompositingReason::kActiveOpacityAnimation;

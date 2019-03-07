@@ -3289,14 +3289,23 @@ TEST_P(PaintArtifactCompositorTest, CreatesViewportNodes) {
   EXPECT_TRUE(cc_transform_node->pre_local.IsIdentity());
 }
 
-enum { kNoRenderSurface, kHasRenderSurface };
+enum {
+  kNoRenderSurface = 0,
+  kHasRenderSurface = 1 << 0,
+  kHasOpacityAnimation = 1 << 1,
+  kHasFilterAnimation = 1 << 2,
+};
 
-#define EXPECT_OPACITY(effect_id, expected_opacity, expected_render_surface) \
-  do {                                                                       \
-    const auto* effect = GetPropertyTrees().effect_tree.Node(effect_id);     \
-    EXPECT_EQ(expected_opacity, effect->opacity);                            \
-    EXPECT_EQ(expected_render_surface == kHasRenderSurface,                  \
-              effect->has_render_surface);                                   \
+#define EXPECT_OPACITY(effect_id, expected_opacity, expected_flags)      \
+  do {                                                                   \
+    const auto* effect = GetPropertyTrees().effect_tree.Node(effect_id); \
+    EXPECT_EQ(expected_opacity, effect->opacity);                        \
+    EXPECT_EQ(!!((expected_flags)&kHasRenderSurface),                    \
+              effect->has_render_surface);                               \
+    EXPECT_EQ(!!((expected_flags)&kHasOpacityAnimation),                 \
+              effect->has_potential_opacity_animation);                  \
+    EXPECT_EQ(!!((expected_flags)&kHasFilterAnimation),                  \
+              effect->has_potential_filter_animation);                   \
   } while (false)
 
 TEST_P(PaintArtifactCompositorTest, OpacityRenderSurfaces) {
@@ -3309,16 +3318,16 @@ TEST_P(PaintArtifactCompositorTest, OpacityRenderSurfaces) {
   //   L0  L1         L5
   auto e = CreateOpacityEffect(e0(), 0.1f);
   auto a = CreateOpacityEffect(*e, 0.2f);
-  auto b =
-      CreateOpacityEffect(*e, 0.3f, CompositingReason::kActiveOpacityAnimation);
-  auto c =
-      CreateOpacityEffect(*e, 0.4f, CompositingReason::kActiveOpacityAnimation);
-  auto aa =
-      CreateOpacityEffect(*a, 0.5f, CompositingReason::kActiveOpacityAnimation);
-  auto ab =
-      CreateOpacityEffect(*a, 0.6f, CompositingReason::kActiveOpacityAnimation);
-  auto ca =
-      CreateOpacityEffect(*c, 0.7f, CompositingReason::kActiveOpacityAnimation);
+  auto b = CreateOpacityEffect(*e, 0.3f,
+                               CompositingReason::kWillChangeCompositingHint);
+  auto c = CreateOpacityEffect(*e, 0.4f,
+                               CompositingReason::kWillChangeCompositingHint);
+  auto aa = CreateOpacityEffect(*a, 0.5f,
+                                CompositingReason::kWillChangeCompositingHint);
+  auto ab = CreateOpacityEffect(*a, 0.6f,
+                                CompositingReason::kWillChangeCompositingHint);
+  auto ca = CreateOpacityEffect(*c, 0.7f,
+                                CompositingReason::kWillChangeCompositingHint);
   auto t = CreateTransform(t0(), TransformationMatrix().Rotate(90),
                            FloatPoint3D(), CompositingReason::k3DTransform);
 
@@ -3363,6 +3372,70 @@ TEST_P(PaintArtifactCompositorTest, OpacityRenderSurfaces) {
   // simplicity of the algorithm.
   EXPECT_OPACITY(effect_tree.Node(effect_ids[4])->parent_id, 0.1f,
                  kHasRenderSurface);
+}
+
+TEST_P(PaintArtifactCompositorTest, OpacityAnimationRenderSurfaces) {
+  // The topologies of the effect tree and layer tree are the same as
+  // OpacityRencerSurfaces, except that the layers all have 1.f opacity and
+  // active opacity animations.
+  //            e
+  //         /  |  \
+  //       a    b    c -- L4
+  //     / \   / \    \
+  //    aa ab L2 L3   ca          (L = layer)
+  //    |   |          |
+  //   L0  L1         L5
+  auto e = CreateCompositedAnimatingOpacityEffect(e0(), 1.f);
+  auto a = CreateCompositedAnimatingOpacityEffect(*e, 1.f);
+  auto b = CreateCompositedAnimatingOpacityEffect(*e, 1.f);
+  auto c = CreateCompositedAnimatingOpacityEffect(*e, 1.f);
+  auto aa = CreateCompositedAnimatingOpacityEffect(*a, 1.f);
+  auto ab = CreateCompositedAnimatingOpacityEffect(*a, 1.f);
+  auto ca = CreateCompositedAnimatingOpacityEffect(*c, 1.f);
+  auto t = CreateTransform(t0(), TransformationMatrix().Rotate(90),
+                           FloatPoint3D(), CompositingReason::k3DTransform);
+
+  TestPaintArtifact artifact;
+  FloatRect r(150, 150, 100, 100);
+  artifact.Chunk(t0(), c0(), *aa).RectDrawing(r, Color::kWhite);
+  artifact.Chunk(t0(), c0(), *ab).RectDrawing(r, Color::kWhite);
+  artifact.Chunk(t0(), c0(), *b).RectDrawing(r, Color::kWhite);
+  artifact.Chunk(*t, c0(), *b).RectDrawing(r, Color::kWhite);
+  artifact.Chunk(t0(), c0(), *c).RectDrawing(r, Color::kWhite);
+  artifact.Chunk(t0(), c0(), *ca).RectDrawing(r, Color::kWhite);
+  Update(artifact.Build());
+  ASSERT_EQ(6u, ContentLayerCount());
+
+  int effect_ids[6];
+  for (size_t i = 0; i < ContentLayerCount(); i++)
+    effect_ids[i] = ContentLayerAt(i)->effect_tree_index();
+
+  // Effects of layer 0, 1, 5 each has one compositing layer, so don't have
+  // render surface.
+  EXPECT_OPACITY(effect_ids[0], 1.f, kHasOpacityAnimation);
+  EXPECT_OPACITY(effect_ids[1], 1.f, kHasOpacityAnimation);
+  EXPECT_OPACITY(effect_ids[5], 1.f, kHasOpacityAnimation);
+
+  // Layer 2 and 3 have the same effect state. The effect has render surface
+  // because it has two compositing layers.
+  EXPECT_EQ(effect_ids[2], effect_ids[3]);
+  EXPECT_OPACITY(effect_ids[2], 1.f, kHasRenderSurface | kHasOpacityAnimation);
+
+  // Effect |a| has two indirect compositing layers, so has render surface.
+  const auto& effect_tree = GetPropertyTrees().effect_tree;
+  int id_a = effect_tree.Node(effect_ids[0])->parent_id;
+  EXPECT_EQ(id_a, effect_tree.Node(effect_ids[1])->parent_id);
+  EXPECT_OPACITY(id_a, 1.f, kHasRenderSurface | kHasOpacityAnimation);
+
+  // Effect |c| has one direct and one indirect compositing layers, so has
+  // render surface.
+  EXPECT_OPACITY(effect_ids[4], 1.f, kHasRenderSurface | kHasOpacityAnimation);
+
+  // Though all children of effect |e| have render surfaces and |e| doesn't
+  // control any compositing layer, we still give it a render surface for
+  // simplicity of the algorithm.
+  EXPECT_OPACITY(effect_tree.Node(effect_ids[4])->parent_id, 1.f,
+                 kHasRenderSurface | kHasOpacityAnimation);
 }
 
 TEST_P(PaintArtifactCompositorTest, OpacityRenderSurfacesWithBackdropChildren) {
@@ -3413,10 +3486,10 @@ TEST_P(PaintArtifactCompositorTest,
 TEST_P(PaintArtifactCompositorTest, OpacityIndirectlyAffectingTwoLayers) {
   auto opacity = CreateOpacityEffect(e0(), 0.5f);
   auto child_composited_effect = CreateOpacityEffect(
-      *opacity, 1.f, CompositingReason::kActiveOpacityAnimation);
+      *opacity, 1.f, CompositingReason::kWillChangeCompositingHint);
   auto grandchild_composited_effect =
       CreateOpacityEffect(*child_composited_effect, 1.f,
-                          CompositingReason::kActiveOpacityAnimation);
+                          CompositingReason::kWillChangeCompositingHint);
 
   TestPaintArtifact artifact;
   artifact.Chunk(t0(), c0(), *child_composited_effect)
@@ -3431,8 +3504,134 @@ TEST_P(PaintArtifactCompositorTest, OpacityIndirectlyAffectingTwoLayers) {
   EXPECT_OPACITY(layer0_effect_id, 1.f, kNoRenderSurface);
   int layer1_effect_id = ContentLayerAt(1)->effect_tree_index();
   EXPECT_OPACITY(layer1_effect_id, 1.f, kNoRenderSurface);
+  // |opacity| affects both layer0 and layer1 which don't have render surfaces,
+  // so it should have a render surface.
   int opacity_id = effect_tree.Node(layer0_effect_id)->parent_id;
   EXPECT_OPACITY(opacity_id, 0.5f, kHasRenderSurface);
+}
+
+TEST_P(PaintArtifactCompositorTest,
+       OpacityIndirectlyAffectingTwoLayersWithOpacityAnimations) {
+  auto opacity = CreateCompositedAnimatingOpacityEffect(e0(), 1.f);
+  auto child_composited_effect =
+      CreateCompositedAnimatingOpacityEffect(*opacity, 1.f);
+  auto grandchild_composited_effect =
+      CreateCompositedAnimatingOpacityEffect(*child_composited_effect, 1.f);
+
+  TestPaintArtifact artifact;
+  artifact.Chunk(t0(), c0(), *child_composited_effect)
+      .RectDrawing(FloatRect(150, 150, 100, 100), Color::kWhite);
+  artifact.Chunk(t0(), c0(), *grandchild_composited_effect)
+      .RectDrawing(FloatRect(150, 150, 100, 100), Color::kGray);
+  Update(artifact.Build());
+  ASSERT_EQ(2u, ContentLayerCount());
+
+  const auto& effect_tree = GetPropertyTrees().effect_tree;
+  // layer0's opacity animation needs a render surfafce because it affects
+  // both layer0 and layer1.
+  int layer0_effect_id = ContentLayerAt(0)->effect_tree_index();
+  EXPECT_OPACITY(layer0_effect_id, 1.f,
+                 kHasRenderSurface | kHasOpacityAnimation);
+  // layer1's opacity animation doesn't need a render surface because it
+  // affects layer1 only.
+  int layer1_effect_id = ContentLayerAt(1)->effect_tree_index();
+  EXPECT_OPACITY(layer1_effect_id, 1.f,
+                 kNoRenderSurface | kHasOpacityAnimation);
+  // Though |opacity| affects both layer0 and layer1, layer0's effect has
+  // render surface, so |opacity| doesn't need a render surface.
+  int opacity_id = effect_tree.Node(layer0_effect_id)->parent_id;
+  EXPECT_OPACITY(opacity_id, 1.f, kNoRenderSurface | kHasOpacityAnimation);
+}
+
+TEST_P(PaintArtifactCompositorTest, FilterCreatesRenderSurface) {
+  CompositorFilterOperations filter;
+  filter.AppendBlurFilter(5);
+  auto e1 = CreateFilterEffect(e0(), filter, FloatPoint(),
+                               CompositingReason::kWillChangeCompositingHint);
+  Update(TestPaintArtifact()
+             .Chunk(t0(), c0(), *e1)
+             .RectDrawing(FloatRect(150, 150, 100, 100), Color::kWhite)
+             .Build());
+  ASSERT_EQ(1u, ContentLayerCount());
+  EXPECT_OPACITY(ContentLayerAt(0)->effect_tree_index(), 1.f,
+                 kHasRenderSurface);
+}
+
+TEST_P(PaintArtifactCompositorTest,
+       FilterCompositedAnimationCreatesRenderSurface) {
+  EffectPaintPropertyNode::State state;
+  state.local_transform_space = &t0();
+  state.direct_compositing_reasons = CompositingReason::kActiveFilterAnimation;
+  state.is_running_filter_animation_on_compositor = true;
+  auto e1 = EffectPaintPropertyNode::Create(e0(), std::move(state));
+  Update(TestPaintArtifact()
+             .Chunk(t0(), c0(), *e1)
+             .RectDrawing(FloatRect(150, 150, 100, 100), Color::kWhite)
+             .Build());
+  ASSERT_EQ(1u, ContentLayerCount());
+  EXPECT_OPACITY(ContentLayerAt(0)->effect_tree_index(), 1.f,
+                 kHasRenderSurface | kHasFilterAnimation);
+}
+
+TEST_P(PaintArtifactCompositorTest,
+       FilterNonCompositedAnimationDoesNotCreateRenderSurface) {
+  EffectPaintPropertyNode::State state;
+  state.local_transform_space = &t0();
+  state.direct_compositing_reasons = CompositingReason::kActiveFilterAnimation;
+  auto e1 = EffectPaintPropertyNode::Create(e0(), std::move(state));
+  Update(TestPaintArtifact()
+             .Chunk(t0(), c0(), *e1)
+             .RectDrawing(FloatRect(150, 150, 100, 100), Color::kWhite)
+             .Build());
+  ASSERT_EQ(1u, ContentLayerCount());
+  EXPECT_OPACITY(ContentLayerAt(0)->effect_tree_index(), 1.f, kNoRenderSurface);
+}
+
+TEST_P(PaintArtifactCompositorTest, BackdropFilterCreatesRenderSurface) {
+  CompositorFilterOperations filter;
+  filter.AppendBlurFilter(5);
+  auto e1 =
+      CreateBackdropFilterEffect(e0(), filter, FloatPoint(),
+                                 CompositingReason::kWillChangeCompositingHint);
+  Update(TestPaintArtifact()
+             .Chunk(t0(), c0(), *e1)
+             .RectDrawing(FloatRect(150, 150, 100, 100), Color::kWhite)
+             .Build());
+  ASSERT_EQ(1u, ContentLayerCount());
+  EXPECT_OPACITY(ContentLayerAt(0)->effect_tree_index(), 1.f,
+                 kHasRenderSurface);
+}
+
+TEST_P(PaintArtifactCompositorTest,
+       BackdropFilterCompositedAnimationCreatesRenderSurface) {
+  EffectPaintPropertyNode::State state;
+  state.local_transform_space = &t0();
+  state.direct_compositing_reasons =
+      CompositingReason::kActiveBackdropFilterAnimation;
+  state.is_running_backdrop_filter_animation_on_compositor = true;
+  auto e1 = EffectPaintPropertyNode::Create(e0(), std::move(state));
+  Update(TestPaintArtifact()
+             .Chunk(t0(), c0(), *e1)
+             .RectDrawing(FloatRect(150, 150, 100, 100), Color::kWhite)
+             .Build());
+  ASSERT_EQ(1u, ContentLayerCount());
+  EXPECT_OPACITY(ContentLayerAt(0)->effect_tree_index(), 1.f,
+                 kHasRenderSurface);
+}
+
+TEST_P(PaintArtifactCompositorTest,
+       BackdropFilterNonCompositedAnimationCreatesRenderSurface) {
+  EffectPaintPropertyNode::State state;
+  state.local_transform_space = &t0();
+  state.direct_compositing_reasons =
+      CompositingReason::kActiveBackdropFilterAnimation;
+  auto e1 = EffectPaintPropertyNode::Create(e0(), std::move(state));
+  Update(TestPaintArtifact()
+             .Chunk(t0(), c0(), *e1)
+             .RectDrawing(FloatRect(150, 150, 100, 100), Color::kWhite)
+             .Build());
+  ASSERT_EQ(1u, ContentLayerCount());
+  EXPECT_OPACITY(ContentLayerAt(0)->effect_tree_index(), 1.f, kNoRenderSurface);
 }
 
 TEST_P(PaintArtifactCompositorTest, Non2dAxisAlignedClip) {
