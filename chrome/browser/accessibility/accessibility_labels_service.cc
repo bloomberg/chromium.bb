@@ -34,12 +34,13 @@ void AccessibilityLabelsService::RegisterProfilePrefs(
 }
 
 // static
-void AccessibilityLabelsService::InitOffTheRecordPrefs(Profile* profile) {
-  DCHECK(profile->IsOffTheRecord());
-  profile->GetPrefs()->SetBoolean(prefs::kAccessibilityImageLabelsEnabled,
-                                  false);
-  profile->GetPrefs()->SetBoolean(prefs::kAccessibilityImageLabelsOptInAccepted,
-                                  false);
+void AccessibilityLabelsService::InitOffTheRecordPrefs(
+    Profile* off_the_record_profile) {
+  DCHECK(off_the_record_profile->IsOffTheRecord());
+  off_the_record_profile->GetPrefs()->SetBoolean(
+      prefs::kAccessibilityImageLabelsEnabled, false);
+  off_the_record_profile->GetPrefs()->SetBoolean(
+      prefs::kAccessibilityImageLabelsOptInAccepted, false);
 }
 
 void AccessibilityLabelsService::Init() {
