@@ -8,6 +8,7 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/win/windows_version.h"
 #include "chrome/common/chrome_version.h"
 #include "chrome/credential_provider/eventlog/gcp_eventlog_messages.h"
 #include "chrome/credential_provider/gaiacp/associated_user_validator.h"
@@ -116,7 +117,9 @@ BOOL CGaiaCredentialProviderModule::DllMain(HINSTANCE /*hinstance*/,
         credential_provider::ConfigureGcpCrashReporting(*cmd_line);
       }
 
-      LOGFN(INFO) << "DllMain(DLL_PROCESS_ATTACH)";
+      LOGFN(INFO) << "DllMain(DLL_PROCESS_ATTACH) Build: "
+                  << base::win::OSInfo::GetInstance()->Kernel32BaseVersion()
+                  << " Version:" << GetWindowsVersion();
       break;
     }
     case DLL_PROCESS_DETACH:
