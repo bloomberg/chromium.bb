@@ -35,6 +35,7 @@
 #include "content/browser/resource_context_impl.h"
 #include "content/browser/service_worker/service_worker_navigation_handle.h"
 #include "content/browser/service_worker/service_worker_navigation_handle_core.h"
+#include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_request_handler.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/url_loader_factory_getter.h"
@@ -88,7 +89,6 @@
 #include "services/network/public/mojom/request_context_frame_type.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
-#include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 
 #if defined(OS_ANDROID)
 #include "content/browser/android/content_url_loader_factory.h"
@@ -432,7 +432,6 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
   CreateDefaultRequestHandlerForNonNetworkService(
       net::URLRequestContextGetter* url_request_context_getter,
       storage::FileSystemContext* upload_file_system_context,
-      ServiceWorkerNavigationHandleCore* service_worker_navigation_handle_core,
       AppCacheNavigationHandleCore* appcache_handle_core,
       bool was_request_intercepted) const {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -446,14 +445,6 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
         base::Unretained(upload_file_system_context),
         // If the request has already been intercepted, the request should not
         // be intercepted again.
-        // S13nServiceWorker: Requests are intercepted by S13nServiceWorker
-        // before the default request handler when needed, so we never need to
-        // pass |service_worker_navigation_handle_core| here.
-        base::Unretained(
-            blink::ServiceWorkerUtils::IsServicificationEnabled() ||
-                    was_request_intercepted
-                ? nullptr
-                : service_worker_navigation_handle_core),
         base::Unretained(was_request_intercepted ? nullptr
                                                  : appcache_handle_core));
   }
@@ -461,7 +452,6 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
   void CreateNonNetworkServiceURLLoader(
       net::URLRequestContextGetter* url_request_context_getter,
       storage::FileSystemContext* upload_file_system_context,
-      ServiceWorkerNavigationHandleCore* service_worker_navigation_handle_core,
       AppCacheNavigationHandleCore* appcache_handle_core,
       const network::ResourceRequest& /* resource_request */,
       network::mojom::URLLoaderRequest url_loader,
@@ -504,22 +494,10 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
           resource_context_, url_request_context_getter->GetURLRequestContext(),
           upload_file_system_context, *request_info_,
           std::move(navigation_ui_data_), std::move(url_loader_client),
-          std::move(url_loader), service_worker_navigation_handle_core,
+          std::move(url_loader),
+          nullptr /* service_worker_navigation_handle_core */,
           appcache_handle_core, options, resource_request_->priority,
           global_request_id_);
-
-      if (!blink::ServiceWorkerUtils::IsServicificationEnabled()) {
-        // Get the SWProviderHost for non-S13nSW path. For S13nSW path,
-        // |service_worker_provider_host_| must be set in
-        // CreateServiceWorkerInterceptor().
-        net::URLRequest* url_request = rdh->GetURLRequest(global_request_id_);
-        ServiceWorkerProviderHost* service_worker_provider_host =
-            ServiceWorkerRequestHandler::GetProviderHost(url_request);
-        if (service_worker_provider_host) {
-          service_worker_provider_host_ =
-              service_worker_provider_host->AsWeakPtr();
-        }
-      }
     }
 
     // TODO(arthursonzogni): Detect when the ResourceDispatcherHost didn't
@@ -561,7 +539,6 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
         // |default_request_handler_factory_| could be called only from |this|.
         base::Unretained(this), base::Unretained(url_request_context_getter),
         base::Unretained(upload_file_system_context),
-        base::Unretained(service_worker_navigation_handle_core),
         base::Unretained(appcache_handle_core));
 
     StartInternal(request_info_.get(), service_worker_navigation_handle_core,
@@ -674,10 +651,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       return;
     }
 
-    // Set-up an interceptor for service workers if S13nSW is enabled and
-    // non-null |service_worker_navigation_handle_core| is given.
-    if (service_worker_navigation_handle_core &&
-        blink::ServiceWorkerUtils::IsServicificationEnabled()) {
+    // Set-up an interceptor for service workers.
+    if (service_worker_navigation_handle_core) {
       std::unique_ptr<NavigationLoaderInterceptor> service_worker_interceptor =
           CreateServiceWorkerInterceptor(*request_info,
                                          service_worker_navigation_handle_core);
@@ -910,18 +885,12 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
 
   scoped_refptr<network::SharedURLLoaderFactory>
   PrepareForNonInterceptedRequest(uint32_t* out_options) {
-    // If NetworkService is not enabled (which means we come here because one of
-    // the loader interceptors is enabled), use the default request handler
-    // instead of going through the NetworkService path.
+    // If NetworkService is not enabled, use the default request handler instead
+    // of going through the NetworkService path.
     if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
       DCHECK(!interceptors_.empty());
       DCHECK(default_request_handler_factory_);
-      // The only way to come here is to enable ServiceWorkerServicification or
-      // SignedExchange without NetworkService. We know that their request
-      // interceptors have already intercepted and decided not to handle the
-      // request.
-      DCHECK(blink::ServiceWorkerUtils::IsServicificationEnabled() ||
-             signed_exchange_utils::IsSignedExchangeHandlingEnabled());
+
       default_loader_used_ = true;
       // Update |request_info_| when following a redirect.
       if (url_chain_.size() > 0) {
@@ -1147,32 +1116,6 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
         // thread.
         if (navigation_data)
           cloned_navigation_data = navigation_data->Clone();
-      }
-
-      // non-S13nServiceWorker:
-      // This is similar to what is done in
-      // ServiceWorkerControlleeHandler::MaybeCreateSubresourceLoaderParams()
-      // (which is used when S13nServiceWorker is on). It takes the matching
-      // ControllerServiceWorkerInfo (if any) associated with the request. It
-      // will be sent to the renderer process and used to intercept requests.
-      ServiceWorkerProviderHost* sw_provider_host =
-          ServiceWorkerRequestHandler::GetProviderHost(url_request);
-      if (sw_provider_host && sw_provider_host->controller()) {
-        DCHECK(!blink::ServiceWorkerUtils::IsServicificationEnabled());
-        subresource_loader_params_ = SubresourceLoaderParams();
-        subresource_loader_params_->controller_service_worker_info =
-            blink::mojom::ControllerServiceWorkerInfo::New();
-        subresource_loader_params_->controller_service_worker_info->mode =
-            sw_provider_host->GetControllerMode();
-        base::WeakPtr<ServiceWorkerObjectHost> sw_object_host =
-            sw_provider_host->GetOrCreateServiceWorkerObjectHost(
-                sw_provider_host->controller());
-        if (sw_object_host) {
-          subresource_loader_params_->controller_service_worker_object_host =
-              sw_object_host;
-          subresource_loader_params_->controller_service_worker_info
-              ->object_info = sw_object_host->CreateIncompleteObjectInfo();
-        }
       }
     } else {
       is_download = is_stream = false;
