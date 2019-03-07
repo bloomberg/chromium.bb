@@ -9,8 +9,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "chrome/browser/chromeos/login/mixin_based_in_process_browser_test.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
-#include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 
 namespace chromeos {
@@ -47,11 +47,13 @@ class DevicePolicyCrosTestHelper {
 };
 
 // Used to test Device policy changes in Chrome OS.
-class DevicePolicyCrosBrowserTest : public InProcessBrowserTest {
+class DevicePolicyCrosBrowserTest
+    : public chromeos::MixinBasedInProcessBrowserTest {
  protected:
   DevicePolicyCrosBrowserTest();
   ~DevicePolicyCrosBrowserTest() override;
 
+  // MixinBasedInProcessBrowserTest:
   void SetUp() override;
   void SetUpInProcessBrowserTestFixture() override;
 

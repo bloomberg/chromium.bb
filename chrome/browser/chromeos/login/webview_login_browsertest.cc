@@ -21,6 +21,7 @@
 #include "chrome/browser/chromeos/login/signin_partition_manager.h"
 #include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
+#include "chrome/browser/chromeos/login/test/local_policy_test_server_mixin.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
@@ -30,7 +31,6 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/scoped_testing_cros_settings.h"
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
-#include "chrome/browser/policy/test/local_policy_test_server.h"
 #include "chrome/browser/ui/login/login_handler.h"
 #include "chrome/browser/ui/webui/signin/signin_utils.h"
 #include "chromeos/constants/chromeos_switches.h"
@@ -842,16 +842,7 @@ class WebviewProxyAuthLoginTest : public WebviewLoginTest {
         .set_public_key_version(1);
     device_policy_test_helper_.device_policy()->Build();
 
-    // Start policy server. Use the DMToken and DeviceId from PolicyBuilder.
-    // These also used in |device_policy_test_helper_| and was passed to
-    // |fake_session_manager_client_| above, so the device will request policy
-    // with these identifiers.
-    policy_test_server_.RegisterClient(policy::PolicyBuilder::kFakeToken,
-                                       policy::PolicyBuilder::kFakeDeviceId,
-                                       {} /* state_keys */);
     UpdateServedPolicyFromDevicePolicyTestHelper();
-    ASSERT_TRUE(policy_test_server_.Start());
-
     WebviewLoginTest::SetUp();
   }
 
@@ -859,8 +850,6 @@ class WebviewProxyAuthLoginTest : public WebviewLoginTest {
     command_line->AppendSwitchASCII(
         ::switches::kProxyServer,
         auth_proxy_server_->host_port_pair().ToString());
-    command_line->AppendSwitchASCII(policy::switches::kDeviceManagementUrl,
-                                    policy_test_server_.GetServiceURL().spec());
     WebviewLoginTest::SetUpCommandLine(command_line);
   }
 
@@ -933,10 +922,7 @@ class WebviewProxyAuthLoginTest : public WebviewLoginTest {
   }
 
   void UpdateServedPolicyFromDevicePolicyTestHelper() {
-    policy_test_server_.UpdatePolicy(
-        policy::dm_protocol::kChromeDevicePolicyType,
-        std::string() /* entity_id */,
-        device_policy_builder()->payload().SerializeAsString());
+    local_policy_mixin_.UpdateDevicePolicy(device_policy_builder()->payload());
   }
 
   policy::DevicePolicyBuilder* device_policy_builder() {
@@ -956,7 +942,7 @@ class WebviewProxyAuthLoginTest : public WebviewLoginTest {
   // A proxy server which requires authentication using the 'Basic'
   // authentication method.
   std::unique_ptr<net::SpawnedTestServer> auth_proxy_server_;
-  policy::LocalPolicyTestServer policy_test_server_;
+  LocalPolicyTestServerMixin local_policy_mixin_{&mixin_host_};
   policy::DevicePolicyCrosTestHelper device_policy_test_helper_;
 
   // FakeDBusThreadManager uses FakeSessionManagerClient.
