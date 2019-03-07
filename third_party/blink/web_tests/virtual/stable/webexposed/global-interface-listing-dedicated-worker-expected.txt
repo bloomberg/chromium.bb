@@ -15,6 +15,33 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter onabort
 [Worker]     method constructor
 [Worker]     setter onabort
+[Worker] interface BackgroundFetchManager
+[Worker]     attribute @@toStringTag
+[Worker]     method constructor
+[Worker]     method fetch
+[Worker]     method get
+[Worker]     method getIds
+[Worker] interface BackgroundFetchRecord
+[Worker]     attribute @@toStringTag
+[Worker]     getter request
+[Worker]     getter responseReady
+[Worker]     method constructor
+[Worker] interface BackgroundFetchRegistration : EventTarget
+[Worker]     attribute @@toStringTag
+[Worker]     getter downloadTotal
+[Worker]     getter downloaded
+[Worker]     getter failureReason
+[Worker]     getter id
+[Worker]     getter onprogress
+[Worker]     getter recordsAvailable
+[Worker]     getter result
+[Worker]     getter uploadTotal
+[Worker]     getter uploaded
+[Worker]     method abort
+[Worker]     method constructor
+[Worker]     method match
+[Worker]     method matchAll
+[Worker]     setter onprogress
 [Worker] interface Blob
 [Worker]     attribute @@toStringTag
 [Worker]     getter size
@@ -961,6 +988,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker] interface ServiceWorkerRegistration : EventTarget
 [Worker]     attribute @@toStringTag
 [Worker]     getter active
+[Worker]     getter backgroundFetch
 [Worker]     getter installing
 [Worker]     getter navigationPreload
 [Worker]     getter onupdatefound

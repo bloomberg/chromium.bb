@@ -14,6 +14,41 @@ interface AbortSignal : EventTarget
     getter onabort
     method constructor
     setter onabort
+interface BackgroundFetchEvent : ExtendableEvent
+    attribute @@toStringTag
+    getter registration
+    method constructor
+interface BackgroundFetchManager
+    attribute @@toStringTag
+    method constructor
+    method fetch
+    method get
+    method getIds
+interface BackgroundFetchRecord
+    attribute @@toStringTag
+    getter request
+    getter responseReady
+    method constructor
+interface BackgroundFetchRegistration : EventTarget
+    attribute @@toStringTag
+    getter downloadTotal
+    getter downloaded
+    getter failureReason
+    getter id
+    getter onprogress
+    getter recordsAvailable
+    getter result
+    getter uploadTotal
+    getter uploaded
+    method abort
+    method constructor
+    method match
+    method matchAll
+    setter onprogress
+interface BackgroundFetchUpdateUIEvent : BackgroundFetchEvent
+    attribute @@toStringTag
+    method constructor
+    method updateUI
 interface Blob
     attribute @@toStringTag
     getter size
@@ -1021,6 +1056,7 @@ interface ServiceWorkerGlobalScope : WorkerGlobalScope
 interface ServiceWorkerRegistration : EventTarget
     attribute @@toStringTag
     getter active
+    getter backgroundFetch
     getter installing
     getter navigationPreload
     getter onupdatefound
@@ -2527,6 +2563,10 @@ interface WritableStream
     getter clients
     getter onabortpayment
     getter onactivate
+    getter onbackgroundfetchabort
+    getter onbackgroundfetchclick
+    getter onbackgroundfetchfail
+    getter onbackgroundfetchsuccess
     getter oncanmakepayment
     getter onfetch
     getter oninstall
@@ -2542,6 +2582,10 @@ interface WritableStream
     method skipWaiting
     setter onabortpayment
     setter onactivate
+    setter onbackgroundfetchabort
+    setter onbackgroundfetchclick
+    setter onbackgroundfetchfail
+    setter onbackgroundfetchsuccess
     setter oncanmakepayment
     setter onfetch
     setter oninstall
