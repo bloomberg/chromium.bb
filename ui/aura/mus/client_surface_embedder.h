@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "ui/aura/aura_export.h"
+#include "ui/aura/window_observer.h"
 
 namespace ui {
 class LayerOwner;
@@ -23,11 +24,12 @@ namespace aura {
 class Window;
 
 // Used to display content from another client. The other client is rendering
-// to viz using the SurfaceId supplied to SetSurfaceId().
-class AURA_EXPORT ClientSurfaceEmbedder {
+// to viz using the SurfaceId supplied to SetSurfaceId(). This class can't
+// outlive the window.
+class AURA_EXPORT ClientSurfaceEmbedder : public WindowObserver {
  public:
   explicit ClientSurfaceEmbedder(Window* window);
-  ~ClientSurfaceEmbedder();
+  ~ClientSurfaceEmbedder() override;
 
   // Sets the current SurfaceId *and* updates the size of the layer to match
   // that of the window.
@@ -37,6 +39,9 @@ class AURA_EXPORT ClientSurfaceEmbedder {
   viz::SurfaceId GetSurfaceId() const;
 
  private:
+  // aura::WindowObserver:
+  void OnWindowVisibilityChanged(Window* window, bool visible) override;
+
   // The window which embeds the client.
   Window* window_;
 
