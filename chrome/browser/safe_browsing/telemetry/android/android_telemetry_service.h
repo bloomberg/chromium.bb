@@ -51,6 +51,8 @@ class AndroidTelemetryService : public download::DownloadItem::Observer,
   void OnDownloadUpdated(download::DownloadItem* download) override;
 
  private:
+  friend class AndroidTelemetryServiceTest;
+
   // Whether the ping can be sent, based on empty web_contents, or incognito
   // mode, or extended reporting opt-in status,
   bool CanSendPing(download::DownloadItem* item);
