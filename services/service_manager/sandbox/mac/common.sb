@@ -68,10 +68,13 @@
 ; https://crbug.com/850021
 (define (allow-cvms-blobs)
   (if (>= os-version 1014)
-    (allow file-read*
-      (extension "com.apple.cvms.kernel")
-      (subpath "/private/var/db/CVMS")
-    )))
+    (begin
+      (allow file-read* file-write-unlink
+        (prefix "/private/tmp/cvmsCodeSignObj"))
+      (allow file-read*
+        (extension "com.apple.cvms.kernel")
+        (prefix "/private/var/db/CVMS/cvmsCodeSignObj"))
+)))
 
 ; Allow logging for all processes.
 (allow file-write*
@@ -190,4 +193,9 @@
   (sysctl-name "kern.version")
   (sysctl-name "sysctl.proc_cputype")
   (sysctl-name (string-append "kern.proc.pid." (param current-pid)))
+)
+
+(allow network-outbound
+  (literal "/private/var/run/asl_input")
+  (literal "/private/var/run/syslog")
 )
