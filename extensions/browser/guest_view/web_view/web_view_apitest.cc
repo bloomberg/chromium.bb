@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/path_service.h"
@@ -45,6 +46,7 @@
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
 #include "net/base/filename_util.h"
+#include "net/test/embedded_test_server/default_handlers.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -237,6 +239,8 @@ void WebViewAPITest::StartTestServer(const std::string& app_location) {
           &UserAgentResponseHandler,
           kUserAgentRedirectResponsePath,
           embedded_test_server()->GetURL(kRedirectResponseFullPath)));
+
+  net::test_server::RegisterDefaultHandlers(embedded_test_server());
 
   embedded_test_server()->StartAcceptingConnections();
 }
@@ -791,6 +795,17 @@ IN_PROC_BROWSER_TEST_F(WebViewAPITest, MAYBE_TestWebRequestAPIWithHeaders) {
   std::string app_location = "web_view/apitest";
   StartTestServer(app_location);
   RunTest("testWebRequestAPIWithHeaders", app_location);
+  StopTestServer();
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestWebRequestAPIWithExtraHeaders) {
+  // TODO(crbug.com/938095): Make this pass with network service.
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
+    return;
+
+  std::string app_location = "web_view/apitest";
+  StartTestServer(app_location);
+  RunTest("testWebRequestAPIWithExtraHeaders", app_location);
   StopTestServer();
 }
 

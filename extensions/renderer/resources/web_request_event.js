@@ -99,27 +99,29 @@ WebRequestEventImpl.prototype.addListener =
   var subEventCallback = cb;
   if (opt_extraInfo && $Array.indexOf(opt_extraInfo, 'blocking') >= 0) {
     var eventName = this.eventName;
+    var webViewInstanceId = this.webViewInstanceId;
     subEventCallback = function() {
       var requestId = arguments[0].requestId;
       try {
         var result = $Function.apply(cb, null, arguments);
         webRequestInternal.eventHandled(
-            eventName, subEventName, requestId, result);
+            eventName, subEventName, requestId, webViewInstanceId, result);
       } catch (e) {
         webRequestInternal.eventHandled(
-            eventName, subEventName, requestId);
+            eventName, subEventName, requestId, webViewInstanceId);
         throw e;
       }
     };
   } else if (
       opt_extraInfo && $Array.indexOf(opt_extraInfo, 'asyncBlocking') >= 0) {
     var eventName = this.eventName;
+    var webViewInstanceId = this.webViewInstanceId;
     subEventCallback = function() {
       var details = arguments[0];
       var requestId = details.requestId;
       var handledCallback = function(response) {
         webRequestInternal.eventHandled(
-            eventName, subEventName, requestId, response);
+            eventName, subEventName, requestId, webViewInstanceId, response);
       };
       $Function.apply(cb, null, [details, handledCallback]);
     };
