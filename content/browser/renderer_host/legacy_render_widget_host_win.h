@@ -16,6 +16,7 @@
 #include "content/common/content_export.h"
 #include "ui/compositor/compositor_animation_observer.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/native_widget_types.h"
 
 namespace ui {
 class AXFragmentRootWin;
@@ -127,6 +128,9 @@ class CONTENT_EXPORT LegacyRenderWidgetHostHWND
   // DirectManipulation needs to poll for new events every frame while finger
   // gesturing on touchpad.
   void PollForNextEvent();
+
+  // Return the root accessible object for either MSAA or UI Automation.
+  gfx::NativeViewAccessible GetOrCreateWindowRootAccessible();
 
  protected:
   void OnFinalMessage(HWND hwnd) override;

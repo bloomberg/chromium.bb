@@ -1139,6 +1139,7 @@ test("content_browsertests") {
     sources += [
       "../browser/accessibility/accessibility_win_browsertest.cc",
       "../browser/accessibility/ax_platform_node_win_browsertest.cc",
+      "../browser/renderer_host/accessibility_tree_linkage_win_browsertest.cc",
       "../browser/renderer_host/direct_manipulation_browsertest.cc",
     ]
 
