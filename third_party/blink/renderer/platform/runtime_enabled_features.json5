@@ -1212,6 +1212,11 @@
       name: "RTCRtpSenderParameters",
       status: "stable",
     },
+    {
+      name: "RTCStatsRelativePacketArrivalDelay",
+      origin_trial_feature_name: "RTCStatsRelativePacketArrivalDelay",
+      status: "experimental",
+    },
     // Enables the use of |RTCConfiguration::sdpSemantics| to override the
     // default SDP semantics at RTCPeerConnection construction.
     {

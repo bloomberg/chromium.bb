@@ -120,11 +120,11 @@ class RTCStatsReportIterationSource final
 RTCStatsFilter GetRTCStatsFilter(const ScriptState* script_state) {
   const ExecutionContext* context = ExecutionContext::From(script_state);
   DCHECK(context->IsContextThread());
-  // If this original trial is enabled then it exposes jitterBufferFlushes
-  // metric
-  return origin_trials::RtcAudioJitterBufferMaxPacketsEnabled(context)
-             ? RTCStatsFilter::kIncludeNonStandardMembers
-             : RTCStatsFilter::kIncludeOnlyStandardMembers;
+  if (origin_trials::RtcAudioJitterBufferMaxPacketsEnabled(context) ||
+      origin_trials::RTCStatsRelativePacketArrivalDelayEnabled(context)) {
+    return RTCStatsFilter::kIncludeNonStandardMembers;
+  }
+  return RTCStatsFilter::kIncludeOnlyStandardMembers;
 }
 
 RTCStatsReport::RTCStatsReport(std::unique_ptr<WebRTCStatsReport> report)
