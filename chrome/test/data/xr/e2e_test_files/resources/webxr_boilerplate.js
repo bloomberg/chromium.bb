@@ -31,6 +31,12 @@ var sessionTypes = Object.freeze({
 });
 var sessionTypeToRequest = sessionTypes.IMMERSIVE;
 
+var referenceSpaceMap = {
+  [sessionTypes.IMMERSIVE]: { type: 'stationary', subtype: 'eye-level' },
+  [sessionTypes.MAGIC_WINDOW]: { type: 'identity' },
+  [sessionTypes.AR]: { type: 'identity' }
+}
+
 class SessionInfo {
   constructor() {
     this.session = null;
@@ -134,7 +140,7 @@ function onSessionStarted(session) {
   }
 
   session.updateRenderState({ baseLayer: new XRWebGLLayer(session, gl) });
-  session.requestReferenceSpace({ type: 'stationary', subtype: 'eye-level' })
+  session.requestReferenceSpace(referenceSpaceMap[getSessionType(session)])
       .then( (refSpace) => {
         sessionInfos[getSessionType(session)].currentRefSpace = refSpace;
         session.requestAnimationFrame(onXRFrame);

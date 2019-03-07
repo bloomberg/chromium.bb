@@ -227,18 +227,6 @@ void GvrDevice::StopPresenting() {
   exclusive_controller_binding_.Close();
 }
 
-void GvrDevice::OnGetInlineFrameData(
-    mojom::XRFrameDataProvider::GetFrameDataCallback callback) {
-  if (!gvr_api_) {
-    std::move(callback).Run(nullptr);
-    return;
-  }
-  mojom::XRFrameDataPtr frame_data = mojom::XRFrameData::New();
-  frame_data->pose =
-      GvrDelegate::GetVRPosePtrWithNeckModel(gvr_api_.get(), nullptr);
-  std::move(callback).Run(std::move(frame_data));
-}
-
 void GvrDevice::OnListeningForActivate(bool listening) {
   GvrDelegateProvider* delegate_provider = GetGvrDelegateProvider();
   if (!delegate_provider)
@@ -365,13 +353,7 @@ void GvrDevice::OnInitRequestSessionFinished(
     return;
   }
 
-  if (!options->immersive) {
-    // TODO(https://crbug.com/695937): This should be NOTREACHED() once we no
-    // longer need the hacked GVR non-immersive mode.  This should now only be
-    // hit if orientation devices are disabled by flag.
-    ReturnNonImmersiveSession(std::move(pending_request_session_callback_));
-    return;
-  }
+  DCHECK(options->immersive);
 
   // StartWebXRPresentation is async as we may trigger a DON (Device ON) flow
   // that pauses Chrome.

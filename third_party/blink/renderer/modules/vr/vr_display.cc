@@ -50,6 +50,15 @@ namespace {
 constexpr WTF::TimeDelta kNonImmersivePoseAgeThreshold =
     WTF::TimeDelta::FromMilliseconds(250);
 
+device::mojom::blink::XRFrameDataPtr CreateIdentityFrameData() {
+  auto data = device::mojom::blink::XRFrameData::New();
+  data->pose = device::mojom::blink::VRPose::New();
+  data->pose->orientation.emplace({0.0f, 0.0f, 0.0f, 1.0f});
+  data->pose->position.emplace({0.0f, 0.0f, 0.0f});
+
+  return data;
+}
+
 VREye StringToVREye(const String& which_eye) {
   if (which_eye == "left")
     return kVREyeLeft;
@@ -279,18 +288,28 @@ void VRDisplay::RequestVSync() {
     DVLOG(2) << __FUNCTION__ << " done: pending_presenting_vsync_="
              << pending_presenting_vsync_;
   } else {
-    // Check if non_immersive_provider_, if not then we are not fully
-    // initialized, or we do not support non-immersive, so don't request the
-    // vsync. If and when non_immersive_provider_ is set it will run this code
-    // again.
-    if (!non_immersive_provider_)
+    // If we haven't been fully initialized yet, then we need to keep waiting
+    // so that we know if we have a non immersive provider or if we need to
+    // pass out identity poses.  When the callback from initialization happens
+    // it will run this code again.
+    if (!non_immersive_session_initialized_)
       return;
     if (pending_non_immersive_vsync_)
       return;
     non_immersive_vsync_waiting_for_pose_.Reset();
     non_immersive_pose_request_time_ = WTF::CurrentTimeTicks();
-    non_immersive_provider_->GetFrameData(WTF::Bind(
-        &VRDisplay::OnNonImmersiveFrameData, WrapWeakPersistent(this)));
+
+    if (non_immersive_provider_) {
+      non_immersive_provider_->GetFrameData(WTF::Bind(
+          &VRDisplay::OnNonImmersiveFrameData, WrapWeakPersistent(this)));
+    } else {
+      // If we don't have a non immersive provider, we should just return
+      // an identity pose.  We're not worried about re-entrant calls right now
+      // because we should end up waiting for the RAF callback which we request
+      // below. If we start to see errors with this, we'll want to do this as a
+      // posted task.
+      OnNonImmersiveFrameData(CreateIdentityFrameData());
+    }
     pending_non_immersive_vsync_ = true;
     pending_non_immersive_vsync_id_ = doc->RequestAnimationFrame(
         MakeGarbageCollected<VRDisplayFrameRequestCallback>(this));
@@ -586,14 +605,20 @@ void VRDisplay::OnRequestImmersiveSessionReturned(
 
 void VRDisplay::OnNonImmersiveSessionRequestReturned(
     device::mojom::blink::XRSessionPtr session) {
-  if (!session) {
-    // System does not support any kind of session.
-    return;
+  non_immersive_session_initialized_ = true;
+
+  // Only create the non immersive provider if we actually got a session.
+  // If we didn't get a session, we will just hand out identity poses.
+  if (session) {
+    non_immersive_provider_.Bind(std::move(session->data_provider));
+    non_immersive_client_binding_ = MakeGarbageCollected<SessionClientBinding>(
+        this, SessionClientBinding::SessionBindingType::kNonImmersive,
+        std::move(session->client_request));
   }
-  non_immersive_provider_.Bind(std::move(session->data_provider));
-  non_immersive_client_binding_ = MakeGarbageCollected<SessionClientBinding>(
-      this, SessionClientBinding::SessionBindingType::kNonImmersive,
-      std::move(session->client_request));
+
+  // Now that we're initialized, we need to ensure that the data is flowing
+  // by requesting a VSync, since it may have skipped requesting one because
+  // we weren't yet initialized.
   RequestVSync();
 }
 
