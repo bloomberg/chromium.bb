@@ -30,7 +30,7 @@ class VIZ_SERVICE_EXPORT OverlayStrategyFullscreen
       OverlayCandidateList* candidate_list,
       std::vector<gfx::Rect>* content_bounds) override;
 
-  OverlayProcessor::StrategyType GetUMAEnum() const override;
+  OverlayStrategy GetUMAEnum() const override;
 
  private:
   OverlayCandidateValidator* capability_checker_;  // Weak.

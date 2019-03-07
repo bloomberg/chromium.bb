@@ -38,7 +38,7 @@ class VIZ_SERVICE_EXPORT OverlayStrategyUnderlayCast
       base::RepeatingCallback<void(const gfx::RectF&, gfx::OverlayTransform)>;
   static void SetOverlayCompositedCallback(const OverlayCompositedCallback& cb);
 
-  OverlayProcessor::StrategyType GetUMAEnum() const override;
+  OverlayStrategy GetUMAEnum() const override;
 
  private:
   // Keep track if an overlay is being used on the previous frame.

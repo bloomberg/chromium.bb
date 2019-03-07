@@ -75,8 +75,8 @@ bool OverlayStrategySingleOnTop::TryOverlay(
   return false;
 }
 
-OverlayProcessor::StrategyType OverlayStrategySingleOnTop::GetUMAEnum() const {
-  return OverlayProcessor::StrategyType::kSingleOnTop;
+OverlayStrategy OverlayStrategySingleOnTop::GetUMAEnum() const {
+  return OverlayStrategy::kSingleOnTop;
 }
 
 }  // namespace viz
