@@ -57,10 +57,13 @@
 
 namespace {
 
-// Button background and icon color for in-product help promos.
-// TODO(collinbaker): https://crbug.com/909747 handle themed toolbar colors, and
-// maybe move this into theme system.
-constexpr SkColor kFeaturePromoHighlightColor = gfx::kGoogleBlue600;
+// Button background and icon colors for in-product help promos. The first is
+// the preferred color, but the selected color depends on the
+// background. TODO(collinbaker): consider moving these into theme system.
+constexpr SkColor kFeaturePromoHighlightDarkColor = gfx::kGoogleBlue600;
+constexpr SkColor kFeaturePromoHighlightDarkExtremeColor = gfx::kGoogleBlue900;
+constexpr SkColor kFeaturePromoHighlightLightColor = gfx::kGoogleGrey100;
+constexpr SkColor kFeaturePromoHighlightLightExtremeColor = SK_ColorWHITE;
 
 // Cycle duration of ink drop pulsing animation used for in-product help.
 constexpr base::TimeDelta kFeaturePromoPulseDuration =
@@ -252,7 +255,7 @@ void BrowserAppMenuButton::UpdateIcon() {
           ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
 #if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
       if (promo_feature_)
-        severity_color = kFeaturePromoHighlightColor;
+        severity_color = GetPromoHighlightColor();
 #endif
       break;
     case AppMenuIconController::Severity::LOW:
@@ -316,6 +319,15 @@ void BrowserAppMenuButton::UpdateBorder() {
   if (!border() || border()->GetInsets() != new_insets)
     SetBorder(views::CreateEmptyBorder(new_insets));
 }
+
+#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
+SkColor BrowserAppMenuButton::GetPromoHighlightColor() const {
+  return ToolbarButton::AdjustHighlightColorForContrast(
+      GetThemeProvider(), kFeaturePromoHighlightDarkColor,
+      kFeaturePromoHighlightLightColor, kFeaturePromoHighlightDarkExtremeColor,
+      kFeaturePromoHighlightLightExtremeColor);
+}
+#endif
 
 gfx::Rect BrowserAppMenuButton::GetAnchorBoundsInScreen() const {
   gfx::Rect bounds = GetBoundsInScreen();
@@ -395,7 +407,7 @@ std::unique_ptr<views::InkDropMask> BrowserAppMenuButton::CreateInkDropMask()
 SkColor BrowserAppMenuButton::GetInkDropBaseColor() const {
 #if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
   if (promo_feature_)
-    return kFeaturePromoHighlightColor;
+    return GetPromoHighlightColor();
 #endif
   return AppMenuButton::GetInkDropBaseColor();
 }

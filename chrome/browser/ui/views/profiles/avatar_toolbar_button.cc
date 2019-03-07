@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/profiles/avatar_toolbar_button.h"
 
+#include <vector>
+
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/vector_icons/vector_icons.h"
@@ -60,7 +62,6 @@ AvatarToolbarButton::AvatarToolbarButton(Browser* browser)
       browser_list_observer_(this),
       profile_observer_(this),
       identity_manager_observer_(this) {
-
   if (IsIncognitoCounterActive())
     browser_list_observer_.Add(BrowserList::GetInstance());
 
@@ -137,14 +138,14 @@ void AvatarToolbarButton::UpdateText() {
     text = l10n_util::GetPluralStringFUTF16(IDS_AVATAR_BUTTON_INCOGNITO,
                                             incognito_window_count);
   } else if (sync_state == SyncState::kError) {
-    color =
-        AdjustHighlightColorForContrast(gfx::kGoogleRed300, gfx::kGoogleRed600,
-                                        gfx::kGoogleRed050, gfx::kGoogleRed900);
+    color = AdjustHighlightColorForContrast(
+        GetThemeProvider(), gfx::kGoogleRed300, gfx::kGoogleRed600,
+        gfx::kGoogleRed050, gfx::kGoogleRed900);
     text = l10n_util::GetStringUTF16(IDS_AVATAR_BUTTON_SYNC_ERROR);
   } else if (sync_state == SyncState::kPaused) {
     color = AdjustHighlightColorForContrast(
-        gfx::kGoogleBlue300, gfx::kGoogleBlue600, gfx::kGoogleBlue050,
-        gfx::kGoogleBlue900);
+        GetThemeProvider(), gfx::kGoogleBlue300, gfx::kGoogleBlue600,
+        gfx::kGoogleBlue050, gfx::kGoogleBlue900);
 
     text = l10n_util::GetStringUTF16(IDS_AVATAR_BUTTON_SYNC_PAUSED);
   }
@@ -396,34 +397,4 @@ void AvatarToolbarButton::SetInsets() {
   gfx::Insets layout_insets(ui::MaterialDesignController::touch_ui() ? 0 : -2);
 
   SetLayoutInsetDelta(layout_insets);
-}
-
-SkColor AvatarToolbarButton::AdjustHighlightColorForContrast(
-    SkColor desired_dark_color,
-    SkColor desired_light_color,
-    SkColor dark_extreme,
-    SkColor light_extreme) const {
-  const ui::ThemeProvider* theme_provider = GetThemeProvider();
-  if (!theme_provider)
-    return desired_light_color;
-  SkColor toolbar_color =
-      GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR);
-  SkColor contrasting_color = color_utils::PickContrastingColor(
-      desired_dark_color, desired_light_color, toolbar_color);
-  SkColor limit =
-      contrasting_color == desired_dark_color ? dark_extreme : light_extreme;
-  // Setting highlight color will set the text to the highlight color, and the
-  // background to the same color with a low alpha. This means that our target
-  // contrast is between the text (the highlight color) and a blend of the
-  // highlight color and the toolbar color.
-  SkColor base_color = color_utils::AlphaBlend(contrasting_color, toolbar_color,
-                                               kToolbarButtonBackgroundAlpha);
-
-  // Add a fudge factor to the minimum contrast ratio since we'll actually be
-  // blending with the adjusted color.
-  SkAlpha blend_alpha = color_utils::GetBlendValueWithMinimumContrast(
-      contrasting_color, limit, base_color,
-      color_utils::kMinimumReadableContrastRatio * 1.05);
-
-  return color_utils::AlphaBlend(limit, contrasting_color, blend_alpha);
 }
