@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.content.IntentSender.SendIntentException;
 import android.os.Handler;
 import android.os.Looper;
+import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 
 import com.google.android.play.core.appupdate.AppUpdateInfo;
@@ -15,11 +16,16 @@ import com.google.android.play.core.appupdate.AppUpdateManager;
 import com.google.android.play.core.install.InstallState;
 import com.google.android.play.core.install.InstallStateUpdatedListener;
 import com.google.android.play.core.install.model.AppUpdateType;
+import com.google.android.play.core.install.model.InstallErrorCode;
 import com.google.android.play.core.install.model.InstallStatus;
 import com.google.android.play.core.install.model.UpdateAvailability;
 
 import org.chromium.base.Log;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.omaha.UpdateStatusProvider.UpdateState;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
 /**
  * Helper class for gluing interactions with the Play store's AppUpdateManager with Chrome.  This
@@ -28,6 +34,50 @@ import org.chromium.chrome.browser.omaha.UpdateStatusProvider.UpdateState;
  */
 public class PlayInlineUpdateController
         implements InlineUpdateController, InstallStateUpdatedListener {
+    /**
+     * Converts Play's InstallErrorCode enum to a stable monotomically incrementing Chrome enum.
+     * This is used for metric stability.
+     * Treat this as append only as it is used by UMA.
+     */
+    @IntDef({InstallErrorCodeMetrics.NO_ERROR, InstallErrorCodeMetrics.NO_ERROR_PARTIALLY_ALLOWED,
+            InstallErrorCodeMetrics.ERROR_UNKNOWN, InstallErrorCodeMetrics.ERROR_API_NOT_AVAILABLE,
+            InstallErrorCodeMetrics.ERROR_INVALID_REQUEST,
+            InstallErrorCodeMetrics.ERROR_INSTALL_UNAVAILABLE,
+            InstallErrorCodeMetrics.ERROR_INSTALL_NOT_ALLOWED,
+            InstallErrorCodeMetrics.ERROR_DOWNLOAD_NOT_PRESENT,
+            InstallErrorCodeMetrics.ERROR_INTERNAL_ERROR, InstallErrorCodeMetrics.ERROR_UNTRACKED})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface InstallErrorCodeMetrics {
+        int NO_ERROR = 0;
+        int NO_ERROR_PARTIALLY_ALLOWED = 1;
+        int ERROR_UNKNOWN = 2;
+        int ERROR_API_NOT_AVAILABLE = 3;
+        int ERROR_INVALID_REQUEST = 4;
+        int ERROR_INSTALL_UNAVAILABLE = 5;
+        int ERROR_INSTALL_NOT_ALLOWED = 6;
+        int ERROR_DOWNLOAD_NOT_PRESENT = 7;
+        int ERROR_INTERNAL_ERROR = 8;
+        int ERROR_UNTRACKED = 9;
+
+        int COUNT = 10;
+    }
+
+    /**
+     * A list of possible Play API call site failures.
+     * Treat this as append only as it is used by UMA.
+     */
+    @IntDef({CallFailure.START_FAILED, CallFailure.START_EXCEPTION, CallFailure.COMPLETE_FAILED,
+            CallFailure.QUERY_FAILED})
+    @Retention(RetentionPolicy.SOURCE)
+    private @interface CallFailure {
+        int START_FAILED = 0;
+        int START_EXCEPTION = 1;
+        int COMPLETE_FAILED = 2;
+        int QUERY_FAILED = 3;
+
+        int COUNT = 4;
+    }
+
     private static final String TAG = "PlayInline";
     private static final int RESULT_IN_APP_UPDATE_FAILED = 1;
     private static final int REQUEST_CODE = 8123;
@@ -80,9 +130,12 @@ public class PlayInlineUpdateController
             boolean success = mAppUpdateManager.startUpdateFlowForResult(
                     mAppUpdateInfo, AppUpdateType.FLEXIBLE, activity, REQUEST_CODE);
             Log.i(TAG, "startUpdateFlowForResult() returned " + success);
+
+            if (!success) recordCallFailure(CallFailure.START_FAILED);
         } catch (SendIntentException exception) {
             mInstallStatus = InstallStatus.FAILED;
             Log.i(TAG, "startUpdateFlowForResult() threw an exception.");
+            recordCallFailure(CallFailure.START_EXCEPTION);
         }
         // TODO(dtrainor): Use success.
     }
@@ -96,6 +149,7 @@ public class PlayInlineUpdateController
                 })
                 .addOnFailureListener(exception -> {
                     Log.i(TAG, "completeUpdate() failed.");
+                    recordCallFailure(CallFailure.COMPLETE_FAILED);
                     mInstallStatus = InstallStatus.FAILED;
                     pushStatus();
                 });
@@ -106,6 +160,14 @@ public class PlayInlineUpdateController
     public void onStateUpdate(InstallState state) {
         Log.i(TAG,
                 "onStateUpdate(" + state.installStatus() + ", " + state.installErrorCode() + ")");
+
+        if (state.installStatus() != mInstallStatus) {
+            RecordHistogram.recordEnumeratedHistogram("GoogleUpdate.Inline.StateChange.Error."
+                            + installStatusToEnumSuffix(state.installStatus()),
+                    installErrorCodeToMetrics(state.installErrorCode()),
+                    InstallErrorCodeMetrics.COUNT);
+        }
+
         mInstallStatus = state.installStatus();
         pushStatus();
     }
@@ -126,6 +188,7 @@ public class PlayInlineUpdateController
                     mUpdateAvailability = UpdateAvailability.UNKNOWN;
                     mInstallStatus = InstallStatus.UNKNOWN;
                     Log.i(TAG, "pullCurrentState() failed.");
+                    recordCallFailure(CallFailure.QUERY_FAILED);
                     pushStatus();
                 });
     }
@@ -172,5 +235,61 @@ public class PlayInlineUpdateController
         }
 
         return newStatus;
+    }
+
+    private static String installStatusToEnumSuffix(@InstallStatus int status) {
+        switch (status) {
+            case InstallStatus.UNKNOWN:
+                return "Unknown";
+            case InstallStatus.REQUIRES_UI_INTENT:
+                return "RequiresUiIntent";
+            case InstallStatus.PENDING:
+                return "Pending";
+            case InstallStatus.DOWNLOADING:
+                return "Downloading";
+            case InstallStatus.DOWNLOADED:
+                return "Downloaded";
+            case InstallStatus.INSTALLING:
+                return "Installing";
+            case InstallStatus.INSTALLED:
+                return "Installed";
+            case InstallStatus.FAILED:
+                return "Failed";
+            case InstallStatus.CANCELED:
+                return "Canceled";
+            default:
+                return "Untracked";
+        }
+    }
+
+    private static @InstallErrorCodeMetrics int installErrorCodeToMetrics(
+            @InstallErrorCode int error) {
+        switch (error) {
+            case InstallErrorCode.NO_ERROR:
+                return InstallErrorCodeMetrics.NO_ERROR;
+            case InstallErrorCode.NO_ERROR_PARTIALLY_ALLOWED:
+                return InstallErrorCodeMetrics.NO_ERROR_PARTIALLY_ALLOWED;
+            case InstallErrorCode.ERROR_UNKNOWN:
+                return InstallErrorCodeMetrics.ERROR_UNKNOWN;
+            case InstallErrorCode.ERROR_API_NOT_AVAILABLE:
+                return InstallErrorCodeMetrics.ERROR_API_NOT_AVAILABLE;
+            case InstallErrorCode.ERROR_INVALID_REQUEST:
+                return InstallErrorCodeMetrics.ERROR_INVALID_REQUEST;
+            case InstallErrorCode.ERROR_INSTALL_UNAVAILABLE:
+                return InstallErrorCodeMetrics.ERROR_INSTALL_UNAVAILABLE;
+            case InstallErrorCode.ERROR_INSTALL_NOT_ALLOWED:
+                return InstallErrorCodeMetrics.ERROR_INSTALL_NOT_ALLOWED;
+            case InstallErrorCode.ERROR_DOWNLOAD_NOT_PRESENT:
+                return InstallErrorCodeMetrics.ERROR_DOWNLOAD_NOT_PRESENT;
+            case InstallErrorCode.ERROR_INTERNAL_ERROR:
+                return InstallErrorCodeMetrics.ERROR_INTERNAL_ERROR;
+            default:
+                return InstallErrorCodeMetrics.ERROR_UNTRACKED;
+        }
+    }
+
+    private static void recordCallFailure(@CallFailure int failure) {
+        RecordHistogram.recordEnumeratedHistogram(
+                "GoogleUpdate.Inline.CallFailure", failure, CallFailure.COUNT);
     }
 }

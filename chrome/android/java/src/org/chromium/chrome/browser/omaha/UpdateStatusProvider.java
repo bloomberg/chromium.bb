@@ -48,19 +48,37 @@ import java.lang.annotation.RetentionPolicy;
  * For manually testing this functionality, see {@link UpdateConfigs}.
  */
 public class UpdateStatusProvider implements ActivityStateListener {
-    /** Possible update states. */
+    /**
+     * Possible sources of user interaction regarding updates.
+     * Treat this as append only as it is used by UMA.
+     */
+    @IntDef({UpdateInteractionSource.FROM_MENU, UpdateInteractionSource.FROM_INFOBAR})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface UpdateInteractionSource {
+        int FROM_MENU = 0;
+        int FROM_INFOBAR = 1;
+
+        int COUNT = 2;
+    }
+
+    /**
+     * Possible update states.
+     * Treat this as append only as it is used by UMA.
+     */
     @IntDef({UpdateState.NONE, UpdateState.UPDATE_AVAILABLE, UpdateState.UNSUPPORTED_OS_VERSION,
             UpdateState.INLINE_UPDATE_AVAILABLE, UpdateState.INLINE_UPDATE_DOWNLOADING,
             UpdateState.INLINE_UPDATE_READY, UpdateState.INLINE_UPDATE_FAILED})
     @Retention(RetentionPolicy.SOURCE)
     public @interface UpdateState {
-        int NONE = 1;
-        int UPDATE_AVAILABLE = 2;
-        int UNSUPPORTED_OS_VERSION = 3;
-        int INLINE_UPDATE_AVAILABLE = 4;
-        int INLINE_UPDATE_DOWNLOADING = 5;
-        int INLINE_UPDATE_READY = 6;
-        int INLINE_UPDATE_FAILED = 7;
+        int NONE = 0;
+        int UPDATE_AVAILABLE = 1;
+        int UNSUPPORTED_OS_VERSION = 2;
+        int INLINE_UPDATE_AVAILABLE = 3;
+        int INLINE_UPDATE_DOWNLOADING = 4;
+        int INLINE_UPDATE_READY = 5;
+        int INLINE_UPDATE_FAILED = 6;
+
+        int COUNT = 7;
     }
 
     /** A set of properties that represent the current update state for Chrome. */
@@ -118,6 +136,9 @@ public class UpdateStatusProvider implements ActivityStateListener {
     private final InlineUpdateController mInlineController;
     private final UpdateQuery mOmahaQuery;
     private @Nullable UpdateStatus mStatus;
+
+    /** Whether or not we've recorded the initial update status yet. */
+    private boolean mRecordedInitialStatus;
 
     /** @return Returns a singleton of {@link UpdateStatusProvider}. */
     public static UpdateStatusProvider getInstance() {
@@ -181,16 +202,32 @@ public class UpdateStatusProvider implements ActivityStateListener {
 
     /**
      * Starts the inline update process, if possible.
+     * @source         The source of the action (the UI that caused it).
      * @param activity An {@link Activity} that will be used to interact with Play.
      */
-    public void startInlineUpdate(Activity activity) {
+    public void startInlineUpdate(@UpdateInteractionSource int source, Activity activity) {
         if (mStatus == null || mStatus.updateState != UpdateState.INLINE_UPDATE_AVAILABLE) return;
+        RecordHistogram.recordEnumeratedHistogram(
+                "GoogleUpdate.Inline.UI.Start.Source", source, UpdateInteractionSource.COUNT);
+        mInlineController.startUpdate(activity);
+    }
+
+    /**
+     * Retries the inline update process, if possible.
+     * @param activity An {@link Activity} that will be used to interact with Play.
+     */
+    public void retryInlineUpdate(@UpdateInteractionSource int source, Activity activity) {
+        if (mStatus == null || mStatus.updateState != UpdateState.INLINE_UPDATE_AVAILABLE) return;
+        RecordHistogram.recordEnumeratedHistogram(
+                "GoogleUpdate.Inline.UI.Retry.Source", source, UpdateInteractionSource.COUNT);
         mInlineController.startUpdate(activity);
     }
 
     /** Finishes the inline update process, which may involve restarting the app. */
-    public void finishInlineUpdate() {
+    public void finishInlineUpdate(@UpdateInteractionSource int source) {
         if (mStatus == null || mStatus.updateState != UpdateState.INLINE_UPDATE_READY) return;
+        RecordHistogram.recordEnumeratedHistogram(
+                "GoogleUpdate.Inline.UI.Install.Source", source, UpdateInteractionSource.COUNT);
         mInlineController.completeUpdate();
     }
 
@@ -247,6 +284,12 @@ public class UpdateStatusProvider implements ActivityStateListener {
             if (inlineState != UpdateState.NONE) {
                 mStatus.updateState = inlineState;
             }
+        }
+
+        if (!mRecordedInitialStatus) {
+            RecordHistogram.recordEnumeratedHistogram(
+                    "GoogleUpdate.StartUp.State", mStatus.updateState, UpdateState.COUNT);
+            mRecordedInitialStatus = true;
         }
 
         pingObservers();

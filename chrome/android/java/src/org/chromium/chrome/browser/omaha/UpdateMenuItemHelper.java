@@ -25,6 +25,7 @@ import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.omaha.UpdateStatusProvider.UpdateInteractionSource;
 import org.chromium.chrome.browser.omaha.UpdateStatusProvider.UpdateState;
 import org.chromium.chrome.browser.omaha.UpdateStatusProvider.UpdateStatus;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
@@ -208,13 +209,16 @@ public class UpdateMenuItemHelper {
                 }
                 break;
             case UpdateState.INLINE_UPDATE_AVAILABLE:
-                UpdateStatusProvider.getInstance().startInlineUpdate(activity);
+                UpdateStatusProvider.getInstance().startInlineUpdate(
+                        UpdateInteractionSource.FROM_MENU, activity);
                 break;
             case UpdateState.INLINE_UPDATE_READY:
-                UpdateStatusProvider.getInstance().finishInlineUpdate();
+                UpdateStatusProvider.getInstance().finishInlineUpdate(
+                        UpdateInteractionSource.FROM_MENU);
                 break;
             case UpdateState.INLINE_UPDATE_FAILED:
-                UpdateStatusProvider.getInstance().startInlineUpdate(activity);
+                UpdateStatusProvider.getInstance().retryInlineUpdate(
+                        UpdateInteractionSource.FROM_MENU, activity);
                 break;
             case UpdateState.UNSUPPORTED_OS_VERSION:
             // Intentional fall through.
