@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.tasks.tab_list_ui;
 
-import android.view.View.OnClickListener;
-
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.tab.Tab;
@@ -71,11 +69,8 @@ public class TabStripBottomToolbarMediator implements Destroyable {
         };
 
         setupToolbarClickHandlers();
-        mResetHandler.resetStripWithTabModel(tabModelSelector.getCurrentModel());
-    }
-
-    void resetWithTabModel(TabModel tabModel) {
         mToolbarPropertyModel.set(TabStripToolbarViewProperties.IS_MAIN_CONTENT_VISIBLE, true);
+        mResetHandler.resetStripWithTabModel(tabModelSelector.getCurrentModel());
     }
 
     private void setupToolbarClickHandlers() {
@@ -88,21 +83,6 @@ public class TabStripBottomToolbarMediator implements Destroyable {
                     .createNewTab(new LoadUrlParams(UrlConstants.NTP_URL), TabLaunchType.FROM_LINK,
                             currentTab);
         });
-    }
-
-    private OnClickListener getExpandButtonClickListener() {
-        return view -> {
-            mResetHandler.resetSheetWithTabModel(mTabModelSelector.getCurrentModel());
-        };
-    }
-
-    private OnClickListener getAddButtonClickListener() {
-        return view -> {
-            Tab currentTab = mTabModelSelector.getCurrentTab();
-            mTabCreatorManager.getTabCreator(currentTab.isIncognito())
-                    .createNewTab(new LoadUrlParams(UrlConstants.NTP_URL), TabLaunchType.FROM_LINK,
-                            currentTab);
-        };
     }
 
     @Override

@@ -9,7 +9,7 @@ import android.view.View.OnClickListener;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 
-class BottomTabGridSheetToolbarProperties {
+class BottomTabGridSheetProperties {
     public static final PropertyModel
             .WritableObjectPropertyKey<OnClickListener> COLLAPSE_CLICK_LISTENER =
             new PropertyModel.WritableObjectPropertyKey<OnClickListener>();
@@ -18,7 +18,9 @@ class BottomTabGridSheetToolbarProperties {
             new PropertyModel.WritableObjectPropertyKey<OnClickListener>();
     public static final PropertyModel.WritableObjectPropertyKey<String> HEADER_TITLE =
             new PropertyModel.WritableObjectPropertyKey<String>();
+    public static final PropertyModel.WritableIntPropertyKey CONTENT_TOP_MARGIN =
+            new PropertyModel.WritableIntPropertyKey();
 
-    public static final PropertyKey[] ALL_KEYS =
-            new PropertyKey[] {COLLAPSE_CLICK_LISTENER, ADD_CLICK_LISTENER, HEADER_TITLE};
+    public static final PropertyKey[] ALL_KEYS = new PropertyKey[] {
+            COLLAPSE_CLICK_LISTENER, ADD_CLICK_LISTENER, HEADER_TITLE, CONTENT_TOP_MARGIN};
 }

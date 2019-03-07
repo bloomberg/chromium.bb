@@ -12,15 +12,15 @@ import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.widget.ListMenuButton;
+import org.chromium.ui.widget.ChromeImageView;
 
 /**
  * Represents a generic toolbar used in the bottom strip/grid component.
  * {@link BottomTabGridSheetToolbarCoordinator}
  */
 public class BottomTabListToolbarView extends FrameLayout {
-    private ListMenuButton mRightButton;
-    private ListMenuButton mLeftButton;
+    private ChromeImageView mRightButton;
+    private ChromeImageView mLeftButton;
     private ViewGroup mContainerView;
     private TextView mTitleTextView;
 

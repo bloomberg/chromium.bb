@@ -26,17 +26,18 @@ class BottomTabGridSheetToolbarCoordinator implements Destroyable {
      * Construct a new {@link BottomTabGridSheetToolbarCoordinator}.
      *
      * @param context              The {@link Context} used to retrieve resources.
-     * @param parentView           The parent {@link View} to which the content will
+     * @param contentView          The {@link View} to which the content will
      *                             eventually be attached.
      * @param toolbarPropertyModel The {@link PropertyModel} instance representing
      *                             the toolbar.
      */
     BottomTabGridSheetToolbarCoordinator(
-            Context context, ViewGroup parentView, PropertyModel toolbarPropertyModel) {
+            Context context, ViewGroup contentView, PropertyModel toolbarPropertyModel) {
         mToolbarView = (BottomTabListToolbarView) LayoutInflater.from(context).inflate(
-                R.layout.bottom_tab_grid_toolbar, parentView, false);
-        mModelChangeProcessor = PropertyModelChangeProcessor.create(
-                toolbarPropertyModel, mToolbarView, BottomTabGridSheetToolbarViewBinder::bind);
+                R.layout.bottom_tab_grid_toolbar, contentView, false);
+        mModelChangeProcessor = PropertyModelChangeProcessor.create(toolbarPropertyModel,
+                new BottomTabGridSheetViewBinder.ViewHolder(mToolbarView, contentView),
+                BottomTabGridSheetViewBinder::bind);
     }
 
     /** @return The content {@link View}. */
