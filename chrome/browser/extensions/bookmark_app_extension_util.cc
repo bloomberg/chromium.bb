@@ -8,11 +8,13 @@
 
 #include "base/callback.h"
 #include "build/build_config.h"
+#include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/web_applications/extensions/web_app_extension_shortcut.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/common/extension.h"
 
 #if defined(OS_MACOSX)
@@ -78,7 +80,16 @@ void BookmarkAppPinToShelf(const Extension* extension) {
 #endif  // defined(OS_CHROMEOS)
 }
 
-bool CanBookmarkAppReparentTab(bool shortcut_created) {
+bool CanBookmarkAppReparentTab(Profile* profile,
+                               const Extension* extension,
+                               bool shortcut_created) {
+  // Reparent the web contents into its own window only if that is the
+  // extension's launch type.
+  if (!extension ||
+      extensions::GetLaunchType(extensions::ExtensionPrefs::Get(profile),
+                                extension) != extensions::LAUNCH_TYPE_WINDOW) {
+    return false;
+  }
 #if defined(OS_MACOSX)
   // On macOS it is only possible to reparent the window when the shortcut (app
   // shim) was created.  See https://crbug.com/915571.
