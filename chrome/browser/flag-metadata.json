@@ -48,11 +48,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "WebRtcUseEchoCanceller3",
-    "owners": [ "peah@chromium.org", "gustaf@chromium.org" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "account-consistency",
     "owners": [ "droger", "msarda" ],
     "expiry_milestone": 80

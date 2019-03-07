@@ -803,7 +803,6 @@ void InputController::CheckMutedState() {
 void InputController::UpdateVolumeAndAPMStats(
     base::Optional<double> new_volume) {
   DCHECK_CALLED_ON_VALID_THREAD(owning_thread_);
-  processing_helper_->GetAudioProcessor()->UpdateInternalStats();
   if (new_volume)
     SetVolume(*new_volume);
 }

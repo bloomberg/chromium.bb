@@ -5750,24 +5750,6 @@
             ]
         }
     ],
-    "WebRtcUseEchoCanceller3": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "WebRtcUseEchoCanceller3",
-                    "enable_features": [
-                        "WebRtcUseEchoCanceller3"
-                    ]
-                }
-            ]
-        }
-    ],
     "WinOOPSelectFileDialog": [
         {
             "platforms": [
