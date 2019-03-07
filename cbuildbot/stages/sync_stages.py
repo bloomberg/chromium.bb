@@ -747,7 +747,7 @@ class ManifestVersionedSyncStage(SyncStage):
       latest = self.buildstore.GetBuildHistory(
           master_build_status['build_config'],
           1,
-          branch=self._run.options.branch_name)
+          branch=self._run.options.branch)
       if latest and latest[0]['buildbucket_id'] != master_id:
         raise failures_lib.MasterSlaveVersionMismatchFailure(
             'This slave\'s master (id=%s) has been supplanted by a newer '

@@ -395,7 +395,7 @@ class BuildReexecutionFinishedStage(generic_stages.BuilderStage,
     build_id = build_identifier.cidb_id
     if self.buildstore.AreClientsReady():
       builds = self.buildstore.GetBuildHistory(
-          self._run.config.name, 2, branch=self._run.options.branch_name,
+          self._run.config.name, 2, branch=self._run.options.branch,
           ignore_build_id=build_id)
       for build in builds:
         old_version = build['full_version']
