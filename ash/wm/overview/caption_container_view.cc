@@ -243,7 +243,11 @@ CaptionContainerView::CaptionContainerView(views::ButtonListener* listener,
           kHorizontalLabelPaddingDp));
   AddChildWithLayer(listener_button_, header_view_);
 
-  gfx::ImageSkia* icon = window->GetProperty(aura::client::kAppIconKey);
+  // Prefer kAppIconSmallKey (set by the client in Mash), then kAppIconKey and
+  // kWindowIconKey (set for client windows in classic Ash but not Mash).
+  gfx::ImageSkia* icon = window->GetProperty(aura::client::kAppIconSmallKey);
+  if (!icon || icon->size().IsEmpty())
+    icon = window->GetProperty(aura::client::kAppIconKey);
   if (!icon || icon->size().IsEmpty())
     icon = window->GetProperty(aura::client::kWindowIconKey);
   if (icon && !icon->size().IsEmpty()) {

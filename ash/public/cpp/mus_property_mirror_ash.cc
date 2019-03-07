@@ -50,8 +50,6 @@ void MusPropertyMirrorAsh::MirrorPropertyFromWidgetWindowToRootWindow(
   } else if (key == kWindowPinTypeKey) {
     ash::mojom::WindowPinType value = window->GetProperty(kWindowPinTypeKey);
     root_window->SetProperty(kWindowPinTypeKey, value);
-  } else if (key == aura::client::kAppIconKey) {
-    MirrorOwnedProperty(window, root_window, aura::client::kAppIconKey);
   } else if (key == kRestoreBoundsOverrideKey) {
     MirrorOwnedProperty(window, root_window, kRestoreBoundsOverrideKey);
   } else if (key == kRestoreWindowStateTypeOverrideKey) {
@@ -73,9 +71,6 @@ void MusPropertyMirrorAsh::MirrorPropertyFromWidgetWindowToRootWindow(
   } else if (key == aura::client::kTopViewInset) {
     root_window->SetProperty(aura::client::kTopViewInset,
                              window->GetProperty(aura::client::kTopViewInset));
-
-  } else if (key == aura::client::kWindowIconKey) {
-    MirrorOwnedProperty(window, root_window, aura::client::kWindowIconKey);
   } else if (key == kFrameActiveColorKey) {
     root_window->SetProperty(kFrameActiveColorKey,
                              window->GetProperty(kFrameActiveColorKey));

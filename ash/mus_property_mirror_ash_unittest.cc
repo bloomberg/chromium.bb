@@ -59,18 +59,6 @@ TEST_F(MusPropertyMirrorAshTest, OwnedProperties) {
             *window_2->GetProperty(aura::client::kTitleKey));
   EXPECT_NE(window_1->GetProperty(aura::client::kTitleKey),
             window_2->GetProperty(aura::client::kTitleKey));
-
-  window_1->ClearProperty(aura::client::kWindowIconKey);
-  EXPECT_EQ(nullptr, window_1->GetProperty(aura::client::kWindowIconKey));
-  window_2->ClearProperty(aura::client::kWindowIconKey);
-  EXPECT_EQ(nullptr, window_2->GetProperty(aura::client::kWindowIconKey));
-  window_1->SetProperty(aura::client::kWindowIconKey, new gfx::ImageSkia());
-  EXPECT_NE(nullptr, window_1->GetProperty(aura::client::kWindowIconKey));
-  mus_property_mirror_ash.MirrorPropertyFromWidgetWindowToRootWindow(
-      window_1.get(), window_2.get(), aura::client::kWindowIconKey);
-  EXPECT_NE(nullptr, window_2->GetProperty(aura::client::kWindowIconKey));
-  EXPECT_NE(window_1->GetProperty(aura::client::kWindowIconKey),
-            window_2->GetProperty(aura::client::kWindowIconKey));
 }
 
 }  // namespace ash
