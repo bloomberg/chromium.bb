@@ -415,6 +415,22 @@ class EntryList {
     return false;
   }
 
+  /**
+   * Removes the entry.
+   * @param {!Entry|FilesAppEntry} entry to be removed.
+   * This method is specific to EntryList and VolumeEntry instance.
+   * @return {boolean} if entry was removed.
+   */
+  removeChildEntry(entry) {
+    const childIndex =
+        this.children_.findIndex(childEntry => childEntry === entry);
+    if (childIndex !== -1) {
+      this.children_.splice(childIndex, 1);
+      return true;
+    }
+    return false;
+  }
+
   /** @override */
   getNativeEntry() {
     return null;
@@ -664,6 +680,22 @@ class VolumeEntry {
   removeByRootType(rootType) {
     const childIndex = this.children_.findIndex(
         childEntry => childEntry.rootType === rootType);
+    if (childIndex !== -1) {
+      this.children_.splice(childIndex, 1);
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Removes the entry.
+   * @param {!Entry|FilesAppEntry} entry to be removed.
+   * This method is specific to EntryList and VolumeEntry instance.
+   * @return {boolean} if entry was removed.
+   */
+  removeChildEntry(entry) {
+    const childIndex =
+        this.children_.findIndex(childEntry => childEntry === entry);
     if (childIndex !== -1) {
       this.children_.splice(childIndex, 1);
       return true;

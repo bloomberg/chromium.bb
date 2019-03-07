@@ -478,3 +478,51 @@ function testMyFilesVolumeEnabled(callback) {
       }),
       callback);
 }
+
+/**
+ * Tests that adding a new partition to the same grouped USB will add the
+ * partition to the grouping.
+ */
+function testMultipleUsbPartitionsGrouping() {
+  const shortcutListModel = new MockFolderShortcutDataModel([]);
+  const recentItem = null;
+  const volumeManager = new MockVolumeManager();
+
+  // Use same device path so the partitions are grouped.
+  volumeManager.volumeInfoList.add(MockVolumeManager.createMockVolumeInfo(
+      VolumeManagerCommon.VolumeType.REMOVABLE, 'removable:partition1',
+      'partition1', 'device/path/1'));
+  volumeManager.volumeInfoList.add(MockVolumeManager.createMockVolumeInfo(
+      VolumeManagerCommon.VolumeType.REMOVABLE, 'removable:partition2',
+      'partition2', 'device/path/1'));
+  volumeManager.volumeInfoList.add(MockVolumeManager.createMockVolumeInfo(
+      VolumeManagerCommon.VolumeType.REMOVABLE, 'removable:partition3',
+      'partition3', 'device/path/1'));
+
+  const model = new NavigationListModel(
+      volumeManager, shortcutListModel, recentItem, directoryModel);
+
+  // Check that the common root shows 3 partitions.
+  let groupedUsbs = /** @type NavigationModelFakeItem */ (model.item(2));
+  assertEquals('External Drive', groupedUsbs.label);
+  assertEquals(3, groupedUsbs.entry.getUIChildren().length);
+
+  // Add a 4th partition, which triggers NavigationListModel to recalculate.
+  volumeManager.volumeInfoList.add(MockVolumeManager.createMockVolumeInfo(
+      VolumeManagerCommon.VolumeType.REMOVABLE, 'removable:partition4',
+      'partition4', 'device/path/1'));
+
+  // Check that the common root shows 4 partitions.
+  groupedUsbs = /** @type NavigationModelFakeItem */ (model.item(2));
+  assertEquals('External Drive', groupedUsbs.label);
+  assertEquals(4, groupedUsbs.entry.getUIChildren().length);
+
+  // Remove the 4th partition, which triggers NavigationListModel to
+  // recalculate.
+  volumeManager.volumeInfoList.remove('removable:partition4');
+
+  // Check that the common root shows 3 partitions.
+  groupedUsbs = /** @type NavigationModelFakeItem */ (model.item(2));
+  assertEquals('External Drive', groupedUsbs.label);
+  assertEquals(3, groupedUsbs.entry.getUIChildren().length);
+}
