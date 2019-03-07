@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <grit-part>
   <!-- Strings describing Chrome security policy for DevTools security panel -->
-  <message name="IDS_EDITED_NONSECURE_SUMMARY" desc="Main summary for an HTTP page where a user has entered data in a form field." translateable="false">
+  <message name="IDS_HTTP_NONSECURE_SUMMARY" desc="Main summary for where the site is non-secure HTTP." translateable="false">
     This page is insecure (unencrypted HTTP).
   </message>
   <message name="IDS_EDITED_NONSECURE" desc="Summary phrase for a security problem where the site is non-secure (HTTP) and user has entered data in a form field." translateable="false">

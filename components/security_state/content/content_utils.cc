@@ -64,7 +64,7 @@ void ExplainHTTPSecurity(
   if (security_info.security_level == security_state::DANGEROUS &&
       !security_info.scheme_is_cryptographic) {
     security_style_explanations->summary =
-        l10n_util::GetStringUTF8(IDS_EDITED_NONSECURE_SUMMARY);
+        l10n_util::GetStringUTF8(IDS_HTTP_NONSECURE_SUMMARY);
     if (security_info.insecure_input_events.insecure_field_edited) {
       security_style_explanations->insecure_explanations.push_back(
           content::SecurityStyleExplanation(
