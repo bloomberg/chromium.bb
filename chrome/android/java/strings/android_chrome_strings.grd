@@ -4044,7 +4044,7 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
         Site paused
       </message>
       <message name="IDS_USAGE_STATS_SITE_PAUSED_EXPLANATION" desc="Message when a website is suspended due to exceeding a user-defined limit">
-        Your <ph name="FQDN">%1$s</ph> timer ran out. It'll start again tomorrow.
+        Your <ph name="FQDN">%1$s<ex>www.amazon.com</ex></ph> timer ran out. It'll start again tomorrow.
       </message>
 
       <!-- Bottom Tab Grid strings -->
