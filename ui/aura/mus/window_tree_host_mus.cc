@@ -202,7 +202,7 @@ void WindowTreeHostMus::SetBounds(
   const gfx::Rect pixel_bounds(
       gfx::ScaleToFlooredPoint(bounds_in_dip.origin(), dsf),
       gfx::ScaleToCeiledSize(bounds_in_dip.size(), dsf));
-  if (!in_set_bounds_from_server_) {
+  if (!is_server_setting_bounds_) {
     // Update the LocalSurfaceIdAllocation here, rather than in WindowTreeHost
     // as WindowTreeClient (the delegate) needs that information before
     // OnWindowTreeHostBoundsWillChange().
@@ -223,7 +223,7 @@ void WindowTreeHostMus::SetBounds(
 void WindowTreeHostMus::SetBoundsFromServer(
     const gfx::Rect& bounds,
     const viz::LocalSurfaceIdAllocation& local_surface_id_allocation) {
-  base::AutoReset<bool> resetter(&in_set_bounds_from_server_, true);
+  base::AutoReset<bool> resetter(&is_server_setting_bounds_, true);
   SetBounds(bounds, local_surface_id_allocation);
 }
 

@@ -1046,7 +1046,7 @@ void DesktopWindowTreeHostMus::SetBounds(
     const viz::LocalSurfaceIdAllocation& local_surface_id_allocation) {
   gfx::Rect final_bounds = bounds;
   // If the server initiated the bounds change, then we need to honor it.
-  if (!in_set_bounds_from_server() && bounds_in_dip().size() != bounds.size()) {
+  if (!is_server_setting_bounds() && bounds_in_dip().size() != bounds.size()) {
     gfx::Size size = bounds.size();
     size.SetToMax(native_widget_delegate_->GetMinimumSize());
     const gfx::Size max_size = native_widget_delegate_->GetMaximumSize();
@@ -1065,7 +1065,7 @@ void DesktopWindowTreeHostMus::SetBoundsInPixels(
   // WindowTreeHost exposes SetBoundsInPixels() this function may be called too.
   // If the server initiated the bounds change, then we need to honor it.
   gfx::Rect final_bounds_in_pixels = bounds_in_pixels;
-  if (!in_set_bounds_from_server() &&
+  if (!is_server_setting_bounds() &&
       GetBoundsInPixels().size() != bounds_in_pixels.size()) {
     gfx::Size size = bounds_in_pixels.size();
     size.SetToMax(gfx::ConvertSizeToPixel(

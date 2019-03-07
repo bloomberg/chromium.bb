@@ -127,7 +127,7 @@ class AURA_EXPORT WindowTreeHostMus : public WindowTreeHostPlatform,
       const viz::LocalSurfaceIdAllocation& local_surface_id_allocation =
           viz::LocalSurfaceIdAllocation()) override;
 
-  bool in_set_bounds_from_server() const { return in_set_bounds_from_server_; }
+  bool is_server_setting_bounds() const { return is_server_setting_bounds_; }
 
  private:
   int64_t display_id_;
@@ -135,7 +135,7 @@ class AURA_EXPORT WindowTreeHostMus : public WindowTreeHostPlatform,
   WindowTreeHostMusDelegate* delegate_;
 
   // If true, the server initiated the bounds change.
-  bool in_set_bounds_from_server_ = false;
+  bool is_server_setting_bounds_ = false;
 
   std::unique_ptr<InputMethodMus> input_method_;
 
