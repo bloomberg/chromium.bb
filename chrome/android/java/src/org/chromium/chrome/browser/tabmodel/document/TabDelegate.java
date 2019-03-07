@@ -18,6 +18,7 @@ import org.chromium.chrome.browser.ServiceTabLauncher;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabBuilder;
 import org.chromium.chrome.browser.tab.TabIdManager;
 import org.chromium.chrome.browser.tab.TabState;
 import org.chromium.chrome.browser.tabmodel.AsyncTabParamsManager;
@@ -53,8 +54,10 @@ public class TabDelegate extends TabCreator {
      */
     @Override
     public Tab createFrozenTab(TabState state, int id, int index) {
-        return Tab.createFrozenTabFromState(
-                id, state.isIncognito(), null, Tab.INVALID_TAB_ID, state);
+        return TabBuilder.createFromFrozenState(state)
+                .setId(id)
+                .setIncognito(state.isIncognito())
+                .build();
     }
 
     @Override

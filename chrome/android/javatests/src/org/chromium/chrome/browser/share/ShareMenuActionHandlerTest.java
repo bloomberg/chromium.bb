@@ -13,7 +13,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
-import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.MockTab;
 import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.util.SadTabRule;
 import org.chromium.content_public.browser.WebContents;
@@ -36,7 +36,7 @@ public class ShareMenuActionHandlerTest {
     @Test
     @SmallTest
     public void testShouldFetchCanonicalUrl() throws ExecutionException {
-        MockTab mockTab = ThreadUtils.runOnUiThreadBlocking(() -> { return new MockTab(); });
+        MockUrlTab mockTab = ThreadUtils.runOnUiThreadBlocking(() -> { return new MockUrlTab(); });
         MockWebContents mockWebContents = new MockWebContents();
         MockRenderFrameHost mockRenderFrameHost = new MockRenderFrameHost();
         mSadTabRule.setTab(mockTab);
@@ -99,14 +99,14 @@ public class ShareMenuActionHandlerTest {
         Assert.assertEquals(httpsUrl, ShareMenuActionHandler.getUrlToShare(httpsUrl, contentUrl));
     }
 
-    private static class MockTab extends Tab {
+    private static class MockUrlTab extends MockTab {
         public WebContents webContents;
         public String url;
         public boolean isShowingErrorPage;
         public boolean isShowingInterstitialPage;
 
-        public MockTab() {
-            super(INVALID_TAB_ID, false, null);
+        public MockUrlTab() {
+            super(INVALID_TAB_ID, false);
         }
 
         @Override

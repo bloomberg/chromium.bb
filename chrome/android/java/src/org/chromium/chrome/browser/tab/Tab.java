@@ -319,35 +319,25 @@ public class Tab
     /**
      * Creates an instance of a {@link Tab}.
      *
-     * This constructor may be called before the native library has been loaded, so any additions
-     * must be vetted for library calls.
-     *
-     * @param id        The id this tab should be identified with.
-     * @param incognito Whether or not this tab is incognito.
-     * @param window    An instance of a {@link WindowAndroid}.
-     */
-    public Tab(int id, boolean incognito, WindowAndroid window) {
-        this(id, INVALID_TAB_ID, incognito, window, null, null, null);
-    }
-
-    /**
-     * Creates an instance of a {@link Tab}.
-     *
      * This constructor can be called before the native library has been loaded, so any additions
      * must be vetted for library calls.
      *
-     * @param id          The id this tab should be identified with.
-     * @param parentId    The id id of the tab that caused this tab to be opened.
-     * @param incognito   Whether or not this tab is incognito.
-     * @param window      An instance of a {@link WindowAndroid}.
-     * @param creationState State in which the tab is created, needed to initialize TabUma
-     *                      accounting. When null, TabUma will not be initialized.
-     * @param frozenState State containing information about this Tab, if it was persisted.
+     * Package-private. Use {@link TabBuilder} to create an instance.
+     *
+     * @param id            The id this tab should be identified with.
+     * @param parentId      The id id of the tab that caused this tab to be opened.
+     * @param incognito     Whether or not this tab is incognito.
+     * @param window        An instance of a {@link WindowAndroid}.
+     * @param launchType    Type indicating how this tab was launched.
+     * @param creationState State in which the tab is created.
+     * @param frozenState   State containing information about this Tab, if it was persisted.
+     * @param loadUrlParams Parameters used for a lazily loaded Tab.
      */
     @SuppressLint("HandlerLeak")
-    public Tab(int id, int parentId, boolean incognito, WindowAndroid window,
-            @Nullable @TabLaunchType Integer type,
-            @Nullable @TabCreationState Integer creationState, TabState frozenState) {
+    Tab(int id, int parentId, boolean incognito, WindowAndroid window,
+            @Nullable @TabLaunchType Integer launchType,
+            @Nullable @TabCreationState Integer creationState, TabState frozenState,
+            LoadUrlParams loadUrlParams) {
         mId = TabIdManager.getInstance().generateValidId(id);
         mParentId = parentId;
         mIncognito = incognito;
@@ -369,14 +359,15 @@ public class Tab
         mThemedApplicationContext = themeWrapper;
 
         mWindowAndroid = window;
-        mLaunchType = type;
-        mLaunchTypeAtCreation = type;
+        mLaunchType = launchType;
+        mLaunchTypeAtCreation = launchType;
+        mPendingLoadParams = loadUrlParams;
+        if (loadUrlParams != null) mUrl = loadUrlParams.getUrl();
 
         TabThemeColorHelper.createForTab(this);
 
         // Restore data from the TabState, if it existed.
         if (frozenState != null) {
-            assert type == TabLaunchType.FROM_RESTORE;
             restoreFieldsFromState(frozenState);
         } else {
             if (mParentId == INVALID_TAB_ID || getTabModelSelector() == null
@@ -396,15 +387,7 @@ public class Tab
         ContextualSearchTabHelper.createForTab(this);
         MediaSessionTabHelper.createForTab(this);
 
-        if (creationState != null) {
-            TabUma.create(this, creationState);
-            if (frozenState == null) {
-                assert creationState != TabCreationState.FROZEN_ON_RESTORE;
-            } else {
-                assert type == TabLaunchType.FROM_RESTORE
-                        && creationState == TabCreationState.FROZEN_ON_RESTORE;
-            }
-        }
+        if (creationState != null) TabUma.create(this, creationState);
 
         mAttachStateChangeListener = new OnAttachStateChangeListener() {
             @Override
@@ -686,7 +669,7 @@ public class Tab
     }
 
     /** @return WebContentsState representing the state of the WebContents (navigations, etc.) */
-    public WebContentsState getFrozenContentsState() {
+    private WebContentsState getFrozenContentsState() {
         return mFrozenContentsState;
     }
 
@@ -1135,7 +1118,7 @@ public class Tab
      * - Removes the tab from its current {@link TabModelSelector}, effectively severing
      *   the {@link Activity} to {@link Tab} link.
      */
-    private void detach() {
+    public void detach() {
         // TODO(yusufo): We can't call updateWindowAndroid here and set mWindowAndroid to null
         // because many code paths (including navigation) expect the tab to always be associated
         // with an activity, and will crash. crbug.com/657007
@@ -1877,10 +1860,6 @@ public class Tab
         return mNativeTabAndroid;
     }
 
-    private static Rect getEstimatedContentSize(Context context) {
-        return ExternalPrerenderHandler.estimateContentSize(context, false);
-    }
-
     /** This is currently called when committing a pre-rendered page. */
     @VisibleForTesting
     public void swapWebContents(
@@ -1895,7 +1874,7 @@ public class Tab
 
         Rect bounds = new Rect();
         if (originalWidth == 0 && originalHeight == 0) {
-            bounds = getEstimatedContentSize(getApplicationContext());
+            bounds = ExternalPrerenderHandler.estimateContentSize(getApplicationContext(), false);
             originalWidth = bounds.right - bounds.left;
             originalHeight = bounds.bottom - bounds.top;
         }
@@ -1974,14 +1953,6 @@ public class Tab
      */
     private LoadUrlParams getPendingLoadParams() {
         return mPendingLoadParams;
-    }
-
-    /**
-     * @param params Parameters that should be used for a lazily loaded Tab.
-     */
-    private void setPendingLoadParams(LoadUrlParams params) {
-        mPendingLoadParams = params;
-        mUrl = params.getUrl();
     }
 
     /**
@@ -2346,18 +2317,6 @@ public class Tab
     }
 
     /**
-     * Creates a new, "frozen" tab from a saved state. This can be used for background tabs restored
-     * on cold start that should be loaded when switched to. initialize() needs to be called
-     * afterwards to complete the second level initialization.
-     */
-    public static Tab createFrozenTabFromState(
-            int id, boolean incognito, WindowAndroid nativeWindow, int parentId, TabState state) {
-        assert state != null;
-        return new Tab(id, parentId, incognito, nativeWindow, TabLaunchType.FROM_RESTORE,
-                TabCreationState.FROZEN_ON_RESTORE, state);
-    }
-
-    /**
      * Update whether or not the current native tab and/or web contents are
      * currently visible (from an accessibility perspective), or whether
      * they're obscured by another view.
@@ -2386,57 +2345,6 @@ public class Tab
     private boolean isObscuredByAnotherViewForAccessibility() {
         ChromeActivity activity = getActivity();
         return activity != null && activity.isViewObscuringAllTabs();
-    }
-
-    /**
-     * Creates a new tab to be loaded lazily. This can be used for tabs opened in the background
-     * that should be loaded when switched to. initialize() needs to be called afterwards to
-     * complete the second level initialization.
-     */
-    public static Tab createTabForLazyLoad(boolean incognito, WindowAndroid nativeWindow,
-            @TabLaunchType int type, int parentId, LoadUrlParams loadUrlParams) {
-        Tab tab = new Tab(INVALID_TAB_ID, parentId, incognito, nativeWindow, type,
-                TabCreationState.FROZEN_FOR_LAZY_LOAD, null);
-        tab.setPendingLoadParams(loadUrlParams);
-        return tab;
-    }
-
-    /**
-     * Creates a fresh tab. initialize() needs to be called afterwards to complete the second level
-     * initialization.
-     * @param initiallyHidden true iff the tab being created is initially in background
-     */
-    public static Tab createLiveTab(int id, boolean incognito, WindowAndroid nativeWindow,
-            @TabLaunchType int type, int parentId, boolean initiallyHidden) {
-        return new Tab(id, parentId, incognito, nativeWindow, type,
-                initiallyHidden ? TabCreationState.LIVE_IN_BACKGROUND
-                                : TabCreationState.LIVE_IN_FOREGROUND,
-                null);
-    }
-
-    /**
-     * Creates an instance of a {@link Tab} that is fully detached from any activity.
-     * Also performs general tab initialization as well as detached specifics.
-     *
-     * The current application context must allow the creation of a WindowAndroid.
-     *
-     * @return The newly created and initialized tab.
-     */
-    public static Tab createDetached(TabDelegateFactory delegateFactory) {
-        Context context = ContextUtils.getApplicationContext();
-        WindowAndroid windowAndroid = new WindowAndroid(context);
-        Tab tab = new Tab(INVALID_TAB_ID, INVALID_TAB_ID, false, windowAndroid,
-                TabLaunchType.FROM_SPECULATIVE_BACKGROUND_CREATION, null, null);
-        tab.initialize(null, null, delegateFactory, true, false);
-
-        // Resize the webContent to avoid expensive post load resize when attaching the tab.
-        Rect bounds = getEstimatedContentSize(context);
-        int width = bounds.right - bounds.left;
-        int height = bounds.bottom - bounds.top;
-        tab.getWebContents().setSize(width, height);
-
-        tab.detach();
-        return tab;
     }
 
     void handleRendererResponsiveStateChanged(boolean isResponsive) {

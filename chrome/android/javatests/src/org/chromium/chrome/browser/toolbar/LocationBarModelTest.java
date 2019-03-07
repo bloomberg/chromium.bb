@@ -24,6 +24,7 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.omnibox.UrlBarData;
+import org.chromium.chrome.browser.tab.MockTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.top.ToolbarLayout;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -122,7 +123,7 @@ public class LocationBarModelTest {
             super(ContextUtils.getApplicationContext());
             initializeWithNative();
 
-            Tab tab = new Tab(0, false, null) {
+            Tab tab = new MockTab(0, false) {
                 @Override
                 public boolean isInitialized() {
                     return true;

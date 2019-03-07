@@ -12,6 +12,7 @@ import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
 
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabBuilder;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tabmodel.SingleTabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
@@ -89,8 +90,10 @@ public abstract class SingleTabActivity extends ChromeActivity {
         }
 
         if (tab == null) {
-            tab = new Tab(Tab.INVALID_TAB_ID, Tab.INVALID_TAB_ID, false, getWindowAndroid(),
-                    TabLaunchType.FROM_CHROME_UI, null, null);
+            tab = new TabBuilder()
+                          .setWindow(getWindowAndroid())
+                          .setLaunchType(TabLaunchType.FROM_CHROME_UI)
+                          .build();
         }
 
         tab.initialize(null, getTabContentManager(), createTabDelegateFactory(), false, unfreeze);

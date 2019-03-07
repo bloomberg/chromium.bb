@@ -28,6 +28,7 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabBuilder;
 import org.chromium.chrome.browser.tab.TabState;
 import org.chromium.chrome.browser.tabmodel.DocumentModeAssassin.DocumentModeAssassinForTesting;
 import org.chromium.chrome.browser.tabmodel.DocumentModeAssassin.DocumentModeAssassinObserver;
@@ -107,7 +108,7 @@ public class DocumentModeAssassinTest {
 
             @Override
             public Tab getTabAt(int index) {
-                return new Tab(TAB_STATE_INFO[index].tabId, false, null);
+                return new TabBuilder().setId(TAB_STATE_INFO[index].tabId).build();
             }
 
             @Override
