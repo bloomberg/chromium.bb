@@ -206,8 +206,6 @@ std::string GetTransportStateString(syncer::SyncService::TransportState state) {
   switch (state) {
     case syncer::SyncService::TransportState::DISABLED:
       return "Disabled";
-    case syncer::SyncService::TransportState::WAITING_FOR_START_REQUEST:
-      return "Waiting for start request";
     case syncer::SyncService::TransportState::START_DEFERRED:
       return "Start deferred";
     case syncer::SyncService::TransportState::INITIALIZING:

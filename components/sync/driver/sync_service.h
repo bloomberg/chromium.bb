@@ -85,15 +85,6 @@ class SyncService : public KeyedService {
     // Sync is inactive, e.g. due to enterprise policy, or simply because there
     // is no authenticated user.
     DISABLED,
-    // Sync can start in principle, but nothing has prodded it to actually do it
-    // yet. Note that during subsequent browser startups, Sync starts
-    // automatically, i.e. no prod is necessary, but during the first start Sync
-    // does need a kick. This usually happens via starting (not finishing!) the
-    // initial setup, or via a call to SyncUserSettings::SetSyncRequested.
-    // TODO(crbug.com/839834): Check whether this state is necessary, or if Sync
-    // can just always start up if all conditions are fulfilled (that's what
-    // happens in practice anyway).
-    WAITING_FOR_START_REQUEST,
     // Sync's startup was deferred, so that it doesn't slow down browser
     // startup. Once the deferral time (usually 10s) expires, or something
     // requests immediate startup, Sync will actually start.

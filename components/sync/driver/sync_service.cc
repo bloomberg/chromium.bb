@@ -30,7 +30,6 @@ bool SyncService::CanSyncFeatureStart() const {
 bool SyncService::IsEngineInitialized() const {
   switch (GetTransportState()) {
     case TransportState::DISABLED:
-    case TransportState::WAITING_FOR_START_REQUEST:
     case TransportState::START_DEFERRED:
     case TransportState::INITIALIZING:
       return false;
@@ -49,7 +48,6 @@ bool SyncService::IsSyncFeatureActive() const {
   }
   switch (GetTransportState()) {
     case TransportState::DISABLED:
-    case TransportState::WAITING_FOR_START_REQUEST:
     case TransportState::START_DEFERRED:
     case TransportState::INITIALIZING:
     case TransportState::PENDING_DESIRED_CONFIGURATION:

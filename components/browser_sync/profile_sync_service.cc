@@ -538,8 +538,8 @@ void ProfileSyncService::StartUpSlowEngineComponents() {
 void ProfileSyncService::Shutdown() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  ShutdownImpl(syncer::BROWSER_SHUTDOWN);
   NotifyShutdown();
+  ShutdownImpl(syncer::BROWSER_SHUTDOWN);
 
   // All observers must be gone now: All KeyedServices should have unregistered
   // their observers already before, in their own Shutdown(), and all others
@@ -701,9 +701,12 @@ syncer::SyncService::TransportState ProfileSyncService::GetTransportState()
 
   if (!engine_initialized_) {
     switch (startup_controller_->GetState()) {
+        // TODO(crbug.com/935523): If the engine is allowed to start, then we
+        // should generally have kicked off the startup process already, so
+        // NOT_STARTED should be impossible. But we can temporarily be in this
+        // state between shutting down and starting up again (e.g. during the
+        // NotifyObservers() call in ShutdownImpl()).
       case syncer::StartupController::State::NOT_STARTED:
-        DCHECK(!engine_);
-        return TransportState::WAITING_FOR_START_REQUEST;
       case syncer::StartupController::State::STARTING_DEFERRED:
         DCHECK(!engine_);
         return TransportState::START_DEFERRED;
@@ -1523,8 +1526,6 @@ void ProfileSyncService::OnFirstSetupCompletePrefChange(
 
 void ProfileSyncService::OnSyncRequestedPrefChange(bool is_sync_requested) {
   if (is_sync_requested) {
-    NotifyObservers();
-
     // If the Sync engine was already initialized (probably running in transport
     // mode), just reconfigure.
     if (engine_initialized_) {
@@ -1534,6 +1535,8 @@ void ProfileSyncService::OnSyncRequestedPrefChange(bool is_sync_requested) {
       // reasons remaining, in which case this will effectively do nothing.
       startup_controller_->TryStart(/*force_immediate=*/true);
     }
+
+    NotifyObservers();
   } else {
     // This will notify the observers.
     if (is_stopping_and_clearing_) {

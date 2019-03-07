@@ -194,10 +194,8 @@ TEST_F(ProfileSyncServiceStartupTest, StartFirstTime) {
 
   SimulateTestUserSignin();
 
-  // Now we're signed in, so the engine can start. There's already a setup in
-  // progress, so we don't go into the WAITING_FOR_START_REQUEST state. Engine
-  // initialization is immediate in this test, so we also bypass the
-  // INITIALIZING state.
+  // Now we're signed in, so the engine can start. Engine initialization is
+  // immediate in this test, so we bypass the INITIALIZING state.
   EXPECT_TRUE(sync_service()->IsEngineInitialized());
   EXPECT_EQ(syncer::SyncService::DISABLE_REASON_NONE,
             sync_service()->GetDisableReasons());
