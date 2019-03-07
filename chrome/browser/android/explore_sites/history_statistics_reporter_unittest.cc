@@ -192,8 +192,6 @@ TEST_F(HistoryStatisticsReporterTest, OneRunPerSession) {
 }
 
 TEST_F(HistoryStatisticsReporterTest, OneRunPerWeekSaveTimestamp) {
-  base::Time time_now = task_runner()->GetMockClock()->Now();
-
   ASSERT_TRUE(LoadHistory());
 
   ScheduleReportAndRunUntilIdle();
@@ -202,6 +200,7 @@ TEST_F(HistoryStatisticsReporterTest, OneRunPerWeekSaveTimestamp) {
   histograms().ExpectTotalCount("History.DatabaseMonthlyHostCountTime", 1);
 
   // Reporter should have left the time of request in Prefs.
+  base::Time time_now = task_runner()->GetMockClock()->Now();
   EXPECT_EQ(time_now, prefs()->GetTime(kWeeklyStatsReportingTimestamp));
 }
 
@@ -217,8 +216,6 @@ TEST_F(HistoryStatisticsReporterTest, OneRunPerWeekReadTimestamp) {
 }
 
 TEST_F(HistoryStatisticsReporterTest, OneRunPerWeekReadTimestampAfterWeek) {
-  base::Time time_now = task_runner()->GetMockClock()->Now();
-
   ASSERT_TRUE(LoadHistory());
 
   prefs()->SetTime(
@@ -229,6 +226,7 @@ TEST_F(HistoryStatisticsReporterTest, OneRunPerWeekReadTimestampAfterWeek) {
   // More than a week since last query, should have gone through.
   histograms().ExpectTotalCount("History.DatabaseMonthlyHostCountTime", 1);
   // Reporter should have left the time of request in Prefs.
+  base::Time time_now = task_runner()->GetMockClock()->Now();
   EXPECT_EQ(time_now, prefs()->GetTime(kWeeklyStatsReportingTimestamp));
 }
 
