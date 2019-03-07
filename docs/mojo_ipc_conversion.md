@@ -265,6 +265,8 @@ interface Foo {
   DoTheThing(string name) => (bool success);
 };
 ```
+See [Receiving responses](/mojo/public/cpp/bindings/README.md#receiving-responses)
+for more information.
 
 ## Repurposing `IPC::ParamTraits` and `IPC_STRUCT*` Invocations
 

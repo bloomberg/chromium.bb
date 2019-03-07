@@ -1793,7 +1793,7 @@ inline bool IsKnownEnumValue(Department value);
 
 ### Using Mojo Bindings in Chrome
 
-See [Converting Legacy Chrome IPC To Mojo](/ipc/README.md).
+See [Converting Legacy Chrome IPC To Mojo](/docs/mojo_ipc_conversion.md).
 
 ### Additional Documentation
 
