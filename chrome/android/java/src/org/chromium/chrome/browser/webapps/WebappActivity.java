@@ -46,11 +46,10 @@ import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabBuilder;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tab.TabState;
-import org.chromium.chrome.browser.tab.TabUma.TabCreationState;
-import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
 import org.chromium.chrome.browser.toolbar.top.ToolbarControlContainer;
 import org.chromium.chrome.browser.util.ColorUtils;
@@ -389,8 +388,10 @@ public class WebappActivity extends SingleTabActivity {
         TabState tabState = TabState.restoreTabState(getActivityDirectory(), tabId);
         if (tabState == null) return null;
 
-        return new Tab(tabId, Tab.INVALID_TAB_ID, false, getWindowAndroid(),
-                TabLaunchType.FROM_RESTORE, TabCreationState.FROZEN_ON_RESTORE, tabState);
+        return TabBuilder.createFromFrozenState(tabState)
+                .setId(tabId)
+                .setWindow(getWindowAndroid())
+                .build();
     }
 
     @Override

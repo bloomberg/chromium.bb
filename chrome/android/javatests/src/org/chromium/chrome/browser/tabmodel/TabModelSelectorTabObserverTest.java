@@ -17,6 +17,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ObserverList;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabBuilder;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tab.TabTestUtils;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -137,7 +138,10 @@ public class TabModelSelectorTabObserverTest {
     }
 
     private Tab createTestTab(boolean incognito) {
-        Tab testTab = new Tab(Tab.INVALID_TAB_ID, incognito, mTestRule.getWindowAndroid());
+        Tab testTab = new TabBuilder()
+                              .setIncognito(incognito)
+                              .setWindow(mTestRule.getWindowAndroid())
+                              .build();
         testTab.initializeNative();
         return testTab;
     }

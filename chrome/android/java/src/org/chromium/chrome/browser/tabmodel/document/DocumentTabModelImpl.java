@@ -13,6 +13,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.document.DocumentActivity;
 import org.chromium.chrome.browser.document.DocumentUtils;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabBuilder;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabList;
@@ -236,7 +237,8 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
 
         // Create a placeholder Tab that just has the ID.
         if (entry.placeholderTab == null) {
-            entry.placeholderTab = new Tab(tabId, isIncognito(), null);
+            entry.placeholderTab =
+                    new TabBuilder().setId(tabId).setIncognito(isIncognito()).build();
         }
 
         return entry.placeholderTab;

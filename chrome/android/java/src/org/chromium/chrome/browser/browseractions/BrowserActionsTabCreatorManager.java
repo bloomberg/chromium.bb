@@ -8,6 +8,7 @@ import android.content.Context;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabBuilder;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tab.TabState;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
@@ -47,8 +48,10 @@ public class BrowserActionsTabCreatorManager implements TabCreatorManager {
                 : "tab launch type should be FROM_BROWSER_ACTIONS or FROM_RESTORE";
             Context context = ContextUtils.getApplicationContext();
             WindowAndroid windowAndroid = new WindowAndroid(context);
-            Tab tab = Tab.createTabForLazyLoad(
-                    false, windowAndroid, type, Tab.INVALID_TAB_ID, loadUrlParams);
+            Tab tab = TabBuilder.createForLazyLoad(loadUrlParams)
+                              .setWindow(windowAndroid)
+                              .setLaunchType(type)
+                              .build();
             tab.initialize(null, null, new TabDelegateFactory(), true, false);
             mTabModel.addTab(tab, -1, type);
             return tab;
@@ -58,8 +61,10 @@ public class BrowserActionsTabCreatorManager implements TabCreatorManager {
         public Tab createFrozenTab(TabState state, int id, int index) {
             Context context = ContextUtils.getApplicationContext();
             WindowAndroid windowAndroid = new WindowAndroid(context);
-            Tab tab = Tab.createFrozenTabFromState(
-                    id, false, windowAndroid, Tab.INVALID_TAB_ID, state);
+            Tab tab = TabBuilder.createFromFrozenState(state)
+                              .setId(id)
+                              .setWindow(windowAndroid)
+                              .build();
             tab.initialize(null, null, new TabDelegateFactory(), true, false);
             mTabModel.addTab(tab, index, TabLaunchType.FROM_RESTORE);
             return tab;

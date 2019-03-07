@@ -17,10 +17,9 @@ import org.chromium.chrome.browser.SingleTabActivity;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabBuilder;
 import org.chromium.chrome.browser.tab.TabRedirectHandler;
 import org.chromium.chrome.browser.tab.TabState;
-import org.chromium.chrome.browser.tab.TabUma.TabCreationState;
-import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.common.Referrer;
 import org.chromium.ui.base.PageTransition;
@@ -168,8 +167,10 @@ public class NoTouchActivity extends SingleTabActivity {
         TabState tabState = TabState.restoreTabState(savedInstanceState);
         assert tabState != null;
 
-        return new Tab(tabId, Tab.INVALID_TAB_ID, false, getWindowAndroid(),
-                TabLaunchType.FROM_RESTORE, TabCreationState.FROZEN_ON_RESTORE, tabState);
+        return TabBuilder.createFromFrozenState(tabState)
+                .setId(tabId)
+                .setWindow(getWindowAndroid())
+                .build();
     }
 
     @Override

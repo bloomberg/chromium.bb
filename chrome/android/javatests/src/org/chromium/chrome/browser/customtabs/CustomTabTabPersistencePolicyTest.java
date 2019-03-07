@@ -31,6 +31,7 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
+import org.chromium.chrome.browser.tab.MockTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabState;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -439,7 +440,7 @@ public class CustomTabTabPersistencePolicyTest {
                 new MockTabModel.MockTabModelDelegate() {
                     @Override
                     public Tab createTab(int id, boolean incognito) {
-                        return new Tab(id, incognito, null) {
+                        return new MockTab(id, incognito) {
                             @Override
                             public String getUrl() {
                                 return "https://www.google.com";
