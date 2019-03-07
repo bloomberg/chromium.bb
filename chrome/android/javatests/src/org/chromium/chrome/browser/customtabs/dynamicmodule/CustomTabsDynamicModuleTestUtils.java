@@ -50,7 +50,7 @@ public class CustomTabsDynamicModuleTestUtils {
     /**
      * A asset name used to load {@link #FAKE_MODULE_DEX}.
      */
-    /* package */ final static String FAKE_MODULE_DEX_RESOURCE_ID = "42";
+    /* package */ final static String FAKE_MODULE_DEX_ASSET_NAME = "R.strings.forty_two";
 
     /**
      * A fake "dex file" that consists of couple of bytes.
@@ -308,7 +308,7 @@ public class CustomTabsDynamicModuleTestUtils {
 
         @Override
         public InputStream createInputStream(@Nullable String dexAssetName, Context moduleContext) {
-            if (!FAKE_MODULE_DEX_RESOURCE_ID.equals(dexAssetName)) {
+            if (!FAKE_MODULE_DEX_ASSET_NAME.equals(dexAssetName)) {
                 throw new RuntimeException("Unknown resource ID: " + dexAssetName);
             }
 

@@ -49,11 +49,20 @@ public class ModuleLoader {
 
     /** Specifies the module package name and entry point class name. */
     private final ComponentName mComponentName;
+    @Nullable
     private final String mDexAssetName;
     private final DexInputStreamProvider mDexInputStreamProvider;
     private final DexClassLoaderProvider mDexClassLoaderProvider;
     private final long mModuleLastUpdateTime;
     private final String mModuleId;
+
+    /** @param moduleContext The context for the package to load the class from. */
+    private Context mModuleContext;
+
+    @Nullable
+    private ClassLoader mClassLoader;
+    private boolean mIsClassLoaderCreating;
+    private boolean mNeedsToLoadModule;
 
     /**
      * Tracks the number of usages of the module. If it is no longer used, it may be destroyed, but
@@ -122,6 +131,9 @@ public class ModuleLoader {
         }
         mModuleLastUpdateTime = lastUpdateTime;
         mModuleId = String.format("%s v%s (%s)", packageName, versionCode, versionName);
+
+        mModuleContext = createModuleContext(
+                mComponentName.getPackageName(), /* resourcesOnly = */ mDexAssetName != null);
     }
 
     public ComponentName getComponentName() {
@@ -137,6 +149,12 @@ public class ModuleLoader {
      * If the module is not loaded yet, dynamically loads the module entry point class.
      */
     public void loadModule() {
+        if (mClassLoader == null) {
+            mNeedsToLoadModule = true;
+            if (!mIsClassLoaderCreating) createClassLoader();
+            return;
+        }
+
         if (mIsModuleLoading) return;
 
         // If module has been already loaded all callbacks must be notified synchronously.
@@ -146,9 +164,7 @@ public class ModuleLoader {
             return;
         }
 
-        Context moduleContext = createModuleContext(
-                mComponentName.getPackageName(), /* resourcesOnly = */ mDexAssetName != null);
-        if (moduleContext == null) {
+        if (mModuleContext == null) {
             runAndClearCallbacks();
             return;
         }
@@ -156,9 +172,16 @@ public class ModuleLoader {
         ModuleMetrics.registerLifecycleState(ModuleMetrics.LifecycleState.NOT_LOADED);
 
         mIsModuleLoading = true;
-        new LoadClassTask(moduleContext)
-                .executeWithTaskTraits(
-                        new TaskTraits().taskPriority(TaskPriority.USER_VISIBLE).mayBlock(true));
+        new LoadClassTask().executeWithTaskTraits(
+                new TaskTraits().taskPriority(TaskPriority.USER_VISIBLE).mayBlock(true));
+    }
+
+    public void createClassLoader() {
+        if (mClassLoader != null) return;
+
+        mIsClassLoaderCreating = true;
+        new ClassLoaderTask().executeWithTaskTraits(
+                new TaskTraits().taskPriority(TaskPriority.USER_VISIBLE).mayBlock(true));
     }
 
     /**
@@ -311,41 +334,34 @@ public class ModuleLoader {
     }
 
     /**
-     * A task for loading the module entry point class on a background thread.
+     * A task for creating module {@link ClassLoader}.
      */
-    private class LoadClassTask extends AsyncTask<Class<?>> {
+    private class ClassLoaderTask extends AsyncTask<ClassLoader> {
         /** Buffer size to use while copying an input stream into the disk. */
         private static final int BUFFER_SIZE = 16 * 1024;
 
-        private final Context mModuleContext;
-
-        /**
-         * Constructs the task.
-         * @param moduleContext The context for the package to load the class from.
-         */
-        LoadClassTask(Context moduleContext) {
-            mModuleContext = moduleContext;
-        }
-
         @Override
         @Nullable
-        protected Class<?> doInBackground() {
+        protected ClassLoader doInBackground() {
             try {
                 boolean loadFromDex = updateModuleDexInDiskIfNeeded();
-                long entryPointLoadClassStartTime = ModuleMetrics.now();
-                Class<?> clazz =
-                        getModuleClassLoader(loadFromDex).loadClass(mComponentName.getClassName());
-                ModuleMetrics.recordLoadClassTime(entryPointLoadClassStartTime);
-                return clazz;
-            } catch (ClassNotFoundException e) {
-                Log.e(TAG, "Could not find class %s", mComponentName.getClassName(), e);
-                ModuleMetrics.recordLoadResult(ModuleMetrics.LoadResult.CLASS_NOT_FOUND_EXCEPTION);
+                mClassLoader = getModuleClassLoader(loadFromDex);
+                return mClassLoader;
             } catch (IOException e) {
                 Log.e(TAG, "Could not copy dex to local storage", e);
                 ModuleMetrics.recordLoadResult(
                         ModuleMetrics.LoadResult.FAILED_TO_COPY_DEX_EXCEPTION);
             }
             return null;
+        }
+
+        @Override
+        protected void onPostExecute(ClassLoader classLoader) {
+            mIsClassLoaderCreating = false;
+            if (mNeedsToLoadModule) {
+                mNeedsToLoadModule = false;
+                loadModule();
+            }
         }
 
         /**
@@ -399,6 +415,27 @@ public class ModuleLoader {
                 return mModuleContext.getClassLoader();
             }
             return mDexClassLoaderProvider.createClassLoader(getDexFile());
+        }
+    }
+
+    /**
+     * A task for loading the module entry point class on a background thread.
+     */
+    private class LoadClassTask extends AsyncTask<Class<?>> {
+        @Override
+        @Nullable
+        protected Class<?> doInBackground() {
+            if (mClassLoader == null) return null;
+            try {
+                long entryPointLoadClassStartTime = ModuleMetrics.now();
+                Class<?> clazz = mClassLoader.loadClass(mComponentName.getClassName());
+                ModuleMetrics.recordLoadClassTime(entryPointLoadClassStartTime);
+                return clazz;
+            } catch (ClassNotFoundException e) {
+                Log.e(TAG, "Could not find class %s", mComponentName.getClassName(), e);
+                ModuleMetrics.recordLoadResult(ModuleMetrics.LoadResult.CLASS_NOT_FOUND_EXCEPTION);
+            }
+            return null;
         }
 
         @Override
