@@ -15,6 +15,7 @@
 #include "base/task/post_task.h"
 #include "content/browser/notifications/blink_notification_service_impl.h"
 #include "content/browser/notifications/notification_database.h"
+#include "content/browser/notifications/notification_trigger_constants.h"
 #include "content/browser/notifications/platform_notification_service_proxy.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/public/browser/browser_context.h"
@@ -472,6 +473,28 @@ void PlatformNotificationContextImpl::WriteNotificationData(
       database_data, std::move(callback)));
 }
 
+bool PlatformNotificationContextImpl::DoCheckNotificationTriggerQuota(
+    const GURL& origin) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  int notification_count = 0;
+  // Iterate over all notifications and count all scheduled notifications for
+  // |origin|.
+  NotificationDatabase::Status status =
+      database_->ForEachNotificationData(base::BindRepeating(
+          [](const GURL& expected_origin, int* count,
+             const NotificationDatabaseData& data) {
+            if (CanTrigger(data) && data.origin == expected_origin)
+              *count = *count + 1;
+          },
+          origin, &notification_count));
+
+  // Blow away the database if reading data failed due to corruption.
+  if (status == NotificationDatabase::STATUS_ERROR_CORRUPTED)
+    DestroyDatabase();
+
+  return notification_count < kMaximumScheduledNotificationsPerOrigin;
+}
+
 void PlatformNotificationContextImpl::DoWriteNotificationData(
     int64_t service_worker_registration_id,
     int64_t persistent_notification_id,
@@ -489,6 +512,7 @@ void PlatformNotificationContextImpl::DoWriteNotificationData(
     return;
   }
 
+  bool replaces_existing = false;
   std::string notification_id =
       notification_id_generator_.GenerateForPersistentNotification(
           origin, database_data.notification_data.tag,
@@ -501,6 +525,8 @@ void PlatformNotificationContextImpl::DoWriteNotificationData(
         database_->DeleteAllNotificationDataForOrigin(
             origin, database_data.notification_data.tag,
             &deleted_notification_ids);
+
+    replaces_existing = deleted_notification_ids.count(notification_id) != 0;
 
     UMA_HISTOGRAM_ENUMERATION("Notifications.Database.DeleteBeforeWriteResult",
                               delete_status,
@@ -525,6 +551,16 @@ void PlatformNotificationContextImpl::DoWriteNotificationData(
   write_database_data.notification_id = notification_id;
   write_database_data.origin = origin;
 
+  if (CanTrigger(write_database_data) &&
+      !DoCheckNotificationTriggerQuota(origin)) {
+    // TODO(knollr): Reply with a custom error so developers can handle this.
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
+        base::BindOnce(std::move(callback), /* success= */ false,
+                       /* notification_id= */ ""));
+    return;
+  }
+
   NotificationDatabase::Status status =
       database_->WriteNotificationData(origin, write_database_data);
 
@@ -533,6 +569,8 @@ void PlatformNotificationContextImpl::DoWriteNotificationData(
 
   if (status == NotificationDatabase::STATUS_OK) {
     if (CanTrigger(write_database_data)) {
+      if (replaces_existing)
+        service_proxy_->CloseNotification(notification_id);
       // Schedule notification to be shown.
       base::PostTaskWithTraits(
           FROM_HERE, {BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
