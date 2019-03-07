@@ -100,10 +100,6 @@ void QuotaTemporaryStorageEvictor::ReportPerHourHistogram() {
   stats_in_hour.subtract_assign(previous_statistics_);
   previous_statistics_ = statistics_;
 
-  UMA_HISTOGRAM_COUNTS_1M("Quota.ErrorsOnEvictingOriginPerHour",
-                          stats_in_hour.num_errors_on_evicting_origin);
-  UMA_HISTOGRAM_COUNTS_1M("Quota.ErrorsOnGettingUsageAndQuotaPerHour",
-                          stats_in_hour.num_errors_on_getting_usage_and_quota);
   UMA_HISTOGRAM_COUNTS_1M("Quota.EvictedOriginsPerHour",
                           stats_in_hour.num_evicted_origins);
   UMA_HISTOGRAM_COUNTS_1M("Quota.EvictionRoundsPerHour",
