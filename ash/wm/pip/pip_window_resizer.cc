@@ -183,7 +183,7 @@ void PipWindowResizer::Drag(const gfx::Point& location_in_parent,
   ::wm::ConvertRectFromScreen(GetTarget()->parent(), &new_bounds);
   if (new_bounds != GetTarget()->bounds()) {
     moved_or_resized_ = true;
-    GetTarget()->SetBounds(new_bounds);
+    SetBoundsDuringResize(new_bounds);
   }
 }
 

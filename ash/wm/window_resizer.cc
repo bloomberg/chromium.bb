@@ -7,20 +7,40 @@
 #include "ash/wm/root_window_finder.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_state.h"
+#include "base/bind.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/time/time.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
+#include "ui/aura/window_tracker.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/compositor/compositor.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/presentation_feedback.h"
 #include "ui/views/window/window_resize_utils.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
 namespace ash {
-
 namespace {
+
+void OnFramePresented(base::TimeTicks start_time,
+                      const gfx::PresentationFeedback& feedback) {
+  UMA_HISTOGRAM_TIMES("Ash.InteractiveWindowResize.TimeToPresent",
+                      feedback.timestamp - start_time);
+}
+
+void RecordMetricsForResize(base::TimeTicks start_time, aura::Window* window) {
+  DCHECK(window);
+  ui::Compositor* compositor = window->GetHost()->compositor();
+  DCHECK(compositor);
+  compositor->RequestPresentationTimeForNextFrame(
+      base::BindOnce(&OnFramePresented, start_time));
+}
 
 // Returns true for resize components along the right edge, where a drag in
 // positive x will make the window larger.
@@ -254,6 +274,22 @@ gfx::Rect WindowResizer::CalculateBoundsForDrag(
 bool WindowResizer::IsBottomEdge(int window_component) {
   return window_component == HTBOTTOMLEFT || window_component == HTBOTTOM ||
          window_component == HTBOTTOMRIGHT || window_component == HTGROWBOX;
+}
+
+void WindowResizer::SetBoundsDuringResize(const gfx::Rect& bounds) {
+  aura::Window* window = GetTarget();
+  DCHECK(window);
+  // Consider having this time come from the event.
+  base::TimeTicks start = base::TimeTicks::Now();
+  const gfx::Rect original_bounds = window->bounds();
+  window->SetBounds(bounds);
+  aura::WindowTracker tracker;
+  tracker.Add(window);
+  if (tracker.windows().empty())
+    return;  // Assume we've been destroyed.
+  if (bounds.size() == original_bounds.size())
+    return;
+  RecordMetricsForResize(start, window);
 }
 
 void WindowResizer::AdjustDeltaForTouchResize(int* delta_x, int* delta_y) {

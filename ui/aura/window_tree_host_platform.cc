@@ -238,7 +238,8 @@ void WindowTreeHostPlatform::DispatchEvent(ui::Event* event) {
       // other external states are updated correctly, instead of just changing
       // |current_cursor_| here.
       cursor_client->SetCursor(ui::CursorType::kNone);
-      DCHECK_EQ(ui::CursorType::kNone, current_cursor_.native_type());
+      DCHECK(cursor_client->IsCursorLocked() ||
+             ui::CursorType::kNone == current_cursor_.native_type());
     }
   }
 }

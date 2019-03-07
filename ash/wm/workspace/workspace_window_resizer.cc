@@ -474,7 +474,7 @@ void WorkspaceWindowResizer::Drag(const gfx::Point& location_in_parent,
     // the drag and quit early if so.
     base::WeakPtr<WorkspaceWindowResizer> resizer(
         weak_ptr_factory_.GetWeakPtr());
-    GetTarget()->SetBounds(bounds);
+    SetBoundsDuringResize(bounds);
     if (!resizer)
       return;
   }
