@@ -97,19 +97,6 @@ source_set("run_all_unittests") {
   ]
 }
 
-source_set("unit_tests") {
-  configs += [ "//build/config/compiler:enable_arc" ]
-  testonly = true
-  sources = [
-    "google_toolbox_unittest.mm",
-  ]
-  deps = [
-    "//base",
-    "//testing/gtest",
-    "//third_party/google_toolbox_for_mac",
-  ]
-}
-
 test("ios_chrome_perftests") {
   deps = [
     # Ensure that all perf tests are run, use fake hooks and pack resources.
@@ -134,7 +121,6 @@ test("ios_chrome_unittests") {
     ios_packed_resources_target,
 
     # Add unit_tests target here.
-    ":unit_tests",
     "//ios/chrome/app:unit_tests",
     "//ios/chrome/app/application_delegate:unit_tests",
     "//ios/chrome/app/spotlight:unit_tests",
