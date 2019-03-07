@@ -443,7 +443,7 @@ TEST_P(TabTest, GetSuggestedFilenameFromDefaultName) {
 
 TEST_P(TabTest, ClosingWebStateDoesNotRemoveSnapshot) {
   id partialMock = OCMPartialMock(
-      SnapshotCacheFactory::GetForBrowserState(tab_.browserState));
+      SnapshotCacheFactory::GetForBrowserState(chrome_browser_state_.get()));
   NSString* tab_id = TabIdTabHelper::FromWebState(tab_.webState)->tab_id();
   SnapshotTabHelper::CreateForWebState(tab_.webState, tab_id);
   [[partialMock reject] removeImageWithSessionID:tab_id];
@@ -461,7 +461,7 @@ TEST_P(TabTest, ClosingWebStateDoesNotRemoveSnapshot) {
 
 TEST_P(TabTest, CallingRemoveSnapshotRemovesSnapshot) {
   id partialMock = OCMPartialMock(
-      SnapshotCacheFactory::GetForBrowserState(tab_.browserState));
+      SnapshotCacheFactory::GetForBrowserState(chrome_browser_state_.get()));
   NSString* tab_id = TabIdTabHelper::FromWebState(tab_.webState)->tab_id();
 
   SnapshotTabHelper::CreateForWebState(tab_.webState, tab_id);
