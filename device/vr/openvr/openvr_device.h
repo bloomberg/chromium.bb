@@ -52,10 +52,6 @@ class DEVICE_VR_EXPORT OpenVRDevice
   mojom::XRCompositorHostPtr BindCompositorHost();
 
  private:
-  // VRDeviceBase
-  void OnGetInlineFrameData(
-      mojom::XRFrameDataProvider::GetFrameDataCallback callback) override;
-
   // XRSessionController
   void SetFrameDataRestricted(bool restricted) override;
 
