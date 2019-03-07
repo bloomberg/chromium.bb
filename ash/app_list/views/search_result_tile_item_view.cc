@@ -257,6 +257,8 @@ void SearchResultTileItemView::ButtonPressed(views::Button* sender,
   RecordSearchResultOpenSource(result(), view_delegate_->GetModel(),
                                view_delegate_->GetSearchModel());
   view_delegate_->OpenSearchResult(result()->id(), event.flags());
+  view_delegate_->LogResultLaunchHistogram(
+      SearchResultLaunchLocation::kTileList, index_in_item_list_view_);
   view_delegate_->LogSearchClick(
       result()->id(), index_in_item_list_view_,
       ash::mojom::AppListLaunchedFrom::kLaunchedFromSearchBox);

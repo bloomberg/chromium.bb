@@ -873,6 +873,14 @@ void AppListControllerImpl::OpenSearchResult(const std::string& result_id,
     presenter_.GetView()->CloseOpenedPage();
 }
 
+void AppListControllerImpl::LogResultLaunchHistogram(
+    app_list::SearchResultLaunchLocation launch_location,
+    int suggestion_index) {
+  app_list::RecordSearchLaunchIndexAndQueryLength(
+      launch_location, static_cast<int>(last_raw_query_.size()),
+      suggestion_index);
+}
+
 void AppListControllerImpl::LogSearchClick(
     const std::string& result_id,
     int suggestion_index,

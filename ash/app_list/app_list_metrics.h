@@ -59,6 +59,16 @@ constexpr char kAppListPeekingToFullscreenHistogram[] =
 // The UMA histogram that logs how the app list is shown.
 constexpr char kAppListToggleMethodHistogram[] = "Apps.AppListShowSource";
 
+// The UMA histogram that logs the index launched item in the results list and
+// the query length.
+constexpr char kAppListResultLaunchIndexAndQueryLength[] =
+    "Apps.AppListResultLaunchIndexAndQueryLength";
+
+// The UMA histogram that logs the index launched item in the app tile list and
+// the query length.
+constexpr char kAppListTileLaunchIndexAndQueryLength[] =
+    "Apps.AppListTileLaunchIndexAndQueryLength";
+
 // The UMA histogram that logs which page gets opened by the user.
 constexpr char kPageOpenedHistogram[] = "Apps.AppListPageOpened";
 
@@ -189,6 +199,14 @@ enum AppListAppMovingType {
   kMaxAppListAppMovingType = 5,
 };
 
+// Different places a search result can be launched from. These values do not
+// persist to logs, so can be changed as-needed. However, changes should be
+// reflected in RecordSearchLaunchIndexAndQueryLength().
+enum SearchResultLaunchLocation {
+  kResultList = 0,
+  kTileList = 1,
+};
+
 void RecordFolderShowHideAnimationSmoothness(int actual_frames,
                                              int ideal_duration_ms,
                                              float refresh_rate);
@@ -207,6 +225,11 @@ APP_LIST_EXPORT void RecordSearchResultOpenSource(
     const SearchResult* result,
     const AppListModel* model,
     const SearchModel* search_model);
+
+APP_LIST_EXPORT void RecordSearchLaunchIndexAndQueryLength(
+    SearchResultLaunchLocation launch_location,
+    int query_length,
+    int suggestion_index);
 
 }  // namespace app_list
 

@@ -4,6 +4,7 @@
 
 #include "ash/app_list/app_list_controller_impl.h"
 
+#include "ash/app_list/app_list_metrics.h"
 #include "ash/app_list/home_launcher_gesture_handler.h"
 #include "ash/app_list/views/app_list_main_view.h"
 #include "ash/app_list/views/app_list_view.h"
@@ -14,10 +15,17 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
+#include "base/strings/string16.cc"
+#include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 
 namespace ash {
 
 namespace {
+
+using ::app_list::kAppListResultLaunchIndexAndQueryLength;
+using ::app_list::kAppListTileLaunchIndexAndQueryLength;
+using ::app_list::SearchResultLaunchLocation;
 
 bool IsTabletMode() {
   return Shell::Get()
@@ -83,6 +91,76 @@ TEST_F(AppListControllerImplTest, UpdateExpandArrowViewVisibility) {
   // No activatable windows. Hide the expand arrow view.
   w2.reset();
   EXPECT_FALSE(GetExpandArrowViewVisibility());
+}
+
+class AppListControllerImplMetricsTest : public AshTestBase {
+ public:
+  AppListControllerImplMetricsTest() = default;
+  ~AppListControllerImplMetricsTest() override = default;
+
+  void SetUp() override {
+    AshTestBase::SetUp();
+    controller_ = ash::Shell::Get()->app_list_controller();
+  }
+
+  AppListControllerImpl* controller_;
+  const base::HistogramTester histogram_tester_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(AppListControllerImplMetricsTest);
+};
+
+TEST_F(AppListControllerImplMetricsTest, LogSingleResultListClick) {
+  histogram_tester_.ExpectTotalCount(kAppListResultLaunchIndexAndQueryLength,
+                                     0);
+  controller_->StartSearch(base::string16());
+  controller_->LogResultLaunchHistogram(SearchResultLaunchLocation::kResultList,
+                                        4);
+  histogram_tester_.ExpectUniqueSample(kAppListResultLaunchIndexAndQueryLength,
+                                       4, 1);
+}
+
+TEST_F(AppListControllerImplMetricsTest, LogSingleTileListClick) {
+  histogram_tester_.ExpectTotalCount(kAppListTileLaunchIndexAndQueryLength, 0);
+  controller_->StartSearch(base::ASCIIToUTF16("aaaa"));
+  controller_->LogResultLaunchHistogram(SearchResultLaunchLocation::kTileList,
+                                        4);
+  histogram_tester_.ExpectUniqueSample(kAppListTileLaunchIndexAndQueryLength,
+                                       32, 1);
+}
+
+TEST_F(AppListControllerImplMetricsTest, LogOneClickInEveryBucket) {
+  histogram_tester_.ExpectTotalCount(kAppListResultLaunchIndexAndQueryLength,
+                                     0);
+  for (int query_length = 0; query_length < 11; ++query_length) {
+    const base::string16 query =
+        base::ASCIIToUTF16(std::string(query_length, 'a'));
+    for (int click_index = 0; click_index < 7; ++click_index) {
+      controller_->StartSearch(query);
+      controller_->LogResultLaunchHistogram(
+          SearchResultLaunchLocation::kResultList, click_index);
+    }
+  }
+
+  histogram_tester_.ExpectTotalCount(kAppListResultLaunchIndexAndQueryLength,
+                                     77);
+  for (int query_length = 0; query_length < 11; ++query_length) {
+    for (int click_index = 0; click_index < 7; ++click_index) {
+      histogram_tester_.ExpectBucketCount(
+          kAppListResultLaunchIndexAndQueryLength,
+          7 * query_length + click_index, 1);
+    }
+  }
+}
+
+TEST_F(AppListControllerImplMetricsTest, LogManyClicksInOneBucket) {
+  histogram_tester_.ExpectTotalCount(kAppListTileLaunchIndexAndQueryLength, 0);
+  controller_->StartSearch(base::ASCIIToUTF16("aaaa"));
+  for (int i = 0; i < 50; ++i)
+    controller_->LogResultLaunchHistogram(SearchResultLaunchLocation::kTileList,
+                                          4);
+  histogram_tester_.ExpectUniqueSample(kAppListTileLaunchIndexAndQueryLength,
+                                       32, 50);
 }
 
 }  // namespace ash

@@ -64,6 +64,16 @@ class APP_LIST_EXPORT SearchResultView
   // Computes the button's spoken feedback name.
   base::string16 ComputeAccessibleName() const;
 
+  // Gets the index of this result in the |SearchResultListView|.
+  int get_index_in_search_result_list_view() const {
+    return index_in_search_result_list_view_;
+  }
+
+  // Stores the index of this result in the |SearchResultListView|.
+  void set_index_in_search_result_list_view(size_t index) {
+    index_in_search_result_list_view_ = index;
+  }
+
   void set_is_last_result(bool is_last) { is_last_result_ = is_last; }
 
   // AppListMenuModelAdapter::Delegate overrides:
@@ -150,6 +160,10 @@ class APP_LIST_EXPORT SearchResultView
   bool selected_ = false;
   // Whether the removal confirmation dialog is invoked by long press touch.
   bool confirm_remove_by_long_press_ = false;
+
+  // The index of this item in the search_result_tile_item_list_view, only
+  // used for logging.
+  int index_in_search_result_list_view_ = -1;
 
   base::WeakPtrFactory<SearchResultView> weak_ptr_factory_;
 
