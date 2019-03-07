@@ -48,6 +48,8 @@ const base::Feature kSyncPseudoUSSAppList{"SyncPseudoUSSAppList",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kSyncPseudoUSSApps{"SyncPseudoUSSApps",
                                        base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kSyncPseudoUSSArcPackage{"SyncPseudoUSSArcPackage",
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kSyncPseudoUSSDictionary{"SyncPseudoUSSDictionary",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kSyncPseudoUSSExtensionSettings{

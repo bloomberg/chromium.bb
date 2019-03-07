@@ -141,6 +141,11 @@ class DataTypeManagerImpl : public DataTypeManager,
   // DataTypeController::ReadyForStart().
   void UpdateUnreadyTypeErrors(const ModelTypeSet& desired_types);
 
+  // Update unready state for |type|, such that data_type_status_table_ matches
+  // DataTypeController::ReadyForStart(). Returns true if there was an actual
+  // change.
+  bool UpdateUnreadyTypeError(ModelType type);
+
   // Post a task to reconfigure when no downloading or association are running.
   void ProcessReconfigure();
 

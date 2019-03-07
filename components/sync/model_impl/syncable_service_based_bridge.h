@@ -76,6 +76,7 @@ class SyncableServiceBasedBridge : public ModelTypeSyncBridge {
                                        ModelTypeChangeProcessor* other);
 
  private:
+  void OnSyncableServiceReady();
   void OnStoreCreated(const base::Optional<ModelError>& error,
                       std::unique_ptr<ModelTypeStore> store);
   void OnReadAllDataForInit(std::unique_ptr<InMemoryStore> in_memory_store,

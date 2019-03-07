@@ -24,6 +24,7 @@ extern const base::Feature
     kSyncAllowWalletDataInTransportModeWithCustomPassphrase;
 extern const base::Feature kSyncPseudoUSSAppList;
 extern const base::Feature kSyncPseudoUSSApps;
+extern const base::Feature kSyncPseudoUSSArcPackage;
 extern const base::Feature kSyncPseudoUSSDictionary;
 extern const base::Feature kSyncPseudoUSSExtensionSettings;
 extern const base::Feature kSyncPseudoUSSExtensions;
