@@ -485,7 +485,8 @@ void OAuth2TokenServiceDelegateAndroid::LoadCredentials(
     const std::string& primary_account_id) {
   DCHECK_EQ(LOAD_CREDENTIALS_NOT_STARTED, load_credentials_state());
   set_load_credentials_state(LOAD_CREDENTIALS_IN_PROGRESS);
-  if (primary_account_id.empty()) {
+  if (primary_account_id.empty() &&
+      !base::FeatureList::IsEnabled(signin::kMiceFeature)) {
     FireRefreshTokensLoaded();
     return;
   }
