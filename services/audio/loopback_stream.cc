@@ -23,11 +23,17 @@
 
 namespace audio {
 
-// static
-constexpr double LoopbackStream::kMaxVolume;
+namespace {
+
+// Start with a conservative, but reasonable capture delay that should work for
+// most platforms (i.e., not needing an increase during a loopback session).
+constexpr base::TimeDelta kInitialCaptureDelay =
+    base::TimeDelta::FromMilliseconds(20);
+
+}  // namespace
 
 // static
-constexpr base::TimeDelta LoopbackStream::kCaptureDelay;
+constexpr double LoopbackStream::kMaxVolume;
 
 LoopbackStream::LoopbackStream(
     CreatedCallback created_callback,
@@ -294,6 +300,7 @@ void LoopbackStream::FlowNetwork::Start() {
   first_generate_time_ = clock_->NowTicks();
   frames_elapsed_ = 0;
   next_generate_time_ = first_generate_time_;
+  capture_delay_ = kInitialCaptureDelay;
 
   flow_task_runner_->PostTask(
       FROM_HERE,
@@ -319,20 +326,37 @@ void LoopbackStream::FlowNetwork::GenerateMoreAudio() {
   TRACE_EVENT_WITH_FLOW0("audio", "GenerateMoreAudio", this,
                          TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
 
-  // Always generate audio from the recent past, to prevent buffer underruns
-  // in the inputs.
-  const base::TimeTicks delayed_capture_time =
-      next_generate_time_ - kCaptureDelay;
-
   // Drive the audio flows from the SnooperNodes and produce the single result
   // stream. Hold the lock during this part of the process to prevent any of the
   // control methods from altering the configuration of the network.
   double output_volume;
+  base::TimeTicks delayed_capture_time;
   {
     base::AutoLock scoped_lock(lock_);
     output_volume = volume_;
 
     HelpDiagnoseCauseOfLoopbackCrash("generating");
+
+    // Compute the reference time to use for audio rendering. Query each input
+    // node and update |capture_delay_|, if necessary. This is used to always
+    // generate audio from a "safe point" in the recent past, to prevent buffer
+    // underruns in the inputs. http://crbug.com/934770
+    delayed_capture_time = next_generate_time_ - capture_delay_;
+    for (SnooperNode* node : inputs_) {
+      const base::Optional<base::TimeTicks> suggestion =
+          node->SuggestLatestRenderTime(mix_bus_->frames());
+      if (suggestion.value_or(delayed_capture_time) < delayed_capture_time) {
+        const base::TimeDelta increase = delayed_capture_time - (*suggestion);
+        TRACE_EVENT_INSTANT2("audio", "GenerateMoreAudio Capture Delay Change",
+                             TRACE_EVENT_SCOPE_THREAD, "old capture delay (µs)",
+                             capture_delay_.InMicroseconds(), "change (µs)",
+                             increase.InMicroseconds());
+        delayed_capture_time = *suggestion;
+        capture_delay_ += increase;
+      }
+    }
+    TRACE_COUNTER_ID1("audio", "Loopback Capture Delay (µs)", this,
+                      capture_delay_.InMicroseconds());
 
     // Render the audio from each input, apply this stream's volume setting by
     // scaling the data, then mix it all together to form a single audio
