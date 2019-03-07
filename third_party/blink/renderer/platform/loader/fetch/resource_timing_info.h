@@ -73,10 +73,10 @@ class PLATFORM_EXPORT ResourceTimingInfo
     return redirect_chain_;
   }
 
-  void AddFinalTransferSize(long long encoded_data_length) {
+  void AddFinalTransferSize(uint64_t encoded_data_length) {
     transfer_size_ += encoded_data_length;
   }
-  long long TransferSize() const { return transfer_size_; }
+  uint64_t TransferSize() const { return transfer_size_; }
 
   // The timestamps in PerformanceResourceTiming are measured relative from the
   // time origin. In most cases these timestamps must be positive value, so we
@@ -99,7 +99,7 @@ class PLATFORM_EXPORT ResourceTimingInfo
   KURL initial_url_;
   ResourceResponse final_response_;
   Vector<ResourceResponse> redirect_chain_;
-  long long transfer_size_ = 0;
+  uint64_t transfer_size_ = 0;
   bool has_cross_origin_redirect_ = false;
   bool negative_allowed_ = false;
 

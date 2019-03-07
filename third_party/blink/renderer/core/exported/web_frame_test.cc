@@ -12843,7 +12843,7 @@ TEST_F(WebFrameTest, NavigationTimingInfo) {
                                                    ->Loader()
                                                    .GetDocumentLoader()
                                                    ->GetNavigationTimingInfo();
-  EXPECT_EQ(navigation_timing_info->TransferSize(), 34);
+  EXPECT_EQ(navigation_timing_info->TransferSize(), static_cast<uint64_t>(34));
 }
 
 TEST_F(WebFrameSimTest, EnterFullscreenResetScrollAndScaleState) {

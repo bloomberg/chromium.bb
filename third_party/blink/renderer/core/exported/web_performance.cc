@@ -34,7 +34,7 @@
 
 namespace blink {
 
-static double MillisecondsToSeconds(unsigned long long milliseconds) {
+static double MillisecondsToSeconds(uint64_t milliseconds) {
   return static_cast<double>(milliseconds / 1000.0);
 }
 

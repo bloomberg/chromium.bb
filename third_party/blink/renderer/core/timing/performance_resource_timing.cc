@@ -109,15 +109,15 @@ bool PerformanceResourceTiming::DidReuseConnection() const {
   return did_reuse_connection_;
 }
 
-unsigned long long PerformanceResourceTiming::GetTransferSize() const {
+uint64_t PerformanceResourceTiming::GetTransferSize() const {
   return transfer_size_;
 }
 
-unsigned long long PerformanceResourceTiming::GetEncodedBodySize() const {
+uint64_t PerformanceResourceTiming::GetEncodedBodySize() const {
   return encoded_body_size_;
 }
 
-unsigned long long PerformanceResourceTiming::GetDecodedBodySize() const {
+uint64_t PerformanceResourceTiming::GetDecodedBodySize() const {
   return decoded_body_size_;
 }
 
@@ -310,21 +310,21 @@ DOMHighResTimeStamp PerformanceResourceTiming::responseEnd() const {
       time_origin_, response_end_, allow_negative_value_);
 }
 
-unsigned long long PerformanceResourceTiming::transferSize() const {
+uint64_t PerformanceResourceTiming::transferSize() const {
   if (!AllowTimingDetails())
     return 0;
 
   return GetTransferSize();
 }
 
-unsigned long long PerformanceResourceTiming::encodedBodySize() const {
+uint64_t PerformanceResourceTiming::encodedBodySize() const {
   if (!AllowTimingDetails())
     return 0;
 
   return GetEncodedBodySize();
 }
 
-unsigned long long PerformanceResourceTiming::decodedBodySize() const {
+uint64_t PerformanceResourceTiming::decodedBodySize() const {
   if (!AllowTimingDetails())
     return 0;
 

@@ -83,9 +83,9 @@ class CORE_EXPORT PerformanceResourceTiming : public PerformanceEntry {
   DOMHighResTimeStamp requestStart() const;
   DOMHighResTimeStamp responseStart() const;
   virtual DOMHighResTimeStamp responseEnd() const;
-  unsigned long long transferSize() const;
-  unsigned long long encodedBodySize() const;
-  unsigned long long decodedBodySize() const;
+  uint64_t transferSize() const;
+  uint64_t encodedBodySize() const;
+  uint64_t decodedBodySize() const;
   const HeapVector<Member<PerformanceServerTiming>>& serverTiming() const;
 
   void Trace(blink::Visitor*) override;
@@ -108,9 +108,9 @@ class CORE_EXPORT PerformanceResourceTiming : public PerformanceEntry {
   virtual ResourceLoadTiming* GetResourceLoadTiming() const;
   virtual bool AllowTimingDetails() const;
   virtual bool DidReuseConnection() const;
-  virtual unsigned long long GetTransferSize() const;
-  virtual unsigned long long GetEncodedBodySize() const;
-  virtual unsigned long long GetDecodedBodySize() const;
+  virtual uint64_t GetTransferSize() const;
+  virtual uint64_t GetEncodedBodySize() const;
+  virtual uint64_t GetDecodedBodySize() const;
 
   AtomicString initiator_type_;
   AtomicString alpn_negotiated_protocol_;
@@ -119,9 +119,9 @@ class CORE_EXPORT PerformanceResourceTiming : public PerformanceEntry {
   scoped_refptr<ResourceLoadTiming> timing_;
   TimeTicks last_redirect_end_time_;
   TimeTicks response_end_;
-  unsigned long long transfer_size_;
-  unsigned long long encoded_body_size_;
-  unsigned long long decoded_body_size_;
+  uint64_t transfer_size_;
+  uint64_t encoded_body_size_;
+  uint64_t decoded_body_size_;
   bool did_reuse_connection_;
   bool allow_timing_details_;
   bool allow_redirect_details_;
