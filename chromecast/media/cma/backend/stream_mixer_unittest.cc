@@ -385,12 +385,16 @@ class StreamMixerTest : public testing::Test {
   }
 
   MockRedirectedAudioOutput* AddOutputRedirector(
-      const AudioOutputRedirectionConfig& config) {
+      const AudioOutputRedirectionConfig& config,
+      AudioOutputRedirector** redirector_ptr = nullptr) {
     auto redirected_output =
         std::make_unique<MockRedirectedAudioOutput>(kNumChannels);
     MockRedirectedAudioOutput* redirected_output_ptr = redirected_output.get();
     auto redirector = std::make_unique<AudioOutputRedirector>(
         config, std::move(redirected_output));
+    if (redirector_ptr) {
+      *redirector_ptr = redirector.get();
+    }
     mixer_->AddAudioOutputRedirector(std::move(redirector));
     return redirected_output_ptr;
   }
@@ -1328,6 +1332,64 @@ TEST_F(StreamMixerTest, OutputRedirectionNoMatch) {
 
   CheckRedirectorOutput(redirected_output_ptr,
                         {inputs[0].get(), inputs[1].get()}, {}, kNumFrames);
+
+  mixer_.reset();
+}
+
+TEST_F(StreamMixerTest, ModifyOutputRedirection) {
+  std::vector<std::unique_ptr<MockMixerSource>> inputs;
+  inputs.push_back(
+      std::make_unique<MockMixerSource>(kTestSamplesPerSecond, "matches"));
+  inputs.push_back(
+      std::make_unique<MockMixerSource>(kTestSamplesPerSecond, "asdf"));
+
+  for (size_t i = 0; i < inputs.size(); ++i) {
+    mixer_->AddInput(inputs[i].get());
+  }
+  WaitForMixer();
+  mock_output_->ClearData();
+
+  AudioOutputRedirectionConfig config;
+  config.stream_match_patterns.push_back({AudioContentType::kMedia, "*match*"});
+  AudioOutputRedirector* redirector_ptr = nullptr;
+  MockRedirectedAudioOutput* redirected_output_ptr =
+      AddOutputRedirector(config, &redirector_ptr);
+  CHECK(redirector_ptr);
+  WaitForMixer();
+
+  const int kNumFrames = 32;
+  for (size_t i = 0; i < inputs.size(); ++i) {
+    inputs[i]->SetData(GetTestData(i));
+  }
+  PlaybackOnce();
+  mock_output_->ClearData();
+  for (size_t i = 0; i < inputs.size(); ++i) {
+    inputs[i]->SetData(GetTestData(i));
+  }
+  PlaybackOnce();
+
+  CheckRedirectorOutput(redirected_output_ptr, {inputs[1].get()},
+                        {inputs[0].get()}, kNumFrames);
+
+  std::vector<std::pair<AudioContentType, std::string>> new_match_patterns = {
+      {AudioContentType::kMedia, "*asdf*"}};
+  mixer_->ModifyAudioOutputRedirection(redirector_ptr,
+                                       std::move(new_match_patterns));
+  WaitForMixer();
+  mock_output_->ClearData();
+
+  for (size_t i = 0; i < inputs.size(); ++i) {
+    inputs[i]->SetData(GetTestData(i));
+  }
+  PlaybackOnce();
+  mock_output_->ClearData();
+  for (size_t i = 0; i < inputs.size(); ++i) {
+    inputs[i]->SetData(GetTestData(i));
+  }
+  PlaybackOnce();
+
+  CheckRedirectorOutput(redirected_output_ptr, {inputs[0].get()},
+                        {inputs[1].get()}, kNumFrames);
 
   mixer_.reset();
 }

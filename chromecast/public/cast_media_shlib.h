@@ -10,9 +10,11 @@
 #include <functional>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "chromecast_export.h"
+#include "volume_control.h"
 
 namespace chromecast {
 namespace media {
@@ -176,6 +178,12 @@ class CHROMECAST_EXPORT CastMediaShlib {
   // AddAudioOutputRedirection().
   static void RemoveAudioOutputRedirection(AudioOutputRedirectorToken* token)
       __attribute__((__weak__));
+
+  // Updates the set of streams that an audio output redirector should apply to.
+  static void ModifyAudioOutputRedirection(
+      AudioOutputRedirectorToken* token,
+      std::vector<std::pair<AudioContentType, std::string /* device ID */>>
+          stream_match_patterns) __attribute__((__weak__));
 };
 
 }  // namespace media
