@@ -561,11 +561,11 @@ class CC_EXPORT LayerImpl {
   friend class TreeSynchronizer;
 
   DrawMode current_draw_mode_;
+  EffectTree& GetEffectTree() const;
 
  private:
   PropertyTrees* GetPropertyTrees() const;
   ClipTree& GetClipTree() const;
-  EffectTree& GetEffectTree() const;
   ScrollTree& GetScrollTree() const;
   TransformTree& GetTransformTree() const;
 

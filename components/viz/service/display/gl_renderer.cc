@@ -1753,13 +1753,16 @@ void GLRenderer::DrawSolidColorQuad(const SolidColorDrawQuad* quad,
 
   SkColor color = quad->color;
   float opacity = quad->shared_quad_state->opacity;
-  float alpha = (SkColorGetA(color) * (1.0f / 255.0f)) * opacity;
 
-  // Early out if alpha is small enough that quad doesn't contribute to output.
-  if (alpha < std::numeric_limits<float>::epsilon() &&
-      quad->ShouldDrawWithBlending() &&
-      quad->shared_quad_state->blend_mode == SkBlendMode::kSrcOver)
-    return;
+  // Early out if alpha is small enough that quad doesn't contribute to output,
+  // for kSrcOver blend mode.
+  if (quad->shared_quad_state->blend_mode == SkBlendMode::kSrcOver) {
+    float alpha = (SkColorGetA(color) * (1.0f / 255.0f)) * opacity;
+    if (alpha < std::numeric_limits<float>::epsilon() &&
+        quad->ShouldDrawWithBlending() &&
+        quad->shared_quad_state->blend_mode == SkBlendMode::kSrcOver)
+      return;
+  }
 
   gfx::Transform device_transform =
       current_frame()->window_matrix * current_frame()->projection_matrix *

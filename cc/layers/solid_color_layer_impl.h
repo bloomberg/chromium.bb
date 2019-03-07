@@ -27,6 +27,7 @@ class CC_EXPORT SolidColorLayerImpl : public LayerImpl {
                                const gfx::Rect& visible_layer_rect,
                                SkColor color,
                                bool force_anti_aliasing_off,
+                               SkBlendMode effect_blend_mode,
                                AppendQuadsData* append_quads_data);
 
   ~SolidColorLayerImpl() override;
