@@ -551,10 +551,14 @@ typedef NS_ENUM(NSInteger, ItemType) {
   NSString* continueButtonTitle =
       l10n_util::GetNSString(IDS_IOS_DISCONNECT_DIALOG_CONTINUE_BUTTON_MOBILE);
   if ([self authService] -> IsAuthenticatedIdentityManaged()) {
-    std::string hosted_domain =
-        IdentityManagerFactory::GetForBrowserState(_browserState)
-            ->GetPrimaryAccountInfo()
-            .hosted_domain;
+    identity::IdentityManager* identityManager =
+        IdentityManagerFactory::GetForBrowserState(_browserState);
+    base::Optional<AccountInfo> accountInfo =
+        identityManager->FindExtendedAccountInfoForAccount(
+            identityManager->GetPrimaryAccountInfo());
+    std::string hosted_domain = accountInfo.has_value()
+                                    ? accountInfo.value().hosted_domain
+                                    : std::string();
     if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
       title =
           l10n_util::GetNSString(IDS_IOS_MANAGED_DISCONNECT_DIALOG_TITLE_UNITY);
