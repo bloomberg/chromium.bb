@@ -247,11 +247,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "autofill-preview-style",
-    "owners": [ "ftirelo" ],
-    "expiry_milestone": 73
-  },
-  {
     "name": "autofill-profile-client-validation",
     "owners": [ "parastoog" ],
     "expiry_milestone": 77
@@ -958,11 +953,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "enable-chromevox-developer-option",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-client-lo-fi",
     "owners": [ "//components/data_reduction_proxy/OWNERS" ],
     "expiry_milestone": 76
@@ -1183,11 +1173,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "enable-gesture-navigation",
-    "owners": [ "jinsukkim@chromium.org" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-google-branded-context-menu",
     "owners": [ "edwardjung@chromium.org" ],
     "expiry_milestone": 76
@@ -1224,11 +1209,6 @@
   {
     "name": "enable-history-manipulation-intervention",
     "owners": [ "shivanisha" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "enable-home-launcher",
-    // "owners": [ "your-team" ],
     "expiry_milestone": 76
   },
   {
@@ -1457,11 +1437,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "enable-nup-printing",
-    "owners": [ "skau" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-offer-store-unmasked-wallet-cards",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
@@ -1543,11 +1518,6 @@
   },
   {
     "name": "enable-play-store-search",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "enable-policy-tool",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
   },
@@ -1641,12 +1611,6 @@
     "name": "enable-service-worker-long-running-message",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
-  },
-  {
-    "name": "enable-service-worker-servicification",
-    "owners": [ "worker-dev@chromium.org" ],
-    // Enabled by default in M72.
-    "expiry_milestone": 73
   },
   {
     "name": "enable-shill-sandboxing",
@@ -1744,11 +1708,6 @@
   },
   {
     "name": "enable-sync-pseudo-uss-history-delete-directives",
-    "owners": [ "mastiz", "//components/sync/OWNERS" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "enable-sync-pseudo-uss-passwords",
     "owners": [ "mastiz", "//components/sync/OWNERS" ],
     "expiry_milestone": 76
   },
@@ -2394,11 +2353,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "offline-bookmarks",
-    "owners": [ "jianli", "offline-dev" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "offline-indicator-always-http-probe",
     "owners": [ "jianli", "offline-dev" ],
     "expiry_milestone": 76
@@ -2895,11 +2849,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "slide-top-chrome-with-page-scrolls",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "smart-text-selection",
     "owners": [ "djacobo", "linben" ],
     "expiry_milestone": 76
@@ -2942,11 +2891,6 @@
   {
     "name": "sync-USS-autofill-wallet-metadata",
     "owners": [ "jkrcal", "//components/sync/OWNERS" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "sync-standalone-transport",
-    "owners": [ "treib", "//components/sync/OWNERS" ],
     "expiry_milestone": 76
   },
   {
