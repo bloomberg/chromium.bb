@@ -374,6 +374,12 @@ message DeviceState {
   optional DisabledState disabled_state = 2;
 }
 
+message CustomerLogo {
+  // The SCS url for the logo set by the admin for a particular OU.
+  // This is in the form https://admin.googleusercontent.com/<scs_url_key>.
+  optional string logo_url = 1;
+}
+
 // This message is included in serialized form in PolicyFetchResponse below. It
 // may also be signed, with the signature being created for the serialized form.
 message PolicyData {
@@ -548,6 +554,12 @@ message PolicyData {
   // This field should only be set for Device Policy response.
   // See go/cros-rlz-segments
   optional MarketSegment market_segment = 30;
+
+  // This field is currently only set for Device Policy response.
+  // This represents the logo set by the admin for the OU that the device
+  // belongs to. This is domain metadata included in a device policy response,
+  // but it is not an explicit device policy.
+  optional CustomerLogo customer_logo = 31;
 }
 
 message PolicyFetchResponse {
