@@ -2630,10 +2630,6 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
           subresource_filter::kSafeBrowsingSubresourceFilter));
 
   html_source->AddBoolean(
-      "enableSoundContentSetting",
-      base::FeatureList::IsEnabled(features::kSoundContentSetting));
-
-  html_source->AddBoolean(
       "enableBlockAutoplayContentSetting",
       base::FeatureList::IsEnabled(media::kAutoplayDisableSettings));
 

@@ -645,7 +645,6 @@ cr.define('settings_privacy_page', function() {
 
       setup(() => {
         loadTimeData.overrideValues({
-          enableSoundContentSetting: true,
           enableBlockAutoplayContentSetting: true
         });
 

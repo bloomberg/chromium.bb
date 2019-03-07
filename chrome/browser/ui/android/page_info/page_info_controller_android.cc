@@ -122,8 +122,7 @@ void PageInfoControllerAndroid::SetPermissionInfo(
   permissions_to_display.push_back(CONTENT_SETTINGS_TYPE_POPUPS);
   permissions_to_display.push_back(CONTENT_SETTINGS_TYPE_ADS);
   permissions_to_display.push_back(CONTENT_SETTINGS_TYPE_AUTOPLAY);
-  if (base::FeatureList::IsEnabled(features::kSoundContentSetting))
-    permissions_to_display.push_back(CONTENT_SETTINGS_TYPE_SOUND);
+  permissions_to_display.push_back(CONTENT_SETTINGS_TYPE_SOUND);
 
   std::map<ContentSettingsType, ContentSetting>
       user_specified_settings_to_display;

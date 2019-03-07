@@ -80,7 +80,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &features::kPrioritizeBootstrapTasks,
     &features::kServiceWorkerPaymentApps,
     &features::kShowTrustedPublisherURL,
-    &features::kSoundContentSetting,
     &features::kSSLCommittedInterstitials,
     &features::kUserActivationV2,
     &features::kWebAuth,

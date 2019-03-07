@@ -76,10 +76,6 @@ bool SetTabAudioMuted(content::WebContents* contents,
 // Returns the last reason a tab's mute state was changed.
 TabMutedReason GetTabAudioMutedReason(content::WebContents* contents);
 
-// Returns true if the tabs at the |indices| in |tab_strip| are all muted.
-bool AreAllTabsMuted(const TabStripModel& tab_strip,
-                     const std::vector<int>& indices);
-
 // Returns true if the site at |index| in |tab_strip| is muted.
 bool IsSiteMuted(const TabStripModel& tab_strip, const int index);
 

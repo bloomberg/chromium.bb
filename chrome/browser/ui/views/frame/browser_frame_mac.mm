@@ -239,10 +239,7 @@ void BrowserFrameMac::ValidateUserInterfaceItem(
     }
     case IDC_WINDOW_MUTE_SITE: {
       TabStripModel* model = browser->tab_strip_model();
-      bool will_mute =
-          base::FeatureList::IsEnabled(features::kSoundContentSetting)
-              ? model->WillContextMenuMuteSites(model->active_index())
-              : model->WillContextMenuMute(model->active_index());
+      bool will_mute = model->WillContextMenuMuteSites(model->active_index());
       // Menu items may be validated during browser startup, before the
       // TabStripModel has been populated.
       result->new_toggle_state = !model->empty() && !will_mute;

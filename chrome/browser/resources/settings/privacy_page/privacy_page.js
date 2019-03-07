@@ -95,14 +95,6 @@ Polymer({
     },
 
     /** @private */
-    enableSoundContentSetting_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('enableSoundContentSetting');
-      }
-    },
-
-    /** @private */
     enableBlockAutoplayContentSetting_: {
       type: Boolean,
       value: function() {

@@ -3044,10 +3044,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kRemoveNtpFakebox)},
 #endif  // !defined(OS_ANDROID)
 
-    {"sound-content-setting", flag_descriptions::kSoundContentSettingName,
-     flag_descriptions::kSoundContentSettingDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kSoundContentSetting)},
-
 #if defined(DCHECK_IS_CONFIGURABLE)
     {"dcheck-is-fatal", flag_descriptions::kDcheckIsFatalName,
      flag_descriptions::kDcheckIsFatalDescription, kOsWin,

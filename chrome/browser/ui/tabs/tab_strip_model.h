@@ -401,7 +401,6 @@ class TabStripModel {
     CommandRestoreTab,
     CommandTogglePinned,
     CommandFocusMode,
-    CommandToggleTabAudioMuted,
     CommandToggleSiteMuted,
     CommandSendToMyDevices,
     CommandBookmarkAllTabs,
@@ -426,10 +425,6 @@ class TabStripModel {
   // |context_index| is selected the command applies to all selected tabs.
   void ExecuteAddToExistingGroupCommand(int context_index,
                                         const TabGroupData* group);
-
-  // Returns true if 'CommandToggleTabAudioMuted' will mute. |index| is the
-  // index supplied to |ExecuteContextMenuCommand|.
-  bool WillContextMenuMute(int index);
 
   // Returns true if 'CommandToggleSiteMuted' will mute. |index| is the
   // index supplied to |ExecuteContextMenuCommand|.

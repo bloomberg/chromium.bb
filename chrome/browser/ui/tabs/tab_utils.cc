@@ -141,15 +141,6 @@ bool SetTabAudioMuted(content::WebContents* contents,
   return true;
 }
 
-bool AreAllTabsMuted(const TabStripModel& tab_strip,
-                     const std::vector<int>& indices) {
-  for (auto i = indices.begin(); i != indices.end(); ++i) {
-    if (!tab_strip.GetWebContentsAt(*i)->IsAudioMuted())
-      return false;
-  }
-  return true;
-}
-
 bool IsSiteMuted(const TabStripModel& tab_strip, const int index) {
   content::WebContents* web_contents = tab_strip.GetWebContentsAt(index);
 

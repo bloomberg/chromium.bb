@@ -137,15 +137,13 @@
             '$i18nPolymer{siteSettingsAllowRecentlyClosedSites}',
             '$i18nPolymer{siteSettingsBackgroundSyncBlocked}')]]"></cr-link-row>
 
-    <template is="dom-if" if="[[enableSoundContentSetting_]]">
-      <cr-link-row class="hr two-line" data-route="SITE_SETTINGS_SOUND"
-          id="sound" label="$i18n{siteSettingsSound}" on-click="onTapNavigate_"
-          start-icon="settings:volume-up"
-          sub-label="[[defaultSettingLabel_(
-              default_.sound,
-              '$i18nPolymer{siteSettingsSoundAllow}',
-              '$i18nPolymer{siteSettingsSoundBlock}')]]"></cr-link-row>
-    </template>
+    <cr-link-row class="hr two-line" data-route="SITE_SETTINGS_SOUND"
+        id="sound" label="$i18n{siteSettingsSound}" on-click="onTapNavigate_"
+        start-icon="settings:volume-up"
+        sub-label="[[defaultSettingLabel_(
+            default_.sound,
+            '$i18nPolymer{siteSettingsSoundAllow}',
+            '$i18nPolymer{siteSettingsSoundBlock}')]]"></cr-link-row>
 
     <cr-link-row class="hr two-line"
         data-route="SITE_SETTINGS_AUTOMATIC_DOWNLOADS" id="automatic-downloads"
