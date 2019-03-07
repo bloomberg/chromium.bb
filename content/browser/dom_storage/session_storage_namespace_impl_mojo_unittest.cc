@@ -78,9 +78,11 @@ class SessionStorageNamespaceImplMojoTest
     security_policy->Add(kTestProcessIdOrigin3, &browser_context_);
     security_policy->AddIsolatedOrigins(
         {test_origin1_, test_origin2_, test_origin3_});
-    security_policy->LockToOrigin(IsolationContext(), kTestProcessIdOrigin1,
+    security_policy->LockToOrigin(IsolationContext(&browser_context_),
+                                  kTestProcessIdOrigin1,
                                   test_origin1_.GetURL());
-    security_policy->LockToOrigin(IsolationContext(), kTestProcessIdOrigin3,
+    security_policy->LockToOrigin(IsolationContext(&browser_context_),
+                                  kTestProcessIdOrigin3,
                                   test_origin3_.GetURL());
 
     mojo::core::SetDefaultProcessErrorCallback(

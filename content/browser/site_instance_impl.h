@@ -137,6 +137,10 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   // |should_use_effective_urls| defaults to true and specifies whether to
   // resolve |url| to an effective URL (via
   // ContentBrowserClient::GetEffectiveURL()) before determining the site.
+  //
+  // TODO(alexmos): |isolation_context| now also carries a
+  // BrowserOrResourceContext, so |context| should be removed here and in
+  // similar functions.
   static GURL GetSiteForURL(const BrowserOrResourceContext& context,
                             const IsolationContext& isolation_context,
                             const GURL& url,

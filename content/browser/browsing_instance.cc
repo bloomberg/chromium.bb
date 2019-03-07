@@ -22,7 +22,8 @@ int BrowsingInstance::next_browsing_instance_id_ = 1;
 BrowsingInstance::BrowsingInstance(BrowserContext* browser_context)
     : browser_context_(browser_context),
       isolation_context_(
-          BrowsingInstanceId::FromUnsafeValue(next_browsing_instance_id_++)),
+          BrowsingInstanceId::FromUnsafeValue(next_browsing_instance_id_++),
+          BrowserOrResourceContext(browser_context)),
       active_contents_count_(0u),
       default_process_(nullptr) {
   DCHECK(browser_context);
