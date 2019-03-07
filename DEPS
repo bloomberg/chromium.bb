@@ -772,7 +772,7 @@ deps = {
   },
 
   'src/third_party/custom_tabs_client/src': {
-      'url': Var('chromium_git') + '/custom-tabs-client.git' + '@' + '51a4ff1d07d8507b934fc9d9af226a969b6c4674',
+      'url': Var('chromium_git') + '/custom-tabs-client.git' + '@' + 'cea0bcafdebe711f0f83a5f05e07bc367ca18422',
       'condition': 'checkout_android',
   },
 

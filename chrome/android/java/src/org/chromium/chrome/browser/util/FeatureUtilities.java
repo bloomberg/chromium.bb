@@ -78,6 +78,7 @@ public class FeatureUtilities {
     private static Boolean sIsAdaptiveToolbarEnabled;
     private static Boolean sShouldInflateToolbarOnBackgroundThread;
     private static Boolean sIsNightModeAvailable;
+    private static Boolean sIsNightModeForCustomTabsAvailable;
     private static Boolean sShouldPrioritizeBootstrapTasks;
     private static Boolean sIsTabGroupsAndroidEnabled;
 
@@ -196,6 +197,7 @@ public class FeatureUtilities {
         cacheAdaptiveToolbarEnabled();
         cacheInflateToolbarOnBackgroundThread();
         cacheNightModeAvailable();
+        cacheNightModeForCustomTabsAvailable();
         cacheDownloadAutoResumptionEnabledInNative();
         cachePrioritizeBootstrapTasks();
 
@@ -425,6 +427,38 @@ public class FeatureUtilities {
                     ChromePreferenceManager.NIGHT_MODE_AVAILABLE_KEY, false);
         }
         return sIsNightModeAvailable;
+    }
+
+    /**
+     * Cache whether or not night mode is available for custom tabs (i.e. night mode experiment is
+     * enabled), so the value is immediately available on next start-up.
+     */
+    public static void cacheNightModeForCustomTabsAvailable() {
+        ChromePreferenceManager.getInstance().writeBoolean(
+                ChromePreferenceManager.NIGHT_MODE_CCT_AVAILABLE_KEY,
+                ChromeFeatureList.isEnabled(ChromeFeatureList.ANDROID_NIGHT_MODE_CCT));
+    }
+
+    /**
+     * @return Whether or not night mode experiment is enabled (i.e. night mode experiment is
+     *         enabled) for custom tabs.
+     */
+    public static boolean isNightModeForCustomTabsAvailable() {
+        if (sIsNightModeForCustomTabsAvailable == null) {
+            ChromePreferenceManager prefManager = ChromePreferenceManager.getInstance();
+
+            sIsNightModeForCustomTabsAvailable = prefManager.readBoolean(
+                    ChromePreferenceManager.NIGHT_MODE_CCT_AVAILABLE_KEY, true);
+        }
+        return sIsNightModeForCustomTabsAvailable;
+    }
+
+    /**
+     * Toggles whether the night mode for custom tabs experiment is enabled. Must only be used for
+     * testing. Should be reset back to NULL after the test has finished.
+     */
+    public static void setNightModeForCustomTabsAvailableForTesting(Boolean available) {
+        sIsNightModeForCustomTabsAvailable = available;
     }
 
     /**

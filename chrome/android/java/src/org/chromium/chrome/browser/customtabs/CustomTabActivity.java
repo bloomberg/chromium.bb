@@ -309,7 +309,7 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
 
     @Override
     protected NightModeStateProvider createNightModeStateProvider() {
-        return new CustomTabNightModeStateController(getDelegate());
+        return new CustomTabNightModeStateController(getDelegate(), getIntent());
     }
 
     @Override

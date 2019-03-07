@@ -91,6 +91,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kAllowNewIncognitoTabIntents,
     &kAllowRemoteContextForNotifications,
     &kAndroidNightMode,
+    &kAndroidNightModeCCT,
     &kAndroidPayIntegrationV1,
     &kAndroidPayIntegrationV2,
     &kAndroidPaymentApps,
@@ -221,6 +222,9 @@ const base::Feature kAdjustWebApkInstallationSpace = {
 
 const base::Feature kAndroidNightMode{"AndroidNightMode",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kAndroidNightModeCCT{"AndroidNightModeCCT",
+                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
 // TODO(rouslan): Remove this.
 const base::Feature kAndroidPayIntegrationV1{"AndroidPayIntegrationV1",
