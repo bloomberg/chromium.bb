@@ -41,6 +41,11 @@ class ImportMap final : public GarbageCollectedFinalized<ImportMap> {
   void Trace(Visitor*);
 
  private:
+  using MatchResult = HashMap<String, Vector<KURL>>::const_iterator;
+  base::Optional<MatchResult> Match(const ParsedSpecifier&) const;
+  base::Optional<MatchResult> MatchExact(const ParsedSpecifier&) const;
+  base::Optional<MatchResult> MatchPrefix(const ParsedSpecifier&) const;
+
   HashMap<String, Vector<KURL>> imports_;
   Member<const Modulator> modulator_for_built_in_modules_;
 };
