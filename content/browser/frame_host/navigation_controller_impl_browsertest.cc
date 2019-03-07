@@ -8734,6 +8734,166 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
       "Navigation.BackForward.SetShouldSkipOnBackForwardUI", false, 1);
 }
 
+// Tests that if a navigation entry is marked as skippable due to pushState then
+// the flag should be reset if there is a user gesture on this document. All of
+// the adjacent entries belonging to the same document will have their skippable
+// bits reset.
+IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
+                       OnUserGestureResetSameDocumentEntriesSkipFlag) {
+  GURL skippable_url(embedded_test_server()->GetURL("/frame_tree/top.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), skippable_url));
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  EXPECT_FALSE(root->HasBeenActivated());
+  EXPECT_FALSE(root->HasTransientUserActivation());
+
+  NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
+      shell()->web_contents()->GetController());
+
+  // Redirect to another page without a user gesture.
+  GURL redirected_url(embedded_test_server()->GetURL("/empty.html"));
+  EXPECT_TRUE(
+      NavigateToURLFromRendererWithoutUserGesture(shell(), redirected_url));
+  // Last entry should have been marked as skippable.
+  EXPECT_TRUE(controller.GetEntryAtIndex(0)->should_skip_on_back_forward_ui());
+
+  // Use the pushState API to add another entry without user gesture.
+  GURL push_state_url1(embedded_test_server()->GetURL("/title1.html"));
+  std::string script("history.pushState('', '','" + push_state_url1.spec() +
+                     "');");
+  EXPECT_TRUE(content::ExecuteScriptWithoutUserGesture(shell()->web_contents(),
+                                                       script));
+
+  // Use the pushState API to add another entry without user gesture.
+  GURL push_state_url2(embedded_test_server()->GetURL("/title2.html"));
+  script = "history.pushState('', '','" + push_state_url2.spec() + "');";
+  EXPECT_TRUE(content::ExecuteScriptWithoutUserGesture(shell()->web_contents(),
+                                                       script));
+
+  EXPECT_EQ(3, controller.GetCurrentEntryIndex());
+  EXPECT_EQ(3, controller.GetLastCommittedEntryIndex());
+
+  // We now have
+  // [skippable_url(skip), redirected_url(skip), push_state_url1(skip),
+  // push_state_url2*]
+  // Last 2 entries should have been marked as skippable.
+  EXPECT_TRUE(controller.GetEntryAtIndex(1)->should_skip_on_back_forward_ui());
+  EXPECT_TRUE(controller.GetEntryAtIndex(2)->should_skip_on_back_forward_ui());
+  EXPECT_FALSE(
+      controller.GetLastCommittedEntry()->should_skip_on_back_forward_ui());
+
+  EXPECT_EQ(skippable_url, controller.GetEntryAtIndex(0)->GetURL());
+  EXPECT_EQ(redirected_url, controller.GetEntryAtIndex(1)->GetURL());
+  EXPECT_EQ(push_state_url1, controller.GetEntryAtIndex(2)->GetURL());
+  EXPECT_EQ(push_state_url2, controller.GetEntryAtIndex(3)->GetURL());
+
+  // Do another pushState so push_state_url2's entry also becomes skippable.
+  GURL push_state_url3(embedded_test_server()->GetURL("/title3.html"));
+  script = "history.pushState('', '','" + push_state_url3.spec() + "');";
+  EXPECT_TRUE(content::ExecuteScriptWithoutUserGesture(shell()->web_contents(),
+                                                       script));
+  EXPECT_TRUE(controller.GetEntryAtIndex(3)->should_skip_on_back_forward_ui());
+  // We now have
+  // [skippable_url(skip), redirected_url(skip), push_state_url1(skip),
+  // push_state_url2(skip), push_state_url3*]
+
+  // Go to index 2.
+  TestNavigationObserver load_observer(shell()->web_contents());
+  controller.GoToIndex(2);
+  load_observer.Wait();
+  EXPECT_EQ(push_state_url1, controller.GetLastCommittedEntry()->GetURL());
+
+  // We now have (Before user gesture)
+  // [skippable_url(skip), redirected_url(skip), push_state_url1*,
+  // push_state_url2(skip), push_state_url3]
+  EXPECT_TRUE(controller.GetEntryAtIndex(0)->should_skip_on_back_forward_ui());
+  EXPECT_TRUE(controller.GetEntryAtIndex(1)->should_skip_on_back_forward_ui());
+  EXPECT_FALSE(controller.GetEntryAtIndex(2)->should_skip_on_back_forward_ui());
+  EXPECT_TRUE(controller.GetEntryAtIndex(3)->should_skip_on_back_forward_ui());
+  EXPECT_FALSE(controller.GetEntryAtIndex(4)->should_skip_on_back_forward_ui());
+
+  // Simulate a user gesture.
+  root->UpdateUserActivationState(
+      blink::UserActivationUpdateType::kNotifyActivation);
+
+  // We now have (After user gesture)
+  // [skippable_url(skip), redirected_url, push_state_url1*, push_state_url2,
+  // push_state_url3]
+  // All the navigations that refer to the same document should have their
+  // skippable bit reset.
+  EXPECT_FALSE(controller.GetEntryAtIndex(1)->should_skip_on_back_forward_ui());
+  EXPECT_FALSE(controller.GetEntryAtIndex(2)->should_skip_on_back_forward_ui());
+  EXPECT_FALSE(controller.GetEntryAtIndex(3)->should_skip_on_back_forward_ui());
+  EXPECT_FALSE(controller.GetEntryAtIndex(4)->should_skip_on_back_forward_ui());
+  // The first entry is not the same document and its bit should not be reset.
+  EXPECT_TRUE(controller.GetEntryAtIndex(0)->should_skip_on_back_forward_ui());
+
+  // goBack should now navigate to entry at index 1.
+  TestNavigationObserver back_load_observer(shell()->web_contents());
+  controller.GoBack();
+  back_load_observer.Wait();
+  EXPECT_EQ(redirected_url, controller.GetLastCommittedEntry()->GetURL());
+
+  // Do another pushState without user gesture.
+  GURL push_state_url4(embedded_test_server()->GetURL("/title3.html"));
+  script = "history.pushState('', '','" + push_state_url3.spec() + "');";
+  EXPECT_TRUE(content::ExecuteScriptWithoutUserGesture(shell()->web_contents(),
+                                                       script));
+  // We now have
+  // [skippable_url(skip), redirected_url, push_state_url4*]
+  EXPECT_EQ(3, controller.GetEntryCount());
+  EXPECT_EQ(skippable_url, controller.GetEntryAtIndex(0)->GetURL());
+  EXPECT_EQ(redirected_url, controller.GetEntryAtIndex(1)->GetURL());
+  EXPECT_EQ(push_state_url4, controller.GetEntryAtIndex(2)->GetURL());
+  // The skippable flag will still be unset since this page has seen a user
+  // gesture once.
+  EXPECT_FALSE(controller.GetEntryAtIndex(1)->should_skip_on_back_forward_ui());
+}
+
+// Tests that if a navigation entry is marked as skippable due to redirect to a
+// new document then the flag should not be reset if there is a user gesture on
+// the new document.
+IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
+                       OnUserGestureDoNotResetDifferentDocumentEntrySkipFlag) {
+  GURL skippable_url(embedded_test_server()->GetURL("/frame_tree/top.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), skippable_url));
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  EXPECT_FALSE(root->HasBeenActivated());
+  EXPECT_FALSE(root->HasTransientUserActivation());
+
+  // Navigate to a new same-site document from the renderer without a user
+  // gesture.
+  GURL redirected_url(embedded_test_server()->GetURL("/title1.html"));
+  EXPECT_TRUE(
+      NavigateToURLFromRendererWithoutUserGesture(shell(), redirected_url));
+
+  NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
+      shell()->web_contents()->GetController());
+  EXPECT_EQ(1, controller.GetCurrentEntryIndex());
+  EXPECT_EQ(1, controller.GetLastCommittedEntryIndex());
+
+  EXPECT_TRUE(controller.GetEntryAtIndex(0)->should_skip_on_back_forward_ui());
+  EXPECT_FALSE(
+      controller.GetLastCommittedEntry()->should_skip_on_back_forward_ui());
+
+  // Simulate a user gesture.
+  root->UpdateUserActivationState(
+      blink::UserActivationUpdateType::kNotifyActivation);
+
+  // Since the last navigations refer to a different document, a user gesture
+  // here should not reset the skippable bit in the previous entries.
+  EXPECT_TRUE(controller.GetEntryAtIndex(0)->should_skip_on_back_forward_ui());
+}
+
 // Tests that the navigation entry is not marked as skippable on back/forward
 // button if it does a renderer initiated navigation after getting a user
 // activation.

@@ -238,6 +238,10 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
       const scoped_refptr<const base::RefCountedString>& data_url_as_string);
 #endif
 
+  // Invoked when a user activation occurs within the page, so that relevant
+  // entries can be updated as needed.
+  void NotifyUserActivation();
+
  private:
   friend class RestoreHelper;
 

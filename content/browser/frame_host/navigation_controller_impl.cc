@@ -423,6 +423,23 @@ void ValidateRequestMatchesEntry(NavigationRequest* request,
 }
 #endif  // DCHECK_IS_ON()
 
+// Resets |should_skip_on_back_forward_ui| flag for |entry| if it has a frame
+// entry for |root_frame| with the same document sequence number as
+// |document_sequence_number|.
+bool ResetSkippableForSameDocumentEntry(FrameTreeNode* root_frame,
+                                        int64_t& document_sequence_number,
+                                        NavigationEntryImpl* entry) {
+  if (entry && entry->should_skip_on_back_forward_ui()) {
+    auto* frame_entry = entry->GetFrameEntry(root_frame);
+    if (frame_entry &&
+        frame_entry->document_sequence_number() == document_sequence_number) {
+      entry->set_should_skip_on_back_forward_ui(false);
+      return true;
+    }
+  }
+  return false;
+}
+
 }  // namespace
 
 // NavigationControllerImpl ----------------------------------------------------
@@ -2074,6 +2091,44 @@ bool NavigationControllerImpl::ValidateDataURLAsString(
   return true;
 }
 #endif
+
+void NavigationControllerImpl::NotifyUserActivation() {
+  // When a user activation occurs, ensure that all adjacent entries for the
+  // same document clear their skippable bit, so that the history manipulation
+  // intervention does not apply to them.
+  auto* last_committed_entry = GetLastCommittedEntry();
+  if (!last_committed_entry)
+    return;
+  int last_committed_entry_index = GetLastCommittedEntryIndex();
+
+  auto* root_frame = delegate_->GetFrameTree()->root();
+  auto* frame_entry = last_committed_entry->GetFrameEntry(root_frame);
+  if (!frame_entry)
+    return;
+
+  int64_t document_sequence_number = frame_entry->document_sequence_number();
+
+  // |last_committed_entry| should not be skippable because it is the current
+  // entry and in case the skippable bit was earlier set then on re-navigation
+  // it would have been reset.
+  DCHECK(!last_committed_entry->should_skip_on_back_forward_ui());
+
+  for (int index = last_committed_entry_index - 1; index >= 0; index--) {
+    auto* entry = GetEntryAtIndex(index);
+    if (!ResetSkippableForSameDocumentEntry(root_frame,
+                                            document_sequence_number, entry)) {
+      break;
+    }
+  }
+  for (int index = last_committed_entry_index + 1; index < GetEntryCount();
+       index++) {
+    auto* entry = GetEntryAtIndex(index);
+    if (!ResetSkippableForSameDocumentEntry(root_frame,
+                                            document_sequence_number, entry)) {
+      break;
+    }
+  }
+}
 
 bool NavigationControllerImpl::StartHistoryNavigationInNewSubframe(
     RenderFrameHostImpl* render_frame_host,
