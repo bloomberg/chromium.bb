@@ -67,7 +67,6 @@ class ImeWindowView : public ImeNativeWindow,
   bool CanMaximize() const override;
   bool CanMinimize() const override;
   base::string16 GetWindowTitle() const override;
-  gfx::ImageSkia GetWindowAppIcon() override;
   gfx::ImageSkia GetWindowIcon() override;
   void DeleteDelegate() override;
 
