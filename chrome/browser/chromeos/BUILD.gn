@@ -2767,6 +2767,8 @@ source_set("time_limit_tests") {
   check_includes = false
 
   sources = [
+    "child_accounts/time_limit_consistency_test/consistency_golden_converter.cc",
+    "child_accounts/time_limit_consistency_test/consistency_golden_converter_unittest.cc",
     "child_accounts/time_limit_consistency_test/consistency_golden_loader.cc",
     "child_accounts/time_limit_consistency_test/consistency_golden_loader_unittest.cc",
   ]
