@@ -213,6 +213,10 @@ static void ProduceCacheInternal(
       V8CodeCache::SetCacheTimeStamp(cache_handler);
       break;
     case V8CodeCache::ProduceCacheOptions::kProduceCodeCache: {
+      // TODO(crbug.com/938269): Investigate why this can be empty here.
+      if (unbound_script.IsEmpty())
+        break;
+
       constexpr const char* kTraceEventCategoryGroup = "v8,devtools.timeline";
       TRACE_EVENT_BEGIN1(kTraceEventCategoryGroup, trace_name, "fileName",
                          source_url.GetString().Utf8());
