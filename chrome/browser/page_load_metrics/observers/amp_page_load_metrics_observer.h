@@ -96,6 +96,8 @@ class AMPPageLoadMetricsObserver
   struct MainFrameNavigationInfo {
     GURL url;
 
+    ukm::SourceId ukm_source_id = ukm::kInvalidSourceId;
+
     // Pointer to the RenderViewHost for the iframe hosting the AMP document
     // associated with the main frame AMP navigation.
     content::RenderFrameHost* subframe_rfh = nullptr;
