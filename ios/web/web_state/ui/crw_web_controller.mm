@@ -438,8 +438,6 @@ const CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
 // Returns the current URL of the web view, and sets |trustLevel| accordingly
 // based on the confidence in the verification.
 - (GURL)webURLWithTrustLevel:(web::URLVerificationTrustLevel*)trustLevel;
-// Returns |YES| if |url| should be loaded in a native view.
-- (BOOL)shouldLoadURLInNativeView:(const GURL&)url;
 // Loads POST request with body in |_wkWebView| by constructing an HTML page
 // that executes the request through JavaScript and replaces document with the
 // result.
@@ -473,15 +471,6 @@ const CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
 // Updates the WKBackForwardListItemHolder navigation item.
 - (void)updateCurrentBackForwardListItemHolder;
 
-// Presents native content using the native controller for |item| without
-// notifying WebStateObservers. This method does not modify the underlying web
-// view. It simply covers the web view with the native content.
-// |-didLoadNativeContentForNavigationItem| must be called some time later
-// to notify WebStateObservers.
-- (void)presentNativeContentForNavigationItem:(web::NavigationItem*)item;
-// Notifies WebStateObservers the completion of this navigation.
-- (void)didLoadNativeContentForNavigationItem:(web::NavigationItemImpl*)item
-                            rendererInitiated:(BOOL)rendererInitiated;
 // Loads a blank page directly into WKWebView as a placeholder for a Native View
 // or WebUI URL. This page has the URL about:blank?for=<encoded original URL>.
 // If |originalContext| is provided, reuse it for the placeholder navigation
@@ -508,10 +497,6 @@ const CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
 // If YES, the page should be closed if it successfully redirects to a native
 // application, for example if a new tab redirects to the App Store.
 - (BOOL)shouldClosePageOnNativeApplicationLoad;
-// Discards non committed items, only if the last committed URL was not loaded
-// in native view. But if it was a native view, no discard will happen to avoid
-// an ugly animation where the web view is inserted and quickly removed.
-- (void)discardNonCommittedItemsIfLastCommittedWasNotNativeView;
 // Updates URL for navigation context and navigation item.
 - (void)didReceiveRedirectForNavigation:(web::NavigationContextImpl*)context
                                 withURL:(const GURL&)URL;
@@ -534,8 +519,6 @@ const CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
 // bounds. Reloads if delta is 0.
 // TODO(crbug.com/661316): Move this method to NavigationManager.
 - (void)rendererInitiatedGoDelta:(int)delta hasUserGesture:(BOOL)hasUserGesture;
-// Informs the native controller if web usage is allowed or not.
-- (void)setNativeControllerWebUsageEnabled:(BOOL)webUsageEnabled;
 // Acts on a single message from the JS object, parsed from JSON into a
 // DictionaryValue. Returns NO if the format for the message was invalid.
 - (BOOL)respondToMessage:(base::DictionaryValue*)crwMessage
@@ -1736,13 +1719,6 @@ GURL URLEscapedForHistory(const GURL& url) {
 
 #pragma mark -
 
-- (void)setNativeControllerWebUsageEnabled:(BOOL)webUsageEnabled {
-  if ([self.nativeController
-          respondsToSelector:@selector(setWebUsageEnabled:)]) {
-    [self.nativeController setWebUsageEnabled:webUsageEnabled];
-  }
-}
-
 - (BOOL)isSafeBrowsingWarningDisplayedInWebView {
   // A SafeBrowsing warning is a UIScrollView that is inserted on top of
   // WKWebView's scroll view. This method uses heuristics to detect this view.
@@ -2593,85 +2569,6 @@ GURL URLEscapedForHistory(const GURL& url) {
   self.webStateImpl->OnPageLoaded(currentURL, NO);
 }
 
-// Loads the current URL in a native controller if using the legacy navigation
-// stack. If the new navigation stack is used, start loading a placeholder
-// into the web view, upon the completion of which the native controller will
-// be triggered.
-- (void)loadCurrentURLInNativeViewWithRendererInitiatedNavigation:
-    (BOOL)rendererInitiated {
-  if (!web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
-    // Free the web view.
-    [self removeWebView];
-    [self presentNativeContentForNavigationItem:self.currentNavItem];
-    [self didLoadNativeContentForNavigationItem:self.currentNavItem
-                              rendererInitiated:rendererInitiated];
-  } else {
-    // Just present the native view now. Leave the rest of native content load
-    // until the placeholder navigation finishes.
-    [self presentNativeContentForNavigationItem:self.currentNavItem];
-    web::NavigationContextImpl* context = [self
-        loadPlaceholderInWebViewForURL:self.currentNavItem->GetVirtualURL()
-                     rendererInitiated:rendererInitiated
-                            forContext:nullptr];
-    context->SetIsNativeContentPresented(true);
-  }
-}
-
-- (void)presentNativeContentForNavigationItem:(web::NavigationItem*)item {
-  const GURL targetURL = item ? item->GetURL() : GURL::EmptyGURL();
-  id<CRWNativeContent> nativeContent =
-      [_nativeProvider controllerForURL:targetURL webState:self.webState];
-  // Unlike the WebView case, always create a new controller and view.
-  // TODO(crbug.com/759178): What to do if this does return nil?
-  [self setNativeController:nativeContent];
-  if ([nativeContent respondsToSelector:@selector(virtualURL)]) {
-    item->SetVirtualURL([nativeContent virtualURL]);
-  }
-
-  NSString* title = [self.nativeController title];
-  if (title && item) {
-    base::string16 newTitle = base::SysNSStringToUTF16(title);
-    item->SetTitle(newTitle);
-  }
-}
-
-- (void)didLoadNativeContentForNavigationItem:(web::NavigationItemImpl*)item
-                            rendererInitiated:(BOOL)rendererInitiated {
-  const GURL targetURL = item ? item->GetURL() : GURL::EmptyGURL();
-  const web::Referrer referrer;
-  std::unique_ptr<web::NavigationContextImpl> context =
-      [self registerLoadRequestForURL:targetURL
-                             referrer:referrer
-                           transition:self.currentTransition
-               sameDocumentNavigation:NO
-                       hasUserGesture:YES
-                    rendererInitiated:rendererInitiated
-                placeholderNavigation:NO];
-
-  self.webStateImpl->OnNavigationStarted(context.get());
-  [self didStartLoading];
-  self.navigationManagerImpl->CommitPendingItem();
-  context->SetHasCommitted(true);
-  self.webStateImpl->OnNavigationFinished(context.get());
-
-  if (item && web::GetWebClient()->IsAppSpecificURL(item->GetURL())) {
-    // Report the successful navigation to the ErrorRetryStateMachine.
-    item->error_retry_state_machine().SetNoNavigationError();
-  }
-
-  NSString* title = [self.nativeController title];
-  if (title) {
-    [self setNavigationItemTitle:title];
-  }
-
-  if ([self.nativeController respondsToSelector:@selector(setDelegate:)]) {
-    [self.nativeController setDelegate:self];
-  }
-
-  _loadPhase = web::PAGE_LOADED;
-  [self didFinishWithURL:targetURL loadSuccess:YES context:context.get()];
-}
-
 - (web::NavigationContextImpl*)
     loadPlaceholderInWebViewForURL:(const GURL&)originalURL
                  rendererInitiated:(BOOL)rendererInitiated
@@ -2758,13 +2655,6 @@ GURL URLEscapedForHistory(const GURL& url) {
   if (IsPlaceholderUrl(_documentURL))
     return ExtractUrlFromPlaceholderUrl(_documentURL);
   return _documentURL;
-}
-
-- (BOOL)shouldLoadURLInNativeView:(const GURL&)url {
-  // App-specific URLs that don't require WebUI are loaded in native views.
-  return web::GetWebClient()->IsAppSpecificURL(url) &&
-         !self.webStateImpl->HasWebUI() &&
-         [_nativeProvider hasControllerForURL:url];
 }
 
 - (void)abortLoad {
@@ -2943,6 +2833,112 @@ GURL URLEscapedForHistory(const GURL& url) {
     [self requirePageReconstruction];
 }
 
+#pragma mark - Native Content
+
+// Returns |YES| if |url| should be loaded in a native view.
+- (BOOL)shouldLoadURLInNativeView:(const GURL&)url {
+  // App-specific URLs that don't require WebUI are loaded in native views.
+  return web::GetWebClient()->IsAppSpecificURL(url) &&
+         !self.webStateImpl->HasWebUI() &&
+         [_nativeProvider hasControllerForURL:url];
+}
+
+// Informs the native controller if web usage is allowed or not.
+- (void)setNativeControllerWebUsageEnabled:(BOOL)webUsageEnabled {
+  if ([self.nativeController
+          respondsToSelector:@selector(setWebUsageEnabled:)]) {
+    [self.nativeController setWebUsageEnabled:webUsageEnabled];
+  }
+}
+
+// Loads the current URL in a native controller if using the legacy navigation
+// stack. If the new navigation stack is used, start loading a placeholder
+// into the web view, upon the completion of which the native controller will
+// be triggered.
+- (void)loadCurrentURLInNativeViewWithRendererInitiatedNavigation:
+    (BOOL)rendererInitiated {
+  if (!web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+    // Free the web view.
+    [self removeWebView];
+    [self presentNativeContentForNavigationItem:self.currentNavItem];
+    [self didLoadNativeContentForNavigationItem:self.currentNavItem
+                              rendererInitiated:rendererInitiated];
+  } else {
+    // Just present the native view now. Leave the rest of native content load
+    // until the placeholder navigation finishes.
+    [self presentNativeContentForNavigationItem:self.currentNavItem];
+    web::NavigationContextImpl* context = [self
+        loadPlaceholderInWebViewForURL:self.currentNavItem->GetVirtualURL()
+                     rendererInitiated:rendererInitiated
+                            forContext:nullptr];
+    context->SetIsNativeContentPresented(true);
+  }
+}
+
+// Presents native content using the native controller for |item| without
+// notifying WebStateObservers. This method does not modify the underlying web
+// view. It simply covers the web view with the native content.
+// |-didLoadNativeContentForNavigationItem| must be called some time later
+// to notify WebStateObservers.
+- (void)presentNativeContentForNavigationItem:(web::NavigationItem*)item {
+  const GURL targetURL = item ? item->GetURL() : GURL::EmptyGURL();
+  id<CRWNativeContent> nativeContent =
+      [_nativeProvider controllerForURL:targetURL webState:self.webState];
+  // Unlike the WebView case, always create a new controller and view.
+  // TODO(crbug.com/759178): What to do if this does return nil?
+  [self setNativeController:nativeContent];
+  if ([nativeContent respondsToSelector:@selector(virtualURL)]) {
+    item->SetVirtualURL([nativeContent virtualURL]);
+  }
+
+  NSString* title = [self.nativeController title];
+  if (title && item) {
+    base::string16 newTitle = base::SysNSStringToUTF16(title);
+    item->SetTitle(newTitle);
+  }
+}
+
+// Notifies WebStateObservers the completion of this navigation.
+- (void)didLoadNativeContentForNavigationItem:(web::NavigationItemImpl*)item
+                            rendererInitiated:(BOOL)rendererInitiated {
+  const GURL targetURL = item ? item->GetURL() : GURL::EmptyGURL();
+  const web::Referrer referrer;
+  std::unique_ptr<web::NavigationContextImpl> context =
+      [self registerLoadRequestForURL:targetURL
+                             referrer:referrer
+                           transition:self.currentTransition
+               sameDocumentNavigation:NO
+                       hasUserGesture:YES
+                    rendererInitiated:rendererInitiated
+                placeholderNavigation:NO];
+
+  self.webStateImpl->OnNavigationStarted(context.get());
+  [self didStartLoading];
+  self.navigationManagerImpl->CommitPendingItem();
+  context->SetHasCommitted(true);
+  self.webStateImpl->OnNavigationFinished(context.get());
+
+  if (item && web::GetWebClient()->IsAppSpecificURL(item->GetURL())) {
+    // Report the successful navigation to the ErrorRetryStateMachine.
+    item->error_retry_state_machine().SetNoNavigationError();
+  }
+
+  NSString* title = [self.nativeController title];
+  if (title) {
+    [self setNavigationItemTitle:title];
+  }
+
+  if ([self.nativeController respondsToSelector:@selector(setDelegate:)]) {
+    [self.nativeController setDelegate:self];
+  }
+
+  _loadPhase = web::PAGE_LOADED;
+  [self didFinishWithURL:targetURL loadSuccess:YES context:context.get()];
+}
+
+// Discards non committed items, only if the last committed URL was not loaded
+// in native view. But if it was a native view, no discard will happen to avoid
+// an ugly animation where the web view is inserted and quickly removed.
 - (void)discardNonCommittedItemsIfLastCommittedWasNotNativeView {
   GURL lastCommittedURL = self.webState->GetLastCommittedURL();
   BOOL previousItemWasLoadedInNativeView =
