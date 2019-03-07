@@ -371,18 +371,24 @@ TEST_F(GinPortTest, TestSenderProperty) {
   v8::Local<v8::Context> context = MainContext();
 
   PortId port_id(base::UnguessableToken::Create(), 0, true);
-  gin::Handle<GinPort> port = CreatePort(context, port_id);
 
-  v8::Local<v8::Object> port_obj = port.ToV8().As<v8::Object>();
+  {
+    gin::Handle<GinPort> port = CreatePort(context, port_id);
+    v8::Local<v8::Object> port_obj = port.ToV8().As<v8::Object>();
+    EXPECT_EQ("undefined",
+              GetStringPropertyFromObject(port_obj, context, "sender"));
+  }
 
-  EXPECT_EQ("undefined",
-            GetStringPropertyFromObject(port_obj, context, "sender"));
-
-  port->SetSender(context,
-                  gin::DataObjectBuilder(isolate()).Set("prop", 42).Build());
-
-  EXPECT_EQ(R"({"prop":42})",
-            GetStringPropertyFromObject(port_obj, context, "sender"));
+  {
+    // SetSender() can only be called before the `sender` property is accessed,
+    // so we need to create a new port here.
+    gin::Handle<GinPort> port = CreatePort(context, port_id);
+    port->SetSender(context,
+                    gin::DataObjectBuilder(isolate()).Set("prop", 42).Build());
+    v8::Local<v8::Object> port_obj = port.ToV8().As<v8::Object>();
+    EXPECT_EQ(R"({"prop":42})",
+              GetStringPropertyFromObject(port_obj, context, "sender"));
+  }
 }
 
 TEST_F(GinPortTest, TryUsingPortAfterInvalidation) {
@@ -425,6 +431,24 @@ TEST_F(GinPortTest, TryUsingPortAfterInvalidation) {
                               function_args,
                               "Uncaught Error: Extension context invalidated.");
   }
+}
+
+TEST_F(GinPortTest, AlteringPortName) {
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = MainContext();
+
+  PortId port_id(base::UnguessableToken::Create(), 0, true);
+  gin::Handle<GinPort> port = CreatePort(context, port_id);
+
+  v8::Local<v8::Object> port_obj = port.ToV8().As<v8::Object>();
+
+  v8::Local<v8::Function> change_port_name = FunctionFromString(
+      context, "(function(port) { port.name = 'foo'; return port.name; })");
+
+  v8::Local<v8::Value> args[] = {port_obj};
+  v8::Local<v8::Value> result =
+      RunFunction(change_port_name, context, base::size(args), args);
+  EXPECT_EQ(R"("foo")", V8ToString(result, context));
 }
 
 }  // namespace extensions

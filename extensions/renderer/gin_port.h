@@ -70,7 +70,9 @@ class GinPort final : public gin::Wrappable<GinPort> {
   // the port.
   void DispatchOnDisconnect(v8::Local<v8::Context> context);
 
-  // Sets the |sender| property on the port.
+  // Sets the |sender| property on the port. Note: this can only be called
+  // before the `sender` property is accessed on the JS object, since it is
+  // lazily set as a data property in first access.
   void SetSender(v8::Local<v8::Context> context, v8::Local<v8::Value> sender);
 
   const PortId& port_id() const { return port_id_; }
@@ -141,6 +143,10 @@ class GinPort final : public gin::Wrappable<GinPort> {
   // The delegate for handling the message passing between ports. Guaranteed to
   // outlive this object.
   Delegate* const delegate_;
+
+  // Whether the `sender` property has been accessed, and thus set on the
+  // port JS object.
+  bool accessed_sender_;
 
   // A listener for context invalidation. Note: this isn't actually optional;
   // it just needs to be created after |weak_factory_|, which needs to be the
