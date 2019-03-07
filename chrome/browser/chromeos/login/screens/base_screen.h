@@ -102,10 +102,6 @@ class BaseScreen {
   // Sends all pending context changes to the JS side.
   void CommitContextChanges();
 
-  // Screen can call this method to notify framework that it have finished
-  // it's work with |outcome|.
-  void Finish(ScreenExitCode exit_code);
-
   // The method is called each time some key in screen context is
   // updated by JS side. Default implementation does nothing, so
   // subclasses should override it in order to observe updates in

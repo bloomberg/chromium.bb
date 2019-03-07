@@ -7,7 +7,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
 #include "chrome/browser/chromeos/login/screens/demo_preferences_screen_view.h"
-#include "chrome/browser/chromeos/login/screens/screen_exit_code.h"
 #include "chrome/browser/chromeos/login/screens/welcome_screen.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/common/pref_names.h"

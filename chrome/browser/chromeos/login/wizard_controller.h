@@ -262,7 +262,6 @@ class WizardController : public BaseScreenDelegate,
   void PerformOOBECompletedActions();
 
   // Overridden from BaseScreenDelegate:
-  void OnExit(ScreenExitCode exit_code) override;
   void ShowCurrentScreen() override;
   ErrorScreen* GetErrorScreen() override;
   void ShowErrorScreen() override;
