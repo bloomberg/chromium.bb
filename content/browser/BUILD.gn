@@ -1625,8 +1625,6 @@ jumbo_source_set("browser") {
     "service_manager/service_manager_context.h",
     "service_worker/embedded_worker_instance.cc",
     "service_worker/embedded_worker_instance.h",
-    "service_worker/embedded_worker_registry.cc",
-    "service_worker/embedded_worker_registry.h",
     "service_worker/embedded_worker_status.h",
     "service_worker/payment_handler_support.cc",
     "service_worker/payment_handler_support.h",

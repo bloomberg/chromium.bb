@@ -10,7 +10,6 @@
 #include <memory>
 #include <string>
 
-#include "base/callback.h"
 #include "base/callback_forward.h"
 #include "base/gtest_prod_util.h"
 #include "base/logging.h"
@@ -37,7 +36,6 @@
 
 namespace content {
 
-class EmbeddedWorkerRegistry;
 class ServiceWorkerContentSettingsProxyImpl;
 class ServiceWorkerContextCore;
 class ServiceWorkerVersion;
@@ -120,6 +118,7 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
         const GURL& source_url) {}
   };
 
+  explicit EmbeddedWorkerInstance(ServiceWorkerVersion* owner_version);
   ~EmbeddedWorkerInstance() override;
 
   // Starts the worker. It is invalid to call this when the worker is not in
@@ -236,7 +235,6 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   class ScopedLifetimeTracker;
   class StartTask;
   class WorkerProcessHandle;
-  friend class EmbeddedWorkerRegistry;
   friend class EmbeddedWorkerInstanceTest;
   FRIEND_TEST_ALL_PREFIXES(EmbeddedWorkerInstanceTest, StartAndStop);
   FRIEND_TEST_ALL_PREFIXES(EmbeddedWorkerInstanceTest, DetachDuringStart);
@@ -244,12 +242,6 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   FRIEND_TEST_ALL_PREFIXES(service_worker_new_script_loader_unittest::
                                ServiceWorkerNewScriptLoaderTest,
                            AccessedNetwork);
-
-  // Constructor is called via EmbeddedWorkerRegistry::CreateWorker().
-  // This instance holds a ref of |registry|.
-  EmbeddedWorkerInstance(base::WeakPtr<ServiceWorkerContextCore> context,
-                         ServiceWorkerVersion* owner_version,
-                         int embedded_worker_id);
 
   // Called back from StartTask after a process is allocated on the UI thread.
   void OnProcessAllocated(std::unique_ptr<WorkerProcessHandle> handle,
@@ -314,10 +306,9 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   void NotifyForegroundServiceWorkerRemoved();
 
   base::WeakPtr<ServiceWorkerContextCore> context_;
-  scoped_refptr<EmbeddedWorkerRegistry> registry_;
   ServiceWorkerVersion* owner_version_;
 
-  // Unique within an EmbeddedWorkerRegistry.
+  // Unique within a ServiceWorkerContextCore.
   const int embedded_worker_id_;
 
   EmbeddedWorkerStatus status_;
