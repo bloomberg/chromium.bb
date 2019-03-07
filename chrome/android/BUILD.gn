@@ -1704,6 +1704,13 @@ if (public_android_sdk) {
   }
 }
 
+# TODO(estevenson): Remove this once we switch to using bundle targets to
+# generate APK stubs.
+android_resources("trichrome_dummy_resources") {
+  custom_package = "org.chromium.trichromelibrary"
+  resource_dirs = [ "trichrome/res_dummy" ]
+}
+
 monochrome_public_apk_or_module_tmpl("trichrome_chrome_apk") {
   apk_name = "TrichromeChrome"
   target_type = "android_apk"
