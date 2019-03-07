@@ -560,6 +560,7 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
 
     @Override
     public void evaluateJavaScript(String script, JavaScriptCallback callback) {
+        ThreadUtils.assertOnUiThread();
         if (isDestroyed() || script == null) return;
         nativeEvaluateJavaScript(mNativeWebContentsAndroid, script, callback);
     }
@@ -567,6 +568,7 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
     @Override
     @VisibleForTesting
     public void evaluateJavaScriptForTests(String script, JavaScriptCallback callback) {
+        ThreadUtils.assertOnUiThread();
         if (script == null) return;
         checkNotDestroyed();
         nativeEvaluateJavaScriptForTests(mNativeWebContentsAndroid, script, callback);
