@@ -161,6 +161,15 @@ void ChildProcessLauncher::ResetRegisteredFilesForTesting() {
   ChildProcessLauncherHelper::ResetRegisteredFilesForTesting();
 }
 
+#if defined(OS_ANDROID)
+void ChildProcessLauncher::DumpProcessStack() {
+  base::Process to_pass = process_.process.Duplicate();
+  GetProcessLauncherTaskRunner()->PostTask(
+      FROM_HERE, base::BindOnce(&ChildProcessLauncherHelper::DumpProcessStack,
+                                helper_, std::move(to_pass)));
+}
+#endif
+
 ChildProcessLauncher::Client* ChildProcessLauncher::ReplaceClientForTest(
     Client* client) {
   Client* ret = client_;

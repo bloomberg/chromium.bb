@@ -14,6 +14,7 @@
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
+#include "base/rand_util.h"
 #include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/android/feature_utilities.h"
 #include "chrome/browser/android/hung_renderer_infobar_delegate.h"
@@ -495,13 +496,18 @@ TabWebContentsDelegateAndroid::SwapWebContents(
 void JNI_TabWebContentsDelegateAndroid_OnRendererUnresponsive(
     JNIEnv* env,
     const JavaParamRef<jobject>& java_web_contents) {
+  // Rate limit the number of stack dumps so we don't overwhelm our crash
+  // reports.
+  content::WebContents* web_contents =
+      content::WebContents::FromJavaWebContents(java_web_contents);
+  if (base::RandDouble() < 0.01)
+    web_contents->GetMainFrame()->GetProcess()->DumpProcessStack();
+
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableHungRendererInfoBar)) {
     return;
   }
 
-  content::WebContents* web_contents =
-        content::WebContents::FromJavaWebContents(java_web_contents);
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(web_contents);
   DCHECK(!FindHungRendererInfoBar(infobar_service));

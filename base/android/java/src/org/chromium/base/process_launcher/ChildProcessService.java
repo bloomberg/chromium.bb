@@ -187,6 +187,19 @@ public abstract class ChildProcessService extends Service {
                 }
             });
         }
+
+        @Override
+        public void dumpProcessStack() {
+            assert mServiceBound;
+            synchronized (mLibraryInitializedLock) {
+                if (!mLibraryInitialized) {
+                    Log.e(TAG, "Cannot dump process stack before native is loaded");
+                    return;
+                }
+            }
+            nativeDumpProcessStack();
+        }
+
     };
 
     /**
@@ -361,4 +374,9 @@ public abstract class ChildProcessService extends Service {
      * Force the child process to exit.
      */
     private static native void nativeExitChildProcess();
+
+    /**
+     * Dumps the child process stack without crashing it.
+     */
+    private static native void nativeDumpProcessStack();
 }

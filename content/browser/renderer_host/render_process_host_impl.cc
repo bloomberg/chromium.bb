@@ -2647,6 +2647,11 @@ bool RenderProcessHostImpl::GetIntersectsViewport() {
 ChildProcessImportance RenderProcessHostImpl::GetEffectiveImportance() {
   return effective_importance_;
 }
+
+void RenderProcessHostImpl::DumpProcessStack() {
+  if (child_process_launcher_)
+    child_process_launcher_->DumpProcessStack();
+}
 #endif
 
 RendererAudioOutputStreamFactoryContext*

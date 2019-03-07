@@ -437,6 +437,19 @@ public class ChildProcessConnection {
         notifyChildProcessDied();
     }
 
+    /**
+     * Dumps the stack of the child process without crashing it.
+     */
+    public void dumpProcessStack() {
+        assert isRunningOnLauncherThread();
+        IChildProcessService service = mService;
+        try {
+            if (service != null) service.dumpProcessStack();
+        } catch (RemoteException e) {
+            Log.e(TAG, "Failed to dump process stack.", e);
+        }
+    }
+
     @VisibleForTesting
     protected void onServiceConnectedOnLauncherThread(IBinder service) {
         assert isRunningOnLauncherThread();
