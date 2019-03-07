@@ -228,9 +228,11 @@ Background.prototype = {
   /**
    * @override
    */
-  navigateToRange: function(range, opt_focus, opt_speechProps) {
+  navigateToRange: function(
+      range, opt_focus, opt_speechProps, opt_skipSettingSelection) {
     opt_focus = opt_focus === undefined ? true : opt_focus;
     opt_speechProps = opt_speechProps || {};
+    opt_skipSettingSelection = opt_skipSettingSelection || false;
     var prevRange = this.currentRange_;
 
     // Specialization for math output.
@@ -249,7 +251,8 @@ Background.prototype = {
     var selectedRange;
     var msg;
 
-    if (this.pageSel_ && this.pageSel_.isValid() && range.isValid()) {
+    if (this.pageSel_ && this.pageSel_.isValid() && range.isValid() &&
+        !opt_skipSettingSelection) {
       // Suppress hints.
       o.withoutHints();
 
@@ -291,7 +294,7 @@ Background.prototype = {
         if (this.pageSel_)
           this.pageSel_.select();
       }
-    } else {
+    } else if (!opt_skipSettingSelection) {
       // Ensure we don't select the editable when we first encounter it.
       var lca = null;
       if (range.start.node && prevRange.start.node) {
