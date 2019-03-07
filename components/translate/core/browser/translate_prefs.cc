@@ -23,6 +23,7 @@
 #include "build/build_config.h"
 #include "components/language/core/browser/language_prefs.h"
 #include "components/language/core/common/language_experiments.h"
+#include "components/language/core/common/language_util.h"
 #include "components/language/core/common/locale_util.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
@@ -31,7 +32,6 @@
 #include "components/translate/core/browser/translate_accept_languages.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_pref_names.h"
-#include "components/translate/core/common/translate_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_collator.h"
 
@@ -217,7 +217,7 @@ void TranslatePrefs::AddToLanguageList(const std::string& input_language,
   DCHECK(!input_language.empty());
 
   std::string chrome_language = input_language;
-  translate::ToChromeLanguageSynonym(&chrome_language);
+  language::ToChromeLanguageSynonym(&chrome_language);
 
   std::vector<std::string> languages;
   GetLanguageList(&languages);
@@ -242,7 +242,7 @@ void TranslatePrefs::RemoveFromLanguageList(const std::string& input_language) {
   DCHECK(!input_language.empty());
 
   std::string chrome_language = input_language;
-  translate::ToChromeLanguageSynonym(&chrome_language);
+  language::ToChromeLanguageSynonym(&chrome_language);
 
   std::vector<std::string> languages;
   GetLanguageList(&languages);
@@ -439,7 +439,7 @@ void TranslatePrefs::GetLanguageInfoList(
 
     // Extract the base language: if the base language can be translated, then
     // even the regional one should be marked as such.
-    translate::ToTranslateLanguageSynonym(&supports_translate_code);
+    language::ToTranslateLanguageSynonym(&supports_translate_code);
 
     language.supports_translate =
         translate_language_set.count(supports_translate_code) > 0;
@@ -452,7 +452,7 @@ void TranslatePrefs::BlockLanguage(const std::string& input_language) {
   DCHECK(!input_language.empty());
 
   std::string translate_language = input_language;
-  translate::ToTranslateLanguageSynonym(&translate_language);
+  language::ToTranslateLanguageSynonym(&translate_language);
 
   BlacklistValue(kPrefTranslateBlockedLanguages, translate_language);
 }
@@ -461,7 +461,7 @@ void TranslatePrefs::UnblockLanguage(const std::string& input_language) {
   DCHECK(!input_language.empty());
 
   std::string translate_language = input_language;
-  translate::ToTranslateLanguageSynonym(&translate_language);
+  language::ToTranslateLanguageSynonym(&translate_language);
   if (GetListSize(kPrefTranslateBlockedLanguages) > 1) {
     RemoveValueFromBlacklist(kPrefTranslateBlockedLanguages,
                              translate_language);
@@ -985,7 +985,7 @@ base::Value TranslatePrefs::GetDefaultBlockedLanguages() {
 #endif
   base::ListValue language_values;
   for (std::string& language : languages) {
-    translate::ToTranslateLanguageSynonym(&language);
+    language::ToTranslateLanguageSynonym(&language);
     if (std::find(language_values.GetList().begin(),
                   language_values.GetList().end(),
                   base::Value(language)) == language_values.GetList().end())
