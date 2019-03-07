@@ -65,7 +65,7 @@ KeyedService* OfflinePageModelFactory::BuildServiceInstanceFor(
   std::unique_ptr<ArchiveManager> archive_manager(new DownloadArchiveManager(
       temporary_archives_dir, persistent_archives_dir,
       DownloadPrefs::GetDefaultDownloadDirectory(), background_task_runner,
-      profile));
+      profile->GetPrefs()));
   auto clock = std::make_unique<base::DefaultClock>();
 
   std::unique_ptr<SystemDownloadManager> download_manager(
