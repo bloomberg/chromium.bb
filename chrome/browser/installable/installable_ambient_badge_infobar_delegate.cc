@@ -6,13 +6,16 @@
 
 #include <memory>
 
+#include "base/feature_list.h"
+#include "base/metrics/field_trial_params.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/ui/android/infobars/installable_ambient_badge_infobar.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 InstallableAmbientBadgeInfoBarDelegate::
-    ~InstallableAmbientBadgeInfoBarDelegate() {}
+    ~InstallableAmbientBadgeInfoBarDelegate() = default;
 
 // static
 void InstallableAmbientBadgeInfoBarDelegate::Create(
@@ -37,7 +40,18 @@ void InstallableAmbientBadgeInfoBarDelegate::AddToHomescreen() {
 
 const base::string16 InstallableAmbientBadgeInfoBarDelegate::GetMessageText()
     const {
-  return l10n_util::GetStringFUTF16(IDS_AMBIENT_BADGE_INSTALL, app_name_);
+  if (!base::FeatureList::IsEnabled(features::kAddToHomescreenMessaging))
+    return l10n_util::GetStringFUTF16(IDS_AMBIENT_BADGE_INSTALL, app_name_);
+
+  bool include_no_download_required = base::GetFieldTrialParamByFeatureAsBool(
+      features::kAddToHomescreenMessaging, "include_no_download_required",
+      /* default_value= */ false);
+
+  return l10n_util::GetStringFUTF16(
+      include_no_download_required
+          ? IDS_AMBIENT_BADGE_INSTALL_ALTERNATIVE_NO_DOWNLOAD_REQUIRED
+          : IDS_AMBIENT_BADGE_INSTALL_ALTERNATIVE,
+      app_name_);
 }
 
 const SkBitmap& InstallableAmbientBadgeInfoBarDelegate::GetPrimaryIcon() const {
