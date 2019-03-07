@@ -116,9 +116,10 @@ void CryptAuthKeyCreatorImpl::CreateKeys(
   DCHECK(!keys_to_create.empty());
 
   // Fail if CreateKeys() has already been called.
-  DCHECK(keys_to_create_.empty() && new_keys_.empty() &&
+  DCHECK(num_keys_to_create_ == 0 && new_keys_.empty() &&
          !create_keys_callback_);
 
+  num_keys_to_create_ = keys_to_create.size();
   keys_to_create_ = keys_to_create;
   server_ephemeral_dh_ = server_ephemeral_dh;
   create_keys_callback_ = std::move(create_keys_callback);
@@ -195,7 +196,7 @@ void CryptAuthKeyCreatorImpl::OnAsymmetricKeyPairGenerated(
     CryptAuthKeyBundle::Name bundle_name,
     const std::string& public_key,
     const std::string& private_key) {
-  DCHECK(keys_to_create_.size() > 0);
+  DCHECK(num_keys_to_create_ > 0);
   DCHECK(!public_key.empty() && !private_key.empty());
 
   const CryptAuthKeyCreator::CreateKeyData& create_key_data =
@@ -205,8 +206,8 @@ void CryptAuthKeyCreatorImpl::OnAsymmetricKeyPairGenerated(
                         create_key_data.status, create_key_data.type,
                         create_key_data.handle);
 
-  keys_to_create_.erase(bundle_name);
-  if (keys_to_create_.empty())
+  --num_keys_to_create_;
+  if (num_keys_to_create_ == 0)
     std::move(create_keys_callback_).Run(new_keys_, client_ephemeral_dh_);
 }
 
@@ -214,7 +215,7 @@ void CryptAuthKeyCreatorImpl::OnSymmetricKeyDerived(
     CryptAuthKeyBundle::Name bundle_name,
     const std::string& symmetric_key,
     const std::string& handle) {
-  DCHECK(keys_to_create_.size() > 0);
+  DCHECK(num_keys_to_create_ > 0);
   DCHECK(!symmetric_key.empty());
 
   const CryptAuthKeyCreator::CreateKeyData& create_key_data =
@@ -223,8 +224,8 @@ void CryptAuthKeyCreatorImpl::OnSymmetricKeyDerived(
   new_keys_.try_emplace(bundle_name, symmetric_key, create_key_data.status,
                         create_key_data.type, handle);
 
-  keys_to_create_.erase(bundle_name);
-  if (keys_to_create_.empty())
+  --num_keys_to_create_;
+  if (num_keys_to_create_ == 0)
     std::move(create_keys_callback_).Run(new_keys_, client_ephemeral_dh_);
 }
 
