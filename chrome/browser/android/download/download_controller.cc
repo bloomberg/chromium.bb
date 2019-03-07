@@ -22,6 +22,7 @@
 #include "chrome/browser/android/download/download_manager_service.h"
 #include "chrome/browser/android/download/download_utils.h"
 #include "chrome/browser/android/tab_android.h"
+#include "chrome/browser/download/download_offline_content_provider.h"
 #include "chrome/browser/download/download_stats.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/offline_pages/android/offline_page_bridge.h"
@@ -385,6 +386,10 @@ void DownloadController::OnDownloadStarted(
 
   if (download::AutoResumptionHandler::Get())
     download::AutoResumptionHandler::Get()->OnDownloadStarted(download_item);
+
+  DownloadUtils::GetDownloadOfflineContentProvider(
+      content::DownloadItemUtils::GetBrowserContext(download_item))
+      ->OnDownloadStarted(download_item);
 
   OnDownloadUpdated(download_item);
 }

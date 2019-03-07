@@ -60,9 +60,10 @@ OfflineItemFilter MimeTypeToOfflineItemFilter(const std::string& mime_type) {
 
 OfflineItem OfflineItemUtils::CreateOfflineItem(const std::string& name_space,
                                                 DownloadItem* download_item) {
+  auto* browser_context =
+      content::DownloadItemUtils::GetBrowserContext(download_item);
   bool off_the_record =
-      content::DownloadItemUtils::GetBrowserContext(download_item)
-          ->IsOffTheRecord();
+      browser_context ? browser_context->IsOffTheRecord() : false;
 
   OfflineItem item;
   item.id = ContentId(name_space, download_item->GetGuid());

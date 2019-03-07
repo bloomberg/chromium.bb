@@ -25,6 +25,10 @@
 #include "chrome/browser/extensions/api/downloads/downloads_api.h"
 #endif
 
+#if defined(OS_ANDROID)
+#include "chrome/browser/android/download/download_utils.h"
+#endif
+
 using content::BrowserContext;
 using content::DownloadManager;
 using content::DownloadManagerDelegate;
@@ -64,19 +68,11 @@ DownloadCoreServiceImpl::GetDownloadManagerDelegate() {
                      new DownloadHistory::HistoryAdapter(history))));
   }
 
-  download_provider_.reset(new DownloadOfflineContentProvider(
-      OfflineContentAggregatorFactory::GetForBrowserContext(
-          profile_->GetOriginalProfile()),
-      offline_items_collection::OfflineContentAggregator::CreateUniqueNameSpace(
-          OfflineItemUtils::GetDownloadNamespacePrefix(
-              profile_->IsOffTheRecord()),
-          profile_->IsOffTheRecord())));
-
   // Pass an empty delegate when constructing the DownloadUIController. The
   // default delegate does all the notifications we need.
   download_ui_.reset(new DownloadUIController(
       manager, std::unique_ptr<DownloadUIController::Delegate>(),
-      download_provider_.get()));
+      CreateDownloadOfflineContentProvider()));
 
 #if !defined(OS_ANDROID)
   download_shelf_controller_.reset(new DownloadShelfController(profile_));
@@ -88,6 +84,22 @@ DownloadCoreServiceImpl::GetDownloadManagerDelegate() {
   g_browser_process->download_status_updater()->AddManager(manager);
 
   return manager_delegate_.get();
+}
+
+DownloadOfflineContentProvider*
+DownloadCoreServiceImpl::CreateDownloadOfflineContentProvider() {
+#if defined(OS_ANDROID)
+  return DownloadUtils::GetDownloadOfflineContentProvider(profile_);
+#else
+  download_provider_.reset(new DownloadOfflineContentProvider(
+      OfflineContentAggregatorFactory::GetForBrowserContext(
+          profile_->GetOriginalProfile()),
+      offline_items_collection::OfflineContentAggregator::CreateUniqueNameSpace(
+          OfflineItemUtils::GetDownloadNamespacePrefix(
+              profile_->IsOffTheRecord()),
+          profile_->IsOffTheRecord())));
+  return download_provider_.get();
+#endif
 }
 
 DownloadHistory* DownloadCoreServiceImpl::GetDownloadHistory() {
