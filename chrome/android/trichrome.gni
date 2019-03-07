@@ -112,5 +112,6 @@ template("trichrome_library_apk_tmpl") {
             [ "//base/android/proguard/disable_all_obfuscation.flags" ]
       }
     }
+    deps += [ "//chrome/android:trichrome_dummy_resources" ]
   }
 }
