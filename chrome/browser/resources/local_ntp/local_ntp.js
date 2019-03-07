@@ -129,7 +129,6 @@ var IDS = {
   NOTIFICATION_CLOSE_BUTTON: 'mv-notice-x',
   NOTIFICATION_MESSAGE: 'mv-msg',
   NTP_CONTENTS: 'ntp-contents',
-  OGB: 'one-google',
   PROMO: 'promo',
   RESTORE_ALL_LINK: 'mv-restore',
   SUGGESTIONS: 'suggestions',
@@ -968,15 +967,32 @@ function handlePostMessage(event) {
   if (cmd === 'loaded') {
     tilesAreLoaded = true;
     if (configData.isGooglePage) {
-      // Show search suggestions, promo, and the OGB if they were previously
-      // hidden.
+      // Show search suggestions if they were previously hidden.
       if ($(IDS.SUGGESTIONS)) {
         $(IDS.SUGGESTIONS).style.visibility = 'visible';
       }
-      if ($(IDS.PROMO)) {
-        $(IDS.PROMO).classList.remove(CLASSES.HIDE_PROMO);
+      if (!$('one-google-loader')) {
+        // Load the OneGoogleBar script. It'll create a global variable name
+        // "og" which is a dict corresponding to the native OneGoogleBarData
+        // type. We do this only after all the tiles have loaded, to avoid
+        // slowing down the main page load.
+        var ogScript = document.createElement('script');
+        ogScript.id = 'one-google-loader';
+        ogScript.src = 'chrome-search://local-ntp/one-google.js';
+        document.body.appendChild(ogScript);
+        ogScript.onload = function() {
+          injectOneGoogleBar(og);
+        };
       }
-      $(IDS.OGB).classList.remove('hidden');
+      if (!$('promo-loader')) {
+        var promoScript = document.createElement('script');
+        promoScript.id = 'promo-loader';
+        promoScript.src = 'chrome-search://local-ntp/promo.js';
+        document.body.appendChild(promoScript);
+        promoScript.onload = function() {
+          injectPromo(promo);
+        };
+      }
       $(customBackgrounds.IDS.CUSTOM_LINKS_RESTORE_DEFAULT)
           .classList.toggle(
               customBackgrounds.CLASSES.OPTION_DISABLED,
@@ -1013,41 +1029,17 @@ function handlePostMessage(event) {
   }
 }
 
-/**
- * Request data for search suggestions, promo, and the OGB. Insert it into
- * the page once it's available. For search suggestions this should be almost
- * immediately as cached data is always used. Promos and the OGB may need
- * to wait for the asynchronous network request to complete.
- */
-function requestAndInsertGoogleResources() {
+function showSearchSuggestions() {
+  // Inject search suggestions as early as possible to avoid shifting of other
+  // elements.
   if (!$('search-suggestions-loader')) {
-    let ssScript = document.createElement('script');
+    var ssScript = document.createElement('script');
     ssScript.id = 'search-suggestions-loader';
     ssScript.src = 'chrome-search://local-ntp/search-suggestions.js';
     ssScript.async = false;
     document.body.appendChild(ssScript);
     ssScript.onload = function() {
       injectSearchSuggestions(search_suggestions);
-    };
-  }
-  if (!$('one-google-loader')) {
-    // Load the OneGoogleBar script. It'll create a global variable |og| which
-    // is a JSON object corresponding to the native OneGoogleBarData type.
-    let ogScript = document.createElement('script');
-    ogScript.id = 'one-google-loader';
-    ogScript.src = 'chrome-search://local-ntp/one-google.js';
-    document.body.appendChild(ogScript);
-    ogScript.onload = function() {
-      injectOneGoogleBar(og);
-    };
-  }
-  if (!$('promo-loader')) {
-    let promoScript = document.createElement('script');
-    promoScript.id = 'promo-loader';
-    promoScript.src = 'chrome-search://local-ntp/promo.js';
-    document.body.appendChild(promoScript);
-    promoScript.onload = function() {
-      injectPromo(promo);
     };
   }
 }
@@ -1115,7 +1107,7 @@ function init() {
   var searchboxApiHandle = embeddedSearchApiHandle.searchBox;
 
   if (configData.isGooglePage) {
-    requestAndInsertGoogleResources();
+    showSearchSuggestions();
     enableMDIcons();
 
     ntpApiHandle.onaddcustomlinkdone = onAddCustomLinkDone;
@@ -1338,7 +1330,6 @@ function injectPromo(promo) {
   let promoContainer = document.createElement('div');
   promoContainer.id = IDS.PROMO;
   promoContainer.innerHTML += promo.promoHtml;
-  promoContainer.classList.add(CLASSES.HIDE_PROMO);
   $(IDS.NTP_CONTENTS).appendChild(promoContainer);
 
   if (promo.promoLogUrl) {
@@ -1375,10 +1366,6 @@ function injectSearchSuggestions(suggestions) {
  * doesn't block the main page load.
  */
 function injectOneGoogleBar(ogb) {
-  if (ogb.barHtml == '') {
-    return;
-  }
-
   var inHeadStyle = document.createElement('style');
   inHeadStyle.type = 'text/css';
   inHeadStyle.appendChild(document.createTextNode(ogb.inHeadStyle));
@@ -1391,8 +1378,9 @@ function injectOneGoogleBar(ogb) {
 
   renderOneGoogleBarTheme();
 
-  var ogElem = $(IDS.OGB);
+  var ogElem = $('one-google');
   ogElem.innerHTML = ogb.barHtml;
+  ogElem.classList.remove('hidden');
 
   var afterBarScript = document.createElement('script');
   afterBarScript.type = 'text/javascript';
