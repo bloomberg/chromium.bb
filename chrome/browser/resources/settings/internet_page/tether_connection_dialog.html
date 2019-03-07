@@ -2,6 +2,7 @@
 <link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_network_icon.html">
 <link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_onc_types.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
@@ -21,7 +22,7 @@
       }
 
       [slot=body] > * {
-        margin-left: 5px;
+        margin-inline-start: 5px;
       }
 
       iron-icon {
@@ -31,7 +32,7 @@
       #host-device-text-container {
         display: flex;
         flex-direction: column;
-        margin-left: 18px;
+        margin-inline-start: 18px;
       }
 
       #availability-title {
@@ -50,7 +51,7 @@
       #tether-explanation,
       #tether-carrier-warning,
       #tether-description-title {
-        margin-top: var(--settings-page-vertical-margin);
+        margin-top: var(--cr-section-vertical-margin);
       }
 
       #tether-carrier-warning {
@@ -58,7 +59,7 @@
       }
 
       #tether-description-list {
-        padding-left: 16px;
+        padding-inline-start: 16px;
       }
 
       #host-device-lost-container {
