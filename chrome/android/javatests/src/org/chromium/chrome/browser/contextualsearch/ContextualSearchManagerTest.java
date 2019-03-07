@@ -472,12 +472,14 @@ public class ContextualSearchManagerTest {
         private final String mQuickActionUri;
         private final int mQuickActionCategory;
         private final long mLoggedEventId;
+        private final String mSearchUrlFull;
+        private final String mSearchUrlPreload;
 
         public FakeResponseOnMainThread(boolean isNetworkUnavailable, int responseCode,
                 String searchTerm, String displayText, String alternateTerm, String mid,
                 boolean doPreventPreload, int startAdjust, int endAdjudst, String contextLanguage,
                 String thumbnailUrl, String caption, String quickActionUri, int quickActionCategory,
-                long loggedEventId) {
+                long loggedEventId, String searchUrlFull, String searchUrlPreload) {
             mIsNetworkUnavailable = isNetworkUnavailable;
             mResponseCode = responseCode;
             mSearchTerm = searchTerm;
@@ -493,6 +495,8 @@ public class ContextualSearchManagerTest {
             mQuickActionUri = quickActionUri;
             mQuickActionCategory = quickActionCategory;
             mLoggedEventId = loggedEventId;
+            mSearchUrlFull = searchUrlFull;
+            mSearchUrlPreload = searchUrlPreload;
         }
 
         @Override
@@ -500,7 +504,8 @@ public class ContextualSearchManagerTest {
             mFakeServer.handleSearchTermResolutionResponse(mIsNetworkUnavailable, mResponseCode,
                     mSearchTerm, mDisplayText, mAlternateTerm, mMid, mDoPreventPreload,
                     mStartAdjust, mEndAdjust, mContextLanguage, mThumbnailUrl, mCaption,
-                    mQuickActionUri, mQuickActionCategory, mLoggedEventId);
+                    mQuickActionUri, mQuickActionCategory, mLoggedEventId, mSearchUrlFull,
+                    mSearchUrlPreload);
         }
     }
 
@@ -511,7 +516,7 @@ public class ContextualSearchManagerTest {
     private void fakeResponse(boolean isNetworkUnavailable, int responseCode,
             String searchTerm, String displayText, String alternateTerm, boolean doPreventPreload) {
         fakeResponse(isNetworkUnavailable, responseCode, searchTerm, displayText, alternateTerm,
-                null, doPreventPreload, 0, 0, "", "", "", "", QuickActionCategory.NONE, 0);
+                null, doPreventPreload, 0, 0, "", "", "", "", QuickActionCategory.NONE, 0, "", "");
     }
 
     /**
@@ -521,12 +526,14 @@ public class ContextualSearchManagerTest {
     private void fakeResponse(boolean isNetworkUnavailable, int responseCode, String searchTerm,
             String displayText, String alternateTerm, String mid, boolean doPreventPreload,
             int startAdjust, int endAdjust, String contextLanguage, String thumbnailUrl,
-            String caption, String quickActionUri, int quickActionCategory, long loggedEventId) {
+            String caption, String quickActionUri, int quickActionCategory, long loggedEventId,
+            String searchUrlFull, String searchUrlPreload) {
         if (mFakeServer.getSearchTermRequested() != null) {
-            InstrumentationRegistry.getInstrumentation().runOnMainSync(new FakeResponseOnMainThread(
-                    isNetworkUnavailable, responseCode, searchTerm, displayText, alternateTerm, mid,
-                    doPreventPreload, startAdjust, endAdjust, contextLanguage, thumbnailUrl,
-                    caption, quickActionUri, quickActionCategory, loggedEventId));
+            InstrumentationRegistry.getInstrumentation().runOnMainSync(
+                    new FakeResponseOnMainThread(isNetworkUnavailable, responseCode, searchTerm,
+                            displayText, alternateTerm, mid, doPreventPreload, startAdjust,
+                            endAdjust, contextLanguage, thumbnailUrl, caption, quickActionUri,
+                            quickActionCategory, loggedEventId, searchUrlFull, searchUrlPreload));
         }
     }
 
@@ -2387,7 +2394,7 @@ public class ContextualSearchManagerTest {
         waitForPanelToPeek();
 
         fakeResponse(false, 200, "Intelligence", "United States Intelligence", "alternate-term",
-                null, false, -14, 0, "", "", "", "", QuickActionCategory.NONE, 0);
+                null, false, -14, 0, "", "", "", "", QuickActionCategory.NONE, 0, "", "");
         waitForSelectionToBe("United States Intelligence");
     }
 

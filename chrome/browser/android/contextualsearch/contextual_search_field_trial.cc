@@ -5,7 +5,9 @@
 #include "chrome/browser/android/contextualsearch/contextual_search_field_trial.h"
 
 #include "base/command_line.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/strings/string_number_conversions.h"
+#include "chrome/browser/android/chrome_feature_list.h"
 #include "components/variations/variations_associated_data.h"
 
 namespace {
@@ -117,6 +119,12 @@ int ContextualSearchFieldTrial::GetIntParamValueOrDefault(
     std::string param_string = GetSwitch(name);
     if (param_string.empty())
       param_string = GetParam(name);
+    // If we still didn't get a param, try getting a Feature param.
+    if (param_string.empty()) {
+      // For now, we just support the Contextual Search Definitions feature.
+      param_string = base::GetFieldTrialParamValueByFeature(
+          chrome::android::kContextualSearchDefinitions, name);
+    }
 
     int param_int;
     if (!param_string.empty() && base::StringToInt(param_string, &param_int))

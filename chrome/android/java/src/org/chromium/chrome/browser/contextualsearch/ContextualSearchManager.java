@@ -490,7 +490,7 @@ public class ContextualSearchManager
             mTranslateController.cacheNativeTranslateData();
         } else if (!TextUtils.isEmpty(selection)) {
             boolean shouldPrefetch = mPolicy.shouldPrefetchSearchResult();
-            mSearchRequest = new ContextualSearchRequest(selection, null, null, shouldPrefetch);
+            mSearchRequest = new ContextualSearchRequest(selection, shouldPrefetch);
             mTranslateController.forceAutoDetectTranslateUnlessDisabled(mSearchRequest);
             mDidStartLoadingResolvedSearchRequest = false;
             mSearchPanel.setSearchTerm(selection);
@@ -680,6 +680,8 @@ public class ContextualSearchManager
      * @param quickActionCategory The {@link QuickActionCategory} for the quick action.
      * @param loggedEventId The EventID logged by the server, which should be recorded and sent back
      *        to the server along with user action results in a subsequent request.
+     * @param searchUrlFull The URL for the full search to present in the overlay, or empty.
+     * @param searchUrlPreload The URL for the search to preload into the overlay, or empty.
      */
     @CalledByNative
     public void onSearchTermResolutionResponse(boolean isNetworkUnavailable, int responseCode,
@@ -687,11 +689,11 @@ public class ContextualSearchManager
             final String mid, boolean doPreventPreload, int selectionStartAdjust,
             int selectionEndAdjust, final String contextLanguage, final String thumbnailUrl,
             final String caption, final String quickActionUri, final int quickActionCategory,
-            final long loggedEventId) {
+            final long loggedEventId, final String searchUrlFull, final String searchUrlPreload) {
         mNetworkCommunicator.handleSearchTermResolutionResponse(isNetworkUnavailable, responseCode,
                 searchTerm, displayText, alternateTerm, mid, doPreventPreload, selectionStartAdjust,
                 selectionEndAdjust, contextLanguage, thumbnailUrl, caption, quickActionUri,
-                quickActionCategory, loggedEventId);
+                quickActionCategory, loggedEventId, searchUrlFull, searchUrlPreload);
     }
 
     @Override
@@ -699,7 +701,8 @@ public class ContextualSearchManager
             String searchTerm, String displayText, String alternateTerm, String mid,
             boolean doPreventPreload, int selectionStartAdjust, int selectionEndAdjust,
             String contextLanguage, String thumbnailUrl, String caption, String quickActionUri,
-            int quickActionCategory, long loggedEventId) {
+            int quickActionCategory, long loggedEventId, String searchUrlFull,
+            String searchUrlPreload) {
         if (!mInternalStateController.isStillWorkingOn(InternalState.RESOLVING)) return;
 
         // Show an appropriate message for what to search for.
@@ -765,8 +768,8 @@ public class ContextualSearchManager
             // TODO(donnd): Instead of preloading, we should prefetch (ie the URL should not
             // appear in the user's history until the user views it).  See crbug.com/406446.
             boolean shouldPreload = !doPreventPreload && mPolicy.shouldPrefetchSearchResult();
-            mSearchRequest =
-                    new ContextualSearchRequest(searchTerm, alternateTerm, mid, shouldPreload);
+            mSearchRequest = new ContextualSearchRequest(
+                    searchTerm, alternateTerm, mid, shouldPreload, searchUrlFull, searchUrlPreload);
             // Trigger translation, if enabled.
             mTranslateController.forceTranslateIfNeeded(mSearchRequest, contextLanguage);
             mDidStartLoadingResolvedSearchRequest = false;
@@ -1045,8 +1048,8 @@ public class ContextualSearchManager
                 // is in progress or we should do a verbatim search now.
                 if (mSearchRequest == null && mPolicy.shouldCreateVerbatimRequest()
                         && !TextUtils.isEmpty(mSelectionController.getSelectedText())) {
-                    mSearchRequest = new ContextualSearchRequest(
-                            mSelectionController.getSelectedText(), null, null, false);
+                    mSearchRequest =
+                            new ContextualSearchRequest(mSelectionController.getSelectedText());
                     mDidStartLoadingResolvedSearchRequest = false;
                 }
                 if (mSearchRequest != null
