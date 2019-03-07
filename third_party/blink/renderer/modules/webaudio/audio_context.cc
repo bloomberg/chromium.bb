@@ -68,8 +68,14 @@ AudioContext* AudioContext::Create(Document& document,
         WebAudioLatencyHint(context_options->latencyHint().GetAsDouble());
   }
 
+  base::Optional<float> sample_rate;
+  if (context_options->hasSampleRate()) {
+    sample_rate = context_options->sampleRate();
+  }
+
   AudioContext* audio_context =
-      MakeGarbageCollected<AudioContext>(document, latency_hint);
+      MakeGarbageCollected<AudioContext>(document, latency_hint, sample_rate);
+  ++g_hardware_context_count;
   audio_context->UpdateStateIfNeeded();
 
   if (!audio_utilities::IsValidAudioBufferSampleRate(
@@ -97,7 +103,6 @@ AudioContext* AudioContext::Create(Document& document,
     audio_context->StartRendering();
     audio_context->SetContextState(kRunning);
   }
-  ++g_hardware_context_count;
 #if DEBUG_AUDIONODE_REFERENCES
   fprintf(stderr, "[%16p]: AudioContext::AudioContext(): %u #%u\n",
           audio_context, audio_context->context_id_, g_hardware_context_count);
@@ -117,10 +122,12 @@ AudioContext* AudioContext::Create(Document& document,
 }
 
 AudioContext::AudioContext(Document& document,
-                           const WebAudioLatencyHint& latency_hint)
+                           const WebAudioLatencyHint& latency_hint,
+                           base::Optional<float> sample_rate)
     : BaseAudioContext(&document, kRealtimeContext),
       context_id_(g_context_id++) {
-  destination_node_ = RealtimeAudioDestinationNode::Create(this, latency_hint);
+  destination_node_ =
+      RealtimeAudioDestinationNode::Create(this, latency_hint, sample_rate);
 
   switch (GetAutoplayPolicy()) {
     case AutoplayPolicy::Type::kNoUserGestureRequired:

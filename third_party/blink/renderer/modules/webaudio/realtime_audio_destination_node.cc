@@ -39,17 +39,20 @@
 namespace blink {
 
 scoped_refptr<RealtimeAudioDestinationHandler>
-RealtimeAudioDestinationHandler::Create(
-    AudioNode& node,
-    const WebAudioLatencyHint& latency_hint) {
+RealtimeAudioDestinationHandler::Create(AudioNode& node,
+                                        const WebAudioLatencyHint& latency_hint,
+                                        base::Optional<float> sample_rate) {
   return base::AdoptRef(
-      new RealtimeAudioDestinationHandler(node, latency_hint));
+      new RealtimeAudioDestinationHandler(node, latency_hint, sample_rate));
 }
 
 RealtimeAudioDestinationHandler::RealtimeAudioDestinationHandler(
     AudioNode& node,
-    const WebAudioLatencyHint& latency_hint)
-    : AudioDestinationHandler(node), latency_hint_(latency_hint) {
+    const WebAudioLatencyHint& latency_hint,
+    base::Optional<float> sample_rate)
+    : AudioDestinationHandler(node),
+      latency_hint_(latency_hint),
+      sample_rate_(sample_rate) {
   // Node-specific default channel count and mixing rules.
   channel_count_ = 2;
   SetInternalChannelCountMode(kExplicit);
@@ -235,8 +238,8 @@ int RealtimeAudioDestinationHandler::GetFramesPerBuffer() const {
 }
 
 void RealtimeAudioDestinationHandler::CreatePlatformDestination() {
-  platform_destination_ =
-      AudioDestination::Create(*this, ChannelCount(), latency_hint_);
+  platform_destination_ = AudioDestination::Create(*this, ChannelCount(),
+                                                   latency_hint_, sample_rate_);
 }
 
 void RealtimeAudioDestinationHandler::StartPlatformDestination() {
@@ -267,16 +270,19 @@ void RealtimeAudioDestinationHandler::StopPlatformDestination() {
 
 RealtimeAudioDestinationNode::RealtimeAudioDestinationNode(
     AudioContext& context,
-    const WebAudioLatencyHint& latency_hint)
+    const WebAudioLatencyHint& latency_hint,
+    base::Optional<float> sample_rate)
     : AudioDestinationNode(context) {
-  SetHandler(RealtimeAudioDestinationHandler::Create(*this, latency_hint));
+  SetHandler(RealtimeAudioDestinationHandler::Create(*this, latency_hint,
+                                                     sample_rate));
 }
 
 RealtimeAudioDestinationNode* RealtimeAudioDestinationNode::Create(
     AudioContext* context,
-    const WebAudioLatencyHint& latency_hint) {
-  return MakeGarbageCollected<RealtimeAudioDestinationNode>(*context,
-                                                            latency_hint);
+    const WebAudioLatencyHint& latency_hint,
+    base::Optional<float> sample_rate) {
+  return MakeGarbageCollected<RealtimeAudioDestinationNode>(
+      *context, latency_hint, sample_rate);
 }
 
 }  // namespace blink
