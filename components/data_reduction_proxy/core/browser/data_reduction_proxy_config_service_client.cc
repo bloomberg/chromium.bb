@@ -534,6 +534,23 @@ void DataReductionProxyConfigServiceClient::HandleResponse(
     std::string encoded_config;
     base::Base64Encode(config_data, &encoded_config);
     config_storer_.Run(encoded_config);
+
+    // Record timing metrics on successful requests only.
+    const network::ResourceResponseHead* info = url_loader_->ResponseInfo();
+    base::TimeDelta http_request_rtt =
+        info->response_start - info->request_start;
+    UMA_HISTOGRAM_TIMES("DataReductionProxy.ConfigService.HttpRequestRTT",
+                        http_request_rtt);
+
+    if (info->load_timing.connect_timing.connect_end > base::TimeTicks() &&
+        info->load_timing.connect_timing.connect_start > base::TimeTicks()) {
+      base::TimeDelta connection_setup =
+          info->load_timing.connect_timing.connect_end -
+          info->load_timing.connect_timing.connect_start;
+      UMA_HISTOGRAM_TIMES(
+          "DataReductionProxy.ConfigService.ConnectionSetupTime",
+          connection_setup);
+    }
   } else {
     ++failed_attempts_before_success_;
   }
