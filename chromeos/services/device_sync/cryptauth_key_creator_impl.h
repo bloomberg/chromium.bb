@@ -63,6 +63,7 @@ class CryptAuthKeyCreatorImpl : public CryptAuthKeyCreator {
                              const std::string& symmetric_key,
                              const std::string& handle);
 
+  size_t num_keys_to_create_ = 0;
   base::flat_map<CryptAuthKeyBundle::Name, CreateKeyData> keys_to_create_;
   base::flat_map<CryptAuthKeyBundle::Name, CryptAuthKey> new_keys_;
   base::Optional<CryptAuthKey> server_ephemeral_dh_;
