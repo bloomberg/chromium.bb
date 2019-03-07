@@ -184,9 +184,6 @@ void PreviewsDeciderImpl::AddPreviewNavigation(const GURL& url,
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::Time time =
       previews_black_list_->AddPreviewNavigation(url, opt_out, type);
-  if (opt_out) {
-    last_opt_out_time_ = time;
-  }
   LogPreviewNavigation(url, opt_out, type, time, page_id);
 }
 
@@ -253,29 +250,20 @@ PreviewsEligibilityReason PreviewsDeciderImpl::DeterminePreviewEligibility(
   if (url.has_username() || url.has_password())
     return PreviewsEligibilityReason::URL_HAS_BASIC_AUTH;
 
-  // Trigger the USER_RECENTLY_OPTED_OUT rule when a reload on a preview has
-  // occurred recently.
-  if (recent_preview_reload_time_ &&
-      recent_preview_reload_time_.value() + params::SingleOptOutDuration() >
-          clock_->Now()) {
-    return PreviewsEligibilityReason::USER_RECENTLY_OPTED_OUT;
-  }
+  // Skip blacklist checks if the blacklist is ignored.
+  if (!blacklist_ignored_) {
+    if (!previews_black_list_)
+      return PreviewsEligibilityReason::BLACKLIST_UNAVAILABLE;
+    passed_reasons->push_back(PreviewsEligibilityReason::BLACKLIST_UNAVAILABLE);
 
-  // In the case that the user has chosen to ignore the normal blacklist rules
-  // (flags or interventions-internals), a preview should still not be served
-  // for 5 seconds after the last opt out. This allows "show original" to
-  // function correctly as the start of that navigation will be within 5 seconds
-  // (we don't yet re-evaluate on redirects, so this is sufficient).
-  if (blacklist_ignored_) {
-    if (clock_->Now() < last_opt_out_time_ + base::TimeDelta::FromSeconds(5)) {
+    // Trigger the USER_RECENTLY_OPTED_OUT rule when a reload on a preview has
+    // occurred recently. No need to push_back the eligibility reason as it will
+    // be added in IsLoadedAndAllowed as the first check.
+    if (recent_preview_reload_time_ &&
+        recent_preview_reload_time_.value() + params::SingleOptOutDuration() >
+            clock_->Now()) {
       return PreviewsEligibilityReason::USER_RECENTLY_OPTED_OUT;
     }
-    passed_reasons->push_back(
-        PreviewsEligibilityReason::USER_RECENTLY_OPTED_OUT);
-  } else if (!previews_black_list_) {
-    return PreviewsEligibilityReason::BLACKLIST_UNAVAILABLE;
-  } else {
-    passed_reasons->push_back(PreviewsEligibilityReason::BLACKLIST_UNAVAILABLE);
 
     // The blacklist will disallow certain hosts for periods of time based on
     // user's opting out of the preview.

@@ -185,10 +185,6 @@ class PreviewsDeciderImpl : public PreviewsDecider,
 
   std::unique_ptr<PreviewsBlackList> previews_black_list_;
 
-  // Only used when the blacklist has been disabled to allow "Show Original" to
-  // function as expected. The time of the most recent opt out event.
-  base::Time last_opt_out_time_;
-
   // Holds optimization guidance from the server.
   std::unique_ptr<PreviewsOptimizationGuide> previews_opt_guide_;
 

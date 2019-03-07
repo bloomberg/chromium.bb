@@ -1027,29 +1027,20 @@ IN_PROC_BROWSER_TEST_P(
 
 IN_PROC_BROWSER_TEST_P(
     PreviewsLitePageServerBrowserTest,
-    DISABLE_ON_WIN_MAC_CHROMESOS(ReloadingLitePagesDisablesLitePages)) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {previews::features::kPreviewsReloadsAreSoftOptOuts}, {});
-
-  ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
-  VerifyPreviewLoaded();
-
-  GetWebContents()->GetController().Reload(content::ReloadType::NORMAL, false);
-  VerifyPreviewNotLoaded();
-
-  // Check the the rule is still present.
-  ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
-  VerifyPreviewNotLoaded();
-}
-
-IN_PROC_BROWSER_TEST_P(
-    PreviewsLitePageServerBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMESOS(LitePagePreviewsLoadOriginal)) {
   base::HistogramTester histogram_tester;
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
   VerifyPreviewLoaded();
   VerifyInfoStatus(&histogram_tester, previews::ServerLitePageStatus::kSuccess);
+
+  PreviewsServiceFactory::GetForProfile(
+      Profile::FromBrowserContext(browser()
+                                      ->tab_strip_model()
+                                      ->GetActiveWebContents()
+                                      ->GetBrowserContext()))
+      ->previews_ui_service()
+      ->previews_decider_impl()
+      ->SetIgnorePreviewsBlacklistDecision(false /* ignored */);
 
   PreviewsUITabHelper::FromWebContents(GetWebContents())
       ->ReloadWithoutPreviews();

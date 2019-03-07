@@ -1516,7 +1516,7 @@ TEST_F(PreviewsDeciderImplTest, LogDecisionMadeBlacklistStatusesIgnore) {
   }
 }
 
-TEST_F(PreviewsDeciderImplTest, IgnoreFlagStillHasFiveSecondRule) {
+TEST_F(PreviewsDeciderImplTest, IgnoreFlagDoesNotCheckBlacklist) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
       {features::kPreviews, features::kClientLoFi}, {});
@@ -1529,21 +1529,10 @@ TEST_F(PreviewsDeciderImplTest, IgnoreFlagStillHasFiveSecondRule) {
   EXPECT_TRUE(previews_decider_impl()->ShouldAllowPreviewAtNavigationStart(
       &user_data, GURL("https://www.google.com"), false, PreviewsType::LOFI));
 
-  previews_decider_impl()->AddPreviewNavigation(
-      GURL("http://wwww.somedomain.com"), true, PreviewsType::LOFI, 1);
-
-  EXPECT_FALSE(previews_decider_impl()->ShouldAllowPreviewAtNavigationStart(
-      &user_data, GURL("https://www.google.com"), false, PreviewsType::LOFI));
-  EXPECT_EQ(PreviewsEligibilityReason::USER_RECENTLY_OPTED_OUT,
-            ui_service()->decision_reasons().back());
-
-  clock_.Advance(base::TimeDelta::FromSeconds(6));
+  previews_decider_impl()->AddPreviewReload();
 
   EXPECT_TRUE(previews_decider_impl()->ShouldAllowPreviewAtNavigationStart(
       &user_data, GURL("https://www.google.com"), false, PreviewsType::LOFI));
-  EXPECT_THAT(
-      ui_service()->decision_passed_reasons().back(),
-      ::testing::Contains(PreviewsEligibilityReason::USER_RECENTLY_OPTED_OUT));
 }
 
 TEST_F(PreviewsDeciderImplTest, ReloadsTriggerFiveMinuteRule) {
