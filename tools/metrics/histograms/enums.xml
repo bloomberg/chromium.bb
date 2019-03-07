@@ -43548,6 +43548,13 @@ Called by update_net_trust_anchors.py.-->
     Other error unrelated to preprocessor. This signals a bug in the feature
     generation process.
   </int>
+  <int value="4" label="Mismatched feature size error">
+    The ExampleProprocessor returned a feature vector with an incorrect size.
+  </int>
+  <int value="5" label="Missing ML Service connection error">
+    The ML Service connection had not been initialized at the time it was
+    needed.
+  </int>
 </enum>
 
 <enum name="PowerMLSmartDimParameterResult">
