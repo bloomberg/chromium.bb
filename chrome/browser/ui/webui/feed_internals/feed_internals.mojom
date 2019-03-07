@@ -35,6 +35,24 @@ struct LastFetchProperties {
   Time? refresh_suppress_time;
 };
 
+// Models a single suggestion in the Feed.
+struct Suggestion {
+  // Title of the suggestion.
+  string title;
+
+  // URL of the suggested page.
+  string url;
+
+  // Name of the content's publisher.
+  string publisher_name;
+
+  // URL of the image associated with the suggestion.
+  string image_url;
+
+  // URL of the suggested page's favicon.
+  string favicon_url;
+};
+
 // Time wrapper to allow for nullable objects.
 struct Time {
   double ms_since_epoch;
@@ -58,4 +76,7 @@ interface PageHandler {
   // Clear all data cached by the Feed library. Also triggers a refresh of the
   // Feed.
   ClearCachedDataAndRefreshFeed();
+
+  // Get the last known content with metadata.
+  GetCurrentContent() => (array<Suggestion> suggestions);
 };
