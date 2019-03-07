@@ -6,9 +6,9 @@ package org.chromium.android_webview;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.pm.ApplicationInfo;
 import android.media.AudioManager;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
@@ -19,6 +19,7 @@ import android.view.View;
 import android.webkit.URLUtil;
 import android.widget.FrameLayout;
 
+import org.chromium.base.BuildInfo;
 import org.chromium.base.Callback;
 import org.chromium.base.ContentUriUtils;
 import org.chromium.base.ThreadUtils;
@@ -158,8 +159,9 @@ class AwWebContentsDelegateAdapter extends AwWebContentsDelegate {
         // to be always run.
         boolean result = mContentsClient.onConsoleMessage(
                 new AwConsoleMessage(message, sourceId, lineNumber, messageLevel));
-        boolean isAppDebuggable = mContext.getApplicationInfo().FLAG_DEBUGGABLE != 0;
-        boolean isOsDebuggable = !Build.TYPE.equals("user");
+        boolean isAppDebuggable =
+                (mContext.getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0;
+        boolean isOsDebuggable = BuildInfo.isDebugAndroid();
         // Always return true if not debuggable so js console messages won't be mirrored to logcat
         // for privacy.
         if (!isAppDebuggable && !isOsDebuggable) {
