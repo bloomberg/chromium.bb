@@ -6,10 +6,13 @@
 #define CHROME_BROWSER_PREVIEWS_PREVIEWS_SERVICE_H_
 
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
+#include "chrome/browser/previews/previews_top_host_provider_impl.h"
 #include "components/blacklist/opt_out_blacklist/opt_out_blacklist_data.h"
 #include "components/keyed_service/core/keyed_service.h"
 
@@ -26,6 +29,7 @@ class OptimizationGuideService;
 }
 
 namespace previews {
+class PreviewsTopHostProviderImpl;
 class PreviewsUIService;
 }
 
@@ -69,6 +73,10 @@ class PreviewsService : public KeyedService {
   static blacklist::BlacklistData::AllowedTypesAndVersions GetAllowedPreviews();
 
  private:
+  // The top site provider for use with previews.
+  std::unique_ptr<previews::PreviewsTopHostProviderImpl>
+      previews_top_host_provider_;
+
   // The previews UI thread service.
   std::unique_ptr<previews::PreviewsUIService> previews_ui_service_;
 

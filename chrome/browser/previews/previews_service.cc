@@ -102,7 +102,10 @@ PreviewsService::GetAllowedPreviews() {
 }
 
 PreviewsService::PreviewsService(content::BrowserContext* browser_context)
-    : previews_lite_page_decider_(
+    : previews_top_host_provider_(
+          std::make_unique<previews::PreviewsTopHostProviderImpl>(
+              browser_context)),
+      previews_lite_page_decider_(
           std::make_unique<PreviewsLitePageDecider>(browser_context)) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
@@ -133,7 +136,8 @@ void PreviewsService::Initialize(
           profile_path.Append(chrome::kPreviewsOptOutDBFilename)),
       optimization_guide_service
           ? std::make_unique<previews::PreviewsOptimizationGuide>(
-                optimization_guide_service, ui_task_runner, profile_path)
+                optimization_guide_service, ui_task_runner, profile_path,
+                previews_top_host_provider_.get())
           : nullptr,
       base::Bind(&IsPreviewsTypeEnabled),
       std::make_unique<previews::PreviewsLogger>(), GetAllowedPreviews(),

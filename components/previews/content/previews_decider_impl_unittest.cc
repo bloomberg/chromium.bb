@@ -36,6 +36,7 @@
 #include "components/blacklist/opt_out_blacklist/opt_out_blacklist_item.h"
 #include "components/blacklist/opt_out_blacklist/opt_out_store.h"
 #include "components/optimization_guide/optimization_guide_service.h"
+#include "components/previews/content/previews_top_host_provider.h"
 #include "components/previews/content/previews_ui_service.h"
 #include "components/previews/content/previews_user_data.h"
 #include "components/previews/core/previews_black_list.h"
@@ -129,6 +130,17 @@ class TestPreviewsBlackList : public PreviewsBlackList {
   PreviewsEligibilityReason status_;
 };
 
+// A test class implementation to enable testing of previews_decider_impl.
+class TestPreviewsTopHostProvider : public PreviewsTopHostProvider {
+ public:
+  TestPreviewsTopHostProvider() {}
+  ~TestPreviewsTopHostProvider() override {}
+
+  std::vector<std::string> GetTopHosts(size_t max_sites) const override {
+    return std::vector<std::string>();
+  }
+};
+
 // Stub class of PreviewsOptimizationGuide to control IsWhitelisted and
 // IsBlacklisted outcomes when testing PreviewsDeciderImpl.
 class TestPreviewsOptimizationGuide : public PreviewsOptimizationGuide {
@@ -136,10 +148,12 @@ class TestPreviewsOptimizationGuide : public PreviewsOptimizationGuide {
   TestPreviewsOptimizationGuide(
       optimization_guide::OptimizationGuideService* optimization_guide_service,
       const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
-      const base::FilePath& test_path)
+      const base::FilePath& test_path,
+      PreviewsTopHostProvider* previews_top_host_provider)
       : PreviewsOptimizationGuide(optimization_guide_service,
                                   ui_task_runner,
-                                  test_path) {}
+                                  test_path,
+                                  previews_top_host_provider) {}
   ~TestPreviewsOptimizationGuide() override {}
 
   // PreviewsOptimizationGuide:
@@ -383,7 +397,7 @@ class PreviewsDeciderImplTest : public testing::Test {
         std::make_unique<TestPreviewsOptimizationGuide>(
             &optimization_guide_service_,
             scoped_task_environment_.GetMainThreadTaskRunner(),
-            temp_dir_.GetPath()),
+            temp_dir_.GetPath(), &previews_top_host_provider_),
         base::BindRepeating(&IsPreviewFieldTrialEnabled),
         std::make_unique<PreviewsLogger>(), std::move(allowed_types),
         &network_quality_tracker_));
@@ -416,6 +430,7 @@ class PreviewsDeciderImplTest : public testing::Test {
   base::FieldTrialList field_trial_list_;
   TestPreviewsDeciderImpl* previews_decider_impl_;
   optimization_guide::OptimizationGuideService optimization_guide_service_;
+  TestPreviewsTopHostProvider previews_top_host_provider_;
   std::unique_ptr<TestPreviewsUIService> ui_service_;
   network::TestNetworkQualityTracker network_quality_tracker_;
 };

@@ -24,6 +24,7 @@
 #include "components/optimization_guide/hints_component_info.h"
 #include "components/optimization_guide/optimization_guide_service.h"
 #include "components/optimization_guide/proto/hints.pb.h"
+#include "components/previews/content/previews_top_host_provider.h"
 #include "components/previews/content/previews_user_data.h"
 #include "components/previews/core/bloom_filter.h"
 #include "components/previews/core/previews_experiments.h"
@@ -66,6 +67,17 @@ class TestOptimizationGuideService
   bool remove_observer_called_;
 };
 
+// A test class implementation for unit testing previews_optimization_guide.
+class TestPreviewsTopHostProvider : public PreviewsTopHostProvider {
+ public:
+  TestPreviewsTopHostProvider() {}
+  ~TestPreviewsTopHostProvider() override {}
+
+  std::vector<std::string> GetTopHosts(size_t max_sites) const override {
+    return std::vector<std::string>();
+  }
+};
+
 class PreviewsOptimizationGuideTest : public testing::Test {
  public:
   PreviewsOptimizationGuideTest() {}
@@ -105,7 +117,9 @@ class PreviewsOptimizationGuideTest : public testing::Test {
             scoped_task_environment_.GetMainThreadTaskRunner());
     guide_ = std::make_unique<PreviewsOptimizationGuide>(
         optimization_guide_service_.get(),
-        scoped_task_environment_.GetMainThreadTaskRunner(), temp_dir());
+        scoped_task_environment_.GetMainThreadTaskRunner(), temp_dir(),
+        previews_top_host_provider_.get());
+
     // Add observer is called after the HintCache is fully initialized,
     // indicating that the PreviewsOptimizationGuide is ready to process hints.
     while (!optimization_guide_service_->AddObserverCalled()) {
@@ -177,6 +191,7 @@ class PreviewsOptimizationGuideTest : public testing::Test {
 
   std::unique_ptr<PreviewsOptimizationGuide> guide_;
   std::unique_ptr<TestOptimizationGuideService> optimization_guide_service_;
+  std::unique_ptr<TestPreviewsTopHostProvider> previews_top_host_provider_;
 
   // Flag set when the OnLoadOptimizationHints callback runs. This indicates
   // that MaybeLoadOptimizationHints() has completed its processing.

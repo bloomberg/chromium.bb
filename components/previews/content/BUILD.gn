@@ -17,6 +17,7 @@ static_library("content") {
     "previews_hints_util.h",
     "previews_optimization_guide.cc",
     "previews_optimization_guide.h",
+    "previews_top_host_provider.h",
     "previews_ui_service.cc",
     "previews_ui_service.h",
     "previews_user_data.cc",
