@@ -50,8 +50,11 @@ void AssistantPageView::InitLayout() {
 
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
-  assistant_main_view_ = new AssistantMainView(assistant_view_delegate_);
-  AddChildView(assistant_main_view_);
+  // |assistant_view_delegate_| could be nullptr in test.
+  if (assistant_view_delegate_) {
+    assistant_main_view_ = new AssistantMainView(assistant_view_delegate_);
+    AddChildView(assistant_main_view_);
+  }
 }
 
 const char* AssistantPageView::GetClassName() const {
@@ -63,7 +66,9 @@ gfx::Size AssistantPageView::CalculatePreferredSize() const {
 }
 
 void AssistantPageView::RequestFocus() {
-  assistant_main_view_->RequestFocus();
+  // |assistant_main_view_| could be nullptr in test.
+  if (assistant_main_view_)
+    assistant_main_view_->RequestFocus();
 }
 
 void AssistantPageView::OnBoundsChanged(const gfx::Rect& previous_bounds) {

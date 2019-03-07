@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "ash/app_list/model/app_list_model.h"
+#include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
 #include "ash/public/cpp/menu_utils.h"
 #include "base/callback.h"
@@ -40,6 +41,10 @@ void AppListTestViewDelegate::OpenSearchResult(const std::string& result_id,
   for (size_t i = 0; i < results->item_count(); ++i) {
     if (results->GetItemAt(i)->id() == result_id) {
       open_search_result_counts_[i]++;
+      if (app_list_features::IsEmbeddedAssistantUIEnabled() &&
+          results->GetItemAt(i)->is_omnibox_search()) {
+        ++open_assistant_ui_count_;
+      }
       break;
     }
   }
