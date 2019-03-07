@@ -5,7 +5,6 @@
 #include <memory>
 
 #include "build/build_config.h"
-#include "cc/paint/color_space_transfer_cache_entry.h"
 #include "components/viz/common/resources/resource_format.h"
 #include "components/viz/test/test_gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/client/raster_implementation.h"

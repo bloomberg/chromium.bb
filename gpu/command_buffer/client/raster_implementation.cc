@@ -29,7 +29,6 @@
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
-#include "cc/paint/color_space_transfer_cache_entry.h"
 #include "cc/paint/decode_stashing_image_provider.h"
 #include "cc/paint/display_item_list.h"
 #include "cc/paint/paint_cache.h"
