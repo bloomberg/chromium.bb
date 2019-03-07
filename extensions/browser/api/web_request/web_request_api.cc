@@ -1645,6 +1645,10 @@ bool ExtensionWebRequestEventRouter::AddEventListener(
   RecordAddEventListenerUMAs(extra_info_spec);
 
   listeners_[browser_context][event_name].push_back(std::move(listener));
+
+  if (extra_info_spec & ExtraInfoSpec::EXTRA_HEADERS)
+    extra_headers_listener_count_[browser_context]++;
+
   return true;
 }
 
@@ -1696,6 +1700,12 @@ void ExtensionWebRequestEventRouter::RemoveEventListener(
         DecrementBlockCount(
             listener->id.browser_context, listener->id.extension_id, event_name,
             blocked_request_id, nullptr, 0 /* extra_info_spec */);
+      }
+
+      if (listener->extra_info_spec & ExtraInfoSpec::EXTRA_HEADERS) {
+        extra_headers_listener_count_[listener->id.browser_context]--;
+        DCHECK_GE(extra_headers_listener_count_[listener->id.browser_context],
+                  0);
       }
 
       listeners.erase(it);
@@ -1779,14 +1789,7 @@ bool ExtensionWebRequestEventRouter::HasAnyExtraHeadersListener(
 
 bool ExtensionWebRequestEventRouter::HasAnyExtraHeadersListenerImpl(
     void* browser_context) {
-  for (const char* name : kWebRequestExtraHeadersEventNames) {
-    const Listeners& listeners = listeners_[browser_context][name];
-    for (const auto& listener : listeners) {
-      if (listener->extra_info_spec & ExtraInfoSpec::EXTRA_HEADERS)
-        return true;
-    }
-  }
-  return false;
+  return extra_headers_listener_count_[browser_context] > 0;
 }
 
 bool ExtensionWebRequestEventRouter::IsPageLoad(
