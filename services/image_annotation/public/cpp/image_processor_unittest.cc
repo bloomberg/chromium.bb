@@ -8,7 +8,9 @@
 #include <limits>
 
 #include "base/bind.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
+#include "services/image_annotation/image_annotation_metrics.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/src/core/SkEndian.h"
@@ -87,6 +89,7 @@ void OutputImageError(double* const error,
 
 TEST(ImageProcessorTest, NullImage) {
   base::test::ScopedTaskEnvironment test_task_env;
+  base::HistogramTester histogram_tester;
 
   bool empty_bytes = false;
 
@@ -101,10 +104,14 @@ TEST(ImageProcessorTest, NullImage) {
   test_task_env.RunUntilIdle();
 
   EXPECT_THAT(empty_bytes, Eq(true));
+
+  histogram_tester.ExpectUniqueSample(metrics_internal::kSourcePixelCount,
+                                      0 /* sample */, 1 /* count */);
 }
 
 TEST(ImageProcessorTest, ImageContent) {
   base::test::ScopedTaskEnvironment test_task_env;
+  base::HistogramTester histogram_tester;
 
   // Create one image that doesn't need scaling and one image that does.
   const int max_dim = static_cast<int>(std::sqrt(ImageProcessor::kMaxPixels));
@@ -128,6 +135,14 @@ TEST(ImageProcessorTest, ImageContent) {
           base::BindOnce(&OutputImageError, &scale_error, small_orig));
   test_task_env.RunUntilIdle();
   EXPECT_THAT(scale_error, Lt(kMaxError));
+
+  histogram_tester.ExpectBucketCount(metrics_internal::kSourcePixelCount,
+                                     max_dim * max_dim /* sample */,
+                                     1 /* count */);
+  histogram_tester.ExpectBucketCount(metrics_internal::kSourcePixelCount,
+                                     4 * max_dim * max_dim /* sample */,
+                                     1 /* count */);
+  histogram_tester.ExpectTotalCount(metrics_internal::kSourcePixelCount, 2);
 }
 
 }  // namespace image_annotation

@@ -13,11 +13,15 @@
 #include "base/feature_list.h"
 #include "base/json/json_writer.h"
 #include "base/location.h"
+#include "base/logging.h"
+#include "base/no_destructor.h"
 #include "base/stl_util.h"
 #include "components/google/core/common/google_util.h"
 #include "net/base/load_flags.h"
+#include "net/base/net_errors.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/data_decoder/public/mojom/constants.mojom.h"
+#include "services/image_annotation/image_annotation_metrics.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "url/gurl.h"
 
@@ -34,11 +38,16 @@ constexpr size_t kMaxResponseSize = 1024 * 1024;  // 1MB.
 // annotations message.
 mojom::AnnotationPtr ParseJsonOcrAnnotation(const base::Value& ocr_engine,
                                             const double min_ocr_confidence) {
+  if (!ocr_engine.is_dict())
+    return mojom::AnnotationPtr(nullptr);
+
   // No OCR regions is valid - it just means there is no text.
   const base::Value* const ocr_regions = ocr_engine.FindKey("ocrRegions");
-  if (!ocr_regions)
+  if (!ocr_regions) {
+    ReportOcrAnnotation(1.0 /* confidence */, true /* empty */);
     return mojom::Annotation::New(mojom::AnnotationType::kOcr, 1.0 /* score */,
                                   std::string() /* text */);
+  }
 
   if (!ocr_regions->is_list())
     return mojom::AnnotationPtr(nullptr);
@@ -90,9 +99,11 @@ mojom::AnnotationPtr ParseJsonOcrAnnotation(const base::Value& ocr_engine,
     all_ocr_text += region_ocr_text;
   }
 
-  return mojom::Annotation::New(
-      mojom::AnnotationType::kOcr,
-      word_count == 0 ? 1.0 : word_confidence_sum / word_count, all_ocr_text);
+  const double all_ocr_confidence =
+      word_count == 0 ? 1.0 : word_confidence_sum / word_count;
+  ReportOcrAnnotation(all_ocr_confidence, all_ocr_text.empty());
+  return mojom::Annotation::New(mojom::AnnotationType::kOcr, all_ocr_confidence,
+                                all_ocr_text);
 }
 
 // Extracts annotations from the given description engine result into the second
@@ -102,18 +113,27 @@ mojom::AnnotationPtr ParseJsonOcrAnnotation(const base::Value& ocr_engine,
 // classified as containing adult content.
 std::tuple<bool, std::vector<mojom::AnnotationPtr>> ParseJsonDescAnnotations(
     const base::Value& desc_engine) {
-  constexpr char kAdultFailureReason[] = "ADULT";
-  const std::map<std::string, mojom::AnnotationType> annotation_types = {
-      {"OCR", mojom::AnnotationType::kOcr},
-      {"CAPTION", mojom::AnnotationType::kCaption},
-      {"LABEL", mojom::AnnotationType::kLabel}};
+  static const base::NoDestructor<std::map<std::string, mojom::AnnotationType>>
+      kAnnotationTypes({{"OCR", mojom::AnnotationType::kOcr},
+                        {"CAPTION", mojom::AnnotationType::kCaption},
+                        {"LABEL", mojom::AnnotationType::kLabel}});
 
-  const base::Value* const failure_reason =
-      desc_engine.FindKey("failureReason");
-
-  const bool adult = failure_reason && failure_reason->is_string() &&
-                     failure_reason->GetString() == kAdultFailureReason;
+  bool adult = false;
   std::vector<mojom::AnnotationPtr> results;
+
+  if (!desc_engine.is_dict())
+    return {adult, std::move(results)};
+
+  // If there is a failure reason, log it and track whether it is due to adult
+  // content.
+  const base::Value* const failure_reason_value =
+      desc_engine.FindKey("failureReason");
+  if (failure_reason_value && failure_reason_value->is_string()) {
+    const DescFailureReason failure_reason =
+        ParseDescFailureReason(failure_reason_value->GetString());
+    ReportDescFailure(failure_reason);
+    adult = failure_reason == DescFailureReason::kAdult;
+  }
 
   const base::Value* const desc_list_dict =
       desc_engine.FindKey("descriptionList");
@@ -132,8 +152,8 @@ std::tuple<bool, std::vector<mojom::AnnotationPtr>> ParseJsonDescAnnotations(
     if (!type || !type->is_string())
       continue;
 
-    const auto type_lookup = annotation_types.find(type->GetString());
-    if (type_lookup == annotation_types.end())
+    const auto type_lookup = kAnnotationTypes->find(type->GetString());
+    if (type_lookup == kAnnotationTypes->end())
       continue;
 
     const base::Value* const score = desc.FindKey("score");
@@ -145,11 +165,40 @@ std::tuple<bool, std::vector<mojom::AnnotationPtr>> ParseJsonDescAnnotations(
     if (!text || !text->is_string() || text->GetString().empty())
       continue;
 
+    ReportDescAnnotation(type_lookup->second, score->GetDouble(),
+                         text->GetString().empty());
     results.push_back(mojom::Annotation::New(
         type_lookup->second, score->GetDouble(), text->GetString()));
   }
 
   return {adult, std::move(results)};
+}
+
+// Returns the integer status code for this engine, or -1 if no status can be
+// extracted.
+int ExtractStatusCode(const base::Value* const status_dict) {
+  if (!status_dict || !status_dict->is_dict())
+    return -1;
+
+  const base::Value* const code_value = status_dict->FindKey("code");
+
+  // A missing code is the same as a default (i.e. OK) code.
+  if (!code_value)
+    return 0;
+
+  if (!code_value->is_int())
+    return -1;
+  const int code = code_value->GetInt();
+
+#ifndef NDEBUG
+  // Also log error status messages (which are helpful for debugging).
+  const base::Value* const message = status_dict->FindKey("message");
+  if (code != 0 && message && message->is_string())
+    DVLOG(1) << "Engine failed with status " << code << " and message '"
+             << message->GetString() << "'";
+#endif
+
+  return code;
 }
 
 // Attempts to extract annotation results from the server response, returning a
@@ -188,18 +237,38 @@ std::map<std::string, mojom::AnnotateImageResultPtr> UnpackJsonResponse(
       if (!engine_result.is_dict())
         continue;
 
+      // A non-zero status code means the following:
+      //  -1:                       The status dict could not be parsed. We
+      //                            still try to parse an engine result in this
+      //                            case to be robust.
+      //  any other non-zero value: The status dict was parsed and contains a
+      //                            known failure. We always report an error
+      //                            in this case.
+      const int status_code =
+          ExtractStatusCode(engine_result.FindKey("status"));
+
       const base::Value* const desc_engine =
           engine_result.FindKey("descriptionEngine");
       const base::Value* const ocr_engine = engine_result.FindKey("ocrEngine");
 
-      if (desc_engine && desc_engine->is_dict()) {
+      if (desc_engine) {
         // Add description annotations and update the adult image flag.
-        std::tie(adult, annotations) = ParseJsonDescAnnotations(*desc_engine);
-      } else if (ocr_engine && ocr_engine->is_dict()) {
+        ReportDescStatus(status_code);
+
+        if (status_code <= 0) {
+          std::tie(adult, annotations) = ParseJsonDescAnnotations(*desc_engine);
+        }
+      } else if (ocr_engine) {
         // Update the specialized OCR annotations.
-        ocr_annotation =
-            ParseJsonOcrAnnotation(*ocr_engine, min_ocr_confidence);
+        ReportOcrStatus(status_code);
+
+        if (status_code <= 0) {
+          ocr_annotation =
+              ParseJsonOcrAnnotation(*ocr_engine, min_ocr_confidence);
+        }
       }
+
+      ReportEngineKnown(ocr_engine || desc_engine);
     }
 
     // Remove any description OCR data (which is lower quality) if we have
@@ -214,10 +283,7 @@ std::map<std::string, mojom::AnnotateImageResultPtr> UnpackJsonResponse(
     if (adult) {
       out[image_id->GetString()] = mojom::AnnotateImageResult::NewErrorCode(
           mojom::AnnotateImageError::kAdult);
-    } else if (annotations.empty()) {
-      out[image_id->GetString()] = mojom::AnnotateImageResult::NewErrorCode(
-          mojom::AnnotateImageError::kFailure);
-    } else {
+    } else if (!annotations.empty()) {
       out[image_id->GetString()] =
           mojom::AnnotateImageResult::NewAnnotations(std::move(annotations));
     }
@@ -252,7 +318,15 @@ Annotator::Annotator(
   DCHECK(connector_);
 }
 
-Annotator::~Annotator() {}
+Annotator::~Annotator() {
+  // Report any clients still connected at service shutdown.
+  for (const auto& request_info_kv : request_infos_) {
+    for (const auto& unused : request_info_kv.second) {
+      ReportClientResult(ClientResult::kShutdown);
+      ANALYZER_ALLOW_UNUSED(unused);
+    }
+  }
+}
 
 void Annotator::BindRequest(mojom::AnnotatorRequest request) {
   bindings_.AddBinding(this, std::move(request));
@@ -263,6 +337,7 @@ void Annotator::AnnotateImage(const std::string& source_id,
                               AnnotateImageCallback callback) {
   // Return cached results if they exist.
   const auto cache_lookup = cached_results_.find(source_id);
+  ReportCacheHit(cache_lookup != cached_results_.end());
   if (cache_lookup != cached_results_.end()) {
     std::move(callback).Run(cache_lookup->second.Clone());
     return;
@@ -278,7 +353,7 @@ void Annotator::AnnotateImage(const std::string& source_id,
   // processor was responsible for some ongoing work.
   request_info_list.back().first.set_connection_error_handler(base::BindOnce(
       &Annotator::RemoveRequestInfo, base::Unretained(this), source_id,
-      --request_info_list.end(), mojom::AnnotateImageError::kCanceled));
+      --request_info_list.end(), true /* canceled */));
 
   // Don't start local work if it would duplicate some ongoing or already-
   // completed work.
@@ -336,6 +411,8 @@ std::string Annotator::FormatJsonRequest(
 
   std::string json_request;
   base::JSONWriter::Write(request, &json_request);
+
+  ReportServerRequestSizeKB(json_request.size() / 1024);
 
   return json_request;
 }
@@ -408,11 +485,12 @@ void Annotator::OnJpgImageDataReceived(
     const std::string& source_id,
     const RequestInfoList::iterator request_info_it,
     const std::vector<uint8_t>& image_bytes) {
+  ReportPixelFetchSuccess(!image_bytes.empty());
+
   // Failed to retrieve bytes from local processor; remove dead processor and
   // reschedule processing.
   if (image_bytes.empty()) {
-    RemoveRequestInfo(source_id, request_info_it,
-                      mojom::AnnotateImageError::kFailure);
+    RemoveRequestInfo(source_id, request_info_it, false /* canceled */);
     return;
   }
 
@@ -463,6 +541,15 @@ void Annotator::OnServerResponseReceived(
     const std::set<std::string>& source_ids,
     const UrlLoaderList::iterator http_request_it,
     const std::unique_ptr<std::string> json_response) {
+  ReportServerNetError(http_request_it->get()->NetError());
+
+  if (const network::ResourceResponseInfo* const response_info =
+          http_request_it->get()->ResponseInfo()) {
+    ReportServerResponseCode(response_info->headers->response_code());
+    ReportServerLatency(response_info->response_time -
+                        response_info->request_time);
+  }
+
   http_requests_.erase(http_request_it);
 
   if (!json_response) {
@@ -470,6 +557,8 @@ void Annotator::OnServerResponseReceived(
     ProcessResults(source_ids, {});
     return;
   }
+
+  ReportServerResponseSizeBytes(json_response->size());
 
   // Send JSON string to a dedicated service for safe parsing.
   GetJsonParser().Parse(*json_response,
@@ -481,15 +570,17 @@ void Annotator::OnResponseJsonParsed(
     const std::set<std::string>& source_ids,
     const base::Optional<base::Value> json_data,
     const base::Optional<std::string>& error) {
+  const bool success = json_data.has_value() && !error.has_value();
+  ReportJsonParseSuccess(success);
+
   // Extract annotation results for each source ID with valid results.
-  std::map<std::string, mojom::AnnotateImageResultPtr> results;
-  if (!json_data.has_value() || error.has_value()) {
+  if (success) {
+    ProcessResults(source_ids,
+                   UnpackJsonResponse(*json_data, min_ocr_confidence_));
+  } else {
     DVLOG(1) << "Parsing server response JSON failed with error: "
              << error.value_or("No reason reported.");
     ProcessResults(source_ids, {});
-  } else {
-    ProcessResults(source_ids,
-                   UnpackJsonResponse(*json_data, min_ocr_confidence_));
   }
 }
 
@@ -519,11 +610,15 @@ void Annotator::ProcessResults(
                                   ? result_lookup->second.Clone()
                                   : mojom::AnnotateImageResult::NewErrorCode(
                                         mojom::AnnotateImageError::kFailure);
+    const auto client_result = result_lookup != results.end()
+                                   ? ClientResult::kSucceeded
+                                   : ClientResult::kFailed;
 
     // Notify clients of success or failure.
     // TODO(crbug.com/916420): explore server retry strategies.
     for (auto& info : request_info_it->second) {
       std::move(info.second).Run(image_result.Clone());
+      ReportClientResult(client_result);
     }
     request_infos_.erase(request_info_it);
   }
@@ -544,7 +639,7 @@ data_decoder::mojom::JsonParser& Annotator::GetJsonParser() {
 void Annotator::RemoveRequestInfo(
     const std::string& source_id,
     const RequestInfoList::iterator request_info_it,
-    const mojom::AnnotateImageError error) {
+    const bool canceled) {
   // Check whether we are deleting the ImageProcessor responsible for current
   // local processing.
   auto lookup = local_processors_.find(source_id);
@@ -552,8 +647,12 @@ void Annotator::RemoveRequestInfo(
                                lookup->second == &request_info_it->first;
 
   // Notify client of cancellation / failure.
+  ReportClientResult(canceled ? ClientResult::kCanceled
+                              : ClientResult::kFailed);
   std::move(request_info_it->second)
-      .Run(mojom::AnnotateImageResult::NewErrorCode(error));
+      .Run(mojom::AnnotateImageResult::NewErrorCode(
+          canceled ? mojom::AnnotateImageError::kCanceled
+                   : mojom::AnnotateImageError::kFailure));
 
   // Delete the specified ImageProcessor.
   RequestInfoList& request_info_list = request_infos_[source_id];

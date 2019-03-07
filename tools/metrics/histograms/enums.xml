@@ -5197,6 +5197,11 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="Used relinker"/>
 </enum>
 
+<enum name="BooleanKnown">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Known"/>
+</enum>
+
 <enum name="BooleanLatched">
   <int value="0" label="Not latched"/>
   <int value="1" label="Latched"/>
@@ -25471,6 +25476,27 @@ Called by update_net_error_codes.py.-->
   <int value="3" label="IGNORED_AS_REDUNDANT"/>
 </enum>
 
+<enum name="GoogleRpcCode">
+  <summary>Canonical error codes for gRPC APIs.</summary>
+  <int value="0" label="OK"/>
+  <int value="1" label="CANCELLED"/>
+  <int value="2" label="UNKNOWN"/>
+  <int value="3" label="INVALID_ARGUMENT"/>
+  <int value="4" label="DEADLINE_EXCEEDED"/>
+  <int value="5" label="NOT_FOUND"/>
+  <int value="6" label="ALREADY_EXISTS"/>
+  <int value="7" label="PERMISSION_DENIED"/>
+  <int value="8" label="RESOURCE_EXHAUSTED"/>
+  <int value="9" label="FAILED_PRECONDITION"/>
+  <int value="10" label="ABORTED"/>
+  <int value="11" label="OUT_OF_RANGE"/>
+  <int value="12" label="UNIMPLEMENTED"/>
+  <int value="13" label="INTERNAL"/>
+  <int value="14" label="UNAVAILABLE"/>
+  <int value="15" label="DATA_LOSS"/>
+  <int value="16" label="UNAUTHENTICATED"/>
+</enum>
+
 <enum name="GoogleServiceAuthError">
   <int value="0" label="NONE"/>
   <int value="1" label="INVALID_GAIA_CREDENTIALS"/>
@@ -27485,6 +27511,28 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   </obsolete>
   <int value="0" label="No stored passwords from IE7 found."/>
   <int value="1" label="Some stored passwords from IE7 found."/>
+</enum>
+
+<enum name="ImageAnnotationServiceClientResult">
+  <summary>
+    The result status of a request made to the image annotation service by a
+    client feature.
+  </summary>
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Succeeded"/>
+  <int value="2" label="Canceled"/>
+  <int value="3" label="Failed"/>
+  <int value="4" label="Shutdown"/>
+</enum>
+
+<enum name="ImageAnnotationServiceDescType">
+  <summary>
+    The type of description annotation returned from the image annotation
+    service.
+  </summary>
+  <int value="1" label="OCR"/>
+  <int value="2" label="Label"/>
+  <int value="3" label="Caption"/>
 </enum>
 
 <enum name="ImageCaptureOutcome">

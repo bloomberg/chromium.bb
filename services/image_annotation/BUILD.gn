@@ -6,9 +6,13 @@ source_set("lib") {
   sources = [
     "annotator.cc",
     "annotator.h",
+    "image_annotation_metrics.cc",
+    "image_annotation_metrics.h",
+    "image_annotation_utils.cc",
+    "image_annotation_utils.h",
   ]
 
-  visibility = [ ":*" ]
+  visibility = [ "/*" ]
 
   deps = [
     "//base",

@@ -20,10 +20,12 @@ enum AnnotateImageError {
 };
 
 // The types of annotations that can be returned.
+//
+// Logged in metrics - do not reuse or reassign values.
 enum AnnotationType {
-  kOcr,
-  kLabel,
-  kCaption,
+  kOcr = 1,
+  kLabel = 2,
+  kCaption = 3,
 };
 
 // One annotation for an image.
