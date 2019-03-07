@@ -197,6 +197,7 @@ jumbo_component("ime") {
   if (is_chromeos) {
     deps += [
       "//chromeos",
+      "//chromeos/ime:gencode",
       "//services/ws/public/cpp/input_devices",
       "//ui/base/ime/chromeos/public/interfaces",
       "//ui/chromeos/strings",
