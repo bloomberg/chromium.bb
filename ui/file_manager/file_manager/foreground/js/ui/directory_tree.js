@@ -800,8 +800,6 @@ SubDirectoryItem.prototype.updateDriveSpecificIcons = function() {
 function EntryListItem(rootType, modelItem, tree) {
   const item =
       /** @type {EntryListItem} */ (new DirectoryItem(modelItem.label, tree));
-  // Get the original label id defined by TreeItem, before overwriting
-  // prototype.
   item.__proto__ = EntryListItem.prototype;
   if (window.IN_TEST) {
     item.setAttribute('dir-type', 'EntryListItem');
@@ -815,6 +813,16 @@ function EntryListItem(rootType, modelItem, tree) {
 
   if (rootType === VolumeManagerCommon.RootType.REMOVABLE) {
     item.setupEjectButton_(item.rowElement);
+
+    // For removable add menus for roots to be able to unmount, format, etc.
+    if (tree.contextMenuForRootItems) {
+      item.setContextMenu_(tree.contextMenuForRootItems);
+    }
+  } else {
+    // For MyFiles allow normal file operations menus.
+    if (tree.contextMenuForSubitems) {
+      item.setContextMenu_(tree.contextMenuForSubitems);
+    }
   }
 
   const icon = queryRequiredElement('.icon', item);
@@ -827,11 +835,6 @@ function EntryListItem(rootType, modelItem, tree) {
   }
   icon.classList.add('item-icon');
   icon.setAttribute('root-type-icon', rootType);
-
-  // Sets up context menu of the item.
-  if (tree.contextMenuForRootItems) {
-    item.setContextMenu_(tree.contextMenuForRootItems);
-  }
 
   // Populate children of this volume.
   item.updateSubDirectories(false /* recursive */);

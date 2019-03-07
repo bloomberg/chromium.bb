@@ -1427,19 +1427,25 @@ FileTransferController.prototype.canCutOrCopy_ = function(isMove) {
     if (!selectedItem) {
       return false;
     }
+    const entry = selectedItem.entry;
 
-    if (!this.shouldShowCommandFor_(selectedItem.entry)) {
+    if (!this.shouldShowCommandFor_(entry)) {
       command.setHidden(true);
       return false;
     }
 
+    // For MyFiles/Downloads we only allow copy.
+    if (isMove && this.isDownloads_(entry)) {
+      return false;
+    }
+
     // Cut is unavailable on Team Drive roots.
-    if (util.isTeamDriveRoot(selectedItem.entry)) {
+    if (util.isTeamDriveRoot(entry)) {
       return false;
     }
 
     const metadata = this.metadataModel_.getCache(
-        [selectedItem.entry], ['canCopy', 'canDelete']);
+        [entry], ['canCopy', 'canDelete']);
     assert(metadata.length === 1);
 
     if (!isMove) {
@@ -1447,7 +1453,7 @@ FileTransferController.prototype.canCutOrCopy_ = function(isMove) {
     }
 
     // We need to check source volume is writable for move operation.
-    const volumeInfo = this.volumeManager_.getVolumeInfo(selectedItem.entry);
+    const volumeInfo = this.volumeManager_.getVolumeInfo(entry);
     return !volumeInfo.isReadOnly && metadata[0].canCopy !== false &&
         metadata[0].canDelete !== false;
   }
@@ -1458,6 +1464,12 @@ FileTransferController.prototype.canCutOrCopy_ = function(isMove) {
   if (!this.selectionHandler_.selection.entries.every(
           this.shouldShowCommandFor_)) {
     command.setHidden(true);
+    return false;
+  }
+
+  // For MyFiles/Downloads we only allow copy.
+  if (isMove &&
+      this.selectionHandler_.selection.entries.some(this.isDownloads_, this)) {
     return false;
   }
 
@@ -1819,4 +1831,27 @@ FileTransferController.prototype.blinkSelection_ = function() {
       listItems[i].classList.remove('blink');
     }
   }, 100);
+};
+
+/**
+ * Returns True if entry is MyFiles>Downloads.
+ * @param {(!Entry|!FakeEntry)} entry Entry or a fake entry.
+ * @return {boolean}
+ */
+FileTransferController.prototype.isDownloads_ = function(entry) {
+  if (util.isFakeEntry(entry)) {
+    return false;
+  }
+
+  const volumeInfo = this.volumeManager_.getVolumeInfo(entry);
+  if (!volumeInfo) {
+    return false;
+  }
+
+  if (util.isMyFilesVolumeEnabled() &&
+      volumeInfo.volumeType === VolumeManagerCommon.RootType.DOWNLOADS &&
+      entry.fullPath === '/Downloads') {
+    return true;
+  }
+  return false;
 };
