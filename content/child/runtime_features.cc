@@ -227,7 +227,8 @@ void SetIndividualRuntimeFeatures(
 
   WebRuntimeFeatures::EnableFeatureFromString(
       "BlinkGenPropertyTrees",
-      base::FeatureList::IsEnabled(blink::features::kBlinkGenPropertyTrees));
+      base::FeatureList::IsEnabled(blink::features::kBlinkGenPropertyTrees) ||
+          enable_experimental_web_platform_features);
 
   WebRuntimeFeatures::EnablePassiveDocumentEventListeners(
       base::FeatureList::IsEnabled(features::kPassiveDocumentEventListeners));
