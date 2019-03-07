@@ -14,6 +14,11 @@ namespace features {
 
 // All features in alphabetical order.
 
+#if defined(OS_ANDROID)
+const base::Feature kAddToHomescreenMessaging{
+    "AddToHomescreenMessaging", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // defined(OS_ANDROID)
+
 #if defined(OS_MACOSX)
 // Enables the menu item for Javascript execution via AppleScript.
 const base::Feature kAppleScriptExecuteJavaScriptMenuItem{
