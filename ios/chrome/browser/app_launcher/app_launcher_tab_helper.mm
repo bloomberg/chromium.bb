@@ -13,10 +13,9 @@
 #import "ios/chrome/browser/app_launcher/app_launcher_abuse_detector.h"
 #include "ios/chrome/browser/app_launcher/app_launcher_flags.h"
 #import "ios/chrome/browser/app_launcher/app_launcher_tab_helper_delegate.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/chrome_url_util.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
-#import "ios/chrome/browser/tabs/legacy_tab_helper.h"
-#import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/u2f/u2f_tab_helper.h"
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
@@ -216,7 +215,8 @@ bool AppLauncherTabHelper::ShouldAllowRequest(
   bool is_link_transition = ui::PageTransitionTypeIncludingQualifiersIs(
       request_info.transition_type, ui::PAGE_TRANSITION_LINK);
 
-  Tab* tab = LegacyTabHelper::GetTabForWebState(web_state_);
+  ios::ChromeBrowserState* browser_state =
+      ios::ChromeBrowserState::FromBrowserState(web_state_->GetBrowserState());
 
   if (base::FeatureList::IsEnabled(kAppLauncherRefresh)) {
     if (!is_link_transition && original_pending_url.is_valid()) {
@@ -224,7 +224,7 @@ bool AppLauncherTabHelper::ShouldAllowRequest(
       // was a redirection, the |source_url| may not have been reported to
       // ReadingListWebStateObserver. Report it to mark as read if needed.
       ReadingListModel* model =
-          ReadingListModelFactory::GetForBrowserState(tab.browserState);
+          ReadingListModelFactory::GetForBrowserState(browser_state);
       if (model && model->loaded())
         model->SetReadStatus(original_pending_url, true);
     }
@@ -244,7 +244,7 @@ bool AppLauncherTabHelper::ShouldAllowRequest(
     // entry as read if needed.
     if (original_pending_url.is_valid()) {
       ReadingListModel* model =
-          ReadingListModelFactory::GetForBrowserState(tab.browserState);
+          ReadingListModelFactory::GetForBrowserState(browser_state);
       if (model && model->loaded())
         model->SetReadStatus(original_pending_url, true);
     }
