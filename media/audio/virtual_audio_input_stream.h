@@ -80,7 +80,7 @@ class MEDIA_EXPORT VirtualAudioInputStream : public AudioInputStream {
   // Pulls audio data from all attached VirtualAudioOutputStreams, mixes and
   // converts the streams into one, and pushes the result to |callback_|.
   // Invoked on the worker thread.
-  void PumpAudio();
+  void PumpAudio(base::TimeTicks ideal_time, base::TimeTicks now);
 
   const scoped_refptr<base::SingleThreadTaskRunner> worker_task_runner_;
 

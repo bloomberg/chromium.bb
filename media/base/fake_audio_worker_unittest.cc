@@ -32,12 +32,14 @@ class FakeAudioWorkerTest : public testing::Test {
 
   ~FakeAudioWorkerTest() override = default;
 
-  void CalledByFakeWorker() { seen_callbacks_++; }
+  void CalledByFakeWorker(base::TimeTicks ideal_time, base::TimeTicks now) {
+    seen_callbacks_++;
+  }
 
   void RunOnAudioThread() {
     ASSERT_TRUE(message_loop_.task_runner()->BelongsToCurrentThread());
-    fake_worker_.Start(base::Bind(&FakeAudioWorkerTest::CalledByFakeWorker,
-                                  base::Unretained(this)));
+    fake_worker_.Start(base::BindRepeating(
+        &FakeAudioWorkerTest::CalledByFakeWorker, base::Unretained(this)));
   }
 
   void RunOnceOnAudioThread() {
