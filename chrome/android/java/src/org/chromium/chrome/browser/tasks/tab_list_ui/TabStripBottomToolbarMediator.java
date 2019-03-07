@@ -29,7 +29,7 @@ public class TabStripBottomToolbarMediator implements Destroyable {
     interface ResetHandler {
         /**
          * Handles a reset event originated from {@link TabStripBottomToolbarMediator}
-         * when the bottom sheet is collaped.
+         * when the bottom sheet is collapsed.
          *
          * @param tabModel current {@link TabModel} instance.
          */
@@ -37,7 +37,7 @@ public class TabStripBottomToolbarMediator implements Destroyable {
 
         /**
          * Handles a reset event originated from {@link TabStripBottomToolbarMediator}
-         * when the bottom sheet is expanded and the component.
+         * when the bottom sheet is expanded.
          *
          * @param tabModel current {@link TabModel} instance.
          */
