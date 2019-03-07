@@ -33,6 +33,7 @@ extern const base::Feature kAutofillCreditCardAssist;
 extern const base::Feature kAutofillCreditCardLocalCardMigration;
 extern const base::Feature kAutofillDeleteDisusedAddresses;
 extern const base::Feature kAutofillDeleteDisusedCreditCards;
+extern const base::Feature kAutofillDoNotUploadSaveUnsupportedCards;
 extern const base::Feature kAutofillDownstreamUseGooglePayBrandingOniOS;
 extern const base::Feature kAutofillDynamicForms;
 extern const base::Feature kAutofillEnableAccountWalletStorage;

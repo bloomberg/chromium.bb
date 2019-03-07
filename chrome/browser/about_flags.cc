@@ -2530,6 +2530,13 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAll,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillUpstreamEditableExpirationDate)},
+    {"enable-autofill-do-not-upload-save-unsupported-cards",
+     flag_descriptions::kEnableAutofillDoNotUploadSaveUnsupportedCardsName,
+     flag_descriptions::
+         kEnableAutofillDoNotUploadSaveUnsupportedCardsDescription,
+     kOsAll,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillDoNotUploadSaveUnsupportedCards)},
     {"enable-autofill-import-non-focusable-credit-card-forms",
      flag_descriptions::kEnableAutofillImportNonFocusableCreditCardFormsName,
      flag_descriptions::

@@ -420,8 +420,8 @@ void CreditCardSaveManager::OnDidGetStrikesForUploadSave(
   show_save_prompt_ =
       num_strikes < kMaxStrikesToPreventPoppingUpOfferToSavePrompt;
 
-  // Only offer upload once both Payments and the Autofill LegacyStrikeDatabase
-  // have returned their decisions. Use population of
+  // Only offer upload once both Payments and the Autofill
+  // LegacyStrikeDatabase have returned their decisions. Use population of
   // |upload_request_.context_token| as an indicator of the Payments call
   // returning successfully.
   if (!upload_request_.context_token.empty())
@@ -431,12 +431,24 @@ void CreditCardSaveManager::OnDidGetStrikesForUploadSave(
 void CreditCardSaveManager::OnDidGetUploadDetails(
     AutofillClient::PaymentsRpcResult result,
     const base::string16& context_token,
-    std::unique_ptr<base::Value> legal_message) {
+    std::unique_ptr<base::Value> legal_message,
+    std::vector<std::pair<int, int>> supported_card_bin_ranges) {
   if (observer_for_testing_)
     observer_for_testing_->OnReceivedGetUploadDetailsResponse();
   if (result == AutofillClient::SUCCESS) {
     // Do *not* call payments_client_->Prepare() here. We shouldn't send
     // credentials until the user has explicitly accepted a prompt to upload.
+    if (base::FeatureList::IsEnabled(
+            features::kAutofillDoNotUploadSaveUnsupportedCards) &&
+        !supported_card_bin_ranges.empty() &&
+        !IsCreditCardSupported(supported_card_bin_ranges)) {
+      AttemptToOfferCardLocalSave(has_non_focusable_field_,
+                                  upload_request_.card);
+      upload_decision_metrics_ |=
+          AutofillMetrics::UPLOAD_NOT_OFFERED_UNSUPPORTED_BIN_RANGE;
+      LogCardUploadDecisions(upload_decision_metrics_);
+      return;
+    }
     upload_request_.context_token = context_token;
     legal_message_ = base::DictionaryValue::From(std::move(legal_message));
 
@@ -1055,6 +1067,30 @@ void CreditCardSaveManager::LogSaveCardRequestExpirationDateReasonMetric() {
         AutofillMetrics::SaveCardRequestExpirationDateReasonMetric::
             kExpirationDatePresentButExpired);
   }
+}
+
+bool CreditCardSaveManager::IsCreditCardSupported(
+    std::vector<std::pair<int, int>> supported_card_bin_ranges) {
+  base::string16 stripped_number =
+      CreditCard::StripSeparators(upload_request_.card.number());
+  for (auto& bin_range : supported_card_bin_ranges) {
+    unsigned long range_num_of_digits =
+        base::NumberToString(bin_range.first).size();
+    DCHECK_EQ(range_num_of_digits,
+              base::NumberToString(bin_range.second).size());
+    // The first n digits of credit card number, where n is the number of
+    // digits in range's starting/ending number.
+    int first_digits_start, first_digits_end;
+    base::StringToInt(stripped_number.substr(0, range_num_of_digits),
+                      &first_digits_start);
+    base::StringToInt(stripped_number.substr(0, range_num_of_digits),
+                      &first_digits_end);
+    if (first_digits_start >= bin_range.first &&
+        first_digits_end <= bin_range.second) {
+      return true;
+    }
+  }
+  return false;
 }
 
 }  // namespace autofill

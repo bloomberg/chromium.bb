@@ -5509,4 +5509,61 @@ TEST_F(CreditCardSaveManagerTest,
   EXPECT_EQ(local_card_migration_strike_database.GetStrikes(), 3);
 }
 
+// Tests that if a card doesn't fall in any of the supported bin ranges, local
+// save is offered rather than upload save.
+TEST_F(CreditCardSaveManagerTest, UploadSaveNotOfferedForUnsupportedCard) {
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillDoNotUploadSaveUnsupportedCards);
+  std::vector<std::pair<int, int>> supported_card_bin_ranges{
+      std::make_pair(4111, 4113), std::make_pair(34, 34),
+      std::make_pair(300, 305)};
+  payments_client_->SetSupportedBINRanges(supported_card_bin_ranges);
+  // Set up our credit card form data.
+  FormData credit_card_form;
+  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  FormsSeen(std::vector<FormData>(1, credit_card_form));
+
+  // Edit the data, and submit.
+  credit_card_form.fields[0].value = ASCIIToUTF16("Flo Master");
+  credit_card_form.fields[1].value = ASCIIToUTF16("5454545454545454");
+  credit_card_form.fields[2].value = ASCIIToUTF16(NextMonth());
+  credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
+  credit_card_form.fields[4].value = ASCIIToUTF16("123");
+
+  // Since card isn't in any of the supported ranges, local save should be
+  // offered and upload save should not.
+  FormSubmitted(credit_card_form);
+  EXPECT_TRUE(autofill_client_.ConfirmSaveCardLocallyWasCalled());
+  EXPECT_FALSE(credit_card_save_manager_->CreditCardWasUploaded());
+}
+
+// Tests that if a card falls in one of the supported bin ranges, upload save
+// is offered.
+TEST_F(CreditCardSaveManagerTest, UploadSaveOfferedForSupportedCard) {
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillDoNotUploadSaveUnsupportedCards);
+  // Set supported BIN ranges.
+  std::vector<std::pair<int, int>> supported_card_bin_ranges{
+      std::make_pair(4111, 4113)};
+  payments_client_->SetSupportedBINRanges(supported_card_bin_ranges);
+
+  // Set up our credit card form data.
+  FormData credit_card_form;
+  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  FormsSeen(std::vector<FormData>(1, credit_card_form));
+
+  // Edit the data, and submit.
+  credit_card_form.fields[0].value = ASCIIToUTF16("Flo Master");
+  credit_card_form.fields[1].value = ASCIIToUTF16("4111111111111111");
+  credit_card_form.fields[2].value = ASCIIToUTF16(NextMonth());
+  credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
+  credit_card_form.fields[4].value = ASCIIToUTF16("123");
+
+  // Since card is in one of the supported ranges(4111-4113), upload save should
+  // be offered.
+  FormSubmitted(credit_card_form);
+  EXPECT_FALSE(autofill_client_.ConfirmSaveCardLocallyWasCalled());
+  EXPECT_TRUE(credit_card_save_manager_->CreditCardWasUploaded());
+}
+
 }  // namespace autofill

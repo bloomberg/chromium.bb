@@ -232,7 +232,8 @@ void LocalCardMigrationManager::OnDidGetUploadDetails(
     bool is_from_settings_page,
     AutofillClient::PaymentsRpcResult result,
     const base::string16& context_token,
-    std::unique_ptr<base::Value> legal_message) {
+    std::unique_ptr<base::Value> legal_message,
+    std::vector<std::pair<int, int>> supported_card_bin_ranges) {
   if (observer_for_testing_)
     observer_for_testing_->OnReceivedGetUploadDetailsResponse();
 

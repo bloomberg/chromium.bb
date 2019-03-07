@@ -30,7 +30,8 @@ void TestPaymentsClient::GetUploadDetails(
     const std::string& app_locale,
     base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
                             const base::string16&,
-                            std::unique_ptr<base::Value>)> callback,
+                            std::unique_ptr<base::Value>,
+                            std::vector<std::pair<int, int>>)> callback,
     const int billable_service_number,
     PaymentsClient::UploadCardSource upload_card_source) {
   upload_details_addresses_ = addresses;
@@ -38,11 +39,11 @@ void TestPaymentsClient::GetUploadDetails(
   active_experiments_ = active_experiments;
   billable_service_number_ = billable_service_number;
   upload_card_source_ = upload_card_source;
-  std::move(callback).Run(app_locale == "en-US"
-                              ? AutofillClient::SUCCESS
-                              : AutofillClient::PERMANENT_FAILURE,
-                          base::ASCIIToUTF16("this is a context token"),
-                          std::unique_ptr<base::Value>(nullptr));
+  std::move(callback).Run(
+      app_locale == "en-US" ? AutofillClient::SUCCESS
+                            : AutofillClient::PERMANENT_FAILURE,
+      base::ASCIIToUTF16("this is a context token"),
+      std::unique_ptr<base::Value>(nullptr), supported_card_bin_ranges_);
 }
 
 void TestPaymentsClient::UploadCard(
@@ -69,6 +70,11 @@ void TestPaymentsClient::SetServerIdForCardUpload(std::string server_id) {
 void TestPaymentsClient::SetSaveResultForCardsMigration(
     std::unique_ptr<std::unordered_map<std::string, std::string>> save_result) {
   save_result_ = std::move(save_result);
+}
+
+void TestPaymentsClient::SetSupportedBINRanges(
+    std::vector<std::pair<int, int>> bin_ranges) {
+  supported_card_bin_ranges_ = bin_ranges;
 }
 
 }  // namespace payments
