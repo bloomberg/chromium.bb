@@ -5987,8 +5987,7 @@ crbug.com/935064 external/wpt/content-security-policy/unsafe-hashes/javascript_s
 crbug.com/936827 external/wpt/fullscreen/api/element-request-fullscreen-and-remove-manual.html [ Failure Pass ]
 
 # Enable WPT animation-worklet test to run with threaded-compositing
-crbug.com/915352 virtual/threaded/external/wpt/animation-worklet/playback-rate.https.html [ Pass Failure ]
-crbug.com/915352 [ Linux ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-pause-resume.https.html [ Pass Failure ]
+crbug.com/915352 virtual/threaded/external/wpt/animation-worklet/worklet-animation-pause-resume.https.html [ Pass Failure ]
 
 crbug.com/915352 [ Mac10.10 Mac10.11 ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-with-scroll-timeline.https.html [ Pass Failure ]
 crbug.com/915352 [ Mac10.10 Mac10.11 ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-with-scroll-timeline-and-display-none.https.html [ Pass Failure ]
