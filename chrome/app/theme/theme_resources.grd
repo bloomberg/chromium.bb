@@ -209,6 +209,19 @@
       <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_24" file="common/profile_avatar_note.png" />
       <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_25" file="common/profile_avatar_sun_cloud.png" />
       <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_26" file="common/profile_avatar_placeholder.png" />
+      <if expr="not is_android and not chromeos">
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_27" file="common/origami/avatar_cat.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_28" file="common/origami/avatar_corgi.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_29" file="common/origami/avatar_dragon.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_30" file="common/origami/avatar_elephant.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_31" file="common/origami/avatar_fox.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_32" file="common/origami/avatar_monkey.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_33" file="common/origami/avatar_panda.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_34" file="common/origami/avatar_penguin.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_35" file="common/origami/avatar_pinkbutterfly.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_36" file="common/origami/avatar_rabbit.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_37" file="common/origami/avatar_unicorn.png" />
+      </if>
       <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_PLACEHOLDER_LARGE" file="common/profile_avatar_placeholder_large.png" />
       <structure type="chrome_scaled_image" name="IDR_PROFILES_DICE_TURN_ON_SYNC" file="common/turn_on_sync_illustration.png" />
 

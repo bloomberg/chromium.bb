@@ -325,6 +325,39 @@
   <message name="IDS_DEFAULT_AVATAR_LABEL_25" desc="The label for the sun and cloud avatar.">
     Sun and clouds
   </message>
+  <message name="IDS_DEFAULT_AVATAR_LABEL_27" desc="The label for the cat avatar.">
+    Cat
+  </message>
+  <message name="IDS_DEFAULT_AVATAR_LABEL_28" desc="The label for the corgi avatar.">
+    Corgi
+  </message>
+  <message name="IDS_DEFAULT_AVATAR_LABEL_29" desc="The label for the dragon avatar.">
+    Dragon
+  </message>
+  <message name="IDS_DEFAULT_AVATAR_LABEL_30" desc="The label for the elephant avatar.">
+    Elephant
+  </message>
+  <message name="IDS_DEFAULT_AVATAR_LABEL_31" desc="The label for the fox avatar.">
+    Fox
+  </message>
+  <message name="IDS_DEFAULT_AVATAR_LABEL_32" desc="The label for the monkey avatar.">
+    Monkey
+  </message>
+  <message name="IDS_DEFAULT_AVATAR_LABEL_33" desc="The label for the panda avatar.">
+    Panda
+  </message>
+  <message name="IDS_DEFAULT_AVATAR_LABEL_34" desc="The label for the penguin avatar.">
+    Penguin
+  </message>
+  <message name="IDS_DEFAULT_AVATAR_LABEL_35" desc="The label for the butterfly avatar.">
+    Butterfly
+  </message>
+  <message name="IDS_DEFAULT_AVATAR_LABEL_36" desc="The label for the rabbit avatar.">
+    Rabbit
+  </message>
+  <message name="IDS_DEFAULT_AVATAR_LABEL_37" desc="The label for the unicorn avatar.">
+    Unicorn
+  </message>
 
   <message name="IDS_PROFILES_LOCAL_PROFILE_STATE" desc="This is displayed underneath the profile name for profiles that are not signed in to sync.">
     Not signed in

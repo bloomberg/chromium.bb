@@ -31,8 +31,7 @@ extern const char kGAIAPictureFileName[];
 extern const char kHighResAvatarFolderName[];
 
 // Avatar formatting.
-extern const int kAvatarIconWidth;
-extern const int kAvatarIconHeight;
+extern const int kAvatarIconSize;
 extern const SkColor kAvatarTutorialBackgroundColor;
 extern const SkColor kAvatarTutorialContentTextColor;
 extern const SkColor kAvatarBubbleAccountsBackgroundColor;
@@ -83,6 +82,13 @@ size_t GetGenericAvatarIconCount();
 // Gets the index for the (grey silhouette) avatar used as a placeholder.
 size_t GetPlaceholderAvatarIndex();
 
+// Gets the start index of the modern profile avatar icons.
+size_t GetModernAvatarIconStartIndex();
+
+// Returns whether |icon_index| corresponds to one of the modern profile avatar
+// icons.
+bool IsModernAvatarIconIndex(size_t icon_index);
+
 // Gets the resource ID of the placeholder avatar icon.
 int GetPlaceholderAvatarIconResourceID();
 
@@ -113,8 +119,10 @@ bool IsDefaultAvatarIconUrl(const std::string& icon_url, size_t *icon_index);
 
 // Returns a list of dictionaries containing the default profile avatar icons as
 // well as avatar labels used for accessibility purposes. The list is ordered
-// according to the avatars' default order.
-std::unique_ptr<base::ListValue> GetDefaultProfileAvatarIconsAndLabels();
+// according to the avatars' default order. If |selected_avatar_idx| is one of
+// the available indices, the corresponding avatar is marked as selected.
+std::unique_ptr<base::ListValue> GetDefaultProfileAvatarIconsAndLabels(
+    size_t selected_avatar_idx = SIZE_MAX);
 
 // This method tries to find a random avatar index that is not in
 // |used_icon_indices|. If there is no such index, a random index is returned.

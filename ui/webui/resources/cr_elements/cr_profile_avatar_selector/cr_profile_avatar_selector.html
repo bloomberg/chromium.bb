@@ -10,7 +10,7 @@
   <template>
     <style>
       :host {
-        --avatar-size: 48px;
+        --avatar-size: 96px;
         --avatar-spacing: 24px;
         display: inline-flex;
 
@@ -22,7 +22,7 @@
         background-position: center;
         background-repeat: no-repeat;
         border: 1px solid rgba(0, 0, 0, .12);
-        border-radius: var(--cr-card-border-radius);
+        border-radius: 100%;
         display: flex;
         height: var(--avatar-size);
         margin: calc(var(--avatar-spacing) / 2);
@@ -39,6 +39,10 @@
 
       #avatar-grid .avatar.iron-selected {
         border: 2px solid var(--google-blue-500);
+      }
+
+      paper-button {
+        background-size: var(--avatar-size);
       }
 
       :host-context([dark]) #avatar-grid .avatar.iron-selected {
