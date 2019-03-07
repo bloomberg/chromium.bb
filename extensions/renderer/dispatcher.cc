@@ -936,6 +936,7 @@ void Dispatcher::OnCancelSuspend(const std::string& extension_id) {
 void Dispatcher::OnDeliverMessage(int worker_thread_id,
                                   const PortId& target_port_id,
                                   const Message& message) {
+  DCHECK_EQ(kMainThreadId, worker_thread_id);
   bindings_system_->GetMessagingService()->DeliverMessage(
       script_context_set_.get(), target_port_id, message,
       NULL);  // All render frames.
