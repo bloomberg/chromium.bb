@@ -454,22 +454,42 @@ TEST_F(TaskSchedulerWorkerPoolImplStartInBodyTest, PostTasksBeforeStart) {
 }
 
 // Verify that posting many tasks before Start will cause the number of workers
-// to grow to |max_tasks_| during Start.
+// to grow to |max_tasks_| after Start.
 TEST_F(TaskSchedulerWorkerPoolImplStartInBodyTest, PostManyTasks) {
   scoped_refptr<TaskRunner> task_runner = test::CreateTaskRunnerWithTraits(
       {WithBaseSyncPrimitives()}, &mock_scheduler_task_runner_delegate_);
   constexpr size_t kNumTasksPosted = 2 * kMaxTasks;
-  for (size_t i = 0; i < kNumTasksPosted; ++i)
+
+  WaitableEvent threads_running;
+  WaitableEvent threads_continue;
+
+  RepeatingClosure threads_running_barrier = BarrierClosure(
+      kMaxTasks,
+      BindOnce(&WaitableEvent::Signal, Unretained(&threads_running)));
+  // Posting these tasks should cause new workers to be created.
+  for (size_t i = 0; i < kMaxTasks; ++i) {
+    task_runner->PostTask(
+        FROM_HERE, BindLambdaForTesting([&]() {
+          threads_running_barrier.Run();
+          test::WaitWithoutBlockingObserver(&threads_continue);
+        }));
+  }
+  // Post the remaining |kNumTasksPosted - kMaxTasks| tasks, don't wait for them
+  // as they'll be blocked behind the above kMaxtasks.
+  for (size_t i = kMaxTasks; i < kNumTasksPosted; ++i)
     task_runner->PostTask(FROM_HERE, DoNothing());
 
   EXPECT_EQ(0U, worker_pool_->NumberOfWorkersForTesting());
 
   StartWorkerPool(TimeDelta::Max(), kMaxTasks);
-  ASSERT_GT(kNumTasksPosted, worker_pool_->GetMaxTasksForTesting());
+  EXPECT_GT(worker_pool_->NumberOfWorkersForTesting(), 0U);
   EXPECT_EQ(kMaxTasks, worker_pool_->GetMaxTasksForTesting());
 
+  threads_running.Wait();
   EXPECT_EQ(worker_pool_->NumberOfWorkersForTesting(),
             worker_pool_->GetMaxTasksForTesting());
+  threads_continue.Signal();
+  task_tracker_.FlushForTesting();
 }
 
 namespace {
@@ -1698,7 +1718,7 @@ TEST_F(TaskSchedulerWorkerPoolImplStartInBodyTest,
           // to accommodate queued and running sequences.
           ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                   BlockingType::WILL_BLOCK);
-          EXPECT_EQ(kNumWorkers, worker_pool_->NumberOfWorkersForTesting());
+          EXPECT_LE(kNumWorkers + 1, worker_pool_->NumberOfWorkersForTesting());
         }
 
         worker_observer.UnblockWorkers();
@@ -1706,7 +1726,7 @@ TEST_F(TaskSchedulerWorkerPoolImplStartInBodyTest,
 
   runner->PostTask(FROM_HERE, BindLambdaForTesting([&]() {
                      EXPECT_LE(worker_pool_->NumberOfWorkersForTesting(),
-                               kNumWorkers);
+                               kNumWorkers + 1);
                    }));
   hold_will_block_task.Signal();
 

@@ -259,7 +259,7 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
     // Optional observer notified when a worker enters and exits its main.
     SchedulerWorkerObserver* scheduler_worker_observer = nullptr;
 
-    bool may_block_without_delay_;
+    bool may_block_without_delay;
 
     // Threshold after which the max tasks is increased to compensate for a
     // worker that is within a MAY_BLOCK ScopedBlockingCall.

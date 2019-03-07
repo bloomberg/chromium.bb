@@ -18,6 +18,7 @@
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
+#include "base/numerics/clamped_math.h"
 #include "base/sequence_token.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -100,20 +101,7 @@ class SchedulerWorkerPoolImpl::SchedulerWorkerActionExecutor {
   SchedulerWorkerActionExecutor(SchedulerWorkerPoolImpl* outer)
       : outer_(outer) {}
 
-  ~SchedulerWorkerActionExecutor() {
-    SchedulerLock::AssertNoLockHeldOnCurrentThread();
-
-    // Wake up workers.
-    workers_to_wake_up_.ForEachWorker(
-        [](SchedulerWorker* worker) { worker->WakeUp(); });
-
-    // Start workers. Happens after wake ups to prevent the case where a worker
-    // enters its main function, is descheduled because it wasn't woken up yet,
-    // and is woken up immediately after.
-    workers_to_start_.ForEachWorker([&](SchedulerWorker* worker) {
-      worker->Start(outer_->after_start().scheduler_worker_observer);
-    });
-  }
+  ~SchedulerWorkerActionExecutor() { FlushImpl(); }
 
   void ScheduleWakeUp(scoped_refptr<SchedulerWorker> worker) {
     workers_to_wake_up_.AddWorker(std::move(worker));
@@ -121,6 +109,15 @@ class SchedulerWorkerPoolImpl::SchedulerWorkerActionExecutor {
 
   void ScheduleStart(scoped_refptr<SchedulerWorker> worker) {
     workers_to_start_.AddWorker(std::move(worker));
+  }
+
+  void Flush(SchedulerLock* held_lock) {
+    if (workers_to_wake_up_.empty() && workers_to_start_.empty())
+      return;
+    AutoSchedulerUnlock auto_unlock(*held_lock);
+    FlushImpl();
+    workers_to_wake_up_.clear();
+    workers_to_start_.clear();
   }
 
  private:
@@ -148,6 +145,13 @@ class SchedulerWorkerPoolImpl::SchedulerWorkerActionExecutor {
       }
     }
 
+    bool empty() const { return first_worker_ == nullptr; }
+
+    void clear() {
+      first_worker_.reset();
+      additional_workers_.clear();
+    }
+
    private:
     // The purpose of |first_worker| is to avoid a heap allocation by the vector
     // in the case where there is only one worker in the container.
@@ -156,6 +160,21 @@ class SchedulerWorkerPoolImpl::SchedulerWorkerActionExecutor {
 
     DISALLOW_COPY_AND_ASSIGN(WorkerContainer);
   };
+
+  void FlushImpl() {
+    SchedulerLock::AssertNoLockHeldOnCurrentThread();
+
+    // Wake up workers.
+    workers_to_wake_up_.ForEachWorker(
+        [](SchedulerWorker* worker) { worker->WakeUp(); });
+
+    // Start workers. Happens after wake ups to prevent the case where a worker
+    // enters its main function, is descheduled because it wasn't woken up yet,
+    // and is woken up immediately after.
+    workers_to_start_.ForEachWorker([&](SchedulerWorker* worker) {
+      worker->Start(outer_->after_start().scheduler_worker_observer);
+    });
+  }
 
   SchedulerWorkerPoolImpl* const outer_;
 
@@ -370,7 +389,7 @@ void SchedulerWorkerPoolImpl::Start(
 
   DCHECK(workers_.empty());
 
-  in_start().may_block_without_delay_ =
+  in_start().may_block_without_delay =
       FeatureList::IsEnabled(kMayBlockWithoutDelay);
   in_start().may_block_threshold =
       may_block_threshold ? may_block_threshold.value()
@@ -603,6 +622,12 @@ SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::GetWork(
 
   DCHECK(ContainsWorker(outer_->workers_, worker));
 
+  // Use this opportunity, before assigning work to this worker, to create/wake
+  // additional workers if needed (doing this here allows us to reduce
+  // potentially expensive create/wake directly on PostTask()).
+  outer_->EnsureEnoughWorkersLockRequired(&executor);
+  executor.Flush(&outer_->lock_);
+
   if (!CanGetWorkLockRequired(worker))
     return nullptr;
 
@@ -621,9 +646,6 @@ SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::GetWork(
     OnWorkerBecomesIdleLockRequired(worker);
     return nullptr;
   }
-
-  // Replace this worker if it was the last one, capacity permitting.
-  outer_->MaintainAtLeastOneIdleWorkerLockRequired(&executor);
 
   // Running task bookkeeping.
   worker_only().is_running_task = true;
@@ -833,7 +855,7 @@ void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::BlockingStarted(
   DCHECK(worker_only().is_running_task);
 
   // MayBlock with no delay reuses WillBlock implementation.
-  if (outer_->after_start().may_block_without_delay_)
+  if (outer_->after_start().may_block_without_delay)
     blocking_type = BlockingType::WILL_BLOCK;
 
   switch (blocking_type) {
@@ -853,7 +875,7 @@ void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::
 
   // The blocking type always being WILL_BLOCK in this experiment, it should
   // never be considered "upgraded".
-  if (outer_->after_start().may_block_without_delay_)
+  if (outer_->after_start().may_block_without_delay)
     return;
 
   {
@@ -1063,27 +1085,31 @@ size_t SchedulerWorkerPoolImpl::GetDesiredNumAwakeWorkersLockRequired() const {
 
 void SchedulerWorkerPoolImpl::EnsureEnoughWorkersLockRequired(
     SchedulerWorkerActionExecutor* executor) {
+  // Don't do anything if the pool isn't started.
+  if (max_tasks_ == 0)
+    return;
+
   const size_t desired_num_awake_workers =
       GetDesiredNumAwakeWorkersLockRequired();
-  workers_.reserve(desired_num_awake_workers);
+  const size_t num_awake_workers = GetNumAwakeWorkersLockRequired();
+
+  size_t num_workers_to_wake_up =
+      ClampSub(desired_num_awake_workers, num_awake_workers);
+  num_workers_to_wake_up = std::min(num_workers_to_wake_up, size_t(2U));
 
   // Wake up the appropriate number of workers.
-  for (size_t i = GetNumAwakeWorkersLockRequired();
-       i < desired_num_awake_workers; ++i) {
+  for (size_t i = 0; i < num_workers_to_wake_up; ++i) {
     MaintainAtLeastOneIdleWorkerLockRequired(executor);
     SchedulerWorker* worker_to_wakeup = idle_workers_stack_.Pop();
     DCHECK(worker_to_wakeup);
     executor->ScheduleWakeUp(worker_to_wakeup);
   }
 
-  // If no worker is about to call MaintainAtLeastOneIdleWorkerLockRequired(),
-  // call it here. This is useful in the case where the loop above didn't wake
-  // up any worker but a recent increase in |max_tasks| now makes it possible to
-  // keep an idle worker.
-  DCHECK_GE(GetNumAwakeWorkersLockRequired(), num_running_tasks_);
-  const size_t num_awake_workers_not_running_task =
-      GetNumAwakeWorkersLockRequired() - num_running_tasks_;
-  if (num_awake_workers_not_running_task == 0)
+  // In the case where the loop above didn't wake up any worker and we don't
+  // have excess workers, the idle worker should be maintained. This happens
+  // when called from the last worker awake, or a recent increase in |max_tasks|
+  // now makes it possible to keep an idle worker.
+  if (desired_num_awake_workers == num_awake_workers)
     MaintainAtLeastOneIdleWorkerLockRequired(executor);
 }
 
