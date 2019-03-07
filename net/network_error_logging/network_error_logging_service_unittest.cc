@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/values_test_util.h"
 #include "base/time/time.h"
@@ -184,6 +185,21 @@ class NetworkErrorLoggingServiceTest : public ::testing::Test {
   const std::vector<TestReportingService::Report>& reports() {
     return reporting_service_->reports();
   }
+
+  const url::Origin MakeOrigin(size_t index) {
+    GURL url(base::StringPrintf("https://example%zd.com/", index));
+    return url::Origin::Create(url);
+  }
+
+  // Returns whether the NetworkErrorLoggingService has a policy corresponding
+  // to |origin|. Returns true if so, even if the policy is expired.
+  bool HasPolicyForOrigin(const url::Origin& origin) {
+    std::set<url::Origin> all_policy_origins =
+        service_->GetPolicyOriginsForTesting();
+    return all_policy_origins.find(origin) != all_policy_origins.end();
+  }
+
+  size_t PolicyCount() { return service_->GetPolicyOriginsForTesting().size(); }
 
   const GURL kUrl_ = GURL("https://example.com/path");
   const GURL kUrlDifferentPort_ = GURL("https://example.com:4433/path");
@@ -585,8 +601,11 @@ TEST_F(NetworkErrorLoggingServiceTest, SuccessPOSTReportQueued) {
 
 TEST_F(NetworkErrorLoggingServiceTest, MaxAge0) {
   service()->OnHeader(kOrigin_, kServerIP_, kHeader_);
+  EXPECT_EQ(1u, PolicyCount());
 
+  // Max_age of 0 removes the policy.
   service()->OnHeader(kOrigin_, kServerIP_, kHeaderMaxAge0_);
+  EXPECT_EQ(0u, PolicyCount());
 
   service()->OnRequest(MakeRequestDetails(kUrl_, ERR_CONNECTION_REFUSED));
 
@@ -775,22 +794,31 @@ TEST_F(NetworkErrorLoggingServiceTest,
 
 TEST_F(NetworkErrorLoggingServiceTest, RemoveAllBrowsingData) {
   service()->OnHeader(kOrigin_, kServerIP_, kHeader_);
+  EXPECT_EQ(1u, PolicyCount());
+  EXPECT_TRUE(HasPolicyForOrigin(kOrigin_));
 
   service()->RemoveAllBrowsingData();
 
   service()->OnRequest(MakeRequestDetails(kUrl_, ERR_CONNECTION_REFUSED));
 
+  EXPECT_EQ(0u, PolicyCount());
+  EXPECT_FALSE(HasPolicyForOrigin(kOrigin_));
   EXPECT_TRUE(reports().empty());
 }
 
 TEST_F(NetworkErrorLoggingServiceTest, RemoveSomeBrowsingData) {
   service()->OnHeader(kOrigin_, kServerIP_, kHeader_);
   service()->OnHeader(kOriginDifferentHost_, kServerIP_, kHeader_);
+  EXPECT_EQ(2u, PolicyCount());
 
+  // Remove policy for kOrigin_ but not kOriginDifferentHost_
   service()->RemoveBrowsingData(
       base::BindRepeating([](const GURL& origin) -> bool {
         return origin.host() == "example.com";
       }));
+  EXPECT_EQ(1u, PolicyCount());
+  EXPECT_TRUE(HasPolicyForOrigin(kOriginDifferentHost_));
+  EXPECT_FALSE(HasPolicyForOrigin(kOrigin_));
 
   service()->OnRequest(MakeRequestDetails(kUrl_, ERR_CONNECTION_REFUSED));
 
@@ -1032,6 +1060,87 @@ TEST_F(NetworkErrorLoggingServiceTest, MismatchingIPAddress_SignedExchange) {
   service()->QueueSignedExchangeReport(MakeSignedExchangeReportDetails(
       false, "sxg.failed", kUrl_, kInnerUrl_, kCertUrl_, kOtherServerIP_));
   EXPECT_TRUE(reports().empty());
+}
+
+// When the max number of policies is exceeded, first try to remove expired
+// policies before evicting the least recently used unexpired policy.
+TEST_F(NetworkErrorLoggingServiceTest, EvictAllExpiredPoliciesFirst) {
+  base::SimpleTestClock clock;
+  service()->SetClockForTesting(&clock);
+
+  // Add 100 policies then make them expired.
+  for (size_t i = 0; i < 100; ++i) {
+    service()->OnHeader(MakeOrigin(i), kServerIP_, kHeader_);
+  }
+  EXPECT_EQ(100u, PolicyCount());
+  clock.Advance(base::TimeDelta::FromSeconds(86401));  // max_age is 86400 sec
+  // Expired policies are allowed to linger before hitting the policy limit.
+  EXPECT_EQ(100u, PolicyCount());
+
+  // Reach the max policy limit.
+  for (size_t i = 100; i < NetworkErrorLoggingService::kMaxPolicies; ++i) {
+    service()->OnHeader(MakeOrigin(i), kServerIP_, kHeader_);
+  }
+  EXPECT_EQ(NetworkErrorLoggingService::kMaxPolicies, PolicyCount());
+
+  // Add one more policy to trigger eviction of only the expired policies.
+  service()->OnHeader(kOrigin_, kServerIP_, kHeader_);
+  EXPECT_EQ(NetworkErrorLoggingService::kMaxPolicies - 100 + 1, PolicyCount());
+}
+
+TEST_F(NetworkErrorLoggingServiceTest, EvictLeastRecentlyUsedPolicy) {
+  base::SimpleTestClock clock;
+  service()->SetClockForTesting(&clock);
+
+  // A policy's |last_used| is updated when it is added
+  for (size_t i = 0; i < NetworkErrorLoggingService::kMaxPolicies; ++i) {
+    service()->OnHeader(MakeOrigin(i), kServerIP_, kHeader_);
+    clock.Advance(base::TimeDelta::FromSeconds(1));
+  }
+
+  EXPECT_EQ(PolicyCount(), NetworkErrorLoggingService::kMaxPolicies);
+
+  // Set another policy which triggers eviction. None of the policies have
+  // expired, so the least recently used (i.e. least recently added) policy
+  // should be evicted.
+  service()->OnHeader(kOrigin_, kServerIP_, kHeader_);
+  clock.Advance(base::TimeDelta::FromSeconds(1));
+  EXPECT_EQ(PolicyCount(), NetworkErrorLoggingService::kMaxPolicies);
+
+  EXPECT_FALSE(HasPolicyForOrigin(MakeOrigin(0)));  // evicted
+  std::set<url::Origin> all_policy_origins =
+      service()->GetPolicyOriginsForTesting();
+  for (size_t i = 1; i < NetworkErrorLoggingService::kMaxPolicies; ++i) {
+    // Avoid n calls to HasPolicyForOrigin(), which would be O(n^2).
+    EXPECT_EQ(1u, all_policy_origins.count(MakeOrigin(i)));
+  }
+  EXPECT_TRUE(HasPolicyForOrigin(kOrigin_));
+
+  // Now use the policies in reverse order starting with kOrigin_, then add
+  // another policy to trigger eviction, to check that the stalest policy is
+  // identified correctly.
+  service()->OnRequest(
+      MakeRequestDetails(kOrigin_.GetURL(), ERR_CONNECTION_REFUSED));
+  clock.Advance(base::TimeDelta::FromSeconds(1));
+  for (size_t i = NetworkErrorLoggingService::kMaxPolicies - 1; i >= 1; --i) {
+    service()->OnRequest(
+        MakeRequestDetails(MakeOrigin(i).GetURL(), ERR_CONNECTION_REFUSED));
+    clock.Advance(base::TimeDelta::FromSeconds(1));
+  }
+  service()->OnHeader(kOriginSubdomain_, kServerIP_, kHeader_);
+  EXPECT_EQ(PolicyCount(), NetworkErrorLoggingService::kMaxPolicies);
+
+  EXPECT_FALSE(HasPolicyForOrigin(kOrigin_));  // evicted
+  all_policy_origins = service()->GetPolicyOriginsForTesting();
+  for (size_t i = NetworkErrorLoggingService::kMaxPolicies - 1; i >= 1; --i) {
+    // Avoid n calls to HasPolicyForOrigin(), which would be O(n^2).
+    EXPECT_EQ(1u, all_policy_origins.count(MakeOrigin(i)));
+  }
+  EXPECT_TRUE(HasPolicyForOrigin(kOriginSubdomain_));  // most recently added
+
+  // Note: This test advances the clock by ~2000 seconds, which is below the
+  // specified max_age of 86400 seconds, so none of the policies expire during
+  // this test.
 }
 
 }  // namespace

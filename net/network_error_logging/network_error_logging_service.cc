@@ -207,17 +207,20 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
     OriginPolicy policy;
     policy.origin = origin;
     policy.received_ip_address = received_ip_address;
+    policy.last_used = clock_->Now();
     HeaderOutcome outcome = ParseHeader(value, clock_->Now(), &policy);
     RecordHeaderOutcome(outcome);
     if (outcome != HeaderOutcome::SET && outcome != HeaderOutcome::REMOVED)
       return;
 
+    // If a policy for |origin| already existed, remove the old poliicy.
     auto it = policies_.find(origin);
-    if (it != policies_.end()) {
-      MaybeRemoveWildcardPolicy(origin, &it->second);
-      policies_.erase(it);
-    }
+    if (it != policies_.end())
+      RemovePolicy(it);
 
+    // A policy's |expires| field is set to a null time if the max_age was 0.
+    // Having a max_age of 0 means that the policy should be removed, so return
+    // here instead of continuing on to inserting the policy.
     if (policy.expires.is_null())
       return;
 
@@ -225,6 +228,14 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
     auto inserted = policies_.insert(std::make_pair(origin, policy));
     DCHECK(inserted.second);
     MaybeAddWildcardPolicy(origin, &inserted.first->second);
+
+    // Evict policies if the policy limit is exceeded.
+    if (policies_.size() > kMaxPolicies) {
+      RemoveAllExpiredPolicies();
+      while (policies_.size() > kMaxPolicies) {
+        EvictStalestPolicy();
+      }
+    }
   }
 
   void OnRequest(RequestDetails details) override {
@@ -245,6 +256,9 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
       RecordRequestOutcome(RequestOutcome::kDiscardedNoOriginPolicy);
       return;
     }
+
+    // Mark the policy used.
+    policy->last_used = clock_->Now();
 
     Error type = details.type;
     // It is expected for Reporting uploads to terminate with ERR_ABORTED, since
@@ -338,6 +352,10 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
           RequestOutcome::kDiscardedNoOriginPolicy);
       return;
     }
+
+    // Mark the policy used.
+    policy->last_used = clock_->Now();
+
     if (IsMismatchingSubdomainReport(*policy, report_origin)) {
       RecordSignedExchangeRequestOutcome(
           RequestOutcome::kDiscardedNonDNSSubdomainReport);
@@ -371,17 +389,14 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
 
   void RemoveBrowsingData(const base::RepeatingCallback<bool(const GURL&)>&
                               origin_filter) override {
-    std::vector<url::Origin> origins_to_remove;
-
-    for (auto it = policies_.begin(); it != policies_.end(); ++it) {
-      if (origin_filter.Run(it->first.GetURL()))
-        origins_to_remove.push_back(it->first);
-    }
-
-    for (auto it = origins_to_remove.begin(); it != origins_to_remove.end();
-         ++it) {
-      MaybeRemoveWildcardPolicy(*it, &policies_[*it]);
-      policies_.erase(*it);
+    for (auto it = policies_.begin(); it != policies_.end();) {
+      const url::Origin& origin = it->first;
+      // Remove policies matching the filter.
+      if (origin_filter.Run(origin.GetURL())) {
+        it = RemovePolicy(it);
+      } else {
+        ++it;
+      }
     }
   }
 
@@ -437,6 +452,10 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
     double success_fraction;
     double failure_fraction;
     bool include_subdomains;
+
+    // Last time the policy was accessed to create a report, even if no report
+    // ends up being queued. Also updated when the policy is first set.
+    mutable base::Time last_used;
   };
 
   // Map from origin to origin's (owned) policy.
@@ -524,7 +543,6 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
   }
 
   const OriginPolicy* FindPolicyForOrigin(const url::Origin& origin) const {
-    // TODO(juliatuttle): Clean out expired policies sometime/somewhere.
     auto it = policies_.find(origin);
     if (it != policies_.end() && clock_->Now() < it->second.expires)
       return &it->second;
@@ -576,13 +594,23 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
     DCHECK(inserted.second);
   }
 
-  void MaybeRemoveWildcardPolicy(const url::Origin& origin,
-                                 const OriginPolicy* policy) {
+  // Removes the policy pointed to by |policy_it|. Invalidates |policy_it|.
+  // Returns the iterator to the next element.
+  PolicyMap::iterator RemovePolicy(PolicyMap::iterator policy_it) {
+    DCHECK(policy_it != policies_.end());
+    OriginPolicy* policy = &policy_it->second;
+    MaybeRemoveWildcardPolicy(policy);
+    return policies_.erase(policy_it);
+  }
+
+  void MaybeRemoveWildcardPolicy(const OriginPolicy* policy) {
     DCHECK(policy);
-    DCHECK_EQ(policy, &policies_[origin]);
 
     if (!policy->include_subdomains)
       return;
+
+    const url::Origin& origin = policy->origin;
+    DCHECK_EQ(policy, &policies_[origin]);
 
     auto wildcard_it = wildcard_policies_.find(origin.host());
     DCHECK(wildcard_it != wildcard_policies_.end());
@@ -591,6 +619,30 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
     DCHECK_EQ(1u, erased);
     if (wildcard_it->second.empty())
       wildcard_policies_.erase(wildcard_it);
+  }
+
+  void RemoveAllExpiredPolicies() {
+    for (auto it = policies_.begin(); it != policies_.end();) {
+      if (it->second.expires < clock_->Now()) {
+        it = RemovePolicy(it);
+      } else {
+        ++it;
+      }
+    }
+  }
+
+  void EvictStalestPolicy() {
+    PolicyMap::iterator stalest_it = policies_.begin();
+    for (auto it = policies_.begin(); it != policies_.end(); ++it) {
+      if (it->second.last_used < stalest_it->second.last_used)
+        stalest_it = it;
+    }
+
+    // This should only be called if we have hit the max policy limit, so there
+    // should be at least one policy.
+    DCHECK(stalest_it != policies_.end());
+
+    RemovePolicy(stalest_it);
   }
 
   std::unique_ptr<const base::Value> CreateReportBody(
@@ -714,6 +766,9 @@ const char NetworkErrorLoggingService::kSignedExchangeBodyKey[] = "sxg";
 const char NetworkErrorLoggingService::kOuterUrlKey[] = "outer_url";
 const char NetworkErrorLoggingService::kInnerUrlKey[] = "inner_url";
 const char NetworkErrorLoggingService::kCertUrlKey[] = "cert_url";
+
+// See also: max number of Reporting endpoints specified in ReportingPolicy.
+const size_t NetworkErrorLoggingService::kMaxPolicies = 1000u;
 
 // static
 void NetworkErrorLoggingService::

@@ -115,6 +115,9 @@ class NET_EXPORT NetworkErrorLoggingService {
   static const char kInnerUrlKey[];
   static const char kCertUrlKey[];
 
+  // Maximum number of NEL policies to store before evicting.
+  static const size_t kMaxPolicies;
+
   // Histograms.  These are mainly used in test cases to verify that interesting
   // events occurred.
 
