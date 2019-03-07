@@ -162,8 +162,10 @@ class TestAnimateInAndOutOfScreen : public RenderingTest {
   TestAnimateInAndOutOfScreen() : on_draw_count_(0), draw_gl_count_on_rt_(0) {}
 
   void StartTest() override {
-    new_constraints_ = ParentCompositorDrawConstraints(
-        false, gfx::Transform(), window_->surface_size().IsEmpty());
+    initial_constraints_ = ParentCompositorDrawConstraints(
+        window_->surface_size(), gfx::Transform());
+    new_constraints_ = ParentCompositorDrawConstraints(window_->surface_size(),
+                                                       gfx::Transform());
     new_constraints_.transform.Scale(2.0, 2.0);
     browser_view_renderer_->PostInvalidate(ActiveCompositor());
   }
@@ -212,12 +214,7 @@ class TestAnimateInAndOutOfScreen : public RenderingTest {
   bool DrawConstraintsEquals(
       const ParentCompositorDrawConstraints& constraints1,
       const ParentCompositorDrawConstraints& constraints2) {
-    if (constraints1.is_layer != constraints2.is_layer ||
-        constraints1.transform != constraints2.transform)
-      return false;
-
-    return !constraints1.is_layer ||
-           constraints1.surface_rect_empty == constraints2.surface_rect_empty;
+    return constraints1 == constraints2;
   }
 
   void OnParentDrawConstraintsUpdated() override {

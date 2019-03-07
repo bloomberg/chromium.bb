@@ -11,6 +11,7 @@
 #include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "content/public/browser/android/synchronous_compositor.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/transform.h"
 
 namespace viz {
@@ -24,10 +25,9 @@ class ChildFrame {
   ChildFrame(
       scoped_refptr<content::SynchronousCompositor::FrameFuture> frame_future,
       const CompositorID& compositor_id,
-      bool viewport_rect_for_tile_priority_empty,
+      const gfx::Size& viewport_size_for_tile_priority,
       const gfx::Transform& transform_for_tile_priority,
-      bool offscreen_pre_raster,
-      bool is_layer);
+      bool offscreen_pre_raster);
   ~ChildFrame();
 
   // Helper to move frame from |frame_future| to |frame|.
@@ -40,10 +40,9 @@ class ChildFrame {
   std::unique_ptr<viz::CompositorFrame> frame;
   // The id of the compositor this |frame| comes from.
   const CompositorID compositor_id;
-  const bool viewport_rect_for_tile_priority_empty;
+  const gfx::Size viewport_size_for_tile_priority;
   const gfx::Transform transform_for_tile_priority;
   const bool offscreen_pre_raster;
-  const bool is_layer;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChildFrame);
