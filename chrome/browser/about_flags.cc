@@ -643,6 +643,16 @@ const FeatureEntry::FeatureVariation
 #endif  // OS_ANDROID
 
 #if defined(OS_ANDROID)
+const FeatureEntry::FeatureParam
+    kInterestFeedLargerImagesFeatureVariationConstant[] = {
+        {"feed_ui_enabled", "true"},
+        {"feed_server_endpoint",
+         "https://www.google.com/httpservice/noretry/DiscoverClankService/"
+         "FeedQuery"}};
+const FeatureEntry::FeatureVariation kInterestFeedFeatureVariations[] = {
+    {"(larger images)", kInterestFeedLargerImagesFeatureVariationConstant,
+     base::size(kInterestFeedLargerImagesFeatureVariationConstant), nullptr}};
+
 const FeatureEntry::FeatureVariation kRemoteSuggestionsFeatureVariations[] = {
     {"via content suggestion server (backed by ChromeReader)", nullptr, 0,
      "3313421"},
@@ -2226,7 +2236,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"interest-feed-content-suggestions",
      flag_descriptions::kInterestFeedContentSuggestionsName,
      flag_descriptions::kInterestFeedContentSuggestionsDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(feed::kInterestFeedContentSuggestions)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(feed::kInterestFeedContentSuggestions,
+                                    kInterestFeedFeatureVariations,
+                                    "InterestFeedContentSuggestions")},
     {"enable-ntp-remote-suggestions",
      flag_descriptions::kEnableNtpRemoteSuggestionsName,
      flag_descriptions::kEnableNtpRemoteSuggestionsDescription, kOsAndroid,
