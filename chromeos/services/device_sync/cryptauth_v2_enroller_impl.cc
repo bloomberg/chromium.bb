@@ -254,48 +254,59 @@ bool IsSupportedKeyType(const cryptauthv2::KeyType& key_type) {
          key_type == cryptauthv2::KeyType::P256;
 }
 
+// The key bundle kUserKeyPair has special standing in order to 1) accommodate
+// any existing key from v1 Enrollment and 2) enforce that the key is not
+// rotated. As such, only one user key pair should exist in the key bundle, and
+// it should be an active, P-256 key with handle
+// kCryptAuthFixedUserKeyPairHandle.
+//
+// It is possible that CryptAuth could request the creation of a new user key
+// pair even if the client sends information about an existing key in the
+// SyncKeysRequest. If this happens, the client should re-use the existing user
+// key pair key material when creating a new key. At the end of the enrollment
+// flow, the existing key will be replaced with this new key that has the same
+// public/private keys.
+//
 // Returns an error code if the key-creation instructions are invalid and null
 // otherwise.
 base::Optional<CryptAuthEnrollmentResult::ResultCode>
-ProcessKeyCreationInstructions(
-    const CryptAuthKeyBundle::Name& bundle_name,
-    const SyncSingleKeyResponse& single_key_response,
-    const std::string& server_ephemeral_dh,
-    base::Optional<CryptAuthKeyCreator::CreateKeyData>* new_key_to_create,
-    base::Optional<cryptauthv2::KeyDirective>* new_key_directive) {
-  if (single_key_response.key_creation() == SyncSingleKeyResponse::NONE)
+ProcessNewUserKeyPairInstructions(
+    CryptAuthKey::Status status,
+    cryptauthv2::KeyType type,
+    const CryptAuthKey* current_active_key,
+    base::Optional<CryptAuthKeyCreator::CreateKeyData>* new_key_to_create) {
+  if (type != cryptauthv2::KeyType::P256) {
+    PA_LOG(ERROR) << "User key pair must have KeyType P256.";
+    return CryptAuthEnrollmentResult::ResultCode::
+        kErrorUserKeyPairCreationInstructionsInvalid;
+  }
+
+  // Because no more than one user key pair can exist in the bundle, the newly
+  // created key must be active.
+  if (status != CryptAuthKey::Status::kActive) {
+    PA_LOG(ERROR) << "New user key pair must be active.";
+    return CryptAuthEnrollmentResult::ResultCode::
+        kErrorUserKeyPairCreationInstructionsInvalid;
+  }
+
+  // If a user key pair already exists in the registry, reuse the same key data.
+  if (current_active_key && current_active_key->IsAsymmetricKey() &&
+      !current_active_key->private_key().empty()) {
+    PA_LOG(WARNING) << "Received request to create new user key pair while one "
+                    << "already exists in the key registry. Reusing existing "
+                    << "key material.";
+
+    *new_key_to_create = CryptAuthKeyCreator::CreateKeyData(
+        status, type, kCryptAuthFixedUserKeyPairHandle,
+        current_active_key->public_key(), current_active_key->private_key());
+
     return base::nullopt;
-
-  if (!IsSupportedKeyType(single_key_response.key_type())) {
-    PA_LOG(ERROR) << "KeyType " << single_key_response.key_type() << " "
-                  << "not supported.";
-    return CryptAuthEnrollmentResult::ResultCode::
-        kErrorKeyCreationKeyTypeNotSupported;
   }
 
-  // Symmetric keys cannot be created without the server's Diffie-Hellman key.
-  if (server_ephemeral_dh.empty() &&
-      (single_key_response.key_type() == cryptauthv2::KeyType::RAW128 ||
-       single_key_response.key_type() == cryptauthv2::KeyType::RAW256)) {
-    PA_LOG(ERROR)
-        << "Missing server's Diffie-Hellman key. Cannot create symmetric keys.";
-    return CryptAuthEnrollmentResult::ResultCode::
-        kErrorSymmetricKeyCreationMissingServerDiffieHellman;
-  }
-
-  // CryptAuth demands that the key in the kUserKeyPair bundle has a fixed
-  // handle name. For other key bundles, do not specify a handle name; let
-  // CryptAuthKey generate a handle for us.
-  base::Optional<std::string> new_key_handle;
-  if (bundle_name == CryptAuthKeyBundle::Name::kUserKeyPair)
-    new_key_handle = kCryptAuthFixedUserKeyPairHandle;
-
+  // If there is no user key pair in the registry, then the user has never
+  // successfully enrolled via v1 or v2 Enrollment. Generate a new key pair.
   *new_key_to_create = CryptAuthKeyCreator::CreateKeyData(
-      ConvertKeyCreationToKeyStatus(single_key_response.key_creation()),
-      single_key_response.key_type(), new_key_handle);
-
-  if (single_key_response.has_key_directive())
-    *new_key_directive = single_key_response.key_directive();
+      status, type, kCryptAuthFixedUserKeyPairHandle);
 
   return base::nullopt;
 }
@@ -618,6 +629,51 @@ CryptAuthV2EnrollerImpl::ProcessSingleKeyResponses(
   }
 
   return error_code;
+}
+
+base::Optional<CryptAuthEnrollmentResult::ResultCode>
+CryptAuthV2EnrollerImpl::ProcessKeyCreationInstructions(
+    const CryptAuthKeyBundle::Name& bundle_name,
+    const SyncSingleKeyResponse& single_key_response,
+    const std::string& server_ephemeral_dh,
+    base::Optional<CryptAuthKeyCreator::CreateKeyData>* new_key_to_create,
+    base::Optional<cryptauthv2::KeyDirective>* new_key_directive) {
+  if (single_key_response.key_creation() == SyncSingleKeyResponse::NONE)
+    return base::nullopt;
+
+  CryptAuthKey::Status status =
+      ConvertKeyCreationToKeyStatus(single_key_response.key_creation());
+  cryptauthv2::KeyType type = single_key_response.key_type();
+
+  if (!IsSupportedKeyType(type)) {
+    PA_LOG(ERROR) << "KeyType " << type << " not supported.";
+    return CryptAuthEnrollmentResult::ResultCode::
+        kErrorKeyCreationKeyTypeNotSupported;
+  }
+
+  // Symmetric keys cannot be created without the server's Diffie-Hellman key.
+  if (server_ephemeral_dh.empty() && (type == cryptauthv2::KeyType::RAW128 ||
+                                      type == cryptauthv2::KeyType::RAW256)) {
+    PA_LOG(ERROR)
+        << "Missing server's Diffie-Hellman key. Cannot create symmetric keys.";
+    return CryptAuthEnrollmentResult::ResultCode::
+        kErrorSymmetricKeyCreationMissingServerDiffieHellman;
+  }
+
+  if (single_key_response.has_key_directive())
+    *new_key_directive = single_key_response.key_directive();
+
+  // Handle the user key pair special case separately below.
+  if (bundle_name != CryptAuthKeyBundle::Name::kUserKeyPair) {
+    *new_key_to_create = CryptAuthKeyCreator::CreateKeyData(status, type);
+
+    return base::nullopt;
+  }
+
+  DCHECK(bundle_name == CryptAuthKeyBundle::Name::kUserKeyPair);
+  return ProcessNewUserKeyPairInstructions(
+      status, type, key_registry_->GetActiveKey(bundle_name),
+      new_key_to_create);
 }
 
 void CryptAuthV2EnrollerImpl::OnSyncKeysFailure(NetworkRequestError error) {
