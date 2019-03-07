@@ -11,7 +11,7 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* BbLcdBackgroundColor::ParseSingleValue(
     CSSParserTokenRange& range,
@@ -19,8 +19,8 @@ const CSSValue* BbLcdBackgroundColor::ParseSingleValue(
     const CSSParserLocalContext&) const {
   // Allow the special focus color even in HTML Standard parsing mode.
   if (range.Peek().Id() == CSSValueAuto || range.Peek().Id() == CSSValueNone)
-    return CSSPropertyParserHelpers::ConsumeIdent(range);
-  return CSSPropertyParserHelpers::ConsumeColor(range, context.Mode());
+    return css_property_parser_helpers::ConsumeIdent(range);
+  return css_property_parser_helpers::ConsumeColor(range, context.Mode());
 }
 
 const CSSValue* BbLcdBackgroundColor::CSSValueFromComputedStyleInternal(
@@ -83,5 +83,5 @@ void BbLcdBackgroundColor::ApplyValue(StyleResolverState& state,
   }
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

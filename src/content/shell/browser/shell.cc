@@ -232,8 +232,8 @@ Shell* Shell::CreateNewWindow(BrowserContext* browser_context,
       WebContents::Create(create_params);
 
   #if defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_WIN)
-    CR_DEFINE_STATIC_LOCAL(const gfx::FontRenderParams, fontRenderParams,
-          (gfx::GetFontRenderParams(gfx::FontRenderParamsQuery(), NULL)));
+    static const gfx::FontRenderParams& fontRenderParams =
+        gfx::GetFontRenderParams(gfx::FontRenderParamsQuery(), NULL);
 
     content::RendererPreferences *prefs = web_contents->GetMutableRendererPrefs();
 
