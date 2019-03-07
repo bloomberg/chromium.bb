@@ -287,7 +287,7 @@ MojoResult ChannelMojo::ReadFromMessageAttachmentSet(
     auto serialized_handle = mojo::native::SerializedHandle::New();
     serialized_handle->the_handle = attachment->TakeMojoHandle();
     serialized_handle->type =
-        mojo::ConvertTo<mojo::native::SerializedHandle::Type>(
+        mojo::ConvertTo<mojo::native::SerializedHandleType>(
             attachment->GetType());
     output_handles.emplace_back(std::move(serialized_handle));
   }
