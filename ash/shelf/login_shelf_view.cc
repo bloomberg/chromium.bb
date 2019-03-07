@@ -18,7 +18,6 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
-#include "ash/session/session_observer.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_widget.h"
@@ -126,8 +125,7 @@ void SetButtonHighlightPath(views::View* view) {
                     GetButtonHighlightPath(view).release());
 }
 
-class LoginShelfButton : public views::LabelButton,
-                         public ash::SessionObserver {
+class LoginShelfButton : public views::LabelButton {
  public:
   LoginShelfButton(views::ButtonListener* listener,
                    const base::string16& text,
@@ -157,9 +155,7 @@ class LoginShelfButton : public views::LabelButton,
     SetTextSubpixelRenderingEnabled(false);
 
     SetImageLabelSpacing(kImageLabelSpacingDp);
-    SetTextColor(views::Button::STATE_NORMAL, kButtonTextColor);
-    SetTextColor(views::Button::STATE_HOVERED, kButtonTextColor);
-    SetTextColor(views::Button::STATE_PRESSED, kButtonTextColor);
+    SetEnabledTextColors(kButtonTextColor);
     SetTextColor(
         views::Button::STATE_DISABLED,
         SkColorSetA(kButtonTextColor, login_constants::kButtonDisabledAlpha));
@@ -195,25 +191,19 @@ class LoginShelfButton : public views::LabelButton,
     return ink_drop;
   }
 
-  // ash::SessionObserver:
-  void OnSessionStateChanged(session_manager::SessionState state) override {
-    if (state == session_manager::SessionState::OOBE) {
-      SetTextColor(views::Button::STATE_NORMAL, gfx::kGoogleGrey600);
-      SetTextColor(views::Button::STATE_HOVERED, gfx::kGoogleGrey600);
-      SetTextColor(views::Button::STATE_PRESSED, gfx::kGoogleGrey600);
-      SetImage(views::Button::STATE_NORMAL,
-               gfx::CreateVectorIcon(icon_, gfx::kGoogleGrey600));
-    } else {
-      SetTextColor(views::Button::STATE_NORMAL, kButtonTextColor);
-      SetTextColor(views::Button::STATE_HOVERED, kButtonTextColor);
-      SetTextColor(views::Button::STATE_PRESSED, kButtonTextColor);
-      SetImage(views::Button::STATE_NORMAL,
-               gfx::CreateVectorIcon(icon_, kButtonTextColor));
-    }
+  void PaintDarkColors() {
+    SetEnabledTextColors(gfx::kGoogleGrey600);
+    SetImage(views::Button::STATE_NORMAL,
+             gfx::CreateVectorIcon(icon_, gfx::kGoogleGrey600));
+  }
+
+  void PaintLightColors() {
+    SetEnabledTextColors(kButtonTextColor);
+    SetImage(views::Button::STATE_NORMAL,
+             gfx::CreateVectorIcon(icon_, kButtonTextColor));
   }
 
  private:
-  ash::ScopedSessionObserver observer_{this};
   const gfx::VectorIcon& icon_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginShelfButton);
@@ -226,8 +216,9 @@ class KioskAppsButton : public views::MenuButton,
                         public ui::SimpleMenuModel,
                         public ui::SimpleMenuModel::Delegate {
  public:
-  KioskAppsButton(const base::string16& text, const gfx::ImageSkia& image)
-      : MenuButton(text, this), ui::SimpleMenuModel(this) {
+  KioskAppsButton()
+      : MenuButton(l10n_util::GetStringUTF16(IDS_ASH_SHELF_APPS_BUTTON), this),
+        ui::SimpleMenuModel(this) {
     SetFocusBehavior(FocusBehavior::ALWAYS);
     SetInstallFocusRingOnFocus(true);
     focus_ring()->SetColor(kFocusBorderColor);
@@ -244,11 +235,10 @@ class KioskAppsButton : public views::MenuButton,
 
     SetTextSubpixelRenderingEnabled(false);
 
-    SetImage(views::Button::STATE_NORMAL, image);
+    SetImage(views::Button::STATE_NORMAL,
+             CreateVectorIcon(kShelfAppsButtonIcon, kButtonIconColor));
     SetImageLabelSpacing(kImageLabelSpacingDp);
-    SetTextColor(views::Button::STATE_NORMAL, kButtonTextColor);
-    SetTextColor(views::Button::STATE_HOVERED, kButtonTextColor);
-    SetTextColor(views::Button::STATE_PRESSED, kButtonTextColor);
+    SetEnabledTextColors(kButtonTextColor);
     label()->SetFontList(views::Label::GetDefaultFontList().Derive(
         1, gfx::Font::FontStyle::NORMAL, gfx::Font::Weight::NORMAL));
   }
@@ -298,6 +288,18 @@ class KioskAppsButton : public views::MenuButton,
     ink_drop->SetShowHighlightOnHover(false);
     ink_drop->SetShowHighlightOnFocus(false);
     return ink_drop;
+  }
+
+  void PaintDarkColors() {
+    SetEnabledTextColors(gfx::kGoogleGrey600);
+    SetImage(views::Button::STATE_NORMAL,
+             CreateVectorIcon(kShelfAppsButtonIcon, gfx::kGoogleGrey600));
+  }
+
+  void PaintLightColors() {
+    SetEnabledTextColors(kButtonTextColor);
+    SetImage(views::Button::STATE_NORMAL,
+             CreateVectorIcon(kShelfAppsButtonIcon, kButtonIconColor));
   }
 
   // views::MenuButtonListener:
@@ -376,9 +378,7 @@ LoginShelfView::LoginShelfView(
   };
   add_button(kShutdown, IDS_ASH_SHELF_SHUTDOWN_BUTTON,
              kShelfShutdownButtonIcon);
-  kiosk_apps_button_ = new KioskAppsButton(
-      l10n_util::GetStringUTF16(IDS_ASH_SHELF_APPS_BUTTON),
-      CreateVectorIcon(kShelfAppsButtonIcon, kButtonIconColor));
+  kiosk_apps_button_ = new KioskAppsButton();
   kiosk_apps_button_->set_id(kApps);
   AddChildView(kiosk_apps_button_);
   add_button(kRestart, IDS_ASH_SHELF_RESTART_BUTTON, kShelfShutdownButtonIcon);
@@ -628,9 +628,39 @@ void LoginShelfView::UpdateUi() {
   kiosk_apps_button_->SetVisible(
       (!dialog_visible ||
        dialog_state_ == mojom::OobeDialogState::GAIA_SIGNIN) &&
-      kiosk_apps_button_->HasApps() && is_login_primary);
+      kiosk_apps_button_->HasApps() && (is_login_primary || is_oobe));
+
+  UpdateButtonColors(is_oobe);
   Layout();
   UpdateButtonUnionBounds();
+}
+
+void LoginShelfView::UpdateButtonColors(bool use_dark_colors) {
+  if (use_dark_colors) {
+    static_cast<LoginShelfButton*>(GetViewByID(kShutdown))->PaintDarkColors();
+    static_cast<LoginShelfButton*>(GetViewByID(kRestart))->PaintDarkColors();
+    static_cast<LoginShelfButton*>(GetViewByID(kSignOut))->PaintDarkColors();
+    static_cast<LoginShelfButton*>(GetViewByID(kCloseNote))->PaintDarkColors();
+    static_cast<LoginShelfButton*>(GetViewByID(kCancel))->PaintDarkColors();
+    static_cast<LoginShelfButton*>(GetViewByID(kParentAccess))
+        ->PaintDarkColors();
+    static_cast<LoginShelfButton*>(GetViewByID(kBrowseAsGuest))
+        ->PaintDarkColors();
+    static_cast<LoginShelfButton*>(GetViewByID(kAddUser))->PaintDarkColors();
+    kiosk_apps_button_->PaintDarkColors();
+  } else {
+    static_cast<LoginShelfButton*>(GetViewByID(kShutdown))->PaintLightColors();
+    static_cast<LoginShelfButton*>(GetViewByID(kRestart))->PaintLightColors();
+    static_cast<LoginShelfButton*>(GetViewByID(kSignOut))->PaintLightColors();
+    static_cast<LoginShelfButton*>(GetViewByID(kCloseNote))->PaintLightColors();
+    static_cast<LoginShelfButton*>(GetViewByID(kCancel))->PaintLightColors();
+    static_cast<LoginShelfButton*>(GetViewByID(kParentAccess))
+        ->PaintLightColors();
+    static_cast<LoginShelfButton*>(GetViewByID(kBrowseAsGuest))
+        ->PaintLightColors();
+    static_cast<LoginShelfButton*>(GetViewByID(kAddUser))->PaintLightColors();
+    kiosk_apps_button_->PaintLightColors();
+  }
 }
 
 void LoginShelfView::UpdateButtonUnionBounds() {
