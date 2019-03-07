@@ -2784,9 +2784,15 @@ const FeatureEntry kFeatureEntries[] = {
          kOutOfProcessHeapProfilingKeepSmallAllocationsDescription,
      kOsAll, SINGLE_VALUE_TYPE(heap_profiling::kMemlogKeepSmallAllocations)},
 
-    {"memlog-sampling", flag_descriptions::kOutOfProcessHeapProfilingSampling,
-     flag_descriptions::kOutOfProcessHeapProfilingSamplingDescription, kOsAll,
-     SINGLE_VALUE_TYPE(heap_profiling::kMemlogSampling)},
+    {"memlog-in-process",
+     flag_descriptions::kOutOfProcessHeapProfilingInProcess,
+     flag_descriptions::kOutOfProcessHeapProfilingInProcessDescription, kOsAll,
+     SINGLE_VALUE_TYPE(heap_profiling::kMemlogInProcess)},
+
+    {"memlog-sampling-rate",
+     flag_descriptions::kOutOfProcessHeapProfilingSamplingRate,
+     flag_descriptions::kOutOfProcessHeapProfilingSamplingRateDescription,
+     kOsAll, SINGLE_VALUE_TYPE(heap_profiling::kMemlogSamplingRate)},
 
     {"memlog-stack-mode", flag_descriptions::kOOPHPStackModeName,
      flag_descriptions::kOOPHPStackModeDescription, kOsAll,
