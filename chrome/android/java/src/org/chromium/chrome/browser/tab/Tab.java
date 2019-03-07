@@ -362,6 +362,9 @@ public class Tab
         ContextThemeWrapper themeWrapper = new ContextThemeWrapper(
                 ContextUtils.getApplicationContext(), ChromeActivity.getThemeId());
         Configuration config = new Configuration();
+        // Pre-Android O, fontScale gets initialized to 1 in the constructor. Set it to 0 so
+        // that applyOverrideConfiguration() does not interpret it as an overridden value.
+        config.fontScale = 0;
         config.uiMode = Configuration.UI_MODE_NIGHT_NO
                 | (config.uiMode & ~Configuration.UI_MODE_NIGHT_MASK);
         themeWrapper.applyOverrideConfiguration(config);
