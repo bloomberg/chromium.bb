@@ -3760,6 +3760,20 @@
           'chrome_public_apk'
         ],
       },
+      'V8 Blink Linux Layout NG': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'os': 'Ubuntu-14.04',
+            },
+          ],
+          'hard_timeout': 900,
+        },
+        'test_suites': {
+          'gtest_tests': 'layout_ng_gtests',
+          'isolated_scripts': 'chromium_webkit_isolated_scripts',
+        },
+      },
       'V8 Linux GN': {
         'additional_compile_targets': [
           'accessibility_unittests',
