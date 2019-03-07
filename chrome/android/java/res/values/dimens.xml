@@ -590,9 +590,6 @@
     <!-- Explicit Language Ask Prompt dimensions -->
     <dimen name="explicit_ask_checkbox_end_padding">4dp</dimen>
 
-    <!-- Autofill Assistant dimensions -->
-    <dimen name="autofill_assistant_details_image_size">48dp</dimen>
-
     <!-- Tab List dimensions -->
     <dimen name="tab_grid_favicon_size">32dp</dimen>
     <dimen name="tab_list_selected_inset">6dp</dimen>
