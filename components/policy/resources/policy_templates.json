@@ -717,6 +717,7 @@
         'BrowserSwitcherDelay',
         'BrowserSwitcherEnabled',
         'BrowserSwitcherExternalSitelistUrl',
+        'BrowserSwitcherKeepLastChromeTab',
         'BrowserSwitcherUrlList',
         'BrowserSwitcherUrlGreylist',
         'BrowserSwitcherUseIeSitelist',
