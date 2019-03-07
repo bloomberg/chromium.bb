@@ -57,7 +57,7 @@ bool FilterByTriggered(bool include_triggered,
   if (include_triggered)
     return true;
   // Notifications without a trigger always match.
-  if (!database_data.notification_data.show_trigger_timestamp.has_value())
+  if (!database_data.notification_data.show_trigger_timestamp)
     return true;
   // Otherwise it has to be triggered already.
   return database_data.has_triggered;
@@ -211,8 +211,12 @@ void BlinkNotificationServiceImpl::DisplayPersistentNotification(
   // TODO(https://crbug.com/870258): Validate resources are not too big (either
   // here or in the mojo struct traits).
 
-  if (platform_notification_data.show_trigger_timestamp.has_value())
+  if (platform_notification_data.show_trigger_timestamp &&
+      base::FeatureList::IsEnabled(features::kNotificationTriggers)) {
+    // TODO(knollr): Let PlatformNotificationContext display all notifications,
+    // even non scheduled ones and always set resources here.
     database_data.notification_resources = notification_resources;
+  }
 
   notification_context_->WriteNotificationData(
       next_persistent_id, service_worker_registration_id, origin_.GetURL(),
@@ -234,6 +238,16 @@ void BlinkNotificationServiceImpl::DisplayPersistentNotificationWithId(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!success) {
     std::move(callback).Run(PersistentNotificationError::INTERNAL_ERROR);
+    return;
+  }
+
+  if (platform_notification_data.show_trigger_timestamp &&
+      base::FeatureList::IsEnabled(features::kNotificationTriggers)) {
+    // This notification will be handled by the |notification_context_| because
+    // it has to be scheduled rather than displayed immediately.
+    // TODO(knollr): Let PlatformNotificationContext display all notifications,
+    // even non scheduled ones to make this code path go away.
+    std::move(callback).Run(PersistentNotificationError::NONE);
     return;
   }
 
