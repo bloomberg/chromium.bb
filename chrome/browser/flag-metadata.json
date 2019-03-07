@@ -651,7 +651,7 @@
   },
   {
     "name": "disallow-unsafe-http-downloads",
-    // "owners": [ "your-team" ],
+    "owners": [ "cthomp" ],
     "expiry_milestone": 76
   },
   {
