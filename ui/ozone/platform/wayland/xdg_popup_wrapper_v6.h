@@ -26,6 +26,7 @@ class XDGPopupWrapperV6 : public XDGPopupWrapper {
                   const gfx::Rect& bounds) override;
 
   zxdg_positioner_v6* CreatePositioner(WaylandConnection* connection,
+                                       WaylandWindow* parent_window,
                                        const gfx::Rect& bounds);
 
   // xdg_popup_listener

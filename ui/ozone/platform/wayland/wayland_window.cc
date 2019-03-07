@@ -66,11 +66,20 @@ class XDGShellObjectFactory {
   DISALLOW_COPY_AND_ASSIGN(XDGShellObjectFactory);
 };
 
+// Translates bounds relative to top level window to specified parent.
 gfx::Rect TranslateBoundsToParentCoordinates(const gfx::Rect& child_bounds,
                                              const gfx::Rect& parent_bounds) {
-  int x = child_bounds.x() - parent_bounds.x();
-  int y = child_bounds.y() - parent_bounds.y();
-  return gfx::Rect(gfx::Point(x, y), child_bounds.size());
+  return gfx::Rect(gfx::Point(child_bounds.x() - parent_bounds.x(),
+                              child_bounds.y() - parent_bounds.y()),
+                   child_bounds.size());
+}
+
+// Translates bounds relative to parent window to top level window.
+gfx::Rect TranslateBoundsToTopLevelCoordinates(const gfx::Rect& child_bounds,
+                                               const gfx::Rect& parent_bounds) {
+  return gfx::Rect(gfx::Point(child_bounds.x() + parent_bounds.x(),
+                              child_bounds.y() + parent_bounds.y()),
+                   child_bounds.size());
 }
 
 }  // namespace
@@ -183,8 +192,7 @@ void WaylandWindow::CreateXdgPopup() {
 
   DCHECK(parent_window_ && !xdg_popup_);
 
-  gfx::Rect bounds =
-      TranslateBoundsToParentCoordinates(bounds_, parent_window_->GetBounds());
+  auto bounds = AdjustPopupWindowPosition();
 
   xdg_popup_ = xdg_shell_objects_factory_->CreateXDGPopup(connection_, this);
   if (!xdg_popup_ ||
@@ -235,9 +243,9 @@ void WaylandWindow::CreateAndShowTooltipSubSurface() {
 void WaylandWindow::ApplyPendingBounds() {
   if (pending_bounds_.IsEmpty())
     return;
+  DCHECK(xdg_surface_);
 
   SetBounds(pending_bounds_);
-  DCHECK(xdg_surface_);
   xdg_surface_->SetWindowGeometry(bounds_);
   xdg_surface_->AckConfigure();
   pending_bounds_ = gfx::Rect();
@@ -514,6 +522,8 @@ void WaylandWindow::HandleSurfaceConfigure(int32_t width,
                                            bool is_maximized,
                                            bool is_fullscreen,
                                            bool is_activated) {
+  DCHECK(!xdg_popup());
+
   // Propagate the window state information to the client.
   PlatformWindowState old_state = state_;
 
@@ -589,6 +599,48 @@ void WaylandWindow::HandleSurfaceConfigure(int32_t width,
     delegate_->OnActivationChanged(is_active_);
 
   MaybeTriggerPendingStateChange();
+}
+
+void WaylandWindow::HandlePopupConfigure(const gfx::Rect& bounds) {
+  DCHECK(xdg_popup());
+  gfx::Rect new_bounds = bounds;
+
+  // It's not enough to just set new bounds. If it is a menu window, whose
+  // parent is a top level window aka browser window, it can be flipped
+  // vertically along y-axis and have negative values set. Chromium cannot
+  // understand that and starts to position nested menu windows incorrectly. To
+  // fix that, we have to bear in mind that Wayland compositor does not share
+  // global coordinates for any surfaces, and Chromium assumes the top level
+  // window is always located at 0,0 origin. What is more, child windows must
+  // always be positioned relative to parent window local surface coordinates.
+  // Thus, if the menu window is flipped along y-axis by Wayland and its origin
+  // is above the top level parent window, the origin of the top level window
+  // has to be shifted by that value on y-axis so that the origin of the menu
+  // becomes x,0, and events can be handled normally.
+  if (!parent_window_->xdg_popup()) {
+    gfx::Rect parent_bounds = parent_window_->GetBounds();
+    // The menu window is flipped along y-axis and have x,-y origin. Shift the
+    // parent top level window instead.
+    if (new_bounds.y() < 0) {
+      // Move parent bounds along y-axis.
+      parent_bounds.set_y(-(new_bounds.y()));
+      new_bounds.set_y(0);
+    } else {
+      // If the menu window is located at correct origin from the browser point
+      // of view, return the top level window back to 0,0.
+      parent_bounds.set_y(0);
+    }
+    parent_window_->SetBounds(parent_bounds);
+  } else {
+    // The nested menu windows are located relative to the parent menu windows.
+    // Thus, the location must be translated to be relative to the top level
+    // window, which automatically becomes the same as relative to an origin of
+    // a display.
+    new_bounds = TranslateBoundsToTopLevelCoordinates(
+        new_bounds, parent_window_->GetBounds());
+    DCHECK(new_bounds.y() >= 0);
+  }
+  SetBounds(new_bounds);
 }
 
 void WaylandWindow::OnCloseRequest() {
@@ -751,6 +803,50 @@ void WaylandWindow::UpdateCursorPositionFromEvent(
     cursor_position->OnCursorPositionChanged(
         event->AsLocatedEvent()->location());
   }
+}
+
+gfx::Rect WaylandWindow::AdjustPopupWindowPosition() const {
+  auto* parent_window = parent_window_->xdg_popup()
+                            ? parent_window_->parent_window_
+                            : parent_window_;
+  DCHECK(parent_window);
+  // Chromium positions windows in screen coordinates, but Wayland requires them
+  // to be in local surface coordinates aka relative to parent window.
+  const gfx::Rect parent_bounds = parent_window_->GetBounds();
+  gfx::Rect new_bounds =
+      TranslateBoundsToParentCoordinates(bounds_, parent_bounds);
+
+  // Chromium may decide to position nested menu windows on the left side
+  // instead of the right side of parent menu windows when the size of the
+  // window becomes larger than the display it is shown on. It's correct when
+  // the window is located on one display and occupies the whole work area, but
+  // as soon as it's moved and there is space on the right side, Chromium
+  // continues positioning the nested menus on the left side relative to the
+  // parent menu (Wayland does not provide clients with global coordinates).
+  // Instead, reposition that window to be on the right side of the parent menu
+  // window and let the compositor decide how to position it if it does not fit
+  // a single display. However, there is one exception - if the window is
+  // maximized, let Chromium position it on the left side as long as the Wayland
+  // compositor may decide to position the nested window on the right side of
+  // the parent menu window, which results in showing it on a second display if
+  // more than one display is used.
+  if (parent_window_->xdg_popup() && parent_window_->parent_window_ &&
+      !parent_window_->parent_window_->IsMaximized()) {
+    auto* top_level_window = parent_window_->parent_window_;
+    DCHECK(top_level_window && !top_level_window->xdg_popup());
+    if (new_bounds.x() <= 0 && !top_level_window->IsMaximized()) {
+      // Position the child menu window on the right side of the parent window
+      // and let the Wayland compositor decide how to do constraint
+      // adjustements.
+      int new_x = parent_bounds.width() - (new_bounds.width() + new_bounds.x());
+      new_bounds.set_x(new_x);
+    }
+  }
+  return new_bounds;
+}
+
+WaylandWindow* WaylandWindow::GetTopLevelWindow() {
+  return parent_window_ ? parent_window_->GetTopLevelWindow() : this;
 }
 
 // static

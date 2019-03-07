@@ -5,10 +5,14 @@
 #ifndef UI_OZONE_PLATFORM_WAYLAND_TEST_MOCK_SURFACE_H_
 #define UI_OZONE_PLATFORM_WAYLAND_TEST_MOCK_SURFACE_H_
 
+#include <memory>
+#include <utility>
+
 #include <wayland-server-protocol-core.h>
 
 #include "base/macros.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "ui/ozone/platform/wayland/test/mock_xdg_popup.h"
 #include "ui/ozone/platform/wayland/test/mock_xdg_surface.h"
 #include "ui/ozone/platform/wayland/test/server_object.h"
 
@@ -38,8 +42,14 @@ class MockSurface : public ServerObject {
   }
   MockXdgSurface* xdg_surface() const { return xdg_surface_.get(); }
 
+  void set_xdg_popup(std::unique_ptr<MockXdgPopup> xdg_popup) {
+    xdg_popup_ = std::move(xdg_popup);
+  }
+  MockXdgPopup* xdg_popup() const { return xdg_popup_.get(); }
+
  private:
   std::unique_ptr<MockXdgSurface> xdg_surface_;
+  std::unique_ptr<MockXdgPopup> xdg_popup_;
 
   DISALLOW_COPY_AND_ASSIGN(MockSurface);
 };
