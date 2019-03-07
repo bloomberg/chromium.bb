@@ -423,12 +423,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle,
   // The state the navigation is in.
   State state_;
 
-  // A list of Throttles registered for this navigation.
-  std::vector<std::unique_ptr<NavigationThrottle>> throttles_;
-
-  // The index of the next throttle to check.
-  size_t next_index_;
-
   // The time this naviagtion was ready to commit.
   base::TimeTicks ready_to_commit_time_;
 

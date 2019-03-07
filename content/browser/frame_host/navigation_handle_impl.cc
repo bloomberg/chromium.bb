@@ -4,42 +4,21 @@
 
 #include "content/browser/frame_host/navigation_handle_impl.h"
 
-#include <iterator>
-
-#include "base/bind.h"
 #include "base/debug/dump_without_crashing.h"
-#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/optional.h"
-#include "base/time/time.h"
 #include "content/browser/appcache/appcache_navigation_handle.h"
 #include "content/browser/appcache/appcache_service_impl.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/devtools/devtools_instrumentation.h"
 #include "content/browser/frame_host/debug_urls.h"
-#include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
-#include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/frame_host/navigator.h"
-#include "content/browser/frame_host/navigator_delegate.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_navigation_handle.h"
-#include "content/common/child_process_host_impl.h"
 #include "content/common/frame_messages.h"
-#include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/navigation_ui_data.h"
-#include "content/public/browser/render_process_host.h"
-#include "content/public/browser/site_instance.h"
-#include "content/public/common/child_process_host.h"
-#include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
-#include "net/base/net_errors.h"
-#include "net/url_request/redirect_info.h"
-#include "services/network/public/cpp/resource_request_body.h"
-#include "url/gurl.h"
-#include "url/url_constants.h"
 
 namespace content {
 
