@@ -493,9 +493,10 @@ ResourceFetcher::ResourceFetcher(const ResourceFetcherInit& init)
       auto_load_images_(true),
       images_enabled_(true),
       allow_stale_resources_(false),
-      image_fetched_(false),
-      stale_while_revalidate_enabled_(false) {
+      image_fetched_(false) {
   DCHECK(console_logger_);
+  stale_while_revalidate_enabled_ =
+      RuntimeEnabledFeatures::StaleWhileRevalidateEnabledByRuntimeFlag();
   InstanceCounters::IncrementCounter(InstanceCounters::kResourceFetcherCounter);
   if (IsMainThread())
     MainThreadFetchersSet().insert(this);
@@ -2078,6 +2079,7 @@ void ResourceFetcher::RevalidateStaleResource(Resource* stale_resource) {
   // requests.
   FetchParameters params(stale_resource->GetResourceRequest());
   params.SetStaleRevalidation(true);
+  params.MutableResourceRequest().SetSkipServiceWorker(true);
   RawResource::Fetch(
       params, this,
       MakeGarbageCollected<StaleRevalidationResourceClient>(stale_resource));
