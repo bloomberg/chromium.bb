@@ -51,7 +51,8 @@ Controller::Controller() {
 
   adapter_ = std::make_unique<Adapter>(
       profile, als_reader_.get(), brightness_monitor_.get(), modeller_.get(),
-      metrics_reporter_.get(), power_manager_client);
+      model_config_loader_.get(), metrics_reporter_.get(),
+      power_manager_client);
 }
 
 Controller::~Controller() = default;
