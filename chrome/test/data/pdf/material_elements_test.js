@@ -97,12 +97,12 @@ var tests = [
     chrome.test.assertFalse(dropdown.dropdownOpen);
     chrome.test.assertEq('closedIcon', dropdown.dropdownIcon);
 
-    MockInteractions.tap(dropdown.$.icon);
+    MockInteractions.tap(dropdown.$.button);
 
     chrome.test.assertTrue(dropdown.dropdownOpen);
     chrome.test.assertEq('openIcon', dropdown.dropdownIcon);
 
-    MockInteractions.tap(dropdown.$.icon);
+    MockInteractions.tap(dropdown.$.button);
 
     chrome.test.assertFalse(dropdown.dropdownOpen);
 

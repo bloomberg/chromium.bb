@@ -101,6 +101,7 @@ Polymer({
         }
         if (this.dropdownOpen) {
           this.toggleDropdown();
+          this.blur();
         }
         // Clean up the handler. The dropdown may already be closed.
         window.removeEventListener('pointerdown', listener);
