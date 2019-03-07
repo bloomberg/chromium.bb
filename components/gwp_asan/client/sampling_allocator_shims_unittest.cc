@@ -135,9 +135,10 @@ MULTIPROCESS_TEST_MAIN_WITH_SETUP(
 
 #if defined(OS_POSIX)
   EXPECT_TRUE(allocationCheck(
-      [&] {
+      [&]() -> void* {
         void* ptr;
-        posix_memalign(&ptr, page_size, page_size);
+        if (posix_memalign(&ptr, page_size, page_size))
+          return nullptr;
         return ptr;
       },
       &free, &failures));
