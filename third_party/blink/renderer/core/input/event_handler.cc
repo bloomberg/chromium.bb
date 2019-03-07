@@ -1257,7 +1257,9 @@ void EventHandler::SetPointerCapture(PointerId pointer_id, Element* target) {
     frame_->LocalFrameRoot().GetEventHandler().SetPointerCapture(pointer_id,
                                                                  target);
   } else {
-    pointer_event_manager_->SetPointerCapture(pointer_id, target);
+    if (pointer_event_manager_->SetPointerCapture(pointer_id, target) &&
+        pointer_id == PointerEventFactory::kMouseId)
+      CaptureMouseEventsToWidget(true);
   }
 }
 
@@ -1267,7 +1269,9 @@ void EventHandler::ReleasePointerCapture(PointerId pointer_id,
     frame_->LocalFrameRoot().GetEventHandler().ReleasePointerCapture(pointer_id,
                                                                      target);
   } else {
-    pointer_event_manager_->ReleasePointerCapture(pointer_id, target);
+    if (pointer_event_manager_->ReleasePointerCapture(pointer_id, target) &&
+        pointer_id == PointerEventFactory::kMouseId)
+      CaptureMouseEventsToWidget(false);
   }
 }
 

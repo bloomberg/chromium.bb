@@ -892,7 +892,7 @@ void PointerEventManager::ElementRemoved(Element* target) {
                                           target);
 }
 
-void PointerEventManager::SetPointerCapture(PointerId pointer_id,
+bool PointerEventManager::SetPointerCapture(PointerId pointer_id,
                                             Element* target) {
   UseCounter::Count(frame_->GetDocument(), WebFeature::kPointerEventSetCapture);
   if (pointer_event_factory_.IsActiveButtonsState(pointer_id)) {
@@ -901,10 +901,12 @@ void PointerEventManager::SetPointerCapture(PointerId pointer_id,
                         WebFeature::kPointerEventSetCaptureOutsideDispatch);
     }
     pending_pointer_capture_target_.Set(pointer_id, target);
+    return true;
   }
+  return false;
 }
 
-void PointerEventManager::ReleasePointerCapture(PointerId pointer_id,
+bool PointerEventManager::ReleasePointerCapture(PointerId pointer_id,
                                                 Element* target) {
   // Only the element that is going to get the next pointer event can release
   // the capture. Note that this might be different from
@@ -913,8 +915,11 @@ void PointerEventManager::ReleasePointerCapture(PointerId pointer_id,
   // but |m_pendingPointerCaptureTarget| indicated the element that gets the
   // very next pointer event. They will be the same if there was no change in
   // capturing of a particular |pointerId|. See crbug.com/614481.
-  if (pending_pointer_capture_target_.at(pointer_id) == target)
+  if (pending_pointer_capture_target_.at(pointer_id) == target) {
     ReleasePointerCapture(pointer_id);
+    return true;
+  }
+  return false;
 }
 
 void PointerEventManager::ReleaseMousePointerCapture() {
