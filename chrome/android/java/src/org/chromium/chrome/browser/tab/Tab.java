@@ -289,8 +289,6 @@ public class Tab
     /** The current browser controls constraints. -1 if not set. */
     private @BrowserControlsState int mBrowserConstrolsConstraints = -1;
 
-    private final TabObserver mFullscreenHandler = new TabFullscreenHandler();
-
     private TabDelegateFactory mDelegateFactory;
 
     private BrowserControlsVisibilityDelegate mBrowserControlsVisibilityDelegate;
@@ -389,7 +387,7 @@ public class Tab
             }
         }
 
-        addObserver(mFullscreenHandler);
+        TabFullscreenHandler.createForTab(this);
 
         if (incognito) {
             CipherFactory.getInstance().triggerKeyGeneration();
@@ -1312,7 +1310,6 @@ public class Tab
     protected void didFinishPageLoad(String url) {
         mIsTabStateDirty = true;
         updateTitle();
-        updateFullscreenEnabledState();
 
         for (TabObserver observer : mObservers) observer.onPageLoadFinished(this, url);
         mIsBeingRestored = false;
