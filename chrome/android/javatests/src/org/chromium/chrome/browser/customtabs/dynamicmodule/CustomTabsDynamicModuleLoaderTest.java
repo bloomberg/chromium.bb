@@ -13,7 +13,7 @@ import static org.junit.Assert.assertTrue;
 import static org.chromium.base.ThreadUtils.runOnUiThreadBlocking;
 import static org.chromium.chrome.browser.customtabs.dynamicmodule.CustomTabsDynamicModuleTestUtils.FAKE_CLASS_LOADER_PROVIDER;
 import static org.chromium.chrome.browser.customtabs.dynamicmodule.CustomTabsDynamicModuleTestUtils.FAKE_MODULE_COMPONENT_NAME;
-import static org.chromium.chrome.browser.customtabs.dynamicmodule.CustomTabsDynamicModuleTestUtils.FAKE_MODULE_DEX_RESOURCE_ID;
+import static org.chromium.chrome.browser.customtabs.dynamicmodule.CustomTabsDynamicModuleTestUtils.FAKE_MODULE_DEX_ASSET_NAME;
 
 import android.support.test.filters.SmallTest;
 
@@ -54,12 +54,11 @@ public class CustomTabsDynamicModuleLoaderTest {
         LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_BROWSER);
         mDexInputStreamProvider = new FakeDexInputStreamProvider();
         mModuleLoaderFromApk = new ModuleLoader(FAKE_MODULE_COMPONENT_NAME,
-                /* dexAssetName = */ null,
-                mDexInputStreamProvider, FAKE_CLASS_LOADER_PROVIDER);
+                /* dexAssetName = */ null, mDexInputStreamProvider, FAKE_CLASS_LOADER_PROVIDER);
         mModuleLoaderFromDex = new ModuleLoader(FAKE_MODULE_COMPONENT_NAME,
-                FAKE_MODULE_DEX_RESOURCE_ID, mDexInputStreamProvider, FAKE_CLASS_LOADER_PROVIDER);
+                FAKE_MODULE_DEX_ASSET_NAME, mDexInputStreamProvider, FAKE_CLASS_LOADER_PROVIDER);
         mModuleLoaderFromDex2 = new ModuleLoader(FAKE_MODULE_COMPONENT_NAME,
-                FAKE_MODULE_DEX_RESOURCE_ID, mDexInputStreamProvider, FAKE_CLASS_LOADER_PROVIDER);
+                FAKE_MODULE_DEX_ASSET_NAME, mDexInputStreamProvider, FAKE_CLASS_LOADER_PROVIDER);
     }
 
     @After
