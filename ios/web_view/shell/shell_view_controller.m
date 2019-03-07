@@ -376,6 +376,13 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibiltyIdentifier =
                                              .usesSyncAndWalletSandbox ^= YES;
                                        }]];
 
+  [alertController
+      addAction:[UIAlertAction actionWithTitle:@"Cancel download"
+                                         style:UIAlertActionStyleDefault
+                                       handler:^(UIAlertAction* action) {
+                                         [weakSelf.downloadTask cancel];
+                                       }]];
+
   [self presentViewController:alertController animated:YES completion:nil];
 }
 
