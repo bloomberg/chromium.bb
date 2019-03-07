@@ -20,8 +20,6 @@ import org.chromium.chrome.browser.autofill_assistant.metrics.DropOutReason;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
-import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 
@@ -65,12 +63,13 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
 
     @CalledByNative
     private static AutofillAssistantUiController create(
-            ChromeActivity activity, long nativeUiController) {
+            ChromeActivity activity, boolean allowTabSwitching, long nativeUiController) {
         assert activity != null;
-        return new AutofillAssistantUiController(activity, nativeUiController);
+        return new AutofillAssistantUiController(activity, allowTabSwitching, nativeUiController);
     }
 
-    private AutofillAssistantUiController(ChromeActivity activity, long nativeUiController) {
+    private AutofillAssistantUiController(
+            ChromeActivity activity, boolean allowTabSwitching, long nativeUiController) {
         mNativeUiController = nativeUiController;
         mActivity = activity;
         mCoordinator = new AssistantCoordinator(activity, this);
@@ -79,6 +78,15 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
                     @Override
                     protected void onObservingDifferentTab(Tab tab) {
                         if (mWebContents == null) return;
+
+                        if (!allowTabSwitching) {
+                            if (tab == null || tab.getWebContents() != mWebContents) {
+                                safeNativeOnFatalError(
+                                        activity.getString(R.string.autofill_assistant_give_up),
+                                        DropOutReason.TAB_CHANGED);
+                            }
+                            return;
+                        }
 
                         // Get rid of any undo snackbars right away before switching tabs, to avoid
                         // confusion.
@@ -106,32 +114,14 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
                         if (mWebContents == null) return;
 
                         if (!isAttached && tab.getWebContents() == mWebContents) {
+                            if (!allowTabSwitching) {
+                                safeNativeStop(DropOutReason.TAB_DETACHED);
+                                return;
+                            }
                             AutofillAssistantClient.fromWebContents(mWebContents).destroyUi();
                         }
                     }
                 };
-
-        initForCustomTab(activity);
-    }
-
-    private void initForCustomTab(ChromeActivity activity) {
-        if (!(activity instanceof CustomTabActivity)) {
-            return;
-        }
-
-        // Shut down Autofill Assistant when the selected tab (foreground tab) is changed.
-        TabModel currentTabModel = activity.getTabModelSelector().getCurrentModel();
-        currentTabModel.addObserver(new EmptyTabModelObserver() {
-            @Override
-            public void didSelectTab(Tab tab, int type, int lastId) {
-                // Shutdown the Autofill Assistant if the user switches to another tab.
-                if (tab.getWebContents() != mWebContents) {
-                    currentTabModel.removeObserver(this);
-                    safeNativeOnFatalError(activity.getString(R.string.autofill_assistant_give_up),
-                            DropOutReason.TAB_CHANGED);
-                }
-            }
-        });
     }
 
     // Java => native methods.
