@@ -42,6 +42,27 @@ PlatformNotificationService* GetNotificationService() {
   return GetContentClient()->browser()->GetPlatformNotificationService();
 }
 
+bool FilterByTag(const std::string& filter_tag,
+                 const NotificationDatabaseData& database_data) {
+  // An empty filter tag matches all.
+  if (filter_tag.empty())
+    return true;
+  // Otherwise we need an exact match.
+  return filter_tag == database_data.notification_data.tag;
+}
+
+bool FilterByTriggered(bool include_triggered,
+                       const NotificationDatabaseData& database_data) {
+  // Including triggered matches all.
+  if (include_triggered)
+    return true;
+  // Notifications without a trigger always match.
+  if (!database_data.notification_data.show_trigger_timestamp.has_value())
+    return true;
+  // Otherwise it has to be triggered already.
+  return database_data.has_triggered;
+}
+
 }  // namespace
 
 using blink::mojom::PersistentNotificationError;
@@ -190,14 +211,17 @@ void BlinkNotificationServiceImpl::DisplayPersistentNotification(
   // TODO(https://crbug.com/870258): Validate resources are not too big (either
   // here or in the mojo struct traits).
 
+  if (platform_notification_data.show_trigger_timestamp.has_value())
+    database_data.notification_resources = notification_resources;
+
   notification_context_->WriteNotificationData(
       next_persistent_id, service_worker_registration_id, origin_.GetURL(),
       database_data,
-      base::AdaptCallbackForRepeating(base::BindOnce(
+      base::BindOnce(
           &BlinkNotificationServiceImpl::DisplayPersistentNotificationWithId,
           weak_factory_for_ui_.GetWeakPtr(), service_worker_registration_id,
           platform_notification_data, notification_resources,
-          std::move(callback))));
+          std::move(callback)));
 }
 
 void BlinkNotificationServiceImpl::DisplayPersistentNotificationWithId(
@@ -300,8 +324,7 @@ void BlinkNotificationServiceImpl::GetNotifications(
 
   notification_context_->ReadAllNotificationDataForServiceWorkerRegistration(
       origin_.GetURL(), service_worker_registration_id,
-      base::AdaptCallbackForRepeating(
-          std::move(read_notification_data_callback)));
+      std::move(read_notification_data_callback));
 }
 
 void BlinkNotificationServiceImpl::DidGetNotifications(
@@ -316,9 +339,8 @@ void BlinkNotificationServiceImpl::DidGetNotifications(
   std::vector<blink::PlatformNotificationData> datas;
 
   for (const NotificationDatabaseData& database_data : notifications) {
-    // An empty filter tag matches all, else we need an exact match.
-    if (filter_tag.empty() ||
-        filter_tag == database_data.notification_data.tag) {
+    if (FilterByTag(filter_tag, database_data) &&
+        FilterByTriggered(include_triggered, database_data)) {
       ids.push_back(database_data.notification_id);
       datas.push_back(database_data.notification_data);
     }

@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
-#include "content/browser/notifications/notification_database_data_conversions.h"
+#include "content/browser/notifications/notification_database_conversions.h"
 
 namespace content {
 

@@ -2,19 +2,47 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/notifications/notification_database_data_conversions.h"
+#include "content/browser/notifications/notification_database_conversions.h"
 
 #include <stddef.h>
 
 #include <memory>
 
 #include "base/logging.h"
+#include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "content/browser/notifications/notification_database_data.pb.h"
+#include "content/browser/notifications/notification_database_resources.pb.h"
 #include "content/public/browser/notification_database_data.h"
+#include "third_party/blink/public/common/notifications/notification_resources.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/codec/png_codec.h"
 
 namespace content {
+
+namespace {
+
+// static
+SkBitmap DeserializeImage(const std::string& image_data) {
+  base::AssertLongCPUWorkAllowed();
+  SkBitmap image;
+  gfx::PNGCodec::Decode(
+      reinterpret_cast<const unsigned char*>(image_data.data()),
+      image_data.length(), &image);
+  return image;
+}
+
+// static
+std::vector<unsigned char> SerializeImage(const SkBitmap& image) {
+  base::AssertLongCPUWorkAllowed();
+  std::vector<unsigned char> image_data;
+  gfx::PNGCodec::EncodeBGRASkBitmap(image, false, &image_data);
+  return image_data;
+}
+
+}  // namespace
 
 bool DeserializeNotificationDatabaseData(const std::string& input,
                                          NotificationDatabaseData* output) {
@@ -38,14 +66,20 @@ bool DeserializeNotificationDatabaseData(const std::string& input,
   if (message.has_time_until_close_millis()) {
     output->time_until_close_millis =
         base::TimeDelta::FromMilliseconds(message.time_until_close_millis());
+  } else {
+    output->time_until_close_millis = base::nullopt;
   }
   if (message.has_time_until_first_click_millis()) {
     output->time_until_first_click_millis = base::TimeDelta::FromMilliseconds(
         message.time_until_first_click_millis());
+  } else {
+    output->time_until_first_click_millis = base::nullopt;
   }
   if (message.has_time_until_last_click_millis()) {
     output->time_until_last_click_millis = base::TimeDelta::FromMilliseconds(
         message.time_until_last_click_millis());
+  } else {
+    output->time_until_last_click_millis = base::nullopt;
   }
 
   switch (message.closed_reason()) {
@@ -95,8 +129,9 @@ bool DeserializeNotificationDatabaseData(const std::string& input,
     notification_data->vibration_pattern.clear();
   }
 
-  notification_data->timestamp =
-      base::Time::FromInternalValue(payload.timestamp());
+  notification_data->timestamp = base::Time::FromDeltaSinceWindowsEpoch(
+      base::TimeDelta::FromMicroseconds(payload.timestamp()));
+
   notification_data->renotify = payload.renotify();
   notification_data->silent = payload.silent();
   notification_data->require_interaction = payload.require_interaction();
@@ -134,6 +169,19 @@ bool DeserializeNotificationDatabaseData(const std::string& input,
     notification_data->actions.push_back(action);
   }
 
+  if (payload.has_show_trigger_timestamp()) {
+    notification_data->show_trigger_timestamp =
+        base::Time::FromDeltaSinceWindowsEpoch(
+            base::TimeDelta::FromMicroseconds(
+                payload.show_trigger_timestamp()));
+  } else {
+    notification_data->show_trigger_timestamp = base::nullopt;
+  }
+
+  output->has_triggered = message.has_triggered();
+
+  output->notification_resources = base::nullopt;
+
   return true;
 }
 
@@ -141,8 +189,8 @@ bool SerializeNotificationDatabaseData(const NotificationDatabaseData& input,
                                        std::string* output) {
   DCHECK(output);
 
-  std::unique_ptr<NotificationDatabaseDataProto::NotificationData> payload(
-      new NotificationDatabaseDataProto::NotificationData());
+  auto payload =
+      std::make_unique<NotificationDatabaseDataProto::NotificationData>();
 
   const blink::PlatformNotificationData& notification_data =
       input.notification_data;
@@ -174,7 +222,8 @@ bool SerializeNotificationDatabaseData(const NotificationDatabaseData& input,
   for (size_t i = 0; i < notification_data.vibration_pattern.size(); ++i)
     payload->add_vibration_pattern(notification_data.vibration_pattern[i]);
 
-  payload->set_timestamp(notification_data.timestamp.ToInternalValue());
+  payload->set_timestamp(
+      notification_data.timestamp.ToDeltaSinceWindowsEpoch().InMicroseconds());
   payload->set_renotify(notification_data.renotify);
   payload->set_silent(notification_data.silent);
   payload->set_require_interaction(notification_data.require_interaction);
@@ -210,6 +259,13 @@ bool SerializeNotificationDatabaseData(const NotificationDatabaseData& input,
       payload_action->set_placeholder(
           base::UTF16ToUTF8(action.placeholder.string()));
     }
+  }
+
+  if (notification_data.show_trigger_timestamp.has_value()) {
+    payload->set_show_trigger_timestamp(
+        notification_data.show_trigger_timestamp.value()
+            .ToDeltaSinceWindowsEpoch()
+            .InMicroseconds());
   }
 
   NotificationDatabaseDataProto message;
@@ -249,7 +305,71 @@ bool SerializeNotificationDatabaseData(const NotificationDatabaseData& input,
       break;
   }
 
+  message.set_has_triggered(input.has_triggered);
+
   return message.SerializeToString(output);
+}
+
+bool DeserializeNotificationDatabaseResources(
+    const std::string& serialized_resources,
+    blink::NotificationResources* output) {
+  DCHECK(output);
+
+  NotificationDatabaseResourcesProto message;
+  if (!message.ParseFromString(serialized_resources))
+    return false;
+
+  if (message.has_image())
+    output->image = DeserializeImage(message.image());
+  else
+    output->image = SkBitmap();
+
+  if (message.has_notification_icon())
+    output->notification_icon = DeserializeImage(message.notification_icon());
+  else
+    output->notification_icon = SkBitmap();
+
+  if (message.has_badge())
+    output->badge = DeserializeImage(message.badge());
+  else
+    output->badge = SkBitmap();
+
+  output->action_icons.clear();
+  for (int i = 0; i < message.action_icons_size(); ++i)
+    output->action_icons.push_back(DeserializeImage(message.action_icons(i)));
+
+  return true;
+}
+
+bool SerializeNotificationDatabaseResources(
+    const blink::NotificationResources& input,
+    std::string* serialized_resources) {
+  DCHECK(serialized_resources);
+
+  NotificationDatabaseResourcesProto message;
+
+  if (!input.image.isNull()) {
+    auto image_data = SerializeImage(input.image);
+    message.set_image(image_data.data(), image_data.size());
+  }
+  if (!input.notification_icon.isNull()) {
+    auto image_data = SerializeImage(input.notification_icon);
+    message.set_notification_icon(image_data.data(), image_data.size());
+  }
+  if (!input.badge.isNull()) {
+    auto image_data = SerializeImage(input.badge);
+    message.set_badge(image_data.data(), image_data.size());
+  }
+  for (const auto& image : input.action_icons) {
+    if (!image.isNull()) {
+      auto image_data = SerializeImage(image);
+      message.add_action_icons(image_data.data(), image_data.size());
+    } else {
+      message.add_action_icons();
+    }
+  }
+
+  return message.SerializeToString(serialized_resources);
 }
 
 }  // namespace content
