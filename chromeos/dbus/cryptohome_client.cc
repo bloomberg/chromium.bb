@@ -134,10 +134,17 @@ class CryptohomeClientImpl : public CryptohomeClient {
   }
 
   // CryptohomeClient override.
-  void Unmount(DBusMethodCallback<bool> callback) override {
+  void UnmountEx(const cryptohome::UnmountRequest& request,
+                 DBusMethodCallback<cryptohome::BaseReply> callback) override {
     dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
-                                 cryptohome::kCryptohomeUnmount);
-    CallBoolMethod(&method_call, std::move(callback));
+                                 cryptohome::kCryptohomeUnmountEx);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendProtoAsArrayOfBytes(request);
+
+    proxy_->CallMethod(
+        &method_call, kTpmDBusTimeoutMs,
+        base::BindOnce(&CryptohomeClientImpl::OnBaseReplyMethod,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   // CryptohomeClient override.
