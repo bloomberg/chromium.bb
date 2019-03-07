@@ -8,10 +8,15 @@ namespace chromeos {
 
 MockSupervisionTransitionScreen::MockSupervisionTransitionScreen(
     BaseScreenDelegate* base_screen_delegate,
-    SupervisionTransitionScreenView* view)
-    : SupervisionTransitionScreen(base_screen_delegate, view) {}
+    SupervisionTransitionScreenView* view,
+    const base::RepeatingClosure& exit_callback)
+    : SupervisionTransitionScreen(base_screen_delegate, view, exit_callback) {}
 
 MockSupervisionTransitionScreen::~MockSupervisionTransitionScreen() = default;
+
+void MockSupervisionTransitionScreen::ExitScreen() {
+  exit_callback()->Run();
+}
 
 MockSupervisionTransitionScreenView::MockSupervisionTransitionScreenView() =
     default;

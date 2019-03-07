@@ -26,9 +26,11 @@ constexpr const char kDeclinedSetupUserAction[] = "setup-declined";
 
 MultiDeviceSetupScreen::MultiDeviceSetupScreen(
     BaseScreenDelegate* base_screen_delegate,
-    MultiDeviceSetupScreenView* view)
+    MultiDeviceSetupScreenView* view,
+    const base::RepeatingClosure& exit_callback)
     : BaseScreen(base_screen_delegate, OobeScreen::SCREEN_MULTIDEVICE_SETUP),
-      view_(view) {
+      view_(view),
+      exit_callback_(exit_callback) {
   DCHECK(view_);
   view_->Bind(this);
 }
@@ -99,7 +101,7 @@ void MultiDeviceSetupScreen::RecordMultiDeviceSetupOOBEUserChoiceHistogram(
 }
 
 void MultiDeviceSetupScreen::ExitScreen() {
-  Finish(ScreenExitCode::MULTIDEVICE_SETUP_FINISHED);
+  exit_callback_.Run();
 }
 
 }  // namespace chromeos

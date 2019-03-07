@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
 #include "chrome/browser/chromeos/login/screens/enable_debugging_screen_view.h"
@@ -19,7 +20,8 @@ class EnableDebuggingScreen : public BaseScreen,
                               public EnableDebuggingScreenView::Delegate {
  public:
   EnableDebuggingScreen(BaseScreenDelegate* delegate,
-                        EnableDebuggingScreenView* view);
+                        EnableDebuggingScreenView* view,
+                        const base::RepeatingClosure& exit_callback);
   ~EnableDebuggingScreen() override;
 
   // BaseScreen implementation:
@@ -30,8 +32,12 @@ class EnableDebuggingScreen : public BaseScreen,
   void OnExit(bool success) override;
   void OnViewDestroyed(EnableDebuggingScreenView* view) override;
 
+ protected:
+  base::RepeatingClosure* exit_callback() { return &exit_callback_; }
+
  private:
   EnableDebuggingScreenView* view_;
+  base::RepeatingClosure exit_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(EnableDebuggingScreen);
 };

@@ -8,6 +8,7 @@
 #include <set>
 #include <string>
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -25,9 +26,13 @@ class ErrorScreen;
 class ResetView;
 
 // Representation independent class that controls screen showing reset to users.
+// It run exit callback only if the user cancels the reset. Other user actions
+// will end up in the device restart.
 class ResetScreen : public BaseScreen, public UpdateEngineClient::Observer {
  public:
-  ResetScreen(BaseScreenDelegate* base_screen_delegate, ResetView* view);
+  ResetScreen(BaseScreenDelegate* base_screen_delegate,
+              ResetView* view,
+              const base::RepeatingClosure& exit_callback);
   ~ResetScreen() override;
 
   // Called when view is destroyed so there's no dead reference to it.
@@ -69,6 +74,7 @@ class ResetScreen : public BaseScreen, public UpdateEngineClient::Observer {
   ErrorScreen* GetErrorScreen();
 
   ResetView* view_;
+  base::RepeatingClosure exit_callback_;
 
   // Help application used for help dialogs.
   scoped_refptr<HelpAppLauncher> help_app_;

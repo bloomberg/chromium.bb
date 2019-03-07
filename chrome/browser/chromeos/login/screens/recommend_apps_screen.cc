@@ -8,9 +8,11 @@ namespace chromeos {
 
 RecommendAppsScreen::RecommendAppsScreen(
     BaseScreenDelegate* base_screen_delegate,
-    RecommendAppsScreenView* view)
+    RecommendAppsScreenView* view,
+    const ScreenExitCallback& exit_callback)
     : BaseScreen(base_screen_delegate, OobeScreen::SCREEN_RECOMMEND_APPS),
-      view_(view) {
+      view_(view),
+      exit_callback_(exit_callback) {
   DCHECK(view_);
 
   view_->Bind(this);
@@ -35,7 +37,7 @@ void RecommendAppsScreen::Hide() {
 }
 
 void RecommendAppsScreen::OnSkip() {
-  Finish(ScreenExitCode::RECOMMEND_APPS_SKIPPED);
+  exit_callback_.Run(Result::SKIPPED);
 }
 
 void RecommendAppsScreen::OnRetry() {
@@ -43,7 +45,7 @@ void RecommendAppsScreen::OnRetry() {
 }
 
 void RecommendAppsScreen::OnInstall() {
-  Finish(ScreenExitCode::RECOMMEND_APPS_SELECTED);
+  exit_callback_.Run(Result::SELECTED);
 }
 
 void RecommendAppsScreen::OnViewDestroyed(RecommendAppsScreenView* view) {

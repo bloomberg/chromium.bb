@@ -56,10 +56,12 @@ WelcomeScreen* WelcomeScreen::Get(ScreenManager* manager) {
 
 WelcomeScreen::WelcomeScreen(BaseScreenDelegate* base_screen_delegate,
                              Delegate* delegate,
-                             WelcomeView* view)
+                             WelcomeView* view,
+                             const base::RepeatingClosure& exit_callback)
     : BaseScreen(base_screen_delegate, OobeScreen::SCREEN_OOBE_WELCOME),
       view_(view),
       delegate_(delegate),
+      exit_callback_(exit_callback),
       weak_factory_(this) {
   if (view_)
     view_->Bind(this);
@@ -240,7 +242,7 @@ void WelcomeScreen::OnContinueButtonPressed() {
   if (view_) {
     view_->StopDemoModeDetection();
   }
-  Finish(ScreenExitCode::WELCOME_CONTINUED);
+  exit_callback_.Run();
 }
 
 void WelcomeScreen::OnLanguageChangedCallback(

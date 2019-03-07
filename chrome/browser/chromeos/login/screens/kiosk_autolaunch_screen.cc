@@ -13,9 +13,11 @@ namespace chromeos {
 
 KioskAutolaunchScreen::KioskAutolaunchScreen(
     BaseScreenDelegate* base_screen_delegate,
-    KioskAutolaunchScreenView* view)
+    KioskAutolaunchScreenView* view,
+    const ScreenExitCallback& exit_callback)
     : BaseScreen(base_screen_delegate, OobeScreen::SCREEN_KIOSK_AUTOLAUNCH),
-      view_(view) {
+      view_(view),
+      exit_callback_(exit_callback) {
   DCHECK(view_);
   if (view_)
     view_->SetDelegate(this);
@@ -32,8 +34,7 @@ void KioskAutolaunchScreen::Show() {
 }
 
 void KioskAutolaunchScreen::OnExit(bool confirmed) {
-  Finish(confirmed ? ScreenExitCode::KIOSK_AUTOLAUNCH_CONFIRMED
-                   : ScreenExitCode::KIOSK_AUTOLAUNCH_CANCELED);
+  exit_callback_.Run(confirmed ? Result::COMPLETED : Result::CANCELED);
 }
 
 void KioskAutolaunchScreen::OnViewDestroyed(KioskAutolaunchScreenView* view) {

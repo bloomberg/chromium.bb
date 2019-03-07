@@ -21,9 +21,11 @@ constexpr const char kFlowFinished[] = "flow-finished";
 
 AssistantOptInFlowScreen::AssistantOptInFlowScreen(
     BaseScreenDelegate* base_screen_delegate,
-    AssistantOptInFlowScreenView* view)
+    AssistantOptInFlowScreenView* view,
+    const base::RepeatingClosure& exit_callback)
     : BaseScreen(base_screen_delegate, OobeScreen::SCREEN_ASSISTANT_OPTIN_FLOW),
-      view_(view) {
+      view_(view),
+      exit_callback_(exit_callback) {
   DCHECK(view_);
   if (view_)
     view_->Bind(this);
@@ -47,7 +49,7 @@ void AssistantOptInFlowScreen::Show() {
     return;
   }
 #endif
-  Finish(ScreenExitCode::ASSISTANT_OPTIN_FLOW_FINISHED);
+  exit_callback_.Run();
 }
 
 void AssistantOptInFlowScreen::Hide() {
@@ -63,7 +65,7 @@ void AssistantOptInFlowScreen::OnViewDestroyed(
 
 void AssistantOptInFlowScreen::OnUserAction(const std::string& action_id) {
   if (action_id == kFlowFinished)
-    Finish(ScreenExitCode::ASSISTANT_OPTIN_FLOW_FINISHED);
+    exit_callback_.Run();
   else
     BaseScreen::OnUserAction(action_id);
 }

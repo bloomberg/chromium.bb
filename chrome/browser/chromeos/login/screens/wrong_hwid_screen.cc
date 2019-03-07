@@ -10,9 +10,11 @@
 namespace chromeos {
 
 WrongHWIDScreen::WrongHWIDScreen(BaseScreenDelegate* base_screen_delegate,
-                                 WrongHWIDScreenView* view)
+                                 WrongHWIDScreenView* view,
+                                 const base::RepeatingClosure& exit_callback)
     : BaseScreen(base_screen_delegate, OobeScreen::SCREEN_WRONG_HWID),
-      view_(view) {
+      view_(view),
+      exit_callback_(exit_callback) {
   DCHECK(view_);
   if (view_)
     view_->SetDelegate(this);
@@ -34,7 +36,7 @@ void WrongHWIDScreen::Hide() {
 }
 
 void WrongHWIDScreen::OnExit() {
-  Finish(ScreenExitCode::WRONG_HWID_WARNING_SKIPPED);
+  exit_callback_.Run();
 }
 
 void WrongHWIDScreen::OnViewDestroyed(WrongHWIDScreenView* view) {

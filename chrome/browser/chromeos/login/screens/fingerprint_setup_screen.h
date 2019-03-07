@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
 #include "chrome/browser/chromeos/login/screens/fingerprint_setup_screen_view.h"
@@ -20,7 +21,8 @@ class BaseScreenDelegate;
 class FingerprintSetupScreen : public BaseScreen {
  public:
   FingerprintSetupScreen(BaseScreenDelegate* base_screen_delegate,
-                         FingerprintSetupScreenView* view);
+                         FingerprintSetupScreenView* view,
+                         const base::RepeatingClosure& exit_callback);
   ~FingerprintSetupScreen() override;
 
   // BaseScreen:
@@ -30,6 +32,7 @@ class FingerprintSetupScreen : public BaseScreen {
 
  private:
   FingerprintSetupScreenView* const view_;
+  base::RepeatingClosure exit_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(FingerprintSetupScreen);
 };

@@ -15,11 +15,14 @@ namespace chromeos {
 class MockDemoPreferencesScreen : public DemoPreferencesScreen {
  public:
   MockDemoPreferencesScreen(BaseScreenDelegate* base_screen_delegate,
-                            DemoPreferencesScreenView* view);
+                            DemoPreferencesScreenView* view,
+                            const ScreenExitCallback& exit_callback);
   ~MockDemoPreferencesScreen() override;
 
   MOCK_METHOD0(Show, void());
   MOCK_METHOD0(Hide, void());
+
+  void ExitScreen(Result result);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockDemoPreferencesScreen);

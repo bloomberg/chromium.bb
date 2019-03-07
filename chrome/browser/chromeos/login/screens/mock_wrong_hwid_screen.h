@@ -16,7 +16,8 @@ class BaseScreenDelegate;
 class MockWrongHWIDScreen : public WrongHWIDScreen {
  public:
   MockWrongHWIDScreen(BaseScreenDelegate* base_screen_delegate,
-                      WrongHWIDScreenView* view);
+                      WrongHWIDScreenView* view,
+                      const base::RepeatingClosure& exit_callback);
   ~MockWrongHWIDScreen() override;
 
   MOCK_METHOD0(Show, void());

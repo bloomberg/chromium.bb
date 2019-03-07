@@ -9,7 +9,7 @@
 #include <string>
 
 #include "ash/public/interfaces/locale.mojom.h"
-#include "base/callback_forward.h"
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -49,7 +49,8 @@ class WelcomeScreen : public BaseScreen,
 
   WelcomeScreen(BaseScreenDelegate* base_screen_delegate,
                 Delegate* delegate,
-                WelcomeView* view);
+                WelcomeView* view,
+                const base::RepeatingClosure& exit_callback);
   ~WelcomeScreen() override;
 
   static WelcomeScreen* Get(ScreenManager* manager);
@@ -80,6 +81,10 @@ class WelcomeScreen : public BaseScreen,
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
+
+ protected:
+  // Exposes exit callback to test overrides.
+  base::RepeatingClosure* exit_callback() { return &exit_callback_; }
 
  private:
   // BaseScreen implementation:
@@ -127,6 +132,7 @@ class WelcomeScreen : public BaseScreen,
 
   WelcomeView* view_ = nullptr;
   Delegate* delegate_ = nullptr;
+  base::RepeatingClosure exit_callback_;
 
   std::string input_method_;
   std::string timezone_;

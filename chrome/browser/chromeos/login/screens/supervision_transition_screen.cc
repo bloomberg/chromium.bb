@@ -11,10 +11,12 @@ namespace chromeos {
 
 SupervisionTransitionScreen::SupervisionTransitionScreen(
     BaseScreenDelegate* base_screen_delegate,
-    SupervisionTransitionScreenView* view)
+    SupervisionTransitionScreenView* view,
+    const base::RepeatingClosure& exit_callback)
     : BaseScreen(base_screen_delegate,
                  OobeScreen::SCREEN_SUPERVISION_TRANSITION),
-      view_(view) {
+      view_(view),
+      exit_callback_(exit_callback) {
   if (view_)
     view_->Bind(this);
 }
@@ -41,7 +43,7 @@ void SupervisionTransitionScreen::OnViewDestroyed(
 }
 
 void SupervisionTransitionScreen::OnSupervisionTransitionFinished() {
-  Finish(ScreenExitCode::SUPERVISION_TRANSITION_FINISHED);
+  exit_callback_.Run();
 }
 
 }  // namespace chromeos

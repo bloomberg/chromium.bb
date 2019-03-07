@@ -36,9 +36,11 @@ void ArcTermsOfServiceScreen::MaybeLaunchArcSettings(Profile* profile) {
 
 ArcTermsOfServiceScreen::ArcTermsOfServiceScreen(
     BaseScreenDelegate* base_screen_delegate,
-    ArcTermsOfServiceScreenView* view)
+    ArcTermsOfServiceScreenView* view,
+    const ScreenExitCallback& exit_callback)
     : BaseScreen(base_screen_delegate, OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE),
-      view_(view) {
+      view_(view),
+      exit_callback_(exit_callback) {
   DCHECK(view_);
   if (view_) {
     view_->AddObserver(this);
@@ -68,14 +70,14 @@ void ArcTermsOfServiceScreen::Hide() {
 
 void ArcTermsOfServiceScreen::OnUserAction(const std::string& action_id) {
   if (action_id == kUserActionBack) {
-    Finish(ScreenExitCode::ARC_TERMS_OF_SERVICE_BACK);
+    exit_callback_.Run(Result::BACK);
   } else {
     BaseScreen::OnUserAction(action_id);
   }
 }
 
 void ArcTermsOfServiceScreen::OnSkip() {
-  Finish(ScreenExitCode::ARC_TERMS_OF_SERVICE_SKIPPED);
+  exit_callback_.Run(Result::SKIPPED);
 }
 
 void ArcTermsOfServiceScreen::OnAccept(bool review_arc_settings) {
@@ -85,7 +87,7 @@ void ArcTermsOfServiceScreen::OnAccept(bool review_arc_settings) {
     profile->GetPrefs()->SetBoolean(prefs::kShowArcSettingsOnSessionStart,
                                     true);
   }
-  Finish(ScreenExitCode::ARC_TERMS_OF_SERVICE_ACCEPTED);
+  exit_callback_.Run(Result::ACCEPTED);
 }
 
 void ArcTermsOfServiceScreen::OnViewDestroyed(
