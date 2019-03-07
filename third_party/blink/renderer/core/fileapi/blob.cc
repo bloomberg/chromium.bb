@@ -99,7 +99,7 @@ Blob* Blob::Create(
   PopulateBlobData(blob_data.get(), blob_parts,
                    normalize_line_endings_to_native);
 
-  long long blob_size = blob_data->length();
+  uint64_t blob_size = blob_data->length();
   return MakeGarbageCollected<Blob>(
       BlobDataHandle::Create(std::move(blob_data), blob_size));
 }
@@ -112,7 +112,7 @@ Blob* Blob::Create(const unsigned char* data,
   std::unique_ptr<BlobData> blob_data = BlobData::Create();
   blob_data->SetContentType(content_type);
   blob_data->AppendBytes(data, size);
-  long long blob_size = blob_data->length();
+  uint64_t blob_size = blob_data->length();
 
   return MakeGarbageCollected<Blob>(
       BlobDataHandle::Create(std::move(blob_data), blob_size));
@@ -172,10 +172,10 @@ Blob* Blob::slice(long long start,
                   long long end,
                   const String& content_type,
                   ExceptionState& exception_state) const {
-  long long size = this->size();
+  uint64_t size = this->size();
   ClampSliceOffsets(size, start, end);
 
-  long long length = end - start;
+  uint64_t length = end - start;
   std::unique_ptr<BlobData> blob_data = BlobData::Create();
   blob_data->SetContentType(NormalizeType(content_type));
   blob_data->AppendBlob(blob_data_handle_, start, length);

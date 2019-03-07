@@ -538,7 +538,7 @@ void DOMWebSocket::send(Blob* binary_data, ExceptionState& exception_state) {
     UpdateBufferedAmountAfterClose(binary_data->size());
     return;
   }
-  unsigned long long size = binary_data->size();
+  uint64_t size = binary_data->size();
   RecordSendTypeHistogram(kWebSocketSendTypeBlob);
   RecordSendMessageSizeHistogram(
       kWebSocketSendTypeBlob,

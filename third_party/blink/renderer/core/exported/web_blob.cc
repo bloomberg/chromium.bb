@@ -42,11 +42,11 @@ namespace blink {
 
 WebBlob WebBlob::CreateFromUUID(const WebString& uuid,
                                 const WebString& type,
-                                long long size) {
+                                uint64_t size) {
   return Blob::Create(BlobDataHandle::Create(uuid, type, size));
 }
 
-WebBlob WebBlob::CreateFromFile(const WebString& path, long long size) {
+WebBlob WebBlob::CreateFromFile(const WebString& path, uint64_t size) {
   std::unique_ptr<BlobData> blob_data = BlobData::Create();
   blob_data->AppendFile(path, 0, size, InvalidFileTime());
   return Blob::Create(BlobDataHandle::Create(std::move(blob_data), size));

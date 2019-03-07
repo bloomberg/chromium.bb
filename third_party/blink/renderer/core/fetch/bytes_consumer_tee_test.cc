@@ -372,8 +372,8 @@ TEST_F(BytesConsumerTeeTest, BlobHandle) {
 }
 
 TEST_F(BytesConsumerTeeTest, BlobHandleWithInvalidSize) {
-  scoped_refptr<BlobDataHandle> blob_data_handle =
-      BlobDataHandle::Create(BlobData::Create(), -1);
+  scoped_refptr<BlobDataHandle> blob_data_handle = BlobDataHandle::Create(
+      BlobData::Create(), std::numeric_limits<uint64_t>::max());
   BytesConsumer* src =
       MakeGarbageCollected<FakeBlobBytesConsumer>(blob_data_handle);
 

@@ -69,7 +69,7 @@ Blob* PushMessageData::blob() const {
   // Note that the content type of the Blob object is deliberately not being
   // provided, following the specification.
 
-  const long long byte_length = blob_data->length();
+  const uint64_t byte_length = blob_data->length();
   return Blob::Create(
       BlobDataHandle::Create(std::move(blob_data), byte_length));
 }
