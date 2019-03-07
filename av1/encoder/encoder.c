@@ -61,7 +61,6 @@
 #include "av1/encoder/firstpass.h"
 #include "av1/encoder/grain_test_vectors.h"
 #include "av1/encoder/hash_motion.h"
-#include "av1/encoder/level.h"
 #include "av1/encoder/mbgraph.h"
 #include "av1/encoder/pass2_strategy.h"
 #include "av1/encoder/picklpf.h"

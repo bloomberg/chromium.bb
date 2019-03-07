@@ -11,7 +11,6 @@
 
 #ifndef AOM_AV1_ENCODER_LEVEL_H_
 #define AOM_AV1_ENCODER_LEVEL_H_
-#include "av1/common/enums.h"
 
 struct AV1_COMP;
 

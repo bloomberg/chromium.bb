@@ -9,15 +9,6 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#include <limits.h>
-#include <math.h>
-#include <stdbool.h>
-#include <stdio.h>
-
-#include "config/aom_config.h"
-#include "config/aom_dsp_rtcd.h"
-#include "config/av1_rtcd.h"
-
 #include "av1/encoder/encoder.h"
 #include "av1/encoder/level.h"
 
