@@ -38,7 +38,7 @@ namespace device_sync {
 //   the CryptAuth server. Specifically,
 //
 //   |derived_key| =
-//       Hkdf(|secret|, salt="CryptAuth Enrollment", info=|key_bundle_name|).
+//       Hkdf(|secret|, salt="CryptAuth Enrollment", info=|derived_key_handle|).
 //
 //   The CryptAuth server's Diffie-Hellman key is passed into CreateKeys(),
 //   CreateKeys() generates the client side of the Diffie-Hellman handshake, and

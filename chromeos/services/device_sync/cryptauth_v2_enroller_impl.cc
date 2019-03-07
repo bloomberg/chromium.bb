@@ -701,12 +701,10 @@ void CryptAuthV2EnrollerImpl::OnKeysCreated(
     const CryptAuthKeyBundle::Name& bundle_name = name_key_pair.first;
     const CryptAuthKey& new_key = name_key_pair.second;
 
-    std::string bundle_name_str =
-        CryptAuthKeyBundle::KeyBundleNameEnumToString(bundle_name);
-
     EnrollSingleKeyRequest* single_key_request =
         request.add_enroll_single_key_requests();
-    single_key_request->set_key_name(bundle_name_str);
+    single_key_request->set_key_name(
+        CryptAuthKeyBundle::KeyBundleNameEnumToString(bundle_name));
     single_key_request->set_new_key_handle(new_key.handle());
     if (new_key.IsAsymmetricKey())
       single_key_request->set_key_material(new_key.public_key());
@@ -715,7 +713,7 @@ void CryptAuthV2EnrollerImpl::OnKeysCreated(
     // SyncKeysResponse as the payload and the particular salt specified by the
     // v2 Enrollment protocol.
     base::Optional<std::string> key_proof = key_proof_computer->ComputeKeyProof(
-        new_key, session_id, kCryptAuthKeyProofSalt, bundle_name_str);
+        new_key, session_id, kCryptAuthKeyProofSalt);
     if (!key_proof || key_proof->empty()) {
       FinishAttempt(CryptAuthEnrollmentResult::ResultCode::
                         kErrorKeyProofComputationFailed);
