@@ -16,6 +16,7 @@ import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
+import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.StateChangeReason;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
@@ -45,17 +46,17 @@ class BottomTabGridMediator implements Destroyable {
     private final Context mContext;
     private final BottomSheetController mBottomSheetController;
     private final BottomSheetObserver mSheetObserver;
-    private final PropertyModel mToolbarPropertyModel;
+    private final PropertyModel mModel;
     private final TabModelSelector mTabModelSelector;
     private final TabModelSelectorTabModelObserver mTabModelObserver;
     private final TabCreatorManager mTabCreatorManager;
 
     BottomTabGridMediator(Context context, BottomSheetController bottomSheetController,
-            ResetHandler resetHandler, PropertyModel toolbarPropertyModel,
-            TabModelSelector tabModelSelector, TabCreatorManager tabCreatorManager) {
+            ResetHandler resetHandler, PropertyModel model, TabModelSelector tabModelSelector,
+            TabCreatorManager tabCreatorManager) {
         mContext = context;
         mBottomSheetController = bottomSheetController;
-        mToolbarPropertyModel = toolbarPropertyModel;
+        mModel = model;
         mTabModelSelector = tabModelSelector;
         mTabCreatorManager = tabCreatorManager;
 
@@ -71,18 +72,23 @@ class BottomTabGridMediator implements Destroyable {
         mTabModelObserver = new TabModelSelectorTabModelObserver(tabModelSelector) {
             @Override
             public void didCloseTab(int tabId, boolean incognito) {
-                updateBottomSheetTitle();
+                updateBottomSheetTitleAndMargin();
             }
 
             @Override
             public void didAddTab(Tab tab, @TabLaunchType int type) {
-                updateBottomSheetTitle();
+                updateBottomSheetTitleAndMargin();
+            }
+
+            @Override
+            public void didSelectTab(Tab tab, int type, int lastId) {
+                if (type == TabSelectionType.FROM_USER) resetHandler.resetWithTabModel(null);
             }
         };
 
         // setup toolbar property model
         setupToolbarClickHandlers();
-        updateBottomSheetTitle();
+        updateBottomSheetTitleAndMargin();
     }
 
     /**
@@ -125,18 +131,19 @@ class BottomTabGridMediator implements Destroyable {
                 : null;
     }
 
-    private void updateBottomSheetTitle() {
+    private void updateBottomSheetTitleAndMargin() {
         int tabsCount = mTabModelSelector.getCurrentModel().getCount();
-        mToolbarPropertyModel.set(BottomTabGridSheetToolbarProperties.HEADER_TITLE,
+        mModel.set(BottomTabGridSheetProperties.HEADER_TITLE,
                 mContext.getResources().getQuantityString(
                         R.plurals.bottom_tab_grid_title_placeholder, tabsCount, tabsCount));
+        mModel.set(BottomTabGridSheetProperties.CONTENT_TOP_MARGIN,
+                (int) mContext.getResources().getDimension(R.dimen.control_container_height));
     }
 
     private void setupToolbarClickHandlers() {
-        mToolbarPropertyModel.set(BottomTabGridSheetToolbarProperties.COLLAPSE_CLICK_LISTENER,
+        mModel.set(BottomTabGridSheetProperties.COLLAPSE_CLICK_LISTENER,
                 getCollapseButtonClickListener());
-        mToolbarPropertyModel.set(BottomTabGridSheetToolbarProperties.ADD_CLICK_LISTENER,
-                getAddButtonClickListener());
+        mModel.set(BottomTabGridSheetProperties.ADD_CLICK_LISTENER, getAddButtonClickListener());
     }
 
     private OnClickListener getCollapseButtonClickListener() {

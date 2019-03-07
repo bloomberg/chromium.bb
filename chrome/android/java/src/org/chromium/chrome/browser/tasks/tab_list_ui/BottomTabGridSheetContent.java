@@ -10,23 +10,19 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.ContentPriority;
 
-import javax.inject.Inject;
-
 /** A {@link BottomSheetContent} that displays tab grid. **/
 public class BottomTabGridSheetContent implements BottomSheetContent {
     private final TabListRecyclerView mRecyclerView;
-    private final BottomTabGridSheetToolbarCoordinator mToolbarCoordinator;
+    private final View mToolbarView;
 
     /**
-     * Construct a new {@link ContextualSuggestionsBottomSheetContent}.
+     * Construct a new {@link BottomTabGridSheetContent}.
      * @param recyclerView The {@link TabListRecyclerView} holding the tab grid.
-     * @param toolbarCoordinator instance of {@link BottomTabGridSheetToolbarCoordinator}
+     * @param toolbarView The toolbar {@link View} to use.}
      */
-    @Inject
-    BottomTabGridSheetContent(TabListRecyclerView recyclerView,
-            BottomTabGridSheetToolbarCoordinator toolbarCoordinator) {
+    BottomTabGridSheetContent(TabListRecyclerView recyclerView, View toolbarView) {
         mRecyclerView = recyclerView;
-        mToolbarCoordinator = toolbarCoordinator;
+        mToolbarView = toolbarView;
     }
 
     @Override
@@ -36,7 +32,7 @@ public class BottomTabGridSheetContent implements BottomSheetContent {
 
     @Override
     public View getToolbarView() {
-        return mToolbarCoordinator.getView();
+        return mToolbarView;
     }
 
     @Override
@@ -75,6 +71,11 @@ public class BottomTabGridSheetContent implements BottomSheetContent {
     @Override
     public int getSheetFullHeightAccessibilityStringId() {
         return R.string.bottom_tab_grid_opened_full;
+    }
+
+    @Override
+    public boolean hasCustomLifecycle() {
+        return true;
     }
 
     @Override

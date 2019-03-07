@@ -34,7 +34,7 @@ public class BottomTabGridCoordinator implements Destroyable {
             TabCreatorManager tabCreatorManager) {
         mContext = context;
 
-        mToolbarPropertyModel = new PropertyModel(BottomTabGridSheetToolbarProperties.ALL_KEYS);
+        mToolbarPropertyModel = new PropertyModel(BottomTabGridSheetProperties.ALL_KEYS);
 
         mTabGridCoordinator = new TabListCoordinator(TabListCoordinator.TabListMode.GRID, context,
                 tabModelSelector, tabContentManager, bottomSheetController.getBottomSheet(), false);
@@ -77,7 +77,7 @@ public class BottomTabGridCoordinator implements Destroyable {
             mToolbarCoordinator = new BottomTabGridSheetToolbarCoordinator(
                     mContext, mTabGridCoordinator.getContainerView(), mToolbarPropertyModel);
             mBottomSheetContent = new BottomTabGridSheetContent(
-                    mTabGridCoordinator.getContainerView(), mToolbarCoordinator);
+                    mTabGridCoordinator.getContainerView(), mToolbarCoordinator.getView());
         } else {
             if (mBottomSheetContent != null) {
                 mBottomSheetContent.destroy();

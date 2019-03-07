@@ -3,10 +3,9 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<org.chromium.chrome.browser.tasks.tab_list_ui.BottomTabToolbarView
+<org.chromium.chrome.browser.tasks.tab_list_ui.BottomTabListToolbarView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content" >
     <LinearLayout
@@ -16,13 +15,11 @@
         android:orientation="horizontal"
         android:gravity="center_vertical"
         android:background="@color/modern_primary_color">
-        <org.chromium.chrome.browser.widget.ListMenuButton
+        <org.chromium.ui.widget.ChromeImageView
             android:id="@+id/toolbar_left_button"
-            android:layout_width="@dimen/bottom_tab_grid_toolbar_icon_size"
-            android:layout_height="match_parent"
+            style="@style/BottomToolbarButton"
             android:src="@drawable/ic_expand_more_black_24dp"
             app:tint="@color/standard_mode_tint"
-            android:background="?attr/selectableItemBackground"
             android:contentDescription="@string/accessibility_collapse_section_header" />
          <TextView
              android:id="@+id/title"
@@ -32,15 +29,12 @@
              android:singleLine="true"
              android:ellipsize="end"
              android:textAppearance="@style/TextAppearance.BlackTitle1"
-             android:gravity="center"
-             android:focusableInTouchMode="true" />
-        <org.chromium.chrome.browser.widget.ListMenuButton
+             android:gravity="center"/>
+        <org.chromium.ui.widget.ChromeImageView
             android:id="@+id/toolbar_right_button"
-            android:layout_width="@dimen/bottom_tab_grid_toolbar_icon_size"
-            android:layout_height="match_parent"
+            style="@style/BottomToolbarButton"
             android:src="@drawable/plus"
             app:tint="@color/standard_mode_tint"
-            android:background="?attr/selectableItemBackground"
             android:contentDescription="@string/bottom_tab_grid_new_tab" />
    </LinearLayout>
-</org.chromium.chrome.browser.tasks.tab_list_ui.BottomTabToolbarView>
+</org.chromium.chrome.browser.tasks.tab_list_ui.BottomTabListToolbarView>

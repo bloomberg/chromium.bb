@@ -593,6 +593,5 @@
     <!-- Tab List dimensions -->
     <dimen name="tab_grid_favicon_size">32dp</dimen>
     <dimen name="tab_list_selected_inset">6dp</dimen>
-    <dimen name="bottom_tab_grid_toolbar_icon_size">48dp</dimen>
 
 </resources>
