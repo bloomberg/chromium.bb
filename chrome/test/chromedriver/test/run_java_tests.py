@@ -3,13 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Runs the WebDriver Java acceptance tests.
-
-This script is called from chrome/test/chromedriver/run_all_tests.py and reports
-results using the buildbot annotation scheme.
-
-For ChromeDriver documentation, refer to http://code.google.com/p/chromedriver.
-"""
+"""Runs the WebDriver Java acceptance tests."""
 
 import optparse
 import os
