@@ -9,6 +9,8 @@
 
 #include <unordered_set>
 
+#include "ui/base/win/accessibility_misc_utils.h"
+
 struct IAccessible;
 struct IAccessible2;
 struct IAccessible2_2;

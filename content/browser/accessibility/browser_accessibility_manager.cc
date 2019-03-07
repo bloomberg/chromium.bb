@@ -16,18 +16,14 @@
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/common/accessibility_messages.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
+#include "ui/accessibility/ax_node_position.h"
 #include "ui/accessibility/ax_tree_data.h"
+#include "ui/accessibility/ax_tree_manager_map.h"
 #include "ui/accessibility/ax_tree_serializer.h"
 
 namespace content {
 
 namespace {
-
-// Map from AXTreeID to BrowserAccessibilityManager
-using AXTreeIDMap = std::map<ui::AXTreeID, BrowserAccessibilityManager*>;
-base::LazyInstance<AXTreeIDMap>::Leaky g_ax_tree_id_map =
-    LAZY_INSTANCE_INITIALIZER;
-
 // A function to call when focus changes, for testing only.
 base::LazyInstance<base::Closure>::DestructorAtExit
     g_focus_change_callback_for_testing = LAZY_INSTANCE_INITIALIZER;
@@ -148,9 +144,8 @@ BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
 // static
 BrowserAccessibilityManager* BrowserAccessibilityManager::FromID(
     ui::AXTreeID ax_tree_id) {
-  AXTreeIDMap& ax_tree_id_map = g_ax_tree_id_map.Get();
-  AXTreeIDMap::iterator iter = ax_tree_id_map.find(ax_tree_id);
-  return iter == ax_tree_id_map.end() ? nullptr : iter->second;
+  return static_cast<BrowserAccessibilityManager*>(
+      ui::AXTreeManagerMap::GetInstance().GetManager(ax_tree_id));
 }
 
 BrowserAccessibilityManager::BrowserAccessibilityManager(
@@ -191,7 +186,7 @@ BrowserAccessibilityManager::BrowserAccessibilityManager(
 BrowserAccessibilityManager::~BrowserAccessibilityManager() {
   tree_.reset(nullptr);
   event_generator_.ReleaseTree();
-  g_ax_tree_id_map.Get().erase(ax_tree_id_);
+  ui::AXTreeManagerMap::GetInstance().RemoveTreeManager(ax_tree_id_);
 }
 
 void BrowserAccessibilityManager::Initialize(
@@ -1169,9 +1164,9 @@ void BrowserAccessibilityManager::OnAtomicUpdateFinished(
   bool ax_tree_id_changed = false;
   if (GetTreeData().tree_id != ui::AXTreeIDUnknown() &&
       GetTreeData().tree_id != ax_tree_id_) {
-    g_ax_tree_id_map.Get().erase(ax_tree_id_);
+    ui::AXTreeManagerMap::GetInstance().RemoveTreeManager(ax_tree_id_);
     ax_tree_id_ = GetTreeData().tree_id;
-    g_ax_tree_id_map.Get().insert(std::make_pair(ax_tree_id_, this));
+    ui::AXTreeManagerMap::GetInstance().AddTreeManager(ax_tree_id_, this);
     ax_tree_id_changed = true;
   }
 
@@ -1187,6 +1182,19 @@ void BrowserAccessibilityManager::OnAtomicUpdateFinished(
     last_focused_node_ = nullptr;
     last_focused_manager_ = nullptr;
   }
+}
+
+ui::AXNode* BrowserAccessibilityManager::GetNodeFromTree(ui::AXTreeID tree_id,
+                                                         int32_t node_id) {
+  auto* manager = BrowserAccessibilityManager::FromID(tree_id);
+  if (!manager)
+    return nullptr;
+
+  BrowserAccessibility* wrapper = manager->GetFromID(node_id);
+  if (wrapper)
+    return wrapper->node();
+
+  return nullptr;
 }
 
 BrowserAccessibilityManager* BrowserAccessibilityManager::GetRootManager() {

@@ -26,6 +26,7 @@
 #include "ui/accessibility/ax_range.h"
 #include "ui/accessibility/ax_serializable_tree.h"
 #include "ui/accessibility/ax_tree_id_registry.h"
+#include "ui/accessibility/ax_tree_manager.h"
 #include "ui/accessibility/ax_tree_observer.h"
 #include "ui/accessibility/ax_tree_update.h"
 #include "ui/gfx/native_widget_types.h"
@@ -112,7 +113,8 @@ struct BrowserAccessibilityFindInPageInfo {
 };
 
 // Manages a tree of BrowserAccessibility objects.
-class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver {
+class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
+                                                   public ui::AXTreeManager {
  protected:
   using BrowserAccessibilityPositionInstance =
       BrowserAccessibilityPosition::AXPositionInstance;
@@ -360,6 +362,9 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver {
       ui::AXTree* tree,
       bool root_changed,
       const std::vector<ui::AXTreeObserver::Change>& changes) override;
+
+  // AXTreeManager implementation.
+  ui::AXNode* GetNodeFromTree(ui::AXTreeID tree_id, int32_t node_id) override;
 
   BrowserAccessibilityDelegate* delegate() const { return delegate_; }
 

@@ -6,6 +6,7 @@
 
 #include "base/strings/string_util.h"
 #include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/accessibility/ax_tree_manager_map.h"
 
 namespace ui {
 
@@ -74,9 +75,18 @@ void AXNodePosition::AnchorParent(AXTreeID* tree_id, int32_t* parent_id) const {
 }
 
 AXNode* AXNodePosition::GetNodeInTree(AXTreeID tree_id, int32_t node_id) const {
-  if (!tree_ || node_id == INVALID_ANCHOR_ID)
+  if (node_id == INVALID_ANCHOR_ID)
     return nullptr;
-  return AXNodePosition::tree_->GetFromId(node_id);
+
+  // Used for testing via AXNodePosition::SetTreeForTesting
+  if (AXNodePosition::tree_)
+    return AXNodePosition::tree_->GetFromId(node_id);
+
+  AXTreeManager* manager = AXTreeManagerMap::GetInstance().GetManager(tree_id);
+  if (manager)
+    return manager->GetNodeFromTree(tree_id, node_id);
+
+  return nullptr;
 }
 
 int AXNodePosition::MaxTextOffset() const {

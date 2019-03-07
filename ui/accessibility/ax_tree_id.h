@@ -65,6 +65,14 @@ class AX_EXPORT AXTreeID {
   base::Optional<base::UnguessableToken> token_;
 };
 
+// For use in std::unordered_map.
+struct AXTreeIDHash {
+  size_t operator()(const ui::AXTreeID& tree_id) const {
+    DCHECK(tree_id.type() == ax::mojom::AXTreeIDType::kToken);
+    return base::UnguessableTokenHash()(tree_id.token().value());
+  }
+};
+
 AX_EXPORT std::ostream& operator<<(std::ostream& stream, const AXTreeID& value);
 
 // The value to use when an AXTreeID is unknown.

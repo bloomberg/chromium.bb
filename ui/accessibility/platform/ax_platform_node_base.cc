@@ -318,6 +318,10 @@ bool AXPlatformNodeBase::SetTextSelection(int start_offset, int end_offset) {
   return delegate_->AccessibilityPerformAction(action_data);
 }
 
+bool AXPlatformNodeBase::IsDocument() const {
+  return ui::IsDocument(GetData().role);
+}
+
 bool AXPlatformNodeBase::IsTextOnlyObject() const {
   return GetData().role == ax::mojom::Role::kStaticText ||
          GetData().role == ax::mojom::Role::kLineBreak ||
