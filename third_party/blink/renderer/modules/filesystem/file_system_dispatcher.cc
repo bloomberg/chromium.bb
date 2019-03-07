@@ -69,7 +69,7 @@ class FileSystemDispatcher::ReadDirectoryListener
   void DidWrite(int64_t byte_count, bool complete) override { NOTREACHED(); }
 
  private:
-  std::unique_ptr<AsyncFileSystemCallbacks> callbacks_;
+  std::unique_ptr<EntriesCallbacks> callbacks_;
 };
 
 FileSystemDispatcher::FileSystemDispatcher(ExecutionContext& context)
