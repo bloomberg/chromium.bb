@@ -114,6 +114,8 @@ class AutofillMetrics {
     // All the required conditions were satisfied even though the form is
     // unfocused after the user entered information into it.
     UPLOAD_OFFERED_FROM_NON_FOCUSABLE_FIELD = 1 << 15,
+    // The card does not satisfy any of the ranges of supported BIN ranges.
+    UPLOAD_NOT_OFFERED_UNSUPPORTED_BIN_RANGE = 1 << 16,
     // Update |kNumCardUploadDecisionMetrics| when adding new enum here.
   };
 
@@ -1235,7 +1237,7 @@ class AutofillMetrics {
  private:
   static void Log(AutocompleteEvent event);
 
-  static const int kNumCardUploadDecisionMetrics = 16;
+  static const int kNumCardUploadDecisionMetrics = 17;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(AutofillMetrics);
 };

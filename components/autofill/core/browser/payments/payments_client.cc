@@ -343,7 +343,8 @@ class GetUploadDetailsRequest : public PaymentsRequest {
       const std::string& app_locale,
       base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
                               const base::string16&,
-                              std::unique_ptr<base::Value>)> callback,
+                              std::unique_ptr<base::Value>,
+                              std::vector<std::pair<int, int>>)> callback,
       const int billable_service_number,
       PaymentsClient::UploadCardSource upload_card_source)
       : addresses_(addresses),
@@ -442,6 +443,16 @@ class GetUploadDetailsRequest : public PaymentsRequest {
     base::Value* dictionary_value = response.FindKey("legal_message");
     if (dictionary_value)
       legal_message_ = std::make_unique<base::Value>(dictionary_value->Clone());
+
+    base::Value* list_ptr = response.FindKey("supported_card_bin_ranges");
+    if (list_ptr && list_ptr->is_list()) {
+      for (base::Value& result : list_ptr->GetList()) {
+        DCHECK(result.is_dict());
+        base::Optional<int> start = response.FindIntKey("start");
+        base::Optional<int> end = response.FindIntKey("end");
+        supported_card_bin_ranges_.push_back(std::make_pair(*start, *end));
+      }
+    }
   }
 
   bool IsResponseComplete() override {
@@ -449,7 +460,8 @@ class GetUploadDetailsRequest : public PaymentsRequest {
   }
 
   void RespondToDelegate(AutofillClient::PaymentsRpcResult result) override {
-    std::move(callback_).Run(result, context_token_, std::move(legal_message_));
+    std::move(callback_).Run(result, context_token_, std::move(legal_message_),
+                             supported_card_bin_ranges_);
   }
 
  private:
@@ -460,10 +472,12 @@ class GetUploadDetailsRequest : public PaymentsRequest {
   std::string app_locale_;
   base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
                           const base::string16&,
-                          std::unique_ptr<base::Value>)>
+                          std::unique_ptr<base::Value>,
+                          std::vector<std::pair<int, int>>)>
       callback_;
   base::string16 context_token_;
   std::unique_ptr<base::Value> legal_message_;
+  std::vector<std::pair<int, int>> supported_card_bin_ranges_;
   const int billable_service_number_;
   PaymentsClient::UploadCardSource upload_card_source_;
 };
@@ -771,7 +785,8 @@ void PaymentsClient::GetUploadDetails(
     const std::string& app_locale,
     base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
                             const base::string16&,
-                            std::unique_ptr<base::Value>)> callback,
+                            std::unique_ptr<base::Value>,
+                            std::vector<std::pair<int, int>>)> callback,
     const int billable_service_number,
     UploadCardSource upload_card_source) {
   IssueRequest(

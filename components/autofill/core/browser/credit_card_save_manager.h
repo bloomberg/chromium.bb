@@ -8,6 +8,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/optional.h"
@@ -153,10 +154,14 @@ class CreditCardSaveManager {
 
   // Returns the legal message retrieved from Payments. On failure or not
   // meeting Payments's conditions for upload, |legal_message| will contain
-  // nullptr.
-  void OnDidGetUploadDetails(AutofillClient::PaymentsRpcResult result,
-                             const base::string16& context_token,
-                             std::unique_ptr<base::Value> legal_message);
+  // nullptr. |supported_card_bin_ranges| is a list of BIN prefix ranges which
+  // are supoorted, with the first and second number in the pair being the start
+  // and end of the range.
+  void OnDidGetUploadDetails(
+      AutofillClient::PaymentsRpcResult result,
+      const base::string16& context_token,
+      std::unique_ptr<base::Value> legal_message,
+      std::vector<std::pair<int, int>> supported_card_bin_ranges);
 
   // Logs the number of strikes that a card had when save succeeded.
   void LogStrikesPresentWhenCardSaved(bool is_local, const int num_strikes);
@@ -259,6 +264,13 @@ class CreditCardSaveManager {
   // Logs the reason why expiration date was explicitly requested.
   void LogSaveCardRequestExpirationDateReasonMetric();
 
+  // Checks if credit card matches one of the ranges in
+  // |supported_card_bin_ranges_|, inclusive of the start and end boundaries.
+  // For example, if the range consists of std::pair<34, 36>, then all cards
+  // with first two digits of 34, 35 and 36 are supported.
+  bool IsCreditCardSupported(
+      std::vector<std::pair<int, int>> supported_card_bin_ranges);
+
   // For testing.
   void SetEventObserverForTesting(ObserverForTest* observer) {
     observer_for_testing_ = observer;
@@ -334,6 +346,8 @@ class CreditCardSaveManager {
 
   std::unique_ptr<LocalCardMigrationStrikeDatabase>
       local_card_migration_strike_database_;
+
+  std::unique_ptr<CreditCardSaveStrikeDatabase> strike_database_;
 
   // May be null.
   ObserverForTest* observer_for_testing_ = nullptr;

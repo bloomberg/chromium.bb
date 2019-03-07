@@ -32579,6 +32579,8 @@ from previous Chrome versions.
   <int value="549483647" label="EnableUnifiedMultiDeviceSettings:disabled"/>
   <int value="550378029" label="reset-app-list-install-state"/>
   <int value="550387510" label="NTPAssetDownloadSuggestions:disabled"/>
+  <int value="556555487"
+      label="AutofillDoNotUploadSaveUnsupportedCards:disabled"/>
   <int value="557200974" label="WebSocketHandshakeReuseConnection:disabled"/>
   <int value="557915559" label="CCTModuleCustomRequestHeader:enabled"/>
   <int value="558873715" label="SiteDetails:disabled"/>
@@ -33071,6 +33073,8 @@ from previous Chrome versions.
   <int value="1346994602" label="SyncPseudoUSSDictionary:enabled"/>
   <int value="1351830811" label="do-not-ignore-autocomplete-off"/>
   <int value="1352447982" label="enable-lcd-text"/>
+  <int value="1353066950"
+      label="AutofillDoNotUploadSaveUnsupportedCards:enabled"/>
   <int value="1353629763" label="MediaSessionAccelerators:enabled"/>
   <int value="1355923367" label="CrOSContainer:disabled"/>
   <int value="1359972809" label="enable-gesture-deletion"/>

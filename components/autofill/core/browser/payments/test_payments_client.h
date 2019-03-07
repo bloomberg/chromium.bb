@@ -6,6 +6,7 @@
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_PAYMENTS_TEST_PAYMENTS_CLIENT_H_
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "components/autofill/core/browser/payments/payments_client.h"
@@ -34,7 +35,8 @@ class TestPaymentsClient : public payments::PaymentsClient {
       const std::string& app_locale,
       base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
                               const base::string16&,
-                              std::unique_ptr<base::Value>)> callback,
+                              std::unique_ptr<base::Value>,
+                              std::vector<std::pair<int, int>>)> callback,
       const int billable_service_number,
       UploadCardSource upload_card_source =
           UploadCardSource::UNKNOWN_UPLOAD_CARD_SOURCE) override;
@@ -55,6 +57,8 @@ class TestPaymentsClient : public payments::PaymentsClient {
       std::unique_ptr<std::unordered_map<std::string, std::string>>
           save_result);
 
+  void SetSupportedBINRanges(std::vector<std::pair<int, int>> bin_ranges);
+
   int detected_values_in_upload_details() const { return detected_values_; }
   const std::vector<AutofillProfile>& addresses_in_upload_details() const {
     return upload_details_addresses_;
@@ -74,6 +78,7 @@ class TestPaymentsClient : public payments::PaymentsClient {
 
  private:
   std::string server_id_;
+  std::vector<std::pair<int, int>> supported_card_bin_ranges_;
   std::vector<AutofillProfile> upload_details_addresses_;
   std::vector<AutofillProfile> upload_card_addresses_;
   int detected_values_;

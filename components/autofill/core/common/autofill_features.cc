@@ -67,6 +67,10 @@ const base::Feature kAutofillDeleteDisusedAddresses{
 const base::Feature kAutofillDeleteDisusedCreditCards{
     "AutofillDeleteDisusedCreditCards", base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kAutofillDoNotUploadSaveUnsupportedCards{
+    "AutofillDoNotUploadSaveUnsupportedCards",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether the credit card downstream keyboard accessory shows
 // the Google Pay logo animation on iOS.
 const base::Feature kAutofillDownstreamUseGooglePayBrandingOniOS{

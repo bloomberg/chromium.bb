@@ -5,7 +5,10 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_TEST_LOCAL_CARD_MIGRATION_MANAGER_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_TEST_LOCAL_CARD_MIGRATION_MANAGER_H_
 
+#include <memory>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "components/autofill/core/browser/local_card_migration_manager.h"
 #include "components/autofill/core/browser/sync_utils.h"
@@ -60,7 +63,8 @@ class TestLocalCardMigrationManager : public LocalCardMigrationManager {
       bool is_from_settings_page,
       AutofillClient::PaymentsRpcResult result,
       const base::string16& context_token,
-      std::unique_ptr<base::Value> legal_message) override;
+      std::unique_ptr<base::Value> legal_message,
+      std::vector<std::pair<int, int>> supported_bin_ranges) override;
 
   bool local_card_migration_was_triggered_ = false;
 
