@@ -303,11 +303,6 @@ public class ToolbarManager
             }
         };
 
-        mIsBottomToolbarVisible = FeatureUtilities.isBottomToolbarEnabled()
-                && (!FeatureUtilities.isAdaptiveToolbarEnabled()
-                        || mActivity.getResources().getConfiguration().orientation
-                                != Configuration.ORIENTATION_LANDSCAPE);
-
         mIncognitoStateProvider = new IncognitoStateProvider(mActivity);
         mTabCountProvider = new TabCountProvider();
         mThemeColorProvider = themeColorProvider;
@@ -315,7 +310,6 @@ public class ToolbarManager
 
         mToolbarProvider = AsyncViewProvider.of(controlContainer, R.id.toolbar_stub, R.id.toolbar);
         mToolbar = new TopToolbarCoordinator(controlContainer, mToolbarProvider);
-        mToolbar.onBottomToolbarVisibilityChanged(mIsBottomToolbarVisible);
         mToolbarProvider.whenLoaded((toolbar)
                                             -> onToolbarInflationComplete(menuHandler,
                                                     appMenuPropertiesDelegate, invalidator));
@@ -786,7 +780,13 @@ public class ToolbarManager
                 mActivity.findViewById(R.id.bottom_controls_stub),
                 mActivity.getActivityTabProvider(), homeButtonListener, searchAcceleratorListener,
                 shareButtonListener);
+
+        mIsBottomToolbarVisible = FeatureUtilities.isBottomToolbarEnabled()
+                && (!FeatureUtilities.isAdaptiveToolbarEnabled()
+                        || mActivity.getResources().getConfiguration().orientation
+                                != Configuration.ORIENTATION_LANDSCAPE);
         mBottomControlsCoordinator.setBottomControlsVisible(mIsBottomToolbarVisible);
+        mToolbar.onBottomToolbarVisibilityChanged(mIsBottomToolbarVisible);
 
         Toast.setGlobalExtraYOffset(
                 mActivity.getResources().getDimensionPixelSize(R.dimen.bottom_toolbar_height));
