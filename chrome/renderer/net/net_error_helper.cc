@@ -24,7 +24,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/chrome_render_thread_observer.h"
-#include "chrome/renderer/ssl/ssl_certificate_error_page_controller.h"
+#include "chrome/renderer/security_interstitials/security_interstitial_page_controller.h"
 #include "chrome/renderer/supervised_user/supervised_user_error_page_controller.h"
 #include "components/error_page/common/error.h"
 #include "components/error_page/common/error_page_params.h"
@@ -167,7 +167,7 @@ NetErrorHelper::NetErrorHelper(RenderFrame* render_frame)
     : RenderFrameObserver(render_frame),
       content::RenderFrameObserverTracker<NetErrorHelper>(render_frame),
       weak_controller_delegate_factory_(this),
-      weak_ssl_error_controller_delegate_factory_(this),
+      weak_security_interstitial_controller_delegate_factory_(this),
       weak_supervised_user_error_controller_delegate_factory_(this) {
   RenderThread::Get()->AddObserver(this);
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -324,7 +324,7 @@ void NetErrorHelper::DidCommitProvisionalLoad(bool is_same_document_navigation,
   // error page, the controller has not yet been attached, so this won't affect
   // it.
   weak_controller_delegate_factory_.InvalidateWeakPtrs();
-  weak_ssl_error_controller_delegate_factory_.InvalidateWeakPtrs();
+  weak_security_interstitial_controller_delegate_factory_.InvalidateWeakPtrs();
   weak_supervised_user_error_controller_delegate_factory_.InvalidateWeakPtrs();
 
   core_->OnCommitLoad(GetFrameType(render_frame()),
@@ -433,9 +433,10 @@ void NetErrorHelper::LoadErrorPage(const std::string& html,
                                  failed_url, true /* replace_current_item */);
 }
 
-void NetErrorHelper::EnablePageHelperFunctions(net::Error net_error) {
-  SSLCertificateErrorPageController::Install(
-      render_frame(), weak_ssl_error_controller_delegate_factory_.GetWeakPtr());
+void NetErrorHelper::EnablePageHelperFunctions() {
+  SecurityInterstitialPageController::Install(
+      render_frame(),
+      weak_security_interstitial_controller_delegate_factory_.GetWeakPtr());
   NetErrorPageController::Install(
       render_frame(), weak_controller_delegate_factory_.GetWeakPtr());
 
