@@ -115,7 +115,7 @@ void* GuardedPageAllocator::Allocate(size_t size, size_t align) {
   void* alloc = reinterpret_cast<void*>(free_page + offset);
 
   // Initialize slot metadata.
-  RecordAllocationInSlot(free_slot, size, alloc);
+  RecordAllocationMetadata(free_slot, size, alloc);
 
   return alloc;
 }
@@ -139,14 +139,14 @@ void GuardedPageAllocator::Deallocate(void* ptr) {
     // TODO(https://crbug.com/925447): The other thread may not be done writing
     // a stack trace so we could spin here until it's read; however, it's also
     // possible we are racing an allocation in the middle of
-    // RecordAllocationInSlot. For now it's possible a racy double free could
+    // RecordAllocationMetadata. For now it's possible a racy double free could
     // lead to a bad stack trace, but no internal allocator corruption.
     __builtin_trap();
   }
 
   // Record deallocation stack trace/thread id before marking the page
   // inaccessible in case a use-after-free occurs immediately.
-  RecordDeallocationInSlot(slot);
+  RecordDeallocationMetadata(slot);
   MarkPageInaccessible(reinterpret_cast<void*>(state_.GetPageAddr(addr)));
 
   FreeSlot(slot);
@@ -191,9 +191,9 @@ void GuardedPageAllocator::FreeSlot(size_t slot) {
             free_slot_start_idx_);
 }
 
-void GuardedPageAllocator::RecordAllocationInSlot(size_t slot,
-                                                  size_t size,
-                                                  void* ptr) {
+void GuardedPageAllocator::RecordAllocationMetadata(size_t slot,
+                                                    size_t size,
+                                                    void* ptr) {
   slots_[slot].alloc_size = size;
   slots_[slot].alloc_ptr = reinterpret_cast<uintptr_t>(ptr);
 
@@ -212,7 +212,7 @@ void GuardedPageAllocator::RecordAllocationInSlot(size_t slot,
   slots_[slot].deallocation_occurred = false;
 }
 
-void GuardedPageAllocator::RecordDeallocationInSlot(size_t slot) {
+void GuardedPageAllocator::RecordDeallocationMetadata(size_t slot) {
   void* trace[AllocatorState::kMaxStackFrames];
   size_t len =
       base::debug::CollectStackTrace(trace, AllocatorState::kMaxStackFrames);
