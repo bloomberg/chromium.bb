@@ -15,6 +15,10 @@
 
 class GURL;
 
+namespace blink {
+struct NotificationResources;
+}  // namespace blink
+
 namespace content {
 
 // Represents the storage context for persistent Web Notifications, specific to
@@ -27,6 +31,10 @@ class PlatformNotificationContext
   using ReadResultCallback =
       base::OnceCallback<void(bool /* success */,
                               const NotificationDatabaseData&)>;
+
+  using ReadResourcesResultCallback =
+      base::OnceCallback<void(bool /* success */,
+                              const blink::NotificationResources&)>;
 
   using ReadAllResultCallback =
       base::OnceCallback<void(bool /* success */,
@@ -63,6 +71,14 @@ class PlatformNotificationContext
       const GURL& origin,
       Interaction interaction,
       ReadResultCallback callback) = 0;
+
+  // Reads the resources associated with |notification_id| belonging to |origin|
+  // from the database. |callback| will be invoked with the success status
+  // and a reference to the notification resources when completed.
+  virtual void ReadNotificationResources(
+      const std::string& notification_id,
+      const GURL& origin,
+      ReadResourcesResultCallback callback) = 0;
 
   // Reads all data associated with |service_worker_registration_id| belonging
   // to |origin| from the database. |callback| will be invoked with the success

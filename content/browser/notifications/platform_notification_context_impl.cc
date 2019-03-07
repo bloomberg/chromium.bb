@@ -21,6 +21,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/notification_database_data.h"
 #include "content/public/browser/platform_notification_service.h"
+#include "third_party/blink/public/common/notifications/notification_resources.h"
 
 namespace content {
 namespace {
@@ -176,6 +177,55 @@ void PlatformNotificationContextImpl::DoReadNotificationData(
       FROM_HERE, {BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
       base::BindOnce(std::move(callback), /* success= */ false,
                      NotificationDatabaseData()));
+}
+
+void PlatformNotificationContextImpl::ReadNotificationResources(
+    const std::string& notification_id,
+    const GURL& origin,
+    ReadResourcesResultCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  LazyInitialize(base::BindOnce(
+      &PlatformNotificationContextImpl::DoReadNotificationResources, this,
+      notification_id, origin, std::move(callback)));
+}
+
+void PlatformNotificationContextImpl::DoReadNotificationResources(
+    const std::string& notification_id,
+    const GURL& origin,
+    ReadResourcesResultCallback callback,
+    bool initialized) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  if (!initialized) {
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
+        base::BindOnce(std::move(callback), /* success= */ false,
+                       blink::NotificationResources()));
+    return;
+  }
+
+  blink::NotificationResources notification_resources;
+  NotificationDatabase::Status status = database_->ReadNotificationResources(
+      notification_id, origin, &notification_resources);
+
+  UMA_HISTOGRAM_ENUMERATION("Notifications.Database.ReadResult", status,
+                            NotificationDatabase::STATUS_COUNT);
+
+  if (status == NotificationDatabase::STATUS_OK) {
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
+        base::BindOnce(std::move(callback), /* success= */ true,
+                       notification_resources));
+    return;
+  }
+
+  // Blow away the database if reading data failed due to corruption.
+  if (status == NotificationDatabase::STATUS_ERROR_CORRUPTED)
+    DestroyDatabase();
+
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
+      base::BindOnce(std::move(callback), /* success= */ false,
+                     blink::NotificationResources()));
 }
 
 void PlatformNotificationContextImpl::

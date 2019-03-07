@@ -15,6 +15,7 @@
 #include "content/public/browser/notification_database_data.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/notifications/notification_resources.h"
 #include "third_party/blink/public/common/notifications/platform_notification_data.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
@@ -330,6 +331,93 @@ TEST_F(NotificationDatabaseTest, ReadNotificationDataReflection) {
   EXPECT_EQ(notification_data.silent, read_notification_data.silent);
 }
 
+TEST_F(NotificationDatabaseTest, ReadInvalidNotificationResources) {
+  std::unique_ptr<NotificationDatabase> database(CreateDatabaseInMemory());
+  ASSERT_EQ(NotificationDatabase::STATUS_OK,
+            database->Open(true /* create_if_missing */));
+
+  blink::NotificationResources database_resources;
+
+  // Reading the notification resources for a notification that does not exist
+  // should return the ERROR_NOT_FOUND status code.
+  EXPECT_EQ(NotificationDatabase::STATUS_ERROR_NOT_FOUND,
+            database->ReadNotificationResources(
+                "bad-id", GURL("https://chrome.com"), &database_resources));
+}
+
+TEST_F(NotificationDatabaseTest, ReadNotificationResourcesDifferentOrigin) {
+  std::unique_ptr<NotificationDatabase> database(CreateDatabaseInMemory());
+  ASSERT_EQ(NotificationDatabase::STATUS_OK,
+            database->Open(true /* create_if_missing */));
+
+  GURL origin("https://example.com");
+
+  NotificationDatabaseData database_data;
+  blink::NotificationResources database_resources;
+  database_data.notification_id = GenerateNotificationId();
+  database_data.notification_data.title = base::UTF8ToUTF16("My Notification");
+  database_data.notification_resources = blink::NotificationResources();
+
+  ASSERT_EQ(NotificationDatabase::STATUS_OK,
+            database->WriteNotificationData(origin, database_data));
+
+  // Reading the notification resources from the database when given a different
+  // origin should return the ERROR_NOT_FOUND status code.
+  EXPECT_EQ(NotificationDatabase::STATUS_ERROR_NOT_FOUND,
+            database->ReadNotificationResources(database_data.notification_id,
+                                                GURL("https://chrome.com"),
+                                                &database_resources));
+
+  // However, reading the notification from the database with the same origin
+  // should return STATUS_OK and the associated notification data.
+  EXPECT_EQ(NotificationDatabase::STATUS_OK,
+            database->ReadNotificationResources(database_data.notification_id,
+                                                origin, &database_resources));
+}
+
+TEST_F(NotificationDatabaseTest, ReadNotificationResourcesReflection) {
+  std::unique_ptr<NotificationDatabase> database(CreateDatabaseInMemory());
+  ASSERT_EQ(NotificationDatabase::STATUS_OK,
+            database->Open(true /* create_if_missing */));
+
+  GURL origin("https://example.com");
+
+  blink::NotificationResources notification_resources;
+  NotificationDatabaseData database_data;
+  database_data.notification_id = GenerateNotificationId();
+  database_data.origin = origin;
+  database_data.service_worker_registration_id = 42;
+  database_data.notification_resources = notification_resources;
+
+  // Write the constructed notification to the database, and then immediately
+  // read it back from the database again as well.
+  ASSERT_EQ(NotificationDatabase::STATUS_OK,
+            database->WriteNotificationData(origin, database_data));
+
+  NotificationDatabaseData read_database_data;
+  ASSERT_EQ(NotificationDatabase::STATUS_OK,
+            database->ReadNotificationData(database_data.notification_id,
+                                           origin, &read_database_data));
+
+  // Verify that all members retrieved from the database are exactly the same
+  // as the ones that were written to it. This tests the serialization behavior.
+
+  EXPECT_EQ(database_data.notification_id, read_database_data.notification_id);
+
+  EXPECT_EQ(database_data.origin, read_database_data.origin);
+  EXPECT_EQ(database_data.service_worker_registration_id,
+            read_database_data.service_worker_registration_id);
+
+  // We do not populate the resources when reading from the database.
+  EXPECT_FALSE(read_database_data.notification_resources.has_value());
+
+  blink::NotificationResources read_notification_resources;
+  EXPECT_EQ(
+      NotificationDatabase::STATUS_OK,
+      database->ReadNotificationResources(database_data.notification_id, origin,
+                                          &read_notification_resources));
+}
+
 TEST_F(NotificationDatabaseTest, ReadWriteMultipleNotificationData) {
   std::unique_ptr<NotificationDatabase> database(CreateDatabaseInMemory());
   ASSERT_EQ(NotificationDatabase::STATUS_OK,
@@ -463,6 +551,37 @@ TEST_F(NotificationDatabaseTest, DeleteNotificationDataSameOrigin) {
   EXPECT_EQ(
       NotificationDatabase::STATUS_ERROR_NOT_FOUND,
       database->ReadNotificationData(notification_id, origin, &database_data));
+}
+
+TEST_F(NotificationDatabaseTest, DeleteNotificationResourcesSameOrigin) {
+  std::unique_ptr<NotificationDatabase> database(CreateDatabaseInMemory());
+  ASSERT_EQ(NotificationDatabase::STATUS_OK,
+            database->Open(true /* create_if_missing */));
+
+  const std::string notification_id = GenerateNotificationId();
+
+  blink::NotificationResources notification_resources;
+  NotificationDatabaseData database_data;
+  database_data.notification_id = notification_id;
+  database_data.notification_resources = notification_resources;
+
+  GURL origin("https://example.com");
+
+  ASSERT_EQ(NotificationDatabase::STATUS_OK,
+            database->WriteNotificationData(origin, database_data));
+
+  // Reading notification resources after writing should succeed.
+  EXPECT_EQ(NotificationDatabase::STATUS_OK,
+            database->ReadNotificationResources(notification_id, origin,
+                                                &notification_resources));
+
+  // Delete the notification which was just written to the database, and verify
+  // that reading the resources again will fail.
+  EXPECT_EQ(NotificationDatabase::STATUS_OK,
+            database->DeleteNotificationData(notification_id, origin));
+  EXPECT_EQ(NotificationDatabase::STATUS_ERROR_NOT_FOUND,
+            database->ReadNotificationResources(notification_id, origin,
+                                                &notification_resources));
 }
 
 TEST_F(NotificationDatabaseTest, DeleteNotificationDataDifferentOrigin) {

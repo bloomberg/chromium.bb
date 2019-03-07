@@ -1555,7 +1555,7 @@ test("content_unittests") {
     "../browser/network_service_client_unittest.cc",
     "../browser/notification_service_impl_unittest.cc",
     "../browser/notifications/blink_notification_service_impl_unittest.cc",
-    "../browser/notifications/notification_database_data_unittest.cc",
+    "../browser/notifications/notification_database_conversions_unittest.cc",
     "../browser/notifications/notification_database_unittest.cc",
     "../browser/notifications/notification_event_dispatcher_impl_unittest.cc",
     "../browser/notifications/notification_id_generator_unittest.cc",

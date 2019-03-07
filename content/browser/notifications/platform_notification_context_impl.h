@@ -80,6 +80,9 @@ class CONTENT_EXPORT PlatformNotificationContextImpl
       const GURL& origin,
       Interaction interaction,
       ReadResultCallback callback) override;
+  void ReadNotificationResources(const std::string& notification_id,
+                                 const GURL& origin,
+                                 ReadResourcesResultCallback callback) override;
   void WriteNotificationData(int64_t persistent_notification_id,
                              int64_t service_worker_registration_id,
                              const GURL& origin,
@@ -127,6 +130,14 @@ class CONTENT_EXPORT PlatformNotificationContextImpl
                               Interaction interaction,
                               ReadResultCallback callback,
                               bool initialized);
+
+  // Actually reads the notification resources from the database. Must only be
+  // called on the |task_runner_| thread. |callback| will be invoked on the
+  // UI thread when the operation has completed.
+  void DoReadNotificationResources(const std::string& notification_id,
+                                   const GURL& origin,
+                                   ReadResourcesResultCallback callback,
+                                   bool initialized);
 
   // Updates the database (and the result callback) based on
   // |displayed_notifications| if |supports_synchronization|.

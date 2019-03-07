@@ -19,6 +19,10 @@
 
 class GURL;
 
+namespace blink {
+struct NotificationResources;
+}  // namespace blink
+
 namespace leveldb {
 class DB;
 class Env;
@@ -94,6 +98,14 @@ class CONTENT_EXPORT NotificationDatabase {
       const std::string& notification_id,
       const GURL& origin,
       NotificationDatabaseData* notification_data) const;
+
+  // Reads the notification resources for the notification identified by
+  // |notification_id| and belonging to |origin| from the database, and stores
+  // it in |*notification_resources|. Returns the status code.
+  Status ReadNotificationResources(
+      const std::string& notification_id,
+      const GURL& origin,
+      blink::NotificationResources* notification_resources) const;
 
   // This function is identical to ReadNotificationData above, but also records
   // an interaction with that notification in the database for UKM logging
