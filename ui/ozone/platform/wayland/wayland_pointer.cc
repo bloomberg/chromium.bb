@@ -6,6 +6,7 @@
 
 #include <linux/input.h>
 #include <wayland-client.h>
+#include <memory>
 
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
@@ -41,7 +42,7 @@ WaylandPointer::WaylandPointer(wl_pointer* pointer,
 
   wl_pointer_add_listener(obj_.get(), &listener, this);
 
-  cursor_.reset(new WaylandCursor);
+  cursor_ = std::make_unique<WaylandCursor>();
 }
 
 WaylandPointer::~WaylandPointer() {

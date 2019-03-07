@@ -16,80 +16,71 @@
 
 namespace ui {
 
-WaylandCursor::WaylandCursor() : shared_memory_(new base::SharedMemory()) {}
+WaylandCursor::WaylandCursor() = default;
+
+WaylandCursor::~WaylandCursor() = default;
+
+// static
+void WaylandCursor::OnBufferRelease(void* data, wl_buffer* buffer) {
+  auto* cursor = static_cast<WaylandCursor*>(data);
+  DCHECK(cursor->buffers_.count(buffer) > 0);
+  cursor->buffers_.erase(buffer);
+}
 
 void WaylandCursor::Init(wl_pointer* pointer, WaylandConnection* connection) {
-  if (input_pointer_ == pointer)
-    return;
+  DCHECK(connection);
 
   input_pointer_ = pointer;
 
-  DCHECK(connection);
   shm_ = connection->shm();
   pointer_surface_.reset(
       wl_compositor_create_surface(connection->compositor()));
 }
 
-WaylandCursor::~WaylandCursor() {
-  pointer_surface_.reset();
-  buffer_.reset();
-
-  if (shared_memory_->handle().GetHandle()) {
-    shared_memory_->Unmap();
-    shared_memory_->Close();
-  }
-}
-
 void WaylandCursor::UpdateBitmap(const std::vector<SkBitmap>& cursor_image,
-                                 const gfx::Point& location,
+                                 const gfx::Point& hotspot,
                                  uint32_t serial) {
   if (!input_pointer_)
     return;
 
-  if (!cursor_image.size()) {
-    HideCursor(serial);
-    return;
-  }
+  if (!cursor_image.size())
+    return HideCursor(serial);
 
   const SkBitmap& image = cursor_image[0];
   SkISize size = image.dimensions();
-  if (size.isEmpty()) {
-    HideCursor(serial);
-    return;
-  }
+  if (size.isEmpty())
+    return HideCursor(serial);
 
   gfx::Size image_size = gfx::SkISizeToSize(size);
-  if (image_size != size_) {
-    wl_buffer* buffer =
-        wl::CreateSHMBuffer(image_size, shared_memory_.get(), shm_);
-    if (!buffer) {
-      LOG(ERROR) << "Failed to create SHM buffer for Cursor Bitmap.";
-      wl_pointer_set_cursor(input_pointer_, serial, nullptr, 0, 0);
-      return;
-    }
-    buffer_.reset(buffer);
-    size_ = image_size;
+  auto shared_memory = std::make_unique<base::SharedMemory>();
+  wl::Object<wl_buffer> buffer(
+      wl::CreateSHMBuffer(image_size, shared_memory.get(), shm_));
+  if (!buffer) {
+    LOG(ERROR) << "Failed to create SHM buffer for Cursor Bitmap.";
+    return HideCursor(serial);
   }
-  wl::DrawBitmapToSHMB(size_, *shared_memory_, image);
+
+  static const struct wl_buffer_listener wl_buffer_listener {
+    &WaylandCursor::OnBufferRelease
+  };
+  wl_buffer_add_listener(buffer.get(), &wl_buffer_listener, this);
+
+  wl::DrawBitmapToSHMB(image_size, *shared_memory, image);
 
   wl_pointer_set_cursor(input_pointer_, serial, pointer_surface_.get(),
-                        location.x(), location.y());
-  wl_surface_attach(pointer_surface_.get(), buffer_.get(), 0, 0);
-  wl_surface_damage(pointer_surface_.get(), 0, 0, size_.width(),
-                    size_.height());
+                        hotspot.x(), hotspot.y());
+  wl_surface_attach(pointer_surface_.get(), buffer.get(), 0, 0);
   wl_surface_commit(pointer_surface_.get());
+
+  buffers_.emplace(
+      buffer.get(),
+      std::pair<wl::Object<wl_buffer>, std::unique_ptr<base::SharedMemory>>(
+          std::move(buffer), std::move(shared_memory)));
 }
 
 void WaylandCursor::HideCursor(uint32_t serial) {
-  size_ = gfx::Size();
+  DCHECK(input_pointer_);
   wl_pointer_set_cursor(input_pointer_, serial, nullptr, 0, 0);
-
-  buffer_.reset();
-
-  if (shared_memory_->handle().GetHandle()) {
-    shared_memory_->Unmap();
-    shared_memory_->Close();
-  }
 }
 
 }  // namespace ui

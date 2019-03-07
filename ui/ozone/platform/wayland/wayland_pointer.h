@@ -16,6 +16,10 @@ namespace ui {
 
 class WaylandWindow;
 
+// Wraps the wl_pointer object and transmits events to the dispatcher callback.
+//
+// Exposes an aggregated WaylandCursor that manages the visual shape of the
+// pointer.
 class WaylandPointer {
  public:
   WaylandPointer(wl_pointer* pointer, const EventDispatchCallback& callback);

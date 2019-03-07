@@ -8,16 +8,19 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event.h"
+#include "ui/ozone/platform/wayland/test/mock_pointer.h"
 #include "ui/ozone/platform/wayland/test/mock_surface.h"
-#include "ui/ozone/platform/wayland/test/test_pointer.h"
 #include "ui/ozone/platform/wayland/test/test_wayland_server_thread.h"
+#include "ui/ozone/platform/wayland/wayland_cursor.h"
 #include "ui/ozone/platform/wayland/wayland_test.h"
 #include "ui/ozone/platform/wayland/wayland_window.h"
 #include "ui/ozone/test/mock_platform_window_delegate.h"
 #include "ui/platform_window/platform_window_init_properties.h"
 
-using ::testing::SaveArg;
 using ::testing::_;
+using ::testing::Mock;
+using ::testing::Ne;
+using ::testing::SaveArg;
 
 namespace ui {
 
@@ -38,7 +41,7 @@ class WaylandPointerTest : public WaylandTest {
   }
 
  protected:
-  wl::TestPointer* pointer_;
+  wl::MockPointer* pointer_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WaylandPointerTest);
@@ -310,6 +313,24 @@ TEST_P(WaylandPointerTest, AxisHorizontal) {
   EXPECT_EQ(0, mouse_wheel_event->changed_button_flags());
   EXPECT_EQ(gfx::PointF(50, 75), mouse_wheel_event->location_f());
   EXPECT_EQ(gfx::PointF(50, 75), mouse_wheel_event->root_location_f());
+}
+
+TEST_P(WaylandPointerTest, SetBitmap) {
+  SkBitmap dummy_cursor;
+  dummy_cursor.setInfo(
+      SkImageInfo::Make(16, 16, kUnknown_SkColorType, kUnknown_SkAlphaType));
+
+  EXPECT_CALL(*pointer_, SetCursor(nullptr, 0, 0));
+  connection_->SetCursorBitmap({}, {});
+  connection_->ScheduleFlush();
+  Sync();
+  Mock::VerifyAndClearExpectations(pointer_);
+
+  EXPECT_CALL(*pointer_, SetCursor(Ne(nullptr), 5, 8));
+  connection_->SetCursorBitmap({dummy_cursor}, gfx::Point(5, 8));
+  connection_->ScheduleFlush();
+  Sync();
+  Mock::VerifyAndClearExpectations(pointer_);
 }
 
 INSTANTIATE_TEST_SUITE_P(XdgVersionV5Test,

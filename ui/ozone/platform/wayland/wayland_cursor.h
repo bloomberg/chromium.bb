@@ -6,12 +6,14 @@
 #define UI_OZONE_PLATFORM_WAYLAND_WAYLAND_CURSOR_H_
 
 #include <wayland-client.h>
+#include <memory>
+#include <utility>
 #include <vector>
 
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkSurface.h"
-#include "ui/gfx/geometry/size.h"
 #include "ui/ozone/platform/wayland/wayland_object.h"
 
 namespace base {
@@ -26,10 +28,14 @@ namespace ui {
 
 class WaylandConnection;
 
-// The WaylandCursor class wraps the actual visual representation
-// (what users see drawn) of a wl_pointer.
+// Manages the actual visual representation (what users see drawn) of the
+// 'pointer' (which is the Wayland term for mouse/mice).
 //
-// 'pointer' is the Wayland terminology for mouse/mice.
+// An instance of this class is aggregated by an instance of WaylandPointer
+// and is exposed for updating the pointer bitmap with the single method call.
+//
+// Encapsulates the low-level job such as surface and buffer management and
+// Wayland protocol calls.
 class WaylandCursor {
  public:
   WaylandCursor();
@@ -38,24 +44,28 @@ class WaylandCursor {
   void Init(wl_pointer* pointer, WaylandConnection* connection);
 
   // Updates wl_pointer's visual representation with the given bitmap
-  // image set, at the hotspot specified by 'location'.
+  // image set and hotspot.
   void UpdateBitmap(const std::vector<SkBitmap>& bitmaps,
-                    const gfx::Point& location,
+                    const gfx::Point& hotspot,
                     uint32_t serial);
 
  private:
+  // wl_buffer_listener:
+  static void OnBufferRelease(void* data, wl_buffer* wl_buffer);
+
   void HideCursor(uint32_t serial);
 
   wl_shm* shm_ = nullptr;                // Owned by WaylandConnection.
   wl_pointer* input_pointer_ = nullptr;  // Owned by WaylandPointer.
 
-  wl::Object<wl_buffer> buffer_;
+  // Holds the buffers and their memory until the compositor releases them.
+  base::flat_map<
+      wl_buffer*,
+      std::pair<wl::Object<wl_buffer>, std::unique_ptr<base::SharedMemory>>>
+      buffers_;
   wl::Object<wl_surface> pointer_surface_;
 
-  std::unique_ptr<base::SharedMemory> shared_memory_;
   sk_sp<SkSurface> sk_surface_;
-
-  gfx::Size size_;
 
   DISALLOW_COPY_AND_ASSIGN(WaylandCursor);
 };
