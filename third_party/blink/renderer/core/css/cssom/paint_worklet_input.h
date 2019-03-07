@@ -19,11 +19,7 @@ class CORE_EXPORT PaintWorkletInput : public cc::PaintWorkletInput {
   PaintWorkletInput(const std::string& name,
                     const FloatSize& container_size,
                     float effective_zoom,
-                    const Document&,
-                    const ComputedStyle&,
-                    Node* styled_node,
-                    const Vector<CSSPropertyID>& native_properties,
-                    const Vector<AtomicString>& custom_properties);
+                    CrossThreadPersistent<PaintWorkletStylePropertyMap>);
 
   ~PaintWorkletInput() override = default;
 
