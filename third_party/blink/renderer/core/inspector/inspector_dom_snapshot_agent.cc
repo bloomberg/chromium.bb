@@ -212,7 +212,7 @@ void InspectorDOMSnapshotAgent::DidInsertDOMNode(Node* node) {
 void InspectorDOMSnapshotAgent::EnableAndReset() {
   enabled_.Set(true);
   origin_url_map_ = std::make_unique<OriginUrlMap>();
-  instrumenting_agents_->addInspectorDOMSnapshotAgent(this);
+  instrumenting_agents_->AddInspectorDOMSnapshotAgent(this);
 }
 
 void InspectorDOMSnapshotAgent::Restore() {
@@ -231,7 +231,7 @@ Response InspectorDOMSnapshotAgent::disable() {
     return Response::Error("DOM snapshot agent hasn't been enabled.");
   enabled_.Clear();
   origin_url_map_.reset();
-  instrumenting_agents_->removeInspectorDOMSnapshotAgent(this);
+  instrumenting_agents_->RemoveInspectorDOMSnapshotAgent(this);
   return Response::OK();
 }
 

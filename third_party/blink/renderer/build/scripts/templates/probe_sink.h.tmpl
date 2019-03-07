@@ -42,10 +42,10 @@ class {{export_symbol}} {{sink_class}} : public GarbageCollectedFinalized<{{sink
 {% for agent in agents %}
 {% set class_name = agent | agent_name_to_class %}
 {% set getter_name = agent | to_lower_case %}
-  bool has{{agent}}s() const { return !{{getter_name}}s_.IsEmpty(); }
+  bool Has{{agent}}s() const { return !{{getter_name}}s_.IsEmpty(); }
   const HeapListHashSet<Member<{{class_name}}>>& {{getter_name}}s() const { return {{getter_name}}s_; }
-  void add{{agent}}({{class_name}}* agent);
-  void remove{{agent}}({{class_name}}* agent);
+  void Add{{agent}}({{class_name}}* agent);
+  void Remove{{agent}}({{class_name}}* agent);
 
 {% endfor %}
   // Queries process-wide. Intended for fast-return cases only.

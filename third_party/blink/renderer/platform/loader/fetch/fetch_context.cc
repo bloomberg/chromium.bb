@@ -56,7 +56,7 @@ FetchContext& FetchContext::NullInstance() {
 
 FetchContext::FetchContext()
     : platform_probe_sink_(MakeGarbageCollected<PlatformProbeSink>()) {
-  platform_probe_sink_->addPlatformTraceEvents(
+  platform_probe_sink_->AddPlatformTraceEvents(
       MakeGarbageCollected<PlatformTraceEventsAgent>());
 }
 

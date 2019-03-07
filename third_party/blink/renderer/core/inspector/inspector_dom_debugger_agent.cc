@@ -224,7 +224,7 @@ Response InspectorDOMDebuggerAgent::disable() {
 
 void InspectorDOMDebuggerAgent::Restore() {
   if (enabled_.Get())
-    instrumenting_agents_->addInspectorDOMDebuggerAgent(this);
+    instrumenting_agents_->AddInspectorDOMDebuggerAgent(this);
 }
 
 Response InspectorDOMDebuggerAgent::setEventListenerBreakpoint(
@@ -756,9 +756,9 @@ void InspectorDOMDebuggerAgent::DidRemoveBreakpoint() {
 void InspectorDOMDebuggerAgent::SetEnabled(bool enabled) {
   enabled_.Set(enabled);
   if (enabled)
-    instrumenting_agents_->addInspectorDOMDebuggerAgent(this);
+    instrumenting_agents_->AddInspectorDOMDebuggerAgent(this);
   else
-    instrumenting_agents_->removeInspectorDOMDebuggerAgent(this);
+    instrumenting_agents_->RemoveInspectorDOMDebuggerAgent(this);
 }
 
 void InspectorDOMDebuggerAgent::DidCommitLoadForLocalFrame(LocalFrame*) {

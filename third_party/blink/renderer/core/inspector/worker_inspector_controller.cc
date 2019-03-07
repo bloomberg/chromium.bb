@@ -74,7 +74,7 @@ WorkerInspectorController::WorkerInspectorController(
       thread_(thread),
       inspected_frames_(nullptr),
       probe_sink_(MakeGarbageCollected<CoreProbeSink>()) {
-  probe_sink_->addInspectorTraceEvents(
+  probe_sink_->AddInspectorTraceEvents(
       MakeGarbageCollected<InspectorTraceEvents>());
   if (auto* scope = DynamicTo<WorkerGlobalScope>(thread->GlobalScope())) {
     worker_devtools_token_ = devtools_params->devtools_worker_token;

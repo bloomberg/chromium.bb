@@ -453,7 +453,7 @@ void InspectorDOMAgent::EnableAndReset() {
   history_ = MakeGarbageCollected<InspectorHistory>();
   dom_editor_ = MakeGarbageCollected<DOMEditor>(history_.Get());
   document_ = inspected_frames_->Root()->GetDocument();
-  instrumenting_agents_->addInspectorDOMAgent(this);
+  instrumenting_agents_->AddInspectorDOMAgent(this);
 }
 
 Response InspectorDOMAgent::enable() {
@@ -466,7 +466,7 @@ Response InspectorDOMAgent::disable() {
   if (!enabled_.Get())
     return Response::Error("DOM agent hasn't been enabled");
   enabled_.Clear();
-  instrumenting_agents_->removeInspectorDOMAgent(this);
+  instrumenting_agents_->RemoveInspectorDOMAgent(this);
   history_.Clear();
   dom_editor_.Clear();
   SetDocument(nullptr);

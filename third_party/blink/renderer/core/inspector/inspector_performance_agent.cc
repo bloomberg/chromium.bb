@@ -49,7 +49,7 @@ void InspectorPerformanceAgent::Restore() {
 }
 
 void InspectorPerformanceAgent::InnerEnable() {
-  instrumenting_agents_->addInspectorPerformanceAgent(this);
+  instrumenting_agents_->AddInspectorPerformanceAgent(this);
   Thread::Current()->AddTaskTimeObserver(this);
   layout_start_ticks_ = TimeTicks();
   recalc_style_start_ticks_ = TimeTicks();
@@ -71,7 +71,7 @@ protocol::Response InspectorPerformanceAgent::disable() {
   if (!enabled_.Get())
     return Response::OK();
   enabled_.Clear();
-  instrumenting_agents_->removeInspectorPerformanceAgent(this);
+  instrumenting_agents_->RemoveInspectorPerformanceAgent(this);
   Thread::Current()->RemoveTaskTimeObserver(this);
   return Response::OK();
 }
