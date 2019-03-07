@@ -5,7 +5,9 @@
 #include "third_party/blink/renderer/core/display_lock/display_lock_context.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_options.h"
+#include "third_party/blink/renderer/core/editing/ephemeral_range.h"
 #include "third_party/blink/renderer/core/editing/finder/text_finder.h"
+#include "third_party/blink/renderer/core/editing/visible_units.h"
 #include "third_party/blink/renderer/core/frame/find_in_page.h"
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
@@ -18,7 +20,10 @@ namespace {
 class DisplayLockTestFindInPageClient : public mojom::blink::FindInPageClient {
  public:
   DisplayLockTestFindInPageClient()
-      : find_results_are_ready_(false), count_(-1), binding_(this) {}
+      : find_results_are_ready_(false),
+        active_index_(-1),
+        count_(-1),
+        binding_(this) {}
 
   ~DisplayLockTestFindInPageClient() override = default;
 
@@ -41,19 +46,29 @@ class DisplayLockTestFindInPageClient : public mojom::blink::FindInPageClient {
                       const WebRect& active_match_rect,
                       int active_match_ordinal,
                       mojom::blink::FindMatchUpdateType final_update) final {
+    active_match_rect_ = active_match_rect;
+    active_index_ = active_match_ordinal;
     find_results_are_ready_ =
         (final_update == mojom::blink::FindMatchUpdateType::kFinalUpdate);
   }
 
   bool FindResultsAreReady() const { return find_results_are_ready_; }
   int Count() const { return count_; }
+  int ActiveIndex() const { return active_index_; }
+  IntRect ActiveMatchRect() const { return active_match_rect_; }
+
   void Reset() {
     find_results_are_ready_ = false;
     count_ = -1;
+    active_index_ = -1;
+    active_match_rect_ = IntRect();
   }
 
  private:
+  IntRect active_match_rect_;
   bool find_results_are_ready_;
+  int active_index_;
+
   int count_;
   mojo::Binding<mojom::blink::FindInPageClient> binding_;
 };
@@ -342,6 +357,7 @@ TEST_F(DisplayLockContextTest,
   test::RunPendingTasks();
   EXPECT_TRUE(client.FindResultsAreReady());
   EXPECT_EQ(1, client.Count());
+  EXPECT_EQ(1, client.ActiveIndex());
   client.Reset();
 
   // Check if the result is correct if we update the contents.
@@ -353,7 +369,10 @@ TEST_F(DisplayLockContextTest,
   test::RunPendingTasks();
   EXPECT_TRUE(client.FindResultsAreReady());
   EXPECT_EQ(0, client.Count());
+  EXPECT_EQ(-1, client.ActiveIndex());
   client.Reset();
+  // Assert the container is still locked.
+  EXPECT_TRUE(element->GetDisplayLockContext()->IsLocked());
 
   // Check if the result is correct if we have non-activatable lock.
   element->SetInnerHTMLFromString(
@@ -383,16 +402,34 @@ TEST_F(DisplayLockContextTest,
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 4);
   EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 2);
 
+  EXPECT_TRUE(element->GetDisplayLockContext()->IsLocked());
+  EXPECT_TRUE(activatable->GetDisplayLockContext()->IsLocked());
+  EXPECT_TRUE(non_activatable->GetDisplayLockContext()->IsLocked());
+  EXPECT_TRUE(nested_non_activatable->GetDisplayLockContext()->IsLocked());
+
   find_in_page->Find(current_id++, "testing", find_options->Clone());
   EXPECT_FALSE(client.FindResultsAreReady());
   test::RunPendingTasks();
   EXPECT_TRUE(client.FindResultsAreReady());
   EXPECT_EQ(2, client.Count());
+  EXPECT_EQ(1, client.ActiveIndex());
   client.Reset();
+
+  UpdateAllLifecyclePhasesForTest();
+  // The locked container should be unlocked, since the match is inside that
+  // container ("testing1" inside the div).
+  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 3);
+  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 2);
+  EXPECT_FALSE(element->GetDisplayLockContext()->IsLocked());
+  // Since the active match isn't in any locked container, they need to be
+  // locked.
+  EXPECT_TRUE(activatable->GetDisplayLockContext()->IsLocked());
+  EXPECT_TRUE(non_activatable->GetDisplayLockContext()->IsLocked());
+  EXPECT_TRUE(nested_non_activatable->GetDisplayLockContext()->IsLocked());
 
   // Check if the result is correct if we update style.
   activatable->setAttribute("style", "contain: style layout; display: none;");
-  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 4);
+  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 3);
   EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 2);
 
   find_in_page->Find(current_id++, "testing", find_options->Clone());
@@ -400,6 +437,7 @@ TEST_F(DisplayLockContextTest,
   test::RunPendingTasks();
   EXPECT_TRUE(client.FindResultsAreReady());
   EXPECT_EQ(1, client.Count());
+  EXPECT_EQ(1, client.ActiveIndex());
   client.Reset();
 
   // Now commit all the locks and ensure we can find.
@@ -421,7 +459,162 @@ TEST_F(DisplayLockContextTest,
   test::RunPendingTasks();
   EXPECT_TRUE(client.FindResultsAreReady());
   EXPECT_EQ(2, client.Count());
+}
+
+// Tests find-in-page active match navigation (find next/previous).
+TEST_F(DisplayLockContextTest, FindInPageNavigateLockedMatches) {
+  ResizeAndFocus();
+  SetHtmlInnerHTML(R"HTML(
+    <style>
+    div {
+      width: 100px;
+      height: 100px;
+      contain: content;
+    }
+    </style>
+    <body>
+      <div id="container">
+        <div id="one">result</div>
+        <div id="two"><b>r</b>esult</div>
+        <div id="three">r<i>esul</i>t</div>
+      </div>
+    </body>
+  )HTML");
+
+  WebString search_text(String("result"));
+  auto* find_in_page = GetFindInPage();
+  ASSERT_TRUE(find_in_page);
+
+  DisplayLockTestFindInPageClient client;
+  client.SetFrame(LocalMainFrame());
+
+  DisplayLockOptions options;
+  options.setActivatable(true);
+
+  // Lock the children and container.
+  auto* container = GetDocument().getElementById("container");
+  auto* div_one = GetDocument().getElementById("one");
+  auto* div_two = GetDocument().getElementById("two");
+  auto* div_three = GetDocument().getElementById("three");
+  auto* script_state = ToScriptStateForMainWorld(GetDocument().GetFrame());
+  {
+    ScriptState::Scope scope(script_state);
+    container->getDisplayLockForBindings()->acquire(script_state, &options);
+    div_one->getDisplayLockForBindings()->acquire(script_state, &options);
+    div_two->getDisplayLockForBindings()->acquire(script_state, &options);
+    div_three->getDisplayLockForBindings()->acquire(script_state, &options);
+  }
+  UpdateAllLifecyclePhasesForTest();
+
+  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 4);
+  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 0);
+
+  auto find_options = mojom::blink::FindOptions::New();
+  find_options->run_synchronously_for_testing = true;
+  find_options->find_next = false;
+  find_options->forward = true;
+
+  int current_id = 123;
+
+  // Find should activate "result" number 1 in "#one".
+  find_in_page->Find(current_id++, search_text, find_options->Clone());
+  test::RunPendingTasks();
+  EXPECT_EQ(3, client.Count());
+  EXPECT_EQ(1, client.ActiveIndex());
+
+  EphemeralRange range_one = EphemeralRange::RangeOfContents(*div_one);
+  ASSERT_FALSE(range_one.IsNull());
+  EXPECT_EQ(ComputeTextRect(range_one), client.ActiveMatchRect());
+
+  UpdateAllLifecyclePhasesForTest();
+  // |div_one| and the container should be unlocked.
+  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 2);
+  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 0);
+  EXPECT_FALSE(container->GetDisplayLockContext()->IsLocked());
+  EXPECT_FALSE(div_one->GetDisplayLockContext()->IsLocked());
+  EXPECT_TRUE(div_two->GetDisplayLockContext()->IsLocked());
+  EXPECT_TRUE(div_three->GetDisplayLockContext()->IsLocked());
+
+  // Find next should activate "result" number 2 in "#two".
   client.Reset();
+  find_options->find_next = true;
+  find_in_page->Find(current_id++, search_text, find_options->Clone());
+  test::RunPendingTasks();
+  EXPECT_EQ(3, client.Count());
+  EXPECT_EQ(2, client.ActiveIndex());
+
+  EphemeralRange range_two = EphemeralRange::RangeOfContents(*div_two);
+  ASSERT_FALSE(range_one.IsNull());
+  EXPECT_EQ(ComputeTextRect(range_two), client.ActiveMatchRect());
+
+  UpdateAllLifecyclePhasesForTest();
+  // |div_two| should be unlocked.
+  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
+  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 0);
+  EXPECT_FALSE(container->GetDisplayLockContext()->IsLocked());
+  EXPECT_FALSE(div_one->GetDisplayLockContext()->IsLocked());
+  EXPECT_FALSE(div_two->GetDisplayLockContext()->IsLocked());
+  EXPECT_TRUE(div_three->GetDisplayLockContext()->IsLocked());
+
+  // Find next should activate "result" number 3 in "#three".
+  client.Reset();
+  find_options->find_next = true;
+  find_in_page->Find(current_id++, search_text, find_options->Clone());
+  test::RunPendingTasks();
+  EXPECT_EQ(3, client.Count());
+  EXPECT_EQ(3, client.ActiveIndex());
+
+  EphemeralRange range_three = EphemeralRange::RangeOfContents(*div_three);
+  ASSERT_FALSE(range_three.IsNull());
+  EXPECT_EQ(ComputeTextRect(range_three), client.ActiveMatchRect());
+
+  UpdateAllLifecyclePhasesForTest();
+  // |div_three| should be unlocked.
+  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 0);
+  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 0);
+  EXPECT_FALSE(container->GetDisplayLockContext()->IsLocked());
+  EXPECT_FALSE(div_one->GetDisplayLockContext()->IsLocked());
+  EXPECT_FALSE(div_two->GetDisplayLockContext()->IsLocked());
+  EXPECT_FALSE(div_three->GetDisplayLockContext()->IsLocked());
+
+  // Lock them again, now making |div_two| non-activatable.
+  {
+    ScriptState::Scope scope(script_state);
+    div_one->getDisplayLockForBindings()->acquire(script_state, &options);
+    div_two->getDisplayLockForBindings()->acquire(script_state, nullptr);
+    div_three->getDisplayLockForBindings()->acquire(script_state, &options);
+  }
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 3);
+  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 1);
+
+  // Find result in #one.
+  find_in_page->ClearActiveFindMatch();
+  client.Reset();
+  find_options->find_next = false;
+  find_in_page->Find(current_id++, search_text, find_options->Clone());
+  test::RunPendingTasks();
+  EXPECT_EQ(2, client.Count());
+  EXPECT_EQ(1, client.ActiveIndex());
+  EXPECT_EQ(ComputeTextRect(range_one), client.ActiveMatchRect());
+
+  // Going forward from #one would go to #three.
+  client.Reset();
+  find_options->find_next = true;
+  find_in_page->Find(current_id++, search_text, find_options->Clone());
+  test::RunPendingTasks();
+  EXPECT_EQ(2, client.Count());
+  EXPECT_EQ(2, client.ActiveIndex());
+  EXPECT_EQ(ComputeTextRect(range_three), client.ActiveMatchRect());
+
+  // Going backwards from #three would go to #one.
+  client.Reset();
+  find_options->forward = false;
+  find_in_page->Find(current_id++, search_text, find_options->Clone());
+  test::RunPendingTasks();
+  EXPECT_EQ(2, client.Count());
+  EXPECT_EQ(1, client.ActiveIndex());
+  EXPECT_EQ(ComputeTextRect(range_one), client.ActiveMatchRect());
 }
 
 TEST_F(DisplayLockContextTest, CallUpdateStyleAndLayoutAfterChange) {

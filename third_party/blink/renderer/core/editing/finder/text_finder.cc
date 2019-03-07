@@ -37,6 +37,7 @@
 #include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/public/web/web_view_client.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache_base.h"
+#include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/dom/range.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/editing/editor.h"
@@ -74,9 +75,13 @@ void TextFinder::FindMatch::Trace(Visitor* visitor) {
 
 static void ScrollToVisible(Range* match) {
   const Node& first_node = *match->FirstNode();
-  if (RuntimeEnabledFeatures::InvisibleDOMEnabled() &&
-      InvisibleDOM::ActivateRangeIfNeeded(EphemeralRangeInFlatTree(match)))
-    first_node.GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  if (RuntimeEnabledFeatures::InvisibleDOMEnabled() ||
+      RuntimeEnabledFeatures::DisplayLockingEnabled()) {
+    const EphemeralRangeInFlatTree range(match);
+    if (InvisibleDOM::ActivateRangeIfNeeded(range) ||
+        DisplayLockUtilities::ActivateFindInPageMatchRangeIfNeeded(range))
+      first_node.GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  }
   Settings* settings = first_node.GetDocument().GetSettings();
   bool smooth_find_enabled =
       settings ? settings->GetSmoothScrollForFindEnabled() : false;
