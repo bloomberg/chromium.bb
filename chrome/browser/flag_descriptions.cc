@@ -1783,10 +1783,6 @@ const char kSoleIntegrationDescription[] =
     "Enable Sole integration for browser customization. You must restart "
     "the browser twice for changes to take effect.";
 
-const char kSoundContentSettingName[] = "Sound content setting";
-const char kSoundContentSettingDescription[] =
-    "Enable site-wide muting in content settings and tab strip context menu.";
-
 const char kSpeculativeServiceWorkerStartOnQueryInputName[] =
     "Enable speculative start of a service worker when a search is predicted.";
 const char kSpeculativeServiceWorkerStartOnQueryInputDescription[] =

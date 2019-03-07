@@ -67,25 +67,13 @@ void TabMenuModel::Build(TabStripModel* tab_strip, int index) {
     AddItemWithStringId(TabStripModel::CommandFocusMode,
                         IDS_TAB_CXMENU_FOCUS_THIS_TAB);
   }
-  if (base::FeatureList::IsEnabled(features::kSoundContentSetting)) {
-    const bool will_mute =
-        !chrome::AreAllSitesMuted(*tab_strip, affected_indices);
-    AddItem(TabStripModel::CommandToggleSiteMuted,
-            will_mute
-                ? l10n_util::GetPluralStringFUTF16(
-                      IDS_TAB_CXMENU_SOUND_MUTE_SITE, num_affected_tabs)
-                : l10n_util::GetPluralStringFUTF16(
-                      IDS_TAB_CXMENU_SOUND_UNMUTE_SITE, num_affected_tabs));
-  } else {
-    const bool will_mute =
-        !chrome::AreAllTabsMuted(*tab_strip, affected_indices);
-    AddItem(TabStripModel::CommandToggleTabAudioMuted,
-            will_mute
-                ? l10n_util::GetPluralStringFUTF16(
-                      IDS_TAB_CXMENU_AUDIO_MUTE_TAB, num_affected_tabs)
-                : l10n_util::GetPluralStringFUTF16(
-                      IDS_TAB_CXMENU_AUDIO_UNMUTE_TAB, num_affected_tabs));
-  }
+  const bool will_mute =
+      !chrome::AreAllSitesMuted(*tab_strip, affected_indices);
+  AddItem(TabStripModel::CommandToggleSiteMuted,
+          will_mute ? l10n_util::GetPluralStringFUTF16(
+                          IDS_TAB_CXMENU_SOUND_MUTE_SITE, num_affected_tabs)
+                    : l10n_util::GetPluralStringFUTF16(
+                          IDS_TAB_CXMENU_SOUND_UNMUTE_SITE, num_affected_tabs));
 
   Browser* browser =
       chrome::FindBrowserWithWebContents(tab_strip->GetWebContentsAt(index));

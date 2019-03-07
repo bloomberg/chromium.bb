@@ -1056,9 +1056,6 @@ extern const char kSmoothScrollingDescription[];
 extern const char kSoleIntegrationName[];
 extern const char kSoleIntegrationDescription[];
 
-extern const char kSoundContentSettingName[];
-extern const char kSoundContentSettingDescription[];
-
 extern const char kSpeculativeServiceWorkerStartOnQueryInputName[];
 extern const char kSpeculativeServiceWorkerStartOnQueryInputDescription[];
 

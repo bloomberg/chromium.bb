@@ -127,9 +127,6 @@ suite('SiteDetails', function() {
     const optionalSiteDetailsContentSettingsTypes =
         /** @type {!settings.ContentSettingsType : string} */ ({});
     optionalSiteDetailsContentSettingsTypes[settings.ContentSettingsTypes
-                                                .SOUND] =
-        'enableSoundContentSetting';
-    optionalSiteDetailsContentSettingsTypes[settings.ContentSettingsTypes
                                                 .CLIPBOARD] =
         'enableClipboardContentSetting';
     optionalSiteDetailsContentSettingsTypes[settings.ContentSettingsTypes.ADS] =
@@ -250,7 +247,6 @@ suite('SiteDetails', function() {
   test('correct pref settings are shown', function() {
     browserProxy.setPrefs(prefs);
     // Make sure all the possible content settings are shown for this test.
-    loadTimeData.overrideValues({enableSoundContentSetting: true});
     loadTimeData.overrideValues({enableSafeBrowsingSubresourceFilter: true});
     loadTimeData.overrideValues({enableClipboardContentSetting: true});
     loadTimeData.overrideValues({enableSensorsContentSetting: true});

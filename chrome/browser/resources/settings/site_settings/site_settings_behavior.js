@@ -198,8 +198,6 @@ const SiteSettingsBehaviorImpl = {
         settings.ContentSettingsTypes.ADS,
         'enableSafeBrowsingSubresourceFilter');
     addOrRemoveSettingWithFlag(
-        settings.ContentSettingsTypes.SOUND, 'enableSoundContentSetting');
-    addOrRemoveSettingWithFlag(
         settings.ContentSettingsTypes.CLIPBOARD,
         'enableClipboardContentSetting');
     addOrRemoveSettingWithFlag(

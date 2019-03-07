@@ -1132,7 +1132,6 @@ bool TabStripModel::IsContextMenuCommandEnabled(
       return delegate()->GetRestoreTabType() !=
              TabStripModelDelegate::RESTORE_NONE;
 
-    case CommandToggleTabAudioMuted:
     case CommandToggleSiteMuted: {
       std::vector<int> indices = GetIndicesForCommand(context_index);
       for (size_t i = 0; i < indices.size(); ++i) {
@@ -1276,20 +1275,6 @@ void TabStripModel::ExecuteContextMenuCommand(int context_index,
       break;
     }
 
-    case CommandToggleTabAudioMuted: {
-      std::vector<int> indices = GetIndicesForCommand(context_index);
-      const bool mute = WillContextMenuMute(context_index);
-      if (mute)
-        base::RecordAction(UserMetricsAction("TabContextMenu_MuteTabs"));
-      else
-        base::RecordAction(UserMetricsAction("TabContextMenu_UnmuteTabs"));
-      for (auto i = indices.begin(); i != indices.end(); ++i) {
-        chrome::SetTabAudioMuted(GetWebContentsAt(*i), mute,
-                                 TabMutedReason::CONTEXT_MENU, std::string());
-      }
-      break;
-    }
-
     case CommandToggleSiteMuted: {
       const bool mute = WillContextMenuMuteSites(context_index);
       if (mute) {
@@ -1341,11 +1326,6 @@ void TabStripModel::ExecuteAddToExistingGroupCommand(
   base::RecordAction(UserMetricsAction("TabContextMenu_AddToExistingGroup"));
 
   AddToExistingGroup(GetIndicesForCommand(context_index), group);
-}
-
-bool TabStripModel::WillContextMenuMute(int index) {
-  std::vector<int> indices = GetIndicesForCommand(index);
-  return !chrome::AreAllTabsMuted(*this, indices);
 }
 
 bool TabStripModel::WillContextMenuMuteSites(int index) {

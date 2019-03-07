@@ -171,9 +171,6 @@ bool ShouldShowPermission(
   }
 
   if (info.type == CONTENT_SETTINGS_TYPE_SOUND) {
-    if (!base::FeatureList::IsEnabled(features::kSoundContentSetting))
-      return false;
-
     // The sound content setting should always show up when the tab has played
     // audio.
     if (web_contents && web_contents->WasEverAudible())

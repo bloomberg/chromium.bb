@@ -102,9 +102,6 @@ public class SiteSettingsPreferences extends PreferenceFragment
             if (!SiteSettingsCategory.adsCategoryEnabled()) {
                 getPreferenceScreen().removePreference(findPreference(Type.ADS));
             }
-            if (!ChromeFeatureList.isEnabled(ChromeFeatureList.SOUND_CONTENT_SETTING)) {
-                getPreferenceScreen().removePreference(findPreference(Type.SOUND));
-            }
             if (!ChromeFeatureList.isEnabled(ChromeFeatureList.CLIPBOARD_CONTENT_SETTING)) {
                 getPreferenceScreen().removePreference(findPreference(Type.CLIPBOARD));
             }
@@ -156,9 +153,7 @@ public class SiteSettingsPreferences extends PreferenceFragment
             if (ChromeFeatureList.isEnabled(ChromeFeatureList.GENERIC_SENSOR_EXTRA_CLASSES)) {
                 websitePrefs.add(Type.SENSORS);
             }
-            if (ChromeFeatureList.isEnabled(ChromeFeatureList.SOUND_CONTENT_SETTING)) {
-                websitePrefs.add(Type.SOUND);
-            }
+            websitePrefs.add(Type.SOUND);
             websitePrefs.add(Type.USB);
         }
 

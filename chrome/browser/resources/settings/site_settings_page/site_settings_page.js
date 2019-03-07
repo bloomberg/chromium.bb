@@ -60,14 +60,6 @@ Polymer({
     },
 
     /** @private */
-    enableSoundContentSetting_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('enableSoundContentSetting');
-      }
-    },
-
-    /** @private */
     enableSensorsContentSetting_: {
       type: Boolean,
       readOnly: true,

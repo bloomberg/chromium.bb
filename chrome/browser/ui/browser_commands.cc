@@ -787,12 +787,9 @@ void PinTab(Browser* browser) {
 }
 
 void MuteSite(Browser* browser) {
-  TabStripModel::ContextMenuCommand command_id =
-      base::FeatureList::IsEnabled(features::kSoundContentSetting)
-          ? TabStripModel::ContextMenuCommand::CommandToggleSiteMuted
-          : TabStripModel::ContextMenuCommand::CommandToggleTabAudioMuted;
   browser->tab_strip_model()->ExecuteContextMenuCommand(
-      browser->tab_strip_model()->active_index(), command_id);
+      browser->tab_strip_model()->active_index(),
+      TabStripModel::ContextMenuCommand::CommandToggleSiteMuted);
 }
 
 void ConvertPopupToTabbedBrowser(Browser* browser) {
