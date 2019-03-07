@@ -256,7 +256,7 @@ __gCrWeb.autofill['fillForm'] = function(data, forceFillFieldIdentifier) {
   if (!__gCrWeb.autofill.styleInjected) {
     var style = document.createElement('style');
     style.textContent = '[chrome-autofilled] {' +
-        'background-color:#FAFFBD !important;' +
+        'background-color:#E8F0FE !important;' +
         'background-image:none !important;' +
         'color:#000000 !important;' +
         '}';
