@@ -270,7 +270,7 @@ void PerUserTopicRegistrationManager::ActOnSuccesfullRegistration(
   if (all_subscription_completed &&
       base::FeatureList::IsEnabled(
           invalidation::switches::kFCMInvalidationsConservativeEnabling)) {
-    NotifySubscriptionChannelStateChange(INVALIDATIONS_ENABLED);
+    NotifySubscriptionChannelStateChange(SubscriptionChannelState::ENABLED);
   }
 }
 
@@ -308,7 +308,8 @@ void PerUserTopicRegistrationManager::RegistrationFinishedForTopic(
       if (type == PerUserTopicRegistrationRequest::SUBSCRIBE &&
           base::FeatureList::IsEnabled(
               invalidation::switches::kFCMInvalidationsConservativeEnabling)) {
-        NotifySubscriptionChannelStateChange(SUBSCRIPTION_FAILURE);
+        NotifySubscriptionChannelStateChange(
+            SubscriptionChannelState::SUBSCRIPTION_FAILURE);
       }
       if (!code.ShouldRetry()) {
         registration_statuses_.erase(it);
@@ -374,14 +375,15 @@ void PerUserTopicRegistrationManager::OnAccessTokenRequestSucceeded(
   request_access_token_backoff_.Reset();
   access_token_ = access_token;
   // Emit ENABLED when successfully got the token.
-  NotifySubscriptionChannelStateChange(INVALIDATIONS_ENABLED);
+  NotifySubscriptionChannelStateChange(SubscriptionChannelState::ENABLED);
   DoRegistrationUpdate();
 }
 
 void PerUserTopicRegistrationManager::OnAccessTokenRequestFailed(
     GoogleServiceAuthError error) {
   DCHECK_NE(error.state(), GoogleServiceAuthError::NONE);
-  NotifySubscriptionChannelStateChange(INVALIDATION_CREDENTIALS_REJECTED);
+  NotifySubscriptionChannelStateChange(
+      SubscriptionChannelState::ACCESS_TOKEN_FAILURE);
   request_access_token_backoff_.InformOfRequest(false);
   request_access_token_retry_timer_.Start(
       FROM_HERE, request_access_token_backoff_.GetTimeUntilRelease(),
@@ -410,18 +412,19 @@ void PerUserTopicRegistrationManager::DropAllSavedRegistrationsOnTokenChange(
 }
 
 void PerUserTopicRegistrationManager::NotifySubscriptionChannelStateChange(
-    InvalidatorState invalidator_state) {
-  // TRANSIENT_INVALIDATION_ERROR is the default state of the subscription
+    SubscriptionChannelState state) {
+  // NOT_STARTED is the default state of the subscription
   // channel and shouldn't explicitly issued.
-  DCHECK(invalidator_state != TRANSIENT_INVALIDATION_ERROR);
-  if (last_issued_state_ == invalidator_state) {
+  DCHECK(state != SubscriptionChannelState::NOT_STARTED);
+  if (last_issued_state_ == state) {
     // Notify only on state change.
     return;
   }
 
-  last_issued_state_ = invalidator_state;
-  for (auto& observer : observers_)
-    observer.OnSubscriptionChannelStateChanged(invalidator_state);
+  last_issued_state_ = state;
+  for (auto& observer : observers_) {
+    observer.OnSubscriptionChannelStateChanged(state);
+  }
 }
 
 base::DictionaryValue PerUserTopicRegistrationManager::CollectDebugData()

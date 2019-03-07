@@ -13,6 +13,7 @@
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "components/invalidation/impl/channels_states.h"
 #include "components/invalidation/impl/per_user_topic_registration_request.h"
 #include "components/invalidation/public/identity_provider.h"
 #include "components/invalidation/public/invalidation_export.h"
@@ -46,7 +47,7 @@ class INVALIDATION_EXPORT PerUserTopicRegistrationManager {
   class Observer {
    public:
     virtual void OnSubscriptionChannelStateChanged(
-        InvalidatorState invalidator_state) = 0;
+        SubscriptionChannelState state) = 0;
   };
 
   PerUserTopicRegistrationManager(
@@ -105,7 +106,8 @@ class INVALIDATION_EXPORT PerUserTopicRegistrationManager {
 
   void DropAllSavedRegistrationsOnTokenChange(
       const std::string& instance_id_token);
-  void NotifySubscriptionChannelStateChange(InvalidatorState invalidator_state);
+  void NotifySubscriptionChannelStateChange(
+      SubscriptionChannelState invalidator_state);
 
   std::map<Topic, std::unique_ptr<RegistrationEntry>> registration_statuses_;
 
@@ -131,7 +133,8 @@ class INVALIDATION_EXPORT PerUserTopicRegistrationManager {
   const std::string project_id_;
 
   base::ObserverList<Observer>::Unchecked observers_;
-  InvalidatorState last_issued_state_ = TRANSIENT_INVALIDATION_ERROR;
+  SubscriptionChannelState last_issued_state_ =
+      SubscriptionChannelState::NOT_STARTED;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

@@ -87,7 +87,7 @@ class FCMInvalidationListener : public InvalidationListener,
 
   // PerUserTopicRegistrationManager::Observer implementation.
   void OnSubscriptionChannelStateChanged(
-      InvalidatorState invalidator_state) override;
+      SubscriptionChannelState state) override;
 
   void DoRegistrationUpdate();
 
@@ -139,7 +139,8 @@ class FCMInvalidationListener : public InvalidationListener,
   TopicSet registered_topics_;
 
   // The states of the HTTP and FCM channel.
-  InvalidatorState subscription_channel_state_ = DEFAULT_INVALIDATION_ERROR;
+  SubscriptionChannelState subscription_channel_state_ =
+      SubscriptionChannelState::NOT_STARTED;
   FcmChannelState fcm_network_state_ = FcmChannelState::NOT_STARTED;
 
   std::unique_ptr<PerUserTopicRegistrationManager>
