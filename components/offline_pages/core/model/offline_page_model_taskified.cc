@@ -517,7 +517,7 @@ void OfflinePageModelTaskified::OnCreateArchiveDone(
   // the completion of certain action, i.e., authentication, in the middle.
   if (skip_clearing_original_url_for_testing_ ||
       save_page_params.original_url != offline_page.url) {
-    offline_page.original_url = save_page_params.original_url;
+    offline_page.original_url_if_different = save_page_params.original_url;
   }
 
   if (policy_controller_->IsUserRequestedDownload(

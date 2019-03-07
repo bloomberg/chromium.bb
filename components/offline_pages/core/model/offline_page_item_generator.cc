@@ -26,7 +26,7 @@ OfflinePageItem OfflinePageItemGenerator::CreateItem() {
     item.client_id.id = id_;
   item.request_origin = request_origin_;
   item.url = url_;
-  item.original_url = original_url_;
+  item.original_url_if_different = original_url_;
   item.file_size = file_size_;
   item.creation_time = creation_time_;
   item.last_access_time = last_access_time_;

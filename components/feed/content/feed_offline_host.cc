@@ -25,12 +25,6 @@ using offline_pages::SuggestionsProvider;
 
 namespace {
 
-// |url| is always set. Sometimes |original_url| is set. If |original_url| is
-// set it is returned by this method, otherwise fall back to |url|.
-const GURL& PreferOriginal(const OfflinePageItem& item) {
-  return item.original_url.is_empty() ? item.url : item.original_url;
-}
-
 // Aggregates multiple callbacks from OfflinePageModel, storing the offline url.
 // When all callbacks have been invoked, tracked by ref counting, then
 // |on_completeion_| is finally invoked, sending all results together.
@@ -255,7 +249,7 @@ void FeedOfflineHost::OfflinePageModelLoaded(OfflinePageModel* model) {
 void FeedOfflineHost::OfflinePageAdded(OfflinePageModel* model,
                                        const OfflinePageItem& added_page) {
   DCHECK(!notify_status_change_.is_null());
-  const std::string& url = PreferOriginal(added_page).spec();
+  const std::string& url = added_page.GetOriginalUrl().spec();
   CacheOfflinePageUrlAndId(url, added_page.offline_id);
   notify_status_change_.Run(url, true);
 }

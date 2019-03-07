@@ -140,7 +140,7 @@ TEST_F(PrefetchedPagesTrackerImplTest, ShouldDeletePrefetchedURLWhenNotified) {
       tracker.PrefetchedOfflinePageExists(GURL("http://prefetched.com")));
   tracker.OfflinePageDeleted(offline_pages::OfflinePageModel::DeletedPageInfo(
       item.offline_id, kSystemDownloadId, item.client_id,
-      /*request_origin=*/"", item.original_url));
+      /*request_origin=*/"", item.original_url_if_different));
   EXPECT_FALSE(
       tracker.PrefetchedOfflinePageExists(GURL("http://prefetched.com")));
 }
@@ -163,7 +163,8 @@ TEST_F(PrefetchedPagesTrackerImplTest,
   tracker.OfflinePageDeleted(offline_pages::OfflinePageModel::DeletedPageInfo(
       manually_downloaded_item.offline_id, kSystemDownloadId,
       manually_downloaded_item.client_id,
-      /*request_origin=*/"", manually_downloaded_item.original_url));
+      /*request_origin=*/"",
+      manually_downloaded_item.original_url_if_different));
   EXPECT_TRUE(
       tracker.PrefetchedOfflinePageExists(GURL("http://prefetched.com")));
 }
@@ -274,7 +275,7 @@ TEST_F(PrefetchedPagesTrackerImplTest,
 
   tracker.OfflinePageDeleted(offline_pages::OfflinePageModel::DeletedPageInfo(
       first_item.offline_id, kSystemDownloadId, first_item.client_id,
-      /*request_origin=*/"", first_item.original_url));
+      /*request_origin=*/"", first_item.original_url_if_different));
 
   // Only one offline page (out of two) has been removed, the remaining one
   // should be reported here.
@@ -299,14 +300,14 @@ TEST_F(PrefetchedPagesTrackerImplTest,
 
   tracker.OfflinePageDeleted(offline_pages::OfflinePageModel::DeletedPageInfo(
       first_item.offline_id, kSystemDownloadId, first_item.client_id,
-      /*request_origin=*/"", first_item.original_url));
+      /*request_origin=*/"", first_item.original_url_if_different));
 
   ASSERT_TRUE(
       tracker.PrefetchedOfflinePageExists(GURL("http://prefetched.com")));
 
   tracker.OfflinePageDeleted(offline_pages::OfflinePageModel::DeletedPageInfo(
       second_item.offline_id, kSystemDownloadId, second_item.client_id,
-      /*request_origin=*/"", second_item.original_url));
+      /*request_origin=*/"", second_item.original_url_if_different));
 
   // All offline pages have been removed, their absence should be reported here.
   EXPECT_FALSE(

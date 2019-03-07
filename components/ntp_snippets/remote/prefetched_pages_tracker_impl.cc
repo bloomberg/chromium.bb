@@ -19,12 +19,6 @@ bool IsOfflineItemPrefetchedPage(const OfflinePageItem& offline_page_item) {
          offline_pages::kSuggestedArticlesNamespace;
 }
 
-const GURL& GetOfflinePageUrl(const OfflinePageItem& offline_page_item) {
-  return offline_page_item.original_url != GURL()
-             ? offline_page_item.original_url
-             : offline_page_item.url;
-}
-
 }  // namespace
 
 PrefetchedPagesTrackerImpl::PrefetchedPagesTrackerImpl(
@@ -119,7 +113,7 @@ void PrefetchedPagesTrackerImpl::OfflinePagesLoaded(
 
 void PrefetchedPagesTrackerImpl::AddOfflinePage(
     const OfflinePageItem& offline_page_item) {
-  const GURL& url = GetOfflinePageUrl(offline_page_item);
+  const GURL& url = offline_page_item.GetOriginalUrl();
   DCHECK(prefetched_url_counts_.count(url) == 0 ||
          prefetched_url_counts_.find(url)->second > 0);
   ++prefetched_url_counts_[url];

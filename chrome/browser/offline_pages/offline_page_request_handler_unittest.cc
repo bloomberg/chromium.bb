@@ -1835,7 +1835,7 @@ TYPED_TEST(OfflinePageRequestHandlerTest,
 
   // Check if the original URL is still present.
   OfflinePageItem page = this->GetPage(offline_id);
-  EXPECT_EQ(kUrl, page.original_url);
+  EXPECT_EQ(kUrl, page.original_url_if_different);
 
   // No redirect should be triggered when original URL is same as final URL.
   this->LoadPage(kUrl);

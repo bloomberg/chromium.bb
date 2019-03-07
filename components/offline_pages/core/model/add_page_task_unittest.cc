@@ -95,7 +95,7 @@ TEST_F(AddPageTaskTest, AddPageWithAllFieldsSet) {
                        kTestFilePath, kTestFileSize, base::Time::Now(),
                        kTestOrigin);
   page.title = kTestTitle;
-  page.original_url = kTestUrl2;
+  page.original_url_if_different = kTestUrl2;
   page.system_download_id = kTestDownloadId;
   page.file_missing_time = base::Time::Now();
   page.digest = kTestDigest;

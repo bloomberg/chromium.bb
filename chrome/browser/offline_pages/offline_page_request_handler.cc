@@ -618,7 +618,7 @@ void OfflinePageRequestHandler::OnTrustedOfflinePageFound() {
   // after intermediate redirects for authentication. Previously this case was
   // not handled and some pages might be saved with same URLs. Though we fixed
   // the problem, we still need to support those pages already saved with this
-  if (url_ == GetCurrentOfflinePage().original_url &&
+  if (url_ == GetCurrentOfflinePage().original_url_if_different &&
       url_ != GetCurrentOfflinePage().url) {
     ReportRequestResult(RequestResult::REDIRECTED, network_state_);
     Redirect(GetCurrentOfflinePage().url);
