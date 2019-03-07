@@ -172,7 +172,13 @@ bool LayoutEmbeddedContent::NodeAtPoint(
 
   // A hit test can never hit an off-screen element; only off-screen iframes are
   // throttled; therefore, hit tests can skip descending into throttled iframes.
-  if (local_frame_view->ShouldThrottleRendering()) {
+  // We also check the document lifecycle state because the frame may have been
+  // throttled at the time lifecycle updates happened, in which case it will not
+  // be up-to-date and we can't hit test it.
+  if (local_frame_view->ShouldThrottleRendering() ||
+      !local_frame_view->GetFrame().GetDocument() ||
+      local_frame_view->GetFrame().GetDocument()->Lifecycle().GetState() <
+          DocumentLifecycle::kCompositingClean) {
     return NodeAtPointOverEmbeddedContentView(result, location_in_container,
                                               accumulated_offset, action);
   }
