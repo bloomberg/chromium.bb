@@ -35,6 +35,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 #include "url/origin.h"
@@ -57,6 +58,8 @@ struct SecurityOriginHash;
 //
 // See also: https://html.spec.whatwg.org/C/#concept-origin
 class PLATFORM_EXPORT SecurityOrigin : public RefCounted<SecurityOrigin> {
+  USING_FAST_MALLOC(SecurityOrigin);
+
  public:
   enum class AccessResultDomainDetail {
     kDomainNotRelevant,

@@ -26,6 +26,7 @@
 
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
 
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/thread_specific.h"
 #include "third_party/blink/renderer/platform/wtf/threading.h"
@@ -44,6 +45,8 @@ struct PolicyAreasHashTraits : HashTraits<SchemeRegistry::PolicyAreas> {
 };
 
 class URLSchemesRegistry final {
+  USING_FAST_MALLOC(URLSchemesRegistry);
+
  public:
   URLSchemesRegistry()
       :  // For ServiceWorker schemes: HTTP is required because http://localhost
