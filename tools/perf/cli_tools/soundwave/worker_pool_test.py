@@ -5,7 +5,10 @@
 import argparse
 import os
 import shutil
-import sqlite3
+try:
+  import sqlite3
+except ImportError:
+  pass
 import tempfile
 import unittest
 

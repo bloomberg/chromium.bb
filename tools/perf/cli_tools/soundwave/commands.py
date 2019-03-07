@@ -4,7 +4,10 @@
 
 import json
 import logging
-import sqlite3
+try:
+  import sqlite3
+except ImportError:
+  pass
 
 from core import cli_utils
 from core.external_modules import pandas

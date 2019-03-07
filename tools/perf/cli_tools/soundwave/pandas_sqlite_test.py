@@ -2,7 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import sqlite3
+try:
+  import sqlite3
+except ImportError:
+  pass
 import unittest
 
 from cli_tools.soundwave import pandas_sqlite

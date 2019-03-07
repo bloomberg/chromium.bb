@@ -5,7 +5,10 @@
 import contextlib
 import os
 
-import sqlite3
+try:
+  import sqlite3
+except ImportError:
+  pass
 
 from cli_tools.soundwave import pandas_sqlite
 from cli_tools.soundwave.tables import alerts
