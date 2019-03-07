@@ -1,0 +1,12 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// Functionality for enumerating and connecting to devices within the HID
+// subsystem.
+// https://github.com/nondebug/webhid
+
+[
+    Exposed(Window WebHID),
+    SecureContext
+] interface HID : EventTarget {};

@@ -16,6 +16,7 @@
     "CookieStore",
     "MediaKeySession",
     "FileWriter",
+    "HID",
     "IdleStatus",
     "ImageCapture",
     "IDBDatabase",

@@ -12,6 +12,7 @@ font-display-late-swap
 fullscreen
 geolocation
 gyroscope
+hid
 layout-animations
 lazyload
 legacy-image-formats
