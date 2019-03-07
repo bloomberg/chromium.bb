@@ -712,9 +712,9 @@ void FragmentPaintPropertyTreeBuilder::UpdateTransform() {
         state.compositor_element_id = CompositorElementIdFromUniqueObjectId(
             object_.UniqueId(),
             CompositorElementIdNamespace::kPrimaryTransform);
+        state.is_running_animation_on_compositor =
+            style.IsRunningTransformAnimationOnCompositor();
       }
-      state.is_running_animation_on_compositor =
-          style.IsRunningTransformAnimationOnCompositor();
 
       OnUpdate(properties_->UpdateTransform(*context_.current.transform,
                                             std::move(state)));
@@ -963,11 +963,11 @@ void FragmentPaintPropertyTreeBuilder::UpdateEffect() {
           state.compositor_element_id = CompositorElementIdFromUniqueObjectId(
               object_.UniqueId(), CompositorElementIdNamespace::kPrimary);
         }
+        state.is_running_opacity_animation_on_compositor =
+            style.IsRunningOpacityAnimationOnCompositor();
+        state.is_running_backdrop_filter_animation_on_compositor =
+            style.IsRunningBackdropFilterAnimationOnCompositor();
       }
-      state.is_running_opacity_animation_on_compositor =
-          style.IsRunningOpacityAnimationOnCompositor();
-      state.is_running_backdrop_filter_animation_on_compositor =
-          style.IsRunningBackdropFilterAnimationOnCompositor();
 
       OnUpdate(properties_->UpdateEffect(*context_.current_effect,
                                          std::move(state)));
@@ -1113,9 +1113,9 @@ void FragmentPaintPropertyTreeBuilder::UpdateFilter() {
 
         state.compositor_element_id = CompositorElementIdFromUniqueObjectId(
             object_.UniqueId(), CompositorElementIdNamespace::kEffectFilter);
+        state.is_running_filter_animation_on_compositor =
+            style.IsRunningFilterAnimationOnCompositor();
       }
-      state.is_running_filter_animation_on_compositor =
-          style.IsRunningFilterAnimationOnCompositor();
 
       OnUpdate(properties_->UpdateFilter(*context_.current_effect,
                                          std::move(state)));
