@@ -69,35 +69,40 @@ class ScriptsSmokeTest(unittest.TestCase):
     options = options_for_unittests.GetCopy()
     browser_type = options.browser_type
     tempdir = tempfile.mkdtemp()
-    benchmark = 'dummy_benchmark.stable_benchmark_1'
+    benchmarks = ['dummy_benchmark.stable_benchmark_1',
+                  'dummy_benchmark.noisy_benchmark_1']
     return_code, stdout = self.RunPerfScript(
         '../../testing/scripts/run_performance_tests.py '
         '../../tools/perf/run_benchmark '
-        '--benchmarks=dummy_benchmark.stable_benchmark_1 '
+        '--benchmarks=%s '
         '--browser=%s '
-        '--isolated-script-test-repeat=2 '
         '--isolated-script-test-also-run-disabled-tests '
         '--isolated-script-test-output=%s' % (
+            ','.join(benchmarks),
             browser_type,
             os.path.join(tempdir, 'output.json')
         ))
     self.assertEquals(return_code, 0, stdout)
     try:
-      # By design, run_performance_tests.py does not output test results
-      # to the location passed in by --isolated-script-test-output. Instead
-      # it uses that directory of that file and puts stuff in its own
-      # subdirectories for the purposes of merging later.
-      with open(os.path.join(tempdir, benchmark, 'test_results.json')) as f:
+      with open(os.path.join(tempdir, 'output.json')) as f:
         test_results = json.load(f)
         self.assertIsNotNone(
             test_results, 'json_test_results should be populated: ' + stdout)
-        test_repeats = test_results['num_failures_by_type']['PASS']
+        benchmarks_run = [str(b) for b in test_results['tests'].keys()]
+        self.assertEqual(sorted(benchmarks_run), sorted(benchmarks))
+        story_runs = test_results['num_failures_by_type']['PASS']
         self.assertEqual(
-            test_repeats, 2, '--isolated-script-test-repeat=2 should work.')
-      with open(os.path.join(tempdir, benchmark, 'perf_results.json')) as f:
-        perf_results = json.load(f)
-        self.assertIsNotNone(
-            perf_results, 'json perf results should be populated: ' + stdout)
+            story_runs, 2,
+            'Total runs should be 2 since each benchmark has one story.')
+      for benchmark in benchmarks:
+        with open(os.path.join(tempdir, benchmark, 'test_results.json')) as f:
+          test_results = json.load(f)
+          self.assertIsNotNone(
+              test_results, 'json_test_results should be populated: ' + stdout)
+        with open(os.path.join(tempdir, benchmark, 'perf_results.json')) as f:
+          perf_results = json.load(f)
+          self.assertIsNotNone(
+              perf_results, 'json perf results should be populated: ' + stdout)
     except IOError as e:
       self.fail('json_test_results should be populated: ' + stdout + str(e))
     finally:
@@ -130,6 +135,13 @@ class ScriptsSmokeTest(unittest.TestCase):
       expected_benchmark_folders = (
           'dummy_benchmark.stable_benchmark_1',
           'dummy_benchmark.stable_benchmark_1.reference')
+      with open(os.path.join(tempdir, 'output.json')) as f:
+        test_results = json.load(f)
+        self.assertIsNotNone(
+            test_results, 'json_test_results should be populated: ' + stdout)
+        test_repeats = test_results['num_failures_by_type']['PASS']
+        self.assertEqual(
+            test_repeats, 2, '--isolated-script-test-repeat=2 should work.')
       for folder in expected_benchmark_folders:
         with open(os.path.join(tempdir, folder, 'test_results.json')) as f:
           test_results = json.load(f)
@@ -168,10 +180,10 @@ class ScriptsSmokeTest(unittest.TestCase):
         ))
     self.assertEquals(return_code, 0, stdout)
     try:
-      # By design, run_performance_tests.py does not output test results
-      # to the location passed in by --isolated-script-test-output. Instead
-      # it uses the directory of that file and puts stuff in its own
-      # subdirectories for the purposes of merging later.
+      with open(os.path.join(tempdir, 'output.json')) as f:
+        test_results = json.load(f)
+        self.assertIsNotNone(
+            test_results, 'json_test_results should be populated: ' + stdout)
       with open(os.path.join(tempdir, benchmark, 'test_results.json')) as f:
         test_results = json.load(f)
         self.assertIsNotNone(
