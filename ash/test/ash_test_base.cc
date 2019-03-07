@@ -39,6 +39,8 @@
 #include "components/account_id/account_id.h"
 #include "components/user_manager/user_names.h"
 #include "mojo/public/cpp/bindings/map.h"
+#include "services/ws/public/cpp/input_devices/input_device_client.h"
+#include "services/ws/public/cpp/input_devices/input_device_client_test_api.h"
 #include "services/ws/public/cpp/property_type_converters.h"
 #include "services/ws/public/mojom/window_manager.mojom.h"
 #include "services/ws/public/mojom/window_tree_constants.mojom.h"
@@ -187,6 +189,10 @@ void AshTestBase::TearDown() {
   // Some tests set an internal display id,
   // reset it here, so other tests will continue in a clean environment.
   display::Display::SetInternalDisplayId(display::kInvalidDisplayId);
+
+  // Tests can add devices, so reset the lists for future tests.
+  ws::InputDeviceClientTestApi().SetTouchscreenDevices({});
+  ws::InputDeviceClientTestApi().SetKeyboardDevices({});
 }
 
 // static
