@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.payments;
 
-import android.app.Activity;
 import android.content.Context;
 import android.os.Handler;
 import android.support.annotation.Nullable;
@@ -485,8 +484,37 @@ public class PaymentRequestImpl
                 && mMethodData.keySet().iterator().next().startsWith(UrlConstants.HTTPS_URL_PREFIX);
     }
 
-    private void buildUI(Activity activity) {
+    /** @return Whether the UI was built. */
+    private boolean buildUI(ChromeActivity activity) {
         assert activity != null;
+
+        // Catch any time the user switches tabs. Because the dialog is modal, a user shouldn't be
+        // allowed to switch tabs, which can happen if the user receives an external Intent.
+        mObservedTabModelSelector = activity.getTabModelSelector();
+        mObservedTabModel = activity.getCurrentTabModel();
+        mObservedTabModelSelector.addObserver(mSelectorObserver);
+        mObservedTabModel.addObserver(mTabModelObserver);
+
+        // Only the currently selected tab is allowed to show the payment UI.
+        if (TabModelUtils.getCurrentWebContents(mObservedTabModel) != mWebContents) {
+            mJourneyLogger.setNotShown(NotShownReason.OTHER);
+            disconnectFromClientWithDebugMessage(
+                    "Background tab is not allowed to show PaymentRequest UI");
+            if (sObserverForTest != null) sObserverForTest.onPaymentRequestServiceShowFailed();
+            return false;
+        }
+
+        // Catch any time the user enters the overview mode and dismiss the payment UI.
+        if (activity instanceof ChromeTabbedActivity) {
+            mOverviewModeBehavior = ((ChromeTabbedActivity) activity).getOverviewModeBehavior();
+            if (mOverviewModeBehavior.overviewVisible()) {
+                mJourneyLogger.setNotShown(NotShownReason.OTHER);
+                disconnectFromClientWithDebugMessage("In tab overview mode");
+                if (sObserverForTest != null) sObserverForTest.onPaymentRequestServiceShowFailed();
+                return false;
+            }
+            mOverviewModeBehavior.addOverviewModeObserver(mOverviewModeObserver);
+        }
 
         List<AutofillProfile> profiles = null;
         if (mRequestShipping || mRequestPayerName || mRequestPayerPhone || mRequestPayerEmail) {
@@ -531,6 +559,8 @@ public class PaymentRequestImpl
         mAddressEditor.setEditorDialog(mUI.getEditorDialog());
         mCardEditor.setEditorDialog(mUI.getCardEditorDialog());
         if (mContactEditor != null) mContactEditor.setEditorDialog(mUI.getEditorDialog());
+
+        return true;
     }
 
     private void createShippingSection(
@@ -622,43 +652,16 @@ public class PaymentRequestImpl
             return;
         }
 
-        // Catch any time the user switches tabs. Because the dialog is modal, a user shouldn't be
-        // allowed to switch tabs, which can happen if the user receives an external Intent.
-        mObservedTabModelSelector = chromeActivity.getTabModelSelector();
-        mObservedTabModel = chromeActivity.getCurrentTabModel();
-        mObservedTabModelSelector.addObserver(mSelectorObserver);
-        mObservedTabModel.addObserver(mTabModelObserver);
-
-        // Only the currently selected tab is allowed to show the payment UI.
-        if (TabModelUtils.getCurrentWebContents(mObservedTabModel) != mWebContents) {
-            mJourneyLogger.setNotShown(NotShownReason.OTHER);
-            disconnectFromClientWithDebugMessage(
-                    "Background tab is not allowed to show PaymentRequest UI");
-            if (sObserverForTest != null) sObserverForTest.onPaymentRequestServiceShowFailed();
-            return;
-        }
-
-        // Catch any time the user enters the overview mode and dismiss the payment UI.
-        if (chromeActivity instanceof ChromeTabbedActivity) {
-            mOverviewModeBehavior =
-                    ((ChromeTabbedActivity) chromeActivity).getOverviewModeBehavior();
-            if (mOverviewModeBehavior.overviewVisible()) {
-                mJourneyLogger.setNotShown(NotShownReason.OTHER);
-                disconnectFromClientWithDebugMessage("In tab overview mode");
-                if (sObserverForTest != null) sObserverForTest.onPaymentRequestServiceShowFailed();
-                return;
-            }
-            mOverviewModeBehavior.addOverviewModeObserver(mOverviewModeObserver);
-        }
-
         mIsUserGestureShow = isUserGesture;
-        buildUI(chromeActivity);
-        if (!mShouldSkipShowingPaymentRequestUi) mUI.show();
+        if (!mShouldSkipShowingPaymentRequestUi) {
+            if (!buildUI(chromeActivity)) return;
+            mUI.show();
+        }
 
-        triggerPaymentAppUiSkipIfApplicable();
+        triggerPaymentAppUiSkipIfApplicable(chromeActivity);
     }
 
-    private void triggerPaymentAppUiSkipIfApplicable() {
+    private void triggerPaymentAppUiSkipIfApplicable(ChromeActivity chromeActivity) {
         // If we are skipping showing the Payment Request UI, we should call into the
         // PaymentApp immediately after we determine the instruments are ready and UI is shown.
         if (mShouldSkipShowingPaymentRequestUi && isFinishedQueryingPaymentApps()
@@ -667,6 +670,7 @@ public class PaymentRequestImpl
 
             PaymentInstrument selectedInstrument =
                     (PaymentInstrument) mPaymentMethodsSection.getSelectedItem();
+            if (!buildUI(chromeActivity)) return;
 
             // Do not skip to payment app if it is not the only one, it's not pre-selected, or if
             // skip-UI requires a user gesture in show(), which was not present.
@@ -1829,15 +1833,20 @@ public class PaymentRequestImpl
             respondHasEnrolledInstrumentQuery(mHasEnrolledInstrument);
         }
 
+        ChromeActivity chromeActivity = ChromeActivity.fromWebContents(mWebContents);
+        if (chromeActivity == null) {
+            mJourneyLogger.setNotShown(NotShownReason.OTHER);
+            disconnectFromClientWithDebugMessage("Unable to find Chrome activity");
+            if (sObserverForTest != null) sObserverForTest.onPaymentRequestServiceShowFailed();
+            return;
+        }
+
         // The list of payment instruments is ready to display.
         mPaymentMethodsSection = new SectionInformation(PaymentRequestUI.DataType.PAYMENT_METHODS,
                 selection, new ArrayList<>(mPendingInstruments));
         if (mPaymentMethodsSectionAdditionalTextResourceId != 0) {
-            Context context = ChromeActivity.fromWebContents(mWebContents);
-            if (context != null) {
-                mPaymentMethodsSection.setAdditionalText(
-                        context.getString(mPaymentMethodsSectionAdditionalTextResourceId));
-            }
+            mPaymentMethodsSection.setAdditionalText(
+                    chromeActivity.getString(mPaymentMethodsSectionAdditionalTextResourceId));
         }
 
         // Record the number suggested payment methods and whether at least one of them was
@@ -1855,7 +1864,7 @@ public class PaymentRequestImpl
 
         SettingsAutofillAndPaymentsObserver.getInstance().registerObserver(this);
 
-        triggerPaymentAppUiSkipIfApplicable();
+        triggerPaymentAppUiSkipIfApplicable(chromeActivity);
     }
 
     /**
