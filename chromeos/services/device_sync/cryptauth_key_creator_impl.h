@@ -5,6 +5,8 @@
 #ifndef CHROMEOS_SERVICES_DEVICE_SYNC_CRYPTAUTH_KEY_CREATOR_IMPL_H_
 #define CHROMEOS_SERVICES_DEVICE_SYNC_CRYPTAUTH_KEY_CREATOR_IMPL_H_
 
+#include "chromeos/services/device_sync/cryptauth_key_creator.h"
+
 #include <memory>
 #include <string>
 #include <utility>
@@ -16,7 +18,6 @@
 #include "base/optional.h"
 #include "chromeos/services/device_sync/cryptauth_key.h"
 #include "chromeos/services/device_sync/cryptauth_key_bundle.h"
-#include "chromeos/services/device_sync/cryptauth_key_creator.h"
 
 namespace chromeos {
 
