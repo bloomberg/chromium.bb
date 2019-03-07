@@ -195,14 +195,14 @@ public class PreferencesLauncher {
 
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return false;
 
-        if (!ChromeFeatureList.isEnabled(GOOGLE_ACCOUNT_PWM_UI)) return false;
-
         int minGooglePlayServicesVersion = ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
                 GOOGLE_ACCOUNT_PWM_UI, MIN_GOOGLE_PLAY_SERVICES_VERSION_PARAM,
                 DEFAULT_MIN_GOOGLE_PLAY_SERVICES_APK_VERSION);
         if (AppHooks.get().isGoogleApiAvailableWithMinApkVersion(minGooglePlayServicesVersion)
                 != ConnectionResult.SUCCESS)
             return false;
+
+        if (!ChromeFeatureList.isEnabled(GOOGLE_ACCOUNT_PWM_UI)) return false;
 
         return googlePasswordManagerUIProvider.showGooglePasswordManager(activity);
     }
