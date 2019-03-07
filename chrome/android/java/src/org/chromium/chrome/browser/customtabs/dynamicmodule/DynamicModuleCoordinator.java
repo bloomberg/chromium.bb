@@ -223,8 +223,8 @@ public class DynamicModuleCoordinator implements NativeInitObserver, Destroyable
 
     private ModuleLoader getModuleLoader() {
         ComponentName componentName = mIntentDataProvider.getModuleComponentName();
-        int dexResourceId = mIntentDataProvider.getModuleDexResourceId();
-        return mConnection.getModuleLoader(componentName, dexResourceId);
+        String dexAssetName = mIntentDataProvider.getModuleDexAssetName();
+        return mConnection.getModuleLoader(componentName, dexAssetName);
     }
 
     /* package */ Context getActivityContext() {

@@ -141,9 +141,9 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
     public static final String EXTRA_MODULE_PACKAGE_NAME =
             "org.chromium.chrome.browser.customtabs.EXTRA_MODULE_PACKAGE_NAME";
 
-    /** The resource ID of the dex file that contains the module code. */
-    private static final String EXTRA_MODULE_DEX_RESOURCE_ID =
-            "org.chromium.chrome.browser.customtabs.EXTRA_MODULE_DEX_RESOURCE_ID";
+    /** The asset name of the dex file that contains the module code. */
+    private static final String EXTRA_MODULE_DEX_ASSET_NAME =
+            "org.chromium.chrome.browser.customtabs.EXTRA_MODULE_DEX_ASSET_NAME";
 
     /** The class name of the module entry point. */
     @VisibleForTesting
@@ -196,7 +196,8 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
     @Nullable
     private final String mModuleManagedUrlsHeaderValue;
     private final boolean mHideCctHeaderOnModuleManagedUrls;
-    private final int mModuleDexResourceId;
+    @Nullable
+    private final String mModuleDexAssetName;
     private final boolean mIsIncognito;
     @Nullable
     private final List<String> mTrustedWebActivityAdditionalOrigins;
@@ -334,7 +335,8 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
         String moduleClassName = IntentUtils.safeGetStringExtra(intent, EXTRA_MODULE_CLASS_NAME);
         if (modulePackageName != null && moduleClassName != null) {
             mModuleComponentName = new ComponentName(modulePackageName, moduleClassName);
-            mModuleDexResourceId = intent.getIntExtra(EXTRA_MODULE_DEX_RESOURCE_ID, 0);
+            mModuleDexAssetName =
+                    IntentUtils.safeGetStringExtra(intent, EXTRA_MODULE_DEX_ASSET_NAME);
             String moduleManagedUrlsRegex =
                     IntentUtils.safeGetStringExtra(intent, EXTRA_MODULE_MANAGED_URLS_REGEX);
             mModuleManagedUrlsPattern = (moduleManagedUrlsRegex != null)
@@ -349,7 +351,7 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
             mModuleManagedUrlsPattern = null;
             mModuleManagedUrlsHeaderValue = null;
             mHideCctHeaderOnModuleManagedUrls = false;
-            mModuleDexResourceId = 0;
+            mModuleDexAssetName = null;
         }
     }
 
@@ -852,8 +854,9 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
      * @return The resource identifier for the dex that contains module code. {@code 0} if no dex
      * resource is provided.
      */
-    public int getModuleDexResourceId() {
-        return mModuleDexResourceId;
+    @Nullable
+    public String getModuleDexAssetName() {
+        return mModuleDexAssetName;
     }
 
     /**
