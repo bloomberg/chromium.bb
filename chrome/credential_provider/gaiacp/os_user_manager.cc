@@ -480,10 +480,6 @@ HRESULT OSUserManager::FindUserBySID(const wchar_t* sid,
     wcscpy_s(domain, domain_size, local_domain_buffer);
   }
 
-  if (hr != S_OK && hr != HRESULT_FROM_WIN32(ERROR_INSUFFICIENT_BUFFER))
-    LOGFN(ERROR) << "LookupAccountSid hr=" << putHR(hr);
-
-  LOGFN(INFO) << "username=" << username << " ntdomain=" << domain;
   ::LocalFree(psid);
   return hr;
 }
