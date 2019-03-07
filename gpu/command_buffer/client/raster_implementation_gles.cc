@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "cc/paint/color_space_transfer_cache_entry.h"
 #include "cc/paint/decode_stashing_image_provider.h"
 #include "cc/paint/display_item_list.h"  // nogncheck
 #include "cc/paint/paint_op_buffer_serializer.h"

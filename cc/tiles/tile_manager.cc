@@ -1172,7 +1172,7 @@ scoped_refptr<TileTask> TileManager::CreateRasterTask(
         tile->id(), tile->invalidated_content_rect(), tile->invalidated_id(),
         &invalidated_rect);
   }
-  const RasterColorSpace& raster_color_space = client_->GetRasterColorSpace();
+  const gfx::ColorSpace& raster_color_space = client_->GetRasterColorSpace();
   bool partial_tile_decode = false;
   if (resource) {
     resource_content_id = tile->invalidated_id();
@@ -1181,7 +1181,7 @@ scoped_refptr<TileTask> TileManager::CreateRasterTask(
   } else {
     resource = resource_pool_->AcquireResource(tile->desired_texture_size(),
                                                DetermineResourceFormat(tile),
-                                               raster_color_space.color_space);
+                                               raster_color_space);
     DCHECK(resource);
   }
 
@@ -1269,9 +1269,6 @@ scoped_refptr<TileTask> TileManager::CreateRasterTask(
 
   PlaybackImageProvider image_provider(image_controller_.cache(),
                                        std::move(settings));
-
-  playback_settings.raster_color_space = raster_color_space;
-
   PaintWorkletImageProvider paint_worklet_image_provider(
       image_controller_.paint_worklet_image_cache());
   DispatchingImageProvider dispatching_image_provider(

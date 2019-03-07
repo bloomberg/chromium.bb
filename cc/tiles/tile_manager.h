@@ -18,7 +18,6 @@
 #include "base/sequenced_task_runner.h"
 #include "base/values.h"
 #include "cc/base/unique_notifier.h"
-#include "cc/paint/color_space_transfer_cache_entry.h"
 #include "cc/raster/raster_buffer_provider.h"
 #include "cc/raster/raster_source.h"
 #include "cc/resources/memory_history.h"
@@ -82,7 +81,7 @@ class CC_EXPORT TileManagerClient {
   virtual void SetIsLikelyToRequireADraw(bool is_likely_to_require_a_draw) = 0;
 
   // Requests the color space into which tiles should be rasterized.
-  virtual RasterColorSpace GetRasterColorSpace() const = 0;
+  virtual const gfx::ColorSpace& GetRasterColorSpace() const = 0;
 
   // Requests that a pending tree be scheduled to invalidate content on the
   // pending on active tree. This is currently used when tiles that are
@@ -199,7 +198,7 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
           resource_pool_->AcquireResource(
               tiles[i]->desired_texture_size(),
               raster_buffer_provider_->GetResourceFormat(),
-              client_->GetRasterColorSpace().color_space);
+              client_->GetRasterColorSpace());
       raster_buffer_provider_->AcquireBufferForRaster(resource, 0, 0);
       // The raster here never really happened, cuz tests. So just add an
       // arbitrary sync token.

@@ -14,7 +14,6 @@
 #include "base/time/time.h"
 #include "cc/cc_export.h"
 #include "cc/layers/layer_impl.h"
-#include "cc/paint/color_space_transfer_cache_entry.h"
 #include "cc/resources/memory_history.h"
 #include "cc/resources/resource_pool.h"
 #include "cc/trees/debug_rect_history.h"
@@ -158,9 +157,6 @@ class CC_EXPORT HeadsUpDisplayLayerImpl : public LayerImpl {
   std::vector<DebugRect> paint_rects_;
 
   base::TimeTicks time_of_last_graph_update_;
-
-  // color space for OOPR
-  const RasterColorSpace raster_color_space_;
 
   DISALLOW_COPY_AND_ASSIGN(HeadsUpDisplayLayerImpl);
 };

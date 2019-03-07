@@ -1573,16 +1573,22 @@ void LayerTreeHostImpl::SetIsLikelyToRequireADraw(
   is_likely_to_require_a_draw_ = is_likely_to_require_a_draw;
 }
 
-RasterColorSpace LayerTreeHostImpl::GetRasterColorSpace() const {
-  RasterColorSpace result;
+const gfx::ColorSpace& LayerTreeHostImpl::GetRasterColorSpace() const {
+  int dummy;
+  return GetRasterColorSpaceAndId(&dummy);
+}
+
+const gfx::ColorSpace& LayerTreeHostImpl::GetRasterColorSpaceAndId(
+    int* id) const {
+  const gfx::ColorSpace* result = nullptr;
   // The pending tree will have the most recently updated color space, so
   // prefer that.
   if (pending_tree_) {
-    result.color_space = pending_tree_->raster_color_space();
-    result.color_space_id = pending_tree_->raster_color_space_id();
+    result = &pending_tree_->raster_color_space();
+    *id = pending_tree_->raster_color_space_id();
   } else if (active_tree_) {
-    result.color_space = active_tree_->raster_color_space();
-    result.color_space_id = active_tree_->raster_color_space_id();
+    result = &active_tree_->raster_color_space();
+    *id = active_tree_->raster_color_space_id();
   }
 
   // If we are likely to software composite the resource, we use sRGB because
@@ -1591,11 +1597,11 @@ RasterColorSpace LayerTreeHostImpl::GetRasterColorSpace() const {
   // (not specifying a color space indicates that no color conversion is
   // required).
   if (!layer_tree_frame_sink_ || !layer_tree_frame_sink_->context_provider() ||
-      !result.color_space.IsValid()) {
-    result.color_space = default_color_space_;
-    result.color_space_id = default_color_space_id_;
+      !result || !result->IsValid()) {
+    result = &default_color_space_;
+    *id = default_color_space_id_;
   }
-  return result;
+  return *result;
 }
 
 void LayerTreeHostImpl::RequestImplSideInvalidationForCheckerImagedTiles() {
@@ -2382,7 +2388,8 @@ void LayerTreeHostImpl::UpdateTreeResourcesIfNeeded() {
   // For simplicity, clobber all resources when the color space changes.
   // This is mostly to clear the image decode caches, which don't handle
   // multiple color space at once.
-  int color_space_id = GetRasterColorSpace().color_space_id;
+  int color_space_id = -1;
+  GetRasterColorSpaceAndId(&color_space_id);
   bool color_space_changed = last_color_space_id_ != color_space_id;
   last_color_space_id_ = color_space_id;
 
@@ -3060,14 +3067,14 @@ void LayerTreeHostImpl::CreateTileManagerResources() {
                                                 tile_format),
         settings_.decoded_image_working_set_budget_bytes, max_texture_size_,
         paint_image_generator_client_id_,
-        GetRasterColorSpace().color_space.ToSkColorSpace());
+        GetRasterColorSpace().ToSkColorSpace());
   } else {
     bool gpu_compositing = !!layer_tree_frame_sink_->context_provider();
     image_decode_cache_ = std::make_unique<SoftwareImageDecodeCache>(
         viz::ResourceFormatToClosestSkColorType(gpu_compositing, tile_format),
         settings_.decoded_image_working_set_budget_bytes,
         paint_image_generator_client_id_,
-        GetRasterColorSpace().color_space.ToSkColorSpace());
+        GetRasterColorSpace().ToSkColorSpace());
   }
 
   // Pass the single-threaded synchronous task graph runner to the worker pool

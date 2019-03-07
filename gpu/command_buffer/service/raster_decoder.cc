@@ -23,7 +23,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
-#include "cc/paint/color_space_transfer_cache_entry.h"
 #include "cc/paint/paint_cache.h"
 #include "cc/paint/paint_op_buffer.h"
 #include "cc/paint/transfer_cache_entry.h"
