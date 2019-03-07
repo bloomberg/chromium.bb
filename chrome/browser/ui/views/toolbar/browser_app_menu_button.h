@@ -70,6 +70,11 @@ class BrowserAppMenuButton : public AppMenuButton,
  private:
   void UpdateBorder();
 
+#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
+  // Picks the best promo color given the current background color.
+  SkColor GetPromoHighlightColor() const;
+#endif
+
   // AppMenuButton:
   const char* GetClassName() const override;
   bool GetDropFormats(int* formats,
