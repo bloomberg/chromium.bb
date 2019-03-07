@@ -147,7 +147,8 @@ TEST_F(BlobBytesConsumerTest, DrainAsBlobDataHandle) {
 
 TEST_F(BlobBytesConsumerTest, DrainAsBlobDataHandle_2) {
   scoped_refptr<BlobDataHandle> blob_data_handle = BlobDataHandle::Create(
-      "uuid", "", -1, CreateBlob("foo bar")->CloneBlobPtr().PassInterface());
+      "uuid", "", std::numeric_limits<uint64_t>::max(),
+      CreateBlob("foo bar")->CloneBlobPtr().PassInterface());
   ;
   BlobBytesConsumer* consumer =
       MakeGarbageCollected<BlobBytesConsumer>(&GetDocument(), blob_data_handle);
@@ -167,7 +168,8 @@ TEST_F(BlobBytesConsumerTest, DrainAsBlobDataHandle_2) {
 
 TEST_F(BlobBytesConsumerTest, DrainAsBlobDataHandle_3) {
   scoped_refptr<BlobDataHandle> blob_data_handle = BlobDataHandle::Create(
-      "uuid", "", -1, CreateBlob("foo bar")->CloneBlobPtr().PassInterface());
+      "uuid", "", std::numeric_limits<uint64_t>::max(),
+      CreateBlob("foo bar")->CloneBlobPtr().PassInterface());
   ;
   BlobBytesConsumer* consumer =
       MakeGarbageCollected<BlobBytesConsumer>(&GetDocument(), blob_data_handle);

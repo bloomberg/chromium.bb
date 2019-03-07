@@ -344,7 +344,7 @@ void MediaRecorder::WriteData(const char* data,
     return;
 
   // Cache |m_blobData->length()| before release()ng it.
-  const long long blob_data_length = blob_data_->length();
+  const uint64_t blob_data_length = blob_data_->length();
   CreateBlobEvent(Blob::Create(BlobDataHandle::Create(std::move(blob_data_),
                                                       blob_data_length)),
                   timecode);

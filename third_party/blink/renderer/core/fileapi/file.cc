@@ -146,7 +146,7 @@ File* File::Create(
   PopulateBlobData(blob_data.get(), file_bits,
                    normalize_line_endings_to_native);
 
-  long long file_size = blob_data->length();
+  uint64_t file_size = blob_data->length();
   return File::Create(file_name, last_modified,
                       BlobDataHandle::Create(std::move(blob_data), file_size));
 }
@@ -187,7 +187,8 @@ File* File::CreateWithRelativePath(const String& path,
 File::File(const String& path,
            ContentTypeLookupPolicy policy,
            UserVisibility user_visibility)
-    : Blob(BlobDataHandle::Create(CreateBlobDataForFile(path, policy), -1)),
+    : Blob(BlobDataHandle::Create(CreateBlobDataForFile(path, policy),
+                                  std::numeric_limits<uint64_t>::max())),
       has_backing_file_(true),
       user_visibility_(user_visibility),
       path_(path),
@@ -322,17 +323,16 @@ double File::lastModifiedDate() const {
   return modified_date;
 }
 
-unsigned long long File::size() const {
+uint64_t File::size() const {
   if (HasValidSnapshotMetadata())
     return snapshot_size_;
 
-  // FIXME: JavaScript cannot represent sizes as large as unsigned long long, we
-  // need to come up with an exception to throw if file size is not
-  // representable.
+  // FIXME: JavaScript cannot represent sizes as large as uint64_t, we need
+  // to come up with an exception to throw if file size is not representable.
   long long size;
   if (!HasBackingFile() || !GetFileSize(path_, size))
     return 0;
-  return static_cast<unsigned long long>(size);
+  return static_cast<uint64_t>(size);
 }
 
 Blob* File::slice(long long start,
@@ -349,7 +349,7 @@ Blob* File::slice(long long start,
   CaptureSnapshot(size, modification_time_ms);
   ClampSliceOffsets(size, start, end);
 
-  long long length = end - start;
+  uint64_t length = end - start;
   std::unique_ptr<BlobData> blob_data = BlobData::Create();
   blob_data->SetContentType(NormalizeType(content_type));
   DCHECK(!path_.IsEmpty());

@@ -183,7 +183,7 @@ class CORE_EXPORT File final : public Blob {
 
   File* Clone(const String& name = String()) const;
 
-  unsigned long long size() const override;
+  uint64_t size() const override;
   Blob* slice(long long start,
               long long end,
               const String& content_type,

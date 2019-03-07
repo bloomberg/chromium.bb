@@ -173,7 +173,7 @@ class PLATFORM_EXPORT EncodedFormData : public RefCounted<EncodedFormData> {
   }
 
   // Size of the elements making up the EncodedFormData.
-  unsigned long long SizeInBytes() const;
+  uint64_t SizeInBytes() const;
 
   bool IsSafeToSendToAnotherThread() const;
 

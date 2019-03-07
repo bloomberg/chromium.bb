@@ -157,7 +157,7 @@ String EncodedFormData::FlattenToString() const {
                                  bytes.size());
 }
 
-unsigned long long EncodedFormData::SizeInBytes() const {
+uint64_t EncodedFormData::SizeInBytes() const {
   unsigned size = 0;
   for (const FormDataElement& e : elements_) {
     switch (e.type_) {

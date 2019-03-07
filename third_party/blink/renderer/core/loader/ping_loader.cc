@@ -63,7 +63,7 @@ class Beacon {
 
  public:
   virtual void Serialize(ResourceRequest&) const = 0;
-  virtual unsigned long long size() const = 0;
+  virtual uint64_t size() const = 0;
   virtual const AtomicString GetContentType() const = 0;
 };
 
@@ -71,9 +71,7 @@ class BeaconString final : public Beacon {
  public:
   explicit BeaconString(const String& data) : data_(data) {}
 
-  unsigned long long size() const override {
-    return data_.CharactersSizeInBytes();
-  }
+  uint64_t size() const override { return data_.CharactersSizeInBytes(); }
 
   void Serialize(ResourceRequest& request) const override {
     scoped_refptr<EncodedFormData> entity_body =
@@ -98,7 +96,7 @@ class BeaconBlob final : public Beacon {
       content_type_ = AtomicString(blob_type);
   }
 
-  unsigned long long size() const override { return data_->size(); }
+  uint64_t size() const override { return data_->size(); }
 
   void Serialize(ResourceRequest& request) const override {
     DCHECK(data_);
@@ -126,7 +124,7 @@ class BeaconDOMArrayBufferView final : public Beacon {
  public:
   explicit BeaconDOMArrayBufferView(DOMArrayBufferView* data) : data_(data) {}
 
-  unsigned long long size() const override { return data_->byteLength(); }
+  uint64_t size() const override { return data_->byteLength(); }
 
   void Serialize(ResourceRequest& request) const override {
     DCHECK(data_);
@@ -154,9 +152,7 @@ class BeaconFormData final : public Beacon {
                     entity_body_->Boundary().data();
   }
 
-  unsigned long long size() const override {
-    return entity_body_->SizeInBytes();
-  }
+  uint64_t size() const override { return entity_body_->SizeInBytes(); }
 
   void Serialize(ResourceRequest& request) const override {
     request.SetHTTPBody(entity_body_.get());
