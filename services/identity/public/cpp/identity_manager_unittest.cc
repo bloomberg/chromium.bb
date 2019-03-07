@@ -2473,27 +2473,8 @@ TEST_F(IdentityManagerTest, FindExtendedAccountInfoForAccount) {
   SetRefreshTokenForAccount(identity_manager(), account_info.account_id,
                             "refresh-token");
 
-  // FindExtendedAccountInfoForAccount() returns empty optional if the account
-  // has not extended information.
-  EXPECT_FALSE(identity_manager()
-                   ->FindExtendedAccountInfoForAccount(account_info)
-                   .has_value());
-
-  // Populate the extended information of the account.
-  base::DictionaryValue user_info;
-  user_info.SetString("id", account_info.gaia);
-  user_info.SetString("email", account_info.email);
-  user_info.SetString("hd", "hosted_domain");
-  user_info.SetString("name", "full_name");
-  user_info.SetString("given_name", "given_name");
-  user_info.SetString("locale", "locale");
-  user_info.SetString("picture", "picture_url");
-  account_tracker()->SetAccountInfoFromUserInfo(account_info.account_id,
-                                                &user_info);
-
   // FindExtendedAccountInfoForAccount() returns extended account information if
-  // the account is know, has valid refresh token and has extended account
-  // information.
+  // the account is known and has valid refresh token.
   const base::Optional<AccountInfo> extended_account_info =
       identity_manager()->FindExtendedAccountInfoForAccount(account_info);
 

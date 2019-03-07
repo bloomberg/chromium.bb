@@ -149,11 +149,6 @@ base::Optional<AccountInfo> IdentityManager::FindExtendedAccountInfoForAccount(
   if (!HasAccountWithRefreshToken(extended_account_info.account_id))
     return base::nullopt;
 
-  // If the extended information is not available, AccountInfo::IsValid() will
-  // return false. If this is the case, return base::nullopt.
-  if (!extended_account_info.IsValid())
-    return base::nullopt;
-
   return GetAccountInfoForAccountWithRefreshToken(account_info.account_id);
 }
 
