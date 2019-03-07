@@ -28,7 +28,6 @@ namespace identity {
 
 const char kTestGaiaId[] = "gaia_id_for_me_dummy.com";
 const char kTestEmail[] = "me@dummy.com";
-const char kTestRefreshToken[] = "dummy-refresh-token";
 const char kTestAccessToken[] = "access_token";
 
 class IdentityAccessorImplTest : public testing::Test {
@@ -75,14 +74,13 @@ class IdentityAccessorImplTest : public testing::Test {
     account_fetcher_.Initialize(&signin_client_, &token_service_,
                                 &account_tracker_,
                                 std::make_unique<TestImageDecoder>());
+    signin_manager_.Initialize(&pref_service_);
   }
 
   ~IdentityAccessorImplTest() override {
-    token_service_.Shutdown();
-    signin_client_.Shutdown();
-    account_tracker_.Shutdown();
-    gaia_cookie_manager_service_.Shutdown();
+    signin_manager_.Shutdown();
     account_fetcher_.Shutdown();
+    account_tracker_.Shutdown();
   }
 
   void TearDown() override {
@@ -211,17 +209,17 @@ TEST_F(IdentityAccessorImplTest, GetPrimaryAccountInfoNotSignedIn) {
 // Check that the primary account info has expected values if signed in without
 // a refresh token available.
 TEST_F(IdentityAccessorImplTest, GetPrimaryAccountInfoSignedInNoRefreshToken) {
-  identity_test_environment()->SetPrimaryAccount(kTestEmail);
-  IdentityManager* identity_manager =
-      identity_test_environment()->identity_manager();
+  std::string primary_account_id =
+      identity_test_environment()->SetPrimaryAccount(kTestEmail).account_id;
+
   base::RunLoop run_loop;
   GetIdentityAccessorImpl()->GetPrimaryAccountInfo(base::BindRepeating(
       &IdentityAccessorImplTest::OnReceivedPrimaryAccountInfo,
       base::Unretained(this), run_loop.QuitClosure()));
   run_loop.Run();
+
   EXPECT_TRUE(primary_account_info_);
-  EXPECT_EQ(identity_manager->GetPrimaryAccountId(),
-            primary_account_info_->account_id);
+  EXPECT_EQ(primary_account_id, primary_account_info_->account_id);
   EXPECT_EQ(kTestGaiaId, primary_account_info_->gaia);
   EXPECT_EQ(kTestEmail, primary_account_info_->email);
   EXPECT_FALSE(primary_account_state_.has_refresh_token);
@@ -231,19 +229,18 @@ TEST_F(IdentityAccessorImplTest, GetPrimaryAccountInfoSignedInNoRefreshToken) {
 // Check that the primary account info has expected values if signed in with a
 // refresh token available.
 TEST_F(IdentityAccessorImplTest, GetPrimaryAccountInfoSignedInRefreshToken) {
-  identity_test_environment()->SetPrimaryAccount(kTestEmail);
-  IdentityManager* identity_manager =
-      identity_test_environment()->identity_manager();
-  token_service()->UpdateCredentials(identity_manager->GetPrimaryAccountId(),
-                                     kTestRefreshToken);
+  std::string primary_account_id = identity_test_environment()
+                                       ->MakePrimaryAccountAvailable(kTestEmail)
+                                       .account_id;
+
   base::RunLoop run_loop;
   GetIdentityAccessorImpl()->GetPrimaryAccountInfo(base::BindRepeating(
       &IdentityAccessorImplTest::OnReceivedPrimaryAccountInfo,
       base::Unretained(this), run_loop.QuitClosure()));
   run_loop.Run();
+
   EXPECT_TRUE(primary_account_info_);
-  EXPECT_EQ(identity_manager->GetPrimaryAccountId(),
-            primary_account_info_->account_id);
+  EXPECT_EQ(primary_account_id, primary_account_info_->account_id);
   EXPECT_EQ(kTestGaiaId, primary_account_info_->gaia);
   EXPECT_EQ(kTestEmail, primary_account_info_->email);
   EXPECT_TRUE(primary_account_state_.has_refresh_token);
@@ -253,11 +250,9 @@ TEST_F(IdentityAccessorImplTest, GetPrimaryAccountInfoSignedInRefreshToken) {
 // Check that GetPrimaryAccountWhenAvailable() returns immediately in the
 // case where the primary account is available when the call is received.
 TEST_F(IdentityAccessorImplTest, GetPrimaryAccountWhenAvailableSignedIn) {
-  identity_test_environment()->SetPrimaryAccount(kTestEmail);
-  IdentityManager* identity_manager =
-      identity_test_environment()->identity_manager();
-  token_service()->UpdateCredentials(identity_manager->GetPrimaryAccountId(),
-                                     kTestRefreshToken);
+  std::string primary_account_id = identity_test_environment()
+                                       ->MakePrimaryAccountAvailable(kTestEmail)
+                                       .account_id;
 
   AccountInfo account_info;
   AccountState account_state;
@@ -268,7 +263,7 @@ TEST_F(IdentityAccessorImplTest, GetPrimaryAccountWhenAvailableSignedIn) {
       base::Unretained(&account_info), base::Unretained(&account_state)));
   run_loop.Run();
 
-  EXPECT_EQ(identity_manager->GetPrimaryAccountId(), account_info.account_id);
+  EXPECT_EQ(primary_account_id, account_info.account_id);
   EXPECT_EQ(kTestGaiaId, account_info.gaia);
   EXPECT_EQ(kTestEmail, account_info.email);
   EXPECT_TRUE(account_state.has_refresh_token);
@@ -298,17 +293,14 @@ TEST_F(IdentityAccessorImplTest, GetPrimaryAccountWhenAvailableSignInLater) {
   run_loop2.Run();
   EXPECT_FALSE(primary_account_info_);
 
-  IdentityManager* identity_manager =
-      identity_test_environment()->identity_manager();
-
   // Make the primary account available and check that the callback is invoked
   // as expected.
-  identity_test_environment()->SetPrimaryAccount(kTestEmail);
-  token_service()->UpdateCredentials(identity_manager->GetPrimaryAccountId(),
-                                     kTestRefreshToken);
+  std::string primary_account_id = identity_test_environment()
+                                       ->MakePrimaryAccountAvailable(kTestEmail)
+                                       .account_id;
   run_loop.Run();
 
-  EXPECT_EQ(identity_manager->GetPrimaryAccountId(), account_info.account_id);
+  EXPECT_EQ(primary_account_id, account_info.account_id);
   EXPECT_EQ(kTestGaiaId, account_info.gaia);
   EXPECT_EQ(kTestEmail, account_info.email);
   EXPECT_TRUE(account_state.has_refresh_token);
@@ -324,7 +316,8 @@ TEST_F(IdentityAccessorImplTest,
   AccountState account_state;
 
   // Sign in, but don't set the refresh token yet.
-  identity_test_environment()->SetPrimaryAccount(kTestEmail);
+  std::string primary_account_id =
+      identity_test_environment()->SetPrimaryAccount(kTestEmail).account_id;
   base::RunLoop run_loop;
   GetIdentityAccessorImpl()->GetPrimaryAccountWhenAvailable(base::BindRepeating(
       &IdentityAccessorImplTest::OnPrimaryAccountAvailable,
@@ -341,21 +334,16 @@ TEST_F(IdentityAccessorImplTest,
       base::Unretained(this), run_loop2.QuitClosure()));
   run_loop2.Run();
 
-  IdentityManager* identity_manager =
-      identity_test_environment()->identity_manager();
-
   EXPECT_TRUE(primary_account_info_);
-  EXPECT_EQ(identity_manager->GetPrimaryAccountId(),
-            primary_account_info_->account_id);
+  EXPECT_EQ(primary_account_id, primary_account_info_->account_id);
   EXPECT_TRUE(account_info.account_id.empty());
 
   // Set the refresh token and check that the callback is invoked as expected
   // (i.e., the primary account is now considered available).
-  token_service()->UpdateCredentials(identity_manager->GetPrimaryAccountId(),
-                                     kTestRefreshToken);
+  identity_test_environment()->SetRefreshTokenForPrimaryAccount();
   run_loop.Run();
 
-  EXPECT_EQ(identity_manager->GetPrimaryAccountId(), account_info.account_id);
+  EXPECT_EQ(primary_account_id, account_info.account_id);
   EXPECT_EQ(kTestGaiaId, account_info.gaia);
   EXPECT_EQ(kTestEmail, account_info.email);
   EXPECT_TRUE(account_state.has_refresh_token);
@@ -376,7 +364,7 @@ TEST_F(IdentityAccessorImplTest,
   // Set the refresh token, but don't sign in yet.
   std::string account_id_to_use =
       account_tracker()->SeedAccountInfo(kTestGaiaId, kTestEmail);
-  token_service()->UpdateCredentials(account_id_to_use, kTestRefreshToken);
+  identity_test_environment()->SetRefreshTokenForAccount(account_id_to_use);
   base::RunLoop run_loop;
   GetIdentityAccessorImpl()->GetPrimaryAccountWhenAvailable(base::BindRepeating(
       &IdentityAccessorImplTest::OnPrimaryAccountAvailable,
@@ -406,14 +394,12 @@ TEST_F(IdentityAccessorImplTest,
 
   // Sign the user in and check that the callback is invoked as expected (i.e.,
   // the primary account is now considered available).
-  identity_test_environment()->SetPrimaryAccount(kTestEmail);
+  std::string primary_account_id =
+      identity_test_environment()->SetPrimaryAccount(kTestEmail).account_id;
 
   run_loop.Run();
 
-  IdentityManager* identity_manager =
-      identity_test_environment()->identity_manager();
-
-  EXPECT_EQ(identity_manager->GetPrimaryAccountId(), account_info.account_id);
+  EXPECT_EQ(primary_account_id, account_info.account_id);
   EXPECT_EQ(kTestGaiaId, account_info.gaia);
   EXPECT_EQ(kTestEmail, account_info.email);
   EXPECT_TRUE(account_state.has_refresh_token);
@@ -452,24 +438,22 @@ TEST_F(IdentityAccessorImplTest,
   run_loop3.Run();
   EXPECT_FALSE(primary_account_info_);
 
-  IdentityManager* identity_manager =
-      identity_test_environment()->identity_manager();
-
   // Make the primary account available and check that the callbacks are invoked
   // as expected.
-  identity_test_environment()->SetPrimaryAccount(kTestEmail);
-  token_service()->UpdateCredentials(identity_manager->GetPrimaryAccountId(),
-                                     kTestRefreshToken);
+  std::string primary_account_id = identity_test_environment()
+                                       ->MakePrimaryAccountAvailable(kTestEmail)
+                                       .account_id;
+
   run_loop.Run();
   run_loop2.Run();
 
-  EXPECT_EQ(identity_manager->GetPrimaryAccountId(), account_info1.account_id);
+  EXPECT_EQ(primary_account_id, account_info1.account_id);
   EXPECT_EQ(kTestGaiaId, account_info1.gaia);
   EXPECT_EQ(kTestEmail, account_info1.email);
   EXPECT_TRUE(account_state1.has_refresh_token);
   EXPECT_TRUE(account_state1.is_primary_account);
 
-  EXPECT_EQ(identity_manager->GetPrimaryAccountId(), account_info2.account_id);
+  EXPECT_EQ(primary_account_id, account_info2.account_id);
   EXPECT_EQ(kTestGaiaId, account_info2.gaia);
   EXPECT_EQ(kTestEmail, account_info2.email);
   EXPECT_TRUE(account_state2.has_refresh_token);
@@ -480,15 +464,12 @@ TEST_F(IdentityAccessorImplTest,
 // available if the refresh token has an auth error.
 TEST_F(IdentityAccessorImplTest,
        GetPrimaryAccountWhenAvailableRefreshTokenHasAuthError) {
-  IdentityManager* identity_manager =
-      identity_test_environment()->identity_manager();
-  identity_test_environment()->SetPrimaryAccount(kTestEmail);
-  token_service()->UpdateCredentials(identity_manager->GetPrimaryAccountId(),
-                                     kTestRefreshToken);
-  token_service()->UpdateAuthErrorForTesting(
-      identity_manager->GetPrimaryAccountId(),
-      GoogleServiceAuthError(
-          GoogleServiceAuthError::State::INVALID_GAIA_CREDENTIALS));
+  std::string primary_account_id = identity_test_environment()
+                                       ->MakePrimaryAccountAvailable(kTestEmail)
+                                       .account_id;
+  identity_test_environment()->UpdatePersistentErrorOfRefreshTokenForAccount(
+      primary_account_id,
+      GoogleServiceAuthError(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
 
   AccountInfo account_info;
   AccountState account_state;
@@ -504,13 +485,12 @@ TEST_F(IdentityAccessorImplTest,
 
   // Clear the auth error, update credentials, and check that the callback
   // fires.
-  token_service()->UpdateAuthErrorForTesting(
-      identity_manager->GetPrimaryAccountId(), GoogleServiceAuthError());
-  token_service()->UpdateCredentials(identity_manager->GetPrimaryAccountId(),
-                                     kTestRefreshToken);
+  identity_test_environment()->UpdatePersistentErrorOfRefreshTokenForAccount(
+      primary_account_id, GoogleServiceAuthError());
+  identity_test_environment()->SetRefreshTokenForPrimaryAccount();
   run_loop.Run();
 
-  EXPECT_EQ(identity_manager->GetPrimaryAccountId(), account_info.account_id);
+  EXPECT_EQ(primary_account_id, account_info.account_id);
   EXPECT_EQ(kTestGaiaId, account_info.gaia);
   EXPECT_EQ(kTestEmail, account_info.email);
   EXPECT_TRUE(account_state.has_refresh_token);
@@ -555,7 +535,8 @@ TEST_F(IdentityAccessorImplTest, GetAccountInfoForKnownGaiaIdNoRefreshToken) {
 TEST_F(IdentityAccessorImplTest, GetAccountInfoForKnownGaiaIdRefreshToken) {
   std::string account_id =
       account_tracker()->SeedAccountInfo(kTestGaiaId, kTestEmail);
-  token_service()->UpdateCredentials(account_id, kTestRefreshToken);
+  identity_test_environment()->SetRefreshTokenForAccount(account_id);
+
   base::RunLoop run_loop;
   GetIdentityAccessorImpl()->GetAccountInfoFromGaiaId(
       kTestGaiaId,
@@ -588,19 +569,19 @@ TEST_F(IdentityAccessorImplTest, GetAccessTokenNotSignedIn) {
 // Check that the expected access token is received if requesting an access
 // token when signed in.
 TEST_F(IdentityAccessorImplTest, GetAccessTokenSignedIn) {
-  IdentityManager* identity_manager =
-      identity_test_environment()->identity_manager();
-  identity_test_environment()->SetPrimaryAccount(kTestEmail);
-  std::string account_id = identity_manager->GetPrimaryAccountId();
-  token_service()->UpdateCredentials(account_id, kTestRefreshToken);
-  token_service()->set_auto_post_fetch_response_on_message_loop(true);
+  std::string primary_account_id = identity_test_environment()
+                                       ->MakePrimaryAccountAvailable(kTestEmail)
+                                       .account_id;
   base::RunLoop run_loop;
-
   GetIdentityAccessorImpl()->GetAccessToken(
-      account_id, ScopeSet(), "dummy_consumer",
+      primary_account_id, ScopeSet(), "dummy_consumer",
       base::BindRepeating(&IdentityAccessorImplTest::OnReceivedAccessToken,
                           base::Unretained(this), run_loop.QuitClosure()));
+  identity_test_environment()
+      ->WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
+          kTestAccessToken, base::Time::Max());
   run_loop.Run();
+
   EXPECT_TRUE(access_token_);
   EXPECT_EQ(kTestAccessToken, access_token_.value());
   EXPECT_EQ(GoogleServiceAuthError::State::NONE, access_token_error_.state());
