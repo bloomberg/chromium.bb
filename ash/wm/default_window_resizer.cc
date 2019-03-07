@@ -27,7 +27,7 @@ void DefaultWindowResizer::Drag(const gfx::Point& location, int event_flags) {
     if (!did_move_or_resize_ && !details().restore_bounds.IsEmpty())
       window_state_->ClearRestoreBounds();
     did_move_or_resize_ = true;
-    GetTarget()->SetBounds(bounds);
+    SetBoundsDuringResize(bounds);
   }
 }
 
