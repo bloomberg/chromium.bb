@@ -15,11 +15,14 @@ namespace chromeos {
 class MockSupervisionTransitionScreen : public SupervisionTransitionScreen {
  public:
   MockSupervisionTransitionScreen(BaseScreenDelegate* base_screen_delegate,
-                                  SupervisionTransitionScreenView* view);
+                                  SupervisionTransitionScreenView* view,
+                                  const base::RepeatingClosure& exit_callback);
   virtual ~MockSupervisionTransitionScreen();
 
   MOCK_METHOD0(Show, void());
   MOCK_METHOD0(Hide, void());
+
+  void ExitScreen();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockSupervisionTransitionScreen);

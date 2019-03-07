@@ -8,10 +8,15 @@ namespace chromeos {
 
 MockArcTermsOfServiceScreen::MockArcTermsOfServiceScreen(
     BaseScreenDelegate* base_screen_delegate,
-    ArcTermsOfServiceScreenView* view)
-    : ArcTermsOfServiceScreen(base_screen_delegate, view) {}
+    ArcTermsOfServiceScreenView* view,
+    const ScreenExitCallback& exit_callback)
+    : ArcTermsOfServiceScreen(base_screen_delegate, view, exit_callback) {}
 
 MockArcTermsOfServiceScreen::~MockArcTermsOfServiceScreen() = default;
+
+void MockArcTermsOfServiceScreen::ExitScreen(Result result) {
+  exit_callback()->Run(result);
+}
 
 MockArcTermsOfServiceScreenView::MockArcTermsOfServiceScreenView() = default;
 

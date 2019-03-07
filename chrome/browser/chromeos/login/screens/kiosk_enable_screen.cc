@@ -11,10 +11,13 @@
 
 namespace chromeos {
 
-KioskEnableScreen::KioskEnableScreen(BaseScreenDelegate* base_screen_delegate,
-                                     KioskEnableScreenView* view)
+KioskEnableScreen::KioskEnableScreen(
+    BaseScreenDelegate* base_screen_delegate,
+    KioskEnableScreenView* view,
+    const base::RepeatingClosure& exit_callback)
     : BaseScreen(base_screen_delegate, OobeScreen::SCREEN_KIOSK_ENABLE),
-      view_(view) {
+      view_(view),
+      exit_callback_(exit_callback) {
   DCHECK(view_);
   if (view_)
     view_->SetDelegate(this);
@@ -31,7 +34,7 @@ void KioskEnableScreen::Show() {
 }
 
 void KioskEnableScreen::OnExit() {
-  Finish(ScreenExitCode::KIOSK_ENABLE_COMPLETED);
+  exit_callback_.Run();
 }
 
 void KioskEnableScreen::OnViewDestroyed(KioskEnableScreenView* view) {

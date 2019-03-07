@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
@@ -24,8 +25,12 @@ class DemoPreferencesScreen
     : public BaseScreen,
       public input_method::InputMethodManager::Observer {
  public:
+  enum class Result { COMPLETED, CANCELED };
+
+  using ScreenExitCallback = base::RepeatingCallback<void(Result result)>;
   DemoPreferencesScreen(BaseScreenDelegate* base_screen_delegate,
-                        DemoPreferencesScreenView* view);
+                        DemoPreferencesScreenView* view,
+                        const ScreenExitCallback& exit_callback);
   ~DemoPreferencesScreen() override;
 
   // BaseScreen:
@@ -37,6 +42,9 @@ class DemoPreferencesScreen
   // Called when view is being destroyed. If Screen is destroyed earlier
   // then it has to call Bind(nullptr).
   void OnViewDestroyed(DemoPreferencesScreenView* view);
+
+ protected:
+  ScreenExitCallback* exit_callback() { return &exit_callback_; }
 
  private:
   // InputMethodManager::Observer:
@@ -59,6 +67,7 @@ class DemoPreferencesScreen
       input_manager_observer_;
 
   DemoPreferencesScreenView* view_;
+  ScreenExitCallback exit_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(DemoPreferencesScreen);
 };

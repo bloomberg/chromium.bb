@@ -71,10 +71,13 @@ const char HIDDetectionScreen::kContextKeyKeyboardLabel[] =
 const char HIDDetectionScreen::kContextKeyContinueButtonEnabled[] =
     "continue-button-enabled";
 
-HIDDetectionScreen::HIDDetectionScreen(BaseScreenDelegate* base_screen_delegate,
-                                       HIDDetectionView* view)
+HIDDetectionScreen::HIDDetectionScreen(
+    BaseScreenDelegate* base_screen_delegate,
+    HIDDetectionView* view,
+    const base::RepeatingClosure& exit_callback)
     : BaseScreen(base_screen_delegate, OobeScreen::SCREEN_OOBE_HID_DETECTION),
       view_(view),
+      exit_callback_(exit_callback),
       binding_(this),
       weak_ptr_factory_(this) {
   if (view_)
@@ -116,7 +119,7 @@ void HIDDetectionScreen::OnContinueButtonClicked() {
   if (adapter_is_powered && need_switching_off)
     PowerOff();
 
-  Finish(ScreenExitCode::HID_DETECTION_COMPLETED);
+  exit_callback_.Run();
 }
 
 void HIDDetectionScreen::OnViewDestroyed(HIDDetectionView* view) {

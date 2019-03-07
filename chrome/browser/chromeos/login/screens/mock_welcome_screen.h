@@ -18,12 +18,15 @@ class MockWelcomeScreen : public WelcomeScreen {
  public:
   MockWelcomeScreen(BaseScreenDelegate* base_screen_delegate,
                     Delegate* delegate,
-                    WelcomeView* view);
+                    WelcomeView* view,
+                    const base::RepeatingClosure& exit_callback);
   ~MockWelcomeScreen() override;
 
   MOCK_METHOD0(Show, void());
   MOCK_METHOD0(Hide, void());
   MOCK_METHOD2(SetConfiguration, void(base::Value* configuration, bool notify));
+
+  void ExitScreen();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockWelcomeScreen);

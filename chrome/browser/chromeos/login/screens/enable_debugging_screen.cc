@@ -10,10 +10,13 @@
 
 namespace chromeos {
 
-EnableDebuggingScreen::EnableDebuggingScreen(BaseScreenDelegate* delegate,
-                                             EnableDebuggingScreenView* view)
+EnableDebuggingScreen::EnableDebuggingScreen(
+    BaseScreenDelegate* delegate,
+    EnableDebuggingScreenView* view,
+    const base::RepeatingClosure& exit_callback)
     : BaseScreen(delegate, OobeScreen::SCREEN_OOBE_ENABLE_DEBUGGING),
-      view_(view) {
+      view_(view),
+      exit_callback_(exit_callback) {
   DCHECK(view_);
   if (view_)
     view_->SetDelegate(this);
@@ -35,8 +38,7 @@ void EnableDebuggingScreen::Hide() {
 }
 
 void EnableDebuggingScreen::OnExit(bool success) {
-  Finish(success ? ScreenExitCode::ENABLE_DEBUGGING_FINISHED
-                 : ScreenExitCode::ENABLE_DEBUGGING_CANCELED);
+  exit_callback_.Run();
 }
 
 void EnableDebuggingScreen::OnViewDestroyed(EnableDebuggingScreenView* view) {

@@ -22,12 +22,16 @@
 #include "chrome/browser/chromeos/login/enrollment/auto_enrollment_controller.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen.h"
 #include "chrome/browser/chromeos/login/screen_manager.h"
+#include "chrome/browser/chromeos/login/screens/arc_terms_of_service_screen.h"
 #include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
+#include "chrome/browser/chromeos/login/screens/demo_preferences_screen.h"
+#include "chrome/browser/chromeos/login/screens/demo_setup_screen.h"
+#include "chrome/browser/chromeos/login/screens/enable_debugging_screen.h"
 #include "chrome/browser/chromeos/login/screens/eula_screen.h"
-#include "chrome/browser/chromeos/login/screens/hid_detection_screen.h"
 #include "chrome/browser/chromeos/login/screens/kiosk_autolaunch_screen.h"
 #include "chrome/browser/chromeos/login/screens/network_screen.h"
-#include "chrome/browser/chromeos/login/screens/reset_screen.h"
+#include "chrome/browser/chromeos/login/screens/recommend_apps_screen.h"
+#include "chrome/browser/chromeos/login/screens/terms_of_service_screen.h"
 #include "chrome/browser/chromeos/login/screens/update_screen.h"
 #include "chrome/browser/chromeos/login/screens/welcome_screen.h"
 #include "chrome/browser/chromeos/policy/enrollment_config.h"
@@ -188,9 +192,13 @@ class WizardController : public BaseScreenDelegate,
   void ShowPreviousScreen();
 
   // Shared actions to be performed on a screen exit.
-  void OnScreenExit(OobeScreen screen);
+  // |exit_code| is the screen specific exit code reported by the screen.
+  void OnScreenExit(OobeScreen screen, int exit_code);
 
   // Exit handlers:
+  void OnWrongHWIDScreenExit();
+  void OnHidDetectionScreenExit();
+  void OnWelcomeScreenExit();
   void OnNetworkScreenExit(NetworkScreen::Result result);
   bool ShowEulaOrArcTosAfterNetworkScreen();
   void OnEulaScreenExit(EulaScreen::Result result);
@@ -200,33 +208,37 @@ class WizardController : public BaseScreenDelegate,
   void OnAutoEnrollmentCheckScreenExit();
   void OnEnrollmentScreenExit(EnrollmentScreen::Result result);
   void OnEnrollmentDone();
-  void OnHIDDetectionCompleted();
-  void OnWelcomeContinued();
-  void OnDeviceModificationCanceled();
-  void OnKioskAutolaunchCanceled();
-  void OnKioskAutolaunchConfirmed();
-  void OnKioskEnableCompleted();
-  void OnWrongHWIDWarningSkipped();
-  void OnTermsOfServiceDeclined();
+  void OnEnableDebuggingScreenExit();
+  void OnKioskEnableScreenExit();
+  void OnKioskAutolaunchScreenExit(KioskAutolaunchScreen::Result result);
+  void OnDemoPreferencesScreenExit(DemoPreferencesScreen::Result result);
+  void OnDemoSetupScreenExit(DemoSetupScreen::Result result);
+  void OnTermsOfServiceScreenExit(TermsOfServiceScreen::Result result);
   void OnTermsOfServiceAccepted();
+  void OnSyncConsentScreenExit();
   void OnSyncConsentFinished();
-  void OnDiscoverScreenFinished();
-  void OnFingerprintSetupFinished();
+  void OnFingerprintSetupScreenExit();
+  void OnDiscoverScreenExit();
+  void OnMarketingOptInScreenExit();
+  void OnArcTermsOfServiceScreenExit(ArcTermsOfServiceScreen::Result result);
   void OnArcTermsOfServiceSkipped();
   void OnArcTermsOfServiceAccepted();
-  void OnArcTermsOfServiceBack();
-  void OnRecommendAppsSkipped();
-  void OnRecommendAppsSelected();
+  void OnRecommendAppsScreenExit(RecommendAppsScreen::Result result);
+  void OnAppDownloadingScreenExit();
+  void OnAssistantOptInFlowScreenExit();
+  void OnMultiDeviceSetupScreenExit();
+  void OnResetScreenExit();
+  void OnHIDDetectionCompleted();
+  void OnDeviceModificationCanceled();
+  void OnFingerprintSetupFinished();
   void OnAppDownloadingFinished();
   void OnDemoSetupFinished();
   void OnDemoSetupCanceled();
   void OnDemoPreferencesContinued();
   void OnDemoPreferencesCanceled();
   void OnSupervisionTransitionFinished();
-  void OnAssistantOptInFlowFinished();
-  void OnMultiDeviceSetupFinished();
+  void OnSupervisionTransitionScreenExit();
   void OnOobeFlowFinished();
-  void OnMarketingOptInFinished();
 
   // Callback invoked once it has been determined whether the device is disabled
   // or not.

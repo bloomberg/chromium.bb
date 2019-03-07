@@ -8,10 +8,15 @@ namespace chromeos {
 
 MockDemoSetupScreen::MockDemoSetupScreen(
     BaseScreenDelegate* base_screen_delegate,
-    DemoSetupScreenView* view)
-    : DemoSetupScreen(base_screen_delegate, view) {}
+    DemoSetupScreenView* view,
+    const ScreenExitCallback& exit_callback)
+    : DemoSetupScreen(base_screen_delegate, view, exit_callback) {}
 
 MockDemoSetupScreen::~MockDemoSetupScreen() = default;
+
+void MockDemoSetupScreen::ExitScreen(Result result) {
+  exit_callback()->Run(result);
+}
 
 MockDemoSetupScreenView::MockDemoSetupScreenView() = default;
 

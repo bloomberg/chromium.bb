@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
 #include "chrome/browser/chromeos/login/screens/recommend_apps/recommend_apps_fetcher.h"
@@ -22,8 +23,12 @@ class BaseScreenDelegate;
 class RecommendAppsScreen : public BaseScreen,
                             public RecommendAppsScreenViewObserver {
  public:
+  enum class Result { SELECTED, SKIPPED };
+
+  using ScreenExitCallback = base::RepeatingCallback<void(Result result)>;
   RecommendAppsScreen(BaseScreenDelegate* base_screen_delegate,
-                      RecommendAppsScreenView* view);
+                      RecommendAppsScreenView* view,
+                      const ScreenExitCallback& exit_callback);
   ~RecommendAppsScreen() override;
 
   // BaseScreen:
@@ -38,6 +43,7 @@ class RecommendAppsScreen : public BaseScreen,
 
  private:
   RecommendAppsScreenView* view_;
+  ScreenExitCallback exit_callback_;
 
   std::unique_ptr<RecommendAppsFetcher> recommend_apps_fetcher_;
 

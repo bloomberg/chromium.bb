@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/timer/timer.h"
@@ -28,8 +29,12 @@ class BaseScreenDelegate;
 class TermsOfServiceScreen : public BaseScreen,
                              public TermsOfServiceScreenView::Delegate {
  public:
+  enum class Result { ACCEPTED, DECLINED };
+
+  using ScreenExitCallback = base::RepeatingCallback<void(Result result)>;
   TermsOfServiceScreen(BaseScreenDelegate* base_screen_delegate,
-                       TermsOfServiceScreenView* view);
+                       TermsOfServiceScreenView* view,
+                       const ScreenExitCallback& exit_callback);
   ~TermsOfServiceScreen() override;
 
   // BaseScreen:
@@ -52,6 +57,7 @@ class TermsOfServiceScreen : public BaseScreen,
   void OnDownloaded(std::unique_ptr<std::string> response_body);
 
   TermsOfServiceScreenView* view_;
+  ScreenExitCallback exit_callback_;
 
   std::unique_ptr<network::SimpleURLLoader> terms_of_service_loader_;
 

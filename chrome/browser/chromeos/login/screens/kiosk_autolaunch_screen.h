@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
@@ -19,8 +20,12 @@ namespace chromeos {
 class KioskAutolaunchScreen : public BaseScreen,
                               public KioskAutolaunchScreenView::Delegate {
  public:
+  enum class Result { COMPLETED, CANCELED };
+
+  using ScreenExitCallback = base::RepeatingCallback<void(Result result)>;
   KioskAutolaunchScreen(BaseScreenDelegate* base_screen_delegate,
-                        KioskAutolaunchScreenView* view);
+                        KioskAutolaunchScreenView* view,
+                        const ScreenExitCallback& exit_callback);
   ~KioskAutolaunchScreen() override;
 
   // BaseScreen implementation:
@@ -33,6 +38,7 @@ class KioskAutolaunchScreen : public BaseScreen,
 
  private:
   KioskAutolaunchScreenView* view_;
+  ScreenExitCallback exit_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(KioskAutolaunchScreen);
 };

@@ -49,7 +49,8 @@ class HIDDetectionScreen : public BaseScreen,
   using DeviceMap = std::map<std::string, InputDeviceInfoPtr>;
 
   HIDDetectionScreen(BaseScreenDelegate* base_screen_delegate,
-                     HIDDetectionView* view);
+                     HIDDetectionView* view,
+                     const base::RepeatingClosure& exit_callback);
   ~HIDDetectionScreen() override;
 
   // Called when continue button was clicked.
@@ -204,6 +205,7 @@ class HIDDetectionScreen : public BaseScreen,
   void SetAdapterInitialPoweredForTesting(bool powered);
 
   HIDDetectionView* view_;
+  base::RepeatingClosure exit_callback_;
 
   // Default bluetooth adapter, used for all operations.
   scoped_refptr<device::BluetoothAdapter> adapter_;

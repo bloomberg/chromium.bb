@@ -45,11 +45,13 @@ void SetApplicationLocaleAndInputMethod(const std::string& locale,
 
 DemoPreferencesScreen::DemoPreferencesScreen(
     BaseScreenDelegate* base_screen_delegate,
-    DemoPreferencesScreenView* view)
+    DemoPreferencesScreenView* view,
+    const ScreenExitCallback& exit_callback)
     : BaseScreen(base_screen_delegate,
                  OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES),
       input_manager_observer_(this),
-      view_(view) {
+      view_(view),
+      exit_callback_(exit_callback) {
   DCHECK(view_);
   view_->Bind(this);
 
@@ -88,11 +90,11 @@ void DemoPreferencesScreen::Hide() {
 
 void DemoPreferencesScreen::OnUserAction(const std::string& action_id) {
   if (action_id == kUserActionContinue) {
-    Finish(ScreenExitCode::DEMO_MODE_PREFERENCES_CONTINUED);
+    exit_callback_.Run(Result::COMPLETED);
   } else if (action_id == kUserActionClose) {
     // Restore initial locale and input method if the user pressed back button.
     SetApplicationLocaleAndInputMethod(initial_locale_, initial_input_method_);
-    Finish(ScreenExitCode::DEMO_MODE_PREFERENCES_CANCELED);
+    exit_callback_.Run(Result::CANCELED);
   } else {
     BaseScreen::OnUserAction(action_id);
   }

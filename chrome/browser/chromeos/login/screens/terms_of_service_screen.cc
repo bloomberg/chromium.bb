@@ -31,9 +31,11 @@ namespace chromeos {
 
 TermsOfServiceScreen::TermsOfServiceScreen(
     BaseScreenDelegate* base_screen_delegate,
-    TermsOfServiceScreenView* view)
+    TermsOfServiceScreenView* view,
+    const ScreenExitCallback& exit_callback)
     : BaseScreen(base_screen_delegate, OobeScreen::SCREEN_TERMS_OF_SERVICE),
-      view_(view) {
+      view_(view),
+      exit_callback_(exit_callback) {
   DCHECK(view_);
   if (view_)
     view_->SetDelegate(this);
@@ -66,11 +68,11 @@ void TermsOfServiceScreen::Hide() {
 }
 
 void TermsOfServiceScreen::OnDecline() {
-  Finish(ScreenExitCode::TERMS_OF_SERVICE_DECLINED);
+  exit_callback_.Run(Result::DECLINED);
 }
 
 void TermsOfServiceScreen::OnAccept() {
-  Finish(ScreenExitCode::TERMS_OF_SERVICE_ACCEPTED);
+  exit_callback_.Run(Result::ACCEPTED);
 }
 
 void TermsOfServiceScreen::OnViewDestroyed(TermsOfServiceScreenView* view) {

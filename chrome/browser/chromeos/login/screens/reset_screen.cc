@@ -93,9 +93,11 @@ void StartTPMFirmwareUpdate(
 }  // namespace
 
 ResetScreen::ResetScreen(BaseScreenDelegate* base_screen_delegate,
-                         ResetView* view)
+                         ResetView* view,
+                         const base::RepeatingClosure& exit_callback)
     : BaseScreen(base_screen_delegate, OobeScreen::SCREEN_OOBE_RESET),
       view_(view),
+      exit_callback_(exit_callback),
       weak_ptr_factory_(this) {
   DCHECK(view_);
   if (view_)
@@ -234,14 +236,17 @@ void ResetScreen::OnUserAction(const std::string& action_id) {
 
 void ResetScreen::OnCancel() {
   if (context_.GetInteger(kContextKeyScreenState, STATE_RESTART_REQUIRED) ==
-      STATE_REVERT_PROMISE)
+      STATE_REVERT_PROMISE) {
     return;
+  }
+
   // Hide Rollback view for the next show.
   if (context_.GetBoolean(kContextKeyIsRollbackAvailable) &&
-      context_.GetBoolean(kContextKeyIsRollbackChecked))
+      context_.GetBoolean(kContextKeyIsRollbackChecked)) {
     OnToggleRollback();
-  Finish(ScreenExitCode::RESET_CANCELED);
+  }
   DBusThreadManager::Get()->GetUpdateEngineClient()->RemoveObserver(this);
+  exit_callback_.Run();
 }
 
 void ResetScreen::OnPowerwash() {

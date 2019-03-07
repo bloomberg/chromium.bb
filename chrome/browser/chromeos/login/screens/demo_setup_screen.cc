@@ -22,9 +22,11 @@ constexpr char kUserActionPowerwash[] = "powerwash";
 namespace chromeos {
 
 DemoSetupScreen::DemoSetupScreen(BaseScreenDelegate* base_screen_delegate,
-                                 DemoSetupScreenView* view)
+                                 DemoSetupScreenView* view,
+                                 const ScreenExitCallback& exit_callback)
     : BaseScreen(base_screen_delegate, OobeScreen::SCREEN_OOBE_DEMO_SETUP),
       view_(view),
+      exit_callback_(exit_callback),
       weak_ptr_factory_(this) {
   DCHECK(view_);
   view_->Bind(this);
@@ -49,7 +51,7 @@ void DemoSetupScreen::OnUserAction(const std::string& action_id) {
   if (action_id == kUserActionStartSetup) {
     StartEnrollment();
   } else if (action_id == kUserActionClose) {
-    Finish(ScreenExitCode::DEMO_MODE_SETUP_CANCELED);
+    exit_callback_.Run(Result::CANCELED);
   } else if (action_id == kUserActionPowerwash) {
     chromeos::DBusThreadManager::Get()
         ->GetSessionManagerClient()
@@ -77,7 +79,7 @@ void DemoSetupScreen::OnSetupError(
 }
 
 void DemoSetupScreen::OnSetupSuccess() {
-  Finish(ScreenExitCode::DEMO_MODE_SETUP_FINISHED);
+  exit_callback_.Run(Result::COMPLETED);
 }
 
 void DemoSetupScreen::OnViewDestroyed(DemoSetupScreenView* view) {
