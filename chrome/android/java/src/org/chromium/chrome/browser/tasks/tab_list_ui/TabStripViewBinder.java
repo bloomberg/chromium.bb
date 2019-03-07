@@ -41,14 +41,19 @@ class TabStripViewBinder {
                                             R.drawable.selected_tab_background,
                                             holder.itemView.getContext().getTheme())
                                     : null);
+            String title = item.get(TabProperties.TITLE);
             if (item.get(TabProperties.IS_SELECTED)) {
                 holder.button.setOnClickListener(view -> {
                     item.get(TabProperties.TAB_CLOSED_LISTENER).run(holder.getTabId());
                 });
+                holder.button.setContentDescription(holder.itemView.getContext().getString(
+                        R.string.accessibility_tabstrip_btn_close_tab, title));
             } else {
                 holder.button.setOnClickListener(view -> {
                     item.get(TabProperties.TAB_SELECTED_LISTENER).run(holder.getTabId());
                 });
+                holder.button.setContentDescription(holder.itemView.getContext().getString(
+                        R.string.accessibility_tabstrip_tab, title));
             }
         } else if (TabProperties.FAVICON == propertyKey) {
             Bitmap favicon = item.get(TabProperties.FAVICON);

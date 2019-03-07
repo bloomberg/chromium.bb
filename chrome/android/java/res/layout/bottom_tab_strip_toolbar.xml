@@ -20,7 +20,7 @@
             style="@style/BottomToolbarButton"
             android:src="@drawable/ic_expand_less_black_24dp"
             app:tint="@color/standard_mode_tint"
-            android:contentDescription="@string/accessibility_expand_section_header" />
+            android:contentDescription="@string/accessibility_bottom_tab_strip_expand_tab_sheet" />
         <FrameLayout
             android:id="@+id/toolbar_container_view"
             android:layout_width="0dp"

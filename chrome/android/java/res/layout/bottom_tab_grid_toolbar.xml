@@ -20,7 +20,7 @@
             style="@style/BottomToolbarButton"
             android:src="@drawable/ic_expand_more_black_24dp"
             app:tint="@color/standard_mode_tint"
-            android:contentDescription="@string/accessibility_collapse_section_header" />
+            android:contentDescription="@string/accessibility_bottom_tab_grid_close_tab_sheet" />
          <TextView
              android:id="@+id/title"
              android:layout_height="wrap_content"

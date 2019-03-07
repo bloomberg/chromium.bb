@@ -32,15 +32,21 @@ public class TabGroupUtils {
 
         @StringRes
         int textId;
+        @StringRes
+        int accessibilityTextId;
         switch (featureName) {
             case FeatureConstants.TAB_GROUPS_QUICKLY_COMPARE_PAGES_FEATURE:
                 textId = R.string.iph_tab_groups_quickly_compare_pages_text;
+                accessibilityTextId = textId;
                 break;
             case FeatureConstants.TAB_GROUPS_TAP_TO_SEE_ANOTHER_TAB_FEATURE:
                 textId = R.string.iph_tab_groups_tap_to_see_another_tab_text;
+                accessibilityTextId =
+                        R.string.iph_tab_groups_tap_to_see_another_tab_accessibility_text;
                 break;
             case FeatureConstants.TAB_GROUPS_YOUR_TABS_ARE_TOGETHER_FEATURE:
                 textId = R.string.iph_tab_groups_your_tabs_together_text;
+                accessibilityTextId = textId;
                 break;
             default:
                 assert false;
@@ -53,8 +59,8 @@ public class TabGroupUtils {
 
         ViewRectProvider rectProvider = new ViewRectProvider(view);
 
-        TextBubble textBubble =
-                new TextBubble(view.getContext(), view, textId, textId, true, rectProvider);
+        TextBubble textBubble = new TextBubble(
+                view.getContext(), view, textId, accessibilityTextId, true, rectProvider);
         textBubble.setDismissOnTouchInteraction(true);
         textBubble.addOnDismissListener(() -> tracker.dismissed(featureName));
         textBubble.show();
