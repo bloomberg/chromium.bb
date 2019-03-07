@@ -27,7 +27,6 @@ void NullAudioSink::Initialize(const AudioParameters& params,
                                RenderCallback* callback) {
   DCHECK(!started_);
   fake_worker_.reset(new FakeAudioWorker(task_runner_, params));
-  fixed_data_delay_ = FakeAudioWorker::ComputeFakeOutputDelay(params);
   audio_bus_ = AudioBus::Create(params);
   callback_ = callback;
   initialized_ = true;
@@ -55,8 +54,8 @@ void NullAudioSink::Play() {
   if (playing_)
     return;
 
-  fake_worker_->Start(
-      base::BindRepeating(&NullAudioSink::CallRender, base::Unretained(this)));
+  fake_worker_->Start(base::Bind(
+      &NullAudioSink::CallRender, base::Unretained(this)));
 
   playing_ = true;
 }
@@ -99,16 +98,11 @@ void NullAudioSink::SwitchOutputDevice(const std::string& device_id,
   std::move(callback).Run(OUTPUT_DEVICE_STATUS_ERROR_INTERNAL);
 }
 
-void NullAudioSink::CallRender(base::TimeTicks ideal_time,
-                               base::TimeTicks now) {
+void NullAudioSink::CallRender() {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-  // Since NullAudioSink is only used for cases where a real audio sink was not
-  // available, provide "idealized" delay-timing arguments. This will drive the
-  // smoothest playback (since video is sync'ed to audio). See
-  // content::AudioRendererImpl and media::AudioClock for further details.
-  int frames_received =
-      callback_->Render(fixed_data_delay_, ideal_time, 0, audio_bus_.get());
+  int frames_received = callback_->Render(
+      base::TimeDelta(), base::TimeTicks::Now(), 0, audio_bus_.get());
   if (!audio_hash_ || frames_received <= 0)
     return;
 

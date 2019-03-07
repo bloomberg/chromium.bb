@@ -40,13 +40,12 @@ class MEDIA_EXPORT FakeAudioOutputStream : public MuteableAudioOutputStream {
   ~FakeAudioOutputStream() override;
 
   // Task that periodically calls OnMoreData() to consume audio data.
-  void CallOnMoreData(base::TimeTicks ideal_time, base::TimeTicks now);
+  void CallOnMoreData();
 
-  AudioManagerBase* const audio_manager_;
-  const base::TimeDelta fixed_data_delay_;
+  AudioManagerBase* audio_manager_;
   AudioSourceCallback* callback_;
   FakeAudioWorker fake_worker_;
-  const std::unique_ptr<AudioBus> audio_bus_;
+  std::unique_ptr<AudioBus> audio_bus_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeAudioOutputStream);
 };
