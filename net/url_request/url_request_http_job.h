@@ -10,6 +10,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -151,6 +152,12 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
   // Callback functions for Cookie Monster
   void SetCookieHeaderAndStart(const CookieList& cookie_list,
                                const CookieStatusList& excluded_list);
+
+  // Another Cookie Monster callback
+  void OnSetCookieResult(std::string cookie_string,
+                         CanonicalCookie::CookieInclusionStatus status);
+  int num_cookie_lines_left_;
+  std::vector<CookieLineWithStatus> cs_status_list_;
 
   // Some servers send the body compressed, but specify the content length as
   // the uncompressed size. If this is the case, we return true in order

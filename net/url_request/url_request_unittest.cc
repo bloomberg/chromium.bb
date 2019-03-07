@@ -53,6 +53,7 @@
 #include "net/base/chunked_upload_data_stream.h"
 #include "net/base/directory_listing.h"
 #include "net/base/elements_upload_data_stream.h"
+#include "net/base/layered_network_delegate.h"
 #include "net/base/load_flags.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/load_timing_info_test_util.h"
@@ -2588,6 +2589,154 @@ TEST_F(URLRequestTest, DelayedCookieCallback) {
                 != std::string::npos);
     EXPECT_EQ(0, network_delegate.blocked_get_cookies_count());
     EXPECT_EQ(0, network_delegate.blocked_set_cookie_count());
+  }
+}
+
+class FilteringTestLayeredNetworkDelegate : public LayeredNetworkDelegate {
+ public:
+  FilteringTestLayeredNetworkDelegate(
+      std::unique_ptr<NetworkDelegate> network_delegate)
+      : LayeredNetworkDelegate(std::move((network_delegate))),
+        set_cookie_called_count_(0),
+        blocked_set_cookie_count_(0) {}
+  ~FilteringTestLayeredNetworkDelegate() override = default;
+
+  bool OnCanSetCookieInternal(const URLRequest& request,
+                              const net::CanonicalCookie& cookie,
+                              CookieOptions* options,
+                              bool allowed_from_caller) override {
+    // Filter out cookies with the same name as |cookie_name_filter_| and
+    // combine with |allowed_from_caller|.
+    bool allowed =
+        allowed_from_caller && !(cookie.Name() == cookie_name_filter_);
+
+    ++set_cookie_called_count_;
+
+    if (!allowed)
+      ++blocked_set_cookie_count_;
+
+    return allowed;
+  }
+
+  void SetCookieFilter(std::string filter) {
+    cookie_name_filter_ = std::move(filter);
+  }
+
+  int set_cookie_called_count() { return set_cookie_called_count_; }
+
+  int blocked_set_cookie_count() { return blocked_set_cookie_count_; }
+
+  void ResetSetCookieCalledCount() { set_cookie_called_count_ = 0; }
+
+  void ResetBlockedSetCookieCount() { blocked_set_cookie_count_ = 0; }
+
+ private:
+  std::string cookie_name_filter_;
+  int set_cookie_called_count_;
+  int blocked_set_cookie_count_;
+};
+
+TEST_F(URLRequestTest, DelayedCookieCallbackAsync) {
+  HttpTestServer test_server;
+  ASSERT_TRUE(test_server.Start());
+
+  TestURLRequestContext async_context;
+  std::unique_ptr<DelayedCookieMonster> delayed_cm =
+      std::make_unique<DelayedCookieMonster>();
+  async_context.set_cookie_store(delayed_cm.get());
+  FilteringTestLayeredNetworkDelegate async_filter_network_delegate(
+      std::make_unique<TestNetworkDelegate>());
+  async_filter_network_delegate.SetCookieFilter("CookieBlockedOnCanGetCookie");
+  async_context.set_network_delegate(&async_filter_network_delegate);
+  TestDelegate async_delegate;
+
+  TestURLRequestContext sync_context;
+  std::unique_ptr<CookieMonster> cm =
+      std::make_unique<CookieMonster>(nullptr, nullptr, nullptr);
+  sync_context.set_cookie_store(cm.get());
+  FilteringTestLayeredNetworkDelegate sync_filter_network_delegate(
+      std::make_unique<TestNetworkDelegate>());
+  sync_filter_network_delegate.SetCookieFilter("CookieBlockedOnCanGetCookie");
+  sync_context.set_network_delegate(&sync_filter_network_delegate);
+  TestDelegate sync_delegate;
+
+  // Add a secure cookie so we can try to set an insecure cookie and have
+  // SetCanonicalCookie (and therefore SetCookieWithOptions) fail.
+  GURL::Replacements replace_scheme;
+  replace_scheme.SetSchemeStr("https");
+  GURL url = test_server.base_url().ReplaceComponents(replace_scheme);
+
+  delayed_cm->SetCookieWithOptionsAsync(url, "AlreadySetCookie=1;Secure",
+                                        CookieOptions(),
+                                        CookieStore::SetCookiesCallback());
+  cm->SetCookieWithOptionsAsync(url, "AlreadySetCookie=1;Secure",
+                                CookieOptions(),
+                                CookieStore::SetCookiesCallback());
+
+  std::vector<std::string> cookie_lines(
+      {// Fails on CanonicalCookie::Create for trying to create a secure cookie
+       // on an insecure host.
+       "CookieNotSet=1;Secure",
+       // Fail in FilteringTestLayeredNetworkDelegate::CanGetCookie.
+       "CookieBlockedOnCanGetCookie=1",
+       // Fails in SetCanonicalCookie for trying to overwrite a secure cookie
+       // with an insecure cookie.
+       "AlreadySetCookie=1",
+       // Succeeds and added cookie to store. Delayed (which makes the callback
+       // run asynchronously) in DelayedCookieMonster.
+       "CookieSet=1"});
+
+  for (auto first_cookie_line : cookie_lines) {
+    for (auto second_cookie_line : cookie_lines) {
+      // Run with the delayed cookie monster.
+      std::unique_ptr<URLRequest> request = async_context.CreateRequest(
+          test_server.GetURL("/set-cookie?" + first_cookie_line + "&" +
+                             second_cookie_line),
+          DEFAULT_PRIORITY, &async_delegate, TRAFFIC_ANNOTATION_FOR_TESTS);
+
+      request->Start();
+      async_delegate.RunUntilComplete();
+      EXPECT_THAT(async_delegate.request_status(), IsOk());
+
+      // Run with the regular cookie monster.
+      request = sync_context.CreateRequest(
+          test_server.GetURL("/set-cookie?" + first_cookie_line + "&" +
+                             second_cookie_line),
+          DEFAULT_PRIORITY, &sync_delegate, TRAFFIC_ANNOTATION_FOR_TESTS);
+
+      request->Start();
+      sync_delegate.RunUntilComplete();
+      EXPECT_THAT(sync_delegate.request_status(), IsOk());
+
+      int expected_set_cookie_count = 0;
+      int expected_blocked_cookie_count = 0;
+
+      if (first_cookie_line != "CookieNotSet=1;Secure")
+        ++expected_set_cookie_count;
+      if (second_cookie_line != "CookieNotSet=1;Secure")
+        ++expected_set_cookie_count;
+
+      if (first_cookie_line == "CookieBlockedOnCanGetCookie=1")
+        ++expected_blocked_cookie_count;
+      if (second_cookie_line == "CookieBlockedOnCanGetCookie=1")
+        ++expected_blocked_cookie_count;
+
+      EXPECT_EQ(expected_set_cookie_count,
+                async_filter_network_delegate.set_cookie_called_count());
+      EXPECT_EQ(expected_blocked_cookie_count,
+                async_filter_network_delegate.blocked_set_cookie_count());
+
+      EXPECT_EQ(expected_set_cookie_count,
+                sync_filter_network_delegate.set_cookie_called_count());
+      EXPECT_EQ(expected_blocked_cookie_count,
+                sync_filter_network_delegate.blocked_set_cookie_count());
+
+      async_filter_network_delegate.ResetSetCookieCalledCount();
+      async_filter_network_delegate.ResetBlockedSetCookieCount();
+
+      sync_filter_network_delegate.ResetSetCookieCalledCount();
+      sync_filter_network_delegate.ResetBlockedSetCookieCount();
+    }
   }
 }
 
@@ -8135,6 +8284,39 @@ TEST_F(URLRequestTestHTTP, BasicAuthWithCookies) {
     EXPECT_TRUE(d.data_received().find("Cookie: got_challenged=true")
         != std::string::npos);
   }
+}
+
+TEST_F(URLRequestTestHTTP, AuthChallengeWithFilteredCookie) {
+  ASSERT_TRUE(http_test_server()->Start());
+
+  GURL url_requiring_auth = http_test_server()->GetURL(
+      "/auth-basic?set-cookie-if-not-challenged&set-cookie-if-challenged");
+
+  FilteringTestLayeredNetworkDelegate filtering_network_delegate(
+      std::make_unique<TestNetworkDelegate>());  // Must outlive URLRequest.
+  filtering_network_delegate.SetCookieFilter(
+      "got_challenged");  // Filter the cookie auth-basic sets
+  TestURLRequestContext context(true);
+  context.set_network_delegate(&filtering_network_delegate);
+  context.Init();
+
+  TestDelegate delegate;
+
+  delegate.set_credentials(AuthCredentials(kUser, kSecret));
+
+  std::unique_ptr<URLRequest> request(
+      context.CreateRequest(url_requiring_auth, DEFAULT_PRIORITY, &delegate,
+                            TRAFFIC_ANNOTATION_FOR_TESTS));
+  request->Start();
+
+  delegate.RunUntilComplete();
+  EXPECT_THAT(delegate.request_status(), IsOk());
+
+  // Make sure the cookie was actually filtered.
+  EXPECT_EQ(std::string::npos,
+            delegate.data_received().find("Cookie: got_challenged=true"));
+  // Make sure it was blocked twice.
+  EXPECT_EQ(2, filtering_network_delegate.blocked_set_cookie_count());
 }
 
 // Tests that load timing works as expected with auth and the cache.

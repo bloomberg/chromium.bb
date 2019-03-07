@@ -44,6 +44,8 @@
 
 #include "net/cookies/canonical_cookie.h"
 
+#include <utility>
+
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
@@ -551,5 +553,10 @@ std::string CanonicalCookie::DomainWithoutDot() const {
     return domain_;
   return domain_.substr(1);
 }
+
+CookieLineWithStatus::CookieLineWithStatus(
+    std::string cookie_string,
+    CanonicalCookie::CookieInclusionStatus status)
+    : cookie_string(std::move(cookie_string)), status(status) {}
 
 }  // namespace net

@@ -66,7 +66,8 @@ class NET_EXPORT CanonicalCookie {
     EXCLUDE_OVERWRITE_SECURE,
     EXCLUDE_OVERWRITE_HTTP_ONLY,
     EXCLUDE_INVALID_DOMAIN,
-    EXCLUDE_INVALID_PREFIX
+    EXCLUDE_INVALID_PREFIX,
+    EXCLUDE_THIRD_PARTY_POLICY
   };
 
   // Creates a new |CanonicalCookie| from the |cookie_line| and the
@@ -262,6 +263,15 @@ class NET_EXPORT CanonicalCookie {
 // were excluded
 struct CookieWithStatus {
   CanonicalCookie cookie;
+  CanonicalCookie::CookieInclusionStatus status;
+};
+
+// Just used for the next function to send the cookie string with it's status
+struct CookieLineWithStatus {
+  CookieLineWithStatus(std::string cookie_string,
+                       CanonicalCookie::CookieInclusionStatus status);
+
+  std::string cookie_string;
   CanonicalCookie::CookieInclusionStatus status;
 };
 
