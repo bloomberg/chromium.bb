@@ -355,20 +355,11 @@ class GIT(object):
 
     sha_only: Fail unless rev is a sha hash.
     """
-    # 'git rev-parse foo' where foo is *any* 40 character hex string will return
-    # the string and return code 0. So strip one character to force 'git
-    # rev-parse' to do a hash table look-up and returns 128 if the hash is not
-    # present.
-    lookup_rev = rev
-    if re.match(r'^[0-9a-fA-F]{40}$', rev):
-      lookup_rev = rev[:-1]
     try:
-      sha = GIT.Capture(['rev-parse', lookup_rev], cwd=cwd).lower()
-      if lookup_rev != rev:
-        # Make sure we get the original 40 chars back.
-        return rev.lower() == sha
+      sha = GIT.Capture(['rev-parse', '--verify', '%s^{commit}' % rev],
+                        cwd=cwd)
       if sha_only:
-        return sha.startswith(rev.lower())
+        return sha == rev.lower()
       return True
     except subprocess2.CalledProcessError:
       return False
