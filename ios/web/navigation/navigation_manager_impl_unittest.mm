@@ -236,8 +236,7 @@ TEST_P(NavigationManagerTest, GetPendingItemIndexWithoutPendingEntry) {
   EXPECT_EQ(-1, navigation_manager()->GetPendingItemIndex());
 }
 
-// Tests that GetPendingItemIndex() returns current item index if there is a
-// pending entry.
+// Tests that GetPendingItemIndex() returns -1 if there is a pending item.
 TEST_P(NavigationManagerTest, GetPendingItemIndexWithPendingEntry) {
   navigation_manager()->AddPendingItem(
       GURL("http://www.url.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
@@ -251,6 +250,19 @@ TEST_P(NavigationManagerTest, GetPendingItemIndexWithPendingEntry) {
       GURL("http://www.url.com/0"), Referrer(), ui::PAGE_TRANSITION_TYPED,
       web::NavigationInitiationType::BROWSER_INITIATED,
       web::NavigationManager::UserAgentOverrideOption::INHERIT);
+  EXPECT_EQ(-1, navigation_manager()->GetPendingItemIndex());
+}
+
+// Tests that setting and getting PendingItemIndex.
+TEST_P(NavigationManagerTest, SetAndGetPendingItemIndex) {
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.url.test"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::BROWSER_INITIATED,
+      web::NavigationManager::UserAgentOverrideOption::INHERIT);
+  [mock_wk_list_ setCurrentURL:@"http://www.url.test"];
+  navigation_manager()->CommitPendingItem();
+
+  navigation_manager()->SetPendingItemIndex(0);
   EXPECT_EQ(0, navigation_manager()->GetPendingItemIndex());
 }
 

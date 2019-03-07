@@ -372,15 +372,9 @@ int WKBasedNavigationManagerImpl::GetIndexOfItem(
 }
 
 int WKBasedNavigationManagerImpl::GetPendingItemIndex() const {
-  if (GetPendingItem()) {
-    if (pending_item_index_ != -1) {
-      return pending_item_index_;
-    }
-    // TODO(crbug.com/665189): understand why last committed item index is
-    // returned here.
-    return GetLastCommittedItemIndex();
-  }
-  return -1;
+  if (is_restore_session_in_progress_)
+    return -1;
+  return pending_item_index_;
 }
 
 bool WKBasedNavigationManagerImpl::RemoveItemAtIndex(int index) {

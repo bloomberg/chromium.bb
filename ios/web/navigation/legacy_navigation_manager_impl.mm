@@ -158,15 +158,7 @@ int LegacyNavigationManagerImpl::GetIndexOfItem(
 }
 
 int LegacyNavigationManagerImpl::GetPendingItemIndex() const {
-  if (GetPendingItem()) {
-    if ([session_controller_ pendingItemIndex] != -1) {
-      return [session_controller_ pendingItemIndex];
-    }
-    // TODO(crbug.com/665189): understand why last committed item index is
-    // returned here.
-    return GetLastCommittedItemIndex();
-  }
-  return -1;
+  return [session_controller_ pendingItemIndex];
 }
 
 int LegacyNavigationManagerImpl::
@@ -358,7 +350,7 @@ bool LegacyNavigationManagerImpl::IsRestoreSessionInProgress() const {
 }
 
 void LegacyNavigationManagerImpl::SetPendingItemIndex(int index) {
-  NOTREACHED();
+  session_controller_.pendingItemIndex = index;
 }
 
 }  // namespace web
