@@ -65,6 +65,24 @@ bool ModulatorImplBase::BuiltInModuleEnabled(
   }
 }
 
+void ModulatorImplBase::BuiltInModuleUseCount(
+    blink::layered_api::Module module) const {
+  DCHECK(BuiltInModuleInfraEnabled());
+  DCHECK(BuiltInModuleEnabled(module));
+  switch (module) {
+    case blink::layered_api::Module::kBlank:
+      break;
+    case blink::layered_api::Module::kVirtualScroller:
+      UseCounter::Count(GetExecutionContext(),
+                        WebFeature::kBuiltInModuleVirtualScroller);
+      break;
+    case blink::layered_api::Module::kKvStorage:
+      UseCounter::Count(GetExecutionContext(),
+                        WebFeature::kBuiltInModuleKvStorage);
+      break;
+  }
+}
+
 // <specdef label="fetch-a-module-script-tree"
 // href="https://html.spec.whatwg.org/C/#fetch-a-module-script-tree">
 // <specdef label="fetch-a-module-worker-script-tree"

@@ -21792,6 +21792,8 @@ Called by update_net_error_codes.py.-->
   <int value="2821" label="CSSValueAppearanceTextarea"/>
   <int value="2822" label="CSSValueAppearanceTextFieldForOthersRendered"/>
   <int value="2823" label="CSSValueAppearanceTextFieldForTemporalRendered"/>
+  <int value="2824" label="BuiltInModuleKvStorage"/>
+  <int value="2825" label="BuiltInModuleVirtualScroller"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">
