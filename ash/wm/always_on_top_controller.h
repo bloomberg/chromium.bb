@@ -33,6 +33,8 @@ class ASH_EXPORT AlwaysOnTopController : public aura::WindowObserver,
   void SetLayoutManagerForTest(
       std::unique_ptr<WorkspaceLayoutManager> layout_manager);
 
+  static void SetDisallowReparent(aura::Window* window);
+
  private:
   void AddWindow(aura::Window* window);
   void RemoveWindow(aura::Window* window);
