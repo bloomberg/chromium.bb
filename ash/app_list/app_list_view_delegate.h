@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "ash/app_list/app_list_metrics.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/public/cpp/ash_public_export.h"
 #include "ash/public/interfaces/app_list.mojom.h"
@@ -59,6 +60,16 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
       const std::string& result_id,
       int suggestion_index,
       ash::mojom::AppListLaunchedFrom launched_from) = 0;
+
+  // Called to log UMA metrics for the launch of an item either in the app tile
+  // list or the search result list. The |launch_location| argument determines
+  // which histogram to log to. |suggestion_index| represents the index of the
+  // launched item in its list view, not the overall position in the suggestion
+  // window. For instance, the first launcher result item is index 0, regardless
+  // of if there is an answer card above it.
+  virtual void LogResultLaunchHistogram(
+      app_list::SearchResultLaunchLocation launch_location,
+      int suggestion_index) = 0;
 
   // Called to invoke a custom action on a result with |result_id|.
   // |action_index| corresponds to the index of an icon in

@@ -166,6 +166,9 @@ class ASH_EXPORT AppListControllerImpl
   void LogSearchClick(const std::string& result_id,
                       int suggestion_index,
                       ash::mojom::AppListLaunchedFrom launched_from) override;
+  void LogResultLaunchHistogram(
+      app_list::SearchResultLaunchLocation launch_location,
+      int suggestion_index) override;
   void InvokeSearchResultAction(const std::string& result_id,
                                 int action_index,
                                 int event_flags) override;

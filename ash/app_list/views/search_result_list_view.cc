@@ -43,6 +43,7 @@ SearchResultListView::SearchResultListView(AppListMainView* main_view,
   for (int i = 0; i < kMaxResults; ++i) {
     search_result_views_.emplace_back(
         new SearchResultView(this, view_delegate_));
+    search_result_views_.back()->set_index_in_search_result_list_view(i);
     results_container_->AddChildView(search_result_views_.back());
     AddObservedResultView(search_result_views_.back());
   }
@@ -124,6 +125,9 @@ void SearchResultListView::SearchResultActivated(SearchResultView* view,
   if (view_delegate_ && view->result()) {
     RecordSearchResultOpenSource(view->result(), view_delegate_->GetModel(),
                                  view_delegate_->GetSearchModel());
+    view_delegate_->LogResultLaunchHistogram(
+        SearchResultLaunchLocation::kResultList,
+        view->get_index_in_search_result_list_view());
     view_delegate_->OpenSearchResult(view->result()->id(), event_flags);
   }
 }
