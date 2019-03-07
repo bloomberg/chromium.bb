@@ -16,7 +16,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 
 /**
- * {@link android.support.v7.widget.RecyclerView.ViewHolder} for tab grid. Owns the tab info card
+ * {@link RecyclerView.ViewHolder} for tab grid. Owns the tab info card
  * and the associated view hierarchy.
  */
 class TabGridViewHolder extends RecyclerView.ViewHolder {
@@ -24,9 +24,9 @@ class TabGridViewHolder extends RecyclerView.ViewHolder {
     public final TextView title;
     public final ImageView thumbnail;
     public final ImageView closeButton;
-    public int mTabId;
+    private int mTabId;
 
-    public TabGridViewHolder(View itemView) {
+    private TabGridViewHolder(View itemView) {
         super(itemView);
         this.thumbnail = itemView.findViewById(R.id.tab_thumbnail);
         this.title = itemView.findViewById(R.id.tab_title);

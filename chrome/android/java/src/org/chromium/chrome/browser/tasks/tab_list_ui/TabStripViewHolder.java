@@ -13,13 +13,13 @@ import android.widget.ImageButton;
 import org.chromium.chrome.R;
 
 /**
- * {@link RecyclerView.ViewHolder} for tabstrip.
+ * {@link RecyclerView.ViewHolder} for tab strip.
  */
 class TabStripViewHolder extends RecyclerView.ViewHolder {
-    public int mTabId;
+    private int mTabId;
     public final ImageButton button;
 
-    public TabStripViewHolder(View itemView) {
+    private TabStripViewHolder(View itemView) {
         super(itemView);
         this.button = itemView.findViewById(R.id.tab_strip_item_button);
     }

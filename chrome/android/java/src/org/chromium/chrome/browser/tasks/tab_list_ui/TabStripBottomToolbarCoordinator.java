@@ -16,9 +16,9 @@ import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.ui.modelutil.PropertyModel;
 
 /**
- * A coordinator for BottomTabStrip component. Manages the communication with
- * {@link TabListCoordinator} & @{link BottomTabGridCoordinator} as well as the
- * life-cycle of shared component objects.
+ * A coordinator for TabStripBottomToolbar component. Manages the communication with
+ * {@link TabListCoordinator}, {@link BottomTabGridCoordinator}, and
+ * {@link TabStripToolbarCoordinator}, as well as the life-cycle of shared component objects.
  */
 public class TabStripBottomToolbarCoordinator
         implements Destroyable, TabStripBottomToolbarMediator.ResetHandler {
@@ -59,7 +59,7 @@ public class TabStripBottomToolbarCoordinator
 
     /**
      * Handles a reset event originated from {@link TabStripBottomToolbarMediator}
-     * when the bottom sheet is collaped.
+     * when the bottom sheet is collapsed.
      *
      * @param tabModel current {@link TabModel} instance.
      */
@@ -70,7 +70,7 @@ public class TabStripBottomToolbarCoordinator
 
     /**
      * Handles a reset event originated from {@link TabStripBottomToolbarMediator}
-     * when the bottom sheet is expanded and the component.
+     * when the bottom sheet is expanded.
      *
      * @param tabModel current {@link TabModel} instance.
      */

@@ -18,6 +18,9 @@ import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 
+/**
+ * ViewBinder for TabGridContainer.
+ */
 class TabGridContainerViewBinder {
     /**
      * Bind the given model to the given view, updating the payload in propertyKey.
