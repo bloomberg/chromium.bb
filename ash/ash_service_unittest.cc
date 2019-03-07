@@ -91,19 +91,20 @@ class AshServiceTest : public testing::Test {
 
   // service_manager::test::ServiceTest:
   void SetUp() override {
-    aura::test::EnvTestHelper().SetMode(aura::Env::Mode::MUS);
+    old_mode_ = aura::test::EnvTestHelper().SetMode(aura::Env::Mode::MUS);
   }
 
   void TearDown() override {
     // Unset the screen installed by the test.
     display::Screen::SetScreenInstance(nullptr);
-    aura::test::EnvTestHelper().SetMode(aura::Env::Mode::LOCAL);
+    aura::test::EnvTestHelper().SetMode(old_mode_);
   }
 
  protected:
   service_manager::Connector* connector() { return test_service_.connector(); }
 
  private:
+  aura::Env::Mode old_mode_ = aura::Env::Mode::LOCAL;
   base::test::ScopedTaskEnvironment task_environment_;
   service_manager::TestServiceManager test_service_manager_;
   service_manager::TestService test_service_;
