@@ -55966,6 +55966,13 @@ Full version information for the fingerprint enum values:
   <int value="4" label="Abandoned"/>
 </enum>
 
+<enum name="WebAuthenticationRelyingPartySecurityCheckFailure">
+  <int value="0" label="Opaque or Non-Secure Origin"/>
+  <int value="1" label="Relying Party Id Invalid"/>
+  <int value="2" label="AppId Extension Invalid"/>
+  <int value="3" label="AppId Extension Domain Mismatch"/>
+</enum>
+
 <enum name="WebAuthenticationU2FAttestationPromptResult">
   <int value="0" label="Queried"/>
   <int value="1" label="Allowed"/>
