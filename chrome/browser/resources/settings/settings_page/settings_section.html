@@ -16,19 +16,8 @@
         position: relative;
       }
 
-      #header {
-        margin-bottom: 12px;
-      }
-
       #header .title {
-        color: var(--cr-primary-text-color);
-        font-size: 108%;
-        font-weight: 400;
-        letter-spacing: .25px;
-        margin-bottom: 0;
-        margin-top: var(--settings-page-vertical-margin);
-        padding-bottom: 4px;
-        padding-top: 8px;
+        @apply --cr-card-external-title;
       }
 
       :host(:not(.expanded)) #card {
