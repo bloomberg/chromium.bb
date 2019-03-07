@@ -763,10 +763,12 @@ const char kVizHitTestDrawQuadDescription[] =
     "with hit-test data computed from the CompositorFrame.";
 
 const char kEnableOutOfProcessHeapProfilingName[] =
-    "Out of process heap profiling start mode.";
+    "Chrome heap profiling start mode.";
 const char kEnableOutOfProcessHeapProfilingDescription[] =
-    "Creates a profiling service that records stacktraces for all live, "
-    "malloced objects. Heap dumps can be obtained at chrome://tracing "
+    "Starts heap profiling service that records sampled memory allocation "
+    "profile having each sample attributed with a callstack. "
+    "The sampling resolution is controlled with --memlog-sampling flag. "
+    "Recorded heap dumps can be obtained at chrome://tracing "
     "[category:memory-infra] and chrome://memory-internals. This setting "
     "controls which processes are profiled. As long as this setting is not "
     "disabled, users can start profiling any given process in "
@@ -783,8 +785,14 @@ const char kEnableOutOfProcessHeapProfilingModeRendererSampling[] =
     "Profile a random sampling of renderer processes, ensuring only one is "
     "ever profiled at a time.";
 
+const char kOutOfProcessHeapProfilingInProcess[] =
+    "Run the heap profiling service in the browser process.";
+const char kOutOfProcessHeapProfilingInProcessDescription[] =
+    "Makes profiling service (if enabled) to be executed within the browser "
+    "process. By default the service is run in a dedicated utility process.";
+
 const char kOutOfProcessHeapProfilingKeepSmallAllocations[] =
-    "Emit small allocations in memlog heap dumps.";
+    "Emit small allocations in memlog heap dumps (deprecated).";
 const char kOutOfProcessHeapProfilingKeepSmallAllocationsDescription[] =
     "By default, small allocations are pruned from the heap dump. This reduces "
     "the size of the compressed trace by 100x. If pruning is disabled, the "
@@ -794,11 +802,12 @@ const char kOutOfProcessHeapProfilingKeepSmallAllocationsDescription[] =
     "automatically uploaded traces will always be pruned. This only affects "
     "manually taken memory-infra traces.";
 
-const char kOutOfProcessHeapProfilingSampling[] = "Sample memlog allocations";
-const char kOutOfProcessHeapProfilingSamplingDescription[] =
-    "Use a poisson process to sample allocations. Defaults to a sample rate of "
-    "10000. This results in low noise for large and/or frequent allocations ["
-    "[size * frequency >> 10000]. This means that aggregate numbers [e.g. "
+const char kOutOfProcessHeapProfilingSamplingRate[] =
+    "Sampling interval in bytes for memlog allocations.";
+const char kOutOfProcessHeapProfilingSamplingRateDescription[] =
+    "Use a poisson process to sample allocations. Defaults to a sampling rate "
+    "of 100KB. This results in low noise for large and/or frequent allocations "
+    "[size * frequency >> 100KB]. This means that aggregate numbers [e.g. "
     "total size of malloc-ed objects] and large and/or frequent allocations "
     "can be trusted with high fidelity.";
 

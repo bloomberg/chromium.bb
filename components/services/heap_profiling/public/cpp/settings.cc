@@ -30,10 +30,6 @@ const bool kDefaultShouldSample = true;
 const bool kDefaultInProcessMode = false;
 
 bool RecordAllAllocationsForStartup() {
-  const base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
-  if (cmdline->HasSwitch(kMemlogSampling))
-    return false;
-
   return !base::GetFieldTrialParamByFeatureAsBool(
       kOOPHeapProfilingFeature, kOOPHeapProfilingFeatureSampling,
       kDefaultShouldSample);

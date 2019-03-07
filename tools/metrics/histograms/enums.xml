@@ -32685,6 +32685,7 @@ from previous Chrome versions.
   <int value="359601954" label="CrostiniUsbSupport:enabled"/>
   <int value="360391863" label="NTPOfflineBadge:enabled"/>
   <int value="360599302" label="enable-gpu-rasterization"/>
+  <int value="362644448" label="memlog-in-process"/>
   <int value="365467768" label="prefetch-search-results"/>
   <int value="367063319" label="PasswordImport:disabled"/>
   <int value="368854020" label="ash-screen-rotation-animation"/>
@@ -33707,6 +33708,7 @@ from previous Chrome versions.
   <int value="2005614493" label="tab-management-experiment-type-dill"/>
   <int value="2006413281"
       label="ContextualSuggestionsAlternateCardLayout:enabled"/>
+  <int value="2009097351" label="memlog-sampling-rate"/>
   <int value="2009362691" label="AllowStartingServiceManagerOnly:enabled"/>
   <int value="2014331873" label="NTPDownloadSuggestions:disabled"/>
   <int value="2014629801" label="view-passwords:disabled"/>
@@ -33769,7 +33771,6 @@ from previous Chrome versions.
   <int value="2123567684" label="OptimizeLoadingIPCForSmallResources:enabled"/>
   <int value="2126203058" label="force-show-update-menu-badge"/>
   <int value="2129184006" label="NTPOfflinePageDownloadSuggestions:enabled"/>
-  <int value="2129251171" label="memlog-sampling"/>
   <int value="2129929643" label="enable-use-zoom-for-dsf"/>
   <int value="2134480727" label="MediaSessionAccelerators:disabled"/>
   <int value="2135408204" label="OverscrollHistoryNavigation:disabled"/>

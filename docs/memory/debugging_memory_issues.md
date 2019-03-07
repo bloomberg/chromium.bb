@@ -118,9 +118,14 @@ available as command line flags, for automated test runs [e.g. telemetry].
 
 * `#memlog` controls which processes are profiled. It's also possible to
   manually specify the process via the interface at `chrome://memory-internals`.
-* `#memlog-sampling` will greatly reduce the overhead of the heap profiler, at
-  the expense of inaccuracy in small or infrequent allocations. Unless
-  performance is a concern, leave it disabled.
+* `#memlog-in-process` makes the profiling service to be run within the
+  Chrome browser process. Defaults to run the service as a separate dedicated
+  process.
+* `#memlog-sampling-rate` specifies the sampling interval in bytes. The lower
+  the interval, the more precise is the profile. However it comes at the cost of
+  performance. Default value is 100KB, that is enough to observe allocation
+  sites that make allocations >500KB total, where total equals to a single
+  allocation size times the number of such allocations at the same call site.
 * `#memlog-stack-mode` describes the type of metadata recorded for each
   allocation. `native` stacks provide the most utility. The only time the other
   options should be considered is for Android official builds, most of which do
