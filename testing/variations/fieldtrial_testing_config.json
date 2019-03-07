@@ -4002,6 +4002,24 @@
             ]
         }
     ],
+    "RemoveNTPFakebox": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "RemoveNTPFakebox",
+                    "enable_features": [
+                        "RemoveNtpFakebox"
+                    ]
+                }
+            ]
+        }
+    ],
     "RendererSchedulerWakeUpThrottling": [
         {
             "platforms": [
