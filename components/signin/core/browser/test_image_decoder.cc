@@ -2,15 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/signin/core/browser/fake_account_fetcher_service.h"
+#include "components/signin/core/browser/test_image_decoder.h"
 
 #include "base/values.h"
 #include "build/build_config.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "ui/gfx/image/image_unittest_util.h"
-
-FakeAccountFetcherService::FakeAccountFetcherService() {}
 
 TestImageDecoder::TestImageDecoder() = default;
 

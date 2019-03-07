@@ -12,23 +12,10 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "components/signin/core/browser/fake_account_fetcher_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
+#include "components/signin/core/browser/test_image_decoder.h"
 
 namespace {
-
-// Testing factory that creates a FakeAccountFetcherService.
-std::unique_ptr<KeyedService> BuildFakeAccountFetcherService(
-    content::BrowserContext* context) {
-  Profile* profile = Profile::FromBrowserContext(context);
-  auto account_fetcher_service = std::make_unique<FakeAccountFetcherService>();
-  account_fetcher_service->Initialize(
-      ChromeSigninClientFactory::GetForProfile(profile),
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
-      AccountTrackerServiceFactory::GetForProfile(profile),
-      std::make_unique<TestImageDecoder>());
-  return account_fetcher_service;
-}
 
 // Testing factory that creates a FakeProfileOAuth2TokenService.
 std::unique_ptr<KeyedService> BuildFakeProfileOAuth2TokenService(
@@ -94,9 +81,7 @@ void IdentityTestEnvironmentProfileAdaptor::
 // static
 TestingProfile::TestingFactories
 IdentityTestEnvironmentProfileAdaptor::GetIdentityTestEnvironmentFactories() {
-  return {{AccountFetcherServiceFactory::GetInstance(),
-           base::BindRepeating(&BuildFakeAccountFetcherService)},
-          {ProfileOAuth2TokenServiceFactory::GetInstance(),
+  return {{ProfileOAuth2TokenServiceFactory::GetInstance(),
            base::BindRepeating(&BuildFakeProfileOAuth2TokenService)}};
 }
 
@@ -120,11 +105,9 @@ IdentityTestEnvironmentProfileAdaptor::IdentityTestEnvironmentProfileAdaptor(
     : identity_test_env_(
           profile->GetPrefs(),
           AccountTrackerServiceFactory::GetForProfile(profile),
-          static_cast<FakeAccountFetcherService*>(
-              AccountFetcherServiceFactory::GetForProfile(profile)),
+          AccountFetcherServiceFactory::GetForProfile(profile),
           static_cast<FakeProfileOAuth2TokenService*>(
               ProfileOAuth2TokenServiceFactory::GetForProfile(profile)),
           SigninManagerFactory::GetForProfile(profile),
           GaiaCookieManagerServiceFactory::GetForProfile(profile),
-          IdentityManagerFactory::GetForProfile(profile)) {
-}
+          IdentityManagerFactory::GetForProfile(profile)) {}

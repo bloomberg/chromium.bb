@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SIGNIN_CORE_BROWSER_FAKE_ACCOUNT_FETCHER_SERVICE_H_
-#define COMPONENTS_SIGNIN_CORE_BROWSER_FAKE_ACCOUNT_FETCHER_SERVICE_H_
+#ifndef COMPONENTS_SIGNIN_CORE_BROWSER_TEST_IMAGE_DECODER_H_
+#define COMPONENTS_SIGNIN_CORE_BROWSER_TEST_IMAGE_DECODER_H_
 
 #include <memory>
 
@@ -11,19 +11,6 @@
 #include "build/build_config.h"
 #include "components/image_fetcher/core/image_decoder.h"
 #include "components/signin/core/browser/account_fetcher_service.h"
-
-class KeyedService;
-
-// AccountTrackerService is a KeyedService that retrieves and caches GAIA
-// information about Google Accounts.  This fake class can be used in tests
-// to prevent AccountTrackerService from sending network requests.
-class FakeAccountFetcherService : public AccountFetcherService {
- public:
-  FakeAccountFetcherService();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(FakeAccountFetcherService);
-};
 
 // This dummy class implements |image_fetcher::ImageDecoder|, and is passed
 // as an argument to |AccountFetcherService::Initialize|.
@@ -45,4 +32,4 @@ class TestImageDecoder : public image_fetcher::ImageDecoder {
   DISALLOW_COPY_AND_ASSIGN(TestImageDecoder);
 };
 
-#endif  // COMPONENTS_SIGNIN_CORE_BROWSER_FAKE_ACCOUNT_FETCHER_SERVICE_H_
+#endif  // COMPONENTS_SIGNIN_CORE_BROWSER_TEST_IMAGE_DECODER_H_

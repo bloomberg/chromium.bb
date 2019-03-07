@@ -21,10 +21,10 @@
 #include "components/signin/core/browser/account_consistency_method.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/device_id_helper.h"
-#include "components/signin/core/browser/fake_account_fetcher_service.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_pref_names.h"
+#include "components/signin/core/browser/test_image_decoder.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "google_apis/gaia/fake_oauth2_token_service_delegate.h"
@@ -99,7 +99,7 @@ class SigninManagerTest : public testing::Test {
   TestSigninClient* signin_client() { return &test_signin_client_; }
 
   AccountTrackerService* account_tracker() { return &account_tracker_; }
-  FakeAccountFetcherService* account_fetcher() { return &account_fetcher_; }
+  AccountFetcherService* account_fetcher() { return &account_fetcher_; }
   PrefService* prefs() { return &user_prefs_; }
 
   // Seed the account tracker with information from logged in user.  Normally
@@ -149,7 +149,7 @@ class SigninManagerTest : public testing::Test {
   ProfileOAuth2TokenService token_service_;
   AccountTrackerService account_tracker_;
   GaiaCookieManagerService cookie_manager_service_;
-  FakeAccountFetcherService account_fetcher_;
+  AccountFetcherService account_fetcher_;
   std::unique_ptr<SigninManager> manager_;
   TestSigninManagerObserver test_observer_;
   std::vector<std::string> oauth_tokens_fetched_;
