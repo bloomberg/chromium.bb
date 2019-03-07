@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.autofill_assistant.overlay;
 
 import android.animation.TimeInterpolator;
 import android.animation.ValueAnimator;
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -526,36 +525,33 @@ public class TouchEventFilterView
 
     /** Returns the origin of the visual viewport in this view. */
     @Override
-    @SuppressLint("CanvasSize")
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         if (mCurrentState == AssistantOverlayState.HIDDEN) {
             return;
         }
-        canvas.drawPaint(mBackground);
 
-        int width = canvas.getWidth();
-        int yTop = getVisualViewportTop();
-        if (yTop > 0) {
-            canvas.drawRect(0, 0, width, yTop, mClear);
-        }
+        int width = getWidth();
         int yBottom = getVisualViewportBottom();
-        if (yBottom > 0) {
-            canvas.drawRect(0, yBottom, width, canvas.getHeight(), mClear);
+
+        // Don't draw over the top or bottom bars.
+        if (mFullscreenManager != null) {
+            canvas.clipRect(0, mFullscreenManager.getTopVisibleContentOffset() - mMarginTop, width,
+                    yBottom);
         }
+        canvas.drawPaint(mBackground);
 
         if (mCurrentState != AssistantOverlayState.PARTIAL) {
             return;
         }
 
+        int yTop = getVisualViewportTop();
         int height = yBottom - yTop;
-
         float boxesAlpha = (mCurrentBoxesAnimator != null && mCurrentBoxesAnimator.isRunning())
                 ? ((float) mCurrentBoxesAnimator.getAnimatedValue())
                 : 0f;
         mBoxStroke.setAlpha((int) (0xff * (1.0 - boxesAlpha)));
         mBoxFill.setAlpha((int) (BACKGROUND_ALPHA * boxesAlpha));
-
         for (RectF rect : mTouchableArea) {
             mDrawRect.left = rect.left * width - mPaddingPx;
             mDrawRect.top =
