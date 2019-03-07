@@ -1516,10 +1516,10 @@ Handoff must also be enabled in the General section of Settings, and your device
         Syncing to <ph name="EMAIL">$1<ex>john.doe@gmail.com</ex></ph>
       </message>
       <message name="IDS_IOS_SIGN_IN_TO_CHROME_SETTING_SYNC_OFF" desc="The subtitle for the setting item of the signed in user when sync is off [iOS only]">
-        Sync is Off
+        Sync is off
       </message>
       <message name="IDS_IOS_SIGN_IN_TO_CHROME_SETTING_SYNC_ON" desc="The subtitle for the setting item of the signed in user when sync is on [iOS only]">
-        Sync is On
+        Sync is on
       </message>
       <message name="IDS_IOS_SPOTLIGHT_KEYWORD_EIGHT" desc="Keyword used in Spotlight that will be linked to the Chrome App. [iOS only]">
         Online
