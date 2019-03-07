@@ -34,11 +34,11 @@
 #include "chrome/common/pref_names.h"
 #include "components/language/core/browser/language_model_manager.h"
 #include "components/language/core/browser/pref_names.h"
+#include "components/language/core/common/language_util.h"
 #include "components/language/core/common/locale_util.h"
 #include "components/spellcheck/common/spellcheck_common.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_prefs.h"
-#include "components/translate/core/common/translate_util.h"
 #include "third_party/icu/source/i18n/unicode/coll.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_collator.h"
@@ -288,7 +288,7 @@ LanguageSettingsPrivateEnableLanguageFunction::Run() {
   std::vector<std::string> languages;
   translate_prefs->GetLanguageList(&languages);
   std::string chrome_language = language_code;
-  translate::ToChromeLanguageSynonym(&chrome_language);
+  language::ToChromeLanguageSynonym(&chrome_language);
 
   if (base::ContainsValue(languages, chrome_language)) {
     LOG(ERROR) << "Language " << chrome_language << " already enabled";
@@ -321,7 +321,7 @@ LanguageSettingsPrivateDisableLanguageFunction::Run() {
   std::vector<std::string> languages;
   translate_prefs->GetLanguageList(&languages);
   std::string chrome_language = language_code;
-  translate::ToChromeLanguageSynonym(&chrome_language);
+  language::ToChromeLanguageSynonym(&chrome_language);
 
   if (!base::ContainsValue(languages, chrome_language)) {
     LOG(ERROR) << "Language " << chrome_language << " not enabled";

@@ -18,6 +18,7 @@
 #include "base/time/time.h"
 #include "components/language/core/browser/language_model.h"
 #include "components/language/core/common/language_experiments.h"
+#include "components/language/core/common/language_util.h"
 #include "components/language/core/common/locale_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/translate/core/browser/language_state.h"
@@ -36,7 +37,6 @@
 #include "components/translate/core/common/language_detection_details.h"
 #include "components/translate/core/common/translate_constants.h"
 #include "components/translate/core/common/translate_switches.h"
-#include "components/translate/core/common/translate_util.h"
 #include "components/variations/variations_associated_data.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/network_change_notifier.h"
@@ -467,7 +467,7 @@ std::string TranslateManager::GetTargetLanguage(
     for (const auto& lang : language_model->GetLanguages()) {
       std::string lang_code =
           TranslateDownloadManager::GetLanguageCode(lang.lang_code);
-      translate::ToTranslateLanguageSynonym(&lang_code);
+      language::ToTranslateLanguageSynonym(&lang_code);
       if (TranslateDownloadManager::IsSupportedLanguage(lang_code))
         language_codes.push_back(lang_code);
     }
@@ -483,7 +483,7 @@ std::string TranslateManager::GetTargetLanguage(
     std::string language = TranslateDownloadManager::GetLanguageCode(
         TranslateDownloadManager::GetInstance()->application_locale());
     // Map 'he', 'nb', 'fil' back to 'iw', 'no', 'tl'
-    translate::ToTranslateLanguageSynonym(&language);
+    language::ToTranslateLanguageSynonym(&language);
     if (TranslateDownloadManager::IsSupportedLanguage(language))
       return language;
 
