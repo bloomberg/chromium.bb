@@ -102,6 +102,21 @@ enum class AttestationPromptResult {
   kMaxValue = kAbandoned,
 };
 
+// The following enums correspond to UMA histograms and should not be
+// reassigned.
+enum class RelyingPartySecurityCheckFailure {
+  kOpaqueOrNonSecureOrigin = 0,
+  kRelyingPartyIdInvalid = 1,
+  kAppIdExtensionInvalid = 2,
+  kAppIdExtensionDomainMismatch = 3,
+  kMaxValue = kAppIdExtensionDomainMismatch,
+};
+
+void ReportSecurityCheckFailure(RelyingPartySecurityCheckFailure error) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "WebAuthentication.RelyingPartySecurityCheckFailure", error);
+}
+
 bool OriginIsCryptoTokenExtension(const url::Origin& origin) {
   auto cryptotoken_origin = url::Origin::Create(GURL(kCryptotokenOrigin));
   return cryptotoken_origin == origin;
@@ -213,6 +228,8 @@ base::Optional<std::string> ProcessAppIdExtension(std::string appid,
   GURL appid_url = GURL(appid);
   if (!appid_url.is_valid() || appid_url.scheme() != url::kHttpsScheme ||
       appid_url.scheme_piece() != origin.scheme()) {
+    ReportSecurityCheckFailure(
+        RelyingPartySecurityCheckFailure::kAppIdExtensionInvalid);
     return base::nullopt;
   }
 
@@ -246,6 +263,9 @@ base::Optional<std::string> ProcessAppIdExtension(std::string appid,
        appid_url.EqualsIgnoringRef(kGstatic2))) {
     return appid;
   }
+
+  ReportSecurityCheckFailure(
+      RelyingPartySecurityCheckFailure::kAppIdExtensionDomainMismatch);
 
   return base::nullopt;
 }
@@ -615,6 +635,8 @@ void AuthenticatorImpl::MakeCredential(
   relying_party_id_ = options->relying_party->id;
 
   if (!HasValidEffectiveDomain(caller_origin_)) {
+    ReportSecurityCheckFailure(
+        RelyingPartySecurityCheckFailure::kOpaqueOrNonSecureOrigin);
     bad_message::ReceivedBadMessage(render_frame_host_->GetProcess(),
                                     bad_message::AUTH_INVALID_EFFECTIVE_DOMAIN);
     InvokeCallbackAndCleanup(std::move(callback),
@@ -624,6 +646,8 @@ void AuthenticatorImpl::MakeCredential(
   }
 
   if (!IsRelyingPartyIdValid(relying_party_id_, caller_origin_)) {
+    ReportSecurityCheckFailure(
+        RelyingPartySecurityCheckFailure::kRelyingPartyIdInvalid);
     bad_message::ReceivedBadMessage(render_frame_host_->GetProcess(),
                                     bad_message::AUTH_INVALID_RELYING_PARTY);
     InvokeCallbackAndCleanup(std::move(callback),
@@ -669,6 +693,10 @@ void AuthenticatorImpl::MakeCredential(
         client_data::kCreateType, caller_origin_.Serialize(),
         std::move(options->challenge));
   }
+
+  UMA_HISTOGRAM_COUNTS_100(
+      "WebAuthentication.MakeCredentialExcludeCredentialsCount",
+      options->exclude_credentials.size());
 
   // U2F requests proxied from the cryptotoken extension are limited to USB
   // devices.
@@ -775,6 +803,8 @@ void AuthenticatorImpl::GetAssertion(
   }
 
   if (!HasValidEffectiveDomain(caller_origin_)) {
+    ReportSecurityCheckFailure(
+        RelyingPartySecurityCheckFailure::kOpaqueOrNonSecureOrigin);
     bad_message::ReceivedBadMessage(render_frame_host_->GetProcess(),
                                     bad_message::AUTH_INVALID_EFFECTIVE_DOMAIN);
     InvokeCallbackAndCleanup(std::move(callback),
@@ -784,6 +814,8 @@ void AuthenticatorImpl::GetAssertion(
   }
 
   if (!IsRelyingPartyIdValid(options->relying_party_id, caller_origin_)) {
+    ReportSecurityCheckFailure(
+        RelyingPartySecurityCheckFailure::kRelyingPartyIdInvalid);
     bad_message::ReceivedBadMessage(render_frame_host_->GetProcess(),
                                     bad_message::AUTH_INVALID_RELYING_PARTY);
     InvokeCallbackAndCleanup(std::move(callback),
@@ -817,6 +849,10 @@ void AuthenticatorImpl::GetAssertion(
           ? base::flat_set<device::FidoTransportProtocol>(
                 {device::FidoTransportProtocol::kUsbHumanInterfaceDevice})
           : transports_;
+
+  UMA_HISTOGRAM_COUNTS_100(
+      "WebAuthentication.CredentialRequestAllowCredentialsCount",
+      options->allow_credentials.size());
 
   DCHECK(get_assertion_response_callback_.is_null());
   get_assertion_response_callback_ = std::move(callback);
