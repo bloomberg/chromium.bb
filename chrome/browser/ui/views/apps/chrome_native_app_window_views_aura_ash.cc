@@ -361,8 +361,12 @@ void ChromeNativeAppWindowViewsAuraAsh::UpdateDraggableRegions(
     gfx::Insets insets(draggable_region->getBounds().bottom(), 0, 0, 0);
 
     // Invert the draggable regions to determine the additional client areas.
+    // Inversion should be computed for the difference between the inset area
+    // and the draggable_region -- draggable_region->getBounds() could have
+    // smaller width than widget's width.
     SkRegion inverted_region;
-    inverted_region.setRect(draggable_region->getBounds());
+    inverted_region.setRect(0, 0, widget()->GetWindowBoundsInScreen().width(),
+                            draggable_region->getBounds().bottom());
     inverted_region.op(*draggable_region, SkRegion::kDifference_Op);
     std::vector<gfx::Rect> additional_client_regions;
     for (SkRegion::Iterator i(inverted_region); !i.done(); i.next())
