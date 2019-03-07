@@ -31,50 +31,50 @@ static const char *level_fail_messages[TARGET_LEVEL_FAIL_IDS] = {
 static void check_level_constraints(AV1_COMP *cpi,
                                     const AV1LevelSpec *level_spec) {
   const AV1_LEVEL target_seq_level_idx = cpi->target_seq_level_idx;
-  if (target_seq_level_idx > LEVEL_DISABLED &&
-      target_seq_level_idx < LEVEL_END) {
-    // Check level conformance
-    // TODO(kyslov@) implement all constraints
-    AV1_COMMON *const cm = &cpi->common;
+  if (target_seq_level_idx <= LEVEL_DISABLED ||
+      target_seq_level_idx >= LEVEL_END)
+    return;
+
+  TARGET_LEVEL_FAIL_ID fail_id = TARGET_LEVEL_FAIL_IDS;
+  // Check level conformance
+  // TODO(kyslov@) implement all constraints
+  do {
     const AV1LevelSpec *const target_level_spec =
         av1_level_defs + target_seq_level_idx;
-    const int target_level_major = 2 + (target_seq_level_idx >> 2);
-    const int target_level_minor = target_seq_level_idx & 3;
-
     if (level_spec->max_picture_size > target_level_spec->max_picture_size) {
-      aom_internal_error(&cm->error, AOM_CODEC_ERROR,
-                         "Failed to encode to the target level %d_%d. %s",
-                         target_level_major, target_level_minor,
-                         level_fail_messages[LUMA_PIC_SIZE_TOO_LARGE]);
+      fail_id = LUMA_PIC_SIZE_TOO_LARGE;
+      break;
     }
 
     if (level_spec->max_h_size > target_level_spec->max_h_size) {
-      aom_internal_error(&cm->error, AOM_CODEC_ERROR,
-                         "Failed to encode to the target level %d_%d. %s",
-                         target_level_major, target_level_minor,
-                         level_fail_messages[LUMA_PIC_H_SIZE_TOO_LARGE]);
+      fail_id = LUMA_PIC_H_SIZE_TOO_LARGE;
+      break;
     }
 
     if (level_spec->max_v_size > target_level_spec->max_v_size) {
-      aom_internal_error(&cm->error, AOM_CODEC_ERROR,
-                         "Failed to encode to the target level %d_%d. %s",
-                         target_level_major, target_level_minor,
-                         level_fail_messages[LUMA_PIC_V_SIZE_TOO_LARGE]);
+      fail_id = LUMA_PIC_V_SIZE_TOO_LARGE;
+      break;
     }
 
     if (level_spec->max_tile_cols > target_level_spec->max_tile_cols) {
-      aom_internal_error(&cm->error, AOM_CODEC_ERROR,
-                         "Failed to encode to the target level %d_%d. %s",
-                         target_level_major, target_level_minor,
-                         level_fail_messages[TOO_MANY_TILE_COLUMNS]);
+      fail_id = TOO_MANY_TILE_COLUMNS;
+      break;
     }
 
     if (level_spec->max_tiles > target_level_spec->max_tiles) {
-      aom_internal_error(&cm->error, AOM_CODEC_ERROR,
-                         "Failed to encode to the target level %d_%d. %s",
-                         target_level_major, target_level_minor,
-                         level_fail_messages[TOO_MANY_TILES]);
+      fail_id = TOO_MANY_TILES;
+      break;
     }
+  } while (0);
+
+  if (fail_id != TARGET_LEVEL_FAIL_IDS) {
+    AV1_COMMON *const cm = &cpi->common;
+    const int target_level_major = 2 + (target_seq_level_idx >> 2);
+    const int target_level_minor = target_seq_level_idx & 3;
+    aom_internal_error(&cm->error, AOM_CODEC_ERROR,
+                       "Failed to encode to the target level %d_%d. %s",
+                       target_level_major, target_level_minor,
+                       level_fail_messages[fail_id]);
   }
 }
 
