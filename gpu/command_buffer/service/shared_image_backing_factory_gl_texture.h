@@ -35,6 +35,12 @@ class ImageFactory;
 class GPU_GLES2_EXPORT SharedImageBackingFactoryGLTexture
     : public SharedImageBackingFactory {
  public:
+  struct UnpackStateAttribs {
+    bool es3_capable = false;
+    bool desktop_gl = false;
+    bool supports_unpack_subimage = false;
+  };
+
   SharedImageBackingFactoryGLTexture(const GpuPreferences& gpu_preferences,
                                      const GpuDriverBugWorkarounds& workarounds,
                                      const GpuFeatureInfo& gpu_feature_info,
@@ -95,7 +101,8 @@ class GPU_GLES2_EXPORT SharedImageBackingFactoryGLTexture
       viz::ResourceFormat format,
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,
-      uint32_t usage);
+      uint32_t usage,
+      const UnpackStateAttribs& attribs);
 
   struct FormatInfo {
     FormatInfo();
@@ -146,9 +153,7 @@ class GPU_GLES2_EXPORT SharedImageBackingFactoryGLTexture
   GpuMemoryBufferFormatSet gpu_memory_buffer_formats_;
   int32_t max_texture_size_ = 0;
   bool texture_usage_angle_ = false;
-  bool es3_capable_ = false;
-  bool desktop_gl_ = false;
-  bool supports_unpack_subimage_ = false;
+  UnpackStateAttribs attribs;
 };
 
 }  // namespace gpu
