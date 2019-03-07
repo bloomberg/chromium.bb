@@ -555,6 +555,8 @@ TEST_F(DataReductionProxyConfigServiceClientTest, EnsureBackoff) {
 // Tests that the config is read successfully on the first attempt.
 TEST_F(DataReductionProxyConfigServiceClientTest, RemoteConfigSuccess) {
   Init(true);
+  base::HistogramTester histogram_tester;
+
   AddMockSuccess();
   SetDataReductionProxyEnabled(true, true);
   EXPECT_TRUE(configurator()->GetProxyConfig().proxy_rules().empty());
@@ -562,6 +564,8 @@ TEST_F(DataReductionProxyConfigServiceClientTest, RemoteConfigSuccess) {
   config_client()->RetrieveConfig();
   RunUntilIdle();
   VerifyRemoteSuccess(true);
+  histogram_tester.ExpectTotalCount(
+      "DataReductionProxy.ConfigService.HttpRequestRTT", 1);
   EXPECT_FALSE(configurator()->GetProxyConfig().proxy_rules().empty());
 #if defined(OS_ANDROID)
   EXPECT_FALSE(config_client()->foreground_fetch_pending());
@@ -650,6 +654,8 @@ TEST_F(DataReductionProxyConfigServiceClientTest,
   histogram_tester.ExpectUniqueSample(
       "DataReductionProxy.ConfigService.FetchFailedAttemptsBeforeSuccess", 1,
       1);
+  histogram_tester.ExpectTotalCount(
+      "DataReductionProxy.ConfigService.HttpRequestRTT", 1);
 }
 
 // Verifies that the config is fetched successfully after IP address changes.
