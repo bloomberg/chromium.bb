@@ -185,8 +185,6 @@
         <template is="dom-repeat" items="[[backgrounds_]]">
           <button
               active$="[[isSelectedBackground_(item, selectedBackground_)]]"
-              aria-pressed$="[[getAriaPressedValue_(item,
-                                                    selectedBackground_)]]"
               class="ntp-background-grid-button"
               on-click="onBackgroundClick_"
               on-keyup="onBackgroundKeyUp_"
