@@ -124,6 +124,7 @@ class WebRequestProxyingURLLoaderFactory
 
     WebRequestProxyingURLLoaderFactory* const factory_;
     network::ResourceRequest request_;
+    const base::Optional<url::Origin> original_initiator_;
     const bool is_download_;
     const uint64_t request_id_;
     const int32_t network_service_request_id_;
