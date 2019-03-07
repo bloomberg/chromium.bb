@@ -5,10 +5,22 @@
 #ifndef NET_THIRD_PARTY_QUIC_PLATFORM_IMPL_QUIC_SYSTEM_EVENT_LOOP_IMPL_H_
 #define NET_THIRD_PARTY_QUIC_PLATFORM_IMPL_QUIC_SYSTEM_EVENT_LOOP_IMPL_H_
 
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/task/task_scheduler/task_scheduler.h"
 
 inline void QuicRunSystemEventLoopIterationImpl() {
   base::RunLoop().RunUntilIdle();
 }
+
+class QuicSystemEventLoopImpl {
+ public:
+  QuicSystemEventLoopImpl(std::string context_name) {
+    base::TaskScheduler::CreateAndStartWithDefaultParams(context_name);
+  }
+
+ private:
+  base::MessageLoopForIO message_loop_;
+};
 
 #endif  // NET_THIRD_PARTY_QUIC_PLATFORM_IMPL_QUIC_SYSTEM_EVENT_LOOP_IMPL_H_

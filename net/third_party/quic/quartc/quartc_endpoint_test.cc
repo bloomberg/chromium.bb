@@ -80,7 +80,8 @@ TEST_F(QuartcEndpointTest, ClientCreatesSessionAsynchronously) {
 
 // Tests that the server can negotiate for an older QUIC version if the client
 // attempts to connect using a newer version.
-TEST_F(QuartcEndpointTest, DISABLED_ServerNegotiatesForOldVersion) {
+TEST_F(QuartcEndpointTest,
+       QUIC_TEST_DISABLED_IN_CHROME(ServerNegotiatesForOldVersion)) {
   // Note: for this test, we need support for two versions.  Which two shouldn't
   // matter, but they must be enabled so that the version manager doesn't filter
   // them out.
@@ -124,7 +125,8 @@ TEST_F(QuartcEndpointTest, DISABLED_ServerNegotiatesForOldVersion) {
 
 // Tests that the server can accept connections from clients that use older
 // QUIC versions.
-TEST_F(QuartcEndpointTest, DISABLED_ServerAcceptsOldVersion) {
+TEST_F(QuartcEndpointTest,
+       QUIC_TEST_DISABLED_IN_CHROME(ServerAcceptsOldVersion)) {
   // Note: for this test, we need support for two versions.  Which two shouldn't
   // matter, but they must be enabled so that the version manager doesn't filter
   // them out.

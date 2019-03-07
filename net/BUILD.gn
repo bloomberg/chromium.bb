@@ -3061,6 +3061,7 @@ if (is_linux) {
       "third_party/quic/core/quic_epoll_connection_helper.h",
       "third_party/quic/core/quic_packet_reader.cc",
       "third_party/quic/core/quic_packet_reader.h",
+      "third_party/quic/platform/api/quic_default_buffer_allocator.h",
       "third_party/quic/platform/api/quic_default_proof_providers.h",
       "third_party/quic/platform/api/quic_system_event_loop.h",
       "third_party/quic/platform/impl/batch_writer/quic_batch_writer_base.cc",
@@ -3071,6 +3072,7 @@ if (is_linux) {
       "third_party/quic/platform/impl/batch_writer/quic_gso_batch_writer.h",
       "third_party/quic/platform/impl/batch_writer/quic_sendmmsg_batch_writer.cc",
       "third_party/quic/platform/impl/batch_writer/quic_sendmmsg_batch_writer.h",
+      "third_party/quic/platform/impl/quic_default_buffer_allocator_impl.h",
       "third_party/quic/platform/impl/quic_default_proof_providers_impl.cc",
       "third_party/quic/platform/impl/quic_default_proof_providers_impl.h",
       "third_party/quic/platform/impl/quic_epoll_clock.cc",
@@ -3343,8 +3345,6 @@ source_set("quic_test_tools") {
     sources += [
       "third_party/quic/test_tools/bad_packet_writer.cc",
       "third_party/quic/test_tools/bad_packet_writer.h",
-      "third_party/quic/test_tools/fake_epoll_server.cc",
-      "third_party/quic/test_tools/fake_epoll_server.h",
       "third_party/quic/test_tools/limited_mtu_test_writer.cc",
       "third_party/quic/test_tools/limited_mtu_test_writer.h",
       "third_party/quic/test_tools/packet_dropping_test_writer.cc",
@@ -3361,6 +3361,8 @@ source_set("quic_test_tools") {
       "third_party/quic/test_tools/quic_test_server.h",
       "third_party/quic/test_tools/server_thread.cc",
       "third_party/quic/test_tools/server_thread.h",
+      "tools/epoll_server/fake_epoll_server.cc",
+      "tools/epoll_server/fake_epoll_server.h",
     ]
     deps += [
       ":epoll_quic_tools",

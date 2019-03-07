@@ -17,14 +17,13 @@
 #include "net/third_party/quic/core/quic_packets.h"
 #include "net/third_party/quic/core/quic_simple_buffer_allocator.h"
 #include "net/third_party/quic/core/quic_time.h"
+#include "net/third_party/quic/platform/api/quic_default_buffer_allocator.h"
 #include "net/third_party/quic/platform/api/quic_epoll.h"
 #include "net/third_party/quic/platform/impl/quic_epoll_clock.h"
 
 namespace quic {
 
 class QuicRandom;
-
-using QuicStreamBufferAllocator = SimpleBufferAllocator;
 
 enum class QuicAllocator { SIMPLE, BUFFER_POOL };
 
@@ -46,7 +45,7 @@ class QuicEpollConnectionHelper : public QuicConnectionHelperInterface {
   QuicRandom* random_generator_;
   // Set up allocators.  They take up minimal memory before use.
   // Allocator for stream send buffers.
-  QuicStreamBufferAllocator stream_buffer_allocator_;
+  QuicDefaultBufferAllocator stream_buffer_allocator_;
   SimpleBufferAllocator simple_buffer_allocator_;
   QuicAllocator allocator_type_;
 };

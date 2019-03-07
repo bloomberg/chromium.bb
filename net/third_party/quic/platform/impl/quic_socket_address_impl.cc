@@ -31,8 +31,11 @@ QuicSocketAddressImpl::QuicSocketAddressImpl(
 }
 
 QuicSocketAddressImpl::QuicSocketAddressImpl(const struct sockaddr& saddr) {
-  QUIC_BUG << "QuicSocketAddressImpl(const struct sockaddr& saddr) is not "
-              "implemented.";
+  if (saddr.sa_family == AF_INET) {
+    CHECK(socket_address_.FromSockAddr(&saddr, sizeof(struct sockaddr_in)));
+  } else if (saddr.sa_family == AF_INET6) {
+    CHECK(socket_address_.FromSockAddr(&saddr, sizeof(struct sockaddr_in6)));
+  }
 }
 
 bool operator==(const QuicSocketAddressImpl& lhs,

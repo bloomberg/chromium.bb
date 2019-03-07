@@ -8,7 +8,6 @@
 #include "net/third_party/quic/core/tls_client_handshaker.h"
 #include "net/third_party/quic/platform/api/quic_arraysize.h"
 #include "net/third_party/quic/platform/api/quic_bug_tracker.h"
-#include "net/third_party/quic/platform/api/quic_singleton.h"
 #include "third_party/boringssl/src/include/openssl/crypto.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
 
@@ -19,7 +18,8 @@ namespace {
 class SslIndexSingleton {
  public:
   static SslIndexSingleton* GetInstance() {
-    return QuicSingleton<SslIndexSingleton>::get();
+    static SslIndexSingleton* instance = new SslIndexSingleton();
+    return instance;
   }
 
   int HandshakerIndex() const { return ssl_ex_data_index_handshaker_; }
@@ -34,8 +34,6 @@ class SslIndexSingleton {
 
   SslIndexSingleton(const SslIndexSingleton&) = delete;
   SslIndexSingleton& operator=(const SslIndexSingleton&) = delete;
-
-  friend QuicSingletonFriend<SslIndexSingleton>;
 
   int ssl_ex_data_index_handshaker_;
 };

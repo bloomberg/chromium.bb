@@ -11,4 +11,6 @@ inline void QuicRunSystemEventLoopIteration() {
   QuicRunSystemEventLoopIterationImpl();
 }
 
+using QuicSystemEventLoop = QuicSystemEventLoopImpl;
+
 #endif  // NET_THIRD_PARTY_QUIC_PLATFORM_API_QUIC_SYSTEM_EVENT_LOOP_H_

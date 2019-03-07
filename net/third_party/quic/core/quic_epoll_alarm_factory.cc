@@ -4,6 +4,8 @@
 
 #include "net/third_party/quic/core/quic_epoll_alarm_factory.h"
 
+#include <type_traits>
+
 #include "net/third_party/quic/core/quic_arena_scoped_ptr.h"
 
 namespace quic {
@@ -42,10 +44,12 @@ class QuicEpollAlarm : public QuicAlarm {
  private:
   class EpollAlarmImpl : public QuicEpollAlarmBase {
    public:
+    using int64_epoll = decltype(QuicEpollAlarmBase().OnAlarm());
+
     explicit EpollAlarmImpl(QuicEpollAlarm* alarm) : alarm_(alarm) {}
 
     // Use the same integer type as the base class.
-    int64_t /* allow-non-std-int */ OnAlarm() override {
+    int64_epoll OnAlarm() override {
       QuicEpollAlarmBase::OnAlarm();
       alarm_->Fire();
       // Fire will take care of registering the alarm, if needed.
@@ -78,8 +82,8 @@ QuicArenaScopedPtr<QuicAlarm> QuicEpollAlarmFactory::CreateAlarm(
   if (arena != nullptr) {
     return arena->New<QuicEpollAlarm>(epoll_server_, std::move(delegate));
   }
-    return QuicArenaScopedPtr<QuicAlarm>(
-        new QuicEpollAlarm(epoll_server_, std::move(delegate)));
+  return QuicArenaScopedPtr<QuicAlarm>(
+      new QuicEpollAlarm(epoll_server_, std::move(delegate)));
 }
 
 }  // namespace quic
