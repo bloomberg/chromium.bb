@@ -300,15 +300,16 @@ def process_perf_results(output_json, configuration_name,
       f for f in listdir(task_output_dir)
       if not isfile(join(task_output_dir, f))
   ]
+
   benchmark_directory_list = []
   benchmarks_shard_map_file = None
   for directory in directory_list:
     for f in listdir(join(task_output_dir, directory)):
       path = join(task_output_dir, directory, f)
-      if path.endswith('benchmarks_shard_map.json'):
-        benchmarks_shard_map_file = path
-      else:
+      if os.path.isdir(path):
         benchmark_directory_list.append(path)
+      elif path.endswith('benchmarks_shard_map.json'):
+        benchmarks_shard_map_file = path
 
   # Now create a map of benchmark name to the list of directories
   # the lists were written to.
@@ -492,7 +493,7 @@ def _handle_perf_results(
           benchmark_name, directories, configuration_name,
           build_properties, output_json_file, service_account_file))
 
-    # Kick off the uploads in mutliple processes
+    # Kick off the uploads in multiple processes
     pool = mp.Pool()
     try:
       async_result = pool.map_async(
@@ -500,10 +501,11 @@ def _handle_perf_results(
       results = async_result.get(timeout=2000)
     except mp.TimeoutError:
       logging.error('Failed uploading benchmarks to perf dashboard in parallel')
-      pool.terminate()
       results = []
       for benchmark_name in benchmark_directory_map:
         results.append((benchmark_name, False))
+    finally:
+      pool.terminate()
 
     # Keep a mapping of benchmarks to their upload results
     benchmark_upload_result_map = {}

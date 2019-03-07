@@ -33,7 +33,9 @@ If this is executed with a gtest perf test, the flag --non-telemetry
 has to be passed in to the script so the script knows it is running
 an executable and not the run_benchmark command.
 
-The results of running the benchmark are put in separate directories per
+This script obeys the --isolated-script-test-output flag and merges test results
+from all the benchmarks into the one output.json file. The test results and perf
+results are also put in separate directories per
 benchmark. Two files will be present in each directory; perf_results.json, which
 is the perf specific results (with unenforced format, could be histogram or
 graph json), and test_results.json, which is a JSON test results
@@ -59,11 +61,14 @@ import common
 
 CHROMIUM_SRC_DIR = os.path.abspath(
     os.path.join(os.path.dirname(__file__), '..', '..'))
-PERF_DIR = os.path.join(CHROMIUM_SRC_DIR, 'tools', 'perf')
-# Add src/tools/perf where generate_legacy_perf_dashboard_json.py lives
-sys.path.append(PERF_DIR)
 
+PERF_DIR = os.path.join(CHROMIUM_SRC_DIR, 'tools', 'perf')
+sys.path.append(PERF_DIR)
 import generate_legacy_perf_dashboard_json
+
+PERF_CORE_DIR = os.path.join(PERF_DIR, 'core')
+sys.path.append(PERF_CORE_DIR)
+import results_merger
 
 # Add src/testing/ into sys.path for importing xvfb and test_env.
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
@@ -394,6 +399,12 @@ def main():
   options = parse_arguments(args)
   isolated_out_dir = os.path.dirname(options.isolated_script_test_output)
   overall_return_code = 0
+  # This is a list of test results files to be merged into a standard
+  # output.json file for use by infrastructure including FindIt.
+  # This list should not contain reference build runs
+  # since we do not monitor those. Also, merging test reference build results
+  # with standard build results may not work properly.
+  test_results_files = []
 
   if options.non_telemetry:
     command_generator = GtestCommandGenerator(options)
@@ -407,6 +418,7 @@ def main():
     output_paths = OutputFilePaths(isolated_out_dir, benchmark_name).SetUp()
     overall_return_code = execute_gtest_perf_test(
         command_generator, output_paths, options.xvfb)
+    test_results_files.append(output_paths.test_results)
   else:
     # If the user has supplied a list of benchmark names, execute those instead
     # of using the shard map.
@@ -419,6 +431,7 @@ def main():
         return_code = execute_telemetry_benchmark(
             command_generator, output_paths, options.xvfb)
         overall_return_code = return_code or overall_return_code
+        test_results_files.append(output_paths.test_results)
       if options.run_ref_build:
         print ('Not running reference build. --run-ref-build argument is only '
                'supported for sharded benchmarks. It is simple to support '
@@ -458,6 +471,7 @@ def main():
         return_code = execute_telemetry_benchmark(
             command_generator, output_paths, options.xvfb)
         overall_return_code = return_code or overall_return_code
+        test_results_files.append(output_paths.test_results)
         if options.run_ref_build:
           reference_benchmark_foldername = benchmark + '.reference'
           reference_output_paths = OutputFilePaths(
@@ -465,13 +479,22 @@ def main():
           reference_command_generator = TelemetryCommandGenerator(
               benchmark, options,
               stories=stories, is_reference=True)
-          # We intentionally ignore the return code of the reference build.
+          # We intentionally ignore the return code and test results of the
+          # reference build.
           execute_telemetry_benchmark(
               reference_command_generator, reference_output_paths,
               options.xvfb)
     else:
       raise Exception('Telemetry tests must provide either a shard map or a '
                       '--benchmarks list so that we know which stories to run.')
+
+  test_results_list = []
+  for test_results_file in test_results_files:
+    with open(test_results_file, 'r') as fh:
+      test_results_list.append(json.load(fh))
+  merged_test_results = results_merger.merge_test_results(test_results_list)
+  with open(options.isolated_script_test_output, 'w') as f:
+    json.dump(merged_test_results, f)
 
   return overall_return_code
 
