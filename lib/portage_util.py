@@ -2037,6 +2037,22 @@ def PackagesWithTest(sysroot, packages):
   return pkg_with_test
 
 
+def ParseParallelEmergeStatusFile(file_path):
+  """Parse the parallel emerge status file.
+
+  Args:
+    file_path (str): The path to the file.
+
+  Returns:
+    list - Each CPV in the file.
+  """
+  if os.path.exists(file_path):
+    packages = osutils.ReadFile(file_path).strip().split()
+    return [SplitCPV(p, strict=False) for p in packages]
+
+  return []
+
+
 class PortageqError(Error):
   """Portageq command error."""
 

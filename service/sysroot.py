@@ -3,10 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Functionality to setup a board sysroot."""
-
-# TODO(saklein) Fold this functionality into an appropriate location when the
-# corresponding API endpoint(s) is built out.
+"""Sysroot service."""
 
 from __future__ import print_function
 
@@ -31,54 +28,12 @@ class NotInChrootError(Error):
   """When SetupBoard is run outside of the chroot."""
 
 
-# TODO(saklein) Similar to both cros_choose_profile.Board and
-# upload_prebuilts.BuildTarget (both in scripts). Find if there are other
-# instances of similar classes, and build out a single, shared implementation
-# in a more appropriate location.
-class Board(object):
-  """Manage the board arguments and configs."""
-
-  def __init__(self, board=None, variant=None, board_root=None, profile=None):
-    """Board constructor.
-
-    At least board or board_root must be provided.
-
-    Args:
-      board (str): The board name.
-      variant (str): The variant name.
-      board_root (str): The boards fully qualified build directory path.
-      profile (str): The name of the profile to be chosen.
-    """
-    if not board and not board_root:
-      # Enforce preconditions.
-      raise InvalidArgumentsError('Either board or board_root must be '
-                                  'provided.')
-    elif board:
-      # The board and variant can be specified separately, or can both be
-      # contained in the board name, separated by an underscore.
-      board_split = board.split('_')
-      variant_default = variant
-      board_root = os.path.normpath(board_root) if board_root else None
-    else:
-      board_root = os.path.normpath(board_root)
-      board_split = os.path.basename(board_root).split('_')
-      variant_default = None
-
-    self.board = board_split.pop(0)
-    self.variant = board_split.pop(0) if board_split else variant_default
-    self.profile = profile
-
-    if self.variant:
-      self.board_variant = '%s_%s' % (self.board, self.variant)
-    else:
-      self.board_variant = self.board
-
-    self.root = (board_root if board_root else
-                 cros_build_lib.GetSysroot(self.board_variant))
+class UpdateChrootError(Error):
+  """Error occurred when running update chroot."""
 
 
 class SetupBoardRunConfig(object):
-  """Value object for setup board run configurations."""
+  """Value object for full setup board run configurations."""
 
   def __init__(self, set_default=False, force=False, usepkg=True, jobs=None,
                regen_configs=False, quiet=False, update_toolchain=True,
@@ -108,7 +63,7 @@ class SetupBoardRunConfig(object):
     self.init_board_pkgs = init_board_pkgs
     self.local_build = local_build
 
-  def UpdateChrootArgs(self):
+  def GetUpdateChrootArgs(self):
     """Create a list containing the relevant update_chroot arguments.
 
     Returns:
@@ -129,26 +84,56 @@ class SetupBoardRunConfig(object):
     return args
 
 
-def SetupBoard(board, accept_licenses=None, run_configs=None):
-  """Setup a board's sysroot.
+def SetupBoard(target, accept_licenses=None, run_configs=None):
+  """Run the full process to setup a board's sysroot.
+
+  This is the entry point to run the setup_board script.
 
   Args:
-    board (Board): The board configuration.
-    accept_licenses (str|None): A list of additional licenses to accept.
+    target (build_target_util.BuildTarget): The build target configuration.
+    accept_licenses (str|None): The additional licenses to accept.
     run_configs (SetupBoardRunConfig): The run configs.
+
+  Raises:
+    sysroot_lib.ToolchainInstallError when the toolchain fails to install.
   """
   if not cros_build_lib.IsInsideChroot():
     # TODO(saklein) switch to build out command and run inside chroot.
     raise NotInChrootError('SetupBoard must be run from inside the chroot')
 
-  sysroot = sysroot_lib.Sysroot(board.root)
+  # Make sure we have valid run configs setup.
+  run_configs = run_configs or SetupBoardRunConfig()
+
+  sysroot = Create(target, run_configs, accept_licenses)
+
+  if run_configs.regen_configs:
+    # We're now done if we're only regenerating the configs.
+    return
+
+  InstallToolchain(target, sysroot, run_configs)
+
+
+def Create(target, run_configs, accept_licenses):
+  """Create a sysroot.
+
+  This entry point is the subset of the full setup process that does the
+  creation and configuration of a sysroot, including installing portage.
+
+  Args:
+    target (build_target.BuildTarget): The build target being installed in the
+      sysroot being created.
+    run_configs (SetupBoardRunConfig): The run configs.
+    accept_licenses (str|None): The additional licenses to accept.
+  """
+  cros_build_lib.AssertInsideChroot()
+
+  sysroot = sysroot_lib.Sysroot(target.root)
+
   if sysroot.Exists() and not run_configs.force and not run_configs.quiet:
     logging.warning('Board output directory already exists: %s\n'
                     'Use --force to clobber the board root and start again.',
                     sysroot.path)
 
-  # Make sure we have valid run configs setup.
-  run_configs = run_configs or SetupBoardRunConfig()
   # Override regen_configs setting to force full setup run if the sysroot does
   # not exist.
   run_configs.regen_configs = run_configs.regen_configs and sysroot.Exists()
@@ -156,10 +141,15 @@ def SetupBoard(board, accept_licenses=None, run_configs=None):
   # Make sure the chroot is fully up to date before we start unless the
   # chroot update is explicitly disabled.
   if run_configs.update_chroot:
+    logging.info('Updating chroot.')
     update_chroot = [os.path.join(constants.CROSUTILS_DIR, 'update_chroot'),
-                     '--toolchain_boards', board.board]
-    update_chroot += run_configs.UpdateChrootArgs()
-    cros_build_lib.RunCommand(update_chroot)
+                     '--toolchain_boards', target.name]
+    update_chroot += run_configs.GetUpdateChrootArgs()
+    try:
+      cros_build_lib.RunCommand(update_chroot)
+    except cros_build_lib.RunCommandError:
+      raise UpdateChrootError('Error occurred while updating the chroot.'
+                              'See the logs for more information.')
 
   # Delete old sysroot to force a fresh start if requested.
   if sysroot.Exists() and run_configs.force:
@@ -169,30 +159,47 @@ def SetupBoard(board, accept_licenses=None, run_configs=None):
   # Dependencies: None.
   # Create the skeleton.
   logging.info('Creating sysroot directories.')
-  CreateSysrootSkeleton(sysroot)
+  _CreateSysrootSkeleton(sysroot)
 
   # Step 2: Standalone configurations.
   # Dependencies: Folders exist.
   # Install main, board setup, and user make.conf files.
   logging.info('Installing configurations into sysroot.')
-  InstallConfigs(sysroot, board)
+  _InstallConfigs(sysroot, target)
 
   # Step 3: Portage configurations.
   # Dependencies: make.conf.board_setup.
   # Create the command wrappers, choose profile, and make.conf.board.
   # Refresh the workon symlinks to compensate for crbug.com/679831.
   logging.info('Setting up portage in the sysroot.')
-  InstallPortageConfigs(sysroot, board, accept_licenses,
-                        run_configs.local_build)
+  _InstallPortageConfigs(sysroot, target, accept_licenses,
+                         run_configs.local_build)
 
-  # Developer Experience Step: Set default board (if requested) to allow running
-  # later commands without needing to pass the --board argument.
+  # Developer Experience Step: Set default board (if requested) to allow
+  # running later commands without needing to pass the --board argument.
   if run_configs.set_default:
-    cros_build_lib.SetDefaultBoard(board.board_variant)
+    cros_build_lib.SetDefaultBoard(target.name)
 
-  if run_configs.regen_configs:
-    # We're now done if we're only regenerating the configs.
-    return
+  return sysroot
+
+
+def InstallToolchain(target, sysroot, run_configs):
+  """Update the toolchain to a sysroot.
+
+  This entry point just installs the target's toolchain into the sysroot.
+  Everything else must have been done already for this to be successful.
+
+  Args:
+    target (build_target_util.BuildTarget): The target whose toolchain is being
+      installed.
+    sysroot (sysroot_lib.Sysroot): The sysroot where the toolchain is being
+      installed.
+    run_configs (SetupBoardRunConfig): The run configs.
+  """
+  cros_build_lib.AssertInsideChroot()
+  if not sysroot.Exists():
+    # Sanity check before we try installing anything.
+    raise ValueError('The sysroot must exist, run Create first.')
 
   # Step 4: Install toolchain and packages.
   # Dependencies: Portage configs and wrappers have been installed.
@@ -200,10 +207,10 @@ def SetupBoard(board, accept_licenses=None, run_configs=None):
     logging.info('Updating toolchain.')
     # Use the local packages if we're doing a local only build or usepkg is set.
     local_init = run_configs.usepkg or run_configs.local_build
-    InstallToolchain(sysroot, board, local_init=local_init)
+    _InstallToolchain(sysroot, target, local_init=local_init)
 
 
-def CreateSysrootSkeleton(sysroot):
+def _CreateSysrootSkeleton(sysroot):
   """Create the sysroot skeleton.
 
   Dependencies: None.
@@ -215,7 +222,7 @@ def CreateSysrootSkeleton(sysroot):
   sysroot.CreateSkeleton()
 
 
-def InstallConfigs(sysroot, board):
+def _InstallConfigs(sysroot, target):
   """Install standalone configuration files into the sysroot.
 
   Dependencies: The sysroot exists (i.e. CreateSysrootSkeleton).
@@ -223,14 +230,15 @@ def InstallConfigs(sysroot, board):
 
   Args:
     sysroot (sysroot_lib.Sysroot): The sysroot.
-    board (Board): The board being setup in the sysroot.
+    target (build_target.BuildTarget): The build target being setup in
+      the sysroot.
   """
   sysroot.InstallMakeConf()
-  sysroot.InstallMakeConfBoardSetup(board.board_variant)
+  sysroot.InstallMakeConfBoardSetup(target.name)
   sysroot.InstallMakeConfUser()
 
 
-def InstallPortageConfigs(sysroot, board, accept_licenses, local_build):
+def _InstallPortageConfigs(sysroot, target, accept_licenses, local_build):
   """Install portage wrappers and configurations.
 
   Dependencies: make.conf.board_setup (InstallConfigs).
@@ -239,19 +247,20 @@ def InstallPortageConfigs(sysroot, board, accept_licenses, local_build):
 
   Args:
     sysroot (sysroot_lib.Sysroot): The sysroot.
-    board (Board): The board being installed in the sysroot.
+    target (build_target.BuildTarget): The build target being installed
+      in the sysroot.
     accept_licenses (str): Additional accepted licenses as a string.
     local_build (bool): If the build is a local only build.
   """
-  sysroot.CreateAllWrappers(friendly_name=board.board_variant)
-  _ChooseProfile(board, sysroot)
-  _RefreshWorkonSymlinks(board.board_variant, sysroot)
+  sysroot.CreateAllWrappers(friendly_name=target.name)
+  _ChooseProfile(target, sysroot)
+  _RefreshWorkonSymlinks(target.name, sysroot)
   # Must be done after the profile is chosen or binhosts may be incomplete.
   sysroot.InstallMakeConfBoard(accepted_licenses=accept_licenses,
                                local_only=local_build)
 
 
-def InstallToolchain(sysroot, board, local_init=True):
+def _InstallToolchain(sysroot, target, local_init=True):
   """Install toolchain and packages.
 
   Dependencies: Portage configs and wrappers have been installed
@@ -260,14 +269,15 @@ def InstallToolchain(sysroot, board, local_init=True):
 
   Args:
     sysroot (sysroot_lib.Sysroot): The sysroot to install to.
-    board (Board): The board whose toolchain is being installed.
+    target (build_target.BuildTarget): The build target whose toolchain is
+      being installed.
     local_init (bool): Whether to use local packages to bootstrap implicit
       dependencies.
   """
-  sysroot.UpdateToolchain(board.board_variant, local_init=local_init)
+  sysroot.UpdateToolchain(target.name, local_init=local_init)
 
 
-def _RefreshWorkonSymlinks(board, sysroot):
+def _RefreshWorkonSymlinks(target, sysroot):
   """Force refresh the workon symlinks.
 
   Create an instance of the WorkonHelper, which will recreate all symlinks
@@ -279,28 +289,29 @@ def _RefreshWorkonSymlinks(board, sysroot):
   instantiated since it refreshes the symlinks in its __init__.
 
   Args:
-    board (str): The full board name.
+    target (str): The build target name.
     sysroot (sysroot_lib.Sysroot): The board's sysroot.
   """
-  workon_helper.WorkonHelper(sysroot.path, friendly_name=board)
+  workon_helper.WorkonHelper(sysroot.path, friendly_name=target)
 
 
-def _ChooseProfile(board, sysroot):
+def _ChooseProfile(target, sysroot):
   """Helper function to execute cros_choose_profile.
 
   TODO(saklein) Refactor cros_choose_profile to avoid needing the RunCommand
   call here, and by extension this method all together.
 
   Args:
-    board (Board): The board config for the board whose profile is being chosen.
+    target (build_target_util.BuildTarget): The build target whose profile is
+      being chosen.
     sysroot (sysroot_lib.Sysroot): The sysroot for which the profile is
       being chosen.
   """
-  choose_profile = ['cros_choose_profile', '--board', board.board_variant,
+  choose_profile = ['cros_choose_profile', '--board', target.name,
                     '--board-root', sysroot.path]
-  if board.profile:
+  if target.profile:
     # Chooses base by default, only override when we have a passed param.
-    choose_profile += ['--profile', board.profile]
+    choose_profile += ['--profile', target.profile]
   try:
     cros_build_lib.RunCommand(choose_profile, print_cmd=False)
   except cros_build_lib.RunCommandError as e:

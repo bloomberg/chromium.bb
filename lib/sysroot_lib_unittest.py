@@ -9,7 +9,10 @@ from __future__ import print_function
 
 import os
 
+from chromite.lib import constants
+from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
+from chromite.lib import portage_util
 from chromite.lib import sysroot_lib
 from chromite.lib import toolchain
 
@@ -164,26 +167,62 @@ class SysrootLibToolchainUpdateTest(cros_test_lib.RunCommandTempDirTestCase):
     # Fake being root to avoid running commands with SudoRunCommand.
     self.PatchObject(os, 'getuid', return_value=0)
     self.PatchObject(os, 'geteuid', return_value=0)
-    self.PatchObject(toolchain, 'InstallToolchain')
 
     self.sysroot = sysroot_lib.Sysroot(self.tempdir)
+    self.emerge = os.path.join(constants.CHROMITE_BIN_DIR, 'parallel_emerge')
 
   def testDefaultUpdateToolchain(self):
     """Test the default path."""
+    self.PatchObject(toolchain, 'InstallToolchain')
+
     self.sysroot.UpdateToolchain('board')
-    self.assertCommandContains(['emerge-board', '--getbinpkg', '--usepkg'])
+    self.assertCommandContains(
+        [self.emerge, '--board=board', '--getbinpkg', '--usepkg'])
 
   def testNoLocalInitUpdateToolchain(self):
     """Test the nousepkg and not local case."""
+    self.PatchObject(toolchain, 'InstallToolchain')
+
     self.sysroot.UpdateToolchain('board', local_init=False)
-    self.assertCommandContains(['emerge-board', '--getbinpkg', '--usepkg'],
-                               expected=False)
-    self.assertCommandContains(['emerge-board'])
+    self.assertCommandContains(['--getbinpkg', '--usepkg'], expected=False)
+    self.assertCommandContains([self.emerge, '--board=board'])
 
   def testReUpdateToolchain(self):
     """Test behavior when not running for the first time."""
-    # GetCachedField uses RunCommand, so we need to mock it rather than setting
-    # the config that's used to check for the installation.
-    self.PatchObject(self.sysroot, 'GetCachedField', return_value='yes')
+    self.PatchObject(toolchain, 'InstallToolchain')
+
+    self.PatchObject(self.sysroot, 'IsToolchainInstalled', return_value=True)
     self.sysroot.UpdateToolchain('board')
-    self.assertCommandContains(['emerge-board'], expected=False)
+    self.assertCommandContains([self.emerge], expected=False)
+
+  def testInstallToolchainError(self):
+    """Test error handling from the libc install."""
+    failed = ['cat/pkg', 'cat/pkg2']
+    failed_cpvs = [portage_util.SplitCPV(pkg, strict=False) for pkg in failed]
+    result = cros_build_lib.CommandResult(returncode=1)
+    error = toolchain.ToolchainInstallError('Error', result=result,
+                                            tc_info=failed_cpvs)
+    self.PatchObject(toolchain, 'InstallToolchain', side_effect=error)
+
+    try:
+      self.sysroot.UpdateToolchain('board')
+    except sysroot_lib.ToolchainInstallError as e:
+      self.assertTrue(e.failed_toolchain_info)
+      self.assertEqual(failed_cpvs, e.failed_toolchain_info)
+    except Exception as e:
+      self.fail('Unexpected exception raised: %s' % type(e))
+    else:
+      self.fail('Expected an exception.')
+
+  def testEmergeError(self):
+    """Test the emerge error handling."""
+    self.PatchObject(toolchain, 'InstallToolchain')
+    # pylint: disable=protected-access
+    command = self.sysroot._UpdateToolchainCommand('board', True)
+
+    err = cros_build_lib.RunCommandError(
+        'Error', cros_build_lib.CommandResult(returncode=1))
+    self.rc.AddCmdResult(command, side_effect=err)
+
+    with self.assertRaises(sysroot_lib.ToolchainInstallError):
+      self.sysroot.UpdateToolchain('board', local_init=True)

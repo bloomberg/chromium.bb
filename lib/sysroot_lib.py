@@ -71,7 +71,9 @@ exec pkg-config "$@"
 
 _wrapper_dir = '/usr/local/bin'
 
-_IMPLICIT_SYSROOT_DEPS = 'IMPLICIT_SYSROOT_DEPS'
+_IMPLICIT_SYSROOT_DEPS_KEY = 'IMPLICIT_SYSROOT_DEPS'
+_IMPLICIT_SYSROOT_DEPS = ['sys-kernel/linux-headers', 'sys-libs/gcc-libs',
+                          'sys-libs/libcxxabi', 'sys-libs/libcxx']
 
 _MAKE_CONF = 'etc/make.conf'
 _MAKE_CONF_BOARD_SETUP = 'etc/make.conf.board_setup'
@@ -106,6 +108,18 @@ _ARCH_MAPPING = {
     'arm': 'arm-generic',
     'mips': 'mipsel-o32-generic',
 }
+
+
+class Error(Exception):
+  """Module base error class."""
+
+
+class ToolchainInstallError(Error, cros_build_lib.RunCommandError):
+  """An error when installing a toolchain."""
+
+  def __init__(self, msg, result, exception=None, tc_info=None):
+    super(ToolchainInstallError, self).__init__(msg, result, exception)
+    self.failed_toolchain_info = tc_info
 
 
 def _CreateWrapper(wrapper_path, template, **kwargs):
@@ -610,20 +624,49 @@ PORTAGE_BINHOST="$PORTAGE_BINHOST $LATEST_RELEASE_CHROME_BINHOST"
       local_init (bool): Whether to use local packages to bootstrap the
         implicit dependencies.
     """
-    toolchain.InstallToolchain(self)
+    try:
+      toolchain.InstallToolchain(self)
+    except toolchain.ToolchainInstallError as e:
+      raise ToolchainInstallError(e.message, e.result, exception=e.exception,
+                                  tc_info=e.failed_toolchain_info)
 
-    if not self.GetCachedField(_IMPLICIT_SYSROOT_DEPS):
+    if not self.IsToolchainInstalled():
       # Emerge the implicit dependencies.
-      emerge = ['emerge-%s' % board, '--root-deps=rdeps', '--select', '--quiet']
+      emerge = self._UpdateToolchainCommand(board, local_init)
 
-      if local_init:
-        emerge += ['--getbinpkg', '--usepkg']
+      # Use a tempdir to handle the status file cleanup.
+      with osutils.TempDir() as tempdir:
+        status_file = os.path.join(tempdir, 'status_file')
+        extra_env = {constants.PARALLEL_EMERGE_STATUS_FILE_ENVVAR: status_file}
 
-      cros_build_lib.SudoRunCommand(
-          emerge + ['sys-kernel/linux-headers', 'sys-libs/gcc-libs',
-                    'sys-libs/libcxx', 'sys-libs/libcxxabi'])
+        try:
+          cros_build_lib.SudoRunCommand(emerge, preserve_env=True,
+                                        extra_env=extra_env)
+        except cros_build_lib.RunCommandError as e:
+          # Include failed packages from the status file in the error.
+          cpvs = portage_util.ParseParallelEmergeStatusFile(status_file)
+          raise ToolchainInstallError(e.message, e.result, exception=e,
+                                      tc_info=cpvs)
+
       # Record we've installed them so we don't call emerge each time.
-      self.SetCachedField(_IMPLICIT_SYSROOT_DEPS, 'yes')
+      self.SetCachedField(_IMPLICIT_SYSROOT_DEPS_KEY, 'yes')
+
+  def _UpdateToolchainCommand(self, board, local_init):
+    """Helper function to build the emerge command for UpdateToolchain."""
+    emerge = [os.path.join(constants.CHROMITE_BIN_DIR, 'parallel_emerge'),
+              '--board=%s' % board, '--root-deps=rdeps', '--select',
+              '--quiet']
+
+    if local_init:
+      emerge += ['--getbinpkg', '--usepkg']
+
+    emerge += _IMPLICIT_SYSROOT_DEPS
+
+    return emerge
+
+  def IsToolchainInstalled(self):
+    """Check if the toolchain has been installed."""
+    return self.GetCachedField(_IMPLICIT_SYSROOT_DEPS_KEY) == 'yes'
 
   def Delete(self, async=False):
     """Delete the sysroot.
