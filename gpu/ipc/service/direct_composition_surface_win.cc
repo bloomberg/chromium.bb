@@ -1656,6 +1656,8 @@ bool DCLayerTree::CommitAndClearPendingOverlays(
     bool video_needs_commit = false;
     if (!video_swap_chain->PresentToSwapChain(*pending_overlays_[i],
                                               &video_needs_commit)) {
+      DLOG(ERROR) << "PresentToSwapChain failed";
+      DCHECK(false);
       return false;
     }
     needs_commit = needs_commit || video_needs_commit;
@@ -1691,6 +1693,7 @@ bool DCLayerTree::CommitAndClearPendingOverlays(
     HRESULT hr = dcomp_device_->Commit();
     if (FAILED(hr)) {
       DLOG(ERROR) << "Commit failed with error 0x" << std::hex << hr;
+      DCHECK(false);
       return false;
     }
   }
@@ -1950,7 +1953,8 @@ gfx::SwapResult DirectCompositionSurfaceWin::SwapBuffers(
     succeeded = false;
 
   DCLayerTree::BackbufferInfo backbuffer_info = {
-      root_surface_->swap_chain().Get(), root_surface_->dcomp_surface().Get(),
+      root_surface_->swap_chain().Get(),
+      root_surface_->dcomp_surface().Get(),
       root_surface_->dcomp_surface_serial(),
   };
   if (!layer_tree_->CommitAndClearPendingOverlays(std::move(backbuffer_info)))
