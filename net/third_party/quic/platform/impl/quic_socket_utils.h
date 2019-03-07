@@ -19,6 +19,9 @@
 #include "net/third_party/quic/core/quic_bandwidth.h"
 #include "net/third_party/quic/core/quic_types.h"
 
+#define MMSG_MORE 0
+#define MMSG_MORE_NO_ANDROID 0
+
 namespace quic {
 class QuicIpAddress;
 class QuicSocketAddress;

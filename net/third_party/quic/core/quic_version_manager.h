@@ -13,6 +13,8 @@ namespace quic {
 // Used to generate filtered supported versions based on flags.
 class QUIC_EXPORT_PRIVATE QuicVersionManager {
  public:
+  // |supported_versions| should be sorted in the order of preference (typically
+  // highest supported version to the lowest supported version).
   explicit QuicVersionManager(ParsedQuicVersionVector supported_versions);
   virtual ~QuicVersionManager();
 
@@ -20,7 +22,8 @@ class QUIC_EXPORT_PRIVATE QuicVersionManager {
   // TODO(nharper): Remove this method once it is unused.
   const QuicTransportVersionVector& GetSupportedTransportVersions();
 
-  // Returns currently supported QUIC versions.
+  // Returns currently supported QUIC versions. This vector has the same order
+  // as the versions passed to the constructor.
   const ParsedQuicVersionVector& GetSupportedVersions();
 
  protected:

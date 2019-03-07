@@ -8,100 +8,143 @@
 //
 // Some usage examples:
 //
-//   TODO(rtenneti): make --host optional by getting IP Address of URL's host.
-//
-//   Get IP address of the www.google.com
-//   IP=`dig www.google.com +short | head -1`
-//
 // Standard request/response:
-//   quic_client http://www.google.com  --host=${IP}
-//   quic_client http://www.google.com --quiet  --host=${IP}
-//   quic_client https://www.google.com --port=443  --host=${IP}
+//   quic_client www.google.com
+//   quic_client www.google.com --quiet
+//   quic_client www.google.com --port=443
 //
 // Use a specific version:
-//   quic_client http://www.google.com --quic_version=23  --host=${IP}
+//   quic_client www.google.com --quic_version=23
 //
 // Send a POST instead of a GET:
-//   quic_client http://www.google.com --body="this is a POST body" --host=${IP}
+//   quic_client www.google.com --body="this is a POST body"
 //
 // Append additional headers to the request:
-//   quic_client http://www.google.com  --host=${IP}
-//               --headers="Header-A: 1234; Header-B: 5678"
+//   quic_client www.google.com --headers="Header-A: 1234; Header-B: 5678"
 //
 // Connect to a host different to the URL being requested:
-//   Get IP address of the www.google.com
+//   quic_client mail.google.com --host=www.google.com
+//
+// Connect to a specific IP:
 //   IP=`dig www.google.com +short | head -1`
-//   quic_client mail.google.com --host=${IP}
+//   quic_client www.google.com --host=${IP}
 //
 // Send repeated requests and change ephemeral port between requests
 //   quic_client www.google.com --num_requests=10
 //
 // Try to connect to a host which does not speak QUIC:
-//   Get IP address of the www.example.com
-//   IP=`dig www.example.com +short | head -1`
-//   quic_client http://www.example.com --host=${IP}
+//   quic_client www.example.com
+
+#include <netdb.h>
+#include <sys/socket.h>
+#include <sys/types.h>
 
 #include <iostream>
+#include <memory>
 #include <vector>
 
-#include "base/at_exit.h"
-#include "base/command_line.h"
-#include "base/message_loop/message_loop.h"
-#include "base/task/task_scheduler/task_scheduler.h"
-#include "net/base/net_errors.h"
-#include "net/base/privacy_mode.h"
 #include "net/third_party/quic/core/quic_packets.h"
 #include "net/third_party/quic/core/quic_server_id.h"
+#include "net/third_party/quic/core/quic_utils.h"
 #include "net/third_party/quic/platform/api/quic_default_proof_providers.h"
-#include "net/third_party/quic/platform/api/quic_flags.h"
 #include "net/third_party/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quic/platform/api/quic_socket_address.h"
 #include "net/third_party/quic/platform/api/quic_str_cat.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
+#include "net/third_party/quic/platform/api/quic_system_event_loop.h"
 #include "net/third_party/quic/platform/api/quic_text_utils.h"
 #include "net/third_party/quic/tools/quic_client.h"
 #include "net/third_party/quic/tools/quic_url.h"
-#include "net/third_party/quiche/src/spdy/core/spdy_header_block.h"
-#include "net/tools/epoll_server/epoll_server.h"
-#include "net/tools/quic/synchronous_host_resolver.h"
 
-using quic::ProofVerifier;
+namespace {
+
+using quic::QuicSocketAddress;
 using quic::QuicString;
 using quic::QuicStringPiece;
 using quic::QuicTextUtils;
 using quic::QuicUrl;
-using spdy::SpdyHeaderBlock;
-using std::cerr;
-using std::cout;
-using std::endl;
-using std::string;
+
+class FakeProofVerifier : public quic::ProofVerifier {
+ public:
+  ~FakeProofVerifier() override {}
+  quic::QuicAsyncStatus VerifyProof(
+      const std::string& /*hostname*/,
+      const uint16_t /*port*/,
+      const std::string& /*server_config*/,
+      quic::QuicTransportVersion /*quic_version*/,
+      quic::QuicStringPiece /*chlo_hash*/,
+      const std::vector<std::string>& /*certs*/,
+      const std::string& /*cert_sct*/,
+      const std::string& /*signature*/,
+      const quic::ProofVerifyContext* /*context*/,
+      std::string* /*error_details*/,
+      std::unique_ptr<quic::ProofVerifyDetails>* /*details*/,
+      std::unique_ptr<quic::ProofVerifierCallback> /*callback*/) override {
+    return quic::QUIC_SUCCESS;
+  }
+  quic::QuicAsyncStatus VerifyCertChain(
+      const std::string& /*hostname*/,
+      const std::vector<std::string>& /*certs*/,
+      const quic::ProofVerifyContext* /*context*/,
+      std::string* /*error_details*/,
+      std::unique_ptr<quic::ProofVerifyDetails>* /*details*/,
+      std::unique_ptr<quic::ProofVerifierCallback> /*callback*/) override {
+    return quic::QUIC_SUCCESS;
+  }
+  std::unique_ptr<quic::ProofVerifyContext> CreateDefaultContext() override {
+    return nullptr;
+  }
+};
+
+QuicSocketAddress LookupAddress(QuicString host, QuicString port) {
+  addrinfo hint;
+  memset(&hint, 0, sizeof(hint));
+  hint.ai_protocol = IPPROTO_UDP;
+
+  addrinfo* info_list = nullptr;
+  int result = getaddrinfo(host.c_str(), port.c_str(), &hint, &info_list);
+  if (result != 0) {
+    QUIC_LOG(ERROR) << "Failed to look up " << host << ": "
+                    << gai_strerror(result);
+    return QuicSocketAddress();
+  }
+
+  CHECK(info_list != nullptr);
+  std::unique_ptr<addrinfo, void (*)(addrinfo*)> info_list_owned(info_list,
+                                                                 freeaddrinfo);
+  return QuicSocketAddress(*info_list->ai_addr);
+}
+
+}  // namespace
 
 DEFINE_QUIC_COMMAND_LINE_FLAG(
-    string,
+    std::string,
     host,
     "",
-    "The IP or hostname the quic client will connect to.");
+    "The IP or hostname to connect to. If not provided, the host "
+    "will be derived from the provided URL.");
 
 DEFINE_QUIC_COMMAND_LINE_FLAG(int32_t, port, 0, "The port to connect to.");
 
-DEFINE_QUIC_COMMAND_LINE_FLAG(string,
+DEFINE_QUIC_COMMAND_LINE_FLAG(std::string,
                               body,
                               "",
                               "If set, send a POST with this body.");
 
 DEFINE_QUIC_COMMAND_LINE_FLAG(
-    string,
+    std::string,
     body_hex,
     "",
-    "If set, contents are converted from hex to ascii, before sending as body "
-    "of a POST. e.g. --body_hex=\"68656c6c6f\"");
+    "If set, contents are converted from hex to ascii, before "
+    "sending as body of a POST. e.g. --body_hex=\"68656c6c6f\"");
 
 DEFINE_QUIC_COMMAND_LINE_FLAG(
-    string,
+    std::string,
     headers,
     "",
-    "A semicolon separated list of key:value pairs to add to request headers.");
+    "A semicolon separated list of key:value pairs to "
+    "add to request headers.");
 
 DEFINE_QUIC_COMMAND_LINE_FLAG(bool,
                               quiet,
@@ -112,23 +155,23 @@ DEFINE_QUIC_COMMAND_LINE_FLAG(
     int32_t,
     quic_version,
     -1,
-    "QUIC version to speak, e.g. 21. If not set, then all available versions "
-    "are offered in the handshake.");
+    "QUIC version to speak, e.g. 21. If not set, then all available "
+    "versions are offered in the handshake.");
 
 DEFINE_QUIC_COMMAND_LINE_FLAG(
     bool,
     version_mismatch_ok,
     false,
-    "If true, a version mismatch in the handshake is not considered a failure. "
-    "Useful for probing a server to determine if it speaks any version of "
-    "QUIC.");
+    "If true, a version mismatch in the handshake is not considered a "
+    "failure. Useful for probing a server to determine if it speaks "
+    "any version of QUIC.");
 
 DEFINE_QUIC_COMMAND_LINE_FLAG(
     bool,
     redirect_is_success,
     true,
-    "If true, an HTTP response code of 3xx is considered to be a successful "
-    "response, otherwise a failure.");
+    "If true, an HTTP response code of 3xx is considered to be a "
+    "successful response, otherwise a failure.");
 
 DEFINE_QUIC_COMMAND_LINE_FLAG(int32_t,
                               initial_mtu,
@@ -141,84 +184,31 @@ DEFINE_QUIC_COMMAND_LINE_FLAG(
     1,
     "How many sequential requests to make on a single connection.");
 
+DEFINE_QUIC_COMMAND_LINE_FLAG(bool,
+                              disable_certificate_verification,
+                              false,
+                              "If true, don't verify the server certificate.");
+
 DEFINE_QUIC_COMMAND_LINE_FLAG(
     bool,
     drop_response_body,
     false,
     "If true, drop response body immediately after it is received.");
 
-DEFINE_QUIC_COMMAND_LINE_FLAG(bool,
-                              disable_certificate_verification,
-                              false,
-                              "If true, do not verify certificates.");
-
-class FakeProofVerifier : public ProofVerifier {
- public:
-  quic::QuicAsyncStatus VerifyProof(
-      const string& /*hostname*/,
-      const uint16_t /*port*/,
-      const string& /*server_config*/,
-      quic::QuicTransportVersion /*quic_version*/,
-      QuicStringPiece /*chlo_hash*/,
-      const std::vector<string>& /*certs*/,
-      const string& /*cert_sct*/,
-      const string& /*signature*/,
-      const quic::ProofVerifyContext* /*context*/,
-      string* /*error_details*/,
-      std::unique_ptr<quic::ProofVerifyDetails>* /*details*/,
-      std::unique_ptr<quic::ProofVerifierCallback> /*callback*/) override {
-    return quic::QUIC_SUCCESS;
-  }
-
-  quic::QuicAsyncStatus VerifyCertChain(
-      const std::string& /*hostname*/,
-      const std::vector<std::string>& /*certs*/,
-      const quic::ProofVerifyContext* /*verify_context*/,
-      std::string* /*error_details*/,
-      std::unique_ptr<quic::ProofVerifyDetails>* /*verify_details*/,
-      std::unique_ptr<quic::ProofVerifierCallback> /*callback*/) override {
-    return quic::QUIC_SUCCESS;
-  }
-  std::unique_ptr<quic::ProofVerifyContext> CreateDefaultContext() override {
-    return nullptr;
-  }
-};
-
 int main(int argc, char* argv[]) {
-  base::TaskScheduler::CreateAndStartWithDefaultParams("quic_client");
-  const char* usage =
-      "Usage: epoll_quic_client [options] <url>\n"
-      "\n"
-      "<url> with scheme must be provided (e.g. http://www.google.com)\n";
+  QuicSystemEventLoop event_loop("quic_client");
+  const char* usage = "Usage: quic_client [options] <url>";
+
+  // All non-flag arguments should be interpreted as URLs to fetch.
   std::vector<QuicString> urls =
       quic::QuicParseCommandLineFlags(usage, argc, argv);
-  if (urls.empty()) {
+  if (urls.size() != 1) {
     quic::QuicPrintCommandLineFlagHelp(usage);
     exit(0);
   }
 
-  logging::LoggingSettings settings;
-  settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
-  CHECK(logging::InitLogging(settings));
-
-  VLOG(1) << "server host: " << GetQuicFlag(FLAGS_host)
-          << " port: " << GetQuicFlag(FLAGS_port)
-          << " body: " << GetQuicFlag(FLAGS_body)
-          << " headers: " << GetQuicFlag(FLAGS_headers)
-          << " quiet: " << GetQuicFlag(FLAGS_quiet)
-          << " quic-version: " << GetQuicFlag(FLAGS_quic_version)
-          << " version_mismatch_ok: " << GetQuicFlag(FLAGS_version_mismatch_ok)
-          << " redirect_is_success: " << GetQuicFlag(FLAGS_redirect_is_success)
-          << " initial_mtu: " << GetQuicFlag(FLAGS_initial_mtu);
-
-  base::AtExitManager exit_manager;
-  base::MessageLoopForIO message_loop;
-
-  // Determine IP address to connect to from supplied hostname.
-  quic::QuicIpAddress ip_addr;
-
   QuicUrl url(urls[0], "https");
-  string host = GetQuicFlag(FLAGS_host);
+  std::string host = GetQuicFlag(FLAGS_host);
   if (host.empty()) {
     host = url.host();
   }
@@ -226,20 +216,14 @@ int main(int argc, char* argv[]) {
   if (port == 0) {
     port = url.port();
   }
-  if (!ip_addr.FromString(host)) {
-    net::AddressList addresses;
-    int rv = net::SynchronousHostResolver::Resolve(host, &addresses);
-    if (rv != net::OK) {
-      LOG(ERROR) << "Unable to resolve '" << host
-                 << "' : " << net::ErrorToShortString(rv);
-      return 1;
-    }
-    ip_addr =
-        quic::QuicIpAddress(quic::QuicIpAddressImpl(addresses[0].address()));
-  }
 
-  string host_port = quic::QuicStrCat(ip_addr.ToString(), ":", port);
-  VLOG(1) << "Resolved " << host << " to " << host_port << endl;
+  // Determine IP address to connect to from supplied hostname.
+  QuicSocketAddress addr = LookupAddress(host, quic::QuicStrCat(port));
+  if (!addr.IsInitialized()) {
+    return 1;
+  }
+  std::cerr << "Resolved " << url.ToString() << " to " << addr.ToString()
+            << std::endl;
 
   // Build the client, and try to connect.
   quic::QuicEpollServer epoll_server;
@@ -251,42 +235,41 @@ int main(int argc, char* argv[]) {
         quic::PROTOCOL_QUIC_CRYPTO, static_cast<quic::QuicTransportVersion>(
                                         GetQuicFlag(FLAGS_quic_version))));
   }
-  const int32_t num_requests = GetQuicFlag(FLAGS_num_requests);
-  // For secure QUIC we need to verify the cert chain.
-  std::unique_ptr<ProofVerifier> proof_verifier;
+  const int32_t num_requests(GetQuicFlag(FLAGS_num_requests));
+  std::unique_ptr<quic::ProofVerifier> proof_verifier;
   if (GetQuicFlag(FLAGS_disable_certificate_verification)) {
     proof_verifier = quic::QuicMakeUnique<FakeProofVerifier>();
   } else {
     proof_verifier = quic::CreateDefaultProofVerifier();
   }
-  quic::QuicClient client(quic::QuicSocketAddress(ip_addr, port), server_id,
-                          versions, &epoll_server, std::move(proof_verifier));
-  client.set_initial_max_packet_length(GetQuicFlag(FLAGS_initial_mtu) != 0
-                                           ? GetQuicFlag(FLAGS_initial_mtu)
-                                           : quic::kDefaultMaxPacketSize);
+  quic::QuicClient client(addr, server_id, versions, &epoll_server,
+                          std::move(proof_verifier));
+  int32_t initial_mtu = GetQuicFlag(FLAGS_initial_mtu);
+  client.set_initial_max_packet_length(
+      initial_mtu != 0 ? initial_mtu : quic::kDefaultMaxPacketSize);
   client.set_drop_response_body(GetQuicFlag(FLAGS_drop_response_body));
   if (!client.Initialize()) {
-    cerr << "Failed to initialize client." << endl;
+    std::cerr << "Failed to initialize client." << std::endl;
     return 1;
   }
   if (!client.Connect()) {
     quic::QuicErrorCode error = client.session()->error();
     if (error == quic::QUIC_INVALID_VERSION) {
-      cout << "Server talks QUIC, but none of the versions supported by "
-           << "this client: " << ParsedQuicVersionVectorToString(versions)
-           << endl;
+      std::cerr << "Server talks QUIC, but none of the versions supported by "
+                << "this client: " << ParsedQuicVersionVectorToString(versions)
+                << std::endl;
       // 0: No error.
       // 20: Failed to connect due to QUIC_INVALID_VERSION.
       return GetQuicFlag(FLAGS_version_mismatch_ok) ? 0 : 20;
     }
-    cerr << "Failed to connect to " << host_port
-         << ". Error: " << quic::QuicErrorCodeToString(error) << endl;
+    std::cerr << "Failed to connect to " << addr.ToString()
+              << ". Error: " << quic::QuicErrorCodeToString(error) << std::endl;
     return 1;
   }
-  cout << "Connected to " << host_port << endl;
+  std::cerr << "Connected to " << addr.ToString() << std::endl;
 
   // Construct the string body from flags, if provided.
-  string body = GetQuicFlag(FLAGS_body);
+  std::string body = GetQuicFlag(FLAGS_body);
   if (!GetQuicFlag(FLAGS_body_hex).empty()) {
     DCHECK(GetQuicFlag(FLAGS_body).empty())
         << "Only set one of --body and --body_hex.";
@@ -322,62 +305,67 @@ int main(int argc, char* argv[]) {
 
     // Print request and response details.
     if (!GetQuicFlag(FLAGS_quiet)) {
-      cout << "Request:" << endl;
-      cout << "headers:" << header_block.DebugString();
+      std::cout << "Request:" << std::endl;
+      std::cout << "headers:" << header_block.DebugString();
       if (!GetQuicFlag(FLAGS_body_hex).empty()) {
         // Print the user provided hex, rather than binary body.
-        cout << "body:\n"
-             << QuicTextUtils::HexDump(
-                    QuicTextUtils::HexDecode(GetQuicFlag(FLAGS_body_hex)))
-             << endl;
+        std::cout << "body:\n"
+                  << QuicTextUtils::HexDump(
+                         QuicTextUtils::HexDecode(GetQuicFlag(FLAGS_body_hex)))
+                  << std::endl;
       } else {
-        cout << "body: " << body << endl;
+        std::cout << "body: " << body << std::endl;
       }
-      cout << endl;
+      std::cout << std::endl;
 
       if (!client.preliminary_response_headers().empty()) {
-        cout << "Preliminary response headers: "
-             << client.preliminary_response_headers() << endl;
-        cout << endl;
+        std::cout << "Preliminary response headers: "
+                  << client.preliminary_response_headers() << std::endl;
+        std::cout << std::endl;
       }
 
-      cout << "Response:" << endl;
-      cout << "headers: " << client.latest_response_headers() << endl;
-      string response_body = client.latest_response_body();
+      std::cout << "Response:" << std::endl;
+      std::cout << "headers: " << client.latest_response_headers() << std::endl;
+      std::string response_body = client.latest_response_body();
       if (!GetQuicFlag(FLAGS_body_hex).empty()) {
         // Assume response is binary data.
-        cout << "body:\n" << QuicTextUtils::HexDump(response_body) << endl;
+        std::cout << "body:\n"
+                  << QuicTextUtils::HexDump(response_body) << std::endl;
       } else {
-        cout << "body: " << response_body << endl;
+        std::cout << "body: " << response_body << std::endl;
       }
-      cout << "trailers: " << client.latest_response_trailers() << endl;
+      std::cout << "trailers: " << client.latest_response_trailers()
+                << std::endl;
     }
 
     if (!client.connected()) {
-      cerr << "Request caused connection failure. Error: "
-           << quic::QuicErrorCodeToString(client.session()->error()) << endl;
+      std::cerr << "Request caused connection failure. Error: "
+                << quic::QuicErrorCodeToString(client.session()->error())
+                << std::endl;
       return 1;
     }
 
     size_t response_code = client.latest_response_code();
     if (response_code >= 200 && response_code < 300) {
-      cout << "Request succeeded (" << response_code << ")." << endl;
+      std::cerr << "Request succeeded (" << response_code << ")." << std::endl;
     } else if (response_code >= 300 && response_code < 400) {
       if (GetQuicFlag(FLAGS_redirect_is_success)) {
-        cout << "Request succeeded (redirect " << response_code << ")." << endl;
+        std::cerr << "Request succeeded (redirect " << response_code << ")."
+                  << std::endl;
       } else {
-        cout << "Request failed (redirect " << response_code << ")." << endl;
+        std::cerr << "Request failed (redirect " << response_code << ")."
+                  << std::endl;
         return 1;
       }
     } else {
-      cerr << "Request failed (" << response_code << ")." << endl;
+      std::cerr << "Request failed (" << response_code << ")." << std::endl;
       return 1;
     }
 
     // Change the ephemeral port if there are more requests to do.
     if (i + 1 < num_requests) {
       if (!client.ChangeEphemeralPort()) {
-        cout << "Failed to change ephemeral port." << endl;
+        std::cerr << "Failed to change ephemeral port." << std::endl;
         return 1;
       }
     }

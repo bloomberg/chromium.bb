@@ -19,8 +19,6 @@
 #include "net/third_party/quic/platform/api/quic_socket_address.h"
 #include "net/third_party/quic/platform/impl/quic_socket_utils.h"
 
-#define MMSG_MORE 0
-
 namespace quic {
 
 #if MMSG_MORE

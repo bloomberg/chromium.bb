@@ -6,7 +6,7 @@
 
 #include "net/third_party/quic/platform/api/quic_flags.h"
 #include "net/third_party/quic/platform/api/quic_test.h"
-#include "net/third_party/quic/test_tools/fake_epoll_server.h"
+#include "net/tools/epoll_server/fake_epoll_server.h"
 
 namespace quic {
 namespace test {

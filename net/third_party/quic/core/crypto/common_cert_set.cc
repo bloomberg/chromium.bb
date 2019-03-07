@@ -9,7 +9,6 @@
 #include "base/macros.h"
 #include "net/third_party/quic/core/quic_utils.h"
 #include "net/third_party/quic/platform/api/quic_arraysize.h"
-#include "net/third_party/quic/platform/api/quic_singleton.h"
 
 namespace quic {
 
@@ -142,17 +141,10 @@ class CommonCertSetsQUIC : public CommonCertSets {
     return false;
   }
 
-  static CommonCertSetsQUIC* GetInstance() {
-    return QuicSingleton<CommonCertSetsQUIC>::get();
-  }
-
- private:
   CommonCertSetsQUIC() {}
   CommonCertSetsQUIC(const CommonCertSetsQUIC&) = delete;
   CommonCertSetsQUIC& operator=(const CommonCertSetsQUIC&) = delete;
   ~CommonCertSetsQUIC() override {}
-
-  friend QuicSingletonFriend<CommonCertSetsQUIC>;
 };
 
 }  // anonymous namespace
@@ -161,7 +153,8 @@ CommonCertSets::~CommonCertSets() {}
 
 // static
 const CommonCertSets* CommonCertSets::GetInstanceQUIC() {
-  return CommonCertSetsQUIC::GetInstance();
+  static CommonCertSetsQUIC* certs = new CommonCertSetsQUIC();
+  return certs;
 }
 
 }  // namespace quic

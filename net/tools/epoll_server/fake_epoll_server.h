@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_THIRD_PARTY_QUIC_TEST_TOOLS_FAKE_EPOLL_SERVER_H_
-#define NET_THIRD_PARTY_QUIC_TEST_TOOLS_FAKE_EPOLL_SERVER_H_
+#ifndef NET_TOOLS_EPOLL_SERVER_FAKE_EPOLL_SERVER_H_
+#define NET_TOOLS_EPOLL_SERVER_FAKE_EPOLL_SERVER_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -112,4 +112,4 @@ class FakeEpollServer : public FakeTimeEpollServer {
 }  // namespace test
 }  // namespace quic
 
-#endif  // NET_THIRD_PARTY_QUIC_TEST_TOOLS_FAKE_EPOLL_SERVER_H_
+#endif  // NET_TOOLS_EPOLL_SERVER_FAKE_EPOLL_SERVER_H_
