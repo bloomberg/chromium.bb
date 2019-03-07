@@ -27,9 +27,8 @@ const char kEnableLocalSyncBackend[] = "enable-local-sync-backend";
 const char kLocalSyncBackendDir[] = "local-sync-backend-dir";
 
 // If enabled, the sync engine will be shut down in the "paused" state.
-// TODO(crbug.com/938819): Remove this after M74 has fully rolled out.
 const base::Feature kStopSyncInPausedState{"StopSyncInPausedState",
-                                           base::FEATURE_ENABLED_BY_DEFAULT};
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool IsSyncAllowedByFlag() {
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(
