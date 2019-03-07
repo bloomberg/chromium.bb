@@ -11,7 +11,17 @@
 
 <dom-module id="settings-appearance-fonts-page">
   <template>
-    <style include="settings-shared"></style>
+    <style include="settings-shared">
+      #minimumSize {
+        align-items: flex-end;
+        display: flex;
+        flex-direction: column;
+      }
+
+      #minimumSizeSample {
+        text-align: end;
+      }
+    </style>
     <div class="settings-box first">
       <div class="start">$i18n{fontSize}</div>
       <settings-slider id="sizeSlider"
@@ -22,20 +32,20 @@
     </div>
     <div class="settings-box">
       <div class="start">$i18n{minimumFont}</div>
-      <div style="
-          font-size:[[computeMinimumFontSize_(
-              prefs.webkit.webprefs.minimum_font_size.value)]]px;
-          font-family:
-              '[[prefs.webkit.webprefs.fonts.standard.Zyyy.value]]';">
-        [[computeMinimumFontSize_(
-                prefs.webkit.webprefs.minimum_font_size.value)]]:
-        $i18n{quickBrownFox}
+      <div id="minimumSize">
+        <settings-slider  pref="{{prefs.webkit.webprefs.minimum_font_size}}"
+            ticks="[[minimumFontSizeRange_]]" label-min="$i18n{tiny}"
+            label-max="$i18n{huge}"></settings-slider>
+        <div id="minimumSizeSample" style="
+            font-size:[[computeMinimumFontSize_(
+                prefs.webkit.webprefs.minimum_font_size.value)]]px;
+            font-family:
+                '[[prefs.webkit.webprefs.fonts.standard.Zyyy.value]]';">
+          [[computeMinimumFontSize_(
+                  prefs.webkit.webprefs.minimum_font_size.value)]]:
+          $i18n{quickBrownFox}
+        </div>
       </div>
-      <settings-slider id="minimumSizeSlider"
-          pref="{{prefs.webkit.webprefs.minimum_font_size}}"
-          ticks="[[minimumFontSizeRange_]]"
-          label-min="$i18n{tiny}" label-max="$i18n{huge}">
-      </settings-slider>
     </div>
     <div class="settings-box">
       <h2>$i18n{standardFont}</h2>
