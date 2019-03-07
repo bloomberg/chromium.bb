@@ -792,11 +792,10 @@ bool MessageService::MaybeAddPendingLazyContextOpenChannelTask(
 
   ChannelId channel_id = (*params)->receiver_port_id.GetChannelId();
   pending_lazy_context_channels_.emplace(channel_id, context_id);
-  int source_id = (*params)->source_process_id;
   task_queue->AddPendingTask(
-      context_id, base::BindOnce(&MessageService::PendingLazyContextOpenChannel,
-                                 weak_factory_.GetWeakPtr(),
-                                 base::Passed(params), source_id));
+      context_id,
+      base::BindOnce(&MessageService::PendingLazyContextOpenChannel,
+                     weak_factory_.GetWeakPtr(), std::move(*params)));
 
   for (const PendingMessage& message : pending_messages) {
     EnqueuePendingMessageForLazyBackgroundLoad(message.first, channel_id,
@@ -879,7 +878,6 @@ void MessageService::OnOpenChannelAllowed(
 
 void MessageService::PendingLazyContextOpenChannel(
     std::unique_ptr<OpenChannelParams> params,
-    int source_process_id,
     std::unique_ptr<LazyContextTaskQueue::ContextInfo> context_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 

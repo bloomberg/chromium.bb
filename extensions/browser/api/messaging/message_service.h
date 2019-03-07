@@ -206,7 +206,6 @@ class MessageService : public BrowserContextKeyedAPI,
   // use that argument.
   void PendingLazyContextOpenChannel(
       std::unique_ptr<OpenChannelParams> params,
-      int source_process_id,
       std::unique_ptr<LazyContextTaskQueue::ContextInfo> context_info);
   void PendingLazyContextClosePort(
       const PortId& port_id,
