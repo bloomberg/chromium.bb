@@ -8,8 +8,8 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/display_observer.h"
+#include "ui/ozone/platform/wayland/test/mock_pointer.h"
 #include "ui/ozone/platform/wayland/test/mock_surface.h"
-#include "ui/ozone/platform/wayland/test/test_pointer.h"
 #include "ui/ozone/platform/wayland/test/test_wayland_server_thread.h"
 #include "ui/ozone/platform/wayland/wayland_connection.h"
 #include "ui/ozone/platform/wayland/wayland_output_manager.h"
@@ -450,7 +450,7 @@ TEST_P(WaylandScreenTest, GetCursorScreenPoint) {
 
   Sync();
 
-  wl::TestPointer* pointer = server_.seat()->pointer();
+  wl::MockPointer* pointer = server_.seat()->pointer();
   ASSERT_TRUE(pointer);
 
   uint32_t serial = 0;
