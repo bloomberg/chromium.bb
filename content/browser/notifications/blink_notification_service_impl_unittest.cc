@@ -778,6 +778,9 @@ TEST_F(BlinkNotificationServiceImplTest, GetNotificationsWithFilter) {
 }
 
 TEST_F(BlinkNotificationServiceImplTest, GetTriggeredNotificationsWithFilter) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kNotificationTriggers);
+
   SetPermissionStatus(blink::mojom::PermissionStatus::GRANTED);
 
   scoped_refptr<ServiceWorkerRegistration> registration;
@@ -815,6 +818,9 @@ TEST_F(BlinkNotificationServiceImplTest, GetTriggeredNotificationsWithFilter) {
 }
 
 TEST_F(BlinkNotificationServiceImplTest, ResourcesStoredForTriggered) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kNotificationTriggers);
+
   SetPermissionStatus(blink::mojom::PermissionStatus::GRANTED);
 
   scoped_refptr<ServiceWorkerRegistration> registration;
@@ -860,6 +866,29 @@ TEST_F(BlinkNotificationServiceImplTest, ResourcesStoredForTriggered) {
   EXPECT_EQ(10, stored_resources_a.value().notification_icon.width());
 
   EXPECT_FALSE(stored_resources_b.has_value());
+}
+
+TEST_F(BlinkNotificationServiceImplTest, NotCallingDisplayForTriggered) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kNotificationTriggers);
+
+  SetPermissionStatus(blink::mojom::PermissionStatus::GRANTED);
+
+  scoped_refptr<ServiceWorkerRegistration> registration;
+  RegisterServiceWorker(&registration);
+
+  base::Time timestamp = base::Time::Now() + base::TimeDelta::FromSeconds(10);
+  blink::PlatformNotificationData scheduled_notification_data;
+  scheduled_notification_data.show_trigger_timestamp = timestamp;
+  blink::NotificationResources resources;
+
+  DisplayPersistentNotificationSync(registration->id(),
+                                    scheduled_notification_data, resources);
+
+  // Wait for service to receive all the Display calls.
+  RunAllTasksUntilIdle();
+
+  EXPECT_EQ(0u, GetDisplayedNotifications().size());
 }
 
 }  // namespace content

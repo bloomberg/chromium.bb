@@ -1276,6 +1276,8 @@ jumbo_source_set("browser") {
     "notifications/notification_storage.h",
     "notifications/platform_notification_context_impl.cc",
     "notifications/platform_notification_context_impl.h",
+    "notifications/platform_notification_service_proxy.cc",
+    "notifications/platform_notification_service_proxy.h",
     "payments/payment_app_context_impl.cc",
     "payments/payment_app_context_impl.h",
     "payments/payment_app_database.cc",

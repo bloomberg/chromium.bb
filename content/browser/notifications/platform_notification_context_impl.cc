@@ -8,12 +8,14 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "content/browser/notifications/blink_notification_service_impl.h"
 #include "content/browser/notifications/notification_database.h"
+#include "content/browser/notifications/platform_notification_service_proxy.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -21,6 +23,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/notification_database_data.h"
 #include "content/public/browser/platform_notification_service.h"
+#include "content/public/common/content_features.h"
 #include "third_party/blink/public/common/notifications/notification_resources.h"
 
 namespace content {
@@ -30,6 +33,13 @@ namespace {
 // database files should be stored.
 const base::FilePath::CharType kPlatformNotificationsDirectory[] =
     FILE_PATH_LITERAL("Platform Notifications");
+
+// Checks if this notification can trigger in the future.
+bool CanTrigger(const NotificationDatabaseData& data) {
+  if (!base::FeatureList::IsEnabled(features::kNotificationTriggers))
+    return false;
+  return data.notification_data.show_trigger_timestamp && !data.has_triggered;
+}
 
 }  // namespace
 
@@ -56,6 +66,9 @@ PlatformNotificationContextImpl::~PlatformNotificationContextImpl() {
 
 void PlatformNotificationContextImpl::Initialize() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  service_proxy_ = std::make_unique<PlatformNotificationServiceProxy>(
+      service_worker_context_, browser_context_);
+
   PlatformNotificationService* service =
       GetContentClient()->browser()->GetPlatformNotificationService();
   if (!service) {
@@ -84,10 +97,11 @@ void PlatformNotificationContextImpl::DidGetNotifications(
   // because flakiness may cause a platform to inform Chrome of a notification
   // that has since been closed, or because the platform does not support
   // notifications that exceed the lifetime of the browser process.
-  if (supports_synchronization) {
-    LazyInitialize(
-        base::BindOnce(&PlatformNotificationContextImpl::DoSyncNotificationData,
-                       this, std::move(displayed_notifications)));
+  if (supports_synchronization ||
+      base::FeatureList::IsEnabled(features::kNotificationTriggers)) {
+    LazyInitialize(base::BindOnce(
+        &PlatformNotificationContextImpl::DoSyncNotificationData, this,
+        supports_synchronization, std::move(displayed_notifications)));
   }
 
   // |service_worker_context_| may be NULL in tests.
@@ -96,28 +110,57 @@ void PlatformNotificationContextImpl::DidGetNotifications(
 }
 
 void PlatformNotificationContextImpl::DoSyncNotificationData(
+    bool supports_synchronization,
     std::set<std::string> displayed_notifications,
     bool initialized) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   if (!initialized)
     return;
 
-  // Iterate over all notifications and delete all expired ones. Passing |this|
-  // as Unretained is safe as this is synchronous.
+  // Reset |next_trigger_| to keep track of the next trigger timestamp.
+  next_trigger_ = base::nullopt;
+
+  // Iterate over all notifications and delete all expired ones.
   NotificationDatabase::Status status =
       database_->ForEachNotificationData(base::BindRepeating(
-          &PlatformNotificationContextImpl::DoHandleSyncNotification,
-          base::Unretained(this), displayed_notifications));
+          &PlatformNotificationContextImpl::DoHandleSyncNotification, this,
+          supports_synchronization, displayed_notifications));
 
   // Blow away the database if reading data failed due to corruption.
   if (status == NotificationDatabase::STATUS_ERROR_CORRUPTED)
     DestroyDatabase();
+
+  // Schedule the next trigger timestamp.
+  if (next_trigger_) {
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
+        base::BindOnce(&PlatformNotificationContextImpl::ScheduleTrigger, this,
+                       next_trigger_.value()));
+  }
 }
 
 void PlatformNotificationContextImpl::DoHandleSyncNotification(
+    bool supports_synchronization,
     const std::set<std::string>& displayed_notifications,
     const NotificationDatabaseData& data) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  // Handle pending notifications.
+  if (CanTrigger(data)) {
+    base::Time timestamp =
+        data.notification_data.show_trigger_timestamp.value();
+    // Check if we should display this notification.
+    if (timestamp <= base::Time::Now())
+      DoTriggerNotification(data);
+    else if (!next_trigger_ || next_trigger_.value() > timestamp)
+      next_trigger_ = timestamp;
+    return;
+  }
+
+  // Do not delete notifications if the platform does not support syncing them.
+  if (!supports_synchronization)
+    return;
+
+  // Delete notifications that are not on screen anymore.
   if (!displayed_notifications.count(data.notification_id))
     database_->DeleteNotificationData(data.notification_id, data.origin);
 }
@@ -125,6 +168,7 @@ void PlatformNotificationContextImpl::DoHandleSyncNotification(
 void PlatformNotificationContextImpl::Shutdown() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
+  service_proxy_.reset();
   services_.clear();
 
   // |service_worker_context_| may be NULL in tests.
@@ -201,6 +245,61 @@ void PlatformNotificationContextImpl::DoReadNotificationData(
       FROM_HERE, {BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
       base::BindOnce(std::move(callback), /* success= */ false,
                      NotificationDatabaseData()));
+}
+
+void PlatformNotificationContextImpl::ScheduleTrigger(base::Time timestamp) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  base::TimeDelta delay = timestamp - base::Time::Now();
+  if (delay.InMicroseconds() < 0)
+    delay = base::TimeDelta();
+
+  if (trigger_timer_.IsRunning() && trigger_timer_.GetCurrentDelay() <= delay)
+    return;
+
+  trigger_timer_.Start(FROM_HERE, delay, this,
+                       &PlatformNotificationContextImpl::TriggerNotifications);
+}
+
+void PlatformNotificationContextImpl::TriggerNotifications() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  std::set<std::string> displayed_notifications;
+  LazyInitialize(base::BindOnce(
+      &PlatformNotificationContextImpl::DoSyncNotificationData, this,
+      /* supports_synchronization= */ false,
+      std::move(displayed_notifications)));
+}
+
+void PlatformNotificationContextImpl::DoTriggerNotification(
+    const NotificationDatabaseData& database_data) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  // Bail out in case we can not display the notification after Shutdown.
+  if (!service_proxy_)
+    return;
+
+  blink::NotificationResources resources;
+  NotificationDatabase::Status status = database_->ReadNotificationResources(
+      database_data.notification_id, database_data.origin, &resources);
+
+  if (status != NotificationDatabase::STATUS_OK) {
+    // TODO(knollr): add UMA for this
+    resources = blink::NotificationResources();
+  }
+
+  // Create a copy of the |database_data| to store the |has_triggered| flag.
+  NotificationDatabaseData write_database_data = database_data;
+  write_database_data.has_triggered = true;
+  status = database_->WriteNotificationData(write_database_data.origin,
+                                            write_database_data);
+
+  if (status != NotificationDatabase::STATUS_OK) {
+    database_->DeleteNotificationData(write_database_data.notification_id,
+                                      write_database_data.origin);
+    return;
+  }
+
+  write_database_data.notification_resources = std::move(resources);
+  service_proxy_->DisplayNotification(std::move(write_database_data),
+                                      base::DoNothing());
 }
 
 void PlatformNotificationContextImpl::ReadNotificationResources(
@@ -329,7 +428,8 @@ void PlatformNotificationContextImpl::
         // The database is only used for persistent notifications.
         DCHECK(NotificationIdGenerator::IsPersistentNotification(
             it->notification_id));
-        if (displayed_notifications.count(it->notification_id)) {
+        if (displayed_notifications.count(it->notification_id) ||
+            CanTrigger(*it)) {
           ++it;
         } else {
           obsolete_notifications.push_back(it->notification_id);
@@ -389,6 +489,11 @@ void PlatformNotificationContextImpl::DoWriteNotificationData(
     return;
   }
 
+  std::string notification_id =
+      notification_id_generator_.GenerateForPersistentNotification(
+          origin, database_data.notification_data.tag,
+          persistent_notification_id);
+
   // Eagerly delete data for replaced notifications from the database.
   if (!database_data.notification_data.tag.empty()) {
     std::set<std::string> deleted_notification_ids;
@@ -417,10 +522,8 @@ void PlatformNotificationContextImpl::DoWriteNotificationData(
 
   // Create a copy of the |database_data| to store a generated notification ID.
   NotificationDatabaseData write_database_data = database_data;
-  write_database_data.notification_id =
-      notification_id_generator_.GenerateForPersistentNotification(
-          origin, database_data.notification_data.tag,
-          persistent_notification_id);
+  write_database_data.notification_id = notification_id;
+  write_database_data.origin = origin;
 
   NotificationDatabase::Status status =
       database_->WriteNotificationData(origin, write_database_data);
@@ -429,6 +532,16 @@ void PlatformNotificationContextImpl::DoWriteNotificationData(
                             NotificationDatabase::STATUS_COUNT);
 
   if (status == NotificationDatabase::STATUS_OK) {
+    if (CanTrigger(write_database_data)) {
+      // Schedule notification to be shown.
+      base::PostTaskWithTraits(
+          FROM_HERE, {BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
+          base::BindOnce(&PlatformNotificationContextImpl::ScheduleTrigger,
+                         this,
+                         write_database_data.notification_data
+                             .show_trigger_timestamp.value()));
+    }
+
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
         base::BindOnce(std::move(callback), /* success= */ true,
