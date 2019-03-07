@@ -69,8 +69,6 @@
     },
     "6": {
         "benchmarks": {
-            "memory.long_running_idle_gmail_background_tbmv2": {},
-            "memory.long_running_idle_gmail_tbmv2": {},
             "octane": {},
             "oortonline_tbmv2": {},
             "power.desktop": {},
