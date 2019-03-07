@@ -97,6 +97,14 @@ FetchResponseData* CreateFetchResponseDataFromFetchAPIResponse(
   for (const auto& header : fetch_api_response.headers)
     response->HeaderList()->Append(header.key, header.value);
 
+  // TODO(wanderview): This sets the mime type of the Response based on the
+  // current headers.  This should be correct for most cases, but technically
+  // the mime type should really be frozen at the initial Response
+  // construction.  We should plumb the value through the cache_storage
+  // persistence layer and include the explicit mime type in FetchAPIResponse
+  // to set here. See: crbug.com/938939
+  response->SetMIMEType(response->HeaderList()->ExtractMIMEType());
+
   if (fetch_api_response.blob) {
     response->ReplaceBodyStreamBuffer(MakeGarbageCollected<BodyStreamBuffer>(
         script_state,
