@@ -458,10 +458,11 @@ class CppStyleTest(CppStyleTestBase):
 
     # Test the integer type.
     def test_precise_width_integer(self):
-        self.assert_lint(
-            'unsigned short a = 1',
-            'Use a precise-width integer type from <stdint.h> or <cstdint> such as uint16_t instead of unsigned short'
-            '  [runtime/int] [1]')
+        errmsg = ('Use a precise-width integer type from <stdint.h> or <cstdint> such as uint16_t instead of %s')
+        self.assert_lint('unsigned short a = 1', errmsg % 'unsigned short  [runtime/int] [1]')
+        self.assert_lint('uint16_t unsignedshort = 1', '')
+        self.assert_lint('signed  short a = 1', errmsg % 'signed  short  [runtime/int] [1]')
+        self.assert_lint('short a = 1', errmsg % 'short  [runtime/int] [1]')
 
     # Test C-style cast cases.
     def test_cstyle_cast(self):
@@ -1508,7 +1509,7 @@ class CppStyleTest(CppStyleTestBase):
         errmsg = ('Please declare integral type bitfields with either signed or unsigned.  [runtime/bitfields] [5]')
 
         self.assert_lint('int a : 30;', errmsg)
-        self.assert_lint('mutable short a : 14;', errmsg)
+        self.assert_lint('mutable int a : 14;', errmsg)
         self.assert_lint('const char a : 6;', errmsg)
         self.assert_lint('long int a : 30;', errmsg)
         self.assert_lint('int a = 1 ? 0 : 30;', '')
