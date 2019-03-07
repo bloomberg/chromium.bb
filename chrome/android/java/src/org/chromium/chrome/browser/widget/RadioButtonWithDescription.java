@@ -55,8 +55,10 @@ public class RadioButtonWithDescription extends RelativeLayout implements OnClic
         if (attrs != null) applyAttributes(attrs);
 
         // We want RadioButtonWithDescription to handle the clicks itself.
-        mRadioButton.setClickable(false);
         setOnClickListener(this);
+        // Make it focusable for navigation via key events (tab/up/down keys)
+        // with Bluetooth keyboard. See: crbug.com/936143
+        setFocusable(true);
     }
 
     private void applyAttributes(AttributeSet attrs) {
@@ -111,6 +113,10 @@ public class RadioButtonWithDescription extends RelativeLayout implements OnClic
      */
     public void setChecked(boolean checked) {
         mRadioButton.setChecked(checked);
+        // Retain focus on RadioButtonWithDescription after radio button is checked.
+        // Otherwise focus is lost. This is required for Bluetooth keyboard navigation.
+        // See: crbug.com/936143
+        if (checked) requestFocus();
     }
 
     public void setOnCheckedChangeListener(OnCheckedChangeListener listener) {

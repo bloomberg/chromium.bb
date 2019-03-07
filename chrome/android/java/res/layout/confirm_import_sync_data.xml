@@ -29,6 +29,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
+            android:background="?android:attr/selectableItemBackground"
             app:titleText="@string/sync_import_existing_data" />
 
         <org.chromium.chrome.browser.widget.RadioButtonWithDescription
@@ -36,6 +37,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
+            android:background="?android:attr/selectableItemBackground"
             app:titleText="@string/sync_keep_existing_data_separate" />
 
     </LinearLayout>
