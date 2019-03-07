@@ -1196,17 +1196,12 @@ SendResult UDPSocketPosixSender::InternalSendmmsgBuffers(
     DatagramBuffers buffers) const {
   base::StackVector<struct iovec, kWriteAsyncMaxBuffersThreshold + 1> msg_iov;
   base::StackVector<struct mmsghdr, kWriteAsyncMaxBuffersThreshold + 1> msgvec;
-  int i = 0;
-  for (auto& buffer : buffers) {
-    msg_iov[i].iov_base = const_cast<char*>(buffer->data());
-    msg_iov[i].iov_len = buffer->length();
-    i++;
-  }
-  for (size_t j = 0; j < buffers.size(); j++) {
-    std::memset(&msgvec[j], 0, sizeof(msgvec[j]));
-    msgvec[j].msg_hdr.msg_iov = &msg_iov[j];
-    msgvec[j].msg_hdr.msg_iovlen = 1;
-  }
+  msg_iov->reserve(buffers.size());
+  for (auto& buffer : buffers)
+    msg_iov->push_back({const_cast<char*>(buffer->data()), buffer->length()});
+  msgvec->reserve(buffers.size());
+  for (size_t j = 0; j < buffers.size(); j++)
+    msgvec->push_back({{nullptr, 0, &msg_iov[j], 1, nullptr, 0, 0}, 0});
   int result = HANDLE_EINTR(Sendmmsg(fd, &msgvec[0], buffers.size(), 0));
   SendResult send_result(0, 0, std::move(buffers));
   if (result < 0) {
