@@ -45381,6 +45381,16 @@ Called by update_net_trust_anchors.py.-->
   <int value="11" label="PARSE_DATA_DECODE_FAILURE"/>
 </enum>
 
+<enum name="QuicDroppedPacketReason">
+  <int value="0" label="INVALID_PUBLIC_HEADER"/>
+  <int value="1" label="VERSION_MISMATCH"/>
+  <int value="2" label="INVALID_VERSION_NEGOTIATION_PACKET"/>
+  <int value="3" label="INVALID_PUBLIC_RESET_PACKET"/>
+  <int value="4" label="INVALID_PACKET_NUMBER"/>
+  <int value="5" label="INVALID_DIVERSIFICATION_NONCE"/>
+  <int value="6" label="DECRYPTION_FAILURE"/>
+</enum>
+
 <enum name="QuicErrorCodes">
   <int value="0" label="NO_ERROR"/>
   <int value="1" label="INTERNAL_ERROR"/>
