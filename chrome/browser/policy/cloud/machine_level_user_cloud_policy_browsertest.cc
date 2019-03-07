@@ -626,7 +626,14 @@ class MachineLevelUserCloudPolicyPolicyFetchTest
   DISALLOW_COPY_AND_ASSIGN(MachineLevelUserCloudPolicyPolicyFetchTest);
 };
 
-IN_PROC_BROWSER_TEST_P(MachineLevelUserCloudPolicyPolicyFetchTest, Test) {
+// Crashes on Win only.  http://crbug.com/939261
+#if defined(OS_WIN)
+#define MAYBE_Test DISABLED_Test
+#else
+#define MAYBE_Test Test
+#endif
+
+IN_PROC_BROWSER_TEST_P(MachineLevelUserCloudPolicyPolicyFetchTest, MAYBE_Test) {
   MachineLevelUserCloudPolicyManager* manager =
       g_browser_process->browser_policy_connector()
           ->machine_level_user_cloud_policy_manager();
