@@ -1128,18 +1128,19 @@ const LayoutBlock* LayoutObject::InclusiveContainingBlock() const {
 }
 
 LayoutBlock* LayoutObject::ContainingBlock(AncestorSkipInfo* skip_info) const {
-  LayoutObject* object = Parent();
-  if (!object && IsLayoutScrollbarPart())
-    object = ToLayoutScrollbarPart(this)->GetScrollableArea()->GetLayoutBox();
   if (!IsTextOrSVGChild()) {
     if (style_->GetPosition() == EPosition::kFixed)
       return ContainingBlockForFixedPosition(skip_info);
     if (style_->GetPosition() == EPosition::kAbsolute)
       return ContainingBlockForAbsolutePosition(skip_info);
   }
+  LayoutObject* object;
   if (IsColumnSpanAll()) {
     object = SpannerPlaceholder()->ContainingBlock();
   } else {
+    object = Parent();
+    if (!object && IsLayoutScrollbarPart())
+      object = ToLayoutScrollbarPart(this)->GetScrollableArea()->GetLayoutBox();
     while (object && ((object->IsInline() && !object->IsAtomicInlineLevel()) ||
                       !object->IsLayoutBlock())) {
       if (skip_info)
