@@ -481,7 +481,8 @@ GURL SiteInstance::GetSiteForURL(BrowserContext* browser_context,
   // IsolationContext to be passed in, and this implementation should just
   // become SiteInstanceImpl::GetSiteForURL.
   return SiteInstanceImpl::GetSiteForURL(
-      BrowserOrResourceContext(browser_context), IsolationContext(), url,
+      BrowserOrResourceContext(browser_context),
+      IsolationContext(browser_context), url,
       true /* should_use_effective_urls */);
 }
 

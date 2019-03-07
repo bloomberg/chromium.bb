@@ -42,22 +42,32 @@
 
 namespace content {
 
-namespace {
+// This is a base class for all tests in this class.  It does not isolate any
+// origins and only provides common helper functions to the other test classes.
+class IsolatedOriginTestBase : public ContentBrowserTest {
+ public:
+  IsolatedOriginTestBase() {}
+  ~IsolatedOriginTestBase() override {}
 
-bool IsIsolatedOrigin(const url::Origin& origin) {
-  auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
-  // The tests that use this check globally applicable isolated origins, so
-  // it's fine to pass in a default IsolationContext.
-  return policy->IsIsolatedOrigin(IsolationContext(), origin);
-}
+  // Check if |origin| is an isolated origin.  This helper is used in tests
+  // that care only about globally applicable isolated origins (not restricted
+  // to a particular BrowsingInstance or profile).
+  bool IsIsolatedOrigin(const url::Origin& origin) {
+    auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
+    IsolationContext isolation_context(
+        shell()->web_contents()->GetBrowserContext());
+    return policy->IsIsolatedOrigin(isolation_context, origin);
+  }
 
-bool IsIsolatedOrigin(const GURL& url) {
-  return IsIsolatedOrigin(url::Origin::Create(url));
-}
+  bool IsIsolatedOrigin(const GURL& url) {
+    return IsIsolatedOrigin(url::Origin::Create(url));
+  }
 
-}  // namespace
+ private:
+  DISALLOW_COPY_AND_ASSIGN(IsolatedOriginTestBase);
+};
 
-class IsolatedOriginTest : public ContentBrowserTest {
+class IsolatedOriginTest : public IsolatedOriginTestBase {
  public:
   IsolatedOriginTest() {}
   ~IsolatedOriginTest() override {}
@@ -1142,7 +1152,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTest,
   EXPECT_EQ(bad_message::RPH_MOJO_PROCESS_ERROR, kill_waiter.Wait());
 }
 
-class IsolatedOriginFieldTrialTest : public ContentBrowserTest {
+class IsolatedOriginFieldTrialTest : public IsolatedOriginTestBase {
  public:
   IsolatedOriginFieldTrialTest() {
     scoped_feature_list_.InitAndEnableFeatureWithParameters(
@@ -1201,7 +1211,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginCommandLineAndFieldTrialTest, Test) {
 // This is a regresion test for https://crbug.com/793350 - the long list of
 // origins to isolate used to be unnecessarily propagated to the renderer
 // process, trigerring a crash due to exceeding kZygoteMaxMessageLength.
-class IsolatedOriginLongListTest : public ContentBrowserTest {
+class IsolatedOriginLongListTest : public IsolatedOriginTestBase {
  public:
   IsolatedOriginLongListTest() {}
   ~IsolatedOriginLongListTest() override {}
@@ -1820,6 +1830,59 @@ IN_PROC_BROWSER_TEST_F(DynamicIsolatedOriginTest,
   // bar.com cookies.
   EXPECT_TRUE(ExecuteScript(child, "document.cookie = 'foo=bar';"));
   EXPECT_EQ("foo=bar", EvalJs(child, "document.cookie"));
+}
+
+// Checks that isolated origins can be added only for a specific profile,
+// and that they don't apply to other profiles.
+IN_PROC_BROWSER_TEST_F(DynamicIsolatedOriginTest, PerProfileIsolation) {
+  // This test is designed to run without strict site isolation.
+  if (AreAllSitesIsolatedForTesting())
+    return;
+
+  // Create a browser in a different profile.
+  BrowserContext* main_context = shell()->web_contents()->GetBrowserContext();
+  Shell* other_shell = CreateOffTheRecordBrowser();
+  BrowserContext* other_context =
+      other_shell->web_contents()->GetBrowserContext();
+  ASSERT_NE(main_context, other_context);
+
+  // Start on bar.com in both browsers.
+  GURL bar_url(embedded_test_server()->GetURL("bar.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), bar_url));
+  EXPECT_TRUE(NavigateToURL(other_shell, bar_url));
+
+  // Start isolating foo.com in |other_context| only.
+  GURL foo_url(
+      embedded_test_server()->GetURL("foo.com", "/page_with_iframe.html"));
+  auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
+  policy->AddIsolatedOrigins({url::Origin::Create(foo_url)}, other_context);
+
+  // Verify that foo.com is indeed isolated in |other_shell|, by navigating to
+  // it in a new BrowsingInstance and checking that a bar.com subframe becomes
+  // an OOPIF.
+  EXPECT_TRUE(NavigateToURL(other_shell, foo_url));
+  WebContentsImpl* other_contents =
+      static_cast<WebContentsImpl*>(other_shell->web_contents());
+  NavigateIframeToURL(other_contents, "test_iframe", bar_url);
+  FrameTreeNode* root = other_contents->GetFrameTree()->root();
+  FrameTreeNode* child = root->child_at(0);
+  EXPECT_EQ(child->current_url(), bar_url);
+  EXPECT_NE(root->current_frame_host()->GetSiteInstance(),
+            child->current_frame_host()->GetSiteInstance());
+  EXPECT_NE(root->current_frame_host()->GetProcess(),
+            child->current_frame_host()->GetProcess());
+
+  // Verify that foo.com is *not* isolated in the regular shell, due to a
+  // different profile.
+  EXPECT_TRUE(NavigateToURL(shell(), foo_url));
+  NavigateIframeToURL(web_contents(), "test_iframe", bar_url);
+  root = web_contents()->GetFrameTree()->root();
+  child = root->child_at(0);
+  EXPECT_EQ(child->current_url(), bar_url);
+  EXPECT_EQ(root->current_frame_host()->GetSiteInstance(),
+            child->current_frame_host()->GetSiteInstance());
+  EXPECT_EQ(root->current_frame_host()->GetProcess(),
+            child->current_frame_host()->GetProcess());
 }
 
 // This class allows intercepting the BroadcastChannelProvider::ConnectToChannel
