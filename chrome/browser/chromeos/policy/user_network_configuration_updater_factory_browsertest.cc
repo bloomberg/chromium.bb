@@ -15,6 +15,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/screens/gaia_view.h"
+#include "chrome/browser/chromeos/login/test/local_policy_test_server_mixin.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
@@ -23,7 +24,6 @@
 #include "chrome/browser/chromeos/policy/user_network_configuration_updater_factory.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/net/nss_context.h"
-#include "chrome/browser/policy/test/local_policy_test_server.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -437,21 +437,6 @@ class PolicyProvidedTrustAnchorsDeviceLocalAccountTest
   }
 
  protected:
-  void SetUp() override {
-    // Configure and start the test server.
-    std::unique_ptr<crypto::RSAPrivateKey> signing_key(
-        PolicyBuilder::CreateTestSigningKey());
-    ASSERT_TRUE(policy_server_.SetSigningKeyAndSignature(
-        signing_key.get(), PolicyBuilder::GetTestSigningKeySignature()));
-    signing_key.reset();
-    policy_server_.RegisterClient(PolicyBuilder::kFakeToken,
-                                  PolicyBuilder::kFakeDeviceId,
-                                  {} /* state_keys */);
-    ASSERT_TRUE(policy_server_.Start());
-
-    DevicePolicyCrosBrowserTest::SetUp();
-  }
-
   virtual void SetupDevicePolicy() = 0;
 
   void SetUpInProcessBrowserTestFixture() override {
@@ -475,8 +460,6 @@ class PolicyProvidedTrustAnchorsDeviceLocalAccountTest
     command_line->AppendSwitch(chromeos::switches::kForceLoginManagerInTests);
     command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile, "user");
     command_line->AppendSwitch(chromeos::switches::kOobeSkipPostLogin);
-    command_line->AppendSwitchASCII(switches::kDeviceManagementUrl,
-                                    policy_server_.GetServiceURL().spec());
   }
 
   void WaitForSessionStart() {
@@ -487,7 +470,7 @@ class PolicyProvidedTrustAnchorsDeviceLocalAccountTest
         .Wait();
   }
 
-  LocalPolicyTestServer policy_server_;
+  chromeos::LocalPolicyTestServerMixin local_policy_mixin_{&mixin_host_};
 
   const AccountId device_local_account_id_ =
       AccountId::FromUserEmail(GenerateDeviceLocalAccountUserId(
@@ -514,9 +497,7 @@ class PolicyProvidedTrustAnchorsPublicSessionTest
     account->set_type(
         em::DeviceLocalAccountInfoProto::ACCOUNT_TYPE_PUBLIC_SESSION);
     RefreshDevicePolicy();
-    ASSERT_TRUE(
-        policy_server_.UpdatePolicy(dm_protocol::kChromeDevicePolicyType,
-                                    std::string(), proto.SerializeAsString()));
+    ASSERT_TRUE(local_policy_mixin_.UpdateDevicePolicy(proto));
   }
 
   void StartLogin() {

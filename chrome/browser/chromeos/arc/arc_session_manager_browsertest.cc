@@ -20,6 +20,7 @@
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/test/arc_data_removed_waiter.h"
+#include "chrome/browser/chromeos/login/test/local_policy_test_server_mixin.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -28,7 +29,6 @@
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
-#include "chrome/browser/policy/test/local_policy_test_server.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -100,31 +100,20 @@ class ArcPlayStoreDisabledWaiter : public ArcSessionManager::Observer {
   DISALLOW_COPY_AND_ASSIGN(ArcPlayStoreDisabledWaiter);
 };
 
-class ArcSessionManagerTest : public InProcessBrowserTest {
+class ArcSessionManagerTest : public chromeos::MixinBasedInProcessBrowserTest {
  protected:
   ArcSessionManagerTest() {}
 
-  // InProcessBrowserTest:
+  // MixinBasedInProcessBrowserTest:
   ~ArcSessionManagerTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
+    chromeos::MixinBasedInProcessBrowserTest::SetUpCommandLine(command_line);
     arc::SetArcAvailableCommandLineForTesting(command_line);
   }
 
-  void SetUpInProcessBrowserTestFixture() override {
-    // Start test device management server.
-    test_server_.reset(new policy::LocalPolicyTestServer());
-    ASSERT_TRUE(test_server_->Start());
-
-    // Specify device management server URL.
-    std::string url = test_server_->GetServiceURL().spec();
-    base::CommandLine* const command_line =
-        base::CommandLine::ForCurrentProcess();
-    command_line->AppendSwitchASCII(policy::switches::kDeviceManagementUrl,
-                                    url);
-  }
-
   void SetUpOnMainThread() override {
+    chromeos::MixinBasedInProcessBrowserTest::SetUpOnMainThread();
     user_manager_enabler_ = std::make_unique<user_manager::ScopedUserManager>(
         std::make_unique<chromeos::FakeChromeUserManager>());
     // Init ArcSessionManager for testing.
@@ -188,8 +177,8 @@ class ArcSessionManagerTest : public InProcessBrowserTest {
     profile_.reset();
     base::RunLoop().RunUntilIdle();
     user_manager_enabler_.reset();
-    test_server_.reset();
     chromeos::ProfileHelper::SetAlwaysReturnPrimaryUserForTesting(false);
+    chromeos::MixinBasedInProcessBrowserTest::TearDownOnMainThread();
   }
 
   chromeos::FakeChromeUserManager* GetFakeUserManager() const {
@@ -214,7 +203,7 @@ class ArcSessionManagerTest : public InProcessBrowserTest {
   }
 
  private:
-  std::unique_ptr<policy::LocalPolicyTestServer> test_server_;
+  chromeos::LocalPolicyTestServerMixin local_policy_mixin_{&mixin_host_};
   std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;
   std::unique_ptr<IdentityTestEnvironmentProfileAdaptor>
       identity_test_environment_adaptor_;

@@ -35,6 +35,7 @@
 #include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
 #include "chrome/browser/chromeos/login/test/https_forwarder.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
+#include "chrome/browser/chromeos/login/test/local_policy_test_server_mixin.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
@@ -47,7 +48,6 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
-#include "chrome/browser/policy/test/local_policy_test_server.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/signin/signin_utils.h"
 #include "chrome/common/chrome_constants.h"
@@ -157,7 +157,6 @@ constexpr char kRelayState[] = "RelayState";
 
 constexpr char kTestUserinfoToken[] = "fake-userinfo-token";
 constexpr char kTestRefreshToken[] = "fake-refresh-token";
-constexpr char kPolicy[] = "{\"managed_users\": [\"*\"]}";
 
 constexpr char kAffiliationID[] = "some-affiliation-id";
 
@@ -855,8 +854,6 @@ class SAMLEnrollmentTest : public SamlTest,
   ~SAMLEnrollmentTest() override;
 
   // SamlTest:
-  void SetUp() override;
-  void SetUpCommandLine(base::CommandLine* command_line) override;
   void SetUpOnMainThread() override;
   void StartSamlAndWaitForIdpPageLoad(const std::string& gaia_email) override;
 
@@ -869,7 +866,7 @@ class SAMLEnrollmentTest : public SamlTest,
   content::WebContents* GetEnrollmentContents();
 
  private:
-  std::unique_ptr<policy::LocalPolicyTestServer> test_server_;
+  LocalPolicyTestServerMixin local_policy_mixin_{&mixin_host_};
   base::ScopedTempDir temp_dir_;
 
   std::unique_ptr<base::RunLoop> run_loop_;
@@ -886,26 +883,6 @@ SAMLEnrollmentTest::SAMLEnrollmentTest() {
 }
 
 SAMLEnrollmentTest::~SAMLEnrollmentTest() {}
-
-void SAMLEnrollmentTest::SetUp() {
-  ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-  const base::FilePath policy_file =
-      temp_dir_.GetPath().AppendASCII("policy.json");
-  ASSERT_EQ(static_cast<int>(strlen(kPolicy)),
-            base::WriteFile(policy_file, kPolicy, strlen(kPolicy)));
-
-  test_server_.reset(new policy::LocalPolicyTestServer(policy_file));
-  ASSERT_TRUE(test_server_->Start());
-
-  SamlTest::SetUp();
-}
-
-void SAMLEnrollmentTest::SetUpCommandLine(base::CommandLine* command_line) {
-  command_line->AppendSwitchASCII(policy::switches::kDeviceManagementUrl,
-                                  test_server_->GetServiceURL().spec());
-
-  SamlTest::SetUpCommandLine(command_line);
-}
 
 void SAMLEnrollmentTest::SetUpOnMainThread() {
   FakeGaia::AccessTokenInfo token_info;
