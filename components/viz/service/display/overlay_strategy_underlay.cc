@@ -100,8 +100,8 @@ bool OverlayStrategyUnderlay::Attempt(
   return false;
 }
 
-OverlayProcessor::StrategyType OverlayStrategyUnderlay::GetUMAEnum() const {
-  return OverlayProcessor::StrategyType::kUnderlay;
+OverlayStrategy OverlayStrategyUnderlay::GetUMAEnum() const {
+  return OverlayStrategy::kUnderlay;
 }
 
 }  // namespace viz

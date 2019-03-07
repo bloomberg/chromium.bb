@@ -46,8 +46,8 @@ class SendPromotionHintsBeforeReturning {
 
 }  // namespace
 
-OverlayProcessor::StrategyType OverlayProcessor::Strategy::GetUMAEnum() const {
-  return StrategyType::kUnknown;
+OverlayStrategy OverlayProcessor::Strategy::GetUMAEnum() const {
+  return OverlayStrategy::kUnknown;
 }
 
 OverlayProcessor::OverlayProcessor(OutputSurface* surface)
@@ -194,7 +194,7 @@ void OverlayProcessor::ProcessForOverlays(
   UMA_HISTOGRAM_ENUMERATION("Viz.DisplayCompositor.OverlayStrategy",
                             successful_strategy
                                 ? successful_strategy->GetUMAEnum()
-                                : StrategyType::kNoStrategyUsed);
+                                : OverlayStrategy::kNoStrategyUsed);
 
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("viz.debug.overlay_planes"),
                  "Scheduled overlay planes", candidates->size());

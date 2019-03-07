@@ -82,6 +82,8 @@ viz_component("common") {
   sources = [
     "constants.cc",
     "constants.h",
+    "display/overlay_strategy.cc",
+    "display/overlay_strategy.h",
     "display/renderer_settings.cc",
     "display/renderer_settings.h",
     "features.cc",
@@ -254,6 +256,7 @@ viz_source_set("unit_tests") {
   never_build_jumbo = true
   testonly = true
   sources = [
+    "display/overlay_strategy_unittest.cc",
     "frame_sinks/begin_frame_args_unittest.cc",
     "frame_sinks/begin_frame_source_unittest.cc",
     "frame_sinks/copy_output_util_unittest.cc",

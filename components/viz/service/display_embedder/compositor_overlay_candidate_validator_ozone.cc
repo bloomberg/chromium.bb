@@ -8,8 +8,6 @@
 
 #include <utility>
 
-#include "base/bind.h"
-#include "base/strings/string_split.h"
 #include "components/viz/service/display/overlay_strategy_fullscreen.h"
 #include "components/viz/service/display/overlay_strategy_single_on_top.h"
 #include "components/viz/service/display/overlay_strategy_underlay.h"
@@ -17,60 +15,44 @@
 #include "ui/ozone/public/overlay_candidates_ozone.h"
 
 namespace viz {
-namespace {
-// Templated function used to create an OverlayProcessor::Strategy
-// of type |S|.
-template <typename S>
-std::unique_ptr<OverlayProcessor::Strategy> MakeOverlayStrategy(
-    CompositorOverlayCandidateValidatorOzone* capability_checker) {
-  return std::make_unique<S>(capability_checker);
-}
-
-}  // namespace
 
 // |overlay_candidates| is an object used to answer questions about possible
 // overlays configurations.
-// |strategies_string| is a comma-separated string containing all the overlay
-// strategies that should be returned by GetStrategies.
-// If |strategies_string| is empty "single-on-top,underlay" will be used as
-// default.
+// |strategies_string| is a list of overlay strategies that should be returned
+// by GetStrategies.
 CompositorOverlayCandidateValidatorOzone::
     CompositorOverlayCandidateValidatorOzone(
         std::unique_ptr<ui::OverlayCandidatesOzone> overlay_candidates,
-        std::string strategies_string)
+        std::vector<OverlayStrategy> strategies)
     : overlay_candidates_(std::move(overlay_candidates)),
-      software_mirror_active_(false) {
-  if (!strategies_string.length())
-    strategies_string = "single-on-top,underlay";
-
-  for (const auto& strategy_name :
-       base::SplitStringPiece(strategies_string, ",", base::TRIM_WHITESPACE,
-                              base::SPLIT_WANT_NONEMPTY)) {
-    if (strategy_name == "single-fullscreen") {
-      strategies_instantiators_.push_back(
-          base::BindRepeating(MakeOverlayStrategy<OverlayStrategyFullscreen>));
-    } else if (strategy_name == "single-on-top") {
-      strategies_instantiators_.push_back(
-          base::BindRepeating(MakeOverlayStrategy<OverlayStrategySingleOnTop>));
-    } else if (strategy_name == "underlay") {
-      strategies_instantiators_.push_back(
-          base::BindRepeating(MakeOverlayStrategy<OverlayStrategyUnderlay>));
-    } else if (strategy_name == "cast") {
-      strategies_instantiators_.push_back(base::BindRepeating(
-          MakeOverlayStrategy<OverlayStrategyUnderlayCast>));
-    } else {
-      LOG(WARNING) << "Unrecognized overlay strategy " << strategy_name;
-    }
-  }
-}
+      strategies_(std::move(strategies)) {}
 
 CompositorOverlayCandidateValidatorOzone::
     ~CompositorOverlayCandidateValidatorOzone() {}
 
 void CompositorOverlayCandidateValidatorOzone::GetStrategies(
     OverlayProcessor::StrategyList* strategies) {
-  for (auto& instantiator : strategies_instantiators_)
-    strategies->push_back(instantiator.Run(this));
+  for (OverlayStrategy strategy : strategies_) {
+    switch (strategy) {
+      case OverlayStrategy::kFullscreen:
+        strategies->push_back(
+            std::make_unique<OverlayStrategyFullscreen>(this));
+        break;
+      case OverlayStrategy::kSingleOnTop:
+        strategies->push_back(
+            std::make_unique<OverlayStrategySingleOnTop>(this));
+        break;
+      case OverlayStrategy::kUnderlay:
+        strategies->push_back(std::make_unique<OverlayStrategyUnderlay>(this));
+        break;
+      case OverlayStrategy::kUnderlayCast:
+        strategies->push_back(
+            std::make_unique<OverlayStrategyUnderlayCast>(this));
+        break;
+      default:
+        NOTREACHED();
+    }
+  }
 }
 
 bool CompositorOverlayCandidateValidatorOzone::AllowCALayerOverlays() {

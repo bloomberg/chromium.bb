@@ -274,7 +274,8 @@ CreateOverlayCandidateValidator(
     std::unique_ptr<ui::OverlayCandidatesOzone> overlay_candidates =
         ozone_platform->GetOverlayManager()->CreateOverlayCandidates(widget);
     validator.reset(new viz::CompositorOverlayCandidateValidatorOzone(
-        std::move(overlay_candidates), enable_overlay_flag));
+        std::move(overlay_candidates),
+        viz::ParseOverlayStategies(enable_overlay_flag)));
   }
 #elif defined(OS_MACOSX)
   // Overlays are only supported through the remote layer API.

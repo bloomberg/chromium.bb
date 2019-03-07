@@ -67,11 +67,10 @@ class TestOverlayCandidatesOzone : public ui::OverlayCandidatesOzone {
 std::unique_ptr<viz::CompositorOverlayCandidateValidator>
 CreateTestValidatorOzone() {
 #if defined(USE_OZONE)
-  return std::unique_ptr<viz::CompositorOverlayCandidateValidator>(
-      new viz::CompositorOverlayCandidateValidatorOzone(
-          std::unique_ptr<ui::OverlayCandidatesOzone>(
-              new TestOverlayCandidatesOzone()),
-          ""));
+  std::vector<viz::OverlayStrategy> strategies = {
+      viz::OverlayStrategy::kSingleOnTop, viz::OverlayStrategy::kUnderlay};
+  return std::make_unique<viz::CompositorOverlayCandidateValidatorOzone>(
+      std::make_unique<TestOverlayCandidatesOzone>(), std::move(strategies));
 #else
   return nullptr;
 #endif  // defined(USE_OZONE)
