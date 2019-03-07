@@ -49,6 +49,7 @@ UrlData::UrlData(const GURL& url, CorsMode cors_mode, UrlIndex* url_index)
     : url_(url),
       have_data_origin_(false),
       cors_mode_(cors_mode),
+      has_access_control_(false),
       url_index_(url_index),
       length_(kPositionNotSpecified),
       range_supported_(false),
@@ -90,6 +91,7 @@ void UrlData::MergeFrom(const scoped_refptr<UrlData>& other) {
     bytes_read_from_cache_ += other->bytes_read_from_cache_;
     // is_cors_corss_origin_ will not relax from true to false.
     set_is_cors_cross_origin(other->is_cors_cross_origin_);
+    has_access_control_ |= other->has_access_control_;
     multibuffer()->MergeFrom(other->multibuffer());
   }
 }
@@ -110,6 +112,10 @@ void UrlData::set_is_cors_cross_origin(bool is_cors_cross_origin) {
   if (is_cors_cross_origin_)
     return;
   is_cors_cross_origin_ = is_cors_cross_origin;
+}
+
+void UrlData::set_has_access_control() {
+  has_access_control_ = true;
 }
 
 void UrlData::RedirectTo(const scoped_refptr<UrlData>& url_data) {

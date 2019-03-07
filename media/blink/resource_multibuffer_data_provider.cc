@@ -331,6 +331,18 @@ void ResourceMultiBufferDataProvider::DidReceiveResponse(
   destination_url_data->set_is_cors_cross_origin(
       network::cors::IsCorsCrossOriginResponseType(response_type));
 
+  // Only used for metrics.
+  {
+    WebString access_control =
+        response.HttpHeaderField("Access-Control-Allow-Origin");
+    if (!access_control.IsEmpty() && !access_control.Equals("null")) {
+      // Note: When |access_control| is not *, we should verify that it matches
+      // the requesting origin. Instead we just assume that it matches, which is
+      // probably accurate enough for metrics.
+      destination_url_data->set_has_access_control();
+    }
+  }
+
   if (destination_url_data != url_data_) {
     // At this point, we've encountered a redirect, or found a better url data
     // instance for the data that we're about to download.
