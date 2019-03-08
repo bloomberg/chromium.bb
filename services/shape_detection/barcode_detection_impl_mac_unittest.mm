@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback_forward.h"
 #include "base/command_line.h"
 #include "base/mac/mac_util.h"
@@ -35,7 +36,7 @@ ACTION_P(RunClosure, closure) {
   closure.Run();
 }
 
-std::unique_ptr<mojom::BarcodeDetection> CreateBarcodeDetectorImplMacCI(
+std::unique_ptr<mojom::BarcodeDetection> CreateBarcodeDetectorImplMacCoreImage(
     mojom::BarcodeDetectorOptionsPtr options) {
   if (@available(macOS 10.10, *)) {
     return std::make_unique<BarcodeDetectionImplMac>();
@@ -52,23 +53,44 @@ std::unique_ptr<mojom::BarcodeDetection> CreateBarcodeDetectorImplMacVision(
   return nullptr;
 }
 
+void* LoadVisionLibrary() {
+  if (@available(macOS 10.13, *)) {
+    return dlopen("/System/Library/Frameworks/Vision.framework/Vision",
+                  RTLD_LAZY);
+  }
+  return nullptr;
+}
+
+using LibraryLoadCB = base::RepeatingCallback<void*(void)>;
+
 using BarcodeDetectorFactory =
-    base::Callback<std::unique_ptr<mojom::BarcodeDetection>(
+    base::RepeatingCallback<std::unique_ptr<mojom::BarcodeDetection>(
         mojom::BarcodeDetectorOptionsPtr)>;
 
 const std::string kInfoString = "https://www.chromium.org";
 
 struct TestParams {
   size_t num_barcodes;
-  const std::string barcode_value;
-  bool test_vision_api;
+  LibraryLoadCB library_load_callback;
   BarcodeDetectorFactory factory;
+  NSString* test_code_generator;
 } kTestParams[] = {
-    {1, kInfoString, false,
-     base::BindRepeating(&CreateBarcodeDetectorImplMacCI)},
-    {1, kInfoString, true,
-     base::BindRepeating(&CreateBarcodeDetectorImplMacVision)},
-};
+    // CoreImage only supports QR Codes.
+    {1, base::BindRepeating([]() { return static_cast<void*>(nullptr); }),
+     base::BindRepeating(&CreateBarcodeDetectorImplMacCoreImage),
+     @"CIQRCodeGenerator"},
+    // Vision only supports a number of 1D/2D codes. Not all of them are
+    // available for generation, though, only a few.
+    {1, base::BindRepeating(&LoadVisionLibrary),
+     base::BindRepeating(&CreateBarcodeDetectorImplMacVision),
+     @"CIPDF417BarcodeGenerator"},
+    {1, base::BindRepeating(&LoadVisionLibrary),
+     base::BindRepeating(&CreateBarcodeDetectorImplMacVision),
+     @"CIQRCodeGenerator"},
+    {6 /* 1D barcode makes the detector find the same code several times. */,
+     base::BindRepeating(&LoadVisionLibrary),
+     base::BindRepeating(&CreateBarcodeDetectorImplMacVision),
+     @"CICode128BarcodeGenerator"}};
 }
 
 class BarcodeDetectionImplMacTest : public TestWithParam<struct TestParams> {
@@ -76,14 +98,7 @@ class BarcodeDetectionImplMacTest : public TestWithParam<struct TestParams> {
   ~BarcodeDetectionImplMacTest() override = default;
 
   void SetUp() override {
-    // Only load the library if we need to for this test.
-    if (GetParam().test_vision_api)
-      return;
-
-    if (@available(macOS 10.13, *)) {
-      vision_framework_ = dlopen(
-          "/System/Library/Frameworks/Vision.framework/Vision", RTLD_LAZY);
-    }
+    vision_framework_ = GetParam().library_load_callback.Run();
   }
 
   void TearDown() override {
@@ -145,10 +160,9 @@ TEST_P(BarcodeDetectionImplMacTest, ScanOneBarcode) {
   NSData* const qr_code_data =
       [[NSString stringWithUTF8String:kInfoString.c_str()]
           dataUsingEncoding:NSISOLatin1StringEncoding];
-  // TODO(mcasas): Consider using other generator types (e.g.
-  // CI{AztecCode,Code128Barcode,PDF417Barcode}Generator) when the minimal OS
-  // X is upgraded to 10.10+ (https://crbug.com/624049).
-  CIFilter* qr_code_generator = [CIFilter filterWithName:@"CIQRCodeGenerator"];
+
+  CIFilter* qr_code_generator =
+      [CIFilter filterWithName:GetParam().test_code_generator];
   [qr_code_generator setValue:qr_code_data forKey:@"inputMessage"];
 
   // [CIImage outputImage] is available in macOS 10.10+.  Could be added to
@@ -175,9 +189,9 @@ TEST_P(BarcodeDetectionImplMacTest, ScanOneBarcode) {
   // Send the image Detect() and expect the response in callback.
   EXPECT_CALL(*this, Detection()).WillOnce(RunClosure(quit_closure));
   impl_->Detect(bitmap,
-                base::Bind(&BarcodeDetectionImplMacTest::DetectCallback,
-                           base::Unretained(this), GetParam().num_barcodes,
-                           GetParam().barcode_value));
+                base::BindOnce(&BarcodeDetectionImplMacTest::DetectCallback,
+                               base::Unretained(this), GetParam().num_barcodes,
+                               kInfoString));
 
   run_loop.Run();
 }
