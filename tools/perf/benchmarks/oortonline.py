@@ -58,9 +58,10 @@ class OortOnlineTBMv2(perf_benchmark.PerfBenchmark):
         chrome_trace_config.MemoryDumpConfig())
     return options
 
+  # TODO(934227): Remove this benchmark now that it's descheduled.
   @classmethod
   def Name(cls):
-    return 'oortonline_tbmv2'
+    return 'UNSCHEDULED_oortonline_tbmv2'
 
   @classmethod
   def ShouldAddValue(cls, name, _):

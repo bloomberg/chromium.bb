@@ -22,7 +22,7 @@ UNDOCUMENTED_BENCHMARKS = {
   'memory.top_10_mobile',
   'net_perftests',
   'octane',
-  'oortonline_tbmv2',
+  'UNSCHEDULED_oortonline_tbmv2',
   'passthrough_command_buffer_perftests',
   'performance_browser_tests',
   'rasterize_and_record_micro.partial_invalidation',
