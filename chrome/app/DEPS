@@ -67,7 +67,7 @@ specific_include_rules = {
     "+services/image_annotation/public",
     "+services/resource_coordinator/public",
     "+services/ws/common",
-    "+third_party/blink/public/mojom/input",
+    "+third_party/blink/public/mojom",
   ],
   "chrome_content_gpu_overlay_manifest\.cc": [
     "+components/arc/common",
