@@ -49,10 +49,10 @@ DarkModeSettings BuildDarkModeSettings(const Settings& frame_settings,
     dark_mode_settings.image_policy = DarkModeImagePolicy::kFilterNone;
     return dark_mode_settings;
   }
-  dark_mode_settings.mode = frame_settings.GetHighContrastMode();
-  dark_mode_settings.grayscale = frame_settings.GetHighContrastGrayscale();
-  dark_mode_settings.contrast = frame_settings.GetHighContrastContrast();
-  dark_mode_settings.image_policy = frame_settings.GetHighContrastImagePolicy();
+  dark_mode_settings.mode = frame_settings.GetDarkMode();
+  dark_mode_settings.grayscale = frame_settings.GetDarkModeGrayscale();
+  dark_mode_settings.contrast = frame_settings.GetDarkModeContrast();
+  dark_mode_settings.image_policy = frame_settings.GetDarkModeImagePolicy();
   return dark_mode_settings;
 }
 

@@ -888,28 +888,24 @@
     // Dark mode
     //
     {
-      // TODO(crbug.com/938511): Rename this to "darkMode" (not "darkModeMode").
-      name: "highContrastMode",
+      name: "darkMode",
       initial: "DarkMode::kOff",
       type: "DarkMode",
       invalidate: "Paint",
     },
     {
-      // TODO(crbug.com/938511): Rename this to "darkModeGrayscale".
-      name: "highContrastGrayscale",
+      name: "darkModeGrayscale",
       initial: false,
       invalidate: "Paint",
     },
     {
-      // TODO(crbug.com/938511): Rename this to "darkModeContrast".
-      name: "highContrastContrast",
+      name: "darkModeContrast",
       initial: 0,
       type: "double",
       invalidate: "Paint",
     },
     {
-      // TODO(crbug.com/938511): Rename this to "darkModeImagePolicy".
-      name: "highContrastImagePolicy",
+      name: "darkModeImagePolicy",
       initial: "DarkModeImagePolicy::kFilterAll",
       type: "DarkModeImagePolicy",
       invalidate: "Paint",
