@@ -98,28 +98,6 @@ TEST_F(VideoDecoderTest, FlushAfterInitialize) {
   EXPECT_TRUE(tvp->WaitForFrameProcessors());
 }
 
-// Flush the decoder immediately after doing a mid-stream reset, without waiting
-// for a kResetDone event.
-TEST_F(VideoDecoderTest, FlushBeforeResetDone) {
-  auto tvp = CreateVideoPlayer(g_env->video_);
-
-  tvp->Play();
-  EXPECT_TRUE(tvp->WaitForFrameDecoded(g_env->video_->NumFrames() / 2));
-  tvp->Reset();
-  tvp->Flush();
-  EXPECT_TRUE(tvp->WaitForResetDone());
-  EXPECT_TRUE(tvp->WaitForFlushDone());
-
-  // As flush doesn't cancel reset, we should have received a single kResetDone
-  // and kFlushDone event. We didn't decode the entire video, but more frames
-  // might be decoded by the time we called reset, so we can only check whether
-  // the decoded frame count is <= the total number of frames.
-  EXPECT_EQ(tvp->GetResetDoneCount(), 1u);
-  EXPECT_EQ(tvp->GetFlushDoneCount(), 1u);
-  EXPECT_LE(tvp->GetFrameDecodedCount(), g_env->video_->NumFrames());
-  EXPECT_TRUE(tvp->WaitForFrameProcessors());
-}
-
 // Reset the decoder immediately after initialization.
 TEST_F(VideoDecoderTest, ResetAfterInitialize) {
   auto tvp = CreateVideoPlayer(g_env->video_);
