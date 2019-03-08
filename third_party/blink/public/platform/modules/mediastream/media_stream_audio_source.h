@@ -41,14 +41,14 @@ class MediaStreamAudioTrack;
 // needed, and/or calls to DeliverDataToTracks() must be made at very specific
 // times.
 //
-// An instance of this class is owned by blink::WebMediaStreamSource.
+// An instance of this class is owned by WebMediaStreamSource.
 //
 // Usage example:
 //
 //   class MyAudioSource : public MediaStreamAudioSource { ... };
 //
-//   blink::WebMediaStreamSource blink_source = ...;
-//   blink::WebMediaStreamTrack blink_track = ...;
+//   WebMediaStreamSource blink_source = ...;
+//   WebMediaStreamTrack blink_track = ...;
 //   blink_source.setExtraData(new MyAudioSource());  // Takes ownership.
 //   if (MediaStreamAudioSource::From(blink_source)
 //           ->ConnectToTrack(blink_track)) {
@@ -60,7 +60,7 @@ class MediaStreamAudioTrack;
 //   // MediaStreamAudioTrack instance created.
 //   CHECK(MediaStreamAudioTrack::From(blink_track));
 class BLINK_PLATFORM_EXPORT MediaStreamAudioSource
-    : public blink::WebPlatformMediaStreamSource {
+    : public WebPlatformMediaStreamSource {
  public:
   explicit MediaStreamAudioSource(bool is_local_source);
   MediaStreamAudioSource(bool is_local_source, bool disable_local_echo);
@@ -68,8 +68,7 @@ class BLINK_PLATFORM_EXPORT MediaStreamAudioSource
 
   // Returns the MediaStreamAudioSource instance owned by the given blink
   // |source| or null.
-  static MediaStreamAudioSource* From(
-      const blink::WebMediaStreamSource& source);
+  static MediaStreamAudioSource* From(const WebMediaStreamSource& source);
 
   // Provides a weak reference to this MediaStreamAudioSource. The weak pointer
   // may only be dereferenced on the main thread.
@@ -86,7 +85,7 @@ class BLINK_PLATFORM_EXPORT MediaStreamAudioSource
   // implementation of the content::MediaStreamAudioTrack interface, which
   // becomes associated with and owned by |track|. Returns true if the source
   // was successfully started.
-  bool ConnectToTrack(const blink::WebMediaStreamTrack& track);
+  bool ConnectToTrack(const WebMediaStreamTrack& track);
 
   // Returns the current format of the audio passing through this source to the
   // sinks. This can return invalid parameters if the source has not yet been
@@ -127,7 +126,7 @@ class BLINK_PLATFORM_EXPORT MediaStreamAudioSource
   // Stops the source and start the |new_device|.
   // A default no-op implementation is provided in this base class. Subclasses
   // should override this method.
-  virtual void ChangeSourceImpl(const blink::MediaStreamDevice& new_device);
+  virtual void ChangeSourceImpl(const MediaStreamDevice& new_device);
 
   // Called by subclasses to update the format of the audio passing through this
   // source to the sinks. This may be called at any time, before or after
@@ -154,7 +153,7 @@ class BLINK_PLATFORM_EXPORT MediaStreamAudioSource
  private:
   // MediaStreamSource override.
   void DoStopSource() final;
-  void DoChangeSource(const blink::MediaStreamDevice& new_device) final;
+  void DoChangeSource(const MediaStreamDevice& new_device) final;
 
   // Removes |track| from the list of instances that get a copy of the source
   // audio data. The "stop callback" that was provided to the track calls

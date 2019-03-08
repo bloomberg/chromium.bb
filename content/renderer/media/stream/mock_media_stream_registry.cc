@@ -4,17 +4,17 @@
 
 #include "content/renderer/media/stream/mock_media_stream_registry.h"
 
-#include <string>
+#include <memory>
 
 #include "base/strings/utf_string_conversions.h"
-#include "content/renderer/media/stream/media_stream_video_track.h"
 #include "content/renderer/media/stream/mock_media_stream_video_source.h"
-#include "content/renderer/media/stream/video_track_adapter.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_vector.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
+#include "third_party/blink/public/web/modules/mediastream/video_track_adapter.h"
 
 namespace content {
 
@@ -54,7 +54,7 @@ void MockMediaStreamRegistry::Init() {
 
 void MockMediaStreamRegistry::AddVideoTrack(
     const std::string& track_id,
-    const VideoTrackAdapterSettings& adapter_settings,
+    const blink::VideoTrackAdapterSettings& adapter_settings,
     const base::Optional<bool>& noise_reduction,
     bool is_screencast,
     double min_frame_rate) {
@@ -67,16 +67,17 @@ void MockMediaStreamRegistry::AddVideoTrack(
   blink::WebMediaStreamTrack blink_track;
   blink_track.Initialize(blink::WebString::FromUTF8(track_id), blink_source);
 
-  blink_track.SetPlatformTrack(std::make_unique<MediaStreamVideoTrack>(
+  blink_track.SetPlatformTrack(std::make_unique<blink::MediaStreamVideoTrack>(
       native_source, adapter_settings, noise_reduction, is_screencast,
-      min_frame_rate, MediaStreamVideoSource::ConstraintsCallback(),
+      min_frame_rate, blink::MediaStreamVideoSource::ConstraintsCallback(),
       true /* enabled */));
   test_stream_.AddTrack(blink_track);
 }
 
 void MockMediaStreamRegistry::AddVideoTrack(const std::string& track_id) {
-  AddVideoTrack(track_id, VideoTrackAdapterSettings(), base::Optional<bool>(),
-                false /* is_screncast */, 0.0 /* min_frame_rate */);
+  AddVideoTrack(track_id, blink::VideoTrackAdapterSettings(),
+                base::Optional<bool>(), false /* is_screncast */,
+                0.0 /* min_frame_rate */);
 }
 
 void MockMediaStreamRegistry::AddAudioTrack(const std::string& track_id) {

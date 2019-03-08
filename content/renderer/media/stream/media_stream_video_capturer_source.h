@@ -12,10 +12,11 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
-#include "content/renderer/media/stream/media_stream_video_source.h"
+#include "content/common/content_export.h"
 #include "media/capture/video_capture_types.h"
 #include "third_party/blink/public/common/media/video_capture.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
 
 namespace media {
 class VideoCapturerSource;
@@ -30,7 +31,7 @@ class RenderFrame;
 // Render thread. Objects can be constructed either by indicating a |device| to
 // look for, or by plugging in a |source| constructed elsewhere.
 class CONTENT_EXPORT MediaStreamVideoCapturerSource
-    : public MediaStreamVideoSource {
+    : public blink::MediaStreamVideoSource {
  public:
   using DeviceCapturerFactoryCallback =
       base::RepeatingCallback<std::unique_ptr<media::VideoCapturerSource>(
@@ -58,7 +59,7 @@ class CONTENT_EXPORT MediaStreamVideoCapturerSource
                            CaptureTimeAndMetadataPlumbing);
   FRIEND_TEST_ALL_PREFIXES(MediaStreamVideoCapturerSourceTest, ChangeSource);
 
-  // MediaStreamVideoSource overrides.
+  // blink::MediaStreamVideoSource overrides.
   void RequestRefreshFrame() override;
   void OnFrameDropped(media::VideoCaptureFrameDropReason reason) override;
   void OnLog(const std::string& message) override;

@@ -9,12 +9,12 @@
 #include <utility>
 #include <vector>
 
-#include "content/renderer/media/stream/media_stream_constraints_util_sets.h"
-#include "content/renderer/media/stream/media_stream_video_source.h"
 #include "media/base/limits.h"
 #include "third_party/blink/public/common/mediastream/media_stream_controls.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util_sets.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
 
 namespace content {
 
@@ -35,15 +35,16 @@ static_assert(kDefaultScreenCastHeight <= kMaxScreenCastDimension,
 
 const double kMaxScreenCastFrameRate = 120.0;
 const double kDefaultScreenCastFrameRate =
-    MediaStreamVideoSource::kDefaultFrameRate;
+    blink::MediaStreamVideoSource::kDefaultFrameRate;
 
 namespace {
 
-using ResolutionSet = media_constraints::ResolutionSet;
+using blink::VideoCaptureSettings;
+using ResolutionSet = blink::media_constraints::ResolutionSet;
 using Point = ResolutionSet::Point;
-using StringSet = media_constraints::DiscreteSet<std::string>;
-using BoolSet = media_constraints::DiscreteSet<bool>;
-using DoubleRangeSet = media_constraints::NumericRangeSet<double>;
+using StringSet = blink::media_constraints::DiscreteSet<std::string>;
+using BoolSet = blink::media_constraints::DiscreteSet<bool>;
+using DoubleRangeSet = blink::media_constraints::NumericRangeSet<double>;
 
 constexpr double kMinScreenCastAspectRatio =
     static_cast<double>(kMinScreenCastDimension) /
@@ -70,11 +71,11 @@ class VideoContentCaptureCandidates {
             DoubleRangeSet::FromConstraint(constraint_set.frame_rate,
                                            0.0,
                                            kMaxScreenCastFrameRate)),
-        device_id_set_(media_constraints::StringSetFromConstraint(
+        device_id_set_(blink::media_constraints::StringSetFromConstraint(
             constraint_set.device_id)),
-        noise_reduction_set_(media_constraints::BoolSetFromConstraint(
+        noise_reduction_set_(blink::media_constraints::BoolSetFromConstraint(
             constraint_set.goog_noise_reduction)),
-        rescale_set_(media_constraints::RescaleSetFromConstraint(
+        rescale_set_(blink::media_constraints::RescaleSetFromConstraint(
             constraint_set.resize_mode)) {}
 
   VideoContentCaptureCandidates(VideoContentCaptureCandidates&& other) =

@@ -851,6 +851,19 @@ void RendererBlinkPlatformImpl::UpdateWebRTCAPICount(
   UpdateWebRTCMethodCount(api_name);
 }
 
+base::Optional<double>
+RendererBlinkPlatformImpl::GetWebRtcMaxCaptureFrameRate() {
+  const std::string max_fps_str =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kWebRtcMaxCaptureFramerate);
+  if (!max_fps_str.empty()) {
+    double value;
+    if (base::StringToDouble(max_fps_str, &value) && value >= 0.0)
+      return value;
+  }
+  return base::nullopt;
+}
+
 //------------------------------------------------------------------------------
 
 std::unique_ptr<blink::WebSpeechSynthesizer>

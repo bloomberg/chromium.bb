@@ -5,7 +5,7 @@
 #include "content/renderer/media_stream_video_sink.h"
 
 #include "content/public/renderer/media_stream_utils.h"
-#include "content/renderer/media/stream/media_stream_video_track.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
 
 namespace content {
 

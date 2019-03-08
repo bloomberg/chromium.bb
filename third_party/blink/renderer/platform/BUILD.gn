@@ -498,6 +498,7 @@ jumbo_component("platform") {
     "date_components.h",
     "exported/file_path_conversion.cc",
     "exported/interface_registry.cc",
+    "exported/mediastream/media_stream_audio_processor_options.cc",
     "exported/mediastream/media_stream_audio_source.cc",
     "exported/mediastream/media_stream_audio_track.cc",
     "exported/mediastream/web_platform_media_stream_source.cc",

@@ -13,8 +13,6 @@
 #include "base/logging.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/render_thread.h"
-#include "content/renderer/media/stream/media_stream_video_source.h"
-#include "content/renderer/media/stream/media_stream_video_track.h"
 #include "content/renderer/media/stream/processed_local_audio_source.h"
 #include "content/renderer/media/stream/webaudio_media_stream_source.h"
 #include "content/renderer/media/webrtc_local_audio_source_provider.h"
@@ -27,6 +25,8 @@
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/platform/web_vector.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
 #include "third_party/blink/public/web/web_frame.h"
 
 using blink::WebFrame;
@@ -77,11 +77,11 @@ void CreateNativeVideoMediaStreamTrack(blink::WebMediaStreamTrack track) {
   DCHECK(track.GetPlatformTrack() == nullptr);
   blink::WebMediaStreamSource source = track.Source();
   DCHECK_EQ(source.GetType(), blink::WebMediaStreamSource::kTypeVideo);
-  MediaStreamVideoSource* native_source =
-      MediaStreamVideoSource::GetVideoSource(source);
+  blink::MediaStreamVideoSource* native_source =
+      blink::MediaStreamVideoSource::GetVideoSource(source);
   DCHECK(native_source);
-  track.SetPlatformTrack(std::make_unique<MediaStreamVideoTrack>(
-      native_source, MediaStreamVideoSource::ConstraintsCallback(),
+  track.SetPlatformTrack(std::make_unique<blink::MediaStreamVideoTrack>(
+      native_source, blink::MediaStreamVideoSource::ConstraintsCallback(),
       track.IsEnabled()));
 }
 
@@ -91,17 +91,17 @@ void CloneNativeVideoMediaStreamTrack(
   DCHECK(!clone.GetPlatformTrack());
   blink::WebMediaStreamSource source = clone.Source();
   DCHECK_EQ(source.GetType(), blink::WebMediaStreamSource::kTypeVideo);
-  MediaStreamVideoSource* native_source =
-      MediaStreamVideoSource::GetVideoSource(source);
+  blink::MediaStreamVideoSource* native_source =
+      blink::MediaStreamVideoSource::GetVideoSource(source);
   DCHECK(native_source);
-  MediaStreamVideoTrack* original_track =
-      MediaStreamVideoTrack::GetVideoTrack(original);
+  blink::MediaStreamVideoTrack* original_track =
+      blink::MediaStreamVideoTrack::GetVideoTrack(original);
   DCHECK(original_track);
-  clone.SetPlatformTrack(std::make_unique<MediaStreamVideoTrack>(
+  clone.SetPlatformTrack(std::make_unique<blink::MediaStreamVideoTrack>(
       native_source, original_track->adapter_settings(),
       original_track->noise_reduction(), original_track->is_screencast(),
       original_track->min_frame_rate(),
-      MediaStreamVideoSource::ConstraintsCallback(), clone.IsEnabled()));
+      blink::MediaStreamVideoSource::ConstraintsCallback(), clone.IsEnabled()));
 }
 
 }  // namespace

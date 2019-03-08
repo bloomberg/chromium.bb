@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "content/common/content_export.h"
-#include "content/renderer/media/stream/media_stream_constraints_util.h"
 #include "third_party/blink/public/mojom/mediastream/media_devices.mojom.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util.h"
 
 namespace blink {
 class MediaStreamAudioSource;
@@ -117,7 +117,7 @@ using AudioDeviceCaptureCapabilities =
 //    whose default value is false only for desktop capture.
 //  * Audio processing. The remaining constraints are used to control audio
 //    processing. This is how audio-processing properties are set for device
-//    capture(see the content::AudioProcessingProperties struct) :
+//    capture(see the blink::AudioProcessingProperties struct) :
 //      - echo_cancellation_type: mapped from the experimental constraint with
 //        the same name. "System" is selected only if the device supports it.
 //        If constraint is not specified, "system" is selected if supported,
@@ -130,7 +130,7 @@ using AudioDeviceCaptureCapabilities =
 //    specified, the default value is the same as the final value of the
 //    echo_cancellation constraint.  If the echo_cancellation constraint is
 //    not explicitly specified, the default value is implementation defined
-//    (see content::AudioProcessingProperties).
+//    (see blink::AudioProcessingProperties).
 //    For content capture the rules are the same, but all properties are false
 //    by default, regardless of the value of the echo_cancellation constraint.
 //    Note that it is important to distinguish between audio properties and
@@ -146,7 +146,7 @@ using AudioDeviceCaptureCapabilities =
 //    their corresponding constraints.
 // TODO(guidou): Add support for other standard constraints such as sampleRate,
 // channelCount and groupId. https://crbug.com/731170
-AudioCaptureSettings CONTENT_EXPORT
+blink::AudioCaptureSettings CONTENT_EXPORT
 SelectSettingsAudioCapture(const AudioDeviceCaptureCapabilities& capabilities,
                            const blink::WebMediaConstraints& constraints,
                            bool should_disable_hardware_noise_suppression);
@@ -158,7 +158,7 @@ SelectSettingsAudioCapture(const AudioDeviceCaptureCapabilities& capabilities,
 // different from those of |source| because it is currently not possible to
 // reconfigure audio tracks or sources.
 // TODO(guidou): Allow reconfiguring audio tracks. https://crbug.com/796964
-AudioCaptureSettings CONTENT_EXPORT
+blink::AudioCaptureSettings CONTENT_EXPORT
 SelectSettingsAudioCapture(blink::MediaStreamAudioSource* source,
                            const blink::WebMediaConstraints& constraints);
 

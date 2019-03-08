@@ -4,11 +4,11 @@
 
 #include "content/renderer/media/stream/remote_media_stream_track_adapter.h"
 
-#include "content/renderer/media/stream/media_stream_video_track.h"
 #include "content/renderer/media/webrtc/media_stream_remote_video_source.h"
 #include "content/renderer/media/webrtc/peer_connection_remote_audio_source.h"
 #include "content/renderer/media/webrtc/track_observer.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
 
 namespace content {
 
@@ -47,8 +47,9 @@ void RemoteVideoTrackAdapter::InitializeWebVideoTrack(
   capabilities.device_id = blink::WebString::FromUTF8(id());
   web_track()->Source().SetCapabilities(capabilities);
 
-  web_track()->SetPlatformTrack(std::make_unique<MediaStreamVideoTrack>(
-      video_source, MediaStreamVideoSource::ConstraintsCallback(), enabled));
+  web_track()->SetPlatformTrack(std::make_unique<blink::MediaStreamVideoTrack>(
+      video_source, blink::MediaStreamVideoSource::ConstraintsCallback(),
+      enabled));
 }
 
 RemoteAudioTrackAdapter::RemoteAudioTrackAdapter(

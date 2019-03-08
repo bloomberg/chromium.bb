@@ -14,8 +14,6 @@
 #include "build/build_config.h"
 #include "content/public/common/content_features.h"
 #include "content/renderer/media/audio/audio_device_factory.h"
-#include "content/renderer/media/stream/media_stream_audio_processor_options.h"
-#include "content/renderer/media/stream/media_stream_constraints_util.h"
 #include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
 #include "content/renderer/media/webrtc/webrtc_audio_device_impl.h"
 #include "content/renderer/media/webrtc_logging.h"
@@ -23,11 +21,14 @@
 #include "media/base/channel_layout.h"
 #include "media/base/sample_rates.h"
 #include "media/webrtc/webrtc_switches.h"
+#include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_processor_options.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util.h"
 #include "third_party/webrtc/media/base/media_channel.h"
 
 namespace content {
 
-using EchoCancellationType = AudioProcessingProperties::EchoCancellationType;
+using EchoCancellationType =
+    blink::AudioProcessingProperties::EchoCancellationType;
 
 namespace {
 // Used as an identifier for ProcessedLocalAudioSource::From().
@@ -42,10 +43,11 @@ bool ApmInAudioServiceEnabled() {
 #endif
 }
 
-void LogAudioProcesingProperties(const AudioProcessingProperties& properties) {
+void LogAudioProcesingProperties(
+    const blink::AudioProcessingProperties& properties) {
   auto aec_to_string =
-      [](AudioProcessingProperties::EchoCancellationType type) {
-        using AEC = AudioProcessingProperties::EchoCancellationType;
+      [](blink::AudioProcessingProperties::EchoCancellationType type) {
+        using AEC = blink::AudioProcessingProperties::EchoCancellationType;
         switch (type) {
           case AEC::kEchoCancellationDisabled:
             return "disabled";
@@ -89,7 +91,7 @@ ProcessedLocalAudioSource::ProcessedLocalAudioSource(
     int consumer_render_frame_id,
     const blink::MediaStreamDevice& device,
     bool disable_local_echo,
-    const AudioProcessingProperties& audio_processing_properties,
+    const blink::AudioProcessingProperties& audio_processing_properties,
     const ConstraintsCallback& started_callback,
     PeerConnectionDependencyFactory* factory)
     : blink::MediaStreamAudioSource(true /* is_local_source */,

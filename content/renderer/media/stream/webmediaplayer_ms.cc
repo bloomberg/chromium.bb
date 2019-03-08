@@ -15,7 +15,6 @@
 #include "cc/layers/video_frame_provider_client_impl.h"
 #include "cc/layers/video_layer.h"
 #include "content/child/child_process.h"
-#include "content/renderer/media/stream/media_stream_video_track.h"
 #include "content/renderer/media/stream/webmediaplayer_ms_compositor.h"
 #include "content/renderer/media/web_media_element_source_utils.h"
 #include "content/renderer/media/webrtc_logging.h"
@@ -39,6 +38,7 @@
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/platform/web_surface_layer_bridge.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 
 namespace {

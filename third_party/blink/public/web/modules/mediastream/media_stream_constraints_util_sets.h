@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_STREAM_MEDIA_STREAM_CONSTRAINTS_UTIL_SETS_H_
-#define CONTENT_RENDERER_MEDIA_STREAM_MEDIA_STREAM_CONSTRAINTS_UTIL_SETS_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_MEDIA_STREAM_CONSTRAINTS_UTIL_SETS_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_MEDIA_STREAM_CONSTRAINTS_UTIL_SETS_H_
 
 #include <algorithm>
 #include <limits>
@@ -15,14 +15,12 @@
 #include "base/logging.h"
 #include "base/optional.h"
 #include "base/stl_util.h"
-#include "content/common/content_export.h"
+#include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
 
 namespace blink {
-struct WebMediaTrackConstraintSet;
-}
 
-namespace content {
+struct WebMediaTrackConstraintSet;
 
 template <typename ConstraintType>
 bool ConstraintHasMax(const ConstraintType& constraint) {
@@ -220,23 +218,25 @@ inline bool DiscreteSet<bool>::is_universal() const {
   return Contains(true) && Contains(false);
 }
 
-DiscreteSet<std::string> StringSetFromConstraint(
-    const blink::StringConstraint& constraint);
-DiscreteSet<bool> BoolSetFromConstraint(
-    const blink::BooleanConstraint& constraint);
+// TODO(crbug.com/704136): Remove BLINK_EXPORT when this file is moved
+// out of blink/public/platform.
+BLINK_EXPORT DiscreteSet<std::string> StringSetFromConstraint(
+    const StringConstraint& constraint);
+BLINK_EXPORT DiscreteSet<bool> BoolSetFromConstraint(
+    const BooleanConstraint& constraint);
 
 // This class represents a set of (height, width) screen resolution candidates
 // determined by width, height and aspect-ratio constraints.
 // This class supports widths and heights from 0 to kMaxDimension, both
 // inclusive and aspect ratios from 0.0 to positive infinity, both inclusive.
-class CONTENT_EXPORT ResolutionSet {
+class BLINK_EXPORT ResolutionSet {
  public:
   static const int kMaxDimension = std::numeric_limits<int>::max();
 
   // Helper class that represents (height, width) points on a plane.
   // TODO(guidou): Use a generic point/vector class that uses double once it
   // becomes available (e.g., a gfx::Vector2dD).
-  class CONTENT_EXPORT Point {
+  class BLINK_EXPORT Point {
    public:
     // Creates a (|height|, |width|) point. |height| and |width| must be finite.
     Point(double height, double width);
@@ -371,7 +371,7 @@ class CONTENT_EXPORT ResolutionSet {
   //
   // This function has undefined behavior if this set is empty.
   Point SelectClosestPointToIdeal(
-      const blink::WebMediaTrackConstraintSet& constraint_set,
+      const WebMediaTrackConstraintSet& constraint_set,
       int default_height,
       int default_width) const;
 
@@ -389,35 +389,13 @@ class CONTENT_EXPORT ResolutionSet {
   // Returns a ResolutionCandidateSet initialized with |constraint_set|'s
   // width, height and aspectRatio constraints.
   static ResolutionSet FromConstraintSet(
-      const blink::WebMediaTrackConstraintSet& constraint_set);
-
- private:
-  FRIEND_TEST_ALL_PREFIXES(MediaStreamConstraintsUtilSetsTest,
-                           ResolutionVertices);
-  FRIEND_TEST_ALL_PREFIXES(MediaStreamConstraintsUtilSetsTest,
-                           ResolutionPointSetClosestPoint);
-  FRIEND_TEST_ALL_PREFIXES(MediaStreamConstraintsUtilSetsTest,
-                           ResolutionLineSetClosestPoint);
-  FRIEND_TEST_ALL_PREFIXES(MediaStreamConstraintsUtilSetsTest,
-                           ResolutionGeneralSetClosestPoint);
-  FRIEND_TEST_ALL_PREFIXES(MediaStreamConstraintsUtilSetsTest,
-                           ResolutionIdealOutsideSinglePoint);
-
-  // Implements SelectClosestPointToIdeal() for the case when only the ideal
-  // aspect ratio is provided.
-  Point SelectClosestPointToIdealAspectRatio(double ideal_aspect_ratio,
-                                             int default_height,
-                                             int default_width) const;
+      const WebMediaTrackConstraintSet& constraint_set);
 
   // Returns the closest point in this set to |point|. If |point| is included in
   // this set, Point is returned. If this set is empty, behavior is undefined.
+  // TODO(crbug.com/704136): Make this method private once dependent tests are
+  // moved to Blink.
   Point ClosestPointTo(const Point& point) const;
-
-  // Returns the vertices of the set that have the property accessed
-  // by |accessor| closest to |value|. The returned vector always has one or two
-  // elements. Behavior is undefined if the set is empty.
-  std::vector<Point> GetClosestVertices(double (Point::*accessor)() const,
-                                        double value) const;
 
   // Returns a list of the vertices defined by the constraints on a height-width
   // Cartesian plane.
@@ -430,7 +408,22 @@ class CONTENT_EXPORT ResolutionSet {
   // consecutive vertices (modulo the size of the list) corresponds to a side of
   // the polygon, with the vertices given in counterclockwise order.
   // The list cannot contain more than six points.
+  // TODO(crbug.com/704136): Make this method private once dependent tests are
+  // moved to Blink.
   std::vector<Point> ComputeVertices() const;
+
+ private:
+  // Implements SelectClosestPointToIdeal() for the case when only the ideal
+  // aspect ratio is provided.
+  Point SelectClosestPointToIdealAspectRatio(double ideal_aspect_ratio,
+                                             int default_height,
+                                             int default_width) const;
+
+  // Returns the vertices of the set that have the property accessed
+  // by |accessor| closest to |value|. The returned vector always has one or two
+  // elements. Behavior is undefined if the set is empty.
+  std::vector<Point> GetClosestVertices(double (Point::*accessor)() const,
+                                        double value) const;
 
   // Adds |point| to |vertices| if |point| is included in this candidate set.
   void TryAddVertex(std::vector<ResolutionSet::Point>* vertices,
@@ -445,19 +438,19 @@ class CONTENT_EXPORT ResolutionSet {
 };
 
 // Scalar multiplication for Points.
-CONTENT_EXPORT ResolutionSet::Point operator*(double d,
-                                              const ResolutionSet::Point& p);
+BLINK_EXPORT ResolutionSet::Point operator*(double d,
+                                            const ResolutionSet::Point& p);
 
 // This function returns a set of bools from a resizeMode StringConstraint.
 // If |resize_mode_constraint| includes
-// blink::WebMediaStreamTrack::kResizeModeNone, false is included in the
+// WebMediaStreamTrack::kResizeModeNone, false is included in the
 // returned value. If |resize_mode_constraint| includes
-// blink::WebMediaStreamTrack::kResizeModeRescale, true is included in the
+// WebMediaStreamTrack::kResizeModeRescale, true is included in the
 // returned value.
-CONTENT_EXPORT DiscreteSet<bool> RescaleSetFromConstraint(
-    const blink::StringConstraint& resize_mode_constraint);
+BLINK_EXPORT DiscreteSet<bool> RescaleSetFromConstraint(
+    const StringConstraint& resize_mode_constraint);
 
 }  // namespace media_constraints
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_RENDERER_MEDIA_STREAM_MEDIA_STREAM_CONSTRAINTS_UTIL_SETS_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_MEDIA_STREAM_CONSTRAINTS_UTIL_SETS_H_

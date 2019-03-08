@@ -13,7 +13,6 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/test/scoped_task_environment.h"
 #include "content/child/child_process.h"
-#include "content/renderer/media/stream/media_stream_video_track.h"
 #include "content/renderer/media/stream/mock_media_stream_video_sink.h"
 #include "content/renderer/media/stream/mock_media_stream_video_source.h"
 #include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
@@ -23,6 +22,7 @@
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
 #include "third_party/blink/public/web/web_heap.h"
 
 namespace content {
@@ -71,8 +71,9 @@ class WebRtcMediaStreamTrackAdapterTest : public ::testing::Test {
     // Takes ownership of |video_source|.
     web_source.SetPlatformSource(base::WrapUnique(video_source));
 
-    return MediaStreamVideoTrack::CreateVideoTrack(
-        video_source, MediaStreamVideoSource::ConstraintsCallback(), true);
+    return blink::MediaStreamVideoTrack::CreateVideoTrack(
+        video_source, blink::MediaStreamVideoSource::ConstraintsCallback(),
+        true);
   }
 
   void CreateRemoteTrackAdapter(

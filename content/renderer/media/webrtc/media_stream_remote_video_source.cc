@@ -244,7 +244,7 @@ void MediaStreamRemoteVideoSource::StopSourceImpl() {
   // longer receives the video track.
   if (!observer_)
     return;
-  DCHECK(state() != MediaStreamVideoSource::ENDED);
+  DCHECK(state() != blink::MediaStreamVideoSource::ENDED);
   scoped_refptr<webrtc::VideoTrackInterface> video_track(
       static_cast<webrtc::VideoTrackInterface*>(observer_->track().get()));
   video_track->RemoveSink(delegate_.get());

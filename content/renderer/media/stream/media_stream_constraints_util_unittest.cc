@@ -4,11 +4,11 @@
 
 #include <string>
 
-#include "content/renderer/media/stream/media_stream_audio_processor_options.h"
-#include "content/renderer/media/stream/media_stream_constraints_util.h"
-#include "content/renderer/media/stream/media_stream_constraints_util_sets.h"
 #include "content/renderer/media/stream/mock_constraint_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_processor_options.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util_sets.h"
 
 namespace content {
 
@@ -20,10 +20,10 @@ constexpr double kSourceAspectRatio =
     static_cast<double>(kSourceWidth) / static_cast<double>(kSourceHeight);
 constexpr double kSourceFrameRate = 100.0;
 
-VideoTrackAdapterSettings SelectTrackSettings(
+blink::VideoTrackAdapterSettings SelectTrackSettings(
     const blink::WebMediaTrackConstraintSet& basic_constraint_set,
-    const media_constraints::ResolutionSet& resolution_set,
-    const media_constraints::NumericRangeSet<double>& frame_rate_set,
+    const blink::media_constraints::ResolutionSet& resolution_set,
+    const blink::media_constraints::NumericRangeSet<double>& frame_rate_set,
     bool enable_rescale = true) {
   media::VideoCaptureFormat source_format(
       gfx::Size(kSourceWidth, kSourceHeight), kSourceFrameRate,
@@ -37,8 +37,8 @@ VideoTrackAdapterSettings SelectTrackSettings(
 
 class MediaStreamConstraintsUtilTest : public testing::Test {
  protected:
-  using DoubleRangeSet = media_constraints::NumericRangeSet<double>;
-  using ResolutionSet = media_constraints::ResolutionSet;
+  using DoubleRangeSet = blink::media_constraints::NumericRangeSet<double>;
+  using ResolutionSet = blink::media_constraints::ResolutionSet;
 };
 
 TEST_F(MediaStreamConstraintsUtilTest, BooleanConstraints) {

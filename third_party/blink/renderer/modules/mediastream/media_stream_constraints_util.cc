@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/stream/media_stream_constraints_util.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util.h"
 
 #include <algorithm>
 #include <limits>
@@ -10,17 +10,17 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "content/renderer/media/stream/media_stream_constraints_util_sets.h"
-#include "content/renderer/media/stream/media_stream_constraints_util_video_device.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util_sets.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util_video_device.h"
 
-namespace content {
+namespace blink {
 
 namespace {
 
 template <typename P, typename T>
-bool ScanConstraintsForExactValue(const blink::WebMediaConstraints& constraints,
+bool ScanConstraintsForExactValue(const WebMediaConstraints& constraints,
                                   P picker,
                                   T* value) {
   if (constraints.IsNull())
@@ -42,7 +42,7 @@ bool ScanConstraintsForExactValue(const blink::WebMediaConstraints& constraints,
 }
 
 template <typename P, typename T>
-bool ScanConstraintsForMaxValue(const blink::WebMediaConstraints& constraints,
+bool ScanConstraintsForMaxValue(const WebMediaConstraints& constraints,
                                 P picker,
                                 T* value) {
   if (constraints.IsNull())
@@ -71,7 +71,7 @@ bool ScanConstraintsForMaxValue(const blink::WebMediaConstraints& constraints,
 }
 
 template <typename P, typename T>
-bool ScanConstraintsForMinValue(const blink::WebMediaConstraints& constraints,
+bool ScanConstraintsForMinValue(const WebMediaConstraints& constraints,
                                 P picker,
                                 T* value) {
   if (constraints.IsNull())
@@ -172,59 +172,59 @@ AudioCaptureSettings& AudioCaptureSettings::operator=(
     AudioCaptureSettings&& other) = default;
 
 bool GetConstraintValueAsBoolean(
-    const blink::WebMediaConstraints& constraints,
-    const blink::BooleanConstraint blink::WebMediaTrackConstraintSet::*picker,
+    const WebMediaConstraints& constraints,
+    const BooleanConstraint WebMediaTrackConstraintSet::*picker,
     bool* value) {
   return ScanConstraintsForExactValue(constraints, picker, value);
 }
 
 bool GetConstraintValueAsInteger(
-    const blink::WebMediaConstraints& constraints,
-    const blink::LongConstraint blink::WebMediaTrackConstraintSet::*picker,
+    const WebMediaConstraints& constraints,
+    const LongConstraint WebMediaTrackConstraintSet::*picker,
     int* value) {
   return ScanConstraintsForExactValue(constraints, picker, value);
 }
 
 bool GetConstraintMinAsInteger(
-    const blink::WebMediaConstraints& constraints,
-    const blink::LongConstraint blink::WebMediaTrackConstraintSet::*picker,
+    const WebMediaConstraints& constraints,
+    const LongConstraint WebMediaTrackConstraintSet::*picker,
     int* value) {
   return ScanConstraintsForMinValue(constraints, picker, value);
 }
 
 bool GetConstraintMaxAsInteger(
-    const blink::WebMediaConstraints& constraints,
-    const blink::LongConstraint blink::WebMediaTrackConstraintSet::*picker,
+    const WebMediaConstraints& constraints,
+    const LongConstraint WebMediaTrackConstraintSet::*picker,
     int* value) {
   return ScanConstraintsForMaxValue(constraints, picker, value);
 }
 
 bool GetConstraintValueAsDouble(
-    const blink::WebMediaConstraints& constraints,
-    const blink::DoubleConstraint blink::WebMediaTrackConstraintSet::*picker,
+    const WebMediaConstraints& constraints,
+    const DoubleConstraint WebMediaTrackConstraintSet::*picker,
     double* value) {
   return ScanConstraintsForExactValue(constraints, picker, value);
 }
 
 bool GetConstraintMinAsDouble(
-    const blink::WebMediaConstraints& constraints,
-    const blink::DoubleConstraint blink::WebMediaTrackConstraintSet::*picker,
+    const WebMediaConstraints& constraints,
+    const DoubleConstraint WebMediaTrackConstraintSet::*picker,
     double* value) {
   return ScanConstraintsForMinValue(constraints, picker, value);
 }
 
 bool GetConstraintMaxAsDouble(
-    const blink::WebMediaConstraints& constraints,
-    const blink::DoubleConstraint blink::WebMediaTrackConstraintSet::*picker,
+    const WebMediaConstraints& constraints,
+    const DoubleConstraint WebMediaTrackConstraintSet::*picker,
     double* value) {
   return ScanConstraintsForMaxValue(constraints, picker, value);
 }
 
 bool GetConstraintValueAsString(
-    const blink::WebMediaConstraints& constraints,
-    const blink::StringConstraint blink::WebMediaTrackConstraintSet::*picker,
+    const WebMediaConstraints& constraints,
+    const StringConstraint WebMediaTrackConstraintSet::*picker,
     std::string* value) {
-  blink::WebVector<blink::WebString> return_value;
+  WebVector<WebString> return_value;
   if (ScanConstraintsForExactValue(constraints, picker, &return_value)) {
     *value = return_value[0].Utf8();
     return true;
@@ -232,8 +232,7 @@ bool GetConstraintValueAsString(
   return false;
 }
 
-std::string GetMediaStreamSource(
-    const blink::WebMediaConstraints& constraints) {
+std::string GetMediaStreamSource(const WebMediaConstraints& constraints) {
   std::string source;
   if (constraints.Basic().media_stream_source.HasIdeal() &&
       constraints.Basic().media_stream_source.Ideal().size() > 0) {
@@ -247,12 +246,12 @@ std::string GetMediaStreamSource(
   return source;
 }
 
-bool IsDeviceCapture(const blink::WebMediaConstraints& constraints) {
+bool IsDeviceCapture(const WebMediaConstraints& constraints) {
   return GetMediaStreamSource(constraints).empty();
 }
 
 VideoTrackAdapterSettings SelectVideoTrackAdapterSettings(
-    const blink::WebMediaTrackConstraintSet& basic_constraint_set,
+    const WebMediaTrackConstraintSet& basic_constraint_set,
     const media_constraints::ResolutionSet& resolution_set,
     const media_constraints::NumericRangeSet<double>& frame_rate_set,
     const media::VideoCaptureFormat& source_format,
@@ -297,16 +296,15 @@ VideoTrackAdapterSettings SelectVideoTrackAdapterSettings(
 }
 
 double NumericConstraintFitnessDistance(double value1, double value2) {
-  if (std::fabs(value1 - value2) <= blink::DoubleConstraint::kConstraintEpsilon)
+  if (std::fabs(value1 - value2) <= DoubleConstraint::kConstraintEpsilon)
     return 0.0;
 
   return std::fabs(value1 - value2) /
          std::max(std::fabs(value1), std::fabs(value2));
 }
 
-double StringConstraintFitnessDistance(
-    const blink::WebString& value,
-    const blink::StringConstraint& constraint) {
+double StringConstraintFitnessDistance(const WebString& value,
+                                       const StringConstraint& constraint) {
   if (!constraint.HasIdeal())
     return 0.0;
 
@@ -318,18 +316,18 @@ double StringConstraintFitnessDistance(
   return 1.0;
 }
 
-blink::WebMediaStreamSource::Capabilities ComputeCapabilitiesForVideoSource(
-    const blink::WebString& device_id,
+WebMediaStreamSource::Capabilities ComputeCapabilitiesForVideoSource(
+    const WebString& device_id,
     const media::VideoCaptureFormats& formats,
     media::VideoFacingMode facing_mode,
     bool is_device_capture,
     const base::Optional<std::string>& group_id) {
-  blink::WebMediaStreamSource::Capabilities capabilities;
+  WebMediaStreamSource::Capabilities capabilities;
   capabilities.device_id = std::move(device_id);
   if (is_device_capture) {
     capabilities.facing_mode = ToWebFacingMode(facing_mode);
     if (group_id)
-      capabilities.group_id = blink::WebString::FromUTF8(*group_id);
+      capabilities.group_id = WebString::FromUTF8(*group_id);
   }
   if (!formats.empty()) {
     int max_width = 1;
@@ -351,4 +349,4 @@ blink::WebMediaStreamSource::Capabilities ComputeCapabilitiesForVideoSource(
   return capabilities;
 }
 
-}  // namespace content
+}  // namespace blink

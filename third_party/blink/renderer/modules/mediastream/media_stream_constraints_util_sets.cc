@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/stream/media_stream_constraints_util_sets.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util_sets.h"
 
 #include <cmath>
 
-#include "content/renderer/media/stream/media_stream_constraints_util.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util.h"
 
-namespace content {
+namespace blink {
 namespace media_constraints {
 
 using Point = ResolutionSet::Point;
@@ -52,14 +52,14 @@ int ToValidDimension(int dimension) {
   return static_cast<int>(dimension);
 }
 
-int MinDimensionFromConstraint(const blink::LongConstraint& constraint) {
+int MinDimensionFromConstraint(const LongConstraint& constraint) {
   if (!ConstraintHasMin(constraint))
     return 0;
 
   return ToValidDimension(ConstraintMin(constraint));
 }
 
-int MaxDimensionFromConstraint(const blink::LongConstraint& constraint) {
+int MaxDimensionFromConstraint(const LongConstraint& constraint) {
   if (!ConstraintHasMax(constraint))
     return ResolutionSet::kMaxDimension;
 
@@ -70,14 +70,14 @@ double ToValidAspectRatio(double aspect_ratio) {
   return aspect_ratio < 0.0 ? 0.0 : aspect_ratio;
 }
 
-double MinAspectRatioFromConstraint(const blink::DoubleConstraint& constraint) {
+double MinAspectRatioFromConstraint(const DoubleConstraint& constraint) {
   if (!ConstraintHasMin(constraint))
     return 0.0;
 
   return ToValidAspectRatio(ConstraintMin(constraint));
 }
 
-double MaxAspectRatioFromConstraint(const blink::DoubleConstraint& constraint) {
+double MaxAspectRatioFromConstraint(const DoubleConstraint& constraint) {
   if (!ConstraintHasMax(constraint))
     return HUGE_VAL;
 
@@ -181,7 +181,7 @@ Point Point::ClosestPointInSegment(const Point& p,
   double m = Dot(s2_trans, p_trans) / Dot(s2_trans, s2_trans);
   if (m < 0)
     return s1;
-  else if (m > 1)
+  if (m > 1)
     return s2;
 
   // Return the projection in the original coordinate system.
@@ -269,7 +269,7 @@ ResolutionSet ResolutionSet::Intersection(const ResolutionSet& other) const {
 }
 
 Point ResolutionSet::SelectClosestPointToIdeal(
-    const blink::WebMediaTrackConstraintSet& constraint_set,
+    const WebMediaTrackConstraintSet& constraint_set,
     int default_height,
     int default_width) const {
   DCHECK_GE(default_height, 1);
@@ -314,7 +314,8 @@ Point ResolutionSet::SelectClosestPointToIdeal(
         Point ideal_point(closest_vertices[0].height(),
                           closest_vertices[0].height() * default_aspect_ratio);
         return GetClosestPointToVertexOrSide(closest_vertices, ideal_point);
-      } else if (constraint_set.width.HasIdeal()) {
+      }
+      if (constraint_set.width.HasIdeal()) {
         int ideal_width = ToValidDimension(constraint_set.width.Ideal());
         ResolutionSet ideal_line = ResolutionSet::FromExactWidth(ideal_width);
         ResolutionSet intersection = Intersection(ideal_line);
@@ -327,7 +328,8 @@ Point ResolutionSet::SelectClosestPointToIdeal(
         Point ideal_point(closest_vertices[0].width() / default_aspect_ratio,
                           closest_vertices[0].width());
         return GetClosestPointToVertexOrSide(closest_vertices, ideal_point);
-      } else {
+      }
+      {
         DCHECK(constraint_set.aspect_ratio.HasIdeal());
         double ideal_aspect_ratio =
             ToValidAspectRatio(constraint_set.aspect_ratio.Ideal());
@@ -494,9 +496,10 @@ std::vector<Point> ResolutionSet::ComputeVertices() const {
     TryAddVertex(&vertices,
                  Point(max_height_, max_height_ * min_aspect_ratio_));
   }
-  if (IsPositiveFiniteAspectRatio(max_aspect_ratio_))
+  if (IsPositiveFiniteAspectRatio(max_aspect_ratio_)) {
     TryAddVertex(&vertices,
                  Point(max_height_, max_height_ * max_aspect_ratio_));
+  }
   TryAddVertex(&vertices, Point(max_height_, max_width_));
   // Continue along max_width.
   if (IsPositiveFiniteAspectRatio(min_aspect_ratio_))
@@ -533,7 +536,7 @@ void ResolutionSet::TryAddVertex(std::vector<Point>* vertices,
 }
 
 ResolutionSet ResolutionSet::FromConstraintSet(
-    const blink::WebMediaTrackConstraintSet& constraint_set) {
+    const WebMediaTrackConstraintSet& constraint_set) {
   return ResolutionSet(
       MinDimensionFromConstraint(constraint_set.height),
       MaxDimensionFromConstraint(constraint_set.height),
@@ -544,7 +547,7 @@ ResolutionSet ResolutionSet::FromConstraintSet(
 }
 
 DiscreteSet<std::string> StringSetFromConstraint(
-    const blink::StringConstraint& constraint) {
+    const StringConstraint& constraint) {
   if (!constraint.HasExact())
     return DiscreteSet<std::string>::UniversalSet();
 
@@ -555,8 +558,7 @@ DiscreteSet<std::string> StringSetFromConstraint(
   return DiscreteSet<std::string>(std::move(elements));
 }
 
-DiscreteSet<bool> BoolSetFromConstraint(
-    const blink::BooleanConstraint& constraint) {
+DiscreteSet<bool> BoolSetFromConstraint(const BooleanConstraint& constraint) {
   if (!constraint.HasExact())
     return DiscreteSet<bool>::UniversalSet();
 
@@ -564,14 +566,13 @@ DiscreteSet<bool> BoolSetFromConstraint(
 }
 
 DiscreteSet<bool> RescaleSetFromConstraint(
-    const blink::StringConstraint& resize_mode_constraint) {
+    const StringConstraint& resize_mode_constraint) {
   DCHECK_EQ(resize_mode_constraint.GetName(),
-            blink::WebMediaTrackConstraintSet().resize_mode.GetName());
+            WebMediaTrackConstraintSet().resize_mode.GetName());
   bool contains_none = resize_mode_constraint.Matches(
-      blink::WebString::FromASCII(blink::WebMediaStreamTrack::kResizeModeNone));
-  bool contains_rescale =
-      resize_mode_constraint.Matches(blink::WebString::FromASCII(
-          blink::WebMediaStreamTrack::kResizeModeRescale));
+      WebString::FromASCII(WebMediaStreamTrack::kResizeModeNone));
+  bool contains_rescale = resize_mode_constraint.Matches(
+      WebString::FromASCII(WebMediaStreamTrack::kResizeModeRescale));
   if (resize_mode_constraint.Exact().empty() ||
       (contains_none && contains_rescale)) {
     return DiscreteSet<bool>::UniversalSet();
@@ -587,4 +588,4 @@ DiscreteSet<bool> RescaleSetFromConstraint(
 }
 
 }  // namespace media_constraints
-}  // namespace content
+}  // namespace blink

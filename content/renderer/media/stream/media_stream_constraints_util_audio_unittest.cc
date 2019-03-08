@@ -25,6 +25,8 @@
 
 namespace content {
 
+using blink::AudioCaptureSettings;
+using blink::AudioProcessingProperties;
 using EchoCancellationType = AudioProcessingProperties::EchoCancellationType;
 
 namespace {
@@ -111,7 +113,8 @@ class MediaStreamConstraintsUtilAudioTest
           "8khz_sample_rate_device", "fake_group4",
           media::AudioParameters(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
                                  media::CHANNEL_LAYOUT_STEREO,
-                                 AudioProcessing::kSampleRate8kHz, 1000));
+                                 blink::AudioProcessing::kSampleRate8kHz,
+                                 1000));
 
       default_device_ = &capabilities_[0];
       system_echo_canceller_device_ = &capabilities_[1];
@@ -753,19 +756,19 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, ChannelsWithSource) {
 
 TEST_P(MediaStreamConstraintsUtilAudioTest, SampleRate) {
   AudioCaptureSettings result;
-  int exact_sample_rate = AudioProcessing::kSampleRate8kHz;
-  int min_sample_rate = AudioProcessing::kSampleRate8kHz;
+  int exact_sample_rate = blink::AudioProcessing::kSampleRate8kHz;
+  int min_sample_rate = blink::AudioProcessing::kSampleRate8kHz;
   // |max_sample_rate| is different based on architecture, namely due to a
   // difference on Android.
   int max_sample_rate =
       std::max(static_cast<int>(media::AudioParameters::kAudioCDSampleRate),
-               kAudioProcessingSampleRate);
-  int ideal_sample_rate = AudioProcessing::kSampleRate8kHz;
+               blink::kAudioProcessingSampleRate);
+  int ideal_sample_rate = blink::AudioProcessing::kSampleRate8kHz;
   if (!IsDeviceCapture()) {
     exact_sample_rate = media::AudioParameters::kAudioCDSampleRate;
     min_sample_rate =
         std::min(static_cast<int>(media::AudioParameters::kAudioCDSampleRate),
-                 kAudioProcessingSampleRate);
+                 blink::kAudioProcessingSampleRate);
     ideal_sample_rate = media::AudioParameters::kAudioCDSampleRate;
   }
 
@@ -840,7 +843,7 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, SampleRate) {
 
   if (IsDeviceCapture()) {
     constraint_factory_.basic().sample_rate.SetIdeal(
-        AudioProcessing::kSampleRate48kHz + 1000);
+        blink::AudioProcessing::kSampleRate48kHz + 1000);
     result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
     EXPECT_EQ(result.device_id(), "default_device");

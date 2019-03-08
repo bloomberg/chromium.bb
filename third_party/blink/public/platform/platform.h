@@ -676,6 +676,10 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   virtual void UpdateWebRTCAPICount(WebRTCAPIName api_name) {}
 
+  virtual base::Optional<double> GetWebRtcMaxCaptureFrameRate() {
+    return base::nullopt;
+  }
+
   // WebWorker ----------------------------------------------------------
 
   virtual std::unique_ptr<WebDedicatedWorkerHostFactoryClient>
