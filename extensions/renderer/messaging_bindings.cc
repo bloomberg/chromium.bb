@@ -181,11 +181,10 @@ void MessagingBindings::BindToGC(
 
 void MessagingBindings::OpenChannelToExtension(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
-  // TODO(crbug.com/925918): Support messaging from a Service Worker.
-  DCHECK(!worker_thread_util::IsWorkerThread());
-
   content::RenderFrame* render_frame = context()->GetRenderFrame();
-  if (!render_frame)
+  bool is_for_service_worker = false;
+  if (!render_frame &&
+      !(is_for_service_worker = worker_thread_util::IsWorkerThread()))
     return;
 
   // The Javascript code should validate/fill the arguments.
@@ -221,9 +220,17 @@ void MessagingBindings::OpenChannelToExtension(
   {
     SCOPED_UMA_HISTOGRAM_TIMER(
         "Extensions.Messaging.SetPortIdTime.Extension");
-    render_frame->Send(new ExtensionHostMsg_OpenChannelToExtension(
-        PortContext::ForFrame(render_frame->GetRoutingID()), info, channel_name,
-        port_id));
+    if (is_for_service_worker) {
+      WorkerThreadDispatcher::GetBindingsSystem()
+          ->GetIPCMessageSender()
+          ->SendOpenMessageChannel(
+              context(), port_id, MessageTarget::ForExtension(info.target_id),
+              channel_name, false /* include_tls_channel_id */);
+    } else {
+      render_frame->Send(new ExtensionHostMsg_OpenChannelToExtension(
+          PortContext::ForFrame(render_frame->GetRoutingID()), info,
+          channel_name, port_id));
+    }
   }
 
   ++num_extension_ports_;

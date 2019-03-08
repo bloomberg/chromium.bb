@@ -159,6 +159,40 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerMessagingTest,
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
+// Tests chrome.runtime.onMessageExternal between two Service Worker based
+// extensions.
+IN_PROC_BROWSER_TEST_P(ServiceWorkerMessagingTest, ExternalMessageToWorker) {
+  const std::string kTargetExtensionId = "pkplfbidichfdicaijlchgnapepdginl";
+
+  // Load the receiver extension first.
+  const Extension* target_extension = LoadExtension(test_data_dir_.AppendASCII(
+      "service_worker/messaging/send_message_external/target"));
+  ASSERT_TRUE(target_extension);
+  EXPECT_EQ(kTargetExtensionId, target_extension->id());
+
+  // Then run the test from initiator extension.
+  ASSERT_TRUE(RunExtensionTest(
+      "service_worker/messaging/send_message_external/initiator"))
+      << message_;
+}
+
+// Tests chrome.runtime.onConnectExternal between two Service Worker based
+// extensions.
+IN_PROC_BROWSER_TEST_P(ServiceWorkerMessagingTest, ConnectExternalToWorker) {
+  const std::string kTargetExtensionId = "pkplfbidichfdicaijlchgnapepdginl";
+
+  // Load the receiver extension first.
+  const Extension* target_extension = LoadExtension(test_data_dir_.AppendASCII(
+      "service_worker/messaging/connect_external/target"));
+  ASSERT_TRUE(target_extension);
+  EXPECT_EQ(kTargetExtensionId, target_extension->id());
+
+  // Then run the test from initiator extension.
+  ASSERT_TRUE(
+      RunExtensionTest("service_worker/messaging/connect_external/initiator"))
+      << message_;
+}
+
 INSTANTIATE_TEST_SUITE_P(ServiceWorkerMessagingTestWithNativeBindings,
                          ServiceWorkerMessagingTest,
                          ::testing::Values(NATIVE_BINDINGS));

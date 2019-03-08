@@ -345,15 +345,12 @@ class WorkerThreadIPCMessageSender : public IPCMessageSender {
                               const std::string& channel_name,
                               bool include_tls_channel_id) override {
     DCHECK(!script_context->GetRenderFrame());
+    DCHECK_EQ(Feature::SERVICE_WORKER_CONTEXT, script_context->context_type());
     const Extension* extension = script_context->extension();
 
     switch (target.type) {
       case MessageTarget::EXTENSION: {
         ExtensionMsg_ExternalConnectionInfo info;
-        // TODO(crbug.com/925918): Support extension Service Worker to extension
-        // messaging.
-        DCHECK_EQ(Feature::CONTENT_SCRIPT_CONTEXT,
-                  script_context->context_type());
         if (extension && !extension->is_hosted_app()) {
           info.source_endpoint =
               MessagingEndpoint::ForExtension(extension->id());
