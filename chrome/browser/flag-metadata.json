@@ -1634,6 +1634,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "enable-site-isolation-for-password-sites",
+    "owners": [ "site-isolation-dev", "alexmos", "lukasza" ],
+    "expiry_milestone": 77
+  },
+  {
     "name": "enable-site-per-process",
     "owners": [ "site-isolation-dev", "creis", "lukasza" ],
     // Even after shipping some form of Site Isolation on Android, we want to

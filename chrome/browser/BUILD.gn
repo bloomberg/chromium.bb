@@ -1563,6 +1563,8 @@ jumbo_split_static_library("browser") {
     "signin/signin_util.h",
     "site_details.cc",
     "site_details.h",
+    "site_isolation_policy.cc",
+    "site_isolation_policy.h",
     "speech/chrome_speech_recognition_manager_delegate.cc",
     "speech/chrome_speech_recognition_manager_delegate.h",
     "speech/speech_recognizer.cc",

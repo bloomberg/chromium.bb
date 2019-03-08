@@ -1803,6 +1803,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSSLCommittedInterstitialsDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kSSLCommittedInterstitials)},
 #if defined(OS_ANDROID)
+    {"enable-site-isolation-for-password-sites",
+     flag_descriptions::kSiteIsolationForPasswordSitesName,
+     flag_descriptions::kSiteIsolationForPasswordSitesDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(features::kSiteIsolationForPasswordSites)},
     {"enable-site-per-process", flag_descriptions::kStrictSiteIsolationName,
      flag_descriptions::kStrictSiteIsolationDescription, kOsAndroid,
      SINGLE_VALUE_TYPE(switches::kSitePerProcess)},

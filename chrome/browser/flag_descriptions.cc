@@ -2648,6 +2648,12 @@ const char kSiteExplorationUiName[] = "Site Exploration UI";
 const char kSiteExplorationUiDescription[] =
     "Show site suggestions in the Exploration UI";
 
+const char kSiteIsolationForPasswordSitesName[] =
+    "Site Isolation For Password Sites";
+const char kSiteIsolationForPasswordSitesDescription[] =
+    "Security mode that enables site isolation for sites based on "
+    "password-oriented heuristics, such as a user typing in a password.";
+
 const char kStrictSiteIsolationName[] = "Strict site isolation";
 const char kStrictSiteIsolationDescription[] =
     "Security mode that enables site isolation for all sites (SitePerProcess). "
