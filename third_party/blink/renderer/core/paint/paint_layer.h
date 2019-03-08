@@ -1064,7 +1064,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   // for the definition of a replaced normal-flow stacking element.
   bool IsReplacedNormalFlowStacking() const;
 
-  void SetNeeedsCompositingReasonsUpdate() {
+  void SetNeedsCompositingReasonsUpdate() {
     needs_compositing_reasons_update_ = true;
   }
 

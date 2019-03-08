@@ -2391,7 +2391,7 @@ void Document::ViewportDefiningElementDidChange() {
     if (layout_object->HasLayer()) {
       ToLayoutBoxModelObject(layout_object)
           ->Layer()
-          ->SetNeeedsCompositingReasonsUpdate();
+          ->SetNeedsCompositingReasonsUpdate();
     }
   }
 }
