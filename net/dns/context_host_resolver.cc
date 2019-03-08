@@ -10,12 +10,13 @@
 #include "base/time/tick_clock.h"
 #include "net/dns/dns_client.h"
 #include "net/dns/dns_config.h"
-#include "net/dns/host_resolver_impl.h"
+#include "net/dns/host_resolver_manager.h"
 #include "net/dns/host_resolver_proc.h"
 
 namespace net {
 
-ContextHostResolver::ContextHostResolver(std::unique_ptr<HostResolverImpl> impl)
+ContextHostResolver::ContextHostResolver(
+    std::unique_ptr<HostResolverManager> impl)
     : impl_(std::move(impl)) {}
 
 ContextHostResolver::~ContextHostResolver() = default;

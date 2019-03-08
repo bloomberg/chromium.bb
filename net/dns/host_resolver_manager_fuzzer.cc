@@ -172,9 +172,7 @@ class DnsRequest {
   }
 
   // Cancel the request, if not already completed. Otherwise, does nothing.
-  void Cancel() {
-    request_.reset();
-  }
+  void Cancel() { request_.reset(); }
 
   net::HostResolver* host_resolver_;
   base::FuzzedDataProvider* data_provider_;

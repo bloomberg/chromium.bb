@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/dns/host_resolver_impl.h"
+#include "net/dns/host_resolver_manager.h"
 
 #if defined(OS_WIN)
 #include <Winsock2.h>
@@ -118,9 +118,9 @@ const unsigned kMinimumTTLSeconds = kCacheEntryTTLSeconds;
 const int kIPv6ProbePeriodMs = 1000;
 
 // Google DNS address used for IPv6 probes.
-const uint8_t kIPv6ProbeAddress[] =
-    { 0x20, 0x01, 0x48, 0x60, 0x48, 0x60, 0x00, 0x00,
-      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x88, 0x88 };
+const uint8_t kIPv6ProbeAddress[] = {0x20, 0x01, 0x48, 0x60, 0x48, 0x60,
+                                     0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                                     0x00, 0x00, 0x88, 0x88};
 
 enum DnsResolveStatus {
   RESOLVE_STATUS_DNS_SUCCESS = 0,
@@ -159,11 +159,11 @@ bool ResemblesMulticastDNSName(const std::string& hostname) {
   const size_t kSuffixLenTrimmed = kSuffixLen - 1;
   if (hostname.back() == '.') {
     return hostname.size() > kSuffixLen &&
-        !hostname.compare(hostname.size() - kSuffixLen, kSuffixLen, kSuffix);
+           !hostname.compare(hostname.size() - kSuffixLen, kSuffixLen, kSuffix);
   }
   return hostname.size() > kSuffixLenTrimmed &&
-      !hostname.compare(hostname.size() - kSuffixLenTrimmed, kSuffixLenTrimmed,
-                        kSuffix, kSuffixLenTrimmed);
+         !hostname.compare(hostname.size() - kSuffixLenTrimmed,
+                           kSuffixLenTrimmed, kSuffix, kSuffixLenTrimmed);
 }
 
 bool ConfigureAsyncDnsNoFallbackFieldTrial() {
@@ -236,8 +236,7 @@ bool HaveOnlyLoopbackAddresses() {
   }
 
   bool result = true;
-  for (struct ifaddrs* interface = interface_addr;
-       interface != NULL;
+  for (struct ifaddrs* interface = interface_addr; interface != NULL;
        interface = interface->ifa_next) {
     if (!(IFF_UP & interface->ifa_flags))
       continue;
@@ -287,7 +286,7 @@ std::unique_ptr<base::Value> NetLogProcTaskFailedCallback(
                   os_error,
                   0,  // Use default language.
                   (LPWSTR)&error_string,
-                  0,  // Buffer size.
+                  0,   // Buffer size.
                   0);  // Arguments (unused).
     dict->SetString("os_error_string", base::WideToUTF8(error_string));
     LocalFree(error_string);
@@ -329,7 +328,7 @@ std::unique_ptr<base::Value> NetLogRequestCallback(
   return std::move(dict);
 }
 
-// Creates NetLog parameters for the creation of a HostResolverImpl::Job.
+// Creates NetLog parameters for the creation of a HostResolverManager::Job.
 std::unique_ptr<base::Value> NetLogJobCreationCallback(
     const NetLogSource& source,
     const std::string* host,
@@ -401,13 +400,9 @@ class PriorityTracker {
     memset(counts_, 0, sizeof(counts_));
   }
 
-  RequestPriority highest_priority() const {
-    return highest_priority_;
-  }
+  RequestPriority highest_priority() const { return highest_priority_; }
 
-  size_t total_count() const {
-    return total_count_;
-  }
+  size_t total_count() const { return total_count_; }
 
   void Add(RequestPriority req_priority) {
     ++total_count_;
@@ -481,7 +476,7 @@ bool ResolveLocalHostname(base::StringPiece host, AddressList* address_list) {
   return true;
 }
 
-const unsigned HostResolverImpl::kMaximumDnsFailures = 16;
+const unsigned HostResolverManager::kMaximumDnsFailures = 16;
 
 // Holds the callback and request parameters for an outstanding request.
 //
@@ -493,14 +488,14 @@ const unsigned HostResolverImpl::kMaximumDnsFailures = 16;
 // other. Care must be taken to clear the corresponding pointer when
 // cancellation is initiated by the Job (OnJobCancelled) vs by the end user
 // (~RequestImpl).
-class HostResolverImpl::RequestImpl
+class HostResolverManager::RequestImpl
     : public HostResolver::ResolveHostRequest,
-      public base::LinkNode<HostResolverImpl::RequestImpl> {
+      public base::LinkNode<HostResolverManager::RequestImpl> {
  public:
   RequestImpl(const NetLogWithSource& source_net_log,
               const HostPortPair& request_host,
               const base::Optional<ResolveHostParameters>& optional_parameters,
-              base::WeakPtr<HostResolverImpl> resolver)
+              base::WeakPtr<HostResolverManager> resolver)
       : source_net_log_(source_net_log),
         request_host_(request_host),
         parameters_(optional_parameters ? optional_parameters.value()
@@ -656,7 +651,7 @@ class HostResolverImpl::RequestImpl
 
   // The resolve job that this request is dependent on.
   Job* job_;
-  base::WeakPtr<HostResolverImpl> resolver_;
+  base::WeakPtr<HostResolverManager> resolver_;
 
   // The user's callback to invoke when the request completes.
   CompletionOnceCallback callback_;
@@ -685,7 +680,7 @@ class HostResolverImpl::RequestImpl
 //
 // TODO(szym): Move to separate source file for testing and mocking.
 //
-class HostResolverImpl::ProcTask {
+class HostResolverManager::ProcTask {
  public:
   typedef base::OnceCallback<void(int net_error, const AddressList& addr_list)>
       Callback;
@@ -900,7 +895,7 @@ class HostResolverImpl::ProcTask {
 // transactions are scheduled separately and started separately.
 //
 // TODO(szym): This could be moved to separate source file as well.
-class HostResolverImpl::DnsTask : public base::SupportsWeakPtr<DnsTask> {
+class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
  public:
   class Delegate {
    public:
@@ -1388,12 +1383,12 @@ class HostResolverImpl::DnsTask : public base::SupportsWeakPtr<DnsTask> {
 //-----------------------------------------------------------------------------
 
 // Aggregates all Requests for the same Key. Dispatched via PriorityDispatch.
-class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
-                              public HostResolverImpl::DnsTask::Delegate {
+class HostResolverManager::Job : public PrioritizedDispatcher::Job,
+                                 public HostResolverManager::DnsTask::Delegate {
  public:
   // Creates new job for |key| where |request_net_log| is bound to the
   // request that spawned it.
-  Job(const base::WeakPtr<HostResolverImpl>& resolver,
+  Job(const base::WeakPtr<HostResolverManager>& resolver,
       const Key& key,
       RequestPriority priority,
       scoped_refptr<base::TaskRunner> proc_task_runner,
@@ -1556,8 +1551,8 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
     }
   }
 
-  // Called by HostResolverImpl when this job is evicted due to queue overflow.
-  // Completes all requests and destroys the job.
+  // Called by HostResolverManager when this job is evicted due to queue
+  // overflow. Completes all requests and destroys the job.
   void OnEvicted() {
     DCHECK(!is_running());
     DCHECK(is_queued());
@@ -1585,9 +1580,7 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
 
   const Key& key() const { return key_; }
 
-  bool is_queued() const {
-    return !handle_.is_null();
-  }
+  bool is_queued() const { return !handle_.is_null(); }
 
   bool is_running() const {
     return is_dns_running() || is_mdns_running() || is_proc_running();
@@ -1809,7 +1802,7 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
     }
   }
 
-  // HostResolverImpl::DnsTask::Delegate implementation:
+  // HostResolverManager::DnsTask::Delegate implementation:
 
   void OnDnsTaskComplete(base::TimeTicks start_time,
                          const HostCache::Entry& results,
@@ -2069,9 +2062,7 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
   }
 
   // Number of non-canceled requests in |requests_|.
-  size_t num_active_requests() const {
-    return priority_tracker_.total_count();
-  }
+  size_t num_active_requests() const { return priority_tracker_.total_count(); }
 
   bool is_dns_running() const { return !!dns_task_; }
 
@@ -2079,7 +2070,7 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
 
   bool is_proc_running() const { return !!proc_task_; }
 
-  base::WeakPtr<HostResolverImpl> resolver_;
+  base::WeakPtr<HostResolverManager> resolver_;
 
   Key key_;
 
@@ -2114,7 +2105,7 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
   // All Requests waiting for the result of this Job. Some can be canceled.
   base::LinkedList<RequestImpl> requests_;
 
-  // A handle used in |HostResolverImpl::dispatcher_|.
+  // A handle used in |HostResolverManager::dispatcher_|.
   PrioritizedDispatcher::Handle handle_;
 
   base::WeakPtrFactory<Job> weak_ptr_factory_;
@@ -2122,7 +2113,8 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
 
 //-----------------------------------------------------------------------------
 
-HostResolverImpl::HostResolverImpl(const Options& options, NetLog* net_log)
+HostResolverManager::HostResolverManager(const Options& options,
+                                         NetLog* net_log)
     : max_queued_jobs_(0),
       proc_params_(NULL, options.max_retry_attempts),
       net_log_(net_log),
@@ -2178,7 +2170,7 @@ HostResolverImpl::HostResolverImpl(const Options& options, NetLog* net_log)
   allow_fallback_to_proctask_ = !ConfigureAsyncDnsNoFallbackFieldTrial();
 }
 
-HostResolverImpl::~HostResolverImpl() {
+HostResolverManager::~HostResolverManager() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   // Prevent the dispatcher from starting new jobs.
   dispatcher_->SetLimitsToZero();
@@ -2191,7 +2183,7 @@ HostResolverImpl::~HostResolverImpl() {
   NetworkChangeNotifier::RemoveDNSObserver(this);
 }
 
-void HostResolverImpl::SetDnsClient(std::unique_ptr<DnsClient> dns_client) {
+void HostResolverManager::SetDnsClient(std::unique_ptr<DnsClient> dns_client) {
   // DnsClient and config must be updated before aborting DnsTasks, since doing
   // so may start new jobs.
   dns_client_ = std::move(dns_client);
@@ -2211,7 +2203,7 @@ void HostResolverImpl::SetDnsClient(std::unique_ptr<DnsClient> dns_client) {
 }
 
 std::unique_ptr<HostResolver::ResolveHostRequest>
-HostResolverImpl::CreateRequest(
+HostResolverManager::CreateRequest(
     const HostPortPair& host,
     const NetLogWithSource& net_log,
     const base::Optional<ResolveHostParameters>& optional_parameters) {
@@ -2220,8 +2212,8 @@ HostResolverImpl::CreateRequest(
 }
 
 std::unique_ptr<HostResolver::MdnsListener>
-HostResolverImpl::CreateMdnsListener(const HostPortPair& host,
-                                     DnsQueryType query_type) {
+HostResolverManager::CreateMdnsListener(const HostPortPair& host,
+                                        DnsQueryType query_type) {
   DCHECK_NE(DnsQueryType::UNSPECIFIED, query_type);
 
   auto listener =
@@ -2235,25 +2227,25 @@ HostResolverImpl::CreateMdnsListener(const HostPortPair& host,
   return listener;
 }
 
-void HostResolverImpl::SetDnsClientEnabled(bool enabled) {
+void HostResolverManager::SetDnsClientEnabled(bool enabled) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 #if defined(ENABLE_BUILT_IN_DNS)
   if (enabled && !dns_client_) {
     SetDnsClient(DnsClient::CreateClient(net_log_));
   } else if (!enabled && dns_client_) {
-    SetDnsClient(std::unique_ptr<DnsClient>());
+    SetDnsClient(nullptr);
   }
 #endif
 }
 
-HostCache* HostResolverImpl::GetHostCache() {
+HostCache* HostResolverManager::GetHostCache() {
   return cache_.get();
 }
 
-bool HostResolverImpl::HasCached(base::StringPiece hostname,
-                                 HostCache::Entry::Source* source_out,
-                                 HostCache::EntryStaleness* stale_out,
-                                 bool* secure_out) const {
+bool HostResolverManager::HasCached(base::StringPiece hostname,
+                                    HostCache::Entry::Source* source_out,
+                                    HostCache::EntryStaleness* stale_out,
+                                    bool* secure_out) const {
   if (!cache_)
     return false;
 
@@ -2264,7 +2256,7 @@ bool HostResolverImpl::HasCached(base::StringPiece hostname,
   return !!key;
 }
 
-std::unique_ptr<base::Value> HostResolverImpl::GetDnsConfigAsValue() const {
+std::unique_ptr<base::Value> HostResolverManager::GetDnsConfigAsValue() const {
   // Check if async DNS is disabled.
   if (!dns_client_.get())
     return nullptr;
@@ -2278,28 +2270,28 @@ std::unique_ptr<base::Value> HostResolverImpl::GetDnsConfigAsValue() const {
   return dns_config->ToValue();
 }
 
-size_t HostResolverImpl::LastRestoredCacheSize() const {
+size_t HostResolverManager::LastRestoredCacheSize() const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   return cache_ ? cache_->last_restore_size() : 0;
 }
 
-size_t HostResolverImpl::CacheSize() const {
+size_t HostResolverManager::CacheSize() const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   return cache_ ? cache_->size() : 0;
 }
 
-void HostResolverImpl::SetNoIPv6OnWifi(bool no_ipv6_on_wifi) {
+void HostResolverManager::SetNoIPv6OnWifi(bool no_ipv6_on_wifi) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   assume_ipv6_failure_on_wifi_ = no_ipv6_on_wifi;
 }
 
-bool HostResolverImpl::GetNoIPv6OnWifi() {
+bool HostResolverManager::GetNoIPv6OnWifi() {
   return assume_ipv6_failure_on_wifi_;
 }
 
-void HostResolverImpl::SetDnsConfigOverrides(
+void HostResolverManager::SetDnsConfigOverrides(
     const DnsConfigOverrides& overrides) {
   if (dns_config_overrides_ == overrides)
     return;
@@ -2309,14 +2301,14 @@ void HostResolverImpl::SetDnsConfigOverrides(
     UpdateDNSConfig(true);
 }
 
-void HostResolverImpl::SetRequestContext(URLRequestContext* context) {
+void HostResolverManager::SetRequestContext(URLRequestContext* context) {
   if (context != url_request_context_) {
     url_request_context_ = context;
   }
 }
 
 const std::vector<DnsConfig::DnsOverHttpsServerConfig>*
-HostResolverImpl::GetDnsOverHttpsServersForTesting() const {
+HostResolverManager::GetDnsOverHttpsServersForTesting() const {
   if (!dns_config_overrides_.dns_over_https_servers ||
       dns_config_overrides_.dns_over_https_servers.value().empty()) {
     return nullptr;
@@ -2324,19 +2316,19 @@ HostResolverImpl::GetDnsOverHttpsServersForTesting() const {
   return &dns_config_overrides_.dns_over_https_servers.value();
 }
 
-void HostResolverImpl::SetTickClockForTesting(
+void HostResolverManager::SetTickClockForTesting(
     const base::TickClock* tick_clock) {
   tick_clock_ = tick_clock;
   cache_->set_tick_clock_for_testing(tick_clock);
 }
 
-void HostResolverImpl::SetMaxQueuedJobsForTesting(size_t value) {
+void HostResolverManager::SetMaxQueuedJobsForTesting(size_t value) {
   DCHECK_EQ(0u, dispatcher_->num_queued_jobs());
   DCHECK_GE(value, 0u);
   max_queued_jobs_ = value;
 }
 
-void HostResolverImpl::SetHaveOnlyLoopbackAddresses(bool result) {
+void HostResolverManager::SetHaveOnlyLoopbackAddresses(bool result) {
   if (result) {
     additional_resolver_flags_ |= HOST_RESOLVER_LOOPBACK_ONLY;
   } else {
@@ -2344,29 +2336,29 @@ void HostResolverImpl::SetHaveOnlyLoopbackAddresses(bool result) {
   }
 }
 
-void HostResolverImpl::SetMdnsSocketFactoryForTesting(
+void HostResolverManager::SetMdnsSocketFactoryForTesting(
     std::unique_ptr<MDnsSocketFactory> socket_factory) {
   DCHECK(!mdns_client_);
   mdns_socket_factory_ = std::move(socket_factory);
 }
 
-void HostResolverImpl::SetMdnsClientForTesting(
+void HostResolverManager::SetMdnsClientForTesting(
     std::unique_ptr<MDnsClient> client) {
   mdns_client_ = std::move(client);
 }
 
-void HostResolverImpl::SetBaseDnsConfigForTesting(
+void HostResolverManager::SetBaseDnsConfigForTesting(
     const DnsConfig& base_config) {
   test_base_config_ = base_config;
   UpdateDNSConfig(true);
 }
 
-void HostResolverImpl::SetTaskRunnerForTesting(
+void HostResolverManager::SetTaskRunnerForTesting(
     scoped_refptr<base::TaskRunner> task_runner) {
   proc_task_runner_ = std::move(task_runner);
 }
 
-int HostResolverImpl::Resolve(RequestImpl* request) {
+int HostResolverManager::Resolve(RequestImpl* request) {
   // Request should not yet have a scheduled Job.
   DCHECK(!request->job());
   // Request may only be resolved once.
@@ -2410,7 +2402,7 @@ int HostResolverImpl::Resolve(RequestImpl* request) {
   return rv;
 }
 
-HostCache::Entry HostResolverImpl::ResolveLocally(
+HostCache::Entry HostResolverManager::ResolveLocally(
     const std::string& hostname,
     DnsQueryType dns_query_type,
     HostResolverSource source,
@@ -2488,7 +2480,8 @@ HostCache::Entry HostResolverImpl::ResolveLocally(
   return HostCache::Entry(ERR_DNS_CACHE_MISS, HostCache::Entry::SOURCE_UNKNOWN);
 }
 
-int HostResolverImpl::CreateAndStartJob(const Key& key, RequestImpl* request) {
+int HostResolverManager::CreateAndStartJob(const Key& key,
+                                           RequestImpl* request) {
   auto jobit = jobs_.find(key);
   Job* job;
   if (jobit == jobs_.end()) {
@@ -2519,7 +2512,7 @@ int HostResolverImpl::CreateAndStartJob(const Key& key, RequestImpl* request) {
   return ERR_IO_PENDING;
 }
 
-base::Optional<HostCache::Entry> HostResolverImpl::ResolveAsIP(
+base::Optional<HostCache::Entry> HostResolverManager::ResolveAsIP(
     const Key& key,
     const IPAddress* ip_address) {
   if (ip_address == nullptr || !IsAddressType(key.dns_query_type))
@@ -2540,7 +2533,7 @@ base::Optional<HostCache::Entry> HostResolverImpl::ResolveAsIP(
                           HostCache::Entry::SOURCE_UNKNOWN);
 }
 
-base::Optional<HostCache::Entry> HostResolverImpl::ServeFromCache(
+base::Optional<HostCache::Entry> HostResolverManager::ServeFromCache(
     const Key& key,
     bool allow_stale,
     base::Optional<HostCache::EntryStaleness>* out_stale_info) {
@@ -2572,7 +2565,7 @@ base::Optional<HostCache::Entry> HostResolverImpl::ServeFromCache(
   return cache_result->second;
 }
 
-base::Optional<HostCache::Entry> HostResolverImpl::ServeFromHosts(
+base::Optional<HostCache::Entry> HostResolverManager::ServeFromHosts(
     const Key& key) {
   if (!HaveDnsConfig() || !IsAddressType(key.dns_query_type))
     return base::nullopt;
@@ -2622,7 +2615,7 @@ base::Optional<HostCache::Entry> HostResolverImpl::ServeFromHosts(
   return base::nullopt;
 }
 
-base::Optional<HostCache::Entry> HostResolverImpl::ServeLocalhost(
+base::Optional<HostCache::Entry> HostResolverManager::ServeLocalhost(
     const Key& key) {
   AddressList resolved_addresses;
   if (!IsAddressType(key.dns_query_type) ||
@@ -2653,18 +2646,18 @@ base::Optional<HostCache::Entry> HostResolverImpl::ServeLocalhost(
                           HostCache::Entry::SOURCE_UNKNOWN);
 }
 
-void HostResolverImpl::CacheResult(const Key& key,
-                                   const HostCache::Entry& entry,
-                                   base::TimeDelta ttl) {
+void HostResolverManager::CacheResult(const Key& key,
+                                      const HostCache::Entry& entry,
+                                      base::TimeDelta ttl) {
   // Don't cache an error unless it has a positive TTL.
   if (cache_.get() && (entry.error() == OK || ttl > base::TimeDelta()))
     cache_->Set(key, entry, tick_clock_->NowTicks(), ttl);
 }
 
 // Record time from Request creation until a valid DNS response.
-void HostResolverImpl::RecordTotalTime(bool speculative,
-                                       bool from_cache,
-                                       base::TimeDelta duration) const {
+void HostResolverManager::RecordTotalTime(bool speculative,
+                                          bool from_cache,
+                                          base::TimeDelta duration) const {
   if (!speculative) {
     UMA_HISTOGRAM_LONG_TIMES_100("Net.DNS.TotalTime", duration);
 
@@ -2694,7 +2687,8 @@ void HostResolverImpl::RecordTotalTime(bool speculative,
   }
 }
 
-std::unique_ptr<HostResolverImpl::Job> HostResolverImpl::RemoveJob(Job* job) {
+std::unique_ptr<HostResolverManager::Job> HostResolverManager::RemoveJob(
+    Job* job) {
   DCHECK(job);
   std::unique_ptr<Job> retval;
   auto it = jobs_.find(job->key());
@@ -2705,7 +2699,7 @@ std::unique_ptr<HostResolverImpl::Job> HostResolverImpl::RemoveJob(Job* job) {
   return retval;
 }
 
-HostResolverImpl::Key HostResolverImpl::GetEffectiveKeyForRequest(
+HostResolverManager::Key HostResolverManager::GetEffectiveKeyForRequest(
     const std::string& hostname,
     DnsQueryType dns_query_type,
     HostResolverSource source,
@@ -2731,7 +2725,7 @@ HostResolverImpl::Key HostResolverImpl::GetEffectiveKeyForRequest(
   return Key(hostname, effective_query_type, effective_flags, source);
 }
 
-bool HostResolverImpl::IsIPv6Reachable(const NetLogWithSource& net_log) {
+bool HostResolverManager::IsIPv6Reachable(const NetLogWithSource& net_log) {
   // Don't bother checking if the device is on WiFi and IPv6 is assumed to not
   // work on WiFi.
   if (assume_ipv6_failure_on_wifi_ &&
@@ -2756,8 +2750,8 @@ bool HostResolverImpl::IsIPv6Reachable(const NetLogWithSource& net_log) {
   return last_ipv6_probe_result_;
 }
 
-bool HostResolverImpl::IsGloballyReachable(const IPAddress& dest,
-                                           const NetLogWithSource& net_log) {
+bool HostResolverManager::IsGloballyReachable(const IPAddress& dest,
+                                              const NetLogWithSource& net_log) {
   std::unique_ptr<DatagramClientSocket> socket(
       ClientSocketFactory::GetDefaultFactory()->CreateDatagramClientSocket(
           DatagramSocket::DEFAULT_BIND, net_log.net_log(), net_log.source()));
@@ -2783,18 +2777,18 @@ bool HostResolverImpl::IsGloballyReachable(const IPAddress& dest,
   return true;
 }
 
-void HostResolverImpl::RunLoopbackProbeJob() {
+void HostResolverManager::RunLoopbackProbeJob() {
   // Run this asynchronously as it can take 40-100ms and should not block
   // initialization.
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE,
       {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&HaveOnlyLoopbackAddresses),
-      base::BindOnce(&HostResolverImpl::SetHaveOnlyLoopbackAddresses,
+      base::BindOnce(&HostResolverManager::SetHaveOnlyLoopbackAddresses,
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
-void HostResolverImpl::AbortAllInProgressJobs() {
+void HostResolverManager::AbortAllInProgressJobs() {
   // In Abort, a Request callback could spawn new Jobs with matching keys, so
   // first collect and remove all running jobs from |jobs_|.
   std::vector<std::unique_ptr<Job>> jobs_to_abort;
@@ -2818,7 +2812,7 @@ void HostResolverImpl::AbortAllInProgressJobs() {
       PrioritizedDispatcher::Limits(limits.reserved_slots.size(), 0));
 
   // Life check to bail once |this| is deleted.
-  base::WeakPtr<HostResolverImpl> self = weak_ptr_factory_.GetWeakPtr();
+  base::WeakPtr<HostResolverManager> self = weak_ptr_factory_.GetWeakPtr();
 
   // Then Abort them.
   for (size_t i = 0; self.get() && i < jobs_to_abort.size(); ++i) {
@@ -2829,7 +2823,7 @@ void HostResolverImpl::AbortAllInProgressJobs() {
     dispatcher_->SetLimits(limits);
 }
 
-void HostResolverImpl::AbortDnsTasks(int error, bool fallback_only) {
+void HostResolverManager::AbortDnsTasks(int error, bool fallback_only) {
   // Aborting jobs potentially modifies |jobs_| and may even delete some jobs.
   // Create safe closures of all current jobs.
   std::vector<base::OnceClosure> job_abort_closures;
@@ -2851,7 +2845,7 @@ void HostResolverImpl::AbortDnsTasks(int error, bool fallback_only) {
   dispatcher_->SetLimits(limits);
 }
 
-void HostResolverImpl::TryServingAllJobsFromHosts() {
+void HostResolverManager::TryServingAllJobsFromHosts() {
   if (!HaveDnsConfig())
     return;
 
@@ -2859,7 +2853,7 @@ void HostResolverImpl::TryServingAllJobsFromHosts() {
   // http://crbug.com/117655
 
   // Life check to bail once |this| is deleted.
-  base::WeakPtr<HostResolverImpl> self = weak_ptr_factory_.GetWeakPtr();
+  base::WeakPtr<HostResolverManager> self = weak_ptr_factory_.GetWeakPtr();
 
   for (auto it = jobs_.begin(); self.get() && it != jobs_.end();) {
     Job* job = it->second.get();
@@ -2869,7 +2863,7 @@ void HostResolverImpl::TryServingAllJobsFromHosts() {
   }
 }
 
-void HostResolverImpl::OnIPAddressChanged() {
+void HostResolverManager::OnIPAddressChanged() {
   last_ipv6_probe_time_ = base::TimeTicks();
   // Abandon all ProbeJobs.
   probe_weak_ptr_factory_.InvalidateWeakPtrs();
@@ -2883,7 +2877,7 @@ void HostResolverImpl::OnIPAddressChanged() {
   // |this| may be deleted inside AbortAllInProgressJobs().
 }
 
-void HostResolverImpl::OnConnectionTypeChanged(
+void HostResolverManager::OnConnectionTypeChanged(
     NetworkChangeNotifier::ConnectionType type) {
   proc_params_.unresponsive_delay =
       GetTimeDeltaForConnectionTypeFromFieldTrialOrDefault(
@@ -2891,11 +2885,11 @@ void HostResolverImpl::OnConnectionTypeChanged(
           ProcTaskParams::kDnsDefaultUnresponsiveDelay, type);
 }
 
-void HostResolverImpl::OnInitialDNSConfigRead() {
+void HostResolverManager::OnInitialDNSConfigRead() {
   UpdateDNSConfig(false);
 }
 
-void HostResolverImpl::OnDNSChanged() {
+void HostResolverManager::OnDNSChanged() {
   // Ignore changes if we're using a test config or if we have overriding
   // configuration that overrides everything from the base config.
   if (test_base_config_ || dns_config_overrides_.OverridesEverything())
@@ -2904,7 +2898,7 @@ void HostResolverImpl::OnDNSChanged() {
   UpdateDNSConfig(true);
 }
 
-DnsConfig HostResolverImpl::GetBaseDnsConfig(bool log_to_net_log) {
+DnsConfig HostResolverManager::GetBaseDnsConfig(bool log_to_net_log) {
   DnsConfig dns_config;
 
   // Skip retrieving the base config if all values will be overridden.
@@ -2928,7 +2922,7 @@ DnsConfig HostResolverImpl::GetBaseDnsConfig(bool log_to_net_log) {
   return dns_config_overrides_.ApplyOverrides(dns_config);
 }
 
-void HostResolverImpl::UpdateDNSConfig(bool config_changed) {
+void HostResolverManager::UpdateDNSConfig(bool config_changed) {
   DnsConfig dns_config = GetBaseDnsConfig(true);
 
   // Conservatively assume local IPv6 is needed when DnsConfig is not valid.
@@ -2956,7 +2950,7 @@ void HostResolverImpl::UpdateDNSConfig(bool config_changed) {
       cache_->OnNetworkChange();
 
     // Life check to bail once |this| is deleted.
-    base::WeakPtr<HostResolverImpl> self = weak_ptr_factory_.GetWeakPtr();
+    base::WeakPtr<HostResolverManager> self = weak_ptr_factory_.GetWeakPtr();
 
     // Existing jobs will have been sent to the original server so they need to
     // be aborted.
@@ -2970,7 +2964,7 @@ void HostResolverImpl::UpdateDNSConfig(bool config_changed) {
   UpdateModeForHistogram(dns_config);
 }
 
-bool HostResolverImpl::HaveDnsConfig() const {
+bool HostResolverManager::HaveDnsConfig() const {
   // Use DnsClient only if it's fully configured and there is no override by
   // ScopedDefaultHostResolverProc.
   // The alternative is to use NetworkChangeNotifier to override DnsConfig,
@@ -2979,12 +2973,12 @@ bool HostResolverImpl::HaveDnsConfig() const {
          (proc_params_.resolver_proc || !HostResolverProc::GetDefault());
 }
 
-void HostResolverImpl::OnDnsTaskResolve() {
+void HostResolverManager::OnDnsTaskResolve() {
   DCHECK(dns_client_);
   num_dns_failures_ = 0;
 }
 
-void HostResolverImpl::OnFallbackResolve(int dns_task_error) {
+void HostResolverManager::OnFallbackResolve(int dns_task_error) {
   DCHECK(dns_client_);
   DCHECK_NE(OK, dns_task_error);
 
@@ -3002,7 +2996,7 @@ void HostResolverImpl::OnFallbackResolve(int dns_task_error) {
   AbortDnsTasks(ERR_FAILED, true /* fallback_only */);
 }
 
-MDnsClient* HostResolverImpl::GetOrCreateMdnsClient() {
+MDnsClient* HostResolverManager::GetOrCreateMdnsClient() {
 #if BUILDFLAG(ENABLE_MDNS)
   if (!mdns_client_) {
     if (!mdns_socket_factory_)
@@ -3021,7 +3015,7 @@ MDnsClient* HostResolverImpl::GetOrCreateMdnsClient() {
 #endif
 }
 
-void HostResolverImpl::UpdateModeForHistogram(const DnsConfig& dns_config) {
+void HostResolverManager::UpdateModeForHistogram(const DnsConfig& dns_config) {
   // Resolving with Async DNS resolver?
   if (HaveDnsConfig()) {
     mode_for_histogram_ = MODE_FOR_HISTOGRAM_ASYNC_DNS;
@@ -3052,12 +3046,12 @@ void HostResolverImpl::UpdateModeForHistogram(const DnsConfig& dns_config) {
   }
 }
 
-HostResolverImpl::RequestImpl::~RequestImpl() {
+HostResolverManager::RequestImpl::~RequestImpl() {
   if (job_)
     job_->CancelRequest(this);
 }
 
-void HostResolverImpl::RequestImpl::ChangeRequestPriority(
+void HostResolverManager::RequestImpl::ChangeRequestPriority(
     RequestPriority priority) {
   DCHECK(job_);
   job_->ChangeRequestPriority(this, priority);

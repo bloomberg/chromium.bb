@@ -19,10 +19,10 @@ namespace net {
 
 class DnsClient;
 struct DnsConfig;
-class HostResolverImpl;
+class HostResolverManager;
 struct ProcTaskParams;
 
-// Wrapper for HostResolverImpl that sets per-context parameters for created
+// Wrapper for HostResolverManager that sets per-context parameters for created
 // requests. Except for tests, typically only interacted with through the
 // HostResolver interface.
 //
@@ -34,7 +34,7 @@ class NET_EXPORT ContextHostResolver : public HostResolver {
  public:
   // Creates a ContextHostResolver that forwards all of its requests through
   // |impl|.
-  explicit ContextHostResolver(std::unique_ptr<HostResolverImpl> impl);
+  explicit ContextHostResolver(std::unique_ptr<HostResolverManager> impl);
   ~ContextHostResolver() override;
 
   // HostResolver methods:
@@ -74,7 +74,7 @@ class NET_EXPORT ContextHostResolver : public HostResolver {
  private:
   // TODO(crbug.com/934402): Make this a non-owned pointer to the singleton
   // resolver.
-  std::unique_ptr<HostResolverImpl> impl_;
+  std::unique_ptr<HostResolverManager> impl_;
 };
 
 }  // namespace net

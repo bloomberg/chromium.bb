@@ -391,7 +391,6 @@ component("net") {
     "//net/dns",
     "//net/dns:dns_client",
     "//net/dns:host_resolver",
-    "//net/dns:host_resolver_impl",
     "//net/dns:mdns_client",
     "//net/dns/public",
   ]
@@ -400,7 +399,6 @@ component("net") {
     "//net/dns",
     "//net/dns:dns_client",
     "//net/dns:host_resolver",
-    "//net/dns:host_resolver_impl",
     "//net/dns:mdns_client",
     "//net/dns/public",
   ]
@@ -2227,7 +2225,6 @@ source_set("net_deps") {
     "//net/dns",
     "//net/dns:dns_client",
     "//net/dns:host_resolver",
-    "//net/dns:host_resolver_impl",
     "//net/dns:mdns_client",
     "//net/dns/public",
   ]
@@ -2295,7 +2292,6 @@ source_set("net_public_deps") {
     "//net/dns",
     "//net/dns:dns_client",
     "//net/dns:host_resolver",
-    "//net/dns:host_resolver_impl",
     "//net/dns:mdns_client",
     "//net/dns/public",
   ]
