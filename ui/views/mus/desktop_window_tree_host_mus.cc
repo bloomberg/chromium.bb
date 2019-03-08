@@ -346,11 +346,6 @@ void DesktopWindowTreeHostMus::Init(const Widget::InitParams& params) {
     SetBoundsInDIP(params.bounds);
   }
 
-  // If the standard frame is not used, the frame area (rendered by the client)
-  // should be handled by the client, so it shouldn't update the client area
-  // by itself. See https://crbug.com/935338.
-  auto_update_client_area_ = !params.remove_standard_frame;
-
   cursor_manager_owner_ = std::make_unique<CursorManagerOwner>(window());
   InitHost();
 

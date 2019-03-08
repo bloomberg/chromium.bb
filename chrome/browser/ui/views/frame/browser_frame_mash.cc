@@ -88,6 +88,9 @@ views::Widget::InitParams BrowserFrameMash::GetWidgetParams() {
   std::unique_ptr<views::DesktopWindowTreeHostMus> desktop_window_tree_host =
       std::make_unique<views::DesktopWindowTreeHostMus>(
           std::move(window_tree_host_init_params), browser_frame_, this);
+  // BrowserNonClientFrameViewAsh::OnBoundsChanged() takes care of updating
+  // the insets.
+  desktop_window_tree_host->set_auto_update_client_area(false);
   SetDesktopWindowTreeHost(std::move(desktop_window_tree_host));
   return params;
 }
