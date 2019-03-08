@@ -70,9 +70,25 @@ cr.define('wallpapers', function() {
         var div = self.ownerDocument.createElement('div');
         div.textContent = entry;
         li.appendChild(div);
-          li.addEventListener('mousedown', e => {
-            e.preventDefault();
-          });
+        div.addEventListener('mousedown', e => {
+          var targetEl = e.target;
+          var inkEl = targetEl.querySelector('.ink');
+          if (inkEl) {
+            inkEl.classList.remove('ripple-category-list-item-animation');
+          } else {
+            inkEl = document.createElement('span');
+            inkEl.classList.add('ink');
+            inkEl.style.width = inkEl.style.height =
+                Math.max(targetEl.offsetWidth, targetEl.offsetHeight) + 'px';
+            targetEl.appendChild(inkEl);
+          }
+          inkEl.style.left = (e.offsetX - 0.5 * inkEl.offsetWidth) + 'px';
+          inkEl.style.top = (e.offsetY - 0.5 * inkEl.offsetHeight) + 'px';
+          inkEl.classList.add('ripple-category-list-item-animation');
+        });
+        li.addEventListener('mousedown', e => {
+          e.preventDefault();
+        });
         return li;
       };
     },
