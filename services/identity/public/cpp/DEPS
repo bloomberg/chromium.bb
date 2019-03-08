@@ -1,10 +1,10 @@
 include_rules = [
+  "+components/image_fetcher/core/fake_image_decoder.h",
   "+components/prefs/testing_pref_service.h",
   "+components/signin/core/browser/account_consistency_method.h",
   "+components/signin/core/browser/account_fetcher_service.h",
   "+components/signin/core/browser/account_info.h",
   "+components/signin/core/browser/child_account_info_fetcher_android.h",
-  "+components/signin/core/browser/test_image_decoder.h",
   "+components/signin/core/browser/gaia_cookie_manager_service.h",
   "+components/signin/core/browser/list_accounts_test_utils.h",
   "+components/signin/core/browser/oauth2_token_service_delegate_android.h",

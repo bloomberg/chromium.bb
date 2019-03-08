@@ -123,6 +123,7 @@ source_set("test_support") {
   deps = [
     ":signin",
     "//base",
+    "//components/image_fetcher/core:test_support",
     "//components/keyed_service/core",
     "//components/signin/core/browser:internals_test_support",
     "//components/signin/ios/browser",

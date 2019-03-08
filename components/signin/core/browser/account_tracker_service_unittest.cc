@@ -13,6 +13,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
+#include "components/image_fetcher/core/fake_image_decoder.h"
 #include "components/image_fetcher/core/image_data_fetcher.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -22,7 +23,6 @@
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/avatar_icon_util.h"
 #include "components/signin/core/browser/signin_pref_names.h"
-#include "components/signin/core/browser/test_image_decoder.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "google_apis/gaia/fake_oauth2_token_service.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
@@ -356,9 +356,9 @@ class AccountTrackerServiceTest : public testing::Test {
     account_tracker_->AddObserver(&observer_);
 
     account_tracker_->Initialize(&pref_service_, std::move(path));
-    account_fetcher_->Initialize(signin_client(), token_service(),
-                                 account_tracker_.get(),
-                                 std::make_unique<TestImageDecoder>());
+    account_fetcher_->Initialize(
+        signin_client(), token_service(), account_tracker_.get(),
+        std::make_unique<image_fetcher::FakeImageDecoder>());
     if (network_enabled) {
       account_fetcher_->EnableNetworkFetchesForTest();
     }

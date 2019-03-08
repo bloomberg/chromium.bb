@@ -14,17 +14,18 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
+#include "components/image_fetcher/core/fake_image_decoder.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/signin/core/browser/account_consistency_method.h"
+#include "components/signin/core/browser/account_fetcher_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/device_id_helper.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_pref_names.h"
-#include "components/signin/core/browser/test_image_decoder.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "google_apis/gaia/fake_oauth2_token_service_delegate.h"
@@ -79,9 +80,9 @@ class SigninManagerTest : public testing::Test {
     SigninManagerBase::RegisterProfilePrefs(user_prefs_.registry());
     SigninManagerBase::RegisterPrefs(local_state_.registry());
     account_tracker_.Initialize(&user_prefs_, base::FilePath());
-    account_fetcher_.Initialize(&test_signin_client_, &token_service_,
-                                &account_tracker_,
-                                std::make_unique<TestImageDecoder>());
+    account_fetcher_.Initialize(
+        &test_signin_client_, &token_service_, &account_tracker_,
+        std::make_unique<image_fetcher::FakeImageDecoder>());
   }
 
   ~SigninManagerTest() override {
