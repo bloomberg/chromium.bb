@@ -43,8 +43,6 @@
 #include "net/base/request_priority.h"
 #include "net/http/http_util.h"
 #include "net/log/net_log.h"
-#include "net/log/net_log_capture_mode.h"
-#include "net/log/net_log_event_type.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request.h"
 #include "services/network/public/cpp/features.h"
@@ -237,34 +235,6 @@ EventType ResourceTypeToEventType(ResourceType resource_type) {
     default:
       return EventType::FETCH_SUB_RESOURCE;
   }
-}
-
-std::unique_ptr<base::Value> NetLogServiceWorkerStatusCallback(
-    blink::ServiceWorkerStatusCode status,
-    net::NetLogCaptureMode) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
-  dict->SetString("status", blink::ServiceWorkerStatusToString(status));
-  return std::move(dict);
-}
-
-std::unique_ptr<base::Value> NetLogFetchEventCallback(
-    blink::ServiceWorkerStatusCode status,
-    ServiceWorkerFetchDispatcher::FetchEventResult result,
-    net::NetLogCaptureMode) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
-  dict->SetString("status", blink::ServiceWorkerStatusToString(status));
-  dict->SetBoolean(
-      "has_response",
-      result == ServiceWorkerFetchDispatcher::FetchEventResult::kGotResponse);
-  return std::move(dict);
-}
-
-void EndNetLogEventWithServiceWorkerStatus(
-    const net::NetLogWithSource& net_log,
-    net::NetLogEventType type,
-    blink::ServiceWorkerStatusCode status) {
-  net_log.EndEvent(type,
-                   base::Bind(&NetLogServiceWorkerStatusCallback, status));
 }
 
 const net::NetworkTrafficAnnotationTag kNavigationPreloadTrafficAnnotation =
@@ -495,14 +465,12 @@ ServiceWorkerFetchDispatcher::ServiceWorkerFetchDispatcher(
     ResourceType resource_type,
     const std::string& client_id,
     scoped_refptr<ServiceWorkerVersion> version,
-    const net::NetLogWithSource& net_log,
     base::OnceClosure prepare_callback,
     FetchCallback fetch_callback)
     : request_(std::move(request)),
       client_id_(client_id),
       version_(std::move(version)),
       resource_type_(resource_type),
-      net_log_(net_log),
       prepare_callback_(std::move(prepare_callback)),
       fetch_callback_(std::move(fetch_callback)),
       did_complete_(false),
@@ -511,17 +479,9 @@ ServiceWorkerFetchDispatcher::ServiceWorkerFetchDispatcher(
   if (blink::ServiceWorkerUtils::IsServicificationEnabled())
     DCHECK(!request_->blob);
 #endif  // DCHECK_IS_ON()
-  net_log_.BeginEvent(net::NetLogEventType::SERVICE_WORKER_DISPATCH_FETCH_EVENT,
-                      net::NetLog::StringCallback(
-                          "event_type", ServiceWorkerMetrics::EventTypeToString(
-                                            GetEventType())));
 }
 
-ServiceWorkerFetchDispatcher::~ServiceWorkerFetchDispatcher() {
-  if (!did_complete_)
-    net_log_.EndEvent(
-        net::NetLogEventType::SERVICE_WORKER_DISPATCH_FETCH_EVENT);
-}
+ServiceWorkerFetchDispatcher::~ServiceWorkerFetchDispatcher() = default;
 
 void ServiceWorkerFetchDispatcher::Run() {
   DCHECK(version_->status() == ServiceWorkerVersion::ACTIVATING ||
@@ -529,8 +489,6 @@ void ServiceWorkerFetchDispatcher::Run() {
       << version_->status();
 
   if (version_->status() == ServiceWorkerVersion::ACTIVATING) {
-    net_log_.BeginEvent(
-        net::NetLogEventType::SERVICE_WORKER_WAIT_FOR_ACTIVATION);
     version_->RegisterStatusChangeCallback(
         base::BindOnce(&ServiceWorkerFetchDispatcher::DidWaitForActivation,
                        weak_factory_.GetWeakPtr()));
@@ -540,7 +498,6 @@ void ServiceWorkerFetchDispatcher::Run() {
 }
 
 void ServiceWorkerFetchDispatcher::DidWaitForActivation() {
-  net_log_.EndEvent(net::NetLogEventType::SERVICE_WORKER_WAIT_FOR_ACTIVATION);
   StartWorker();
 }
 
@@ -558,7 +515,6 @@ void ServiceWorkerFetchDispatcher::StartWorker() {
     return;
   }
 
-  net_log_.BeginEvent(net::NetLogEventType::SERVICE_WORKER_START_WORKER);
   version_->RunAfterStartWorker(
       GetEventType(),
       base::BindOnce(&ServiceWorkerFetchDispatcher::DidStartWorker,
@@ -568,12 +524,9 @@ void ServiceWorkerFetchDispatcher::StartWorker() {
 void ServiceWorkerFetchDispatcher::DidStartWorker(
     blink::ServiceWorkerStatusCode status) {
   if (status != blink::ServiceWorkerStatusCode::kOk) {
-    EndNetLogEventWithServiceWorkerStatus(
-        net_log_, net::NetLogEventType::SERVICE_WORKER_START_WORKER, status);
     DidFail(status);
     return;
   }
-  net_log_.EndEvent(net::NetLogEventType::SERVICE_WORKER_START_WORKER);
   DispatchFetchEvent();
 }
 
@@ -590,7 +543,6 @@ void ServiceWorkerFetchDispatcher::DispatchFetchEvent() {
   // Run callback to say that the fetch event will be dispatched.
   DCHECK(prepare_callback_);
   std::move(prepare_callback_).Run();
-  net_log_.BeginEvent(net::NetLogEventType::SERVICE_WORKER_FETCH_EVENT);
 
   // Set up for receiving the response.
   blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback_ptr;
@@ -636,8 +588,6 @@ void ServiceWorkerFetchDispatcher::DispatchFetchEvent() {
 void ServiceWorkerFetchDispatcher::DidFailToDispatch(
     std::unique_ptr<ResponseCallback> response_callback,
     blink::ServiceWorkerStatusCode status) {
-  EndNetLogEventWithServiceWorkerStatus(
-      net_log_, net::NetLogEventType::SERVICE_WORKER_FETCH_EVENT, status);
   DidFail(status);
 }
 
@@ -655,7 +605,6 @@ void ServiceWorkerFetchDispatcher::DidFinish(
     blink::mojom::FetchAPIResponsePtr response,
     blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
     blink::mojom::ServiceWorkerFetchEventTimingPtr timing) {
-  net_log_.EndEvent(net::NetLogEventType::SERVICE_WORKER_FETCH_EVENT);
   Complete(blink::ServiceWorkerStatusCode::kOk, fetch_result,
            std::move(response), std::move(body_as_stream), std::move(timing));
 }
@@ -669,10 +618,6 @@ void ServiceWorkerFetchDispatcher::Complete(
   DCHECK(fetch_callback_);
 
   did_complete_ = true;
-  net_log_.EndEvent(
-      net::NetLogEventType::SERVICE_WORKER_DISPATCH_FETCH_EVENT,
-      base::Bind(&NetLogFetchEventCallback, status, fetch_result));
-
   std::move(fetch_callback_)
       .Run(status, fetch_result, std::move(response), std::move(body_as_stream),
            std::move(timing), version_);

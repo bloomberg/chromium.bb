@@ -852,7 +852,6 @@ void ServiceWorkerURLRequestJob::ForwardRequestToServiceWorker() {
   fetch_dispatcher_ = std::make_unique<ServiceWorkerFetchDispatcher>(
       std::move(fetch_api_request), resource_type_,
       provider_host_->client_uuid(), base::WrapRefCounted(active_worker),
-      request()->net_log(),
       base::BindOnce(&ServiceWorkerURLRequestJob::DidPrepareFetchEvent,
                      weak_factory_.GetWeakPtr(),
                      base::WrapRefCounted(active_worker)),
