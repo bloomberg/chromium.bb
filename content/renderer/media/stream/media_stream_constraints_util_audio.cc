@@ -1229,8 +1229,7 @@ class DeviceContainer {
         // It is possible, however, that the HW echo canceller is enabled. In
         // such case the property for echo cancellation type should be updated
         // accordingly.
-        if (effects & media::AudioParameters::ECHO_CANCELLER ||
-            effects & media::AudioParameters::EXPERIMENTAL_ECHO_CANCELLER) {
+        if (effects & media::AudioParameters::ECHO_CANCELLER) {
           properties.echo_cancellation_type =
               EchoCancellationType::kEchoCancellationSystem;
         }
