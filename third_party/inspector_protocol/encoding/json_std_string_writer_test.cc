@@ -37,7 +37,7 @@ TEST(JsonStdStringWriterTest, HelloWorld) {
       reinterpret_cast<const uint8_t*>(value.data()), value.size()));
   WriteUTF8AsUTF16(writer.get(), "msg2");
   WriteUTF8AsUTF16(writer.get(), "\\\b\r\n\t\f\"");
-  WriteUTF8AsUTF16(writer.get(), "msg2");
+  WriteUTF8AsUTF16(writer.get(), "nested");
   writer->HandleObjectBegin();
   WriteUTF8AsUTF16(writer.get(), "double");
   writer->HandleDouble(3.1415);
