@@ -33,6 +33,7 @@ class Hint;
 
 namespace previews {
 
+class HintsFetcher;
 class PreviewsHints;
 class PreviewsTopHostProvider;
 class PreviewsUserData;
@@ -119,14 +120,13 @@ class PreviewsOptimizationGuide
                     const GURL& document_url,
                     const optimization_guide::proto::Hint* loaded_hint) const;
 
-  // Method to request OnePlatform client hints for user's sites with
-  // top engagement scores and creates a remote request to the OnePlatform
-  // Service. On request success OnOnePlatformHintsReceived callback will be
-  // called.
+  // Method to request OnePlatform client hints for user's sites with top
+  // engagement scores and creates a remote request using |hints_fetcher_| On
+  // request success OnOnePlatformHintsReceived callback will be called.
   void GetOnePlatformClientHints();
 
-  // Called when the response form the OnePlatform Service for hints is
-  // received.
+  // Called when the response from the OnePlatform Guide Service is handled and
+  // stored by the |hints_fetcher_|. received.
   void OnOnePlatformHintsReceived();
 
   // The OptimizationGuideService that this guide is listening to. Not owned.
@@ -150,8 +150,12 @@ class PreviewsOptimizationGuide
   // Used in testing to subscribe to an update event in this class.
   base::OnceClosure next_update_closure_;
 
+  // HintsFetcher handles the request to update Hints from OnePlatform Guide
+  // Service.
+  std::unique_ptr<HintsFetcher> hintsfetcher_;
+
   // TopHostProvider that this guide can query. Not owned.
-  PreviewsTopHostProvider* previews_top_host_provider_;
+  PreviewsTopHostProvider* previews_top_host_provider_ = nullptr;
 
   // Used to get |weak_ptr_| to self on the UI thread.
   base::WeakPtrFactory<PreviewsOptimizationGuide> ui_weak_ptr_factory_;
