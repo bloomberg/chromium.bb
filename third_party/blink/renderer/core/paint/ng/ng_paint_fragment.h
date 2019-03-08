@@ -9,7 +9,6 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_fragment.h"
-#include "third_party/blink/renderer/core/loader/resource/image_resource_observer.h"
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item_client.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
@@ -36,8 +35,7 @@ enum class NGOutlineType;
 // - image (<img>, svg <image>) or video (<video>) elements that are
 //   placeholders for displaying them.
 class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
-                                    public DisplayItemClient,
-                                    public ImageResourceObserver {
+                                    public DisplayItemClient {
  public:
   NGPaintFragment(scoped_refptr<const NGPhysicalFragment>,
                   NGPhysicalOffset offset,

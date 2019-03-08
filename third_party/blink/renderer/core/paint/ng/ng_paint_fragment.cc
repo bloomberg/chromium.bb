@@ -36,8 +36,7 @@ namespace blink {
 namespace {
 
 struct SameSizeAsNGPaintFragment : public RefCounted<NGPaintFragment>,
-                                   public DisplayItemClient,
-                                   public ImageResourceObserver {
+                                   public DisplayItemClient {
   void* pointers[6];
   NGPhysicalOffset offsets[2];
   unsigned flags;
