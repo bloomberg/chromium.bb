@@ -364,7 +364,7 @@ class DriveFsHostTest : public ::testing::Test, public mojom::DriveFsBootstrap {
         .WillOnce(RunQuitClosure(&quit_closure));
     // Eventually we must attempt unmount.
     EXPECT_CALL(*disk_manager_, UnmountPath("/media/drivefsroot/salt-g-ID",
-                                            chromeos::UNMOUNT_OPTIONS_NONE, _));
+                                            chromeos::UNMOUNT_OPTIONS_LAZY, _));
     SendOnMounted();
     run_loop.Run();
     ASSERT_TRUE(host_->IsMounted());
@@ -500,7 +500,7 @@ TEST_F(DriveFsHostTest, DestroyBeforeMojoConnection) {
   auto token = StartMount();
   DispatchMountSuccessEvent(token);
   EXPECT_CALL(*disk_manager_, UnmountPath("/media/drivefsroot/salt-g-ID",
-                                          chromeos::UNMOUNT_OPTIONS_NONE, _));
+                                          chromeos::UNMOUNT_OPTIONS_LAZY, _));
 
   host_.reset();
   EXPECT_FALSE(PendingConnectionManager::Get().OpenIpcChannel(token, {}));
