@@ -428,9 +428,6 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
           ShowViewFromMode(profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN);
         }
         break;
-      case sync_ui_util::SUPERVISED_USER_AUTH_ERROR:
-        NOTREACHED();
-        break;
       case sync_ui_util::AUTH_ERROR:
         ShowViewFromMode(profiles::BUBBLE_VIEW_MODE_GAIA_REAUTH);
         break;
@@ -661,7 +658,7 @@ views::View* ProfileChooserView::CreateSyncErrorViewIfNeeded(
 
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
 
-  if (error != sync_ui_util::SUPERVISED_USER_AUTH_ERROR && dice_enabled_)
+  if (dice_enabled_)
     return CreateDiceSyncErrorView(avatar_item, error, button_string_id);
 
   // Sets an overall horizontal layout.
