@@ -36,7 +36,6 @@ login.createScreen(
         show: function() {
           this.setLoading_(false);
 
-          Oobe.getInstance().headerHidden = true;
           Oobe.showScreen({id: SCREEN_UNRECOVERABLE_CRYPTOHOME_ERROR});
         },
 

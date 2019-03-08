@@ -285,10 +285,6 @@ cr.define('cr.ui.login', function() {
       document.documentElement.setAttribute('screen', displayType);
     },
 
-    get newKioskUI() {
-      return loadTimeData.getString('newKioskUI') == 'on';
-    },
-
     /**
      * Returns dimensions of screen exluding header bar.
      * @type {Object}
@@ -304,32 +300,6 @@ cr.define('cr.ui.login', function() {
      */
     get currentScreen() {
       return $(this.screens_[this.currentStep_]);
-    },
-
-    /**
-     * Hides/shows header (Shutdown/Add User/Cancel buttons).
-     * @param {boolean} hidden Whether header is hidden.
-     * TODO(crbug/914578): talk to the views login shelf through Mojo.
-     */
-    get headerHidden() {
-      return $('login-header-bar').hidden;
-    },
-
-    set headerHidden(hidden) {
-      if (this.showingViewsBasedShelf && !hidden) {
-        // When views-based shelf is enabled, toggling header bar visibility
-        // is handled by ash. Prevent showing a duplicate header bar here.
-        return;
-      }
-      $('login-header-bar').hidden = hidden;
-    },
-
-    /**
-     * The header bar should be hidden when views-based shelf is shown.
-     */
-    get showingViewsBasedShelf() {
-      // TODO: remove this method once webui shelf has been removed.
-      return true;
     },
 
     /**
@@ -727,16 +697,10 @@ cr.define('cr.ui.login', function() {
       // Make sure the screen is decorated.
       this.preloadScreen(screen);
 
-      if (screen.data !== undefined && screen.data.disableAddUser)
-        DisplayManager.updateAddUserButtonStatus(true);
-
 
       // Show sign-in screen instead of account picker if pod row is empty.
       if (screenId == SCREEN_ACCOUNT_PICKER && $('pod-row').pods.length == 0 &&
           cr.isChromeOS) {
-        // Manually hide 'add-user' header bar, because of the case when
-        // 'Cancel' button is used on the offline login page.
-        $('add-user-header-bar-item').hidden = true;
         Oobe.showSigninUI();
         return;
       }
@@ -1309,22 +1273,9 @@ cr.define('cr.ui.login', function() {
   };
 
   /**
-   * Disable Add users button if said.
-   * @param {boolean} disable true to disable
+   * Clears password field in user-pod.
    */
-  DisplayManager.updateAddUserButtonStatus =
-      function(disable) {
-    $('add-user-button').disabled = disable;
-    $('add-user-button')
-        .classList[disable ? 'add' : 'remove']('button-restricted');
-    $('add-user-button').title =
-        disable ? loadTimeData.getString('disabledAddUserTooltip') : '';
-  }
-
-      /**
-       * Clears password field in user-pod.
-       */
-      DisplayManager.clearUserPodPassword = function() {
+  DisplayManager.clearUserPodPassword = function() {
     $('pod-row').clearFocusedPod();
   };
 

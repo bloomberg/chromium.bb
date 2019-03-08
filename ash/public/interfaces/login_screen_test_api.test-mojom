@@ -25,4 +25,16 @@ interface LoginScreenTestApi {
 
   // Fetches current UI update count.
   GetUiUpdateCount() => (int64 count);
+
+  // Simulates Kiosk App launch. Returns true if launch attempt was successful.
+  // (I.e. app was found, and launch event was generated.)
+  LaunchApp(string app_id) => (bool found);
+
+  // Simulate Click on AddUser button.
+  // Returns true if request was successful.
+  ClickAddUserButton() => (bool success);
+
+  // Blocks until UI update counter is greated than |previous_update_count|.
+  // Returns true on success, false on error.
+  WaitForUiUpdate(int64 previous_update_count) => (bool success);
 };

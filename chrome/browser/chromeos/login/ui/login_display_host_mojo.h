@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
-#include "chrome/browser/chromeos/login/ui/kiosk_app_menu_updater.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_common.h"
 #include "chrome/browser/chromeos/login/ui/oobe_ui_dialog_delegate.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
@@ -156,8 +155,6 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
 
   // The account id of the user pod that's being focused.
   AccountId focused_pod_account_id_;
-
-  KioskAppMenuUpdater kiosk_updater_;
 
   // Fetches system information and sends it to the UI over mojo.
   std::unique_ptr<MojoSystemInfoDispatcher> system_info_updater_;

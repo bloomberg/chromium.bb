@@ -82,7 +82,6 @@ login.createScreen('UserImageScreen', 'user-image', function() {
      * @param {object} data Screen init payload.
      */
     onBeforeShow: function(data) {
-      Oobe.getInstance().headerHidden = true;
       this.loading = true;
       chrome.send('onUserImageScreenShown');
     },

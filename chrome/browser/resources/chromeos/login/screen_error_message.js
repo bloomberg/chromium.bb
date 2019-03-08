@@ -283,12 +283,6 @@ login.createScreen('ErrorMessageScreen', 'error-message', function() {
       this.classList.remove(this.ui_state);
       this.ui_state = ui_state;
       this.classList.add(this.ui_state);
-
-      if (ui_state == ERROR_SCREEN_UI_STATE.LOCAL_STATE_ERROR) {
-        // Hide header bar and progress dots, because there are no way
-        // from the error screen about broken local state.
-        Oobe.getInstance().headerHidden = true;
-      }
       this.onContentChange_();
     },
 

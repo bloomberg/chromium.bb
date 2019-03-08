@@ -12,8 +12,6 @@
 
 #include "ash/public/cpp/login_constants.h"
 #include "ash/public/cpp/wallpaper_types.h"
-#include "ash/public/interfaces/constants.mojom.h"
-#include "ash/public/interfaces/shutdown.mojom.h"
 #include "ash/public/interfaces/tray_action.mojom.h"
 #include "base/bind.h"
 #include "base/i18n/number_formatting.h"
@@ -102,9 +100,7 @@
 #include "components/version_info/version_info.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/service_manager_connection.h"
 #include "google_apis/gaia/gaia_auth_util.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/ime/chromeos/ime_keyboard.h"
 #include "ui/base/ime/chromeos/input_method_descriptor.h"
@@ -326,14 +322,6 @@ void SigninScreenHandler::DeclareLocalizedValues(
   builder->Add("submitButtonAccessibleName",
                IDS_LOGIN_POD_SUBMIT_BUTTON_ACCESSIBLE_NAME);
   builder->Add("signedIn", IDS_SCREEN_LOCK_ACTIVE_USER);
-  builder->Add("launchAppButton", IDS_LAUNCH_APP_BUTTON);
-  builder->Add("restart", IDS_ASH_SHELF_RESTART_BUTTON);
-  builder->Add("shutDown", IDS_ASH_SHELF_SHUTDOWN_BUTTON);
-  builder->Add("addUser", IDS_ASH_ADD_USER_BUTTON);
-  builder->Add("browseAsGuest", IDS_ASH_BROWSE_AS_GUEST_BUTTON);
-  builder->Add("moreOptions", IDS_MORE_OPTIONS_BUTTON);
-  builder->Add("cancel", IDS_ASH_SHELF_CANCEL_BUTTON);
-  builder->Add("signOutUser", IDS_ASH_SHELF_SIGN_OUT_BUTTON);
   builder->Add("offlineLogin", IDS_OFFLINE_LOGIN_HTML);
   builder->Add("ownerUserPattern", IDS_LOGIN_POD_OWNER_USER);
   builder->Add("removeUser", IDS_LOGIN_POD_REMOVE_USER);
@@ -460,7 +448,6 @@ void SigninScreenHandler::RegisterMessages() {
               &SigninScreenHandler::HandleLaunchPublicSession);
   AddRawCallback("offlineLogin", &SigninScreenHandler::HandleOfflineLogin);
   AddCallback("rebootSystem", &SigninScreenHandler::HandleRebootSystem);
-  AddCallback("shutdownSystem", &SigninScreenHandler::HandleShutdownSystem);
   AddCallback("removeUser", &SigninScreenHandler::HandleRemoveUser);
   AddCallback("toggleEnrollmentScreen",
               &SigninScreenHandler::HandleToggleEnrollmentScreen);
@@ -470,7 +457,6 @@ void SigninScreenHandler::RegisterMessages() {
               &SigninScreenHandler::HandleToggleKioskEnableScreen);
   AddCallback("accountPickerReady",
               &SigninScreenHandler::HandleAccountPickerReady);
-  AddCallback("signOutUser", &SigninScreenHandler::HandleSignOutUser);
   AddCallback("openInternetDetailDialog",
               &SigninScreenHandler::HandleOpenInternetDetailDialog);
   AddCallback("loginVisible", &SigninScreenHandler::HandleLoginVisible);
@@ -499,12 +485,6 @@ void SigninScreenHandler::RegisterMessages() {
   AddCallback("sendFeedback", &SigninScreenHandler::HandleSendFeedback);
   AddCallback("sendFeedbackAndResyncUserData",
               &SigninScreenHandler::HandleSendFeedbackAndResyncUserData);
-
-  // This message is sent by the kiosk app menu, but is handled here
-  // so we can tell the delegate to launch the app.
-  AddCallback("launchKioskApp", &SigninScreenHandler::HandleLaunchKioskApp);
-  AddCallback("launchArcKioskApp",
-              &SigninScreenHandler::HandleLaunchArcKioskApp);
 }
 
 void SigninScreenHandler::Show(const LoginScreenContext& context,
@@ -592,23 +572,20 @@ void SigninScreenHandler::ShowImpl() {
         ->GetImeKeyboard()
         ->SetCapsLockEnabled(false);
 
-    base::DictionaryValue params;
-    params.SetBoolean("disableAddUser", AllWhitelistedUsersPresent());
-    UpdateUIState(UI_STATE_ACCOUNT_PICKER, &params);
+    UpdateUIState(UI_STATE_ACCOUNT_PICKER);
   }
 }
 
-void SigninScreenHandler::UpdateUIState(UIState ui_state,
-                                        base::DictionaryValue* params) {
+void SigninScreenHandler::UpdateUIState(UIState ui_state) {
   switch (ui_state) {
     case UI_STATE_GAIA_SIGNIN:
       ui_state_ = UI_STATE_GAIA_SIGNIN;
-      ShowScreenWithData(OobeScreen::SCREEN_GAIA_SIGNIN, params);
+      ShowScreen(OobeScreen::SCREEN_GAIA_SIGNIN);
       break;
     case UI_STATE_ACCOUNT_PICKER:
       ui_state_ = UI_STATE_ACCOUNT_PICKER;
       gaia_screen_handler_->CancelShowGaiaAsync();
-      ShowScreenWithData(OobeScreen::SCREEN_ACCOUNT_PICKER, params);
+      ShowScreen(OobeScreen::SCREEN_ACCOUNT_PICKER);
       break;
     default:
       NOTREACHED();
@@ -967,8 +944,7 @@ void SigninScreenHandler::OnPreferencesChanged() {
     // We need to reload GAIA if UI_STATE_UNKNOWN or the allow new user setting
     // has changed so that reloaded GAIA shows/hides the option to create a new
     // account.
-    UpdateUIState(UI_STATE_ACCOUNT_PICKER, nullptr);
-    UpdateAddButtonStatus();
+    UpdateUIState(UI_STATE_ACCOUNT_PICKER);
   }
 }
 
@@ -1074,11 +1050,6 @@ bool SigninScreenHandler::ShouldLoadGaia() const {
          is_account_picker_showing_first_time_;
 }
 
-void SigninScreenHandler::UpdateAddButtonStatus() {
-  CallJS("cr.ui.login.DisplayManager.updateAddUserButtonStatus",
-         AllWhitelistedUsersPresent());
-}
-
 void SigninScreenHandler::HandleAuthenticateUser(const AccountId& account_id,
                                                  const std::string& password,
                                                  bool authenticated_by_pin) {
@@ -1178,16 +1149,7 @@ void SigninScreenHandler::HandleOfflineLogin(const base::ListValue* args) {
 
   gaia_screen_handler_->set_populated_email(email);
   gaia_screen_handler_->LoadAuthExtension(true /* force */, true /* offline */);
-  UpdateUIState(UI_STATE_GAIA_SIGNIN, nullptr);
-}
-
-void SigninScreenHandler::HandleShutdownSystem() {
-  ash::mojom::ShutdownControllerPtr shutdown_controller;
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(ash::mojom::kServiceName, &shutdown_controller);
-
-  shutdown_controller->RequestShutdownFromLoginScreen();
+  UpdateUIState(UI_STATE_GAIA_SIGNIN);
 }
 
 void SigninScreenHandler::HandleRebootSystem() {
@@ -1207,7 +1169,6 @@ void SigninScreenHandler::HandleRemoveUser(const AccountId& account_id) {
   if (!delegate_)
     return;
   delegate_->RemoveUser(account_id);
-  UpdateAddButtonStatus();
 }
 
 void SigninScreenHandler::HandleToggleEnrollmentScreen() {
@@ -1239,8 +1200,7 @@ void SigninScreenHandler::HandleToggleKioskAutolaunchScreen() {
 
 void SigninScreenHandler::LoadUsers(const user_manager::UserList& users,
                                     const base::ListValue& users_list) {
-  CallJS("login.AccountPickerScreen.loadUsers", users_list,
-         delegate_->IsShowGuest());
+  CallJS("login.AccountPickerScreen.loadUsers", users_list);
 
   // Enable pin for any users who can use it.
   // TODO(jdufault): Cache pin state in BrowserProcess::local_state() so we
@@ -1297,11 +1257,6 @@ void SigninScreenHandler::HandleAccountPickerReady() {
 
   if (delegate_)
     delegate_->OnSigninScreenReady();
-}
-
-void SigninScreenHandler::HandleSignOutUser() {
-  if (delegate_)
-    delegate_->Signout();
 }
 
 void SigninScreenHandler::HandleOpenInternetDetailDialog() {
@@ -1437,22 +1392,6 @@ void SigninScreenHandler::SendPublicSessionKeyboardLayouts(
     std::unique_ptr<base::ListValue> keyboard_layouts) {
   CallJS("login.AccountPickerScreen.setPublicSessionKeyboardLayouts",
          account_id, locale, *keyboard_layouts);
-}
-
-void SigninScreenHandler::HandleLaunchKioskApp(const AccountId& app_account_id,
-                                               bool diagnostic_mode) {
-  UserContext context(user_manager::USER_TYPE_KIOSK_APP, app_account_id);
-  SigninSpecifics specifics;
-  specifics.kiosk_diagnostic_mode = diagnostic_mode;
-  if (delegate_)
-    delegate_->Login(context, specifics);
-}
-
-void SigninScreenHandler::HandleLaunchArcKioskApp(
-    const AccountId& app_account_id) {
-  UserContext context(user_manager::USER_TYPE_ARC_KIOSK_APP, app_account_id);
-  if (delegate_)
-    delegate_->Login(context, SigninSpecifics());
 }
 
 void SigninScreenHandler::HandleGetTabletModeState() {

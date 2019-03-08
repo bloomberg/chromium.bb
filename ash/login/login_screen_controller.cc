@@ -485,11 +485,13 @@ void LoginScreenController::SetPublicSessionShowFullManagementDisclosure(
 }
 
 void LoginScreenController::SetKioskApps(
-    std::vector<mojom::KioskAppInfoPtr> kiosk_apps) {
+    std::vector<mojom::KioskAppInfoPtr> kiosk_apps,
+    SetKioskAppsCallback callback) {
   Shelf::ForWindow(Shell::Get()->GetPrimaryRootWindow())
       ->shelf_widget()
       ->login_shelf_view()
       ->SetKioskApps(std::move(kiosk_apps));
+  std::move(callback).Run(true);
 }
 
 void LoginScreenController::ShowKioskAppError(const std::string& message) {

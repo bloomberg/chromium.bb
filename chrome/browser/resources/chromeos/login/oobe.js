@@ -10,10 +10,8 @@
 // <include src="test_util.js">
 // <include src="../../../../../ui/login/screen.js">
 // <include src="screen_context.js">
-// <include src="apps_menu.js">
 // <include src="../../../../../ui/login/bubble.js">
 // <include src="../../../../../ui/login/display_manager.js">
-// <include src="md_header_bar.js">
 // <include src="demo_mode_test_helper.js">
 
 // <include
@@ -142,7 +140,6 @@ cr.define('cr.ui.Oobe', function() {
       $('bubble-persistent').hideOnKeyPress = false;
 
       cr.ui.Bubble.decorate($('bubble'));
-      login.HeaderBar.decorate($('login-header-bar'));
 
       chrome.send('screenStateInitialize');
     },

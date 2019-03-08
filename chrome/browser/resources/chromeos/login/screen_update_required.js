@@ -7,10 +7,5 @@
  */
 
 login.createScreen('UpdateRequiredScreen', 'update-required', function() {
-  return {
-    /** @Override */
-    onBeforeShow: function(data) {
-      Oobe.getInstance().headerHidden = true;
-    }
-  };
+  return {};
 });

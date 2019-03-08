@@ -57,7 +57,6 @@ login.createScreen(
         onBeforeShow: function(data) {
           // Active Directory password change screen is similar to Active
           // Directory login screen. So we restore bottom bar controls.
-          Oobe.getInstance().headerHidden = false;
           this.adPasswordChanged_.reset();
           if ('username' in data)
             this.adPasswordChanged_.username = data.username;

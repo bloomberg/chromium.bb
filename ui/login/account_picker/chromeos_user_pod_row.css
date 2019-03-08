@@ -496,20 +496,6 @@ html[dir=rtl] .pod.focused:not(.multiprofiles-policy-applied):not(.public-accoun
   width: 27px;
 }
 
-.launch-app-button-container {
-  display: block;
-  flex: auto;
-  text-align: center;
-}
-
-.launch-app-button {
-  display: inline;
-  margin-top: 6px !important;
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
 .pod[auth-type='onlineSignIn'] .reauth-hint-container {
   display: flex;
   justify-content: center;

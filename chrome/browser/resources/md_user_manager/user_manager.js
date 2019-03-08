@@ -97,8 +97,7 @@ cr.define('cr.ui', function() {
    *     displayed.
    */
   UserManager.showUserManagerScreen = function(showGuest, showAddPerson) {
-    UserManager.getInstance().showScreen(
-        {id: 'account-picker', data: {disableAddUser: false}});
+    UserManager.getInstance().showScreen({id: 'account-picker', data: {}});
     // Hide control options if the user does not have the right permissions.
     const controlBar = document.querySelector('control-bar');
     controlBar.showGuest = showGuest;

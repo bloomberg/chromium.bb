@@ -81,34 +81,10 @@ cr.define('cr.ui', function() {
   Oobe.showOobeUI = function(showOobe) {
     if (showOobe) {
       document.body.classList.add('oobe-display');
-
-      // Callback to animate the header bar in.
-      var showHeaderBar = function() {
-        login.HeaderBar.animateIn(false, function() {
-          chrome.send('headerBarVisible');
-        });
-      };
-      // Start asynchronously so the OOBE welcome screen comes in first.
-      window.setTimeout(showHeaderBar, HEADER_BAR_DELAY_MS);
     } else {
       document.body.classList.remove('oobe-display');
       Oobe.getInstance().prepareForLoginDisplay_();
-      // Ensure header bar is visible when switching to Login UI from oobe.
-      if (Oobe.getInstance().displayType == DISPLAY_TYPE.OOBE)
-        login.HeaderBar.animateIn(true);
     }
-
-    Oobe.getInstance().headerHidden = false;
-  };
-
-  /**
-   * When |showShutdown| is set to "true", the shutdown button is shown and the
-   * reboot button hidden. If set to "false", the reboot button is visible and
-   * the shutdown button hidden.
-   */
-  Oobe.showShutdown = function(showShutdown) {
-    $('login-header-bar').showShutdownButton = showShutdown;
-    $('login-header-bar').showRebootButton = !showShutdown;
   };
 
   /**
@@ -378,13 +354,6 @@ cr.define('cr.ui', function() {
    */
   Oobe.setUpOnlineDemoModeForTesting = function() {
     DemoModeTestHelper.setUp('online');
-  };
-
-  /**
-   * Shows/hides login UI control bar with buttons like [Shut down].
-   */
-  Oobe.showControlBar = function(show) {
-    Oobe.getInstance().headerHidden = !show;
   };
 
   /**

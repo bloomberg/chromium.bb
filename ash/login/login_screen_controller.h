@@ -5,6 +5,8 @@
 #ifndef ASH_LOGIN_LOGIN_SCREEN_CONTROLLER_H_
 #define ASH_LOGIN_LOGIN_SCREEN_CONTROLLER_H_
 
+#include <vector>
+
 #include "ash/ash_export.h"
 #include "ash/login/login_screen_controller_observer.h"
 #include "ash/public/cpp/system_tray_focus_observer.h"
@@ -158,7 +160,8 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen,
       std::vector<mojom::InputMethodItemPtr> keyboard_layouts) override;
   void SetPublicSessionShowFullManagementDisclosure(
       bool is_full_management_disclosure_needed) override;
-  void SetKioskApps(std::vector<mojom::KioskAppInfoPtr> kiosk_apps) override;
+  void SetKioskApps(std::vector<mojom::KioskAppInfoPtr> kiosk_apps,
+                    SetKioskAppsCallback callback) override;
   void ShowKioskAppError(const std::string& message) override;
   void NotifyOobeDialogState(mojom::OobeDialogState state) override;
   void SetAddUserButtonEnabled(bool enable) override;

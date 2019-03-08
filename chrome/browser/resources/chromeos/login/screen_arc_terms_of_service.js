@@ -602,8 +602,6 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
     onBeforeShow: function(data) {
       this.setLearnMoreHandlers_();
 
-      Oobe.getInstance().headerHidden = true;
-
       this.hideOverlay();
       // ToS content may be loaded before the page is shown. In that case,
       // height of ToS webview is not correctly calculated. Recalculate the
