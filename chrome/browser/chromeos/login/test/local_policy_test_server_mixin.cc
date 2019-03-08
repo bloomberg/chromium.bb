@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/guid.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/policy_builder.h"
 #include "components/policy/core/common/policy_switches.h"
@@ -59,6 +60,36 @@ bool LocalPolicyTestServerMixin::UpdateDevicePolicy(
   return policy_test_server_->UpdatePolicy(
       policy::dm_protocol::kChromeDevicePolicyType,
       std::string() /* entity_id */, policy.SerializeAsString());
+}
+
+bool LocalPolicyTestServerMixin::SetDeviceStateRetrievalResponse(
+    policy::ServerBackedStateKeysBroker* keys_broker,
+    enterprise_management::DeviceStateRetrievalResponse::RestoreMode
+        restore_mode,
+    const std::string& managemement_domain) {
+  std::vector<std::string> keys;
+  base::RunLoop loop;
+  keys_broker->RequestStateKeys(base::BindOnce(
+      [](std::vector<std::string>* keys, base::OnceClosure quit,
+         const std::vector<std::string>& state_keys) {
+        *keys = state_keys;
+        std::move(quit).Run();
+      },
+      &keys, loop.QuitClosure()));
+  loop.Run();
+  if (keys.empty())
+    return false;
+  if (!policy_test_server_->RegisterClient("dm_token", base::GenerateGUID(),
+                                           keys)) {
+    return false;
+  }
+
+  base::Value device_state(base::Value::Type::DICTIONARY);
+  device_state.SetKey("management_domain", base::Value(managemement_domain));
+  device_state.SetKey("restore_mode",
+                      base::Value(static_cast<int>(restore_mode)));
+  server_config_.SetKey("device_state", std::move(device_state));
+  return policy_test_server_->SetConfig(server_config_);
 }
 
 LocalPolicyTestServerMixin::~LocalPolicyTestServerMixin() = default;

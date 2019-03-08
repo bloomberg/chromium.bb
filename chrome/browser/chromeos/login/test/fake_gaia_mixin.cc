@@ -22,6 +22,8 @@ constexpr char kTestAllScopeAccessToken[] = "fake-all-scope-token";
 const char FakeGaiaMixin::kFakeUserEmail[] = "fake-email@gmail.com";
 const char FakeGaiaMixin::kFakeUserPassword[] = "fake-password";
 const char FakeGaiaMixin::kFakeUserGaiaId[] = "fake-gaiaId";
+const char FakeGaiaMixin::kFakeAuthCode[] = "fake-auth-code";
+const char FakeGaiaMixin::kFakeRefreshToken[] = "fake-refresh-token";
 const char FakeGaiaMixin::kEmptyUserServices[] = "[]";
 
 const char FakeGaiaMixin::kFakeSIDCookie[] = "fake-SID-cookie";
