@@ -257,21 +257,35 @@ void QuicConnectionPeer::SetNextMtuProbeAt(QuicConnection* connection,
 
 // static
 void QuicConnectionPeer::SetAckMode(QuicConnection* connection,
-                                    QuicConnection::AckMode ack_mode) {
-  connection->ack_mode_ = ack_mode;
+                                    AckMode ack_mode) {
+  if (connection->received_packet_manager_.decide_when_to_send_acks()) {
+    connection->received_packet_manager_.ack_mode_ = ack_mode;
+  } else {
+    connection->ack_mode_ = ack_mode;
+  }
 }
 
 // static
 void QuicConnectionPeer::SetFastAckAfterQuiescence(
     QuicConnection* connection,
     bool fast_ack_after_quiescence) {
-  connection->fast_ack_after_quiescence_ = fast_ack_after_quiescence;
+  if (connection->received_packet_manager_.decide_when_to_send_acks()) {
+    connection->received_packet_manager_.fast_ack_after_quiescence_ =
+        fast_ack_after_quiescence;
+  } else {
+    connection->fast_ack_after_quiescence_ = fast_ack_after_quiescence;
+  }
 }
 
 // static
 void QuicConnectionPeer::SetAckDecimationDelay(QuicConnection* connection,
                                                float ack_decimation_delay) {
-  connection->ack_decimation_delay_ = ack_decimation_delay;
+  if (connection->received_packet_manager_.decide_when_to_send_acks()) {
+    connection->received_packet_manager_.ack_decimation_delay_ =
+        ack_decimation_delay;
+  } else {
+    connection->ack_decimation_delay_ = ack_decimation_delay;
+  }
 }
 
 // static

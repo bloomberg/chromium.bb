@@ -256,8 +256,7 @@ TEST_F(BbrSenderTest, SetInitialCongestionWindow) {
 // Test a simple long data transfer in the default setup.
 TEST_F(BbrSenderTest, SimpleTransfer) {
   // Disable Ack Decimation on the receiver, because it can increase srtt.
-  QuicConnectionPeer::SetAckMode(receiver_.connection(),
-                                 QuicConnection::AckMode::TCP_ACKING);
+  QuicConnectionPeer::SetAckMode(receiver_.connection(), AckMode::TCP_ACKING);
   CreateDefaultSetup();
 
   // At startup make sure we are at the default.
@@ -306,8 +305,7 @@ TEST_F(BbrSenderTest, SimpleTransferEarlyPacketLoss) {
   // congestion_window_ in GetCongestionWindow().
   SetConnectionOption(kBBS1);
   // Disable Ack Decimation on the receiver, because it can increase srtt.
-  QuicConnectionPeer::SetAckMode(receiver_.connection(),
-                                 QuicConnection::AckMode::TCP_ACKING);
+  QuicConnectionPeer::SetAckMode(receiver_.connection(), AckMode::TCP_ACKING);
   CreateDefaultSetup();
 
   // At startup make sure we are at the default.
@@ -377,7 +375,7 @@ TEST_F(BbrSenderTest, SimpleTransferAckDecimation) {
   QuicConnectionPeer::SetSendAlgorithm(bbr_sender_.connection(), sender_);
   // Enable Ack Decimation on the receiver.
   QuicConnectionPeer::SetAckMode(receiver_.connection(),
-                                 QuicConnection::AckMode::ACK_DECIMATION);
+                                 AckMode::ACK_DECIMATION);
   CreateDefaultSetup();
 
   // Transfer 12MB.
@@ -402,8 +400,7 @@ TEST_F(BbrSenderTest, SimpleTransferAckDecimation) {
 // Test a simple long data transfer with 2 rtts of aggregation.
 TEST_F(BbrSenderTest, SimpleTransfer2RTTAggregationBytes20RTTWindow) {
   // Disable Ack Decimation on the receiver, because it can increase srtt.
-  QuicConnectionPeer::SetAckMode(receiver_.connection(),
-                                 QuicConnection::AckMode::TCP_ACKING);
+  QuicConnectionPeer::SetAckMode(receiver_.connection(), AckMode::TCP_ACKING);
   CreateDefaultSetup();
   SetConnectionOption(kBBR4);
   // 2 RTTs of aggregation, with a max of 10kb.
@@ -430,8 +427,7 @@ TEST_F(BbrSenderTest, SimpleTransfer2RTTAggregationBytes20RTTWindow) {
 // Test a simple long data transfer with 2 rtts of aggregation.
 TEST_F(BbrSenderTest, SimpleTransfer2RTTAggregationBytes40RTTWindow) {
   // Disable Ack Decimation on the receiver, because it can increase srtt.
-  QuicConnectionPeer::SetAckMode(receiver_.connection(),
-                                 QuicConnection::AckMode::TCP_ACKING);
+  QuicConnectionPeer::SetAckMode(receiver_.connection(), AckMode::TCP_ACKING);
   CreateDefaultSetup();
   SetConnectionOption(kBBR5);
   // 2 RTTs of aggregation, with a max of 10kb.
@@ -546,8 +542,7 @@ TEST_F(BbrSenderTest, ApplicationLimitedBurstsWithoutPrior) {
 // Verify that the DRAIN phase works correctly.
 TEST_F(BbrSenderTest, Drain) {
   // Disable Ack Decimation on the receiver, because it can increase srtt.
-  QuicConnectionPeer::SetAckMode(receiver_.connection(),
-                                 QuicConnection::AckMode::TCP_ACKING);
+  QuicConnectionPeer::SetAckMode(receiver_.connection(), AckMode::TCP_ACKING);
   CreateDefaultSetup();
   const QuicTime::Delta timeout = QuicTime::Delta::FromSeconds(10);
   // Get the queue at the bottleneck, which is the outgoing queue at the port to
@@ -610,8 +605,7 @@ TEST_F(BbrSenderTest, Drain) {
 TEST_F(BbrSenderTest, ShallowDrain) {
   SetQuicReloadableFlag(quic_bbr_slower_startup3, true);
   // Disable Ack Decimation on the receiver, because it can increase srtt.
-  QuicConnectionPeer::SetAckMode(receiver_.connection(),
-                                 QuicConnection::AckMode::TCP_ACKING);
+  QuicConnectionPeer::SetAckMode(receiver_.connection(), AckMode::TCP_ACKING);
 
   CreateDefaultSetup();
   // BBQ4 increases the pacing gain in DRAIN to 0.75
@@ -816,8 +810,7 @@ TEST_F(BbrSenderTest, ProbeRttSkippedAfterAppLimited) {
 // connection will exit low gain early if the number of bytes in flight is low.
 TEST_F(BbrSenderTest, InFlightAwareGainCycling) {
   // Disable Ack Decimation on the receiver, because it can increase srtt.
-  QuicConnectionPeer::SetAckMode(receiver_.connection(),
-                                 QuicConnection::AckMode::TCP_ACKING);
+  QuicConnectionPeer::SetAckMode(receiver_.connection(), AckMode::TCP_ACKING);
   CreateDefaultSetup();
   DriveOutOfStartup();
 
@@ -1222,8 +1215,7 @@ TEST_F(BbrSenderTest, AckAggregationInStartup) {
   SetQuicReloadableFlag(quic_bbr_slower_startup3, true);
   // Disable Ack Decimation on the receiver to avoid loss and make results
   // consistent.
-  QuicConnectionPeer::SetAckMode(receiver_.connection(),
-                                 QuicConnection::AckMode::TCP_ACKING);
+  QuicConnectionPeer::SetAckMode(receiver_.connection(), AckMode::TCP_ACKING);
   CreateDefaultSetup();
 
   SetConnectionOption(kBBQ3);

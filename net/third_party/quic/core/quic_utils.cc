@@ -357,10 +357,7 @@ bool QuicUtils::IsIetfPacketHeader(uint8_t first_byte) {
 
 // static
 bool QuicUtils::IsIetfPacketShortHeader(uint8_t first_byte) {
-  if (first_byte & FLAGS_LONG_HEADER) {
-    return false;
-  }
-  return !(first_byte & FLAGS_DEMULTIPLEXING_BIT);
+  return IsIetfPacketHeader(first_byte) && !(first_byte & FLAGS_LONG_HEADER);
 }
 
 // static

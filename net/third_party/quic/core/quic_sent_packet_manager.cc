@@ -90,7 +90,6 @@ QuicSentPacketManager::QuicSentPacketManager(
                     &general_loss_algorithm_)),
       general_loss_algorithm_(loss_type),
       uber_loss_algorithm_(loss_type),
-      n_connection_simulation_(false),
       consecutive_rto_count_(0),
       consecutive_tlp_count_(0),
       consecutive_crypto_retransmission_count_(0),
@@ -189,9 +188,6 @@ void QuicSentPacketManager::SetFromConfig(const QuicConfig& config) {
   if (config.HasClientSentConnectionOption(k1CON, perspective)) {
     send_algorithm_->SetNumEmulatedConnections(1);
   }
-  if (config.HasClientSentConnectionOption(kNCON, perspective)) {
-    n_connection_simulation_ = true;
-  }
   if (config.HasClientSentConnectionOption(kNTLP, perspective)) {
     max_tail_loss_probes_ = 0;
   }
@@ -259,14 +255,6 @@ void QuicSentPacketManager::AdjustNetworkParameters(QuicBandwidth bandwidth,
   send_algorithm_->AdjustNetworkParameters(bandwidth, rtt);
   if (debug_delegate_ != nullptr) {
     debug_delegate_->OnAdjustNetworkParameters(bandwidth, rtt);
-  }
-}
-
-void QuicSentPacketManager::SetNumOpenStreams(size_t num_streams) {
-  if (n_connection_simulation_) {
-    // Ensure the number of connections is between 1 and 5.
-    send_algorithm_->SetNumEmulatedConnections(
-        std::min<size_t>(5, std::max<size_t>(1, num_streams)));
   }
 }
 

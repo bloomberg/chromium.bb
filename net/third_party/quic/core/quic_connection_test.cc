@@ -2346,8 +2346,7 @@ TEST_P(QuicConnectionTest, AckDecimationReducesAcks) {
                        QuicTime::Delta::Zero(), QuicTime::Zero());
   EXPECT_CALL(visitor_, OnAckNeedsRetransmittableFrame()).Times(AnyNumber());
 
-  QuicConnectionPeer::SetAckMode(
-      &connection_, QuicConnection::ACK_DECIMATION_WITH_REORDERING);
+  QuicConnectionPeer::SetAckMode(&connection_, ACK_DECIMATION_WITH_REORDERING);
 
   // Start ack decimation from 10th packet.
   connection_.set_min_received_before_ack_decimation(10);
@@ -5155,7 +5154,7 @@ TEST_P(QuicConnectionTest, SendDelayedAfterQuiescence) {
 
 TEST_P(QuicConnectionTest, SendDelayedAckDecimation) {
   EXPECT_CALL(visitor_, OnAckNeedsRetransmittableFrame()).Times(AnyNumber());
-  QuicConnectionPeer::SetAckMode(&connection_, QuicConnection::ACK_DECIMATION);
+  QuicConnectionPeer::SetAckMode(&connection_, ACK_DECIMATION);
 
   const size_t kMinRttMs = 40;
   RttStats* rtt_stats = const_cast<RttStats*>(manager_->GetRttStats());
@@ -5213,7 +5212,7 @@ TEST_P(QuicConnectionTest, SendDelayedAckDecimation) {
 
 TEST_P(QuicConnectionTest, SendDelayedAckAckDecimationAfterQuiescence) {
   EXPECT_CALL(visitor_, OnAckNeedsRetransmittableFrame()).Times(AnyNumber());
-  QuicConnectionPeer::SetAckMode(&connection_, QuicConnection::ACK_DECIMATION);
+  QuicConnectionPeer::SetAckMode(&connection_, ACK_DECIMATION);
   QuicConnectionPeer::SetFastAckAfterQuiescence(&connection_, true);
 
   const size_t kMinRttMs = 40;
@@ -5399,7 +5398,7 @@ TEST_P(QuicConnectionTest, SendDelayedAckDecimationUnlimitedAggregation) {
 
 TEST_P(QuicConnectionTest, SendDelayedAckDecimationEighthRtt) {
   EXPECT_CALL(visitor_, OnAckNeedsRetransmittableFrame()).Times(AnyNumber());
-  QuicConnectionPeer::SetAckMode(&connection_, QuicConnection::ACK_DECIMATION);
+  QuicConnectionPeer::SetAckMode(&connection_, ACK_DECIMATION);
   QuicConnectionPeer::SetAckDecimationDelay(&connection_, 0.125);
 
   const size_t kMinRttMs = 40;
@@ -5458,8 +5457,7 @@ TEST_P(QuicConnectionTest, SendDelayedAckDecimationEighthRtt) {
 
 TEST_P(QuicConnectionTest, SendDelayedAckDecimationWithReordering) {
   EXPECT_CALL(visitor_, OnAckNeedsRetransmittableFrame()).Times(AnyNumber());
-  QuicConnectionPeer::SetAckMode(
-      &connection_, QuicConnection::ACK_DECIMATION_WITH_REORDERING);
+  QuicConnectionPeer::SetAckMode(&connection_, ACK_DECIMATION_WITH_REORDERING);
 
   const size_t kMinRttMs = 40;
   RttStats* rtt_stats = const_cast<RttStats*>(manager_->GetRttStats());
@@ -5523,8 +5521,7 @@ TEST_P(QuicConnectionTest, SendDelayedAckDecimationWithReordering) {
 
 TEST_P(QuicConnectionTest, SendDelayedAckDecimationWithLargeReordering) {
   EXPECT_CALL(visitor_, OnAckNeedsRetransmittableFrame()).Times(AnyNumber());
-  QuicConnectionPeer::SetAckMode(
-      &connection_, QuicConnection::ACK_DECIMATION_WITH_REORDERING);
+  QuicConnectionPeer::SetAckMode(&connection_, ACK_DECIMATION_WITH_REORDERING);
 
   const size_t kMinRttMs = 40;
   RttStats* rtt_stats = const_cast<RttStats*>(manager_->GetRttStats());
@@ -5607,8 +5604,7 @@ TEST_P(QuicConnectionTest, SendDelayedAckDecimationWithLargeReordering) {
 
 TEST_P(QuicConnectionTest, SendDelayedAckDecimationWithReorderingEighthRtt) {
   EXPECT_CALL(visitor_, OnAckNeedsRetransmittableFrame()).Times(AnyNumber());
-  QuicConnectionPeer::SetAckMode(
-      &connection_, QuicConnection::ACK_DECIMATION_WITH_REORDERING);
+  QuicConnectionPeer::SetAckMode(&connection_, ACK_DECIMATION_WITH_REORDERING);
   QuicConnectionPeer::SetAckDecimationDelay(&connection_, 0.125);
 
   const size_t kMinRttMs = 40;
@@ -5676,8 +5672,7 @@ TEST_P(QuicConnectionTest, SendDelayedAckDecimationWithReorderingEighthRtt) {
 TEST_P(QuicConnectionTest,
        SendDelayedAckDecimationWithLargeReorderingEighthRtt) {
   EXPECT_CALL(visitor_, OnAckNeedsRetransmittableFrame()).Times(AnyNumber());
-  QuicConnectionPeer::SetAckMode(
-      &connection_, QuicConnection::ACK_DECIMATION_WITH_REORDERING);
+  QuicConnectionPeer::SetAckMode(&connection_, ACK_DECIMATION_WITH_REORDERING);
   QuicConnectionPeer::SetAckDecimationDelay(&connection_, 0.125);
 
   const size_t kMinRttMs = 40;

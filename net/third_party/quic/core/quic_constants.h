@@ -214,10 +214,6 @@ const size_t kPacketHeaderTypeSize = 1;
 // Number of bytes reserved for connection ID length.
 const size_t kConnectionIdLengthSize = 1;
 
-// Length of an encoded variable length connection ID, in bytes.
-// TODO(dschinazi) b/120240679 - remove kQuicConnectionIdLength
-const size_t kQuicConnectionIdLength = 8;
-
 // Minimum length of random bytes in IETF stateless reset packet.
 const size_t kMinRandomBytesLengthInStatelessReset = 24;
 

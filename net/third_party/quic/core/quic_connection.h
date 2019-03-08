@@ -336,8 +336,6 @@ class QUIC_EXPORT_PRIVATE QuicConnection
     NO_ACK,
   };
 
-  enum AckMode { TCP_ACKING, ACK_DECIMATION, ACK_DECIMATION_WITH_REORDERING };
-
   // Constructs a new QuicConnection for |connection_id| and
   // |initial_peer_address| using |writer| to write packets. |owns_writer|
   // specifies whether the connection takes ownership of |writer|. |helper| must
@@ -379,9 +377,6 @@ class QUIC_EXPORT_PRIVATE QuicConnection
 
   // Returns the max pacing rate for the connection.
   virtual QuicBandwidth MaxPacingRate() const;
-
-  // Sets the number of active streams on the connection for congestion control.
-  void SetNumOpenStreams(size_t num_streams);
 
   // Sends crypto handshake messages of length |write_length| to the peer in as
   // few packets as possible. Returns the number of bytes consumed from the
@@ -820,20 +815,11 @@ class QUIC_EXPORT_PRIVATE QuicConnection
     return packet_generator_.fully_pad_crypto_handshake_packets();
   }
 
-  size_t min_received_before_ack_decimation() const {
-    return min_received_before_ack_decimation_;
-  }
-  void set_min_received_before_ack_decimation(size_t new_value) {
-    min_received_before_ack_decimation_ = new_value;
-  }
+  size_t min_received_before_ack_decimation() const;
+  void set_min_received_before_ack_decimation(size_t new_value);
 
-  size_t ack_frequency_before_ack_decimation() const {
-    return ack_frequency_before_ack_decimation_;
-  }
-  void set_ack_frequency_before_ack_decimation(size_t new_value) {
-    DCHECK_GT(new_value, 0u);
-    ack_frequency_before_ack_decimation_ = new_value;
-  }
+  size_t ack_frequency_before_ack_decimation() const;
+  void set_ack_frequency_before_ack_decimation(size_t new_value);
 
   // If |defer| is true, configures the connection to defer sending packets in
   // response to an ACK to the SendAlarm. If |defer| is false, packets may be
@@ -1172,6 +1158,8 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   QuicPacketHeader last_header_;
   bool should_last_packet_instigate_acks_;
   // Whether the most recent packet was missing before it was received.
+  // TODO(fayang): Remove was_last_packet_missing_ when deprecating
+  // quic_rpm_decides_when_to_send_acks.
   bool was_last_packet_missing_;
 
   // Track some peer state so we can do less bookkeeping
@@ -1234,12 +1222,18 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // quic_deprecate_ack_bundling_mode.
   bool ack_queued_;
   // How many retransmittable packets have arrived without sending an ack.
+  // TODO(fayang): Remove
+  // num_retransmittable_packets_received_since_last_ack_sent_ when deprecating
+  // quic_rpm_decides_when_to_send_acks.
   QuicPacketCount num_retransmittable_packets_received_since_last_ack_sent_;
   // How many consecutive packets have arrived without sending an ack.
   QuicPacketCount num_packets_received_since_last_ack_sent_;
   // Indicates how many consecutive times an ack has arrived which indicates
   // the peer needs to stop waiting for some packets.
   int stop_waiting_count_;
+  // TODO(fayang): Remove ack_mode_, ack_decimation_delay_,
+  // unlimited_ack_decimation_, fast_ack_after_quiescence_ when deprecating
+  // quic_rpm_decides_when_to_send_acks.
   // Indicates the current ack mode, defaults to acking every 2 packets.
   AckMode ack_mode_;
   // The max delay in fraction of min_rtt to use when sending decimated acks.
@@ -1311,6 +1305,8 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   QuicTime time_of_last_received_packet_;
 
   // The time the previous ack-instigating packet was received and processed.
+  // TODO(fayang): Remove time_of_previous_received_packet_ when deprecating
+  // quic_rpm_decides_when_to_send_acks.
   QuicTime time_of_previous_received_packet_;
 
   // Sent packet manager which tracks the status of packets sent by this
@@ -1394,9 +1390,13 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   size_t max_consecutive_num_packets_with_no_retransmittable_frames_;
 
   // Ack decimation will start happening after this many packets are received.
+  // TODO(fayang): Remove min_received_before_ack_decimation_ when deprecating
+  // quic_rpm_decides_when_to_send_acks.
   size_t min_received_before_ack_decimation_;
 
   // Before ack decimation starts (if enabled), we ack every n-th packet.
+  // TODO(fayang): Remove ack_frequency_before_ack_decimation_ when deprecating
+  // quic_rpm_decides_when_to_send_acks.
   size_t ack_frequency_before_ack_decimation_;
 
   // If true, the connection will fill up the pipe with extra data whenever the

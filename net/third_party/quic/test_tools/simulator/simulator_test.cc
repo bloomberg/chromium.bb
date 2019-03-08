@@ -48,19 +48,22 @@ class Counter : public Actor {
 
 class SimulatorTest : public QuicTest {};
 
-// Test that the basic event handling works.
+// Test that the basic event handling works, and that Actors can be created and
+// destroyed mid-simulation.
 TEST_F(SimulatorTest, Counters) {
   Simulator simulator;
-  Counter fast_counter(&simulator, "fast_counter",
-                       QuicTime::Delta::FromSeconds(3));
-  Counter slow_counter(&simulator, "slow_counter",
-                       QuicTime::Delta::FromSeconds(10));
+  for (int i = 0; i < 2; ++i) {
+    Counter fast_counter(&simulator, "fast_counter",
+                         QuicTime::Delta::FromSeconds(3));
+    Counter slow_counter(&simulator, "slow_counter",
+                         QuicTime::Delta::FromSeconds(10));
 
-  simulator.RunUntil(
-      [&slow_counter]() { return slow_counter.get_value() >= 10; });
+    simulator.RunUntil(
+        [&slow_counter]() { return slow_counter.get_value() >= 10; });
 
-  EXPECT_EQ(10, slow_counter.get_value());
-  EXPECT_EQ(10 * 10 / 3, fast_counter.get_value());
+    EXPECT_EQ(10, slow_counter.get_value());
+    EXPECT_EQ(10 * 10 / 3, fast_counter.get_value());
+  }
 }
 
 // A port which counts the number of packets received on it, both total and

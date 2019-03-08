@@ -350,6 +350,9 @@ QuicConnection::QuicConnection(
   if (packet_generator_.deprecate_ack_bundling_mode()) {
     QUIC_RELOADABLE_FLAG_COUNT(quic_deprecate_ack_bundling_mode);
   }
+  if (received_packet_manager_.decide_when_to_send_acks()) {
+    QUIC_RELOADABLE_FLAG_COUNT(quic_rpm_decides_when_to_send_acks);
+  }
   QUIC_DLOG(INFO) << ENDPOINT
                   << "Created connection with connection_id: " << connection_id
                   << " and version: "
@@ -431,29 +434,33 @@ void QuicConnection::SetFromConfig(const QuicConfig& config) {
   if (debug_visitor_ != nullptr) {
     debug_visitor_->OnSetFromConfig(config);
   }
-  if (GetQuicReloadableFlag(quic_enable_ack_decimation) &&
-      config.HasClientSentConnectionOption(kACD0, perspective_)) {
-    ack_mode_ = TCP_ACKING;
-  }
-  if (config.HasClientSentConnectionOption(kACKD, perspective_)) {
-    ack_mode_ = ACK_DECIMATION;
-  }
-  if (config.HasClientSentConnectionOption(kAKD2, perspective_)) {
-    ack_mode_ = ACK_DECIMATION_WITH_REORDERING;
-  }
-  if (config.HasClientSentConnectionOption(kAKD3, perspective_)) {
-    ack_mode_ = ACK_DECIMATION;
-    ack_decimation_delay_ = kShortAckDecimationDelay;
-  }
-  if (config.HasClientSentConnectionOption(kAKD4, perspective_)) {
-    ack_mode_ = ACK_DECIMATION_WITH_REORDERING;
-    ack_decimation_delay_ = kShortAckDecimationDelay;
-  }
-  if (config.HasClientSentConnectionOption(kAKDU, perspective_)) {
-    unlimited_ack_decimation_ = true;
-  }
-  if (config.HasClientSentConnectionOption(kACKQ, perspective_)) {
-    fast_ack_after_quiescence_ = true;
+  if (received_packet_manager_.decide_when_to_send_acks()) {
+    received_packet_manager_.SetFromConfig(config, perspective_);
+  } else {
+    if (GetQuicReloadableFlag(quic_enable_ack_decimation) &&
+        config.HasClientSentConnectionOption(kACD0, perspective_)) {
+      ack_mode_ = TCP_ACKING;
+    }
+    if (config.HasClientSentConnectionOption(kACKD, perspective_)) {
+      ack_mode_ = ACK_DECIMATION;
+    }
+    if (config.HasClientSentConnectionOption(kAKD2, perspective_)) {
+      ack_mode_ = ACK_DECIMATION_WITH_REORDERING;
+    }
+    if (config.HasClientSentConnectionOption(kAKD3, perspective_)) {
+      ack_mode_ = ACK_DECIMATION;
+      ack_decimation_delay_ = kShortAckDecimationDelay;
+    }
+    if (config.HasClientSentConnectionOption(kAKD4, perspective_)) {
+      ack_mode_ = ACK_DECIMATION_WITH_REORDERING;
+      ack_decimation_delay_ = kShortAckDecimationDelay;
+    }
+    if (config.HasClientSentConnectionOption(kAKDU, perspective_)) {
+      unlimited_ack_decimation_ = true;
+    }
+    if (config.HasClientSentConnectionOption(kACKQ, perspective_)) {
+      fast_ack_after_quiescence_ = true;
+    }
   }
   if (config.HasClientSentConnectionOption(k5RTO, perspective_)) {
     close_connection_after_five_rtos_ = true;
@@ -513,10 +520,6 @@ void QuicConnection::AdjustNetworkParameters(QuicBandwidth bandwidth,
 
 QuicBandwidth QuicConnection::MaxPacingRate() const {
   return sent_packet_manager_.MaxPacingRate();
-}
-
-void QuicConnection::SetNumOpenStreams(size_t num_streams) {
-  sent_packet_manager_.SetNumOpenStreams(num_streams);
 }
 
 bool QuicConnection::SelectMutualVersion(
@@ -1431,9 +1434,15 @@ void QuicConnection::OnPacketComplete() {
   const bool was_missing =
       should_last_packet_instigate_acks_ && was_last_packet_missing_;
 
-  // It's possible the ack frame was sent along with response data, so it
-  // no longer needs to be sent.
-  if (ack_frame_updated()) {
+  if (received_packet_manager_.decide_when_to_send_acks()) {
+    received_packet_manager_.MaybeUpdateAckTimeout(
+        should_last_packet_instigate_acks_, last_header_.packet_number,
+        time_of_last_received_packet_, clock_->ApproximateNow(),
+        sent_packet_manager_.GetRttStats(),
+        sent_packet_manager_.delayed_ack_time());
+  } else if (ack_frame_updated()) {
+    // It's possible the ack frame was sent along with response data, so it
+    // no longer needs to be sent.
     MaybeQueueAck(was_missing);
   }
 
@@ -1457,6 +1466,7 @@ void QuicConnection::OnAuthenticatedIetfStatelessResetPacket(
 }
 
 void QuicConnection::MaybeQueueAck(bool was_missing) {
+  DCHECK(!received_packet_manager_.decide_when_to_send_acks());
   ++num_packets_received_since_last_ack_sent_;
   // Determine whether the newly received packet was missing before recording
   // the received packet.
@@ -1883,7 +1893,16 @@ void QuicConnection::OnCanWrite() {
   ScopedPacketFlusher flusher(this, NO_ACK);
 
   WriteQueuedPackets();
-  if (send_ack_when_on_can_write_) {
+  if (received_packet_manager_.decide_when_to_send_acks()) {
+    const QuicTime ack_timeout = received_packet_manager_.ack_timeout();
+    if (ack_timeout.IsInitialized() &&
+        ack_timeout <= clock_->ApproximateNow()) {
+      // Send an ACK now because either 1) we were write blocked when we last
+      // tried to send an ACK, or 2) both ack alarm and send alarm were set to
+      // go off together.
+      SendAck();
+    }
+  } else if (send_ack_when_on_can_write_) {
     // Send an ACK now because either 1) we were write blocked when we last
     // tried to send an ACK, or 2) both ack alarm and send alarm were set to go
     // off together.
@@ -2164,7 +2183,13 @@ bool QuicConnection::ShouldGeneratePacket(
 const QuicFrames QuicConnection::MaybeBundleAckOpportunistically() {
   DCHECK(packet_generator_.deprecate_ack_bundling_mode());
   QuicFrames frames;
-  if (!ack_alarm_->IsSet() && stop_waiting_count_ <= 1) {
+  bool has_pending_ack = false;
+  if (received_packet_manager_.decide_when_to_send_acks()) {
+    has_pending_ack = received_packet_manager_.ack_timeout().IsInitialized();
+  } else {
+    has_pending_ack = ack_alarm_->IsSet();
+  }
+  if (!has_pending_ack && stop_waiting_count_ <= 1) {
     // No need to send an ACK.
     return frames;
   }
@@ -2597,7 +2622,11 @@ void QuicConnection::OnPingTimeout() {
 }
 
 void QuicConnection::SendAck() {
-  ResetAckStates();
+  if (!received_packet_manager_.decide_when_to_send_acks()) {
+    // When received_packet_manager decides when to send ack, delaying
+    // ResetAckStates until ACK is successfully flushed.
+    ResetAckStates();
+  }
 
   if (packet_generator_.deprecate_ack_bundling_mode()) {
     QUIC_DVLOG(1) << ENDPOINT << "Sending an ACK proactively";
@@ -2608,7 +2637,14 @@ void QuicConnection::SendAck() {
       PopulateStopWaitingFrame(&stop_waiting);
       frames.push_back(QuicFrame(stop_waiting));
     }
-    send_ack_when_on_can_write_ = !packet_generator_.FlushAckFrame(frames);
+    if (received_packet_manager_.decide_when_to_send_acks()) {
+      if (!packet_generator_.FlushAckFrame(frames)) {
+        return;
+      }
+      ResetAckStates();
+    } else {
+      send_ack_when_on_can_write_ = !packet_generator_.FlushAckFrame(frames);
+    }
   } else {
     packet_generator_.SetShouldSendAck(!no_stop_waiting_frames_);
   }
@@ -3139,21 +3175,39 @@ QuicConnection::ScopedPacketFlusher::~ScopedPacketFlusher() {
   }
 
   if (flush_and_set_pending_retransmission_alarm_on_delete_) {
-    if (connection_->packet_generator_.deprecate_ack_bundling_mode() &&
-        connection_->ack_alarm_->IsSet() &&
-        connection_->ack_alarm_->deadline() <=
-            connection_->clock_->ApproximateNow()) {
-      // An ACK needs to be sent right now. This ACK did not get bundled
-      // because either there was no data to write or packets were marked as
-      // received after frames were queued in the generator.
-      if (connection_->send_alarm_->IsSet() &&
-          connection_->send_alarm_->deadline() <=
+    if (connection_->packet_generator_.deprecate_ack_bundling_mode()) {
+      if (connection_->received_packet_manager_.decide_when_to_send_acks()) {
+        const QuicTime ack_timeout =
+            connection_->received_packet_manager_.ack_timeout();
+        if (ack_timeout.IsInitialized()) {
+          if (ack_timeout <= connection_->clock_->ApproximateNow() &&
+              !connection_->CanWrite(NO_RETRANSMITTABLE_DATA)) {
+            // Cancel ACK alarm if connection is write blocked, and ACK will be
+            // sent when connection gets unblocked.
+            connection_->ack_alarm_->Cancel();
+          } else {
+            connection_->MaybeSetAckAlarmTo(ack_timeout);
+          }
+        }
+      }
+      if (connection_->ack_alarm_->IsSet() &&
+          connection_->ack_alarm_->deadline() <=
               connection_->clock_->ApproximateNow()) {
-        // If send alarm will go off soon, let send alarm send the ACK.
-        connection_->ack_alarm_->Cancel();
-        connection_->send_ack_when_on_can_write_ = true;
-      } else {
-        connection_->SendAck();
+        // An ACK needs to be sent right now. This ACK did not get bundled
+        // because either there was no data to write or packets were marked as
+        // received after frames were queued in the generator.
+        if (connection_->send_alarm_->IsSet() &&
+            connection_->send_alarm_->deadline() <=
+                connection_->clock_->ApproximateNow()) {
+          // If send alarm will go off soon, let send alarm send the ACK.
+          connection_->ack_alarm_->Cancel();
+          if (!connection_->received_packet_manager_
+                   .decide_when_to_send_acks()) {
+            connection_->send_ack_when_on_can_write_ = true;
+          }
+        } else {
+          connection_->SendAck();
+        }
       }
     }
     connection_->packet_generator_.Flush();
@@ -3659,6 +3713,9 @@ void QuicConnection::ResetAckStates() {
   stop_waiting_count_ = 0;
   num_retransmittable_packets_received_since_last_ack_sent_ = 0;
   num_packets_received_since_last_ack_sent_ = 0;
+  if (received_packet_manager_.decide_when_to_send_acks()) {
+    received_packet_manager_.ResetAckStates();
+  }
 }
 
 MessageStatus QuicConnection::SendMessage(QuicMessageId message_id,
@@ -3720,6 +3777,37 @@ EncryptionLevel QuicConnection::GetConnectionCloseEncryptionLevel() const {
     return ENCRYPTION_ZERO_RTT;
   }
   return ENCRYPTION_NONE;
+}
+
+size_t QuicConnection::min_received_before_ack_decimation() const {
+  if (received_packet_manager_.decide_when_to_send_acks()) {
+    return received_packet_manager_.min_received_before_ack_decimation();
+  }
+  return min_received_before_ack_decimation_;
+}
+
+void QuicConnection::set_min_received_before_ack_decimation(size_t new_value) {
+  if (received_packet_manager_.decide_when_to_send_acks()) {
+    received_packet_manager_.set_min_received_before_ack_decimation(new_value);
+  } else {
+    min_received_before_ack_decimation_ = new_value;
+  }
+}
+
+size_t QuicConnection::ack_frequency_before_ack_decimation() const {
+  if (received_packet_manager_.decide_when_to_send_acks()) {
+    return received_packet_manager_.ack_frequency_before_ack_decimation();
+  }
+  return ack_frequency_before_ack_decimation_;
+}
+
+void QuicConnection::set_ack_frequency_before_ack_decimation(size_t new_value) {
+  DCHECK_GT(new_value, 0u);
+  if (received_packet_manager_.decide_when_to_send_acks()) {
+    received_packet_manager_.set_ack_frequency_before_ack_decimation(new_value);
+  } else {
+    ack_frequency_before_ack_decimation_ = new_value;
+  }
 }
 
 #undef ENDPOINT  // undef for jumbo builds

@@ -764,7 +764,7 @@ size_t QuicFramer::GetNewConnectionIdFrameSize(
     const QuicNewConnectionIdFrame& frame) {
   return kQuicFrameTypeSize +
          QuicDataWriter::GetVarInt62Len(frame.sequence_number) +
-         kConnectionIdLengthSize + kQuicConnectionIdLength +
+         kConnectionIdLengthSize + frame.connection_id.length() +
          sizeof(frame.stateless_reset_token);
 }
 
@@ -3666,10 +3666,7 @@ bool QuicFramer::ProcessStopWaitingFrame(QuicDataReader* reader,
     set_detailed_error("Unable to read least unacked delta.");
     return false;
   }
-  if (header.packet_number.ToUint64() < least_unacked_delta ||
-      (GetQuicReloadableFlag(
-           quic_close_connection_with_zero_least_unacked_stop_waiting) &&
-       header.packet_number.ToUint64() == least_unacked_delta)) {
+  if (header.packet_number.ToUint64() <= least_unacked_delta) {
     set_detailed_error("Invalid unacked delta.");
     return false;
   }
@@ -5566,7 +5563,7 @@ bool QuicFramer::AppendNewConnectionIdFrame(
     set_detailed_error("Can not write New Connection ID sequence number");
     return false;
   }
-  if (!writer->WriteUInt8(kQuicConnectionIdLength)) {
+  if (!writer->WriteUInt8(frame.connection_id.length())) {
     set_detailed_error(
         "Can not write New Connection ID frame connection ID Length");
     return false;
@@ -5601,7 +5598,7 @@ bool QuicFramer::ProcessNewConnectionIdFrame(QuicDataReader* reader,
   }
 
   // TODO(dschinazi) b/120240679 - remove this check
-  if (connection_id_length != kQuicConnectionIdLength) {
+  if (connection_id_length != kQuicDefaultConnectionIdLength) {
     set_detailed_error("Invalid new connection ID length.");
     return false;
   }
