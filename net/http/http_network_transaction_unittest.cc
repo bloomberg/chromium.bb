@@ -11294,24 +11294,32 @@ TEST_F(HttpNetworkTransactionTest, GroupNameForDirectConnections) {
 TEST_F(HttpNetworkTransactionTest, GroupNameForHTTPProxyConnections) {
   const GroupNameTest tests[] = {
       {
-          "http_proxy", "http://www.example.org/http_proxy_normal",
-          "http_proxy/www.example.org:80", false,
+          "http_proxy",
+          "http://www.example.org/http_proxy_normal",
+          "www.example.org:80",
+          false,
       },
 
       // SSL Tests
       {
-          "http_proxy", "https://www.example.org/http_connect_ssl",
-          "http_proxy/ssl/www.example.org:443", true,
+          "http_proxy",
+          "https://www.example.org/http_connect_ssl",
+          "ssl/www.example.org:443",
+          true,
       },
 
       {
-          "http_proxy", "https://host.with.alternate/direct",
-          "http_proxy/ssl/host.with.alternate:443", true,
+          "http_proxy",
+          "https://host.with.alternate/direct",
+          "ssl/host.with.alternate:443",
+          true,
       },
 
       {
-          "http_proxy", "ftp://ftp.google.com/http_proxy_normal",
-          "http_proxy/ftp/ftp.google.com:21", false,
+          "http_proxy",
+          "ftp://ftp.google.com/http_proxy_normal",
+          "ftp/ftp.google.com:21",
+          false,
       },
   };
 
@@ -11343,37 +11351,37 @@ TEST_F(HttpNetworkTransactionTest, GroupNameForHTTPProxyConnections) {
 TEST_F(HttpNetworkTransactionTest, GroupNameForSOCKSConnections) {
   const GroupNameTest tests[] = {
       {
-       "socks4://socks_proxy:1080",
-       "http://www.example.org/socks4_direct",
-       "socks4/www.example.org:80",
-       false,
+          "socks4://socks_proxy:1080",
+          "http://www.example.org/socks4_direct",
+          "www.example.org:80",
+          false,
       },
       {
-       "socks5://socks_proxy:1080",
-       "http://www.example.org/socks5_direct",
-       "socks5/www.example.org:80",
-       false,
+          "socks5://socks_proxy:1080",
+          "http://www.example.org/socks5_direct",
+          "www.example.org:80",
+          false,
       },
 
       // SSL Tests
       {
-       "socks4://socks_proxy:1080",
-       "https://www.example.org/socks4_ssl",
-       "socks4/ssl/www.example.org:443",
-       true,
+          "socks4://socks_proxy:1080",
+          "https://www.example.org/socks4_ssl",
+          "ssl/www.example.org:443",
+          true,
       },
       {
-       "socks5://socks_proxy:1080",
-       "https://www.example.org/socks5_ssl",
-       "socks5/ssl/www.example.org:443",
-       true,
+          "socks5://socks_proxy:1080",
+          "https://www.example.org/socks5_ssl",
+          "ssl/www.example.org:443",
+          true,
       },
 
       {
-       "socks4://socks_proxy:1080",
-       "https://host.with.alternate/direct",
-       "socks4/ssl/host.with.alternate:443",
-       true,
+          "socks4://socks_proxy:1080",
+          "https://host.with.alternate/direct",
+          "ssl/host.with.alternate:443",
+          true,
       },
   };
 

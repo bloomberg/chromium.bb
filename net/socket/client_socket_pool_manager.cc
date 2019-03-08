@@ -122,14 +122,6 @@ CreateSocketParamsAndGetGroupName(
                                   disable_resolver_cache, resolution_callback));
 
     if (proxy_info.is_http() || proxy_info.is_https() || proxy_info.is_quic()) {
-      // TODO(mmenke):  Would it be better to split these into two different
-      //     socket pools?  And maybe socks4/socks5 as well?
-      if (proxy_info.is_http()) {
-        *connection_group = "http_proxy/" + *connection_group;
-      } else {
-        *connection_group = "https_proxy/" + *connection_group;
-      }
-
       scoped_refptr<SSLSocketParams> ssl_params;
       if (!proxy_info.is_http()) {
         proxy_tcp_params = new TransportSocketParams(
@@ -154,16 +146,9 @@ CreateSocketParamsAndGetGroupName(
           NetworkTrafficAnnotationTag(proxy_info.traffic_annotation()));
     } else {
       DCHECK(proxy_info.is_socks());
-      char socks_version;
-      if (proxy_server.scheme() == ProxyServer::SCHEME_SOCKS5)
-        socks_version = '5';
-      else
-        socks_version = '4';
-      *connection_group = base::StringPrintf("socks%c/%s", socks_version,
-                                             connection_group->c_str());
-
       socks_params = new SOCKSSocketParams(
-          proxy_tcp_params, socks_version == '5', origin_host_port,
+          proxy_tcp_params, proxy_server.scheme() == ProxyServer::SCHEME_SOCKS5,
+          origin_host_port,
           NetworkTrafficAnnotationTag(proxy_info.traffic_annotation()));
     }
   }

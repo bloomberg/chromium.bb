@@ -540,8 +540,7 @@ TEST_F(HttpStreamFactoryTest, PreconnectHttpProxy) {
     peer.SetClientSocketPoolManager(std::move(mock_pool_manager));
     PreconnectHelper(kTests[i], session.get());
     EXPECT_EQ(kTests[i].num_streams, http_proxy_pool->last_num_streams());
-    EXPECT_EQ("http_proxy/" + GetGroupName(kTests[i]),
-              http_proxy_pool->last_group_name());
+    EXPECT_EQ(GetGroupName(kTests[i]), http_proxy_pool->last_group_name());
   }
 }
 
@@ -566,8 +565,7 @@ TEST_F(HttpStreamFactoryTest, PreconnectSocksProxy) {
     peer.SetClientSocketPoolManager(std::move(mock_pool_manager));
     PreconnectHelper(kTests[i], session.get());
     EXPECT_EQ(kTests[i].num_streams, socks_proxy_pool->last_num_streams());
-    EXPECT_EQ("socks4/" + GetGroupName(kTests[i]),
-              socks_proxy_pool->last_group_name());
+    EXPECT_EQ(GetGroupName(kTests[i]), socks_proxy_pool->last_group_name());
   }
 }
 
