@@ -188,8 +188,8 @@ void Content::ApplyValue(StyleResolverState& state,
         QualifiedName attr(
             g_null_atom, ToCSSCustomIdentValue(function_value->Item(0)).Value(),
             g_null_atom);
-        const AtomicString& value = state.GetElement()->getAttribute(attr);
-        string = value.IsNull() ? g_empty_string : value.GetString();
+        const AtomicString& attr_value = state.GetElement()->getAttribute(attr);
+        string = attr_value.IsNull() ? g_empty_string : attr_value.GetString();
       } else {
         string = ToCSSStringValue(*item).Value();
       }

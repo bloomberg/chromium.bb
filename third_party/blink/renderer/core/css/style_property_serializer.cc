@@ -93,10 +93,10 @@ StylePropertySerializer::CSSPropertyValueSetForSerializer::PropertyAt(
       static_cast<CSSPropertyID>(index + firstCSSProperty);
   DCHECK(isCSSPropertyIDWithName(property_id));
   if (longhand_property_used_.test(index)) {
-    int index = property_set_->FindPropertyIndex(property_id);
-    DCHECK_NE(index, -1);
+    int real_index = property_set_->FindPropertyIndex(property_id);
+    DCHECK_NE(real_index, -1);
     return StylePropertySerializer::PropertyValueForSerializer(
-        property_set_->PropertyAt(index));
+        property_set_->PropertyAt(real_index));
   }
 
   CSSPropertyValueSet::PropertyReference property =

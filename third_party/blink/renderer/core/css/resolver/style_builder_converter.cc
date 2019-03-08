@@ -1309,11 +1309,11 @@ ShapeValue* StyleBuilderConverter::ConvertShapeValue(StyleResolverState& state,
   CSSBoxType css_box = CSSBoxType::kMissing;
   const CSSValueList& value_list = ToCSSValueList(value);
   for (unsigned i = 0; i < value_list.length(); ++i) {
-    const CSSValue& value = value_list.Item(i);
-    if (value.IsBasicShapeValue()) {
-      shape = BasicShapeForValue(state, value);
+    const CSSValue& item_value = value_list.Item(i);
+    if (item_value.IsBasicShapeValue()) {
+      shape = BasicShapeForValue(state, item_value);
     } else {
-      css_box = ToCSSIdentifierValue(value).ConvertTo<CSSBoxType>();
+      css_box = ToCSSIdentifierValue(item_value).ConvertTo<CSSBoxType>();
     }
   }
 

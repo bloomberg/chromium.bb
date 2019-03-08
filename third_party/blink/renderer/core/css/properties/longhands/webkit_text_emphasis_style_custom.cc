@@ -102,12 +102,16 @@ void WebkitTextEmphasisStyle::ApplyValue(StyleResolverState& state,
     const CSSValueList& list = ToCSSValueList(value);
     DCHECK_EQ(list.length(), 2U);
     for (unsigned i = 0; i < 2; ++i) {
-      const CSSIdentifierValue& value = ToCSSIdentifierValue(list.Item(i));
-      if (value.GetValueID() == CSSValueFilled ||
-          value.GetValueID() == CSSValueOpen)
-        state.Style()->SetTextEmphasisFill(value.ConvertTo<TextEmphasisFill>());
-      else
-        state.Style()->SetTextEmphasisMark(value.ConvertTo<TextEmphasisMark>());
+      const CSSIdentifierValue& ident_value =
+          ToCSSIdentifierValue(list.Item(i));
+      if (ident_value.GetValueID() == CSSValueFilled ||
+          ident_value.GetValueID() == CSSValueOpen) {
+        state.Style()->SetTextEmphasisFill(
+            ident_value.ConvertTo<TextEmphasisFill>());
+      } else {
+        state.Style()->SetTextEmphasisMark(
+            ident_value.ConvertTo<TextEmphasisMark>());
+      }
     }
     state.Style()->SetTextEmphasisCustomMark(g_null_atom);
     return;

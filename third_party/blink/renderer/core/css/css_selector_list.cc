@@ -137,14 +137,14 @@ CSSSelectorList CSSSelectorList::ExpandedFirstPseudoClass() const {
   std::vector<const CSSSelector*> selector_boundaries =
       SelectorBoundaries(*this);
 
-  size_t i = 0;
+  size_t begin = 0;
   CSSSelectorList transformed = this->Copy();
-  while (!selector_boundaries[i]->HasPseudoIs() &&
-         !selector_boundaries[i]->HasPseudoWhere())
-    ++i;
+  while (!selector_boundaries[begin]->HasPseudoIs() &&
+         !selector_boundaries[begin]->HasPseudoWhere())
+    ++begin;
 
-  const CSSSelector* selector_to_expand_begin = selector_boundaries[i];
-  const CSSSelector* selector_to_expand_end = selector_boundaries[i + 1];
+  const CSSSelector* selector_to_expand_begin = selector_boundaries[begin];
+  const CSSSelector* selector_to_expand_end = selector_boundaries[begin + 1];
   unsigned selector_to_expand_length =
       static_cast<unsigned>(selector_to_expand_end - selector_to_expand_begin);
 
