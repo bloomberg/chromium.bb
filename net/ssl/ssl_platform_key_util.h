@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "net/base/net_export.h"
+#include "third_party/boringssl/src/include/openssl/base.h"
 
 namespace net {
 
@@ -20,6 +21,10 @@ class X509Certificate;
 // Thread is non-joinable and as such provides
 // TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN semantics.
 scoped_refptr<base::SingleThreadTaskRunner> GetSSLPlatformKeyTaskRunner();
+
+// Returns the public key of |certificate| as an |EVP_PKEY| or nullptr on error.
+bssl::UniquePtr<EVP_PKEY> GetClientCertPublicKey(
+    const X509Certificate* certificate);
 
 // Determines the key type and maximum signature length of |certificate|'s
 // public key. |*out_type| will be set to one of the |EVP_PKEY_*| values from

@@ -10,7 +10,6 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/memory/ref_counted.h"
 #include "base/test/scoped_task_environment.h"
@@ -78,10 +77,8 @@ TEST_P(SSLPlatformKeyMacTest, KeyMatches) {
       CreateSSLPrivateKeyForSecIdentity(cert.get(), sec_identity.get());
   ASSERT_TRUE(key);
 
-  // Mac keys from the default provider are expected to support all algorithms,
-  // except RSA-PSS which is new in 10.13.
-  EXPECT_EQ(SSLPrivateKey::DefaultAlgorithmPreferences(
-                test_key.type, base::mac::IsAtLeastOS10_13()),
+  // Mac keys from the default provider are expected to support all algorithms.
+  EXPECT_EQ(SSLPrivateKey::DefaultAlgorithmPreferences(test_key.type, true),
             key->GetAlgorithmPreferences());
 
   TestSSLPrivateKeyMatches(key.get(), pkcs8);
