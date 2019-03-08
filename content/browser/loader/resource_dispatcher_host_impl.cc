@@ -629,11 +629,13 @@ bool ResourceDispatcherHostImpl::HandleExternalProtocol(ResourceLoader* loader,
   if (!url.is_valid() || job_factory->IsHandledProtocol(url.scheme()))
     return false;
 
+  network::mojom::URLLoaderFactory* dummy = nullptr;
+
   return GetContentClient()->browser()->HandleExternalProtocol(
       url, info->GetWebContentsGetterForRequest(), info->GetChildID(),
       info->GetNavigationUIData(), info->IsMainFrame(),
       info->GetPageTransition(), info->HasUserGesture(), url_request->method(),
-      url_request->extra_request_headers());
+      url_request->extra_request_headers(), nullptr, dummy);
 }
 
 void ResourceDispatcherHostImpl::DidStartRequest(ResourceLoader* loader) {

@@ -1422,7 +1422,9 @@ class CONTENT_EXPORT ContentBrowserClient {
       ui::PageTransition page_transition,
       bool has_user_gesture,
       const std::string& method,
-      const net::HttpRequestHeaders& headers);
+      const net::HttpRequestHeaders& headers,
+      network::mojom::URLLoaderFactoryRequest* factory_request,
+      network::mojom::URLLoaderFactory*& out_factory);
 
   // Creates an OverlayWindow to be used for Picture-in-Picture. This window
   // will house the content shown when in Picture-in-Picture mode. This will
