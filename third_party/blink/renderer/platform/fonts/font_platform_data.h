@@ -55,13 +55,6 @@ typedef struct CGFont* CGFontRef;
 typedef const struct __CTFont* CTFontRef;
 
 #include <objc/objc-auto.h>
-
-inline CTFontRef toCTFontRef(NSFont* nsFont) {
-  return reinterpret_cast<CTFontRef>(nsFont);
-}
-inline NSFont* toNSFont(CTFontRef ctFontRef) {
-  return const_cast<NSFont*>(reinterpret_cast<const NSFont*>(ctFontRef));
-}
 #endif  // defined(OS_MACOSX)
 
 class SkFont;

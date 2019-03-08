@@ -395,6 +395,10 @@ _CONFIG = [
         ],
     },
     {
+        'paths': ['third_party/blink/renderer/core/editing/web_substring_util.mm'],
+        'allowed': ['base::mac::CFToNSCast'],
+    },
+    {
         'paths': ['third_party/blink/renderer/core/fetch/data_consumer_handle_test_util.cc'],
         'allowed': [
             # The existing code already contains gin::IsolateHolder.
