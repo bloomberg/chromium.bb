@@ -438,6 +438,18 @@ class ShelfLayoutManagerTest : public AshTestBase {
     return true;
   }
 
+  // Performs a swipe up gesture to show an auto-hidden shelf.
+  void SwipeUpToShowShelf() {
+    gfx::Rect display_bounds =
+        display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
+    const gfx::Point start(display_bounds.bottom_center());
+    const gfx::Point end(start + gfx::Vector2d(0, -80));
+    const base::TimeDelta kTimeDelta = base::TimeDelta::FromMilliseconds(100);
+    const int kNumScrollSteps = 4;
+    GetEventGenerator()->GestureScrollSequence(start, end, kTimeDelta,
+                                               kNumScrollSteps);
+  }
+
  private:
   base::TimeTicks timestamp_;
   gfx::Point current_point_;
@@ -838,15 +850,7 @@ void ShelfLayoutManagerTest::TestHomeLauncherGestureHandler(
   wm::ActivateWindow(window.get());
 
   if (autohide_shelf) {
-    gfx::Rect display_bounds =
-        display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
-    const gfx::Point start(display_bounds.bottom_center());
-    const gfx::Point end(start + gfx::Vector2d(0, -80));
-    const base::TimeDelta kTimeDelta = base::TimeDelta::FromMilliseconds(100);
-    const int kNumScrollSteps = 4;
-    // Swipe up to show the auto-hide shelf.
-    GetEventGenerator()->GestureScrollSequence(start, end, kTimeDelta,
-                                               kNumScrollSteps);
+    SwipeUpToShowShelf();
     EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
   }
 
@@ -2586,6 +2590,51 @@ TEST_F(ShelfLayoutManagerTest, SwipeUpAutoHideHiddenShelf) {
   }
 }
 
+// Tests the auto-hide shelf status when moving the mouse in and out.
+TEST_F(ShelfLayoutManagerTest, AutoHideShelfOnMouseMove) {
+  // Create one window, or the shelf won't auto-hide.
+  CreateTestWidget();
+  Shelf* shelf = GetPrimaryShelf();
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();
+
+  // Set the shelf to auto-hide.
+  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  ShelfLayoutManager* layout_manager = GetShelfLayoutManager();
+  layout_manager->LayoutShelf();
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
+
+  // Swipe up to show the shelf.
+  SwipeUpToShowShelf();
+  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
+
+  // Move the mouse far away from the shelf, but without having been on the
+  // shelf first. This isn't technically a mouse-out event, so the shelf should
+  // not hide.
+  generator->MoveMouseTo(0, 0);
+  ASSERT_FALSE(TriggerAutoHideTimeout());
+  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
+
+  // Now place the mouse on the shelf, then move away. The shelf should hide.
+  generator->MoveMouseTo(1, display.bounds().bottom() - 1);
+  generator->MoveMouseTo(0, 0);
+  ASSERT_TRUE(TriggerAutoHideTimeout());
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
+
+  // Now let's show the shelf again.
+  SwipeUpToShowShelf();
+  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
+
+  // Move the mouse away, but move it back within the shelf immediately. The
+  // shelf should remain shown.
+  generator->MoveMouseTo(0, 0);
+  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
+  generator->MoveMouseTo(1, display.bounds().bottom() - 1);
+  ASSERT_FALSE(TriggerAutoHideTimeout());
+  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
+}
+
 // Tests the auto-hide shelf status with mouse events.
 TEST_F(ShelfLayoutManagerTest, AutoHideShelfOnMouseEvents) {
   views::Widget* widget = CreateTestWidget();
@@ -2600,17 +2649,11 @@ TEST_F(ShelfLayoutManagerTest, AutoHideShelfOnMouseEvents) {
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
 
-  gfx::Rect display_bounds =
-      display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
-  const gfx::Point start(display_bounds.bottom_center());
-  const gfx::Point end(start + gfx::Vector2d(0, -80));
-  const base::TimeDelta kTimeDelta = base::TimeDelta::FromMilliseconds(100);
-  const int kNumScrollSteps = 4;
   // Swipe up to show the auto-hide shelf.
-  generator->GestureScrollSequence(start, end, kTimeDelta, kNumScrollSteps);
+  SwipeUpToShowShelf();
   EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
 
-  // Move the mouse should not hide the AUTO_HIDE_SHOWN shelf.
+  // Move the mouse should not hide the AUTO_HIDE_SHOWN shelf immediately.
   generator->MoveMouseTo(5, 5);
   EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
 

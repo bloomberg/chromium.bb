@@ -308,6 +308,10 @@ class ASH_EXPORT ShelfLayoutManager
   // Updates the auto hide state immediately.
   void UpdateAutoHideStateNow();
 
+  // Starts the auto hide timer, so that the shelf will be hidden after the
+  // timeout (unless something else happens to interrupt / reset it).
+  void StartAutoHideTimer();
+
   // Stops the auto hide timer and clears
   // |mouse_over_shelf_when_auto_hide_timer_started_|.
   void StopAutoHideTimer();
@@ -410,6 +414,11 @@ class ASH_EXPORT ShelfLayoutManager
   // Whether the mouse was over the shelf when the auto hide timer started.
   // False when neither the auto hide timer nor the timer task are running.
   bool mouse_over_shelf_when_auto_hide_timer_started_ = false;
+
+  // Whether the mouse pointer (not the touch pointer) was over the shelf last
+  // time we saw it. This is used to differentiate between mouse and touch in
+  // the shelf autohide behavior.
+  bool last_seen_mouse_position_was_over_shelf_ = false;
 
   base::ObserverList<ShelfLayoutManagerObserver>::Unchecked observers_;
 
