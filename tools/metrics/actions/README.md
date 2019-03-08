@@ -152,12 +152,26 @@ User action descriptions should clearly state when the action is emitted.
 
 ### Owners
 
-User actions need to be owned by a person or set of people.  These indicate who
-the current experts on it are.  Being the owner means you are responsible for
-answering questions about it, handling the maintenance if there are functional
-changes.  The owners should be added in the original user action description.
-If you are using a user action heavily and understand it intimately, feel free
-to add yourself as an owner. @chromium.org email addresses are preferred.
+User actions need to have owners, who are the current experts on the metric. The
+owners are the contact points for any questions or maintenance tasks. It's a
+best practice to list multiple owners, so that there's no single point of
+failure for such communication.
+
+Being an owner means you are responsible for answering questions about the
+metric, handling the maintenance if there are functional changes, and
+deprecating the metric if it outlives its usefulness. If you are using a metric
+heavily and understand it intimately, feel free to add yourself as an owner.
+@chromium.org email addresses are preferred.
+
+If an appropriate mailing list is available, it's a good idea to include the
+mailing list as a secondary owner. However, it's always a best practice to list
+an individual as the primary owner. Listing an individual owner makes it clearer
+who is ultimately most responsible for maintaining the metric, which makes it
+less likely that such maintenance tasks will slip through the cracks.
+
+Notably, owners are asked to evaluate whether histograms have outlived their
+usefulness. The metrics team may file a bug in Monorail. It's important that
+somebody familiar with the user action notices and triages such bugs!
 
 ### Beware `not_user_triggered="true"`
 
