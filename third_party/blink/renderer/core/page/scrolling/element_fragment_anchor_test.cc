@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "third_party/blink/renderer/core/page/scrolling/element_fragment_anchor.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/web/web_script_source.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/css/css_style_declaration.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
@@ -17,8 +19,6 @@
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
 namespace blink {
-
-namespace {
 
 using test::RunPendingTasks;
 
@@ -208,6 +208,57 @@ TEST_F(ElementFragmentAnchorTest, IframeFragmentDirtyLayoutAfterLoad) {
   main_resource.Finish();
 }
 
-}  // namespace
+// Ensure that a BeginFrame after the element-to-focus is removed from the
+// document doesn't cause a nullptr crash when the fragment anchor element has
+// been removed and garbage collected.
+TEST_F(ElementFragmentAnchorTest, AnchorRemovedBeforeBeginFrameCrash) {
+  SimRequest main_resource("https://example.com/test.html#anchor", "text/html");
+  SimSubresourceRequest css_resource("https://example.com/sheet.css",
+                                     "text/css");
+  LoadURL("https://example.com/test.html#anchor");
+
+  main_resource.Complete(R"HTML(
+      <!DOCTYPE html>
+      <link rel="stylesheet" type="text/css" href="sheet.css">
+      <div style="height: 1000px;"></div>
+      <input id="anchor">Bottom of the page</input>
+    )HTML");
+
+  // We're still waiting on the stylesheet to load so the load event shouldn't
+  // yet dispatch and rendering is deferred. This will avoid invoking or
+  // focusing the fragment when it's first installed.
+  ASSERT_FALSE(GetDocument().IsRenderingReady());
+  ASSERT_FALSE(GetDocument().IsLoadCompleted());
+
+  ASSERT_TRUE(GetDocument().View()->GetFragmentAnchor());
+  ASSERT_TRUE(static_cast<ElementFragmentAnchor*>(
+                  GetDocument().View()->GetFragmentAnchor())
+                  ->anchor_node_);
+
+  // Remove the fragment anchor from the DOM and perform GC.
+  GetDocument().getElementById("anchor")->remove();
+  v8::Isolate* isolate = ToIsolate(GetDocument().GetFrame());
+  isolate->RequestGarbageCollectionForTesting(
+      v8::Isolate::kFullGarbageCollection);
+
+  // Now that the element has been removed and GC'd, unblock rendering so we can
+  // produce a frame.
+  css_resource.Complete("");
+
+  ASSERT_TRUE(GetDocument().IsRenderingReady());
+
+  // We should still have a fragment anchor but its node pointer shoulld be
+  // gone since it's a WeakMember.
+  ASSERT_TRUE(GetDocument().View()->GetFragmentAnchor());
+  ASSERT_FALSE(static_cast<ElementFragmentAnchor*>(
+                   GetDocument().View()->GetFragmentAnchor())
+                   ->anchor_node_);
+
+  // We'd normally focus the fragment during BeginFrame. Make sure we don't
+  // crash since it's been GC'd.
+  Compositor().BeginFrame();
+
+  // Non-crash is considered a pass.
+}
 
 }  // namespace blink
