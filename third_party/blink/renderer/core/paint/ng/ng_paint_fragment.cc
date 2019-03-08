@@ -363,10 +363,6 @@ bool NGPaintFragment::ShouldClipOverflow() const {
          ToNGPhysicalBoxFragment(*physical_fragment_).ShouldClipOverflow();
 }
 
-LayoutRect NGPaintFragment::SelfInkOverflow() const {
-  return physical_fragment_->InkOverflow().ToLayoutRect();
-}
-
 // Populate descendants from NGPhysicalFragment tree.
 void NGPaintFragment::PopulateDescendants(
     const NGPhysicalOffset inline_offset_to_container_box,
