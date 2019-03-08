@@ -21,6 +21,7 @@ from chrome_telemetry_build import chromium_config
 class GpuIntegrationTestUnittest(unittest.TestCase):
   def setUp(self):
     self._test_state = {}
+    self._test_result = {}
 
   def testSimpleIntegrationTest(self):
     self._RunIntegrationTest(
@@ -60,6 +61,63 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
       ['--retry-limit=2'])
     # The number of attempted runs is 1 + the retry limit.
     self.assertEquals(self._test_state['num_test_runs'], 3)
+
+  def testUseTestExpectationsFileToHandleExpectedSkip(self):
+    self._RunIntegrationTest(
+      'run_tests_with_expectations_files',
+      [],
+      [],
+      [('unittest_data.integration_tests'
+        '.RunTestsWithExpectationsFiles.expected_skip')],
+      ['--test-filter=expected_skip'])
+    results = (self._test_result['tests']['unittest_data']['integration_tests']
+               ['RunTestsWithExpectationsFiles']['expected_skip'])
+    self.assertEqual(results['expected'], 'SKIP')
+    self.assertEqual(results['actual'], 'SKIP')
+    self.assertNotIn('is_regression', results)
+
+  def testUseTestExpectationsFileToHandleUnexpectedTestFailure(self):
+    self._RunIntegrationTest(
+      'run_tests_with_expectations_files',
+      [('unittest_data.integration_tests'
+        '.RunTestsWithExpectationsFiles.unexpected_test_failure')],
+      [],
+      [],
+      ['--test-filter=unexpected_test_failure'])
+    results = (self._test_result['tests']['unittest_data']['integration_tests']
+               ['RunTestsWithExpectationsFiles']['unexpected_test_failure'])
+    self.assertEqual(results['expected'], 'PASS')
+    self.assertEqual(results['actual'], 'FAIL')
+    self.assertIn('is_regression', results)
+
+  def testUseTestExpectationsFileToHandleExpectedFailure(self):
+    self._RunIntegrationTest(
+      'run_tests_with_expectations_files',
+      [],
+      [('unittest_data.integration_tests'
+        '.RunTestsWithExpectationsFiles.expected_failure')],
+      [],
+      ['--test-filter=expected_failure'])
+    results = (self._test_result['tests']['unittest_data']['integration_tests']
+               ['RunTestsWithExpectationsFiles']['expected_failure'])
+    self.assertEqual(results['expected'], 'FAIL')
+    self.assertEqual(results['actual'], 'FAIL')
+    self.assertNotIn('is_regression', results)
+
+  def testUseTestExpectationsFileToHandleExpectedFlakyTest(self):
+    self._RunIntegrationTest(
+      'run_tests_with_expectations_files',
+      [],
+      [('unittest_data.integration_tests'
+        '.RunTestsWithExpectationsFiles.expected_flaky')],
+      [],
+      ['--test-filter=expected_flaky', '--retry-limit=3',
+       '--retry-only-retry-on-failure-tests'])
+    results = (self._test_result['tests']['unittest_data']['integration_tests']
+               ['RunTestsWithExpectationsFiles']['expected_flaky'])
+    self.assertEqual(results['expected'], 'PASS')
+    self.assertEqual(results['actual'], 'FAIL FAIL FAIL PASS')
+    self.assertNotIn('is_regression', results)
 
   def testRepeat(self):
     self._RunIntegrationTest(
@@ -123,11 +181,11 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
            '--write-full-results-to=%s' % test_results_path,
            '--test-state-json-path=%s' % test_state_path] + additional_args)
       with open(test_results_path) as f:
-        test_result = json.load(f)
+        self._test_result = json.load(f)
       with open(test_state_path) as f:
         self._test_state = json.load(f)
       actual_successes, actual_failures, actual_skips = (
-          self._ExtractTestResults(test_result))
+          self._ExtractTestResults(self._test_result))
       self.assertEquals(set(actual_failures), set(failures))
       self.assertEquals(set(actual_successes), set(successes))
       self.assertEquals(set(actual_skips), set(skips))

@@ -6,11 +6,14 @@ import logging
 
 from telemetry.testing import serially_executed_browser_test_case
 from telemetry.util import screenshot
+from typ import json_results
 
 from gpu_tests import exception_formatter
 from gpu_tests import gpu_test_expectations
 
 _START_BROWSER_RETRIES = 3
+
+ResultType = json_results.ResultType
 
 # Please expand the following lists when we expand to new bot configs.
 _SUPPORTED_WIN_VERSIONS = ['win7', 'win10']
@@ -163,8 +166,60 @@ class GpuIntegrationTest(
     cls.SetBrowserOptions(cls._finder_options)
     cls.StartBrowser()
 
+  def _RunGpuTestWithExpectationsFiles(self, url, test_name, *args):
+    expected_results, should_retry_on_failure = (
+        self.GetExpectationsForTest())
+    try:
+      # TODO(nednguyen): For some reason the arguments are getting wrapped
+      # in another tuple sometimes (like in the WebGL extension tests).
+      # Perhaps only if multiple arguments are yielded in the test
+      # generator?
+      if len(args) == 1 and isinstance(args[0], tuple):
+        args = args[0]
+      self.RunActualGpuTest(url, *args)
+    except Exception:
+      if ResultType.Failure in expected_results or should_retry_on_failure:
+        if should_retry_on_failure:
+          # For robustness, shut down the browser and restart it
+          # between flaky test failures, to make sure any state
+          # doesn't propagate to the next iteration.
+          self._RestartBrowser('flaky test failure')
+        else:
+          msg = 'Expected exception while running %s' % test_name
+          exception_formatter.PrintFormattedException(msg=msg)
+          # Even though this is a known failure, the browser might still
+          # be in a bad state; for example, certain kinds of timeouts
+          # will affect the next test. Restart the browser to prevent
+          # these kinds of failures propagating to the next test.
+          self._RestartBrowser('expected test failure')
+      else:
+        # This is not an expected exception or test failure, so print
+        # the detail to the console.
+        exception_formatter.PrintFormattedException()
+        # Symbolize any crash dump (like from the GPU process) that
+        # might have happened but wasn't detected above. Note we don't
+        # do this for either 'fail' or 'flaky' expectations because
+        # there are still quite a few flaky failures in the WebGL test
+        # expectations, and since minidump symbolization is slow
+        # (upwards of one minute on a fast laptop), symbolizing all the
+        # stacks could slow down the tests' running time unacceptably.
+        self.browser.LogSymbolizedUnsymbolizedMinidumps(logging.ERROR)
+        # This failure might have been caused by a browser or renderer
+        # crash, so restart the browser to make sure any state doesn't
+        # propagate to the next test iteration.
+        self._RestartBrowser('unexpected test failure')
+      self.fail()
+    else:
+      if ResultType.Failure in expected_results:
+        logging.warning(
+          '%s was expected to fail, but passed.\n', test_name)
+
   def _RunGpuTest(self, url, test_name, *args):
-    expectations = self.__class__.GetExpectations()
+    cls = self.__class__
+    if cls.ExpectationsFiles():
+      self._RunGpuTestWithExpectationsFiles(url, test_name, *args)
+      return
+    expectations = cls.GetExpectations()
     expectation = expectations.GetExpectationForTest(
       self.browser, url, test_name)
     if expectation == 'skip':
