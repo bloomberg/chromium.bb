@@ -68,7 +68,7 @@ RequestCoordinatorFactory::RequestCoordinatorFactory()
     : BrowserContextKeyedServiceFactory(
           "OfflineRequestCoordinator",
           BrowserContextDependencyManager::GetInstance()) {
-  DependsOn(OfflinePageModelFactory::GetInstance());
+  // Depends on OfflinePageModelFactory in SimpleDependencyManager.
 }
 
 // static

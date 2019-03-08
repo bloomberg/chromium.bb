@@ -215,8 +215,7 @@ std::unique_ptr<KeyedService> BuildWebDataService(
 }
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
-std::unique_ptr<KeyedService> BuildOfflinePageModel(
-    content::BrowserContext* context) {
+std::unique_ptr<KeyedService> BuildOfflinePageModel(SimpleFactoryKey* key) {
   return std::make_unique<offline_pages::StubOfflinePageModel>();
 }
 #endif
@@ -597,7 +596,7 @@ void TestingProfile::CreateBookmarkModel(bool delete_file) {
   }
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
   offline_pages::OfflinePageModelFactory::GetInstance()->SetTestingFactory(
-      this, base::BindRepeating(&BuildOfflinePageModel));
+      GetSimpleFactoryKey(), base::BindRepeating(&BuildOfflinePageModel));
 #endif
   ManagedBookmarkServiceFactory::GetInstance()->SetTestingFactory(
       this, ManagedBookmarkServiceFactory::GetDefaultFactory());

@@ -24,6 +24,7 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/keyed_service/core/simple_factory_key.h"
 #include "components/offline_pages/core/stub_offline_page_model.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browsing_data_remover.h"
@@ -43,8 +44,7 @@ class MockOfflinePageModel : public offline_pages::StubOfflinePageModel {
   }
 };
 
-std::unique_ptr<KeyedService> BuildOfflinePageModel(
-    content::BrowserContext* context) {
+std::unique_ptr<KeyedService> BuildOfflinePageModel(SimpleFactoryKey* key) {
   return std::make_unique<MockOfflinePageModel>();
 }
 
@@ -74,7 +74,8 @@ class SigninManagerAndroidTest : public ::testing::Test {
     // Creating a BookmarkModel also a creates a StubOfflinePageModel.
     // We need to replace this with a mock that responds to deletions.
     offline_pages::OfflinePageModelFactory::GetInstance()->SetTestingFactory(
-        profile_, base::BindRepeating(&BuildOfflinePageModel));
+        profile_->GetSimpleFactoryKey(),
+        base::BindRepeating(&BuildOfflinePageModel));
     bookmarks::BookmarkModel* bookmark_model =
         BookmarkModelFactory::GetForBrowserContext(profile_);
     bookmarks::test::WaitForBookmarkModelToLoad(bookmark_model);
