@@ -252,6 +252,13 @@ void CacheStorageManager::CacheStorageUnreferenced(CacheStorage* cache_storage,
   // CacheStorage's state.
 }
 
+// static
+bool CacheStorageManager::IsValidQuotaOrigin(const url::Origin& origin) {
+  // Disallow opaque origins at the quota boundary because we DCHECK that we
+  // don't get an opaque origin in lower code layers.
+  return !origin.opaque();
+}
+
 void CacheStorageManager::GetAllOriginsUsage(
     CacheStorageOwner owner,
     CacheStorageContext::GetUsageInfoCallback callback) {
@@ -303,7 +310,8 @@ void CacheStorageManager::GetAllOriginsUsageGetSizes(
                      std::move(callback)));
 
   for (StorageUsageInfo& usage : *usages_ptr) {
-    if (usage.total_size_bytes != CacheStorage::kSizeUnknown) {
+    if (usage.total_size_bytes != CacheStorage::kSizeUnknown ||
+        !IsValidQuotaOrigin(usage.origin)) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, barrier_closure);
       continue;
     }

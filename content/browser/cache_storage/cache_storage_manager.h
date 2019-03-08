@@ -103,6 +103,8 @@ class CONTENT_EXPORT CacheStorageManager
                                 const url::Origin& origin,
                                 CacheStorageOwner owner);
 
+  static bool IsValidQuotaOrigin(const url::Origin& origin);
+
  private:
   friend class base::DeleteHelper<CacheStorageManager>;
   friend class base::RefCountedThreadSafe<CacheStorageManager>;
