@@ -473,7 +473,12 @@ by a child template that "extends" this file.
         <!-- ChromeTabbedActivity related -->
         <activity android:name="org.chromium.chrome.browser.ChromeTabbedActivity"
             android:theme="@style/Theme.Chromium.TabbedMode"
+            {% set notouch_build = notouch_build|default(0) %}
+            {% if notouch_build == "true" %}
+            android:exported="false"
+            {% else %}
             android:exported="true"
+            {% endif %}
             android:launchMode="singleTask"
             {# We can only use blocks once in Jinja, for future substitutions we use
             self.supports_video_persistence(). #}
@@ -505,7 +510,9 @@ by a child template that "extends" this file.
         </activity>
         <!-- TODO(crbug.com/780674): retarget .Main back to CTA for non-modern APK -->
         <activity-alias android:name="com.google.android.apps.chrome.Main"
-            {% if min_sdk_version|int < 21 %}
+            {% if notouch_build == "true" %}
+            android:targetActivity="org.chromium.chrome.browser.touchless.NoTouchActivity"
+            {% elif min_sdk_version|int < 21 %}
             android:targetActivity="org.chromium.chrome.browser.document.ChromeLauncherActivity"
             {% else %}
             android:targetActivity="org.chromium.chrome.browser.ChromeTabbedActivity"
@@ -545,7 +552,6 @@ by a child template that "extends" this file.
             {{ self.chrome_activity_common() }}>
             {{ self.extra_web_rendering_activity_definitions() }}
         </activity>
-        {% set notouch_build = notouch_build|default(0) %}
         {% if notouch_build == "true" %}
         <activity android:name="org.chromium.chrome.browser.touchless.NoTouchActivity"
             android:theme="@style/Theme.Chromium.Activity"
