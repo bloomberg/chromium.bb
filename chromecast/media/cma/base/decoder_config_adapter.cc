@@ -144,13 +144,13 @@ SampleFormat ToSampleFormat(const ::media::SampleFormat sample_format) {
 }
 
 ::media::EncryptionScheme::CipherMode ToMediaCipherMode(
-    EncryptionScheme::CipherMode mode) {
-  switch (mode) {
-    case EncryptionScheme::CIPHER_MODE_UNENCRYPTED:
+    EncryptionScheme scheme) {
+  switch (scheme) {
+    case EncryptionScheme::kUnencrypted:
       return ::media::EncryptionScheme::CIPHER_MODE_UNENCRYPTED;
-    case EncryptionScheme::CIPHER_MODE_AES_CTR:
+    case EncryptionScheme::kAesCtr:
       return ::media::EncryptionScheme::CIPHER_MODE_AES_CTR;
-    case EncryptionScheme::CIPHER_MODE_AES_CBC:
+    case EncryptionScheme::kAesCbc:
       return ::media::EncryptionScheme::CIPHER_MODE_AES_CBC;
     default:
       NOTREACHED();
@@ -158,45 +158,24 @@ SampleFormat ToSampleFormat(const ::media::SampleFormat sample_format) {
   }
 }
 
-EncryptionScheme::CipherMode ToCipherMode(
-    ::media::EncryptionScheme::CipherMode mode) {
-  switch (mode) {
+EncryptionScheme ToEncryptionScheme(const ::media::EncryptionScheme& scheme) {
+  switch (scheme.mode()) {
     case ::media::EncryptionScheme::CIPHER_MODE_UNENCRYPTED:
-      return EncryptionScheme::CIPHER_MODE_UNENCRYPTED;
+      return EncryptionScheme::kUnencrypted;
     case ::media::EncryptionScheme::CIPHER_MODE_AES_CTR:
-      return EncryptionScheme::CIPHER_MODE_AES_CTR;
+      return EncryptionScheme::kAesCtr;
     case ::media::EncryptionScheme::CIPHER_MODE_AES_CBC:
-      return EncryptionScheme::CIPHER_MODE_AES_CBC;
+      return EncryptionScheme::kAesCbc;
     default:
       NOTREACHED();
-      return EncryptionScheme::CIPHER_MODE_UNENCRYPTED;
+      return EncryptionScheme::kUnencrypted;
   }
 }
 
-EncryptionScheme::Pattern ToPatternSpec(
-    const ::media::EncryptionPattern& pattern) {
-  return EncryptionScheme::Pattern(pattern.crypt_byte_block(),
-                                   pattern.skip_byte_block());
-}
-
-::media::EncryptionPattern ToMediaPatternSpec(
-    const EncryptionScheme::Pattern& pattern) {
-  return ::media::EncryptionPattern(pattern.encrypt_blocks,
-                                    pattern.skip_blocks);
-}
-
-EncryptionScheme ToEncryptionScheme(
-    const ::media::EncryptionScheme& scheme) {
-  return EncryptionScheme(
-    ToCipherMode(scheme.mode()),
-    ToPatternSpec(scheme.pattern()));
-}
-
-::media::EncryptionScheme ToMediaEncryptionScheme(
-    const EncryptionScheme& scheme) {
-  return ::media::EncryptionScheme(
-    ToMediaCipherMode(scheme.mode),
-    ToMediaPatternSpec(scheme.pattern));
+// TODO(yucliu): Remove pattern after update ::media::Audio/VideoDecoderConfig.
+::media::EncryptionScheme ToMediaEncryptionScheme(EncryptionScheme scheme) {
+  return ::media::EncryptionScheme(ToMediaCipherMode(scheme),
+                                   ::media::EncryptionPattern());
 }
 
 }  // namespace

@@ -84,7 +84,7 @@ VideoConfig DefaultVideoConfig() {
   default_config.codec = kCodecH264;
   default_config.profile = kH264Main;
   default_config.additional_config = nullptr;
-  default_config.encryption_scheme = Unencrypted();
+  default_config.encryption_scheme = EncryptionScheme::kUnencrypted;
   return default_config;
 }
 
@@ -587,7 +587,7 @@ std::unique_ptr<BufferFeeder> BufferFeeder::LoadVideo(
     video_config.codec = kCodecH264;
     video_config.profile = kH264Main;
     video_config.additional_config = nullptr;
-    video_config.encryption_scheme = Unencrypted();
+    video_config.encryption_scheme = EncryptionScheme::kUnencrypted;
   } else {
     base::FilePath file_path = GetTestDataFilePath(filename);
     DemuxResult demux_result = FFmpegDemuxForTest(file_path, false /* audio */);
