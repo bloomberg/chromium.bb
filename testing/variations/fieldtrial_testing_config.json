@@ -3343,6 +3343,23 @@
             ]
         }
     ],
+    "OutOfBlinkCors": [
+        {
+            "platforms": [
+                "windows",
+                "mac",
+                "linux"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "OutOfBlinkCors"
+                    ]
+                }
+            ]
+        }
+    ],
     "OverflowIconsForMediaControls": [
         {
             "platforms": [
