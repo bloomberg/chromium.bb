@@ -149,4 +149,13 @@ public class CompositorAnimationHandler {
     public static boolean isInTestingMode() {
         return sIsInTestingMode;
     }
+
+    /**
+     * Provides update for animation in testing mode.
+     * @return Whether update was successful or not.
+     */
+    @VisibleForTesting
+    public final boolean pushUpdateInTestingMode(long deltaTimeMs) {
+        return sIsInTestingMode ? pushUpdate(deltaTimeMs) : false;
+    }
 }
