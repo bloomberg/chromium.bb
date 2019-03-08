@@ -31,8 +31,6 @@ cast_source_set("base") {
     "audio_device_ids.h",
     "decrypt_context_impl.cc",
     "decrypt_context_impl.h",
-    "decrypt_context_impl_clearkey.cc",
-    "decrypt_context_impl_clearkey.h",
     "media_caps.cc",
     "media_caps.h",
     "slew_volume.cc",
@@ -59,8 +57,6 @@ cast_source_set("base") {
   deps = [
     "//base",
     "//chromecast/base",
-    "//crypto",
-    "//crypto:platform",
     "//media",
     "//media:shared_memory_support",
     "//ui/gfx/geometry",
