@@ -56,13 +56,11 @@ const char kTestEmail[] = "me@gmail.com";
 const char kTestEmail2[] = "me2@gmail.com";
 const char kTestEmail3[] = "me3@gmail.com";
 
-#if defined(OS_ANDROID)
 const char kTestHostedDomain[] = "example.com";
 const char kTestFullName[] = "full_name";
 const char kTestGivenName[] = "given_name";
 const char kTestLocale[] = "locale";
 const char kTestPictureUrl[] = "http://picture.example.com/picture.jpg";
-#endif
 
 #if defined(OS_CHROMEOS)
 const char kTestEmailWithPeriod[] = "m.e@gmail.com";
@@ -110,14 +108,6 @@ class CustomFakeProfileOAuth2TokenService
   std::set<std::string> expected_scopes_to_invalidate_;
   std::string expected_access_token_to_invalidate_;
   base::OnceClosure on_access_token_invalidated_callback_;
-};
-
-class AccountTrackerServiceForTest : public AccountTrackerService {
- public:
-  void SetAccountInfoFromUserInfo(const std::string& account_id,
-                                  const base::DictionaryValue* user_info) {
-    AccountTrackerService::SetAccountInfoFromUserInfo(account_id, user_info);
-  }
 };
 
 class TestSigninManagerObserver : public SigninManagerBase::Observer {
@@ -366,7 +356,7 @@ class IdentityManagerTest : public testing::Test {
   identity_manager_diagnostics_observer() {
     return identity_manager_diagnostics_observer_.get();
   }
-  AccountTrackerServiceForTest* account_tracker() { return &account_tracker_; }
+  AccountTrackerService* account_tracker() { return &account_tracker_; }
   AccountFetcherService* account_fetcher() { return &account_fetcher_; }
   SigninManagerBase* signin_manager() { return signin_manager_.get(); }
   CustomFakeProfileOAuth2TokenService* token_service() {
@@ -485,7 +475,7 @@ class IdentityManagerTest : public testing::Test {
  private:
   base::MessageLoop message_loop_;
   sync_preferences::TestingPrefServiceSyncable pref_service_;
-  AccountTrackerServiceForTest account_tracker_;
+  AccountTrackerService account_tracker_;
   AccountFetcherService account_fetcher_;
   TestSigninClient signin_client_;
   CustomFakeProfileOAuth2TokenService token_service_;
@@ -1523,12 +1513,10 @@ TEST_F(IdentityManagerTest, IdentityManagerReflectsUpdatedEmailAddress) {
 
   // Simulate the flow wherein the user's email address was updated
   // to the originally-created non-normalized version.
-  base::DictionaryValue user_info;
-  user_info.SetString("id", kTestGaiaId);
-  user_info.SetString("email", kTestEmailWithPeriod);
-  account_tracker()->SetAccountInfoFromUserInfo(primary_account_info.account_id,
-                                                &user_info);
-
+  SimulateSuccessfulFetchOfAccountInfo(
+      identity_manager(), primary_account_info.account_id, kTestEmailWithPeriod,
+      kTestGaiaId, kTestHostedDomain, kTestFullName, kTestGivenName,
+      kTestLocale, kTestPictureUrl);
   // Verify that IdentityManager reflects the update.
   primary_account_info = identity_manager()->GetPrimaryAccountInfo();
   EXPECT_EQ(kTestGaiaId, primary_account_info.gaia);
@@ -2387,11 +2375,10 @@ TEST_F(IdentityManagerTest, ObserveOnAccountUpdated) {
   const AccountInfo account_info =
       MakeAccountAvailable(identity_manager(), kTestEmail3);
 
-  base::DictionaryValue user_info;
-  user_info.SetString("id", account_info.account_id);
-  user_info.SetString("email", account_info.email);
-  account_tracker()->SetAccountInfoFromUserInfo(account_info.account_id,
-                                                &user_info);
+  SimulateSuccessfulFetchOfAccountInfo(
+      identity_manager(), account_info.account_id, account_info.email,
+      account_info.account_id, kTestHostedDomain, kTestFullName, kTestGivenName,
+      kTestLocale, kTestPictureUrl);
 
   EXPECT_EQ(account_info.account_id, identity_manager_observer()
                                          ->AccountFromAccountUpdatedCallback()
@@ -2500,16 +2487,10 @@ TEST_F(IdentityManagerTest, ForceRefreshOfExtendedAccountInfo) {
   identity_manager()->ForceRefreshOfExtendedAccountInfo(
       account_info.account_id);
 
-  base::DictionaryValue user_info;
-  user_info.SetString("id", account_info.account_id);
-  user_info.SetString("email", account_info.email);
-  user_info.SetString("hd", kTestHostedDomain);
-  user_info.SetString("name", kTestFullName);
-  user_info.SetString("given_name", kTestGivenName);
-  user_info.SetString("locale", kTestLocale);
-  user_info.SetString("picture", kTestPictureUrl);
-  account_tracker()->SetAccountInfoFromUserInfo(account_info.account_id,
-                                                &user_info);
+  SimulateSuccessfulFetchOfAccountInfo(
+      identity_manager(), account_info.account_id, account_info.email,
+      account_info.account_id, kTestHostedDomain, kTestFullName, kTestGivenName,
+      kTestLocale, kTestPictureUrl);
 
   const AccountInfo& refreshed_account_info =
       identity_manager_observer()->AccountFromAccountUpdatedCallback();

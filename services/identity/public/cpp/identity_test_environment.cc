@@ -584,15 +584,9 @@ void IdentityTestEnvironment::SimulateSuccessfulFetchOfAccountInfo(
     const std::string& given_name,
     const std::string& locale,
     const std::string& picture_url) {
-  base::DictionaryValue user_info;
-  user_info.SetString("id", gaia);
-  user_info.SetString("email", email);
-  user_info.SetString("hd", hosted_domain);
-  user_info.SetString("name", full_name);
-  user_info.SetString("given_name", given_name);
-  user_info.SetString("locale", locale);
-  user_info.SetString("picture", picture_url);
-  account_tracker_service_->SetAccountInfoFromUserInfo(account_id, &user_info);
+  identity::SimulateSuccessfulFetchOfAccountInfo(
+      identity_manager(), account_id, email, gaia, hosted_domain, full_name,
+      given_name, locale, picture_url);
 }
 
 void IdentityTestEnvironment::SimulateMergeSessionFailure(
