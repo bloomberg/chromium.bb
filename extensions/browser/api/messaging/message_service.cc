@@ -189,13 +189,10 @@ void MessageService::OpenChannelToExtension(
             source_endpoint.type == MessagingEndpoint::Type::kNativeApp);
   content::RenderFrameHost* source_render_frame_host =
       source.is_for_render_frame() ? source.GetRenderFrameHost() : nullptr;
-  BrowserContext* context = context_;
   if (!source.IsValid())
     return;
-  if (!source.is_for_native_host()) {
-    context = source.browser_context();
-    DCHECK(ExtensionsBrowserClient::Get()->IsSameContext(context, context_));
-  }
+  BrowserContext* context = source.browser_context();
+  DCHECK(ExtensionsBrowserClient::Get()->IsSameContext(context, context_));
 
   if (!opener_port) {
     DCHECK(source_endpoint.type == MessagingEndpoint::Type::kTab ||
