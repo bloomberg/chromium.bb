@@ -514,6 +514,17 @@ class IdentityManager : public SigninManagerBase::Observer,
       network::TestURLLoaderFactory* test_url_loader_factory,
       const std::vector<identity::CookieParams>& cookie_accounts);
 
+  friend void SimulateSuccessfulFetchOfAccountInfo(
+      IdentityManager* identity_manager,
+      const std::string& account_id,
+      const std::string& email,
+      const std::string& gaia,
+      const std::string& hosted_domain,
+      const std::string& full_name,
+      const std::string& given_name,
+      const std::string& locale,
+      const std::string& picture_url);
+
   // These clients needs to call SetPrimaryAccountSynchronously().
   friend ArcSupportHostTest;
   friend arc::ArcTermsOfServiceDefaultNegotiatorTest;
