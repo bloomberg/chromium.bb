@@ -975,9 +975,9 @@ void PaintArtifactCompositor::Update(
 }
 
 // Every effect is supposed to have render surface enabled for grouping, but we
-// can omit one if the effect is opacity-only, render surface is not forced,
-// and the effect has only one compositing child. This is both for optimization
-// and not introducing sub-pixel differences in web tests.
+// can omit one if the effect is opacity- or blend-mode-only, render surface is
+// not forced, and the effect has only one compositing child. This is both for
+// optimization and not introducing sub-pixel differences in web tests.
 // TODO(crbug.com/504464): There is ongoing work in cc to delay render surface
 // decision until later phase of the pipeline. Remove premature optimization
 // here once the work is ready.
@@ -994,7 +994,8 @@ void PaintArtifactCompositor::UpdateRenderSurfaceForEffects(
          !effect->has_render_surface || !effect->backdrop_filters.IsEmpty();
          effect = effect_tree.Node(effect->parent_id)) {
       found_backdrop_filter |= !effect->backdrop_filters.IsEmpty();
-      if ((effect->opacity != 1.f || effect->has_potential_opacity_animation) &&
+      if ((effect->opacity != 1.f || effect->has_potential_opacity_animation ||
+           effect->blend_mode != SkBlendMode::kSrcOver) &&
           (!pending_render_surfaces.insert(effect->id).is_new_entry ||
            found_backdrop_filter)) {
         // The opacity-only effect is seen a second time, which means that it
