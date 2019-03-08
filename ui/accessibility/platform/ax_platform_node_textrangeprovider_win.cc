@@ -45,7 +45,9 @@ HRESULT AXPlatformNodeTextRangeProviderWin::CreateTextRangeProvider(
 //
 STDMETHODIMP AXPlatformNodeTextRangeProviderWin::Clone(
     ITextRangeProvider** clone) {
-  return E_NOTIMPL;
+  *clone = nullptr;
+
+  return CreateTextRangeProvider(owner_, start_->Clone(), end_->Clone(), clone);
 }
 
 STDMETHODIMP AXPlatformNodeTextRangeProviderWin::Compare(
