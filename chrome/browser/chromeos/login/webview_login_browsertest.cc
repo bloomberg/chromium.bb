@@ -643,10 +643,8 @@ IN_PROC_BROWSER_TEST_F(WebviewClientCertsLoginTest,
 
 // Test that client certificate autoselect selects the right certificate even
 // with multiple filters for the same pattern.
-//
-// Disabled due to flaky timeouts: https://crbug.com/830337.
 IN_PROC_BROWSER_TEST_F(WebviewClientCertsLoginTest,
-                       DISABLED_SigninFrameCertMultipleFiltersAutoSelected) {
+                       SigninFrameCertMultipleFiltersAutoSelected) {
   ASSERT_NO_FATAL_FAILURE(SetUpClientCertInSystemSlot());
   net::SpawnedTestServer::SSLOptions ssl_options;
   ssl_options.request_client_certificate = true;
