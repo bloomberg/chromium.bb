@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/app_list/home_launcher_gesture_handler.h"
+#include "ash/home_screen/home_launcher_gesture_handler.h"
 
-#include "ash/app_list/app_list_controller_impl.h"
+#include "ash/home_screen/home_screen_controller.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
@@ -47,7 +47,9 @@ class HomeLauncherGestureHandlerTest : public AshTestBase {
   }
 
   HomeLauncherGestureHandler* GetGestureHandler() {
-    return Shell::Get()->app_list_controller()->home_launcher_gesture_handler();
+    return Shell::Get()
+        ->home_screen_controller()
+        ->home_launcher_gesture_handler();
   }
 
   void DoPress(Mode mode) {

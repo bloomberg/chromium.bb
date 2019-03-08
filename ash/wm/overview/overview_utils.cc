@@ -6,8 +6,8 @@
 
 #include <utility>
 
-#include "ash/app_list/app_list_controller_impl.h"
-#include "ash/app_list/home_launcher_gesture_handler.h"
+#include "ash/home_screen/home_launcher_gesture_handler.h"
+#include "ash/home_screen/home_screen_controller.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
@@ -295,7 +295,7 @@ bool IsSlidingOutOverviewFromShelf() {
     return false;
 
   if (Shell::Get()
-          ->app_list_controller()
+          ->home_screen_controller()
           ->home_launcher_gesture_handler()
           ->mode() == HomeLauncherGestureHandler::Mode::kSlideUpToShow) {
     return true;

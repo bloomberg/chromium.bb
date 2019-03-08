@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/app_list/home_launcher_gesture_handler.h"
+#include "ash/home_screen/home_launcher_gesture_handler.h"
 
-#include "ash/app_list/app_list_controller_impl.h"
-#include "ash/app_list/model/app_list_view_state.h"
+#include "ash/home_screen/home_launcher_gesture_handler_observer.h"
+#include "ash/home_screen/home_screen_controller.h"
+#include "ash/home_screen/home_screen_delegate.h"
 #include "ash/root_window_controller.h"
 #include "ash/scoped_animation_disabler.h"
 #include "ash/screen_util.h"
@@ -23,6 +24,7 @@
 #include "ash/wm/workspace_controller.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/logging.h"
 #include "base/metrics/user_metrics.h"
 #include "base/numerics/ranges.h"
 #include "services/ws/public/mojom/window_tree_constants.mojom.h"
@@ -270,9 +272,7 @@ class HomeLauncherGestureHandler::ScopedWindowModifier
   DISALLOW_COPY_AND_ASSIGN(ScopedWindowModifier);
 };
 
-HomeLauncherGestureHandler::HomeLauncherGestureHandler(
-    AppListControllerImpl* app_list_controller)
-    : app_list_controller_(app_list_controller) {
+HomeLauncherGestureHandler::HomeLauncherGestureHandler() {
   tablet_mode_observer_.Add(Shell::Get()->tablet_mode_controller());
 }
 
@@ -297,7 +297,7 @@ bool HomeLauncherGestureHandler::OnPressEvent(Mode mode,
   last_event_location_ = base::make_optional(location);
 
   if (mode != Mode::kNone) {
-    app_list_controller_->NotifyHomeLauncherTargetPositionChanged(
+    NotifyHomeLauncherTargetPositionChanged(
         mode == Mode::kSlideUpToShow /*showing*/, display_.id());
   }
 
@@ -402,6 +402,30 @@ aura::Window* HomeLauncherGestureHandler::GetWindow2() {
   return window2_->window();
 }
 
+void HomeLauncherGestureHandler::AddObserver(
+    HomeLauncherGestureHandlerObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void HomeLauncherGestureHandler::RemoveObserver(
+    HomeLauncherGestureHandlerObserver* observer) {
+  observers_.RemoveObserver(observer);
+}
+
+void HomeLauncherGestureHandler::NotifyHomeLauncherTargetPositionChanged(
+    bool showing,
+    int64_t display_id) {
+  for (auto& observer : observers_)
+    observer.OnHomeLauncherTargetPositionChanged(showing, display_id);
+}
+
+void HomeLauncherGestureHandler::NotifyHomeLauncherAnimationComplete(
+    bool shown,
+    int64_t display_id) {
+  for (auto& observer : observers_)
+    observer.OnHomeLauncherAnimationComplete(shown, display_id);
+}
+
 void HomeLauncherGestureHandler::OnWindowDestroying(aura::Window* window) {
   if (window1_ && window == GetWindow1()) {
     for (auto* hidden_window : hidden_windows_)
@@ -440,10 +464,10 @@ void HomeLauncherGestureHandler::OnTabletModeEnded() {
 }
 
 void HomeLauncherGestureHandler::OnImplicitAnimationsCompleted() {
-  float app_list_opacity = 1.f;
+  float home_launcher_opacity = 1.f;
   const bool is_final_state_show = IsFinalStateShow();
-  app_list_controller_->NotifyHomeLauncherAnimationComplete(
-      is_final_state_show /*shown*/, display_.id());
+  NotifyHomeLauncherAnimationComplete(is_final_state_show /*shown*/,
+                                      display_.id());
   if (Shell::Get()->overview_controller()->IsSelecting()) {
     if (overview_active_on_gesture_start_ && is_final_state_show) {
       // Exit overview if event is released on the top half. This will also
@@ -452,14 +476,18 @@ void HomeLauncherGestureHandler::OnImplicitAnimationsCompleted() {
       Shell::Get()->overview_controller()->ToggleOverview(
           OverviewSession::EnterExitOverviewType::kSwipeFromShelf);
     } else {
-      app_list_opacity = 0.f;
+      home_launcher_opacity = 0.f;
     }
   }
 
+  HomeScreenDelegate* home_screen_delegate =
+      Shell::Get()->home_screen_controller()->delegate();
+  DCHECK(home_screen_delegate);
+
   // Return the app list to its original opacity and transform without
   // animation.
-  app_list_controller_->presenter()->UpdateYPositionAndOpacityForHomeLauncher(
-      0, app_list_opacity, base::NullCallback());
+  home_screen_delegate->UpdateYPositionAndOpacityForHomeLauncher(
+      0, home_launcher_opacity, base::NullCallback());
 
   if (!window1_) {
     RemoveObserversAndStopTracking();
@@ -477,8 +505,7 @@ void HomeLauncherGestureHandler::OnImplicitAnimationsCompleted() {
     window2_->ResetOpacityAndTransform();
 
   if (is_final_state_show) {
-    // Show or hide the expand arrow view.
-    app_list_controller_->UpdateExpandArrowVisibility();
+    home_screen_delegate->UpdateAfterHomeLauncherShown();
 
     std::vector<aura::Window*> windows_to_hide_minimize;
     windows_to_hide_minimize.push_back(GetWindow1());
@@ -518,13 +545,11 @@ void HomeLauncherGestureHandler::AnimateToFinalState() {
   UpdateWindows(is_final_state_show ? 1.0 : 0.0, /*animate=*/true);
 
   if (!is_final_state_show && mode_ == Mode::kSlideDownToHide) {
-    app_list_controller_->NotifyHomeLauncherTargetPositionChanged(
-        false /*showing*/, display_.id());
+    NotifyHomeLauncherTargetPositionChanged(false /*showing*/, display_.id());
     base::RecordAction(
         base::UserMetricsAction("AppList_HomeLauncherToMRUWindow"));
   } else if (is_final_state_show && mode_ == Mode::kSlideUpToShow) {
-    app_list_controller_->NotifyHomeLauncherTargetPositionChanged(
-        true /*showing*/, display_.id());
+    NotifyHomeLauncherTargetPositionChanged(true /*showing*/, display_.id());
     base::RecordAction(
         base::UserMetricsAction("AppList_CurrentWindowToHomeLauncher"));
   }
@@ -552,7 +577,10 @@ void HomeLauncherGestureHandler::UpdateWindows(double progress, bool animate) {
   const int y_position = gfx::Tween::IntValueBetween(
       progress, work_area.bottom(), display_.bounds().y());
   const float opacity = gfx::Tween::FloatValueBetween(progress, 0.f, 1.f);
-  app_list_controller_->presenter()->UpdateYPositionAndOpacityForHomeLauncher(
+  HomeScreenDelegate* home_screen_delegate =
+      Shell::Get()->home_screen_controller()->delegate();
+  DCHECK(home_screen_delegate);
+  home_screen_delegate->UpdateYPositionAndOpacityForHomeLauncher(
       y_position, opacity,
       animate ? base::BindRepeating(&HomeLauncherGestureHandler::UpdateSettings,
                                     base::Unretained(this))

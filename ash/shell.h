@@ -128,6 +128,7 @@ class FirstRunHelper;
 class FocusCycler;
 class HighContrastController;
 class HighlighterController;
+class HomeScreenController;
 class ImeController;
 class ImeFocusHandler;
 class ImmersiveContext;
@@ -405,6 +406,9 @@ class ASH_EXPORT Shell : public SessionObserver,
   EventClientImpl* event_client() { return event_client_.get(); }
   EventTransformationHandler* event_transformation_handler() {
     return event_transformation_handler_.get();
+  }
+  HomeScreenController* home_screen_controller() {
+    return home_screen_controller_.get();
   }
   FirstRunHelper* first_run_helper() { return first_run_helper_.get(); }
   ::wm::FocusController* focus_controller() { return focus_controller_.get(); }
@@ -729,6 +733,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<DragDropController> drag_drop_controller_;
   std::unique_ptr<FirstRunHelper> first_run_helper_;
   std::unique_ptr<FocusCycler> focus_cycler_;
+  std::unique_ptr<HomeScreenController> home_screen_controller_;
   std::unique_ptr<ImeController> ime_controller_;
   std::unique_ptr<ImeFocusHandler> ime_focus_handler_;
   std::unique_ptr<ImmersiveContext> immersive_context_;

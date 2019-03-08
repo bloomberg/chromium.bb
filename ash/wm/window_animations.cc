@@ -10,8 +10,8 @@
 #include <utility>
 #include <vector>
 
-#include "ash/app_list/app_list_controller_impl.h"
-#include "ash/app_list/home_launcher_gesture_handler.h"
+#include "ash/home_screen/home_launcher_gesture_handler.h"
+#include "ash/home_screen/home_screen_controller.h"
 #include "ash/public/cpp/window_animation_types.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
@@ -246,17 +246,17 @@ void AnimateHideWindow_BrightnessGrayscale(aura::Window* window) {
 }
 
 bool AnimateShowWindow_SlideDown(aura::Window* window) {
-  AppListControllerImpl* app_list_controller =
-      Shell::Get()->app_list_controller();
+  HomeScreenController* home_screen_controller =
+      Shell::Get()->home_screen_controller();
   const TabletModeController* tablet_mode_controller =
       Shell::Get()->tablet_mode_controller();
 
-  if (app_list_controller && tablet_mode_controller &&
+  if (home_screen_controller && tablet_mode_controller &&
       tablet_mode_controller->IsTabletModeWindowManagerEnabled()) {
     // Slide down the window from above screen to show and, meanwhile, slide
     // down the home launcher off screen.
     HomeLauncherGestureHandler* handler =
-        app_list_controller->home_launcher_gesture_handler();
+        home_screen_controller->home_launcher_gesture_handler();
     if (handler &&
         handler->HideHomeLauncherForWindow(
             display::Screen::GetScreen()->GetDisplayNearestView(window),
