@@ -13141,6 +13141,7 @@ Called by update_net_error_codes.py.-->
   <int value="353" label="potm"/>
   <int value="354" label="ppsm"/>
   <int value="355" label="pps"/>
+  <int value="356" label="mobileconfig"/>
 </enum>
 
 <enum name="DownloadItem.DangerType">
@@ -47880,6 +47881,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="353" label="POTM"/>
   <int value="354" label="PPSM"/>
   <int value="355" label="PPS"/>
+  <int value="356" label="MOBILECONFIG"/>
 </enum>
 
 <enum name="SBClientDownloadIsSignedBinary">
