@@ -30,11 +30,17 @@ class AwInterceptedRequestHandler {};
 // pass-through implementation.
 class AwProxyingURLLoaderFactory : public network::mojom::URLLoaderFactory {
  public:
+  // Create a factory that will create specialized URLLoaders for Android
+  // WebView. If |intercept_only| parameter is true the loader created by
+  // this factory will only execute the intercept callback
+  // (shouldInterceptRequest), it will not propagate the request to the
+  // target factory.
   AwProxyingURLLoaderFactory(
       int process_id,
       network::mojom::URLLoaderFactoryRequest loader_request,
       network::mojom::URLLoaderFactoryPtrInfo target_factory_info,
-      std::unique_ptr<AwInterceptedRequestHandler> request_handler);
+      std::unique_ptr<AwInterceptedRequestHandler> request_handler,
+      bool intercept_only);
 
   ~AwProxyingURLLoaderFactory() override;
 
@@ -67,6 +73,12 @@ class AwProxyingURLLoaderFactory : public network::mojom::URLLoaderFactory {
   // TODO(timvolodine): consider functionality to have multiple interception
   // handlers operating in sequence.
   std::unique_ptr<AwInterceptedRequestHandler> request_handler_;
+
+  // When true the loader resulting from this factory will only execute
+  // intercept callback (shouldInterceptRequest). If that returns without
+  // a response, the loader will abort loading.
+  bool intercept_only_;
+
   base::WeakPtrFactory<AwProxyingURLLoaderFactory> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AwProxyingURLLoaderFactory);

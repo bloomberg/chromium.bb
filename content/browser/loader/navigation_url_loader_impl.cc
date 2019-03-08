@@ -918,15 +918,24 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     if (!IsURLHandledByNetworkService(resource_request_->url)) {
       if (known_schemes_.find(resource_request_->url.scheme()) ==
           known_schemes_.end()) {
+        network::mojom::URLLoaderFactory* external_protocol_factory = nullptr;
         bool handled = GetContentClient()->browser()->HandleExternalProtocol(
             resource_request_->url, web_contents_getter_,
             ChildProcessHost::kInvalidUniqueID, navigation_ui_data_.get(),
             resource_request_->resource_type == RESOURCE_TYPE_MAIN_FRAME,
             static_cast<ui::PageTransition>(resource_request_->transition_type),
             resource_request_->has_user_gesture, resource_request_->method,
-            resource_request_->headers);
-        factory = base::MakeRefCounted<SingleRequestURLLoaderFactory>(
-            base::BindOnce(UnknownSchemeCallback, handled));
+            resource_request_->headers, &proxied_factory_request_,
+            external_protocol_factory);
+
+        if (external_protocol_factory) {
+          factory =
+              base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+                  external_protocol_factory);
+        } else {
+          factory = base::MakeRefCounted<SingleRequestURLLoaderFactory>(
+              base::BindOnce(UnknownSchemeCallback, handled));
+        }
       } else {
         network::mojom::URLLoaderFactoryPtr& non_network_factory =
             non_network_url_loader_factories_[resource_request_->url.scheme()];

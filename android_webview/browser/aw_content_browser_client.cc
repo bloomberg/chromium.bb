@@ -212,21 +212,6 @@ void DummyBindPasswordManagerDriver(
     autofill::mojom::PasswordManagerDriverRequest request,
     content::RenderFrameHost* render_frame_host) {}
 
-// TODO(timvolodine): consider refactoring this into common utility method.
-void OnReceivedErrorOnUIThread(
-    const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
-    const AwWebResourceRequest& request) {
-  AwContentsClientBridge* client =
-      AwContentsClientBridge::FromWebContentsGetter(web_contents_getter);
-  if (!client) {
-    DLOG(WARNING) << "client is null, onReceivedError dropped for "
-                  << request.url;
-    return;
-  }
-  client->OnReceivedError(request, net::ERR_UNKNOWN_URL_SCHEME,
-                          false /*safebrowsing_hit*/);
-}
-
 void PassCookieManagerToCookieManagerWrapper(
     const network::mojom::NetworkContextPtr& network_context) {
   // Get the CookieManager from the NetworkContext.
@@ -924,17 +909,17 @@ bool AwContentBrowserClient::HandleExternalProtocol(
     ui::PageTransition page_transition,
     bool has_user_gesture,
     const std::string& method,
-    const net::HttpRequestHeaders& headers) {
+    const net::HttpRequestHeaders& headers,
+    network::mojom::URLLoaderFactoryRequest* factory_request,
+    network::mojom::URLLoaderFactory*& out_factory) {
   if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    AwWebResourceRequest aw_resource_request(url.spec(), method, is_main_frame,
-                                             has_user_gesture, headers);
-    aw_resource_request.is_renderer_initiated =
-        ui::PageTransitionIsWebTriggerable(
-            static_cast<ui::PageTransition>(page_transition));
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(&OnReceivedErrorOnUIThread, web_contents_getter,
-                       std::move(aw_resource_request)));
+    auto proxied_request = std::move(*factory_request);
+    network::mojom::URLLoaderFactoryPtrInfo target_factory_info;
+    *factory_request = mojo::MakeRequest(&target_factory_info);
+
+    out_factory = new android_webview::AwProxyingURLLoaderFactory(
+        0 /* process_id */, std::move(proxied_request),
+        std::move(target_factory_info), nullptr, true /* intercept_only */);
   } else {
     // The AwURLRequestJobFactory implementation should ensure this method never
     // gets called when Network Service is not enabled.
