@@ -628,10 +628,11 @@ typedef struct {
   YV12_BUFFER_CONFIG buf;
 } EncRefCntBuffer;
 
-#if CONFIG_COLLECT_PARTITION_STATS
+#if CONFIG_COLLECT_PARTITION_STATS == 2
 typedef struct PartitionStats {
   int partition_decisions[6][EXT_PARTITION_TYPES];
   int partition_attempts[6][EXT_PARTITION_TYPES];
+  int64_t partition_times[6][EXT_PARTITION_TYPES];
 
   int partition_redo;
 } PartitionStats;
@@ -979,7 +980,7 @@ typedef struct AV1_COMP {
 #endif
   // Set if screen content is set or relevant tools are enabled
   int is_screen_content_type;
-#if CONFIG_COLLECT_PARTITION_STATS
+#if CONFIG_COLLECT_PARTITION_STATS == 2
   PartitionStats partition_stats;
 #endif
 
@@ -1286,7 +1287,7 @@ static INLINE BLOCK_SIZE find_partition_size(BLOCK_SIZE bsize, int rows_left,
 // field.
 aom_fixed_buf_t *av1_get_global_headers(AV1_COMP *cpi);
 
-#if CONFIG_COLLECT_PARTITION_STATS
+#if CONFIG_COLLECT_PARTITION_STATS == 2
 static INLINE void av1_print_partition_stats(PartitionStats *part_stats) {
   FILE *f = fopen("partition_stats.csv", "w");
   if (!f) {
@@ -1300,6 +1301,9 @@ static INLINE void av1_print_partition_stats(PartitionStats *part_stats) {
   for (int part = 0; part < EXT_PARTITION_TYPES; part++) {
     fprintf(f, "attempt_%d,", part);
   }
+  for (int part = 0; part < EXT_PARTITION_TYPES; part++) {
+    fprintf(f, "time_%d,", part);
+  }
   fprintf(f, "\n");
 
   const int bsizes[6] = { 128, 64, 32, 16, 8, 4 };
@@ -1312,6 +1316,9 @@ static INLINE void av1_print_partition_stats(PartitionStats *part_stats) {
     for (int part = 0; part < EXT_PARTITION_TYPES; part++) {
       fprintf(f, "%d,", part_stats->partition_attempts[bsize_idx][part]);
     }
+    for (int part = 0; part < EXT_PARTITION_TYPES; part++) {
+      fprintf(f, "%ld,", part_stats->partition_times[bsize_idx][part]);
+    }
     fprintf(f, "\n");
   }
   fclose(f);
@@ -1319,7 +1326,8 @@ static INLINE void av1_print_partition_stats(PartitionStats *part_stats) {
 
 static INLINE int av1_get_bsize_idx_for_part_stats(BLOCK_SIZE bsize) {
   assert(bsize == BLOCK_128X128 || bsize == BLOCK_64X64 ||
-         bsize == BLOCK_32X32 || bsize == BLOCK_16X16 || bsize == BLOCK_8X8);
+         bsize == BLOCK_32X32 || bsize == BLOCK_16X16 || bsize == BLOCK_8X8 ||
+         bsize == BLOCK_4X4);
   switch (bsize) {
     case BLOCK_128X128: return 0;
     case BLOCK_64X64: return 1;

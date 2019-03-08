@@ -2745,7 +2745,7 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
     cpi->tpl_stats[frame].mi_cols = cm->mi_cols;
   }
 
-#if CONFIG_COLLECT_PARTITION_STATS
+#if CONFIG_COLLECT_PARTITION_STATS == 2
   av1_zero(cpi->partition_stats);
 #endif
 
@@ -3067,7 +3067,7 @@ void av1_remove_compressor(AV1_COMP *cpi) {
     }
 #endif  // CONFIG_SPEED_STATS
 
-#if CONFIG_COLLECT_PARTITION_STATS
+#if CONFIG_COLLECT_PARTITION_STATS == 2
     if (cpi->oxcf.pass != 1) {
       av1_print_partition_stats(&cpi->partition_stats);
     }
@@ -5116,9 +5116,9 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
 
   // Print out timing information.
   int i;
-  fprintf(stderr, "\n Frame number: %d, Frame type: %s,\n",
+  fprintf(stderr, "\n Frame number: %d, Frame type: %s, Show Frame: %d\n",
           cm->current_frame.frame_number,
-          get_frame_type_enum(cm->current_frame.frame_type));
+          get_frame_type_enum(cm->current_frame.frame_type), cm->show_frame);
   for (i = 0; i < kTimingComponents; i++) {
     cpi->component_time[i] += cpi->frame_component_time[i];
     fprintf(stderr, " %s:  %" PRId64 " us (total: %" PRId64 " us)\n",

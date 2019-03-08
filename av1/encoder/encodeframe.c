@@ -4000,10 +4000,14 @@ static void rd_pick_partition(AV1_COMP *const cpi, ThreadData *td,
   (void)*tp_orig;
 
 #if CONFIG_COLLECT_PARTITION_STATS
+  int partition_decisions[EXT_PARTITION_TYPES] = { 0 };
+  int partition_attempts[EXT_PARTITION_TYPES] = { 0 };
+  int64_t partition_times[EXT_PARTITION_TYPES] = { 0 };
+  struct aom_usec_timer partition_timer = { 0 };
+  int partition_timer_on = 0;
+#if CONFIG_COLLECT_PARTITION_STATS == 2
   PartitionStats *part_stats = &cpi->partition_stats;
-  const int bsize_idx = av1_get_bsize_idx_for_part_stats(bsize);
-  int *partition_decisions = part_stats->partition_decisions[bsize_idx];
-  int *partition_attempts = part_stats->partition_attempts[bsize_idx];
+#endif
 #endif
 
   // Override partition costs at the edges of the frame in the same
@@ -4190,12 +4194,22 @@ BEGIN_PARTITION_SEARCH:
         (best_rdc.rdcost == INT64_MAX) ? INT64_MAX
                                        : (best_rdc.rdcost - partition_rd_cost);
 #if CONFIG_COLLECT_PARTITION_STATS
-    if (!frame_is_intra_only(cm) && best_remain_rdcost >= 0) {
+    if (best_remain_rdcost >= 0) {
       partition_attempts[PARTITION_NONE] += 1;
+      aom_usec_timer_start(&partition_timer);
+      partition_timer_on = 1;
     }
 #endif
     pick_sb_modes(cpi, tile_data, x, mi_row, mi_col, &this_rdc, PARTITION_NONE,
                   bsize, ctx_none, best_remain_rdcost, 0);
+#if CONFIG_COLLECT_PARTITION_STATS
+    if (partition_timer_on) {
+      aom_usec_timer_mark(&partition_timer);
+      int64_t time = aom_usec_timer_elapsed(&partition_timer);
+      partition_times[PARTITION_NONE] += time;
+      partition_timer_on = 0;
+    }
+#endif
     pb_source_variance = x->source_variance;
     pb_simple_motion_pred_sse = x->simple_motion_pred_sse;
     if (none_rd) *none_rd = this_rdc.rdcost;
@@ -4298,8 +4312,10 @@ BEGIN_PARTITION_SEARCH:
 
     int idx;
 #if CONFIG_COLLECT_PARTITION_STATS
-    if (!frame_is_intra_only(cm) && best_rdc.rdcost - sum_rdc.rdcost >= 0) {
+    if (best_rdc.rdcost - sum_rdc.rdcost >= 0) {
       partition_attempts[PARTITION_SPLIT] += 1;
+      aom_usec_timer_start(&partition_timer);
+      partition_timer_on = 1;
     }
 #endif
     for (idx = 0; idx < 4 && sum_rdc.rdcost < best_rdc.rdcost; ++idx) {
@@ -4338,6 +4354,14 @@ BEGIN_PARTITION_SEARCH:
         }
       }
     }
+#if CONFIG_COLLECT_PARTITION_STATS
+    if (partition_timer_on) {
+      aom_usec_timer_mark(&partition_timer);
+      int64_t time = aom_usec_timer_elapsed(&partition_timer);
+      partition_times[PARTITION_SPLIT] += time;
+      partition_timer_on = 0;
+    }
+#endif
     const int reached_last_index = (idx == 4);
 
     if (reached_last_index && sum_rdc.rdcost < best_rdc.rdcost) {
@@ -4384,8 +4408,10 @@ BEGIN_PARTITION_SEARCH:
                                            ? INT64_MAX
                                            : (best_rdc.rdcost - sum_rdc.rdcost);
 #if CONFIG_COLLECT_PARTITION_STATS
-    if (!frame_is_intra_only(cm) && best_remain_rdcost >= 0) {
+    if (best_remain_rdcost >= 0) {
       partition_attempts[PARTITION_HORZ] += 1;
+      aom_usec_timer_start(&partition_timer);
+      partition_timer_on = 1;
     }
 #endif
     pick_sb_modes(cpi, tile_data, x, mi_row, mi_col, &this_rdc, PARTITION_HORZ,
@@ -4432,6 +4458,14 @@ BEGIN_PARTITION_SEARCH:
         sum_rdc.rdcost += this_rdc.rdcost;
       }
     }
+#if CONFIG_COLLECT_PARTITION_STATS
+    if (partition_timer_on) {
+      aom_usec_timer_mark(&partition_timer);
+      int64_t time = aom_usec_timer_elapsed(&partition_timer);
+      partition_times[PARTITION_VERT] += time;
+      partition_timer_on = 0;
+    }
+#endif
 
     if (sum_rdc.rdcost < best_rdc.rdcost) {
       sum_rdc.rdcost = RDCOST(x->rdmult, sum_rdc.rate, sum_rdc.dist);
@@ -4465,8 +4499,10 @@ BEGIN_PARTITION_SEARCH:
                                            ? INT64_MAX
                                            : (best_rdc.rdcost - sum_rdc.rdcost);
 #if CONFIG_COLLECT_PARTITION_STATS
-    if (!frame_is_intra_only(cm) && best_remain_rdcost >= 0) {
+    if (best_remain_rdcost >= 0) {
       partition_attempts[PARTITION_VERT] += 1;
+      aom_usec_timer_start(&partition_timer);
+      partition_timer_on = 1;
     }
 #endif
     pick_sb_modes(cpi, tile_data, x, mi_row, mi_col, &this_rdc, PARTITION_VERT,
@@ -4512,6 +4548,14 @@ BEGIN_PARTITION_SEARCH:
         sum_rdc.rdcost += this_rdc.rdcost;
       }
     }
+#if CONFIG_COLLECT_PARTITION_STATS
+    if (partition_timer_on) {
+      aom_usec_timer_mark(&partition_timer);
+      int64_t time = aom_usec_timer_elapsed(&partition_timer);
+      partition_times[PARTITION_HORZ] += time;
+      partition_timer_on = 0;
+    }
+#endif
 
     if (sum_rdc.rdcost < best_rdc.rdcost) {
       sum_rdc.rdcost = RDCOST(x->rdmult, sum_rdc.rate, sum_rdc.dist);
@@ -4662,9 +4706,10 @@ BEGIN_PARTITION_SEARCH:
       av1_init_rd_stats(&tmp_sum_rdc);
       tmp_sum_rdc.rate = x->partition_cost[pl][PARTITION_HORZ_A];
       tmp_sum_rdc.rdcost = RDCOST(x->rdmult, tmp_sum_rdc.rate, 0);
-      if (!frame_is_intra_only(cm) &&
-          best_rdc.rdcost - tmp_sum_rdc.rdcost >= 0) {
+      if (best_rdc.rdcost - tmp_sum_rdc.rdcost >= 0) {
         partition_attempts[PARTITION_HORZ_A] += 1;
+        aom_usec_timer_start(&partition_timer);
+        partition_timer_on = 1;
       }
     }
 #endif
@@ -4673,6 +4718,14 @@ BEGIN_PARTITION_SEARCH:
                        PARTITION_HORZ_A, mi_row, mi_col, bsize2, mi_row,
                        mi_col + mi_step, bsize2, mi_row + mi_step, mi_col,
                        subsize);
+#if CONFIG_COLLECT_PARTITION_STATS
+    if (partition_timer_on) {
+      aom_usec_timer_mark(&partition_timer);
+      int64_t time = aom_usec_timer_elapsed(&partition_timer);
+      partition_times[PARTITION_HORZ_A] += time;
+      partition_timer_on = 0;
+    }
+#endif
     restore_context(x, &x_ctx, mi_row, mi_col, bsize, num_planes);
   }
   // PARTITION_HORZ_B
@@ -4693,9 +4746,10 @@ BEGIN_PARTITION_SEARCH:
       av1_init_rd_stats(&tmp_sum_rdc);
       tmp_sum_rdc.rate = x->partition_cost[pl][PARTITION_HORZ_B];
       tmp_sum_rdc.rdcost = RDCOST(x->rdmult, tmp_sum_rdc.rate, 0);
-      if (!frame_is_intra_only(cm) &&
-          best_rdc.rdcost - tmp_sum_rdc.rdcost >= 0) {
+      if (best_rdc.rdcost - tmp_sum_rdc.rdcost >= 0) {
         partition_attempts[PARTITION_HORZ_B] += 1;
+        aom_usec_timer_start(&partition_timer);
+        partition_timer_on = 1;
       }
     }
 #endif
@@ -4704,6 +4758,15 @@ BEGIN_PARTITION_SEARCH:
                        PARTITION_HORZ_B, mi_row, mi_col, subsize,
                        mi_row + mi_step, mi_col, bsize2, mi_row + mi_step,
                        mi_col + mi_step, bsize2);
+
+#if CONFIG_COLLECT_PARTITION_STATS
+    if (partition_timer_on) {
+      aom_usec_timer_mark(&partition_timer);
+      int64_t time = aom_usec_timer_elapsed(&partition_timer);
+      partition_times[PARTITION_HORZ_B] += time;
+      partition_timer_on = 0;
+    }
+#endif
     restore_context(x, &x_ctx, mi_row, mi_col, bsize, num_planes);
   }
 
@@ -4725,9 +4788,10 @@ BEGIN_PARTITION_SEARCH:
       av1_init_rd_stats(&tmp_sum_rdc);
       tmp_sum_rdc.rate = x->partition_cost[pl][PARTITION_VERT_A];
       tmp_sum_rdc.rdcost = RDCOST(x->rdmult, tmp_sum_rdc.rate, 0);
-      if (!frame_is_intra_only(cm) &&
-          best_rdc.rdcost - tmp_sum_rdc.rdcost >= 0) {
+      if (best_rdc.rdcost - tmp_sum_rdc.rdcost >= 0) {
         partition_attempts[PARTITION_VERT_A] += 1;
+        aom_usec_timer_start(&partition_timer);
+        partition_timer_on = 1;
       }
     }
 #endif
@@ -4736,6 +4800,14 @@ BEGIN_PARTITION_SEARCH:
                        PARTITION_VERT_A, mi_row, mi_col, bsize2,
                        mi_row + mi_step, mi_col, bsize2, mi_row,
                        mi_col + mi_step, subsize);
+#if CONFIG_COLLECT_PARTITION_STATS
+    if (partition_timer_on) {
+      aom_usec_timer_mark(&partition_timer);
+      int64_t time = aom_usec_timer_elapsed(&partition_timer);
+      partition_times[PARTITION_VERT_A] += time;
+      partition_timer_on = 0;
+    }
+#endif
     restore_context(x, &x_ctx, mi_row, mi_col, bsize, num_planes);
   }
   // PARTITION_VERT_B
@@ -4759,6 +4831,8 @@ BEGIN_PARTITION_SEARCH:
       if (!frame_is_intra_only(cm) &&
           best_rdc.rdcost - tmp_sum_rdc.rdcost >= 0) {
         partition_attempts[PARTITION_VERT_B] += 1;
+        aom_usec_timer_start(&partition_timer);
+        partition_timer_on = 1;
       }
     }
 #endif
@@ -4767,6 +4841,14 @@ BEGIN_PARTITION_SEARCH:
                        PARTITION_VERT_B, mi_row, mi_col, subsize, mi_row,
                        mi_col + mi_step, bsize2, mi_row + mi_step,
                        mi_col + mi_step, bsize2);
+#if CONFIG_COLLECT_PARTITION_STATS
+    if (partition_timer_on) {
+      aom_usec_timer_mark(&partition_timer);
+      int64_t time = aom_usec_timer_elapsed(&partition_timer);
+      partition_times[PARTITION_VERT_B] += time;
+      partition_timer_on = 0;
+    }
+#endif
     restore_context(x, &x_ctx, mi_row, mi_col, bsize, num_planes);
   }
 
@@ -4821,8 +4903,10 @@ BEGIN_PARTITION_SEARCH:
     sum_rdc.rdcost = RDCOST(x->rdmult, sum_rdc.rate, 0);
 
 #if CONFIG_COLLECT_PARTITION_STATS
-    if (!frame_is_intra_only(cm) && best_rdc.rdcost - sum_rdc.rdcost >= 0) {
+    if (best_rdc.rdcost - sum_rdc.rdcost >= 0) {
       partition_attempts[PARTITION_HORZ_4] += 1;
+      aom_usec_timer_start(&partition_timer);
+      partition_timer_on = 1;
     }
 #endif
     for (int i = 0; i < 4; ++i) {
@@ -4848,6 +4932,15 @@ BEGIN_PARTITION_SEARCH:
         pc_tree->partitioning = PARTITION_HORZ_4;
       }
     }
+
+#if CONFIG_COLLECT_PARTITION_STATS
+    if (partition_timer_on) {
+      aom_usec_timer_mark(&partition_timer);
+      int64_t time = aom_usec_timer_elapsed(&partition_timer);
+      partition_times[PARTITION_HORZ_4] += time;
+      partition_timer_on = 0;
+    }
+#endif
     restore_context(x, &x_ctx, mi_row, mi_col, bsize, num_planes);
   }
 
@@ -4865,8 +4958,10 @@ BEGIN_PARTITION_SEARCH:
     sum_rdc.rdcost = RDCOST(x->rdmult, sum_rdc.rate, 0);
 
 #if CONFIG_COLLECT_PARTITION_STATS
-    if (!frame_is_intra_only(cm) && best_rdc.rdcost - sum_rdc.rdcost >= 0) {
+    if (best_rdc.rdcost - sum_rdc.rdcost >= 0) {
       partition_attempts[PARTITION_VERT_4] += 1;
+      aom_usec_timer_start(&partition_timer);
+      partition_timer_on = 1;
     }
 #endif
     for (int i = 0; i < 4; ++i) {
@@ -4892,6 +4987,14 @@ BEGIN_PARTITION_SEARCH:
         pc_tree->partitioning = PARTITION_VERT_4;
       }
     }
+#if CONFIG_COLLECT_PARTITION_STATS
+    if (partition_timer_on) {
+      aom_usec_timer_mark(&partition_timer);
+      int64_t time = aom_usec_timer_elapsed(&partition_timer);
+      partition_times[PARTITION_VERT_4] += time;
+      partition_timer_on = 0;
+    }
+#endif
     restore_context(x, &x_ctx, mi_row, mi_col, bsize, num_planes);
   }
 
@@ -4899,10 +5002,8 @@ BEGIN_PARTITION_SEARCH:
     // Did not find a valid partition, go back and search again, with less
     // constraint on which partition types to search.
     x->must_find_valid_partition = 1;
-#if CONFIG_COLLECT_PARTITION_STATS
-    if (!frame_is_intra_only(cm)) {
-      part_stats->partition_redo += 1;
-    }
+#if CONFIG_COLLECT_PARTITION_STATS == 2
+    part_stats->partition_redo += 1;
 #endif
     goto BEGIN_PARTITION_SEARCH;
   }
@@ -4915,9 +5016,40 @@ BEGIN_PARTITION_SEARCH:
   *rd_cost = best_rdc;
 
 #if CONFIG_COLLECT_PARTITION_STATS
-  if (!frame_is_intra_only(cm) && best_rdc.rate < INT_MAX &&
-      best_rdc.dist < INT64_MAX) {
+  if (best_rdc.rate < INT_MAX && best_rdc.dist < INT64_MAX) {
     partition_decisions[pc_tree->partitioning] += 1;
+  }
+#endif
+
+#if CONFIG_COLLECT_PARTITION_STATS == 1
+  // If CONFIG_COLLECT_PARTITION_STATS is 1, then print out the stats for each
+  // prediction block
+  FILE *f = fopen("data.csv", "a");
+  fprintf(f, "%d,%d,%d,", bsize, cm->show_frame, frame_is_intra_only(cm));
+  for (int idx = 0; idx < EXT_PARTITION_TYPES; idx++) {
+    fprintf(f, "%d,", partition_decisions[idx]);
+  }
+  for (int idx = 0; idx < EXT_PARTITION_TYPES; idx++) {
+    fprintf(f, "%d,", partition_attempts[idx]);
+  }
+  for (int idx = 0; idx < EXT_PARTITION_TYPES; idx++) {
+    fprintf(f, "%ld,", partition_times[idx]);
+  }
+  fprintf(f, "\n");
+  fclose(f);
+#endif
+
+#if CONFIG_COLLECT_PARTITION_STATS == 2
+  // If CONFIG_COLLECTION_PARTITION_STATS is 2, then we print out the stats for
+  // the whole clip. So we need to pass the information upstream to the encoder
+  const int bsize_idx = av1_get_bsize_idx_for_part_stats(bsize);
+  int *agg_attempts = part_stats->partition_attempts[bsize_idx];
+  int *agg_decisions = part_stats->partition_decisions[bsize_idx];
+  int64_t *agg_times = part_stats->partition_times[bsize_idx];
+  for (int idx = 0; idx < EXT_PARTITION_TYPES; idx++) {
+    agg_attempts[idx] += partition_attempts[idx];
+    agg_decisions[idx] += partition_decisions[idx];
+    agg_times[idx] += partition_times[idx];
   }
 #endif
 
