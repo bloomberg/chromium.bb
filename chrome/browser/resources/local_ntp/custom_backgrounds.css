@@ -200,7 +200,8 @@ html[darkmode=true] .bg-option.bg-option-disabled {
   outline: none;
 }
 
-.bg-option.bg-option-disabled:hover {
+.bg-option.bg-option-disabled:hover,
+html[darkmode=true] .bg-option.bg-option-disabled:hover {
   background-color: transparent;
 }
 
