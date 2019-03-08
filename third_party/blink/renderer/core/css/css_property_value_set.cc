@@ -62,7 +62,7 @@ ImmutableCSSPropertyValueSet* ImmutableCSSPropertyValueSet::Create(
 CSSPropertyName CSSPropertyValueSet::PropertyReference::Name() const {
   if (Id() != CSSPropertyVariable)
     return CSSPropertyName(Id());
-  return CSSPropertyName(ToCSSCustomPropertyDeclaration(Value()).GetName());
+  return CSSPropertyName(To<CSSCustomPropertyDeclaration>(Value()).GetName());
 }
 
 ImmutableCSSPropertyValueSet* CSSPropertyValueSet::ImmutableCopyIfNeeded()
@@ -143,7 +143,7 @@ static bool IsPropertyMatch(const CSSPropertyValueMetadata& metadata,
                             const AtomicString& custom_property_name) {
   DCHECK_EQ(id, CSSPropertyVariable);
   return metadata.Property().PropertyID() == id &&
-         ToCSSCustomPropertyDeclaration(value).GetName() ==
+         To<CSSCustomPropertyDeclaration>(value).GetName() ==
              custom_property_name;
 }
 

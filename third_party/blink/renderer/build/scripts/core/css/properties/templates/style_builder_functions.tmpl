@@ -406,7 +406,7 @@ To<Longhand>(resolved_property).{{apply_call}};
 
   for (const CSSValue* item : list) {
     const CSSValuePair& pair = ToCSSValuePair(*item);
-    AtomicString identifier(ToCSSCustomIdentValue(pair.First()).Value());
+    AtomicString identifier(To<CSSCustomIdentValue>(pair.First()).Value());
     int counter_value = ToCSSPrimitiveValue(pair.Second()).GetIntValue();
     CounterDirectives& directives =
     map.insert(identifier, CounterDirectives()).stored_value->value;

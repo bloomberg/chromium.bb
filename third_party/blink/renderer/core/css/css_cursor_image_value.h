@@ -23,6 +23,7 @@
 
 #include "third_party/blink/renderer/core/css/css_value.h"
 #include "third_party/blink/renderer/platform/geometry/int_point.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -58,9 +59,14 @@ class CSSCursorImageValue : public CSSValue {
   bool hot_spot_specified_;
 };
 
-DEFINE_CSS_VALUE_TYPE_CASTS(CSSCursorImageValue, IsCursorImageValue());
-
 }  // namespace cssvalue
+
+template <>
+struct DowncastTraits<cssvalue::CSSCursorImageValue> {
+  static bool AllowFrom(const CSSValue& value) {
+    return value.IsCursorImageValue();
+  }
+};
 
 }  // namespace blink
 

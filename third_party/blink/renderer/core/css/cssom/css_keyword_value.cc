@@ -36,14 +36,13 @@ CSSKeywordValue* CSSKeywordValue::FromCSSValue(const CSSValue& value) {
     return MakeGarbageCollected<CSSKeywordValue>(
         getValueName(ToCSSIdentifierValue(value).GetValueID()));
   }
-  if (value.IsCustomIdentValue()) {
-    const CSSCustomIdentValue& ident_value = ToCSSCustomIdentValue(value);
-    if (ident_value.IsKnownPropertyID()) {
+  if (const auto* ident_value = DynamicTo<CSSCustomIdentValue>(value)) {
+    if (ident_value->IsKnownPropertyID()) {
       // CSSPropertyID represents the LHS of a CSS declaration, and
       // CSSKeywordValue represents a RHS.
       return nullptr;
     }
-    return MakeGarbageCollected<CSSKeywordValue>(ident_value.Value());
+    return MakeGarbageCollected<CSSKeywordValue>(ident_value->Value());
   }
   NOTREACHED();
   return nullptr;

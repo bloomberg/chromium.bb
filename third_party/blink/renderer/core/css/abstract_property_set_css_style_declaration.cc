@@ -40,7 +40,7 @@ String AbstractPropertySetCSSStyleDeclaration::item(unsigned i) const {
     return "";
   CSSPropertyValueSet::PropertyReference property = PropertySet().PropertyAt(i);
   if (property.Id() == CSSPropertyVariable)
-    return ToCSSCustomPropertyDeclaration(property.Value()).GetName();
+    return To<CSSCustomPropertyDeclaration>(property.Value()).GetName();
   return property.Property().GetPropertyName();
 }
 

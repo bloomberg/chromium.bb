@@ -749,8 +749,8 @@ GridPosition StyleBuilderConverter::ConvertGridPosition(StyleResolverState&,
 
   GridPosition position;
 
-  if (value.IsCustomIdentValue()) {
-    position.SetNamedGridArea(ToCSSCustomIdentValue(value).Value());
+  if (auto* ident_value = DynamicTo<CSSCustomIdentValue>(value)) {
+    position.SetNamedGridArea(ident_value->Value());
     return position;
   }
 
@@ -784,8 +784,9 @@ GridPosition StyleBuilderConverter::ConvertGridPosition(StyleResolverState&,
     current_value = it != values.end() ? it->Get() : nullptr;
   }
 
-  if (current_value && current_value->IsCustomIdentValue()) {
-    grid_line_name = ToCSSCustomIdentValue(current_value)->Value();
+  auto* current_ident_value = DynamicTo<CSSCustomIdentValue>(current_value);
+  if (current_ident_value) {
+    grid_line_name = current_ident_value->Value();
     ++it;
   }
 
@@ -828,7 +829,7 @@ static void ConvertGridLineNamesList(
 
   for (auto& named_grid_line_value : ToCSSValueList(value)) {
     String named_grid_line =
-        ToCSSCustomIdentValue(*named_grid_line_value).Value();
+        To<CSSCustomIdentValue>(*named_grid_line_value).Value();
     NamedGridLinesMap::AddResult result =
         named_grid_lines.insert(named_grid_line, Vector<size_t>());
     result.stored_value->value.push_back(current_named_grid_line);

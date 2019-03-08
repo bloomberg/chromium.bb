@@ -112,7 +112,7 @@ bool CSSValue::HasFailedOrCanceledSubresources() const {
   if (GetClassType() == kImageClass)
     return ToCSSImageValue(this)->HasFailedOrCanceledSubresources();
   if (GetClassType() == kCrossfadeClass)
-    return ToCSSCrossfadeValue(this)->HasFailedOrCanceledSubresources();
+    return To<CSSCrossfadeValue>(this)->HasFailedOrCanceledSubresources();
   if (GetClassType() == kImageSetClass)
     return ToCSSImageSetValue(this)->HasFailedOrCanceledSubresources();
 
@@ -276,9 +276,9 @@ String CSSValue::CssText() const {
     case kColorClass:
       return To<CSSColorValue>(this)->CustomCSSText();
     case kCounterClass:
-      return ToCSSCounterValue(this)->CustomCSSText();
+      return To<CSSCounterValue>(this)->CustomCSSText();
     case kCursorImageClass:
-      return ToCSSCursorImageValue(this)->CustomCSSText();
+      return To<CSSCursorImageValue>(this)->CustomCSSText();
     case kFontFaceSrcClass:
       return ToCSSFontFaceSrcValue(this)->CustomCSSText();
     case kFontFamilyClass:
@@ -300,11 +300,11 @@ String CSSValue::CssText() const {
     case kConicGradientClass:
       return ToCSSConicGradientValue(this)->CustomCSSText();
     case kCrossfadeClass:
-      return ToCSSCrossfadeValue(this)->CustomCSSText();
+      return To<CSSCrossfadeValue>(this)->CustomCSSText();
     case kPaintClass:
       return ToCSSPaintValue(this)->CustomCSSText();
     case kCustomIdentClass:
-      return ToCSSCustomIdentValue(this)->CustomCSSText();
+      return To<CSSCustomIdentValue>(this)->CustomCSSText();
     case kImageClass:
       return ToCSSImageValue(this)->CustomCSSText();
     case kInheritedClass:
@@ -356,7 +356,7 @@ String CSSValue::CssText() const {
     case kVariableReferenceClass:
       return ToCSSVariableReferenceValue(this)->CustomCSSText();
     case kCustomPropertyDeclarationClass:
-      return ToCSSCustomPropertyDeclaration(this)->CustomCSSText();
+      return To<CSSCustomPropertyDeclaration>(this)->CustomCSSText();
     case kPendingSubstitutionValueClass:
       return ToCSSPendingSubstitutionValue(this)->CustomCSSText();
     case kInvalidVariableValueClass:
@@ -390,10 +390,10 @@ void CSSValue::FinalizeGarbageCollectedObject() {
       To<CSSColorValue>(this)->~CSSColorValue();
       return;
     case kCounterClass:
-      ToCSSCounterValue(this)->~CSSCounterValue();
+      To<CSSCounterValue>(this)->~CSSCounterValue();
       return;
     case kCursorImageClass:
-      ToCSSCursorImageValue(this)->~CSSCursorImageValue();
+      To<CSSCursorImageValue>(this)->~CSSCursorImageValue();
       return;
     case kFontFaceSrcClass:
       ToCSSFontFaceSrcValue(this)->~CSSFontFaceSrcValue();
@@ -426,13 +426,13 @@ void CSSValue::FinalizeGarbageCollectedObject() {
       ToCSSConicGradientValue(this)->~CSSConicGradientValue();
       return;
     case kCrossfadeClass:
-      ToCSSCrossfadeValue(this)->~CSSCrossfadeValue();
+      To<CSSCrossfadeValue>(this)->~CSSCrossfadeValue();
       return;
     case kPaintClass:
       ToCSSPaintValue(this)->~CSSPaintValue();
       return;
     case kCustomIdentClass:
-      ToCSSCustomIdentValue(this)->~CSSCustomIdentValue();
+      To<CSSCustomIdentValue>(this)->~CSSCustomIdentValue();
       return;
     case kImageClass:
       ToCSSImageValue(this)->~CSSImageValue();
@@ -511,7 +511,7 @@ void CSSValue::FinalizeGarbageCollectedObject() {
       ToCSSVariableReferenceValue(this)->~CSSVariableReferenceValue();
       return;
     case kCustomPropertyDeclarationClass:
-      ToCSSCustomPropertyDeclaration(this)->~CSSCustomPropertyDeclaration();
+      To<CSSCustomPropertyDeclaration>(this)->~CSSCustomPropertyDeclaration();
       return;
     case kPendingSubstitutionValueClass:
       ToCSSPendingSubstitutionValue(this)->~CSSPendingSubstitutionValue();
@@ -547,10 +547,10 @@ void CSSValue::Trace(blink::Visitor* visitor) {
       To<CSSColorValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kCounterClass:
-      ToCSSCounterValue(this)->TraceAfterDispatch(visitor);
+      To<CSSCounterValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kCursorImageClass:
-      ToCSSCursorImageValue(this)->TraceAfterDispatch(visitor);
+      To<CSSCursorImageValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kFontFaceSrcClass:
       ToCSSFontFaceSrcValue(this)->TraceAfterDispatch(visitor);
@@ -583,13 +583,13 @@ void CSSValue::Trace(blink::Visitor* visitor) {
       ToCSSConicGradientValue(this)->TraceAfterDispatch(visitor);
       return;
     case kCrossfadeClass:
-      ToCSSCrossfadeValue(this)->TraceAfterDispatch(visitor);
+      To<CSSCrossfadeValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kPaintClass:
       ToCSSPaintValue(this)->TraceAfterDispatch(visitor);
       return;
     case kCustomIdentClass:
-      ToCSSCustomIdentValue(this)->TraceAfterDispatch(visitor);
+      To<CSSCustomIdentValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kImageClass:
       ToCSSImageValue(this)->TraceAfterDispatch(visitor);
@@ -667,7 +667,7 @@ void CSSValue::Trace(blink::Visitor* visitor) {
       ToCSSVariableReferenceValue(this)->TraceAfterDispatch(visitor);
       return;
     case kCustomPropertyDeclarationClass:
-      ToCSSCustomPropertyDeclaration(this)->TraceAfterDispatch(visitor);
+      To<CSSCustomPropertyDeclaration>(this)->TraceAfterDispatch(visitor);
       return;
     case kPendingSubstitutionValueClass:
       ToCSSPendingSubstitutionValue(this)->TraceAfterDispatch(visitor);

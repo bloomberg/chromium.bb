@@ -172,7 +172,7 @@ InterpolationValue CSSInterpolationType::MaybeConvertSingleInternal(
   if (GetProperty().IsCSSCustomProperty()) {
     DCHECK(css_environment.HasVariableResolver());
     return MaybeConvertCustomPropertyDeclaration(
-        ToCSSCustomPropertyDeclaration(*value), state,
+        To<CSSCustomPropertyDeclaration>(*value), state,
         css_environment.VariableResolver(), conversion_checkers);
   }
 

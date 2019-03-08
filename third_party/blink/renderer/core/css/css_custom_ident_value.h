@@ -7,6 +7,7 @@
 
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/css_value.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
@@ -50,7 +51,12 @@ class CORE_EXPORT CSSCustomIdentValue : public CSSValue {
   CSSPropertyID property_id_;
 };
 
-DEFINE_CSS_VALUE_TYPE_CASTS(CSSCustomIdentValue, IsCustomIdentValue());
+template <>
+struct DowncastTraits<CSSCustomIdentValue> {
+  static bool AllowFrom(const CSSValue& value) {
+    return value.IsCustomIdentValue();
+  }
+};
 
 }  // namespace blink
 

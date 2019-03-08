@@ -51,7 +51,8 @@ CSSPropertyID CSSPropertyValueMetadata::ShorthandID() const {
 CSSPropertyName CSSPropertyValue::Name() const {
   if (Id() != CSSPropertyVariable)
     return CSSPropertyName(Id());
-  return CSSPropertyName(ToCSSCustomPropertyDeclaration(value_)->GetName());
+  return CSSPropertyName(
+      To<CSSCustomPropertyDeclaration>(value_.Get())->GetName());
 }
 
 bool CSSPropertyValue::operator==(const CSSPropertyValue& other) const {

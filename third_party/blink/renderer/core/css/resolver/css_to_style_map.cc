@@ -376,8 +376,8 @@ double CSSToStyleMap::MapAnimationIterationCount(const CSSValue& value) {
 AtomicString CSSToStyleMap::MapAnimationName(const CSSValue& value) {
   if (value.IsInitialValue())
     return CSSAnimationData::InitialName();
-  if (value.IsCustomIdentValue())
-    return AtomicString(ToCSSCustomIdentValue(value).Value());
+  if (auto* custom_ident_value = DynamicTo<CSSCustomIdentValue>(value))
+    return AtomicString(custom_ident_value->Value());
   DCHECK_EQ(ToCSSIdentifierValue(value).GetValueID(), CSSValueNone);
   return CSSAnimationData::InitialName();
 }
@@ -395,13 +395,12 @@ CSSTransitionData::TransitionProperty CSSToStyleMap::MapAnimationProperty(
     const CSSValue& value) {
   if (value.IsInitialValue())
     return CSSTransitionData::InitialProperty();
-  if (value.IsCustomIdentValue()) {
-    const CSSCustomIdentValue& custom_ident_value =
-        ToCSSCustomIdentValue(value);
-    if (custom_ident_value.IsKnownPropertyID())
+  if (const auto* custom_ident_value = DynamicTo<CSSCustomIdentValue>(value)) {
+    if (custom_ident_value->IsKnownPropertyID()) {
       return CSSTransitionData::TransitionProperty(
-          custom_ident_value.ValueAsPropertyID());
-    return CSSTransitionData::TransitionProperty(custom_ident_value.Value());
+          custom_ident_value->ValueAsPropertyID());
+    }
+    return CSSTransitionData::TransitionProperty(custom_ident_value->Value());
   }
   if (ToCSSIdentifierValue(value).GetValueID() == CSSValueAll)
     return CSSTransitionData::InitialProperty();

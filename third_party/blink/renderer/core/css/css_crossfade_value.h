@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/core/loader/resource/image_resource_content.h"
 #include "third_party/blink/renderer/core/loader/resource/image_resource_observer.h"
 #include "third_party/blink/renderer/platform/graphics/image.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -116,9 +117,15 @@ class CORE_EXPORT CSSCrossfadeValue final : public CSSImageGeneratorValue {
   CrossfadeSubimageObserverProxy crossfade_subimage_observer_;
 };
 
-DEFINE_CSS_VALUE_TYPE_CASTS(CSSCrossfadeValue, IsCrossfadeValue());
-
 }  // namespace cssvalue
+
+template <>
+struct DowncastTraits<cssvalue::CSSCrossfadeValue> {
+  static bool AllowFrom(const CSSValue& value) {
+    return value.IsCrossfadeValue();
+  }
+};
+
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_CROSSFADE_VALUE_H_
