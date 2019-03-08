@@ -126,10 +126,7 @@ void BrowserWithTestWindowTest::TearDown() {
   testing::Test::TearDown();
 
   // A Task is leaked if we don't destroy everything, then run the message loop.
-  base::RunLoop loop;
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                loop.QuitWhenIdleClosure());
-  loop.Run();
+  base::RunLoop().RunUntilIdle();
 }
 
 gfx::NativeWindow BrowserWithTestWindowTest::GetContext() {
