@@ -7,10 +7,6 @@
   ],
   "android.webkit.cts.WebSettingsTest": [
     {
-      "name": "testLocalImageLoads",
-      "_bug_id": "crbug.com/680759"
-    },
-    {
       "name": "testAllowMixedMode",
       "_bug_id": "crbug.com/777393"
     }
