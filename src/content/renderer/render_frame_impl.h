@@ -182,6 +182,13 @@ struct FrameReplicationState;
 struct RequestNavigationParams;
 struct ScreenInfo;
 
+typedef void(*ConsoleLogMessageHandlerFunction)(int severity,
+                                                const std::string& file,
+                                                int line,
+                                                int column,
+                                                const std::string& message,
+                                                const std::string& stack_trace);
+
 class CONTENT_EXPORT RenderFrameImpl
     : public RenderFrame,
       blink::mojom::AutoplayConfigurationClient,
@@ -285,6 +292,9 @@ class CONTENT_EXPORT RenderFrameImpl
       CreateRenderFrameImplFunction create_frame,
       CreateRenderWidgetForChildLocalRootFunction create_widget,
       RenderWidgetForChildLocalRootInitializedCallback widget_initialized);
+
+  static void SetConsoleLogMessageHandler(
+      ConsoleLogMessageHandlerFunction handler);
 
   // Looks up and returns the WebFrame corresponding to a given opener frame
   // routing ID.
@@ -640,10 +650,12 @@ class CONTENT_EXPORT RenderFrameImpl
   void SetMouseCapture(bool capture) override;
   bool ShouldReportDetailedMessageForSource(
       const blink::WebString& source) override;
-  void DidAddMessageToConsole(const blink::WebConsoleMessage& message,
-                              const blink::WebString& source_name,
-                              unsigned source_line,
-                              const blink::WebString& stack_trace) override;
+  void DidAddMessageToConsoleWithCol(
+      const blink::WebConsoleMessage& message,
+      const blink::WebString& source_name,
+      unsigned source_line,
+      unsigned source_column_number,
+      const blink::WebString& stack_trace) override;
   void DownloadURL(const blink::WebURLRequest& request,
                    CrossOriginRedirects cross_origin_redirect_behavior,
                    mojo::ScopedMessagePipeHandle blob_url_token) override;
