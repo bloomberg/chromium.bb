@@ -18,6 +18,7 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 
 import org.chromium.base.Callback;
+import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
@@ -92,6 +93,12 @@ public abstract class AppHooks {
     public void checkIsAndroidEduDevice(final AndroidEduOwnerCheckCallback callback) {
         new Handler(Looper.getMainLooper()).post(() -> callback.onSchoolCheckDone(false));
     }
+
+    /**
+     * Perform platform-specific command line initialization.
+     * @param instance CommandLine instance to be updated.
+     */
+    public void initCommandLine(CommandLine instance) {}
 
     /**
      * Creates a new {@link AccountManagerDelegate}.

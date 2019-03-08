@@ -15,6 +15,7 @@ import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.BuildConfig;
+import org.chromium.base.CommandLine;
 import org.chromium.base.CommandLineInitUtil;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.DiscardableReferencePool;
@@ -83,6 +84,7 @@ public class ChromeApplication extends Application {
             // (see ChildProcessService.java).
             CommandLineInitUtil.initCommandLine(
                     COMMAND_LINE_FILE, ChromeApplication::shouldUseDebugFlags);
+            AppHooks.get().initCommandLine(CommandLine.getInstance());
 
             // Requires command-line flags.
             TraceEvent.maybeEnableEarlyTracing();
