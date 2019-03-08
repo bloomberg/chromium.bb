@@ -5,10 +5,14 @@
 #include "ash/assistant/model/assistant_ui_model.h"
 
 #include "ash/assistant/model/assistant_ui_model_observer.h"
+#include "ash/public/cpp/app_list/app_list_features.h"
 
 namespace ash {
 
-AssistantUiModel::AssistantUiModel() = default;
+AssistantUiModel::AssistantUiModel()
+    : ui_mode_(app_list_features::IsEmbeddedAssistantUIEnabled()
+                   ? AssistantUiMode::kLauncherEmbeddedUi
+                   : AssistantUiMode::kMainUi) {}
 
 AssistantUiModel::~AssistantUiModel() = default;
 
