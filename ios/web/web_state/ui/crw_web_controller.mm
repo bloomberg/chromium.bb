@@ -4469,6 +4469,11 @@ GURL URLEscapedForHistory(const GURL& url) {
 
     allowLoad =
         self.webStateImpl->ShouldAllowRequest(action.request, requestInfo);
+    // The WebState may have been closed in the ShouldAllowRequest callback.
+    if (_isBeingDestroyed) {
+      decisionHandler(WKNavigationActionPolicyCancel);
+      return;
+    }
   }
 
   if (allowLoad) {
@@ -4488,8 +4493,17 @@ GURL URLEscapedForHistory(const GURL& url) {
       // inserting the webview.
       [self discardNonCommittedItemsIfLastCommittedWasNotNativeView];
 
-      if (!_isBeingDestroyed && [self shouldClosePageOnNativeApplicationLoad])
+      if (!_isBeingDestroyed && [self shouldClosePageOnNativeApplicationLoad]) {
+        // Loading was started for user initiated navigations and should be
+        // stopped because no other WKWebView callbacks are called.
+        // TODO(crbug.com/767092): Loading should not start until
+        // webView.loading is changed to YES.
+        self.webStateImpl->SetIsLoading(false);
+
         self.webStateImpl->CloseWebState();
+        decisionHandler(WKNavigationActionPolicyCancel);
+        return;
+      }
     }
 
     if (!_isBeingDestroyed) {
@@ -4551,9 +4565,12 @@ GURL URLEscapedForHistory(const GURL& url) {
         }));
   }
 
-  WKNavigationActionPolicy allowPolicy = web::GetAllowNavigationActionPolicy(
-      self.webState->GetBrowserState()->IsOffTheRecord());
-  decisionHandler(allowLoad ? allowPolicy : WKNavigationActionPolicyCancel);
+  if (!allowLoad) {
+    decisionHandler(WKNavigationActionPolicyCancel);
+    return;
+  }
+  BOOL isOffTheRecord = self.webState->GetBrowserState()->IsOffTheRecord();
+  decisionHandler(web::GetAllowNavigationActionPolicy(isOffTheRecord));
 }
 
 - (void)webView:(WKWebView*)webView
