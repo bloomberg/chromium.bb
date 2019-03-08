@@ -11,6 +11,7 @@
 #include "android_webview/browser/gfx/compositor_id.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "components/viz/common/presentation_feedback_map.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
 #include "ui/gfx/color_space.h"
@@ -63,8 +64,7 @@ class HardwareRenderer : public viz::mojom::CompositorFrameSinkClient {
   void DidReceiveCompositorFrameAck(
       const std::vector<viz::ReturnedResource>& resources) override;
   void OnBeginFrame(const viz::BeginFrameArgs& args,
-                    const base::flat_map<uint32_t, gfx::PresentationFeedback>&
-                        feedbacks) override;
+                    const viz::PresentationFeedbackMap& feedbacks) override;
   void ReclaimResources(
       const std::vector<viz::ReturnedResource>& resources) override;
   void OnBeginFramePausedChanged(bool paused) override;

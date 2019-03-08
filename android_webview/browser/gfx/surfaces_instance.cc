@@ -295,7 +295,7 @@ std::vector<viz::SurfaceRange> SurfacesInstance::GetChildIdsRanges() {
 
 void SurfacesInstance::OnBeginFrame(
     const viz::BeginFrameArgs& args,
-    const base::flat_map<uint32_t, gfx::PresentationFeedback>& feedbacks) {}
+    const viz::PresentationFeedbackMap& feedbacks) {}
 
 void SurfacesInstance::ReclaimResources(
     const std::vector<viz::ReturnedResource>& resources) {

@@ -14,6 +14,7 @@
 #include "components/viz/client/frame_evictor.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
+#include "components/viz/common/presentation_feedback_map.h"
 #include "components/viz/host/hit_test/hit_test_query.h"
 #include "components/viz/host/host_frame_sink_client.h"
 #include "components/viz/host/host_frame_sink_manager.h"
@@ -88,8 +89,7 @@ class CONTENT_EXPORT DelegatedFrameHost
   void DidReceiveCompositorFrameAck(
       const std::vector<viz::ReturnedResource>& resources) override;
   void OnBeginFrame(const viz::BeginFrameArgs& args,
-                    const base::flat_map<uint32_t, gfx::PresentationFeedback>&
-                        feedbacks) override;
+                    const viz::PresentationFeedbackMap& feedbacks) override;
   void ReclaimResources(
       const std::vector<viz::ReturnedResource>& resources) override;
   void OnBeginFramePausedChanged(bool paused) override;

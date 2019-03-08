@@ -928,7 +928,7 @@ void RenderWidgetHostViewAndroid::DidReceiveCompositorFrameAck(
 }
 
 void RenderWidgetHostViewAndroid::DidPresentCompositorFrames(
-    const base::flat_map<uint32_t, gfx::PresentationFeedback>& feedbacks) {
+    const viz::PresentationFeedbackMap& feedbacks) {
   DCHECK(using_browser_compositor_);
   presentation_feedbacks_ = feedbacks;
   if (!presentation_feedbacks_.empty())

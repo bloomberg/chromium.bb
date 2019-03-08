@@ -526,7 +526,7 @@ void SynchronousLayerTreeFrameSink::DidReceiveCompositorFrameAck(
 
 void SynchronousLayerTreeFrameSink::OnBeginFrame(
     const viz::BeginFrameArgs& args,
-    const base::flat_map<uint32_t, gfx::PresentationFeedback>& feedbacks) {}
+    const viz::PresentationFeedbackMap& feedbacks) {}
 
 void SynchronousLayerTreeFrameSink::ReclaimResources(
     const std::vector<viz::ReturnedResource>& resources) {

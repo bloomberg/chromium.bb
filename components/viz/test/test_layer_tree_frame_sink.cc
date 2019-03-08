@@ -253,7 +253,7 @@ void TestLayerTreeFrameSink::DidReceiveCompositorFrameAck(
 
 void TestLayerTreeFrameSink::OnBeginFrame(
     const BeginFrameArgs& args,
-    const base::flat_map<uint32_t, gfx::PresentationFeedback>& feedbacks) {
+    const PresentationFeedbackMap& feedbacks) {
   for (const auto& pair : feedbacks)
     client_->DidPresentCompositorFrame(pair.first, pair.second);
   external_begin_frame_source_.OnBeginFrame(args);

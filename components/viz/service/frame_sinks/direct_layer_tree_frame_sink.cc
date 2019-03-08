@@ -259,7 +259,7 @@ void DirectLayerTreeFrameSink::DidReceiveCompositorFrameAckInternal(
 
 void DirectLayerTreeFrameSink::OnBeginFrame(
     const BeginFrameArgs& args,
-    const base::flat_map<uint32_t, gfx::PresentationFeedback>& feedbacks) {
+    const PresentationFeedbackMap& feedbacks) {
   for (const auto& pair : feedbacks)
     client_->DidPresentCompositorFrame(pair.first, pair.second);
 
