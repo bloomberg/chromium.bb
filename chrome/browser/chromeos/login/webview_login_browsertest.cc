@@ -264,8 +264,7 @@ IN_PROC_BROWSER_TEST_F(WebviewLoginTest, Basic) {
   session_start_waiter.Wait();
 }
 
-// Fails: http://crbug.com/512648.
-IN_PROC_BROWSER_TEST_F(WebviewLoginTest, DISABLED_BackButton) {
+IN_PROC_BROWSER_TEST_F(WebviewLoginTest, BackButton) {
   WaitForGaiaPageLoadAndPropertyUpdate();
 
   // Start with identifer page.
