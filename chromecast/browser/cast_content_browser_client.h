@@ -216,9 +216,6 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
       bool in_memory,
       const base::FilePath& relative_partition_path) override;
   std::string GetUserAgent() const override;
-  void RegisterOutOfProcessServices(OutOfProcessServiceMap* services) override;
-  void RegisterIOThreadServiceHandlers(
-      content::ServiceManagerConnection* connection) override;
   CastFeatureListCreator* GetCastFeatureListCreator() {
     return cast_feature_list_creator_;
   }
