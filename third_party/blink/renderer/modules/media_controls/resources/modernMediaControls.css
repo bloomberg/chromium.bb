@@ -824,6 +824,7 @@ video::-internal-media-controls-text-track-list,
 audio::-internal-media-controls-overflow-menu-list,
 video::-internal-media-controls-overflow-menu-list {
   position: fixed;
+  z-index: 2; /* Keep the menus above the loading animation at z-index 1. */
   max-width: 50%;
   max-height: 250px;
   min-width: 180px;
