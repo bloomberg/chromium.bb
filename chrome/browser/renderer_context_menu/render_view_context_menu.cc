@@ -355,10 +355,11 @@ const struct UmaEnumCommandIdPair {
     {99, -1, IDC_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_TOGGLE},
     {100, -1, IDC_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_TOGGLE_ONCE},
     {101, -1, IDC_CONTENT_CONTEXT_ACCESSIBILITY_LABELS},
+    {102, -1, IDC_SEND_TO_MY_DEVICES},
     // Add new items here and use |enum_id| from the next line.
     // Also, add new items to RenderViewContextMenuItem enum in
     // tools/metrics/histograms/enums.xml.
-    {102, -1, 0},  // Must be the last. Increment |enum_id| when new IDC
+    {103, -1, 0},  // Must be the last. Increment |enum_id| when new IDC
                    // was added.
 };
 

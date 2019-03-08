@@ -46827,6 +46827,10 @@ Called by update_net_trust_anchors.py.-->
   <int value="97" label="IDC_CONTENT_CONTEXT_START_SMART_SELECTION_ACTION5"/>
   <int value="98" label="IDC_CONTENT_CONTEXT_LOOK_UP"/>
   <int value="99" label="IDC_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_TOGGLE"/>
+  <int value="100"
+      label="IDC_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_TOGGLE_ONCE"/>
+  <int value="101" label="IDC_CONTENT_CONTEXT_ACCESSIBILITY_LABELS"/>
+  <int value="102" label="IDC_SEND_TO_MY_DEVICES"/>
 </enum>
 
 <enum name="ReopenTabPromoStepAtDismissal">
