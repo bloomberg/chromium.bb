@@ -13,7 +13,6 @@
 #include "base/stl_util.h"
 #include "chromeos/account_manager/account_manager.h"
 #include "components/signin/core/browser/account_tracker_service.h"
-#include "content/public/browser/network_service_instance.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher_immediate_error.h"
 #include "net/base/backoff_entry.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -69,18 +68,20 @@ std::vector<std::string> GetOAuthAccountIdsFromAccountKeys(
 
 ChromeOSOAuth2TokenServiceDelegate::ChromeOSOAuth2TokenServiceDelegate(
     AccountTrackerService* account_tracker_service,
+    network::NetworkConnectionTracker* network_connection_tracker,
     chromeos::AccountManager* account_manager)
     : account_tracker_service_(account_tracker_service),
+      network_connection_tracker_(network_connection_tracker),
       account_manager_(account_manager),
       backoff_entry_(&kBackoffPolicy),
       backoff_error_(GoogleServiceAuthError::NONE),
       weak_factory_(this) {
-  content::GetNetworkConnectionTracker()->AddNetworkConnectionObserver(this);
+  network_connection_tracker_->AddNetworkConnectionObserver(this);
 }
 
 ChromeOSOAuth2TokenServiceDelegate::~ChromeOSOAuth2TokenServiceDelegate() {
   account_manager_->RemoveObserver(this);
-  content::GetNetworkConnectionTracker()->RemoveNetworkConnectionObserver(this);
+  network_connection_tracker_->RemoveNetworkConnectionObserver(this);
 }
 
 OAuth2AccessTokenFetcher*

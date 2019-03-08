@@ -59,7 +59,7 @@ CreateCrOsOAuthDelegate(Profile* profile) {
 
   return std::make_unique<chromeos::ChromeOSOAuth2TokenServiceDelegate>(
       AccountTrackerServiceFactory::GetInstance()->GetForProfile(profile),
-      account_manager);
+      content::GetNetworkConnectionTracker(), account_manager);
 }
 #endif  // defined(OS_CHROMEOS)
 
