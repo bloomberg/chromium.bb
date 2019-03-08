@@ -26,6 +26,9 @@
 #import <AppKit/NSFont.h>
 #import <AvailabilityMacros.h>
 
+#include "base/mac/foundation_util.h"
+#include "base/mac/scoped_cftyperef.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/stl_util.h"
 #import "third_party/blink/public/platform/mac/web_sandbox_support.h"
 #import "third_party/blink/public/platform/platform.h"
@@ -33,7 +36,6 @@
 #import "third_party/blink/renderer/platform/fonts/opentype/font_settings.h"
 #import "third_party/blink/renderer/platform/fonts/shaping/harfbuzz_face.h"
 #import "third_party/blink/renderer/platform/web_test_support.h"
-#import "third_party/blink/renderer/platform/wtf/retain_ptr.h"
 #import "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #import "third_party/skia/include/core/SkFont.h"
 #import "third_party/skia/include/core/SkStream.h"
@@ -42,13 +44,12 @@
 namespace blink {
 
 static bool CanLoadInProcess(NSFont* ns_font) {
-  RetainPtr<CGFontRef> cg_font(kAdoptCF,
-                               CTFontCopyGraphicsFont(toCTFontRef(ns_font), 0));
+  base::ScopedCFTypeRef<CGFontRef> cg_font(
+      CTFontCopyGraphicsFont(base::mac::NSToCFCast(ns_font), 0));
   // Toll-free bridged types CFStringRef and NSString*.
-  RetainPtr<NSString> font_name(
-      kAdoptNS, const_cast<NSString*>(reinterpret_cast<const NSString*>(
-                    CGFontCopyPostScriptName(cg_font.Get()))));
-  return ![font_name.Get() isEqualToString:@"LastResort"];
+  base::scoped_nsobject<NSString> font_name(
+      base::mac::CFToNSCast(CGFontCopyPostScriptName(cg_font)));
+  return ![font_name isEqualToString:@"LastResort"];
 }
 
 static CTFontDescriptorRef CascadeToLastResortFontDescriptor() {
@@ -56,22 +57,20 @@ static CTFontDescriptorRef CascadeToLastResortFontDescriptor() {
   if (descriptor)
     return descriptor;
 
-  RetainPtr<CTFontDescriptorRef> last_resort(
-      kAdoptCF, CTFontDescriptorCreateWithNameAndSize(CFSTR("LastResort"), 0));
-  const void* descriptors[] = {last_resort.Get()};
-  RetainPtr<CFArrayRef> values_array(
-      kAdoptCF, CFArrayCreate(kCFAllocatorDefault, descriptors,
-                              base::size(descriptors), &kCFTypeArrayCallBacks));
+  base::ScopedCFTypeRef<CTFontDescriptorRef> last_resort(
+      CTFontDescriptorCreateWithNameAndSize(CFSTR("LastResort"), 0));
+  const void* descriptors[] = {last_resort};
+  base::ScopedCFTypeRef<CFArrayRef> values_array(
+      CFArrayCreate(kCFAllocatorDefault, descriptors, base::size(descriptors),
+                    &kCFTypeArrayCallBacks));
 
   const void* keys[] = {kCTFontCascadeListAttribute};
-  const void* values[] = {values_array.Get()};
-  RetainPtr<CFDictionaryRef> attributes(
-      kAdoptCF,
-      CFDictionaryCreate(kCFAllocatorDefault, keys, values, base::size(keys),
-                         &kCFTypeDictionaryKeyCallBacks,
-                         &kCFTypeDictionaryValueCallBacks));
+  const void* values[] = {values_array};
+  base::ScopedCFTypeRef<CFDictionaryRef> attributes(CFDictionaryCreate(
+      kCFAllocatorDefault, keys, values, base::size(keys),
+      &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks));
 
-  descriptor = CTFontDescriptorCreateWithAttributes(attributes.Get());
+  descriptor = CTFontDescriptorCreateWithAttributes(attributes);
 
   return descriptor;
 }
@@ -98,13 +97,10 @@ static sk_sp<SkTypeface> LoadFromBrowserProcess(NSFont* ns_font,
         << "\" from non system location failed. Corrupt or missing font file?";
     return nullptr;
   }
-  RetainPtr<CGFontRef> cg_font(kAdoptCF, loaded_cg_font);
-  RetainPtr<CTFontRef> ct_font(
-      kAdoptCF,
-      CTFontCreateWithGraphicsFont(cg_font.Get(), text_size, 0,
-                                   CascadeToLastResortFontDescriptor()));
-  sk_sp<SkTypeface> return_font(
-      SkCreateTypefaceFromCTFont(ct_font.Get(), cg_font.Get()));
+  base::ScopedCFTypeRef<CGFontRef> cg_font(loaded_cg_font);
+  base::ScopedCFTypeRef<CTFontRef> ct_font(CTFontCreateWithGraphicsFont(
+      cg_font, text_size, 0, CascadeToLastResortFontDescriptor()));
+  sk_sp<SkTypeface> return_font(SkCreateTypefaceFromCTFont(ct_font, cg_font));
 
   if (!return_font.get())
     // TODO crbug.com/461279: Make this appear in the inspector console?
