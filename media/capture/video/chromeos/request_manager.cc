@@ -5,6 +5,7 @@
 #include "media/capture/video/chromeos/request_manager.h"
 
 #include <sync/sync.h>
+#include <initializer_list>
 #include <map>
 #include <set>
 #include <string>
@@ -17,6 +18,7 @@
 #include "media/capture/video/chromeos/camera_buffer_factory.h"
 #include "media/capture/video/chromeos/camera_device_context.h"
 #include "media/capture/video/chromeos/camera_metadata_utils.h"
+#include "media/capture/video/chromeos/mojo/cros_image_capture.mojom.h"
 #include "mojo/public/cpp/platform/platform_handle.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 
@@ -25,7 +27,14 @@ namespace media {
 namespace {
 
 constexpr uint32_t kUndefinedFrameNumber = 0xFFFFFFFF;
+
+constexpr std::initializer_list<StreamType> kYUVReprocessStreams = {
+    StreamType::kYUVInput, StreamType::kJpegOutput};
 }  // namespace
+
+ReprocessTasksInfo::ReprocessTasksInfo() = default;
+
+ReprocessTasksInfo::~ReprocessTasksInfo() = default;
 
 RequestManager::RequestManager(
     cros::mojom::Camera3CallbackOpsRequest callback_ops_request,
@@ -43,7 +52,6 @@ RequestManager::RequestManager(
       blobify_callback_(std::move(blobify_callback)),
       ipc_task_runner_(std::move(ipc_task_runner)),
       capturing_(false),
-      frame_number_(0),
       partial_result_count_(1),
       first_frame_shutter_time_(base::TimeTicks()),
       weak_ptr_factory_(this) {
@@ -94,6 +102,17 @@ cros::mojom::Camera3StreamPtr RequestManager::GetStreamConfiguration(
   return stream_buffer_manager_->GetStreamConfiguration(stream_type);
 }
 
+bool RequestManager::HasStreamsConfiguredForTakePhoto() {
+  if (stream_buffer_manager_->IsReprocessSupported()) {
+    return stream_buffer_manager_->HasStreamsConfigured(
+        {StreamType::kPreviewOutput, StreamType::kJpegOutput,
+         StreamType::kYUVInput, StreamType::kYUVOutput});
+  } else {
+    return stream_buffer_manager_->HasStreamsConfigured(
+        {StreamType::kPreviewOutput, StreamType::kJpegOutput});
+  }
+}
+
 void RequestManager::StartPreview(
     cros::mojom::CameraMetadataPtr preview_settings) {
   DCHECK(ipc_task_runner_->BelongsToCurrentThread());
@@ -116,9 +135,24 @@ void RequestManager::StopPreview(base::OnceCallback<void(int32_t)> callback) {
 }
 
 void RequestManager::TakePhoto(cros::mojom::CameraMetadataPtr settings,
-                               VideoCaptureDevice::TakePhotoCallback callback) {
+                               ReprocessTaskQueue reprocess_tasks) {
   DCHECK(ipc_task_runner_->BelongsToCurrentThread());
 
+  if (stream_buffer_manager_->IsReprocessSupported()) {
+    pending_reprocess_tasks_queue_.push(std::move(reprocess_tasks));
+  } else {
+    // There should be only one reprocess task in the queue which is format
+    // conversion task.
+    DCHECK_EQ(reprocess_tasks.size(), 1lu);
+
+    take_photo_callback_queue_.push(
+        std::move(reprocess_tasks.front().callback));
+  }
+  take_photo_settings_queue_.push(std::move(settings));
+}
+
+void RequestManager::SetJpegOrientation(
+    cros::mojom::CameraMetadataPtr* settings) {
   std::vector<uint8_t> frame_orientation(sizeof(int32_t));
   *reinterpret_cast<int32_t*>(frame_orientation.data()) =
       base::checked_cast<int32_t>(device_context_->GetCameraFrameOrientation());
@@ -128,10 +162,7 @@ void RequestManager::TakePhoto(cros::mojom::CameraMetadataPtr settings,
   e->type = cros::mojom::EntryType::TYPE_INT32;
   e->count = 1;
   e->data = std::move(frame_orientation);
-  AddOrUpdateMetadataEntry(&settings, std::move(e));
-
-  oneshot_request_settings_.push(std::move(settings));
-  take_photo_callback_queue_.push(std::move(callback));
+  AddOrUpdateMetadataEntry(settings, std::move(e));
 }
 
 void RequestManager::PrepareCaptureRequest() {
@@ -140,57 +171,165 @@ void RequestManager::PrepareCaptureRequest() {
   if (!capturing_) {
     return;
   }
+
+  // There are two types of devices, each has several possible combinations of
+  // streams.
+  //
+  // For device with reprocess capability:
+  // 1. Preview
+  // 2. Capture (YuvOutput)
+  // 3. Preview + Capture (YuvOutput)
+  // 4. Reprocess (YuvInput + BlobOutput)
+  //
+  // For device without reprocess capability:
+  // 1. Preview
+  // 2. Capture (BlobOutput)
+  // 3. Preview + Capture (BlobOutput)
   std::set<StreamType> stream_types;
   cros::mojom::CameraMetadataPtr settings;
+  TakePhotoCallback callback = base::DoNothing();
+  base::Optional<uint64_t> input_buffer_id;
+  cros::mojom::Effect reprocess_effect = cros::mojom::Effect::NO_EFFECT;
 
-  // Reqular request should always have repeating request if the preview is
-  // on.
-  stream_types.insert(StreamType::kPreview);
-  if (!stream_buffer_manager_->HasFreeBuffers(stream_types)) {
-    return;
-  }
-  bool has_still_capture_streams = false;
-  if (!oneshot_request_settings_.empty() &&
-      stream_buffer_manager_->HasFreeBuffers({StreamType::kStillCapture})) {
-    stream_types.insert(StreamType::kStillCapture);
-    settings = std::move(oneshot_request_settings_.front());
-    oneshot_request_settings_.pop();
-    has_still_capture_streams = true;
-  } else {
-    settings = repeating_request_settings_.Clone();
+  bool is_reprocess_request = false;
+  bool is_preview_request = false;
+  bool is_oneshot_request = false;
+
+  // First, check if there are pending reprocess tasks.
+  is_reprocess_request = TryPrepareReprocessRequest(
+      &stream_types, &settings, &callback, &input_buffer_id, &reprocess_effect);
+
+  // If there is no pending reprocess task, then check if there are pending
+  // one-shot requests. And also try to put preview in the request.
+  if (!is_reprocess_request) {
+    is_preview_request = TryPreparePreviewRequest(&stream_types, &settings);
+
+    // Order matters here. If the preview request and oneshot request are both
+    // added in single capture request, the settings will be overridden by the
+    // later.
+    is_oneshot_request =
+        TryPrepareOneShotRequest(&stream_types, &settings, &callback);
   }
 
-  auto capture_request = request_builder_->BuildRequest(std::move(stream_types),
-                                                        std::move(settings));
-  if (has_still_capture_streams) {
-    SendCaptureRequest(std::move(capture_request),
-                       std::move(take_photo_callback_queue_.front()));
-    take_photo_callback_queue_.pop();
-  } else {
-    SendCaptureRequest(std::move(capture_request), base::DoNothing());
-  }
-}
-
-void RequestManager::SendCaptureRequest(
-    cros::mojom::Camera3CaptureRequestPtr capture_request,
-    VideoCaptureDevice::TakePhotoCallback take_photo_callback) {
-  DCHECK(ipc_task_runner_->BelongsToCurrentThread());
-  if (!capturing_) {
+  if (!is_reprocess_request && !is_oneshot_request && !is_preview_request) {
     return;
   }
 
-  CaptureResult& pending_result = pending_results_[frame_number_];
-  pending_result.still_capture_callback = std::move(take_photo_callback);
+  auto capture_request = request_builder_->BuildRequest(
+      std::move(stream_types), std::move(settings), input_buffer_id);
+
+  CaptureResult& pending_result =
+      pending_results_[capture_request->frame_number];
   pending_result.unsubmitted_buffer_count =
       capture_request->output_buffers.size();
+  pending_result.input_buffer_id = input_buffer_id;
+  pending_result.reprocess_effect = reprocess_effect;
+  pending_result.still_capture_callback = std::move(callback);
+
+  // For reprocess supported devices, bind the ReprocessTaskQueue with this
+  // frame number. Once the shot result is returned, we will rebind the
+  // ReprocessTaskQueue with the id of YUV buffer which contains the result.
+  if (is_oneshot_request && stream_buffer_manager_->IsReprocessSupported() &&
+      !pending_reprocess_tasks_queue_.empty()) {
+    frame_number_reprocess_tasks_map_[capture_request->frame_number] =
+        std::move(pending_reprocess_tasks_queue_.front());
+    pending_reprocess_tasks_queue_.pop();
+  }
 
   UpdateCaptureSettings(&capture_request->settings);
-  capture_request->frame_number = frame_number_;
   capture_interface_->ProcessCaptureRequest(
       std::move(capture_request),
-      base::BindOnce(&RequestManager::OnProcessedCaptureRequest,
-                     weak_ptr_factory_.GetWeakPtr()));
-  frame_number_++;
+      base::BindOnce(&RequestManager::OnProcessedCaptureRequest, GetWeakPtr()));
+}
+
+bool RequestManager::TryPrepareReprocessRequest(
+    std::set<StreamType>* stream_types,
+    cros::mojom::CameraMetadataPtr* settings,
+    TakePhotoCallback* callback,
+    base::Optional<uint64_t>* input_buffer_id,
+    cros::mojom::Effect* reprocess_effect) {
+  if (buffer_id_reprocess_tasks_map_.empty() ||
+      !stream_buffer_manager_->HasFreeBuffers(kYUVReprocessStreams)) {
+    return false;
+  }
+
+  // Consume reprocess task.
+  ReprocessTaskQueue* reprocess_task_queue;
+  for (auto& it : buffer_id_reprocess_tasks_map_) {
+    if (processing_buffer_ids_.count(it.first) == 0) {
+      *input_buffer_id = it.first;
+      reprocess_task_queue = &it.second;
+      break;
+    }
+  }
+
+  if (!*input_buffer_id) {
+    return false;
+  }
+
+  ReprocessTask task = std::move(reprocess_task_queue->front());
+  reprocess_task_queue->pop();
+
+  stream_types->insert(kYUVReprocessStreams);
+  // Prepare metadata by adding extra metadata.
+  *settings = repeating_request_settings_.Clone();
+  SetJpegOrientation(settings);
+  for (auto& metadata : task.extra_metadata) {
+    AddOrUpdateMetadataEntry(settings, std::move(metadata));
+  }
+  *callback = std::move(task.callback);
+  *reprocess_effect = task.effect;
+  processing_buffer_ids_.insert(**input_buffer_id);
+
+  // Remove the mapping from map if all tasks consumed.
+  if (reprocess_task_queue->empty()) {
+    buffer_id_reprocess_tasks_map_.erase(**input_buffer_id);
+  }
+  return true;
+}
+
+bool RequestManager::TryPreparePreviewRequest(
+    std::set<StreamType>* stream_types,
+    cros::mojom::CameraMetadataPtr* settings) {
+  if (!stream_buffer_manager_->HasFreeBuffers({StreamType::kPreviewOutput})) {
+    return false;
+  }
+
+  stream_types->insert({StreamType::kPreviewOutput});
+  *settings = repeating_request_settings_.Clone();
+  return true;
+}
+
+bool RequestManager::TryPrepareOneShotRequest(
+    std::set<StreamType>* stream_types,
+    cros::mojom::CameraMetadataPtr* settings,
+    TakePhotoCallback* callback) {
+  if (stream_buffer_manager_->IsReprocessSupported()) {
+    // For devices that support reprocess, fill the frame data in YUV buffer and
+    // reprocess on that YUV buffer.
+    if (take_photo_settings_queue_.empty() ||
+        !stream_buffer_manager_->HasFreeBuffers({StreamType::kYUVOutput})) {
+      return false;
+    }
+    stream_types->insert({StreamType::kYUVOutput});
+    *settings = std::move(take_photo_settings_queue_.front());
+  } else {
+    // For devices that do not support reprocess, fill the frame data in BLOB
+    // buffer and fill the callback.
+    if (take_photo_settings_queue_.empty() ||
+        take_photo_callback_queue_.empty() ||
+        !stream_buffer_manager_->HasFreeBuffers({StreamType::kJpegOutput})) {
+      return false;
+    }
+    stream_types->insert({StreamType::kJpegOutput});
+    *callback = std::move(take_photo_callback_queue_.front());
+    take_photo_callback_queue_.pop();
+
+    *settings = std::move(take_photo_settings_queue_.front());
+    SetJpegOrientation(settings);
+  }
+  take_photo_settings_queue_.pop();
+  return true;
 }
 
 void RequestManager::OnProcessedCaptureRequest(int32_t result) {
@@ -517,16 +656,17 @@ void RequestManager::SubmitCaptureResult(
     }
   }
 
+  bool should_release_buffer = true;
   // Deliver the captured data to client.
   if (stream_buffer->status ==
       cros::mojom::Camera3BufferStatus::CAMERA3_BUFFER_STATUS_OK) {
     gfx::GpuMemoryBuffer* buffer =
         stream_buffer_manager_->GetBufferById(stream_type, buffer_id);
-    if (stream_type == StreamType::kPreview) {
+    if (stream_type == StreamType::kPreviewOutput) {
       device_context_->SubmitCapturedData(
           buffer, stream_buffer_manager_->GetStreamCaptureFormat(stream_type),
           pending_result.reference_time, pending_result.timestamp);
-    } else if (stream_type == StreamType::kStillCapture) {
+    } else if (stream_type == StreamType::kJpegOutput) {
       DCHECK(pending_result.still_capture_callback);
       const Camera3JpegBlob* header = reinterpret_cast<Camera3JpegBlob*>(
           reinterpret_cast<uintptr_t>(buffer->memory(0)) +
@@ -543,14 +683,43 @@ void RequestManager::SubmitCaptureResult(
           reinterpret_cast<uint8_t*>(buffer->memory(0)), header->jpeg_size,
           stream_buffer_manager_->GetStreamCaptureFormat(stream_type), 0);
       if (blob) {
-        std::move(pending_result.still_capture_callback).Run(std::move(blob));
+        int task_status = kReprocessSuccess;
+        if (stream_buffer_manager_->IsReprocessSupported()) {
+          task_status = ReprocessManager::GetReprocessReturnCode(
+              pending_result.reprocess_effect, &pending_result.metadata);
+        }
+        std::move(pending_result.still_capture_callback)
+            .Run(task_status, std::move(blob));
       } else {
         // TODO(wtlee): If it is fatal, we should set error state here.
         LOG(ERROR) << "Failed to blobify the captured JPEG image";
       }
+
+      if (pending_result.input_buffer_id) {
+        // Remove the id from processing list to run next reprocess task.
+        processing_buffer_ids_.erase(*pending_result.input_buffer_id);
+
+        // If all reprocess tasks are done for this buffer, release the buffer.
+        if (base::ContainsKey(buffer_id_reprocess_tasks_map_,
+                              *pending_result.input_buffer_id)) {
+          stream_buffer_manager_->ReleaseBuffer(
+              StreamType::kYUVOutput, *pending_result.input_buffer_id);
+        }
+      }
+    } else if (stream_type == StreamType::kYUVOutput) {
+      buffer_id_reprocess_tasks_map_[buffer_id] =
+          std::move(frame_number_reprocess_tasks_map_[frame_number]);
+      frame_number_reprocess_tasks_map_.erase(frame_number);
+
+      // Don't release the buffer since we will need it as input buffer for
+      // reprocessing. We will release it until all reprocess tasks for this
+      // buffer are done.
+      should_release_buffer = false;
     }
   }
-  stream_buffer_manager_->ReleaseBuffer(stream_type, buffer_id);
+  if (should_release_buffer) {
+    stream_buffer_manager_->ReleaseBuffer(stream_type, buffer_id);
+  }
   pending_result.unsubmitted_buffer_count--;
 
   if (pending_result.unsubmitted_buffer_count == 0) {
@@ -561,8 +730,8 @@ void RequestManager::SubmitCaptureResult(
   PrepareCaptureRequest();
 }
 
-size_t RequestManager::GetNumberOfStreams() {
-  return stream_buffer_manager_->GetNumberOfStreams();
+base::WeakPtr<RequestManager> RequestManager::GetWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
 }
 
 void RequestManager::AddResultMetadataObserver(
