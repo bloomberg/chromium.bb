@@ -1363,6 +1363,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     attribute ACTIVE_VARIABLES
 [Worker]     attribute ALIASED_LINE_WIDTH_RANGE
 [Worker]     attribute ALIASED_POINT_SIZE_RANGE
+[Worker]     attribute ALL_BARRIER_BITS
 [Worker]     attribute ALPHA
 [Worker]     attribute ALPHA_BITS
 [Worker]     attribute ALREADY_SIGNALED
