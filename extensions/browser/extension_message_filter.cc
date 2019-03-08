@@ -398,8 +398,6 @@ void ExtensionMessageFilter::OnOpenChannelToExtension(
         this, bad_message::EMF_INVALID_CHANNEL_SOURCE_TYPE);
     return;
   }
-  // TODO(crbug.com/925918): Support messages from Service Worker.
-  DCHECK(source_context.is_for_render_frame());
   if (browser_context_) {
     ChannelEndpoint source_endpoint(browser_context_, render_process_id_,
                                     source_context);

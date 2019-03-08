@@ -187,28 +187,24 @@ void MessageService::OpenChannelToExtension(
   int source_process_id = source.render_process_id();
   DCHECK_EQ(source_process_id == content::ChildProcessHost::kInvalidUniqueID,
             source_endpoint.type == MessagingEndpoint::Type::kNativeApp);
-  const PortContext& source_context = source.port_context();
-  DCHECK(!source_context.is_for_service_worker())
-      << "Service worker to extension messaging isn't supported yet.";
-
-  content::RenderFrameHost* source_render_frame_host = nullptr;
+  content::RenderFrameHost* source_render_frame_host =
+      source.is_for_render_frame() ? source.GetRenderFrameHost() : nullptr;
   BrowserContext* context = context_;
-  if (source_process_id != content::ChildProcessHost::kInvalidUniqueID) {
-    source_render_frame_host = source.GetRenderFrameHost();
-    if (!source_render_frame_host)
-      return;
-    context = source_render_frame_host->GetProcess()->GetBrowserContext();
+  if (!source.IsValid())
+    return;
+  if (!source.is_for_native_host()) {
+    context = source.browser_context();
     DCHECK(ExtensionsBrowserClient::Get()->IsSameContext(context, context_));
   }
 
   if (!opener_port) {
     DCHECK(source_endpoint.type == MessagingEndpoint::Type::kTab ||
            source_endpoint.type == MessagingEndpoint::Type::kExtension);
-    opener_port = std::make_unique<ExtensionMessagePort>(
+    opener_port = ExtensionMessagePort::CreateForEndpoint(
         weak_factory_.GetWeakPtr(), source_port_id,
         source_endpoint.extension_id ? *source_endpoint.extension_id
                                      : ExtensionId(),
-        source_render_frame_host, false /* include_child_frames */);
+        source, false /* include_child_frames */);
   }
   if (!opener_port->IsValidPort())
     return;
