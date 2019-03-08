@@ -1707,61 +1707,50 @@ void Range::GetBorderAndTextQuads(Vector<FloatQuad>& quads) const {
     LayoutText* const layout_text = ToText(node)->GetLayoutObject();
     if (!layout_text)
       continue;
+
+    // TODO(editing-dev): Offset in |LayoutText| doesn't match to DOM offset
+    // when |text-transform| applied. We should map DOM offset to offset in
+    // |LayouText| for |start_offset| and |end_offset|.
+    const unsigned start_offset =
+        (node == start_container) ? start_.Offset() : 0;
+    const unsigned end_offset = (node == end_container)
+                                    ? end_.Offset()
+                                    : std::numeric_limits<unsigned>::max();
     if (!layout_text->IsTextFragment()) {
-      // TODO(editing-dev): Offset in |LayoutText| doesn't match to DOM offset
-      // when |text-transform| applied. We should map DOM offset to offset in
-      // |LayouText| for |start_offset| and |end_offset|.
-      const unsigned start_offset =
-          (node == start_container) ? start_.Offset() : 0;
-      const unsigned end_offset = (node == end_container)
-                                      ? end_.Offset()
-                                      : std::numeric_limits<unsigned>::max();
       quads.AppendVector(ComputeTextQuads(*owner_document_, *layout_text,
                                           start_offset, end_offset));
       continue;
     }
+
+    // Handle ::first-letter
     const LayoutTextFragment& first_letter_part =
         *ToLayoutTextFragment(AssociatedLayoutObjectOf(*node, 0));
+    const bool overlaps_with_first_letter =
+        start_offset < first_letter_part.FragmentLength() ||
+        (start_offset == first_letter_part.FragmentLength() &&
+         end_offset == start_offset);
+    if (overlaps_with_first_letter) {
+      const unsigned start_in_first_letter = start_offset;
+      const unsigned end_in_first_letter =
+          std::min(end_offset, first_letter_part.FragmentLength());
+      quads.AppendVector(ComputeTextQuads(*owner_document_, first_letter_part,
+                                          start_in_first_letter,
+                                          end_in_first_letter));
+    }
     const LayoutTextFragment& remaining_part =
         *ToLayoutTextFragment(layout_text);
-    // Set offsets in |LayoutTextFragment| to cover whole text in
-    // |LayoutTextFragment|.
-    unsigned first_letter_part_start = 0;
-    unsigned first_letter_part_end = first_letter_part.FragmentLength();
-    unsigned remaining_part_start = 0;
-    unsigned remaining_part_end = remaining_part.FragmentLength();
-    if (node == start_container) {
-      if (start_.Offset() < first_letter_part_end) {
-        // |this| range starts in first-letter part.
-        first_letter_part_start = start_.Offset();
-      } else {
-        first_letter_part_start = first_letter_part_end;
-        DCHECK_GE(static_cast<unsigned>(start_.Offset()),
-                  remaining_part.Start());
-        remaining_part_start = start_.Offset() - remaining_part.Start();
-      }
-    }
-    if (node == end_container) {
-      if (end_.Offset() <= first_letter_part_end) {
-        // |this| range ends in first-letter part.
-        first_letter_part_end = end_.Offset();
-        remaining_part_end = remaining_part_start;
-      } else {
-        DCHECK_GE(static_cast<unsigned>(end_.Offset()), remaining_part.Start());
-        remaining_part_end = end_.Offset() - remaining_part.Start();
-      }
-    }
-    DCHECK_LE(first_letter_part_start, first_letter_part_end);
-    DCHECK_LE(remaining_part_start, remaining_part_end);
-    if (first_letter_part_start < first_letter_part_end) {
-      quads.AppendVector(ComputeTextQuads(*owner_document_, first_letter_part,
-                                          first_letter_part_start,
-                                          first_letter_part_end));
-    }
-    if (remaining_part_start < remaining_part_end) {
+    if (end_offset > remaining_part.Start()) {
+      const unsigned start_in_remaining_part =
+          std::max(start_offset, remaining_part.Start()) -
+          remaining_part.Start();
+      // TODO(editing-dev): As we previously set |end_offset == UINT_MAX| as a
+      // hacky support for |text-transform|, we need the same hack here.
+      const unsigned end_in_remaining_part =
+          end_offset == UINT_MAX ? end_offset
+                                 : end_offset - remaining_part.Start();
       quads.AppendVector(ComputeTextQuads(*owner_document_, remaining_part,
-                                          remaining_part_start,
-                                          remaining_part_end));
+                                          start_in_remaining_part,
+                                          end_in_remaining_part));
     }
   }
 }
