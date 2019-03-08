@@ -100,7 +100,7 @@ class RecordingProofVerifier : public ProofVerifier {
   }
 
   std::unique_ptr<ProofVerifyContext> CreateDefaultContext() override {
-    return verifier_->CreateDefaultContext();
+    return verifier_ != nullptr ? verifier_->CreateDefaultContext() : nullptr;
   }
 
   const QuicString& common_name() const { return common_name_; }

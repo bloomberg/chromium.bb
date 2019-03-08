@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "net/third_party/quic/core/crypto/proof_source.h"
 #include "net/third_party/quic/core/crypto/proof_verifier.h"
 #include "net/third_party/quic/platform/impl/quic_default_proof_providers_impl.h"
 
@@ -15,8 +16,14 @@ namespace quic {
 // Provides a default proof verifier.  The verifier has to do a good faith
 // attempt at verifying the certificate against a reasonable root store, and not
 // just always return success.
-std::unique_ptr<ProofVerifier> CreateDefaultProofVerifier() {
+inline std::unique_ptr<ProofVerifier> CreateDefaultProofVerifier() {
   return CreateDefaultProofVerifierImpl();
+}
+
+// Provides a default proof source for CLI-based tools.  The actual certificates
+// used in the proof source should be confifgurable via command-line flags.
+inline std::unique_ptr<ProofSource> CreateDefaultProofSource() {
+  return CreateDefaultProofSourceImpl();
 }
 
 }  // namespace quic
