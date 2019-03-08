@@ -12815,7 +12815,6 @@
         "name": "telemetry_perf_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "hard_timeout": 960,
           "idempotent": false,
           "shards": 12
         }
