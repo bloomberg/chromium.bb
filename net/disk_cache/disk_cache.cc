@@ -32,7 +32,6 @@ class CacheCreator {
                int64_t max_bytes,
                net::CacheType type,
                net::BackendType backend_type,
-               uint32_t flags,
 #if defined(OS_ANDROID)
                base::android::ApplicationStatusListener* app_status_listener,
 #endif
@@ -60,9 +59,7 @@ class CacheCreator {
   int64_t max_bytes_;
   net::CacheType type_;
   net::BackendType backend_type_;
-#if !defined(OS_ANDROID)
-  uint32_t flags_;
-#else
+#if defined(OS_ANDROID)
   base::android::ApplicationStatusListener* app_status_listener_;
 #endif
   std::unique_ptr<disk_cache::Backend>* backend_;
@@ -81,7 +78,6 @@ CacheCreator::CacheCreator(
     int64_t max_bytes,
     net::CacheType type,
     net::BackendType backend_type,
-    uint32_t flags,
 #if defined(OS_ANDROID)
     base::android::ApplicationStatusListener* app_status_listener,
 #endif
@@ -95,9 +91,7 @@ CacheCreator::CacheCreator(
       max_bytes_(max_bytes),
       type_(type),
       backend_type_(backend_type),
-#if !defined(OS_ANDROID)
-      flags_(flags),
-#else
+#if defined(OS_ANDROID)
       app_status_listener_(app_status_listener),
 #endif
       backend_(backend),
@@ -139,7 +133,6 @@ net::Error CacheCreator::Run() {
   created_cache_.reset(new_cache);
   new_cache->SetMaxSize(max_bytes_);
   new_cache->SetType(type_);
-  new_cache->SetFlags(flags_);
   net::Error rv = new_cache->Init(
       base::Bind(&CacheCreator::OnIOComplete, base::Unretained(this)));
   DCHECK_EQ(net::ERR_IO_PENDING, rv);
@@ -245,7 +238,7 @@ net::Error CreateCacheBackendImpl(
 
   bool had_post_cleanup_callback = !post_cleanup_callback.is_null();
   CacheCreator* creator = new CacheCreator(
-      path, force, max_bytes, type, backend_type, kNone,
+      path, force, max_bytes, type, backend_type,
 #if defined(OS_ANDROID)
       std::move(app_status_listener),
 #endif
