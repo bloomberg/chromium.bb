@@ -126,7 +126,7 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantUiModel {
       base::Optional<AssistantExitPoint> exit_point);
   void NotifyUsableWorkAreaChanged();
 
-  AssistantUiMode ui_mode_ = AssistantUiMode::kMainUi;
+  AssistantUiMode ui_mode_;
 
   AssistantVisibility visibility_ = AssistantVisibility::kClosed;
 

@@ -40,6 +40,7 @@ component("model") {
 
   deps = [
     "//ash/assistant/ui:constants",
+    "//ash/public/cpp",
     "//chromeos/services/assistant/public/mojom",
     "//services/content/public/cpp",
     "//ui/gfx/geometry",

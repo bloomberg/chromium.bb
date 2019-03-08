@@ -11,7 +11,9 @@
 #include "ash/app_list/views/assistant/assistant_main_view.h"
 #include "ash/app_list/views/contents_view.h"
 #include "ash/assistant/model/assistant_ui_model.h"
+#include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
+#include "ash/assistant/ui/assistant_web_view.h"
 #include "ash/assistant/util/assistant_util.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/strings/utf_string_conversions.h"
@@ -24,9 +26,6 @@
 namespace app_list {
 
 namespace {
-
-constexpr int kHeightDip = 440;
-constexpr int kWidthDip = 640;
 
 // The height of the search box in |search_result_page_view_|. It is only for
 // animation.
@@ -66,6 +65,13 @@ void AssistantPageView::InitLayout() {
   if (assistant_view_delegate_) {
     assistant_main_view_ = new AssistantMainView(assistant_view_delegate_);
     AddChildView(assistant_main_view_);
+
+    // Web view.
+    assistant_web_view_ = new ash::AssistantWebView(assistant_view_delegate_);
+    AddChildView(assistant_web_view_);
+
+    // Update the view state based on the current UI mode.
+    OnUiModeChanged(assistant_view_delegate_->GetUiModel()->ui_mode());
   }
 }
 
@@ -74,13 +80,27 @@ const char* AssistantPageView::GetClassName() const {
 }
 
 gfx::Size AssistantPageView::CalculatePreferredSize() const {
-  return gfx::Size(kWidthDip, kHeightDip);
+  return gfx::Size(ash::kPreferredWidthDip, ash::kMaxHeightEmbeddedDip);
 }
 
 void AssistantPageView::RequestFocus() {
-  // |assistant_main_view_| could be nullptr in test.
-  if (assistant_main_view_)
-    assistant_main_view_->RequestFocus();
+  if (!assistant_view_delegate_)
+    return;
+
+  switch (assistant_view_delegate_->GetUiModel()->ui_mode()) {
+    case ash::AssistantUiMode::kLauncherEmbeddedUi:
+      if (assistant_main_view_)
+        assistant_main_view_->RequestFocus();
+      break;
+    case ash::AssistantUiMode::kWebUi:
+      if (assistant_web_view_)
+        assistant_web_view_->RequestFocus();
+      break;
+    case ash::AssistantUiMode::kMainUi:
+    case ash::AssistantUiMode::kMiniUi:
+      NOTREACHED();
+      break;
+  }
 }
 
 void AssistantPageView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
@@ -128,7 +148,8 @@ gfx::Rect AssistantPageView::GetPageBoundsForState(
         AppListPage::contents_view()->GetSearchBoxBoundsForState(state);
   } else {
     onscreen_bounds = AppListPage::GetSearchBoxBounds();
-    onscreen_bounds.Offset((onscreen_bounds.width() - kWidthDip) / 2, 0);
+    onscreen_bounds.Offset(
+        (onscreen_bounds.width() - ash::kPreferredWidthDip) / 2, 0);
     onscreen_bounds.set_size(GetPreferredSize());
   }
 
@@ -138,8 +159,8 @@ gfx::Rect AssistantPageView::GetPageBoundsForState(
 gfx::Rect AssistantPageView::GetSearchBoxBounds() const {
   gfx::Rect rect(AppListPage::GetSearchBoxBounds());
 
-  rect.Offset((rect.width() - kWidthDip) / 2, 0);
-  rect.set_size(gfx::Size(kWidthDip, kSearchBoxHeightDip));
+  rect.Offset((rect.width() - ash::kPreferredWidthDip) / 2, 0);
+  rect.set_size(gfx::Size(ash::kPreferredWidthDip, kSearchBoxHeightDip));
 
   return rect;
 }
@@ -152,6 +173,29 @@ views::View* AssistantPageView::GetFirstFocusableView() {
 views::View* AssistantPageView::GetLastFocusableView() {
   return GetFocusManager()->GetNextFocusableView(
       this, GetWidget(), /*reverse=*/true, /*dont_loop=*/false);
+}
+
+void AssistantPageView::OnUiModeChanged(ash::AssistantUiMode ui_mode) {
+  for (int i = 0; i < child_count(); ++i)
+    child_at(i)->SetVisible(false);
+
+  switch (ui_mode) {
+    case ash::AssistantUiMode::kLauncherEmbeddedUi:
+      if (assistant_main_view_)
+        assistant_main_view_->SetVisible(true);
+      break;
+    case ash::AssistantUiMode::kWebUi:
+      if (assistant_web_view_)
+        assistant_web_view_->SetVisible(true);
+      break;
+    case ash::AssistantUiMode::kMainUi:
+    case ash::AssistantUiMode::kMiniUi:
+      NOTREACHED();
+      break;
+  }
+
+  PreferredSizeChanged();
+  RequestFocus();
 }
 
 void AssistantPageView::OnUiVisibilityChanged(

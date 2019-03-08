@@ -14,6 +14,7 @@
 
 namespace ash {
 class AssistantViewDelegate;
+class AssistantWebView;
 }  // namespace ash
 
 namespace ui {
@@ -33,7 +34,6 @@ class APP_LIST_EXPORT AssistantPageView : public AppListPage,
   ~AssistantPageView() override;
 
   void InitLayout();
-  void Back();
 
   // views::View:
   const char* GetClassName() const override;
@@ -53,6 +53,7 @@ class APP_LIST_EXPORT AssistantPageView : public AppListPage,
   views::View* GetLastFocusableView() override;
 
   // AssistantUiModelObserver:
+  void OnUiModeChanged(ash::AssistantUiMode ui_mode) override;
   void OnUiVisibilityChanged(
       ash::AssistantVisibility new_visibility,
       ash::AssistantVisibility old_visibility,
@@ -64,6 +65,7 @@ class APP_LIST_EXPORT AssistantPageView : public AppListPage,
 
   // Owned by the views hierarchy.
   AssistantMainView* assistant_main_view_ = nullptr;
+  ash::AssistantWebView* assistant_web_view_ = nullptr;
 
   // Used to enforce round corners on the Assistant view hierarchy.
   std::unique_ptr<ui::LayerOwner> mask_;
