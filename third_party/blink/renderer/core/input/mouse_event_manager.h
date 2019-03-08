@@ -43,7 +43,7 @@ class CORE_EXPORT MouseEventManager final
   virtual ~MouseEventManager();
   void Trace(blink::Visitor*) override;
 
-  enum UpdateHoverReason { kScrollOffsetChanged, kLayoutOrStyleChanged };
+  enum class UpdateHoverReason { kScrollOffsetChanged, kLayoutOrStyleChanged };
 
   WebInputEventResult DispatchMouseEvent(EventTarget*,
                                          const AtomicString&,
