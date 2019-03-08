@@ -120,4 +120,8 @@ bool HTTPSForwarder::Initialize(const std::string& ssl_host,
   return forwarding_server_->Start();
 }
 
+bool HTTPSForwarder::Stop() {
+  return forwarding_server_->Stop();
+}
+
 }  // namespace chromeos

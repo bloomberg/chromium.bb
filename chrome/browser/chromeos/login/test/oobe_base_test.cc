@@ -125,9 +125,9 @@ void OobeBaseTest::SetUpOnMainThread() {
 }
 
 void OobeBaseTest::TearDownOnMainThread() {
-  EXPECT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
-
   mixin_host_.TearDownOnMainThread();
+  // Embedded test server should always be shutdown after any https forwarders.
+  EXPECT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
   extensions::ExtensionApiTest::TearDownOnMainThread();
 }
 
