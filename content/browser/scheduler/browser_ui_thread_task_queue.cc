@@ -26,6 +26,8 @@ const char* BrowserUIThreadTaskQueue::NameForQueueType(QueueType queue_type) {
       return "best_effort_tq";
     case QueueType::kBootstrap:
       return "bootstrap_tq";
+    case QueueType::kNavigation:
+      return "navigation_tq";
     case QueueType::kDefault:
       return "default_tq";
     case QueueType::kUserBlocking:
