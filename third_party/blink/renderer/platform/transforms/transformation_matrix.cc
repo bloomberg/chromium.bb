@@ -2030,7 +2030,9 @@ bool TransformationMatrix::Preserves2dAxisAlignment() const {
   if (has_x_or_y_perspective)
     return false;
 
-  constexpr double kEpsilon = std::numeric_limits<double>::epsilon();
+  // Use float epsilon here, not double, to round very small rotations back
+  // to zero.
+  constexpr double kEpsilon = std::numeric_limits<float>::epsilon();
 
   int num_non_zero_in_row_1 = 0;
   int num_non_zero_in_row_2 = 0;
