@@ -1123,6 +1123,8 @@ jumbo_split_static_library("browser") {
     "performance_monitor/process_monitor.h",
     "performance_monitor/system_monitor.cc",
     "performance_monitor/system_monitor.h",
+    "performance_monitor/system_monitor_metrics_logger.cc",
+    "performance_monitor/system_monitor_metrics_logger.h",
     "permissions/chooser_context_base.cc",
     "permissions/chooser_context_base.h",
     "permissions/permission_context_base.cc",
