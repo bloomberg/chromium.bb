@@ -1472,11 +1472,21 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         // Create after native initialization so subclasses that override this method have a chance
         // to setup.
         mPageViewTimer = createPageViewTimer();
-        if (shouldInitializeBottomSheet()
-                && FeatureUtilities.areContextualSuggestionsEnabled(this)) {
-            initializeBottomSheet(
+
+        if (shouldInitializeBottomSheet()) {
+            ViewGroup coordinator = findViewById(R.id.coordinator);
+            getLayoutInflater().inflate(R.layout.bottom_sheet, coordinator);
+            mBottomSheet = coordinator.findViewById(R.id.bottom_sheet);
+            mBottomSheet.init(coordinator, this);
+
+            ((BottomContainer) findViewById(R.id.bottom_container)).setBottomSheet(mBottomSheet);
+
+            mBottomSheetController = new BottomSheetController(this, mActivityTabProvider,
+                    mScrimView, mBottomSheet,
+                    getCompositorViewHolder().getLayoutManager().getOverlayPanelManager(),
                     !ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BUTTON));
-            getComponent().resolveContextualSuggestionsCoordinator();
+
+            mComponent.resolveContextualSuggestionsCoordinator();
         }
     }
 
@@ -1485,24 +1495,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      */
     protected boolean shouldInitializeBottomSheet() {
         return false;
-    }
-
-    /**
-     * Initializes the {@link BottomSheet} and {@link BottomSheetController} for use.
-     * @param suppressSheetForContextualSearch Whether the sheet should be suppressed when
-     *                                         Contextual search is showing.
-     */
-    protected void initializeBottomSheet(boolean suppressSheetForContextualSearch) {
-        ViewGroup coordinator = findViewById(R.id.coordinator);
-        getLayoutInflater().inflate(R.layout.bottom_sheet, coordinator);
-        mBottomSheet = coordinator.findViewById(R.id.bottom_sheet);
-        mBottomSheet.init(coordinator, this);
-
-        ((BottomContainer) findViewById(R.id.bottom_container)).setBottomSheet(mBottomSheet);
-
-        mBottomSheetController = new BottomSheetController(this, mActivityTabProvider, mScrimView,
-                mBottomSheet, getCompositorViewHolder().getLayoutManager().getOverlayPanelManager(),
-                suppressSheetForContextualSearch);
     }
 
     /**

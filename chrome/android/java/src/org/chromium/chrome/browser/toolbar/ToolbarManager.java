@@ -978,7 +978,7 @@ public class ToolbarManager
                     mTabModelSelector.getModel(isIncognito).closeAllTabs();
                 };
                 mAppMenuButtonHelper.setOnClickRunnable(() -> recordBottomToolbarUseForIPH());
-                mBottomControlsCoordinator.initializeWithNative(mActivity,
+                mBottomControlsCoordinator.initializeWithNative(
                         mActivity.getCompositorViewHolder().getResourceManager(),
                         mActivity.getCompositorViewHolder().getLayoutManager(),
                         wrapBottomToolbarClickListenerForIPH(tabSwitcherClickHandler),
