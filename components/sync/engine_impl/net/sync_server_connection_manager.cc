@@ -93,11 +93,6 @@ bool SyncBridgedConnection::Init(const char* path,
   return true;
 }
 
-void SyncBridgedConnection::Abort() {
-  DCHECK(post_provider_);
-  post_provider_->Abort();
-}
-
 void SyncBridgedConnection::OnSignalReceived() {
   DCHECK(post_provider_);
   post_provider_->Abort();

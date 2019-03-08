@@ -34,8 +34,6 @@ class SyncBridgedConnection : public ServerConnectionManager::Connection,
             const std::string& payload,
             HttpResponse* response) override;
 
-  void Abort() override;
-
   void OnSignalReceived() override;
 
  private:

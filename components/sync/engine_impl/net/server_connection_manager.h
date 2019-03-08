@@ -115,10 +115,6 @@ class ServerConnectionManager {
                       const std::string& payload,
                       HttpResponse* response) = 0;
 
-    // Immediately abandons a pending HTTP POST request and unblocks caller
-    // in Init.
-    virtual void Abort() = 0;
-
     bool ReadBufferResponse(std::string* buffer_out,
                             HttpResponse* response,
                             bool require_response);
