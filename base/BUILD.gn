@@ -1931,6 +1931,8 @@ buildflag_header("cfi_buildflags") {
 buildflag_header("debugging_buildflags") {
   header = "debugging_buildflags.h"
   header_dir = "base/debug"
+  enable_gdbinit_warning =
+      is_debug && (strip_absolute_paths_from_debug_symbols || use_custom_libcxx)
 
   flags = [
     "ENABLE_LOCATION_SOURCE=$enable_location_source",
@@ -1938,6 +1940,7 @@ buildflag_header("debugging_buildflags") {
     "CAN_UNWIND_WITH_FRAME_POINTERS=$can_unwind_with_frame_pointers",
     "UNSAFE_DEVELOPER_BUILD=$is_unsafe_developer_build",
     "CAN_UNWIND_WITH_CFI_TABLE=$can_unwind_with_cfi_table",
+    "ENABLE_GDBINIT_WARNING=$enable_gdbinit_warning",
   ]
 }
 

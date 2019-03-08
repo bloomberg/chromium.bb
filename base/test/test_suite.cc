@@ -137,9 +137,8 @@ class CheckForLeakedGlobals : public testing::EmptyTestEventListener {
 };
 
 const std::string& GetProfileName() {
-  static const base::NoDestructor<std::string> profile_name([]() {
-    const base::CommandLine& command_line =
-        *base::CommandLine::ForCurrentProcess();
+  static const NoDestructor<std::string> profile_name([]() {
+    const CommandLine& command_line = *CommandLine::ForCurrentProcess();
     if (command_line.HasSwitch(switches::kProfilingFile))
       return command_line.GetSwitchValueASCII(switches::kProfilingFile);
     else
@@ -312,8 +311,8 @@ void TestSuite::DisableCheckForLeakedGlobals() {
 
 void TestSuite::UnitTestAssertHandler(const char* file,
                                       int line,
-                                      const base::StringPiece summary,
-                                      const base::StringPiece stack_trace) {
+                                      const StringPiece summary,
+                                      const StringPiece stack_trace) {
 #if defined(OS_ANDROID)
   // Correlating test stdio with logcat can be difficult, so we emit this
   // helpful little hint about what was running.  Only do this for Android
@@ -464,10 +463,10 @@ void TestSuite::Initialize() {
     SuppressErrorDialogs();
     debug::SetSuppressDebugUI(true);
     assert_handler_ = std::make_unique<logging::ScopedLogAssertHandler>(
-        base::Bind(&TestSuite::UnitTestAssertHandler, base::Unretained(this)));
+        Bind(&TestSuite::UnitTestAssertHandler, Unretained(this)));
   }
 
-  base::test::InitializeICUForTesting();
+  test::InitializeICUForTesting();
 
   // On the Mac OS X command line, the default locale is *_POSIX. In Chromium,
   // the locale is set via an OS X locale API and is never *_POSIX.
@@ -504,14 +503,16 @@ void TestSuite::Initialize() {
 
   trace_to_file_.BeginTracingFromCommandLineOptions();
 
-  base::debug::StartProfiling(GetProfileName());
+  debug::StartProfiling(GetProfileName());
+
+  debug::VerifyDebugger();
 
   is_initialized_ = true;
 }
 
 void TestSuite::Shutdown() {
   DCHECK(is_initialized_);
-  base::debug::StopProfiling();
+  debug::StopProfiling();
 }
 
 }  // namespace base

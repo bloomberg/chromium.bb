@@ -800,6 +800,8 @@ int ContentMainRunnerImpl::Initialize(const ContentMainParams& params) {
             service_manager::switches::kDisableInProcessStackTraces)) {
       base::debug::EnableInProcessStackDumping();
     }
+
+    base::debug::VerifyDebugger();
 #endif  // !defined(OFFICIAL_BUILD)
 
     delegate_->PreSandboxStartup();

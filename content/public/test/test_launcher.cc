@@ -15,6 +15,7 @@
 
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/debug/debugger.h"
 #include "base/environment.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -668,6 +669,8 @@ int LaunchTests(TestLauncherDelegate* launcher_delegate,
       "--single_process (to run the test in one launcher/browser process) or\n"
       "--single-process (to do the above, and also run Chrome in single-"
           "process mode).\n");
+
+  base::debug::VerifyDebugger();
 
   base::MessageLoopForIO message_loop;
 #if defined(OS_POSIX)
