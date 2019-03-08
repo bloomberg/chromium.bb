@@ -503,6 +503,9 @@ void DemoSession::OnSessionStateChanged() {
       }
       break;
     case session_manager::SessionState::ACTIVE:
+      if (ShouldRemoveSplashScreen())
+        RemoveSplashScreen();
+
       // SystemTrayClient may not exist in unit tests.
       if (SystemTrayClient::Get() &&
           base::FeatureList::IsEnabled(
@@ -551,6 +554,15 @@ void DemoSession::RemoveSplashScreen() {
   splash_screen_removed_ = true;
 }
 
+bool DemoSession::ShouldRemoveSplashScreen() {
+  // TODO(crbug.com/934979): Launch screensaver after active session starts, so
+  // that there's no need to check session state here.
+  return base::FeatureList::IsEnabled(switches::kShowSplashScreenInDemoMode) &&
+         session_manager::SessionManager::Get()->session_state() ==
+             session_manager::SessionState::ACTIVE &&
+         screensaver_activated_;
+}
+
 void DemoSession::OnExtensionInstalled(content::BrowserContext* browser_context,
                                        const extensions::Extension* extension,
                                        bool is_update) {
@@ -564,11 +576,11 @@ void DemoSession::OnExtensionInstalled(content::BrowserContext* browser_context,
 }
 
 void DemoSession::OnAppWindowActivated(extensions::AppWindow* app_window) {
-  if (!base::FeatureList::IsEnabled(switches::kShowSplashScreenInDemoMode) ||
-      app_window->extension_id() != GetScreensaverAppId()) {
+  if (app_window->extension_id() != GetScreensaverAppId())
     return;
-  }
-  RemoveSplashScreen();
+  screensaver_activated_ = true;
+  if (ShouldRemoveSplashScreen())
+    RemoveSplashScreen();
 }
 
 }  // namespace chromeos
