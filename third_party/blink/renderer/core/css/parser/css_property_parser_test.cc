@@ -319,7 +319,7 @@ TEST(CSSPropertyParserTest, ColorFunction) {
       CSSPropertyBackgroundColor, "rgba(0, 0, 0, 1)",
       StrictCSSParserContext(SecureContextMode::kSecureContext));
   ASSERT_TRUE(value);
-  EXPECT_EQ(Color::kBlack, cssvalue::ToCSSColorValue(*value).Value());
+  EXPECT_EQ(Color::kBlack, To<cssvalue::CSSColorValue>(*value).Value());
 }
 
 TEST(CSSPropertyParserTest, IncompleteColor) {

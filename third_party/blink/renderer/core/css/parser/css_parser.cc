@@ -240,9 +240,11 @@ bool CSSParser::ParseColor(Color& color, const String& string, bool strict) {
         StrictCSSParserContext(SecureContextMode::kInsecureContext));
   }
 
-  if (!value || !value->IsColorValue())
+  auto* color_value = DynamicTo<CSSColorValue>(value);
+  if (!color_value)
     return false;
-  color = ToCSSColorValue(*value).Value();
+
+  color = color_value->Value();
   return true;
 }
 

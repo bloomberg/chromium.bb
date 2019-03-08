@@ -287,9 +287,9 @@ scoped_refptr<BasicShape> BasicShapeForValue(
     const CSSValue& basic_shape_value) {
   scoped_refptr<BasicShape> basic_shape;
 
-  if (basic_shape_value.IsBasicShapeCircleValue()) {
-    const cssvalue::CSSBasicShapeCircleValue& circle_value =
-        cssvalue::ToCSSBasicShapeCircleValue(basic_shape_value);
+  if (IsA<cssvalue::CSSBasicShapeCircleValue>(basic_shape_value)) {
+    const auto& circle_value =
+        To<cssvalue::CSSBasicShapeCircleValue>(basic_shape_value);
     scoped_refptr<BasicShapeCircle> circle = BasicShapeCircle::Create();
 
     circle->SetCenterX(
@@ -299,9 +299,9 @@ scoped_refptr<BasicShape> BasicShapeForValue(
     circle->SetRadius(CssValueToBasicShapeRadius(state, circle_value.Radius()));
 
     basic_shape = std::move(circle);
-  } else if (basic_shape_value.IsBasicShapeEllipseValue()) {
-    const cssvalue::CSSBasicShapeEllipseValue& ellipse_value =
-        cssvalue::ToCSSBasicShapeEllipseValue(basic_shape_value);
+  } else if (IsA<cssvalue::CSSBasicShapeEllipseValue>(basic_shape_value)) {
+    const auto& ellipse_value =
+        To<cssvalue::CSSBasicShapeEllipseValue>(basic_shape_value);
     scoped_refptr<BasicShapeEllipse> ellipse = BasicShapeEllipse::Create();
 
     ellipse->SetCenterX(
@@ -314,9 +314,9 @@ scoped_refptr<BasicShape> BasicShapeForValue(
         CssValueToBasicShapeRadius(state, ellipse_value.RadiusY()));
 
     basic_shape = std::move(ellipse);
-  } else if (basic_shape_value.IsBasicShapePolygonValue()) {
+  } else if (IsA<cssvalue::CSSBasicShapePolygonValue>(basic_shape_value)) {
     const cssvalue::CSSBasicShapePolygonValue& polygon_value =
-        cssvalue::ToCSSBasicShapePolygonValue(basic_shape_value);
+        To<cssvalue::CSSBasicShapePolygonValue>(basic_shape_value);
     scoped_refptr<BasicShapePolygon> polygon = BasicShapePolygon::Create();
 
     polygon->SetWindRule(polygon_value.GetWindRule());
@@ -327,9 +327,9 @@ scoped_refptr<BasicShape> BasicShapeForValue(
                            ConvertToLength(state, values.at(i + 1).Get()));
 
     basic_shape = std::move(polygon);
-  } else if (basic_shape_value.IsBasicShapeInsetValue()) {
+  } else if (IsA<cssvalue::CSSBasicShapeInsetValue>(basic_shape_value)) {
     const cssvalue::CSSBasicShapeInsetValue& rect_value =
-        cssvalue::ToCSSBasicShapeInsetValue(basic_shape_value);
+        To<cssvalue::CSSBasicShapeInsetValue>(basic_shape_value);
     scoped_refptr<BasicShapeInset> rect = BasicShapeInset::Create();
 
     rect->SetTop(ConvertToLength(state, rect_value.Top()));

@@ -430,18 +430,20 @@ EditingStyle::EditingStyle(CSSPropertyID property_id,
                        (value == "sub" || value == "super");
 }
 
-static Color CssValueToColor(const CSSValue* color_value) {
-  if (!color_value ||
-      (!color_value->IsColorValue() && !color_value->IsPrimitiveValue() &&
-       !color_value->IsIdentifierValue()))
+static Color CssValueToColor(const CSSValue* value) {
+  if (!value)
     return Color::kTransparent;
 
-  if (color_value->IsColorValue())
-    return ToCSSColorValue(color_value)->Value();
+  auto* color_value = DynamicTo<CSSColorValue>(value);
+  if (!color_value && !value->IsPrimitiveValue() && !value->IsIdentifierValue())
+    return Color::kTransparent;
+
+  if (color_value)
+    return color_value->Value();
 
   Color color = 0;
   // FIXME: Why ignore the return value?
-  CSSParser::ParseColor(color, color_value->CssText());
+  CSSParser::ParseColor(color, value->CssText());
   return color;
 }
 

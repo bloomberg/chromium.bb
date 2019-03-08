@@ -693,7 +693,7 @@ StyleContentAlignmentData StyleBuilderConverter::ConvertContentAlignmentData(
   StyleContentAlignmentData alignment_data =
       ComputedStyleInitialValues::InitialContentAlignment();
   const CSSContentDistributionValue& content_value =
-      ToCSSContentDistributionValue(value);
+      To<CSSContentDistributionValue>(value);
   if (content_value.Distribution() != CSSValueInvalid) {
     alignment_data.SetDistribution(
         CSSIdentifierValue::Create(content_value.Distribution())
@@ -1252,8 +1252,8 @@ ShadowData StyleBuilderConverter::ConvertShadow(
       // For OffScreen canvas, we default to black and only parse non
       // Document dependent CSS colors.
       color = StyleColor(Color::kBlack);
-      if (shadow.color->IsColorValue()) {
-        color = ToCSSColorValue(*shadow.color).Value();
+      if (auto* color_value = DynamicTo<CSSColorValue>(shadow.color.Get())) {
+        color = color_value->Value();
       } else {
         CSSValueID value_id = ToCSSIdentifierValue(*shadow.color).GetValueID();
         switch (value_id) {
@@ -1576,7 +1576,7 @@ Rotation StyleBuilderConverter::ConvertRotation(const CSSValue& value) {
   double z = 1;
   if (list.length() == 2) {
     // axis angle
-    const CSSAxisValue& axis = ToCSSAxisValue(list.Item(0));
+    const CSSAxisValue& axis = To<CSSAxisValue>(list.Item(0));
     x = axis.X();
     y = axis.Y();
     z = axis.Z();

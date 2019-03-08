@@ -83,8 +83,8 @@ CSSColorInterpolationType::CreateInterpolableColor(const StyleColor& color) {
 
 std::unique_ptr<InterpolableValue>
 CSSColorInterpolationType::MaybeCreateInterpolableColor(const CSSValue& value) {
-  if (value.IsColorValue())
-    return CreateInterpolableColor(ToCSSColorValue(value).Value());
+  if (auto* color_value = DynamicTo<CSSColorValue>(value))
+    return CreateInterpolableColor(color_value->Value());
   if (!value.IsIdentifierValue())
     return nullptr;
   const CSSIdentifierValue& identifier_value = ToCSSIdentifierValue(value);

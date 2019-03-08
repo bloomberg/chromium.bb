@@ -203,8 +203,8 @@ EditingStyle* EditingStyleUtilities::CreateStyleAtSelectionStart(
 bool EditingStyleUtilities::IsTransparentColorValue(const CSSValue* css_value) {
   if (!css_value)
     return true;
-  if (css_value->IsColorValue())
-    return !ToCSSColorValue(css_value)->Value().Alpha();
+  if (auto* color_value = DynamicTo<CSSColorValue>(css_value))
+    return !color_value->Value().Alpha();
   if (!css_value->IsIdentifierValue())
     return false;
   return ToCSSIdentifierValue(css_value)->GetValueID() == CSSValueTransparent;
