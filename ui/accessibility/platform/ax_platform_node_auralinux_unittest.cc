@@ -1202,52 +1202,6 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkTextWithNonBMPCharacters) {
   g_object_unref(root_obj);
 }
 
-TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkTextCaretMoved) {
-  Init(BuildTextField());
-
-  AtkObject* root_atk_object(GetRootAtkObject());
-  EXPECT_TRUE(ATK_IS_OBJECT(root_atk_object));
-  g_object_ref(root_atk_object);
-
-  ASSERT_TRUE(ATK_IS_TEXT(root_atk_object));
-  AtkText* atk_text = ATK_TEXT(root_atk_object);
-
-  int caret_position_from_event = -1;
-  g_signal_connect(atk_text, "text-caret-moved",
-                   G_CALLBACK(+[](AtkText*, int new_position, gpointer data) {
-                     int* caret_position_from_event = static_cast<int*>(data);
-                     *caret_position_from_event = new_position;
-                   }),
-                   &caret_position_from_event);
-
-  atk_text_set_caret_offset(atk_text, 4);
-  ASSERT_EQ(atk_text_get_caret_offset(atk_text), 4);
-  ASSERT_EQ(caret_position_from_event, 4);
-
-  caret_position_from_event = -1;
-  int character_count = atk_text_get_character_count(atk_text);
-  atk_text_set_caret_offset(atk_text, -1);
-  ASSERT_EQ(atk_text_get_caret_offset(atk_text), character_count);
-  ASSERT_EQ(caret_position_from_event, character_count);
-
-  caret_position_from_event = -1;
-  atk_text_set_caret_offset(atk_text, -1000);
-  ASSERT_EQ(atk_text_get_caret_offset(atk_text), character_count);
-  ASSERT_EQ(caret_position_from_event, character_count);
-
-  caret_position_from_event = -1;
-  atk_text_set_caret_offset(atk_text, 1000);
-  ASSERT_EQ(atk_text_get_caret_offset(atk_text), character_count);
-  ASSERT_EQ(caret_position_from_event, character_count);
-
-  caret_position_from_event = -1;
-  atk_text_set_caret_offset(atk_text, character_count - 1);
-  ASSERT_EQ(atk_text_get_caret_offset(atk_text), character_count - 1);
-  ASSERT_EQ(caret_position_from_event, character_count - 1);
-
-  g_object_unref(root_atk_object);
-}
-
 class ActivationTester {
  public:
   explicit ActivationTester(AtkObject* target) : target_(target) {

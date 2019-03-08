@@ -1141,45 +1141,6 @@ static char* AXPlatformNodeAuraLinuxGetTextBeforeOffset(
                                              end_offset);
 }
 
-int AXPlatformNodeAuraLinux::GetCaretOffset() {
-  if (!HasCaret())
-    return -1;
-
-  int selection_start, selection_end;
-  GetSelectionOffsets(&selection_start, &selection_end);
-  return UTF16ToUnicodeOffsetInText(selection_end);
-}
-
-bool AXPlatformNodeAuraLinux::SetCaretOffset(int offset) {
-  int character_count = atk_text_get_character_count(ATK_TEXT(atk_object_));
-  if (offset < 0 || offset > character_count)
-    offset = character_count;
-
-  offset = UnicodeToUTF16OffsetInText(offset);
-  if (!SetTextSelection(offset, offset))
-    return false;
-
-  OnTextSelectionChanged();
-  return true;
-}
-
-static gint AXPlatformNodeAuraLinuxGetCaretOffset(AtkText* atk_text) {
-  AXPlatformNodeAuraLinux* obj =
-      AtkObjectToAXPlatformNodeAuraLinux(ATK_OBJECT(atk_text));
-  if (!obj)
-    return -1;
-  return obj->GetCaretOffset();
-}
-
-static gboolean AXPlatformNodeAuraLinuxSetCaretOffset(AtkText* atk_text,
-                                                      gint offset) {
-  AXPlatformNodeAuraLinux* obj =
-      AtkObjectToAXPlatformNodeAuraLinux(ATK_OBJECT(atk_text));
-  if (!obj)
-    return FALSE;
-  return obj->SetCaretOffset(offset);
-}
-
 #if ATK_CHECK_VERSION(2, 10, 0)
 static char* AXPlatformNodeAuraLinuxGetStringAtOffset(
     AtkText* atk_text,
@@ -1216,8 +1177,6 @@ static void AXTextInterfaceBaseInit(AtkTextIface* iface) {
   iface->get_text_after_offset = AXPlatformNodeAuraLinuxGetTextAfterOffset;
   iface->get_text_before_offset = AXPlatformNodeAuraLinuxGetTextBeforeOffset;
   iface->get_text_at_offset = AXPlatformNodeAuraLinuxGetTextAtOffset;
-  iface->get_caret_offset = AXPlatformNodeAuraLinuxGetCaretOffset;
-  iface->set_caret_offset = AXPlatformNodeAuraLinuxSetCaretOffset;
 
 #if ATK_CHECK_VERSION(2, 10, 0)
   iface->get_string_at_offset = AXPlatformNodeAuraLinuxGetStringAtOffset;
@@ -2797,13 +2756,6 @@ bool AXPlatformNodeAuraLinux::SelectionAndFocusAreTheSame() {
   return false;
 }
 
-void AXPlatformNodeAuraLinux::OnTextSelectionChanged() {
-  if (HasCaret()) {
-    g_signal_emit_by_name(atk_object_, "text-caret-moved",
-                          atk_text_get_caret_offset(ATK_TEXT(atk_object_)));
-  }
-}
-
 bool AXPlatformNodeAuraLinux::SupportsSelectionWithAtkSelection() {
   return SupportsToggle(GetData().role) ||
          GetData().role == ax::mojom::Role::kListBoxOption;
@@ -2864,9 +2816,6 @@ void AXPlatformNodeAuraLinux::NotifyAccessibilityEvent(
       break;
     case ax::mojom::Event::kSelectedChildrenChanged:
       OnSelectedChildrenChanged();
-      break;
-    case ax::mojom::Event::kTextSelectionChanged:
-      OnTextSelectionChanged();
       break;
     case ax::mojom::Event::kValueChanged:
       OnValueChanged();
