@@ -2625,17 +2625,6 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
         aom_calloc(cm->MBs * sizeof(*cpi->mbgraph_stats[i].mb_stats), 1));
   }
 
-#if CONFIG_FP_MB_STATS
-  cpi->use_fp_mb_stats = 0;
-  if (cpi->use_fp_mb_stats) {
-    // a place holder used to store the first pass mb stats in the first pass
-    CHECK_MEM_ERROR(cm, cpi->twopass.frame_mb_stats_buf,
-                    aom_calloc(cm->MBs * sizeof(uint8_t), 1));
-  } else {
-    cpi->twopass.frame_mb_stats_buf = NULL;
-  }
-#endif
-
   cpi->refresh_alt_ref_frame = 0;
 
   init_level_info(&cpi->level_info);
@@ -2700,19 +2689,6 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
   } else if (oxcf->pass == 2) {
     const size_t packet_sz = sizeof(FIRSTPASS_STATS);
     const int packets = (int)(oxcf->two_pass_stats_in.sz / packet_sz);
-
-#if CONFIG_FP_MB_STATS
-    if (cpi->use_fp_mb_stats) {
-      const size_t psz = cpi->common.MBs * sizeof(uint8_t);
-      const int ps = (int)(oxcf->firstpass_mb_stats_in.sz / psz);
-
-      cpi->twopass.firstpass_mb_stats.mb_stats_start =
-          oxcf->firstpass_mb_stats_in.buf;
-      cpi->twopass.firstpass_mb_stats.mb_stats_end =
-          cpi->twopass.firstpass_mb_stats.mb_stats_start +
-          (ps - 1) * cpi->common.MBs * sizeof(uint8_t);
-    }
-#endif
 
     cpi->twopass.stats_in_start = oxcf->two_pass_stats_in.buf;
     cpi->twopass.stats_in = cpi->twopass.stats_in_start;
@@ -3159,12 +3135,6 @@ void av1_remove_compressor(AV1_COMP *cpi) {
     aom_free(cpi->mbgraph_stats[i].mb_stats);
   }
 
-#if CONFIG_FP_MB_STATS
-  if (cpi->use_fp_mb_stats) {
-    aom_free(cpi->twopass.frame_mb_stats_buf);
-    cpi->twopass.frame_mb_stats_buf = NULL;
-  }
-#endif
 #if CONFIG_INTERNAL_STATS
   aom_free(cpi->ssim_vars);
   cpi->ssim_vars = NULL;

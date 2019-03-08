@@ -145,15 +145,6 @@ static const uint16_t AV1_HIGH_VAR_OFFS_12[MAX_SB_SIZE] = {
   128 * 16, 128 * 16
 };
 
-#if CONFIG_FP_MB_STATS
-static const uint8_t num_16x16_blocks_wide_lookup[BLOCK_SIZES_ALL] = {
-  1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 4, 4, 4, 8, 8, 1, 1, 1, 2, 2, 4
-};
-static const uint8_t num_16x16_blocks_high_lookup[BLOCK_SIZES_ALL] = {
-  1, 1, 1, 1, 1, 1, 1, 2, 1, 2, 4, 2, 4, 8, 4, 8, 1, 1, 2, 1, 4, 2
-};
-#endif  // CONFIG_FP_MB_STATS
-
 static const uint8_t ref_frame_flag_list[REF_FRAMES] = { 0,
                                                          AOM_LAST_FLAG,
                                                          AOM_LAST2_FLAG,
@@ -2324,56 +2315,6 @@ static INLINE void load_pred_mv(MACROBLOCK *x,
   memcpy(x->pred_mv, ctx->pred_mv, sizeof(x->pred_mv));
 }
 
-#if CONFIG_FP_MB_STATS
-const int qindex_skip_threshold_lookup[BLOCK_SIZES] = {
-  0, 10, 10, 30, 40, 40, 60, 80, 80, 90, 100, 100, 120,
-  // TODO(debargha): What are the correct numbers here?
-  130, 130, 150
-};
-const int qindex_split_threshold_lookup[BLOCK_SIZES] = {
-  0, 3, 3, 7, 15, 15, 30, 40, 40, 60, 80, 80, 120,
-  // TODO(debargha): What are the correct numbers here?
-  160, 160, 240
-};
-const int complexity_16x16_blocks_threshold[BLOCK_SIZES] = {
-  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 4, 4, 6,
-  // TODO(debargha): What are the correct numbers here?
-  8, 8, 10
-};
-
-enum {
-  MV_ZERO = 0,
-  MV_LEFT = 1,
-  MV_UP = 2,
-  MV_RIGHT = 3,
-  MV_DOWN = 4,
-  MV_INVALID
-} UENUM1BYTE(MOTION_DIRECTION);
-
-static INLINE MOTION_DIRECTION get_motion_direction_fp(uint8_t fp_byte) {
-  if (fp_byte & FPMB_MOTION_ZERO_MASK) {
-    return MV_ZERO;
-  } else if (fp_byte & FPMB_MOTION_LEFT_MASK) {
-    return MV_LEFT;
-  } else if (fp_byte & FPMB_MOTION_RIGHT_MASK) {
-    return MV_RIGHT;
-  } else if (fp_byte & FPMB_MOTION_UP_MASK) {
-    return MV_UP;
-  } else {
-    return MV_DOWN;
-  }
-}
-
-static INLINE int get_motion_inconsistency(MOTION_DIRECTION this_mv,
-                                           MOTION_DIRECTION that_mv) {
-  if (this_mv == that_mv) {
-    return 0;
-  } else {
-    return abs(this_mv - that_mv) == 2 ? 2 : 1;
-  }
-}
-#endif
-
 // Try searching for an encoding for the given subblock. Returns zero if the
 // rdcost is already too high (to tell the caller not to bother searching for
 // encodings of further subblocks)
@@ -4050,12 +3991,6 @@ static void rd_pick_partition(AV1_COMP *const cpi, ThreadData *td,
   const int yss = x->e_mbd.plane[1].subsampling_y;
 
   if (none_rd) *none_rd = 0;
-
-#if CONFIG_FP_MB_STATS
-  unsigned int src_diff_var = UINT_MAX;
-  int none_complexity = 0;
-#endif
-
   int partition_none_allowed = has_rows && has_cols;
   int partition_horz_allowed = has_cols && yss <= xss && bsize_at_least_8x8 &&
                                cpi->oxcf.enable_rect_partitions;
@@ -4179,63 +4114,6 @@ static void rd_pick_partition(AV1_COMP *const cpi, ThreadData *td,
   xd->left_txfm_context =
       xd->left_txfm_context_buffer + (mi_row & MAX_MIB_MASK);
   save_context(x, &x_ctx, mi_row, mi_col, bsize, num_planes);
-
-#if CONFIG_FP_MB_STATS
-  if (cpi->use_fp_mb_stats) {
-    set_offsets(cpi, tile_info, x, mi_row, mi_col, bsize);
-    src_diff_var = get_sby_perpixel_diff_variance(cpi, &x->plane[0].src, mi_row,
-                                                  mi_col, bsize);
-  }
-
-  // Decide whether we shall split directly and skip searching NONE by using
-  // the first pass block statistics
-  if (cpi->use_fp_mb_stats && bsize >= BLOCK_32X32 && do_square_split &&
-      partition_none_allowed && src_diff_var > 4 &&
-      cm->base_qindex < qindex_split_threshold_lookup[bsize]) {
-    int mb_row = mi_row >> 1;
-    int mb_col = mi_col >> 1;
-    int mb_row_end =
-        AOMMIN(mb_row + num_16x16_blocks_high_lookup[bsize], cm->mb_rows);
-    int mb_col_end =
-        AOMMIN(mb_col + num_16x16_blocks_wide_lookup[bsize], cm->mb_cols);
-    int r, c;
-
-    // compute a complexity measure, basically measure inconsistency of motion
-    // vectors obtained from the first pass in the current block
-    for (r = mb_row; r < mb_row_end; r++) {
-      for (c = mb_col; c < mb_col_end; c++) {
-        const int mb_index = r * cm->mb_cols + c;
-
-        MOTION_DIRECTION this_mv;
-        MOTION_DIRECTION right_mv;
-        MOTION_DIRECTION bottom_mv;
-
-        this_mv =
-            get_motion_direction_fp(cpi->twopass.this_frame_mb_stats[mb_index]);
-
-        // to its right
-        if (c != mb_col_end - 1) {
-          right_mv = get_motion_direction_fp(
-              cpi->twopass.this_frame_mb_stats[mb_index + 1]);
-          none_complexity += get_motion_inconsistency(this_mv, right_mv);
-        }
-
-        // to its bottom
-        if (r != mb_row_end - 1) {
-          bottom_mv = get_motion_direction_fp(
-              cpi->twopass.this_frame_mb_stats[mb_index + cm->mb_cols]);
-          none_complexity += get_motion_inconsistency(this_mv, bottom_mv);
-        }
-
-        // do not count its left and top neighbors to avoid double counting
-      }
-    }
-
-    if (none_complexity > complexity_16x16_blocks_threshold[bsize]) {
-      partition_none_allowed = 0;
-    }
-  }
-#endif
 
   // Use simple_motion_search to prune partitions. This must be done prior to
   // PARTITION_SPLIT to propagate the initial mvs to a smaller blocksize.
@@ -4401,52 +4279,6 @@ BEGIN_PARTITION_SEARCH:
               &terminate_partition_search, simple_motion_features,
               &simple_motion_features_are_valid);
         }
-
-#if CONFIG_FP_MB_STATS
-        // Check if every 16x16 first pass block statistics has zero
-        // motion and the corresponding first pass residue is small enough.
-        // If that is the case, check the difference variance between the
-        // current frame and the last frame. If the variance is small enough,
-        // stop further splitting in RD optimization
-        if (cpi->use_fp_mb_stats && do_square_split &&
-            cm->base_qindex > qindex_skip_threshold_lookup[bsize]) {
-          int mb_row = mi_row >> 1;
-          int mb_col = mi_col >> 1;
-          int mb_row_end =
-              AOMMIN(mb_row + num_16x16_blocks_high_lookup[bsize], cm->mb_rows);
-          int mb_col_end =
-              AOMMIN(mb_col + num_16x16_blocks_wide_lookup[bsize], cm->mb_cols);
-          int r, c;
-
-          int skip = 1;
-          for (r = mb_row; r < mb_row_end; r++) {
-            for (c = mb_col; c < mb_col_end; c++) {
-              const int mb_index = r * cm->mb_cols + c;
-              if (!(cpi->twopass.this_frame_mb_stats[mb_index] &
-                    FPMB_MOTION_ZERO_MASK) ||
-                  !(cpi->twopass.this_frame_mb_stats[mb_index] &
-                    FPMB_ERROR_SMALL_MASK)) {
-                skip = 0;
-                break;
-              }
-            }
-            if (skip == 0) {
-              break;
-            }
-          }
-          if (skip) {
-            if (src_diff_var == UINT_MAX) {
-              set_offsets(cpi, tile_info, x, mi_row, mi_col, bsize);
-              src_diff_var = get_sby_perpixel_diff_variance(
-                  cpi, &x->plane[0].src, mi_row, mi_col, bsize);
-            }
-            if (src_diff_var < 8) {
-              do_square_split = 0;
-              do_rectangular_split = 0;
-            }
-          }
-        }
-#endif
       }
     }
 
@@ -5908,21 +5740,6 @@ static void encode_tiles(AV1_COMP *cpi) {
   }
 }
 
-#if CONFIG_FP_MB_STATS
-static int input_fpmb_stats(FIRSTPASS_MB_STATS *firstpass_mb_stats,
-                            AV1_COMMON *cm, uint8_t **this_frame_mb_stats) {
-  uint8_t *mb_stats_in =
-      firstpass_mb_stats->mb_stats_start +
-      cm->current_frame.frame_number * cm->MBs * sizeof(uint8_t);
-
-  if (mb_stats_in > firstpass_mb_stats->mb_stats_end) return EOF;
-
-  *this_frame_mb_stats = mb_stats_in;
-
-  return 1;
-}
-#endif
-
 #define GLOBAL_TRANS_TYPES_ENC 3  // highest motion model to search
 static int gm_get_params_cost(const WarpedMotionParams *gm,
                               const WarpedMotionParams *ref_gm, int allow_hp) {
@@ -6477,13 +6294,6 @@ static void encode_frame_internal(AV1_COMP *cpi) {
       check_skip_mode_enabled(cpi);
 
   {
-#if CONFIG_FP_MB_STATS
-    if (cpi->use_fp_mb_stats) {
-      input_fpmb_stats(&cpi->twopass.firstpass_mb_stats, cm,
-                       &cpi->twopass.this_frame_mb_stats);
-    }
-#endif
-
     cpi->row_mt_sync_read_ptr = av1_row_mt_sync_read_dummy;
     cpi->row_mt_sync_write_ptr = av1_row_mt_sync_write_dummy;
     cpi->row_mt = 0;

@@ -120,7 +120,6 @@ set_aom_config_var(CONFIG_SPEED_STATS 0 NUMBER "AV1 experiment flag.")
 set_aom_config_var(CONFIG_COLLECT_RD_STATS 0 NUMBER "AV1 experiment flag.")
 set_aom_config_var(CONFIG_DIST_8X8 0 NUMBER "AV1 experiment flag.")
 set_aom_config_var(CONFIG_ENTROPY_STATS 0 NUMBER "AV1 experiment flag.")
-set_aom_config_var(CONFIG_FP_MB_STATS 0 NUMBER "AV1 experiment flag.")
 set_aom_config_var(CONFIG_INTER_STATS_ONLY 0 NUMBER "AV1 experiment flag.")
 set_aom_config_var(CONFIG_RD_DEBUG 0 NUMBER "AV1 experiment flag.")
 set_aom_config_var(CONFIG_2PASS_PARTITION_SEARCH_LVL_START 1 NUMBER

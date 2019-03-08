@@ -21,27 +21,6 @@
 extern "C" {
 #endif
 
-#if CONFIG_FP_MB_STATS
-
-#define FPMB_DCINTRA_MASK 0x01
-
-#define FPMB_MOTION_ZERO_MASK 0x02
-#define FPMB_MOTION_LEFT_MASK 0x04
-#define FPMB_MOTION_RIGHT_MASK 0x08
-#define FPMB_MOTION_UP_MASK 0x10
-#define FPMB_MOTION_DOWN_MASK 0x20
-
-#define FPMB_ERROR_SMALL_MASK 0x40
-#define FPMB_ERROR_LARGE_MASK 0x80
-#define FPMB_ERROR_SMALL_TH 2000
-#define FPMB_ERROR_LARGE_TH 48000
-
-typedef struct {
-  uint8_t *mb_stats_start;
-  uint8_t *mb_stats_end;
-} FIRSTPASS_MB_STATS;
-#endif
-
 #define DOUBLE_DIVIDE_CHECK(x) ((x) < 0 ? (x)-0.000001 : (x) + 0.000001)
 
 // Length of the bi-predictive frame group (BFG)
@@ -139,11 +118,6 @@ typedef struct {
   double mb_av_energy;
   double frame_avg_haar_energy;
 
-#if CONFIG_FP_MB_STATS
-  uint8_t *frame_mb_stats_buf;
-  uint8_t *this_frame_mb_stats;
-  FIRSTPASS_MB_STATS firstpass_mb_stats;
-#endif
   // An indication of the content type of the current frame
   FRAME_CONTENT_TYPE fr_content_type;
 

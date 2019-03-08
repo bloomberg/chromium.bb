@@ -321,10 +321,6 @@ typedef struct AV1EncoderConfig {
 
   aom_fixed_buf_t two_pass_stats_in;
 
-#if CONFIG_FP_MB_STATS
-  aom_fixed_buf_t firstpass_mb_stats_in;
-#endif
-
   aom_tune_metric tuning;
   aom_tune_content content;
   int use_highbitdepth;
@@ -845,10 +841,6 @@ typedef struct AV1_COMP {
 #if CONFIG_INTERNAL_STATS
   uint64_t time_receive_data;
   uint64_t time_compress_data;
-#endif
-
-#if CONFIG_FP_MB_STATS
-  int use_fp_mb_stats;
 #endif
 
   TWO_PASS twopass;

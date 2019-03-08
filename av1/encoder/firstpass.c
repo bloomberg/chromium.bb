@@ -83,17 +83,6 @@ static void output_stats(FIRSTPASS_STATS *stats,
 #endif
 }
 
-#if CONFIG_FP_MB_STATS
-static void output_fpmb_stats(uint8_t *this_frame_mb_stats, int stats_size,
-                              struct aom_codec_pkt_list *pktlist) {
-  struct aom_codec_cx_pkt pkt;
-  pkt.kind = AOM_CODEC_FPMB_STATS_PKT;
-  pkt.data.firstpass_mb_stats.buf = this_frame_mb_stats;
-  pkt.data.firstpass_mb_stats.sz = stats_size * sizeof(*this_frame_mb_stats);
-  aom_codec_pkt_list_add(pktlist, &pkt);
-}
-#endif
-
 void av1_twopass_zero_stats(FIRSTPASS_STATS *section) {
   section->frame = 0.0;
   section->weight = 0.0;
@@ -385,12 +374,6 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
   assert(new_yv12 != NULL);
   assert(frame_is_intra_only(cm) || (lst_yv12 != NULL));
 
-#if CONFIG_FP_MB_STATS
-  if (cpi->use_fp_mb_stats) {
-    av1_zero_array(cpi->twopass.frame_mb_stats_buf, cpi->initial_mbs);
-  }
-#endif
-
   av1_setup_frame_size(cpi);
   aom_clear_system_state();
 
@@ -465,10 +448,6 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
       const BLOCK_SIZE bsize = get_bsize(cm, mb_row, mb_col);
       double log_intra;
       int level_sample;
-
-#if CONFIG_FP_MB_STATS
-      const int mb_index = mb_row * cm->mb_cols + mb_col;
-#endif
 
       aom_clear_system_state();
 
@@ -557,13 +536,6 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
               buf + c8 * 8 + r8 * 8 * stride, stride, hbd);
         }
       }
-
-#if CONFIG_FP_MB_STATS
-      if (cpi->use_fp_mb_stats) {
-        // initialization
-        cpi->twopass.frame_mb_stats_buf[mb_index] = 0;
-      }
-#endif
 
       // Set up limit values for motion vectors to prevent them extending
       // outside the UMV borders.
@@ -663,20 +635,6 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
         best_ref_mv.row = 0;
         best_ref_mv.col = 0;
 
-#if CONFIG_FP_MB_STATS
-        if (cpi->use_fp_mb_stats) {
-          // intra predication statistics
-          cpi->twopass.frame_mb_stats_buf[mb_index] = 0;
-          cpi->twopass.frame_mb_stats_buf[mb_index] |= FPMB_DCINTRA_MASK;
-          cpi->twopass.frame_mb_stats_buf[mb_index] |= FPMB_MOTION_ZERO_MASK;
-          if (this_error > FPMB_ERROR_LARGE_TH) {
-            cpi->twopass.frame_mb_stats_buf[mb_index] |= FPMB_ERROR_LARGE_MASK;
-          } else if (this_error < FPMB_ERROR_SMALL_TH) {
-            cpi->twopass.frame_mb_stats_buf[mb_index] |= FPMB_ERROR_SMALL_MASK;
-          }
-        }
-#endif
-
         if (motion_error <= this_error) {
           aom_clear_system_state();
 
@@ -716,49 +674,8 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
 
           best_ref_mv = mv;
 
-#if CONFIG_FP_MB_STATS
-          if (cpi->use_fp_mb_stats) {
-            // inter predication statistics
-            cpi->twopass.frame_mb_stats_buf[mb_index] = 0;
-            cpi->twopass.frame_mb_stats_buf[mb_index] &= ~FPMB_DCINTRA_MASK;
-            cpi->twopass.frame_mb_stats_buf[mb_index] |= FPMB_MOTION_ZERO_MASK;
-            if (this_error > FPMB_ERROR_LARGE_TH) {
-              cpi->twopass.frame_mb_stats_buf[mb_index] |=
-                  FPMB_ERROR_LARGE_MASK;
-            } else if (this_error < FPMB_ERROR_SMALL_TH) {
-              cpi->twopass.frame_mb_stats_buf[mb_index] |=
-                  FPMB_ERROR_SMALL_MASK;
-            }
-          }
-#endif
-
           if (!is_zero_mv(&mv)) {
             ++mvcount;
-
-#if CONFIG_FP_MB_STATS
-            if (cpi->use_fp_mb_stats) {
-              cpi->twopass.frame_mb_stats_buf[mb_index] &=
-                  ~FPMB_MOTION_ZERO_MASK;
-              // check estimated motion direction
-              if (mv.col > 0 && mv.col >= abs(mv.row)) {
-                // right direction
-                cpi->twopass.frame_mb_stats_buf[mb_index] |=
-                    FPMB_MOTION_RIGHT_MASK;
-              } else if (mv.row < 0 && abs(mv.row) >= abs(mv.col)) {
-                // up direction
-                cpi->twopass.frame_mb_stats_buf[mb_index] |=
-                    FPMB_MOTION_UP_MASK;
-              } else if (mv.col < 0 && abs(mv.col) >= abs(mv.row)) {
-                // left direction
-                cpi->twopass.frame_mb_stats_buf[mb_index] |=
-                    FPMB_MOTION_LEFT_MASK;
-              } else {
-                // down direction
-                cpi->twopass.frame_mb_stats_buf[mb_index] |=
-                    FPMB_MOTION_DOWN_MASK;
-              }
-            }
-#endif
 
             // Non-zero vector, was it different from the last non zero vector?
             if (!is_equal_mv(&mv, &lastmv)) ++new_mv_count;
@@ -894,13 +811,6 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
     twopass->this_frame_stats = fps;
     output_stats(&twopass->this_frame_stats, cpi->output_pkt_list);
     accumulate_stats(&twopass->total_stats, &fps);
-
-#if CONFIG_FP_MB_STATS
-    if (cpi->use_fp_mb_stats) {
-      output_fpmb_stats(twopass->frame_mb_stats_buf, cpi->initial_mbs,
-                        cpi->output_pkt_list);
-    }
-#endif
   }
 
   // Copy the previous Last Frame back into gf and and arf buffers if

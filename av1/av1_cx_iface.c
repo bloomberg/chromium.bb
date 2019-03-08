@@ -684,10 +684,6 @@ static aom_codec_err_t set_encoder_config(
 
   oxcf->two_pass_stats_in = cfg->rc_twopass_stats_in;
 
-#if CONFIG_FP_MB_STATS
-  oxcf->firstpass_mb_stats_in = cfg->rc_firstpass_mb_stats_in;
-#endif
-
   oxcf->color_primaries = extra_cfg->color_primaries;
   oxcf->transfer_characteristics = extra_cfg->transfer_characteristics;
   oxcf->matrix_coefficients = extra_cfg->matrix_coefficients;
