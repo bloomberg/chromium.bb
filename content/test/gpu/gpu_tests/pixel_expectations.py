@@ -152,3 +152,7 @@ class PixelExpectations(GpuTestExpectations):
               bug=927901)
     self.Skip('Pixel_Video_VP9_DXVA', ['linux', 'android', 'mac', 'chromeos'],
               bug=927901)
+
+    # Complex overlays test is flaky on Nvidia probably due to its small size.
+    self.Flaky('Pixel_DirectComposition_ComplexOverlays', ['win', 'nvidia'],
+               bug=929425)
