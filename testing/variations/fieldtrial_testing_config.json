@@ -1413,19 +1413,18 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled"
-                },
-                {
-                    "name": "EnabledWithSnackbarPromo",
+                    "name": "Enabled",
                     "params": {
-                        "snackbar_promo_data_savings_in_megabytes": "1024;100"
-                    }
-                },
-                {
-                    "name": "SnackbarPromoOnly",
-                    "params": {
-                        "snackbar_promo_data_savings_in_megabytes": "1024;100"
-                    }
+                        "availability": "any",
+                        "event_trigger": "name:data_saver_milestone_promo_iph_would_have_triggered;comparator:<2;window:90;storage:360",
+                        "event_used": "name:data_saver_milestone_promo;comparator:<2;window:90;storage:360",
+                        "session_rate": "==0",
+                        "tracking_only": "true",
+                        "x_milestone_promo_data_savings_in_megabytes": "1024;100"
+                    },
+                    "enable_features": [
+                        "IPH_DataSaverMilestonePromo"
+                    ]
                 }
             ]
         }

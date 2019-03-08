@@ -20,10 +20,8 @@ public class DataReductionSavingsMilestonePromo {
     /**
      * A semi-colon delimited list of data savings values in MB that the promo should be shown
      * for.
-     * Note: The value is misnamed for historical reasons. This promo used to be displayed as a
-     * snackbar but was moved to an IPH in M74.
      */
-    public static final String PROMO_PARAM_NAME = "snackbar_promo_data_savings_in_megabytes";
+    public static final String PROMO_PARAM_NAME = "x_milestone_promo_data_savings_in_megabytes";
 
     public static final String PROMO_FIELD_TRIAL_NAME = "DataCompressionProxyPromoVisibility";
     private static final String ENABLE_DATA_REDUCTION_PROXY_SAVINGS_PROMO_SWITCH =

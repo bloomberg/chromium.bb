@@ -17,6 +17,8 @@ const base::Feature kIPHDummyFeature{"IPH_Dummy",
 #if defined(OS_ANDROID)
 const base::Feature kIPHDataSaverDetailFeature{
     "IPH_DataSaverDetail", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kIPHDataSaverMilestonePromoFeature{
+    "IPH_DataSaverMilestonePromo", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHDataSaverPreviewFeature{
     "IPH_DataSaverPreview", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHDownloadHomeFeature{"IPH_DownloadHome",
