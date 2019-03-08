@@ -278,8 +278,13 @@ class Thread;
 #define EMPTY_BODY_IF_DCHECK_IS_OFF
 #else
 #define INLINE_IF_DCHECK_IS_OFF inline
+
+// The static_assert() eats follow-on semicolons. `= default` would work
+// too, but it makes clang realize that all the Scoped classes are no-ops in
+// non-dcheck builds and it starts emitting many -Wunused-variable warnings.
 #define EMPTY_BODY_IF_DCHECK_IS_OFF \
-  {}
+  {}                                \
+  static_assert(true, "")
 #endif
 
 namespace internal {
@@ -597,6 +602,9 @@ class BASE_EXPORT ThreadRestrictions {
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(ThreadRestrictions);
 };
+
+#undef INLINE_IF_DCHECK_IS_OFF
+#undef EMPTY_BODY_IF_DCHECK_IS_OFF
 
 }  // namespace base
 
