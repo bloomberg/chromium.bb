@@ -5,6 +5,7 @@
 #include "gpu/command_buffer/service/gles2_cmd_decoder_passthrough.h"
 
 #include "base/bind_helpers.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "gpu/command_buffer/common/discardable_handle.h"
 #include "gpu/command_buffer/service/decoder_client.h"
@@ -2221,6 +2222,8 @@ error::Error GLES2DecoderPassthroughImpl::DoLineWidth(GLfloat width) {
 }
 
 error::Error GLES2DecoderPassthroughImpl::DoLinkProgram(GLuint program) {
+  TRACE_EVENT0("gpu", "GLES2DecoderPassthroughImpl::DoLinkProgram");
+  SCOPED_UMA_HISTOGRAM_TIMER("GPU.PassthroughDoLinkProgramTime");
   api()->glLinkProgramFn(GetProgramServiceID(program, resources_));
 
   // Program linking can be very slow.  Exit command processing to allow for
