@@ -41,14 +41,14 @@ gfx::Size TrackImageButton::GetLastVisibleSize() const {
 }
 
 void TrackImageButton::OnBoundsChanged(const gfx::Rect&) {
+  if (!size().IsEmpty())
+    last_visible_size_ = size();
+
   SetImage(views::Button::STATE_NORMAL,
            gfx::CreateVectorIcon(icon_, size().width() / 2, kTrackIconColor));
 }
 
 void TrackImageButton::ToggleVisibility(bool is_visible) {
-  if (is_visible && !size().IsEmpty())
-    last_visible_size_ = size();
-
   SetVisible(is_visible);
   SetEnabled(is_visible);
   SetSize(is_visible ? GetLastVisibleSize() : gfx::Size());
