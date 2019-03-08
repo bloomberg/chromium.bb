@@ -96,6 +96,11 @@ class BASE_EXPORT SequenceManagerImpl
   static std::unique_ptr<SequenceManagerImpl> CreateUnbound(
       SequenceManager::Settings settings);
 
+  // Create a SequenceManager that funnels it's tasks down onto |task_runner|.
+  static std::unique_ptr<SequenceManagerImpl> CreateSequenceFunneled(
+      scoped_refptr<SingleThreadTaskRunner> task_runner,
+      SequenceManager::Settings settings);
+
   // SequenceManager implementation:
   void BindToCurrentThread() override;
   void BindToMessageLoop(MessageLoopBase* message_loop_base) override;
