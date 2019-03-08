@@ -30,6 +30,7 @@ import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.tabmodel.DocumentModeAssassin;
+import org.chromium.chrome.browser.touchless.TouchlessDelegate;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.variations.VariationsAssociatedData;
 import org.chromium.ui.base.DeviceFormFactor;
@@ -574,7 +575,7 @@ public class FeatureUtilities {
      * @return Whether no-touch-mode is enabled.
      */
     public static boolean isNoTouchModeEnabled() {
-        return CommandLine.getInstance().hasSwitch(ChromeSwitches.NO_TOUCH_MODE);
+        return TouchlessDelegate.TOUCHLESS_MODE_ENABLED;
     }
 
     /**

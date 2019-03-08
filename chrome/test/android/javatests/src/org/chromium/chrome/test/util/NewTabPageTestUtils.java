@@ -18,7 +18,7 @@ import org.chromium.chrome.browser.suggestions.TileSectionType;
 import org.chromium.chrome.browser.suggestions.TileSource;
 import org.chromium.chrome.browser.suggestions.TileTitleSource;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.touchless.TouchlessNewTabPage;
+import org.chromium.chrome.browser.touchless.TouchlessDelegate;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.test.util.AccountHolder;
@@ -49,7 +49,7 @@ public class NewTabPageTestUtils {
             public boolean isSatisfied() {
                 if (!tab.isIncognito()) {
                     if (FeatureUtilities.isNoTouchModeEnabled()) {
-                        return tab.getNativePage() instanceof TouchlessNewTabPage;
+                        return TouchlessDelegate.isTouchlessNewTabPage(tab.getNativePage());
                     }
                     // TODO(tedchoc): Make MostVisitedPage also have a isLoaded() concept.
                     if (tab.getNativePage() instanceof NewTabPage) {
