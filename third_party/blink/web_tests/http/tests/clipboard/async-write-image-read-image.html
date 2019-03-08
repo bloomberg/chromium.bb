@@ -41,19 +41,21 @@ promise_test(async t => {
   await PermissionsHelper.setPermission('clipboard-read', 'granted');
   await PermissionsHelper.setPermission('clipboard-write', 'granted');
 
-  const input = await loadBlob('resources/greenbox.png');
+  const blobInput = await loadBlob('resources/greenbox.png');
 
-  assert_equals(input.type, "image/png");
-  await navigator.clipboard.write(input);
-  const output = await navigator.clipboard.read();
-  assert_equals(output.type, "image/png");
+  assert_equals(blobInput.type, "image/png");
+  await navigator.clipboard.write([blobInput]);
+  const blobsOutput = await navigator.clipboard.read();
+  assert_equals(blobsOutput.length, 1);
+  const blobOutput = blobsOutput[0];
+  assert_equals(blobOutput.type, "image/png");
 
   document.getElementById('image-on-clipboard').src =
-      window.URL.createObjectURL(output);
+      window.URL.createObjectURL(blobOutput);
 
-  const comparableInput = await getBitmapString(input);
-  const comparableOutput = await getBitmapString(output);
+  const comparableInput = await getBitmapString(blobInput);
+  const comparableOutput = await getBitmapString(blobOutput);
 
   assert_equals(comparableOutput, comparableInput);
-}, "Verify write and read clipboard (DOMString)");
+}, "Verify write and read clipboard (image/png Blob)");
 </script>

@@ -31,11 +31,13 @@ class ClipboardPromise final
   ClipboardPromise(ScriptState*);
   virtual ~ClipboardPromise();
 
+  // Creates promise to execute Clipboard API functions off the main thread.
   static ScriptPromise CreateForRead(ScriptState*);
   static ScriptPromise CreateForReadText(ScriptState*);
-  static ScriptPromise CreateForWrite(ScriptState*, Blob*);
+  static ScriptPromise CreateForWrite(ScriptState*, HeapVector<Member<Blob>>);
   static ScriptPromise CreateForWriteText(ScriptState*, const String&);
 
+  // Entry points back into ClipboardPromise, from ClipboardFileReader.
   void OnLoadBufferComplete(DOMArrayBuffer*);
   void Reject();
 
@@ -43,55 +45,66 @@ class ClipboardPromise final
 
  private:
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner();
-  mojom::blink::PermissionService* GetPermissionService();
 
   bool IsFocusedDocument(ExecutionContext*);
 
+  // Checks for permissions (interacting with PermissionService).
+  mojom::blink::PermissionService* GetPermissionService();
   void RequestReadPermission(
       mojom::blink::PermissionService::RequestPermissionCallback);
   void CheckWritePermission(
       mojom::blink::PermissionService::HasPermissionCallback);
 
+  // Checks Read/Write permission (interacting with PermissionService).
   void HandleRead();
-  void HandleReadWithPermission(mojom::blink::PermissionStatus);
-
   void HandleReadText();
-  void HandleReadTextWithPermission(mojom::blink::PermissionStatus);
-
-  void HandleWrite(Blob*);
-  void HandleWriteWithPermission(mojom::blink::PermissionStatus);
-
+  void HandleWrite(HeapVector<Member<Blob>>*);
   void HandleWriteText(const String&);
+
+  // Reads/Writes after permission check.
+  void HandleReadWithPermission(mojom::blink::PermissionStatus);
+  void HandleReadTextWithPermission(mojom::blink::PermissionStatus);
+  void HandleWriteWithPermission(mojom::blink::PermissionStatus);
   void HandleWriteTextWithPermission(mojom::blink::PermissionStatus);
 
+  void WriteNextRepresentation();
+
+  // Decodes for writing.
   void DecodeImageOnBackgroundThread(
       scoped_refptr<base::SingleThreadTaskRunner>,
       DOMArrayBuffer*);
   void DecodeTextOnBackgroundThread(scoped_refptr<base::SingleThreadTaskRunner>,
                                     DOMArrayBuffer*);
 
-  void ResolveAndWriteImage(sk_sp<SkImage>);
-  void ResolveAndWriteText(const String&);
+  // Writes decoded payload to System Clipboard.
+  void WriteDecodedImage(sk_sp<SkImage>);
+  void WriteDecodedText(const String&);
 
-  // Detect whether an image or text is on the clipboard.
-  // Prioritizes image/png over text/plain over none.
-  String TypeToRead();
+  // Detects whether an image or text is on the clipboard, and
+  // returns all valid clipboard types on the clipboard.
+  Vector<String> TypesToRead();
 
-  // Get Blob containing System Clipboard contents.
+  // Gets Blob containing System Clipboard contents.
   Blob* ReadTextAsBlob();
   Blob* ReadImageAsBlob();
 
-  // Because v8 is thread-hostile, ensure that all interactions with ScriptState
-  // and ScriptPromiseResolver occur on the main thread.
+  bool IsValidClipboardType(const String&);
+
+  // Because v8 is thread-hostile, ensures that all interactions with
+  // ScriptState and ScriptPromiseResolver occur on the main thread.
   Member<ScriptState> script_state_;
   Member<ScriptPromiseResolver> script_promise_resolver_;
 
+  // Reads a Blob's data so that it can be written to the Clipboard.
   std::unique_ptr<ClipboardFileReader> file_reader_;
+  // Checks for Read and Write permission.
   mojom::blink::PermissionServicePtr permission_service_;
   mojom::ClipboardBuffer buffer_;
 
   String write_data_;
-  Member<Blob> blob_data_;
+  HeapVector<Member<Blob>> blob_sequence_data_;
+  // Index of clipboard representation currently being processed.
+  wtf_size_t clipboard_representation_index_;
 
   scoped_refptr<base::SingleThreadTaskRunner> file_reading_task_runner_;
 
