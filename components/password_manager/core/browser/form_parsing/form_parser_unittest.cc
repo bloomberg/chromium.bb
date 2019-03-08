@@ -16,6 +16,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
+#include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/password_form.h"
@@ -1478,6 +1479,33 @@ TEST(FormParserTest, CVC) {
               {.role = ElementRole::CURRENT_PASSWORD,
                .form_control_type = "password",
                .name = "verification_type"},
+          },
+          .fallback_only = true,
+      },
+  });
+}
+
+// The parser should avoid identifying NOT_PASSWORD fields as passwords.
+TEST(FormParserTest, NotPasswordField) {
+  CheckTestData({
+      {
+          "Server hints: NOT_PASSWORD.",
+          {
+              {.role = ElementRole::USERNAME, .form_control_type = "text"},
+              {.form_control_type = "password",
+               .prediction = {.type = autofill::NOT_PASSWORD}},
+              {.role = ElementRole::CURRENT_PASSWORD,
+               .form_control_type = "password"},
+          },
+          .fallback_only = false,
+      },
+      {
+          "Server hints: NOT_PASSWORD on only password.",
+          {
+              {.role = ElementRole::USERNAME, .form_control_type = "text"},
+              {.role = ElementRole::CURRENT_PASSWORD,
+               .prediction = {.type = autofill::NOT_PASSWORD},
+               .form_control_type = "password"},
           },
           .fallback_only = true,
       },

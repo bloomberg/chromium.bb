@@ -777,10 +777,10 @@ std::string AutofillType::ServerFieldTypeToString(ServerFieldType type) {
       return "SEARCH_TERM";
     case PRICE:
       return "PRICE";
-
+    case NOT_PASSWORD:
+      return "NOT_PASSWORD";
     case AMBIGUOUS_TYPE:
       return "AMBIGUOUS_TYPE";
-
     case MAX_VALID_FIELD_TYPE:
       return std::string();
   }
