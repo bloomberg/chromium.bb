@@ -11,6 +11,7 @@
 #include "base/test/test_simple_task_runner.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/core/workers/worker_reporting_proxy.h"
@@ -60,26 +61,6 @@ class AnimationWorkletProxyClientTest : public RenderingTest {
     waitable_event->Signal();
   }
 
-  // Returns false when a script evaluation error happens.
-  bool EvaluateScriptModule(AnimationWorkletGlobalScope* global_scope,
-                            const String& source_code) {
-    ScriptState* script_state =
-        global_scope->ScriptController()->GetScriptState();
-    EXPECT_TRUE(script_state);
-    ScriptState::Scope scope(script_state);
-
-    const KURL js_url("https://example.com/worklet.js");
-    ScriptModule module = ScriptModule::Compile(
-        script_state->GetIsolate(), source_code, js_url, js_url,
-        ScriptFetchOptions(), TextPosition::MinimumPosition(),
-        ASSERT_NO_EXCEPTION);
-    EXPECT_FALSE(module.IsNull());
-    ScriptValue exception = module.Instantiate(script_state);
-    EXPECT_TRUE(exception.IsEmpty());
-    ScriptValue value = module.Evaluate(script_state);
-    return value.IsEmpty();
-  }
-
   using TestCallback =
       void (AnimationWorkletProxyClientTest::*)(WorkerThread*,
                                                 AnimationWorkletProxyClient*,
@@ -124,7 +105,8 @@ class AnimationWorkletProxyClientTest : public RenderingTest {
       )JS";
 
     auto* global_scope = To<AnimationWorkletGlobalScope>(thread->GlobalScope());
-    ASSERT_TRUE(EvaluateScriptModule(global_scope, source_code));
+    ASSERT_TRUE(global_scope->ScriptController()->Evaluate(
+        ScriptSourceCode(source_code), SanitizeScriptErrors::kDoNotSanitize));
 
     std::unique_ptr<AnimationWorkletInput> state =
         std::make_unique<AnimationWorkletInput>();
