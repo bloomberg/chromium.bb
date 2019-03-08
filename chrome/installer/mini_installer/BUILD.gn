@@ -305,20 +305,38 @@ if (!(is_component_build && is_debug && target_cpu == "x86") &&
   action("previous_version_mini_installer") {
     script = "generate_previous_version_mini_installer.py"
     testonly = true
+    if (target_cpu == "arm64") {
+      select_toolchain = host_toolchain
+    } else {
+      select_toolchain = current_toolchain
+    }
+    alternate_version_generator_target =
+        "//chrome/installer/test:alternate_version_generator($select_toolchain)"
+    alternate_version_generator_rel_path =
+        rebase_path(
+            get_label_info(alternate_version_generator_target, "root_out_dir") +
+                "/alternate_version_generator.exe",
+            root_out_dir)
     inputs = [
-      "$root_out_dir/alternate_version_generator.exe",
+      "$root_out_dir/" + alternate_version_generator_rel_path,
       "$root_out_dir/mini_installer.exe",
     ]
     outputs = [
       "$root_out_dir/$target_name.exe",
     ]
     args = [
+      "--alternate_version_generator",
+      alternate_version_generator_rel_path,
+      "--mini_installer",
+      "mini_installer.exe",
       "--out",
       "$target_name.exe",
+      "--path_7za",
+      "../../third_party/lzma_sdk/Executable",
     ]
     deps = [
       ":mini_installer",
-      "//chrome/installer/test:alternate_version_generator",
+      alternate_version_generator_target,
     ]
   }
 }
