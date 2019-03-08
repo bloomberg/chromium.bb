@@ -32,6 +32,9 @@ enum class BrowserTaskType {
   // Critical startup tasks.
   kBootstrap,
 
+  // Navigation related tasks.
+  kNavigation,
+
   // Used to validate values in Java
   kBrowserTaskType_Last
 };

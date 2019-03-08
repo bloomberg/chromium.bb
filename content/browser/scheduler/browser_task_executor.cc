@@ -302,6 +302,14 @@ scoped_refptr<base::SingleThreadTaskRunner> BrowserTaskExecutor::GetTaskRunner(
              " supported.";
       return browser_ui_thread_scheduler_->GetTaskRunner(QueueType::kBootstrap);
 
+    case BrowserTaskType::kNavigation:
+      // TODO(alexclarke): Lets do this at compile time instead.
+      DCHECK(!traits.priority_set_explicitly())
+          << "Combining BrowserTaskType and TaskPriority is not currently"
+             " supported.";
+      return browser_ui_thread_scheduler_->GetTaskRunner(
+          QueueType::kNavigation);
+
     case BrowserTaskType::kDefault:
       // Defer to traits.priority() below.
       break;
