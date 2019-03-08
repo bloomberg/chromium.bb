@@ -2496,6 +2496,8 @@ jumbo_split_static_library("browser") {
       "android/search_permissions/search_permissions_service.h",
       "android/seccomp_support_detector.cc",
       "android/seccomp_support_detector.h",
+      "android/send_tab_to_self/android_notification_handler.cc",
+      "android/send_tab_to_self/android_notification_handler.h",
       "android/send_tab_to_self/send_tab_to_self_android_bridge.cc",
       "android/send_tab_to_self/send_tab_to_self_android_bridge.h",
       "android/service_tab_launcher.cc",

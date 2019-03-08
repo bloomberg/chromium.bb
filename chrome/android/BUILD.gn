@@ -2345,6 +2345,7 @@ generate_jni("jni_headers") {
     "java/src/org/chromium/chrome/browser/rlz/RlzPingHandler.java",
     "java/src/org/chromium/chrome/browser/search_engines/TemplateUrl.java",
     "java/src/org/chromium/chrome/browser/search_engines/TemplateUrlService.java",
+    "java/src/org/chromium/chrome/browser/send_tab_to_self/NotificationManager.java",
     "java/src/org/chromium/chrome/browser/send_tab_to_self/SendTabToSelfAndroidBridge.java",
     "java/src/org/chromium/chrome/browser/send_tab_to_self/SendTabToSelfEntry.java",
     "java/src/org/chromium/chrome/browser/sessions/SessionTabHelper.java",

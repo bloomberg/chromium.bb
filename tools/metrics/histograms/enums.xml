@@ -52728,6 +52728,7 @@ would be helpful to identify which type is being sent.
   <int value="12" label="Offline Content Suggestion"/>
   <int value="13" label="Sites shown in Trusted Web Activities"/>
   <int value="14" label="Offline Pages"/>
+  <int value="15" label="Send Tab To Self"/>
 </enum>
 
 <enum name="TabBackgroundLoadStatus">
