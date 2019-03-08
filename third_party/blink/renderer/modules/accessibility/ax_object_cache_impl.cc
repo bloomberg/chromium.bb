@@ -730,9 +730,7 @@ void AXObjectCacheImpl::FocusableChanged(Element* element) {
     ChildrenChanged(element->parentNode());
   } else {
     // Refresh the focusable state on the exposed object.
-    // TODO(accessibility) find out why using MarkAXObjectDirty(obj, false)
-    // regresses Slack performance, see https://crbug.com/936944.
-    PostNotification(obj, ax::mojom::Event::kValueChanged);
+    MarkAXObjectDirty(obj, false);
   }
 }
 
@@ -971,9 +969,6 @@ void AXObjectCacheImpl::RadiobuttonRemovedFromGroup(
 
 void AXObjectCacheImpl::ImageLoaded(LayoutObject* layout_object) {
   AXObject* obj = Get(layout_object);
-  if (!obj)
-    return;
-
   MarkAXObjectDirty(obj, false);
 }
 
@@ -1128,7 +1123,7 @@ void AXObjectCacheImpl::HandleAttributeChanged(const QualifiedName& attr_name,
   else if (attr_name == kTabindexAttr)
     FocusableChanged(element);
   else if (attr_name == kDisabledAttr)
-    MarkAXObjectDirty(Get(element), false);
+    MarkElementDirty(element, false);
 
   if (!attr_name.LocalName().StartsWith("aria-"))
     return;
@@ -1350,7 +1345,7 @@ void AXObjectCacheImpl::PostPlatformNotification(
 }
 
 void AXObjectCacheImpl::MarkAXObjectDirty(AXObject* obj, bool subtree) {
-  if (!document_ || !document_->View() ||
+  if (!obj || !document_ || !document_->View() ||
       !document_->View()->GetFrame().GetPage())
     return;
 
@@ -1361,8 +1356,9 @@ void AXObjectCacheImpl::MarkAXObjectDirty(AXObject* obj, bool subtree) {
 }
 
 void AXObjectCacheImpl::MarkElementDirty(const Element* element, bool subtree) {
-  if (AXObject* obj = Get(element))
-    MarkAXObjectDirty(obj, subtree);
+  // Warning, if no AXObject exists for element, nothing is marked dirty,
+  // including descendant objects when subtree == true.
+  MarkAXObjectDirty(Get(element), subtree);
 }
 
 void AXObjectCacheImpl::HandleFocusedUIElementChanged(Node* old_focused_node,
