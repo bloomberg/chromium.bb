@@ -13,6 +13,8 @@
 #import "ios/web/public/find_in_page/find_in_page_manager.h"
 #include "ios/web/public/web_state/web_state_observer.h"
 
+@class NSString;
+
 namespace web {
 
 class WebState;
@@ -43,6 +45,9 @@ class FindInPageManagerImpl : public FindInPageManager,
     // find. This ensures that an old find doesn't decrement
     // |pending_frame_calls_count| after it has been reset by the new find.
     int unique_id = 0;
+    // Query string of find request. NSString type to ensure query passed to
+    // delegate methods is the same type as what is passed into Find().
+    NSString* query;
     // Counter to keep track of pending frame JavaScript calls.
     int pending_frame_call_count = 0;
     // Holds number of matches found for each frame keyed by frame_id.
@@ -51,13 +56,16 @@ class FindInPageManagerImpl : public FindInPageManager,
     std::list<std::string> frame_order;
   };
 
-  // Determines whether find is finished. If not, calls pumpSearch to continue.
-  // If it is, calls UpdateFrameMatchesCount(). If find returned null, then does
-  // nothing more.
-  void ProcessFindInPageResult(const std::string& query,
-                               const std::string& frame_id,
+  // Executes find logic for |FindInPageSearch| option.
+  void StartSearch(NSString* query);
+  // Determines whether find is finished. If not, calls pumpSearch to
+  // continue. If it is, calls UpdateFrameMatchesCount(). If find returned
+  // null, then does nothing more.
+  void ProcessFindInPageResult(const std::string& frame_id,
                                const int request_id,
                                const base::Value* result);
+  // Calls delegate DidCountMatches() method if |delegate_| is set.
+  void NotifyDelegateDidCountMatches();
 
   // WebStateObserver overrides
   void WebFrameDidBecomeAvailable(WebState* web_state,
