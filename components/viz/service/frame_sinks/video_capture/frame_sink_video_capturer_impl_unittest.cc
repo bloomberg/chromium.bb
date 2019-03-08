@@ -43,6 +43,11 @@ using testing::Return;
 namespace viz {
 namespace {
 
+bool AlignsWithI420SubsamplingBoundaries(const gfx::Rect& update_rect) {
+  return (update_rect.x() % 2 == 0) && (update_rect.y() % 2 == 0) &&
+         (update_rect.width() % 2 == 0) && (update_rect.height() % 2 == 0);
+}
+
 // Returns true if |frame|'s device scale factor, page scale factor and root
 // scroll offset are equal to the expected values.
 bool CompareVarsInCompositorFrameMetadata(
@@ -471,6 +476,11 @@ class FrameSinkVideoCapturerTest : public testing::Test {
   void AdvanceClockForRefreshTimer() {
     task_runner_->FastForwardBy(capturer_->GetDelayBeforeNextRefreshAttempt());
     PropagateMojoTasks();
+  }
+
+  gfx::Rect ExpandRectToI420SubsampleBoundaries(const gfx::Rect& rect) {
+    return FrameSinkVideoCapturerImpl::ExpandRectToI420SubsampleBoundaries(
+        rect);
   }
 
  protected:
@@ -1048,6 +1058,10 @@ TEST_F(FrameSinkVideoCapturerTest, DeliversUpdateRectAndCaptureCounter) {
                     size_set().expected_content_rect.height()));
   expected_frame_update_rect.Offset(
       size_set().expected_content_rect.OffsetFromOrigin());
+  EXPECT_FALSE(AlignsWithI420SubsamplingBoundaries(expected_frame_update_rect));
+  expected_frame_update_rect =
+      ExpandRectToI420SubsampleBoundaries(expected_frame_update_rect);
+  EXPECT_TRUE(AlignsWithI420SubsamplingBoundaries(expected_frame_update_rect));
 
   // Notify frame damage with custom damage rect, and expect that the refresh
   // frame is delivered to the consumer with a corresponding |update_rect|.
