@@ -51,24 +51,10 @@ class CONTENT_EXPORT ServiceWorkerRequestHandler
     : public base::SupportsUserData::Data,
       public NavigationLoaderInterceptor {
  public:
-  // PlzNavigate
-  // Attaches a newly created handler if the given |request| needs to be handled
-  // by ServiceWorker.
-  static void InitializeForNavigation(
-      net::URLRequest* request,
-      ServiceWorkerNavigationHandleCore* navigation_handle_core,
-      storage::BlobStorageContext* blob_storage_context,
-      bool skip_service_worker,
-      ResourceType resource_type,
-      blink::mojom::RequestContextType request_context_type,
-      network::mojom::RequestContextFrameType frame_type,
-      bool is_parent_frame_secure,
-      scoped_refptr<network::ResourceRequestBody> body,
-      base::RepeatingCallback<WebContents*()> web_contents_getter);
-
-  // S13nServiceWorker:
-  // Same as InitializeForNavigation() but instead of attaching to a URLRequest,
-  // just creates a NavigationLoaderInterceptor and returns it.
+  // Returns a loader interceptor for a navigation. May return nullptr
+  // if the navigation cannot use service workers.
+  // TODO(falken): Rename to InitializeForNavigation since this also is called
+  // when NetworkService is disabled.
   static std::unique_ptr<NavigationLoaderInterceptor>
   InitializeForNavigationNetworkService(
       const GURL& url,

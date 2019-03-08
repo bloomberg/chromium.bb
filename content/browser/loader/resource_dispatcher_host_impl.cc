@@ -56,8 +56,6 @@
 #include "content/browser/loader/throttling_resource_handler.h"
 #include "content/browser/loader/upload_data_stream_builder.h"
 #include "content/browser/resource_context_impl.h"
-#include "content/browser/service_worker/service_worker_context_wrapper.h"
-#include "content/browser/service_worker/service_worker_navigation_handle_core.h"
 #include "content/browser/service_worker/service_worker_request_handler.h"
 #include "content/browser/streams/stream.h"
 #include "content/browser/streams/stream_context.h"
@@ -1502,7 +1500,6 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
     std::unique_ptr<NavigationUIData> navigation_ui_data,
     network::mojom::URLLoaderClientPtr url_loader_client,
     network::mojom::URLLoaderRequest url_loader_request,
-    ServiceWorkerNavigationHandleCore* service_worker_handle_core,
     AppCacheNavigationHandleCore* appcache_handle_core,
     uint32_t url_loader_options,
     net::RequestPriority net_priority,
@@ -1586,10 +1583,7 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
   // TODO(davidben): Associate the request with the FrameTreeNode and/or tab so
   // that IO thread -> UI thread hops will work.
   ResourceRequestInfoImpl* extra_info = new ResourceRequestInfoImpl(
-      ResourceRequesterInfo::CreateForBrowserSideNavigation(
-          service_worker_handle_core
-              ? service_worker_handle_core->context_wrapper()
-              : scoped_refptr<ServiceWorkerContextWrapper>()),
+      ResourceRequesterInfo::CreateForBrowserSideNavigation(),
       -1,  // route_id
       info.frame_tree_node_id,
       ChildProcessHost::kInvalidUniqueID,  // plugin_child_id
@@ -1631,16 +1625,6 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
         new_request.get(),
         blob_context->GetBlobDataFromPublicURL(new_request->url()));
   }
-
-  network::mojom::RequestContextFrameType frame_type =
-      info.is_main_frame ? network::mojom::RequestContextFrameType::kTopLevel
-                         : network::mojom::RequestContextFrameType::kNested;
-  ServiceWorkerRequestHandler::InitializeForNavigation(
-      new_request.get(), service_worker_handle_core, blob_context,
-      info.begin_params->skip_service_worker, resource_type,
-      info.begin_params->request_context_type, frame_type,
-      info.are_ancestors_secure, info.common_params.post_data,
-      extra_info->GetWebContentsGetterForRequest());
 
   // Have the appcache associate its extra info with the request.
   if (appcache_handle_core) {

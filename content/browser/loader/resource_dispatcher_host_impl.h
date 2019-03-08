@@ -77,7 +77,6 @@ class ResourceHandler;
 class ResourceMessageDelegate;
 class ResourceRequesterInfo;
 class ResourceRequestInfoImpl;
-class ServiceWorkerNavigationHandleCore;
 struct NavigationRequestInfo;
 struct Referrer;
 struct ResourceRequest;
@@ -235,7 +234,6 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       std::unique_ptr<NavigationUIData> navigation_ui_data,
       network::mojom::URLLoaderClientPtr url_loader_client,
       network::mojom::URLLoaderRequest url_loader_request,
-      ServiceWorkerNavigationHandleCore* service_worker_handle_core,
       AppCacheNavigationHandleCore* appcache_handle_core,
       uint32_t url_loader_options,
       net::RequestPriority net_priority,

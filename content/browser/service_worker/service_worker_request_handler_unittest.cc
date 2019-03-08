@@ -132,36 +132,6 @@ class ServiceWorkerRequestHandlerTest : public testing::Test {
 
   void InitializeHandlerForNavigationSimpleTest(const std::string& url,
                                                 bool expected_handler_created) {
-    bool handler_created = false;
-    if (blink::ServiceWorkerUtils::IsServicificationEnabled()) {
-      handler_created = InitializeHandlerForNavigationNetworkService(
-          url, expected_handler_created);
-    } else {
-      handler_created = InitializeHandlerForNavigationNonNetworkService(
-          url, expected_handler_created);
-    }
-    EXPECT_EQ(expected_handler_created, handler_created);
-  }
-
-  bool InitializeHandlerForNavigationNonNetworkService(
-      const std::string& url,
-      bool expected_handler_created) {
-    std::unique_ptr<ServiceWorkerNavigationHandleCore> navigation_handle_core =
-        CreateNavigationHandleCore(helper_->context_wrapper());
-    std::unique_ptr<net::URLRequest> request = CreateRequest(url, "GET");
-    ServiceWorkerRequestHandler::InitializeForNavigation(
-        request.get(), navigation_handle_core.get(), &blob_storage_context_,
-        false /* skip_service_worker */, RESOURCE_TYPE_MAIN_FRAME,
-        blink::mojom::RequestContextType::HYPERLINK,
-        network::mojom::RequestContextFrameType::kTopLevel,
-        true /* is_parent_frame_secure */, nullptr /* body */,
-        base::RepeatingCallback<WebContents*(void)>());
-    return !!GetHandler(request.get());
-  }
-
-  bool InitializeHandlerForNavigationNetworkService(
-      const std::string& url,
-      bool expected_handler_created) {
     std::unique_ptr<ServiceWorkerNavigationHandleCore> navigation_handle_core =
         CreateNavigationHandleCore(helper_->context_wrapper());
     base::WeakPtr<ServiceWorkerProviderHost> service_worker_provider_host;
@@ -175,7 +145,7 @@ class ServiceWorkerRequestHandlerTest : public testing::Test {
             true /* is_parent_frame_secure */, nullptr /* body */,
             base::RepeatingCallback<WebContents*(void)>(),
             &service_worker_provider_host);
-    return !!interceptor.get();
+    EXPECT_EQ(expected_handler_created, !!interceptor.get());
   }
 
   TestBrowserThreadBundle browser_thread_bundle_;
