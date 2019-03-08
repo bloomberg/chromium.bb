@@ -105,6 +105,14 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerMessagingTest, TabToWorker) {
   EXPECT_TRUE(reply_listener.WaitUntilSatisfied());
 }
 
+// Tests chrome.tabs.sendMessage from SW extension to content script.
+IN_PROC_BROWSER_TEST_P(ServiceWorkerMessagingTest, WorkerToTab) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  ASSERT_TRUE(
+      RunExtensionTest("service_worker/messaging/send_message_worker_to_tab"))
+      << message_;
+}
+
 INSTANTIATE_TEST_SUITE_P(ServiceWorkerMessagingTestWithNativeBindings,
                          ServiceWorkerMessagingTest,
                          ::testing::Values(NATIVE_BINDINGS));

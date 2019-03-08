@@ -23,13 +23,17 @@
 #include "extensions/common/api/messaging/port_context.h"
 #include "extensions/common/api/messaging/port_id.h"
 #include "extensions/common/extension_messages.h"
+#include "extensions/renderer/extension_bindings_system.h"
 #include "extensions/renderer/extension_frame_helper.h"
 #include "extensions/renderer/extension_port.h"
 #include "extensions/renderer/gc_callback.h"
+#include "extensions/renderer/ipc_message_sender.h"
+#include "extensions/renderer/message_target.h"
 #include "extensions/renderer/messaging_util.h"
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/script_context_set.h"
 #include "extensions/renderer/v8_helpers.h"
+#include "extensions/renderer/worker_thread_dispatcher.h"
 #include "extensions/renderer/worker_thread_util.h"
 #include "gin/converter.h"
 #include "third_party/blink/public/web/web_user_gesture_indicator.h"
@@ -52,6 +56,11 @@ namespace {
 // A global map between ScriptContext and MessagingBindings.
 base::LazyInstance<std::map<ScriptContext*, MessagingBindings*>>::
     DestructorAtExit g_messaging_map = LAZY_INSTANCE_INITIALIZER;
+
+IPCMessageSender* GetWorkerThreadIPCMessageSender() {
+  DCHECK(worker_thread_util::IsWorkerThread());
+  return WorkerThreadDispatcher::GetBindingsSystem()->GetIPCMessageSender();
+}
 
 }  // namespace
 
@@ -261,11 +270,10 @@ void MessagingBindings::OpenChannelToNativeApp(
 
 void MessagingBindings::OpenChannelToTab(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
-  // TODO(crbug.com/925918): Support Service worker to tab messaging.
-  DCHECK(!worker_thread_util::IsWorkerThread());
-
   content::RenderFrame* render_frame = context()->GetRenderFrame();
-  if (!render_frame)
+  bool is_for_service_worker = false;
+  if (!render_frame &&
+      !(is_for_service_worker = worker_thread_util::IsWorkerThread()))
     return;
 
   DCHECK_NE(context()->context_type(), Feature::CONTENT_SCRIPT_CONTEXT);
@@ -295,14 +303,23 @@ void MessagingBindings::OpenChannelToTab(
   std::string extension_id = *v8::String::Utf8Value(isolate, args[2]);
   std::string channel_name = *v8::String::Utf8Value(isolate, args[3]);
 
-  ExtensionFrameHelper* frame_helper = ExtensionFrameHelper::Get(render_frame);
-  DCHECK(frame_helper);
+  if (!is_for_service_worker) {
+    ExtensionFrameHelper* frame_helper =
+        ExtensionFrameHelper::Get(render_frame);
+    DCHECK(frame_helper);
+  }
 
   {
     SCOPED_UMA_HISTOGRAM_TIMER("Extensions.Messaging.SetPortIdTime.Tab");
-    render_frame->Send(new ExtensionHostMsg_OpenChannelToTab(
-        PortContext::ForFrame(render_frame->GetRoutingID()), info, extension_id,
-        channel_name, port_id));
+    if (is_for_service_worker) {
+      GetWorkerThreadIPCMessageSender()->SendOpenMessageChannel(
+          context(), port_id, MessageTarget::ForTab(info.tab_id, info.frame_id),
+          channel_name, false /* include_tls_channel_id */);
+    } else {
+      render_frame->Send(new ExtensionHostMsg_OpenChannelToTab(
+          PortContext::ForFrame(render_frame->GetRoutingID()), info,
+          extension_id, channel_name, port_id));
+    }
   }
 
   args.GetReturnValue().Set(static_cast<int32_t>(js_id));

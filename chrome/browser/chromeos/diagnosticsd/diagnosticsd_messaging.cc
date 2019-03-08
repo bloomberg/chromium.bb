@@ -23,6 +23,7 @@
 #include "chrome/browser/extensions/api/messaging/native_message_port.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/services/diagnosticsd/public/mojom/diagnosticsd.mojom.h"
+#include "extensions/browser/api/messaging/channel_endpoint.h"
 #include "extensions/browser/api/messaging/message_service.h"
 #include "extensions/browser/api/messaging/native_message_host.h"
 #include "extensions/browser/extension_registry.h"
@@ -344,7 +345,7 @@ void DeliverMessageToExtension(
       message_service->GetChannelDelegate(), port_id,
       std::move(native_message_host));
   message_service->OpenChannelToExtension(
-      -1 /* source_process_id */, -1 /* source_routing_id */, port_id,
+      extensions::ChannelEndpoint(profile), port_id,
       extensions::MessagingEndpoint::ForNativeApp(kDiagnosticsdUiMessageHost),
       std::move(native_message_port), extension_id, GURL(),
       std::string() /* channel_name */);
