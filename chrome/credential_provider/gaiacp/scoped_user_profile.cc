@@ -56,6 +56,18 @@ const int kWaitForProfileCreationRetryCount = 30;
 constexpr int kProfilePictureSizes[] = {
     32, 40, 48, 96, 192, 240, kLargestProfilePictureSize};
 
+class ScopedGdiplus {
+ public:
+  ScopedGdiplus() {
+    Gdiplus::GdiplusStartup(&gdiplus_token_, &gdiplus_startup_input_, nullptr);
+  }
+  ~ScopedGdiplus() { Gdiplus::GdiplusShutdown(gdiplus_token_); }
+
+ private:
+  Gdiplus::GdiplusStartupInput gdiplus_startup_input_;
+  ULONG_PTR gdiplus_token_;
+};
+
 std::string GetEncryptedRefreshToken(
     base::win::ScopedHandle::Handle logon_handle,
     const base::DictionaryValue& properties) {
@@ -148,9 +160,7 @@ HRESULT ConvertImageToDesiredFormat(const std::vector<char>& image_buffer,
                                           kCredentialLogoPictureFileExtension));
 
   // Initialize GDI+.
-  Gdiplus::GdiplusStartupInput gdiplus_startup_input;
-  ULONG_PTR gdiplus_token;
-  Gdiplus::GdiplusStartup(&gdiplus_token, &gdiplus_startup_input, NULL);
+  ScopedGdiplus scoped_gdi_plus;
 
   // Load the image stream into memory. Gdiplus::Image can automatically detect
   // the file type and load the correct contents. Note that gaia returns a
@@ -160,12 +170,16 @@ HRESULT ConvertImageToDesiredFormat(const std::vector<char>& image_buffer,
   CComPtr<IStream> buffer_stream;
   buffer_stream.Attach(::SHCreateMemStream(
       reinterpret_cast<const BYTE*>(image_buffer.data()), image_buffer.size()));
+  // Although this is a unique_ptr it needs to be freed before
+  // Gdiplus::GdiplusShutdown or else there will be an access violation during
+  // the delete of the unique_ptr. In this case, the image is created after
+  // ScopedGdiplus so it should go out of scope before GdiplusShutdown is
+  // called.
   std::unique_ptr<Gdiplus::Image> image =
       std::make_unique<Gdiplus::Image>(buffer_stream);
 
   if (image->GetType() == Gdiplus::ImageTypeUnknown) {
     LOGFN(ERROR) << "Unknown image type when loading image stream";
-    Gdiplus::GdiplusShutdown(gdiplus_token);
     return E_FAIL;
   }
 
@@ -175,13 +189,11 @@ HRESULT ConvertImageToDesiredFormat(const std::vector<char>& image_buffer,
       GetEncoderClsidByExtension(converted_path.Extension(), &encoder_clsid);
   if (FAILED(hr)) {
     LOGFN(ERROR) << "GetEncoderClsid hr=" << putHR(hr);
-    Gdiplus::GdiplusShutdown(gdiplus_token);
     return hr;
   }
 
   Gdiplus::Status stat =
       image->Save(converted_path.value().c_str(), &encoder_clsid, nullptr);
-  Gdiplus::GdiplusShutdown(gdiplus_token);
 
   if (stat != Gdiplus::Ok) {
     LOGFN(ERROR) << "image->Save stat=" << stat;
@@ -280,8 +292,8 @@ HRESULT UpdateProfilePicturesForWindows8AndNewer(
     bool needs_to_save_original =
         force_update || !base::PathExists(target_picture_path);
     bool needs_to_save_bitmap =
-        force_update || (image_size == kLargestProfilePictureSize &&
-                         !base::PathExists(bmp_picture_path));
+        image_size == kLargestProfilePictureSize &&
+        (force_update || !base::PathExists(bmp_picture_path));
 
     // Skip if the file already exists and an update is not forced.
     if (!needs_to_save_original && !needs_to_save_bitmap) {
