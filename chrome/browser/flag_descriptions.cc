@@ -3092,6 +3092,11 @@ const char kCryptAuthV2EnrollmentName[] = "CryptAuth v2 Enrollment";
 const char kCryptAuthV2EnrollmentDescription[] =
     "Use the CryptAuth v2 Enrollment protocol.";
 
+const char kDisableExplicitDmaFencesName[] = "Disable explicit dma-fences";
+const char kDisableExplicitDmaFencesDescription[] =
+    "Always rely on implicit syncrhonization between GPU and display "
+    "controller instead of using dma-fences explcitily when available.";
+
 const char kDisableSystemTimezoneAutomaticDetectionName[] =
     "SystemTimezoneAutomaticDetection policy support";
 const char kDisableSystemTimezoneAutomaticDetectionDescription[] =
@@ -3163,11 +3168,6 @@ const char kEnableDragTabsInTabletModeDescription[] =
 const char kEnableDriveFsName[] = "Enable DriveFS";
 const char kEnableDriveFsDescription[] =
     "Enables use of the new DriveFS-based Drive sync client.";
-
-const char kEnableExplicitDmaFencesName[] = "Enable explicit dma-fences";
-const char kEnableExplicitDmaFencesDescription[] =
-    "Use dma-fences explicitly for synchronization between GPU and display "
-    "controller when available.";
 
 const char kEnableEncryptionMigrationName[] =
     "Enable encryption migration of user data";

@@ -43,8 +43,8 @@ bool DrmWindowProxy::SupportsGpuFences() const {
       drm_thread_->task_runner(),
       base::BindOnce(&DrmThread::IsDeviceAtomic, base::Unretained(drm_thread_),
                      widget_, &is_atomic));
-  return is_atomic && base::CommandLine::ForCurrentProcess()->HasSwitch(
-                          switches::kEnableExplicitDmaFences);
+  return is_atomic && !base::CommandLine::ForCurrentProcess()->HasSwitch(
+                          switches::kDisableExplicitDmaFences);
 }
 
 }  // namespace ui

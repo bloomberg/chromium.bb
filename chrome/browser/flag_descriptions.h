@@ -1844,6 +1844,9 @@ extern const char kCrostiniUsbSupportDescription[];
 extern const char kCryptAuthV2EnrollmentName[];
 extern const char kCryptAuthV2EnrollmentDescription[];
 
+extern const char kDisableExplicitDmaFencesName[];
+extern const char kDisableExplicitDmaFencesDescription[];
+
 extern const char kDisableSystemTimezoneAutomaticDetectionName[];
 extern const char kDisableSystemTimezoneAutomaticDetectionDescription[];
 
@@ -1888,9 +1891,6 @@ extern const char kEnableDragTabsInTabletModeDescription[];
 
 extern const char kEnableDriveFsName[];
 extern const char kEnableDriveFsDescription[];
-
-extern const char kEnableExplicitDmaFencesName[];
-extern const char kEnableExplicitDmaFencesDescription[];
 
 extern const char kEnableEncryptionMigrationName[];
 extern const char kEnableEncryptionMigrationDescription[];

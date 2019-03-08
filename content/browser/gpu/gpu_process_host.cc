@@ -241,7 +241,7 @@ static const char* const kSwitchNames[] = {
 #endif
 #if defined(USE_OZONE)
     switches::kOzonePlatform,
-    switches::kEnableExplicitDmaFences,
+    switches::kDisableExplicitDmaFences,
     switches::kOzoneDumpFile,
 #endif
 #if defined(USE_X11)
