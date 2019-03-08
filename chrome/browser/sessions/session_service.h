@@ -66,7 +66,13 @@ class SessionService : public sessions::BaseSessionServiceDelegate,
  public:
   // Used to distinguish an application from a ordinary content window.
   enum AppType {
-    TYPE_APP,
+    // Chrome Apps.
+    TYPE_CHROME_APP,
+
+    // Web Apps.
+    TYPE_WEB_APP,
+
+    // Not an app.
     TYPE_NORMAL
   };
 
