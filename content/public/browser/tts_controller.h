@@ -97,6 +97,9 @@ class CONTENT_EXPORT TtsController {
   // as well.
   virtual void Stop() = 0;
 
+  // Stops the current utterance if it matches the given |source_url|.
+  virtual void Stop(const GURL& source_url) = 0;
+
   // Pause the speech queue. Some engines may support pausing in the middle
   // of an utterance.
   virtual void Pause() = 0;

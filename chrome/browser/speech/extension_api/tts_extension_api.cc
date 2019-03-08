@@ -293,7 +293,7 @@ bool TtsSpeakFunction::RunAsync() {
 }
 
 ExtensionFunction::ResponseAction TtsStopSpeakingFunction::Run() {
-  content::TtsController::GetInstance()->Stop();
+  content::TtsController::GetInstance()->Stop(source_url());
   return RespondNow(NoArguments());
 }
 

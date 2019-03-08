@@ -41,6 +41,7 @@ class TestableTtsController : public content::TtsController {
   bool IsSpeaking() override { return false; }
   void SpeakOrEnqueue(content::TtsUtterance* utterance) override {}
   void Stop() override {}
+  void Stop(const GURL& source_url) override {}
   void Pause() override {}
   void Resume() override {}
   void GetVoices(content::BrowserContext* browser_context,
