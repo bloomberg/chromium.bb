@@ -33,10 +33,6 @@
         flex-shrink: 0;  /* Prevent distortion of icons in cramped UI. */
       }
 
-      iron-icon[icon='cr:check'] {
-       --iron-icon-fill-color: var(--google-green-500);
-      }
-
       iron-icon.policy {
         margin-inline-end: var(--cr-controlled-by-spacing);
       }
@@ -62,11 +58,6 @@
 
       .separator + paper-icon-button-light {
         margin-inline-start: var(--cr-icon-ripple-margin);
-      }
-
-      /* For "Advanced" toggle button. */
-      paper-button[toggles][active] {
-        background-color: var(--paper-grey-300);
       }
 
       /* Special case for buttons inside of toggle-buttons. */
@@ -115,8 +106,14 @@
       }
 
       cr-radio-group:focus {
+        /* TODO(dbeam): why is this here? It looks weird and I'm not sure how to
+         * actually trigger it with mouse/keyboard/screenreader. */
         background-color: var(--google-grey-300);
         outline: none;
+      }
+
+      :host-context([dark]) cr-radio-group:focus {
+        background-color: var(--google-grey-800);
       }
 
       /* See also: .no-min-width below. */
