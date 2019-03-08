@@ -40,17 +40,18 @@ class COMPONENT_EXPORT(LEARNING_COMMON) LearningTaskController {
   LearningTaskController() = default;
   virtual ~LearningTaskController() = default;
 
-  // TODO(liberato): what is the scope of this id?  can it be local to whoever
-  // owns the LTC?  otherwise, consider making it an unguessable token.
-  // TODO(liberato): consider making a special id that means "i will not send a
+  // TODO(liberato): What is the scope of this id?  Can it be local to whoever
+  // owns the LTC?  Otherwise, consider making it an unguessable token.
+  // TODO(liberato): Consider making a special id that means "I will not send a
   // target value", to save a call to CancelObservation.
   using ObservationId = int32_t;
 
-  // new example.  Call this at the time one would try to predict the
-  // TargetValue.  This lets the framework snapshot any framework-provided
+  // Start a new observation.  Call this at the time one would try to predict
+  // the TargetValue.  This lets the framework snapshot any framework-provided
   // feature values at prediction time.  Later, if you want to turn these
-  // features into an example for training a model, then call the returned CB
-  // with the TargetValue and weight.  Otherwise, you may discard the CB.
+  // features into an example for training a model, then call
+  // CompleteObservation with the same id and an ObservationCompletion.
+  // Otherwise, call CancelObservation with |id|.
   // TODO(liberato): This should optionally take a callback to receive a
   // prediction for the FeatureVector.
   // TODO(liberato): See if this ends up generating smaller code with pass-by-
@@ -63,7 +64,7 @@ class COMPONENT_EXPORT(LEARNING_COMMON) LearningTaskController {
   virtual void CompleteObservation(ObservationId id,
                                    const ObservationCompletion& completion) = 0;
 
-  // Notify the LTC that no completion will be sent.
+  // Notify the LearningTaskController that no completion will be sent.
   virtual void CancelObservation(ObservationId id) = 0;
 
  private:
