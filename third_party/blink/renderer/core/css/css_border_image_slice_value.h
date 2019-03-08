@@ -28,6 +28,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/core/css/css_quad_value.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 namespace cssvalue {
@@ -58,10 +59,15 @@ class CSSBorderImageSliceValue : public CSSValue {
   bool fill_;
 };
 
-DEFINE_CSS_VALUE_TYPE_CASTS(CSSBorderImageSliceValue,
-                            IsBorderImageSliceValue());
-
 }  // namespace cssvalue
+
+template <>
+struct DowncastTraits<cssvalue::CSSBorderImageSliceValue> {
+  static bool AllowFrom(const CSSValue& value) {
+    return value.IsBorderImageSliceValue();
+  }
+};
+
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_BORDER_IMAGE_SLICE_VALUE_H_

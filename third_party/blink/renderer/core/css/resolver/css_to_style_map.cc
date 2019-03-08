@@ -551,12 +551,12 @@ static Length ConvertBorderImageSliceSide(const CSSPrimitiveValue& value) {
 void CSSToStyleMap::MapNinePieceImageSlice(StyleResolverState&,
                                            const CSSValue& value,
                                            NinePieceImage& image) {
-  if (!value.IsBorderImageSliceValue())
+  if (!IsA<cssvalue::CSSBorderImageSliceValue>(value))
     return;
 
   // Retrieve the border image value.
-  const cssvalue::CSSBorderImageSliceValue& border_image_slice =
-      cssvalue::ToCSSBorderImageSliceValue(value);
+  const auto& border_image_slice =
+      To<cssvalue::CSSBorderImageSliceValue>(value);
 
   // Set up a length box to represent our image slices.
   LengthBox box;

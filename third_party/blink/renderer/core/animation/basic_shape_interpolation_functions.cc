@@ -510,21 +510,21 @@ scoped_refptr<BasicShape> CreateBasicShape(
 
 InterpolationValue basic_shape_interpolation_functions::MaybeConvertCSSValue(
     const CSSValue& value) {
-  if (value.IsBasicShapeCircleValue()) {
-    return circle_functions::ConvertCSSValue(
-        cssvalue::ToCSSBasicShapeCircleValue(value));
+  if (auto* circle_value =
+          DynamicTo<cssvalue::CSSBasicShapeCircleValue>(value)) {
+    return circle_functions::ConvertCSSValue(*circle_value);
   }
-  if (value.IsBasicShapeEllipseValue()) {
-    return ellipse_functions::ConvertCSSValue(
-        cssvalue::ToCSSBasicShapeEllipseValue(value));
+
+  if (auto* ellipse_value =
+          DynamicTo<cssvalue::CSSBasicShapeEllipseValue>(value)) {
+    return ellipse_functions::ConvertCSSValue(*ellipse_value);
   }
-  if (value.IsBasicShapeInsetValue()) {
-    return inset_functions::ConvertCSSValue(
-        cssvalue::ToCSSBasicShapeInsetValue(value));
+  if (auto* inset_value = DynamicTo<cssvalue::CSSBasicShapeInsetValue>(value)) {
+    return inset_functions::ConvertCSSValue(*inset_value);
   }
-  if (value.IsBasicShapePolygonValue()) {
-    return polygon_functions::ConvertCSSValue(
-        cssvalue::ToCSSBasicShapePolygonValue(value));
+  if (auto* polygon_value =
+          DynamicTo<cssvalue::CSSBasicShapePolygonValue>(value)) {
+    return polygon_functions::ConvertCSSValue(*polygon_value);
   }
   return nullptr;
 }

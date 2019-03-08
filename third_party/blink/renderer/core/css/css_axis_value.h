@@ -7,6 +7,7 @@
 
 #include "third_party/blink/renderer/core/css/css_value_list.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -38,7 +39,10 @@ class CSSAxisValue : public CSSValueList {
   CSSValueID axis_name_;
 };
 
-DEFINE_CSS_VALUE_TYPE_CASTS(CSSAxisValue, IsAxisValue());
+template <>
+struct DowncastTraits<CSSAxisValue> {
+  static bool AllowFrom(const CSSValue& value) { return value.IsAxisValue(); }
+};
 
 }  // namespace blink
 

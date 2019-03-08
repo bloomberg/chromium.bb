@@ -196,11 +196,11 @@ InterpolationValue CSSImageSliceInterpolationType::MaybeConvertValue(
     const CSSValue& value,
     const StyleResolverState*,
     ConversionCheckers&) const {
-  if (!value.IsBorderImageSliceValue())
+  if (!IsA<cssvalue::CSSBorderImageSliceValue>(value))
     return nullptr;
 
   const cssvalue::CSSBorderImageSliceValue& slice =
-      cssvalue::ToCSSBorderImageSliceValue(value);
+      To<cssvalue::CSSBorderImageSliceValue>(value);
   std::unique_ptr<InterpolableList> list =
       InterpolableList::Create(kSideIndexCount);
   const CSSValue* sides[kSideIndexCount];

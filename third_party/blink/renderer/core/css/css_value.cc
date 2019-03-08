@@ -262,19 +262,19 @@ bool CSSValue::operator==(const CSSValue& other) const {
 String CSSValue::CssText() const {
   switch (GetClassType()) {
     case kAxisClass:
-      return ToCSSAxisValue(this)->CustomCSSText();
+      return To<CSSAxisValue>(this)->CustomCSSText();
     case kBasicShapeCircleClass:
-      return ToCSSBasicShapeCircleValue(this)->CustomCSSText();
+      return To<CSSBasicShapeCircleValue>(this)->CustomCSSText();
     case kBasicShapeEllipseClass:
-      return ToCSSBasicShapeEllipseValue(this)->CustomCSSText();
+      return To<CSSBasicShapeEllipseValue>(this)->CustomCSSText();
     case kBasicShapePolygonClass:
-      return ToCSSBasicShapePolygonValue(this)->CustomCSSText();
+      return To<CSSBasicShapePolygonValue>(this)->CustomCSSText();
     case kBasicShapeInsetClass:
-      return ToCSSBasicShapeInsetValue(this)->CustomCSSText();
+      return To<CSSBasicShapeInsetValue>(this)->CustomCSSText();
     case kBorderImageSliceClass:
-      return ToCSSBorderImageSliceValue(this)->CustomCSSText();
+      return To<CSSBorderImageSliceValue>(this)->CustomCSSText();
     case kColorClass:
-      return ToCSSColorValue(this)->CustomCSSText();
+      return To<CSSColorValue>(this)->CustomCSSText();
     case kCounterClass:
       return ToCSSCounterValue(this)->CustomCSSText();
     case kCursorImageClass:
@@ -352,7 +352,7 @@ String CSSValue::CssText() const {
     case kImageSetClass:
       return ToCSSImageSetValue(this)->CustomCSSText();
     case kCSSContentDistributionClass:
-      return ToCSSContentDistributionValue(this)->CustomCSSText();
+      return To<CSSContentDistributionValue>(this)->CustomCSSText();
     case kVariableReferenceClass:
       return ToCSSVariableReferenceValue(this)->CustomCSSText();
     case kCustomPropertyDeclarationClass:
@@ -369,25 +369,25 @@ String CSSValue::CssText() const {
 void CSSValue::FinalizeGarbageCollectedObject() {
   switch (GetClassType()) {
     case kAxisClass:
-      ToCSSAxisValue(this)->~CSSAxisValue();
+      To<CSSAxisValue>(this)->~CSSAxisValue();
       return;
     case kBasicShapeCircleClass:
-      ToCSSBasicShapeCircleValue(this)->~CSSBasicShapeCircleValue();
+      To<CSSBasicShapeCircleValue>(this)->~CSSBasicShapeCircleValue();
       return;
     case kBasicShapeEllipseClass:
-      ToCSSBasicShapeEllipseValue(this)->~CSSBasicShapeEllipseValue();
+      To<CSSBasicShapeEllipseValue>(this)->~CSSBasicShapeEllipseValue();
       return;
     case kBasicShapePolygonClass:
-      ToCSSBasicShapePolygonValue(this)->~CSSBasicShapePolygonValue();
+      To<CSSBasicShapePolygonValue>(this)->~CSSBasicShapePolygonValue();
       return;
     case kBasicShapeInsetClass:
-      ToCSSBasicShapeInsetValue(this)->~CSSBasicShapeInsetValue();
+      To<CSSBasicShapeInsetValue>(this)->~CSSBasicShapeInsetValue();
       return;
     case kBorderImageSliceClass:
-      ToCSSBorderImageSliceValue(this)->~CSSBorderImageSliceValue();
+      To<CSSBorderImageSliceValue>(this)->~CSSBorderImageSliceValue();
       return;
     case kColorClass:
-      ToCSSColorValue(this)->~CSSColorValue();
+      To<CSSColorValue>(this)->~CSSColorValue();
       return;
     case kCounterClass:
       ToCSSCounterValue(this)->~CSSCounterValue();
@@ -505,7 +505,7 @@ void CSSValue::FinalizeGarbageCollectedObject() {
       ToCSSImageSetValue(this)->~CSSImageSetValue();
       return;
     case kCSSContentDistributionClass:
-      ToCSSContentDistributionValue(this)->~CSSContentDistributionValue();
+      To<CSSContentDistributionValue>(this)->~CSSContentDistributionValue();
       return;
     case kVariableReferenceClass:
       ToCSSVariableReferenceValue(this)->~CSSVariableReferenceValue();
@@ -526,25 +526,25 @@ void CSSValue::FinalizeGarbageCollectedObject() {
 void CSSValue::Trace(blink::Visitor* visitor) {
   switch (GetClassType()) {
     case kAxisClass:
-      ToCSSAxisValue(this)->TraceAfterDispatch(visitor);
+      To<CSSAxisValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kBasicShapeCircleClass:
-      ToCSSBasicShapeCircleValue(this)->TraceAfterDispatch(visitor);
+      To<CSSBasicShapeCircleValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kBasicShapeEllipseClass:
-      ToCSSBasicShapeEllipseValue(this)->TraceAfterDispatch(visitor);
+      To<CSSBasicShapeEllipseValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kBasicShapePolygonClass:
-      ToCSSBasicShapePolygonValue(this)->TraceAfterDispatch(visitor);
+      To<CSSBasicShapePolygonValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kBasicShapeInsetClass:
-      ToCSSBasicShapeInsetValue(this)->TraceAfterDispatch(visitor);
+      To<CSSBasicShapeInsetValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kBorderImageSliceClass:
-      ToCSSBorderImageSliceValue(this)->TraceAfterDispatch(visitor);
+      To<CSSBorderImageSliceValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kColorClass:
-      ToCSSColorValue(this)->TraceAfterDispatch(visitor);
+      To<CSSColorValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kCounterClass:
       ToCSSCounterValue(this)->TraceAfterDispatch(visitor);
@@ -661,7 +661,7 @@ void CSSValue::Trace(blink::Visitor* visitor) {
       ToCSSImageSetValue(this)->TraceAfterDispatch(visitor);
       return;
     case kCSSContentDistributionClass:
-      ToCSSContentDistributionValue(this)->TraceAfterDispatch(visitor);
+      To<CSSContentDistributionValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kVariableReferenceClass:
       ToCSSVariableReferenceValue(this)->TraceAfterDispatch(visitor);
