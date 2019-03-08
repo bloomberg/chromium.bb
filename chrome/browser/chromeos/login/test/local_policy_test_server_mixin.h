@@ -10,8 +10,10 @@
 #include "base/macros.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/mixin_based_in_process_browser_test.h"
+#include "chrome/browser/chromeos/policy/server_backed_state_keys_broker.h"
 #include "chrome/browser/policy/test/local_policy_test_server.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
+#include "components/policy/proto/device_management_backend.pb.h"
 
 namespace chromeos {
 
@@ -31,6 +33,15 @@ class LocalPolicyTestServerMixin : public InProcessBrowserTestMixin {
 
   bool UpdateDevicePolicy(
       const enterprise_management::ChromeDeviceSettingsProto& policy);
+
+  // Set response for DeviceStateRetrievalRequest. Returns that if finds state
+  // key passed in the request. State keys could be set by RegisterClient call
+  // on policy test server.
+  bool SetDeviceStateRetrievalResponse(
+      policy::ServerBackedStateKeysBroker* keys_broker,
+      enterprise_management::DeviceStateRetrievalResponse::RestoreMode
+          restore_mode,
+      const std::string& managemement_domain);
 
  private:
   std::unique_ptr<policy::LocalPolicyTestServer> policy_test_server_;
