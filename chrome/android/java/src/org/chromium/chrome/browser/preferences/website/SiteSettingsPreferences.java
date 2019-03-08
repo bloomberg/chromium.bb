@@ -180,7 +180,8 @@ public class SiteSettingsPreferences extends PreferenceFragment
             p.setTitle(ContentSettingsResources.getTitle(contentType));
             p.setOnPreferenceClickListener(this);
 
-            if ((Type.CAMERA == prefCategory || Type.MICROPHONE == prefCategory)
+            if ((Type.CAMERA == prefCategory || Type.MICROPHONE == prefCategory
+                        || Type.NOTIFICATIONS == prefCategory)
                     && SiteSettingsCategory.createFromType(prefCategory)
                                .showPermissionBlockedMessage(getActivity())) {
                 // Show 'disabled' message when permission is not granted in Android.
