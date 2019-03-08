@@ -48,6 +48,7 @@ BUILD_PACKAGES_PREBUILTS = '10774.0.0'
 BUILD_PACKAGES_WITH_DEBUG_SYMBOLS = '6302.0.0'
 CROS_RUN_UNITTESTS = '6773.0.0'
 BUILD_IMAGE_BUILDER_PATH = '8183.0.0'
+ANDROID_BREAKPAD = '9667.0.0'
 
 class InvalidWorkspace(failures_lib.StepFailure):
   """Raised when a workspace isn't usable."""
@@ -616,10 +617,20 @@ class WorkspaceDebugSymbolsStage(WorkspaceStageBase,
     symbols_file = self.DownloadAndroidSymbols()
 
     if symbols_file:
-      commands.GenerateAndroidBreakpadSymbols(
-          buildroot, board, symbols_file,
-          chroot_args=ChrootArgs(self._run.options),
-          extra_env=self._portage_extra_env)
+      try:
+        commands.GenerateAndroidBreakpadSymbols(
+            buildroot, board, symbols_file,
+            chroot_args=ChrootArgs(self._run.options),
+            extra_env=self._portage_extra_env)
+      except failures_lib.BuildScriptFailure:
+        # Android breakpad symbol preparation is expected to work in
+        # modern branches.
+        if self.AfterLimit(ANDROID_BREAKPAD):
+          raise
+
+        # For older branches, we only process them on a best effort basis.
+        logging.PrintBuildbotStepWarnings()
+        logging.warning('Preparing Android symbols failed, ignoring..')
 
     # Upload them.
     self.UploadDebugTarball()
