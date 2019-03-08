@@ -157,39 +157,29 @@ void RewritePointersToStackMemory(uintptr_t top,
 #endif
 }
 
-// Represents a recorded stack frame.
-struct RecordedFrame {
-  RecordedFrame(const void* instruction_pointer,
-                const ModuleCache::Module* module)
-      : instruction_pointer(instruction_pointer), module(module) {}
-
-  const void* instruction_pointer;
-  const ModuleCache::Module* module;
-};
-
 // Walks the stack represented by |context| from the current frame downwards,
-// recording the instruction pointer and associated module for each frame in
-// |stack|.
-void RecordStack(ModuleCache* module_cache,
-                 CONTEXT* context,
-                 std::vector<RecordedFrame>* stack) {
+// recording the instruction pointer and associated module for each frame.
+std::vector<Frame> RecordStack(ModuleCache* module_cache, CONTEXT* context) {
 #ifdef _WIN64
-  DCHECK(stack->empty());
+  std::vector<Frame> stack;
 
   // Reserve enough memory for most stacks, to avoid repeated
   // allocations. Approximately 99.9% of recorded stacks are 128 frames or
   // fewer.
-  stack->reserve(128);
+  stack.reserve(128);
 
   Win32StackFrameUnwinder frame_unwinder(module_cache);
   while (ContextPC(context)) {
-    const void* instruction_pointer =
-        reinterpret_cast<const void*>(ContextPC(context));
+    uintptr_t instruction_pointer = ContextPC(context);
     const ModuleCache::Module* module = nullptr;
     if (!frame_unwinder.TryUnwind(context, &module))
-      return;
-    stack->emplace_back(instruction_pointer, module);
+      break;
+    stack.emplace_back(instruction_pointer, module);
   }
+
+  return stack;
+#else
+  return {};
 #endif
 }
 
@@ -295,7 +285,7 @@ void SuspendThreadAndRecordStack(
     void* stack_copy_buffer,
     size_t stack_copy_buffer_size,
     ModuleCache* module_cache,
-    std::vector<RecordedFrame>* stack,
+    std::vector<Frame>* stack,
     ProfileBuilder* profile_builder,
     NativeStackSamplerTestDelegate* test_delegate) {
   DCHECK(stack->empty());
@@ -354,7 +344,7 @@ void SuspendThreadAndRecordStack(
     RewritePointersToStackMemory(top, bottom, &thread_context,
                                  stack_copy_buffer);
 
-    RecordStack(module_cache, &thread_context, stack);
+    *stack = RecordStack(module_cache, &thread_context);
   }
 }
 
@@ -375,9 +365,6 @@ class NativeStackSamplerWin : public NativeStackSampler {
       ProfileBuilder* profile_builder) override;
 
  private:
-  // Creates a set of frames with the information represented by |stack|.
-  std::vector<Frame> CreateFrames(const std::vector<RecordedFrame>& stack);
-
   win::ScopedHandle thread_handle_;
 
   ModuleCache* module_cache_;
@@ -409,29 +396,13 @@ std::vector<Frame> NativeStackSamplerWin::RecordStackFrames(
                "NativeStackSamplerWin::RecordStackFrames");
   DCHECK(stack_buffer);
 
-  std::vector<RecordedFrame> stack;
+  std::vector<Frame> stack;
   SuspendThreadAndRecordStack(thread_handle_.Get(), thread_stack_base_address_,
                               stack_buffer->buffer(), stack_buffer->size(),
                               module_cache_, &stack, profile_builder,
                               test_delegate_);
 
-  return CreateFrames(stack);
-}
-
-std::vector<Frame> NativeStackSamplerWin::CreateFrames(
-    const std::vector<RecordedFrame>& stack) {
-  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cpu_profiler.debug"),
-               "NativeStackSamplerWin::CreateFrames");
-
-  std::vector<Frame> frames;
-  frames.reserve(stack.size());
-
-  for (const auto& frame : stack) {
-    frames.emplace_back(reinterpret_cast<uintptr_t>(frame.instruction_pointer),
-                        frame.module);
-  }
-
-  return frames;
+  return stack;
 }
 
 // NativeStackSampler ---------------------------------------------------------
