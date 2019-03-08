@@ -77,7 +77,6 @@
 #include "net/cert/cert_status_flags.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_response_info.h"
-#include "net/log/net_log_with_source.h"
 #include "net/test/embedded_test_server/default_handlers.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -939,8 +938,7 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
     request->method = "GET";
     fetch_dispatcher_ = std::make_unique<ServiceWorkerFetchDispatcher>(
         std::move(request), resource_type, std::string() /* client_id */,
-        version_, net::NetLogWithSource(), std::move(prepare_callback),
-        std::move(fetch_callback));
+        version_, std::move(prepare_callback), std::move(fetch_callback));
     fetch_dispatcher_->Run();
   }
 

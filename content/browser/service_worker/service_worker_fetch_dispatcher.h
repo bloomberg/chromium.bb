@@ -18,7 +18,6 @@
 #include "content/common/content_export.h"
 #include "content/public/common/resource_type.h"
 #include "mojo/public/cpp/system/data_pipe.h"
-#include "net/log/net_log_with_source.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
@@ -59,7 +58,6 @@ class CONTENT_EXPORT ServiceWorkerFetchDispatcher {
                                ResourceType resource_type,
                                const std::string& client_id,
                                scoped_refptr<ServiceWorkerVersion> version,
-                               const net::NetLogWithSource& net_log,
                                base::OnceClosure prepare_callback,
                                FetchCallback fetch_callback);
   ~ServiceWorkerFetchDispatcher();
@@ -122,7 +120,6 @@ class CONTENT_EXPORT ServiceWorkerFetchDispatcher {
   std::string client_id_;
   scoped_refptr<ServiceWorkerVersion> version_;
   const ResourceType resource_type_;
-  net::NetLogWithSource net_log_;
   base::OnceClosure prepare_callback_;
   FetchCallback fetch_callback_;
   bool did_complete_;
