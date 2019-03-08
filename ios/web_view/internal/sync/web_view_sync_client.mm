@@ -81,8 +81,7 @@ WebViewSyncClient::WebViewSyncClient(WebViewBrowserState* browser_state)
       browser_state_, ServiceAccessType::IMPLICIT_ACCESS);
 
   component_factory_.reset(new browser_sync::ProfileSyncComponentsFactoryImpl(
-      this, version_info::Channel::UNKNOWN,
-      prefs::kSavingBrowserHistoryDisabled,
+      this, version_info::Channel::STABLE, prefs::kSavingBrowserHistoryDisabled,
       base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::UI}),
       db_thread_, profile_web_data_service_, account_web_data_service_,
       password_store_,
