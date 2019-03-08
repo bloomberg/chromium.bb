@@ -306,8 +306,7 @@ bool RenderFrameDevToolsAgentHost::AttachSession(DevToolsSession* session) {
   session->AddHandler(std::make_unique<protocol::SecurityHandler>());
   if (!frame_tree_node_ || !frame_tree_node_->parent()) {
     session->AddHandler(std::make_unique<protocol::TracingHandler>(
-        frame_tree_node_, GetIOContext(),
-        session->client()->UsesBinaryProtocol()));
+        frame_tree_node_, GetIOContext(), session->UsesBinaryProtocol()));
   }
 
   if (sessions().empty()) {
