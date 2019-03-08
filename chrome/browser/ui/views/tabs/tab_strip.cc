@@ -970,6 +970,7 @@ void TabStrip::CloseTab(Tab* tab, CloseTabSource source) {
       AddMessageLoopObserver();
   }
 
+  UpdateHoverCard(nullptr, false);
   controller_->CloseTab(model_index, source);
 }
 
