@@ -18,9 +18,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "services/shape_detection/barcode_detection_impl_mac_vision.h"
-#include "services/shape_detection/barcode_detection_provider_mac.h"
 #include "services/shape_detection/public/mojom/barcodedetection.mojom.h"
-#include "services/shape_detection/public/mojom/barcodedetection_provider.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/utils/mac/SkCGUtils.h"
@@ -37,25 +35,8 @@ ACTION_P(RunClosure, closure) {
   closure.Run();
 }
 
-static const std::vector<mojom::BarcodeFormat>& CISupportedFormats = {
-    mojom::BarcodeFormat::QR_CODE};
-static const std::vector<mojom::BarcodeFormat>& VisionSupportedFormats = {
-    mojom::BarcodeFormat::AZTEC,       mojom::BarcodeFormat::CODE_128,
-    mojom::BarcodeFormat::CODE_39,     mojom::BarcodeFormat::CODE_93,
-    mojom::BarcodeFormat::DATA_MATRIX, mojom::BarcodeFormat::EAN_13,
-    mojom::BarcodeFormat::EAN_8,       mojom::BarcodeFormat::ITF,
-    mojom::BarcodeFormat::PDF417,      mojom::BarcodeFormat::QR_CODE,
-    mojom::BarcodeFormat::UPC_E};
-
-std::unique_ptr<mojom::BarcodeDetectionProvider> CreateBarcodeProviderMac() {
-  return std::make_unique<BarcodeDetectionProviderMac>();
-}
-
 std::unique_ptr<mojom::BarcodeDetection> CreateBarcodeDetectorImplMacCI(
     mojom::BarcodeDetectorOptionsPtr options) {
-  if (@available(macOS 10.13, *)) {
-    return nullptr;
-  }
   if (@available(macOS 10.10, *)) {
     return std::make_unique<BarcodeDetectionImplMac>();
   }
@@ -80,12 +61,12 @@ const std::string kInfoString = "https://www.chromium.org";
 struct TestParams {
   size_t num_barcodes;
   const std::string barcode_value;
-  const std::vector<mojom::BarcodeFormat> formats;
+  bool test_vision_api;
   BarcodeDetectorFactory factory;
 } kTestParams[] = {
-    {1, kInfoString, CISupportedFormats,
+    {1, kInfoString, false,
      base::BindRepeating(&CreateBarcodeDetectorImplMacCI)},
-    {1, kInfoString, VisionSupportedFormats,
+    {1, kInfoString, true,
      base::BindRepeating(&CreateBarcodeDetectorImplMacVision)},
 };
 }
@@ -95,11 +76,14 @@ class BarcodeDetectionImplMacTest : public TestWithParam<struct TestParams> {
   ~BarcodeDetectionImplMacTest() override = default;
 
   void SetUp() override {
+    // Only load the library if we need to for this test.
+    if (GetParam().test_vision_api)
+      return;
+
     if (@available(macOS 10.13, *)) {
       vision_framework_ = dlopen(
           "/System/Library/Frameworks/Vision.framework/Vision", RTLD_LAZY);
     }
-    provider_ = base::BindOnce(&CreateBarcodeProviderMac).Run();
   }
 
   void TearDown() override {
@@ -129,7 +113,6 @@ class BarcodeDetectionImplMacTest : public TestWithParam<struct TestParams> {
   MOCK_METHOD0(OnEnumerateSupportedFormats, void(void));
 
   std::unique_ptr<mojom::BarcodeDetection> impl_;
-  std::unique_ptr<mojom::BarcodeDetectionProvider> provider_;
   const base::MessageLoop message_loop_;
   void* vision_framework_ = nullptr;
 };
@@ -141,24 +124,6 @@ TEST_P(BarcodeDetectionImplMacTest, CreateAndDestroy) {
                     "not supported, skipping test.";
     return;
   }
-}
-
-TEST_P(BarcodeDetectionImplMacTest, EnumerateSupportedBarcodes) {
-  impl_ = GetParam().factory.Run(mojom::BarcodeDetectorOptions::New());
-  if (!impl_) {
-    LOG(WARNING) << "Barcode Detection for this (library, OS version) pair is "
-                    "not supported, skipping test.";
-    return;
-  }
-
-  base::RunLoop run_loop;
-  base::RepeatingClosure quit_closure = run_loop.QuitClosure();
-  EXPECT_CALL(*this, OnEnumerateSupportedFormats())
-      .WillOnce(RunClosure(quit_closure));
-  provider_->EnumerateSupportedFormats(base::BindOnce(
-      &BarcodeDetectionImplMacTest::EnumerateSupportedFormatsCallback,
-      base::Unretained(this), GetParam().formats));
-  run_loop.Run();
 }
 
 // This test generates a single QR code and scans it back.

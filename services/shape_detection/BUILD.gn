@@ -117,6 +117,7 @@ source_set("tests") {
   testonly = true
   sources = [
     "barcode_detection_impl_mac_unittest.mm",
+    "barcode_detection_provider_mac_unittest.mm",
     "face_detection_impl_mac_unittest.mm",
     "face_detection_impl_win_unittest.cc",
     "text_detection_impl_mac_unittest.mm",
