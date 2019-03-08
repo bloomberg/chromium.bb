@@ -19,7 +19,6 @@ from telemetry import benchmark as benchmark_module
 from telemetry import decorators
 from telemetry.testing import options_for_unittests
 from telemetry.testing import progress_reporter
-
 from py_utils import discover
 
 from benchmarks import jetstream
@@ -117,7 +116,7 @@ _BLACK_LIST_TEST_MODULES = {
 _BLACK_LIST_TEST_NAMES = [
    'memory.long_running_idle_gmail_background_tbmv2',
    'tab_switching.typical_25',
-   'oortonline_tbmv2',
+   'UNSCHEDULED_oortonline_tbmv2',
    'webrtc',  # crbug.com/932036
 ]
 
