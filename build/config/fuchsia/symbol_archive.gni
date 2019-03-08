@@ -13,6 +13,8 @@ assert(is_fuchsia)
 #   archive_name: The path to the compressed tarball that will be
 #                   generated.
 template("symbol_archive") {
+  assert(!is_debug)
+
   action(target_name) {
     _ids_txt = invoker.ids_txt
     _build_ids = invoker.archive_name
