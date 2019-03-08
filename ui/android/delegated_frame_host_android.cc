@@ -196,7 +196,7 @@ void DelegatedFrameHostAndroid::EvictDelegatedFrame() {
     content_layer_->RemoveFromParent();
     content_layer_ = nullptr;
   }
-  if (!HasSavedFrame() || frame_evictor_->visible())
+  if (!HasSavedFrame())
     return;
   std::vector<viz::SurfaceId> surface_ids = {
       viz::SurfaceId(frame_sink_id_, local_surface_id_)};
