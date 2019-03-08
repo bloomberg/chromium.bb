@@ -1085,20 +1085,39 @@ void PaintLayer::SetNeedsVisualOverflowRecalc() {
   MarkAncestorChainForFlagsUpdate();
 }
 
+void PaintLayer::SetChildNeedsCompositingInputsUpdateUpToAncestor(
+    PaintLayer* ancestor) {
+  DCHECK(ancestor);
+
+  for (auto* layer = this; layer && layer != ancestor; layer = layer->Parent())
+    layer->child_needs_compositing_inputs_update_ = true;
+
+  ancestor->child_needs_compositing_inputs_update_ = true;
+}
+
 void PaintLayer::SetNeedsCompositingInputsUpdateInternal() {
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
 
   needs_ancestor_dependent_compositing_inputs_update_ = true;
 
+  PaintLayer* last_ancestor = nullptr;
   for (PaintLayer* current = this;
        current && !current->child_needs_compositing_inputs_update_;
-       current = current->Parent())
+       current = current->Parent()) {
+    last_ancestor = current;
     current->child_needs_compositing_inputs_update_ = true;
+    if (Compositor() &&
+        current->GetLayoutObject().ShouldApplyStrictContainment())
+      break;
+  }
 
   if (Compositor()) {
     Compositor()->SetNeedsCompositingUpdate(
         kCompositingUpdateAfterCompositingInputChange);
+
+    if (last_ancestor)
+      Compositor()->UpdateCompositingInputsRoot(last_ancestor);
   }
 }
 
@@ -3411,6 +3430,43 @@ void PaintLayer::ClearNeedsRepaintRecursively() {
   for (PaintLayer* child = FirstChild(); child; child = child->NextSibling())
     child->ClearNeedsRepaintRecursively();
   needs_repaint_ = false;
+}
+
+const PaintLayer* PaintLayer::CommonAncestor(const PaintLayer* other) const {
+  DCHECK(other);
+  if (this == other)
+    return this;
+
+  int this_depth = 0;
+  for (auto* layer = this; layer; layer = layer->Parent()) {
+    if (layer == other)
+      return layer;
+    this_depth++;
+  }
+  int other_depth = 0;
+  for (auto* layer = other; layer; layer = layer->Parent()) {
+    if (layer == this)
+      return layer;
+    other_depth++;
+  }
+
+  const PaintLayer* this_iterator = this;
+  const PaintLayer* other_iterator = other;
+  for (; this_depth > other_depth; this_depth--)
+    this_iterator = this_iterator->Parent();
+  for (; other_depth > this_depth; other_depth--)
+    other_iterator = other_iterator->Parent();
+
+  while (this_iterator) {
+    if (this_iterator == other_iterator)
+      return this_iterator;
+    this_iterator = this_iterator->Parent();
+    other_iterator = other_iterator->Parent();
+  }
+
+  DCHECK(!this_iterator);
+  DCHECK(!other_iterator);
+  return nullptr;
 }
 
 DisableCompositingQueryAsserts::DisableCompositingQueryAsserts()

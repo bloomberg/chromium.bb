@@ -500,6 +500,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     return ShouldApplyPaintContainment() && ShouldApplyLayoutContainment() &&
            ShouldApplyStyleContainment();
   }
+  inline bool ShouldApplyStrictContainment() const {
+    return ShouldApplyPaintContainment() && ShouldApplyLayoutContainment() &&
+           ShouldApplyStyleContainment() && ShouldApplySizeContainment();
+  }
 
  private:
   //////////////////////////////////////////

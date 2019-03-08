@@ -372,8 +372,9 @@ void PaintLayerCompositor::UpdateWithoutAcceleratedCompositing(
     CompositingUpdateType update_type) {
   DCHECK(!HasAcceleratedCompositing());
 
-  if (update_type >= kCompositingUpdateAfterCompositingInputChange)
-    CompositingInputsUpdater(RootLayer()).Update();
+  if (update_type >= kCompositingUpdateAfterCompositingInputChange) {
+    CompositingInputsUpdater(RootLayer(), GetCompositingInputsRoot()).Update();
+  }
 
 #if DCHECK_IS_ON()
   CompositingInputsUpdater::AssertNeedsCompositingInputsUpdateBitsCleared(
@@ -459,7 +460,7 @@ void PaintLayerCompositor::UpdateIfNeeded(
   Vector<PaintLayer*> layers_needing_paint_invalidation;
 
   if (update_type >= kCompositingUpdateAfterCompositingInputChange) {
-    CompositingInputsUpdater(update_root).Update();
+    CompositingInputsUpdater(RootLayer(), GetCompositingInputsRoot()).Update();
 
 #if DCHECK_IS_ON()
     // FIXME: Move this check to the end of the compositing update.
