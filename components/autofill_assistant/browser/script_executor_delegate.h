@@ -53,6 +53,7 @@ class ScriptExecutorDelegate {
   virtual void SetPaymentRequestOptions(
       std::unique_ptr<PaymentRequestOptions> options) = 0;
   virtual void SetProgress(int progress) = 0;
+  virtual void SetProgressVisible(bool visible) = 0;
   virtual void SetChips(std::unique_ptr<std::vector<Chip>> chips) = 0;
 
   // Makes no area of the screen touchable.

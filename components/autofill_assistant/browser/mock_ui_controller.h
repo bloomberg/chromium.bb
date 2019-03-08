@@ -32,6 +32,7 @@ class MockUiController : public UiController {
                void(const PaymentRequestOptions* options));
   MOCK_METHOD1(OnDetailsChanged, void(const Details* details));
   MOCK_METHOD1(OnProgressChanged, void(int progress));
+  MOCK_METHOD1(OnProgressVisibilityChanged, void(bool visible));
   MOCK_METHOD1(OnTouchableAreaChanged, void(const std::vector<RectF>& areas));
   MOCK_CONST_METHOD0(Terminate, bool());
   MOCK_CONST_METHOD0(GetDropOutReason, Metrics::DropOutReason());

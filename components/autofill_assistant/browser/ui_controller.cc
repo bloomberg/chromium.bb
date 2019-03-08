@@ -21,6 +21,7 @@ void UiController::OnPaymentRequestChanged(
     const PaymentRequestOptions* options) {}
 void UiController::OnDetailsChanged(const Details* details) {}
 void UiController::OnProgressChanged(int progress) {}
+void UiController::OnProgressVisibilityChanged(bool visible) {}
 void UiController::OnTouchableAreaChanged(const std::vector<RectF>& areas) {}
 
 }  // namespace autofill_assistant

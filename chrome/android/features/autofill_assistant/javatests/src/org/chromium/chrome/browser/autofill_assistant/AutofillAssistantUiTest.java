@@ -176,6 +176,13 @@ public class AutofillAssistantUiTest {
 
         // Progress bar must be shown.
         Assert.assertTrue(bottomSheet.findViewById(R.id.progress_bar).isShown());
+
+        // Disable progress bar.
+        ThreadUtils.runOnUiThreadBlocking(
+                ()
+                        -> assistantCoordinator.getModel().getHeaderModel().set(
+                                AssistantHeaderModel.PROGRESS_VISIBLE, false));
+        Assert.assertFalse(bottomSheet.findViewById(R.id.progress_bar).isShown());
     }
 
     private void testChips(InOrder inOrder, AssistantCarouselModel carouselModel,

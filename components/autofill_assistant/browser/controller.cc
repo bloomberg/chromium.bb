@@ -153,6 +153,18 @@ void Controller::SetProgress(int progress) {
   GetUiController()->OnProgressChanged(progress);
 }
 
+void Controller::SetProgressVisible(bool visible) {
+  if (progress_visible_ == visible)
+    return;
+
+  progress_visible_ = visible;
+  GetUiController()->OnProgressVisibilityChanged(visible);
+}
+
+bool Controller::GetProgressVisible() const {
+  return progress_visible_;
+}
+
 const std::vector<Chip>& Controller::GetSuggestions() const {
   static const base::NoDestructor<std::vector<Chip>> no_suggestions_;
   return suggestions_ ? *suggestions_ : *no_suggestions_;

@@ -47,6 +47,9 @@ class UiDelegate {
   // Returns the current progress; a percentage.
   virtual int GetProgress() const = 0;
 
+  // Returns whether the progress bar is visible.
+  virtual bool GetProgressVisible() const = 0;
+
   // Returns the current set of suggestions.
   virtual const std::vector<Chip>& GetSuggestions() const = 0;
 
