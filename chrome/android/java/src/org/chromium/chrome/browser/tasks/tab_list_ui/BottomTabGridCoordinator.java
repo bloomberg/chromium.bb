@@ -6,18 +6,21 @@ package org.chromium.chrome.browser.tasks.tab_list_ui;
 
 import android.app.Activity;
 import android.content.Context;
+import android.support.annotation.Nullable;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
-import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupUtils;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.ui.modelutil.PropertyModel;
+
+import java.util.List;
 
 /**
  * A coordinator for BottomTabGrid component. Manages the communication with
@@ -43,9 +46,9 @@ public class BottomTabGridCoordinator implements Destroyable {
         mTabGridCoordinator = new TabListCoordinator(TabListCoordinator.TabListMode.GRID, context,
                 tabModelSelector, tabContentManager, bottomSheetController.getBottomSheet(), false);
 
-        mMediator =
-                new BottomTabGridMediator(mContext, bottomSheetController, this::resetWithTabModel,
-                        mToolbarPropertyModel, tabModelSelector, tabCreatorManager);
+        mMediator = new BottomTabGridMediator(mContext, bottomSheetController,
+                this::resetWithListOfTabs, mToolbarPropertyModel, tabModelSelector,
+                tabCreatorManager);
         startObservingForCreationIPH();
     }
 
@@ -67,17 +70,17 @@ public class BottomTabGridCoordinator implements Destroyable {
     }
 
     /**
-     * Updates tabs list through {@link TabListCoordinator} with given tab model and
-     * calls onReset() on {@link BottomTabGridMediator}
+     * Updates tabs list through {@link TabListCoordinator} with given list of Tabs and
+     * calls onReset() on {@link BottomTabGridMediator}.
      */
-    public void resetWithTabModel(TabModel tabModel) {
-        mTabGridCoordinator.resetWithTabModel(tabModel);
-        updateBottomSheetContent(tabModel);
+    public void resetWithListOfTabs(@Nullable List<Tab> tabs) {
+        mTabGridCoordinator.resetWithListOfTabs(tabs);
+        updateBottomSheetContent(tabs);
         mMediator.onReset(mBottomSheetContent);
     }
 
-    private void updateBottomSheetContent(TabModel tabModel) {
-        if (tabModel != null) {
+    private void updateBottomSheetContent(@Nullable List<Tab> tabs) {
+        if (tabs != null) {
             // create bottom sheet content
             mToolbarCoordinator = new BottomTabGridSheetToolbarCoordinator(
                     mContext, mTabGridCoordinator.getContainerView(), mToolbarPropertyModel);

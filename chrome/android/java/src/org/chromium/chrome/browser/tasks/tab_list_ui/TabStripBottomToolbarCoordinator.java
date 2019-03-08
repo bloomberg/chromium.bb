@@ -9,11 +9,13 @@ import android.view.ViewGroup;
 
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
-import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.ui.modelutil.PropertyModel;
+
+import java.util.List;
 
 /**
  * A coordinator for TabStripBottomToolbar component. Manages the communication with
@@ -61,22 +63,22 @@ public class TabStripBottomToolbarCoordinator
      * Handles a reset event originated from {@link TabStripBottomToolbarMediator}
      * when the bottom sheet is collapsed.
      *
-     * @param tabModel current {@link TabModel} instance.
+     * @param tabs List of Tabs to reset.
      */
     @Override
-    public void resetStripWithTabModel(TabModel tabModel) {
-        mTabStripCoordinator.resetWithTabModel(tabModel);
+    public void resetStripWithListOfTabs(List<Tab> tabs) {
+        mTabStripCoordinator.resetWithListOfTabs(tabs);
     }
 
     /**
      * Handles a reset event originated from {@link TabStripBottomToolbarMediator}
      * when the bottom sheet is expanded.
      *
-     * @param tabModel current {@link TabModel} instance.
+     * @param tabs List of Tabs to reset.
      */
     @Override
-    public void resetSheetWithTabModel(TabModel tabModel) {
-        mBottomTabGridCoordinator.resetWithTabModel(tabModel);
+    public void resetSheetWithListOfTabs(List<Tab> tabs) {
+        mBottomTabGridCoordinator.resetWithListOfTabs(tabs);
     }
 
     /**

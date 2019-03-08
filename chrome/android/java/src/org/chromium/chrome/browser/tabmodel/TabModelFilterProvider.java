@@ -4,6 +4,9 @@
 
 package org.chromium.chrome.browser.tabmodel;
 
+import org.chromium.chrome.browser.tasks.tabgroup.TabGroupModelFilter;
+import org.chromium.chrome.browser.util.FeatureUtilities;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -89,7 +92,9 @@ public class TabModelFilterProvider {
      * @return a {@link TabModelFilter}.
      */
     private TabModelFilter createTabModelFilter(TabModel model) {
-        // TODO(meiliang): build based on chrome feature.
+        if (FeatureUtilities.isTabGroupsAndroidEnabled()) {
+            return new TabGroupModelFilter(model);
+        }
         return new EmptyTabModelFilter(model);
     }
 }
