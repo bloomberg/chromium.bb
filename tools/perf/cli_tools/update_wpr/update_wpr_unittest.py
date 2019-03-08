@@ -20,13 +20,17 @@ class UpdateWprTest(unittest.TestCase):
   def setUp(self):
     self.maxDiff = None
 
+    # TODO(crbug.com/938487): This pattern of mocking leads to double-mocked
+    # functions (when inside a test case we mock something that has already been
+    # mocked), which cannot be reliably unmocked by calling
+    # mock.patch.stopall(), so then the mock leaks to other test cases run
+    # later and breaks them.
     self._check_log = mock.patch('core.cli_helpers.CheckLog').start()
     self._run = mock.patch('core.cli_helpers.Run').start()
     self._check_output = mock.patch('subprocess.check_output').start()
     self._check_call = mock.patch('subprocess.check_call').start()
     self._info = mock.patch('core.cli_helpers.Info').start()
     self._comment = mock.patch('core.cli_helpers.Comment').start()
-    self._ask = mock.patch('core.cli_helpers.Ask').start()
     self._open = mock.patch('__builtin__.open').start()
     datetime = mock.patch('datetime.datetime').start()
     datetime.now.return_value.strftime.return_value = '<tstamp>'
