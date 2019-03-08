@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/ui/views/test/view_event_test_platform_part.h"
 #include "chrome/test/base/chrome_unit_test_suite.h"
@@ -16,7 +15,6 @@
 #include "mojo/core/embedder/embedder.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/ime/input_method_initializer.h"
-#include "ui/base/test/ui_controls.h"
 #include "ui/compositor/test/context_factories_for_test.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
@@ -169,22 +167,17 @@ void ViewEventTestBase::StartMessageLoopAndRunTest() {
   run_loop_.Run();
 }
 
-void ViewEventTestBase::ScheduleMouseMoveInBackground(int x, int y) {
+scoped_refptr<base::SingleThreadTaskRunner>
+ViewEventTestBase::GetDragTaskRunner() {
   if (!drag_event_thread_) {
     drag_event_thread_ = std::make_unique<base::Thread>("drag-event-thread");
     drag_event_thread_->Start();
   }
-  drag_event_thread_->task_runner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(base::IgnoreResult(&ui_controls::SendMouseMove), x, y));
-}
-
-void ViewEventTestBase::StopBackgroundThread() {
-  drag_event_thread_.reset();
+  return drag_event_thread_->task_runner();
 }
 
 void ViewEventTestBase::RunTestMethod(base::OnceClosure task) {
-  StopBackgroundThread();
+  drag_event_thread_.reset();
 
   std::move(task).Run();
   if (HasFatalFailure())

@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/views/bookmarks/bookmark_menu_controller_views.h"
 #include "chrome/browser/ui/views/chrome_constrained_window_views_client.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/test/view_event_test_base.h"
@@ -426,7 +427,13 @@ class BookmarkBarViewDragTestBase : public BookmarkBarViewEventTestBase {
   BookmarkBarViewDragTestBase() = default;
   ~BookmarkBarViewDragTestBase() override = default;
 
-  virtual void OnWidgetDragWillStart() = 0;
+  void OnWidgetDragWillStart() {
+    const gfx::Point target = GetDragTargetInScreen();
+    GetDragTaskRunner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(base::IgnoreResult(&ui_controls::SendMouseMove),
+                       target.x(), target.y()));
+  }
 
   virtual void OnWidgetDragComplete() {
     // All drag tests drag node f1a, so at the end of the test, if the node was
@@ -465,6 +472,16 @@ class BookmarkBarViewDragTestBase : public BookmarkBarViewEventTestBase {
         CreateEventTask(this, &BookmarkBarViewDragTestBase::StartDrag));
   }
 
+  virtual void AfterDragStarted() = 0;
+
+  virtual void OnDragEntered() {
+    // Drop the element.
+    ASSERT_TRUE(ui_controls::SendMouseEventsNotifyWhenDone(
+        ui_controls::LEFT, ui_controls::UP,
+        CreateEventTask(this,
+                        &BookmarkBarViewDragTestBase::OnWidgetDragComplete)));
+  }
+
   // Called after the drag ends; returns the node the test thinks should be the
   // dropped node.  This is used to verify that the dragged node was dropped in
   // the expected position.
@@ -475,21 +492,22 @@ class BookmarkBarViewDragTestBase : public BookmarkBarViewEventTestBase {
 
  private:
   void StartDrag() {
-    const gfx::Point target = GetDragTargetInScreen();
+    const views::View* drag_view =
+        bb_view_->GetMenu()->GetSubmenu()->GetMenuItemAt(0);
+    const gfx::Point current_position =
+        ui_test_utils::GetCenterInScreenCoordinates(drag_view);
 #if defined(USE_AURA)
     // TODO: fix this. Aura requires an additional mouse event to trigger drag
     // and drop checking state.
     EXPECT_TRUE(ui_controls::SendMouseMoveNotifyWhenDone(
-        target.x() + 10, target.y(),
+        current_position.x() + 10, current_position.y(),
         CreateEventTask(this, &BookmarkBarViewDragTestBase::StartDrag2)));
 #else
     EXPECT_TRUE(ui_controls::SendMouseMoveNotifyWhenDone(
-        target.x() + 10, target.y(),
-        CreateEventTask(this,
-                        &BookmarkBarViewDragTestBase::OnWidgetDragWillStart)));
+        current_position.x() + 10, current_position.y(),
+        CreateEventTask(this, &BookmarkBarViewDragTestBase::AfterDragStarted)));
 
-    // See comment above this method as to why we do this.
-    ScheduleMouseMoveInBackground(target.x(), target.y());
+    OnWidgetDragWillStart();
 #endif
   }
 
@@ -497,8 +515,7 @@ class BookmarkBarViewDragTestBase : public BookmarkBarViewEventTestBase {
     const gfx::Point target = GetDragTargetInScreen();
     EXPECT_TRUE(ui_controls::SendMouseMoveNotifyWhenDone(
         target.x(), target.y(),
-        CreateEventTask(this,
-                        &BookmarkBarViewDragTestBase::OnWidgetDragWillStart)));
+        CreateEventTask(this, &BookmarkBarViewDragTestBase::AfterDragStarted)));
   }
 
   GURL f1a_url_;
@@ -776,32 +793,19 @@ VIEW_TEST(BookmarkBarViewTest4, ContextMenus)
 
 // Tests drag and drop within the same menu.
 class BookmarkBarViewTest5 : public BookmarkBarViewDragTestBase {
- public:
-  // BookmarkBarViewDragTestBase:
-  void OnWidgetDragWillStart() override {
-    // Drop the item so that it's now the second item.
-    views::MenuItemView* target_menu =
-        bb_view_->GetMenu()->GetSubmenu()->GetMenuItemAt(1);
-    gfx::Point loc(1, target_menu->height() - 2);
-    views::View::ConvertPointToScreen(target_menu, &loc);
-    ASSERT_TRUE(ui_controls::SendMouseMove(loc.x(), loc.y()));
-
-    ASSERT_TRUE(ui_controls::SendMouseEventsNotifyWhenDone(
-        ui_controls::LEFT, ui_controls::UP,
-        CreateEventTask(this, &BookmarkBarViewTest5::OnWidgetDragComplete)));
-  }
-
  protected:
   // BookmarkBarViewDragTestBase:
+  void AfterDragStarted() override { OnDragEntered(); }
+
   const BookmarkNode* GetDroppedNode() const override {
     return model_->bookmark_bar_node()->GetChild(0)->GetChild(1);
   }
 
   gfx::Point GetDragTargetInScreen() const override {
-    views::MenuItemView* target_menu =
+    const views::View* target_view =
         bb_view_->GetMenu()->GetSubmenu()->GetMenuItemAt(1);
-    gfx::Point target(1, target_menu->height() - 1);
-    views::View::ConvertPointToScreen(target_menu, &target);
+    gfx::Point target(target_view->width() / 2, target_view->height() - 1);
+    views::View::ConvertPointToScreen(target_view, &target);
     return target;
   }
 };
@@ -848,17 +852,6 @@ VIEW_TEST(BookmarkBarViewTest6, OpenMenuOnClickAndHold)
 // Tests drag and drop to different menu.
 class BookmarkBarViewTest7 : public BookmarkBarViewDragTestBase {
  public:
-  // BookmarkBarViewDragTestBase:
-  void OnWidgetDragWillStart() override { OnDropMenuShown(); }
-
-  void OnWidgetDragComplete() override {
-    // The button should be in normal state now.
-    EXPECT_EQ(views::Button::STATE_NORMAL,
-              bb_view_->other_bookmarks_button()->state());
-
-    BookmarkBarViewDragTestBase::OnWidgetDragComplete();
-  }
-
   void OnDropMenuShown() {
     views::MenuItemView* drop_menu = bb_view_->GetDropMenu();
     ASSERT_NE(nullptr, drop_menu);
@@ -869,16 +862,29 @@ class BookmarkBarViewTest7 : public BookmarkBarViewDragTestBase {
     EXPECT_EQ(views::Button::STATE_PRESSED,
               bb_view_->other_bookmarks_button()->state());
 
-    views::MenuItemView* target_menu = drop_submenu->GetMenuItemAt(0);
-    gfx::Point loc(1, 1);
-    views::View::ConvertPointToScreen(target_menu, &loc);
+    const views::View* target_view = drop_submenu->GetMenuItemAt(0);
+
+    // Drag to the top of the target view.
+    gfx::Point target(target_view->width() / 2, 0);
+    views::View::ConvertPointToScreen(target_view, &target);
     ASSERT_TRUE(ui_controls::SendMouseMoveNotifyWhenDone(
-        loc.x(), loc.y(),
+        target.x(), target.y(),
         CreateEventTask(this, &BookmarkBarViewTest7::OnDragEntered)));
+  }
+
+  // BookmarkBarViewDragTestBase:
+  void OnWidgetDragComplete() override {
+    // The button should be in normal state now.
+    EXPECT_EQ(views::Button::STATE_NORMAL,
+              bb_view_->other_bookmarks_button()->state());
+
+    BookmarkBarViewDragTestBase::OnWidgetDragComplete();
   }
 
  protected:
   // BookmarkBarViewDragTestBase:
+  void AfterDragStarted() override { OnDropMenuShown(); }
+
   const BookmarkNode* GetDroppedNode() const override {
     return model_->other_node()->GetChild(0);
   }
@@ -886,13 +892,6 @@ class BookmarkBarViewTest7 : public BookmarkBarViewDragTestBase {
   gfx::Point GetDragTargetInScreen() const override {
     return ui_test_utils::GetCenterInScreenCoordinates(
         bb_view_->other_bookmarks_button());
-  }
-
- private:
-  void OnDragEntered() {
-    ASSERT_TRUE(ui_controls::SendMouseEventsNotifyWhenDone(
-        ui_controls::LEFT, ui_controls::UP,
-        CreateEventTask(this, &BookmarkBarViewTest7::OnWidgetDragComplete)));
   }
 };
 
@@ -907,37 +906,35 @@ VIEW_TEST(BookmarkBarViewTest7, MAYBE(DNDToDifferentMenu))
 // original menu.
 class BookmarkBarViewTest8 : public BookmarkBarViewDragTestBase {
  public:
-  // BookmarkBarViewDragTestBase:
-  void OnWidgetDragWillStart() override { OnDropMenuShown(); }
-
   void OnDropMenuShown() {
-    views::MenuItemView* drop_menu = bb_view_->GetDropMenu();
-    ASSERT_NE(nullptr, drop_menu);
-    ASSERT_TRUE(drop_menu->GetSubmenu()->IsShowing());
-
-    // Now drag back over first menu.
-    views::LabelButton* button = GetBookmarkButton(0);
-    gfx::Point loc = ui_test_utils::GetCenterInScreenCoordinates(button);
-    ASSERT_TRUE(ui_controls::SendMouseMoveNotifyWhenDone(
-        loc.x(), loc.y(),
-        CreateEventTask(this, &BookmarkBarViewTest8::OnDragEntered)));
-  }
-
-  void OnDragEntered() {
-    // Drop on folder F11.
     views::MenuItemView* drop_menu = bb_view_->GetDropMenu();
     ASSERT_NE(nullptr, drop_menu);
     views::SubmenuView* drop_submenu = drop_menu->GetSubmenu();
     ASSERT_TRUE(drop_submenu->IsShowing());
 
-    views::MenuItemView* target_menu = drop_submenu->GetMenuItemAt(1);
-    ui_test_utils::MoveMouseToCenterAndPress(
-        target_menu, ui_controls::LEFT, ui_controls::UP,
-        CreateEventTask(this, &BookmarkBarViewTest8::OnWidgetDragComplete));
+    const views::View* target_view;
+    base::OnceClosure task;
+    const auto* controller =
+        static_cast<const BookmarkMenuController*>(drop_menu->GetDelegate());
+    if (controller->node() == model_->other_node()) {
+      // Now drag back over first menu.
+      target_view = GetBookmarkButton(0);
+      task = CreateEventTask(this, &BookmarkBarViewTest8::OnDropMenuShown);
+    } else {
+      // Drag to folder F11.
+      target_view = drop_submenu->GetMenuItemAt(1);
+      task = CreateEventTask(this, &BookmarkBarViewTest8::OnDragEntered);
+    }
+    const gfx::Point target =
+        ui_test_utils::GetCenterInScreenCoordinates(target_view);
+    ASSERT_TRUE(ui_controls::SendMouseMoveNotifyWhenDone(target.x(), target.y(),
+                                                         std::move(task)));
   }
 
  protected:
   // BookmarkBarViewDragTestBase:
+  void AfterDragStarted() override { OnDropMenuShown(); }
+
   const BookmarkNode* GetDroppedNode() const override {
     return model_->bookmark_bar_node()->GetChild(0)->GetChild(0)->GetChild(1);
   }
@@ -1941,29 +1938,29 @@ VIEW_TEST(BookmarkBarViewTest21, ContextMenusForEmptyFolder)
 class BookmarkBarViewTest22 : public BookmarkBarViewDragTestBase {
  public:
   // BookmarkBarViewDragTestBase:
-  void OnWidgetDragWillStart() override {
-    OnDragEntered();
-    OnWidgetDestroyed();
-  }
-
   void OnWidgetDestroyed() {
-#if defined(OS_CHROMEOS)
-    ASSERT_TRUE(ui_controls::SendMouseEventsNotifyWhenDone(
-        ui_controls::LEFT, ui_controls::UP,
-        CreateEventTask(this, &BookmarkBarViewTest22::Done)));
-#else
-    // There are no widgets to send the mouse release to.
     Done();
-#endif
   }
 
  protected:
-  void OnDragEntered() {
+  // BookmarkBarViewDragTestBase:
+  void AfterDragStarted() override { OnDragEntered(); }
+
+  void OnDragEntered() override {
+#if defined(OS_CHROMEOS)
+    ASSERT_TRUE(ui_controls::SendMouseEventsNotifyWhenDone(
+        ui_controls::LEFT, ui_controls::UP,
+        CreateEventTask(this, &BookmarkBarViewTest22::OnWidgetDestroyed)));
+#endif
+
     window_->Close();
-    window_ = NULL;
+    window_ = nullptr;
+
+#if !defined(OS_CHROMEOS)
+    OnWidgetDestroyed();
+#endif
   }
 
-  // BookmarkBarViewDragTestBase:
   const BookmarkNode* GetDroppedNode() const override {
     // This test doesn't check what happens on drop.
     return nullptr;

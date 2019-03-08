@@ -97,7 +97,7 @@ void ToolbarViewInteractiveUITest::AppMenuShown() {
 
 void ToolbarViewInteractiveUITest::OnWidgetDragWillStart() {
   // Enqueue an event to move the mouse to the app menu button, which should
-  // result in calling OnMenuOpened().
+  // result in calling AppMenuShown().
   const gfx::Point target =
       ui_test_utils::GetCenterInScreenCoordinates(GetAppMenuButton());
   task_runner_->PostTask(
@@ -111,10 +111,12 @@ void ToolbarViewInteractiveUITest::OnWidgetDragComplete() {
 }
 
 void ToolbarViewInteractiveUITest::StartDrag() {
-  // Move the mouse outside the app button.
-  gfx::Point target =
-      ui_test_utils::GetCenterInScreenCoordinates(GetAppMenuButton());
-  EXPECT_TRUE(ui_controls::SendMouseMove(target.x() + 10, target.y()));
+  // Move the mouse outside the toolbar action.
+  const views::View* toolbar_action =
+      GetBrowserActions()->GetToolbarActionViewAt(0);
+  gfx::Point target(toolbar_action->width() + 1, toolbar_action->height() / 2);
+  views::View::ConvertPointToScreen(toolbar_action, &target);
+  EXPECT_TRUE(ui_controls::SendMouseMove(target.x(), target.y()));
 
   OnWidgetDragWillStart();
 }

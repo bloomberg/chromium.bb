@@ -87,14 +87,14 @@ void TestTargetView::Init() {
   // First, fill the parent completely.
   SetBoundsRect(parent()->GetLocalBounds());
 
-  // Then add two draggable views, each 10x2.
+  // Then add two draggable views, each 10x5.
   views::View* first = new TestDragView();
   AddChildView(first);
-  first->SetBounds(2, 2, 10, 2);
+  first->SetBounds(2, 2, 10, 5);
 
   views::View* second = new TestDragView();
   AddChildView(second);
-  second->SetBounds(15, 2, 10, 2);
+  second->SetBounds(15, 2, 10, 5);
 }
 
 bool TestTargetView::GetDropFormats(
@@ -143,6 +143,8 @@ class MenuViewDragAndDropTest : public MenuTestBase {
   // MenuTestBase:
   void BuildMenu(views::MenuItemView* menu) override;
   void DoTestWithMenuOpen() override;
+
+  virtual void OnDragEntered();
 
   TestTargetView* target_view() { return target_view_; }
   bool asked_to_close() const { return asked_to_close_; }
@@ -201,14 +203,23 @@ void MenuViewDragAndDropTest::DoTestWithMenuOpen() {
   ASSERT_TRUE(submenu);
   ASSERT_TRUE(submenu->IsShowing());
   ASSERT_EQ(3, submenu->GetMenuItemCount());
-  views::View* first_view = submenu->GetMenuItemAt(0);
+  const views::View* first_view = submenu->GetMenuItemAt(0);
   ASSERT_EQ(1, first_view->child_count());
-  views::View* child_view = first_view->child_at(0);
+  const views::View* child_view = first_view->child_at(0);
   EXPECT_EQ(child_view, target_view_);
 
   // We do this here (instead of in BuildMenu()) so that the menu is already
   // built and the bounds are correct.
   target_view_->Init();
+}
+
+void MenuViewDragAndDropTest::OnDragEntered() {
+  // Drop the element.
+  GetDragTaskRunner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(base::IgnoreResult(&ui_controls::SendMouseEvents),
+                     ui_controls::LEFT, ui_controls::UP,
+                     ui_controls::kNoAccelerator));
 }
 
 bool MenuViewDragAndDropTest::GetDropFormats(
@@ -276,15 +287,16 @@ class MenuViewDragAndDropTestTestInMenuDrag : public MenuViewDragAndDropTest {
 
  private:
   void StartDrag();
-  void OnDragEntered();
 };
 
 void MenuViewDragAndDropTestTestInMenuDrag::OnWidgetDragWillStart() {
   // Enqueue an event to drag the second menu element to the third element.
-  views::View* drag_view = menu()->GetSubmenu()->GetMenuItemAt(2);
-  gfx::Point loc(1, drag_view->height() - 1);
-  views::View::ConvertPointToScreen(drag_view, &loc);
-  ScheduleMouseMoveInBackground(loc.x(), loc.y());
+  const views::View* drop_target_view = menu()->GetSubmenu()->GetMenuItemAt(2);
+  const gfx::Point target =
+      ui_test_utils::GetCenterInScreenCoordinates(drop_target_view);
+  GetDragTaskRunner()->PostTask(
+      FROM_HERE, base::BindOnce(base::IgnoreResult(&ui_controls::SendMouseMove),
+                                target.x(), target.y()));
 }
 
 void MenuViewDragAndDropTestTestInMenuDrag::OnWidgetDragComplete() {
@@ -303,8 +315,10 @@ void MenuViewDragAndDropTestTestInMenuDrag::OnWidgetDragComplete() {
 void MenuViewDragAndDropTestTestInMenuDrag::DoTestWithMenuOpen() {
   MenuViewDragAndDropTest::DoTestWithMenuOpen();
 
+  views::SubmenuView* submenu = menu()->GetSubmenu();
+
   // We're going to drag the second menu element.
-  views::MenuItemView* drag_view = menu()->GetSubmenu()->GetMenuItemAt(1);
+  views::MenuItemView* drag_view = submenu->GetMenuItemAt(1);
   ASSERT_NE(nullptr, drag_view);
   ui_test_utils::MoveMouseToCenterAndPress(
       drag_view, ui_controls::LEFT, ui_controls::DOWN,
@@ -313,28 +327,15 @@ void MenuViewDragAndDropTestTestInMenuDrag::DoTestWithMenuOpen() {
 
 void MenuViewDragAndDropTestTestInMenuDrag::StartDrag() {
   // Begin dragging the second menu element.
-  views::View* drag_view = menu()->GetSubmenu()->GetMenuItemAt(2);
-  gfx::Point loc(1, drag_view->height() - 1);
-  views::View::ConvertPointToScreen(drag_view, &loc);
+  const views::View* drag_view = menu()->GetSubmenu()->GetMenuItemAt(1);
+  const gfx::Point current_position =
+      ui_test_utils::GetCenterInScreenCoordinates(drag_view);
   EXPECT_TRUE(ui_controls::SendMouseMoveNotifyWhenDone(
-      loc.x() + 10, loc.y(),
+      current_position.x() + 10, current_position.y(),
       CreateEventTask(this,
                       &MenuViewDragAndDropTestTestInMenuDrag::OnDragEntered)));
 
   OnWidgetDragWillStart();
-}
-
-void MenuViewDragAndDropTestTestInMenuDrag::OnDragEntered() {
-  // Drop the item on the target.
-  views::MenuItemView* drop_target = menu()->GetSubmenu()->GetMenuItemAt(2);
-  gfx::Point loc(1, drop_target->height() - 2);
-  views::View::ConvertPointToScreen(drop_target, &loc);
-  ui_controls::SendMouseMove(loc.x(), loc.y());
-
-  ui_controls::SendMouseEventsNotifyWhenDone(
-      ui_controls::LEFT, ui_controls::UP,
-      CreateEventTask(
-          this, &MenuViewDragAndDropTestTestInMenuDrag::OnWidgetDragComplete));
 }
 
 // Test that an in-menu (i.e., entirely implemented in the menu code) closes the
@@ -356,18 +357,20 @@ class MenuViewDragAndDropTestNestedDrag : public MenuViewDragAndDropTest {
  protected:
   // MenuViewDragAndDropTest:
   void DoTestWithMenuOpen() override;
+  void OnDragEntered() override;
 
  private:
   void StartDrag();
-  void OnDragEntered();
 };
 
 void MenuViewDragAndDropTestNestedDrag::OnWidgetDragWillStart() {
   // Enqueue an event to drag the target's first child to its second.
-  views::View* drop_target = target_view()->child_at(1);
-  gfx::Point loc(2, 0);
-  views::View::ConvertPointToScreen(drop_target, &loc);
-  ScheduleMouseMoveInBackground(loc.x(), loc.y());
+  const views::View* drop_target_view = target_view()->child_at(1);
+  const gfx::Point target =
+      ui_test_utils::GetCenterInScreenCoordinates(drop_target_view);
+  GetDragTaskRunner()->PostTask(
+      FROM_HERE, base::BindOnce(base::IgnoreResult(&ui_controls::SendMouseMove),
+                                target.x(), target.y()));
 }
 
 void MenuViewDragAndDropTestNestedDrag::OnWidgetDragComplete() {
@@ -402,33 +405,24 @@ void MenuViewDragAndDropTestNestedDrag::DoTestWithMenuOpen() {
       CreateEventTask(this, &MenuViewDragAndDropTestNestedDrag::StartDrag));
 }
 
-void MenuViewDragAndDropTestNestedDrag::StartDrag() {
-  // Begin dragging the target's first child.
-  views::View* drop_target = target_view()->child_at(1);
-  gfx::Point loc(2, 0);
-  views::View::ConvertPointToScreen(drop_target, &loc);
-  EXPECT_TRUE(ui_controls::SendMouseMoveNotifyWhenDone(
-      loc.x() + 10, loc.y(),
-      CreateEventTask(this,
-                      &MenuViewDragAndDropTestNestedDrag::OnDragEntered)));
-
-  OnWidgetDragWillStart();
-}
-
 void MenuViewDragAndDropTestNestedDrag::OnDragEntered() {
   // The view should be dragging now.
   EXPECT_TRUE(target_view()->dragging());
 
-  // Drop the item so that it's now the second item.
-  views::View* drop_target = target_view()->child_at(1);
-  gfx::Point loc(5, 0);
-  views::View::ConvertPointToScreen(drop_target, &loc);
-  ui_controls::SendMouseMove(loc.x(), loc.y());
+  MenuViewDragAndDropTest::OnDragEntered();
+}
 
-  ui_controls::SendMouseEventsNotifyWhenDone(
-      ui_controls::LEFT, ui_controls::UP,
-      CreateEventTask(
-          this, &MenuViewDragAndDropTestNestedDrag::OnWidgetDragComplete));
+void MenuViewDragAndDropTestNestedDrag::StartDrag() {
+  // Begin dragging the target's first child.
+  const views::View* drag_view = target_view()->child_at(0);
+  const gfx::Point current_position =
+      ui_test_utils::GetCenterInScreenCoordinates(drag_view);
+  EXPECT_TRUE(ui_controls::SendMouseMoveNotifyWhenDone(
+      current_position.x() + 10, current_position.y(),
+      CreateEventTask(this,
+                      &MenuViewDragAndDropTestNestedDrag::OnDragEntered)));
+
+  OnWidgetDragWillStart();
 }
 
 // Test that a nested drag (i.e. one via a child view, and not entirely
