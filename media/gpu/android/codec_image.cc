@@ -96,7 +96,7 @@ bool CodecImage::CopyTexImage(unsigned target) {
   if (bound_service_id != static_cast<GLint>(texture_owner_->GetTextureId()))
     return false;
 
-  RenderToTextureOwnerFrontBuffer(BindingsMode::kDontRestore);
+  RenderToTextureOwnerFrontBuffer(BindingsMode::kEnsureTexImageBound);
   return true;
 }
 
@@ -155,7 +155,7 @@ void CodecImage::GetTextureMatrix(float matrix[16]) {
   // The matrix is available after we render to the front buffer. If that fails
   // we'll return the matrix from the previous frame, which is more likely to be
   // correct than the identity matrix anyway.
-  RenderToTextureOwnerFrontBuffer(BindingsMode::kDontRestore);
+  RenderToTextureOwnerFrontBuffer(BindingsMode::kDontRestoreIfBound);
   texture_owner_->GetTransformMatrix(matrix);
   YInvertMatrix(matrix);
 }
@@ -176,8 +176,10 @@ void CodecImage::NotifyPromotionHint(bool promotion_hint,
 }
 
 bool CodecImage::RenderToFrontBuffer() {
+  // This code is used to trigger early rendering of the image before it is used
+  // for compositing, there is no need to bind the image.
   return texture_owner_
-             ? RenderToTextureOwnerFrontBuffer(BindingsMode::kRestore)
+             ? RenderToTextureOwnerFrontBuffer(BindingsMode::kRestoreIfBound)
              : RenderToOverlay();
 }
 
@@ -202,13 +204,13 @@ bool CodecImage::RenderToTextureOwnerBackBuffer() {
   return true;
 }
 
-bool CodecImage::RenderToTextureOwnerFrontBuffer(BindingsMode bindings_mode,
-                                                 bool bind_egl_image) {
+bool CodecImage::RenderToTextureOwnerFrontBuffer(BindingsMode bindings_mode) {
   DCHECK(texture_owner_);
-  DCHECK(bind_egl_image);
 
-  if (phase_ == Phase::kInFrontBuffer)
+  if (phase_ == Phase::kInFrontBuffer) {
+    EnsureBoundIfNeeded(bindings_mode);
     return true;
+  }
   if (phase_ == Phase::kInvalidated)
     return false;
 
@@ -223,21 +225,29 @@ bool CodecImage::RenderToTextureOwnerFrontBuffer(BindingsMode bindings_mode,
 
   std::unique_ptr<ui::ScopedMakeCurrent> scoped_make_current =
       MakeCurrentIfNeeded(texture_owner_.get());
-  // If we have to switch contexts, then we always want to restore the
-  // bindings. Also if bind_egl_image is set to false, we do no need to restore
-  // any bindings since UpdateTexImage will not bind any egl image to the
-  // texture target.
+  // If updating the image will implicitly update the texture bindings then
+  // restore if requested or the update needed a context switch.
   bool should_restore_bindings =
-      (bindings_mode == BindingsMode::kRestore || !!scoped_make_current) &&
-      bind_egl_image;
+      texture_owner_->binds_texture_on_update() &&
+      (bindings_mode == BindingsMode::kRestoreIfBound || !!scoped_make_current);
 
   GLint bound_service_id = 0;
   if (should_restore_bindings)
     glGetIntegerv(GL_TEXTURE_BINDING_EXTERNAL_OES, &bound_service_id);
-  texture_owner_->UpdateTexImage(bind_egl_image);
+  texture_owner_->UpdateTexImage();
+  EnsureBoundIfNeeded(bindings_mode);
   if (should_restore_bindings)
     glBindTexture(GL_TEXTURE_EXTERNAL_OES, bound_service_id);
   return true;
+}
+
+void CodecImage::EnsureBoundIfNeeded(BindingsMode mode) {
+  DCHECK(texture_owner_);
+
+  if (texture_owner_->binds_texture_on_update() ||
+      mode != BindingsMode::kEnsureTexImageBound)
+    return;
+  texture_owner_->EnsureTexImageBound();
 }
 
 bool CodecImage::RenderToOverlay() {
@@ -263,7 +273,7 @@ std::unique_ptr<base::android::ScopedHardwareBufferFenceSync>
 CodecImage::GetAHardwareBuffer() {
   DCHECK(texture_owner_);
 
-  RenderToTextureOwnerFrontBuffer(BindingsMode::kDontRestore);
+  RenderToTextureOwnerFrontBuffer(BindingsMode::kDontRestoreIfBound);
   return texture_owner_->GetAHardwareBuffer();
 }
 

@@ -48,6 +48,8 @@ void AVDASharedState::WaitForFrameAvailable() {
 
 void AVDASharedState::UpdateTexImage() {
   texture_owner()->UpdateTexImage();
+  if (!texture_owner()->binds_texture_on_update())
+    texture_owner()->EnsureTexImageBound();
   // Helpfully, this is already column major.
   texture_owner()->GetTransformMatrix(gl_matrix_);
 }

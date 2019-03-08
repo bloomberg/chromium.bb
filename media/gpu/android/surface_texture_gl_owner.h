@@ -33,7 +33,8 @@ class MEDIA_GPU_EXPORT SurfaceTextureGLOwner : public TextureOwner {
   gl::GLContext* GetContext() const override;
   gl::GLSurface* GetSurface() const override;
   gl::ScopedJavaSurface CreateJavaSurface() const override;
-  void UpdateTexImage(bool bind_egl_image) override;
+  void UpdateTexImage() override;
+  void EnsureTexImageBound() override;
   void GetTransformMatrix(float mtx[16]) override;
   void ReleaseBackBuffers() override;
   void SetReleaseTimeToNow() override;

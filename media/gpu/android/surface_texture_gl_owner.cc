@@ -37,7 +37,7 @@ struct FrameAvailableEvent
 
 SurfaceTextureGLOwner::SurfaceTextureGLOwner(
     std::unique_ptr<gpu::gles2::AbstractTexture> texture)
-    : TextureOwner(std::move(texture)),
+    : TextureOwner(true /*binds_texture_on_update */, std::move(texture)),
       surface_texture_(gl::SurfaceTexture::Create(GetTextureId())),
       context_(gl::GLContext::GetCurrent()),
       surface_(gl::GLSurface::GetCurrent()),
@@ -68,13 +68,14 @@ gl::ScopedJavaSurface SurfaceTextureGLOwner::CreateJavaSurface() const {
   return gl::ScopedJavaSurface(surface_texture_.get());
 }
 
-// bind_egl_image is a no-op for surface texture since it always binds the egl
-// image under the hood.
-void SurfaceTextureGLOwner::UpdateTexImage(bool bind_egl_image) {
+void SurfaceTextureGLOwner::UpdateTexImage() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(bind_egl_image);
   if (surface_texture_)
     surface_texture_->UpdateTexImage();
+}
+
+void SurfaceTextureGLOwner::EnsureTexImageBound() {
+  NOTREACHED();
 }
 
 void SurfaceTextureGLOwner::GetTransformMatrix(float mtx[]) {
