@@ -48,6 +48,8 @@ namespace {
 DEFINE_VARIATION_PARAM(kIPHDummyFeature, "IPH_Dummy");
 #if defined(OS_ANDROID)
 DEFINE_VARIATION_PARAM(kIPHDataSaverDetailFeature, "IPH_DataSaverDetail");
+DEFINE_VARIATION_PARAM(kIPHDataSaverMilestonePromoFeature,
+                       "IPH_DataSaverMilestonePromo");
 DEFINE_VARIATION_PARAM(kIPHDataSaverPreviewFeature, "IPH_DataSaverPreview");
 DEFINE_VARIATION_PARAM(kIPHDownloadHomeFeature, "IPH_DownloadHome");
 DEFINE_VARIATION_PARAM(kIPHDownloadPageFeature, "IPH_DownloadPage");
@@ -109,6 +111,7 @@ constexpr flags_ui::FeatureEntry::FeatureVariation
     kIPHDemoModeChoiceVariations[] = {
 #if defined(OS_ANDROID)
         VARIATION_ENTRY(kIPHDataSaverDetailFeature),
+        VARIATION_ENTRY(kIPHDataSaverMilestonePromoFeature),
         VARIATION_ENTRY(kIPHDataSaverPreviewFeature),
         VARIATION_ENTRY(kIPHDownloadHomeFeature),
         VARIATION_ENTRY(kIPHDownloadPageFeature),
