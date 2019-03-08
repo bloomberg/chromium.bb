@@ -93,10 +93,10 @@
 
     'chromium.chrome': {
       'chromeos-amd64-generic-google-rel': 'official_cros_chrome_sdk',
-      'Google Chrome ChromeOS': 'official_goma_chromeos',
-      'Google Chrome Linux x64': 'official_goma',
-      'Google Chrome Mac': 'official_goma',
-      'Google Chrome Win': 'official_goma_x86',
+      'linux-chromeos-google-rel': 'official_goma_chromeos',
+      'linux-google-rel': 'official_goma',
+      'mac-google-rel': 'official_goma',
+      'win-google-rel': 'official_goma_x86',
     },
 
     'chromium.chromedriver': {
