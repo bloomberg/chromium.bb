@@ -17,8 +17,6 @@
 #import "ios/chrome/browser/ui/infobars/infobar_feature.h"
 #import "ios/chrome/browser/ui/infobars/infobar_positioner.h"
 #include "ios/chrome/browser/ui/infobars/legacy_infobar_container_view_controller.h"
-#import "ios/chrome/browser/ui/infobars/presentation/infobar_banner_animator.h"
-#import "ios/chrome/browser/ui/infobars/presentation/infobar_banner_presentation_controller.h"
 #import "ios/chrome/browser/ui/signin_interaction/public/signin_presenter.h"
 #include "ios/chrome/browser/upgrade/upgrade_center.h"
 
@@ -28,7 +26,6 @@
 
 @interface InfobarContainerCoordinator () <
     InfobarContainerConsumer,
-    UIViewControllerTransitioningDelegate,
     SigninPresenter>
 
 @property(nonatomic, assign) TabModel* tabModel;
@@ -148,16 +145,11 @@
   ChromeCoordinator<InfobarCoordinating>* infobarCoordinator =
       static_cast<ChromeCoordinator<InfobarCoordinating>*>(infoBarDelegate);
 
-  // Present the InfobarCoordinator BannerViewController.
+  // Present the InfobarBanner, and set the Coordinator and View hierarchies.
   [infobarCoordinator start];
+  [infobarCoordinator presentInfobarBannerFrom:self.baseViewController];
   self.infobarViewController = [infobarCoordinator bannerViewController];
-  [infobarCoordinator bannerViewController].transitioningDelegate = self;
-  [[infobarCoordinator bannerViewController]
-      setModalPresentationStyle:UIModalPresentationCustom];
-  [self.baseViewController
-      presentViewController:[infobarCoordinator bannerViewController]
-                   animated:YES
-                 completion:nil];
+  [self.childCoordinators addObject:infobarCoordinator];
 }
 
 - (void)setUserInteractionEnabled:(BOOL)enabled {
@@ -173,38 +165,15 @@
 #pragma mark - InfobarCommands
 
 - (void)displayModalInfobar {
-  // TODO(crbug.com/911864): To be implemented.
-}
+  // Dismiss the InfobarBanner if being presented.
+  if (self.baseViewController.presentedViewController) {
+    [self.baseViewController dismissViewControllerAnimated:NO completion:nil];
+  }
 
-#pragma mark - UIViewControllerTransitioningDelegate
-
-- (UIPresentationController*)
-    presentationControllerForPresentedViewController:
-        (UIViewController*)presented
-                            presentingViewController:
-                                (UIViewController*)presenting
-                                sourceViewController:(UIViewController*)source {
-  InfobarBannerPresentationController* presentationController =
-      [[InfobarBannerPresentationController alloc]
-          initWithPresentedViewController:presented
-                 presentingViewController:presenting];
-  return presentationController;
-}
-
-- (id<UIViewControllerAnimatedTransitioning>)
-    animationControllerForPresentedController:(UIViewController*)presented
-                         presentingController:(UIViewController*)presenting
-                             sourceController:(UIViewController*)source {
-  InfobarBannerAnimator* animator = [[InfobarBannerAnimator alloc] init];
-  animator.presenting = YES;
-  return animator;
-}
-
-- (id<UIViewControllerAnimatedTransitioning>)
-    animationControllerForDismissedController:(UIViewController*)dismissed {
-  InfobarBannerAnimator* animator = [[InfobarBannerAnimator alloc] init];
-  animator.presenting = NO;
-  return animator;
+  ChromeCoordinator<InfobarCoordinating>* infobarCoordinator =
+      static_cast<ChromeCoordinator<InfobarCoordinating>*>(
+          self.activeChildCoordinator);
+  [infobarCoordinator presentInfobarModalFrom:self.baseViewController];
 }
 
 #pragma mark - SigninPresenter

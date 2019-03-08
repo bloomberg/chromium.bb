@@ -16,8 +16,8 @@
 // Asks the delegate to dismiss the InfobarBanner.
 - (void)dismissInfobarBanner:(UIViewController*)sender;
 
-// Asks the delegate to to present the InfobarModal for this InfobarBanner.
-- (void)presentInfobarModal;
+// Asks the delegate to present the InfobarModal for this InfobarBanner.
+- (void)presentInfobarModalFromBanner;
 
 @end
 
