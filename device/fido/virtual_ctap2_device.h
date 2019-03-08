@@ -29,8 +29,15 @@ namespace device {
 class COMPONENT_EXPORT(DEVICE_FIDO) VirtualCtap2Device
     : public VirtualFidoDevice {
  public:
+  struct COMPONENT_EXPORT(DEVICE_FIDO) Config {
+    Config();
+
+    bool pin_support = false;
+    bool internal_uv_support = false;
+  };
+
   VirtualCtap2Device();
-  explicit VirtualCtap2Device(scoped_refptr<State> state, bool enable_pin);
+  explicit VirtualCtap2Device(scoped_refptr<State> state, const Config& config);
   ~VirtualCtap2Device() override;
 
   // FidoDevice:

@@ -2449,6 +2449,71 @@ TEST_F(AuthenticatorImplTest, ExtensionHMACSecret) {
   }
 }
 
+class UVAuthenticatorImplTest : public AuthenticatorImplTest {
+ public:
+  UVAuthenticatorImplTest() = default;
+
+ protected:
+  static PublicKeyCredentialCreationOptionsPtr make_credential_options(
+      blink::mojom::UserVerificationRequirement uv =
+          blink::mojom::UserVerificationRequirement::REQUIRED) {
+    PublicKeyCredentialCreationOptionsPtr options =
+        GetTestPublicKeyCredentialCreationOptions();
+    options->authenticator_selection->user_verification = uv;
+    return options;
+  }
+
+  static PublicKeyCredentialRequestOptionsPtr get_credential_options(
+      blink::mojom::UserVerificationRequirement uv =
+          blink::mojom::UserVerificationRequirement::REQUIRED) {
+    PublicKeyCredentialRequestOptionsPtr options =
+        GetTestPublicKeyCredentialRequestOptions();
+    options->user_verification = uv;
+    return options;
+  }
+
+  static const char* UVToString(blink::mojom::UserVerificationRequirement uv) {
+    switch (uv) {
+      case blink::mojom::UserVerificationRequirement::DISCOURAGED:
+        return "discouraged";
+      case blink::mojom::UserVerificationRequirement::PREFERRED:
+        return "preferred";
+      case blink::mojom::UserVerificationRequirement::REQUIRED:
+        return "required";
+    }
+  }
+
+  static bool HasUV(const TestMakeCredentialCallback& callback) {
+    DCHECK_EQ(AuthenticatorStatus::SUCCESS, callback.status());
+    base::Optional<Value> attestation_value =
+        Reader::Read(callback.value()->attestation_object);
+    DCHECK(attestation_value);
+    DCHECK(attestation_value->is_map());
+    const auto& attestation = attestation_value->GetMap();
+
+    const auto auth_data_it = attestation.find(Value("authData"));
+    DCHECK(auth_data_it != attestation.end() &&
+           auth_data_it->second.is_bytestring());
+    base::Optional<device::AuthenticatorData> auth_data =
+        device::AuthenticatorData::DecodeAuthenticatorData(
+            auth_data_it->second.GetBytestring());
+    return auth_data->obtained_user_verification();
+  }
+
+  static bool HasUV(const TestGetAssertionCallback& callback) {
+    DCHECK_EQ(AuthenticatorStatus::SUCCESS, callback.status());
+    base::Optional<device::AuthenticatorData> auth_data =
+        device::AuthenticatorData::DecodeAuthenticatorData(
+            callback.value()->authenticator_data);
+    return auth_data->obtained_user_verification();
+  }
+
+  device::test::ScopedVirtualFidoDevice virtual_device_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(UVAuthenticatorImplTest);
+};
+
 // PINList is a list of expected |attempts| values and the PIN to answer with.
 using PINList = std::list<std::pair<base::Optional<int>, std::string>>;
 
@@ -2500,16 +2565,18 @@ class PINTestAuthenticatorContentBrowserClient : public ContentBrowserClient {
   base::Optional<InterestingFailureReason> failure_reason;
 };
 
-class PINAuthenticatorContentBrowserClientTest : public AuthenticatorImplTest {
+class PINAuthenticatorImplTest : public UVAuthenticatorImplTest {
  public:
-  PINAuthenticatorContentBrowserClientTest() = default;
+  PINAuthenticatorImplTest() = default;
 
   void SetUp() override {
     scoped_feature_list_.InitAndEnableFeature(device::kWebAuthPINSupport);
 
-    AuthenticatorImplTest::SetUp();
+    UVAuthenticatorImplTest::SetUp();
     old_client_ = SetBrowserClientForTesting(&test_client_);
-    virtual_device_.EnablePINSupport();
+    device::VirtualCtap2Device::Config config;
+    config.pin_support = true;
+    virtual_device_.SetCtap2Config(config);
     NavigateAndCommit(GURL(kTestOrigin1));
   }
 
@@ -2519,60 +2586,18 @@ class PINAuthenticatorContentBrowserClientTest : public AuthenticatorImplTest {
   }
 
  protected:
-  static PublicKeyCredentialCreationOptionsPtr make_credential_options() {
-    PublicKeyCredentialCreationOptionsPtr options =
-        GetTestPublicKeyCredentialCreationOptions();
-    options->authenticator_selection->user_verification =
-        blink::mojom::UserVerificationRequirement::REQUIRED;
-    return options;
-  }
-
-  static PublicKeyCredentialRequestOptionsPtr get_credential_options() {
-    PublicKeyCredentialRequestOptionsPtr options =
-        GetTestPublicKeyCredentialRequestOptions();
-    options->user_verification =
-        blink::mojom::UserVerificationRequirement::REQUIRED;
-    return options;
-  }
-
-  static bool HasUV(const TestMakeCredentialCallback& callback) {
-    DCHECK_EQ(AuthenticatorStatus::SUCCESS, callback.status());
-    base::Optional<Value> attestation_value =
-        Reader::Read(callback.value()->attestation_object);
-    DCHECK(attestation_value);
-    DCHECK(attestation_value->is_map());
-    const auto& attestation = attestation_value->GetMap();
-
-    const auto auth_data_it = attestation.find(Value("authData"));
-    DCHECK(auth_data_it != attestation.end() &&
-           auth_data_it->second.is_bytestring());
-    base::Optional<device::AuthenticatorData> auth_data =
-        device::AuthenticatorData::DecodeAuthenticatorData(
-            auth_data_it->second.GetBytestring());
-    return auth_data->obtained_user_verification();
-  }
-
-  static bool HasUV(const TestGetAssertionCallback& callback) {
-    DCHECK_EQ(AuthenticatorStatus::SUCCESS, callback.status());
-    base::Optional<device::AuthenticatorData> auth_data =
-        device::AuthenticatorData::DecodeAuthenticatorData(
-            callback.value()->authenticator_data);
-    return auth_data->obtained_user_verification();
-  }
-
   PINTestAuthenticatorContentBrowserClient test_client_;
-  device::test::ScopedVirtualFidoDevice virtual_device_;
 
  private:
   ContentBrowserClient* old_client_ = nullptr;
   base::test::ScopedFeatureList scoped_feature_list_;
 
-  DISALLOW_COPY_AND_ASSIGN(PINAuthenticatorContentBrowserClientTest);
+  DISALLOW_COPY_AND_ASSIGN(PINAuthenticatorImplTest);
 };
 
 static constexpr char kTestPIN[] = "1234";
 
-TEST_F(PINAuthenticatorContentBrowserClientTest, MakeCredentialSet) {
+TEST_F(PINAuthenticatorImplTest, MakeCredentialSet) {
   TestServiceManagerContext smc;
   test_client_.expected = {{base::nullopt, kTestPIN}};
 
@@ -2586,7 +2611,7 @@ TEST_F(PINAuthenticatorContentBrowserClientTest, MakeCredentialSet) {
   EXPECT_TRUE(HasUV(callback_receiver));
 }
 
-TEST_F(PINAuthenticatorContentBrowserClientTest, MakeCredentialUse) {
+TEST_F(PINAuthenticatorImplTest, MakeCredentialUse) {
   TestServiceManagerContext smc;
   virtual_device_.mutable_state()->pin = kTestPIN;
   virtual_device_.mutable_state()->retries = 8;
@@ -2602,7 +2627,7 @@ TEST_F(PINAuthenticatorContentBrowserClientTest, MakeCredentialUse) {
   EXPECT_TRUE(HasUV(callback_receiver));
 }
 
-TEST_F(PINAuthenticatorContentBrowserClientTest, MakeCredentialSoftLock) {
+TEST_F(PINAuthenticatorImplTest, MakeCredentialSoftLock) {
   TestServiceManagerContext smc;
   virtual_device_.mutable_state()->pin = kTestPIN;
   virtual_device_.mutable_state()->retries = 8;
@@ -2621,7 +2646,7 @@ TEST_F(PINAuthenticatorContentBrowserClientTest, MakeCredentialSoftLock) {
             *test_client_.failure_reason);
 }
 
-TEST_F(PINAuthenticatorContentBrowserClientTest, MakeCredentialHardLock) {
+TEST_F(PINAuthenticatorImplTest, MakeCredentialHardLock) {
   TestServiceManagerContext smc;
   virtual_device_.mutable_state()->pin = kTestPIN;
   virtual_device_.mutable_state()->retries = 1;
@@ -2639,7 +2664,7 @@ TEST_F(PINAuthenticatorContentBrowserClientTest, MakeCredentialHardLock) {
             *test_client_.failure_reason);
 }
 
-TEST_F(PINAuthenticatorContentBrowserClientTest, GetAssertion) {
+TEST_F(PINAuthenticatorImplTest, GetAssertion) {
   TestServiceManagerContext smc;
   virtual_device_.mutable_state()->pin = kTestPIN;
   virtual_device_.mutable_state()->retries = 8;
@@ -2658,7 +2683,7 @@ TEST_F(PINAuthenticatorContentBrowserClientTest, GetAssertion) {
   EXPECT_TRUE(HasUV(callback_receiver));
 }
 
-TEST_F(PINAuthenticatorContentBrowserClientTest, GetAssertionSoftLock) {
+TEST_F(PINAuthenticatorImplTest, GetAssertionSoftLock) {
   TestServiceManagerContext smc;
   virtual_device_.mutable_state()->pin = kTestPIN;
   virtual_device_.mutable_state()->retries = 8;
@@ -2680,7 +2705,7 @@ TEST_F(PINAuthenticatorContentBrowserClientTest, GetAssertionSoftLock) {
             *test_client_.failure_reason);
 }
 
-TEST_F(PINAuthenticatorContentBrowserClientTest, GetAssertionHardLock) {
+TEST_F(PINAuthenticatorImplTest, GetAssertionHardLock) {
   TestServiceManagerContext smc;
   virtual_device_.mutable_state()->pin = kTestPIN;
   virtual_device_.mutable_state()->retries = 1;
@@ -2699,6 +2724,114 @@ TEST_F(PINAuthenticatorContentBrowserClientTest, GetAssertionHardLock) {
   ASSERT_TRUE(test_client_.failure_reason.has_value());
   EXPECT_EQ(InterestingFailureReason::kHardPINBlock,
             *test_client_.failure_reason);
+}
+
+class InternalUVAuthenticatorImplTest : public UVAuthenticatorImplTest {
+ public:
+  InternalUVAuthenticatorImplTest() = default;
+
+  void SetUp() override {
+    UVAuthenticatorImplTest::SetUp();
+    device::VirtualCtap2Device::Config config;
+    config.internal_uv_support = true;
+    virtual_device_.SetCtap2Config(config);
+    NavigateAndCommit(GURL(kTestOrigin1));
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(InternalUVAuthenticatorImplTest);
+};
+
+TEST_F(InternalUVAuthenticatorImplTest, MakeCredential) {
+  TestServiceManagerContext smc;
+  AuthenticatorPtr authenticator = ConnectToAuthenticator();
+
+  for (const auto fingerprints_enrolled : {false, true}) {
+    SCOPED_TRACE(::testing::Message()
+                 << "fingerprints_enrolled=" << fingerprints_enrolled);
+    virtual_device_.mutable_state()->fingerprints_enrolled =
+        fingerprints_enrolled;
+
+    for (const auto uv :
+         {blink::mojom::UserVerificationRequirement::DISCOURAGED,
+          blink::mojom::UserVerificationRequirement::PREFERRED,
+          blink::mojom::UserVerificationRequirement::REQUIRED}) {
+      SCOPED_TRACE(UVToString(uv));
+
+      auto options = make_credential_options(uv);
+      // UV cannot be satisfied without fingerprints.
+      const bool should_timeout =
+          !fingerprints_enrolled &&
+          uv == blink::mojom::UserVerificationRequirement::REQUIRED;
+      if (should_timeout) {
+        options->adjusted_timeout = base::TimeDelta::FromMilliseconds(100);
+      }
+
+      TestMakeCredentialCallback callback_receiver;
+      authenticator->MakeCredential(std::move(options),
+                                    callback_receiver.callback());
+      callback_receiver.WaitForCallback();
+
+      if (should_timeout) {
+        EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR,
+                  callback_receiver.status());
+      } else {
+        EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
+        EXPECT_EQ(fingerprints_enrolled, HasUV(callback_receiver));
+      }
+    }
+  }
+}
+
+TEST_F(InternalUVAuthenticatorImplTest, GetAssertion) {
+  TestServiceManagerContext smc;
+  AuthenticatorPtr authenticator = ConnectToAuthenticator();
+  ASSERT_TRUE(virtual_device_.mutable_state()->InjectRegistration(
+      get_credential_options()->allow_credentials[0]->id, kTestRelyingPartyId));
+
+  for (const auto fingerprints_enrolled : {false, true}) {
+    SCOPED_TRACE(::testing::Message()
+                 << "fingerprints_enrolled=" << fingerprints_enrolled);
+    virtual_device_.mutable_state()->fingerprints_enrolled =
+        fingerprints_enrolled;
+
+    for (auto uv : {blink::mojom::UserVerificationRequirement::DISCOURAGED,
+                    blink::mojom::UserVerificationRequirement::PREFERRED,
+                    blink::mojom::UserVerificationRequirement::REQUIRED}) {
+      SCOPED_TRACE(UVToString(uv));
+
+      auto options = get_credential_options(uv);
+      // UV cannot be satisfied without fingerprints.
+      const bool should_timeout =
+          !fingerprints_enrolled &&
+          uv == blink::mojom::UserVerificationRequirement::REQUIRED;
+      if (should_timeout) {
+        options->adjusted_timeout = base::TimeDelta::FromMilliseconds(100);
+      }
+
+      TestGetAssertionCallback callback_receiver;
+      authenticator->GetAssertion(std::move(options),
+                                  callback_receiver.callback());
+      callback_receiver.WaitForCallback();
+
+      if (should_timeout) {
+        EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR,
+                  callback_receiver.status());
+      } else {
+        EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
+
+        if (false) {
+          // TODO: make this true as I believe it's the correct behaviour.
+          EXPECT_EQ(
+              fingerprints_enrolled &&
+                  uv != blink::mojom::UserVerificationRequirement::DISCOURAGED,
+              HasUV(callback_receiver));
+        } else {
+          EXPECT_EQ(fingerprints_enrolled, HasUV(callback_receiver));
+        }
+      }
+    }
+  }
 }
 
 }  // namespace content

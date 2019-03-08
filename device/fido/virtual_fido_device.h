@@ -105,6 +105,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
     // itself.
     uint8_t pin_token[32];
 
+    // Whether a device with internal-UV support has fingerprints enrolled.
+    bool fingerprints_enrolled = false;
+
     FidoTransportProtocol transport =
         FidoTransportProtocol::kUsbHumanInterfaceDevice;
 

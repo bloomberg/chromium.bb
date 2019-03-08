@@ -140,8 +140,9 @@ CtapDeviceResponseCode CheckUserVerification(
   bool uv = false;
   if (can_do_uv) {
     if (options.user_verification_availability ==
-        AuthenticatorSupportedOptions::UserVerificationAvailability::
-            kSupportedAndConfigured) {
+            AuthenticatorSupportedOptions::UserVerificationAvailability::
+                kSupportedAndConfigured &&
+        user_verification == UserVerificationRequirement::kRequired) {
       // Internal UV is assumed to always succeed.
       if (simulate_press_callback) {
         simulate_press_callback.Run();
@@ -412,6 +413,8 @@ CtapDeviceResponseCode SetPIN(VirtualCtap2Device::State* state,
 
 }  // namespace
 
+VirtualCtap2Device::Config::Config() = default;
+
 VirtualCtap2Device::VirtualCtap2Device()
     : VirtualFidoDevice(), weak_factory_(this) {
   device_info_ =
@@ -419,12 +422,16 @@ VirtualCtap2Device::VirtualCtap2Device()
 }
 
 VirtualCtap2Device::VirtualCtap2Device(scoped_refptr<State> state,
-                                       bool enable_pin)
+                                       const Config& config)
     : VirtualFidoDevice(std::move(state)), weak_factory_(this) {
   device_info_ =
       AuthenticatorGetInfoResponse({ProtocolVersion::kCtap}, kDeviceAaguid);
-  if (enable_pin) {
-    AuthenticatorSupportedOptions options;
+
+  AuthenticatorSupportedOptions options;
+  bool options_updated = false;
+  if (config.pin_support) {
+    options_updated = true;
+
     if (mutable_state()->pin.empty()) {
       options.client_pin_availability = AuthenticatorSupportedOptions::
           ClientPinAvailability::kSupportedButPinNotSet;
@@ -432,6 +439,20 @@ VirtualCtap2Device::VirtualCtap2Device(scoped_refptr<State> state,
       options.client_pin_availability = AuthenticatorSupportedOptions::
           ClientPinAvailability::kSupportedAndPinSet;
     }
+  }
+
+  if (config.internal_uv_support) {
+    options_updated = true;
+    if (mutable_state()->fingerprints_enrolled) {
+      options.user_verification_availability = AuthenticatorSupportedOptions::
+          UserVerificationAvailability::kSupportedAndConfigured;
+    } else {
+      options.user_verification_availability = AuthenticatorSupportedOptions::
+          UserVerificationAvailability::kSupportedButNotConfigured;
+    }
+  }
+
+  if (options_updated) {
     device_info_->SetOptions(options);
   }
 }
