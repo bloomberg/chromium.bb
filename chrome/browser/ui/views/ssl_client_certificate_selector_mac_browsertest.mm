@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#import "base/mac/mac_util.h"
 #include "base/macros.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/ssl/ssl_client_auth_metrics.h"
@@ -224,8 +223,7 @@ IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMacTest, Accept) {
                                 ClientCertSelectionResult::kUserSelect, 1);
 
   // The test keys are RSA keys.
-  EXPECT_EQ(net::SSLPrivateKey::DefaultAlgorithmPreferences(
-                EVP_PKEY_RSA, base::mac::IsAtLeastOS10_13()),
+  EXPECT_EQ(net::SSLPrivateKey::DefaultAlgorithmPreferences(EVP_PKEY_RSA, true),
             results.key->GetAlgorithmPreferences());
   TestSSLPrivateKeyMatches(results.key.get(), pkcs8_key1_);
 }

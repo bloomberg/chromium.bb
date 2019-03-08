@@ -50,9 +50,8 @@ scoped_refptr<base::SingleThreadTaskRunner> GetSSLPlatformKeyTaskRunner() {
   return g_platform_key_task_runner.Get().task_runner();
 }
 
-bool GetClientCertInfo(const X509Certificate* certificate,
-                       int* out_type,
-                       size_t* out_max_length) {
+bssl::UniquePtr<EVP_PKEY> GetClientCertPublicKey(
+    const X509Certificate* certificate) {
   crypto::OpenSSLErrStackTracer tracker(FROM_HERE);
 
   base::StringPiece spki;
@@ -60,7 +59,7 @@ bool GetClientCertInfo(const X509Certificate* certificate,
           x509_util::CryptoBufferAsStringPiece(certificate->cert_buffer()),
           &spki)) {
     LOG(ERROR) << "Could not extract SPKI from certificate.";
-    return false;
+    return nullptr;
   }
 
   CBS cbs;
@@ -68,6 +67,17 @@ bool GetClientCertInfo(const X509Certificate* certificate,
   bssl::UniquePtr<EVP_PKEY> key(EVP_parse_public_key(&cbs));
   if (!key || CBS_len(&cbs) != 0) {
     LOG(ERROR) << "Could not parse public key.";
+    return nullptr;
+  }
+
+  return key;
+}
+
+bool GetClientCertInfo(const X509Certificate* certificate,
+                       int* out_type,
+                       size_t* out_max_length) {
+  bssl::UniquePtr<EVP_PKEY> key = GetClientCertPublicKey(certificate);
+  if (!key) {
     return false;
   }
 
