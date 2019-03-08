@@ -622,7 +622,7 @@
   {
     "prefix": "omt-worker-fetch",
     "base": "external/wpt/service-workers",
-    "args": ["--enable-features=OffMainThreadServiceWorkerScriptFetch"]
+    "args": ["--enable-features=OffMainThreadDedicatedWorkerScriptFetch,PlzDedicatedWorker,OffMainThreadServiceWorkerScriptFetch,OffMainThreadSharedWorkerScriptFetch"]
   },
   {
     "prefix": "omt-worker-fetch",
