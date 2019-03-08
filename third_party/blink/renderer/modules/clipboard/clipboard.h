@@ -26,7 +26,7 @@ class Clipboard : public EventTargetWithInlineData,
   ScriptPromise read(ScriptState*);
   ScriptPromise readText(ScriptState*);
 
-  ScriptPromise write(ScriptState*, Blob*);
+  ScriptPromise write(ScriptState*, HeapVector<Member<Blob>>);
   ScriptPromise writeText(ScriptState*, const String&);
 
   // EventTarget

@@ -18,34 +18,29 @@ test(() => {
   assert_equals(navigator.clipboard, navigator.clipboard);
 }, "navigator.clipboard exists");
 
-/* clipboard.write(text/plain Blob) */
-
 promise_test(async () => {
   await getPermissions();
   const blob = new Blob(["hello"], {type: 'text/plain'});
-  await navigator.clipboard.write(blob);
-}, "navigator.clipboard.write(text/plain Blob) succeeds");
+  await navigator.clipboard.write([blob]);
+}, "navigator.clipboard.write([text/plain Blob]) succeeds");
 
 promise_test(async t => {
   await getPermissions();
   await promise_rejects(t, new TypeError(),
                          navigator.clipboard.write());
-}, "navigator.clipboard.write() fails (expect Blob)");
+}, "navigator.clipboard.write() fails (expect [Blob])");
 
 promise_test(async t => {
   await getPermissions();
   await promise_rejects(t, new TypeError(),
                          navigator.clipboard.write(null));
-}, "navigator.clipboard.write(null) fails (expect Blob)");
+}, "navigator.clipboard.write(null) fails (expect [Blob])");
 
 promise_test(async t => {
   await getPermissions();
   await promise_rejects(t, new TypeError(),
                          navigator.clipboard.write("Bad string"));
-}, "navigator.clipboard.write(DOMString) fails (expect Blob)");
-
-
-/* clipboard.writeText() */
+}, "navigator.clipboard.write(DOMString) fails (expect [Blob])");
 
 promise_test(async () => {
   await getPermissions();
@@ -58,17 +53,13 @@ promise_test(async t => {
                          navigator.clipboard.writeText());
 }, "navigator.clipboard.writeText() fails (expect DOMString)");
 
-/* text/plain or image/png Blob clipboard.read() */
-
 promise_test(async () => {
   await getPermissions();
   const result = await navigator.clipboard.read();
-  assert_true(result instanceof Blob);
+  assert_true(result instanceof Array);
+  assert_true(result[0] instanceof Blob);
   assert_equals(typeof result, "object");
 }, "navigator.clipboard.read() succeeds");
-
-
-/* clipboard.readText() */
 
 promise_test(async () => {
   await getPermissions();

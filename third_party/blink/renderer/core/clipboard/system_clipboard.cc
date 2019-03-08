@@ -110,6 +110,16 @@ void SystemClipboard::WritePlainText(const String& plain_text,
   clipboard_->CommitWrite(mojom::ClipboardBuffer::kStandard);
 }
 
+void SystemClipboard::WritePlainTextNoCommit(const String& plain_text,
+                                             SmartReplaceOption) {
+  // TODO(huangdarwin): add support for smart replace
+  String text = plain_text;
+#if defined(OS_WIN)
+  ReplaceNewlinesWithWindowsStyleNewlines(text);
+#endif
+  clipboard_->WriteText(mojom::ClipboardBuffer::kStandard, NonNullString(text));
+}
+
 String SystemClipboard::ReadHTML(KURL& url,
                                  unsigned& fragment_start,
                                  unsigned& fragment_end) {
@@ -191,9 +201,8 @@ void SystemClipboard::WriteImageWithTag(Image* image,
   clipboard_->CommitWrite(mojom::ClipboardBuffer::kStandard);
 }
 
-void SystemClipboard::WriteImage(const SkBitmap& bitmap) {
+void SystemClipboard::WriteImageNoCommit(const SkBitmap& bitmap) {
   clipboard_->WriteImage(mojom::ClipboardBuffer::kStandard, bitmap);
-  clipboard_->CommitWrite(mojom::ClipboardBuffer::kStandard);
 }
 
 String SystemClipboard::ReadCustomData(const String& type) {
@@ -235,6 +244,10 @@ void SystemClipboard::WriteDataObject(DataObject* data_object) {
     clipboard_->WriteCustomData(mojom::ClipboardBuffer::kStandard,
                                 std::move(custom_data));
   }
+  clipboard_->CommitWrite(mojom::ClipboardBuffer::kStandard);
+}
+
+void SystemClipboard::CommitWrite() {
   clipboard_->CommitWrite(mojom::ClipboardBuffer::kStandard);
 }
 

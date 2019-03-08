@@ -37,6 +37,8 @@ class CORE_EXPORT SystemClipboard {
   String ReadPlainText();
   String ReadPlainText(mojom::ClipboardBuffer buffer);
   void WritePlainText(const String&, SmartReplaceOption = kCannotSmartReplace);
+  void WritePlainTextNoCommit(const String&,
+                              SmartReplaceOption = kCannotSmartReplace);
 
   // If no data is read, an empty string will be returned and all out parameters
   // will be cleared. If applicable, the page URL will be assigned to the KURL
@@ -56,10 +58,14 @@ class CORE_EXPORT SystemClipboard {
   // Write the image and its associated tag (bookmark/HTML types).
   void WriteImageWithTag(Image*, const KURL&, const String& title);
   // Write the image only.
-  void WriteImage(const SkBitmap&);
+  void WriteImageNoCommit(const SkBitmap&);
 
   String ReadCustomData(const String& type);
   void WriteDataObject(DataObject*);
+
+  // Clipboard write functions that don't commit (explicitly labelled as
+  // NoCommit) must use CommitWrite for changes to reach the OS clipboard.
+  void CommitWrite();
 
  private:
   SystemClipboard();

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>
+  Async Clipboard write duplicate mime type test
+</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../../http/tests/resources/permissions-helper.js"></script>
+
+<script>
+promise_test(async t => {
+  await PermissionsHelper.setPermission('clipboard-write', 'granted');
+
+  const blobText = new Blob(["test text"], {type: 'text/plain'});
+  const blobText2 = new Blob(["test text"], {type: 'text/plain'});
+
+  assert_equals(blobText.type, "text/plain");
+  assert_equals(blobText2.type, "text/plain");
+
+  await promise_rejects(t, 'NotAllowedError',
+      navigator.clipboard.write([blobText, blobText2]));
+}, "Verify write and read clipboard (multiple blobs)");
+</script>

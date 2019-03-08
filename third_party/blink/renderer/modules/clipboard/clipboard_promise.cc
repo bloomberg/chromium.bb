@@ -5,6 +5,8 @@
 #include "third_party/blink/renderer/modules/clipboard/clipboard_promise.h"
 
 #include <memory>
+#include <utility>
+
 #include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
 #include "third_party/blink/public/platform/modules/permissions/permission.mojom-blink.h"
@@ -38,6 +40,26 @@
 // access is gated behind a permission prompt. Both clipboard read and write
 // require the tab to be focused (and Chromium must be the foreground app) for
 // the operation to be allowed.
+//
+// Writing a Blob's data to the system clipboard is accomplished by:
+// (1) Reading the blob's contents using a ClipboardFileReader.
+// (2) Decoding the blob's contents to avoid RCE in native applications that may
+//     vulnerabilities in their decoders.
+// (3) Writing the blob's decoded contents to the system clipboard.
+//
+// Reading a type from the system clipboard to a Blob is accomplished by:
+// (1) Reading the item from the system clipboard
+// (2) Encoding the blob's contents.
+// (3) Writing the contents to a blob.
+//
+// TODO (huangdarwin): Strongly consider making a class break to have
+// decoders and encoders in a separate class, with this class mostly checking
+// for permissions, and the next class doing decoding/encoding for individual
+// types.
+//
+// TODO (huangdarwin): Use a SequencedTaskRunner to write one clipboard type
+// before the next one? This could allow for removing awkward logic regarding
+// clipboard_representation_index_.
 
 namespace blink {
 
@@ -65,13 +87,15 @@ ScriptPromise ClipboardPromise::CreateForReadText(ScriptState* script_state) {
 }
 
 ScriptPromise ClipboardPromise::CreateForWrite(ScriptState* script_state,
-                                               Blob* data) {
+                                               HeapVector<Member<Blob>> data) {
   ClipboardPromise* clipboard_promise =
       MakeGarbageCollected<ClipboardPromise>(script_state);
+  HeapVector<Member<Blob>>* blob_sequence =
+      MakeGarbageCollected<HeapVector<Member<Blob>>>(data);
   clipboard_promise->GetTaskRunner()->PostTask(
-      FROM_HERE,
-      WTF::Bind(&ClipboardPromise::HandleWrite,
-                WrapPersistent(clipboard_promise), WrapPersistent(data)));
+      FROM_HERE, WTF::Bind(&ClipboardPromise::HandleWrite,
+                           WrapPersistent(clipboard_promise),
+                           WrapPersistent(blob_sequence)));
   return clipboard_promise->script_promise_resolver_->Promise();
 }
 
@@ -90,6 +114,7 @@ ClipboardPromise::ClipboardPromise(ScriptState* script_state)
       script_state_(script_state),
       script_promise_resolver_(ScriptPromiseResolver::Create(script_state)),
       buffer_(mojom::ClipboardBuffer::kStandard),
+      clipboard_representation_index_(0),
       file_reading_task_runner_(
           GetExecutionContext()->GetTaskRunner(TaskType::kFileReading)) {}
 
@@ -180,24 +205,26 @@ void ClipboardPromise::HandleReadWithPermission(PermissionStatus status) {
     return;
   }
 
-  String type_to_read = TypeToRead();
-  Blob* blob = nullptr;
-
-  if (type_to_read == kMimeTypeImagePng) {
-    blob = ReadImageAsBlob();
-  } else if (type_to_read == kMimeTypeTextPlain) {
-    blob = ReadTextAsBlob();
-  } else {
-    // Reject when there's no data on clipboard.
+  Vector<String> types_to_read = TypesToRead();
+  HeapVector<Member<Blob>> blobs;
+  blobs.ReserveInitialCapacity(types_to_read.size());
+  for (const String& type_to_read : types_to_read) {
+    if (type_to_read == kMimeTypeImagePng) {
+      blobs.push_back(ReadImageAsBlob());
+    } else if (type_to_read == kMimeTypeTextPlain) {
+      blobs.push_back(ReadTextAsBlob());
+    } else {
+      NOTREACHED() << "Type " << type_to_read << " was not implemented";
+    }
   }
 
-  if (!blob) {
+  if (!blobs.size()) {
     script_promise_resolver_->Reject(DOMException::Create(
         DOMExceptionCode::kDataError, "No valid data on clipboard."));
     return;
   }
 
-  script_promise_resolver_->Resolve(std::move(blob));
+  script_promise_resolver_->Resolve(std::move(blobs));
 }
 
 void ClipboardPromise::HandleReadText() {
@@ -218,11 +245,11 @@ void ClipboardPromise::HandleReadTextWithPermission(PermissionStatus status) {
   script_promise_resolver_->Resolve(text);
 }
 
-// TODO(huangdarwin): This currently only handles plain text and images.
-// TODO(huangdarwin): Use an array or structure to hold multiple
-// Blobs, like how DataTransfer holds multiple DataTransferItems.
-void ClipboardPromise::HandleWrite(Blob* data) {
-  blob_data_ = data;
+void ClipboardPromise::HandleWrite(HeapVector<Member<Blob>>* data) {
+  // TODO(huangdarwin): This currently only handles plain text and images.
+  DCHECK_CALLED_ON_VALID_SEQUENCE(async_clipboard_sequence_checker);
+  CHECK(data);
+  blob_sequence_data_ = std::move(*data);
 
   CheckWritePermission(WTF::Bind(&ClipboardPromise::HandleWriteWithPermission,
                                  WrapPersistent(this)));
@@ -236,17 +263,48 @@ void ClipboardPromise::HandleWriteWithPermission(PermissionStatus status) {
     return;
   }
 
-  String type_to_read = blob_data_->type();
-  if (type_to_read == kMimeTypeImagePng || type_to_read == kMimeTypeTextPlain) {
-    DCHECK(!file_reader_);
-    file_reader_ = std::make_unique<ClipboardFileReader>(
-        blob_data_, this, file_reading_task_runner_);
-  } else {
-    script_promise_resolver_->Reject(
-        DOMException::Create(DOMExceptionCode::kNotAllowedError,
-                             "Write type " + type_to_read + " not supported."));
+  // Check that all blobs have valid and unique MIME types.
+  HashSet<String> unique_types;
+  unique_types.ReserveCapacityForSize(blob_sequence_data_.size());
+  for (const Member<Blob>& blob : blob_sequence_data_) {
+    String type = blob->type();
+    if (!IsValidClipboardType(type)) {
+      script_promise_resolver_->Reject(
+          DOMException::Create(DOMExceptionCode::kNotAllowedError,
+                               "Write type " + type + " not supported."));
+      return;
+    }
+    if (unique_types.Contains(type)) {
+      script_promise_resolver_->Reject(
+          DOMException::Create(DOMExceptionCode::kNotAllowedError,
+                               "Attempting to write duplicate type " + type +
+                                   +". All types must be unique"));
+    }
+    unique_types.insert(type);
+  }
+
+  DCHECK(!clipboard_representation_index_);
+  WriteNextRepresentation();
+}
+
+// Called to begin writing a type, or after writing each type.
+void ClipboardPromise::WriteNextRepresentation() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(async_clipboard_sequence_checker);
+  if (clipboard_representation_index_ == blob_sequence_data_.size()) {
+    SystemClipboard::GetInstance().CommitWrite();
+    script_promise_resolver_->Resolve();
     return;
   }
+
+  const Member<Blob>& blob =
+      blob_sequence_data_[clipboard_representation_index_];
+  clipboard_representation_index_++;
+  DCHECK(IsValidClipboardType(blob->type()));
+
+  // Creates a FileReader to read the Blob.
+  DCHECK(!file_reader_);
+  file_reader_ = std::make_unique<ClipboardFileReader>(
+      blob, this, file_reading_task_runner_);
 }
 
 void ClipboardPromise::HandleWriteText(const String& data) {
@@ -264,14 +322,15 @@ void ClipboardPromise::HandleWriteTextWithPermission(PermissionStatus status) {
     return;
   }
 
-  ResolveAndWriteText(write_data_);
+  SystemClipboard::GetInstance().WritePlainText(write_data_);
+  script_promise_resolver_->Resolve();
 }
 
 void ClipboardPromise::OnLoadBufferComplete(DOMArrayBuffer* array_buffer) {
+  String blob_type =
+      blob_sequence_data_[clipboard_representation_index_ - 1]->type();
   DCHECK_CALLED_ON_VALID_SEQUENCE(async_clipboard_sequence_checker);
-  String blob_type = blob_data_->type();
-  DCHECK(blob_type == kMimeTypeImagePng || blob_type == kMimeTypeTextPlain);
-
+  DCHECK(IsValidClipboardType(blob_type));
   file_reader_.reset();
 
   if (blob_type == kMimeTypeImagePng) {
@@ -286,6 +345,8 @@ void ClipboardPromise::OnLoadBufferComplete(DOMArrayBuffer* array_buffer) {
         CrossThreadBind(&ClipboardPromise::DecodeTextOnBackgroundThread,
                         WrapCrossThreadPersistent(this), GetTaskRunner(),
                         WrapCrossThreadPersistent(array_buffer)));
+  } else {
+    NOTREACHED();
   }
 }
 
@@ -322,7 +383,7 @@ void ClipboardPromise::DecodeImageOnBackgroundThread(
 
   PostCrossThreadTask(
       *task_runner, FROM_HERE,
-      CrossThreadBind(&ClipboardPromise::ResolveAndWriteImage,
+      CrossThreadBind(&ClipboardPromise::WriteDecodedImage,
                       WrapCrossThreadPersistent(this), std::move(image)));
 }
 
@@ -336,25 +397,25 @@ void ClipboardPromise::DecodeTextOnBackgroundThread(
 
   PostCrossThreadTask(
       *task_runner, FROM_HERE,
-      CrossThreadBind(&ClipboardPromise::ResolveAndWriteText,
+      CrossThreadBind(&ClipboardPromise::WriteDecodedText,
                       WrapCrossThreadPersistent(this), std::move(wtf_string)));
 }
 
-void ClipboardPromise::ResolveAndWriteImage(sk_sp<SkImage> image) {
+void ClipboardPromise::WriteDecodedImage(sk_sp<SkImage> image) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(async_clipboard_sequence_checker);
 
   SkBitmap bitmap;
   image->asLegacyBitmap(&bitmap);
 
-  SystemClipboard::GetInstance().WriteImage(std::move(bitmap));
-  script_promise_resolver_->Resolve();
+  SystemClipboard::GetInstance().WriteImageNoCommit(std::move(bitmap));
+  WriteNextRepresentation();
 }
 
-void ClipboardPromise::ResolveAndWriteText(const String& text) {
+void ClipboardPromise::WriteDecodedText(const String& text) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(async_clipboard_sequence_checker);
 
-  SystemClipboard::GetInstance().WritePlainText(text);
-  script_promise_resolver_->Resolve();
+  SystemClipboard::GetInstance().WritePlainTextNoCommit(text);
+  WriteNextRepresentation();
 }
 
 void ClipboardPromise::Reject() {
@@ -365,17 +426,17 @@ void ClipboardPromise::Reject() {
 
 // TODO(huangdarwin): This is beginning to share responsibility
 // with data_object.cc, so how can we share some code?
-String ClipboardPromise::TypeToRead() {
+Vector<String> ClipboardPromise::TypesToRead() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(async_clipboard_sequence_checker);
-  String type_to_read;
-  for (const String& available_type :
-       SystemClipboard::GetInstance().ReadAvailableTypes()) {
-    if (available_type == kMimeTypeImagePng)
-      return available_type;
-    if (available_type == kMimeTypeTextPlain)
-      type_to_read = available_type;
+  Vector<String> available_types =
+      SystemClipboard::GetInstance().ReadAvailableTypes();
+  Vector<String> types_to_read;
+  types_to_read.ReserveInitialCapacity(available_types.size());
+  for (const String& available_type : available_types) {
+    if (IsValidClipboardType(available_type))
+      types_to_read.push_back(available_type);
   }
-  return type_to_read;
+  return types_to_read;
 }
 
 Blob* ClipboardPromise::ReadTextAsBlob() {
@@ -408,10 +469,15 @@ Blob* ClipboardPromise::ReadImageAsBlob() {
   return Blob::Create(png_data.data(), png_data.size(), kMimeTypeImagePng);
 }
 
+bool ClipboardPromise::IsValidClipboardType(const String& type) {
+  // TODO (https://crbug.com/931839): Add support for text/html and other types.
+  return type == kMimeTypeImagePng || type == kMimeTypeTextPlain;
+}
+
 void ClipboardPromise::Trace(blink::Visitor* visitor) {
   visitor->Trace(script_state_);
   visitor->Trace(script_promise_resolver_);
-  visitor->Trace(blob_data_);
+  visitor->Trace(blob_sequence_data_);
   ContextLifecycleObserver::Trace(visitor);
 }
 
