@@ -3348,9 +3348,9 @@
     ]
   },
 
-  "CloudPolicyOverridesMachinePolicy": {
+  "CloudPolicyOverridesPlatformPolicy": {
     "os": ["win", "linux", "mac"],
-    "test_policy": { "CloudPolicyOverridesMachinePolicy": false },
+    "test_policy": { "CloudPolicyOverridesPlatformPolicy": false },
     "pref_mappings": [
       { "pref": "policy.cloud_override",
         "local_state": true

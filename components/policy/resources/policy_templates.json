@@ -12294,25 +12294,25 @@
       'desc': '''If "OffHours" policy is set, then the specified device policies are ignored (use the default settings of these policies) during the defined time intervals. Device policies are re-applied by Chrome on every event when "OffHours" period starts or ends. User will be notified and forced to sign out when "OffHours" time end and device policy settings are changed (e.g. when user is logged in not with an allowed account).''',
     },
     {
-      'name': 'CloudPolicyOverridesMachinePolicy',
+      'name': 'CloudPolicyOverridesPlatformPolicy',
       'type': 'main',
       'schema': { 'type': 'boolean'},
-      'supported_on': ['chrome.*:62-'],
+      'supported_on': ['chrome.*:65-'],
       'features': {
         'dynamic_refresh': False,
         'per_profile': False,
       },
       'example_value': False,
       'id': 381,
-      'caption': '''<ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> cloud policy overrides Machine policy.''',
+      'caption': '''<ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> cloud policy overrides Platform policy.''',
       'tags': [],
       'future': True,
       'desc': '''
-      If the policy is set to true, cloud  policy takes precedence if it conflicts with machine policy.
-      If the policy is set to false or not configured, machine policy takes precedence if it conflicts with cloud policy.
-      For more details about policy priority, please visit: https://support.google.com/chrome?p=set_chrome_policies_for_devices
+      If the policy is set to true, cloud  policy takes precedence if it conflicts with platform policy.
+      If the policy is set to false or not configured, platform policy takes precedence if it conflicts with cloud policy.
 
-      This policy is available only on Windows instances that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain. or Windows 10 Pro or Enterprise instances that enrolled for device management.''',
+      This policy is only available as a platform.
+      ''',
     },
     {
       'name': 'PromptForDownloadLocation',

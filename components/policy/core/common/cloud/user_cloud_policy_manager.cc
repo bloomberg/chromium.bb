@@ -74,7 +74,8 @@ void UserCloudPolicyManager::Connect(
 
   CreateComponentCloudPolicyService(
       dm_protocol::kChromeExtensionPolicyType, component_policy_cache_path_,
-      (local_state->GetBoolean(policy_prefs::kCloudPolicyOverridesMachinePolicy)
+      (local_state->GetBoolean(
+           policy_prefs::kCloudPolicyOverridesPlatformPolicy)
            ? POLICY_SOURCE_PRIORITY_CLOUD
            : POLICY_SOURCE_CLOUD),
       client.get(), schema_registry());

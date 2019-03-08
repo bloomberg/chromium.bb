@@ -182,7 +182,7 @@ void BrowserPolicyConnector::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(
       policy_prefs::kCloudManagementEnrollmentMandatory, false);
   registry->RegisterBooleanPref(
-      policy_prefs::kCloudPolicyOverridesMachinePolicy, false);
+      policy_prefs::kCloudPolicyOverridesPlatformPolicy, false);
 }
 
 }  // namespace policy
