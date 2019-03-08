@@ -51,6 +51,7 @@ class NavigationUIData;
 class NavigatorDelegate;
 class ServiceWorkerContextWrapper;
 class ServiceWorkerNavigationHandle;
+class SiteInstanceImpl;
 
 // This class keeps track of a single navigation. It is created after the
 // BeforeUnload for the navigation has run. It is then owned by the
