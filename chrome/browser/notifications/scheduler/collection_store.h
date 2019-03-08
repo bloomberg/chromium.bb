@@ -19,7 +19,7 @@ namespace notifications {
 template <typename T>
 class CollectionStore {
  public:
-  using Entries = std::unique_ptr<std::vector<T>>;
+  using Entries = std::vector<std::unique_ptr<T>>;
   using LoadCallback = base::OnceCallback<void(bool, Entries)>;
   using InitCallback = base::OnceCallback<void(bool)>;
   using UpdateCallback = base::OnceCallback<void(bool)>;
@@ -36,7 +36,7 @@ class CollectionStore {
 
   // Adds an entry to the storage.
   virtual void Add(const std::string& key,
-                   const T& entry,
+                   T& entry,
                    UpdateCallback callback) = 0;
 
   // Deletes an entry from storage.

@@ -68,15 +68,14 @@ class ProtoDbCollectionStore : public CollectionStore<T> {
   void Load(const std::string& key, LoadCallback callback) override {
     db_->LoadEntriesWithFilter(
         base::BindRepeating(&ExactMatchKeyFilter, key),
-        base::BindOnce(&ProtoDbCollectionStore::OnEntriesLoaded,
+        base::BindOnce(&ProtoDbCollectionStore::OnProtosLoaded,
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
-  void Add(const std::string& key,
-           const T& entry,
-           UpdateCallback callback) override {
+  void Add(const std::string& key, T& entry, UpdateCallback callback) override {
     auto protos_to_save = std::make_unique<KeyProtoVector>();
-    protos_to_save->emplace_back(std::make_pair(key, EntryToProto(entry)));
+    protos_to_save->emplace_back(
+        std::make_pair(key, std::move(EntryToProto(entry))));
     db_->UpdateEntries(std::move(protos_to_save), std::make_unique<KeyVector>(),
                        std::move(callback));
   }
@@ -89,11 +88,15 @@ class ProtoDbCollectionStore : public CollectionStore<T> {
   }
 
  protected:
-  // Conversion from in memory entry type T to protobuff type P.
+  // TODO(xingliu): Replace these with leveldb proto's new struct wrapper. See
+  // if move semantic is supported in the struct wrapper.
+  // Conversion from in memory entry type T to protobuff type P. The subclass
+  // should choose to move or copy the data inside |entry| to proto P.
   virtual P EntryToProto(const T& entry) = 0;
 
-  // Conversion from protobuff type P to in memory entry type T.
-  virtual T ProtoToEntry(const P& proto) = 0;
+  // Conversion from protobuff type P to in memory entry type T. Large piece of
+  // data in |proto| should be released and move to entry type T if possible.
+  virtual std::unique_ptr<T> ProtoToEntry(P& proto) = 0;
 
  private:
   void OnDbInitialized(InitCallback callback,
@@ -111,23 +114,23 @@ class ProtoDbCollectionStore : public CollectionStore<T> {
       return;
     }
 
-    db_->LoadEntries(base::BindOnce(&ProtoDbCollectionStore::OnEntriesLoaded,
+    db_->LoadEntries(base::BindOnce(&ProtoDbCollectionStore::OnProtosLoaded,
                                     weak_ptr_factory_.GetWeakPtr(),
                                     std::move(callback)));
   }
 
-  void OnEntriesLoaded(LoadCallback callback,
-                       bool success,
-                       std::unique_ptr<std::vector<P>> protos) {
+  void OnProtosLoaded(LoadCallback callback,
+                      bool success,
+                      std::unique_ptr<std::vector<P>> protos) {
     // Failed to load data.
     if (!success) {
       std::move(callback).Run(false, Entries());
       return;
     }
 
-    Entries entries = std::make_unique<std::vector<T>>();
-    for (const auto& proto : *protos)
-      entries->emplace_back(ProtoToEntry(proto));
+    Entries entries;
+    for (auto& proto : *protos)
+      entries.emplace_back(std::move(ProtoToEntry(proto)));
 
     std::move(callback).Run(true, std::move(entries));
   }
