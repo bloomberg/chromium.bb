@@ -32,6 +32,7 @@
 #import <AppKit/AppKit.h>
 #include <memory>
 #include "base/location.h"
+#include "base/mac/foundation_util.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/font_family_names.h"
 #include "third_party/blink/renderer/platform/fonts/font_description.h"
@@ -131,7 +132,7 @@ scoped_refptr<SimpleFontData> FontCache::PlatformFallbackFontForCharacter(
 
   const FontPlatformData& platform_data =
       font_data_to_substitute->PlatformData();
-  NSFont* ns_font = toNSFont(platform_data.CtFont());
+  NSFont* ns_font = base::mac::CFToNSCast(platform_data.CtFont());
 
   NSString* string =
       [[NSString alloc] initWithCharactersNoCopy:code_units

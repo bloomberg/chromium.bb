@@ -89,8 +89,8 @@ static sk_sp<SkTypeface> LoadFromBrowserProcess(NSFont* ns_font,
 
   CGFontRef loaded_cg_font;
   uint32_t font_id;
-  if (!sandbox_support->LoadFont(toCTFontRef(ns_font), &loaded_cg_font,
-                                 &font_id)) {
+  if (!sandbox_support->LoadFont(base::mac::NSToCFCast(ns_font),
+                                 &loaded_cg_font, &font_id)) {
     // TODO crbug.com/461279: Make this appear in the inspector console?
     DLOG(ERROR)
         << "Loading user font \"" << [[ns_font familyName] UTF8String]
@@ -181,7 +181,7 @@ FontPlatformData::FontPlatformData(NSFont* ns_font,
   DCHECK(ns_font);
   sk_sp<SkTypeface> typeface;
   if (CanLoadInProcess(ns_font)) {
-    typeface.reset(SkCreateTypefaceFromCTFont(toCTFontRef(ns_font)));
+    typeface.reset(SkCreateTypefaceFromCTFont(base::mac::NSToCFCast(ns_font)));
   } else {
     // In process loading fails for cases where third party font manager
     // software registers fonts in non system locations such as /Library/Fonts

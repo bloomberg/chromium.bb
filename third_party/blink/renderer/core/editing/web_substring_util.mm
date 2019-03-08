@@ -33,6 +33,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/mac/foundation_util.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/web/web_frame_widget.h"
 #include "third_party/blink/public/web/web_hit_test_result.h"
@@ -96,7 +97,7 @@ NSAttributedString* AttributedSubstringFromRange(const EphemeralRange& range,
     FontPlatformData font_platform_data =
         style->GetFont().PrimaryFont()->PlatformData();
     font_platform_data.text_size_ *= font_scale;
-    NSFont* font = toNSFont(font_platform_data.CtFont());
+    NSFont* font = base::mac::CFToNSCast(font_platform_data.CtFont());
     // If the platform font can't be loaded, or the size is incorrect comparing
     // to the computed style, it's likely that the site is using a web font.
     // For now, just use the default font instead.

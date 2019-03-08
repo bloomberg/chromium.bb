@@ -1,6 +1,7 @@
 include_rules = [
     "+base/atomic_sequence_num.h",
     "+base/files/file.h",
+    "+base/mac/foundation_util.h",
     "+base/memory/scoped_refptr.h",
     "+base/metrics/field_trial_params.h",
     "+base/strings/stringprintf.h",
