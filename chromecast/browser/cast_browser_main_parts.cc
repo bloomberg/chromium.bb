@@ -8,7 +8,6 @@
 #include <string.h>
 
 #include <string>
-#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -122,12 +121,6 @@
 #include "device/bluetooth/cast/bluetooth_adapter_cast.h"
 #endif  // !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
 
-#if !defined(OS_FUCHSIA)
-#include "base/bind_helpers.h"
-#include "components/heap_profiling/client_connection_manager.h"
-#include "components/heap_profiling/supervisor.h"
-#endif  // !defined(OS_FUCHSIA)
-
 namespace {
 
 #if !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
@@ -224,18 +217,6 @@ void DeregisterKillOnAlarm() {
 }
 
 #endif  // !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
-
-#if !defined(OS_FUCHSIA)
-
-std::unique_ptr<heap_profiling::ClientConnectionManager>
-CreateClientConnectionManager(
-    base::WeakPtr<heap_profiling::Controller> controller_weak_ptr,
-    heap_profiling::Mode mode) {
-  return std::make_unique<heap_profiling::ClientConnectionManager>(
-      std::move(controller_weak_ptr), mode);
-}
-
-#endif
 
 }  // namespace
 
@@ -686,17 +667,6 @@ void CastBrowserMainParts::PostDestroyThreads() {
 #if !defined(OS_ANDROID)
   cast_content_browser_client_->ResetMediaResourceTracker();
 #endif  // !defined(OS_ANDROID)
-}
-
-void CastBrowserMainParts::ServiceManagerConnectionStarted(
-    content::ServiceManagerConnection* connection) {
-#if !defined(OS_FUCHSIA)
-  heap_profiling::Supervisor* supervisor =
-      heap_profiling::Supervisor::GetInstance();
-  supervisor->SetClientConnectionManagerConstructor(
-      &CreateClientConnectionManager);
-  supervisor->Start(connection, base::NullCallback());
-#endif  // !defined(OS_FUCHSIA)
 }
 
 }  // namespace shell

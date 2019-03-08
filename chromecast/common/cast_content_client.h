@@ -31,8 +31,6 @@ class CastContentClient : public content::ContentClient {
 #if defined(OS_ANDROID)
   ::media::MediaDrmBridgeClient* GetMediaDrmBridgeClient() override;
 #endif  // OS_ANDROID
-  void OnServiceManagerConnected(
-      content::ServiceManagerConnection* connection) override;
 
  private:
   GURL last_active_url_;
