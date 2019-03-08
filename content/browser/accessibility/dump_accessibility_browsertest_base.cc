@@ -223,7 +223,6 @@ void DumpAccessibilityTestBase::RunTestForPlatform(
 
   NavigateToURL(shell(), GURL(url::kAboutBlankURL));
 
-  bool path_exists = false;
   std::string html_contents;
   base::FilePath expected_file;
   std::string expected_contents_raw;
@@ -231,25 +230,11 @@ void DumpAccessibilityTestBase::RunTestForPlatform(
     base::ScopedAllowBlockingForTesting allow_blocking;
     base::ReadFileToString(file_path, &html_contents);
 
-    // Try to get version specific expected file.
-    base::FilePath::StringType expected_file_suffix =
-        formatter_->GetVersionSpecificExpectedFileSuffix();
-    if (expected_file_suffix != FILE_PATH_LITERAL("")) {
-      expected_file = base::FilePath(file_path.RemoveExtension().value() +
-                                     expected_file_suffix);
-      path_exists = base::PathExists(expected_file);
-    }
+    // Read the expected file.
+    expected_file = base::FilePath(file_path.RemoveExtension().value() +
+                                   formatter_->GetExpectedFileSuffix());
 
-    // If a version specific file does not exist, get the generic one.
-    if (!path_exists) {
-      expected_file_suffix = formatter_->GetExpectedFileSuffix();
-      expected_file = base::FilePath(file_path.RemoveExtension().value() +
-                                     expected_file_suffix);
-      path_exists = base::PathExists(expected_file);
-    }
-
-    // If no expected file could be found, display error.
-    if (!path_exists) {
+    if (!base::PathExists(expected_file)) {
       LOG(INFO) << "File not found: " << expected_file.LossyDisplayName();
       LOG(INFO)
           << "No expectation file present, ignoring test on this platform."
@@ -285,7 +270,6 @@ void DumpAccessibilityTestBase::RunTestForPlatform(
   std::vector<std::string> run_until;
   property_filters_.clear();
   node_filters_.clear();
-  formatter_->AddDefaultFilters(&property_filters_);
   AddDefaultFilters(&property_filters_);
   ParseHtmlForExtraDirectives(html_contents, &wait_for, &run_until);
 

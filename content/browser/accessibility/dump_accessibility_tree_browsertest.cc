@@ -173,6 +173,55 @@ class DumpAccessibilityTreeTest : public DumpAccessibilityTestBase {
 
 void DumpAccessibilityTreeTest::AddDefaultFilters(
     std::vector<PropertyFilter>* property_filters) {
+  // TODO(aleventhal) Each platform deserves separate default filters.
+
+  //
+  // Windows
+  //
+
+  // Too noisy: HOTTRACKED, LINKED, SELECTABLE, IA2_STATE_EDITABLE,
+  //            IA2_STATE_OPAQUE, IA2_STATE_SELECTAbLE_TEXT,
+  //            IA2_STATE_SINGLE_LINE, IA2_STATE_VERTICAL.
+  // Too unpredictible: OFFSCREEN
+  // Windows states to log by default:
+  AddPropertyFilter(property_filters, "ALERT*");
+  AddPropertyFilter(property_filters, "ANIMATED*");
+  AddPropertyFilter(property_filters, "BUSY");
+  AddPropertyFilter(property_filters, "CHECKED");
+  AddPropertyFilter(property_filters, "COLLAPSED");
+  AddPropertyFilter(property_filters, "EXPANDED");
+  AddPropertyFilter(property_filters, "FLOATING");
+  AddPropertyFilter(property_filters, "FOCUSABLE");
+  AddPropertyFilter(property_filters, "HASPOPUP");
+  AddPropertyFilter(property_filters, "INVISIBLE");
+  AddPropertyFilter(property_filters, "MARQUEED");
+  AddPropertyFilter(property_filters, "MIXED");
+  AddPropertyFilter(property_filters, "MOVEABLE");
+  AddPropertyFilter(property_filters, "MULTISELECTABLE");
+  AddPropertyFilter(property_filters, "PRESSED");
+  AddPropertyFilter(property_filters, "PROTECTED");
+  AddPropertyFilter(property_filters, "READONLY");
+  AddPropertyFilter(property_filters, "SELECTED");
+  AddPropertyFilter(property_filters, "SIZEABLE");
+  AddPropertyFilter(property_filters, "TRAVERSED");
+  AddPropertyFilter(property_filters, "UNAVAILABLE");
+  AddPropertyFilter(property_filters, "IA2_STATE_ACTIVE");
+  AddPropertyFilter(property_filters, "IA2_STATE_ARMED");
+  AddPropertyFilter(property_filters, "IA2_STATE_CHECKABLE");
+  AddPropertyFilter(property_filters, "IA2_STATE_DEFUNCT");
+  AddPropertyFilter(property_filters, "IA2_STATE_HORIZONTAL");
+  AddPropertyFilter(property_filters, "IA2_STATE_ICONIFIED");
+  AddPropertyFilter(property_filters, "IA2_STATE_INVALID_ENTRY");
+  AddPropertyFilter(property_filters, "IA2_STATE_MODAL");
+  AddPropertyFilter(property_filters, "IA2_STATE_MULTI_LINE");
+  AddPropertyFilter(property_filters, "IA2_STATE_PINNED");
+  AddPropertyFilter(property_filters, "IA2_STATE_REQUIRED");
+  AddPropertyFilter(property_filters, "IA2_STATE_STALE");
+  AddPropertyFilter(property_filters, "IA2_STATE_TRANSIENT");
+  // Reduce flakiness.
+  AddPropertyFilter(property_filters, "FOCUSED", PropertyFilter::DENY);
+  AddPropertyFilter(property_filters, "HOTTRACKED", PropertyFilter::DENY);
+  AddPropertyFilter(property_filters, "OFFSCREEN", PropertyFilter::DENY);
   AddPropertyFilter(property_filters, "value='*'");
   // The value attribute on the document object contains the URL of the current
   // page which will not be the same every time the test is run.
@@ -180,11 +229,65 @@ void DumpAccessibilityTreeTest::AddDefaultFilters(
   // Object attributes.value
   AddPropertyFilter(property_filters, "layout-guess:*", PropertyFilter::ALLOW);
 
-  AddPropertyFilter(property_filters, "select*");
-  AddPropertyFilter(property_filters, "descript*");
+  //
+  // Blink
+  //
+
+  // Noisy, perhaps add later:
+  //   editable, focus*, horizontal, linked, richlyEditable, vertical
+  // Too flaky: hovered, offscreen
+  // States
   AddPropertyFilter(property_filters, "check*");
+  AddPropertyFilter(property_filters, "descript*");
+  AddPropertyFilter(property_filters, "collapsed");
+  AddPropertyFilter(property_filters, "haspopup");
   AddPropertyFilter(property_filters, "horizontal");
+  AddPropertyFilter(property_filters, "invisible");
+  AddPropertyFilter(property_filters, "multiline");
   AddPropertyFilter(property_filters, "multiselectable");
+  AddPropertyFilter(property_filters, "protected");
+  AddPropertyFilter(property_filters, "required");
+  AddPropertyFilter(property_filters, "select*");
+  AddPropertyFilter(property_filters, "visited");
+  // Other attributes
+  AddPropertyFilter(property_filters, "busy=true");
+  AddPropertyFilter(property_filters, "valueForRange*");
+  AddPropertyFilter(property_filters, "minValueForRange*");
+  AddPropertyFilter(property_filters, "maxValueForRange*");
+  AddPropertyFilter(property_filters, "hierarchicalLevel*");
+  AddPropertyFilter(property_filters, "autoComplete*");
+  AddPropertyFilter(property_filters, "restriction*");
+  AddPropertyFilter(property_filters, "keyShortcuts*");
+  AddPropertyFilter(property_filters, "activedescendantId*");
+  AddPropertyFilter(property_filters, "controlsIds*");
+  AddPropertyFilter(property_filters, "flowtoIds*");
+  AddPropertyFilter(property_filters, "detailsIds*");
+  AddPropertyFilter(property_filters, "invalidState=*");
+  AddPropertyFilter(property_filters, "invalidState=false",
+                    PropertyFilter::DENY);  // Don't show false value
+  AddPropertyFilter(property_filters, "roleDescription=*");
+  AddPropertyFilter(property_filters, "errormessageId=*");
+
+  //
+  // OS X
+  //
+
+  AddPropertyFilter(property_filters, "AXValueAutofill*");
+  AddPropertyFilter(property_filters, "AXAutocomplete*");
+
+  //
+  // Android
+  //
+
+  AddPropertyFilter(property_filters, "hint=*");
+  AddPropertyFilter(property_filters, "interesting", PropertyFilter::DENY);
+  AddPropertyFilter(property_filters, "has_character_locations",
+                    PropertyFilter::DENY);
+  AddPropertyFilter(property_filters, "has_image", PropertyFilter::DENY);
+
+  //
+  // General
+  //
 
   // Deny most empty values
   AddPropertyFilter(property_filters, "*=''", PropertyFilter::DENY);

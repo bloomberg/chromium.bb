@@ -68,9 +68,6 @@ class AccessibilityTreeFormatterAndroid
   AccessibilityTreeFormatterAndroid();
   ~AccessibilityTreeFormatterAndroid() override;
 
-  void AddDefaultFilters(
-      std::vector<PropertyFilter>* property_filters) override;
-
  private:
   const base::FilePath::StringType GetExpectedFileSuffix() override;
   const std::string GetAllowEmptyString() override;
@@ -104,14 +101,6 @@ AccessibilityTreeFormatterAndroid::AccessibilityTreeFormatterAndroid() {}
 
 AccessibilityTreeFormatterAndroid::~AccessibilityTreeFormatterAndroid() {}
 
-void AccessibilityTreeFormatterAndroid::AddDefaultFilters(
-    std::vector<PropertyFilter>* property_filters) {
-  AddPropertyFilter(property_filters, "hint=*");
-  AddPropertyFilter(property_filters, "interesting", PropertyFilter::DENY);
-  AddPropertyFilter(property_filters, "has_character_locations",
-                    PropertyFilter::DENY);
-  AddPropertyFilter(property_filters, "has_image", PropertyFilter::DENY);
-}
 void AccessibilityTreeFormatterAndroid::AddProperties(
     const BrowserAccessibility& node,
     base::DictionaryValue* dict) {
