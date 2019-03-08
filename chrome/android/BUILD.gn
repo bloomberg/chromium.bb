@@ -136,6 +136,16 @@ if (enable_vr) {
   }
 }
 
+if (notouch_build) {
+  android_resources("chrome_touchless_java_resources") {
+    resource_dirs = [ "//chrome/android/touchless/java/res" ]
+    deps = [
+      ":chrome_app_java_resources",
+    ]
+    custom_package = "org.chromium.chrome.touchless"
+  }
+}
+
 android_resources("chrome_download_java_resources") {
   resource_dirs = [ "//chrome/android/java/res_download" ]
   deps = [
@@ -418,6 +428,9 @@ android_library("chrome_java") {
     ]
   }
   srcjar_deps += [ ":chrome_vr_android_java_enums_srcjar" ]
+  if (notouch_build) {
+    deps += [ ":chrome_touchless_java_resources" ]
+  }
 
   # Add the actual implementation where necessary so that downstream targets
   # can provide their own implementations.
@@ -437,10 +450,6 @@ java_group("chrome_all_java") {
     "//chrome/android/features/autofill_assistant:java",
     "//chrome/android/features/media_router:java",
   ]
-
-  if (notouch_build) {
-    deps += [ "//chrome/android/features/touchless:java" ]
-  }
 }
 
 android_library("bundle_canary_java") {
@@ -1830,7 +1839,6 @@ chrome_test_apk_tmpl("chrome_public_test_apk") {
     ":chrome_test_java",
     "//chrome/android/features/autofill_assistant:test_java",
     "//chrome/android/features/media_router:test_java",
-    "//chrome/android/features/touchless:touchless_java_test",
     "//chrome/android/webapk/libs/runtime_library:runtime_library_javatests",
     "//chrome/android/webapk/shell_apk:shell_apk_javatests",
     "//chrome/browser/profiling_host:profiling_host_javatests",

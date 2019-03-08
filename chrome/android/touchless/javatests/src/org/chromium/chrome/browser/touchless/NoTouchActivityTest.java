@@ -31,7 +31,7 @@ import org.chromium.net.test.EmbeddedTestServer;
  * Tests for NoTouchActivity.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, ChromeSwitches.NO_TOUCH_MODE})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class NoTouchActivityTest {
     private static final String TEST_PATH = "/chrome/test/data/android/simple.html";
 
