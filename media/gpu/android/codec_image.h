@@ -106,17 +106,22 @@ class MEDIA_GPU_EXPORT CodecImage : public gpu::gles2::GLStreamTextureImage {
 
   // Renders this image to the texture owner front buffer by first rendering
   // it to the back buffer if it's not already there, and then waiting for the
-  // frame available event before calling UpdateTexImage(). Passing
-  // BindingsMode::kDontRestore skips the work of restoring the current texture
-  // bindings if the texture owner's context is already current. Otherwise,
-  // this switches contexts and preserves the texture bindings. Setting
-  // |bind_egl_image| = false skips doing the egl bindings to the texture target
-  // during texture update. |bind_egl_image| must always be true when using a
-  // SurfaceTexture backed CodecImage(TextureOwner). Returns true if the buffer
-  // is in the front buffer. Returns false if the buffer was invalidated.
-  enum class BindingsMode { kRestore, kDontRestore };
-  bool RenderToTextureOwnerFrontBuffer(BindingsMode bindings_mode,
-                                       bool bind_egl_image = true);
+  // frame available event before calling UpdateTexImage().
+  enum class BindingsMode {
+    // Ensures that the TextureOwner's texture is bound to the latest image, if
+    // it requires explicit binding.
+    kEnsureTexImageBound,
+
+    // Updates the current image but does not bind it. If updating the image
+    // implicitly binds the texture, the current bindings will be restored.
+    kRestoreIfBound,
+
+    // Updates the current image but does not bind it. If updating the image
+    // implicitly binds the texture, the current bindings will not be restored.
+    kDontRestoreIfBound
+  };
+  bool RenderToTextureOwnerFrontBuffer(BindingsMode bindings_mode);
+  void EnsureBoundIfNeeded(BindingsMode mode);
 
   // Renders this image to the overlay. Returns true if the buffer is in the
   // overlay front buffer. Returns false if the buffer was invalidated.

@@ -22,13 +22,15 @@ class MockTextureOwner : public TextureOwner {
  public:
   MockTextureOwner(GLuint fake_texture_id,
                    gl::GLContext* fake_context,
-                   gl::GLSurface* fake_surface);
+                   gl::GLSurface* fake_surface,
+                   bool binds_texture_on_update = false);
 
   MOCK_CONST_METHOD0(GetTextureId, GLuint());
   MOCK_CONST_METHOD0(GetContext, gl::GLContext*());
   MOCK_CONST_METHOD0(GetSurface, gl::GLSurface*());
   MOCK_CONST_METHOD0(CreateJavaSurface, gl::ScopedJavaSurface());
-  MOCK_METHOD1(UpdateTexImage, void(bool bind_egl_image));
+  MOCK_METHOD0(UpdateTexImage, void());
+  MOCK_METHOD0(EnsureTexImageBound, void());
   MOCK_METHOD1(GetTransformMatrix, void(float mtx[16]));
   MOCK_METHOD0(ReleaseBackBuffers, void());
   MOCK_METHOD0(SetReleaseTimeToNow, void());
@@ -53,6 +55,7 @@ class MockTextureOwner : public TextureOwner {
   gl::GLSurface* fake_surface;
   bool expecting_frame_available;
   int get_a_hardware_buffer_count = 0;
+  bool expect_update_tex_image;
 
  protected:
   ~MockTextureOwner();

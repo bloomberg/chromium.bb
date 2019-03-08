@@ -34,7 +34,8 @@ class MEDIA_GPU_EXPORT ImageReaderGLOwner : public TextureOwner {
   gl::GLContext* GetContext() const override;
   gl::GLSurface* GetSurface() const override;
   gl::ScopedJavaSurface CreateJavaSurface() const override;
-  void UpdateTexImage(bool bind_egl_image) override;
+  void UpdateTexImage() override;
+  void EnsureTexImageBound() override;
   void GetTransformMatrix(float mtx[16]) override;
   void ReleaseBackBuffers() override;
   void SetReleaseTimeToNow() override;
@@ -61,8 +62,6 @@ class MEDIA_GPU_EXPORT ImageReaderGLOwner : public TextureOwner {
   // Deletes the current image if it has no pending refs. Returns false on
   // error.
   bool MaybeDeleteCurrentImage();
-
-  void EnsureTexImageBound();
 
   // Releases an external ref on the image, with the fence that must be signaled
   // before the |image| can be resued by the AImageReader.
