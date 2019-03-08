@@ -149,8 +149,8 @@ class FixtureWithMockTaskRunner final : public Fixture {
             nullptr,
             ThreadTaskRunnerHandle::Get(),
             mock_tick_clock(),
-            SequenceManager::Settings{.randomised_sampling_enabled = false,
-                                      .clock = mock_tick_clock()})) {
+            SequenceManager::Settings{MessageLoop::Type::TYPE_DEFAULT, false,
+                                      mock_tick_clock()})) {
     // A null clock triggers some assertions.
     AdvanceMockTickClock(TimeDelta::FromMilliseconds(1));
 
@@ -220,8 +220,8 @@ class FixtureWithMockMessagePump : public Fixture {
     sequence_manager_ = SequenceManagerForTest::Create(
         std::make_unique<ThreadControllerWithMessagePumpImpl>(
             std::move(pump), mock_tick_clock()),
-        SequenceManager::Settings{.randomised_sampling_enabled = false,
-                                  .clock = mock_tick_clock()});
+        SequenceManager::Settings{MessageLoop::Type::TYPE_DEFAULT, false,
+                                  mock_tick_clock()});
     sequence_manager_->SetDefaultTaskRunner(MakeRefCounted<NullTaskRunner>());
 
     // The SequenceManager constructor calls Now() once for setting up
@@ -302,8 +302,8 @@ class FixtureWithMessageLoop : public Fixture {
     sequence_manager_ = SequenceManagerForTest::Create(
         message_loop_->GetMessageLoopBase(), ThreadTaskRunnerHandle::Get(),
         mock_tick_clock(),
-        SequenceManager::Settings{.randomised_sampling_enabled = false,
-                                  .clock = mock_tick_clock()});
+        SequenceManager::Settings{MessageLoop::Type::TYPE_DEFAULT, false,
+                                  mock_tick_clock()});
 
     // The SequenceManager constructor calls Now() once for setting up
     // housekeeping. The MessageLoop also contains a SequenceManager so two
@@ -3748,10 +3748,9 @@ TEST(SequenceManagerBasicTest, DefaultTaskRunnerSupport) {
       MakeRefCounted<TestSimpleTaskRunner>();
   {
     std::unique_ptr<SequenceManagerForTest> manager =
-        SequenceManagerForTest::Create(
-            message_loop.GetMessageLoopBase(), message_loop.task_runner(),
-            nullptr,
-            SequenceManager::Settings{.randomised_sampling_enabled = false});
+        SequenceManagerForTest::Create(message_loop.GetMessageLoopBase(),
+                                       message_loop.task_runner(), nullptr,
+                                       SequenceManager::Settings());
     manager->SetDefaultTaskRunner(custom_task_runner);
     DCHECK_EQ(custom_task_runner, message_loop.task_runner());
   }

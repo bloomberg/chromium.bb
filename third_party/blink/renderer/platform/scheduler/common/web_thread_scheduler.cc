@@ -21,7 +21,8 @@ WebThreadScheduler::CreateMainThreadScheduler(
     std::unique_ptr<base::MessagePump> message_pump,
     base::Optional<base::Time> initial_virtual_time) {
   auto settings = base::sequence_manager::SequenceManager::Settings{
-      .randomised_sampling_enabled = true};
+      base::MessageLoop::TYPE_DEFAULT,
+      /*randomised_sampling_enabled=*/true};
   auto sequence_manager =
       message_pump
           ? base::sequence_manager::
