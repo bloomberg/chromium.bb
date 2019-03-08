@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <algorithm>
 #include <map>
 #include <memory>
 #include <utility>
@@ -160,7 +161,8 @@ bool ServerPredictionsToPasswordFormPrediction(
 bool IsPredictedTypeNotPasswordPrediction(
     autofill::ServerFieldType field_type) {
   return field_type == autofill::CREDIT_CARD_NUMBER ||
-         field_type == autofill::CREDIT_CARD_VERIFICATION_CODE;
+         field_type == autofill::CREDIT_CARD_VERIFICATION_CODE ||
+         field_type == autofill::NOT_PASSWORD;
 }
 
 bool AreAllFieldsEmpty(const PasswordForm& form) {

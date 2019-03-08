@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <iterator>
 #include <set>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -20,6 +21,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/common/autofill_regex_constants.h"
 #include "components/autofill/core/common/autofill_regexes.h"
 #include "components/autofill/core/common/form_data.h"
@@ -104,12 +106,11 @@ struct ProcessedField {
   // The flag derived from field->autocomplete_attribute.
   AutocompleteFlag autocomplete_flag = AutocompleteFlag::kNone;
 
-  // True iff field->form_control_type == "password".
+  // True if field->form_control_type == "password".
   bool is_password = false;
 
-  // True if this field was marked CREDIT_CARD_VERIFICATION_CODE in server
-  // predictions.
-  bool server_hints_CVC = false;
+  // True if the server predicts this field not to be a password.
+  bool server_hints_not_password = false;
 
   Interactability interactability = Interactability::kUnlikely;
 };
@@ -122,19 +123,15 @@ bool StringMatchesCVC(const base::string16& str) {
   return autofill::MatchesPattern(str, *kCardCvcReCached);
 }
 
-// TODO(crbug.com/860700): Remove once server-side provides hints for CVC
-// fields.
-// Returns true if the |field| is suspected to be a CVC field.
-bool IsFieldCVC(const ProcessedField& field) {
-  return field.server_hints_CVC ||
+// TODO(crbug.com/860700): Remove name and attribute checking once server-side
+// provides hints for CVC.
+// Returns true if the |field| is suspected to be not the password field.
+// The suspicion is based on server-side provided hints and on checking the
+// field's id and name for hinting towards a CVC code.
+bool IsNotPasswordField(const ProcessedField& field) {
+  return field.server_hints_not_password ||
          StringMatchesCVC(field.field->name_attribute) ||
-         StringMatchesCVC(field.field->id_attribute);
-}
-
-// Returns true if the |field| is suspected to be a credit card related field
-// (credit card owner name, CVC code, expiration date etc).
-bool IsCreditCardField(const ProcessedField& field) {
-  return IsFieldCVC(field) ||
+         StringMatchesCVC(field.field->id_attribute) ||
          field.autocomplete_flag == AutocompleteFlag::kCreditCard;
 }
 
@@ -356,13 +353,15 @@ void ParseUsingPredictions(std::vector<ProcessedField>* processed_fields,
   if (result->confirmation_password && !result->new_password)
     result->confirmation_password = nullptr;
 
-  // For the use of basic heuristics, also mark CVC fields as such.
+  // For the use of basic heuristics, also mark CVC fields and NOT_PASSWORD
+  // fields as such.
   for (const auto& prediction : predictions) {
-    if (prediction.second.type == autofill::CREDIT_CARD_VERIFICATION_CODE) {
+    if (prediction.second.type == autofill::CREDIT_CARD_VERIFICATION_CODE ||
+        prediction.second.type == autofill::NOT_PASSWORD) {
       ProcessedField* processed_field =
           FindFieldWithUniqueRendererId(processed_fields, prediction.first);
       if (processed_field)
-        processed_field->server_hints_CVC = true;
+        processed_field->server_hints_not_password = true;
     }
   }
 }
@@ -433,7 +432,7 @@ bool IsLikelyPassword(const ProcessedField& field, size_t* ignored_readonly) {
     ++*ignored_readonly;
     return false;
   }
-  return !IsCreditCardField(field);
+  return !IsNotPasswordField(field);
 }
 
 // Filters the available passwords from |processed_fields| using these rules:
@@ -612,7 +611,7 @@ const FormFieldData* FindUsernameFieldBaseHeuristics(
       continue;
     if (is_saving && IsProbablyNotUsername(it->field->value))
       continue;
-    if (!is_fallback && IsCreditCardField(*it))
+    if (!is_fallback && IsNotPasswordField(*it))
       continue;
     if (!username)
       username = it->field;
@@ -660,7 +659,7 @@ void ParseUsingBaseHeuristics(
     // What is the best interactability among passwords?
     Interactability password_max = Interactability::kUnlikely;
     for (const ProcessedField& processed_field : processed_fields) {
-      if (processed_field.is_password && !IsCreditCardField(processed_field))
+      if (processed_field.is_password && !IsNotPasswordField(processed_field))
         password_max = std::max(password_max, processed_field.interactability);
     }
 
@@ -706,7 +705,7 @@ void ParseUsingBaseHeuristics(
   *username_max = Interactability::kUnlikely;
   for (auto it = processed_fields.begin(); it != first_relevant_password;
        ++it) {
-    if (!it->is_password && !IsCreditCardField(*it))
+    if (!it->is_password && !IsNotPasswordField(*it))
       *username_max = std::max(*username_max, it->interactability);
   }
 
