@@ -54,8 +54,6 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeSessionManagerClient
   void StartSession(
       const cryptohome::AccountIdentifier& cryptohome_id) override;
   void StopSession() override;
-  void NotifySupervisedUserCreationStarted() override;
-  void NotifySupervisedUserCreationFinished() override;
   void StartDeviceWipe() override;
   void ClearForcedReEnrollmentVpd(VoidDBusMethodCallback callback) override;
   void StartTPMFirmwareUpdate(const std::string& update_mode) override;

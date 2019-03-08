@@ -156,12 +156,6 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) SessionManagerClient : public DBusClient {
   // Notifies session_manager that Chrome has hidden the lock screen.
   virtual void NotifyLockScreenDismissed() = 0;
 
-  // Notifies that supervised user creation have started.
-  virtual void NotifySupervisedUserCreationStarted() = 0;
-
-  // Notifies that supervised user creation have finished.
-  virtual void NotifySupervisedUserCreationFinished() = 0;
-
   // Map that is used to describe the set of active user sessions where |key|
   // is cryptohome id and |value| is user_id_hash.
   using ActiveSessionsMap = std::map<std::string, std::string>;

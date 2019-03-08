@@ -262,16 +262,6 @@ class SessionManagerClientImpl : public SessionManagerClient {
         login_manager::kSessionManagerHandleLockScreenDismissed);
   }
 
-  void NotifySupervisedUserCreationStarted() override {
-    SimpleMethodCallToSessionManager(
-        login_manager::kSessionManagerHandleSupervisedUserCreationStarting);
-  }
-
-  void NotifySupervisedUserCreationFinished() override {
-    SimpleMethodCallToSessionManager(
-        login_manager::kSessionManagerHandleSupervisedUserCreationFinished);
-  }
-
   void RetrieveActiveSessions(ActiveSessionsCallback callback) override {
     dbus::MethodCall method_call(
         login_manager::kSessionManagerInterface,
