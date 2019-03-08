@@ -220,7 +220,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling android_sdk_emulator_version
   # and whatever else without interference from each other.
-  'android_sdk_emulator_version': '731059df93885359487fd9d6085bc7804a23f9c8',
+  'android_sdk_emulator_version': 'qQXmM5spNs2IKBD_7Y_2a5ondRnb3LGHbqfm39aXmGgC',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling android_sdk_extras_version
   # and whatever else without interference from each other.
@@ -232,11 +232,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling android_sdk_platforms_version
   # and whatever else without interference from each other.
-  'android_sdk_platforms_version': '6a79b931523181e147ddfc7db318bf0b2e34edb5',
+  'android_sdk_platforms_version': 'Yz02ywwHGz649rWbTjLJ_XBR8DmwIpxDCx4lkrBiMuQC',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling android_sdk_sources_version
   # and whatever else without interference from each other.
-  'android_sdk_sources_version': '8d8bd74d8f062449b8c44a663cc38a33ddf96752',
+  'android_sdk_sources_version': 'WRJ021tx-HAI9-nepe2OosHLCxifKbIWBWQvH1z42aYC',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling android_sdk_tools_version
   # and whatever else without interference from each other.

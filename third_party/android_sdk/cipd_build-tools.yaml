@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 # To create CIPD package run the following command.
-# cipd create --pkg-def cipd_build-tools.yaml -tag version:$version
+# cipd create --pkg-def cipd_build-tools.yaml
 package: chromium/third_party/android_sdk/public/build-tools
 description: build-tools Android SDK Build Tools
 root: public/
