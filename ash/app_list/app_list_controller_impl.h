@@ -305,6 +305,8 @@ class ASH_EXPORT AppListControllerImpl
   // Shows the home launcher in tablet mode.
   void ShowHomeLauncher();
 
+  void ResetHomeLauncherIfShown();
+
   base::string16 last_raw_query_;
 
   mojom::AppListClientPtr client_;
