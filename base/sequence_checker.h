@@ -54,7 +54,13 @@
   DCHECK((name).CalledOnValidSequence())
 #define DETACH_FROM_SEQUENCE(name) (name).DetachFromSequence()
 #else  // DCHECK_IS_ON()
+#if __OBJC__
+// TODO(https://crbug.com/936856): clang currently doesn't support static_assert
+// in Objective-C classes.
 #define SEQUENCE_CHECKER(name)
+#else
+#define SEQUENCE_CHECKER(name) static_assert(true, "")
+#endif
 #define DCHECK_CALLED_ON_VALID_SEQUENCE(name) EAT_STREAM_PARAMETERS
 #define DETACH_FROM_SEQUENCE(name)
 #endif  // DCHECK_IS_ON()
