@@ -236,7 +236,7 @@ NGOutOfFlowLayoutPart::GetContainingBlockInfo(
 }
 
 void NGOutOfFlowLayoutPart::ComputeInlineContainingBlocks(
-    Vector<NGOutOfFlowPositionedDescendant> descendants) {
+    const Vector<NGOutOfFlowPositionedDescendant>& descendants) {
   NGBoxFragmentBuilder::InlineContainingBlockMap inline_container_fragments;
 
   for (auto& descendant : descendants) {
@@ -391,7 +391,7 @@ void NGOutOfFlowLayoutPart::ComputeInlineContainingBlocks(
 }
 
 void NGOutOfFlowLayoutPart::LayoutDescendantCandidates(
-    const Vector<NGOutOfFlowPositionedDescendant> descendant_candidates,
+    const Vector<NGOutOfFlowPositionedDescendant>& descendant_candidates,
     const LayoutBox* only_layout,
     HashSet<const LayoutObject*>* placed_objects) {
   for (auto& candidate : descendant_candidates) {
