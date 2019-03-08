@@ -45,7 +45,6 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
-#include "third_party/blink/renderer/modules/filesystem/async_file_system_callbacks.h"
 #include "third_party/blink/renderer/modules/filesystem/dom_file_system.h"
 #include "third_party/blink/renderer/modules/filesystem/file_system_callbacks.h"
 #include "third_party/blink/renderer/modules/filesystem/file_system_client.h"
@@ -54,15 +53,6 @@
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 namespace blink {
-
-namespace {
-
-void ReportFailure(std::unique_ptr<AsyncFileSystemCallbacks> callbacks,
-                   base::File::Error error) {
-  callbacks->DidFail(error);
-}
-
-}  // namespace
 
 LocalFileSystem::~LocalFileSystem() = default;
 
@@ -133,11 +123,20 @@ void LocalFileSystem::RequestFileSystemAccessInternal(
 
 void LocalFileSystem::FileSystemNotAllowedInternal(
     ExecutionContext* context,
-    std::unique_ptr<AsyncFileSystemCallbacks> callbacks) {
+    std::unique_ptr<FileSystemCallbacks> callbacks) {
   context->GetTaskRunner(TaskType::kFileReading)
-      ->PostTask(FROM_HERE,
-                 WTF::Bind(&ReportFailure, WTF::Passed(std::move(callbacks)),
-                           base::File::FILE_ERROR_ABORT));
+      ->PostTask(FROM_HERE, WTF::Bind(&FileSystemCallbacks::DidFail,
+                                      WTF::Passed(std::move(callbacks)),
+                                      base::File::FILE_ERROR_ABORT));
+}
+
+void LocalFileSystem::FileSystemNotAllowedInternal(
+    ExecutionContext* context,
+    std::unique_ptr<ResolveURICallbacks> callbacks) {
+  context->GetTaskRunner(TaskType::kFileReading)
+      ->PostTask(FROM_HERE, WTF::Bind(&ResolveURICallbacks::DidFail,
+                                      WTF::Passed(std::move(callbacks)),
+                                      base::File::FILE_ERROR_ABORT));
 }
 
 void LocalFileSystem::FileSystemAllowedInternal(

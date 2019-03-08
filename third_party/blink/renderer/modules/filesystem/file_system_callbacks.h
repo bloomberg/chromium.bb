@@ -42,8 +42,9 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_file_writer_callback.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_metadata_callback.h"
 #include "third_party/blink/renderer/core/fileapi/file_error.h"
-#include "third_party/blink/renderer/modules/filesystem/async_file_system_callbacks.h"
 #include "third_party/blink/renderer/modules/filesystem/entry_heap_vector.h"
+#include "third_party/blink/renderer/platform/blob/blob_data.h"
+#include "third_party/blink/renderer/platform/file_metadata.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -71,14 +72,9 @@ class ErrorCallbackBase : public GarbageCollectedFinalized<ErrorCallbackBase> {
   virtual void Invoke(base::File::Error error) = 0;
 };
 
-class FileSystemCallbacksBase : public AsyncFileSystemCallbacks {
+class FileSystemCallbacksBase {
  public:
-  ~FileSystemCallbacksBase() override;
-
-  // For ErrorCallback.
-  void DidFail(base::File::Error error) final;
-
-  // Other callback methods are implemented by each subclass.
+  virtual ~FileSystemCallbacksBase();
 
  protected:
   FileSystemCallbacksBase(ErrorCallbackBase*,
@@ -100,6 +96,20 @@ class FileSystemCallbacksBase : public AsyncFileSystemCallbacks {
   Persistent<DOMFileSystemBase> file_system_;
   Persistent<ExecutionContext> execution_context_;
   int async_operation_id_;
+};
+
+// This is a base class for the SnapshotFileCallback and CreateFileHelper.
+// Both implement snapshot file operations.
+class SnapshotFileCallbackBase {
+ public:
+  virtual ~SnapshotFileCallbackBase() = default;
+
+  // Called when a snapshot file is created successfully.
+  virtual void DidCreateSnapshotFile(
+      const FileMetadata&,
+      scoped_refptr<BlobDataHandle> snapshot) = 0;
+
+  virtual void DidFail(base::File::Error error) = 0;
 };
 
 // Subclasses ----------------------------------------------------------------
@@ -175,7 +185,11 @@ class EntryCallbacks final : public FileSystemCallbacksBase {
                                                 DOMFileSystemBase*,
                                                 const String& expected_path,
                                                 bool is_directory);
-  void DidSucceed() override;
+  // Called when a requested operation is completed successfully.
+  void DidSucceed();
+
+  // Called when a request operation has failed.
+  void DidFail(base::File::Error error);
 
  private:
   EntryCallbacks(OnDidGetEntryCallback*,
@@ -207,8 +221,16 @@ class EntriesCallbacks final : public FileSystemCallbacksBase {
                                                   ExecutionContext*,
                                                   DirectoryReaderBase*,
                                                   const String& base_path);
-  void DidReadDirectoryEntry(const String& name, bool is_directory) override;
-  void DidReadDirectoryEntries(bool has_more) override;
+  // Called when a directory entry is read.
+  void DidReadDirectoryEntry(const String& name, bool is_directory);
+
+  // Called after a chunk of directory entries have been read (i.e. indicates
+  // it's good time to call back to the application). If hasMore is true there
+  // can be more chunks.
+  void DidReadDirectoryEntries(bool has_more);
+
+  // Called when a request operation has failed.
+  void DidFail(base::File::Error error);
 
  private:
   EntriesCallbacks(OnDidGetEntriesCallback*,
@@ -268,7 +290,11 @@ class FileSystemCallbacks final : public FileSystemCallbacksBase {
       ErrorCallbackBase*,
       ExecutionContext*,
       mojom::blink::FileSystemType);
-  void DidOpenFileSystem(const String& name, const KURL& root_url) override;
+  // Called when a requested file system is opened.
+  void DidOpenFileSystem(const String& name, const KURL& root_url);
+
+  // Called when a request operation has failed.
+  void DidFail(base::File::Error error);
 
  private:
   FileSystemCallbacks(OnDidOpenFileSystemCallback*,
@@ -287,11 +313,15 @@ class ResolveURICallbacks final : public FileSystemCallbacksBase {
   static std::unique_ptr<ResolveURICallbacks> Create(OnDidGetEntryCallback*,
                                                      ErrorCallbackBase*,
                                                      ExecutionContext*);
+  // Called when a filesystem URL is resolved.
   void DidResolveURL(const String& name,
                      const KURL& root_url,
                      mojom::blink::FileSystemType,
                      const String& file_path,
-                     bool is_directry) override;
+                     bool is_directry);
+
+  // Called when a request operation has failed.
+  void DidFail(base::File::Error error);
 
  private:
   ResolveURICallbacks(OnDidGetEntryCallback*,
@@ -334,7 +364,11 @@ class MetadataCallbacks final : public FileSystemCallbacksBase {
                                                    ErrorCallbackBase*,
                                                    ExecutionContext*,
                                                    DOMFileSystemBase*);
-  void DidReadMetadata(const FileMetadata&) override;
+  // Called when a file metadata is read successfully.
+  void DidReadMetadata(const FileMetadata&);
+
+  // Called when a request operation has failed.
+  void DidFail(base::File::Error error);
 
  private:
   MetadataCallbacks(OnDidReadMetadataCallback*,
@@ -380,7 +414,11 @@ class FileWriterCallbacks final : public FileSystemCallbacksBase {
       OnDidCreateFileWriterCallback*,
       ErrorCallbackBase*,
       ExecutionContext*);
-  void DidCreateFileWriter(const KURL& path, long long length) override;
+  // Called when an AsyncFileWrter has been created successfully.
+  void DidCreateFileWriter(const KURL& path, long long length);
+
+  // Called when a request operation has failed.
+  void DidFail(base::File::Error error);
 
  private:
   FileWriterCallbacks(FileWriterBase*,
@@ -391,7 +429,8 @@ class FileWriterCallbacks final : public FileSystemCallbacksBase {
   Persistent<OnDidCreateFileWriterCallback> success_callback_;
 };
 
-class SnapshotFileCallback final : public FileSystemCallbacksBase {
+class SnapshotFileCallback final : public SnapshotFileCallbackBase,
+                                   public FileSystemCallbacksBase {
  public:
   class OnDidCreateSnapshotFileCallback
       : public GarbageCollectedFinalized<OnDidCreateSnapshotFileCallback> {
@@ -422,15 +461,19 @@ class SnapshotFileCallback final : public FileSystemCallbacksBase {
     Member<V8PersistentCallbackInterface<V8FileCallback>> callback_;
   };
 
-  static std::unique_ptr<AsyncFileSystemCallbacks> Create(
+  static std::unique_ptr<SnapshotFileCallbackBase> Create(
       DOMFileSystemBase*,
       const String& name,
       const KURL&,
       OnDidCreateSnapshotFileCallback*,
       ErrorCallbackBase*,
       ExecutionContext*);
+  // Called when a snapshot file is created successfully.
   void DidCreateSnapshotFile(const FileMetadata&,
                              scoped_refptr<BlobDataHandle> snapshot) override;
+
+  // Called when a request operation has failed.
+  void DidFail(base::File::Error error) override;
 
  private:
   SnapshotFileCallback(DOMFileSystemBase*,
@@ -488,7 +531,11 @@ class VoidCallbacks final : public FileSystemCallbacksBase {
                                                ErrorCallbackBase*,
                                                ExecutionContext*,
                                                DOMFileSystemBase*);
-  void DidSucceed() override;
+  // Called when a requested operation is completed successfully.
+  void DidSucceed();
+
+  // Called when a request operation has failed.
+  void DidFail(base::File::Error error);
 
  private:
   VoidCallbacks(OnDidSucceedCallback*,

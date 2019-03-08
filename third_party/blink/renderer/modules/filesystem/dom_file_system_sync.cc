@@ -75,7 +75,7 @@ DirectoryEntrySync* DOMFileSystemSync::root() {
 
 namespace {
 
-class CreateFileHelper final : public AsyncFileSystemCallbacks {
+class CreateFileHelper final : public SnapshotFileCallbackBase {
  public:
   class CreateFileResult : public GarbageCollected<CreateFileResult> {
    public:
@@ -92,12 +92,12 @@ class CreateFileHelper final : public AsyncFileSystemCallbacks {
     void Trace(blink::Visitor* visitor) { visitor->Trace(file_); }
   };
 
-  static std::unique_ptr<AsyncFileSystemCallbacks> Create(
+  static std::unique_ptr<SnapshotFileCallbackBase> Create(
       CreateFileResult* result,
       const String& name,
       const KURL& url,
       mojom::blink::FileSystemType type) {
-    return base::WrapUnique(static_cast<AsyncFileSystemCallbacks*>(
+    return base::WrapUnique(static_cast<SnapshotFileCallbackBase*>(
         new CreateFileHelper(result, name, url, type)));
   }
 
