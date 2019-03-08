@@ -4,19 +4,23 @@
 
 #include "linux_dev_platform.h"
 
+#include <clocale>
+#include <cstdlib>
 #include <cstring>
 #include <iomanip>
-#include <locale>
 #include <sstream>
 
 namespace inspector_protocol {
 namespace {
 class LinuxDevPlatform : public Platform {
   bool StrToD(const char* str, double* result) const override {
-    locale_t new_locale = newlocale(LC_NUMERIC_MASK, "C", NULL);
+    // This is not thread-safe
+    // (see https://en.cppreference.com/w/cpp/locale/setlocale)
+    // but good enough for a unittest.
+    const char* saved_locale = std::setlocale(LC_NUMERIC, nullptr);
     char* end;
-    *result = strtod_l(str, &end, new_locale);
-    freelocale(new_locale);
+    *result = std::strtod(str, &end);
+    std::setlocale(LC_NUMERIC, saved_locale);
     if (errno == ERANGE) {
       // errno must be reset, e.g. see the example here:
       // https://en.cppreference.com/w/cpp/string/byte/strtof
