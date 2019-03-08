@@ -536,6 +536,7 @@ test("browser_tests") {
       "//chrome/browser/chromeos:test_support",
       "//chrome/browser/media/router:test_support",
       "//chrome/browser/resources/chromeos/chromevox:browser_tests",
+      "//chrome/browser/resources/chromeos/login:browser_tests",
       "//chrome/browser/resources/chromeos/select_to_speak:browser_tests",
       "//chrome/browser/resources/chromeos/switch_access:browser_tests",
       "//chrome/services/file_util/public/cpp:browser_tests",

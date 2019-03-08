@@ -135,6 +135,9 @@ template("js2gtest") {
     if (defined(invoker.deps)) {
       deps += invoker.deps
     }
+    if (defined(invoker.gen_include_files)) {
+      data = invoker.gen_include_files
+    }
     if (defined(invoker.extra_js_files)) {
       data_deps = [
         ":$copy_target_name",
