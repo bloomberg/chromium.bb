@@ -23,6 +23,7 @@ java_cpp_enum("autofill_assistant_enums_java") {
   sources = [
     "metrics.h",
     "overlay_state.h",
+    "payment_request.h",
   ]
 }
 

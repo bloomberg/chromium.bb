@@ -38,8 +38,8 @@ public class AssistantCarouselCoordinator {
         mView.setLayoutManager(mLayoutManager);
         mView.addItemDecoration(new SpaceItemDecoration(context));
         mView.setAdapter(new RecyclerViewAdapter<>(
-                new SimpleRecyclerViewMcp<>(model.getChipsModel(), AssistantChip::getType,
-                        AssistantChipViewHolder::bind),
+                new SimpleRecyclerViewMcp<>(model.getChipsModel(),
+                        AssistantChipViewHolder::getViewType, AssistantChipViewHolder::bind),
                 AssistantChipViewHolder::create));
 
         // Carousel is initially hidden.

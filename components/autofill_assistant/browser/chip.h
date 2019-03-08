@@ -20,13 +20,16 @@ struct Chip {
   Chip(Chip&&);
   Chip& operator=(Chip&&);
 
-  ChipType type;
+  ChipType type = UNKNOWN_CHIP_TYPE;
 
   // Localized string to display.
   std::string text;
 
   // Callback triggered when the chip is tapped.
   base::OnceClosure callback;
+
+  // Whether this chip is disabled.
+  bool disabled = false;
 };
 
 // Guarantees that the Chip.type of all chips is set to a sensible value.

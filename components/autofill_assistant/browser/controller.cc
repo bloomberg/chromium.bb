@@ -210,8 +210,6 @@ void Controller::SelectChip(std::vector<Chip>* chips, int chip_index) {
     return;
   }
 
-  // If the button clicked is not the Cancel button, then we clear the
-  // current chips and run the callback.
   auto callback = std::move((*chips)[chip_index].callback);
   SetChips(nullptr);
   std::move(callback).Run();
@@ -600,14 +598,105 @@ const PaymentRequestOptions* Controller::GetPaymentRequestOptions() const {
   return payment_request_options_.get();
 }
 
-void Controller::SetPaymentInformation(
-    std::unique_ptr<PaymentInformation> payment_information) {
-  if (!payment_request_options_)
+void Controller::OnPaymentRequestContinueButtonClicked() {
+  if (!payment_request_options_ || !payment_request_info_)
     return;
 
   auto callback = std::move(payment_request_options_->callback);
+  auto payment_request_info = std::move(payment_request_info_);
+
+  // TODO(crbug.com/806868): succeed is currently always true, but we might want
+  // to set it to false and propagate the result to GetPaymentInformationAction
+  // when the user clicks "Cancel" during that action.
+  payment_request_info->succeed = true;
+
   SetPaymentRequestOptions(nullptr);
-  std::move(callback).Run(std::move(payment_information));
+  std::move(callback).Run(std::move(payment_request_info));
+}
+
+void Controller::SetShippingAddress(
+    std::unique_ptr<autofill::AutofillProfile> address) {
+  if (!payment_request_info_)
+    return;
+
+  payment_request_info_->shipping_address = std::move(address);
+  UpdatePaymentRequestActions();
+}
+
+void Controller::SetBillingAddress(
+    std::unique_ptr<autofill::AutofillProfile> address) {
+  if (!payment_request_info_)
+    return;
+
+  payment_request_info_->billing_address = std::move(address);
+  UpdatePaymentRequestActions();
+}
+
+void Controller::SetContactInfo(std::string name,
+                                std::string phone,
+                                std::string email) {
+  if (!payment_request_info_)
+    return;
+
+  payment_request_info_->payer_name = name;
+  payment_request_info_->payer_phone = phone;
+  payment_request_info_->payer_email = email;
+  UpdatePaymentRequestActions();
+}
+
+void Controller::SetCreditCard(std::unique_ptr<autofill::CreditCard> card) {
+  if (!payment_request_info_)
+    return;
+
+  payment_request_info_->card = std::move(card);
+  UpdatePaymentRequestActions();
+}
+
+void Controller::SetTermsAndConditions(
+    TermsAndConditionsState terms_and_conditions) {
+  if (!payment_request_info_)
+    return;
+
+  payment_request_info_->terms_and_conditions = terms_and_conditions;
+  UpdatePaymentRequestActions();
+}
+
+void Controller::UpdatePaymentRequestActions() {
+  // TODO(crbug.com/806868): This method uses #SetChips(), which means that
+  // updating the PR actions will also clear the suggestions. We should update
+  // the actions only if there are use cases of PR + suggestions.
+  if (!payment_request_options_ || !payment_request_info_) {
+    return;
+  }
+
+  bool contact_info_ok = (!payment_request_options_->request_payer_name ||
+                          !payment_request_info_->payer_name.empty()) &&
+                         (!payment_request_options_->request_payer_email ||
+                          !payment_request_info_->payer_email.empty()) &&
+                         (!payment_request_options_->request_payer_phone ||
+                          !payment_request_info_->payer_phone.empty());
+
+  bool shipping_address_ok = !payment_request_options_->request_shipping ||
+                             payment_request_info_->shipping_address;
+
+  bool terms_ok = payment_request_info_->terms_and_conditions != NOT_SELECTED;
+
+  bool continue_button_enabled = contact_info_ok && shipping_address_ok &&
+                                 payment_request_info_->card && terms_ok;
+
+  auto chips = std::make_unique<std::vector<Chip>>();
+  chips->emplace_back();
+  chips->back().text =
+      l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_PAYMENT_INFO_CONFIRM);
+  chips->back().type = HIGHLIGHTED_ACTION;
+  chips->back().disabled = !continue_button_enabled;
+  if (continue_button_enabled) {
+    chips->back().callback =
+        base::BindOnce(&Controller::OnPaymentRequestContinueButtonClicked,
+                       weak_ptr_factory_.GetWeakPtr());
+  }
+
+  SetChips(std::move(chips));
 }
 
 void Controller::GetTouchableArea(std::vector<RectF>* area) const {
@@ -767,7 +856,12 @@ void Controller::SetPaymentRequestOptions(
   if (payment_request_options_ == nullptr && options == nullptr)
     return;
 
+  if (options) {
+    payment_request_info_ = std::make_unique<PaymentInformation>();
+  }
+
   payment_request_options_ = std::move(options);
+  UpdatePaymentRequestActions();
   GetUiController()->OnPaymentRequestChanged(payment_request_options_.get());
 }
 

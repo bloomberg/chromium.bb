@@ -321,13 +321,6 @@ void UiControllerAndroid::UpdateActions() {
 
   JNIEnv* env = AttachCurrentThread();
 
-  // TODO(crbug.com/806868): Remove this case once payment request reuses the
-  // carousel.
-  if (ui_delegate_->GetPaymentRequestOptions()) {
-    Java_AutofillAssistantUiController_clearActions(env, java_object_);
-    return;
-  }
-
   bool has_close_or_cancel = false;
   auto chips = Java_AutofillAssistantUiController_createChipList(env);
   const auto& actions = ui_delegate_->GetActions();
@@ -338,7 +331,7 @@ void UiControllerAndroid::UpdateActions() {
     switch (action.type) {
       case HIGHLIGHTED_ACTION:
         Java_AutofillAssistantUiController_addHighlightedActionButton(
-            env, java_object_, chips, text, i);
+            env, java_object_, chips, text, i, action.disabled);
         break;
 
       case NORMAL_ACTION:
@@ -524,16 +517,36 @@ UiControllerAndroid::GetPaymentRequestModel() {
                                                     GetModel());
 }
 
-void UiControllerAndroid::OnGetPaymentInformation(
-    std::unique_ptr<PaymentInformation> payment_info) {
-  ui_delegate_->SetPaymentInformation(std::move(payment_info));
+void UiControllerAndroid::OnShippingAddressChanged(
+    std::unique_ptr<autofill::AutofillProfile> address) {
+  ui_delegate_->SetShippingAddress(std::move(address));
+}
+
+void UiControllerAndroid::OnBillingAddressChanged(
+    std::unique_ptr<autofill::AutofillProfile> address) {
+  ui_delegate_->SetBillingAddress(std::move(address));
+}
+
+void UiControllerAndroid::OnContactInfoChanged(std::string name,
+                                               std::string phone,
+                                               std::string email) {
+  ui_delegate_->SetContactInfo(name, phone, email);
+}
+
+void UiControllerAndroid::OnCreditCardChanged(
+    std::unique_ptr<autofill::CreditCard> card) {
+  ui_delegate_->SetCreditCard(std::move(card));
+}
+
+void UiControllerAndroid::OnTermsAndConditionsChanged(
+    TermsAndConditionsState state) {
+  ui_delegate_->SetTermsAndConditions(state);
 }
 
 void UiControllerAndroid::OnPaymentRequestChanged(
     const PaymentRequestOptions* payment_options) {
   JNIEnv* env = AttachCurrentThread();
   auto jmodel = GetPaymentRequestModel();
-  UpdateActions();
   if (!payment_options) {
     Java_AssistantPaymentRequestModel_clearOptions(env, jmodel);
     return;

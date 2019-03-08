@@ -16,6 +16,7 @@ import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantCarouselModel;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChip;
+import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChip.Type;
 import org.chromium.chrome.browser.autofill_assistant.metrics.DropOutReason;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
@@ -24,7 +25,6 @@ import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -201,22 +201,17 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
         for (int i = 0; i < texts.length; i++) {
             final int suggestionIndex = i;
             chips.add(new AssistantChip(AssistantChip.Type.CHIP_ASSISTIVE, texts[i],
-                    () -> safeNativeOnSuggestionSelected(suggestionIndex)));
+                    /* disabled= */ false, () -> safeNativeOnSuggestionSelected(suggestionIndex)));
         }
         AssistantCarouselModel model = getModel().getSuggestionsModel();
         model.set(ALIGNMENT, AssistantCarouselModel.Alignment.START);
         setChips(model, chips);
     }
 
-    @CalledByNative
-    private void clearActions() {
-        getModel().getActionsModel().getChipsModel().set(Collections.emptyList());
-    }
-
     /** Creates an empty list of chips. */
     @CalledByNative
     private static List<AssistantChip> createChipList() {
-        return new ArrayList<AssistantChip>();
+        return new ArrayList<>();
     }
 
     /**
@@ -224,7 +219,7 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
      */
     @CalledByNative
     private void addActionButton(List<AssistantChip> chips, String text, int actionIndex) {
-        chips.add(new AssistantChip(AssistantChip.Type.BUTTON_HAIRLINE, text,
+        chips.add(new AssistantChip(AssistantChip.Type.BUTTON_HAIRLINE, text, /* disabled= */ false,
                 () -> safeNativeOnActionSelected(actionIndex)));
     }
 
@@ -234,8 +229,8 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
      */
     @CalledByNative
     private void addHighlightedActionButton(
-            List<AssistantChip> chips, String text, int actionIndex) {
-        chips.add(new AssistantChip(AssistantChip.Type.BUTTON_FILLED_BLUE, text,
+            List<AssistantChip> chips, String text, int actionIndex, boolean disabled) {
+        chips.add(new AssistantChip(Type.BUTTON_FILLED_BLUE, text, disabled,
                 () -> safeNativeOnActionSelected(actionIndex)));
     }
 
@@ -245,7 +240,7 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
      */
     @CalledByNative
     private void addCancelButton(List<AssistantChip> chips, String text, int actionIndex) {
-        chips.add(new AssistantChip(AssistantChip.Type.BUTTON_HAIRLINE, text,
+        chips.add(new AssistantChip(AssistantChip.Type.BUTTON_HAIRLINE, text, /* disabled= */ false,
                 () -> safeNativeOnCancelButtonClicked(actionIndex)));
     }
 
@@ -254,8 +249,8 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
      */
     @CalledByNative
     private void addCloseButton(List<AssistantChip> chips, String text) {
-        chips.add(new AssistantChip(
-                AssistantChip.Type.BUTTON_HAIRLINE, text, this::safeNativeOnCloseButtonClicked));
+        chips.add(new AssistantChip(AssistantChip.Type.BUTTON_HAIRLINE, text, /* disabled= */ false,
+                this::safeNativeOnCloseButtonClicked));
     }
 
     @CalledByNative

@@ -75,9 +75,15 @@ class UiControllerAndroid : public UiController {
   void OnFeedbackButtonClicked();
 
   // Called by AssistantPaymentRequestDelegate:
-  void OnGetPaymentInformation(
-      std::unique_ptr<PaymentInformation> payment_info);
-  void OnCancelButtonClicked();
+  void OnShippingAddressChanged(
+      std::unique_ptr<autofill::AutofillProfile> address);
+  void OnBillingAddressChanged(
+      std::unique_ptr<autofill::AutofillProfile> address);
+  void OnContactInfoChanged(std::string name,
+                            std::string phone,
+                            std::string email);
+  void OnCreditCardChanged(std::unique_ptr<autofill::CreditCard> card);
+  void OnTermsAndConditionsChanged(TermsAndConditionsState state);
 
   // Called by Java.
   void SnackbarResult(JNIEnv* env,
@@ -140,6 +146,7 @@ class UiControllerAndroid : public UiController {
   // action after a short delay unless the user taps the undo button.
   void ShowSnackbar(const std::string& message,
                     base::OnceCallback<void()> action);
+  void OnCancelButtonClicked();
   void OnCancelButtonWithActionIndexClicked(int action_index);
   void OnCancel(int action_index);
 

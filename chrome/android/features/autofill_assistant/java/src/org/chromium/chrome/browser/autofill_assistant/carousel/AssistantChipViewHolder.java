@@ -26,12 +26,11 @@ class AssistantChipViewHolder extends ViewHolder {
     static AssistantChipViewHolder create(ViewGroup parent, int viewType) {
         LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
         int resId = -1;
-        switch (viewType) {
+        switch (viewType % AssistantChip.Type.CHIP_TYPE_NUMBER) {
             // TODO: inflate normal chrome buttons instead.
             case AssistantChip.Type.CHIP_ASSISTIVE:
                 resId = R.layout.autofill_assistant_chip_assistive;
                 break;
-            case AssistantChip.Type.BUTTON_FILLED_DISABLED:
             case AssistantChip.Type.BUTTON_FILLED_BLUE:
                 resId = R.layout.autofill_assistant_button_filled;
                 break;
@@ -43,11 +42,22 @@ class AssistantChipViewHolder extends ViewHolder {
         }
 
         TextView view = (TextView) layoutInflater.inflate(resId, /* root= */ null);
-        if (viewType == AssistantChip.Type.BUTTON_FILLED_DISABLED) {
+        if (viewType >= AssistantChip.Type.CHIP_TYPE_NUMBER) {
             view.setEnabled(false);
         }
 
         return new AssistantChipViewHolder(view);
+    }
+
+    static int getViewType(AssistantChip chip) {
+        // We add AssistantChip.Type.CHIP_TYPE_NUMBER to differentiate between enabled and disabled
+        // chips of the same type. Ideally, we should return a (type, disabled) tuple but
+        // RecyclerView does not allow that.
+        if (chip.isDisabled()) {
+            return chip.getType() + AssistantChip.Type.CHIP_TYPE_NUMBER;
+        }
+
+        return chip.getType();
     }
 
     public void bind(AssistantChip chip) {

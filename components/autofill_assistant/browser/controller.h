@@ -111,8 +111,16 @@ class Controller : public ScriptExecutorDelegate,
   void SelectAction(int index) override;
   std::string GetDebugContext() override;
   const PaymentRequestOptions* GetPaymentRequestOptions() const override;
-  void SetPaymentInformation(
-      std::unique_ptr<PaymentInformation> payment_information) override;
+  void SetShippingAddress(
+      std::unique_ptr<autofill::AutofillProfile> address) override;
+  void SetBillingAddress(
+      std::unique_ptr<autofill::AutofillProfile> address) override;
+  void SetContactInfo(std::string name,
+                      std::string phone,
+                      std::string email) override;
+  void SetCreditCard(std::unique_ptr<autofill::CreditCard> card) override;
+  void SetTermsAndConditions(
+      TermsAndConditionsState terms_and_conditions) override;
   void GetTouchableArea(std::vector<RectF>* area) const override;
   void OnFatalError(const std::string& error_message,
                     Metrics::DropOutReason reason) override;
@@ -163,6 +171,9 @@ class Controller : public ScriptExecutorDelegate,
 
   // Called when a script is selected.
   void OnScriptSelected(const std::string& script_path);
+
+  void UpdatePaymentRequestActions();
+  void OnPaymentRequestContinueButtonClicked();
 
   // Overrides ScriptTracker::Listener:
   void OnNoRunnableScripts() override;
@@ -258,6 +269,7 @@ class Controller : public ScriptExecutorDelegate,
   bool will_shutdown_ = false;
 
   std::unique_ptr<PaymentRequestOptions> payment_request_options_;
+  std::unique_ptr<PaymentInformation> payment_request_info_;
 
   // Tracks scripts and script execution. It's kept at the end, as it tend to
   // depend on everything the controller support, through script and script

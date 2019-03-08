@@ -180,10 +180,11 @@ public class AutofillAssistantUiTest {
 
     private void testChips(InOrder inOrder, AssistantCarouselModel carouselModel,
             AssistantCarouselCoordinator carouselCoordinator) {
-        List<AssistantChip> chips = Arrays.asList(
-                new AssistantChip(
-                        AssistantChip.Type.CHIP_ASSISTIVE, "chip 0", () -> {/* do nothing */}),
-                new AssistantChip(AssistantChip.Type.CHIP_ASSISTIVE, "chip 1", mRunnableMock));
+        List<AssistantChip> chips =
+                Arrays.asList(new AssistantChip(AssistantChip.Type.CHIP_ASSISTIVE, "chip 0",
+                                      /* disabled= */ false, () -> {/* do nothing */}),
+                        new AssistantChip(AssistantChip.Type.CHIP_ASSISTIVE, "chip 1",
+                                /* disabled= */ false, mRunnableMock));
         ThreadUtils.runOnUiThreadBlocking(() -> carouselModel.getChipsModel().set(chips));
         RecyclerView chipsViewContainer = carouselCoordinator.getView();
         Assert.assertEquals(2, chipsViewContainer.getAdapter().getItemCount());
