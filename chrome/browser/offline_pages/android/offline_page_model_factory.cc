@@ -19,16 +19,15 @@
 #include "chrome/browser/offline_pages/fresh_offline_content_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
-#include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/keyed_service/core/simple_dependency_manager.h"
 #include "components/offline_pages/core/model/offline_page_model_taskified.h"
 #include "components/offline_pages/core/offline_page_metadata_store.h"
 
 namespace offline_pages {
 
 OfflinePageModelFactory::OfflinePageModelFactory()
-    : BrowserContextKeyedServiceFactory(
-          "OfflinePageModel",
-          BrowserContextDependencyManager::GetInstance()) {}
+    : SimpleKeyedServiceFactory("OfflinePageModel",
+                                SimpleDependencyManager::GetInstance()) {}
 
 // static
 OfflinePageModelFactory* OfflinePageModelFactory::GetInstance() {
@@ -36,25 +35,32 @@ OfflinePageModelFactory* OfflinePageModelFactory::GetInstance() {
 }
 
 // static
-OfflinePageModel* OfflinePageModelFactory::GetForBrowserContext(
-    content::BrowserContext* context) {
+OfflinePageModel* OfflinePageModelFactory::GetForKey(SimpleFactoryKey* key,
+                                                     PrefService* prefs) {
   return static_cast<OfflinePageModel*>(
-      GetInstance()->GetServiceForBrowserContext(context, true));
+      GetInstance()->GetServiceForKey(key, prefs, /*create=*/true));
 }
 
-KeyedService* OfflinePageModelFactory::BuildServiceInstanceFor(
-    content::BrowserContext* context) const {
-  Profile* profile = Profile::FromBrowserContext(context);
+// static
+OfflinePageModel* OfflinePageModelFactory::GetForBrowserContext(
+    content::BrowserContext* browser_context) {
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+  return GetForKey(profile->GetSimpleFactoryKey(), profile->GetPrefs());
+}
+
+std::unique_ptr<KeyedService> OfflinePageModelFactory::BuildServiceInstanceFor(
+    SimpleFactoryKey* key,
+    PrefService* prefs) const {
   scoped_refptr<base::SequencedTaskRunner> background_task_runner =
       base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()});
 
   base::FilePath store_path =
-      profile->GetPath().Append(chrome::kOfflinePageMetadataDirname);
+      key->path().Append(chrome::kOfflinePageMetadataDirname);
   std::unique_ptr<OfflinePageMetadataStore> metadata_store(
       new OfflinePageMetadataStore(background_task_runner, store_path));
 
   base::FilePath persistent_archives_dir =
-      profile->GetPath().Append(chrome::kOfflinePageArchivesDirname);
+      key->path().Append(chrome::kOfflinePageArchivesDirname);
   // If base::PathService::Get returns false, the temporary_archives_dir will be
   // empty, and no temporary pages will be saved during this chrome lifecycle.
   base::FilePath temporary_archives_dir;
@@ -65,19 +71,20 @@ KeyedService* OfflinePageModelFactory::BuildServiceInstanceFor(
   std::unique_ptr<ArchiveManager> archive_manager(new DownloadArchiveManager(
       temporary_archives_dir, persistent_archives_dir,
       DownloadPrefs::GetDefaultDownloadDirectory(), background_task_runner,
-      profile->GetPrefs()));
+      prefs));
   auto clock = std::make_unique<base::DefaultClock>();
 
   std::unique_ptr<SystemDownloadManager> download_manager(
       new android::OfflinePagesDownloadManagerBridge());
 
-  OfflinePageModelTaskified* model = new OfflinePageModelTaskified(
-      std::move(metadata_store), std::move(archive_manager),
-      std::move(download_manager), background_task_runner);
+  std::unique_ptr<OfflinePageModelTaskified> model =
+      std::make_unique<OfflinePageModelTaskified>(
+          std::move(metadata_store), std::move(archive_manager),
+          std::move(download_manager), background_task_runner);
 
-  CctOriginObserver::AttachToOfflinePageModel(model);
+  CctOriginObserver::AttachToOfflinePageModel(model.get());
 
-  FreshOfflineContentObserver::AttachToOfflinePageModel(model);
+  FreshOfflineContentObserver::AttachToOfflinePageModel(model.get());
 
   return model;
 }

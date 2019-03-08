@@ -61,7 +61,8 @@ FeedHostServiceFactory::FeedHostServiceFactory()
           "FeedHostService",
           BrowserContextDependencyManager::GetInstance()) {
   DependsOn(IdentityManagerFactory::GetInstance());
-  DependsOn(offline_pages::OfflinePageModelFactory::GetInstance());
+  // Depends on offline_pages::OfflinePageModelFactory in
+  // SimpleDependencyManager.
   DependsOn(offline_pages::PrefetchServiceFactory::GetInstance());
   DependsOn(HistoryServiceFactory::GetInstance());
 }

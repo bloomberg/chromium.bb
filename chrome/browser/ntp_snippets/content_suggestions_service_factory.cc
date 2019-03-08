@@ -372,7 +372,7 @@ ContentSuggestionsServiceFactory::ContentSuggestionsServiceFactory()
   DependsOn(IdentityManagerFactory::GetInstance());
   DependsOn(LargeIconServiceFactory::GetInstance());
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
-  DependsOn(OfflinePageModelFactory::GetInstance());
+  // Depends on OfflinePageModelFactory in SimpleDependencyManager.
   DependsOn(offline_pages::PrefetchServiceFactory::GetInstance());
 #endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
 #if defined(OS_ANDROID)

@@ -18,6 +18,7 @@
 #include "chrome/browser/offline_pages/test_offline_page_model_builder.h"
 #include "chrome/browser/offline_pages/test_request_coordinator_builder.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "chrome/test/base/testing_profile.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
 #include "components/offline_pages/core/offline_page_feature.h"
 #include "components/offline_pages/core/offline_page_item.h"
@@ -221,10 +222,11 @@ void RecentTabHelperTest::SetUp() {
 
   // Sets up the factories for testing.
   OfflinePageModelFactory::GetInstance()->SetTestingFactoryAndUse(
-      browser_context(), base::BindRepeating(&BuildTestOfflinePageModel));
+      profile()->GetSimpleFactoryKey(), profile()->GetPrefs(),
+      base::BindRepeating(&BuildTestOfflinePageModel));
   RunUntilIdle();
   RequestCoordinatorFactory::GetInstance()->SetTestingFactoryAndUse(
-      browser_context(), base::BindRepeating(&BuildTestRequestCoordinator));
+      profile(), base::BindRepeating(&BuildTestRequestCoordinator));
   RunUntilIdle();
 
   RecentTabHelper::CreateForWebContents(web_contents());
