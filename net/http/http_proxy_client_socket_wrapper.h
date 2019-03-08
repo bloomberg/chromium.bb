@@ -27,6 +27,7 @@
 #include "net/quic/quic_stream_factory.h"
 #include "net/socket/connect_job.h"
 #include "net/socket/next_proto.h"
+#include "net/socket/socket_tag.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/spdy/spdy_session.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -64,9 +65,10 @@ class NET_EXPORT_PRIVATE HttpProxyClientSocketWrapper
   HttpProxyClientSocketWrapper(
       const OnProxyAuthChallengeCallback& on_proxy_auth_callback,
       RequestPriority priority,
+      const SocketTag& socket_tag,
       base::TimeDelta connect_timeout_duration,
       base::TimeDelta proxy_negotiation_timeout_duration,
-      const CommonConnectJobParams& common_connect_job_params,
+      const CommonConnectJobParams* common_connect_job_params,
       const scoped_refptr<TransportSocketParams>& transport_params,
       const scoped_refptr<SSLSocketParams>& ssl_params,
       quic::QuicTransportVersion quic_version,
@@ -205,6 +207,7 @@ class NET_EXPORT_PRIVATE HttpProxyClientSocketWrapper
   State next_state_;
 
   RequestPriority priority_;
+  const SocketTag socket_tag_;
   const base::TimeDelta connect_timeout_duration_;
   const base::TimeDelta proxy_negotiation_timeout_duration_;
 
@@ -220,7 +223,7 @@ class NET_EXPORT_PRIVATE HttpProxyClientSocketWrapper
   bool has_restarted_;
   const bool tunnel_;
 
-  const CommonConnectJobParams common_connect_job_params_;
+  const CommonConnectJobParams* common_connect_job_params_;
 
   bool using_spdy_;
   bool is_trusted_proxy_;

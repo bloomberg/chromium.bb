@@ -166,11 +166,13 @@ HttpProxySocketParams::~HttpProxySocketParams() = default;
 
 HttpProxyConnectJob::HttpProxyConnectJob(
     RequestPriority priority,
-    const CommonConnectJobParams& common_connect_job_params,
+    const SocketTag& socket_tag,
+    const CommonConnectJobParams* common_connect_job_params,
     const scoped_refptr<HttpProxySocketParams>& params,
     Delegate* delegate,
     const NetLogWithSource* net_log)
     : ConnectJob(priority,
+                 socket_tag,
                  base::TimeDelta() /* The socket takes care of timeouts */,
                  common_connect_job_params,
                  delegate,
@@ -181,9 +183,10 @@ HttpProxyConnectJob::HttpProxyConnectJob(
           base::BindRepeating(&HttpProxyConnectJob::OnNeedsProxyAuth,
                               base::Unretained(this)),
           priority,
+          socket_tag,
           ConnectionTimeout(
               *params,
-              common_connect_job_params.network_quality_estimator),
+              common_connect_job_params->network_quality_estimator),
           kHttpProxyConnectJobTunnelTimeout,
           common_connect_job_params,
           params->transport_params(),

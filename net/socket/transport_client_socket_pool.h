@@ -14,6 +14,7 @@
 #include "net/base/net_export.h"
 #include "net/socket/client_socket_pool.h"
 #include "net/socket/client_socket_pool_base.h"
+#include "net/socket/connect_job.h"
 #include "net/socket/connection_attempts.h"
 #include "net/socket/socket_tag.h"
 #include "net/socket/ssl_client_socket.h"
@@ -50,7 +51,8 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
   using CreateConnectJobCallback =
       base::RepeatingCallback<std::unique_ptr<ConnectJob>(
           RequestPriority priority,
-          const CommonConnectJobParams& common_connect_job_params,
+          const SocketTag& socket_tag,
+          const CommonConnectJobParams* common_connect_job_params,
           ConnectJob::Delegate* delegate)>;
 
   // "Parameters" that own a single callback for creating a ConnectJob that can
@@ -185,14 +187,7 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
         ConnectJob::Delegate* delegate) const override;
 
    private:
-    ClientSocketFactory* const client_socket_factory_;
-    HostResolver* const host_resolver_;
-    ProxyDelegate* const proxy_delegate_;
-    const SSLClientSocketContext ssl_client_socket_context_;
-    const SSLClientSocketContext ssl_client_socket_context_privacy_mode_;
-    SocketPerformanceWatcherFactory* const socket_performance_watcher_factory_;
-    NetworkQualityEstimator* const network_quality_estimator_;
-    NetLog* const net_log_;
+    const CommonConnectJobParams common_connect_job_params_;
 
     DISALLOW_COPY_AND_ASSIGN(TransportConnectJobFactory);
   };

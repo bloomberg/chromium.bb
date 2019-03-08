@@ -139,7 +139,17 @@ class SSLConnectJobTest : public WithScopedTaskEnvironment,
             nullptr /* ssl_config_service */,
             nullptr /* socket_performance_watcher_factory */,
             nullptr /* network_quality_estimator */,
-            nullptr /* net_log */) {
+            nullptr /* net_log */),
+        common_connect_job_params_(
+            &socket_factory_,
+            &host_resolver_,
+            nullptr /* proxy_delegate */,
+            ssl_client_socket_context_,
+            ssl_client_socket_context_,
+            nullptr /* socket_performance_watcher */,
+            nullptr /* network_quality_estimator */,
+            nullptr /* net_log */,
+            nullptr /* websocket_lock_endpoint_manager */) {
     ssl_config_service_->GetSSLConfig(&ssl_config_);
 
     // Set an initial delay to ensure that the first call to TimeTicks::Now()
@@ -154,14 +164,7 @@ class SSLConnectJobTest : public WithScopedTaskEnvironment,
       ProxyServer::Scheme proxy_scheme = ProxyServer::SCHEME_DIRECT,
       RequestPriority priority = DEFAULT_PRIORITY) {
     return std::make_unique<SSLConnectJob>(
-        priority,
-        CommonConnectJobParams(
-            SocketTag(), &socket_factory_, &host_resolver_,
-            nullptr /* proxy_delegate */, ssl_client_socket_context_,
-            ssl_client_socket_context_,
-            nullptr /* socket_performance_watcher */,
-            nullptr /* network_quality_estimator */, nullptr /* net_log */,
-            nullptr /* websocket_lock_endpoint_manager */),
+        priority, SocketTag(), &common_connect_job_params_,
         SSLParams(proxy_scheme), test_delegate, nullptr /* net_log */);
   }
 
@@ -222,6 +225,7 @@ class SSLConnectJobTest : public WithScopedTaskEnvironment,
   TransportClientSocketPool http_proxy_socket_pool_;
 
   SSLConfig ssl_config_;
+  const CommonConnectJobParams common_connect_job_params_;
 };
 
 TEST_F(SSLConnectJobTest, TCPFail) {

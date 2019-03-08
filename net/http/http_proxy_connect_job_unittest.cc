@@ -70,6 +70,7 @@ class HttpProxyConnectJobTest : public ::testing::TestWithParam<HttpProxyType>,
     network_quality_estimator_ =
         std::make_unique<TestNetworkQualityEstimator>();
     session_ = SpdySessionDependencies::SpdyCreateSession(&session_deps_);
+    InitCommonConnectJobParams();
   }
 
   virtual ~HttpProxyConnectJobTest() {
@@ -158,32 +159,38 @@ class HttpProxyConnectJobTest : public ::testing::TestWithParam<HttpProxyType>,
       ConnectJob::Delegate* delegate,
       RequestPriority priority) {
     return std::make_unique<HttpProxyConnectJob>(
-        priority,
-        CommonConnectJobParams(
-            SocketTag(), &socket_factory_, session_deps_.host_resolver.get(),
-            proxy_delegate_.get(),
-            SSLClientSocketContext(
-                session_deps_.cert_verifier.get(),
-                session_deps_.channel_id_service.get(),
-                session_deps_.transport_security_state.get(),
-                session_deps_.cert_transparency_verifier.get(),
-                session_deps_.ct_policy_enforcer.get(),
-                nullptr /* ssl_session_cache_arg */),
-            SSLClientSocketContext(
-                session_deps_.cert_verifier.get(),
-                session_deps_.channel_id_service.get(),
-                session_deps_.transport_security_state.get(),
-                session_deps_.cert_transparency_verifier.get(),
-                session_deps_.ct_policy_enforcer.get(),
-                nullptr /* ssl_session_cache_arg */),
-            nullptr /* socket_performance_watcher_factory */,
-            network_quality_estimator_.get(), nullptr /* net_log */,
-            nullptr /* websocket_endpoint_lock_manager */),
+        priority, SocketTag(), common_connect_job_params_.get(),
         std::move(http_proxy_socket_params), delegate, nullptr /* net_log */);
   }
 
+  // This may only be called at the start of the test, before any ConnectJobs
+  // have been created.
   void InitProxyDelegate() {
     proxy_delegate_ = std::make_unique<TestProxyDelegate>();
+    InitCommonConnectJobParams();
+  }
+
+  // This may only be called at the start of the test, before any ConnectJobs
+  // have been created.
+  void InitCommonConnectJobParams() {
+    common_connect_job_params_ = std::make_unique<CommonConnectJobParams>(
+        &socket_factory_, session_deps_.host_resolver.get(),
+        proxy_delegate_.get(),
+        SSLClientSocketContext(session_deps_.cert_verifier.get(),
+                               session_deps_.channel_id_service.get(),
+                               session_deps_.transport_security_state.get(),
+                               session_deps_.cert_transparency_verifier.get(),
+                               session_deps_.ct_policy_enforcer.get(),
+                               nullptr /* ssl_session_cache_arg */),
+        SSLClientSocketContext(session_deps_.cert_verifier.get(),
+                               session_deps_.channel_id_service.get(),
+                               session_deps_.transport_security_state.get(),
+                               session_deps_.cert_transparency_verifier.get(),
+                               session_deps_.ct_policy_enforcer.get(),
+                               nullptr /* ssl_session_cache_arg */),
+        nullptr /* socket_performance_watcher_factory */,
+        network_quality_estimator_.get(), nullptr /* net_log */,
+        nullptr /* websocket_endpoint_lock_manager */);
   }
 
   void Initialize(base::span<const MockRead> reads,
@@ -242,6 +249,8 @@ class HttpProxyConnectJobTest : public ::testing::TestWithParam<HttpProxyType>,
   SpdyTestUtil spdy_util_;
 
   TestCompletionCallback callback_;
+
+  std::unique_ptr<CommonConnectJobParams> common_connect_job_params_;
 };
 
 // All tests are run with three different proxy types: HTTP, HTTPS (non-SPDY)

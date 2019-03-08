@@ -49,7 +49,17 @@ class SOCKSConnectJobTest : public testing::Test,
       : WithScopedTaskEnvironment(
             base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
             base::test::ScopedTaskEnvironment::NowSource::
-                MAIN_THREAD_MOCK_TIME) {
+                MAIN_THREAD_MOCK_TIME),
+        common_connect_job_params_(
+            &client_socket_factory_,
+            &host_resolver_,
+            nullptr /* proxy_delegate */,
+            SSLClientSocketContext(),
+            SSLClientSocketContext(),
+            nullptr /* socket_performance_watcher_factory */,
+            nullptr /* network_quality_estimator */,
+            &net_log_,
+            nullptr /* websocket_endpoint_lock_manager */) {
     // Set an initial delay to ensure that the first call to TimeTicks::Now()
     // before incrementing the counter does not return a null value.
     FastForwardBy(base::TimeDelta::FromSeconds(1));
@@ -70,21 +80,11 @@ class SOCKSConnectJobTest : public testing::Test,
         TRAFFIC_ANNOTATION_FOR_TESTS);
   }
 
-  CommonConnectJobParams CreateCommonParams() {
-    // Group name doesn't matter.
-    return CommonConnectJobParams(
-        SocketTag(), &client_socket_factory_, &host_resolver_,
-        nullptr /* proxy_delegate */, SSLClientSocketContext(),
-        SSLClientSocketContext(),
-        nullptr /* socket_performance_watcher_factory */,
-        nullptr /* network_quality_estimator */, &net_log_,
-        nullptr /* websocket_endpoint_lock_manager */);
-  }
-
  protected:
   NetLog net_log_;
   MockHostResolver host_resolver_;
   MockTaggingClientSocketFactory client_socket_factory_;
+  const CommonConnectJobParams common_connect_job_params_;
 };
 
 TEST_F(SOCKSConnectJobTest, HostResolutionFailure) {
@@ -93,7 +93,8 @@ TEST_F(SOCKSConnectJobTest, HostResolutionFailure) {
   for (bool failure_synchronous : {false, true}) {
     host_resolver_.set_synchronous_mode(failure_synchronous);
     TestConnectJobDelegate test_delegate;
-    SOCKSConnectJob socks_connect_job(DEFAULT_PRIORITY, CreateCommonParams(),
+    SOCKSConnectJob socks_connect_job(DEFAULT_PRIORITY, SocketTag(),
+                                      &common_connect_job_params_,
                                       CreateSOCKSParams(SOCKSVersion::V5),
                                       &test_delegate, nullptr /* net_log */);
     test_delegate.StartJobExpectingResult(
@@ -121,7 +122,8 @@ TEST_F(SOCKSConnectJobTest, HandshakeError) {
       client_socket_factory_.AddSocketDataProvider(&sequenced_socket_data);
 
       TestConnectJobDelegate test_delegate;
-      SOCKSConnectJob socks_connect_job(DEFAULT_PRIORITY, CreateCommonParams(),
+      SOCKSConnectJob socks_connect_job(DEFAULT_PRIORITY, SocketTag(),
+                                        &common_connect_job_params_,
                                         CreateSOCKSParams(SOCKSVersion::V5),
                                         &test_delegate, nullptr /* net_log */);
       test_delegate.StartJobExpectingResult(
@@ -154,7 +156,8 @@ TEST_F(SOCKSConnectJobTest, SOCKS4) {
       client_socket_factory_.AddSocketDataProvider(&sequenced_socket_data);
 
       TestConnectJobDelegate test_delegate;
-      SOCKSConnectJob socks_connect_job(DEFAULT_PRIORITY, CreateCommonParams(),
+      SOCKSConnectJob socks_connect_job(DEFAULT_PRIORITY, SocketTag(),
+                                        &common_connect_job_params_,
                                         CreateSOCKSParams(SOCKSVersion::V4),
                                         &test_delegate, nullptr /* net_log */);
       test_delegate.StartJobExpectingResult(
@@ -190,7 +193,8 @@ TEST_F(SOCKSConnectJobTest, SOCKS5) {
       client_socket_factory_.AddSocketDataProvider(&sequenced_socket_data);
 
       TestConnectJobDelegate test_delegate;
-      SOCKSConnectJob socks_connect_job(DEFAULT_PRIORITY, CreateCommonParams(),
+      SOCKSConnectJob socks_connect_job(DEFAULT_PRIORITY, SocketTag(),
+                                        &common_connect_job_params_,
                                         CreateSOCKSParams(SOCKSVersion::V5),
                                         &test_delegate, nullptr /* net_log */);
       test_delegate.StartJobExpectingResult(
@@ -217,7 +221,8 @@ TEST_F(SOCKSConnectJobTest, HasEstablishedConnection) {
   client_socket_factory_.AddSocketDataProvider(&sequenced_socket_data);
 
   TestConnectJobDelegate test_delegate;
-  SOCKSConnectJob socks_connect_job(DEFAULT_PRIORITY, CreateCommonParams(),
+  SOCKSConnectJob socks_connect_job(DEFAULT_PRIORITY, SocketTag(),
+                                    &common_connect_job_params_,
                                     CreateSOCKSParams(SOCKSVersion::V4),
                                     &test_delegate, nullptr /* net_log */);
   socks_connect_job.Connect();
@@ -247,7 +252,8 @@ TEST_F(SOCKSConnectJobTest, TimeoutDuringDnsResolution) {
   host_resolver_.set_ondemand_mode(true);
 
   TestConnectJobDelegate test_delegate;
-  SOCKSConnectJob socks_connect_job(DEFAULT_PRIORITY, CreateCommonParams(),
+  SOCKSConnectJob socks_connect_job(DEFAULT_PRIORITY, SocketTag(),
+                                    &common_connect_job_params_,
                                     CreateSOCKSParams(SOCKSVersion::V5),
                                     &test_delegate, nullptr /* net_log */);
   socks_connect_job.Connect();
@@ -284,7 +290,8 @@ TEST_F(SOCKSConnectJobTest, TimeoutDuringHandshake) {
   client_socket_factory_.AddSocketDataProvider(&sequenced_socket_data);
 
   TestConnectJobDelegate test_delegate;
-  SOCKSConnectJob socks_connect_job(DEFAULT_PRIORITY, CreateCommonParams(),
+  SOCKSConnectJob socks_connect_job(DEFAULT_PRIORITY, SocketTag(),
+                                    &common_connect_job_params_,
                                     CreateSOCKSParams(SOCKSVersion::V5),
                                     &test_delegate, nullptr /* net_log */);
   socks_connect_job.Connect();
@@ -329,9 +336,9 @@ TEST_F(SOCKSConnectJobTest, Priority) {
         continue;
       TestConnectJobDelegate test_delegate;
       SOCKSConnectJob socks_connect_job(
-          static_cast<RequestPriority>(initial_priority), CreateCommonParams(),
-          CreateSOCKSParams(SOCKSVersion::V4), &test_delegate,
-          nullptr /* net_log */);
+          static_cast<RequestPriority>(initial_priority), SocketTag(),
+          &common_connect_job_params_, CreateSOCKSParams(SOCKSVersion::V4),
+          &test_delegate, nullptr /* net_log */);
       ASSERT_THAT(socks_connect_job.Connect(), test::IsError(ERR_IO_PENDING));
       ASSERT_TRUE(host_resolver_.has_pending_requests());
       int request_id = host_resolver_.num_resolve();
@@ -374,7 +381,8 @@ TEST_F(SOCKSConnectJobTest, ConnectTiming) {
   client_socket_factory_.AddSocketDataProvider(&sequenced_socket_data);
 
   TestConnectJobDelegate test_delegate;
-  SOCKSConnectJob socks_connect_job(DEFAULT_PRIORITY, CreateCommonParams(),
+  SOCKSConnectJob socks_connect_job(DEFAULT_PRIORITY, SocketTag(),
+                                    &common_connect_job_params_,
                                     CreateSOCKSParams(SOCKSVersion::V5),
                                     &test_delegate, nullptr /* net_log */);
   base::TimeTicks start = base::TimeTicks::Now();
@@ -413,7 +421,8 @@ TEST_F(SOCKSConnectJobTest, CancelDuringDnsResolution) {
 
   TestConnectJobDelegate test_delegate;
   std::unique_ptr<SOCKSConnectJob> socks_connect_job =
-      std::make_unique<SOCKSConnectJob>(DEFAULT_PRIORITY, CreateCommonParams(),
+      std::make_unique<SOCKSConnectJob>(DEFAULT_PRIORITY, SocketTag(),
+                                        &common_connect_job_params_,
                                         CreateSOCKSParams(SOCKSVersion::V5),
                                         &test_delegate, nullptr /* net_log */);
   socks_connect_job->Connect();
@@ -436,7 +445,8 @@ TEST_F(SOCKSConnectJobTest, CancelDuringConnect) {
 
   TestConnectJobDelegate test_delegate;
   std::unique_ptr<SOCKSConnectJob> socks_connect_job =
-      std::make_unique<SOCKSConnectJob>(DEFAULT_PRIORITY, CreateCommonParams(),
+      std::make_unique<SOCKSConnectJob>(DEFAULT_PRIORITY, SocketTag(),
+                                        &common_connect_job_params_,
                                         CreateSOCKSParams(SOCKSVersion::V5),
                                         &test_delegate, nullptr /* net_log */);
   socks_connect_job->Connect();
@@ -464,7 +474,8 @@ TEST_F(SOCKSConnectJobTest, CancelDuringHandshake) {
 
   TestConnectJobDelegate test_delegate;
   std::unique_ptr<SOCKSConnectJob> socks_connect_job =
-      std::make_unique<SOCKSConnectJob>(DEFAULT_PRIORITY, CreateCommonParams(),
+      std::make_unique<SOCKSConnectJob>(DEFAULT_PRIORITY, SocketTag(),
+                                        &common_connect_job_params_,
                                         CreateSOCKSParams(SOCKSVersion::V5),
                                         &test_delegate, nullptr /* net_log */);
   socks_connect_job->Connect();

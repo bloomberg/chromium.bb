@@ -26,6 +26,7 @@ namespace net {
 class ClientSocketHandle;
 class HostPortPair;
 class HttpProxySocketParams;
+class SocketTag;
 class SOCKSSocketParams;
 class TransportSocketParams;
 
@@ -82,7 +83,8 @@ class NET_EXPORT_PRIVATE SSLConnectJob : public ConnectJob,
   // Note: the SSLConnectJob does not own |messenger| so it must outlive the
   // job.
   SSLConnectJob(RequestPriority priority,
-                const CommonConnectJobParams& common_connect_job_params,
+                const SocketTag& socket_tag,
+                const CommonConnectJobParams* common_connect_job_params,
                 const scoped_refptr<SSLSocketParams>& params,
                 ConnectJob::Delegate* delegate,
                 const NetLogWithSource* net_log);

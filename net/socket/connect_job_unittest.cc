@@ -34,21 +34,12 @@ class TestConnectJob : public ConnectJob {
 
   TestConnectJob(JobType job_type,
                  base::TimeDelta timeout_duration,
-                 ConnectJob::Delegate* delegate,
-                 NetLog* net_log)
+                 const CommonConnectJobParams* common_connect_job_params,
+                 ConnectJob::Delegate* delegate)
       : ConnectJob(DEFAULT_PRIORITY,
+                   SocketTag(),
                    timeout_duration,
-                   CommonConnectJobParams(
-                       SocketTag(),
-                       nullptr /* client_socket_factory */,
-                       nullptr /* host_resolver */,
-                       nullptr /* proxy_delegate */,
-                       SSLClientSocketContext(),
-                       SSLClientSocketContext(),
-                       nullptr /* socket_performance_watcher_factory */,
-                       nullptr /* network_quality_estimator */,
-                       net_log,
-                       nullptr /* websocket_endpoint_lock_manager */),
+                   common_connect_job_params,
                    delegate,
                    nullptr /* net_log */,
                    NetLogSourceType::TRANSPORT_CONNECT_JOB,
@@ -87,7 +78,7 @@ class TestConnectJob : public ConnectJob {
   // The priority seen during the most recent call to ChangePriorityInternal().
   RequestPriority last_seen_priority() const { return last_seen_priority_; }
 
- private:
+ protected:
   const JobType job_type_;
   StaticSocketDataProvider socket_data_provider_;
   RequestPriority last_seen_priority_;
@@ -99,11 +90,23 @@ class ConnectJobTest : public testing::Test {
  public:
   ConnectJobTest()
       : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME) {}
+            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME),
+        common_connect_job_params_(
+            nullptr /* client_socket_factory */,
+            nullptr /* host_resolver */,
+            nullptr /* proxy_delegate */,
+            SSLClientSocketContext(),
+            SSLClientSocketContext(),
+            nullptr /* socket_performance_watcher_factory */,
+            nullptr /* network_quality_estimator */,
+            &net_log_,
+            nullptr /* websocket_endpoint_lock_manager */) {}
   ~ConnectJobTest() override = default;
 
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
+  TestNetLog net_log_;
+  const CommonConnectJobParams common_connect_job_params_;
   TestConnectJobDelegate delegate_;
 };
 
@@ -111,8 +114,8 @@ class ConnectJobTest : public testing::Test {
 // completion.
 TEST_F(ConnectJobTest, NoTimeoutOnSyncCompletion) {
   TestConnectJob job(TestConnectJob::JobType::kSyncSuccess,
-                     base::TimeDelta::FromMicroseconds(1), &delegate_,
-                     nullptr /* net_log */);
+                     base::TimeDelta::FromMicroseconds(1),
+                     &common_connect_job_params_, &delegate_);
   EXPECT_THAT(job.Connect(), test::IsOk());
 }
 
@@ -120,8 +123,8 @@ TEST_F(ConnectJobTest, NoTimeoutOnSyncCompletion) {
 // completion.
 TEST_F(ConnectJobTest, NoTimeoutOnAsyncCompletion) {
   TestConnectJob job(TestConnectJob::JobType::kAsyncSuccess,
-                     base::TimeDelta::FromMinutes(1), &delegate_,
-                     nullptr /* net_log */);
+                     base::TimeDelta::FromMinutes(1),
+                     &common_connect_job_params_, &delegate_);
   ASSERT_THAT(job.Connect(), test::IsError(ERR_IO_PENDING));
   EXPECT_THAT(delegate_.WaitForResult(), test::IsOk());
 }
@@ -129,7 +132,7 @@ TEST_F(ConnectJobTest, NoTimeoutOnAsyncCompletion) {
 // Job shouldn't timeout when passed a TimeDelta of zero.
 TEST_F(ConnectJobTest, NoTimeoutWithNoTimeDelta) {
   TestConnectJob job(TestConnectJob::JobType::kHung, base::TimeDelta(),
-                     &delegate_, nullptr /* net_log */);
+                     &common_connect_job_params_, &delegate_);
   ASSERT_THAT(job.Connect(), test::IsError(ERR_IO_PENDING));
   scoped_task_environment_.RunUntilIdle();
   EXPECT_FALSE(delegate_.has_result());
@@ -139,8 +142,8 @@ TEST_F(ConnectJobTest, NoTimeoutWithNoTimeDelta) {
 // subclasses during the SetPriorityInternal call.
 TEST_F(ConnectJobTest, SetPriority) {
   TestConnectJob job(TestConnectJob::JobType::kAsyncSuccess,
-                     base::TimeDelta::FromMicroseconds(1), &delegate_,
-                     nullptr /* net_log */);
+                     base::TimeDelta::FromMicroseconds(1),
+                     &common_connect_job_params_, &delegate_);
   ASSERT_THAT(job.Connect(), test::IsError(ERR_IO_PENDING));
 
   job.ChangePriority(HIGHEST);
@@ -156,10 +159,10 @@ TEST_F(ConnectJobTest, SetPriority) {
 
 TEST_F(ConnectJobTest, TimedOut) {
   const base::TimeDelta kTimeout = base::TimeDelta::FromHours(1);
-  TestNetLog log;
 
-  std::unique_ptr<TestConnectJob> job = std::make_unique<TestConnectJob>(
-      TestConnectJob::JobType::kHung, kTimeout, &delegate_, &log);
+  std::unique_ptr<TestConnectJob> job =
+      std::make_unique<TestConnectJob>(TestConnectJob::JobType::kHung, kTimeout,
+                                       &common_connect_job_params_, &delegate_);
   ASSERT_THAT(job->Connect(), test::IsError(ERR_IO_PENDING));
 
   // Nothing should happen before the specified time.
@@ -176,7 +179,7 @@ TEST_F(ConnectJobTest, TimedOut) {
   job.reset();
 
   TestNetLogEntry::List entries;
-  log.GetEntries(&entries);
+  net_log_.GetEntries(&entries);
 
   EXPECT_EQ(6u, entries.size());
   EXPECT_TRUE(LogContainsBeginEvent(entries, 0, NetLogEventType::CONNECT_JOB));
@@ -196,8 +199,8 @@ TEST_F(ConnectJobTest, TimedOut) {
 TEST_F(ConnectJobTest, TimedOutWithRestartedTimer) {
   const base::TimeDelta kTimeout = base::TimeDelta::FromHours(1);
 
-  TestConnectJob job(TestConnectJob::JobType::kHung, kTimeout, &delegate_,
-                     nullptr /* net_log */);
+  TestConnectJob job(TestConnectJob::JobType::kHung, kTimeout,
+                     &common_connect_job_params_, &delegate_);
   ASSERT_THAT(job.Connect(), test::IsError(ERR_IO_PENDING));
 
   // Nothing should happen before the specified time.

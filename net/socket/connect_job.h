@@ -43,7 +43,6 @@ class WebSocketEndpointLockManager;
 // those.
 struct NET_EXPORT_PRIVATE CommonConnectJobParams {
   CommonConnectJobParams(
-      const SocketTag& socket_tag,
       ClientSocketFactory* client_socket_factory,
       HostResolver* host_resolver,
       ProxyDelegate* proxy_delegate,
@@ -57,9 +56,6 @@ struct NET_EXPORT_PRIVATE CommonConnectJobParams {
   ~CommonConnectJobParams();
 
   CommonConnectJobParams& operator=(const CommonConnectJobParams& other);
-
-  // Tag applied to any created socket.
-  SocketTag socket_tag;
 
   ClientSocketFactory* client_socket_factory;
   HostResolver* host_resolver;
@@ -119,8 +115,9 @@ class NET_EXPORT_PRIVATE ConnectJob {
   // |net_log_connect_event_type| is the NetLog event type logged on Connect()
   // and connect completion.
   ConnectJob(RequestPriority priority,
+             const SocketTag& socket_tag,
              base::TimeDelta timeout_duration,
-             const CommonConnectJobParams& common_connect_job_params,
+             const CommonConnectJobParams* common_connect_job_params,
              Delegate* delegate,
              const NetLogWithSource* net_log,
              NetLogSourceType net_log_source_type,
@@ -184,31 +181,29 @@ class NET_EXPORT_PRIVATE ConnectJob {
   const NetLogWithSource& net_log() const { return net_log_; }
 
  protected:
-  const SocketTag& socket_tag() const {
-    return common_connect_job_params_.socket_tag;
-  }
+  const SocketTag& socket_tag() const { return socket_tag_; }
   ClientSocketFactory* client_socket_factory() {
-    return common_connect_job_params_.client_socket_factory;
+    return common_connect_job_params_->client_socket_factory;
   }
   HostResolver* host_resolver() {
-    return common_connect_job_params_.host_resolver;
+    return common_connect_job_params_->host_resolver;
   }
   const SSLClientSocketContext& ssl_client_socket_context() {
-    return common_connect_job_params_.ssl_client_socket_context;
+    return common_connect_job_params_->ssl_client_socket_context;
   }
   const SSLClientSocketContext& ssl_client_socket_context_privacy_mode() {
-    return common_connect_job_params_.ssl_client_socket_context_privacy_mode;
+    return common_connect_job_params_->ssl_client_socket_context_privacy_mode;
   }
   SocketPerformanceWatcherFactory* socket_performance_watcher_factory() {
-    return common_connect_job_params_.socket_performance_watcher_factory;
+    return common_connect_job_params_->socket_performance_watcher_factory;
   }
   NetworkQualityEstimator* network_quality_estimator() {
-    return common_connect_job_params_.network_quality_estimator;
+    return common_connect_job_params_->network_quality_estimator;
   }
   WebSocketEndpointLockManager* websocket_endpoint_lock_manager() {
-    return common_connect_job_params_.websocket_endpoint_lock_manager;
+    return common_connect_job_params_->websocket_endpoint_lock_manager;
   }
-  const CommonConnectJobParams& common_connect_job_params() {
+  const CommonConnectJobParams* common_connect_job_params() {
     return common_connect_job_params_;
   }
 
@@ -236,7 +231,8 @@ class NET_EXPORT_PRIVATE ConnectJob {
 
   const base::TimeDelta timeout_duration_;
   RequestPriority priority_;
-  const CommonConnectJobParams common_connect_job_params_;
+  const SocketTag socket_tag_;
+  const CommonConnectJobParams* common_connect_job_params_;
   // Timer to abort jobs that take too long.
   base::OneShotTimer timer_;
   Delegate* delegate_;

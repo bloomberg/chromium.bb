@@ -70,27 +70,30 @@ const int TransportConnectJob::kIPv6FallbackTimerInMs = 300;
 std::unique_ptr<ConnectJob> TransportConnectJob::CreateTransportConnectJob(
     scoped_refptr<TransportSocketParams> transport_client_params,
     RequestPriority priority,
-    const CommonConnectJobParams& common_connect_job_params,
+    const SocketTag& socket_tag,
+    const CommonConnectJobParams* common_connect_job_params,
     ConnectJob::Delegate* delegate,
     const NetLogWithSource* net_log) {
-  if (!common_connect_job_params.websocket_endpoint_lock_manager) {
+  if (!common_connect_job_params->websocket_endpoint_lock_manager) {
     return std::make_unique<TransportConnectJob>(
-        priority, common_connect_job_params, transport_client_params, delegate,
-        net_log);
+        priority, socket_tag, common_connect_job_params,
+        transport_client_params, delegate, net_log);
   }
 
   return std::make_unique<WebSocketTransportConnectJob>(
-      priority, common_connect_job_params, transport_client_params, delegate,
-      net_log);
+      priority, socket_tag, common_connect_job_params, transport_client_params,
+      delegate, net_log);
 }
 
 TransportConnectJob::TransportConnectJob(
     RequestPriority priority,
-    const CommonConnectJobParams& common_connect_job_params,
+    const SocketTag& socket_tag,
+    const CommonConnectJobParams* common_connect_job_params,
     const scoped_refptr<TransportSocketParams>& params,
     Delegate* delegate,
     const NetLogWithSource* net_log)
     : ConnectJob(priority,
+                 socket_tag,
                  ConnectionTimeout(),
                  common_connect_job_params,
                  delegate,
@@ -101,7 +104,7 @@ TransportConnectJob::TransportConnectJob(
       next_state_(STATE_NONE),
       resolve_result_(OK) {
   // This is only set for WebSockets.
-  DCHECK(!common_connect_job_params.websocket_endpoint_lock_manager);
+  DCHECK(!common_connect_job_params->websocket_endpoint_lock_manager);
 }
 
 TransportConnectJob::~TransportConnectJob() {

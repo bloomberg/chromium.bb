@@ -308,22 +308,13 @@ class TestConnectJob : public ConnectJob {
   TestConnectJob(JobType job_type,
                  const TestClientSocketPoolBase::Request& request,
                  base::TimeDelta timeout_duration,
+                 const CommonConnectJobParams* common_connect_job_params,
                  ConnectJob::Delegate* delegate,
-                 MockClientSocketFactory* client_socket_factory,
-                 NetLog* net_log)
+                 MockClientSocketFactory* client_socket_factory)
       : ConnectJob(request.priority(),
+                   request.socket_tag(),
                    timeout_duration,
-                   CommonConnectJobParams(
-                       request.socket_tag(),
-                       nullptr /* client_socket_factory */,
-                       nullptr /* host_resolver */,
-                       nullptr /* proxy_delegate */,
-                       SSLClientSocketContext(),
-                       SSLClientSocketContext(),
-                       nullptr /* socket_performance_watcher_factory */,
-                       nullptr /* network_quality_estimator */,
-                       net_log,
-                       nullptr /* websocket_endpoint_lock_manager */),
+                   common_connect_job_params,
                    delegate,
                    nullptr /* net_log */,
                    NetLogSourceType::TRANSPORT_CONNECT_JOB,
@@ -534,10 +525,19 @@ class TestConnectJobFactory
  public:
   TestConnectJobFactory(MockClientSocketFactory* client_socket_factory,
                         NetLog* net_log)
-      : job_type_(TestConnectJob::kMockJob),
+      : common_connect_job_params_(
+            nullptr /* client_socket_factory */,
+            nullptr /* host_resolver */,
+            nullptr /* proxy_delegate */,
+            SSLClientSocketContext(),
+            SSLClientSocketContext(),
+            nullptr /* socket_performance_watcher_factory */,
+            nullptr /* network_quality_estimator */,
+            net_log,
+            nullptr /* websocket_endpoint_lock_manager */),
+        job_type_(TestConnectJob::kMockJob),
         job_types_(NULL),
-        client_socket_factory_(client_socket_factory),
-        net_log_(net_log) {}
+        client_socket_factory_(client_socket_factory) {}
 
   ~TestConnectJobFactory() override = default;
 
@@ -563,17 +563,17 @@ class TestConnectJobFactory
       job_type = job_types_->front();
       job_types_->pop_front();
     }
-    return std::unique_ptr<ConnectJob>(
-        new TestConnectJob(job_type, request, timeout_duration_, delegate,
-                           client_socket_factory_, net_log_));
+    return std::make_unique<TestConnectJob>(
+        job_type, request, timeout_duration_, &common_connect_job_params_,
+        delegate, client_socket_factory_);
   }
 
  private:
+  const CommonConnectJobParams common_connect_job_params_;
   TestConnectJob::JobType job_type_;
   std::list<TestConnectJob::JobType>* job_types_;
   base::TimeDelta timeout_duration_;
   MockClientSocketFactory* const client_socket_factory_;
-  NetLog* net_log_;
 
   DISALLOW_COPY_AND_ASSIGN(TestConnectJobFactory);
 };

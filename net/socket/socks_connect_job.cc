@@ -36,11 +36,13 @@ SOCKSSocketParams::~SOCKSSocketParams() = default;
 
 SOCKSConnectJob::SOCKSConnectJob(
     RequestPriority priority,
-    const CommonConnectJobParams& common_connect_job_params,
+    const SocketTag& socket_tag,
+    const CommonConnectJobParams* common_connect_job_params,
     const scoped_refptr<SOCKSSocketParams>& socks_params,
     ConnectJob::Delegate* delegate,
     const NetLogWithSource* net_log)
     : ConnectJob(priority,
+                 socket_tag,
                  ConnectionTimeout(),
                  common_connect_job_params,
                  delegate,
@@ -138,7 +140,7 @@ int SOCKSConnectJob::DoTransportConnect() {
 
   next_state_ = STATE_TRANSPORT_CONNECT_COMPLETE;
   transport_connect_job_ = TransportConnectJob::CreateTransportConnectJob(
-      socks_params_->transport_params(), priority(),
+      socks_params_->transport_params(), priority(), socket_tag(),
       common_connect_job_params(), this, &net_log());
   return transport_connect_job_->Connect();
 }

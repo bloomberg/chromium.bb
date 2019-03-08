@@ -18,7 +18,6 @@
 namespace net {
 
 CommonConnectJobParams::CommonConnectJobParams(
-    const SocketTag& socket_tag,
     ClientSocketFactory* client_socket_factory,
     HostResolver* host_resolver,
     ProxyDelegate* proxy_delegate,
@@ -28,8 +27,7 @@ CommonConnectJobParams::CommonConnectJobParams(
     NetworkQualityEstimator* network_quality_estimator,
     NetLog* net_log,
     WebSocketEndpointLockManager* websocket_endpoint_lock_manager)
-    : socket_tag(socket_tag),
-      client_socket_factory(client_socket_factory),
+    : client_socket_factory(client_socket_factory),
       host_resolver(host_resolver),
       proxy_delegate(proxy_delegate),
       ssl_client_socket_context(ssl_client_socket_context),
@@ -49,20 +47,22 @@ CommonConnectJobParams& CommonConnectJobParams::operator=(
     const CommonConnectJobParams& other) = default;
 
 ConnectJob::ConnectJob(RequestPriority priority,
+                       const SocketTag& socket_tag,
                        base::TimeDelta timeout_duration,
-                       const CommonConnectJobParams& common_connect_job_params,
+                       const CommonConnectJobParams* common_connect_job_params,
                        Delegate* delegate,
                        const NetLogWithSource* net_log,
                        NetLogSourceType net_log_source_type,
                        NetLogEventType net_log_connect_event_type)
     : timeout_duration_(timeout_duration),
       priority_(priority),
+      socket_tag_(socket_tag),
       common_connect_job_params_(common_connect_job_params),
       delegate_(delegate),
       top_level_job_(net_log == nullptr),
       net_log_(net_log
                    ? *net_log
-                   : NetLogWithSource::Make(common_connect_job_params.net_log,
+                   : NetLogWithSource::Make(common_connect_job_params->net_log,
                                             net_log_source_type)),
       net_log_connect_event_type_(net_log_connect_event_type) {
   DCHECK(delegate);
