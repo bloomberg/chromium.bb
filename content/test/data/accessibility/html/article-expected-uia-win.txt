@@ -1,4 +1,0 @@
-region
-++document IsKeyboardFocusable=true
-++++article
-++++++description Name='This is an article element.'

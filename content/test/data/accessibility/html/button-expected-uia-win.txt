@@ -1,4 +1,0 @@
-region
-++document IsKeyboardFocusable=true
-++++group
-++++++button Name='Click me!' IsKeyboardFocusable=true IsDataValidForForm=true

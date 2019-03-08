@@ -129,11 +129,6 @@ void AccessibilityTreeFormatter::SetNodeFilters(
   node_filters_ = node_filters;
 }
 
-const base::FilePath::StringType
-AccessibilityTreeFormatter::GetVersionSpecificExpectedFileSuffix() {
-  return FILE_PATH_LITERAL("");
-}
-
 // static
 bool AccessibilityTreeFormatter::MatchesPropertyFilters(
     const std::vector<PropertyFilter>& property_filters,
@@ -216,16 +211,7 @@ bool AccessibilityTreeFormatter::WriteAttribute(bool include_by_default,
   return true;
 }
 
-void AccessibilityTreeFormatter::AddPropertyFilter(
-    std::vector<PropertyFilter>* property_filters,
-    std::string filter,
-    PropertyFilter::Type type) {
-  property_filters->push_back(PropertyFilter(base::ASCIIToUTF16(filter), type));
-}
-
 void AccessibilityTreeFormatter::SetUpCommandLineForTestPass(
     base::CommandLine* command_line) {}
 
-void AccessibilityTreeFormatter::AddDefaultFilters(
-    std::vector<PropertyFilter>* property_filters) {}
 }  // namespace content

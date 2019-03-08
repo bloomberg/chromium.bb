@@ -76,8 +76,6 @@ class CONTENT_EXPORT AccessibilityTreeFormatter {
   // Called to allow each test pass to alter the command-line
   virtual void SetUpCommandLineForTestPass(base::CommandLine* command_line);
 
-  virtual void AddDefaultFilters(std::vector<PropertyFilter>* property_filters);
-
   static bool MatchesPropertyFilters(
       const std::vector<PropertyFilter>& property_filters,
       const base::string16& text,
@@ -156,11 +154,6 @@ class CONTENT_EXPORT AccessibilityTreeFormatter {
   // HTML test:      test-file.html
   // Expected:       test-file-expected-mac.txt.
   virtual const base::FilePath::StringType GetExpectedFileSuffix() = 0;
-  // Some Platforms expect different outputs depending on the version.
-  // Most test outputs are identical but this allows a version specific
-  // expected file to be used.
-  virtual const base::FilePath::StringType
-  GetVersionSpecificExpectedFileSuffix();
 
   // A string that indicates a given line in a file is an allow-empty,
   // allow or deny filter. Overridden by each platform subclass. Example:
@@ -216,9 +209,7 @@ class CONTENT_EXPORT AccessibilityTreeFormatter {
   bool WriteAttribute(bool include_by_default,
                       const std::string& attr,
                       base::string16* line);
-  void AddPropertyFilter(std::vector<PropertyFilter>* property_filters,
-                         std::string filter,
-                         PropertyFilter::Type type = PropertyFilter::ALLOW);
+
   bool show_ids() { return show_ids_; }
 
  private:
