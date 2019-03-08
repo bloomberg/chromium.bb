@@ -39,6 +39,24 @@ testcase.recentsDrive = async () => {
   await verifyRecents(appId);
 };
 
+testcase.recentsCrostiniNotMounted = async () => {
+  // Add entries to crostini volume, but do not mount.
+  // The crostini entries should not show up in recents.
+  await addEntries(['crostini'], BASIC_CROSTINI_ENTRY_SET);
+
+  const appId = await setupAndWaitUntilReady(
+      RootPath.DOWNLOADS, [ENTRIES.beautiful, ENTRIES.photos], []);
+  await verifyRecents(appId, [ENTRIES.beautiful]);
+};
+
+testcase.recentsCrostiniMounted = async () => {
+  const appId = await setupAndWaitUntilReady(
+      RootPath.DOWNLOADS, [ENTRIES.beautiful, ENTRIES.photos], []);
+  // Mount crostini and both downloads and crostini entries will be in recents.
+  await mountCrostini(appId);
+  await verifyRecents(appId);
+};
+
 testcase.recentsDownloadsAndDrive = async () => {
   // Populate both downloads and drive with disjoint sets of files.
   const appId = await setupAndWaitUntilReady(

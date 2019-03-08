@@ -236,33 +236,12 @@ testcase.openQuickViewMtp = async () => {
  * Tests opening Quick View on a Crostini file.
  */
 testcase.openQuickViewCrostini = async () => {
-  const fakeLinuxFiles = '#directory-tree [root-type-icon="crostini"]';
-  const realLinuxFiles = '#directory-tree [volume-type-icon="crostini"]';
-
   // Open Files app on Downloads containing ENTRIES.photos.
   const appId =
       await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.photos], []);
 
-  // Check: the fake Linux files icon should be shown.
-  await remoteCall.waitForElement(appId, fakeLinuxFiles);
-
-  // Add files to the Crostini volume.
-  await addEntries(['crostini'], BASIC_CROSTINI_ENTRY_SET);
-
-  // Click the fake Linux files icon to mount the Crostini volume.
-  chrome.test.assertTrue(
-      !!await remoteCall.callRemoteTestUtil(
-          'fakeMouseClick', appId, [fakeLinuxFiles]),
-      'fakeMouseClick failed');
-
-  // Check: the Crostini volume icon should appear.
-  await remoteCall.waitForElement(appId, realLinuxFiles);
-
-  // Check: the Crostini files should appear in the file list.
-  const files = TestEntryInfo.getExpectedRows(BASIC_CROSTINI_ENTRY_SET);
-  await remoteCall.waitForFiles(appId, files, {ignoreLastModifiedTime: true});
-
   // Open a Crostini file in Quick View.
+  await mountCrostini(appId);
   await openQuickView(appId, ENTRIES.hello.nameText);
 };
 
