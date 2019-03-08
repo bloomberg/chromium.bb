@@ -34,7 +34,6 @@
 #include "content/browser/loader/prefetch_url_loader_service.h"
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "content/browser/resource_context_impl.h"
-#include "content/browser/service_worker/service_worker_request_handler.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/streams/stream.h"
 #include "content/browser/streams/stream_context.h"
@@ -419,8 +418,6 @@ StoragePartitionImpl* StoragePartitionImplMap::Get(
       DevToolsURLRequestInterceptor::MaybeCreate(browser_context_);
   if (devtools_interceptor)
     request_interceptors.push_back(std::move(devtools_interceptor));
-  request_interceptors.push_back(ServiceWorkerRequestHandler::CreateInterceptor(
-      browser_context_->GetResourceContext()));
   request_interceptors.push_back(std::make_unique<AppCacheInterceptor>());
 
   bool create_request_context = true;
