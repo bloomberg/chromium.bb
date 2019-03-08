@@ -160,6 +160,7 @@ DocumentLoader::DocumentLoader(
   origin_policy_ = params_->origin_policy;
   requestor_origin_ = params_->requestor_origin;
   unreachable_url_ = params_->unreachable_url;
+  error_code_ = params_->error_code;
   previews_state_ = params_->previews_state;
 
   // See WebNavigationParams for special case explanations.

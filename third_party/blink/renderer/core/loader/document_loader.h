@@ -254,6 +254,8 @@ class CORE_EXPORT DocumentLoader
 
   void ProvideDocumentToResourceFetcherProperties(Document&);
 
+  int ErrorCode() const { return error_code_; }
+
  protected:
   bool had_transient_activation() const { return had_transient_activation_; }
 
@@ -346,6 +348,7 @@ class CORE_EXPORT DocumentLoader
   String origin_policy_;
   scoped_refptr<const SecurityOrigin> requestor_origin_;
   KURL unreachable_url_;
+  int error_code_;
   std::unique_ptr<WebNavigationBodyLoader> body_loader_;
 
   // Params are saved in constructor and are cleared after StartLoading().

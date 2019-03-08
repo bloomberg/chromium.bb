@@ -2863,7 +2863,8 @@ void RenderFrameImpl::LoadNavigationErrorPage(
   frame_->EnableViewSourceMode(false);
 
   auto navigation_params = WebNavigationParams::CreateForErrorPage(
-      document_loader, error_html, GURL(kUnreachableWebDataURL), error.url());
+      document_loader, error_html, GURL(kUnreachableWebDataURL), error.url(),
+      error.reason());
   std::unique_ptr<DocumentState> document_state;
 
   if (inherit_document_state) {
@@ -3600,6 +3601,7 @@ void RenderFrameImpl::CommitFailedNavigationInternal(
   FillNavigationParamsRequest(common_params, commit_params,
                               navigation_params.get());
   navigation_params->url = GURL(kUnreachableWebDataURL);
+  navigation_params->error_code = error_code;
 
   if (!ShouldDisplayErrorPageForFailedLoad(error_code, common_params.url)) {
     // The browser expects this frame to be loading an error page. Inform it
@@ -6022,15 +6024,51 @@ void RenderFrameImpl::DidCommitNavigationInternal(
   DCHECK(!(was_within_same_document && interface_params));
   UpdateStateForCommit(item, commit_type, transition);
 
+  auto params = MakeDidCommitProvisionalLoadParams(commit_type, transition);
+
+  // If this is a regular commit, not an error page, the URL that was just
+  // committed must match the process lock, if there is one. Verify it here, to
+  // get a stack trace for a bug where this seems to be occurring.
+  // TODO(nasko): Remove this check after we've gathered enough information to
+  // debug issues with browser-side security checks. https://crbug.com/931895.
+  RenderThreadImpl* render_thread = RenderThreadImpl::current();
+  const GURL* lock_url =
+      render_thread ? render_thread->site_lock_url() : nullptr;
+  if (frame_->GetDocumentLoader()->ErrorCode() != net::ERR_BLOCKED_BY_CLIENT &&
+      lock_url && lock_url->scheme() == params->url.scheme() &&
+      lock_url->SchemeIsHTTPOrHTTPS()) {
+    std::string lock_domain =
+        net::registry_controlled_domains::GetDomainAndRegistry(
+            lock_url->host(),
+            net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+    std::string commit_domain =
+        net::registry_controlled_domains::GetDomainAndRegistry(
+            params->url.host(),
+            net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+    if (lock_domain != commit_domain) {
+      base::debug::SetCrashKeyString(
+          base::debug::AllocateCrashKeyString(
+              "lock_domain", base::debug::CrashKeySize::Size64),
+          lock_domain);
+      base::debug::SetCrashKeyString(
+          base::debug::AllocateCrashKeyString(
+              "commit_domain", base::debug::CrashKeySize::Size64),
+          commit_domain);
+      base::debug::SetCrashKeyString(
+          base::debug::AllocateCrashKeyString(
+              "is_subframe", base::debug::CrashKeySize::Size32),
+          is_main_frame_ ? "true" : "false");
+      CHECK(false);
+    }
+  }
+
   // This invocation must precede any calls to allowScripts(), allowImages(), or
   // allowPlugins() for the new page. This ensures that when these functions
   // send ViewHostMsg_ContentBlocked messages, those arrive after the browser
   // process has already been informed of the provisional load committing.
   if (was_within_same_document) {
-    GetFrameHost()->DidCommitSameDocumentNavigation(
-        MakeDidCommitProvisionalLoadParams(commit_type, transition));
+    GetFrameHost()->DidCommitSameDocumentNavigation(std::move(params));
   } else {
-    auto params = MakeDidCommitProvisionalLoadParams(commit_type, transition);
     NavigationState* navigation_state =
         NavigationState::FromDocumentLoader(frame_->GetDocumentLoader());
     if (navigation_state->uses_per_navigation_mojo_interface()) {
