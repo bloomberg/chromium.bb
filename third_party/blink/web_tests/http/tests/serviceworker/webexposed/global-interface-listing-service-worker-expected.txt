@@ -50,6 +50,7 @@ interface BackgroundFetchUpdateUIEvent : BackgroundFetchEvent
     method constructor
     method updateUI
 interface BarcodeDetector
+    static method getSupportedFormats
     attribute @@toStringTag
     method constructor
     method detect

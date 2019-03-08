@@ -11,5 +11,6 @@
     MeasureAs=ShapeDetection_BarcodeDetectorConstructor,
     RuntimeEnabled=ShapeDetection
 ] interface BarcodeDetector {
+    [CallWith=ScriptState] static Promise<sequence<BarcodeFormat>> getSupportedFormats();
     [CallWith=ScriptState, MeasureAs=ShapeDetectionAPI] Promise<sequence<DetectedBarcode>> detect(ImageBitmapSource image);
 };

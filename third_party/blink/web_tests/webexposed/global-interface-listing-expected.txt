@@ -452,6 +452,7 @@ interface BarProp
     getter visible
     method constructor
 interface BarcodeDetector
+    static method getSupportedFormats
     attribute @@toStringTag
     method constructor
     method detect

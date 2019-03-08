@@ -13,8 +13,10 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.shape_detection.mojom.BarcodeDetection;
+import org.chromium.shape_detection.mojom.BarcodeDetectionProvider;
 import org.chromium.shape_detection.mojom.BarcodeDetectionResult;
 import org.chromium.shape_detection.mojom.BarcodeDetectorOptions;
+import org.chromium.shape_detection.mojom.BarcodeFormat;
 
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -26,6 +28,32 @@ import java.util.concurrent.TimeUnit;
 public class BarcodeDetectionImplTest {
     private static final org.chromium.skia.mojom.Bitmap QR_CODE_BITMAP =
             TestUtils.mojoBitmapFromFile("qr_code.png");
+
+    private static final int[] SUPPORTED_FORMATS = {BarcodeFormat.AZTEC, BarcodeFormat.CODE_128,
+            BarcodeFormat.CODE_39, BarcodeFormat.CODE_93, BarcodeFormat.CODABAR,
+            BarcodeFormat.DATA_MATRIX, BarcodeFormat.EAN_13, BarcodeFormat.EAN_8, BarcodeFormat.ITF,
+            BarcodeFormat.PDF417, BarcodeFormat.QR_CODE, BarcodeFormat.UPC_A, BarcodeFormat.UPC_E};
+
+    private static int[] enumerateSupportedFormats() {
+        BarcodeDetectionProvider provider = new BarcodeDetectionProviderImpl();
+
+        final ArrayBlockingQueue<int[]> queue = new ArrayBlockingQueue<>(13);
+        provider.enumerateSupportedFormats(
+                new BarcodeDetectionProvider.EnumerateSupportedFormatsResponse() {
+                    @Override
+                    public void call(int[] results) {
+                        queue.add(results);
+                    }
+                });
+        int[] toReturn = null;
+        try {
+            toReturn = queue.poll(5L, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            Assert.fail("Could not get int[] supported formats: " + e.toString());
+        }
+        Assert.assertNotNull(toReturn);
+        return toReturn;
+    }
 
     private static BarcodeDetectionResult[] detect(org.chromium.skia.mojom.Bitmap mojoBitmap) {
         BarcodeDetectorOptions options = new BarcodeDetectorOptions();
@@ -46,6 +74,17 @@ public class BarcodeDetectionImplTest {
         }
         Assert.assertNotNull(toReturn);
         return toReturn;
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"ShapeDetection"})
+    public void testEnumerateSupportedFormats() {
+        if (!TestUtils.IS_GMS_CORE_SUPPORTED) {
+            return;
+        }
+        int[] results = enumerateSupportedFormats();
+        Assert.assertArrayEquals(SUPPORTED_FORMATS, results);
     }
 
     @Test

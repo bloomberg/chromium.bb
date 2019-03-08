@@ -16,6 +16,16 @@ class MockBarcodeDetectionProvider {
     this.mockService_ = new MockBarcodeDetection(request, options);
   }
 
+  enumerateSupportedFormats() {
+    return Promise.resolve({
+      supportedFormats: [
+        shapeDetection.mojom.BarcodeFormat.AZTEC,
+        shapeDetection.mojom.BarcodeFormat.DATA_MATRIX,
+        shapeDetection.mojom.BarcodeFormat.QR_CODE,
+      ]
+    });
+  }
+
   getFrameData() {
     return this.mockService_.bufferData_;
   }
