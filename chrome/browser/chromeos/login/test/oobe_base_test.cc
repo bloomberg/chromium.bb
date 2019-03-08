@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/login/session/user_session_manager_test_api.h"
 #include "chrome/browser/chromeos/login/test/https_forwarder.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
+#include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_webui.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_test_impl.h"
@@ -218,13 +219,15 @@ void OobeBaseTest::WaitForGaiaPageEvent(const std::string& event) {
   content::DOMMessageQueue message_queue;
   std::string js =
       R"((function() {
-            var authenticator = $('gaia-signin').gaiaAuthHost_;
+            var authenticator = $AuthenticatorId;
             var f = function() {
               authenticator.removeEventListener('$Event', f);
               window.domAutomationController.send('Done');
             };
             authenticator.addEventListener('$Event', f);
           })();)";
+  base::ReplaceSubstringsAfterOffset(&js, 0, "$AuthenticatorId",
+                                     authenticator_id_);
   base::ReplaceSubstringsAfterOffset(&js, 0, "$Event", event);
   test::OobeJS().Evaluate(js);
 
@@ -232,6 +235,14 @@ void OobeBaseTest::WaitForGaiaPageEvent(const std::string& event) {
   do {
     ASSERT_TRUE(message_queue.WaitForMessage(&message));
   } while (message != "\"Done\"");
+}
+
+void OobeBaseTest::WaitForEnrollmentSuccess() {
+  test::OobeJS()
+      .CreateWaiter(
+          "document.getElementsByClassName('oauth-enroll-state-attribute-"
+          "prompt').length > 0")
+      ->Wait();
 }
 
 void OobeBaseTest::WaitForSigninScreen() {
