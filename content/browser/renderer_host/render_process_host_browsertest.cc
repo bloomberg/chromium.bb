@@ -416,7 +416,9 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
   GURL test_url = embedded_test_server()->GetURL("/simple_page.html");
   BrowserContext* browser_context =
       ShellContentBrowserClient::Get()->browser_context();
-  GURL test_site = SiteInstance::GetSiteForURL(browser_context, test_url);
+  scoped_refptr<SiteInstance> test_site_instance =
+      SiteInstance::Create(browser_context)->GetRelatedSiteInstance(test_url);
+  GURL test_site = test_site_instance->GetSiteURL();
   CustomStoragePartitionForSomeSites modified_client(test_site);
   ContentBrowserClient* old_client =
       SetBrowserClientForTesting(&modified_client);

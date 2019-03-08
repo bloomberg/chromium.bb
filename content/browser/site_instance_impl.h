@@ -283,6 +283,9 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   // the BrowsingInstance's default process.
   RenderProcessHost* GetDefaultProcessIfUsable();
 
+  // Returns true if this object was constructed as a default site instance.
+  bool IsDefaultSiteInstance();
+
  private:
   friend class BrowsingInstance;
   friend class SiteInstanceTestBrowserClient;

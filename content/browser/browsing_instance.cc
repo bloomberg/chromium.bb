@@ -8,12 +8,18 @@
 #include "base/logging.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_or_resource_context.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/site_isolation_policy.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 
 namespace content {
+
+namespace {
+const char* const kDefaultInstanceSiteURL = "http://unisolated.invalid";
+}  // namespace
 
 // Start the BrowsingInstance ID counter from 1 to avoid a conflict with the
 // invalid BrowsingInstanceId value, which is 0 in its underlying IdType32.
@@ -39,8 +45,15 @@ void BrowsingInstance::RenderProcessHostDestroyed(RenderProcessHost* host) {
 
 void BrowsingInstance::SetDefaultProcess(RenderProcessHost* default_process) {
   DCHECK(!default_process_);
+  DCHECK(!default_site_instance_);
   default_process_ = default_process;
   default_process_->AddObserver(this);
+}
+
+bool BrowsingInstance::IsDefaultSiteInstance(
+    const SiteInstanceImpl* site_instance) const {
+  return site_instance != nullptr &&
+         site_instance == default_site_instance_.get();
 }
 
 bool BrowsingInstance::HasSiteInstance(const GURL& url) {
@@ -52,14 +65,13 @@ bool BrowsingInstance::HasSiteInstance(const GURL& url) {
 }
 
 scoped_refptr<SiteInstanceImpl> BrowsingInstance::GetSiteInstanceForURL(
-    const GURL& url) {
-  std::string site =
-      SiteInstanceImpl::GetSiteForURL(browser_context_, isolation_context_, url)
-          .possibly_invalid_spec();
+    const GURL& url,
+    bool allow_default_instance) {
+  scoped_refptr<SiteInstanceImpl> site_instance =
+      GetSiteInstanceForURLHelper(url, allow_default_instance);
 
-  auto i = site_instance_map_.find(site);
-  if (i != site_instance_map_.end())
-    return i->second;
+  if (site_instance)
+    return site_instance;
 
   // No current SiteInstance for this site, so let's create one.
   scoped_refptr<SiteInstanceImpl> instance = new SiteInstanceImpl(this);
@@ -69,9 +81,67 @@ scoped_refptr<SiteInstanceImpl> BrowsingInstance::GetSiteInstanceForURL(
   return instance;
 }
 
+void BrowsingInstance::GetSiteAndLockForURL(const GURL& url,
+                                            bool allow_default_instance,
+                                            GURL* site_url,
+                                            GURL* lock_url) {
+  scoped_refptr<SiteInstanceImpl> site_instance =
+      GetSiteInstanceForURLHelper(url, allow_default_instance);
+
+  if (site_instance) {
+    *site_url = site_instance->GetSiteURL();
+    *lock_url = site_instance->lock_url();
+    return;
+  }
+
+  BrowserOrResourceContext context(browser_context_);
+  *site_url = SiteInstanceImpl::GetSiteForURL(
+      context, isolation_context_, url, true /* should_use_effective_urls */);
+  *lock_url = SiteInstanceImpl::DetermineProcessLockURL(
+      context, isolation_context_, url);
+}
+
+scoped_refptr<SiteInstanceImpl> BrowsingInstance::GetSiteInstanceForURLHelper(
+    const GURL& url,
+    bool allow_default_instance) {
+  std::string site =
+      SiteInstanceImpl::GetSiteForURL(browser_context_, isolation_context_, url)
+          .possibly_invalid_spec();
+
+  auto i = site_instance_map_.find(site);
+  if (i != site_instance_map_.end())
+    return i->second;
+
+  // Check to see if we can use the default SiteInstance for sites that don't
+  // need to be isolated in their own process. The default instance allows us to
+  // have multiple unisolated sites share a process. We don't use the default
+  // instance when kProcessSharingWithStrictSiteInstances is enabled because in
+  // that case we want each site to have their own SiteInstance object and logic
+  // elsewhere ensures that those SiteInstances share a process.
+  if (allow_default_instance &&
+      !base::FeatureList::IsEnabled(
+          features::kProcessSharingWithStrictSiteInstances) &&
+      !SiteInstanceImpl::DoesSiteRequireDedicatedProcess(
+          browser_context_, isolation_context_, url)) {
+    DCHECK(!default_process_);
+    if (!default_site_instance_) {
+      default_site_instance_ = new SiteInstanceImpl(this);
+      default_site_instance_->SetSite(GURL(kDefaultInstanceSiteURL));
+    }
+    return default_site_instance_;
+  }
+
+  return nullptr;
+}
+
 void BrowsingInstance::RegisterSiteInstance(SiteInstanceImpl* site_instance) {
   DCHECK(site_instance->browsing_instance_.get() == this);
   DCHECK(site_instance->HasSite());
+
+  // Explicitly prevent the |default_site_instance_| from being added since
+  // the map is only supposed to contain instances that map to a single site.
+  if (site_instance == default_site_instance_.get())
+    return;
 
   std::string site = site_instance->GetSiteURL().possibly_invalid_spec();
 

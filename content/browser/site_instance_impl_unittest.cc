@@ -470,9 +470,14 @@ TEST_F(SiteInstanceTest, ProcessLockDoesNotUseEffectiveURL) {
                                        GURL("https://bar.com/"));
     scoped_refptr<SiteInstance> site_instance =
         bar_site_instance->GetRelatedSiteInstance(test_url);
-    EXPECT_EQ(expected_app_site_url, site_instance->GetSiteURL());
-    EXPECT_EQ(nonapp_site_url,
-              static_cast<SiteInstanceImpl*>(site_instance.get())->lock_url());
+    auto* site_instance_impl =
+        static_cast<SiteInstanceImpl*>(site_instance.get());
+    if (AreAllSitesIsolatedForTesting()) {
+      EXPECT_EQ(expected_app_site_url, site_instance->GetSiteURL());
+      EXPECT_EQ(nonapp_site_url, site_instance_impl->lock_url());
+    } else {
+      EXPECT_TRUE(site_instance_impl->IsDefaultSiteInstance());
+    }
   }
 
   // New SiteInstance with a lazily assigned site URL.
@@ -566,14 +571,14 @@ TEST_F(SiteInstanceTest, OneSiteInstancePerSite) {
 
   const GURL url_a1("http://www.google.com/1.html");
   scoped_refptr<SiteInstanceImpl> site_instance_a1(
-      browsing_instance->GetSiteInstanceForURL(url_a1));
+      browsing_instance->GetSiteInstanceForURL(url_a1, false));
   EXPECT_TRUE(site_instance_a1.get() != nullptr);
 
   // A separate site should create a separate SiteInstance.
   const GURL url_b1("http://www.yahoo.com/");
   scoped_refptr<SiteInstanceImpl> site_instance_b1(
 
-      browsing_instance->GetSiteInstanceForURL(url_b1));
+      browsing_instance->GetSiteInstanceForURL(url_b1, false));
   EXPECT_NE(site_instance_a1.get(), site_instance_b1.get());
   EXPECT_TRUE(site_instance_a1->IsRelatedSiteInstance(site_instance_b1.get()));
 
@@ -585,7 +590,7 @@ TEST_F(SiteInstanceTest, OneSiteInstancePerSite) {
   // A second visit to the original site should return the same SiteInstance.
   const GURL url_a2("http://www.google.com/2.html");
   EXPECT_EQ(site_instance_a1.get(),
-            browsing_instance->GetSiteInstanceForURL(url_a2));
+            browsing_instance->GetSiteInstanceForURL(url_a2, false));
   EXPECT_EQ(site_instance_a1.get(),
             site_instance_a1->GetRelatedSiteInstance(url_a2));
 
@@ -595,7 +600,7 @@ TEST_F(SiteInstanceTest, OneSiteInstancePerSite) {
       new BrowsingInstance(browser_context.get());
   // Ensure the new SiteInstance is ref counted so that it gets deleted.
   scoped_refptr<SiteInstanceImpl> site_instance_a2_2(
-      browsing_instance2->GetSiteInstanceForURL(url_a2));
+      browsing_instance2->GetSiteInstanceForURL(url_a2, false));
   EXPECT_NE(site_instance_a1.get(), site_instance_a2_2.get());
   EXPECT_FALSE(
       site_instance_a1->IsRelatedSiteInstance(site_instance_a2_2.get()));
@@ -638,14 +643,14 @@ TEST_F(SiteInstanceTest, OneSiteInstancePerSiteInBrowserContext) {
 
   const GURL url_a1("http://www.google.com/1.html");
   scoped_refptr<SiteInstanceImpl> site_instance_a1(
-      browsing_instance->GetSiteInstanceForURL(url_a1));
+      browsing_instance->GetSiteInstanceForURL(url_a1, false));
   EXPECT_TRUE(site_instance_a1.get() != nullptr);
   std::unique_ptr<RenderProcessHost> process_a1(site_instance_a1->GetProcess());
 
   // A separate site should create a separate SiteInstance.
   const GURL url_b1("http://www.yahoo.com/");
   scoped_refptr<SiteInstanceImpl> site_instance_b1(
-      browsing_instance->GetSiteInstanceForURL(url_b1));
+      browsing_instance->GetSiteInstanceForURL(url_b1, false));
   EXPECT_NE(site_instance_a1.get(), site_instance_b1.get());
   EXPECT_TRUE(site_instance_a1->IsRelatedSiteInstance(site_instance_b1.get()));
 
@@ -657,7 +662,7 @@ TEST_F(SiteInstanceTest, OneSiteInstancePerSiteInBrowserContext) {
   // A second visit to the original site should return the same SiteInstance.
   const GURL url_a2("http://www.google.com/2.html");
   EXPECT_EQ(site_instance_a1.get(),
-            browsing_instance->GetSiteInstanceForURL(url_a2));
+            browsing_instance->GetSiteInstanceForURL(url_a2, false));
   EXPECT_EQ(site_instance_a1.get(),
             site_instance_a1->GetRelatedSiteInstance(url_a2));
 
@@ -666,7 +671,7 @@ TEST_F(SiteInstanceTest, OneSiteInstancePerSiteInBrowserContext) {
   BrowsingInstance* browsing_instance2 =
       new BrowsingInstance(browser_context.get());
   scoped_refptr<SiteInstanceImpl> site_instance_a1_2(
-      browsing_instance2->GetSiteInstanceForURL(url_a1));
+      browsing_instance2->GetSiteInstanceForURL(url_a1, false));
   EXPECT_TRUE(site_instance_a1.get() != nullptr);
   EXPECT_NE(site_instance_a1.get(), site_instance_a1_2.get());
   EXPECT_EQ(process_a1.get(), site_instance_a1_2->GetProcess());
@@ -678,7 +683,7 @@ TEST_F(SiteInstanceTest, OneSiteInstancePerSiteInBrowserContext) {
   BrowsingInstance* browsing_instance3 =
       new BrowsingInstance(browser_context2.get());
   scoped_refptr<SiteInstanceImpl> site_instance_a2_3(
-      browsing_instance3->GetSiteInstanceForURL(url_a2));
+      browsing_instance3->GetSiteInstanceForURL(url_a2, false));
   EXPECT_TRUE(site_instance_a2_3.get() != nullptr);
   std::unique_ptr<RenderProcessHost> process_a2_3(
       site_instance_a2_3->GetProcess());
@@ -1230,10 +1235,14 @@ TEST_F(SiteInstanceTest, OriginalURL) {
                                        GURL("https://bar.com/"));
     scoped_refptr<SiteInstance> site_instance =
         bar_site_instance->GetRelatedSiteInstance(original_url);
-    EXPECT_EQ(expected_site_url, site_instance->GetSiteURL());
-    EXPECT_EQ(
-        original_url,
-        static_cast<SiteInstanceImpl*>(site_instance.get())->original_url());
+    auto* site_instance_impl =
+        static_cast<SiteInstanceImpl*>(site_instance.get());
+    if (AreAllSitesIsolatedForTesting()) {
+      EXPECT_EQ(expected_site_url, site_instance->GetSiteURL());
+      EXPECT_EQ(original_url, site_instance_impl->original_url());
+    } else {
+      EXPECT_TRUE(site_instance_impl->IsDefaultSiteInstance());
+    }
   }
 
   // New SiteInstance with a lazily assigned site URL.
