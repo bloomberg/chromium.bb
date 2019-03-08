@@ -73,13 +73,15 @@ void GetAnimationValuesForType(
       *out_tween_type = gfx::Tween::LINEAR_OUT_SLOW_IN;
       return;
     case SPLITVIEW_ANIMATION_TEXT_FADE_IN:
-    case SPLITVIEW_ANIMATION_TEXT_FADE_OUT:
     case SPLITVIEW_ANIMATION_TEXT_SLIDE_IN:
-    case SPLITVIEW_ANIMATION_TEXT_SLIDE_OUT:
-      if (type == SPLITVIEW_ANIMATION_TEXT_SLIDE_IN)
-        *out_delay = kLabelAnimationDelayMs;
+      *out_delay = kLabelAnimationDelayMs;
       *out_duration = kLabelAnimationMs;
       *out_tween_type = gfx::Tween::LINEAR_OUT_SLOW_IN;
+      return;
+    case SPLITVIEW_ANIMATION_TEXT_FADE_OUT:
+    case SPLITVIEW_ANIMATION_TEXT_SLIDE_OUT:
+      *out_duration = kLabelAnimationMs;
+      *out_tween_type = gfx::Tween::FAST_OUT_LINEAR_IN;
       return;
     case SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_FADE_OUT:
     case SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_SLIDE_OUT:
