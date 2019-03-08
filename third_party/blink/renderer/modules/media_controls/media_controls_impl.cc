@@ -938,9 +938,7 @@ void MediaControlsImpl::Reset() {
 
   UpdatePlayState();
 
-  UpdateCurrentTimeDisplay();
-
-  timeline_->SetPosition(MediaElement().currentTime());
+  UpdateTimeIndicators();
 
   OnVolumeChange();
   OnTextTracksAddedOrRemoved();
@@ -953,6 +951,11 @@ void MediaControlsImpl::Reset() {
   UpdateCSSClassFromState();
   UpdateSizingCSSClass();
   OnControlsListUpdated();
+}
+
+void MediaControlsImpl::UpdateTimeIndicators() {
+  timeline_->SetPosition(MediaElement().currentTime());
+  UpdateCurrentTimeDisplay();
 }
 
 void MediaControlsImpl::OnControlsListUpdated() {
@@ -1123,6 +1126,9 @@ bool MediaControlsImpl::ShouldHideMediaControls(unsigned behavior_flags) const {
 
   // Don't hide if we have accessiblity focus.
   if (panel_->KeepDisplayedForAccessibility())
+    return false;
+
+  if (MediaElement().seeking())
     return false;
 
   return true;
@@ -1620,8 +1626,7 @@ void MediaControlsImpl::HandlePointerEvent(Event* event) {
       is_mouse_over_controls_ = true;
       if (!MediaElement().paused()) {
         MakeOpaqueFromPointerEvent();
-        if (ShouldHideMediaControls())
-          StartHideMediaControlsTimer();
+        StartHideMediaControlsIfNecessary();
       }
     }
   } else if (event->type() == event_type_names::kPointerout) {
@@ -1804,6 +1809,11 @@ void MediaControlsImpl::HideMediaControlsTimerFired(TimerBase*) {
   overlay_cast_button_->SetIsWanted(false);
 }
 
+void MediaControlsImpl::StartHideMediaControlsIfNecessary() {
+  if (ShouldHideMediaControls())
+    StartHideMediaControlsTimer();
+}
+
 void MediaControlsImpl::StartHideMediaControlsTimer() {
   hide_media_controls_timer_.StartOneShot(
       GetTimeWithoutMouseMovementBeforeHidingMediaControls(), FROM_HERE);
@@ -1877,8 +1887,7 @@ void MediaControlsImpl::OnFocusIn() {
 }
 
 void MediaControlsImpl::OnTimeUpdate() {
-  timeline_->SetPosition(MediaElement().currentTime());
-  UpdateCurrentTimeDisplay();
+  UpdateTimeIndicators();
 
   // 'timeupdate' might be called in a paused state. The controls should not
   // become transparent in that case.
@@ -1920,8 +1929,7 @@ void MediaControlsImpl::OnDurationChange() {
 
 void MediaControlsImpl::OnPlay() {
   UpdatePlayState();
-  timeline_->SetPosition(MediaElement().currentTime());
-  UpdateCurrentTimeDisplay();
+  UpdateTimeIndicators();
   UpdateCSSClassFromState();
 }
 
@@ -1934,12 +1942,37 @@ void MediaControlsImpl::OnPlaying() {
 
 void MediaControlsImpl::OnPause() {
   UpdatePlayState();
-  timeline_->SetPosition(MediaElement().currentTime());
-  UpdateCurrentTimeDisplay();
+  UpdateTimeIndicators();
   MakeOpaque();
 
   StopHideMediaControlsTimer();
 
+  UpdateCSSClassFromState();
+}
+
+void MediaControlsImpl::OnSeeking() {
+  UpdateTimeIndicators();
+  if (!is_scrubbing_) {
+    is_scrubbing_ = true;
+    UpdateCSSClassFromState();
+  }
+
+  // Don't try to show the controls if the seek was caused by the video being
+  // looped.
+  if (MediaElement().Loop() && MediaElement().currentTime() == 0)
+    return;
+
+  if (!MediaElement().ShouldShowControls())
+    return;
+
+  MaybeShow();
+  StopHideMediaControlsTimer();
+}
+
+void MediaControlsImpl::OnSeeked() {
+  StartHideMediaControlsIfNecessary();
+
+  is_scrubbing_ = false;
   UpdateCSSClassFromState();
 }
 
