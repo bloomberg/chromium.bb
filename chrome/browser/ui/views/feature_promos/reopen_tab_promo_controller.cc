@@ -43,9 +43,15 @@ void ReopenTabPromoController::ShowPromo() {
   app_menu_button->AddObserver(this);
   app_menu_button->SetPromoFeature(InProductHelpFeature::kReopenTab);
 
+  // Get keyboard shortcut for reopening last closed tab. This should exist.
+  ui::Accelerator accelerator;
+  bool has_accelerator =
+      browser_view_->GetAccelerator(IDC_RESTORE_TAB, &accelerator);
+  DCHECK(has_accelerator);
   promo_bubble_ = FeaturePromoBubbleView::CreateOwned(
       app_menu_button, views::BubbleBorder::Arrow::TOP_RIGHT,
-      IDS_REOPEN_TAB_PROMO, FeaturePromoBubbleView::ActivationAction::ACTIVATE);
+      FeaturePromoBubbleView::ActivationAction::DO_NOT_ACTIVATE,
+      IDS_REOPEN_TAB_PROMO, IDS_REOPEN_TAB_PROMO_SCREENREADER, accelerator);
   promo_bubble_->set_close_on_deactivate(false);
   promo_bubble_->GetWidget()->AddObserver(this);
 }
@@ -53,8 +59,18 @@ void ReopenTabPromoController::ShowPromo() {
 void ReopenTabPromoController::OnTabReopened(int command_id) {
   iph_service_->TabReopened();
 
-  if (is_showing_ && command_id == AppMenuModel::kMinRecentTabsCommandId) {
-    promo_step_ = StepAtDismissal::kTabReopened;
+  if (!is_showing_)
+    return;
+  if (command_id != AppMenuModel::kMinRecentTabsCommandId &&
+      command_id != IDC_RESTORE_TAB)
+    return;
+
+  promo_step_ = StepAtDismissal::kTabReopened;
+  if (command_id == IDC_RESTORE_TAB) {
+    // If using the keyboard shortcut, we bypass the other steps and so we close
+    // the bubble now.
+    promo_bubble_->GetWidget()->Close();
+    PromoEnded();
   }
 }
 
@@ -62,19 +78,20 @@ void ReopenTabPromoController::OnWidgetDestroying(views::Widget* widget) {
   DCHECK(promo_bubble_);
   promo_bubble_ = nullptr;
 
-  // If the menu isn't showing, that means the promo bubble timed out.
-  if (!browser_view_->toolbar()->app_menu_button()->IsMenuShowing())
+  // If we haven't progressed past |StepAtDismissal::kBubbleShown|, the bubble
+  // timed out without the user following our IPH. End it.
+  if (promo_step_ == StepAtDismissal::kBubbleShown)
     PromoEnded();
 }
 
 void ReopenTabPromoController::AppMenuShown() {
+  promo_step_ = StepAtDismissal::kMenuOpened;
+
   // Close the promo bubble since it doesn't automatically close on click.
   promo_bubble_->GetWidget()->Close();
 
   // Stop showing promo on app menu button.
   browser_view_->toolbar()->app_menu_button()->SetPromoFeature(base::nullopt);
-
-  promo_step_ = StepAtDismissal::kMenuOpened;
 }
 
 void ReopenTabPromoController::AppMenuClosed() {

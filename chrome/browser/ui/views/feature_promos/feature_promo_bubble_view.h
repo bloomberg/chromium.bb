@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_FEATURE_PROMOS_FEATURE_PROMO_BUBBLE_VIEW_H_
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/timer/timer.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
@@ -15,6 +16,7 @@ class Rect;
 }
 
 namespace ui {
+class Accelerator;
 class MouseEvent;
 }
 
@@ -31,44 +33,36 @@ class FeaturePromoBubbleView : public views::BubbleDialogDelegateView {
   ~FeaturePromoBubbleView() override;
 
   // Creates a promo bubble. The returned pointer is only valid until the widget
-  // is closed. It must not be manually deleted by the caller. |anchor_view| is
-  // the View this bubble is anchored to. |arrow| specifies where on the border
-  // the bubble's arrow is located. |string_specifier| is a string ID that can
-  // be passed to |l10n_util::GetStringUTF16()|. |activation_action| specifies
-  // whether the bubble's widget will be activated.
+  // is closed. It must not be manually deleted by the caller.
+  // * |anchor_view| is the View this bubble is anchored to.
+  // * |arrow| specifies where on the border the bubble's arrow is located.
+  // * |string_specifier| is a string ID that can be passed to
+  // |l10n_util::GetStringUTF16()|.
+  // * |screenreader_string_specifier| is an optional alternate string to be
+  // exposed to screen readers.
+  // * |feature_accelerator| is an optional keyboard accelerator to be announced
+  // by screen readers. If |screenreader_string_specifier| is used and has a
+  // placeholder, |feature_accelerator|'s shortcut text will be filled in.
+  // * |activation_action| specifies whether the bubble's widget will be
+  // activated.
   static FeaturePromoBubbleView* CreateOwned(
       views::View* anchor_view,
       views::BubbleBorder::Arrow arrow,
+      ActivationAction activation_action,
       int string_specifier,
-      ActivationAction activation_action);
+      base::Optional<int> screenreader_string_specifier = base::nullopt,
+      base::Optional<ui::Accelerator> feature_accelerator = base::nullopt);
 
   // Closes the promo bubble.
   void CloseBubble();
 
- protected:
-  // The |anchor_view| is used to anchor the FeaturePromoBubbleView. The |arrow|
-  // sets where the arrow hangs off the bubble and the |string_specifier| is
-  // the text that is displayed on the bubble. The |activation_action| sets if
-  // the bubble is active or not.
-  FeaturePromoBubbleView(views::View* anchor_view,
-                         views::BubbleBorder::Arrow arrow,
-                         int string_specifier,
-                         ActivationAction activation_action);
-
-  // The |anchor_rect| is used to anchor bubble views that have custom
-  // positioning requirements. The |arrow| sets where the arrow hangs off the
-  // bubble and the |string_specifier| is the text that is displayed on the
-  // bubble.
-  FeaturePromoBubbleView(const gfx::Rect& anchor_rect,
-                         views::BubbleBorder::Arrow arrow,
-                         int string_specifier);
-
  private:
   FeaturePromoBubbleView(views::View* anchor_view,
-                         const gfx::Rect& anchor_rect,
                          views::BubbleBorder::Arrow arrow,
+                         ActivationAction activation_action,
                          int string_specifier,
-                         ActivationAction activation_action);
+                         base::Optional<int> screenreader_string_specifier,
+                         base::Optional<ui::Accelerator> feature_accelerator);
 
   // BubbleDialogDelegateView:
   int GetDialogButtons() const override;
@@ -76,6 +70,8 @@ class FeaturePromoBubbleView : public views::BubbleDialogDelegateView {
   void OnMouseEntered(const ui::MouseEvent& event) override;
   void OnMouseExited(const ui::MouseEvent& event) override;
   gfx::Rect GetBubbleBounds() override;
+  ax::mojom::Role GetAccessibleWindowRole() const override;
+  base::string16 GetAccessibleWindowTitle() const override;
   void UpdateHighlightedButton(bool highlighted) override {
     // Do nothing: the anchor for promo bubbles should not highlight.
   }
@@ -86,6 +82,8 @@ class FeaturePromoBubbleView : public views::BubbleDialogDelegateView {
   // Timer used to auto close the bubble.
   base::OneShotTimer timer_;
   const ActivationAction activation_action_;
+
+  base::string16 accessible_name_;
 
   DISALLOW_COPY_AND_ASSIGN(FeaturePromoBubbleView);
 };

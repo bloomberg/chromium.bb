@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/tabs/new_tab_button.h"
 
+#include <memory>
 #include <string>
 
 #include "base/strings/string_number_conversions.h"
@@ -101,8 +102,9 @@ void NewTabButton::ShowPromo() {
   DCHECK(!new_tab_promo_);
   // Owned by its native widget. Will be destroyed as its widget is destroyed.
   new_tab_promo_ = FeaturePromoBubbleView::CreateOwned(
-      this, views::BubbleBorder::LEFT_CENTER, GetNewTabPromoStringSpecifier(),
-      FeaturePromoBubbleView::ActivationAction::DO_NOT_ACTIVATE);
+      this, views::BubbleBorder::LEFT_CENTER,
+      FeaturePromoBubbleView::ActivationAction::DO_NOT_ACTIVATE,
+      GetNewTabPromoStringSpecifier());
   new_tab_promo_observer_.Add(new_tab_promo_->GetWidget());
   SchedulePaint();
 }
