@@ -71,69 +71,6 @@ bool SchemeMaySupportRedirectingToHTTPS(const GURL& url) {
 int ServiceWorkerRequestHandler::user_data_key_;
 
 // static
-void ServiceWorkerRequestHandler::InitializeForNavigation(
-    net::URLRequest* request,
-    ServiceWorkerNavigationHandleCore* navigation_handle_core,
-    storage::BlobStorageContext* blob_storage_context,
-    bool skip_service_worker,
-    ResourceType resource_type,
-    blink::mojom::RequestContextType request_context_type,
-    network::mojom::RequestContextFrameType frame_type,
-    bool is_parent_frame_secure,
-    scoped_refptr<network::ResourceRequestBody> body,
-    base::RepeatingCallback<WebContents*()> web_contents_getter) {
-  // Only create a handler when there is a ServiceWorkerNavigationHandlerCore
-  // to take ownership of a pre-created SeviceWorkerProviderHost.
-  if (!navigation_handle_core)
-    return;
-
-  // This is the legacy path used by non-NetworkService and
-  // non-S13nServiceWorker. The NetworkService/S13nServiceWorker path is
-  // InitializeForNavigationNetworkService().
-  //
-  // This function can still be called with a null navigation_handle_core by
-  // ResourceDispatcherHostImpl::BeginNavigationRequest when S13nSW is on and
-  // NetworkService is off, so this DCHECK must be after the null check above.
-  DCHECK(!blink::ServiceWorkerUtils::IsServicificationEnabled());
-
-  // Create the handler even for insecure HTTP since it's used in the
-  // case of redirect to HTTPS.
-  if (!request->url().SchemeIsHTTPOrHTTPS() &&
-      !OriginCanAccessServiceWorkers(request->url()) &&
-      !SchemeMaySupportRedirectingToHTTPS(request->url())) {
-    return;
-  }
-
-  if (!navigation_handle_core->context_wrapper())
-    return;
-  ServiceWorkerContextCore* context =
-      navigation_handle_core->context_wrapper()->context();
-  if (!context)
-    return;
-
-  // Initialize the SWProviderHost.
-  base::WeakPtr<ServiceWorkerProviderHost> provider_host =
-      ServiceWorkerProviderHost::PreCreateNavigationHost(
-          context->AsWeakPtr(), is_parent_frame_secure,
-          std::move(web_contents_getter));
-
-  std::unique_ptr<ServiceWorkerRequestHandler> handler(
-      provider_host->CreateRequestHandler(
-          network::mojom::FetchRequestMode::kNavigate,
-          network::mojom::FetchCredentialsMode::kInclude,
-          network::mojom::FetchRedirectMode::kManual,
-          std::string() /* integrity */, false /* keepalive */, resource_type,
-          request_context_type, frame_type, blob_storage_context->AsWeakPtr(),
-          body, skip_service_worker));
-  if (handler)
-    request->SetUserData(&user_data_key_, std::move(handler));
-
-  navigation_handle_core->DidPreCreateProviderHost(
-      provider_host->provider_id());
-}
-
-// S13nServiceWorker:
-// static
 std::unique_ptr<NavigationLoaderInterceptor>
 ServiceWorkerRequestHandler::InitializeForNavigationNetworkService(
     const GURL& url,

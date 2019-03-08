@@ -89,13 +89,12 @@ ResourceRequesterInfo::CreateForRendererTesting(int child_id) {
 }
 
 scoped_refptr<ResourceRequesterInfo>
-ResourceRequesterInfo::CreateForBrowserSideNavigation(
-    scoped_refptr<ServiceWorkerContextWrapper> service_worker_context) {
+ResourceRequesterInfo::CreateForBrowserSideNavigation() {
   return scoped_refptr<ResourceRequesterInfo>(new ResourceRequesterInfo(
       RequesterType::BROWSER_SIDE_NAVIGATION,
       ChildProcessHost::kInvalidUniqueID, nullptr /* appcache_service */,
       nullptr /* blob_storage_context */, nullptr /* file_system_context */,
-      service_worker_context.get(), GetContextsCallback()));
+      nullptr /* service_worker_context */, GetContextsCallback()));
 }
 
 scoped_refptr<ResourceRequesterInfo>

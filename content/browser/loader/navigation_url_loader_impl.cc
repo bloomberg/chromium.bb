@@ -494,10 +494,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
           resource_context_, url_request_context_getter->GetURLRequestContext(),
           upload_file_system_context, *request_info_,
           std::move(navigation_ui_data_), std::move(url_loader_client),
-          std::move(url_loader),
-          nullptr /* service_worker_navigation_handle_core */,
-          appcache_handle_core, options, resource_request_->priority,
-          global_request_id_);
+          std::move(url_loader), appcache_handle_core, options,
+          resource_request_->priority, global_request_id_);
     }
 
     // TODO(arthursonzogni): Detect when the ResourceDispatcherHost didn't
