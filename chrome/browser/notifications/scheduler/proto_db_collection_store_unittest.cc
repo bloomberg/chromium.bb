@@ -13,7 +13,6 @@
 #include "base/test/scoped_task_environment.h"
 #include "components/leveldb_proto/testing/fake_db.h"
 #include "components/leveldb_proto/testing/proto/test_db.pb.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace notifications {
@@ -52,10 +51,11 @@ class ProtoStoreForTest
     return proto;
   }
 
-  TestEntry ProtoToEntry(const leveldb_proto::TestProto& proto) override {
-    TestEntry entry;
-    entry.id = proto.id();
-    entry.data = proto.data();
+  std::unique_ptr<TestEntry> ProtoToEntry(
+      leveldb_proto::TestProto& proto) override {
+    auto entry = std::make_unique<TestEntry>();
+    entry->id = proto.id();
+    entry->data = proto.data();
     return entry;
   }
 
@@ -105,12 +105,12 @@ class ProtoDbCollectionStoreTest : public testing::Test {
   const std::map<std::string, leveldb_proto::TestProto>& db_protos() const {
     return db_protos_;
   }
-  std::vector<TestEntry>* entries() const { return entries_.get(); }
+  ProtoStoreForTest::Entries* entries() { return &entries_; }
 
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<ProtoStoreForTest> store_;
-  std::unique_ptr<std::vector<TestEntry>> entries_;
+  std::vector<std::unique_ptr<TestEntry>> entries_;
   std::map<std::string, leveldb_proto::TestProto> db_protos_;
   leveldb_proto::test::FakeDB<leveldb_proto::TestProto>* db_;
 
@@ -138,14 +138,14 @@ TEST_F(ProtoDbCollectionStoreTest, InitAndLoad) {
   db()->LoadCallback(true);
 
   EXPECT_EQ(entries()->size(), 1u);
-  VerifyEntryProto(entries()->front(), db_protos().begin()->second);
+  VerifyEntryProto(*entries()->front(), db_protos().begin()->second);
 }
 
 TEST_F(ProtoDbCollectionStoreTest, InitAndLoadFailedInit) {
   store()->InitAndLoad(
       base::BindOnce([](bool success, ProtoStoreForTest::Entries entries) {
         EXPECT_FALSE(success);
-        EXPECT_EQ(entries, nullptr);
+        EXPECT_TRUE(entries.empty());
       }));
 
   db()->InitStatusCallback(leveldb_proto::Enums::InitStatus::kError);
@@ -155,7 +155,7 @@ TEST_F(ProtoDbCollectionStoreTest, InitAndLoadFailedLoad) {
   store()->InitAndLoad(
       base::BindOnce([](bool success, ProtoStoreForTest::Entries entries) {
         EXPECT_FALSE(success);
-        EXPECT_EQ(entries, nullptr);
+        EXPECT_TRUE(entries.empty());
       }));
 
   db()->InitStatusCallback(leveldb_proto::Enums::InitStatus::kOK);
@@ -172,7 +172,7 @@ TEST_F(ProtoDbCollectionStoreTest, LoadOne) {
       base::BindOnce(&ProtoDbCollectionStoreTest::OnDbInitAndLoad,
                      base::Unretained(this), run_loop.QuitClosure(), true));
   db()->LoadCallback(true);
-  VerifyEntryProto(entries()->front(), db_protos().begin()->second);
+  VerifyEntryProto(*entries()->front(), db_protos().begin()->second);
 }
 
 TEST_F(ProtoDbCollectionStoreTest, Add) {
@@ -192,10 +192,9 @@ TEST_F(ProtoDbCollectionStoreTest, Add) {
   store()->Load(new_key, base::BindOnce([](bool success,
                                            ProtoStoreForTest::Entries entries) {
                   EXPECT_TRUE(success);
-                  EXPECT_TRUE(entries);
-                  EXPECT_EQ(entries->size(), 1u);
-                  EXPECT_EQ(entries->front().id, "new_id");
-                  EXPECT_EQ(entries->front().data, "new_data");
+                  EXPECT_EQ(entries.size(), 1u);
+                  EXPECT_EQ(entries.front()->id, "new_id");
+                  EXPECT_EQ(entries.front()->data, "new_data");
                 }));
   db()->LoadCallback(true);
 }
@@ -215,8 +214,7 @@ TEST_F(ProtoDbCollectionStoreTest, Delete) {
       kProtoKey,
       base::BindOnce([](bool success, ProtoStoreForTest::Entries entries) {
         EXPECT_TRUE(success);
-        EXPECT_TRUE(entries);
-        EXPECT_EQ(entries->size(), 0u);
+        EXPECT_TRUE(entries.empty());
       }));
 
   db()->LoadCallback(true);

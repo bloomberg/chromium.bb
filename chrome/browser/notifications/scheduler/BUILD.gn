@@ -40,17 +40,29 @@ source_set("public") {
 
 # Internal library that embedders should not directly depend on.
 source_set("lib") {
+  visibility = [
+    ":scheduler",
+    ":unit_tests",
+  ]
   sources = [
     "collection_store.h",
+    "icon_entry.cc",
+    "icon_entry.h",
+    "icon_store.cc",
+    "icon_store.h",
     "notification_schedule_service_impl.cc",
     "notification_schedule_service_impl.h",
+    "proto_conversion.cc",
+    "proto_conversion.h",
     "proto_db_collection_store.cc",
     "proto_db_collection_store.h",
   ]
 
+  # This target should not depend on anything in //chrome/* except the proto library.
   deps = [
     ":public",
     "//base",
+    "//chrome/browser/notifications/proto",
     "//components/keyed_service/core",
     "//components/leveldb_proto",
   ]
@@ -59,6 +71,7 @@ source_set("lib") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "proto_conversion_unittest.cc",
     "proto_db_collection_store_unittest.cc",
   ]
 
