@@ -1103,6 +1103,7 @@ component("net") {
       "spdy/platform/impl/spdy_export_impl.h",
       "spdy/platform/impl/spdy_flags_impl.cc",
       "spdy/platform/impl/spdy_flags_impl.h",
+      "spdy/platform/impl/spdy_logging_impl.h",
       "spdy/platform/impl/spdy_macros_impl.h",
       "spdy/platform/impl/spdy_mem_slice_impl.cc",
       "spdy/platform/impl/spdy_mem_slice_impl.h",
