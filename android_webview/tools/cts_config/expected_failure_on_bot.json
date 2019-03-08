@@ -3,14 +3,6 @@
     {
       "name": "testJavascriptInterfaceForClientPopup",
       "_bug_id": "crbug.com/698369"
-    },
-    {
-      "name": "testRequestImageRef",
-      "_bug_id": "crbug.com/900915"
-    },
-    {
-      "name": "testLoadDataWithBaseUrl",
-      "_bug_id": "crbug.com/900915"
     }
   ],
   "android.webkit.cts.WebSettingsTest": [
