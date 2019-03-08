@@ -42,6 +42,7 @@ class CONTENT_EXPORT TtsControllerImpl : public TtsController {
   bool IsSpeaking() override;
   void SpeakOrEnqueue(TtsUtterance* utterance) override;
   void Stop() override;
+  void Stop(const GURL& source_url) override;
   void Pause() override;
   void Resume() override;
   void OnTtsEvent(int utterance_id,

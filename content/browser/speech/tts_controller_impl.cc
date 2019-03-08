@@ -108,9 +108,18 @@ void TtsControllerImpl::SpeakOrEnqueue(TtsUtterance* utterance) {
 }
 
 void TtsControllerImpl::Stop() {
+  Stop(GURL());
+}
+
+void TtsControllerImpl::Stop(const GURL& source_url) {
   base::RecordAction(base::UserMetricsAction("TextToSpeech.Stop"));
 
   paused_ = false;
+
+  if (!source_url.is_empty() && current_utterance_ &&
+      current_utterance_->GetSrcUrl().GetOrigin() != source_url.GetOrigin())
+    return;
+
   if (current_utterance_ && !current_utterance_->GetEngineId().empty()) {
     if (GetTtsControllerDelegate()->GetTtsEngineDelegate())
       GetTtsControllerDelegate()->GetTtsEngineDelegate()->Stop(
