@@ -11,7 +11,7 @@
 @protocol InfobarModalDelegate
 
 // Asks the delegate to dismiss the InfobarModal.
-- (void)dismissInfobarModal:(UIViewController*)sender;
+- (void)dismissInfobarModal:(UIButton*)sender;
 
 @end
 

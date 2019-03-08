@@ -128,7 +128,7 @@
 
 #pragma mark - InfobarModalDelegate
 
-- (void)dismissInfobarModal:(UIViewController*)sender {
+- (void)dismissInfobarModal:(UIButton*)sender {
   [self.modalViewController.presentingViewController
       dismissViewControllerAnimated:YES
                          completion:^{
@@ -149,10 +149,14 @@
                          driver:(InfobarModalTransitionDriver*)driver {
   self.modalViewController =
       [[InfobarModalViewController alloc] initWithModalDelegate:self];
-  self.modalViewController.transitioningDelegate = driver;
-  [self.modalViewController
-      setModalPresentationStyle:UIModalPresentationCustom];
-  [presentingViewController presentViewController:self.modalViewController
+  self.modalViewController.title =
+      base::SysUTF16ToNSString(self.confirmInfobarDelegate->GetMessageText());
+
+  UINavigationController* navController = [[UINavigationController alloc]
+      initWithRootViewController:self.modalViewController];
+  navController.transitioningDelegate = driver;
+  navController.modalPresentationStyle = UIModalPresentationCustom;
+  [presentingViewController presentViewController:navController
                                          animated:YES
                                        completion:nil];
 }

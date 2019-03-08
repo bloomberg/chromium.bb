@@ -20,5 +20,6 @@ source_set("presentation") {
   ]
   deps = [
     "//base",
+    "//ios/chrome/browser/ui/util",
   ]
 }

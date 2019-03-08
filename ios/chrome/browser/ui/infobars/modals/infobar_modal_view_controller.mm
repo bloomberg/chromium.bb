@@ -32,24 +32,22 @@
 // TODO(crbug.com/1372916): PLACEHOLDER UI for the modal ViewController.
 - (void)viewDidLoad {
   [super viewDidLoad];
+  self.view.backgroundColor = [UIColor whiteColor];
 
-  self.view.backgroundColor = [UIColor lightGrayColor];
-
-  UIButton* dismissButton = [UIButton buttonWithType:UIButtonTypeSystem];
-  [dismissButton setTitle:@"Dismiss" forState:UIControlStateNormal];
-  [dismissButton addTarget:self.infobarModalDelegate
-                    action:@selector(dismissInfobarModal:)
-          forControlEvents:UIControlEventTouchUpInside];
-  dismissButton.translatesAutoresizingMaskIntoConstraints = NO;
-
-  [self.view addSubview:dismissButton];
-
-  [NSLayoutConstraint activateConstraints:@[
-    [dismissButton.topAnchor constraintEqualToAnchor:self.view.topAnchor],
-    [dismissButton.trailingAnchor
-        constraintEqualToAnchor:self.view.trailingAnchor],
-    [dismissButton.widthAnchor constraintEqualToConstant:100]
-  ]];
+  // Configure the NavigationBar.
+  UIBarButtonItem* cancelButton = [[UIBarButtonItem alloc]
+      initWithBarButtonSystemItem:UIBarButtonSystemItemCancel
+                           target:self.infobarModalDelegate
+                           action:@selector(dismissInfobarModal:)];
+  UIImage* settingsImage = [[UIImage imageNamed:@"infobar_settings_icon"]
+      imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+  UIBarButtonItem* settingsButton =
+      [[UIBarButtonItem alloc] initWithImage:settingsImage
+                                       style:UIBarButtonItemStylePlain
+                                      target:self
+                                      action:nil];
+  self.navigationItem.leftBarButtonItem = cancelButton;
+  self.navigationItem.rightBarButtonItem = settingsButton;
 }
 
 @end
