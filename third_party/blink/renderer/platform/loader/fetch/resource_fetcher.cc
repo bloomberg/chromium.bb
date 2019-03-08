@@ -484,8 +484,6 @@ ResourceFetcher::ResourceFetcher(const ResourceFetcherInit& init)
           init.initial_throttling_policy,
           *properties_,
           init.frame_scheduler)),
-      archive_(init.archive),
-      archive_load_result_(mojom::MHTMLLoadResult::kSuccess),
       resource_timing_report_timer_(
           task_runner_,
           this,
@@ -1683,31 +1681,8 @@ Vector<KURL> ResourceFetcher::GetUrlsOfUnusedPreloads() {
   return urls;
 }
 
-ArchiveResource* ResourceFetcher::CreateArchive(
-    const KURL& url,
-    scoped_refptr<const SharedBuffer> buffer) {
-  // Only the top-frame can load MHTML.
-  if (!properties_->IsMainFrame()) {
-    console_logger_->AddErrorMessage(
-        ConsoleLogger::Source::kScript,
-        "Attempted to load a multipart archive into an subframe: " +
-            url.GetString());
-    return nullptr;
-  }
-
-  archive_ = MHTMLArchive::Create(url, buffer);
-  archive_load_result_ = archive_->LoadResult();
-  if (archive_load_result_ != mojom::MHTMLLoadResult::kSuccess) {
-    archive_.Clear();
-
-    // Log if attempting to load an invalid archive resource.
-    console_logger_->AddErrorMessage(
-        ConsoleLogger::Source::kScript,
-        "Malformed multipart archive: " + url.GetString());
-    return nullptr;
-  }
-
-  return archive_->MainResource();
+void ResourceFetcher::SetArchive(MHTMLArchive* archive) {
+  archive_ = archive;
 }
 
 void ResourceFetcher::HandleLoaderFinish(

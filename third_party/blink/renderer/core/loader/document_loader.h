@@ -33,6 +33,7 @@
 #include <memory>
 #include "base/memory/scoped_refptr.h"
 #include "base/unguessable_token.h"
+#include "third_party/blink/public/mojom/loader/mhtml_load_result.mojom-shared.h"
 #include "third_party/blink/public/platform/web_loading_behavior_flag.h"
 #include "third_party/blink/public/platform/web_navigation_body_loader.h"
 #include "third_party/blink/public/platform/web_scoped_virtual_time_pauser.h"
@@ -75,6 +76,7 @@ class FrameResourceFetcherProperties;
 class HistoryItem;
 class LocalFrame;
 class LocalFrameClient;
+class MHTMLArchive;
 class ResourceFetcher;
 class ResourceTimingInfo;
 class SerializedScriptValue;
@@ -260,6 +262,14 @@ class CORE_EXPORT DocumentLoader
   bool had_transient_activation() const { return had_transient_activation_; }
 
   Vector<KURL> redirect_chain_;
+
+  // Archive used to load document and/or subresources. If one of the ancestor
+  // frames was loaded as an archive, we'll load the document resource from it.
+  // Otherwise, if the document resource is an archive itself (based on mime
+  // type), we'll create one and use it for subresources.
+  Member<MHTMLArchive> archive_;
+  mojom::MHTMLLoadResult archive_load_result_ =
+      mojom::MHTMLLoadResult::kSuccess;
 
  private:
   // installNewDocument() does the work of creating a Document and

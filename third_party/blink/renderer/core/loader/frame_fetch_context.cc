@@ -228,19 +228,6 @@ ResourceFetcher* FrameFetchContext::CreateFetcher(
   // frame will be in layout-blocking state until the <body> tag is inserted
   init.initial_throttling_policy =
       ResourceLoadScheduler::ThrottlingPolicy::kTight;
-  // TODO(nasko): How should this work with OOPIF?
-  // The MHTMLArchive is parsed as a whole, but can be constructed from frames
-  // in multiple processes. In that case, which process should parse it and how
-  // should the output be spread back across multiple processes?
-  if (!init.properties->IsMainFrame()) {
-    if (auto* parent_local_frame =
-            DynamicTo<LocalFrame>(frame.Tree().Parent())) {
-      init.archive = parent_local_frame->Loader()
-                         .GetDocumentLoader()
-                         ->Fetcher()
-                         ->Archive();
-    }
-  }
   init.frame_scheduler = frame.GetFrameScheduler();
   return MakeGarbageCollected<ResourceFetcher>(init);
 }

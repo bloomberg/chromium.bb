@@ -143,6 +143,15 @@ DocumentLoader::DocumentLoader(
                        : UseCounter::kDefaultContext) {
   DCHECK(frame_);
 
+  // TODO(nasko): How should this work with OOPIF?
+  // The MHTMLArchive is parsed as a whole, but can be constructed from frames
+  // in multiple processes. In that case, which process should parse it and how
+  // should the output be spread back across multiple processes?
+  if (!frame_->IsMainFrame()) {
+    if (auto* parent = DynamicTo<LocalFrame>(frame_->Tree().Parent()))
+      archive_ = parent->Loader().GetDocumentLoader()->archive_;
+  }
+
   url_ = params_->url;
   original_url_ = url_;
   had_transient_activation_ = LocalFrame::HasTransientUserActivation(frame_) ||
@@ -186,14 +195,13 @@ DocumentLoader::DocumentLoader(
     WebNavigationParams::FillStaticResponse(
         params_.get(), "text/html", "UTF-8",
         base::make_span(encoded_srcdoc.data(), encoded_srcdoc.length()));
-  } else if (!params_->is_static_data && fetcher_->Archive()) {
+  } else if (!params_->is_static_data && archive_) {
     // If we have an archive loaded in some ancestor frame, we should
     // retrieve document content from that archive. This is different from
     // loading an archive into this frame, which will be handled separately
     // once we load the body and parse it as an archive.
     params_->body_loader.reset();
-    ArchiveResource* archive_resource =
-        fetcher_->Archive()->SubresourceForURL(url_);
+    ArchiveResource* archive_resource = archive_->SubresourceForURL(url_);
     if (archive_resource) {
       SharedBuffer* archive_data = archive_resource->Data();
       WebNavigationParams::FillStaticResponse(
@@ -291,6 +299,7 @@ DocumentLoader::~DocumentLoader() {
 }
 
 void DocumentLoader::Trace(blink::Visitor* visitor) {
+  visitor->Trace(archive_);
   visitor->Trace(frame_);
   visitor->Trace(resource_fetcher_properties_);
   visitor->Trace(fetcher_);
@@ -612,8 +621,26 @@ void DocumentLoader::FinishedLoading(TimeTicks finish_time) {
   }
 
   if (loading_mhtml_archive_) {
-    ArchiveResource* main_resource =
-        fetcher_->CreateArchive(url_, data_buffer_);
+    ArchiveResource* main_resource = nullptr;
+    if (!frame_->IsMainFrame()) {
+      // Only the top-frame can load MHTML.
+      frame_->Console().AddConsoleMessage(ConsoleMessage::Create(
+          kJSMessageSource, mojom::ConsoleMessageLevel::kError,
+          "Attempted to load a multipart archive into an subframe: " +
+              url_.GetString()));
+    } else {
+      archive_ = MHTMLArchive::Create(url_, data_buffer_);
+      archive_load_result_ = archive_->LoadResult();
+      if (archive_load_result_ != mojom::MHTMLLoadResult::kSuccess) {
+        archive_.Clear();
+        // Log if attempting to load an invalid archive resource.
+        frame_->Console().AddConsoleMessage(ConsoleMessage::Create(
+            kJSMessageSource, mojom::ConsoleMessageLevel::kError,
+            "Malformed multipart archive: " + url_.GetString()));
+      } else {
+        main_resource = archive_->MainResource();
+      }
+    }
     data_buffer_ = nullptr;
     if (main_resource) {
       // The origin is the MHTML file, we need to set the base URL to the
@@ -1070,13 +1097,13 @@ void DocumentLoader::StartLoadingInternal() {
           WebScopedVirtualTimePauser::VirtualTaskDuration::kNonInstant);
   virtual_time_pauser_.PauseVirtualTime();
 
-  if (!fetcher_->Archive())
+  if (!archive_)
     application_cache_host_->WillStartLoadingMainResource(url_, http_method_);
 
   // Many parties are interested in resource loading, so we will notify
   // them through various DispatchXXX methods on FrameFetchContext.
 
-  if (!fetcher_->Archive()) {
+  if (!archive_) {
     V8DOMActivityLogger* activity_logger =
         V8DOMActivityLogger::CurrentActivityLoggerIfIsolatedWorld();
     if (activity_logger) {
@@ -1489,8 +1516,10 @@ void DocumentLoader::InstallNewDocument(
 }
 
 const AtomicString& DocumentLoader::MimeType() const {
-  if (fetcher_->Archive())
-    return fetcher_->Archive()->MainResource()->MimeType();
+  // In the case of mhtml archive, |response_| has an archive mime type,
+  // while the document has a different mime type.
+  if (archive_ && loading_mhtml_archive_)
+    return archive_->MainResource()->MimeType();
   return response_.MimeType();
 }
 
@@ -1551,6 +1580,7 @@ void DocumentLoader::ResumeParser() {
 void DocumentLoader::ProvideDocumentToResourceFetcherProperties(
     Document& document) {
   resource_fetcher_properties_->UpdateDocument(document);
+  fetcher_->SetArchive(archive_.Get());
 }
 
 void DocumentLoader::ReportPreviewsIntervention() const {
