@@ -748,7 +748,7 @@ GpuProcessHost::~GpuProcessHost() {
 
   std::string message;
   bool block_offscreen_contexts = true;
-  int severity = logging::LOG_ERROR;
+  int severity = GPU_PROCESS_KIND_SANDBOXED ? logging::LOG_ERROR : logging::LOG_INFO;
   if (!in_process_ && process_launched_ &&
       kind_ == GPU_PROCESS_KIND_SANDBOXED) {
     ChildProcessTerminationInfo info =
@@ -810,6 +810,9 @@ GpuProcessHost::~GpuProcessHost() {
       case base::TERMINATION_STATUS_LAUNCH_FAILED:
         message = "The GPU process failed to start!";
         break;
+      case base::TERMINATION_STATUS_STILL_RUNNING:
+        message = "The GPU process still running";
+        break;
       default:
         message = base::StringPrintf(
             "The GPU process exited with code %d. Termination status is %d",
@@ -818,6 +821,16 @@ GpuProcessHost::~GpuProcessHost() {
                       (logging::LOG_INFO) : (logging::LOG_WARNING);
         break;
     }
+  }
+  message += std::string(", process id=") + std::to_string(process_id_);
+  message += std::string(", mode=") + std::to_string((int)mode_);
+  message += std::string(", inProcess=") + std::to_string(in_process_);
+  message += std::string(", launched=") + std::to_string(process_launched_);
+  message += std::string(", sandboxed=") +
+             std::to_string(kind_ == GPU_PROCESS_KIND_SANDBOXED);
+  if (gpu_host_) {
+    message += std::string(", host inited=") +
+               std::to_string(gpu_host_->initialized());
   }
 
   // If there are any remaining offscreen contexts at the point the GPU process
@@ -1259,7 +1272,9 @@ void GpuProcessHost::RecordProcessCrash() {
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
   // Maximum number of times the GPU process can crash before we try something
   // different, like disabling hardware acceleration or all GL.
-  constexpr int kGpuFallbackCrashCount = 3;
+  // Change 3 to 1 to be more conservative and efficient on fallback
+  // because of less tries on restarting new GPU processes.
+  constexpr int kGpuFallbackCrashCount = 1;
 #else
   // Android and Chrome OS switch to software compositing and fallback crashes
   // the browser process. For Android the OS can also kill the GPU process
@@ -1314,7 +1329,7 @@ void GpuProcessHost::RecordProcessCrash() {
   base::debug::Alias(&display_compositor_crash_count);
 
   // GPU process initialization failed and fallback already happened.
-  if (!gpu_host_ || !gpu_host_->initialized())
+  if (!gpu_host_)
     return;
 
   bool disable_crash_limit = base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -1322,8 +1337,15 @@ void GpuProcessHost::RecordProcessCrash() {
 
   // GPU process crashed too many times, fallback on a different GPU process
   // mode.
-  if (recent_crash_count >= kGpuFallbackCrashCount && !disable_crash_limit)
+  if (recent_crash_count >= kGpuFallbackCrashCount && !disable_crash_limit) {
+    auto current_mode = mode_;
     GpuDataManagerImpl::GetInstance()->FallBackToNextGpuMode();
+    auto next_mode = GpuDataManagerImpl::GetInstance()->GetGpuMode();
+    LOG(WARNING) << "GPU crashed at current mode:"
+                 << std::to_string(int(current_mode))
+                 << "; Will fall back to the next mode:"
+                 << std::to_string(int(next_mode));
+  }
 }
 
 viz::mojom::GpuService* GpuProcessHost::gpu_service() {
