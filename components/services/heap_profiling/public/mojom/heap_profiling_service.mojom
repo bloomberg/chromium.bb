@@ -34,10 +34,6 @@ interface ProfilingService {
                      handle memlog_pipe_receiver, ProcessType process_type,
                      ProfilingParams params);
 
-  // |keep_small_allocations| controls whether small allocations are emitted in
-  // heap dumps.
-  SetKeepSmallAllocations(bool keep_small_allocations);
-
   // Returns the pids of all profiled processes.
   GetProfiledPids() => (array<mojo_base.mojom.ProcessId> pids);
 };

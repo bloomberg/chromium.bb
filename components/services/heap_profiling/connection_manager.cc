@@ -230,7 +230,6 @@ void ConnectionManager::OnConnectionCompleteThunk(
 }
 
 void ConnectionManager::DumpProcessesForTracing(
-    bool keep_small_allocations,
     bool strip_path_from_mapped_files,
     DumpProcessesForTracingCallback callback,
     VmRegions vm_regions) {
@@ -257,8 +256,8 @@ void ConnectionManager::DumpProcessesForTracing(
     if (!connection->stream_samples) {
       connection->client->RetrieveHeapProfile(base::BindOnce(
           &ConnectionManager::HeapProfileRetrieved, weak_factory_.GetWeakPtr(),
-          tracking, pid, connection->process_type, keep_small_allocations,
-          strip_path_from_mapped_files, connection->sampling_rate));
+          tracking, pid, connection->process_type, strip_path_from_mapped_files,
+          connection->sampling_rate));
       continue;
     }
     int barrier_id = next_barrier_id_++;
@@ -270,8 +269,7 @@ void ConnectionManager::DumpProcessesForTracing(
         barrier_id, base::ThreadTaskRunnerHandle::Get(),
         base::BindOnce(&ConnectionManager::DoDumpOneProcessForTracing,
                        weak_factory_.GetWeakPtr(), tracking, pid,
-                       connection->process_type, keep_small_allocations,
-                       strip_path_from_mapped_files,
+                       connection->process_type, strip_path_from_mapped_files,
                        connection->sampling_rate));
     connection->client->FlushMemlogPipe(barrier_id);
   }
@@ -281,7 +279,6 @@ void ConnectionManager::HeapProfileRetrieved(
     scoped_refptr<DumpProcessesForTracingTracking> tracking,
     base::ProcessId pid,
     mojom::ProcessType process_type,
-    bool keep_small_allocations,
     bool strip_path_from_mapped_files,
     uint32_t sampling_rate,
     mojom::HeapProfilePtr profile) {
@@ -331,17 +328,16 @@ void ConnectionManager::HeapProfileRetrieved(
   }
 
   DCHECK(success);
-  DoDumpOneProcessForTracing(
-      tracking, pid, process_type, keep_small_allocations,
-      strip_path_from_mapped_files, sampling_rate, success, std::move(counts),
-      std::move(context_map), std::move(string_map));
+  DoDumpOneProcessForTracing(tracking, pid, process_type,
+                             strip_path_from_mapped_files, sampling_rate,
+                             success, std::move(counts), std::move(context_map),
+                             std::move(string_map));
 }
 
 void ConnectionManager::DoDumpOneProcessForTracing(
     scoped_refptr<DumpProcessesForTracingTracking> tracking,
     base::ProcessId pid,
     mojom::ProcessType process_type,
-    bool keep_small_allocations,
     bool strip_path_from_mapped_files,
     uint32_t sampling_rate,
     bool success,
@@ -371,8 +367,8 @@ void ConnectionManager::DoDumpOneProcessForTracing(
   params.context_map = std::move(context);
   params.mapped_strings = std::move(mapped_strings);
   params.process_type = process_type;
-  params.min_size_threshold = keep_small_allocations ? 0 : kMinSizeThreshold;
-  params.min_count_threshold = keep_small_allocations ? 0 : kMinCountThreshold;
+  params.min_size_threshold = kMinSizeThreshold;
+  params.min_count_threshold = kMinCountThreshold;
   params.strip_path_from_mapped_files = strip_path_from_mapped_files;
   params.next_id = next_id_;
   params.sampling_rate = sampling_rate;

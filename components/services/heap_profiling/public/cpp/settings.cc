@@ -158,9 +158,4 @@ bool IsBackgroundHeapProfilingEnabled() {
   return base::FeatureList::IsEnabled(kOOPHeapProfilingFeature);
 }
 
-bool ShouldKeepSmallAllocations() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      kMemlogKeepSmallAllocations);
-}
-
 }  // namespace heap_profiling

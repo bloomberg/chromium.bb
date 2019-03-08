@@ -13,8 +13,11 @@ along with sufficient metadata to identify the code that made the allocation.
  2. Choose the process types you want to profile with the `memlog` flag. The
     most common setting is `Only Browser`.
 
- 3. By default, small, infrequent allocations are omitted. If you want to see a
-    full heap dump, enable `memlog-keep-small-allocations`.
+ 3. You can control resolution of sampling with `memlog-sampling-rate`.
+    By default samples are collected with the average interval of 100KB.
+    On versions prior Chrome 75 you can enable `memlog-keep-small-allocations`
+    to record all the allocations, however this option has a significant
+    performance and memory overhead.
 
  4. By default, stack traces use native stack traces, which does not contain any
     thread information. To include the thread at time of allocation, set

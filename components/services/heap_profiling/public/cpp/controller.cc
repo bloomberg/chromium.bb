@@ -28,9 +28,6 @@ Controller::Controller(std::unique_ptr<service_manager::Connector> connector,
   // Start the Heap Profiling service.
   connector_->BindInterface(mojom::kServiceName, &heap_profiling_service_);
 
-  // Pass state from command line flags to Heap Profiling service.
-  SetKeepSmallAllocations(ShouldKeepSmallAllocations());
-
   // Grab a HeapProfiler InterfacePtr and pass that to memory instrumentation.
   memory_instrumentation::mojom::HeapProfilerPtr heap_profiler;
   connector_->BindInterface(mojom::kServiceName, &heap_profiler);
@@ -63,11 +60,6 @@ void Controller::StartProfilingClient(mojom::ProfilingClientPtr client,
 void Controller::GetProfiledPids(GetProfiledPidsCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   heap_profiling_service_->GetProfiledPids(std::move(callback));
-}
-
-void Controller::SetKeepSmallAllocations(bool keep_small_allocations) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  heap_profiling_service_->SetKeepSmallAllocations(keep_small_allocations);
 }
 
 base::WeakPtr<Controller> Controller::GetWeakPtr() {
