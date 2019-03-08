@@ -9,127 +9,125 @@ import {promiseForRequest, promiseForTransaction, throwForDisallowedKey} from '.
 // - Susceptible to tampering of built-in prototypes and globals. We want to
 //   work on tooling to ameliorate that.
 
-// TODO: Use private fields when those ship.
-// In the meantime we use this hard-to-understand, but effective, pattern:
-// http://2ality.com/2016/01/private-data-classes.html#keeping-private-data-in-weakmaps
-// Of note, the weak map entries will live only as long as the corresponding StorageArea instances.
-//
-// Cheatsheet:
-// x.#y      <--->  _y.get(x)
-// x.#y = z  <--->  _y.set(x, z)
-
-const _databaseName = new WeakMap();
-const _databasePromise = new WeakMap();
-const _backingStoreObject = new WeakMap();
-
 const DEFAULT_STORAGE_AREA_NAME = 'default';
 const DEFAULT_IDB_STORE_NAME = 'store';
 
 if (!self.isSecureContext) {
   throw new DOMException(
-      'KV Storage is only available in secure contexts',
-      'SecurityError');
+      'KV Storage is only available in secure contexts', 'SecurityError');
 }
 
 export class StorageArea {
+  #backingStoreObject;
+  #databaseName;
+  #databasePromise;
+
+  // TODO: Once private methods land in Chrome, this private field can
+  // be refactored out with a private static method.
+  #setPromise = promise => {
+    this.#databasePromise = promise;
+  };
+
   constructor(name) {
-    _databasePromise.set(this, null);
-    _databaseName.set(this, `kv-storage:${name}`);
+    this.#databaseName = `kv-storage:${name}`;
   }
 
   async set(key, value) {
     throwForDisallowedKey(key);
 
-    return performDatabaseOperation(this, 'readwrite', (transaction, store) => {
-      if (value === undefined) {
-        store.delete(key);
-      } else {
-        store.put(value, key);
-      }
+    return performDatabaseOperation(
+        this.#databasePromise, this.#setPromise, this.#databaseName,
+        'readwrite', (transaction, store) => {
+          if (value === undefined) {
+            store.delete(key);
+          } else {
+            store.put(value, key);
+          }
 
-      return promiseForTransaction(transaction);
-    });
+          return promiseForTransaction(transaction);
+        });
   }
 
   async get(key) {
     throwForDisallowedKey(key);
 
-    return performDatabaseOperation(this, 'readonly', (transaction, store) => {
-      return promiseForRequest(store.get(key));
-    });
+    return performDatabaseOperation(
+        this.#databasePromise, this.#setPromise, this.#databaseName, 'readonly',
+        (transaction, store) => {
+          return promiseForRequest(store.get(key));
+        });
   }
 
   async delete(key) {
     throwForDisallowedKey(key);
 
-    return performDatabaseOperation(this, 'readwrite', (transaction, store) => {
-      store.delete(key);
-      return promiseForTransaction(transaction);
-    });
+    return performDatabaseOperation(
+        this.#databasePromise, this.#setPromise, this.#databaseName,
+        'readwrite', (transaction, store) => {
+          store.delete(key);
+          return promiseForTransaction(transaction);
+        });
   }
 
   async clear() {
-    if (!_databasePromise.has(this)) {
-      throw new TypeError('Invalid this value');
-    }
-
-    const databasePromise = _databasePromise.get(this);
-    if (databasePromise !== null) {
+    if (!this.#databasePromise) {
       // Don't try to delete, and clear the promise, while we're opening the database; wait for that
       // first.
       try {
-        await databasePromise;
+        await this.#databasePromise;
       } catch {
         // If the database failed to initialize, then that's fine, we'll still try to delete it.
       }
 
-      _databasePromise.set(this, null);
+      this.#databasePromise = undefined;
     }
 
-    return promiseForRequest(self.indexedDB.deleteDatabase(_databaseName.get(this)));
+    return promiseForRequest(self.indexedDB.deleteDatabase(this.#databaseName));
   }
 
   keys() {
-    if (!_databasePromise.has(this)) {
-      throw new TypeError('Invalid this value');
-    }
+    // Brand check: throw if there is no such private field.
+    this.#databaseName;
 
     return createStorageAreaAsyncIterator(
-        'keys', steps => performDatabaseOperation(this, 'readonly', steps));
+        'keys',
+        steps => performDatabaseOperation(
+            this.#databasePromise, this.#setPromise, this.#databaseName,
+            'readonly', steps));
   }
 
   values() {
-    if (!_databasePromise.has(this)) {
-      throw new TypeError('Invalid this value');
-    }
+    // Brand check: throw if there is no such private field.
+    this.#databaseName;
 
     return createStorageAreaAsyncIterator(
-        'values', steps => performDatabaseOperation(this, 'readonly', steps));
+        'values',
+        steps => performDatabaseOperation(
+            this.#databasePromise, this.#setPromise, this.#databaseName,
+            'readonly', steps));
   }
 
   entries() {
-    if (!_databasePromise.has(this)) {
-      throw new TypeError('Invalid this value');
-    }
+    // Brand check: throw if there is no such private field.
+    this.#databaseName;
 
     return createStorageAreaAsyncIterator(
-        'entries', steps => performDatabaseOperation(this, 'readonly', steps));
+        'entries',
+        steps => performDatabaseOperation(
+            this.#databasePromise, this.#setPromise, this.#databaseName,
+            'readonly', steps));
   }
 
   get backingStore() {
-    if (!_databasePromise.has(this)) {
-      throw new TypeError('Invalid this value');
-    }
-
-    if (!_backingStoreObject.has(this)) {
-      _backingStoreObject.set(this, Object.freeze({
-        database: _databaseName.get(this),
+    if (!this.#backingStoreObject) {
+      this.#backingStoreObject = Object.freeze({
+        database: this.#databaseName,
         store: DEFAULT_IDB_STORE_NAME,
-        version: 1,
-      }));
+        version: 1
+      });
     }
 
-    return _backingStoreObject.get(this);
+    return this.#backingStoreObject;
   }
 }
 
@@ -137,54 +135,50 @@ StorageArea.prototype[Symbol.asyncIterator] = StorageArea.prototype.entries;
 
 export const storage = new StorageArea(DEFAULT_STORAGE_AREA_NAME);
 
-async function performDatabaseOperation(area, mode, steps) {
-  if (!_databasePromise.has(area)) {
-    throw new TypeError('Invalid this value');
+async function performDatabaseOperation(
+    promise, setPromise, name, mode, steps) {
+  if (!promise) {
+    promise = initializeDatabasePromise(setPromise, name);
   }
 
-  if (_databasePromise.get(area) === null) {
-    initializeDatabasePromise(area);
-  }
-
-  const database = await _databasePromise.get(area);
+  const database = await promise;
   const transaction = database.transaction(DEFAULT_IDB_STORE_NAME, mode);
   const store = transaction.objectStore(DEFAULT_IDB_STORE_NAME);
 
   return steps(transaction, store);
 }
 
-function initializeDatabasePromise(area) {
-  const databaseName = _databaseName.get(area);
+function initializeDatabasePromise(setPromise, databaseName) {
+  const promise = new Promise((resolve, reject) => {
+    const request = self.indexedDB.open(databaseName, 1);
 
-  _databasePromise.set(
-      area, new Promise((resolve, reject) => {
-        const request = self.indexedDB.open(databaseName, 1);
+    request.onsuccess = () => {
+      const database = request.result;
 
-        request.onsuccess = () => {
-          const database = request.result;
+      if (!checkDatabaseSchema(database, databaseName, reject)) {
+        return;
+      }
 
-          if (!checkDatabaseSchema(database, databaseName, reject)) {
-            return;
-          }
+      database.onclose = () => setPromise(undefined);
+      database.onversionchange = () => {
+        database.close();
+        setPromise(undefined);
+      };
+      resolve(database);
+    };
 
-          database.onclose = () => _databasePromise.set(area, null);
-          database.onversionchange = () => {
-            database.close();
-            _databasePromise.set(area, null);
-          };
-          resolve(database);
-        };
+    request.onerror = () => reject(request.error);
 
-        request.onerror = () => reject(request.error);
-
-        request.onupgradeneeded = () => {
-          try {
-            request.result.createObjectStore(DEFAULT_IDB_STORE_NAME);
-          } catch (e) {
-            reject(e);
-          }
-        };
-      }));
+    request.onupgradeneeded = () => {
+      try {
+        request.result.createObjectStore(DEFAULT_IDB_STORE_NAME);
+      } catch (e) {
+        reject(e);
+      }
+    };
+  });
+  setPromise(promise);
+  return promise;
 }
 
 function checkDatabaseSchema(database, databaseName, reject) {
