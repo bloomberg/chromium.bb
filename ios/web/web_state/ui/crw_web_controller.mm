@@ -2822,17 +2822,6 @@ GURL URLEscapedForHistory(const GURL& url) {
   return rendererInitiatedWithoutInteraction || noNavigationItems;
 }
 
-- (void)updateDesktopUserAgentForItem:(web::NavigationItem*)item
-                previousUserAgentType:(web::UserAgentType)userAgentType {
-  if (!item)
-    return;
-  web::UserAgentType itemUserAgentType = item->GetUserAgentType();
-  if (itemUserAgentType == web::UserAgentType::NONE)
-    return;
-  if (itemUserAgentType != userAgentType)
-    [self requirePageReconstruction];
-}
-
 #pragma mark - Native Content
 
 // Returns |YES| if |url| should be loaded in a native view.
