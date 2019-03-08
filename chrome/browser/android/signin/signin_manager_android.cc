@@ -25,7 +25,6 @@
 #include "chrome/browser/policy/cloud/user_policy_signin_service_mobile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/pref_names.h"
 #include "components/google/core/common/google_util.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
@@ -206,8 +205,10 @@ void SigninManagerAndroid::OnSignInCompleted(
 
   // TODO(crbug.com/889902): Migrate to IdentityManager once there's an
   // API mapping for SigninManager::OnExternalSigninCompleted().
-  SigninManagerFactory::GetForProfile(profile_)->OnExternalSigninCompleted(
-      base::android::ConvertJavaStringToUTF8(env, username));
+  SigninManager::FromSigninManagerBase(
+      IdentityManagerFactory::GetForProfile(profile_)->GetSigninManager())
+      ->OnExternalSigninCompleted(
+          base::android::ConvertJavaStringToUTF8(env, username));
 }
 
 void SigninManagerAndroid::SignOut(JNIEnv* env,
