@@ -169,6 +169,19 @@ public class SiteSettingsCategory {
     }
 
     /**
+     * Get the chooser data type {@link ContentSettingsType} corresponding to the given
+     * {@link ContentSettingsType}.
+     */
+    public static int chooserDataTypeFrom(@ContentSettingsType int type) {
+        switch (type) {
+            case ContentSettingsType.CONTENT_SETTINGS_TYPE_USB_GUARD:
+                return ContentSettingsType.CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA;
+            default:
+                return -1; // Conversion unavailable.
+        }
+    }
+
+    /**
      * Convert Type into preference String
      */
     public static String preferenceKey(@Type int type) {
@@ -220,6 +233,14 @@ public class SiteSettingsCategory {
      */
     public @ContentSettingsType int getContentSettingsType() {
         return contentSettingsType(mCategory);
+    }
+
+    /**
+     * Returns the {@link ContentSettingsType} representing the chooser data type for this category,
+     * or -1 if this category does not have a chooser data type.
+     */
+    public @ContentSettingsType int getChooserDataType() {
+        return chooserDataTypeFrom(contentSettingsType(mCategory));
     }
 
     /**

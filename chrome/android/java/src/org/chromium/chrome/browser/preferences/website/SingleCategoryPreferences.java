@@ -151,9 +151,9 @@ public class SingleCategoryPreferences extends PreferenceFragment
 
             resetList();
 
-            boolean hasEntries = mCategory.showSites(SiteSettingsCategory.Type.USB)
-                    ? addChosenObjects(sites)
-                    : addWebsites(sites);
+            int chooserDataType = mCategory.getChooserDataType();
+            boolean hasEntries =
+                    chooserDataType == -1 ? addWebsites(sites) : addChosenObjects(sites);
 
             if (!hasEntries && mEmptyView != null)
                 mEmptyView.setText(R.string.no_saved_website_settings);
