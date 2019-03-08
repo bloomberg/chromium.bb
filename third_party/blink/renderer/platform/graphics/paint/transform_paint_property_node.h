@@ -69,6 +69,8 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
           flattens_inherited_transform != other.flattens_inherited_transform ||
           affected_by_outer_viewport_bounds_delta !=
               other.affected_by_outer_viewport_bounds_delta ||
+          is_running_animation_on_compositor !=
+              other.is_running_animation_on_compositor ||
           backface_visibility != other.backface_visibility ||
           rendering_context_id != other.rendering_context_id ||
           direct_compositing_reasons != other.direct_compositing_reasons ||
@@ -79,16 +81,11 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
           !StickyConstraintEquals(other)) {
         return PaintPropertyChangeType::kChangedOnlyValues;
       }
-      bool matrix_changed = matrix != other.matrix;
-      if (!is_running_animation_on_compositor && matrix_changed) {
-        return PaintPropertyChangeType::kChangedOnlyValues;
-      }
-      if (is_running_animation_on_compositor !=
-          other.is_running_animation_on_compositor) {
-        return PaintPropertyChangeType::kChangedOnlyCompositedAnimationStatus;
-      }
-      if (matrix_changed) {
-        return PaintPropertyChangeType::kChangedOnlyCompositedAnimationValues;
+      if (matrix != other.matrix) {
+        return is_running_animation_on_compositor
+                   ? PaintPropertyChangeType::
+                         kChangedOnlyCompositedAnimationValues
+                   : PaintPropertyChangeType::kChangedOnlyValues;
       }
       return PaintPropertyChangeType::kUnchanged;
     }

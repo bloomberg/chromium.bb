@@ -262,13 +262,7 @@ class CORE_EXPORT ObjectPaintProperties {
     if (field) {
       auto changed = field->Update(parent, std::move(state));
 #if DCHECK_IS_ON()
-      DCHECK(!is_immutable_ || changed == PaintPropertyChangeType::kUnchanged ||
-             // TODO(crbug.com/937929): kChangedOnlyCompositedAnimationStatus is
-             // to workaround the situation that composited animation status
-             // changes without LayoutObject::SetStyle() being able to detect.
-             // Note that this may cause some false-negatives.
-             changed ==
-                 PaintPropertyChangeType::kChangedOnlyCompositedAnimationStatus)
+      DCHECK(!is_immutable_ || changed == PaintPropertyChangeType::kUnchanged)
           << "Value changed while immutable. New state:\n"
           << *field;
 #endif
