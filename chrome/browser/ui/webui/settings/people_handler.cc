@@ -620,8 +620,11 @@ void PeopleHandler::HandleShowSetupUI(const base::ListValue* args) {
     if (service && !sync_blocker_)
       sync_blocker_ = service->GetSetupInProgressHandle();
 
-    // TODO(treib): Should we also call SetSyncRequested(true) here? That's what
-    // happens in the non-Unity code path.
+    // Mark Sync as requested by the user. It might already be requested, but
+    // it's not e.g. if Sync was reset via the dashboard. This also pokes the
+    // SyncService to start up immediately, i.e. bypass deferred startup.
+    if (service)
+      service->GetUserSettings()->SetSyncRequested(true);
 
     GetLoginUIService()->SetLoginUI(this);
 
@@ -669,8 +672,8 @@ void PeopleHandler::HandleShowSetupUI(const base::ListValue* args) {
     // re-entrant call to early exit.
     sync_startup_tracker_ = std::make_unique<SyncStartupTracker>(service, this);
     // SetSyncRequested(true) does two things:
-    // 1) If DISABLE_REASON_USER_CHOICE is set (meaning that Sync was reset via
-    //    the dashboard), clears it.
+    // 1) As the name says, it marks Sync as requested by the user (it might not
+    //    be requested yet if Sync was reset via the dashboard).
     // 2) Pokes the sync service to start *immediately*, i.e. bypass deferred
     //    startup.
     // It's possible that both of these are already the case, i.e. the engine is
@@ -767,14 +770,9 @@ void PeopleHandler::HandlePauseSync(const base::ListValue* args) {
   auto* identity_manager = IdentityManagerFactory::GetForProfile(profile_);
   DCHECK(identity_manager->HasPrimaryAccount());
 
-  CoreAccountInfo primary_account_info =
-      identity_manager->GetPrimaryAccountInfo();
-
-  identity_manager->GetAccountsMutator()->AddOrUpdateAccount(
-      primary_account_info.gaia, primary_account_info.email,
-      OAuth2TokenServiceDelegate::kInvalidRefreshToken,
-      primary_account_info.is_under_advanced_protection,
-      signin_metrics::SourceForRefreshTokenOperation::kSettings_PauseSync);
+  identity_manager->GetAccountsMutator()
+      ->InvalidateRefreshTokenForPrimaryAccount(
+          signin_metrics::SourceForRefreshTokenOperation::kSettings_PauseSync);
 }
 #endif
 
