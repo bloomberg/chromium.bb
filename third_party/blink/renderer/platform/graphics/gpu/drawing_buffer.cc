@@ -1586,13 +1586,22 @@ bool DrawingBuffer::SetupRGBEmulationForBlitFramebuffer(
   GLuint rgb_texture = back_color_buffer_->rgb_workaround_texture_id;
   DCHECK_EQ(texture_target_, GC3D_TEXTURE_RECTANGLE_ARB);
   if (!rgb_texture) {
-    rgb_texture =
-        gl_->CreateAndTexStorage2DSharedImageWithInternalFormatCHROMIUM(
-            back_color_buffer_->mailbox.name, GL_RGB);
+    gpu::SharedImageInterface* sii = ContextProvider()->SharedImageInterface();
+    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager =
+        Platform::Current()->GetGpuMemoryBufferManager();
+    back_color_buffer_->rgb_workaround_mailbox = sii->CreateSharedImage(
+        back_color_buffer_->gpu_memory_buffer.get(), gpu_memory_buffer_manager,
+        storage_color_space_,
+        gpu::SHARED_IMAGE_USAGE_GLES2 |
+            gpu::SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT |
+            gpu::SHARED_IMAGE_USAGE_DISPLAY | gpu::SHARED_IMAGE_USAGE_SCANOUT |
+            gpu::SHARED_IMAGE_USAGE_RGB_EMULATION);
+    gl_->WaitSyncTokenCHROMIUM(sii->GenUnverifiedSyncToken().GetConstData());
+    rgb_texture = gl_->CreateAndTexStorage2DSharedImageCHROMIUM(
+        back_color_buffer_->rgb_workaround_mailbox.name);
     back_color_buffer_->rgb_workaround_texture_id = rgb_texture;
   }
 
-  gl_->EndSharedImageAccessDirectCHROMIUM(back_color_buffer_->texture_id);
   gl_->BeginSharedImageAccessDirectCHROMIUM(
       rgb_texture, GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM);
   gl_->FramebufferTexture2D(GL_DRAW_FRAMEBUFFER_ANGLE, GL_COLOR_ATTACHMENT0,
@@ -1607,9 +1616,6 @@ void DrawingBuffer::CleanupRGBEmulationForBlitFramebuffer() {
   DCHECK(back_color_buffer_->gpu_memory_buffer);
   gl_->EndSharedImageAccessDirectCHROMIUM(
       back_color_buffer_->rgb_workaround_texture_id);
-  gl_->BeginSharedImageAccessDirectCHROMIUM(
-      back_color_buffer_->texture_id,
-      GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM);
   gl_->FramebufferTexture2D(GL_DRAW_FRAMEBUFFER_ANGLE, GL_COLOR_ATTACHMENT0,
                             texture_target_, back_color_buffer_->texture_id, 0);
   // Clear the alpha channel.
