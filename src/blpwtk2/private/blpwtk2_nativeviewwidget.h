@@ -56,6 +56,8 @@ class NativeViewWidget : private views::WidgetDelegateView {
     blpwtk2::NativeView getNativeWidgetView() const;
     void setRegion(blpwtk2::NativeRegion);
 
+    gfx::NativeWindow GetNativeWindow();
+
   private:
     // views::WidgetDelegate overrides
     void WindowClosing() override;
