@@ -202,7 +202,7 @@ bool ValidPublicResetPacketPredicate(
     const testing::tuple<const char*, int>& packet_buffer) {
   FramerVisitorCapturingPublicReset visitor(expected_connection_id);
   QuicFramer framer(AllSupportedVersions(), QuicTime::Zero(),
-                    Perspective::IS_CLIENT);
+                    Perspective::IS_CLIENT, kQuicDefaultConnectionIdLength);
   framer.set_visitor(&visitor);
   QuicEncryptedPacket encrypted(testing::get<0>(packet_buffer),
                                 testing::get<1>(packet_buffer));

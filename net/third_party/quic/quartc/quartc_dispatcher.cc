@@ -4,6 +4,7 @@
 
 #include "net/third_party/quic/quartc/quartc_dispatcher.h"
 
+#include "net/third_party/quic/core/quic_utils.h"
 #include "net/third_party/quic/core/quic_versions.h"
 #include "net/third_party/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quic/quartc/quartc_factory.h"
@@ -25,7 +26,8 @@ QuartcDispatcher::QuartcDispatcher(
                      version_manager,
                      std::move(helper),
                      std::move(session_helper),
-                     std::move(alarm_factory)),
+                     std::move(alarm_factory),
+                     kQuicDefaultConnectionIdLength),
       owned_quic_config_(std::move(config)),
       owned_crypto_config_(std::move(crypto_config)),
       crypto_config_(crypto_config_serialized),

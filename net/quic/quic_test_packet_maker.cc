@@ -79,7 +79,8 @@ QuicTestPacketMaker::MakeConnectivityProbingPacket(uint64_t num,
 
   quic::QuicFramer framer(quic::test::SupportedVersions(quic::ParsedQuicVersion(
                               quic::PROTOCOL_QUIC_CRYPTO, version_)),
-                          clock_->Now(), perspective_);
+                          clock_->Now(), perspective_,
+                          quic::kQuicDefaultConnectionIdLength);
   size_t max_plaintext_size =
       framer.GetMaxPlaintextSize(quic::kDefaultMaxPacketSize);
   char buffer[quic::kDefaultMaxPacketSize];
@@ -691,7 +692,8 @@ std::unique_ptr<quic::QuicReceivedPacket> QuicTestPacketMaker::MakeAckPacket(
   }
   quic::QuicFramer framer(quic::test::SupportedVersions(quic::ParsedQuicVersion(
                               quic::PROTOCOL_QUIC_CRYPTO, version_)),
-                          clock_->Now(), perspective_);
+                          clock_->Now(), perspective_,
+                          quic::kQuicDefaultConnectionIdLength);
   quic::QuicFrames frames;
   quic::QuicFrame ack_frame(&ack);
   frames.push_back(ack_frame);
@@ -1187,7 +1189,8 @@ QuicTestPacketMaker::MakeMultipleFramesPacket(
     quic::QuicStreamFrameDataProducer* data_producer) {
   quic::QuicFramer framer(quic::test::SupportedVersions(quic::ParsedQuicVersion(
                               quic::PROTOCOL_QUIC_CRYPTO, version_)),
-                          clock_->Now(), perspective_);
+                          clock_->Now(), perspective_,
+                          quic::kQuicDefaultConnectionIdLength);
   if (data_producer != nullptr) {
     framer.set_data_producer(data_producer);
   }

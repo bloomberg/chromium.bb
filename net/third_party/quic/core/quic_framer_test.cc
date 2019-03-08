@@ -14,6 +14,7 @@
 #include "net/third_party/quic/core/crypto/null_encrypter.h"
 #include "net/third_party/quic/core/crypto/quic_decrypter.h"
 #include "net/third_party/quic/core/crypto/quic_encrypter.h"
+#include "net/third_party/quic/core/quic_connection_id.h"
 #include "net/third_party/quic/core/quic_packets.h"
 #include "net/third_party/quic/core/quic_types.h"
 #include "net/third_party/quic/core/quic_utils.h"
@@ -434,7 +435,8 @@ class QuicFramerTest : public QuicTestWithParam<ParsedQuicVersion> {
         start_(QuicTime::Zero() + QuicTime::Delta::FromMicroseconds(0x10)),
         framer_(AllSupportedVersionsIncludingTls(),
                 start_,
-                Perspective::IS_SERVER) {
+                Perspective::IS_SERVER,
+                kQuicDefaultConnectionIdLength) {
     SetQuicFlag(&FLAGS_quic_supports_tls_handshake, true);
     framer_.set_version(version_);
     framer_.SetDecrypter(ENCRYPTION_NONE,
@@ -9695,7 +9697,7 @@ void QuicFramerFuzzFunc(unsigned char* data,
                         size_t size,
                         const ParsedQuicVersion& version) {
   QuicFramer framer(AllSupportedVersions(), QuicTime::Zero(),
-                    Perspective::IS_SERVER);
+                    Perspective::IS_SERVER, kQuicDefaultConnectionIdLength);
   ASSERT_EQ(GetQuicFlag(FLAGS_quic_supports_tls_handshake), true);
   const char* const packet_bytes = reinterpret_cast<const char*>(data);
 
@@ -12880,6 +12882,46 @@ TEST_P(QuicFramerTest, InvalidCoalescedPacket) {
   CheckStreamFrameData("hello world!", visitor_.stream_frames_[0].get());
 
   ASSERT_EQ(visitor_.coalesced_packets_.size(), 0u);
+}
+
+TEST_P(QuicFramerTest, PacketHeaderWithVariableLengthConnectionId) {
+  if (framer_.transport_version() < QUIC_VERSION_46) {
+    return;
+  }
+  char connection_id_bytes[9] = {0xFE, 0xDC, 0xBA, 0x98, 0x76,
+                                 0x54, 0x32, 0x10, 0x42};
+  QuicConnectionId connection_id(connection_id_bytes,
+                                 sizeof(connection_id_bytes));
+  QuicFramerPeer::SetLargestPacketNumber(&framer_, kPacketNumber - 2);
+  QuicFramerPeer::SetExpectedConnectionIDLength(&framer_,
+                                                connection_id.length());
+
+  // clang-format off
+  PacketFragments packet = {
+      // type (8 byte connection_id and 1 byte packet number)
+      {"Unable to read type.",
+       {0x40}},
+      // connection_id
+      {"Unable to read Destination ConnectionId.",
+       {0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10, 0x42}},
+      // packet number
+      {"Unable to read packet number.",
+       {0x78}},
+  };
+  // clang-format on
+
+  std::unique_ptr<QuicEncryptedPacket> encrypted(
+      AssemblePacketFromFragments(packet));
+  EXPECT_FALSE(framer_.ProcessPacket(*encrypted));
+  EXPECT_EQ(QUIC_MISSING_PAYLOAD, framer_.error());
+  ASSERT_TRUE(visitor_.header_.get());
+  EXPECT_EQ(connection_id, visitor_.header_->destination_connection_id);
+  EXPECT_FALSE(visitor_.header_->reset_flag);
+  EXPECT_FALSE(visitor_.header_->version_flag);
+  EXPECT_EQ(PACKET_1BYTE_PACKET_NUMBER, visitor_.header_->packet_number_length);
+  EXPECT_EQ(kPacketNumber, visitor_.header_->packet_number);
+
+  CheckFramingBoundaries(packet, QUIC_INVALID_PACKET_HEADER);
 }
 
 }  // namespace

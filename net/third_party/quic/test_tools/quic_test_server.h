@@ -65,6 +65,11 @@ class QuicTestServer : public QuicServer {
                  const QuicConfig& config,
                  const ParsedQuicVersionVector& supported_versions,
                  QuicSimpleServerBackend* quic_simple_server_backend);
+  QuicTestServer(std::unique_ptr<ProofSource> proof_source,
+                 const QuicConfig& config,
+                 const ParsedQuicVersionVector& supported_versions,
+                 QuicSimpleServerBackend* quic_simple_server_backend,
+                 uint8_t expected_connection_id_length);
 
   // Create a custom dispatcher which creates custom sessions.
   QuicDispatcher* CreateQuicDispatcher() override;

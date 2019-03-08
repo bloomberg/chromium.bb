@@ -55,14 +55,16 @@ QuicServer::QuicServer(std::unique_ptr<ProofSource> proof_source,
                  QuicConfig(),
                  QuicCryptoServerConfig::ConfigOptions(),
                  AllSupportedVersions(),
-                 quic_simple_server_backend) {}
+                 quic_simple_server_backend,
+                 kQuicDefaultConnectionIdLength) {}
 
 QuicServer::QuicServer(
     std::unique_ptr<ProofSource> proof_source,
     const QuicConfig& config,
     const QuicCryptoServerConfig::ConfigOptions& crypto_config_options,
     const ParsedQuicVersionVector& supported_versions,
-    QuicSimpleServerBackend* quic_simple_server_backend)
+    QuicSimpleServerBackend* quic_simple_server_backend,
+    uint8_t expected_connection_id_length)
     : port_(0),
       fd_(-1),
       packets_dropped_(0),
@@ -77,7 +79,8 @@ QuicServer::QuicServer(
       crypto_config_options_(crypto_config_options),
       version_manager_(supported_versions),
       packet_reader_(new QuicPacketReader()),
-      quic_simple_server_backend_(quic_simple_server_backend) {
+      quic_simple_server_backend_(quic_simple_server_backend),
+      expected_connection_id_length_(expected_connection_id_length) {
   Initialize();
 }
 
@@ -155,7 +158,7 @@ QuicDispatcher* QuicServer::CreateQuicDispatcher() {
           new QuicSimpleCryptoServerStreamHelper(QuicRandom::GetInstance())),
       std::unique_ptr<QuicEpollAlarmFactory>(
           new QuicEpollAlarmFactory(&epoll_server_)),
-      quic_simple_server_backend_);
+      quic_simple_server_backend_, expected_connection_id_length_);
 }
 
 void QuicServer::WaitForEvents() {

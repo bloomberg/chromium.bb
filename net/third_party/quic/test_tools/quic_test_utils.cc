@@ -855,7 +855,8 @@ QuicEncryptedPacket* ConstructEncryptedPacket(
   }
 
   QuicFrames frames;
-  QuicFramer framer(*versions, QuicTime::Zero(), perspective);
+  QuicFramer framer(*versions, QuicTime::Zero(), perspective,
+                    kQuicDefaultConnectionIdLength);
   if ((*versions)[0].transport_version < QUIC_VERSION_47) {
     QuicFrame frame(QuicStreamFrame(
         QuicUtils::GetCryptoStreamId((*versions)[0].transport_version), false,
@@ -913,7 +914,8 @@ QuicEncryptedPacket* ConstructMisFramedEncryptedPacket(
   QuicFrames frames;
   frames.push_back(frame);
   QuicFramer framer(versions != nullptr ? *versions : AllSupportedVersions(),
-                    QuicTime::Zero(), perspective);
+                    QuicTime::Zero(), perspective,
+                    kQuicDefaultConnectionIdLength);
 
   std::unique_ptr<QuicPacket> packet(
       BuildUnsizedDataPacket(&framer, header, frames));

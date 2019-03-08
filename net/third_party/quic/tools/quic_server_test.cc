@@ -45,7 +45,8 @@ class MockQuicSimpleDispatcher : public QuicSimpleDispatcher {
                              std::move(helper),
                              std::move(session_helper),
                              std::move(alarm_factory),
-                             quic_simple_server_backend) {}
+                             quic_simple_server_backend,
+                             kQuicDefaultConnectionIdLength) {}
   ~MockQuicSimpleDispatcher() override = default;
 
   MOCK_METHOD0(OnCanWrite, void());

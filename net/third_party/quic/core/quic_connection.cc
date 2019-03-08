@@ -223,7 +223,8 @@ QuicConnection::QuicConnection(
     const ParsedQuicVersionVector& supported_versions)
     : framer_(supported_versions,
               helper->GetClock()->ApproximateNow(),
-              perspective),
+              perspective,
+              connection_id.length()),
       current_packet_content_(NO_FRAMES_RECEIVED),
       is_current_packet_connectivity_probing_(false),
       current_effective_peer_migration_type_(NO_CHANGE),

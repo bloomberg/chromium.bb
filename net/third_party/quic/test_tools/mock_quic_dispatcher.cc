@@ -23,7 +23,8 @@ MockQuicDispatcher::MockQuicDispatcher(
                            std::move(helper),
                            std::move(session_helper),
                            std::move(alarm_factory),
-                           quic_simple_server_backend) {}
+                           quic_simple_server_backend,
+                           kQuicDefaultConnectionIdLength) {}
 
 MockQuicDispatcher::~MockQuicDispatcher() {}
 

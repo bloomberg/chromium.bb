@@ -98,7 +98,8 @@ int main(int argc, char* argv[]) {
       CreateProofSource(base::FilePath(GetQuicFlag(FLAGS_certificate_file)),
                         base::FilePath(GetQuicFlag(FLAGS_key_file))),
       config, quic::QuicCryptoServerConfig::ConfigOptions(),
-      quic::AllSupportedVersions(), &memory_cache_backend);
+      quic::AllSupportedVersions(), &memory_cache_backend,
+      quic::kQuicDefaultConnectionIdLength);
 
   int rc = server.CreateUDPSocketAndListen(quic::QuicSocketAddress(
       quic::QuicIpAddress::Any6(), GetQuicFlag(FLAGS_port)));

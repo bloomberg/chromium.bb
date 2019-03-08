@@ -292,16 +292,23 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
 SimpleQuicFramer::SimpleQuicFramer()
     : framer_(AllSupportedVersions(),
               QuicTime::Zero(),
-              Perspective::IS_SERVER) {}
+              Perspective::IS_SERVER,
+              kQuicDefaultConnectionIdLength) {}
 
 SimpleQuicFramer::SimpleQuicFramer(
     const ParsedQuicVersionVector& supported_versions)
-    : framer_(supported_versions, QuicTime::Zero(), Perspective::IS_SERVER) {}
+    : framer_(supported_versions,
+              QuicTime::Zero(),
+              Perspective::IS_SERVER,
+              kQuicDefaultConnectionIdLength) {}
 
 SimpleQuicFramer::SimpleQuicFramer(
     const ParsedQuicVersionVector& supported_versions,
     Perspective perspective)
-    : framer_(supported_versions, QuicTime::Zero(), perspective) {}
+    : framer_(supported_versions,
+              QuicTime::Zero(),
+              perspective,
+              kQuicDefaultConnectionIdLength) {}
 
 SimpleQuicFramer::~SimpleQuicFramer() {}
 
