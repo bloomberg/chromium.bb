@@ -20,6 +20,7 @@
 
 namespace net {
 
+class SocketTag;
 class StreamSocket;
 class TransportSocketParams;
 
@@ -62,7 +63,8 @@ class NET_EXPORT_PRIVATE SOCKSConnectJob : public ConnectJob,
                                            public ConnectJob::Delegate {
  public:
   SOCKSConnectJob(RequestPriority priority,
-                  const CommonConnectJobParams& common_connect_job_params,
+                  const SocketTag& socket_tag,
+                  const CommonConnectJobParams* common_connect_job_params,
                   const scoped_refptr<SOCKSSocketParams>& socks_params,
                   ConnectJob::Delegate* delegate,
                   const NetLogWithSource* net_log);

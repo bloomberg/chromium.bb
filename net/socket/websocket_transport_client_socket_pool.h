@@ -21,6 +21,7 @@
 #include "net/log/net_log_with_source.h"
 #include "net/socket/client_socket_pool.h"
 #include "net/socket/client_socket_pool_base.h"
+#include "net/socket/connect_job.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/socket/transport_client_socket_pool.h"
 
@@ -200,18 +201,11 @@ class NET_EXPORT_PRIVATE WebSocketTransportClientSocketPool
   void ActivateStalledRequest();
   bool DeleteStalledRequest(ClientSocketHandle* handle);
 
+  const CommonConnectJobParams common_connect_job_params_;
   std::set<const ClientSocketHandle*> pending_callbacks_;
   PendingConnectsMap pending_connects_;
   StalledRequestQueue stalled_request_queue_;
   StalledRequestMap stalled_request_map_;
-  NetLog* const pool_net_log_;
-  ClientSocketFactory* const client_socket_factory_;
-  HostResolver* const host_resolver_;
-  ProxyDelegate* const proxy_delegate_;
-  const SSLClientSocketContext ssl_client_socket_context_;
-  const SSLClientSocketContext ssl_client_socket_context_privacy_mode_;
-  NetworkQualityEstimator* const network_quality_estimator_;
-  WebSocketEndpointLockManager* websocket_endpoint_lock_manager_;
   const int max_sockets_;
   int handed_out_socket_count_;
   bool flushing_;

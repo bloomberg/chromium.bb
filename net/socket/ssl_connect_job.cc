@@ -92,14 +92,16 @@ static const int kSSLHandshakeTimeoutInSeconds = 30;
 
 SSLConnectJob::SSLConnectJob(
     RequestPriority priority,
-    const CommonConnectJobParams& common_connect_job_params,
+    const SocketTag& socket_tag,
+    const CommonConnectJobParams* common_connect_job_params,
     const scoped_refptr<SSLSocketParams>& params,
     ConnectJob::Delegate* delegate,
     const NetLogWithSource* net_log)
     : ConnectJob(priority,
+                 socket_tag,
                  ConnectionTimeout(
                      *params,
-                     common_connect_job_params.network_quality_estimator),
+                     common_connect_job_params->network_quality_estimator),
                  common_connect_job_params,
                  delegate,
                  net_log,
@@ -268,7 +270,7 @@ int SSLConnectJob::DoTransportConnect() {
 
   next_state_ = STATE_TRANSPORT_CONNECT_COMPLETE;
   nested_connect_job_ = TransportConnectJob::CreateTransportConnectJob(
-      params_->GetDirectConnectionParams(), priority(),
+      params_->GetDirectConnectionParams(), priority(), socket_tag(),
       common_connect_job_params(), this, &net_log());
   return nested_connect_job_->Connect();
 }
@@ -296,7 +298,7 @@ int SSLConnectJob::DoSOCKSConnect() {
 
   next_state_ = STATE_SOCKS_CONNECT_COMPLETE;
   nested_connect_job_ = std::make_unique<SOCKSConnectJob>(
-      priority(), common_connect_job_params(),
+      priority(), socket_tag(), common_connect_job_params(),
       params_->GetSocksProxyConnectionParams(), this, &net_log());
   return nested_connect_job_->Connect();
 }
@@ -318,7 +320,7 @@ int SSLConnectJob::DoTunnelConnect() {
   scoped_refptr<HttpProxySocketParams> http_proxy_params =
       params_->GetHttpProxyConnectionParams();
   nested_connect_job_ = std::make_unique<HttpProxyConnectJob>(
-      priority(), common_connect_job_params(),
+      priority(), socket_tag(), common_connect_job_params(),
       params_->GetHttpProxyConnectionParams(), this, &net_log());
   return nested_connect_job_->Connect();
 }

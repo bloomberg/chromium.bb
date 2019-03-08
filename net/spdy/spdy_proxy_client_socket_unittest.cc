@@ -86,7 +86,8 @@ static const char kRedirectUrl[] = "https://example.com/";
 base::WeakPtr<SpdySession> CreateSpdyProxySession(
     HttpNetworkSession* http_session,
     SpdySessionDependencies* session_deps,
-    const SpdySessionKey& key) {
+    const SpdySessionKey& key,
+    const CommonConnectJobParams* common_connect_job_params) {
   EXPECT_FALSE(http_session->spdy_session_pool()->FindAvailableSession(
       key, true /* enable_ip_based_pooling */, false /* is_websocket */,
       NetLogWithSource()));
@@ -100,27 +101,9 @@ base::WeakPtr<SpdySession> CreateSpdyProxySession(
       transport_params, nullptr, nullptr, key.host_port_pair(), ssl_config,
       key.privacy_mode());
   TestConnectJobDelegate connect_job_delegate;
-  SSLConnectJob connect_job(
-      MEDIUM,
-      CommonConnectJobParams(
-          SocketTag(), session_deps->socket_factory.get(),
-          session_deps->host_resolver.get(), nullptr /* proxy_delegate */,
-          SSLClientSocketContext(session_deps->cert_verifier.get(),
-                                 session_deps->channel_id_service.get(),
-                                 session_deps->transport_security_state.get(),
-                                 session_deps->cert_transparency_verifier.get(),
-                                 session_deps->ct_policy_enforcer.get(),
-                                 nullptr /* ssl_client_session_cache_arg */),
-          SSLClientSocketContext(session_deps->cert_verifier.get(),
-                                 session_deps->channel_id_service.get(),
-                                 session_deps->transport_security_state.get(),
-                                 session_deps->cert_transparency_verifier.get(),
-                                 session_deps->ct_policy_enforcer.get(),
-                                 nullptr /* ssl_client_session_cache_arg */),
-          nullptr /* socket_performance_watcher_factory */,
-          nullptr /* network_quality_estimator */, session_deps->net_log,
-          nullptr /* websocket_endpoint_lock_manager */),
-      ssl_params, &connect_job_delegate, nullptr /* net_log */);
+  SSLConnectJob connect_job(MEDIUM, SocketTag(), common_connect_job_params,
+                            ssl_params, &connect_job_delegate,
+                            nullptr /* net_log */);
   connect_job_delegate.StartJobExpectingResult(&connect_job, OK,
                                                false /* expect_sync_result */);
 
@@ -216,6 +199,7 @@ class SpdyProxyClientSocketTest : public PlatformTest,
   HostPortPair endpoint_host_port_pair_;
   ProxyServer proxy_;
   SpdySessionKey endpoint_spdy_session_key_;
+  const CommonConnectJobParams common_connect_job_params_;
 
   DISALLOW_COPY_AND_ASSIGN(SpdyProxyClientSocketTest);
 };
@@ -232,7 +216,27 @@ SpdyProxyClientSocketTest::SpdyProxyClientSocketTest()
                                  proxy_,
                                  PRIVACY_MODE_DISABLED,
                                  SpdySessionKey::IsProxySession::kFalse,
-                                 SocketTag()) {
+                                 SocketTag()),
+      common_connect_job_params_(
+          session_deps_.socket_factory.get(),
+          session_deps_.host_resolver.get(),
+          nullptr /* proxy_delegate */,
+          SSLClientSocketContext(session_deps_.cert_verifier.get(),
+                                 session_deps_.channel_id_service.get(),
+                                 session_deps_.transport_security_state.get(),
+                                 session_deps_.cert_transparency_verifier.get(),
+                                 session_deps_.ct_policy_enforcer.get(),
+                                 nullptr /* ssl_client_session_cache_arg */),
+          SSLClientSocketContext(session_deps_.cert_verifier.get(),
+                                 session_deps_.channel_id_service.get(),
+                                 session_deps_.transport_security_state.get(),
+                                 session_deps_.cert_transparency_verifier.get(),
+                                 session_deps_.ct_policy_enforcer.get(),
+                                 nullptr /* ssl_client_session_cache_arg */),
+          nullptr /* socket_performance_watcher_factory */,
+          nullptr /* network_quality_estimator */,
+          net_log_.bound().net_log(),
+          nullptr /* websocket_endpoint_lock_manager */) {
   session_deps_.net_log = net_log_.bound().net_log();
 }
 
@@ -268,7 +272,8 @@ void SpdyProxyClientSocketTest::Initialize(base::span<const MockRead> reads,
 
   // Creates the SPDY session and stream.
   spdy_session_ = CreateSpdyProxySession(session_.get(), &session_deps_,
-                                         endpoint_spdy_session_key_);
+                                         endpoint_spdy_session_key_,
+                                         &common_connect_job_params_);
 
   base::WeakPtr<SpdyStream> spdy_stream(
       CreateStreamSynchronously(

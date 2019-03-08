@@ -40,9 +40,10 @@ namespace net {
 HttpProxyClientSocketWrapper::HttpProxyClientSocketWrapper(
     const OnProxyAuthChallengeCallback& on_proxy_auth_callback,
     RequestPriority priority,
+    const SocketTag& socket_tag,
     base::TimeDelta connect_timeout_duration,
     base::TimeDelta proxy_negotiation_timeout_duration,
-    const CommonConnectJobParams& common_connect_job_params,
+    const CommonConnectJobParams* common_connect_job_params,
     const scoped_refptr<TransportSocketParams>& transport_params,
     const scoped_refptr<SSLSocketParams>& ssl_params,
     quic::QuicTransportVersion quic_version,
@@ -59,6 +60,7 @@ HttpProxyClientSocketWrapper::HttpProxyClientSocketWrapper(
     : on_proxy_auth_callback_(on_proxy_auth_callback),
       next_state_(STATE_NONE),
       priority_(priority),
+      socket_tag_(socket_tag),
       connect_timeout_duration_(connect_timeout_duration),
       proxy_negotiation_timeout_duration_(proxy_negotiation_timeout_duration),
       transport_params_(transport_params),
@@ -81,7 +83,7 @@ HttpProxyClientSocketWrapper::HttpProxyClientSocketWrapper(
                             GetDestination().ToString()),
                        http_auth_cache,
                        http_auth_handler_factory,
-                       common_connect_job_params_.host_resolver)
+                       common_connect_job_params_->host_resolver)
                  : nullptr),
       net_log_(NetLogWithSource::Make(
           net_log.net_log(),
@@ -527,8 +529,8 @@ int HttpProxyClientSocketWrapper::DoBeginConnect() {
 int HttpProxyClientSocketWrapper::DoTransportConnect() {
   next_state_ = STATE_TCP_CONNECT_COMPLETE;
   nested_connect_job_ = TransportConnectJob::CreateTransportConnectJob(
-      transport_params_, priority_, common_connect_job_params_, this,
-      &net_log_);
+      transport_params_, priority_, socket_tag_, common_connect_job_params_,
+      this, &net_log_);
   return nested_connect_job_->Connect();
 }
 
@@ -561,8 +563,7 @@ int HttpProxyClientSocketWrapper::DoSSLConnect() {
   if (tunnel_) {
     SpdySessionKey key(ssl_params_->GetDirectConnectionParams()->destination(),
                        ProxyServer::Direct(), PRIVACY_MODE_DISABLED,
-                       SpdySessionKey::IsProxySession::kTrue,
-                       common_connect_job_params_.socket_tag);
+                       SpdySessionKey::IsProxySession::kTrue, socket_tag_);
     if (spdy_session_pool_->FindAvailableSession(
             key, /* enable_ip_based_pooling = */ true,
             /* is_websocket = */ false, net_log_)) {
@@ -573,7 +574,8 @@ int HttpProxyClientSocketWrapper::DoSSLConnect() {
   }
   next_state_ = STATE_SSL_CONNECT_COMPLETE;
   nested_connect_job_ = std::make_unique<SSLConnectJob>(
-      priority_, common_connect_job_params_, ssl_params_, this, &net_log_);
+      priority_, socket_tag_, common_connect_job_params_, ssl_params_, this,
+      &net_log_);
   return nested_connect_job_->Connect();
 }
 
@@ -650,12 +652,13 @@ int HttpProxyClientSocketWrapper::DoHttpProxyConnect() {
 
   // Add a HttpProxy connection on top of the tcp socket.
   transport_socket_ =
-      common_connect_job_params_.client_socket_factory->CreateProxyClientSocket(
-          nested_connect_job_->PassSocket(), user_agent_, endpoint_,
-          ProxyServer(GetProxyServerScheme(), GetDestination()),
-          http_auth_controller_.get(), tunnel_, using_spdy_,
-          negotiated_protocol_, common_connect_job_params_.proxy_delegate,
-          ssl_params_.get() != nullptr, traffic_annotation_);
+      common_connect_job_params_->client_socket_factory
+          ->CreateProxyClientSocket(
+              nested_connect_job_->PassSocket(), user_agent_, endpoint_,
+              ProxyServer(GetProxyServerScheme(), GetDestination()),
+              http_auth_controller_.get(), tunnel_, using_spdy_,
+              negotiated_protocol_, common_connect_job_params_->proxy_delegate,
+              ssl_params_.get() != nullptr, traffic_annotation_);
   nested_connect_job_.reset();
   return transport_socket_->Connect(base::Bind(
       &HttpProxyClientSocketWrapper::OnIOComplete, base::Unretained(this)));
@@ -683,8 +686,7 @@ int HttpProxyClientSocketWrapper::DoSpdyProxyCreateStream() {
   DCHECK(ssl_params_);
   SpdySessionKey key(ssl_params_->GetDirectConnectionParams()->destination(),
                      ProxyServer::Direct(), PRIVACY_MODE_DISABLED,
-                     SpdySessionKey::IsProxySession::kTrue,
-                     common_connect_job_params_.socket_tag);
+                     SpdySessionKey::IsProxySession::kTrue, socket_tag_);
   base::WeakPtr<SpdySession> spdy_session =
       spdy_session_pool_->FindAvailableSession(
           key, /* enable_ip_based_pooling = */ true,
@@ -705,8 +707,8 @@ int HttpProxyClientSocketWrapper::DoSpdyProxyCreateStream() {
   spdy_stream_request_ = std::make_unique<SpdyStreamRequest>();
   return spdy_stream_request_->StartRequest(
       SPDY_BIDIRECTIONAL_STREAM, spdy_session,
-      GURL("https://" + endpoint_.ToString()), priority_,
-      common_connect_job_params_.socket_tag, spdy_session->net_log(),
+      GURL("https://" + endpoint_.ToString()), priority_, socket_tag_,
+      spdy_session->net_log(),
       base::Bind(&HttpProxyClientSocketWrapper::OnIOComplete,
                  base::Unretained(this)),
       traffic_annotation_);
@@ -739,8 +741,7 @@ int HttpProxyClientSocketWrapper::DoQuicProxyCreateSession() {
       std::make_unique<QuicStreamRequest>(quic_stream_factory_);
   return quic_stream_request_->Request(
       proxy_server, quic_version_, ssl_params_->privacy_mode(), priority_,
-      common_connect_job_params_.socket_tag,
-      ssl_params_->ssl_config().GetCertVerifyFlags(),
+      socket_tag_, ssl_params_->ssl_config().GetCertVerifyFlags(),
       GURL("https://" + proxy_server.ToString()), net_log_,
       &quic_net_error_details_,
       /*failed_on_default_network_callback=*/CompletionOnceCallback(),

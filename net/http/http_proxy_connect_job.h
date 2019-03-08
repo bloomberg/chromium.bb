@@ -27,6 +27,7 @@ class HttpAuthCache;
 class HttpAuthHandlerFactory;
 class HttpProxyClientSocketWrapper;
 class NetworkQualityEstimator;
+class SocketTag;
 class SpdySessionPool;
 class SSLSocketParams;
 class TransportSocketParams;
@@ -102,7 +103,8 @@ class NET_EXPORT_PRIVATE HttpProxySocketParams
 class NET_EXPORT_PRIVATE HttpProxyConnectJob : public ConnectJob {
  public:
   HttpProxyConnectJob(RequestPriority priority,
-                      const CommonConnectJobParams& common_connect_job_params,
+                      const SocketTag& socket_tag,
+                      const CommonConnectJobParams* common_connect_job_params,
                       const scoped_refptr<HttpProxySocketParams>& params,
                       Delegate* delegate,
                       const NetLogWithSource* net_log);

@@ -20,6 +20,7 @@
 
 namespace net {
 
+class SocketTag;
 class WebSocketTransportConnectSubJob;
 
 // WebSocketTransportConnectJob handles the host resolution necessary for socket
@@ -39,7 +40,8 @@ class NET_EXPORT_PRIVATE WebSocketTransportConnectJob : public ConnectJob {
  public:
   WebSocketTransportConnectJob(
       RequestPriority priority,
-      const CommonConnectJobParams& common_connect_job_params,
+      const SocketTag& socket_tag,
+      const CommonConnectJobParams* common_connect_job_params,
       const scoped_refptr<TransportSocketParams>& params,
       Delegate* delegate,
       const NetLogWithSource* net_log);

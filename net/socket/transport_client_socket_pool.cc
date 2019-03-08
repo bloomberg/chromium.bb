@@ -36,41 +36,45 @@ namespace {
 std::unique_ptr<ConnectJob> CreateTransportConnectJob(
     scoped_refptr<TransportSocketParams> transport_socket_params,
     RequestPriority priority,
-    const CommonConnectJobParams& common_connect_job_params,
+    const SocketTag& socket_tag,
+    const CommonConnectJobParams* common_connect_job_params,
     ConnectJob::Delegate* delegate) {
   return TransportConnectJob::CreateTransportConnectJob(
-      std::move(transport_socket_params), priority, common_connect_job_params,
-      delegate, nullptr /* net_log */);
+      std::move(transport_socket_params), priority, socket_tag,
+      common_connect_job_params, delegate, nullptr /* net_log */);
 }
 
 std::unique_ptr<ConnectJob> CreateSOCKSConnectJob(
     scoped_refptr<SOCKSSocketParams> socks_socket_params,
     RequestPriority priority,
-    const CommonConnectJobParams& common_connect_job_params,
+    const SocketTag& socket_tag,
+    const CommonConnectJobParams* common_connect_job_params,
     ConnectJob::Delegate* delegate) {
-  return std::make_unique<SOCKSConnectJob>(priority, common_connect_job_params,
-                                           std::move(socks_socket_params),
-                                           delegate, nullptr /* net_log */);
+  return std::make_unique<SOCKSConnectJob>(
+      priority, socket_tag, common_connect_job_params,
+      std::move(socks_socket_params), delegate, nullptr /* net_log */);
 }
 
 std::unique_ptr<ConnectJob> CreateSSLConnectJob(
     scoped_refptr<SSLSocketParams> ssl_socket_params,
     RequestPriority priority,
-    const CommonConnectJobParams& common_connect_job_params,
+    const SocketTag& socket_tag,
+    const CommonConnectJobParams* common_connect_job_params,
     ConnectJob::Delegate* delegate) {
-  return std::make_unique<SSLConnectJob>(priority, common_connect_job_params,
-                                         std::move(ssl_socket_params), delegate,
-                                         nullptr /* net_log */);
+  return std::make_unique<SSLConnectJob>(
+      priority, socket_tag, common_connect_job_params,
+      std::move(ssl_socket_params), delegate, nullptr /* net_log */);
 }
 
 std::unique_ptr<ConnectJob> CreateHttpProxyConnectJob(
     scoped_refptr<HttpProxySocketParams> http_proxy_socket_params,
     RequestPriority priority,
-    const CommonConnectJobParams& common_connect_job_params,
+    const SocketTag& socket_tag,
+    const CommonConnectJobParams* common_connect_job_params,
     ConnectJob::Delegate* delegate) {
   return std::make_unique<HttpProxyConnectJob>(
-      priority, common_connect_job_params, std::move(http_proxy_socket_params),
-      delegate, nullptr /* net_log */);
+      priority, socket_tag, common_connect_job_params,
+      std::move(http_proxy_socket_params), delegate, nullptr /* net_log */);
 }
 
 }  // namespace
@@ -123,15 +127,16 @@ TransportClientSocketPool::TransportConnectJobFactory::
         SocketPerformanceWatcherFactory* socket_performance_watcher_factory,
         NetworkQualityEstimator* network_quality_estimator,
         NetLog* net_log)
-    : client_socket_factory_(client_socket_factory),
-      host_resolver_(host_resolver),
-      proxy_delegate_(proxy_delegate),
-      ssl_client_socket_context_(ssl_client_socket_context),
-      ssl_client_socket_context_privacy_mode_(
-          ssl_client_socket_context_privacy_mode),
-      socket_performance_watcher_factory_(socket_performance_watcher_factory),
-      network_quality_estimator_(network_quality_estimator),
-      net_log_(net_log) {}
+    : common_connect_job_params_(
+          client_socket_factory,
+          host_resolver,
+          proxy_delegate,
+          ssl_client_socket_context,
+          ssl_client_socket_context_privacy_mode,
+          socket_performance_watcher_factory,
+          network_quality_estimator,
+          net_log,
+          nullptr /* websocket_endpoint_lock_manager */) {}
 
 TransportClientSocketPool::TransportConnectJobFactory::
     ~TransportConnectJobFactory() = default;
@@ -141,13 +146,7 @@ TransportClientSocketPool::TransportConnectJobFactory::NewConnectJob(
     const PoolBase::Request& request,
     ConnectJob::Delegate* delegate) const {
   return request.params()->create_connect_job_callback().Run(
-      request.priority(),
-      CommonConnectJobParams(
-          request.socket_tag(), client_socket_factory_, host_resolver_,
-          proxy_delegate_, ssl_client_socket_context_,
-          ssl_client_socket_context_privacy_mode_,
-          socket_performance_watcher_factory_, network_quality_estimator_,
-          net_log_, nullptr /* websocket_endpoint_lock_manager */),
+      request.priority(), request.socket_tag(), &common_connect_job_params_,
       delegate);
 }
 

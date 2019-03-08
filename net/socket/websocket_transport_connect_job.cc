@@ -23,11 +23,13 @@ namespace net {
 
 WebSocketTransportConnectJob::WebSocketTransportConnectJob(
     RequestPriority priority,
-    const CommonConnectJobParams& common_connect_job_params,
+    const SocketTag& socket_tag,
+    const CommonConnectJobParams* common_connect_job_params,
     const scoped_refptr<TransportSocketParams>& params,
     Delegate* delegate,
     const NetLogWithSource* net_log)
     : ConnectJob(priority,
+                 socket_tag,
                  TransportConnectJob::ConnectionTimeout(),
                  common_connect_job_params,
                  delegate,
@@ -39,7 +41,7 @@ WebSocketTransportConnectJob::WebSocketTransportConnectJob(
       race_result_(TransportConnectJob::RACE_UNKNOWN),
       had_ipv4_(false),
       had_ipv6_(false) {
-  DCHECK(common_connect_job_params.websocket_endpoint_lock_manager);
+  DCHECK(common_connect_job_params->websocket_endpoint_lock_manager);
 }
 
 WebSocketTransportConnectJob::~WebSocketTransportConnectJob() = default;
