@@ -6,6 +6,9 @@ include_rules = [
     "+third_party/blink/renderer/platform/fonts",
 
     # Dependencies.
+    "+base/mac/foundation_util.h",
+    "+base/mac/scoped_cftyperef.h",
+    "+base/mac/scoped_nsobject.h",
     "+cc",
     "+third_party/blink/renderer/platform/font_family_names.h",
     "+third_party/blink/renderer/platform/geometry",
