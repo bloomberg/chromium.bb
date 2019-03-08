@@ -17,8 +17,6 @@
 #endif
 
 namespace {
-const CGFloat kExpandAnimationDuration = 0.1;
-const CGFloat kCollapseAnimationDuration = 0.05;
 const CGFloat kVerticalOffset = 6;
 }  // namespace
 
@@ -29,7 +27,6 @@ const CGFloat kVerticalOffset = 6;
 @property(nonatomic, weak) id<OmniboxPopupPresenterDelegate> delegate;
 @property(nonatomic, weak) UIViewController* viewController;
 @property(nonatomic, strong) UIView* popupContainerView;
-@property(nonatomic) UIViewPropertyAnimator* animator;
 @end
 
 @implementation OmniboxPopupPresenter
@@ -69,7 +66,7 @@ const CGFloat kVerticalOffset = 6;
   return self;
 }
 
-- (void)updateHeightAndAnimateAppearanceIfNecessary {
+- (void)updateHeight {
   UIView* popup = self.popupContainerView;
   if (!popup.superview) {
     UIViewController* parentVC =
@@ -86,43 +83,18 @@ const CGFloat kVerticalOffset = 6;
   }
 
   [self.delegate popupDidOpenForPresenter:self];
-
-  [self.animator stopAnimation:YES];
-
-  if (popup.bounds.size.height == 0) {
-    // Animate if it expanding.
-    self.animator = [[UIViewPropertyAnimator alloc]
-        initWithDuration:kExpandAnimationDuration
-                   curve:UIViewAnimationCurveEaseInOut
-              animations:^{
-                [[popup superview] layoutIfNeeded];
-              }];
-    [self.animator startAnimation];
-  }
 }
 
-- (void)animateCollapse {
-  [self.delegate popupDidCloseForPresenter:self];
-  UIView* retainedPopupView = self.popupContainerView;
-  UIViewController* retainedViewController = self.viewController;
+- (void)collapse {
   if (!IsIPadIdiom()) {
     self.bottomConstraint.active = NO;
   }
 
-  [self.animator stopAnimation:YES];
+  [self.viewController willMoveToParentViewController:nil];
+  [self.popupContainerView removeFromSuperview];
+  [self.viewController removeFromParentViewController];
 
-  self.animator = [[UIViewPropertyAnimator alloc]
-      initWithDuration:kCollapseAnimationDuration
-                 curve:UIViewAnimationCurveEaseInOut
-            animations:^{
-              [[self.popupContainerView superview] layoutIfNeeded];
-            }];
-  [self.animator addCompletion:^(UIViewAnimatingPosition) {
-    [retainedViewController willMoveToParentViewController:nil];
-    [retainedPopupView removeFromSuperview];
-    [retainedViewController removeFromParentViewController];
-  }];
-  [self.animator startAnimation];
+  [self.delegate popupDidCloseForPresenter:self];
 }
 
 #pragma mark - Private
