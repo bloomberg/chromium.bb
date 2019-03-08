@@ -78,6 +78,18 @@ message RemoveAccountResponse {
   optional ErrorType error = 1;
 }
 
+message SetConfigRequest {
+  // Principal name of the account to remove (user@REALM.COM).
+  optional string principal_name = 1;
+  // Kerberos configuration file to set.
+  optional string krb5conf = 2;
+}
+
+message SetConfigResponse {
+  // Response status.
+  optional ErrorType error = 1;
+}
+
 message AcquireKerberosTgtRequest {
   // Principal name of the account to acquire a ticket for (user@REALM.COM).
   optional string principal_name = 1;
