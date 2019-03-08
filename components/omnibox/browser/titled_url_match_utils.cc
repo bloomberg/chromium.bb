@@ -94,8 +94,8 @@ AutocompleteMatch TitledUrlMatchToAutocompleteMatch(
         !HistoryProvider::PreventInlineAutocomplete(input);
   }
   match.description = title;
-  offsets = TitledUrlMatch::OffsetsFromMatchPositions(
-      titled_url_match.title_match_positions);
+  offsets =
+      TitledUrlMatch::OffsetsFromMatchPositions(new_title_match_positions);
   TermMatches title_term_matches = OffsetsToTermMatches(offsets);
   match.description_class = HistoryProvider::SpansFromTermMatch(
       title_term_matches, match.description.size(), false);
