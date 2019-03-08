@@ -3299,6 +3299,7 @@ test("unit_tests") {
       "../browser/media_galleries/media_galleries_preferences_unittest.cc",
       "../browser/media_galleries/win/mtp_device_delegate_impl_win_unittest.cc",
       "../browser/media_galleries/win/mtp_device_object_enumerator_unittest.cc",
+      "../browser/memory/memory_pressure_monitor_utils_unittest.cc",
       "../browser/memory/swap_thrashing_monitor_delegate_win_unittest.cc",
       "../browser/metrics/desktop_session_duration/desktop_session_duration_tracker_unittest.cc",
       "../browser/metrics/tab_stats_data_store_unittest.cc",
