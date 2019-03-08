@@ -298,8 +298,6 @@ void PreviewsLitePageNavigationThrottle::LogIneligibleReason(
 
 bool PreviewsLitePageNavigationThrottle::IsEligibleForPreview() const {
   DCHECK(navigation_handle()->IsInMainFrame());
-  DCHECK_NE(navigation_handle()->GetReloadType(),
-            content::ReloadType::ORIGINAL_REQUEST_URL);
 
   if (data_reduction_proxy::HasURLRedirectCycle(
           navigation_handle()->GetRedirectChain()) ||
@@ -320,6 +318,8 @@ bool PreviewsLitePageNavigationThrottle::IsEligibleForPreview() const {
                           content::LITE_PAGE_REDIRECT_ON)) {
     return false;
   }
+
+  DCHECK_EQ(navigation_handle()->GetReloadType(), content::ReloadType::NONE);
 
   if (previews::IsLitePageRedirectPreviewDomain(navigation_handle()->GetURL()))
     return false;

@@ -1009,18 +1009,51 @@ IN_PROC_BROWSER_TEST_P(
 IN_PROC_BROWSER_TEST_P(
     PreviewsLitePageServerBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMESOS(LitePagePreviewsReloadDisabled)) {
-  // Start with a non-preview load.
-  g_browser_process->network_quality_tracker()
-      ->ReportEffectiveConnectionTypeForTesting(
-          net::EFFECTIVE_CONNECTION_TYPE_3G);
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {}, {previews::features::kPreviewsReloadsAreSoftOptOuts});
+
+  content::ReloadType tests[] = {
+      content::ReloadType::NORMAL,
+      content::ReloadType::BYPASSING_CACHE,
+      content::ReloadType::ORIGINAL_REQUEST_URL,
+  };
+  for (content::ReloadType type : tests) {
+    // Start with a non-preview load.
+    g_browser_process->network_quality_tracker()
+        ->ReportEffectiveConnectionTypeForTesting(
+            net::EFFECTIVE_CONNECTION_TYPE_3G);
+
+    ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
+    VerifyPreviewNotLoaded();
+
+    // Set the conditions so a Preview would trigger if not for the reload.
+    g_browser_process->network_quality_tracker()
+        ->ReportEffectiveConnectionTypeForTesting(
+            net::EFFECTIVE_CONNECTION_TYPE_2G);
+    GetWebContents()->GetController().Reload(type, false);
+    VerifyPreviewNotLoaded();
+
+    // Verify that a reload on a preview page triggers a redirect back to the
+    // original page.
+    ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
+    VerifyPreviewLoaded();
+
+    GetWebContents()->GetController().Reload(type, false);
+    VerifyPreviewNotLoaded();
+  }
+}
+
+IN_PROC_BROWSER_TEST_P(
+    PreviewsLitePageServerBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMESOS(LitePagePreviewsReloadDisabled_SoftOptOut)) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {previews::features::kPreviewsReloadsAreSoftOptOuts}, {});
 
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
-  VerifyPreviewNotLoaded();
+  VerifyPreviewLoaded();
 
-  // Set the conditions so a Preview would trigger if not for the reload.
-  g_browser_process->network_quality_tracker()
-      ->ReportEffectiveConnectionTypeForTesting(
-          net::EFFECTIVE_CONNECTION_TYPE_2G);
   GetWebContents()->GetController().Reload(content::ReloadType::NORMAL, false);
   VerifyPreviewNotLoaded();
 }
@@ -1077,9 +1110,9 @@ IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,
     VerifyInfoStatus(&histogram_tester,
                      previews::ServerLitePageStatus::kRedirect);
     ClearDeciderState();
-      histogram_tester.ExpectBucketCount(
-          "Previews.ServerLitePage.ServerResponse",
-          PreviewsLitePageNavigationThrottle::ServerResponse::kRedirect, 1);
+    histogram_tester.ExpectBucketCount(
+        "Previews.ServerLitePage.ServerResponse",
+        PreviewsLitePageNavigationThrottle::ServerResponse::kRedirect, 1);
   }
 
   {
