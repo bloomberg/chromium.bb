@@ -152,8 +152,12 @@ const CryptAuthKey* CryptAuthKeyBundle::GetActiveKey() const {
 }
 
 void CryptAuthKeyBundle::AddKey(const CryptAuthKey& key) {
+  DCHECK(name_ != Name::kUserKeyPair ||
+         key.handle() == kCryptAuthFixedUserKeyPairHandle);
+
   if (key.status() == CryptAuthKey::Status::kActive)
     DeactivateKeys();
+
   handle_to_key_map_.insert_or_assign(key.handle(), key);
 }
 
