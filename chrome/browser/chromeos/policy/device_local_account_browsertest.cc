@@ -2601,6 +2601,8 @@ IN_PROC_BROWSER_TEST_F(ManagedSessionsTest, AllowCrossOriginAuthPrompt) {
           broker));
 }
 
+// TODO(crbug.com/939700): Fix this test.
+#if 0
 IN_PROC_BROWSER_TEST_F(ManagedSessionsTest, PacHttpsUrlStrippingEnabled) {
   SetManagedSessionsEnabled(/* managed_sessions_enabled */ true);
 
@@ -2633,6 +2635,7 @@ IN_PROC_BROWSER_TEST_F(ManagedSessionsTest, PacHttpsUrlStrippingEnabled) {
       chromeos::ChromeUserManager::Get()->IsFullManagementDisclosureNeeded(
           broker));
 }
+#endif
 
 class TermsOfServiceDownloadTest : public DeviceLocalAccountTest,
                                    public testing::WithParamInterface<bool> {
