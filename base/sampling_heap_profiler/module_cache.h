@@ -20,6 +20,16 @@
 
 namespace base {
 
+// Supports cached lookup of modules by address, with caching based on module
+// address ranges.
+//
+// Cached lookup is necessary on Mac for performance, due to an inefficient
+// dladdr implementation. See https://crrev.com/487092.
+//
+// Cached lookup is beneficial on Windows to minimize use of the loader
+// lock. Note however that the cache retains a handle to looked-up modules for
+// its lifetime, which may result in pinning modules in memory that were
+// transiently loaded by the OS.
 class BASE_EXPORT ModuleCache {
  public:
   // Module represents a binary module (executable or library) and its
@@ -75,16 +85,6 @@ class BASE_EXPORT ModuleCache {
   // at |module_addr|.
   static size_t GetModuleTextSize(const void* module_addr);
   friend bool MayTriggerUnwInitLocalCrash(uint64_t);
-#endif
-
-#if defined(OS_WIN)
-  const Module* GetModuleForHandle(HMODULE module_handle);
-  static std::unique_ptr<Module> CreateModuleForHandle(HMODULE module_handle);
-  friend class NativeStackSamplerWin;
-
-  // The module objects, indexed by the module handle.
-  // TODO(wittman): Merge this state into modules_cache_map_ and remove
-  std::map<HMODULE, std::unique_ptr<Module>> win_module_cache_;
 #endif
 
   std::map<uintptr_t, std::unique_ptr<Module>> modules_cache_map_;
