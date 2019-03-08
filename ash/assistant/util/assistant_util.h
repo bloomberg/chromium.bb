@@ -29,6 +29,17 @@ bool IsFinishingSession(AssistantVisibility new_visibility);
 COMPONENT_EXPORT(ASSISTANT_UTIL)
 bool IsEmbeddedUiEntryPoint(AssistantEntryPoint entry_point);
 
+// Returns true if the |entry_point| should start Assistant with a voice
+// interaction.
+// |prefer_voice| is true if user prefers voice input modality or if the device
+// is in tablet mode.
+COMPONENT_EXPORT(ASSISTANT_UTIL)
+bool IsVoiceEntryPoint(AssistantEntryPoint entry_point, bool prefer_voice);
+
+// Returns true if the |entry_point| should attempt warmer welcome.
+COMPONENT_EXPORT(ASSISTANT_UTIL)
+bool ShouldAttemptWarmerWelcome(AssistantEntryPoint entry_point);
+
 }  // namespace util
 }  // namespace assistant
 }  // namespace ash

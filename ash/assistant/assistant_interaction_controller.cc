@@ -16,6 +16,7 @@
 #include "ash/assistant/model/assistant_ui_element.h"
 #include "ash/assistant/model/assistant_ui_model.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
+#include "ash/assistant/util/assistant_util.h"
 #include "ash/assistant/util/deep_link_util.h"
 #include "ash/assistant/util/histogram_util.h"
 #include "ash/public/cpp/ash_pref_names.h"
@@ -620,37 +621,32 @@ void AssistantInteractionController::OnUiVisible(
   DCHECK_EQ(AssistantVisibility::kVisible,
             assistant_controller_->ui_controller()->model()->visibility());
 
-  bool launch_with_mic_open =
+  const bool launch_with_mic_open =
       Shell::Get()->voice_interaction_controller()->launch_with_mic_open();
+  const bool prefer_voice = launch_with_mic_open || IsTabletMode();
 
-  switch (entry_point) {
-    case AssistantEntryPoint::kLauncherSearchBoxMic:
-      launch_with_mic_open = true;
-      FALLTHROUGH;
-    case AssistantEntryPoint::kHotkey:
-    case AssistantEntryPoint::kLauncherSearchBox:
-    case AssistantEntryPoint::kLongPressLauncher: {
-      // When the user prefers it or when we are in tablet mode, launching
-      // Assistant UI will immediately start a voice interaction.
-      if (launch_with_mic_open || IsTabletMode()) {
-        StartVoiceInteraction();
-        should_attempt_warmer_welcome_ = false;
-      }
-      break;
-    }
-    case AssistantEntryPoint::kStylus:
-      model_.SetInputModality(InputModality::kStylus);
-      FALLTHROUGH;
-    case AssistantEntryPoint::kDeepLink:
-    case AssistantEntryPoint::kHotword:
-    case AssistantEntryPoint::kLauncherSearchResult:
-      should_attempt_warmer_welcome_ = false;
-      break;
-    case AssistantEntryPoint::kUnspecified:
-    case AssistantEntryPoint::kSetup:
-      // No action necessary.
-      break;
+  // We don't explicitly start a new voice interaction if the entry point
+  // is hotword since in such cases a voice interaction will already be in
+  // progress.
+  if (assistant::util::IsVoiceEntryPoint(entry_point, prefer_voice) &&
+      entry_point != AssistantEntryPoint::kHotword) {
+    should_attempt_warmer_welcome_ = false;
+    StartVoiceInteraction();
+    return;
   }
+
+  if (entry_point == AssistantEntryPoint::kStylus) {
+    should_attempt_warmer_welcome_ = false;
+    model_.SetInputModality(InputModality::kStylus);
+    return;
+  }
+
+  if (!chromeos::assistant::features::IsWarmerWelcomeEnabled())
+    return;
+
+  should_attempt_warmer_welcome_ =
+      should_attempt_warmer_welcome_ &&
+      assistant::util::ShouldAttemptWarmerWelcome(entry_point);
 
   // Explicitly check the interaction state to ensure warmer welcome will
   // not interrupt any ongoing active interactions. This happens, for example,
@@ -660,31 +656,30 @@ void AssistantInteractionController::OnUiVisible(
   if (model_.interaction_state() == InteractionState::kActive)
     should_attempt_warmer_welcome_ = false;
 
+  if (!should_attempt_warmer_welcome_)
+    return;
+
   // TODO(yileili): Currently WW is only triggered when the first Assistant
   // launch of the user session does not automatically start an interaction that
   // would otherwise cause us to interrupt the user. Need further UX design to
   // attempt WW after the first interaction.
-  if (should_attempt_warmer_welcome_) {
-    if (chromeos::assistant::features::IsWarmerWelcomeEnabled()) {
-      auto* pref_service =
-          Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+  auto* pref_service =
+      Shell::Get()->session_controller()->GetLastActiveUserPrefService();
 
-      DCHECK(pref_service);
+  DCHECK(pref_service);
 
-      auto num_warmer_welcome_triggered =
-          pref_service->GetInteger(prefs::kAssistantNumWarmerWelcomeTriggered);
-      if (num_warmer_welcome_triggered < kWarmerWelcomesMaxTimesTriggered) {
-        // If the user has opted to launch Assistant with the mic open, we can
-        // reasonably assume there is an expectation of TTS.
-        assistant_->StartWarmerWelcomeInteraction(
-            num_warmer_welcome_triggered,
-            /*allow_tts=*/launch_with_mic_open);
-        pref_service->SetInteger(prefs::kAssistantNumWarmerWelcomeTriggered,
-                                 ++num_warmer_welcome_triggered);
-      }
-    }
-    should_attempt_warmer_welcome_ = false;
+  auto num_warmer_welcome_triggered =
+      pref_service->GetInteger(prefs::kAssistantNumWarmerWelcomeTriggered);
+  if (num_warmer_welcome_triggered < kWarmerWelcomesMaxTimesTriggered) {
+    // If the user has opted to launch Assistant with the mic open, we can
+    // reasonably assume there is an expectation of TTS.
+    assistant_->StartWarmerWelcomeInteraction(
+        num_warmer_welcome_triggered,
+        /*allow_tts=*/launch_with_mic_open);
+    pref_service->SetInteger(prefs::kAssistantNumWarmerWelcomeTriggered,
+                             ++num_warmer_welcome_triggered);
   }
+  should_attempt_warmer_welcome_ = false;
 }
 
 void AssistantInteractionController::StartMetalayerInteraction(

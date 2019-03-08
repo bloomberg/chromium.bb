@@ -142,6 +142,9 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantViewDelegate {
   // Returns the root window that newly created windows should be added to.
   virtual aura::Window* GetRootWindowForNewWindows() = 0;
 
+  // Returns true if user prefers to start with voice interaction.
+  virtual bool IsLaunchWithMicOpen() const = 0;
+
   // Returns true if in tablet mode.
   virtual bool IsTabletMode() const = 0;
 

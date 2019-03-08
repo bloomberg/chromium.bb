@@ -415,17 +415,9 @@ void DialogPlate::SetFocus(ash::InputModality input_modality) {
       textfield_->RequestFocus();
       break;
     case ash::InputModality::kVoice:
+      animated_voice_input_toggle_->RequestFocus();
+      break;
     case ash::InputModality::kStylus:
-      // When not using |kKeyboard| input modality we need to explicitly clear
-      // focus if the focused view is |textfield_| or |voice_input_toggle_| to
-      // prevent it from being read by ChromeVox. Clearing focus also allows
-      // AssistantContainerView's focus traversal to be reset.
-      views::FocusManager* focus_manager = GetFocusManager();
-      if (focus_manager &&
-          (focus_manager->GetFocusedView() == textfield_ ||
-           focus_manager->GetFocusedView() == voice_input_toggle_)) {
-        focus_manager->ClearFocus();
-      }
       break;
   }
 }

@@ -54,6 +54,7 @@ class AssistantViewDelegateImpl : public AssistantViewDelegate {
   void GetNavigableContentsFactoryForView(
       content::mojom::NavigableContentsFactoryRequest request) override;
   aura::Window* GetRootWindowForNewWindows() override;
+  bool IsLaunchWithMicOpen() const override;
   bool IsTabletMode() const override;
   void OnDialogPlateButtonPressed(AssistantButtonId id) override;
   void OnDialogPlateContentsCommitted(const std::string& text) override;
