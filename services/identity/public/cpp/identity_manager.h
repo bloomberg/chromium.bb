@@ -385,11 +385,14 @@ class IdentityManager : public SigninManagerBase::Observer,
   // Performs initalization that is dependent on the network being initialized.
   void OnNetworkInitialized();
 
+#if !defined(OS_IOS) && !defined(OS_ANDROID)
   // Explicitly triggers the loading of accounts in the context of supervised
   // users.
-  // TODO(https://crbug.com/860492): Eliminate the need to expose this.
-  void LegacyLoadCredentialsForSupervisedUser(
+  // TODO(https://crbug.com/860492): Remove this method when supervised users
+  // support is eliminated.
+  void DeprecatedLoadCredentialsForSupervisedUser(
       const std::string& primary_account_id);
+#endif
 
   // Returns pointer to the object used to obtain diagnostics about the internal
   // state of IdentityManager.
