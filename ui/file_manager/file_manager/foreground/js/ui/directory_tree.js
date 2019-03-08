@@ -836,6 +836,11 @@ function EntryListItem(rootType, modelItem, tree) {
   icon.classList.add('item-icon');
   icon.setAttribute('root-type-icon', rootType);
 
+  // MyFiles shows expanded by default.
+  if (rootType === VolumeManagerCommon.RootType.MY_FILES) {
+    item.mayHaveChildren_ = true;
+    item.expanded = true;
+  }
   // Populate children of this volume.
   item.updateSubDirectories(false /* recursive */);
 
@@ -918,9 +923,6 @@ EntryListItem.prototype.updateSubDirectories = function(
   const onSuccess = (entries) => {
     this.entries_ = entries;
     this.updateSubElementsFromList(recursive);
-    if (this.entries_.length > 0) {
-      this.expanded = true;
-    }
     opt_successCallback && opt_successCallback();
   };
   const reader = this.entry.createReader();
