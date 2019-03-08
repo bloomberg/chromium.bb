@@ -52,4 +52,8 @@ cast_source_set("common") {
       "//extensions/shell:resources_grit",
     ]
   }
+
+  if (!is_fuchsia) {
+    deps += [ "//components/services/heap_profiling/public/cpp" ]
+  }
 }
