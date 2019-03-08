@@ -204,6 +204,7 @@ class GPU_GLES2_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
   void EnableCHROMIUMTextureStorageImage();
   void EnableCHROMIUMColorBufferFloatRGBA();
   void EnableCHROMIUMColorBufferFloatRGB();
+  void EnableEXTFloatBlend();
   void EnableEXTColorBufferFloat();
   void EnableEXTColorBufferHalfFloat();
   void EnableOESTextureFloatLinear();
