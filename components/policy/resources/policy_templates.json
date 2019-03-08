@@ -14388,7 +14388,7 @@
 
       When this policy is left unset, Internet Explorer will auto-detect <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s own executable path when launching <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> from Internet Explorer.
 
-      When this policy is set, it will be used to launch <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> when switching launching <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> from Internet Explorer.
+      When this policy is set, it will be used to launch <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> when launching <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> from Internet Explorer.
 
       This policy can be set to an executable file path, or ${chrome} to auto-detect Chrome's install location.''',
     },
