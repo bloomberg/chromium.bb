@@ -144,10 +144,6 @@ void OfflinePageTabHelper::DidStartNavigation(web::WebState* web_state,
     return;
   }
   offline_navigation_triggered_ = GURL::EmptyGURL();
-  if (!reading_list_model_->loaded()) {
-    initial_navigation_url_ = GURL::EmptyGURL();
-    return;
-  }
   initial_navigation_url_ = context->GetUrl();
   loading_slow_or_failed_ = false;
   navigation_committed_ = false;
@@ -194,7 +190,9 @@ void OfflinePageTabHelper::PageLoaded(
     PresentOfflinePageForOnlineUrl(url);
     return;
   }
-  if (!url.is_valid() || !reading_list_model_->GetEntryByURL(url)) {
+
+  if (!url.is_valid() || !reading_list_model_->loaded() ||
+      !reading_list_model_->GetEntryByURL(url)) {
     return;
   }
   reading_list_model_->SetReadStatus(url, true);
@@ -209,8 +207,9 @@ void OfflinePageTabHelper::WebStateDestroyed(web::WebState* web_state) {
 
 void OfflinePageTabHelper::ReadingListModelLoaded(
     const ReadingListModel* model) {
-  // There is no need to do anything. If the navigation is in progress then
-  // CheckLoadingProgress might still present distilled version of the page.
+  if (navigation_committed_ && loading_slow_or_failed_) {
+    PresentOfflinePageForOnlineUrl(initial_navigation_url_);
+  }
 }
 
 void OfflinePageTabHelper::ReadingListModelBeingDeleted(
