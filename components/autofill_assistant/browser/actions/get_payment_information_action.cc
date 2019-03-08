@@ -119,7 +119,8 @@ void GetPaymentInformationAction::OnGetPaymentInformation(
     }
     processed_action_proto_->mutable_payment_details()
         ->set_is_terms_and_conditions_accepted(
-            payment_information->is_terms_and_conditions_accepted);
+            payment_information->terms_and_conditions ==
+            TermsAndConditionsState::ACCEPTED);
     processed_action_proto_->mutable_payment_details()->set_payer_email(
         payment_information->payer_email);
   }

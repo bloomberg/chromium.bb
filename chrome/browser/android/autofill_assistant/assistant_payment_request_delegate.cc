@@ -32,64 +32,81 @@ AssistantPaymentRequestDelegate::~AssistantPaymentRequestDelegate() {
       AttachCurrentThread(), java_assistant_payment_request_delegate_);
 }
 
-void AssistantPaymentRequestDelegate::OnGetPaymentInformation(
+void AssistantPaymentRequestDelegate::OnContactInfoChanged(
     JNIEnv* env,
-    const JavaParamRef<jobject>& jcaller,
-    jboolean jsucceed,
-    const JavaParamRef<jobject>& jcard,
-    const JavaParamRef<jobject>& jaddress,
-    const JavaParamRef<jstring>& jpayer_name,
-    const JavaParamRef<jstring>& jpayer_phone,
-    const JavaParamRef<jstring>& jpayer_email,
-    jboolean jis_terms_and_services_accepted) {
-  std::unique_ptr<PaymentInformation> payment_info =
-      std::make_unique<PaymentInformation>();
-  payment_info->succeed = jsucceed;
-  payment_info->is_terms_and_conditions_accepted =
-      jis_terms_and_services_accepted;
-  if (payment_info->succeed) {
-    if (jcard != nullptr) {
-      payment_info->card = std::make_unique<autofill::CreditCard>();
-      autofill::PersonalDataManagerAndroid::PopulateNativeCreditCardFromJava(
-          jcard, env, payment_info->card.get());
+    const base::android::JavaParamRef<jobject>& jcaller,
+    const base::android::JavaParamRef<jstring>& jpayer_name,
+    const base::android::JavaParamRef<jstring>& jpayer_phone,
+    const base::android::JavaParamRef<jstring>& jpayer_email) {
+  std::string name;
+  std::string phone;
+  std::string email;
 
-      auto guid = payment_info->card->billing_address_id();
-      if (!guid.empty()) {
-        autofill::AutofillProfile* profile =
-            autofill::PersonalDataManagerFactory::GetForProfile(
-                ProfileManager::GetLastUsedProfile())
-                ->GetProfileByGUID(guid);
-        if (profile != nullptr)
-          payment_info->billing_address =
-              std::make_unique<autofill::AutofillProfile>(*profile);
-      }
-    }
-    if (jaddress != nullptr) {
-      payment_info->shipping_address =
-          std::make_unique<autofill::AutofillProfile>();
-      autofill::PersonalDataManagerAndroid::PopulateNativeProfileFromJava(
-          jaddress, env, payment_info->shipping_address.get());
-    }
-    if (jpayer_name != nullptr) {
-      base::android::ConvertJavaStringToUTF8(env, jpayer_name,
-                                             &payment_info->payer_name);
-    }
-    if (jpayer_phone != nullptr) {
-      base::android::ConvertJavaStringToUTF8(env, jpayer_phone,
-                                             &payment_info->payer_phone);
-    }
-    if (jpayer_email != nullptr) {
-      base::android::ConvertJavaStringToUTF8(env, jpayer_email,
-                                             &payment_info->payer_email);
-    }
+  if (jpayer_name) {
+    base::android::ConvertJavaStringToUTF8(env, jpayer_name, &name);
   }
-  ui_controller_->OnGetPaymentInformation(std::move(payment_info));
+
+  if (jpayer_phone) {
+    base::android::ConvertJavaStringToUTF8(env, jpayer_phone, &phone);
+  }
+
+  if (jpayer_email) {
+    base::android::ConvertJavaStringToUTF8(env, jpayer_email, &email);
+  }
+
+  ui_controller_->OnContactInfoChanged(name, phone, email);
 }
 
-void AssistantPaymentRequestDelegate::OnCancelButtonClicked(
+void AssistantPaymentRequestDelegate::OnShippingAddressChanged(
     JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& jcaller) {
-  ui_controller_->OnCancelButtonClicked();
+    const base::android::JavaParamRef<jobject>& jcaller,
+    const base::android::JavaParamRef<jobject>& jaddress) {
+  if (!jaddress) {
+    ui_controller_->OnShippingAddressChanged(nullptr);
+    return;
+  }
+
+  auto shipping_address = std::make_unique<autofill::AutofillProfile>();
+  autofill::PersonalDataManagerAndroid::PopulateNativeProfileFromJava(
+      jaddress, env, shipping_address.get());
+  ui_controller_->OnShippingAddressChanged(std::move(shipping_address));
+}
+
+void AssistantPaymentRequestDelegate::OnCreditCardChanged(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jcaller,
+    const base::android::JavaParamRef<jobject>& jcard) {
+  if (!jcard) {
+    ui_controller_->OnCreditCardChanged(nullptr);
+    return;
+  }
+
+  auto card = std::make_unique<autofill::CreditCard>();
+  autofill::PersonalDataManagerAndroid::PopulateNativeCreditCardFromJava(
+      jcard, env, card.get());
+
+  auto guid = card->billing_address_id();
+  if (!guid.empty()) {
+    autofill::AutofillProfile* profile =
+        autofill::PersonalDataManagerFactory::GetForProfile(
+            ProfileManager::GetLastUsedProfile())
+            ->GetProfileByGUID(guid);
+    if (profile != nullptr) {
+      auto billing_address =
+          std::make_unique<autofill::AutofillProfile>(*profile);
+      ui_controller_->OnBillingAddressChanged(std::move(billing_address));
+    }
+  }
+
+  ui_controller_->OnCreditCardChanged(std::move(card));
+}
+
+void AssistantPaymentRequestDelegate::OnTermsAndConditionsChanged(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jcaller,
+    jint state) {
+  ui_controller_->OnTermsAndConditionsChanged(
+      static_cast<TermsAndConditionsState>(state));
 }
 
 base::android::ScopedJavaGlobalRef<jobject>

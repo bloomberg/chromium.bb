@@ -18,6 +18,15 @@ class CreditCard;
 
 namespace autofill_assistant {
 
+// GENERATED_JAVA_ENUM_PACKAGE: (
+// org.chromium.chrome.browser.autofill_assistant.payment)
+// GENERATED_JAVA_CLASS_NAME_OVERRIDE: AssistantTermsAndConditionsState
+enum TermsAndConditionsState {
+  NOT_SELECTED = 0,
+  ACCEPTED = 1,
+  REQUIRES_REVIEW = 2,
+};
+
 // Struct for holding the payment information data.
 struct PaymentInformation {
   PaymentInformation();
@@ -30,7 +39,7 @@ struct PaymentInformation {
   std::string payer_name;
   std::string payer_phone;
   std::string payer_email;
-  bool is_terms_and_conditions_accepted = false;
+  TermsAndConditionsState terms_and_conditions = NOT_SELECTED;
 };
 
 // Struct for holding the payment request options.

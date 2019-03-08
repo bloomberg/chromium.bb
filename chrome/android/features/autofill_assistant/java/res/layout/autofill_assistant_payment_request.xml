@@ -67,7 +67,4 @@
         android:text="@string/autofill_assistant_3rd_party_privacy_notice"
         android:textAppearance="@style/TextAppearance.AssistantBlackCaption"
         android:background="@drawable/autofill_assistant_lightblue_rect_bg"/>
-
-    <include layout="@layout/autofill_assistant_payment_request_bottom_bar" />
-
 </org.chromium.chrome.browser.widget.BoundedLinearLayout>

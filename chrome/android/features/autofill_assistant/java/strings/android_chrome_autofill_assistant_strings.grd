@@ -133,9 +133,6 @@
       <message name="IDS_AUTOFILL_ASSISTANT_FIRST_RUN_ACCESSIBILITY" desc="Accessibility description of Autofill Assistant first run screen is shown.">
         Google Assistant in Chrome first run screen is shown
       </message>
-      <message name="IDS_AUTOFILL_ASSISTANT_PAYMENT_INFO_CONFIRM" desc="Text on the payment request primary button to confirm payment information [CHAR-LIMIT=32]">
-        Continue
-      </message>
       <message name="IDS_AUTOFILL_ASSISTANT_GIVE_UP"
                desc="Text label that is shown when autofill assistant cannot help anymore, because of a user action."
                internal_comment="TODO(wnwen): Remove duplication in components/autofill_assistant_strings.grdp">

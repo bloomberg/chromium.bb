@@ -12,7 +12,6 @@ import android.view.View;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
-import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
@@ -213,13 +212,27 @@ public class AutofillAssistantPaymentRequest {
                         mWebContents.getLastCommittedUrl()),
                 SecurityStateModel.getSecurityLevelForWebContents(mWebContents),
                 new ShippingStrings(PaymentShippingType.SHIPPING));
-        // This payment request is embedded in another flow, so update the 'Pay' button text to
-        // 'Confirm'.
-        mUI.updatePayButtonText(R.string.autofill_assistant_payment_info_confirm);
 
         mAddressEditor.setEditorDialog(mUI.getEditorDialog());
         mCardEditor.setEditorDialog(mUI.getCardEditorDialog());
         if (mContactEditor != null) mContactEditor.setEditorDialog(mUI.getEditorDialog());
+
+        // Notify initial selections.
+        if (mContactSection != null && mContactSection.getSelectedItem() != null) {
+            onSectionOptionSelected(
+                    PaymentRequestUI.DataType.CONTACT_DETAILS, mContactSection.getSelectedItem());
+        }
+
+        if (mShippingAddressesSection != null
+                && mShippingAddressesSection.getSelectedItem() != null) {
+            onSectionOptionSelected(PaymentRequestUI.DataType.SHIPPING_ADDRESSES,
+                    mShippingAddressesSection.getSelectedItem());
+        }
+
+        if (mPaymentMethodsSection != null && mPaymentMethodsSection.getSelectedItem() != null) {
+            onSectionOptionSelected(PaymentRequestUI.DataType.PAYMENT_METHODS,
+                    mPaymentMethodsSection.getSelectedItem());
+        }
     }
 
     private void createShippingSection(
@@ -295,12 +308,13 @@ public class AutofillAssistantPaymentRequest {
     }
 
     @PaymentRequestUI.SelectionResult
-    public int onSectionOptionSelected(@PaymentRequestUI.DataType int optionType,
-            EditableOption option, Callback<PaymentInformation> checkedCallback) {
+    public int onSectionOptionSelected(
+            @PaymentRequestUI.DataType int optionType, EditableOption option) {
         if (optionType == PaymentRequestUI.DataType.SHIPPING_ADDRESSES) {
             AutofillAddress address = (AutofillAddress) option;
             if (address.isComplete()) {
                 mShippingAddressesSection.setSelectedItem(option);
+                mDelegate.onShippingAddressChanged(address.getProfile());
             } else {
                 editAddress(address);
                 return PaymentRequestUI.SelectionResult.EDITOR_LAUNCH;
@@ -309,6 +323,7 @@ public class AutofillAssistantPaymentRequest {
             AutofillContact contact = (AutofillContact) option;
             if (contact.isComplete()) {
                 mContactSection.setSelectedItem(option);
+                mDelegate.onContactInfoChanged(contact);
             } else {
                 editContact(contact);
                 return PaymentRequestUI.SelectionResult.EDITOR_LAUNCH;
@@ -317,6 +332,7 @@ public class AutofillAssistantPaymentRequest {
             AutofillPaymentInstrument card = (AutofillPaymentInstrument) option;
             if (card.isComplete()) {
                 mPaymentMethodsSection.setSelectedItem(option);
+                mDelegate.onCreditCardChanged(card.getCard());
             } else {
                 editCard(card);
                 return PaymentRequestUI.SelectionResult.EDITOR_LAUNCH;
@@ -485,48 +501,11 @@ public class AutofillAssistantPaymentRequest {
         return networksByString;
     }
 
-    public boolean onPayClicked(EditableOption selectedShippingAddress,
-            EditableOption selectedShippingOption, EditableOption selectedPaymentMethod,
-            boolean isTermsAndConditionsAccepted) {
-        SelectedPaymentInformation selectedPaymentInformation = new SelectedPaymentInformation();
-
-        selectedPaymentInformation.isTermsAndConditionsAccepted = isTermsAndConditionsAccepted;
-        selectedPaymentInformation.card =
-                ((AutofillPaymentInstrument) selectedPaymentMethod).getCard();
-        if (mPaymentOptions.mRequestShipping && selectedShippingAddress != null) {
-            selectedPaymentInformation.address =
-                    ((AutofillAddress) selectedShippingAddress).getProfile();
-        }
-        if (mPaymentOptions.mRequestPayerName || mPaymentOptions.mRequestPayerPhone
-                || mPaymentOptions.mRequestPayerEmail) {
-            EditableOption selectedContact =
-                    mContactSection != null ? mContactSection.getSelectedItem() : null;
-            if (selectedContact != null) {
-                selectedPaymentInformation.payerName =
-                        ((AutofillContact) selectedContact).getPayerName();
-                selectedPaymentInformation.payerPhone =
-                        ((AutofillContact) selectedContact).getPayerPhone();
-                selectedPaymentInformation.payerEmail =
-                        ((AutofillContact) selectedContact).getPayerEmail();
-            }
-        }
-        selectedPaymentInformation.succeed = true;
-        mDelegate.onPaymentInformationSelected(selectedPaymentInformation);
-        return false;
-    }
-
-    public void onDismiss() {
-        SelectedPaymentInformation selectedPaymentInformation = new SelectedPaymentInformation();
-        selectedPaymentInformation.succeed = false;
-        mDelegate.onPaymentInformationSelected(selectedPaymentInformation);
-        close();
-    }
-
-    public void onCancelButtonClicked() {
-        mDelegate.onCancelButtonClicked();
-    }
-
     public void onCardAndAddressSettingsClicked() {
         // TODO(crbug.com/806868): Allow user to control cards and addresses.
+    }
+
+    public void onTermsAndConditionsChanged(@AssistantTermsAndConditionsState int state) {
+        mDelegate.onTermsAndConditionsChanged(state);
     }
 }
