@@ -1398,18 +1398,20 @@ TEST_F(IdentityManagerTest, GetAccountsCookieMutator) {
   EXPECT_TRUE(mutator);
 }
 
+#if !defined(OS_IOS) && !defined(OS_ANDROID)
 // Tests that requesting a load of accounts results in the notification
 // firing that tokens were loaded.
-TEST_F(IdentityManagerTest, LegacyLoadCredentials) {
+TEST_F(IdentityManagerTest, DeprecatedLoadCredentialsForSupervisedUser) {
   base::RunLoop run_loop;
   identity_manager_observer()->SetOnRefreshTokensLoadedCallback(
       run_loop.QuitClosure());
 
   // Load the accounts and ensure that we see the resulting notification that
   // they were loaded.
-  identity_manager()->LegacyLoadCredentialsForSupervisedUser("");
+  identity_manager()->DeprecatedLoadCredentialsForSupervisedUser("");
   run_loop.Run();
 }
+#endif
 
 TEST_F(IdentityManagerTest, LegacySeedAccountInfo) {
   ASSERT_FALSE(

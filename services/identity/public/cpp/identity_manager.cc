@@ -304,10 +304,12 @@ void IdentityManager::OnNetworkInitialized() {
   account_fetcher_service_->OnNetworkInitialized();
 }
 
-void IdentityManager::LegacyLoadCredentialsForSupervisedUser(
+#if !defined(OS_IOS) && !defined(OS_ANDROID)
+void IdentityManager::DeprecatedLoadCredentialsForSupervisedUser(
     const std::string& primary_account_id) {
   token_service_->LoadCredentials(primary_account_id);
 }
+#endif
 
 DiagnosticsProvider* IdentityManager::GetDiagnosticsProvider() {
   return diagnostics_provider_.get();
