@@ -99,6 +99,10 @@
           {
             "match": "android.webkit.cts.WebViewClientTest#testShouldOverrideUrlLoadingOnCreateWindow",
             "_bug_id": "crbug.com/896022"
+          },
+          {
+            "match": "android.webkit.cts.WebViewTest#testLoadDataWithBaseUrl",
+            "_bug_id": "crbug.com/900915"
           }
         ]
       },
@@ -174,6 +178,10 @@
           {
             "match": "android.webkit.cts.WebViewClientTest#testShouldOverrideUrlLoadingOnCreateWindow",
             "_bug_id": "crbug.com/896022"
+          },
+          {
+            "match": "android.webkit.cts.WebViewTest#testLoadDataWithBaseUrl",
+            "_bug_id": "crbug.com/900915"
           }
         ]
       },
