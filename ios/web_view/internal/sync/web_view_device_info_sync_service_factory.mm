@@ -54,7 +54,7 @@ WebViewDeviceInfoSyncServiceFactory::BuildServiceInstanceFor(
       WebViewBrowserState::FromBrowserState(context);
   auto local_device_info_provider =
       std::make_unique<syncer::LocalDeviceInfoProviderImpl>(
-          version_info::Channel::UNKNOWN, version_info::GetVersionNumber(),
+          version_info::Channel::STABLE, version_info::GetVersionNumber(),
           ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET,
           /*signin_scoped_device_id_callback=*/
           base::BindRepeating(&signin::GetSigninScopedDeviceId,

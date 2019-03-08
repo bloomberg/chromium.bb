@@ -98,7 +98,7 @@ WebViewGCMProfileServiceFactory::BuildServiceInstanceFor(
       base::BindRepeating(&RequestProxyResolvingSocketFactory, context),
       browser_state->GetSharedURLLoaderFactory(),
       ApplicationContext::GetInstance()->GetNetworkConnectionTracker(),
-      version_info::Channel::UNKNOWN, GetProductCategoryForSubtypes(),
+      version_info::Channel::STABLE, GetProductCategoryForSubtypes(),
       WebViewIdentityManagerFactory::GetForBrowserState(browser_state),
       base::WrapUnique(new gcm::GCMClientFactory),
       base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::UI}),
