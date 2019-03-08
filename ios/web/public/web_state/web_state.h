@@ -75,14 +75,22 @@ class WebState : public base::SupportsUserData {
   // Parameters for the OpenURL() method.
   struct OpenURLParams {
     OpenURLParams(const GURL& url,
+                  const GURL& virtual_url,
                   const Referrer& referrer,
                   WindowOpenDisposition disposition,
                   ui::PageTransition transition,
                   bool is_renderer_initiated);
+    OpenURLParams(const GURL& url,
+                  const Referrer& referrer,
+                  WindowOpenDisposition disposition,
+                  ui::PageTransition transition,
+                  bool is_renderer_initiated);
+    OpenURLParams(const OpenURLParams& params);
     ~OpenURLParams();
 
-    // The URL/referrer to be opened.
+    // The URL/virtualURL/referrer to be opened.
     GURL url;
+    GURL virtual_url;
     Referrer referrer;
 
     // The disposition requested by the navigation source.

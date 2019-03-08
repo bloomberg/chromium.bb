@@ -495,7 +495,7 @@ TEST_P(WebStateImplTest, DelegateTest) {
   EXPECT_EQ(web_state_.get(),
             delegate.last_close_web_state_request()->web_state);
 
-  // Test that OpenURLFromWebState() is called.
+  // Test that OpenURLFromWebState() is called without a virtual URL.
   WebState::OpenURLParams params(GURL("https://chromium.test/"), Referrer(),
                                  WindowOpenDisposition::CURRENT_TAB,
                                  ui::PAGE_TRANSITION_LINK, true);
@@ -506,6 +506,27 @@ TEST_P(WebStateImplTest, DelegateTest) {
   EXPECT_EQ(web_state_.get(), open_url_request->web_state);
   WebState::OpenURLParams actual_params = open_url_request->params;
   EXPECT_EQ(params.url, actual_params.url);
+  EXPECT_EQ(GURL::EmptyGURL(), params.virtual_url);
+  EXPECT_EQ(GURL::EmptyGURL(), actual_params.virtual_url);
+  EXPECT_EQ(params.referrer.url, actual_params.referrer.url);
+  EXPECT_EQ(params.referrer.policy, actual_params.referrer.policy);
+  EXPECT_EQ(params.disposition, actual_params.disposition);
+  EXPECT_TRUE(
+      PageTransitionCoreTypeIs(params.transition, actual_params.transition));
+  EXPECT_EQ(params.is_renderer_initiated, actual_params.is_renderer_initiated);
+
+  // Test that OpenURLFromWebState() is called with a virtual URL.
+  params = WebState::OpenURLParams(
+      GURL("https://chromium.test/"), GURL("https://virtual.chromium.test/"),
+      Referrer(), WindowOpenDisposition::CURRENT_TAB, ui::PAGE_TRANSITION_LINK,
+      true);
+  web_state_->OpenURL(params);
+  open_url_request = delegate.last_open_url_request();
+  ASSERT_TRUE(open_url_request);
+  EXPECT_EQ(web_state_.get(), open_url_request->web_state);
+  actual_params = open_url_request->params;
+  EXPECT_EQ(params.url, actual_params.url);
+  EXPECT_EQ(params.virtual_url, actual_params.virtual_url);
   EXPECT_EQ(params.referrer.url, actual_params.referrer.url);
   EXPECT_EQ(params.referrer.policy, actual_params.referrer.policy);
   EXPECT_EQ(params.disposition, actual_params.disposition);
