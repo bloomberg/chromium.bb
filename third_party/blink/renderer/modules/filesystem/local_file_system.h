@@ -46,7 +46,6 @@
 
 namespace blink {
 
-class AsyncFileSystemCallbacks;
 class FileSystemClient;
 class ExecutionContext;
 class FileSystemCallbacks;
@@ -99,7 +98,9 @@ class LocalFileSystem final : public GarbageCollectedFinalized<LocalFileSystem>,
   void RequestFileSystemAccessInternal(ExecutionContext*,
                                        base::OnceCallback<void(bool)> callback);
   void FileSystemNotAllowedInternal(ExecutionContext*,
-                                    std::unique_ptr<AsyncFileSystemCallbacks>);
+                                    std::unique_ptr<FileSystemCallbacks>);
+  void FileSystemNotAllowedInternal(ExecutionContext*,
+                                    std::unique_ptr<ResolveURICallbacks>);
   void FileSystemAllowedInternal(ExecutionContext*,
                                  mojom::blink::FileSystemType,
                                  std::unique_ptr<FileSystemCallbacks> callbacks,

@@ -6,7 +6,6 @@ import("//third_party/blink/renderer/modules/modules.gni")
 
 blink_modules_sources("filesystem") {
   sources = [
-    "async_file_system_callbacks.h",
     "data_transfer_item_file_system.cc",
     "data_transfer_item_file_system.h",
     "dev_tools_host_file_system.cc",

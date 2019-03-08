@@ -192,7 +192,7 @@ void FileSystemDispatcher::Remove(const KURL& path,
                                   std::unique_ptr<VoidCallbacks> callbacks) {
   GetFileSystemManager().Remove(
       path, recursive,
-      WTF::Bind(&FileSystemDispatcher::DidFinish, WrapWeakPersistent(this),
+      WTF::Bind(&FileSystemDispatcher::DidRemove, WrapWeakPersistent(this),
                 std::move(callbacks)));
 }
 
@@ -202,7 +202,7 @@ void FileSystemDispatcher::RemoveSync(
     std::unique_ptr<VoidCallbacks> callbacks) {
   base::File::Error error_code = base::File::FILE_ERROR_FAILED;
   GetFileSystemManager().Remove(path, recursive, &error_code);
-  DidFinish(std::move(callbacks), error_code);
+  DidRemove(std::move(callbacks), error_code);
 }
 
 void FileSystemDispatcher::ReadMetadata(
@@ -428,7 +428,7 @@ void FileSystemDispatcher::Cancel(int request_id_to_cancel,
 
 void FileSystemDispatcher::CreateSnapshotFile(
     const KURL& file_path,
-    std::unique_ptr<AsyncFileSystemCallbacks> callbacks) {
+    std::unique_ptr<SnapshotFileCallbackBase> callbacks) {
   GetFileSystemManager().CreateSnapshotFile(
       file_path, WTF::Bind(&FileSystemDispatcher::DidCreateSnapshotFile,
                            WrapWeakPersistent(this), std::move(callbacks)));
@@ -436,7 +436,7 @@ void FileSystemDispatcher::CreateSnapshotFile(
 
 void FileSystemDispatcher::CreateSnapshotFileSync(
     const KURL& file_path,
-    std::unique_ptr<AsyncFileSystemCallbacks> callbacks) {
+    std::unique_ptr<SnapshotFileCallbackBase> callbacks) {
   base::File::Info file_info;
   base::FilePath platform_path;
   base::File::Error error_code = base::File::FILE_ERROR_FAILED;
@@ -475,9 +475,16 @@ void FileSystemDispatcher::DidResolveURL(
   }
 }
 
-void FileSystemDispatcher::DidFinish(
-    std::unique_ptr<AsyncFileSystemCallbacks> callbacks,
-    base::File::Error error_code) {
+void FileSystemDispatcher::DidRemove(std::unique_ptr<VoidCallbacks> callbacks,
+                                     base::File::Error error_code) {
+  if (error_code == base::File::Error::FILE_OK)
+    callbacks->DidSucceed();
+  else
+    callbacks->DidFail(error_code);
+}
+
+void FileSystemDispatcher::DidFinish(std::unique_ptr<EntryCallbacks> callbacks,
+                                     base::File::Error error_code) {
   if (error_code == base::File::Error::FILE_OK)
     callbacks->DidSucceed();
   else
@@ -561,7 +568,7 @@ void FileSystemDispatcher::DidCancel(StatusCallback callback,
 }
 
 void FileSystemDispatcher::DidCreateSnapshotFile(
-    std::unique_ptr<AsyncFileSystemCallbacks> callbacks,
+    std::unique_ptr<SnapshotFileCallbackBase> callbacks,
     const base::File::Info& file_info,
     const base::FilePath& platform_path,
     base::File::Error error_code,

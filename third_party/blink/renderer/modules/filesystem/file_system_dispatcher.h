@@ -10,7 +10,6 @@
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
 #include "third_party/blink/public/mojom/filesystem/file_system.mojom-blink.h"
 #include "third_party/blink/public/platform/web_callbacks.h"
-#include "third_party/blink/renderer/modules/filesystem/async_file_system_callbacks.h"
 #include "third_party/blink/renderer/modules/filesystem/file_system_callbacks.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
@@ -139,10 +138,10 @@ class FileSystemDispatcher
   void Cancel(int request_id_to_cancel, StatusCallback callback);
 
   void CreateSnapshotFile(const KURL& file_path,
-                          std::unique_ptr<AsyncFileSystemCallbacks> callbacks);
+                          std::unique_ptr<SnapshotFileCallbackBase> callbacks);
   void CreateSnapshotFileSync(
       const KURL& file_path,
-      std::unique_ptr<AsyncFileSystemCallbacks> callbacks);
+      std::unique_ptr<SnapshotFileCallbackBase> callbacks);
 
  private:
   class WriteListener;
@@ -157,7 +156,9 @@ class FileSystemDispatcher
                      const base::FilePath& file_path,
                      bool is_directory,
                      base::File::Error error_code);
-  void DidFinish(std::unique_ptr<AsyncFileSystemCallbacks> callbacks,
+  void DidRemove(std::unique_ptr<VoidCallbacks> callbacks,
+                 base::File::Error error_code);
+  void DidFinish(std::unique_ptr<EntryCallbacks> callbacks,
                  base::File::Error error_code);
   void DidReadMetadata(std::unique_ptr<MetadataCallbacks> callbacks,
                        const base::File::Info& file_info,
@@ -185,7 +186,7 @@ class FileSystemDispatcher
                  int cancelled_operation_id,
                  base::File::Error error_code);
   void DidCreateSnapshotFile(
-      std::unique_ptr<AsyncFileSystemCallbacks> callbacks,
+      std::unique_ptr<SnapshotFileCallbackBase> callbacks,
       const base::File::Info& file_info,
       const base::FilePath& platform_path,
       base::File::Error error_code,
