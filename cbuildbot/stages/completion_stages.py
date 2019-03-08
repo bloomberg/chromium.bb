@@ -127,7 +127,7 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
     """
     # Wait for slaves if we're a master, in production or mock-production.
     # Otherwise just look at our own status.
-    build_identifier, db = self._run.GetCIDBHandle()
+    build_identifier, _ = self._run.GetCIDBHandle()
     build_id = build_identifier.cidb_id
     builders_array = None
     if not self._run.config.master:
@@ -137,15 +137,7 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
       # The master build.
       builders = self._GetSlaveConfigs()
       builders_array = [b.name for b in builders]
-      timeout = None
-
-      if db:
-        timeout = db.GetTimeToDeadline(build_id)
-        logging.info('Got timeout for build_id %s', build_id)
-      if timeout is None:
-        # Catch-all: This could happen if cidb is not setup, or the deadline
-        # query fails.
-        timeout = self._run.config.build_timeout
+      timeout = self._run.config.build_timeout
 
       if self._run.options.debug:
         # For debug runs, wait for three minutes to ensure most code

@@ -467,14 +467,16 @@ class ValidationPool(object):
     # We choose a longer wait here as we haven't committed to anything yet. By
     # doing this here we can reduce the number of builder cycles.
     timeout = cls.DEFAULT_TIMEOUT
-    build_identifier, db = builder_run.GetCIDBHandle()
-    if db:
-      build_id = build_identifier.cidb_id
-      time_to_deadline = db.GetTimeToDeadline(build_id)
-      if time_to_deadline is not None:
-        # We must leave enough time before the deadline to allow us to extend
-        # the deadline in case we hit this timeout.
-        timeout = time_to_deadline - cls.EXTENSION_TIMEOUT_BUFFER
+    if builder_run:
+      try:
+        time_to_deadline = builder_run.config.build_timeout
+        if time_to_deadline is not None:
+          # We must leave enough time before the deadline to allow us to extend
+          # the deadline in case we hit this timeout.
+          timeout = time_to_deadline - cls.EXTENSION_TIMEOUT_BUFFER
+      except AttributeError:
+        logging.error('Could not fetch build_timeout from BuilderRun.config',
+                      exc_info=True)
 
     end_time = time.time() + timeout
     status = constants.TREE_OPEN
