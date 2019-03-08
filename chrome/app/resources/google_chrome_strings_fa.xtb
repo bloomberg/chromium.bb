@@ -99,9 +99,11 @@
 <translation id="3398288718845740432">‏پنهان در منوی Chrome</translation>
 <translation id="3451115285585441894">‏افزودن به Chrome...</translation>
 <translation id="345171907106878721">‏افرودن خودتان به Chrome</translation>
+<translation id="3457651673823986489">‏اگر تصویری توضیح مفیدی نداشته باشد، Chrome توضیحی برای شما ارائه خواهد کرد. Google تصاویر را اسکن می‌کند. هروقت خواستید می‌توانید این گزینه را در تنظیمات خاموش کنید.</translation>
 <translation id="3479552764303398839">اکنون نه</translation>
 <translation id="34857402635545079">‏همچنین داده‌ها از Chrome پاک شود (<ph name="URL" />)</translation>
 <translation id="3503306920980160878">‏Chrome برای هم‌رسانی مکانتان با این سایت باید به مکان شما دسترسی داشته باشد</translation>
+<translation id="3576528680708590453">‏سرپرست سیستم برای باز شدن مرورگری دیگر جهت دسترسی به <ph name="TARGET_URL_HOSTNAME" />، Google Chrome را پیکربندی کرده است.</translation>
 <translation id="3582972582564653026">‏Chrome را در همه دستگاه‌هایتان همگام‌سازی و شخصی‌سازی کنید</translation>
 <translation id="3622797965165704966">‏اکنون استفاده از Chrome با حساب Google شما و در رایانه‌های مشترک آسان‌تر شده است.</translation>
 <translation id="3637702109597584617">‏<ph name="TERMS_OF_SERVICE_LINK" />شرایط و ضوابط<ph name="END_TERMS_OF_SERVICE_LINK" /> سیستم‌عامل Google Chrome</translation>
@@ -249,6 +251,7 @@
 <translation id="8129812357326543296">‏درباره &amp;Google Chrome</translation>
 <translation id="8179874765710681175">‏Chrome را روی تلفنتان نصب کنید. پیامکی به تلفن شما خواهیم فرستاد.</translation>
 <translation id="8183957050892517584">‏Chrome به‌طور امن جزئیات شخصی‌تان را ذخیره خواهد کرد تا نیازی نباشد دوباره آن‌ها را تایپ کنید.</translation>
+<translation id="8224281044825492187">‏اگر تصویری توضیح مفیدی نداشته باشد، Chrome توضیحی برای شما ارائه خواهد کرد. Google تصاویر را اسکن می‌کند.</translation>
 <translation id="8226081633851087288">{0,plural, =0{‏سیستم‌عامل Chrome اکنون بازراه‌اندازی می‌شود}=1{‏سیستم‌عامل Chrome ‏۱ ثانیه دیگر بازراه‌اندازی می‌شود}one{‏سیستم‌عامل Chrome # ثانیه دیگر بازراه‌اندازی می‌شود}other{‏سیستم‌عامل Chrome # ثانیه دیگر بازراه‌اندازی می‌شود}}</translation>
 <translation id="825412236959742607">‏این صفحه حافظه خیلی زیادی استفاده می‌کند، به‌همین‌دلیل Chrome برخی از محتوا را پاک کرد.</translation>
 <translation id="8255190535488645436">‏Google Chrome درحال استفاده از دوربین و میکروفون شما است.</translation>

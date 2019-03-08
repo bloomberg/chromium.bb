@@ -720,7 +720,6 @@
 <translation id="4989163558385430922">查看全部</translation>
 <translation id="4989809363548539747">這是不支援的外掛程式</translation>
 <translation id="5002932099480077015">啟用後，Chrome 會將您的信用卡複本儲存在這個裝置上，以加快表單填寫速度。</translation>
-<translation id="5014174725590676422">目前顯示 Chrome 版 Google 助理首次執行的畫面</translation>
 <translation id="5015510746216210676">裝置名稱：</translation>
 <translation id="5017554619425969104">你複製的文字</translation>
 <translation id="5018422839182700155">無法開啟這個網頁</translation>
@@ -1439,7 +1438,6 @@
 <translation id="9080712759204168376">訂單摘要</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> 通常使用加密方式保護您的資訊。但 Chromium 這次嘗試連線到 <ph name="SITE" /> 時，該網站傳回了異常且錯誤的憑證。這可能是因為有攻擊者企圖偽裝成 <ph name="SITE" />，或是受到 Wi-Fi 登入畫面影響而造成連線中斷。不過請放心，Chromium 已及時停止連線，並未傳輸任何資料，因此您的資訊仍然安全無虞。</translation>
 <translation id="9106062320799175032">新增帳單地址</translation>
-<translation id="9110718169272311511">Chrome 版 Google 助理位於靠近畫面底部的位置</translation>
 <translation id="9114524666733003316">正在驗證信用卡...</translation>
 <translation id="9128870381267983090">連線至網路</translation>
 <translation id="9137013805542155359">顯示原文</translation>

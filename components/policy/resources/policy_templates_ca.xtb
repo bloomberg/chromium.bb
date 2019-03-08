@@ -294,8 +294,8 @@
 <translation id="1599424828227887013">Activa l'aïllament de llocs web per a orígens especificats en dispositius Android</translation>
 <translation id="1608259529294767544">Aquesta política dona permís a l'Assistent de Google perquè escolti la frase d'activació per veu.
 
-      Si la política s'activa, l'Assistent de Google podrà escoltar la frase d'activació per veu.
-      Si es desactiva, l'Assistent de Google no podrà escoltar la frase d'activació per veu.
+      Si la política s'activa, l'Assistent de Google escoltarà la frase d'activació per veu.
+      Si es desactiva, l'Assistent de Google no escoltarà la frase d'activació per veu.
       Si no s'estableix, els usuaris poden decidir si permeten que l'Assistent de Google escolti la frase d'activació per veu.
       </translation>
 <translation id="1608755754295374538">URL als quals els dispositius de captura d'àudio podran accedir sense confirmació.</translation>
@@ -1977,9 +1977,9 @@ Si la política no es defineix, els usuaris podran triar si el prestatge s'ha d'
       Aquesta política només funciona quan l'extensió <ph name="CHROME_REPORTING_EXTENSION_NAME" /> està activada i l'ordinador està inscrit amb <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="5584132346604748282">Controla els serveis d'ubicació de Google a Android</translation>
 <translation id="5586942249556966598">No facis res</translation>
-<translation id="5590494712401018042">Especifica el percentatge que permet ajustar el retard per atenuar la pantalla quan el dispositiu està en mode de presentació.
+<translation id="5590494712401018042">Especifica el percentatge en què s'ajusta el retard per atenuar la pantalla quan el dispositiu està en mode de presentació.
 
-          Si s'estableix aquesta política, especifica el percentatge que permet ajustar el retard per atenuar la pantalla quan el dispositiu està en mode de presentació. Quan s'ajusta aquest retard, s'adapten els retards de desconnexió, bloqueig i inactivitat de la pantalla perquè les distàncies amb el retard per atenuar la pantalla siguin les mateixes que les configurades originalment.
+          Si s'estableix aquesta política, especifica el percentatge en què s'ajusta el retard per atenuar la pantalla quan el dispositiu està en mode de presentació. Quan s'ajusta aquest retard, s'adapten els retards de desconnexió, bloqueig i inactivitat de la pantalla perquè les distàncies amb el retard per atenuar la pantalla siguin les mateixes que les configurades originalment.
 
           Si no s'estableix aquesta política, es fa servir un factor d'ajust predeterminat.
 
@@ -2622,9 +2622,9 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
           Si aquesta política es deixa sense establir, s'utilitzarà per a tots els llocs web el valor global predeterminat indicat a la política DefaultWebUsbGuardSetting (si s'ha definit) o el valor personalitzat que hagi definit l'usuari.
 
           Els patrons d'URL d'aquesta política no poden entrar en conflicte amb els configurats mitjançant WebUsbBlockedForUrls. No s'ha especificat quina de les dues polítiques té prioritat si un URL coincideix amb totes dues.</translation>
-<translation id="7086677522575756117">Especifica el percentatge que permet ajustar el retard per atenuar la pantalla quan es detecta activitat de l'usuari mentre la pantalla està atenuada o poc després d'haver-la apagat.
+<translation id="7086677522575756117">Especifica el percentatge en què s'ajusta el retard per atenuar la pantalla quan es detecta activitat de l'usuari mentre la pantalla està atenuada o poc després d'haver-la apagat.
 
-          Si s'estableix aquesta política, especifica el percentatge que permet ajustar el retard per atenuar la pantalla quan es detecta activitat de l'usuari mentre la pantalla està atenuada o poc després d'haver-la apagat. Quan s'ajusta aquest retard, s'adapten els retards de desconnexió, bloqueig i inactivitat de la pantalla perquè les distàncies amb el retard per atenuar la pantalla siguin les mateixes que les configurades originalment.
+          Si s'estableix aquesta política, especifica el percentatge en què s'ajusta el retard per atenuar la pantalla quan es detecta activitat de l'usuari mentre la pantalla està atenuada o poc després d'haver-la apagat. Quan s'ajusta aquest retard, s'adapten els retards de desconnexió, bloqueig i inactivitat de la pantalla perquè les distàncies amb el retard per atenuar la pantalla siguin les mateixes que les configurades originalment.
 
           Si no s'estableix aquesta política, es fa servir un factor d'ajust predeterminat.
 

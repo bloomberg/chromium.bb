@@ -182,7 +182,7 @@
       Jika dasar ini ditetapkan kepada palsu, <ph name="PRODUCT_NAME" /> tidak akan membenarkan profil tetamu dimulakan.</translation>
 <translation id="1363275621236827384">Dayakan pertanyaan ke Pelayan Quirks untuk mendapatkan profil perkakasan</translation>
 <translation id="1363612796557848469">Dasar ini memberi Google Assistant kebenaran untuk mengakses konteks skrin dan menghantar maklumat tersebut ke pelayan.
-      Jika dasar ini didayakan, Google Assistant akan dibenarkan mengakses koteks skrin.
+      Jika dasar ini didayakan, Google Assistant akan dibenarkan mengakses konteks skrin.
       Jika dasar ini dilumpuhkan, Google Assistant tidak akan dibenarkan mengakses konteks skrin.
       Jika tidak ditetapkan, pengguna boleh memutuskan sama ada hendak membenarkan Google Assistant mengakses konteks skrin atau tidak</translation>
 <translation id="1383493480903114193">Dasar ini memaksa kod rangkaian dijalankan dalam proses penyemak imbas.
@@ -445,6 +445,7 @@
       Jika tetapan ini didayakan, maka perkhidmatan perlindungan kata laluan akan menangkap cap jari kata laluan pada URL ini untuk tujuan pengesanan penggunaan semula kata laluan.
       Jika tetapan ini dilumpuhkan atau tidak ditetapkan, maka perkhidmatan perlindungan kata laluan hanya akan menangkap cap jari kata laluan di https://accounts.google.com.
       Dasar ini hanya tersedia pada tika Windows yang dihubungkan ke domain <ph name="MS_AD_NAME" /> atau tika Windows 10 Pro atau Enterprise yang didaftarkan untuk pengurusan peranti.</translation>
+<translation id="1919802376548418720">Gunakan dasar KDC untuk menetapkan bukti kelayakan.</translation>
 <translation id="1920046221095339924">Benarkan sesi yang diurus pada peranti</translation>
 <translation id="1929709556673267855">Menyediakan konfigurasi untuk pencetak perusahaan yang dihubungkan pada peranti.
 
@@ -612,6 +613,15 @@
 <translation id="2240879329269430151">Membolehkan anda menetapkan sama ada tapak web dibenarkan untuk memaparkan pop timbul. Memaparkan pop  timbul boleh dibenarkan untuk semua tapak web atau dinafikan untuk semua tapak web.
 
           Jika dasar ini dibiarkan tanpa ditetapkan, 'BlockPopups' akan digunakan dan pengguna akan boleh mengubahnya.</translation>
+<translation id="2265214338421787313">Dasar ini membenarkan pentadbir menetapkan bahawa halaman boleh memaparkan tetingkap timbul semasa penyahmuatannya.
+
+      Apabila dasar ditetapkan kepada didayakan, halaman dibenarkan untuk memaparkan tetingkap timbul semasa halaman itu dinyahmuat.
+
+      Apabila dasar ditetapkan kepada dilumpuhkan atau tidak ditetapkan, halaman tidak dibenarkan untuk memaparkan tetingkap timbul semasa dinyahmuat, seperti yang dinyatakan dalam spesifikasi (https://html.spec.whatwg.org/#apis-for-creating-and-navigating-browsing-contexts-by-name).
+
+      Dasar ini akan dialih keluar dalam Chrome 82.
+
+      Lihat https://www.chromestatus.com/feature/5989473649164288 .</translation>
 <translation id="2269319728625047531">Dayakan pemaparan Persetujuan Penyegerakan semasa log masuk</translation>
 <translation id="2274864612594831715">Dasar ini mengkonfigurasi mendayakan papan kekunci maya sebagai peranti input pada ChromeOS. Pengguna tidak boleh mengatasi dasar ini.
 
@@ -2057,9 +2067,9 @@ Tidak seperti <ph name="URL_LIST_POLICY_NAME" />, peraturan dikenakan pada kedua
       Dasar ini hanya dikuatkuasakan apabila <ph name="CHROME_REPORTING_EXTENSION_NAME" /> didayakan dan peranti didaftarkan dengan <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="5584132346604748282">Kawal Perkhidmatan lokasi Google Android</translation>
 <translation id="5586942249556966598">Jangan buat apa-apa</translation>
-<translation id="5590494712401018042">Menyatakan peratusan skala kelengahan pemalapan apabila peranti berada dalam mod pembentangan.
+<translation id="5590494712401018042">Menyatakan peratusan skala kelengahan pemalapan skrin apabila peranti berada dalam mod pembentangan.
 
-          Jika dasar ini ditetapkan, peratusan skala kelengahan pemalapan apabila peranti berada dalam mod pembentangan ditentukan. Apabila kelengahan pemalapan diskalakan, kelengahan skrin dimatikan, kunci skrin dan melahu akan dilaraskan untuk mengekalkan jarak yang sama dari kelengahan pemalapan seperti yang dikonfigurasikan pada asalnya.
+          Jika dasar ini ditetapkan, peratusan skala kelengahan pemalapan skrin apabila peranti berada dalam mod pembentangan ditentukan. Apabila kelengahan pemalapan skrin diskalakan, kelengahan skrin dimatikan, kunci skrin dan melahu akan dilaraskan untuk mengekalkan jarak yang sama dari kelengahan pemalapan skrin seperti yang dikonfigurasikan pada asalnya.
 
           Jika dasar ini tidak ditetapkan, faktor skala lalai akan digunakan.
 
@@ -2277,6 +2287,7 @@ Tidak seperti <ph name="URL_LIST_POLICY_NAME" />, peraturan dikenakan pada kedua
 <translation id="602728333950205286">URL semerta pembekal carian lalai</translation>
 <translation id="603410445099326293">Parameter untuk URL cadangan yang menggunakan POST</translation>
 <translation id="6034341625190551415">Mengawal jenis akaun sesi awam dan kios.</translation>
+<translation id="6034603289689965535">Membenarkan halaman memaparkan tetingkap timbul semasa penyahmuatannya</translation>
 <translation id="6036523166753287175">Dayakan penyusuran tembok api daripada hos akses jauh</translation>
 <translation id="6070667616071269965">Reka letak papan kekunci skrin log masuk peranti</translation>
 <translation id="6074963268421707432">Jangan benarkan mana-mana tapak untuk memaparkan pemberitahuan desktop</translation>
@@ -2970,7 +2981,7 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
           Nilai dasar ini hendaklah dinyatakan dalam peratus dalam julat 0-100.</translation>
 <translation id="7517846421386644905">Membenarkan pentadbir mengawal sama ada data telemetri dan diagnostik perlu dikumpulkan, diproses dan dilaporkan oleh pengawal diagnostik dan telemetri (DTC) wilco.
 
-      Jika dasar ini ditetapkan kepada palsu atau tidak dibiarkan tidak ditetapkan, DTC akan dimatikan dan tidak dapat mengumpul, memproses dan melaporkan data telemetri dan diagnostik daripada peranti.
+      Jika dasar ini ditetapkan kepada palsu atau dibiarkan tidak ditetapkan, DTC akan dimatikan dan tidak dapat mengumpul, memproses dan melaporkan data telemetri dan diagnostik daripada peranti.
       Jika DTC wilco tersedia pada peranti yang ditentukan dan dasar ini ditetapkan kepada benar, pengumpulan, pemprosesan dan pelaporan data telemetri dan diagnostik akan dihidupkan.</translation>
 <translation id="7519251620064708155">Benarkan penghasilan kunci pada tapak ini</translation>
 <translation id="7529100000224450960">Membolehkan anda menetapkan senarai pola url yang menentukan tapak yang dibenarkan untuk membuka pop timbul.

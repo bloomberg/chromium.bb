@@ -720,7 +720,6 @@
 <translation id="4989163558385430922">Afișează-le pe toate</translation>
 <translation id="4989809363548539747">Acest plugin nu este acceptat</translation>
 <translation id="5002932099480077015">Dacă este activată, Chrome va stoca o copie a cardului pe acest dispozitiv, pentru completarea mai rapidă a formularelor.</translation>
-<translation id="5014174725590676422">Se afișează ecranul pentru prima rulare a Asistentului Google în Chrome</translation>
 <translation id="5015510746216210676">Numele dispozitivului:</translation>
 <translation id="5017554619425969104">Textul copiat de tine</translation>
 <translation id="5018422839182700155">Pagina nu poate fi deschisă</translation>
@@ -994,7 +993,7 @@
 <translation id="6579990219486187401">Roz deschis</translation>
 <translation id="6583674473685352014">B6 (Plic)</translation>
 <translation id="6587923378399804057">Linkul copiat de tine</translation>
-<translation id="6591833882275308647"><ph name="DEVICE_TYPE" /> nu este gestionat</translation>
+<translation id="6591833882275308647">Dispozitivul <ph name="DEVICE_TYPE" /> nu este gestionat</translation>
 <translation id="6596325263575161958">Opțiuni de criptare</translation>
 <translation id="6604181099783169992">Senzori de mișcare sau de lumină</translation>
 <translation id="6609880536175561541">Prc7 (Plic)</translation>
@@ -1131,7 +1130,7 @@ Detalii suplimentare:
 <translation id="7381288752349550461">Modificarea sesiunii gestionate</translation>
 <translation id="7390545607259442187">Confirmă cardul</translation>
 <translation id="7400418766976504921">Adresă URL</translation>
-<translation id="7403591733719184120"><ph name="DEVICE_NAME" /> este gestionat</translation>
+<translation id="7403591733719184120">Dispozitivul <ph name="DEVICE_NAME" /> este gestionat</translation>
 <translation id="7407424307057130981">&lt;p&gt;Această eroare se va afișa dacă ai un software Superfish pe computerul Windows.&lt;/p&gt;
       &lt;p&gt;Urmează acești pași ca să dezactivezi temporar software-ul, astfel încât să poți accesa internetul. Vei avea nevoie de privilegii de administrator.&lt;/p&gt;
       &lt;ol&gt;
@@ -1284,7 +1283,7 @@ Detalii suplimentare:
 <translation id="8100588592594801589">Cardurile nevalide au fost eliminate</translation>
 <translation id="8103161714697287722">Metodă de plată</translation>
 <translation id="8118489163946903409">Metodă de plată</translation>
-<translation id="8123836779274890062"><ph name="DEVICE_TYPE" /> gestionat de <ph name="ENROLLMENT_DOMAIN" /></translation>
+<translation id="8123836779274890062">Dispozitivul <ph name="DEVICE_TYPE" /> gestionat de <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="8127301229239896662">„<ph name="SOFTWARE_NAME" />” nu a fost instalat corect pe computer sau în rețea. Contactează administratorul IT pentru a remedia această problemă.</translation>
 <translation id="8131740175452115882">Confirmați</translation>
 <translation id="8149426793427495338">Computerul este inactiv.</translation>
@@ -1440,7 +1439,6 @@ Detalii suplimentare:
 <translation id="9080712759204168376">Rezumatul comenzii</translation>
 <translation id="9103872766612412690">Site-ul <ph name="SITE" /> folosește în mod obișnuit criptarea pentru a-ți proteja informațiile. Când Chromium a încercat să se conecteze la <ph name="SITE" /> de această dată, site-ul a returnat date de conectare neobișnuite și incorecte. Acest lucru s-a întâmplat fie pentru că un atacator încearcă să falsifice site-ul <ph name="SITE" />, fie pentru că un ecran de conectare Wi-Fi a întrerupt conexiunea. Securitatea informațiilor tale nu a fost afectată, deoarece Chromium a oprit conexiunea înainte ca datele să fie transferate.</translation>
 <translation id="9106062320799175032">Adaugă o adresă de facturare</translation>
-<translation id="9110718169272311511">Asistentul Google în Chrome este disponibil în partea de jos a ecranului</translation>
 <translation id="9114524666733003316">Se confirmă cardul…</translation>
 <translation id="9128870381267983090">Conectați-vă la rețea</translation>
 <translation id="9137013805542155359">Afișează originalul</translation>

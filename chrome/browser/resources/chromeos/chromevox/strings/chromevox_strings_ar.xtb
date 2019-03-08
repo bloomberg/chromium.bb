@@ -23,6 +23,7 @@
 <translation id="1120743664840974483">{"a": "alpha", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu"}</translation>
 <translation id="1120938014254001895">التمرير السريع بإصبعين إلى الأعلى</translation>
 <translation id="1124771028211010580">نمط العرض الحالي هو جنبًا إلى جنب.</translation>
+<translation id="1126928665165112660">غير مائل</translation>
 <translation id="113582498867142724">مجموعة من <ph name="TAG" /> تشتمل على <ph name="NUM" /> من العناصر</translation>
 <translation id="1155043339247954670">ليس هناك عنصر قائمة تالٍ.</translation>
 <translation id="1157782847298808853">مساعدة لوحة المفاتيح</translation>
@@ -55,6 +56,7 @@
 <translation id="1325946044405407859">أسمر مصفر</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> من <ph name="TOTAL" /></translation>
 <translation id="1334095593597963605">صدى الحرف والكلمة</translation>
+<translation id="1334570596456017464">منخفض</translation>
 <translation id="1339428534620983148">عمود الجدول السابق</translation>
 <translation id="1342835525016946179">article</translation>
 <translation id="1346059596910821859">نصيحة</translation>
@@ -130,6 +132,7 @@
 <translation id="1905379170753160525">عرض قائمة العناوين</translation>
 <translation id="1912556590115083156">vlnk</translation>
 <translation id="1913761808037590218">#ed</translation>
+<translation id="1914424852593176649">مقاس <ph name="FONT_SIZE" /></translation>
 <translation id="1914635379910604678">الوَتر <ph name="DOT" /></translation>
 <translation id="1923956950274750765">أرجواني خفيف متوسط</translation>
 <translation id="1954623340234317532">التحكم في أسبوع من العام</translation>
@@ -139,6 +142,7 @@
 <translation id="1990932729021763163">عنوان الصف:</translation>
 <translation id="2002895034995108595">إعادة تعيين مخطط المفاتيح الحالي</translation>
 <translation id="2007545860310005685">{COUNT,plural, =1{قوس متوسط أيسر واحد}zero{# left brackets}two{قوسان متوسطان أيسران (#)}few{# أقواس متوسطة يسرى}many{# قوسًا متوسطًا أيسرًا}other{# من الأقواس اليسرى}}</translation>
+<translation id="2009187674653301682">ليست نصوصًا مرتفعة</translation>
 <translation id="2010555995361223825">‏قوائم ChromeVox</translation>
 <translation id="2045490512405922022">غير محدد</translation>
 <translation id="20601713649439366">ليس هناك تعبير رياضي سابق.</translation>
@@ -168,6 +172,7 @@
 <translation id="2278490101488436824">التمرير السريع بثلاثة أصابع إلى يمين الشاشة</translation>
 <translation id="2281234842553884450">شريط التمرير السابق</translation>
 <translation id="2311237334957139798">الانتقال إلى السابق بدقة</translation>
+<translation id="2314393392395134769">بدون اشتراك</translation>
 <translation id="2318372665160196757">رئيسي</translation>
 <translation id="2329324941084714723">لوحة علامة التبويب</translation>
 <translation id="2344193891939537199">التحكم في الوقت والتاريخ</translation>
@@ -299,10 +304,12 @@
 <translation id="3163593631834463955">عنوان عمود فارغ</translation>
 <translation id="316542773973815724">تنقل</translation>
 <translation id="3172700825913348768">{COUNT,plural, =1{مسافة واحدة}zero{# spaces}two{مسافتان (#)}few{# مسافات}many{# مسافة}other{# من المسافات}}</translation>
+<translation id="3179119189286472195">ليس رابطًا</translation>
 <translation id="320961988183078793">تم إدخال <ph name="TYPE" /></translation>
 <translation id="321072937702597574">أرجواني خفيف</translation>
 <translation id="3218691001991391708">لصق <ph name="TEXT" />.</translation>
 <translation id="3223701887221307104">علامة تبويب <ph name="NAME" /></translation>
+<translation id="3223779237381380437">لا يتوسّطه خط</translation>
 <translation id="3226035351387556942">chk</translation>
 <translation id="3229375994964697375">الرابط الذي تم الانتقال إليه</translation>
 <translation id="3232388865800379423">زر بقائمة منبثقة</translation>
@@ -516,6 +523,7 @@
 <translation id="4763296182459741068">التفاف إلى أسفل</translation>
 <translation id="4763480195061959176">فيديو</translation>
 <translation id="4764692524839457597">تلقائي</translation>
+<translation id="4772771694153161212">بدون تسطير</translation>
 <translation id="479989351350248267">بحث</translation>
 <translation id="4804818685124855865">قطع الاتصال</translation>
 <translation id="481165870889056555">الإعلان عن عنوان الصفحة الحالية</translation>
@@ -531,6 +539,7 @@
 <translation id="4846428657345567687">‏مرحبًا بكم في ChromeVox!</translation>
 <translation id="4848993367330139335">tmr</translation>
 <translation id="4850023505158945298">العنصر المماثل السابق.</translation>
+<translation id="4862744964787595316">غير غامق</translation>
 <translation id="4866956062845190338">rdmnuitm</translation>
 <translation id="4867316986324544967">‏تفعيل تسجيل TTS</translation>
 <translation id="4877261390094455813">الدخول إلى طلب بحث.</translation>
@@ -843,6 +852,7 @@
 <translation id="712735679809149106">صدى الكلمة</translation>
 <translation id="7137397390322864165">برتقالي وردي</translation>
 <translation id="713824876195128146">الاقتباس الطويل التالي</translation>
+<translation id="7140168702531682811">رموز علوية</translation>
 <translation id="7143034430156387447">التبديل بين نمط برايل ذي 6 نقاط و8 نقاط</translation>
 <translation id="7143207342074048698">اتصال</translation>
 <translation id="7153618581592392745">بنفسجي فاتح</translation>
@@ -1139,6 +1149,7 @@
 <translation id="8883850400338911892">‏URL ببرايل 8 نقاط</translation>
 <translation id="8896347895970027998">‏تبديل ChromeVox بين الوضع نشط أو غير نشط.</translation>
 <translation id="8896479570570613387">أرجواني متوسط</translation>
+<translation id="8897030325301866860">الخطّ <ph name="FONT_FAMILY" /></translation>
 <translation id="8898516272131543774">دورة صدى علامات الترقيم</translation>
 <translation id="8900148057318340779">مفتاح بادئة</translation>
 <translation id="8908714597367957477">colhdr</translation>

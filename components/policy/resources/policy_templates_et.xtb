@@ -448,6 +448,7 @@
       Kui see seade on lubatud, jäädvustab paroolikaitseteenus nendel URL-idel parooli sõrmejälje, et tuvastada parooli uuesti kasutamine.
       Kui seade on keelatud või määramata, jäädvustab paroolikaitseteenus parooli sõrmejälje ainult saidil https://accounts.google.com.
       Reegel on saadaval ainult Windowsi eksemplarides, mis on liidetud domeeniga <ph name="MS_AD_NAME" />, ja Windows 10 Pro või Enterprise'i eksemplaridega, mis on registreeritud seadmehalduse teenuses.</translation>
+<translation id="1919802376548418720">Kasutage mandaatide volitamiseks KDC reeglit.</translation>
 <translation id="1920046221095339924">Seadmes hallatud seansi lubamine</translation>
 <translation id="1929709556673267855">Määrab seadistused seadmetega seotud ettevõtte printeritele.
 
@@ -615,6 +616,15 @@
 <translation id="2240879329269430151">Võimaldab määrata, kas veebisaitidel on lubatud kuvada hüpikaknaid. Hüpikaknad võib kõikide veebisaitide puhul lubada või keelata.
 
           Kui jätate reegli määramata, siis kasutatakse reeglit „BlockPopups” ja kasutaja saab seda muuta.</translation>
+<translation id="2265214338421787313">See reegel lubab administraatoril määrata, kas leht võib mahalaadimise ajal kuvada hüpikaknaid.
+
+      Kui reegel on lubatud, saavad lehed mahalaadimise ajal hüpikaknaid kuvada.
+
+      Kui reegel on keelatud või määramata, ei saa tehniliste andmete põhjal lehed mahalaadimise ajal hüpikaknaid kuvada (https://html.spec.whatwg.org/#apis-for-creating-and-navigating-browsing-contexts-by-name).
+
+      See reegel eemaldatakse Chrome'i versioonis 82.
+
+      Vt https://www.chromestatus.com/feature/5989473649164288 .</translation>
 <translation id="2269319728625047531">Sisselogimisel sünkroonimise nõusoleku kuvamise lubamine</translation>
 <translation id="2274864612594831715">See reegel seadistab virtuaalse klaviatuuri sisendseadmena lubamise Chrome OS-is. Kasutajad ei saa seda reeglit alistada.
 
@@ -2280,6 +2290,7 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli IsolateOr
 <translation id="602728333950205286">Vaikeotsingupakkuja Instant-URL</translation>
 <translation id="603410445099326293">Parameetrid POST-meetodit kasutava soovituse URL-i jaoks</translation>
 <translation id="6034341625190551415">Haldab avalikku seanssi ja kioski kontotüüpe.</translation>
+<translation id="6034603289689965535">Lubab lehel mahalaadimise ajal kuvada hüpikaknaid</translation>
 <translation id="6036523166753287175">Luba tulemüüri läbimine kaugjuurdepääsu hostist</translation>
 <translation id="6070667616071269965">Seadme sisselogimisekraani klaviatuuripaigutused</translation>
 <translation id="6074963268421707432">Keela kõigil saitidel töölaua märguannete kuvamine</translation>
@@ -2566,7 +2577,7 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli IsolateOr
 <translation id="6770454900105963262">Aruandeteave aktiivsete kioskiseansside kohta</translation>
 <translation id="6786747875388722282">Laiendused</translation>
 <translation id="6786967369487349613">Rändlusprofiili kataloogi määramine</translation>
-<translation id="6795485990775913659">PIN-koodita ainult printimise lubamine</translation>
+<translation id="6795485990775913659">Printimise lubamine ainult PIN-koodita</translation>
 <translation id="6810445994095397827">Blokeeri JavaScript nendel saitidel</translation>
 <translation id="6813263547126514821">Toide ja väljalülitamine</translation>
 <translation id="681446116407619279">Toetatud autentimisskeemid</translation>

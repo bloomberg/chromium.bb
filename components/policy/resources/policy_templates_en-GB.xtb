@@ -446,6 +446,7 @@
       If this setting is enabled, then password protection service will capture fingerprint of password on these URLs for password reuse detection purpose.
       If this setting is disabled or not set, then password protection service will only capture password fingerprint on https://accounts.google.com.
       This policy is available only on Windows instances that are joined to a <ph name="MS_AD_NAME" /> domain. It also applies to Windows 10 Pro or Enterprise instances that enrolled for device management.</translation>
+<translation id="1919802376548418720">Use KDC policy to delegate credentials.</translation>
 <translation id="1920046221095339924">Allow managed session on device</translation>
 <translation id="1929709556673267855">Provides configurations for enterprise printers bound to devices.
 
@@ -613,6 +614,15 @@
 <translation id="2240879329269430151">Allows you to set whether websites are allowed to show pop-ups. Showing pop-ups can be either allowed for all websites or denied for all websites.
 
           If this policy is left unset, 'BlockPop-ups' will be used and the user will be able to change it.</translation>
+<translation id="2265214338421787313">This policy allows an admin to specify that a page may show pop-ups during its unloading.
+
+      When the policy is set to enabled, pages are allowed to show pop-ups while they are being unloaded.
+
+      When the policy is set to disabled or not set, pages are not allowed to show pop-ups while they are being unloaded, as per the spec (https://html.spec.whatwg.org/#apis-for-creating-and-navigating-browsing-contexts-by-name).
+
+      This policy will be removed in Chrome 82.
+
+      See https://www.chromestatus.com/feature/5989473649164288 .</translation>
 <translation id="2269319728625047531">Enable displaying Sync Consent during sign-in</translation>
 <translation id="2274864612594831715">This policy configures enabling the virtual keyboard as an input device on ChromeOS. Users cannot override this policy.
 
@@ -2286,6 +2296,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="602728333950205286">Default search provider instant URL</translation>
 <translation id="603410445099326293">Parameters for suggest URL which uses POST</translation>
 <translation id="6034341625190551415">Controls public session and kiosk account types.</translation>
+<translation id="6034603289689965535">Allows a page to show pop-ups during its unloading</translation>
 <translation id="6036523166753287175">Enable firewall traversal from remote access host</translation>
 <translation id="6070667616071269965">Device sign-in screen keyboard layouts</translation>
 <translation id="6074963268421707432">Do not allow any site to show desktop notifications</translation>

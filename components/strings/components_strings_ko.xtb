@@ -720,7 +720,6 @@
 <translation id="4989163558385430922">모두 보기</translation>
 <translation id="4989809363548539747">이 플러그인은 지원되지 않습니다.</translation>
 <translation id="5002932099480077015">선택하면 Chrome에서 양식을 더 빠르게 작성할 수 있도록 이 기기에 카드 사본을 저장합니다.</translation>
-<translation id="5014174725590676422">Chrome의 Google 어시스턴트 첫 실행 화면이 표시됩니다.</translation>
 <translation id="5015510746216210676">컴퓨터 이름:</translation>
 <translation id="5017554619425969104">복사한 텍스트</translation>
 <translation id="5018422839182700155">이 페이지를 열 수 없음</translation>
@@ -1438,7 +1437,6 @@
 <translation id="9080712759204168376">주문 요약</translation>
 <translation id="9103872766612412690"><ph name="SITE" />에서는 사용자 정보를 보호하기 위해 일반적으로 암호화를 사용합니다. 이번에 Chromium에서 <ph name="SITE" />에 연결을 시도했을 때 웹사이트에서 비정상적이고 잘못된 사용자 인증 정보를 반환했습니다. 이는 공격자가 <ph name="SITE" />인 것처럼 가장하려고 하거나 Wi-Fi 로그인 화면이 연결을 방해했기 때문일 수 있습니다. 데이터 교환이 발생하기 전에 Chromium에서 연결을 중단했으므로 사용자 정보는 안전합니다.</translation>
 <translation id="9106062320799175032">청구서 주소 추가</translation>
-<translation id="9110718169272311511">화면 하단에서 Chrome의 Google 어시스턴트를 사용할 수 있습니다.</translation>
 <translation id="9114524666733003316">카드 확인 중...</translation>
 <translation id="9128870381267983090">네트워크에 연결</translation>
 <translation id="9137013805542155359">원본 보기</translation>

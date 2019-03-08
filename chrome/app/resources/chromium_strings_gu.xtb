@@ -20,7 +20,9 @@
 <translation id="1585657529869845941">જો <ph name="BEGIN_BOLD" />છતાં સ્વિચ કરો<ph name="END_BOLD" /> દેખાય, તો તેના પર ક્લિક કરો</translation>
 <translation id="1668054258064581266">તમારા એકાઉન્ટને Chromiumમાંથી દૂર કર્યાં પછી, અમલમાં લાવવા માટે તમારે તમારા ટૅબને ફરીથી લોડ કરવાની જરૂર પડી શકે છે.</translation>
 <translation id="1688750314291223739">તમારી વેબ પરની વ્યક્તિગત કરેલી બ્રાઉઝર સુવિધાઓને સાચવવા અને તેમને કોઈ પણ કમ્પ્યુટર પર Chromium માંથી ઍક્સેસ કરવા માટે સમન્વયન સેટ કરો.</translation>
+<translation id="1701453112166152218">જો છબીમાં ઉપયોગી વર્ણન ન હોય, તો Chromium, તમારા માટે વર્ણન પ્રદાન કરવાનો પ્રયાસ કરશે. છબીઓ Google દ્વારા સ્કૅન થયેલી છે. તમે આને કોઈપણ સમયે સેટિંગમાંથી બંધ કરી શકો છો.</translation>
 <translation id="1708666629004767631">Chromiumનું નવું, સુરક્ષિત વર્ઝન ઉપલબ્ધ છે.</translation>
+<translation id="1736416771649788185">જો છબીમાં ઉપયોગી વર્ણન ન હોય, તો Chromium, તમારા માટે વર્ણન પ્રદાન કરવાનો પ્રયાસ કરશે. છબીઓ Google દ્વારા સ્કૅન થયેલી છે.</translation>
 <translation id="1766096484055239003">અપડેટ લાગુ કરવા માટે તમે Chromiumને ફરીથી લૉન્ચ કરો તે તમારા વ્યવસ્થાપક માટે જરૂરી છે</translation>
 <translation id="1774152462503052664">Chromium ને પૃષ્ઠભૂમિમાં ચાલવા દો</translation>
 <translation id="1779356040007214683">Chromium ને સુરક્ષિત બનાવવા માટે, અમે <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> માં સૂચિબદ્ધ નથી અને તમારી જાણ વિના ઉમેરવામાં આવ્યાં હોઈ શકે છે તેવા કેટલાક એક્સ્ટેન્શન્સને અક્ષમ કર્યા છે.</translation>
@@ -270,6 +272,7 @@ Chromium તમારી સેટિંગ્સને પુનઃપ્રા
 <translation id="9089354809943900324">Chromium જૂનું થઈ ગયું છે</translation>
 <translation id="91086099826398415">નવા Chromium &amp;ટૅબમાં લિંક ખોલો</translation>
 <translation id="911206726377975832">તમારો બ્રાઉઝિંગ ડેટા પણ ડિલીટ કરી દઈએ?</translation>
+<translation id="9158494823179993217">તમારા સિસ્ટમ વ્યવસ્થાપકે <ph name="TARGET_URL_HOSTNAME" />ને ઍક્સેસ કરવા Chromiumને વૈકલ્પિક બ્રાઉઝર ખોલવા માટે ગોઠવેલું છે.</translation>
 <translation id="918373042641772655"><ph name="USERNAME" />ને ડિસ્કનેક્ટ કરવું આ ડિવાઇસ પર સ્ટોર તમારા ઇતિહાસ, બુકમાર્ક, સેટિંગ અને બીજા Chromium ડેટાને કાઢી નાંખશે. તમારા Google એકાઉન્ટમાં સ્ટોર કરેલો ડેટા કાઢી નંખાશે નહિ અને તે <ph name="GOOGLE_DASHBOARD_LINK" />Google ડૅશબોર્ડ<ph name="END_GOOGLE_DASHBOARD_LINK" /> પર મેનેજ કરી શકાય છે.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
 <translation id="9197815481970649201">તમે હમણાં Chromium માં સાઇન ઇન કર્યું છે</translation>

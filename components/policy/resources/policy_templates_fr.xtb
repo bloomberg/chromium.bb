@@ -111,7 +111,7 @@
 
       Si cette règle n'est pas définie, Internet Explorer transmet seulement l'URL à Chrome comme paramètre de ligne de commande.
 
-      Si cette règle est définie sur une liste de chaînes, les chaînes sont séparées par une espace avant d'être transmises à Chrome comme paramètres de ligne de commande.
+      Si cette règle est définie sur une liste de chaînes, les chaînes sont reliées par des espaces avant d'être transmises à Chrome comme paramètres de ligne de commande.
 
       Si un élément contient ${url}, il est remplacé par l'URL de la page à ouvrir.
 
@@ -2082,7 +2082,7 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
 
           Cette règle ne prend effet que si la règle <ph name="POWER_SMART_DIM_ENABLED_POLICY_NAME" /> est désactivée. Elle est ignorée dans le cas contraire, le délai d'assombrissement de l'écran étant alors déterminé par un modèle de machine learning.
 
-          Le facteur d'adaptation doit être de 100 % ou plus. Les valeurs qui auraient pour conséquence de rendre le délai d'assombrissement de l'écran en mode Présentation plus court que le délai d'assombrissement de l'écran standard ne sont pas autorisées.</translation>
+          Le facteur d'adaptation doit être de 100 % ou plus. Les valeurs qui auraient pour conséquence de rendre le délai d'assombrissement de l'écran en mode Présentation plus court que le délai standard d'assombrissement de l'écran ne sont pas autorisées.</translation>
 <translation id="5592242031005200087">
       Si cette règle est activée, chacune des origines définies et répertoriées dans une
       liste d'éléments séparés par une virgule exécute son propre processus.

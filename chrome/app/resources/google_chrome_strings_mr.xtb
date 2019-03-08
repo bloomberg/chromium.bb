@@ -101,9 +101,11 @@
 <translation id="3398288718845740432">Chrome मेनूमध्‍ये लपवा</translation>
 <translation id="3451115285585441894">Chrome मध्‍ये जोडत आहे...</translation>
 <translation id="345171907106878721">Chrome वर आपल्या स्वतःस जोडा</translation>
+<translation id="3457651673823986489">इमेजमध्ये उपयोगी वर्णन नसल्यास, Chrome तुमच्यासाठी ते देण्याचा प्रयत्न करेल. Google द्वारे इमेज स्कॅन केल्या जातात. तुम्ही सेटिंग्जमध्ये हे कधीही बंद करू शकता.</translation>
 <translation id="3479552764303398839">सध्या नाही</translation>
 <translation id="34857402635545079">Chrome (<ph name="URL" />) वरील डेटा देखील साफ करा</translation>
 <translation id="3503306920980160878">तुमचे स्थान या साइटसोबत शेअर करण्यासाठी Chrome ला तुमच्या स्थानाचा अ‍ॅक्सेस हवा आहे</translation>
+<translation id="3576528680708590453">तुमच्या सिस्टम अ‍ॅडमिनिस्ट्रेटरने <ph name="TARGET_URL_HOSTNAME" /> अॅक्‍सेस करण्याकरिता पर्यायी ब्राउझर उघडण्यासाठी Google Chrome कॉन्फिगर केले आहे.</translation>
 <translation id="3582972582564653026">तुमच्या डिव्हाइसवर Chrome सिंक आणि पर्सनलाइझ करा</translation>
 <translation id="3622797965165704966">आता आपल्या Google खात्यावर आणि शेअर केलेल्या संगणकांवर Chrome वापरणे अधिक सुलभ आहे.</translation>
 <translation id="3637702109597584617">Google Chrome OS <ph name="TERMS_OF_SERVICE_LINK" />सेवा अटी<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
@@ -239,7 +241,7 @@ Google Chrome तुमची सेटिंग्ज पुन्हा मि
 <translation id="7787950393032327779">प्रोफाईल दुसर्‍या संगणकावरील (<ph name="HOST_NAME" />) दुसर्‍या Google Chrome प्रक्रियेद्वारे (<ph name="PROCESS_ID" />) वापरले जात असल्याचे दिसते. Chrome ने प्रोफाईल लॉक केले आहे जेणेकरून ते दूषित होत नाही. कोणत्याही इतर प्रक्रिया हे प्रोफाईल वापरत नसल्याची तुम्हाला खात्री असल्यास, तुम्ही प्रोफाईल अनलॉक करू शकता आणि Chrome रीलाँच करू शकता.</translation>
 <translation id="7808348361785373670">Chrome मधून काढून टाका...</translation>
 <translation id="7825851276765848807">अनिर्दिष्ट त्रुटीमुळे स्थापना अयशस्वी. कृपया Google Chrome पुन्हा डाउनलोड करा.</translation>
-<translation id="7855730255114109580">Google Chrome अद्ययावत झाले आहे</translation>
+<translation id="7855730255114109580">Google Chrome अपडेट झाले आहे</translation>
 <translation id="7888186132678118370">Chrome ला आपल्या टास्कबार वर पिन करा</translation>
 <translation id="7890208801193284374">तुम्ही कॉंप्युटर शेअर केल्यास, मित्र आणि कुटुंब स्वतंत्रपणे ब्राउझ करू शकतात आणि त्यांना पाहिजे तसे Chrome सेट अप करू शकतात.</translation>
 <translation id="7896673875602241923">कोणीतरी यापूर्वी <ph name="ACCOUNT_EMAIL_LAST" /> म्हणून या संंगणकावरील Chrome मध्ये साइन इन केले आहे. कृपया तुमची माहिती स्वतंत्र ठेवण्यासाठी एक नवीन Chrome वापरकर्ता तयार करा.</translation>
@@ -253,6 +255,7 @@ Google Chrome तुमची सेटिंग्ज पुन्हा मि
 <translation id="8129812357326543296">&amp;Google Chrome विषयी</translation>
 <translation id="8179874765710681175">तुमच्या फोनवर Chrome इंस्टॉल करा. आम्ही तुमच्या फोनवर एक SMS पाठवू.</translation>
 <translation id="8183957050892517584">Chrome तुमचे वैयक्तिक तपशील सुरक्षितपणे संचयित करेल जेणेकरून तुम्हाला ते पुन्हा टाइप करण्याची आवश्यकता नसेल.</translation>
+<translation id="8224281044825492187">इमेजमध्ये उपयोगी वर्णन नसल्यास, Chrome तुमच्यासाठी ते देण्याचा प्रयत्न करेल. Google द्वारे इमेज स्कॅन केल्या जातात.</translation>
 <translation id="8226081633851087288">{0,plural, =0{Chrome OS आता रीस्टार्ट होईल}=1{Chrome OS एका सेकंदात रीस्टार्ट होईल}one{Chrome OS # सेकंदात रीस्टार्ट होईल}other{Chrome OS # सेकंदामध्ये रीस्टार्ट होईल}}</translation>
 <translation id="825412236959742607">हे पेज खूप जास्त मेमरी वापरत असल्यामुळे, Chrome ने काही आशय काढून टाकला आहे.</translation>
 <translation id="8255190535488645436">Google Chrome तुमचा कॅमेरा आणि मायक्रोफोन वापरत आहे.</translation>

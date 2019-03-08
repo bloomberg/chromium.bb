@@ -498,7 +498,7 @@ Format jest taki sam jak w słowniku NativePrinters. Dodatkowo w przypadku każd
 
       Gdy zasada jest skonfigurowana, będzie używana do uruchamiania <ph name="PRODUCT_NAME" /> podczas uruchamiania <ph name="PRODUCT_NAME" /> z Internet Explorera.
 
-      Jak wartość tej zasady można ustawić ścieżkę pliku wykonywalnego lub ${chrome}, by automatycznie wykrywać miejsce instalacji Chrome.</translation>
+      Jako wartość tej zasady można ustawić ścieżkę pliku wykonywalnego lub ${chrome}, by automatycznie wykrywać miejsce instalacji Chrome.</translation>
 <translation id="2024476116966025075">Konfiguracja wymaganej nazwy domeny dla klientów zdalnego dostępu</translation>
 <translation id="2030905906517501646">Słowo kluczowe domyślnego dostawcy wyszukiwania</translation>
 <translation id="203096360153626918">Ta zasada nie ma wpływu na aplikacje na Androida. Mogą one działać w trybie pełnoekranowym, nawet gdy zasada jest ustawiona na <ph name="FALSE" />.</translation>

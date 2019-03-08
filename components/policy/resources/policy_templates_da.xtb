@@ -485,7 +485,7 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 
       Hvis Internet Explorer-tilføjelsen "Emulator til ældre websites" ikke er installeret, har denne politik ingen effekt.
 
-      Hvis politikken ikke er konfigureret, registrerer Internet Explorer automatisk den eksekverbare stil, der tilhører <ph name="PRODUCT_NAME" />, når <ph name="PRODUCT_NAME" /> åbnes via Internet Explorer.
+      Hvis politikken ikke er konfigureret, registrerer Internet Explorer automatisk den eksekverbare sti, der tilhører <ph name="PRODUCT_NAME" />, når <ph name="PRODUCT_NAME" /> åbnes via Internet Explorer.
 
       Når politikken er konfigureret, anvendes den til at åbne <ph name="PRODUCT_NAME" />, når åbningen af <ph name="PRODUCT_NAME" /> via Internet Explorer skiftes til en anden browser.
 

@@ -105,7 +105,7 @@ Pentru mai multe informații despre contextele sigure, accesează https://www.w3
 
       Dacă niciun element nu conține ${url}, adresa URL este anexată la sfârșitul liniei de comandă.
 
-      Variabilele de mediu sunt extinse. În Windows, %ABC% este înlocuit cu valoarea variabilei mediului ABC.</translation>
+      Variabilele de mediu sunt extinse. În Windows, %ABC% este înlocuit cu valoarea variabilei de mediu ABC.</translation>
 <translation id="1151353063931113432">Permite imagini de pe aceste site-uri</translation>
 <translation id="1152117524387175066">Raportează starea comutatorului modului pentru dezvoltatori al dispozitivului la pornire.
 

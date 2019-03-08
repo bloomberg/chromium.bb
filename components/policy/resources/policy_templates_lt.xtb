@@ -182,10 +182,10 @@
 
       Jei ši politika nustatyta į „false“, „<ph name="PRODUCT_NAME" />“ neleis pradėti svečio profilių.</translation>
 <translation id="1363275621236827384">Įgalinti užklausas į „Quirks Server“, skirtas aparatinės įrangos profiliams</translation>
-<translation id="1363612796557848469">Pagal šia politiką „Google“ padėjėjui suteikiamas leidimas pasiekti ekrano kontaktą ir siųsti informaciją į serverį.
-      Jei politika įgalinta, „Google“ padėjėjui leidžiama pasiekti ekrano kontekstą.
-      Jei politika išjungta, „Google“ padėjėjui neleidžiama pasiekti ekrano konteksto.
-      Jei nenustatyta, naudotojai gali nuspręsti, ar leisti „Google“ padėjėjui pasiekti ekrano kontekstą.</translation>
+<translation id="1363612796557848469">Pagal šia politiką „Google Assistant“ suteikiamas leidimas pasiekti ekrano kontaktą ir siųsti informaciją į serverį.
+      Jei politika įgalinta, „Google Assistant“ leidžiama pasiekti ekrano kontekstą.
+      Jei politika išjungta, „Google Assistant“ neleidžiama pasiekti ekrano konteksto.
+      Jei nenustatyta, naudotojai gali nuspręsti, ar leisti „Google Assistant“ pasiekti ekrano kontekstą.</translation>
 <translation id="1383493480903114193">Taikant šią politiką darbo tinkle kodas priverstinai vykdomas naršyklės procese.
 
       Ši politika išjungta pagal numatytuosius nustatymus, o įgalinus naudotojui gali iškilti saugos problemų, jei darbo tinkle procesas įtraukiamas į smėlio dėžę.
@@ -306,11 +306,11 @@
       Daugiau informacijos apie Saugų naršymą pateikiama adresu https://developers.google.com/safe-browsing.</translation>
 <translation id="1583248206450240930">Naudoti „<ph name="PRODUCT_FRAME_NAME" />“ pagal numatytuosius nustatymus</translation>
 <translation id="1599424828227887013">Įgalinti nurodytų šaltinių svetainių atskyrimą „Android“ įrenginiuose</translation>
-<translation id="1608259529294767544">Pagal šią politiką „Google“ padėjėjui suteikiamas leidimas klausyti suaktyvinimo balsu frazės.
+<translation id="1608259529294767544">Pagal šią politiką „Google Assistant“ suteikiamas leidimas klausyti suaktyvinimo balsu frazės.
 
-      Jei politika įgalinta, „Google“ padėjėjas klauso suaktyvinimo balsu frazės.
-      Jei politika išjungta, „Google“ padėjėjas neklauso suaktyvinimo balsu frazės.
-      Jei nenustatyta, naudotojai gali nuspręsti, ar leisti „Google“ padėjėjui klausyti suaktyvinimo balsu frazės.
+      Jei politika įgalinta, „Google Assistant“ klauso suaktyvinimo balsu frazės.
+      Jei politika išjungta, „Google Assistant“ neklauso suaktyvinimo balsu frazės.
+      Jei nenustatyta, naudotojai gali nuspręsti, ar leisti „Google Assistant“ klausyti suaktyvinimo balsu frazės.
       </translation>
 <translation id="1608755754295374538">URL, kuriems bus suteikta prieiga prie garso užfiksavimo įrenginių be paraginimo</translation>
 <translation id="1615221548356595305">Leisti šių prieglobų HTTP/2 ryšių susijungimą, net jei naudojami kliento sertifikatai</translation>
@@ -1518,7 +1518,7 @@
           Ši politika pasirenkama. Jei nenustatyta, vaizdų paieškos užklausa siunčiama naudojant GET metodą.
 
           Šios politikos laikomasi, tik jei įgalinta politika „DefaultSearchProviderEnabled“.</translation>
-<translation id="427706009709857238">„Leidimas „Google“ pasiekiamumo padėjėjui klausyti suaktyvinimo balsu frazės“</translation>
+<translation id="427706009709857238">„Leidimas „Google“ pasiekiamumo „Google Assistant“ klausyti suaktyvinimo balsu frazės“</translation>
 <translation id="4285674129118156176">Leidžiama nesusietiems naudotojams naudoti ARC</translation>
 <translation id="4298509794364745131">Nurodomas programų, kurias galite įgalinti kaip užrašų programas „<ph name="PRODUCT_OS_NAME" />“ užrakinimo ekrane, sąrašas.
 
@@ -2862,7 +2862,7 @@
 
       Nustačius šią politiką kaip „Tiesa“, taip pat išjungiami spausdintuvai, naudojantys kitus nei IPPS, USB ar IPP per USB protokolus, nes naudotojo vardas ir failo pavadinimas neturėtų būti atvirai siunčiami tinklu.</translation>
 <translation id="7258823566580374486">Įgalinti nuotolinės prieigos prieglobų slėpimą</translation>
-<translation id="7260204423892780600">Valdomi „Google“ padėjėjo nustatymai.</translation>
+<translation id="7260204423892780600">Valdomi „Google Assistant“ nustatymai.</translation>
 <translation id="7260277299188117560">Įgalintas automatinis P2P naujinys</translation>
 <translation id="7261252191178797385">Įrenginio ekrano fono vaizdas</translation>
 <translation id="7264704483008663819">Ši politika nebetaikoma naudojant M68. Naudokite „DeveloperToolsAvailability“.
@@ -3696,7 +3696,7 @@ Rekomenduojame politiką sistemoje „Windows“ nustatyti naudojant GPO, tačia
       Nustačius mažesnę šios politikos vertę, tai taikoma visą laiką: gali būti, kad įrenginyje NEBUS galima grąžinti ankstesnių versijų, net iš naujo nustačius didesnę politikos vertę.
 
       Faktines grąžinimo galimybes taip pat gali lemti aparatinė įranga ir kritinio pažeidžiamumo pataisos.</translation>
-<translation id="9126014181388780690">„Leidimas „Google“ padėjėjui pasiekti ekrano kontekstą“</translation>
+<translation id="9126014181388780690">„Leidimas „Google Assistant“ pasiekti ekrano kontekstą“</translation>
 <translation id="913195841488580904">Blokuoti prieigą prie URL sąrašo</translation>
 <translation id="9135033364005346124">Įgalinti <ph name="CLOUD_PRINT_NAME" /> tarpinį serverį</translation>
 <translation id="9136399279941091445">Nenaudojimo valandų intervalai, kai išleidžiama nurodyta įrenginio politika</translation>

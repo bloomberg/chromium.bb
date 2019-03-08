@@ -570,6 +570,7 @@
 <translation id="1826516787628120939">Έλεγχος</translation>
 <translation id="1828378091493947763">Αυτή η προσθήκη δεν υποστηρίζεται σε αυτήν τη συσκευή</translation>
 <translation id="1828901632669367785">Εκτύπωση με χρήση του παραθύρου διαλόγου του συστήματος...</translation>
+<translation id="1829129547161959350">Πιγκουίνος</translation>
 <translation id="1829192082282182671">Σμίκρυνση</translation>
 <translation id="1830550083491357902">Δεν είναι συνδεδεμένος</translation>
 <translation id="183183971458492120">Γίνεται φόρτωση των πληροφοριών…</translation>
@@ -934,7 +935,6 @@
 <translation id="2365507699358342471">Αυτός ο ιστότοπος μπορεί να δει το κείμενο και τις εικόνες που έχουν αντιγραφεί στο πρόχειρο.</translation>
 <translation id="2367199180085172140">Προσθήκη κοινόχρηστου αρχείου</translation>
 <translation id="2367972762794486313">Εμφάνιση εφαρμογών</translation>
-<translation id="2369536625682139252">Όλα τα δεδομένα που αποθηκεύτηκαν από τον ιστότοπο <ph name="SITE" /> θα διαγραφούν, εκτός από τα cookie.</translation>
 <translation id="2371076942591664043">Άνοιγμα κατά την &amp;ολοκλήρωση</translation>
 <translation id="2375406435414127095">Συνδεθείτε στο τηλέφωνό σας</translation>
 <translation id="2377319039870049694">Εναλλαγή σε προβολή λίστας</translation>
@@ -1895,6 +1895,7 @@
 <translation id="3807249107536149332">Η επέκταση <ph name="EXTENSION_NAME" /> (αναγνωριστικό επέκτασης "<ph name="EXTENSION_ID" />") δεν επιτρέπεται σε μια οθόνη σύνδεσης.</translation>
 <translation id="3807747707162121253">&amp;Ακύρωση</translation>
 <translation id="38089336910894858">Εμφάνιση προειδοποίησης πριν από τον τερματισμό με το ⌘Q</translation>
+<translation id="3809272675881623365">Κουνέλι</translation>
 <translation id="3809280248639369696">Σεληνόφως</translation>
 <translation id="3810973564298564668">Διαχείριση</translation>
 <translation id="3811494700605067549">έχει επιλεγεί 1 αρχείο</translation>
@@ -2114,6 +2115,7 @@
 <translation id="4118579674665737931">Επανεκκινήστε τη συσκευή και δοκιμάστε ξανά.</translation>
 <translation id="4120817667028078560">Η διαδρομή είναι πάρα πολύ μεγάλη</translation>
 <translation id="4121428309786185360">Λήγει την</translation>
+<translation id="4124935795427217608">Μονόκερος</translation>
 <translation id="412730574613779332">Σπάντεξ</translation>
 <translation id="412940972494182898">Εκτέλεση του Flash αυτήν τη φορά</translation>
 <translation id="4130199216115862831">Αρχείο καταγραφής συσκευής</translation>
@@ -2444,6 +2446,7 @@
 <translation id="469230890969474295">Φάκελος OEM</translation>
 <translation id="4692623383562244444">Μηχανές αναζήτησης</translation>
 <translation id="4694024090038830733">Η διαμόρφωση του εκτυπωτή γίνεται από τον διαχειριστή.</translation>
+<translation id="4694604912444486114">Πίθηκος</translation>
 <translation id="4697551882387947560">Όταν η περίοδος περιήγησης λήξει</translation>
 <translation id="4699172675775169585">Εικόνες και αρχεία στην κρυφή μνήμη</translation>
 <translation id="4699357559218762027">(αυτόματη εκκίνηση)</translation>
@@ -2462,6 +2465,7 @@
 <translation id="4722920479021006856">Η εφαρμογή <ph name="APP_NAME" /> μοιράζεται την οθόνη σας.</translation>
 <translation id="4724450788351008910">Ο δεσμός άλλαξε</translation>
 <translation id="4724850507808590449">Δημιουργήθηκαν αντίγραφα ασφαλείας για <ph name="FILE_COUNT" /> φωτογραφίες</translation>
+<translation id="4725511304875193254">Κόργκι</translation>
 <translation id="4726710629007580002">Παρουσιάστηκαν προειδοποιήσεις κατά την απόπειρα εγκατάστασης αυτής της επέκτασης:</translation>
 <translation id="4728558894243024398">Πλατφόρμα</translation>
 <translation id="4732760563705710320">Δυστυχώς, αυτό το βίντεο δεν υποστηρίζεται από τη συσκευή μετάδοσης σας.</translation>
@@ -3580,6 +3584,7 @@
 <translation id="6356138805250111037">Πιο έξυπνος ορθογραφικός έλεγχος μέσω αποστολής στην Google όσων πληκτρολογείτε στο πρόγραμμα περιήγησης</translation>
 <translation id="63566973648609420">Μόνο κάποιος που γνωρίζει τη φράση πρόσβασης μπορεί να διαβάσει τα κρυπτογραφημένα δεδομένα σας. Η φράση πρόσβασης δεν αποστέλλεται ούτε αποθηκεύεται στην Google. Εάν ξεχάσετε τη φράση πρόσβασης ή θέλετε να αλλάξετε αυτήν τη ρύθμιση, θα πρέπει να <ph name="BEGIN_LINK" />επαναφέρετε τον συγχρονισμό<ph name="END_LINK" />.</translation>
 <translation id="6357619544108132570">Καλώς ορίσατε στην οικογένεια <ph name="SHORT_PRODUCT_NAME" />. Πρόκειται για έναν μη συμβατικό υπολογιστή.</translation>
+<translation id="6358884629796491903">Δράκος</translation>
 <translation id="6361850914223837199">Λεπτομέρειες σφάλματος:</translation>
 <translation id="6362853299801475928">&amp;Αναφορά προβλήματος...</translation>
 <translation id="6365069501305898914">Facebook</translation>
@@ -3857,6 +3862,7 @@
 <translation id="6790820461102226165">Προσθήκη ατόμου</translation>
 <translation id="6792072150955115067">Η εφαρμογή <ph name="APP_NAME" /> θέλει να μοιραστεί το περιεχόμενο της οθόνης σας με τον ιστότοπο <ph name="TARGET_NAME" />. Επιλέξτε το περιεχόμενο που θα θέλατε να μοιραστείτε.</translation>
 <translation id="6793604637258913070">Επισήμανση του δρομέα κειμένου όταν εμφανίζεται ή κινείται.</translation>
+<translation id="6795884519221689054">Πάντα</translation>
 <translation id="6797493596609571643">Ωχ, κάτι δεν πήγε καλά.</translation>
 <translation id="6798578729981748444">Για να ολοκληρώσετε την εισαγωγή, κλείστε όλα τα παράθυρα του Firefox.</translation>
 <translation id="6798780071646309401">η λειτουργία Caps Lock ενεργοποιήθηκε</translation>
@@ -3867,6 +3873,7 @@
 <translation id="6805647936811177813">Συνδεθείτε στο <ph name="TOKEN_NAME" /> για εισαγωγή του πιστοποιητικού πελάτη από το <ph name="HOST_NAME" />.</translation>
 <translation id="680572642341004180">Ενεργοποίηση παρακολούθησης RLZ στο <ph name="SHORT_PRODUCT_OS_NAME" />.</translation>
 <translation id="6806699711453372963">Διαχείριση κοινοποίησης Linux</translation>
+<translation id="6808193438228982088">Αλεπού</translation>
 <translation id="6810613314571580006">Αυτόματη σύνδεση σε ιστότοπους με χρήση αποθηκευμένων διαπιστευτηρίων. Όταν η λειτουργία είναι απενεργοποιημένη, θα σας ζητείται επιβεβαίωση κάθε φορά που προσπαθείτε να συνδεθείτε σε έναν ιστότοπο.</translation>
 <translation id="6810768462515084623">Δυστυχώς, φαίνεται πως ο κωδικός πρόσβασής σας έληξε. Ανανεώστε τον σε μια άλλη συσκευή και δοκιμάστε ξανά.</translation>
 <translation id="6811034713472274749">Σελίδα έτοιμη για προβολή</translation>
@@ -5036,6 +5043,7 @@
 <translation id="8554899698005018844">Καμία γλώσσα</translation>
 <translation id="855773602626431402">Παρεμποδίστηκε η εκτέλεση μιας προσθήκης εκτός περιβάλλοντος δοκιμών σε αυτήν τη σελίδα.</translation>
 <translation id="8557930019681227453">Μανιφέστο</translation>
+<translation id="8561206103590473338">Ελέφαντας</translation>
 <translation id="8561853412914299728"><ph name="TAB_TITLE" /> <ph name="EMOJI_PLAYING" /></translation>
 <translation id="8565650234829130278">Έγινε προσπάθεια υποβάθμισης της εφαρμογής.</translation>
 <translation id="8569002732135253578">Αυτήν τη στιγμή γίνεται εκτύπωση του εγγράφου <ph name="DOCUMENT_NAME" /></translation>

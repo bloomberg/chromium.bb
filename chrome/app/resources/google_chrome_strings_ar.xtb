@@ -101,9 +101,11 @@
 <translation id="3398288718845740432">‏الإخفاء في قائمة Chrome</translation>
 <translation id="3451115285585441894">‏جارٍ الإضافة إلى Chrome...</translation>
 <translation id="345171907106878721">‏إضافة نفسك إلى Chrome</translation>
+<translation id="3457651673823986489">‏في حال لم تتضمّن إحدى الصور وصفًا مفيدًا، سيحاول Chrome توفير وصف لك. تعمل Google على فحص الصور. ويمكنك إيقاف هذه الميزة في الإعدادات في أي وقت.</translation>
 <translation id="3479552764303398839">ليس الآن</translation>
 <translation id="34857402635545079">‏محو البيانات من Chrome أيضًا (<ph name="URL" />)</translation>
 <translation id="3503306920980160878">‏يحتاج Chrome للوصول إلى موقعك الجغرافي لمشاركته مع موقع الويب هذا.</translation>
+<translation id="3576528680708590453">‏ضبط مشرف النظام Google Chrome لفتح متصفِّح بديل للوصول إلى <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="3582972582564653026">‏يمكنك مزامنة Chrome وتخصيصه على جميع أجهزتك.</translation>
 <translation id="3622797965165704966">‏الآن أصبح استخدام Chrome مع حسابك في Google وفي أجهزة الكمبيوتر المشتركة أكثر سهولة.</translation>
 <translation id="3637702109597584617">‏<ph name="TERMS_OF_SERVICE_LINK" />بنود خدمة<ph name="END_TERMS_OF_SERVICE_LINK" /> نظام التشغيل Google Chrome</translation>
@@ -252,6 +254,7 @@
 <translation id="8129812357326543296">‏&amp;حول Google Chrome</translation>
 <translation id="8179874765710681175">‏بادِر بتثبيت Chrome على هاتفك. سنرسل رسالة قصيرة إلى هاتفك.</translation>
 <translation id="8183957050892517584">‏سيخزّن Chrome معلوماتك الشخصية بشكلٍ آمن لكي لا تُضطر إلى كتابتها مرة أخرى.</translation>
+<translation id="8224281044825492187">‏في حال لم تتضمّن إحدى الصور وصفًا مفيدًا، سيحاول Chrome توفير وصف لك. تعمل Google على فحص الصور.</translation>
 <translation id="8226081633851087288">{0,plural, =0{‏ستتم إعادة تشغيل نظام التشغيل Chrome الآن}=1{‏ستتم إعادة تشغيل نظام التشغيل Chrome خلال ثانية واحدة}two{‏ستتم إعادة تشغيل نظام التشغيل Chrome خلال ثانيتين (#)}few{‏ستتم إعادة تشغيل نظام التشغيل Chrome خلال # ثوانٍ}many{‏ستتم إعادة تشغيل نظام التشغيل Chrome خلال # ثانيةً}other{‏ستتم إعادة تشغيل نظام التشغيل Chrome خلال # ثانيةً}}</translation>
 <translation id="825412236959742607">‏تستهلك هذه الصفحة مساحة كبيرة من الذاكرة، لذلك أزال Chrome بعض محتواها.</translation>
 <translation id="8255190535488645436">‏يستخدم Google Chrome الكاميرا والميكروفون.</translation>

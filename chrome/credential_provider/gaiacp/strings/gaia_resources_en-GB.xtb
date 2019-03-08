@@ -3,6 +3,7 @@
 <translationbundle lang="en-GB">
 <translation id="1296843352074373664">Google user</translation>
 <translation id="1383286653814676580">Used to run Google Credential Provider sign-in page.</translation>
+<translation id="1644179990571656190">Failed to create new registered Google user. This system only allows one registered Google user to be created.</translation>
 <translation id="1813213595719100133">Signing in with Google Accounts on this domain is not allowed. Try a different account.</translation>
 <translation id="195232392645680541">Sign in using your Google account.</translation>
 <translation id="2595469428674600431">Sorry, your Windows password couldn't be verified. Please try again.</translation>

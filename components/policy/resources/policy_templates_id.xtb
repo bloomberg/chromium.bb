@@ -1986,9 +1986,9 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 
           Jika kebijakan ini tidak disetel, faktor skala default akan digunakan.
 
-          Kebijakan ini hanya berpengaruh jika <ph name="POWER_SMART_DIM_ENABLED_POLICY_NAME" /> dinonaktifkan. Jika tidak demikian, kebijakan ini akan diabaikan karena penundaan redup layar ditentukan oleh model machine learning.
+          Kebijakan ini hanya berpengaruh jika <ph name="POWER_SMART_DIM_ENABLED_POLICY_NAME" /> dinonaktifkan. Jika tidak demikian, kebijakan ini akan diabaikan karena penundaan peredupan layar ditentukan oleh model machine learning.
 
-          Faktor skalanya harus 100% atau lebih. Nilai yang akan membuat keterlambatan redup layar dalam mode presentasi menjadi lebih singkat daripada penundaan redup layar biasa tidak diizinkan.</translation>
+          Faktor skalanya harus 100% atau lebih. Nilai yang akan membuat penundaan peredupan layar dalam mode presentasi menjadi lebih singkat daripada penundaan peredupan layar biasa tidak diizinkan.</translation>
 <translation id="5592242031005200087">
       Jika kebijakan ini diaktifkan, setiap asal bernama dalam daftar
       yang dipisahkan koma akan dijalankan dalam prosesnya sendiri. Hal ini juga akan mengisolasi
@@ -2618,13 +2618,13 @@ Kebijakan ini hanya berlaku jika dukungan aplikasi Linux diaktifkan.</translatio
           Jika kebijakan ini tidak disetel, nilai default global akan digunakan untuk semua situs yaitu dari kebijakan 'DefaultWebUsbGuardSetting' jika disetel, atau dari konfigurasi pribadi pengguna.
 
           Pola URL di kebijakan ini tidak boleh bertentangan dengan pola URL yang dikonfigurasi melalui WebUsbBlockedForUrls. Tidak ditentukan yang mana di antara kedua kebijakan ini yang diprioritaskan jika URL cocok dengan keduanya.</translation>
-<translation id="7086677522575756117">Menentukan persentase yang digunakan untuk menskalakan penundaan redup layar ketika terdapat aktivitas pengguna saat layar redup atau segera setelah layar dimatikan.
+<translation id="7086677522575756117">Menentukan persentase yang digunakan untuk menskalakan penundaan peredupan layar ketika terdapat aktivitas pengguna saat layar redup atau segera setelah layar dimatikan.
 
-          Jika kebijakan ini disetel, kebijakan ini akan menentukan persentase yang digunakan untuk menskalakan penundaan redup layar ketika terdapat aktivitas pengguna saat layar redup atau segera setelah layar dimatikan. Ketika penundaan redup diskalakan, penundaan layar mati, kunci layar, dan menganggur akan disesuaikan untuk mempertahankan jarak yang sama dari penundaan redup layar seperti yang dikonfigurasi semula.
+          Jika kebijakan ini disetel, kebijakan ini akan menentukan persentase yang digunakan untuk menskalakan penundaan peredupan layar ketika terdapat aktivitas pengguna saat layar redup atau segera setelah layar dimatikan. Ketika penundaan peredupan diskalakan, penundaan layar mati, kunci layar, dan menganggur akan disesuaikan untuk mempertahankan jarak yang sama dari penundaan peredupan layar seperti yang dikonfigurasi semula.
 
           Jika kebijakan ini tidak disetel, faktor skala default akan digunakan.
 
-          Kebijakan ini hanya berpengaruh jika kebijakan <ph name="POWER_SMART_DIM_ENABLED_POLICY_NAME" /> dinonaktifkan. Jika tidak demikian, kebijakan ini akan diabaikan karena penundaan redup layar ditentukan oleh model machine learning.
+          Kebijakan ini hanya berpengaruh jika kebijakan <ph name="POWER_SMART_DIM_ENABLED_POLICY_NAME" /> dinonaktifkan. Jika tidak demikian, kebijakan ini akan diabaikan karena penundaan peredupan layar ditentukan oleh model machine learning.
 
           Faktor skalanya harus 100% atau lebih.</translation>
 <translation id="7106631983877564505">Mengaktifkan kunci jika perangkat <ph name="PRODUCT_OS_NAME" /> menganggur atau ditangguhkan.

@@ -424,6 +424,7 @@ itabadilishwa na data ya hoja za utafutaji za kweli.
       Kama mipangilio hii imewashwa, basi huduma ya ulinzi wa manenosiri itarekodi alama bainifu ya nenosiri kwenye URL hizi kwa madhumuni ya utambuzi wa kutumia nenosiri tena.
       Ikiwa mipangilio hii imezimwa au haijawekwa, basi huduma ya ulinzi wa manenosiri itarekodi alama bainifu ya nenosiri kwenye https://accounts.google.com.
       Sera hii inapatikana kwenye matukio ya Windows ambayo yameunganishwa kwenye kikoa cha <ph name="MS_AD_NAME" />. au matukio ya Windows 10 Pro au Enterprise yaliyojumuishwa katika usimamizi wa kifaa.</translation>
+<translation id="1919802376548418720">Tumia sera ya KDC kutoa kitambulisho.</translation>
 <translation id="1920046221095339924">Ruhusu vipindi vinavyodhibitiwa kwenye kifaa</translation>
 <translation id="1929709556673267855">Hutoa mipangilio ya printa za biashara zilizooanishwa kwenye vifaa.
 
@@ -590,6 +591,15 @@ Sera hii ikiondolewa, chaguomsingi zitatumika kwa mipangilio yote.</translation>
 <translation id="2240879329269430151">Inakuruhusu kuweka ikiwa tovuti zinaruhusiwa kuonyesha ibukizi. Kuonyesha ibukizi kunaweza kuruhusiwa kwa tovuti zote au kukataliwa kwa tovuti zote.
 
           Ikiwa sera hii itaachwa bila kuwekwa, 'BlockPopups' itatumiwa na mtumiaji ataweza kuibadilisha.</translation>
+<translation id="2265214338421787313">Sera hii huruhusu msimamizi kubainisha kuwa ukurasa unaweza kuonyesha madirisha ibukizi wakati wa kuondoa.
+
+      Sera hii ikiwashwa, kurasa zinaruhusiwa kuonyesha madirisha ibukizi wakati zinaondolewa.
+
+      Sera ikizimwa au isipowekwa, kurasa haziruhusiwi kuonyesha madirisha ibukizi wakati zinaondolewa kulingana na maelezo ya msingi (https://html.spec.whatwg.org/#apis-for-creating-and-navigating-browsing-contexts-by-name).
+
+      Sera hii itaondolewa katika Chrome 82.
+
+      Angalia https://www.chromestatus.com/feature/5989473649164288 .</translation>
 <translation id="2269319728625047531">Washa kipengele cha kuonyesha Idhini ya Usawazishaji wakati wa kuingia katika akaunti</translation>
 <translation id="2274864612594831715">Sera hii inasanidi kuwasha kibodi pepe kama kifaa cha kuingiza data kwenye ChromeOS. Watumiaji hawawezi kuibatilisha sera hii.
 
@@ -2240,6 +2250,7 @@ Kama sera hii haijawekwa, kiteuzi kikubwa huzimwa wakati skrini ya kuingia katik
 <translation id="602728333950205286">URL ya papo hapo ya kitoaji chaguomsingi cha utafutaji</translation>
 <translation id="603410445099326293">Vigezo vya URL ya kupendekeza inayotumia POST</translation>
 <translation id="6034341625190551415">Hudhibiti kipindi cha umma na aina za akaunti zinazotumia skrini nzima.</translation>
+<translation id="6034603289689965535">Huruhusu ukurasa kuonyesha madirisha ibukizi wakati wa kuondoa</translation>
 <translation id="6036523166753287175">Inawezesha kutamba kwa ngome kutoka katika ufikivu wa mpangishaji wa mbali</translation>
 <translation id="6070667616071269965">Miundo ya kibodi ya skrini ya kuingia katika kifaa</translation>
 <translation id="6074963268421707432">Usiruhusu tovuti yoyote ionyeshe arifa kwenye eneo-kazi</translation>

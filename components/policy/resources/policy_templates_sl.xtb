@@ -185,7 +185,7 @@
 <translation id="1363612796557848469">Ta pravilnik Pomočniku Google odobri dovoljenje za dostop do vsebine zaslona in pošiljanje podatkov strežniku.
       Če je pravilnik omogočen, je Pomočniku Google dovoljeno dostopati do vsebine zaslona.
       Če je pravilnik onemogočen, Pomočniku Google ni dovoljeno dostopati do vsebine zaslona.
-      Če ni nastavljen, se lahko uporabniki odločijo, ali Pomočniku Google odobrijo dostop do vsebine zaslon.</translation>
+      Če ni nastavljen, se lahko uporabniki odločijo, ali Pomočniku Google odobrijo dostop do vsebine zaslona.</translation>
 <translation id="1383493480903114193">Ta pravilnik vsili, da se omrežna koda izvaja v procesu brskalnika.
 
       Ta pravilnik je privzeto onemogočen, če pa je omogočen, so uporabniki izpostavljeni varnostnim težavam, ko se omrežni proces izvaja v peskovniku.
@@ -529,7 +529,7 @@
 <translation id="209586405398070749">Stabilna različica</translation>
 <translation id="2098658257603918882">Omogoči poročanje o uporabi in podatkih, povezanih z zrušitvami</translation>
 <translation id="2104418465060359056">Sporočanje podatkov o razširitvah in vtičnikih</translation>
-<translation id="2106627642643925514">Preglasi način tiskanja s kodo PIN. Če način ni na voljo, je ta pravilnik prezrt.</translation>
+<translation id="2106627642643925514">Preglasi privzeti način tiskanja s kodo PIN. Če način ni na voljo, je ta pravilnik prezrt.</translation>
 <translation id="2107601598727098402">
         Ta pravilnik zastara v različici M72. Uporabite pravilnik CloudManagementEnrollmentToken.
         </translation>
@@ -2073,7 +2073,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 
           Ta pravilnik ima vpliv samo, če je onemogočen pravilnik <ph name="POWER_SMART_DIM_ENABLED_POLICY_NAME" />. V nasprotnem primeru je pravilnik prezrt, ker zakasnitev zatemnitve zaslona določa model strojnega učenja.
 
-          Faktor prilagoditve mora biti 100 % ali več. Vrednosti, zaradi katerih bi bila zakasnitve zatemnitve zaslona v predstavitvenem načinu krajša od običajne zakasnitve zatemnitve zaslona, niso dovoljene.</translation>
+          Faktor prilagoditve mora biti 100 % ali več. Vrednosti, zaradi katerih bi bila zakasnitev zatemnitve zaslona v predstavitvenem načinu krajša od običajne zakasnitve zatemnitve zaslona, niso dovoljene.</translation>
 <translation id="5592242031005200087">
       Če je pravilnik omogočen, se bo vsak naveden izvor s
       seznama, ločenega z vejicami, izvajal v svojem procesu. S tem bodo osamljeni tudi
@@ -2753,7 +2753,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
           Če ta pravilnik ni nastavljen, se za vsa spletna mesta uporabi globalna privzeta vrednost iz pravilnika »DefaultWebUsbGuardSetting«, kadar je ta pravilnik nastavljen, sicer pa iz osebnih nastavitev uporabnika.
 
           Vzorci URL-jev v tem pravilniku ne smejo biti v nasprotju s tistimi, ki so konfigurirani v pravilniku »WebUsbBlockedForUrls«. Če se URL ujema z obema pravilnikoma, ni določeno, kateri ima prednost.</translation>
-<translation id="7086677522575756117">Določa odstotek, za katerega se prilagodi zakasnitev zatemnitve zaslona, kadar se zazna dejavnost zaslona, medtem ko je zaslon v zatemnjenem načinu ali kmalu potem ko je bil izklopljen.
+<translation id="7086677522575756117">Določa odstotek, za katerega se prilagodi zakasnitev zatemnitve zaslona, kadar se zazna dejavnost uporabnika, medtem ko je zaslon v zatemnjenem načinu ali kmalu potem ko je bil izklopljen.
 
           Če je nastavljen ta pravilnik, določa odstotek prilagoditve zakasnitve zatemnitve zaslona, kadar se zazna dejavnost uporabnika, medtem ko je zaslon v zatemnjenem načinu ali kmalu potem ko je bil izklopljen. Če je zakasnitev zatemnitve prilagojena, se zakasnitev izklopa zaslona, zakasnitev zaklepanja zaslona in zakasnitev zaradi nedejavnosti prilagodijo tako, da ohranijo enako časovno razdaljo od zakasnitve zatemnitve zaslona, kot je bila sprva konfigurirana.
 
@@ -2976,7 +2976,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
           Če je ta pravilnik nastavljen, je prvotna svetlost zaslona prilagojena na vrednost v pravilniku, uporabnik pa jo lahko pozneje spremeni. Funkcije samodejnega prilagajanja svetlosti so onemogočene.
           Če ta pravilnik ni nastavljen, ne vpliva na uporabniške kontrolnike za nastavitev zaslona in funkcije samodejnega prilagajanja svetlosti.
           Vrednosti pravilnika morajo biti navedene v odstotkih, in sicer v obsegu od 0 do 100.</translation>
-<translation id="7517846421386644905">Skrbniku omogoča nadziranje, ali naj diagnostična storitev wilco in krmilnik telemetrije (DTC) zbirata, obdelujeta in sporočata telemetrijo in diagnostične podatke.
+<translation id="7517846421386644905">Skrbniku omogoča nadziranje, ali naj diagnostična storitev wilco in kontrolnik telemetrije (DTC) zbirata, obdelujeta in sporočata telemetrijo in diagnostične podatke.
 
       Če je pravilnik onemogočen ali ni nastavljen, je orodje DTC izklopljeno in so zbiranje, obdelava ter sporočanje telemetrije in diagnostičnih podatkov naprave onemogočeni.
       Če je orodje wilco DTC v dani napravi na voljo in je pravilnik omogočen, so zbiranje, obdelava in poročanje telemetrije ter diagnostičnih podatkov vklopljeni.</translation>
@@ -2986,7 +2986,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
           Če ta pravilnik ni nastavljen, bo za vsa spletna mesta uporabljena splošna privzeta vrednost iz pravilnika »DefaultPopupsSetting«, kadar je ta nastavljen, ali iz uporabnikove osebne konfiguracije, kadar pravilnik »DefaultImagesSetting« ni nastavljen.</translation>
 <translation id="7529144158022474049">Faktor razpršitve samodejnega posodabljanja</translation>
 <translation id="7534199150025803530">Ta pravilnik ne vpliva na aplikacijo Google Drive za Android. Če želite preprečiti uporabo Googla Drive prek povezav v mobilnih omrežij, onemogočite namestitev aplikacije Google Drive za Android.</translation>
-<translation id="7540622499178214923">Omogoča diagnostično storitev wilco in kontrolnika telemetrije</translation>
+<translation id="7540622499178214923">Omogoča diagnostično storitev wilco in kontrolnik telemetrije</translation>
 <translation id="7547549430720182663">Združi</translation>
 <translation id="7553535237300701827">Če je ta pravilnik nastavljen, je glede na vrednost nastavitve preverjanje pristnosti pri prijavi takšno:
 

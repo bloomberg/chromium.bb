@@ -498,7 +498,7 @@
 
       Si no se configura esta política, Internet Explorer detectará de forma automática la ruta ejecutable de <ph name="PRODUCT_NAME" /> cuando ejecute <ph name="PRODUCT_NAME" /> desde Internet Explorer.
 
-      Si se configura esta política, se usará para ejecutar <ph name="PRODUCT_NAME" /> al cambiar la ejecución de <ph name="PRODUCT_NAME" /> desde Internet Explorer.
+      Si se configura esta política, se usará para ejecutar <ph name="PRODUCT_NAME" /> al ejecutar <ph name="PRODUCT_NAME" /> desde Internet Explorer.
 
       Esta política se puede configurar como una ruta de un archivo ejecutable o ${chrome} para detectar de forma automática la ubicación donde está instalado Chrome.</translation>
 <translation id="2024476116966025075">Configurar el nombre de dominio requerido para los clientes de acceso remoto</translation>

@@ -107,7 +107,7 @@
 
       Quando a política for definida para uma lista de strings, as strings serão mescladas com espaços e transmitidas ao Chrome como parâmetros de linha de comando.
 
-      Se um elemento tiver ${url}, ele será substituído com o URL da página a ser aberta.
+      Se um elemento tiver ${url}, ele será substituído pelo URL da página a ser aberta.
 
       Se nenhum elemento tiver ${url}, o URL será anexado ao fim da linha de comando.
 
@@ -493,7 +493,7 @@
 
       Quando a política não for definida, o Internet Explorer detectará automaticamente o caminho executável do <ph name="PRODUCT_NAME" /> quando for abrir o <ph name="PRODUCT_NAME" /> a partir do Internet Explorer.
 
-      Quando a política for definida, ela será usada para abrir o <ph name="PRODUCT_NAME" /> quando for mudar a inicialização do <ph name="PRODUCT_NAME" /> a partir do Internet Explorer.
+      Quando a política for definida, ela será usada para abrir o <ph name="PRODUCT_NAME" /> ao iniciar o <ph name="PRODUCT_NAME" /> a partir do Internet Explorer.
 
       Esta política pode ser definida para um caminho de arquivo executável ou como ${chrome} para detectar automaticamente o local de instalação do Chrome.</translation>
 <translation id="2024476116966025075">Configurar o nome de domínio obrigatório para clientes de acesso remoto</translation>
@@ -2592,7 +2592,7 @@
 
       Esta política se aplicará apenas se a compatibilidade com apps Linux estiver ativada.</translation>
 <translation id="69525503251220566">Parâmetro que fornece recursos de pesquisa por imagem para o provedor de pesquisa padrão</translation>
-<translation id="6953102253399571439">Permitir impressão com PIN por padrão</translation>
+<translation id="6953102253399571439">Ativar impressão com PIN como padrão</translation>
 <translation id="6956272732789158625">Não permitir que nenhum site use a geração de chaves</translation>
 <translation id="6965859329738616662">Especifica se um modelo de escurecimento inteligente é permitido para aumentar o tempo que a tela permanece ativa.
 
@@ -2689,7 +2689,7 @@
       Esta política pode ser definida como "conservadora" ou "desempenho". No primeiro caso, as configurações do programador de tarefas são ajustadas para proporcionar estabilidade. No segundo, o objetivo é ter o máximo de desempenho.
 
       Se a política não for definida, o usuário poderá escolher.</translation>
-<translation id="7145335384492396213">Definir modo de impressão com PIN como padrão</translation>
+<translation id="7145335384492396213">Modo padrão de impressão com PIN</translation>
 <translation id="7158064522994309072">Esta política controla qual comando é usado para abrir URLs em um navegador alternativo.
 
       Quando esta política não for definida, um padrão específico da plataforma será usado: Internet Explorer para Windows ou Safari para Mac OS X. No Linux, a inicialização de um navegador alternativo falhará quando a configuração não for feita.

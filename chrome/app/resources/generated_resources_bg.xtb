@@ -567,6 +567,7 @@
 <translation id="1826516787628120939">Извършва се проверка</translation>
 <translation id="1828378091493947763">Тази приставка не се поддържа на устройството</translation>
 <translation id="1828901632669367785">Печат чрез системния диалогов прозорец...</translation>
+<translation id="1829129547161959350">Пингвин</translation>
 <translation id="1829192082282182671">&amp;Намаляване</translation>
 <translation id="1830550083491357902">Не сте в профила си</translation>
 <translation id="183183971458492120">Информацията се зарежда...</translation>
@@ -931,7 +932,6 @@
 <translation id="2365507699358342471">Този сайт може да преглежда текста и изображенията, копирани в буферната памет.</translation>
 <translation id="2367199180085172140">Добавяне на споделяне на файл</translation>
 <translation id="2367972762794486313">Показване на приложенията</translation>
-<translation id="2369536625682139252">Ще бъдат изтрити всички съхранявани от <ph name="SITE" /> данни освен „бисквитките“.</translation>
 <translation id="2371076942591664043">Отваряне &amp;след изтегляне</translation>
 <translation id="2375406435414127095">Свързване с телефона ви</translation>
 <translation id="2377319039870049694">Превключване към списъчен изглед</translation>
@@ -1386,7 +1386,7 @@
 <translation id="3038612606416062604">Ръчно добавяне на принтер</translation>
 <translation id="3038675903128704560">Забраняване на сайтовете да използват приставка за достъп до компютъра ви</translation>
 <translation id="3039491566278747710">Правилото за работа офлайн не бе инсталирано успешно на устройството.</translation>
-<translation id="3040310857793999281">Превключване на заглушаването</translation>
+<translation id="3040310857793999281">Превключване на спирането на звука</translation>
 <translation id="3045447014237878114">Този сайт е изтеглил автоматично няколко файла</translation>
 <translation id="3046910703532196514">Уеб страница, цялата</translation>
 <translation id="304747341537320566">Машини за синтезиран говор</translation>
@@ -1893,6 +1893,7 @@
 <translation id="3807249107536149332">Разширението <ph name="EXTENSION_NAME" /> (идентификатор <ph name="EXTENSION_ID" />) не е разрешено на екрана за вход.</translation>
 <translation id="3807747707162121253">&amp;Отказ</translation>
 <translation id="38089336910894858">Показване на предупреждение преди излизане с ⌘Q</translation>
+<translation id="3809272675881623365">Заек</translation>
 <translation id="3809280248639369696">Пришълец</translation>
 <translation id="3810973564298564668">Управление</translation>
 <translation id="3811494700605067549">Избрахте 1 файл</translation>
@@ -2113,6 +2114,7 @@
 <translation id="4118579674665737931">Моля, рестартирайте устройството и опитайте отново.</translation>
 <translation id="4120817667028078560">Пътят е твърде дълъг</translation>
 <translation id="4121428309786185360">Изтича на</translation>
+<translation id="4124935795427217608">Еднорог</translation>
 <translation id="412730574613779332">Супергерой</translation>
 <translation id="412940972494182898">Изпълняване на Flash този път</translation>
 <translation id="4130199216115862831">Регистрационен файл на устройството</translation>
@@ -2443,6 +2445,7 @@
 <translation id="469230890969474295">OEM папка</translation>
 <translation id="4692623383562244444">Търсещи машини</translation>
 <translation id="4694024090038830733">Конфигурирането на принтери се управлява от администратора.</translation>
+<translation id="4694604912444486114">Маймуна</translation>
 <translation id="4697551882387947560">При приключване на сесията на сърфиране</translation>
 <translation id="4699172675775169585">Кеширани изображения и файлове</translation>
 <translation id="4699357559218762027">(автоматично стартирано)</translation>
@@ -2461,6 +2464,7 @@
 <translation id="4722920479021006856"><ph name="APP_NAME" /> споделя екрана ви.</translation>
 <translation id="4724450788351008910">Променена принадлежност</translation>
 <translation id="4724850507808590449">На <ph name="FILE_COUNT" /> снимки бяха създадени резервни копия</translation>
+<translation id="4725511304875193254">Корги</translation>
 <translation id="4726710629007580002">Имаше предупреждения при опита за инсталиране на това разширение:</translation>
 <translation id="4728558894243024398">Платформа</translation>
 <translation id="4732760563705710320">За съжаление, този видеоклип не се поддържа от устройството ви за предаване на съдържание.</translation>
@@ -3579,6 +3583,7 @@
 <translation id="6356138805250111037">Възползвайте се от по-интелигентна проверка на правописа, като изпращате до Google това, което въвеждате в браузъра</translation>
 <translation id="63566973648609420">Само някой с пропуска ви може да прочете шифрованите ви данни – той не се изпраща до Google, нито се съхранява от нас. Ако го забравите или искате да промените тази настройка, ще се наложи <ph name="BEGIN_LINK" />да нулирате синхронизирането<ph name="END_LINK" />.</translation>
 <translation id="6357619544108132570">Добре дошли в семейството на <ph name="SHORT_PRODUCT_NAME" />. Това не е обикновен компютър.</translation>
+<translation id="6358884629796491903">Дракон</translation>
 <translation id="6361850914223837199">Подробности за грешката:</translation>
 <translation id="6362853299801475928">&amp;Подаване на сигнал за проблем...</translation>
 <translation id="6365069501305898914">Facebook</translation>
@@ -3856,6 +3861,7 @@
 <translation id="6790820461102226165">Добавяне на човек...</translation>
 <translation id="6792072150955115067"><ph name="APP_NAME" /> иска да сподели съдържанието на екрана ви с/ъс <ph name="TARGET_NAME" />. Изберете какво да се сподели.</translation>
 <translation id="6793604637258913070">Открояване на точката на вмъкване в текста, когато се показва или движи</translation>
+<translation id="6795884519221689054">Панда</translation>
 <translation id="6797493596609571643">Ами сега! Нещо се обърка.</translation>
 <translation id="6798578729981748444">За да завършите импортирането, затворете всички прозорци на Firefox.</translation>
 <translation id="6798780071646309401">caps lock е включен</translation>
@@ -3866,6 +3872,7 @@
 <translation id="6805647936811177813">Моля, влезте в/ъв <ph name="TOKEN_NAME" />, за да импортирате сертификат за клиентската програма от <ph name="HOST_NAME" />.</translation>
 <translation id="680572642341004180">Активиране на проследяването на RLZ в <ph name="SHORT_PRODUCT_OS_NAME" />.</translation>
 <translation id="6806699711453372963">Управление на споделянето с Linux</translation>
+<translation id="6808193438228982088">Лисица</translation>
 <translation id="6810613314571580006">Автоматично влизане в уебсайтове посредством съхраняваните идентификационни данни. Когато функцията е деактивирана, ще се изисква потвърждение преди всяко влизане в профил в уебсайт.</translation>
 <translation id="6810768462515084623">Ами сега! Изглежда, че паролата ви е изтекла. Моля, подновете я на друго устройство и опитайте отново.</translation>
 <translation id="6811034713472274749">Страницата е готова за преглед</translation>
@@ -5035,6 +5042,7 @@
 <translation id="8554899698005018844">Без език</translation>
 <translation id="855773602626431402">На тази страница бе предотвратено изпълняването на приставка извън тестова среда.</translation>
 <translation id="8557930019681227453">Манифест</translation>
+<translation id="8561206103590473338">Слон</translation>
 <translation id="8561853412914299728"><ph name="TAB_TITLE" /> <ph name="EMOJI_PLAYING" /></translation>
 <translation id="8565650234829130278">Бе направен опит за понижаване на приложението.</translation>
 <translation id="8569002732135253578">„<ph name="DOCUMENT_NAME" />“ се отпечатва</translation>

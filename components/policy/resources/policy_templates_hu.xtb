@@ -179,7 +179,7 @@
 
       Ha a házirend értéke hamis, a <ph name="PRODUCT_NAME" /> nem teszi lehetővé vendégprofilok indítását.</translation>
 <translation id="1363275621236827384">Lekérdezések engedélyezése a Quirks Server felé a hardverprofiloknál</translation>
-<translation id="1363612796557848469">Ez a házirend engedélyt ad a Google Segéd számára a képernyőn lévő kontextus megtekintésére és az ezzel kapcsolatos adatoknak a szervernek való elküldésére.
+<translation id="1363612796557848469">Ez a házirend engedélyt ad a Google Segéd számára, hogy hozzáférjen a képernyőn lévő kontextushoz, és az ezzel kapcsolatos adatokat elküldje a szervernek.
       Ha a házirend engedélyezve van, a Google Segéd hozzáférhet a képernyőn látható kontextushoz.
       Ha a házirend le van tiltva, a Google Segéd nem férhet hozzá a képernyőn látható kontextushoz.
       Ha nincs beállítva, akkor a felhasználó döntheti el, hogy engedélyezi-e a Google Segéd számára a képernyőn lévő kontextus elérését.</translation>

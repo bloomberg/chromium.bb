@@ -18,7 +18,9 @@
 <translation id="1585657529869845941">النقر على زر <ph name="BEGIN_BOLD" />التبديل على أي حال<ph name="END_BOLD" /> في حال ظهوره</translation>
 <translation id="1668054258064581266">‏بعد إزالة حسابك من Chromium، قد تحتاج إلى إعادة تحميل علامات التبويب المفتوحة لتفعيلها.</translation>
 <translation id="1688750314291223739">‏يمكنك إعداد المزامنة لحفظ ميزات المتصفح المخصصة على الويب والدخول إليها من Chromium على أي كمبيوتر.</translation>
+<translation id="1701453112166152218">‏في حال لم تتضمّن إحدى الصور وصفًا مفيدًا، سيحاول Chromium توفير وصف لك. تعمل Google على فحص الصور. ويمكنك إيقاف هذه الميزة في الإعدادات في أي وقت.</translation>
 <translation id="1708666629004767631">‏يتوفر إصدار جديد وأكثر أمانًا Chromium.</translation>
+<translation id="1736416771649788185">‏في حال لم تتضمّن إحدى الصور وصفًا مفيدًا، سيحاول Chromium توفير وصف لك. تعمل Google على فحص الصور.</translation>
 <translation id="1766096484055239003">‏يتطلّب المُشرف إعادة تشغيل Chromium لتطبيق تحديث.</translation>
 <translation id="1774152462503052664">‏دع Chromium يعمل في الخلفية</translation>
 <translation id="1779356040007214683">‏لجعل Chromium أكثر أمانًا، تم إيقاف بعض الإضافات غير المدرجة في <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> والتي ربما تمت إضافتها بدون علمك.</translation>
@@ -268,6 +270,7 @@
 <translation id="9089354809943900324">‏إصدار Chromium قديم</translation>
 <translation id="91086099826398415">‏فتح الرابط في علامة تبويب جديدة في Chromium</translation>
 <translation id="911206726377975832">هل تريد أيضًا حذف بيانات التصفح؟</translation>
+<translation id="9158494823179993217">‏ضبط مشرف النظام Chromium لفتح متصفِّح بديل للوصول إلى <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="918373042641772655">‏سيؤدي فصل <ph name="USERNAME" />إلى مسح السجّل والإشارات المرجعية والإعدادات و بيانات Chrome الأخرى المخزنة على هذا الجهاز. لن يتم مسح البيانات المخزنة في حساب Google ويمكن إدارتها على <ph name="GOOGLE_DASHBOARD_LINK" />لوحة تحكم Google<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
 <translation id="9197815481970649201">‏تم تسجيل دخولك الآن إلى Chromium</translation>

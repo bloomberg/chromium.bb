@@ -23,6 +23,7 @@
 <translation id="1120743664840974483">{«ا»: «اسب»، «ب»: «بازی»، «پ»: «پروین»، «ت»: «ترانه»، «ث»: «ثریا»، «ج»: «جوجه»، «چ»: «چرخ»، «ح»: «حریم»، « خ»:«خصوصی »، « د»: «دفترچه»، «ذ»: «ذلیل»، «ر»: «روز»، «ز»: «زمان»، «ژ»: «ژولیت»، «س»: «سیاست»، «ش»: «شنبه»، «ص»: «صفحه»، «ض»: «ضروری»، «ط»: «طراوت»، «ظ»: «ظهر»، «ع»: «عصر»، « غ»: «غروب»، «ف»: «فروش»، «ق»: «قلب»، «ک»: «کودکان»، «گ»: «گوشی»، «ل»: «لوله»، «م»: «مرز»، «ن»: «نامناسب»، «و»: «ویلا»، «ه»: «هیاهو»، «ی»: «یادآور»}</translation>
 <translation id="1120938014254001895">تند کشیدن دو انگشت به بالا</translation>
 <translation id="1124771028211010580">سبک نمایش کنونی، پهلو به پهلو است.</translation>
+<translation id="1126928665165112660">ایتالیک نیست</translation>
 <translation id="113582498867142724">مجموعه <ph name="TAG" /> با <ph name="NUM" /> مورد</translation>
 <translation id="1155043339247954670">مورد فهرست بعدی وجود ندارد.</translation>
 <translation id="1157782847298808853">راهنمای صفحه‌کلید</translation>
@@ -55,6 +56,7 @@
 <translation id="1325946044405407859">برنزه کدر</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> از <ph name="TOTAL" /></translation>
 <translation id="1334095593597963605">بازگویی نویسه و کلمه</translation>
+<translation id="1334570596456017464">زیرنگاشت</translation>
 <translation id="1339428534620983148">ستون قبلی جدول</translation>
 <translation id="1342835525016946179">article</translation>
 <translation id="1346059596910821859">نکته</translation>
@@ -130,6 +132,7 @@
 <translation id="1905379170753160525">نمایش فهرست عناوین</translation>
 <translation id="1912556590115083156">vlnk</translation>
 <translation id="1913761808037590218">‎#ed</translation>
+<translation id="1914424852593176649">اندازه <ph name="FONT_SIZE" /></translation>
 <translation id="1914635379910604678"><ph name="DOT" /> ترکیب کلید</translation>
 <translation id="1923956950274750765">بنفش ارکیده‌ای سیر</translation>
 <translation id="1954623340234317532">کنترل هفته از سال</translation>
@@ -139,6 +142,7 @@
 <translation id="1990932729021763163">عنوان ردیف:</translation>
 <translation id="2002895034995108595">بازنشانی نقشه کلید کنونی</translation>
 <translation id="2007545860310005685">{COUNT,plural, =1{کروشه چپ}one{# کروشه چپ}other{# کروشه چپ}}</translation>
+<translation id="2009187674653301682">بالانگاشت نیست</translation>
 <translation id="2010555995361223825">‏منوهای ChromeVox</translation>
 <translation id="2045490512405922022">بدون علامت</translation>
 <translation id="20601713649439366">هیچ رابطه ریاضی قبلی وجود ندارد.</translation>
@@ -168,6 +172,7 @@
 <translation id="2278490101488436824">تند کشیدن سه انگشت به راست</translation>
 <translation id="2281234842553884450">اسلایدر قبلی</translation>
 <translation id="2311237334957139798">حرکت به قبلی با جزئیات</translation>
+<translation id="2314393392395134769">بالانویس نیست</translation>
 <translation id="2318372665160196757">اصلی</translation>
 <translation id="2329324941084714723">پانل برگه</translation>
 <translation id="2344193891939537199">کنترل تاریخ زمان</translation>
@@ -299,10 +304,12 @@
 <translation id="3163593631834463955">عنوان ستون خالی</translation>
 <translation id="316542773973815724">پیمایش</translation>
 <translation id="3172700825913348768">{COUNT,plural, =1{فاصله}one{# فاصله}other{# فاصله}}</translation>
+<translation id="3179119189286472195">پیوند نیست</translation>
 <translation id="320961988183078793"><ph name="TYPE" /> قرار داده شد</translation>
 <translation id="321072937702597574">بنفش ارکیده‌ای</translation>
 <translation id="3218691001991391708"><ph name="TEXT" /> را جای‌گذاری کنید.</translation>
 <translation id="3223701887221307104"><ph name="NAME" />، برگه</translation>
+<translation id="3223779237381380437">خط‌خورده نیست</translation>
 <translation id="3226035351387556942">chk</translation>
 <translation id="3229375994964697375">پیوند بازدیدشده</translation>
 <translation id="3232388865800379423">دکمه بازشو</translation>
@@ -516,6 +523,7 @@
 <translation id="4763296182459741068">جمع کردن به پایین</translation>
 <translation id="4763480195061959176">ویدئو</translation>
 <translation id="4764692524839457597">پیش‌فرض</translation>
+<translation id="4772771694153161212">زیرخط نیست</translation>
 <translation id="479989351350248267">جستجو</translation>
 <translation id="4804818685124855865">قطع اتصال</translation>
 <translation id="481165870889056555">اعلام عنوان صفحه کنونی</translation>
@@ -531,6 +539,7 @@
 <translation id="4846428657345567687">‏به ChromeVox خوش‌آمدید!</translation>
 <translation id="4848993367330139335">tmr</translation>
 <translation id="4850023505158945298">عنصر مشابه قبلی.</translation>
+<translation id="4862744964787595316">سیاه نیست</translation>
 <translation id="4866956062845190338">rdmnuitm</translation>
 <translation id="4867316986324544967">‏فعال کردن گزارش‌گیری TTS</translation>
 <translation id="4877261390094455813">یک عبارت جستجو را وارد کنید.</translation>
@@ -843,6 +852,7 @@
 <translation id="712735679809149106">بازگویی کلمه</translation>
 <translation id="7137397390322864165">حنایی روشن</translation>
 <translation id="713824876195128146">نقل قول طولانی بعدی</translation>
+<translation id="7140168702531682811">بالانگاشت</translation>
 <translation id="7143034430156387447">تغییر وضعیت بین بریل ۶ و ۸ نقطه</translation>
 <translation id="7143207342074048698">در حال اتصال</translation>
 <translation id="7153618581592392745">نیلی کم‌رنگ</translation>
@@ -1139,6 +1149,7 @@
 <translation id="8883850400338911892">ویرایش نشانی وب‏ ۸ نقطه‌ای</translation>
 <translation id="8896347895970027998">‏ChromeVox را فعال یا غیرفعال کنید.</translation>
 <translation id="8896479570570613387">آبی بنفش</translation>
+<translation id="8897030325301866860">قلم <ph name="FONT_FAMILY" /></translation>
 <translation id="8898516272131543774">بازگویی علائم سجاوندی حلقه</translation>
 <translation id="8900148057318340779">کلید پیشوند</translation>
 <translation id="8908714597367957477">colhdr</translation>
