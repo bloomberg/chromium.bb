@@ -159,10 +159,6 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
   LayoutRect VisualRect() const override;
   LayoutRect PartialInvalidationVisualRect() const override;
 
-  // CSS ink overflow https://www.w3.org/TR/css-overflow-3/#ink
-  // Encloses all pixels painted by self + children.
-  LayoutRect SelfInkOverflow() const;
-
   NGPhysicalOffsetRect ComputeLocalSelectionRectForText(
       const LayoutSelectionStatus&) const;
   NGPhysicalOffsetRect ComputeLocalSelectionRectForReplaced() const;

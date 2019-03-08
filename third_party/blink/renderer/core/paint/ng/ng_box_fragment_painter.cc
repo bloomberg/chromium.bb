@@ -802,11 +802,11 @@ void NGBoxFragmentPainter::PaintAtomicInlineChild(const NGPaintFragment& child,
   }
 }
 
-void NGBoxFragmentPainter::PaintTextChild(const NGPaintFragment& text_fragment,
+void NGBoxFragmentPainter::PaintTextChild(const NGPaintFragment& paint_fragment,
                                           const PaintInfo& paint_info,
                                           const LayoutPoint& paint_offset) {
   // Inline blocks should be painted by PaintAtomicInlineChild.
-  DCHECK(!text_fragment.PhysicalFragment().IsAtomicInline());
+  DCHECK(!paint_fragment.PhysicalFragment().IsAtomicInline());
 
   // Only paint during the foreground/selection phases.
   if (paint_info.phase != PaintPhase::kForeground &&
@@ -818,9 +818,12 @@ void NGBoxFragmentPainter::PaintTextChild(const NGPaintFragment& text_fragment,
   // Note: To paint selection for <br>, we don't check intersection with
   // fragment paint rect and cull rect since computing selection rect is
   // expensive.
+  const NGPhysicalTextFragment& text_fragment =
+      ToNGPhysicalTextFragment(paint_fragment.PhysicalFragment());
   if (!text_fragment.Size().IsEmpty()) {
-    LayoutRect physical_visual_overflow = text_fragment.SelfInkOverflow();
-    physical_visual_overflow.MoveBy(text_fragment.Offset().ToLayoutPoint());
+    LayoutRect physical_visual_overflow =
+        text_fragment.SelfInkOverflow().ToLayoutRect();
+    physical_visual_overflow.MoveBy(paint_fragment.Offset().ToLayoutPoint());
     physical_visual_overflow.MoveBy(paint_offset);
     if (!paint_info.GetCullRect().Intersects(physical_visual_overflow))
       return;
@@ -832,7 +835,7 @@ void NGBoxFragmentPainter::PaintTextChild(const NGPaintFragment& text_fragment,
       node_holder = ToLayoutText(node->GetLayoutObject())->EnsureNodeHolder();
   }
 
-  NGTextFragmentPainter text_painter(text_fragment);
+  NGTextFragmentPainter text_painter(paint_fragment);
   text_painter.Paint(paint_info, paint_offset, node_holder);
 }
 
@@ -877,7 +880,7 @@ bool NGBoxFragmentPainter::ShouldPaint(
     const ScopedPaintState& paint_state) const {
   // TODO(layout-dev): Add support for scrolling, see BlockPainter::ShouldPaint.
   return paint_state.LocalRectIntersectsCullRect(
-      box_fragment_.SelfInkOverflow());
+      PhysicalFragment().InkOverflow().ToLayoutRect());
 }
 
 void NGBoxFragmentPainter::PaintTextClipMask(GraphicsContext& context,
@@ -1067,7 +1070,7 @@ bool NGBoxFragmentPainter::HitTestTextFragment(
   LayoutRect rect = LayoutRect(PixelSnappedIntRect(border_rect));
   if (UNLIKELY(result.GetHitTestRequest().GetType() &
                HitTestRequest::kHitTestVisualOverflow)) {
-    rect = text_paint_fragment.SelfInkOverflow();
+    rect = text_fragment.SelfInkOverflow().ToLayoutRect();
     rect.MoveBy(border_rect.Location());
   }
 
@@ -1109,7 +1112,8 @@ bool NGBoxFragmentPainter::HitTestLineBoxFragment(
     return false;
 
   const LayoutPoint overflow_location =
-      fragment.SelfInkOverflow().Location() + physical_offset;
+      fragment.PhysicalFragment().SelfInkOverflow().offset.ToLayoutPoint() +
+      physical_offset;
   if (HitTestClippedOutByBorder(location_in_container, overflow_location))
     return false;
 

@@ -69,7 +69,7 @@ class CORE_EXPORT NGPhysicalBoxFragment final
   NGPhysicalOffsetRect SelfInkOverflow() const;
 
   // Ink overflow including contents, in the local coordinates.
-  NGPhysicalOffsetRect InkOverflow(bool apply_clip) const;
+  NGPhysicalOffsetRect InkOverflow(bool apply_clip = true) const;
 
   // Ink overflow of children in local coordinates.
   NGPhysicalOffsetRect ContentsInkOverflow() const;
