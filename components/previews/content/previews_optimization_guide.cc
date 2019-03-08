@@ -15,6 +15,7 @@
 #include "components/optimization_guide/optimization_guide_service.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/previews/content/hint_cache_leveldb_store.h"
+#include "components/previews/content/hints_fetcher.h"
 #include "components/previews/content/previews_hints.h"
 #include "components/previews/content/previews_hints_util.h"
 #include "components/previews/content/previews_top_host_provider.h"
@@ -226,6 +227,7 @@ void PreviewsOptimizationGuide::OnHintCacheInitialized() {
   // feature state:
   // (1) Data saver should be enabled
   // (2) Infobar notification does not need to be shown to the user.
+
   if (previews::params::IsOnePlatformHintsEnabled()) {
     // TODO(mcrouse): We will likely need to an async call and likely
     // within a timer that will call GetOnePlatformClientHints().
@@ -272,6 +274,12 @@ void PreviewsOptimizationGuide::GetOnePlatformClientHints() {
 
   LOCAL_HISTOGRAM_COUNTS_100("Previews.HintsFetcher.GetHintsRequest.HostCount",
                              top_hosts.size());
+
+  if (!hintsfetcher_) {
+    hintsfetcher_ = std::make_unique<HintsFetcher>(hint_cache_.get());
+  }
+
+  hintsfetcher_->FetchHintsForHosts(top_hosts);
 
   // TODO(mcrouse) to build SimpleURLLoader to perform request from service
   // for per-user client hints.
