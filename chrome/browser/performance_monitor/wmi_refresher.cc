@@ -10,6 +10,7 @@
 #include <limits>
 #include <vector>
 
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/timer/elapsed_timer.h"
@@ -99,17 +100,24 @@ void WMIRefresher::InitializeDiskIdleTimeConfigImpl(
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
 
+  base::ElapsedTimer elapsed_timer;
+
   // This assumes that CoInitialize(Ex) has already been called on this thread.
   AssertComApartmentType(base::win::ComApartmentType::MTA);
 
+  base::ElapsedTimer elapsed_timer_create_connection;
   if (!base::win::CreateLocalWmiConnection(true /* set_blanket */,
                                            &wmi_services_)) {
     LOG(ERROR) << "Unable to create the local WMI connection";
     *res = InitStatus::kLocalWMIConnectionError;
     return;
   }
+  base::UmaHistogramTimes(
+      "Memory.Experimental.WMIRefresher.Init.CreateLocalWmiConnectionDuration",
+      elapsed_timer_create_connection.Elapsed());
 
   HRESULT hr = S_OK;
+  base::ElapsedTimer elapsed_timer_cocreate_instance;
   // Creates the WMI refresher interface.
   if (FAILED(hr = ::CoCreateInstance(CLSID_WbemRefresher, nullptr,
                                      CLSCTX_INPROC_SERVER,
@@ -118,6 +126,9 @@ void WMIRefresher::InitializeDiskIdleTimeConfigImpl(
     *res = InitStatus::kRefresherCreationError;
     return;
   }
+  base::UmaHistogramTimes(
+      "Memory.Experimental.WMIRefresher.Init.CoCreateInstanceDuration",
+      elapsed_timer_cocreate_instance.Elapsed());
 
   // Get the interface to configure the refresher.
   ComPtr<IWbemConfigureRefresher> wmi_refresher_config;
@@ -129,6 +140,7 @@ void WMIRefresher::InitializeDiskIdleTimeConfigImpl(
   }
 
   long wmi_refresher_enum_id = 0;
+  base::ElapsedTimer elapsed_timer_add_enum;
   // Add the enumerator for the disk performance data.
   hr = wmi_refresher_config->AddEnum(
       wmi_services_.Get(), L"Win32_PerfRawData_PerfDisk_PhysicalDisk", 0,
@@ -139,7 +151,15 @@ void WMIRefresher::InitializeDiskIdleTimeConfigImpl(
     *res = InitStatus::kRefresherAddEnumError;
     return;
   }
+  base::UmaHistogramTimes(
+      "Memory.Experimental.WMIRefresher.Init.AddEnumDuration",
+      elapsed_timer_add_enum.Elapsed());
+
   *res = InitStatus::kInitStatusOk;
+
+  base::UmaHistogramTimes(
+      "Memory.Experimental.WMIRefresher.InitializeDiskIdleTimeConfigDuration",
+      elapsed_timer.Elapsed());
 
   refresh_ready_ = true;
 }
