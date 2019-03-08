@@ -102,6 +102,7 @@
 #include "third_party/blink/renderer/platform/network/http_names.h"
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
 #include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
+#include "third_party/blink/renderer/platform/network/network_utils.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
@@ -524,8 +525,11 @@ void DocumentLoader::BodyCodeCacheReceived(
 }
 
 void DocumentLoader::BodyDataReceived(base::span<const char> data) {
-  fetcher_->Context().DispatchDidReceiveData(main_resource_identifier_,
-                                             data.data(), data.size());
+  GetFrameLoader().Progress().IncrementProgress(main_resource_identifier_,
+                                                data.size());
+  probe::DidReceiveData(probe::ToCoreProbeSink(GetFrame()),
+                        main_resource_identifier_, this, data.data(),
+                        data.size());
   HandleData(data.data(), data.size());
 }
 
@@ -541,10 +545,11 @@ void DocumentLoader::BodyLoadingFinished(
   response_.SetDecodedBodyLength(total_decoded_body_length);
 
   if (!error) {
-    fetcher_->Context().DispatchDidFinishLoading(
-        main_resource_identifier_, completion_time, total_encoded_data_length,
-        total_decoded_body_length, should_report_corb_blocking,
-        FetchContext::ResourceResponseType::kNotFromMemoryCache);
+    GetFrameLoader().Progress().CompleteProgress(main_resource_identifier_);
+    probe::DidFinishLoading(
+        probe::ToCoreProbeSink(GetFrame()), main_resource_identifier_, this,
+        completion_time, total_encoded_data_length, total_decoded_body_length,
+        should_report_corb_blocking);
     if (response_.IsHTTP()) {
       navigation_timing_info_->SetFinalResponse(response_);
       navigation_timing_info_->AddFinalTransferSize(
@@ -566,9 +571,17 @@ void DocumentLoader::BodyLoadingFinished(
   }
 
   ResourceError resource_error = error.value();
-  fetcher_->Context().DispatchDidFail(url_, main_resource_identifier_,
-                                      resource_error, total_encoded_data_length,
-                                      false /* is_internal_request */);
+  if (network_utils::IsCertificateTransparencyRequiredError(
+          resource_error.ErrorCode())) {
+    GetUseCounter().Count(
+        WebFeature::kCertificateTransparencyRequiredErrorOnResourceLoad,
+        GetFrame());
+  }
+  GetFrameLoader().Progress().CompleteProgress(main_resource_identifier_);
+  probe::DidFailLoading(probe::ToCoreProbeSink(GetFrame()),
+                        main_resource_identifier_, this, resource_error);
+  GetFrame()->Console().DidFailLoading(this, main_resource_identifier_,
+                                       resource_error);
   LoadFailed(resource_error);
 }
 
