@@ -1554,9 +1554,6 @@ extern const char kSiteExplorationUiDescription[];
 extern const char kSiteIsolationForPasswordSitesName[];
 extern const char kSiteIsolationForPasswordSitesDescription[];
 
-extern const char kSpannableInlineAutocompleteName[];
-extern const char kSpannableInlineAutocompleteDescription[];
-
 extern const char kStrictSiteIsolationName[];
 extern const char kStrictSiteIsolationDescription[];
 

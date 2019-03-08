@@ -2628,11 +2628,6 @@ const char kSetMarketUrlForTestingDescription[] =
     "When enabled, sets the market URL for use in testing the update menu "
     "item.";
 
-const char kSpannableInlineAutocompleteName[] = "Spannable inline autocomplete";
-const char kSpannableInlineAutocompleteDescription[] =
-    "A new type of inline autocomplete for the omnibox that works with "
-    "keyboards that compose text.";
-
 const char kSiteExplorationUiName[] = "Site Exploration UI";
 const char kSiteExplorationUiDescription[] =
     "Show site suggestions in the Exploration UI";
