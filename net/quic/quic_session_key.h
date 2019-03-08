@@ -8,7 +8,7 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/privacy_mode.h"
 #include "net/socket/socket_tag.h"
-#include "net/third_party/quic/core/quic_server_id.h"
+#include "net/third_party/quiche/src/quic/core/quic_server_id.h"
 
 namespace net {
 

@@ -6,7 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_ADAPTERS_P2P_QUIC_TRANSPORT_STATS_H_
 
 #include "base/time/time.h"
-#include "net/third_party/quic/core/quic_connection_stats.h"
+#include "net/third_party/quiche/src/quic/core/quic_connection_stats.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 
 namespace blink {

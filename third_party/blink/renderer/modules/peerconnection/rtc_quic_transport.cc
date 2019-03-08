@@ -4,8 +4,8 @@
 
 #include "third_party/blink/renderer/modules/peerconnection/rtc_quic_transport.h"
 
+#include "net/quic/platform/impl/quic_chromium_clock.h"
 #include "net/quic/quic_chromium_alarm_factory.h"
-#include "net/third_party/quic/platform/impl/quic_chromium_clock.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_high_res_time_stamp.h"

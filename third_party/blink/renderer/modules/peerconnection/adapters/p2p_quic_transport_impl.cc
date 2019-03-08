@@ -4,12 +4,12 @@
 #include "third_party/blink/renderer/modules/peerconnection/adapters/p2p_quic_transport_impl.h"
 
 #include "net/quic/quic_chromium_connection_helper.h"
-#include "net/third_party/quic/core/crypto/quic_random.h"
-#include "net/third_party/quic/core/quic_config.h"
-#include "net/third_party/quic/core/quic_utils.h"
-#include "net/third_party/quic/core/tls_client_handshaker.h"
-#include "net/third_party/quic/core/tls_server_handshaker.h"
-#include "net/third_party/quic/tools/quic_simple_crypto_server_stream_helper.h"
+#include "net/third_party/quiche/src/quic/core/crypto/quic_random.h"
+#include "net/third_party/quiche/src/quic/core/quic_config.h"
+#include "net/third_party/quiche/src/quic/core/quic_utils.h"
+#include "net/third_party/quiche/src/quic/core/tls_client_handshaker.h"
+#include "net/third_party/quiche/src/quic/core/tls_server_handshaker.h"
+#include "net/third_party/quiche/src/quic/tools/quic_simple_crypto_server_stream_helper.h"
 
 namespace blink {
 

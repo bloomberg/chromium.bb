@@ -14,13 +14,13 @@
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
 #include "net/log/net_log.h"
+#include "net/quic/platform/impl/quic_chromium_clock.h"
 #include "net/quic/quic_chromium_alarm_factory.h"
 #include "net/quic/quic_chromium_connection_helper.h"
-#include "net/third_party/quic/core/crypto/quic_crypto_server_config.h"
-#include "net/third_party/quic/core/quic_config.h"
-#include "net/third_party/quic/core/quic_version_manager.h"
-#include "net/third_party/quic/platform/impl/quic_chromium_clock.h"
-#include "net/third_party/quic/tools/quic_simple_server_backend.h"
+#include "net/third_party/quiche/src/quic/core/crypto/quic_crypto_server_config.h"
+#include "net/third_party/quiche/src/quic/core/quic_config.h"
+#include "net/third_party/quiche/src/quic/core/quic_version_manager.h"
+#include "net/third_party/quiche/src/quic/tools/quic_simple_server_backend.h"
 
 namespace net {
 

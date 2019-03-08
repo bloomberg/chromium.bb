@@ -9,13 +9,13 @@
 
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util.h"
+#include "net/quic/platform/impl/quic_chromium_clock.h"
 #include "net/quic/quic_chromium_client_session.h"
 #include "net/quic/quic_http_stream.h"
 #include "net/quic/quic_stream_factory.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
-#include "net/third_party/quic/core/crypto/quic_crypto_client_config.h"
-#include "net/third_party/quic/platform/impl/quic_chromium_clock.h"
+#include "net/third_party/quiche/src/quic/core/crypto/quic_crypto_client_config.h"
 
 using std::string;
 

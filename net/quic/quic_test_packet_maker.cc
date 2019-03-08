@@ -9,11 +9,11 @@
 
 #include "net/quic/mock_crypto_client_stream.h"
 #include "net/quic/quic_http_utils.h"
-#include "net/third_party/quic/core/quic_framer.h"
-#include "net/third_party/quic/core/quic_utils.h"
-#include "net/third_party/quic/test_tools/mock_random.h"
-#include "net/third_party/quic/test_tools/quic_test_utils.h"
-#include "net/third_party/quic/test_tools/simple_data_producer.h"
+#include "net/third_party/quiche/src/quic/core/quic_framer.h"
+#include "net/third_party/quiche/src/quic/core/quic_utils.h"
+#include "net/third_party/quiche/src/quic/test_tools/mock_random.h"
+#include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
+#include "net/third_party/quiche/src/quic/test_tools/simple_data_producer.h"
 
 namespace net {
 namespace test {

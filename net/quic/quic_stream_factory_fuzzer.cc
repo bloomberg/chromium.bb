@@ -23,8 +23,8 @@
 #include "net/socket/socket_tag.h"
 #include "net/ssl/ssl_config_service_defaults.h"
 #include "net/test/gtest_util.h"
-#include "net/third_party/quic/test_tools/mock_clock.h"
-#include "net/third_party/quic/test_tools/mock_random.h"
+#include "net/third_party/quiche/src/quic/test_tools/mock_clock.h"
+#include "net/third_party/quiche/src/quic/test_tools/mock_random.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 
 namespace net {
