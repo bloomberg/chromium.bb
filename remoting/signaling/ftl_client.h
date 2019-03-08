@@ -23,7 +23,7 @@ class FtlClient {
  public:
   template <typename ResponseType>
   using RpcCallback =
-      base::OnceCallback<void(grpc::Status, const ResponseType&)>;
+      base::OnceCallback<void(const grpc::Status&, const ResponseType&)>;
 
   explicit FtlClient(OAuthTokenGetter* token_getter);
   ~FtlClient();

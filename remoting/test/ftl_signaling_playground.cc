@@ -215,7 +215,7 @@ void FtlSignalingPlayground::GetIceServer(base::OnceClosure on_done) {
 
 void FtlSignalingPlayground::OnGetIceServerResponse(
     base::OnceClosure on_done,
-    grpc::Status status,
+    const grpc::Status& status,
     const ftl::GetICEServerResponse& response) {
   if (status.ok()) {
     printf("Ice transport policy: %s\n",
@@ -261,7 +261,7 @@ void FtlSignalingPlayground::SignInGaia(base::OnceClosure on_done) {
 
 void FtlSignalingPlayground::OnSignInGaiaResponse(
     base::OnceClosure on_done,
-    grpc::Status status,
+    const grpc::Status& status,
     const ftl::SignInGaiaResponse& response) {
   if (status.ok()) {
     // TODO(yuweih): Allow loading auth token directly from command line.
@@ -293,7 +293,7 @@ void FtlSignalingPlayground::PullMessages(base::OnceClosure on_done) {
 
 void FtlSignalingPlayground::OnPullMessagesResponse(
     base::OnceClosure on_done,
-    grpc::Status status,
+    const grpc::Status& status,
     const ftl::PullMessagesResponse& response) {
   if (!status.ok()) {
     if (status.error_code() == grpc::StatusCode::UNAUTHENTICATED) {
@@ -352,7 +352,7 @@ void FtlSignalingPlayground::OnPullMessagesResponse(
 
 void FtlSignalingPlayground::OnAckMessagesResponse(
     base::OnceClosure on_done,
-    grpc::Status status,
+    const grpc::Status& status,
     const ftl::AckMessagesResponse& response) {
   if (status.ok()) {
     VLOG(0) << "Messages acked";

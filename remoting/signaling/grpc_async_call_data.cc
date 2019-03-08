@@ -4,30 +4,33 @@
 
 #include "remoting/signaling/grpc_async_call_data.h"
 
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "third_party/grpc/src/include/grpcpp/client_context.h"
 
 namespace remoting {
+namespace internal {
 
-GrpcAsyncCallDataBase::GrpcAsyncCallDataBase(
+GrpcAsyncCallData::GrpcAsyncCallData(
     std::unique_ptr<grpc::ClientContext> context) {
   context_ = std::move(context);
   caller_task_runner_ = base::ThreadTaskRunnerHandle::Get();
 }
 
-GrpcAsyncCallDataBase::~GrpcAsyncCallDataBase() = default;
+GrpcAsyncCallData::~GrpcAsyncCallData() = default;
 
-void GrpcAsyncCallDataBase::RunCallbackAndSelfDestroyOnDone() {
-  caller_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&GrpcAsyncCallDataBase::RunCallbackOnCallerThread,
-                     base::Owned(this)));
-}
-
-void GrpcAsyncCallDataBase::CancelRequest() {
+void GrpcAsyncCallData::CancelRequest() {
+  VLOG(0) << "Canceling request: " << this;
   context_->TryCancel();
+  OnRequestCanceled();
 }
 
+void GrpcAsyncCallData::DeleteOnCallerThread() {
+  if (caller_task_runner_->BelongsToCurrentThread()) {
+    delete this;
+    return;
+  }
+  caller_task_runner_->DeleteSoon(FROM_HERE, this);
+}
+
+}  // namespace internal
 }  // namespace remoting

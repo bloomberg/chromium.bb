@@ -18,4 +18,5 @@ message EchoResponse {
 
 service GrpcAsyncDispatcherTestService {
   rpc Echo(EchoRequest) returns (EchoResponse) {}
+  rpc StreamEcho(EchoRequest) returns (stream EchoResponse) {}
 }

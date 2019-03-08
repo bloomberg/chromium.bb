@@ -10,10 +10,6 @@ static_library("signaling") {
     "delegating_signal_strategy.h",
     "ftl_client.cc",
     "ftl_client.h",
-    "grpc_async_call_data.cc",
-    "grpc_async_call_data.h",
-    "grpc_async_dispatcher.cc",
-    "grpc_async_dispatcher.h",
     "iq_sender.cc",
     "iq_sender.h",
     "jid_util.cc",
@@ -49,6 +45,7 @@ static_library("signaling") {
   ]
 
   deps = [
+    ":grpc_async_dispatcher",
     "//base",
     "//crypto",
     "//google_apis",
@@ -62,20 +59,36 @@ static_library("signaling") {
     sources -= [
       "ftl_client.cc",
       "ftl_client.h",
-      "grpc_async_call_data.cc",
-      "grpc_async_call_data.h",
-      "grpc_async_dispatcher.cc",
-      "grpc_async_dispatcher.h",
       "log_to_server.cc",
       "server_log_entry.cc",
       "xmpp_signal_strategy.cc",
     ]
     deps -= [
+      ":grpc_async_dispatcher",
       "//google_apis",
       "//third_party/grpc:grpcpp",
     ]
     public_deps -= [ ":ftl_grpc_library" ]
   }
+}
+
+static_library("grpc_async_dispatcher") {
+  sources = [
+    "grpc_async_call_data.cc",
+    "grpc_async_call_data.h",
+    "grpc_async_dispatcher.cc",
+    "grpc_async_dispatcher.h",
+    "grpc_async_server_streaming_call_data.cc",
+    "grpc_async_server_streaming_call_data.h",
+    "grpc_async_unary_call_data.h",
+    "scoped_grpc_server_stream.cc",
+    "scoped_grpc_server_stream.h",
+  ]
+
+  deps = [
+    "//base",
+    "//third_party/grpc:grpcpp",
+  ]
 }
 
 cc_grpc_library("ftl_grpc_library") {

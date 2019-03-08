@@ -8,11 +8,9 @@
 #include <memory>
 #include <utility>
 
-#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/single_thread_task_runner.h"
-#include "third_party/grpc/src/include/grpcpp/support/async_unary_call.h"
 #include "third_party/grpc/src/include/grpcpp/support/status.h"
 
 namespace grpc {
@@ -20,64 +18,52 @@ class ClientContext;
 }  // namespace grpc
 
 namespace remoting {
+namespace internal {
 
 // The GrpcAsyncCallData base class that holds logic invariant to the response
 // type.
-class GrpcAsyncCallDataBase {
+//
+// The lifetime of GrpcAsyncCallData is bound to the completion queue. A
+// subclass may enqueue itself multiple times into the completion queue, and
+// GrpcAsyncDispatcher will dequeue it and call OnDequeuedOnDispatcherThread()
+// on a background thread when the event is handled. If the subclass won't
+// re-enqueue itself, OnDequeuedOnDispatcherThread() should return false, which
+// will delete the call data by calling DeleteOnCallerThread().
+//
+// Ctor, dtor, and methods except OnDequeuedOnDispatcherThread() will be called
+// from the same thread (caller_task_runner_).
+class GrpcAsyncCallData {
  public:
-  explicit GrpcAsyncCallDataBase(std::unique_ptr<grpc::ClientContext> context);
-  virtual ~GrpcAsyncCallDataBase();
+  explicit GrpcAsyncCallData(std::unique_ptr<grpc::ClientContext> context);
+  virtual ~GrpcAsyncCallData();
 
-  void RunCallbackAndSelfDestroyOnDone();
+  // Force dequeues any pending request.
   void CancelRequest();
 
-  virtual void RegisterAndMoveOwnershipToCompletionQueue() = 0;
-  virtual void RunCallbackOnCallerThread() = 0;
+  // Can be called from any thread.
+  void DeleteOnCallerThread();
+
+  // Returns true iff the task is not finished and the subclass will
+  // *immediately* enqueue itself back to the completion queue. If this method
+  // returns false, the object will be deleted by calling
+  // DeleteOnCallerThread().
+  // Note that this will be called from an anonymous thread.
+  virtual bool OnDequeuedOnDispatcherThread(bool operation_succeeded) = 0;
 
  protected:
+  // Called after CancelRequest() is called.
+  virtual void OnRequestCanceled() {}
+
+  scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner_;
   grpc::Status status_{grpc::StatusCode::UNKNOWN, "Uninitialized"};
 
  private:
   std::unique_ptr<grpc::ClientContext> context_;
-  scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(GrpcAsyncCallDataBase);
-};
-
-template <typename ResponseType>
-class GrpcAsyncCallData : public GrpcAsyncCallDataBase {
- public:
-  using RpcCallback =
-      base::OnceCallback<void(grpc::Status, const ResponseType&)>;
-
-  GrpcAsyncCallData(
-      std::unique_ptr<grpc::ClientContext> context,
-      std::unique_ptr<grpc::ClientAsyncResponseReader<ResponseType>>
-          response_reader,
-      RpcCallback callback)
-      : GrpcAsyncCallDataBase(std::move(context)) {
-    response_reader_ = std::move(response_reader);
-    callback_ = std::move(callback);
-  }
-  ~GrpcAsyncCallData() override = default;
-
-  void RegisterAndMoveOwnershipToCompletionQueue() override {
-    response_reader_->Finish(&response_, &status_, /* event_tag */ this);
-  }
-
-  void RunCallbackOnCallerThread() override {
-    std::move(callback_).Run(status_, response_);
-  }
-
- private:
-  std::unique_ptr<grpc::ClientAsyncResponseReader<ResponseType>>
-      response_reader_;
-  ResponseType response_;
-  RpcCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(GrpcAsyncCallData);
 };
 
+}  // namespace internal
 }  // namespace remoting
 
 #endif  // REMOTING_SIGNALING_GRPC_ASYNC_CALL_DATA_H_
