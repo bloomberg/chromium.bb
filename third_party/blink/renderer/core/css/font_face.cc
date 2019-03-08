@@ -352,15 +352,15 @@ bool FontFace::SetPropertyValue(const CSSValue* value,
   return true;
 }
 
-bool FontFace::SetFamilyValue(const CSSValue& family_value) {
+bool FontFace::SetFamilyValue(const CSSValue& value) {
   AtomicString family;
-  if (family_value.IsFontFamilyValue()) {
-    family = AtomicString(ToCSSFontFamilyValue(family_value).Value());
-  } else if (family_value.IsIdentifierValue()) {
+  if (auto* family_value = DynamicTo<CSSFontFamilyValue>(value)) {
+    family = AtomicString(family_value->Value());
+  } else if (value.IsIdentifierValue()) {
     // We need to use the raw text for all the generic family types, since
     // @font-face is a way of actually defining what font to use for those
     // types.
-    switch (ToCSSIdentifierValue(family_value).GetValueID()) {
+    switch (ToCSSIdentifierValue(value).GetValueID()) {
       case CSSValueSerif:
         family = font_family_names::kWebkitSerif;
         break;
@@ -578,9 +578,8 @@ FontSelectionCapabilities FontFace::GetFontSelectionCapabilities() const {
         default:
           break;
       }
-    } else if (style_->IsFontStyleRangeValue()) {
-      const cssvalue::CSSFontStyleRangeValue* range_value =
-          cssvalue::ToCSSFontStyleRangeValue(style_);
+    } else if (const auto* range_value =
+                   DynamicTo<cssvalue::CSSFontStyleRangeValue>(style_.Get())) {
       if (range_value->GetFontStyleValue()->IsIdentifierValue()) {
         CSSValueID font_style_id =
             range_value->GetFontStyleValue()->GetValueID();
@@ -701,7 +700,7 @@ void FontFace::InitCSSFontFace(ExecutionContext* context, const CSSValue& src) {
   for (int i = 0; i < src_length; i++) {
     // An item in the list either specifies a string (local font name) or a URL
     // (remote font to download).
-    const CSSFontFaceSrcValue& item = ToCSSFontFaceSrcValue(src_list.Item(i));
+    const CSSFontFaceSrcValue& item = To<CSSFontFaceSrcValue>(src_list.Item(i));
 
     if (!item.IsLocal()) {
       if (ContextAllowsDownload(context) && item.IsSupportedFormat()) {

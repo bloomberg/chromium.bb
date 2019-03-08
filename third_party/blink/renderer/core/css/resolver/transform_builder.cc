@@ -103,10 +103,10 @@ static TransformOperation::OperationType GetTransformOperationType(
 
 bool TransformBuilder::HasRelativeLengths(const CSSValueList& value_list) {
   for (auto& value : value_list) {
-    const CSSFunctionValue* transform_value = ToCSSFunctionValue(value.Get());
+    const CSSFunctionValue* transform_value = To<CSSFunctionValue>(value.Get());
 
     for (const CSSValue* item : *transform_value) {
-      const CSSPrimitiveValue& primitive_value = ToCSSPrimitiveValue(*item);
+      const auto& primitive_value = ToCSSPrimitiveValue(*item);
 
       if (primitive_value.IsCalculated()) {
         CSSCalcValue* css_calc_value = primitive_value.CssCalcValue();
@@ -138,7 +138,7 @@ TransformOperations TransformBuilder::CreateTransformOperations(
 
   float zoom_factor = conversion_data.Zoom();
   for (auto& value : ToCSSValueList(in_value)) {
-    const CSSFunctionValue* transform_value = ToCSSFunctionValue(value.Get());
+    const auto* transform_value = To<CSSFunctionValue>(value.Get());
     TransformOperation::OperationType transform_type =
         GetTransformOperationType(transform_value->FunctionType());
 

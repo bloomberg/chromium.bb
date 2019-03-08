@@ -635,10 +635,10 @@ void StyleEngine::AddDefaultFontDisplay(
   if (!rule->FontDisplay())
     return;
   for (const auto& family_value : rule->FontFamily()) {
-    if (family_value->IsFontFamilyValue()) {
-      default_font_display_map_.Set(
-          AtomicString(ToCSSFontFamilyValue(family_value)->Value()),
-          CSSValueToFontDisplay(rule->FontDisplay()));
+    if (auto* font_family_value =
+            DynamicTo<CSSFontFamilyValue>(family_value.Get())) {
+      default_font_display_map_.Set(AtomicString(font_family_value->Value()),
+                                    CSSValueToFontDisplay(rule->FontDisplay()));
     }
   }
 }

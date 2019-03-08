@@ -108,7 +108,7 @@ bool CSSValue::HasFailedOrCanceledSubresources() const {
   if (IsValueList())
     return ToCSSValueList(this)->HasFailedOrCanceledSubresources();
   if (GetClassType() == kFontFaceSrcClass)
-    return ToCSSFontFaceSrcValue(this)->HasFailedOrCanceledSubresources();
+    return To<CSSFontFaceSrcValue>(this)->HasFailedOrCanceledSubresources();
   if (GetClassType() == kImageClass)
     return ToCSSImageValue(this)->HasFailedOrCanceledSubresources();
   if (GetClassType() == kCrossfadeClass)
@@ -280,25 +280,25 @@ String CSSValue::CssText() const {
     case kCursorImageClass:
       return To<CSSCursorImageValue>(this)->CustomCSSText();
     case kFontFaceSrcClass:
-      return ToCSSFontFaceSrcValue(this)->CustomCSSText();
+      return To<CSSFontFaceSrcValue>(this)->CustomCSSText();
     case kFontFamilyClass:
-      return ToCSSFontFamilyValue(this)->CustomCSSText();
+      return To<CSSFontFamilyValue>(this)->CustomCSSText();
     case kFontFeatureClass:
-      return ToCSSFontFeatureValue(this)->CustomCSSText();
+      return To<CSSFontFeatureValue>(this)->CustomCSSText();
     case kFontStyleRangeClass:
-      return ToCSSFontStyleRangeValue(this)->CustomCSSText();
+      return To<CSSFontStyleRangeValue>(this)->CustomCSSText();
     case kFontVariationClass:
-      return ToCSSFontVariationValue(this)->CustomCSSText();
+      return To<CSSFontVariationValue>(this)->CustomCSSText();
     case kFunctionClass:
-      return ToCSSFunctionValue(this)->CustomCSSText();
+      return To<CSSFunctionValue>(this)->CustomCSSText();
     case kLayoutFunctionClass:
       return ToCSSLayoutFunctionValue(this)->CustomCSSText();
     case kLinearGradientClass:
-      return ToCSSLinearGradientValue(this)->CustomCSSText();
+      return To<CSSLinearGradientValue>(this)->CustomCSSText();
     case kRadialGradientClass:
-      return ToCSSRadialGradientValue(this)->CustomCSSText();
+      return To<CSSRadialGradientValue>(this)->CustomCSSText();
     case kConicGradientClass:
-      return ToCSSConicGradientValue(this)->CustomCSSText();
+      return To<CSSConicGradientValue>(this)->CustomCSSText();
     case kCrossfadeClass:
       return To<CSSCrossfadeValue>(this)->CustomCSSText();
     case kPaintClass:
@@ -396,34 +396,34 @@ void CSSValue::FinalizeGarbageCollectedObject() {
       To<CSSCursorImageValue>(this)->~CSSCursorImageValue();
       return;
     case kFontFaceSrcClass:
-      ToCSSFontFaceSrcValue(this)->~CSSFontFaceSrcValue();
+      To<CSSFontFaceSrcValue>(this)->~CSSFontFaceSrcValue();
       return;
     case kFontFamilyClass:
-      ToCSSFontFamilyValue(this)->~CSSFontFamilyValue();
+      To<CSSFontFamilyValue>(this)->~CSSFontFamilyValue();
       return;
     case kFontFeatureClass:
-      ToCSSFontFeatureValue(this)->~CSSFontFeatureValue();
+      To<CSSFontFeatureValue>(this)->~CSSFontFeatureValue();
       return;
     case kFontStyleRangeClass:
-      ToCSSFontStyleRangeValue(this)->~CSSFontStyleRangeValue();
+      To<CSSFontStyleRangeValue>(this)->~CSSFontStyleRangeValue();
       return;
     case kFontVariationClass:
-      ToCSSFontVariationValue(this)->~CSSFontVariationValue();
+      To<CSSFontVariationValue>(this)->~CSSFontVariationValue();
       return;
     case kFunctionClass:
-      ToCSSFunctionValue(this)->~CSSFunctionValue();
+      To<CSSFunctionValue>(this)->~CSSFunctionValue();
       return;
     case kLayoutFunctionClass:
       ToCSSLayoutFunctionValue(this)->~CSSLayoutFunctionValue();
       return;
     case kLinearGradientClass:
-      ToCSSLinearGradientValue(this)->~CSSLinearGradientValue();
+      To<CSSLinearGradientValue>(this)->~CSSLinearGradientValue();
       return;
     case kRadialGradientClass:
-      ToCSSRadialGradientValue(this)->~CSSRadialGradientValue();
+      To<CSSRadialGradientValue>(this)->~CSSRadialGradientValue();
       return;
     case kConicGradientClass:
-      ToCSSConicGradientValue(this)->~CSSConicGradientValue();
+      To<CSSConicGradientValue>(this)->~CSSConicGradientValue();
       return;
     case kCrossfadeClass:
       To<CSSCrossfadeValue>(this)->~CSSCrossfadeValue();
@@ -553,34 +553,34 @@ void CSSValue::Trace(blink::Visitor* visitor) {
       To<CSSCursorImageValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kFontFaceSrcClass:
-      ToCSSFontFaceSrcValue(this)->TraceAfterDispatch(visitor);
+      To<CSSFontFaceSrcValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kFontFamilyClass:
-      ToCSSFontFamilyValue(this)->TraceAfterDispatch(visitor);
+      To<CSSFontFamilyValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kFontFeatureClass:
-      ToCSSFontFeatureValue(this)->TraceAfterDispatch(visitor);
+      To<CSSFontFeatureValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kFontStyleRangeClass:
-      ToCSSFontStyleRangeValue(this)->TraceAfterDispatch(visitor);
+      To<CSSFontStyleRangeValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kFontVariationClass:
-      ToCSSFontVariationValue(this)->TraceAfterDispatch(visitor);
+      To<CSSFontVariationValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kFunctionClass:
-      ToCSSFunctionValue(this)->TraceAfterDispatch(visitor);
+      To<CSSFunctionValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kLayoutFunctionClass:
       ToCSSLayoutFunctionValue(this)->TraceAfterDispatch(visitor);
       return;
     case kLinearGradientClass:
-      ToCSSLinearGradientValue(this)->TraceAfterDispatch(visitor);
+      To<CSSLinearGradientValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kRadialGradientClass:
-      ToCSSRadialGradientValue(this)->TraceAfterDispatch(visitor);
+      To<CSSRadialGradientValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kConicGradientClass:
-      ToCSSConicGradientValue(this)->TraceAfterDispatch(visitor);
+      To<CSSConicGradientValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kCrossfadeClass:
       To<CSSCrossfadeValue>(this)->TraceAfterDispatch(visitor);

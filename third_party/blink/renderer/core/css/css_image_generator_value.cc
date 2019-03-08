@@ -32,10 +32,10 @@
 
 namespace blink {
 
+using cssvalue::CSSConicGradientValue;
 using cssvalue::CSSCrossfadeValue;
-using cssvalue::ToCSSConicGradientValue;
-using cssvalue::ToCSSLinearGradientValue;
-using cssvalue::ToCSSRadialGradientValue;
+using cssvalue::CSSLinearGradientValue;
+using cssvalue::CSSRadialGradientValue;
 
 Image* GeneratedImageCache::GetImage(const FloatSize& size) const {
   if (size.IsEmpty())
@@ -155,17 +155,17 @@ scoped_refptr<Image> CSSImageGeneratorValue::GetImage(
       return To<CSSCrossfadeValue>(this)->GetImage(client, document, style,
                                                    target_size);
     case kLinearGradientClass:
-      return ToCSSLinearGradientValue(this)->GetImage(client, document, style,
-                                                      target_size);
+      return To<CSSLinearGradientValue>(this)->GetImage(client, document, style,
+                                                        target_size);
     case kPaintClass:
       return ToCSSPaintValue(this)->GetImage(client, document, style,
                                              target_size);
     case kRadialGradientClass:
-      return ToCSSRadialGradientValue(this)->GetImage(client, document, style,
-                                                      target_size);
+      return To<CSSRadialGradientValue>(this)->GetImage(client, document, style,
+                                                        target_size);
     case kConicGradientClass:
-      return ToCSSConicGradientValue(this)->GetImage(client, document, style,
-                                                     target_size);
+      return To<CSSConicGradientValue>(this)->GetImage(client, document, style,
+                                                       target_size);
     default:
       NOTREACHED();
   }
@@ -177,13 +177,13 @@ bool CSSImageGeneratorValue::IsFixedSize() const {
     case kCrossfadeClass:
       return To<CSSCrossfadeValue>(this)->IsFixedSize();
     case kLinearGradientClass:
-      return ToCSSLinearGradientValue(this)->IsFixedSize();
+      return To<CSSLinearGradientValue>(this)->IsFixedSize();
     case kPaintClass:
       return ToCSSPaintValue(this)->IsFixedSize();
     case kRadialGradientClass:
-      return ToCSSRadialGradientValue(this)->IsFixedSize();
+      return To<CSSRadialGradientValue>(this)->IsFixedSize();
     case kConicGradientClass:
-      return ToCSSConicGradientValue(this)->IsFixedSize();
+      return To<CSSConicGradientValue>(this)->IsFixedSize();
     default:
       NOTREACHED();
   }
@@ -198,13 +198,13 @@ FloatSize CSSImageGeneratorValue::FixedSize(
       return To<CSSCrossfadeValue>(this)->FixedSize(document,
                                                     default_object_size);
     case kLinearGradientClass:
-      return ToCSSLinearGradientValue(this)->FixedSize(document);
+      return To<CSSLinearGradientValue>(this)->FixedSize(document);
     case kPaintClass:
       return ToCSSPaintValue(this)->FixedSize(document);
     case kRadialGradientClass:
-      return ToCSSRadialGradientValue(this)->FixedSize(document);
+      return To<CSSRadialGradientValue>(this)->FixedSize(document);
     case kConicGradientClass:
-      return ToCSSConicGradientValue(this)->FixedSize(document);
+      return To<CSSConicGradientValue>(this)->FixedSize(document);
     default:
       NOTREACHED();
   }
@@ -216,13 +216,13 @@ bool CSSImageGeneratorValue::IsPending() const {
     case kCrossfadeClass:
       return To<CSSCrossfadeValue>(this)->IsPending();
     case kLinearGradientClass:
-      return ToCSSLinearGradientValue(this)->IsPending();
+      return To<CSSLinearGradientValue>(this)->IsPending();
     case kPaintClass:
       return ToCSSPaintValue(this)->IsPending();
     case kRadialGradientClass:
-      return ToCSSRadialGradientValue(this)->IsPending();
+      return To<CSSRadialGradientValue>(this)->IsPending();
     case kConicGradientClass:
-      return ToCSSConicGradientValue(this)->IsPending();
+      return To<CSSConicGradientValue>(this)->IsPending();
     default:
       NOTREACHED();
   }
@@ -235,13 +235,13 @@ bool CSSImageGeneratorValue::KnownToBeOpaque(const Document& document,
     case kCrossfadeClass:
       return To<CSSCrossfadeValue>(this)->KnownToBeOpaque(document, style);
     case kLinearGradientClass:
-      return ToCSSLinearGradientValue(this)->KnownToBeOpaque(document, style);
+      return To<CSSLinearGradientValue>(this)->KnownToBeOpaque(document, style);
     case kPaintClass:
       return ToCSSPaintValue(this)->KnownToBeOpaque(document, style);
     case kRadialGradientClass:
-      return ToCSSRadialGradientValue(this)->KnownToBeOpaque(document, style);
+      return To<CSSRadialGradientValue>(this)->KnownToBeOpaque(document, style);
     case kConicGradientClass:
-      return ToCSSConicGradientValue(this)->KnownToBeOpaque(document, style);
+      return To<CSSConicGradientValue>(this)->KnownToBeOpaque(document, style);
     default:
       NOTREACHED();
   }
@@ -254,16 +254,16 @@ void CSSImageGeneratorValue::LoadSubimages(const Document& document) {
       To<CSSCrossfadeValue>(this)->LoadSubimages(document);
       break;
     case kLinearGradientClass:
-      ToCSSLinearGradientValue(this)->LoadSubimages(document);
+      To<CSSLinearGradientValue>(this)->LoadSubimages(document);
       break;
     case kPaintClass:
       ToCSSPaintValue(this)->LoadSubimages(document);
       break;
     case kRadialGradientClass:
-      ToCSSRadialGradientValue(this)->LoadSubimages(document);
+      To<CSSRadialGradientValue>(this)->LoadSubimages(document);
       break;
     case kConicGradientClass:
-      ToCSSConicGradientValue(this)->LoadSubimages(document);
+      To<CSSConicGradientValue>(this)->LoadSubimages(document);
       break;
     default:
       NOTREACHED();

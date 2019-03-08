@@ -28,6 +28,7 @@
 
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/css_value_list.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 namespace cssvalue {
@@ -72,9 +73,15 @@ class CSSFontStyleRangeValue final : public CSSValue {
   Member<const CSSValueList> oblique_values_;
 };
 
-DEFINE_CSS_VALUE_TYPE_CASTS(CSSFontStyleRangeValue, IsFontStyleRangeValue());
-
 }  // namespace cssvalue
+
+template <>
+struct DowncastTraits<cssvalue::CSSFontStyleRangeValue> {
+  static bool AllowFrom(const CSSValue& value) {
+    return value.IsFontStyleRangeValue();
+  }
+};
+
 }  // namespace blink
 
 #endif

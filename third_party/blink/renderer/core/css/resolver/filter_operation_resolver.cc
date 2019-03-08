@@ -179,7 +179,7 @@ FilterOperations FilterOperationResolver::CreateFilterOperations(
       continue;
     }
 
-    const CSSFunctionValue* filter_value = ToCSSFunctionValue(curr_value.Get());
+    const auto* filter_value = To<CSSFunctionValue>(curr_value.Get());
     FilterOperation::OperationType operation_type =
         FilterOperationForType(filter_value->FunctionType());
     CountFilterUse(operation_type, state.GetDocument());
@@ -261,7 +261,7 @@ FilterOperations FilterOperationResolver::CreateOffscreenFilterOperations(
     if (curr_value->IsURIValue())
       continue;
 
-    const CSSFunctionValue* filter_value = ToCSSFunctionValue(curr_value.Get());
+    const auto* filter_value = To<CSSFunctionValue>(curr_value.Get());
     FilterOperation::OperationType operation_type =
         FilterOperationForType(filter_value->FunctionType());
     // TODO(fserb): Take an ExecutionContext argument to this function,

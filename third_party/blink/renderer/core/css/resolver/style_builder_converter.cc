@@ -194,9 +194,9 @@ static bool ConvertFontFamilyName(
     AtomicString& family_name,
     FontBuilder* font_builder,
     const Document* document_for_count) {
-  if (value.IsFontFamilyValue()) {
+  if (auto* font_family_value = DynamicTo<CSSFontFamilyValue>(value)) {
     generic_family = FontDescription::kNoFamily;
-    family_name = AtomicString(ToCSSFontFamilyValue(value).Value());
+    family_name = AtomicString(font_family_value->Value());
 #if defined(OS_MACOSX)
     if (family_name == FontCache::LegacySystemFontFamily()) {
       UseCounter::Count(*document_for_count, WebFeature::kBlinkMacSystemFont);
@@ -267,8 +267,7 @@ StyleBuilderConverter::ConvertFontFeatureSettings(StyleResolverState& state,
   scoped_refptr<FontFeatureSettings> settings = FontFeatureSettings::Create();
   int len = list.length();
   for (int i = 0; i < len; ++i) {
-    const cssvalue::CSSFontFeatureValue& feature =
-        ToCSSFontFeatureValue(list.Item(i));
+    const auto& feature = To<CSSFontFeatureValue>(list.Item(i));
     settings->Append(FontFeature(feature.Tag(), feature.Value()));
   }
   return settings;
@@ -286,8 +285,7 @@ StyleBuilderConverter::ConvertFontVariationSettings(StyleResolverState& state,
       FontVariationSettings::Create();
   int len = list.length();
   for (int i = 0; i < len; ++i) {
-    const CSSFontVariationValue& feature =
-        ToCSSFontVariationValue(list.Item(i));
+    const auto& feature = To<CSSFontVariationValue>(list.Item(i));
     settings->Append(FontVariationAxis(feature.Tag(), feature.Value()));
   }
   return settings;
@@ -419,17 +417,16 @@ FontSelectionValue StyleBuilderConverterBase::ConvertFontStyle(
         NOTREACHED();
         return NormalSlopeValue();
     }
-  } else if (value.IsFontStyleRangeValue()) {
-    const CSSFontStyleRangeValue& style_range_value =
-        ToCSSFontStyleRangeValue(value);
-    const CSSValueList* values = style_range_value.GetObliqueValues();
+  } else if (const auto* style_range_value =
+                 DynamicTo<CSSFontStyleRangeValue>(value)) {
+    const CSSValueList* values = style_range_value->GetObliqueValues();
     CHECK_LT(values->length(), 2u);
     if (values->length()) {
       return FontSelectionValue(
           ToCSSPrimitiveValue(values->Item(0)).ComputeDegrees());
     } else {
       const CSSIdentifierValue* identifier_value =
-          style_range_value.GetFontStyleValue();
+          style_range_value->GetFontStyleValue();
       if (identifier_value->GetValueID() == CSSValueNormal)
         return NormalSlopeValue();
       if (identifier_value->GetValueID() == CSSValueItalic ||
@@ -805,7 +802,7 @@ GridTrackSize StyleBuilderConverter::ConvertGridTrackSize(
   if (value.IsPrimitiveValue() || value.IsIdentifierValue())
     return GridTrackSize(ConvertGridTrackBreadth(state, value));
 
-  auto& function = ToCSSFunctionValue(value);
+  auto& function = To<CSSFunctionValue>(value);
   if (function.FunctionType() == CSSValueFitContent) {
     SECURITY_DCHECK(function.length() == 1);
     return GridTrackSize(ConvertGridTrackBreadth(state, function.Item(0)),
@@ -1652,10 +1649,9 @@ static const CSSValue& ComputeRegisteredPropertyValue(
     const CSSToLengthConversionData& css_to_length_conversion_data,
     const CSSValue& value) {
   // TODO(timloh): Images values can also contain lengths.
-  if (value.IsFunctionValue()) {
-    const CSSFunctionValue& function_value = ToCSSFunctionValue(value);
+  if (const auto* function_value = DynamicTo<CSSFunctionValue>(value)) {
     CSSFunctionValue* new_function =
-        CSSFunctionValue::Create(function_value.FunctionType());
+        CSSFunctionValue::Create(function_value->FunctionType());
     for (const CSSValue* inner_value : ToCSSValueList(value)) {
       new_function->Append(ComputeRegisteredPropertyValue(
           document, css_to_length_conversion_data, *inner_value));
