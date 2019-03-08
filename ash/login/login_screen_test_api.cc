@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "ash/login/ui/lock_contents_view.h"
 #include "ash/login/ui/lock_screen.h"
@@ -43,6 +44,75 @@ bool IsLoginShelfViewButtonShown(int button_view_id) {
 }
 
 }  // anonymous namespace
+
+class ShelfTestUiUpdateDelegate : public LoginShelfView::TestUiUpdateDelegate {
+ public:
+  using Callback = mojom::LoginScreenTestApi::WaitForUiUpdateCallback;
+
+  // Returns instance owned by LoginShelfView. Installs instance of
+  // ShelfTestUiUpdateDelegate when needed.
+  static ShelfTestUiUpdateDelegate* Get(LoginShelfView* shelf) {
+    if (!shelf->test_ui_update_delegate()) {
+      shelf->InstallTestUiUpdateDelegate(
+          std::make_unique<ShelfTestUiUpdateDelegate>());
+    }
+    return static_cast<ShelfTestUiUpdateDelegate*>(
+        shelf->test_ui_update_delegate());
+  }
+
+  ShelfTestUiUpdateDelegate() = default;
+  ~ShelfTestUiUpdateDelegate() override {
+    for (PendingCallback& entry : heap_)
+      std::move(entry.callback).Run(false);
+  }
+
+  // Returns UI update count.
+  int64_t ui_update_count() const { return ui_update_count_; }
+
+  // Add a callback to be invoked when ui update count is greater than
+  // |previous_update_count|. Note |callback| could be invoked synchronously
+  // when the current ui update count is already greater than
+  // |previous_update_count|.
+  void AddCallback(int64_t previous_update_count, Callback callback) {
+    if (previous_update_count < ui_update_count_) {
+      std::move(callback).Run(true);
+    } else {
+      heap_.emplace_back(previous_update_count, std::move(callback));
+      std::push_heap(heap_.begin(), heap_.end());
+    }
+  }
+
+  // LoginShelfView::TestUiUpdateDelegate
+  void OnUiUpdate() override {
+    ++ui_update_count_;
+    while (!heap_.empty() && heap_.front().old_count < ui_update_count_) {
+      std::move(heap_.front().callback).Run(true);
+      std::pop_heap(heap_.begin(), heap_.end());
+      heap_.pop_back();
+    }
+  }
+
+ private:
+  struct PendingCallback {
+    PendingCallback(int64_t old_count, Callback callback)
+        : old_count(old_count), callback(std::move(callback)) {}
+
+    bool operator<(const PendingCallback& right) const {
+      // We need min_heap, therefore this returns true when another element on
+      // the right is less than this count. (regular heap is max_heap).
+      return old_count > right.old_count;
+    }
+
+    int64_t old_count = 0;
+    Callback callback;
+  };
+
+  std::vector<PendingCallback> heap_;
+
+  int64_t ui_update_count_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(ShelfTestUiUpdateDelegate);
+};
 
 // static
 void LoginScreenTestApi::BindRequest(mojom::LoginScreenTestApiRequest request) {
@@ -105,7 +175,33 @@ void LoginScreenTestApi::SubmitPassword(const AccountId& account_id,
 void LoginScreenTestApi::GetUiUpdateCount(GetUiUpdateCountCallback callback) {
   LoginShelfView* view = GetLoginShelfView();
 
-  std::move(callback).Run(view ? view->ui_update_count() : 0);
+  std::move(callback).Run(
+      view ? ShelfTestUiUpdateDelegate::Get(view)->ui_update_count() : 0);
+}
+
+void LoginScreenTestApi::LaunchApp(const std::string& app_id,
+                                   LaunchAppCallback callback) {
+  LoginShelfView* view = GetLoginShelfView();
+
+  std::move(callback).Run(view && view->LaunchAppForTesting(app_id));
+}
+
+void LoginScreenTestApi::ClickAddUserButton(
+    ClickAddUserButtonCallback callback) {
+  LoginShelfView* view = GetLoginShelfView();
+
+  std::move(callback).Run(view && view->SimulateAddUserButtonForTesting());
+}
+
+void LoginScreenTestApi::WaitForUiUpdate(int64_t previous_update_count,
+                                         WaitForUiUpdateCallback callback) {
+  LoginShelfView* view = GetLoginShelfView();
+  if (view) {
+    ShelfTestUiUpdateDelegate::Get(view)->AddCallback(previous_update_count,
+                                                      std::move(callback));
+  } else {
+    std::move(callback).Run(false);
+  }
 }
 
 }  // namespace ash

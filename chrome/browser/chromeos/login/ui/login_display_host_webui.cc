@@ -672,6 +672,9 @@ void LoginDisplayHostWebUI::OnStartSignInScreen(
   CHECK(login_display_);
   GetOobeUI()->ShowSigninScreen(context, login_display_.get(),
                                 login_display_.get());
+
+  OnStartSignInScreenCommon();
+
   TRACE_EVENT_ASYNC_STEP_INTO0("ui", "ShowLoginWebUI", kShowLoginWebUIid,
                                "WaitForScreenStateInitialize");
 
@@ -1081,7 +1084,10 @@ void LoginDisplayHostWebUI::DisableRestrictiveProxyCheckForTest() {
 void LoginDisplayHostWebUI::ShowGaiaDialog(
     bool can_close,
     const base::Optional<AccountId>& prefilled_account) {
-  NOTREACHED();
+  // This is a special case, when WebUI sign-in screen shown with Views-based
+  // launch bar. Then "Add user" button will be Views-based, and user click
+  // will result in this call.
+  ShowGaiaDialogCommon(prefilled_account);
 }
 
 void LoginDisplayHostWebUI::HideOobeDialog() {

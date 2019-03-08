@@ -631,8 +631,6 @@ void UserManagerScreenHandler::GetLocalizedValues(
   localized_strings->SetString("cancel", l10n_util::GetStringUTF16(IDS_CANCEL));
   localized_strings->SetString(
       "browseAsGuest", l10n_util::GetStringUTF16(IDS_BROWSE_AS_GUEST_BUTTON));
-  localized_strings->SetString("signOutUser",
-      l10n_util::GetStringUTF16(IDS_SCREEN_LOCK_SIGN_OUT));
   localized_strings->SetString("addSupervisedUser",
       l10n_util::GetStringUTF16(IDS_CREATE_LEGACY_SUPERVISED_USER_MENU_LABEL));
 
@@ -733,7 +731,6 @@ void UserManagerScreenHandler::GetLocalizedValues(
   localized_strings->SetString("publicSessionSelectLanguage", "");
   localized_strings->SetString("publicSessionSelectKeyboard", "");
   localized_strings->SetString("signinBannerText", "");
-  localized_strings->SetString("launchAppButton", "");
   localized_strings->SetString("multiProfilesRestrictedPolicyTitle", "");
   localized_strings->SetString("multiProfilesNotAllowedPolicyMsg", "");
   localized_strings->SetString("multiProfilesPrimaryOnlyPolicyMsg", "");

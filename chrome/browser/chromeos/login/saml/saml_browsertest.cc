@@ -36,6 +36,7 @@
 #include "chrome/browser/chromeos/login/test/https_forwarder.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/local_policy_test_server_mixin.h"
+#include "chrome/browser/chromeos/login/test/login_screen_tester.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
@@ -1181,8 +1182,8 @@ void SAMLPolicyTest::ShowGAIALoginForm() {
       GetLoginUI()->GetWebContents(),
       "$('gaia-signin').gaiaAuthHost_.addEventListener('ready', function() {"
       "  window.domAutomationController.send('ready');"
-      "});"
-      "$('add-user-button').click();"));
+      "});"));
+  ASSERT_TRUE(test::LoginScreenTester().ClickAddUserButton());
   content::DOMMessageQueue message_queue;
   std::string message;
   ASSERT_TRUE(message_queue.WaitForMessage(&message));
@@ -1193,13 +1194,20 @@ void SAMLPolicyTest::ShowSAMLInterstitial() {
   login_screen_load_observer_->Wait();
   ASSERT_TRUE(
       content::ExecuteScript(GetLoginUI()->GetWebContents(),
-                             "$('saml-interstitial').addEventListener("
-                             "    'samlInterstitialPageReady',"
-                             "    function() {"
-                             "        window.domAutomationController.send("
-                             "            'samlInterstitialPageReady');"
-                             "    });"
-                             "$('add-user-button').click();"));
+                             "{"
+                             "  let notify = function() {"
+                             "    window.domAutomationController.send("
+                             "        'samlInterstitialPageReady');"
+                             "  };"
+                             "  if($('gaia-signin')."
+                             "      samlInterstitialPageReady) {"
+                             "    window.setTimeout(notify,0);"
+                             "  } else {"
+                             "    $('saml-interstitial').addEventListener("
+                             "        'samlInterstitialPageReady', notify);"
+                             "  }"
+                             "}"));
+  ASSERT_TRUE(test::LoginScreenTester().ClickAddUserButton());
 
   content::DOMMessageQueue message_queue;
   std::string message;

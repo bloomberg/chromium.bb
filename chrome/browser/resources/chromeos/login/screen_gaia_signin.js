@@ -124,6 +124,12 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
     lastBackMessageValue_: false,
 
     /**
+     * Flag for tests that saml page was loaded.
+     * @type {boolean}
+     */
+    samlInterstitialPageReady: false,
+
+    /**
      * Whether the dialog could be closed.
      * This is being checked in cancel() when user clicks on signin-back-button
      * (normal gaia flow) or the buttons in gaia-navigation (used in enterprise
@@ -162,8 +168,6 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       this.navigation_.closeVisible = !this.navigation_.refreshVisible &&
           !isWhitelistError && !this.authCompleted_ &&
           this.screenMode_ != ScreenMode.SAML_INTERSTITIAL;
-
-      $('login-header-bar').updateUI_();
 
       let showGuestInOobe = !this.closable && this.isAtTheBeginning();
       chrome.send('showGuestInOobe', [showGuestInOobe]);
@@ -581,10 +585,6 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
         chrome.send('loginVisible', ['gaia-loading']);
       });
 
-      // Button header is always visible when sign in is presented.
-      // Header is hidden once GAIA reports on successful sign in.
-      Oobe.getInstance().headerHidden = false;
-
       // Re-enable navigation in case it was disabled before refresh.
       this.navigationDisabled_ = false;
 
@@ -711,10 +711,6 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       this.authCompleted_ = false;
       this.lastBackMessageValue_ = false;
 
-      $('login-header-bar').showCreateSupervisedButton =
-          data.supervisedUsersCanCreate;
-      $('login-header-bar').showGuestButton = data.guestSignin;
-
       // Reset SAML
       this.classList.toggle('full-width', false);
       $('saml-notice-container').hidden = true;
@@ -782,6 +778,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
           if (this.loading)
             this.loading = false;
           // This event is for the browser tests.
+          this.samlInterstitialPageReady = true;
           $('saml-interstitial').fire('samlInterstitialPageReady');
           break;
       }
@@ -990,7 +987,6 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      */
     onAuthConfirmPassword_: function(email, passwordCount) {
       this.loading = true;
-      Oobe.getInstance().headerHidden = false;
 
       if (this.samlPasswordConfirmAttempt_ == 0)
         chrome.send('scrapedPasswordCount', [passwordCount]);
@@ -1112,8 +1108,6 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       $('signin-back-button').hidden = true;
       $('signin-frame-dialog').setAttribute('hide-shadow', true);
 
-      // Now that we're in logged in state header should be hidden.
-      Oobe.getInstance().headerHidden = true;
       // Clear any error messages that were shown before login.
       Oobe.clearErrors();
 
@@ -1160,9 +1154,6 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       this.gaiaAuthHost_.resetStates();
       if (takeFocus) {
         if (!forceOnline && this.isOffline()) {
-          // Show 'Cancel' button to allow user to return to the main screen
-          // (e.g. this makes sense when connection is back).
-          Oobe.getInstance().headerHidden = false;
           Oobe.getInstance().setSigninUIState(SIGNIN_UI_STATE.GAIA_SIGNIN);
           // Do nothing, since offline version is reloaded after an error comes.
         } else {
@@ -1192,7 +1183,6 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      */
     showErrorBubble: function(loginAttempts, error) {
       if (this.isOffline()) {
-        $('add-user-button').hidden = true;
         // Reload offline version of the sign-in extension, which will show
         // error itself.
         chrome.send('offlineLogin', [this.email]);
@@ -1311,7 +1301,6 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       adAuthUI.errorState = errorState;
       this.authCompleted_ = false;
       this.loading = false;
-      Oobe.getInstance().headerHidden = false;
     }
   };
 });

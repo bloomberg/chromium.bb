@@ -1821,6 +1821,8 @@ test("browser_tests") {
         "../browser/chromeos/login/lock/screen_locker_browsertest.cc",
         "../browser/chromeos/login/lock/screen_locker_tester.cc",
         "../browser/chromeos/login/lock/screen_locker_tester.h",
+        "../browser/chromeos/login/test/login_screen_tester.cc",
+        "../browser/chromeos/login/test/login_screen_tester.h",
         "../browser/chromeos/login/login_auth_recorder_browsertest.cc",
         "../browser/chromeos/login/login_browsertest.cc",
         "../browser/chromeos/login/login_manager_test.cc",

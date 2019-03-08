@@ -74,8 +74,8 @@ class TestLoginScreen : public ash::mojom::LoginScreen {
       std::vector<::ash::mojom::InputMethodItemPtr> keyboard_layouts) override;
   void SetPublicSessionShowFullManagementDisclosure(
       bool show_full_management_disclosure) override;
-  void SetKioskApps(
-      std::vector<::ash::mojom::KioskAppInfoPtr> kiosk_apps) override;
+  void SetKioskApps(std::vector<::ash::mojom::KioskAppInfoPtr> kiosk_apps,
+                    SetKioskAppsCallback callback) override;
   void ShowKioskAppError(const std::string& message) override;
   void NotifyOobeDialogState(ash::mojom::OobeDialogState state) override;
   void SetAddUserButtonEnabled(bool enable) override;

@@ -195,7 +195,8 @@ interface LoginScreen {
       bool show_full_management_disclosure);
 
   // Update the kiosk app data for the login screen.
-  SetKioskApps(array<KioskAppInfo> kiosk_apps);
+  // Returns true on success.
+  SetKioskApps(array<KioskAppInfo> kiosk_apps) => (bool success);
 
   // Display a toast describing the latest kiosk app launch error.
   ShowKioskAppError(string message);

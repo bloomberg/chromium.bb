@@ -528,6 +528,20 @@ void ShelfWidget::OnSessionStateChanged(session_manager::SessionState state) {
   // * when views based shelf is disabled
   // * in UNKNOWN state - it might be called before shelf was initialized
   // * on secondary screens in states other than ACTIVE
+  //
+  // TODO(alemate): better handle show-hide for some UI screens:
+  // https://crbug.com/935842
+  // https://crbug.com/935844
+  // https://crbug.com/935846
+  // https://crbug.com/935847
+  // https://crbug.com/935852
+  // https://crbug.com/935853
+  // https://crbug.com/935856
+  // https://crbug.com/935857
+  // https://crbug.com/935858
+  // https://crbug.com/935860
+  // https://crbug.com/935861
+  // https://crbug.com/935863
   bool using_views_shelf = IsUsingViewsShelf();
   bool unknown_state = state == session_manager::SessionState::UNKNOWN;
   bool hide_on_secondary_screen = shelf_->ShouldHideOnSecondaryDisplay(state);

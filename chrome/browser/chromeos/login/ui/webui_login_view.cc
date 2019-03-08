@@ -400,7 +400,6 @@ void WebUILoginView::OnKeyboardVisibilityChanged(bool visible) {
   if (!GetOobeUI())
     return;
   CoreOobeView* view = GetOobeUI()->GetCoreOobeView();
-  view->ShowControlBar(!visible);
   view->SetVirtualKeyboardShown(visible);
 }
 

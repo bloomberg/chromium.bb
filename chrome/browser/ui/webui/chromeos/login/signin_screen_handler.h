@@ -47,7 +47,6 @@ enum class TrayActionState;
 }  // namespace ash
 
 namespace base {
-class DictionaryValue;
 class ListValue;
 }
 
@@ -261,9 +260,8 @@ class SigninScreenHandler
   void ShowImpl();
 
   // Updates current UI of the signin screen according to |ui_state|
-  // argument.  Optionally it can pass screen initialization data via
-  // |params| argument.
-  void UpdateUIState(UIState ui_state, base::DictionaryValue* params);
+  // argument.
+  void UpdateUIState(UIState ui_state);
 
   void UpdateStateInternal(NetworkError::ErrorReason reason, bool force_update);
   void SetupAndShowOfflineMessage(NetworkStateInformer::State state,
@@ -313,8 +311,6 @@ class SigninScreenHandler
   // TabletModeClientObserver:
   void OnTabletModeToggled(bool enabled) override;
 
-  void UpdateAddButtonStatus();
-
   // Restore input focus to current user pod.
   void RefocusCurrentPod();
 
@@ -338,7 +334,6 @@ class SigninScreenHandler
                                  const std::string& locale,
                                  const std::string& input_method);
   void HandleOfflineLogin(const base::ListValue* args);
-  void HandleShutdownSystem();
   void HandleRebootSystem();
   void HandleRemoveUser(const AccountId& account_id);
   void HandleToggleEnrollmentScreen();
@@ -348,7 +343,6 @@ class SigninScreenHandler
   void HandleToggleResetScreen();
   void HandleToggleKioskAutolaunchScreen();
   void HandleAccountPickerReady();
-  void HandleSignOutUser();
   void HandleOpenInternetDetailDialog();
   void HandleLoginVisible(const std::string& source);
   void HandleCancelPasswordChangedFlow(const AccountId& account_id);

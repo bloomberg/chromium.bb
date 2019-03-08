@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "apps/test/app_window_waiter.h"
+#include "ash/public/interfaces/login_screen_test_api.test-mojom-test-utils.h"
 #include "ash/public/interfaces/wallpaper.mojom.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -20,6 +21,7 @@
 #include "base/system/sys_info.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/app_mode/fake_cws.h"
+#include "chrome/browser/chromeos/app_mode/kiosk_app_data.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/file_manager/fake_disk_mount_manager.h"
@@ -49,7 +51,6 @@
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
-#include "chrome/browser/ui/webui/chromeos/login/kiosk_app_menu_handler.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
@@ -63,6 +64,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_ui.h"
+#include "content/public/common/service_manager_connection.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/app_window/app_window.h"
@@ -84,6 +86,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/audio/public/cpp/fake_system_info.h"
 #include "services/identity/public/cpp/identity_manager.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "ui/aura/window.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/keyboard/public/keyboard_switches.h"
@@ -205,14 +208,6 @@ const char kTestLoginToken[] = "fake-login-token";
 const char kTestAccessToken[] = "fake-access-token";
 const char kTestClientId[] = "fake-client-id";
 const char kTestAppScope[] = "https://www.googleapis.com/auth/userinfo.profile";
-
-// Test JS API.
-const char kLaunchAppForTestNewAPI[] =
-    "login.AccountPickerScreen.runAppForTesting";
-const char kLaunchAppForTestOldAPI[] = "login.AppsMenuButton.runAppForTesting";
-const char kCheckDiagnosticModeNewAPI[] = "$('oobe').confirmDiagnosticMode_";
-const char kCheckDiagnosticModeOldAPI[] =
-    "$('show-apps-button').confirmDiagnosticMode_";
 
 // Helper function for GetConsumerKioskAutoLaunchStatusCallback.
 void ConsumerKioskAutoLaunchStatusCheck(
@@ -459,6 +454,22 @@ class KioskTest : public OobeBaseTest {
  public:
   KioskTest() : settings_helper_(false), fake_cws_(new FakeCWS) {
     set_exit_when_last_browser_closes(false);
+
+    // This test does not operate any real App, so App data does not exist.
+    // Depending on timing, the asynchronous check for app data may or may not
+    // complete before test checks pass. And if the check does complete, it will
+    // mark app status KioskAppData::STATUS_ERROR, and exclude it from the list
+    // of populated apps.
+    //
+    // Then, any Update UI event (asynchronous) (like
+    // LoginDisplayHostCommon::OnStartSignInScreenCommon() will invoke
+    // SendKioskApps() and destroy test configuration.
+    //
+    // We default to ignore test data, as most of test cases use app ids only,
+    // So individual checks should revert it to default when needed.
+    //
+    // TODO(https://crbug.com/937244): Remove this.
+    KioskAppData::SetIgnoreKioskAppDataLoadFailuresForTesting(true);
   }
 
   ~KioskTest() override {}
@@ -515,11 +526,18 @@ class KioskTest : public OobeBaseTest {
       command_line->AppendSwitch(switches::kEnableConsumerKiosk);
   }
 
-  void LaunchApp(const std::string& app_id, bool diagnostic_mode) {
-    bool new_kiosk_ui = KioskAppMenuHandler::EnableNewKioskUI();
-    GetLoginUI()->CallJavascriptFunctionUnsafe(
-        new_kiosk_ui ? kLaunchAppForTestNewAPI : kLaunchAppForTestOldAPI,
-        base::Value(app_id), base::Value(diagnostic_mode));
+  bool LaunchApp(const std::string& app_id, bool diagnostic_mode) {
+    // TODO(https://crbug.com/932323): Implement or remove diagnostic mode.
+    if (diagnostic_mode)
+      return false;
+    ash::mojom::LoginScreenTestApiPtr test_api_;
+    content::ServiceManagerConnection::GetForProcess()
+        ->GetConnector()
+        ->BindInterface(ash::mojom::kServiceName, &test_api_);
+    ash::mojom::LoginScreenTestApiAsyncWaiter login_screen(test_api_.get());
+    bool found;
+    login_screen.LaunchApp(app_id, &found);
+    return found;
   }
 
   void ReloadKioskApps() {
@@ -536,10 +554,10 @@ class KioskTest : public OobeBaseTest {
   }
 
   void SetupTestAppUpdateCheck() {
-    if (!test_app_version().empty()) {
-      fake_cws_->SetUpdateCrx(test_app_id(), test_crx_file(),
-                              test_app_version());
-    }
+    if (test_app_version().empty())
+      return;
+
+    fake_cws_->SetUpdateCrx(test_app_id(), test_crx_file(), test_app_version());
   }
 
   void ReloadAutolaunchKioskApps() {
@@ -558,18 +576,10 @@ class KioskTest : public OobeBaseTest {
     chromeos::WizardController::SkipPostLoginScreensForTesting();
     chromeos::WizardController* wizard_controller =
         chromeos::WizardController::default_controller();
-    if (wizard_controller) {
+    if (wizard_controller)
       wizard_controller->SkipToLoginForTesting(LoginScreenContext());
-      OobeScreenWaiter(OobeScreen::SCREEN_GAIA_SIGNIN).Wait();
-    } else {
-      // No wizard and running with an existing profile and it should land
-      // on account picker when new kiosk UI is enabled. Otherwise, just
-      // wait for the login signal from Gaia.
-      if (KioskAppMenuHandler::EnableNewKioskUI())
-        OobeScreenWaiter(OobeScreen::SCREEN_ACCOUNT_PICKER).Wait();
-      else
-        OobeScreenWaiter(OobeScreen::SCREEN_GAIA_SIGNIN).Wait();
-    }
+
+    OobeScreenWaiter(OobeScreen::SCREEN_GAIA_SIGNIN).Wait();
   }
 
   void PrepareAppLaunch() {
@@ -590,7 +600,7 @@ class KioskTest : public OobeBaseTest {
     if (!network_setup_cb.is_null())
       network_setup_cb.Run();
 
-    LaunchApp(test_app_id(), false);
+    EXPECT_TRUE(LaunchApp(test_app_id(), false));
   }
 
   const extensions::Extension* GetInstalledApp() {
@@ -978,20 +988,19 @@ IN_PROC_BROWSER_TEST_F(KioskTest, LaunchAppUserCancel) {
             chromeos::KioskAppLaunchError::Get());
 }
 
-IN_PROC_BROWSER_TEST_F(KioskTest, LaunchInDiagnosticMode) {
+// TODO: https://crbug.com/932323
+IN_PROC_BROWSER_TEST_F(KioskTest, DISABLED_LaunchInDiagnosticMode) {
+  const char kCheckDiagnosticModeOldAPI[] =
+      "$('show-apps-button').confirmDiagnosticMode_";
+
   PrepareAppLaunch();
   SimulateNetworkOnline();
 
-  LaunchApp(kTestKioskApp, true);
+  EXPECT_TRUE(LaunchApp(kTestKioskApp, true));
 
-  bool new_kiosk_ui = KioskAppMenuHandler::EnableNewKioskUI();
-  test::OobeJS()
-      .CreateWaiter(new_kiosk_ui ? kCheckDiagnosticModeNewAPI
-                                 : kCheckDiagnosticModeOldAPI)
-      ->Wait();
+  test::OobeJS().CreateWaiter(kCheckDiagnosticModeOldAPI)->Wait();
 
-  std::string diagnosticMode(new_kiosk_ui ?
-      kCheckDiagnosticModeNewAPI : kCheckDiagnosticModeOldAPI);
+  std::string diagnosticMode(kCheckDiagnosticModeOldAPI);
   test::OobeJS().Evaluate(
       "(function() {"
       "var e = new Event('click');" +
@@ -1196,7 +1205,9 @@ IN_PROC_BROWSER_TEST_F(KioskTest, KioskEnableAfter2ndSigninScreen) {
 #if defined(ADDRESS_SANITIZER)
 #define MAYBE_DoNotLaunchWhenUntrusted DISABLED_DoNotLaunchWhenUntrusted
 #else
-#define MAYBE_DoNotLaunchWhenUntrusted DoNotLaunchWhenUntrusted
+// TODO(https://crbug.com/934109): Fix kiosk launch when the device is
+// untrusted.
+#define MAYBE_DoNotLaunchWhenUntrusted DISABLED_DoNotLaunchWhenUntrusted
 #endif
 IN_PROC_BROWSER_TEST_F(KioskTest, MAYBE_DoNotLaunchWhenUntrusted) {
   PrepareAppLaunch();
@@ -1207,7 +1218,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest, MAYBE_DoNotLaunchWhenUntrusted) {
       CrosSettingsProvider::PERMANENTLY_UNTRUSTED);
 
   // Check that the attempt to start a kiosk app fails with an error.
-  LaunchApp(test_app_id(), false);
+  EXPECT_TRUE(LaunchApp(test_app_id(), false));
   bool ignored = false;
   EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
       GetLoginUI()->GetWebContents(),
@@ -1405,7 +1416,7 @@ class KioskUpdateTest : public KioskTest {
     set_test_crx_file(crx_file);
     PrepareAppLaunch();
     SimulateNetworkOnline();
-    LaunchApp(test_app_id(), false);
+    EXPECT_TRUE(LaunchApp(test_app_id(), false));
     WaitForAppLaunchSuccess();
     EXPECT_EQ(version, GetInstalledAppVersion().GetString());
   }
@@ -1426,7 +1437,7 @@ class KioskUpdateTest : public KioskTest {
     // Launch the primary app.
     StartUIForAppLaunch();
     SimulateNetworkOnline();
-    LaunchApp(test_app_id(), false);
+    EXPECT_TRUE(LaunchApp(test_app_id(), false));
     WaitForAppLaunchWithOptions(false, true);
 
     // Verify the primary app and the secondary apps are all installed.
@@ -1583,7 +1594,7 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, LaunchOfflineEnabledAppNoNetwork) {
   set_test_app_id(kTestOfflineEnabledKioskApp);
   StartUIForAppLaunch();
   SimulateNetworkOffline();
-  LaunchApp(test_app_id(), false);
+  EXPECT_TRUE(LaunchApp(test_app_id(), false));
   WaitForAppLaunchSuccess();
 
   EXPECT_EQ("1.0.0", GetInstalledAppVersion().GetString());
@@ -1604,7 +1615,7 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest,
       KioskAppManager::Get()->HasCachedCrx(kTestOfflineEnabledKioskApp));
   StartUIForAppLaunch();
   SimulateNetworkOffline();
-  LaunchApp(test_app_id(), false);
+  EXPECT_TRUE(LaunchApp(test_app_id(), false));
   WaitForAppLaunchSuccess();
 
   EXPECT_EQ("1.0.0", GetInstalledAppVersion().GetString());
@@ -1632,7 +1643,7 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest,
 
   StartUIForAppLaunch();
   SimulateNetworkOffline();
-  LaunchApp(test_app_id(), false);
+  EXPECT_TRUE(LaunchApp(test_app_id(), false));
   WaitForAppLaunchSuccess();
 
   // v2 app should have been installed.
@@ -1651,7 +1662,7 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, LaunchOfflineEnabledAppNoUpdate) {
 
   StartUIForAppLaunch();
   SimulateNetworkOnline();
-  LaunchApp(test_app_id(), false);
+  EXPECT_TRUE(LaunchApp(test_app_id(), false));
   WaitForAppLaunchSuccess();
 
   EXPECT_EQ("1.0.0", GetInstalledAppVersion().GetString());
@@ -1670,7 +1681,7 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, LaunchOfflineEnabledAppHasUpdate) {
 
   StartUIForAppLaunch();
   SimulateNetworkOnline();
-  LaunchApp(test_app_id(), false);
+  EXPECT_TRUE(LaunchApp(test_app_id(), false));
   WaitForAppLaunchSuccess();
 
   EXPECT_EQ("2.0.0", GetInstalledAppVersion().GetString());
@@ -1687,7 +1698,7 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, PRE_UsbStickUpdateAppNoNetwork) {
   set_test_app_id(kTestOfflineEnabledKioskApp);
   StartUIForAppLaunch();
   SimulateNetworkOffline();
-  LaunchApp(test_app_id(), false);
+  EXPECT_TRUE(LaunchApp(test_app_id(), false));
   WaitForAppLaunchSuccess();
   EXPECT_EQ("1.0.0", GetInstalledAppVersion().GetString());
 
@@ -1715,7 +1726,7 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, UsbStickUpdateAppNoNetwork) {
   set_test_app_id(kTestOfflineEnabledKioskApp);
   StartUIForAppLaunch();
   SimulateNetworkOffline();
-  LaunchApp(test_app_id(), false);
+  EXPECT_TRUE(LaunchApp(test_app_id(), false));
   WaitForAppLaunchSuccess();
   EXPECT_EQ("2.0.0", GetInstalledAppVersion().GetString());
 }
@@ -1842,7 +1853,7 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, PermissionChange) {
 
   StartUIForAppLaunch();
   SimulateNetworkOnline();
-  LaunchApp(test_app_id(), false);
+  EXPECT_TRUE(LaunchApp(test_app_id(), false));
   WaitForAppLaunchSuccess();
 
   EXPECT_EQ("2.0.0", GetInstalledAppVersion().GetString());
@@ -1904,7 +1915,7 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, PRE_IncompliantPlatformDelayInstall) {
 
   StartUIForAppLaunch();
   SimulateNetworkOnline();
-  LaunchApp(test_app_id(), false);
+  EXPECT_TRUE(LaunchApp(test_app_id(), false));
   WaitForAppLaunchSuccess();
 
   EXPECT_EQ("1.0.0", GetInstalledAppVersion().GetString());
@@ -1926,7 +1937,7 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, IncompliantPlatformDelayInstall) {
 
   StartUIForAppLaunch();
   SimulateNetworkOnline();
-  LaunchApp(test_app_id(), false);
+  EXPECT_TRUE(LaunchApp(test_app_id(), false));
   WaitForAppLaunchSuccess();
 
   EXPECT_EQ("2.0.0", GetInstalledAppVersion().GetString());
@@ -1950,7 +1961,7 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, IncompliantPlatformFirstInstall) {
 
   StartUIForAppLaunch();
   SimulateNetworkOnline();
-  LaunchApp(test_app_id(), false);
+  EXPECT_TRUE(LaunchApp(test_app_id(), false));
   WaitForAppLaunchSuccess();
 
   EXPECT_EQ("2.0.0", GetInstalledAppVersion().GetString());
@@ -1981,7 +1992,7 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, UpdateMultiAppKioskRemoveOneApp) {
 
   StartUIForAppLaunch();
   SimulateNetworkOnline();
-  LaunchApp(test_app_id(), false);
+  EXPECT_TRUE(LaunchApp(test_app_id(), false));
   WaitForAppLaunchWithOptions(false, true);
 
   // Verify the secondary app kTestSecondaryApp1 is removed.
@@ -2009,7 +2020,7 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, UpdateMultiAppKioskAddOneApp) {
 
   StartUIForAppLaunch();
   SimulateNetworkOnline();
-  LaunchApp(test_app_id(), false);
+  EXPECT_TRUE(LaunchApp(test_app_id(), false));
   WaitForAppLaunchWithOptions(false, true);
 
   // Verify the secondary app kTestSecondaryApp3 is installed.
@@ -2044,7 +2055,7 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest,
 
   StartUIForAppLaunch();
   SimulateNetworkOnline();
-  LaunchApp(test_app_id(), false);
+  EXPECT_TRUE(LaunchApp(test_app_id(), false));
   WaitForAppLaunchWithOptions(false, true);
 
   // Verify the secondary app is removed.
@@ -2077,7 +2088,7 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, LaunchAppWithUpdatedModule) {
 
   StartUIForAppLaunch();
   SimulateNetworkOnline();
-  LaunchApp(test_app_id(), false);
+  EXPECT_TRUE(LaunchApp(test_app_id(), false));
   WaitForAppLaunchWithOptions(false, true);
 
   // Verify the shared module is updated to the new version after primary app
@@ -2198,7 +2209,7 @@ IN_PROC_BROWSER_TEST_F(KioskEnterpriseTest, EnterpriseKioskApp) {
                             "");
 
   PrepareAppLaunch();
-  LaunchApp(kTestEnterpriseKioskApp, false);
+  EXPECT_TRUE(LaunchApp(kTestEnterpriseKioskApp, false));
 
   KioskSessionInitializedWaiter().Wait();
 
@@ -2268,7 +2279,7 @@ IN_PROC_BROWSER_TEST_F(KioskEnterpriseTest, PrivateStore) {
   waiter.WaitForAppData();
 
   PrepareAppLaunch();
-  LaunchApp(kTestEnterpriseKioskApp, false);
+  EXPECT_TRUE(LaunchApp(kTestEnterpriseKioskApp, false));
   WaitForAppLaunchWithOptions(false /* check_launch_data */,
                               true /* terminate_app */);
 

@@ -185,14 +185,6 @@ void UpdateAuthParams(base::DictionaryValue* params,
   // nosignup flow if new users are not allowed.
   if (!allow_new_user || is_restrictive_proxy)
     params->SetString("flow", "nosignup");
-
-  params->SetBoolean("supervisedUsersCanCreate", false);
-
-  // Now check whether we're in multi-profiles user adding scenario and
-  // disable GAIA right panel features if that's the case.
-  if (UserAddingScreen::Get()->IsRunning()) {
-    params->SetBoolean("supervisedUsersCanCreate", false);
-  }
 }
 
 void RecordSAMLScrapingVerificationResultInHistogram(bool success) {
@@ -1203,7 +1195,7 @@ void GaiaScreenHandler::ShowGaiaScreenIfReady() {
 
   LoadAuthExtension(!gaia_silent_load_ /* force */, false /* offline */);
   signin_screen_handler_->UpdateUIState(
-      SigninScreenHandler::UI_STATE_GAIA_SIGNIN, nullptr);
+      SigninScreenHandler::UI_STATE_GAIA_SIGNIN);
   core_oobe_view_->UpdateKeyboardState();
 
   if (gaia_silent_load_) {

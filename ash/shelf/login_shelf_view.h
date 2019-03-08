@@ -5,6 +5,8 @@
 #ifndef ASH_SHELF_LOGIN_SHELF_VIEW_H_
 #define ASH_SHELF_LOGIN_SHELF_VIEW_H_
 
+#include <memory>
+#include <string>
 #include <vector>
 
 #include "ash/ash_export.h"
@@ -61,6 +63,13 @@ class ASH_EXPORT LoginShelfView : public views::View,
     kParentAccess    // Unlock child device with Parent Access Code.
   };
 
+  // Stores and notifies UiUpdate test callbacks.
+  class TestUiUpdateDelegate {
+   public:
+    virtual ~TestUiUpdateDelegate();
+    virtual void OnUiUpdate() = 0;
+  };
+
   explicit LoginShelfView(
       LockScreenActionBackgroundController* lock_screen_action_background);
   ~LoginShelfView() override;
@@ -101,8 +110,20 @@ class ASH_EXPORT LoginShelfView : public views::View,
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
-  int ui_update_count() const { return ui_update_count_; }
   gfx::Rect get_button_union_bounds() const { return button_union_bounds_; }
+
+  // Test API. Returns true if request was successful (i.e. button was
+  // clickable).
+  bool LaunchAppForTesting(const std::string& app_id);
+  bool SimulateAddUserButtonForTesting();
+
+  // Adds test delegate. Delegate will become owned by LoginShelfView.
+  void InstallTestUiUpdateDelegate(
+      std::unique_ptr<TestUiUpdateDelegate> delegate);
+
+  TestUiUpdateDelegate* test_ui_update_delegate() {
+    return test_ui_update_delegate_.get();
+  }
 
  protected:
   // TrayActionObserver:
@@ -161,7 +182,7 @@ class ASH_EXPORT LoginShelfView : public views::View,
   KioskAppsButton* kiosk_apps_button_ = nullptr;  // Owned by view hierarchy
 
   // This is used in tests to wait until UI is updated.
-  int ui_update_count_ = 0;
+  std::unique_ptr<TestUiUpdateDelegate> test_ui_update_delegate_;
 
   // The bounds of all the buttons that this view is showing. Useful for
   // letting events that target the "empty space" pass through. These

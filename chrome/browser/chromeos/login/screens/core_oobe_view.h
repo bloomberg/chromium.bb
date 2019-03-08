@@ -35,7 +35,6 @@ class CoreOobeView {
   virtual void ClearErrors() = 0;
   virtual void ReloadContent(const base::DictionaryValue& dictionary) = 0;
   virtual void ReloadEulaContent(const base::DictionaryValue& dictionary) = 0;
-  virtual void ShowControlBar(bool show) = 0;
   virtual void SetVirtualKeyboardShown(bool shown) = 0;
   virtual void SetClientAreaSize(int width, int height) = 0;
   virtual void ShowDeviceResetScreen() = 0;

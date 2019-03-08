@@ -217,7 +217,6 @@ void CoreOobeHandler::RegisterMessages() {
   AddCallback("toggleResetScreen", &CoreOobeHandler::HandleToggleResetScreen);
   AddCallback("toggleEnableDebuggingScreen",
               &CoreOobeHandler::HandleEnableDebuggingScreen);
-  AddCallback("headerBarVisible", &CoreOobeHandler::HandleHeaderBarVisible);
   AddCallback("raiseTabKeyEvent", &CoreOobeHandler::HandleRaiseTabKeyEvent);
   // Note: Used by enterprise_RemoraRequisitionDisplayUsage.py:
   // TODO(felixe): Use chrome.system.display or cros_display_config.mojom,
@@ -301,10 +300,6 @@ void CoreOobeHandler::ReloadContent(const base::DictionaryValue& dictionary) {
 void CoreOobeHandler::ReloadEulaContent(
     const base::DictionaryValue& dictionary) {
   CallJS("cr.ui.Oobe.reloadEulaContent", dictionary);
-}
-
-void CoreOobeHandler::ShowControlBar(bool show) {
-  CallJS("cr.ui.Oobe.showControlBar", show);
 }
 
 void CoreOobeHandler::SetVirtualKeyboardShown(bool shown) {
@@ -479,11 +474,6 @@ void CoreOobeHandler::ShowOobeUI(bool show) {
     UpdateOobeUIVisibility();
 }
 
-void CoreOobeHandler::UpdateShutdownAndRebootVisibility(
-    bool reboot_on_shutdown) {
-  CallJS("cr.ui.Oobe.showShutdown", !reboot_on_shutdown);
-}
-
 void CoreOobeHandler::SetLoginUserCount(int user_count) {
   CallJS("cr.ui.Oobe.setLoginUserCount", user_count);
 }
@@ -584,7 +574,6 @@ void CoreOobeHandler::UpdateKeyboardState() {
   if (!features::IsUsingWindowService()) {
     const bool is_keyboard_shown =
         ChromeKeyboardControllerClient::Get()->is_keyboard_visible();
-    ShowControlBar(!is_keyboard_shown);
     SetVirtualKeyboardShown(is_keyboard_shown);
   }
 }
@@ -621,12 +610,6 @@ void CoreOobeHandler::HandleLaunchHelpApp(double help_topic_id) {
     help_app_ = new HelpAppLauncher(GetNativeWindow());
   help_app_->ShowHelpTopic(
       static_cast<HelpAppLauncher::HelpTopic>(help_topic_id));
-}
-
-void CoreOobeHandler::HandleHeaderBarVisible() {
-  LoginDisplayHost* login_display_host = LoginDisplayHost::default_host();
-  if (login_display_host)
-    login_display_host->SetStatusAreaVisible(true);
 }
 
 void CoreOobeHandler::HandleRaiseTabKeyEvent(bool reverse) {

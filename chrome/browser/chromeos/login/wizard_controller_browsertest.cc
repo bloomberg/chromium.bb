@@ -2091,7 +2091,6 @@ IN_PROC_BROWSER_TEST_F(WizardControllerBrokenLocalStateTest,
   ASSERT_FALSE(JSExecuteBooleanExpression("$('error-message').hidden"));
   ASSERT_TRUE(JSExecuteBooleanExpression(
       "$('error-message').classList.contains('ui-state-local-state-error')"));
-  ASSERT_TRUE(JSExecuteBooleanExpression("$('login-header-bar').hidden"));
 
   // Emulates user click on the "Restart and Powerwash" button.
   ASSERT_EQ(0, fake_session_manager_client()->start_device_wipe_call_count());

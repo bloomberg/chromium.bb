@@ -15,7 +15,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
-#include "chrome/browser/chromeos/settings/shutdown_policy_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/core_oobe_handler.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
@@ -50,7 +49,6 @@ class DiscoverScreenView;
 class FingerprintSetupScreenView;
 class GaiaView;
 class HIDDetectionView;
-class KioskAppMenuHandler;
 class KioskAutolaunchScreenView;
 class KioskEnableScreenView;
 class LoginScreenContext;
@@ -78,8 +76,7 @@ class WrongHWIDScreenView;
 // - welcome screen (setup language/keyboard/network).
 // - eula screen (CrOS (+ OEM) EULA content/TPM password/crash reporting).
 // - update screen.
-class OobeUI : public ui::MojoWebUIController,
-               public ShutdownPolicyHandler::Delegate {
+class OobeUI : public ui::MojoWebUIController {
  public:
   // List of known types of OobeUI. Type added as path in chrome://oobe url, for
   // example chrome://oobe/user-adding.
@@ -143,9 +140,6 @@ class OobeUI : public ui::MojoWebUIController,
   DiscoverScreenView* GetDiscoverScreenView();
   NetworkScreenView* GetNetworkScreenView();
   MarketingOptInScreenView* GetMarketingOptInScreenView();
-
-  // ShutdownPolicyHandler::Delegate
-  void OnShutdownPolicyChanged(bool reboot_on_shutdown) override;
 
   // Collects localized strings from the owned handlers.
   void GetLocalizedStrings(base::DictionaryValue* localized_strings);
@@ -252,9 +246,6 @@ class OobeUI : public ui::MojoWebUIController,
   std::vector<BaseWebUIHandler*> webui_only_handlers_;  // Non-owning pointers.
   std::vector<BaseScreenHandler*> screen_handlers_;     // Non-owning pointers.
 
-  KioskAppMenuHandler* kiosk_app_menu_handler_ =
-      nullptr;  // Non-owning pointers.
-
   std::unique_ptr<ErrorScreen> error_screen_;
 
   // Id of the current oobe/login screen.
@@ -272,9 +263,6 @@ class OobeUI : public ui::MojoWebUIController,
 
   // List of registered observers.
   base::ObserverList<Observer>::Unchecked observer_list_;
-
-  // Observer of CrosSettings watching the kRebootOnShutdown policy.
-  std::unique_ptr<ShutdownPolicyHandler> shutdown_policy_handler_;
 
   std::unique_ptr<OobeDisplayChooser> oobe_display_chooser_;
 

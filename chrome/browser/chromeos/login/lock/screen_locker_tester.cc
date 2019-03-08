@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/lock/screen_locker_tester.h"
 
+#include <cstdint>
 #include <string>
 
 #include "ash/public/cpp/ash_switches.h"
@@ -34,16 +35,6 @@
 
 namespace chromeos {
 namespace {
-
-// Helper to use inside a loop instead of using RunLoop::RunUntilIdle() to avoid
-// the loop being a busy loop that prevents renderer from doing its job. Use
-// only when there is no better way to synchronize.
-void GiveItSomeTime(base::TimeDelta delta) {
-  base::RunLoop run_loop;
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, run_loop.QuitClosure(), delta);
-  run_loop.Run();
-}
 
 bool IsScreenLockerLocked() {
   return ScreenLocker::default_screen_locker() &&
@@ -137,23 +128,18 @@ bool ScreenLockerTester::IsLocked() {
   return IsScreenLockerLocked() && is_ui_shown;
 }
 
-bool ScreenLockerTester::IsRestartButtonShown() {
+bool ScreenLockerTester::IsLockRestartButtonShown() {
   if (!IsScreenLockerLocked())
     return false;
 
-  ash::mojom::LoginScreenTestApiAsyncWaiter login_screen(test_api_.get());
-  bool is_restart_button_shown;
-  login_screen.IsRestartButtonShown(&is_restart_button_shown);
-  return IsScreenLockerLocked() && is_restart_button_shown;
+  return login_screen_tester_.IsRestartButtonShown() && IsScreenLockerLocked();
 }
 
-bool ScreenLockerTester::IsShutdownButtonShown() {
+bool ScreenLockerTester::IsLockShutdownButtonShown() {
   if (!IsScreenLockerLocked())
     return false;
 
-  ash::mojom::LoginScreenTestApiAsyncWaiter login_screen(test_api_.get());
-  bool is_shutdown_button_shown;
-  login_screen.IsShutdownButtonShown(&is_shutdown_button_shown);
+  bool is_shutdown_button_shown = login_screen_tester_.IsShutdownButtonShown();
   return IsScreenLockerLocked() && is_shutdown_button_shown;
 }
 
@@ -165,17 +151,11 @@ void ScreenLockerTester::UnlockWithPassword(const AccountId& account_id,
 }
 
 int64_t ScreenLockerTester::GetUiUpdateCount() {
-  ash::mojom::LoginScreenTestApiAsyncWaiter login_screen(test_api_.get());
-  int64_t ui_update_count = 0;
-  login_screen.GetUiUpdateCount(&ui_update_count);
-  return ui_update_count;
+  return login_screen_tester_.GetUiUpdateCount();
 }
 
-// Blocks until LoginShelfView::ui_update_count() is greater then
-// |previous_update_count|.
 void ScreenLockerTester::WaitForUiUpdate(int64_t previous_update_count) {
-  while (GetUiUpdateCount() <= previous_update_count) {
-    GiveItSomeTime(base::TimeDelta::FromMilliseconds(100));
-  }
+  login_screen_tester_.WaitForUiUpdate(previous_update_count);
 }
+
 }  // namespace chromeos

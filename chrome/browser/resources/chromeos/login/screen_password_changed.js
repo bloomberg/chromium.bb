@@ -19,12 +19,10 @@ login.createScreen('PasswordChangedScreen', 'password-changed', function() {
           'cancel', this.cancel.bind(this));
 
       this.gaiaPasswordChanged_.addEventListener('passwordEnter', function(e) {
-        $('login-header-bar').disabled = true;
         chrome.send('migrateUserData', [e.detail.password]);
       });
 
       this.gaiaPasswordChanged_.addEventListener('proceedAnyway', function() {
-        $('login-header-bar').disabled = true;
         chrome.send('resyncUserData');
       });
     },
@@ -44,13 +42,6 @@ login.createScreen('PasswordChangedScreen', 'password-changed', function() {
     },
 
     /**
-     * Event handler that is invoked just before the screen is hidden.
-     */
-    onBeforeHide: function() {
-      $('login-header-bar').disabled = false;
-    },
-
-    /**
      * Show password changed screen.
      * @param {boolean} showError Whether to show the incorrect password error.
      */
@@ -62,10 +53,7 @@ login.createScreen('PasswordChangedScreen', 'password-changed', function() {
         this.gaiaPasswordChanged_.email = email;
 
       // We'll get here after the successful online authentication.
-      // It assumes session is about to start so hides login screen controls.
-      Oobe.getInstance().headerHidden = false;
       Oobe.showScreen({id: SCREEN_PASSWORD_CHANGED});
-      $('login-header-bar').disabled = false;
       Oobe.getInstance().setSigninUIState(SIGNIN_UI_STATE.PASSWORD_CHANGED);
     }
   };

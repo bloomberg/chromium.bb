@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "chrome/browser/chromeos/login/ui/kiosk_app_menu_updater.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -74,6 +75,12 @@ class LoginDisplayHostCommon : public LoginDisplayHost,
   // Marks display host for deletion.
   void ShutdownDisplayHost();
 
+  // Common code for OnStartSignInScreen() call above.
+  void OnStartSignInScreenCommon();
+
+  // Common code for ShowGaiaDialog() call above.
+  void ShowGaiaDialogCommon(const base::Optional<AccountId>& prefilled_account);
+
   // Active instance of authentication prewarmer.
   std::unique_ptr<AuthPrewarmer> auth_prewarmer_;
 
@@ -105,6 +112,8 @@ class LoginDisplayHostCommon : public LoginDisplayHost,
 
   // Called after host deletion.
   std::vector<base::OnceClosure> completion_callbacks_;
+
+  KioskAppMenuUpdater kiosk_updater_;
 
   base::WeakPtrFactory<LoginDisplayHostCommon> weak_factory_;
 

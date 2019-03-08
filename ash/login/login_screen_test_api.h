@@ -5,6 +5,8 @@
 #ifndef ASH_LOGIN_LOGIN_SCREEN_TEST_API_H_
 #define ASH_LOGIN_LOGIN_SCREEN_TEST_API_H_
 
+#include <string>
+
 #include "ash/public/interfaces/login_screen_test_api.test-mojom.h"
 #include "base/macros.h"
 #include "components/account_id/account_id.h"
@@ -29,6 +31,16 @@ class LoginScreenTestApi : public mojom::LoginScreenTestApi {
                       const std::string& password,
                       SubmitPasswordCallback callback) override;
   void GetUiUpdateCount(GetUiUpdateCountCallback callback) override;
+  void LaunchApp(const std::string& app_id,
+                 LaunchAppCallback callback) override;
+  void ClickAddUserButton(ClickAddUserButtonCallback callback) override;
+  // This blocks until UI update number becomes greater than the
+  // |previous_update_count|.  Where |previous_update_count| presumably is
+  // coming from GetUiUpdateCount().  This way test remembers the "current" UI
+  // update version, performs some actions, and then waits until UI switches to
+  // the new version.
+  void WaitForUiUpdate(int64_t previous_update_count,
+                       WaitForUiUpdateCallback callback) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LoginScreenTestApi);
