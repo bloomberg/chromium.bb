@@ -2317,12 +2317,12 @@
   },
   {
     "name": "network-service",
-    // "owners": [ "your-team" ],
+    "owners": [ "network-service-dev" ],
     "expiry_milestone": 76
   },
   {
     "name": "network-service-in-process",
-    // "owners": [ "your-team" ],
+    "owners": [ "network-service-dev" ],
     "expiry_milestone": 76
   },
   {
