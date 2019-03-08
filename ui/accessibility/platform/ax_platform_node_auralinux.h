@@ -88,6 +88,7 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   void OnMenuPopupEnd();
   void OnSelected();
   void OnSelectedChildrenChanged();
+  void OnTextSelectionChanged();
   void OnValueChanged();
 
   bool SupportsSelectionWithAtkSelection();
@@ -111,9 +112,10 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   void SetEmbeddedDocument(AtkObject* new_document);
   void SetEmbeddingWindow(AtkObject* new_embedding_window);
 
- protected:
-  AXHypertext hypertext_;
+  int GetCaretOffset();
+  bool SetCaretOffset(int offset);
 
+ protected:
   // Offsets for the AtkText API are calculated in UTF-16 code point offsets,
   // but the ATK APIs want all offsets to be in "characters," which we
   // understand to be Unicode character offsets. We keep a lazily generated set

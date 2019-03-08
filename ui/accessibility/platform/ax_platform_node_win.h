@@ -929,57 +929,7 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   std::vector<Microsoft::WRL::ComPtr<AXPlatformRelationWin>> relations_;
 
   AXHypertext old_hypertext_;
-  AXHypertext hypertext_;
 
-  // These protected methods are still used by BrowserAccessibilityComWin. At
-  // some point post conversion, we can probably move these to be private
-  // methods.
-  //
-  //
-  // Selection helper functions.
-  // The following functions retrieve the endpoints of the current selection.
-  // First they check for a local selection found on the current control, e.g.
-  // when querying the selection on a textarea.
-  // If not found they retrieve the global selection found on the current frame.
-  int GetSelectionAnchor();
-  int GetSelectionFocus();
-
-  // Retrieves the selection offsets in the way required by the IA2 APIs.
-  // selection_start and selection_end are -1 when there is no selection active
-  // on this object.
-  // The greatest of the two offsets is one past the last character of the
-  // selection.)
-  void GetSelectionOffsets(int* selection_start, int* selection_end);
-
-  //
-  // Helper methods for IA2 hyperlinks.
-  //
-  // Hyperlink is an IA2 misnomer. It refers to objects embedded within other
-  // objects, such as a numbered list within a contenteditable div.
-  // Also, in IA2, text that includes embedded objects is called hypertext.
-  // Returns true if the current object is an IA2 hyperlink.
-  bool IsHyperlink();
-
-  // Returns the hyperlink at the given text position, or nullptr if no
-  // hyperlink can be found.
-  AXPlatformNodeWin* GetHyperlinkFromHypertextOffset(int offset);
-
-  // Functions for retrieving offsets for hyperlinks and hypertext.
-  // Return -1 in case of failure.
-  int32_t GetHyperlinkIndexFromChild(AXPlatformNodeWin* child);
-  int32_t GetHypertextOffsetFromHyperlinkIndex(int32_t hyperlink_index);
-  int32_t GetHypertextOffsetFromChild(AXPlatformNodeWin* child);
-  int32_t GetHypertextOffsetFromDescendant(AXPlatformNodeWin* descendant);
-
-  // If the selection endpoint is either equal to or an ancestor of this object,
-  // returns endpoint_offset.
-  // If the selection endpoint is a descendant of this object, returns its
-  // offset. Otherwise, returns either 0 or the length of the hypertext
-  // depending on the direction of the selection.
-  // Returns -1 in case of unexpected failure, e.g. the selection endpoint
-  // cannot be found in the accessibility tree.
-  int GetHypertextOffsetFromEndpoint(AXPlatformNodeWin* endpoint_object,
-                                     int endpoint_offset);
   bool IsSameHypertextCharacter(size_t old_char_index, size_t new_char_index);
   void ComputeHypertextRemovedAndInserted(size_t* start,
                                           size_t* old_len,
