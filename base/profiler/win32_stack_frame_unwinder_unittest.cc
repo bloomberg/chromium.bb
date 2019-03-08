@@ -17,6 +17,17 @@ namespace base {
 
 namespace {
 
+// Stub module for testing.
+class TestModule : public ModuleCache::Module {
+ public:
+  uintptr_t GetBaseAddress() const override { return 0; }
+  std::string GetId() const override { return ""; }
+  FilePath GetDebugBasename() const override { return FilePath(); }
+  size_t GetSize() const override { return 0; }
+};
+
+const TestModule valid_module;
+
 class TestUnwindFunctions : public Win32StackFrameUnwinder::UnwindFunctions {
  public:
   TestUnwindFunctions();
@@ -27,7 +38,7 @@ class TestUnwindFunctions : public Win32StackFrameUnwinder::UnwindFunctions {
                      DWORD64 program_counter,
                      PRUNTIME_FUNCTION runtime_function,
                      CONTEXT* context) override;
-  ScopedModuleHandle GetModuleForProgramCounter(
+  const ModuleCache::Module* GetModuleForProgramCounter(
       DWORD64 program_counter) override;
 
   // Instructs GetModuleForProgramCounter to return null on the next call.
@@ -90,13 +101,11 @@ void TestUnwindFunctions::VirtualUnwind(DWORD64 image_base,
   EXPECT_EQ(&runtime_functions_.back(), runtime_function);
 }
 
-ScopedModuleHandle TestUnwindFunctions::GetModuleForProgramCounter(
+const ModuleCache::Module* TestUnwindFunctions::GetModuleForProgramCounter(
     DWORD64 program_counter) {
   bool return_non_null_value = module_is_loaded_;
   module_is_loaded_ = true;
-  return ScopedModuleHandle(return_non_null_value ?
-                            ModuleHandleTraits::kNonNullModuleForTesting :
-                            nullptr);
+  return return_non_null_value ? &valid_module : nullptr;
 }
 
 void TestUnwindFunctions::SetUnloadedModule() {
@@ -149,28 +158,28 @@ Win32StackFrameUnwinderTest::CreateUnwinder() {
 TEST_F(Win32StackFrameUnwinderTest, FramesWithUnwindInfo) {
   std::unique_ptr<Win32StackFrameUnwinder> unwinder = CreateUnwinder();
   CONTEXT context = {0};
-  ScopedModuleHandle module;
+  const ModuleCache::Module* module = nullptr;
 
   unwind_functions_->SetHasRuntimeFunction(&context);
   EXPECT_TRUE(unwinder->TryUnwind(&context, &module));
-  EXPECT_TRUE(module.IsValid());
+  EXPECT_NE(nullptr, module);
 
   unwind_functions_->SetHasRuntimeFunction(&context);
-  module.Set(nullptr);
+  module = nullptr;
   EXPECT_TRUE(unwinder->TryUnwind(&context, &module));
-  EXPECT_TRUE(module.IsValid());
+  EXPECT_NE(nullptr, module);
 
   unwind_functions_->SetHasRuntimeFunction(&context);
-  module.Set(nullptr);
+  module = nullptr;
   EXPECT_TRUE(unwinder->TryUnwind(&context, &module));
-  EXPECT_TRUE(module.IsValid());
+  EXPECT_NE(nullptr, module);
 }
 
 // Checks that an instruction pointer in an unloaded module fails to unwind.
 TEST_F(Win32StackFrameUnwinderTest, UnloadedModule) {
   std::unique_ptr<Win32StackFrameUnwinder> unwinder = CreateUnwinder();
   CONTEXT context = {0};
-  ScopedModuleHandle module;
+  const ModuleCache::Module* module = nullptr;
 
   unwind_functions_->SetUnloadedModule();
   EXPECT_FALSE(unwinder->TryUnwind(&context, &module));
@@ -181,7 +190,7 @@ TEST_F(Win32StackFrameUnwinderTest, UnloadedModule) {
 TEST_F(Win32StackFrameUnwinderTest, FrameAtTopWithoutUnwindInfo) {
   std::unique_ptr<Win32StackFrameUnwinder> unwinder = CreateUnwinder();
   CONTEXT context = {0};
-  ScopedModuleHandle module;
+  const ModuleCache::Module* module = nullptr;
   DWORD64 next_ip = 0x0123456789abcdef;
   DWORD64 original_rsp = reinterpret_cast<DWORD64>(&next_ip);
   context.Rsp = original_rsp;
@@ -190,17 +199,17 @@ TEST_F(Win32StackFrameUnwinderTest, FrameAtTopWithoutUnwindInfo) {
   EXPECT_TRUE(unwinder->TryUnwind(&context, &module));
   EXPECT_EQ(next_ip, context.Rip);
   EXPECT_EQ(original_rsp + 8, context.Rsp);
-  EXPECT_TRUE(module.IsValid());
+  EXPECT_NE(nullptr, module);
 
   unwind_functions_->SetHasRuntimeFunction(&context);
-  module.Set(nullptr);
+  module = nullptr;
   EXPECT_TRUE(unwinder->TryUnwind(&context, &module));
-  EXPECT_TRUE(module.IsValid());
+  EXPECT_NE(nullptr, module);
 
   unwind_functions_->SetHasRuntimeFunction(&context);
-  module.Set(nullptr);
+  module = nullptr;
   EXPECT_TRUE(unwinder->TryUnwind(&context, &module));
-  EXPECT_TRUE(module.IsValid());
+  EXPECT_NE(nullptr, module);
 }
 
 // Checks that a frame below the top of the stack with missing unwind info
@@ -210,10 +219,10 @@ TEST_F(Win32StackFrameUnwinderTest, FrameBelowTopWithoutUnwindInfo) {
     // First stack, with a bad function below the top of the stack.
     std::unique_ptr<Win32StackFrameUnwinder> unwinder = CreateUnwinder();
     CONTEXT context = {0};
-    ScopedModuleHandle module;
+    const ModuleCache::Module* module = nullptr;
     unwind_functions_->SetHasRuntimeFunction(&context);
     EXPECT_TRUE(unwinder->TryUnwind(&context, &module));
-    EXPECT_TRUE(module.IsValid());
+    EXPECT_NE(nullptr, module);
 
     unwind_functions_->SetNoRuntimeFunction(&context);
     EXPECT_FALSE(unwinder->TryUnwind(&context, &module));

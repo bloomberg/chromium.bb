@@ -188,31 +188,21 @@ void RewritePointersToStackMemory(uintptr_t top,
 #endif
 }
 
-// Movable type representing a recorded stack frame.
+// Represents a recorded stack frame.
 struct RecordedFrame {
-  RecordedFrame() {}
-
-  RecordedFrame(RecordedFrame&& other)
-      : instruction_pointer(other.instruction_pointer),
-        module(std::move(other.module)) {}
-
-  RecordedFrame& operator=(RecordedFrame&& other) {
-    instruction_pointer = other.instruction_pointer;
-    module = std::move(other.module);
-    return *this;
-  }
+  RecordedFrame(const void* instruction_pointer,
+                const ModuleCache::Module* module)
+      : instruction_pointer(instruction_pointer), module(module) {}
 
   const void* instruction_pointer;
-  ScopedModuleHandle module;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(RecordedFrame);
+  const ModuleCache::Module* module;
 };
 
 // Walks the stack represented by |context| from the current frame downwards,
 // recording the instruction pointer and associated module for each frame in
 // |stack|.
-NativeStackSamplerError RecordStack(CONTEXT* context,
+NativeStackSamplerError RecordStack(ModuleCache* module_cache,
+                                    CONTEXT* context,
                                     std::vector<RecordedFrame>* stack) {
 #ifdef _WIN64
   DCHECK(stack->empty());
@@ -222,17 +212,14 @@ NativeStackSamplerError RecordStack(CONTEXT* context,
   // fewer.
   stack->reserve(128);
 
-  Win32StackFrameUnwinder frame_unwinder;
+  Win32StackFrameUnwinder frame_unwinder(module_cache);
   while (ContextPC(context)) {
     const void* instruction_pointer =
         reinterpret_cast<const void*>(ContextPC(context));
-    ScopedModuleHandle module;
+    const ModuleCache::Module* module = nullptr;
     if (!frame_unwinder.TryUnwind(context, &module))
       return NATIVE_STACK_SAMPLER_TRY_UNWIND_FAILED;
-    RecordedFrame frame;
-    frame.instruction_pointer = instruction_pointer;
-    frame.module = std::move(module);
-    stack->push_back(std::move(frame));
+    stack->emplace_back(instruction_pointer, module);
   }
   return NATIVE_STACK_SAMPLER_SUCCESS;
 #else
@@ -341,6 +328,7 @@ NativeStackSamplerError SuspendThreadAndRecordStack(
     const void* base_address,
     void* stack_copy_buffer,
     size_t stack_copy_buffer_size,
+    ModuleCache* module_cache,
     std::vector<RecordedFrame>* stack,
     ProfileBuilder* profile_builder,
     NativeStackSamplerTestDelegate* test_delegate) {
@@ -400,7 +388,7 @@ NativeStackSamplerError SuspendThreadAndRecordStack(
     RewritePointersToStackMemory(top, bottom, &thread_context,
                                  stack_copy_buffer);
 
-    return RecordStack(&thread_context, stack);
+    return RecordStack(module_cache, &thread_context, stack);
   }
 }
 
@@ -460,7 +448,8 @@ std::vector<Frame> NativeStackSamplerWin::RecordStackFrames(
   std::vector<RecordedFrame> stack;
   NativeStackSamplerError error_code = SuspendThreadAndRecordStack(
       thread_handle_.Get(), thread_stack_base_address_, stack_buffer->buffer(),
-      stack_buffer->size(), &stack, profile_builder, test_delegate_);
+      stack_buffer->size(), module_cache_, &stack, profile_builder,
+      test_delegate_);
 
   if (error_code != NATIVE_STACK_SAMPLER_SUCCESS) {
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("cpu_profiler"),
@@ -483,7 +472,7 @@ std::vector<Frame> NativeStackSamplerWin::CreateFrames(
 
   for (const auto& frame : stack) {
     frames.emplace_back(reinterpret_cast<uintptr_t>(frame.instruction_pointer),
-                        module_cache_->GetModuleForHandle(frame.module.Get()));
+                        frame.module);
   }
 
   return frames;

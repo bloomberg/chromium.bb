@@ -15,34 +15,13 @@ namespace base {
 
 // Win32UnwindFunctions -------------------------------------------------------
 
-const HMODULE ModuleHandleTraits::kNonNullModuleForTesting =
-    reinterpret_cast<HMODULE>(static_cast<uintptr_t>(-1));
-
-// static
-bool ModuleHandleTraits::CloseHandle(HMODULE handle) {
-  if (handle == kNonNullModuleForTesting)
-    return true;
-
-  return ::FreeLibrary(handle) != 0;
-}
-
-// static
-bool ModuleHandleTraits::IsHandleValid(HMODULE handle) {
-  return handle != nullptr;
-}
-
-// static
-HMODULE ModuleHandleTraits::NullHandle() {
-  return nullptr;
-}
-
 namespace {
 
 // Implements the UnwindFunctions interface for the corresponding Win32
 // functions.
 class Win32UnwindFunctions : public Win32StackFrameUnwinder::UnwindFunctions {
-public:
-  Win32UnwindFunctions();
+ public:
+  explicit Win32UnwindFunctions(ModuleCache* module_cache);
   ~Win32UnwindFunctions() override;
 
   PRUNTIME_FUNCTION LookupFunctionEntry(DWORD64 program_counter,
@@ -53,14 +32,17 @@ public:
                      PRUNTIME_FUNCTION runtime_function,
                      CONTEXT* context) override;
 
-  ScopedModuleHandle GetModuleForProgramCounter(
+  const ModuleCache::Module* GetModuleForProgramCounter(
       DWORD64 program_counter) override;
 
-private:
+ private:
+  ModuleCache* module_cache_;
+
   DISALLOW_COPY_AND_ASSIGN(Win32UnwindFunctions);
 };
 
-Win32UnwindFunctions::Win32UnwindFunctions() {}
+Win32UnwindFunctions::Win32UnwindFunctions(ModuleCache* module_cache)
+    : module_cache_(module_cache) {}
 Win32UnwindFunctions::~Win32UnwindFunctions() {}
 
 PRUNTIME_FUNCTION Win32UnwindFunctions::LookupFunctionEntry(
@@ -90,18 +72,9 @@ void Win32UnwindFunctions::VirtualUnwind(DWORD64 image_base,
 #endif
 }
 
-ScopedModuleHandle Win32UnwindFunctions::GetModuleForProgramCounter(
+const ModuleCache::Module* Win32UnwindFunctions::GetModuleForProgramCounter(
     DWORD64 program_counter) {
-  HMODULE module_handle = nullptr;
-  // GetModuleHandleEx() increments the module reference count, which is then
-  // managed and ultimately decremented by ScopedModuleHandle.
-  if (!::GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS,
-                           reinterpret_cast<LPCTSTR>(program_counter),
-                           &module_handle)) {
-    const DWORD error = ::GetLastError();
-    DCHECK_EQ(ERROR_MOD_NOT_FOUND, static_cast<int>(error));
-  }
-  return ScopedModuleHandle(module_handle);
+  return module_cache_->GetModuleForAddress(program_counter);
 }
 
 }  // namespace
@@ -111,19 +84,20 @@ ScopedModuleHandle Win32UnwindFunctions::GetModuleForProgramCounter(
 Win32StackFrameUnwinder::UnwindFunctions::~UnwindFunctions() {}
 Win32StackFrameUnwinder::UnwindFunctions::UnwindFunctions() {}
 
-Win32StackFrameUnwinder::Win32StackFrameUnwinder()
-    : Win32StackFrameUnwinder(std::make_unique<Win32UnwindFunctions>()) {}
+Win32StackFrameUnwinder::Win32StackFrameUnwinder(ModuleCache* module_cache)
+    : Win32StackFrameUnwinder(
+          std::make_unique<Win32UnwindFunctions>(module_cache)) {}
 
 Win32StackFrameUnwinder::~Win32StackFrameUnwinder() {}
 
 bool Win32StackFrameUnwinder::TryUnwind(CONTEXT* context,
-                                        ScopedModuleHandle* module) {
+                                        const ModuleCache::Module** module) {
 #ifdef _WIN64
-  // TODO(wittman): update base::ModuleCache to return a ScopedModuleHandle and
-  // use it for this module lookup.
-  ScopedModuleHandle frame_module =
+  *module = nullptr;
+
+  const ModuleCache::Module* frame_module =
       unwind_functions_->GetModuleForProgramCounter(ContextPC(context));
-  if (!frame_module.IsValid()) {
+  if (!frame_module) {
     // There's no loaded module containing the instruction pointer. This can be
     // due to executing code that is not in a module. In particular,
     // runtime-generated code associated with third-party injected DLLs
@@ -184,7 +158,7 @@ bool Win32StackFrameUnwinder::TryUnwind(CONTEXT* context,
     }
   }
 
-  module->Set(frame_module.Take());
+  *module = frame_module;
   return true;
 #else
   NOTREACHED();
