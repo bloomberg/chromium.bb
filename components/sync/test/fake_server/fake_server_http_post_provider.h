@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_SYNC_TEST_FAKE_SERVER_FAKE_SERVER_HTTP_POST_PROVIDER_H_
 #define COMPONENTS_SYNC_TEST_FAKE_SERVER_FAKE_SERVER_HTTP_POST_PROVIDER_H_
 
+#include <atomic>
 #include <string>
 
 #include "base/callback.h"
@@ -54,12 +55,18 @@ class FakeServerHttpPostProvider
  private:
   friend class base::RefCountedThreadSafe<FakeServerHttpPostProvider>;
 
+  void HandleCommandOnFakeServerThread(int* http_status_code,
+                                       std::string* response);
+
   static bool network_enabled_;
 
   // |fake_server_| should only be dereferenced on the same thread as
   // |fake_server_task_runner_| runs on.
   base::WeakPtr<FakeServer> fake_server_;
   scoped_refptr<base::SequencedTaskRunner> fake_server_task_runner_;
+
+  base::WaitableEvent synchronous_post_completion_;
+  std::atomic_bool aborted_;
 
   std::string response_;
   std::string request_url_;
