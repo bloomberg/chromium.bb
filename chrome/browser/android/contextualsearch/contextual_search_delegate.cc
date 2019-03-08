@@ -24,6 +24,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/translate/translate_service.h"
+#include "components/contextual_search/core/browser/public.h"
 #include "components/language/core/browser/language_model.h"
 #include "components/language/core/browser/language_model_manager.h"
 #include "components/language/core/browser/pref_names.h"
@@ -74,10 +75,6 @@ const int kContextualSearchMaxSelection = 100;
 const char kXssiEscape[] = ")]}'\n";
 const char kDiscourseContextHeaderPrefix[] = "X-Additional-Discourse-Context: ";
 const char kDoPreventPreloadValue[] = "1";
-
-// The version of the Contextual Cards API that we want to invoke.
-const int kContextualCardsUrlActions = 3;
-const int kContextualCardsDefinitions = 4;
 
 const int kResponseCodeUninitialized = -1;
 
@@ -265,15 +262,28 @@ std::string ContextualSearchDelegate::BuildRequestUrl(
   TemplateURLRef::SearchTermsArgs search_terms_args =
       TemplateURLRef::SearchTermsArgs(base::string16());
 
-  // Set the Coca-integration version based on our current active feature,
-  // or an override param from our field trial.
-  int contextual_cards_version = kContextualCardsUrlActions;
+  // Set the Coca-integration version.
+  // This is based on our current active feature, or an override param from a
+  // field trial, possibly augmented by using simplified server logic.
+  int contextual_cards_version =
+      contextual_search::kContextualCardsUrlActionsIntegration;
   if (base::FeatureList::IsEnabled(
           chrome::android::kContextualSearchDefinitions)) {
-    contextual_cards_version = kContextualCardsDefinitions;
+    contextual_cards_version =
+        contextual_search::kContextualCardsDefinitionsIntegration;
   }
+  // Let the field-trial override.
   if (field_trial_->GetContextualCardsVersion() != 0) {
     contextual_cards_version = field_trial_->GetContextualCardsVersion();
+  }
+  // Add the simplified-server mixin, if enabled.
+  if (base::FeatureList::IsEnabled(
+          chrome::android::kContextualSearchSimplifiedServer) &&
+      contextual_cards_version <
+          contextual_search::kContextualCardsSimplifiedServerMixin) {
+    contextual_cards_version =
+        contextual_cards_version +
+        contextual_search::kContextualCardsSimplifiedServerMixin;
   }
 
   TemplateURLRef::SearchTermsArgs::ContextualSearchParams params(
