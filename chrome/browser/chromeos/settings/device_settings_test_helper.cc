@@ -38,7 +38,9 @@ ScopedDeviceSettingsTestHelper::~ScopedDeviceSettingsTestHelper() {
 DeviceSettingsTestBase::DeviceSettingsTestBase()
     : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {}
 
-DeviceSettingsTestBase::~DeviceSettingsTestBase() = default;
+DeviceSettingsTestBase::~DeviceSettingsTestBase() {
+  CHECK(teardown_called_);
+}
 
 void DeviceSettingsTestBase::SetUp() {
   device_policy_ = std::make_unique<policy::DevicePolicyBuilder>();
@@ -66,6 +68,7 @@ void DeviceSettingsTestBase::SetUp() {
 }
 
 void DeviceSettingsTestBase::TearDown() {
+  teardown_called_ = true;
   OwnerSettingsServiceChromeOSFactory::SetDeviceSettingsServiceForTesting(
       nullptr);
   FlushDeviceSettings();

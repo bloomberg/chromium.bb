@@ -250,6 +250,12 @@ class VolumeManagerTest : public testing::Test {
         chromeos::PowerManagerClient::Get(), disk_mount_manager_.get());
   }
 
+  void TearDown() override {
+    main_profile_.reset();
+    disk_mount_manager_.reset();
+    chromeos::PowerManagerClient::Shutdown();
+  }
+
   Profile* profile() const { return main_profile_->profile(); }
   VolumeManager* volume_manager() const {
     return main_profile_->volume_manager();

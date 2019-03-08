@@ -85,6 +85,8 @@ class DeviceSettingsTestBase : public testing::Test {
   std::unique_ptr<TestingProfile> profile_;
 
  private:
+  bool teardown_called_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(DeviceSettingsTestBase);
 };
 

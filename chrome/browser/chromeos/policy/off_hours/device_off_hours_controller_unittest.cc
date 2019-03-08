@@ -115,7 +115,10 @@ class DeviceOffHoursControllerSimpleTest
         device_settings_service_->device_off_hours_controller();
   }
 
-  void TearDown() override { chromeos::SystemClockClient::Shutdown(); }
+  void TearDown() override {
+    chromeos::SystemClockClient::Shutdown();
+    chromeos::DeviceSettingsTestBase::TearDown();
+  }
 
   void UpdateDeviceSettings() {
     device_policy_->Build();

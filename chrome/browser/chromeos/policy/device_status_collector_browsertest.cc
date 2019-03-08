@@ -408,6 +408,7 @@ class DeviceStatusCollectorTest : public testing::Test {
   }
 
   ~DeviceStatusCollectorTest() override {
+    chromeos::PowerManagerClient::Shutdown();
     chromeos::LoginState::Shutdown();
     chromeos::CrasAudioHandler::Shutdown();
     chromeos::KioskAppManager::Shutdown();
@@ -2173,13 +2174,10 @@ class DeviceStatusCollectorNetworkInterfacesTest
     : public DeviceStatusCollectorTest {
  protected:
   void SetUp() override {
-    RestartStatusCollector(base::BindRepeating(&GetEmptyVolumeInfo),
-                           base::BindRepeating(&GetEmptyCPUStatistics),
-                           base::BindRepeating(&GetEmptyCPUTempInfo),
-                           base::BindRepeating(&GetEmptyAndroidStatus),
-                           base::BindRepeating(&GetEmptyTpmStatus));
+    DeviceStatusCollectorTest::SetUp();
+    scoped_testing_cros_settings_.device_settings()->SetBoolean(
+        chromeos::kReportDeviceNetworkInterfaces, true);
 
-    chromeos::DBusThreadManager::Initialize();
     chromeos::NetworkHandler::Initialize();
     base::RunLoop().RunUntilIdle();
 
@@ -2288,8 +2286,8 @@ class DeviceStatusCollectorNetworkInterfacesTest
   }
 
   void TearDown() override {
-    status_collector_.reset();
     chromeos::NetworkHandler::Shutdown();
+    DeviceStatusCollectorTest::TearDown();
   }
 
   void VerifyNetworkReporting() {

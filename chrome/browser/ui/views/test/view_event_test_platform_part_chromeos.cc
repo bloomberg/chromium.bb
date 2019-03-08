@@ -92,6 +92,7 @@ ViewEventTestPlatformPartChromeOS::~ViewEventTestPlatformPartChromeOS() {
   chromeos::CrasAudioHandler::Shutdown();
   bluez::BluezDBusManager::Shutdown();
   chromeos::PowerPolicyController::Shutdown();
+  chromeos::PowerManagerClient::Shutdown();
   chromeos::DBusThreadManager::Shutdown();
 }
 
