@@ -85,8 +85,7 @@ void GridTemplateAreas::ApplyValue(StyleResolverState& state,
     return;
   }
 
-  const CSSGridTemplateAreasValue& grid_template_areas_value =
-      ToCSSGridTemplateAreasValue(value);
+  const auto& grid_template_areas_value = To<CSSGridTemplateAreasValue>(value);
   const NamedGridAreaMap& new_named_grid_areas =
       grid_template_areas_value.GridAreaMap();
 

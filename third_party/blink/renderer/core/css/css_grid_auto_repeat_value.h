@@ -7,6 +7,7 @@
 
 #include "third_party/blink/renderer/core/css/css_value_list.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -46,7 +47,12 @@ class CSSGridAutoRepeatValue : public CSSValueList {
   const CSSValueID auto_repeat_id_;
 };
 
-DEFINE_CSS_VALUE_TYPE_CASTS(CSSGridAutoRepeatValue, IsGridAutoRepeatValue());
+template <>
+struct DowncastTraits<CSSGridAutoRepeatValue> {
+  static bool AllowFrom(const CSSValue& value) {
+    return value.IsGridAutoRepeatValue();
+  }
+};
 
 }  // namespace blink
 

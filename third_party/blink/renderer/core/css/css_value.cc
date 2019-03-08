@@ -314,11 +314,11 @@ String CSSValue::CssText() const {
     case kInitialClass:
       return ToCSSInitialValue(this)->CustomCSSText();
     case kGridAutoRepeatClass:
-      return ToCSSGridAutoRepeatValue(this)->CustomCSSText();
+      return To<CSSGridAutoRepeatValue>(this)->CustomCSSText();
     case kGridLineNamesClass:
-      return ToCSSGridLineNamesValue(this)->CustomCSSText();
+      return To<CSSGridLineNamesValue>(this)->CustomCSSText();
     case kGridTemplateAreasClass:
-      return ToCSSGridTemplateAreasValue(this)->CustomCSSText();
+      return To<CSSGridTemplateAreasValue>(this)->CustomCSSText();
     case kPathClass:
       return ToCSSPathValue(this)->CustomCSSText();
     case kPrimitiveClass:
@@ -447,13 +447,13 @@ void CSSValue::FinalizeGarbageCollectedObject() {
       ToCSSUnsetValue(this)->~CSSUnsetValue();
       return;
     case kGridAutoRepeatClass:
-      ToCSSGridAutoRepeatValue(this)->~CSSGridAutoRepeatValue();
+      To<CSSGridAutoRepeatValue>(this)->~CSSGridAutoRepeatValue();
       return;
     case kGridLineNamesClass:
-      ToCSSGridLineNamesValue(this)->~CSSGridLineNamesValue();
+      To<CSSGridLineNamesValue>(this)->~CSSGridLineNamesValue();
       return;
     case kGridTemplateAreasClass:
-      ToCSSGridTemplateAreasValue(this)->~CSSGridTemplateAreasValue();
+      To<CSSGridTemplateAreasValue>(this)->~CSSGridTemplateAreasValue();
       return;
     case kPathClass:
       ToCSSPathValue(this)->~CSSPathValue();
@@ -604,13 +604,13 @@ void CSSValue::Trace(blink::Visitor* visitor) {
       ToCSSUnsetValue(this)->TraceAfterDispatch(visitor);
       return;
     case kGridAutoRepeatClass:
-      ToCSSGridAutoRepeatValue(this)->TraceAfterDispatch(visitor);
+      To<CSSGridAutoRepeatValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kGridLineNamesClass:
-      ToCSSGridLineNamesValue(this)->TraceAfterDispatch(visitor);
+      To<CSSGridLineNamesValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kGridTemplateAreasClass:
-      ToCSSGridTemplateAreasValue(this)->TraceAfterDispatch(visitor);
+      To<CSSGridTemplateAreasValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kPathClass:
       ToCSSPathValue(this)->TraceAfterDispatch(visitor);

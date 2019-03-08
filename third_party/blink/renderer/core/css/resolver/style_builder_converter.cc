@@ -874,11 +874,11 @@ void StyleBuilderConverter::ConvertGridTrackList(
       continue;
     }
 
-    if (curr_value->IsGridAutoRepeatValue()) {
+    if (auto* grid_auto_repeat_value =
+            DynamicTo<CSSGridAutoRepeatValue>(curr_value.Get())) {
       DCHECK(auto_repeat_track_sizes.IsEmpty());
       size_t auto_repeat_index = 0;
-      CSSValueID auto_repeat_id =
-          ToCSSGridAutoRepeatValue(curr_value.Get())->AutoRepeatID();
+      CSSValueID auto_repeat_id = grid_auto_repeat_value->AutoRepeatID();
       DCHECK(auto_repeat_id == CSSValueAutoFill ||
              auto_repeat_id == CSSValueAutoFit);
       auto_repeat_type = auto_repeat_id == CSSValueAutoFill
