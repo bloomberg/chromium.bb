@@ -52,7 +52,11 @@ STATIC_ASSERT_ENUM(kDragOperationEvery, kWebDragOperationEvery);
 bool WebFrameWidgetBase::ignore_input_events_ = false;
 
 WebFrameWidgetBase::WebFrameWidgetBase(WebWidgetClient& client)
-    : client_(&client) {}
+    : client_(&client) {
+  // TODO(crbug.com/939262): This could be how ScheduleAnimation finds a null
+  // client, which would be bad.
+  CHECK(client_);
+}
 
 WebFrameWidgetBase::~WebFrameWidgetBase() = default;
 

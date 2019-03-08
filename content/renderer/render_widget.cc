@@ -1192,6 +1192,9 @@ void RenderWidget::SetRootLayer(scoped_refptr<cc::Layer> layer) {
 }
 
 void RenderWidget::ScheduleAnimation() {
+  // TODO(crbug.com/939262): This shouldn't be null. That would mean we're
+  // somehow using RenderWidget after it has closed.
+  CHECK(layer_tree_view_);
   // This call is not needed in single thread mode for tests without a
   // scheduler, but they need to override the WebWidgetClient and replace this
   // method in order to schedule a synchronous composite task themselves.

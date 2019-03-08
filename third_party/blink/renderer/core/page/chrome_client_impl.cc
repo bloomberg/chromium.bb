@@ -405,11 +405,14 @@ void ChromeClientImpl::ScheduleAnimation(const LocalFrameView* frame_view) {
   // a local frame root that doesn't have a WebWidget? During initialization
   // there is no content to draw so this call serves no purpose. Maybe the
   // WebFrameWidget needs to be initialized before initializing the core frame?
-  if (!web_frame->LocalRootFrameWidget())
+  WebFrameWidgetBase* widget = web_frame->LocalRootFrameWidget();
+  if (!widget)
     return;
   // LocalRootFrameWidget() is a WebWidget, its client is the embedder.
-  WebWidgetClient* web_widget_client =
-      web_frame->LocalRootFrameWidget()->Client();
+  WebWidgetClient* web_widget_client = widget->Client();
+  // TODO(crbug.com/939262): This shouldn't be null. The WebFrameWidget is
+  // removed before its client is dropped.
+  CHECK(web_widget_client);
   web_widget_client->ScheduleAnimation();
 }
 
