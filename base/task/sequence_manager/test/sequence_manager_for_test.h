@@ -35,7 +35,8 @@ class SequenceManagerForTest : public internal::SequenceManagerImpl {
   static std::unique_ptr<SequenceManagerForTest> Create(
       std::unique_ptr<internal::ThreadController> thread_controller,
       SequenceManager::Settings settings = SequenceManager::Settings{
-          .randomised_sampling_enabled = true});
+          base::MessageLoop::TYPE_DEFAULT,
+          /*randomised_sampling_enabled=*/true});
 
   size_t ActiveQueuesCount() const;
   bool HasImmediateWork() const;

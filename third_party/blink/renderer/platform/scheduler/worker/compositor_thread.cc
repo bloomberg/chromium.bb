@@ -20,7 +20,8 @@ CompositorThread::CreateNonMainThreadScheduler() {
   return std::make_unique<CompositorThreadScheduler>(
       base::sequence_manager::CreateSequenceManagerOnCurrentThread(
           base::sequence_manager::SequenceManager::Settings{
-              .randomised_sampling_enabled = true}));
+              base::MessageLoop::TYPE_DEFAULT,
+              /*randomised_sampling_enabled=*/true}));
 }
 
 }  // namespace scheduler
