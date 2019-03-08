@@ -26,8 +26,9 @@ Security](https://github.com/Microsoft/MSRC-Security-Research/blob/master/presen
 states that "~70% of the vulnerabilities addressed through a security update
 each year continue to be memory safety issues". A trip through Chromium's bug
 tracker will show many, many vulnerabilities whose root cause is memory
-unsafety. (For example, [Type=Bug-Security
-sanitizer](https://bugs.chromium.org/p/chromium/issues/list?can=1&q=Type%3DBug-Security+sanitizer&colspec=ID+Pri+M+Stars+ReleaseBlock+Component+Status+Owner+Summary+OS+Modified&x=m&y=releaseblock&cells=ids).)
+unsafety. (As of March 2019, only about 5 of 130 [public Critical-severity
+bugs](https://bugs.chromium.org/p/chromium/issues/list?can=1&q=Type%3DBug-Security+Security_Severity%3DCritical+-status%3AWontFix+-status%3ADuplicate&sort=&groupby=&colspec=ID+Pri+M+Stars+ReleaseBlock+Component+Status+Owner+Summary+OS+Modified&x=m&y=releaseblock&mode=&cells=ids&num=)
+are not obviously due to memory corruption.)
 
 Security engineers in general, very much including Chrome Security Team, would
 like to advance the state of engineering to where memory safety issues are much
@@ -64,8 +65,8 @@ certainty that an input is coming from the same source as the application itself
 (e.g. Google in the case of Chrome, or Mozilla in the case of Firefox), and that
 the transport is integrity-protected (such as with HTTPS), then it can be
 acceptable to parse even complex inputs from that source. It's still ideal,
-where feasible, to not have to trust the source — such as by parsing the input
-in a sandbox.
+where feasible, to reduce our degree of trust in the source — such as by parsing
+the input in a sandbox.
 
 ### Unsafe Implementation Languages
 
@@ -84,7 +85,7 @@ account representing a person; this includes the Chrome browser process. We
 consider such processes to have high privilege. (After all, they can do anything
 the person can do, with any and all of the person's valuable data and accounts.)
 
-Processes with slightly reduced privilege include (as of February 2019) the GPU
+Processes with slightly reduced privilege include (as of March 2019) the GPU
 process and (hopefully soon) the network process. These are still pretty
 high-privilege processes. We are always looking for ways to reduce their
 privilege without breaking them.
@@ -111,14 +112,14 @@ many of its privileges revoked.
 
 When appropriate, try to handle the inputs in a renderer process that is Site
 Isolated to the same site as the inputs come from. Take care to validate the
-parsed (processed) inputs in the browser, since the semantics of the data are
-not necessarily trustworthy yet.
+parsed (processed) inputs in the browser, since only the browser can trust
+itself to validate and act on the meaning of an object.
 
 Equivalently, you can launch a sandboxed utility process to handle the data, and
-return a well-formed response back to the caller in an IPC message. An example
-of launching a utility process to parse an untrustworthy input is [Safe
+return a well-formed response back to the caller in an IPC message. See [Safe
 Browsing's ZIP
-analyzer](https://cs.chromium.org/chromium/src/chrome/common/safe_browsing/zip_analyzer.h).
+analyzer](https://cs.chromium.org/chromium/src/chrome/common/safe_browsing/zip_analyzer.h)
+for an example.
 
 ### Verifying The Trustworthiness Of A Source
 
@@ -127,8 +128,9 @@ to parse/evaluate it at high privilege in an unsafe language. A "trustworthy
 source" meets all of these criteria:
 
   * communication happens via validly-authenticated TLS, HTTPS, or QUIC;
-  * peer's keys are [pinned in Chrome](https://cs.chromium.org/chromium/src/net/http/transport_security_state_static.json?sq=package:chromium&g=0); and
-  * peer is operated by a business entity that Chrome should trust (e.g. an [Alphabet](https://abc.xyz) company).
+  * the peer's keys are [pinned in Chrome](https://cs.chromium.org/chromium/src/net/http/transport_security_state_static.json?sq=package:chromium&g=0); and
+  * the peer is operated by a business entity that you can or do trust (e.g.
+    for Chrome, an [Alphabet](https://abc.xyz) company).
 
 ### Normalization {#normalization}
 
@@ -137,8 +139,8 @@ _normal_ or _minimal_ form, usually by first transforming it into a format with
 a simpler grammar. We say that all data, file, and wire formats are defined by a
 _grammar_, even if that grammar is implicit or only partially-specified (as is
 so often the case). A file format with a particularly simple grammar is
-[Farbfeld](https://tools.suckless.org/farbfeld/) (the grammar is represented in
-the table at the top).
+[Farbfeld](https://tools.suckless.org/farbfeld/). (The grammar is represented in
+the table at the top.)
 
 It's rare to find such a simple grammar for input formats, however.
 
@@ -167,18 +169,18 @@ only process objects adhering to a well-defined, generally low-complexity
 grammar. This is a big part of why [we like for Mojo messages to use structured
 types](mojo.md#Use-structured-types).
 
-For example, it would be safe enough to convert a PNG to an SkBitmap in a
+For example, it would be safe enough to convert a PNG to an `SkBitmap` in a
 sandboxed process, and then send the `SkBitmap` to a higher-privileged process
 via IPC. Although there may be bugs in the IPC message deserialization code
 and/or in Skia's `SkBitmap` handling code, we consider this safe enough for a
 few reasons:
 
-* we must accept the risk of bugs in Mojo deserialization; but thankfully
-* Mojo deserialization is very amenable to fuzzing;
-* it's a big improvement to scope bugs to smaller areas, like deserialization
-  functions and very simple classes like `SkBitmap` and `SkPixmap`; and
-* ultimately this process results in parsing significantly simpler grammars (PNG
-  → Mojo + `SkBitmap` in this case).
+  * we must accept the risk of bugs in Mojo deserialization; but thankfully
+  * Mojo deserialization is very amenable to fuzzing; and
+  * it's a big improvement to scope bugs to smaller areas, like deserialization
+    functions and very simple classes like `SkBitmap` and `SkPixmap`; and
+  * ultimately this process results in parsing significantly simpler grammars
+    (PNG → Mojo + `SkBitmap` in this case).
 
 > (We have to accept the risk of memory safety bugs in Mojo deserialization
 > because C++'s high performance is crucial in such a throughput- and
@@ -190,11 +192,11 @@ few reasons:
 
 Where possible, it's great to use a memory-safe language. Of the currently
 approved set of implementation languages in Chromium, the most likely candidates
-are Java (on Android only) and JavaScript (although we don't currently use it in
-high-privilege processes like the browser). One can imagine Swift on iOS or
-Kotlin on Android, too, although they are not currently used in Chromium. (Some
-of us on Security Team aspire to get more of Chromium in safer languages, but
-that's a long-term, heavy lift.)
+are Java (on Android only) and JavaScript or WebAssembly (although we don't
+currently use them in high-privilege processes like the browser). One can
+imagine Swift on iOS or Kotlin on Android, too, although they are not currently
+used in Chromium. (Some of us on Security Team aspire to get more of Chromium in
+safer languages, but that's a long-term, heavy lift.)
 
 For an example of image processing, we have the pure-Java class
 [BaseGifImage](https://cs.chromium.org/chromium/src/third_party/gif_player/src/jp/tomorrowkey/android/gifplayer/BaseGifImage.java?rcl=27febd503d1bab047d73df26db83184fff8d6620&l=27).
