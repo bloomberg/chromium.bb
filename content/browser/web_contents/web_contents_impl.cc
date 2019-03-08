@@ -1789,13 +1789,11 @@ bool WebContentsImpl::NeedToFireBeforeUnload() {
   if (GetRenderViewHost()->SuddenTerminationAllowed())
     return false;
 
-  // TODO(alexmos): This checks for both beforeunload and unload handlers from
-  // the whole main frame process.  Remove this and explicitly check whether
-  // the main frame has each of these handlers. This can be done for
-  // beforeunload via RenderFrameHostImpl::ShouldDispatchBeforeUnload(), and
-  // something similar is needed for unload.
-  if (!GetMainFrame()->GetProcess()->SuddenTerminationAllowed())
+  // Check whether the main frame needs to run beforeunload or unload handlers.
+  if (GetMainFrame()->GetSuddenTerminationDisablerState(
+          blink::kBeforeUnloadHandler | blink::kUnloadHandler)) {
     return true;
+  }
 
   // Check whether any subframes need to run beforeunload handlers.
   //

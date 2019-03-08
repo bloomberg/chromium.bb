@@ -1810,6 +1810,8 @@ void NavigateToDataURLAndCheckForTerminationDisabler(
   NavigateToURL(shell, GURL("data:text/html," + html));
   RenderFrameHostImpl* rfh =
       static_cast<RenderFrameHostImpl*>(shell->web_contents()->GetMainFrame());
+  EXPECT_EQ(expect_onunload || expect_onbeforeunload,
+            shell->web_contents()->NeedToFireBeforeUnload());
   EXPECT_EQ(expect_onunload,
             rfh->GetSuddenTerminationDisablerState(blink::kUnloadHandler));
   EXPECT_EQ(expect_onbeforeunload, rfh->GetSuddenTerminationDisablerState(
@@ -1820,6 +1822,22 @@ void NavigateToDataURLAndCheckForTerminationDisabler(
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
                        SuddenTerminationDisablerNone) {
   const std::string NO_HANDLERS_HTML = "<html><body>foo</body></html>";
+  NavigateToDataURLAndCheckForTerminationDisabler(shell(), NO_HANDLERS_HTML,
+                                                  false, false);
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebContentsImplBrowserTest,
+    SuddenTerminationDisablerNoneProcessTerminationDisallowed) {
+  const std::string NO_HANDLERS_HTML = "<html><body>foo</body></html>";
+  // The WebContents termination disabler should be independent of the
+  // RenderProcessHost termination disabler, as process termination can depend
+  // on more than the presence of a beforeunload/unload handler.
+  shell()
+      ->web_contents()
+      ->GetMainFrame()
+      ->GetProcess()
+      ->SetSuddenTerminationAllowed(false);
   NavigateToDataURLAndCheckForTerminationDisabler(shell(), NO_HANDLERS_HTML,
                                                   false, false);
 }
