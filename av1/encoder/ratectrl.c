@@ -1010,7 +1010,7 @@ static int rc_pick_q_and_bounds_two_pass(const AV1_COMP *cpi, int width,
       active_best_quality = cq_level;
       active_worst_quality = cq_level;
     } else if (cm->current_frame.frame_type == KEY_FRAME &&
-               cpi->oxcf.fwd_kf_enabled) {
+               cm->show_frame == 0) {
       // Handle the special case for forward reference key frames.
       // Increase the boost because this keyframe is used as a forward and
       // backward reference.
