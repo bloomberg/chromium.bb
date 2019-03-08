@@ -7,8 +7,10 @@
 
 #include "ash/app_list/app_list_export.h"
 #include "ash/app_list/views/app_list_page.h"
+#include "ash/assistant/model/assistant_ui_model_observer.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "base/macros.h"
+#include "base/optional.h"
 
 namespace ash {
 class AssistantViewDelegate;
@@ -23,7 +25,8 @@ namespace app_list {
 class AssistantMainView;
 
 // The Assistant page for the app list.
-class APP_LIST_EXPORT AssistantPageView : public AppListPage {
+class APP_LIST_EXPORT AssistantPageView : public AppListPage,
+                                          public ash::AssistantUiModelObserver {
  public:
   explicit AssistantPageView(
       ash::AssistantViewDelegate* assistant_view_delegate);
@@ -37,6 +40,7 @@ class APP_LIST_EXPORT AssistantPageView : public AppListPage {
   gfx::Size CalculatePreferredSize() const override;
   void RequestFocus() override;
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   // ui::EventHandler:
   void OnMouseEvent(ui::MouseEvent* event) override;
@@ -47,6 +51,13 @@ class APP_LIST_EXPORT AssistantPageView : public AppListPage {
   gfx::Rect GetSearchBoxBounds() const override;
   views::View* GetFirstFocusableView() override;
   views::View* GetLastFocusableView() override;
+
+  // AssistantUiModelObserver:
+  void OnUiVisibilityChanged(
+      ash::AssistantVisibility new_visibility,
+      ash::AssistantVisibility old_visibility,
+      base::Optional<ash::AssistantEntryPoint> entry_point,
+      base::Optional<ash::AssistantExitPoint> exit_point) override;
 
  private:
   ash::AssistantViewDelegate* const assistant_view_delegate_;

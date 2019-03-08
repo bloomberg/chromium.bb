@@ -131,6 +131,10 @@ aura::Window* AssistantViewDelegateImpl::GetRootWindowForNewWindows() {
   return Shell::Get()->GetRootWindowForNewWindows();
 }
 
+bool AssistantViewDelegateImpl::IsLaunchWithMicOpen() const {
+  return Shell::Get()->voice_interaction_controller()->launch_with_mic_open();
+}
+
 bool AssistantViewDelegateImpl::IsTabletMode() const {
   return Shell::Get()
       ->tablet_mode_controller()
