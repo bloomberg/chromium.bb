@@ -59,6 +59,8 @@ enum SplitviewAnimationType {
   // Used to slide in the text labels.
   SPLITVIEW_ANIMATION_TEXT_SLIDE_IN,
   SPLITVIEW_ANIMATION_TEXT_SLIDE_OUT,
+  // Used to animate the inset of the preview area to nothing.
+  SPLITVIEW_ANIMATION_PREVIEW_AREA_NIX_INSET,
   // Used to apply window transform on the selector item after it gets snapped
   // or on the dragged window after the drag ends.
   SPLITVIEW_ANIMATION_SET_WINDOW_TRANSFORM,

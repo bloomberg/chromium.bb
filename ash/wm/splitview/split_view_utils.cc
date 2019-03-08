@@ -96,6 +96,7 @@ void GetAnimationValuesForType(
           ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET;
       return;
     case SPLITVIEW_ANIMATION_PREVIEW_AREA_FADE_OUT:
+    case SPLITVIEW_ANIMATION_PREVIEW_AREA_NIX_INSET:
       *out_duration = kPreviewAreaFadeOutMs;
       *out_tween_type = gfx::Tween::FAST_OUT_LINEAR_IN;
       return;
@@ -181,6 +182,7 @@ void DoSplitviewTransformAnimation(ui::Layer* layer,
   switch (type) {
     case SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_SLIDE_IN:
     case SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_SLIDE_OUT:
+    case SPLITVIEW_ANIMATION_PREVIEW_AREA_NIX_INSET:
     case SPLITVIEW_ANIMATION_PREVIEW_AREA_SLIDE_IN_OUT:
     case SPLITVIEW_ANIMATION_SET_WINDOW_TRANSFORM:
     case SPLITVIEW_ANIMATION_TEXT_SLIDE_IN:

@@ -22,12 +22,23 @@ class SplitViewHighlightViewTestApi;
 // rounded corners remain the same during the duration of an animation.
 // (Transforming a rounded rect will stretch the corners, and having to repaint
 // every animation tick is expensive.)
+//
+// Although rounded corners are prevented from stretching along one axis, there
+// is one animation where the rounded corners will stretch along the
+// perpendicular axis. Specifically, the preview area has a small inset (on all
+// four sides) until you actually snap the window, and then the preview area
+// animates to nix that inset while fading out. So the rounded corners will
+// stretch by an amount depending on the dimensions of the work area, but it is
+// unlikely to be noticeable under normal circumstances.
 class ASH_EXPORT SplitViewHighlightView : public views::View {
  public:
   explicit SplitViewHighlightView(bool is_right_or_bottom);
   ~SplitViewHighlightView() override;
 
-  void SetBounds(const gfx::Rect& bounds, bool landscape, bool animate);
+  void SetBounds(const gfx::Rect& bounds,
+                 bool landscape,
+                 bool animate,
+                 bool nixing_preview_inset = false);
 
   void SetColor(SkColor color);
 
