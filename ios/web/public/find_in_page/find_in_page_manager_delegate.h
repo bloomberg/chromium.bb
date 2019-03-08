@@ -9,6 +9,8 @@
 
 #include "base/macros.h"
 
+@class NSString;
+
 namespace web {
 
 class WebState;
@@ -24,7 +26,7 @@ class FindInPageManagerDelegate {
   // that it is processing |match_count| for the correct find.
   virtual void DidCountMatches(WebState* web_state,
                                int match_count,
-                               const std::string& query) = 0;
+                               NSString* query) = 0;
 
   // Called when a match number |index| is highlighted. This is triggered by
   // calling FindInPageManager::Find() with any FindInPageOptions to indicate

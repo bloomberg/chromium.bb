@@ -20,7 +20,7 @@ FakeFindInPageManagerDelegate::~FakeFindInPageManagerDelegate() = default;
 
 void FakeFindInPageManagerDelegate::DidCountMatches(WebState* web_state,
                                                     int match_count,
-                                                    const std::string& query) {
+                                                    NSString* query) {
   delegate_state_ = std::make_unique<State>();
   delegate_state_->web_state = web_state;
   delegate_state_->match_count = match_count;
