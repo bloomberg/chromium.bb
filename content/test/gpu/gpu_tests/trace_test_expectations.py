@@ -31,3 +31,7 @@ class TraceTestExpectations(GpuTestExpectations):
     self.Fail('VideoPathTraceTest_DirectComposition_Video_VP9_Fullsize',
         ['win', 'intel'], bug=930343)
 
+    # Complex overlays test is flaky on Nvidia probably due to its small size.
+    self.Flaky('VideoPathTraceTest_DirectComposition_ComplexOverlays',
+        ['win', 'nvidia'], bug=937545)
+
