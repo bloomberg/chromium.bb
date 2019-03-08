@@ -116,6 +116,18 @@ cd third_party/sqlite
 git rm patches/*
 git format-patch --output-directory=patches --zero-commit \
     sqlite-base..sqlite-dev
+
+### Document and link any backported patches to the upstream repository URL
+### and crbug.
+# Under the *.patch's added by this change, the below information should be
+# added between the "Subject: *" line and the first "---" line. For an example,
+# please reference https://crrev.com/c/1480822/2/third_party/sqlite/patches/0008-Adjustments-to-the-page-cache-to-try-to-avoid-harmle.patch.
+#
+# This backports https://www.sqlite.org/src/info/XXX
+#
+# Bug: XXX
+
+### Commit and create CL
 git add amalgamation/
 git add patches/
 git commit -m "Squash: regenerate amalgamation and patches."
