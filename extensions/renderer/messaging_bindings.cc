@@ -57,11 +57,6 @@ namespace {
 base::LazyInstance<std::map<ScriptContext*, MessagingBindings*>>::
     DestructorAtExit g_messaging_map = LAZY_INSTANCE_INITIALIZER;
 
-IPCMessageSender* GetWorkerThreadIPCMessageSender() {
-  DCHECK(worker_thread_util::IsWorkerThread());
-  return WorkerThreadDispatcher::GetBindingsSystem()->GetIPCMessageSender();
-}
-
 }  // namespace
 
 MessagingBindings::MessagingBindings(ScriptContext* context)
@@ -312,9 +307,12 @@ void MessagingBindings::OpenChannelToTab(
   {
     SCOPED_UMA_HISTOGRAM_TIMER("Extensions.Messaging.SetPortIdTime.Tab");
     if (is_for_service_worker) {
-      GetWorkerThreadIPCMessageSender()->SendOpenMessageChannel(
-          context(), port_id, MessageTarget::ForTab(info.tab_id, info.frame_id),
-          channel_name, false /* include_tls_channel_id */);
+      WorkerThreadDispatcher::GetBindingsSystem()
+          ->GetIPCMessageSender()
+          ->SendOpenMessageChannel(
+              context(), port_id,
+              MessageTarget::ForTab(info.tab_id, info.frame_id), channel_name,
+              false /* include_tls_channel_id */);
     } else {
       render_frame->Send(new ExtensionHostMsg_OpenChannelToTab(
           PortContext::ForFrame(render_frame->GetRoutingID()), info,
