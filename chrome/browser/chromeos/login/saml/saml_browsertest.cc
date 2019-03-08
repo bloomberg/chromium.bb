@@ -352,7 +352,7 @@ class SamlTest : public OobeBaseTest {
         embedded_test_server()->base_url().Resolve("/SAML"));
     fake_gaia_.fake_gaia()->RegisterSamlUser(kDifferentDomainSAMLUserEmail,
                                              saml_idp_url);
-    fake_gaia_.fake_gaia()->RegisterSamlDomainRedirectUrl("corp.example.com",
+    fake_gaia_.fake_gaia()->RegisterSamlDomainRedirectUrl("example.com",
                                                           saml_idp_url);
   }
 
@@ -1419,8 +1419,7 @@ IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, SAMLInterstitialChangeAccount) {
 // Tests that clicking "Next" in the SAML interstitial page successfully
 // triggers a SAML redirect request, and the SAML IdP authentication page is
 // loaded and authenticaing there is successful.
-// Disabled due to flakiness, see crbug.com/699228
-IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, DISABLED_SAMLInterstitialNext) {
+IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, SAMLInterstitialNext) {
   fake_saml_idp()->SetLoginHTMLTemplate("saml_login.html");
   fake_gaia_.fake_gaia()->SetFakeMergeSessionParams(
       kFirstSAMLUserEmail, kTestAuthSIDCookie1, kTestAuthLSIDCookie1);
