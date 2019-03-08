@@ -62,8 +62,7 @@ void CustomProperty::ApplyInherit(StyleResolverState& state) const {
 
 void CustomProperty::ApplyValue(StyleResolverState& state,
                                 const CSSValue& value) const {
-  const CSSCustomPropertyDeclaration& declaration =
-      ToCSSCustomPropertyDeclaration(value);
+  const auto& declaration = To<CSSCustomPropertyDeclaration>(value);
 
   bool is_inherited_property = IsInherited();
   bool initial = declaration.IsInitial(is_inherited_property);

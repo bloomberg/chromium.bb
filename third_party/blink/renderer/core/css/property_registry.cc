@@ -32,7 +32,9 @@ const CSSValue* PropertyRegistry::ParseIfRegistered(
     const Document& document,
     const AtomicString& property_name,
     const CSSValue* value) {
-  if (!value || !value->IsCustomPropertyDeclaration())
+  auto* custom_property_declaration =
+      DynamicTo<CSSCustomPropertyDeclaration>(value);
+  if (!custom_property_declaration)
     return value;
 
   const PropertyRegistry* registry = document.GetPropertyRegistry();
@@ -46,7 +48,7 @@ const CSSValue* PropertyRegistry::ParseIfRegistered(
   if (!registration)
     return value;
 
-  CSSVariableData* tokens = ToCSSCustomPropertyDeclaration(value)->Value();
+  CSSVariableData* tokens = custom_property_declaration->Value();
 
   if (!tokens || tokens->NeedsVariableResolution())
     return value;

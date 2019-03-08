@@ -39,9 +39,9 @@ CSSStyleValue* CreateStyleValueWithoutProperty(const CSSValue& value) {
     return CSSKeywordValue::FromCSSValue(value);
   if (value.IsVariableReferenceValue())
     return CSSUnparsedValue::FromCSSValue(ToCSSVariableReferenceValue(value));
-  if (value.IsCustomPropertyDeclaration()) {
-    return CSSUnparsedValue::FromCSSValue(
-        ToCSSCustomPropertyDeclaration(value));
+  if (auto* custom_prop_declaration =
+          DynamicTo<CSSCustomPropertyDeclaration>(value)) {
+    return CSSUnparsedValue::FromCSSValue(*custom_prop_declaration);
   }
   return nullptr;
 }

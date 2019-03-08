@@ -148,9 +148,8 @@ void Content::ApplyValue(StyleResolverState& state,
         item->IsImageValue()) {
       next_content =
           ContentData::Create(state.GetStyleImage(CSSPropertyContent, *item));
-    } else if (item->IsCounterValue()) {
-      const cssvalue::CSSCounterValue* counter_value =
-          cssvalue::ToCSSCounterValue(item.Get());
+    } else if (const auto* counter_value =
+                   DynamicTo<cssvalue::CSSCounterValue>(item.Get())) {
       const auto list_style_type =
           CssValueIDToPlatformEnum<EListStyleType>(counter_value->ListStyle());
       std::unique_ptr<CounterContent> counter =
@@ -186,7 +185,8 @@ void Content::ApplyValue(StyleResolverState& state,
         state.Style()->SetHasAttrContent();
         // TODO: Can a namespace be specified for an attr(foo)?
         QualifiedName attr(
-            g_null_atom, ToCSSCustomIdentValue(function_value->Item(0)).Value(),
+            g_null_atom,
+            To<CSSCustomIdentValue>(function_value->Item(0)).Value(),
             g_null_atom);
         const AtomicString& attr_value = state.GetElement()->getAttribute(attr);
         string = attr_value.IsNull() ? g_empty_string : attr_value.GetString();

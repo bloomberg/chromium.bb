@@ -62,9 +62,8 @@ InterpolationValue CSSVarCycleInterpolationType::MaybeConvertSingle(
     const InterpolationEnvironment& environment,
     const InterpolationValue& underlying,
     ConversionCheckers& conversion_checkers) const {
-  const CSSCustomPropertyDeclaration& declaration =
-      *ToCSSCustomPropertyDeclaration(
-          ToCSSPropertySpecificKeyframe(keyframe).Value());
+  const auto& declaration = *To<CSSCustomPropertyDeclaration>(
+      ToCSSPropertySpecificKeyframe(keyframe).Value());
   DCHECK_EQ(GetProperty().CustomPropertyName(), declaration.GetName());
   if (!declaration.Value() || !declaration.Value()->NeedsVariableResolution()) {
     return nullptr;

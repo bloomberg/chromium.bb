@@ -109,8 +109,8 @@ MutableCSSPropertyValueSet::SetResult CSSParserImpl::ParseVariableValue(
   bool did_parse = false;
   bool did_change = false;
   if (!parser.parsed_properties_.IsEmpty()) {
-    const CSSCustomPropertyDeclaration* parsed_declaration =
-        ToCSSCustomPropertyDeclaration(parser.parsed_properties_[0].Value());
+    const auto* parsed_declaration =
+        To<CSSCustomPropertyDeclaration>(parser.parsed_properties_[0].Value());
     if (parsed_declaration->Value() && registry) {
       const PropertyRegistration* registration =
           registry->Registration(property_name);
@@ -144,7 +144,7 @@ static inline void FilterProperties(
 
     if (property.Id() == CSSPropertyVariable) {
       const AtomicString& name =
-          ToCSSCustomPropertyDeclaration(property.Value())->GetName();
+          To<CSSCustomPropertyDeclaration>(property.Value())->GetName();
       if (seen_custom_properties.Contains(name))
         continue;
       seen_custom_properties.insert(name);

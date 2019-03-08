@@ -86,7 +86,7 @@ PropertyHandleSet StringKeyframe::Properties() const {
         << property.PropertyID() << ").";
     if (property.IDEquals(CSSPropertyVariable)) {
       properties.insert(PropertyHandle(
-          ToCSSCustomPropertyDeclaration(property_reference.Value())
+          To<CSSCustomPropertyDeclaration>(property_reference.Value())
               .GetName()));
     } else {
       properties.insert(PropertyHandle(property, false));

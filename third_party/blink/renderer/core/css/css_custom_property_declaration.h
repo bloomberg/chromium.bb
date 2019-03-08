@@ -8,6 +8,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/core/css/css_value.h"
 #include "third_party/blink/renderer/core/css/css_variable_data.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
@@ -68,8 +69,12 @@ class CORE_EXPORT CSSCustomPropertyDeclaration : public CSSValue {
   CSSValueID value_id_;
 };
 
-DEFINE_CSS_VALUE_TYPE_CASTS(CSSCustomPropertyDeclaration,
-                            IsCustomPropertyDeclaration());
+template <>
+struct DowncastTraits<CSSCustomPropertyDeclaration> {
+  static bool AllowFrom(const CSSValue& value) {
+    return value.IsCustomPropertyDeclaration();
+  }
+};
 
 }  // namespace blink
 

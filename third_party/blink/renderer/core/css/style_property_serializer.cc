@@ -180,8 +180,7 @@ String StylePropertySerializer::GetCustomPropertyText(
   StringBuilder result;
   if (is_not_first_decl)
     result.Append(' ');
-  const CSSCustomPropertyDeclaration* value =
-      ToCSSCustomPropertyDeclaration(property.Value());
+  const auto* value = To<CSSCustomPropertyDeclaration>(property.Value());
   SerializeIdentifier(value->GetName(), result, is_not_first_decl);
   result.Append(':');
   if (!value->Value())
