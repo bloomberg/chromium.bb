@@ -95,9 +95,16 @@ const CGFloat kIconTrailingMargin = 12;
   if (!self.superview)
     return;
 
-  [NamedGuide guideWithName:kTranslateInfobarOptionsGuide
-                       view:self.optionsButton]
-      .constrainedView = self.optionsButton;
+  // Constrain the options button named guide to its corresponding view. Reset
+  // the named guide's existing constrained view beforehand. Otherwise this will
+  // be a no-op if the new constrained view is the same as the existing one,
+  // even though the existing constraints are invalid (e.g., when the infobar is
+  // removed from the view hierarchy and added again after a tab switch).
+  NamedGuide* namedGuide =
+      [NamedGuide guideWithName:kTranslateInfobarOptionsGuide
+                           view:self.optionsButton];
+  [namedGuide resetConstraints];
+  namedGuide.constrainedView = self.optionsButton;
 
   // The initial bottom padding should be the current height of the secondary
   // toolbar or the bottom safe area inset, whichever is greater.
