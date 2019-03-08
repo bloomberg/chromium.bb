@@ -64,7 +64,7 @@
   BOOL isNTP = IsVisibleURLNewTabPage(self.webStateList->GetActiveWebState());
 
   if (!self.hasResults && (!shortcutsEnabled || isNTP)) {
-    [self.presenter animateCollapse];
+    [self.presenter collapse];
   }
 }
 
@@ -99,7 +99,7 @@
   self.open = !result.empty();
 
   if (self.open) {
-    [self.presenter updateHeightAndAnimateAppearanceIfNecessary];
+    [self.presenter updateHeight];
   }
 }
 

@@ -31,11 +31,10 @@
 @interface OmniboxPopupPresenter : NSObject
 
 // Updates appearance depending on the content size of the presented view
-// controller by changing the visible height of the popup. When the popup was
-// not previously shown, it will appear with "expansion" animation.
-- (void)updateHeightAndAnimateAppearanceIfNecessary;
-// Call this to hide the popup with animation.
-- (void)animateCollapse;
+// controller by changing the visible height of the popup.
+- (void)updateHeight;
+// Hides the popup.
+- (void)collapse;
 
 - (instancetype)initWithPopupPresenterDelegate:
                     (id<OmniboxPopupPresenterDelegate>)presenterDelegate

@@ -117,14 +117,14 @@
     self.popupViewController.shortcutsEnabled = YES;
   }
 
-  [self.mediator.presenter updateHeightAndAnimateAppearanceIfNecessary];
+  [self.mediator.presenter updateHeight];
   self.mediator.open = YES;
 }
 
 - (void)closePopup {
   self.mediator.open = NO;
   self.popupViewController.shortcutsEnabled = NO;
-  [self.mediator.presenter animateCollapse];
+  [self.mediator.presenter collapse];
 }
 
 #pragma mark - Property accessor
