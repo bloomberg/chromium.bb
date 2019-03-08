@@ -272,5 +272,5 @@ TEST_F(PopupMenuMediatorTest, TestItemsStatusOnNTP) {
   web_state_->OnNavigationFinished(&context);
 
   EXPECT_TRUE(HasItem(consumer, kToolsMenuNewTabId, /*enabled=*/YES));
-  EXPECT_TRUE(HasItem(consumer, kToolsMenuSiteInformation, /*enabled=*/NO));
+  EXPECT_TRUE(HasItem(consumer, kToolsMenuSiteInformation, /*enabled=*/YES));
 }

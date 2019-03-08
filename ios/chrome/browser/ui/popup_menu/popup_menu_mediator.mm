@@ -516,8 +516,7 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
   if (URL.SchemeIs(kChromeUIScheme) && URL.host() == kChromeUIOfflineHost) {
     return YES;
   }
-  return navItem->GetVirtualURL().is_valid() &&
-         !web::GetWebClient()->IsAppSpecificURL(navItem->GetVirtualURL());
+  return navItem->GetVirtualURL().is_valid();
 }
 
 // Whether the current page is a web page.
