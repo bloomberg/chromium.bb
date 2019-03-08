@@ -125,7 +125,8 @@ class TestDispatcher : public QuicDispatcher {
                        std::unique_ptr<QuicCryptoServerStream::Helper>(
                            new QuicSimpleCryptoServerStreamHelper(
                                QuicRandom::GetInstance())),
-                       QuicMakeUnique<MockAlarmFactory>()) {}
+                       QuicMakeUnique<MockAlarmFactory>(),
+                       kQuicDefaultConnectionIdLength) {}
 
   MOCK_METHOD4(CreateQuicSession,
                QuicServerSessionBase*(QuicConnectionId connection_id,
@@ -292,7 +293,8 @@ class QuicDispatcherTest : public QuicTest {
     std::unique_ptr<QuicReceivedPacket> received_packet(
         ConstructReceivedPacket(*packet, mock_helper_.GetClock()->Now()));
 
-    if (ChloExtractor::Extract(*packet, versions, {}, nullptr)) {
+    if (ChloExtractor::Extract(*packet, versions, {}, nullptr,
+                               connection_id.length())) {
       // Add CHLO packet to the beginning to be verified first, because it is
       // also processed first by new session.
       data_connection_map_[connection_id].push_front(

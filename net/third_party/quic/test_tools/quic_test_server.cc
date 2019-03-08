@@ -76,14 +76,16 @@ class QuicTestDispatcher : public QuicSimpleDispatcher {
       std::unique_ptr<QuicConnectionHelperInterface> helper,
       std::unique_ptr<QuicCryptoServerStream::Helper> session_helper,
       std::unique_ptr<QuicAlarmFactory> alarm_factory,
-      QuicSimpleServerBackend* quic_simple_server_backend)
+      QuicSimpleServerBackend* quic_simple_server_backend,
+      uint8_t expected_connection_id_length)
       : QuicSimpleDispatcher(config,
                              crypto_config,
                              version_manager,
                              std::move(helper),
                              std::move(session_helper),
                              std::move(alarm_factory),
-                             quic_simple_server_backend),
+                             quic_simple_server_backend,
+                             expected_connection_id_length),
         session_factory_(nullptr),
         stream_factory_(nullptr),
         crypto_stream_factory_(nullptr) {}
@@ -157,11 +159,24 @@ QuicTestServer::QuicTestServer(
     const QuicConfig& config,
     const ParsedQuicVersionVector& supported_versions,
     QuicSimpleServerBackend* quic_simple_server_backend)
+    : QuicTestServer(std::move(proof_source),
+                     config,
+                     supported_versions,
+                     quic_simple_server_backend,
+                     kQuicDefaultConnectionIdLength) {}
+
+QuicTestServer::QuicTestServer(
+    std::unique_ptr<ProofSource> proof_source,
+    const QuicConfig& config,
+    const ParsedQuicVersionVector& supported_versions,
+    QuicSimpleServerBackend* quic_simple_server_backend,
+    uint8_t expected_connection_id_length)
     : QuicServer(std::move(proof_source),
                  config,
                  QuicCryptoServerConfig::ConfigOptions(),
                  supported_versions,
-                 quic_simple_server_backend) {}
+                 quic_simple_server_backend,
+                 expected_connection_id_length) {}
 
 QuicDispatcher* QuicTestServer::CreateQuicDispatcher() {
   return new QuicTestDispatcher(
@@ -170,7 +185,8 @@ QuicDispatcher* QuicTestServer::CreateQuicDispatcher() {
                                                 QuicAllocator::BUFFER_POOL),
       std::unique_ptr<QuicCryptoServerStream::Helper>(
           new QuicSimpleCryptoServerStreamHelper(QuicRandom::GetInstance())),
-      QuicMakeUnique<QuicEpollAlarmFactory>(epoll_server()), server_backend());
+      QuicMakeUnique<QuicEpollAlarmFactory>(epoll_server()), server_backend(),
+      expected_connection_id_length());
 }
 
 void QuicTestServer::SetSessionFactory(SessionFactory* factory) {

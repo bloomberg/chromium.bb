@@ -347,5 +347,13 @@ void QuicFramerPeer::SetFirstSendingPacketNumber(QuicFramer* framer,
       QuicPacketNumber(packet_number);
 }
 
+// static
+void QuicFramerPeer::SetExpectedConnectionIDLength(
+    QuicFramer* framer,
+    uint8_t expected_connection_id_length) {
+  *const_cast<uint8_t*>(&framer->expected_connection_id_length_) =
+      expected_connection_id_length;
+}
+
 }  // namespace test
 }  // namespace quic

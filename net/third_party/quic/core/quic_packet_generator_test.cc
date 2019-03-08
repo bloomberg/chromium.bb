@@ -201,7 +201,8 @@ class QuicPacketGeneratorTest : public QuicTest {
   QuicPacketGeneratorTest()
       : framer_(AllSupportedVersions(),
                 QuicTime::Zero(),
-                Perspective::IS_CLIENT),
+                Perspective::IS_CLIENT,
+                kQuicDefaultConnectionIdLength),
         generator_(TestConnectionId(),
                    &framer_,
                    &random_generator_,

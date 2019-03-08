@@ -17,6 +17,7 @@
 #include "net/third_party/quic/core/crypto/quic_encrypter.h"
 #include "net/third_party/quic/core/crypto/quic_random.h"
 #include "net/third_party/quic/core/quic_connection_id.h"
+#include "net/third_party/quic/core/quic_constants.h"
 #include "net/third_party/quic/core/quic_data_reader.h"
 #include "net/third_party/quic/core/quic_data_writer.h"
 #include "net/third_party/quic/core/quic_socket_address_coder.h"
@@ -452,7 +453,8 @@ void RecordDroppedPacketReason(DroppedPacketReason reason) {
 
 QuicFramer::QuicFramer(const ParsedQuicVersionVector& supported_versions,
                        QuicTime creation_time,
-                       Perspective perspective)
+                       Perspective perspective,
+                       uint8_t expected_connection_id_length)
     : visitor_(nullptr),
       error_(QUIC_NO_ERROR),
       last_serialized_connection_id_(EmptyQuicConnectionId()),
@@ -470,7 +472,8 @@ QuicFramer::QuicFramer(const ParsedQuicVersionVector& supported_versions,
       first_sending_packet_number_(FirstSendingPacketNumber()),
       data_producer_(nullptr),
       infer_packet_header_type_from_version_(perspective ==
-                                             Perspective::IS_CLIENT) {
+                                             Perspective::IS_CLIENT),
+      expected_connection_id_length_(expected_connection_id_length) {
   DCHECK(!supported_versions.empty());
   version_ = supported_versions_[0];
   decrypter_ = QuicMakeUnique<NullDecrypter>(perspective);
@@ -2543,11 +2546,11 @@ bool QuicFramer::ProcessIetfPacketHeader(QuicDataReader* reader,
 
   uint8_t destination_connection_id_length =
       header->destination_connection_id_included == CONNECTION_ID_PRESENT
-          ? kQuicDefaultConnectionIdLength
+          ? expected_connection_id_length_
           : 0;
   uint8_t source_connection_id_length =
       header->source_connection_id_included == CONNECTION_ID_PRESENT
-          ? kQuicDefaultConnectionIdLength
+          ? expected_connection_id_length_
           : 0;
   if (header->form == IETF_QUIC_LONG_HEADER_PACKET) {
     // Read and validate connection ID length.
@@ -2567,9 +2570,6 @@ bool QuicFramer::ProcessIetfPacketHeader(QuicDataReader* reader,
     }
     if (dcil != destination_connection_id_length ||
         scil != source_connection_id_length) {
-      // Long header packets received by client must include 8-byte source
-      // connection ID, and those received by server must include 8-byte
-      // destination connection ID.
       QUIC_DVLOG(1) << "dcil: " << static_cast<uint32_t>(dcil)
                     << ", scil: " << static_cast<uint32_t>(scil);
       set_detailed_error("Invalid ConnectionId length.");
@@ -5597,7 +5597,6 @@ bool QuicFramer::ProcessNewConnectionIdFrame(QuicDataReader* reader,
     return false;
   }
 
-  // TODO(dschinazi) b/120240679 - remove this check
   if (connection_id_length != kQuicDefaultConnectionIdLength) {
     set_detailed_error("Invalid new connection ID length.");
     return false;

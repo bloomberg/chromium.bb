@@ -231,7 +231,8 @@ int main(int argc, char* argv[]) {
   quic::ParsedQuicVersionVector versions = quic::AllSupportedVersions();
   // Fake a time since we're not actually generating acks.
   quic::QuicTime start(quic::QuicTime::Zero());
-  quic::QuicFramer framer(versions, start, perspective);
+  quic::QuicFramer framer(versions, start, perspective,
+                          quic::kQuicDefaultConnectionIdLength);
   if (!GetQuicFlag(FLAGS_quic_version).empty()) {
     for (quic::ParsedQuicVersion version : versions) {
       if (quic::QuicVersionToString(version.transport_version) ==

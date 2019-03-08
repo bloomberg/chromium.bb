@@ -439,7 +439,8 @@ class QuicSessionTestServer : public QuicSessionTestBase {
         path_frame_buffer2_({8, 9, 10, 11, 12, 13, 14, 15}),
         client_framer_(SupportedVersions(GetParam()),
                        QuicTime::Zero(),
-                       Perspective::IS_CLIENT) {
+                       Perspective::IS_CLIENT,
+                       kQuicDefaultConnectionIdLength) {
     client_framer_.set_visitor(&framer_visitor_);
   }
 

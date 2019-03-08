@@ -294,8 +294,10 @@ void ChloFramerVisitor::OnHandshakeMessage(
 bool ChloExtractor::Extract(const QuicEncryptedPacket& packet,
                             const ParsedQuicVersionVector& versions,
                             const QuicTagVector& create_session_tag_indicators,
-                            Delegate* delegate) {
-  QuicFramer framer(versions, QuicTime::Zero(), Perspective::IS_SERVER);
+                            Delegate* delegate,
+                            uint8_t connection_id_length) {
+  QuicFramer framer(versions, QuicTime::Zero(), Perspective::IS_SERVER,
+                    connection_id_length);
   ChloFramerVisitor visitor(&framer, create_session_tag_indicators, delegate);
   framer.set_visitor(&visitor);
   if (!framer.ProcessPacket(packet)) {

@@ -224,7 +224,8 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   // version in |supported_versions|.
   QuicFramer(const ParsedQuicVersionVector& supported_versions,
              QuicTime creation_time,
-             Perspective perspective);
+             Perspective perspective,
+             uint8_t expected_connection_id_length);
   QuicFramer(const QuicFramer&) = delete;
   QuicFramer& operator=(const QuicFramer&) = delete;
 
@@ -915,6 +916,12 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   // Otherwise, framer infers packet header type from first byte of a received
   // packet.
   bool infer_packet_header_type_from_version_;
+
+  // IETF short headers contain a destination connection ID but do not
+  // encode its length. This variable contains the length we expect to read.
+  // This is also used to validate the long header connection ID lengths in
+  // older versions of QUIC.
+  const uint8_t expected_connection_id_length_;
 };
 
 }  // namespace quic

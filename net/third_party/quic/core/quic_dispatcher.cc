@@ -277,7 +277,8 @@ QuicDispatcher::QuicDispatcher(
     QuicVersionManager* version_manager,
     std::unique_ptr<QuicConnectionHelperInterface> helper,
     std::unique_ptr<QuicCryptoServerStream::Helper> session_helper,
-    std::unique_ptr<QuicAlarmFactory> alarm_factory)
+    std::unique_ptr<QuicAlarmFactory> alarm_factory,
+    uint8_t expected_connection_id_length)
     : config_(config),
       crypto_config_(crypto_config),
       compressed_certs_cache_(
@@ -292,7 +293,8 @@ QuicDispatcher::QuicDispatcher(
       version_manager_(version_manager),
       framer_(GetSupportedVersions(),
               /*unused*/ QuicTime::Zero(),
-              Perspective::IS_SERVER),
+              Perspective::IS_SERVER,
+              expected_connection_id_length),
       last_error_(QUIC_NO_ERROR),
       new_sessions_allowed_per_event_loop_(0u),
       accept_new_connections_(true) {
@@ -1173,7 +1175,7 @@ void QuicDispatcher::MaybeRejectStatelessly(QuicConnectionId connection_id,
     if (FLAGS_quic_allow_chlo_buffering &&
         !ChloExtractor::Extract(*current_packet_, GetSupportedVersions(),
                                 config_->create_session_tag_indicators(),
-                                &alpn_extractor)) {
+                                &alpn_extractor, connection_id.length())) {
       // Buffer non-CHLO packets.
       ProcessUnauthenticatedHeaderFate(kFateBuffer, connection_id, form,
                                        version);
@@ -1195,7 +1197,7 @@ void QuicDispatcher::MaybeRejectStatelessly(QuicConnectionId connection_id,
                           rejector.get());
   if (!ChloExtractor::Extract(*current_packet_, GetSupportedVersions(),
                               config_->create_session_tag_indicators(),
-                              &validator)) {
+                              &validator, connection_id.length())) {
     ProcessUnauthenticatedHeaderFate(kFateBuffer, connection_id, form, version);
     return;
   }

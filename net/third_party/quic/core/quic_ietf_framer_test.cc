@@ -210,7 +210,10 @@ class QuicIetfFramerTest : public QuicTestWithParam<ParsedQuicVersion> {
  public:
   QuicIetfFramerTest()
       : start_(QuicTime::Zero() + QuicTime::Delta::FromMicroseconds(0x10)),
-        framer_(AllSupportedVersions(), start_, Perspective::IS_SERVER) {
+        framer_(AllSupportedVersions(),
+                start_,
+                Perspective::IS_SERVER,
+                kQuicDefaultConnectionIdLength) {
     framer_.set_visitor(&visitor_);
   }
 

@@ -135,13 +135,15 @@ class QuicPacketCreatorTest : public QuicTestWithParam<TestParams> {
 
  protected:
   QuicPacketCreatorTest()
-      : server_framer_(SupportedVersions(GetParam().version),
+      : connection_id_(TestConnectionId(2)),
+        server_framer_(SupportedVersions(GetParam().version),
                        QuicTime::Zero(),
-                       Perspective::IS_SERVER),
+                       Perspective::IS_SERVER,
+                       connection_id_.length()),
         client_framer_(SupportedVersions(GetParam().version),
                        QuicTime::Zero(),
-                       Perspective::IS_CLIENT),
-        connection_id_(TestConnectionId(2)),
+                       Perspective::IS_CLIENT,
+                       connection_id_.length()),
         data_("foo"),
         creator_(connection_id_, &client_framer_, &delegate_, &producer_),
         serialized_packet_(creator_.NoPacket()) {
@@ -245,12 +247,12 @@ class QuicPacketCreatorTest : public QuicTestWithParam<TestParams> {
   static const QuicStreamOffset kOffset = 0u;
 
   char buffer_[kMaxPacketSize];
+  QuicConnectionId connection_id_;
   QuicFrames frames_;
   QuicFramer server_framer_;
   QuicFramer client_framer_;
   StrictMock<MockFramerVisitor> framer_visitor_;
   StrictMock<MockPacketCreatorDelegate> delegate_;
-  QuicConnectionId connection_id_;
   QuicString data_;
   struct iovec iov_;
   TestPacketCreator creator_;

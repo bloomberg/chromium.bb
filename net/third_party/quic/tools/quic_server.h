@@ -41,7 +41,8 @@ class QuicServer : public QuicEpollCallbackInterface {
              const QuicConfig& config,
              const QuicCryptoServerConfig::ConfigOptions& server_config_options,
              const ParsedQuicVersionVector& supported_versions,
-             QuicSimpleServerBackend* quic_simple_server_backend);
+             QuicSimpleServerBackend* quic_simple_server_backend,
+             uint8_t expected_connection_id_length);
   QuicServer(const QuicServer&) = delete;
   QuicServer& operator=(const QuicServer&) = delete;
 
@@ -99,6 +100,10 @@ class QuicServer : public QuicEpollCallbackInterface {
 
   void set_silent_close(bool value) { silent_close_ = value; }
 
+  uint8_t expected_connection_id_length() {
+    return expected_connection_id_length_;
+  }
+
  private:
   friend class quic::test::QuicServerPeer;
 
@@ -145,6 +150,9 @@ class QuicServer : public QuicEpollCallbackInterface {
   std::unique_ptr<QuicPacketReader> packet_reader_;
 
   QuicSimpleServerBackend* quic_simple_server_backend_;  // unowned.
+
+  // Connection ID length expected to be read on incoming IETF short headers.
+  uint8_t expected_connection_id_length_;
 };
 
 }  // namespace quic

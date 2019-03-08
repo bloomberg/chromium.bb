@@ -165,6 +165,9 @@ class QuicFramerPeer {
                                    QuicPacketNumberLength packet_number_length);
   static void SetFirstSendingPacketNumber(QuicFramer* framer,
                                           uint64_t packet_number);
+  static void SetExpectedConnectionIDLength(
+      QuicFramer* framer,
+      uint8_t expected_connection_id_length);
 };
 
 }  // namespace test

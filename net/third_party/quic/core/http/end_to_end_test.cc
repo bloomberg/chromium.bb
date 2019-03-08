@@ -450,9 +450,13 @@ class EndToEndTest : public QuicTestWithParam<TestParams> {
     SetQuicReloadableFlag(quic_use_cheap_stateless_rejects,
                           GetParam().use_cheap_stateless_reject);
 
-    auto* test_server = new QuicTestServer(
-        crypto_test_utils::ProofSourceForTesting(), server_config_,
-        server_supported_versions_, &memory_cache_backend_);
+    uint8_t connection_id_length = override_connection_id_ != nullptr
+                                       ? override_connection_id_->length()
+                                       : kQuicDefaultConnectionIdLength;
+    auto* test_server =
+        new QuicTestServer(crypto_test_utils::ProofSourceForTesting(),
+                           server_config_, server_supported_versions_,
+                           &memory_cache_backend_, connection_id_length);
     server_thread_ = QuicMakeUnique<ServerThread>(test_server, server_address_);
     if (chlo_multiplier_ != 0) {
       server_thread_->server()->SetChloMultiplier(chlo_multiplier_);
@@ -778,6 +782,18 @@ TEST_P(EndToEndTestWithTls, SeparateFinPacket) {
 }
 
 TEST_P(EndToEndTestWithTls, MultipleRequestResponse) {
+  ASSERT_TRUE(Initialize());
+
+  EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
+  EXPECT_EQ("200", client_->response_headers()->find(":status")->second);
+  EXPECT_EQ(kBarResponseBody, client_->SendSynchronousRequest("/bar"));
+  EXPECT_EQ("200", client_->response_headers()->find(":status")->second);
+}
+
+TEST_P(EndToEndTest, MultipleRequestResponseZeroConnectionID) {
+  QuicConnectionId connection_id = QuicUtils::CreateZeroConnectionId(
+      GetParam().negotiated_version.transport_version);
+  override_connection_id_ = &connection_id;
   ASSERT_TRUE(Initialize());
 
   EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
@@ -2231,7 +2247,7 @@ TEST_P(EndToEndTestWithTls, ServerSendPublicReset) {
   QuicPublicResetPacket header;
   header.connection_id = connection_id;
   QuicFramer framer(server_supported_versions_, QuicTime::Zero(),
-                    Perspective::IS_SERVER);
+                    Perspective::IS_SERVER, kQuicDefaultConnectionIdLength);
   std::unique_ptr<QuicEncryptedPacket> packet;
   if (client_connection->transport_version() > QUIC_VERSION_43) {
     packet = framer.BuildIetfStatelessResetPacket(connection_id,
@@ -2277,7 +2293,7 @@ TEST_P(EndToEndTestWithTls, ServerSendPublicResetWithDifferentConnectionId) {
   QuicPublicResetPacket header;
   header.connection_id = incorrect_connection_id;
   QuicFramer framer(server_supported_versions_, QuicTime::Zero(),
-                    Perspective::IS_SERVER);
+                    Perspective::IS_SERVER, kQuicDefaultConnectionIdLength);
   std::unique_ptr<QuicEncryptedPacket> packet;
   testing::NiceMock<MockQuicConnectionDebugVisitor> visitor;
   client_->client()->client_session()->connection()->set_debug_visitor(
@@ -2328,7 +2344,7 @@ TEST_P(EndToEndTestWithTls, ClientSendPublicResetWithDifferentConnectionId) {
   QuicPublicResetPacket header;
   header.connection_id = incorrect_connection_id;
   QuicFramer framer(server_supported_versions_, QuicTime::Zero(),
-                    Perspective::IS_CLIENT);
+                    Perspective::IS_CLIENT, kQuicDefaultConnectionIdLength);
   std::unique_ptr<QuicEncryptedPacket> packet(
       framer.BuildPublicResetPacket(header));
   client_writer_->WritePacket(
