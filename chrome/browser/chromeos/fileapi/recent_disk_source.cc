@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/fileapi/recent_download_source.h"
+#include "chrome/browser/chromeos/fileapi/recent_disk_source.h"
 
 #include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
+#include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"
-#include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "storage/browser/fileapi/external_mount_points.h"
@@ -72,21 +72,23 @@ void GetMetadataOnIOThread(
 
 }  // namespace
 
-const char RecentDownloadSource::kLoadHistogramName[] =
-    "FileBrowser.Recent.LoadDownloads";
-
-RecentDownloadSource::RecentDownloadSource(Profile* profile)
-    : mount_point_name_(
-          file_manager::util::GetDownloadsMountPointName(profile)),
+RecentDiskSource::RecentDiskSource(std::string mount_point_name,
+                                   bool ignore_dotfiles,
+                                   int max_depth,
+                                   std::string uma_histogram_name)
+    : mount_point_name_(std::move(mount_point_name)),
+      ignore_dotfiles_(ignore_dotfiles),
+      max_depth_(max_depth),
+      uma_histogram_name_(std::move(uma_histogram_name)),
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
-RecentDownloadSource::~RecentDownloadSource() {
+RecentDiskSource::~RecentDiskSource() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
-void RecentDownloadSource::GetRecentFiles(Params params) {
+void RecentDiskSource::GetRecentFiles(Params params) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!params_.has_value());
   DCHECK(build_start_time_.is_null());
@@ -94,20 +96,29 @@ void RecentDownloadSource::GetRecentFiles(Params params) {
   DCHECK_EQ(0, inflight_stats_);
   DCHECK(recent_files_.empty());
 
+  // Return immediately if mount point does not exist.
+  storage::ExternalMountPoints* mount_points =
+      storage::ExternalMountPoints::GetSystemInstance();
+  base::FilePath path;
+  if (!mount_points->GetRegisteredPath(mount_point_name_, &path)) {
+    std::move(params.callback()).Run({});
+    return;
+  }
+
   params_.emplace(std::move(params));
 
   DCHECK(params_.has_value());
 
   build_start_time_ = base::TimeTicks::Now();
 
-  ScanDirectory(base::FilePath());
+  ScanDirectory(base::FilePath(), 1);
 }
 
-void RecentDownloadSource::ScanDirectory(const base::FilePath& path) {
+void RecentDiskSource::ScanDirectory(const base::FilePath& path, int depth) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(params_.has_value());
 
-  storage::FileSystemURL url = BuildDownloadsURL(path);
+  storage::FileSystemURL url = BuildDiskURL(path);
 
   ++inflight_readdirs_;
   base::PostTaskWithTraits(
@@ -115,12 +126,13 @@ void RecentDownloadSource::ScanDirectory(const base::FilePath& path) {
       base::BindOnce(
           &ReadDirectoryOnIOThread,
           base::WrapRefCounted(params_.value().file_system_context()), url,
-          base::Bind(&RecentDownloadSource::OnReadDirectory,
-                     weak_ptr_factory_.GetWeakPtr(), path)));
+          base::BindRepeating(&RecentDiskSource::OnReadDirectory,
+                              weak_ptr_factory_.GetWeakPtr(), path, depth)));
 }
 
-void RecentDownloadSource::OnReadDirectory(
+void RecentDiskSource::OnReadDirectory(
     const base::FilePath& path,
+    const int depth,
     base::File::Error result,
     storage::FileSystemOperation::FileEntryList entries,
     bool has_more) {
@@ -128,11 +140,21 @@ void RecentDownloadSource::OnReadDirectory(
   DCHECK(params_.has_value());
 
   for (const auto& entry : entries) {
+    // Ignore directories and files that start with dot.
+    if (ignore_dotfiles_ &&
+        base::StartsWith(entry.name.value(), ".",
+                         base::CompareCase::INSENSITIVE_ASCII)) {
+      continue;
+    }
     base::FilePath subpath = path.Append(entry.name);
+
     if (entry.type == filesystem::mojom::FsFileType::DIRECTORY) {
-      ScanDirectory(subpath);
+      if (max_depth_ > 0 && depth >= max_depth_) {
+        continue;
+      }
+      ScanDirectory(subpath, depth + 1);
     } else {
-      storage::FileSystemURL url = BuildDownloadsURL(subpath);
+      storage::FileSystemURL url = BuildDiskURL(subpath);
       ++inflight_stats_;
       base::PostTaskWithTraits(
           FROM_HERE, {BrowserThread::IO},
@@ -140,7 +162,7 @@ void RecentDownloadSource::OnReadDirectory(
               &GetMetadataOnIOThread,
               base::WrapRefCounted(params_.value().file_system_context()), url,
               storage::FileSystemOperation::GET_METADATA_FIELD_LAST_MODIFIED,
-              base::BindOnce(&RecentDownloadSource::OnGetMetadata,
+              base::BindOnce(&RecentDiskSource::OnGetMetadata,
                              weak_ptr_factory_.GetWeakPtr(), url)));
     }
   }
@@ -152,9 +174,9 @@ void RecentDownloadSource::OnReadDirectory(
   OnReadOrStatFinished();
 }
 
-void RecentDownloadSource::OnGetMetadata(const storage::FileSystemURL& url,
-                                         base::File::Error result,
-                                         const base::File::Info& info) {
+void RecentDiskSource::OnGetMetadata(const storage::FileSystemURL& url,
+                                     base::File::Error result,
+                                     const base::File::Info& info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(params_.has_value());
 
@@ -169,7 +191,7 @@ void RecentDownloadSource::OnGetMetadata(const storage::FileSystemURL& url,
   OnReadOrStatFinished();
 }
 
-void RecentDownloadSource::OnReadOrStatFinished() {
+void RecentDiskSource::OnReadOrStatFinished() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (inflight_readdirs_ > 0 || inflight_stats_ > 0)
@@ -183,8 +205,8 @@ void RecentDownloadSource::OnReadOrStatFinished() {
   }
 
   DCHECK(!build_start_time_.is_null());
-  UMA_HISTOGRAM_TIMES(kLoadHistogramName,
-                      base::TimeTicks::Now() - build_start_time_);
+  UmaHistogramTimes(uma_histogram_name_,
+                    base::TimeTicks::Now() - build_start_time_);
   build_start_time_ = base::TimeTicks();
 
   Params params = std::move(params_.value());
@@ -199,14 +221,13 @@ void RecentDownloadSource::OnReadOrStatFinished() {
   std::move(params.callback()).Run(std::move(files));
 }
 
-storage::FileSystemURL RecentDownloadSource::BuildDownloadsURL(
+storage::FileSystemURL RecentDiskSource::BuildDiskURL(
     const base::FilePath& path) const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(params_.has_value());
 
   storage::ExternalMountPoints* mount_points =
       storage::ExternalMountPoints::GetSystemInstance();
-
   return mount_points->CreateExternalFileSystemURL(params_.value().origin(),
                                                    mount_point_name_, path);
 }

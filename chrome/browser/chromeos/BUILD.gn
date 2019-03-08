@@ -972,8 +972,8 @@ source_set("chromeos") {
     "fileapi/mtp_watcher_manager.h",
     "fileapi/recent_arc_media_source.cc",
     "fileapi/recent_arc_media_source.h",
-    "fileapi/recent_download_source.cc",
-    "fileapi/recent_download_source.h",
+    "fileapi/recent_disk_source.cc",
+    "fileapi/recent_disk_source.h",
     "fileapi/recent_drive_source.cc",
     "fileapi/recent_drive_source.h",
     "fileapi/recent_file.cc",
@@ -2338,7 +2338,7 @@ source_set("unit_tests") {
     "fileapi/file_access_permissions_unittest.cc",
     "fileapi/file_system_backend_unittest.cc",
     "fileapi/recent_arc_media_source_unittest.cc",
-    "fileapi/recent_download_source_unittest.cc",
+    "fileapi/recent_disk_source_unittest.cc",
     "fileapi/recent_model_unittest.cc",
     "fileapi/test/fake_recent_source.cc",
     "hats/hats_finch_helper_unittest.cc",
@@ -2757,4 +2757,3 @@ fuzzer_test("smb_url_fuzzer") {
 
   seed_corpus = "smb_client/fuzzer_data/smb_url_corpus"
 }
-

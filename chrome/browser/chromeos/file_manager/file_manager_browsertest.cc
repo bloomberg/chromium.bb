@@ -952,6 +952,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("recentsDownloads"),
         TestCase("recentsDrive").DisableDriveFs(),
         TestCase("recentsDrive").EnableDriveFs(),
+        TestCase("recentsCrostiniNotMounted"),
+        TestCase("recentsCrostiniMounted"),
         TestCase("recentsDownloadsAndDrive").DisableDriveFs(),
         TestCase("recentsDownloadsAndDrive").EnableDriveFs(),
         TestCase("recentsDownloadsAndDriveWithOverlap").DisableDriveFs(),

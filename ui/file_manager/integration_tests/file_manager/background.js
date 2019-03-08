@@ -271,7 +271,7 @@ async function openAndWaitForClosingDialog(
  * @param {?string} initialRoot Root path to be used as a default current
  *     directory during initialization. Can be null, for no default path.
  * @param {!Array<TestEntryInfo>>} initialLocalEntries List of initial
- *     entries to load in Google Drive (defaults to a basic entry set).
+ *     entries to load in Downloads (defaults to a basic entry set).
  * @param {!Array<TestEntryInfo>>} initialDriveEntries List of initial
  *     entries to load in Google Drive (defaults to a basic entry set).
  * @param {Object} appState App state to be passed with on opening the Files
@@ -468,4 +468,27 @@ async function expandTreeItem(appId, treeItem) {
 
   const expandedSubtree = treeItem + '> .tree-children[expanded]';
   await remoteCall.waitForElement(appId, expandedSubtree);
+}
+
+/**
+ * Mounts crostini volume by clicking on the fake crostini root.
+ * @param {string} appId Files app windowId.
+ * @param {!Array<TestEntryInfo>>} initialEntries List of initial entries to
+ *     load in Crostini (defaults to a basic entry set).
+ */
+async function mountCrostini(appId, initialEntries = BASIC_CROSTINI_ENTRY_SET) {
+  const fakeLinuxFiles = '#directory-tree [root-type-icon="crostini"]';
+  const realLinxuFiles = '#directory-tree [volume-type-icon="crostini"]';
+
+  // Add entries to crostini volume, but do not mount.
+  await addEntries(['crostini'], initialEntries);
+
+  // Linux files fake root is shown.
+  await remoteCall.waitForElement(appId, fakeLinuxFiles);
+
+  // Mount crostini, and ensure real root and files are shown.
+  remoteCall.callRemoteTestUtil('fakeMouseClick', appId, [fakeLinuxFiles]);
+  await remoteCall.waitForElement(appId, realLinxuFiles);
+  const files = TestEntryInfo.getExpectedRows(BASIC_CROSTINI_ENTRY_SET);
+  await remoteCall.waitForFiles(appId, files);
 }
