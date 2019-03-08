@@ -944,7 +944,7 @@ void NavigationRequest::OnRequestRedirected(
   // For now, DevTools needs the POST data sent to the renderer process even if
   // it is no longer a POST after the redirect.
   if (redirect_info.new_method != "POST")
-    common_params_.post_data = nullptr;
+    common_params_.post_data.reset();
 
   // Mark time for the Navigation Timing API.
   if (commit_params_.navigation_timing.redirect_start.is_null()) {
@@ -1055,7 +1055,7 @@ void NavigationRequest::OnResponseStarted(
     base::Optional<SubresourceLoaderParams> subresource_loader_params) {
   // The |loader_|'s job is finished. It must not call the NavigationRequest
   // anymore from now.
-  loader_ = nullptr;
+  loader_.reset();
   is_download_ = is_download && IsNavigationDownloadAllowed(download_policy);
   is_stream_ = is_stream;
   request_id_ = request_id;
@@ -1286,7 +1286,7 @@ void NavigationRequest::OnRequestFailed(
 
   // The |loader_|'s job is finished. It must not call the NavigationRequest
   // anymore from now.
-  loader_ = nullptr;
+  loader_.reset();
 
   bool collapse_frame =
       status.extended_error_code ==

@@ -1000,7 +1000,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
         &should_clear_upload);
     if (should_clear_upload) {
       // The request body is no longer applicable.
-      resource_request_->request_body = nullptr;
+      resource_request_->request_body.reset();
       blob_handles_.clear();
     }
 
