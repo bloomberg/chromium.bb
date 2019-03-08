@@ -42,20 +42,20 @@ class FtlSignalingPlayground {
 
   void GetIceServer(base::OnceClosure on_done);
   void OnGetIceServerResponse(base::OnceClosure on_done,
-                              grpc::Status status,
+                              const grpc::Status& status,
                               const ftl::GetICEServerResponse& response);
 
   void SignInGaia(base::OnceClosure on_done);
   void OnSignInGaiaResponse(base::OnceClosure on_done,
-                            grpc::Status status,
+                            const grpc::Status& status,
                             const ftl::SignInGaiaResponse& response);
 
   void PullMessages(base::OnceClosure on_done);
   void OnPullMessagesResponse(base::OnceClosure on_done,
-                              grpc::Status status,
+                              const grpc::Status& status,
                               const ftl::PullMessagesResponse& response);
   void OnAckMessagesResponse(base::OnceClosure on_done,
-                             grpc::Status status,
+                             const grpc::Status& status,
                              const ftl::AckMessagesResponse& response);
 
   std::unique_ptr<test::TestTokenStorage> storage_;
