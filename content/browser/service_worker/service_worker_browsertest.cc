@@ -3185,8 +3185,9 @@ class CacheStorageSideDataSizeChecker
         cache_storage_context_->cache_manager()->OpenCacheStorage(
             url::Origin::Create(origin_), CacheStorageOwner::kCacheAPI);
     cache_storage.value()->OpenCache(
-        cache_name_, base::BindOnce(&self::OnCacheStorageOpenCallback, this,
-                                    result, std::move(continuation)));
+        cache_name_, /* trace_id = */ 0,
+        base::BindOnce(&self::OnCacheStorageOpenCallback, this, result,
+                       std::move(continuation)));
   }
 
   void OnCacheStorageOpenCallback(int* result,
@@ -3198,7 +3199,7 @@ class CacheStorageSideDataSizeChecker
     scoped_request->url = url_;
     CacheStorageCache* cache = cache_handle.value();
     cache->Match(
-        std::move(scoped_request), nullptr,
+        std::move(scoped_request), nullptr, /* trace_id = */ 0,
         base::BindOnce(&self::OnCacheStorageCacheMatchCallback, this, result,
                        std::move(continuation), std::move(cache_handle)));
   }

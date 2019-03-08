@@ -521,6 +521,7 @@ class CacheStorageCacheTest : public testing::Test {
 
     cache_->BatchOperation(
         std::move(operations), fail_on_duplicates,
+        /* trace_id = */ 0,
         base::BindOnce(&CacheStorageCacheTest::VerboseErrorTypeCallback,
                        base::Unretained(this), base::Unretained(loop.get())),
         base::BindOnce(&OnBadMessage, base::Unretained(&bad_message_reason_)));
@@ -565,6 +566,7 @@ class CacheStorageCacheTest : public testing::Test {
 
     cache_->Match(
         CopyFetchRequest(request), std::move(match_options),
+        /* trace_id = */ 0,
         base::BindOnce(&CacheStorageCacheTest::ResponseAndErrorCallback,
                        base::Unretained(this), base::Unretained(loop.get())));
     loop->Run();
@@ -580,6 +582,7 @@ class CacheStorageCacheTest : public testing::Test {
     base::RunLoop loop;
     cache_->MatchAll(
         CopyFetchRequest(request), std::move(match_options),
+        /* trace_id = */ 0,
         base::BindOnce(&CacheStorageCacheTest::ResponsesAndErrorCallback,
                        base::Unretained(this), loop.QuitClosure(), responses));
     loop.Run();
@@ -593,6 +596,7 @@ class CacheStorageCacheTest : public testing::Test {
     base::RunLoop loop;
     cache_->GetAllMatchedEntries(
         nullptr /* request */, nullptr /* options */,
+        /* trace_id = */ 0,
         base::BindOnce(&CacheStorageCacheTest::CacheEntriesAndErrorCallback,
                        base::Unretained(this), loop.QuitClosure(),
                        cache_entries));
@@ -629,6 +633,7 @@ class CacheStorageCacheTest : public testing::Test {
 
     cache_->Keys(
         CopyFetchRequest(request), std::move(match_options),
+        /* trace_id = */ 0,
         base::BindOnce(&CacheStorageCacheTest::RequestsCallback,
                        base::Unretained(this), base::Unretained(loop.get())));
     loop->Run();
@@ -659,7 +664,7 @@ class CacheStorageCacheTest : public testing::Test {
     cache_->WriteSideData(
         base::BindOnce(&CacheStorageCacheTest::ErrorTypeCallback,
                        base::Unretained(this), base::Unretained(&run_loop)),
-        url, expected_response_time, buffer, buf_len);
+        url, expected_response_time, /* trace_id = */ 0, buffer, buf_len);
     run_loop.Run();
     if (callback_error_ == CacheStorageError::kSuccess)
       CheckOpHistograms(histogram_tester, "WriteSideData");
@@ -991,6 +996,7 @@ TEST_P(CacheStorageCacheTestP, PutBodyDropBlobRef) {
   std::unique_ptr<base::RunLoop> loop(new base::RunLoop());
   cache_->BatchOperation(
       std::move(operations), true /* fail_on_duplicate */,
+      /* trace_id = */ 0,
       base::BindOnce(&CacheStorageCacheTestP::VerboseErrorTypeCallback,
                      base::Unretained(this), base::Unretained(loop.get())),
       CacheStorageCache::BadMessageCallback());
@@ -2253,6 +2259,7 @@ TEST_P(CacheStorageCacheTestP, VerifySerialScheduling) {
   operations1.emplace_back(std::move(operation1));
   cache_->BatchOperation(
       std::move(operations1), true /* fail_on_duplicate */,
+      /* trace_id = */ 0,
       base::BindOnce(&CacheStorageCacheTest::SequenceCallback,
                      base::Unretained(this), 1, &sequence_out,
                      close_loop1.get()),
@@ -2274,6 +2281,7 @@ TEST_P(CacheStorageCacheTestP, VerifySerialScheduling) {
   operations2.emplace_back(std::move(operation2));
   cache_->BatchOperation(
       std::move(operations2), true /* fail_on_duplicate */,
+      /* trace_id = */ 0,
       base::BindOnce(&CacheStorageCacheTest::SequenceCallback,
                      base::Unretained(this), 2, &sequence_out,
                      close_loop2.get()),

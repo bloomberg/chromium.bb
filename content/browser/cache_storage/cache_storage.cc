@@ -28,6 +28,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/trace_event/trace_event.h"
+#include "base/trace_event/traced_value.h"
 #include "content/browser/cache_storage/cache_storage.pb.h"
 #include "content/browser/cache_storage/cache_storage_cache.h"
 #include "content/browser/cache_storage/cache_storage_cache_handle.h"
@@ -36,6 +38,7 @@
 #include "content/browser/cache_storage/cache_storage_manager.h"
 #include "content/browser/cache_storage/cache_storage_quota_client.h"
 #include "content/browser/cache_storage/cache_storage_scheduler.h"
+#include "content/browser/cache_storage/cache_storage_trace_utils.h"
 #include "content/common/background_fetch/background_fetch_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "crypto/symmetric_key.h"
@@ -596,6 +599,7 @@ void CacheStorage::DropHandleRef() {
 }
 
 void CacheStorage::OpenCache(const std::string& cache_name,
+                             int64_t trace_id,
                              CacheAndErrorCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -613,11 +617,12 @@ void CacheStorage::OpenCache(const std::string& cache_name,
   scheduler_->ScheduleOperation(
       CacheStorageSchedulerOp::kOpen,
       base::BindOnce(&CacheStorage::OpenCacheImpl, weak_factory_.GetWeakPtr(),
-                     cache_name,
+                     cache_name, trace_id,
                      scheduler_->WrapCallbackToRunNext(std::move(callback))));
 }
 
 void CacheStorage::HasCache(const std::string& cache_name,
+                            int64_t trace_id,
                             BoolAndErrorCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -631,11 +636,12 @@ void CacheStorage::HasCache(const std::string& cache_name,
   scheduler_->ScheduleOperation(
       CacheStorageSchedulerOp::kHas,
       base::BindOnce(&CacheStorage::HasCacheImpl, weak_factory_.GetWeakPtr(),
-                     cache_name,
+                     cache_name, trace_id,
                      scheduler_->WrapCallbackToRunNext(std::move(callback))));
 }
 
 void CacheStorage::DoomCache(const std::string& cache_name,
+                             int64_t trace_id,
                              ErrorCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -649,11 +655,11 @@ void CacheStorage::DoomCache(const std::string& cache_name,
   scheduler_->ScheduleOperation(
       CacheStorageSchedulerOp::kDelete,
       base::BindOnce(&CacheStorage::DoomCacheImpl, weak_factory_.GetWeakPtr(),
-                     cache_name,
+                     cache_name, trace_id,
                      scheduler_->WrapCallbackToRunNext(std::move(callback))));
 }
 
-void CacheStorage::EnumerateCaches(IndexCallback callback) {
+void CacheStorage::EnumerateCaches(int64_t trace_id, IndexCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (!initialized_)
@@ -666,13 +672,14 @@ void CacheStorage::EnumerateCaches(IndexCallback callback) {
   scheduler_->ScheduleOperation(
       CacheStorageSchedulerOp::kKeys,
       base::BindOnce(&CacheStorage::EnumerateCachesImpl,
-                     weak_factory_.GetWeakPtr(),
+                     weak_factory_.GetWeakPtr(), trace_id,
                      scheduler_->WrapCallbackToRunNext(std::move(callback))));
 }
 
 void CacheStorage::MatchCache(const std::string& cache_name,
                               blink::mojom::FetchAPIRequestPtr request,
                               blink::mojom::CacheQueryOptionsPtr match_options,
+                              int64_t trace_id,
                               CacheStorageCache::ResponseCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -687,12 +694,14 @@ void CacheStorage::MatchCache(const std::string& cache_name,
       CacheStorageSchedulerOp::kMatch,
       base::BindOnce(&CacheStorage::MatchCacheImpl, weak_factory_.GetWeakPtr(),
                      cache_name, std::move(request), std::move(match_options),
+                     trace_id,
                      scheduler_->WrapCallbackToRunNext(std::move(callback))));
 }
 
 void CacheStorage::MatchAllCaches(
     blink::mojom::FetchAPIRequestPtr request,
     blink::mojom::CacheQueryOptionsPtr match_options,
+    int64_t trace_id,
     CacheStorageCache::ResponseCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -707,13 +716,14 @@ void CacheStorage::MatchAllCaches(
       CacheStorageSchedulerOp::kMatchAll,
       base::BindOnce(&CacheStorage::MatchAllCachesImpl,
                      weak_factory_.GetWeakPtr(), std::move(request),
-                     std::move(match_options),
+                     std::move(match_options), trace_id,
                      scheduler_->WrapCallbackToRunNext(std::move(callback))));
 }
 
 void CacheStorage::WriteToCache(const std::string& cache_name,
                                 blink::mojom::FetchAPIRequestPtr request,
                                 blink::mojom::FetchAPIResponsePtr response,
+                                int64_t trace_id,
                                 CacheStorage::ErrorCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -728,7 +738,7 @@ void CacheStorage::WriteToCache(const std::string& cache_name,
       CacheStorageSchedulerOp::kPut,
       base::BindOnce(&CacheStorage::WriteToCacheImpl,
                      weak_factory_.GetWeakPtr(), cache_name, std::move(request),
-                     std::move(response),
+                     std::move(response), trace_id,
                      scheduler_->WrapCallbackToRunNext(std::move(callback))));
 }
 
@@ -873,7 +883,12 @@ void CacheStorage::LazyInitDidLoadIndex(
 }
 
 void CacheStorage::OpenCacheImpl(const std::string& cache_name,
+                                 int64_t trace_id,
                                  CacheAndErrorCallback callback) {
+  TRACE_EVENT_WITH_FLOW1("CacheStorage", "CacheStorage::OpenCacheImpl",
+                         TRACE_ID_GLOBAL(trace_id),
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
+                         "cache_name", cache_name);
   CacheStorageCacheHandle cache_handle = GetLoadedCache(cache_name);
   if (cache_handle.value()) {
     std::move(callback).Run(std::move(cache_handle),
@@ -884,14 +899,20 @@ void CacheStorage::OpenCacheImpl(const std::string& cache_name,
   cache_loader_->PrepareNewCacheDestination(
       cache_name, base::BindOnce(&CacheStorage::CreateCacheDidCreateCache,
                                  weak_factory_.GetWeakPtr(), cache_name,
-                                 std::move(callback)));
+                                 trace_id, std::move(callback)));
 }
 
 void CacheStorage::CreateCacheDidCreateCache(
     const std::string& cache_name,
+    int64_t trace_id,
     CacheAndErrorCallback callback,
     std::unique_ptr<CacheStorageCache> cache) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  TRACE_EVENT_WITH_FLOW0("CacheStorage",
+                         "CacheStorage::CreateCacheDidCreateCache",
+                         TRACE_ID_GLOBAL(trace_id),
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
 
   UMA_HISTOGRAM_BOOLEAN("ServiceWorkerCache.CreateCacheStorageResult",
                         static_cast<bool>(cache));
@@ -915,7 +936,7 @@ void CacheStorage::CreateCacheDidCreateCache(
       *cache_index_,
       base::BindOnce(&CacheStorage::CreateCacheDidWriteIndex,
                      weak_factory_.GetWeakPtr(), std::move(callback),
-                     cache_ptr->CreateHandle()));
+                     cache_ptr->CreateHandle(), trace_id));
 
   cache_loader_->NotifyCacheCreated(cache_name, std::move(handle));
   if (cache_storage_manager_)
@@ -925,9 +946,15 @@ void CacheStorage::CreateCacheDidCreateCache(
 void CacheStorage::CreateCacheDidWriteIndex(
     CacheAndErrorCallback callback,
     CacheStorageCacheHandle cache_handle,
+    int64_t trace_id,
     bool success) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(cache_handle.value());
+
+  TRACE_EVENT_WITH_FLOW0("CacheStorage",
+                         "CacheStorage::CreateCacheDidWriteIndex",
+                         TRACE_ID_GLOBAL(trace_id),
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
 
   // TODO(jkarlin): Handle !success.
 
@@ -935,13 +962,23 @@ void CacheStorage::CreateCacheDidWriteIndex(
 }
 
 void CacheStorage::HasCacheImpl(const std::string& cache_name,
+                                int64_t trace_id,
                                 BoolAndErrorCallback callback) {
+  TRACE_EVENT_WITH_FLOW1("CacheStorage", "CacheStorage::HasCacheImpl",
+                         TRACE_ID_GLOBAL(trace_id),
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
+                         "cache_name", cache_name);
   bool has_cache = base::ContainsKey(cache_map_, cache_name);
   std::move(callback).Run(has_cache, CacheStorageError::kSuccess);
 }
 
 void CacheStorage::DoomCacheImpl(const std::string& cache_name,
+                                 int64_t trace_id,
                                  ErrorCallback callback) {
+  TRACE_EVENT_WITH_FLOW1("CacheStorage", "CacheStorage::DoomCacheImpl",
+                         TRACE_ID_GLOBAL(trace_id),
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
+                         "cache_name", cache_name);
   CacheStorageCacheHandle cache_handle = GetLoadedCache(cache_name);
   if (!cache_handle.value()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -956,14 +993,20 @@ void CacheStorage::DoomCacheImpl(const std::string& cache_name,
       *cache_index_,
       base::BindOnce(&CacheStorage::DeleteCacheDidWriteIndex,
                      weak_factory_.GetWeakPtr(), std::move(cache_handle),
-                     std::move(callback)));
+                     std::move(callback), trace_id));
 }
 
 void CacheStorage::DeleteCacheDidWriteIndex(
     CacheStorageCacheHandle cache_handle,
     ErrorCallback callback,
+    int64_t trace_id,
     bool success) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  TRACE_EVENT_WITH_FLOW0("CacheStorage",
+                         "CacheStorage::DeleteCacheDidWriteIndex",
+                         TRACE_ID_GLOBAL(trace_id),
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
 
   if (!success) {
     // Undo any changes if the index couldn't be written to disk.
@@ -1010,7 +1053,11 @@ void CacheStorage::DeleteCacheDidGetSize(CacheStorageCache* doomed_cache,
   doomed_caches_.erase(doomed_caches_iter);
 }
 
-void CacheStorage::EnumerateCachesImpl(IndexCallback callback) {
+void CacheStorage::EnumerateCachesImpl(int64_t trace_id,
+                                       IndexCallback callback) {
+  TRACE_EVENT_WITH_FLOW0("CacheStorage", "CacheStorage::EnumerateCachesImpl",
+                         TRACE_ID_GLOBAL(trace_id),
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
   std::move(callback).Run(*cache_index_);
 }
 
@@ -1018,7 +1065,13 @@ void CacheStorage::MatchCacheImpl(
     const std::string& cache_name,
     blink::mojom::FetchAPIRequestPtr request,
     blink::mojom::CacheQueryOptionsPtr match_options,
+    int64_t trace_id,
     CacheStorageCache::ResponseCallback callback) {
+  TRACE_EVENT_WITH_FLOW2(
+      "CacheStorage", "CacheStorage::MatchCacheImpl", TRACE_ID_GLOBAL(trace_id),
+      TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "cache_name",
+      cache_name, "request", CacheStorageTracedValue(request));
+
   CacheStorageCacheHandle cache_handle = GetLoadedCache(cache_name);
 
   if (!cache_handle.value()) {
@@ -1031,32 +1084,41 @@ void CacheStorage::MatchCacheImpl(
   // match is done.
   CacheStorageCache* cache_ptr = cache_handle.value();
   cache_ptr->Match(
-      std::move(request), std::move(match_options),
+      std::move(request), std::move(match_options), trace_id,
       base::BindOnce(&CacheStorage::MatchCacheDidMatch,
                      weak_factory_.GetWeakPtr(), std::move(cache_handle),
-                     std::move(callback)));
+                     trace_id, std::move(callback)));
 }
 
 void CacheStorage::MatchCacheDidMatch(
     CacheStorageCacheHandle cache_handle,
+    int64_t trace_id,
     CacheStorageCache::ResponseCallback callback,
     CacheStorageError error,
     blink::mojom::FetchAPIResponsePtr response) {
+  TRACE_EVENT_WITH_FLOW0("CacheStorage", "CacheStorage::MatchCacheDidMatch",
+                         TRACE_ID_GLOBAL(trace_id),
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
   std::move(callback).Run(error, std::move(response));
 }
 
 void CacheStorage::MatchAllCachesImpl(
     blink::mojom::FetchAPIRequestPtr request,
     blink::mojom::CacheQueryOptionsPtr match_options,
+    int64_t trace_id,
     CacheStorageCache::ResponseCallback callback) {
+  TRACE_EVENT_WITH_FLOW0("CacheStorage", "CacheStorage::MatchAllCachesImpl",
+                         TRACE_ID_GLOBAL(trace_id),
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
+
   std::vector<CacheMatchResponse>* match_responses =
       new std::vector<CacheMatchResponse>(cache_index_->num_entries());
 
   base::RepeatingClosure barrier_closure = base::BarrierClosure(
       cache_index_->num_entries(),
-      base::BindOnce(&CacheStorage::MatchAllCachesDidMatchAll,
-                     weak_factory_.GetWeakPtr(),
-                     base::WrapUnique(match_responses), std::move(callback)));
+      base::BindOnce(
+          &CacheStorage::MatchAllCachesDidMatchAll, weak_factory_.GetWeakPtr(),
+          base::WrapUnique(match_responses), trace_id, std::move(callback)));
 
   size_t idx = 0;
   for (const auto& cache_metadata : cache_index_->ordered_cache_metadata()) {
@@ -1066,10 +1128,10 @@ void CacheStorage::MatchAllCachesImpl(
     CacheStorageCache* cache_ptr = cache_handle.value();
     cache_ptr->Match(
         BackgroundFetchSettledFetch::CloneRequest(request),
-        match_options ? match_options->Clone() : nullptr,
+        match_options ? match_options->Clone() : nullptr, trace_id,
         base::BindOnce(&CacheStorage::MatchAllCachesDidMatch,
                        weak_factory_.GetWeakPtr(), std::move(cache_handle),
-                       &match_responses->at(idx), barrier_closure));
+                       &match_responses->at(idx), barrier_closure, trace_id));
     idx++;
   }
 }
@@ -1078,8 +1140,12 @@ void CacheStorage::MatchAllCachesDidMatch(
     CacheStorageCacheHandle cache_handle,
     CacheMatchResponse* out_match_response,
     const base::RepeatingClosure& barrier_closure,
+    int64_t trace_id,
     CacheStorageError error,
     blink::mojom::FetchAPIResponsePtr response) {
+  TRACE_EVENT_WITH_FLOW0("CacheStorage", "CacheStorage::MatchAllCachesDidMatch",
+                         TRACE_ID_GLOBAL(trace_id),
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
   out_match_response->error = error;
   out_match_response->response = std::move(response);
   barrier_closure.Run();
@@ -1087,7 +1153,12 @@ void CacheStorage::MatchAllCachesDidMatch(
 
 void CacheStorage::MatchAllCachesDidMatchAll(
     std::unique_ptr<std::vector<CacheMatchResponse>> match_responses,
+    int64_t trace_id,
     CacheStorageCache::ResponseCallback callback) {
+  TRACE_EVENT_WITH_FLOW0("CacheStorage",
+                         "CacheStorage::MatchAllCachesDidMatchAll",
+                         TRACE_ID_GLOBAL(trace_id),
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
   for (CacheMatchResponse& match_response : *match_responses) {
     if (match_response.error == CacheStorageError::kErrorNotFound)
       continue;
@@ -1101,7 +1172,14 @@ void CacheStorage::MatchAllCachesDidMatchAll(
 void CacheStorage::WriteToCacheImpl(const std::string& cache_name,
                                     blink::mojom::FetchAPIRequestPtr request,
                                     blink::mojom::FetchAPIResponsePtr response,
+                                    int64_t trace_id,
                                     CacheStorage::ErrorCallback callback) {
+  TRACE_EVENT_WITH_FLOW2("CacheStorage", "CacheStorage::WriteToCacheImpl",
+                         TRACE_ID_GLOBAL(trace_id),
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
+                         "cache_name", cache_name, "request",
+                         CacheStorageTracedValue(request));
+
   CacheStorageCacheHandle cache_handle = GetLoadedCache(cache_name);
 
   if (!cache_handle.value()) {
@@ -1112,7 +1190,8 @@ void CacheStorage::WriteToCacheImpl(const std::string& cache_name,
   CacheStorageCache* cache_ptr = cache_handle.value();
   DCHECK(cache_ptr);
 
-  cache_ptr->Put(std::move(request), std::move(response), std::move(callback));
+  cache_ptr->Put(std::move(request), std::move(response), trace_id,
+                 std::move(callback));
 }
 
 CacheStorageCacheHandle CacheStorage::GetLoadedCache(

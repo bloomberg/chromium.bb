@@ -26,6 +26,8 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/trace_event/trace_event.h"
+#include "base/trace_event/traced_value.h"
 #include "content/browser/cache_storage/cache_storage.pb.h"
 #include "content/browser/cache_storage/cache_storage_blob_to_disk_cache.h"
 #include "content/browser/cache_storage/cache_storage_cache_entry_handler.h"
@@ -35,6 +37,7 @@
 #include "content/browser/cache_storage/cache_storage_manager.h"
 #include "content/browser/cache_storage/cache_storage_quota_client.h"
 #include "content/browser/cache_storage/cache_storage_scheduler.h"
+#include "content/browser/cache_storage/cache_storage_trace_utils.h"
 #include "content/common/background_fetch/background_fetch_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_thread.h"
@@ -546,6 +549,7 @@ bool CacheStorageCache::IsUnreferenced() const {
 
 void CacheStorageCache::Match(blink::mojom::FetchAPIRequestPtr request,
                               blink::mojom::CacheQueryOptionsPtr match_options,
+                              int64_t trace_id,
                               ResponseCallback callback) {
   if (backend_state_ == BACKEND_CLOSED) {
     std::move(callback).Run(
@@ -557,13 +561,14 @@ void CacheStorageCache::Match(blink::mojom::FetchAPIRequestPtr request,
       CacheStorageSchedulerOp::kMatch,
       base::BindOnce(&CacheStorageCache::MatchImpl,
                      weak_ptr_factory_.GetWeakPtr(), std::move(request),
-                     std::move(match_options),
+                     std::move(match_options), trace_id,
                      scheduler_->WrapCallbackToRunNext(std::move(callback))));
 }
 
 void CacheStorageCache::MatchAll(
     blink::mojom::FetchAPIRequestPtr request,
     blink::mojom::CacheQueryOptionsPtr match_options,
+    int64_t trace_id,
     ResponsesCallback callback) {
   if (backend_state_ == BACKEND_CLOSED) {
     std::move(callback).Run(
@@ -576,13 +581,14 @@ void CacheStorageCache::MatchAll(
       CacheStorageSchedulerOp::kMatchAll,
       base::BindOnce(&CacheStorageCache::MatchAllImpl,
                      weak_ptr_factory_.GetWeakPtr(), std::move(request),
-                     std::move(match_options),
+                     std::move(match_options), trace_id,
                      scheduler_->WrapCallbackToRunNext(std::move(callback))));
 }
 
 void CacheStorageCache::WriteSideData(ErrorCallback callback,
                                       const GURL& url,
                                       base::Time expected_response_time,
+                                      int64_t trace_id,
                                       scoped_refptr<net::IOBuffer> buffer,
                                       int buf_len) {
   if (backend_state_ == BACKEND_CLOSED) {
@@ -601,12 +607,13 @@ void CacheStorageCache::WriteSideData(ErrorCallback callback,
       blink::mojom::StorageType::kTemporary,
       base::BindOnce(&CacheStorageCache::WriteSideDataDidGetQuota,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback), url,
-                     expected_response_time, buffer, buf_len));
+                     expected_response_time, trace_id, buffer, buf_len));
 }
 
 void CacheStorageCache::BatchOperation(
     std::vector<blink::mojom::BatchOperationPtr> operations,
     bool fail_on_duplicates,
+    int64_t trace_id,
     VerboseErrorCallback callback,
     BadMessageCallback bad_message_callback) {
   // This method may produce a warning message that should be returned in the
@@ -701,12 +708,13 @@ void CacheStorageCache::BatchOperation(
         blink::mojom::StorageType::kTemporary,
         base::BindOnce(&CacheStorageCache::BatchDidGetUsageAndQuota,
                        weak_ptr_factory_.GetWeakPtr(), std::move(operations),
-                       std::move(callback), std::move(bad_message_callback),
-                       std::move(message), space_required, side_data_size));
+                       trace_id, std::move(callback),
+                       std::move(bad_message_callback), std::move(message),
+                       space_required, side_data_size));
     return;
   }
 
-  BatchDidGetUsageAndQuota(std::move(operations), std::move(callback),
+  BatchDidGetUsageAndQuota(std::move(operations), trace_id, std::move(callback),
                            std::move(bad_message_callback), std::move(message),
                            0 /* space_required */, 0 /* side_data_size */,
                            blink::mojom::QuotaStatusCode::kOk, 0 /* usage */,
@@ -715,6 +723,7 @@ void CacheStorageCache::BatchOperation(
 
 void CacheStorageCache::BatchDidGetUsageAndQuota(
     std::vector<blink::mojom::BatchOperationPtr> operations,
+    int64_t trace_id,
     VerboseErrorCallback callback,
     BadMessageCallback bad_message_callback,
     base::Optional<std::string> message,
@@ -723,6 +732,11 @@ void CacheStorageCache::BatchDidGetUsageAndQuota(
     blink::mojom::QuotaStatusCode status_code,
     int64_t usage,
     int64_t quota) {
+  TRACE_EVENT_WITH_FLOW1("CacheStorage",
+                         "CacheStorageCache::BatchDidGetUsageAndQuota",
+                         TRACE_ID_GLOBAL(trace_id),
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
+                         "operations", CacheStorageTracedValue(operations));
   base::CheckedNumeric<uint64_t> safe_space_required = space_required;
   base::CheckedNumeric<uint64_t> safe_space_required_with_side_data;
   safe_space_required += usage;
@@ -760,10 +774,12 @@ void CacheStorageCache::BatchDidGetUsageAndQuota(
   auto barrier_closure = base::BarrierClosure(
       operations.size(),
       base::BindOnce(&CacheStorageCache::BatchDidAllOperations,
-                     weak_ptr_factory_.GetWeakPtr(), callback_copy, message));
+                     weak_ptr_factory_.GetWeakPtr(), callback_copy, message,
+                     trace_id));
   auto completion_callback = base::BindRepeating(
       &CacheStorageCache::BatchDidOneOperation, weak_ptr_factory_.GetWeakPtr(),
-      std::move(barrier_closure), std::move(callback_copy), std::move(message));
+      std::move(barrier_closure), std::move(callback_copy), std::move(message),
+      trace_id);
 
   // Operations may synchronously invoke |callback| which could release the
   // last reference to this instance. Hold a handle for the duration of this
@@ -776,9 +792,9 @@ void CacheStorageCache::BatchDidGetUsageAndQuota(
       case blink::mojom::OperationType::kPut:
         if (skip_side_data) {
           operation->response->side_data_blob = nullptr;
-          Put(std::move(operation), completion_callback);
+          Put(std::move(operation), trace_id, completion_callback);
         } else {
-          Put(std::move(operation), completion_callback);
+          Put(std::move(operation), trace_id, completion_callback);
         }
         break;
       case blink::mojom::OperationType::kDelete:
@@ -800,7 +816,12 @@ void CacheStorageCache::BatchDidOneOperation(
     base::OnceClosure completion_closure,
     VerboseErrorCallback error_callback,
     base::Optional<std::string> message,
+    int64_t trace_id,
     CacheStorageError error) {
+  TRACE_EVENT_WITH_FLOW0("CacheStorage",
+                         "CacheStorageCache::BatchDidOneOperation",
+                         TRACE_ID_GLOBAL(trace_id),
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
   if (error != CacheStorageError::kSuccess) {
     // This relies on |callback| being created by AdaptCallbackForRepeating
     // and ignoring anything but the first invocation.
@@ -813,7 +834,12 @@ void CacheStorageCache::BatchDidOneOperation(
 
 void CacheStorageCache::BatchDidAllOperations(
     VerboseErrorCallback callback,
-    base::Optional<std::string> message) {
+    base::Optional<std::string> message,
+    int64_t trace_id) {
+  TRACE_EVENT_WITH_FLOW0("CacheStorage",
+                         "CacheStorageCache::BatchDidAllOperations",
+                         TRACE_ID_GLOBAL(trace_id),
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
   // This relies on |callback| being created by AdaptCallbackForRepeating
   // and ignoring anything but the first invocation.
   std::move(callback).Run(CacheStorageVerboseError::New(
@@ -822,6 +848,7 @@ void CacheStorageCache::BatchDidAllOperations(
 
 void CacheStorageCache::Keys(blink::mojom::FetchAPIRequestPtr request,
                              blink::mojom::CacheQueryOptionsPtr options,
+                             int64_t trace_id,
                              RequestsCallback callback) {
   if (backend_state_ == BACKEND_CLOSED) {
     std::move(callback).Run(
@@ -833,7 +860,7 @@ void CacheStorageCache::Keys(blink::mojom::FetchAPIRequestPtr request,
       CacheStorageSchedulerOp::kKeys,
       base::BindOnce(&CacheStorageCache::KeysImpl,
                      weak_ptr_factory_.GetWeakPtr(), std::move(request),
-                     std::move(options),
+                     std::move(options), trace_id,
                      scheduler_->WrapCallbackToRunNext(std::move(callback))));
 }
 
@@ -1237,9 +1264,10 @@ int32_t CacheStorageCache::GetResponsePaddingVersion() {
 void CacheStorageCache::MatchImpl(
     blink::mojom::FetchAPIRequestPtr request,
     blink::mojom::CacheQueryOptionsPtr match_options,
+    int64_t trace_id,
     ResponseCallback callback) {
   MatchAllImpl(
-      std::move(request), std::move(match_options),
+      std::move(request), std::move(match_options), trace_id,
       base::BindOnce(&CacheStorageCache::MatchDidMatchAll,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
@@ -1264,8 +1292,14 @@ void CacheStorageCache::MatchDidMatchAll(
 
 void CacheStorageCache::MatchAllImpl(blink::mojom::FetchAPIRequestPtr request,
                                      blink::mojom::CacheQueryOptionsPtr options,
+                                     int64_t trace_id,
                                      ResponsesCallback callback) {
   DCHECK_NE(BACKEND_UNINITIALIZED, backend_state_);
+  TRACE_EVENT_WITH_FLOW2("CacheStorage", "CacheStorageCache::MatchAllImpl",
+                         TRACE_ID_GLOBAL(trace_id),
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
+                         "request", CacheStorageTracedValue(request), "options",
+                         CacheStorageTracedValue(options));
   if (backend_state_ != BACKEND_OPEN) {
     std::move(callback).Run(
         MakeErrorStorage(ErrorStorageType::kStorageMatchAllBackendClosed),
@@ -1273,17 +1307,23 @@ void CacheStorageCache::MatchAllImpl(blink::mojom::FetchAPIRequestPtr request,
     return;
   }
 
-  QueryCache(
-      std::move(request), std::move(options),
-      QUERY_CACHE_REQUESTS | QUERY_CACHE_RESPONSES_WITH_BODIES,
-      base::BindOnce(&CacheStorageCache::MatchAllDidQueryCache,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  QueryCache(std::move(request), std::move(options),
+             QUERY_CACHE_REQUESTS | QUERY_CACHE_RESPONSES_WITH_BODIES,
+             base::BindOnce(&CacheStorageCache::MatchAllDidQueryCache,
+                            weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                            trace_id));
 }
 
 void CacheStorageCache::MatchAllDidQueryCache(
     ResponsesCallback callback,
+    int64_t trace_id,
     CacheStorageError error,
     std::unique_ptr<QueryCacheResults> query_cache_results) {
+  TRACE_EVENT_WITH_FLOW0("CacheStorage",
+                         "CacheStorageCache::MatchAllDidQueryCache",
+                         TRACE_ID_GLOBAL(trace_id),
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
+
   if (error != CacheStorageError::kSuccess) {
     std::move(callback).Run(error,
                             std::vector<blink::mojom::FetchAPIResponsePtr>());
@@ -1305,11 +1345,17 @@ void CacheStorageCache::WriteSideDataDidGetQuota(
     ErrorCallback callback,
     const GURL& url,
     base::Time expected_response_time,
+    int64_t trace_id,
     scoped_refptr<net::IOBuffer> buffer,
     int buf_len,
     blink::mojom::QuotaStatusCode status_code,
     int64_t usage,
     int64_t quota) {
+  TRACE_EVENT_WITH_FLOW0("CacheStorage",
+                         "CacheStorageCache::WriteSideDataDidGetQuota",
+                         TRACE_ID_GLOBAL(trace_id),
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
+
   if (status_code != blink::mojom::QuotaStatusCode::kOk ||
       (buf_len > quota - usage)) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -1323,15 +1369,20 @@ void CacheStorageCache::WriteSideDataDidGetQuota(
       base::BindOnce(&CacheStorageCache::WriteSideDataImpl,
                      weak_ptr_factory_.GetWeakPtr(),
                      scheduler_->WrapCallbackToRunNext(std::move(callback)),
-                     url, expected_response_time, buffer, buf_len));
+                     url, expected_response_time, trace_id, buffer, buf_len));
 }
 
 void CacheStorageCache::WriteSideDataImpl(ErrorCallback callback,
                                           const GURL& url,
                                           base::Time expected_response_time,
+                                          int64_t trace_id,
                                           scoped_refptr<net::IOBuffer> buffer,
                                           int buf_len) {
   DCHECK_NE(BACKEND_UNINITIALIZED, backend_state_);
+  TRACE_EVENT_WITH_FLOW1("CacheStorage", "CacheStorageCache::WriteSideDataImpl",
+                         TRACE_ID_GLOBAL(trace_id),
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
+                         "url", url.spec());
   if (backend_state_ != BACKEND_OPEN) {
     std::move(callback).Run(
         MakeErrorStorage(ErrorStorageType::kWriteSideDataImplBackendClosed));
@@ -1344,7 +1395,7 @@ void CacheStorageCache::WriteSideDataImpl(ErrorCallback callback,
   net::CompletionCallback open_entry_callback = base::AdaptCallbackForRepeating(
       base::BindOnce(&CacheStorageCache::WriteSideDataDidOpenEntry,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback),
-                     expected_response_time, buffer, buf_len,
+                     expected_response_time, trace_id, buffer, buf_len,
                      std::move(scoped_entry_ptr)));
 
   // Use LOWEST priority here as writing side data is less important than
@@ -1358,10 +1409,15 @@ void CacheStorageCache::WriteSideDataImpl(ErrorCallback callback,
 void CacheStorageCache::WriteSideDataDidOpenEntry(
     ErrorCallback callback,
     base::Time expected_response_time,
+    int64_t trace_id,
     scoped_refptr<net::IOBuffer> buffer,
     int buf_len,
     std::unique_ptr<disk_cache::Entry*> entry_ptr,
     int rv) {
+  TRACE_EVENT_WITH_FLOW0("CacheStorage",
+                         "CacheStorageCache::WriteSideDataDidOpenEntry",
+                         TRACE_ID_GLOBAL(trace_id),
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
   if (rv != net::OK) {
     std::move(callback).Run(CacheStorageError::kErrorNotFound);
     return;
@@ -1372,16 +1428,21 @@ void CacheStorageCache::WriteSideDataDidOpenEntry(
                base::BindOnce(&CacheStorageCache::WriteSideDataDidReadMetaData,
                               weak_ptr_factory_.GetWeakPtr(),
                               std::move(callback), expected_response_time,
-                              buffer, buf_len, std::move(entry)));
+                              trace_id, buffer, buf_len, std::move(entry)));
 }
 
 void CacheStorageCache::WriteSideDataDidReadMetaData(
     ErrorCallback callback,
     base::Time expected_response_time,
+    int64_t trace_id,
     scoped_refptr<net::IOBuffer> buffer,
     int buf_len,
     disk_cache::ScopedEntryPtr entry,
     std::unique_ptr<proto::CacheMetadata> headers) {
+  TRACE_EVENT_WITH_FLOW0("CacheStorage",
+                         "CacheStorageCache::WriteSideDataDidReadMetaData",
+                         TRACE_ID_GLOBAL(trace_id),
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
   if (!headers || headers->response().response_time() !=
                       expected_response_time.ToInternalValue()) {
     std::move(callback).Run(CacheStorageError::kErrorNotFound);
@@ -1401,7 +1462,7 @@ void CacheStorageCache::WriteSideDataDidReadMetaData(
       base::AdaptCallbackForRepeating(base::BindOnce(
           &CacheStorageCache::WriteSideDataDidWrite,
           weak_ptr_factory_.GetWeakPtr(), std::move(callback), std::move(entry),
-          buf_len, std::move(response), side_data_size_before_write));
+          buf_len, std::move(response), side_data_size_before_write, trace_id));
 
   int rv = temp_entry_ptr->WriteData(
       INDEX_SIDE_DATA, 0 /* offset */, buffer.get(), buf_len,
@@ -1417,7 +1478,11 @@ void CacheStorageCache::WriteSideDataDidWrite(
     int expected_bytes,
     std::unique_ptr<::content::proto::CacheResponse> response,
     int side_data_size_before_write,
+    int64_t trace_id,
     int rv) {
+  TRACE_EVENT_WITH_FLOW0("CacheStorage",
+                         "CacheStorageCache::WriteSideDataDidWrite",
+                         TRACE_ID_GLOBAL(trace_id), TRACE_EVENT_FLAG_FLOW_IN);
   if (rv != expected_bytes) {
     entry->Doom();
     UpdateCacheSize(
@@ -1441,15 +1506,17 @@ void CacheStorageCache::WriteSideDataDidWrite(
 }
 
 void CacheStorageCache::Put(blink::mojom::BatchOperationPtr operation,
+                            int64_t trace_id,
                             ErrorCallback callback) {
   DCHECK(BACKEND_OPEN == backend_state_ || initializing_);
   DCHECK_EQ(blink::mojom::OperationType::kPut, operation->operation_type);
-  Put(std::move(operation->request), std::move(operation->response),
+  Put(std::move(operation->request), std::move(operation->response), trace_id,
       std::move(callback));
 }
 
 void CacheStorageCache::Put(blink::mojom::FetchAPIRequestPtr request,
                             blink::mojom::FetchAPIResponsePtr response,
+                            int64_t trace_id,
                             ErrorCallback callback) {
   DCHECK(BACKEND_OPEN == backend_state_ || initializing_);
 
@@ -1457,7 +1524,7 @@ void CacheStorageCache::Put(blink::mojom::FetchAPIRequestPtr request,
                             response->response_type);
 
   auto put_context = cache_entry_handler_->CreatePutContext(
-      std::move(request), std::move(response));
+      std::move(request), std::move(response), trace_id);
   put_context->callback =
       scheduler_->WrapCallbackToRunNext(std::move(callback));
 
@@ -1469,6 +1536,12 @@ void CacheStorageCache::Put(blink::mojom::FetchAPIRequestPtr request,
 
 void CacheStorageCache::PutImpl(std::unique_ptr<PutContext> put_context) {
   DCHECK_NE(BACKEND_UNINITIALIZED, backend_state_);
+  TRACE_EVENT_WITH_FLOW2(
+      "CacheStorage", "CacheStorageCache::PutImpl",
+      TRACE_ID_GLOBAL(put_context->trace_id),
+      TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "request",
+      CacheStorageTracedValue(put_context->request), "response",
+      CacheStorageTracedValue(put_context->response));
   if (backend_state_ != BACKEND_OPEN) {
     std::move(put_context->callback)
         .Run(MakeErrorStorage(ErrorStorageType::kPutImplBackendClosed));
@@ -1500,6 +1573,9 @@ void CacheStorageCache::PutImpl(std::unique_ptr<PutContext> put_context) {
 void CacheStorageCache::PutDidDeleteEntry(
     std::unique_ptr<PutContext> put_context,
     CacheStorageError error) {
+  TRACE_EVENT_WITH_FLOW0("CacheStorage", "CacheStorageCache::PutDidDeleteEntry",
+                         TRACE_ID_GLOBAL(put_context->trace_id),
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
   if (backend_state_ != BACKEND_OPEN) {
     std::move(put_context->callback)
         .Run(MakeErrorStorage(
@@ -1535,6 +1611,10 @@ void CacheStorageCache::PutDidCreateEntry(
     std::unique_ptr<disk_cache::Entry*> entry_ptr,
     std::unique_ptr<PutContext> put_context,
     int rv) {
+  TRACE_EVENT_WITH_FLOW0("CacheStorage", "CacheStorageCache::PutDidCreateEntry",
+                         TRACE_ID_GLOBAL(put_context->trace_id),
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
+
   put_context->cache_entry.reset(*entry_ptr);
 
   if (rv != net::OK) {
@@ -1606,6 +1686,11 @@ void CacheStorageCache::PutDidWriteHeaders(
     std::unique_ptr<PutContext> put_context,
     int expected_bytes,
     int rv) {
+  TRACE_EVENT_WITH_FLOW0("CacheStorage",
+                         "CacheStorageCache::PutDidWriteHeaders",
+                         TRACE_ID_GLOBAL(put_context->trace_id),
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
+
   if (rv != expected_bytes) {
     put_context->cache_entry->Doom();
     std::move(put_context->callback)
@@ -1645,6 +1730,11 @@ void CacheStorageCache::PutWriteBlobToCache(
   DCHECK(disk_cache_body_index == INDEX_RESPONSE_BODY ||
          disk_cache_body_index == INDEX_SIDE_DATA);
 
+  TRACE_EVENT_WITH_FLOW0("CacheStorage",
+                         "CacheStorageCache::PutWriteBlobToCache",
+                         TRACE_ID_GLOBAL(put_context->trace_id),
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
+
   blink::mojom::BlobPtr blob = disk_cache_body_index == INDEX_RESPONSE_BODY
                                    ? std::move(put_context->blob)
                                    : std::move(put_context->side_data_blob);
@@ -1675,6 +1765,11 @@ void CacheStorageCache::PutDidWriteBlobToCache(
     disk_cache::ScopedEntryPtr entry,
     bool success) {
   DCHECK(entry);
+  TRACE_EVENT_WITH_FLOW0("CacheStorage",
+                         "CacheStorageCache::PutDidWriteBlobToCache",
+                         TRACE_ID_GLOBAL(put_context->trace_id),
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
+
   put_context->cache_entry = std::move(entry);
 
   active_blob_to_disk_cache_writers_.Remove(blob_to_cache_key);
@@ -1788,6 +1883,7 @@ void CacheStorageCache::UpdateCacheSizeGotSize(
 void CacheStorageCache::GetAllMatchedEntries(
     blink::mojom::FetchAPIRequestPtr request,
     blink::mojom::CacheQueryOptionsPtr options,
+    int64_t trace_id,
     CacheEntriesCallback callback) {
   if (backend_state_ == BACKEND_CLOSED) {
     std::move(callback).Run(
@@ -1799,15 +1895,22 @@ void CacheStorageCache::GetAllMatchedEntries(
       CacheStorageSchedulerOp::kGetAllMatched,
       base::BindOnce(&CacheStorageCache::GetAllMatchedEntriesImpl,
                      weak_ptr_factory_.GetWeakPtr(), std::move(request),
-                     std::move(options),
+                     std::move(options), trace_id,
                      scheduler_->WrapCallbackToRunNext(std::move(callback))));
 }
 
 void CacheStorageCache::GetAllMatchedEntriesImpl(
     blink::mojom::FetchAPIRequestPtr request,
     blink::mojom::CacheQueryOptionsPtr options,
+    int64_t trace_id,
     CacheEntriesCallback callback) {
   DCHECK_NE(BACKEND_UNINITIALIZED, backend_state_);
+  TRACE_EVENT_WITH_FLOW2("CacheStorage",
+                         "CacheStorageCache::GetAllMatchedEntriesImpl",
+                         TRACE_ID_GLOBAL(trace_id),
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
+                         "request", CacheStorageTracedValue(request), "options",
+                         CacheStorageTracedValue(options));
   if (backend_state_ != BACKEND_OPEN) {
     std::move(callback).Run(
         MakeErrorStorage(
@@ -1820,13 +1923,20 @@ void CacheStorageCache::GetAllMatchedEntriesImpl(
       std::move(request), std::move(options),
       QUERY_CACHE_REQUESTS | QUERY_CACHE_RESPONSES_WITH_BODIES,
       base::BindOnce(&CacheStorageCache::GetAllMatchedEntriesDidQueryCache,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+                     weak_ptr_factory_.GetWeakPtr(), trace_id,
+                     std::move(callback)));
 }
 
 void CacheStorageCache::GetAllMatchedEntriesDidQueryCache(
+    int64_t trace_id,
     CacheEntriesCallback callback,
     blink::mojom::CacheStorageError error,
     std::unique_ptr<QueryCacheResults> query_cache_results) {
+  TRACE_EVENT_WITH_FLOW0("CacheStorage",
+                         "CacheStorageCache::GetAllMatchedEntriesDidQueryCache",
+                         TRACE_ID_GLOBAL(trace_id),
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
+
   if (error != CacheStorageError::kSuccess) {
     std::move(callback).Run(error, {});
     return;
@@ -1910,24 +2020,36 @@ void CacheStorageCache::DeleteDidQueryCache(
 
 void CacheStorageCache::KeysImpl(blink::mojom::FetchAPIRequestPtr request,
                                  blink::mojom::CacheQueryOptionsPtr options,
+                                 int64_t trace_id,
                                  RequestsCallback callback) {
   DCHECK_NE(BACKEND_UNINITIALIZED, backend_state_);
+  TRACE_EVENT_WITH_FLOW2("CacheStorage", "CacheStorageCache::KeysImpl",
+                         TRACE_ID_GLOBAL(trace_id),
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
+                         "request", CacheStorageTracedValue(request), "options",
+                         CacheStorageTracedValue(options));
+
   if (backend_state_ != BACKEND_OPEN) {
     std::move(callback).Run(
         MakeErrorStorage(ErrorStorageType::kKeysImplBackendClosed), nullptr);
     return;
   }
 
-  QueryCache(
-      std::move(request), std::move(options), QUERY_CACHE_REQUESTS,
-      base::BindOnce(&CacheStorageCache::KeysDidQueryCache,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  QueryCache(std::move(request), std::move(options), QUERY_CACHE_REQUESTS,
+             base::BindOnce(&CacheStorageCache::KeysDidQueryCache,
+                            weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                            trace_id));
 }
 
 void CacheStorageCache::KeysDidQueryCache(
     RequestsCallback callback,
+    int64_t trace_id,
     CacheStorageError error,
     std::unique_ptr<QueryCacheResults> query_cache_results) {
+  TRACE_EVENT_WITH_FLOW0("CacheStorage", "CacheStorageCache::KeysDidQueryCache",
+                         TRACE_ID_GLOBAL(trace_id),
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
+
   if (error != CacheStorageError::kSuccess) {
     std::move(callback).Run(error, nullptr);
     return;

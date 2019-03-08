@@ -18,11 +18,13 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
+#include "base/trace_event/traced_value.h"
 #include "content/browser/cache_storage/cache_storage_cache.h"
 #include "content/browser/cache_storage/cache_storage_cache_handle.h"
 #include "content/browser/cache_storage/cache_storage_context_impl.h"
 #include "content/browser/cache_storage/cache_storage_histogram_utils.h"
 #include "content/browser/cache_storage/cache_storage_manager.h"
+#include "content/browser/cache_storage/cache_storage_trace_utils.h"
 #include "content/common/background_fetch/background_fetch_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -31,6 +33,7 @@
 #include "content/public/common/origin_util.h"
 #include "content/public/common/referrer_type_converters.h"
 #include "mojo/public/cpp/bindings/message.h"
+#include "third_party/blink/public/common/cache_storage/cache_storage_utils.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 #include "url/gurl.h"
@@ -90,9 +93,17 @@ class CacheStorageDispatcherHost::CacheImpl
   // blink::mojom::CacheStorageCache implementation:
   void Match(blink::mojom::FetchAPIRequestPtr request,
              blink::mojom::CacheQueryOptionsPtr match_options,
+             int64_t trace_id,
              MatchCallback callback) override {
+    TRACE_EVENT_WITH_FLOW2("CacheStorage",
+                           "CacheStorageDispatchHost::CacheImpl::Match",
+                           TRACE_ID_GLOBAL(trace_id),
+                           TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
+                           "request", CacheStorageTracedValue(request),
+                           "options", CacheStorageTracedValue(match_options));
+
     auto cb = base::BindOnce(
-        [](base::TimeTicks start_time, bool ignore_search,
+        [](base::TimeTicks start_time, bool ignore_search, int64_t trace_id,
            blink::mojom::CacheStorageCache::MatchCallback callback,
            blink::mojom::CacheStorageError error,
            blink::mojom::FetchAPIResponsePtr response) {
@@ -108,16 +119,28 @@ class CacheStorageDispatcherHost::CacheImpl
                 "ServiceWorkerCache.Cache.Browser.Match.Miss", elapsed);
           }
           if (error != CacheStorageError::kSuccess) {
+            TRACE_EVENT_WITH_FLOW1(
+                "CacheStorage",
+                "CacheStorageDispatchHost::CacheImpl::Match::Callback",
+                TRACE_ID_GLOBAL(trace_id),
+                TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "status",
+                CacheStorageTracedValue(error));
             std::move(callback).Run(
                 blink::mojom::MatchResult::NewStatus(error));
             return;
           }
           UMA_HISTOGRAM_LONG_TIMES("ServiceWorkerCache.Cache.Browser.Match.Hit",
                                    elapsed);
+          TRACE_EVENT_WITH_FLOW1(
+              "CacheStorage",
+              "CacheStorageDispatchHost::CacheImpl::Match::Callback",
+              TRACE_ID_GLOBAL(trace_id),
+              TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "response",
+              CacheStorageTracedValue(response));
           std::move(callback).Run(
               blink::mojom::MatchResult::NewResponse(std::move(response)));
         },
-        base::TimeTicks::Now(), match_options->ignore_search,
+        base::TimeTicks::Now(), match_options->ignore_search, trace_id,
         std::move(callback));
 
     content::CacheStorageCache* cache = cache_handle_.value();
@@ -126,14 +149,23 @@ class CacheStorageDispatcherHost::CacheImpl
       return;
     }
 
-    cache->Match(std::move(request), std::move(match_options), std::move(cb));
+    cache->Match(std::move(request), std::move(match_options), trace_id,
+                 std::move(cb));
   }
 
   void MatchAll(blink::mojom::FetchAPIRequestPtr request,
                 blink::mojom::CacheQueryOptionsPtr match_options,
+                int64_t trace_id,
                 MatchAllCallback callback) override {
+    TRACE_EVENT_WITH_FLOW2("CacheStorage",
+                           "CacheStorageDispatchHost::CacheImpl::MatchAll",
+                           TRACE_ID_GLOBAL(trace_id),
+                           TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
+                           "request", CacheStorageTracedValue(request),
+                           "options", CacheStorageTracedValue(match_options));
+
     auto cb = base::BindOnce(
-        [](base::TimeTicks start_time,
+        [](base::TimeTicks start_time, int64_t trace_id,
            blink::mojom::CacheStorageCache::MatchAllCallback callback,
            blink::mojom::CacheStorageError error,
            std::vector<blink::mojom::FetchAPIResponsePtr> responses) {
@@ -142,14 +174,26 @@ class CacheStorageDispatcherHost::CacheImpl
                                    elapsed);
           if (error != CacheStorageError::kSuccess &&
               error != CacheStorageError::kErrorNotFound) {
+            TRACE_EVENT_WITH_FLOW1(
+                "CacheStorage",
+                "CacheStorageDispatchHost::CacheImpl::MatchAll::Callback",
+                TRACE_ID_GLOBAL(trace_id),
+                TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "status",
+                CacheStorageTracedValue(error));
             std::move(callback).Run(
                 blink::mojom::MatchAllResult::NewStatus(error));
             return;
           }
+          TRACE_EVENT_WITH_FLOW1(
+              "CacheStorage",
+              "CacheStorageDispatchHost::CacheImpl::MatchAll::Callback",
+              TRACE_ID_GLOBAL(trace_id),
+              TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
+              "response_list", CacheStorageTracedValue(responses));
           std::move(callback).Run(
               blink::mojom::MatchAllResult::NewResponses(std::move(responses)));
         },
-        base::TimeTicks::Now(), std::move(callback));
+        base::TimeTicks::Now(), trace_id, std::move(callback));
 
     content::CacheStorageCache* cache = cache_handle_.value();
     if (!cache) {
@@ -158,21 +202,35 @@ class CacheStorageDispatcherHost::CacheImpl
       return;
     }
 
-    cache->MatchAll(std::move(request), std::move(match_options),
+    cache->MatchAll(std::move(request), std::move(match_options), trace_id,
                     std::move(cb));
   }
 
   void Keys(blink::mojom::FetchAPIRequestPtr request,
             blink::mojom::CacheQueryOptionsPtr match_options,
+            int64_t trace_id,
             KeysCallback callback) override {
+    TRACE_EVENT_WITH_FLOW2("CacheStorage",
+                           "CacheStorageDispatchHost::CacheImpl::Keys",
+                           TRACE_ID_GLOBAL(trace_id),
+                           TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
+                           "request", CacheStorageTracedValue(request),
+                           "options", CacheStorageTracedValue(match_options));
+
     auto cb = base::BindOnce(
-        [](base::TimeTicks start_time,
+        [](base::TimeTicks start_time, int64_t trace_id,
            blink::mojom::CacheStorageCache::KeysCallback callback,
            blink::mojom::CacheStorageError error,
            std::unique_ptr<content::CacheStorageCache::Requests> requests) {
           UMA_HISTOGRAM_LONG_TIMES("ServiceWorkerCache.Cache.Browser.Keys",
                                    base::TimeTicks::Now() - start_time);
           if (error != CacheStorageError::kSuccess) {
+            TRACE_EVENT_WITH_FLOW1(
+                "CacheStorage",
+                "CacheStorageDispatchHost::CacheImpl::Keys::Callback",
+                TRACE_ID_GLOBAL(trace_id),
+                TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "status",
+                CacheStorageTracedValue(error));
             std::move(callback).Run(
                 blink::mojom::CacheKeysResult::NewStatus(error));
             return;
@@ -183,10 +241,17 @@ class CacheStorageDispatcherHost::CacheImpl
                 BackgroundFetchSettledFetch::CloneRequest(request));
           }
 
+          TRACE_EVENT_WITH_FLOW1(
+              "CacheStorage",
+              "CacheStorageDispatchHost::CacheImpl::Keys::Callback",
+              TRACE_ID_GLOBAL(trace_id),
+              TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
+              "request_list", CacheStorageTracedValue(requests_));
+
           std::move(callback).Run(
               blink::mojom::CacheKeysResult::NewKeys(std::move(requests_)));
         },
-        base::TimeTicks::Now(), std::move(callback));
+        base::TimeTicks::Now(), trace_id, std::move(callback));
 
     content::CacheStorageCache* cache = cache_handle_.value();
     if (!cache) {
@@ -194,12 +259,20 @@ class CacheStorageDispatcherHost::CacheImpl
       return;
     }
 
-    cache->Keys(std::move(request), std::move(match_options), std::move(cb));
+    cache->Keys(std::move(request), std::move(match_options), trace_id,
+                std::move(cb));
   }
 
   void Batch(std::vector<blink::mojom::BatchOperationPtr> batch_operations,
              bool fail_on_duplicates,
+             int64_t trace_id,
              BatchCallback callback) override {
+    TRACE_EVENT_WITH_FLOW1(
+        "CacheStorage", "CacheStorageDispatchHost::CacheImpl::Batch",
+        TRACE_ID_GLOBAL(trace_id),
+        TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "operation_list",
+        CacheStorageTracedValue(batch_operations));
+
     if (!ValidBatchOperations(batch_operations)) {
       mojo::ReportBadMessage("CSDH_UNEXPECTED_OPERATION");
       return;
@@ -213,9 +286,16 @@ class CacheStorageDispatcherHost::CacheImpl
     auto cb = base::BindOnce(
         [](base::TimeTicks start_time,
            blink::mojom::OperationType operation_type, int operation_count,
+           int64_t trace_id,
            blink::mojom::CacheStorageCache::BatchCallback callback,
            blink::mojom::CacheStorageVerboseErrorPtr error) {
           base::TimeDelta elapsed = base::TimeTicks::Now() - start_time;
+          TRACE_EVENT_WITH_FLOW1(
+              "CacheStorage",
+              "CacheStorageDispatchHost::CacheImpl::Batch::Callback",
+              TRACE_ID_GLOBAL(trace_id),
+              TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "status",
+              CacheStorageTracedValue(error->value));
           if (operation_type == blink::mojom::OperationType::kDelete) {
             DCHECK_EQ(operation_count, 1);
             UMA_HISTOGRAM_LONG_TIMES(
@@ -231,7 +311,7 @@ class CacheStorageDispatcherHost::CacheImpl
           }
           std::move(callback).Run(std::move(error));
         },
-        base::TimeTicks::Now(), operation_type, operation_count,
+        base::TimeTicks::Now(), operation_type, operation_count, trace_id,
         std::move(callback));
 
     content::CacheStorageCache* cache = cache_handle_.value();
@@ -242,7 +322,8 @@ class CacheStorageDispatcherHost::CacheImpl
     }
 
     cache->BatchOperation(
-        std::move(batch_operations), fail_on_duplicates, std::move(cb),
+        std::move(batch_operations), fail_on_duplicates, trace_id,
+        std::move(cb),
         base::BindOnce(
             [](mojo::ReportBadMessageCallback bad_message_callback) {
               std::move(bad_message_callback).Run("CSDH_UNEXPECTED_OPERATION");
@@ -253,7 +334,13 @@ class CacheStorageDispatcherHost::CacheImpl
   void SetSideData(const GURL& url,
                    base::Time response_time,
                    const std::vector<uint8_t>& side_data,
+                   int64_t trace_id,
                    SetSideDataCallback callback) override {
+    TRACE_EVENT_WITH_FLOW1("CacheStorage",
+                           "CacheStorageDispatcherHost::CacheImpl::SetSideData",
+                           TRACE_ID_GLOBAL(trace_id),
+                           TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
+                           "url", url.spec());
     content::CacheStorageCache* cache = cache_handle_.value();
     if (!cache) {
       std::move(callback).Run(blink::mojom::CacheStorageError::kErrorNotFound);
@@ -263,7 +350,7 @@ class CacheStorageDispatcherHost::CacheImpl
         base::MakeRefCounted<net::IOBuffer>(side_data.size());
     if (!side_data.empty())
       memcpy(buffer->data(), &side_data.front(), side_data.size());
-    cache->WriteSideData(std::move(callback), url, response_time,
+    cache->WriteSideData(std::move(callback), url, response_time, trace_id,
                          std::move(buffer), side_data.size());
   }
 
@@ -288,9 +375,15 @@ class CacheStorageDispatcherHost::CacheStorageImpl final
   ~CacheStorageImpl() override = default;
 
   // Mojo CacheStorage Interface implementation:
-  void Keys(blink::mojom::CacheStorage::KeysCallback callback) override {
+  void Keys(int64_t trace_id,
+            blink::mojom::CacheStorage::KeysCallback callback) override {
+    TRACE_EVENT_WITH_FLOW0(
+        "CacheStorage", "CacheStorageDispatchHost::CacheStorageImpl::Keys",
+        TRACE_ID_GLOBAL(trace_id),
+        TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
+
     auto cb = base::BindOnce(
-        [](base::TimeTicks start_time,
+        [](base::TimeTicks start_time, int64_t trace_id,
            blink::mojom::CacheStorage::KeysCallback callback,
            const CacheStorageIndex& cache_index) {
           std::vector<base::string16> string16s;
@@ -300,9 +393,15 @@ class CacheStorageDispatcherHost::CacheStorageImpl final
           UMA_HISTOGRAM_LONG_TIMES(
               "ServiceWorkerCache.CacheStorage.Browser.Keys",
               base::TimeTicks::Now() - start_time);
+          TRACE_EVENT_WITH_FLOW1(
+              "CacheStorage",
+              "CacheStorageDispatchHost::CacheStorageImpl::Keys::Callback",
+              TRACE_ID_GLOBAL(trace_id),
+              TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "key_list",
+              CacheStorageTracedValue(string16s));
           std::move(callback).Run(string16s);
         },
-        base::TimeTicks::Now(), std::move(callback));
+        base::TimeTicks::Now(), trace_id, std::move(callback));
 
     content::CacheStorage* cache_storage = GetOrCreateCacheStorage();
     if (!cache_storage) {
@@ -310,21 +409,35 @@ class CacheStorageDispatcherHost::CacheStorageImpl final
       return;
     }
 
-    cache_storage->EnumerateCaches(std::move(cb));
+    cache_storage->EnumerateCaches(trace_id, std::move(cb));
   }
 
   void Delete(const base::string16& cache_name,
+              int64_t trace_id,
               blink::mojom::CacheStorage::DeleteCallback callback) override {
+    std::string utf8_cache_name = base::UTF16ToUTF8(cache_name);
+    TRACE_EVENT_WITH_FLOW1("CacheStorage",
+                           "CacheStorageDispatchHost::CacheStorageImpl::Delete",
+                           TRACE_ID_GLOBAL(trace_id),
+                           TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
+                           "cache_name", utf8_cache_name);
+
     auto cb = base::BindOnce(
-        [](base::TimeTicks start_time,
+        [](base::TimeTicks start_time, int64_t trace_id,
            blink::mojom::CacheStorage::DeleteCallback callback,
            CacheStorageError error) {
           UMA_HISTOGRAM_LONG_TIMES(
               "ServiceWorkerCache.CacheStorage.Browser.Delete",
               base::TimeTicks::Now() - start_time);
+          TRACE_EVENT_WITH_FLOW1(
+              "CacheStorage",
+              "CacheStorageDispatchHost::CacheStorageImpl::Delete::Callback",
+              TRACE_ID_GLOBAL(trace_id),
+              TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "status",
+              CacheStorageTracedValue(error));
           std::move(callback).Run(error);
         },
-        base::TimeTicks::Now(), std::move(callback));
+        base::TimeTicks::Now(), trace_id, std::move(callback));
 
     content::CacheStorage* cache_storage = GetOrCreateCacheStorage();
     if (!cache_storage) {
@@ -332,23 +445,37 @@ class CacheStorageDispatcherHost::CacheStorageImpl final
       return;
     }
 
-    cache_storage->DoomCache(base::UTF16ToUTF8(cache_name), std::move(cb));
+    cache_storage->DoomCache(utf8_cache_name, trace_id, std::move(cb));
   }
 
   void Has(const base::string16& cache_name,
+           int64_t trace_id,
            blink::mojom::CacheStorage::HasCallback callback) override {
+    std::string utf8_cache_name = base::UTF16ToUTF8(cache_name);
+    TRACE_EVENT_WITH_FLOW1("CacheStorage",
+                           "CacheStorageDispatchHost::CacheStorageImpl::Has",
+                           TRACE_ID_GLOBAL(trace_id),
+                           TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
+                           "cache_name", utf8_cache_name);
+
     auto cb = base::BindOnce(
-        [](base::TimeTicks start_time,
+        [](base::TimeTicks start_time, int64_t trace_id,
            blink::mojom::CacheStorage::HasCallback callback, bool has_cache,
            CacheStorageError error) {
           if (!has_cache)
             error = CacheStorageError::kErrorNotFound;
+          TRACE_EVENT_WITH_FLOW1(
+              "CacheStorage",
+              "CacheStorageDispatchHost::CacheStorageImpl::Has::Callback",
+              TRACE_ID_GLOBAL(trace_id),
+              TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "status",
+              CacheStorageTracedValue(error));
           UMA_HISTOGRAM_LONG_TIMES(
               "ServiceWorkerCache.CacheStorage.Browser.Has",
               base::TimeTicks::Now() - start_time);
           std::move(callback).Run(error);
         },
-        base::TimeTicks::Now(), std::move(callback));
+        base::TimeTicks::Now(), trace_id, std::move(callback));
 
     content::CacheStorage* cache_storage = GetOrCreateCacheStorage();
     if (!cache_storage) {
@@ -357,14 +484,22 @@ class CacheStorageDispatcherHost::CacheStorageImpl final
       return;
     }
 
-    cache_storage->HasCache(base::UTF16ToUTF8(cache_name), std::move(cb));
+    cache_storage->HasCache(utf8_cache_name, trace_id, std::move(cb));
   }
 
   void Match(blink::mojom::FetchAPIRequestPtr request,
              blink::mojom::MultiCacheQueryOptionsPtr match_options,
+             int64_t trace_id,
              blink::mojom::CacheStorage::MatchCallback callback) override {
+    TRACE_EVENT_WITH_FLOW2("CacheStorage",
+                           "CacheStorageDispatchHost::CacheStorageImpl::Match",
+                           TRACE_ID_GLOBAL(trace_id),
+                           TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
+                           "request", CacheStorageTracedValue(request),
+                           "options", CacheStorageTracedValue(match_options));
+
     auto cb = BindOnce(
-        [](base::TimeTicks start_time, bool match_all_caches,
+        [](base::TimeTicks start_time, bool match_all_caches, int64_t trace_id,
            blink::mojom::CacheStorage::MatchCallback callback,
            CacheStorageError error,
            blink::mojom::FetchAPIResponsePtr response) {
@@ -379,14 +514,26 @@ class CacheStorageDispatcherHost::CacheStorageImpl final
                 elapsed);
           }
           if (error != CacheStorageError::kSuccess) {
+            TRACE_EVENT_WITH_FLOW1(
+                "CacheStorage",
+                "CacheStorageDispatchHost::CacheStorageImpl::Match::Callback",
+                TRACE_ID_GLOBAL(trace_id),
+                TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "status",
+                CacheStorageTracedValue(error));
             std::move(callback).Run(
                 blink::mojom::MatchResult::NewStatus(error));
             return;
           }
+          TRACE_EVENT_WITH_FLOW1(
+              "CacheStorage",
+              "CacheStorageDispatchHost::CacheStorageImpl::Match::Callback",
+              TRACE_ID_GLOBAL(trace_id),
+              TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "response",
+              CacheStorageTracedValue(response));
           std::move(callback).Run(
               blink::mojom::MatchResult::NewResponse(std::move(response)));
         },
-        base::TimeTicks::Now(), !match_options->cache_name,
+        base::TimeTicks::Now(), !match_options->cache_name, trace_id,
         std::move(callback));
 
     content::CacheStorage* cache_storage = GetOrCreateCacheStorage();
@@ -398,21 +545,29 @@ class CacheStorageDispatcherHost::CacheStorageImpl final
     if (!match_options->cache_name) {
       cache_storage->MatchAllCaches(std::move(request),
                                     std::move(match_options->query_options),
-                                    std::move(cb));
+                                    trace_id, std::move(cb));
       return;
     }
     std::string cache_name = base::UTF16ToUTF8(*match_options->cache_name);
     cache_storage->MatchCache(std::move(cache_name), std::move(request),
-                              std::move(match_options->query_options),
+                              std::move(match_options->query_options), trace_id,
                               std::move(cb));
   }
 
   void Open(const base::string16& cache_name,
+            int64_t trace_id,
             blink::mojom::CacheStorage::OpenCallback callback) override {
+    std::string utf8_cache_name = base::UTF16ToUTF8(cache_name);
+    TRACE_EVENT_WITH_FLOW1("CacheStorage",
+                           "CacheStorageDispatchHost::CacheStorageImpl::Open",
+                           TRACE_ID_GLOBAL(trace_id),
+                           TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
+                           "cache_name", utf8_cache_name);
     content::CacheStorage* cache_storage = GetOrCreateCacheStorage();
     auto cb =
         base::BindOnce(
             [](base::WeakPtr<CacheStorageImpl> self, base::TimeTicks start_time,
+               int64_t trace_id,
                blink::mojom::CacheStorage::OpenCallback callback,
                CacheStorageCacheHandle cache_handle, CacheStorageError error) {
               if (!self)
@@ -421,6 +576,13 @@ class CacheStorageDispatcherHost::CacheStorageImpl final
               UMA_HISTOGRAM_LONG_TIMES(
                   "ServiceWorkerCache.CacheStorage.Browser.Open",
                   base::TimeTicks::Now() - start_time);
+
+              TRACE_EVENT_WITH_FLOW1(
+                  "CacheStorage",
+                  "CacheStorageDispatchHost::CacheStorageImpl::Open::Callback",
+                  TRACE_ID_GLOBAL(trace_id),
+                  TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
+                  "status", CacheStorageTracedValue(error));
 
               if (error != CacheStorageError::kSuccess) {
                 std::move(callback).Run(
@@ -438,7 +600,7 @@ class CacheStorageDispatcherHost::CacheStorageImpl final
               std::move(callback).Run(
                   blink::mojom::OpenResult::NewCache(std::move(ptr_info)));
             },
-            weak_factory_.GetWeakPtr(), base::TimeTicks::Now(),
+            weak_factory_.GetWeakPtr(), base::TimeTicks::Now(), trace_id,
             std::move(callback));
 
     if (!cache_storage) {
@@ -447,7 +609,7 @@ class CacheStorageDispatcherHost::CacheStorageImpl final
       return;
     }
 
-    cache_storage->OpenCache(base::UTF16ToUTF8(cache_name), std::move(cb));
+    cache_storage->OpenCache(utf8_cache_name, trace_id, std::move(cb));
   }
 
  private:

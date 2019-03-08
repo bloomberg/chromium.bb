@@ -455,6 +455,7 @@ class BackgroundFetchDataManagerTest
             origin(), CacheStorageOwner::kBackgroundFetch);
     cache_storage.value()->HasCache(
         cache_name,
+        /* trace_id= */ 0,
         base::BindOnce(&BackgroundFetchDataManagerTest::DidFindCache,
                        base::Unretained(this), run_loop.QuitClosure(),
                        &result));
@@ -476,6 +477,7 @@ class BackgroundFetchDataManagerTest
     cache_storage.value()->MatchCache(
         kExampleUniqueId, BackgroundFetchSettledFetch::CloneRequest(request),
         std::move(match_options),
+        /* trace_id= */ 0,
         base::BindOnce(&BackgroundFetchDataManagerTest::DidMatchCache,
                        base::Unretained(this), run_loop.QuitClosure(),
                        &result));
@@ -493,6 +495,7 @@ class BackgroundFetchDataManagerTest
               origin(), CacheStorageOwner::kBackgroundFetch);
       cache_storage.value()->OpenCache(
           /* cache_name= */ kExampleUniqueId,
+          /* trace_id= */ 0,
           base::BindOnce(&BackgroundFetchDataManagerTest::DidOpenCache,
                          base::Unretained(this), run_loop.QuitClosure(),
                          &handle));
@@ -514,6 +517,7 @@ class BackgroundFetchDataManagerTest
       operation_ptr_vec[0]->match_options->ignore_search = true;
       handle.value()->BatchOperation(
           std::move(operation_ptr_vec), /* fail_on_duplicates= */ true,
+          /* trace_id= */ 0,
           base::BindOnce(&BackgroundFetchDataManagerTest::DidDeleteFromCache,
                          base::Unretained(this), run_loop.QuitClosure()),
           base::DoNothing());
@@ -532,6 +536,7 @@ class BackgroundFetchDataManagerTest
               origin(), CacheStorageOwner::kBackgroundFetch);
       cache_storage.value()->OpenCache(
           /* cache_name= */ kExampleUniqueId,
+          /* trace_id= */ 0,
           base::BindOnce(&BackgroundFetchDataManagerTest::DidOpenCache,
                          base::Unretained(this), run_loop.QuitClosure(),
                          &handle));
@@ -550,6 +555,7 @@ class BackgroundFetchDataManagerTest
       operation_ptr_vec[0]->response = std::move(response);
       handle.value()->BatchOperation(
           std::move(operation_ptr_vec), /* fail_on_duplicates= */ true,
+          /* trace_id= */ 0,
           base::BindOnce(&BackgroundFetchDataManagerTest::DidDeleteFromCache,
                          base::Unretained(this), run_loop.QuitClosure()),
           base::DoNothing());
