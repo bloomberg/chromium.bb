@@ -475,6 +475,10 @@ void PoissonAllocationSampler::RecordFree(void* address) {
 void PoissonAllocationSampler::DoRecordFree(void* address) {
   if (UNLIKELY(ScopedMuteThreadSamples::IsMuted()))
     return;
+  // There is a rare case on macOS and Android when the very first thread_local
+  // access in ScopedMuteThreadSamples constructor may allocate and
+  // thus reenter DoRecordAlloc. However the call chain won't build up further
+  // as RecordAlloc accesses are guarded with pthread TLS-based ReentryGuard.
   ScopedMuteThreadSamples no_reentrancy_scope;
   AutoLock lock(mutex_);
   for (auto* observer : observers_)

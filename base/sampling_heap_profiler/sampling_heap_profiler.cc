@@ -168,6 +168,10 @@ void SamplingHeapProfiler::SampleAdded(
     size_t total,
     PoissonAllocationSampler::AllocatorType type,
     const char* context) {
+  // CaptureStack and allocation context tracking may use TLS.
+  // Bail out if it has been destroyed.
+  if (UNLIKELY(base::ThreadLocalStorage::HasBeenDestroyed()))
+    return;
   DCHECK(PoissonAllocationSampler::ScopedMuteThreadSamples::IsMuted());
   AutoLock lock(mutex_);
   Sample sample(size, total, ++last_sample_ordinal_);
@@ -187,9 +191,6 @@ void SamplingHeapProfiler::SampleAdded(
 
 void SamplingHeapProfiler::CaptureMixedStack(const char* context,
                                              Sample* sample) {
-  // Allocation context is tracked in TLS. Return nothing if TLS was destroyed.
-  if (UNLIKELY(base::ThreadLocalStorage::HasBeenDestroyed()))
-    return;
   auto* tracker =
       trace_event::AllocationContextTracker::GetInstanceForCurrentThread();
   if (!tracker)
@@ -228,10 +229,6 @@ void SamplingHeapProfiler::CaptureNativeStack(const char* context,
 
   if (record_thread_names_)
     sample->thread_name = CachedThreadName();
-
-  // Task context require access to TLS.
-  if (UNLIKELY(base::ThreadLocalStorage::HasBeenDestroyed()))
-    return;
 
   if (!context) {
     const auto* tracker =
