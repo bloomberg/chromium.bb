@@ -48,13 +48,11 @@ ExtensionPopup::ExtensionPopup(extensions::ExtensionViewHost* host,
                                arrow,
                                views::BubbleBorder::SMALL_SHADOW),
       host_(host) {
-  show_action_ = show_action;
   set_margins(gfx::Insets());
   SetLayoutManager(std::make_unique<views::FillLayout>());
   AddChildView(GetExtensionView());
   GetExtensionView()->set_container(this);
-  // ExtensionPopup closes itself on very specific de-activation conditions.
-  set_close_on_deactivate(false);
+  UpdateShowAction(show_action);
 
   // Listen for the containing view calling window.close();
   registrar_.Add(
@@ -87,10 +85,13 @@ int ExtensionPopup::GetDialogButtons() const {
 
 void ExtensionPopup::OnWidgetActivationChanged(views::Widget* widget,
                                                bool active) {
-  // Don't close if we haven't shown the widget yet (the widget is shown once
-  // the WebContents finishes loading).
-  if (GetWidget()->IsVisible() && active && widget == anchor_widget())
-    CloseUnlessUnderInspection();
+  if (active && observe_next_widget_activation_) {
+    observe_next_widget_activation_ = false;
+    views::Widget* const my_widget = GetWidget();
+    if (widget != my_widget)
+      my_widget->Close();
+  }
+  BubbleDialogDelegateView::OnWidgetActivationChanged(widget, active);
 }
 
 bool ExtensionPopup::ShouldHaveRoundCorners() const {
@@ -120,13 +121,15 @@ void ExtensionPopup::Observe(int type,
 void ExtensionPopup::DevToolsAgentHostAttached(
     content::DevToolsAgentHost* agent_host) {
   if (host()->host_contents() == agent_host->GetWebContents())
-    show_action_ = SHOW_AND_INSPECT;
+    UpdateShowAction(SHOW_AND_INSPECT);
 }
 
 void ExtensionPopup::DevToolsAgentHostDetached(
     content::DevToolsAgentHost* agent_host) {
-  if (host()->host_contents() == agent_host->GetWebContents())
-    show_action_ = SHOW;
+  if (host()->host_contents() == agent_host->GetWebContents()) {
+    UpdateShowAction(SHOW);
+    observe_next_widget_activation_ = true;
+  }
 }
 
 ExtensionViewViews* ExtensionPopup::GetExtensionView() {
@@ -165,6 +168,11 @@ void ExtensionPopup::OnTabStripModelChanged(
 void ExtensionPopup::CloseUnlessUnderInspection() {
   if (show_action_ == SHOW)
     GetWidget()->Close();
+}
+
+void ExtensionPopup::UpdateShowAction(ShowAction show_action) {
+  show_action_ = show_action;
+  set_close_on_deactivate(show_action == SHOW);
 }
 
 void ExtensionPopup::ShowBubble() {

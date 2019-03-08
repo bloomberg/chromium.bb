@@ -398,19 +398,6 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest,
     EXPECT_FALSE(first_controller->IsShowingPopup());
     EXPECT_TRUE(second_controller->IsShowingPopup());
   }
-
-  {
-    // Clicking on the second extension's browser action a second time should
-    // result in closing the popup.
-    content::WindowedNotificationObserver observer(
-        extensions::NOTIFICATION_EXTENSION_HOST_DESTROYED,
-        content::NotificationService::AllSources());
-    browser_actions_bar()->Press(1);
-    observer.Wait();
-    EXPECT_FALSE(browser_actions_bar()->HasPopup());
-    EXPECT_FALSE(first_controller->IsShowingPopup());
-    EXPECT_FALSE(second_controller->IsShowingPopup());
-  }
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest,

@@ -106,9 +106,13 @@ std::unique_ptr<LabelButtonBorder> ToolbarActionView::CreateDefaultBorder()
 }
 
 bool ToolbarActionView::IsTriggerableEvent(const ui::Event& event) {
-  return views::MenuButton::IsTriggerableEvent(event) &&
-         (base::TimeTicks::Now() - popup_closed_time_).InMilliseconds() >
-             views::kMinimumMsBetweenButtonClicks;
+  // By default MenuButton checks the time since the menu closure, but that
+  // prevents left clicks from showing the extension popup when the context menu
+  // is showing.  The time check is to prevent reshowing on the same click that
+  // closed the menu, when this class handles via |suppress_next_release_|, so
+  // it's not necessary.  Bypass it by calling IsTriggerableEventType() instead
+  // of IsTriggerableEvent().
+  return views::MenuButton::IsTriggerableEventType(event);
 }
 
 SkColor ToolbarActionView::GetInkDropBaseColor() const {
@@ -205,15 +209,37 @@ gfx::Size ToolbarActionView::CalculatePreferredSize() const {
 }
 
 bool ToolbarActionView::OnMousePressed(const ui::MouseEvent& event) {
-  if (event.IsOnlyLeftMouseButton() && !view_controller()->IsShowingPopup()) {
-    // This event is likely to trigger the MenuButton action.
-    // TODO(bruthig): The ACTION_PENDING triggering logic should be in
-    // MenuButton::OnPressed() however there is a bug with the pressed state
-    // logic in MenuButton. See http://crbug.com/567252.
-    AnimateInkDrop(views::InkDropState::ACTION_PENDING, &event);
+  if (event.IsOnlyLeftMouseButton()) {
+    if (view_controller()->IsShowingPopup()) {
+      // Left-clicking the button should always hide the popup.  In most cases,
+      // this would have happened automatically anyway due to the popup losing
+      // activation, but if the popup is currently being inspected, the
+      // activation loss will not automatically close it, so force-hide here.
+      view_controller_->HidePopup();
+
+      // Since we just hid the popup, don't allow the mouse release for this
+      // click to re-show it.
+      suppress_next_release_ = true;
+    } else {
+      // This event is likely to trigger the MenuButton action.
+      // TODO(bruthig): The ACTION_PENDING triggering logic should be in
+      // MenuButton::OnPressed() however there is a bug with the pressed state
+      // logic in MenuButton. See http://crbug.com/567252.
+      AnimateInkDrop(views::InkDropState::ACTION_PENDING, &event);
+    }
   }
 
   return MenuButton::OnMousePressed(event);
+}
+
+void ToolbarActionView::OnMouseReleased(const ui::MouseEvent& event) {
+  // MenuButton::OnMouseReleased() may synchronously delete |this|, so writing
+  // member variables after that point is unsafe.  Instead, copy the old value
+  // of |suppress_next_release_| so it can be updated now.
+  const bool suppress_next_release = suppress_next_release_;
+  suppress_next_release_ = false;
+  if (!suppress_next_release)
+    MenuButton::OnMouseReleased(event);
 }
 
 void ToolbarActionView::OnGestureEvent(ui::GestureEvent* event) {
@@ -226,6 +252,13 @@ void ToolbarActionView::OnGestureEvent(ui::GestureEvent* event) {
 
 void ToolbarActionView::OnDragDone() {
   views::MenuButton::OnDragDone();
+
+  // The mouse release that ends a drag does not generate a mouse release event,
+  // so OnMouseReleased() doesn't get called.  Thus if the click that started
+  // the drag set |suppress_next_release_|, it must be reset here or the next
+  // mouse release after the drag will be erroneously discarded.
+  suppress_next_release_ = false;
+
   delegate_->OnToolbarActionViewDragDone();
 }
 
@@ -272,7 +305,6 @@ void ToolbarActionView::OnPopupShown(bool by_user) {
 }
 
 void ToolbarActionView::OnPopupClosed() {
-  popup_closed_time_ = base::TimeTicks::Now();
   pressed_lock_.reset();  // Unpress the menu button if it was pressed.
 }
 
