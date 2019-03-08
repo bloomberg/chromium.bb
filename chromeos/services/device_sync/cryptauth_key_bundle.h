@@ -66,6 +66,8 @@ class CryptAuthKeyBundle {
   // If the key being added is active, all other keys in the bundle will be
   // deactivated. If the handle of the input key matches one in the bundle, the
   // existing key will be overwritten.
+  // Note: All keys added to the bundle kUserKeyPair must have the handle
+  // kCryptAuthFixedUserKeyPairHandle.
   void AddKey(const CryptAuthKey& key);
 
   // Activates the key corresponding to |handle| in the bundle and deactivates
