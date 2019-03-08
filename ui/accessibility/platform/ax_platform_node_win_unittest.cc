@@ -8,6 +8,7 @@
 
 #include <memory>
 
+#include "base/test/metrics/histogram_tester.h"
 #include "base/win/atl.h"
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_variant.h"
@@ -3264,6 +3265,32 @@ TEST_F(AXPlatformNodeWinTest, TestUIAGetPropertyValueClickablePoint) {
   std::vector<double> expected_values = {70, 130};
   EXPECT_UIA_DOUBLE_ARRAY_EQ(raw_element_provider_simple,
                              UIA_ClickablePointPropertyId, expected_values);
+}
+
+TEST_F(AXPlatformNodeWinTest, TestUIAGetPropertyValue_Histogram) {
+  AXNodeData root;
+  root.id = 0;
+  Init(root);
+  ComPtr<IRawElementProviderSimple> root_node =
+      GetRootIRawElementProviderSimple();
+
+  // Log a known property ID
+  {
+    base::HistogramTester histogram_tester;
+    ScopedVariant property_value;
+    root_node->GetPropertyValue(UIA_NamePropertyId, property_value.Receive());
+    histogram_tester.ExpectUniqueSample(
+        "Accessibility.WinAPIs.GetPropertyValue", UIA_NamePropertyId, 1);
+  }
+
+  // Collapse unknown property IDs to zero
+  {
+    base::HistogramTester histogram_tester;
+    ScopedVariant property_value;
+    root_node->GetPropertyValue(42, property_value.Receive());
+    histogram_tester.ExpectUniqueSample(
+        "Accessibility.WinAPIs.GetPropertyValue", 0, 1);
+  }
 }
 
 TEST_F(AXPlatformNodeWinTest, TestUIAGetDescribedByPropertyId) {
