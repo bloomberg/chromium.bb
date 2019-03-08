@@ -19,21 +19,6 @@
 
 namespace content {
 
-namespace {
-// Returns whether it's possible for a document whose frame is a descendant of
-// |frame| to be a secure context, not considering scheme exceptions (since any
-// document can be a secure context if it has a scheme exception). See
-// Document::isSecureContextImpl for more details.
-bool IsFrameSecure(blink::WebFrame* frame) {
-  while (frame) {
-    if (!frame->GetSecurityOrigin().IsPotentiallyTrustworthy())
-      return false;
-    frame = frame->Parent();
-  }
-  return true;
-}
-}  // namespace
-
 class ServiceWorkerNetworkProviderForFrame::NewDocumentObserver
     : public RenderFrameObserver {
  public:
@@ -78,21 +63,13 @@ ServiceWorkerNetworkProviderForFrame::Create(
     scoped_refptr<network::SharedURLLoaderFactory> fallback_loader_factory) {
   DCHECK(ServiceWorkerUtils::IsBrowserAssignedProviderId(provider_id));
 
-  // Ideally Document::IsSecureContext would be called here, but the document is
-  // not created yet, and due to redirects the URL may change. So pass
-  // is_parent_frame_secure to the browser process, so it can determine the
-  // context security when deciding whether to allow a service worker to control
-  // the document.
-  const bool is_parent_frame_secure =
-      IsFrameSecure(frame->GetWebFrame()->Parent());
-
   auto provider =
       base::WrapUnique(new ServiceWorkerNetworkProviderForFrame(frame));
 
   auto host_info = blink::mojom::ServiceWorkerProviderHostInfo::New(
       provider_id, frame->GetRoutingID(),
       blink::mojom::ServiceWorkerProviderType::kForWindow,
-      is_parent_frame_secure, nullptr /* host_request */,
+      false /* is_parent_frame_secure */, nullptr /* host_request */,
       nullptr /* client_ptr_info */);
   blink::mojom::ServiceWorkerContainerAssociatedRequest client_request =
       mojo::MakeRequest(&host_info->client_ptr_info);
