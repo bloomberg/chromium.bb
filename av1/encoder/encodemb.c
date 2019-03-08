@@ -227,8 +227,12 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
     TX_TYPE tx_type = av1_get_tx_type(pd->plane_type, xd, blk_row, blk_col,
                                       tx_size, cm->reduced_tx_set_used);
     if (args->enable_optimize_b != NO_TRELLIS_OPT) {
-      av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize,
-                      tx_size, tx_type, AV1_XFORM_QUANT_FP);
+      av1_xform_quant(
+          cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size, tx_type,
+          USE_B_QUANT_NO_TRELLIS &&
+                  (args->enable_optimize_b == FINAL_PASS_TRELLIS_OPT)
+              ? AV1_XFORM_QUANT_B
+              : AV1_XFORM_QUANT_FP);
       TXB_CTX txb_ctx;
       get_txb_ctx(plane_bsize, tx_size, plane, a, l, &txb_ctx);
       av1_optimize_b(args->cpi, x, plane, block, tx_size, tx_type, &txb_ctx,
@@ -579,8 +583,12 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
     const ENTROPY_CONTEXT *a = &args->ta[blk_col];
     const ENTROPY_CONTEXT *l = &args->tl[blk_row];
     if (args->enable_optimize_b != NO_TRELLIS_OPT) {
-      av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize,
-                      tx_size, tx_type, AV1_XFORM_QUANT_FP);
+      av1_xform_quant(
+          cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size, tx_type,
+          USE_B_QUANT_NO_TRELLIS &&
+                  (args->enable_optimize_b == FINAL_PASS_TRELLIS_OPT)
+              ? AV1_XFORM_QUANT_B
+              : AV1_XFORM_QUANT_FP);
       TXB_CTX txb_ctx;
       get_txb_ctx(plane_bsize, tx_size, plane, a, l, &txb_ctx);
       av1_optimize_b(args->cpi, x, plane, block, tx_size, tx_type, &txb_ctx,
