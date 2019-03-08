@@ -184,7 +184,7 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
       av1_quantize_skip(n_coeffs, qcoeff, dqcoeff, eob);
     }
   }
-  // NOTE: optimize_b_following is ture means av1_optimze_b will be called
+  // NOTE: optimize_b_following is true means av1_optimze_b will be called
   // When the condition of doing optimize_b is changed,
   // this flag need update simultaneously
   const int optimize_b_following =
