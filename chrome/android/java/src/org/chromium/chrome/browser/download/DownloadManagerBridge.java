@@ -13,8 +13,10 @@ import android.os.Build;
 import android.os.Environment;
 import android.support.v4.app.NotificationManagerCompat;
 import android.text.TextUtils;
+import android.util.Pair;
 
 import org.chromium.base.Callback;
+import org.chromium.base.ContentUriUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.StrictModeContext;
@@ -262,20 +264,35 @@ public class DownloadManagerBridge {
         return ContextUtils.getApplicationContext();
     }
 
+    /**
+     * This function is meant to be called as the last step of a download. It will add the download
+     * to the android's DownloadManager and determine if the download can be resolved to any
+     * activity so that it can be auto-opened.
+     */
     @CalledByNative
-    private static void addCompletedDownload(String fileName, String description, String mimeType,
-            String filePath, long fileSizeBytes, String originalUrl, String referrer,
-            String downloadGuid, long callbackId) {
-        AsyncTask<Long> task = new AsyncTask<Long>() {
+    private static void addCompletedDownload(String fileName, String description,
+            String originalMimeType, String filePath, long fileSizeBytes, String originalUrl,
+            String referrer, String downloadGuid, long callbackId) {
+        final String mimeType = ChromeDownloadDelegate.remapGenericMimeType(
+                originalMimeType, originalUrl, fileName);
+        AsyncTask<Pair<Long, Boolean>> task = new AsyncTask<Pair<Long, Boolean>>() {
             @Override
-            protected Long doInBackground() {
-                return addCompletedDownload(fileName, description, mimeType, filePath,
-                        fileSizeBytes, originalUrl, referrer, downloadGuid);
+            protected Pair<Long, Boolean> doInBackground() {
+                long downloadId = ContentUriUtils.isContentUri(filePath)
+                        ? DownloadItem.INVALID_DOWNLOAD_ID
+                        : addCompletedDownload(fileName, description, mimeType, filePath,
+                                fileSizeBytes, originalUrl, referrer, downloadGuid);
+                boolean success = ContentUriUtils.isContentUri(filePath)
+                        || downloadId != DownloadItem.INVALID_DOWNLOAD_ID;
+                boolean canResolve = success
+                        && DownloadManagerService.canResolveDownload(
+                                filePath, mimeType, downloadId);
+                return Pair.create(downloadId, canResolve);
             }
 
             @Override
-            protected void onPostExecute(Long downloadId) {
-                nativeOnAddCompletedDownloadDone(callbackId, downloadId);
+            protected void onPostExecute(Pair<Long, Boolean> result) {
+                nativeOnAddCompletedDownloadDone(callbackId, result.first, result.second);
             }
         };
         try {
@@ -283,7 +300,7 @@ public class DownloadManagerBridge {
         } catch (RejectedExecutionException e) {
             // Reaching thread limit, update will be reschduled for the next run.
             Log.e(TAG, "Thread limit reached, reschedule notification update later.");
-            nativeOnAddCompletedDownloadDone(callbackId, DownloadItem.INVALID_DOWNLOAD_ID);
+            nativeOnAddCompletedDownloadDone(callbackId, DownloadItem.INVALID_DOWNLOAD_ID, false);
         }
     }
 
@@ -424,5 +441,6 @@ public class DownloadManagerBridge {
         }
     }
 
-    private static native void nativeOnAddCompletedDownloadDone(long callbackId, long downloadId);
+    private static native void nativeOnAddCompletedDownloadDone(
+            long callbackId, long downloadId, boolean canResolve);
 }

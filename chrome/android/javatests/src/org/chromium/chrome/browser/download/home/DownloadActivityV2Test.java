@@ -63,6 +63,16 @@ public class DownloadActivityV2Test extends DummyUiActivityTestCase {
     public void setUpTest() throws Exception {
         super.setUpTest();
         MockitoAnnotations.initMocks(this);
+
+        Map<String, Boolean> features = new HashMap<>();
+        features.put(ChromeFeatureList.DOWNLOADS_LOCATION_CHANGE, true);
+        features.put(ChromeFeatureList.DOWNLOAD_HOME_SHOW_STORAGE_INFO, true);
+        features.put(ChromeFeatureList.DOWNLOAD_HOME_V2, true);
+        features.put(ChromeFeatureList.OFFLINE_PAGES_PREFETCHING, true);
+        features.put(ChromeFeatureList.OVERSCROLL_HISTORY_NAVIGATION, false);
+        features.put(ChromeFeatureList.DOWNLOAD_OFFLINE_CONTENT_PROVIDER, false);
+        ChromeFeatureList.setTestFeatures(features);
+
         StubbedOfflineContentProvider stubbedOfflineContentProvider =
                 new StubbedOfflineContentProvider();
         OfflineContentAggregatorFactory.setOfflineContentProviderForTests(
@@ -79,14 +89,6 @@ public class DownloadActivityV2Test extends DummyUiActivityTestCase {
         stubbedOfflineContentProvider.addItem(item3);
 
         TrackerFactory.setTrackerForTests(mTracker);
-
-        Map<String, Boolean> features = new HashMap<>();
-        features.put(ChromeFeatureList.DOWNLOADS_LOCATION_CHANGE, true);
-        features.put(ChromeFeatureList.DOWNLOAD_HOME_SHOW_STORAGE_INFO, true);
-        features.put(ChromeFeatureList.DOWNLOAD_HOME_V2, true);
-        features.put(ChromeFeatureList.OFFLINE_PAGES_PREFETCHING, true);
-        features.put(ChromeFeatureList.OVERSCROLL_HISTORY_NAVIGATION, false);
-        ChromeFeatureList.setTestFeatures(features);
     }
 
     private void setUpUi() {

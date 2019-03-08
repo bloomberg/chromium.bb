@@ -221,6 +221,7 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
         }
     }
 
+    private final boolean mUseNewDownloadPath;
     private final boolean mIsIncognito;
     private final Handler mHandler = new Handler();
     private final DownloadProgressInfoBar.Client mClient = new DownloadProgressInfoBarClient();
@@ -258,6 +259,8 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
 
     /** Constructor. */
     public DownloadInfoBarController(boolean isIncognito) {
+        mUseNewDownloadPath =
+                ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOAD_OFFLINE_CONTENT_PROVIDER);
         mIsIncognito = isIncognito;
         mHandler.post(() -> getOfflineContentProvider().addObserver(this));
     }
@@ -273,6 +276,8 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
 
     /** Updates the InfoBar when new information about a download comes in. */
     public void onDownloadItemUpdated(DownloadItem downloadItem) {
+        if (mUseNewDownloadPath) return;
+
         OfflineItem offlineItem = DownloadInfo.createOfflineItem(downloadItem.getDownloadInfo());
         if (!isVisibleToUser(offlineItem)) return;
 
@@ -291,6 +296,7 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
 
     /** Updates the InfoBar after a download has been removed. */
     public void onDownloadItemRemoved(ContentId contentId) {
+        if (mUseNewDownloadPath) return;
         onItemRemoved(contentId);
     }
 

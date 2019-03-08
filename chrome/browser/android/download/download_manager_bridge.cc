@@ -24,14 +24,15 @@ using download::DownloadItem;
 static void JNI_DownloadManagerBridge_OnAddCompletedDownloadDone(
     JNIEnv* env,
     jlong callback_id,
-    jlong download_id) {
+    jlong download_id,
+    jboolean can_resolve) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(callback_id);
 
   // Convert java long long int to c++ pointer, take ownership.
   std::unique_ptr<AddCompletedDownloadCallback> cb(
       reinterpret_cast<AddCompletedDownloadCallback*>(callback_id));
-  std::move(*cb).Run(download_id);
+  std::move(*cb).Run(download_id, can_resolve);
 }
 
 void DownloadManagerBridge::AddCompletedDownload(

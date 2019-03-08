@@ -33,6 +33,7 @@ import com.google.ipc.invalidation.util.Preconditions;
 
 import org.chromium.base.ContentUriUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.media.MediaViewerUtils;
 import org.chromium.chrome.browser.notifications.ChromeNotificationBuilder;
 import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
@@ -242,7 +243,9 @@ public final class DownloadNotificationFactory {
 
                 if (downloadUpdate.getIsOpenable()) {
                     Intent intent;
-                    if (LegacyHelpers.isLegacyDownload(downloadUpdate.getContentId())) {
+                    if (LegacyHelpers.isLegacyDownload(downloadUpdate.getContentId())
+                            && !ChromeFeatureList.isEnabled(
+                                    ChromeFeatureList.DOWNLOAD_OFFLINE_CONTENT_PROVIDER)) {
                         Preconditions.checkNotNull(downloadUpdate.getContentId());
                         Preconditions.checkArgument(downloadUpdate.getSystemDownloadId() != -1
                                 || ContentUriUtils.isContentUri(downloadUpdate.getFilePath()));

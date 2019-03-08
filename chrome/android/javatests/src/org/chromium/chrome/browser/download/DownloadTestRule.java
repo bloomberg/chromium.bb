@@ -20,12 +20,18 @@ import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactory;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.components.offline_items_collection.ContentId;
+import org.chromium.components.offline_items_collection.OfflineContentProvider;
+import org.chromium.components.offline_items_collection.OfflineItem;
+import org.chromium.components.offline_items_collection.OfflineItemState;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -194,6 +200,22 @@ public class DownloadTestRule extends ChromeActivityTestRule<ChromeActivity> {
         }
     }
 
+    private class TestDownloadBackendObserver implements OfflineContentProvider.Observer {
+        @Override
+        public void onItemsAdded(ArrayList<OfflineItem> items) {}
+
+        @Override
+        public void onItemRemoved(ContentId id) {}
+
+        @Override
+        public void onItemUpdated(OfflineItem item) {
+            if (item.state == OfflineItemState.COMPLETE) {
+                mLastDownloadFilePath = item.filePath;
+                mHttpDownloadFinished.notifyCalled();
+            }
+        }
+    }
+
     @Override
     public Statement apply(final Statement base, Description description) {
         return super.apply(new Statement() {
@@ -222,6 +244,8 @@ public class DownloadTestRule extends ChromeActivityTestRule<ChromeActivity> {
                             new SystemDownloadNotifier(), new Handler(), UPDATE_DELAY_MILLIS));
             DownloadController.setDownloadNotificationService(
                     DownloadManagerService.getDownloadManagerService());
+            OfflineContentAggregatorFactory.forProfile(null).addObserver(
+                    new TestDownloadBackendObserver());
         });
     }
 

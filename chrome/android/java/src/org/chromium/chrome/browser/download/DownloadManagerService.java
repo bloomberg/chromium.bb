@@ -886,6 +886,23 @@ public class DownloadManagerService
                                 : ExternalNavigationDelegateImpl.resolveIntent(intent, true);
     }
 
+    /**
+     * Return whether a download item can be resolved to any activity.
+     * @param filePath The file path for the download.
+     * @param mimeType The mime type of the download
+     * @param systemDownloadId They download ID generated from the android DownloadManager.
+     * @return True, if the download can be handled by an activity, false otherwise
+     */
+    public static boolean canResolveDownload(
+            String filePath, String mimeType, long systemDownloadId) {
+        assert !ThreadUtils.runningOnUiThread();
+        if (isOMADownloadDescription(mimeType)) return true;
+
+        Intent intent = getLaunchIntentForDownload(filePath, systemDownloadId,
+                DownloadManagerService.isSupportedMimeType(mimeType), null, null);
+        return intent != null && ExternalNavigationDelegateImpl.resolveIntent(intent, true);
+    }
+
     /** See {@link #openDownloadedContent(Context, String, boolean, boolean, String, long)}. */
     protected void openDownloadedContent(final DownloadInfo downloadInfo, final long downloadId,
             @DownloadOpenSource int source) {
@@ -1196,18 +1213,25 @@ public class DownloadManagerService
      */
     public void onSuccessNotificationShown(
             DownloadInfo info, boolean canResolve, int notificationId, long systemDownloadId) {
-        if (canResolve && shouldOpenAfterDownload(info.getMimeType(), info.hasUserGesture())) {
-            DownloadItem item = new DownloadItem(false, info);
-            item.setSystemDownloadId(systemDownloadId);
-            handleAutoOpenAfterDownload(item);
-        } else {
-            DownloadInfoBarController infobarController =
-                    getInfoBarController(info.isOffTheRecord());
-            if (infobarController != null) {
-                infobarController.onNotificationShown(info.getContentId(), notificationId);
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOAD_OFFLINE_CONTENT_PROVIDER)) {
+            if (canResolve && shouldOpenAfterDownload(info.getMimeType(), info.hasUserGesture())) {
+                DownloadItem item = new DownloadItem(false, info);
+                item.setSystemDownloadId(systemDownloadId);
+                handleAutoOpenAfterDownload(item);
+            } else {
+                DownloadInfoBarController infobarController =
+                        getInfoBarController(info.isOffTheRecord());
+                if (infobarController != null) {
+                    infobarController.onNotificationShown(info.getContentId(), notificationId);
+                }
+                mDownloadSnackbarController.onDownloadSucceeded(
+                        info, notificationId, systemDownloadId, canResolve, false);
             }
-            mDownloadSnackbarController.onDownloadSucceeded(
-                    info, notificationId, systemDownloadId, canResolve, false);
+        } else {
+            if (getInfoBarController(info.isOffTheRecord()) != null) {
+                getInfoBarController(info.isOffTheRecord())
+                        .onNotificationShown(info.getContentId(), notificationId);
+            }
         }
 
         if (BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
