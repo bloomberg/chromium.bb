@@ -235,15 +235,6 @@ const base::Value::ListStorage* GetListPolicyValue(
   return &entry->value->GetList();
 }
 
-bool IsPacHttpsUrlStrippingDisabled(
-    policy::DeviceLocalAccountPolicyBroker* broker) {
-  const policy::PolicyMap::Entry* entry =
-      broker->core()->store()->policy_map().Get(
-          policy::key::kPacHttpsUrlStrippingEnabled);
-  // Policy is enabled and it's value is set to 'false'.
-  return entry && entry->value && !entry->value->GetBool();
-}
-
 bool AreRiskyPoliciesUsed(policy::DeviceLocalAccountPolicyBroker* broker) {
   const policy::PolicyMap& policy_map = broker->core()->store()->policy_map();
   for (const auto& it : policy_map) {
@@ -1536,8 +1527,7 @@ bool ChromeUserManagerImpl::IsManagedSessionEnabledForUser(
 bool ChromeUserManagerImpl::IsFullManagementDisclosureNeeded(
     policy::DeviceLocalAccountPolicyBroker* broker) const {
   return IsManagedSessionEnabled(broker) &&
-         (IsPacHttpsUrlStrippingDisabled(broker) ||
-          AreRiskyPoliciesUsed(broker) ||
+         (AreRiskyPoliciesUsed(broker) ||
           AreRiskyExtensionsForceInstalled(broker) ||
           AreForcedNetworkCertificatesInstalled() ||
           IsProxyUsed(GetLocalState()));

@@ -2278,7 +2278,7 @@
   },
 
   "PacHttpsUrlStrippingEnabled": {
-  "note": "This policy has been removed, see https://crbug.com/939760."
+    "note": "This policy has been removed, see https://crbug.com/939760."
   },
 
   "RegisteredProtocolHandlers": {

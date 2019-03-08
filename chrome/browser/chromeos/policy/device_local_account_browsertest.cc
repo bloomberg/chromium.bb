@@ -2601,42 +2601,6 @@ IN_PROC_BROWSER_TEST_F(ManagedSessionsTest, AllowCrossOriginAuthPrompt) {
           broker));
 }
 
-// TODO(crbug.com/939700): Fix this test.
-#if 0
-IN_PROC_BROWSER_TEST_F(ManagedSessionsTest, PacHttpsUrlStrippingEnabled) {
-  SetManagedSessionsEnabled(/* managed_sessions_enabled */ true);
-
-  device_local_account_policy_.payload()
-      .mutable_pachttpsurlstrippingenabled()
-      ->set_value(false);
-
-  // Install and refresh the device policy now. This will also fetch the initial
-  // user policy for the device-local account now.
-  UploadAndInstallDeviceLocalAccountPolicy();
-  AddPublicSessionToDevicePolicy(kAccountId1);
-  AddNetworkCertificateToDevicePolicy();
-  WaitForPolicy();
-
-  const user_manager::User* user =
-      user_manager::UserManager::Get()->FindUser(account_id_1_);
-  ASSERT_TRUE(user);
-  auto* broker = GetDeviceLocalAccountPolicyBroker();
-  ASSERT_TRUE(broker);
-
-  // Check that 'DeviceLocalAccountManagedSessionEnabled' policy was applied
-  // correctly.
-  ASSERT_TRUE(
-      chromeos::ChromeUserManager::Get()->IsManagedSessionEnabledForUser(
-          *user));
-
-  // Check that disabling 'PacHttpsUrlStrippingEnabled' activates managed
-  // sessions mode.
-  ASSERT_TRUE(
-      chromeos::ChromeUserManager::Get()->IsFullManagementDisclosureNeeded(
-          broker));
-}
-#endif
-
 class TermsOfServiceDownloadTest : public DeviceLocalAccountTest,
                                    public testing::WithParamInterface<bool> {
 };

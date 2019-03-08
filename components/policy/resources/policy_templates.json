@@ -11089,7 +11089,8 @@
       'name': 'PacHttpsUrlStrippingEnabled',
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': [ 'chrome.*:52-75', 'chrome_os:52-75' ],
+      'supported_on': [ 'chrome.*:52-74', 'chrome_os:52-74' ],
+      'deprecated': True,
       'features': {
         'dynamic_refresh': False,
         'per_profile': False,
