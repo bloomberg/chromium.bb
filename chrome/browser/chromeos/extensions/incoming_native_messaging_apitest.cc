@@ -17,6 +17,7 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/test/browser_test.h"
+#include "extensions/browser/api/messaging/channel_endpoint.h"
 #include "extensions/browser/api/messaging/message_service.h"
 #include "extensions/browser/api/messaging/native_message_host.h"
 #include "extensions/common/api/messaging/messaging_endpoint.h"
@@ -88,8 +89,7 @@ class ExtensionIncomingNativeMessagingTest
         message_service->GetChannelDelegate(), port_id,
         std::move(native_message_host));
     message_service->OpenChannelToExtension(
-        content::ChildProcessHost::kInvalidUniqueID /* source_process_id */,
-        MSG_ROUTING_NONE /* source_routing_id */, port_id,
+        extensions::ChannelEndpoint(profile()), port_id,
         extensions::MessagingEndpoint::ForNativeApp(kFakeNativeAppName),
         std::move(native_message_port), extension_->id(), GURL(),
         std::string() /* channel_name */);

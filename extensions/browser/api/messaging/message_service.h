@@ -30,6 +30,7 @@ class BrowserContext;
 }
 
 namespace extensions {
+class ChannelEndpoint;
 class Extension;
 class ExtensionHost;
 class MessagingDelegate;
@@ -81,8 +82,7 @@ class MessageService : public BrowserContextKeyedAPI,
   // and every listening context owned by that extension. |channel_name| is
   // an optional identifier for use by extension developers. |opener_port| is an
   // optional pre-opened port that should be attached to the opened channel.
-  void OpenChannelToExtension(int source_process_id,
-                              int source_routing_id,
+  void OpenChannelToExtension(const ChannelEndpoint& source,
                               const PortId& source_port_id,
                               const MessagingEndpoint& source_endpoint,
                               std::unique_ptr<MessagePort> opener_port,
@@ -93,8 +93,7 @@ class MessageService : public BrowserContextKeyedAPI,
   // Same as above, but opens a channel to the tab with the given ID.  Messages
   // are restricted to that tab, so if there are multiple tabs in that process,
   // only the targeted tab will receive messages.
-  void OpenChannelToTab(int source_process_id,
-                        int source_routing_id,
+  void OpenChannelToTab(const ChannelEndpoint& source,
                         const PortId& source_port_id,
                         int tab_id,
                         int frame_id,

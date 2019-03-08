@@ -17,6 +17,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "extensions/browser/api/messaging/channel_endpoint.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/process_manager_observer.h"
@@ -184,6 +185,35 @@ ExtensionMessagePort::ExtensionMessagePort(
   } else {
     RegisterFrame(rfh);
   }
+}
+
+ExtensionMessagePort::ExtensionMessagePort(
+    base::WeakPtr<ChannelDelegate> channel_delegate,
+    const PortId& port_id,
+    content::BrowserContext* browser_context)
+    : weak_channel_delegate_(channel_delegate),
+      port_id_(port_id),
+      browser_context_(browser_context) {}
+
+// static
+std::unique_ptr<ExtensionMessagePort> ExtensionMessagePort::CreateForEndpoint(
+    base::WeakPtr<ChannelDelegate> channel_delegate,
+    const PortId& port_id,
+    const std::string& extension_id,
+    const ChannelEndpoint& endpoint,
+    bool include_child_frames) {
+  if (endpoint.is_for_render_frame()) {
+    return std::make_unique<ExtensionMessagePort>(
+        channel_delegate, port_id, extension_id, endpoint.GetRenderFrameHost(),
+        include_child_frames);
+  }
+  DCHECK(!include_child_frames);
+  // NOTE: We don't want all the workers within the extension, so we cannot
+  // reuse other constructor from above.
+  std::unique_ptr<ExtensionMessagePort> port(new ExtensionMessagePort(
+      channel_delegate, port_id, endpoint.browser_context()));
+  port->RegisterWorker(endpoint.GetWorkerId());
+  return port;
 }
 
 ExtensionMessagePort::~ExtensionMessagePort() {}

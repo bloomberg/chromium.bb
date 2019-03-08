@@ -30,6 +30,7 @@ class Message;
 
 namespace extensions {
 class ExtensionHost;
+class ChannelEndpoint;
 struct PortContext;
 
 // A port that manages communication with an extension.
@@ -49,6 +50,16 @@ class ExtensionMessagePort : public MessagePort {
                        const PortId& port_id,
                        const std::string& extension_id,
                        content::RenderProcessHost* extension_process);
+
+  // Creates a port for any ChannelEndpoint which can be for a render frame or
+  // Service Worker.
+  static std::unique_ptr<ExtensionMessagePort> CreateForEndpoint(
+      base::WeakPtr<ChannelDelegate> channel_delegate,
+      const PortId& port_id,
+      const std::string& extension_id,
+      const ChannelEndpoint& endpoint,
+      bool include_child_frames);
+
   ~ExtensionMessagePort() override;
 
   // MessagePort:
@@ -74,6 +85,10 @@ class ExtensionMessagePort : public MessagePort {
  private:
   class FrameTracker;
   struct IPCTarget;
+
+  ExtensionMessagePort(base::WeakPtr<ChannelDelegate> channel_delegate,
+                       const PortId& port_id,
+                       content::BrowserContext* browser_context);
 
   // Registers a frame as a receiver / sender.
   void RegisterFrame(content::RenderFrameHost* rfh);

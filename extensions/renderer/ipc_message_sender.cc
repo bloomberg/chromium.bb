@@ -364,9 +364,16 @@ class WorkerThreadIPCMessageSender : public IPCMessageSender {
             PortContextForCurrentWorker(), info, channel_name, port_id));
         break;
       }
-      case MessageTarget::TAB:
-        NOTIMPLEMENTED() << "https://crbug.com/925918.";
+      case MessageTarget::TAB: {
+        DCHECK(extension);
+        ExtensionMsg_TabTargetConnectionInfo info;
+        info.tab_id = *target.tab_id;
+        info.frame_id = *target.frame_id;
+        dispatcher_->Send(new ExtensionHostMsg_OpenChannelToTab(
+            PortContextForCurrentWorker(), info, extension->id(), channel_name,
+            port_id));
         break;
+      }
       case MessageTarget::NATIVE_APP:
         NOTIMPLEMENTED() << "https://crbug.com/925918.";
         break;
