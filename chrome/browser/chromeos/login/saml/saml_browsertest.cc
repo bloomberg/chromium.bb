@@ -14,7 +14,6 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -88,7 +87,6 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
@@ -848,8 +846,7 @@ IN_PROC_BROWSER_TEST_F(SamlTest, MAYBE_MetaRefreshToHTTPDisallowed) {
             WaitForAndGetFatalErrorMessage());
 }
 
-class SAMLEnrollmentTest : public SamlTest,
-                           public content::WebContentsObserver {
+class SAMLEnrollmentTest : public SamlTest {
  public:
   SAMLEnrollmentTest();
   ~SAMLEnrollmentTest() override;
@@ -858,19 +855,11 @@ class SAMLEnrollmentTest : public SamlTest,
   void SetUpOnMainThread() override;
   void StartSamlAndWaitForIdpPageLoad(const std::string& gaia_email) override;
 
-  // content::WebContentsObserver:
-  void DidFinishLoad(content::RenderFrameHost* render_frame_host,
-                     const GURL& validated_url) override;
-
-  void WaitForEnrollmentSuccess();
   guest_view::TestGuestViewManager* GetGuestViewManager();
   content::WebContents* GetEnrollmentContents();
 
  private:
   LocalPolicyTestServerMixin local_policy_mixin_{&mixin_host_};
-  base::ScopedTempDir temp_dir_;
-
-  std::unique_ptr<base::RunLoop> run_loop_;
 
   guest_view::TestGuestViewManagerFactory guest_view_manager_factory_;
 
@@ -881,6 +870,7 @@ SAMLEnrollmentTest::SAMLEnrollmentTest() {
   guest_view::GuestViewManager::set_factory_for_testing(
       &guest_view_manager_factory_);
   gaia_frame_parent_ = "oauth-enroll-auth-view";
+  authenticator_id_ = "$('oauth-enrollment').authenticator_";
 }
 
 SAMLEnrollmentTest::~SAMLEnrollmentTest() {}
@@ -900,63 +890,16 @@ void SAMLEnrollmentTest::SetUpOnMainThread() {
 void SAMLEnrollmentTest::StartSamlAndWaitForIdpPageLoad(
     const std::string& gaia_email) {
   WaitForSigninScreen();
-  run_loop_.reset(new base::RunLoop);
   ExistingUserController::current_controller()->OnStartEnterpriseEnrollment();
   while (!GetEnrollmentContents()) {
     GetGuestViewManager()->WaitForNextGuestCreated();
   }
-  Observe(GetEnrollmentContents());
-  run_loop_->Run();
-
+  // Wait for Gaia is ready.
+  OobeBaseTest::WaitForGaiaPageEvent("backButton");
   SetSignFormField("identifier", gaia_email);
 
-  run_loop_.reset(new base::RunLoop);
   ExecuteJsInSigninFrame("document.getElementById('nextButton').click();");
-  run_loop_->Run();
-}
-
-void SAMLEnrollmentTest::DidFinishLoad(
-    content::RenderFrameHost* render_frame_host,
-    const GURL& validated_url) {
-  const GURL origin = validated_url.GetOrigin();
-  if (origin !=
-          fake_gaia_.gaia_https_forwarder()->GetURLForSSLHost(std::string()) &&
-      origin != saml_https_forwarder_.GetURLForSSLHost(std::string())) {
-    return;
-  }
-
-  // The GAIA or SAML IdP login form finished loading.
-  if (run_loop_)
-    run_loop_->Quit();
-}
-
-// Waits until the class |oauth-enroll-state-success| becomes set for the
-// enrollment screen, indicating enrollment success.
-void SAMLEnrollmentTest::WaitForEnrollmentSuccess() {
-  bool done = false;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-      GetLoginUI()->GetWebContents(),
-      "var enrollmentScreen = document.getElementById('oauth-enrollment');"
-      "function SendReplyIfEnrollmentDone() {"
-      "  if (enrollmentScreen.classList.contains("
-      "          'oauth-enroll-state-attribute-prompt')) {"
-      "    $('oauth-enroll-attribute-prompt-card').fire('submit');"
-      "    return false;"
-      "  }"
-      "  if (!enrollmentScreen.classList.contains("
-      "           'oauth-enroll-state-success')) {"
-      "    return false;"
-      "  }"
-      "  domAutomationController.send(true);"
-      "  observer.disconnect();"
-      "  return true;"
-      "}"
-      "var observer = new MutationObserver(SendReplyIfEnrollmentDone);"
-      "if (!SendReplyIfEnrollmentDone()) {"
-      "  var options = { attributes: true, attributeFilter: [ 'class' ] };"
-      "  observer.observe(enrollmentScreen, options);"
-      "}",
-      &done));
+  OobeBaseTest::WaitForGaiaPageEvent("authFlowChange");
 }
 
 guest_view::TestGuestViewManager* SAMLEnrollmentTest::GetGuestViewManager() {
@@ -975,7 +918,7 @@ content::WebContents* SAMLEnrollmentTest::GetEnrollmentContents() {
 }
 
 // Flaky. See crbug.com/766953.
-#if defined(ADDRESS_SANITIZER) || defined(OS_CHROMEOS)
+#if defined(ADDRESS_SANITIZER)
 #define MAYBE_WithoutCredentialsPassingAPI DISABLED_WithoutCredentialsPassingAPI
 #else
 #define MAYBE_WithoutCredentialsPassingAPI WithoutCredentialsPassingAPI
@@ -989,16 +932,16 @@ IN_PROC_BROWSER_TEST_F(SAMLEnrollmentTest, MAYBE_WithoutCredentialsPassingAPI) {
   SetSignFormField("Password", "fake_password");
   ExecuteJsInSigninFrame("document.getElementById('Submit').click();");
 
-  WaitForEnrollmentSuccess();
+  OobeBaseTest::WaitForEnrollmentSuccess();
 }
 
 // Flaky. See crbug.com/766953.
-#if defined(ADDRESS_SANITIZER) || defined(OS_CHROMEOS)
+#if defined(ADDRESS_SANITIZER)
 #define MAYBE_WithCredentialsPassingAPI DISABLED_WithCredentialsPassingAPI
 #else
 #define MAYBE_WithCredentialsPassingAPI WithCredentialsPassingAPI
 #endif
-IN_PROC_BROWSER_TEST_F(SAMLEnrollmentTest, MAYBE_WithCredentialsPassingAPI) {
+IN_PROC_BROWSER_TEST_F(SAMLEnrollmentTest, WithCredentialsPassingAPI) {
   fake_saml_idp()->SetLoginHTMLTemplate("saml_api_login.html");
   fake_saml_idp()->SetLoginAuthHTMLTemplate("saml_api_login_auth.html");
   StartSamlAndWaitForIdpPageLoad(kFirstSAMLUserEmail);
@@ -1008,7 +951,7 @@ IN_PROC_BROWSER_TEST_F(SAMLEnrollmentTest, MAYBE_WithCredentialsPassingAPI) {
   SetSignFormField("Password", "fake_password");
   ExecuteJsInSigninFrame("document.getElementById('Submit').click();");
 
-  WaitForEnrollmentSuccess();
+  OobeBaseTest::WaitForEnrollmentSuccess();
 }
 
 class SAMLPolicyTest : public SamlTest {

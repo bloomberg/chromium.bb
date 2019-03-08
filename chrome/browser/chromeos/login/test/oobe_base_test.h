@@ -65,6 +65,7 @@ class OobeBaseTest : public extensions::ExtensionApiTest {
   void WaitForGaiaPageBackButtonUpdate();
   void WaitForGaiaPageEvent(const std::string& event);
   void WaitForSigninScreen();
+  void WaitForEnrollmentSuccess();
   void ExecuteJsInSigninFrame(const std::string& js);
   void SetSignFormField(const std::string& field_id,
                         const std::string& field_value);
@@ -80,6 +81,7 @@ class OobeBaseTest : public extensions::ExtensionApiTest {
   std::unique_ptr<content::WindowedNotificationObserver>
       login_screen_load_observer_;
   std::string gaia_frame_parent_ = "signin-frame";
+  std::string authenticator_id_ = "$('gaia-signin').gaiaAuthHost_";
 
   DISALLOW_COPY_AND_ASSIGN(OobeBaseTest);
 };
