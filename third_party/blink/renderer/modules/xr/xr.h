@@ -71,6 +71,10 @@ class XR final : public EventTargetWithInlineData,
 
   int64_t GetSourceId() const { return ukm_source_id_; }
 
+  using EnvironmentProviderErrorCallback = base::OnceCallback<void()>;
+  void AddEnvironmentProviderErrorHandler(
+      EnvironmentProviderErrorCallback callback);
+
  private:
   class PendingSessionQuery final
       : public GarbageCollected<PendingSessionQuery> {
@@ -105,6 +109,8 @@ class XR final : public EventTargetWithInlineData,
 
   void Dispose();
 
+  void OnEnvironmentProviderDisconnect();
+
   bool pending_device_ = false;
 
   // Indicates whether use of requestDevice has already been logged.
@@ -122,6 +128,9 @@ class XR final : public EventTargetWithInlineData,
   // respective calls to be made directly.
   HeapVector<Member<PendingSessionQuery>> pending_mode_queries_;
   HeapVector<Member<PendingSessionQuery>> pending_session_requests_;
+
+  Vector<EnvironmentProviderErrorCallback>
+      environment_provider_error_callbacks_;
 
   Member<XRFrameProvider> frame_provider_;
   HeapHashSet<WeakMember<XRSession>> sessions_;

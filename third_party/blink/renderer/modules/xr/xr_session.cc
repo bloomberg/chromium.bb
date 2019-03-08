@@ -54,6 +54,12 @@ const char kReferenceSpaceNotSupported[] =
 const char kIncompatibleLayer[] =
     "XRLayer was created with a different session.";
 
+const char kNoSpaceSpecified[] = "No XRSpace specified.";
+
+const char kHitTestNotSupported[] = "Device does not support hit-test!";
+
+const char kDeviceDisconnected[] = "The XR device has been disconnected.";
+
 const double kDegToRad = M_PI / 180.0;
 
 // TODO(bajones): This is something that we probably want to make configurable.
@@ -362,7 +368,7 @@ ScriptPromise XRSession::requestHitTest(ScriptState* script_state,
   if (!space) {
     return ScriptPromise::Reject(
         script_state, V8ThrowException::CreateTypeError(
-                          script_state->GetIsolate(), "No XRSpace specified."));
+                          script_state->GetIsolate(), kNoSpaceSpecified));
   }
 
   // TODO(https://crbug.com/846411): use space.
@@ -373,9 +379,8 @@ ScriptPromise XRSession::requestHitTest(ScriptState* script_state,
   // we want.
   if (!xr_->xrEnvironmentProviderPtr()) {
     return ScriptPromise::RejectWithDOMException(
-        script_state,
-        DOMException::Create(DOMExceptionCode::kNotSupportedError,
-                             "Device does not support hit-test!"));
+        script_state, DOMException::Create(DOMExceptionCode::kNotSupportedError,
+                                           kHitTestNotSupported));
   }
 
   device::mojom::blink::XRRayPtr ray_mojo = device::mojom::blink::XRRay::New();
@@ -393,12 +398,12 @@ ScriptPromise XRSession::requestHitTest(ScriptState* script_state,
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  // TODO(https://crbug.com/845520): Promise should be rejected if session
-  // is deleted.
+  EnsureEnvironmentErrorHandler();
   xr_->xrEnvironmentProviderPtr()->RequestHitTest(
       std::move(ray_mojo),
-      WTF::Bind(&XRSession::OnHitTestResults, WrapWeakPersistent(this),
+      WTF::Bind(&XRSession::OnHitTestResults, WrapPersistent(this),
                 WrapPersistent(resolver)));
+  hit_test_promises_.insert(resolver);
 
   return promise;
 }
@@ -406,6 +411,9 @@ ScriptPromise XRSession::requestHitTest(ScriptState* script_state,
 void XRSession::OnHitTestResults(
     ScriptPromiseResolver* resolver,
     base::Optional<WTF::Vector<device::mojom::blink::XRHitResultPtr>> results) {
+  DCHECK(hit_test_promises_.Contains(resolver));
+  hit_test_promises_.erase(resolver);
+
   if (!results) {
     resolver->Reject();
     return;
@@ -426,6 +434,24 @@ void XRSession::OnHitTestResults(
     hit_results.push_back(hit_result);
   }
   resolver->Resolve(hit_results);
+}
+
+void XRSession::EnsureEnvironmentErrorHandler() {
+  if (!environment_error_handler_subscribed_ &&
+      xr_->xrEnvironmentProviderPtr()) {
+    environment_error_handler_subscribed_ = true;
+    xr_->AddEnvironmentProviderErrorHandler(WTF::Bind(
+        &XRSession::OnEnvironmentProviderError, WrapPersistent(this)));
+  }
+}
+
+void XRSession::OnEnvironmentProviderError() {
+  HeapHashSet<Member<ScriptPromiseResolver>> hit_test_promises;
+  hit_test_promises_.swap(hit_test_promises);
+  for (ScriptPromiseResolver* resolver : hit_test_promises) {
+    resolver->Reject(DOMException::Create(DOMExceptionCode::kInvalidStateError,
+                                          kDeviceDisconnected));
+  }
 }
 
 ScriptPromise XRSession::end(ScriptState* script_state) {
@@ -994,6 +1020,7 @@ void XRSession::Trace(blink::Visitor* visitor) {
   visitor->Trace(resize_observer_);
   visitor->Trace(canvas_input_provider_);
   visitor->Trace(callback_collection_);
+  visitor->Trace(hit_test_promises_);
   EventTargetWithInlineData::Trace(visitor);
 }
 
