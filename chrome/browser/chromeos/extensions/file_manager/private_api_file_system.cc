@@ -445,7 +445,7 @@ void FileManagerPrivateInternalAddFileWatchFunction::
   // Obsolete. Fallback code if storage::WatcherManager is not implemented.
   event_router->AddFileWatch(
       file_system_url.path(), file_system_url.virtual_path(), extension_id(),
-      base::Bind(&FileWatchFunctionBase::RespondWith, this));
+      base::BindOnce(&FileWatchFunctionBase::RespondWith, this));
 }
 
 void FileManagerPrivateInternalRemoveFileWatchFunction::

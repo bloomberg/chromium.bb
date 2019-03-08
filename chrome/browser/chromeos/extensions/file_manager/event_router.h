@@ -75,7 +75,7 @@ class EventRouter
   // KeyedService overrides.
   void Shutdown() override;
 
-  typedef base::Callback<void(bool success)> BoolCallback;
+  using BoolCallback = base::OnceCallback<void(bool success)>;
 
   // Adds a file watch at |local_path|, associated with |virtual_path|, for
   // an extension with |extension_id|.
@@ -88,7 +88,7 @@ class EventRouter
   void AddFileWatch(const base::FilePath& local_path,
                     const base::FilePath& virtual_path,
                     const std::string& extension_id,
-                    const BoolCallback& callback);
+                    BoolCallback callback);
 
   // Removes a file watch at |local_path| for an extension with |extension_id|.
   //
