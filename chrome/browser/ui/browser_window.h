@@ -209,9 +209,10 @@ class BrowserWindow : public ui::BaseWindow {
   virtual void OnTabDetached(content::WebContents* contents,
                              bool was_active) = 0;
 
-  // Called when the user restores a tab from the recently closed tabs menu.
-  // |command_id| is the menu command associated with the restored tab.
-  virtual void OnTabRestoredFromMenu(int command_id) = 0;
+  // Called when the user restores a tab. |command_id| may be IDC_RESTORE_TAB or
+  // the menu command, depending on whether the tab was restored via keyboard or
+  // main menu.
+  virtual void OnTabRestored(int command_id) = 0;
 
   // Called to force the zoom state to for the active tab to be recalculated.
   // |can_show_bubble| is true when a user presses the zoom up or down keyboard

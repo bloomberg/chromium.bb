@@ -967,7 +967,7 @@ void BrowserView::OnTabDetached(content::WebContents* contents,
   }
 }
 
-void BrowserView::OnTabRestoredFromMenu(int command_id) {
+void BrowserView::OnTabRestored(int command_id) {
 #if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
   reopen_tab_promo_controller_.OnTabReopened(command_id);
 #endif
