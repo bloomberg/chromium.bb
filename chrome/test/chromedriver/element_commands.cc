@@ -384,6 +384,10 @@ Status ExecuteSendKeysToElement(Session* session,
       paths_string.append(path_part);
     }
 
+    // w3c spec specifies empty path_part should throw invalidArgument error
+    if (paths_string.empty())
+      return Status(kInvalidArgument, "'text' is empty");
+
     ChromeDesktopImpl* chrome_desktop = nullptr;
     bool is_desktop = session->chrome->GetAsDesktop(&chrome_desktop).IsOk();
 
@@ -409,11 +413,12 @@ Status ExecuteSendKeysToElement(Session* session,
     if (status.IsError())
       return status;
     if (!multiple && paths.size() > 1)
-      return Status(kUnknownError, "the element can not hold multiple files");
+      return Status(kInvalidArgument,
+                    "the element can not hold multiple files");
 
     std::unique_ptr<base::DictionaryValue> element(CreateElement(element_id));
-    return web_view->SetFileInputFiles(
-        session->GetCurrentFrameId(), *element, paths);
+    return web_view->SetFileInputFiles(session->GetCurrentFrameId(), *element,
+                                       paths, multiple);
   } else {
     return SendKeysToElement(session, web_view, element_id, key_list);
   }
