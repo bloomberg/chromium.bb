@@ -126,6 +126,8 @@ config("feature_flags") {
     defines += [ "SAFE_BROWSING_DB_LOCAL" ]
   } else if (safe_browsing_mode == 2) {
     defines += [ "SAFE_BROWSING_DB_REMOTE" ]
+  } else if (safe_browsing_mode == 3) {
+    defines += [ "SAFE_BROWSING_DB_LOCAL" ]
   }
   if (is_official_build) {
     defines += [ "OFFICIAL_BUILD" ]

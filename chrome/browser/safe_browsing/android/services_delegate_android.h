@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/safe_browsing/services_delegate.h"
+#include "components/safe_browsing/common/safe_browsing_prefs.h"
 
 namespace safe_browsing {
 
@@ -54,6 +55,14 @@ class ServicesDelegateAndroid : public ServicesDelegate {
   TelemetryService* GetTelemetryService() const override;
 
   std::string GetSafetyNetId() const override;
+
+  // Reports the current extended reporting level. Note that this is an
+  // estimation and may not always be correct. It is possible that the
+  // estimation finds both Scout and legacy extended reporting to be enabled.
+  // This can happen, for instance, if one profile has Scout enabled and another
+  // has legacy extended reporting enabled. In such a case, this method reports
+  // LEGACY as the current level.
+  ExtendedReportingLevel GetEstimatedExtendedReportingLevel() const;
 
   SafeBrowsingService* const safe_browsing_service_;
 

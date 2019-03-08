@@ -232,7 +232,7 @@ class PageInfoUI {
   std::unique_ptr<PageInfoUI::SecurityDescription> GetSecurityDescription(
       const IdentityInfo& identity_info) const;
 
-#if defined(SAFE_BROWSING_DB_LOCAL)
+#if defined(FULL_SAFE_BROWSING)
   // Creates security description for password reuse case.
   virtual std::unique_ptr<PageInfoUI::SecurityDescription>
   CreateSecurityDescriptionForPasswordReuse(

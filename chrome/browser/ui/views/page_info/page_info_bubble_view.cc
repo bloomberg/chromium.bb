@@ -73,7 +73,7 @@
 #include "ui/views/window/dialog_client_view.h"
 #include "url/gurl.h"
 
-#if defined(SAFE_BROWSING_DB_LOCAL)
+#if defined(FULL_SAFE_BROWSING)
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
 #endif
 
@@ -902,7 +902,7 @@ void PageInfoBubbleView::LayoutPermissionsLikeUiRow(views::GridLayout* layout,
   permissions_set->AddPaddingColumn(views::GridLayout::kFixedSize, side_margin);
 }
 
-#if defined(SAFE_BROWSING_DB_LOCAL)
+#if defined(FULL_SAFE_BROWSING)
 std::unique_ptr<PageInfoUI::SecurityDescription>
 PageInfoBubbleView::CreateSecurityDescriptionForPasswordReuse(
     bool is_enterprise_password) const {

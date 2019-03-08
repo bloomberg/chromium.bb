@@ -131,7 +131,7 @@
 #include "chrome/browser/ui/webui/settings/printing_handler.h"
 #endif
 
-#if defined(SAFE_BROWSING_DB_LOCAL)
+#if defined(SAFE_BROWSING_FULL)
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
 #include "chrome/browser/ui/webui/settings/change_password_handler.h"
 #endif
@@ -268,7 +268,7 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
 #endif  // OS_WIN && defined(GOOGLE_CHROME_BUILD)
 
   bool password_protection_available = false;
-#if defined(SAFE_BROWSING_DB_LOCAL)
+#if defined(SAFE_BROWSING_FULL)
   safe_browsing::ChromePasswordProtectionService* password_protection =
       safe_browsing::ChromePasswordProtectionService::
           GetPasswordProtectionService(profile);
