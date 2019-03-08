@@ -110,5 +110,16 @@ TEST_F(AllocatorStateTest, GetErrorTypeEdgeCases) {
             AllocatorState::ErrorType::kBufferOverflow);
 }
 
+// Correctly handle the edge case when a free() occurs on a page that has never
+// been allocated.
+TEST_F(AllocatorStateTest, GetErrorTypeFreeInvalidAddressEdgeCase) {
+  InitializeState(base::GetPageSize(), kGpaMaxPages);
+  EXPECT_TRUE(state_.IsValid());
+
+  state_.free_invalid_address = state_.first_page_addr;
+  EXPECT_EQ(state_.GetErrorType(state_.first_page_addr, false, false),
+            AllocatorState::ErrorType::kFreeInvalidAddress);
+}
+
 }  // namespace internal
 }  // namespace gwp_asan
