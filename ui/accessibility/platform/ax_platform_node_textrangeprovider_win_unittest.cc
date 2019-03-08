@@ -9,12 +9,90 @@
 #include "base/win/atl.h"
 #include "base/win/scoped_bstr.h"
 #include "ui/accessibility/platform/ax_fragment_root_win.h"
-
+#include "ui/accessibility/platform/ax_platform_node_textrangeprovider_win.h"
 using Microsoft::WRL::ComPtr;
 
 namespace ui {
 
-class AXPlatformNodeTextRangeProviderTest : public ui::AXPlatformNodeWinTest {};
+class AXPlatformNodeTextRangeProviderTest : public ui::AXPlatformNodeWinTest {
+ public:
+  const AXNodePosition::AXPositionInstance& GetStart(
+      const AXPlatformNodeTextRangeProviderWin* text_range) {
+    return text_range->start_;
+  }
+  const AXNodePosition::AXPositionInstance& GetEnd(
+      const AXPlatformNodeTextRangeProviderWin* text_range) {
+    return text_range->end_;
+  }
+  ui::AXPlatformNodeWin* GetOwner(
+      const AXPlatformNodeTextRangeProviderWin* text_range) {
+    return text_range->owner_;
+  }
+};
+
+TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderClone) {
+  ui::AXNodeData root_data;
+  root_data.id = 1;
+  root_data.role = ax::mojom::Role::kRootWebArea;
+
+  ui::AXNodeData text_data;
+  text_data.id = 2;
+  text_data.role = ax::mojom::Role::kStaticText;
+  text_data.SetName("some text");
+  root_data.child_ids.push_back(2);
+
+  ui::AXTreeUpdate update;
+  ui::AXTreeData tree_data;
+  tree_data.tree_id = ui::AXTreeID::CreateNewAXTreeID();
+  update.tree_data = tree_data;
+  update.has_tree_data = true;
+  update.root_id = root_data.id;
+  update.nodes.push_back(root_data);
+  update.nodes.push_back(text_data);
+  Init(update);
+
+  AXNodePosition::SetTreeForTesting(tree_.get());
+
+  ComPtr<IRawElementProviderSimple> text_node_raw =
+      QueryInterfaceFromNodeId<IRawElementProviderSimple>(text_data.id);
+
+  ComPtr<ITextProvider> text_provider;
+  EXPECT_HRESULT_SUCCEEDED(
+      text_node_raw->GetPatternProvider(UIA_TextPatternId, &text_provider));
+
+  ComPtr<ITextRangeProvider> text_range_provider;
+  EXPECT_HRESULT_SUCCEEDED(
+      text_provider->get_DocumentRange(&text_range_provider));
+
+  base::win::ScopedBstr text_content;
+  EXPECT_HRESULT_SUCCEEDED(
+      text_range_provider->GetText(-1, text_content.Receive()));
+  EXPECT_STREQ(text_content, L"some text");
+  text_content.Reset();
+
+  ComPtr<ITextRangeProvider> text_range_provider_clone;
+  text_range_provider->Clone(&text_range_provider_clone);
+
+  ComPtr<AXPlatformNodeTextRangeProviderWin> original_range;
+  ComPtr<AXPlatformNodeTextRangeProviderWin> clone_range;
+
+  text_range_provider->QueryInterface(IID_PPV_ARGS(&original_range));
+  text_range_provider->QueryInterface(IID_PPV_ARGS(&clone_range));
+
+  EXPECT_EQ(GetStart(original_range.Get()), GetStart(clone_range.Get()));
+  EXPECT_EQ(GetEnd(original_range.Get()), GetEnd(clone_range.Get()));
+  EXPECT_EQ(GetOwner(original_range.Get()), GetOwner(clone_range.Get()));
+
+  // Clear original text range provider.
+  text_range_provider.Reset();
+  EXPECT_EQ(nullptr, text_range_provider.Get());
+
+  // Ensure the clone still works correctly.
+  EXPECT_HRESULT_SUCCEEDED(
+      text_range_provider_clone->GetText(-1, text_content.Receive()));
+  EXPECT_STREQ(text_content, L"some text");
+  text_content.Reset();
+}
 
 TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderGetText) {
   ui::AXNodeData text_data;
