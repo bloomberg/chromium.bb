@@ -1657,7 +1657,6 @@ bool DCLayerTree::CommitAndClearPendingOverlays(
     if (!video_swap_chain->PresentToSwapChain(*pending_overlays_[i],
                                               &video_needs_commit)) {
       DLOG(ERROR) << "PresentToSwapChain failed";
-      DCHECK(false);
       return false;
     }
     needs_commit = needs_commit || video_needs_commit;
@@ -1693,7 +1692,6 @@ bool DCLayerTree::CommitAndClearPendingOverlays(
     HRESULT hr = dcomp_device_->Commit();
     if (FAILED(hr)) {
       DLOG(ERROR) << "Commit failed with error 0x" << std::hex << hr;
-      DCHECK(false);
       return false;
     }
   }
