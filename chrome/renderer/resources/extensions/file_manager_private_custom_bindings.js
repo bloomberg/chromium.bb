@@ -280,7 +280,7 @@ registerArgumentMassager('fileManagerPrivate.onDirectoryChanged',
   dispatch(args);
 });
 
-registerArgumentMassager('fileManagerPrivate.onCrostiniSharedPathsChanged',
+registerArgumentMassager('fileManagerPrivate.onCrostiniChanged',
                          function(args, dispatch) {
   // Convert entries arguments into real Entry objects.
   const entries = args[0].entries;
