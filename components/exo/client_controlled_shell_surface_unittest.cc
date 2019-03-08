@@ -1850,6 +1850,12 @@ TEST_F(ClientControlledShellSurfaceDisplayTest,
                                      ash::mojom::WindowStateType::MINIMIZED, 0,
                                      gfx::Rect(0, 0, 100, 100), 0);
   ASSERT_EQ(1, bounds_change_count());
+
+  // Send bounds change when exiting minmized.
+  shell_surface->OnBoundsChangeEvent(ash::mojom::WindowStateType::MINIMIZED,
+                                     ash::mojom::WindowStateType::NORMAL, 0,
+                                     gfx::Rect(0, 0, 100, 100), 0);
+  ASSERT_EQ(2, bounds_change_count());
 }
 
 TEST_F(ClientControlledShellSurfaceTest, SetPipWindowBoundsAnimates) {

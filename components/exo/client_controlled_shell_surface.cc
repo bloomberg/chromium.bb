@@ -542,10 +542,13 @@ void ClientControlledShellSurface::OnBoundsChangeEvent(
     const gfx::Rect& window_bounds,
     int bounds_change) {
   // 1) Do no update the bounds unless we have geometry from client.
-  // 2) Do not update the bounds if window is minimized.
+  // 2) Do not update the bounds if window is minimized unless it
+  // exiting the minimzied state.
   // The bounds will be provided by client when unminimized.
   if (!geometry().IsEmpty() && !window_bounds.IsEmpty() &&
-      !widget_->IsMinimized() && bounds_changed_callback_) {
+      (!widget_->IsMinimized() ||
+       requested_state != ash::mojom::WindowStateType::MINIMIZED) &&
+      bounds_changed_callback_) {
     // Sends the client bounds, which matches the geometry
     // when frame is enabled.
     ash::NonClientFrameViewAsh* frame_view = GetFrameView();
