@@ -96,12 +96,18 @@ using pASurfaceTransactionStats_getPreviousReleaseFenceFd =
 namespace gl {
 namespace {
 
+// Helper function to log errors from dlsym. Calling LOG(ERROR) inside a macro
+// crashes clang code coverage. https://crbug.com/843356
+void LogDlsymError(const char* func) {
+  LOG(ERROR) << "Unable to load function " << func;
+}
+
 #define LOAD_FUNCTION(lib, func)                             \
   do {                                                       \
     func##Fn = reinterpret_cast<p##func>(dlsym(lib, #func)); \
     if (!func##Fn) {                                         \
       supported = false;                                     \
-      LOG(ERROR) << "Unable to load function " << #func;     \
+      LogDlsymError(#func);                                  \
     }                                                        \
   } while (0)
 
