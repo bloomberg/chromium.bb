@@ -8,6 +8,7 @@
 #include "ash/ash_export.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/color_palette.h"
 
 namespace ash {
 
@@ -39,7 +40,7 @@ ASH_EXPORT constexpr int kHiddenShelfInScreenPortion = 3;
 
 // The default base color of the shelf to which different alpha values are
 // applied based on the desired shelf opacity level.
-ASH_EXPORT constexpr SkColor kShelfDefaultBaseColor = SK_ColorBLACK;
+ASH_EXPORT constexpr SkColor kShelfDefaultBaseColor = gfx::kGoogleGrey900;
 
 // Size allocated for each app button on the shelf.
 ASH_EXPORT constexpr int kShelfButtonSize = kShelfSize;
