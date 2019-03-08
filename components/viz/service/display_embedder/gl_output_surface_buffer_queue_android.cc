@@ -4,6 +4,7 @@
 
 #include "components/viz/service/display_embedder/gl_output_surface_buffer_queue_android.h"
 
+#include "components/viz/service/display/overlay_strategy_fullscreen.h"
 #include "components/viz/service/display/overlay_strategy_single_on_top.h"
 #include "components/viz/service/display/overlay_strategy_underlay.h"
 #include "components/viz/service/display_embedder/compositor_overlay_candidate_validator_android.h"
@@ -19,6 +20,9 @@ class OverlayCandidateValidatorImpl : public OverlayCandidateValidator {
   ~OverlayCandidateValidatorImpl() override = default;
 
   void GetStrategies(OverlayProcessor::StrategyList* strategies) override {
+    // Added in priority order, most to least desirable.
+    strategies->push_back(std::make_unique<OverlayStrategyFullscreen>(this));
+    strategies->push_back(std::make_unique<OverlayStrategySingleOnTop>(this));
     strategies->push_back(std::make_unique<OverlayStrategyUnderlay>(
         this, OverlayStrategyUnderlay::OpaqueMode::AllowTransparentCandidates));
   }
