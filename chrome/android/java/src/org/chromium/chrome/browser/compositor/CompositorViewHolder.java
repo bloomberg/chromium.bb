@@ -691,6 +691,7 @@ public class CompositorViewHolder extends FrameLayout
         Point viewportSize = getViewportSize();
         setSize(mTabVisible.getWebContents(), mTabVisible.getContentView(), viewportSize.x,
                 viewportSize.y);
+        onViewportChanged();
     }
 
     @Override
@@ -699,6 +700,7 @@ public class CompositorViewHolder extends FrameLayout
         Point viewportSize = getViewportSize();
         setSize(mTabVisible.getWebContents(), mTabVisible.getContentView(), viewportSize.x,
                 viewportSize.y);
+        onViewportChanged();
     }
 
     @Override
