@@ -595,7 +595,14 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_attributes(
   base::string16 attributes_str;
   const std::vector<base::string16>& attributes =
       offset_to_text_attributes().find(*start_offset)->second;
+
   for (const base::string16& attribute : attributes) {
+    // Work around JAWS crash in JAWS <= 17, and unpatched versions of JAWS
+    // 2018/2019.
+    // TODO(accessibility) Remove once JAWS <= 17 is longer a concern.
+    // Wait until 2021 for this, as JAWS users are slow to update.
+    if (attribute == L"srcdoc" || attribute == L"data-srcdoc")
+      continue;
     attributes_str += attribute + L';';
   }
 
