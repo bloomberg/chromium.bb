@@ -174,7 +174,7 @@ void AppCache::ToDatabaseRecords(
   cache_record->group_id = group->group_id();
   cache_record->online_wildcard = online_whitelist_all_;
   cache_record->update_time = update_time_;
-  cache_record->cache_size = 0;
+  cache_record->cache_size = cache_size_;
 
   for (const auto& pair : entries_) {
     entries->push_back(AppCacheDatabase::EntryRecord());
@@ -184,7 +184,6 @@ void AppCache::ToDatabaseRecords(
     record.flags = pair.second.types();
     record.response_id = pair.second.response_id();
     record.response_size = pair.second.response_size();
-    cache_record->cache_size += record.response_size;
   }
 
   const url::Origin origin = url::Origin::Create(group->manifest_url());
