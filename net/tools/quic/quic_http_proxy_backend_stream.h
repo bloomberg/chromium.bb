@@ -30,8 +30,8 @@
 #include "net/base/upload_data_stream.h"
 #include "net/url_request/url_request.h"
 
-#include "net/third_party/quic/tools/quic_backend_response.h"
-#include "net/third_party/quic/tools/quic_simple_server_backend.h"
+#include "net/third_party/quiche/src/quic/tools/quic_backend_response.h"
+#include "net/third_party/quiche/src/quic/tools/quic_simple_server_backend.h"
 #include "net/third_party/quiche/src/spdy/core/spdy_header_block.h"
 #include "net/tools/quic/quic_http_proxy_backend.h"
 

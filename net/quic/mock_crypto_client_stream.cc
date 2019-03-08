@@ -6,13 +6,13 @@
 
 #include "net/quic/mock_decrypter.h"
 #include "net/quic/mock_encrypter.h"
-#include "net/third_party/quic/core/crypto/null_decrypter.h"
-#include "net/third_party/quic/core/crypto/null_encrypter.h"
-#include "net/third_party/quic/core/crypto/quic_decrypter.h"
-#include "net/third_party/quic/core/crypto/quic_encrypter.h"
-#include "net/third_party/quic/core/http/quic_spdy_client_session_base.h"
-#include "net/third_party/quic/platform/api/quic_ptr_util.h"
-#include "net/third_party/quic/test_tools/quic_config_peer.h"
+#include "net/third_party/quiche/src/quic/core/crypto/null_decrypter.h"
+#include "net/third_party/quiche/src/quic/core/crypto/null_encrypter.h"
+#include "net/third_party/quiche/src/quic/core/crypto/quic_decrypter.h"
+#include "net/third_party/quiche/src/quic/core/crypto/quic_encrypter.h"
+#include "net/third_party/quiche/src/quic/core/http/quic_spdy_client_session_base.h"
+#include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
+#include "net/third_party/quiche/src/quic/test_tools/quic_config_peer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using quic::CLIENT;

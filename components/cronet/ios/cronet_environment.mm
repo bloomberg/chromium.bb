@@ -48,7 +48,7 @@
 #include "net/socket/ssl_client_socket.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/ssl/ssl_key_logger_impl.h"
-#include "net/third_party/quic/core/quic_versions.h"
+#include "net/third_party/quiche/src/quic/core/quic_versions.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
 #include "net/url_request/url_request_context_storage.h"

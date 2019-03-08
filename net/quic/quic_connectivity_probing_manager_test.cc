@@ -9,8 +9,8 @@
 #include "net/log/test_net_log.h"
 #include "net/socket/socket_test_util.h"
 #include "net/test/gtest_util.h"
-#include "net/third_party/quic/test_tools/mock_clock.h"
-#include "net/third_party/quic/test_tools/quic_test_utils.h"
+#include "net/third_party/quiche/src/quic/test_tools/mock_clock.h"
+#include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

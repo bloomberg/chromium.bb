@@ -6,7 +6,7 @@
 #define NET_QUIC_MOCK_QUIC_DATA_H_
 
 #include "net/socket/socket_test_util.h"
-#include "net/third_party/quic/core/quic_packets.h"
+#include "net/third_party/quiche/src/quic/core/quic_packets.h"
 
 namespace net {
 namespace test {

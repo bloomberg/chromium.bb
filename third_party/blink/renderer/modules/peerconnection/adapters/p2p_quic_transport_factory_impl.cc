@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/modules/peerconnection/adapters/p2p_quic_transport_factory_impl.h"
-#include "net/third_party/quic/core/quic_connection_id.h"
-#include "net/third_party/quic/core/quic_packet_writer.h"
+#include "net/third_party/quiche/src/quic/core/quic_connection_id.h"
+#include "net/third_party/quiche/src/quic/core/quic_packet_writer.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/p2p_quic_crypto_config_factory_impl.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/p2p_quic_packet_transport.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/p2p_quic_transport_impl.h"

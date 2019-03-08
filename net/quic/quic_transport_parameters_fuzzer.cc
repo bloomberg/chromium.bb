@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/test/fuzzed_data_provider.h"
-#include "net/third_party/quic/core/crypto/transport_parameters.h"
+#include "net/third_party/quiche/src/quic/core/crypto/transport_parameters.h"
 
 // Entry point for LibFuzzer.
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {

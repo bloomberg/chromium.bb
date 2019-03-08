@@ -11,8 +11,8 @@
 
 #include "base/macros.h"
 #include "net/base/net_export.h"
-#include "net/third_party/quic/core/crypto/channel_id.h"
-#include "net/third_party/quic/platform/api/quic_string_piece.h"
+#include "net/third_party/quiche/src/quic/core/crypto/channel_id.h"
+#include "net/third_party/quiche/src/quic/platform/api/quic_string_piece.h"
 
 namespace crypto {
 class ECPrivateKey;
