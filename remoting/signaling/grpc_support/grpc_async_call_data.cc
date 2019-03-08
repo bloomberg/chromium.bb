@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/signaling/grpc_async_call_data.h"
+#include "remoting/signaling/grpc_support/grpc_async_call_data.h"
 
 #include "base/threading/thread_task_runner_handle.h"
 #include "third_party/grpc/src/include/grpcpp/client_context.h"

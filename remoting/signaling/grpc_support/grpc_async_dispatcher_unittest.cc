@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/signaling/grpc_async_dispatcher.h"
+#include "remoting/signaling/grpc_support/grpc_async_dispatcher.h"
 
 #include <memory>
 #include <string>
@@ -14,7 +14,7 @@
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "remoting/signaling/grpc_async_dispatcher_test_services.grpc.pb.h"
+#include "remoting/signaling/grpc_support/grpc_async_dispatcher_test_services.grpc.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/grpc/src/include/grpcpp/grpcpp.h"
 

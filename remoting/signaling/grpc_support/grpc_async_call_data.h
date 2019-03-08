@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_SIGNALING_GRPC_ASYNC_CALL_DATA_H_
-#define REMOTING_SIGNALING_GRPC_ASYNC_CALL_DATA_H_
+#ifndef REMOTING_SIGNALING_GRPC_SUPPORT_GRPC_ASYNC_CALL_DATA_H_
+#define REMOTING_SIGNALING_GRPC_SUPPORT_GRPC_ASYNC_CALL_DATA_H_
 
 #include <memory>
 #include <utility>
@@ -66,4 +66,4 @@ class GrpcAsyncCallData {
 }  // namespace internal
 }  // namespace remoting
 
-#endif  // REMOTING_SIGNALING_GRPC_ASYNC_CALL_DATA_H_
+#endif  // REMOTING_SIGNALING_GRPC_SUPPORT_GRPC_ASYNC_CALL_DATA_H_

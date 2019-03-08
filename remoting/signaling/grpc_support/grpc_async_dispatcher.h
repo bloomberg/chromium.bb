@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_SIGNALING_GRPC_ASYNC_DISPATCHER_H_
-#define REMOTING_SIGNALING_GRPC_ASYNC_DISPATCHER_H_
+#ifndef REMOTING_SIGNALING_GRPC_SUPPORT_GRPC_ASYNC_DISPATCHER_H_
+#define REMOTING_SIGNALING_GRPC_SUPPORT_GRPC_ASYNC_DISPATCHER_H_
 
 #include <memory>
 #include <utility>
@@ -14,20 +14,17 @@
 #include "base/synchronization/lock.h"
 #include "base/thread_annotations.h"
 #include "base/threading/thread.h"
-#include "remoting/signaling/grpc_async_call_data.h"
-#include "remoting/signaling/grpc_async_server_streaming_call_data.h"
-#include "remoting/signaling/grpc_async_unary_call_data.h"
-#include "remoting/signaling/scoped_grpc_server_stream.h"
+#include "remoting/signaling/grpc_support/grpc_async_call_data.h"
+#include "remoting/signaling/grpc_support/grpc_async_server_streaming_call_data.h"
+#include "remoting/signaling/grpc_support/grpc_async_unary_call_data.h"
+#include "remoting/signaling/grpc_support/scoped_grpc_server_stream.h"
 #include "third_party/grpc/src/include/grpcpp/completion_queue.h"
 #include "third_party/grpc/src/include/grpcpp/support/async_unary_call.h"
 
 namespace remoting {
 
 // This class helps adapting the gRPC async completion queue handling logic into
-// Chromium's callback paradigm. See using_grpc_async_dispatcher.md for detailed
-// usage.
-// TODO(yuweih): Move GrpcAsyncDispatcher and other helper classes into a
-// subdirectory.
+// Chromium's callback paradigm. See README.md for detailed usage.
 class GrpcAsyncDispatcher {
  public:
   template <typename ResponseType>
@@ -134,4 +131,4 @@ class GrpcAsyncDispatcher {
 
 }  // namespace remoting
 
-#endif  // REMOTING_SIGNALING_GRPC_ASYNC_DISPATCHER_H_
+#endif  // REMOTING_SIGNALING_GRPC_SUPPORT_GRPC_ASYNC_DISPATCHER_H_

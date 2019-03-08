@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_SIGNALING_SCOPED_GRPC_SERVER_STREAM_H_
-#define REMOTING_SIGNALING_SCOPED_GRPC_SERVER_STREAM_H_
+#ifndef REMOTING_SIGNALING_GRPC_SUPPORT_SCOPED_GRPC_SERVER_STREAM_H_
+#define REMOTING_SIGNALING_GRPC_SUPPORT_SCOPED_GRPC_SERVER_STREAM_H_
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -29,4 +29,4 @@ class ScopedGrpcServerStream {
 
 }  // namespace remoting
 
-#endif  // REMOTING_SIGNALING_SCOPED_GRPC_SERVER_STREAM_H_
+#endif  // REMOTING_SIGNALING_GRPC_SUPPORT_SCOPED_GRPC_SERVER_STREAM_H_
