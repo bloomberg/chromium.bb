@@ -20,19 +20,28 @@
 namespace blink {
 
 NGInlineBoxFragmentPainter::NGInlineBoxFragmentPainter(
-    const NGPaintFragment& inline_box_fragment)
-    : InlineBoxPainterBase(
-          inline_box_fragment,
-          &inline_box_fragment.GetLayoutObject()->GetDocument(),
-          inline_box_fragment.GetLayoutObject()->GeneratingNode(),
-          inline_box_fragment.Style(),
-          // TODO(layout-dev): Should be first-line style.
-          inline_box_fragment.Style()),
+    const NGPaintFragment& inline_box_fragment,
+    const LayoutObject& layout_object,
+    const ComputedStyle& style,
+    const ComputedStyle& line_style)
+    : InlineBoxPainterBase(layout_object,
+                           &layout_object.GetDocument(),
+                           layout_object.GeneratingNode(),
+                           style,
+                           line_style),
       inline_box_fragment_(inline_box_fragment),
       border_edges_(NGBorderEdges::FromPhysical(
           inline_box_fragment.PhysicalFragment().BorderEdges(),
-          inline_box_fragment.Style().GetWritingMode())) {
-}
+          style.GetWritingMode())) {}
+
+NGInlineBoxFragmentPainter::NGInlineBoxFragmentPainter(
+    const NGPaintFragment& inline_box_fragment)
+    : NGInlineBoxFragmentPainter(
+          inline_box_fragment,
+          *inline_box_fragment.GetLayoutObject(),
+          inline_box_fragment.Style(),
+          // TODO(layout-dev): Should be first-line style.
+          inline_box_fragment.Style()) {}
 
 void NGInlineBoxFragmentPainter::Paint(const PaintInfo& paint_info,
                                        const LayoutPoint& paint_offset) {

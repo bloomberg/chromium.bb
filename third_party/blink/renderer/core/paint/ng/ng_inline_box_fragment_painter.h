@@ -45,6 +45,11 @@ class NGInlineBoxFragmentPainter : public InlineBoxPainterBase {
                            const LayoutRect& paint_rect) override;
 
  private:
+  NGInlineBoxFragmentPainter(const NGPaintFragment& inline_box_fragment,
+                             const LayoutObject& layout_object,
+                             const ComputedStyle& style,
+                             const ComputedStyle& line_style);
+
   void PaintBackgroundBorderShadow(const PaintInfo&,
                                    const LayoutPoint& paint_offset);
 

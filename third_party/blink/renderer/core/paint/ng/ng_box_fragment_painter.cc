@@ -449,8 +449,8 @@ void NGBoxFragmentPainter::PaintMask(const PaintInfo& paint_info,
   DrawingRecorder recorder(paint_info.context, box_fragment_, paint_info.phase);
   LayoutRect paint_rect =
       LayoutRect(paint_offset, box_fragment_.Size().ToLayoutSize());
-  PaintMaskImages(paint_info, paint_rect, box_fragment_, geometry,
-                  border_edges_.line_left, border_edges_.line_right);
+  PaintMaskImages(paint_info, paint_rect, *box_fragment_.GetLayoutObject(),
+                  geometry, border_edges_.line_left, border_edges_.line_right);
 }
 
 // TODO(kojii): This logic is kept in sync with BoxPainter. Not much efforts to
@@ -631,9 +631,10 @@ void NGBoxFragmentPainter::PaintBoxDecorationBackgroundWithRect(
         ShouldPaintBoxFragmentBorders(layout_object)) {
       Node* generating_node = layout_object.GeneratingNode();
       const Document& document = layout_object.GetDocument();
-      PaintBorder(box_fragment_, document, generating_node, paint_info,
-                  paint_rect, style, box_decoration_data.bleed_avoidance,
-                  border_edges_.line_left, border_edges_.line_right);
+      PaintBorder(*box_fragment_.GetLayoutObject(), document, generating_node,
+                  paint_info, paint_rect, style,
+                  box_decoration_data.bleed_avoidance, border_edges_.line_left,
+                  border_edges_.line_right);
     }
   }
 
