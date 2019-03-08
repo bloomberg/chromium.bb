@@ -77,6 +77,7 @@ class FakeGaiaMixin : public InProcessBrowserTestMixin {
   void SetUp() override;
   void SetUpCommandLine(base::CommandLine* command_line) override;
   void SetUpOnMainThread() override;
+  void TearDownOnMainThread() override;
 
  private:
   net::EmbeddedTestServer* embedded_test_server_;

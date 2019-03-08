@@ -104,4 +104,8 @@ void FakeGaiaMixin::SetUpOnMainThread() {
   }
 }
 
+void FakeGaiaMixin::TearDownOnMainThread() {
+  EXPECT_TRUE(gaia_https_forwarder_.Stop());
+}
+
 }  // namespace chromeos
