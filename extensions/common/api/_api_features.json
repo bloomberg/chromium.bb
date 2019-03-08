@@ -415,7 +415,8 @@
       "blessed_extension",
       "lock_screen_extension",
       "unblessed_extension",
-      "web_page"
+      "web_page",
+      "extension_service_worker"
     ],
     "matches": ["<all_urls>"]
   },
@@ -449,7 +450,8 @@
       "blessed_extension",
       "lock_screen_extension",
       "unblessed_extension",
-      "content_script"
+      "content_script",
+      "extension_service_worker"
     ]
   },
   "runtime.onConnectNative": {
