@@ -817,6 +817,12 @@ TaskQueue::QueuePriority FrameSchedulerImpl::ComputePriority(
   if (fixed_priority)
     return fixed_priority.value();
 
+  if (!parent_page_scheduler_) {
+    // Frame might be detached during its shutdown. Return a default priority
+    // in that case.
+    return TaskQueue::QueuePriority::kNormalPriority;
+  }
+
   // A hidden page with no audio.
   if (parent_page_scheduler_->IsBackgrounded()) {
     if (main_thread_scheduler_->scheduling_settings()

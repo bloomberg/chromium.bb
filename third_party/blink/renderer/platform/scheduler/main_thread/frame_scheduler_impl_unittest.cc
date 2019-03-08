@@ -1850,6 +1850,13 @@ TEST_F(FrameSchedulerImplTest, ContentCaptureHasIdleTaskQueue) {
             task_queue->FixedPriority().value());
 }
 
+TEST_F(FrameSchedulerImplTest, ComputePriorityForDetachedFrame) {
+  auto task_queue = GetTaskQueue(TaskType::kJavascriptTimer);
+  // Just check that it does not crash.
+  page_scheduler_.reset();
+  frame_scheduler_->ComputePriority(task_queue.get());
+}
+
 }  // namespace frame_scheduler_impl_unittest
 }  // namespace scheduler
 }  // namespace blink
