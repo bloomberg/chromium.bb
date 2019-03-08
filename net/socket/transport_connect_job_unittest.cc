@@ -37,6 +37,7 @@ class TransportConnectJobTest : public TestWithScopedTaskEnvironment {
             &client_socket_factory_,
             &host_resolver_,
             nullptr /* proxy_delegate */,
+            nullptr /* http_user_agent_settings */,
             SSLClientSocketContext(),
             SSLClientSocketContext(),
             nullptr /* socket_performance_watcher_factory */,

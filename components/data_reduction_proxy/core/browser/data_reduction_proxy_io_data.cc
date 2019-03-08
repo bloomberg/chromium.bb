@@ -31,8 +31,6 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_throttle_manager.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
-#include "net/url_request/http_user_agent_settings.h"
-#include "net/url_request/static_http_user_agent_settings.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
 #include "net/url_request/url_request_context_getter.h"

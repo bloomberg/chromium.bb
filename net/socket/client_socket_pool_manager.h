@@ -32,7 +32,6 @@ typedef base::Callback<int(const AddressList&, const NetLogWithSource& net_log)>
 class ClientSocketHandle;
 class HostPortPair;
 class HttpNetworkSession;
-class HttpRequestHeaders;
 class NetLogWithSource;
 class ProxyInfo;
 class ProxyServer;
@@ -109,7 +108,6 @@ class NET_EXPORT_PRIVATE ClientSocketPoolManager {
 int InitSocketHandleForHttpRequest(
     ClientSocketPoolManager::SocketGroupType group_type,
     const HostPortPair& endpoint,
-    const HttpRequestHeaders& request_extra_headers,
     int request_load_flags,
     RequestPriority request_priority,
     HttpNetworkSession* session,
@@ -137,7 +135,6 @@ int InitSocketHandleForHttpRequest(
 int InitSocketHandleForWebSocketRequest(
     ClientSocketPoolManager::SocketGroupType group_type,
     const HostPortPair& endpoint,
-    const HttpRequestHeaders& request_extra_headers,
     int request_load_flags,
     RequestPriority request_priority,
     HttpNetworkSession* session,
@@ -194,7 +191,6 @@ NET_EXPORT int InitSocketHandleForTlsConnect(
 int PreconnectSocketsForHttpRequest(
     ClientSocketPoolManager::SocketGroupType group_type,
     const HostPortPair& endpoint,
-    const HttpRequestHeaders& request_extra_headers,
     int request_load_flags,
     RequestPriority request_priority,
     HttpNetworkSession* session,

@@ -72,7 +72,6 @@ class NET_EXPORT_PRIVATE HttpProxyClientSocketWrapper
       const scoped_refptr<TransportSocketParams>& transport_params,
       const scoped_refptr<SSLSocketParams>& ssl_params,
       quic::QuicTransportVersion quic_version,
-      const std::string& user_agent,
       const HostPortPair& endpoint,
       HttpAuthCache* http_auth_cache,
       HttpAuthHandlerFactory* http_auth_handler_factory,
@@ -202,9 +201,11 @@ class NET_EXPORT_PRIVATE HttpProxyClientSocketWrapper
 
   const HostPortPair& GetDestination();
 
-  const OnProxyAuthChallengeCallback on_proxy_auth_callback_;
+  std::string GetUserAgent() const;
 
   State next_state_;
+
+  const OnProxyAuthChallengeCallback on_proxy_auth_callback_;
 
   RequestPriority priority_;
   const SocketTag socket_tag_;
@@ -216,7 +217,6 @@ class NET_EXPORT_PRIVATE HttpProxyClientSocketWrapper
 
   quic::QuicTransportVersion quic_version_;
 
-  const std::string user_agent_;
   const HostPortPair endpoint_;
   SpdySessionPool* const spdy_session_pool_;
 

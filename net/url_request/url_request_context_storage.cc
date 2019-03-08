@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "net/base/http_user_agent_settings.h"
 #include "net/base/network_delegate.h"
 #include "net/base/proxy_delegate.h"
 #include "net/cert/cert_verifier.h"
@@ -20,7 +21,6 @@
 #include "net/log/net_log.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/ssl/channel_id_service.h"
-#include "net/url_request/http_user_agent_settings.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_job_factory.h"
 #include "net/url_request/url_request_throttler_manager.h"

@@ -221,6 +221,7 @@ SpdyProxyClientSocketTest::SpdyProxyClientSocketTest()
           session_deps_.socket_factory.get(),
           session_deps_.host_resolver.get(),
           nullptr /* proxy_delegate */,
+          nullptr /* http_user_agent_settings */,
           SSLClientSocketContext(session_deps_.cert_verifier.get(),
                                  session_deps_.channel_id_service.get(),
                                  session_deps_.transport_security_state.get(),

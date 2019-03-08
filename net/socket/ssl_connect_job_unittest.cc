@@ -37,7 +37,6 @@
 #include "net/socket/socket_tag.h"
 #include "net/socket/socket_test_util.h"
 #include "net/socket/socks_connect_job.h"
-#include "net/socket/transport_client_socket_pool.h"
 #include "net/socket/transport_connect_job.h"
 #include "net/ssl/ssl_config_service_defaults.h"
 #include "net/test/gtest_util.h"
@@ -48,11 +47,6 @@
 
 namespace net {
 namespace {
-
-const int kMaxSockets = 32;
-const int kMaxSocketsPerGroup = 6;
-constexpr base::TimeDelta kUnusedIdleSocketTimeout =
-    base::TimeDelta::FromSeconds(10);
 
 // Just check that all connect times are set to base::TimeTicks::Now(), for
 // tests that don't update the mocked out time.
@@ -113,7 +107,6 @@ class SSLConnectJobTest : public WithScopedTaskEnvironment,
             new HttpProxySocketParams(proxy_transport_socket_params_,
                                       nullptr /* ssl_params */,
                                       quic::QUIC_VERSION_UNSUPPORTED,
-                                      std::string(),
                                       HostPortPair("host", 80),
                                       session_->http_auth_cache(),
                                       session_->http_auth_handler_factory(),
@@ -122,28 +115,11 @@ class SSLConnectJobTest : public WithScopedTaskEnvironment,
                                       /*is_trusted_proxy=*/false,
                                       /*tunnel=*/true,
                                       TRAFFIC_ANNOTATION_FOR_TESTS)),
-        http_proxy_socket_pool_(
-            kMaxSockets,
-            kMaxSocketsPerGroup,
-            kUnusedIdleSocketTimeout,
-            &socket_factory_,
-            &host_resolver_,
-            nullptr /* proxy_delegate */,
-            nullptr /* cert_verifier */,
-            nullptr /* channel_id_server */,
-            nullptr /* transport_security_state */,
-            nullptr /* cert_transparency_verifier */,
-            nullptr /* ct_policy_enforcer */,
-            nullptr /* ssl_client_session_cache */,
-            nullptr /* ssl_client_session_cache_privacy_mode */,
-            nullptr /* ssl_config_service */,
-            nullptr /* socket_performance_watcher_factory */,
-            nullptr /* network_quality_estimator */,
-            nullptr /* net_log */),
         common_connect_job_params_(
             &socket_factory_,
             &host_resolver_,
             nullptr /* proxy_delegate */,
+            nullptr /* http_user_agent_settings */,
             ssl_client_socket_context_,
             ssl_client_socket_context_,
             nullptr /* socket_performance_watcher */,
@@ -221,8 +197,6 @@ class SSLConnectJobTest : public WithScopedTaskEnvironment,
   scoped_refptr<TransportSocketParams> proxy_transport_socket_params_;
   scoped_refptr<SOCKSSocketParams> socks_socket_params_;
   scoped_refptr<HttpProxySocketParams> http_proxy_socket_params_;
-
-  TransportClientSocketPool http_proxy_socket_pool_;
 
   SSLConfig ssl_config_;
   const CommonConnectJobParams common_connect_job_params_;

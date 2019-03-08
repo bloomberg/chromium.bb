@@ -27,6 +27,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
@@ -103,6 +104,7 @@
 #include "net/test/test_with_scoped_task_environment.h"
 #include "net/third_party/quiche/src/spdy/core/spdy_framer.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "net/url_request/static_http_user_agent_settings.h"
 #include "net/websockets/websocket_handshake_stream_base.h"
 #include "net/websockets/websocket_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -697,6 +699,7 @@ CaptureGroupNameSocketPool<ParentPool>::CaptureGroupNameSocketPool(
                  base::TimeDelta(),
                  NULL,
                  host_resolver,
+                 NULL,
                  NULL,
                  NULL,
                  NULL,
@@ -10482,43 +10485,73 @@ TEST_F(HttpNetworkTransactionTest, BuildRequest_UserAgent) {
 }
 
 TEST_F(HttpNetworkTransactionTest, BuildRequest_UserAgentOverTunnel) {
-  HttpRequestInfo request;
-  request.method = "GET";
-  request.url = GURL("https://www.example.org/");
-  request.extra_headers.SetHeader(HttpRequestHeaders::kUserAgent,
-                                  "Chromium Ultra Awesome X Edition");
-  request.traffic_annotation =
-      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+  // Test user agent values, used both for the request header of the original
+  // request, and the value returned by the HttpUserAgentSettings. nullptr means
+  // no request header / no HttpUserAgentSettings object.
+  const char* kTestUserAgents[] = {nullptr, "", "Foopy"};
 
-  session_deps_.proxy_resolution_service = ProxyResolutionService::CreateFixed(
-      "myproxy:70", TRAFFIC_ANNOTATION_FOR_TESTS);
-  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
+  for (const char* setting_user_agent : kTestUserAgents) {
+    if (!setting_user_agent) {
+      session_deps_.http_user_agent_settings.reset();
+    } else {
+      session_deps_.http_user_agent_settings =
+          std::make_unique<StaticHttpUserAgentSettings>(
+              std::string() /* accept-language */, setting_user_agent);
+    }
+    session_deps_.proxy_resolution_service =
+        ProxyResolutionService::CreateFixed("myproxy:70",
+                                            TRAFFIC_ANNOTATION_FOR_TESTS);
+    std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+    for (const char* request_user_agent : kTestUserAgents) {
+      HttpRequestInfo request;
+      request.method = "GET";
+      request.url = GURL("https://www.example.org/");
+      if (request_user_agent) {
+        request.extra_headers.SetHeader(HttpRequestHeaders::kUserAgent,
+                                        request_user_agent);
+      }
+      request.traffic_annotation =
+          net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
 
-  MockWrite data_writes[] = {
-      MockWrite("CONNECT www.example.org:443 HTTP/1.1\r\n"
-                "Host: www.example.org:443\r\n"
-                "Proxy-Connection: keep-alive\r\n"
-                "User-Agent: Chromium Ultra Awesome X Edition\r\n\r\n"),
-  };
-  MockRead data_reads[] = {
-    // Return an error, so the transaction stops here (this test isn't
-    // interested in the rest).
-    MockRead("HTTP/1.1 407 Proxy Authentication Required\r\n"),
-    MockRead("Proxy-Authenticate: Basic realm=\"MyRealm1\"\r\n"),
-    MockRead("Proxy-Connection: close\r\n\r\n"),
-  };
+      HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
 
-  StaticSocketDataProvider data(data_reads, data_writes);
-  session_deps_.socket_factory->AddSocketDataProvider(&data);
+      std::string expected_request;
+      if (!setting_user_agent || strlen(setting_user_agent) == 0) {
+        expected_request =
+            "CONNECT www.example.org:443 HTTP/1.1\r\n"
+            "Host: www.example.org:443\r\n"
+            "Proxy-Connection: keep-alive\r\n\r\n";
+      } else {
+        expected_request = base::StringPrintf(
+            "CONNECT www.example.org:443 HTTP/1.1\r\n"
+            "Host: www.example.org:443\r\n"
+            "Proxy-Connection: keep-alive\r\n"
+            "User-Agent: %s\r\n\r\n",
+            setting_user_agent);
+      }
+      MockWrite data_writes[] = {
+          MockWrite(expected_request.c_str()),
+      };
+      MockRead data_reads[] = {
+          // Return an error, so the transaction stops here (this test isn't
+          // interested in the rest).
+          MockRead("HTTP/1.1 407 Proxy Authentication Required\r\n"),
+          MockRead("Proxy-Authenticate: Basic realm=\"MyRealm1\"\r\n"),
+          MockRead("Proxy-Connection: close\r\n\r\n"),
+      };
 
-  TestCompletionCallback callback;
+      StaticSocketDataProvider data(data_reads, data_writes);
+      session_deps_.socket_factory->AddSocketDataProvider(&data);
 
-  int rv = trans.Start(&request, callback.callback(), NetLogWithSource());
-  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+      TestCompletionCallback callback;
 
-  rv = callback.WaitForResult();
-  EXPECT_THAT(rv, IsOk());
+      int rv = trans.Start(&request, callback.callback(), NetLogWithSource());
+      EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+
+      rv = callback.WaitForResult();
+      EXPECT_THAT(rv, IsOk());
+    }
+  }
 }
 
 TEST_F(HttpNetworkTransactionTest, BuildRequest_Referer) {
@@ -14374,8 +14407,8 @@ TEST_F(HttpNetworkTransactionTest, MultiRoundAuth) {
       1,                                 // Max sockets per group
       base::TimeDelta::FromSeconds(10),  // unused_idle_socket_timeout
       session_deps_.socket_factory.get(), session_deps_.host_resolver.get(),
-      nullptr /* proxy_delegate */, session_deps_.cert_verifier.get(),
-      session_deps_.channel_id_service.get(),
+      nullptr /* proxy_delegate */, nullptr /* http_user_agent_settings */,
+      session_deps_.cert_verifier.get(), session_deps_.channel_id_service.get(),
       session_deps_.transport_security_state.get(),
       session_deps_.cert_transparency_verifier.get(),
       session_deps_.ct_policy_enforcer.get(),

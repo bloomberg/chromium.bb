@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_URL_REQUEST_HTTP_USER_AGENT_SETTINGS_H_
-#define NET_URL_REQUEST_HTTP_USER_AGENT_SETTINGS_H_
+#ifndef NET_BASE_HTTP_USER_AGENT_SETTINGS_H_
+#define NET_BASE_HTTP_USER_AGENT_SETTINGS_H_
 
 #include <string>
 
@@ -31,4 +31,4 @@ class NET_EXPORT HttpUserAgentSettings {
 
 }  // namespace net
 
-#endif  // NET_URL_REQUEST_HTTP_USER_AGENT_SETTINGS_H_
+#endif  // NET_BASE_HTTP_USER_AGENT_SETTINGS_H_

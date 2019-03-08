@@ -61,6 +61,7 @@ class HttpAuthHandlerFactory;
 class HttpNetworkSessionPeer;
 class HttpResponseBodyDrainer;
 class HttpServerProperties;
+class HttpUserAgentSettings;
 class NetLog;
 #if BUILDFLAG(ENABLE_REPORTING)
 class NetworkErrorLoggingService;
@@ -257,6 +258,7 @@ class NET_EXPORT HttpNetworkSession {
     CTPolicyEnforcer* ct_policy_enforcer;
     ProxyResolutionService* proxy_resolution_service;
     ProxyDelegate* proxy_delegate;
+    const HttpUserAgentSettings* http_user_agent_settings;
     SSLConfigService* ssl_config_service;
     HttpAuthHandlerFactory* http_auth_handler_factory;
     HttpServerProperties* http_server_properties;

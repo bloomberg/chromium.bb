@@ -78,6 +78,7 @@
 #include "net/third_party/quiche/src/spdy/core/spdy_frame_builder.h"
 #include "net/third_party/quiche/src/spdy/core/spdy_framer.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "net/url_request/static_http_user_agent_settings.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "net/url_request/url_request_test_util.h"
@@ -8143,6 +8144,8 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectBadCertificate) {
 // Checks if a request's specified "user-agent" header shows up correctly in the
 // CONNECT request to a QUIC proxy.
 TEST_P(QuicNetworkTransactionTest, QuicProxyUserAgent) {
+  const char kConfiguredUserAgent[] = "Configured User-Agent";
+  const char kRequestUserAgent[] = "Request User-Agent";
   session_params_.enable_quic = true;
   session_params_.enable_quic_proxies_for_https_urls = true;
   proxy_resolution_service_ = ProxyResolutionService::CreateFixedFromPacResult(
@@ -8154,7 +8157,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyUserAgent) {
       SYNCHRONOUS, ConstructInitialSettingsPacket(1, &header_stream_offset));
 
   spdy::SpdyHeaderBlock headers = ConnectRequestHeaders("mail.example.org:443");
-  headers["user-agent"] = "Chromium Ultra Awesome X Edition";
+  headers["user-agent"] = kConfiguredUserAgent;
   mock_quic_data.AddWrite(
       SYNCHRONOUS, ConstructClientRequestHeadersPacket(
                        2, GetNthClientInitiatedBidirectionalStreamId(0), true,
@@ -8165,11 +8168,14 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyUserAgent) {
 
   mock_quic_data.AddSocketDataToFactory(&socket_factory_);
 
+  StaticHttpUserAgentSettings http_user_agent_settings(
+      std::string() /* accept_language */, kConfiguredUserAgent);
+  session_context_.http_user_agent_settings = &http_user_agent_settings;
   CreateSession();
 
   request_.url = GURL("https://mail.example.org/");
   request_.extra_headers.SetHeader(HttpRequestHeaders::kUserAgent,
-                                   "Chromium Ultra Awesome X Edition");
+                                   kRequestUserAgent);
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   HeadersHandler headers_handler;
   trans.SetBeforeHeadersSentCallback(

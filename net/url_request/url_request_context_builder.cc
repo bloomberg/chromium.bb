@@ -213,6 +213,8 @@ void URLRequestContextBuilder::SetHttpNetworkSessionComponents(
   session_context->proxy_resolution_service =
       request_context->proxy_resolution_service();
   session_context->proxy_delegate = request_context->proxy_delegate();
+  session_context->http_user_agent_settings =
+      request_context->http_user_agent_settings();
   session_context->ssl_config_service = request_context->ssl_config_service();
   session_context->http_auth_handler_factory =
       request_context->http_auth_handler_factory();

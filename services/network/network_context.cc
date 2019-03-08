@@ -116,12 +116,12 @@
 #endif  // !defined(OS_IOS)
 
 #if BUILDFLAG(ENABLE_REPORTING)
+#include "net/base/http_user_agent_settings.h"
 #include "net/network_error_logging/network_error_logging_service.h"
 #include "net/reporting/reporting_browsing_data_remover.h"
 #include "net/reporting/reporting_policy.h"
 #include "net/reporting/reporting_report.h"
 #include "net/reporting/reporting_service.h"
-#include "net/url_request/http_user_agent_settings.h"
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
 #if BUILDFLAG(ENABLE_MDNS)

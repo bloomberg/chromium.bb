@@ -33,6 +33,7 @@ namespace net {
 
 class ClientSocketFactory;
 class HostResolver;
+class HttpUserAgentSettings;
 class NetLog;
 class NetworkQualityEstimator;
 class ProxyDelegate;
@@ -50,6 +51,7 @@ class NET_EXPORT_PRIVATE WebSocketTransportClientSocketPool
       ClientSocketFactory* client_socket_factory,
       HostResolver* host_resolver,
       ProxyDelegate* proxy_delegate,
+      const HttpUserAgentSettings* http_user_agent_settings,
       CertVerifier* cert_verifier,
       ChannelIDService* channel_id_service,
       TransportSecurityState* transport_security_state,

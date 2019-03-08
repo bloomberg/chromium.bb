@@ -14,6 +14,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
+#include "net/base/http_user_agent_settings.h"
 #include "net/base/proxy_delegate.h"
 #include "net/http/http_proxy_client_socket.h"
 #include "net/http/http_response_info.h"
@@ -47,7 +48,6 @@ HttpProxyClientSocketWrapper::HttpProxyClientSocketWrapper(
     const scoped_refptr<TransportSocketParams>& transport_params,
     const scoped_refptr<SSLSocketParams>& ssl_params,
     quic::QuicTransportVersion quic_version,
-    const std::string& user_agent,
     const HostPortPair& endpoint,
     HttpAuthCache* http_auth_cache,
     HttpAuthHandlerFactory* http_auth_handler_factory,
@@ -57,8 +57,8 @@ HttpProxyClientSocketWrapper::HttpProxyClientSocketWrapper(
     bool tunnel,
     const NetworkTrafficAnnotationTag& traffic_annotation,
     const NetLogWithSource& net_log)
-    : on_proxy_auth_callback_(on_proxy_auth_callback),
-      next_state_(STATE_NONE),
+    : next_state_(STATE_NONE),
+      on_proxy_auth_callback_(on_proxy_auth_callback),
       priority_(priority),
       socket_tag_(socket_tag),
       connect_timeout_duration_(connect_timeout_duration),
@@ -66,7 +66,6 @@ HttpProxyClientSocketWrapper::HttpProxyClientSocketWrapper(
       transport_params_(transport_params),
       ssl_params_(ssl_params),
       quic_version_(quic_version),
-      user_agent_(user_agent),
       endpoint_(endpoint),
       spdy_session_pool_(spdy_session_pool),
       has_restarted_(false),
@@ -654,7 +653,7 @@ int HttpProxyClientSocketWrapper::DoHttpProxyConnect() {
   transport_socket_ =
       common_connect_job_params_->client_socket_factory
           ->CreateProxyClientSocket(
-              nested_connect_job_->PassSocket(), user_agent_, endpoint_,
+              nested_connect_job_->PassSocket(), GetUserAgent(), endpoint_,
               ProxyServer(GetProxyServerScheme(), GetDestination()),
               http_auth_controller_.get(), tunnel_, using_spdy_,
               negotiated_protocol_, common_connect_job_params_->proxy_delegate,
@@ -725,8 +724,9 @@ int HttpProxyClientSocketWrapper::DoSpdyProxyCreateStreamComplete(int result) {
   spdy_stream_request_.reset();
   DCHECK(stream.get());
   // |transport_socket_| will set itself as |stream|'s delegate.
-  transport_socket_.reset(new SpdyProxyClientSocket(
-      stream, user_agent_, endpoint_, net_log_, http_auth_controller_.get()));
+  transport_socket_.reset(
+      new SpdyProxyClientSocket(stream, GetUserAgent(), endpoint_, net_log_,
+                                http_auth_controller_.get()));
   return transport_socket_->Connect(base::Bind(
       &HttpProxyClientSocketWrapper::OnIOComplete, base::Unretained(this)));
 }
@@ -779,8 +779,8 @@ int HttpProxyClientSocketWrapper::DoQuicProxyCreateStreamComplete(int result) {
   quic_stream->SetPriority(spdy_priority);
 
   transport_socket_.reset(new QuicProxyClientSocket(
-      std::move(quic_stream), std::move(quic_session_), user_agent_, endpoint_,
-      net_log_, http_auth_controller_.get()));
+      std::move(quic_stream), std::move(quic_session_), GetUserAgent(),
+      endpoint_, net_log_, http_auth_controller_.get()));
   return transport_socket_->Connect(base::Bind(
       &HttpProxyClientSocketWrapper::OnIOComplete, base::Unretained(this)));
 }
@@ -880,6 +880,12 @@ const HostPortPair& HttpProxyClientSocketWrapper::GetDestination() {
   } else {
     return ssl_params_->GetDirectConnectionParams()->destination();
   }
+}
+
+std::string HttpProxyClientSocketWrapper::GetUserAgent() const {
+  if (!common_connect_job_params_->http_user_agent_settings)
+    return std::string();
+  return common_connect_job_params_->http_user_agent_settings->GetUserAgent();
 }
 
 }  // namespace net

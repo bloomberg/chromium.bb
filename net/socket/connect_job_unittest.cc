@@ -95,6 +95,7 @@ class ConnectJobTest : public testing::Test {
             nullptr /* client_socket_factory */,
             nullptr /* host_resolver */,
             nullptr /* proxy_delegate */,
+            nullptr /* http_user_agent_settings */,
             SSLClientSocketContext(),
             SSLClientSocketContext(),
             nullptr /* socket_performance_watcher_factory */,
