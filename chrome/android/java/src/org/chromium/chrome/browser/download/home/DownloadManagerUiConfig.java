@@ -88,6 +88,8 @@ public class DownloadManagerUiConfig {
             mSupportFullWidthImages = !DeviceFormFactor.isNonMultiDisplayContextOnTablet(
                     ContextUtils.getApplicationContext());
             mUseGenericViewTypes = SysUtils.isLowEndDevice();
+            mUseNewDownloadPath = ChromeFeatureList.isEnabled(
+                    ChromeFeatureList.DOWNLOAD_OFFLINE_CONTENT_PROVIDER);
         }
 
         public Builder setIsOffTheRecord(boolean isOffTheRecord) {

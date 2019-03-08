@@ -81,6 +81,7 @@ OfflineItem OfflineItemUtils::CreateOfflineItem(const std::string& name_space,
   item.is_openable = download_item->CanOpenDownload();
   item.file_path = download_item->GetTargetFilePath();
   item.mime_type = download_item->GetMimeType();
+  // TODO(shaktisahu): Handle any null or generic mime types.
 
   item.page_url = download_item->GetTabUrl();
   item.original_url = download_item->GetOriginalUrl();

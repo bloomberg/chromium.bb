@@ -72,13 +72,16 @@ class DownloadOfflineContentProvider : public OfflineContentProvider,
                             VisualsCallback callback,
                             const SkBitmap& bitmap);
   void AddCompletedDownload(DownloadItem* item);
-  void AddCompletedDownloadDone(DownloadItem* item, int64_t system_download_id);
+  void AddCompletedDownloadDone(DownloadItem* item,
+                                int64_t system_download_id,
+                                bool can_resolve);
   void UpdateObservers(DownloadItem* item);
 
   base::ObserverList<OfflineContentProvider::Observer>::Unchecked observers_;
   OfflineContentAggregator* aggregator_;
   std::string name_space_;
   DownloadManager* manager_;
+  std::set<std::string> completed_downloads_;
 
   base::WeakPtrFactory<DownloadOfflineContentProvider> weak_ptr_factory_;
 
