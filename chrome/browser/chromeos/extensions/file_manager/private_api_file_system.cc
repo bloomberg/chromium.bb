@@ -252,11 +252,11 @@ void StatusCallbackToResponseCallback(
 // Calls a response callback (on the UI thread) with a file content hash
 // computed on the IO thread.
 void ComputeChecksumRespondOnUIThread(
-    const base::Callback<void(const std::string&)>& callback,
+    base::OnceCallback<void(const std::string&)> callback,
     const std::string& hash) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                           base::BindOnce(callback, hash));
+                           base::BindOnce(std::move(callback), hash));
 }
 
 // Calls a response callback on the UI thread.
@@ -961,16 +961,16 @@ FileManagerPrivateInternalComputeChecksumFunction::Run() {
       file_system_context->CreateFileStreamReader(
           file_system_url, 0, storage::kMaximumLength, base::Time());
 
-  FileStreamMd5Digester::ResultCallback result_callback = base::Bind(
+  FileStreamMd5Digester::ResultCallback result_callback = base::BindOnce(
       &ComputeChecksumRespondOnUIThread,
-      base::Bind(
+      base::BindOnce(
           &FileManagerPrivateInternalComputeChecksumFunction::RespondWith,
           this));
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&FileStreamMd5Digester::GetMd5Digest,
-                     base::Unretained(digester_.get()), base::Passed(&reader),
-                     result_callback));
+                     base::Unretained(digester_.get()), std::move(reader),
+                     std::move(result_callback)));
 
   return RespondLater();
 }
