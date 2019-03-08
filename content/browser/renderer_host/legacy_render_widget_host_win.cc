@@ -38,6 +38,27 @@ namespace content {
 // accessibility support.
 const int kIdScreenReaderHoneyPot = 1;
 
+namespace {
+
+bool LoggingEnabled() {
+  static bool logging_enabled =
+      base::FeatureList::IsEnabled(features::kPrecisionTouchpadLogging);
+
+  return logging_enabled;
+}
+
+// TODO(crbug.com/914914) This is added for help us getting debug log on
+// machine with scrolling issue on Windows Precision Touchpad. We will remove it
+// after Windows Precision Touchpad scrolling issue fixed.
+void DebugLogging(const std::string& s) {
+  if (!LoggingEnabled())
+    return;
+
+  LOG(ERROR) << "Windows PTP: " << s;
+}
+
+}  // namespace
+
 // DirectManipulation needs to poll for new events every frame while finger
 // gesturing on touchpad.
 class CompositorAnimationObserverForDirectManipulation
@@ -50,11 +71,14 @@ class CompositorAnimationObserverForDirectManipulation
         compositor_(compositor) {
     DCHECK(compositor_);
     compositor_->AddAnimationObserver(this);
+    DebugLogging("Add AnimationObserverForDirectManipulation.");
   }
 
   ~CompositorAnimationObserverForDirectManipulation() override {
-    if (compositor_)
+    if (compositor_) {
       compositor_->RemoveAnimationObserver(this);
+      DebugLogging("Remove AnimationObserverForDirectManipulation.");
+    }
   }
 
   // ui::CompositorAnimationObserver
@@ -64,6 +88,7 @@ class CompositorAnimationObserverForDirectManipulation
 
   // ui::CompositorAnimationObserver
   void OnCompositingShuttingDown(ui::Compositor* compositor) override {
+    DebugLogging("OnCompositingShuttingDown.");
     compositor->RemoveAnimationObserver(this);
     compositor_ = nullptr;
   }
@@ -517,6 +542,7 @@ LRESULT LegacyRenderWidgetHostHWND::OnPointerHitTest(UINT message,
   if (!direct_manipulation_helper_)
     return 0;
 
+  DebugLogging("Receive DM_POINTERHITTEST.");
   // Update window event target for each DM_POINTERHITTEST.
   if (direct_manipulation_helper_->OnPointerHitTest(
           w_param, GetWindowEventTarget(GetParent()))) {
@@ -524,6 +550,7 @@ LRESULT LegacyRenderWidgetHostHWND::OnPointerHitTest(UINT message,
       // This is reach if Windows send a DM_POINTERHITTEST before the last
       // DM_POINTERHITTEST receive READY status. We never see this but still
       // worth to handle it.
+      DebugLogging("AnimationObserverForDirectManipulation exists.");
       return 0;
     }
 
@@ -580,6 +607,7 @@ void LegacyRenderWidgetHostHWND::CreateAnimationObserver() {
 }
 
 void LegacyRenderWidgetHostHWND::DestroyAnimationObserver() {
+  DebugLogging("DestroyAnimationObserver.");
   compositor_animation_observer_.reset();
 }
 
