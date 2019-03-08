@@ -111,6 +111,9 @@ WaitUntilObserver* WaitUntilObserver::Create(ExecutionContext* context,
 }
 
 void WaitUntilObserver::WillDispatchEvent() {
+  // TODO(crbug.com/934622): Temporary CHECK for the crash bug.
+  CHECK(GetExecutionContext());
+
   // When handling a notificationclick, paymentrequest, or backgroundfetchclick
   // event, we want to allow one window to be focused or opened. These calls are
   // allowed between the call to willDispatchEvent() and the last call to
@@ -118,7 +121,7 @@ void WaitUntilObserver::WillDispatchEvent() {
   // between willDispatchEvent() and didDispatchEvent().
   if (type_ == kNotificationClick || type_ == kPaymentRequest ||
       type_ == kBackgroundFetchClick) {
-    execution_context_->AllowWindowInteraction();
+    GetExecutionContext()->AllowWindowInteraction();
   }
 
   DCHECK_EQ(EventDispatchState::kInitial, event_dispatch_state_);
@@ -147,7 +150,7 @@ void WaitUntilObserver::WaitUntil(ScriptState* script_state,
     return;
   }
 
-  if (!execution_context_)
+  if (!GetExecutionContext())
     return;
 
   // When handling a notificationclick event, we want to allow one window to
@@ -195,7 +198,7 @@ bool WaitUntilObserver::IsEventActive(ScriptState* script_state) const {
 WaitUntilObserver::WaitUntilObserver(ExecutionContext* context,
                                      EventType type,
                                      int event_id)
-    : execution_context_(context),
+    : ContextClient(context),
       type_(type),
       event_id_(event_id),
       consume_window_interaction_timer_(
@@ -223,7 +226,7 @@ void WaitUntilObserver::DecrementPendingPromiseCount() {
 }
 
 void WaitUntilObserver::MaybeCompleteEvent() {
-  if (!execution_context_)
+  if (!GetExecutionContext())
     return;
 
   switch (event_dispatch_state_) {
@@ -246,7 +249,7 @@ void WaitUntilObserver::MaybeCompleteEvent() {
   }
 
   ServiceWorkerGlobalScopeClient* client =
-      ServiceWorkerGlobalScopeClient::From(execution_context_);
+      ServiceWorkerGlobalScopeClient::From(GetExecutionContext());
   mojom::ServiceWorkerEventStatus status =
       (event_dispatch_state_ == EventDispatchState::kFailed ||
        has_rejected_promise_)
@@ -269,7 +272,8 @@ void WaitUntilObserver::MaybeCompleteEvent() {
       client->DidHandleFetchEvent(event_id_, status);
       break;
     case kInstall:
-      To<ServiceWorkerGlobalScope>(*execution_context_).SetIsInstalling(false);
+      To<ServiceWorkerGlobalScope>(*GetExecutionContext())
+          .SetIsInstalling(false);
       client->DidHandleInstallEvent(event_id_, status);
       break;
     case kMessage:
@@ -305,17 +309,15 @@ void WaitUntilObserver::MaybeCompleteEvent() {
       client->DidHandleBackgroundFetchSuccessEvent(event_id_, status);
       break;
   }
-  execution_context_ = nullptr;
 }
 
 void WaitUntilObserver::ConsumeWindowInteraction(TimerBase*) {
-  if (!execution_context_)
-    return;
-  execution_context_->ConsumeWindowInteraction();
+  if (ExecutionContext* context = GetExecutionContext())
+    context->ConsumeWindowInteraction();
 }
 
 void WaitUntilObserver::Trace(blink::Visitor* visitor) {
-  visitor->Trace(execution_context_);
+  ContextClient::Trace(visitor);
 }
 
 }  // namespace blink
