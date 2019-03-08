@@ -215,7 +215,8 @@ FetchRespondWithObserver* FetchRespondWithObserver::Create(
 // JavaScript.
 void FetchRespondWithObserver::OnResponseRejected(
     ServiceWorkerResponseError error) {
-  DCHECK(GetExecutionContext());
+  // TODO(crbug.com/934622): Temporary CHECK for the crash bug.
+  CHECK(GetExecutionContext());
   GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
       kJSMessageSource, mojom::ConsoleMessageLevel::kWarning,
       GetMessageForResponseError(error, request_url_)));
@@ -234,7 +235,8 @@ void FetchRespondWithObserver::OnResponseFulfilled(
     ExceptionState::ContextType context_type,
     const char* interface_name,
     const char* property_name) {
-  DCHECK(GetExecutionContext());
+  // TODO(crbug.com/934622): Temporary CHECK for the crash bug.
+  CHECK(GetExecutionContext());
   if (!V8Response::HasInstance(value.V8Value(), value.GetIsolate())) {
     OnResponseRejected(ServiceWorkerResponseError::kNoV8Instance);
     return;

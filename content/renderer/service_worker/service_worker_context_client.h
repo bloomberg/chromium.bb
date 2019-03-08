@@ -435,6 +435,7 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   bool report_debug_log_ = true;
   base::Lock debug_log_lock_;
   std::deque<std::string> debug_log_ GUARDED_BY(debug_log_lock_);
+  bool dispatching_fetch_event_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerContextClient);
 };

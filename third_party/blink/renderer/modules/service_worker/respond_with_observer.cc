@@ -18,21 +18,13 @@ using blink::mojom::ServiceWorkerResponseError;
 
 namespace blink {
 
-void RespondWithObserver::ContextDestroyed(ExecutionContext*) {
-  if (observer_) {
-    DCHECK_EQ(kPending, state_);
-    observer_.Clear();
-  }
-  state_ = kDone;
-}
-
 void RespondWithObserver::WillDispatchEvent() {
   event_dispatch_time_ = WTF::CurrentTimeTicks();
 }
 
 void RespondWithObserver::DidDispatchEvent(
     DispatchEventResult dispatch_result) {
-  DCHECK(GetExecutionContext());
+  CHECK(GetExecutionContext());
   if (state_ != kInitial)
     return;
 
@@ -49,7 +41,7 @@ void RespondWithObserver::DidDispatchEvent(
 void RespondWithObserver::RespondWith(ScriptState* script_state,
                                       ScriptPromise script_promise,
                                       ExceptionState& exception_state) {
-  if (state_ != kInitial) {
+  if (state_ != kInitial || !GetExecutionContext()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,
         "The event has already been responded to.");
@@ -88,14 +80,14 @@ void RespondWithObserver::ResponseWasFulfilled(
 RespondWithObserver::RespondWithObserver(ExecutionContext* context,
                                          int event_id,
                                          WaitUntilObserver* observer)
-    : ContextLifecycleObserver(context),
+    : ContextClient(context),
       event_id_(event_id),
       state_(kInitial),
       observer_(observer) {}
 
 void RespondWithObserver::Trace(blink::Visitor* visitor) {
   visitor->Trace(observer_);
-  ContextLifecycleObserver::Trace(visitor);
+  ContextClient::Trace(visitor);
 }
 
 }  // namespace blink

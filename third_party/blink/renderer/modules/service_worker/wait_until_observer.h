@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICE_WORKER_WAIT_UNTIL_OBSERVER_H_
 
 #include "base/callback.h"
+#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_global_scope_client.h"
 #include "third_party/blink/renderer/platform/timer.h"
@@ -14,14 +15,16 @@
 namespace blink {
 
 class ExceptionState;
-class ExecutionContext;
 class ScriptPromise;
 class ScriptState;
 class ScriptValue;
 
 // Created for each ExtendableEvent instance.
 class MODULES_EXPORT WaitUntilObserver final
-    : public GarbageCollectedFinalized<WaitUntilObserver> {
+    : public GarbageCollectedFinalized<WaitUntilObserver>,
+      public ContextClient {
+  USING_GARBAGE_COLLECTED_MIXIN(WaitUntilObserver);
+
  public:
   using PromiseSettledCallback =
       base::RepeatingCallback<void(const ScriptValue&)>;
@@ -75,7 +78,7 @@ class MODULES_EXPORT WaitUntilObserver final
   // https://w3c.github.io/ServiceWorker/#extendableevent-active.
   bool IsEventActive(ScriptState* script_state) const;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   friend class InternalsServiceWorker;
@@ -108,7 +111,6 @@ class MODULES_EXPORT WaitUntilObserver final
 
   void MaybeCompleteEvent();
 
-  Member<ExecutionContext> execution_context_;
   EventType type_;
   int event_id_;
   int pending_promises_ = 0;

@@ -517,6 +517,11 @@ void ServiceWorkerContextClient::WillDestroyWorkerContext(
     v8::Local<v8::Context> context) {
   CHECK(worker_task_runner_->RunsTasksInCurrentSequence());
   RecordDebugLog("WillDestroyWorkerContext");
+  if (dispatching_fetch_event_) {
+    CrashWithDebugLog("WDWC_DFE");
+    return;
+  }
+
   // At this point WillStopCurrentWorkerThread is already called, so
   // worker_task_runner_->RunsTasksInCurrentSequence() returns false
   // (while we're still on the worker thread).
@@ -1481,9 +1486,10 @@ void ServiceWorkerContextClient::DispatchFetchEvent(
     DispatchFetchEventCallback callback) {
   CHECK(worker_task_runner_->RunsTasksInCurrentSequence());
   if (!context_) {
-    CrashWithDebugLog("DFE");
+    CrashWithDebugLog("DFE1");
     return;
   }
+  dispatching_fetch_event_ = true;
   int event_id = context_->timeout_timer->StartEvent(
       CreateAbortCallback(&context_->fetch_event_callbacks));
   context_->fetch_event_callbacks.emplace(event_id, std::move(callback));
@@ -1509,7 +1515,12 @@ void ServiceWorkerContextClient::DispatchFetchEvent(
   blink::WebServiceWorkerRequest web_request;
   ToWebServiceWorkerRequestForFetchEvent(std::move(params->request),
                                          params->client_id, &web_request);
+  if (!context_) {
+    CrashWithDebugLog("DFE2");
+    return;
+  }
   proxy_->DispatchFetchEvent(event_id, web_request, navigation_preload_sent);
+  dispatching_fetch_event_ = false;
 }
 
 void ServiceWorkerContextClient::DispatchNotificationClickEvent(

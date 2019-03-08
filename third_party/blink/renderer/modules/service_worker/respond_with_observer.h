@@ -26,13 +26,11 @@ class WaitUntilObserver;
 // overriding onResponseFulfilled, onResponseRejected and onNoResponse.
 class MODULES_EXPORT RespondWithObserver
     : public GarbageCollectedFinalized<RespondWithObserver>,
-      public ContextLifecycleObserver {
+      public ContextClient {
   USING_GARBAGE_COLLECTED_MIXIN(RespondWithObserver);
 
  public:
   virtual ~RespondWithObserver() = default;
-
-  void ContextDestroyed(ExecutionContext*) override;
 
   void WillDispatchEvent();
   void DidDispatchEvent(DispatchEventResult dispatch_result);
