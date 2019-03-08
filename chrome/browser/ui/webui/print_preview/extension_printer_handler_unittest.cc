@@ -29,14 +29,13 @@
 #include "components/version_info/version_info.h"
 #include "content/public/test/test_utils.h"
 #include "device/base/mock_device_client.h"
-#include "device/usb/mock_usb_device.h"
-#include "device/usb/mock_usb_service.h"
-#include "device/usb/mojo/type_converters.h"
+#include "device/usb/public/cpp/fake_usb_device_manager.h"
 #include "device/usb/public/mojom/device.mojom.h"
 #include "extensions/browser/api/device_permissions_manager.h"
 #include "extensions/browser/api/printer_provider/printer_provider_api.h"
 #include "extensions/browser/api/printer_provider/printer_provider_api_factory.h"
 #include "extensions/browser/api/printer_provider/printer_provider_print_job.h"
+#include "extensions/browser/api/usb/usb_device_manager.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/value_builder.h"
 #include "printing/pdf_render_settings.h"
@@ -46,8 +45,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/size.h"
 
-using device::MockUsbDevice;
-using device::MockUsbService;
+using device::mojom::UsbDeviceInfoPtr;
 using extensions::DictionaryBuilder;
 using extensions::Extension;
 using extensions::PrinterProviderAPI;
@@ -508,6 +506,13 @@ class ExtensionPrinterHandlerTest : public testing::Test {
     pwg_raster_converter_ = pwg_raster_converter.get();
     extension_printer_handler_->SetPwgRasterConverterForTesting(
         std::move(pwg_raster_converter));
+
+    // Set fake USB device manager for extensions::UsbDeviceManager.
+    device::mojom::UsbDeviceManagerPtr usb_manager_ptr;
+    fake_usb_manager_.AddBinding(mojo::MakeRequest(&usb_manager_ptr));
+    extensions::UsbDeviceManager::Get(env_.profile())
+        ->SetDeviceManagerForTesting(std::move(usb_manager_ptr));
+    base::RunLoop().RunUntilIdle();
   }
 
  protected:
@@ -517,10 +522,7 @@ class ExtensionPrinterHandlerTest : public testing::Test {
             ->GetForBrowserContext(env_.profile()));
   }
 
-  device::MockUsbService& usb_service() {
-    return *device_client_.usb_service();
-  }
-
+  device::FakeUsbDeviceManager fake_usb_manager_;
   device::MockDeviceClient device_client_;
   TestExtensionEnvironment env_;
   std::unique_ptr<ExtensionPrinterHandler> extension_printer_handler_;
@@ -587,12 +589,11 @@ TEST_F(ExtensionPrinterHandlerTest, GetPrinters_Reset) {
 }
 
 TEST_F(ExtensionPrinterHandlerTest, GetUsbPrinters) {
-  scoped_refptr<device::UsbDevice> device0 =
-      base::MakeRefCounted<MockUsbDevice>(0, 0, "Google", "USB Printer", "");
-  usb_service().AddDevice(device0);
-  scoped_refptr<device::UsbDevice> device1 =
-      base::MakeRefCounted<MockUsbDevice>(0, 1, "Google", "USB Printer", "");
-  usb_service().AddDevice(device1);
+  UsbDeviceInfoPtr device0 =
+      fake_usb_manager_.CreateAndAddDevice(0, 0, "Google", "USB Printer", "");
+  UsbDeviceInfoPtr device1 =
+      fake_usb_manager_.CreateAndAddDevice(0, 1, "Google", "USB Printer", "");
+  base::RunLoop().RunUntilIdle();
 
   const Extension* extension_1 =
       env_.MakeExtension(*base::test::ParseJsonDeprecated(kExtension1),
@@ -603,9 +604,7 @@ TEST_F(ExtensionPrinterHandlerTest, GetUsbPrinters) {
 
   extensions::DevicePermissionsManager* permissions_manager =
       extensions::DevicePermissionsManager::Get(env_.profile());
-  auto device_info_0 = device::mojom::UsbDeviceInfo::From(*device0);
-  DCHECK(device_info_0);
-  permissions_manager->AllowUsbDevice(extension_2->id(), *device_info_0);
+  permissions_manager->AllowUsbDevice(extension_2->id(), *device0);
 
   size_t call_count = 0;
   std::unique_ptr<base::ListValue> printers;
@@ -628,7 +627,7 @@ TEST_F(ExtensionPrinterHandlerTest, GetUsbPrinters) {
       DictionaryBuilder()
           .Set("id", base::StringPrintf("provisional-usb:%s:%s",
                                         extension_1->id().c_str(),
-                                        device0->guid().c_str()))
+                                        device0->guid.c_str()))
           .Set("name", "USB Printer")
           .Set("extensionName", "Provider 1")
           .Set("extensionId", extension_1->id())
@@ -638,7 +637,7 @@ TEST_F(ExtensionPrinterHandlerTest, GetUsbPrinters) {
       DictionaryBuilder()
           .Set("id", base::StringPrintf("provisional-usb:%s:%s",
                                         extension_2->id().c_str(),
-                                        device1->guid().c_str()))
+                                        device1->guid.c_str()))
           .Set("name", "USB Printer")
           .Set("extensionName", "Provider 2")
           .Set("extensionId", extension_2->id())
@@ -980,15 +979,15 @@ TEST_F(ExtensionPrinterHandlerTest, Print_Pwg_FailedConversion) {
 }
 
 TEST_F(ExtensionPrinterHandlerTest, GrantUsbPrinterAccess) {
-  auto device =
-      base::MakeRefCounted<MockUsbDevice>(0, 0, "Google", "USB Printer", "");
-  usb_service().AddDevice(device);
+  UsbDeviceInfoPtr device =
+      fake_usb_manager_.CreateAndAddDevice(0, 0, "Google", "USB Printer", "");
+  base::RunLoop().RunUntilIdle();
 
   size_t call_count = 0;
   std::unique_ptr<base::DictionaryValue> printer_info;
 
   std::string printer_id = base::StringPrintf(
-      "provisional-usb:fake extension id:%s", device->guid().c_str());
+      "provisional-usb:fake extension id:%s", device->guid.c_str());
   extension_printer_handler_->StartGrantPrinterAccess(
       printer_id, base::Bind(&RecordPrinterInfo, &call_count, &printer_info));
 
@@ -1012,16 +1011,16 @@ TEST_F(ExtensionPrinterHandlerTest, GrantUsbPrinterAccess) {
 }
 
 TEST_F(ExtensionPrinterHandlerTest, GrantUsbPrinterAccess_Reset) {
-  auto device =
-      base::MakeRefCounted<MockUsbDevice>(0, 0, "Google", "USB Printer", "");
-  usb_service().AddDevice(device);
+  UsbDeviceInfoPtr device =
+      fake_usb_manager_.CreateAndAddDevice(0, 0, "Google", "USB Printer", "");
+  base::RunLoop().RunUntilIdle();
 
   size_t call_count = 0;
   std::unique_ptr<base::DictionaryValue> printer_info;
 
   extension_printer_handler_->StartGrantPrinterAccess(
       base::StringPrintf("provisional-usb:fake extension id:%s",
-                         device->guid().c_str()),
+                         device->guid.c_str()),
       base::Bind(&RecordPrinterInfo, &call_count, &printer_info));
 
   EXPECT_FALSE(printer_info.get());

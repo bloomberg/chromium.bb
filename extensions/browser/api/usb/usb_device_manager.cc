@@ -78,9 +78,6 @@ void UsbDeviceManager::Observer::OnDeviceAdded(
 void UsbDeviceManager::Observer::OnDeviceRemoved(
     const device::mojom::UsbDeviceInfo& device_info) {}
 
-void UsbDeviceManager::Observer::OnDeviceRemovedCleanup(
-    const device::mojom::UsbDeviceInfo& device_info) {}
-
 void UsbDeviceManager::Observer::OnDeviceManagerConnectionError() {}
 
 UsbDeviceManager::UsbDeviceManager(content::BrowserContext* browser_context)
@@ -143,8 +140,17 @@ void UsbDeviceManager::GetApiDevice(
 
 void UsbDeviceManager::GetDevices(
     device::mojom::UsbDeviceManager::GetDevicesCallback callback) {
-  EnsureConnectionWithDeviceManager();
-  device_manager_->GetDevices(/*options=*/nullptr, std::move(callback));
+  if (!is_initialized_) {
+    pending_get_devices_requests_.push(std::move(callback));
+    EnsureConnectionWithDeviceManager();
+    return;
+  }
+
+  std::vector<device::mojom::UsbDeviceInfoPtr> device_list;
+  for (const auto& pair : devices_)
+    device_list.push_back(pair.second->Clone());
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), std::move(device_list)));
 }
 
 void UsbDeviceManager::GetDevice(
@@ -156,6 +162,13 @@ void UsbDeviceManager::GetDevice(
                              std::move(device_client));
 }
 
+const device::mojom::UsbDeviceInfo* UsbDeviceManager::GetDeviceInfo(
+    const std::string& guid) {
+  DCHECK(is_initialized_);
+  auto it = devices_.find(guid);
+  return it == devices_.end() ? nullptr : it->second.get();
+}
+
 #if defined(OS_CHROMEOS)
 void UsbDeviceManager::CheckAccess(
     const std::string& guid,
@@ -164,50 +177,6 @@ void UsbDeviceManager::CheckAccess(
   device_manager_->CheckAccess(guid, std::move(callback));
 }
 #endif  // defined(OS_CHROMEOS)
-
-void UsbDeviceManager::Shutdown() {
-  EventRouter* event_router = EventRouter::Get(browser_context_);
-  if (event_router) {
-    event_router->UnregisterObserver(this);
-  }
-}
-
-void UsbDeviceManager::OnListenerAdded(const EventListenerInfo& details) {
-  EnsureConnectionWithDeviceManager();
-}
-
-void UsbDeviceManager::OnDeviceAdded(
-    device::mojom::UsbDeviceInfoPtr device_info) {
-  DCHECK(device_info);
-
-  DispatchEvent(usb::OnDeviceAdded::kEventName, *device_info);
-
-  // Notify all observers.
-  for (auto& observer : observer_list_)
-    observer.OnDeviceAdded(*device_info);
-}
-
-void UsbDeviceManager::OnDeviceRemoved(
-    device::mojom::UsbDeviceInfoPtr device_info) {
-  DCHECK(device_info);
-
-  DispatchEvent(usb::OnDeviceRemoved::kEventName, *device_info);
-
-  // Notify all observers for OnDeviceRemoved event.
-  for (auto& observer : observer_list_)
-    observer.OnDeviceRemoved(*device_info);
-
-  auto iter = guid_to_id_map_.find(device_info->guid);
-  if (iter != guid_to_id_map_.end()) {
-    int id = iter->second;
-    guid_to_id_map_.erase(iter);
-    id_to_guid_map_.erase(id);
-  }
-
-  // Notify all observers for OnDeviceRemovedCleanup event.
-  for (auto& observer : observer_list_)
-    observer.OnDeviceRemovedCleanup(*device_info);
-}
 
 void UsbDeviceManager::EnsureConnectionWithDeviceManager() {
   if (device_manager_)
@@ -223,6 +192,70 @@ void UsbDeviceManager::EnsureConnectionWithDeviceManager() {
   SetUpDeviceManagerConnection();
 }
 
+void UsbDeviceManager::SetDeviceManagerForTesting(
+    device::mojom::UsbDeviceManagerPtr fake_device_manager) {
+  DCHECK(!device_manager_);
+  DCHECK(fake_device_manager);
+  device_manager_ = std::move(fake_device_manager);
+  SetUpDeviceManagerConnection();
+}
+
+void UsbDeviceManager::Shutdown() {
+  EventRouter* event_router = EventRouter::Get(browser_context_);
+  if (event_router) {
+    event_router->UnregisterObserver(this);
+  }
+}
+
+void UsbDeviceManager::OnListenerAdded(const EventListenerInfo& details) {
+  EnsureConnectionWithDeviceManager();
+}
+
+void UsbDeviceManager::OnDeviceAdded(
+    device::mojom::UsbDeviceInfoPtr device_info) {
+  DCHECK(device_info);
+  // Update the device list.
+  DCHECK(!base::ContainsKey(devices_, device_info->guid));
+  std::string guid = device_info->guid;
+  auto result =
+      devices_.insert(std::make_pair(std::move(guid), std::move(device_info)));
+  const device::mojom::UsbDeviceInfo& stored_info = *result.first->second;
+
+  DispatchEvent(usb::OnDeviceAdded::kEventName, stored_info);
+
+  // Notify all observers.
+  for (auto& observer : observer_list_)
+    observer.OnDeviceAdded(stored_info);
+}
+
+void UsbDeviceManager::OnDeviceRemoved(
+    device::mojom::UsbDeviceInfoPtr device_info) {
+  DCHECK(device_info);
+  // Update the device list.
+  DCHECK(base::ContainsKey(devices_, device_info->guid));
+  devices_.erase(device_info->guid);
+
+  DispatchEvent(usb::OnDeviceRemoved::kEventName, *device_info);
+
+  // Notify all observers for OnDeviceRemoved event.
+  for (auto& observer : observer_list_)
+    observer.OnDeviceRemoved(*device_info);
+
+  auto iter = guid_to_id_map_.find(device_info->guid);
+  if (iter != guid_to_id_map_.end()) {
+    int id = iter->second;
+    guid_to_id_map_.erase(iter);
+    id_to_guid_map_.erase(id);
+  }
+
+  // Remove permission entry for ephemeral USB device.
+  DevicePermissionsManager* permissions_manager =
+      DevicePermissionsManager::Get(browser_context_);
+  DCHECK(permissions_manager);
+  permissions_manager->RemoveEntryByDeviceGUID(DevicePermissionEntry::Type::USB,
+                                               device_info->guid);
+}
+
 void UsbDeviceManager::SetUpDeviceManagerConnection() {
   DCHECK(device_manager_);
   device_manager_.set_connection_error_handler(
@@ -233,12 +266,36 @@ void UsbDeviceManager::SetUpDeviceManagerConnection() {
   DCHECK(!client_binding_);
   device::mojom::UsbDeviceManagerClientAssociatedPtrInfo client;
   client_binding_.Bind(mojo::MakeRequest(&client));
-  device_manager_->SetClient(std::move(client));
+  device_manager_->EnumerateDevicesAndSetClient(
+      std::move(client), base::BindOnce(&UsbDeviceManager::InitDeviceList,
+                                        weak_factory_.GetWeakPtr()));
+}
+
+void UsbDeviceManager::InitDeviceList(
+    std::vector<device::mojom::UsbDeviceInfoPtr> devices) {
+  for (auto& device_info : devices) {
+    DCHECK(device_info);
+    std::string guid = device_info->guid;
+    devices_.insert(std::make_pair(guid, std::move(device_info)));
+  }
+  is_initialized_ = true;
+
+  while (!pending_get_devices_requests_.empty()) {
+    std::vector<device::mojom::UsbDeviceInfoPtr> device_list;
+    for (const auto& entry : devices_) {
+      device_list.push_back(entry.second->Clone());
+    }
+    std::move(pending_get_devices_requests_.front())
+        .Run(std::move(device_list));
+    pending_get_devices_requests_.pop();
+  }
 }
 
 void UsbDeviceManager::OnDeviceManagerConnectionError() {
   device_manager_.reset();
   client_binding_.Close();
+  devices_.clear();
+  is_initialized_ = false;
 
   guid_to_id_map_.clear();
   id_to_guid_map_.clear();
