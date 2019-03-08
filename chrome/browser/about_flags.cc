@@ -1352,10 +1352,10 @@ const FeatureEntry kFeatureEntries[] = {
      kOsWin | kOsLinux | kOsCrOS | kOsAndroid,
      SINGLE_DISABLE_VALUE_TYPE(switches::kDisableTouchAdjustment)},
 #if defined(OS_CHROMEOS)
-    {"enable-explicit-dma-fences",
-     flag_descriptions::kEnableExplicitDmaFencesName,
-     flag_descriptions::kEnableExplicitDmaFencesDescription, kOsCrOS,
-     SINGLE_VALUE_TYPE(switches::kEnableExplicitDmaFences)},
+    {"disable-explicit-dma-fences",
+     flag_descriptions::kDisableExplicitDmaFencesName,
+     flag_descriptions::kDisableExplicitDmaFencesDescription, kOsCrOS,
+     SINGLE_VALUE_TYPE(switches::kDisableExplicitDmaFences)},
 #endif  // OS_CHROMEOS
 #if defined(OS_CHROMEOS)
     {"allow-touchpad-three-finger-click",
