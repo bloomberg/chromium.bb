@@ -19,7 +19,7 @@
 #include "net/dns/dns_client.h"
 #include "net/dns/dns_util.h"
 #include "net/dns/host_cache.h"
-#include "net/dns/host_resolver_impl.h"
+#include "net/dns/host_resolver_manager.h"
 
 namespace net {
 
@@ -153,7 +153,7 @@ std::unique_ptr<ContextHostResolver> HostResolver::CreateSystemResolverImpl(
     const Options& options,
     NetLog* net_log) {
   return std::make_unique<ContextHostResolver>(
-      std::make_unique<HostResolverImpl>(options, net_log));
+      std::make_unique<HostResolverManager>(options, net_log));
 }
 
 // static

@@ -550,7 +550,7 @@ class NET_EXPORT NetworkChangeNotifier {
   static ConnectionType ConnectionTypeFromInterfaces();
 
  private:
-  friend class HostResolverImplDnsTest;
+  friend class HostResolverManagerDnsTest;
   friend class NetworkChangeNotifierAndroidTest;
   friend class NetworkChangeNotifierLinuxTest;
   friend class NetworkChangeNotifierWinTest;

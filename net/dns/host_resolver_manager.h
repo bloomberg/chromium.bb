@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_DNS_HOST_RESOLVER_IMPL_H_
-#define NET_DNS_HOST_RESOLVER_IMPL_H_
+#ifndef NET_DNS_HOST_RESOLVER_MANAGER_H_
+#define NET_DNS_HOST_RESOLVER_MANAGER_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -50,7 +50,7 @@ class NetLogWithSource;
 // though the HostResolver interface).
 //
 // For each hostname that is requested, HostResolver creates a
-// HostResolverImpl::Job. When this job gets dispatched it creates a task
+// HostResolverManager::Job. When this job gets dispatched it creates a task
 // (ProcTask for the system resolver or DnsTask for the async resolver) which
 // resolves the hostname. If requests for that same host are made during the
 // job's lifetime, they are attached to the existing job rather than creating a
@@ -59,7 +59,7 @@ class NetLogWithSource;
 // The way these classes fit together is illustrated by:
 //
 //
-//            +----------- HostResolverImpl -------------+
+//            +----------- HostResolverManager ----------+
 //            |                    |                     |
 //           Job                  Job                   Job
 //    (for host1, fam1)    (for host2, fam2)     (for hostx, famx)
@@ -67,17 +67,17 @@ class NetLogWithSource;
 //   Request ... Request  Request ... Request   Request ... Request
 //  (port1)     (port2)  (port3)      (port4)  (port5)      (portX)
 //
-// When a HostResolverImpl::Job finishes, the callbacks of each waiting request
-// are run on the origin thread.
+// When a HostResolverManager::Job finishes, the callbacks of each waiting
+// request are run on the origin thread.
 //
 // Thread safety: This class is not threadsafe, and must only be called
 // from one thread!
 //
-// The HostResolverImpl enforces limits on the maximum number of concurrent
+// The HostResolverManager enforces limits on the maximum number of concurrent
 // threads using PrioritizedDispatcher::Limits.
 //
 // Jobs are ordered in the queue based on their priority and order of arrival.
-class NET_EXPORT HostResolverImpl
+class NET_EXPORT HostResolverManager
     : public NetworkChangeNotifier::IPAddressObserver,
       public NetworkChangeNotifier::ConnectionTypeObserver,
       public NetworkChangeNotifier::DNSObserver {
@@ -97,13 +97,13 @@ class NET_EXPORT HostResolverImpl
   // the resolver will run at once. This upper-bounds the total number of
   // outstanding DNS transactions (not counting retransmissions and retries).
   //
-  // |net_log| must remain valid for the life of the HostResolverImpl.
-  HostResolverImpl(const Options& options, NetLog* net_log);
+  // |net_log| must remain valid for the life of the HostResolverManager.
+  HostResolverManager(const Options& options, NetLog* net_log);
 
   // If any completion callbacks are pending when the resolver is destroyed,
   // the host resolutions are cancelled, and the completion callbacks will not
   // be called.
-  ~HostResolverImpl() override;
+  ~HostResolverManager() override;
 
   // Set the DnsClient to be used for resolution. In case of failure, the
   // HostResolverProc from ProcTaskParams will be queried. If the DnsClient is
@@ -167,8 +167,8 @@ class NET_EXPORT HostResolverImpl
   void SetTaskRunnerForTesting(scoped_refptr<base::TaskRunner> task_runner);
 
  private:
-  friend class HostResolverImplTest;
-  FRIEND_TEST_ALL_PREFIXES(HostResolverImplDnsTest, ModeForHistogram);
+  friend class HostResolverManagerTest;
+  FRIEND_TEST_ALL_PREFIXES(HostResolverManagerDnsTest, ModeForHistogram);
   class Job;
   class ProcTask;
   class LoopbackProbeJob;
@@ -333,7 +333,7 @@ class NET_EXPORT HostResolverImpl
   MDnsClient* GetOrCreateMdnsClient();
 
   // Allows the tests to catch slots leaking out of the dispatcher.  One
-  // HostResolverImpl::Job could occupy multiple PrioritizedDispatcher job
+  // HostResolverManager::Job could occupy multiple PrioritizedDispatcher job
   // slots.
   size_t num_running_dispatcher_jobs_for_tests() const {
     return dispatcher_->num_running_jobs();
@@ -421,11 +421,11 @@ class NET_EXPORT HostResolverImpl
 
   THREAD_CHECKER(thread_checker_);
 
-  base::WeakPtrFactory<HostResolverImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<HostResolverManager> weak_ptr_factory_;
 
-  base::WeakPtrFactory<HostResolverImpl> probe_weak_ptr_factory_;
+  base::WeakPtrFactory<HostResolverManager> probe_weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(HostResolverImpl);
+  DISALLOW_COPY_AND_ASSIGN(HostResolverManager);
 };
 
 // Resolves a local hostname (such as "localhost" or "localhost6") into
@@ -435,10 +435,10 @@ class NET_EXPORT HostResolverImpl
 // resolve to both IPv4 and IPv6.
 // This function is only exposed so it can be unit-tested.
 // TODO(tfarina): It would be better to change the tests so this function
-// gets exercised indirectly through HostResolverImpl.
+// gets exercised indirectly through HostResolverManager.
 NET_EXPORT_PRIVATE bool ResolveLocalHostname(base::StringPiece host,
                                              AddressList* address_list);
 
 }  // namespace net
 
-#endif  // NET_DNS_HOST_RESOLVER_IMPL_H_
+#endif  // NET_DNS_HOST_RESOLVER_MANAGER_H_

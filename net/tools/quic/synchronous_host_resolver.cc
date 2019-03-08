@@ -20,7 +20,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
-#include "net/dns/host_resolver_impl.h"
+#include "net/dns/host_resolver.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_with_source.h"
 
@@ -63,8 +63,8 @@ void ResolverThread::Run() {
   net::HostResolver::Options options;
   options.max_concurrent_resolves = 6;
   options.max_retry_attempts = 3u;
-  std::unique_ptr<net::HostResolverImpl> resolver(
-      new net::HostResolverImpl(options, &net_log));
+  std::unique_ptr<net::HostResolver> resolver =
+      net::HostResolver::CreateSystemResolver(options, &net_log);
 
   HostPortPair host_port_pair(host_, 80);
   std::unique_ptr<net::HostResolver::ResolveHostRequest> request =
