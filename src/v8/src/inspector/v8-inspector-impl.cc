@@ -109,15 +109,15 @@ v8::MaybeLocal<v8::Script> V8InspectorImpl::compileScript(
 }
 
 void V8InspectorImpl::enableStackCapturingIfNeeded() {
-  if (!m_capturingStackTracesCount)
-    V8StackTraceImpl::setCaptureStackTraceForUncaughtExceptions(m_isolate,
+  if (!m_capturingStackTracesCount && V8StackTrace::s_stackCaptureControlledByInspector)
+    V8StackTraceImpl::setCaptureStackTraceForUncaughtExceptions_bb(m_isolate,
                                                                 true);
   ++m_capturingStackTracesCount;
 }
 
 void V8InspectorImpl::disableStackCapturingIfNeeded() {
-  if (!(--m_capturingStackTracesCount))
-    V8StackTraceImpl::setCaptureStackTraceForUncaughtExceptions(m_isolate,
+  if (!(--m_capturingStackTracesCount) && V8StackTrace::s_stackCaptureControlledByInspector)
+    V8StackTraceImpl::setCaptureStackTraceForUncaughtExceptions_bb(m_isolate,
                                                                 false);
 }
 
