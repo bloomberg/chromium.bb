@@ -138,8 +138,6 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
   LayoutUnit MinLineHeightForReplacedObject(bool is_first_line,
                                             LayoutUnit replaced_height) const;
 
-  virtual bool CreatesNewFormattingContext() const { return true; }
-
   const char* GetName() const override;
 
  protected:

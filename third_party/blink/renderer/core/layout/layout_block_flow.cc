@@ -688,7 +688,7 @@ void LayoutBlockFlow::DetermineLogicalLeftPositionForChild(LayoutBox& child) {
   LayoutUnit child_margin_start = MarginStartForChild(child);
   LayoutUnit new_position = start_position + child_margin_start;
 
-  if (child.AvoidsFloats() && ContainsFloats()) {
+  if (child.CreatesNewFormattingContext() && ContainsFloats()) {
     LayoutUnit position_to_avoid_floats = StartOffsetForAvoidingFloats(
         LogicalTopForChild(child), LogicalHeightForChild(child));
 
@@ -739,8 +739,8 @@ void LayoutBlockFlow::MarkDescendantsWithFloatsForLayoutIfNeeded(
   // TODO(mstensho): rework the code to return early when there is no need for
   // marking, instead of this |markDescendantsWithFloats| flag.
   bool mark_descendants_with_floats = false;
-  if (new_logical_top != child.LogicalTop() && !child.AvoidsFloats() &&
-      child.ContainsFloats()) {
+  if (new_logical_top != child.LogicalTop() &&
+      !child.CreatesNewFormattingContext() && child.ContainsFloats()) {
     mark_descendants_with_floats = true;
   } else if (UNLIKELY(new_logical_top.MightBeSaturated())) {
     // The logical top might be saturated for very large elements. Comparing
@@ -748,7 +748,8 @@ void LayoutBlockFlow::MarkDescendantsWithFloatsForLayoutIfNeeded(
     // removing margins, borders etc. from a saturated number might yield
     // incorrect results. If this is the case, always mark for layout.
     mark_descendants_with_floats = true;
-  } else if (!child.AvoidsFloats() || child.ShrinkToAvoidFloats()) {
+  } else if (!child.CreatesNewFormattingContext() ||
+             child.ShrinkToAvoidFloats()) {
     // If an element might be affected by the presence of floats, then always
     // mark it for layout.
     LayoutUnit lowest_float =
@@ -1349,7 +1350,7 @@ void LayoutBlockFlow::RebuildFloatsFromIntruding() {
 
   // Inline blocks are covered by the isAtomicInlineLevel() check in the
   // avoidFloats method.
-  if (AvoidsFloats() || IsDocumentElement() || IsLayoutView() ||
+  if (CreatesNewFormattingContext() || IsDocumentElement() || IsLayoutView() ||
       IsFloatingOrOutOfFlowPositioned() || IsTableCell()) {
     if (floating_objects_) {
       floating_objects_->Clear();
@@ -1384,7 +1385,6 @@ void LayoutBlockFlow::RebuildFloatsFromIntruding() {
   bool sibling_float_may_intrude = false;
   LayoutObject* prev = PreviousSibling();
   while (prev && (!prev->IsBox() || !prev->IsLayoutBlock() ||
-                  ToLayoutBlock(prev)->AvoidsFloats() ||
                   ToLayoutBlock(prev)->CreatesNewFormattingContext())) {
     if (prev->IsFloating())
       sibling_float_may_intrude = true;
@@ -1947,7 +1947,8 @@ LayoutUnit LayoutBlockFlow::CollapseMargins(
     bool logical_top_intrudes_into_float =
         logical_top < before_collapse_logical_top;
     if (logical_top_intrudes_into_float && ContainsFloats() &&
-        !child.AvoidsFloats() && LowestFloatLogicalBottom() > logical_top) {
+        !child.CreatesNewFormattingContext() &&
+        LowestFloatLogicalBottom() > logical_top) {
       child.SetNeedsLayoutAndFullPaintInvalidation(
           layout_invalidation_reason::kAncestorMarginCollapsing);
     }
@@ -2847,12 +2848,12 @@ void LayoutBlockFlow::MarkSiblingsWithFloatsForLayout(
   FloatingObjectSetIterator end = floating_object_set.end();
 
   for (LayoutObject* next = NextSibling(); next; next = next->NextSibling()) {
-    if (!next->IsLayoutBlockFlow() ||
-        (!float_to_remove && (next->IsFloatingOrOutOfFlowPositioned() ||
-                              ToLayoutBlockFlow(next)->AvoidsFloats())))
+    LayoutBlockFlow* next_block = ToLayoutBlockFlowOrNull(next);
+    if (!next_block ||
+        (!float_to_remove && (next_block->IsFloatingOrOutOfFlowPositioned() ||
+                              next_block->CreatesNewFormattingContext())))
       continue;
 
-    LayoutBlockFlow* next_block = ToLayoutBlockFlow(next);
     for (FloatingObjectSetIterator it = floating_object_set.begin(); it != end;
          ++it) {
       LayoutBox* floating_box = (*it)->GetLayoutObject();
@@ -2880,7 +2881,7 @@ LayoutUnit LayoutBlockFlow::GetClearDelta(LayoutBox* child,
   LayoutUnit result = clear != EClear::kNone
                           ? (logical_bottom - logical_top).ClampNegativeToZero()
                           : LayoutUnit();
-  if (!result && child->AvoidsFloats()) {
+  if (!result && child->CreatesNewFormattingContext()) {
     LayoutUnit new_logical_top = logical_top;
     LayoutRect border_box = child->BorderBoxRect();
     LayoutUnit child_logical_width_at_old_logical_top_offset =
@@ -2972,8 +2973,9 @@ void LayoutBlockFlow::WillBeDestroyed() {
 void LayoutBlockFlow::StyleWillChange(StyleDifference diff,
                                       const ComputedStyle& new_style) {
   const ComputedStyle* old_style = Style();
-  can_propagate_float_into_sibling_ =
-      old_style ? !IsFloatingOrOutOfFlowPositioned() && !AvoidsFloats() : false;
+  can_propagate_float_into_sibling_ = old_style &&
+                                      !IsFloatingOrOutOfFlowPositioned() &&
+                                      !CreatesNewFormattingContext();
   if (old_style && Parent() && diff.NeedsFullLayout() &&
       old_style->GetPosition() != new_style.GetPosition() && ContainsFloats() &&
       !IsFloating() && !IsOutOfFlowPositioned() &&
@@ -2995,7 +2997,7 @@ void LayoutBlockFlow::StyleDidChange(StyleDifference diff,
   // and clear all floats from its next sibling blocks that exist in our
   // floating objects list. See crbug.com/56299 and crbug.com/62875.
   bool can_propagate_float_into_sibling =
-      !IsFloatingOrOutOfFlowPositioned() && !AvoidsFloats();
+      !IsFloatingOrOutOfFlowPositioned() && !CreatesNewFormattingContext();
   bool sibling_float_propagation_changed =
       diff.NeedsFullLayout() && can_propagate_float_into_sibling_ &&
       !can_propagate_float_into_sibling && HasOverhangingFloats();
@@ -3966,9 +3968,10 @@ LayoutUnit LayoutBlockFlow::PositionAndLayoutFloat(
   if (child.LogicalBottom() <= old_logical_top) {
     LayoutObject* next = child.NextSibling();
     if (next && next->IsLayoutBlockFlow()) {
-      LayoutBlockFlow* nextBlock = ToLayoutBlockFlow(next);
-      if (!nextBlock->AvoidsFloats() || nextBlock->ShrinkToAvoidFloats())
-        nextBlock->MarkAllDescendantsWithFloatsForLayout();
+      LayoutBlockFlow* next_block = ToLayoutBlockFlow(next);
+      if (!next_block->CreatesNewFormattingContext() ||
+          next_block->ShrinkToAvoidFloats())
+        next_block->MarkAllDescendantsWithFloatsForLayout();
     }
   }
 
@@ -4030,7 +4033,7 @@ bool LayoutBlockFlow::HasOverhangingFloat(LayoutBox* layout_box) {
 void LayoutBlockFlow::AddIntrudingFloats(LayoutBlockFlow* prev,
                                          LayoutUnit logical_left_offset,
                                          LayoutUnit logical_top_offset) {
-  DCHECK(!AvoidsFloats());
+  DCHECK(!CreatesNewFormattingContext());
 
   // If we create our own block formatting context then our contents don't
   // interact with floats outside it, even those from our parent.
@@ -4474,11 +4477,10 @@ bool LayoutBlockFlow::CreatesNewFormattingContext() const {
   if (IsRenderedLegend())
     return true;
 
-  return false;
-}
+  if (ShouldBeConsideredAsReplaced())
+    return true;
 
-bool LayoutBlockFlow::AvoidsFloats() const {
-  return ShouldBeConsideredAsReplaced() || CreatesNewFormattingContext();
+  return false;
 }
 
 void LayoutBlockFlow::MoveChildrenTo(LayoutBoxModelObject* to_box_model_object,

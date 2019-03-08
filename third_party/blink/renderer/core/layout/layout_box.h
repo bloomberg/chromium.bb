@@ -1203,7 +1203,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
      // inline-block.
 
   bool ShrinkToAvoidFloats() const;
-  virtual bool AvoidsFloats() const;
+  virtual bool CreatesNewFormattingContext() const { return true; }
   bool ShouldBeConsideredAsReplaced() const;
 
   void UpdateFragmentationInfoForChild(LayoutBox&);

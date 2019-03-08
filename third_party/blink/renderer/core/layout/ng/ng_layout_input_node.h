@@ -138,7 +138,7 @@ class CORE_EXPORT NGLayoutInputNode {
   }
 
   bool CreatesNewFormattingContext() const {
-    return IsBlock() && box_->AvoidsFloats();
+    return IsBlock() && box_->CreatesNewFormattingContext();
   }
 
   // Returns true if this node should pass its percentage resolution block-size
