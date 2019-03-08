@@ -88,7 +88,7 @@ bool BrowserDevToolsAgentHost::AttachSession(DevToolsSession* session) {
         socket_callback_, tethering_task_runner_));
   }
   session->AddHandler(std::make_unique<protocol::TracingHandler>(
-      nullptr, GetIOContext(), session->UsesBinaryProtocol()));
+      nullptr, GetIOContext(), session->client()->UsesBinaryProtocol()));
   return true;
 }
 
