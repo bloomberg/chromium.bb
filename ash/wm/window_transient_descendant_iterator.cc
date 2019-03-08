@@ -17,7 +17,6 @@ WindowTransientDescendantIterator::WindowTransientDescendantIterator()
 WindowTransientDescendantIterator::WindowTransientDescendantIterator(
     aura::Window* root_window)
     : current_window_(root_window) {
-  DCHECK(!::wm::GetTransientParent(root_window));
 }
 
 // Performs a pre-order traversal of the transient descendants.
