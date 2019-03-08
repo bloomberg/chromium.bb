@@ -342,8 +342,10 @@ void AutoclickController::UpdateRingSize() {
           switches::kEnableExperimentalAccessibilityAutoclick)) {
     return;
   }
-  autoclick_ring_handler_->SetSize(movement_threshold_,
-                                   movement_threshold_ + 10);
+  // In V2, size doesn't need two inputs.
+  // TODO(katie): Re-write this function to take one parameter when fully
+  // upgrading to V2.
+  autoclick_ring_handler_->SetSize(movement_threshold_, movement_threshold_);
 }
 
 bool AutoclickController::DragInProgress() const {
