@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.send_tab_to_self;
 
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.share.ShareActivity;
@@ -11,6 +12,7 @@ import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.components.sync.ModelType;
+import org.chromium.ui.widget.Toast;
 
 /**
  * A simple activity that allows Chrome to expose send tab to self as an option in the share menu.
@@ -22,6 +24,9 @@ public class SendTabToSelfShareActivity extends ShareActivity {
         SendTabToSelfAndroidBridge bridge = new SendTabToSelfAndroidBridge(tab.getProfile());
         bridge.addEntry(tab.getUrl(), tab.getTitle());
         bridge.destroy();
+
+        Toast.makeText(triggeringActivity, R.string.send_tab_to_self_toast, Toast.LENGTH_SHORT)
+                .show();
     }
 
     public static boolean featureIsAvailable(Tab currentTab) {

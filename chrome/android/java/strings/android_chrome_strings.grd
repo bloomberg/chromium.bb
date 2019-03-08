@@ -3956,6 +3956,11 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
         Swipe down to close.
       </message>
 
+      <!-- SendTabToSelf -->
+      <message name="IDS_SEND_TAB_TO_SELF_TOAST" desc="Text for a toast indicating that the tab was shared successfully on the user's other synced devices.">
+        Tab sent to your devices
+      </message>
+
       <!-- Chrome Duet -->
       <message name="IDS_IPH_DUET_TITLE" desc="This string appears in an overlay that explains a new UI to users. 'Search' refers to searching the web, and 'explore' refers to Chrome's suggested content.">
         Search &amp; explore

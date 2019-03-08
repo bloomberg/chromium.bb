@@ -15,6 +15,10 @@
 #include "chrome/browser/send_tab_to_self/desktop_notification_handler.h"
 #endif
 
+#if defined(OS_ANDROID)
+#include "chrome/browser/android/send_tab_to_self/android_notification_handler.h"
+#endif
+
 namespace send_tab_to_self {
 
 ReceivingUiHandlerRegistry::ReceivingUiHandlerRegistry() {}
@@ -31,6 +35,9 @@ void ReceivingUiHandlerRegistry::InstantiatePlatformSpecificHandlers(
 #if defined(OS_LINUX) || defined(OS_MACOSX)
   applicable_handlers_.push_back(
       std::make_unique<send_tab_to_self::DesktopNotificationHandler>(profile));
+#elif defined(OS_ANDROID)
+  applicable_handlers_.push_back(
+      std::make_unique<AndroidNotificationHandler>());
 #endif
 }
 
