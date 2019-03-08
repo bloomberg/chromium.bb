@@ -5,14 +5,14 @@
 #ifndef CONTENT_RENDERER_MEDIA_STREAM_MOCK_MEDIA_STREAM_VIDEO_SOURCE_H_
 #define CONTENT_RENDERER_MEDIA_STREAM_MOCK_MEDIA_STREAM_VIDEO_SOURCE_H_
 
-#include "content/renderer/media/stream/media_stream_video_source.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
 
 #include "base/macros.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace content {
 
-class MockMediaStreamVideoSource : public MediaStreamVideoSource {
+class MockMediaStreamVideoSource : public blink::MediaStreamVideoSource {
  public:
   MockMediaStreamVideoSource();
   explicit MockMediaStreamVideoSource(bool respond_to_request_refresh_frame);
@@ -43,7 +43,7 @@ class MockMediaStreamVideoSource : public MediaStreamVideoSource {
   double max_requested_frame_rate() const { return max_requested_frame_rate_; }
 
   void SetMutedState(bool muted_state) override {
-    MediaStreamVideoSource::SetMutedState(muted_state);
+    blink::MediaStreamVideoSource::SetMutedState(muted_state);
     DoSetMutedState(muted_state);
   }
 
@@ -55,7 +55,7 @@ class MockMediaStreamVideoSource : public MediaStreamVideoSource {
 
   bool is_suspended() { return is_suspended_; }
 
-  // Implements MediaStreamVideoSource.
+  // Implements blink::MediaStreamVideoSource.
   void RequestRefreshFrame() override;
   base::Optional<media::VideoCaptureParams> GetCurrentCaptureParams()
       const override;
@@ -65,7 +65,7 @@ class MockMediaStreamVideoSource : public MediaStreamVideoSource {
   // Implements MediaStreamSource.
   void DoChangeSource(const blink::MediaStreamDevice& new_device) override;
 
-  // Implements MediaStreamVideoSource.
+  // Implements blink::MediaStreamVideoSource.
   void StartSourceImpl(
       const blink::VideoCaptureDeliverFrameCB& frame_callback) override;
   void StopSourceImpl() override;

@@ -1,5 +1,16 @@
 include_rules = [
+    # TODO(crbug.com/923394): Remove these dependencies once std types are
+    # migrated to WTF types in mediastream.
+    "+base/strings/utf_string_conversions.h",
+    "+base/strings/string_number_conversions.h",
+    "+base/containers/flat_map.h",
+
+    "+base/threading/sequenced_task_runner_handle.h",
+    "+base/threading/thread_task_runner_handle.h",
+    "+base/trace_event/trace_event.h",
     "+media/base",
+    "+media/capture",
+    "+media/mojo/interfaces",
     "+mojo/public/cpp/bindings/binding.h",
     "-third_party/blink/renderer/modules",
     "+third_party/blink/renderer/modules/event_modules.h",

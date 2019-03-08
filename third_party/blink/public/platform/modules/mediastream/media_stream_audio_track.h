@@ -24,10 +24,10 @@ class MediaStreamAudioSource;
 
 // Provides the part of the audio pipeline delivering audio from a
 // MediaStreamAudioSource to one or more WebMediaStreamAudioSinks. An instance
-// of this class is owned by blink::WebMediaStreamTrack, and clients should use
+// of this class is owned by WebMediaStreamTrack, and clients should use
 // From() to gain access to a MediaStreamAudioTrack.
 class BLINK_PLATFORM_EXPORT MediaStreamAudioTrack
-    : public blink::WebPlatformMediaStreamTrack {
+    : public WebPlatformMediaStreamTrack {
  public:
   explicit MediaStreamAudioTrack(bool is_local_track);
 
@@ -35,7 +35,7 @@ class BLINK_PLATFORM_EXPORT MediaStreamAudioTrack
 
   // Returns the MediaStreamAudioTrack instance owned by the given blink |track|
   // or null.
-  static MediaStreamAudioTrack* From(const blink::WebMediaStreamTrack& track);
+  static MediaStreamAudioTrack* From(const WebMediaStreamTrack& track);
 
   // Provides a weak reference to this MediaStreamAudioTrack which is
   // invalidated when Stop() is called. The weak pointer may only be
@@ -68,7 +68,7 @@ class BLINK_PLATFORM_EXPORT MediaStreamAudioTrack
   // MediaStreamTrack override.
   void SetEnabled(bool enabled) override;
   void SetContentHint(
-      blink::WebMediaStreamTrack::ContentHintType content_hint) override;
+      WebMediaStreamTrack::ContentHintType content_hint) override;
 
   // Returns a unique class identifier. Some subclasses override and use this
   // method to provide safe down-casting to their type.

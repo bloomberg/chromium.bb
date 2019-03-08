@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/stream/media_stream_video_source.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
 
 #include <algorithm>
 #include <limits>
@@ -17,19 +17,17 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "content/child/child_process.h"
-#include "content/public/common/content_features.h"
-#include "content/renderer/media/stream/media_stream_constraints_util_video_device.h"
-#include "content/renderer/media/stream/media_stream_video_track.h"
-#include "content/renderer/media/stream/video_track_adapter.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util_video_device.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
+#include "third_party/blink/public/web/modules/mediastream/video_track_adapter.h"
 
-namespace content {
+namespace blink {
 
 // static
 MediaStreamVideoSource* MediaStreamVideoSource::GetVideoSource(
-    const blink::WebMediaStreamSource& source) {
-  if (source.IsNull() ||
-      source.GetType() != blink::WebMediaStreamSource::kTypeVideo) {
+    const WebMediaStreamSource& source) {
+  if (source.IsNull() || source.GetType() != WebMediaStreamSource::kTypeVideo) {
     return nullptr;
   }
   return static_cast<MediaStreamVideoSource*>(source.GetPlatformSource());
@@ -38,7 +36,7 @@ MediaStreamVideoSource* MediaStreamVideoSource::GetVideoSource(
 MediaStreamVideoSource::MediaStreamVideoSource()
     : state_(NEW), weak_factory_(this) {
   track_adapter_ = base::MakeRefCounted<VideoTrackAdapter>(
-      ChildProcess::current()->io_task_runner(),
+      Platform::Current()->GetIOTaskRunner(),
       base::BindRepeating(&MediaStreamVideoSource::OnFrameDropped,
                           weak_factory_.GetWeakPtr()));
 }
@@ -50,9 +48,9 @@ MediaStreamVideoSource::~MediaStreamVideoSource() {
 void MediaStreamVideoSource::AddTrack(
     MediaStreamVideoTrack* track,
     const VideoTrackAdapterSettings& track_adapter_settings,
-    const blink::VideoCaptureDeliverFrameCB& frame_callback,
-    const blink::VideoTrackSettingsCallback& settings_callback,
-    const blink::VideoTrackFormatCallback& format_callback,
+    const VideoCaptureDeliverFrameCB& frame_callback,
+    const VideoTrackSettingsCallback& settings_callback,
+    const VideoTrackFormatCallback& format_callback,
     const ConstraintsCallback& callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!base::ContainsValue(tracks_, track));
@@ -286,7 +284,8 @@ void MediaStreamVideoSource::UpdateHasConsumers(MediaStreamVideoTrack* track,
 }
 
 void MediaStreamVideoSource::UpdateCapturingLinkSecure(
-    MediaStreamVideoTrack* track, bool is_secure) {
+    MediaStreamVideoTrack* track,
+    bool is_secure) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   secure_tracker_.Update(track, is_secure);
   OnCapturingLinkSecured(secure_tracker_.is_capturing_secure());
@@ -315,7 +314,7 @@ MediaStreamVideoSource::GetCurrentCaptureParams() const {
 }
 
 void MediaStreamVideoSource::DoChangeSource(
-    const blink::MediaStreamDevice& new_device) {
+    const MediaStreamDevice& new_device) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOG(1) << "MediaStreamVideoSource::DoChangeSource: "
            << ", new device id = " << new_device.id
@@ -335,11 +334,10 @@ void MediaStreamVideoSource::DoStopSource() {
   track_adapter_->StopFrameMonitoring();
   StopSourceImpl();
   state_ = ENDED;
-  SetReadyState(blink::WebMediaStreamSource::kReadyStateEnded);
+  SetReadyState(WebMediaStreamSource::kReadyStateEnded);
 }
 
-void MediaStreamVideoSource::OnStartDone(
-    blink::MediaStreamRequestResult result) {
+void MediaStreamVideoSource::OnStartDone(MediaStreamRequestResult result) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOG(3) << "OnStartDone({result =" << result << "})";
   if (state_ == ENDED) {
@@ -349,11 +347,11 @@ void MediaStreamVideoSource::OnStartDone(
     return;
   }
 
-  if (result == blink::MEDIA_DEVICE_OK) {
+  if (result == MEDIA_DEVICE_OK) {
     DCHECK_EQ(STARTING, state_);
     OnLog("MediaStreamVideoSource changing state to STARTED");
     state_ = STARTED;
-    SetReadyState(blink::WebMediaStreamSource::kReadyStateLive);
+    SetReadyState(WebMediaStreamSource::kReadyStateLive);
     StartFrameMonitoring();
   } else {
     StopSource();
@@ -369,11 +367,11 @@ void MediaStreamVideoSource::FinalizeAddPendingTracks() {
   std::vector<PendingTrackInfo> pending_track_descriptors;
   pending_track_descriptors.swap(pending_tracks_);
   for (const auto& track_info : pending_track_descriptors) {
-    blink::MediaStreamRequestResult result = blink::MEDIA_DEVICE_OK;
+    MediaStreamRequestResult result = MEDIA_DEVICE_OK;
     if (state_ != STARTED)
-      result = blink::MEDIA_DEVICE_TRACK_START_FAILURE_VIDEO;
+      result = MEDIA_DEVICE_TRACK_START_FAILURE_VIDEO;
 
-    if (result == blink::MEDIA_DEVICE_OK) {
+    if (result == MEDIA_DEVICE_OK) {
       track_adapter_->AddTrack(track_info.track, track_info.frame_callback,
                                track_info.settings_callback,
                                track_info.format_callback,
@@ -385,7 +383,7 @@ void MediaStreamVideoSource::FinalizeAddPendingTracks() {
       OnLog(
           "MediaStreamVideoSource invoking callback indicating result of "
           "starting track.");
-      track_info.callback.Run(this, result, blink::WebString());
+      track_info.callback.Run(this, result, WebString());
     } else {
       OnLog(
           "MediaStreamVideoSource dropping event indicating result of starting "
@@ -407,7 +405,7 @@ void MediaStreamVideoSource::StartFrameMonitoring() {
 }
 
 void MediaStreamVideoSource::SetReadyState(
-    blink::WebMediaStreamSource::ReadyState state) {
+    WebMediaStreamSource::ReadyState state) {
   DVLOG(3) << "MediaStreamVideoSource::SetReadyState state " << state;
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!Owner().IsNull())
@@ -420,9 +418,8 @@ void MediaStreamVideoSource::SetMutedState(bool muted_state) {
   DVLOG(3) << "MediaStreamVideoSource::SetMutedState state=" << muted_state;
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!Owner().IsNull()) {
-    Owner().SetReadyState(muted_state
-                              ? blink::WebMediaStreamSource::kReadyStateMuted
-                              : blink::WebMediaStreamSource::kReadyStateLive);
+    Owner().SetReadyState(muted_state ? WebMediaStreamSource::kReadyStateMuted
+                                      : WebMediaStreamSource::kReadyStateLive);
   }
 }
 
@@ -449,9 +446,9 @@ void MediaStreamVideoSource::UpdateTrackSettings(
 
 MediaStreamVideoSource::PendingTrackInfo::PendingTrackInfo(
     MediaStreamVideoTrack* track,
-    const blink::VideoCaptureDeliverFrameCB& frame_callback,
-    const blink::VideoTrackSettingsCallback& settings_callback,
-    const blink::VideoTrackFormatCallback& format_callback,
+    const VideoCaptureDeliverFrameCB& frame_callback,
+    const VideoTrackSettingsCallback& settings_callback,
+    const VideoTrackFormatCallback& format_callback,
     std::unique_ptr<VideoTrackAdapterSettings> adapter_settings,
     const ConstraintsCallback& callback)
     : track(track),
@@ -469,4 +466,4 @@ MediaStreamVideoSource::PendingTrackInfo::operator=(
 
 MediaStreamVideoSource::PendingTrackInfo::~PendingTrackInfo() {}
 
-}  // namespace content
+}  // namespace blink

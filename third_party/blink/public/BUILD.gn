@@ -7,6 +7,7 @@ import("//mojo/public/tools/bindings/mojom.gni")
 import("//third_party/blink/public/public_features.gni")
 import("//third_party/blink/renderer/config.gni")
 import("//third_party/blink/renderer/core/core.gni")
+import("//third_party/webrtc/webrtc.gni")
 import("//tools/grit/grit_rule.gni")
 import("//tools/grit/repack.gni")
 
@@ -140,6 +141,7 @@ source_set("blink_headers") {
     "platform/modules/media_capabilities/web_media_decoding_configuration.h",
     "platform/modules/media_capabilities/web_video_configuration.h",
     "platform/modules/mediastream/media_stream_audio_deliverer.h",
+    "platform/modules/mediastream/media_stream_audio_processor_options.h",
     "platform/modules/mediastream/media_stream_audio_source.h",
     "platform/modules/mediastream/media_stream_audio_track.h",
     "platform/modules/mediastream/media_stream_types.h",
@@ -386,6 +388,12 @@ source_set("blink_headers") {
     "web/mac/web_substring_util.h",
     "web/modules/autofill/web_form_element_observer.h",
     "web/modules/autofill/web_form_element_observer_callback.h",
+    "web/modules/mediastream/media_stream_constraints_util.h",
+    "web/modules/mediastream/media_stream_constraints_util_sets.h",
+    "web/modules/mediastream/media_stream_constraints_util_video_device.h",
+    "web/modules/mediastream/media_stream_video_source.h",
+    "web/modules/mediastream/media_stream_video_track.h",
+    "web/modules/mediastream/video_track_adapter.h",
     "web/modules/service_worker/web_service_worker_context_client.h",
     "web/modules/service_worker/web_service_worker_context_proxy.h",
     "web/web_active_fling_parameters.h",
@@ -534,8 +542,6 @@ source_set("blink_headers") {
     "//services/ws/public/mojom/ime",
     "//skia",
     "//third_party/blink/public/common",
-    "//third_party/webrtc/api:libjingle_peerconnection_api",
-    "//third_party/webrtc/rtc_base:rtc_base",
     "//ui/accessibility:ax_enums_mojo",
     "//url",
   ]
@@ -553,6 +559,12 @@ source_set("blink_headers") {
     "//services/device/public/mojom:mojom_shared_cpp_sources",
     "//services/network/public/cpp:cpp",
     "//services/network/public/mojom",
+    "//third_party/webrtc/api:libjingle_peerconnection_api",
+    "//third_party/webrtc/media:rtc_media_base",
+    "//third_party/webrtc/modules/audio_processing:api",
+    "//third_party/webrtc/rtc_base:rtc_base",
+    "//third_party/webrtc/rtc_base:rtc_task_queue",
+    "//third_party/webrtc_overrides:init_webrtc",
     "//v8:v8_headers",
   ]
 }

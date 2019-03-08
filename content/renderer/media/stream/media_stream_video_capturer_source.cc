@@ -8,9 +8,9 @@
 
 #include "base/bind.h"
 #include "content/public/renderer/render_frame.h"
-#include "content/renderer/media/stream/media_stream_constraints_util.h"
 #include "media/capture/video_capturer_source.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 
 namespace content {

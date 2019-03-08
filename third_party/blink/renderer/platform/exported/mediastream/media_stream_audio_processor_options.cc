@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/stream/media_stream_audio_processor_options.h"
+#include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_processor_options.h"
 
 #include <stddef.h>
 #include <utility>
@@ -20,14 +20,13 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "content/public/common/content_features.h"
-#include "content/renderer/media/stream/media_stream_constraints_util.h"
 #include "media/base/audio_parameters.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util.h"
 #include "third_party/webrtc/modules/audio_processing/aec_dump/aec_dump_factory.h"
 #include "third_party/webrtc/modules/audio_processing/include/audio_processing.h"
 #include "third_party/webrtc/modules/audio_processing/typing_detection.h"
 
-namespace content {
+namespace blink {
 namespace {
 
 base::Optional<double> GetGainControlCompressionGain(
@@ -212,4 +211,4 @@ void ConfigPreAmplifier(webrtc::AudioProcessing::Config* apm_config,
   }
 }
 
-}  // namespace content
+}  // namespace blink

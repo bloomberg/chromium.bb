@@ -2,42 +2,42 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_STREAM_MEDIA_STREAM_CONSTRAINTS_UTIL_VIDEO_DEVICE_H_
-#define CONTENT_RENDERER_MEDIA_STREAM_MEDIA_STREAM_CONSTRAINTS_UTIL_VIDEO_DEVICE_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_MEDIA_STREAM_CONSTRAINTS_UTIL_VIDEO_DEVICE_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_MEDIA_STREAM_CONSTRAINTS_UTIL_VIDEO_DEVICE_H_
 
 #include <string>
 #include <vector>
 
 #include "base/optional.h"
-#include "content/common/content_export.h"
-#include "content/renderer/media/stream/media_stream_constraints_util.h"
 #include "media/capture/video_capture_types.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util.h"
 
 namespace blink {
 class WebString;
 class WebMediaConstraints;
 }  // namespace blink
 
-namespace content {
+namespace blink {
 
 // Calculates and returns videoKind value for |format|.
 // See https://w3c.github.io/mediacapture-depth.
-CONTENT_EXPORT blink::WebString GetVideoKindForFormat(
-    const media::VideoCaptureFormat& format);
+BLINK_EXPORT WebString
+GetVideoKindForFormat(const media::VideoCaptureFormat& format);
 
-CONTENT_EXPORT blink::WebMediaStreamTrack::FacingMode ToWebFacingMode(
+BLINK_EXPORT WebMediaStreamTrack::FacingMode ToWebFacingMode(
     media::VideoFacingMode video_facing);
 
-CONTENT_EXPORT blink::WebMediaStreamTrack::DisplayCaptureSurfaceType
-ToWebDisplaySurface(media::mojom::DisplayCaptureSurfaceType display_surface);
+BLINK_EXPORT WebMediaStreamTrack::DisplayCaptureSurfaceType ToWebDisplaySurface(
+    media::mojom::DisplayCaptureSurfaceType display_surface);
 
-CONTENT_EXPORT blink::WebMediaStreamTrack::CursorCaptureType
-ToWebCursorCaptureType(media::mojom::CursorCaptureType cursor);
+BLINK_EXPORT WebMediaStreamTrack::CursorCaptureType ToWebCursorCaptureType(
+    media::mojom::CursorCaptureType cursor);
 
 // This is a temporary struct to bridge blink and content mojo types.
 // TODO(crbug.com/704136): Replace references to this type with the blink mojo
 // type once all dependent types are migrated to Blink.
-struct CONTENT_EXPORT VideoInputDeviceCapabilities {
+struct BLINK_EXPORT VideoInputDeviceCapabilities {
   VideoInputDeviceCapabilities(std::string device_id,
                                std::string group_id,
                                std::vector<media::VideoCaptureFormat> formats,
@@ -53,7 +53,7 @@ struct CONTENT_EXPORT VideoInputDeviceCapabilities {
   media::VideoFacingMode facing_mode;
 };
 
-struct CONTENT_EXPORT VideoDeviceCaptureCapabilities {
+struct BLINK_EXPORT VideoDeviceCaptureCapabilities {
   VideoDeviceCaptureCapabilities();
   VideoDeviceCaptureCapabilities(VideoDeviceCaptureCapabilities&& other);
   ~VideoDeviceCaptureCapabilities();
@@ -131,13 +131,13 @@ struct CONTENT_EXPORT VideoDeviceCaptureCapabilities {
 // the track_adapter_settings() accessor. For more details about the algorithm
 // for track adapter settings, see the SelectVideoTrackAdapterSettings
 // documentation.
-VideoCaptureSettings CONTENT_EXPORT SelectSettingsVideoDeviceCapture(
+VideoCaptureSettings BLINK_EXPORT SelectSettingsVideoDeviceCapture(
     const VideoDeviceCaptureCapabilities& capabilities,
-    const blink::WebMediaConstraints& constraints,
+    const WebMediaConstraints& constraints,
     int default_width,
     int default_height,
     double default_frame_rate);
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_RENDERER_MEDIA_STREAM_MEDIA_STREAM_CONSTRAINTS_UTIL_VIDEO_DEVICE_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_MEDIA_STREAM_CONSTRAINTS_UTIL_VIDEO_DEVICE_H_

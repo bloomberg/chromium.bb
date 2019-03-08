@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_STREAM_VIDEO_TRACK_ADAPTER_H_
-#define CONTENT_RENDERER_MEDIA_STREAM_VIDEO_TRACK_ADAPTER_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_VIDEO_TRACK_ADAPTER_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_VIDEO_TRACK_ADAPTER_H_
 
 #include <stdint.h>
 
@@ -13,15 +13,15 @@
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
-#include "content/common/content_export.h"
-#include "content/renderer/media/stream/media_stream_video_track.h"
 #include "media/base/video_frame.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_types.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
 #include "ui/gfx/geometry/size.h"
 
-namespace content {
+namespace blink {
 
-class CONTENT_EXPORT VideoTrackAdapterSettings {
+class BLINK_EXPORT VideoTrackAdapterSettings {
  public:
   // Creates a VideoTrackAdapterSettings with no target resolution or frame rate
   // and without any constraints on the resolution.
@@ -76,7 +76,7 @@ class CONTENT_EXPORT VideoTrackAdapterSettings {
 // the IO-thread.
 // Adaptations is done by wrapping the original media::VideoFrame in a new
 // media::VideoFrame with a new visible_rect and natural_size.
-class VideoTrackAdapter
+class BLINK_EXPORT VideoTrackAdapter
     : public base::RefCountedThreadSafe<VideoTrackAdapter> {
  public:
   using OnMutedCallback = base::Callback<void(bool mute_state)>;
@@ -93,9 +93,9 @@ class VideoTrackAdapter
   // |source_frame_rate| is used to calculate a prudent interval to check for
   // passing frames and inform of the result via |on_muted_state_callback|.
   void AddTrack(const MediaStreamVideoTrack* track,
-                blink::VideoCaptureDeliverFrameCB frame_callback,
-                blink::VideoTrackSettingsCallback settings_callback,
-                blink::VideoTrackFormatCallback track_callback,
+                VideoCaptureDeliverFrameCB frame_callback,
+                VideoTrackSettingsCallback settings_callback,
+                VideoTrackFormatCallback track_callback,
                 const VideoTrackAdapterSettings& settings);
   void RemoveTrack(const MediaStreamVideoTrack* track);
   void ReconfigureTrack(const MediaStreamVideoTrack* track,
@@ -124,28 +124,26 @@ class VideoTrackAdapter
   // Returns true if |desired_size| is updated successfully, false otherwise.
   // |desired_size| is not updated |settings| has rescaling disabled and
   // |input_size| is invalid.
-  CONTENT_EXPORT static bool CalculateDesiredSize(
-      bool is_rotated,
-      const gfx::Size& input_size,
-      const VideoTrackAdapterSettings& settings,
-      gfx::Size* desired_size);
+  static bool CalculateDesiredSize(bool is_rotated,
+                                   const gfx::Size& input_size,
+                                   const VideoTrackAdapterSettings& settings,
+                                   gfx::Size* desired_size);
 
  private:
   virtual ~VideoTrackAdapter();
   friend class base::RefCountedThreadSafe<VideoTrackAdapter>;
 
   void AddTrackOnIO(const MediaStreamVideoTrack* track,
-                    blink::VideoCaptureDeliverFrameCB frame_callback,
-                    blink::VideoTrackSettingsCallback settings_callback,
-                    blink::VideoTrackFormatCallback track_callback,
+                    VideoCaptureDeliverFrameCB frame_callback,
+                    VideoTrackSettingsCallback settings_callback,
+                    VideoTrackFormatCallback track_callback,
                     const VideoTrackAdapterSettings& settings);
   void RemoveTrackOnIO(const MediaStreamVideoTrack* track);
   void ReconfigureTrackOnIO(const MediaStreamVideoTrack* track,
                             const VideoTrackAdapterSettings& settings);
 
-  void StartFrameMonitoringOnIO(
-    const OnMutedCallback& on_muted_state_callback,
-    double source_frame_rate);
+  void StartFrameMonitoringOnIO(const OnMutedCallback& on_muted_state_callback,
+                                double source_frame_rate);
   void StopFrameMonitoringOnIO();
   void SetSourceFrameSizeOnIO(const gfx::Size& frame_size);
 
@@ -193,6 +191,6 @@ class VideoTrackAdapter
   DISALLOW_COPY_AND_ASSIGN(VideoTrackAdapter);
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_RENDERER_MEDIA_STREAM_VIDEO_TRACK_ADAPTER_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_VIDEO_TRACK_ADAPTER_H_

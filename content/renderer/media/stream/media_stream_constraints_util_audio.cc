@@ -13,21 +13,23 @@
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
 #include "content/public/common/content_features.h"
-#include "content/renderer/media/stream/media_stream_audio_processor_options.h"
-#include "content/renderer/media/stream/media_stream_constraints_util.h"
-#include "content/renderer/media/stream/media_stream_constraints_util_sets.h"
-#include "content/renderer/media/stream/media_stream_video_source.h"
 #include "content/renderer/media/stream/processed_local_audio_source.h"
 #include "media/audio/audio_features.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/limits.h"
 #include "third_party/blink/public/common/mediastream/media_stream_controls.h"
+#include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_processor_options.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util_sets.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
 
 namespace content {
 
+using blink::AudioCaptureSettings;
+using blink::AudioProcessingProperties;
 using ConstraintSet = blink::WebMediaTrackConstraintSet;
 using BooleanConstraint = blink::BooleanConstraint;
 using EchoCancellationType = AudioProcessingProperties::EchoCancellationType;
@@ -35,16 +37,16 @@ using ProcessingType = AudioCaptureSettings::ProcessingType;
 using StringConstraint = blink::StringConstraint;
 
 template <class T>
-using NumericRangeSet = media_constraints::NumericRangeSet<T>;
+using NumericRangeSet = blink::media_constraints::NumericRangeSet<T>;
 
 namespace {
 
-using BoolSet = media_constraints::DiscreteSet<bool>;
-using DoubleRangeSet = media_constraints::NumericRangeSet<double>;
+using BoolSet = blink::media_constraints::DiscreteSet<bool>;
+using DoubleRangeSet = blink::media_constraints::NumericRangeSet<double>;
 using EchoCancellationTypeSet =
-    media_constraints::DiscreteSet<EchoCancellationType>;
-using IntRangeSet = media_constraints::NumericRangeSet<int>;
-using StringSet = media_constraints::DiscreteSet<std::string>;
+    blink::media_constraints::DiscreteSet<EchoCancellationType>;
+using IntRangeSet = blink::media_constraints::NumericRangeSet<int>;
+using StringSet = blink::media_constraints::DiscreteSet<std::string>;
 
 // The presence of a MediaStreamAudioSource object indicates whether the source
 // in question is currently in use, or not. This convenience enum helps
@@ -153,7 +155,7 @@ class BooleanContainer {
 
   const char* ApplyConstraintSet(const BooleanConstraint& constraint) {
     allowed_values_ = allowed_values_.Intersection(
-        media_constraints::BoolSetFromConstraint(constraint));
+        blink::media_constraints::BoolSetFromConstraint(constraint));
     return allowed_values_.IsEmpty() ? constraint.GetName() : nullptr;
   }
 
@@ -186,7 +188,7 @@ class StringContainer {
 
   const char* ApplyConstraintSet(const StringConstraint& constraint) {
     allowed_values_ = allowed_values_.Intersection(
-        media_constraints::StringSetFromConstraint(constraint));
+        blink::media_constraints::StringSetFromConstraint(constraint));
     return allowed_values_.IsEmpty() ? constraint.GetName() : nullptr;
   }
 
@@ -252,8 +254,8 @@ class NumericContainer {
         return std::make_tuple(1.0, constraint.Ideal());
 
       T value = SelectClosestValueTo(constraint.Ideal());
-      double fitness =
-          1.0 - NumericConstraintFitnessDistance(value, constraint.Ideal());
+      double fitness = 1.0 - blink::NumericConstraintFitnessDistance(
+                                 value, constraint.Ideal());
       return std::make_tuple(fitness, value);
     }
 
@@ -332,11 +334,11 @@ class EchoCancellationContainer {
 
   const char* ApplyConstraintSet(const ConstraintSet& constraint_set) {
     // Convert the constraints into discrete sets.
-    BoolSet ec_set = media_constraints::BoolSetFromConstraint(
+    BoolSet ec_set = blink::media_constraints::BoolSetFromConstraint(
         constraint_set.echo_cancellation);
-    BoolSet goog_ec_set = media_constraints::BoolSetFromConstraint(
+    BoolSet goog_ec_set = blink::media_constraints::BoolSetFromConstraint(
         constraint_set.goog_echo_cancellation);
-    StringSet ec_type_set = media_constraints::StringSetFromConstraint(
+    StringSet ec_type_set = blink::media_constraints::StringSetFromConstraint(
         constraint_set.echo_cancellation_type);
 
     // Apply echoCancellation constraint.
@@ -639,7 +641,7 @@ class ProcessingBasedContainer {
         IntRangeSet::FromValue(GetSampleSize()), /* sample_size_range */
         IntRangeSet::FromValue(1),               /* channels_range */
         IntRangeSet::FromValue(
-            kAudioProcessingSampleRate), /* sample_rate_range */
+            blink::kAudioProcessingSampleRate), /* sample_rate_range */
         source_info, is_device_capture, device_parameters);
   }
 

@@ -7,8 +7,8 @@
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "content/renderer/media/stream/media_stream_audio_processor_options.h"
 #include "content/renderer/media/stream/mock_constraint_factory.h"
+#include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_processor_options.h"
 
 namespace content {
 

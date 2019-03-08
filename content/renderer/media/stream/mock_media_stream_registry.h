@@ -10,9 +10,11 @@
 #include "base/optional.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
 
-namespace content {
-
+namespace blink {
 class VideoTrackAdapterSettings;
+}
+
+namespace content {
 
 // This class encapsulates creation of a Blink MediaStream having inside the
 // necessary Blink and Chromium, track and source. The Chrome Video source is
@@ -23,7 +25,7 @@ class MockMediaStreamRegistry final {
 
   void Init();
   void AddVideoTrack(const std::string& track_id,
-                     const VideoTrackAdapterSettings& adapter_settings,
+                     const blink::VideoTrackAdapterSettings& adapter_settings,
                      const base::Optional<bool>& noise_reduction,
                      bool is_screen_cast,
                      double min_frame_rate);

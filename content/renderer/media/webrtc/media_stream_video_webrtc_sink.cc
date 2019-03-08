@@ -18,11 +18,11 @@
 #include "base/timer/timer.h"
 #include "content/public/common/content_features.h"
 #include "content/public/renderer/media_stream_utils.h"
-#include "content/renderer/media/stream/media_stream_constraints_util.h"
-#include "content/renderer/media/stream/media_stream_video_track.h"
 #include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
 #include "content/renderer/media/webrtc/webrtc_video_track_source.h"
 #include "media/base/limits.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
 #include "third_party/webrtc/api/video_track_source_proxy.h"
 
 namespace content {
@@ -214,8 +214,8 @@ MediaStreamVideoWebRtcSink::MediaStreamVideoWebRtcSink(
     PeerConnectionDependencyFactory* factory,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : weak_factory_(this) {
-  MediaStreamVideoTrack* video_track =
-      MediaStreamVideoTrack::GetVideoTrack(track);
+  blink::MediaStreamVideoTrack* video_track =
+      blink::MediaStreamVideoTrack::GetVideoTrack(track);
   DCHECK(video_track);
 
   absl::optional<bool> needs_denoising =

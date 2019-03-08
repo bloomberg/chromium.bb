@@ -11,20 +11,21 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "content/common/content_export.h"
-#include "content/renderer/media/stream/media_stream_video_source.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
 #include "third_party/webrtc/api/media_stream_interface.h"
 
 namespace content {
 
 class TrackObserver;
 
-// MediaStreamRemoteVideoSource implements the MediaStreamVideoSource interface
-// for video tracks received on a PeerConnection. The purpose of the class is
-// to make sure there is no difference between a video track where the source is
-// a local source and a video track where the source is a remote video track.
+// MediaStreamRemoteVideoSource implements the blink::MediaStreamVideoSource
+// interface for video tracks received on a PeerConnection. The purpose of the
+// class is to make sure there is no difference between a video track where the
+// source is a local source and a video track where the source is a remote video
+// track.
 class CONTENT_EXPORT MediaStreamRemoteVideoSource
-    : public MediaStreamVideoSource {
+    : public blink::MediaStreamVideoSource {
  public:
   explicit MediaStreamRemoteVideoSource(
       std::unique_ptr<TrackObserver> observer);
@@ -36,7 +37,7 @@ class CONTENT_EXPORT MediaStreamRemoteVideoSource
   void OnSourceTerminated();
 
  protected:
-  // Implements MediaStreamVideoSource.
+  // Implements blink::MediaStreamVideoSource.
   void StartSourceImpl(
       const blink::VideoCaptureDeliverFrameCB& frame_callback) override;
 

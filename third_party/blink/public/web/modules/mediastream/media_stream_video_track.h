@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_STREAM_MEDIA_STREAM_VIDEO_TRACK_H_
-#define CONTENT_RENDERER_MEDIA_STREAM_MEDIA_STREAM_VIDEO_TRACK_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_MEDIA_STREAM_VIDEO_TRACK_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_MEDIA_STREAM_VIDEO_TRACK_H_
 
 #include <memory>
 #include <vector>
@@ -13,14 +13,14 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
-#include "content/common/content_export.h"
-#include "content/renderer/media/stream/media_stream_video_source.h"
 #include "third_party/blink/public/platform/modules/mediastream/secure_display_link_tracker.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_sink.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_platform_media_stream_track.h"
+#include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
 
-namespace content {
+namespace blink {
 
 class VideoTrackAdapterSettings;
 
@@ -28,7 +28,7 @@ class VideoTrackAdapterSettings;
 // blink::WebMediaStreamTrack in content. It is owned by the blink object
 // and can be retrieved from a blink object using
 // WebMediaStreamTrack::getExtraData() or MediaStreamVideoTrack::GetVideoTrack.
-class CONTENT_EXPORT MediaStreamVideoTrack
+class BLINK_EXPORT MediaStreamVideoTrack
     : public blink::WebPlatformMediaStreamTrack {
  public:
   // Help method to create a blink::WebMediaStreamTrack and a
@@ -95,9 +95,7 @@ class CONTENT_EXPORT MediaStreamVideoTrack
   const base::Optional<bool>& noise_reduction() const {
     return noise_reduction_;
   }
-  bool is_screencast() const {
-    return is_screencast_;
-  }
+  bool is_screencast() const { return is_screencast_; }
   const base::Optional<double>& min_frame_rate() const {
     return min_frame_rate_;
   }
@@ -184,6 +182,6 @@ class CONTENT_EXPORT MediaStreamVideoTrack
   DISALLOW_COPY_AND_ASSIGN(MediaStreamVideoTrack);
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_RENDERER_MEDIA_STREAM_MEDIA_STREAM_VIDEO_TRACK_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_MEDIA_STREAM_VIDEO_TRACK_H_

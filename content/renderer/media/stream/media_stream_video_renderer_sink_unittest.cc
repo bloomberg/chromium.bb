@@ -13,7 +13,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
 #include "content/child/child_process.h"
-#include "content/renderer/media/stream/media_stream_video_track.h"
 #include "content/renderer/media/stream/mock_media_stream_registry.h"
 #include "content/renderer/media/stream/mock_media_stream_video_source.h"
 #include "media/base/video_frame.h"
@@ -21,6 +20,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
 #include "third_party/blink/public/web/web_heap.h"
 
 using ::testing::_;
@@ -45,7 +45,7 @@ class MediaStreamVideoRendererSinkTest : public testing::Test {
                              blink::WebString::FromASCII("dummy_source_name"),
                              false /* remote */);
     blink_source_.SetPlatformSource(base::WrapUnique(mock_source_));
-    blink_track_ = MediaStreamVideoTrack::CreateVideoTrack(
+    blink_track_ = blink::MediaStreamVideoTrack::CreateVideoTrack(
         mock_source_,
         blink::WebPlatformMediaStreamSource::ConstraintsCallback(), true);
     mock_source_->StartMockedSource();

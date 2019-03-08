@@ -16,14 +16,17 @@ namespace base {
 class SingleThreadTaskRunner;
 }
 
+namespace blink {
+class MediaStreamVideoTrack;
+}
+
 namespace content {
 
-class MediaStreamVideoTrack;
 class PeerConnectionDependencyFactory;
 class WebRtcVideoTrackSource;
 
 // MediaStreamVideoWebRtcSink is an adapter between a
-// content::MediaStreamVideoTrack object and a webrtc VideoTrack that is
+// blink::MediaStreamVideoTrack object and a webrtc VideoTrack that is
 // currently sent on a PeerConnection.
 // The responsibility of the class is to create and own a representation of a
 // webrtc VideoTrack that can be added and removed from a RTCPeerConnection. An

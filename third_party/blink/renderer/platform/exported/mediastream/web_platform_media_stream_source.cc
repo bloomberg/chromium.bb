@@ -33,22 +33,20 @@ void WebPlatformMediaStreamSource::FinalizeStopSource() {
   if (!stop_callback_.is_null())
     base::ResetAndReturn(&stop_callback_).Run(Owner());
   if (Owner())
-    Owner().SetReadyState(blink::WebMediaStreamSource::kReadyStateEnded);
+    Owner().SetReadyState(WebMediaStreamSource::kReadyStateEnded);
 }
 
 void WebPlatformMediaStreamSource::SetSourceMuted(bool is_muted) {
   // Although this change is valid only if the ready state isn't already Ended,
-  // there's code further along (like in blink::MediaStreamTrack) which filters
+  // there's code further along (like in MediaStreamTrack) which filters
   // that out already.
   if (!Owner())
     return;
-  Owner().SetReadyState(is_muted
-                            ? blink::WebMediaStreamSource::kReadyStateMuted
-                            : blink::WebMediaStreamSource::kReadyStateLive);
+  Owner().SetReadyState(is_muted ? WebMediaStreamSource::kReadyStateMuted
+                                 : WebMediaStreamSource::kReadyStateLive);
 }
 
-void WebPlatformMediaStreamSource::SetDevice(
-    const blink::MediaStreamDevice& device) {
+void WebPlatformMediaStreamSource::SetDevice(const MediaStreamDevice& device) {
   device_ = device;
 }
 
@@ -64,7 +62,7 @@ void WebPlatformMediaStreamSource::ResetSourceStoppedCallback() {
 }
 
 void WebPlatformMediaStreamSource::ChangeSource(
-    const blink::MediaStreamDevice& new_device) {
+    const MediaStreamDevice& new_device) {
   DoChangeSource(new_device);
 }
 

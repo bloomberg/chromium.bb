@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/stream/media_stream_video_track.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
 
 #include <string>
 #include <utility>
@@ -14,16 +14,15 @@
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "content/renderer/media/stream/media_stream_constraints_util_video_device.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/capture/video_capture_types.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util_video_device.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 
-namespace content {
+namespace blink {
 
 namespace {
-void ResetCallback(
-    std::unique_ptr<blink::VideoCaptureDeliverFrameCB> callback) {
+void ResetCallback(std::unique_ptr<VideoCaptureDeliverFrameCB> callback) {
   // |callback| will be deleted when this exits.
 }
 
@@ -42,7 +41,7 @@ void ReleaseOriginalFrame(const scoped_refptr<media::VideoFrame>& frame) {}
 class MediaStreamVideoTrack::FrameDeliverer
     : public base::RefCountedThreadSafe<FrameDeliverer> {
  public:
-  using VideoSinkId = blink::WebMediaStreamSink*;
+  using VideoSinkId = WebMediaStreamSink*;
 
   FrameDeliverer(
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
@@ -54,8 +53,7 @@ class MediaStreamVideoTrack::FrameDeliverer
 
   // Add |callback| to receive video frames on the IO-thread.
   // Must be called on the main render thread.
-  void AddCallback(VideoSinkId id,
-                   const blink::VideoCaptureDeliverFrameCB& callback);
+  void AddCallback(VideoSinkId id, const VideoCaptureDeliverFrameCB& callback);
 
   // Removes |callback| associated with |id| from receiving video frames if |id|
   // has been added. It is ok to call RemoveCallback even if the |id| has not
@@ -72,7 +70,7 @@ class MediaStreamVideoTrack::FrameDeliverer
   friend class base::RefCountedThreadSafe<FrameDeliverer>;
   virtual ~FrameDeliverer();
   void AddCallbackOnIO(VideoSinkId id,
-                       const blink::VideoCaptureDeliverFrameCB& callback);
+                       const VideoCaptureDeliverFrameCB& callback);
   void RemoveCallbackOnIO(
       VideoSinkId id,
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
@@ -99,7 +97,7 @@ class MediaStreamVideoTrack::FrameDeliverer
   bool emit_frame_drop_events_;
 
   using VideoIdCallbackPair =
-      std::pair<VideoSinkId, blink::VideoCaptureDeliverFrameCB>;
+      std::pair<VideoSinkId, VideoCaptureDeliverFrameCB>;
   std::vector<VideoIdCallbackPair> callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameDeliverer);
@@ -116,11 +114,10 @@ MediaStreamVideoTrack::FrameDeliverer::FrameDeliverer(
       emit_frame_drop_events_(true) {
   DCHECK(io_task_runner_.get());
 
-  blink::WebLocalFrame* web_frame =
-      blink::WebLocalFrame::FrameForCurrentContext();
+  WebLocalFrame* web_frame = WebLocalFrame::FrameForCurrentContext();
   if (web_frame) {
     main_render_task_runner_ =
-        web_frame->GetTaskRunner(blink::TaskType::kInternalMedia);
+        web_frame->GetTaskRunner(TaskType::kInternalMedia);
   }
 }
 
@@ -130,7 +127,7 @@ MediaStreamVideoTrack::FrameDeliverer::~FrameDeliverer() {
 
 void MediaStreamVideoTrack::FrameDeliverer::AddCallback(
     VideoSinkId id,
-    const blink::VideoCaptureDeliverFrameCB& callback) {
+    const VideoCaptureDeliverFrameCB& callback) {
   DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
   io_task_runner_->PostTask(
       FROM_HERE,
@@ -139,7 +136,7 @@ void MediaStreamVideoTrack::FrameDeliverer::AddCallback(
 
 void MediaStreamVideoTrack::FrameDeliverer::AddCallbackOnIO(
     VideoSinkId id,
-    const blink::VideoCaptureDeliverFrameCB& callback) {
+    const VideoCaptureDeliverFrameCB& callback) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   callbacks_.push_back(std::make_pair(id, callback));
 }
@@ -159,8 +156,8 @@ void MediaStreamVideoTrack::FrameDeliverer::RemoveCallbackOnIO(
   for (; it != callbacks_.end(); ++it) {
     if (it->first == id) {
       // Callback is copied to heap and then deleted on the target thread.
-      std::unique_ptr<blink::VideoCaptureDeliverFrameCB> callback;
-      callback.reset(new blink::VideoCaptureDeliverFrameCB(it->second));
+      std::unique_ptr<VideoCaptureDeliverFrameCB> callback;
+      callback.reset(new VideoCaptureDeliverFrameCB(it->second));
       callbacks_.erase(it);
       task_runner->PostTask(
           FROM_HERE, base::BindOnce(&ResetCallback, std::move(callback)));
@@ -238,11 +235,11 @@ MediaStreamVideoTrack::FrameDeliverer::GetBlackFrame(
 }
 
 // static
-blink::WebMediaStreamTrack MediaStreamVideoTrack::CreateVideoTrack(
+WebMediaStreamTrack MediaStreamVideoTrack::CreateVideoTrack(
     MediaStreamVideoSource* source,
     const MediaStreamVideoSource::ConstraintsCallback& callback,
     bool enabled) {
-  blink::WebMediaStreamTrack track;
+  WebMediaStreamTrack track;
   track.Initialize(source->Owner());
   track.SetPlatformTrack(
       std::make_unique<MediaStreamVideoTrack>(source, callback, enabled));
@@ -250,12 +247,12 @@ blink::WebMediaStreamTrack MediaStreamVideoTrack::CreateVideoTrack(
 }
 
 // static
-blink::WebMediaStreamTrack MediaStreamVideoTrack::CreateVideoTrack(
-    const blink::WebString& id,
+WebMediaStreamTrack MediaStreamVideoTrack::CreateVideoTrack(
+    const WebString& id,
     MediaStreamVideoSource* source,
     const MediaStreamVideoSource::ConstraintsCallback& callback,
     bool enabled) {
-  blink::WebMediaStreamTrack track;
+  WebMediaStreamTrack track;
   track.Initialize(id, source->Owner());
   track.SetPlatformTrack(
       std::make_unique<MediaStreamVideoTrack>(source, callback, enabled));
@@ -263,7 +260,7 @@ blink::WebMediaStreamTrack MediaStreamVideoTrack::CreateVideoTrack(
 }
 
 // static
-blink::WebMediaStreamTrack MediaStreamVideoTrack::CreateVideoTrack(
+WebMediaStreamTrack MediaStreamVideoTrack::CreateVideoTrack(
     MediaStreamVideoSource* source,
     const VideoTrackAdapterSettings& adapter_settings,
     const base::Optional<bool>& noise_reduction,
@@ -271,7 +268,7 @@ blink::WebMediaStreamTrack MediaStreamVideoTrack::CreateVideoTrack(
     const base::Optional<double>& min_frame_rate,
     const MediaStreamVideoSource::ConstraintsCallback& callback,
     bool enabled) {
-  blink::WebMediaStreamTrack track;
+  WebMediaStreamTrack track;
   track.Initialize(source->Owner());
   track.SetPlatformTrack(std::make_unique<MediaStreamVideoTrack>(
       source, adapter_settings, noise_reduction, is_screencast, min_frame_rate,
@@ -281,9 +278,9 @@ blink::WebMediaStreamTrack MediaStreamVideoTrack::CreateVideoTrack(
 
 // static
 MediaStreamVideoTrack* MediaStreamVideoTrack::GetVideoTrack(
-     const blink::WebMediaStreamTrack& track) {
+    const WebMediaStreamTrack& track) {
   if (track.IsNull() ||
-      track.Source().GetType() != blink::WebMediaStreamSource::kTypeVideo) {
+      track.Source().GetType() != WebMediaStreamSource::kTypeVideo) {
     return nullptr;
   }
   return static_cast<MediaStreamVideoTrack*>(track.GetPlatformTrack());
@@ -293,7 +290,7 @@ MediaStreamVideoTrack::MediaStreamVideoTrack(
     MediaStreamVideoSource* source,
     const MediaStreamVideoSource::ConstraintsCallback& callback,
     bool enabled)
-    : blink::WebPlatformMediaStreamTrack(true),
+    : WebPlatformMediaStreamTrack(true),
       adapter_settings_(std::make_unique<VideoTrackAdapterSettings>(
           VideoTrackAdapterSettings())),
       is_screencast_(false),
@@ -326,7 +323,7 @@ MediaStreamVideoTrack::MediaStreamVideoTrack(
     const base::Optional<double>& min_frame_rate,
     const MediaStreamVideoSource::ConstraintsCallback& callback,
     bool enabled)
-    : blink::WebPlatformMediaStreamTrack(true),
+    : WebPlatformMediaStreamTrack(true),
       adapter_settings_(
           std::make_unique<VideoTrackAdapterSettings>(adapter_settings)),
       noise_reduction_(noise_reduction),
@@ -360,10 +357,9 @@ MediaStreamVideoTrack::~MediaStreamVideoTrack() {
   DVLOG(3) << "~MediaStreamVideoTrack()";
 }
 
-void MediaStreamVideoTrack::AddSink(
-    blink::WebMediaStreamSink* sink,
-    const blink::VideoCaptureDeliverFrameCB& callback,
-    bool is_sink_secure) {
+void MediaStreamVideoTrack::AddSink(WebMediaStreamSink* sink,
+                                    const VideoCaptureDeliverFrameCB& callback,
+                                    bool is_sink_secure) {
   DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
   DCHECK(!base::ContainsValue(sinks_, sink));
   sinks_.push_back(sink);
@@ -378,7 +374,7 @@ void MediaStreamVideoTrack::AddSink(
                                      secure_tracker_.is_capturing_secure());
 }
 
-void MediaStreamVideoTrack::RemoveSink(blink::WebMediaStreamSink* sink) {
+void MediaStreamVideoTrack::RemoveSink(WebMediaStreamSink* sink) {
   DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
   auto it = std::find(sinks_.begin(), sinks_.end(), sink);
   DCHECK(it != sinks_.end());
@@ -401,7 +397,7 @@ void MediaStreamVideoTrack::SetEnabled(bool enabled) {
 }
 
 void MediaStreamVideoTrack::SetContentHint(
-    blink::WebMediaStreamTrack::ContentHintType content_hint) {
+    WebMediaStreamTrack::ContentHintType content_hint) {
   DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
   for (auto* sink : sinks_)
     sink->OnContentHintChanged(content_hint);
@@ -415,11 +411,11 @@ void MediaStreamVideoTrack::StopAndNotify(base::OnceClosure callback) {
   } else if (callback) {
     std::move(callback).Run();
   }
-  OnReadyStateChanged(blink::WebMediaStreamSource::kReadyStateEnded);
+  OnReadyStateChanged(WebMediaStreamSource::kReadyStateEnded);
 }
 
 void MediaStreamVideoTrack::GetSettings(
-    blink::WebMediaStreamTrack::Settings& settings) {
+    WebMediaStreamTrack::Settings& settings) {
   DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
   if (!source_)
     return;
@@ -449,12 +445,11 @@ void MediaStreamVideoTrack::GetSettings(
   }
 
   settings.facing_mode = ToWebFacingMode(source_->device().video_facing);
-  settings.resize_mode = blink::WebString::FromASCII(
-      std::string(adapter_settings().target_size()
-                      ? blink::WebMediaStreamTrack::kResizeModeRescale
-                      : blink::WebMediaStreamTrack::kResizeModeNone));
+  settings.resize_mode = WebString::FromASCII(std::string(
+      adapter_settings().target_size() ? WebMediaStreamTrack::kResizeModeRescale
+                                       : WebMediaStreamTrack::kResizeModeNone));
 
-  const base::Optional<blink::CameraCalibration> calibration =
+  const base::Optional<CameraCalibration> calibration =
       source_->device().camera_calibration;
   if (calibration) {
     settings.depth_near = calibration->depth_near;
@@ -471,7 +466,7 @@ void MediaStreamVideoTrack::GetSettings(
 }
 
 void MediaStreamVideoTrack::OnReadyStateChanged(
-    blink::WebMediaStreamSource::ReadyState state) {
+    WebMediaStreamSource::ReadyState state) {
   DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
   for (auto* sink : sinks_)
     sink->OnReadyStateChanged(state);
@@ -495,4 +490,4 @@ void MediaStreamVideoTrack::OnFrameDropped(
   source_->OnFrameDropped(reason);
 }
 
-}  // namespace content
+}  // namespace blink

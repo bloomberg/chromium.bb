@@ -28,7 +28,10 @@ class Size;
 }
 
 namespace blink {
+class AudioCaptureSettings;
 class MediaStreamAudioSource;
+class MediaStreamVideoSource;
+class VideoCaptureSettings;
 class WebMediaStream;
 class WebMediaStreamSource;
 class WebString;
@@ -36,12 +39,9 @@ class WebString;
 
 namespace content {
 
-class AudioCaptureSettings;
 class AudioDeviceCaptureCapability;
 class MediaStreamDeviceObserver;
-class MediaStreamVideoSource;
 class PeerConnectionDependencyFactory;
-class VideoCaptureSettings;
 class RenderFrameImpl;
 
 // TODO(guidou): Add |request_id| and |is_processing_user_gesture| to
@@ -135,14 +135,14 @@ class CONTENT_EXPORT UserMediaProcessor
       const blink::MediaStreamDevice& device,
       const blink::WebPlatformMediaStreamSource::ConstraintsCallback&
           source_ready);
-  virtual std::unique_ptr<MediaStreamVideoSource> CreateVideoSource(
+  virtual std::unique_ptr<blink::MediaStreamVideoSource> CreateVideoSource(
       const blink::MediaStreamDevice& device,
       const blink::WebPlatformMediaStreamSource::SourceStoppedCallback&
           stop_callback);
 
   // Intended to be used only for testing.
-  const AudioCaptureSettings& AudioCaptureSettingsForTesting() const;
-  const VideoCaptureSettings& VideoCaptureSettingsForTesting() const;
+  const blink::AudioCaptureSettings& AudioCaptureSettingsForTesting() const;
+  const blink::VideoCaptureSettings& VideoCaptureSettingsForTesting() const;
 
  private:
   class RequestInfo;
@@ -274,7 +274,7 @@ class CONTENT_EXPORT UserMediaProcessor
           video_input_capabilities);
   void FinalizeSelectVideoDeviceSettings(
       const blink::WebUserMediaRequest& web_request,
-      const VideoCaptureSettings& settings);
+      const blink::VideoCaptureSettings& settings);
   void SelectVideoContentSettings();
 
   void GenerateStreamForCurrentRequestInfo();

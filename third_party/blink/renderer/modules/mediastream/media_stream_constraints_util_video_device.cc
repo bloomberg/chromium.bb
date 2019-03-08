@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/stream/media_stream_constraints_util_video_device.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util_video_device.h"
 
 #include <algorithm>
 #include <cmath>
@@ -11,15 +11,15 @@
 #include <vector>
 
 #include "base/stl_util.h"
-#include "content/renderer/media/stream/media_stream_constraints_util.h"
-#include "content/renderer/media/stream/media_stream_constraints_util_sets.h"
-#include "content/renderer/media/stream/media_stream_video_source.h"
 #include "media/base/limits.h"
-#include "media/mojo/interfaces/display_media_information.mojom.h"
+#include "media/mojo/interfaces/display_media_information.mojom-blink.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util_sets.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
 
-namespace content {
+namespace blink {
 
 namespace {
 
@@ -41,14 +41,14 @@ const int kNumDefaultDistanceEntries = 4;
 const char kVideoKindColor[] = "color";
 const char kVideoKindDepth[] = "depth";
 
-blink::WebString ToWebString(media::VideoFacingMode facing_mode) {
+WebString ToWebString(media::VideoFacingMode facing_mode) {
   switch (facing_mode) {
     case media::MEDIA_VIDEO_FACING_USER:
-      return blink::WebString::FromASCII("user");
+      return WebString::FromASCII("user");
     case media::MEDIA_VIDEO_FACING_ENVIRONMENT:
-      return blink::WebString::FromASCII("environment");
+      return WebString::FromASCII("environment");
     default:
-      return blink::WebString();
+      return WebString();
   }
 }
 
@@ -91,7 +91,7 @@ double NumericRangeNativeFitness(const NumericConstraint& constraint,
 // an optional boolean |value|.
 // Based on https://w3c.github.io/mediacapture-main/#dfn-fitness-distance.
 double OptionalBoolFitness(const base::Optional<bool>& value,
-                           const blink::BooleanConstraint& constraint) {
+                           const BooleanConstraint& constraint) {
   if (!constraint.HasIdeal())
     return 0.0;
 
@@ -100,7 +100,7 @@ double OptionalBoolFitness(const base::Optional<bool>& value,
 
 // If |failed_constraint_name| is not null, this function updates it with the
 // name of |constraint|.
-void UpdateFailedConstraintName(const blink::BaseConstraint& constraint,
+void UpdateFailedConstraintName(const BaseConstraint& constraint,
                                 const char** failed_constraint_name) {
   if (failed_constraint_name)
     *failed_constraint_name = constraint.GetName();
@@ -179,16 +179,15 @@ class CandidateFormat {
   }
 
   // Convenience accessor for video kind using Blink type.
-  blink::WebString VideoKind() const { return GetVideoKindForFormat(format_); }
+  WebString VideoKind() const { return GetVideoKindForFormat(format_); }
 
   // This function tries to apply |constraint_set| to this candidate format
   // and returns true if successful. If |constraint_set| cannot be satisfied,
   // false is returned, and the name of one of the constraints that
   // could not be satisfied is returned in |failed_constraint_name| if
   // |failed_constraint_name| is not null.
-  bool ApplyConstraintSet(
-      const blink::WebMediaTrackConstraintSet& constraint_set,
-      const char** failed_constraint_name = nullptr) {
+  bool ApplyConstraintSet(const WebMediaTrackConstraintSet& constraint_set,
+                          const char** failed_constraint_name = nullptr) {
     auto rescale_intersection =
         rescale_set_.Intersection(media_constraints::RescaleSetFromConstraint(
             constraint_set.resize_mode));
@@ -254,7 +253,7 @@ class CandidateFormat {
   // The track settings that correspond to this fitness are returned on the
   // |track_settings| output parameter. The fitness function is based on
   // https://w3c.github.io/mediacapture-main/#dfn-fitness-distance.
-  double Fitness(const blink::WebMediaTrackConstraintSet& basic_constraint_set,
+  double Fitness(const WebMediaTrackConstraintSet& basic_constraint_set,
                  VideoTrackAdapterSettings* track_settings) const {
     DCHECK(!rescale_set_.IsEmpty());
     double track_fitness_with_rescale = HUGE_VAL;
@@ -311,12 +310,11 @@ class CandidateFormat {
 
     if (basic_constraint_set.resize_mode.HasIdeal()) {
       if (!base::ContainsValue(basic_constraint_set.resize_mode.Ideal(),
-                               blink::WebMediaStreamTrack::kResizeModeNone)) {
+                               WebMediaStreamTrack::kResizeModeNone)) {
         track_fitness_without_rescale += 1.0;
       }
-      if (!base::ContainsValue(
-              basic_constraint_set.resize_mode.Ideal(),
-              blink::WebMediaStreamTrack::kResizeModeRescale)) {
+      if (!base::ContainsValue(basic_constraint_set.resize_mode.Ideal(),
+                               WebMediaStreamTrack::kResizeModeRescale)) {
         track_fitness_with_rescale += 1.0;
       }
     }
@@ -340,8 +338,7 @@ class CandidateFormat {
   // the corresponding width, height and frameRate properties.
   // This distance is intended to be used to break ties among candidates that
   // are equally good according to the standard fitness distance.
-  double NativeFitness(
-      const blink::WebMediaTrackConstraintSet& constraint_set) const {
+  double NativeFitness(const WebMediaTrackConstraintSet& constraint_set) const {
     return NumericRangeNativeFitness(constraint_set.width, MinWidth(),
                                      MaxWidth(), NativeWidth()) +
            NumericRangeNativeFitness(constraint_set.height, MinHeight(),
@@ -351,7 +348,7 @@ class CandidateFormat {
   }
 
  private:
-  bool SatisfiesFrameRateConstraint(const blink::DoubleConstraint& constraint) {
+  bool SatisfiesFrameRateConstraint(const DoubleConstraint& constraint) {
     double constraint_min =
         ConstraintHasMin(constraint) ? ConstraintMin(constraint) : -1.0;
     double constraint_max = ConstraintHasMax(constraint)
@@ -361,11 +358,11 @@ class CandidateFormat {
         ((constraint_min > NativeFrameRate()) ||
          (constraint_min > MaxFrameRateConstraint().value_or(
                                media::limits::kMaxFramesPerSecond) +
-                               blink::DoubleConstraint::kConstraintEpsilon));
+                               DoubleConstraint::kConstraintEpsilon));
     bool constraint_max_out_of_range =
         ((constraint_max < kMinDeviceCaptureFrameRate) ||
          (constraint_max < MinFrameRateConstraint().value_or(0.0) -
-                               blink::DoubleConstraint::kConstraintEpsilon));
+                               DoubleConstraint::kConstraintEpsilon));
     bool constraint_self_contradicts = constraint_min > constraint_max;
 
     return !constraint_min_out_of_range && !constraint_max_out_of_range &&
@@ -395,44 +392,42 @@ class CandidateFormat {
 // Returns true if the facing mode |value| satisfies |constraints|, false
 // otherwise.
 bool FacingModeSatisfiesConstraint(media::VideoFacingMode value,
-                                   const blink::StringConstraint& constraint) {
-  blink::WebString string_value = ToWebString(value);
+                                   const StringConstraint& constraint) {
+  WebString string_value = ToWebString(value);
   if (string_value.IsNull())
     return constraint.Exact().empty();
 
   return constraint.Matches(string_value);
+}
+
+// Returns true if |constraint_set| can be satisfied by |device|. Otherwise,
+// returns false and, if |failed_constraint_name| is not null, updates
+// |failed_constraint_name| with the name of a constraint that could not be
+// satisfied.
+bool DeviceSatisfiesConstraintSet(
+    const DeviceInfo& device,
+    const WebMediaTrackConstraintSet& constraint_set,
+    const char** failed_constraint_name = nullptr) {
+  if (!constraint_set.device_id.Matches(
+          WebString::FromUTF8(device.device_id))) {
+    UpdateFailedConstraintName(constraint_set.device_id,
+                               failed_constraint_name);
+    return false;
   }
 
-  // Returns true if |constraint_set| can be satisfied by |device|. Otherwise,
-  // returns false and, if |failed_constraint_name| is not null, updates
-  // |failed_constraint_name| with the name of a constraint that could not be
-  // satisfied.
-  bool DeviceSatisfiesConstraintSet(
-      const DeviceInfo& device,
-      const blink::WebMediaTrackConstraintSet& constraint_set,
-      const char** failed_constraint_name = nullptr) {
-    if (!constraint_set.device_id.Matches(
-            blink::WebString::FromUTF8(device.device_id))) {
-      UpdateFailedConstraintName(constraint_set.device_id,
-                                 failed_constraint_name);
-      return false;
-    }
+  if (!constraint_set.group_id.Matches(WebString::FromUTF8(device.group_id))) {
+    UpdateFailedConstraintName(constraint_set.group_id, failed_constraint_name);
+    return false;
+  }
 
-    if (!constraint_set.group_id.Matches(
-            blink::WebString::FromUTF8(device.group_id))) {
-      UpdateFailedConstraintName(constraint_set.group_id,
-                                 failed_constraint_name);
-      return false;
-    }
+  if (!FacingModeSatisfiesConstraint(device.facing_mode,
+                                     constraint_set.facing_mode)) {
+    UpdateFailedConstraintName(constraint_set.facing_mode,
+                               failed_constraint_name);
+    return false;
+  }
 
-    if (!FacingModeSatisfiesConstraint(device.facing_mode,
-                                       constraint_set.facing_mode)) {
-      UpdateFailedConstraintName(constraint_set.facing_mode,
-                                 failed_constraint_name);
-      return false;
-    }
-
-    return true;
+  return true;
 }
 
 // Returns true if |value| satisfies the given |constraint|, false otherwise.
@@ -440,7 +435,7 @@ bool FacingModeSatisfiesConstraint(media::VideoFacingMode value,
 // |failed_constraint_name| is set to |constraints|'s name.
 bool OptionalBoolSatisfiesConstraint(
     const base::Optional<bool>& value,
-    const blink::BooleanConstraint& constraint,
+    const BooleanConstraint& constraint,
     const char** failed_constraint_name = nullptr) {
   if (!constraint.HasExact())
     return true;
@@ -453,13 +448,11 @@ bool OptionalBoolSatisfiesConstraint(
 }
 
 double DeviceFitness(const DeviceInfo& device,
-                     const blink::WebMediaTrackConstraintSet& constraint_set) {
-  return StringConstraintFitnessDistance(
-             blink::WebString::FromUTF8(device.device_id),
-             constraint_set.device_id) +
-         StringConstraintFitnessDistance(
-             blink::WebString::FromUTF8(device.group_id),
-             constraint_set.group_id) +
+                     const WebMediaTrackConstraintSet& constraint_set) {
+  return StringConstraintFitnessDistance(WebString::FromUTF8(device.device_id),
+                                         constraint_set.device_id) +
+         StringConstraintFitnessDistance(WebString::FromUTF8(device.group_id),
+                                         constraint_set.group_id) +
          StringConstraintFitnessDistance(ToWebString(device.facing_mode),
                                          constraint_set.facing_mode);
 }
@@ -472,7 +465,7 @@ double DeviceFitness(const DeviceInfo& device,
 double CandidateFitness(const DeviceInfo& device,
                         const CandidateFormat& candidate_format,
                         const base::Optional<bool>& noise_reduction,
-                        const blink::WebMediaTrackConstraintSet& constraint_set,
+                        const WebMediaTrackConstraintSet& constraint_set,
                         VideoTrackAdapterSettings* track_settings) {
   return DeviceFitness(device, constraint_set) +
          candidate_format.Fitness(constraint_set, track_settings) +
@@ -542,51 +535,49 @@ VideoInputDeviceCapabilities& VideoInputDeviceCapabilities::operator=(
 
 VideoInputDeviceCapabilities::~VideoInputDeviceCapabilities() = default;
 
-blink::WebString GetVideoKindForFormat(
-    const media::VideoCaptureFormat& format) {
+WebString GetVideoKindForFormat(const media::VideoCaptureFormat& format) {
   return (format.pixel_format == media::PIXEL_FORMAT_Y16)
-             ? blink::WebString::FromASCII(kVideoKindDepth)
-             : blink::WebString::FromASCII(kVideoKindColor);
+             ? WebString::FromASCII(kVideoKindDepth)
+             : WebString::FromASCII(kVideoKindColor);
 }
 
-blink::WebMediaStreamTrack::FacingMode ToWebFacingMode(
+WebMediaStreamTrack::FacingMode ToWebFacingMode(
     media::VideoFacingMode video_facing) {
   switch (video_facing) {
     case media::MEDIA_VIDEO_FACING_NONE:
-      return blink::WebMediaStreamTrack::FacingMode::kNone;
+      return WebMediaStreamTrack::FacingMode::kNone;
     case media::MEDIA_VIDEO_FACING_USER:
-      return blink::WebMediaStreamTrack::FacingMode::kUser;
+      return WebMediaStreamTrack::FacingMode::kUser;
     case media::MEDIA_VIDEO_FACING_ENVIRONMENT:
-      return blink::WebMediaStreamTrack::FacingMode::kEnvironment;
+      return WebMediaStreamTrack::FacingMode::kEnvironment;
     default:
-      return blink::WebMediaStreamTrack::FacingMode::kNone;
+      return WebMediaStreamTrack::FacingMode::kNone;
   }
 }
 
-blink::WebMediaStreamTrack::DisplayCaptureSurfaceType ToWebDisplaySurface(
+WebMediaStreamTrack::DisplayCaptureSurfaceType ToWebDisplaySurface(
     media::mojom::DisplayCaptureSurfaceType display_surface) {
   switch (display_surface) {
     case media::mojom::DisplayCaptureSurfaceType::MONITOR:
-      return blink::WebMediaStreamTrack::DisplayCaptureSurfaceType::kMonitor;
+      return WebMediaStreamTrack::DisplayCaptureSurfaceType::kMonitor;
     case media::mojom::DisplayCaptureSurfaceType::WINDOW:
-      return blink::WebMediaStreamTrack::DisplayCaptureSurfaceType::kWindow;
+      return WebMediaStreamTrack::DisplayCaptureSurfaceType::kWindow;
     case media::mojom::DisplayCaptureSurfaceType::APPLICATION:
-      return blink::WebMediaStreamTrack::DisplayCaptureSurfaceType::
-          kApplication;
+      return WebMediaStreamTrack::DisplayCaptureSurfaceType::kApplication;
     case media::mojom::DisplayCaptureSurfaceType::BROWSER:
-      return blink::WebMediaStreamTrack::DisplayCaptureSurfaceType::kBrowser;
+      return WebMediaStreamTrack::DisplayCaptureSurfaceType::kBrowser;
   }
 }
 
-blink::WebMediaStreamTrack::CursorCaptureType ToWebCursorCaptureType(
+WebMediaStreamTrack::CursorCaptureType ToWebCursorCaptureType(
     media::mojom::CursorCaptureType cursor) {
   switch (cursor) {
     case media::mojom::CursorCaptureType::NEVER:
-      return blink::WebMediaStreamTrack::CursorCaptureType::kNever;
+      return WebMediaStreamTrack::CursorCaptureType::kNever;
     case media::mojom::CursorCaptureType::ALWAYS:
-      return blink::WebMediaStreamTrack::CursorCaptureType::kAlways;
+      return WebMediaStreamTrack::CursorCaptureType::kAlways;
     case media::mojom::CursorCaptureType::MOTION:
-      return blink::WebMediaStreamTrack::CursorCaptureType::kMotion;
+      return WebMediaStreamTrack::CursorCaptureType::kMotion;
   }
 }
 
@@ -599,7 +590,7 @@ VideoDeviceCaptureCapabilities& VideoDeviceCaptureCapabilities::operator=(
 
 VideoCaptureSettings SelectSettingsVideoDeviceCapture(
     const VideoDeviceCaptureCapabilities& capabilities,
-    const blink::WebMediaConstraints& constraints,
+    const WebMediaConstraints& constraints,
     int default_width,
     int default_height,
     double default_frame_rate) {
@@ -705,4 +696,4 @@ VideoCaptureSettings SelectSettingsVideoDeviceCapture(
   return result;
 }
 
-}  // namespace content
+}  // namespace blink

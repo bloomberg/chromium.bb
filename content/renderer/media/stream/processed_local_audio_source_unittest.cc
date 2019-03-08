@@ -10,13 +10,13 @@
 #include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "content/renderer/media/audio/mock_audio_device_factory.h"
-#include "content/renderer/media/stream/media_stream_audio_processor_options.h"
 #include "content/renderer/media/stream/processed_local_audio_source.h"
 #include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_parameters.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_processor_options.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_track.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_audio_sink.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
@@ -97,7 +97,7 @@ class ProcessedLocalAudioSourceTest : public testing::Test {
   }
 
   void CreateProcessedLocalAudioSource(
-      const AudioProcessingProperties& properties) {
+      const blink::AudioProcessingProperties& properties) {
     std::unique_ptr<ProcessedLocalAudioSource> source =
         std::make_unique<ProcessedLocalAudioSource>(
             -1 /* consumer_render_frame_id is N/A for non-browser tests */,
@@ -166,7 +166,7 @@ TEST_F(ProcessedLocalAudioSourceTest, VerifyAudioFlowWithoutAudioProcessing) {
 
   // Turn off the default constraints so the sink will get audio in chunks of
   // the native buffer size.
-  AudioProcessingProperties properties;
+  blink::AudioProcessingProperties properties;
   properties.DisableDefaultProperties();
   CreateProcessedLocalAudioSource(properties);
 

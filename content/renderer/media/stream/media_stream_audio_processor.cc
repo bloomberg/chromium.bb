@@ -41,7 +41,8 @@
 
 namespace content {
 
-using EchoCancellationType = AudioProcessingProperties::EchoCancellationType;
+using EchoCancellationType =
+    blink::AudioProcessingProperties::EchoCancellationType;
 
 namespace {
 
@@ -267,7 +268,7 @@ class MediaStreamAudioFifo {
 };
 
 MediaStreamAudioProcessor::MediaStreamAudioProcessor(
-    const AudioProcessingProperties& properties,
+    const blink::AudioProcessingProperties& properties,
     WebRtcPlayoutDataSource* playout_data_source)
     : render_delay_ms_(0),
       audio_delay_stats_reporter_(kBuffersPerSecond),
@@ -377,7 +378,7 @@ void MediaStreamAudioProcessor::Stop() {
     return;
 
   audio_processing_.get()->UpdateHistogramsOnCallEnd();
-  StopEchoCancellationDump(audio_processing_.get());
+  blink::StopEchoCancellationDump(audio_processing_.get());
   worker_queue_.reset(nullptr);
 
   if (playout_data_source_) {
@@ -409,8 +410,8 @@ void MediaStreamAudioProcessor::OnAecDumpFile(
     // Here tasks will be posted on the |worker_queue_|. It must be
     // kept alive until StopEchoCancellationDump is called or the
     // webrtc::AudioProcessing instance is destroyed.
-    StartEchoCancellationDump(audio_processing_.get(), std::move(file),
-                              worker_queue_.get());
+    blink::StartEchoCancellationDump(audio_processing_.get(), std::move(file),
+                                     worker_queue_.get());
   } else {
     file.Close();
   }
@@ -419,7 +420,7 @@ void MediaStreamAudioProcessor::OnAecDumpFile(
 void MediaStreamAudioProcessor::OnDisableAecDump() {
   DCHECK(main_thread_runner_->BelongsToCurrentThread());
   if (audio_processing_)
-    StopEchoCancellationDump(audio_processing_.get());
+    blink::StopEchoCancellationDump(audio_processing_.get());
 
   // Note that deleting an rtc::TaskQueue has to be done from the
   // thread that created it.
@@ -433,7 +434,7 @@ void MediaStreamAudioProcessor::OnIpcClosing() {
 
 // static
 bool MediaStreamAudioProcessor::WouldModifyAudio(
-    const AudioProcessingProperties& properties) {
+    const blink::AudioProcessingProperties& properties) {
   // Note: This method should by kept in-sync with any changes to the logic in
   // MediaStreamAudioProcessor::InitializeAudioProcessingModule().
 
@@ -524,7 +525,7 @@ MediaStreamAudioProcessor::GetStats(bool has_remote_tracks) {
 }
 
 void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
-    const AudioProcessingProperties& properties) {
+    const blink::AudioProcessingProperties& properties) {
   DCHECK(main_thread_runner_->BelongsToCurrentThread());
   DCHECK(!audio_processing_);
 
@@ -609,30 +610,32 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
   }
 
   if (properties.EchoCancellationIsWebRtcProvided()) {
-    EnableEchoCancellation(audio_processing_.get());
+    blink::EnableEchoCancellation(audio_processing_.get());
   }
 
   if (properties.goog_noise_suppression)
-    EnableNoiseSuppression(audio_processing_.get(), NoiseSuppression::kHigh);
+    blink::EnableNoiseSuppression(audio_processing_.get(),
+                                  NoiseSuppression::kHigh);
 
   if (goog_typing_detection) {
     // TODO(xians): Remove this |typing_detector_| after the typing suppression
     // is enabled by default.
     typing_detector_.reset(new webrtc::TypingDetection());
-    EnableTypingDetection(audio_processing_.get(), typing_detector_.get());
+    blink::EnableTypingDetection(audio_processing_.get(),
+                                 typing_detector_.get());
   }
 
   // TODO(saza): When Chrome uses AGC2, handle all JSON config via the
   // webrtc::AudioProcessing::Config, crbug.com/895814.
   base::Optional<double> pre_amplifier_fixed_gain_factor,
       gain_control_compression_gain_db;
-  GetExtraGainConfig(audio_processing_platform_config_json,
-                     &pre_amplifier_fixed_gain_factor,
-                     &gain_control_compression_gain_db);
+  blink::GetExtraGainConfig(audio_processing_platform_config_json,
+                            &pre_amplifier_fixed_gain_factor,
+                            &gain_control_compression_gain_db);
 
   if (properties.goog_auto_gain_control) {
-    EnableAutomaticGainControl(audio_processing_.get(),
-                               gain_control_compression_gain_db);
+    blink::EnableAutomaticGainControl(audio_processing_.get(),
+                                      gain_control_compression_gain_db);
   }
 
   webrtc::AudioProcessing::Config apm_config = audio_processing_->GetConfig();
@@ -659,7 +662,7 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
           saturation_margin;
     }
   }
-  ConfigPreAmplifier(&apm_config, pre_amplifier_fixed_gain_factor);
+  blink::ConfigPreAmplifier(&apm_config, pre_amplifier_fixed_gain_factor);
   audio_processing_->ApplyConfig(apm_config);
 
   RecordProcessingState(AUDIO_PROCESSING_ENABLED);
@@ -676,8 +679,9 @@ void MediaStreamAudioProcessor::InitializeCaptureFifo(
   // either use the input parameters (in which case, audio processing will
   // convert at output) or ideally, have a backchannel from the sink to know
   // what format it would prefer.
-  const int output_sample_rate = audio_processing_ ? kAudioProcessingSampleRate
-                                                   : input_format.sample_rate();
+  const int output_sample_rate = audio_processing_
+                                     ? blink::kAudioProcessingSampleRate
+                                     : input_format.sample_rate();
   media::ChannelLayout output_channel_layout = audio_processing_ ?
       media::GuessChannelLayout(kAudioProcessingNumberOfChannels) :
       input_format.channel_layout();

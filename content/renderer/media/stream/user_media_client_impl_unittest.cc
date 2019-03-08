@@ -16,8 +16,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
 #include "content/child/child_process.h"
-#include "content/renderer/media/stream/media_stream_audio_processor_options.h"
-#include "content/renderer/media/stream/media_stream_constraints_util.h"
 #include "content/renderer/media/stream/media_stream_constraints_util_video_content.h"
 #include "content/renderer/media/stream/media_stream_device_observer.h"
 #include "content/renderer/media/stream/mock_constraint_factory.h"
@@ -28,6 +26,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/mediastream/media_devices.h"
+#include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_processor_options.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_track.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_platform_media_stream_track.h"
@@ -37,6 +36,7 @@
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_vector.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util.h"
 #include "third_party/blink/public/web/web_heap.h"
 
 using testing::_;
@@ -44,7 +44,8 @@ using testing::Mock;
 
 namespace content {
 
-using EchoCancellationType = AudioProcessingProperties::EchoCancellationType;
+using EchoCancellationType =
+    blink::AudioProcessingProperties::EchoCancellationType;
 
 namespace {
 
@@ -102,7 +103,7 @@ blink::WebMediaConstraints CreateFacingModeConstraints(
   return factory.CreateWebMediaConstraints();
 }
 
-void CheckVideoSource(MediaStreamVideoSource* source,
+void CheckVideoSource(blink::MediaStreamVideoSource* source,
                       int expected_source_width,
                       int expected_source_height,
                       double expected_source_frame_rate) {
@@ -114,7 +115,7 @@ void CheckVideoSource(MediaStreamVideoSource* source,
   EXPECT_EQ(format.frame_rate, expected_source_frame_rate);
 }
 
-void CheckVideoSourceAndTrack(MediaStreamVideoSource* source,
+void CheckVideoSourceAndTrack(blink::MediaStreamVideoSource* source,
                               int expected_source_width,
                               int expected_source_height,
                               double expected_source_frame_rate,
@@ -126,8 +127,8 @@ void CheckVideoSourceAndTrack(MediaStreamVideoSource* source,
                    expected_source_frame_rate);
   EXPECT_EQ(web_track.Source().GetReadyState(),
             blink::WebMediaStreamSource::kReadyStateLive);
-  MediaStreamVideoTrack* track =
-      MediaStreamVideoTrack::GetVideoTrack(web_track);
+  blink::MediaStreamVideoTrack* track =
+      blink::MediaStreamVideoTrack::GetVideoTrack(web_track);
   EXPECT_EQ(track->source(), source);
 
   blink::WebMediaStreamTrack::Settings settings;
@@ -274,14 +275,14 @@ class MockMediaDevicesDispatcherHost
     std::move(callback).Run(formats);
   }
 
-  void SetVideoSource(MediaStreamVideoSource* video_source) {
+  void SetVideoSource(blink::MediaStreamVideoSource* video_source) {
     video_source_ = video_source;
   }
 
  private:
   media::AudioParameters audio_parameters_ =
       media::AudioParameters::UnavailableDeviceParams();
-  MediaStreamVideoSource* video_source_ = nullptr;
+  blink::MediaStreamVideoSource* video_source_ = nullptr;
 };
 
 enum RequestState {
@@ -331,10 +332,10 @@ class UserMediaProcessorUnderTest : public UserMediaProcessor {
   }
   void ClearLastGeneratedStream() { last_generated_stream_.Reset(); }
 
-  AudioCaptureSettings AudioSettings() const {
+  blink::AudioCaptureSettings AudioSettings() const {
     return AudioCaptureSettingsForTesting();
   }
-  VideoCaptureSettings VideoSettings() const {
+  blink::VideoCaptureSettings VideoSettings() const {
     return VideoCaptureSettingsForTesting();
   }
 
@@ -342,7 +343,7 @@ class UserMediaProcessorUnderTest : public UserMediaProcessor {
   blink::WebString constraint_name() const { return constraint_name_; }
 
   // UserMediaProcessor overrides.
-  std::unique_ptr<MediaStreamVideoSource> CreateVideoSource(
+  std::unique_ptr<blink::MediaStreamVideoSource> CreateVideoSource(
       const blink::MediaStreamDevice& device,
       const blink::WebPlatformMediaStreamSource::SourceStoppedCallback&
           stop_callback) override {
@@ -884,9 +885,9 @@ TEST_F(UserMediaClientImplTest, DefaultConstraintsPropagate) {
       blink::WebUserMediaRequest::CreateForTesting(CreateDefaultConstraints(),
                                                    CreateDefaultConstraints());
   user_media_client_impl_->RequestUserMediaForTest(request);
-  AudioCaptureSettings audio_capture_settings =
+  blink::AudioCaptureSettings audio_capture_settings =
       user_media_processor_->AudioSettings();
-  VideoCaptureSettings video_capture_settings =
+  blink::VideoCaptureSettings video_capture_settings =
       user_media_processor_->VideoSettings();
   user_media_client_impl_->CancelUserMediaRequest(request);
 
@@ -897,7 +898,7 @@ TEST_F(UserMediaClientImplTest, DefaultConstraintsPropagate) {
   EXPECT_TRUE(audio_capture_settings.disable_local_echo());
   EXPECT_FALSE(audio_capture_settings.render_to_associated_sink());
 
-  const AudioProcessingProperties& properties =
+  const blink::AudioProcessingProperties& properties =
       audio_capture_settings.audio_processing_properties();
   EXPECT_EQ(EchoCancellationType::kEchoCancellationAec3,
             properties.echo_cancellation_type);
@@ -905,8 +906,9 @@ TEST_F(UserMediaClientImplTest, DefaultConstraintsPropagate) {
   EXPECT_TRUE(properties.goog_auto_gain_control);
   // The default value for goog_experimental_echo_cancellation is platform
   // dependent.
-  EXPECT_EQ(AudioProcessingProperties().goog_experimental_echo_cancellation,
-            properties.goog_experimental_echo_cancellation);
+  EXPECT_EQ(
+      blink::AudioProcessingProperties().goog_experimental_echo_cancellation,
+      properties.goog_experimental_echo_cancellation);
   EXPECT_TRUE(properties.goog_typing_noise_detection);
   EXPECT_TRUE(properties.goog_noise_suppression);
   EXPECT_TRUE(properties.goog_experimental_noise_suppression);
@@ -915,23 +917,23 @@ TEST_F(UserMediaClientImplTest, DefaultConstraintsPropagate) {
 
   EXPECT_TRUE(video_capture_settings.HasValue());
   EXPECT_EQ(video_capture_settings.Width(),
-            MediaStreamVideoSource::kDefaultWidth);
+            blink::MediaStreamVideoSource::kDefaultWidth);
   EXPECT_EQ(video_capture_settings.Height(),
-            MediaStreamVideoSource::kDefaultHeight);
+            blink::MediaStreamVideoSource::kDefaultHeight);
   EXPECT_EQ(video_capture_settings.FrameRate(),
-            MediaStreamVideoSource::kDefaultFrameRate);
+            blink::MediaStreamVideoSource::kDefaultFrameRate);
   EXPECT_EQ(video_capture_settings.ResolutionChangePolicy(),
             media::ResolutionChangePolicy::FIXED_RESOLUTION);
   EXPECT_FALSE(video_capture_settings.noise_reduction());
   EXPECT_FALSE(video_capture_settings.min_frame_rate().has_value());
 
-  const VideoTrackAdapterSettings& track_settings =
+  const blink::VideoTrackAdapterSettings& track_settings =
       video_capture_settings.track_adapter_settings();
   EXPECT_FALSE(track_settings.target_size().has_value());
   EXPECT_EQ(track_settings.min_aspect_ratio(),
-            1.0 / MediaStreamVideoSource::kDefaultHeight);
+            1.0 / blink::MediaStreamVideoSource::kDefaultHeight);
   EXPECT_EQ(track_settings.max_aspect_ratio(),
-            MediaStreamVideoSource::kDefaultWidth);
+            blink::MediaStreamVideoSource::kDefaultWidth);
   // 0.0 is the default max_frame_rate and it indicates no frame-rate adjustment
   EXPECT_EQ(track_settings.max_frame_rate(), 0.0);
 }
@@ -948,9 +950,9 @@ TEST_F(UserMediaClientImplTest, DefaultTabCapturePropagate) {
       blink::WebUserMediaRequest::CreateForTesting(audio_constraints,
                                                    video_constraints);
   user_media_client_impl_->RequestUserMediaForTest(request);
-  AudioCaptureSettings audio_capture_settings =
+  blink::AudioCaptureSettings audio_capture_settings =
       user_media_processor_->AudioSettings();
-  VideoCaptureSettings video_capture_settings =
+  blink::VideoCaptureSettings video_capture_settings =
       user_media_processor_->VideoSettings();
   user_media_client_impl_->CancelUserMediaRequest(request);
 
@@ -960,7 +962,7 @@ TEST_F(UserMediaClientImplTest, DefaultTabCapturePropagate) {
   EXPECT_TRUE(audio_capture_settings.disable_local_echo());
   EXPECT_FALSE(audio_capture_settings.render_to_associated_sink());
 
-  const AudioProcessingProperties& properties =
+  const blink::AudioProcessingProperties& properties =
       audio_capture_settings.audio_processing_properties();
   EXPECT_EQ(EchoCancellationType::kEchoCancellationDisabled,
             properties.echo_cancellation_type);
@@ -983,7 +985,7 @@ TEST_F(UserMediaClientImplTest, DefaultTabCapturePropagate) {
   EXPECT_FALSE(video_capture_settings.min_frame_rate().has_value());
   EXPECT_FALSE(video_capture_settings.max_frame_rate().has_value());
 
-  const VideoTrackAdapterSettings& track_settings =
+  const blink::VideoTrackAdapterSettings& track_settings =
       video_capture_settings.track_adapter_settings();
   EXPECT_EQ(track_settings.target_width(), kDefaultScreenCastWidth);
   EXPECT_EQ(track_settings.target_height(), kDefaultScreenCastHeight);
@@ -1005,9 +1007,9 @@ TEST_F(UserMediaClientImplTest, DefaultDesktopCapturePropagate) {
       blink::WebUserMediaRequest::CreateForTesting(audio_constraints,
                                                    video_constraints);
   user_media_client_impl_->RequestUserMediaForTest(request);
-  AudioCaptureSettings audio_capture_settings =
+  blink::AudioCaptureSettings audio_capture_settings =
       user_media_processor_->AudioSettings();
-  VideoCaptureSettings video_capture_settings =
+  blink::VideoCaptureSettings video_capture_settings =
       user_media_processor_->VideoSettings();
   user_media_client_impl_->CancelUserMediaRequest(request);
   base::RunLoop().RunUntilIdle();
@@ -1018,7 +1020,7 @@ TEST_F(UserMediaClientImplTest, DefaultDesktopCapturePropagate) {
   EXPECT_FALSE(audio_capture_settings.disable_local_echo());
   EXPECT_FALSE(audio_capture_settings.render_to_associated_sink());
 
-  const AudioProcessingProperties& properties =
+  const blink::AudioProcessingProperties& properties =
       audio_capture_settings.audio_processing_properties();
   EXPECT_EQ(EchoCancellationType::kEchoCancellationDisabled,
             properties.echo_cancellation_type);
@@ -1041,7 +1043,7 @@ TEST_F(UserMediaClientImplTest, DefaultDesktopCapturePropagate) {
   EXPECT_FALSE(video_capture_settings.min_frame_rate().has_value());
   EXPECT_FALSE(video_capture_settings.max_frame_rate().has_value());
 
-  const VideoTrackAdapterSettings& track_settings =
+  const blink::VideoTrackAdapterSettings& track_settings =
       video_capture_settings.track_adapter_settings();
   EXPECT_EQ(track_settings.target_width(), kDefaultScreenCastWidth);
   EXPECT_EQ(track_settings.target_height(), kDefaultScreenCastHeight);
@@ -1069,9 +1071,9 @@ TEST_F(UserMediaClientImplTest, NonDefaultAudioConstraintsPropagate) {
       blink::WebUserMediaRequest::CreateForTesting(
           audio_constraints, blink::WebMediaConstraints());
   user_media_client_impl_->RequestUserMediaForTest(request);
-  AudioCaptureSettings audio_capture_settings =
+  blink::AudioCaptureSettings audio_capture_settings =
       user_media_processor_->AudioSettings();
-  VideoCaptureSettings video_capture_settings =
+  blink::VideoCaptureSettings video_capture_settings =
       user_media_processor_->VideoSettings();
   user_media_client_impl_->CancelUserMediaRequest(request);
 
@@ -1082,7 +1084,7 @@ TEST_F(UserMediaClientImplTest, NonDefaultAudioConstraintsPropagate) {
   EXPECT_TRUE(audio_capture_settings.disable_local_echo());
   EXPECT_TRUE(audio_capture_settings.render_to_associated_sink());
 
-  const AudioProcessingProperties& properties =
+  const blink::AudioProcessingProperties& properties =
       audio_capture_settings.audio_processing_properties();
   EXPECT_EQ(EchoCancellationType::kEchoCancellationDisabled,
             properties.echo_cancellation_type);
@@ -1186,9 +1188,9 @@ TEST_F(UserMediaClientImplTest, CreateWithFacingModeEnvironment) {
 TEST_F(UserMediaClientImplTest, ApplyConstraintsVideoDeviceSingleTrack) {
   EXPECT_CALL(mock_dispatcher_host_, OnStreamStarted(_));
   blink::WebMediaStreamTrack web_track = RequestLocalVideoTrack();
-  MediaStreamVideoTrack* track =
-      MediaStreamVideoTrack::GetVideoTrack(web_track);
-  MediaStreamVideoSource* source = track->source();
+  blink::MediaStreamVideoTrack* track =
+      blink::MediaStreamVideoTrack::GetVideoTrack(web_track);
+  blink::MediaStreamVideoSource* source = track->source();
   CheckVideoSource(source, 0, 0, 0.0);
 
   media_devices_dispatcher_.SetVideoSource(source);
