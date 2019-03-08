@@ -483,6 +483,11 @@ const char kSkipBrowserTouchFilterTypeParamName[] = "type";
 const char kSkipBrowserTouchFilterTypeParamValueDiscrete[] = "discrete";
 const char kSkipBrowserTouchFilterTypeParamValueAll[] = "all";
 
+// Allows developers transfer user activation state to any target window in the
+// frame tree.
+const base::Feature kUserActivationDelegation{
+    "UserActivationDelegation", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Allows user activation propagation to all frames having the same origin as
 // the activation notifier frame.  This is an intermediate measure before we
 // have an iframe attribute to declaratively allow user activation propagation

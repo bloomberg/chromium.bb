@@ -37,11 +37,15 @@ struct BLINK_COMMON_EXPORT TransferableMessage : public CloneableMessage {
   std::vector<SkBitmap> image_bitmap_contents_array;
 
   // Whether the recipient should have a user gesture when it processes this
-  // message.
+  // message. This is a legacy bit used only without User Activation v2.
   bool has_user_gesture = false;
 
   // The state of user activation.
   mojom::UserActivationSnapshotPtr user_activation;
+
+  // Whether the state of user activation should be transferred to the
+  // destination frame.
+  bool transfer_user_activation = false;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TransferableMessage);

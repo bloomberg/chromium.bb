@@ -493,10 +493,12 @@ void DOMWindow::DoPostMessage(scoped_refptr<SerializedScriptValue> message,
   if (options->includeUserActivation())
     user_activation = UserActivation::CreateSnapshot(source);
 
-  MessageEvent* event =
-      MessageEvent::Create(std::move(channels), std::move(message),
-                           source_origin, String(), source, user_activation);
+  MessageEvent* event = MessageEvent::Create(
+      std::move(channels), std::move(message), source_origin, String(), source,
+      user_activation, options->transferUserActivation());
 
+  // TODO(928838): Transfer activation state in current renderer's frame tree if
+  // source frame has transient activation.
   SchedulePostMessage(event, std::move(target), source_document);
 }
 

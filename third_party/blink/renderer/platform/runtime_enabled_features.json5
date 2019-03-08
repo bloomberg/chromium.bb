@@ -1403,6 +1403,10 @@
       status: "stable",
     },
     {
+      name: "UserActivationDelegation",
+      status: "experimental",
+    },
+    {
       name: "UserActivationSameOriginVisibility",
     },
     {

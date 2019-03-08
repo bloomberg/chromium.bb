@@ -46,6 +46,7 @@ BlinkTransferableMessage ToBlinkTransferableMessage(
         message.user_activation->has_been_active,
         message.user_activation->was_active);
   }
+  result.transfer_user_activation = message.transfer_user_activation;
   return result;
 }
 
@@ -76,6 +77,7 @@ TransferableMessage ToTransferableMessage(BlinkTransferableMessage message) {
         message.user_activation->has_been_active,
         message.user_activation->was_active);
   }
+  result.transfer_user_activation = message.transfer_user_activation;
   return result;
 }
 
