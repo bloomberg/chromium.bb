@@ -221,6 +221,9 @@ void ElementFragmentAnchor::ApplyFocusIfNeeded() {
   if (!frame_->GetDocument()->IsRenderingReady())
     return;
 
+  if (!anchor_node_)
+    return;
+
   // If the anchor accepts keyboard focus and fragment scrolling is allowed,
   // move focus there to aid users relying on keyboard navigation.
   // If anchorNode is not focusable or fragment scrolling is not allowed,

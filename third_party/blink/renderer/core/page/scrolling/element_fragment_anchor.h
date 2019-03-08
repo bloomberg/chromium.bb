@@ -56,6 +56,9 @@ class CORE_EXPORT ElementFragmentAnchor final : public FragmentAnchor {
   void Trace(blink::Visitor*) override;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(ElementFragmentAnchorTest,
+                           AnchorRemovedBeforeBeginFrameCrash);
+
   void ApplyFocusIfNeeded();
 
   WeakMember<Node> anchor_node_;
