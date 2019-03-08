@@ -234,8 +234,8 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
   ASSERT_TRUE(disabled_listener.WaitUntilSatisfied());
   ASSERT_TRUE(disabled_listener.was_satisfied());
 
-  ui::IMEBridge::Get()->SetInputContextHandler(NULL);
-  ui::IMEBridge::Get()->SetCandidateWindowHandler(NULL);
+  ui::IMEBridge::Get()->SetInputContextHandler(nullptr);
+  ui::IMEBridge::Get()->SetCandidateWindowHandler(nullptr);
 }
 
 IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
@@ -1020,8 +1020,8 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
     EXPECT_EQ("", mock_input_context->last_commit_text());
   }
 
-  ui::IMEBridge::Get()->SetInputContextHandler(NULL);
-  ui::IMEBridge::Get()->SetCandidateWindowHandler(NULL);
+  ui::IMEBridge::Get()->SetInputContextHandler(nullptr);
+  ui::IMEBridge::Get()->SetCandidateWindowHandler(nullptr);
 }
 
 IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest, RestrictedKeyboard) {
@@ -1134,6 +1134,9 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest, RestrictedKeyboard) {
     ASSERT_TRUE(focus_listener.WaitUntilSatisfied());
     ASSERT_TRUE(focus_listener.was_satisfied());
   }
+
+  ui::IMEBridge::Get()->SetInputContextHandler(nullptr);
+  ui::IMEBridge::Get()->SetCandidateWindowHandler(nullptr);
 }
 
 IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest, ShouldDoLearning) {
@@ -1163,6 +1166,9 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest, ShouldDoLearning) {
   engine_handler->FocusIn(context);
   ASSERT_TRUE(focus_listener.WaitUntilSatisfied());
   ASSERT_TRUE(focus_listener.was_satisfied());
+
+  ui::IMEBridge::Get()->SetInputContextHandler(nullptr);
+  ui::IMEBridge::Get()->SetCandidateWindowHandler(nullptr);
 }
 
 }  // namespace
