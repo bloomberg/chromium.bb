@@ -264,6 +264,13 @@ void WindowTreeClient::SetHitTestInsets(WindowMus* window,
   tree_->SetHitTestInsets(window->server_id(), mouse, touch);
 }
 
+void WindowTreeClient::SetShape(WindowMus* window,
+                                std::unique_ptr<std::vector<gfx::Rect>> shape) {
+  DCHECK(tree_);
+  tree_->SetShape(window->server_id(),
+                  shape ? (*shape) : std::vector<gfx::Rect>());
+}
+
 void WindowTreeClient::TrackOcclusionState(WindowMus* window) {
   DCHECK(tree_);
   tree_->TrackOcclusionState(window->server_id());

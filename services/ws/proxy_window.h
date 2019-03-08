@@ -23,7 +23,6 @@
 
 namespace aura {
 class Window;
-class WindowTargeter;
 }  // namespace aura
 
 namespace ui {
@@ -85,6 +84,8 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ProxyWindow {
                      const std::vector<gfx::Rect>& additional_client_areas);
 
   void SetHitTestInsets(const gfx::Insets& mouse, const gfx::Insets& touch);
+
+  void SetShape(const std::vector<gfx::Rect>& shape);
 
   void set_attached_frame_sink_id(const viz::FrameSinkId& id) {
     attached_frame_sink_id_ = id;
@@ -150,6 +151,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ProxyWindow {
 
  private:
   friend class ProxyWindowTestHelper;
+  class ProxyWindowTargeter;
 
   ProxyWindow(aura::Window*,
               WindowTree* tree,
@@ -184,7 +186,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ProxyWindow {
   gfx::Insets client_area_;
   std::vector<gfx::Rect> additional_client_areas_;
 
-  aura::WindowTargeter* window_targeter_ = nullptr;
+  ProxyWindowTargeter* window_targeter_ = nullptr;
 
   std::unique_ptr<ui::EventHandler> event_handler_;
 

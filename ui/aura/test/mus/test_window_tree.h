@@ -211,6 +211,7 @@ class TestWindowTree : public ws::mojom::WindowTree {
   void SetHitTestInsets(ws::Id window_id,
                         const gfx::Insets& mouse,
                         const gfx::Insets& touch) override;
+  void SetShape(ws::Id window_id, const std::vector<gfx::Rect>& shape) override;
   void SetCanAcceptDrops(ws::Id window_id, bool accepts_drags) override;
   void SetWindowVisibility(uint32_t change_id,
                            ws::Id window_id,

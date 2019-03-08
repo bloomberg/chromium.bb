@@ -1693,6 +1693,27 @@ void WindowTree::SetHitTestInsets(Id transport_window_id,
                                  MakeInsetsPositive(touch));
 }
 
+void WindowTree::SetShape(Id transport_window_id,
+                          const std::vector<gfx::Rect>& shape) {
+  const ClientWindowId window_id = MakeClientWindowId(transport_window_id);
+  DVLOG(3) << "SetShape client_window_id=" << window_id.ToString()
+           << " #shape=" << shape.size();
+  aura::Window* window = GetWindowByClientId(window_id);
+  if (!window) {
+    DVLOG(1) << "SetShape failed (invalid window id)";
+    return;
+  }
+  if (!IsClientCreatedWindow(window)) {
+    DVLOG(1) << "SetShape failed (access denied)";
+    return;
+  }
+  window->layer()->SetAlphaShape(
+      shape.empty() ? nullptr
+                    : std::make_unique<std::vector<gfx::Rect>>(shape));
+  ProxyWindow* proxy_window = ProxyWindow::GetMayBeNull(window);
+  proxy_window->SetShape(shape);
+}
+
 void WindowTree::AttachFrameSinkId(Id transport_window_id,
                                    const viz::FrameSinkId& f) {
   if (!f.is_valid()) {

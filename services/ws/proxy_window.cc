@@ -57,59 +57,6 @@ ui::PointerId GetPointerId(const ui::Event& event) {
   return event.AsTouchEvent()->pointer_details().id;
 }
 
-// WindowTargeter used for ProxyWindows. This is used for two purposes:
-// . If the location is in the non-client area, then child Windows are not
-//   considered. This is done to ensure the delegate of the window (which is
-//   local) sees the event.
-// . To ensure |WindowTree::intercepts_events_| is honored.
-class ProxyWindowTargeter : public aura::WindowTargeter {
- public:
-  explicit ProxyWindowTargeter(ProxyWindow* proxy_window)
-      : proxy_window_(proxy_window) {}
-  ~ProxyWindowTargeter() override = default;
-
-  // aura::WindowTargeter:
-  bool SubtreeShouldBeExploredForEvent(aura::Window* window,
-                                       const ui::LocatedEvent& event) override {
-    // If the top-level does not have insets, then forward the call to the
-    // parent's WindowTargeter. This is necessary for targeters such as
-    // EasyResizeWindowTargeter to work correctly.
-    if (mouse_extend().IsEmpty() && touch_extend().IsEmpty() &&
-        proxy_window_->IsTopLevel() && window->parent()) {
-      aura::WindowTargeter* parent_targeter =
-          static_cast<WindowTargeter*>(window->parent()->targeter());
-      if (parent_targeter)
-        return parent_targeter->SubtreeShouldBeExploredForEvent(window, event);
-    }
-    return aura::WindowTargeter::SubtreeShouldBeExploredForEvent(window, event);
-  }
-
-  ui::EventTarget* FindTargetForEvent(ui::EventTarget* event_target,
-                                      ui::Event* event) override {
-    aura::Window* window = static_cast<aura::Window*>(event_target);
-    DCHECK_EQ(window, proxy_window_->window());
-    if (proxy_window_->DoesOwnerInterceptEvents()) {
-      // If the owner intercepts events, then don't recurse (otherwise events
-      // would go to a descendant).
-      return event_target->CanAcceptEvent(*event) ? window : nullptr;
-    }
-
-    // Ensure events in the non-client area target the top-level window.
-    // TopLevelEventHandler will ensure these are routed correctly.
-    if (event->IsLocatedEvent() &&
-        IsLocationInNonClientArea(window,
-                                  event->AsLocatedEvent()->location())) {
-      return window;
-    }
-    return aura::WindowTargeter::FindTargetForEvent(event_target, event);
-  }
-
- private:
-  ProxyWindow* const proxy_window_;
-
-  DISALLOW_COPY_AND_ASSIGN(ProxyWindowTargeter);
-};
-
 // ProxyWindowEventHandler is used to forward events to the client.
 // ProxyWindowEventHandler adds itself to the pre-phase to ensure it's
 // considered before the Window's delegate (or other EventHandlers).
@@ -425,6 +372,84 @@ void PointerPressHandler::OnWindowVisibilityChanged(aura::Window* window,
 
 }  // namespace
 
+// WindowTargeter used for ProxyWindows. This is used for three purposes:
+// . If the location is in the non-client area, then child Windows are not
+//   considered. This is done to ensure the delegate of the window (which is
+//   local) sees the event.
+// . To ensure |WindowTree::intercepts_events_| is honored.
+// . To support custom shaped windows through SetShape().
+class ProxyWindow::ProxyWindowTargeter : public aura::WindowTargeter {
+ public:
+  explicit ProxyWindowTargeter(ProxyWindow* proxy_window)
+      : proxy_window_(proxy_window) {}
+  ~ProxyWindowTargeter() override = default;
+
+  void SetShape(const std::vector<gfx::Rect>& shape) { shape_ = shape; }
+
+  // aura::WindowTargeter:
+  bool SubtreeShouldBeExploredForEvent(aura::Window* window,
+                                       const ui::LocatedEvent& event) override {
+    // It's okay to check only when the window is the proxy_window. Any
+    // descendants should pass this condition once it passes with proxy_window.
+    if (window == proxy_window_->window() && !IsLocationInShape(event))
+      return false;
+
+    // If the top-level does not have insets, then forward the call to the
+    // parent's WindowTargeter. This is necessary for targeters such as
+    // EasyResizeWindowTargeter to work correctly.
+    if (mouse_extend().IsEmpty() && touch_extend().IsEmpty() &&
+        proxy_window_->IsTopLevel() && window->parent()) {
+      aura::WindowTargeter* parent_targeter =
+          static_cast<WindowTargeter*>(window->parent()->targeter());
+      if (parent_targeter)
+        return parent_targeter->SubtreeShouldBeExploredForEvent(window, event);
+    }
+    return aura::WindowTargeter::SubtreeShouldBeExploredForEvent(window, event);
+  }
+
+  ui::EventTarget* FindTargetForEvent(ui::EventTarget* event_target,
+                                      ui::Event* event) override {
+    aura::Window* window = static_cast<aura::Window*>(event_target);
+    DCHECK_EQ(window, proxy_window_->window());
+    if (proxy_window_->DoesOwnerInterceptEvents()) {
+      // If the owner intercepts events, then don't recurse (otherwise events
+      // would go to a descendant).
+      return event_target->CanAcceptEvent(*event) ? window : nullptr;
+    }
+
+    // Ensure events in the non-client area target the top-level window.
+    // TopLevelEventHandler will ensure these are routed correctly.
+    if (event->IsLocatedEvent() &&
+        IsLocationInNonClientArea(window,
+                                  event->AsLocatedEvent()->location())) {
+      return window;
+    }
+    return aura::WindowTargeter::FindTargetForEvent(event_target, event);
+  }
+
+ private:
+  bool IsLocationInShape(const ui::LocatedEvent& event) {
+    // If |shape_| is empty, the handling of custom shapes are not used. Always
+    // return true.
+    if (shape_.empty())
+      return true;
+
+    gfx::Point location = event.root_location();
+    aura::Window::ConvertPointToTarget(proxy_window_->window()->GetRootWindow(),
+                                       proxy_window_->window(), &location);
+    for (const auto& rect : shape_) {
+      if (rect.Contains(location))
+        return true;
+    }
+    return false;
+  }
+
+  ProxyWindow* const proxy_window_;
+  std::vector<gfx::Rect> shape_;
+
+  DISALLOW_COPY_AND_ASSIGN(ProxyWindowTargeter);
+};
+
 ProxyWindow::~ProxyWindow() {
   // WindowTree/ClientRoot should have reset |attached_frame_sink_id_| before
   // the Window is destroyed.
@@ -480,6 +505,10 @@ void ProxyWindow::SetClientArea(
 void ProxyWindow::SetHitTestInsets(const gfx::Insets& mouse,
                                    const gfx::Insets& touch) {
   window_targeter_->SetInsets(mouse, touch);
+}
+
+void ProxyWindow::SetShape(const std::vector<gfx::Rect>& shape) {
+  window_targeter_->SetShape(shape);
 }
 
 void ProxyWindow::SetCaptureOwner(WindowTree* owner) {
