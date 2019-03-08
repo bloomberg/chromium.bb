@@ -47,7 +47,6 @@ class CORE_EXPORT MimeClassInfo final
 
  private:
   friend class PluginData;
-  friend class PluginListBuilder;
 
   String type_;
   String description_;
@@ -80,7 +79,6 @@ class CORE_EXPORT PluginInfo final
  private:
   friend class MimeClassInfo;
   friend class PluginData;
-  friend class PluginListBuilder;
 
   String name_;
   String filename_;
