@@ -113,10 +113,10 @@ void Settings::SetForceDarkModeEnabled(bool enabled) {
   force_dark_mode_ = enabled;
 
   if (force_dark_mode_) {
-    SetHighContrastMode(DarkMode::kInvertLightness);
-    SetHighContrastImagePolicy(DarkModeImagePolicy::kFilterSmart);
+    SetDarkMode(DarkMode::kInvertLightness);
+    SetDarkModeImagePolicy(DarkModeImagePolicy::kFilterSmart);
   } else {
-    SetHighContrastMode(DarkMode::kOff);
+    SetDarkMode(DarkMode::kOff);
   }
 }
 

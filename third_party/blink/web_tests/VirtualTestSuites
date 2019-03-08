@@ -441,17 +441,17 @@
   {
     "prefix": "dark-mode",
     "base": "paint/dark-mode/image-filter-all",
-    "args": ["--blink-settings=highContrastMode=3,highContrastImagePolicy=0"]
+    "args": ["--blink-settings=darkMode=3,darkModeImagePolicy=0"]
   },
   {
     "prefix": "dark-mode",
     "base": "paint/dark-mode/image-filter-none",
-    "args": ["--blink-settings=highContrastMode=3,highContrastImagePolicy=1"]
+    "args": ["--blink-settings=darkMode=3,darkModeImagePolicy=1"]
   },
   {
     "prefix": "dark-mode",
     "base": "paint/dark-mode/image-filter-smart",
-    "args": ["--blink-settings=highContrastMode=3,highContrastImagePolicy=2"]
+    "args": ["--blink-settings=darkMode=3,darkModeImagePolicy=2"]
   },
   {
     "prefix": "outofblink-cors",
