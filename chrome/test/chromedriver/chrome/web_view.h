@@ -190,10 +190,10 @@ class WebView {
 
   // Set files in a file input element.
   // |element| is the WebElement JSON Object of the input element.
-  virtual Status SetFileInputFiles(
-      const std::string& frame,
-      const base::DictionaryValue& element,
-      const std::vector<base::FilePath>& files) = 0;
+  virtual Status SetFileInputFiles(const std::string& frame,
+                                   const base::DictionaryValue& element,
+                                   const std::vector<base::FilePath>& files,
+                                   const bool append) = 0;
 
   // Take a heap snapshot which can build up a graph of Javascript objects.
   // A raw heap snapshot is in JSON format:

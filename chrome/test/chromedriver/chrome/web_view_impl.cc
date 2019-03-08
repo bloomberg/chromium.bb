@@ -694,29 +694,16 @@ Status WebViewImpl::CaptureScreenshot(
   return Status(kOk);
 }
 
-Status WebViewImpl::SetFileInputFiles(
-    const std::string& frame,
-    const base::DictionaryValue& element,
-    const std::vector<base::FilePath>& files) {
+Status WebViewImpl::SetFileInputFiles(const std::string& frame,
+                                      const base::DictionaryValue& element,
+                                      const std::vector<base::FilePath>& files,
+                                      const bool append) {
   WebViewImpl* target = GetTargetForFrame(this, frame);
   if (target != nullptr && target != this) {
     if (target->IsDetached())
       return Status(kTargetDetached);
     WebViewImplHolder target_holder(target);
-    return target->SetFileInputFiles(frame, element, files);
-  }
-
-  base::ListValue file_list;
-  for (size_t i = 0; i < files.size(); ++i) {
-    if (!files[i].IsAbsolute()) {
-      return Status(kUnknownError,
-                    "path is not absolute: " + files[i].AsUTF8Unsafe());
-    }
-    if (files[i].ReferencesParent()) {
-      return Status(kUnknownError,
-                    "path is not canonical: " + files[i].AsUTF8Unsafe());
-    }
-    file_list.AppendString(files[i].value());
+    return target->SetFileInputFiles(frame, element, files, append);
   }
 
   int context_id;
@@ -734,10 +721,97 @@ Status WebViewImpl::SetFileInputFiles(
     return status;
   if (!found_node)
     return Status(kUnknownError, "no node ID for file input");
-  base::DictionaryValue params;
-  params.SetInteger("nodeId", node_id);
-  params.SetKey("files", file_list.Clone());
-  return client_->SendCommand("DOM.setFileInputFiles", params);
+
+  base::ListValue file_list;
+  // if the append flag is true, we need to retrieve the files that
+  // already exist in the element and add them too.
+  // Additionally, we need to add the old files first so that it looks
+  // like we're appending files.
+  if (append) {
+    // Convert the node_id to a Runtime.RemoteObject
+    std::string inputRemoteObjectId;
+    {
+      std::unique_ptr<base::DictionaryValue> cmd_result;
+      base::DictionaryValue params;
+      params.SetInteger("nodeId", node_id);
+      status = client_->SendCommandAndGetResult("DOM.resolveNode", params,
+                                                &cmd_result);
+      if (status.IsError())
+        return status;
+      if (!cmd_result->GetString("object.objectId", &inputRemoteObjectId))
+        return Status(kUnknownError, "DevTools didn't return objectId");
+    }
+
+    // figure out how many files there are
+    int numberOfFiles = 0;
+    {
+      std::unique_ptr<base::DictionaryValue> cmd_result;
+      base::DictionaryValue params;
+      params.SetString("functionDeclaration",
+                       "function() { return this.files.length }");
+      params.SetString("objectId", inputRemoteObjectId);
+      status = client_->SendCommandAndGetResult("Runtime.callFunctionOn",
+                                                params, &cmd_result);
+      if (status.IsError())
+        return status;
+      if (!cmd_result->GetInteger("result.value", &numberOfFiles))
+        return Status(kUnknownError, "DevTools didn't return value");
+    }
+
+    // Ask for each Runtime.RemoteObject and add them to the list
+    for (int i = 0; i < numberOfFiles; i++) {
+      std::string fileObjectId;
+      {
+        std::unique_ptr<base::DictionaryValue> cmd_result;
+        base::DictionaryValue params;
+        params.SetString(
+            "functionDeclaration",
+            "function() { return this.files[" + std::to_string(i) + "] }");
+        params.SetString("objectId", inputRemoteObjectId);
+
+        status = client_->SendCommandAndGetResult("Runtime.callFunctionOn",
+                                                  params, &cmd_result);
+        if (status.IsError())
+          return status;
+        if (!cmd_result->GetString("result.objectId", &fileObjectId))
+          return Status(kUnknownError, "DevTools didn't return objectId");
+      }
+
+      // Now convert each RemoteObject into the full path
+      {
+        base::DictionaryValue params;
+        params.SetString("objectId", fileObjectId);
+        std::unique_ptr<base::DictionaryValue> getFileInfoResult;
+        status = client_->SendCommandAndGetResult("DOM.getFileInfo", params,
+                                                  &getFileInfoResult);
+        if (status.IsError())
+          return status;
+        // Add the full path to the file_list
+        std::string fullPath;
+        if (!getFileInfoResult->GetString("path", &fullPath))
+          return Status(kUnknownError, "DevTools didn't return path");
+        file_list.AppendString(fullPath);
+      }
+    }
+  }
+
+  // Now add the new files
+  for (size_t i = 0; i < files.size(); ++i) {
+    if (!files[i].IsAbsolute()) {
+      return Status(kUnknownError,
+                    "path is not absolute: " + files[i].AsUTF8Unsafe());
+    }
+    if (files[i].ReferencesParent()) {
+      return Status(kUnknownError,
+                    "path is not canonical: " + files[i].AsUTF8Unsafe());
+    }
+    file_list.AppendString(files[i].value());
+  }
+
+  base::DictionaryValue setFilesParams;
+  setFilesParams.SetInteger("nodeId", node_id);
+  setFilesParams.SetKey("files", file_list.Clone());
+  return client_->SendCommand("DOM.setFileInputFiles", setFilesParams);
 }
 
 Status WebViewImpl::TakeHeapSnapshot(std::unique_ptr<base::Value>* snapshot) {
