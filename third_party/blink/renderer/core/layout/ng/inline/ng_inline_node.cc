@@ -1031,22 +1031,23 @@ static LayoutUnit ComputeContentSize(
 
   NGExclusionSpace empty_exclusion_space;
   NGPositionedFloatVector empty_leading_floats;
-  Vector<LayoutObject*> floats_for_min_max;
   NGLineLayoutOpportunity line_opportunity(available_inline_size);
   LayoutUnit result;
   LayoutUnit previous_floats_inline_size =
       input.float_left_inline_size + input.float_right_inline_size;
   DCHECK_GE(previous_floats_inline_size, 0);
-  NGLineBreaker line_breaker(
-      node, mode, space, line_opportunity, empty_leading_floats,
-      /* handled_leading_floats_index */ 0u,
-      /* break_token */ nullptr, &empty_exclusion_space,
-      input.percentage_resolution_block_size, &floats_for_min_max);
+  NGLineBreaker line_breaker(node, mode, space, line_opportunity,
+                             empty_leading_floats,
+                             /* handled_leading_floats_index */ 0u,
+                             /* break_token */ nullptr, &empty_exclusion_space);
+
+  Vector<LayoutObject*> floats_for_min_max;
   do {
     floats_for_min_max.Shrink(0);
 
     NGLineInfo line_info;
-    line_breaker.NextLine(&line_info);
+    line_breaker.NextLine(input.percentage_resolution_block_size,
+                          &floats_for_min_max, &line_info);
     if (line_info.Results().IsEmpty())
       break;
 
