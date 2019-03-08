@@ -64,7 +64,6 @@
 #include "media/base/media_switches.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "ui/base/ui_base_switches.h"
-#include "ui/compositor/compositor_switches.h"
 #include "ui/gl/gl_switches.h"
 
 #if defined(OS_LINUX)

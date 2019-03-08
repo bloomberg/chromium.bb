@@ -67,7 +67,6 @@
 #include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/compositor/compositor.h"
-#include "ui/compositor/compositor_switches.h"
 #include "ui/compositor/host/external_begin_frame_controller_client_impl.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/display_switches.h"
