@@ -18,15 +18,6 @@
 
 namespace extensions {
 
-namespace {
-
-IPCMessageSender* GetWorkerThreadIPCMessageSender() {
-  DCHECK(worker_thread_util::IsWorkerThread());
-  return WorkerThreadDispatcher::GetBindingsSystem()->GetIPCMessageSender();
-}
-
-}  // namespace
-
 ExtensionPort::ExtensionPort(ScriptContext* script_context,
                              const PortId& id,
                              int js_id)
@@ -37,7 +28,9 @@ ExtensionPort::~ExtensionPort() {}
 void ExtensionPort::PostExtensionMessage(std::unique_ptr<Message> message) {
   if (worker_thread_util::IsWorkerThread()) {
     DCHECK(!script_context_->GetRenderFrame());
-    GetWorkerThreadIPCMessageSender()->SendPostMessageToPort(id_, *message);
+    WorkerThreadDispatcher::GetBindingsSystem()
+        ->GetIPCMessageSender()
+        ->SendPostMessageToPort(id_, *message);
   } else {
     content::RenderFrame* render_frame = script_context_->GetRenderFrame();
     if (!render_frame)
@@ -49,8 +42,9 @@ void ExtensionPort::PostExtensionMessage(std::unique_ptr<Message> message) {
 void ExtensionPort::Close(bool close_channel) {
   if (worker_thread_util::IsWorkerThread()) {
     DCHECK(!script_context_->GetRenderFrame());
-    GetWorkerThreadIPCMessageSender()->SendCloseMessagePort(MSG_ROUTING_NONE,
-                                                            id_, close_channel);
+    WorkerThreadDispatcher::GetBindingsSystem()
+        ->GetIPCMessageSender()
+        ->SendCloseMessagePort(MSG_ROUTING_NONE, id_, close_channel);
   } else {
     content::RenderFrame* render_frame = script_context_->GetRenderFrame();
     if (!render_frame)
