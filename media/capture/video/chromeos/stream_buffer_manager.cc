@@ -57,7 +57,20 @@ VideoCaptureFormat StreamBufferManager::GetStreamCaptureFormat(
 bool StreamBufferManager::HasFreeBuffers(
     const std::set<StreamType>& stream_types) {
   for (auto stream_type : stream_types) {
+    if (IsInputStream(stream_type)) {
+      continue;
+    }
     if (stream_context_[stream_type]->free_buffers.empty()) {
+      return false;
+    }
+  }
+  return true;
+}
+
+bool StreamBufferManager::HasStreamsConfigured(
+    std::initializer_list<StreamType> stream_types) {
+  for (auto stream_type : stream_types) {
+    if (stream_context_.find(stream_type) == stream_context_.end()) {
       return false;
     }
   }
@@ -100,17 +113,23 @@ void StreamBufferManager::SetUpStreamsAndBuffers(
     stream_context_[stream_type]->capture_format.pixel_format =
         stream_format.video_format;
 
+    // For input stream, there is no need to allocate buffers.
+    if (IsInputStream(stream_type)) {
+      continue;
+    }
+
     // Allocate buffers.
     size_t num_buffers = stream_context_[stream_type]->stream->max_buffers;
     stream_context_[stream_type]->buffers.resize(num_buffers);
     int32_t buffer_width, buffer_height;
     switch (stream_type) {
-      case StreamType::kPreview: {
+      case StreamType::kPreviewOutput:
+      case StreamType::kYUVOutput: {
         buffer_width = stream_context_[stream_type]->stream->width;
         buffer_height = stream_context_[stream_type]->stream->height;
         break;
       }
-      case StreamType::kStillCapture: {
+      case StreamType::kJpegOutput: {
         const cros::mojom::CameraMetadataEntryPtr* jpeg_max_size =
             GetMetadataEntry(
                 static_metadata,
@@ -160,7 +179,8 @@ cros::mojom::Camera3StreamPtr StreamBufferManager::GetStreamConfiguration(
 }
 
 base::Optional<BufferInfo> StreamBufferManager::RequestBuffer(
-    StreamType stream_type) {
+    StreamType stream_type,
+    base::Optional<uint64_t> buffer_id) {
   VideoPixelFormat buffer_format =
       stream_context_[stream_type]->capture_format.pixel_format;
   uint32_t drm_format = PixFormatVideoToDrm(buffer_format);
@@ -175,11 +195,25 @@ base::Optional<BufferInfo> StreamBufferManager::RequestBuffer(
   }
 
   BufferInfo buffer_info;
-  buffer_info.id = stream_context_[stream_type]->free_buffers.front();
-  stream_context_[stream_type]->free_buffers.pop();
-  buffer_info.gpu_memory_buffer = stream_context_[stream_type]
-                                      ->buffers[GetBufferIndex(buffer_info.id)]
-                                      .get();
+  if (buffer_id.has_value()) {
+    // Currently, only kYUVInput has an associated output buffer which is
+    // kYUVOutput.
+    if (stream_type != StreamType::kYUVInput) {
+      return {};
+    }
+    buffer_info.id = *buffer_id;
+    buffer_info.gpu_memory_buffer =
+        stream_context_[StreamType::kYUVOutput]
+            ->buffers[GetBufferIndex(buffer_info.id)]
+            .get();
+  } else {
+    buffer_info.id = stream_context_[stream_type]->free_buffers.front();
+    stream_context_[stream_type]->free_buffers.pop();
+    buffer_info.gpu_memory_buffer =
+        stream_context_[stream_type]
+            ->buffers[GetBufferIndex(buffer_info.id)]
+            .get();
+  }
   buffer_info.hal_pixel_format = stream_context_[stream_type]->stream->format;
   buffer_info.drm_format = drm_format;
   return buffer_info;
@@ -187,11 +221,14 @@ base::Optional<BufferInfo> StreamBufferManager::RequestBuffer(
 
 void StreamBufferManager::ReleaseBuffer(StreamType stream_type,
                                         uint64_t buffer_id) {
+  if (IsInputStream(stream_type)) {
+    return;
+  }
   stream_context_[stream_type]->free_buffers.push(buffer_id);
 }
 
-size_t StreamBufferManager::GetNumberOfStreams() {
-  return stream_context_.size();
+bool StreamBufferManager::IsReprocessSupported() {
+  return stream_context_.find(StreamType::kYUVOutput) != stream_context_.end();
 }
 
 // static

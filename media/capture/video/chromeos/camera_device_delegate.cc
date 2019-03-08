@@ -90,12 +90,22 @@ void TakePhotoCallbackBundle(VideoCaptureDevice::TakePhotoCallback callback,
 
 }  // namespace
 
+bool IsInputStream(StreamType stream_type) {
+  // Currently there is only one input stream. Modify this method if there is
+  // any other input streams.
+  return stream_type == StreamType::kYUVInput;
+}
+
 StreamType StreamIdToStreamType(uint64_t stream_id) {
   switch (stream_id) {
     case 0:
-      return StreamType::kPreview;
+      return StreamType::kPreviewOutput;
     case 1:
-      return StreamType::kStillCapture;
+      return StreamType::kJpegOutput;
+    case 2:
+      return StreamType::kYUVInput;
+    case 3:
+      return StreamType::kYUVOutput;
     default:
       return StreamType::kUnknown;
   }
@@ -103,10 +113,14 @@ StreamType StreamIdToStreamType(uint64_t stream_id) {
 
 std::string StreamTypeToString(StreamType stream_type) {
   switch (stream_type) {
-    case StreamType::kPreview:
-      return std::string("StreamType::kPreview");
-    case StreamType::kStillCapture:
-      return std::string("StreamType::kStillCapture");
+    case StreamType::kPreviewOutput:
+      return std::string("StreamType::kPreviewOutput");
+    case StreamType::kJpegOutput:
+      return std::string("StreamType::kJpegOutput");
+    case StreamType::kYUVInput:
+      return std::string("StreamType::kYUVInput");
+    case StreamType::kYUVOutput:
+      return std::string("StreamType::kYUVOutput");
     default:
       return std::string("Unknown StreamType value: ") +
              std::to_string(static_cast<int32_t>(stream_type));
@@ -178,6 +192,8 @@ void CameraDeviceDelegate::AllocateAndStart(
 void CameraDeviceDelegate::StopAndDeAllocate(
     base::OnceClosure device_close_callback) {
   DCHECK(ipc_task_runner_->BelongsToCurrentThread());
+
+  reprocess_manager_->FlushReprocessOptions();
 
   if (!device_context_ ||
       device_context_->GetState() == CameraDeviceContext::State::kStopped ||
@@ -268,7 +284,7 @@ void CameraDeviceDelegate::SetPhotoOptions(
     return;
   }
 
-  if (request_manager_->GetNumberOfStreams() < kMaxConfiguredStreams) {
+  if (!request_manager_->HasStreamsConfiguredForTakePhoto()) {
     request_manager_->StopPreview(
         base::BindOnce(&CameraDeviceDelegate::OnFlushed, GetWeakPtr()));
     set_photo_option_callback_ = std::move(callback);
@@ -293,9 +309,9 @@ void CameraDeviceDelegate::TakePhotoImpl() {
 
   auto construct_request_cb =
       base::BindOnce(&CameraDeviceDelegate::ConstructDefaultRequestSettings,
-                     GetWeakPtr(), StreamType::kStillCapture);
+                     GetWeakPtr(), StreamType::kJpegOutput);
 
-  if (request_manager_->GetNumberOfStreams() >= kMaxConfiguredStreams) {
+  if (request_manager_->HasStreamsConfiguredForTakePhoto()) {
     camera_3a_controller_->Stabilize3AForStillCapture(
         std::move(construct_request_cb));
     return;
@@ -391,6 +407,8 @@ void CameraDeviceDelegate::OnGotCameraInfo(
   }
   SortCameraMetadata(&camera_info->static_camera_characteristics);
   static_metadata_ = std::move(camera_info->static_camera_characteristics);
+
+  reprocess_manager_->UpdateSupportedEffects(static_metadata_);
 
   const cros::mojom::CameraMetadataEntryPtr* sensor_orientation =
       GetMetadataEntry(
@@ -491,7 +509,7 @@ void CameraDeviceDelegate::ConfigureStreams(bool require_photo) {
   // Set up context for preview stream.
   cros::mojom::Camera3StreamPtr preview_stream =
       cros::mojom::Camera3Stream::New();
-  preview_stream->id = static_cast<uint64_t>(StreamType::kPreview);
+  preview_stream->id = static_cast<uint64_t>(StreamType::kPreviewOutput);
   preview_stream->stream_type =
       cros::mojom::Camera3StreamType::CAMERA3_STREAM_OUTPUT;
   preview_stream->width =
@@ -521,7 +539,7 @@ void CameraDeviceDelegate::ConfigureStreams(bool require_photo) {
 
     cros::mojom::Camera3StreamPtr still_capture_stream =
         cros::mojom::Camera3Stream::New();
-    still_capture_stream->id = static_cast<uint64_t>(StreamType::kStillCapture);
+    still_capture_stream->id = static_cast<uint64_t>(StreamType::kJpegOutput);
     still_capture_stream->stream_type =
         cros::mojom::Camera3StreamType::CAMERA3_STREAM_OUTPUT;
     still_capture_stream->width = max_blob_width;
@@ -532,6 +550,38 @@ void CameraDeviceDelegate::ConfigureStreams(bool require_photo) {
     still_capture_stream->rotation =
         cros::mojom::Camera3StreamRotation::CAMERA3_STREAM_ROTATION_0;
     stream_config->streams.push_back(std::move(still_capture_stream));
+
+    int32_t max_yuv_width = 0, max_yuv_height = 0;
+    if (IsYUVReprocessingSupported(&max_yuv_width, &max_yuv_height)) {
+      auto reprocessing_stream_input = cros::mojom::Camera3Stream::New();
+      reprocessing_stream_input->id =
+          static_cast<uint64_t>(StreamType::kYUVInput);
+      reprocessing_stream_input->stream_type =
+          cros::mojom::Camera3StreamType::CAMERA3_STREAM_INPUT;
+      reprocessing_stream_input->width = max_yuv_width;
+      reprocessing_stream_input->height = max_yuv_height;
+      reprocessing_stream_input->format =
+          cros::mojom::HalPixelFormat::HAL_PIXEL_FORMAT_YCbCr_420_888;
+      reprocessing_stream_input->data_space = 0;
+      reprocessing_stream_input->rotation =
+          cros::mojom::Camera3StreamRotation::CAMERA3_STREAM_ROTATION_0;
+
+      auto reprocessing_stream_output = cros::mojom::Camera3Stream::New();
+      reprocessing_stream_output->id =
+          static_cast<uint64_t>(StreamType::kYUVOutput);
+      reprocessing_stream_output->stream_type =
+          cros::mojom::Camera3StreamType::CAMERA3_STREAM_OUTPUT;
+      reprocessing_stream_output->width = max_yuv_width;
+      reprocessing_stream_output->height = max_yuv_height;
+      reprocessing_stream_output->format =
+          cros::mojom::HalPixelFormat::HAL_PIXEL_FORMAT_YCbCr_420_888;
+      reprocessing_stream_output->data_space = 0;
+      reprocessing_stream_output->rotation =
+          cros::mojom::Camera3StreamRotation::CAMERA3_STREAM_ROTATION_0;
+
+      stream_config->streams.push_back(std::move(reprocessing_stream_input));
+      stream_config->streams.push_back(std::move(reprocessing_stream_output));
+    }
   }
 
   stream_config->operation_mode = cros::mojom::Camera3StreamConfigurationMode::
@@ -562,7 +612,7 @@ void CameraDeviceDelegate::OnConfiguredStreams(
   }
   if (!updated_config ||
       updated_config->streams.size() > kMaxConfiguredStreams ||
-      updated_config->streams.size() < 1) {
+      updated_config->streams.size() < kMinConfiguredStreams) {
     device_context_->SetErrorState(
         media::VideoCaptureError::
             kCrosHalV3DeviceDelegateWrongNumberOfStreamsConfigured,
@@ -578,7 +628,76 @@ void CameraDeviceDelegate::OnConfiguredStreams(
 
   device_context_->SetState(CameraDeviceContext::State::kStreamConfigured);
   // Kick off the preview stream.
-  ConstructDefaultRequestSettings(StreamType::kPreview);
+  ConstructDefaultRequestSettings(StreamType::kPreviewOutput);
+}
+
+bool CameraDeviceDelegate::IsYUVReprocessingSupported(int* max_width,
+                                                      int* max_height) {
+  bool has_yuv_reprocessing_capability = [&] {
+    auto capabilities = GetMetadataEntryAsSpan<uint8_t>(
+        static_metadata_,
+        cros::mojom::CameraMetadataTag::ANDROID_REQUEST_AVAILABLE_CAPABILITIES);
+    auto capability_yuv_reprocessing = static_cast<uint8_t>(
+        cros::mojom::AndroidRequestAvailableCapabilities::
+            ANDROID_REQUEST_AVAILABLE_CAPABILITIES_YUV_REPROCESSING);
+    for (auto capability : capabilities) {
+      if (capability == capability_yuv_reprocessing) {
+        return true;
+      }
+    }
+    return false;
+  }();
+
+  if (!has_yuv_reprocessing_capability) {
+    return false;
+  }
+
+  bool has_yuv_input_blob_output = [&] {
+    auto formats_map = GetMetadataEntryAsSpan<int32_t>(
+        static_metadata_,
+        cros::mojom::CameraMetadataTag::
+            ANDROID_SCALER_AVAILABLE_INPUT_OUTPUT_FORMATS_MAP);
+    // The formats map looks like: [
+    //   {INPUT_FORMAT, NUM_OF_OUTPUTS, OUTPUT_FORMAT_1, OUTPUT_FORMAT_2, ...},
+    //   {...},
+    //   ...
+    // ]
+    auto format_yuv = static_cast<int32_t>(
+        cros::mojom::HalPixelFormat::HAL_PIXEL_FORMAT_YCbCr_420_888);
+    auto format_blob = static_cast<int32_t>(
+        cros::mojom::HalPixelFormat::HAL_PIXEL_FORMAT_BLOB);
+
+    size_t idx = 0;
+    while (idx < formats_map.size() && !has_yuv_input_blob_output) {
+      auto in_format = formats_map[idx++];
+      auto out_amount = formats_map[idx++];
+      if (in_format != format_yuv) {
+        idx += out_amount;
+        continue;
+      }
+      for (size_t idx_end = idx + out_amount; idx < idx_end; idx++) {
+        auto out_format = formats_map[idx];
+        if (out_format == format_blob) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }();
+
+  if (!has_yuv_input_blob_output) {
+    return false;
+  }
+
+  GetMaxStreamResolution(
+      static_metadata_, cros::mojom::Camera3StreamType::CAMERA3_STREAM_INPUT,
+      cros::mojom::HalPixelFormat::HAL_PIXEL_FORMAT_YCbCr_420_888, max_width,
+      max_height);
+  if (max_width == 0 || max_height == 0) {
+    return false;
+  }
+
+  return true;
 }
 
 void CameraDeviceDelegate::ConstructDefaultRequestSettings(
@@ -588,18 +707,20 @@ void CameraDeviceDelegate::ConstructDefaultRequestSettings(
              CameraDeviceContext::State::kStreamConfigured ||
          device_context_->GetState() == CameraDeviceContext::State::kCapturing);
 
-  if (stream_type == StreamType::kPreview) {
+  if (stream_type == StreamType::kPreviewOutput) {
     device_ops_->ConstructDefaultRequestSettings(
         cros::mojom::Camera3RequestTemplate::CAMERA3_TEMPLATE_PREVIEW,
         base::BindOnce(
             &CameraDeviceDelegate::OnConstructedDefaultPreviewRequestSettings,
             GetWeakPtr()));
-  } else {  // stream_type == StreamType::kStillCapture
+  } else if (stream_type == StreamType::kJpegOutput) {
     device_ops_->ConstructDefaultRequestSettings(
         cros::mojom::Camera3RequestTemplate::CAMERA3_TEMPLATE_STILL_CAPTURE,
         base::BindOnce(&CameraDeviceDelegate::
                            OnConstructedDefaultStillCaptureRequestSettings,
                        GetWeakPtr()));
+  } else {
+    NOTREACHED() << "No default request settings for stream: " << stream_type;
   }
 }
 
@@ -638,12 +759,13 @@ void CameraDeviceDelegate::OnConstructedDefaultStillCaptureRequestSettings(
   DCHECK(ipc_task_runner_->BelongsToCurrentThread());
 
   while (!take_photo_callbacks_.empty()) {
-    request_manager_->TakePhoto(
-        settings.Clone(),
+    reprocess_manager_->ConsumeReprocessOptions(
         base::BindOnce(
             &TakePhotoCallbackBundle, std::move(take_photo_callbacks_.front()),
             base::BindOnce(&Camera3AController::SetAutoFocusModeForStillCapture,
-                           camera_3a_controller_->GetWeakPtr())));
+                           camera_3a_controller_->GetWeakPtr())),
+        base::BindOnce(&RequestManager::TakePhoto,
+                       request_manager_->GetWeakPtr(), settings.Clone()));
     take_photo_callbacks_.pop();
   }
 }

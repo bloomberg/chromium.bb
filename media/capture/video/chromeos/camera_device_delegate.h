@@ -24,10 +24,15 @@ class ReprocessManager;
 class RequestManager;
 
 enum class StreamType : uint64_t {
-  kPreview = 0,
-  kStillCapture = 1,
+  kPreviewOutput = 0,
+  kJpegOutput = 1,
+  kYUVInput = 2,
+  kYUVOutput = 3,
   kUnknown,
 };
+
+// Returns true if the given stream type is an input stream.
+bool IsInputStream(StreamType stream_type);
 
 StreamType StreamIdToStreamType(uint64_t stream_id);
 
@@ -130,6 +135,14 @@ class CAPTURE_EXPORT CameraDeviceDelegate final {
   void OnConfiguredStreams(
       int32_t result,
       cros::mojom::Camera3StreamConfigurationPtr updated_config);
+
+  // Checks metadata in |static_metadata_| to ensure field
+  // request.availableCapabilities contains YUV reprocessing and field
+  // scaler.availableInputOutputFormatsMap contains YUV => BLOB mapping.
+  // If above checks both pass, fill the max yuv width and height in
+  // |max_width| and |max_height| and return true if both width and height are
+  // positive numbers. Return false otherwise.
+  bool IsYUVReprocessingSupported(int* max_width, int* max_height);
 
   // ConstructDefaultRequestSettings asks the camera HAL for the default request
   // settings of the stream in |stream_context_|.
