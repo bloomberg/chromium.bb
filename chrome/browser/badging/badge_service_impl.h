@@ -7,7 +7,7 @@
 
 #include "base/optional.h"
 #include "content/public/browser/frame_service_base.h"
-#include "third_party/blink/public/platform/modules/badging/badging.mojom.h"
+#include "third_party/blink/public/mojom/badging/badging.mojom.h"
 
 namespace content {
 class RenderFrameHost;

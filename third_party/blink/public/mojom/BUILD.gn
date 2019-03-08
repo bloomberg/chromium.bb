@@ -18,6 +18,7 @@ mojom("mojom_platform") {
     "associated_interfaces/associated_interfaces.mojom",
     "autoplay/autoplay.mojom",
     "background_fetch/background_fetch.mojom",
+    "badging/badging.mojom",
     "blob/blob.mojom",
     "blob/blob_registry.mojom",
     "blob/blob_url_store.mojom",

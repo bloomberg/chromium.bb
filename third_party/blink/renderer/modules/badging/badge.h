@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_BADGING_BADGE_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_BADGING_BADGE_H_
 
-#include "third_party/blink/public/platform/modules/badging/badging.mojom-blink.h"
+#include "third_party/blink/public/mojom/badging/badging.mojom-blink.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 
