@@ -897,8 +897,7 @@ void AppListControllerImpl::OpenSearchResult(const std::string& result_id,
       client_->OpenSearchResult(result_id, event_flags);
   }
 
-  if (IsTabletMode() && presenter_.IsVisible())
-    presenter_.GetView()->CloseOpenedPage();
+  ResetHomeLauncherIfShown();
 }
 
 void AppListControllerImpl::LogResultLaunchHistogram(
@@ -975,8 +974,7 @@ void AppListControllerImpl::ActivateItem(const std::string& id,
   if (client_)
     client_->ActivateItem(id, event_flags);
 
-  if (IsTabletMode() && presenter_.IsVisible())
-    presenter_.GetView()->CloseOpenedPage();
+  ResetHomeLauncherIfShown();
 }
 
 void AppListControllerImpl::GetContextMenuModel(
@@ -1178,6 +1176,19 @@ void AppListControllerImpl::ShowHomeLauncher() {
   Show(GetDisplayIdToShowAppListOn(), app_list::kTabletMode, base::TimeTicks());
   UpdateHomeLauncherVisibility();
   Shelf::ForWindow(presenter_.GetWindow())->MaybeUpdateShelfBackground();
+}
+
+void AppListControllerImpl::ResetHomeLauncherIfShown() {
+  if (!IsTabletMode() || !presenter_.IsVisible())
+    return;
+
+  auto* const keyboard_controller = keyboard::KeyboardController::Get();
+  if (keyboard_controller->IsKeyboardVisible())
+    keyboard_controller->HideKeyboardByUser();
+  presenter_.GetView()->CloseOpenedPage();
+
+  // Refresh the suggestion chips with empty query.
+  StartSearch(base::string16());
 }
 
 }  // namespace ash

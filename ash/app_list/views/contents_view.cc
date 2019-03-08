@@ -485,6 +485,7 @@ bool ContentsView::Back() {
     keyboard_controller->HideKeyboardByUser();
     return true;
   }
+
   ash::AppListState state = view_to_state_[GetActivePageIndex()];
   switch (state) {
     case ash::AppListState::kStateStart:
