@@ -50,6 +50,7 @@
 #include "components/autofill_assistant/browser/features.h"
 #include "components/browser_sync/browser_sync_switches.h"
 #include "components/cloud_devices/common/cloud_devices_switches.h"
+#include "components/contextual_search/core/browser/public.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/dom_distiller/core/dom_distiller_switches.h"
@@ -987,6 +988,12 @@ const FeatureEntry::FeatureParam kExploreSitesPersonalized = {
 const FeatureEntry::FeatureVariation kExploreSitesVariations[] = {
     {"Experimental", &kExploreSitesExperimental, 1, nullptr},
     {"Personalized", &kExploreSitesPersonalized, 1, nullptr}};
+
+const FeatureEntry::FeatureParam kSimplifiedServerAllCocaCards = {
+    contextual_search::kContextualCardsVersionParamName,
+    contextual_search::kContextualCardsSimplifiedServerWithDiagnosticChar};
+const FeatureEntry::FeatureVariation kSimplifiedServerVariations[] = {
+    {"and allow all CoCa cards", &kSimplifiedServerAllCocaCards, 1, nullptr}};
 #endif  // defined(OS_ANDROID)
 
 const FeatureEntry::FeatureParam
@@ -1218,6 +1225,14 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kContextualSearchSecondTapName,
      flag_descriptions::kContextualSearchSecondTapDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kContextualSearchSecondTap)},
+    {"contextual-search-simplified-server",
+     flag_descriptions::kContextualSearchSimplifiedServerName,
+     flag_descriptions::kContextualSearchSimplifiedServerDescription,
+     kOsAndroid,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         chrome::android::kContextualSearchSimplifiedServer,
+         kSimplifiedServerVariations,
+         "ContextualSearchSimplifiedServer")},
     {"contextual-search-unity-integration",
      flag_descriptions::kContextualSearchUnityIntegrationName,
      flag_descriptions::kContextualSearchUnityIntegrationDescription,

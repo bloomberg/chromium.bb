@@ -2274,6 +2274,13 @@ const char kContextualSearchRankerQueryName[] =
 const char kContextualSearchRankerQueryDescription[] =
     "Enables prediction of tap gestures using Assist-Ranker machine learning.";
 
+const char kContextualSearchSimplifiedServerName[] =
+    "Contextual Search simplified server logic";
+const char kContextualSearchSimplifiedServerDescription[] =
+    "Enables simpler server-side logic for determining what data to return and "
+    "show in the Contextual Search UI.  Option to allow all cards CoCa "
+    "returns.";
+
 const char kContextualSearchSecondTapName[] =
     "Contextual Search second tap triggering";
 const char kContextualSearchSecondTapDescription[] =
