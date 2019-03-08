@@ -226,7 +226,7 @@
 #include "extensions/common/manifest.h"
 #endif
 
-#if defined(SAFE_BROWSING_DB_LOCAL)
+#if defined(FULL_SAFE_BROWSING)
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
 #include "chrome/browser/ui/webui/reset_password/reset_password_ui.h"
 #include "components/safe_browsing/features.h"
@@ -687,7 +687,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<MediaEngagementUI>;
   }
 
-#if defined(SAFE_BROWSING_DB_LOCAL)
+#if defined(FULL_SAFE_BROWSING)
   bool enable_reset_password =
       base::FeatureList::IsEnabled(
           safe_browsing::kForceEnableResetPasswordWebUI) ||

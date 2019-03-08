@@ -82,7 +82,7 @@
 #include "third_party/re2/src/re2/re2.h"
 #include "url/url_constants.h"
 
-#if defined(SAFE_BROWSING_DB_LOCAL)
+#if defined(FULL_SAFE_BROWSING)
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager.h"
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
 #endif
@@ -436,7 +436,7 @@ void ChromePasswordManagerClient::PasswordWasAutofilled(
 void ChromePasswordManagerClient::CheckSafeBrowsingReputation(
     const GURL& form_action,
     const GURL& frame_url) {
-#if defined(SAFE_BROWSING_DB_LOCAL)
+#if defined(FULL_SAFE_BROWSING)
   safe_browsing::PasswordProtectionService* pps =
       GetPasswordProtectionService();
   if (pps) {
@@ -451,7 +451,7 @@ void ChromePasswordManagerClient::HidePasswordGenerationPopup() {
     popup_controller_->HideAndDestroy();
 }
 
-#if defined(SAFE_BROWSING_DB_LOCAL)
+#if defined(FULL_SAFE_BROWSING)
 safe_browsing::PasswordProtectionService*
 ChromePasswordManagerClient::GetPasswordProtectionService() const {
   return safe_browsing::ChromePasswordProtectionService::

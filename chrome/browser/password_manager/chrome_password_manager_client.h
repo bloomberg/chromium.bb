@@ -134,7 +134,7 @@ class ChromePasswordManagerClient
 
   void HidePasswordGenerationPopup();
 
-#if defined(SAFE_BROWSING_DB_LOCAL)
+#if defined(FULL_SAFE_BROWSING)
   safe_browsing::PasswordProtectionService* GetPasswordProtectionService()
       const override;
 

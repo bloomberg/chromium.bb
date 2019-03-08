@@ -143,7 +143,7 @@ class PageInfoBubbleView : public PageInfoBubbleViewBase,
                                   bool is_list_empty,
                                   int column_id);
 
-#if defined(SAFE_BROWSING_DB_LOCAL)
+#if defined(FULL_SAFE_BROWSING)
   std::unique_ptr<PageInfoUI::SecurityDescription>
   CreateSecurityDescriptionForPasswordReuse(
       bool is_enterprise_password) const override;
