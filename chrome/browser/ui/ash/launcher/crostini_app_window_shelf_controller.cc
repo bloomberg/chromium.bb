@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/shelf_spinner_controller.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_client.h"
+#include "chrome/browser/ui/ash/session_controller_client.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -261,15 +262,13 @@ void CrostiniAppWindowShelfController::RegisterAppWindow(
       std::make_unique<AppWindowBase>(shelf_id, widget);
   AppWindowBase* app_window = aura_window_to_app_window_[window].get();
 
-  const AccountId& current_user =
-      user_manager::UserManager::Get()->GetActiveUser()->GetAccountId();
-  const AccountId& window_owner =
-      MultiUserWindowManagerClient::GetInstance()->GetWindowOwner(window);
   // Only add an app to the shelf if it's associated with the currently active
   // user (which should always be the primary user at this time).
-  if (current_user == window_owner) {
-    AddToShelf(window, app_window);
-  }
+  if (SessionControllerClient::IsMultiProfileAvailable() &&
+      user_manager::UserManager::Get()->GetActiveUser()->GetAccountId() !=
+          MultiUserWindowManagerClient::GetInstance()->GetWindowOwner(window))
+    return;
+  AddToShelf(window, app_window);
 }
 
 void CrostiniAppWindowShelfController::OnWindowDestroying(
