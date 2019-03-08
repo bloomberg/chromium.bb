@@ -19,11 +19,27 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "gpu/command_buffer/service/abstract_texture.h"
 #include "gpu/ipc/common/android/android_image_reader_utils.h"
+#include "third_party/libsync/src/include/sync/sync.h"
 #include "ui/gl/gl_fence_android_native_fence_sync.h"
 #include "ui/gl/scoped_binders.h"
 #include "ui/gl/scoped_make_current.h"
 
 namespace media {
+namespace {
+
+base::ScopedFD MergeFDs(base::ScopedFD a, base::ScopedFD b) {
+  if (!a.is_valid())
+    return b;
+  if (!b.is_valid())
+    return a;
+
+  base::ScopedFD merged(HANDLE_EINTR(sync_merge("", a.get(), b.get())));
+  if (!merged.is_valid())
+    LOG(ERROR) << "Failed to merge fences.";
+  return merged;
+}
+
+}  // namespace
 
 // FrameAvailableEvent_ImageReader is a RefCounted wrapper for a WaitableEvent
 // (it's not possible to put one in RefCountedData). This lets us safely signal
@@ -58,7 +74,10 @@ class ImageReaderGLOwner::ScopedHardwareBufferImpl
       : base::android::ScopedHardwareBufferFenceSync(std::move(handle),
                                                      std::move(fence_fd)),
         texture_owner_(std::move(texture_owner)),
-        image_(image) {}
+        image_(image) {
+    DCHECK(image_);
+    texture_owner_->RegisterRefOnImage(image_);
+  }
   ~ScopedHardwareBufferImpl() override {
     texture_owner_->ReleaseRefOnImage(image_, std::move(read_fence_));
   }
@@ -79,7 +98,6 @@ ImageReaderGLOwner::ImageReaderGLOwner(
     Mode mode)
     : TextureOwner(false /* binds_texture_on_image_update */,
                    std::move(texture)),
-      current_image_(nullptr),
       loader_(base::android::AndroidImageReader::GetInstance()),
       context_(gl::GLContext::GetCurrent()),
       surface_(gl::GLSurface::GetCurrent()),
@@ -132,11 +150,12 @@ ImageReaderGLOwner::ImageReaderGLOwner(
 
 ImageReaderGLOwner::~ImageReaderGLOwner() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK_EQ(external_image_refs_.size(), 0u);
 
   // Clear the texture before we return, so that it can OnTextureDestroyed() if
   // it hasn't already.  This will do nothing if it has already been destroyed.
   ClearAbstractTexture();
+
+  DCHECK_EQ(image_refs_.size(), 0u);
 }
 
 void ImageReaderGLOwner::OnTextureDestroyed(gpu::gles2::AbstractTexture*) {
@@ -154,13 +173,18 @@ void ImageReaderGLOwner::OnTextureDestroyed(gpu::gles2::AbstractTexture*) {
   // Now we can stop listening to new images.
   loader_.AImageReader_setImageListener(image_reader_, NULL);
 
-  // Delete the image before closing the associated image reader.
-  if (current_image_)
-    loader_.AImage_delete(current_image_);
+  // Delete all images before closing the associated image reader.
+  for (auto& image_ref : image_refs_)
+    loader_.AImage_delete(image_ref.first);
 
   // Delete the image reader.
   loader_.AImageReader_delete(image_reader_);
   image_reader_ = nullptr;
+
+  // Clean up the ImageRefs which should now be a no-op since there is no valid
+  // |image_reader_|.
+  image_refs_.clear();
+  current_image_ref_.reset();
 }
 
 gl::ScopedJavaSurface ImageReaderGLOwner::CreateJavaSurface() const {
@@ -243,94 +267,65 @@ void ImageReaderGLOwner::UpdateTexImage() {
     return;
   }
 
-  // If we have a new Image, delete the previously acquired image.
-  if (!MaybeDeleteCurrentImage())
-    return;
-
   // Make the newly acquired image as current image.
-  current_image_ = image;
-  current_image_fence_ = std::move(scoped_acquire_fence_fd);
-  current_image_bound_ = false;
+  current_image_ref_.emplace(this, image, std::move(scoped_acquire_fence_fd));
 }
 
 void ImageReaderGLOwner::EnsureTexImageBound() {
-  if (current_image_bound_)
-    return;
-
-  base::ScopedFD acquire_fence =
-      base::ScopedFD(HANDLE_EINTR(dup(current_image_fence_.get())));
-
-  // Insert an EGL fence and make server wait for image to be available.
-  if (!gpu::InsertEglFenceAndWait(std::move(acquire_fence)))
-    return;
-
-  // Create EGL image from the AImage and bind it to the texture.
-  if (!gpu::CreateAndBindEglImage(current_image_, GetTextureId(), &loader_))
-    return;
-
-  current_image_bound_ = true;
-}
-
-bool ImageReaderGLOwner::MaybeDeleteCurrentImage() {
-  if (!current_image_)
-    return true;
-
-  if (external_image_refs_.count(current_image_) != 0)
-    return true;
-
-  // We should not need a fence if this image was never bound.
-  return gpu::DeleteAImageAsync(current_image_, &loader_);
+  if (current_image_ref_)
+    current_image_ref_->EnsureBound();
 }
 
 std::unique_ptr<base::android::ScopedHardwareBufferFenceSync>
 ImageReaderGLOwner::GetAHardwareBuffer() {
-  if (!current_image_)
+  if (!current_image_ref_)
     return nullptr;
 
   AHardwareBuffer* buffer = nullptr;
-  loader_.AImage_getHardwareBuffer(current_image_, &buffer);
+  loader_.AImage_getHardwareBuffer(current_image_ref_->image(), &buffer);
   if (!buffer)
     return nullptr;
 
-  auto fence_fd = base::ScopedFD(HANDLE_EINTR(dup(current_image_fence_.get())));
+  return std::make_unique<ScopedHardwareBufferImpl>(
+      this, current_image_ref_->image(),
+      base::android::ScopedHardwareBufferHandle::Create(buffer),
+      current_image_ref_->GetReadyFence());
+}
+
+void ImageReaderGLOwner::RegisterRefOnImage(AImage* image) {
+  DCHECK(image_reader_);
 
   // Add a ref that the caller will release.
-  external_image_refs_[current_image_].count++;
-  return std::make_unique<ScopedHardwareBufferImpl>(
-      this, current_image_,
-      base::android::ScopedHardwareBufferHandle::Create(buffer),
-      std::move(fence_fd));
+  image_refs_[image].count++;
 }
 
 void ImageReaderGLOwner::ReleaseRefOnImage(AImage* image,
                                            base::ScopedFD fence_fd) {
-  auto it = external_image_refs_.find(image);
-  DCHECK(it != external_image_refs_.end());
+  // During cleanup on losing the texture, all images are synchronously released
+  // and the |image_reader_| is destroyed.
+  if (!image_reader_)
+    return;
+
+  auto it = image_refs_.find(image);
+  DCHECK(it != image_refs_.end());
 
   auto& image_ref = it->second;
   DCHECK_GT(image_ref.count, 0u);
   image_ref.count--;
-
-  // TODO(khushalsagar): We should probably merge this fence with any
-  // pre-existing fence, and there are also a couple of other cases that are
-  // being ignored here (delete image async if it is the |current_image| using
-  // this fence, combining display compositor fence with the |fence_fd| here).
-  // But all of this is going to be automagically fixed with SharedImages, so
-  // need to do the proper thing once media switches to that.
-  image_ref.fence_fd = std::move(fence_fd);
+  image_ref.release_fence_fd =
+      MergeFDs(std::move(image_ref.release_fence_fd), std::move(fence_fd));
 
   if (image_ref.count > 0)
     return;
 
-  // Delete the image if it has no pending refs and it is not the current image.
-  if (image != current_image_) {
-    if (image_ref.fence_fd.is_valid())
-      loader_.AImage_deleteAsync(image, image_ref.fence_fd.release());
-    else
-      loader_.AImage_delete(image);
+  if (image_ref.release_fence_fd.is_valid()) {
+    loader_.AImage_deleteAsync(image,
+                               std::move(image_ref.release_fence_fd.release()));
+  } else {
+    loader_.AImage_delete(image);
   }
 
-  external_image_refs_.erase(it);
+  image_refs_.erase(it);
 }
 
 void ImageReaderGLOwner::GetTransformMatrix(float mtx[]) {
@@ -416,5 +411,46 @@ ImageReaderGLOwner::ImageRef::~ImageRef() = default;
 ImageReaderGLOwner::ImageRef::ImageRef(ImageRef&& other) = default;
 ImageReaderGLOwner::ImageRef& ImageReaderGLOwner::ImageRef::operator=(
     ImageRef&& other) = default;
+
+ImageReaderGLOwner::ScopedCurrentImageRef::ScopedCurrentImageRef(
+    ImageReaderGLOwner* texture_owner,
+    AImage* image,
+    base::ScopedFD ready_fence)
+    : texture_owner_(texture_owner),
+      image_(image),
+      ready_fence_(std::move(ready_fence)) {
+  DCHECK(image_);
+  texture_owner_->RegisterRefOnImage(image_);
+}
+
+ImageReaderGLOwner::ScopedCurrentImageRef::~ScopedCurrentImageRef() {
+  base::ScopedFD release_fence;
+  if (image_bound_)
+    release_fence = gpu::CreateEglFenceAndExportFd();
+  else
+    release_fence = std::move(ready_fence_);
+  texture_owner_->ReleaseRefOnImage(image_, std::move(release_fence));
+}
+
+base::ScopedFD ImageReaderGLOwner::ScopedCurrentImageRef::GetReadyFence()
+    const {
+  return base::ScopedFD(HANDLE_EINTR(dup(ready_fence_.get())));
+}
+
+void ImageReaderGLOwner::ScopedCurrentImageRef::EnsureBound() {
+  if (image_bound_)
+    return;
+
+  // Insert an EGL fence and make server wait for image to be available.
+  if (!gpu::InsertEglFenceAndWait(GetReadyFence()))
+    return;
+
+  // Create EGL image from the AImage and bind it to the texture.
+  if (!gpu::CreateAndBindEglImage(image_, texture_owner_->GetTextureId(),
+                                  &texture_owner_->loader_))
+    return;
+
+  image_bound_ = true;
+}
 
 }  // namespace media
