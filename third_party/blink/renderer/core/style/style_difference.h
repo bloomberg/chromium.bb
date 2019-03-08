@@ -40,13 +40,13 @@ class StyleDifference {
         visual_rect_update_(false),
         property_specific_differences_(0),
         scroll_anchor_disabling_property_changed_(false),
-        composited_reasons_changed_(false) {}
+        compositing_reasons_changed_(false) {}
 
   bool HasDifference() const {
     return paint_invalidation_type_ || layout_type_ ||
            property_specific_differences_ || recompute_overflow_ ||
            visual_rect_update_ || scroll_anchor_disabling_property_changed_ ||
-           composited_reasons_changed_;
+           compositing_reasons_changed_;
   }
 
   bool HasAtMostPropertySpecificDifferences(
@@ -167,8 +167,10 @@ class StyleDifference {
   void SetScrollAnchorDisablingPropertyChanged() {
     scroll_anchor_disabling_property_changed_ = true;
   }
-  bool CompositingReasonsChanged() const { return composited_reasons_changed_; }
-  void SetCompositingReasonsChanged() { composited_reasons_changed_ = true; }
+  bool CompositingReasonsChanged() const {
+    return compositing_reasons_changed_;
+  }
+  void SetCompositingReasonsChanged() { compositing_reasons_changed_ = true; }
 
  private:
   static constexpr int kPropertyDifferenceCount = 10;
@@ -189,7 +191,7 @@ class StyleDifference {
   unsigned visual_rect_update_ : 1;
   unsigned property_specific_differences_ : kPropertyDifferenceCount;
   unsigned scroll_anchor_disabling_property_changed_ : 1;
-  unsigned composited_reasons_changed_ : 1;
+  unsigned compositing_reasons_changed_ : 1;
 };
 
 CORE_EXPORT std::ostream& operator<<(std::ostream&, const StyleDifference&);
