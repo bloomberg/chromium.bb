@@ -7,10 +7,7 @@ import("//ui/base/ui_features.gni")
 
 assert(is_mac)
 
-translated_xibs = [
-  "SaveAccessoryView.xib",
-  "TaskManager.xib",
-]
+translated_xibs = [ "TaskManager.xib" ]
 
 mac_xib_bundle_data("chrome_xibs") {
   sources = translated_xibs

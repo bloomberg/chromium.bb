@@ -12,13 +12,12 @@
 #include "base/files/file_util.h"
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
-#include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
-#import "ui/base/cocoa/nib_loading.h"
+#import "ui/base/cocoa/controls/textfield_utils.h"
 #include "ui/base/cocoa/remote_views_window.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/shell_dialogs/select_file_policy.h"
@@ -48,6 +47,42 @@ NSString* GetDescriptionFromExtension(const base::FilePath::StringType& ext) {
   base::string16 ext_name = base::UTF8ToUTF16(ext);
   return l10n_util::GetNSStringF(IDS_APP_SAVEAS_EXTENSION_FORMAT,
                                  base::i18n::ToUpper(ext_name), ext_name);
+}
+
+base::scoped_nsobject<NSView> CreateAccessoryView() {
+  static constexpr CGFloat kControlPadding = 2;
+
+  base::scoped_nsobject<NSView> view(
+      [[NSView alloc] initWithFrame:NSMakeRect(0, 0, 350, 60)]);
+
+  // Create the label and center it vertically.
+  NSTextField* label = [TextFieldUtils
+      labelWithString:l10n_util::GetNSString(
+                          IDS_SAVE_PAGE_FILE_FORMAT_PROMPT_MAC)];
+  [label sizeToFit];
+  NSRect label_frame = [label frame];
+  label_frame.origin =
+      NSMakePoint(kControlPadding, NSMidY([view frame]) - NSMidY(label_frame));
+  [label setFrame:label_frame];
+  [view addSubview:label];
+
+  // Create the pop-up button, positioning it to the right of the label.
+  // Its X position needs to be slightly below the label's, so that the text
+  // baselines are aligned.
+  base::scoped_nsobject<NSPopUpButton> pop_up_button([[NSPopUpButton alloc]
+      initWithFrame:NSMakeRect(NSWidth(label_frame) + kControlPadding,
+                               NSMinY(label_frame) - 5, 230, 25)
+          pullsDown:NO]);
+  [pop_up_button setTag:kFileTypePopupTag];
+  [view addSubview:pop_up_button.get()];
+
+  // Resize the containing view to fit the controls.
+  CGFloat total_width = NSMaxX([pop_up_button frame]);
+  NSRect view_frame = [view frame];
+  view_frame.size.width = total_width + kControlPadding;
+  [view setFrame:view_frame];
+
+  return view;
 }
 
 }  // namespace
@@ -305,10 +340,8 @@ SelectFileDialogImpl::SetAccessoryView(
     int file_type_index,
     const base::FilePath::StringType& default_extension) {
   DCHECK(file_types);
-  NSView* accessory_view = ui::GetViewFromNib(@"SaveAccessoryView");
-  if (!accessory_view)
-    return base::scoped_nsobject<ExtensionDropdownHandler>();
-  [dialog setAccessoryView:accessory_view];
+  base::scoped_nsobject<NSView> accessory_view = CreateAccessoryView();
+  [dialog setAccessoryView:accessory_view.get()];
 
   NSPopUpButton* popup = [accessory_view viewWithTag:kFileTypePopupTag];
   DCHECK(popup);

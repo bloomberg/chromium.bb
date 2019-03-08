@@ -335,6 +335,9 @@ need to be translated for each locale.-->
       </message>
 
       <if expr="is_macosx">
+        <message name="IDS_SAVE_PAGE_FILE_FORMAT_PROMPT_MAC" desc="The title of the File Format label for saving a page.">
+          Format:
+        </message>
         <message name="IDS_SELECT_FOLDER_BUTTON_TITLE" desc="The name of the Select button in the folder selection dialog.">
           Select
         </message>

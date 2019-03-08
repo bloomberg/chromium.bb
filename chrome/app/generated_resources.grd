@@ -8035,9 +8035,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
         <message name="IDS_PLEASE_RELAUNCH_BROWSER" desc="Title of the alert when Chrome needs to be relaunched for a change/update to take effect.">
           Please Relaunch <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>
         </message>
-        <message name="IDS_SAVE_PAGE_FILE_FORMAT_PROMPT_MAC" desc="The title of the File Format label for saving a page.">
-          Format:
-        </message>
 
         <!-- Install from disk image -->
         <message name="IDS_INSTALL_FROM_DMG_TITLE" desc="Title of the dialog asking whether to install from the disk image.  Mac-only.">
