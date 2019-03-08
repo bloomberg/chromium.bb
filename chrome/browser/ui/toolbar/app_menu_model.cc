@@ -28,7 +28,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search/search.h"
-#include "chrome/browser/send_tab_to_self/send_tab_to_self_util.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -764,10 +763,6 @@ void AppMenuModel::Build() {
     AddItemWithStringId(IDC_ROUTE_MEDIA, IDS_MEDIA_ROUTER_MENU_ITEM_TITLE);
 
   AddItemWithStringId(IDC_FIND, IDS_FIND);
-
-  if (send_tab_to_self::ShouldOfferFeature(browser_)) {
-    AddItemWithStringId(IDC_SEND_TO_MY_DEVICES, IDS_SEND_TO_MY_DEVICES);
-  }
 
   if (extensions::util::IsNewBookmarkAppsEnabled() &&
       banners::AppBannerManager::IsExperimentalAppBannersEnabled()) {
