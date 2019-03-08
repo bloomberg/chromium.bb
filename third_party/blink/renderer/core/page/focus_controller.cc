@@ -1047,9 +1047,9 @@ bool FocusController::AdvanceFocusInDocumentOrder(
     }
 
     // Chrome doesn't want focus, so we should wrap focus.
-    ScopedFocusNavigation scope = ScopedFocusNavigation::CreateForDocument(
+    ScopedFocusNavigation doc_scope = ScopedFocusNavigation::CreateForDocument(
         *To<LocalFrame>(page_->MainFrame())->GetDocument(), owner_map);
-    element = FindFocusableElementRecursively(type, scope, owner_map);
+    element = FindFocusableElementRecursively(type, doc_scope, owner_map);
     element = FindFocusableElementDescendingDownIntoFrameDocument(type, element,
                                                                   owner_map);
 

@@ -803,8 +803,9 @@ bool SelectTextInsteadOfDrag(const Node& node) {
   if (HasEditableStyle(node))
     return true;
 
-  for (Node& node : NodeTraversal::InclusiveAncestorsOf(node)) {
-    if (node.IsHTMLElement() && ToHTMLElement(&node)->draggable())
+  for (Node& ancestor_node : NodeTraversal::InclusiveAncestorsOf(node)) {
+    if (ancestor_node.IsHTMLElement() &&
+        ToHTMLElement(&ancestor_node)->draggable())
       return false;
   }
 
@@ -1267,12 +1268,12 @@ bool DragController::StartDrag(LocalFrame* src,
       // a user can initiate a drag on a link without having any text
       // selected.  In this case, we should expand the selection to
       // the enclosing anchor element
-      if (Node* node = EnclosingAnchorElement(
+      if (Node* anchor = EnclosingAnchorElement(
               src->Selection()
                   .ComputeVisibleSelectionInDOMTreeDeprecated()
                   .Base())) {
         src->Selection().SetSelectionAndEndTyping(
-            SelectionInDOMTree::Builder().SelectAllChildren(*node).Build());
+            SelectionInDOMTree::Builder().SelectAllChildren(*anchor).Build());
       }
     }
 
