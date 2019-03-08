@@ -2278,13 +2278,7 @@
   },
 
   "PacHttpsUrlStrippingEnabled": {
-    "os": ["win", "linux", "mac", "chromeos"],
-    "test_policy": { "PacHttpsUrlStrippingEnabled": true },
-    "pref_mappings": [
-      { "pref": "proxy.pac_https_url_stripping_enabled",
-        "local_state": true
-      }
-    ]
+  "note": "This policy has been removed, see https://crbug.com/939760."
   },
 
   "RegisteredProtocolHandlers": {
@@ -2452,13 +2446,7 @@
   },
 
   "SSLVersionMax": {
-    "os": ["win", "linux", "mac", "chromeos"],
-    "test_policy": { "SSLVersionMax": "tls1.2" },
-    "pref_mappings": [
-      { "pref": "ssl.version_max",
-        "local_state": true
-      }
-    ]
+     "note": "This policy has been removed, see https://crbug.com/939760."
   },
 
   "CertificateTransparencyEnforcementDisabledForUrls": {
