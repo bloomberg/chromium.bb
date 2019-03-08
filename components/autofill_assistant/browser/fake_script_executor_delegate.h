@@ -37,6 +37,7 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
   void SetDetails(const Details& details) override;
   void ClearDetails() override;
   void SetProgress(int progress) override;
+  void SetProgressVisible(bool visible) override;
   void SetChips(std::unique_ptr<std::vector<Chip>> chips) override;
   void SetPaymentRequestOptions(
       std::unique_ptr<PaymentRequestOptions> options) override;

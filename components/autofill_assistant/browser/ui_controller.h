@@ -59,6 +59,10 @@ class UiController {
   // percentage.
   virtual void OnProgressChanged(int progress);
 
+  // Called when the current progress bar visibility has changed. If |visible|
+  // is true, then the bar is now shown.
+  virtual void OnProgressVisibilityChanged(bool visible);
+
   // Updates the area of the visible viewport that is accessible when the
   // overlay state is OverlayState::PARTIAL.
   //

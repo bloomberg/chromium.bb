@@ -89,6 +89,7 @@ class Controller : public ScriptExecutorDelegate,
   void SetDetails(const Details& details) override;
   void ClearDetails() override;
   void SetProgress(int progress) override;
+  void SetProgressVisible(bool visible) override;
   void SetChips(std::unique_ptr<std::vector<Chip>> chips) override;
 
   // Stops the controller with |reason| and destroys this. The current status
@@ -105,6 +106,7 @@ class Controller : public ScriptExecutorDelegate,
   void OnUserInteractionInsideTouchableArea() override;
   const Details* GetDetails() const override;
   int GetProgress() const override;
+  bool GetProgressVisible() const override;
   const std::vector<Chip>& GetSuggestions() const override;
   void SelectSuggestion(int index) override;
   const std::vector<Chip>& GetActions() const override;
@@ -251,6 +253,9 @@ class Controller : public ScriptExecutorDelegate,
 
   // Current progress.
   int progress_ = 0;
+
+  // Current visibility of the progress bar. It is initially visible.
+  bool progress_visible_ = true;
 
   // Current set of suggestions. May be null, but never empty.
   std::unique_ptr<std::vector<Chip>> suggestions_;
