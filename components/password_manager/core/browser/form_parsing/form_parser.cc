@@ -926,6 +926,9 @@ FormDataParser::~FormDataParser() = default;
 
 std::unique_ptr<PasswordForm> FormDataParser::Parse(const FormData& form_data,
                                                     Mode mode) {
+  if (form_data.fields.size() > kMaxParseableFields)
+    return nullptr;
+
   readonly_status_ = ReadonlyPasswordFields::kNoHeuristics;
   autofill::ValueElementVector all_possible_passwords;
   autofill::ValueElementVector all_possible_usernames;
