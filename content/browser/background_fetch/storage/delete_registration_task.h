@@ -39,6 +39,7 @@ class DeleteRegistrationTask : public background_fetch::DatabaseTask {
                              blink::ServiceWorkerStatusCode status);
 
   void DidDeleteCache(base::OnceClosure done_closure,
+                      int64_t trace_id,
                       blink::mojom::CacheStorageError error);
 
   void FinishWithError(blink::mojom::BackgroundFetchError error) override;

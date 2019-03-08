@@ -143,6 +143,7 @@ class ErrorCacheForTests : public mojom::blink::CacheStorageCache {
 
   void Match(mojom::blink::FetchAPIRequestPtr fetch_api_request,
              mojom::blink::CacheQueryOptionsPtr query_options,
+             int64_t trace_id,
              MatchCallback callback) override {
     last_error_web_cache_method_called_ = "dispatchMatch";
     CheckUrlIfProvided(fetch_api_request->url);
@@ -153,6 +154,7 @@ class ErrorCacheForTests : public mojom::blink::CacheStorageCache {
   }
   void MatchAll(mojom::blink::FetchAPIRequestPtr fetch_api_request,
                 mojom::blink::CacheQueryOptionsPtr query_options,
+                int64_t trace_id,
                 MatchAllCallback callback) override {
     last_error_web_cache_method_called_ = "dispatchMatchAll";
     if (fetch_api_request)
@@ -165,6 +167,7 @@ class ErrorCacheForTests : public mojom::blink::CacheStorageCache {
   }
   void Keys(mojom::blink::FetchAPIRequestPtr fetch_api_request,
             mojom::blink::CacheQueryOptionsPtr query_options,
+            int64_t trace_id,
             KeysCallback callback) override {
     last_error_web_cache_method_called_ = "dispatchKeys";
     if (fetch_api_request && !fetch_api_request->url.IsEmpty()) {
@@ -178,6 +181,7 @@ class ErrorCacheForTests : public mojom::blink::CacheStorageCache {
   }
   void Batch(Vector<mojom::blink::BatchOperationPtr> batch_operations,
              bool fail_on_duplicates,
+             int64_t trace_id,
              BatchCallback callback) override {
     last_error_web_cache_method_called_ = "dispatchBatch";
     CheckBatchOperationsIfProvided(batch_operations);
@@ -186,6 +190,7 @@ class ErrorCacheForTests : public mojom::blink::CacheStorageCache {
   void SetSideData(const KURL& url,
                    base::Time response_time,
                    const Vector<uint8_t>& side_data,
+                   int64_t trace_id,
                    SetSideDataCallback callback) override {
     std::move(callback).Run(
         blink::mojom::CacheStorageError::kErrorNotImplemented);
@@ -589,6 +594,7 @@ class MatchTestCache : public NotImplementedErrorCache {
   // From WebServiceWorkerCache:
   void Match(mojom::blink::FetchAPIRequestPtr fetch_api_request,
              mojom::blink::CacheQueryOptionsPtr query_options,
+             int64_t trace_id,
              MatchCallback callback) override {
     mojom::blink::MatchResultPtr result = mojom::blink::MatchResult::New();
     result->set_response(std::move(response_));
@@ -634,6 +640,7 @@ class KeysTestCache : public NotImplementedErrorCache {
 
   void Keys(mojom::blink::FetchAPIRequestPtr fetch_api_request,
             mojom::blink::CacheQueryOptionsPtr query_options,
+            int64_t trace_id,
             KeysCallback callback) override {
     mojom::blink::CacheKeysResultPtr result =
         mojom::blink::CacheKeysResult::New();
@@ -690,6 +697,7 @@ class MatchAllAndBatchTestCache : public NotImplementedErrorCache {
 
   void MatchAll(mojom::blink::FetchAPIRequestPtr fetch_api_request,
                 mojom::blink::CacheQueryOptionsPtr query_options,
+                int64_t trace_id,
                 MatchAllCallback callback) override {
     mojom::blink::MatchAllResultPtr result =
         mojom::blink::MatchAllResult::New();
@@ -698,6 +706,7 @@ class MatchAllAndBatchTestCache : public NotImplementedErrorCache {
   }
   void Batch(Vector<mojom::blink::BatchOperationPtr> batch_operations,
              bool fail_on_duplicates,
+             int64_t trace_id,
              BatchCallback callback) override {
     std::move(callback).Run(CacheStorageVerboseError::New(
         mojom::blink::CacheStorageError::kSuccess, String()));

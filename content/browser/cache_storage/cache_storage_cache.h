@@ -116,6 +116,7 @@ class CONTENT_EXPORT CacheStorageCache {
   // Returns ERROR_TYPE_NOT_FOUND if not found.
   void Match(blink::mojom::FetchAPIRequestPtr request,
              blink::mojom::CacheQueryOptionsPtr match_options,
+             int64_t trace_id,
              ResponseCallback callback);
 
   // Returns blink::mojom::CacheStorageError::kSuccess and matched
@@ -123,6 +124,7 @@ class CONTENT_EXPORT CacheStorageCache {
   // blink::mojom::CacheStorageError::kSuccess and an empty vector.
   void MatchAll(blink::mojom::FetchAPIRequestPtr request,
                 blink::mojom::CacheQueryOptionsPtr match_options,
+                int64_t trace_id,
                 ResponsesCallback callback);
 
   // Writes the side data (ex: V8 code cache) for the specified cache entry.
@@ -134,6 +136,7 @@ class CONTENT_EXPORT CacheStorageCache {
   void WriteSideData(CacheStorageCache::ErrorCallback callback,
                      const GURL& url,
                      base::Time expected_response_time,
+                     int64_t trace_id,
                      scoped_refptr<net::IOBuffer> buffer,
                      int buf_len);
 
@@ -152,10 +155,12 @@ class CONTENT_EXPORT CacheStorageCache {
   // http://crbug.com/486637
   void BatchOperation(std::vector<blink::mojom::BatchOperationPtr> operations,
                       bool fail_on_duplicates,
+                      int64_t trace_id,
                       VerboseErrorCallback callback,
                       BadMessageCallback bad_message_callback);
   void BatchDidGetUsageAndQuota(
       std::vector<blink::mojom::BatchOperationPtr> operations,
+      int64_t trace_id,
       VerboseErrorCallback callback,
       BadMessageCallback bad_message_callback,
       base::Optional<std::string> message,
@@ -170,16 +175,19 @@ class CONTENT_EXPORT CacheStorageCache {
   void BatchDidOneOperation(base::OnceClosure completion_closure,
                             VerboseErrorCallback error_callback,
                             base::Optional<std::string> message,
+                            int64_t trace_id,
                             blink::mojom::CacheStorageError error);
   // Callback invoked once all BatchDidOneOperation() calls have run.
   // Invokes |error_callback|.
   void BatchDidAllOperations(VerboseErrorCallback error_callback,
-                             base::Optional<std::string> message);
+                             base::Optional<std::string> message,
+                             int64_t trace_id);
 
   // Returns blink::mojom::CacheStorageError::kSuccess and a vector of
   // requests if there are no errors.
   void Keys(blink::mojom::FetchAPIRequestPtr request,
             blink::mojom::CacheQueryOptionsPtr options,
+            int64_t trace_id,
             RequestsCallback callback);
 
   // Closes the backend. Future operations that require the backend
@@ -199,11 +207,13 @@ class CONTENT_EXPORT CacheStorageCache {
   // in the dispatcher.
   void Put(blink::mojom::FetchAPIRequestPtr request,
            blink::mojom::FetchAPIResponsePtr response,
+           int64_t trace_id,
            ErrorCallback callback);
 
   // Similar to MatchAll, but returns the associated requests as well.
   void GetAllMatchedEntries(blink::mojom::FetchAPIRequestPtr request,
                             blink::mojom::CacheQueryOptionsPtr match_options,
+                            int64_t trace_id,
                             CacheEntriesCallback callback);
 
   // Async operations in progress will cancel and not run their callbacks.
@@ -317,6 +327,7 @@ class CONTENT_EXPORT CacheStorageCache {
   // Match callbacks
   void MatchImpl(blink::mojom::FetchAPIRequestPtr request,
                  blink::mojom::CacheQueryOptionsPtr match_options,
+                 int64_t trace_id,
                  ResponseCallback callback);
   void MatchDidMatchAll(
       ResponseCallback callback,
@@ -326,9 +337,11 @@ class CONTENT_EXPORT CacheStorageCache {
   // MatchAll callbacks
   void MatchAllImpl(blink::mojom::FetchAPIRequestPtr request,
                     blink::mojom::CacheQueryOptionsPtr options,
+                    int64_t trace_id,
                     ResponsesCallback callback);
   void MatchAllDidQueryCache(
       ResponsesCallback callback,
+      int64_t trace_id,
       blink::mojom::CacheStorageError error,
       std::unique_ptr<QueryCacheResults> query_cache_results);
 
@@ -336,6 +349,7 @@ class CONTENT_EXPORT CacheStorageCache {
   void WriteSideDataDidGetQuota(ErrorCallback callback,
                                 const GURL& url,
                                 base::Time expected_response_time,
+                                int64_t trace_id,
                                 scoped_refptr<net::IOBuffer> buffer,
                                 int buf_len,
                                 blink::mojom::QuotaStatusCode status_code,
@@ -345,12 +359,14 @@ class CONTENT_EXPORT CacheStorageCache {
   void WriteSideDataImpl(ErrorCallback callback,
                          const GURL& url,
                          base::Time expected_response_time,
+                         int64_t trace_id,
                          scoped_refptr<net::IOBuffer> buffer,
                          int buf_len);
   void WriteSideDataDidGetUsageAndQuota(
       ErrorCallback callback,
       const GURL& url,
       base::Time expected_response_time,
+      int64_t trace_id,
       scoped_refptr<net::IOBuffer> buffer,
       int buf_len,
       blink::mojom::QuotaStatusCode status_code,
@@ -358,6 +374,7 @@ class CONTENT_EXPORT CacheStorageCache {
       int64_t quota);
   void WriteSideDataDidOpenEntry(ErrorCallback callback,
                                  base::Time expected_response_time,
+                                 int64_t trace_id,
                                  scoped_refptr<net::IOBuffer> buffer,
                                  int buf_len,
                                  std::unique_ptr<disk_cache::Entry*> entry_ptr,
@@ -365,6 +382,7 @@ class CONTENT_EXPORT CacheStorageCache {
   void WriteSideDataDidReadMetaData(
       ErrorCallback callback,
       base::Time expected_response_time,
+      int64_t trace_id,
       scoped_refptr<net::IOBuffer> buffer,
       int buf_len,
       disk_cache::ScopedEntryPtr entry,
@@ -375,12 +393,15 @@ class CONTENT_EXPORT CacheStorageCache {
       int expected_bytes,
       std::unique_ptr<content::proto::CacheResponse> response,
       int side_data_size_before_write,
+      int64_t trace_id,
       int rv);
 
   // Puts the request and response object in the cache. The response body (if
   // present) is stored in the cache, but not the request body. Returns OK on
   // success.
-  void Put(blink::mojom::BatchOperationPtr operation, ErrorCallback callback);
+  void Put(blink::mojom::BatchOperationPtr operation,
+           int64_t trace_id,
+           ErrorCallback callback);
   void PutImpl(std::unique_ptr<PutContext> put_context);
   void PutDidDeleteEntry(std::unique_ptr<PutContext> put_context,
                          blink::mojom::CacheStorageError error);
@@ -412,8 +433,10 @@ class CONTENT_EXPORT CacheStorageCache {
   // GetAllMatchedEntries callbacks.
   void GetAllMatchedEntriesImpl(blink::mojom::FetchAPIRequestPtr request,
                                 blink::mojom::CacheQueryOptionsPtr options,
+                                int64_t trace_id,
                                 CacheEntriesCallback callback);
   void GetAllMatchedEntriesDidQueryCache(
+      int64_t trace_id,
       CacheEntriesCallback callback,
       blink::mojom::CacheStorageError error,
       std::unique_ptr<QueryCacheResults> query_cache_results);
@@ -432,9 +455,11 @@ class CONTENT_EXPORT CacheStorageCache {
   // Keys callbacks.
   void KeysImpl(blink::mojom::FetchAPIRequestPtr request,
                 blink::mojom::CacheQueryOptionsPtr options,
+                int64_t trace_id,
                 RequestsCallback callback);
   void KeysDidQueryCache(
       RequestsCallback callback,
+      int64_t trace_id,
       blink::mojom::CacheStorageError error,
       std::unique_ptr<QueryCacheResults> query_cache_results);
 

@@ -114,7 +114,8 @@ class MODULES_EXPORT Cache final : public ScriptWrappable {
                         const String& method_name,
                         const HeapVector<Member<Request>>&,
                         const HeapVector<Member<Response>>&,
-                        ExceptionState&);
+                        ExceptionState&,
+                        int64_t trace_id);
   ScriptPromise KeysImpl(ScriptState*,
                          const Request*,
                          const CacheQueryOptions*);

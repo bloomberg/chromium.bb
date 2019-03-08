@@ -49,6 +49,10 @@ void TracedValue::SetString(const char* name, const String& value) {
   traced_value_.SetString(name, adaptor.AsStringPiece());
 }
 
+void TracedValue::SetValue(const char* name, TracedValue* value) {
+  traced_value_.SetValue(name, &value->traced_value_);
+}
+
 void TracedValue::SetStringWithCopiedName(const char* name,
                                           const String& value) {
   StringUTF8Adaptor adaptor(value);

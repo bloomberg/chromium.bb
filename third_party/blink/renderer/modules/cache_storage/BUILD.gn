@@ -12,6 +12,8 @@ blink_modules_sources("cache_storage") {
     "cache_storage.h",
     "cache_storage_error.cc",
     "cache_storage_error.h",
+    "cache_storage_trace_utils.cc",
+    "cache_storage_trace_utils.h",
     "global_cache_storage.cc",
     "global_cache_storage.h",
     "inspector_cache_storage_agent.cc",

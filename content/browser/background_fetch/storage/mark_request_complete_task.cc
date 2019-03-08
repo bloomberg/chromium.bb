@@ -18,6 +18,7 @@
 #include "content/common/service_worker/service_worker_utils.h"
 #include "services/network/public/cpp/cors/cors.h"
 #include "storage/browser/blob/blob_impl.h"
+#include "third_party/blink/public/common/cache_storage/cache_storage_utils.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom.h"
 
 namespace content {
@@ -107,6 +108,11 @@ void MarkRequestCompleteTask::StoreResponse(base::OnceClosure done_closure) {
 void MarkRequestCompleteTask::DidGetIsQuotaAvailable(
     base::OnceClosure done_closure,
     bool is_available) {
+  int64_t trace_id = blink::cache_storage::CreateTraceId();
+  TRACE_EVENT_WITH_FLOW0("CacheStorage",
+                         "MarkRequestCompleteTask::DidGetIsQuotaAvailable",
+                         TRACE_ID_GLOBAL(trace_id), TRACE_EVENT_FLAG_FLOW_OUT);
+
   if (!is_available) {
     FinishWithError(blink::mojom::BackgroundFetchError::QUOTA_EXCEEDED);
     return;
@@ -114,9 +120,10 @@ void MarkRequestCompleteTask::DidGetIsQuotaAvailable(
 
   CacheStorageHandle cache_storage = GetOrOpenCacheStorage(registration_id_);
   cache_storage.value()->OpenCache(
-      /* cache_name= */ registration_id_.unique_id(),
+      /* cache_name= */ registration_id_.unique_id(), trace_id,
       base::BindOnce(&MarkRequestCompleteTask::DidOpenCache,
-                     weak_factory_.GetWeakPtr(), std::move(done_closure)));
+                     weak_factory_.GetWeakPtr(), std::move(done_closure),
+                     trace_id));
 }
 
 void MarkRequestCompleteTask::PopulateResponseBody(
@@ -144,8 +151,13 @@ void MarkRequestCompleteTask::PopulateResponseBody(
 
 void MarkRequestCompleteTask::DidOpenCache(
     base::OnceClosure done_closure,
+    int64_t trace_id,
     CacheStorageCacheHandle handle,
     blink::mojom::CacheStorageError error) {
+  TRACE_EVENT_WITH_FLOW0("CacheStorage",
+                         "MarkRequestCompleteTask::DidOpenCache",
+                         TRACE_ID_GLOBAL(trace_id),
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
   if (error != blink::mojom::CacheStorageError::kSuccess) {
     SetStorageError(BackgroundFetchStorageError::kCacheStorageError);
     CreateAndStoreCompletedRequest(std::move(done_closure));
@@ -165,6 +177,7 @@ void MarkRequestCompleteTask::DidOpenCache(
   // overwritten here, it should be written back.
   handle.value()->Put(
       std::move(request), BackgroundFetchSettledFetch::CloneResponse(response_),
+      trace_id,
       base::BindOnce(&MarkRequestCompleteTask::DidWriteToCache,
                      weak_factory_.GetWeakPtr(), std::move(handle),
                      std::move(done_closure)));

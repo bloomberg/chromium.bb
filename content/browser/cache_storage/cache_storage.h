@@ -102,25 +102,32 @@ class CONTENT_EXPORT CacheStorage : public CacheStorageCacheObserver {
   // of the cache. Once all handles to a cache are deleted the cache is deleted.
   // The cache will also be deleted in the CacheStorage's destructor so be sure
   // to check the handle's value before using it.
-  void OpenCache(const std::string& cache_name, CacheAndErrorCallback callback);
+  void OpenCache(const std::string& cache_name,
+                 int64_t trace_id,
+                 CacheAndErrorCallback callback);
 
   // Calls the callback with whether or not the cache exists.
-  void HasCache(const std::string& cache_name, BoolAndErrorCallback callback);
+  void HasCache(const std::string& cache_name,
+                int64_t trace_id,
+                BoolAndErrorCallback callback);
 
   // Deletes the cache if it exists. If it doesn't exist,
   // blink::mojom::CacheStorageError::kErrorNotFound is returned. Any
   // existing CacheStorageCacheHandle(s) to the cache will remain valid but
   // future CacheStorage operations won't be able to access the cache. The cache
   // isn't actually erased from disk until the last handle is dropped.
-  void DoomCache(const std::string& cache_name, ErrorCallback callback);
+  void DoomCache(const std::string& cache_name,
+                 int64_t trace_id,
+                 ErrorCallback callback);
 
   // Calls the callback with the cache index.
-  void EnumerateCaches(IndexCallback callback);
+  void EnumerateCaches(int64_t trace_id, IndexCallback callback);
 
   // Calls match on the cache with the given |cache_name|.
   void MatchCache(const std::string& cache_name,
                   blink::mojom::FetchAPIRequestPtr request,
                   blink::mojom::CacheQueryOptionsPtr match_options,
+                  int64_t trace_id,
                   CacheStorageCache::ResponseCallback callback);
 
   // Calls match on all of the caches in parallel, calling |callback| with the
@@ -129,12 +136,14 @@ class CONTENT_EXPORT CacheStorage : public CacheStorageCacheObserver {
   // blink::mojom::CacheStorageError::kErrorNotFound.
   void MatchAllCaches(blink::mojom::FetchAPIRequestPtr request,
                       blink::mojom::CacheQueryOptionsPtr match_options,
+                      int64_t trace_id,
                       CacheStorageCache::ResponseCallback callback);
 
   // Puts the request/response pair in the cache.
   void WriteToCache(const std::string& cache_name,
                     blink::mojom::FetchAPIRequestPtr request,
                     blink::mojom::FetchAPIResponsePtr response,
+                    int64_t trace_id,
                     CacheStorage::ErrorCallback callback);
 
   // Sums the sizes of each cache and closes them. Runs |callback| with the
@@ -195,22 +204,29 @@ class CONTENT_EXPORT CacheStorage : public CacheStorageCacheObserver {
 
   // The Open and CreateCache callbacks are below.
   void OpenCacheImpl(const std::string& cache_name,
+                     int64_t trace_id,
                      CacheAndErrorCallback callback);
   void CreateCacheDidCreateCache(const std::string& cache_name,
+                                 int64_t trace_id,
                                  CacheAndErrorCallback callback,
                                  std::unique_ptr<CacheStorageCache> cache);
   void CreateCacheDidWriteIndex(CacheAndErrorCallback callback,
                                 CacheStorageCacheHandle cache_handle,
+                                int64_t trace_id,
                                 bool success);
 
   // The HasCache callbacks are below.
   void HasCacheImpl(const std::string& cache_name,
+                    int64_t trace_id,
                     BoolAndErrorCallback callback);
 
   // The DeleteCache callbacks are below.
-  void DoomCacheImpl(const std::string& cache_name, ErrorCallback callback);
+  void DoomCacheImpl(const std::string& cache_name,
+                     int64_t trace_id,
+                     ErrorCallback callback);
   void DeleteCacheDidWriteIndex(CacheStorageCacheHandle cache_handle,
                                 ErrorCallback callback,
+                                int64_t trace_id,
                                 bool success);
   void DeleteCacheFinalize(CacheStorageCache* doomed_cache);
   void DeleteCacheDidGetSize(CacheStorageCache* doomed_cache,
@@ -218,14 +234,16 @@ class CONTENT_EXPORT CacheStorage : public CacheStorageCacheObserver {
   void DeleteCacheDidCleanUp(bool success);
 
   // The EnumerateCache callbacks are below.
-  void EnumerateCachesImpl(IndexCallback callback);
+  void EnumerateCachesImpl(int64_t trace_id, IndexCallback callback);
 
   // The MatchCache callbacks are below.
   void MatchCacheImpl(const std::string& cache_name,
                       blink::mojom::FetchAPIRequestPtr request,
                       blink::mojom::CacheQueryOptionsPtr match_options,
+                      int64_t trace_id,
                       CacheStorageCache::ResponseCallback callback);
   void MatchCacheDidMatch(CacheStorageCacheHandle cache_handle,
+                          int64_t trace_id,
                           CacheStorageCache::ResponseCallback callback,
                           blink::mojom::CacheStorageError error,
                           blink::mojom::FetchAPIResponsePtr response);
@@ -233,20 +251,24 @@ class CONTENT_EXPORT CacheStorage : public CacheStorageCacheObserver {
   // The MatchAllCaches callbacks are below.
   void MatchAllCachesImpl(blink::mojom::FetchAPIRequestPtr request,
                           blink::mojom::CacheQueryOptionsPtr match_options,
+                          int64_t trace_id,
                           CacheStorageCache::ResponseCallback callback);
   void MatchAllCachesDidMatch(CacheStorageCacheHandle cache_handle,
                               CacheMatchResponse* out_match_response,
                               const base::RepeatingClosure& barrier_closure,
+                              int64_t trace_id,
                               blink::mojom::CacheStorageError error,
                               blink::mojom::FetchAPIResponsePtr response);
   void MatchAllCachesDidMatchAll(
       std::unique_ptr<std::vector<CacheMatchResponse>> match_responses,
+      int64_t trace_id,
       CacheStorageCache::ResponseCallback callback);
 
   // WriteToCache callbacks.
   void WriteToCacheImpl(const std::string& cache_name,
                         blink::mojom::FetchAPIRequestPtr request,
                         blink::mojom::FetchAPIResponsePtr response,
+                        int64_t trace_id,
                         CacheStorage::ErrorCallback callback);
 
   void GetSizeThenCloseAllCachesImpl(SizeCallback callback);

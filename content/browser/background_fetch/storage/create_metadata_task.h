@@ -59,7 +59,8 @@ class CreateMetadataTask : public DatabaseTask {
 
   void InitializeMetadataProto();
 
-  void DidOpenCache(CacheStorageCacheHandle handle,
+  void DidOpenCache(int64_t trace_id,
+                    CacheStorageCacheHandle handle,
                     blink::mojom::CacheStorageError error);
 
   void DidStoreRequests(CacheStorageCacheHandle handle,

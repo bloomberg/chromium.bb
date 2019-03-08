@@ -44,6 +44,7 @@ class MarkRequestCompleteTask : public DatabaseTask {
                               bool is_available);
 
   void DidOpenCache(base::OnceClosure done_closure,
+                    int64_t trace_id,
                     CacheStorageCacheHandle handle,
                     blink::mojom::CacheStorageError error);
 

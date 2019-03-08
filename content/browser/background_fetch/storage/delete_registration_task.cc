@@ -13,6 +13,7 @@
 #include "content/browser/background_fetch/storage/database_helpers.h"
 #include "content/browser/cache_storage/cache_storage_manager.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
+#include "third_party/blink/public/common/cache_storage/cache_storage_utils.h"
 
 namespace content {
 
@@ -57,6 +58,10 @@ DeleteRegistrationTask::DeleteRegistrationTask(
 DeleteRegistrationTask::~DeleteRegistrationTask() = default;
 
 void DeleteRegistrationTask::Start() {
+  int64_t trace_id = blink::cache_storage::CreateTraceId();
+  TRACE_EVENT_WITH_FLOW0("CacheStorage", "DeleteRegistrationTask::Start",
+                         TRACE_ID_GLOBAL(trace_id), TRACE_EVENT_FLAG_FLOW_OUT);
+
   base::RepeatingClosure barrier_closure = base::BarrierClosure(
       2u, base::BindOnce(&DeleteRegistrationTask::FinishWithError,
                          weak_factory_.GetWeakPtr(),
@@ -74,9 +79,9 @@ void DeleteRegistrationTask::Start() {
 
   CacheStorageHandle cache_storage = GetOrOpenCacheStorage(origin_, unique_id_);
   cache_storage.value()->DoomCache(
-      /* cache_name= */ unique_id_,
+      /* cache_name= */ unique_id_, trace_id,
       base::BindOnce(&DeleteRegistrationTask::DidDeleteCache,
-                     weak_factory_.GetWeakPtr(), barrier_closure));
+                     weak_factory_.GetWeakPtr(), barrier_closure, trace_id));
 }
 
 void DeleteRegistrationTask::DidGetRegistration(
@@ -132,7 +137,11 @@ void DeleteRegistrationTask::DidDeleteRegistration(
 
 void DeleteRegistrationTask::DidDeleteCache(
     base::OnceClosure done_closure,
+    int64_t trace_id,
     blink::mojom::CacheStorageError error) {
+  TRACE_EVENT_WITH_FLOW0("CacheStorage",
+                         "DeleteRegistrationTask::DidDeleteCache",
+                         TRACE_ID_GLOBAL(trace_id), TRACE_EVENT_FLAG_FLOW_IN);
   if (error != blink::mojom::CacheStorageError::kSuccess &&
       error != blink::mojom::CacheStorageError::kErrorNotFound) {
     SetStorageError(BackgroundFetchStorageError::kCacheStorageError);
