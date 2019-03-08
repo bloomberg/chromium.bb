@@ -189,11 +189,18 @@ class MediaStreamConstraintsUtilAudioTest
   std::unique_ptr<LocalMediaStreamAudioSource> GetLocalMediaStreamAudioSource(
       bool enable_system_echo_canceller,
       bool disable_local_echo,
-      bool render_to_associated_sink) {
+      bool render_to_associated_sink,
+      bool enable_experimental_echo_canceller = false) {
     blink::MediaStreamDevice device;
     device.type = GetMediaStreamType();
+
+    int effects = 0;
     if (enable_system_echo_canceller)
-      device.input.set_effects(media::AudioParameters::ECHO_CANCELLER);
+      effects |= media::AudioParameters::ECHO_CANCELLER;
+    if (enable_experimental_echo_canceller)
+      effects |= media::AudioParameters::EXPERIMENTAL_ECHO_CANCELLER;
+    device.input.set_effects(effects);
+
     if (render_to_associated_sink)
       device.matched_output_device_id = std::string("some_device_id");
 
@@ -2111,6 +2118,21 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, UsedAndUnusedSources) {
     EXPECT_EQ(result.audio_processing_properties().echo_cancellation_type,
               EchoCancellationType::kEchoCancellationAec3);
   }
+}
+
+TEST_P(MediaStreamConstraintsUtilAudioTest, ExperimetanlEcWithSource) {
+  std::unique_ptr<LocalMediaStreamAudioSource> source =
+      GetLocalMediaStreamAudioSource(
+          false /* enable_system_echo_canceller */,
+          false /* disable_local_echo */, false /* render_to_associated_sink */,
+          true /* enable_experimental_echo_canceller */);
+
+  constraint_factory_.Reset();
+  constraint_factory_.basic().echo_cancellation.SetExact(false);
+
+  auto result = SelectSettingsAudioCapture(
+      source.get(), constraint_factory_.CreateWebMediaConstraints());
+  EXPECT_TRUE(result.HasValue());
 }
 
 INSTANTIATE_TEST_SUITE_P(,
