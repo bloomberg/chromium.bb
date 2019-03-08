@@ -74,14 +74,16 @@ class FakeModuleInstallerBackend extends ModuleInstallerBackend {
         // Get list of all files at path where SplitCompat looks for downloaded modules.
         // May change in future releases of the Play Core SDK.
         File[] srcModuleFiles = new File(MODULES_SRC_DIRECTORY_PATH).listFiles();
+        // Check if any apks for the module are actually installed.
+        boolean no_module_apks_installed = true;
 
         for (File srcModuleFile : srcModuleFiles) {
-            // Take only source APK files.
-            if (srcModuleFile.getName().endsWith(".apk")) {
+            // Take only source APK files of the specified module.
+            String srcModuleFileName = srcModuleFile.getName();
+            if (srcModuleFileName.endsWith(".apk") && srcModuleFileName.startsWith(moduleName)) {
                 // Construct destination file corresponding to each source file.
                 File dstModuleFile = joinPaths(context.getFilesDir().getPath(), "splitcompat",
-                        Integer.toString(versionCode), "unverified-splits",
-                        srcModuleFile.getName());
+                        Integer.toString(versionCode), "unverified-splits", srcModuleFileName);
 
                 // NOTE: Need to give Chrome storage permission for this to work.
                 try {
@@ -95,11 +97,20 @@ class FakeModuleInstallerBackend extends ModuleInstallerBackend {
                         FileOutputStream ostream = new FileOutputStream(dstModuleFile)) {
                     ostream.getChannel().transferFrom(
                             istream.getChannel(), 0, istream.getChannel().size());
+                    if (srcModuleFileName.equals(moduleName + ".apk")) {
+                        // Base apk of the module must be installed for install
+                        // to be successful.
+                        no_module_apks_installed = false;
+                    }
                 } catch (RuntimeException | IOException e) {
                     Log.e(TAG, "Failed to install module apk %s", dstModuleFile.getName(), e);
                     return false;
                 }
             }
+        }
+
+        if (no_module_apks_installed) {
+            return false;
         }
 
         // Check that the module's signature matches Chrome's.
