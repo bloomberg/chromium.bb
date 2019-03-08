@@ -4314,7 +4314,7 @@ BEGIN_PARTITION_SEARCH:
     if (partition_timer_on) {
       aom_usec_timer_mark(&partition_timer);
       int64_t time = aom_usec_timer_elapsed(&partition_timer);
-      partition_times[PARTITION_VERT] += time;
+      partition_times[PARTITION_HORZ] += time;
       partition_timer_on = 0;
     }
 #endif
@@ -4404,7 +4404,7 @@ BEGIN_PARTITION_SEARCH:
     if (partition_timer_on) {
       aom_usec_timer_mark(&partition_timer);
       int64_t time = aom_usec_timer_elapsed(&partition_timer);
-      partition_times[PARTITION_HORZ] += time;
+      partition_times[PARTITION_VERT] += time;
       partition_timer_on = 0;
     }
 #endif
