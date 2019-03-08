@@ -24,7 +24,6 @@ class WindowTransientDescendantIterator {
       const WindowTransientDescendantIterator& other) = default;
 
   // Iterates over |root_window| and all of its transient descendants.
-  // Note |root_window| must not have a transient parent.
   explicit WindowTransientDescendantIterator(aura::Window* root_window);
 
   // Prefix increment operator.  This assumes there are more items (i.e.
@@ -73,6 +72,8 @@ class WindowTransientDescendantIteratorRange {
   WindowTransientDescendantIterator end_;
 };
 
+// Returns the range to iterate over the entire transient-window hierarchy which
+// |window| belongs to.
 WindowTransientDescendantIteratorRange GetTransientTreeIterator(
     aura::Window* window);
 

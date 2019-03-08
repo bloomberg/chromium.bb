@@ -106,12 +106,14 @@ OverviewItem::OverviewItem(aura::Window* window,
       overview_session_(overview_session),
       overview_grid_(overview_grid) {
   CreateWindowLabel();
-  GetWindow()->AddObserver(this);
+  for (auto* window_iter : wm::GetTransientTreeIterator(GetWindow()))
+    window_iter->AddObserver(this);
   GetWindow()->SetProperty(ash::kIsShowingInOverviewKey, true);
 }
 
 OverviewItem::~OverviewItem() {
-  GetWindow()->RemoveObserver(this);
+  for (auto* window_iter : wm::GetTransientTreeIterator(GetWindow()))
+    window_iter->RemoveObserver(this);
   GetWindow()->ClearProperty(ash::kIsShowingInOverviewKey);
 }
 
@@ -633,12 +635,25 @@ void OverviewItem::OnWindowBoundsChanged(aura::Window* window,
                                          const gfx::Rect& old_bounds,
                                          const gfx::Rect& new_bounds,
                                          ui::PropertyChangeReason reason) {
-  if (reason == ui::PropertyChangeReason::NOT_FROM_ANIMATION)
-    transform_window_.ResizeMinimizedWidgetIfNeeded();
+  if (reason == ui::PropertyChangeReason::NOT_FROM_ANIMATION) {
+    if (window == GetWindow()) {
+      transform_window_.ResizeMinimizedWidgetIfNeeded();
+    } else {
+      // Transient window is repositioned. The new position within the overview
+      // item needs to be recomputed.
+      SetBounds(target_bounds_, OVERVIEW_ANIMATION_NONE);
+    }
+  }
 }
 
 void OverviewItem::OnWindowDestroying(aura::Window* window) {
-  window->RemoveObserver(this);
+  // Stops observing the window and all of its transient descendents.
+  for (auto* window_iter : wm::WindowTransientDescendantIteratorRange(
+           wm::WindowTransientDescendantIterator(window))) {
+    window_iter->RemoveObserver(this);
+  }
+  if (window != GetWindow())
+    return;
   transform_window_.OnWindowDestroyed();
 
   if (is_being_dragged_) {
@@ -648,6 +663,8 @@ void OverviewItem::OnWindowDestroying(aura::Window* window) {
 }
 
 void OverviewItem::OnWindowTitleChanged(aura::Window* window) {
+  if (window != GetWindow())
+    return;
   // TODO(flackr): Maybe add the new title to a vector of titles so that we can
   // filter any of the titles the window had while in the overview session.
   caption_container_view_->SetTitle(window->GetTitle());
