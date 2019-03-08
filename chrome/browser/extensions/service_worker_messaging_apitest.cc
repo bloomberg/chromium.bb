@@ -8,6 +8,7 @@
 #include "components/version_info/version_info.h"
 #include "extensions/common/extension_features.h"
 #include "extensions/test/extension_test_message_listener.h"
+#include "extensions/test/result_catcher.h"
 
 namespace extensions {
 
@@ -111,6 +112,51 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerMessagingTest, WorkerToTab) {
   ASSERT_TRUE(
       RunExtensionTest("service_worker/messaging/send_message_worker_to_tab"))
       << message_;
+}
+
+// Tests port creation (chrome.runtime.connect) from content script to an
+// extension SW and disconnecting the port.
+IN_PROC_BROWSER_TEST_P(ServiceWorkerMessagingTest,
+                       TabToWorker_ConnectAndDisconnect) {
+  // Load an extension that will inject content script to |new_web_contents|.
+  const Extension* extension = LoadExtension(test_data_dir_.AppendASCII(
+      "service_worker/messaging/connect_to_worker/connect_and_disconnect"));
+  ASSERT_TRUE(extension);
+
+  // Load the tab with content script to open a Port to |extension|.
+  // Test concludes when extension gets notified about port being disconnected.
+  ResultCatcher catcher;
+  {
+    ASSERT_TRUE(StartEmbeddedTestServer());
+    content::WebContents* new_web_contents =
+        AddTab(browser(),
+               embedded_test_server()->GetURL("/extensions/test_file.html"));
+    EXPECT_TRUE(new_web_contents);
+  }
+  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+}
+
+// Tests port creation (chrome.runtime.connect) from content script to an
+// extension and sending message through the port.
+// TODO(lazyboy): Refactor common parts with TabToWorker_ConnectAndDisconnect.
+IN_PROC_BROWSER_TEST_P(ServiceWorkerMessagingTest,
+                       TabToWorker_ConnectAndPostMessage) {
+  // Load an extension that will inject content script to |new_web_contents|.
+  const Extension* extension = LoadExtension(test_data_dir_.AppendASCII(
+      "service_worker/messaging/connect_to_worker/post_message"));
+  ASSERT_TRUE(extension);
+
+  // Load the tab with content script to send message to |extension| via port.
+  // Test concludes when the content script receives a reply.
+  ResultCatcher catcher;
+  {
+    ASSERT_TRUE(StartEmbeddedTestServer());
+    content::WebContents* new_web_contents =
+        AddTab(browser(),
+               embedded_test_server()->GetURL("/extensions/test_file.html"));
+    EXPECT_TRUE(new_web_contents);
+  }
+  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
 INSTANTIATE_TEST_SUITE_P(ServiceWorkerMessagingTestWithNativeBindings,

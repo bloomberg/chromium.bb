@@ -19,6 +19,7 @@
 #include "extensions/renderer/api_activity_logger.h"
 #include "extensions/renderer/bindings/api_binding_util.h"
 #include "extensions/renderer/bindings/get_per_context_data.h"
+#include "extensions/renderer/get_script_context.h"
 #include "extensions/renderer/ipc_message_sender.h"
 #include "extensions/renderer/message_target.h"
 #include "extensions/renderer/native_extension_bindings_system.h"
@@ -115,8 +116,7 @@ void NativeRendererMessagingService::PostMessageToPort(
     const PortId& port_id,
     int routing_id,
     std::unique_ptr<Message> message) {
-  ScriptContext* script_context =
-      ScriptContextSet::GetContextByV8Context(context);
+  ScriptContext* script_context = GetScriptContextFromV8Context(context);
   CHECK(script_context);
   if (!ScriptContextIsValid(script_context))
     return;
@@ -128,8 +128,7 @@ void NativeRendererMessagingService::PostMessageToPort(
 void NativeRendererMessagingService::ClosePort(v8::Local<v8::Context> context,
                                                const PortId& port_id,
                                                int routing_id) {
-  ScriptContext* script_context =
-      ScriptContextSet::GetContextByV8Context(context);
+  ScriptContext* script_context = GetScriptContextFromV8Context(context);
   CHECK(script_context);
 
   MessagingPerContextData* data = GetPerContextData<MessagingPerContextData>(
