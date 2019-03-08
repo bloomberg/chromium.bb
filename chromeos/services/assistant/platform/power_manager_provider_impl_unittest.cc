@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
 #include "services/device/public/cpp/test/test_wake_lock_provider.h"
 #include "services/device/public/mojom/constants.mojom.h"
@@ -31,14 +30,19 @@ class PowerManagerProviderImplTest : public testing::Test {
       : scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::IO),
         wake_lock_provider_(
-            connector_factory_.RegisterInstance(device::mojom::kServiceName)) {
-    fake_power_manager_client_ = new chromeos::FakePowerManagerClient;
-    chromeos::DBusThreadManager::GetSetterForTesting()->SetPowerManagerClient(
-        base::WrapUnique(fake_power_manager_client_));
+            connector_factory_.RegisterInstance(device::mojom::kServiceName)) {}
+  ~PowerManagerProviderImplTest() override = default;
 
+  void SetUp() override {
+    chromeos::PowerManagerClient::Initialize();
     power_manager_provider_impl_ = std::make_unique<PowerManagerProviderImpl>(
         connector_factory_.GetDefaultConnector(),
         scoped_task_environment_.GetMainThreadTaskRunner());
+  }
+
+  void TearDown() override {
+    power_manager_provider_impl_.reset();
+    chromeos::PowerManagerClient::Shutdown();
   }
 
  protected:
@@ -107,9 +111,6 @@ class PowerManagerProviderImplTest : public testing::Test {
   service_manager::TestConnectorFactory connector_factory_;
 
   device::TestWakeLockProvider wake_lock_provider_;
-
-  // Owned by chromeos::DBusThreadManager.
-  chromeos::FakePowerManagerClient* fake_power_manager_client_;
 
   std::unique_ptr<PowerManagerProviderImpl> power_manager_provider_impl_;
 
