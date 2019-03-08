@@ -36,19 +36,29 @@ class JSONTraceExporter {
   using ArgumentNameFilterPredicate =
       base::RepeatingCallback<bool(const char* arg_name)>;
 
+  // Given trace event name and category group name, returns a argument name
+  // filter predicate callback that can filter arguments for the given event.
+  using ArgumentFilterPredicate =
+      base::RepeatingCallback<bool(const char* category_group_name,
+                                   const char* event_name,
+                                   ArgumentNameFilterPredicate*)>;
+
   using OnTraceEventJSONCallback =
       base::RepeatingCallback<void(const std::string& json,
                                    base::DictionaryValue* metadata,
                                    bool has_more)>;
 
-  JSONTraceExporter(bool filter_args, OnTraceEventJSONCallback callback);
+  JSONTraceExporter(ArgumentFilterPredicate argument_filter_predicate,
+                    OnTraceEventJSONCallback callback);
   virtual ~JSONTraceExporter();
 
   // Called to notify the exporter of new trace packets. Will call the
   // |json_callback| passed in the constructor with the converted trace data.
   void OnTraceData(std::vector<perfetto::TracePacket> packets, bool has_more);
 
-  void set_filter_args_for_testing(bool value) { filter_args_ = value; }
+  void SetArgumentFilterForTesting(const ArgumentFilterPredicate& predicate) {
+    argument_filter_predicate_ = predicate;
+  }
 
   void set_label_filter(const std::string& label_filter) {
     label_filter_ = label_filter;
@@ -92,7 +102,7 @@ class JSONTraceExporter {
 
   class ArgumentBuilder {
    public:
-    ArgumentBuilder(bool filter_args,
+    ArgumentBuilder(const ArgumentFilterPredicate& argument_filter_predicate,
                     const char* name,
                     const char* category_group_name,
                     StringBuffer* out);
@@ -172,14 +182,15 @@ class JSONTraceExporter {
    private:
     // Subclasses of JSONTraceExporter can create a new instance by calling
     // AddTraceEvent().
-    ScopedJSONTraceEventAppender(StringBuffer* out,
-                                 bool filter_args,
-                                 const char* name,
-                                 const char* categories,
-                                 int32_t phase,
-                                 int64_t timestamp,
-                                 int32_t pid,
-                                 int32_t tid);
+    ScopedJSONTraceEventAppender(
+        StringBuffer* out,
+        ArgumentFilterPredicate argument_filter_predicate,
+        const char* name,
+        const char* categories,
+        int32_t phase,
+        int64_t timestamp,
+        int32_t pid,
+        int32_t tid);
     friend class JSONTraceExporter;
 
     char phase_;
@@ -187,7 +198,7 @@ class JSONTraceExporter {
     StringBuffer* out_;
     const char* event_name_;
     const char* category_group_name_;
-    bool filter_args_;
+    ArgumentFilterPredicate argument_filter_predicate_;
   };
 
   // Subclasses implement this to add data from |packets| to the JSON output.
@@ -237,7 +248,7 @@ class JSONTraceExporter {
   std::string label_filter_;
   std::string legacy_system_ftrace_output_;
   std::unique_ptr<base::DictionaryValue> metadata_;
-  bool filter_args_;
+  ArgumentFilterPredicate argument_filter_predicate_;
 
   DISALLOW_COPY_AND_ASSIGN(JSONTraceExporter);
 };

@@ -31,11 +31,36 @@ using base::trace_event::TraceLog;
 
 namespace tracing {
 
+namespace {
+
+bool IsArgNameWhitelisted(const char* arg_name) {
+  return base::MatchPattern(arg_name, "granular_arg_whitelisted");
+}
+
+bool IsTraceEventArgsWhitelisted(
+    const char* category_group_name,
+    const char* event_name,
+    base::trace_event::ArgumentNameFilterPredicate* arg_filter) {
+  if (base::MatchPattern(category_group_name, "toplevel") &&
+      base::MatchPattern(event_name, "*")) {
+    return true;
+  }
+  if (base::MatchPattern(category_group_name, "benchmark") &&
+      base::MatchPattern(event_name, "granularly_whitelisted")) {
+    *arg_filter = base::BindRepeating(&IsArgNameWhitelisted);
+    return true;
+  }
+
+  return false;
+}
+
+}  // namespace
+
 class ChromeEventBundleJsonExporterTest : public testing::Test {
  public:
   void SetUp() override {
     json_trace_exporter_.reset(new ChromeEventBundleJsonExporter(
-        /*filter_args=*/false,
+        JSONTraceExporter::ArgumentFilterPredicate(),
         base::BindRepeating(
             &ChromeEventBundleJsonExporterTest::OnTraceEventJSON,
             base::Unretained(this))));
@@ -44,7 +69,8 @@ class ChromeEventBundleJsonExporterTest : public testing::Test {
   void TearDown() override { json_trace_exporter_.reset(); }
 
   void EnableArgumentFilter() {
-    json_trace_exporter_->set_filter_args_for_testing(true);
+    json_trace_exporter_->SetArgumentFilterForTesting(
+        base::BindRepeating(&IsTraceEventArgsWhitelisted));
   }
 
   void OnTraceEventJSON(const std::string& json,
@@ -670,13 +696,13 @@ TEST_F(ChromeEventBundleJsonExporterTest, ArgsWhitelisting) {
     auto* new_trace_event =
         trace_packet_proto.mutable_chrome_events()->add_trace_events();
     SetTestPacketBasicData(new_trace_event);
-    new_trace_event->set_name("ScopedBlockingCallTest");
-    new_trace_event->set_category_group_name("base");
+    new_trace_event->set_name("granularly_whitelisted");
+    new_trace_event->set_category_group_name("benchmark");
     auto* new_arg1 = new_trace_event->add_args();
-    new_arg1->set_name("file_name");
+    new_arg1->set_name("granular_arg_whitelisted");
     new_arg1->set_string_value("whitelisted_value");
     auto* new_arg2 = new_trace_event->add_args();
-    new_arg2->set_name("file_number");
+    new_arg2->set_name("granular_arg_blacklisted");
     new_arg2->set_string_value("blacklisted_value");
   }
 
@@ -701,12 +727,12 @@ TEST_F(ChromeEventBundleJsonExporterTest, ArgsWhitelisting) {
   {
     const auto* trace_event = trace_analyzer()->FindFirstOf(
         trace_analyzer::Query(trace_analyzer::Query::EVENT_NAME) ==
-        trace_analyzer::Query::String("ScopedBlockingCallTest"));
+        trace_analyzer::Query::String("granularly_whitelisted"));
     EXPECT_TRUE(trace_event);
     EXPECT_EQ("whitelisted_value",
-              trace_event->GetKnownArgAsString(("file_name")));
+              trace_event->GetKnownArgAsString(("granular_arg_whitelisted")));
     EXPECT_EQ("__stripped__",
-              trace_event->GetKnownArgAsString(("file_number")));
+              trace_event->GetKnownArgAsString(("granular_arg_blacklisted")));
   }
 }
 
