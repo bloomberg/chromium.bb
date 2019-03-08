@@ -536,8 +536,7 @@ public class FeatureUtilities {
     private static void cacheTabGroupsAndroidEnabled() {
         ChromePreferenceManager.getInstance().writeBoolean(
                 ChromePreferenceManager.TAB_GROUPS_ANDROID_ENABLED_KEY,
-                !DeviceClassManager.enableAccessibilityLayout()
-                        && ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_GROUPS_ANDROID));
+                ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_GROUPS_ANDROID));
     }
 
     /**
@@ -559,7 +558,8 @@ public class FeatureUtilities {
     private static boolean isDeviceEligibleForTabGroups() {
         return !SysUtils.isLowEndDevice()
                 && !DeviceFormFactor.isNonMultiDisplayContextOnTablet(
-                        ContextUtils.getApplicationContext());
+                        ContextUtils.getApplicationContext())
+                && !DeviceClassManager.enableAccessibilityLayout();
     }
 
     /**
