@@ -11,37 +11,23 @@
 #include "components/bookmarks/browser/titled_url_node.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/history_provider.h"
+#include "components/omnibox/browser/in_memory_url_index_types.h"
 #include "components/omnibox/browser/url_prefix.h"
 #include "components/url_formatter/url_formatter.h"
 
 namespace {
 
-// Converts |positions| into ACMatchClassifications and returns the
-// classifications. |text_length| is used to determine the need to add an
-// 'unhighlighted' classification span so the tail of the source string
-// properly highlighted.
-ACMatchClassifications ClassificationsFromMatchPositions(
-    const bookmarks::TitledUrlMatch::MatchPositions& positions,
-    size_t text_length,
-    bool is_url) {
-  ACMatchClassification::Style url_style =
-      is_url ? ACMatchClassification::URL : ACMatchClassification::NONE;
-  ACMatchClassifications classifications;
-  if (positions.empty()) {
-    if (text_length > 0) {
-      classifications.push_back(ACMatchClassification(0, url_style));
-    }
-    return classifications;
+TermMatches OffsetsToTermMatches(const std::vector<size_t> offsets) {
+  TermMatches term_matches;
+  for (auto offset_iter = offsets.begin(); offset_iter != offsets.end();
+       ++offset_iter) {
+    const size_t begin = *offset_iter;
+    ++offset_iter;
+    const size_t end = *offset_iter;
+    if ((begin != base::string16::npos) && (end != base::string16::npos))
+      term_matches.emplace_back(0, begin, end - begin);
   }
-
-  for (auto i = positions.begin(); i != positions.end(); ++i) {
-    AutocompleteMatch::ACMatchClassifications new_class;
-    AutocompleteMatch::ClassifyLocationInString(
-        i->first, i->second - i->first, text_length, url_style, &new_class);
-    classifications =
-        AutocompleteMatch::MergeClassifications(classifications, new_class);
-  }
-  return classifications;
+  return term_matches;
 }
 
 }  // namespace
@@ -82,11 +68,9 @@ AutocompleteMatch TitledUrlMatchToAutocompleteMatch(
       titled_url_match.url_match_positions);
   match.contents = url_formatter::FormatUrlWithOffsets(
       url, format_types, net::UnescapeRule::SPACES, nullptr, nullptr, &offsets);
-  TitledUrlMatch::MatchPositions new_url_match_positions =
-      TitledUrlMatch::ReplaceOffsetsInMatchPositions(
-          titled_url_match.url_match_positions, offsets);
-  match.contents_class = ClassificationsFromMatchPositions(
-      new_url_match_positions, match.contents.size(), true);
+  TermMatches url_term_matches = OffsetsToTermMatches(offsets);
+  match.contents_class = HistoryProvider::SpansFromTermMatch(
+      url_term_matches, match.contents.size(), true);
 
   // The inline_autocomplete_offset should be adjusted based on the formatting
   // applied to |fill_into_edit|.
@@ -110,8 +94,11 @@ AutocompleteMatch TitledUrlMatchToAutocompleteMatch(
         !HistoryProvider::PreventInlineAutocomplete(input);
   }
   match.description = title;
-  match.description_class = ClassificationsFromMatchPositions(
-      titled_url_match.title_match_positions, match.description.size(), false);
+  offsets = TitledUrlMatch::OffsetsFromMatchPositions(
+      titled_url_match.title_match_positions);
+  TermMatches title_term_matches = OffsetsToTermMatches(offsets);
+  match.description_class = HistoryProvider::SpansFromTermMatch(
+      title_term_matches, match.description.size(), false);
 
   return match;
 }
