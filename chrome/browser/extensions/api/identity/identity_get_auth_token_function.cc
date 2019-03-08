@@ -164,7 +164,7 @@ bool IdentityGetAuthTokenFunction::RunAsync() {
 
 void IdentityGetAuthTokenFunction::GetAuthTokenForPrimaryAccount(
     const std::string& extension_gaia_id) {
-  AccountInfo primary_account_info =
+  CoreAccountInfo primary_account_info =
       IdentityManagerFactory::GetForProfile(GetProfile())
           ->GetPrimaryAccountInfo();
   bool primary_account_only = IsPrimaryAccountOnly();
@@ -187,7 +187,9 @@ void IdentityGetAuthTokenFunction::GetAuthTokenForPrimaryAccount(
             primary_account_info.account_id);
     OnReceivedExtensionAccountInfo(
         primary_account_info.gaia,
-        base::Optional<AccountInfo>(primary_account_info), account_state);
+        identity_manager->FindExtendedAccountInfoForAccount(
+            primary_account_info),
+        account_state);
   } else {
     // No primary account, try the first account in cookies.
     DCHECK_EQ(AccountListeningMode::kNotListening, account_listening_mode_);
@@ -268,7 +270,7 @@ void IdentityGetAuthTokenFunction::OnAccountsInCookieUpdated(
             account.gaia_id));
   } else {
     OnReceivedExtensionAccountInfo(
-        /*extension_gaia_id=*/std::string(), base::Optional<AccountInfo>(),
+        /*extension_gaia_id=*/std::string(), base::nullopt,
         identity::AccountState());
   }
 }
