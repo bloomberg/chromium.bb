@@ -212,6 +212,9 @@ void TestWindowTree::SetHitTestInsets(ws::Id window_id,
   last_touch_hit_test_insets_ = touch;
 }
 
+void TestWindowTree::SetShape(ws::Id window_id,
+                              const std::vector<gfx::Rect>& shape) {}
+
 void TestWindowTree::SetCanAcceptDrops(ws::Id window_id, bool accepts_drops) {
   last_accepts_drops_ = accepts_drops;
   ++accepts_drops_count_;

@@ -14,6 +14,7 @@
 #include "ui/aura/client/transient_window_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/mus/focus_synchronizer.h"
+#include "ui/aura/mus/window_mus.h"
 #include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/mus/window_tree_host_mus.h"
 #include "ui/aura/mus/window_tree_host_mus_init_params.h"
@@ -678,7 +679,8 @@ gfx::Rect DesktopWindowTreeHostMus::GetWorkAreaBoundsInScreen() const {
 
 void DesktopWindowTreeHostMus::SetShape(
     std::unique_ptr<Widget::ShapeRects> native_shape) {
-  NOTIMPLEMENTED();
+  MusClient::Get()->window_tree_client()->SetShape(
+      aura::WindowMus::Get(window()), std::move(native_shape));
 }
 
 void DesktopWindowTreeHostMus::Activate() {

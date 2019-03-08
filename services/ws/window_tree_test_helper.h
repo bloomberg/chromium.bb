@@ -89,6 +89,7 @@ class WindowTreeTestHelper {
   void SetHitTestInsets(aura::Window* window,
                         const gfx::Insets& mouse,
                         const gfx::Insets& touch);
+  void SetShape(aura::Window* window, const std::vector<gfx::Rect>& shape);
   bool SetWindowVisibility(aura::Window* window, bool visible);
   void SetWindowProperty(aura::Window* window,
                          const std::string& name,
