@@ -170,7 +170,8 @@ TEST_F(QuartcEndpointTest,
 
 // Tests that version negotiation fails when the client and server support
 // completely disjoint sets of versions.
-TEST_F(QuartcEndpointTest, DISABLED_VersionNegotiationWithDisjointVersions) {
+TEST_F(QuartcEndpointTest,
+       QUIC_TEST_DISABLED_IN_CHROME(VersionNegotiationWithDisjointVersions)) {
   // Note: for this test, we need support for two versions.  Which two shouldn't
   // matter, but they must be enabled so that the version manager doesn't filter
   // them out.

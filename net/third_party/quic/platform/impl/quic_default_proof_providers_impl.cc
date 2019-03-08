@@ -6,13 +6,26 @@
 
 #include <utility>
 
+#include "base/files/file_path.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/ct_log_verifier.h"
 #include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/multi_log_ct_verifier.h"
 #include "net/http/transport_security_state.h"
+#include "net/quic/crypto/proof_source_chromium.h"
 #include "net/quic/crypto/proof_verifier_chromium.h"
+#include "net/third_party/quic/platform/api/quic_flags.h"
 #include "net/third_party/quic/platform/api/quic_ptr_util.h"
+
+DEFINE_QUIC_COMMAND_LINE_FLAG(std::string,
+                              certificate_file,
+                              "",
+                              "Path to the certificate chain.");
+
+DEFINE_QUIC_COMMAND_LINE_FLAG(std::string,
+                              key_file,
+                              "",
+                              "Path to the pkcs8 private key.");
 
 using net::CertVerifier;
 using net::CTVerifier;
@@ -43,6 +56,14 @@ std::unique_ptr<ProofVerifier> CreateDefaultProofVerifierImpl() {
       net::CertVerifier::CreateDefault();
   return QuicMakeUnique<ProofVerifierChromiumWithOwnership>(
       std::move(cert_verifier));
+}
+
+std::unique_ptr<ProofSource> CreateDefaultProofSourceImpl() {
+  auto proof_source = std::make_unique<net::ProofSourceChromium>();
+  CHECK(proof_source->Initialize(
+      base::FilePath(GetQuicFlag(FLAGS_certificate_file)),
+      base::FilePath(GetQuicFlag(FLAGS_key_file)), base::FilePath()));
+  return std::move(proof_source);
 }
 
 }  // namespace quic
