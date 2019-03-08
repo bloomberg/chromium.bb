@@ -26,7 +26,7 @@ class ThreadPoolManager;
 // by the |thread_pool_manager_| should live for the scope of the main thread
 // entry function i.e RunTest.
 class PLATFORM_EXPORT SequenceManagerFuzzerProcessor {
-  DISALLOW_NEW();
+  USING_FAST_MALLOC(SequenceManagerFuzzerProcessor);
 
  public:
   // Public interface used to parse the fuzzer's test description and
