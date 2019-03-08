@@ -59,13 +59,5 @@ const base::Feature kDelayRequestsOnMultiplexedConnections{
 const base::Feature kEnforceRequestInitiatorLockForCorb{
     "EnforceRequestInitiatorLockForCorb", base::FEATURE_ENABLED_BY_DEFAULT};
 
-bool ShouldEnableOutOfBlinkCors() {
-  // OOR-CORS requires NetworkService.
-  if (!base::FeatureList::IsEnabled(features::kNetworkService))
-    return false;
-
-  return base::FeatureList::IsEnabled(features::kOutOfBlinkCors);
-}
-
 }  // namespace features
 }  // namespace network
