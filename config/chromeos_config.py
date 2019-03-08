@@ -145,15 +145,13 @@ def DefaultSettings():
   return defaults
 
 
-def GeneralTemplates(site_config, ge_build_config):
+def GeneralTemplates(site_config):
   """Defines templates that are shared between categories of builders.
 
   Args:
     site_config: A SiteConfig object to add the templates too.
     ge_build_config: Dictionary containing the decoded GE configuration file.
   """
-  is_release_branch = ge_build_config[config_lib.CONFIG_TEMPLATE_RELEASE_BRANCH]
-
   # Config parameters for builders that do not run tests on the builder.
   site_config.AddTemplate(
       'no_unittest_builder',
@@ -632,7 +630,9 @@ def GeneralTemplates(site_config, ge_build_config):
       build_type=constants.CANARY_TYPE,
       chroot_use_image=False,
       suite_scheduling=True,
-      build_timeout=12 * 60 * 60 if is_release_branch else (7 * 60 + 50) * 60,
+      # Because release builders never use prebuilts, they need the
+      # longer timeout.  See crbug.com/938958.
+      build_timeout=12 * 60 * 60,
       useflags=config_lib.append_useflags(['-cros-debug']),
       afdo_use=True,
       manifest=constants.OFFICIAL_MANIFEST,
@@ -4140,7 +4140,7 @@ def GetConfig():
   site_config = config_lib.SiteConfig(defaults=defaults)
   boards_dict = GetBoardTypeToBoardsDict(ge_build_config)
 
-  GeneralTemplates(site_config, ge_build_config)
+  GeneralTemplates(site_config)
 
   chromeos_test.GeneralTemplates(site_config, ge_build_config)
 

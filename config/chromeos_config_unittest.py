@@ -263,8 +263,7 @@ class UnifiedBuildConfigTestCase(object):
     self._boards_dict = chromeos_config.GetBoardTypeToBoardsDict(
         self._ge_build_config)
 
-    chromeos_config.GeneralTemplates(
-        self._site_config, self._fake_ge_build_config)
+    chromeos_config.GeneralTemplates(self._site_config)
     chromeos_test.GeneralTemplates(
         self._site_config, self._fake_ge_build_config)
     chromeos_config.ReleaseBuilders(
@@ -1111,10 +1110,7 @@ class CBuildBotTest(ChromeosConfigTestBase):
     for build_name, config in self.site_config.iteritems():
       if config.build_type != constants.CANARY_TYPE:
         continue
-      if self.isReleaseBranch():
-        expected = 12 * 60 * 60
-      else:
-        expected = (7 * 60 + 50) * 60
+      expected = 12 * 60 * 60
 
       self.assertEqual(
           config.build_timeout, expected,
