@@ -4,21 +4,25 @@
 
 package org.chromium.chrome.browser.toolbar.bottom;
 
+import android.support.annotation.Nullable;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.ViewStub;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.appmenu.AppMenuButtonHelper;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.compositor.layouts.ToolbarSwipeLayout;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
+import org.chromium.chrome.browser.tasks.tab_list_ui.TabStripBottomToolbarCoordinator;
 import org.chromium.chrome.browser.toolbar.IncognitoStateProvider;
 import org.chromium.chrome.browser.toolbar.MenuButton;
 import org.chromium.chrome.browser.toolbar.TabCountProvider;
 import org.chromium.chrome.browser.toolbar.bottom.BottomControlsViewBinder.ViewHolder;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
@@ -36,7 +40,8 @@ public class BottomControlsCoordinator {
     private final BottomControlsMediator mMediator;
 
     /** The coordinator for the split toolbar's bottom toolbar component. */
-    private final BottomToolbarCoordinator mBottomToolbarCoordinator;
+    private @Nullable BottomToolbarCoordinator mBottomToolbarCoordinator;
+    private @Nullable TabStripBottomToolbarCoordinator mTabStripCoordinator;
 
     /**
      * Build the coordinator that manages the bottom controls.
@@ -63,9 +68,14 @@ public class BottomControlsCoordinator {
         mMediator = new BottomControlsMediator(model, fullscreenManager,
                 root.getResources().getDimensionPixelOffset(R.dimen.bottom_toolbar_height));
 
-        mBottomToolbarCoordinator = new BottomToolbarCoordinator(
-                root.findViewById(R.id.bottom_toolbar_stub), tabProvider, homeButtonListener,
-                searchAcceleratorListener, shareButtonListener);
+        if (FeatureUtilities.isTabGroupsAndroidEnabled()) {
+            mTabStripCoordinator = new TabStripBottomToolbarCoordinator(
+                    root.findViewById(R.id.bottom_container_slot));
+        } else {
+            mBottomToolbarCoordinator = new BottomToolbarCoordinator(
+                    root.findViewById(R.id.bottom_toolbar_stub), tabProvider, homeButtonListener,
+                    searchAcceleratorListener, shareButtonListener);
+        }
     }
 
     /**
@@ -73,6 +83,7 @@ public class BottomControlsCoordinator {
      * dependencies.
      * <p>
      * Calling this must occur after the native library have completely loaded.
+     * @param chromeActivity ChromeActivity instance to use.
      * @param resourceManager A {@link ResourceManager} for loading textures into the compositor.
      * @param layoutManager A {@link LayoutManager} to attach overlays to.
      * @param tabSwitcherListener An {@link OnClickListener} that is triggered when the
@@ -88,56 +99,80 @@ public class BottomControlsCoordinator {
      * @param incognitoStateProvider Notifies components when incognito mode is entered or exited.
      * @param topToolbarRoot The root {@link ViewGroup} of the top toolbar.
      */
-    public void initializeWithNative(ResourceManager resourceManager, LayoutManager layoutManager,
-            OnClickListener tabSwitcherListener, OnClickListener newTabClickListener,
-            OnClickListener closeTabsClickListener, AppMenuButtonHelper menuButtonHelper,
-            OverviewModeBehavior overviewModeBehavior, WindowAndroid windowAndroid,
-            TabCountProvider tabCountProvider, IncognitoStateProvider incognitoStateProvider,
-            ViewGroup topToolbarRoot) {
+    public void initializeWithNative(ChromeActivity chromeActivity, ResourceManager resourceManager,
+            LayoutManager layoutManager, OnClickListener tabSwitcherListener,
+            OnClickListener newTabClickListener, OnClickListener closeTabsClickListener,
+            AppMenuButtonHelper menuButtonHelper, OverviewModeBehavior overviewModeBehavior,
+            WindowAndroid windowAndroid, TabCountProvider tabCountProvider,
+            IncognitoStateProvider incognitoStateProvider, ViewGroup topToolbarRoot) {
         mMediator.setLayoutManager(layoutManager);
         mMediator.setResourceManager(resourceManager);
         mMediator.setToolbarSwipeHandler(layoutManager.getToolbarSwipeHandler());
         mMediator.setWindowAndroid(windowAndroid);
 
-        mBottomToolbarCoordinator.initializeWithNative(tabSwitcherListener, newTabClickListener,
-                closeTabsClickListener, menuButtonHelper, overviewModeBehavior, tabCountProvider,
-                incognitoStateProvider, topToolbarRoot);
+        if (mBottomToolbarCoordinator != null) {
+            mBottomToolbarCoordinator.initializeWithNative(tabSwitcherListener, newTabClickListener,
+                    closeTabsClickListener, menuButtonHelper, overviewModeBehavior,
+                    tabCountProvider, incognitoStateProvider, topToolbarRoot);
+        }
+
+        if (mTabStripCoordinator != null) {
+            mTabStripCoordinator.initializeWithNative(chromeActivity.getTabModelSelector(),
+                    chromeActivity.getTabContentManager(), chromeActivity,
+                    chromeActivity.getBottomSheetController());
+            mMediator.setBottomControlsVisible(true);
+        }
     }
 
     /**
      * @param isVisible Whether the bottom control is visible.
      */
     public void setBottomControlsVisible(boolean isVisible) {
+        // TabStripCoordinator manages its own visibility
+        if (mTabStripCoordinator != null) return;
+
         mMediator.setBottomControlsVisible(isVisible);
-        mBottomToolbarCoordinator.setBottomToolbarVisible(isVisible);
+        if (mBottomToolbarCoordinator != null) {
+            mBottomToolbarCoordinator.setBottomToolbarVisible(isVisible);
+        }
     }
 
     /**
      * Show the update badge over the bottom toolbar's app menu.
      */
     public void showAppMenuUpdateBadge() {
-        mBottomToolbarCoordinator.showAppMenuUpdateBadge();
+        if (mBottomToolbarCoordinator != null) {
+            mBottomToolbarCoordinator.showAppMenuUpdateBadge();
+        }
     }
 
     /**
      * Remove the update badge.
      */
     public void removeAppMenuUpdateBadge() {
-        mBottomToolbarCoordinator.removeAppMenuUpdateBadge();
+        if (mBottomToolbarCoordinator != null) {
+            mBottomToolbarCoordinator.removeAppMenuUpdateBadge();
+        }
     }
 
     /**
      * @return Whether the update badge is showing.
      */
     public boolean isShowingAppMenuUpdateBadge() {
-        return mBottomToolbarCoordinator.isShowingAppMenuUpdateBadge();
+        if (mBottomToolbarCoordinator != null) {
+            return mBottomToolbarCoordinator.isShowingAppMenuUpdateBadge();
+        }
+        return false;
     }
 
     /**
      * @return The wrapper for the browsing mode toolbar's app menu button.
      */
     public MenuButton getMenuButtonWrapper() {
-        return mBottomToolbarCoordinator.getMenuButtonWrapper();
+        if (mBottomToolbarCoordinator != null) {
+            return mBottomToolbarCoordinator.getMenuButtonWrapper();
+        }
+        return null;
     }
 
     /**
@@ -153,7 +188,8 @@ public class BottomControlsCoordinator {
      * Clean up any state when the bottom controls component is destroyed.
      */
     public void destroy() {
-        mBottomToolbarCoordinator.destroy();
+        if (mBottomToolbarCoordinator != null) mBottomToolbarCoordinator.destroy();
+        if (mTabStripCoordinator != null) mTabStripCoordinator.destroy();
         mMediator.destroy();
     }
 }
