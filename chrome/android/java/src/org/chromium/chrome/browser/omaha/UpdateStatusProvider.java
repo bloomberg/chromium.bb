@@ -28,6 +28,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.base.task.AsyncTask.Status;
@@ -280,10 +281,11 @@ public class UpdateStatusProvider implements ActivityStateListener {
             }
         } else {
             @UpdateState
+            int omahaState = mOmahaQuery.getResult().updateState;
+            @UpdateState
             int inlineState = mInlineController.getStatus();
-            if (inlineState != UpdateState.NONE) {
-                mStatus.updateState = inlineState;
-            }
+            mStatus.updateState = resolveOmahaAndInlineStatus(
+                    UpdateConfigs.getConfiguration(), omahaState, inlineState);
         }
 
         if (!mRecordedInitialStatus) {
@@ -293,6 +295,28 @@ public class UpdateStatusProvider implements ActivityStateListener {
         }
 
         pingObservers();
+    }
+
+    @VisibleForTesting
+    static @UpdateState int resolveOmahaAndInlineStatus(
+            @UpdateConfigs.UpdateFlowConfiguration int configuration, @UpdateState int omahaState,
+            @UpdateState int inlineState) {
+        switch (configuration) {
+            case UpdateConfigs.UpdateFlowConfiguration.NEVER_SHOW:
+                return UpdateState.NONE;
+            case UpdateConfigs.UpdateFlowConfiguration.INLINE_ONLY:
+                if (omahaState != UpdateState.UPDATE_AVAILABLE) return omahaState;
+                if (inlineState == UpdateState.NONE) return UpdateState.NONE;
+                return inlineState;
+            case UpdateConfigs.UpdateFlowConfiguration.BEST_EFFORT:
+                if (omahaState != UpdateState.UPDATE_AVAILABLE) return omahaState;
+                if (inlineState == UpdateState.NONE) return omahaState;
+                return inlineState;
+            case UpdateConfigs.UpdateFlowConfiguration.INTENT_ONLY: // Intentional fall through.
+            default:
+                // Fall back to use Omaha only and use the old flow.
+                return omahaState;
+        }
     }
 
     private static final class LazyHolder {

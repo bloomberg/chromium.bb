@@ -2495,6 +2495,7 @@ chrome_junit_test_java_sources = [
   "junit/src/org/chromium/chrome/browser/offlinepages/prefetch/OfflineNotificationBackgroundTaskUnitTest.java",
   "junit/src/org/chromium/chrome/browser/offlinepages/prefetch/PrefetchBackgroundTaskUnitTest.java",
   "junit/src/org/chromium/chrome/browser/omaha/ResponseParserTest.java",
+  "junit/src/org/chromium/chrome/browser/omaha/UpdateStatusProviderTest.java",
   "junit/src/org/chromium/chrome/browser/omaha/VersionNumberTest.java",
   "junit/src/org/chromium/chrome/browser/omnibox/AutocompleteEditTextTest.java",
   "junit/src/org/chromium/chrome/browser/omnibox/AutocompleteStateUnitTest.java",
