@@ -249,10 +249,6 @@ void NGBoxFragmentPainter::PaintObject(
   bool is_visible = style.Visibility() == EVisibility::kVisible;
 
   if (ShouldPaintSelfBlockBackground(paint_phase)) {
-    // TODO(eae): style.HasBoxDecorationBackground isn't good enough, it needs
-    // to check the object as some objects may have box decoration background
-    // other than from their own style.
-    // TODO(eae): We can probably get rid of suppress_box_decoration_background.
     if (!suppress_box_decoration_background && is_visible)
       PaintBoxDecorationBackground(paint_info, paint_offset);
 
