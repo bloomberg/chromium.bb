@@ -169,12 +169,6 @@ class CORE_EXPORT PaintLayerStackingNode {
   // have z-order lists.
   bool z_order_lists_dirty_ : 1;
 
-  // This attribute caches whether the element was stacked. It's needed to check
-  // the current stacked status (instead of the new stacked status determined by
-  // the new style which has not been realized yet) when a layer is removed due
-  // to style change.
-  bool is_stacked_ : 1;
-
 #if DCHECK_IS_ON()
   bool layer_list_mutation_allowed_ : 1;
 #endif
