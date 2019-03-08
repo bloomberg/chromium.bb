@@ -1037,6 +1037,8 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
 // in the detail text of the cell.
 - (void)updateGoogleServicesItem:(TableViewImageItem*)googleServicesItem {
   googleServicesItem.detailTextColor = nil;
+  syncer::SyncService* syncService =
+      ProfileSyncServiceFactory::GetForBrowserState(_browserState);
   SyncSetupService* syncSetupService =
       SyncSetupServiceFactory::GetForBrowserState(_browserState);
   AuthenticationService* authService =
@@ -1046,6 +1048,12 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
     googleServicesItem.detailText = nil;
     googleServicesItem.image =
         [UIImage imageNamed:kSyncAndGoogleServicesImageName];
+  } else if (syncService->GetDisableReasons() ==
+             syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY) {
+    googleServicesItem.detailText = l10n_util::GetNSString(
+        IDS_IOS_GOOGLE_SERVICES_SETTINGS_SYNC_DISABLBED_BY_ADMINISTRATOR_STATUS);
+    googleServicesItem.image =
+        [UIImage imageNamed:kSyncAndGoogleServicesSyncOffImageName];
   } else if (!syncSetupService->HasFinishedInitialSetup()) {
     googleServicesItem.detailText =
         l10n_util::GetNSString(IDS_IOS_SYNC_SETUP_IN_PROGRESS);
