@@ -182,6 +182,11 @@ class DemoSession : public session_manager::SessionManagerObserver,
   // Removes the splash screen.
   void RemoveSplashScreen();
 
+  // Returns whether splash screen should be removed. The splash screen should
+  // be removed when both active session starts (i.e. login screen is destroyed)
+  // and screensaver is shown, to ensure a smooth transition.
+  bool ShouldRemoveSplashScreen();
+
   // session_manager::SessionManagerObserver:
   void OnSessionStateChanged() override;
 
@@ -222,6 +227,7 @@ class DemoSession : public session_manager::SessionManagerObserver,
   std::unique_ptr<base::OneShotTimer> remove_splash_screen_fallback_timer_;
 
   bool splash_screen_removed_ = false;
+  bool screensaver_activated_ = false;
 
   base::WeakPtrFactory<DemoSession> weak_ptr_factory_{this};
 
