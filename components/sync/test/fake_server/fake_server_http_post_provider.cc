@@ -19,21 +19,6 @@ namespace fake_server {
 // static
 bool FakeServerHttpPostProvider::network_enabled_ = true;
 
-namespace {
-
-void HandleCommandOnFakeServerThread(base::WeakPtr<FakeServer> fake_server,
-                                     const std::string& request,
-                                     int* http_status_code,
-                                     std::string* response,
-                                     base::WaitableEvent* completion_event) {
-  if (fake_server) {
-    *http_status_code = fake_server->HandleCommand(request, response);
-  }
-  completion_event->Signal();
-}
-
-}  // namespace
-
 FakeServerHttpPostProviderFactory::FakeServerHttpPostProviderFactory(
     const base::WeakPtr<FakeServer>& fake_server,
     scoped_refptr<base::SequencedTaskRunner> fake_server_task_runner)
@@ -62,7 +47,11 @@ FakeServerHttpPostProvider::FakeServerHttpPostProvider(
     const base::WeakPtr<FakeServer>& fake_server,
     scoped_refptr<base::SequencedTaskRunner> fake_server_task_runner)
     : fake_server_(fake_server),
-      fake_server_task_runner_(fake_server_task_runner) {}
+      fake_server_task_runner_(fake_server_task_runner),
+      synchronous_post_completion_(
+          base::WaitableEvent::ResetPolicy::AUTOMATIC,
+          base::WaitableEvent::InitialState::NOT_SIGNALED),
+      aborted_(false) {}
 
 FakeServerHttpPostProvider::~FakeServerHttpPostProvider() {}
 
@@ -93,20 +82,19 @@ bool FakeServerHttpPostProvider::MakeSynchronousPost(int* net_error_code,
     return false;
   }
 
+  synchronous_post_completion_.Reset();
+  aborted_ = false;
+
   // It is assumed that a POST is being made to /command.
   int post_status_code = -1;
   std::string post_response;
 
-  base::WaitableEvent post_complete(
-      base::WaitableEvent::ResetPolicy::AUTOMATIC,
-      base::WaitableEvent::InitialState::NOT_SIGNALED);
-
   bool result = fake_server_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&HandleCommandOnFakeServerThread, fake_server_,
-                     request_content_, base::Unretained(&post_status_code),
-                     base::Unretained(&post_response),
-                     base::Unretained(&post_complete)));
+      base::BindOnce(
+          &FakeServerHttpPostProvider::HandleCommandOnFakeServerThread,
+          base::RetainedRef(this), base::Unretained(&post_status_code),
+          base::Unretained(&post_response)));
 
   if (!result) {
     response_.clear();
@@ -115,14 +103,10 @@ bool FakeServerHttpPostProvider::MakeSynchronousPost(int* net_error_code,
     return false;
   }
 
-  // Note: This is a potential deadlock. Here we're on the sync thread, and
-  // we're waiting for something to happen on the UI thread (where the
-  // FakeServer lives). If at the same time, ProfileSyncService is trying to
-  // Stop() the sync thread, we're deadlocked. For a lack of better ideas, let's
-  // just give up after a few seconds.
-  // TODO(crbug.com/869404): Maybe the FakeServer should live on its own thread.
-  if (!post_complete.TimedWait(base::TimeDelta::FromSeconds(5))) {
-    *net_error_code = net::ERR_TIMED_OUT;
+  synchronous_post_completion_.Wait();
+
+  if (aborted_) {
+    *net_error_code = net::ERR_ABORTED;
     return false;
   }
 
@@ -147,7 +131,14 @@ const std::string FakeServerHttpPostProvider::GetResponseHeaderValue(
   return std::string();
 }
 
-void FakeServerHttpPostProvider::Abort() {}
+void FakeServerHttpPostProvider::Abort() {
+  // The sync thread could be blocked in MakeSynchronousPost(), waiting
+  // for HandleCommandOnFakeServerThread() to be processed and completed.
+  // This causes an immediate unblocking which will be returned as
+  // net::ERR_ABORTED.
+  aborted_ = true;
+  synchronous_post_completion_.Signal();
+}
 
 void FakeServerHttpPostProvider::DisableNetwork() {
   network_enabled_ = false;
@@ -155,6 +146,20 @@ void FakeServerHttpPostProvider::DisableNetwork() {
 
 void FakeServerHttpPostProvider::EnableNetwork() {
   network_enabled_ = true;
+}
+
+void FakeServerHttpPostProvider::HandleCommandOnFakeServerThread(
+    int* http_status_code,
+    std::string* response) {
+  DCHECK(fake_server_task_runner_->RunsTasksInCurrentSequence());
+
+  if (!fake_server_ || aborted_) {
+    // Command explicitly aborted or server destroyed.
+    return;
+  }
+
+  *http_status_code = fake_server_->HandleCommand(request_content_, response);
+  synchronous_post_completion_.Signal();
 }
 
 }  // namespace fake_server
