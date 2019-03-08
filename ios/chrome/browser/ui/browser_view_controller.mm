@@ -3081,37 +3081,34 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 - (web::WebState*)webState:(web::WebState*)webState
          openURLWithParams:(const web::WebState::OpenURLParams&)params {
+  web::NavigationManager::WebLoadParams loadParams(params.url);
+  loadParams.referrer = params.referrer;
+  loadParams.transition_type = params.transition;
+  loadParams.is_renderer_initiated = params.is_renderer_initiated;
+  loadParams.virtual_url = params.virtual_url;
   switch (params.disposition) {
     case WindowOpenDisposition::NEW_FOREGROUND_TAB:
     case WindowOpenDisposition::NEW_BACKGROUND_TAB: {
       Tab* tab = [[self tabModel]
-          insertTabWithURL:params.url
-                  referrer:params.referrer
-                transition:params.transition
-                    opener:LegacyTabHelper::GetTabForWebState(webState)
-               openedByDOM:NO
-                   atIndex:TabModelConstants::kTabPositionAutomatically
-              inBackground:(params.disposition ==
-                            WindowOpenDisposition::NEW_BACKGROUND_TAB)];
+          insertTabWithLoadParams:loadParams
+                           opener:LegacyTabHelper::GetTabForWebState(webState)
+                      openedByDOM:NO
+                          atIndex:TabModelConstants::kTabPositionAutomatically
+                     inBackground:(params.disposition ==
+                                   WindowOpenDisposition::NEW_BACKGROUND_TAB)];
       return tab.webState;
     }
     case WindowOpenDisposition::CURRENT_TAB: {
-      web::NavigationManager::WebLoadParams loadParams(params.url);
-      loadParams.referrer = params.referrer;
-      loadParams.transition_type = params.transition;
-      loadParams.is_renderer_initiated = params.is_renderer_initiated;
       webState->GetNavigationManager()->LoadURLWithParams(loadParams);
       return webState;
     }
     case WindowOpenDisposition::NEW_POPUP: {
       Tab* tab = [[self tabModel]
-          insertTabWithURL:params.url
-                  referrer:params.referrer
-                transition:params.transition
-                    opener:LegacyTabHelper::GetTabForWebState(webState)
-               openedByDOM:YES
-                   atIndex:TabModelConstants::kTabPositionAutomatically
-              inBackground:NO];
+          insertTabWithLoadParams:loadParams
+                           opener:LegacyTabHelper::GetTabForWebState(webState)
+                      openedByDOM:YES
+                          atIndex:TabModelConstants::kTabPositionAutomatically
+                     inBackground:NO];
       return tab.webState;
     }
     default:

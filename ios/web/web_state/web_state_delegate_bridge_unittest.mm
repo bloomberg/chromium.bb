@@ -88,7 +88,7 @@ TEST_F(WebStateDelegateBridgeTest, OpenURLFromWebState) {
   ASSERT_FALSE([delegate_ openURLParams]);
 
   web::WebState::OpenURLParams params(
-      GURL("https://chromium.test/"),
+      GURL("https://chromium.test/"), GURL("https://virtual.chromium.test/"),
       web::Referrer(GURL("https://chromium2.test/"), ReferrerPolicyNever),
       WindowOpenDisposition::NEW_WINDOW, ui::PAGE_TRANSITION_FORM_SUBMIT, true);
   EXPECT_EQ(&test_web_state_,
@@ -98,6 +98,7 @@ TEST_F(WebStateDelegateBridgeTest, OpenURLFromWebState) {
   const web::WebState::OpenURLParams* result_params = [delegate_ openURLParams];
   ASSERT_TRUE(result_params);
   EXPECT_EQ(params.url, result_params->url);
+  EXPECT_EQ(params.virtual_url, result_params->virtual_url);
   EXPECT_EQ(params.referrer.url, result_params->referrer.url);
   EXPECT_EQ(params.referrer.policy, result_params->referrer.policy);
   EXPECT_EQ(params.disposition, result_params->disposition);
