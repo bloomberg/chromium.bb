@@ -63,10 +63,12 @@ test("http_service_tests") {
   ]
 }
 
-symbol_archive("symbol_archive") {
-  deps = [
-    ":http_pkg",
-  ]
-  ids_txt = "$root_gen_dir/fuchsia/http/http/ids.txt"
-  archive_name = "$root_gen_dir/fuchsia/http/http/http.symbols.tar.bz2"
-}
+if (is_official_build) {
+  symbol_archive("symbol_archive") {
+    deps = [
+      ":http_pkg",
+    ]
+    ids_txt = "$root_gen_dir/fuchsia/http/http/ids.txt"
+    archive_name = "$root_gen_dir/fuchsia/http/http/http.symbols.tar.bz2"
+  }
+}  # is_official_build

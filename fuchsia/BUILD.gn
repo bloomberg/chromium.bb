@@ -10,9 +10,6 @@ import("//build/util/process_version.gni")
 # Location where Fuchsia release archives and supporting files are placed.
 _release_artifact_root = "$root_out_dir/fuchsia_artifacts"
 
-# Location where debug symbol tarballs are placed.
-_symbol_artifact_root = "$root_out_dir/symbol_artifacts"
-
 fidl_library("web_fidl") {
   library_name = "web"
   namespace = "chromium"
@@ -108,38 +105,43 @@ copy("release_archives") {
   ]
 }
 
-copy("symbol_tarballs") {
-  sources = [
-    "$_release_artifact_root/build_id.txt",
-    "$root_gen_dir/fuchsia/engine/chromium/chromium.symbols.tar.bz2",
-    "$root_gen_dir/fuchsia/http/http/http.symbols.tar.bz2",
-    "$root_gen_dir/fuchsia/runners/cast_runner/cast_runner.symbols.tar.bz2",
-    "$root_gen_dir/fuchsia/runners/web_runner/web_runner.symbols.tar.bz2",
-    _license_path,
-  ]
-  outputs = [
-    "$_symbol_artifact_root/{{source_file_part}}",
-  ]
-  deps = [
-    ":build_id",
-    ":license",
-    "//fuchsia/engine:symbol_archive",
-    "//fuchsia/http:symbol_archive",
-    "//fuchsia/runners:cast_runner_symbol_archive",
-    "//fuchsia/runners:web_runner_symbol_archive",
-  ]
-}
+if (is_official_build) {
+  # Location where debug symbol tarballs are placed.
+  _symbol_artifact_root = "$root_out_dir/symbol_artifacts"
 
-# Specifies the build steps that must be performed before the creation of
-# a CIPD archive.
-group("archive_sources") {
-  deps = [
-    ":build_id",
-    ":license",
-    ":release_archives",
-    ":symbol_tarballs",
-  ]
-}
+  copy("symbol_tarballs") {
+    sources = [
+      "$_release_artifact_root/build_id.txt",
+      "$root_gen_dir/fuchsia/engine/chromium/chromium.symbols.tar.bz2",
+      "$root_gen_dir/fuchsia/http/http/http.symbols.tar.bz2",
+      "$root_gen_dir/fuchsia/runners/cast_runner/cast_runner.symbols.tar.bz2",
+      "$root_gen_dir/fuchsia/runners/web_runner/web_runner.symbols.tar.bz2",
+      _license_path,
+    ]
+    outputs = [
+      "$_symbol_artifact_root/{{source_file_part}}",
+    ]
+    deps = [
+      ":build_id",
+      ":license",
+      "//fuchsia/engine:symbol_archive",
+      "//fuchsia/http:symbol_archive",
+      "//fuchsia/runners:cast_runner_symbol_archive",
+      "//fuchsia/runners:web_runner_symbol_archive",
+    ]
+  }
+
+  # Specifies the build steps that must be performed before the creation of
+  # a CIPD archive.
+  group("archive_sources") {
+    deps = [
+      ":build_id",
+      ":license",
+      ":release_archives",
+      ":symbol_tarballs",
+    ]
+  }
+}  # is_official_build
 
 # Used by the top-level "gn_all" target to discover Fuchsia build targets.
 group("gn_all") {
