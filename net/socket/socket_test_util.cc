@@ -2078,6 +2078,7 @@ MockTransportClientSocketPool::MockTransportClientSocketPool(
           socket_factory,
           nullptr /* host_resolver */,
           nullptr /* proxy_delegate */,
+          nullptr /* http_user_agent_settings */,
           nullptr /* cert_verifier */,
           nullptr /* channel_id_server */,
           nullptr /* transport_security_state */,

@@ -45,7 +45,6 @@ class NET_EXPORT_PRIVATE HttpProxySocketParams
       const scoped_refptr<TransportSocketParams>& transport_params,
       const scoped_refptr<SSLSocketParams>& ssl_params,
       quic::QuicTransportVersion quic_version,
-      const std::string& user_agent,
       const HostPortPair& endpoint,
       HttpAuthCache* http_auth_cache,
       HttpAuthHandlerFactory* http_auth_handler_factory,
@@ -62,7 +61,6 @@ class NET_EXPORT_PRIVATE HttpProxySocketParams
     return ssl_params_;
   }
   quic::QuicTransportVersion quic_version() const { return quic_version_; }
-  const std::string& user_agent() const { return user_agent_; }
   const HostPortPair& endpoint() const { return endpoint_; }
   HttpAuthCache* http_auth_cache() const { return http_auth_cache_; }
   HttpAuthHandlerFactory* http_auth_handler_factory() const {
@@ -87,7 +85,6 @@ class NET_EXPORT_PRIVATE HttpProxySocketParams
   quic::QuicTransportVersion quic_version_;
   SpdySessionPool* spdy_session_pool_;
   QuicStreamFactory* quic_stream_factory_;
-  const std::string user_agent_;
   const HostPortPair endpoint_;
   HttpAuthCache* const http_auth_cache_;
   HttpAuthHandlerFactory* const http_auth_handler_factory_;

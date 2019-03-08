@@ -14,6 +14,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "net/base/host_port_pair.h"
+#include "net/base/http_user_agent_settings.h"
 #include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/ct_policy_status.h"
 #include "net/cert/do_nothing_ct_verifier.h"
@@ -412,6 +413,8 @@ HttpNetworkSession::Context SpdySessionDependencies::CreateSessionContext(
   context.ct_policy_enforcer = session_deps->ct_policy_enforcer.get();
   context.proxy_resolution_service =
       session_deps->proxy_resolution_service.get();
+  context.http_user_agent_settings =
+      session_deps->http_user_agent_settings.get();
   context.ssl_config_service = session_deps->ssl_config_service.get();
   context.http_auth_handler_factory =
       session_deps->http_auth_handler_factory.get();

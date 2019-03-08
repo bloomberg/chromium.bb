@@ -38,6 +38,7 @@ ClientSocketPoolManagerImpl::ClientSocketPoolManagerImpl(
     SSLConfigService* ssl_config_service,
     WebSocketEndpointLockManager* websocket_endpoint_lock_manager,
     ProxyDelegate* proxy_delegate,
+    const HttpUserAgentSettings* http_user_agent_settings,
     HttpNetworkSession::SocketPoolType pool_type)
     : net_log_(net_log),
       socket_factory_(socket_factory),
@@ -55,6 +56,7 @@ ClientSocketPoolManagerImpl::ClientSocketPoolManagerImpl(
       ssl_config_service_(ssl_config_service),
       websocket_endpoint_lock_manager_(websocket_endpoint_lock_manager),
       proxy_delegate_(proxy_delegate),
+      http_user_agent_settings_(http_user_agent_settings),
       pool_type_(pool_type) {
   CertDatabase::GetInstance()->AddObserver(this);
 }
@@ -101,21 +103,22 @@ TransportClientSocketPool* ClientSocketPoolManagerImpl::GetSocketPool(
     new_pool = std::make_unique<WebSocketTransportClientSocketPool>(
         sockets_per_proxy_server, sockets_per_group,
         unused_idle_socket_timeout(pool_type_), socket_factory_, host_resolver_,
-        proxy_delegate_, cert_verifier_, channel_id_service_,
-        transport_security_state_, cert_transparency_verifier_,
-        ct_policy_enforcer_, ssl_client_session_cache_,
-        ssl_client_session_cache_privacy_mode_, ssl_config_service_,
-        network_quality_estimator_, websocket_endpoint_lock_manager_, net_log_);
+        proxy_delegate_, http_user_agent_settings_, cert_verifier_,
+        channel_id_service_, transport_security_state_,
+        cert_transparency_verifier_, ct_policy_enforcer_,
+        ssl_client_session_cache_, ssl_client_session_cache_privacy_mode_,
+        ssl_config_service_, network_quality_estimator_,
+        websocket_endpoint_lock_manager_, net_log_);
   } else {
     new_pool = std::make_unique<TransportClientSocketPool>(
         sockets_per_proxy_server, sockets_per_group,
         unused_idle_socket_timeout(pool_type_), socket_factory_, host_resolver_,
-        proxy_delegate_, cert_verifier_, channel_id_service_,
-        transport_security_state_, cert_transparency_verifier_,
-        ct_policy_enforcer_, ssl_client_session_cache_,
-        ssl_client_session_cache_privacy_mode_, ssl_config_service_,
-        socket_performance_watcher_factory_, network_quality_estimator_,
-        net_log_);
+        proxy_delegate_, http_user_agent_settings_, cert_verifier_,
+        channel_id_service_, transport_security_state_,
+        cert_transparency_verifier_, ct_policy_enforcer_,
+        ssl_client_session_cache_, ssl_client_session_cache_privacy_mode_,
+        ssl_config_service_, socket_performance_watcher_factory_,
+        network_quality_estimator_, net_log_);
   }
 
   std::pair<TransportSocketPoolMap::iterator, bool> ret =

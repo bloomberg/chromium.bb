@@ -133,7 +133,7 @@ class HttpProxyConnectJobTest : public ::testing::TestWithParam<HttpProxyType>,
   scoped_refptr<HttpProxySocketParams> CreateParams(bool tunnel) {
     return base::MakeRefCounted<HttpProxySocketParams>(
         CreateHttpProxyParams(), CreateHttpsProxyParams(),
-        quic::QUIC_VERSION_UNSUPPORTED, std::string(),
+        quic::QUIC_VERSION_UNSUPPORTED,
         HostPortPair(kEndpointHost, tunnel ? 443 : 80),
         session_->http_auth_cache(), session_->http_auth_handler_factory(),
         session_->spdy_session_pool(), session_->quic_stream_factory(),
@@ -175,7 +175,7 @@ class HttpProxyConnectJobTest : public ::testing::TestWithParam<HttpProxyType>,
   void InitCommonConnectJobParams() {
     common_connect_job_params_ = std::make_unique<CommonConnectJobParams>(
         &socket_factory_, session_deps_.host_resolver.get(),
-        proxy_delegate_.get(),
+        proxy_delegate_.get(), nullptr /* http_user_agent_settings */,
         SSLClientSocketContext(session_deps_.cert_verifier.get(),
                                session_deps_.channel_id_service.get(),
                                session_deps_.transport_security_state.get(),

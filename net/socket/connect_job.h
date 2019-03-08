@@ -29,6 +29,7 @@ class ClientSocketHandle;
 class HostResolver;
 class HttpAuthController;
 class HttpResponseInfo;
+class HttpUserAgentSettings;
 class NetLog;
 class NetworkQualityEstimator;
 class ProxyDelegate;
@@ -46,6 +47,7 @@ struct NET_EXPORT_PRIVATE CommonConnectJobParams {
       ClientSocketFactory* client_socket_factory,
       HostResolver* host_resolver,
       ProxyDelegate* proxy_delegate,
+      const HttpUserAgentSettings* http_user_agent_settings,
       const SSLClientSocketContext& ssl_client_socket_context,
       const SSLClientSocketContext& ssl_client_socket_context_privacy_mode,
       SocketPerformanceWatcherFactory* socket_performance_watcher_factory,
@@ -60,6 +62,7 @@ struct NET_EXPORT_PRIVATE CommonConnectJobParams {
   ClientSocketFactory* client_socket_factory;
   HostResolver* host_resolver;
   ProxyDelegate* proxy_delegate;
+  const HttpUserAgentSettings* http_user_agent_settings;
   SSLClientSocketContext ssl_client_socket_context;
   SSLClientSocketContext ssl_client_socket_context_privacy_mode;
   SocketPerformanceWatcherFactory* socket_performance_watcher_factory;

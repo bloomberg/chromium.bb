@@ -954,10 +954,9 @@ int HttpStreamFactory::Job::DoInitConnectionImpl() {
     DCHECK(!is_websocket_);
     DCHECK(request_info_.socket_tag == SocketTag());
     return PreconnectSocketsForHttpRequest(
-        GetSocketGroup(), destination_, request_info_.extra_headers,
-        request_info_.load_flags, priority_, session_, proxy_info_,
-        server_ssl_config_, proxy_ssl_config_, request_info_.privacy_mode,
-        net_log_, num_streams_);
+        GetSocketGroup(), destination_, request_info_.load_flags, priority_,
+        session_, proxy_info_, server_ssl_config_, proxy_ssl_config_,
+        request_info_.privacy_mode, net_log_, num_streams_);
   }
 
   // If we can't use a HTTP/2 session, don't bother checking for one after
@@ -977,19 +976,18 @@ int HttpStreamFactory::Job::DoInitConnectionImpl() {
     SSLConfig websocket_server_ssl_config = server_ssl_config_;
     websocket_server_ssl_config.alpn_protos.clear();
     return InitSocketHandleForWebSocketRequest(
-        GetSocketGroup(), destination_, request_info_.extra_headers,
-        request_info_.load_flags, priority_, session_, proxy_info_,
-        websocket_server_ssl_config, proxy_ssl_config_,
+        GetSocketGroup(), destination_, request_info_.load_flags, priority_,
+        session_, proxy_info_, websocket_server_ssl_config, proxy_ssl_config_,
         request_info_.privacy_mode, net_log_, connection_.get(),
         resolution_callback, io_callback_, proxy_auth_callback);
   }
 
   return InitSocketHandleForHttpRequest(
-      GetSocketGroup(), destination_, request_info_.extra_headers,
-      request_info_.load_flags, priority_, session_, proxy_info_, quic_version_,
-      server_ssl_config_, proxy_ssl_config_, request_info_.privacy_mode,
-      request_info_.socket_tag, net_log_, connection_.get(),
-      resolution_callback, io_callback_, proxy_auth_callback);
+      GetSocketGroup(), destination_, request_info_.load_flags, priority_,
+      session_, proxy_info_, quic_version_, server_ssl_config_,
+      proxy_ssl_config_, request_info_.privacy_mode, request_info_.socket_tag,
+      net_log_, connection_.get(), resolution_callback, io_callback_,
+      proxy_auth_callback);
 }
 
 void HttpStreamFactory::Job::OnQuicHostResolution(int result) {

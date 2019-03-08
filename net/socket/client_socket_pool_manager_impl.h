@@ -32,6 +32,7 @@ class ChannelIDService;
 class ClientSocketFactory;
 class CTVerifier;
 class HostResolver;
+class HttpUserAgentSettings;
 class NetLog;
 class NetworkQualityEstimator;
 class ProxyDelegate;
@@ -63,6 +64,7 @@ class NET_EXPORT_PRIVATE ClientSocketPoolManagerImpl
       SSLConfigService* ssl_config_service,
       WebSocketEndpointLockManager* websocket_endpoint_lock_manager,
       ProxyDelegate* proxy_delegate,
+      const HttpUserAgentSettings* http_user_agent_settings,
       HttpNetworkSession::SocketPoolType pool_type);
   ~ClientSocketPoolManagerImpl() override;
 
@@ -102,6 +104,7 @@ class NET_EXPORT_PRIVATE ClientSocketPoolManagerImpl
   SSLConfigService* const ssl_config_service_;
   WebSocketEndpointLockManager* const websocket_endpoint_lock_manager_;
   ProxyDelegate* const proxy_delegate_;
+  const HttpUserAgentSettings* const http_user_agent_settings_;
   const HttpNetworkSession::SocketPoolType pool_type_;
 
   TransportSocketPoolMap socket_pools_;

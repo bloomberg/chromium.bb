@@ -29,6 +29,7 @@ class CTVerifier;
 class CTPolicyEnforcer;
 class HostResolver;
 class HttpProxySocketParams;
+class HttpUserAgentSettings;
 class NetLog;
 class NetLogWithSource;
 class NetworkQualityEstimator;
@@ -98,6 +99,7 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
       ClientSocketFactory* client_socket_factory,
       HostResolver* host_resolver,
       ProxyDelegate* proxy_delegate,
+      const HttpUserAgentSettings* http_user_agent_settings,
       CertVerifier* cert_verifier,
       ChannelIDService* channel_id_service,
       TransportSecurityState* transport_security_state,
@@ -173,6 +175,7 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
         ClientSocketFactory* client_socket_factory,
         HostResolver* host_resolver,
         ProxyDelegate* proxy_delegate,
+        const HttpUserAgentSettings* http_user_agent_settings,
         const SSLClientSocketContext& ssl_client_socket_context,
         const SSLClientSocketContext& ssl_client_socket_context_privacy_mode,
         SocketPerformanceWatcherFactory* socket_performance_watcher_factory,

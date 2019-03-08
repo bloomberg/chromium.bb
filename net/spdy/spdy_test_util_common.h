@@ -53,6 +53,7 @@ class CTPolicyEnforcer;
 class HashValue;
 class HostPortPair;
 class HostResolver;
+class HttpUserAgentSettings;
 class NetLogWithSource;
 class SpdySessionKey;
 class SpdyStream;
@@ -212,6 +213,7 @@ struct SpdySessionDependencies {
   std::unique_ptr<CTVerifier> cert_transparency_verifier;
   std::unique_ptr<CTPolicyEnforcer> ct_policy_enforcer;
   std::unique_ptr<ProxyResolutionService> proxy_resolution_service;
+  std::unique_ptr<HttpUserAgentSettings> http_user_agent_settings;
   std::unique_ptr<SSLConfigService> ssl_config_service;
   std::unique_ptr<MockClientSocketFactory> socket_factory;
   std::unique_ptr<HttpAuthHandlerFactory> http_auth_handler_factory;

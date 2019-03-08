@@ -21,6 +21,7 @@ CommonConnectJobParams::CommonConnectJobParams(
     ClientSocketFactory* client_socket_factory,
     HostResolver* host_resolver,
     ProxyDelegate* proxy_delegate,
+    const HttpUserAgentSettings* http_user_agent_settings,
     const SSLClientSocketContext& ssl_client_socket_context,
     const SSLClientSocketContext& ssl_client_socket_context_privacy_mode,
     SocketPerformanceWatcherFactory* socket_performance_watcher_factory,
@@ -30,6 +31,7 @@ CommonConnectJobParams::CommonConnectJobParams(
     : client_socket_factory(client_socket_factory),
       host_resolver(host_resolver),
       proxy_delegate(proxy_delegate),
+      http_user_agent_settings(http_user_agent_settings),
       ssl_client_socket_context(ssl_client_socket_context),
       ssl_client_socket_context_privacy_mode(
           ssl_client_socket_context_privacy_mode),
