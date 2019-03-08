@@ -167,10 +167,14 @@ class SyncConfirmationHandlerTest : public BrowserWithTestWindowTest,
     ASSERT_TRUE(call_data.arg1()->GetAsString(&event));
     EXPECT_EQ("account-image-changed", event);
 
+    identity::IdentityManager* identity_manager =
+        IdentityManagerFactory::GetForProfile(profile());
+    base::Optional<AccountInfo> primary_account =
+        identity_manager->FindExtendedAccountInfoForAccount(
+            identity_manager->GetPrimaryAccountInfo());
+
     std::string original_picture_url =
-        IdentityManagerFactory::GetForProfile(profile())
-            ->GetPrimaryAccountInfo()
-            .picture_url;
+        primary_account ? primary_account->picture_url : std::string();
     std::string expected_picture_url =
         original_picture_url.empty()
             ? profiles::GetPlaceholderAvatarIconUrl()
@@ -235,10 +239,13 @@ TEST_F(SyncConfirmationHandlerTest, TestSetImageIfPrimaryAccountReady) {
   EXPECT_EQ("sync.confirmation.clearFocus",
             web_ui()->call_data()[1]->function_name());
 
+  identity::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(profile());
+  base::Optional<AccountInfo> primary_account_info =
+      identity_manager->FindExtendedAccountInfoForAccount(
+          identity_manager->GetPrimaryAccountInfo());
   std::string original_picture_url =
-      IdentityManagerFactory::GetForProfile(profile())
-          ->GetPrimaryAccountInfo()
-          .picture_url;
+      primary_account_info ? primary_account_info->picture_url : std::string();
   GURL picture_url_with_size = signin::GetAvatarImageURLWithOptions(
       GURL(original_picture_url), kExpectedProfileImageSize,
       false /* no_silhouette */);
@@ -298,10 +305,14 @@ TEST_F(SyncConfirmationHandlerTest, TestSetImageIfPrimaryAccountReadyLater) {
   EXPECT_TRUE(
       web_ui()->call_data()[2]->arg1()->GetAsString(&passed_picture_url));
 
+  identity::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(profile());
+  base::Optional<AccountInfo> primary_account_info =
+      identity_manager->FindExtendedAccountInfoForAccount(
+          identity_manager->GetPrimaryAccountInfo());
+
   std::string original_picture_url =
-      IdentityManagerFactory::GetForProfile(profile())
-          ->GetPrimaryAccountInfo()
-          .picture_url;
+      primary_account_info ? primary_account_info->picture_url : std::string();
   GURL picture_url_with_size = signin::GetAvatarImageURLWithOptions(
       GURL(original_picture_url), kExpectedProfileImageSize,
       false /* no_silhouette */);
