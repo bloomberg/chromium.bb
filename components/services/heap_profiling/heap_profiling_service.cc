@@ -5,6 +5,7 @@
 #include "components/services/heap_profiling/heap_profiling_service.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -86,11 +87,6 @@ void HeapProfilingService::AddProfilingClient(
                                       std::move(params));
 }
 
-void HeapProfilingService::SetKeepSmallAllocations(
-    bool keep_small_allocations) {
-  keep_small_allocations_ = keep_small_allocations;
-}
-
 void HeapProfilingService::GetProfiledPids(GetProfiledPidsCallback callback) {
   std::move(callback).Run(connection_manager_.GetConnectionPids());
 }
@@ -107,8 +103,7 @@ void HeapProfilingService::DumpProcessesForTracing(
       connection_manager_.GetConnectionPidsThatNeedVmRegions();
   if (pids.empty()) {
     connection_manager_.DumpProcessesForTracing(
-        keep_small_allocations_, strip_path_from_mapped_files,
-        std::move(callback), VmRegions());
+        strip_path_from_mapped_files, std::move(callback), VmRegions());
   } else {
     // Need a memory map to make sense of the dump. The dump will be triggered
     // in the memory map global dump callback.
@@ -126,8 +121,7 @@ void HeapProfilingService::OnGetVmRegionsCompleteForDumpProcessesForTracing(
     DumpProcessesForTracingCallback callback,
     VmRegions vm_regions) {
   connection_manager_.DumpProcessesForTracing(
-      keep_small_allocations_, strip_path_from_mapped_files,
-      std::move(callback), std::move(vm_regions));
+      strip_path_from_mapped_files, std::move(callback), std::move(vm_regions));
 }
 
 }  // namespace heap_profiling

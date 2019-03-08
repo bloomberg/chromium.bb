@@ -87,10 +87,6 @@ class TestDriver {
   // |RunInitializationOnUIThread|, and then signals |wait_for_ui_thread_|.
   void CheckOrStartProfilingOnUIThreadAndSignal();
 
-  // Calls Supervisor::SetKeepSmallAllocations() and then signals
-  // |wait_for_ui_thread_|.
-  void SetKeepSmallAllocationsOnUIThreadAndSignal();
-
   // If profiling is expected to already be started, confirm it.
   // Otherwise, start profiling with the given mode.
   // This method must only be called on platforms that supported nested run

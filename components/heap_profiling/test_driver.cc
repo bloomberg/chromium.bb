@@ -591,7 +591,6 @@ bool TestDriver::RunTest(const Options& options) {
   if (running_on_ui_thread_) {
     if (!CheckOrStartProfilingOnUIThreadWithNestedRunLoops())
       return false;
-    Supervisor::GetInstance()->SetKeepSmallAllocations(true);
     if (ShouldProfileRenderer())
       WaitForProfilingToStartForAllRenderersUIThread();
     if (ShouldProfileBrowser())
@@ -605,11 +604,6 @@ bool TestDriver::RunTest(const Options& options) {
     wait_for_ui_thread_.Wait();
     if (!initialization_success_)
       return false;
-    base::PostTaskWithTraits(
-        FROM_HERE, {content::BrowserThread::UI},
-        base::BindOnce(&TestDriver::SetKeepSmallAllocationsOnUIThreadAndSignal,
-                       base::Unretained(this)));
-    wait_for_ui_thread_.Wait();
     if (ShouldProfileRenderer()) {
       base::PostTaskWithTraits(
           FROM_HERE, {content::BrowserThread::UI},
@@ -665,12 +659,6 @@ void TestDriver::CheckOrStartProfilingOnUIThreadAndSignal() {
   // profiling has started.
   if (!wait_for_profiling_to_start_)
     wait_for_ui_thread_.Signal();
-}
-
-void TestDriver::SetKeepSmallAllocationsOnUIThreadAndSignal() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  Supervisor::GetInstance()->SetKeepSmallAllocations(true);
-  wait_for_ui_thread_.Signal();
 }
 
 bool TestDriver::CheckOrStartProfilingOnUIThreadWithAsyncSignalling() {

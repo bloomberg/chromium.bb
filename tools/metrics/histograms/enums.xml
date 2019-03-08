@@ -33309,7 +33309,6 @@ from previous Chrome versions.
   <int value="1060319397" label="enable-data-reduction-proxy-carrier-test"/>
   <int value="1062357243" label="remember-cert-error-decisions"/>
   <int value="1064288458" label="OfflineRecentPages:enabled"/>
-  <int value="1067197792" label="memlog-keep-small-allocations"/>
   <int value="1067618884" label="enable-experimental-input-view-features"/>
   <int value="1067990299" label="enable-ui-devtools"/>
   <int value="1070164693" label="MidiManagerDynamicInstantiation:disabled"/>

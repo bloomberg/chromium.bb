@@ -57,7 +57,6 @@ class Controller {
   using GetProfiledPidsCallback =
       base::OnceCallback<void(const std::vector<base::ProcessId>&)>;
   void GetProfiledPids(GetProfiledPidsCallback callback);
-  void SetKeepSmallAllocations(bool keep_small_allocations);
 
   // Careful! WeakPtrs are also sequence-affine.
   // This method must be called from the same sequence the instance is bound to.

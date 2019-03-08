@@ -791,17 +791,6 @@ const char kOutOfProcessHeapProfilingInProcessDescription[] =
     "Makes profiling service (if enabled) to be executed within the browser "
     "process. By default the service is run in a dedicated utility process.";
 
-const char kOutOfProcessHeapProfilingKeepSmallAllocations[] =
-    "Emit small allocations in memlog heap dumps (deprecated).";
-const char kOutOfProcessHeapProfilingKeepSmallAllocationsDescription[] =
-    "By default, small allocations are pruned from the heap dump. This reduces "
-    "the size of the compressed trace by 100x. If pruning is disabled, the "
-    "chrome://tracing UI may be unable to take or load the trace. Save the "
-    "trace directly using chrome://memory-internals, and use other mechanisms "
-    "[e.g. diff_heap_profiler.py] to examine the trace. Note that "
-    "automatically uploaded traces will always be pruned. This only affects "
-    "manually taken memory-infra traces.";
-
 const char kOutOfProcessHeapProfilingSamplingRate[] =
     "Sampling interval in bytes for memlog allocations.";
 const char kOutOfProcessHeapProfilingSamplingRateDescription[] =

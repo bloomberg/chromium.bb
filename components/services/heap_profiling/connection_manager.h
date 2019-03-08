@@ -70,8 +70,7 @@ class ConnectionManager {
   // Dumping is asynchronous so will not be complete when this function
   // returns. The dump is complete when the callback provided in the args is
   // fired.
-  void DumpProcessesForTracing(bool keep_small_allocations,
-                               bool strip_path_from_mapped_files,
+  void DumpProcessesForTracing(bool strip_path_from_mapped_files,
                                DumpProcessesForTracingCallback callback,
                                VmRegions vm_regions);
 
@@ -92,7 +91,6 @@ class ConnectionManager {
       scoped_refptr<DumpProcessesForTracingTracking> tracking,
       base::ProcessId pid,
       mojom::ProcessType process_type,
-      bool keep_small_allocations,
       bool strip_path_from_mapped_files,
       uint32_t sampling_rate,
       mojom::HeapProfilePtr profile);
@@ -101,7 +99,6 @@ class ConnectionManager {
       scoped_refptr<DumpProcessesForTracingTracking> tracking,
       base::ProcessId pid,
       mojom::ProcessType process_type,
-      bool keep_small_allocations,
       bool strip_path_from_mapped_files,
       uint32_t sampling_rate,
       bool success,
