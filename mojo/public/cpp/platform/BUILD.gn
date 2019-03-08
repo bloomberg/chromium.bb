@@ -38,6 +38,10 @@ component("platform") {
     sources += [ "named_platform_channel_posix.cc" ]
   }
 
+  if (is_mac) {
+    sources += [ "named_platform_channel_mac.cc" ]
+  }
+
   if (is_fuchsia) {
     public_deps += [
       "//third_party/fuchsia-sdk/sdk:fdio",

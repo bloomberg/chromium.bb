@@ -15,6 +15,8 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "build/build_config.h"
+#include "mojo/public/cpp/platform/features.h"
 
 namespace mojo {
 
@@ -77,10 +79,26 @@ PlatformHandle CreateUnixDomainSocket() {
 
 }  // namespace
 
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+// Temporarily forward declare named_platform_channel_mac.cc symbols.
+namespace NamedPlatformChannelMac {
+PlatformChannelServerEndpoint CreateServerEndpoint(
+    const NamedPlatformChannel::Options& options,
+    NamedPlatformChannel::ServerName* server_name);
+PlatformChannelEndpoint CreateClientEndpoint(
+    const NamedPlatformChannel::ServerName& server_name);
+}  // namespace NamedPlatformChannelMac
+#endif
+
 // static
 PlatformChannelServerEndpoint NamedPlatformChannel::CreateServerEndpoint(
     const Options& options,
     ServerName* server_name) {
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  if (base::FeatureList::IsEnabled(features::kMojoChannelMac)) {
+    return NamedPlatformChannelMac::CreateServerEndpoint(options, server_name);
+  }
+#endif
   ServerName name = options.server_name;
   if (name.empty())
     name = GenerateRandomServerName(options);
@@ -128,6 +146,11 @@ PlatformChannelServerEndpoint NamedPlatformChannel::CreateServerEndpoint(
 // static
 PlatformChannelEndpoint NamedPlatformChannel::CreateClientEndpoint(
     const ServerName& server_name) {
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  if (base::FeatureList::IsEnabled(features::kMojoChannelMac)) {
+    return NamedPlatformChannelMac::CreateClientEndpoint(server_name);
+  }
+#endif
   DCHECK(!server_name.empty());
 
   struct sockaddr_un unix_addr;

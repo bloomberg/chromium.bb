@@ -41,6 +41,18 @@ class COMPONENT_EXPORT(MOJO_CPP_PLATFORM) PlatformChannel {
   using HandlePassingInfo = base::HandlesToInheritVector;
 #elif defined(OS_FUCHSIA)
   using HandlePassingInfo = base::HandlesToTransferVector;
+#elif defined(OS_MACOSX) && !defined(OS_IOS)
+  // This type represents a union between MachPortsForRendezvous and
+  // FileHandleMappingVector, so that the type to use can be determined at run-
+  // time.
+  // TODO(crbug.com/932175): This will become a typedef to
+  // base::MachPortsForRendezvous in the future.
+  class HandlePassingInfo : public base::MachPortsForRendezvous,
+                            public base::FileHandleMappingVector {
+   public:
+    using base::MachPortsForRendezvous::operator=;
+    using base::FileHandleMappingVector::operator=;
+  };
 #elif defined(OS_POSIX)
   using HandlePassingInfo = base::FileHandleMappingVector;
 #else
