@@ -143,8 +143,7 @@ class CorsURLLoaderTest : public testing::Test {
  protected:
   // testing::Test implementation.
   void SetUp() override {
-    feature_list_.InitWithFeatures(
-        {features::kOutOfBlinkCors, features::kNetworkService}, {});
+    feature_list_.InitAndEnableFeature(features::kOutOfBlinkCors);
 
     network_service_ = NetworkService::CreateForTesting();
 
