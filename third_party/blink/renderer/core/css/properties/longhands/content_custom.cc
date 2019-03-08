@@ -179,8 +179,8 @@ void Content::ApplyValue(StyleResolverState& state,
       next_content = ContentData::Create(quote_type);
     } else {
       String string;
-      if (item->IsFunctionValue()) {
-        const CSSFunctionValue* function_value = ToCSSFunctionValue(item.Get());
+      if (const auto* function_value =
+              DynamicTo<CSSFunctionValue>(item.Get())) {
         DCHECK_EQ(function_value->FunctionType(), CSSValueAttr);
         state.Style()->SetHasAttrContent();
         // TODO: Can a namespace be specified for an attr(foo)?

@@ -1624,8 +1624,7 @@ bool IsGridTrackFixedSized(const CSSValue& value) {
   if (value.IsPrimitiveValue() || value.IsIdentifierValue())
     return IsGridBreadthFixedSized(value);
 
-  DCHECK(value.IsFunctionValue());
-  auto& function = ToCSSFunctionValue(value);
+  auto& function = To<CSSFunctionValue>(value);
   if (function.FunctionType() == CSSValueFitContent)
     return false;
 

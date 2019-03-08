@@ -157,8 +157,7 @@ InterpolationValue CSSFontVariationSettingsInterpolationType::MaybeConvertValue(
   std::unique_ptr<InterpolableList> numbers = InterpolableList::Create(length);
   Vector<AtomicString> tags;
   for (wtf_size_t i = 0; i < length; ++i) {
-    const cssvalue::CSSFontVariationValue& item =
-        cssvalue::ToCSSFontVariationValue(list.Item(i));
+    const auto& item = To<cssvalue::CSSFontVariationValue>(list.Item(i));
     numbers->Set(i, InterpolableNumber::Create(item.Value()));
     tags.push_back(item.Tag());
   }

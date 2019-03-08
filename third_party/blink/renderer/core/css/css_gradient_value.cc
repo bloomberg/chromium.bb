@@ -129,15 +129,15 @@ scoped_refptr<Image> CSSGradientValue::GetImage(
   scoped_refptr<Gradient> gradient;
   switch (GetClassType()) {
     case kLinearGradientClass:
-      gradient = ToCSSLinearGradientValue(this)->CreateGradient(
+      gradient = To<CSSLinearGradientValue>(this)->CreateGradient(
           conversion_data, size, document, style);
       break;
     case kRadialGradientClass:
-      gradient = ToCSSRadialGradientValue(this)->CreateGradient(
+      gradient = To<CSSRadialGradientValue>(this)->CreateGradient(
           conversion_data, size, document, style);
       break;
     case kConicGradientClass:
-      gradient = ToCSSConicGradientValue(this)->CreateGradient(
+      gradient = To<CSSConicGradientValue>(this)->CreateGradient(
           conversion_data, size, document, style);
       break;
     default:

@@ -97,7 +97,7 @@ InterpolationValue filter_interpolation_functions::MaybeConvertCSSFilter(
   if (value.IsURIValue())
     return nullptr;
 
-  const CSSFunctionValue& filter = ToCSSFunctionValue(value);
+  const auto& filter = To<CSSFunctionValue>(value);
   DCHECK_LE(filter.length(), 1u);
   FilterOperation::OperationType type =
       FilterOperationResolver::FilterOperationForType(filter.FunctionType());

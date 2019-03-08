@@ -553,14 +553,12 @@ void FrameSerializer::RetrieveResourcesForCSSValue(const CSSValue& css_value,
 
     AddImageToResources(style_image->CachedImage(),
                         style_image->CachedImage()->Url());
-  } else if (css_value.IsFontFaceSrcValue()) {
-    const CSSFontFaceSrcValue& font_face_src_value =
-        ToCSSFontFaceSrcValue(css_value);
-    if (font_face_src_value.IsLocal()) {
+  } else if (const auto* font_face_src_value =
+                 DynamicTo<CSSFontFaceSrcValue>(css_value)) {
+    if (font_face_src_value->IsLocal())
       return;
-    }
 
-    AddFontToResources(font_face_src_value.Fetch(&document, nullptr));
+    AddFontToResources(font_face_src_value->Fetch(&document, nullptr));
   } else if (css_value.IsValueList()) {
     const CSSValueList& css_value_list = ToCSSValueList(css_value);
     for (unsigned i = 0; i < css_value_list.length(); i++)

@@ -227,13 +227,10 @@ void AddColorsFromImageStyle(const ComputedStyle& style,
 
   StyleGeneratedImage* gen_image = ToStyleGeneratedImage(style_image);
   CSSValue* image_css = gen_image->CssValue();
-  if (image_css->IsGradientValue()) {
-    cssvalue::CSSGradientValue* gradient =
-        cssvalue::ToCSSGradientValue(image_css);
+  if (auto* gradient = DynamicTo<cssvalue::CSSGradientValue>(image_css)) {
     BlendWithColorsFromGradient(gradient, colors, found_non_transparent_color,
                                 found_opaque_color, layout_object);
   }
-  return;
 }
 
 // Get the background colors behind the given rect in the given document, by
