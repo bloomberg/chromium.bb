@@ -245,6 +245,8 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   PaintLayer* FirstChild() const { return first_; }
   PaintLayer* LastChild() const { return last_; }
 
+  const PaintLayer* CommonAncestor(const PaintLayer*) const;
+
   // TODO(wangxianzhu): Find a better name for it. 'paintContainer' might be
   // good but we can't use it for now because it conflicts with
   // PaintInfo::paintContainer.
@@ -764,6 +766,9 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   void SetNeedsVisualOverflowRecalc();
   void SetNeedsCompositingInputsUpdate();
 
+  // This methods marks everything from this layer up to the |ancestor| argument
+  // (both included).
+  void SetChildNeedsCompositingInputsUpdateUpToAncestor(PaintLayer* ancestor);
   // Use this internal method only for cases during the descendant-dependent
   // tree walk.
   bool ChildNeedsCompositingInputsUpdate() const {

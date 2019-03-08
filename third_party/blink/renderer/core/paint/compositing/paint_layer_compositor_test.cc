@@ -110,4 +110,35 @@ TEST_F(PaintLayerCompositorTest, UpdateDoesNotOrphanMainGraphicsLayer) {
   EXPECT_EQ(main_graphics_layer_parent, main_graphics_layer->Parent());
 }
 
+TEST_F(PaintLayerCompositorTest, CompositingInputsUpdateStopsContainStrict) {
+  SetHtmlInnerHTML(R"HTML(
+    <style>
+      div {
+        position: relative;
+      }
+      #wrapper {
+        contain: strict;
+        }
+    </style>
+    <div id='wrapper'>
+      <div id='target'></div>
+    </div>
+  )HTML");
+
+  PaintLayer* wrapper = GetPaintLayerByElementId("wrapper");
+  PaintLayer* target = GetPaintLayerByElementId("target");
+  EXPECT_FALSE(wrapper->NeedsCompositingInputsUpdate());
+  EXPECT_FALSE(target->NeedsCompositingInputsUpdate());
+
+  target->SetNeedsCompositingInputsUpdate();
+  EXPECT_FALSE(wrapper->NeedsCompositingInputsUpdate());
+  EXPECT_TRUE(target->NeedsCompositingInputsUpdate());
+
+  GetDocument().View()->UpdateLifecycleToCompositingInputsClean();
+  EXPECT_EQ(DocumentLifecycle::kCompositingInputsClean,
+            GetDocument().Lifecycle().GetState());
+  EXPECT_FALSE(wrapper->NeedsCompositingInputsUpdate());
+  EXPECT_FALSE(target->NeedsCompositingInputsUpdate());
+}
+
 }  // namespace blink

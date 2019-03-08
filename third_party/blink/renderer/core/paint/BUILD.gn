@@ -41,6 +41,8 @@ blink_core_sources("paint") {
     "collapsed_border_painter.h",
     "compositing/composited_layer_mapping.cc",
     "compositing/composited_layer_mapping.h",
+    "compositing/compositing_inputs_root.cc",
+    "compositing/compositing_inputs_root.h",
     "compositing/compositing_inputs_updater.cc",
     "compositing/compositing_inputs_updater.h",
     "compositing/compositing_layer_assigner.cc",

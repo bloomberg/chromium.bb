@@ -30,6 +30,7 @@
 #include "base/gtest_prod_util.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/document_lifecycle.h"
+#include "third_party/blink/renderer/core/paint/compositing/compositing_inputs_root.h"
 #include "third_party/blink/renderer/core/paint/compositing/compositing_reason_finder.h"
 
 namespace blink {
@@ -156,6 +157,16 @@ class CORE_EXPORT PaintLayerCompositor {
 
   void AttachRootLayerViaChromeClient();
 
+  PaintLayer* GetCompositingInputsRoot() {
+    return compositing_inputs_root_.Get();
+  }
+
+  void ClearCompositingInputsRoot() { compositing_inputs_root_.Clear(); }
+
+  void UpdateCompositingInputsRoot(PaintLayer* layer) {
+    compositing_inputs_root_.Update(layer);
+  }
+
  private:
 #if DCHECK_IS_ON()
   void AssertNoUnresolvedDirtyBits();
@@ -221,6 +232,8 @@ class CORE_EXPORT PaintLayerCompositor {
     kRootLayerAttachedViaEnclosingFrame
   };
   RootLayerAttachment root_layer_attachment_;
+
+  CompositingInputsRoot compositing_inputs_root_;
 
   FRIEND_TEST_ALL_PREFIXES(FrameThrottlingTest,
                            IntersectionObservationOverridesThrottling);
