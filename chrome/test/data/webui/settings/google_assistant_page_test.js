@@ -9,12 +9,18 @@ class TestGoogleAssistantBrowserProxy extends TestBrowserProxy {
   constructor() {
     super([
       'showGoogleAssistantSettings',
+      'retrainAssistantVoiceModel',
     ]);
   }
 
   /** @override */
   showGoogleAssistantSettings() {
     this.methodCalled('showGoogleAssistantSettings');
+  }
+
+  /** @override */
+  retrainAssistantVoiceModel() {
+    this.methodCalled('retrainAssistantVoiceModel');
   }
 }
 
@@ -25,6 +31,13 @@ suite('GoogleAssistantHandler', function() {
 
   /** @type {?TestGoogleAssistantBrowserProxy} */
   let browserProxy = null;
+
+  suiteSetup(function() {
+    loadTimeData.overrideValues({
+      enableAssistant: true,
+      voiceMatchEnabled: true,
+    });
+  });
 
   setup(function() {
     browserProxy = new TestGoogleAssistantBrowserProxy();
@@ -63,6 +76,7 @@ suite('GoogleAssistantHandler', function() {
     let button = page.$$('#googleAssistantContextEnable');
     assertFalse(!!button);
     page.setPrefValue('settings.voice_interaction.enabled', true);
+    page.setPrefValue('settings.voice_interaction.context.enabled', false);
     Polymer.dom.flush();
     button = page.$$('#googleAssistantContextEnable');
     assertTrue(!!button);
@@ -72,6 +86,123 @@ suite('GoogleAssistantHandler', function() {
     button.click();
     Polymer.dom.flush();
     assertTrue(button.checked);
+    assertTrue(
+        page.getPref('settings.voice_interaction.context.enabled.value'), true);
+  });
+
+  test('toggleAssistantHotword', function() {
+    let button = page.$$('#googleAssistantHotwordEnable');
+    assertFalse(!!button);
+    page.setPrefValue('settings.voice_interaction.enabled', true);
+    page.setPrefValue('settings.voice_interaction.hotword.enabled', false);
+    Polymer.dom.flush();
+    button = page.$$('#googleAssistantHotwordEnable');
+    assertTrue(!!button);
+    assertFalse(button.disabled);
+    assertFalse(button.checked);
+
+    button.click();
+    Polymer.dom.flush();
+    assertTrue(button.checked);
+    assertTrue(
+        page.getPref('settings.voice_interaction.hotword.enabled.value'), true);
+  });
+
+  test('tapOnRetrainVoiceModel', function() {
+    let button = page.$$('#retrainVoiceModel');
+    assertFalse(!!button);
+    page.setPrefValue('settings.voice_interaction.enabled', true);
+    page.setPrefValue('settings.voice_interaction.hotword.enabled', true);
+    page.setPrefValue(
+        'settings.voice_interaction.activity_control.consent_status',
+        ConsentStatus.kActivityControlAccepted);
+    Polymer.dom.flush();
+    button = page.$$('#retrainVoiceModel');
+    assertTrue(!!button);
+
+    button.click();
+    Polymer.dom.flush();
+    return browserProxy.whenCalled('retrainAssistantVoiceModel');
+  });
+
+  test('retrainButtonVisibility', function() {
+    let button = page.$$('#retrainVoiceModel');
+    assertFalse(!!button);
+    page.setPrefValue('settings.voice_interaction.enabled', true);
+    Polymer.dom.flush();
+    button = page.$$('#retrainVoiceModel');
+    assertFalse(!!button);
+
+    // Hotword enabled.
+    // Activity control consent not granted.
+    // Button should not be shown.
+    page.setPrefValue('settings.voice_interaction.hotword.enabled', true);
+    page.setPrefValue(
+        'settings.voice_interaction.activity_control.consent_status',
+        ConsentStatus.kUnauthorized);
+    Polymer.dom.flush();
+    button = page.$$('#retrainVoiceModel');
+    assertFalse(!!button);
+
+    // Hotword disabled.
+    // Activity control consent granted.
+    // Button should not be shown.
+    page.setPrefValue('settings.voice_interaction.hotword.enabled', false);
+    page.setPrefValue(
+        'settings.voice_interaction.activity_control.consent_status',
+        ConsentStatus.kActivityControlAccepted);
+    Polymer.dom.flush();
+    button = page.$$('#retrainVoiceModel');
+    assertFalse(!!button);
+
+    // Hotword enabled.
+    // Activity control consent granted.
+    // Button should be shown.
+    page.setPrefValue('settings.voice_interaction.hotword.enabled', true);
+    page.setPrefValue(
+        'settings.voice_interaction.activity_control.consent_status',
+        ConsentStatus.kActivityControlAccepted);
+    Polymer.dom.flush();
+    button = page.$$('#retrainVoiceModel');
+    assertTrue(!!button);
+  });
+
+  test('toggleAssistantNotification', function() {
+    let button = page.$$('#googleAssistantNotificationEnable');
+    assertFalse(!!button);
+    page.setPrefValue('settings.voice_interaction.enabled', true);
+    page.setPrefValue('settings.voice_interaction.notification.enabled', false);
+    Polymer.dom.flush();
+    button = page.$$('#googleAssistantNotificationEnable');
+    assertTrue(!!button);
+    assertFalse(button.disabled);
+    assertFalse(button.checked);
+
+    button.click();
+    Polymer.dom.flush();
+    assertTrue(button.checked);
+    assertTrue(
+        page.getPref('settings.voice_interaction.notification.enabled.value'),
+        true);
+  });
+
+  test('toggleAssistantLaunchWithMicOpen', function() {
+    let button = page.$$('#googleAssistantLaunchWithMicOpen');
+    assertFalse(!!button);
+    page.setPrefValue('settings.voice_interaction.enabled', true);
+    page.setPrefValue('settings.voice_interaction.launch_with_mic_open', false);
+    Polymer.dom.flush();
+    button = page.$$('#googleAssistantLaunchWithMicOpen');
+    assertTrue(!!button);
+    assertFalse(button.disabled);
+    assertFalse(button.checked);
+
+    button.click();
+    Polymer.dom.flush();
+    assertTrue(button.checked);
+    assertTrue(
+        page.getPref('settings.voice_interaction.launch_with_mic_open.value'),
+        true);
   });
 
   test('tapOnAssistantSettings', function() {
