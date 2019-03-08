@@ -4,14 +4,21 @@
 
 package org.chromium.chrome.browser.omaha;
 
+import android.support.annotation.IntDef;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
 import org.chromium.base.CommandLine;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.omaha.UpdateStatusProvider.UpdateState;
 import org.chromium.chrome.browser.omaha.inline.FakeAppUpdateManagerWrapper;
 import org.chromium.components.variations.VariationsAssociatedData;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.util.Locale;
 
 /**
  * Helper class for retrieving experiment configuration values and for manually testing update
@@ -42,6 +49,35 @@ public class UpdateConfigs {
             "inline_update_download_canceled";
     private static final String INLINE_UPDATE_INSTALL_FAILED_SWITCH_VALUE =
             "inline_update_install_failed";
+
+    private static final String UPDATE_FLOW_PARAM_NAME = "flow";
+
+    /** Possible update flow configurations. */
+    @IntDef({UpdateFlowConfiguration.NEVER_SHOW, UpdateFlowConfiguration.INTENT_ONLY,
+            UpdateFlowConfiguration.INLINE_ONLY, UpdateFlowConfiguration.BEST_EFFORT})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface UpdateFlowConfiguration {
+        /** Turns off all update indicators. */
+        int NEVER_SHOW = 1;
+
+        /**
+         * Requires Omaha to say an update is available, and only ever Intents out to Play Store.
+         */
+        int INTENT_ONLY = 2;
+
+        /**
+         * Requires both Omaha and Play Store to say an update is available. Only ever uses the
+         * inline update flow.
+         */
+        int INLINE_ONLY = 3;
+
+        /**
+         * Checks both Omaha and Play Store. If Omaha says there is an update available, but Play
+         * Store says there is no update available, Intents out to Play Store. If both Omaha and
+         * Play Store says an update is available, uses the inline update flow.
+         */
+        int BEST_EFFORT = 4;
+    }
 
     /**
      * @return The minimum required storage to show the update prompt or {@code -1} if there is no
@@ -164,5 +200,40 @@ public class UpdateConfigs {
             value = VariationsAssociatedData.getVariationParamValue(FIELD_TRIAL_NAME, paramName);
         }
         return value;
+    }
+
+    /**
+     * When the inline update flow is enabled, returns the variation for the current session. With
+     * the inline update flow disabled it returns {@link UpdateFlowConfiguration#INTENT_ONLY}.
+     * @return the current inline update flow configuration.
+     */
+    @UpdateFlowConfiguration
+    static int getConfiguration() {
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.INLINE_UPDATE_FLOW)) {
+            // Always use the the old flow if the inline update flow feature is not enabled.
+            return UpdateFlowConfiguration.INTENT_ONLY;
+        }
+
+        switch (getFieldTrialConfigurationLowerCase()) {
+            case "never_show":
+                return UpdateFlowConfiguration.NEVER_SHOW;
+            case "intent_only":
+                return UpdateFlowConfiguration.INTENT_ONLY;
+            case "inline_only":
+                return UpdateFlowConfiguration.INLINE_ONLY;
+            case "best_effort":
+                return UpdateFlowConfiguration.BEST_EFFORT;
+            default:
+                // By just turning on the feature flag, assume INLINE_ONLY.
+                return UpdateFlowConfiguration.INLINE_ONLY;
+        }
+    }
+
+    @NonNull
+    private static String getFieldTrialConfigurationLowerCase() {
+        String configuration = ChromeFeatureList.getFieldTrialParamByFeature(
+                ChromeFeatureList.INLINE_UPDATE_FLOW, UPDATE_FLOW_PARAM_NAME);
+        if (configuration == null) return "";
+        return configuration.toLowerCase(Locale.US);
     }
 }
