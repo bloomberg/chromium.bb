@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 #include <string>
+#include <vector>
 
 #include "content/browser/accessibility/accessibility_tree_formatter_browser.h"
 
@@ -18,6 +19,8 @@ class CONTENT_EXPORT AccessibilityTreeFormatterBlink
   explicit AccessibilityTreeFormatterBlink();
   ~AccessibilityTreeFormatterBlink() override;
 
+  void AddDefaultFilters(
+      std::vector<PropertyFilter>* property_filters) override;
   static std::unique_ptr<AccessibilityTreeFormatter> CreateBlink();
 
  private:
