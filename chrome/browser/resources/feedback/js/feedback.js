@@ -73,12 +73,13 @@ let isSystemInfoReady = false;
 let isShowingSrtPrompt = false;
 
 /**
- * Regular expression to check for all variants of bluetooth, blutooth, with or
- * without space between the words and for BT when used as an individual word,
- * or as two individual characters. Case insensitive matching.
+ * Regular expression to check for all variants of blu[e]toot[h] with or without
+ * space between the words; for BT when used as an individual word, or as two
+ * individual characters, and for BLE when used as an individual word. Case
+ * insensitive matching.
  * @type {RegExp}
  */
-const btRegEx = new RegExp('[b]lu[e]?[ ]?tooth|\b[b][ ]?[t]\b', 'i');
+const btRegEx = new RegExp('blu[e]?[ ]?toot[h]?|\\bb[ ]?t\\b|\\bble\\b', 'i');
 
 /**
  * Regular expression to check for all strings indicating that a user can't
