@@ -43,7 +43,7 @@ namespace ash {
 namespace {
 
 constexpr int kShelfRoundedCornerRadius = 28;
-constexpr int kShelfBlurRadius = 10;
+constexpr int kShelfBlurRadius = 30;
 constexpr float kShelfBlurQuality = 0.33f;
 
 // Return the first or last focusable child of |root|.
