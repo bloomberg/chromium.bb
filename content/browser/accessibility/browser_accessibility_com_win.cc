@@ -690,7 +690,7 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_anchor(LONG index,
                                                       VARIANT* anchor) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ANCHOR);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!owner() || !IsEmbeddedByParentObjectHypertext())
+  if (!owner() || !IsHyperlink())
     return E_FAIL;
 
   // IA2 text links can have only one anchor, that is the text inside them.
@@ -716,7 +716,7 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_anchorTarget(
     VARIANT* anchor_target) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ANCHOR_TARGET);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!owner() || !IsEmbeddedByParentObjectHypertext())
+  if (!owner() || !IsHyperlink())
     return E_FAIL;
 
   // IA2 text links can have at most one target, that is when they represent an
@@ -745,7 +745,7 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_anchorTarget(
 IFACEMETHODIMP BrowserAccessibilityComWin::get_startIndex(LONG* index) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_START_INDEX);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!owner() || !IsEmbeddedByParentObjectHypertext())
+  if (!owner() || !IsHyperlink())
     return E_FAIL;
 
   if (!index)
@@ -791,10 +791,10 @@ IFACEMETHODIMP BrowserAccessibilityComWin::nActions(LONG* n_actions) {
   if (!n_actions)
     return E_INVALIDARG;
 
-  // |IsEmbeddedByParentObjectHypertext| is required for
-  // |IAccessibleHyperlink::anchor/anchorTarget| to work properly because the
-  // |IAccessibleHyperlink| interface inherits from |IAccessibleAction|.
-  if (IsEmbeddedByParentObjectHypertext() ||
+  // |IsHyperlink| is required for |IAccessibleHyperlink::anchor/anchorTarget|
+  // to work properly because the |IAccessibleHyperlink| interface inherits from
+  // |IAccessibleAction|.
+  if (IsHyperlink() ||
       owner()->HasIntAttribute(ax::mojom::IntAttribute::kDefaultActionVerb)) {
     *n_actions = 1;
   } else {
@@ -1609,7 +1609,7 @@ STDMETHODIMP BrowserAccessibilityComWin::InternalQueryInterface(
       return E_NOINTERFACE;
     }
   } else if (iid == IID_IAccessibleHyperlink) {
-    if (!accessibility || !accessibility->IsEmbeddedByParentObjectHypertext()) {
+    if (!accessibility || !accessibility->IsHyperlink()) {
       *object = nullptr;
       return E_NOINTERFACE;
     }
