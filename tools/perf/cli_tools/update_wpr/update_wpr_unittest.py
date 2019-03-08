@@ -165,7 +165,7 @@ class UpdateWprTest(unittest.TestCase):
 
   @mock.patch(WPR_UPDATER + 'WprUpdater._RunSystemHealthMemoryBenchmark',
               return_value='<out-file>')
-  @mock.patch(WPR_UPDATER + 'WprUpdater._PrintRunInfo')
+  @mock.patch(WPR_UPDATER + '_PrintRunInfo')
   def testLiveRun(self, print_run_info, run_benchmark):
     self.wpr_updater.LiveRun()
     run_benchmark.assert_called_once_with(log_name='live', live=True)
@@ -202,14 +202,14 @@ class UpdateWprTest(unittest.TestCase):
         'console:error:js,foo,bar',
         'console:error:security,foo,bar',
     ]
-    self.wpr_updater._PrintResultsHTMLInfo('<outfile>')
+    update_wpr._PrintResultsHTMLInfo('<outfile>')
     self.assertListEqual(self._run.mock_calls, [
       mock.call(
         ['.../results2json', '<outfile>.results.html', '<outfile>.hist.json'],
-        env={'LC_ALL': 'en_US.UTF-8'}, ok_fail=False),
+        env={'LC_ALL': 'en_US.UTF-8'}),
       mock.call(
         ['.../histograms2csv', '<outfile>.hist.json', '<outfile>.hist.csv'],
-        env={'LC_ALL': 'en_US.UTF-8'}, ok_fail=False),
+        env={'LC_ALL': 'en_US.UTF-8'}),
     ])
     self._open.assert_called_once_with('<outfile>.hist.csv')
     self.assertListEqual(self._info.mock_calls, [
@@ -220,11 +220,10 @@ class UpdateWprTest(unittest.TestCase):
       mock.call('    [console:error:security]: bar')
     ])
 
-  @mock.patch(WPR_UPDATER + 'WprUpdater._PrintResultsHTMLInfo',
-              side_effect=[Exception()])
+  @mock.patch(WPR_UPDATER + '_PrintResultsHTMLInfo', side_effect=[Exception()])
   def testPrintRunInfo(self, print_results):
     self._check_output.return_value = '0\n'
-    self.wpr_updater._PrintRunInfo('<outfile>', True)
+    update_wpr._PrintRunInfo('<outfile>', True)
     print_results.assert_called_once_with('<outfile>')
     self.assertListEqual(self._info.mock_calls, [
       mock.call('Stdout/Stderr Log: <outfile>'),
@@ -256,7 +255,7 @@ class UpdateWprTest(unittest.TestCase):
       mock.call('.../data/dir/<archive>.sha1'),
     ])
 
-  @mock.patch(WPR_UPDATER + 'WprUpdater._PrintRunInfo')
+  @mock.patch(WPR_UPDATER + '_PrintRunInfo')
   @mock.patch(WPR_UPDATER + 'WprUpdater._DeleteExistingWpr')
   def testRecordWprDesktop(self, delete_existing_wpr, print_run_info):
     del delete_existing_wpr, print_run_info  # Unused.
@@ -266,7 +265,7 @@ class UpdateWprTest(unittest.TestCase):
       '--browser=system', 'desktop_system_health_story_set'
     ], env={'LC_ALL': 'en_US.UTF-8'}, log_path='/tmp/dir/record_<tstamp>')
 
-  @mock.patch(WPR_UPDATER + 'WprUpdater._PrintRunInfo')
+  @mock.patch(WPR_UPDATER + '_PrintRunInfo')
   @mock.patch(WPR_UPDATER + 'WprUpdater._DeleteExistingWpr')
   def testRecordWprMobile(self, delete_existing_wpr, print_run_info):
     del delete_existing_wpr, print_run_info  # Unused.
@@ -278,7 +277,7 @@ class UpdateWprTest(unittest.TestCase):
       'mobile_system_health_story_set'
     ], env={'LC_ALL': 'en_US.UTF-8'}, log_path='/tmp/dir/record_<tstamp>')
 
-  @mock.patch(WPR_UPDATER + 'WprUpdater._PrintRunInfo')
+  @mock.patch(WPR_UPDATER + '_PrintRunInfo')
   @mock.patch(WPR_UPDATER + 'WprUpdater._RunSystemHealthMemoryBenchmark',
               return_value='<out-file>')
   def testReplayWpr(self, run_benchmark, print_run_info):
