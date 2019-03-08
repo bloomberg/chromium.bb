@@ -378,17 +378,9 @@ bool ExtensionActionViewController::TriggerPopupWithUrl(
   if (!ExtensionIsValid())
     return false;
 
-  bool already_showing = IsShowingPopup();
-
   // Always hide the current popup, even if it's not owned by this extension.
   // Only one popup should be visible at a time.
   HideActivePopup();
-
-  // If we were showing a popup already, then we treat the action to open the
-  // same one as a desire to close it (like clicking a menu button that was
-  // already open).
-  if (already_showing)
-    return false;
 
   std::unique_ptr<extensions::ExtensionViewHost> host =
       extensions::ExtensionViewHostFactory::CreatePopupHost(popup_url,

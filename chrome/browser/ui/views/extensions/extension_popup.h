@@ -95,6 +95,8 @@ class ExtensionPopup : public views::BubbleDialogDelegateView,
   void CloseUnlessUnderInspection();
 
  private:
+  // Changes internal state to follow the supplied |show_action|.
+  void UpdateShowAction(ShowAction show_action);
   // Shows the bubble, focuses its content, and registers listeners.
   void ShowBubble();
 
@@ -110,6 +112,12 @@ class ExtensionPopup : public views::BubbleDialogDelegateView,
   std::unique_ptr<extensions::ExtensionViewHost> host_;
 
   ShowAction show_action_;
+
+  // When dev tools closes, we should close the popup iff activation isn't going
+  // back to it.  There's no way to know which widget will be activated when dev
+  // tools closes, so this flag is set instead, which causes
+  // OnWidgetActivationChanged() to optionally close the current widget.
+  bool observe_next_widget_activation_ = false;
 
   content::NotificationRegistrar registrar_;
   ScopedObserver<TabStripModel, TabStripModelObserver> observer_{this};

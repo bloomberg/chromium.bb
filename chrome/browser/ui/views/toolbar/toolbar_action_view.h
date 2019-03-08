@@ -101,6 +101,7 @@ class ToolbarActionView : public views::MenuButton,
   // views::MenuButton:
   gfx::Size CalculatePreferredSize() const override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
+  void OnMouseReleased(const ui::MouseEvent& event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
   void OnDragDone() override;
   void ViewHierarchyChanged(
@@ -143,6 +144,11 @@ class ToolbarActionView : public views::MenuButton,
   // Used to make sure we only register the command once.
   bool called_register_command_ = false;
 
+  // Set to true by a mouse press that will hide a popup due to deactivation.
+  // In this case, the next click should not trigger an action, so the popup
+  // doesn't hide on mouse press and immediately reshow on mouse release.
+  bool suppress_next_release_ = false;
+
   // The cached value of whether or not the action wants to run on the current
   // tab.
   bool wants_to_run_ = false;
@@ -156,9 +162,6 @@ class ToolbarActionView : public views::MenuButton,
   // The root MenuItemView for the context menu, or null if no menu is being
   // shown.
   views::MenuItemView* menu_ = nullptr;
-
-  // The time the popup was last closed.
-  base::TimeTicks popup_closed_time_;
 
   base::WeakPtrFactory<ToolbarActionView> weak_factory_{this};
 
