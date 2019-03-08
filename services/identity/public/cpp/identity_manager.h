@@ -31,11 +31,6 @@
 #include "base/android/jni_android.h"
 #endif
 
-// Necessary to declare this class as a friend.
-namespace arc {
-class ArcTermsOfServiceDefaultNegotiatorTest;
-}
-
 // Necessary to declare these classes as friends.
 namespace chromeos {
 class ChromeSessionManager;
@@ -48,7 +43,6 @@ class TestURLLoaderFactory;
 }  // namespace network
 
 // Necessary to declare these classes as friends.
-class ArcSupportHostTest;
 class IdentityManagerFactory;
 class PrefRegistrySimple;
 class SigninManagerAndroid;
@@ -527,8 +521,6 @@ class IdentityManager : public SigninManagerBase::Observer,
       const std::string& picture_url);
 
   // These clients needs to call SetPrimaryAccountSynchronously().
-  friend ArcSupportHostTest;
-  friend arc::ArcTermsOfServiceDefaultNegotiatorTest;
   friend chromeos::ChromeSessionManager;
   friend chromeos::UserSessionManager;
   friend IdentityManagerFactory;
