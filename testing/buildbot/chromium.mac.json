@@ -3375,7 +3375,6 @@
               "os": "Mac-10.12.6"
             }
           ],
-          "hard_timeout": 960,
           "idempotent": false,
           "shards": 12
         }
