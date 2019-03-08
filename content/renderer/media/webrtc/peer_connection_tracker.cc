@@ -681,10 +681,12 @@ void PeerConnectionTracker::TrackAddIceCandidate(
   int id = GetLocalIDForHandler(pc_handler);
   if (id == -1)
     return;
-  std::string value =
-      "sdpMid: " + candidate->SdpMid().Utf8() + ", " +
-      "sdpMLineIndex: " + base::NumberToString(candidate->SdpMLineIndex()) +
-      ", " + "candidate: " + candidate->Candidate().Utf8();
+  std::string value = "sdpMid: " + candidate->SdpMid().Utf8() + ", " +
+                      "sdpMLineIndex: " +
+                      (candidate->SdpMLineIndex()
+                           ? base::NumberToString(*candidate->SdpMLineIndex())
+                           : "null") +
+                      ", " + "candidate: " + candidate->Candidate().Utf8();
 
   // OnIceCandidate always succeeds as it's a callback from the browser.
   DCHECK(source != SOURCE_LOCAL || succeeded);
