@@ -104,8 +104,6 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
       const CachedNetworkParameters& cached_network_params,
       bool max_bandwidth_resumption);
 
-  void SetNumOpenStreams(size_t num_streams);
-
   void SetMaxPacingRate(QuicBandwidth max_pacing_rate) {
     pacing_sender_.set_max_pacing_rate(max_pacing_rate);
   }
@@ -511,7 +509,6 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
   // quic_use_uber_loss_algorithm.
   GeneralLossAlgorithm general_loss_algorithm_;
   UberLossAlgorithm uber_loss_algorithm_;
-  bool n_connection_simulation_;
 
   // Tracks the first RTO packet.  If any packet before that packet gets acked,
   // it indicates the RTO was spurious and should be reversed(F-RTO).

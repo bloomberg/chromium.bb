@@ -48,13 +48,7 @@ std::unique_ptr<QuartcSession> QuartcFactory::CreateQuartcClientSession(
       server_crypto_config);
 }
 
-QuicConfig CreateQuicConfig(const QuartcSessionConfig& quartc_session_config) {
-  // TODO(b/124398962): Figure out a better way to initialize QUIC flags.
-  // Creating a config shouldn't have global side-effects on flags.  However,
-  // this has the advantage of ensuring that flag values stay in sync with the
-  // options requested by configs, so simply splitting the config and flag
-  // settings doesn't seem preferable.
-
+void ConfigureGlobalQuicSettings() {
   // Fixes behavior of StopReading() with level-triggered stream sequencers.
   SetQuicReloadableFlag(quic_stop_reading_when_level_triggered, true);
 
@@ -82,16 +76,43 @@ QuicConfig CreateQuicConfig(const QuartcSessionConfig& quartc_session_config) {
   SetQuicRestartFlag(quic_no_server_conn_ver_negotiation2, false);
   SetQuicReloadableFlag(quic_no_client_conn_ver_negotiation, false);
 
-  QuicTagVector copt;
-  copt.push_back(kNSTP);
-
   // Enable and request QUIC to include receive timestamps in ACK frames.
   SetQuicReloadableFlag(quic_send_timestamps, true);
-  copt.push_back(kSTMP);
 
   // Enable ACK_DECIMATION_WITH_REORDERING. It requires ack_decimation to be
   // false.
   SetQuicReloadableFlag(quic_enable_ack_decimation, false);
+
+  // Note: flag settings have no effect for Exoblaze builds since
+  // SetQuicReloadableFlag() gets stubbed out.
+  SetQuicReloadableFlag(quic_bbr_less_probe_rtt, true);   // Enable BBR6,7,8.
+  SetQuicReloadableFlag(quic_unified_iw_options, true);   // Enable IWXX opts.
+  SetQuicReloadableFlag(quic_bbr_slower_startup3, true);  // Enable BBQX opts.
+  SetQuicReloadableFlag(quic_bbr_flexible_app_limited, true);  // Enable BBR9.
+}
+
+QuicConfig CreateQuicConfig(const QuartcSessionConfig& quartc_session_config) {
+  // TODO(b/124398962): Figure out a better way to initialize QUIC flags.
+  // Creating a config shouldn't have global side-effects on flags.  However,
+  // this has the advantage of ensuring that flag values stay in sync with the
+  // options requested by configs, so simply splitting the config and flag
+  // settings doesn't seem preferable.
+  ConfigureGlobalQuicSettings();
+
+  // In exoblaze this may return false. DCHECK to avoid problems caused by
+  // incorrect flags configuration.
+  DCHECK(GetQuicReloadableFlag(quic_enable_version_46))
+      << "Your build does not support quic reloadable flags and shouldn't "
+         "place Quartc calls";
+
+  QuicTagVector copt;
+  copt.push_back(kNSTP);
+
+  // Enable and request QUIC to include receive timestamps in ACK frames.
+  copt.push_back(kSTMP);
+
+  // Enable ACK_DECIMATION_WITH_REORDERING. It requires ack_decimation to be
+  // false.
   copt.push_back(kAKD2);
 
   // Use unlimited decimation in order to reduce number of unbundled ACKs.
@@ -100,12 +121,6 @@ QuicConfig CreateQuicConfig(const QuartcSessionConfig& quartc_session_config) {
   // Enable time-based loss detection.
   copt.push_back(kTIME);
 
-  // Note: flag settings have no effect for Exoblaze builds since
-  // SetQuicReloadableFlag() gets stubbed out.
-  SetQuicReloadableFlag(quic_bbr_less_probe_rtt, true);   // Enable BBR6,7,8.
-  SetQuicReloadableFlag(quic_unified_iw_options, true);   // Enable IWXX opts.
-  SetQuicReloadableFlag(quic_bbr_slower_startup3, true);  // Enable BBQX opts.
-  SetQuicReloadableFlag(quic_bbr_flexible_app_limited, true);  // Enable BBR9.
   copt.push_back(kBBR3);  // Stay in low-gain until in-flight < BDP.
   copt.push_back(kBBR5);  // 40 RTT ack aggregation.
   copt.push_back(kBBR6);  // Use a 0.75 * BDP cwnd during PROBE_RTT.

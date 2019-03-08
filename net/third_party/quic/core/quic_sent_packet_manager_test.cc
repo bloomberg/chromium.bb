@@ -2029,23 +2029,6 @@ TEST_P(QuicSentPacketManagerTest, NegotiateNumConnectionsFromOptions) {
   manager_.SetFromConfig(client_config);
 }
 
-TEST_P(QuicSentPacketManagerTest, NegotiateNConnectionFromOptions) {
-  // By default, changing the number of open streams does nothing.
-  manager_.SetNumOpenStreams(5);
-
-  QuicConfig config;
-  QuicTagVector options;
-
-  options.push_back(kNCON);
-  QuicConfigPeer::SetReceivedConnectionOptions(&config, options);
-  EXPECT_CALL(*network_change_visitor_, OnCongestionChange());
-  EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
-  manager_.SetFromConfig(config);
-
-  EXPECT_CALL(*send_algorithm_, SetNumEmulatedConnections(5));
-  manager_.SetNumOpenStreams(5);
-}
-
 TEST_P(QuicSentPacketManagerTest, NegotiateNoMinTLPFromOptionsAtServer) {
   QuicConfig config;
   QuicTagVector options;

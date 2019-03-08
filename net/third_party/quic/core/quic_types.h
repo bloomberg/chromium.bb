@@ -575,6 +575,8 @@ enum PacketNumberSpace : uint8_t {
   NUM_PACKET_NUMBER_SPACES,
 };
 
+enum AckMode { TCP_ACKING, ACK_DECIMATION, ACK_DECIMATION_WITH_REORDERING };
+
 }  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_QUIC_TYPES_H_

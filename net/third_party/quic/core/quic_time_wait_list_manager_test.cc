@@ -542,6 +542,42 @@ TEST_F(QuicTimeWaitListManagerTest, MaxConnectionsTest) {
   }
 }
 
+// Regression test for b/116200989.
+TEST_F(QuicTimeWaitListManagerTest,
+       SendStatelessResetInResponseToShortHeaders) {
+  // This test mimics a scenario where an ENCRYPTION_NONE connection close is
+  // added as termination packet for an IETF connection ID. However, a short
+  // header packet is received later.
+  const size_t kConnectionCloseLength = 100;
+  EXPECT_CALL(visitor_, OnConnectionAddedToTimeWaitList(connection_id_));
+  std::vector<std::unique_ptr<QuicEncryptedPacket>> termination_packets;
+  termination_packets.push_back(
+      std::unique_ptr<QuicEncryptedPacket>(new QuicEncryptedPacket(
+          new char[kConnectionCloseLength], kConnectionCloseLength, true)));
+  // Add an ENCRYPTION_NONE termination packet.
+  time_wait_list_manager_.AddConnectionIdToTimeWait(
+      connection_id_, /*ietf_quic=*/true,
+      QuicTimeWaitListManager::SEND_TERMINATION_PACKETS, ENCRYPTION_NONE,
+      &termination_packets);
+
+  if (GetQuicReloadableFlag(quic_always_reset_short_header_packets)) {
+    // Termination packet is not encrypted, instead, send stateless reset.
+    EXPECT_CALL(writer_,
+                WritePacket(_, _, self_address_.host(), peer_address_, _))
+        .With(Args<0, 1>(PublicResetPacketEq(connection_id_)))
+        .WillOnce(Return(WriteResult(WRITE_STATUS_OK, 0)));
+  } else {
+    // An unprocessable connection close is sent to peer.
+    EXPECT_CALL(writer_, WritePacket(_, kConnectionCloseLength,
+                                     self_address_.host(), peer_address_, _))
+        .WillOnce(Return(WriteResult(WRITE_STATUS_OK, 1)));
+  }
+  // Processes IETF short header packet.
+  time_wait_list_manager_.ProcessPacket(
+      self_address_, peer_address_, connection_id_,
+      IETF_QUIC_SHORT_HEADER_PACKET, QuicMakeUnique<QuicPerPacketContext>());
+}
+
 }  // namespace
 }  // namespace test
 }  // namespace quic

@@ -239,13 +239,6 @@ QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_log_cert_name_for_empty_sct,
           true)
 
-// If true, close connection with INVALID_STOP_WAITING if received a
-// STOP_WAITING with least_unacked 0.
-QUIC_FLAG(
-    bool,
-    FLAGS_quic_reloadable_flag_quic_close_connection_with_zero_least_unacked_stop_waiting,
-    true)
-
 // If true, QuicCryptoServerConfig will correctly rotate configs based on
 // primary time.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_config_rotation, true)
@@ -295,3 +288,15 @@ QUIC_FLAG(bool,
 
 // If true, enforce that QUIC CHLOs fit in one packet.
 QUIC_FLAG(bool, FLAGS_quic_enforce_single_packet_chlo, true)
+
+// If both this flag and gfe2_reloadable_flag_quic_deprecate_ack_bundling_mode
+// are true, QuicReceivedPacketManager decides when to send ACKs.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_rpm_decides_when_to_send_acks,
+          false)
+
+// If true, instead of send encryption none termination packets, send stateless
+// reset in reponse to short headers.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_always_reset_short_header_packets,
+          false)

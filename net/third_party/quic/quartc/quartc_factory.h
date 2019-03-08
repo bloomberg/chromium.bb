@@ -85,6 +85,11 @@ class QuartcFactory {
   std::unique_ptr<QuicCryptoServerStream::Helper> stream_helper_;
 };
 
+// Configures global settings, such as supported quic versions.
+// Must execute on QUIC thread.
+void ConfigureGlobalQuicSettings();
+
+// Must execute on QUIC thread.
 QuicConfig CreateQuicConfig(const QuartcSessionConfig& quartc_session_config);
 
 std::unique_ptr<QuicConnection> CreateQuicConnection(

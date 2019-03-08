@@ -717,8 +717,6 @@ void QuicSession::CloseStreamInner(QuicStreamId stream_id, bool locally_reset) {
   }
 
   stream->OnClose();
-  // Decrease the number of streams being emulated when a new one is opened.
-  connection_->SetNumOpenStreams(dynamic_stream_map_.size());
 
   if (!stream_was_draining && !IsIncomingStream(stream_id) && had_fin_or_rst &&
       connection_->transport_version() != QUIC_VERSION_99) {
@@ -750,8 +748,6 @@ void QuicSession::ClosePendingStream(QuicStreamId stream_id) {
     v99_streamid_manager_.OnStreamClosed(stream_id);
   }
 
-  // Decrease the number of streams being emulated when a new one is opened.
-  connection_->SetNumOpenStreams(dynamic_stream_map_.size());
   OnCanCreateNewOutgoingStream();
 }
 
@@ -1020,9 +1016,6 @@ void QuicSession::ActivateStream(std::unique_ptr<QuicStream> stream) {
   if (IsIncomingStream(stream_id)) {
     ++num_dynamic_incoming_streams_;
   }
-
-  // Increase the number of streams being emulated when a new one is opened.
-  connection_->SetNumOpenStreams(dynamic_stream_map_.size());
 }
 
 QuicStreamId QuicSession::GetNextOutgoingBidirectionalStreamId() {

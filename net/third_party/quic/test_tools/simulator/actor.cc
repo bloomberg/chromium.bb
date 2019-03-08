@@ -12,10 +12,12 @@ Actor::Actor(Simulator* simulator, QuicString name)
     : simulator_(simulator),
       clock_(simulator->GetClock()),
       name_(std::move(name)) {
-  simulator->AddActor(this);
+  simulator_->AddActor(this);
 }
 
-Actor::~Actor() {}
+Actor::~Actor() {
+  simulator_->RemoveActor(this);
+}
 
 void Actor::Schedule(QuicTime next_tick) {
   simulator_->Schedule(this, next_tick);

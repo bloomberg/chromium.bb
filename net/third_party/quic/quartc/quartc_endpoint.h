@@ -148,6 +148,10 @@ class QuartcServerEndpoint : public QuartcEndpoint,
     return crypto_config_.serialized_crypto_config;
   }
 
+  const std::vector<ParsedQuicVersion> GetSupportedQuicVersions() const {
+    return version_manager_->GetSupportedVersions();
+  }
+
  private:
   // Implementation of QuicAlarmFactory used by this endpoint.  Unowned.
   QuicAlarmFactory* alarm_factory_;

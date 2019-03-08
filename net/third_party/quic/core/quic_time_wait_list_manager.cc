@@ -162,6 +162,17 @@ void QuicTimeWaitListManager::ProcessPacket(
           if (connection_data->encryption_level == ENCRYPTION_NONE) {
             QUIC_CODE_COUNT(
                 quic_encryption_none_termination_packets_for_short_header);
+            if (GetQuicReloadableFlag(quic_always_reset_short_header_packets)) {
+              QUIC_RELOADABLE_FLAG_COUNT(
+                  quic_always_reset_short_header_packets);
+              // Send stateless reset in response to short header packets,
+              // because ENCRYPTION_NONE termination packets will not be
+              // processed by clients.
+              SendPublicReset(self_address, peer_address, connection_id,
+                              connection_data->ietf_quic,
+                              std::move(packet_context));
+              return;
+            }
           } else if (connection_data->encryption_level == ENCRYPTION_ZERO_RTT) {
             QUIC_CODE_COUNT(quic_zero_rtt_termination_packets_for_short_header);
           }
