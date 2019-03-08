@@ -3127,7 +3127,7 @@ void LayoutBox::ComputeMarginsForDirection(MarginDirection flow_direction,
       MinimumValueForLength(margin_end_length, container_width);
 
   LayoutUnit available_width = container_width;
-  if (AvoidsFloats() && containing_block->IsLayoutBlockFlow() &&
+  if (CreatesNewFormattingContext() && containing_block->IsLayoutBlockFlow() &&
       ToLayoutBlockFlow(containing_block)->ContainsFloats()) {
     available_width = ContainingBlockAvailableLineWidth();
     if (ShrinkToAvoidFloats() && available_width < container_width) {
@@ -5114,7 +5114,7 @@ DISABLE_CFI_PERF
 bool LayoutBox::ShrinkToAvoidFloats() const {
   // Floating objects don't shrink.  Objects that don't avoid floats don't
   // shrink.
-  if (IsInline() || !AvoidsFloats() || IsFloating())
+  if (IsInline() || !CreatesNewFormattingContext() || IsFloating())
     return false;
 
   // Only auto width objects can possibly shrink to avoid floats.
@@ -5141,10 +5141,6 @@ bool LayoutBox::ShouldBeConsideredAsReplaced() const {
   return node && node->IsElementNode() &&
          (ToElement(node)->IsFormControlElement() ||
           IsHTMLImageElement(ToElement(node)));
-}
-
-bool LayoutBox::AvoidsFloats() const {
-  return true;
 }
 
 bool LayoutBox::HasNonCompositedScrollbars() const {
