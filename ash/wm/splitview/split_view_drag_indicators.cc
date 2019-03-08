@@ -287,7 +287,7 @@ class SplitViewDragIndicators::SplitViewDragIndicatorsView
   ~SplitViewDragIndicatorsView() override {}
 
   // Called by parent widget when the state machine changes. Handles setting the
-  // opacity of the highlights and labels based on the state.
+  // opacity and bounds of the highlights and labels based on the state.
   void OnIndicatorTypeChanged(IndicatorState indicator_state) {
     DCHECK_NE(indicator_state_, indicator_state);
 
@@ -303,7 +303,8 @@ class SplitViewDragIndicators::SplitViewDragIndicatorsView
     right_highlight_view_->OnIndicatorTypeChanged(indicator_state,
                                                   previous_indicator_state_);
 
-    if (indicator_state != IndicatorState::kNone)
+    if (indicator_state != IndicatorState::kNone ||
+        IsPreviewAreaState(previous_indicator_state_))
       Layout(previous_indicator_state_ != IndicatorState::kNone);
   }
 
@@ -356,9 +357,17 @@ class SplitViewDragIndicators::SplitViewDragIndicatorsView
       left_highlight_bounds.Transpose();
       right_highlight_bounds.Transpose();
     }
-    const bool preview_left =
-        (indicator_state_ == IndicatorState::kPreviewAreaLeft);
-    if (IsPreviewAreaState(indicator_state_)) {
+    // While the preview area fades out, its inset animates to zero.
+    const bool nix_preview_inset =
+        indicator_state_ == IndicatorState::kNone &&
+        IsPreviewAreaState(previous_indicator_state_);
+    // For positioning purposes, we need |IndicatorState::kPreviewAreaLeft| or
+    // |IndicatorState::kPreviewAreaRight|, even if |nix_preview_inset| is true
+    // and |indicator_state_| has already been set to |IndicatorState::kNone|.
+    const IndicatorState preview_state =
+        nix_preview_inset ? previous_indicator_state_ : indicator_state_;
+    const bool preview_left = preview_state == IndicatorState::kPreviewAreaLeft;
+    if (IsPreviewAreaState(indicator_state_) || nix_preview_inset) {
       // Get the preview area bounds from the split view controller.
       gfx::Rect preview_area_bounds =
           Shell::Get()->split_view_controller()->GetSnappedWindowBoundsInScreen(
@@ -375,8 +384,10 @@ class SplitViewDragIndicators::SplitViewDragIndicatorsView
       const gfx::Rect work_area_bounds =
           GetWorkAreaBoundsNoOverlapWithShelf(root_window);
       preview_area_bounds.set_y(preview_area_bounds.y() - work_area_bounds.y());
-      preview_area_bounds.Inset(kHighlightScreenEdgePaddingDp,
-                                kHighlightScreenEdgePaddingDp);
+      if (!nix_preview_inset) {
+        preview_area_bounds.Inset(kHighlightScreenEdgePaddingDp,
+                                  kHighlightScreenEdgePaddingDp);
+      }
 
       // Calculate the bounds of the other highlight, which is the one that
       // shrinks and fades away, while the other one, the preview area, expands
@@ -389,7 +400,7 @@ class SplitViewDragIndicators::SplitViewDragIndicatorsView
       if (!landscape)
         other_bounds.Transpose();
 
-      if (IsPreviewAreaOnLeftTopOfScreen(indicator_state_)) {
+      if (IsPreviewAreaOnLeftTopOfScreen(preview_state)) {
         left_highlight_bounds = preview_area_bounds;
         right_highlight_bounds = other_bounds;
       } else {
@@ -400,9 +411,9 @@ class SplitViewDragIndicators::SplitViewDragIndicatorsView
     }
 
     left_highlight_view_->SetBounds(GetMirroredRect(left_highlight_bounds),
-                                    landscape, animate);
+                                    landscape, animate, nix_preview_inset);
     right_highlight_view_->SetBounds(GetMirroredRect(right_highlight_bounds),
-                                     landscape, animate);
+                                     landscape, animate, nix_preview_inset);
 
     // Calculate the bounds of the views which contain the guidance text and
     // icon. Rotate the two views in landscape mode.

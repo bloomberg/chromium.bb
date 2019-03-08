@@ -80,7 +80,8 @@ SplitViewHighlightView::~SplitViewHighlightView() = default;
 
 void SplitViewHighlightView::SetBounds(const gfx::Rect& bounds,
                                        bool landscape,
-                                       bool animate) {
+                                       bool animate,
+                                       bool nixing_preview_inset) {
   if (bounds == this->bounds() && landscape == landscape_)
     return;
 
@@ -94,7 +95,8 @@ void SplitViewHighlightView::SetBounds(const gfx::Rect& bounds,
   const bool slides_from_right = base::i18n::IsRTL() && landscape
                                      ? !is_right_or_bottom_
                                      : is_right_or_bottom_;
-  if (slides_from_right && animate && !offset.IsZero()) {
+  if ((slides_from_right || nixing_preview_inset) && animate &&
+      !offset.IsZero()) {
     gfx::Rect old_left_top_bounds = left_top_->bounds();
     gfx::Rect old_right_middle_bounds = right_bottom_->bounds();
     gfx::Rect old_middle_bounds = middle_->bounds();
@@ -141,16 +143,19 @@ void SplitViewHighlightView::SetBounds(const gfx::Rect& bounds,
   // and apply it. Otherwise set the new bounds and reset the transforms on all
   // items.
   if (animate) {
+    const SplitviewAnimationType animation_type =
+        nixing_preview_inset ? SPLITVIEW_ANIMATION_PREVIEW_AREA_NIX_INSET
+                             : SPLITVIEW_ANIMATION_PREVIEW_AREA_SLIDE_IN_OUT;
     DoSplitviewTransformAnimation(
-        middle_->layer(), SPLITVIEW_ANIMATION_PREVIEW_AREA_SLIDE_IN_OUT,
+        middle_->layer(), animation_type,
         CalculateTransformFromRects(middle_->bounds(), middle_bounds,
                                     landscape));
     DoSplitviewTransformAnimation(
-        left_top_->layer(), SPLITVIEW_ANIMATION_PREVIEW_AREA_SLIDE_IN_OUT,
+        left_top_->layer(), animation_type,
         CalculateTransformFromRects(left_top_->bounds(), left_top_bounds,
                                     landscape));
     DoSplitviewTransformAnimation(
-        right_bottom_->layer(), SPLITVIEW_ANIMATION_PREVIEW_AREA_SLIDE_IN_OUT,
+        right_bottom_->layer(), animation_type,
         CalculateTransformFromRects(right_bottom_->bounds(),
                                     right_bottom_bounds, landscape));
   } else {
