@@ -62,6 +62,22 @@ message KerberosFiles {
   optional bytes krb5conf = 2;
 }
 
+message Account {
+  // Principal name (user@REALM.COM). Accounts are keyed by principal name.
+  optional string principal_name = 1;
+  // Kerberos configuration file. Not set if the configuration file does not
+  // exist or some error occurred trying to read it.
+  optional bytes krb5conf = 2;
+  // For how many seconds the TGT is still valid. A value of zero means that the
+  // ticket has expired. Not set if the ticket does not exist or some error
+  // occurred trying to read it.
+  optional int64 tgt_validity_seconds = 3;
+  // For how many seconds the TGT is still renewable. A value of zero means that
+  // the ticket cannot be renewed anymore. Not set if the ticket does not exist
+  // or some error occurred trying to read it.
+  optional int64 tgt_renewal_seconds = 4;
+}
+
 message AddAccountRequest {
   // Principal name of the account to add (user@REALM.COM).
   optional string principal_name = 1;
@@ -80,6 +96,17 @@ message RemoveAccountRequest {
 message RemoveAccountResponse {
   // Response status.
   optional ErrorType error = 1;
+}
+
+message ListAccountsRequest {
+  // Reserved for future use.
+}
+
+message ListAccountsResponse {
+  // Response status.
+  optional ErrorType error = 1;
+  // List of accounts.
+  repeated Account accounts = 2;
 }
 
 message SetConfigRequest {
