@@ -393,6 +393,9 @@ typedef struct AV1EncoderConfig {
   COST_UPDATE_TYPE mode_cost_upd_freq;
   int border_in_pixels;
   int target_seq_level_idx;
+  // Bit mask to specify which tier each of the 32 possible operating points
+  // conforms to.
+  unsigned int tier_mask;
 } AV1EncoderConfig;
 
 static INLINE int is_lossless_requested(const AV1EncoderConfig *cfg) {

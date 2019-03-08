@@ -1027,7 +1027,6 @@ static void set_bitstream_level_tier(SequenceHeader *seq, AV1_COMMON *cm,
   }
   for (int i = 0; i < MAX_NUM_OPERATING_POINTS; ++i) {
     seq->level[i] = bl;
-    seq->tier[i] = 0;  // setting main tier by default
     // Set the maximum parameters for bitrate and buffer size for this profile,
     // level, and tier
     cm->op_params[i].bitrate = max_level_bitrate(
@@ -2523,6 +2522,8 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
   // Superblock size should not be updated after the first key frame.
   if (!cpi->seq_params_locked) {
     set_sb_size(&cm->seq_params, select_sb_size(cpi));
+    for (int i = 0; i < MAX_NUM_OPERATING_POINTS; ++i)
+      seq_params->tier[i] = (oxcf->tier_mask >> i) & 1;
   }
 
   if (cpi->initial_width || sb_size != seq_params->sb_size) {
