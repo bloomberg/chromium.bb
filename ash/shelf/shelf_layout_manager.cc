@@ -11,9 +11,10 @@
 #include "ash/animation/animation_change_type.h"
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/app_list/app_list_metrics.h"
-#include "ash/app_list/home_launcher_gesture_handler.h"
 #include "ash/app_list/model/app_list_view_state.h"
 #include "ash/app_list/views/app_list_view.h"
+#include "ash/home_screen/home_launcher_gesture_handler.h"
+#include "ash/home_screen/home_screen_controller.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
@@ -181,6 +182,10 @@ ShelfLayoutManager::ShelfLayoutManager(ShelfWidget* shelf_widget, Shelf* shelf)
   Shell::Get()->AddShellObserver(this);
   Shell::Get()->overview_controller()->AddObserver(this);
   Shell::Get()->app_list_controller()->AddObserver(this);
+  Shell::Get()
+      ->home_screen_controller()
+      ->home_launcher_gesture_handler()
+      ->AddObserver(this);
   Shell::Get()->lock_state_controller()->AddObserver(this);
   Shell::Get()->activation_client()->AddObserver(this);
   Shell::Get()->locale_update_controller()->AddObserver(this);
@@ -201,8 +206,14 @@ ShelfLayoutManager::~ShelfLayoutManager() {
   Shell::Get()->locale_update_controller()->RemoveObserver(this);
   Shell::Get()->RemoveShellObserver(this);
   Shell::Get()->lock_state_controller()->RemoveObserver(this);
-  // AppListController is destroyed early when Shell is being destroyed, it may
-  // not exist.
+  // The following are destroyed early when Shell is being destroyed so they
+  // may not exist.
+  if (Shell::Get()->home_screen_controller()) {
+    Shell::Get()
+        ->home_screen_controller()
+        ->home_launcher_gesture_handler()
+        ->RemoveObserver(this);
+  }
   if (Shell::Get()->app_list_controller())
     Shell::Get()->app_list_controller()->RemoveObserver(this);
   if (Shell::Get()->overview_controller())
@@ -1296,7 +1307,7 @@ bool ShelfLayoutManager::StartGestureDrag(
     GestureDragStatus previous_drag_status = gesture_drag_status_;
     gesture_drag_status_ = GESTURE_DRAG_APPLIST_IN_PROGRESS;
     HomeLauncherGestureHandler* home_launcher_handler =
-        Shell::Get()->app_list_controller()->home_launcher_gesture_handler();
+        Shell::Get()->home_screen_controller()->home_launcher_gesture_handler();
     if (home_launcher_handler->OnPressEvent(
             HomeLauncherGestureHandler::Mode::kSlideUpToShow,
             gesture_in_screen.location())) {
@@ -1327,7 +1338,7 @@ void ShelfLayoutManager::UpdateGestureDrag(
     const ui::GestureEvent& gesture_in_screen) {
   if (ShouldHomeGestureHandleEvent(gesture_in_screen.details().scroll_y())) {
     HomeLauncherGestureHandler* home_launcher_handler =
-        Shell::Get()->app_list_controller()->home_launcher_gesture_handler();
+        Shell::Get()->home_screen_controller()->home_launcher_gesture_handler();
     if (home_launcher_handler->OnScrollEvent(
             gesture_in_screen.location(),
             gesture_in_screen.details().scroll_y())) {
@@ -1391,7 +1402,7 @@ void ShelfLayoutManager::CompleteAppListDrag(
     return;
 
   HomeLauncherGestureHandler* home_launcher_handler =
-      Shell::Get()->app_list_controller()->home_launcher_gesture_handler();
+      Shell::Get()->home_screen_controller()->home_launcher_gesture_handler();
   DCHECK(home_launcher_handler);
   if (home_launcher_handler->OnReleaseEvent(gesture_in_screen.location())) {
     gesture_drag_status_ = GESTURE_DRAG_NONE;
@@ -1414,7 +1425,7 @@ void ShelfLayoutManager::CompleteAppListDrag(
 void ShelfLayoutManager::CancelGestureDrag() {
   if (gesture_drag_status_ == GESTURE_DRAG_APPLIST_IN_PROGRESS) {
     HomeLauncherGestureHandler* home_launcher_handler =
-        Shell::Get()->app_list_controller()->home_launcher_gesture_handler();
+        Shell::Get()->home_screen_controller()->home_launcher_gesture_handler();
     DCHECK(home_launcher_handler);
     if (home_launcher_handler->IsDragInProgress())
       home_launcher_handler->Cancel();

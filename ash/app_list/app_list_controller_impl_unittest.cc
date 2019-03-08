@@ -5,11 +5,12 @@
 #include "ash/app_list/app_list_controller_impl.h"
 
 #include "ash/app_list/app_list_metrics.h"
-#include "ash/app_list/home_launcher_gesture_handler.h"
 #include "ash/app_list/views/app_list_main_view.h"
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/app_list/views/contents_view.h"
 #include "ash/app_list/views/expand_arrow_view.h"
+#include "ash/home_screen/home_launcher_gesture_handler.h"
+#include "ash/home_screen/home_screen_controller.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
@@ -76,7 +77,7 @@ TEST_F(AppListControllerImplTest, UpdateExpandArrowViewVisibility) {
   // because w1 still exists.
   wm::ActivateWindow(w1.get());
   Shell::Get()
-      ->app_list_controller()
+      ->home_screen_controller()
       ->home_launcher_gesture_handler()
       ->ShowHomeLauncher(display::Screen::GetScreen()->GetPrimaryDisplay());
   EXPECT_EQ(mojom::WindowStateType::MINIMIZED,

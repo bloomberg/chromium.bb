@@ -9,7 +9,6 @@
 
 #include "ash/app_list/app_list_controller_observer.h"
 #include "ash/app_list/app_list_presenter_delegate_impl.h"
-#include "ash/app_list/home_launcher_gesture_handler.h"
 #include "ash/app_list/model/app_list_folder_item.h"
 #include "ash/app_list/model/app_list_item.h"
 #include "ash/app_list/model/app_list_view_state.h"
@@ -23,6 +22,8 @@
 #include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/assistant/util/assistant_util.h"
 #include "ash/assistant/util/deep_link_util.h"
+#include "ash/home_screen/home_launcher_gesture_handler.h"
+#include "ash/home_screen/home_screen_controller.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/session/session_controller.h"
@@ -94,9 +95,7 @@ bool MinimizeAllWindows() {
 
 AppListControllerImpl::AppListControllerImpl()
     : model_(std::make_unique<app_list::AppListModel>()),
-      presenter_(std::make_unique<AppListPresenterDelegateImpl>(this)),
-      home_launcher_gesture_handler_(
-          std::make_unique<HomeLauncherGestureHandler>(this)) {
+      presenter_(std::make_unique<AppListPresenterDelegateImpl>(this)) {
   model_->AddObserver(this);
 
   SessionController* session_controller = Shell::Get()->session_controller();
@@ -118,6 +117,8 @@ AppListControllerImpl::AppListControllerImpl()
   shell->mru_window_tracker()->AddObserver(this);
   if (app_list_features::IsEmbeddedAssistantUIEnabled())
     shell->assistant_controller()->ui_controller()->AddModelObserver(this);
+  shell->home_screen_controller()->home_launcher_gesture_handler()->AddObserver(
+      this);
 }
 
 AppListControllerImpl::~AppListControllerImpl() = default;
@@ -557,6 +558,9 @@ void AppListControllerImpl::FlushForTesting() {
 // Shell shutdown.
 void AppListControllerImpl::OnShellDestroying() {
   Shell* shell = Shell::Get();
+  shell->home_screen_controller()
+      ->home_launcher_gesture_handler()
+      ->RemoveObserver(this);
   if (app_list_features::IsEmbeddedAssistantUIEnabled())
     shell->assistant_controller()->ui_controller()->RemoveModelObserver(this);
   shell->mru_window_tracker()->RemoveObserver(this);
@@ -730,6 +734,26 @@ void AppListControllerImpl::OnUiVisibilityChanged(
   }
 }
 
+void AppListControllerImpl::OnHomeLauncherAnimationComplete(
+    bool shown,
+    int64_t display_id) {
+  CloseAssistantUi(shown ? AssistantExitPoint::kLauncherOpen
+                         : AssistantExitPoint::kLauncherClose);
+}
+
+void AppListControllerImpl::UpdateYPositionAndOpacityForHomeLauncher(
+    int y_position_in_screen,
+    float opacity,
+    UpdateAnimationSettingsCallback callback) {
+  presenter_.UpdateYPositionAndOpacityForHomeLauncher(
+      y_position_in_screen, opacity, std::move(callback));
+}
+
+void AppListControllerImpl::UpdateAfterHomeLauncherShown() {
+  // Show or hide the expand arrow view.
+  UpdateExpandArrowVisibility();
+}
+
 void AppListControllerImpl::Back() {
   presenter_.GetView()->Back();
 }
@@ -741,8 +765,12 @@ ash::ShelfAction AppListControllerImpl::OnAppListButtonPressed(
   if (!IsTabletMode())
     return ToggleAppList(display_id, show_source, event_time_stamp);
 
-  bool handled = home_launcher_gesture_handler_->ShowHomeLauncher(
-      Shell::Get()->display_manager()->GetDisplayForId(display_id));
+  bool handled =
+      Shell::Get()
+          ->home_screen_controller()
+          ->home_launcher_gesture_handler()
+          ->ShowHomeLauncher(
+              Shell::Get()->display_manager()->GetDisplayForId(display_id));
 
   if (!handled) {
     if (Shell::Get()->overview_controller()->IsSelecting()) {
@@ -974,16 +1002,18 @@ void AppListControllerImpl::ShowWallpaperContextMenu(
 bool AppListControllerImpl::ProcessHomeLauncherGesture(
     ui::GestureEvent* event,
     const gfx::Point& screen_location) {
+  HomeLauncherGestureHandler* home_launcher_gesture_handler =
+      Shell::Get()->home_screen_controller()->home_launcher_gesture_handler();
   switch (event->type()) {
     case ui::ET_SCROLL_FLING_START:
     case ui::ET_GESTURE_SCROLL_BEGIN:
-      return home_launcher_gesture_handler_->OnPressEvent(
+      return home_launcher_gesture_handler->OnPressEvent(
           HomeLauncherGestureHandler::Mode::kSlideDownToHide, screen_location);
     case ui::ET_GESTURE_SCROLL_UPDATE:
-      return home_launcher_gesture_handler_->OnScrollEvent(
+      return home_launcher_gesture_handler->OnScrollEvent(
           screen_location, event->details().scroll_y());
     case ui::ET_GESTURE_END:
-      return home_launcher_gesture_handler_->OnReleaseEvent(screen_location);
+      return home_launcher_gesture_handler->OnReleaseEvent(screen_location);
     default:
       break;
   }
@@ -1001,8 +1031,10 @@ bool AppListControllerImpl::CanProcessEventsOnApplistViews() {
     return false;
   }
 
-  return home_launcher_gesture_handler_ &&
-         home_launcher_gesture_handler_->mode() !=
+  HomeScreenController* home_screen_controller =
+      Shell::Get()->home_screen_controller();
+  return home_screen_controller &&
+         home_screen_controller->home_launcher_gesture_handler()->mode() !=
              HomeLauncherGestureHandler::Mode::kSlideUpToShow;
 }
 
@@ -1046,23 +1078,6 @@ void AppListControllerImpl::NotifyAppListTargetVisibilityChanged(bool visible) {
   // Notify chrome of target visibility changes.
   if (client_)
     client_->OnAppListTargetVisibilityChanged(visible);
-}
-
-void AppListControllerImpl::NotifyHomeLauncherTargetPositionChanged(
-    bool showing,
-    int64_t display_id) {
-  for (auto& observer : observers_)
-    observer.OnHomeLauncherTargetPositionChanged(showing, display_id);
-}
-
-void AppListControllerImpl::NotifyHomeLauncherAnimationComplete(
-    bool shown,
-    int64_t display_id) {
-  CloseAssistantUi(shown ? AssistantExitPoint::kLauncherOpen
-                         : AssistantExitPoint::kLauncherClose);
-
-  for (auto& observer : observers_)
-    observer.OnHomeLauncherAnimationComplete(shown, display_id);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

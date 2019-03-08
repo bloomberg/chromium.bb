@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_APP_LIST_HOME_LAUNCHER_GESTURE_HANDLER_H_
-#define ASH_APP_LIST_HOME_LAUNCHER_GESTURE_HANDLER_H_
+#ifndef ASH_HOME_SCREEN_HOME_LAUNCHER_GESTURE_HANDLER_H_
+#define ASH_HOME_SCREEN_HOME_LAUNCHER_GESTURE_HANDLER_H_
 
 #include <map>
 #include <vector>
@@ -22,7 +22,7 @@
 
 namespace ash {
 
-class AppListControllerImpl;
+class HomeLauncherGestureHandlerObserver;
 
 // HomeLauncherGestureHandler makes modifications to a window's transform and
 // opacity when gesture drag events are received and forwarded to it.
@@ -45,8 +45,7 @@ class ASH_EXPORT HomeLauncherGestureHandler
     kSlideDownToHide,
   };
 
-  explicit HomeLauncherGestureHandler(
-      AppListControllerImpl* app_list_controller);
+  HomeLauncherGestureHandler();
   ~HomeLauncherGestureHandler() override;
 
   // Called by owner of this object when a gesture event is received. |location|
@@ -72,6 +71,13 @@ class ASH_EXPORT HomeLauncherGestureHandler
   aura::Window* GetWindow2();
 
   bool IsDragInProgress() const { return last_event_location_.has_value(); }
+
+  void AddObserver(HomeLauncherGestureHandlerObserver* observer);
+  void RemoveObserver(HomeLauncherGestureHandlerObserver* obsever);
+
+  void NotifyHomeLauncherTargetPositionChanged(bool showing,
+                                               int64_t display_id);
+  void NotifyHomeLauncherAnimationComplete(bool shown, int64_t display_id);
 
   // TODO(sammiequon): Investigate if it is needed to observe potential window
   // visibility changes, if they can happen.
@@ -170,15 +176,14 @@ class ASH_EXPORT HomeLauncherGestureHandler
   ScopedObserver<TabletModeController, TabletModeObserver>
       tablet_mode_observer_{this};
 
-  // Unowned and guaranteed to be non null for the lifetime of this.
-  AppListControllerImpl* app_list_controller_;
-
   // The display where the windows are being processed.
   display::Display display_;
+
+  base::ObserverList<HomeLauncherGestureHandlerObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(HomeLauncherGestureHandler);
 };
 
 }  // namespace ash
 
-#endif  // ASH_APP_LIST_HOME_LAUNCHER_GESTURE_HANDLER_H_
+#endif  // ASH_HOME_SCREEN_HOME_LAUNCHER_GESTURE_HANDLER_H_

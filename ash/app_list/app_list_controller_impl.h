@@ -19,6 +19,8 @@
 #include "ash/ash_export.h"
 #include "ash/assistant/model/assistant_ui_model_observer.h"
 #include "ash/display/window_tree_host_manager.h"
+#include "ash/home_screen/home_launcher_gesture_handler_observer.h"
+#include "ash/home_screen/home_screen_delegate.h"
 #include "ash/public/cpp/assistant/default_voice_interaction_observer.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/interfaces/app_list.mojom.h"
@@ -42,7 +44,6 @@ class MouseWheelEvent;
 namespace ash {
 
 class AppListControllerObserver;
-class HomeLauncherGestureHandler;
 
 // Ash's AppListController owns the AppListModel and implements interface
 // functions that allow Chrome to modify and observe the Shelf and AppListModel
@@ -60,7 +61,9 @@ class ASH_EXPORT AppListControllerImpl
       public DefaultVoiceInteractionObserver,
       public WindowTreeHostManager::Observer,
       public ash::MruWindowTracker::Observer,
-      public AssistantUiModelObserver {
+      public AssistantUiModelObserver,
+      public HomeLauncherGestureHandlerObserver,
+      public HomeScreenDelegate {
  public:
   using AppListItemMetadataPtr = mojom::AppListItemMetadataPtr;
   using SearchResultMetadataPtr = mojom::SearchResultMetadataPtr;
@@ -147,9 +150,6 @@ class ASH_EXPORT AppListControllerImpl
                                  app_list::AppListShowSource show_source,
                                  base::TimeTicks event_time_stamp);
   app_list::AppListViewState GetAppListViewState();
-  HomeLauncherGestureHandler* home_launcher_gesture_handler() {
-    return home_launcher_gesture_handler_.get();
-  }
 
   // Called when a window starts/ends dragging. If we're in tablet mode and home
   // launcher is enabled, we should hide the home launcher during dragging a
@@ -209,11 +209,6 @@ class ASH_EXPORT AppListControllerImpl
   void NotifyAppListVisibilityChanged(bool visible, int64_t display_id);
   void NotifyAppListTargetVisibilityChanged(bool visible);
 
-  // HomeLauncher visibility announcements are for tablet mode AppList.
-  void NotifyHomeLauncherTargetPositionChanged(bool showing,
-                                               int64_t display_id);
-  void NotifyHomeLauncherAnimationComplete(bool shown, int64_t display_id);
-
   void FlushForTesting();
 
   // ShellObserver:
@@ -254,6 +249,16 @@ class ASH_EXPORT AppListControllerImpl
       base::Optional<AssistantEntryPoint> entry_point,
       base::Optional<AssistantExitPoint> exit_point) override;
 
+  // HomeLauncherGestureHandlerObserver:
+  void OnHomeLauncherAnimationComplete(bool shown, int64_t display_id) override;
+
+  // HomeScreenDelegate:
+  void UpdateYPositionAndOpacityForHomeLauncher(
+      int y_position_in_screen,
+      float opacity,
+      UpdateAnimationSettingsCallback callback) override;
+  void UpdateAfterHomeLauncherShown() override;
+
   bool onscreen_keyboard_shown() const { return onscreen_keyboard_shown_; }
 
   // Performs the 'back' action for the active page.
@@ -271,9 +276,6 @@ class ASH_EXPORT AppListControllerImpl
 
   // Returns current visibility of the Assistant page.
   bool IsShowingEmbeddedAssistantUI() const;
-
-  // Updates the visibility of expand arrow view.
-  void UpdateExpandArrowVisibility();
 
   // Get updated app list view state after dragging from shelf.
   app_list::AppListViewState CalculateStateAfterShelfDrag(
@@ -295,6 +297,9 @@ class ASH_EXPORT AppListControllerImpl
   // Update the visibility of Assistant functionality.
   void UpdateAssistantVisibility();
 
+  // Updates the visibility of expand arrow view.
+  void UpdateExpandArrowVisibility();
+
   int64_t GetDisplayIdToShowAppListOn();
 
   // Shows the home launcher in tablet mode.
@@ -313,10 +318,6 @@ class ASH_EXPORT AppListControllerImpl
 
   // Bindings for the AppListController interface.
   mojo::BindingSet<mojom::AppListController> bindings_;
-
-  // Owned pointer to the object which handles gestures related to the home
-  // launcher.
-  std::unique_ptr<HomeLauncherGestureHandler> home_launcher_gesture_handler_;
 
   // Whether the on-screen keyboard is shown.
   bool onscreen_keyboard_shown_ = false;

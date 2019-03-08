@@ -9,6 +9,7 @@
 
 #include "ash/app_list/app_list_controller_observer.h"
 #include "ash/ash_export.h"
+#include "ash/home_screen/home_launcher_gesture_handler_observer.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/session/session_observer.h"
 #include "ash/shelf/shelf.h"
@@ -52,6 +53,7 @@ class ShelfWidget;
 // On mus, widget bounds management is handled by the window manager.
 class ASH_EXPORT ShelfLayoutManager
     : public AppListControllerObserver,
+      public HomeLauncherGestureHandlerObserver,
       public ShellObserver,
       public OverviewObserver,
       public ::wm::ActivationChangeObserver,
@@ -153,6 +155,8 @@ class ASH_EXPORT ShelfLayoutManager
 
   // AppListControllerObserver:
   void OnAppListVisibilityChanged(bool shown, int64_t display_id) override;
+
+  // HomeLauncherGestureHandlerObserver:
   void OnHomeLauncherTargetPositionChanged(bool showing,
                                            int64_t display_id) override;
   void OnHomeLauncherAnimationComplete(bool shown, int64_t display_id) override;

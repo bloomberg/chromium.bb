@@ -54,6 +54,7 @@
 #include "ash/frame/non_client_frame_view_ash.h"
 #include "ash/high_contrast/high_contrast_controller.h"
 #include "ash/highlighter/highlighter_controller.h"
+#include "ash/home_screen/home_screen_controller.h"
 #include "ash/host/ash_window_tree_host_init_params.h"
 #include "ash/ime/ime_controller.h"
 #include "ash/ime/ime_focus_handler.h"
@@ -748,7 +749,11 @@ Shell::~Shell() {
   // Depends on |tablet_mode_controller_|.
   shelf_controller_->Shutdown();
 
-  // Destroy |app_list_controller_| early than |tablet_mode_controller_| since
+  // Destroy |home_screen_controller_| before |app_list_controller_| since
+  // the former delegates to the latter.
+  home_screen_controller_.reset();
+
+  // Destroy |app_list_controller_| earlier than |tablet_mode_controller_| since
   // the former may use the latter before destruction.
   app_list_controller_.reset();
 
@@ -1165,17 +1170,16 @@ void Shell::Init(
 
   magnification_controller_ = std::make_unique<MagnificationController>();
   mru_window_tracker_ = std::make_unique<MruWindowTracker>();
-
-  // |assistant_controller_| needs to be created before |app_list_controller_|
-  // since it is used by the latter in constructor.
   assistant_controller_ = chromeos::switches::IsAssistantEnabled()
                               ? std::make_unique<AssistantController>()
                               : nullptr;
+  home_screen_controller_ = std::make_unique<HomeScreenController>();
 
-  // |tablet_mode_controller_| |mru_window_tracker_|, and
-  // |assistant_controller_| are put before |app_list_controller_| as they are
-  // used in constructor.
+  // |tablet_mode_controller_| |mru_window_tracker_|,
+  // |assistant_controller_| and |home_screen_controller_| are put before
+  // |app_list_controller_| as they are used in its constructor.
   app_list_controller_ = std::make_unique<AppListControllerImpl>();
+  home_screen_controller_->SetDelegate(app_list_controller_.get());
 
   autoclick_controller_ = std::make_unique<AutoclickController>();
 

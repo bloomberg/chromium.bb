@@ -9,11 +9,11 @@
 
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/accelerators/accelerator_table.h"
-#include "ash/app_list/app_list_controller_impl.h"
-#include "ash/app_list/home_launcher_gesture_handler.h"
 #include "ash/app_list/test/app_list_test_helper.h"
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/focus_cycler.h"
+#include "ash/home_screen/home_launcher_gesture_handler.h"
+#include "ash/home_screen/home_screen_controller.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_test_api.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -867,7 +867,7 @@ void ShelfLayoutManagerTest::TestHomeLauncherGestureHandler(
   // The home launcher gesture handler should not be handling any window
   // initially.
   HomeLauncherGestureHandler* gesture_handler =
-      Shell::Get()->app_list_controller()->home_launcher_gesture_handler();
+      Shell::Get()->home_screen_controller()->home_launcher_gesture_handler();
   ASSERT_TRUE(gesture_handler);
   ASSERT_FALSE(gesture_handler->GetWindow1());
 
