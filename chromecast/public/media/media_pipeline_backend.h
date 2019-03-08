@@ -299,7 +299,7 @@ class MediaPipelineBackend {
   // object. Platforms which support standard CDM decryption APIs do not need to
   // implement this function.
   CHROMECAST_EXPORT static AudioDecryptor* CreateAudioDecryptor(
-      const EncryptionScheme& scheme,
+      EncryptionScheme scheme,
       TaskRunner* task_runner) __attribute__((weak));
 };
 

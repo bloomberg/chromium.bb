@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <vector>
 
+#include "cast_decrypt_config.h"
 #include "stream_id.h"
 
 namespace chromecast {
@@ -105,68 +106,6 @@ struct CodecProfileLevel {
   VideoProfile profile;
   int level;
 };
-
-// Specification of whether and how the stream is encrypted (in whole or part).
-struct EncryptionScheme {
-  // Algorithm and mode that was used to encrypt the stream.
-  enum CipherMode {
-    CIPHER_MODE_UNENCRYPTED,
-    CIPHER_MODE_AES_CTR,
-    CIPHER_MODE_AES_CBC
-  };
-
-  // CENC 3rd Edition adds pattern encryption, through two new protection
-  // schemes: 'cens' (with AES-CTR) and 'cbcs' (with AES-CBC).
-  // The pattern applies independently to each 'encrypted' part of the frame (as
-  // defined by the relevant subsample entries), and reduces further the
-  // actual encryption applied through a repeating pattern of (encrypt:skip)
-  // 16 byte blocks. For example, in a (1:9) pattern, the first block is
-  // encrypted, and the next nine are skipped. This pattern is applied
-  // repeatedly until the end of the last 16-byte block in the subsample.
-  // Any remaining bytes are left clear.
-  // If either of encrypt_blocks or skip_blocks is 0, pattern encryption is
-  // disabled.
-  struct Pattern {
-    Pattern() {}
-    Pattern(uint32_t encrypt_blocks, uint32_t skip_blocks);
-    ~Pattern() {}
-    bool IsInEffect() const;
-
-    uint32_t encrypt_blocks = 0;
-    uint32_t skip_blocks = 0;
-  };
-
-  EncryptionScheme() {}
-  EncryptionScheme(CipherMode mode, const Pattern& pattern);
-  ~EncryptionScheme() {}
-  bool is_encrypted() const { return mode != CIPHER_MODE_UNENCRYPTED; }
-
-  CipherMode mode = CIPHER_MODE_UNENCRYPTED;
-  Pattern pattern;
-};
-
-inline EncryptionScheme::Pattern::Pattern(uint32_t encrypt_blocks,
-                                          uint32_t skip_blocks)
-    : encrypt_blocks(encrypt_blocks), skip_blocks(skip_blocks) {
-}
-
-inline bool EncryptionScheme::Pattern::IsInEffect() const {
-  return encrypt_blocks != 0 && skip_blocks != 0;
-}
-
-inline EncryptionScheme::EncryptionScheme(CipherMode mode,
-                                          const Pattern& pattern)
-    : mode(mode), pattern(pattern) {
-}
-
-inline EncryptionScheme Unencrypted() {
-  return EncryptionScheme();
-}
-
-inline EncryptionScheme AesCtrEncryptionScheme() {
-  return EncryptionScheme(EncryptionScheme::CIPHER_MODE_AES_CTR,
-                          EncryptionScheme::Pattern());
-}
 
 // ---- Begin copy/paste from //media/base/video_color_space.h ----
 // Described in ISO 23001-8:2016
@@ -291,7 +230,9 @@ struct AudioConfig {
   AudioConfig(const AudioConfig& other);
   ~AudioConfig();
 
-  bool is_encrypted() const { return encryption_scheme.is_encrypted(); }
+  bool is_encrypted() const {
+    return encryption_scheme != EncryptionScheme::kUnencrypted;
+  }
 
   // Stream id.
   StreamId id;
@@ -317,7 +258,8 @@ inline AudioConfig::AudioConfig()
       sample_format(kUnknownSampleFormat),
       bytes_per_channel(0),
       channel_number(0),
-      samples_per_second(0) {}
+      samples_per_second(0),
+      encryption_scheme(EncryptionScheme::kUnencrypted) {}
 inline AudioConfig::AudioConfig(const AudioConfig& other) = default;
 inline AudioConfig::~AudioConfig() {
 }
@@ -330,7 +272,9 @@ struct VideoConfig {
   VideoConfig(const VideoConfig& other);
   ~VideoConfig();
 
-  bool is_encrypted() const { return encryption_scheme.is_encrypted(); }
+  bool is_encrypted() const {
+    return encryption_scheme != EncryptionScheme::kUnencrypted;
+  }
 
   // Stream Id.
   StreamId id;
@@ -361,8 +305,8 @@ inline VideoConfig::VideoConfig()
     : id(kPrimary),
       codec(kVideoCodecUnknown),
       profile(kVideoProfileUnknown),
-      additional_config(nullptr) {
-}
+      additional_config(nullptr),
+      encryption_scheme(EncryptionScheme::kUnencrypted) {}
 
 inline VideoConfig::VideoConfig(const VideoConfig& other) = default;
 

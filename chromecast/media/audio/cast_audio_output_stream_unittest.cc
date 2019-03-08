@@ -556,7 +556,7 @@ TEST_F(CastAudioOutputStreamTest, Format) {
     const AudioConfig& audio_config = audio_decoder->config();
     EXPECT_EQ(kCodecPCM, audio_config.codec);
     EXPECT_EQ(kSampleFormatS16, audio_config.sample_format);
-    EXPECT_FALSE(audio_config.encryption_scheme.is_encrypted());
+    EXPECT_EQ(audio_config.encryption_scheme, EncryptionScheme::kUnencrypted);
 
     stream->Close();
   }
