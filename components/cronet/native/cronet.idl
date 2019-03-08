@@ -1138,7 +1138,7 @@ struct UrlRequestParams {
 
   /**
    * Marks that the executors this request will use to notify callbacks (for
-   * UploadDataProvider andUrlRequestCallback) is intentionally performing
+   * UploadDataProvider and UrlRequestCallback) is intentionally performing
    * inline execution without switching to another thread.
    *
    * <p><b>Warning:</b> This option makes it easy to accidentally block the network thread.
