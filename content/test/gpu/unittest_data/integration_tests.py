@@ -203,6 +203,37 @@ class BrowserCrashAfterStartTest(_BaseSampleIntegrationTest):
     # is successful based on the parameters.
     pass
 
+class RunTestsWithExpectationsFiles(_BaseSampleIntegrationTest):
+  _flaky_test_run = 0
+
+  @classmethod
+  def GenerateTags(cls, finder_options, possible_browser):
+    del finder_options, possible_browser
+    return ['foo']
+
+  @classmethod
+  def Name(cls):
+    return 'run_tests_with_expectations_files'
+
+  @classmethod
+  def GenerateGpuTests(cls, options):
+    tests = [('unexpected_test_failure', 'failure.html', ()),
+             ('expected_failure', 'failure.html', ()),
+             ('expected_flaky', 'flaky.html', ()),
+             ('expected_skip', 'skip.html', ())]
+    for test in tests:
+      yield test
+
+  def RunActualGpuTest(self, file_path, *args):
+    if file_path == 'failure.html' or self.__class__._flaky_test_run < 3:
+      self.__class__._flaky_test_run += file_path == 'flaky.html'
+      self.fail()
+
+  @classmethod
+  def ExpectationsFiles(cls):
+    return [
+      os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                   'test_expectations.txt')]
 
 class TestRetryLimit(_BaseSampleIntegrationTest):
   _test_state = {
