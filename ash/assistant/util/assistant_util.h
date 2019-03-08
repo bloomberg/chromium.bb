@@ -24,11 +24,6 @@ bool IsStartingSession(AssistantVisibility new_visibility,
 COMPONENT_EXPORT(ASSISTANT_UTIL)
 bool IsFinishingSession(AssistantVisibility new_visibility);
 
-// Returns true if the |entry_point| should show the embedded Assistant UI in
-// Launcher.
-COMPONENT_EXPORT(ASSISTANT_UTIL)
-bool IsEmbeddedUiEntryPoint(AssistantEntryPoint entry_point);
-
 // Returns true if the |entry_point| should start Assistant with a voice
 // interaction.
 // |prefer_voice| is true if user prefers voice input modality or if the device
