@@ -2973,13 +2973,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableOutOfBlinkCorsDescription, kOsAll,
      FEATURE_VALUE_TYPE(network::features::kOutOfBlinkCors)},
 
-#if defined(OS_ANDROID)
-    {"spannable-inline-autocomplete",
-     flag_descriptions::kSpannableInlineAutocompleteName,
-     flag_descriptions::kSpannableInlineAutocompleteDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kSpannableInlineAutocomplete)},
-#endif  // defined(OS_ANDROID)
-
     {"enable-resource-load-scheduler",
      flag_descriptions::kResourceLoadSchedulerName,
      flag_descriptions::kResourceLoadSchedulerDescription, kOsAll,

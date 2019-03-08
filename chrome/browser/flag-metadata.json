@@ -2868,11 +2868,6 @@
     "expiry_milestone": 80
   },
   {
-    "name": "spannable-inline-autocomplete",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "ssl-committed-interstitials",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
