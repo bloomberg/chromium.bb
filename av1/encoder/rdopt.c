@@ -3478,14 +3478,6 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
 
   this_rd_stats.skip &= !x->plane[plane].eobs[block];
 
-#if CONFIG_ONE_PASS_SVM
-  if (plane == AOM_PLANE_Y && plane_bsize >= BLOCK_8X8) {
-    const int eob = x->plane[plane].eobs[block];
-    av1_add_reg_stat(&this_rd_stats, eob, rd, this_rd_stats.sse, blk_row,
-                     blk_col, plane_bsize, txsize_to_bsize[tx_size]);
-  }
-#endif
-
   av1_merge_rd_stats(&args->rd_stats, &this_rd_stats);
 
   args->this_rd += rd;
@@ -3597,16 +3589,8 @@ static int64_t txfm_yrd(const AV1_COMP *const cpi, MACROBLOCK *x,
   if (rd_stats->skip) {
     if (is_inter) {
       rd = RDCOST(x->rdmult, s1, rd_stats->sse);
-#if CONFIG_ONE_PASS_SVM
-      // TODO(chiyotsai@google.com): Investigate if these updates are really
-      // needed.
-      av1_reg_stat_skipmode_update(rd_stats, x->rdmult);
-#endif
     } else {
       rd = RDCOST(x->rdmult, s1 + r_tx_size * tx_select, rd_stats->sse);
-#if CONFIG_ONE_PASS_SVM
-      av1_reg_stat_skipmode_update(rd_stats, x->rdmult);
-#endif
       rd_stats->rate += r_tx_size * tx_select;
     }
   } else {
@@ -3865,42 +3849,6 @@ static int predict_skip_flag(MACROBLOCK *x, BLOCK_SIZE bsize, int64_t *dist,
   return 1;
 }
 
-#if CONFIG_ONE_PASS_SVM
-static void calc_regional_sse(MACROBLOCK *x, BLOCK_SIZE bsize, int64_t dist,
-                              RD_STATS *rd_stats) {
-  // TODO(chiyotsai@google.com): Don't need regional sse's unless we are doing
-  // none.
-  const int bw = block_size_wide[bsize];
-  const int bw_mi = bw >> tx_size_wide_log2[0];
-  const int bh_mi = bw >> tx_size_high_log2[0];
-  const BLOCK_SIZE split_size = get_partition_subsize(bsize, PARTITION_SPLIT);
-  int64_t dist_0, dist_1, dist_2, dist_3;
-  MACROBLOCKD *xd = &x->e_mbd;
-  dist_0 = pixel_diff_dist(x, AOM_PLANE_Y, 0, 0, bsize, split_size, NULL);
-  dist_1 =
-      pixel_diff_dist(x, AOM_PLANE_Y, 0, bw_mi / 2, bsize, split_size, NULL);
-  dist_2 =
-      pixel_diff_dist(x, AOM_PLANE_Y, bh_mi / 2, 0, bsize, split_size, NULL);
-  dist_3 = pixel_diff_dist(x, AOM_PLANE_Y, bh_mi / 2, bw_mi / 2, bsize,
-                           split_size, NULL);
-
-  if (is_cur_buf_hbd(xd)) {
-    dist = ROUND_POWER_OF_TWO(dist, (xd->bd - 8) * 2);
-    dist_0 = ROUND_POWER_OF_TWO(dist_0, (xd->bd - 8) * 2);
-    dist_1 = ROUND_POWER_OF_TWO(dist_1, (xd->bd - 8) * 2);
-    dist_2 = ROUND_POWER_OF_TWO(dist_2, (xd->bd - 8) * 2);
-    dist_3 = ROUND_POWER_OF_TWO(dist_3, (xd->bd - 8) * 2);
-  }
-  const int scaling_factor = MAX_MIB_SIZE * MAX_MIB_SIZE;
-  rd_stats->y_sse = (dist << 4);
-  rd_stats->sse_0 = (dist_0 << 4) * scaling_factor;
-  rd_stats->sse_1 = (dist_1 << 4) * scaling_factor;
-  rd_stats->sse_2 = (dist_2 << 4) * scaling_factor;
-  rd_stats->sse_3 = (dist_3 << 4) * scaling_factor;
-  av1_reg_stat_skipmode_update(rd_stats, x->rdmult);
-}
-#endif
-
 // Used to set proper context for early termination with skip = 1.
 static void set_skip_flag(MACROBLOCK *x, RD_STATS *rd_stats, int bsize,
                           int64_t dist) {
@@ -4037,12 +3985,6 @@ static void super_block_yrd(const AV1_COMP *const cpi, MACROBLOCK *x,
       predict_skip_flag(x, bs, &dist, cpi->common.reduced_tx_set_used)) {
     // Populate rdstats as per skip decision
     set_skip_flag(x, rd_stats, bs, dist);
-#if CONFIG_ONE_PASS_SVM
-    if (bs >= BLOCK_8X8 && mi_size_wide[bs] == mi_size_high[bs] &&
-        xd->mi[0]->partition == PARTITION_NONE) {
-      calc_regional_sse(x, bs, dist, rd_stats);
-    }
-#endif
     // Save the RD search results into tx_rd_record.
     if (is_mb_rd_hash_enabled)
       save_tx_rd_info(n4, hash, x, rd_stats, mb_rd_record);
@@ -5218,13 +5160,6 @@ static void try_tx_block_no_split(
   const int txk_type_idx =
       av1_get_txk_type_index(plane_bsize, blk_row, blk_col);
   no_split->tx_type = mbmi->txk_type[txk_type_idx];
-
-#if CONFIG_ONE_PASS_SVM
-  if (plane_bsize >= BLOCK_8X8) {
-    av1_add_reg_stat(rd_stats, p->eobs[block], no_split->rd, rd_stats->sse,
-                     blk_row, blk_col, plane_bsize, txsize_to_bsize[tx_size]);
-  }
-#endif
 }
 
 static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
@@ -5465,9 +5400,6 @@ static int64_t select_tx_size_and_type(const AV1_COMP *cpi, MACROBLOCK *x,
 
   if (skip_rd <= this_rd) {
     rd_stats->skip = 1;
-#if CONFIG_ONE_PASS_SVM
-    av1_reg_stat_skipmode_update(rd_stats, x->rdmult);
-#endif
   } else {
     rd_stats->skip = 0;
   }
@@ -5485,11 +5417,6 @@ static int64_t select_tx_size_and_type(const AV1_COMP *cpi, MACROBLOCK *x,
   int64_t rd;
   if (rd_stats->skip) {
     rd = RDCOST(x->rdmult, s1, rd_stats->sse);
-#if CONFIG_ONE_PASS_SVM
-    // TODO(chiyotsai@google.com): Investigate if these updates are really
-    // needed.
-    av1_reg_stat_skipmode_update(rd_stats, x->rdmult);
-#endif
   } else {
     rd = RDCOST(x->rdmult, rd_stats->rate + s0, rd_stats->dist);
     if (!xd->lossless[xd->mi[0]->segment_id])
@@ -5548,20 +5475,9 @@ static void tx_block_yrd(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
       x->plane[0].txb_entropy_ctx[block] = 0;
       update_txk_array(mbmi->txk_type, plane_bsize, blk_row, blk_col, tx_size,
                        DCT_DCT);
-#if CONFIG_ONE_PASS_SVM
-      av1_add_reg_stat(rd_stats, 0, RDCOST(x->rdmult, 0, rd_stats->sse),
-                       rd_stats->sse, blk_row, blk_col, plane_bsize,
-                       txsize_to_bsize[tx_size]);
-#endif
     } else {
       rd_stats->skip = 0;
       set_blk_skip(x, 0, blk_row * mi_width + blk_col, 0);
-#if CONFIG_ONE_PASS_SVM
-      av1_add_reg_stat(rd_stats, x->plane[0].eobs[block],
-                       RDCOST(x->rdmult, rd_stats->rate, rd_stats->dist),
-                       rd_stats->sse, blk_row, blk_col, plane_bsize,
-                       txsize_to_bsize[tx_size]);
-#endif
     }
     if (tx_size > TX_4X4 && depth < MAX_VARTX_DEPTH)
       rd_stats->rate += x->txfm_partition_cost[ctx][0];
@@ -5669,11 +5585,6 @@ static int inter_block_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
     rd_stats->rate = 0;
     rd_stats->dist = rd_stats->sse;
     rd_stats->skip = 1;
-#if CONFIG_ONE_PASS_SVM
-    // TODO(chiyotasi@google.com): Investigate if these updates are really
-    // needed.
-    av1_reg_stat_skipmode_update(rd_stats, x->rdmult);
-#endif
   }
   if (this_rd > ref_best_rd) is_cost_valid = 0;
 
@@ -5998,12 +5909,6 @@ static void pick_tx_size_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
   if (cpi->sf.tx_type_search.use_skip_flag_prediction &&
       predict_skip_flag(x, bsize, &dist, cm->reduced_tx_set_used)) {
     set_skip_flag(x, rd_stats, bsize, dist);
-#if CONFIG_ONE_PASS_SVM
-    if (bsize >= BLOCK_8X8 && mi_size_wide[bsize] == mi_size_high[bsize] &&
-        xd->mi[0]->partition == PARTITION_NONE) {
-      calc_regional_sse(x, bsize, dist, rd_stats);
-    }
-#endif
     // Save the RD search results into tx_rd_record.
     if (is_mb_rd_hash_enabled)
       save_tx_rd_info(n4, hash, x, rd_stats, mb_rd_record);
@@ -8986,9 +8891,6 @@ static int txfm_search(const AV1_COMP *cpi, const TileDataEnc *tile_data,
       mbmi->ref_frame[1] = ref_frame_1;
       return 0;
     }
-#if CONFIG_ONE_PASS_SVM
-    av1_reg_stat_skipmode_update(rd_stats_y, x->rdmult);
-#endif
   } else if (!xd->lossless[mbmi->segment_id] &&
              (RDCOST(x->rdmult,
                      rd_stats_y->rate + rd_stats_uv->rate + skip_flag_cost[0],
@@ -9002,9 +8904,6 @@ static int txfm_search(const AV1_COMP *cpi, const TileDataEnc *tile_data,
     rd_stats_y->rate = 0;
     rd_stats_uv->rate = 0;
     mbmi->skip = 1;
-#if CONFIG_ONE_PASS_SVM
-    av1_reg_stat_skipmode_update(rd_stats_y, x->rdmult);
-#endif
   } else {
     rd_stats->rate += skip_flag_cost[0];
     mbmi->skip = 0;
@@ -9735,44 +9634,8 @@ static int64_t skip_mode_rd(RD_STATS *rd_stats, const AV1_COMP *const cpi,
     const int bh = block_size_high[plane_bsize];
 
     av1_subtract_plane(x, bsize, plane);
-    int64_t sse;
-#if CONFIG_ONE_PASS_SVM
-    if (plane == AOM_PLANE_Y && bsize >= BLOCK_8X8 && bw == bh) {
-      rd_stats->sse_0 = aom_sum_squares_2d_i16(p->src_diff, bw, bw / 2, bh / 2)
-                        << 4;
-      rd_stats->sse_1 =
-          aom_sum_squares_2d_i16(p->src_diff + bw / 2, bw, bw / 2, bh / 2) << 4;
-      rd_stats->sse_2 =
-          aom_sum_squares_2d_i16(p->src_diff + bh / 2 * bw, bw, bw / 2, bh / 2)
-          << 4;
-      rd_stats->sse_3 =
-          aom_sum_squares_2d_i16(p->src_diff + bh / 2 * bw + bw / 2, bw, bw / 2,
-                                 bh / 2)
-          << 4;
-
-      sse =
-          rd_stats->sse_0 + rd_stats->sse_1 + rd_stats->sse_2 + rd_stats->sse_3;
-      total_sse += sse;
-
-      const int scaling_factor = MAX_MIB_SIZE * MAX_MIB_SIZE;
-      rd_stats->sse = sse;
-      rd_stats->sse_0 = rd_stats->sse_0 * scaling_factor;
-      rd_stats->sse_1 = rd_stats->sse_1 * scaling_factor;
-      rd_stats->sse_2 = rd_stats->sse_2 * scaling_factor;
-      rd_stats->sse_3 = rd_stats->sse_3 * scaling_factor;
-      rd_stats->y_sse = sse;
-      // TODO(chiyotsai@google.com): Don't manually set the flags
-      av1_reg_stat_skipmode_update(rd_stats, x->rdmult);
-    } else {
-      sse = aom_sum_squares_2d_i16(p->src_diff, bw, bw, bh);
-      sse = sse << 4;
-      total_sse += sse;
-    }
-#else
-    sse = aom_sum_squares_2d_i16(p->src_diff, bw, bw, bh);
-    sse = sse << 4;
+    int64_t sse = aom_sum_squares_2d_i16(p->src_diff, bw, bw, bh) << 4;
     total_sse += sse;
-#endif
   }
   const int skip_mode_ctx = av1_get_skip_mode_context(xd);
   rd_stats->dist = rd_stats->sse = total_sse;
@@ -11087,13 +10950,6 @@ static void rd_pick_skip_mode(RD_STATS *rd_cost,
     rd_cost->dist = rd_cost->sse = skip_mode_rd_stats.dist;
     rd_cost->rdcost = skip_mode_rd_stats.rdcost;
 
-#if CONFIG_ONE_PASS_SVM
-    if (bsize >= BLOCK_8X8 &&
-        block_size_high[bsize] == block_size_wide[bsize]) {
-      av1_copy_reg_stat(rd_cost, &skip_mode_rd_stats);
-    }
-#endif
-
     search_state->best_rd = rd_cost->rdcost;
     search_state->best_skip2 = 1;
     search_state->best_mode_skippable = 1;
@@ -11708,9 +11564,6 @@ static void search_palette_mode(const AV1_COMP *cpi, MACROBLOCK *x, int mi_row,
     rate2 -= rd_stats_y.rate;
     if (num_planes > 1) rate2 -= search_state->rate_uv_tokenonly[uv_tx];
     rate2 += x->skip_cost[av1_get_skip_context(xd)][1];
-#if CONFIG_ONE_PASS_SVM
-    av1_reg_stat_skipmode_update(&rd_stats_y, x->rdmult);
-#endif
   } else {
     rate2 += x->skip_cost[av1_get_skip_context(xd)][0];
   }
@@ -11727,9 +11580,6 @@ static void search_palette_mode(const AV1_COMP *cpi, MACROBLOCK *x, int mi_row,
     search_state->best_mode_skippable = skippable;
     memcpy(ctx->blk_skip, x->blk_skip,
            sizeof(x->blk_skip[0]) * ctx->num_4x4_blk);
-#if CONFIG_ONE_PASS_SVM
-    av1_copy_reg_stat(rd_cost, &rd_stats_y);
-#endif
   }
 }
 
@@ -12693,12 +12543,6 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   int *comp_inter_cost = x->comp_inter_cost[av1_get_reference_mode_context(xd)];
   mode_skip_mask_t mode_skip_mask;
   uint8_t motion_mode_skip_mask = 0;  // second pass of single ref modes
-#if CONFIG_ONE_PASS_SVM
-  int temp_y_eob = 0, temp_y_eob_0 = 0, temp_y_eob_1 = 0, temp_y_eob_2 = 0,
-      temp_y_eob_3 = 0;
-  int64_t temp_y_rd = 0, temp_y_rd_0 = 0, temp_y_rd_1 = 0, temp_y_rd_2 = 0,
-          temp_y_rd_3 = 0;
-#endif
 
   InterModeSearchState search_state;
   init_inter_mode_search_state(&search_state, cpi, tile_data, x, bsize,
@@ -12927,12 +12771,6 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
         distortion2 = rd_stats.dist;
         rate_y = rd_stats_y.rate;
         rate_uv = rd_stats_uv.rate;
-#if CONFIG_ONE_PASS_SVM
-        av1_unpack_reg_stat(&rd_stats_y, &temp_y_eob, &temp_y_eob_0,
-                            &temp_y_eob_1, &temp_y_eob_2, &temp_y_eob_3,
-                            &temp_y_rd, &temp_y_rd_0, &temp_y_rd_1,
-                            &temp_y_rd_2, &temp_y_rd_3);
-#endif
       }
 
       if (sf->prune_comp_search_by_single_result > 0 &&
@@ -12984,12 +12822,6 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
               rate_y +
               x->skip_cost[av1_get_skip_context(xd)][this_skip2 || skippable];
           search_state.best_rate_uv = rate_uv;
-
-#if CONFIG_ONE_PASS_SVM
-          av1_set_reg_stat(rd_cost, temp_y_eob, temp_y_eob_0, temp_y_eob_1,
-                           temp_y_eob_2, temp_y_eob_3, temp_y_rd, temp_y_rd_0,
-                           temp_y_rd_1, temp_y_rd_2, temp_y_rd_3);
-#endif
         }
         memcpy(ctx->blk_skip, x->blk_skip,
                sizeof(x->blk_skip[0]) * ctx->num_4x4_blk);
@@ -13108,9 +12940,6 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
         search_state.best_rate_uv = rd_stats_uv.rate;
         memcpy(ctx->blk_skip, x->blk_skip,
                sizeof(x->blk_skip[0]) * ctx->num_4x4_blk);
-#if CONFIG_ONE_PASS_SVM
-        av1_copy_reg_stat(rd_cost, &rd_stats_y);
-#endif
       }
     }
   }
@@ -13158,9 +12987,6 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
       search_state.best_rate_uv = intra_rd_stats_uv.rate;
       memcpy(ctx->blk_skip, x->blk_skip,
              sizeof(x->blk_skip[0]) * ctx->num_4x4_blk);
-#if CONFIG_ONE_PASS_SVM
-      av1_copy_reg_stat(rd_cost, &intra_rd_stats_y);
-#endif
     }
   }
 #if CONFIG_COLLECT_COMPONENT_TIMING
@@ -13281,12 +13107,6 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   int *comp_inter_cost = x->comp_inter_cost[av1_get_reference_mode_context(xd)];
   mode_skip_mask_t mode_skip_mask;
   uint8_t motion_mode_skip_mask = 0;  // second pass of single ref modes
-#if CONFIG_ONE_PASS_SVM
-  int temp_y_eob = 0, temp_y_eob_0 = 0, temp_y_eob_1 = 0, temp_y_eob_2 = 0,
-      temp_y_eob_3 = 0;
-  int64_t temp_y_rd = 0, temp_y_rd_0 = 0, temp_y_rd_1 = 0, temp_y_rd_2 = 0,
-          temp_y_rd_3 = 0;
-#endif
 
   InterModeSearchState search_state;
   init_inter_mode_search_state(&search_state, cpi, tile_data, x, bsize,
@@ -13502,12 +13322,6 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
         rate2 = rd_stats.rate;
         skippable = rd_stats.skip;
         distortion2 = rd_stats.dist;
-#if CONFIG_ONE_PASS_SVM
-        av1_unpack_reg_stat(&rd_stats_y, &temp_y_eob, &temp_y_eob_0,
-                            &temp_y_eob_1, &temp_y_eob_2, &temp_y_eob_3,
-                            &temp_y_rd, &temp_y_rd_0, &temp_y_rd_1,
-                            &temp_y_rd_2, &temp_y_rd_3);
-#endif
       }
 
       if (sf->prune_comp_search_by_single_result > 0 &&
@@ -13641,9 +13455,6 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
         search_state.best_rate_uv = rd_stats_uv.rate;
         memcpy(ctx->blk_skip, x->blk_skip,
                sizeof(x->blk_skip[0]) * ctx->num_4x4_blk);
-#if CONFIG_ONE_PASS_SVM
-        av1_copy_reg_stat(rd_cost, &rd_stats_y);
-#endif
       }
     }
   }
@@ -13685,9 +13496,6 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
       search_state.best_rate_uv = intra_rd_stats_uv.rate;
       memcpy(ctx->blk_skip, x->blk_skip,
              sizeof(x->blk_skip[0]) * ctx->num_4x4_blk);
-#if CONFIG_ONE_PASS_SVM
-      av1_copy_reg_stat(rd_cost, &intra_rd_stats_y);
-#endif
     }
   }
 
