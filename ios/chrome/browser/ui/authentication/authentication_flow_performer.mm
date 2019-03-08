@@ -249,10 +249,14 @@ const int64_t kAuthenticationFlowTimeoutSeconds = 10;
 
   if (AuthenticationServiceFactory::GetForBrowserState(browserState)
           ->IsAuthenticatedIdentityManaged()) {
-    NSString* hostedDomain = base::SysUTF8ToNSString(
-        IdentityManagerFactory::GetForBrowserState(browserState)
-            ->GetPrimaryAccountInfo()
-            .hosted_domain);
+    identity::IdentityManager* identity_manager =
+        IdentityManagerFactory::GetForBrowserState(browserState);
+    base::Optional<AccountInfo> primary_account_info =
+        identity_manager->FindExtendedAccountInfoForAccount(
+            identity_manager->GetPrimaryAccountInfo());
+    DCHECK(primary_account_info);
+    NSString* hostedDomain =
+        base::SysUTF8ToNSString(primary_account_info->hosted_domain);
     [self promptSwitchFromManagedEmail:lastSignedInEmail
                       withHostedDomain:hostedDomain
                                toEmail:[identity userEmail]
