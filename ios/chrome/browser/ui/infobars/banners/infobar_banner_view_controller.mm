@@ -39,6 +39,9 @@ const CGFloat kContainerStackSpacing = 18.0;
 
 // Icon constants.
 const CGFloat kIconWidth = 25.0;
+
+// PanGesture constants.
+const CGFloat kChangeInPositionForTransition = 100.0;
 }  // namespace
 
 @interface InfobarBannerViewController ()
@@ -190,20 +193,27 @@ const CGFloat kIconWidth = 25.0;
 
   if (gesture.state == UIGestureRecognizerStateBegan) {
     self.originalCenter = self.view.center;
-
   } else if (gesture.state == UIGestureRecognizerStateChanged) {
     self.view.center =
         CGPointMake(self.view.center.x, self.view.center.y + translation.y);
+    // If the translation in the positive Y axis is larger than
+    // kChangeInPositionForTransition then present the InfobarModal.
+    if (self.view.center.y - self.originalCenter.y >
+        kChangeInPositionForTransition) {
+      [self.delegate presentInfobarModalFromBanner];
+      return;
+    }
   }
 
   if (gesture.state == UIGestureRecognizerStateEnded ||
       gesture.state == UIGestureRecognizerStateCancelled) {
-    if (self.view.center.y > self.originalCenter.y) {
-      self.view.center = self.originalCenter;
-      [self.delegate presentInfobarModalFromBanner];
-    } else {
+    // If there's more than a 1px translation in the negative Y axis when the
+    // gesture ended dismiss the banner.
+    if (self.view.center.y - self.originalCenter.y < 0) {
       [self.delegate dismissInfobarBanner:self];
+      return;
     }
+    self.view.center = self.originalCenter;
   }
 
   [gesture setTranslation:CGPointZero inView:self.view];

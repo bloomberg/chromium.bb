@@ -54,16 +54,9 @@
 
 - (id<UIViewControllerAnimatedTransitioning>)
     animationControllerForDismissedController:(UIViewController*)dismissed {
-  switch (self.transitionMode) {
-    case InfobarModalTransitionBase:
-      return nil;
-
-    case InfobarModalTransitionBanner:
-      InfobarExpandBannerAnimator* animator =
-          [[InfobarExpandBannerAnimator alloc] init];
-      animator.presenting = NO;
-      return animator;
-  }
+  // When dismissing the modal ViewController the default UIKit dismiss
+  // animation is used.
+  return nil;
 }
 
 @end

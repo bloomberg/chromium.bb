@@ -132,18 +132,24 @@
 #pragma mark - InfobarModalDelegate
 
 - (void)dismissInfobarModal:(UIButton*)sender {
-  [self.modalViewController.presentingViewController
-      dismissViewControllerAnimated:YES
-                         completion:^{
-                           // If the Modal was presented by the
-                           // BannerViewController, dismiss it too.
-                           if (self.modalTransitionDriver.transitionMode ==
-                               InfobarModalTransitionBanner) {
+  if (self.modalTransitionDriver.transitionMode ==
+      InfobarModalTransitionBanner) {
+    [self.bannerViewController
+        dismissViewControllerAnimated:YES
+                           completion:^{
+                             // Since the Modal was presented by the
+                             // BannerViewController, dismiss that too.
                              [self dismissInfobarBanner:
                                        self.bannerViewController];
-                           }
-                           self.modalTransitionDriver = nil;
-                         }];
+                             self.modalTransitionDriver = nil;
+                           }];
+  } else {
+    [self.modalViewController.presentingViewController
+        dismissViewControllerAnimated:YES
+                           completion:^{
+                             self.modalTransitionDriver = nil;
+                           }];
+  }
 }
 
 #pragma mark - Private
