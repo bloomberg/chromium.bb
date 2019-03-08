@@ -132,7 +132,8 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
   LayoutUnit MainAxisContentExtent(LayoutUnit content_logical_height);
   LayoutUnit ComputeMainAxisExtentForChild(const LayoutBox& child,
                                            SizeType,
-                                           const Length& size) const;
+                                           const Length& size,
+                                           LayoutUnit border_and_padding) const;
 
   LayoutUnit ContentInsetBottom() const;
   LayoutUnit ContentInsetRight() const;
@@ -176,7 +177,8 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
   LayoutUnit ComputeChildMarginValue(const Length& margin);
   void PrepareOrderIteratorAndMargins();
   MinMaxSize ComputeMinAndMaxSizesForChild(const FlexLayoutAlgorithm& algorithm,
-                                           const LayoutBox& child) const;
+                                           const LayoutBox& child,
+                                           LayoutUnit border_and_padding) const;
   LayoutUnit AdjustChildSizeForAspectRatioCrossAxisMinAndMax(
       const LayoutBox& child,
       LayoutUnit child_size) const;
