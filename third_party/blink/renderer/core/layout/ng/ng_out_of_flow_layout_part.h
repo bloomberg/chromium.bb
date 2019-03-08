@@ -93,10 +93,11 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
   ContainingBlockInfo GetContainingBlockInfo(
       const NGOutOfFlowPositionedDescendant&) const;
 
-  void ComputeInlineContainingBlocks(Vector<NGOutOfFlowPositionedDescendant>);
+  void ComputeInlineContainingBlocks(
+      const Vector<NGOutOfFlowPositionedDescendant>&);
 
   void LayoutDescendantCandidates(
-      const Vector<NGOutOfFlowPositionedDescendant> descendant_candidates,
+      const Vector<NGOutOfFlowPositionedDescendant>& descendant_candidates,
       const LayoutBox* only_layout,
       HashSet<const LayoutObject*>* placed_objects);
 
