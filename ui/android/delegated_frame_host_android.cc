@@ -382,7 +382,7 @@ void DelegatedFrameHostAndroid::DidReceiveCompositorFrameAck(
 
 void DelegatedFrameHostAndroid::OnBeginFrame(
     const viz::BeginFrameArgs& args,
-    const base::flat_map<uint32_t, gfx::PresentationFeedback>& feedbacks) {
+    const viz::PresentationFeedbackMap& feedbacks) {
   client_->DidPresentCompositorFrames(feedbacks);
   if (enable_viz_) {
     NOTREACHED();

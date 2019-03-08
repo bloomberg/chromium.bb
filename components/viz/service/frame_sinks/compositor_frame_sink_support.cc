@@ -76,7 +76,7 @@ CompositorFrameSinkSupport::~CompositorFrameSinkSupport() {
   DCHECK(!added_frame_observer_);
 }
 
-CompositorFrameSinkSupport::PresentationFeedbackMap
+PresentationFeedbackMap
 CompositorFrameSinkSupport::TakePresentationFeedbacks() {
   PresentationFeedbackMap map;
   map.swap(presentation_feedbacks_);

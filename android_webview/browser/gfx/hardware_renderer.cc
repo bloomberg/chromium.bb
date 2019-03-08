@@ -189,7 +189,7 @@ void HardwareRenderer::DidReceiveCompositorFrameAck(
 
 void HardwareRenderer::OnBeginFrame(
     const viz::BeginFrameArgs& args,
-    const base::flat_map<uint32_t, gfx::PresentationFeedback>& feedbacks) {
+    const viz::PresentationFeedbackMap& feedbacks) {
   // TODO(tansell): Hook this up.
 }
 

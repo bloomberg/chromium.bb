@@ -122,6 +122,7 @@ viz_component("common") {
     "hit_test/hit_test_data_builder.h",
     "hit_test/hit_test_region_list.cc",
     "hit_test/hit_test_region_list.h",
+    "presentation_feedback_map.h",
     "quads/compositor_frame.cc",
     "quads/compositor_frame.h",
     "quads/compositor_frame_metadata.cc",
