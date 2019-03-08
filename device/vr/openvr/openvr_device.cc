@@ -181,7 +181,10 @@ void OpenVRDevice::RequestSession(
     return;
   }
 
-  DCHECK(options->immersive);
+  if (!options->immersive) {
+    ReturnNonImmersiveSession(std::move(callback));
+    return;
+  }
 
   if (!render_loop_->IsRunning()) {
     render_loop_->Start();
@@ -329,6 +332,23 @@ void OpenVRDevice::OnPresentingControllerMojoConnectionError() {
   // provider on the next session, or look into why the callback gets lost.
   OnExitPresent();
   exclusive_controller_binding_.Close();
+}
+
+void OpenVRDevice::OnGetInlineFrameData(
+    mojom::XRFrameDataProvider::GetFrameDataCallback callback) {
+  if (!openvr_) {
+    std::move(callback).Run(nullptr);
+    return;
+  }
+  const float kPredictionTimeSeconds = 0.03f;
+  vr::TrackedDevicePose_t rendering_poses[vr::k_unMaxTrackedDeviceCount];
+  openvr_->GetSystem()->GetDeviceToAbsoluteTrackingPose(
+      vr::TrackingUniverseSeated, kPredictionTimeSeconds, rendering_poses,
+      vr::k_unMaxTrackedDeviceCount);
+  mojom::XRFrameDataPtr data = mojom::XRFrameData::New();
+  data->pose = mojo::ConvertTo<mojom::VRPosePtr>(
+      rendering_poses[vr::k_unTrackedDeviceIndex_Hmd]);
+  std::move(callback).Run(std::move(data));
 }
 
 // Only deal with events that will cause displayInfo changes for now.
