@@ -211,7 +211,14 @@ if (symbol_level == -1) {
     # Use lower symbol level in Simple Chrome build for faster link time.
     # For Simple Chrome, this should take precedence over is_official_build,
     # turned on by --internal.
-    symbol_level = 1
+    if ((target_cpu == "x64" || target_cpu == "x86") && !is_debug) {
+      # For release x86/x64 build, specify symbol_level=0 for faster link time.
+      # x86/x64 shows backtraces with symbol_level=0 (arm requires
+      # symbol_level=1).
+      symbol_level = 0
+    } else {
+      symbol_level = 1
+    }
   } else if ((!is_nacl && !is_linux && !is_fuchsia) || is_debug ||
              is_official_build || is_chromecast) {
     # Linux builds slower by having symbols as part of the target binary,
