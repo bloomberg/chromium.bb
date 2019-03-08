@@ -19,7 +19,6 @@
 # Tests that fail with NetworkService feature enabled. https://crbug.com/923938
 -android.webkit.cts.CookieManagerTest.testAcceptCookie
 -android.webkit.cts.CookieManagerTest.testThirdPartyCookie
--android.webkit.cts.WebChromeClientTest.testOnJsBeforeUnloadIsCalled
 -android.webkit.cts.WebViewClientTest.testOnReceivedError
 -android.webkit.cts.WebViewClientTest.testShouldOverrideUrlLoading
 -com.android.cts.webkit.WebViewDeviceSideStartupTest.testCookieManagerBlockingUiThread
