@@ -162,8 +162,6 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
   // CSS ink overflow https://www.w3.org/TR/css-overflow-3/#ink
   // Encloses all pixels painted by self + children.
   LayoutRect SelfInkOverflow() const;
-  // Union of children's ink overflows.
-  LayoutRect ChildrenInkOverflow() const;
 
   NGPhysicalOffsetRect ComputeLocalSelectionRectForText(
       const LayoutSelectionStatus&) const;
