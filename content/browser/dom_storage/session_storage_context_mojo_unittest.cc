@@ -72,6 +72,8 @@ class SessionStorageContextMojoTest : public test::MojoTestWithFileService {
   }
 
   void TearDown() override {
+    if (context_)
+      ShutdownContext();
     ChildProcessSecurityPolicyImpl::GetInstance()->Remove(kTestProcessId);
 
     mojo::core::SetDefaultProcessErrorCallback(

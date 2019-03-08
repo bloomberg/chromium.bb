@@ -237,12 +237,14 @@ void SessionStorageContextMojo::DeleteSessionNamespace(
     bool should_persist) {
   auto namespace_it = namespaces_.find(namespace_id);
   // If the namespace has pending clones, do the clone now before destroying it.
-  if (namespace_it->second->HasNamespacesWaitingForClone()) {
-    namespace_it->second->CloneAllNamespacesWaitingForClone();
+  if (namespace_it != namespaces_.end()) {
+    if (namespace_it->second->HasNamespacesWaitingForClone())
+      namespace_it->second->CloneAllNamespacesWaitingForClone();
+
+    // The object hierarchy uses iterators bound to the metadata object, so
+    // make sure to delete the object hierarchy first.
+    namespaces_.erase(namespace_it);
   }
-  // The object hierarchy uses iterators bound to the metadata object, so make
-  // sure to delete the object hierarchy first.
-  namespaces_.erase(namespace_it);
 
   if (!has_scavenged_ && should_persist)
     protected_namespaces_from_scavenge_.insert(namespace_id);
@@ -338,6 +340,12 @@ void SessionStorageContextMojo::PerformStorageCleanup(
 
 void SessionStorageContextMojo::ShutdownAndDelete() {
   DCHECK_NE(connection_state_, CONNECTION_SHUTDOWN);
+
+  // The namespaces will DCHECK if they are destructed with pending clones. It
+  // is valid for to drop these on shutdown.
+  for (auto& namespace_pair : namespaces_) {
+    namespace_pair.second->ClearNamespacesWaitingForClone();
+  }
 
   // Nothing to do if no connection to the database was ever finished.
   if (connection_state_ != CONNECTION_FINISHED) {

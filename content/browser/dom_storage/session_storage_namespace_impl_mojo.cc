@@ -92,6 +92,7 @@ void SessionStorageNamespaceImplMojo::Reset() {
   populated_ = false;
   origin_areas_.clear();
   bindings_.CloseAllBindings();
+  namespaces_waiting_for_clone_call_.clear();
 }
 
 void SessionStorageNamespaceImplMojo::Bind(
