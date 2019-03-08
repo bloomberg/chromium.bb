@@ -546,10 +546,17 @@ void SelectionController::UpdateSelectionForMouseDrag(
                                          Selection().Granularity())
           : SelectionInFlatTree::Builder().Collapse(adjusted_position).Build();
 
+  // When |adjusted_selection| is caret, it's already canonical. No need to re-
+  // canonicalize it.
+  const SelectionInFlatTree new_visible_selection =
+      adjusted_selection.IsRange()
+          ? CreateVisibleSelection(adjusted_selection).AsSelection()
+          : adjusted_selection;
+
   const bool selection_is_directional =
       should_extend_selection ? Selection().IsDirectional() : false;
   SetNonDirectionalSelectionIfNeeded(
-      CreateVisibleSelection(adjusted_selection).AsSelection(),
+      new_visible_selection,
       SetSelectionOptions::Builder()
           .SetGranularity(Selection().Granularity())
           .SetIsDirectional(selection_is_directional)
