@@ -259,7 +259,6 @@ class VRDisplay final : public EventTargetWithInlineData,
   bool did_log_getFrameData_ = false;
   bool did_log_requestPresent_ = false;
 
-  bool non_immersive_session_initialized_ = false;
   device::mojom::blink::XRFrameDataProviderPtr non_immersive_provider_;
 
   device::mojom::blink::XRDevicePtr device_ptr_;

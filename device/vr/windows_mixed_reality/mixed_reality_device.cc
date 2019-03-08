@@ -88,7 +88,10 @@ mojom::XRCompositorHostPtr MixedRealityDevice::BindCompositorHost() {
 void MixedRealityDevice::RequestSession(
     mojom::XRRuntimeSessionOptionsPtr options,
     mojom::XRRuntime::RequestSessionCallback callback) {
-  DCHECK(options->immersive);
+  if (!options->immersive) {
+    ReturnNonImmersiveSession(std::move(callback));
+    return;
+  }
 
   if (!render_loop_)
     CreateRenderLoop();

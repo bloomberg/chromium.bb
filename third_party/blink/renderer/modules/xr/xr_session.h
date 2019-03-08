@@ -155,13 +155,7 @@ class XRSession final : public EventTargetWithInlineData,
 
   // TODO(jacde): Update the mojom to deliver this per-frame.
   bool EmulatedPosition() const {
-    if (display_info_) {
-      return !display_info_->capabilities->hasPosition;
-    }
-
-    // If we don't have display info then we should be using the identity
-    // reference space, which by definition will be emulating the position.
-    return true;
+    return !display_info_->capabilities->hasPosition;
   }
 
   void UpdateDisplayInfo(

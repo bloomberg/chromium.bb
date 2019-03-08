@@ -133,7 +133,10 @@ void OculusDevice::RequestSession(
     return;
   }
 
-  DCHECK(options->immersive);
+  if (!options->immersive) {
+    ReturnNonImmersiveSession(std::move(callback));
+    return;
+  }
 
   StopOvrSession();
 
@@ -280,6 +283,20 @@ void OculusDevice::StopOvrSession() {
     session_ = nullptr;
     ovr_Shutdown();
   }
+}
+
+void OculusDevice::OnGetInlineFrameData(
+    mojom::XRFrameDataProvider::GetFrameDataCallback callback) {
+  if (!session_) {
+    std::move(callback).Run(nullptr);
+    return;
+  }
+
+  ovrTrackingState state = ovr_GetTrackingState(session_, 0, false);
+
+  mojom::XRFrameDataPtr frame_data = mojom::XRFrameData::New();
+  frame_data->pose = mojo::ConvertTo<mojom::VRPosePtr>(state.HeadPose.ThePose);
+  std::move(callback).Run(std::move(frame_data));
 }
 
 void OculusDevice::GetIsolatedXRGamepadProvider(

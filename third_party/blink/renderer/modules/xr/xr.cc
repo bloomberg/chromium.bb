@@ -265,7 +265,11 @@ ScriptPromise XR::requestSession(ScriptState* script_state,
 void XR::DispatchRequestSession(PendingSessionQuery* query) {
   if (!device_) {
     if (query->mode == XRSession::kModeInline) {
-      CreateInlineIdentitySession(query);
+      XRSession* session = MakeGarbageCollected<XRSession>(
+          this, nullptr /* client request */, query->mode,
+          XRSession::kBlendModeOpaque);
+      sessions_.insert(session);
+      query->resolver->Resolve(session);
       return;
     }
 
@@ -366,11 +370,6 @@ void XR::OnRequestSessionReturned(
   // TODO(https://crbug.com/872316) Improve the error messaging to indicate why
   // a request failed.
   if (!session_ptr) {
-    if (query->mode == XRSession::kModeInline) {
-      CreateInlineIdentitySession(query);
-      return;
-    }
-
     DOMException* exception = DOMException::Create(
         DOMExceptionCode::kNotSupportedError, kSessionNotSupported);
     query->resolver->Reject(exception);
@@ -447,14 +446,6 @@ void XR::AddedEventListener(const AtomicString& event_type,
 
 void XR::ContextDestroyed(ExecutionContext*) {
   Dispose();
-}
-
-void XR::CreateInlineIdentitySession(PendingSessionQuery* query) {
-  XRSession* session =
-      MakeGarbageCollected<XRSession>(this, nullptr /* client request */,
-                                      query->mode, XRSession::kBlendModeOpaque);
-  sessions_.insert(session);
-  query->resolver->Resolve(session);
 }
 
 void XR::Dispose() {
