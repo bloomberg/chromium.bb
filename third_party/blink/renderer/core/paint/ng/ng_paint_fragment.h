@@ -53,11 +53,6 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
     return *physical_fragment_;
   }
 
-  // Next/last fragment for  when this is fragmented.
-  const NGPaintFragment* Next() const { return next_fragmented_.get(); }
-  void SetNext(scoped_refptr<NGPaintFragment>);
-  const NGPaintFragment* Last() const;
-  const NGPaintFragment* Last(const NGBreakToken&) const;
   static scoped_refptr<NGPaintFragment>* Find(scoped_refptr<NGPaintFragment>*,
                                               const NGBlockBreakToken*);
 

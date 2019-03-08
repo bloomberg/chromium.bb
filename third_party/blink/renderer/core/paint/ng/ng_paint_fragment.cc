@@ -316,25 +316,6 @@ scoped_refptr<NGPaintFragment> NGPaintFragment::Create(
   return paint_fragment;
 }
 
-const NGPaintFragment* NGPaintFragment::Last() const {
-  for (const NGPaintFragment* fragment = this;;) {
-    const NGPaintFragment* next = fragment->Next();
-    if (!next)
-      return fragment;
-    fragment = next;
-  }
-}
-
-const NGPaintFragment* NGPaintFragment::Last(
-    const NGBreakToken& break_token) const {
-  for (const NGPaintFragment* fragment = this; fragment;
-       fragment = fragment->Next()) {
-    if (fragment->PhysicalFragment().BreakToken() == &break_token)
-      return fragment;
-  }
-  return nullptr;
-}
-
 scoped_refptr<NGPaintFragment>* NGPaintFragment::Find(
     scoped_refptr<NGPaintFragment>* fragment,
     const NGBlockBreakToken* break_token) {
@@ -356,10 +337,6 @@ scoped_refptr<NGPaintFragment>* NGPaintFragment::Find(
     fragment = next;
   }
   NOTREACHED();
-}
-
-void NGPaintFragment::SetNext(scoped_refptr<NGPaintFragment> fragment) {
-  next_fragmented_ = std::move(fragment);
 }
 
 bool NGPaintFragment::IsDescendantOfNotSelf(
