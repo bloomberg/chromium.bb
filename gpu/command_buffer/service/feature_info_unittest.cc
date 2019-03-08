@@ -1440,23 +1440,6 @@ TEST_P(FeatureInfoTest, InitializeOES_element_index_uint) {
   EXPECT_TRUE(info_->validators()->index_type.IsValid(GL_UNSIGNED_INT));
 }
 
-TEST_P(FeatureInfoTest, InitializeVAOsWithClientSideArrays) {
-  gpu::GpuDriverBugWorkarounds workarounds;
-  workarounds.use_client_side_arrays_for_stream_buffers = true;
-  SetupInitExpectationsWithWorkarounds("GL_OES_vertex_array_object",
-                                       workarounds);
-  if (GetContextType() == CONTEXT_TYPE_OPENGLES2) {
-    EXPECT_TRUE(info_->workarounds().use_client_side_arrays_for_stream_buffers);
-    EXPECT_FALSE(info_->feature_flags().native_vertex_array_object);
-  } else {  // CONTEXT_TYPE_OPENGLES3
-    // We only turn on use_client_side_arrays_for_stream_buffers on ES2
-    // contexts. See https://crbug.com/826509.
-    EXPECT_FALSE(
-        info_->workarounds().use_client_side_arrays_for_stream_buffers);
-    EXPECT_TRUE(info_->feature_flags().native_vertex_array_object);
-  }
-}
-
 TEST_P(FeatureInfoTest, InitializeEXT_blend_minmax) {
   SetupInitExpectations("GL_EXT_blend_minmax");
   EXPECT_TRUE(gfx::HasExtension(info_->extensions(), "GL_EXT_blend_minmax"));

@@ -9,6 +9,11 @@
         "type": "android"
       },
       "gl_vendor": "Imagination.*",
+      "gl_type": "gles",
+      "gl_version": {
+        "op": "<",
+        "value": "3.0"
+      },
       "features": [
         "use_client_side_arrays_for_stream_buffers"
       ]
@@ -21,6 +26,11 @@
         "type": "android"
       },
       "gl_vendor": "ARM.*",
+      "gl_type": "gles",
+      "gl_version": {
+        "op": "<",
+        "value": "3.0"
+      },
       "features": [
         "use_client_side_arrays_for_stream_buffers"
       ]
