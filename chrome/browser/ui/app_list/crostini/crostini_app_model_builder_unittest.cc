@@ -15,7 +15,6 @@
 #include "chrome/browser/ui/app_list/app_list_test_util.h"
 #include "chrome/browser/ui/app_list/chrome_app_list_item.h"
 #include "chrome/browser/ui/app_list/test/fake_app_list_model_updater.h"
-#include "chrome/browser/ui/app_list/test/test_app_list_controller_delegate.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/testing_profile.h"
@@ -111,17 +110,14 @@ class CrostiniAppModelBuilderTest : public AppListTestBase {
               return std::make_unique<FakeAppListModelUpdater>(profile);
             },
             profile()));
-    controller_ = std::make_unique<test::TestAppListControllerDelegate>();
+    // The AppListSyncableService creates the CrostiniAppModelBuilder.
     sync_service_ = std::make_unique<app_list::AppListSyncableService>(
         profile_.get(), extensions::ExtensionSystem::Get(profile_.get()));
-    builder_ = std::make_unique<CrostiniAppModelBuilder>(controller_.get());
     RemoveNonCrostiniApps(sync_service_.get());
   }
 
   void ResetBuilder() {
-    builder_.reset();
     sync_service_.reset();
-    controller_.reset();
     model_updater_factory_scope_.reset();
   }
 
@@ -133,9 +129,7 @@ class CrostiniAppModelBuilderTest : public AppListTestBase {
     return l10n_util::GetStringUTF8(IDS_CROSTINI_TERMINAL_APP_NAME);
   }
 
-  std::unique_ptr<test::TestAppListControllerDelegate> controller_;
   std::unique_ptr<app_list::AppListSyncableService> sync_service_;
-  std::unique_ptr<CrostiniAppModelBuilder> builder_;
   std::unique_ptr<CrostiniTestHelper> test_helper_;
 
  private:

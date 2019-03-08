@@ -52,11 +52,11 @@ CrostiniAppModelBuilder::CrostiniAppModelBuilder(
     : AppListModelBuilder(controller, CrostiniAppItem::kItemType) {}
 
 CrostiniAppModelBuilder::~CrostiniAppModelBuilder() {
-  if (crostini_folder_observer_) {
+  if (crostini_folder_observer_)
     model_updater()->RemoveObserver(crostini_folder_observer_.get());
-  }
-  // We don't need to remove ourself from the registry's observer list as these
-  // are both KeyedServices (this class lives on AppListSyncableService).
+
+  crostini::CrostiniRegistryServiceFactory::GetForProfile(profile())
+      ->RemoveObserver(this);
 }
 
 void CrostiniAppModelBuilder::BuildModel() {
