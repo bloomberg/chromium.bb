@@ -132,6 +132,8 @@ class ProcessHostImpl final : public mojom::ProcessHost
             unsigned int                              screen,
             registerScreenForStreamingCallback callback) override;
 
+    void dumpDiagnostics(int type, const std::string& path) override;
+
     void addHttpProxy(mojom::ProxyConfigType type,
                       const std::string&     host,
                       int                    port) override;

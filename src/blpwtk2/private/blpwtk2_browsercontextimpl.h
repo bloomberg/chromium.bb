@@ -118,6 +118,8 @@ class BrowserContextImpl final : public base::RefCounted<BrowserContextImpl>
     void addBypassRule(const StringRef& rule) override;
     void clearBypassRules() override;
     void setPacUrl(const StringRef& url) override;
+    void dumpDiagnostics(DiagnosticInfoType type,
+                         const StringRef&   path) override;
 
 
 
