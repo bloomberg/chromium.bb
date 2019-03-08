@@ -31,7 +31,7 @@ const CSSValue* Contain::ParseSingleValue(CSSParserTokenRange& range,
   CSSIdentifierValue* style = nullptr;
   CSSIdentifierValue* paint = nullptr;
   while (true) {
-    CSSValueID id = range.Peek().Id();
+    id = range.Peek().Id();
     if (id == CSSValueSize && !size)
       size = css_property_parser_helpers::ConsumeIdent(range);
     else if (id == CSSValueLayout && !layout)

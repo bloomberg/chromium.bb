@@ -120,12 +120,14 @@ CSSVariableResolver::Fallback CSSVariableResolver::ResolveFallback(
   if (!ResolveTokenRange(range, options, result))
     return Fallback::kFail;
   if (registration) {
-    CSSParserTokenRange range(result.tokens);
-    range = range.MakeSubRange(&range.Peek(first_fallback_token), range.end());
+    CSSParserTokenRange resolved_range(result.tokens);
+    resolved_range = resolved_range.MakeSubRange(
+        &resolved_range.Peek(first_fallback_token), resolved_range.end());
     const CSSParserContext* context =
         StrictCSSParserContext(state_.GetDocument().GetSecureContextMode());
     const bool is_animation_tainted = false;
-    if (!registration->Syntax().Parse(range, context, is_animation_tainted))
+    if (!registration->Syntax().Parse(resolved_range, context,
+                                      is_animation_tainted))
       return Fallback::kFail;
   }
   return Fallback::kSuccess;

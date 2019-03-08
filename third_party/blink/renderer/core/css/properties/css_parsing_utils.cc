@@ -2291,12 +2291,14 @@ bool ConsumeRadii(CSSValue* horizontal_radii[4],
                   CSSParserTokenRange& range,
                   CSSParserMode css_parser_mode,
                   bool use_legacy_parsing) {
-  unsigned i = 0;
-  for (; i < 4 && !range.AtEnd() && range.Peek().GetType() != kDelimiterToken;
-       ++i) {
-    horizontal_radii[i] = css_property_parser_helpers::ConsumeLengthOrPercent(
-        range, css_parser_mode, kValueRangeNonNegative);
-    if (!horizontal_radii[i])
+  unsigned horizontal_value_count = 0;
+  for (; horizontal_value_count < 4 && !range.AtEnd() &&
+         range.Peek().GetType() != kDelimiterToken;
+       ++horizontal_value_count) {
+    horizontal_radii[horizontal_value_count] =
+        css_property_parser_helpers::ConsumeLengthOrPercent(
+            range, css_parser_mode, kValueRangeNonNegative);
+    if (!horizontal_radii[horizontal_value_count])
       return false;
   }
   if (!horizontal_radii[0])
@@ -2304,7 +2306,7 @@ bool ConsumeRadii(CSSValue* horizontal_radii[4],
   if (range.AtEnd()) {
     // Legacy syntax: -webkit-border-radius: l1 l2; is equivalent to
     // border-radius: l1 / l2;
-    if (use_legacy_parsing && i == 2) {
+    if (use_legacy_parsing && horizontal_value_count == 2) {
       vertical_radii[0] = horizontal_radii[1];
       horizontal_radii[1] = nullptr;
     } else {
@@ -2316,7 +2318,7 @@ bool ConsumeRadii(CSSValue* horizontal_radii[4],
   } else {
     if (!css_property_parser_helpers::ConsumeSlashIncludingWhitespace(range))
       return false;
-    for (i = 0; i < 4 && !range.AtEnd(); ++i) {
+    for (unsigned i = 0; i < 4 && !range.AtEnd(); ++i) {
       vertical_radii[i] = css_property_parser_helpers::ConsumeLengthOrPercent(
           range, css_parser_mode, kValueRangeNonNegative);
       if (!vertical_radii[i])
