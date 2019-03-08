@@ -25,7 +25,6 @@
 namespace net {
 class NetworkDelegate;
 class URLRequest;
-class URLRequestInterceptor;
 }
 
 namespace network {
@@ -101,10 +100,6 @@ class CONTENT_EXPORT ServiceWorkerRequestHandler
   // if no handler is attached.
   static ServiceWorkerRequestHandler* GetHandler(
       const net::URLRequest* request);
-
-  // Creates a protocol interceptor for ServiceWorker.
-  static std::unique_ptr<net::URLRequestInterceptor> CreateInterceptor(
-      ResourceContext* resource_context);
 
   // Returns true if the request falls into the scope of a ServiceWorker.
   // It's only reliable after the ServiceWorkerRequestHandler MaybeCreateJob

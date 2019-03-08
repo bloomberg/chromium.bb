@@ -26,7 +26,6 @@
 #include "ipc/ipc_message.h"
 #include "net/base/url_util.h"
 #include "net/url_request/url_request.h"
-#include "net/url_request/url_request_interceptor.h"
 #include "services/network/public/cpp/resource_request_body.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
@@ -34,28 +33,6 @@
 namespace content {
 
 namespace {
-
-class ServiceWorkerRequestInterceptor
-    : public net::URLRequestInterceptor {
- public:
-  explicit ServiceWorkerRequestInterceptor(ResourceContext* resource_context)
-      : resource_context_(resource_context) {}
-  ~ServiceWorkerRequestInterceptor() override {}
-  net::URLRequestJob* MaybeInterceptRequest(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const override {
-    ServiceWorkerRequestHandler* handler =
-        ServiceWorkerRequestHandler::GetHandler(request);
-    if (!handler)
-      return nullptr;
-    return handler->MaybeCreateJob(
-        request, network_delegate, resource_context_);
-  }
-
- private:
-  ResourceContext* resource_context_;
-  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerRequestInterceptor);
-};
 
 bool SchemeMaySupportRedirectingToHTTPS(const GURL& url) {
 #if defined(OS_CHROMEOS)
@@ -213,14 +190,6 @@ ServiceWorkerRequestHandler* ServiceWorkerRequestHandler::GetHandler(
     const net::URLRequest* request) {
   return static_cast<ServiceWorkerRequestHandler*>(
       request->GetUserData(&user_data_key_));
-}
-
-// static
-std::unique_ptr<net::URLRequestInterceptor>
-ServiceWorkerRequestHandler::CreateInterceptor(
-    ResourceContext* resource_context) {
-  return std::unique_ptr<net::URLRequestInterceptor>(
-      new ServiceWorkerRequestInterceptor(resource_context));
 }
 
 // static
