@@ -84,8 +84,10 @@ struct FakeTraceInfo {
 
 class TestJSONTraceExporter : public JSONTraceExporter {
  public:
-  TestJSONTraceExporter(bool filter_args, OnTraceEventJSONCallback callback)
-      : JSONTraceExporter(filter_args, std::move(callback)) {}
+  TestJSONTraceExporter(ArgumentFilterPredicate argument_filter_predicate,
+                        OnTraceEventJSONCallback callback)
+      : JSONTraceExporter(std::move(argument_filter_predicate),
+                          std::move(callback)) {}
   ~TestJSONTraceExporter() override = default;
 
   int process_packets_calls() const { return process_packets_calls_; }
@@ -186,7 +188,7 @@ class JsonTraceExporterTest : public testing::Test {
  public:
   JsonTraceExporterTest()
       : json_trace_exporter_(new TestJSONTraceExporter(
-            /* filter_args =*/false,
+            JSONTraceExporter::ArgumentFilterPredicate(),
             base::BindRepeating(&JsonTraceExporterTest::OnTraceEventJSON,
                                 base::Unretained(this)))) {}
 
@@ -440,53 +442,70 @@ TEST_F(JsonTraceExporterTest, TestAddArgs) {
 
 TEST_F(JsonTraceExporterTest, TestAddArgsArgumentStripping) {
   std::vector<FakeTraceInfo> infos = {
-      FakeTraceInfo("event1", "base", 'B', /* timestamp = */ 1,
+      FakeTraceInfo("event1", "toplevel", 'B', /* timestamp = */ 1,
                     /* pid = */ 2,
                     /* tid = */ 3),
-      FakeTraceInfo("whitewashed", "base", 'B', /* timestamp = */ 1,
+      FakeTraceInfo("event2", "whitewashed", 'B', /* timestamp = */ 1,
                     /* pid = */ 2, /* tid = */ 3),
-      FakeTraceInfo("ScopedBlockingCallTest", "base", 'B',
+      FakeTraceInfo("event3", "granular_whitelisted", 'B',
                     /* timestamp = */ 1, /* pid = */ 2, /* tid = */ 3)};
   infos[0].args.emplace_back("int_one", int64_t(1));
 
   infos[1].args.emplace_back("int_two", uint64_t(2));
 
   // Third arg only has index into the string table.
-  infos[2].args.emplace_back("file_name", std::string("\"whitelisted_value\""));
-  infos[2].args.emplace_back("file_number",
+  infos[2].args.emplace_back("granular_arg_whitelisted",
+                             std::string("\"whitelisted_value\""));
+  infos[2].args.emplace_back("granular_arg_blacklisted",
                              std::string("\"blacklisted_value\""));
 
-  json_trace_exporter_->set_filter_args_for_testing(true);
+  json_trace_exporter_->SetArgumentFilterForTesting(base::BindRepeating(
+      [](const char* category_group_name, const char* event_name,
+         base::trace_event::ArgumentNameFilterPredicate* arg_filter) {
+        if (base::MatchPattern(category_group_name, "toplevel") &&
+            base::MatchPattern(event_name, "*")) {
+          return true;
+        }
+        if (base::MatchPattern(category_group_name, "granular_whitelisted") &&
+            base::MatchPattern(event_name, "event3")) {
+          *arg_filter = base::BindRepeating([](const char* arg_name) {
+            return base::MatchPattern(arg_name, "granular_arg_whitelisted");
+          });
+          return true;
+        }
+        return false;
+      }));
 
   json_trace_exporter_->SetFakeTraceEvents(infos);
   json_trace_exporter_->OnTraceData(
       std::vector<perfetto::TracePacket>(infos.size()), false);
   EXPECT_EQ(
       "{\"traceEvents\":[{\"pid\":2,\"tid\":3,\"ts\":1,\"ph\":\"B\","
-      "\"cat\":\"base\",\"name\":\"event1\",\"args\":\"__stripped__\"},\n"
-      "{\"pid\":2,\"tid\":3,\"ts\":1,\"ph\":\"B\",\"cat\":\"base\","
-      "\"name\":\"whitewashed\",\"args\":\"__stripped__\"},\n"
+      "\"cat\":\"toplevel\",\"name\":\"event1\",\"args\":{\"int_one\":1}},\n"
+      "{\"pid\":2,\"tid\":3,\"ts\":1,\"ph\":\"B\",\"cat\":\"whitewashed\","
+      "\"name\":\"event2\",\"args\":\"__stripped__\"},\n"
       "{\"pid\":2,\"tid\":3,\"ts\":1,\"ph\":\"B\","
-      "\"cat\":\"base\",\"name\":\"ScopedBlockingCallTest\","
-      "\"args\":{\"file_name\":\"whitelisted_value\","
-      "\"file_number\":\"__stripped__\"}}]}",
+      "\"cat\":\"granular_whitelisted\",\"name\":\"event3\","
+      "\"args\":{\"granular_arg_whitelisted\":\"whitelisted_value\","
+      "\"granular_arg_blacklisted\":\"__stripped__\"}}]}",
       unparsed_trace_data_);
 
   const trace_analyzer::TraceEvent* trace_event = trace_analyzer_->FindFirstOf(
       trace_analyzer::Query(trace_analyzer::Query::EVENT_NAME) ==
       trace_analyzer::Query::String("event1"));
-  EXPECT_FALSE(trace_event->HasArg("int_one"));
   EXPECT_TRUE(trace_event);
+  EXPECT_EQ(1, trace_event->GetKnownArgAsDouble("int_one"));
   trace_event = trace_analyzer_->FindFirstOf(
       trace_analyzer::Query(trace_analyzer::Query::EVENT_NAME) ==
-      trace_analyzer::Query::String("whitewashed"));
+      trace_analyzer::Query::String("event2"));
   EXPECT_FALSE(trace_event->HasArg("int_two"));
   trace_event = trace_analyzer_->FindFirstOf(
       trace_analyzer::Query(trace_analyzer::Query::EVENT_NAME) ==
-      trace_analyzer::Query::String("ScopedBlockingCallTest"));
+      trace_analyzer::Query::String("event3"));
   EXPECT_EQ("whitelisted_value",
-            trace_event->GetKnownArgAsString(("file_name")));
-  EXPECT_EQ("__stripped__", trace_event->GetKnownArgAsString(("file_number")));
+            trace_event->GetKnownArgAsString(("granular_arg_whitelisted")));
+  EXPECT_EQ("__stripped__",
+            trace_event->GetKnownArgAsString(("granular_arg_blacklisted")));
 }
 
 TEST_F(JsonTraceExporterTest, TestFtraceLegacyOutput) {

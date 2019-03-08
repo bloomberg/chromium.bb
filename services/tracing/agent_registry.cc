@@ -118,10 +118,11 @@ void AgentRegistry::RegisterAgent(mojom::AgentPtr agent,
   auto id = next_agent_id_++;
   auto entry = std::make_unique<AgentEntry>(id, this, std::move(agent), label,
                                             type, pid);
-  if (!agent_initialization_callback_.is_null())
-    agent_initialization_callback_.Run(entry.get());
+  AgentEntry* entry_ptr = entry.get();
   auto result = agents_.insert(std::make_pair(id, std::move(entry)));
   DCHECK(result.second);
+  if (!agent_initialization_callback_.is_null())
+    agent_initialization_callback_.Run(entry_ptr);
 }
 
 void AgentRegistry::UnregisterAgent(size_t agent_id) {

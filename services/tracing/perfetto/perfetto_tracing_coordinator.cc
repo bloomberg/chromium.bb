@@ -11,10 +11,12 @@
 #include "base/bind.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/trace_event/trace_log.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "services/tracing/perfetto/chrome_event_bundle_json_exporter.h"
 #include "services/tracing/perfetto/perfetto_service.h"
+#include "services/tracing/public/cpp/trace_event_args_whitelist.h"
 #include "services/tracing/public/mojom/constants.mojom.h"
 #include "services/tracing/public/mojom/perfetto_service.mojom.h"
 #include "third_party/perfetto/include/perfetto/tracing/core/consumer.h"
@@ -35,8 +37,24 @@ class PerfettoTracingCoordinator::TracingSession : public perfetto::Consumer {
   TracingSession(const base::trace_event::TraceConfig& chrome_config,
                  base::OnceClosure tracing_over_callback)
       : tracing_over_callback_(std::move(tracing_over_callback)) {
+    // In legacy backend, the trace event agent sets the predicate used by
+    // TraceLog. For perfetto backend, ensure that predicate is always set
+    // before creating the exporter. The agent can be created later than this
+    // point.
+    if (base::trace_event::TraceLog::GetInstance()
+            ->GetArgumentFilterPredicate()
+            .is_null()) {
+      base::trace_event::TraceLog::GetInstance()->SetArgumentFilterPredicate(
+          base::BindRepeating(&IsTraceEventArgsWhitelisted));
+      base::trace_event::TraceLog::GetInstance()->SetMetadataFilterPredicate(
+          base::BindRepeating(&IsMetadataWhitelisted));
+    }
+
     json_trace_exporter_ = std::make_unique<ChromeEventBundleJsonExporter>(
-        chrome_config.IsArgumentFilterEnabled(),
+        chrome_config.IsArgumentFilterEnabled()
+            ? base::trace_event::TraceLog::GetInstance()
+                  ->GetArgumentFilterPredicate()
+            : JSONTraceExporter::ArgumentFilterPredicate(),
         base::BindRepeating(&TracingSession::OnJSONTraceEventCallback,
                             base::Unretained(this)));
     perfetto::TracingService* service =
