@@ -9,18 +9,22 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "fuchsia/base/lifecycle_impl.h"
 #include "fuchsia/engine/context_provider_impl.h"
 
 int ContextProviderMain() {
   base::MessageLoopForUI message_loop;
-  base::fuchsia::ServiceDirectory* directory =
+  base::fuchsia::ServiceDirectory* const directory =
       base::fuchsia::ServiceDirectory::GetDefault();
+
   ContextProviderImpl context_provider;
   base::fuchsia::ScopedServiceBinding<chromium::web::ContextProvider> binding(
       directory, &context_provider);
 
-  // TODO(crbug.com/852145): Currently the process will run until it's killed.
-  base::RunLoop().Run();
+  base::RunLoop run_loop;
+  cr_fuchsia::LifecycleImpl lifecycle(directory, run_loop.QuitClosure());
+
+  run_loop.Run();
 
   return 0;
 }

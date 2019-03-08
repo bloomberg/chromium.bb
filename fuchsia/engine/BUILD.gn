@@ -92,6 +92,7 @@ component("web_engine_core") {
     "//content/public/common",
     "//content/public/renderer",
     "//fuchsia/base",
+    "//fuchsia/base:modular",
     "//mojo/public/cpp/bindings",
     "//services/network/public/cpp",
     "//services/service_manager/sandbox",
