@@ -829,6 +829,8 @@ void PaintCanvasVideoRenderer::ConvertVideoFrameToRGBPixels(
                               video_frame->visible_rect().width(),
                               video_frame->visible_rect().height());
           break;
+        default:
+          NOTREACHED();
       }
       break;
     case PIXEL_FORMAT_I422:
