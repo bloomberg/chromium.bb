@@ -51,6 +51,7 @@ class TestURLLoaderFactory;
 class ArcSupportHostTest;
 class IdentityManagerFactory;
 class PrefRegistrySimple;
+class SigninManagerAndroid;
 
 namespace identity {
 
@@ -531,6 +532,10 @@ class IdentityManager : public SigninManagerBase::Observer,
   friend chromeos::ChromeSessionManager;
   friend chromeos::UserSessionManager;
   friend IdentityManagerFactory;
+
+  // This friend is temporary during the conversion process.
+  // TODO(crbug.com/889902): Delete this friendship when conversion is done.
+  friend SigninManagerAndroid;
 
   // Private getters used for testing only (i.e. see identity_test_utils.h).
   SigninManagerBase* GetSigninManager();
