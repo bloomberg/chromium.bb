@@ -4,8 +4,6 @@
 
 #import "ios/showcase/core/showcase_model.h"
 
-#include "ios/chrome/browser/ui/util/ui_util.h"
-
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
@@ -103,6 +101,11 @@
       showcase::kClassForDisplayKey : @"RecentTabsTableViewController",
       showcase::kClassForInstantiationKey : @"SCDarkThemeRecentTabsCoordinator",
       showcase::kUseCaseKey : @"Dark theme recent tabs",
+    },
+    @{
+      showcase::kClassForDisplayKey : @"OmniboxPopupViewController",
+      showcase::kClassForInstantiationKey : @"SCOmniboxPopupCoordinator",
+      showcase::kUseCaseKey : @"Omnibox popup table view",
     },
   ];
 }
