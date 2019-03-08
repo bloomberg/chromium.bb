@@ -117,7 +117,19 @@ TEST_F(StreamingConnectionEstablisherTest, TearDownConnection) {
   const auto& stop_calls =
       fake_service_worker_context.stop_all_service_workers_for_origin_calls();
   ASSERT_EQ(1u, stop_calls.size());
-  EXPECT_EQ(GetAndroidMessagesURL(), stop_calls[0]);
+  EXPECT_EQ(GetAndroidMessagesURL().GetOrigin(), stop_calls[0]);
+
+  // Verify that subsequent message message dispatch calls succeed.
+  auto& message_dispatch_calls =
+      fake_service_worker_context
+          .start_service_worker_and_dispatch_long_running_message_calls();
+
+  connection_establisher.EstablishConnection(
+      GetAndroidMessagesURL(),
+      ConnectionEstablisher::ConnectionMode::kStartConnection,
+      &fake_service_worker_context);
+  base::RunLoop().RunUntilIdle();
+  ASSERT_EQ(1u, message_dispatch_calls.size());
 }
 
 }  // namespace android_sms
