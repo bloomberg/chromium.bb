@@ -137,12 +137,23 @@ NGBoxFragmentPainter::NGBoxFragmentPainter(const NGPaintFragment& box)
     : BoxPainterBase(&box.GetLayoutObject()->GetDocument(),
                      box.Style(),
                      box.GetLayoutObject()->GeneratingNode()),
-      box_fragment_(box),
-      border_edges_(
-          NGBorderEdges::FromPhysical(box.PhysicalFragment().BorderEdges(),
-                                      box.Style().GetWritingMode())) {
+      box_fragment_(box) {
   DCHECK(box.PhysicalFragment().IsBox() ||
          box.PhysicalFragment().IsRenderedLegend());
+}
+
+const NGPhysicalBoxFragment& NGBoxFragmentPainter::PhysicalFragment() const {
+  return static_cast<const NGPhysicalBoxFragment&>(
+      box_fragment_.PhysicalFragment());
+}
+
+const NGBorderEdges& NGBoxFragmentPainter::BorderEdges() const {
+  if (border_edges_.has_value())
+    return *border_edges_;
+  const NGPhysicalBoxFragment& fragment = PhysicalFragment();
+  border_edges_ = NGBorderEdges::FromPhysical(
+      fragment.BorderEdges(), fragment.Style().GetWritingMode());
+  return *border_edges_;
 }
 
 void NGBoxFragmentPainter::Paint(const PaintInfo& paint_info) {
@@ -450,8 +461,9 @@ void NGBoxFragmentPainter::PaintMask(const PaintInfo& paint_info,
   DrawingRecorder recorder(paint_info.context, box_fragment_, paint_info.phase);
   LayoutRect paint_rect =
       LayoutRect(paint_offset, box_fragment_.Size().ToLayoutSize());
+  const NGBorderEdges& border_edges = BorderEdges();
   PaintMaskImages(paint_info, paint_rect, *box_fragment_.GetLayoutObject(),
-                  geometry, border_edges_.line_left, border_edges_.line_right);
+                  geometry, border_edges.line_left, border_edges.line_right);
 }
 
 // TODO(kojii): This logic is kept in sync with BoxPainter. Not much efforts to
@@ -568,13 +580,14 @@ void NGBoxFragmentPainter::PaintBoxDecorationBackgroundWithRect(
       BackgroundIsKnownToBeOpaque(paint_info))
     recorder.SetKnownToBeOpaque();
 
+  const NGBorderEdges& border_edges = BorderEdges();
   bool needs_end_layer = false;
   if (!painting_overflow_contents) {
     bool skip_background = layout_box.BackgroundTransfersToView() ||
                            (paint_info.SkipRootBackground() &&
                             paint_info.PaintContainer() == layout_box);
-    PaintNormalBoxShadow(paint_info, paint_rect, style, border_edges_.line_left,
-                         border_edges_.line_right, skip_background);
+    PaintNormalBoxShadow(paint_info, paint_rect, style, border_edges.line_left,
+                         border_edges.line_right, skip_background);
 
     if (box_fragment_.HasSelfPaintingLayer() && layout_box.IsTableCell() &&
         ToLayoutTableCell(layout_box).Table()->ShouldCollapseBorders()) {
@@ -587,7 +600,7 @@ void NGBoxFragmentPainter::PaintBoxDecorationBackgroundWithRect(
     } else if (BleedAvoidanceIsClipping(box_decoration_data.bleed_avoidance)) {
       state_saver.Save();
       FloatRoundedRect border = style.GetRoundedBorderFor(
-          paint_rect, border_edges_.line_left, border_edges_.line_right);
+          paint_rect, border_edges.line_left, border_edges.line_right);
       paint_info.context.ClipRoundedRect(border);
 
       if (box_decoration_data.bleed_avoidance == kBackgroundBleedClipLayer) {
@@ -619,8 +632,8 @@ void NGBoxFragmentPainter::PaintBoxDecorationBackgroundWithRect(
 
   if (!painting_overflow_contents) {
     PaintInsetBoxShadowWithBorderRect(paint_info, paint_rect, style,
-                                      border_edges_.line_left,
-                                      border_edges_.line_right);
+                                      border_edges.line_left,
+                                      border_edges.line_right);
 
     // The theme will tell us whether or not we should also paint the CSS
     // border.
@@ -634,8 +647,8 @@ void NGBoxFragmentPainter::PaintBoxDecorationBackgroundWithRect(
       const Document& document = layout_object.GetDocument();
       PaintBorder(*box_fragment_.GetLayoutObject(), document, generating_node,
                   paint_info, paint_rect, style,
-                  box_decoration_data.bleed_avoidance, border_edges_.line_left,
-                  border_edges_.line_right);
+                  box_decoration_data.bleed_avoidance, border_edges.line_left,
+                  border_edges.line_right);
     }
   }
 
@@ -947,10 +960,11 @@ BoxPainterBase::FillLayerInfo NGBoxFragmentPainter::GetFillLayerInfo(
     const Color& color,
     const FillLayer& bg_layer,
     BackgroundBleedAvoidance bleed_avoidance) const {
+  const NGBorderEdges& border_edges = BorderEdges();
   return BoxPainterBase::FillLayerInfo(
       box_fragment_.GetLayoutObject()->GetDocument(), box_fragment_.Style(),
       box_fragment_.HasOverflowClip(), color, bg_layer, bleed_avoidance,
-      border_edges_.line_left, border_edges_.line_right);
+      border_edges.line_left, border_edges.line_right);
 }
 
 bool NGBoxFragmentPainter::IsInSelfHitTestingPhase(HitTestAction action) const {
@@ -1247,13 +1261,9 @@ bool NGBoxFragmentPainter::HitTestClippedOutByBorder(
   LayoutRect rect =
       LayoutRect(LayoutPoint(), PhysicalFragment().Size().ToLayoutSize());
   rect.MoveBy(border_box_location);
+  const NGBorderEdges& border_edges = BorderEdges();
   return !location_in_container.Intersects(style.GetRoundedBorderFor(
-      rect, border_edges_.line_left, border_edges_.line_right));
-}
-
-const NGPhysicalBoxFragment& NGBoxFragmentPainter::PhysicalFragment() const {
-  return static_cast<const NGPhysicalBoxFragment&>(
-      box_fragment_.PhysicalFragment());
+      rect, border_edges.line_left, border_edges.line_right));
 }
 
 }  // namespace blink

@@ -166,9 +166,10 @@ class NGBoxFragmentPainter : public BoxPainterBase {
       const LayoutPoint& offset);
 
   const NGPhysicalBoxFragment& PhysicalFragment() const;
+  const NGBorderEdges& BorderEdges() const;
 
   const NGPaintFragment& box_fragment_;
-  NGBorderEdges border_edges_;
+  mutable base::Optional<NGBorderEdges> border_edges_;
 };
 
 }  // namespace blink
