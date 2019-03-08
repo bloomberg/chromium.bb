@@ -22,6 +22,7 @@
 #include "base/win/scoped_process_information.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
 #include "chrome/credential_provider/gaiacp/logging.h"
+#include "chrome/credential_provider/gaiacp/mdm_utils.h"
 #include "chrome/credential_provider/gaiacp/reg_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -39,6 +40,18 @@ HRESULT CreateArbitrarySid(DWORD subauth0, PSID* sid) {
 }
 
 }  // namespace
+
+///////////////////////////////////////////////////////////////////////////////
+
+void InitializeRegistryOverrideForTesting(
+    registry_util::RegistryOverrideManager* registry_override) {
+  ASSERT_NO_FATAL_FAILURE(
+      registry_override->OverrideRegistry(HKEY_LOCAL_MACHINE));
+  base::win::RegKey key;
+  ASSERT_EQ(ERROR_SUCCESS,
+            key.Create(HKEY_LOCAL_MACHINE, kGcpRootKeyName, KEY_WRITE));
+  ASSERT_EQ(ERROR_SUCCESS, key.WriteValue(kRegMdmUrl, L""));
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 

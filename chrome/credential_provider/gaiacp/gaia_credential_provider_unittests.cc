@@ -10,7 +10,6 @@
 #include <tuple>
 
 #include "base/synchronization/waitable_event.h"
-#include "base/test/test_reg_util_win.h"
 #include "base/win/registry.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
 #include "chrome/credential_provider/gaiacp/associated_user_validator.h"
@@ -53,8 +52,7 @@ class GcpCredentialProviderTest : public ::testing::Test {
 };
 
 void GcpCredentialProviderTest::SetUp() {
-  ASSERT_NO_FATAL_FAILURE(
-      registry_override_.OverrideRegistry(HKEY_LOCAL_MACHINE));
+  InitializeRegistryOverrideForTesting(&registry_override_);
 }
 
 TEST_F(GcpCredentialProviderTest, Basic) {

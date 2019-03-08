@@ -64,8 +64,10 @@ base::string16 GetMdmUrl() {
   wchar_t mdm_url[256];
   ULONG length = base::size(mdm_url);
   HRESULT hr = GetGlobalFlag(kRegMdmUrl, mdm_url, &length);
+  if (FAILED(hr))
+    return L"https://deviceenrollmentforwindows.googleapis.com/v1/discovery";
 
-  return hr == S_OK ? mdm_url : base::string16();
+  return mdm_url;
 }
 
 bool IsEnrolledWithGoogleMdm(const base::string16& mdm_url) {
