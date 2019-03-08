@@ -108,7 +108,10 @@ class CONTENT_EXPORT SessionStorageNamespaceImplMojo final
       const OriginAreas& areas_to_clone);
 
   // Resets to a pre-populated and pre-bound state. Used when the owner needs to
-  // delete & recreate the database.
+  // delete & recreate the database. This call should happen on every namespace
+  // at once, and the logic relies on that.
+  // TODO(dmurph): It's unclear if we need this or not - we might just want to
+  // destruct the object instead of having this method.
   void Reset();
 
   SessionStorageMetadata::NamespaceEntry namespace_entry() {
@@ -157,6 +160,13 @@ class CONTENT_EXPORT SessionStorageNamespaceImplMojo final
     return !namespaces_waiting_for_clone_call_.empty();
   }
   void CloneAllNamespacesWaitingForClone();
+
+  // This is only used on shutdown to avoid the DCHECK in the destructor.
+  // We are fine to drop clone calls during shutdown, even if this loses some
+  // data.
+  void ClearNamespacesWaitingForClone() {
+    namespaces_waiting_for_clone_call_.clear();
+  }
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SessionStorageContextMojoTest,
