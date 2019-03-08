@@ -19,7 +19,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_relative_utils.h"
-#include "third_party/blink/renderer/core/paint/ng/ng_block_flow_painter.h"
+#include "third_party/blink/renderer/core/paint/ng/ng_box_fragment_painter.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 
@@ -404,8 +404,8 @@ void LayoutNGMixin<Base>::InvalidateDisplayItemClients(
 
 template <typename Base>
 void LayoutNGMixin<Base>::Paint(const PaintInfo& paint_info) const {
-  if (PaintFragment())
-    NGBlockFlowPainter(*this).Paint(paint_info);
+  if (const NGPaintFragment* paint_fragment = PaintFragment())
+    NGBoxFragmentPainter(*paint_fragment).Paint(paint_info);
   else
     LayoutBlockFlow::Paint(paint_info);
 }
@@ -416,7 +416,8 @@ bool LayoutNGMixin<Base>::NodeAtPoint(
     const HitTestLocation& location_in_container,
     const LayoutPoint& accumulated_offset,
     HitTestAction action) {
-  if (!PaintFragment()) {
+  const NGPaintFragment* paint_fragment = PaintFragment();
+  if (!paint_fragment) {
     return LayoutBlockFlow::NodeAtPoint(result, location_in_container,
                                         accumulated_offset, action);
   }
@@ -440,8 +441,8 @@ bool LayoutNGMixin<Base>::NodeAtPoint(
                                    physical_offset))
     return true;
 
-  return NGBlockFlowPainter(*this).NodeAtPoint(result, location_in_container,
-                                               physical_offset, action);
+  return NGBoxFragmentPainter(*paint_fragment)
+      .NodeAtPoint(result, location_in_container, physical_offset, action);
 }
 
 template <typename Base>
