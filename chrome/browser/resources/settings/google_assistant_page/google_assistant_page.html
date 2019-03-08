@@ -82,7 +82,7 @@
           <select id="dspHotwordState" class="md-select"
               aria-labelledby="googleAssistantEnableHotword"
               on-change="onDspHotwordStateChange_"
-              disabled="[[hotwordDisabled_]]">
+              disabled="[[hotwordEnforced_]]">
             <template is="dom-repeat" items="[[hotwordDropdownList_]]">
               <option value="[[item.value]]"
                   selected="[[isDspHotwordStateMatch_(item.value)]]">
