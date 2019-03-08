@@ -200,6 +200,9 @@ class XRSession final : public EventTargetWithInlineData,
       base::Optional<WTF::Vector<device::mojom::blink::XRHitResultPtr>>
           results);
 
+  void EnsureEnvironmentErrorHandler();
+  void OnEnvironmentProviderError();
+
   const Member<XR> xr_;
   const SessionMode mode_;
   const String mode_string_;
@@ -211,6 +214,8 @@ class XRSession final : public EventTargetWithInlineData,
   InputSourceMap input_sources_;
   Member<ResizeObserver> resize_observer_;
   Member<XRCanvasInputProvider> canvas_input_provider_;
+  bool environment_error_handler_subscribed_ = false;
+  HeapHashSet<Member<ScriptPromiseResolver>> hit_test_promises_;
 
   bool has_xr_focus_ = true;
   bool is_external_ = false;

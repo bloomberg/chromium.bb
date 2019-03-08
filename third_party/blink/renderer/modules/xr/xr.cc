@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/modules/xr/xr.h"
 
+#include <utility>
+
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
@@ -109,6 +111,11 @@ XRFrameProvider* XR::frameProvider() {
 const device::mojom::blink::XREnvironmentIntegrationProviderAssociatedPtr&
 XR::xrEnvironmentProviderPtr() {
   return environment_provider_;
+}
+
+void XR::AddEnvironmentProviderErrorHandler(
+    EnvironmentProviderErrorCallback callback) {
+  environment_provider_error_callbacks_.push_back(std::move(callback));
 }
 
 ScriptPromise XR::supportsSessionMode(ScriptState* script_state,
@@ -406,6 +413,9 @@ void XR::OnRequestSessionReturned(
           mojo::MakeRequest(&environment_provider_,
                             GetExecutionContext()->GetTaskRunner(
                                 TaskType::kMiscPlatformAPI)));
+
+      environment_provider_.set_connection_error_handler(WTF::Bind(
+          &XR::OnEnvironmentProviderDisconnect, WrapWeakPersistent(this)));
     }
   }
 
@@ -459,6 +469,15 @@ void XR::Dispose() {
     frame_provider_->Dispose();
 
   device_ = nullptr;
+}
+
+void XR::OnEnvironmentProviderDisconnect() {
+  for (auto& callback : environment_provider_error_callbacks_) {
+    std::move(callback).Run();
+  }
+
+  environment_provider_error_callbacks_.clear();
+  environment_provider_.reset();
 }
 
 void XR::Trace(blink::Visitor* visitor) {
