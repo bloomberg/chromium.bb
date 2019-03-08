@@ -58,7 +58,8 @@ class AdsPageLoadMetricsObserver
   void ReadyToCommitNextNavigation(
       content::NavigationHandle* navigation_handle) override;
   void OnDidFinishSubFrameNavigation(
-      content::NavigationHandle* navigation_handle) override;
+      content::NavigationHandle* navigation_handle,
+      const page_load_metrics::PageLoadExtraInfo& extra_info) override;
   void OnDidInternalNavigationAbort(
       content::NavigationHandle* navigation_handle) override;
   ObservePolicy FlushMetricsOnAppEnterBackground(

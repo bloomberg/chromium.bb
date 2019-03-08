@@ -204,7 +204,8 @@ void AdsPageLoadMetricsObserver::ReadyToCommitNextNavigation(
 // ad, even if it navigates to a non-ad page. This function labels all of a
 // page's frames, even those that fail to commit.
 void AdsPageLoadMetricsObserver::OnDidFinishSubFrameNavigation(
-    content::NavigationHandle* navigation_handle) {
+    content::NavigationHandle* navigation_handle,
+    const page_load_metrics::PageLoadExtraInfo& extra_info) {
   FrameTreeNodeId frame_tree_node_id = navigation_handle->GetFrameTreeNodeId();
   bool is_adframe = DetectAds(navigation_handle);
 

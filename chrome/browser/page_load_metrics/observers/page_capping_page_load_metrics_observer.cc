@@ -162,7 +162,8 @@ void PageCappingPageLoadMetricsObserver::MediaStartedPlaying(
 }
 
 void PageCappingPageLoadMetricsObserver::OnDidFinishSubFrameNavigation(
-    content::NavigationHandle* navigation_handle) {
+    content::NavigationHandle* navigation_handle,
+    const page_load_metrics::PageLoadExtraInfo& extra_info) {
   // If the page is not paused, there is no need to pause new frames.
   if (page_capping_state_ != PageCappingState::kPagePaused)
     return;

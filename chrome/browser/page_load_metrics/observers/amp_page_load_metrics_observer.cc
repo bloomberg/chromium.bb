@@ -170,7 +170,8 @@ void AMPPageLoadMetricsObserver::OnCommitSameDocumentNavigation(
 }
 
 void AMPPageLoadMetricsObserver::OnDidFinishSubFrameNavigation(
-    content::NavigationHandle* navigation_handle) {
+    content::NavigationHandle* navigation_handle,
+    const page_load_metrics::PageLoadExtraInfo& extra_info) {
   if (!navigation_handle->HasCommitted())
     return;
 

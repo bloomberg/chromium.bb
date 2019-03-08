@@ -112,7 +112,8 @@ class PageLoadMetricsTestWaiter
         const page_load_metrics::PageLoadExtraInfo& extra_info) override;
 
     void OnDidFinishSubFrameNavigation(
-        content::NavigationHandle* navigation_handle) override;
+        content::NavigationHandle* navigation_handle,
+        const page_load_metrics::PageLoadExtraInfo& extra_info) override;
 
    private:
     const base::WeakPtr<PageLoadMetricsTestWaiter> waiter_;
@@ -183,7 +184,8 @@ class PageLoadMetricsTestWaiter
                                const PageLoadExtraInfo& extra_info);
 
   void OnDidFinishSubFrameNavigation(
-      content::NavigationHandle* navigation_handle);
+      content::NavigationHandle* navigation_handle,
+      const page_load_metrics::PageLoadExtraInfo& extra_info);
 
   void OnTrackerCreated(page_load_metrics::PageLoadTracker* tracker) override;
 

@@ -81,7 +81,8 @@ class PageCappingPageLoadMetricsObserver
   ObservePolicy OnCommit(content::NavigationHandle* navigation_handle,
                          ukm::SourceId source_id) override;
   void OnDidFinishSubFrameNavigation(
-      content::NavigationHandle* navigation_handle) override;
+      content::NavigationHandle* navigation_handle,
+      const page_load_metrics::PageLoadExtraInfo& extra_info) override;
   void MediaStartedPlaying(
       const content::WebContentsObserver::MediaPlayerInfo& video_type,
       content::RenderFrameHost* render_frame_host) override;
