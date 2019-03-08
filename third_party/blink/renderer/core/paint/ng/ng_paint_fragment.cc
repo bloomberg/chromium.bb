@@ -367,10 +367,6 @@ LayoutRect NGPaintFragment::SelfInkOverflow() const {
   return physical_fragment_->InkOverflow().ToLayoutRect();
 }
 
-LayoutRect NGPaintFragment::ChildrenInkOverflow() const {
-  return physical_fragment_->InkOverflow(false).ToLayoutRect();
-}
-
 // Populate descendants from NGPhysicalFragment tree.
 void NGPaintFragment::PopulateDescendants(
     const NGPhysicalOffset inline_offset_to_container_box,

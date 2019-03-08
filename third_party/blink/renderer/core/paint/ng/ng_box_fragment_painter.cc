@@ -321,15 +321,16 @@ void NGBoxFragmentPainter::PaintBlockFlowContents(
   // all the stylesheets do load, styleResolverMayHaveChanged() on Document will
   // trigger a full paint invalidation.
   // TODO(layout-dev): Handle without delegating to LayoutObject.
-  LayoutObject* layout_object = box_fragment_.GetLayoutObject();
+  const NGPhysicalBoxFragment& fragment = PhysicalFragment();
+  LayoutObject* layout_object = fragment.GetLayoutObject();
   if (layout_object->GetDocument().DidLayoutWithPendingStylesheets() &&
       !layout_object->IsLayoutView()) {
     return;
   }
 
-  DCHECK(PhysicalFragment().ChildrenInline());
+  DCHECK(fragment.ChildrenInline());
 
-  LayoutRect overflow_rect(box_fragment_.ChildrenInkOverflow());
+  LayoutRect overflow_rect(fragment.InkOverflow(false).ToLayoutRect());
   overflow_rect.MoveBy(paint_offset);
   if (!paint_info.GetCullRect().Intersects(overflow_rect))
     return;
