@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.tasks.tab_list_ui;
 import android.content.Context;
 import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.view.LayoutInflater;
@@ -17,7 +18,7 @@ import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.tabmodel.TabModel;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -26,6 +27,7 @@ import org.chromium.ui.modelutil.SimpleRecyclerViewMcpBase;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.List;
 
 /**
  * Coordinator for showing UI for a list of tabs. Can be used in GRID or STRIP modes.
@@ -101,11 +103,11 @@ public class TabListCoordinator implements Destroyable {
     }
 
     /**
-     * Reset the tab grid with the given {@link TabModel}. Can be null.
-     * @param tabModel The current {@link TabModel} to show the tabs for in the UI.
+     * Reset the tab grid with the given List of Tabs. Can be null.
+     * @param tabs List of Tabs to show for in the UI.
      */
-    public void resetWithTabModel(TabModel tabModel) {
-        mMediator.resetWithTabModel(tabModel);
+    public void resetWithListOfTabs(@Nullable List<Tab> tabs) {
+        mMediator.resetWithListOfTabs(tabs);
     }
 
     /**

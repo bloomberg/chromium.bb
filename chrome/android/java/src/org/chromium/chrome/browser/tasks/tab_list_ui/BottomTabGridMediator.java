@@ -5,17 +5,18 @@
 package org.chromium.chrome.browser.tasks.tab_list_ui;
 
 import android.content.Context;
+import android.support.annotation.Nullable;
 import android.view.View.OnClickListener;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
-import org.chromium.chrome.browser.tabmodel.TabModel;
+import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
-import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.StateChangeReason;
@@ -24,6 +25,8 @@ import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetObserver;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.modelutil.PropertyModel;
+
+import java.util.List;
 
 /**
  * A mediator for the BottomTabGrid component, respoonsible for communicating
@@ -38,9 +41,9 @@ class BottomTabGridMediator implements Destroyable {
         /**
          * Handles a reset event originated from {@link BottomTabGridMediator}.
          *
-         * @param tabModel current {@link TabModel} instance.
+         * @param tabs List of Tabs to reset.
          */
-        void resetWithTabModel(TabModel tabModel);
+        void resetWithListOfTabs(@Nullable List<Tab> tabs);
     }
 
     private final Context mContext;
@@ -48,7 +51,7 @@ class BottomTabGridMediator implements Destroyable {
     private final BottomSheetObserver mSheetObserver;
     private final PropertyModel mModel;
     private final TabModelSelector mTabModelSelector;
-    private final TabModelSelectorTabModelObserver mTabModelObserver;
+    private final TabModelObserver mTabModelObserver;
     private final TabCreatorManager mTabCreatorManager;
 
     BottomTabGridMediator(Context context, BottomSheetController bottomSheetController,
@@ -64,12 +67,12 @@ class BottomTabGridMediator implements Destroyable {
         mSheetObserver = new EmptyBottomSheetObserver() {
             @Override
             public void onSheetClosed(@StateChangeReason int reason) {
-                resetHandler.resetWithTabModel(null);
+                resetHandler.resetWithListOfTabs(null);
             }
         };
 
         // register for tab model
-        mTabModelObserver = new TabModelSelectorTabModelObserver(tabModelSelector) {
+        mTabModelObserver = new EmptyTabModelObserver() {
             @Override
             public void didCloseTab(int tabId, boolean incognito) {
                 updateBottomSheetTitleAndMargin();
@@ -82,9 +85,10 @@ class BottomTabGridMediator implements Destroyable {
 
             @Override
             public void didSelectTab(Tab tab, int type, int lastId) {
-                if (type == TabSelectionType.FROM_USER) resetHandler.resetWithTabModel(null);
+                if (type == TabSelectionType.FROM_USER) resetHandler.resetWithListOfTabs(null);
             }
         };
+        mTabModelSelector.getTabModelFilterProvider().addTabModelFilterObserver(mTabModelObserver);
 
         // setup toolbar property model
         setupToolbarClickHandlers();
@@ -111,10 +115,14 @@ class BottomTabGridMediator implements Destroyable {
      */
     @Override
     public void destroy() {
-        mTabModelObserver.destroy();
+        if (mTabModelObserver != null) {
+            mTabModelSelector.getTabModelFilterProvider().removeTabModelFilterObserver(
+                    mTabModelObserver);
+        }
     }
 
     private void showTabGridInBottomSheet(BottomTabGridSheetContent sheetContent) {
+        updateBottomSheetTitleAndMargin();
         mBottomSheetController.getBottomSheet().addObserver(mSheetObserver);
         mBottomSheetController.requestShowContent(sheetContent, true);
         mBottomSheetController.expandSheet();
@@ -132,7 +140,11 @@ class BottomTabGridMediator implements Destroyable {
     }
 
     private void updateBottomSheetTitleAndMargin() {
-        int tabsCount = mTabModelSelector.getCurrentModel().getCount();
+        Tab currentTab = mTabModelSelector.getCurrentTab();
+        int tabsCount = mTabModelSelector.getTabModelFilterProvider()
+                                .getCurrentTabModelFilter()
+                                .getRelatedTabList(currentTab.getId())
+                                .size();
         mModel.set(BottomTabGridSheetProperties.HEADER_TITLE,
                 mContext.getResources().getQuantityString(
                         R.plurals.bottom_tab_grid_title_placeholder, tabsCount, tabsCount));

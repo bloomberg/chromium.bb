@@ -43,6 +43,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel;
+import org.chromium.chrome.browser.tabmodel.TabModelFilterProvider;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
@@ -69,6 +70,8 @@ public class TabListMediatorUnitTest {
     TabContentManager mTabContentManager;
     @Mock
     TabModelSelectorImpl mTabModelSelector;
+    @Mock
+    TabModelFilterProvider mTabModelFilterProvider;
     @Mock
     TabModel mTabModel;
     @Mock
@@ -113,7 +116,11 @@ public class TabListMediatorUnitTest {
                         any(), any(), anyInt(), mFaviconCallbackCaptor.capture());
         doReturn(mTabModel).when(mTabModelSelector).getCurrentModel();
         doReturn(tabModelList).when(mTabModelSelector).getModels();
-        doNothing().when(mTabModel).addObserver(mTabModelObserverCaptor.capture());
+        doReturn(mTabModelFilterProvider).when(mTabModelSelector).getTabModelFilterProvider();
+        doReturn(mTab1).when(mTabModelSelector).getCurrentTab();
+        doNothing()
+                .when(mTabModelFilterProvider)
+                .addTabModelFilterObserver(mTabModelObserverCaptor.capture());
         doReturn(mTab1).when(mTabModel).getTabAt(0);
         doReturn(mTab2).when(mTabModel).getTabAt(1);
         doNothing().when(mTab1).addObserver(mTabObserverCaptor.capture());
@@ -245,7 +252,11 @@ public class TabListMediatorUnitTest {
     }
 
     private void initAndAssertAllProperties() {
-        mMediator.resetWithTabModel(mTabModel);
+        List<Tab> tabs = new ArrayList<>();
+        for (int i = 0; i < mTabModel.getCount(); i++) {
+            tabs.add(mTabModel.getTabAt(i));
+        }
+        mMediator.resetWithListOfTabs(tabs);
         for (FaviconHelper.FaviconImageCallback callback : mFaviconCallbackCaptor.getAllValues()) {
             callback.onFaviconAvailable(Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888), null);
         }
