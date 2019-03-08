@@ -3346,9 +3346,12 @@
     "OutOfBlinkCors": [
         {
             "platforms": [
-                "windows",
+                "android",
+                "chromeos",
+                "ios",
+                "linux",
                 "mac",
-                "linux"
+                "windows"
             ],
             "experiments": [
                 {
