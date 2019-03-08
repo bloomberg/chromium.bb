@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "base/lazy_instance.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -3625,6 +3626,18 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPatternProvider(PATTERNID pattern_id,
 IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
                                                    VARIANT* result) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_PROPERTY_VALUE);
+
+  constexpr long kFirstKnownUiaPropertyId = UIA_RuntimeIdPropertyId;
+  constexpr long kLastKnownUiaPropertyId = UIA_IsDialogPropertyId;
+  if (property_id >= kFirstKnownUiaPropertyId &&
+      property_id <= kLastKnownUiaPropertyId) {
+    base::UmaHistogramSparse("Accessibility.WinAPIs.GetPropertyValue",
+                             property_id);
+  } else {
+    // Collapse all unknown property IDs into a single bucket.
+    base::UmaHistogramSparse("Accessibility.WinAPIs.GetPropertyValue", 0);
+  }
+
   UIA_VALIDATE_CALL_1_ARG(result);
 
   const AXNodeData& data = GetData();
