@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <string>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/rand_util.h"
@@ -15,6 +16,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "mojo/public/cpp/platform/features.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
@@ -33,6 +35,13 @@
 
 #include "base/files/scoped_file.h"
 #include "base/posix/global_descriptors.h"
+#endif
+
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+#include <mach/port.h>
+
+#include "base/mac/mach_logging.h"
+#include "base/mac/scoped_mach_port.h"
 #endif
 
 #if defined(OS_POSIX) && !defined(OS_NACL_SFI)
@@ -95,6 +104,28 @@ void CreateChannel(PlatformHandle* local_endpoint,
 }
 #elif defined(OS_POSIX)
 
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+// TODO(crbug.com/932175): This will be renamed CreateChannel().
+void CreateMachChannel(PlatformHandle* local_endpoint,
+                       PlatformHandle* remote_endpoint) {
+  // Mach messaging is simplex; and in order to enable full-duplex
+  // communication, the Mojo channel implementation performs an internal
+  // handshake with its peer to establish two sets of Mach receive and send
+  // rights. The handshake process starts with the creation of one
+  // PlatformChannel endpoint.
+  base::mac::ScopedMachReceiveRight receive;
+  base::mac::ScopedMachSendRight send;
+  // The mpl_qlimit specified here should stay in sync with
+  // NamedPlatformChannel.
+  CHECK(base::mac::CreateMachPort(&receive, &send, MACH_PORT_QLIMIT_LARGE));
+
+  // In a reverse of Mach messaging semantics, in Mojo the "local" endpoint is
+  // the send right, while the "remote" end is the receive right.
+  *local_endpoint = PlatformHandle(std::move(send));
+  *remote_endpoint = PlatformHandle(std::move(receive));
+}
+#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
+
 #if defined(OS_ANDROID)
 // Leave room for any other descriptors defined in content for example.
 // TODO(https://crbug.com/676442): Consider changing base::GlobalDescriptors to
@@ -114,6 +145,11 @@ bool IsTargetDescriptorUsed(const base::FileHandleMappingVector& mapping,
 
 void CreateChannel(PlatformHandle* local_endpoint,
                    PlatformHandle* remote_endpoint) {
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  if (base::FeatureList::IsEnabled(features::kMojoChannelMac)) {
+    return CreateMachChannel(local_endpoint, remote_endpoint);
+  }
+#endif
   int fds[2];
 #if defined(OS_NACL_SFI)
   PCHECK(imc_socketpair(fds) == 0);
@@ -163,9 +199,12 @@ PlatformChannel::~PlatformChannel() = default;
 
 PlatformChannel& PlatformChannel::operator=(PlatformChannel&& other) = default;
 
-void PlatformChannel::PrepareToPassRemoteEndpoint(HandlePassingInfo* info,
+void PlatformChannel::PrepareToPassRemoteEndpoint(HandlePassingInfo* info_input,
                                                   std::string* value) {
+#if !defined(OS_MACOSX) || defined(OS_IOS)
+  auto* info = info_input;
   DCHECK(info);
+#endif
   DCHECK(value);
   DCHECK(remote_endpoint_.is_valid());
 
@@ -183,6 +222,26 @@ void PlatformChannel::PrepareToPassRemoteEndpoint(HandlePassingInfo* info,
   info->emplace_back(fd, mapped_fd);
   *value = base::NumberToString(mapped_fd);
 #elif defined(OS_POSIX)
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  if (base::FeatureList::IsEnabled(features::kMojoChannelMac)) {
+    auto* info = static_cast<base::MachPortsForRendezvous*>(info_input);
+    DCHECK(remote_endpoint_.platform_handle().is_mach_receive());
+    base::mac::ScopedMachReceiveRight receive_right =
+        remote_endpoint_.TakePlatformHandle().TakeMachReceiveRight();
+    base::MachPortsForRendezvous::key_type rendezvous_key = 0;
+    do {
+      rendezvous_key =
+          static_cast<decltype(rendezvous_key)>(base::RandUint64());
+    } while (info->find(rendezvous_key) != info->end());
+    auto it = info->insert(std::make_pair(
+        rendezvous_key, base::MachRendezvousPort(std::move(receive_right))));
+    DCHECK(it.second) << "Failed to insert port for rendezvous.";
+    *value = base::NumberToString(rendezvous_key);
+    return;
+  }
+
+  auto* info = static_cast<base::FileHandleMappingVector*>(info_input);
+#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
   // Arbitrary sanity check to ensure the loop below terminates reasonably
   // quickly.
   CHECK_LT(info->size(), 1000u);
@@ -215,6 +274,19 @@ void PlatformChannel::PrepareToPassRemoteEndpoint(
   PrepareToPassRemoteEndpoint(&options->handles_to_inherit, command_line);
 #elif defined(OS_FUCHSIA)
   PrepareToPassRemoteEndpoint(&options->handles_to_transfer, command_line);
+#elif defined(OS_MACOSX) && !defined(OS_IOS)
+  HandlePassingInfo info;
+  if (base::FeatureList::IsEnabled(features::kMojoChannelMac))
+    info = options->mach_ports_for_rendezvous;
+  else
+    info = options->fds_to_remap;
+
+  PrepareToPassRemoteEndpoint(&info, command_line);
+
+  if (base::FeatureList::IsEnabled(features::kMojoChannelMac))
+    options->mach_ports_for_rendezvous = info;
+  else
+    options->fds_to_remap = info;
 #elif defined(OS_POSIX)
   PrepareToPassRemoteEndpoint(&options->fds_to_remap, command_line);
 #else
@@ -262,6 +334,26 @@ PlatformChannelEndpoint PlatformChannel::RecoverPassedEndpointFromString(
   return PlatformChannelEndpoint(PlatformHandle(
       base::ScopedFD(base::GlobalDescriptors::GetInstance()->Get(key))));
 #elif defined(OS_POSIX)
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  if (base::FeatureList::IsEnabled(features::kMojoChannelMac)) {
+    auto* client = base::MachPortRendezvousClient::GetInstance();
+    if (!client) {
+      DLOG(ERROR) << "Mach rendezvous failed.";
+      return PlatformChannelEndpoint();
+    }
+    uint32_t rendezvous_key = 0;
+    if (value.empty() || !base::StringToUint(value, &rendezvous_key)) {
+      DLOG(ERROR) << "Invalid PlatformChannel rendezvous key.";
+      return PlatformChannelEndpoint();
+    }
+    auto receive = client->TakeReceiveRight(rendezvous_key);
+    if (!receive.is_valid()) {
+      DLOG(ERROR) << "Invalid PlatformChannel receive right.";
+      return PlatformChannelEndpoint();
+    }
+    return PlatformChannelEndpoint(PlatformHandle(std::move(receive)));
+  }
+#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
   int fd = -1;
   if (value.empty() || !base::StringToInt(value, &fd) ||
       fd < base::GlobalDescriptors::kBaseDescriptor) {
