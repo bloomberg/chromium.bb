@@ -30,8 +30,6 @@ class TransformPaintPropertyNode;
 enum class PaintPropertyChangeType {
   kUnchanged,
   kChangedOnlyCompositedAnimationValues,
-  // TODO(crbug.com/937929): See ObjectPaintProperties::Update().
-  kChangedOnlyCompositedAnimationStatus,
   kChangedOnlyValues,
   // A paint property node is added or removed. This value is used only in
   // renderer/core classes.

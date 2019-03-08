@@ -65,6 +65,12 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
           color_filter != other.color_filter ||
           backdrop_filter_bounds != other.backdrop_filter_bounds ||
           blend_mode != other.blend_mode ||
+          is_running_opacity_animation_on_compositor !=
+              other.is_running_opacity_animation_on_compositor ||
+          is_running_filter_animation_on_compositor !=
+              other.is_running_filter_animation_on_compositor ||
+          is_running_backdrop_filter_animation_on_compositor !=
+              other.is_running_backdrop_filter_animation_on_compositor ||
           direct_compositing_reasons != other.direct_compositing_reasons ||
           compositor_element_id != other.compositor_element_id ||
           filters_origin != other.filters_origin) {
@@ -82,14 +88,6 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
       if (backdrop_filter_changed &&
           !is_running_backdrop_filter_animation_on_compositor) {
         return PaintPropertyChangeType::kChangedOnlyValues;
-      }
-      if (is_running_opacity_animation_on_compositor !=
-              other.is_running_opacity_animation_on_compositor ||
-          is_running_filter_animation_on_compositor !=
-              other.is_running_filter_animation_on_compositor ||
-          is_running_backdrop_filter_animation_on_compositor !=
-              other.is_running_backdrop_filter_animation_on_compositor) {
-        return PaintPropertyChangeType::kChangedOnlyCompositedAnimationStatus;
       }
       if (opacity_changed || filter_changed || backdrop_filter_changed) {
         return PaintPropertyChangeType::kChangedOnlyCompositedAnimationValues;
