@@ -165,6 +165,18 @@ void WebViewClientImpl::setParent(NativeView parent)
     }
 }
 
+void WebViewClientImpl::takeKeyboardFocus()
+{
+    LOG(INFO) << "takeKeyboardFocus";
+    if (d_nativeView) {
+        ::SetFocus(d_nativeView);
+    }
+    else {
+        DCHECK(d_hostPtr);
+        d_hostPtr->takeKeyboardFocus();
+    }
+}
+
 void WebViewClientImpl::find(
         const std::string& text, bool matchCase, bool forward)
 {
