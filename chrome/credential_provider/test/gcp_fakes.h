@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/strings/string16.h"
+#include "base/test/test_reg_util_win.h"
 #include "base/win/scoped_handle.h"
 #include "chrome/credential_provider/gaiacp/associated_user_validator.h"
 #include "chrome/credential_provider/gaiacp/internet_availability_checker.h"
@@ -25,6 +26,9 @@ class WaitableEvent;
 }
 
 namespace credential_provider {
+
+void InitializeRegistryOverrideForTesting(
+    registry_util::RegistryOverrideManager* registry_override);
 
 ///////////////////////////////////////////////////////////////////////////////
 

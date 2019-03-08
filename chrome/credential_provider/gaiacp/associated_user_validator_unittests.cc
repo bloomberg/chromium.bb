@@ -78,8 +78,7 @@ AssociatedUserValidatorTest::AssociatedUserValidatorTest() = default;
 AssociatedUserValidatorTest ::~AssociatedUserValidatorTest() = default;
 
 void AssociatedUserValidatorTest::SetUp() {
-  ASSERT_NO_FATAL_FAILURE(
-      registry_override_.OverrideRegistry(HKEY_LOCAL_MACHINE));
+  InitializeRegistryOverrideForTesting(&registry_override_);
 }
 
 TEST_F(AssociatedUserValidatorTest, CleanupStaleUsers) {

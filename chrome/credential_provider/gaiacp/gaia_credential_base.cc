@@ -1156,11 +1156,7 @@ HRESULT CGaiaCredentialBase::CreateAndRunLogonStub() {
     // case where enrollment to Google MDM is required, the UI should be
     // blocked until the enrollment either succeeds or fails.  To perform this
     // CreateAndRunLogonStub() waits for WaitForLoginUI() to complete.
-    wchar_t mdm_url[256];
-    ULONG mdm_length = base::size(mdm_url);
-    hr = credential_provider::GetGlobalFlag(credential_provider::kRegMdmUrl,
-                                            mdm_url, &mdm_length);
-    if (SUCCEEDED(hr) && mdm_length > 0)
+    if (MdmEnrollmentEnabled())
       ::WaitForSingleObject(reinterpret_cast<HANDLE>(wait_thread), INFINITE);
 
     ::CloseHandle(reinterpret_cast<HANDLE>(wait_thread));

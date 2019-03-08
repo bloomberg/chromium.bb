@@ -429,9 +429,7 @@ TEST_F(GcpProcHelperTest, GetCommandLineForEntrypoint) {
 TEST(Enroll, EnrollToGoogleMdmIfNeeded_NotEnabled) {
   // Make sure MDM is not enforced.
   registry_util::RegistryOverrideManager registry_override;
-  ASSERT_NO_FATAL_FAILURE(
-      registry_override.OverrideRegistry(HKEY_LOCAL_MACHINE));
-  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmUrl, L""));
+  InitializeRegistryOverrideForTesting(&registry_override);
 
   // EnrollToGoogleMdmIfNeeded() should be a noop.
   base::DictionaryValue properties;
@@ -443,9 +441,7 @@ TEST(Enroll, EnrollToGoogleMdmIfNeeded_NotEnabled) {
 TEST(Enroll, EnrollToGoogleMdmIfNeeded_MissingArgs) {
   // Does not matter whether MDM is enforced or not.
   registry_util::RegistryOverrideManager registry_override;
-  ASSERT_NO_FATAL_FAILURE(
-      registry_override.OverrideRegistry(HKEY_LOCAL_MACHINE));
-  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmUrl, L""));
+  InitializeRegistryOverrideForTesting(&registry_override);
 
   // EnrollToGoogleMdmIfNeeded() should fail if email and/or id token are
   // not provided.
