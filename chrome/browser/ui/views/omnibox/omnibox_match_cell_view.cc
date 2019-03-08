@@ -354,6 +354,22 @@ void OmniboxMatchCellView::OnMatchUpdate(const OmniboxResultView* result_view,
     SetTailSuggestCommonPrefixWidth(base::string16());
 }
 
+void OmniboxMatchCellView::SetImage(const gfx::ImageSkia& image) {
+  answer_image_view_->SetImage(image);
+
+  // Usually, answer images are square. But if that's not the case, setting
+  // answer_image_view_ size proportional to the image size preserves
+  // the aspect ratio.
+  int width = image.width();
+  int height = image.height();
+  if (width == height)
+    return;
+  int max = std::max(width, height);
+  width = kEntityImageSize * width / max;
+  height = kEntityImageSize * height / max;
+  answer_image_view_->SetImageSize(gfx::Size(width, height));
+}
+
 const char* OmniboxMatchCellView::GetClassName() const {
   return "OmniboxMatchCellView";
 }
