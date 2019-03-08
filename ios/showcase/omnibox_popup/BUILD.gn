@@ -1,0 +1,23 @@
+# Copyright 2019 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("omnibox_popup") {
+  sources = [
+    "fake_autocomplete_suggestion.h",
+    "fake_autocomplete_suggestion.mm",
+    "sc_omnibox_popup_container_view_controller.h",
+    "sc_omnibox_popup_container_view_controller.mm",
+    "sc_omnibox_popup_coordinator.h",
+    "sc_omnibox_popup_coordinator.mm",
+  ]
+  deps = [
+    "//ios/chrome/browser/ui/omnibox:omnibox_internal",
+    "//ios/chrome/browser/ui/omnibox/popup",
+    "//ios/chrome/browser/ui/toolbar/buttons",
+    "//ios/chrome/common/ui_util",
+    "//ios/showcase/common",
+  ]
+  libs = [ "UIKit.framework" ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
