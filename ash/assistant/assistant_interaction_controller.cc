@@ -19,6 +19,7 @@
 #include "ash/assistant/util/assistant_util.h"
 #include "ash/assistant/util/deep_link_util.h"
 #include "ash/assistant/util/histogram_util.h"
+#include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "ash/session/session_controller.h"
@@ -210,10 +211,13 @@ void AssistantInteractionController::OnHighlighterEnabledChanged(
     HighlighterEnabledState state) {
   switch (state) {
     case HighlighterEnabledState::kEnabled:
-      model_.SetInputModality(InputModality::kStylus);
+      // Skip setting input modality to stylus when the embedded Assistant
+      // feature is enabled to prevent highlighter aborting sessions in
+      // OnUiModeChanged.
+      if (!app_list_features::IsEmbeddedAssistantUIEnabled())
+        model_.SetInputModality(InputModality::kStylus);
       break;
     case HighlighterEnabledState::kDisabledByUser:
-      FALLTHROUGH;
     case HighlighterEnabledState::kDisabledBySessionComplete:
       model_.SetInputModality(InputModality::kKeyboard);
       break;
@@ -228,6 +232,7 @@ void AssistantInteractionController::OnHighlighterEnabledChanged(
 
 void AssistantInteractionController::OnHighlighterSelectionRecognized(
     const gfx::Rect& rect) {
+  assistant_controller_->ui_controller()->ShowUi(AssistantEntryPoint::kStylus);
   StartMetalayerInteraction(/*region=*/rect);
 }
 
@@ -637,7 +642,10 @@ void AssistantInteractionController::OnUiVisible(
 
   if (entry_point == AssistantEntryPoint::kStylus) {
     should_attempt_warmer_welcome_ = false;
-    model_.SetInputModality(InputModality::kStylus);
+    // When the embedded Assistant feature is enabled, we call ShowUi(kStylus)
+    // OnHighlighterSelectionRecognized. But we are not actually using stylus.
+    if (!app_list_features::IsEmbeddedAssistantUIEnabled())
+      model_.SetInputModality(InputModality::kStylus);
     return;
   }
 

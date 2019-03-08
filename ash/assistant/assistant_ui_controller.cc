@@ -35,6 +35,8 @@ constexpr base::TimeDelta kAutoCloseThreshold = base::TimeDelta::FromMinutes(5);
 // Toast -----------------------------------------------------------------------
 
 constexpr int kToastDurationMs = 2500;
+
+constexpr char kStylusPromptToastId[] = "stylus_prompt_for_embedded_ui";
 constexpr char kUnboundServiceToastId[] =
     "assistant_controller_unbound_service";
 
@@ -188,9 +190,13 @@ void AssistantUiController::OnMiniViewPressed() {
 
 void AssistantUiController::OnHighlighterEnabledChanged(
     HighlighterEnabledState state) {
-  // TODO(wutao): Behavior is not defined.
-  if (model_.ui_mode() == AssistantUiMode::kLauncherEmbeddedUi)
+  if (app_list_features::IsEmbeddedAssistantUIEnabled()) {
+    if (state == HighlighterEnabledState::kEnabled) {
+      ShowToast(kStylusPromptToastId, IDS_ASH_ASSISTANT_PROMPT_STYLUS);
+      CloseUi(AssistantExitPoint::kStylus);
+    }
     return;
+  }
 
   switch (state) {
     case HighlighterEnabledState::kEnabled:
@@ -328,10 +334,11 @@ void AssistantUiController::OnUiVisibilityChanged(
 
   // Metalayer should not be sticky. Disable when the UI is no longer visible.
   if (old_visibility == AssistantVisibility::kVisible) {
-    Shell::Get()->highlighter_controller()->AbortSession();
+    if (exit_point != AssistantExitPoint::kStylus)
+      Shell::Get()->highlighter_controller()->AbortSession();
 
     // Only record the exit point when Assistant UI becomes invisible to
-    // avoid duplicate happens (e.g., pressing ESC key).
+    // avoid recording duplicate events (e.g. pressing ESC key).
     assistant::util::RecordAssistantExitPoint(exit_point.value());
   }
 }
@@ -356,11 +363,7 @@ void AssistantUiController::ShowUi(AssistantEntryPoint entry_point) {
     return;
   }
 
-  if (app_list_features::IsEmbeddedAssistantUIEnabled() &&
-      assistant::util::IsEmbeddedUiEntryPoint(entry_point)) {
-    // No container view when embedded in launcher.
-    DCHECK(!container_view_);
-
+  if (app_list_features::IsEmbeddedAssistantUIEnabled()) {
     model_.SetUiMode(AssistantUiMode::kLauncherEmbeddedUi);
     model_.SetVisible(entry_point);
     return;
@@ -445,9 +448,10 @@ void AssistantUiController::UpdateUiMode(
     return;
   }
 
-  // TODO(wutao): Behavior is not defined.
-  if (model_.ui_mode() == AssistantUiMode::kLauncherEmbeddedUi)
+  if (app_list_features::IsEmbeddedAssistantUIEnabled()) {
+    model_.SetUiMode(AssistantUiMode::kLauncherEmbeddedUi);
     return;
+  }
 
   InputModality input_modality = assistant_controller_->interaction_controller()
                                      ->model()
@@ -567,6 +571,9 @@ AssistantContainerView* AssistantUiController::GetViewForTest() {
 }
 
 void AssistantUiController::CreateContainerView() {
+  DCHECK(!container_view_);
+  DCHECK(!app_list_features::IsEmbeddedAssistantUIEnabled());
+
   container_view_ =
       new AssistantContainerView(assistant_controller_->view_delegate());
   container_view_->GetWidget()->AddObserver(this);
