@@ -45,13 +45,13 @@ static_library("signaling") {
   ]
 
   deps = [
-    ":grpc_async_dispatcher",
     "//base",
     "//crypto",
     "//google_apis",
     "//jingle:jingle_glue",
     "//net",
     "//remoting/base",
+    "//remoting/signaling/grpc_support",
     "//third_party/grpc:grpcpp",
   ]
 
@@ -64,31 +64,12 @@ static_library("signaling") {
       "xmpp_signal_strategy.cc",
     ]
     deps -= [
-      ":grpc_async_dispatcher",
       "//google_apis",
+      "//remoting/signaling/grpc_support",
       "//third_party/grpc:grpcpp",
     ]
     public_deps -= [ ":ftl_grpc_library" ]
   }
-}
-
-static_library("grpc_async_dispatcher") {
-  sources = [
-    "grpc_async_call_data.cc",
-    "grpc_async_call_data.h",
-    "grpc_async_dispatcher.cc",
-    "grpc_async_dispatcher.h",
-    "grpc_async_server_streaming_call_data.cc",
-    "grpc_async_server_streaming_call_data.h",
-    "grpc_async_unary_call_data.h",
-    "scoped_grpc_server_stream.cc",
-    "scoped_grpc_server_stream.h",
-  ]
-
-  deps = [
-    "//base",
-    "//third_party/grpc:grpcpp",
-  ]
 }
 
 cc_grpc_library("ftl_grpc_library") {
@@ -118,7 +99,6 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
-    "grpc_async_dispatcher_unittest.cc",
     "iq_sender_unittest.cc",
     "jid_util_unittest.cc",
     "log_to_server_unittest.cc",
@@ -133,15 +113,9 @@ source_set("unit_tests") {
 
   deps = [
     ":test_support",
-    ":unit_tests_grpc_library",
     "//net:test_support",
+    "//remoting/signaling/grpc_support:unit_tests",
     "//testing/gmock",
     "//testing/gtest",
-  ]
-}
-
-cc_grpc_library("unit_tests_grpc_library") {
-  sources = [
-    "grpc_async_dispatcher_test_services.proto",
   ]
 }

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/signaling/grpc_async_server_streaming_call_data.h"
+#include "remoting/signaling/grpc_support/grpc_async_server_streaming_call_data.h"
 
 #include "base/bind.h"
-#include "remoting/signaling/scoped_grpc_server_stream.h"
+#include "remoting/signaling/grpc_support/scoped_grpc_server_stream.h"
 
 namespace remoting {
 namespace internal {

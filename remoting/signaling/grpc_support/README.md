@@ -1,4 +1,4 @@
-# What does GrpcAsyncDispatcher do?
+## Using GrpcAsyncDispatcher
 
 gRPC++ uses
 [completion queue](https://grpc.io/docs/tutorials/async/helloasync-cpp.html)
@@ -9,7 +9,7 @@ APIs but it won't be ready to use in the near future, so we created a
 GrpcAsyncDispatcher class to help adapting gRPC's completion queue logic into
 Chromium's callback paradigm.
 
-# Basic usage
+### Basic usage
 
 ```cpp
 class MyClass {

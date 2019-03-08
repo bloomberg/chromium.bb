@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_SIGNALING_GRPC_ASYNC_SERVER_STREAMING_CALL_DATA_H_
-#define REMOTING_SIGNALING_GRPC_ASYNC_SERVER_STREAMING_CALL_DATA_H_
+#ifndef REMOTING_SIGNALING_GRPC_SUPPORT_GRPC_ASYNC_SERVER_STREAMING_CALL_DATA_H_
+#define REMOTING_SIGNALING_GRPC_SUPPORT_GRPC_ASYNC_SERVER_STREAMING_CALL_DATA_H_
 
 #include <memory>
 #include <utility>
@@ -14,7 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/thread_annotations.h"
-#include "remoting/signaling/grpc_async_call_data.h"
+#include "remoting/signaling/grpc_support/grpc_async_call_data.h"
 #include "third_party/grpc/src/include/grpcpp/support/async_stream.h"
 
 namespace remoting {
@@ -118,4 +118,4 @@ class GrpcAsyncServerStreamingCallData
 }  // namespace internal
 }  // namespace remoting
 
-#endif  // REMOTING_SIGNALING_GRPC_ASYNC_SERVER_STREAMING_CALL_DATA_H_
+#endif  // REMOTING_SIGNALING_GRPC_SUPPORT_GRPC_ASYNC_SERVER_STREAMING_CALL_DATA_H_

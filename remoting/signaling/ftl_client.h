@@ -13,7 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "remoting/base/oauth_token_getter.h"
 #include "remoting/signaling/ftl_services.grpc.pb.h"
-#include "remoting/signaling/grpc_async_dispatcher.h"
+#include "remoting/signaling/grpc_support/grpc_async_dispatcher.h"
 #include "third_party/grpc/src/include/grpcpp/support/status.h"
 
 namespace remoting {

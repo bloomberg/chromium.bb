@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_SIGNALING_GRPC_ASYNC_UNARY_CALL_DATA_H_
-#define REMOTING_SIGNALING_GRPC_ASYNC_UNARY_CALL_DATA_H_
+#ifndef REMOTING_SIGNALING_GRPC_SUPPORT_GRPC_ASYNC_UNARY_CALL_DATA_H_
+#define REMOTING_SIGNALING_GRPC_SUPPORT_GRPC_ASYNC_UNARY_CALL_DATA_H_
 
 #include <memory>
 #include <utility>
@@ -11,7 +11,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/macros.h"
-#include "remoting/signaling/grpc_async_call_data.h"
+#include "remoting/signaling/grpc_support/grpc_async_call_data.h"
 #include "third_party/grpc/src/include/grpcpp/support/async_unary_call.h"
 
 namespace remoting {
@@ -56,4 +56,4 @@ class GrpcAsyncUnaryCallData : public GrpcAsyncCallData {
 }  // namespace internal
 }  // namespace remoting
 
-#endif  // REMOTING_SIGNALING_GRPC_ASYNC_UNARY_CALL_DATA_H_
+#endif  // REMOTING_SIGNALING_GRPC_SUPPORT_GRPC_ASYNC_UNARY_CALL_DATA_H_
