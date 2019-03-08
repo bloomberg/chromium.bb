@@ -326,6 +326,13 @@ void FeatureInfo::EnableCHROMIUMTextureStorageImage() {
   }
 }
 
+void FeatureInfo::EnableEXTFloatBlend() {
+  if (!feature_flags_.ext_float_blend) {
+    AddExtensionString("GL_EXT_float_blend");
+    feature_flags_.ext_float_blend = true;
+  }
+}
+
 void FeatureInfo::EnableEXTColorBufferFloat() {
   if (!ext_color_buffer_float_available_)
     return;
@@ -1666,6 +1673,14 @@ void FeatureInfo::InitializeFloatAndHalfFloatFeatures(
     }
   }
 
+  // Assume all desktop (!gl_version_info_->is_es) supports float blend
+  if (!gl_version_info_->is_es ||
+      gfx::HasExtension(extensions, "GL_EXT_float_blend")) {
+    if (!disallowed_features_.ext_float_blend) {
+      EnableEXTFloatBlend();
+    }
+  }
+
   if (may_enable_chromium_color_buffer_float &&
       !had_native_chromium_color_buffer_float_ext) {
     static_assert(GL_RGBA32F_ARB == GL_RGBA32F &&
@@ -1773,15 +1788,6 @@ void FeatureInfo::InitializeFloatAndHalfFloatFeatures(
     ext_color_buffer_half_float_available_ = true;
     if (!disallowed_features_.ext_color_buffer_half_float)
       EnableEXTColorBufferHalfFloat();
-  }
-
-  // assume all desktop (!gl_version_info_->is_es) supports float blend
-  if (gfx::HasExtension(extensions, "GL_EXT_float_blend") &&
-      !gl_version_info_->is_es) {
-    if (!disallowed_features_.ext_float_blend) {
-      AddExtensionString("GL_EXT_float_blend");
-      feature_flags_.ext_float_blend = true;
-    }
   }
 
   if (enable_texture_float) {

@@ -10,6 +10,11 @@ EXTColorBufferFloat::EXTColorBufferFloat(WebGLRenderingContextBase* context)
     : WebGLExtension(context) {
   context->ExtensionsUtil()->EnsureExtensionEnabled(
       "GL_EXT_color_buffer_float");
+
+  // As a workaround before EXT_float_blend spec is finalized and exposed,
+  // turn it on if possible
+  // TODO(shrekshao): remove when EXT_float_blend is exposed
+  context->ExtensionsUtil()->EnsureExtensionEnabled("GL_EXT_float_blend");
 }
 
 WebGLExtensionName EXTColorBufferFloat::GetName() const {

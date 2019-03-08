@@ -53,6 +53,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail(
         'conformance2/glsl3/const-struct-from-array-as-function-parameter.html',
         ['win', 'nvidia', 'opengl'], bug=874620)
+    # EXT_float_blend is not exposed yet and implicitly turned on somewhere.
+    self.Fail('conformance2/extensions/ext-float-blend.html',
+        ['win', 'mac', 'linux'], bug=930993)
 
     # Too slow (take about one hour to run)
     self.Skip('deqp/functional/gles3/builtinprecision/*.html', bug=619403)

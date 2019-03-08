@@ -16789,6 +16789,9 @@ error::Error GLES2DecoderImpl::HandleRequestExtensionCHROMIUM(
       std::string::npos) {
     feature_info_->EnableOESTextureHalfFloatLinear();
   }
+  if (feature_str.find("GL_EXT_float_blend ") != std::string::npos) {
+    feature_info_->EnableEXTFloatBlend();
+  }
 
   UpdateCapabilities();
 
