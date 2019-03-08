@@ -5542,11 +5542,13 @@ static void encode_sb_row(AV1_COMP *cpi, ThreadData *td, TileDataEnc *tile_data,
 
     x->mb_rd_record.num = x->mb_rd_record.index_start = 0;
 
-    av1_zero(x->txb_rd_record_8X8);
-    av1_zero(x->txb_rd_record_16X16);
-    av1_zero(x->txb_rd_record_32X32);
-    av1_zero(x->txb_rd_record_64X64);
-    av1_zero(x->txb_rd_record_intra);
+    if (!use_nonrd_mode) {
+      av1_zero(x->txb_rd_record_8X8);
+      av1_zero(x->txb_rd_record_16X16);
+      av1_zero(x->txb_rd_record_32X32);
+      av1_zero(x->txb_rd_record_64X64);
+      av1_zero(x->txb_rd_record_intra);
+    }
 
     av1_zero(x->picked_ref_frames_mask);
 

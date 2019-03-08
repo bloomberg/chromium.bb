@@ -11104,8 +11104,7 @@ static const MV_REFERENCE_FRAME real_time_ref_combos[][2] = {
   { LAST_FRAME, NONE_FRAME },
   { ALTREF_FRAME, NONE_FRAME },
   { GOLDEN_FRAME, NONE_FRAME },
-  { INTRA_FRAME, NONE_FRAME },
-  { BWDREF_FRAME, NONE_FRAME }
+  { INTRA_FRAME, NONE_FRAME }
 };
 
 typedef enum { REF_SET_FULL, REF_SET_REDUCED, REF_SET_REALTIME } REF_SET;
@@ -11455,7 +11454,6 @@ static void set_params_nonrd_pick_inter_mode(
                                  yv12_mb);
     }
   }
-
   av1_count_overlappable_neighbors(cm, xd, mi_row, mi_col);
 
   if (check_num_overlappable_neighbors(mbmi) &&
@@ -11473,7 +11471,6 @@ static void set_params_nonrd_pick_inter_mode(
         args->above_pred_stride[0], args->left_pred_buf[0],
         args->left_pred_stride[0]);
   }
-
   init_mode_skip_mask(mode_skip_mask, cpi, x, bsize);
 
   if (cpi->sf.tx_type_search.fast_intra_tx_type_search)
