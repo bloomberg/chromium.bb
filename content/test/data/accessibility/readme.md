@@ -35,6 +35,9 @@ Files used:
 * foo-expected-blink.txt -- representation of internal accessibility tree
 * foo-expected-mac.txt -- expected Mac NSAccessibility output
 * foo-expected-win.txt -- expected Win IAccessible/IAccessible2 output
+* foo-expected-uia-win.txt -- expected Win UIA output
+* foo-expected-uia-win7.txt -- expected Win7 UIA output (Version Specific
+  Expected File)
 
 Format for expected files:
 
@@ -43,6 +46,16 @@ Format for expected files:
   test passes. This can be used to indicate desired output with a link
   to a bug, or as a way to temporarily disable a test during refactoring.
 * Use 2 plus signs for indent to show hierarchy
+
+### Version Specific Expected Files
+
+UIA sometimes differs between windows 7 and later versions of 
+Windows. To account for these differences, the UIA accessibility
+tree formatter will look for a version specific expected file first:
+`foo-expected-uia-win7.txt`. If the version specific expected file 
+does not exist, the normal expected file will be used instead:
+"`foo-expected-uia-win.txt`". There is no concept of version 
+specific filters.
 
 Filters:
 
@@ -56,6 +69,7 @@ Filters:
 * Filters are platform-specific:
 ```
     @WIN-
+    @UIA-WIN-
     @MAC-
     @BLINK-
     @ANDROID-
@@ -79,6 +93,7 @@ Filters:
 * By default empty attributes are skipped. To output the value of an attribute
   even if it's empty, use @WIN-ALLOW-EMPTY:name, for example, and similarly
   for other platforms.
+
 
 ## Advanced:
 
