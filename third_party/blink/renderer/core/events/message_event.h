@@ -77,10 +77,11 @@ class CORE_EXPORT MessageEvent final : public Event {
                               const String& origin = String(),
                               const String& last_event_id = String(),
                               EventTarget* source = nullptr,
-                              UserActivation* user_activation = nullptr) {
+                              UserActivation* user_activation = nullptr,
+                              bool transfer_user_activation = false) {
     return MakeGarbageCollected<MessageEvent>(
         std::move(data), origin, last_event_id, source, std::move(channels),
-        user_activation);
+        user_activation, transfer_user_activation);
   }
   static MessageEvent* CreateError(const String& origin = String(),
                                    EventTarget* source = nullptr) {
@@ -118,7 +119,8 @@ class CORE_EXPORT MessageEvent final : public Event {
                const String& last_event_id,
                EventTarget* source,
                Vector<MessagePortChannel>,
-               UserActivation* user_activation);
+               UserActivation* user_activation,
+               bool transfer_user_activation);
   // Creates a "messageerror" event.
   MessageEvent(const String& origin, EventTarget* source);
   MessageEvent(const String& data, const String& origin);
@@ -142,7 +144,8 @@ class CORE_EXPORT MessageEvent final : public Event {
                         const String& last_event_id,
                         EventTarget* source,
                         MessagePortArray*,
-                        UserActivation* user_activation);
+                        UserActivation* user_activation,
+                        bool transfer_user_activation = false);
   void initMessageEvent(const AtomicString& type,
                         bool bubbles,
                         bool cancelable,
@@ -158,6 +161,7 @@ class CORE_EXPORT MessageEvent final : public Event {
   MessagePortArray ports();
   bool isPortsDirty() const { return is_ports_dirty_; }
   UserActivation* userActivation() const { return user_activation_; }
+  bool transferUserActivation() const { return transfer_user_activation_; }
 
   Vector<MessagePortChannel> ReleaseChannels() { return std::move(channels_); }
 
@@ -242,6 +246,7 @@ class CORE_EXPORT MessageEvent final : public Event {
   bool is_ports_dirty_ = true;
   Vector<MessagePortChannel> channels_;
   Member<UserActivation> user_activation_;
+  bool transfer_user_activation_ = false;
 };
 
 }  // namespace blink
