@@ -16,11 +16,11 @@
 #include "base/values.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/browser_thread.h"
-#include "device/base/device_client.h"
 #include "device/usb/mojo/type_converters.h"
 #include "device/usb/usb_device.h"
 #include "device/usb/usb_ids.h"
 #include "extensions/browser/api/hid/hid_device_manager.h"
+#include "extensions/browser/api/usb/usb_device_manager.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extensions_browser_client.h"
@@ -32,8 +32,6 @@ namespace extensions {
 
 using content::BrowserContext;
 using content::BrowserThread;
-using device::UsbDevice;
-using device::UsbService;
 using extensions::APIPermission;
 using extensions::Extension;
 using extensions::ExtensionHost;
@@ -559,13 +557,13 @@ void DevicePermissionsManager::AllowUsbDevice(
     device_permissions->entries_.insert(device_entry);
     device_permissions->ephemeral_usb_devices_[device_info.guid] = device_entry;
 
-    // Only start observing when an ephemeral device has been added so that
-    // UsbService is not automatically initialized on profile creation (which it
-    // would be if this call were in the constructor).
-    UsbService* usb_service = device::DeviceClient::Get()->GetUsbService();
-    if (!usb_service_observer_.IsObserving(usb_service)) {
-      usb_service_observer_.Add(usb_service);
-    }
+    // Make sure the UsbDeviceManager has been connected to the DeviceService.
+    // UsbDeviceManager is responsible for removing the permission entry for
+    // an ephemeral USB device. Only do this when an ephemeral device has been
+    // added.
+    UsbDeviceManager* device_manager = UsbDeviceManager::Get(context_);
+    DCHECK(device_manager);
+    device_manager->EnsureConnectionWithDeviceManager();
   }
 }
 
@@ -648,7 +646,7 @@ void DevicePermissionsManager::Clear(const std::string& extension_id) {
 
 DevicePermissionsManager::DevicePermissionsManager(
     content::BrowserContext* context)
-    : context_(context), usb_service_observer_(this) {}
+    : context_(context) {}
 
 DevicePermissionsManager::~DevicePermissionsManager() {
   for (const auto& map_entry : extension_id_to_device_permissions_) {
@@ -665,22 +663,6 @@ DevicePermissions* DevicePermissionsManager::GetInternal(
   }
 
   return NULL;
-}
-
-void DevicePermissionsManager::OnDeviceRemovedCleanup(
-    scoped_refptr<UsbDevice> device) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  for (const auto& map_entry : extension_id_to_device_permissions_) {
-    // An ephemeral device cannot be identified if it is reconnected and so
-    // permission to access it is cleared on disconnect.
-    DevicePermissions* device_permissions = map_entry.second;
-    const auto& device_entry =
-        device_permissions->ephemeral_usb_devices_.find(device->guid());
-    if (device_entry != device_permissions->ephemeral_usb_devices_.end()) {
-      device_permissions->entries_.erase(device_entry->second);
-      device_permissions->ephemeral_usb_devices_.erase(device_entry);
-    }
-  }
 }
 
 void DevicePermissionsManager::RemoveEntryByDeviceGUID(

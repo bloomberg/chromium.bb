@@ -28,7 +28,6 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/version_info/version_info.h"
 #include "content/public/test/test_utils.h"
-#include "device/base/mock_device_client.h"
 #include "device/usb/public/cpp/fake_usb_device_manager.h"
 #include "device/usb/public/mojom/device.mojom.h"
 #include "extensions/browser/api/device_permissions_manager.h"
@@ -523,7 +522,6 @@ class ExtensionPrinterHandlerTest : public testing::Test {
   }
 
   device::FakeUsbDeviceManager fake_usb_manager_;
-  device::MockDeviceClient device_client_;
   TestExtensionEnvironment env_;
   std::unique_ptr<ExtensionPrinterHandler> extension_printer_handler_;
 
