@@ -259,12 +259,12 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
                                 cm->reduced_tx_set_used);
   }
 
+  // TODO(debargha, jingning): Temporarily disable txk_type check for eob=0
+  // case. It is possible that certain collision in hash index would cause
+  // the assertion failure. To further optimize the rate-distortion
+  // performance, we need to re-visit this part and enable this assert
+  // again.
   if (p->eobs[block] == 0 && plane == 0) {
-    // TODO(debargha, jingning): Temporarily disable txk_type check for eob=0
-    // case. It is possible that certain collision in hash index would cause
-    // the assertion failure. To further optimize the rate-distortion
-    // performance, we need to re-visit this part and enable this assert
-    // again.
 #if 0
     if (args->cpi->oxcf.aq_mode == NO_AQ &&
         args->cpi->oxcf.deltaq_mode == NO_DELTA_Q) {
@@ -605,12 +605,12 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
                                 dst_stride, *eob, cm->reduced_tx_set_used);
   }
 
+  // TODO(jingning): Temporarily disable txk_type check for eob=0 case.
+  // It is possible that certain collision in hash index would cause
+  // the assertion failure. To further optimize the rate-distortion
+  // performance, we need to re-visit this part and enable this assert
+  // again.
   if (*eob == 0 && plane == 0) {
-    // TODO(jingning): Temporarily disable txk_type check for eob=0 case.
-    // It is possible that certain collision in hash index would cause
-    // the assertion failure. To further optimize the rate-distortion
-    // performance, we need to re-visit this part and enable this assert
-    // again.
 #if 0
     if (args->cpi->oxcf.aq_mode == NO_AQ
         && args->cpi->oxcf.deltaq_mode == NO_DELTA_Q) {
