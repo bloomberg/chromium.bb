@@ -406,6 +406,8 @@ void VideoDecoderShim::YUVConverter::Convert(
         case kRec601_SkYUVColorSpace:
           // Current default.
           break;
+        default:
+          NOTREACHED();
       }
     }
 
