@@ -166,7 +166,8 @@ void PageLoadMetricsTestWaiter::OnFeaturesUsageObserved(
 }
 
 void PageLoadMetricsTestWaiter::OnDidFinishSubFrameNavigation(
-    content::NavigationHandle* navigation_handle) {
+    content::NavigationHandle* navigation_handle,
+    const page_load_metrics::PageLoadExtraInfo& extra_info) {
   if (SubframeNavigationExpectationsSatisfied())
     return;
 
@@ -302,9 +303,10 @@ void PageLoadMetricsTestWaiter::WaiterMetricsObserver::OnFeaturesUsageObserved(
 
 void PageLoadMetricsTestWaiter::WaiterMetricsObserver::
     OnDidFinishSubFrameNavigation(
-        content::NavigationHandle* navigation_handle) {
+        content::NavigationHandle* navigation_handle,
+        const page_load_metrics::PageLoadExtraInfo& extra_info) {
   if (waiter_)
-    waiter_->OnDidFinishSubFrameNavigation(navigation_handle);
+    waiter_->OnDidFinishSubFrameNavigation(navigation_handle, extra_info);
 }
 
 }  // namespace page_load_metrics

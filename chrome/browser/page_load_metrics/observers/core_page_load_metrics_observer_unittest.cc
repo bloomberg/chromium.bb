@@ -40,6 +40,7 @@ class CorePageLoadMetricsObserverTest
 
   void SetUp() override {
     page_load_metrics::PageLoadMetricsObserverTestHarness::SetUp();
+    page_load_metrics::LargestContentfulPaintHandler::SetTestMode(true);
   }
 };
 
@@ -614,8 +615,8 @@ TEST_F(CorePageLoadMetricsObserverTest, FirstMeaningfulPaint) {
   SimulateTimingUpdate(timing);
   NavigateAndCommit(GURL(kDefaultTestUrl2));
 
-  histogram_tester().ExpectTotalCount(
-      internal::kHistogramFirstMeaningfulPaint, 1);
+  histogram_tester().ExpectTotalCount(internal::kHistogramFirstMeaningfulPaint,
+                                      1);
   histogram_tester().ExpectTotalCount(
       internal::kHistogramParseStartToFirstMeaningfulPaint, 1);
   histogram_tester().ExpectBucketCount(
@@ -630,6 +631,7 @@ TEST_F(CorePageLoadMetricsObserverTest, LargestImagePaint) {
   // Pick a value that lines up with a histogram bucket.
   timing.paint_timing->largest_image_paint =
       base::TimeDelta::FromMilliseconds(4780);
+  timing.paint_timing->largest_image_paint_size = 10u;
   PopulateRequiredTimingFields(&timing);
 
   NavigateAndCommit(GURL(kDefaultTestUrl));
@@ -642,25 +644,23 @@ TEST_F(CorePageLoadMetricsObserverTest, LargestImagePaint) {
       testing::ElementsAre(base::Bucket(4780, 1)));
 }
 
-TEST_F(CorePageLoadMetricsObserverTest, LargestImagePaintIgnoreSubFrame) {
+TEST_F(CorePageLoadMetricsObserverTest,
+       LargestContentfulPaintAllFrames_OnlySubframeProvided) {
   const char kSubframeTestUrl[] = "https://google.com/subframe.html";
 
-  // Create a main frame timing with a largest_image_paint that happens late.
   page_load_metrics::mojom::PageLoadTiming timing;
   page_load_metrics::InitPageLoadTimingForTest(&timing);
-  timing.navigation_start = base::Time::FromDoubleT(1);
-  // Pick a value that lines up with a histogram bucket.
-  timing.paint_timing->largest_image_paint =
-      base::TimeDelta::FromMilliseconds(4780);
+  timing.navigation_start = base::Time::FromDoubleT(100);
+  // Intentionally not set candidates for the main frame.
   PopulateRequiredTimingFields(&timing);
 
-  // Create a subframe timing with a largest_image_paint that happens before the
-  // largest_image_paint in the main frame timing.
+  // Create a subframe timing with a largest_image_paint.
   page_load_metrics::mojom::PageLoadTiming subframe_timing;
   page_load_metrics::InitPageLoadTimingForTest(&subframe_timing);
-  subframe_timing.navigation_start = base::Time::FromDoubleT(2);
+  subframe_timing.navigation_start = base::Time::FromDoubleT(200);
   subframe_timing.paint_timing->largest_image_paint =
-      base::TimeDelta::FromMilliseconds(0);
+      base::TimeDelta::FromMilliseconds(4780);
+  subframe_timing.paint_timing->largest_image_paint_size = 100u;
   PopulateRequiredTimingFields(&subframe_timing);
 
   // Commit the main frame and a subframe.
@@ -678,10 +678,270 @@ TEST_F(CorePageLoadMetricsObserverTest, LargestImagePaintIgnoreSubFrame) {
   // Navigate again to force histogram recording in the main frame.
   NavigateAndCommit(GURL(kDefaultTestUrl2));
 
-  // Ensure that the largest_image_paint timing for the main frame is recorded.
+  EXPECT_THAT(histogram_tester().GetAllSamples(
+                  internal::kHistogramLargestContentPaintAllFrames),
+              testing::ElementsAre(base::Bucket(4780, 1)));
   EXPECT_THAT(
-      histogram_tester().GetAllSamples(internal::kHistogramLargestImagePaint),
-      testing::ElementsAre(base::Bucket(4780, 1)));
+      histogram_tester().GetAllSamples(
+          internal::kHistogramLargestContentPaintAllFramesContentType),
+      testing::ElementsAre(base::Bucket(
+          static_cast<base::HistogramBase::Sample>(LargestContentType::kImage),
+          1)));
+}
+
+TEST_F(CorePageLoadMetricsObserverTest,
+       LargestContentfulPaintAllFrames_OnlyMainFrameProvided) {
+  const char kSubframeTestUrl[] = "https://google.com/subframe.html";
+
+  page_load_metrics::mojom::PageLoadTiming timing;
+  page_load_metrics::InitPageLoadTimingForTest(&timing);
+  timing.navigation_start = base::Time::FromDoubleT(1);
+  // Pick a value that lines up with a histogram bucket.
+  timing.paint_timing->largest_image_paint =
+      base::TimeDelta::FromMilliseconds(4780);
+  timing.paint_timing->largest_image_paint_size = 50u;
+  PopulateRequiredTimingFields(&timing);
+
+  page_load_metrics::mojom::PageLoadTiming subframe_timing;
+  page_load_metrics::InitPageLoadTimingForTest(&subframe_timing);
+  subframe_timing.navigation_start = base::Time::FromDoubleT(2);
+  // Intentionally not set candidates for the subframes.
+  PopulateRequiredTimingFields(&subframe_timing);
+
+  // Commit the main frame and a subframe.
+  NavigateAndCommit(GURL(kDefaultTestUrl));
+  RenderFrameHost* subframe =
+      NavigationSimulator::NavigateAndCommitFromDocument(
+          GURL(kSubframeTestUrl),
+          RenderFrameHostTester::For(web_contents()->GetMainFrame())
+              ->AppendChild("subframe"));
+
+  // Simulate timing updates in the main frame and the subframe.
+  SimulateTimingUpdate(timing);
+  SimulateTimingUpdate(subframe_timing, subframe);
+
+  // Navigate again to force histogram recording in the main frame.
+  NavigateAndCommit(GURL(kDefaultTestUrl2));
+
+  EXPECT_THAT(histogram_tester().GetAllSamples(
+                  internal::kHistogramLargestContentPaintAllFrames),
+              testing::ElementsAre(base::Bucket(4780, 1)));
+  EXPECT_THAT(
+      histogram_tester().GetAllSamples(
+          internal::kHistogramLargestContentPaintAllFramesContentType),
+      testing::ElementsAre(base::Bucket(
+          static_cast<base::HistogramBase::Sample>(LargestContentType::kImage),
+          1)));
+}
+
+// This is to test whether LargestContentfulPaintAllFrames could merge
+// candidates from different frames correctly. The merging will substitutes the
+// existing candidate if a larger candidate from subframe is provided.
+TEST_F(CorePageLoadMetricsObserverTest,
+       LargestContentfulPaintAllFrames_MergeFromFramesBySize_SubframeLarger) {
+  const char kSubframeTestUrl[] = "https://google.com/subframe.html";
+
+  // Create a main frame timing with a largest_image_paint that happens late.
+  page_load_metrics::mojom::PageLoadTiming timing;
+  page_load_metrics::InitPageLoadTimingForTest(&timing);
+  timing.navigation_start = base::Time::FromDoubleT(1);
+  // Pick a value that lines up with a histogram bucket.
+  timing.paint_timing->largest_image_paint =
+      base::TimeDelta::FromMilliseconds(10000);
+  timing.paint_timing->largest_image_paint_size = 50u;
+  PopulateRequiredTimingFields(&timing);
+
+  // Create a candidate in subframe with a larger size.
+  page_load_metrics::mojom::PageLoadTiming subframe_timing;
+  page_load_metrics::InitPageLoadTimingForTest(&subframe_timing);
+  subframe_timing.navigation_start = base::Time::FromDoubleT(2);
+  subframe_timing.paint_timing->largest_image_paint =
+      base::TimeDelta::FromMilliseconds(4780);
+  subframe_timing.paint_timing->largest_image_paint_size = 100u;
+  PopulateRequiredTimingFields(&subframe_timing);
+
+  // Commit the main frame and a subframe.
+  NavigateAndCommit(GURL(kDefaultTestUrl));
+  RenderFrameHost* subframe =
+      NavigationSimulator::NavigateAndCommitFromDocument(
+          GURL(kSubframeTestUrl),
+          RenderFrameHostTester::For(web_contents()->GetMainFrame())
+              ->AppendChild("subframe"));
+
+  // Simulate timing updates in the main frame and the subframe.
+  SimulateTimingUpdate(timing);
+  SimulateTimingUpdate(subframe_timing, subframe);
+
+  // Navigate again to force histogram recording in the main frame.
+  NavigateAndCommit(GURL(kDefaultTestUrl2));
+
+  EXPECT_THAT(histogram_tester().GetAllSamples(
+                  internal::kHistogramLargestContentPaintAllFrames),
+              testing::ElementsAre(base::Bucket(4780, 1)));
+  EXPECT_THAT(
+      histogram_tester().GetAllSamples(
+          internal::kHistogramLargestContentPaintAllFramesContentType),
+      testing::ElementsAre(base::Bucket(
+          static_cast<base::HistogramBase::Sample>(LargestContentType::kImage),
+          1)));
+}
+
+// This is to test whether LargestContentfulPaintAllFrames could merge
+// candidates from different frames correctly. The merging will substitutes the
+// existing candidate if a larger candidate from main frame is provided.
+TEST_F(CorePageLoadMetricsObserverTest,
+       LargestContentfulPaintAllFrames_MergeFromFramesBySize_MainFrameLarger) {
+  const char kSubframeTestUrl[] = "https://google.com/subframe.html";
+
+  page_load_metrics::mojom::PageLoadTiming timing;
+  page_load_metrics::InitPageLoadTimingForTest(&timing);
+  timing.navigation_start = base::Time::FromDoubleT(1);
+  // Pick a value that lines up with a histogram bucket.
+  timing.paint_timing->largest_text_paint =
+      base::TimeDelta::FromMilliseconds(4780);
+  timing.paint_timing->largest_text_paint_size = 100u;
+  PopulateRequiredTimingFields(&timing);
+
+  // Create a candidate in subframe with a smaller size.
+  page_load_metrics::mojom::PageLoadTiming subframe_timing;
+  page_load_metrics::InitPageLoadTimingForTest(&subframe_timing);
+  subframe_timing.navigation_start = base::Time::FromDoubleT(2);
+  subframe_timing.paint_timing->largest_text_paint =
+      base::TimeDelta::FromMilliseconds(300);
+  subframe_timing.paint_timing->largest_text_paint_size = 50u;
+  PopulateRequiredTimingFields(&subframe_timing);
+
+  // Commit the main frame and a subframe.
+  NavigateAndCommit(GURL(kDefaultTestUrl));
+  RenderFrameHost* subframe =
+      NavigationSimulator::NavigateAndCommitFromDocument(
+          GURL(kSubframeTestUrl),
+          RenderFrameHostTester::For(web_contents()->GetMainFrame())
+              ->AppendChild("subframe"));
+
+  // Simulate timing updates in the main frame and the subframe.
+  SimulateTimingUpdate(timing);
+  SimulateTimingUpdate(subframe_timing, subframe);
+
+  // Navigate again to force histogram recording in the main frame.
+  NavigateAndCommit(GURL(kDefaultTestUrl2));
+
+  EXPECT_THAT(histogram_tester().GetAllSamples(
+                  internal::kHistogramLargestContentPaintAllFrames),
+              testing::ElementsAre(base::Bucket(4780, 1)));
+  EXPECT_THAT(
+      histogram_tester().GetAllSamples(
+          internal::kHistogramLargestContentPaintAllFramesContentType),
+      testing::ElementsAre(base::Bucket(
+          static_cast<base::HistogramBase::Sample>(LargestContentType::kText),
+          1)));
+}
+
+// This tests a trade-off we have made - aggregating all subframe candidates,
+// which makes LCP unable to substitute the subframe candidate with a smaller
+// candidate. This test provides two subframe candidates, the later larger than
+// the first one.
+TEST_F(CorePageLoadMetricsObserverTest,
+       LargestContentfulPaintAllFrames_SubframesCandidateOnlyGetLarger_Larger) {
+  const char kSubframeTestUrl[] = "https://google.com/subframe.html";
+
+  page_load_metrics::mojom::PageLoadTiming timing;
+  page_load_metrics::InitPageLoadTimingForTest(&timing);
+  timing.navigation_start = base::Time::FromDoubleT(1);
+  PopulateRequiredTimingFields(&timing);
+
+  page_load_metrics::mojom::PageLoadTiming subframe_timing;
+  page_load_metrics::InitPageLoadTimingForTest(&subframe_timing);
+  subframe_timing.navigation_start = base::Time::FromDoubleT(2);
+  subframe_timing.paint_timing->largest_image_paint =
+      base::TimeDelta::FromMilliseconds(4780);
+  subframe_timing.paint_timing->largest_image_paint_size = 50u;
+  PopulateRequiredTimingFields(&subframe_timing);
+
+  // Commit the main frame and a subframe.
+  NavigateAndCommit(GURL(kDefaultTestUrl));
+  RenderFrameHost* subframe =
+      NavigationSimulator::NavigateAndCommitFromDocument(
+          GURL(kSubframeTestUrl),
+          RenderFrameHostTester::For(web_contents()->GetMainFrame())
+              ->AppendChild("subframe"));
+
+  // Simulate timing updates in the main frame and the subframe.
+  SimulateTimingUpdate(timing);
+  SimulateTimingUpdate(subframe_timing, subframe);
+
+  subframe_timing.paint_timing->largest_image_paint =
+      base::TimeDelta::FromMilliseconds(300);
+  subframe_timing.paint_timing->largest_image_paint_size = 10u;
+  SimulateTimingUpdate(subframe_timing, subframe);
+
+  // Navigate again to force histogram recording in the main frame.
+  NavigateAndCommit(GURL(kDefaultTestUrl2));
+
+  // Ensure that the largest_image_paint timing for the main frame is recorded.
+  EXPECT_THAT(histogram_tester().GetAllSamples(
+                  internal::kHistogramLargestContentPaintAllFrames),
+              testing::ElementsAre(base::Bucket(4780, 1)));
+  EXPECT_THAT(
+      histogram_tester().GetAllSamples(
+          internal::kHistogramLargestContentPaintAllFramesContentType),
+      testing::ElementsAre(base::Bucket(
+          static_cast<base::HistogramBase::Sample>(LargestContentType::kImage),
+          1)));
+}
+
+// This tests a trade-off we have made - aggregating all subframe candidates,
+// which makes LCP unable to substitute the subframe candidate with a smaller
+// candidate. This test provides two subframe candidates, the later smaller than
+// the first one.
+TEST_F(
+    CorePageLoadMetricsObserverTest,
+    LargestContentfulPaintAllFrames_SubframesCandidateOnlyGetLarger_Smaller) {
+  const char kSubframeTestUrl[] = "https://google.com/subframe.html";
+
+  page_load_metrics::mojom::PageLoadTiming timing;
+  page_load_metrics::InitPageLoadTimingForTest(&timing);
+  timing.navigation_start = base::Time::FromDoubleT(1);
+  PopulateRequiredTimingFields(&timing);
+
+  page_load_metrics::mojom::PageLoadTiming subframe_timing;
+  page_load_metrics::InitPageLoadTimingForTest(&subframe_timing);
+  subframe_timing.navigation_start = base::Time::FromDoubleT(2);
+  subframe_timing.paint_timing->largest_image_paint =
+      base::TimeDelta::FromMilliseconds(4780);
+  subframe_timing.paint_timing->largest_image_paint_size = 10u;
+  PopulateRequiredTimingFields(&subframe_timing);
+
+  // Commit the main frame and a subframe.
+  NavigateAndCommit(GURL(kDefaultTestUrl));
+  RenderFrameHost* subframe =
+      NavigationSimulator::NavigateAndCommitFromDocument(
+          GURL(kSubframeTestUrl),
+          RenderFrameHostTester::For(web_contents()->GetMainFrame())
+              ->AppendChild("subframe"));
+
+  // Simulate timing updates in the main frame and the subframe.
+  SimulateTimingUpdate(timing);
+  SimulateTimingUpdate(subframe_timing, subframe);
+
+  subframe_timing.paint_timing->largest_image_paint =
+      base::TimeDelta::FromMilliseconds(990);
+  subframe_timing.paint_timing->largest_image_paint_size = 50u;
+  SimulateTimingUpdate(subframe_timing, subframe);
+
+  // Navigate again to force histogram recording in the main frame.
+  NavigateAndCommit(GURL(kDefaultTestUrl2));
+
+  // Ensure that the largest_image_paint timing for the main frame is recorded.
+  EXPECT_THAT(histogram_tester().GetAllSamples(
+                  internal::kHistogramLargestContentPaintAllFrames),
+              testing::ElementsAre(base::Bucket(990, 1)));
+  EXPECT_THAT(
+      histogram_tester().GetAllSamples(
+          internal::kHistogramLargestContentPaintAllFramesContentType),
+      testing::ElementsAre(base::Bucket(
+          static_cast<base::HistogramBase::Sample>(LargestContentType::kImage),
+          1)));
 }
 
 TEST_F(CorePageLoadMetricsObserverTest,
@@ -710,11 +970,13 @@ TEST_F(CorePageLoadMetricsObserverTest, LargestImagePaint_ReportLastCandidate) {
 
   timing.paint_timing->largest_image_paint =
       base::TimeDelta::FromMilliseconds(1000);
+  timing.paint_timing->largest_image_paint_size = 10u;
   PopulateRequiredTimingFields(&timing);
   SimulateTimingUpdate(timing);
 
   timing.paint_timing->largest_image_paint =
       base::TimeDelta::FromMilliseconds(4780);
+  timing.paint_timing->largest_image_paint_size = 5u;
   PopulateRequiredTimingFields(&timing);
   SimulateTimingUpdate(timing);
   // Navigate again to force histogram recording.
@@ -815,6 +1077,7 @@ TEST_F(CorePageLoadMetricsObserverTest, LargestTextPaint) {
   // Pick a value that lines up with a histogram bucket.
   timing.paint_timing->largest_text_paint =
       base::TimeDelta::FromMilliseconds(4780);
+  timing.paint_timing->largest_text_paint_size = 10u;
   PopulateRequiredTimingFields(&timing);
 
   NavigateAndCommit(GURL(kDefaultTestUrl));
@@ -850,11 +1113,9 @@ TEST_F(CorePageLoadMetricsObserverTest, LargestContentPaint_NoTextOrImage) {
   page_load_metrics::mojom::PageLoadTiming timing;
   page_load_metrics::InitPageLoadTimingForTest(&timing);
   timing.navigation_start = base::Time::FromDoubleT(1);
-  // When either the time and size is 0, they are not set and should be excluded
-  // from recording to UMA. We are using the size as the condition of exclusion.
-  timing.paint_timing->largest_text_paint =
-      base::TimeDelta::FromMilliseconds(4780);
-  timing.paint_timing->largest_text_paint_size = 0;
+  // When the size is 0, the timing is regarded as not set and should be
+  // excluded from recording to UMA.
+  timing.paint_timing->largest_text_paint_size = 0u;
   PopulateRequiredTimingFields(&timing);
 
   NavigateAndCommit(GURL(kDefaultTestUrl));

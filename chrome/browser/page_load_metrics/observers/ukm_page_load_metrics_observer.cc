@@ -9,6 +9,7 @@
 
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
+#include "chrome/browser/page_load_metrics/observers/largest_contentful_paint_handler.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/metrics/net/network_metrics_provider.h"
@@ -80,7 +81,8 @@ UkmPageLoadMetricsObserver::CreateIfNeeded() {
 
 UkmPageLoadMetricsObserver::UkmPageLoadMetricsObserver(
     network::NetworkQualityTracker* network_quality_tracker)
-    : network_quality_tracker_(network_quality_tracker) {
+    : network_quality_tracker_(network_quality_tracker),
+      largest_contentful_paint_handler_() {
   DCHECK(network_quality_tracker_);
 }
 
@@ -285,6 +287,14 @@ void UkmPageLoadMetricsObserver::RecordTimingMetrics(
           largest_content_paint_time, info)) {
     builder.SetExperimental_PaintTiming_NavigationToLargestContentPaint(
         largest_content_paint_time.value().InMilliseconds());
+  }
+  const page_load_metrics::TimingInfo& paint =
+      largest_contentful_paint_handler_.MergeMainFrameAndSubframes();
+  if (!paint.IsEmpty() &&
+      WasStartedInForegroundOptionalEventInForeground(paint.Time(), info)) {
+    builder
+        .SetExperimental_PaintTiming_NavigationToLargestContentPaintAllFrames(
+            paint.Time().value().InMilliseconds());
   }
   if (timing.interactive_timing->interactive) {
     base::TimeDelta time_to_interactive =
@@ -509,4 +519,12 @@ UkmPageLoadMetricsObserver::GetRoundedSiteEngagementScore(
              engagement_service->GetMaxPoints());
 
   return rounded_document_engagement_score;
+}
+
+void UkmPageLoadMetricsObserver::OnTimingUpdate(
+    content::RenderFrameHost* subframe_rfh,
+    const page_load_metrics::mojom::PageLoadTiming& timing,
+    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+  largest_contentful_paint_handler_.RecordTiming(timing.paint_timing,
+                                                 subframe_rfh);
 }

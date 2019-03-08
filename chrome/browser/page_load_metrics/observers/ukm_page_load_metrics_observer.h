@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/time/time.h"
+#include "chrome/browser/page_load_metrics/observers/largest_contentful_paint_handler.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
 #include "net/http/http_response_info.h"
 #include "services/metrics/public/cpp/ukm_source.h"
@@ -68,6 +69,11 @@ class UkmPageLoadMetricsObserver
 
   void OnLoadedResource(const page_load_metrics::ExtraRequestCompleteInfo&
                             extra_request_complete_info) override;
+
+  void OnTimingUpdate(
+      content::RenderFrameHost* subframe_rfh,
+      const page_load_metrics::mojom::PageLoadTiming& timing,
+      const page_load_metrics::PageLoadExtraInfo& extra_info) override;
 
  private:
   // Records page load timing related metrics available in PageLoadTiming, such
@@ -137,6 +143,9 @@ class UkmPageLoadMetricsObserver
 
   // The connection info for the committed URL.
   base::Optional<net::HttpResponseInfo::ConnectionInfo> connection_info_;
+
+  page_load_metrics::LargestContentfulPaintHandler
+      largest_contentful_paint_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(UkmPageLoadMetricsObserver);
 };

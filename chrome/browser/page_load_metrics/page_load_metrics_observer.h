@@ -361,7 +361,8 @@ class PageLoadMetricsObserver {
   // that |navigation_handle| will be destroyed soon after this call. Don't
   // hold a reference to it.
   virtual void OnDidFinishSubFrameNavigation(
-      content::NavigationHandle* navigation_handle) {}
+      content::NavigationHandle* navigation_handle,
+      const PageLoadExtraInfo& extra_info) {}
 
   // OnCommitSameDocumentNavigation is triggered when a same-document navigation
   // commits within the main frame of the current page. Note that
