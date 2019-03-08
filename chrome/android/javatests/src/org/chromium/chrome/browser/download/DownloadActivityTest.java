@@ -144,6 +144,7 @@ public class DownloadActivityTest {
         features.put(ChromeFeatureList.DOWNLOADS_LOCATION_CHANGE, false);
         features.put(ChromeFeatureList.DOWNLOAD_HOME_SHOW_STORAGE_INFO, false);
         features.put(ChromeFeatureList.DOWNLOAD_HOME_V2, false);
+        features.put(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY, false);
         features.put(ChromeFeatureList.OVERSCROLL_HISTORY_NAVIGATION, false);
         features.put(ChromeFeatureList.DOWNLOAD_OFFLINE_CONTENT_PROVIDER, false);
         ChromeFeatureList.setTestFeatures(features);
