@@ -9,7 +9,6 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/optional.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/win/windows_version.h"
 #include "ui/base/ui_base_features.h"
@@ -20,15 +19,12 @@ namespace ui {
 namespace win {
 
 namespace {
-base::Optional<bool> logging_enabled;
 
 bool LoggingEnabled() {
-  if (!logging_enabled.has_value()) {
-    logging_enabled =
-        base::FeatureList::IsEnabled(features::kPrecisionTouchpadLogging);
-  }
+  static bool logging_enabled =
+      base::FeatureList::IsEnabled(features::kPrecisionTouchpadLogging);
 
-  return logging_enabled.value();
+  return logging_enabled;
 }
 
 // TODO(crbug.com/914914) This is added for help us getting debug log on
