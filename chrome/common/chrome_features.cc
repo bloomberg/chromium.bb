@@ -538,6 +538,9 @@ const base::Feature kShowTrustedPublisherURL{"ShowTrustedPublisherURL",
 // Launch bug: https://crbug.com/810843.  This is a //chrome-layer feature to
 // avoid turning on site-per-process by default for *all* //content embedders
 // (e.g. this approach lets ChromeCast avoid site-per-process mode).
+//
+// TODO(alexmos): Move this and the other site isolation features below to
+// browser_features, as they are only used on the browser side.
 const base::Feature kSitePerProcess {
   "site-per-process",
 #if defined(OS_ANDROID)
@@ -546,6 +549,15 @@ const base::Feature kSitePerProcess {
       base::FEATURE_ENABLED_BY_DEFAULT
 #endif
 };
+
+// Controls a mode for dynamically process-isolating sites where the user has
+// entered a password.  This is intended to be used primarily when full site
+// isolation is turned off.  To check whether this mode is enabled, use
+// ChromeSiteIsolationPolicy::IsIsolationForPasswordSitesEnabled() rather than
+// checking the feature directly, since that decision is influenced by other
+// factors as well.
+const base::Feature kSiteIsolationForPasswordSites{
+    "site-isolation-for-password-sites", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // kSitePerProcessOnlyForHighMemoryClients is checked before kSitePerProcess,
 // and (if enabled) can restrict if kSitePerProcess feature is checked at all -

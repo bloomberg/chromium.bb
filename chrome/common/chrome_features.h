@@ -366,6 +366,9 @@ COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kSiteSettings;
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kSitePerProcess;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kSiteIsolationForPasswordSites;
+
+COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kSitePerProcessOnlyForHighMemoryClients;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const char kSitePerProcessOnlyForHighMemoryClientsParamName[];

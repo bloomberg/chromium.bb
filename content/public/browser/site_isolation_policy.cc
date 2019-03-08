@@ -116,6 +116,11 @@ bool SiteIsolationPolicy::ShouldPdfCompositorBeEnabledForOopifs() {
 }
 
 // static
+bool SiteIsolationPolicy::AreDynamicIsolatedOriginsEnabled() {
+  return !IsSiteIsolationDisabled();
+}
+
+// static
 std::vector<url::Origin>
 SiteIsolationPolicy::GetIsolatedOriginsFromEnvironment() {
   std::string cmdline_arg =

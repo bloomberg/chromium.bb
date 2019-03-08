@@ -48,6 +48,11 @@ class CONTENT_EXPORT SiteIsolationPolicy {
   // process iframes (OOPIF's) to print properly.
   static bool ShouldPdfCompositorBeEnabledForOopifs();
 
+  // Returns true if isolated origins may be added at runtime in response
+  // to hints such as users typing in a password or (in the future) an origin
+  // opting itself into isolation via a header.
+  static bool AreDynamicIsolatedOriginsEnabled();
+
   // Returns the origins to isolate.  See also AreIsolatedOriginsEnabled.
   // This list applies globally to the whole browser in all profiles.
   static std::vector<url::Origin> GetIsolatedOrigins();

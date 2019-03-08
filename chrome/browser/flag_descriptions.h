@@ -1553,6 +1553,9 @@ extern const char kSetMarketUrlForTestingDescription[];
 extern const char kSiteExplorationUiName[];
 extern const char kSiteExplorationUiDescription[];
 
+extern const char kSiteIsolationForPasswordSitesName[];
+extern const char kSiteIsolationForPasswordSitesDescription[];
+
 extern const char kSpannableInlineAutocompleteName[];
 extern const char kSpannableInlineAutocompleteDescription[];
 
