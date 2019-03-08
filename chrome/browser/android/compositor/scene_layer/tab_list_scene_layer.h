@@ -12,6 +12,7 @@
 
 #include "base/macros.h"
 #include "cc/layers/layer.h"
+#include "cc/layers/ui_resource_layer.h"
 #include "chrome/browser/android/compositor/layer/layer.h"
 #include "chrome/browser/android/compositor/scene_layer/scene_layer.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -107,6 +108,14 @@ class TabListSceneLayer : public SceneLayer {
                    jfloat side_border_scale,
                    jboolean inset_border);
 
+  void PutCreateGroupTextButtonLayer(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jobj,
+      jint text_button_resource_id,
+      jfloat x,
+      jfloat y,
+      jboolean is_visible);
+
   void OnDetach() override;
   bool ShouldShowBackground() override;
   SkColor GetBackgroundColor() override;
@@ -124,6 +133,8 @@ class TabListSceneLayer : public SceneLayer {
   LayerTitleCache* layer_title_cache_;
   TabContentManager* tab_content_manager_;
   SkColor background_color_;
+
+  scoped_refptr<cc::UIResourceLayer> tab_group_layer_;
 
   scoped_refptr<cc::Layer> own_tree_;
 

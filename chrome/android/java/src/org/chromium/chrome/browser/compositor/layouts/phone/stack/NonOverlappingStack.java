@@ -179,11 +179,7 @@ public class NonOverlappingStack extends Stack {
         updateScrollSnap();
     }
 
-    /**
-     * @return The index of the currently centered tab. If we're not currently snapped to a tab
-     *         (e.g. we're in the process of animating a scroll or the user is currently dragging),
-     *         returns the index of the tab closest to the center.
-     */
+    @Override
     public int getCenteredTabIndex() {
         return Math.round(-mScrollOffset / mSpacing);
     }

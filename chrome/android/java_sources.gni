@@ -1560,6 +1560,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/tabmodel/document/TabDelegate.java",
   "java/src/org/chromium/chrome/browser/tasks/TasksUma.java",
   "java/src/org/chromium/chrome/browser/tasks/tabgroup/TabGroupModelFilter.java",
+  "java/src/org/chromium/chrome/browser/tasks/tab_groups/LayoutTabGroupCreationButton.java",
   "java/src/org/chromium/chrome/browser/tasks/tab_groups/TabGroupUtils.java",
   "java/src/org/chromium/chrome/browser/tasks/tab_list_ui/TabStripToolbarViewProperties.java",
   "java/src/org/chromium/chrome/browser/tasks/tab_list_ui/BottomTabListToolbarView.java",
