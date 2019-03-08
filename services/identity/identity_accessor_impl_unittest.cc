@@ -6,11 +6,11 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
+#include "components/image_fetcher/core/fake_image_decoder.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
-#include "components/signin/core/browser/test_image_decoder.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "services/identity/identity_service.h"
@@ -71,9 +71,9 @@ class IdentityAccessorImplTest : public testing::Test {
     SigninManagerBase::RegisterPrefs(pref_service_.registry());
 
     account_tracker_.Initialize(&pref_service_, base::FilePath());
-    account_fetcher_.Initialize(&signin_client_, &token_service_,
-                                &account_tracker_,
-                                std::make_unique<TestImageDecoder>());
+    account_fetcher_.Initialize(
+        &signin_client_, &token_service_, &account_tracker_,
+        std::make_unique<image_fetcher::FakeImageDecoder>());
     signin_manager_.Initialize(&pref_service_);
   }
 

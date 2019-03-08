@@ -220,8 +220,6 @@ static_library("internals_test_support") {
   sources = [
     "fake_profile_oauth2_token_service.cc",
     "fake_profile_oauth2_token_service.h",
-    "test_image_decoder.cc",
-    "test_image_decoder.h",
 
     # TODO(https://crbug.com/907782): Move list_accounts_test_utils to
     # //services/identity/public/cpp once FakeGCMS no longer depends on it.
@@ -233,10 +231,8 @@ static_library("internals_test_support") {
 
   deps = [
     "//base/test:test_support",
-    "//components/image_fetcher/core",
     "//components/prefs",
     "//google_apis:test_support",
-    "//ui/gfx:test_support",
   ]
 
   public_deps = [

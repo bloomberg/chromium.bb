@@ -16,13 +16,13 @@
 #include "base/stl_util.h"
 #include "base/test/bind_test_util.h"
 #include "build/build_config.h"
+#include "components/image_fetcher/core/fake_image_decoder.h"
 #include "components/signin/core/browser/account_consistency_method.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/list_accounts_test_utils.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_switches.h"
-#include "components/signin/core/browser/test_image_decoder.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -341,9 +341,9 @@ class IdentityManagerTest : public testing::Test {
     SigninManagerBase::RegisterPrefs(pref_service_.registry());
 
     account_tracker_.Initialize(&pref_service_, base::FilePath());
-    account_fetcher_.Initialize(&signin_client_, &token_service_,
-                                &account_tracker_,
-                                std::make_unique<TestImageDecoder>());
+    account_fetcher_.Initialize(
+        &signin_client_, &token_service_, &account_tracker_,
+        std::make_unique<image_fetcher::FakeImageDecoder>());
 
     RecreateSigninAndIdentityManager(
         signin::AccountConsistencyMethod::kDisabled,
