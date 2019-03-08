@@ -460,6 +460,12 @@ const base::Feature kSignedHTTPExchange{"SignedHTTPExchange",
 const base::Feature kSpareRendererForSitePerProcess{
     "SpareRendererForSitePerProcess", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Dispatch touch events to "SyntheticGestureController" for events from
+// Devtool Protocol Input.dispatchTouchEvent to simulate touch events close to
+// real OS events.
+const base::Feature kSyntheticPointerActions{"SyntheticPointerActions",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Throttle Blink timers in out-of-view cross origin frames.
 const base::Feature kTimerThrottlingForHiddenFrames{
     "TimerThrottlingForHiddenFrames", base::FEATURE_ENABLED_BY_DEFAULT};
