@@ -108,8 +108,9 @@ ScopedVirtualAuthenticatorEnvironment::CreateFidoDiscovery(
     // If no bindings are active then create a virtual device. This is useful
     // for web-platform tests which assume that they can make webauthn calls,
     // but which don't implement the Chromium-specific mock Mojo interfaces.
+    device::VirtualCtap2Device::Config default_config;
     auto device = std::make_unique<device::VirtualCtap2Device>(
-        virtual_device_state_, false /* no PIN support */);
+        virtual_device_state_, default_config);
     discovery->AddVirtualDevice(std::move(device));
   } else {
     for (auto& authenticator : authenticators_) {
