@@ -1009,14 +1009,22 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
     SiteInstanceDescriptor descriptor(browser_context(), kUrlSameSiteAs2,
                                       SiteInstanceRelation::RELATED);
     related_instance = ConvertToSiteInstance(rfhm, descriptor, nullptr);
-    // Should return a new instance, related to the current, set to the new site
-    // URL.
+    // If kUrlSameSiteAs2 requires a dedicated process on this platform, this
+    // should return a new instance, related to the current and set to the new
+    // site URL.
+    // Otherwise, this should return the default site instance
     EXPECT_TRUE(
         current_instance->IsRelatedSiteInstance(related_instance.get()));
     EXPECT_NE(current_instance, related_instance.get());
     EXPECT_NE(unrelated_instance.get(), related_instance.get());
-    EXPECT_EQ(SiteInstance::GetSiteForURL(browser_context(), kUrlSameSiteAs2),
-              related_instance->GetSiteURL());
+
+    if (AreAllSitesIsolatedForTesting()) {
+      EXPECT_EQ(SiteInstance::GetSiteForURL(browser_context(), kUrlSameSiteAs2),
+                related_instance->GetSiteURL());
+    } else {
+      EXPECT_TRUE(static_cast<SiteInstanceImpl*>(related_instance.get())
+                      ->IsDefaultSiteInstance());
+    }
   }
 
   // 5) Convert a descriptor of an unrelated instance with the same site as the

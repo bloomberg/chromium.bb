@@ -4654,9 +4654,17 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
     EXPECT_EQ(test_url, child1->current_frame_host()->GetLastCommittedURL());
     EXPECT_EQ(url::Origin::Create(test_url),
               child1->current_frame_host()->GetLastCommittedOrigin());
-    GURL c_site_url =
-        child1->current_frame_host()->GetSiteInstance()->GetSiteURL();
-    EXPECT_EQ("c.com", c_site_url.host());
+
+    SiteInstanceImpl* child1_site_instance =
+        child1->current_frame_host()->GetSiteInstance();
+
+    GURL c_site_url = child1_site_instance->GetSiteURL();
+    if (AreAllSitesIsolatedForTesting()) {
+      EXPECT_EQ("c.com", c_site_url.host());
+      EXPECT_EQ(test_url.host(), c_site_url.host());
+    } else {
+      EXPECT_TRUE(child1_site_instance->IsDefaultSiteInstance());
+    }
     EXPECT_NE(a_site_url, c_site_url);
     EXPECT_NE(b_site_url, c_site_url);
   }

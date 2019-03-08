@@ -75,7 +75,8 @@ scoped_refptr<SiteInstanceImpl> SiteInstanceImpl::CreateForURL(
   // This will create a new SiteInstance and BrowsingInstance.
   scoped_refptr<BrowsingInstance> instance(
       new BrowsingInstance(browser_context));
-  return instance->GetSiteInstanceForURL(url);
+  return instance->GetSiteInstanceForURL(url,
+                                         /* allow_default_instance */ false);
 }
 
 // static
@@ -111,6 +112,10 @@ RenderProcessHost* SiteInstanceImpl::GetDefaultProcessIfUsable() {
   if (RequiresDedicatedProcess())
     return nullptr;
   return browsing_instance_->default_process();
+}
+
+bool SiteInstanceImpl::IsDefaultSiteInstance() {
+  return browsing_instance_->IsDefaultSiteInstance(this);
 }
 
 void SiteInstanceImpl::MaybeSetBrowsingInstanceDefaultProcess() {
@@ -225,12 +230,9 @@ void SiteInstanceImpl::SetSite(const GURL& url) {
   // URL is invalid.
   has_site_ = true;
   BrowserContext* browser_context = browsing_instance_->browser_context();
-  site_ = GetSiteForURL(BrowserOrResourceContext(browser_context),
-                        GetIsolationContext(), url,
-                        true /* should_use_effective_urls */);
   original_url_ = url;
-  lock_url_ = DetermineProcessLockURL(BrowserOrResourceContext(browser_context),
-                                      GetIsolationContext(), url);
+  browsing_instance_->GetSiteAndLockForURL(
+      url, /* allow_default_instance */ false, &site_, &lock_url_);
 
   // Now that we have a site, register it with the BrowsingInstance.  This
   // ensures that we won't create another SiteInstance for this site within
@@ -271,7 +273,8 @@ bool SiteInstanceImpl::HasRelatedSiteInstance(const GURL& url) {
 
 scoped_refptr<SiteInstance> SiteInstanceImpl::GetRelatedSiteInstance(
     const GURL& url) {
-  return browsing_instance_->GetSiteInstanceForURL(url);
+  return browsing_instance_->GetSiteInstanceForURL(
+      url, /* allow_default_instance */ true);
 }
 
 bool SiteInstanceImpl::IsRelatedSiteInstance(const SiteInstance* instance) {
@@ -310,11 +313,14 @@ bool SiteInstanceImpl::HasWrongProcessForURL(const GURL& url) {
 
   // If the site URL is an extension (e.g., for hosted apps or WebUI) but the
   // process is not (or vice versa), make sure we notice and fix it.
-  GURL site_url = SiteInstanceImpl::GetSiteForURL(
-      browsing_instance_->browser_context(), GetIsolationContext(), url);
-  GURL origin_lock = DetermineProcessLockURL(
-      BrowserOrResourceContext(browsing_instance_->browser_context()),
-      GetIsolationContext(), url);
+  GURL site_url;
+  GURL origin_lock;
+
+  // Note: This call must return information that is identical to what
+  // would be reported in the SiteInstance returned by
+  // GetRelatedSiteInstance(url).
+  browsing_instance_->GetSiteAndLockForURL(
+      url, /* allow_default_instance */ true, &site_url, &origin_lock);
   return !RenderProcessHostImpl::IsSuitableHost(
       GetProcess(), browsing_instance_->browser_context(),
       GetIsolationContext(), site_url, origin_lock);
