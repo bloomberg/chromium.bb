@@ -115,6 +115,13 @@ void BrowserAccessibilityManagerAuraLinux::FireGeneratedEvent(
   BrowserAccessibilityManager::FireGeneratedEvent(event_type, node);
 
   switch (event_type) {
+    case ui::AXEventGenerator::Event::DOCUMENT_SELECTION_CHANGED: {
+      int32_t focus_id = GetTreeData().sel_focus_object_id;
+      BrowserAccessibility* focus_object = GetFromID(focus_id);
+      if (focus_object)
+        FireEvent(focus_object, ax::mojom::Event::kTextSelectionChanged);
+      break;
+    }
     case ui::AXEventGenerator::Event::CHECKED_STATE_CHANGED:
       FireEvent(node, ax::mojom::Event::kCheckedStateChanged);
       break;
