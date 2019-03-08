@@ -518,6 +518,8 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
   std::set<int32_t> already_serialized_ids;
   for (size_t i = 0; i < dirty_objects.size(); i++) {
     auto obj = dirty_objects[i].obj;
+    if (obj.IsDetached())
+      continue;
     if (already_serialized_ids.find(obj.AxID()) != already_serialized_ids.end())
       continue;
 
