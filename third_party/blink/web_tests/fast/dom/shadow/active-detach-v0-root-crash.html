@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<div id="host">
+  <div id="child">Clicking this text should not crash</div>
+</div>
+<script>
+  var t = async_test("Test that removing an :active v0 shadow host child on mousemove does not crash.");
+  child.addEventListener("mousedown", t.step_func_done(() => {
+    host.createShadowRoot();
+    child.remove();
+  }));
+
+  t.step(() => {
+    if (window.chrome && chrome.gpuBenchmarking) {
+      chrome.gpuBenchmarking.pointerActionSequence([{source: 'mouse', actions:[
+        {name: 'pointerDown', x: 16, y: 16},
+          {name: 'pointerUp'}]}]);
+    }
+  });
+</script>
