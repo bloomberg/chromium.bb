@@ -66,9 +66,14 @@ SyncConfirmationUI::SyncConfirmationUI(content::WebUI* web_ui)
 
     constexpr int kAccountPictureSize = 68;
     std::string custom_picture_url = profiles::GetPlaceholderAvatarIconUrl();
-    GURL account_picture_url(IdentityManagerFactory::GetForProfile(profile)
-                                 ->GetPrimaryAccountInfo()
-                                 .picture_url);
+    identity::IdentityManager* identity_manager =
+        IdentityManagerFactory::GetForProfile(profile);
+    base::Optional<AccountInfo> primary_account_info =
+        identity_manager->FindExtendedAccountInfoForAccount(
+            identity_manager->GetPrimaryAccountInfo());
+    GURL account_picture_url(primary_account_info
+                                 ? primary_account_info->picture_url
+                                 : std::string());
     if (account_picture_url.is_valid()) {
       custom_picture_url = signin::GetAvatarImageURLWithOptions(
                                account_picture_url, kAccountPictureSize,
