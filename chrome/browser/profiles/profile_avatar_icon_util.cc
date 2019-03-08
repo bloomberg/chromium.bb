@@ -533,15 +533,19 @@ std::unique_ptr<base::ListValue> GetDefaultProfileAvatarIconsAndLabels(
 
 size_t GetRandomAvatarIconIndex(
     const std::unordered_set<size_t>& used_icon_indices) {
-  int rand = base::RandInt(0, GetDefaultAvatarIconCount());
+  size_t interval_begin = GetModernAvatarIconStartIndex();
+  size_t interval_end = GetDefaultAvatarIconCount();
+  size_t interval_length = interval_end - interval_begin;
+
+  size_t random_offset = base::RandInt(0, interval_length - 1);
   // Find the next unused index.
-  for (size_t i = 0; i < GetDefaultAvatarIconCount(); ++i) {
-    size_t icon_index = (rand + i) % GetDefaultAvatarIconCount();
+  for (size_t i = 0; i < interval_length; ++i) {
+    size_t icon_index = interval_begin + (random_offset + i) % interval_length;
     if (used_icon_indices.count(icon_index) == 0u)
       return icon_index;
   }
   // All indices are used, so return a random one.
-  return rand;
+  return interval_begin + random_offset;
 }
 
 }  // namespace profiles
