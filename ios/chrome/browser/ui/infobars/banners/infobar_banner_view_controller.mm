@@ -200,7 +200,7 @@ const CGFloat kIconWidth = 25.0;
       gesture.state == UIGestureRecognizerStateCancelled) {
     if (self.view.center.y > self.originalCenter.y) {
       self.view.center = self.originalCenter;
-      [self.delegate presentInfobarModal];
+      [self.delegate presentInfobarModalFromBanner];
     } else {
       [self.delegate dismissInfobarBanner:self];
     }

@@ -11,30 +11,35 @@
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_view_controller.h"
 #import "ios/chrome/browser/ui/infobars/modals/infobar_modal_delegate.h"
 #import "ios/chrome/browser/ui/infobars/modals/infobar_modal_view_controller.h"
-#import "ios/chrome/browser/ui/infobars/presentation/infobar_expand_banner_animator.h"
-#import "ios/chrome/browser/ui/infobars/presentation/infobar_modal_presentation_controller.h"
+#import "ios/chrome/browser/ui/infobars/presentation/infobar_banner_transition_driver.h"
+#import "ios/chrome/browser/ui/infobars/presentation/infobar_modal_transition_driver.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
 @interface InfobarPasswordCoordinator () <InfobarBannerDelegate,
-                                          InfobarModalDelegate,
-                                          UIViewControllerTransitioningDelegate>
+                                          InfobarModalDelegate>
 
 // Delegate that holds the Infobar information and actions.
 @property(nonatomic, readonly)
     IOSChromePasswordManagerInfoBarDelegate* passwordInfoBarDelegate;
 // InfobarBannerViewController owned by this Coordinator.
 @property(nonatomic, strong) InfobarBannerViewController* bannerViewController;
+// InfobarModalViewController owned by this Coordinator.
+@property(nonatomic, strong) InfobarModalViewController* modalViewController;
 
 @end
 
 @implementation InfobarPasswordCoordinator
 // Property defined in InfobarCoordinating.
 @synthesize bannerViewController = _bannerViewController;
+// Property defined in InfobarCoordinating.
+@synthesize bannerTransitionDriver = _bannerTransitionDriver;
 // Property defined in InfobarUIDelegate.
 @synthesize delegate = _delegate;
+// Property defined in InfobarCoordinating.
+@synthesize modalTransitionDriver = _modalTransitionDriver;
 // Property defined in InfobarUIDelegate.
 @synthesize presented = _presented;
 // Property defined in InfobarCoordinating.
@@ -66,23 +71,40 @@
 - (void)stop {
   if (self.started) {
     self.started = NO;
-    [self.bannerViewController.presentingViewController
-        dismissViewControllerAnimated:YES
-                           completion:nil];
+    // RemoveInfoBar() will delete the InfobarIOS that owns this Coordinator
+    // from memory.
+    self.delegate->RemoveInfoBar();
   }
 }
 
 #pragma mark - InfobarUIDelegate
 
 - (void)removeView {
-  [self stop];
+  [self dismissInfobarBanner:self.bannerViewController];
 }
 
 - (void)detachView {
+  [self dismissInfobarBanner:self.bannerViewController];
   [self stop];
-  // RemoveInfoBar() will delete the InfobarIOS that owns this Coordinator
-  // from memory.
-  self.delegate->RemoveInfoBar();
+}
+
+#pragma mark - InfobarCoordinating
+
+- (void)presentInfobarModalFrom:(UIViewController*)baseViewController {
+  self.modalTransitionDriver = [[InfobarModalTransitionDriver alloc]
+      initWithTransitionMode:InfobarModalTransitionBase];
+  [self presentInfobarModalFrom:baseViewController
+                         driver:self.modalTransitionDriver];
+}
+
+- (void)presentInfobarBannerFrom:(UIViewController*)baseViewController {
+  [self.bannerViewController
+      setModalPresentationStyle:UIModalPresentationCustom];
+  self.bannerTransitionDriver = [[InfobarBannerTransitionDriver alloc] init];
+  self.bannerViewController.transitioningDelegate = self.bannerTransitionDriver;
+  [baseViewController presentViewController:self.bannerViewController
+                                   animated:YES
+                                 completion:nil];
 }
 
 #pragma mark - InfobarBannerDelegate
@@ -93,61 +115,49 @@
 }
 
 - (void)dismissInfobarBanner:(id)sender {
-  [self stop];
+  [self.bannerViewController.presentingViewController
+      dismissViewControllerAnimated:YES
+                         completion:^{
+                           self.bannerTransitionDriver = nil;
+                         }];
 }
 
-- (void)presentInfobarModal {
-  InfobarModalViewController* expandedViewController =
-      [[InfobarModalViewController alloc] initWithModalDelegate:self];
-  expandedViewController.transitioningDelegate = self;
-  [expandedViewController setModalPresentationStyle:UIModalPresentationCustom];
-  [self.bannerViewController presentViewController:expandedViewController
-                                          animated:YES
-                                        completion:nil];
+- (void)presentInfobarModalFromBanner {
+  self.modalTransitionDriver = [[InfobarModalTransitionDriver alloc]
+      initWithTransitionMode:InfobarModalTransitionBanner];
+  [self presentInfobarModalFrom:self.bannerViewController
+                         driver:self.modalTransitionDriver];
 }
 
 #pragma mark - InfobarModalDelegate
 
 - (void)dismissInfobarModal:(UIViewController*)sender {
-  [self.bannerViewController dismissViewControllerAnimated:YES
-                                                completion:^{
-                                                  [self stop];
-                                                }];
+  [self.modalViewController.presentingViewController
+      dismissViewControllerAnimated:YES
+                         completion:^{
+                           // If the Modal was presented by the
+                           // BannerViewController, dismiss it too.
+                           if (self.modalTransitionDriver.transitionMode ==
+                               InfobarModalTransitionBanner) {
+                             [self dismissInfobarBanner:
+                                       self.bannerViewController];
+                           }
+                           self.modalTransitionDriver = nil;
+                         }];
 }
 
-// TODO(crbug.com/911864): Create a Transitioning object that can be shared
-// with all Infobar Coordinators.
-#pragma mark - UIViewControllerTransitioningDelegate
+#pragma mark - Private
 
-- (UIPresentationController*)
-    presentationControllerForPresentedViewController:
-        (UIViewController*)presented
-                            presentingViewController:
-                                (UIViewController*)presenting
-                                sourceViewController:(UIViewController*)source {
-  InfobarModalPresentationController* presentationController =
-      [[InfobarModalPresentationController alloc]
-          initWithPresentedViewController:presented
-                 presentingViewController:presenting];
-  return presentationController;
-}
-
-- (id<UIViewControllerAnimatedTransitioning>)
-    animationControllerForPresentedController:(UIViewController*)presented
-                         presentingController:(UIViewController*)presenting
-                             sourceController:(UIViewController*)source {
-  InfobarExpandBannerAnimator* animator =
-      [[InfobarExpandBannerAnimator alloc] init];
-  animator.presenting = YES;
-  return animator;
-}
-
-- (id<UIViewControllerAnimatedTransitioning>)
-    animationControllerForDismissedController:(UIViewController*)dismissed {
-  InfobarExpandBannerAnimator* animator =
-      [[InfobarExpandBannerAnimator alloc] init];
-  animator.presenting = NO;
-  return animator;
+- (void)presentInfobarModalFrom:(UIViewController*)presentingViewController
+                         driver:(InfobarModalTransitionDriver*)driver {
+  self.modalViewController =
+      [[InfobarModalViewController alloc] initWithModalDelegate:self];
+  self.modalViewController.transitioningDelegate = driver;
+  [self.modalViewController
+      setModalPresentationStyle:UIModalPresentationCustom];
+  [presentingViewController presentViewController:self.modalViewController
+                                         animated:YES
+                                       completion:nil];
 }
 
 @end
