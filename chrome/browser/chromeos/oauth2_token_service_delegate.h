@@ -27,12 +27,12 @@ class ChromeOSOAuth2TokenServiceDelegate
       public AccountManager::Observer,
       public network::NetworkConnectionTracker::NetworkConnectionObserver {
  public:
-  // Accepts non-owning pointers to |AccountTrackerService| and
-  // |AccountManager|. |AccountTrackerService| is a |KeyedService|.
-  // |AccountManager| transitively belongs to |g_browser_process|. They outlive
-  // (as they must) |this| delegate.
+  // Accepts non-owning pointers to |AccountTrackerService|,
+  // |NetworkConnectorTracker|, and |AccountManager|. These objects must all
+  // outlive |this| delegate.
   ChromeOSOAuth2TokenServiceDelegate(
       AccountTrackerService* account_tracker_service,
+      network::NetworkConnectionTracker* network_connection_tracker,
       AccountManager* account_manager);
   ~ChromeOSOAuth2TokenServiceDelegate() override;
 
@@ -80,6 +80,9 @@ class ChromeOSOAuth2TokenServiceDelegate
 
   // A non-owning pointer.
   AccountTrackerService* const account_tracker_service_;
+
+  // A non-owning pointer.
+  network::NetworkConnectionTracker* const network_connection_tracker_;
 
   // A non-owning pointer. |AccountManager| is available
   // throughout the lifetime of a user session.

@@ -14,17 +14,18 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/stl_util.h"
+#include "base/test/scoped_task_environment.h"
 #include "chromeos/account_manager/account_manager.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/oauth2_access_token_consumer.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "google_apis/gaia/oauth2_token_service_test_util.h"
+#include "services/network/test/test_network_connection_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -148,7 +149,7 @@ class CrOSOAuthDelegateTest : public testing::Test {
     account_manager_.Initialize(tmp_dir_.GetPath(),
                                 client_->GetURLLoaderFactory(),
                                 immediate_callback_runner_);
-    thread_bundle_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
 
     account_tracker_service_.Initialize(&pref_service_, base::FilePath());
 
@@ -158,7 +159,9 @@ class CrOSOAuthDelegateTest : public testing::Test {
     ad_account_key_ = {"object-guid", ACCOUNT_TYPE_ACTIVE_DIRECTORY};
 
     delegate_ = std::make_unique<ChromeOSOAuth2TokenServiceDelegate>(
-        &account_tracker_service_, &account_manager_);
+        &account_tracker_service_,
+        network::TestNetworkConnectionTracker::GetInstance(),
+        &account_manager_);
     delegate_->LoadCredentials(
         account_info_.account_id /* primary_account_id */);
   }
@@ -191,11 +194,7 @@ class CrOSOAuthDelegateTest : public testing::Test {
         GetValidTokenResponse("token", 3600));
   }
 
-  // Needed because
-  // |content::GetNetworkConnectionTracker()->AddNetworkConnectionObserver| in
-  // |ChromeOSOAuth2TokenServiceDelegate|'s constructor CHECKs that we are
-  // running on the browser UI thread.
-  content::TestBrowserThreadBundle thread_bundle_;
+  base::test::ScopedTaskEnvironment task_environment_;
 
   base::ScopedTempDir tmp_dir_;
   AccountInfo account_info_;
@@ -352,21 +351,22 @@ TEST_F(CrOSOAuthDelegateTest, BatchChangeObserversAreNotifiedOncePerBatch) {
   account_manager_.UpsertAccount(
       AccountManager::AccountKey{account2.gaia, ACCOUNT_TYPE_GAIA},
       "user2@example.com", "token2");
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   AccountManager account_manager;
   // AccountManager will not be fully initialized until
-  // |thread_bundle_.RunUntilIdle()| is called.
+  // |task_environment_.RunUntilIdle()| is called.
   account_manager.Initialize(tmp_dir_.GetPath(), client_->GetURLLoaderFactory(),
                              immediate_callback_runner_);
 
   // Register callbacks before AccountManager has been fully initialized.
   auto delegate = std::make_unique<ChromeOSOAuth2TokenServiceDelegate>(
-      &account_tracker_service_, &account_manager);
+      &account_tracker_service_,
+      network::TestNetworkConnectionTracker::GetInstance(), &account_manager);
   delegate->LoadCredentials(account1.account_id /* primary_account_id */);
   TokenServiceObserver observer(delegate.get());
   // Wait until AccountManager is fully initialized.
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   // Tests
 
@@ -515,9 +515,9 @@ TEST_F(CrOSOAuthDelegateTest, BackOffIsTriggerredForTransientErrors) {
       delegate_->CreateAccessTokenFetcher(account_info_.account_id,
                                           delegate_->GetURLLoaderFactory(),
                                           &access_token_consumer));
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   fetcher->Start("client_id", "client_secret", scopes);
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_EQ(0, access_token_consumer.num_access_token_fetch_success_);
   EXPECT_EQ(1, access_token_consumer.num_access_token_fetch_failure_);
   // Expect a positive backoff time.
@@ -529,7 +529,7 @@ TEST_F(CrOSOAuthDelegateTest, BackOffIsTriggerredForTransientErrors) {
       account_info_.account_id, delegate_->GetURLLoaderFactory(),
       &access_token_consumer));
   fetcher->Start("client_id", "client_secret", scopes);
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_EQ(1, access_token_consumer.num_access_token_fetch_success_);
   EXPECT_EQ(1, access_token_consumer.num_access_token_fetch_failure_);
 }
@@ -552,9 +552,9 @@ TEST_F(CrOSOAuthDelegateTest, BackOffIsResetOnNetworkChange) {
       delegate_->CreateAccessTokenFetcher(account_info_.account_id,
                                           delegate_->GetURLLoaderFactory(),
                                           &access_token_consumer));
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   fetcher->Start("client_id", "client_secret", scopes);
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_EQ(0, access_token_consumer.num_access_token_fetch_success_);
   EXPECT_EQ(1, access_token_consumer.num_access_token_fetch_failure_);
   // Expect a positive backoff time.
@@ -567,7 +567,7 @@ TEST_F(CrOSOAuthDelegateTest, BackOffIsResetOnNetworkChange) {
       account_info_.account_id, delegate_->GetURLLoaderFactory(),
       &access_token_consumer));
   fetcher->Start("client_id", "client_secret", scopes);
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_EQ(1, access_token_consumer.num_access_token_fetch_success_);
   EXPECT_EQ(1, access_token_consumer.num_access_token_fetch_failure_);
 }
