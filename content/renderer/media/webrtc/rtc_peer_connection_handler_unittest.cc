@@ -1145,7 +1145,7 @@ TEST_F(RTCPeerConnectionHandlerTest, OnIceGatheringChange) {
 
   // Check NULL candidate after ice gathering is completed.
   EXPECT_EQ("", mock_client_->candidate_mid());
-  EXPECT_EQ(-1, mock_client_->candidate_mlineindex());
+  EXPECT_FALSE(mock_client_->candidate_mlineindex().has_value());
   EXPECT_EQ("", mock_client_->candidate_sdp());
 }
 

@@ -1464,9 +1464,12 @@ bool RTCPeerConnectionHandler::AddICECandidate(
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::addICECandidate");
   std::unique_ptr<webrtc::IceCandidateInterface> native_candidate(
-      dependency_factory_->CreateIceCandidate(candidate->SdpMid().Utf8(),
-                                              candidate->SdpMLineIndex(),
-                                              candidate->Candidate().Utf8()));
+      dependency_factory_->CreateIceCandidate(
+          candidate->SdpMid().Utf8(),
+          candidate->SdpMLineIndex()
+              ? static_cast<int>(*candidate->SdpMLineIndex())
+              : -1,
+          candidate->Candidate().Utf8()));
   bool return_value = false;
 
   if (native_candidate) {
