@@ -670,9 +670,8 @@ IN_PROC_BROWSER_TEST_F(DataUrlNavigationBrowserTestWithFeatureFlag,
 }
 
 // Tests that a window.open to a blocked scheme with HTML mime type is blocked.
-// Crashes on all platforms.  http://crbug.com/939578
 IN_PROC_BROWSER_TEST_P(BlockedSchemeNavigationBrowserTest,
-                       DISABLED_HTML_WindowOpen_Block) {
+                       HTML_WindowOpen_Block) {
   Navigate(GetTestURL());
   ExecuteScriptAndCheckWindowOpen(
       shell()->web_contents()->GetMainFrame(), GetParam(),
@@ -832,10 +831,9 @@ IN_PROC_BROWSER_TEST_P(
 
 // Tests that opening a new window with a blocked scheme with HTML mimetype is
 // blocked even if the top frame already has a blocked scheme.
-// Crashes on all platforms.  http://crbug.com/939541
 IN_PROC_BROWSER_TEST_P(
     BlockedSchemeNavigationBrowserTest,
-    DISABLED_HTML_WindowOpenFromFrame_TopFrameHasBlockedScheme_Block) {
+    HTML_WindowOpenFromFrame_TopFrameHasBlockedScheme_Block) {
   // Create an empty URL with a blocked scheme, navigate to it, and add a frame.
   EXPECT_TRUE(NavigateToURL(shell(), CreateEmptyURLWithBlockedScheme()));
   AddIFrame(shell()->web_contents()->GetMainFrame(), GetTestURL());
@@ -1311,10 +1309,8 @@ IN_PROC_BROWSER_TEST_P(BlockedSchemeNavigationBrowserTest,
 
 // Tests that opening a window with a blocked scheme with PDF mimetype from a
 // subframe is blocked even if the top frame already has a blocked scheme.
-// Crashes on all platforms.  http://crbug.com/939580
-IN_PROC_BROWSER_TEST_P(
-    BlockedSchemeNavigationBrowserTest,
-    DISABLED_PDF_WindowOpenFromFrame_TopFrameHasBlockedScheme_Block) {
+IN_PROC_BROWSER_TEST_P(BlockedSchemeNavigationBrowserTest,
+                       PDF_WindowOpenFromFrame_TopFrameHasBlockedScheme_Block) {
   EXPECT_TRUE(NavigateToURL(shell(), CreateEmptyURLWithBlockedScheme()));
   AddIFrame(shell()->web_contents()->GetMainFrame(), GetTestURL());
 
