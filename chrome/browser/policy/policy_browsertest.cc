@@ -1933,40 +1933,6 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, Disable3DAPIs) {
   EXPECT_TRUE(IsWebGLEnabled(contents));
 }
 
-namespace {
-
-bool GetPacHttpsUrlStrippingEnabled() {
-  network::mojom::NetworkContextParamsPtr network_context_params =
-      g_browser_process->system_network_context_manager()
-          ->CreateDefaultNetworkContextParams();
-  return !network_context_params->dangerously_allow_pac_access_to_secure_urls;
-}
-
-}  // namespace
-
-// Verifies that stripping of https:// URLs before sending to PAC scripts can
-// be disabled via a policy. Also verifies that stripping is enabled by
-// default.
-IN_PROC_BROWSER_TEST_F(PolicyTest, DisablePacHttpsUrlStripping) {
-  // Stripping is enabled by default.
-  EXPECT_TRUE(g_browser_process->local_state()->GetBoolean(
-      prefs::kPacHttpsUrlStrippingEnabled));
-  EXPECT_TRUE(GetPacHttpsUrlStrippingEnabled());
-
-  // Disable it via a policy.
-  PolicyMap policies;
-  policies.Set(key::kPacHttpsUrlStrippingEnabled, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               base::WrapUnique(new base::Value(false)), nullptr);
-  UpdateProviderPolicy(policies);
-  content::RunAllPendingInMessageLoop();
-
-  // It should now reflect as disabled.
-  EXPECT_FALSE(g_browser_process->local_state()->GetBoolean(
-      prefs::kPacHttpsUrlStrippingEnabled));
-  EXPECT_FALSE(GetPacHttpsUrlStrippingEnabled());
-}
-
 IN_PROC_BROWSER_TEST_F(PolicyTest, DeveloperToolsDisabledByLegacyPolicy) {
   // Verifies that access to the developer tools can be disabled by setting the
   // legacy DeveloperToolsDisabled policy.

@@ -2261,8 +2261,7 @@ const char kQuickCheckEnabled[] = "proxy.quick_check_enabled";
 // (i.e. the path and query components of an https:// URL).
 //
 // This preference is not exposed in the UI, but is overridable using
-// a Policy (PacHttpsUrlStrippingEnabled), or using a commandline
-// flag --unsafe-pac-url.
+// a commandline flag --unsafe-pac-url.
 //
 // The ability to turn off this security feature is not intended to be
 // a long-lived feature, but rather an escape-hatch for enterprises
