@@ -475,7 +475,7 @@ deps = {
   },
 
   'src/ios/third_party/motion_transitioning_objc/src': {
-      'url': Var('chromium_git') + '/external/github.com/material-motion/motion-transitioning-objc.git' + '@' + '78ac32badf9ca9c1ad497a6131ce2bd539094812',
+      'url': Var('chromium_git') + '/external/github.com/material-motion/motion-transitioning-objc.git' + '@' + '8f360fc6f016af373276f858796a5e9f73498af9',
       'condition': 'checkout_ios',
   },
 
