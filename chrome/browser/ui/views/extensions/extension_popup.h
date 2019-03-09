@@ -92,8 +92,6 @@ class ExtensionPopup : public views::BubbleDialogDelegateView,
                  views::BubbleBorder::Arrow arrow,
                  ShowAction show_action);
 
-  void CloseUnlessUnderInspection();
-
  private:
   // Changes internal state to follow the supplied |show_action|.
   void UpdateShowAction(ShowAction show_action);

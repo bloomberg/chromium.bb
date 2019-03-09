@@ -3496,11 +3496,7 @@ jumbo_split_static_library("ui") {
       deps += [ "//apps/ui/views" ]
     }
     if (use_aura) {
-      sources += [
-        "views/chrome_javascript_native_dialog_factory_views.cc",
-        "views/extensions/extension_popup_aura.cc",
-        "views/extensions/extension_popup_aura.h",
-      ]
+      sources += [ "views/chrome_javascript_native_dialog_factory_views.cc" ]
       deps += [ "//ui/wm/public" ]
     }
   }
