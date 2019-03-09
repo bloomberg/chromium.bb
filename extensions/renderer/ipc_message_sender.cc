@@ -372,7 +372,9 @@ class WorkerThreadIPCMessageSender : public IPCMessageSender {
         break;
       }
       case MessageTarget::NATIVE_APP:
-        NOTIMPLEMENTED() << "https://crbug.com/925918.";
+        dispatcher_->Send(new ExtensionHostMsg_OpenChannelToNativeApp(
+            PortContextForCurrentWorker(), *target.native_application_name,
+            port_id));
         break;
     }
   }

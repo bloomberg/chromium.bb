@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/extensions/api/messaging/native_messaging_test_util.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -104,6 +105,24 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerMessagingTest, TabToWorker) {
   }
 
   EXPECT_TRUE(reply_listener.WaitUntilSatisfied());
+}
+
+// Tests chrome.runtime.sendNativeMessage from SW extension to a native
+// messaging host.
+IN_PROC_BROWSER_TEST_P(ServiceWorkerMessagingTest, NativeMessagingBasic) {
+  extensions::ScopedTestNativeMessagingHost test_host;
+  ASSERT_NO_FATAL_FAILURE(test_host.RegisterTestHost(false));
+  ASSERT_TRUE(RunExtensionTest("service_worker/messaging/send_native_message"))
+      << message_;
+}
+
+// Tests chrome.runtime.connectNative from SW extension to a native messaging
+// host.
+IN_PROC_BROWSER_TEST_P(ServiceWorkerMessagingTest, ConnectNative) {
+  extensions::ScopedTestNativeMessagingHost test_host;
+  ASSERT_NO_FATAL_FAILURE(test_host.RegisterTestHost(false));
+  ASSERT_TRUE(RunExtensionTest("service_worker/messaging/connect_native"))
+      << message_;
 }
 
 // Tests chrome.tabs.sendMessage from SW extension to content script.

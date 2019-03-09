@@ -422,7 +422,7 @@
   },
   "runtime.connectNative": {
     "dependencies": ["permission:nativeMessaging"],
-    "contexts": ["blessed_extension"]
+    "contexts": ["blessed_extension", "extension_service_worker"]
   },
   "runtime.getURL": {
     "contexts": [
@@ -483,7 +483,7 @@
   },
   "runtime.sendNativeMessage": {
     "dependencies": ["permission:nativeMessaging"],
-    "contexts": ["blessed_extension"]
+    "contexts": ["blessed_extension", "extension_service_worker"]
   },
   "serial": {
     "dependencies": ["permission:serial"],
