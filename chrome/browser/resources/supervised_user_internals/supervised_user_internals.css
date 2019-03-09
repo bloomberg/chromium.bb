@@ -23,8 +23,8 @@
 
 #info .section {
   display: inline-block;
-  margin-left: auto;
-  margin-right: auto;
+  margin-inline-end: auto;
+  margin-inline-start: auto;
 }
 
 #info .section.hidden {
