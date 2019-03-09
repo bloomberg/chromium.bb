@@ -357,8 +357,12 @@ class IdentityManager : public SigninManagerBase::Observer,
   // Registers local state prefs used by this class.
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
-  // Marks the migration state for account IDs as finished.
-  void LegacySetAccountIdMigrationDone();
+  // Picks the correct account_id for the specified account depending on the
+  // migration state.
+  // TODO(https://crbug.com/883272): Remove once all platform have migrated to
+  // the new account_id based on gaia (currently, only Chrome OS remains).
+  std::string PickAccountIdForAccount(const std::string& gaia,
+                                      const std::string& email) const;
 
   // Returns the currently saved state for the migration of accounts IDs.
   AccountIdMigrationState GetAccountIdMigrationState() const;
@@ -392,14 +396,6 @@ class IdentityManager : public SigninManagerBase::Observer,
   // Returns pointer to the object used to obtain diagnostics about the internal
   // state of IdentityManager.
   DiagnosticsProvider* GetDiagnosticsProvider();
-
-  // Picks the correct account_id for the specified account depending on the
-  // migration state.
-  // NOTE: This method is added temporarily until when the delegate is moved
-  // inside the component. So, do not call this method in normal usage.
-  // TODO(https://crbug.com/922471): Remove the need to expose this method.
-  std::string LegacyPickAccountIdForAccount(const std::string& gaia,
-                                            const std::string& email) const;
 
   // Seeds the account whose account_id is given by
   // AccountTrackerService::PickAccountIdForAccount() with its corresponding

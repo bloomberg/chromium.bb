@@ -357,7 +357,7 @@ AccountInfo AccountReconcilorTest::ConnectProfileToAccount(
 std::string AccountReconcilorTest::PickAccountIdForAccount(
     const std::string& gaia_id,
     const std::string& username) {
-  return identity_test_env()->identity_manager()->LegacyPickAccountIdForAccount(
+  return identity_test_env()->identity_manager()->PickAccountIdForAccount(
       gaia_id, username);
 }
 

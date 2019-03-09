@@ -213,7 +213,7 @@ TEST_F(DiceResponseHandlerTest, Signin) {
   InitializeDiceResponseHandler(signin::AccountConsistencyMethod::kDice);
   DiceResponseParams dice_params = MakeDiceParams(DiceAction::SIGNIN);
   const auto& account_info = dice_params.signin_info->account_info;
-  std::string account_id = identity_manager()->LegacyPickAccountIdForAccount(
+  std::string account_id = identity_manager()->PickAccountIdForAccount(
       account_info.gaia_id, account_info.email);
   EXPECT_FALSE(identity_manager()->HasAccountWithRefreshToken(account_id));
   dice_response_handler_->ProcessDiceHeader(
@@ -247,7 +247,7 @@ TEST_F(DiceResponseHandlerTest, SigninFailure) {
   InitializeDiceResponseHandler(signin::AccountConsistencyMethod::kDice);
   DiceResponseParams dice_params = MakeDiceParams(DiceAction::SIGNIN);
   const auto& account_info = dice_params.signin_info->account_info;
-  std::string account_id = identity_manager()->LegacyPickAccountIdForAccount(
+  std::string account_id = identity_manager()->PickAccountIdForAccount(
       account_info.gaia_id, account_info.email);
   EXPECT_FALSE(identity_manager()->HasAccountWithRefreshToken(account_id));
   dice_response_handler_->ProcessDiceHeader(
@@ -275,7 +275,7 @@ TEST_F(DiceResponseHandlerTest, SigninRepeatedWithSameAccount) {
   InitializeDiceResponseHandler(signin::AccountConsistencyMethod::kDice);
   DiceResponseParams dice_params = MakeDiceParams(DiceAction::SIGNIN);
   const auto& account_info = dice_params.signin_info->account_info;
-  std::string account_id = identity_manager()->LegacyPickAccountIdForAccount(
+  std::string account_id = identity_manager()->PickAccountIdForAccount(
       account_info.gaia_id, account_info.email);
   ASSERT_FALSE(identity_manager()->HasAccountWithRefreshToken(account_id));
   dice_response_handler_->ProcessDiceHeader(
@@ -311,9 +311,9 @@ TEST_F(DiceResponseHandlerTest, SigninWithTwoAccounts) {
   dice_params_2.signin_info->account_info.email = "other_email";
   dice_params_2.signin_info->account_info.gaia_id = "other_gaia_id";
   const auto& account_info_2 = dice_params_2.signin_info->account_info;
-  std::string account_id_1 = identity_manager()->LegacyPickAccountIdForAccount(
+  std::string account_id_1 = identity_manager()->PickAccountIdForAccount(
       account_info_1.gaia_id, account_info_1.email);
-  std::string account_id_2 = identity_manager()->LegacyPickAccountIdForAccount(
+  std::string account_id_2 = identity_manager()->PickAccountIdForAccount(
       account_info_2.gaia_id, account_info_2.email);
   ASSERT_FALSE(identity_manager()->HasAccountWithRefreshToken(account_id_1));
   ASSERT_FALSE(identity_manager()->HasAccountWithRefreshToken(account_id_2));
@@ -364,7 +364,7 @@ TEST_F(DiceResponseHandlerTest, SigninEnableSyncAfterRefreshTokenFetched) {
   InitializeDiceResponseHandler(signin::AccountConsistencyMethod::kDice);
   DiceResponseParams dice_params = MakeDiceParams(DiceAction::SIGNIN);
   const auto& account_info = dice_params.signin_info->account_info;
-  std::string account_id = identity_manager()->LegacyPickAccountIdForAccount(
+  std::string account_id = identity_manager()->PickAccountIdForAccount(
       account_info.gaia_id, account_info.email);
   ASSERT_FALSE(identity_manager()->HasAccountWithRefreshToken(account_id));
   dice_response_handler_->ProcessDiceHeader(
@@ -396,7 +396,7 @@ TEST_F(DiceResponseHandlerTest, SigninEnableSyncBeforeRefreshTokenFetched) {
   InitializeDiceResponseHandler(signin::AccountConsistencyMethod::kDice);
   DiceResponseParams dice_params = MakeDiceParams(DiceAction::SIGNIN);
   const auto& account_info = dice_params.signin_info->account_info;
-  std::string account_id = identity_manager()->LegacyPickAccountIdForAccount(
+  std::string account_id = identity_manager()->PickAccountIdForAccount(
       account_info.gaia_id, account_info.email);
   ASSERT_FALSE(identity_manager()->HasAccountWithRefreshToken(account_id));
   dice_response_handler_->ProcessDiceHeader(
@@ -426,7 +426,7 @@ TEST_F(DiceResponseHandlerTest, Timeout) {
   InitializeDiceResponseHandler(signin::AccountConsistencyMethod::kDice);
   DiceResponseParams dice_params = MakeDiceParams(DiceAction::SIGNIN);
   const auto& account_info = dice_params.signin_info->account_info;
-  std::string account_id = identity_manager()->LegacyPickAccountIdForAccount(
+  std::string account_id = identity_manager()->PickAccountIdForAccount(
       account_info.gaia_id, account_info.email);
   ASSERT_FALSE(identity_manager()->HasAccountWithRefreshToken(account_id));
   dice_response_handler_->ProcessDiceHeader(
@@ -639,9 +639,9 @@ TEST_F(DiceResponseHandlerTest, SigninSignoutDifferentAccount) {
   signin_params_2.signin_info->account_info.gaia_id = "other_gaia_id";
   const auto& signin_account_info_1 = signin_params_1.signin_info->account_info;
   const auto& signin_account_info_2 = signin_params_2.signin_info->account_info;
-  std::string account_id_1 = identity_manager()->LegacyPickAccountIdForAccount(
+  std::string account_id_1 = identity_manager()->PickAccountIdForAccount(
       signin_account_info_1.gaia_id, signin_account_info_1.email);
-  std::string account_id_2 = identity_manager()->LegacyPickAccountIdForAccount(
+  std::string account_id_2 = identity_manager()->PickAccountIdForAccount(
       signin_account_info_2.gaia_id, signin_account_info_2.email);
   dice_response_handler_->ProcessDiceHeader(
       signin_params_1, std::make_unique<TestProcessDiceHeaderDelegate>(this));

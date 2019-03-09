@@ -406,7 +406,7 @@ TEST_P(ChromeSigninViewControllerTest, TestConsentWithOKGOTIT) {
             fake_consent_auditor_->recorded_statuses().at(0));
   EXPECT_EQ(consent_auditor::Feature::CHROME_SYNC,
             fake_consent_auditor_->recorded_features().at(0));
-  EXPECT_EQ(identity_manager_->LegacyPickAccountIdForAccount(
+  EXPECT_EQ(identity_manager_->PickAccountIdForAccount(
                 base::SysNSStringToUTF8([identity_ gaiaID]),
                 base::SysNSStringToUTF8([identity_ userEmail])),
             fake_consent_auditor_->account_id());
@@ -434,7 +434,7 @@ TEST_P(ChromeSigninViewControllerTest, TestConsentWithSettings) {
             fake_consent_auditor_->recorded_statuses().at(0));
   EXPECT_EQ(consent_auditor::Feature::CHROME_SYNC,
             fake_consent_auditor_->recorded_features().at(0));
-  EXPECT_EQ(identity_manager_->LegacyPickAccountIdForAccount(
+  EXPECT_EQ(identity_manager_->PickAccountIdForAccount(
                 base::SysNSStringToUTF8([identity_ gaiaID]),
                 base::SysNSStringToUTF8([identity_ userEmail])),
             fake_consent_auditor_->account_id());
