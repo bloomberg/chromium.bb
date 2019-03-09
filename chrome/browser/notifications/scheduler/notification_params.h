@@ -8,23 +8,20 @@
 #include <memory>
 
 #include "chrome/browser/notifications/scheduler/notification_data.h"
+#include "chrome/browser/notifications/scheduler/notification_scheduler_types.h"
 #include "chrome/browser/notifications/scheduler/schedule_params.h"
 
 namespace notifications {
 
 // Struct used to schedule a notification.
 struct NotificationParams {
-  enum class Type {
-    PLACE_HOLDER,
-  };
-
-  NotificationParams(Type type,
+  NotificationParams(SchedulerClientType type,
                      NotificationData notification,
                      ScheduleParams schedule_params);
   ~NotificationParams();
 
   // The type of notification using the scheduling system.
-  Type type;
+  SchedulerClientType type;
 
   // Data used to show the notification, such as text or title on the
   // notification.

@@ -10,7 +10,7 @@
 
 namespace notifications {
 
-NotificationParams::NotificationParams(Type type,
+NotificationParams::NotificationParams(SchedulerClientType type,
                                        NotificationData notification,
                                        ScheduleParams schedule_params)
     : type(type),
