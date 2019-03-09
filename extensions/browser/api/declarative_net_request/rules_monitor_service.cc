@@ -20,7 +20,6 @@
 #include "extensions/browser/api/declarative_net_request/ruleset_manager.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_matcher.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_source.h"
-#include "extensions/browser/api/declarative_net_request/utils.h"
 #include "extensions/browser/extension_file_task_runner.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_prefs_factory.h"
@@ -111,7 +110,7 @@ class RulesetInfo {
     DCHECK(GetExtensionFileTaskRunner()->RunsTasksInCurrentSequence());
 
     load_ruleset_result_ = RulesetMatcher::CreateVerifiedMatcher(
-        source_.indexed_path, *expected_checksum_, &matcher_);
+        source_.indexed_path(), *expected_checksum_, &matcher_);
 
     UMA_HISTOGRAM_ENUMERATION(
         "Extensions.DeclarativeNetRequest.LoadRulesetResult",
@@ -217,12 +216,13 @@ class RulesMonitorService::FileSequenceState {
     // Attempt to reindex the extension ruleset.
     // Using a weak pointer here is safe since |ruleset_reindexed_callback| will
     // be called on this sequence itself.
-    IndexAndPersistRulesCallback ruleset_reindexed_callback = base::BindOnce(
-        &FileSequenceState::OnRulesetReindexed, weak_factory_.GetWeakPtr(),
-        std::move(load_data), std::move(ui_callback));
-    IndexAndPersistRules(connector_.get(), base::nullopt /* decoder_batch_id */,
-                         std::move(source_copy),
-                         std::move(ruleset_reindexed_callback));
+    RulesetSource::IndexAndPersistRulesCallback ruleset_reindexed_callback =
+        base::BindOnce(&FileSequenceState::OnRulesetReindexed,
+                       weak_factory_.GetWeakPtr(), std::move(load_data),
+                       std::move(ui_callback));
+    source_copy.IndexAndPersistRules(connector_.get(),
+                                     base::nullopt /* decoder_batch_id */,
+                                     std::move(ruleset_reindexed_callback));
   }
 
  private:
