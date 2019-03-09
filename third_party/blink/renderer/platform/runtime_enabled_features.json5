@@ -520,6 +520,7 @@
     },
     {
       name: "FeaturePolicyForSandbox",
+      status: "experimental",
     },
     {
       name: "FeaturePolicyJavaScriptInterface",
