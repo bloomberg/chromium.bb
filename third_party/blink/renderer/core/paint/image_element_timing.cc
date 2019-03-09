@@ -48,31 +48,64 @@ void ImageElementTiming::NotifyImagePainted(
     const ImageResourceContent* cached_image,
     const PaintLayer* painting_layer) {
   auto result = images_notified_.insert(layout_object);
-  if (!result.is_new_entry)
+  if (!result.is_new_entry || !cached_image)
     return;
-
 
   LocalFrame* frame = GetSupplementable()->GetFrame();
   DCHECK(frame == layout_object->GetDocument().GetFrame());
-  if (!frame || !cached_image)
+  if (!frame)
     return;
 
-  // Skip the computations below if the element is not same origin.
+  IntRect intersection_rect =
+      ComputeIntersectionRect(frame, layout_object, painting_layer);
+  const Element* element = ToElement(layout_object->GetNode());
+  const AtomicString attr =
+      element->FastGetAttribute(html_names::kElementtimingAttr);
+  if (!ShouldReportElement(attr, intersection_rect))
+    return;
+
   DCHECK(GetSupplementable()->document() == &layout_object->GetDocument());
   DCHECK(layout_object->GetDocument().GetSecurityOrigin());
   if (!Performance::PassesTimingAllowCheck(
           cached_image->GetResponse(),
           *layout_object->GetDocument().GetSecurityOrigin(),
-          &layout_object->GetDocument()))
+          &layout_object->GetDocument())) {
+    WindowPerformance* performance =
+        DOMWindowPerformance::performance(*GetSupplementable());
+    if (performance &&
+        (performance->HasObserverFor(PerformanceEntry::kElement) ||
+         performance->ShouldBufferEntries())) {
+      // Create an entry with a |startTime| of 0.
+      performance->AddElementTiming(
+          AtomicString(cached_image->Url().GetString()), intersection_rect,
+          TimeTicks(), cached_image->LoadResponseEnd(), attr);
+    }
     return;
+  }
 
-  // Compute the viewport rect.
   WebLayerTreeView* layerTreeView =
       frame->GetChromeClient().GetWebLayerTreeView(frame);
   if (!layerTreeView)
     return;
 
-  IntRect viewport = frame->View()->LayoutViewport()->VisibleContentRect();
+  element_timings_.emplace_back(AtomicString(cached_image->Url().GetString()),
+                                intersection_rect,
+                                cached_image->LoadResponseEnd(), attr);
+  // Only queue a swap promise when |element_timings_| was empty. All of the
+  // records in |element_timings_| will be processed when the promise succeeds
+  // or fails, and at that time the vector is cleared.
+  if (element_timings_.size() == 1) {
+    layerTreeView->NotifySwapTime(ConvertToBaseCallback(
+        CrossThreadBind(&ImageElementTiming::ReportImagePaintSwapTime,
+                        WrapCrossThreadWeakPersistent(this))));
+  }
+}
+
+IntRect ImageElementTiming::ComputeIntersectionRect(
+    const LocalFrame* frame,
+    const LayoutObject* layout_object,
+    const PaintLayer* painting_layer) {
+  viewport_ = frame->View()->LayoutViewport()->VisibleContentRect();
 
   // Compute the visible part of the image rect.
   LayoutRect image_visual_rect = layout_object->FirstFragment().VisualRect();
@@ -89,30 +122,18 @@ void ImageElementTiming::NotifyImagePainted(
   GeometryMapper::SourceToDestinationRect(local_transform, ancestor_transform,
                                           new_visual_rect_abs);
   IntRect visible_new_visual_rect = RoundedIntRect(new_visual_rect_abs);
-  visible_new_visual_rect.Intersect(viewport);
+  visible_new_visual_rect.Intersect(viewport_);
+  return visible_new_visual_rect;
+}
 
-  const Element* element = ToElement(layout_object->GetNode());
-  const AtomicString attr =
-      element->FastGetAttribute(html_names::kElementtimingAttr);
+bool ImageElementTiming::ShouldReportElement(
+    const AtomicString& element_timing,
+    const IntRect& intersection_rect) const {
   // Do not create an entry if 'elementtiming' is not present or the image is
   // below a certain size threshold.
-  if (attr.IsEmpty() &&
-      visible_new_visual_rect.Size().Area() <=
-          viewport.Size().Area() * kImageTimingSizeThreshold) {
-    return;
-  }
-
-  element_timings_.emplace_back(AtomicString(cached_image->Url().GetString()),
-                                visible_new_visual_rect,
-                                cached_image->LoadResponseEnd(), attr);
-  // Only queue a swap promise when |element_timings_| was empty. All of the
-  // records in |element_timings_| will be processed when the promise succeeds
-  // or fails, and at that time the vector is cleared.
-  if (element_timings_.size() == 1) {
-    layerTreeView->NotifySwapTime(ConvertToBaseCallback(
-        CrossThreadBind(&ImageElementTiming::ReportImagePaintSwapTime,
-                        WrapCrossThreadWeakPersistent(this))));
-  }
+  return !element_timing.IsEmpty() ||
+         intersection_rect.Size().Area() >
+             viewport_.Size().Area() * kImageTimingSizeThreshold;
 }
 
 void ImageElementTiming::ReportImagePaintSwapTime(WebLayerTreeView::SwapResult,

@@ -46,6 +46,16 @@ class CORE_EXPORT ImageElementTiming final
 
  private:
   friend class ImageElementTimingTest;
+  // Computes the intersection rect and stores the viewport rect in |viewport_|.
+  IntRect ComputeIntersectionRect(const LocalFrame*,
+                                  const LayoutObject*,
+                                  const PaintLayer*);
+  // Checks if the element must be reported, given its elementtiming attribute
+  // and its intersection rect. Assumes that |viewport_| has been calculated,
+  // i.e. that ComputeIntersectionRect() has been called.
+  bool ShouldReportElement(const AtomicString& element_timing,
+                           const IntRect&) const;
+
   // Callback for the swap promise. Reports paint timestamps.
   void ReportImagePaintSwapTime(WebLayerTreeView::SwapResult,
                                 base::TimeTicks timestamp);
@@ -71,6 +81,8 @@ class CORE_EXPORT ImageElementTiming final
   WTF::Vector<ElementTimingInfo> element_timings_;
   // Hashmap of LayoutObjects for which paint has already been notified.
   WTF::HashSet<const LayoutObject*> images_notified_;
+  // Current viewport rect, updated every time an intersection rect is computed.
+  IntRect viewport_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageElementTiming);
 };
