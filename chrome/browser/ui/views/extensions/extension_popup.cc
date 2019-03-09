@@ -19,6 +19,11 @@
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
 
+#if defined(USE_AURA)
+#include "chrome/browser/ui/browser_dialogs.h"
+#include "ui/wm/core/window_animations.h"
+#endif
+
 // The minimum/maximum dimensions of the popup.
 // The minimum is just a little larger than the size of the button itself.
 // The maximum is an arbitrary number that should be smaller than most screens.
@@ -27,7 +32,6 @@ const int ExtensionPopup::kMinHeight = 25;
 const int ExtensionPopup::kMaxWidth = 800;
 const int ExtensionPopup::kMaxHeight = 600;
 
-#if !defined(USE_AURA)
 // static
 void ExtensionPopup::ShowPopup(
     std::unique_ptr<extensions::ExtensionViewHost> host,
@@ -37,8 +41,16 @@ void ExtensionPopup::ShowPopup(
   auto* popup =
       new ExtensionPopup(host.release(), anchor_view, arrow, show_action);
   views::BubbleDialogDelegateView::CreateBubble(popup);
-}
+
+#if defined(USE_AURA)
+  gfx::NativeView native_view = popup->GetWidget()->GetNativeView();
+  wm::SetWindowVisibilityAnimationType(
+      native_view, wm::WINDOW_VISIBILITY_ANIMATION_TYPE_VERTICAL);
+  wm::SetWindowVisibilityAnimationVerticalPosition(native_view, -3.0f);
+
+  chrome::RecordDialogCreation(chrome::DialogIdentifier::EXTENSION_POPUP_AURA);
 #endif
+}
 
 ExtensionPopup::ExtensionPopup(extensions::ExtensionViewHost* host,
                                views::View* anchor_view,
@@ -162,11 +174,6 @@ void ExtensionPopup::OnTabStripModelChanged(
     const TabStripModelChange& change,
     const TabStripSelectionChange& selection) {
   if (!tab_strip_model->empty() && selection.active_tab_changed())
-    GetWidget()->Close();
-}
-
-void ExtensionPopup::CloseUnlessUnderInspection() {
-  if (show_action_ == SHOW)
     GetWidget()->Close();
 }
 
