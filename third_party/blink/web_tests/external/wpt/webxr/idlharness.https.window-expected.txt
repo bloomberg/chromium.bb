@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 215 tests; 198 PASS, 17 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 216 tests; 197 PASS, 19 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS Partial interface Navigator: original interface defined
 PASS Partial dictionary WebGLContextAttributes: original dictionary defined
@@ -104,7 +104,6 @@ PASS XRView interface: existence and properties of interface prototype object's 
 PASS XRView interface: existence and properties of interface prototype object's @@unscopables property
 PASS XRView interface: attribute eye
 PASS XRView interface: attribute projectionMatrix
-PASS XRView interface: attribute viewMatrix
 PASS XRView interface: attribute transform
 PASS XRViewport interface: existence and properties of interface object
 PASS XRViewport interface object length
@@ -125,6 +124,7 @@ PASS XRRigidTransform interface: existence and properties of interface prototype
 PASS XRRigidTransform interface: attribute position
 PASS XRRigidTransform interface: attribute orientation
 PASS XRRigidTransform interface: attribute matrix
+FAIL XRRigidTransform interface: operation inverse() assert_own_property: interface prototype object missing non-static operation expected property "inverse" missing
 PASS XRRay interface: existence and properties of interface object
 PASS XRRay interface object length
 PASS XRRay interface object name
@@ -176,6 +176,7 @@ PASS XRWebGLLayer interface: attribute antialias
 PASS XRWebGLLayer interface: attribute depth
 PASS XRWebGLLayer interface: attribute stencil
 PASS XRWebGLLayer interface: attribute alpha
+FAIL XRWebGLLayer interface: attribute ignoreDepthValues assert_true: The prototype object must have a property "ignoreDepthValues" expected true got false
 PASS XRWebGLLayer interface: attribute framebuffer
 PASS XRWebGLLayer interface: attribute framebufferWidth
 PASS XRWebGLLayer interface: attribute framebufferHeight
