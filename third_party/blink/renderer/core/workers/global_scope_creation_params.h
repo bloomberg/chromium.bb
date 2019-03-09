@@ -33,6 +33,16 @@ class WorkerClients;
 // fetch is enabled for all worker types (https://crbug.com/835717).
 enum class OffMainThreadWorkerScriptFetchOption { kDisabled, kEnabled };
 
+// Indicates where the CSP list comes from.
+// https://w3c.github.io/webappsec-csp/#initialize-global-object-csp
+enum class GlobalScopeCSPApplyMode {
+  // For dedicated workers, worklets, on-the-main-thread service workers, and
+  // on-the-main-thread shared workers.
+  kUseCreationParamsCSP,
+  // For off-the-main-thread service/shared workers.
+  kUseResponseCSP,
+};
+
 // GlobalScopeCreationParams contains parameters for initializing
 // WorkerGlobalScope or WorkletGlobalScope.
 struct CORE_EXPORT GlobalScopeCreationParams final {
@@ -61,7 +71,9 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
       service_manager::mojom::blink::InterfaceProviderPtrInfo = {},
       BeginFrameProviderParams begin_frame_provider_params = {},
       const FeaturePolicy* parent_feature_policy = nullptr,
-      base::UnguessableToken agent_cluster_id = {});
+      base::UnguessableToken agent_cluster_id = {},
+      GlobalScopeCSPApplyMode csp_apply_mode =
+          GlobalScopeCSPApplyMode::kUseCreationParamsCSP);
 
   ~GlobalScopeCreationParams() = default;
 
@@ -148,6 +160,8 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
   // context that created it (e.g. for a dedicated worker).
   // See https://tc39.github.io/ecma262/#sec-agent-clusters
   base::UnguessableToken agent_cluster_id;
+
+  GlobalScopeCSPApplyMode csp_apply_mode;
 
   DISALLOW_COPY_AND_ASSIGN(GlobalScopeCreationParams);
 };

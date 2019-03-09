@@ -40,6 +40,7 @@
 #include "third_party/blink/renderer/core/frame/dom_timer_coordinator.h"
 #include "third_party/blink/renderer/core/messaging/blink_transferable_message.h"
 #include "third_party/blink/renderer/core/script/script.h"
+#include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
 #include "third_party/blink/renderer/core/workers/worker_animation_frame_provider.h"
 #include "third_party/blink/renderer/core/workers/worker_or_worklet_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worker_settings.h"
@@ -65,7 +66,6 @@ class TrustedTypePolicyFactory;
 class WorkerLocation;
 class WorkerNavigator;
 class WorkerThread;
-struct GlobalScopeCreationParams;
 
 class CORE_EXPORT WorkerGlobalScope
     : public WorkerOrWorkletGlobalScope,
@@ -200,6 +200,8 @@ class CORE_EXPORT WorkerGlobalScope
 
   mojom::ScriptType GetScriptType() const { return script_type_; }
 
+  GlobalScopeCSPApplyMode GetCSPApplyMode() const { return csp_apply_mode_; }
+
  private:
   void SetWorkerSettings(std::unique_ptr<WorkerSettings>);
 
@@ -248,6 +250,8 @@ class CORE_EXPORT WorkerGlobalScope
   const base::UnguessableToken agent_cluster_id_;
 
   HttpsState https_state_;
+
+  GlobalScopeCSPApplyMode csp_apply_mode_;
 };
 
 template <>

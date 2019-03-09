@@ -405,9 +405,16 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
   String source_code;
   std::unique_ptr<Vector<uint8_t>> cached_meta_data;
 
+  bool is_script_installed = installed_scripts_manager_ &&
+                             installed_scripts_manager_->IsScriptInstalled(
+                                 worker_start_data_.script_url);
+
+  // Loading the script from InstalledScriptsManager is considered as
+  // off-the-main-thread script fetch.
   const OffMainThreadWorkerScriptFetchOption off_main_thread_fetch_option =
       (base::FeatureList::IsEnabled(
            features::kOffMainThreadServiceWorkerScriptFetch) ||
+       is_script_installed ||
        worker_start_data_.script_type == mojom::ScriptType::kModule)
           ? OffMainThreadWorkerScriptFetchOption::kEnabled
           : OffMainThreadWorkerScriptFetchOption::kDisabled;
@@ -462,9 +469,14 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
   global_scope_creation_params->v8_cache_options =
       kV8CacheOptionsFullCodeWithoutHeatCheck;
 
-  bool is_script_installed = installed_scripts_manager_ &&
-                             installed_scripts_manager_->IsScriptInstalled(
-                                 worker_start_data_.script_url);
+  // When the script is fetched on the worker thread, CSP will come from the
+  // response of the script. Otherwise, CSP is passed as a parameter of
+  // GlobalScopeCreationParams.
+  global_scope_creation_params->csp_apply_mode =
+      off_main_thread_fetch_option ==
+              OffMainThreadWorkerScriptFetchOption::kEnabled
+          ? GlobalScopeCSPApplyMode::kUseResponseCSP
+          : GlobalScopeCSPApplyMode::kUseCreationParamsCSP;
 
   worker_thread_ = std::make_unique<ServiceWorkerThread>(
       ServiceWorkerGlobalScopeProxy::Create(*this, *worker_context_client_),

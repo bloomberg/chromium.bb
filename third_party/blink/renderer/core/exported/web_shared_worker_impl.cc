@@ -348,6 +348,8 @@ void WebSharedWorkerImpl::ContinueStartWorkerContext() {
     // worker script fetch on the worker thread.
     // TODO(nhiroki): Currently |address_space| and |origin_trial_tokens| are
     // not updated after worker script fetch. Update them.
+    // TODO(crbug.com/937191): Make SharedWorkerGlobalScope use CSP list from
+    // the response of the main script.
     auto creation_params = std::make_unique<GlobalScopeCreationParams>(
         script_request_url_, script_type,
         OffMainThreadWorkerScriptFetchOption::kEnabled, name_,

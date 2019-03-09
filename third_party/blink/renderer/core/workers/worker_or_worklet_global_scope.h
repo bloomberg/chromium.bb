@@ -129,8 +129,12 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(TaskType) override;
 
  protected:
-  void InitContentSecurityPolicyFromVector(
-      const Vector<CSPHeaderAndType>& headers);
+  // Sets outside's CSP used for off-main-thread top-level worker script
+  // fetch.
+  void SetOutsideContentSecurityPolicyHeaders(const Vector<CSPHeaderAndType>&);
+
+  // Initializes inside's CSP used for subresource fetch etc.
+  void InitContentSecurityPolicyFromVector(const Vector<CSPHeaderAndType>&);
   virtual void BindContentSecurityPolicyToExecutionContext();
 
   void FetchModuleScript(const KURL& module_url_record,

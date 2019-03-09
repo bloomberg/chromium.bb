@@ -375,9 +375,13 @@ WorkerOrWorkletGlobalScope::GetTaskRunner(TaskType type) {
   return GetThread()->GetTaskRunner(type);
 }
 
-void WorkerOrWorkletGlobalScope::InitContentSecurityPolicyFromVector(
+void WorkerOrWorkletGlobalScope::SetOutsideContentSecurityPolicyHeaders(
     const Vector<CSPHeaderAndType>& headers) {
   outside_content_security_policy_parsed_headers_ = headers;
+}
+
+void WorkerOrWorkletGlobalScope::InitContentSecurityPolicyFromVector(
+    const Vector<CSPHeaderAndType>& headers) {
   if (!GetContentSecurityPolicy()) {
     ContentSecurityPolicy* csp = ContentSecurityPolicy::Create();
     SetContentSecurityPolicy(csp);

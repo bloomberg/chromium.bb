@@ -34,7 +34,8 @@ GlobalScopeCreationParams::GlobalScopeCreationParams(
         interface_provider_info,
     BeginFrameProviderParams begin_frame_provider_params,
     const FeaturePolicy* parent_feature_policy,
-    base::UnguessableToken agent_cluster_id)
+    base::UnguessableToken agent_cluster_id,
+    GlobalScopeCSPApplyMode csp_apply_mode)
     : script_url(script_url.Copy()),
       script_type(script_type),
       off_main_thread_fetch_option(off_main_thread_fetch_option),
@@ -59,17 +60,10 @@ GlobalScopeCreationParams::GlobalScopeCreationParams(
           parent_feature_policy,
           ParsedFeaturePolicy() /* container_policy */,
           starter_origin->ToUrlOrigin())),
-      agent_cluster_id(agent_cluster_id) {
+      agent_cluster_id(agent_cluster_id),
+      csp_apply_mode(csp_apply_mode) {
   switch (this->script_type) {
     case mojom::ScriptType::kClassic:
-      if (this->off_main_thread_fetch_option ==
-          OffMainThreadWorkerScriptFetchOption::kEnabled) {
-        DCHECK(base::FeatureList::IsEnabled(
-                   features::kOffMainThreadDedicatedWorkerScriptFetch) ||
-               base::FeatureList::IsEnabled(
-                   features::kOffMainThreadServiceWorkerScriptFetch) ||
-               features::IsOffMainThreadSharedWorkerScriptFetchEnabled());
-      }
       break;
     case mojom::ScriptType::kModule:
       DCHECK_EQ(this->off_main_thread_fetch_option,

@@ -472,7 +472,18 @@ void WorkerGlobalScope::DidImportClassicScript(
 
   // Step 12.6. "Execute the Initialize a global object's CSP list algorithm
   // on worker global scope and response. [CSP]"
-  // This is done in the constructor of WorkerGlobalScope.
+  // When |csp_apply_mode_| is kUseCreationParams, this is done in the
+  // constructor.
+  if (csp_apply_mode_ == GlobalScopeCSPApplyMode::kUseResponseCSP) {
+    if (classic_script_loader->GetContentSecurityPolicy()) {
+      InitContentSecurityPolicyFromVector(
+          classic_script_loader->GetContentSecurityPolicy()->Headers());
+    } else {
+      // Initialize CSP with an empty list.
+      InitContentSecurityPolicyFromVector(Vector<CSPHeaderAndType>());
+    }
+    BindContentSecurityPolicyToExecutionContext();
+  }
 
   // Step 12.7. "Asynchronously complete the perform the fetch steps with
   // response."
@@ -545,7 +556,8 @@ WorkerGlobalScope::WorkerGlobalScope(
           creation_params->begin_frame_provider_params)),
       agent_cluster_id_(creation_params->agent_cluster_id.is_empty()
                             ? base::UnguessableToken::Create()
-                            : creation_params->agent_cluster_id) {
+                            : creation_params->agent_cluster_id),
+      csp_apply_mode_(creation_params->csp_apply_mode) {
   InstanceCounters::IncrementCounter(
       InstanceCounters::kWorkerGlobalScopeCounter);
   scoped_refptr<SecurityOrigin> security_origin =
@@ -562,9 +574,14 @@ WorkerGlobalScope::WorkerGlobalScope(
   https_state_ = CalculateHttpsState(GetSecurityOrigin(),
                                      creation_params->starter_https_state);
 
-  InitContentSecurityPolicyFromVector(
+  SetOutsideContentSecurityPolicyHeaders(
       creation_params->content_security_policy_parsed_headers);
-  BindContentSecurityPolicyToExecutionContext();
+  if (csp_apply_mode_ == GlobalScopeCSPApplyMode::kUseCreationParamsCSP) {
+    InitContentSecurityPolicyFromVector(
+        creation_params->content_security_policy_parsed_headers);
+    BindContentSecurityPolicyToExecutionContext();
+  }
+
   SetWorkerSettings(std::move(creation_params->worker_settings));
 
   // Set the URL and referrer policy here for workers whose script is fetched

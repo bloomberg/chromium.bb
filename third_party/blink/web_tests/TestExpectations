@@ -4243,6 +4243,11 @@ crbug.com/435547 http/tests/cachestorage/serviceworker/ignore-search-with-creden
 # This fails because CORS check?: Error message is like:
 # Access to XMLHttpRequest at 'foobar://abcd' (redirected from 'http://web-platform.test:8001/xhr/resources/redirect.py?location=foobar://abcd&code=301') from origin 'http://web-platform.test:8001' has been blocked by CORS policy: Cross origin requests are only supported for protocol schemes: http, data, chrome, https.
 crbug.com/924043 virtual/omt-worker-fetch/external/wpt/xhr/send-redirect-bogus-sync.htm [ Timeout ]
+# Following tests are crashing because module script fetcher for service worker
+# doesn't set CSP correctly.
+crbug.com/937757 external/wpt/service-workers/service-worker/update-registration-with-type.https.html [ Crash ]
+crbug.com/937757 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/update-registration-with-type.https.html [ Crash ]
+crbug.com/937757 virtual/outofblink-cors/external/wpt/service-workers/service-worker/update-registration-with-type.https.html [ Crash ]
 
 crbug.com/697971 [ Mac10.12 ] fast/text/selection/flexbox-selection-nested.html [ Skip ]
 crbug.com/697971 [ Mac10.12 ] fast/text/selection/flexbox-selection.html [ Skip ]
