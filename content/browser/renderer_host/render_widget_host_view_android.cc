@@ -84,6 +84,7 @@
 #include "ui/events/android/gesture_event_type.h"
 #include "ui/events/android/motion_event_android.h"
 #include "ui/events/blink/blink_event_util.h"
+#include "ui/events/blink/blink_features.h"
 #include "ui/events/blink/did_overscroll_params.h"
 #include "ui/events/blink/web_input_event_traits.h"
 #include "ui/events/gesture_detection/gesture_provider_config_helper.h"
@@ -176,6 +177,8 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
       using_browser_compositor_(CompositorImpl::IsInitialized()),
       synchronous_compositor_client_(nullptr),
       observing_root_window_(false),
+      fallback_cursor_mode_enabled_(
+          base::FeatureList::IsEnabled(features::kFallbackCursorMode)),
       prev_top_shown_pix_(0.f),
       prev_top_controls_translate_(0.f),
       prev_bottom_shown_pix_(0.f),
@@ -1589,6 +1592,13 @@ void RenderWidgetHostViewAndroid::GestureEventAck(
   if (!gesture_listener_manager_)
     return;
   gesture_listener_manager_->GestureEventAck(event, ack_result);
+}
+
+bool RenderWidgetHostViewAndroid::OnUnconsumedKeyboardEventAck(
+    const NativeWebKeyboardEventWithLatencyInfo& event) {
+  return fallback_cursor_mode_enabled_ &&
+         event.event.GetType() == blink::WebInputEvent::kKeyDown &&
+         view_.OnUnconsumedKeyboardEventAck(event.event.native_key_code);
 }
 
 InputEventAckState RenderWidgetHostViewAndroid::FilterInputEvent(

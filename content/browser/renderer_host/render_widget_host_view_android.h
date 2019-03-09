@@ -139,6 +139,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
       const blink::WebGestureEvent& gesture_event) override;
   void GestureEventAck(const blink::WebGestureEvent& event,
                        InputEventAckState ack_result) override;
+  bool OnUnconsumedKeyboardEventAck(
+      const NativeWebKeyboardEventWithLatencyInfo& event) override;
   BrowserAccessibilityManager* CreateBrowserAccessibilityManager(
       BrowserAccessibilityDelegate* delegate, bool for_root_frame) override;
   bool LockMouse() override;
@@ -487,6 +489,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   bool observing_root_window_;
 
   bool controls_initialized_ = false;
+
+  bool fallback_cursor_mode_enabled_;
+
   float prev_top_shown_pix_;
   float prev_top_controls_translate_;
   float prev_bottom_shown_pix_;
