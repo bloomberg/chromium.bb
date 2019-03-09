@@ -7,6 +7,7 @@
 
 #include "base/logging.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/p2p_quic_transport_stats.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/webrtc/rtc_base/ssl_fingerprint.h"
 
 namespace blink {
@@ -22,6 +23,8 @@ class P2PQuicStream;
 //
 // This object should be run entirely on the webrtc worker thread.
 class P2PQuicTransport {
+  USING_FAST_MALLOC(P2PQuicTransport);
+
  public:
   // A config used when starting the QUIC handshake.
   struct StartConfig final {

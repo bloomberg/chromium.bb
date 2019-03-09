@@ -41,6 +41,7 @@
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/modules/webmidi/midi_access.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 using midi::mojom::PortState;
 
@@ -82,6 +83,8 @@ base::TimeTicks GetTimeOrigin(ExecutionContext* context) {
 }
 
 class MessageValidator {
+  STACK_ALLOCATED();
+
  public:
   static bool Validate(DOMUint8Array* array,
                        ExceptionState& exception_state,

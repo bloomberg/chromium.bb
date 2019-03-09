@@ -33,12 +33,15 @@
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/graphics/path.h"
 #include "third_party/blink/renderer/platform/transforms/affine_transform.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
 class ExceptionState;
 
 class MODULES_EXPORT CanvasPath {
+  DISALLOW_NEW();
+
  public:
   virtual ~CanvasPath() = default;
 
