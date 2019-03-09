@@ -162,7 +162,6 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
                                  const Length& flex_basis) const;
   bool NeedToStretchChildLogicalHeight(const LayoutBox& child) const;
   bool ChildHasIntrinsicMainAxisSize(const LayoutBox& child) const;
-  EOverflow MainAxisOverflowForChild(const LayoutBox& child) const;
   EOverflow CrossAxisOverflowForChild(const LayoutBox& child) const;
   void CacheChildMainSize(const LayoutBox& child);
   bool CanAvoidLayoutForNGChild(const LayoutBox& child) const;
