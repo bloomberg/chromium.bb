@@ -45,6 +45,8 @@ namespace WTF {
 // destructors.
 
 class PODArena final : public RefCounted<PODArena> {
+  USING_FAST_MALLOC(PODArena);
+
  public:
   // The arena is configured with an allocator, which is responsible
   // for allocating and freeing chunks of memory at a time.

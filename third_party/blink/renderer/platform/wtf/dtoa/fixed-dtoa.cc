@@ -38,6 +38,8 @@ namespace double_conversion {
 // Represents a 128bit type. This class should be replaced by a native type on
 // platforms that support 128bit integers.
 class UInt128 {
+  STACK_ALLOCATED();
+
  public:
   UInt128() : high_bits_(0), low_bits_(0) {}
   UInt128(uint64_t high, uint64_t low) : high_bits_(high), low_bits_(low) {}
