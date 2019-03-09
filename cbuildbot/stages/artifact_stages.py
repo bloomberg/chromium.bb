@@ -122,6 +122,10 @@ class ArchiveStage(generic_stages.BoardSpecificBuilderStage,
         basename = os.path.basename(image_file)
         info = {'input': [basename], 'archive': 'tar', 'compress': 'xz'}
         artifacts.append(info)
+      # We add the dlc folder (if exists) as artifact so we can copy all DLC
+      # artifacts as is.
+      if os.path.isdir(os.path.join(image_dir, 'dlc')):
+        artifacts.append({'input': ['dlc']})
 
     for artifact in artifacts:
       # Resolve the (possible) globs in the input list, and store

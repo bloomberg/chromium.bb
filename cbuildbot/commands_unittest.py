@@ -1640,10 +1640,12 @@ class UnmockedTests(cros_test_lib.TempDirTestCase):
     image_dir = os.path.join(self.tempdir, 'inputs')
     archive_dir = os.path.join(self.tempdir, 'outputs')
     files = ('a.bin', 'aa', 'b b b', 'c', 'dalsdkjfasdlkf',)
+    dlc_dir = 'dlc'
     osutils.SafeMakedirs(image_dir)
     osutils.SafeMakedirs(archive_dir)
     for f in files:
       osutils.Touch(os.path.join(image_dir, f))
+    osutils.SafeMakedirs(os.path.join(image_dir, dlc_dir))
 
     # Check specifying tar functionality.
     artifact = {'paths': ['a.bin'], 'output': 'a.tar.gz', 'archive': 'tar',
@@ -1665,6 +1667,12 @@ class UnmockedTests(cros_test_lib.TempDirTestCase):
     artifact = {'paths': ['a.bin'], 'archive': 'zip'}
     path = commands.BuildStandaloneArchive(archive_dir, image_dir, artifact)
     self.assertEquals(path, ['a.zip'])
+    self.assertExists(os.path.join(archive_dir, path[0]))
+
+    # Check directory copy functionality.
+    artifact = {'paths': ['dlc'], 'output': 'dlc'}
+    path = commands.BuildStandaloneArchive(archive_dir, image_dir, artifact)
+    self.assertEquals(path, ['dlc'])
     self.assertExists(os.path.join(archive_dir, path[0]))
 
   def testGceTarballGeneration(self):
