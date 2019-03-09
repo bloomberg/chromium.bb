@@ -42,6 +42,10 @@ const base::Feature kEnableVizHitTestDrawQuad{"VizHitTestDrawQuad",
 const base::Feature kEnableVizHitTestSurfaceLayer{
     "VizHitTestSurfaceLayer", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables shared-memory distributed BeginFrames. Assumes VizDisplayCompositor.
+const base::Feature kEnableSharedMemoryBeginFrame{
+    "EnableSharedMemoryBeginFrame", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Use the SkiaRenderer.
 const base::Feature kUseSkiaRenderer{"UseSkiaRenderer",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
@@ -91,6 +95,11 @@ bool IsVizHitTestingSurfaceLayerEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
              switches::kUseVizHitTestSurfaceLayer) ||
          base::FeatureList::IsEnabled(kEnableVizHitTestSurfaceLayer);
+}
+
+bool IsSharedMemoryBeginFrameEnabled() {
+  return base::FeatureList::IsEnabled(kVizDisplayCompositor) &&
+         base::FeatureList::IsEnabled(kEnableSharedMemoryBeginFrame);
 }
 
 bool IsUsingSkiaRenderer() {
