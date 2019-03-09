@@ -62,7 +62,7 @@ class NativeStackSampler {
   // thread being sampled).
 
   // Records a set of frames and returns them.
-  virtual std::vector<StackSamplingProfiler::Frame> RecordStackFrames(
+  virtual void RecordStackFrames(
       StackBuffer* stackbuffer,
       StackSamplingProfiler::ProfileBuilder* profile_builder) = 0;
 

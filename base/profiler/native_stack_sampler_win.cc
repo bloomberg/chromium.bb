@@ -285,11 +285,8 @@ void SuspendThreadAndRecordStack(
     void* stack_copy_buffer,
     size_t stack_copy_buffer_size,
     ModuleCache* module_cache,
-    std::vector<Frame>* stack,
     ProfileBuilder* profile_builder,
     NativeStackSamplerTestDelegate* test_delegate) {
-  DCHECK(stack->empty());
-
   CONTEXT thread_context = {0};
   thread_context.ContextFlags = CONTEXT_FULL;
   // The stack bounds are saved to uintptr_ts for use outside
@@ -344,7 +341,8 @@ void SuspendThreadAndRecordStack(
     RewritePointersToStackMemory(top, bottom, &thread_context,
                                  stack_copy_buffer);
 
-    *stack = RecordStack(module_cache, &thread_context);
+    profile_builder->OnSampleCompleted(
+        RecordStack(module_cache, &thread_context));
   }
 }
 
@@ -360,9 +358,8 @@ class NativeStackSamplerWin : public NativeStackSampler {
   ~NativeStackSamplerWin() override;
 
   // StackSamplingProfiler::NativeStackSampler:
-  std::vector<Frame> RecordStackFrames(
-      StackBuffer* stack_buffer,
-      ProfileBuilder* profile_builder) override;
+  void RecordStackFrames(StackBuffer* stack_buffer,
+                         ProfileBuilder* profile_builder) override;
 
  private:
   win::ScopedHandle thread_handle_;
@@ -389,20 +386,15 @@ NativeStackSamplerWin::NativeStackSamplerWin(
 
 NativeStackSamplerWin::~NativeStackSamplerWin() {}
 
-std::vector<Frame> NativeStackSamplerWin::RecordStackFrames(
-    StackBuffer* stack_buffer,
-    ProfileBuilder* profile_builder) {
+void NativeStackSamplerWin::RecordStackFrames(StackBuffer* stack_buffer,
+                                              ProfileBuilder* profile_builder) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cpu_profiler.debug"),
                "NativeStackSamplerWin::RecordStackFrames");
   DCHECK(stack_buffer);
 
-  std::vector<Frame> stack;
   SuspendThreadAndRecordStack(thread_handle_.Get(), thread_stack_base_address_,
                               stack_buffer->buffer(), stack_buffer->size(),
-                              module_cache_, &stack, profile_builder,
-                              test_delegate_);
-
-  return stack;
+                              module_cache_, profile_builder, test_delegate_);
 }
 
 // NativeStackSampler ---------------------------------------------------------
