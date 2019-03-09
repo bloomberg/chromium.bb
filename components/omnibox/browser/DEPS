@@ -4,7 +4,6 @@ include_rules = [
   "+components/data_use_measurement/core",
   "+components/favicon_base",
   "+components/favicon/core",
-  "+copmonents/grit",
   "+components/history/core/browser",
   "+components/history/core/test",
   "+components/keyed_service/content",
