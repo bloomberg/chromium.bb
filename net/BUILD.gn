@@ -797,8 +797,6 @@ component("net") {
       "http/http_network_transaction.h",
       "http/http_proxy_client_socket.cc",
       "http/http_proxy_client_socket.h",
-      "http/http_proxy_client_socket_wrapper.cc",
-      "http/http_proxy_client_socket_wrapper.h",
       "http/http_proxy_connect_job.cc",
       "http/http_proxy_connect_job.h",
       "http/http_request_info.cc",

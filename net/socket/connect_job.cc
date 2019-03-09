@@ -150,9 +150,13 @@ void ConnectJob::OnTimeout() {
   // Make sure the socket is NULL before calling into |delegate|.
   SetSocket(nullptr);
 
+  OnTimedOutInternal();
+
   net_log_.AddEvent(NetLogEventType::CONNECT_JOB_TIMED_OUT);
 
   NotifyDelegateOfCompletion(ERR_TIMED_OUT);
 }
+
+void ConnectJob::OnTimedOutInternal() {}
 
 }  // namespace net

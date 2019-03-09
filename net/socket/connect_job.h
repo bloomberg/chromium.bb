@@ -191,6 +191,9 @@ class NET_EXPORT_PRIVATE ConnectJob {
   HostResolver* host_resolver() {
     return common_connect_job_params_->host_resolver;
   }
+  const HttpUserAgentSettings* http_user_agent_settings() const {
+    return common_connect_job_params_->http_user_agent_settings;
+  }
   const SSLClientSocketContext& ssl_client_socket_context() {
     return common_connect_job_params_->ssl_client_socket_context;
   }
@@ -231,6 +234,9 @@ class NET_EXPORT_PRIVATE ConnectJob {
 
   // Alerts the delegate that the ConnectJob has timed out.
   void OnTimeout();
+
+  // Invoked to notify subclasses that the has request timed out.
+  virtual void OnTimedOutInternal();
 
   const base::TimeDelta timeout_duration_;
   RequestPriority priority_;
