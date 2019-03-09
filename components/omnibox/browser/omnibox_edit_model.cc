@@ -212,6 +212,14 @@ void OmniboxEditModel::RestoreState(const State* state) {
     keyword_ = state->keyword;
     is_keyword_hint_ = state->is_keyword_hint;
     keyword_mode_entry_method_ = state->keyword_mode_entry_method;
+  } else if (!state->user_text.empty()) {
+    // If the |user_input_in_progress| is false but we have |user_text|,
+    // restore the |user_text| to the model and the view. It's likely unelided
+    // text that the user has not made any modifications to.
+    InternalSetUserText(state->user_text);
+
+    // We let the View manage restoring the cursor position afterwards.
+    view_->SetWindowTextAndCaretPos(state->user_text, 0, false, false);
   }
 }
 
@@ -298,6 +306,10 @@ bool OmniboxEditModel::Unelide(bool exit_query_in_omnibox) {
   if (!exit_query_in_omnibox &&
       location_bar_model->GetDisplaySearchTerms(nullptr))
     return false;
+
+  // Set the user text to the unelided URL, but don't change
+  // |user_input_in_progress_|. This is to save the unelided URL on tab switch.
+  InternalSetUserText(url_for_editing_);
 
   view_->SetWindowTextAndCaretPos(url_for_editing_, 0, false, false);
 
