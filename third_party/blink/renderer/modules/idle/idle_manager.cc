@@ -86,7 +86,6 @@ void IdleManager::Trace(blink::Visitor* visitor) {
 }
 
 void IdleManager::OnIdleManagerConnectionError() {
-  // TODO(goto): write a unittest to cover this.
   for (const auto& request : requests_) {
     request->Reject(DOMException::Create(DOMExceptionCode::kNotSupportedError,
                                          "Idle detection not available"));
