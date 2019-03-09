@@ -1188,8 +1188,7 @@ TEST_P(HttpProxyConnectJobTest, TestTimeoutsAuthChallenge) {
     if (timeout_phase == TimeoutPhase::CONNECT) {
       FastForwardBy(kTinyTime);
       ASSERT_TRUE(test_delegate.has_result());
-      EXPECT_THAT(test_delegate.WaitForResult(),
-                  test::IsError(ERR_CONNECTION_TIMED_OUT));
+      EXPECT_THAT(test_delegate.WaitForResult(), test::IsError(ERR_TIMED_OUT));
       continue;
     }
 
@@ -1211,8 +1210,7 @@ TEST_P(HttpProxyConnectJobTest, TestTimeoutsAuthChallenge) {
     if (timeout_phase == TimeoutPhase::PROXY_HANDSHAKE) {
       FastForwardBy(kTinyTime);
       ASSERT_TRUE(test_delegate.has_result());
-      EXPECT_THAT(test_delegate.WaitForResult(),
-                  test::IsError(ERR_CONNECTION_TIMED_OUT));
+      EXPECT_THAT(test_delegate.WaitForResult(), test::IsError(ERR_TIMED_OUT));
       continue;
     }
 
@@ -1247,7 +1245,7 @@ TEST_P(HttpProxyConnectJobTest, TestTimeoutsAuthChallenge) {
         FastForwardBy(kTinyTime);
         ASSERT_TRUE(test_delegate.has_result());
         EXPECT_THAT(test_delegate.WaitForResult(),
-                    test::IsError(ERR_CONNECTION_TIMED_OUT));
+                    test::IsError(ERR_TIMED_OUT));
         continue;
       }
     } else {
@@ -1347,8 +1345,7 @@ TEST_P(HttpProxyConnectJobTest, TestTimeoutsAuthChallengeNewConnection) {
     if (timeout_phase == TimeoutPhase::CONNECT) {
       FastForwardBy(kTinyTime);
       ASSERT_TRUE(test_delegate.has_result());
-      EXPECT_THAT(test_delegate.WaitForResult(),
-                  test::IsError(ERR_CONNECTION_TIMED_OUT));
+      EXPECT_THAT(test_delegate.WaitForResult(), test::IsError(ERR_TIMED_OUT));
       continue;
     }
 
@@ -1371,8 +1368,7 @@ TEST_P(HttpProxyConnectJobTest, TestTimeoutsAuthChallengeNewConnection) {
     if (timeout_phase == TimeoutPhase::PROXY_HANDSHAKE) {
       FastForwardBy(kTinyTime);
       ASSERT_TRUE(test_delegate.has_result());
-      EXPECT_THAT(test_delegate.WaitForResult(),
-                  test::IsError(ERR_CONNECTION_TIMED_OUT));
+      EXPECT_THAT(test_delegate.WaitForResult(), test::IsError(ERR_TIMED_OUT));
       continue;
     }
 
@@ -1409,8 +1405,7 @@ TEST_P(HttpProxyConnectJobTest, TestTimeoutsAuthChallengeNewConnection) {
     if (timeout_phase == TimeoutPhase::SECOND_CONNECT) {
       FastForwardBy(kTinyTime);
       ASSERT_TRUE(test_delegate.has_result());
-      EXPECT_THAT(test_delegate.WaitForResult(),
-                  test::IsError(ERR_CONNECTION_TIMED_OUT));
+      EXPECT_THAT(test_delegate.WaitForResult(), test::IsError(ERR_TIMED_OUT));
       continue;
     }
 
@@ -1433,8 +1428,7 @@ TEST_P(HttpProxyConnectJobTest, TestTimeoutsAuthChallengeNewConnection) {
     if (timeout_phase == TimeoutPhase::SECOND_PROXY_HANDSHAKE) {
       FastForwardBy(kTinyTime);
       ASSERT_TRUE(test_delegate.has_result());
-      EXPECT_THAT(test_delegate.WaitForResult(),
-                  test::IsError(ERR_CONNECTION_TIMED_OUT));
+      EXPECT_THAT(test_delegate.WaitForResult(), test::IsError(ERR_TIMED_OUT));
       continue;
     }
 

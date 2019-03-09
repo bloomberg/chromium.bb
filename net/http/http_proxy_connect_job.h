@@ -14,24 +14,28 @@
 #include "base/time/time.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_export.h"
+#include "net/base/request_priority.h"
 #include "net/http/http_auth.h"
 #include "net/http/http_response_info.h"
+#include "net/quic/quic_chromium_client_session.h"
 #include "net/socket/connect_job.h"
 #include "net/socket/ssl_client_socket.h"
-#include "net/spdy/spdy_session.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace net {
 
 class HttpAuthCache;
+class HttpAuthController;
 class HttpAuthHandlerFactory;
-class HttpProxyClientSocketWrapper;
+class HttpResponseInfo;
 class NetworkQualityEstimator;
 class SocketTag;
+class ProxyClientSocket;
 class SpdySessionPool;
+class SpdyStreamRequest;
 class SSLSocketParams;
 class TransportSocketParams;
-class QuicStreamFactory;
+class QuicStreamRequest;
 
 // HttpProxySocketParams only needs the socket params for one of the proxy
 // types.  The other param must be NULL.  When using an HTTP proxy,
@@ -97,13 +101,14 @@ class NET_EXPORT_PRIVATE HttpProxySocketParams
 
 // HttpProxyConnectJob optionally establishes a tunnel through the proxy
 // server after connecting the underlying transport socket.
-class NET_EXPORT_PRIVATE HttpProxyConnectJob : public ConnectJob {
+class NET_EXPORT_PRIVATE HttpProxyConnectJob : public ConnectJob,
+                                               public ConnectJob::Delegate {
  public:
   HttpProxyConnectJob(RequestPriority priority,
                       const SocketTag& socket_tag,
                       const CommonConnectJobParams* common_connect_job_params,
                       const scoped_refptr<HttpProxySocketParams>& params,
-                      Delegate* delegate,
+                      ConnectJob::Delegate* delegate,
                       const NetLogWithSource* net_log);
   ~HttpProxyConnectJob() override;
 
@@ -111,11 +116,14 @@ class NET_EXPORT_PRIVATE HttpProxyConnectJob : public ConnectJob {
   LoadState GetLoadState() const override;
   bool HasEstablishedConnection() const override;
 
+  void GetAdditionalErrorState(ClientSocketHandle* handle) override;
+
+  // ConnectJob::Delegate implementation.
+  void OnConnectJobComplete(int result, ConnectJob* job) override;
   void OnNeedsProxyAuth(const HttpResponseInfo& response,
                         HttpAuthController* auth_controller,
-                        base::OnceClosure restart_with_auth_callback);
-
-  void GetAdditionalErrorState(ClientSocketHandle* handle) override;
+                        base::OnceClosure restart_with_auth_callback,
+                        ConnectJob* job) override;
 
   // Returns the connection timeout that will be used by a HttpProxyConnectJob
   // created with the specified parameters, given current network conditions.
@@ -131,6 +139,24 @@ class NET_EXPORT_PRIVATE HttpProxyConnectJob : public ConnectJob {
   static void UpdateFieldTrialParametersForTesting();
 
  private:
+  enum State {
+    STATE_BEGIN_CONNECT,
+    STATE_TCP_CONNECT,
+    STATE_TCP_CONNECT_COMPLETE,
+    STATE_SSL_CONNECT,
+    STATE_SSL_CONNECT_COMPLETE,
+    STATE_HTTP_PROXY_CONNECT,
+    STATE_HTTP_PROXY_CONNECT_COMPLETE,
+    STATE_SPDY_PROXY_CREATE_STREAM,
+    STATE_SPDY_PROXY_CREATE_STREAM_COMPLETE,
+    STATE_QUIC_PROXY_CREATE_SESSION,
+    STATE_QUIC_PROXY_CREATE_STREAM,
+    STATE_QUIC_PROXY_CREATE_STREAM_COMPLETE,
+    STATE_RESTART_WITH_AUTH,
+    STATE_RESTART_WITH_AUTH_COMPLETE,
+    STATE_NONE,
+  };
+
   // Begins the tcp connection and the optional Http proxy tunnel.  If the
   // request is not immediately serviceable (likely), the request will return
   // ERR_IO_PENDING. An OK return from this function or the callback means
@@ -140,17 +166,80 @@ class NET_EXPORT_PRIVATE HttpProxyConnectJob : public ConnectJob {
   // a standard net error code will be returned.
   int ConnectInternal() override;
 
-  void ChangePriorityInternal(RequestPriority priority) override;
+  ProxyServer::Scheme GetProxyServerScheme() const;
 
-  void OnConnectComplete(int result);
+  void OnIOComplete(int result);
+
+  void RestartWithAuthCredentials();
+
+  // Runs the state transition loop.
+  int DoLoop(int result);
+
+  // Determine if need to go through TCP or SSL path.
+  int DoBeginConnect();
+  // Connecting to HTTP Proxy
+  int DoTransportConnect();
+  int DoTransportConnectComplete(int result);
+  // Connecting to HTTPS Proxy
+  int DoSSLConnect();
+  int DoSSLConnectComplete(int result);
+
+  int DoHttpProxyConnect();
+  int DoHttpProxyConnectComplete(int result);
+
+  int DoSpdyProxyCreateStream();
+  int DoSpdyProxyCreateStreamComplete(int result);
+
+  int DoQuicProxyCreateSession();
+  int DoQuicProxyCreateStream(int result);
+  int DoQuicProxyCreateStreamComplete(int result);
+
+  int DoRestartWithAuth();
+  int DoRestartWithAuthComplete(int result);
+
+  // ConnectJob implementation.
+  void ChangePriorityInternal(RequestPriority priority) override;
+  void OnTimedOutInternal() override;
 
   int HandleConnectResult(int result);
 
-  std::unique_ptr<HttpProxyClientSocketWrapper> client_socket_;
+  void OnAuthChallenge();
+
+  const HostPortPair& GetDestination();
+
+  std::string GetUserAgent() const;
 
   scoped_refptr<HttpProxySocketParams> params_;
 
   std::unique_ptr<HttpResponseInfo> error_response_info_;
+
+  State next_state_;
+
+  bool has_restarted_;
+
+  bool using_spdy_;
+  NextProto negotiated_protocol_;
+
+  // Set to true once a connection has been successfully established. Remains
+  // true even if a new socket is being connected to retry with auth.
+  bool has_established_connection_;
+
+  std::unique_ptr<ConnectJob> nested_connect_job_;
+  std::unique_ptr<ProxyClientSocket> transport_socket_;
+
+  std::unique_ptr<SpdyStreamRequest> spdy_stream_request_;
+
+  std::unique_ptr<QuicStreamRequest> quic_stream_request_;
+  std::unique_ptr<QuicChromiumClientSession::Handle> quic_session_;
+
+  scoped_refptr<HttpAuthController> http_auth_controller_;
+
+  NetErrorDetails quic_net_error_details_;
+
+  // Time when the connection to the proxy was started.
+  base::TimeTicks connect_start_time_;
+
+  base::WeakPtrFactory<HttpProxyConnectJob> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(HttpProxyConnectJob);
 };

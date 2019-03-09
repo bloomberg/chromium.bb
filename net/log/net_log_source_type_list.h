@@ -7,6 +7,7 @@
 // The following line silences a presubmit warning that would otherwise be
 // triggered by this:
 // no-include-guard-because-multiply-included
+// NOLINT(build/header_guard)
 
 // Used for global events which don't correspond to a particular entity.
 SOURCE_TYPE(NONE)
@@ -30,7 +31,6 @@ SOURCE_TYPE(EXPONENTIAL_BACKOFF_THROTTLING)
 SOURCE_TYPE(UDP_SOCKET)
 SOURCE_TYPE(CERT_VERIFIER_JOB)
 SOURCE_TYPE(PROXY_CLIENT_SOCKET)
-SOURCE_TYPE(PROXY_CLIENT_SOCKET_WRAPPER)
 SOURCE_TYPE(BIDIRECTIONAL_STREAM)
 SOURCE_TYPE(NETWORK_QUALITY_ESTIMATOR)
 SOURCE_TYPE(HTTP_STREAM_JOB_CONTROLLER)

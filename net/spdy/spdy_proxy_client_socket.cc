@@ -179,8 +179,14 @@ int64_t SpdyProxyClientSocket::GetTotalReceivedBytes() const {
 }
 
 void SpdyProxyClientSocket::ApplySocketTag(const SocketTag& tag) {
-  // Underlying SpdySession can be tagged, but |spdy_stream_| cannot.
-  CHECK(false);
+  // In the case of a connection to the proxy using HTTP/2 or HTTP/3 where the
+  // underlying socket may multiplex multiple streams, applying this request's
+  // socket tag to the multiplexed session would incorrectly apply the socket
+  // tag to all mutliplexed streams. Fortunately socket tagging is only
+  // supported on Android without the data reduction proxy, so only simple HTTP
+  // proxies are supported, so proxies won't be using HTTP/2 or HTTP/3. Enforce
+  // that a specific (non-default) tag isn't being applied.
+  CHECK(tag == SocketTag());
 }
 
 int SpdyProxyClientSocket::Read(IOBuffer* buf,

@@ -153,8 +153,14 @@ int64_t QuicProxyClientSocket::GetTotalReceivedBytes() const {
 }
 
 void QuicProxyClientSocket::ApplySocketTag(const SocketTag& tag) {
-  // |session_| can be tagged, but |stream_| cannot.
-  CHECK(false);
+  // In the case of a connection to the proxy using HTTP/2 or HTTP/3 where the
+  // underlying socket may multiplex multiple streams, applying this request's
+  // socket tag to the multiplexed session would incorrectly apply the socket
+  // tag to all mutliplexed streams. Fortunately socket tagging is only
+  // supported on Android without the data reduction proxy, so only simple HTTP
+  // proxies are supported, so proxies won't be using HTTP/2 or HTTP/3. Enforce
+  // that a specific (non-default) tag isn't being applied.
+  CHECK(tag == SocketTag());
 }
 
 int QuicProxyClientSocket::Read(IOBuffer* buf,
