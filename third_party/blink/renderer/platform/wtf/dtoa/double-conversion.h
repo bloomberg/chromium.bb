@@ -28,6 +28,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_DTOA_DOUBLE_CONVERSION_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_DTOA_DOUBLE_CONVERSION_H_
 
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/dtoa/utils.h"
 
 namespace WTF {
@@ -35,6 +36,8 @@ namespace WTF {
 namespace double_conversion {
 
 class DoubleToStringConverter {
+  STACK_ALLOCATED();
+
  public:
   // When calling ToFixed with a double > 10^kMaxFixedDigitsBeforePoint
   // or a requested_digits parameter > kMaxFixedDigitsAfterPoint then the
@@ -358,6 +361,8 @@ class DoubleToStringConverter {
 };
 
 class StringToDoubleConverter {
+  STACK_ALLOCATED();
+
  public:
   // Performs the conversion.
   // The output parameter 'processed_characters_count' is set to the number

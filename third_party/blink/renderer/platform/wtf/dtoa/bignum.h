@@ -28,6 +28,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_DTOA_BIGNUM_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_DTOA_BIGNUM_H_
 
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/dtoa/utils.h"
 
 namespace WTF {
@@ -35,6 +36,8 @@ namespace WTF {
 namespace double_conversion {
 
 class Bignum {
+  DISALLOW_NEW();
+
  public:
   // 3584 = 128 * 28. We can represent 2^3584 > 10^1000 accurately.
   // This bignum can encode much bigger numbers, since it contains an

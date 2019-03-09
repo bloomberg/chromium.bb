@@ -33,6 +33,7 @@
 #include <cfloat>
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 
@@ -40,6 +41,8 @@ namespace blink {
 
 // Simulate core/html/forms/StepRange
 class DecimalStepRange {
+  STACK_ALLOCATED();
+
  public:
   Decimal maximum;
   Decimal minimum;

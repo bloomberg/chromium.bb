@@ -29,6 +29,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_DTOA_UTILS_H_
 
 #include <string.h>
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 #define UNIMPLEMENTED NOTREACHED
@@ -178,6 +179,8 @@ class Vector {
 // purpose of the class is to use safe operations that checks the
 // buffer bounds on all operations in debug mode.
 class StringBuilder {
+  DISALLOW_NEW();
+
  public:
   StringBuilder(char* buffer, int size) : buffer_(buffer, size), position_(0) {}
 
