@@ -42,10 +42,10 @@ class RulesetMatcherTest : public ::testing::Test {
     ListBuilder builder;
     for (const auto& rule : rules)
       builder.Append(rule.ToValue());
-    JSONFileValueSerializer(source.json_path).Serialize(*builder.Build());
+    JSONFileValueSerializer(source.json_path()).Serialize(*builder.Build());
 
     // Index ruleset.
-    IndexAndPersistRulesResult result = IndexAndPersistRulesUnsafe(source);
+    IndexAndPersistRulesResult result = source.IndexAndPersistRulesUnsafe();
     ASSERT_TRUE(result.success);
     ASSERT_TRUE(result.error.empty());
 
@@ -54,7 +54,7 @@ class RulesetMatcherTest : public ::testing::Test {
 
     // Create verified matcher.
     RulesetMatcher::LoadRulesetResult load_result =
-        RulesetMatcher::CreateVerifiedMatcher(source.indexed_path,
+        RulesetMatcher::CreateVerifiedMatcher(source.indexed_path(),
                                               result.ruleset_checksum, matcher);
     ASSERT_EQ(RulesetMatcher::kLoadSuccess, load_result);
   }
@@ -126,9 +126,9 @@ TEST_F(RulesetMatcherTest, FailedVerification) {
   // occurs.
   std::string data = "invalid data";
   ASSERT_EQ(static_cast<int>(data.size()),
-            base::WriteFile(source.indexed_path, data.c_str(), data.size()));
+            base::WriteFile(source.indexed_path(), data.c_str(), data.size()));
   EXPECT_EQ(RulesetMatcher::kLoadErrorVersionMismatch,
-            RulesetMatcher::CreateVerifiedMatcher(source.indexed_path,
+            RulesetMatcher::CreateVerifiedMatcher(source.indexed_path(),
                                                   expected_checksum, &matcher));
 
   // Now, persist invalid data to the ruleset file, while maintaining the
@@ -136,9 +136,9 @@ TEST_F(RulesetMatcherTest, FailedVerification) {
   // mismatch.
   data = GetVersionHeaderForTesting() + "invalid data";
   ASSERT_EQ(static_cast<int>(data.size()),
-            base::WriteFile(source.indexed_path, data.c_str(), data.size()));
+            base::WriteFile(source.indexed_path(), data.c_str(), data.size()));
   EXPECT_EQ(RulesetMatcher::kLoadErrorChecksumMismatch,
-            RulesetMatcher::CreateVerifiedMatcher(source.indexed_path,
+            RulesetMatcher::CreateVerifiedMatcher(source.indexed_path(),
                                                   expected_checksum, &matcher));
 }
 
