@@ -1535,7 +1535,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
         if (mForceTextureCapture) {
             return true;
         }
-        return !(urlHasFocus() || mUrlFocusChangeInProgress || mNtpSearchBoxScrollPercent > 0);
+        return !(urlHasFocus() || mUrlFocusChangeInProgress);
     }
 
     @Override
