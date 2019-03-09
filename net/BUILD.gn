@@ -846,6 +846,7 @@ component("net") {
       "http2/platform/impl/http2_flag_utils_impl.h",
       "http2/platform/impl/http2_flags_impl.cc",
       "http2/platform/impl/http2_flags_impl.h",
+      "http2/platform/impl/http2_logging_impl.h",
       "http2/platform/impl/http2_macros_impl.h",
       "http2/platform/impl/http2_optional_impl.h",
       "http2/platform/impl/http2_ptr_util_impl.h",
@@ -1298,6 +1299,7 @@ component("net") {
       "third_party/quiche/src/http2/platform/api/http2_export.h",
       "third_party/quiche/src/http2/platform/api/http2_flag_utils.h",
       "third_party/quiche/src/http2/platform/api/http2_flags.h",
+      "third_party/quiche/src/http2/platform/api/http2_logging.h",
       "third_party/quiche/src/http2/platform/api/http2_optional.h",
       "third_party/quiche/src/http2/platform/api/http2_ptr_util.h",
       "third_party/quiche/src/http2/platform/api/http2_reconstruct_object.h",
@@ -4963,7 +4965,6 @@ test("net_unittests") {
     "http/transport_security_persister_unittest.cc",
     "http/transport_security_state_unittest.cc",
     "http/url_security_manager_unittest.cc",
-    "http2/platform/impl/http2_mock_log_impl.h",
     "http2/platform/impl/http2_test_helpers_impl.cc",
     "http2/platform/impl/http2_test_helpers_impl.h",
     "log/file_net_log_observer_unittest.cc",
@@ -5167,7 +5168,6 @@ test("net_unittests") {
     "third_party/quiche/src/http2/http2_structures_test.cc",
     "third_party/quiche/src/http2/http2_structures_test_util.cc",
     "third_party/quiche/src/http2/http2_structures_test_util.h",
-    "third_party/quiche/src/http2/platform/api/http2_mock_log.h",
     "third_party/quiche/src/http2/platform/api/http2_string_utils_test.cc",
     "third_party/quiche/src/http2/platform/api/http2_test_helpers.h",
     "third_party/quiche/src/http2/test_tools/frame_parts.cc",
@@ -6428,57 +6428,57 @@ fuzzer_test("net_uri_template_fuzzer") {
   ]
   dict = "data/fuzzer_dictionaries/net_uri_template_fuzzer.dict"
 }
-# TODO(vasilvv): bring back when the corpus is back.
-# fuzzer_test("net_qpack_decoder_fuzzer") {
-#   sources = [
-#     "third_party/quiche/src/quic/core/qpack/fuzzer/qpack_decoder_fuzzer.cc",
-#   ]
-#   deps = [
-#     ":net_fuzzer_test_support",
-#     ":quic_test_tools",
-#     ":test_support",
-#     "//base",
-#     "//net",
-#   ]
-#   seed_corpus = "third_party/quiche/src/quic/core/qpack/fuzzer/qpack_decoder_fuzzer_corpus/"
-# }
-#
-# fuzzer_test("net_qpack_encoder_stream_receiver_fuzzer") {
-#   sources = [
-#     "third_party/quiche/src/quic/core/qpack/fuzzer/qpack_encoder_stream_receiver_fuzzer.cc",
-#   ]
-#   deps = [
-#     ":net_fuzzer_test_support",
-#     "//base",
-#     "//net",
-#   ]
-#   seed_corpus = "third_party/quiche/src/quic/core/qpack/fuzzer/qpack_encoder_stream_receiver_fuzzer_corpus/"
-# }
-#
-# fuzzer_test("net_qpack_encoder_stream_sender_fuzzer") {
-#   sources = [
-#     "third_party/quiche/src/quic/core/qpack/fuzzer/qpack_encoder_stream_sender_fuzzer.cc",
-#   ]
-#   deps = [
-#     ":net_fuzzer_test_support",
-#     ":quic_test_tools",
-#     ":test_support",
-#     "//base",
-#     "//net",
-#   ]
-#   seed_corpus = "third_party/quiche/src/quic/core/qpack/fuzzer/qpack_encoder_stream_sender_fuzzer_corpus/"
-# }
-#
-# fuzzer_test("net_qpack_round_trip_fuzzer") {
-#   sources = [
-#     "third_party/quiche/src/quic/core/qpack/fuzzer/qpack_round_trip_fuzzer.cc",
-#   ]
-#   deps = [
-#     ":net_fuzzer_test_support",
-#     ":quic_test_tools",
-#     ":test_support",
-#     "//base",
-#     "//net",
-#   ]
-#   seed_corpus = "third_party/quiche/src/quic/core/qpack/fuzzer/qpack_round_trip_fuzzer_corpus/"
-# }
+
+fuzzer_test("net_qpack_decoder_fuzzer") {
+  sources = [
+    "third_party/quiche/src/quic/core/qpack/fuzzer/qpack_decoder_fuzzer.cc",
+  ]
+  deps = [
+    ":net_fuzzer_test_support",
+    ":quic_test_tools",
+    ":test_support",
+    "//base",
+    "//net",
+  ]
+  seed_corpus = "third_party/quiche/src/quic/core/qpack/fuzzer/qpack_decoder_fuzzer_corpus/"
+}
+
+fuzzer_test("net_qpack_encoder_stream_receiver_fuzzer") {
+  sources = [
+    "third_party/quiche/src/quic/core/qpack/fuzzer/qpack_encoder_stream_receiver_fuzzer.cc",
+  ]
+  deps = [
+    ":net_fuzzer_test_support",
+    "//base",
+    "//net",
+  ]
+  seed_corpus = "third_party/quiche/src/quic/core/qpack/fuzzer/qpack_encoder_stream_receiver_fuzzer_corpus/"
+}
+
+fuzzer_test("net_qpack_encoder_stream_sender_fuzzer") {
+  sources = [
+    "third_party/quiche/src/quic/core/qpack/fuzzer/qpack_encoder_stream_sender_fuzzer.cc",
+  ]
+  deps = [
+    ":net_fuzzer_test_support",
+    ":quic_test_tools",
+    ":test_support",
+    "//base",
+    "//net",
+  ]
+  seed_corpus = "third_party/quiche/src/quic/core/qpack/fuzzer/qpack_encoder_stream_sender_fuzzer_corpus/"
+}
+
+fuzzer_test("net_qpack_round_trip_fuzzer") {
+  sources = [
+    "third_party/quiche/src/quic/core/qpack/fuzzer/qpack_round_trip_fuzzer.cc",
+  ]
+  deps = [
+    ":net_fuzzer_test_support",
+    ":quic_test_tools",
+    ":test_support",
+    "//base",
+    "//net",
+  ]
+  seed_corpus = "third_party/quiche/src/quic/core/qpack/fuzzer/qpack_round_trip_fuzzer_corpus/"
+}
