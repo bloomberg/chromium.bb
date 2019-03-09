@@ -11,7 +11,7 @@ import("//build/config/ui.gni")
 import("//build/util/branding.gni")
 import("//testing/test.gni")
 import("//tools/grit/grit_rule.gni")
-import("//ui/base/mpris/features.gni")
+import("//ui/base/mpris/buildflags/buildflags.gni")
 import("//ui/base/ui_features.gni")
 import("//ui/ozone/ozone.gni")
 
@@ -359,6 +359,12 @@ jumbo_component("base") {
       "accelerators/global_media_keys_listener_win.h",
       "accelerators/media_keys_listener_win.cc",
     ]
+  } else if (use_mpris) {
+    sources += [
+      "accelerators/media_keys_listener_linux.cc",
+      "accelerators/mpris_media_keys_listener.cc",
+      "accelerators/mpris_media_keys_listener.h",
+    ]
   } else {
     sources += [ "accelerators/media_keys_listener_stub.cc" ]
   }
@@ -451,6 +457,13 @@ jumbo_component("base") {
       configs += [ "//build/config/linux:xscrnsaver" ]
       deps += [ "//ui/gfx/x" ]
     }
+  }
+
+  if (use_mpris) {
+    deps += [
+      "//dbus",
+      "//ui/base/mpris",
+    ]
   }
 
   if (use_x11 && use_aura) {
@@ -1052,7 +1065,11 @@ test("ui_base_unittests") {
   }
 
   if (use_mpris) {
-    deps += [ "//ui/base/mpris:unit_tests" ]
+    sources += [ "accelerators/mpris_media_keys_listener_unittest.cc" ]
+    deps += [
+      "//ui/base/mpris:test_support",
+      "//ui/base/mpris:unit_tests",
+    ]
   }
 
   if (is_chromeos) {

@@ -10,6 +10,11 @@
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/media/hardware_key_media_controller.h"
 #include "ui/base/accelerators/accelerator.h"
+#include "ui/base/mpris/buildflags/buildflags.h"
+
+#if BUILDFLAG(USE_MPRIS)
+#include "ui/base/mpris/mpris_service.h"  // nogncheck
+#endif
 
 namespace content {
 
@@ -30,7 +35,8 @@ MediaKeysListenerManagerImpl::MediaKeysListenerManagerImpl(
     service_manager::Connector* connector)
     : hardware_key_media_controller_(
           std::make_unique<HardwareKeyMediaController>(connector)),
-      media_key_handling_enabled_(true) {
+      media_key_handling_enabled_(true),
+      auxiliary_services_started_(false) {
   DCHECK(!MediaKeysListenerManager::GetInstance());
 }
 
@@ -126,9 +132,22 @@ void MediaKeysListenerManagerImpl::OnMediaKeysAccelerator(
     delegate.OnMediaKeysAccelerator(accelerator);
 }
 
+void MediaKeysListenerManagerImpl::EnsureAuxiliaryServices() {
+  if (auxiliary_services_started_)
+    return;
+
+#if BUILDFLAG(USE_MPRIS)
+  mpris::MprisService::GetInstance()->StartService();
+#endif
+
+  auxiliary_services_started_ = true;
+}
+
 void MediaKeysListenerManagerImpl::EnsureMediaKeysListener() {
   if (media_keys_listener_)
     return;
+
+  EnsureAuxiliaryServices();
 
   media_keys_listener_ = ui::MediaKeysListener::Create(
       this, ui::MediaKeysListener::Scope::kGlobal);
