@@ -31,6 +31,7 @@ bool StructTraits<viz::mojom::RendererSettingsDataView, viz::RendererSettings>::
   out->record_sk_picture = data.record_sk_picture();
   out->allow_overlays = data.allow_overlays();
   out->requires_alpha_channel = data.requires_alpha_channel();
+  out->enable_shared_mem_begin_frame = data.enable_shared_mem_begin_frame();
 
 #if defined(OS_ANDROID)
   success = data.ReadInitialScreenSize(&out->initial_screen_size);

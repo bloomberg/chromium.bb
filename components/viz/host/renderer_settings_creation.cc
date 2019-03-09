@@ -69,6 +69,8 @@ RendererSettings CreateRendererSettings() {
           switches::kDisableMacOverlays);
 #endif
   renderer_settings.record_sk_picture = features::IsRecordingSkPicture();
+  renderer_settings.enable_shared_mem_begin_frame =
+      features::IsSharedMemoryBeginFrameEnabled();
 
   if (command_line->HasSwitch(switches::kSlowDownCompositingScaleFactor)) {
     const int kMinSlowDownScaleFactor = 1;
