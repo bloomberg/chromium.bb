@@ -12,6 +12,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -35,6 +36,7 @@
 #include "content/common/frame_message_enums.h"
 #include "content/common/host_zoom.mojom.h"
 #include "content/common/media/renderer_audio_input_stream_factory.mojom.h"
+#include "content/common/mhtml_file_writer.mojom.h"
 #include "content/common/possibly_associated_interface_ptr.h"
 #include "content/common/renderer.mojom.h"
 #include "content/common/unique_name_helper.h"
@@ -110,7 +112,6 @@
 
 struct FrameMsg_MixedContentFound_Params;
 struct FrameMsg_PostMessage_Params;
-struct FrameMsg_SerializeAsMHTML_Params;
 struct FrameMsg_TextTrackSettings_Params;
 
 namespace blink {
@@ -190,6 +191,7 @@ class CONTENT_EXPORT RenderFrameImpl
       mojom::FullscreenVideoElementHandler,
       mojom::HostZoom,
       mojom::FrameBindingsControl,
+      mojom::MhtmlFileWriter,
       public blink::WebLocalFrameClient,
       public blink::WebFrameSerializerClient,
       service_manager::mojom::InterfaceProvider {
@@ -638,6 +640,10 @@ class CONTENT_EXPORT RenderFrameImpl
   // mojom::HostZoom implementation:
   void SetHostZoomLevel(const GURL& url, double zoom_level) override;
 
+  // mojom::MhtmlFileWriter implementation:
+  void SerializeAsMHTML(const mojom::SerializeAsMHTMLParamsPtr params,
+                        SerializeAsMHTMLCallback callback) override;
+
   // blink::WebLocalFrameClient implementation:
   blink::WebPlugin* CreatePlugin(const blink::WebPluginParams& params) override;
   blink::WebMediaPlayer* CreateMediaPlayer(
@@ -856,6 +862,9 @@ class CONTENT_EXPORT RenderFrameImpl
   // Binds to the fullscreen service in the browser.
   void BindFullscreen(
       mojom::FullscreenVideoElementHandlerAssociatedRequest request);
+
+  // Binds to the MHTML file generation service in the browser.
+  void BindMhtmlFileWriter(mojom::MhtmlFileWriterAssociatedRequest request);
 
   // Binds to the autoplay configuration service in the browser.
   void BindAutoplayConfiguration(
@@ -1119,7 +1128,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnGetSerializedHtmlWithLocalLinks(
       const std::map<GURL, base::FilePath>& url_to_local_path,
       const std::map<int, base::FilePath>& frame_routing_id_to_local_path);
-  void OnSerializeAsMHTML(const FrameMsg_SerializeAsMHTML_Params& params);
   void OnEnableViewSourceMode();
   void OnSuppressFurtherDialogs();
   void OnClearFocusedElement();
@@ -1142,11 +1150,11 @@ class CONTENT_EXPORT RenderFrameImpl
 #endif
 #endif
 
-  // Callback scheduled from OnSerializeAsMHTML for when writing serialized
+  // Callback scheduled from SerializeAsMHTML for when writing serialized
   // MHTML to file has been completed in the file thread.
   void OnWriteMHTMLToDiskComplete(
-      int job_id,
-      std::set<std::string> serialized_resources_uri_digests,
+      SerializeAsMHTMLCallback callback,
+      std::unordered_set<std::string> serialized_resources_uri_digests,
       base::TimeDelta main_thread_use_time,
       MhtmlSaveStatus save_status);
 
@@ -1634,6 +1642,7 @@ class CONTENT_EXPORT RenderFrameImpl
       frame_navigation_control_binding_;
   mojo::AssociatedBinding<mojom::FullscreenVideoElementHandler>
       fullscreen_binding_;
+  mojo::AssociatedBinding<mojom::MhtmlFileWriter> mhtml_file_writer_binding_;
 
   // Only used when PerNavigationMojoInterface is enabled.
   std::unique_ptr<NavigationClient> navigation_client_impl_;

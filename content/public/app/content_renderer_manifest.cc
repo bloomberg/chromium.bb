@@ -34,6 +34,7 @@ const service_manager::Manifest& GetContentRendererManifest() {
                   "content.mojom.ChildHistogramFetcher",
                   "content.mojom.ChildHistogramFetcherFactory",
                   "content.mojom.FrameFactory",
+                  "content.mojom.MhtmlFileWriter",
                   "content.mojom.RenderWidgetWindowTreeClientFactory",
                   "content.mojom.ResourceUsageReporter",
                   "IPC.mojom.ChannelBootstrap",

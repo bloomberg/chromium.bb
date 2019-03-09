@@ -18,7 +18,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "components/download/public/common/download_task_runner.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
-#include "content/common/frame_messages.h"
+#include "content/common/mhtml_file_writer.mojom.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/mhtml_extra_parts.h"
@@ -36,6 +36,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/mojom/frame/find_in_page.mojom.h"
 
 using testing::ContainsRegex;
@@ -97,9 +98,111 @@ int FindTrackingDelegate::global_request_id = 0;
 
 }  // namespace
 
+// This Mock injects our overwritten interface, running the callback
+// SerializeAsMHTMLResponse and immediately disconnecting the message pipe.
+class MockMhtmlFileWriter : public mojom::MhtmlFileWriter {
+ public:
+  explicit MockMhtmlFileWriter() : binding_(this) {}
+
+  ~MockMhtmlFileWriter() override {}
+
+  void BindRequest(mojo::ScopedInterfaceEndpointHandle handle) {
+    binding_.Bind(mojom::MhtmlFileWriterAssociatedRequest(std::move(handle)));
+  }
+
+  void WriteDataToDestinationFile(base::File& destination_file) {
+    const char kTestData[] =
+        "Sample Text to write on generated MHTML "
+        "file to verify it has been written to.";
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    destination_file.WriteAtCurrentPos(kTestData, strlen(kTestData));
+    destination_file.Close();
+  }
+
+  void SerializeAsMHTML(mojom::SerializeAsMHTMLParamsPtr params,
+                        SerializeAsMHTMLCallback callback) override {
+    // Upon using the overridden mock interface implementation, this will be
+    // handled by the product code as illustrated below.  (1), (2), (3) depict
+    // points in time when product code runs on UI thread and download sequence.
+    // For the repro, the message pipe disconnection needs to happen between (1)
+    // and (3).
+    //
+    //   Test instance     UI thread         download sequence
+    //     ---------       ---------           -----------
+    //        |                |                     |
+    //    WE ARE HERE          |                     |
+    //        |                |                     |
+    //        |                |                     |
+    //        +--------------->+                     |
+    //        |                |                     |
+    //        |                |                     |
+    //        |                |                     |
+    //        |                |                     |
+    //        |                |                     |
+    //        |                |                     |
+    // (1)    |      MHTMLGenerationManager::Job     |
+    //        |      ::SerializeAsMHTMLResponse      |
+    //        |                +-------------------->+
+    //        |                |                     |
+    //        |                |                     |
+    //        |                |                     |
+    // (2)    |                |          MHTMLGenerationManager::Job
+    //        |                |          ::CloseFileOnFileThread
+    //        |                |                     |
+    //        |                |                     |
+    //        |           test needs to              |
+    //        |       disconnect message pipe        |
+    //        |      HERE - between (1) and (3)      |
+    //        |                |                     |
+    //        |                |                     |
+    //        |                +<--------------------+
+    //        |                |                     |
+    // (3)    |      MHTMLGenerationManager          |
+    //        |      Job::OnFinished                 |
+    //        |                |                     |
+    //
+    // We hope that the error handler is invoked between (1) and (3) by doing
+    // the following:
+    // - From here, run the callback response to the UI thread. This queues
+    //   the response message onto the bound message pipe.
+    // - After running the callback response, immediately unbind the message
+    //   pipe in order to queue a message onto the bound message pipe to notify
+    //   the Browser the connection was closed and invoke the error handler.
+    // - Upon resuming operation, the FIFO ordering property of associated
+    //   interfaces guarantees the execution of (1) before the error handler.
+    //   (1) posts (2) to the download sequence and terminates. The client end
+    //   then accepts the error notification and invokes the connection error
+    //   handler, guaranteeing its execution before (3).
+
+    // Write a valid MHTML file to destination_file, since we are not
+    // actively running a serialization pipeline in the mock implementation.
+    WriteDataToDestinationFile(params->destination_file);
+
+    std::vector<std::string> dummy_digests;
+    base::TimeDelta dummy_time_delta = base::TimeDelta::Max();
+    std::move(callback).Run(mojom::MhtmlSaveStatus::SUCCESS, dummy_digests,
+                            dummy_time_delta);
+
+    // Close the message pipe connection to invoke the connection error
+    // callback. The connection error handler from here will finalize
+    // the Job and attempt to call MHTMLGenerationManager::Job::CloseFile
+    // a second time. If this situation is handled correctly, the
+    // browser file should be invalidated and idempotent.
+    binding_.Unbind();
+  }
+
+ private:
+  mojo::AssociatedBinding<mojom::MhtmlFileWriter> binding_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockMhtmlFileWriter);
+};
+
 class MHTMLGenerationTest : public ContentBrowserTest {
  public:
-  MHTMLGenerationTest() : has_mhtml_callback_run_(false), file_size_(0) {}
+  MHTMLGenerationTest()
+      : has_mhtml_callback_run_(false),
+        file_size_(0),
+        well_formedness_check_(true) {}
 
  protected:
   void SetUpOnMainThread() override {
@@ -131,8 +234,9 @@ class MHTMLGenerationTest : public ContentBrowserTest {
     ASSERT_TRUE(has_mhtml_callback_run())
         << "Unexpected error generating MHTML file";
 
-    // Skip well formedness check if there was an generation error.
-    if (file_size() == -1)
+    // Skip well formedness check if explicitly disabled or there was a
+    // generation error.
+    if (!well_formedness_check_ || file_size() == -1)
       return;
 
     // Loads the generated file to check if it is well formed.
@@ -218,6 +322,13 @@ class MHTMLGenerationTest : public ContentBrowserTest {
     }
   }
 
+  // In the case that we are using a pre-generated .mhtml file, we do
+  // not have any control over the final mhtml_boundary_marker write
+  // operation. This results in the post-generation verification tests
+  // reporting a malformed multipart archive, unintentionally failing the
+  // test.
+  void DisableWellformednessCheck() { well_formedness_check_ = false; }
+
   bool has_mhtml_callback_run() const { return has_mhtml_callback_run_; }
   int64_t file_size() const { return file_size_; }
   base::HistogramTester* histogram_tester() { return histogram_tester_.get(); }
@@ -233,6 +344,7 @@ class MHTMLGenerationTest : public ContentBrowserTest {
 
   bool has_mhtml_callback_run_;
   int64_t file_size_;
+  bool well_formedness_check_;
   std::unique_ptr<base::HistogramTester> histogram_tester_;
 };
 
@@ -264,120 +376,28 @@ IN_PROC_BROWSER_TEST_F(MHTMLGenerationTest, GenerateMHTML) {
       static_cast<int>(MhtmlSaveStatus::SUCCESS), 1);
 }
 
-class GenerateMHTMLAndExitRendererMessageFilter : public BrowserMessageFilter {
- public:
-  GenerateMHTMLAndExitRendererMessageFilter(
-      RenderProcessHostImpl* render_process_host)
-      : BrowserMessageFilter(FrameMsgStart),
-        render_process_host_(render_process_host) {}
-
- protected:
-  ~GenerateMHTMLAndExitRendererMessageFilter() override {}
-
- private:
-  bool OnMessageReceived(const IPC::Message& message) override {
-    if (message.type() == FrameHostMsg_SerializeAsMHTMLResponse::ID) {
-      // After |return false| below, this IPC message will be handled by the
-      // product code as illustrated below.  (1), (2), (3) depict points in time
-      // when product code runs on UI thread and download sequence.  (X), (Y),
-      // (Z) depict when we want test-injected tasks to run - for the repro, (Z)
-      // has to happen between (1) and (3).  (Y?) and (Z?) depict when test
-      // tasks can theoretically happen and ruin the repro.
-      //
-      //     IO thread       UI thread         download sequence
-      //     ---------       ---------           -----------
-      //        |                |                     |
-      //    WE ARE HERE          |                     |
-      //        |                |                     |
-      // after |return false|    |                     |
-      //        +--------------->+                     |
-      //        |                |                     |
-      //        |               (X)                    |
-      //        |                |                     |
-      //        |                |                    (Y?)
-      //        |               (Z?)                   |
-      //        |                |                     |
-      // (1)    |      MHTMLGenerationManager          |
-      //        |      ::OnSerializeAsMHTMLResponse    |
-      //        |                +-------------------->+
-      //        |                |                     |
-      //        |                |                    (Y)
-      //        |                |                     |
-      // (2)    |                |          MHTMLGenerationManager::Job
-      //        |                |          ::CloseFileOnFileThread
-      //        |                |                     |
-      //        |               (Z)                    |
-      //        |         test needs to inject         |
-      //        |        fast renderer shutdown        |
-      //        |      HERE - between (1) and (3)      |
-      //        |                |                     |
-      //        |                |                     |
-      //        |                +<--------------------+
-      //        |                |                     |
-      // (3)    |      MHTMLGenerationManager          |
-      //        |      ::OnFileClosed                  |
-      //        |                |                     |
-      //
-      // We hope that (Z) happens between (1) and (3) by doing the following:
-      // - From here post TaskX to UI thread.  (X) is guaranteed to happen
-      //   before timepoint (1) (because posting of (1) happens after
-      //   |return false| / before we post TaskX below).
-      // - From (X) post TaskY to download sequence.  Because this posting is
-      //   done before (1), we can guarantee that (Y) will happen before (2).
-      // - From (Y) post TaskZ to UI thread.  Because this posting is done
-      //   before (2), we can guarantee that (Z) will happen before (3).
-      // - We cannot really guarantee that (Y) and (Z) happen *after* (1) - i.e.
-      //   execution at (Y?) and (Z?) instead is possible.  In practice,
-      //   bouncing off of UI and download sequence does mean (Z) happens
-      //   after (1).
-      base::PostTaskWithTraits(
-          FROM_HERE, {BrowserThread::UI},
-          base::BindOnce(&GenerateMHTMLAndExitRendererMessageFilter::TaskX,
-                         base::Unretained(this)));
-    }
-
-    return false;
-  }
-
-  void TaskX() {
-    download::GetDownloadTaskRunner()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&GenerateMHTMLAndExitRendererMessageFilter::TaskY,
-                       base::Unretained(this)));
-  }
-
-  void TaskY() {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(&GenerateMHTMLAndExitRendererMessageFilter::TaskZ,
-                       base::Unretained(this)));
-  }
-
-  void TaskZ() {
-    render_process_host_->FastShutdownIfPossible();
-  }
-
-  RenderProcessHostImpl* render_process_host_;
-
-  DISALLOW_COPY_AND_ASSIGN(GenerateMHTMLAndExitRendererMessageFilter);
-};
-
 // Regression test for the crash/race from https://crbug.com/612098.
-IN_PROC_BROWSER_TEST_F(MHTMLGenerationTest, GenerateMHTMLAndExitRenderer) {
+IN_PROC_BROWSER_TEST_F(MHTMLGenerationTest, GenerateMHTMLAndCloseConnection) {
+  MockMhtmlFileWriter mock_writer;
+
   NavigateToURL(shell(), embedded_test_server()->GetURL("/simple_page.html"));
-
-  RenderProcessHostImpl* render_process_host =
-      static_cast<RenderProcessHostImpl*>(
-          shell()->web_contents()->GetMainFrame()->GetProcess());
-  scoped_refptr<BrowserMessageFilter> filter =
-      new GenerateMHTMLAndExitRendererMessageFilter(render_process_host);
-  render_process_host->AddFilter(filter.get());
-
   base::FilePath path(temp_dir_.GetPath());
   path = path.Append(FILE_PATH_LITERAL("test.mht"));
+
+  blink::AssociatedInterfaceProvider* remote_interfaces =
+      shell()->web_contents()->GetMainFrame()->GetRemoteAssociatedInterfaces();
+  remote_interfaces->OverrideBinderForTesting(
+      mojom::MhtmlFileWriter::Name_,
+      base::BindRepeating(&MockMhtmlFileWriter::BindRequest,
+                          base::Unretained(&mock_writer)));
+
+  DisableWellformednessCheck();
   GenerateMHTMLForCurrentPage(MHTMLGenerationParams(path));
 
-  EXPECT_GT(ReadFileSizeFromDisk(path), 100);  // Verify the actual file size.
+  // Verify the file has some contents written to it.
+  EXPECT_GT(ReadFileSizeFromDisk(path), 100);
+  // Verify the reported file size matches the file written to disk.
+  EXPECT_EQ(ReadFileSizeFromDisk(path), file_size());
 }
 
 // TODO(crbug.com/672313): Flaky on Windows.

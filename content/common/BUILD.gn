@@ -484,6 +484,7 @@ mojom("mojo_bindings") {
     "media/peer_connection_tracker.mojom",
     "media/renderer_audio_input_stream_factory.mojom",
     "media/renderer_audio_output_stream_factory.mojom",
+    "mhtml_file_writer.mojom",
     "native_types.mojom",
     "navigation_client.mojom",
     "navigation_params.mojom",
