@@ -26,7 +26,6 @@
 #include "content/common/content_param_traits.h"
 #include "content/common/content_security_policy/csp_context.h"
 #include "content/common/content_security_policy_header.h"
-#include "content/common/download/mhtml_save_status.h"
 #include "content/common/frame_message_enums.h"
 #include "content/common/frame_message_structs.h"
 #include "content/common/frame_owner_properties.h"
@@ -613,40 +612,6 @@ IPC_STRUCT_TRAITS_BEGIN(content::SavableSubframe)
   IPC_STRUCT_TRAITS_MEMBER(routing_id)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_BEGIN(FrameMsg_SerializeAsMHTML_Params)
-  // Job id - used to match responses to requests.
-  IPC_STRUCT_MEMBER(int, job_id)
-
-  // Destination file handle.
-  IPC_STRUCT_MEMBER(IPC::PlatformFileForTransit, destination_file)
-
-  // MHTML boundary marker / MIME multipart boundary maker.  The same
-  // |mhtml_boundary_marker| should be used for serialization of each frame.
-  IPC_STRUCT_MEMBER(std::string, mhtml_boundary_marker)
-
-  // Whether to use binary encoding while serializing.  Binary encoding is not
-  // supported outside of Chrome, so this should not be used if the MHTML is
-  // intended for sharing.
-  IPC_STRUCT_MEMBER(bool, mhtml_binary_encoding)
-
-  // Whether to remove popup overlay while serializing.
-  IPC_STRUCT_MEMBER(bool, mhtml_popup_overlay_removal)
-
-  // Whether to detect problems while serializing.
-  IPC_STRUCT_MEMBER(bool, mhtml_problem_detection)
-
-  // |digests_of_uris_to_skip| contains digests of uris of MHTML parts that
-  // should be skipped.  This helps deduplicate mhtml parts across frames.
-  // SECURITY NOTE: Sha256 digests (rather than uris) are used to prevent
-  // disclosing uris to other renderer processes;  the digests should be
-  // generated using SHA256HashString function from crypto/sha2.h and hashing
-  // |salt + url.spec()|.
-  IPC_STRUCT_MEMBER(std::set<std::string>, digests_of_uris_to_skip)
-
-  // Salt used for |digests_of_uris_to_skip|.
-  IPC_STRUCT_MEMBER(std::string, salt)
-IPC_STRUCT_END()
-
 // This message is used to send hittesting data from the renderer in order
 // to perform hittesting on the browser process.
 IPC_STRUCT_BEGIN(FrameHostMsg_HittestData_Params)
@@ -1012,13 +977,6 @@ IPC_MESSAGE_ROUTED0(FrameMsg_GetSavableResourceLinks)
 IPC_MESSAGE_ROUTED2(FrameMsg_GetSerializedHtmlWithLocalLinks,
                     FrameMsg_GetSerializedHtmlWithLocalLinks_UrlMap,
                     FrameMsg_GetSerializedHtmlWithLocalLinks_FrameRoutingIdMap)
-
-// Serialize target frame and its resources into MHTML and write it into the
-// provided destination file handle.  Note that when serializing multiple
-// frames, one needs to serialize the *main* frame first (the main frame
-// needs to go first according to RFC2557 + the main frame will trigger
-// generation of the MHTML header).
-IPC_MESSAGE_ROUTED1(FrameMsg_SerializeAsMHTML, FrameMsg_SerializeAsMHTML_Params)
 
 IPC_MESSAGE_ROUTED1(FrameMsg_SetFrameOwnerProperties,
                     content::FrameOwnerProperties /* frame_owner_properties */)
@@ -1613,14 +1571,6 @@ IPC_MESSAGE_ROUTED0(FrameHostMsg_SavableResourceLinksError)
 IPC_MESSAGE_ROUTED2(FrameHostMsg_SerializedHtmlWithLocalLinksResponse,
                     std::string /* data buffer */,
                     bool /* end of data? */)
-
-// Response to FrameMsg_SerializeAsMHTML.
-IPC_MESSAGE_ROUTED4(
-    FrameHostMsg_SerializeAsMHTMLResponse,
-    int /* job_id (used to match responses to requests) */,
-    content::MhtmlSaveStatus /* final success/failure status */,
-    std::set<std::string> /* digests of uris of serialized resources */,
-    base::TimeDelta /* how much time of the main render thread was used */)
 
 // Sent when the renderer updates hint for importance of a tab.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_UpdatePageImportanceSignals,

@@ -630,7 +630,7 @@ class LinkRewritingDelegate : public WebFrameSerializer::LinkRewritingDelegate {
 
 // Implementation of WebFrameSerializer::MHTMLPartsGenerationDelegate that
 // 1. Bases shouldSkipResource and getContentID responses on contents of
-//    FrameMsg_SerializeAsMHTML_Params.
+//    SerializeAsMHTMLParams.
 // 2. Stores digests of urls of serialized resources (i.e. urls reported via
 //    shouldSkipResource) into |serialized_resources_uri_digests| passed
 //    to the constructor.
@@ -638,11 +638,18 @@ class MHTMLPartsGenerationDelegate
     : public WebFrameSerializer::MHTMLPartsGenerationDelegate {
  public:
   MHTMLPartsGenerationDelegate(
-      const FrameMsg_SerializeAsMHTML_Params& params,
-      std::set<std::string>* serialized_resources_uri_digests)
+      const mojom::SerializeAsMHTMLParams& params,
+      std::unordered_set<std::string>* serialized_resources_uri_digests)
       : params_(params),
         serialized_resources_uri_digests_(serialized_resources_uri_digests) {
     DCHECK(serialized_resources_uri_digests_);
+    // Digests must be sorted for binary search.
+    DCHECK(std::is_sorted(params_.digests_of_uris_to_skip.begin(),
+                          params_.digests_of_uris_to_skip.end()));
+    // URLs are not duplicated.
+    DCHECK(std::adjacent_find(params_.digests_of_uris_to_skip.begin(),
+                              params_.digests_of_uris_to_skip.end()) ==
+           params_.digests_of_uris_to_skip.end());
   }
 
   bool ShouldSkipResource(const WebURL& url) override {
@@ -650,7 +657,8 @@ class MHTMLPartsGenerationDelegate
         crypto::SHA256HashString(params_.salt + GURL(url).spec());
 
     // Skip if the |url| already covered by serialization of an *earlier* frame.
-    if (base::ContainsKey(params_.digests_of_uris_to_skip, digest))
+    if (std::binary_search(params_.digests_of_uris_to_skip.begin(),
+                           params_.digests_of_uris_to_skip.end(), digest))
       return true;
 
     // Let's record |url| as being serialized for the *current* frame.
@@ -672,8 +680,8 @@ class MHTMLPartsGenerationDelegate
   }
 
  private:
-  const FrameMsg_SerializeAsMHTML_Params& params_;
-  std::set<std::string>* serialized_resources_uri_digests_;
+  const mojom::SerializeAsMHTMLParams& params_;
+  std::unordered_set<std::string>* serialized_resources_uri_digests_;
 
   DISALLOW_COPY_AND_ASSIGN(MHTMLPartsGenerationDelegate);
 };
@@ -1709,6 +1717,7 @@ RenderFrameImpl::RenderFrameImpl(CreateParams params)
       frame_bindings_control_binding_(this),
       frame_navigation_control_binding_(this),
       fullscreen_binding_(this),
+      mhtml_file_writer_binding_(this),
       navigation_client_impl_(nullptr),
       has_accessed_initial_document_(false),
       media_factory_(this,
@@ -2155,7 +2164,6 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnGetSavableResourceLinks)
     IPC_MESSAGE_HANDLER(FrameMsg_GetSerializedHtmlWithLocalLinks,
                         OnGetSerializedHtmlWithLocalLinks)
-    IPC_MESSAGE_HANDLER(FrameMsg_SerializeAsMHTML, OnSerializeAsMHTML)
     IPC_MESSAGE_HANDLER(FrameMsg_EnableViewSourceMode, OnEnableViewSourceMode)
     IPC_MESSAGE_HANDLER(FrameMsg_SuppressFurtherDialogs,
                         OnSuppressFurtherDialogs)
@@ -6508,21 +6516,24 @@ void RenderFrameImpl::OnGetSerializedHtmlWithLocalLinks(
                                 &delegate);
 }
 
-void RenderFrameImpl::OnSerializeAsMHTML(
-    const FrameMsg_SerializeAsMHTML_Params& params) {
-  TRACE_EVENT0("page-serialization", "RenderFrameImpl::OnSerializeAsMHTML");
+// mojom::MhtmlFileWriter implementation
+// ----------------------------------------
+
+void RenderFrameImpl::SerializeAsMHTML(mojom::SerializeAsMHTMLParamsPtr params,
+                                       SerializeAsMHTMLCallback callback) {
+  TRACE_EVENT0("page-serialization", "RenderFrameImpl::SerializeAsMHTML");
   base::TimeTicks start_time = base::TimeTicks::Now();
-  // Unpack IPC payload.
-  base::File file = IPC::PlatformFileForTransitToFile(params.destination_file);
+
+  // Unpack payload.
   const WebString mhtml_boundary =
-      WebString::FromUTF8(params.mhtml_boundary_marker);
+      WebString::FromUTF8(params->mhtml_boundary_marker);
   DCHECK(!mhtml_boundary.IsEmpty());
 
   // Holds WebThreadSafeData instances for some or all of header, contents and
   // footer.
   std::vector<WebThreadSafeData> mhtml_contents;
-  std::set<std::string> serialized_resources_uri_digests;
-  MHTMLPartsGenerationDelegate delegate(params,
+  std::unordered_set<std::string> serialized_resources_uri_digests;
+  MHTMLPartsGenerationDelegate delegate(*params,
                                         &serialized_resources_uri_digests);
 
   MhtmlSaveStatus save_status = MhtmlSaveStatus::SUCCESS;
@@ -6531,7 +6542,7 @@ void RenderFrameImpl::OnSerializeAsMHTML(
   // Generate MHTML header if needed.
   if (IsMainFrame()) {
     TRACE_EVENT0("page-serialization",
-                 "RenderFrameImpl::OnSerializeAsMHTML header");
+                 "RenderFrameImpl::SerializeAsMHTML header");
     // The returned data can be empty if the main frame should be skipped. If
     // the main frame is skipped, then the whole archive is bad.
     mhtml_contents.emplace_back(WebFrameSerializer::GenerateMHTMLHeader(
@@ -6544,7 +6555,7 @@ void RenderFrameImpl::OnSerializeAsMHTML(
   // results in an omitted resource in the final file.
   if (save_status == MhtmlSaveStatus::SUCCESS) {
     TRACE_EVENT0("page-serialization",
-                 "RenderFrameImpl::OnSerializeAsMHTML parts serialization");
+                 "RenderFrameImpl::SerializeAsMHTML parts serialization");
     // The returned data can be empty if the frame should be skipped, but this
     // is OK.
     mhtml_contents.emplace_back(WebFrameSerializer::GenerateMHTMLParts(
@@ -6566,34 +6577,41 @@ void RenderFrameImpl::OnSerializeAsMHTML(
   if (save_status == MhtmlSaveStatus::SUCCESS && has_some_data) {
     base::PostTaskWithTraitsAndReplyWithResult(
         FROM_HERE, {base::MayBlock()},
-        base::Bind(&WriteMHTMLToDisk, base::Passed(&mhtml_contents),
-                   base::Passed(&file)),
-        base::Bind(&RenderFrameImpl::OnWriteMHTMLToDiskComplete,
-                   weak_factory_.GetWeakPtr(), params.job_id,
-                   base::Passed(&serialized_resources_uri_digests),
-                   main_thread_use_time));
+        base::BindOnce(&WriteMHTMLToDisk, std::move(mhtml_contents),
+                       std::move(params->destination_file)),
+        base::BindOnce(&RenderFrameImpl::OnWriteMHTMLToDiskComplete,
+                       weak_factory_.GetWeakPtr(), std::move(callback),
+                       std::move(serialized_resources_uri_digests),
+                       main_thread_use_time));
   } else {
-    file.Close();
-    OnWriteMHTMLToDiskComplete(params.job_id, serialized_resources_uri_digests,
+    params->destination_file.Close();
+    OnWriteMHTMLToDiskComplete(std::move(callback),
+                               std::move(serialized_resources_uri_digests),
                                main_thread_use_time, save_status);
   }
 }
 
 void RenderFrameImpl::OnWriteMHTMLToDiskComplete(
-    int job_id,
-    std::set<std::string> serialized_resources_uri_digests,
+    SerializeAsMHTMLCallback callback,
+    std::unordered_set<std::string> serialized_resources_uri_digests,
     base::TimeDelta main_thread_use_time,
     MhtmlSaveStatus save_status) {
   TRACE_EVENT1("page-serialization",
                "RenderFrameImpl::OnWriteMHTMLToDiskComplete",
                "frame save status", GetMhtmlSaveStatusLabel(save_status));
   DCHECK(RenderThread::Get()) << "Must run in the main renderer thread";
-  // Notify the browser process about completion.
+
+  // Convert the set into a vector for transport.
+  std::vector<std::string> digests_of_new_parts(
+      std::make_move_iterator(serialized_resources_uri_digests.begin()),
+      std::make_move_iterator(serialized_resources_uri_digests.end()));
+
+  // Notify the browser process about completion using the callback.
   // Note: we assume this method is fast enough to not need to be accounted for
   // in PageSerialization.MhtmlGeneration.RendererMainThreadTime.SingleFrame.
-  Send(new FrameHostMsg_SerializeAsMHTMLResponse(
-      routing_id_, job_id, save_status, serialized_resources_uri_digests,
-      main_thread_use_time));
+  std::move(callback).Run(
+      static_cast<content::mojom::MhtmlSaveStatus>(save_status),
+      std::move(digests_of_new_parts), main_thread_use_time);
 }
 
 #ifndef STATIC_ASSERT_ENUM
@@ -7247,6 +7265,9 @@ void RenderFrameImpl::RegisterMojoInterfaces() {
   registry_.AddInterface(
       base::Bind(&RenderFrameImpl::BindWidget, weak_factory_.GetWeakPtr()));
 
+  GetAssociatedInterfaceRegistry()->AddInterface(base::BindRepeating(
+      &RenderFrameImpl::BindMhtmlFileWriter, base::Unretained(this)));
+
   if (!frame_->Parent()) {
     // Only main frame have ImageDownloader service.
     registry_.AddInterface(base::Bind(&ImageDownloaderImpl::CreateMojoService,
@@ -7268,6 +7289,12 @@ void RenderFrameImpl::OnHostZoomClientRequest(
   DCHECK(!host_zoom_binding_.is_bound());
   host_zoom_binding_.Bind(std::move(request),
                           GetTaskRunner(blink::TaskType::kInternalIPC));
+}
+
+void RenderFrameImpl::BindMhtmlFileWriter(
+    mojom::MhtmlFileWriterAssociatedRequest request) {
+  mhtml_file_writer_binding_.Bind(
+      std::move(request), GetTaskRunner(blink::TaskType::kInternalDefault));
 }
 
 void RenderFrameImpl::CheckIfAudioSinkExistsAndIsAuthorized(
