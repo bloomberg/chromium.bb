@@ -5,12 +5,6 @@
       "_bug_id": "crbug.com/698369"
     }
   ],
-  "android.webkit.cts.WebSettingsTest": [
-    {
-      "name": "testAllowMixedMode",
-      "_bug_id": "crbug.com/777393"
-    }
-  ],
   "android.webkit.cts.ServiceWorkerClientTest": [
     {
       "name": "testServiceWorkerClientInterceptCallback",
