@@ -1441,6 +1441,9 @@ bool VaapiWrapper::Initialize(CodecMode mode, VAProfile va_profile) {
   std::vector<VAConfigAttrib> required_attribs =
       GetRequiredAttribs(mode, va_profile);
 
+  if ((mode == CodecMode::kEncode) && IsLowPowerEncSupported(va_profile))
+    entrypoint = VAEntrypointEncSliceLP;
+
   base::AutoLock auto_lock(*va_lock_);
 
   VAStatus va_res =
@@ -1552,6 +1555,40 @@ void VaapiWrapper::TryToSetVADisplayAttributeToLocalGPU() {
   VAStatus va_res = vaSetDisplayAttributes(va_display_, &item, 1);
   if (va_res != VA_STATUS_SUCCESS)
     DVLOG(2) << "vaSetDisplayAttributes unsupported, ignoring by default.";
+}
+
+// Check the support for low-power encode
+bool VaapiWrapper::IsLowPowerEncSupported(VAProfile va_profile) const {
+  // Only enabled for H264/AVC
+  if (va_profile != VAProfileH264ConstrainedBaseline &&
+      va_profile != VAProfileH264Main && va_profile != VAProfileH264High)
+    return false;
+
+  constexpr VAEntrypoint kLowPowerEncEntryPoint = VAEntrypointEncSliceLP;
+  const std::vector<VAConfigAttrib> required_attribs =
+      GetRequiredAttribs(VaapiWrapper::CodecMode::kEncode, va_profile);
+
+  base::AutoLock auto_lock(*va_lock_);
+  // Query the driver for required attributes.
+  std::vector<VAConfigAttrib> attribs = required_attribs;
+  for (size_t i = 0; i < required_attribs.size(); ++i)
+    attribs[i].value = 0;
+
+  VAStatus va_res =
+      vaGetConfigAttributes(va_display_, va_profile, kLowPowerEncEntryPoint,
+                            &attribs[0], attribs.size());
+  VA_SUCCESS_OR_RETURN(va_res, "vaGetConfigAttributes failed", false);
+
+  for (size_t i = 0; i < required_attribs.size(); ++i) {
+    if (attribs[i].type != required_attribs[i].type ||
+        (attribs[i].value & required_attribs[i].value) !=
+            required_attribs[i].value) {
+      DVLOG(1) << "Unsupported value " << required_attribs[i].value
+               << " for attribute type " << required_attribs[i].type;
+      return false;
+    }
+  }
+  return true;
 }
 
 }  // namespace media
