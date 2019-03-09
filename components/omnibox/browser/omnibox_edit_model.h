@@ -164,7 +164,7 @@ class OmniboxEditModel {
   // Returns the permanent display text for the current page and Omnibox state.
   base::string16 GetPermanentDisplayText() const;
 
-  // Sets the user_text_ to |text|.
+  // Sets the user_text_ to |text|. Also enters user-input-in-progress mode.
   void SetUserText(const base::string16& text);
 
   // If the omnibox is currently displaying elided text, this method will
@@ -411,7 +411,8 @@ class OmniboxEditModel {
   // Virtual for testing.
   virtual bool PopupIsOpen() const;
 
-  // Called whenever user_text_ should change.
+  // An internal method to set the user text. Notably, this differs from
+  // SetUserText because it does not change the user-input-in-progress state.
   void InternalSetUserText(const base::string16& text);
 
   // Conversion between user text and display text. User text is the text the
@@ -514,7 +515,10 @@ class OmniboxEditModel {
   bool user_input_in_progress_;
 
   // The text that the user has entered.  This does not include inline
-  // autocomplete text that has not yet been accepted.
+  // autocomplete text that has not yet been accepted.  |user_text_| can
+  // contain a string without |user_input_in_progress_| being true.
+  // For instance, this is the case when the user has unelided a URL without
+  // modifying its contents.
   base::string16 user_text_;
 
   // We keep track of when the user last focused on the omnibox.
