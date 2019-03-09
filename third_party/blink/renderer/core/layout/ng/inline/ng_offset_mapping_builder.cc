@@ -169,28 +169,15 @@ void NGOffsetMappingBuilder::CollapseTrailingSpace(unsigned space_offset) {
   unsigned position = std::distance(mapping_units_.begin(), container_unit);
   mapping_units_.EraseAt(position);
   mapping_units_.InsertVector(position, new_units);
-  ShiftRanges(position, new_units.size() - 1);
   unsigned new_unit_end = position + new_units.size();
   while (new_unit_end && new_unit_end < mapping_units_.size() &&
          mapping_units_[new_unit_end - 1].Concatenate(
              mapping_units_[new_unit_end])) {
     mapping_units_.EraseAt(new_unit_end);
-    ShiftRanges(new_unit_end, -1);
   }
   while (position && position < mapping_units_.size() &&
          mapping_units_[position - 1].Concatenate(mapping_units_[position])) {
     mapping_units_.EraseAt(position);
-    ShiftRanges(position, -1);
-  }
-}
-
-void NGOffsetMappingBuilder::ShiftRanges(unsigned position, int delta) {
-  for (auto& range : unit_ranges_) {
-    auto& pair = range.value;
-    if (pair.first > position)
-      pair.first += delta;
-    if (pair.second > position)
-      pair.second += delta;
   }
 }
 
@@ -216,22 +203,6 @@ NGOffsetMapping NGOffsetMappingBuilder::Build() {
 
   return NGOffsetMapping(std::move(mapping_units_), std::move(unit_ranges_),
                          destination_string_);
-}
-
-void NGOffsetMappingBuilder::EnterInline(const LayoutObject& layout_object) {
-  if (!layout_object.NonPseudoNode())
-    return;
-  open_inlines_.push_back(mapping_units_.size());
-}
-
-void NGOffsetMappingBuilder::ExitInline(const LayoutObject& layout_object) {
-  if (!layout_object.NonPseudoNode())
-    return;
-  DCHECK(open_inlines_.size());
-  unit_ranges_.insert(
-      layout_object.GetNode(),
-      std::make_pair(open_inlines_.back(), mapping_units_.size()));
-  open_inlines_.pop_back();
 }
 
 }  // namespace blink

@@ -122,7 +122,7 @@ class CORE_EXPORT NGOffsetMapping {
 
   // NGOffsetMapping APIs only accept the following positions:
   // 1. Offset-in-anchor in a text node;
-  // 2. Before/After-anchor of an inline-level node.
+  // 2. Before/After-anchor of an atomic inline or a text-like node like <br>.
   static bool AcceptsPosition(const Position&);
 
   // Returns the mapping object of the inline formatting context laying out the
