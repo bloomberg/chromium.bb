@@ -9,7 +9,6 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search/search.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper_observer.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/sad_tab.h"
@@ -17,57 +16,15 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/sync_preferences/pref_service_syncable.h"
-#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 
 using bookmarks::BookmarkModel;
 using bookmarks::BookmarkNode;
 
-namespace {
-
-bool IsNTP(content::WebContents* web_contents) {
-  // Use the committed entry so the bookmarks bar disappears at the same time
-  // the page does.
-  content::NavigationEntry* entry =
-      web_contents->GetController().GetLastCommittedEntry();
-  if (!entry)
-    entry = web_contents->GetController().GetVisibleEntry();
-  return (entry && NewTabUI::IsNewTab(entry->GetURL())) ||
-         search::NavEntryIsInstantNTP(web_contents, entry);
-}
-
-}  // namespace
-
 BookmarkTabHelper::~BookmarkTabHelper() {
   if (bookmark_model_)
     bookmark_model_->RemoveObserver(this);
-}
-
-bool BookmarkTabHelper::ShouldShowBookmarkBar() const {
-  if (web_contents()->ShowingInterstitialPage())
-    return false;
-
-  if (SadTab::ShouldShow(web_contents()->GetCrashedStatus()))
-    return false;
-
-  if (!browser_defaults::bookmarks_enabled)
-    return false;
-
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-
-#if !defined(OS_CHROMEOS)
-  if (profile->IsGuestSession())
-    return false;
-#endif
-
-  PrefService* prefs = profile->GetPrefs();
-  if (prefs->IsManagedPreference(bookmarks::prefs::kShowBookmarkBar) &&
-      !prefs->GetBoolean(bookmarks::prefs::kShowBookmarkBar))
-    return false;
-
-  return IsNTP(web_contents());
 }
 
 void BookmarkTabHelper::AddObserver(BookmarkTabHelperObserver* observer) {

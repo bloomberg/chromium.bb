@@ -16,8 +16,7 @@ class BookmarkBar {
     // The bookmark bar is visible and not detached.
     SHOW,
 
-    // The bookmark bar is visible and detached from the location bar (as
-    // happens on the new tab page).
+    // The bookmark bar is visible and detached from the location bar.
     DETACHED
   };
 

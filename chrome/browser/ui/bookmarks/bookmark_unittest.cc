@@ -19,12 +19,6 @@
 
 typedef BrowserWithTestWindowTest BookmarkTest;
 
-// Verify that the detached bookmark bar is visible on the new tab page.
-TEST_F(BookmarkTest, DetachedBookmarkBarOnNTP) {
-  AddTab(browser(), GURL(chrome::kChromeUINewTabURL));
-  EXPECT_EQ(BookmarkBar::DETACHED, browser()->bookmark_bar_state());
-}
-
 // Verify that the detached bookmark bar is hidden on custom NTP pages.
 TEST_F(BookmarkTest, DetachedBookmarkBarOnCustomNTP) {
   // Create a empty commited web contents.
@@ -76,10 +70,3 @@ class BookmarkInstantExtendedTest : public BrowserWithTestWindowTest {
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkInstantExtendedTest);
 };
-
-// Verify that in instant extended mode the detached bookmark bar is visible on
-// the new tab page.
-TEST_F(BookmarkInstantExtendedTest, DetachedBookmarkBarOnNTP) {
-  AddTab(browser(), GURL(chrome::kChromeUINewTabURL));
-  EXPECT_EQ(BookmarkBar::DETACHED, browser()->bookmark_bar_state());
-}

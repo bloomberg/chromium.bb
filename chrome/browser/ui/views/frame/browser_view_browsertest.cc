@@ -215,7 +215,7 @@ class BookmarkBarViewObserverImpl : public BookmarkBarViewObserver {
 // Verifies we don't unnecessarily change the visibility of the BookmarkBarView.
 IN_PROC_BROWSER_TEST_F(BrowserViewTest, AvoidUnnecessaryVisibilityChanges) {
   // Create two tabs, the first empty and the second the ntp. Make it so the
-  // BookmarkBarView isn't shown (meaning it'll only be shown when on the ntp).
+  // BookmarkBarView isn't shown.
   browser()->profile()->GetPrefs()->SetBoolean(
       bookmarks::prefs::kShowBookmarkBar, false);
   GURL new_tab_url(chrome::kChromeUINewTabURL);
@@ -226,34 +226,29 @@ IN_PROC_BROWSER_TEST_F(BrowserViewTest, AvoidUnnecessaryVisibilityChanges) {
   BookmarkBarViewObserverImpl observer;
   BookmarkBarView* bookmark_bar = browser_view()->bookmark_bar();
   bookmark_bar->AddObserver(&observer);
-  EXPECT_TRUE(bookmark_bar->visible());
+  EXPECT_FALSE(bookmark_bar->visible());
 
   // Go to empty tab. Bookmark bar should hide.
   browser()->tab_strip_model()->ActivateTabAt(
       0, {TabStripModel::GestureType::kOther});
   EXPECT_FALSE(bookmark_bar->visible());
-  EXPECT_EQ(1, observer.change_count());
+  EXPECT_EQ(0, observer.change_count());
   observer.clear_change_count();
 
-  // Go to ntp tab. Bookmark bar should show.
+  // Go to ntp tab. Bookmark bar should not show.
   browser()->tab_strip_model()->ActivateTabAt(
       1, {TabStripModel::GestureType::kOther});
-  EXPECT_TRUE(bookmark_bar->visible());
-  EXPECT_EQ(1, observer.change_count());
+  EXPECT_FALSE(bookmark_bar->visible());
+  EXPECT_EQ(0, observer.change_count());
   observer.clear_change_count();
 
   // Repeat with the bookmark bar always visible.
   browser()->profile()->GetPrefs()->SetBoolean(
       bookmarks::prefs::kShowBookmarkBar, true);
   browser()->tab_strip_model()->ActivateTabAt(
-      1, {TabStripModel::GestureType::kOther});
-  EXPECT_TRUE(bookmark_bar->visible());
-  observer.clear_change_count();
-
-  browser()->tab_strip_model()->ActivateTabAt(
       0, {TabStripModel::GestureType::kOther});
   EXPECT_TRUE(bookmark_bar->visible());
-  EXPECT_EQ(0, observer.change_count());
+  EXPECT_EQ(1, observer.change_count());
   observer.clear_change_count();
 
   browser()->tab_strip_model()->ActivateTabAt(
