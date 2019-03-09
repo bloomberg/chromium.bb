@@ -3034,6 +3034,9 @@ crbug.com/939181 external/wpt/html/browsers/origin/cross-origin-objects/cross-or
 crbug.com/939181 virtual/not-site-per-process/external/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects.html [ Failure Timeout ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Mac10.12 ] virtual/threaded/external/wpt/animation-worklet/playback-rate.https.html [ Timeout ]
+crbug.com/626703 [ Mac10.13 ] virtual/threaded/external/wpt/animation-worklet/playback-rate.https.html [ Timeout ]
+crbug.com/626703 [ Retina ] virtual/threaded/external/wpt/animation-worklet/playback-rate.https.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-sizing/range-percent-intrinsic-size-2a.html [ Failure ]
 crbug.com/626703 external/wpt/infrastructure/reftest/reftest_fuzzy.html [ Failure ]
 crbug.com/626703 external/wpt/infrastructure/reftest/reftest_fuzzy_1.html [ Failure ]
