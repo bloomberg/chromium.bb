@@ -590,13 +590,9 @@ TEST_F(ProfileAttributesStorageTest, AccessFromElsewhere) {
   EXPECT_EQ(base::ASCIIToUTF16("OtherNewName"), first_entry->GetName());
 }
 
-TEST_F(ProfileAttributesStorageTest,
-       DISABLED_ChooseAvatarIconIndexForNewProfile) {
-  size_t total_icon_count = profiles::GetDefaultAvatarIconCount();
-#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
-  size_t generic_icon_count = profiles::GetGenericAvatarIconCount();
-  ASSERT_LE(generic_icon_count, total_icon_count);
-#endif
+TEST_F(ProfileAttributesStorageTest, ChooseAvatarIconIndexForNewProfile) {
+  size_t total_icon_count = profiles::GetDefaultAvatarIconCount() -
+                            profiles::GetModernAvatarIconStartIndex();
 
   // Run ChooseAvatarIconIndexForNewProfile |num_iterations| times before using
   // the final |icon_index| to add a profile. Multiple checks are needed because
@@ -612,7 +608,7 @@ TEST_F(ProfileAttributesStorageTest,
       icon_index = storage()->ChooseAvatarIconIndexForNewProfile();
       // Icon must not be used.
       ASSERT_EQ(0u, used_icon_indices.count(icon_index));
-      ASSERT_GT(total_icon_count, icon_index);
+      ASSERT_TRUE(profiles::IsModernAvatarIconIndex(icon_index));
     }
 
     used_icon_indices.insert(icon_index);
@@ -628,8 +624,8 @@ TEST_F(ProfileAttributesStorageTest,
 
   for (int iter = 0; iter < num_iterations; ++iter) {
     // All icons are used up, expect any valid icon.
-    ASSERT_GT(total_icon_count,
-              storage()->ChooseAvatarIconIndexForNewProfile());
+    ASSERT_TRUE(profiles::IsModernAvatarIconIndex(
+        storage()->ChooseAvatarIconIndexForNewProfile()));
   }
 }
 
