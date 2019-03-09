@@ -17,8 +17,7 @@ NativeStackSamplerAndroid::NativeStackSamplerAndroid(base::PlatformThreadId tid)
 
 NativeStackSamplerAndroid::~NativeStackSamplerAndroid() = default;
 
-std::vector<base::StackSamplingProfiler::Frame>
-NativeStackSamplerAndroid::RecordStackFrames(
+void NativeStackSamplerAndroid::RecordStackFrames(
     StackBuffer* stack_buffer,
     base::StackSamplingProfiler::ProfileBuilder* profile_builder) {
   if (!unwinder_.is_initialized()) {
@@ -36,7 +35,7 @@ NativeStackSamplerAndroid::RecordStackFrames(
     // TODO(ssid): Add support for obtaining modules here.
     frames.emplace_back(reinterpret_cast<uintptr_t>(pcs[i]), nullptr);
   }
-  return frames;
+  profile_builder->OnSampleCompleted(std::move(frames));
 }
 
 }  // namespace tracing

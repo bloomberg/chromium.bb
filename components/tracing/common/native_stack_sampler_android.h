@@ -22,7 +22,7 @@ class NativeStackSamplerAndroid : public base::NativeStackSampler {
   ~NativeStackSamplerAndroid() override;
 
   // StackSamplingProfiler::NativeStackSampler:
-  std::vector<base::StackSamplingProfiler::Frame> RecordStackFrames(
+  void RecordStackFrames(
       StackBuffer* stack_buffer,
       base::StackSamplingProfiler::ProfileBuilder* profile_builder) override;
 

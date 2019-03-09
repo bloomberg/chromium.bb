@@ -526,9 +526,8 @@ void StackSamplingProfiler::SamplingThread::RecordSampleTask(
   }
 
   // Record a single sample.
-  collection->profile_builder->OnSampleCompleted(
-      collection->native_sampler->RecordStackFrames(
-          stack_buffer_.get(), collection->profile_builder.get()));
+  collection->native_sampler->RecordStackFrames(
+      stack_buffer_.get(), collection->profile_builder.get());
 
   // Schedule the next sample recording if there is one.
   if (++collection->sample_count < collection->params.samples_per_profile) {
