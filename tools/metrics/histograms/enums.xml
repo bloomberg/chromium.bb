@@ -39205,6 +39205,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="9" label="Clicked on Learn More"/>
   <int value="10"
       label="Clicked on the Refresh button in the all dismissed state"/>
+  <int value="11" label="Opened an explore sites tile"/>
 </enum>
 
 <enum name="NewTabPageActioniOS">

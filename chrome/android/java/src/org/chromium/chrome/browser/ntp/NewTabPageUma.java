@@ -34,7 +34,8 @@ public final class NewTabPageUma {
     private NewTabPageUma() {}
 
     // Possible actions taken by the user on the NTP. These values are also defined in
-    // histograms.xml. WARNING: these values must stay in sync with histograms.xml.
+    // enums.xml as NewTabPageActionAndroid2.
+    // WARNING: these values must stay in sync with enums.xml.
 
     /** User performed a search using the omnibox. */
     private static final int ACTION_SEARCHED_USING_OMNIBOX = 0;
@@ -69,8 +70,11 @@ public final class NewTabPageUma {
     /** User clicked on the "Refresh" button in the "all dismissed" state. */
     public static final int ACTION_CLICKED_ALL_DISMISSED_REFRESH = 10;
 
+    /** User opened an explore sites tile. */
+    public static final int ACTION_OPENED_EXPLORE_SITES_TILE = 11;
+
     /** The number of possible actions. */
-    private static final int NUM_ACTIONS = 11;
+    private static final int NUM_ACTIONS = 12;
 
     /** User navigated to a page using the omnibox. */
     private static final int RAPPOR_ACTION_NAVIGATED_USING_OMNIBOX = 0;
@@ -93,7 +97,7 @@ public final class NewTabPageUma {
 
     /**
      * Possible results when updating content suggestions list in the UI. Keep in sync with the
-     * ContentSuggestionsUIUpdateResult enum in histograms.xml. Do not remove or change existing
+     * ContentSuggestionsUIUpdateResult2 enum in enums.xml. Do not remove or change existing
      * values other than NUM_UI_UPDATE_RESULTS.
      */
     @IntDef({ContentSuggestionsUIUpdateResult.SUCCESS_APPENDED,
