@@ -3129,7 +3129,7 @@ def FirmwareBuilders(site_config, _boards_dict, _ge_build_config):
     )
 
 
-def FactoryBuilders(site_config, boards_dict, ge_build_config):
+def FactoryBuilders(site_config, _boards_dict, _ge_build_config):
   """Create all factory build configs.
 
   Args:
@@ -3138,20 +3138,10 @@ def FactoryBuilders(site_config, boards_dict, ge_build_config):
     boards_dict: A dict mapping board types to board name collections.
     ge_build_config: Dictionary containing the decoded GE configuration file.
   """
-  board_configs = CreateInternalBoardConfigs(
-      site_config, boards_dict, ge_build_config)
-
-  _factory_boards = (chromeos_boards.arm_internal_release_boards |
-                     chromeos_boards.x86_internal_release_boards)
-  _factory_boards -= chromeos_boards.nofactory_boards
-
-  for board in _factory_boards:
-    site_config.Add(
-        '%s-%s' % (board, config_lib.CONFIG_TYPE_FACTORY),
-        site_config.templates.factory,
-        board_configs[board],
-    )
-
+  # Intervals:
+  # None: Do not schedule automatically.
+  #ACTIVE = 'with 168h interval'  # 1 week interval
+  #INACTIVE = 'with 720h interval'  # 30 day interval
   branch_builders = [
       (None, 'factory-beltino-5140.14.B', ['tricky', 'mccloud']),
       (None, 'factory-rambi-5517.B', [
