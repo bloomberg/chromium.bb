@@ -1066,7 +1066,7 @@ void Shell::Init(
   AddPreTargetHandler(env_filter_.get());
 
   // FocusController takes ownership of AshFocusRules.
-  focus_rules_ = new wm::AshFocusRules();
+  focus_rules_ = new AshFocusRules();
   focus_controller_ = std::make_unique<::wm::FocusController>(focus_rules_);
   focus_controller_->AddObserver(this);
 
