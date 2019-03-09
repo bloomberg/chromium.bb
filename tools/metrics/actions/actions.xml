@@ -11727,6 +11727,13 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MobileNTPExploreSites">
+  <owner>dewittj@chromium.org</owner>
+  <description>
+    Recorded when a user clicks on an Explore Sites category tile on the NTP.
+  </description>
+</action>
+
 <action name="MobileNTPForeignSession">
   <obsolete>
     Deprecated as of 01/2017. Replaced with
@@ -11737,8 +11744,8 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileNTPMostVisited">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>dewittj@chromium.org</owner>
+  <description>Recorded when a user clicks on a Most Visited tile.</description>
 </action>
 
 <action name="MobileNTPOpenedInNewTab">
