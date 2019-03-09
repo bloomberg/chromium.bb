@@ -27,11 +27,12 @@ class MEDIA_EXPORT LearningHelper {
                    const VideoDecodeStatsDB::DecodeStatsEntry& new_stats);
 
  private:
-  // Learning session for our profile.  Normally, we'd not have one of these
-  // directly, but would instead get one that's connected to a browser profile.
-  // For now, however, we just instantiate one and assume that we'll be
-  // destroyed when the profile changes / history is cleared.
-  base::SequenceBound<learning::LearningSessionImpl> learning_session_;
+  // Learning session for our profile.  This isn't the way LearningSession is
+  // intended to be used -- one should expect to get a LearningTaskController
+  // for a particular task.  The LearningSession would be owned elsewhere (e.g.,
+  // the BrowserContext).  We do it this way here since LearningHelper is an
+  // hacky way to see if all this works.
+  std::unique_ptr<learning::LearningSessionImpl> learning_session_;
 };
 
 }  // namespace media
