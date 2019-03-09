@@ -18439,6 +18439,8 @@ Called by update_net_error_codes.py.-->
   <int value="1321" label="AUTOTESTPRIVATE_GETARCSTATE"/>
   <int value="1322" label="AUTOTESTPRIVATE_ISTABLETMODEENABLED"/>
   <int value="1323" label="AUTOTESTPRIVATE_SETTABLETMODEENABLED"/>
+  <int value="1324" label="AUTOTESTPRIVATE_GETSHELFAUTOHIDEBEHAVIOR"/>
+  <int value="1325" label="AUTOTESTPRIVATE_SETSHELFAUTOHIDEBEHAVIOR"/>
 </enum>
 
 <enum name="ExtensionIconState">

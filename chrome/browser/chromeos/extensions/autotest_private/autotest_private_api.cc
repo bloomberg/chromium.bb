@@ -1523,6 +1523,116 @@ void AutotestPrivateSetTabletModeEnabledFunction::OnSetTabletModeEnabled(
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateGetShelfAutoHideBehaviorFunction
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateGetShelfAutoHideBehaviorFunction::
+    AutotestPrivateGetShelfAutoHideBehaviorFunction() = default;
+
+AutotestPrivateGetShelfAutoHideBehaviorFunction::
+    ~AutotestPrivateGetShelfAutoHideBehaviorFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateGetShelfAutoHideBehaviorFunction::Run() {
+  DVLOG(1) << "AutotestPrivateGetShelfAutoHideBehaviorFunction";
+
+  std::unique_ptr<api::autotest_private::GetShelfAutoHideBehavior::Params>
+      params(api::autotest_private::GetShelfAutoHideBehavior::Params::Create(
+          *args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  service_manager::Connector* connector =
+      content::ServiceManagerConnection::GetForProcess()->GetConnector();
+  connector->BindInterface(ash::mojom::kServiceName, &shelf_controller_);
+
+  int64_t display_id;
+  if (!base::StringToInt64(params->display_id, &display_id)) {
+    return RespondNow(
+        Error("Invalid display_id. Expected string with numbers only. got %s",
+              params->display_id));
+  }
+
+  shelf_controller_->GetAutoHideBehaviorForTesting(
+      display_id,
+      base::BindOnce(&AutotestPrivateGetShelfAutoHideBehaviorFunction::
+                         OnGetShelfAutoHideBehaviorCompleted,
+                     this));
+  return RespondLater();
+}
+
+void AutotestPrivateGetShelfAutoHideBehaviorFunction::
+    OnGetShelfAutoHideBehaviorCompleted(ash::ShelfAutoHideBehavior behavior) {
+  std::string str_behavior;
+  switch (behavior) {
+    case ash::ShelfAutoHideBehavior::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS:
+      str_behavior = "always";
+      break;
+    case ash::ShelfAutoHideBehavior::SHELF_AUTO_HIDE_BEHAVIOR_NEVER:
+      str_behavior = "never";
+      break;
+    case ash::ShelfAutoHideBehavior::SHELF_AUTO_HIDE_ALWAYS_HIDDEN:
+      str_behavior = "hidden";
+      break;
+  }
+  Respond(OneArgument(std::make_unique<base::Value>(str_behavior)));
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateSetShelfAutoHideBehaviorFunction
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateSetShelfAutoHideBehaviorFunction::
+    AutotestPrivateSetShelfAutoHideBehaviorFunction() = default;
+
+AutotestPrivateSetShelfAutoHideBehaviorFunction::
+    ~AutotestPrivateSetShelfAutoHideBehaviorFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateSetShelfAutoHideBehaviorFunction::Run() {
+  DVLOG(1) << "AutotestPrivateSetShelfAutoHideBehaviorFunction";
+
+  std::unique_ptr<api::autotest_private::SetShelfAutoHideBehavior::Params>
+      params(api::autotest_private::SetShelfAutoHideBehavior::Params::Create(
+          *args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  service_manager::Connector* connector =
+      content::ServiceManagerConnection::GetForProcess()->GetConnector();
+  connector->BindInterface(ash::mojom::kServiceName, &shelf_controller_);
+
+  ash::ShelfAutoHideBehavior behavior;
+  if (params->behavior == "always") {
+    behavior = ash::ShelfAutoHideBehavior::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS;
+  } else if (params->behavior == "never") {
+    behavior = ash::ShelfAutoHideBehavior::SHELF_AUTO_HIDE_BEHAVIOR_NEVER;
+  } else if (params->behavior == "hidden") {
+    behavior = ash::ShelfAutoHideBehavior::SHELF_AUTO_HIDE_ALWAYS_HIDDEN;
+  } else {
+    return RespondNow(Error(
+        "Invalid argument: '%s'. Expected: 'always', 'never' or 'hidden'.",
+        params->behavior));
+  }
+  int64_t display_id;
+  if (!base::StringToInt64(params->display_id, &display_id)) {
+    return RespondNow(
+        Error("Invalid display_id. Expected string with numbers only. got %s",
+              params->display_id));
+  }
+
+  shelf_controller_->SetAutoHideBehaviorForTesting(
+      display_id, behavior,
+      base::BindOnce(&AutotestPrivateSetShelfAutoHideBehaviorFunction::
+                         OnSetShelfAutoHideBehaviorCompleted,
+                     this));
+  return RespondLater();
+}
+
+void AutotestPrivateSetShelfAutoHideBehaviorFunction::
+    OnSetShelfAutoHideBehaviorCompleted() {
+  Respond(NoArguments());
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // AutotestPrivateAPI
 ///////////////////////////////////////////////////////////////////////////////
 

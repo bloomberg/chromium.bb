@@ -242,8 +242,8 @@ var defaultTests = [
         chrome.test.callbackFail(
           'Assistant is not available for the current user'));
   },
-  // This test verifies that getArcState returns provisined False in case ARC
-  // is not provisoned by default.
+  // This test verifies that getArcState returns provisioned False in case ARC
+  // is not provisioned by default.
   function arcNotProvisioned() {chrome.autotestPrivate.getArcState(
     function(state) {
       chrome.test.assertFalse(state.provisioned);
@@ -314,11 +314,40 @@ var defaultTests = [
       chrome.test.succeed();
     });
   },
+  // This test verifies that changing the shelf behavior works as expected.
+  function setShelfAutoHideBehavior() {
+    // Using shelf from primary display.
+    var displayId = "-1";
+    chrome.system.display.getInfo(function(info) {
+      var l = info.length;
+      for (var i = 0; i < l; i++) {
+        if (info[i].isPrimary === true) {
+          displayId = info[i].id;
+          break;
+        }
+      }
+      chrome.test.assertTrue(displayId != "-1");
+      var behaviors = ["always", "never", "hidden"];
+      var l = behaviors.length;
+      for (var i = 0; i < l; i++) {
+        var behavior = behaviors[i];
+        chrome.autotestPrivate.setShelfAutoHideBehavior(displayId, behavior,
+            function() {
+          chrome.autotestPrivate.getShelfAutoHideBehavior(displayId,
+              function(newBehavior) {
+            chrome.test.assertTrue(behavior === newBehavior);
+            chrome.test.assertNoLastError();
+            chrome.test.succeed();
+          });
+        });
+      }
+    });
+  },
 ];
 
 var arcEnabledTests = [
-  // This test verifies that getArcState returns provisined True in case ARC
-  // provisiong is done.
+  // This test verifies that getArcState returns provisioned True in case ARC
+  // provisioning is done.
   function arcProvisioned() {chrome.autotestPrivate.getArcState(
     function(state) {
       chrome.test.assertTrue(state.provisioned);

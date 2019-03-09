@@ -4,7 +4,8 @@
 
 #include "ash/shelf/shelf_controller.h"
 
-#include <memory>
+#include <algorithm>
+#include <utility>
 
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/remote_shelf_item_delegate.h"
@@ -260,6 +261,24 @@ void ShelfController::SetShelfItemDelegate(
         id, std::make_unique<RemoteShelfItemDelegate>(id, std::move(delegate)));
   else
     model_.SetShelfItemDelegate(id, nullptr);
+}
+
+void ShelfController::GetAutoHideBehaviorForTesting(
+    int64_t display_id,
+    GetAutoHideBehaviorForTestingCallback callback) {
+  Shelf* shelf = GetShelfForDisplay(display_id);
+  DCHECK(shelf);
+  std::move(callback).Run(shelf->auto_hide_behavior());
+}
+
+void ShelfController::SetAutoHideBehaviorForTesting(
+    int64_t display_id,
+    ShelfAutoHideBehavior behavior,
+    SetAutoHideBehaviorForTestingCallback callback) {
+  Shelf* shelf = GetShelfForDisplay(display_id);
+  DCHECK(shelf);
+  shelf->SetAutoHideBehavior(behavior);
+  std::move(callback).Run();
 }
 
 void ShelfController::ShelfItemAdded(int index) {

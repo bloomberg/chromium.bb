@@ -12,6 +12,7 @@
 #include "ash/public/cpp/assistant/assistant_state_proxy.h"
 #include "ash/public/cpp/assistant/default_voice_interaction_observer.h"
 #include "ash/public/interfaces/ash_message_center_controller.mojom.h"
+#include "ash/public/interfaces/shelf.mojom.h"
 #include "base/compiler_specific.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager.h"
@@ -607,6 +608,38 @@ class AutotestPrivateSetTabletModeEnabledFunction
   void OnSetTabletModeEnabled(bool enabled);
   ~AutotestPrivateSetTabletModeEnabledFunction() override;
   ResponseAction Run() override;
+};
+
+// Returns the shelf auto hide behavior.
+class AutotestPrivateGetShelfAutoHideBehaviorFunction
+    : public UIThreadExtensionFunction {
+ public:
+  AutotestPrivateGetShelfAutoHideBehaviorFunction();
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.getShelfAutoHideBehavior",
+                             AUTOTESTPRIVATE_GETSHELFAUTOHIDEBEHAVIOR)
+
+ private:
+  void OnGetShelfAutoHideBehaviorCompleted(ash::ShelfAutoHideBehavior behavior);
+  ~AutotestPrivateGetShelfAutoHideBehaviorFunction() override;
+  ResponseAction Run() override;
+
+  ash::mojom::ShelfControllerPtr shelf_controller_;
+};
+
+// Sets shelf autohide behavior.
+class AutotestPrivateSetShelfAutoHideBehaviorFunction
+    : public UIThreadExtensionFunction {
+ public:
+  AutotestPrivateSetShelfAutoHideBehaviorFunction();
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.setShelfAutoHideBehavior",
+                             AUTOTESTPRIVATE_SETSHELFAUTOHIDEBEHAVIOR)
+
+ private:
+  void OnSetShelfAutoHideBehaviorCompleted();
+  ~AutotestPrivateSetShelfAutoHideBehaviorFunction() override;
+  ResponseAction Run() override;
+
+  ash::mojom::ShelfControllerPtr shelf_controller_;
 };
 
 template <>
