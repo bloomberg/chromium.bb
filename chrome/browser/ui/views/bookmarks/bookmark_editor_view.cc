@@ -230,7 +230,7 @@ void BookmarkEditorView::Show(gfx::NativeWindow parent) {
   title_tf_->RequestFocus();
 }
 
-void BookmarkEditorView::ShowContextMenuForView(
+void BookmarkEditorView::ShowContextMenuForViewImpl(
     views::View* source,
     const gfx::Point& point,
     ui::MenuSourceType source_type) {

@@ -491,7 +491,7 @@ void NonClientFrameViewAsh::OnSplitViewStateChanged(
   UpdateHeaderView();
 }
 
-void NonClientFrameViewAsh::ShowContextMenuForView(
+void NonClientFrameViewAsh::ShowContextMenuForViewImpl(
     views::View* source,
     const gfx::Point& point,
     ui::MenuSourceType source_type) {

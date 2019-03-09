@@ -137,7 +137,7 @@ ToolbarActionView::CreateInkDropHighlight() const {
 
 bool ToolbarActionView::OnKeyPressed(const ui::KeyEvent& event) {
   if (event.key_code() == ui::VKEY_DOWN) {
-    ShowContextMenuForView(this, gfx::Point(), ui::MENU_SOURCE_KEYBOARD);
+    ShowContextMenuForViewImpl(this, gfx::Point(), ui::MENU_SOURCE_KEYBOARD);
     return true;
   }
   return MenuButton::OnKeyPressed(event);
@@ -308,9 +308,10 @@ void ToolbarActionView::OnPopupClosed() {
   pressed_lock_.reset();  // Unpress the menu button if it was pressed.
 }
 
-void ToolbarActionView::ShowContextMenuForView(views::View* source,
-                                               const gfx::Point& point,
-                                               ui::MenuSourceType source_type) {
+void ToolbarActionView::ShowContextMenuForViewImpl(
+    views::View* source,
+    const gfx::Point& point,
+    ui::MenuSourceType source_type) {
   if (CloseActiveMenuIfNeeded())
     return;
 

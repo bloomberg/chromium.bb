@@ -257,9 +257,9 @@ SkColor ToolbarButton::GetInkDropBaseColor() const {
   return GetToolbarInkDropBaseColor(this);
 }
 
-void ToolbarButton::ShowContextMenuForView(View* source,
-                                           const gfx::Point& point,
-                                           ui::MenuSourceType source_type) {
+void ToolbarButton::ShowContextMenuForViewImpl(View* source,
+                                               const gfx::Point& point,
+                                               ui::MenuSourceType source_type) {
   if (!enabled())
     return;
 

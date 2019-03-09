@@ -71,9 +71,9 @@ class ChromeNativeAppWindowViewsAuraAsh
   bool IsAlwaysOnTop() const override;
 
   // views::ContextMenuController:
-  void ShowContextMenuForView(views::View* source,
-                              const gfx::Point& p,
-                              ui::MenuSourceType source_type) override;
+  void ShowContextMenuForViewImpl(views::View* source,
+                                  const gfx::Point& p,
+                                  ui::MenuSourceType source_type) override;
 
   // WidgetDelegate:
   views::NonClientFrameView* CreateNonClientFrameView(

@@ -94,9 +94,9 @@ class TestContextMenuController : public ContextMenuController {
   }
 
   // ContextMenuController:
-  void ShowContextMenuForView(View* source,
-                              const gfx::Point& point,
-                              ui::MenuSourceType source_type) override {
+  void ShowContextMenuForViewImpl(View* source,
+                                  const gfx::Point& point,
+                                  ui::MenuSourceType source_type) override {
     show_context_menu_calls_++;
     menu_source_view_ = source;
     menu_source_type_ = source_type;

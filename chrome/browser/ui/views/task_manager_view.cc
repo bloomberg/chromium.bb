@@ -272,9 +272,10 @@ void TaskManagerView::OnKeyDown(ui::KeyboardCode keycode) {
     ActivateSelectedTab();
 }
 
-void TaskManagerView::ShowContextMenuForView(views::View* source,
-                                             const gfx::Point& point,
-                                             ui::MenuSourceType source_type) {
+void TaskManagerView::ShowContextMenuForViewImpl(
+    views::View* source,
+    const gfx::Point& point,
+    ui::MenuSourceType source_type) {
   menu_model_.reset(new ui::SimpleMenuModel(this));
 
   for (const auto& table_column : columns_) {

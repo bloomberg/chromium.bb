@@ -258,9 +258,9 @@ enum ScrollBarContextMenuCommands {
   ScrollBarContextMenuCommand_ScrollNext
 };
 
-void BaseScrollBar::ShowContextMenuForView(View* source,
-                                           const gfx::Point& p,
-                                           ui::MenuSourceType source_type) {
+void BaseScrollBar::ShowContextMenuForViewImpl(View* source,
+                                               const gfx::Point& p,
+                                               ui::MenuSourceType source_type) {
   Widget* widget = GetWidget();
   gfx::Rect widget_bounds = widget->GetWindowBoundsInScreen();
   gfx::Point temp_pt(p.x() - widget_bounds.x(), p.y() - widget_bounds.y());

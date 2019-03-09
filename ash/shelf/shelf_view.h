@@ -466,9 +466,9 @@ class ASH_EXPORT ShelfView : public views::View,
       base::Optional<std::vector<mojom::MenuItemPtr>> menu_items);
 
   // Overridden from views::ContextMenuController:
-  void ShowContextMenuForView(views::View* source,
-                              const gfx::Point& point,
-                              ui::MenuSourceType source_type) override;
+  void ShowContextMenuForViewImpl(views::View* source,
+                                  const gfx::Point& point,
+                                  ui::MenuSourceType source_type) override;
 
   // Show either a context or normal click menu of given |menu_model|.
   // If |context_menu| is set, the displayed menu is a context menu and not

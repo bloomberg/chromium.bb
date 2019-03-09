@@ -308,6 +308,7 @@ jumbo_component("views") {
     "bubble/tooltip_icon.cc",
     "button_drag_utils.cc",
     "color_chooser/color_chooser_view.cc",
+    "context_menu_controller.cc",
     "controls/animated_image_view.cc",
     "controls/button/button.cc",
     "controls/button/checkbox.cc",

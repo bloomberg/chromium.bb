@@ -116,9 +116,9 @@ class ToolbarActionView : public views::MenuButton,
   void OnPopupClosed() override;
 
   // views::ContextMenuController:
-  void ShowContextMenuForView(views::View* source,
-                              const gfx::Point& point,
-                              ui::MenuSourceType source_type) override;
+  void ShowContextMenuForViewImpl(views::View* source,
+                                  const gfx::Point& point,
+                                  ui::MenuSourceType source_type) override;
 
   // Shows the context menu (if one exists) for the toolbar action.
   void DoShowContextMenu(ui::MenuSourceType source_type);

@@ -498,9 +498,10 @@ bool SearchResultView::IsSearchResultHoveredOrSelected() {
   return IsMouseHovered() || selected();
 }
 
-void SearchResultView::ShowContextMenuForView(views::View* source,
-                                              const gfx::Point& point,
-                                              ui::MenuSourceType source_type) {
+void SearchResultView::ShowContextMenuForViewImpl(
+    views::View* source,
+    const gfx::Point& point,
+    ui::MenuSourceType source_type) {
   // |result()| could be NULL when result list is changing.
   if (!result())
     return;

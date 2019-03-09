@@ -51,9 +51,9 @@ class TestContextMenuController : public ContextMenuController {
   ~TestContextMenuController() override {}
 
   // ContextMenuController:
-  void ShowContextMenuForView(View* source,
-                              const gfx::Point& point,
-                              ui::MenuSourceType source_type) override {}
+  void ShowContextMenuForViewImpl(View* source,
+                                  const gfx::Point& point,
+                                  ui::MenuSourceType source_type) override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestContextMenuController);
