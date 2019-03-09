@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/containers/flat_map.h"
+#include "base/synchronization/lock.h"
 #include "cc/cc_export.h"
 #include "cc/paint/draw_image.h"
 #include "cc/paint/paint_record.h"
@@ -62,12 +63,17 @@ class CC_EXPORT PaintWorkletImageCache {
 
  private:
   void DecrementCacheRefCount(PaintWorkletInput* input);
+
   // This is a map of paint worklet inputs to a pair of paint record and a
   // reference count. The paint record is the representation of the worklet
   // output based on the input, and the reference count is the number of times
   // that it is used for tile rasterization.
-  // TODO(xidachen): use a struct instead of std::pair.
   base::flat_map<PaintWorkletInput*, PaintWorkletImageCacheValue> records_;
+
+  // The |records_| can be accessed from compositor and raster worker threads at
+  // the same time. To prevent race, we need to lock on it.
+  base::Lock records_lock_;
+
   // The PaintWorkletImageCache is owned by ImageController, which has the same
   // life time as the LayerTreeHostImpl, that guarantees that the painter will
   // live as long as the LayerTreeHostImpl.

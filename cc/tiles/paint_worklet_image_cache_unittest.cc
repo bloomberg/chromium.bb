@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <utility>
 
 #include "cc/tiles/paint_worklet_image_cache.h"
@@ -47,9 +48,6 @@ scoped_refptr<TileTask> GetTaskForPaintWorkletImage(
       paint_image, SkIRect::MakeWH(paint_image.width(), paint_image.height()),
       kNone_SkFilterQuality, CreateMatrix(SkSize::Make(1.f, 1.f), true),
       PaintImage::kDefaultFrameIndex);
-  std::unique_ptr<TestPaintWorkletLayerPainter> painter =
-      std::make_unique<TestPaintWorkletLayerPainter>();
-  cache->SetPaintWorkletLayerPainter(std::move(painter));
   return cache->GetTaskForPaintWorkletImage(draw_image);
 }
 
@@ -64,6 +62,9 @@ void TestPaintRecord(const PaintRecord* record) {
 
 TEST(PaintWorkletImageCacheTest, GetTaskForImage) {
   TestPaintWorkletImageCache cache;
+  std::unique_ptr<TestPaintWorkletLayerPainter> painter =
+      std::make_unique<TestPaintWorkletLayerPainter>();
+  cache.SetPaintWorkletLayerPainter(std::move(painter));
   PaintImage paint_image = CreatePaintImage(100, 100);
   scoped_refptr<TileTask> task =
       GetTaskForPaintWorkletImage(paint_image, &cache);
@@ -116,8 +117,39 @@ TEST(PaintWorkletImageCacheTest, GetTaskForImage) {
   EXPECT_EQ(records[paint_image.paint_worklet_input()].used_ref_count, 0u);
 }
 
+TEST(PaintWorkletImageCacheTest, EntryWithNonZeroRefCountNotPurged) {
+  TestPaintWorkletImageCache cache;
+  std::unique_ptr<TestPaintWorkletLayerPainter> painter =
+      std::make_unique<TestPaintWorkletLayerPainter>();
+  cache.SetPaintWorkletLayerPainter(std::move(painter));
+  PaintImage paint_image = CreatePaintImage(100, 100);
+  scoped_refptr<TileTask> task =
+      GetTaskForPaintWorkletImage(paint_image, &cache);
+  EXPECT_TRUE(task);
+
+  TestTileTaskRunner::ProcessTask(task.get());
+
+  PaintWorkletImageProvider provider(&cache);
+  ImageProvider::ScopedResult result =
+      provider.GetPaintRecordResult(paint_image.paint_worklet_input());
+  base::flat_map<PaintWorkletInput*,
+                 PaintWorkletImageCache::PaintWorkletImageCacheValue>
+      records = cache.GetRecordsForTest();
+  EXPECT_EQ(records[paint_image.paint_worklet_input()].used_ref_count, 1u);
+
+  cache.NotifyDidPrepareTiles();
+  cache.NotifyDidPrepareTiles();
+  cache.NotifyDidPrepareTiles();
+
+  records = cache.GetRecordsForTest();
+  EXPECT_EQ(records.size(), 1u);
+}
+
 TEST(PaintWorkletImageCacheTest, MultipleRecordsInCache) {
   TestPaintWorkletImageCache cache;
+  std::unique_ptr<TestPaintWorkletLayerPainter> painter =
+      std::make_unique<TestPaintWorkletLayerPainter>();
+  cache.SetPaintWorkletLayerPainter(std::move(painter));
   PaintImage paint_image1 = CreatePaintImage(100, 100);
   scoped_refptr<TileTask> task1 =
       GetTaskForPaintWorkletImage(paint_image1, &cache);
@@ -184,6 +216,45 @@ TEST(PaintWorkletImageCacheTest, MultipleRecordsInCache) {
   EXPECT_EQ(
       records[paint_image1.paint_worklet_input()].num_of_frames_not_accessed,
       2u);
+}
+
+// This test ensures that if an entry already exist, then the PaintImageInTask
+// will not replace it with a new entry and reset its ref count.
+TEST(PaintWorkletImageCacheTest, CacheEntryLookup) {
+  TestPaintWorkletImageCache cache;
+  std::unique_ptr<TestPaintWorkletLayerPainter> painter =
+      std::make_unique<TestPaintWorkletLayerPainter>();
+  cache.SetPaintWorkletLayerPainter(std::move(painter));
+  PaintImage paint_image = CreatePaintImage(100, 100);
+  scoped_refptr<TileTask> task =
+      GetTaskForPaintWorkletImage(paint_image, &cache);
+  EXPECT_TRUE(task);
+  PaintWorkletImageProvider provider(&cache);
+
+  TestTileTaskRunner::ProcessTask(task.get());
+
+  {
+    ImageProvider::ScopedResult result =
+        provider.GetPaintRecordResult(paint_image.paint_worklet_input());
+    EXPECT_TRUE(result.paint_record());
+    TestPaintRecord(result.paint_record());
+
+    base::flat_map<PaintWorkletInput*,
+                   PaintWorkletImageCache::PaintWorkletImageCacheValue>
+        records = cache.GetRecordsForTest();
+    // Test the ref count.
+    EXPECT_EQ(records[paint_image.paint_worklet_input()].used_ref_count, 1u);
+
+    // Create a new task with the same PaintWorkletInput as the previous task.
+    // Then ProcessTask will invoke PaintWorkletImageCache::PaintImageInTask,
+    // and it should early exit, without replacing the existing PaintRecord and
+    // resetting the ref count.
+    scoped_refptr<TileTask> task_with_the_same_input =
+        GetTaskForPaintWorkletImage(paint_image, &cache);
+    EXPECT_TRUE(task);
+    TestTileTaskRunner::ProcessTask(task_with_the_same_input.get());
+    EXPECT_EQ(records[paint_image.paint_worklet_input()].used_ref_count, 1u);
+  }
 }
 
 }  // namespace
