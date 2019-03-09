@@ -9,6 +9,7 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
+import android.os.SystemClock;
 import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;
 import android.text.TextUtils;
@@ -187,6 +188,33 @@ public class ContentTextSelectionTest {
         Assert.assertTrue(mSelectionPopupController.hasSelection());
 
         setAttachedOnUiThread(true);
+        waitForSelectActionBarVisible(true);
+        Assert.assertTrue(mSelectionPopupController.hasSelection());
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"TextSelection"})
+    @DisableIf.
+    Build(sdk_is_less_than = Build.VERSION_CODES.N, message = "Drag and drop not enabled pre-N")
+    public void testSelectionPreservedAfterDragAndDrop() throws Throwable {
+        DOMUtils.longPressNode(mWebContents, "plain_text_1");
+        waitForSelectActionBarVisible(true);
+        Assert.assertTrue(mSelectionPopupController.hasSelection());
+
+        // Long press the selected text without release for the following drag.
+        long downTime = SystemClock.uptimeMillis();
+        DOMUtils.longPressNodeWithoutUp(mWebContents, "plain_text_1", downTime);
+        waitForSelectActionBarVisible(true);
+        Assert.assertTrue(mSelectionPopupController.hasSelection());
+
+        // Drag to the specified position by a DOM node id.
+        int stepCount = 10;
+        DOMUtils.dragNodeTo(mWebContents, "plain_text_1", "plain_text_2", stepCount, downTime);
+        waitForSelectActionBarVisible(false);
+        Assert.assertTrue(mSelectionPopupController.hasSelection());
+
+        DOMUtils.dragNodeEnd(mWebContents, "plain_text_2", downTime);
         waitForSelectActionBarVisible(true);
         Assert.assertTrue(mSelectionPopupController.hasSelection());
     }
