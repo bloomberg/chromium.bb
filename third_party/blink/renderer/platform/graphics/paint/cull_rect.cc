@@ -45,6 +45,17 @@ void CullRect::Move(const IntSize& offset) {
     rect_.Move(offset);
 }
 
+static void MapRect(const TransformPaintPropertyNode& transform,
+                    IntRect& rect) {
+  if (transform.IsIdentityOr2DTranslation()) {
+    FloatRect float_rect(rect);
+    float_rect.Move(-transform.Translation2D());
+    rect = EnclosingIntRect(float_rect);
+  } else {
+    rect = transform.Matrix().Inverse().MapRect(rect);
+  }
+}
+
 CullRect::ApplyTransformResult CullRect::ApplyTransformInternal(
     const TransformPaintPropertyNode& transform) {
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
@@ -52,7 +63,7 @@ CullRect::ApplyTransformResult CullRect::ApplyTransformInternal(
       rect_.Intersect(scroll->ContainerRect());
       if (rect_.IsEmpty())
         return kNotExpanded;
-      rect_ = transform.Matrix().Inverse().MapRect(rect_);
+      MapRect(transform, rect_);
 
       // Expand the cull rect for scrolling contents in case of composited
       // scrolling.
@@ -73,7 +84,7 @@ CullRect::ApplyTransformResult CullRect::ApplyTransformInternal(
   }
 
   if (!IsInfinite())
-    rect_ = transform.Matrix().Inverse().MapRect(rect_);
+    MapRect(transform, rect_);
   return kNotExpanded;
 }
 

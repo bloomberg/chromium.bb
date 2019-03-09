@@ -226,7 +226,7 @@ int PropertyTreeManager::EnsureCompositorTransformNode(
   // sticky node because the sticky offset would be applied twice otherwise.
   if (!transform_node.GetStickyConstraint()) {
     compositor_node.local.matrix() =
-        TransformationMatrix::ToSkMatrix44(transform_node.Matrix());
+        TransformationMatrix::ToSkMatrix44(transform_node.SlowMatrix());
   }
   compositor_node.post_local.matrix().setTranslate(origin.X(), origin.Y(),
                                                    origin.Z());
@@ -289,7 +289,7 @@ int PropertyTreeManager::EnsureCompositorTransformNode(
     // transform node has a special scroll offset field. To handle this we
     // adjust cc's transform node to remove the 2d scroll translation and
     // instead set the scroll_offset field.
-    auto scroll_offset_size = transform_node.Matrix().To2DTranslation();
+    auto scroll_offset_size = transform_node.Translation2D();
     auto scroll_offset = gfx::ScrollOffset(-scroll_offset_size.Width(),
                                            -scroll_offset_size.Height());
     DCHECK(compositor_node.local.IsIdentityOr2DTranslation());
@@ -329,7 +329,7 @@ int PropertyTreeManager::EnsureCompositorPageScaleTransformNode(
   // The page scale node is special because its transform matrix is assumed to
   // be in the post_local matrix by the compositor. There should be no
   // translation from the origin so we clear the other matrices.
-  DCHECK(node.Origin() == FloatPoint3D());
+  DCHECK_EQ(node.Origin(), FloatPoint3D());
   compositor_node.post_local.matrix() = compositor_node.local.matrix();
   compositor_node.pre_local.matrix().setIdentity();
   compositor_node.local.matrix().setIdentity();

@@ -130,7 +130,7 @@ class PLATFORM_EXPORT GeometryMapper {
     // Fast-path optimization for mapping through just |source| when |source| is
     // a 2d translation.
     if (&destination == source.Parent() && source.IsIdentityOr2DTranslation()) {
-      MoveRect(mapping_rect, source.Matrix().To2DTranslation());
+      MoveRect(mapping_rect, source.Translation2D());
       return;
     }
 
@@ -138,7 +138,7 @@ class PLATFORM_EXPORT GeometryMapper {
     // |destination| is a 2d translation.
     if (&source == destination.Parent() &&
         destination.IsIdentityOr2DTranslation()) {
-      MoveRect(mapping_rect, -destination.Matrix().To2DTranslation());
+      MoveRect(mapping_rect, -destination.Translation2D());
       return;
     }
 
