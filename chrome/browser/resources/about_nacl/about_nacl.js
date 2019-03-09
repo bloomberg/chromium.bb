@@ -30,5 +30,4 @@ function requestNaClInfo() {
 
 // Get data and have it displayed upon loading.
 document.addEventListener('DOMContentLoaded', requestNaClInfo);
-
 })();
