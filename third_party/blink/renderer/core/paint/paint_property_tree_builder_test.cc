@@ -159,8 +159,7 @@ TEST_P(PaintPropertyTreeBuilderTest, FixedPosition) {
   } else {
     EXPECT_EQ(DocScroll(), positioned_scroll_node->Parent());
   }
-  EXPECT_EQ(TransformationMatrix().Translate(0, -3),
-            positioned_scroll_translation->Matrix());
+  EXPECT_EQ(FloatSize(0, -3), positioned_scroll_translation->Translation2D());
   EXPECT_EQ(nullptr, target1_properties->ScrollTranslation());
   CHECK_EXACT_VISUAL_RECT(LayoutRect(200, 150, 100, 100),
                           target1->GetLayoutObject(),
@@ -197,8 +196,7 @@ TEST_P(PaintPropertyTreeBuilderTest, FixedPosition) {
   } else {
     EXPECT_EQ(DocScroll(), transformed_scroll_node->Parent());
   }
-  EXPECT_EQ(TransformationMatrix().Translate(0, -5),
-            transformed_scroll_translation->Matrix());
+  EXPECT_EQ(FloatSize(0, -5), transformed_scroll_translation->Translation2D());
   EXPECT_EQ(nullptr, target2_properties->ScrollTranslation());
 
   CHECK_EXACT_VISUAL_RECT(LayoutRect(208, 153, 200, 100),
@@ -217,8 +215,8 @@ TEST_P(PaintPropertyTreeBuilderTest, PositionAndScroll) {
       DocumentLifecycle::LifecycleUpdateReason::kTest);
   const ObjectPaintProperties* scroller_properties =
       scroller->GetLayoutObject()->FirstFragment().PaintProperties();
-  EXPECT_EQ(TransformationMatrix().Translate(0, -100),
-            scroller_properties->ScrollTranslation()->Matrix());
+  EXPECT_EQ(FloatSize(0, -100),
+            scroller_properties->ScrollTranslation()->Translation2D());
   EXPECT_EQ(scroller_properties->PaintOffsetTranslation(),
             scroller_properties->ScrollTranslation()->Parent());
   EXPECT_EQ(DocScrollTranslation(),
@@ -231,9 +229,8 @@ TEST_P(PaintPropertyTreeBuilderTest, PositionAndScroll) {
   EXPECT_EQ(IntSize(660, 10200), scroll->ContentsSize());
   EXPECT_FALSE(scroll->UserScrollableHorizontal());
   EXPECT_TRUE(scroll->UserScrollableVertical());
-  EXPECT_EQ(FloatSize(120, 340), scroller_properties->PaintOffsetTranslation()
-                                     ->Matrix()
-                                     .To2DTranslation());
+  EXPECT_EQ(FloatSize(120, 340),
+            scroller_properties->PaintOffsetTranslation()->Translation2D());
   EXPECT_EQ(FloatRoundedRect(0, 0, 413, 317),
             scroller_properties->OverflowClip()->ClipRect());
   EXPECT_EQ(DocContentClip(), scroller_properties->OverflowClip()->Parent());
@@ -246,8 +243,8 @@ TEST_P(PaintPropertyTreeBuilderTest, PositionAndScroll) {
   Element* rel_pos = GetDocument().getElementById("rel-pos");
   const ObjectPaintProperties* rel_pos_properties =
       rel_pos->GetLayoutObject()->FirstFragment().PaintProperties();
-  EXPECT_EQ(TransformationMatrix().Translate(560, 780),
-            rel_pos_properties->PaintOffsetTranslation()->Matrix());
+  EXPECT_EQ(FloatSize(560, 780),
+            rel_pos_properties->PaintOffsetTranslation()->Translation2D());
   EXPECT_EQ(scroller_properties->ScrollTranslation(),
             rel_pos_properties->PaintOffsetTranslation()->Parent());
   EXPECT_EQ(rel_pos_properties->Transform(),
@@ -264,8 +261,8 @@ TEST_P(PaintPropertyTreeBuilderTest, PositionAndScroll) {
   Element* abs_pos = GetDocument().getElementById("abs-pos");
   const ObjectPaintProperties* abs_pos_properties =
       abs_pos->GetLayoutObject()->FirstFragment().PaintProperties();
-  EXPECT_EQ(TransformationMatrix().Translate(123, 456),
-            abs_pos_properties->PaintOffsetTranslation()->Matrix());
+  EXPECT_EQ(FloatSize(123, 456),
+            abs_pos_properties->PaintOffsetTranslation()->Translation2D());
   EXPECT_EQ(DocScrollTranslation(),
             abs_pos_properties->PaintOffsetTranslation()->Parent());
   EXPECT_EQ(abs_pos_properties->Transform(),
@@ -352,8 +349,7 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowScrollVerticalRL) {
   const auto* scroll = properties->Scroll();
 
   // -315: container_width (100) - contents_width (400) - scrollber_width
-  EXPECT_EQ(TransformationMatrix().Translate(-315, 0),
-            scroll_translation->Matrix());
+  EXPECT_EQ(FloatSize(-315, 0), scroll_translation->Translation2D());
   EXPECT_EQ(scroll, scroll_translation->ScrollNode());
   // 10: border width. 85: container client size (== 100 - scrollbar width).
   EXPECT_EQ(IntRect(10, 10, 85, 85), scroll->ContainerRect());
@@ -371,8 +367,7 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowScrollVerticalRL) {
   UpdateAllLifecyclePhasesForTest();
 
   // Only scroll_translation is affected by scrolling.
-  EXPECT_EQ(TransformationMatrix().Translate(-215, 0),
-            scroll_translation->Matrix());
+  EXPECT_EQ(FloatSize(-215, 0), scroll_translation->Translation2D());
   // Other properties are the same as before.
   EXPECT_EQ(scroll, scroll_translation->ScrollNode());
   EXPECT_EQ(IntRect(10, 10, 85, 85), scroll->ContainerRect());
@@ -405,8 +400,7 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowScrollRTL) {
   const auto* scroll = properties->Scroll();
 
   // -315: container_width (100) - contents_width (400) - scrollbar width (15).
-  EXPECT_EQ(TransformationMatrix().Translate(-315, 0),
-            scroll_translation->Matrix());
+  EXPECT_EQ(FloatSize(-315, 0), scroll_translation->Translation2D());
   EXPECT_EQ(scroll, scroll_translation->ScrollNode());
   // 25: border width (10) + scrollbar (on the left) width (15).
   // 85: container client size (== 100 - scrollbar width).
@@ -425,8 +419,7 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowScrollRTL) {
   UpdateAllLifecyclePhasesForTest();
 
   // Only scroll_translation is affected by scrolling.
-  EXPECT_EQ(TransformationMatrix().Translate(-215, 0),
-            scroll_translation->Matrix());
+  EXPECT_EQ(FloatSize(-215, 0), scroll_translation->Translation2D());
   // Other properties are the same as before.
   EXPECT_EQ(scroll, scroll_translation->ScrollNode());
   EXPECT_EQ(IntRect(25, 10, 85, 85), scroll->ContainerRect());
@@ -492,12 +485,11 @@ TEST_P(PaintPropertyTreeBuilderTest, DocScrollingTraditional) {
   LocalFrameView* frame_view = GetDocument().View();
   frame_view->UpdateAllLifecyclePhases(
       DocumentLifecycle::LifecycleUpdateReason::kTest);
-  EXPECT_EQ(TransformationMatrix(), DocPreTranslation()->Matrix());
+  EXPECT_TRUE(DocPreTranslation()->IsIdentity());
   EXPECT_EQ(
       GetDocument().GetPage()->GetVisualViewport().GetScrollTranslationNode(),
       DocPreTranslation()->Parent());
-  EXPECT_EQ(TransformationMatrix().Translate(0, -100),
-            DocScrollTranslation()->Matrix());
+  EXPECT_EQ(FloatSize(0, -100), DocScrollTranslation()->Translation2D());
   EXPECT_EQ(DocPreTranslation(), DocScrollTranslation()->Parent());
   EXPECT_EQ(DocPreTranslation(), &DocContentClip()->LocalTransformSpace());
   EXPECT_EQ(FloatRoundedRect(0, 0, 800, 600), DocContentClip()->ClipRect());
@@ -553,8 +545,8 @@ TEST_P(PaintPropertyTreeBuilderTest, Perspective) {
   Element* inner = GetDocument().getElementById("inner");
   const ObjectPaintProperties* inner_properties =
       inner->GetLayoutObject()->FirstFragment().PaintProperties();
-  EXPECT_EQ(TransformationMatrix().Translate(50, 100),
-            inner_properties->PaintOffsetTranslation()->Matrix());
+  EXPECT_EQ(FloatSize(50, 100),
+            inner_properties->PaintOffsetTranslation()->Translation2D());
   EXPECT_EQ(perspective_properties->Perspective(),
             inner_properties->PaintOffsetTranslation()->Parent());
   CHECK_EXACT_VISUAL_RECT(LayoutRect(50, 100, 100, 200),
@@ -614,8 +606,8 @@ TEST_P(PaintPropertyTreeBuilderTest, Transform) {
             transform_properties->Transform()->Origin());
   EXPECT_EQ(transform_properties->PaintOffsetTranslation(),
             transform_properties->Transform()->Parent());
-  EXPECT_EQ(TransformationMatrix().Translate(50, 100),
-            transform_properties->PaintOffsetTranslation()->Matrix());
+  EXPECT_EQ(FloatSize(50, 100),
+            transform_properties->PaintOffsetTranslation()->Translation2D());
   EXPECT_EQ(DocScrollTranslation(),
             transform_properties->PaintOffsetTranslation()->Parent());
 
@@ -737,14 +729,11 @@ TEST_P(PaintPropertyTreeBuilderTest, WillChangeTransform) {
   const ObjectPaintProperties* transform_properties =
       transform->GetLayoutObject()->FirstFragment().PaintProperties();
 
-  EXPECT_EQ(TransformationMatrix(),
-            transform_properties->Transform()->Matrix());
-  EXPECT_EQ(TransformationMatrix().Translate(0, 0),
-            transform_properties->Transform()->Matrix());
-  // The value is zero without a transform property that needs transform-offset.
-  EXPECT_EQ(FloatPoint3D(0, 0, 0), transform_properties->Transform()->Origin());
-  EXPECT_EQ(TransformationMatrix().Translate(50, 100),
-            transform_properties->PaintOffsetTranslation()->Matrix());
+  EXPECT_TRUE(transform_properties->Transform()->IsIdentity());
+  EXPECT_EQ(FloatSize(), transform_properties->Transform()->Translation2D());
+  EXPECT_EQ(FloatPoint3D(), transform_properties->Transform()->Origin());
+  EXPECT_EQ(FloatSize(50, 100),
+            transform_properties->PaintOffsetTranslation()->Translation2D());
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     EXPECT_TRUE(
         transform_properties->Transform()->HasDirectCompositingReasons());
@@ -766,11 +755,11 @@ TEST_P(PaintPropertyTreeBuilderTest, WillChangeTransform) {
       "margin-left: 50px; margin-top: 100px; width: 400px; height: 300px; "
       "will-change: transform");
   UpdateAllLifecyclePhasesForTest();
-  EXPECT_EQ(TransformationMatrix(), transform->GetLayoutObject()
-                                        ->FirstFragment()
-                                        .PaintProperties()
-                                        ->Transform()
-                                        ->Matrix());
+  EXPECT_TRUE(transform->GetLayoutObject()
+                  ->FirstFragment()
+                  .PaintProperties()
+                  ->Transform()
+                  ->IsIdentity());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, WillChangeContents) {
@@ -796,8 +785,8 @@ TEST_P(PaintPropertyTreeBuilderTest, RelativePositionInline) {
   Element* inline_block = GetDocument().getElementById("inline-block");
   const ObjectPaintProperties* inline_block_properties =
       inline_block->GetLayoutObject()->FirstFragment().PaintProperties();
-  EXPECT_EQ(TransformationMatrix().Translate(135, 490),
-            inline_block_properties->PaintOffsetTranslation()->Matrix());
+  EXPECT_EQ(FloatSize(135, 490),
+            inline_block_properties->PaintOffsetTranslation()->Translation2D());
   // TODO(crbug.com/732611): CAP invalidations are incorrect if there is
   // scrolling.
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
@@ -911,8 +900,8 @@ TEST_P(PaintPropertyTreeBuilderTest, TransformNodeDoesNotAffectEffectNodes) {
   const ObjectPaintProperties* child_with_transform_properties =
       child_with_transform->FirstFragment().PaintProperties();
   EXPECT_EQ(nullptr, child_with_transform_properties->Effect());
-  EXPECT_EQ(TransformationMatrix().Translate(10, 10),
-            child_with_transform_properties->Transform()->Matrix());
+  EXPECT_EQ(FloatSize(10, 10),
+            child_with_transform_properties->Transform()->Translation2D());
   CHECK_EXACT_VISUAL_RECT(LayoutRect(18, 18, 50, 60), child_with_transform,
                           GetDocument().View()->GetLayoutView());
 
@@ -1131,9 +1120,9 @@ TEST_P(PaintPropertyTreeBuilderTest, TransformNodesInSVG) {
             svg_root_with3d_transform_properties->Transform()->Origin());
   EXPECT_EQ(svg_root_with3d_transform_properties->PaintOffsetTranslation(),
             svg_root_with3d_transform_properties->Transform()->Parent());
-  EXPECT_EQ(
-      TransformationMatrix().Translate(70, 25),
-      svg_root_with3d_transform_properties->PaintOffsetTranslation()->Matrix());
+  EXPECT_EQ(FloatSize(70, 25),
+            svg_root_with3d_transform_properties->PaintOffsetTranslation()
+                ->Translation2D());
   // TODO(crbug.com/732611): CAP invalidations are incorrect if there is
   // scrolling.
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
@@ -1191,16 +1180,16 @@ TEST_P(PaintPropertyTreeBuilderTest, SVGViewBoxTransform) {
       svg_with_view_box.FirstFragment().PaintProperties();
   EXPECT_EQ(TransformationMatrix().Translate3d(1, 2, 3),
             svg_with_view_box_properties->Transform()->Matrix());
-  EXPECT_EQ(TransformationMatrix().Translate(-50, -50),
-            svg_with_view_box_properties->ReplacedContentTransform()->Matrix());
+  EXPECT_EQ(FloatSize(-50, -50),
+            svg_with_view_box_properties->ReplacedContentTransform()
+                ->Translation2D());
   EXPECT_EQ(svg_with_view_box_properties->ReplacedContentTransform()->Parent(),
             svg_with_view_box_properties->Transform());
 
   LayoutObject& rect = *GetLayoutObjectByElementId("rect");
   const ObjectPaintProperties* rect_properties =
       rect.FirstFragment().PaintProperties();
-  EXPECT_EQ(TransformationMatrix().Translate(100, 100),
-            rect_properties->Transform()->Matrix());
+  EXPECT_EQ(FloatSize(100, 100), rect_properties->Transform()->Translation2D());
   EXPECT_EQ(svg_with_view_box_properties->ReplacedContentTransform(),
             rect_properties->Transform()->Parent());
 }
@@ -1223,9 +1212,8 @@ TEST_P(PaintPropertyTreeBuilderTest, SVGRootPaintOffsetTransformNode) {
   const ObjectPaintProperties* svg_properties =
       svg.FirstFragment().PaintProperties();
   EXPECT_TRUE(svg_properties->PaintOffsetTranslation());
-  EXPECT_EQ(
-      FloatSize(50, 25),
-      svg_properties->PaintOffsetTranslation()->Matrix().To2DTranslation());
+  EXPECT_EQ(FloatSize(50, 25),
+            svg_properties->PaintOffsetTranslation()->Translation2D());
   EXPECT_EQ(nullptr, svg_properties->ReplacedContentTransform());
   // TODO(crbug.com/732611): CAP invalidations are incorrect if there is
   // scrolling.
@@ -1257,10 +1245,9 @@ TEST_P(PaintPropertyTreeBuilderTest, SVGRootLocalToBorderBoxTransformNode) {
   LayoutObject& svg = *GetLayoutObjectByElementId("svg");
   const ObjectPaintProperties* svg_properties =
       svg.FirstFragment().PaintProperties();
-  EXPECT_EQ(TransformationMatrix().Translate(2, 3),
-            svg_properties->PaintOffsetTranslation()->Matrix());
-  EXPECT_EQ(TransformationMatrix().Translate(5, 7),
-            svg_properties->Transform()->Matrix());
+  EXPECT_EQ(FloatSize(2, 3),
+            svg_properties->PaintOffsetTranslation()->Translation2D());
+  EXPECT_EQ(FloatSize(5, 7), svg_properties->Transform()->Translation2D());
   EXPECT_EQ(TransformationMatrix().Translate(11, 11).Scale(100.0 / 13.0),
             svg_properties->ReplacedContentTransform()->Matrix());
   EXPECT_EQ(svg_properties->PaintOffsetTranslation(),
@@ -1273,8 +1260,7 @@ TEST_P(PaintPropertyTreeBuilderTest, SVGRootLocalToBorderBoxTransformNode) {
   LayoutObject& rect = *GetLayoutObjectByElementId("rect");
   const ObjectPaintProperties* rect_properties =
       rect.FirstFragment().PaintProperties();
-  EXPECT_EQ(TransformationMatrix().Translate(17, 19),
-            rect_properties->Transform()->Matrix());
+  EXPECT_EQ(FloatSize(17, 19), rect_properties->Transform()->Translation2D());
   EXPECT_EQ(svg_properties->ReplacedContentTransform(),
             rect_properties->Transform()->Parent());
 }
@@ -1293,8 +1279,7 @@ TEST_P(PaintPropertyTreeBuilderTest, SVGNestedViewboxTransforms) {
   LayoutObject& svg = *GetLayoutObjectByElementId("svg");
   const ObjectPaintProperties* svg_properties =
       svg.FirstFragment().PaintProperties();
-  EXPECT_EQ(TransformationMatrix().Translate(11, 11),
-            svg_properties->Transform()->Matrix());
+  EXPECT_EQ(FloatSize(11, 11), svg_properties->Transform()->Translation2D());
   EXPECT_EQ(TransformationMatrix().Scale(2),
             svg_properties->ReplacedContentTransform()->Matrix());
 
@@ -1310,8 +1295,7 @@ TEST_P(PaintPropertyTreeBuilderTest, SVGNestedViewboxTransforms) {
   LayoutObject& rect = *GetLayoutObjectByElementId("rect");
   const ObjectPaintProperties* rect_properties =
       rect.FirstFragment().PaintProperties();
-  EXPECT_EQ(TransformationMatrix().Translate(13, 13),
-            rect_properties->Transform()->Matrix());
+  EXPECT_EQ(FloatSize(13, 13), rect_properties->Transform()->Translation2D());
   EXPECT_EQ(nested_svg_properties->Transform(),
             rect_properties->Transform()->Parent());
 }
@@ -1409,9 +1393,8 @@ TEST_P(PaintPropertyTreeBuilderTest, PaintOffsetTranslationSVGHTMLBoundary) {
   LayoutObject& svg = *GetLayoutObjectByElementId("svg");
   const ObjectPaintProperties* svg_properties =
       svg.FirstFragment().PaintProperties();
-  EXPECT_EQ(
-      FloatSize(8, 8),
-      svg_properties->PaintOffsetTranslation()->Matrix().To2DTranslation());
+  EXPECT_EQ(FloatSize(8, 8),
+            svg_properties->PaintOffsetTranslation()->Translation2D());
 
   LayoutObject& div_with_transform =
       *GetLayoutObjectByElementId("divWithTransform");
@@ -1419,10 +1402,9 @@ TEST_P(PaintPropertyTreeBuilderTest, PaintOffsetTranslationSVGHTMLBoundary) {
       div_with_transform.FirstFragment().PaintProperties();
   EXPECT_EQ(TransformationMatrix().Translate3d(3, 4, 5),
             div_with_transform_properties->Transform()->Matrix());
-  EXPECT_EQ(FloatSize(8, 158),
-            div_with_transform_properties->PaintOffsetTranslation()
-                ->Matrix()
-                .To2DTranslation());
+  EXPECT_EQ(
+      FloatSize(8, 158),
+      div_with_transform_properties->PaintOffsetTranslation()->Translation2D());
   EXPECT_EQ(div_with_transform_properties->PaintOffsetTranslation(),
             div_with_transform_properties->Transform()->Parent());
 }
@@ -1483,7 +1465,7 @@ TEST_P(PaintPropertyTreeBuilderTest, SVGViewportContainer) {
   transform = properties4->Transform();
   EXPECT_EQ(nullptr, clip);
   ASSERT_NE(nullptr, transform);
-  EXPECT_EQ(TransformationMatrix().Translate(20, 30), transform->Matrix());
+  EXPECT_EQ(FloatSize(20, 30), transform->Translation2D());
   EXPECT_EQ(parent_transform, transform->Parent());
 }
 
@@ -1553,9 +1535,8 @@ TEST_P(PaintPropertyTreeBuilderTest,
   LayoutObject& svg = *GetLayoutObjectByElementId("svg");
   const ObjectPaintProperties* svg_properties =
       svg.FirstFragment().PaintProperties();
-  EXPECT_EQ(
-      FloatSize(8, 8),
-      svg_properties->PaintOffsetTranslation()->Matrix().To2DTranslation());
+  EXPECT_EQ(FloatSize(8, 8),
+            svg_properties->PaintOffsetTranslation()->Translation2D());
   LayoutObject& div_with_columns =
       *GetLayoutObjectByElementId("divWithColumns")->SlowFirstChild();
   EXPECT_EQ(LayoutPoint(0, 0), div_with_columns.FirstFragment().PaintOffset());
@@ -1586,8 +1567,8 @@ TEST_P(PaintPropertyTreeBuilderTest,
   LayoutObject& container = *GetLayoutObjectByElementId("container");
   const ObjectPaintProperties* container_properties =
       container.FirstFragment().PaintProperties();
-  EXPECT_EQ(TransformationMatrix().Translate(20, 30),
-            container_properties->Transform()->Matrix());
+  EXPECT_EQ(FloatSize(20, 30),
+            container_properties->Transform()->Translation2D());
   EXPECT_EQ(svg_properties->Transform(),
             container_properties->Transform()->Parent());
 
@@ -1739,8 +1720,8 @@ TEST_P(PaintPropertyTreeBuilderTest, BorderRadiusClip) {
   EXPECT_EQ(
       FloatRoundedRect(
           border_box_minus_border_outset,
-          FloatSize(0, 0),    // (top left) = max((12, 12) - (60, 45), (0, 0))
-          FloatSize(0, 0),    // (top right) = max((34, 34) - (50, 45), (0, 0))
+          FloatSize(),        // (top left) = max((12, 12) - (60, 45), (0, 0))
+          FloatSize(),        // (top right) = max((34, 34) - (50, 45), (0, 0))
           FloatSize(18, 23),  // (bot left) = max((78, 78) - (60, 55), (0, 0))
           FloatSize(6, 1)),   // (bot right) = max((56, 56) - (50, 55), (0, 0))
       border_radius_clip->ClipRect());
@@ -1809,14 +1790,12 @@ TEST_P(PaintPropertyTreeBuilderTest, TransformNodesAcrossSubframes) {
   //         ScrollTranslation transform=translation=0.000000,0.000000,0.000000
   //           Transform transform=translation=4.000000,5.000000,6.000000
   auto* inner_document_scroll_translation = inner_div_transform->Parent();
-  EXPECT_EQ(TransformationMatrix().Translate3d(0, 0, 0),
-            inner_document_scroll_translation->Matrix());
+  EXPECT_TRUE(inner_document_scroll_translation->IsIdentity());
   auto* paint_offset_translation = inner_document_scroll_translation->Parent();
   auto* iframe_pre_translation =
       inner_document_scroll_translation->Parent()->Unalias().Parent();
-  EXPECT_EQ(FloatSize(), paint_offset_translation->Matrix().To2DTranslation());
-  EXPECT_EQ(TransformationMatrix().Translate3d(7, 7, 0),
-            iframe_pre_translation->Matrix());
+  EXPECT_TRUE(paint_offset_translation->IsIdentity());
+  EXPECT_EQ(FloatSize(7, 7), iframe_pre_translation->Translation2D());
   // SPv1 composited elements always create paint offset translation,
   // where in CAP they don't.
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
@@ -1828,8 +1807,9 @@ TEST_P(PaintPropertyTreeBuilderTest, TransformNodesAcrossSubframes) {
         iframe_element->FirstFragment().PaintProperties();
     EXPECT_EQ(iframe_element_properties->PaintOffsetTranslation(),
               iframe_pre_translation->Parent());
-    EXPECT_EQ(TransformationMatrix(),
-              iframe_element_properties->PaintOffsetTranslation()->Matrix());
+    EXPECT_EQ(
+        FloatSize(),
+        iframe_element_properties->PaintOffsetTranslation()->Translation2D());
     EXPECT_EQ(div_with_transform_properties->Transform(),
               iframe_element_properties->PaintOffsetTranslation()->Parent());
   }
@@ -1884,8 +1864,8 @@ TEST_P(PaintPropertyTreeBuilderTest, FramesEstablishIsolation) {
   //  - transform isolation node
   //    - paint offset translation
   //      - transform
-  EXPECT_EQ(TransformationMatrix().Translate(50, 0),
-            child_local_border_box_properties.Transform().Matrix());
+  EXPECT_EQ(FloatSize(50, 0),
+            child_local_border_box_properties.Transform().Translation2D());
   EXPECT_EQ(child_local_border_box_properties.Transform().Parent(),
             child_properties->PaintOffsetTranslation());
   EXPECT_EQ(child_local_border_box_properties.Transform().Parent()->Parent(),
@@ -1913,14 +1893,13 @@ TEST_P(PaintPropertyTreeBuilderTest, FramesEstablishIsolation) {
 // this only runs if we don't have DCHECKs enabled.
 #if !DCHECK_IS_ON()
   // Now clobber the child transform to something identifiable.
-  TransformPaintPropertyNode::State state{
-      TransformationMatrix().Translate(123, 321)};
+  TransformPaintPropertyNode::State state{FloatSize(123, 321)};
   child_properties->UpdateTransform(
       *child_local_border_box_properties.Transform().Parent(),
       std::move(state));
   // Verify that we clobbered it correctly.
-  EXPECT_EQ(TransformationMatrix().Translate(123, 321),
-            child_local_border_box_properties.Transform().Matrix());
+  EXPECT_EQ(FloatSize(123, 321),
+            child_local_border_box_properties.Transform().Translation2D());
 
   // This causes a tree topology change which forces the subtree to be updated.
   // However, isolation stops this recursion.
@@ -1930,8 +1909,8 @@ TEST_P(PaintPropertyTreeBuilderTest, FramesEstablishIsolation) {
       DocumentLifecycle::LifecycleUpdateReason::kTest);
 
   // Verify that our clobbered state is still clobbered.
-  EXPECT_EQ(TransformationMatrix().Translate(123, 321),
-            child_local_border_box_properties.Transform().Matrix());
+  EXPECT_EQ(FloatSize(123, 321),
+            child_local_border_box_properties.Transform().Translation2D());
 #endif  // !DCHECK_IS_ON()
 }
 
@@ -1988,21 +1967,18 @@ TEST_P(PaintPropertyTreeBuilderTest, TransformNodesInTransformedSubframes) {
                           frame_view->GetLayoutView());
 
   auto* inner_document_paint_offset_translation = inner_div_transform->Parent();
-  EXPECT_EQ(TransformationMatrix().Translate3d(31, 31, 0),
-            inner_document_paint_offset_translation->Matrix());
+  EXPECT_EQ(FloatSize(31, 31),
+            inner_document_paint_offset_translation->Translation2D());
   auto& inner_document_scroll_translation =
       inner_document_paint_offset_translation->Parent()->Unalias();
-  EXPECT_EQ(TransformationMatrix().Translate3d(0, 0, 0),
-            inner_document_scroll_translation.Matrix());
+  EXPECT_TRUE(inner_document_scroll_translation.IsIdentity());
   auto* iframe_pre_translation = inner_document_scroll_translation.Parent();
-  EXPECT_EQ(TransformationMatrix().Translate3d(42, 42, 0),
-            iframe_pre_translation->Matrix());
+  EXPECT_EQ(FloatSize(42, 42), iframe_pre_translation->Translation2D());
   auto* iframe_transform = iframe_pre_translation->Parent();
   EXPECT_EQ(TransformationMatrix().Translate3d(4, 5, 6),
             iframe_transform->Matrix());
   auto* iframe_paint_offset_translation = iframe_transform->Parent();
-  EXPECT_EQ(TransformationMatrix().Translate3d(7, 7, 0),
-            iframe_paint_offset_translation->Matrix());
+  EXPECT_EQ(FloatSize(7, 7), iframe_paint_offset_translation->Translation2D());
   auto* div_with_transform_transform =
       iframe_paint_offset_translation->Parent();
   EXPECT_EQ(TransformationMatrix().Translate3d(1, 2, 3),
@@ -2509,11 +2485,9 @@ TEST_P(PaintPropertyTreeBuilderTest, PaintOffsetWithBasicPixelSnapping) {
   LayoutObject* b = GetLayoutObjectByElementId("b");
   const ObjectPaintProperties* b_properties =
       b->FirstFragment().PaintProperties();
-  EXPECT_EQ(TransformationMatrix().Translate3d(0, 0, 0),
-            b_properties->Transform()->Matrix());
+  EXPECT_TRUE(b_properties->Transform()->IsIdentity());
   // The paint offset transform should be snapped from (0.3,0.3) to (0,0).
-  EXPECT_EQ(TransformationMatrix().Translate(0, 0),
-            b_properties->Transform()->Parent()->Matrix());
+  EXPECT_TRUE(b_properties->Transform()->Parent()->IsIdentity());
   // The residual subpixel adjustment should be (0.3,0.3) - (0,0) = (0.3,0.3).
   LayoutPoint subpixel_accumulation = LayoutPoint(FloatPoint(0.3, 0.3));
   EXPECT_EQ(subpixel_accumulation, b->FirstFragment().PaintOffset());
@@ -2567,11 +2541,10 @@ TEST_P(PaintPropertyTreeBuilderTest,
   LayoutObject* b = GetLayoutObjectByElementId("b");
   const ObjectPaintProperties* b_properties =
       b->FirstFragment().PaintProperties();
-  EXPECT_EQ(TransformationMatrix().Translate3d(0, 0, 0),
-            b_properties->Transform()->Matrix());
+  EXPECT_TRUE(b_properties->Transform()->IsIdentity());
   // The paint offset transform should be snapped from (0.7,0.7) to (1,1).
-  EXPECT_EQ(TransformationMatrix().Translate(1, 1),
-            b_properties->Transform()->Parent()->Matrix());
+  EXPECT_EQ(FloatSize(1, 1),
+            b_properties->Transform()->Parent()->Translation2D());
   // The residual subpixel adjustment should be (0.7,0.7) - (1,1) = (-0.3,-0.3).
   LayoutPoint subpixel_accumulation =
       LayoutPoint(LayoutPoint(FloatPoint(0.7, 0.7)) - LayoutPoint(1, 1));
@@ -2633,8 +2606,8 @@ TEST_P(PaintPropertyTreeBuilderTest,
   EXPECT_EQ(TransformationMatrix().Scale(10),
             b_properties->Transform()->Matrix());
   // The paint offset transform should not be snapped.
-  EXPECT_EQ(TransformationMatrix().Translate(1, 1),
-            b_properties->Transform()->Parent()->Matrix());
+  EXPECT_EQ(FloatSize(1, 1),
+            b_properties->Transform()->Parent()->Translation2D());
   EXPECT_EQ(LayoutPoint(), b->FirstFragment().PaintOffset());
   // Visual rects via the non-paint properties system use enclosingIntRect
   // before applying transforms, because they are computed bottom-up and
@@ -2699,11 +2672,10 @@ TEST_P(PaintPropertyTreeBuilderTest,
   LayoutObject* b = GetLayoutObjectByElementId("b");
   const ObjectPaintProperties* b_properties =
       b->FirstFragment().PaintProperties();
-  EXPECT_EQ(TransformationMatrix().Translate3d(5, 7, 0),
-            b_properties->Transform()->Matrix());
+  EXPECT_EQ(FloatSize(5, 7), b_properties->Transform()->Translation2D());
   // The paint offset transform should be snapped from (0.7,0.7) to (1,1).
-  EXPECT_EQ(TransformationMatrix().Translate(1, 1),
-            b_properties->Transform()->Parent()->Matrix());
+  EXPECT_EQ(FloatSize(1, 1),
+            b_properties->Transform()->Parent()->Translation2D());
   // The residual subpixel adjustment should be (0.7,0.7) - (1,1) = (-0.3,-0.3).
   LayoutPoint subpixel_accumulation =
       LayoutPoint(LayoutPoint(FloatPoint(0.7, 0.7)) - LayoutPoint(1, 1));
@@ -2715,12 +2687,10 @@ TEST_P(PaintPropertyTreeBuilderTest,
   LayoutObject* c = GetLayoutObjectByElementId("c");
   const ObjectPaintProperties* c_properties =
       c->FirstFragment().PaintProperties();
-  EXPECT_EQ(TransformationMatrix().Translate3d(11, 13, 0),
-            c_properties->Transform()->Matrix());
+  EXPECT_EQ(FloatSize(11, 13), c_properties->Transform()->Translation2D());
   // The paint offset should be (-0.3,-0.3) but the paint offset transform
   // should still be at (0,0) because it should be snapped.
-  EXPECT_EQ(TransformationMatrix().Translate(0, 0),
-            c_properties->Transform()->Parent()->Matrix());
+  EXPECT_EQ(FloatSize(), c_properties->Transform()->Parent()->Translation2D());
   // The residual subpixel adjustment should still be (-0.3,-0.3).
   EXPECT_EQ(subpixel_accumulation, c->FirstFragment().PaintOffset());
   CHECK_EXACT_VISUAL_RECT(LayoutRect(LayoutUnit(16.7), LayoutUnit(20.7),
@@ -2783,11 +2753,10 @@ TEST_P(PaintPropertyTreeBuilderTest, PaintOffsetWithPixelSnappingWithFixedPos) {
   LayoutObject* b = GetLayoutObjectByElementId("b");
   const ObjectPaintProperties* b_properties =
       b->FirstFragment().PaintProperties();
-  EXPECT_EQ(TransformationMatrix().Translate(0, 0),
-            b_properties->Transform()->Matrix());
+  EXPECT_EQ(FloatSize(), b_properties->Transform()->Translation2D());
   // The paint offset transform should be snapped from (0.7,0) to (1,0).
-  EXPECT_EQ(TransformationMatrix().Translate(1, 0),
-            b_properties->Transform()->Parent()->Matrix());
+  EXPECT_EQ(FloatSize(1, 0),
+            b_properties->Transform()->Parent()->Translation2D());
   // The residual subpixel adjustment should be (0.7,0) - (1,0) = (-0.3,0).
   LayoutPoint subpixel_accumulation =
       LayoutPoint(LayoutPoint(FloatPoint(0.7, 0)) - LayoutPoint(1, 0));
@@ -2833,8 +2802,7 @@ TEST_P(PaintPropertyTreeBuilderTest, SvgPixelSnappingShouldResetPaintOffset) {
   LayoutObject& svg_with_transform = *GetLayoutObjectByElementId("svg");
   const ObjectPaintProperties* svg_with_transform_properties =
       svg_with_transform.FirstFragment().PaintProperties();
-  EXPECT_EQ(TransformationMatrix(),
-            svg_with_transform_properties->Transform()->Matrix());
+  EXPECT_TRUE(svg_with_transform_properties->Transform()->IsIdentity());
   EXPECT_EQ(LayoutPoint(FloatPoint(0.1, 0)),
             svg_with_transform.FirstFragment().PaintOffset());
   EXPECT_TRUE(svg_with_transform_properties->ReplacedContentTransform() ==
@@ -2843,8 +2811,8 @@ TEST_P(PaintPropertyTreeBuilderTest, SvgPixelSnappingShouldResetPaintOffset) {
   LayoutObject& rect_with_transform = *GetLayoutObjectByElementId("rect");
   const ObjectPaintProperties* rect_with_transform_properties =
       rect_with_transform.FirstFragment().PaintProperties();
-  EXPECT_EQ(TransformationMatrix().Translate(1, 1),
-            rect_with_transform_properties->Transform()->Matrix());
+  EXPECT_EQ(FloatSize(1, 1),
+            rect_with_transform_properties->Transform()->Translation2D());
 
   // Ensure there is no PaintOffset transform between the rect and the svg's
   // transform.
@@ -2866,9 +2834,8 @@ TEST_P(PaintPropertyTreeBuilderTest, SvgRootAndForeignObjectPixelSnapping) {
   const auto* svg_properties = svg->FirstFragment().PaintProperties();
   // The paint offset of (8.6, 8.3) is rounded off here. The fractional part
   // remains PaintOffset.
-  EXPECT_EQ(
-      FloatSize(9, 8),
-      svg_properties->PaintOffsetTranslation()->Matrix().To2DTranslation());
+  EXPECT_EQ(FloatSize(9, 8),
+            svg_properties->PaintOffsetTranslation()->Translation2D());
   EXPECT_EQ(LayoutPoint(LayoutUnit(-0.40625), LayoutUnit(0.3)),
             svg->FirstFragment().PaintOffset());
   EXPECT_EQ(nullptr, svg_properties->ReplacedContentTransform());
@@ -3160,7 +3127,7 @@ TEST_P(PaintPropertyTreeBuilderTest, FlatteningIn3DContext) {
   const auto* a_properties = PaintPropertiesForElement("a");
   ASSERT_NE(a_properties, nullptr);
   ASSERT_NE(a_properties->Transform(), nullptr);
-  EXPECT_EQ(TransformationMatrix(), a_properties->Transform()->Matrix());
+  EXPECT_TRUE(a_properties->Transform()->IsIdentity());
   EXPECT_TRUE(a_properties->Transform()->HasRenderingContext());
   EXPECT_TRUE(a_properties->Transform()->FlattensInheritedTransform());
   EXPECT_EQ(a_properties->Effect(), nullptr);
@@ -3249,24 +3216,21 @@ TEST_P(PaintPropertyTreeBuilderTest, CachedProperties) {
       a->GetLayoutObject()->FirstFragment().PaintProperties();
   const TransformPaintPropertyNode* a_transform_node =
       a_properties->Transform();
-  EXPECT_EQ(TransformationMatrix().Translate(33, 44),
-            a_transform_node->Matrix());
+  EXPECT_EQ(FloatSize(33, 44), a_transform_node->Translation2D());
 
   Element* b = GetDocument().getElementById("b");
   const ObjectPaintProperties* b_properties =
       b->GetLayoutObject()->FirstFragment().PaintProperties();
   const TransformPaintPropertyNode* b_transform_node =
       b_properties->Transform();
-  EXPECT_EQ(TransformationMatrix().Translate(55, 66),
-            b_transform_node->Matrix());
+  EXPECT_EQ(FloatSize(55, 66), b_transform_node->Translation2D());
 
   Element* c = GetDocument().getElementById("c");
   const ObjectPaintProperties* c_properties =
       c->GetLayoutObject()->FirstFragment().PaintProperties();
   const TransformPaintPropertyNode* c_transform_node =
       c_properties->Transform();
-  EXPECT_EQ(TransformationMatrix().Translate(77, 88),
-            c_transform_node->Matrix());
+  EXPECT_EQ(FloatSize(77, 88), c_transform_node->Translation2D());
 
   CHECK_EXACT_VISUAL_RECT(LayoutRect(33, 44, 50, 60), a->GetLayoutObject(),
                           frame_view->GetLayoutView());
@@ -3288,8 +3252,7 @@ TEST_P(PaintPropertyTreeBuilderTest, CachedProperties) {
   EXPECT_EQ(b_properties,
             b->GetLayoutObject()->FirstFragment().PaintProperties());
   b_transform_node = b_properties->Transform();
-  EXPECT_EQ(TransformationMatrix().Translate(111, 222),
-            b_transform_node->Matrix());
+  EXPECT_EQ(FloatSize(111, 222), b_transform_node->Translation2D());
   EXPECT_EQ(a_transform_node, b_transform_node->Parent()->Parent());
 
   EXPECT_EQ(c_properties,
@@ -3342,7 +3305,7 @@ TEST_P(PaintPropertyTreeBuilderTest, CachedProperties) {
   EXPECT_EQ(b_properties,
             b->GetLayoutObject()->FirstFragment().PaintProperties());
   b_transform_node = b_properties->Transform();
-  EXPECT_EQ(TransformationMatrix().Translate(4, 5), b_transform_node->Matrix());
+  EXPECT_EQ(FloatSize(4, 5), b_transform_node->Translation2D());
   EXPECT_EQ(a_transform_node, b_transform_node->Parent()->Parent());
 
   EXPECT_EQ(c_properties,
@@ -3499,8 +3462,7 @@ TEST_P(PaintPropertyTreeBuilderTest, ContainPaintOrStyleLayoutTreeState) {
     // Verify transform:
 
     // Isolation transform node should be identity.
-    EXPECT_EQ(clip_properties->TransformIsolationNode()->Matrix(),
-              TransformationMatrix());
+    EXPECT_TRUE(clip_properties->TransformIsolationNode()->IsIdentity());
 
     // TODO(crbug.com/732611): CAP invalidations are incorrect if there is
     // scrolling.
@@ -3593,9 +3555,8 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowScrollContentsTreeState) {
             &clipper->FirstFragment().LocalBorderBoxProperties().Clip());
 
   auto contents_properties = clipper->FirstFragment().ContentsProperties();
-  EXPECT_EQ(
-      FloatSize(30, 20),
-      clip_properties->PaintOffsetTranslation()->Matrix().To2DTranslation());
+  EXPECT_EQ(FloatSize(30, 20),
+            clip_properties->PaintOffsetTranslation()->Translation2D());
   EXPECT_EQ(LayoutPoint(0, 0), clipper->FirstFragment().PaintOffset());
   EXPECT_EQ(clip_properties->ScrollTranslation(),
             &contents_properties.Transform());
@@ -3739,8 +3700,7 @@ TEST_P(PaintPropertyTreeBuilderTest,
   } else {
     EXPECT_EQ(DocScrollTranslation(), paint_offset_translation->Parent());
   }
-  EXPECT_EQ(FloatSize(30, 20),
-            paint_offset_translation->Matrix().To2DTranslation());
+  EXPECT_EQ(FloatSize(30, 20), paint_offset_translation->Translation2D());
   EXPECT_EQ(LayoutPoint(0, 0), svg_with_view_box.FirstFragment().PaintOffset());
 
   const auto* replaced_content_transform = svg_with_view_box.FirstFragment()
@@ -3750,8 +3710,7 @@ TEST_P(PaintPropertyTreeBuilderTest,
       replaced_content_transform,
       &svg_with_view_box.FirstFragment().ContentsProperties().Transform());
   EXPECT_EQ(paint_offset_translation, replaced_content_transform->Parent());
-  EXPECT_EQ(FloatSize(-50, -50),
-            replaced_content_transform->Matrix().To2DTranslation());
+  EXPECT_EQ(FloatSize(-50, -50), replaced_content_transform->Translation2D());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, OverflowHiddenScrollProperties) {
@@ -3786,8 +3745,7 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowHiddenScrollProperties) {
   // offset, there should be a scroll translation node but no scroll node.
   auto* scroll_translation =
       overflow_hidden_scroll_properties->ScrollTranslation();
-  EXPECT_EQ(TransformationMatrix().Translate(0, -37),
-            scroll_translation->Matrix());
+  EXPECT_EQ(FloatSize(0, -37), scroll_translation->Translation2D());
   EXPECT_EQ(nullptr, scroll_translation->ScrollNode());
   EXPECT_EQ(nullptr, overflow_hidden_scroll_properties->Scroll());
 }
@@ -3812,8 +3770,7 @@ TEST_P(PaintPropertyTreeBuilderTest, FrameOverflowHiddenScrollProperties) {
 
   UpdateAllLifecyclePhasesForTest();
 
-  EXPECT_EQ(TransformationMatrix().Translate(0, -37),
-            DocScrollTranslation()->Matrix());
+  EXPECT_EQ(FloatSize(0, -37), DocScrollTranslation()->Translation2D());
 
   // TODO(crbug.com/732611): CAP invalidations are incorrect if there is
   // scrolling.
@@ -3880,8 +3837,7 @@ TEST_P(PaintPropertyTreeBuilderTest, NestedScrollProperties) {
   } else {
     EXPECT_EQ(DocScroll(), overflow_a_scroll_node->Parent());
   }
-  EXPECT_EQ(TransformationMatrix().Translate(0, -37),
-            scroll_a_translation->Matrix());
+  EXPECT_EQ(FloatSize(0, -37), scroll_a_translation->Translation2D());
   EXPECT_EQ(IntRect(0, 0, 5, 3), overflow_a_scroll_node->ContainerRect());
   // 107 is the forceScroll element plus the height of the overflow scroll child
   // (overflowB).
@@ -3897,8 +3853,7 @@ TEST_P(PaintPropertyTreeBuilderTest, NestedScrollProperties) {
       overflow_b_scroll_properties->ScrollTranslation();
   auto* overflow_b_scroll_node = scroll_b_translation->ScrollNode();
   EXPECT_EQ(overflow_a_scroll_node, overflow_b_scroll_node->Parent());
-  EXPECT_EQ(TransformationMatrix().Translate(0, -41),
-            scroll_b_translation->Matrix());
+  EXPECT_EQ(FloatSize(0, -41), scroll_b_translation->Translation2D());
   EXPECT_EQ(IntRect(0, 0, 9, 7), overflow_b_scroll_node->ContainerRect());
   EXPECT_EQ(IntSize(9, 100), overflow_b_scroll_node->ContentsSize());
   EXPECT_TRUE(overflow_b_scroll_node->UserScrollableHorizontal());
@@ -3967,8 +3922,7 @@ TEST_P(PaintPropertyTreeBuilderTest, PositionedScrollerIsNotNested) {
   EXPECT_EQ(
       DocScroll(),
       overflow_scroll_properties->ScrollTranslation()->ScrollNode()->Parent());
-  EXPECT_EQ(TransformationMatrix().Translate(0, -37),
-            scroll_translation->Matrix());
+  EXPECT_EQ(FloatSize(0, -37), scroll_translation->Translation2D());
   EXPECT_EQ(IntRect(0, 0, 5, 3), overflow_scroll_node->ContainerRect());
   // The height should be 4000px because the (dom-order) overflow children are
   // positioned and do not contribute to the height. Only the 4000px
@@ -3983,8 +3937,7 @@ TEST_P(PaintPropertyTreeBuilderTest, PositionedScrollerIsNotNested) {
   // The absolute position overflow scroll node is parented under the frame, not
   // the dom-order parent.
   EXPECT_EQ(DocScroll(), abspos_overflow_scroll_node->Parent());
-  EXPECT_EQ(TransformationMatrix().Translate(0, -41),
-            abspos_scroll_translation->Matrix());
+  EXPECT_EQ(FloatSize(0, -41), abspos_scroll_translation->Translation2D());
   EXPECT_EQ(IntRect(0, 0, 9, 7), abspos_overflow_scroll_node->ContainerRect());
   EXPECT_EQ(IntSize(9, 4000), abspos_overflow_scroll_node->ContentsSize());
 
@@ -4001,8 +3954,7 @@ TEST_P(PaintPropertyTreeBuilderTest, PositionedScrollerIsNotNested) {
                 .GetScrollTranslationNode()
                 ->ScrollNode(),
             fixed_overflow_scroll_node->Parent());
-  EXPECT_EQ(TransformationMatrix().Translate(0, -43),
-            fixed_scroll_translation->Matrix());
+  EXPECT_EQ(FloatSize(0, -43), fixed_scroll_translation->Translation2D());
   EXPECT_EQ(IntRect(0, 0, 13, 11), fixed_overflow_scroll_node->ContainerRect());
   EXPECT_EQ(IntSize(13, 4000), fixed_overflow_scroll_node->ContentsSize());
 }
@@ -4067,8 +4019,7 @@ TEST_P(PaintPropertyTreeBuilderTest, NestedPositionedScrollProperties) {
   } else {
     EXPECT_EQ(DocScroll(), overflow_a_scroll_node->Parent());
   }
-  EXPECT_EQ(TransformationMatrix().Translate(0, -37),
-            scroll_a_translation->Matrix());
+  EXPECT_EQ(FloatSize(0, -37), scroll_a_translation->Translation2D());
   EXPECT_EQ(IntRect(0, 0, 20, 20), overflow_a_scroll_node->ContainerRect());
   // 100 is the forceScroll element's height because the overflow child does not
   // contribute to the height.
@@ -4084,8 +4035,7 @@ TEST_P(PaintPropertyTreeBuilderTest, NestedPositionedScrollProperties) {
       overflow_b_scroll_properties->ScrollTranslation();
   auto* overflow_b_scroll_node = scroll_b_translation->ScrollNode();
   EXPECT_EQ(overflow_a_scroll_node, overflow_b_scroll_node->Parent());
-  EXPECT_EQ(TransformationMatrix().Translate(0, -41),
-            scroll_b_translation->Matrix());
+  EXPECT_EQ(FloatSize(0, -41), scroll_b_translation->Translation2D());
   EXPECT_EQ(IntRect(0, 0, 5, 3), overflow_b_scroll_node->ContainerRect());
   EXPECT_EQ(IntSize(5, 100), overflow_b_scroll_node->ContentsSize());
   EXPECT_TRUE(overflow_b_scroll_node->UserScrollableHorizontal());
@@ -4108,8 +4058,7 @@ TEST_P(PaintPropertyTreeBuilderTest, SVGRootClip) {
                                  ->FirstFragment()
                                  .PaintProperties()
                                  ->PaintOffsetTranslation()
-                                 ->Matrix()
-                                 .To2DTranslation());
+                                 ->Translation2D());
   EXPECT_EQ(FloatRoundedRect(0, 0, 100, 100), clip->ClipRect());
 }
 
@@ -4183,8 +4132,7 @@ TEST_P(PaintPropertyTreeBuilderTest, PaintOffsetsUnderMultiColumnScrolled) {
   EXPECT_EQ(FloatSize(8, 8), scroller->FirstFragment()
                                  .PaintProperties()
                                  ->PaintOffsetTranslation()
-                                 ->Matrix()
-                                 .To2DTranslation());
+                                 ->Translation2D());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest,
@@ -4807,8 +4755,12 @@ TEST_P(PaintPropertyTreeBuilderTest, TransformOriginWithAndWithoutTransform) {
         width: 400px;
         height: 100px;
       }
-      #transform {
+      #translation {
         transform: translate(100px, 200px);
+        transform-origin: 75% 75% 0;
+      }
+      #scale {
+        transform: scale(2);
         transform-origin: 75% 75% 0;
       }
       #willChange {
@@ -4816,25 +4768,23 @@ TEST_P(PaintPropertyTreeBuilderTest, TransformOriginWithAndWithoutTransform) {
         transform-origin: 75% 75% 0;
       }
     </style>
-    <div id='transform'></div>
+    <div id='translation'></div>
+    <div id='scale'></div>
     <div id='willChange'></div>
   )HTML");
 
-  auto* transform = GetLayoutObjectByElementId("transform");
-  EXPECT_EQ(
-      TransformationMatrix().Translate3d(100, 200, 0),
-      transform->FirstFragment().PaintProperties()->Transform()->Matrix());
-  EXPECT_EQ(
-      FloatPoint3D(300, 75, 0),
-      transform->FirstFragment().PaintProperties()->Transform()->Origin());
+  auto* translation = PaintPropertiesForElement("translation")->Transform();
+  EXPECT_EQ(FloatSize(100, 200), translation->Translation2D());
+  // We don't need to store origin for 2d-translation.
+  EXPECT_EQ(FloatPoint3D(), translation->Origin());
 
-  auto* will_change = GetLayoutObjectByElementId("willChange");
-  EXPECT_EQ(
-      TransformationMatrix().Translate3d(0, 0, 0),
-      will_change->FirstFragment().PaintProperties()->Transform()->Matrix());
-  EXPECT_EQ(
-      FloatPoint3D(0, 0, 0),
-      will_change->FirstFragment().PaintProperties()->Transform()->Origin());
+  auto* scale = PaintPropertiesForElement("scale")->Transform();
+  EXPECT_EQ(TransformationMatrix().Scale(2), scale->Matrix());
+  EXPECT_EQ(FloatPoint3D(300, 75, 0), scale->Origin());
+
+  auto* will_change = PaintPropertiesForElement("willChange")->Transform();
+  EXPECT_TRUE(will_change->IsIdentity());
+  EXPECT_EQ(FloatPoint3D(), will_change->Origin());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, TransformOriginWithAndWithoutMotionPath) {
@@ -4862,19 +4812,22 @@ TEST_P(PaintPropertyTreeBuilderTest, TransformOriginWithAndWithoutMotionPath) {
   )HTML");
 
   auto* motion_path = GetLayoutObjectByElementId("motionPath");
+  EXPECT_EQ(FloatSize(50, 150), motion_path->FirstFragment()
+                                    .PaintProperties()
+                                    ->Transform()
+                                    ->Translation2D());
+  // We don't need to store origin for 2d-translation.
   EXPECT_EQ(
-      TransformationMatrix().Translate3d(50, 150, 0),
-      motion_path->FirstFragment().PaintProperties()->Transform()->Matrix());
-  EXPECT_EQ(
-      FloatPoint3D(50, 50, 0),
+      FloatPoint3D(),
       motion_path->FirstFragment().PaintProperties()->Transform()->Origin());
 
   auto* will_change = GetLayoutObjectByElementId("willChange");
+  EXPECT_TRUE(will_change->FirstFragment()
+                  .PaintProperties()
+                  ->Transform()
+                  ->IsIdentity());
   EXPECT_EQ(
-      TransformationMatrix().Translate3d(0, 0, 0),
-      will_change->FirstFragment().PaintProperties()->Transform()->Matrix());
-  EXPECT_EQ(
-      FloatPoint3D(0, 0, 0),
+      FloatPoint3D(),
       will_change->FirstFragment().PaintProperties()->Transform()->Origin());
 }
 
@@ -5351,19 +5304,16 @@ TEST_P(PaintPropertyTreeBuilderTest, ScrollBoundsOffset) {
   } else {
     EXPECT_EQ(DocScroll(), scroll_node->Parent());
   }
-  EXPECT_EQ(TransformationMatrix().Translate(0, -42),
-            scroll_translation->Matrix());
+  EXPECT_EQ(FloatSize(0, -42), scroll_translation->Translation2D());
   // The paint offset node should be offset by the margin.
-  EXPECT_EQ(FloatSize(7, 11),
-            paint_offset_translation->Matrix().To2DTranslation());
+  EXPECT_EQ(FloatSize(7, 11), paint_offset_translation->Translation2D());
   // And the scroll node should not.
   EXPECT_EQ(IntRect(0, 0, 100, 100), scroll_node->ContainerRect());
 
   scroller->setAttribute(html_names::kStyleAttr, "border: 20px solid black;");
   UpdateAllLifecyclePhasesForTest();
   // The paint offset node should be offset by the margin.
-  EXPECT_EQ(FloatSize(7, 11),
-            paint_offset_translation->Matrix().To2DTranslation());
+  EXPECT_EQ(FloatSize(7, 11), paint_offset_translation->Translation2D());
   // The scroll node should be offset by the border.
   EXPECT_EQ(IntRect(20, 20, 100, 100), scroll_node->ContainerRect());
 
@@ -5374,8 +5324,8 @@ TEST_P(PaintPropertyTreeBuilderTest, ScrollBoundsOffset) {
   // The scroll node's offset should not include margin if it has already been
   // included in a paint offset node.
   EXPECT_EQ(IntRect(20, 20, 100, 100), scroll_node->ContainerRect());
-  EXPECT_EQ(TransformationMatrix().Translate(7, 11),
-            scroll_properties->PaintOffsetTranslation()->Matrix());
+  EXPECT_EQ(FloatSize(7, 11),
+            scroll_properties->PaintOffsetTranslation()->Translation2D());
 }
 
 
@@ -5396,8 +5346,7 @@ TEST_P(PaintPropertyTreeBuilderTest, BackfaceHidden) {
   } else {
     // For SPv1, |target| is composited so we created PaintOffsetTranslation.
     ASSERT_NE(nullptr, paint_offset_translation);
-    EXPECT_EQ(TransformationMatrix().Translate(60, 50),
-              paint_offset_translation->Matrix());
+    EXPECT_EQ(FloatSize(60, 50), paint_offset_translation->Translation2D());
     EXPECT_EQ(TransformPaintPropertyNode::BackfaceVisibility::kInherited,
               paint_offset_translation->GetBackfaceVisibility());
   }
@@ -5406,7 +5355,7 @@ TEST_P(PaintPropertyTreeBuilderTest, BackfaceHidden) {
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
       RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
     ASSERT_NE(nullptr, transform);
-    EXPECT_TRUE(transform->Matrix().IsIdentity());
+    EXPECT_TRUE(transform->IsIdentity());
     EXPECT_EQ(TransformPaintPropertyNode::BackfaceVisibility::kHidden,
               transform->GetBackfaceVisibility());
   } else {
@@ -5979,10 +5928,9 @@ TEST_P(PaintPropertyTreeBuilderTest,
     EXPECT_EQ(LayoutPoint(), fragment.PaintOffset());
     EXPECT_EQ(LayoutUnit(i * 400), fragment.LogicalTopInFlowThread());
     const auto* properties = fragment.PaintProperties();
-    EXPECT_EQ(TransformationMatrix().Translate(20, -180 + i * 400),
-              properties->PaintOffsetTranslation()->Matrix());
-    EXPECT_EQ(TransformationMatrix().Translate(10, 0),
-              properties->Transform()->Matrix());
+    EXPECT_EQ(FloatSize(20, -180 + i * 400),
+              properties->PaintOffsetTranslation()->Translation2D());
+    EXPECT_EQ(FloatSize(10, 0), properties->Transform()->Translation2D());
     EXPECT_EQ(properties->PaintOffsetTranslation(),
               properties->Transform()->Parent());
   }
@@ -6246,8 +6194,8 @@ TEST_P(PaintPropertyTreeBuilderTest, StickyConstraintChain) {
 
   const auto* outer_properties = PaintPropertiesForElement("outer");
   ASSERT_TRUE(outer_properties && outer_properties->StickyTranslation());
-  EXPECT_EQ(TransformationMatrix().Translate(0, 60),
-            outer_properties->StickyTranslation()->Matrix());
+  EXPECT_EQ(FloatSize(0, 60),
+            outer_properties->StickyTranslation()->Translation2D());
   ASSERT_NE(nullptr,
             outer_properties->StickyTranslation()->GetStickyConstraint());
   EXPECT_TRUE(
@@ -6262,8 +6210,8 @@ TEST_P(PaintPropertyTreeBuilderTest, StickyConstraintChain) {
 
   const auto* middle_properties = PaintPropertiesForElement("middle");
   ASSERT_TRUE(middle_properties && middle_properties->StickyTranslation());
-  EXPECT_EQ(TransformationMatrix().Translate(0, 15),
-            middle_properties->StickyTranslation()->Matrix());
+  EXPECT_EQ(FloatSize(0, 15),
+            middle_properties->StickyTranslation()->Translation2D());
   ASSERT_NE(nullptr,
             middle_properties->StickyTranslation()->GetStickyConstraint());
   EXPECT_TRUE(
@@ -6278,8 +6226,8 @@ TEST_P(PaintPropertyTreeBuilderTest, StickyConstraintChain) {
 
   const auto* inner_properties = PaintPropertiesForElement("inner");
   ASSERT_TRUE(inner_properties && inner_properties->StickyTranslation());
-  EXPECT_EQ(TransformationMatrix().Translate(0, 20),
-            inner_properties->StickyTranslation()->Matrix());
+  EXPECT_EQ(FloatSize(0, 20),
+            inner_properties->StickyTranslation()->Translation2D());
   ASSERT_NE(nullptr,
             inner_properties->StickyTranslation()->GetStickyConstraint());
   EXPECT_TRUE(
@@ -6315,22 +6263,22 @@ TEST_P(PaintPropertyTreeBuilderTest, NonScrollableSticky) {
 
   const auto* outer_properties = PaintPropertiesForElement("outer");
   ASSERT_TRUE(outer_properties && outer_properties->StickyTranslation());
-  EXPECT_EQ(TransformationMatrix().Translate(0, 60),
-            outer_properties->StickyTranslation()->Matrix());
+  EXPECT_EQ(FloatSize(0, 60),
+            outer_properties->StickyTranslation()->Translation2D());
   EXPECT_EQ(nullptr,
             outer_properties->StickyTranslation()->GetStickyConstraint());
 
   const auto* middle_properties = PaintPropertiesForElement("middle");
   ASSERT_TRUE(middle_properties && middle_properties->StickyTranslation());
-  EXPECT_EQ(TransformationMatrix().Translate(0, 15),
-            middle_properties->StickyTranslation()->Matrix());
+  EXPECT_EQ(FloatSize(0, 15),
+            middle_properties->StickyTranslation()->Translation2D());
   EXPECT_EQ(nullptr,
             middle_properties->StickyTranslation()->GetStickyConstraint());
 
   const auto* inner_properties = PaintPropertiesForElement("inner");
   ASSERT_TRUE(inner_properties && inner_properties->StickyTranslation());
-  EXPECT_EQ(TransformationMatrix().Translate(0, 20),
-            inner_properties->StickyTranslation()->Matrix());
+  EXPECT_EQ(FloatSize(0, 20),
+            inner_properties->StickyTranslation()->Translation2D());
   EXPECT_EQ(nullptr,
             inner_properties->StickyTranslation()->GetStickyConstraint());
 }

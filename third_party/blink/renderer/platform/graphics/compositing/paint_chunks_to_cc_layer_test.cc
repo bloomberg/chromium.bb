@@ -267,7 +267,7 @@ TEST_F(PaintChunksToCcLayerTest, EffectFilterGroupingNestedWithTransforms) {
            cc::PaintOpType::Restore,                           // </e2_offset>
            cc::PaintOpType::Restore,                           // </e1>
            cc::PaintOpType::Restore}));                        // </t1*t2>
-  EXPECT_TRANSFORM_MATRIX(t1->Matrix() * t2->Matrix(), *output, 1);
+  EXPECT_TRANSFORM_MATRIX(t1->Matrix() * t2->SlowMatrix(), *output, 1);
   // chunk1.bounds + e2(t2^-1(chunk2.bounds))
   EXPECT_EFFECT_BOUNDS(0, 0, 155, 155, *output, 2);
   // e2_offset
@@ -278,8 +278,8 @@ TEST_F(PaintChunksToCcLayerTest, EffectFilterGroupingNestedWithTransforms) {
   EXPECT_TRANSLATE(-e2->FiltersOrigin().X(), -e2->FiltersOrigin().Y(), *output,
                    7);
   // t2^1
-  auto translation = t2->Matrix().To2DTranslation();
-  EXPECT_TRANSLATE(-translation.Width(), -translation.Height(), *output, 9);
+  EXPECT_TRANSLATE(-t2->Translation2D().Width(), -t2->Translation2D().Height(),
+                   *output, 9);
 }
 
 TEST_F(PaintChunksToCcLayerTest, InterleavedClipEffect) {

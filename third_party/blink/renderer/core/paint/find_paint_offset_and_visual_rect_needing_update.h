@@ -37,7 +37,7 @@ class FindPaintOffsetNeedingUpdateScope {
     if (const auto* properties = fragment_data.PaintProperties()) {
       if (const auto* translation = properties->PaintOffsetTranslation()) {
         old_parent_ = translation->Parent();
-        old_translation_ = translation->Matrix();
+        old_translation_ = translation->Translation2D();
       }
     }
   }
@@ -49,11 +49,11 @@ class FindPaintOffsetNeedingUpdateScope {
     DCHECK_EQ(old_paint_offset_, paint_offset) << object_.DebugName();
 
     const TransformPaintPropertyNode* new_parent = nullptr;
-    base::Optional<TransformationMatrix> new_translation;
+    base::Optional<FloatSize> new_translation;
     if (const auto* properties = fragment_data_.PaintProperties()) {
       if (const auto* translation = properties->PaintOffsetTranslation()) {
         new_parent = translation->Parent();
-        new_translation = translation->Matrix();
+        new_translation = translation->Translation2D();
       }
     }
     DCHECK_EQ(!!old_translation_, !!new_translation) << object_.DebugName();
@@ -68,7 +68,7 @@ class FindPaintOffsetNeedingUpdateScope {
   const bool& is_actually_needed_;
   LayoutPoint old_paint_offset_;
   const TransformPaintPropertyNode* old_parent_ = nullptr;
-  base::Optional<TransformationMatrix> old_translation_;
+  base::Optional<FloatSize> old_translation_;
 };
 
 class FindVisualRectNeedingUpdateScopeBase {

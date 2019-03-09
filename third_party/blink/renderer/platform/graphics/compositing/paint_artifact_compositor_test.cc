@@ -491,8 +491,8 @@ TEST_P(PaintArtifactCompositorTest, FlattensInheritedTransform) {
     auto transform1 = CreateTransform(t0(), TransformationMatrix());
     auto transform2 =
         CreateTransform(*transform1, TransformationMatrix().Rotate3d(0, 45, 0));
-    TransformPaintPropertyNode::State transform3_state;
-    transform3_state.matrix = TransformationMatrix().Rotate3d(0, 45, 0);
+    TransformPaintPropertyNode::State transform3_state{
+        TransformationMatrix().Rotate3d(0, 45, 0)};
     transform3_state.flattens_inherited_transform = transform_is_flattened;
     auto transform3 = TransformPaintPropertyNode::Create(
         *transform2, std::move(transform3_state));
@@ -544,8 +544,8 @@ TEST_P(PaintArtifactCompositorTest, FlattensInheritedTransformWithAlias) {
     auto real_transform2 =
         CreateTransform(*transform1, TransformationMatrix().Rotate3d(0, 45, 0));
     auto transform2 = TransformPaintPropertyNode::CreateAlias(*real_transform2);
-    TransformPaintPropertyNode::State transform3_state;
-    transform3_state.matrix = TransformationMatrix().Rotate3d(0, 45, 0);
+    TransformPaintPropertyNode::State transform3_state{
+        TransformationMatrix().Rotate3d(0, 45, 0)};
     transform3_state.flattens_inherited_transform = transform_is_flattened;
     auto real_transform3 = TransformPaintPropertyNode::Create(
         *transform2, std::move(transform3_state));
@@ -1961,9 +1961,7 @@ scoped_refptr<EffectPaintPropertyNode> CreateSampleEffectNodeWithElementId() {
 
 scoped_refptr<TransformPaintPropertyNode>
 CreateSampleTransformNodeWithElementId() {
-  TransformPaintPropertyNode::State state;
-  state.matrix.Rotate(90);
-  state.origin = FloatPoint3D(100, 100, 0);
+  TransformPaintPropertyNode::State state{TransformationMatrix().Rotate(90)};
   state.direct_compositing_reasons = CompositingReason::k3DTransform;
   state.compositor_element_id = CompositorElementIdFromUniqueObjectId(
       3, CompositorElementIdNamespace::kPrimaryTransform);

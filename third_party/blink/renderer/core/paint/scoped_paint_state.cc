@@ -19,7 +19,7 @@ void ScopedPaintState::AdjustForPaintOffsetTranslation(
     // are painting table row background behind a cell having paint offset
     // translation.
     input_paint_info_.context.Save();
-    FloatSize translation = paint_offset_translation.Matrix().To2DTranslation();
+    FloatSize translation = paint_offset_translation.Translation2D();
     input_paint_info_.context.Translate(translation.Width(),
                                         translation.Height());
     paint_offset_translation_as_drawing_ = true;

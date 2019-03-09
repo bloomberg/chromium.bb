@@ -72,7 +72,7 @@ GeometryMapper::SourceToDestinationProjectionInternal(
   if (source.Parent() && &destination == &source.Parent()->Unalias()) {
     if (source.IsIdentityOr2DTranslation()) {
       success = true;
-      return Translation2DOrMatrix(source.Matrix().To2DTranslation());
+      return Translation2DOrMatrix(source.Translation2D());
     }
     // The result will be translate(origin)*matrix*translate(-origin) which
     // equals to matrix if the origin is zero or if the matrix is just
@@ -86,7 +86,7 @@ GeometryMapper::SourceToDestinationProjectionInternal(
   if (destination.IsIdentityOr2DTranslation() && destination.Parent() &&
       &source == &destination.Parent()->Unalias()) {
     success = true;
-    return Translation2DOrMatrix(-destination.Matrix().To2DTranslation());
+    return Translation2DOrMatrix(-destination.Translation2D());
   }
 
   const auto& source_cache = source.GetTransformCache();

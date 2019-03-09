@@ -740,20 +740,18 @@ TEST_P(PaintPropertyTreeUpdateTest, TransformUpdatesOnRelativeLengthChanges) {
 
   auto* transform = GetDocument().getElementById("transform");
   auto* transform_object = transform->GetLayoutObject();
-  EXPECT_EQ(TransformationMatrix().Translate3d(50, 100, 0),
-            transform_object->FirstFragment()
-                .PaintProperties()
-                ->Transform()
-                ->Matrix());
+  EXPECT_EQ(FloatSize(50, 100), transform_object->FirstFragment()
+                                    .PaintProperties()
+                                    ->Transform()
+                                    ->Translation2D());
 
   transform->setAttribute(html_names::kStyleAttr,
                           "width: 200px; height: 300px;");
   UpdateAllLifecyclePhasesForTest();
-  EXPECT_EQ(TransformationMatrix().Translate3d(100, 150, 0),
-            transform_object->FirstFragment()
-                .PaintProperties()
-                ->Transform()
-                ->Matrix());
+  EXPECT_EQ(FloatSize(100, 150), transform_object->FirstFragment()
+                                     .PaintProperties()
+                                     ->Transform()
+                                     ->Translation2D());
 }
 
 TEST_P(PaintPropertyTreeUpdateTest, CSSClipDependingOnSize) {
@@ -1594,9 +1592,8 @@ TEST_P(PaintPropertyTreeUpdateTest, SubpixelAccumulationAcrossIsolation) {
   auto* child = GetLayoutObjectByElementId("child");
   EXPECT_EQ(LayoutPoint(LayoutUnit(10.25), LayoutUnit()),
             parent->FirstFragment().PaintOffset());
-  EXPECT_EQ(FloatSize(10, 0), isolation_properties->PaintOffsetTranslation()
-                                  ->Matrix()
-                                  .To2DTranslation());
+  EXPECT_EQ(FloatSize(10, 0),
+            isolation_properties->PaintOffsetTranslation()->Translation2D());
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     EXPECT_EQ(LayoutPoint(), child->FirstFragment().PaintOffset());
   } else {
@@ -1609,9 +1606,8 @@ TEST_P(PaintPropertyTreeUpdateTest, SubpixelAccumulationAcrossIsolation) {
 
   EXPECT_EQ(LayoutPoint(LayoutUnit(12.75), LayoutUnit()),
             parent->FirstFragment().PaintOffset());
-  EXPECT_EQ(FloatSize(13, 0), isolation_properties->PaintOffsetTranslation()
-                                  ->Matrix()
-                                  .To2DTranslation());
+  EXPECT_EQ(FloatSize(13, 0),
+            isolation_properties->PaintOffsetTranslation()->Translation2D());
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     EXPECT_EQ(LayoutPoint(), child->FirstFragment().PaintOffset());
   } else {
