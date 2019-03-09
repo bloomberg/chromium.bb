@@ -127,11 +127,9 @@ uint32_t GetFrameOffset(int compact_unwind_info) {
       (((1 << __builtin_popcount(UNWIND_X86_64_RBP_FRAME_OFFSET))) - 1));
 }
 
-}  // namespace
-
-// True if the unwind from |leaf_frame_rip| may trigger a crash bug in
+// True if the unwind from |leaf_frame_module| may trigger a crash bug in
 // unw_init_local. If so, the stack walk should be aborted at the leaf frame.
-bool MayTriggerUnwInitLocalCrash(uint64_t leaf_frame_rip) {
+bool MayTriggerUnwInitLocalCrash(const ModuleCache::Module* leaf_frame_module) {
   // The issue here is a bug in unw_init_local that, in some unwinds, results in
   // attempts to access memory at the address immediately following the address
   // range of the library. When the library is the last of the mapped libraries
@@ -150,19 +148,14 @@ bool MayTriggerUnwInitLocalCrash(uint64_t leaf_frame_rip) {
   //
   // TODO(lgrey): Add references above to LLVM/Radar bugs on unw_init_local once
   // filed.
-  Dl_info info;
-  if (dladdr(reinterpret_cast<const void*>(leaf_frame_rip), &info) == 0)
-    return false;
   uint64_t unused;
   vm_size_t size = sizeof(unused);
-  return vm_read_overwrite(current_task(),
-                           reinterpret_cast<vm_address_t>(info.dli_fbase) +
-                               ModuleCache::GetModuleTextSize(info.dli_fbase),
-                           sizeof(unused),
-                           reinterpret_cast<vm_address_t>(&unused), &size) != 0;
+  return vm_read_overwrite(
+             current_task(),
+             leaf_frame_module->GetBaseAddress() + leaf_frame_module->GetSize(),
+             sizeof(unused), reinterpret_cast<vm_address_t>(&unused),
+             &size) != 0;
 }
-
-namespace {
 
 // Check if the cursor contains a valid-looking frame pointer for frame pointer
 // unwinds. If the stack frame has a frame pointer, stepping the cursor will
@@ -375,9 +368,10 @@ void NativeStackSamplerMac::RecordStackFrames(StackBuffer* stack_buffer,
   // circumstances. If we're subject to that case, just record the first frame
   // and bail. See MayTriggerUnwInitLocalCrash for details.
   uintptr_t rip = thread_state.__rip;
-  if (MayTriggerUnwInitLocalCrash(rip)) {
-    profile_builder->OnSampleCompleted(
-        {Frame(rip, module_cache_->GetModuleForAddress(rip))});
+  const ModuleCache::Module* leaf_frame_module =
+      module_cache_->GetModuleForAddress(rip);
+  if (leaf_frame_module && MayTriggerUnwInitLocalCrash(leaf_frame_module)) {
+    profile_builder->OnSampleCompleted({Frame(rip, leaf_frame_module)});
     return;
   }
 

@@ -72,20 +72,9 @@ class BASE_EXPORT ModuleCache {
   std::vector<const Module*> GetModules() const;
 
  private:
-  // TODO(alph): Refactor corresponding functions to use public API instead,
-  // and drop friends.
-
   // Creates a Module object for the specified memory address. Returns null if
   // the address does not belong to a module.
   static std::unique_ptr<Module> CreateModuleForAddress(uintptr_t address);
-  friend class NativeStackSamplerMac;
-
-#if defined(OS_MACOSX)
-  // Returns the size of the _TEXT segment of the module loaded
-  // at |module_addr|.
-  static size_t GetModuleTextSize(const void* module_addr);
-  friend bool MayTriggerUnwInitLocalCrash(uint64_t);
-#endif
 
   std::map<uintptr_t, std::unique_ptr<Module>> modules_cache_map_;
 };
