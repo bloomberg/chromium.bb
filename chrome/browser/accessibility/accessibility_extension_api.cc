@@ -130,15 +130,12 @@ AccessibilityPrivateSetFocusRingsFunction::Run() {
 ExtensionFunction::ResponseAction
 AccessibilityPrivateSetHighlightsFunction::Run() {
 #if defined(OS_CHROMEOS)
-  std::unique_ptr<extensions::api::accessibility_private::SetHighlights::Params>
-      params(
-          extensions::api::accessibility_private::SetHighlights::Params::Create(
-              *args_));
+  std::unique_ptr<accessibility_private::SetHighlights::Params> params(
+      accessibility_private::SetHighlights::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   std::vector<gfx::Rect> rects;
-  for (const extensions::api::accessibility_private::ScreenRect& rect :
-       params->rects) {
+  for (const accessibility_private::ScreenRect& rect : params->rects) {
     rects.push_back(gfx::Rect(rect.left, rect.top, rect.width, rect.height));
   }
 
@@ -411,8 +408,7 @@ AccessibilityPrivateSetSwitchAccessMenuStateFunction::Run() {
   int width = padding + (item_width * cols);
   int height = padding + (item_height * rows);
 
-  extensions::api::accessibility_private::ScreenRect elem =
-      std::move(params->element_bounds);
+  accessibility_private::ScreenRect elem = std::move(params->element_bounds);
 
   gfx::Rect element_bounds(elem.left, elem.top, elem.width, elem.height);
 
