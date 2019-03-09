@@ -24,6 +24,7 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.util.FeatureUtilities;
+import org.chromium.components.download.DownloadCollectionBridge;
 import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.AndroidPermissionDelegate;
@@ -125,6 +126,7 @@ public class DownloadController {
      */
     @CalledByNative
     private static boolean hasFileAccess() {
+        if (DownloadCollectionBridge.supportsDownloadCollection()) return true;
         Activity activity = ApplicationStatus.getLastTrackedFocusedActivity();
         if (activity instanceof ChromeActivity) {
             return ((ChromeActivity) activity)

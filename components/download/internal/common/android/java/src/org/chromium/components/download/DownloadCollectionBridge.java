@@ -148,6 +148,13 @@ public class DownloadCollectionBridge {
     }
 
     /**
+     * @return whether download collection is supported.
+     */
+    protected boolean isDownloadCollectionSupported() {
+        return false;
+    }
+
+    /**
      * Creates an intermediate URI for download to be written into. On completion, call
      * nativeOnCreateIntermediateUriResult() with |callbackId|.
      * @param fileName Name of the file.
@@ -257,5 +264,12 @@ public class DownloadCollectionBridge {
     @CalledByNative
     private static DisplayNameInfo[] getDisplayNamesForDownloads() {
         return getDownloadCollectionBridge().getDisplayNames();
+    }
+
+    /**
+     * @return whether download collection is supported.
+     */
+    public static boolean supportsDownloadCollection() {
+        return getDownloadCollectionBridge().isDownloadCollectionSupported();
     }
 }
