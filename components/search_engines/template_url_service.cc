@@ -1915,6 +1915,12 @@ bool TemplateURLService::ApplyDefaultSearchChangeNoMetrics(
     if (default_search_provider_) {
       TemplateURLData update_data(*data);
       update_data.sync_guid = default_search_provider_->sync_guid();
+
+      // Now that we are auto-updating the favicon_url as the user browses,
+      // respect the favicon_url entry in the database, instead of falling back
+      // to the one in the prepopulated list.
+      update_data.favicon_url = default_search_provider_->favicon_url();
+
       if (!default_search_provider_->safe_for_autoreplace()) {
         update_data.safe_for_autoreplace = false;
         update_data.SetKeyword(default_search_provider_->keyword());
