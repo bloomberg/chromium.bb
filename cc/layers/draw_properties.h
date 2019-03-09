@@ -11,6 +11,7 @@
 
 #include "cc/trees/occlusion.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/rrect_f.h"
 #include "ui/gfx/transform.h"
 
 namespace cc {
@@ -55,6 +56,10 @@ struct CC_EXPORT DrawProperties {
   // In target surface space, the original rect that clipped this layer. This
   // value is used to avoid unnecessarily changing GL scissor state.
   gfx::Rect clip_rect;
+
+  // Contains a rounded corner rect to clip this layer when drawing. This rrect
+  // is in the target space of the layer.
+  gfx::RRectF rounded_corner_bounds;
 };
 
 }  // namespace cc

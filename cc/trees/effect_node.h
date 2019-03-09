@@ -45,6 +45,10 @@ struct CC_EXPORT EffectNode {
   float backdrop_filter_quality;
   gfx::PointF filters_origin;
 
+  // Bounds of rounded corner rrect in the space of the transform node
+  // associated with this effect node.
+  gfx::RRectF rounded_corner_bounds;
+
   SkBlendMode blend_mode;
 
   gfx::Vector2dF surface_contents_scale;

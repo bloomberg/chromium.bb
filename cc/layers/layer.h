@@ -247,6 +247,12 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     return inputs_.corner_radii;
   }
 
+  // Returns true if any of the corner has a non-zero radius set.
+  bool HasRoundedCorner() const {
+    return corner_radii()[0] + corner_radii()[1] + corner_radii()[2] +
+           corner_radii()[3];
+  }
+
   // Set or get the opacity which should be applied to the contents of the layer
   // and its subtree (together as a single composited entity) when blending them
   // into their target. Note that this does not speak to the contents of this
@@ -889,12 +895,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // full property tree update. If property trees do not exist yet, ensures
   // they are marked as needing to be rebuilt.
   void UpdateScrollOffset(const gfx::ScrollOffset&);
-
-  // Returns true if any of the corner has a non-zero radius set.
-  bool HasRoundedCorner() const {
-    return corner_radii()[0] + corner_radii()[1] + corner_radii()[2] +
-           corner_radii()[3];
-  }
 
   // Encapsulates all data, callbacks or interfaces received from the embedder.
   struct Inputs {
