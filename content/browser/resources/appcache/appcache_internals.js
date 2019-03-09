@@ -68,13 +68,16 @@ cr.define('appcache', function() {
   }
 
 
-  function onAllAppCacheInfoReady(partition_path, data) {
+  function onAllAppCacheInfoReady(partition_path, display_name, data) {
     var template = jstGetTemplate('appcache-list-template');
     var container = $('appcache-list');
     container.appendChild(template);
     jstProcess(
-        new JsEvalContext(
-            {appcache_vector: data, partition_path: partition_path}),
+        new JsEvalContext({
+          appcache_vector: data,
+          partition_path: partition_path,
+          display_name: display_name
+        }),
         template);
     var removeLinks = container.querySelectorAll('a.remove-manifest');
     for (var i = 0; i < removeLinks.length; ++i) {
