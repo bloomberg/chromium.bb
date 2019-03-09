@@ -9,7 +9,10 @@ enable_built_in_dns = !is_ios && !is_proto_quic
 
 source_set("dns") {
   # Due to circular dependencies, should only be depended on through //net.
-  visibility = [ "//net" ]
+  visibility = [
+    "//net",
+    "//net/http:transport_security_state_generated_files",
+  ]
 
   # Internals only intended for use inside network stack (and tests).
   friend = [
