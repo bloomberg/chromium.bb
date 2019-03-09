@@ -44,8 +44,10 @@ class BottomControlsViewBinder {
             final boolean showCompositedView =
                     model.get(BottomControlsProperties.COMPOSITED_VIEW_VISIBLE);
             view.sceneLayer.setIsVisible(showCompositedView);
-            model.get(BottomControlsProperties.TOOLBAR_SWIPE_LAYOUT)
-                    .setBottomToolbarSceneLayersVisibility(showCompositedView);
+            if (model.get(BottomControlsProperties.TOOLBAR_SWIPE_LAYOUT) != null) {
+                model.get(BottomControlsProperties.TOOLBAR_SWIPE_LAYOUT)
+                        .setBottomToolbarSceneLayersVisibility(showCompositedView);
+            }
             model.get(BottomControlsProperties.LAYOUT_MANAGER).requestUpdate();
         } else if (BottomControlsProperties.LAYOUT_MANAGER == propertyKey) {
             assert view.sceneLayer == null;
@@ -57,6 +59,7 @@ class BottomControlsViewBinder {
                     .addSceneOverlayToBack(view.sceneLayer);
         } else if (BottomControlsProperties.TOOLBAR_SWIPE_LAYOUT == propertyKey) {
             assert view.sceneLayer != null;
+            assert model.get(BottomControlsProperties.TOOLBAR_SWIPE_LAYOUT) != null;
             model.get(BottomControlsProperties.TOOLBAR_SWIPE_LAYOUT)
                     .setBottomToolbarSceneLayers(new ScrollingBottomViewSceneLayer(view.sceneLayer),
                             new ScrollingBottomViewSceneLayer(view.sceneLayer),
