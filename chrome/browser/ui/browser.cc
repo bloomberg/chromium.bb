@@ -2636,13 +2636,7 @@ void Browser::UpdateBookmarkBarState(BookmarkBarStateChangeReason reason) {
       !ShouldHideUIForFullscreen()) {
     state = BookmarkBar::SHOW;
   } else {
-    WebContents* web_contents = tab_strip_model_->GetActiveWebContents();
-    BookmarkTabHelper* bookmark_tab_helper =
-        web_contents ? BookmarkTabHelper::FromWebContents(web_contents) : NULL;
-    if (bookmark_tab_helper && bookmark_tab_helper->ShouldShowBookmarkBar())
-      state = BookmarkBar::DETACHED;
-    else
-      state = BookmarkBar::HIDDEN;
+    state = BookmarkBar::HIDDEN;
   }
 
   if (state == bookmark_bar_state_)

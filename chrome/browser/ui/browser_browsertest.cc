@@ -2360,7 +2360,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, GetSizeForNewRenderView) {
 
   // Start with NTP.
   ui_test_utils::NavigateToURL(browser(), GURL("chrome://newtab"));
-  ASSERT_EQ(BookmarkBar::DETACHED, browser()->bookmark_bar_state());
+  ASSERT_EQ(BookmarkBar::HIDDEN, browser()->bookmark_bar_state());
   WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   content::RenderViewHost* prev_rvh = web_contents->GetRenderViewHost();

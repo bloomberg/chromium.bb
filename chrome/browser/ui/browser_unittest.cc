@@ -341,8 +341,8 @@ TEST_F(BrowserBookmarkBarTest, StateOnActiveTabChanged) {
 
   // Open a tab to NTP.
   AddTab(browser(), ntp_url);
-  EXPECT_EQ(BookmarkBar::DETACHED, browser()->bookmark_bar_state());
-  EXPECT_EQ(BookmarkBar::DETACHED, window_bookmark_bar_state());
+  EXPECT_EQ(BookmarkBar::HIDDEN, browser()->bookmark_bar_state());
+  EXPECT_EQ(BookmarkBar::HIDDEN, window_bookmark_bar_state());
 
   // Navigate 1st tab to a non-NTP URL.
   NavigateAndCommitActiveTab(non_ntp_url);
@@ -351,8 +351,8 @@ TEST_F(BrowserBookmarkBarTest, StateOnActiveTabChanged) {
 
   // Open a tab to NTP at index 0.
   AddTab(browser(), ntp_url);
-  EXPECT_EQ(BookmarkBar::DETACHED, browser()->bookmark_bar_state());
-  EXPECT_EQ(BookmarkBar::DETACHED, window_bookmark_bar_state());
+  EXPECT_EQ(BookmarkBar::HIDDEN, browser()->bookmark_bar_state());
+  EXPECT_EQ(BookmarkBar::HIDDEN, window_bookmark_bar_state());
 
   // Activate the 2nd tab which is non-NTP.
   browser()->tab_strip_model()->ActivateTabAt(

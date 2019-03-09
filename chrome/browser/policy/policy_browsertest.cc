@@ -1411,26 +1411,6 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, BookmarkBarEnabled) {
   EXPECT_TRUE(prefs->IsManagedPreference(bookmarks::prefs::kShowBookmarkBar));
   EXPECT_TRUE(prefs->GetBoolean(bookmarks::prefs::kShowBookmarkBar));
   EXPECT_EQ(BookmarkBar::SHOW, browser()->bookmark_bar_state());
-
-  // The NTP has special handling of the bookmark bar.
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
-  EXPECT_EQ(BookmarkBar::SHOW, browser()->bookmark_bar_state());
-
-  policies.Set(key::kBookmarkBarEnabled, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(false), nullptr);
-  UpdateProviderPolicy(policies);
-  EXPECT_TRUE(prefs->IsManagedPreference(bookmarks::prefs::kShowBookmarkBar));
-  EXPECT_FALSE(prefs->GetBoolean(bookmarks::prefs::kShowBookmarkBar));
-  // The bookmark bar is hidden in the NTP when disabled by policy.
-  EXPECT_EQ(BookmarkBar::HIDDEN, browser()->bookmark_bar_state());
-
-  policies.Clear();
-  UpdateProviderPolicy(policies);
-  EXPECT_FALSE(prefs->IsManagedPreference(bookmarks::prefs::kShowBookmarkBar));
-  EXPECT_FALSE(prefs->GetBoolean(bookmarks::prefs::kShowBookmarkBar));
-  // The bookmark bar is shown detached in the NTP, when disabled by prefs only.
-  EXPECT_EQ(BookmarkBar::DETACHED, browser()->bookmark_bar_state());
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, PRE_PRE_DefaultCookiesSetting) {

@@ -137,13 +137,12 @@ TEST_F(BrowserViewTest, BrowserViewLayout) {
   EXPECT_FALSE(bookmark_bar->visible());
   EXPECT_FALSE(bookmark_bar->IsDetached());
 
-  // Bookmark bar is reparented to BrowserView on NTP.
+  // The NTP should be treated the same as any other page.
   NavigateAndCommitActiveTabWithTitle(browser,
                                       GURL(chrome::kChromeUINewTabURL),
                                       base::string16());
-  EXPECT_TRUE(bookmark_bar->visible());
-  EXPECT_TRUE(bookmark_bar->IsDetached());
-  EXPECT_EQ(browser_view(), bookmark_bar->parent());
+  EXPECT_FALSE(bookmark_bar->visible());
+  EXPECT_EQ(top_container, bookmark_bar->parent());
 
   // Find bar host is still at the front of the view hierarchy, followed by the
   // infobar container and then top container.
@@ -160,14 +159,6 @@ TEST_F(BrowserViewTest, BrowserViewLayout) {
   EXPECT_EQ(bookmark_bar->height() + bookmark_bar->y(),
             contents_container->y());
   EXPECT_EQ(contents_web_view->y(), devtools_web_view->y());
-
-  // Bookmark bar is parented back to top container on normal page.
-  NavigateAndCommitActiveTabWithTitle(browser,
-                                      GURL("about:blank"),
-                                      base::string16());
-  EXPECT_FALSE(bookmark_bar->visible());
-  EXPECT_FALSE(bookmark_bar->IsDetached());
-  EXPECT_EQ(top_container, bookmark_bar->parent());
 
   BookmarkBarView::DisableAnimationsForTesting(false);
 }
