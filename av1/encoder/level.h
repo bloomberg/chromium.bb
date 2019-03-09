@@ -12,48 +12,17 @@
 #ifndef AOM_AV1_ENCODER_LEVEL_H_
 #define AOM_AV1_ENCODER_LEVEL_H_
 
+#include "av1/common/enums.h"
+
 struct AV1_COMP;
 
 #define UNDEFINED_LEVEL                                                 \
   {                                                                     \
-    .level = LEVEL_DISABLED, .max_picture_size = 0, .max_h_size = 0,    \
+    .level = SEQ_LEVEL_MAX, .max_picture_size = 0, .max_h_size = 0,     \
     .max_v_size = 0, .max_display_rate = 0, .max_decode_rate = 0,       \
     .max_header_rate = 0, .main_mbps = 0, .high_mbps = 0, .main_cr = 0, \
     .high_cr = 0, .max_tiles = 0, .max_tile_cols = 0                    \
   }
-
-// Defines an enum to store av1 level
-typedef enum {
-  LEVEL_DISABLED = -1,
-  LEVEL_2_0 = 0,
-  LEVEL_2_1 = 1,
-  LEVEL_2_2 = 2,
-  LEVEL_2_3 = 3,
-  LEVEL_3_0 = 4,
-  LEVEL_3_1 = 5,
-  LEVEL_3_2 = 6,
-  LEVEL_3_3 = 7,
-  LEVEL_4_0 = 8,
-  LEVEL_4_1 = 9,
-  LEVEL_4_2 = 10,
-  LEVEL_4_3 = 11,
-  LEVEL_5_0 = 12,
-  LEVEL_5_1 = 13,
-  LEVEL_5_2 = 14,
-  LEVEL_5_3 = 15,
-  LEVEL_6_0 = 16,
-  LEVEL_6_1 = 17,
-  LEVEL_6_2 = 18,
-  LEVEL_6_3 = 19,
-  LEVEL_7_0 = 20,
-  LEVEL_7_1 = 21,
-  LEVEL_7_2 = 22,
-  LEVEL_7_3 = 23,
-  LEVEL_MAX = 31,
-  LEVEL_MONITOR = LEVEL_MAX,
-  LEVEL_START = LEVEL_2_0,
-  LEVEL_END = LEVEL_7_3 + 1
-} AV1_LEVEL;
 
 // AV1 Level Specifications
 typedef struct {
@@ -83,8 +52,8 @@ typedef struct {
   AV1LevelSpec level_spec;
 } AV1LevelInfo;
 
-static const AV1LevelSpec av1_level_defs[LEVEL_END] = {
-  { .level = LEVEL_2_0,
+static const AV1LevelSpec av1_level_defs[SEQ_LEVELS] = {
+  { .level = SEQ_LEVEL_2_0,
     .max_picture_size = 147456,
     .max_h_size = 2048,
     .max_v_size = 1152,
@@ -97,7 +66,7 @@ static const AV1LevelSpec av1_level_defs[LEVEL_END] = {
     .high_cr = 0,
     .max_tiles = 8,
     .max_tile_cols = 4 },
-  { .level = LEVEL_2_1,
+  { .level = SEQ_LEVEL_2_1,
     .max_picture_size = 278784,
     .max_h_size = 2816,
     .max_v_size = 1584,
@@ -112,7 +81,7 @@ static const AV1LevelSpec av1_level_defs[LEVEL_END] = {
     .max_tile_cols = 4 },
   UNDEFINED_LEVEL,
   UNDEFINED_LEVEL,
-  { .level = LEVEL_3_0,
+  { .level = SEQ_LEVEL_3_0,
     .max_picture_size = 665856,
     .max_h_size = 4352,
     .max_v_size = 2448,
@@ -125,7 +94,7 @@ static const AV1LevelSpec av1_level_defs[LEVEL_END] = {
     .high_cr = 0,
     .max_tiles = 16,
     .max_tile_cols = 6 },
-  { .level = LEVEL_3_1,
+  { .level = SEQ_LEVEL_3_1,
     .max_picture_size = 1065024,
     .max_h_size = 5504,
     .max_v_size = 3096,
@@ -140,7 +109,7 @@ static const AV1LevelSpec av1_level_defs[LEVEL_END] = {
     .max_tile_cols = 6 },
   UNDEFINED_LEVEL,
   UNDEFINED_LEVEL,
-  { .level = LEVEL_4_0,
+  { .level = SEQ_LEVEL_4_0,
     .max_picture_size = 2359296,
     .max_h_size = 6144,
     .max_v_size = 3456,
@@ -153,7 +122,7 @@ static const AV1LevelSpec av1_level_defs[LEVEL_END] = {
     .high_cr = 4.0,
     .max_tiles = 32,
     .max_tile_cols = 8 },
-  { .level = LEVEL_4_1,
+  { .level = SEQ_LEVEL_4_1,
     .max_picture_size = 2359296,
     .max_h_size = 6144,
     .max_v_size = 3456,
@@ -168,7 +137,7 @@ static const AV1LevelSpec av1_level_defs[LEVEL_END] = {
     .max_tile_cols = 8 },
   UNDEFINED_LEVEL,
   UNDEFINED_LEVEL,
-  { .level = LEVEL_5_0,
+  { .level = SEQ_LEVEL_5_0,
     .max_picture_size = 8912896,
     .max_h_size = 8192,
     .max_v_size = 4352,
@@ -181,7 +150,7 @@ static const AV1LevelSpec av1_level_defs[LEVEL_END] = {
     .high_cr = 4.0,
     .max_tiles = 64,
     .max_tile_cols = 8 },
-  { .level = LEVEL_5_1,
+  { .level = SEQ_LEVEL_5_1,
     .max_picture_size = 8912896,
     .max_h_size = 8192,
     .max_v_size = 4352,
@@ -194,7 +163,7 @@ static const AV1LevelSpec av1_level_defs[LEVEL_END] = {
     .high_cr = 4.0,
     .max_tiles = 64,
     .max_tile_cols = 8 },
-  { .level = LEVEL_5_2,
+  { .level = SEQ_LEVEL_5_2,
     .max_picture_size = 8912896,
     .max_h_size = 8192,
     .max_v_size = 4352,
@@ -207,7 +176,7 @@ static const AV1LevelSpec av1_level_defs[LEVEL_END] = {
     .high_cr = 4.0,
     .max_tiles = 64,
     .max_tile_cols = 8 },
-  { .level = LEVEL_5_3,
+  { .level = SEQ_LEVEL_5_3,
     .max_picture_size = 8912896,
     .max_h_size = 8192,
     .max_v_size = 4352,
@@ -220,7 +189,7 @@ static const AV1LevelSpec av1_level_defs[LEVEL_END] = {
     .high_cr = 4.0,
     .max_tiles = 64,
     .max_tile_cols = 8 },
-  { .level = LEVEL_6_0,
+  { .level = SEQ_LEVEL_6_0,
     .max_picture_size = 35651584,
     .max_h_size = 16384,
     .max_v_size = 8704,
@@ -233,7 +202,7 @@ static const AV1LevelSpec av1_level_defs[LEVEL_END] = {
     .high_cr = 4.0,
     .max_tiles = 128,
     .max_tile_cols = 16 },
-  { .level = LEVEL_6_1,
+  { .level = SEQ_LEVEL_6_1,
     .max_picture_size = 35651584,
     .max_h_size = 16384,
     .max_v_size = 8704,
@@ -246,7 +215,7 @@ static const AV1LevelSpec av1_level_defs[LEVEL_END] = {
     .high_cr = 4.0,
     .max_tiles = 128,
     .max_tile_cols = 16 },
-  { .level = LEVEL_6_2,
+  { .level = SEQ_LEVEL_6_2,
     .max_picture_size = 35651584,
     .max_h_size = 16384,
     .max_v_size = 8704,
@@ -259,7 +228,7 @@ static const AV1LevelSpec av1_level_defs[LEVEL_END] = {
     .high_cr = 4.0,
     .max_tiles = 128,
     .max_tile_cols = 16 },
-  { .level = LEVEL_6_3,
+  { .level = SEQ_LEVEL_6_3,
     .max_picture_size = 35651584,
     .max_h_size = 16384,
     .max_v_size = 8704,

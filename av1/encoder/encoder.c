@@ -2411,8 +2411,8 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
   assert(IMPLIES(seq_params->profile <= PROFILE_1,
                  seq_params->bit_depth <= AOM_BITS_10));
 
-  cpi->target_seq_level_idx = (AV1_LEVEL)oxcf->target_seq_level_idx;
-  cpi->keep_level_stats = cpi->target_seq_level_idx != LEVEL_DISABLED;
+  cpi->target_seq_level_idx = oxcf->target_seq_level_idx;
+  cpi->keep_level_stats = cpi->target_seq_level_idx >= 0;
 
   cm->timing_info_present = oxcf->timing_info_present;
   cm->timing_info.num_units_in_display_tick =
@@ -2564,7 +2564,7 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
 static void init_level_info(AV1LevelInfo *level_info) {
   av1_zero(*level_info);
 
-  level_info->level_spec.level = LEVEL_DISABLED;
+  level_info->level_spec.level = SEQ_LEVEL_MAX;
 }
 
 AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
