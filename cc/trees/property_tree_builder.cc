@@ -102,7 +102,7 @@ class PropertyTreeBuilderContext {
       bool created_transform_node,
       DataForRecursion<LayerType>* data_for_children) const;
 
-  bool AddEffectNodeIfNeeded(
+  EffectNode* AddEffectNodeIfNeeded(
       const DataForRecursion<LayerType>& data_from_ancestor,
       LayerType* layer,
       DataForRecursion<LayerType>* data_for_children) const;
@@ -184,6 +184,25 @@ static inline const FilterOperations& Filters(Layer* layer) {
 
 static inline const FilterOperations& Filters(LayerImpl* layer) {
   return layer->test_properties()->filters;
+}
+
+static bool HasRoundedCorner(Layer* layer) {
+  return layer->HasRoundedCorner();
+}
+
+static bool HasRoundedCorner(LayerImpl* layer) {
+  return false;
+}
+
+static gfx::RRectF RoundedCornerBounds(Layer* layer) {
+  const std::array<uint32_t, 4> radii = layer->corner_radii();
+  return gfx::RRectF(gfx::RectF(gfx::Rect(layer->bounds())), radii[0], radii[0],
+                     radii[1], radii[1], radii[2], radii[2], radii[3],
+                     radii[3]);
+}
+
+static gfx::RRectF RoundedCornerBounds(LayerImpl* layer) {
+  return gfx::RRectF();
 }
 
 static PictureLayer* MaskLayer(Layer* layer) {
@@ -281,7 +300,8 @@ static int GetTransformParent(const DataForRecursion<LayerType>& data,
 
 template <typename LayerType>
 static bool LayerClipsSubtree(LayerType* layer) {
-  return layer->masks_to_bounds() || MaskLayer(layer);
+  return layer->masks_to_bounds() || MaskLayer(layer) ||
+         HasRoundedCorner(layer);
 }
 
 template <typename LayerType>
@@ -847,6 +867,9 @@ bool ShouldCreateRenderSurface(const MutatorHost& mutator_host,
     return true;
   }
 
+  if (HasRoundedCorner(layer))
+    return true;
+
   // If the layer has blending.
   // TODO(rosca): this is temporary, until blending is implemented for other
   // types of quads than viz::RenderPassDrawQuad. Layers having descendants that
@@ -962,7 +985,7 @@ bool UpdateSubtreeHasCopyRequestRecursive(LayerType* layer) {
 }
 
 template <typename LayerType>
-bool PropertyTreeBuilderContext<LayerType>::AddEffectNodeIfNeeded(
+EffectNode* PropertyTreeBuilderContext<LayerType>::AddEffectNodeIfNeeded(
     const DataForRecursion<LayerType>& data_from_ancestor,
     LayerType* layer,
     DataForRecursion<LayerType>* data_for_children) const {
@@ -1001,7 +1024,7 @@ bool PropertyTreeBuilderContext<LayerType>::AddEffectNodeIfNeeded(
   if (!requires_node) {
     layer->SetEffectTreeIndex(parent_id);
     data_for_children->effect_tree_parent = parent_id;
-    return false;
+    return nullptr;
   }
 
   int node_id = effect_tree_.Insert(EffectNode(), parent_id);
@@ -1041,6 +1064,13 @@ bool PropertyTreeBuilderContext<LayerType>::AddEffectNodeIfNeeded(
   if (MaskLayer(layer)) {
     node->mask_layer_id = MaskLayer(layer)->id();
     effect_tree_.AddMaskLayerId(node->mask_layer_id);
+  }
+
+  if (HasRoundedCorner(layer)) {
+    // This is currently in the local space of the layer and hence in an invalid
+    // space. Once we have the associated transform node for this effect node,
+    // we will update this to the transform node's coordinate space.
+    node->rounded_corner_bounds = RoundedCornerBounds(layer);
   }
 
   if (!is_root) {
@@ -1091,7 +1121,7 @@ bool PropertyTreeBuilderContext<LayerType>::AddEffectNodeIfNeeded(
         gfx::Transform();
     data_for_children->animation_axis_aligned_since_render_target = true;
   }
-  return should_create_render_surface;
+  return node;
 }
 
 static inline bool UserScrollableHorizontal(Layer* layer) {
@@ -1266,11 +1296,12 @@ void PropertyTreeBuilderContext<LayerType>::BuildPropertyTreesInternal(
 
   DataForRecursion<LayerType> data_for_children(data_from_parent);
 
-  bool created_render_surface =
+  EffectNode* effect_node =
       AddEffectNodeIfNeeded(data_from_parent, layer, &data_for_children);
 
   bool created_transform_node = AddTransformNodeIfNeeded(
-      data_from_parent, layer, created_render_surface, &data_for_children);
+      data_from_parent, layer, effect_node && effect_node->has_render_surface,
+      &data_for_children);
   SetHasTransformNode(layer, created_transform_node);
   AddClipNodeIfNeeded(data_from_parent, layer, created_transform_node,
                       &data_for_children);
@@ -1279,6 +1310,22 @@ void PropertyTreeBuilderContext<LayerType>::BuildPropertyTreesInternal(
 
   SetBackfaceVisibilityTransform(layer, created_transform_node);
   SetSafeOpaqueBackgroundColor(data_from_parent, layer, &data_for_children);
+
+  // Update |effect_node| based on changes to the transform tree.
+  if (effect_node) {
+    if (!effect_node->has_render_surface) {
+      effect_node->transform_id =
+          created_transform_node ? data_for_children.transform_tree_parent
+                                 : GetTransformParent(data_from_parent, layer);
+    }
+
+    // The rounded corner bounds needs to be in the space of the transform node
+    // associated with this effect node.
+    if (!effect_node->rounded_corner_bounds.IsEmpty()) {
+      effect_node->rounded_corner_bounds.Offset(
+          layer->offset_to_transform_parent());
+    }
+  }
 
   bool not_axis_aligned_since_last_clip =
       data_from_parent.not_axis_aligned_since_last_clip
