@@ -14,8 +14,6 @@
 
 namespace blink {
 
-class LayoutObject;
-
 // This is the helper class for constructing the DOM-to-TextContent offset
 // mapping. It holds an offset mapping, and provides APIs to modify the mapping
 // step by step until the construction is finished.
@@ -108,22 +106,11 @@ class CORE_EXPORT NGOffsetMappingBuilder {
   // Set the destination string of the offset mapping.
   void SetDestinationString(String);
 
-  // Called when entering a non-atomic inline node (e.g., SPAN), before
-  // collecting any of its inline descendants.
-  void EnterInline(const LayoutObject&);
-
-  // Called when exiting a non-atomic inline node (e.g., SPAN), after having
-  // collected all of its inline descendants.
-  void ExitInline(const LayoutObject&);
-
   // Finalize and return the offset mapping.
   // This method can only be called once, as it can invalidate the stored data.
   NGOffsetMapping Build();
 
  private:
-  // Helper function for CollapseTrailingSpace() to maintain unit ranges.
-  void ShiftRanges(unsigned position, int delta);
-
   Persistent<const Node> current_node_ = nullptr;
   unsigned current_offset_ = 0;
   bool has_open_unit_ = false;
@@ -139,9 +126,6 @@ class CORE_EXPORT NGOffsetMappingBuilder {
 
   // Unit ranges of the current mapping function.
   NGOffsetMapping::RangeMap unit_ranges_;
-
-  // Unit range starts of currently entered inline elements.
-  Vector<unsigned> open_inlines_;
 
   // The destination string of the offset mapping.
   String destination_string_;

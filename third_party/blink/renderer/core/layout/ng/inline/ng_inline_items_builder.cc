@@ -980,8 +980,6 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::EnterInline(
     LayoutObject* node) {
   DCHECK(node);
 
-  mapping_builder_.EnterInline(*node);
-
   // https://drafts.csswg.org/css-writing-modes-3/#bidi-control-codes-injection-table
   const ComputedStyle* style = node->Style();
   if (style->RtlOrdering() == EOrder::kLogical) {
@@ -1056,8 +1054,6 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::ExitInline(
     boxes_.pop_back();
 
   Exit(node);
-
-  mapping_builder_.ExitInline(*node);
 }
 
 template <typename OffsetMappingBuilder>
