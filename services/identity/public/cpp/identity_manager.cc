@@ -271,8 +271,10 @@ void IdentityManager::RegisterPrefs(PrefRegistrySimple* registry) {
   SigninManagerBase::RegisterPrefs(registry);
 }
 
-void IdentityManager::LegacySetAccountIdMigrationDone() {
-  account_tracker_service_->SetMigrationDone();
+std::string IdentityManager::PickAccountIdForAccount(
+    const std::string& gaia,
+    const std::string& email) const {
+  return account_tracker_service_->PickAccountIdForAccount(gaia, email);
 }
 
 IdentityManager::AccountIdMigrationState
@@ -283,12 +285,6 @@ IdentityManager::GetAccountIdMigrationState() const {
 
 PrimaryAccountMutator* IdentityManager::GetPrimaryAccountMutator() {
   return primary_account_mutator_.get();
-}
-
-std::string IdentityManager::LegacyPickAccountIdForAccount(
-    const std::string& gaia,
-    const std::string& email) const {
-  return account_tracker_service_->PickAccountIdForAccount(gaia, email);
 }
 
 AccountsMutator* IdentityManager::GetAccountsMutator() {

@@ -298,7 +298,7 @@ const int64_t kAuthenticationFlowTimeoutSeconds = 10;
       browserState->GetPrefs()->GetString(prefs::kGoogleServicesLastAccountId);
   std::string currentSignedInAccountId =
       IdentityManagerFactory::GetForBrowserState(browserState)
-          ->LegacyPickAccountIdForAccount(
+          ->PickAccountIdForAccount(
               base::SysNSStringToUTF8([identity gaiaID]),
               base::SysNSStringToUTF8([identity userEmail]));
   if (!lastSignedInAccountId.empty()) {

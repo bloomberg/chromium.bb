@@ -100,7 +100,7 @@ std::string PickAccountId(Profile* profile,
                           const std::string& email) {
   return IdentityManagerFactory::GetInstance()
       ->GetForProfile(profile)
-      ->LegacyPickAccountIdForAccount(gaia_id, email);
+      ->PickAccountIdForAccount(gaia_id, email);
 }
 
 const char* BoolToString(bool value) {

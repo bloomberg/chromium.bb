@@ -277,7 +277,7 @@ enum AuthenticationState {
                                     : [self acceptSigninButtonStringId];
   std::string account_id =
       IdentityManagerFactory::GetForBrowserState(_browserState)
-          ->LegacyPickAccountIdForAccount(
+          ->PickAccountIdForAccount(
               base::SysNSStringToUTF8([_selectedIdentity gaiaID]),
               base::SysNSStringToUTF8([_selectedIdentity userEmail]));
 
