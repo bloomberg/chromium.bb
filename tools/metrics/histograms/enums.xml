@@ -22178,6 +22178,7 @@ Called by update_net_error_codes.py.-->
   <int value="2825" label="BuiltInModuleVirtualScroller"/>
   <int value="2826" label="AdClickNavigation"/>
   <int value="2827" label="RTCStatsRelativePacketArrivalDelay"/>
+  <int value="2828" label="FlexboxWithOverflowFlexItemIntrinsicSize"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">

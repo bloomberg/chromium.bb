@@ -94,6 +94,31 @@ void LayoutFlexibleBox::ComputeIntrinsicLogicalWidths(
     max_preferred_logical_width += margin;
     if (!IsColumnFlow()) {
       max_logical_width += max_preferred_logical_width;
+
+      EOverflow overflow = StyleRef().IsHorizontalWritingMode()
+                               ? child->StyleRef().OverflowX()
+                               : child->StyleRef().OverflowY();
+      const Length& main_axis_length = IsHorizontalFlow()
+                                           ? child->StyleRef().Width()
+                                           : child->StyleRef().Height();
+      // This code experimentally implements the proposal in
+      // https://github.com/w3c/csswg-drafts/issues/1865
+      // to see if it is web-compatible.
+      if (overflow != EOverflow::kVisible && !main_axis_length.IsFixed()) {
+        LayoutUnit border_and_padding =
+            StyleRef().IsHorizontalWritingMode()
+                ? child->BorderAndPaddingWidth() +
+                      child->VerticalScrollbarWidth()
+                : child->BorderAndPaddingHeight() +
+                      child->HorizontalScrollbarHeight();
+        if (min_preferred_logical_width != margin + border_and_padding) {
+          min_preferred_logical_width = margin + border_and_padding;
+          UseCounter::Count(
+              GetDocument(),
+              WebFeature::kFlexboxWithOverflowFlexItemIntrinsicSize);
+        }
+      }
+
       if (IsMultiline()) {
         // For multiline, the min preferred width is if you put a break between
         // each item.
