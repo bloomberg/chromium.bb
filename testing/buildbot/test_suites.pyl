@@ -370,10 +370,6 @@
     # NOTE: We only want a small subset of test suites here, because most
     # suites assume that they stub out the underlying device hardware.
     # https://crbug.com/865693
-    'chromeos_coverage_gtests_experimental': {
-      'base_unittests': {},
-    },
-
     'chromeos_device_friendly_gtests': {
       'aura_unittests': {
         'args': [

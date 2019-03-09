@@ -1399,7 +1399,7 @@
             'code-coverage',
         ],
         'test_suites': {
-          'gtest_tests': 'chromeos_coverage_gtests_experimental',
+          'gtest_tests': 'chromeos_device_friendly_gtests',
         },
         'swarming': {
           'dimension_sets': [
