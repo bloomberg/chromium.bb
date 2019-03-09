@@ -413,15 +413,13 @@ void ExtensionMessageFilter::OnOpenChannelToNativeApp(
     const std::string& native_app_name,
     const PortId& port_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // TODO(crbug.com/925918): Support messages from Service Worker.
-  DCHECK(source_context.is_for_render_frame());
   if (!browser_context_)
     return;
 
+  ChannelEndpoint source_endpoint(browser_context_, render_process_id_,
+                                  source_context);
   MessageService::Get(browser_context_)
-      ->OpenChannelToNativeApp(render_process_id_,
-                               source_context.frame->routing_id, port_id,
-                               native_app_name);
+      ->OpenChannelToNativeApp(source_endpoint, port_id, native_app_name);
 }
 
 void ExtensionMessageFilter::OnOpenChannelToTab(

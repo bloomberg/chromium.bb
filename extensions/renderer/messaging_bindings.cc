@@ -245,11 +245,10 @@ void MessagingBindings::OpenChannelToNativeApp(
   // This should be checked by our function routing code.
   CHECK(context()->GetAvailability("runtime.connectNative").is_available());
 
-  // TODO(crbug.com/925918): Support native messaging for Service Workers.
-  DCHECK(!worker_thread_util::IsWorkerThread());
-
   content::RenderFrame* render_frame = context()->GetRenderFrame();
-  if (!render_frame)
+  bool is_for_service_worker = false;
+  if (!render_frame &&
+      !(is_for_service_worker = worker_thread_util::IsWorkerThread()))
     return;
 
   std::string native_app_name =
@@ -262,9 +261,17 @@ void MessagingBindings::OpenChannelToNativeApp(
   {
     SCOPED_UMA_HISTOGRAM_TIMER(
         "Extensions.Messaging.SetPortIdTime.NativeApp");
-    render_frame->Send(new ExtensionHostMsg_OpenChannelToNativeApp(
-        PortContext::ForFrame(render_frame->GetRoutingID()), native_app_name,
-        port_id));
+    if (is_for_service_worker) {
+      WorkerThreadDispatcher::GetBindingsSystem()
+          ->GetIPCMessageSender()
+          ->SendOpenMessageChannel(context(), port_id,
+                                   MessageTarget::ForNativeApp(native_app_name),
+                                   "", false /* include_tls_channel_id */);
+    } else {
+      render_frame->Send(new ExtensionHostMsg_OpenChannelToNativeApp(
+          PortContext::ForFrame(render_frame->GetRoutingID()), native_app_name,
+          port_id));
+    }
   }
 
   args.GetReturnValue().Set(static_cast<int32_t>(js_id));

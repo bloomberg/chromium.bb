@@ -91,7 +91,7 @@ binding.registerCustomHook(function(binding, id, contextType) {
   //
   // Privileged APIs.
   //
-  if (contextType != 'BLESSED_EXTENSION')
+  if (contextType != 'BLESSED_EXTENSION' && contextType != 'SERVICE_WORKER')
     return;
 
   apiFunctions.setHandleRequest('connectNative',
@@ -101,6 +101,11 @@ binding.registerCustomHook(function(binding, id, contextType) {
       return messaging.createPort(portId, '');
     throw new Error('Error connecting to native app: ' + nativeAppName);
   });
+
+  // Following APIs require DOM access. Hence, these are unavailable in
+  // extension Service Workers.
+  if (contextType == 'SERVICE_WORKER')
+    return;
 
   apiFunctions.setCustomCallback('getBackgroundPage',
                                  function(name, request, callback, response) {

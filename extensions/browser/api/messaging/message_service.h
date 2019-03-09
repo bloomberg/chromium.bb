@@ -100,8 +100,7 @@ class MessageService : public BrowserContextKeyedAPI,
                         const std::string& extension_id,
                         const std::string& channel_name);
 
-  void OpenChannelToNativeApp(int source_process_id,
-                              int source_routing_id,
+  void OpenChannelToNativeApp(const ChannelEndpoint& source,
                               const PortId& source_port_id,
                               const std::string& native_app_name);
 

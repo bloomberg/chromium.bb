@@ -78,6 +78,34 @@ LazyContextId LazyContextIdFor(content::BrowserContext* browser_context,
   return LazyContextId(browser_context, extension->id(), extension->url());
 }
 
+const Extension* GetExtensionForNativeAppChannel(
+    const ChannelEndpoint& source) {
+  DCHECK(!source.is_for_native_host());
+
+  if (source.is_for_service_worker()) {
+    const ExtensionId& extension_id =
+        source.port_context().worker->extension_id;
+    return ExtensionRegistry::Get(source.browser_context())
+        ->enabled_extensions()
+        .GetByID(extension_id);
+  }
+
+  DCHECK(source.is_for_render_frame());
+  content::RenderFrameHost* source_rfh = source.GetRenderFrameHost();
+  if (!source_rfh)
+    return nullptr;
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(source_rfh);
+  if (!web_contents)
+    return nullptr;
+  ExtensionWebContentsObserver* extension_web_contents_observer =
+      ExtensionWebContentsObserver::GetForWebContents(web_contents);
+  if (!extension_web_contents_observer)
+    return nullptr;
+  return extension_web_contents_observer->GetExtensionFromFrame(source_rfh,
+                                                                true);
+}
+
 }  // namespace
 
 struct MessageService::MessageChannel {
@@ -335,34 +363,23 @@ void MessageService::OpenChannelToExtension(
 }
 
 void MessageService::OpenChannelToNativeApp(
-    int source_process_id,
-    int source_routing_id,
+    const ChannelEndpoint& source,
     const PortId& source_port_id,
     const std::string& native_app_name) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(source_port_id.is_opener);
 
-  content::RenderFrameHost* source =
-      content::RenderFrameHost::FromID(source_process_id, source_routing_id);
-  if (!source)
+  if (!source.IsValid())
     return;
+  const Extension* extension = GetExtensionForNativeAppChannel(source);
 
-  content::WebContents* web_contents =
-      content::WebContents::FromRenderFrameHost(source);
-  if (!web_contents)
-    return;
-  ExtensionWebContentsObserver* extension_web_contents_observer =
-      ExtensionWebContentsObserver::GetForWebContents(web_contents);
-  if (!extension_web_contents_observer)
-    return;
-  const Extension* extension =
-      extension_web_contents_observer->GetExtensionFromFrame(source, true);
   if (!extension)
     return;
 
-  auto opener_port = std::make_unique<ExtensionMessagePort>(
-      weak_factory_.GetWeakPtr(), source_port_id, extension->id(), source,
-      false /* include_child_frames */);
+  std::unique_ptr<ExtensionMessagePort> opener_port =
+      ExtensionMessagePort::CreateForEndpoint(
+          weak_factory_.GetWeakPtr(), source_port_id, extension->id(), source,
+          false /* include_child_frames */);
   if (!opener_port->IsValidPort())
     return;
 
@@ -375,7 +392,7 @@ void MessageService::OpenChannelToNativeApp(
   }
 
   // Verify that the host is not blocked by policies.
-  BrowserContext* source_context = source->GetProcess()->GetBrowserContext();
+  BrowserContext* source_context = source.browser_context();
   DCHECK(
       ExtensionsBrowserClient::Get()->IsSameContext(source_context, context_));
   MessagingDelegate::PolicyPermission policy_permission =
@@ -388,15 +405,19 @@ void MessageService::OpenChannelToNativeApp(
 
   std::unique_ptr<MessageChannel> channel = std::make_unique<MessageChannel>();
   channel->opener = std::move(opener_port);
-  channel->opener->OpenPort(source_process_id,
-                            PortContext::ForFrame(source_routing_id));
+  channel->opener->OpenPort(source.render_process_id(), source.port_context());
 
+  content::RenderFrameHost* source_rfh =
+      source.is_for_render_frame() ? source.GetRenderFrameHost() : nullptr;
   std::string error = kReceivingEndDoesntExistError;
   const PortId receiver_port_id = source_port_id.GetOppositePortId();
+  // NOTE: We're creating |receiver| with nullptr |source_rfh|, which seems to
+  // work for native messaging tests. This might need further checking in case
+  // any issues arise from it.
   std::unique_ptr<MessagePort> receiver(
       messaging_delegate_->CreateReceiverForNativeApp(
-          weak_factory_.GetWeakPtr(), source, extension->id(), receiver_port_id,
-          native_app_name,
+          weak_factory_.GetWeakPtr(), source_rfh, extension->id(),
+          receiver_port_id, native_app_name,
           policy_permission == MessagingDelegate::PolicyPermission::ALLOW_ALL,
           &error));
 
