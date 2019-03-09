@@ -353,10 +353,16 @@ void ChromeNativeAppWindowViewsAuraAsh::UpdateDraggableRegions(
     const std::vector<extensions::DraggableRegion>& regions) {
   ChromeNativeAppWindowViewsAura::UpdateDraggableRegions(regions);
 
+  if (!features::IsUsingWindowService() || !widget())
+    return;
+
   SkRegion* draggable_region = GetDraggableRegion();
+  auto* window_tree_host =
+      aura::WindowTreeHostMus::ForWindow(widget()->GetNativeWindow());
+  DCHECK(window_tree_host);
+
   // Set the NativeAppWindow's draggable region on the mus window.
-  if (draggable_region && !draggable_region->isEmpty() && widget() &&
-      features::IsUsingWindowService()) {
+  if (draggable_region && !draggable_region->isEmpty()) {
     // Supply client area insets that encompass all draggable regions.
     gfx::Insets insets(draggable_region->getBounds().bottom(), 0, 0, 0);
 
@@ -372,11 +378,14 @@ void ChromeNativeAppWindowViewsAuraAsh::UpdateDraggableRegions(
     for (SkRegion::Iterator i(inverted_region); !i.done(); i.next())
       additional_client_regions.push_back(gfx::SkIRectToRect(i.rect()));
 
-    aura::WindowTreeHostMus* window_tree_host =
-        static_cast<aura::WindowTreeHostMus*>(
-            widget()->GetNativeWindow()->GetHost());
     window_tree_host->SetClientArea(insets,
                                     std::move(additional_client_regions));
+    draggable_regions_sent_ = true;
+  } else if (draggable_regions_sent_) {
+    // Once client area is sent and now it's empty, it needs to resend the empty
+    // insets.
+    window_tree_host->SetClientArea(gfx::Insets(), std::vector<gfx::Rect>());
+    draggable_regions_sent_ = false;
   }
 }
 
