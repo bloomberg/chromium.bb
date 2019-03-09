@@ -439,6 +439,7 @@ void AppCacheInternalsUI::OnAllAppCacheInfoReady(
     incognito_path_prefix = "Incognito ";
   web_ui()->CallJavascriptFunctionUnsafe(
       kFunctionOnAllAppCacheInfoReady,
+      base::Value(partition_path.AsUTF8Unsafe()),
       base::Value(incognito_path_prefix + partition_path.AsUTF8Unsafe()),
       *GetListValueFromAppCacheInfoCollection(collection.get()));
 }

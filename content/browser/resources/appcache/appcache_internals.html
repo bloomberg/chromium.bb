@@ -17,13 +17,8 @@
       <div id="appcache-list-template"
            jsvalues=".partitionPath:$this.partition_path">
         <div class="appcache-summary">
-          <span jsdisplay="$this.partition_path">
-            <span>Instances in: </span>
-            <span jscontent="$this.partition_path"></span>
-          </span>
-          <span jsdisplay="!$this.partition_path">
-            <span>Instances: Incognito </span>
-          </span>
+          <span>Instances in: </span>
+          <span jscontent="$this.display_name"></span>
           <span jscontent="'(' + $this.appcache_vector.length + ')'">
           </span>
         </div>
