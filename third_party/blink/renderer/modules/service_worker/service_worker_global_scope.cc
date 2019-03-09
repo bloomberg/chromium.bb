@@ -33,10 +33,8 @@
 #include <memory>
 #include <utility>
 
-#include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
-#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/renderer/bindings/core/v8/callback_promise_adapter.h"
@@ -331,13 +329,13 @@ void ServiceWorkerGlobalScope::EvaluateClassicScriptInternal(
       return;
     }
 
-    if (base::FeatureList::IsEnabled(
-            features::kOffMainThreadServiceWorkerScriptFetch)) {
-      // WorkerGlobalScope sets the URL in DidImportClassicScript() when
-      // off-the-main-thread fetch is enabled. Since we bypass calling
-      // DidImportClassicScript(), set the URL here.
-      InitializeURL(script_url);
-    }
+    // WorkerGlobalScope sets the response URL, referrer policy and CSP list in
+    // DidImportClassicScript(). Since we bypass calling
+    // DidImportClassicScript(), set them here.
+
+    DCHECK_EQ(GlobalScopeCSPApplyMode::kUseResponseCSP, GetCSPApplyMode());
+
+    InitializeURL(script_url);
 
     DCHECK(source_code.IsEmpty());
     DCHECK(!cached_meta_data);

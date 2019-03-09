@@ -93,6 +93,9 @@ WorkletGlobalScope::WorkletGlobalScope(
   // Step 5: "Let inheritedReferrerPolicy be outsideSettings's referrer policy."
   SetReferrerPolicy(creation_params->referrer_policy);
 
+  SetOutsideContentSecurityPolicyHeaders(
+      creation_params->content_security_policy_parsed_headers);
+
   // https://drafts.css-houdini.org/worklets/#creating-a-workletglobalscope
   // Step 6: "Invoke the initialize a global object's CSP list algorithm given
   // workletGlobalScope."
