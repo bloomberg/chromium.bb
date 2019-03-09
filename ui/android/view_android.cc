@@ -633,4 +633,20 @@ void ViewAndroid::SetLayoutForTesting(int x, int y, int width, int height) {
   bounds_.SetRect(x, y, width, height);
 }
 
+bool ViewAndroid::OnUnconsumedKeyboardEventAck(int native_code) {
+  ScopedJavaLocalRef<jobject> delegate(GetViewAndroidDelegate());
+  if (delegate.is_null())
+    return false;
+
+  JNIEnv* env = base::android::AttachCurrentThread();
+  static bool s_has_touchless_event_handler =
+      Java_ViewAndroidDelegate_hasTouchlessEventHandler(env, delegate);
+
+  if (!s_has_touchless_event_handler)
+    return false;
+
+  return Java_ViewAndroidDelegate_onUnconsumedKeyboardEventAck(env, delegate,
+                                                               native_code);
+}
+
 }  // namespace ui

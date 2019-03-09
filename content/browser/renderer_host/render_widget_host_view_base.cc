@@ -18,6 +18,7 @@
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/renderer_host/delegated_frame_host.h"
 #include "content/browser/renderer_host/display_util.h"
+#include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/browser/renderer_host/input/mouse_wheel_phase_handler.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_target_base.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -379,6 +380,11 @@ void RenderWidgetHostViewBase::WheelEventAck(
 void RenderWidgetHostViewBase::GestureEventAck(
     const blink::WebGestureEvent& event,
     InputEventAckState ack_result) {
+}
+
+bool RenderWidgetHostViewBase::OnUnconsumedKeyboardEventAck(
+    const NativeWebKeyboardEventWithLatencyInfo& event) {
+  return false;
 }
 
 void RenderWidgetHostViewBase::ForwardTouchpadZoomEventIfNecessary(

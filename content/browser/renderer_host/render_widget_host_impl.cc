@@ -2260,6 +2260,9 @@ void RenderWidgetHostImpl::OnKeyboardEventAck(
 
   bool processed = (INPUT_EVENT_ACK_STATE_CONSUMED == ack_result);
 
+  if (!processed)
+    processed = GetView()->OnUnconsumedKeyboardEventAck(event);
+
   // We only send unprocessed key event upwards if we are not hidden,
   // because the user has moved away from us and no longer expect any effect
   // of this key event.

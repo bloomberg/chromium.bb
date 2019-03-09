@@ -434,4 +434,14 @@ public class ViewAndroidDelegate {
         ViewGroup containerView = getContainerView();
         if (containerView != null) ViewUtils.requestFocus(containerView);
     }
+
+    @CalledByNative
+    private boolean hasTouchlessEventHandler() {
+        return TouchlessEventHandler.hasTouchlessEventHandler();
+    }
+
+    @CalledByNative
+    private boolean onUnconsumedKeyboardEventAck(int nativeCode) {
+        return TouchlessEventHandler.onUnconsumedKeyboardEventAck(nativeCode);
+    }
 }

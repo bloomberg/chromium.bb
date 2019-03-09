@@ -185,6 +185,8 @@ class UI_ANDROID_EXPORT ViewAndroid {
     return OnTouchEvent(event);
   }
 
+  bool OnUnconsumedKeyboardEventAck(int native_code);
+
  protected:
   void RemoveAllChildren(bool attached_to_window);
 
