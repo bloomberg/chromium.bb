@@ -2906,6 +2906,9 @@ crbug.com/723741 virtual/threaded/http/tests/devtools/tracing/idle-callback.js [
 # Sheriff 2019-03-07
 crbug.com/939406 external/wpt/html/browsers/windows/embedded-opener-remove-frame.html [ Failure ]
 
+# Sheriff 2019-03-08
+crbug.com/940050 virtual/threaded/external/wpt/animation-worklet/playback-rate.https.html [ Failure ]
+
 # Untriaged failures after https://crrev.com/c/543695/.
 # These need to be updated but appear not to be related to that change.
 crbug.com/626703 http/tests/devtools/indexeddb/database-refresh-view.js [ Pass Failure ]
