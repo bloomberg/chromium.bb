@@ -9,6 +9,16 @@
 <dom-module id="cr-shared-style">
   <template>
     <style include="cr-hidden-style cr-icons">
+      html,
+      :host {
+        --scrollable-border-color: var(--google-grey-refresh-300);
+      }
+
+      html[dark],
+      :host-context([dark]) {
+        --scrollable-border-color: var(--google-grey-refresh-700);
+      }
+
       [actionable] {
         @apply --cr-actionable;
       }
@@ -39,10 +49,10 @@
         overflow-y: auto;
       }
       [scrollable].is-scrolled {
-        border-top-color: var(--google-grey-300);
+        border-top-color: var(--scrollable-border-color);
       }
       [scrollable].can-scroll:not(.scrolled-to-bottom) {
-        border-bottom-color: var(--google-grey-300);
+        border-bottom-color: var(--scrollable-border-color);
       }
       [scrollable] iron-list > :not(.no-outline):focus {
         @apply --cr-list-item-focus;
