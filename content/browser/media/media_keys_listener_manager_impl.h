@@ -72,6 +72,9 @@ class CONTENT_EXPORT MediaKeysListenerManagerImpl
     DISALLOW_COPY_AND_ASSIGN(ListeningData);
   };
 
+  // Creates/Starts any OS-specific services needed for listening to media keys.
+  void EnsureAuxiliaryServices();
+
   void EnsureMediaKeysListener();
   ListeningData* GetOrCreateListeningData(ui::KeyboardCode key_code);
 
@@ -96,6 +99,9 @@ class CONTENT_EXPORT MediaKeysListenerManagerImpl
   // False if media key handling has been explicitly disabled by a call to
   // |DisableInternalMediaKeyHandling()|.
   bool media_key_handling_enabled_;
+
+  // True if auxiliary services have already been started.
+  bool auxiliary_services_started_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaKeysListenerManagerImpl);
 };
