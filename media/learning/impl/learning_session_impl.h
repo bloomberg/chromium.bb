@@ -8,6 +8,7 @@
 #include <map>
 
 #include "base/component_export.h"
+#include "base/sequenced_task_runner.h"
 #include "base/threading/sequence_bound.h"
 #include "media/learning/common/learning_session.h"
 #include "media/learning/common/learning_task_controller.h"
@@ -21,11 +22,14 @@ namespace learning {
 class COMPONENT_EXPORT(LEARNING_IMPL) LearningSessionImpl
     : public LearningSession {
  public:
-  LearningSessionImpl();
+  // We will create LearningTaskControllers that run on |task_runner|.
+  LearningSessionImpl(scoped_refptr<base::SequencedTaskRunner> task_runner);
   ~LearningSessionImpl() override;
 
+  // Create a SequenceBound controller for |task| on |task_runner|.
   using CreateTaskControllerCB =
-      base::RepeatingCallback<std::unique_ptr<LearningTaskController>(
+      base::RepeatingCallback<base::SequenceBound<LearningTaskController>(
+          scoped_refptr<base::SequencedTaskRunner>,
           const LearningTask&,
           SequenceBoundFeatureProvider)>;
 
@@ -42,9 +46,12 @@ class COMPONENT_EXPORT(LEARNING_IMPL) LearningSessionImpl
                         SequenceBoundFeatureProvider());
 
  private:
+  // Task runner on which we'll create controllers.
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
+
   // [task_name] = task controller.
   using LearningTaskMap =
-      std::map<std::string, std::unique_ptr<LearningTaskController>>;
+      std::map<std::string, base::SequenceBound<LearningTaskController>>;
   LearningTaskMap task_map_;
 
   CreateTaskControllerCB controller_factory_;

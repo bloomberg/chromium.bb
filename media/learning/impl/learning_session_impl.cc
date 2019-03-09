@@ -14,13 +14,16 @@
 namespace media {
 namespace learning {
 
-LearningSessionImpl::LearningSessionImpl()
-    : controller_factory_(
-          base::BindRepeating([](const LearningTask& task,
-                                 SequenceBoundFeatureProvider feature_provider)
-                                  -> std::unique_ptr<LearningTaskController> {
-            return std::make_unique<LearningTaskControllerImpl>(
-                task, DistributionReporter::Create(task),
+LearningSessionImpl::LearningSessionImpl(
+    scoped_refptr<base::SequencedTaskRunner> task_runner)
+    : task_runner_(std::move(task_runner)),
+      controller_factory_(base::BindRepeating(
+          [](scoped_refptr<base::SequencedTaskRunner> task_runner,
+             const LearningTask& task,
+             SequenceBoundFeatureProvider feature_provider)
+              -> base::SequenceBound<LearningTaskController> {
+            return base::SequenceBound<LearningTaskControllerImpl>(
+                task_runner, task, DistributionReporter::Create(task),
                 std::move(feature_provider));
           })) {}
 
@@ -38,9 +41,11 @@ void LearningSessionImpl::AddExample(const std::string& task_name,
     // TODO(liberato): We shouldn't be adding examples.  We should provide the
     // LearningTaskController instead, although ownership gets a bit weird.
     LearningTaskController::ObservationId id = 1;
-    iter->second->BeginObservation(id, example.features);
-    iter->second->CompleteObservation(
-        id, ObservationCompletion(example.target_value, example.weight));
+    iter->second.Post(FROM_HERE, &LearningTaskController::BeginObservation, id,
+                      example.features);
+    iter->second.Post(
+        FROM_HERE, &LearningTaskController::CompleteObservation, id,
+        ObservationCompletion(example.target_value, example.weight));
   }
 }
 
@@ -48,8 +53,9 @@ void LearningSessionImpl::RegisterTask(
     const LearningTask& task,
     SequenceBoundFeatureProvider feature_provider) {
   DCHECK(task_map_.count(task.name) == 0);
-  task_map_.emplace(task.name,
-                    controller_factory_.Run(task, std::move(feature_provider)));
+  task_map_.emplace(
+      task.name,
+      controller_factory_.Run(task_runner_, task, std::move(feature_provider)));
 }
 
 }  // namespace learning
