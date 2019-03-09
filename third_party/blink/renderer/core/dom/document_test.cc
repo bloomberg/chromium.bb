@@ -1076,6 +1076,11 @@ INSTANTIATE_TEST_SUITE_P(, IsolatedWorldCSPTest, testing::Values(true, false));
 TEST_F(DocumentTest, CanExecuteScriptsWithSandboxAndIsolatedWorld) {
   constexpr SandboxFlags kSandboxMask = kSandboxScripts;
   GetDocument().EnforceSandboxFlags(kSandboxMask);
+  // With FeaturePolicyForSandbox, all the sandbox flags must be explicitly
+  // converted to equivalent feature policies. Since sandbox is enforced above,
+  // the feature policies have to be reset; setting an empty header policy will
+  // internally convert the newly set sandbox flags to policies.
+  GetDocument().ApplyFeaturePolicyFromHeader("");
 
   LocalFrame* frame = GetDocument().GetFrame();
   frame->GetSettings()->SetScriptEnabled(true);

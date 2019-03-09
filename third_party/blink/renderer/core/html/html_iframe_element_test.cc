@@ -230,10 +230,7 @@ TEST_F(HTMLIFrameElementTest, AllowAttributeContainerPolicy) {
 // Sandboxing an iframe should result in a container policy with an item for
 // each sandbox feature
 TEST_F(HTMLIFrameElementTest, SandboxAttributeContainerPolicy) {
-  // TODO(iclelland): Remove the runtime feature override when this feature
-  // becomes experimental or stable.
-  ASSERT_FALSE(RuntimeEnabledFeatures::FeaturePolicyForSandboxEnabled());
-  RuntimeEnabledFeatures::SetFeaturePolicyForSandboxEnabled(true);
+  ASSERT_TRUE(RuntimeEnabledFeatures::FeaturePolicyForSandboxEnabled());
 
   Document* document = Document::CreateForTest();
   const KURL document_url("http://example.com");
@@ -249,17 +246,12 @@ TEST_F(HTMLIFrameElementTest, SandboxAttributeContainerPolicy) {
       frame_element->ContainerPolicy();
 
   EXPECT_EQ(expected_number_of_sandbox_features, container_policy.size());
-  // TODO: Check that each item is present.
-  RuntimeEnabledFeatures::SetFeaturePolicyForSandboxEnabled(false);
 }
 
 // Test that the allow attribute on a sandboxed frame results in a container
 // policy which is restricted to a unique origin.
 TEST_F(HTMLIFrameElementTest, CrossOriginSandboxAttributeContainerPolicy) {
-  // TODO(iclelland): Remove the runtime feature override when this feature
-  // becomes experimental or stable.
-  ASSERT_FALSE(RuntimeEnabledFeatures::FeaturePolicyForSandboxEnabled());
-  RuntimeEnabledFeatures::SetFeaturePolicyForSandboxEnabled(true);
+  ASSERT_TRUE(RuntimeEnabledFeatures::FeaturePolicyForSandboxEnabled());
   Document* document = Document::CreateForTest();
   const KURL document_url("http://example.com");
   document->SetURL(document_url);
@@ -289,17 +281,13 @@ TEST_F(HTMLIFrameElementTest, CrossOriginSandboxAttributeContainerPolicy) {
   EXPECT_GE(min_value, item.fallback_value);
   EXPECT_LE(max_value, item.opaque_value);
   EXPECT_EQ(0UL, item.values.size());
-  RuntimeEnabledFeatures::SetFeaturePolicyForSandboxEnabled(false);
 }
 
 // Test that the allow attribute on a sandboxed frame with the allow-same-origin
 // flag results in a container policy which is restricted to the origin of the
 // containing document.
 TEST_F(HTMLIFrameElementTest, SameOriginSandboxAttributeContainerPolicy) {
-  // TODO(iclelland): Remove the runtime feature override when this feature
-  // becomes experimental or stable.
-  ASSERT_FALSE(RuntimeEnabledFeatures::FeaturePolicyForSandboxEnabled());
-  RuntimeEnabledFeatures::SetFeaturePolicyForSandboxEnabled(true);
+  ASSERT_TRUE(RuntimeEnabledFeatures::FeaturePolicyForSandboxEnabled());
   Document* document = Document::CreateForTest();
   const KURL document_url("http://example.com");
   document->SetURL(document_url);
@@ -331,7 +319,6 @@ TEST_F(HTMLIFrameElementTest, SameOriginSandboxAttributeContainerPolicy) {
   EXPECT_EQ(1UL, item.values.size());
   EXPECT_FALSE(item.values.begin()->first.opaque());
   EXPECT_EQ("http://example.net", item.values.begin()->first.Serialize());
-  RuntimeEnabledFeatures::SetFeaturePolicyForSandboxEnabled(false);
 }
 
 // Test the ConstructContainerPolicy method when no attributes are set on the
