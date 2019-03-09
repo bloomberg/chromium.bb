@@ -5563,7 +5563,6 @@ crbug.com/888609 [ Mac ] http/tests/devtools/coverage/gutter-css.js [ Pass Timeo
 crbug.com/891530 [ Linux ] virtual/android/rootscroller/remove-rootscroller-crash.html [ Pass Timeout ]
 crbug.com/891510 [ Linux ] fast/dom/inline-event-attributes-release.html [ Failure Pass ]
 crbug.com/891510 [ Win7 ] fast/dom/inline-event-attributes-release.html [ Failure Pass ]
-crbug.com/892772 [ Mac ] editing/caret/caret-painting-low-dpi.html [ Failure Pass ]
 
 # Sheriff 2018-10-09
 crbug.com/806357 [ Linux ] virtual/threaded/fast/events/pointerevents/pinch/pointerevent_touch-action-pinch_zoom_touch.html [ Pass Failure ]
