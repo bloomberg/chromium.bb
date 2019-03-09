@@ -15,7 +15,7 @@
 #include "base/time/time.h"
 #include "content/browser/background_sync/background_sync.pb.h"
 #include "content/common/content_export.h"
-#include "third_party/blink/public/platform/modules/background_sync/background_sync.mojom.h"
+#include "third_party/blink/public/mojom/background_sync/background_sync.mojom.h"
 
 namespace content {
 

@@ -15,7 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "content/browser/background_sync/background_sync_manager.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "third_party/blink/public/platform/modules/background_sync/background_sync.mojom.h"
+#include "third_party/blink/public/mojom/background_sync/background_sync.mojom.h"
 
 namespace content {
 
