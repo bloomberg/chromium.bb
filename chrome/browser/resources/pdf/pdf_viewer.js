@@ -1234,6 +1234,9 @@ PDFViewer.prototype = {
    * conditions.
    */
   updateAnnotationAvailable_() {
+    if (!this.toolbar_) {
+      return;
+    }
     let annotationAvailable = true;
     if (this.viewport_.getClockwiseRotations() != 0) {
       annotationAvailable = false;
