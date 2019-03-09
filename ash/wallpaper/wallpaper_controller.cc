@@ -616,8 +616,8 @@ bool WallpaperController::ShouldShowInitialAnimation() {
 }
 
 void WallpaperController::OnWallpaperAnimationFinished() {
-  // TODO(wzang|784495): This is used by a code path in web-UI login. Remove it
-  // if views-based login is not interested in this event.
+  // TODO(crbug.com/875128): Remove this after web-ui login code is completely
+  // removed.
   if (wallpaper_controller_client_ && is_first_wallpaper_) {
     wallpaper_controller_client_->OnFirstWallpaperAnimationFinished();
   }
