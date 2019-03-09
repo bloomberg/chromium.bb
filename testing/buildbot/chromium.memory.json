@@ -5334,7 +5334,7 @@
               "os": "Ubuntu-14.04"
             }
           ],
-          "shards": 20
+          "shards": 30
         },
         "test": "browser_tests"
       },
