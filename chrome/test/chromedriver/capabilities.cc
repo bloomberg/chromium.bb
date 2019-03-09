@@ -756,7 +756,14 @@ Status Capabilities::Parse(const base::DictionaryValue& desired_caps,
   } else {
     parser_map["chromeOptions"] = base::BindRepeating(&ParseChromeOptions);
   }
-  parser_map["loggingPrefs"] = base::BindRepeating(&ParseLoggingPrefs);
+  // goog:loggingPrefs is spec-compliant name, but loggingPrefs is still
+  // supported in legacy mode.
+  if (w3c_compliant ||
+      desired_caps.GetDictionary("goog:loggingPrefs", nullptr)) {
+    parser_map["goog:loggingPrefs"] = base::BindRepeating(&ParseLoggingPrefs);
+  } else {
+    parser_map["loggingPrefs"] = base::BindRepeating(&ParseLoggingPrefs);
+  }
   // Network emulation requires device mode, which is only enabled when
   // mobile emulation is on.
   if (desired_caps.GetDictionary("goog:chromeOptions.mobileEmulation",

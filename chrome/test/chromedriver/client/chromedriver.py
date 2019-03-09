@@ -231,7 +231,7 @@ class ChromeDriver(object):
 
     params = {
         'goog:chromeOptions': options,
-        'loggingPrefs': logging_prefs
+        'goog:loggingPrefs': logging_prefs
     }
 
     if page_load_strategy:
