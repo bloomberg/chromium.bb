@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
@@ -368,6 +369,8 @@ class ResponsesAccumulator : public RefCounted<ResponsesAccumulator> {
 };
 
 class GetCacheKeysForRequestData {
+  USING_FAST_MALLOC(GetCacheKeysForRequestData);
+
  public:
   GetCacheKeysForRequestData(
       const DataRequestParams& params,

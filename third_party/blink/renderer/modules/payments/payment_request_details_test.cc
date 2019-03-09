@@ -14,11 +14,14 @@
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 namespace {
 
 class DetailsTestCase {
+  USING_FAST_MALLOC(DetailsTestCase);
+
  public:
   DetailsTestCase(
       PaymentTestDetailToChange detail,

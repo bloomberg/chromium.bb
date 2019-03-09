@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/modules/indexeddb/idb_key.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_key_path.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_value.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "v8/include/v8.h"
 
@@ -183,6 +184,8 @@ TEST(IDBValueWrapperTest, WriteBytes) {
 
 // Friend class of IDBValueUnwrapper with access to its internals.
 class IDBValueUnwrapperReadTestHelper {
+  STACK_ALLOCATED();
+
  public:
   void ReadVarInt(const char* start, uint32_t buffer_size) {
     IDBValueUnwrapper unwrapper;
