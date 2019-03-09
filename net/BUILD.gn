@@ -294,7 +294,6 @@ component("net") {
     "http/http_util.h",
     "http/http_vary_data.cc",
     "http/http_vary_data.h",
-    "http/transport_security_state.cc",
     "http/transport_security_state.h",
     "http/transport_security_state_source.cc",
     "http/transport_security_state_source.h",
@@ -384,6 +383,7 @@ component("net") {
 
   deps = [
     ":net_deps",
+    "//net/http:transport_security_state_generated_files",
   ]
 
   public_deps = [
@@ -401,6 +401,7 @@ component("net") {
     "//net/dns:host_resolver",
     "//net/dns:mdns_client",
     "//net/dns/public",
+    "//net/http:transport_security_state_generated_files",
   ]
 
   if (!is_nacl) {
@@ -2225,6 +2226,7 @@ source_set("net_deps") {
     "//net/dns:host_resolver",
     "//net/dns:mdns_client",
     "//net/dns/public",
+    "//net/http:transport_security_state_generated_files",
   ]
 
   public_deps = [
@@ -2238,10 +2240,6 @@ source_set("net_deps") {
   ]
 
   public_configs = net_configs
-
-  if (include_transport_security_state_preload_list) {
-    public_deps += [ "//net/http:generate_transport_security_state" ]
-  }
 
   if (!is_nacl) {
     public_deps += [
@@ -2292,6 +2290,7 @@ source_set("net_public_deps") {
     "//net/dns:host_resolver",
     "//net/dns:mdns_client",
     "//net/dns/public",
+    "//net/http:transport_security_state_generated_files",
   ]
 
   public_deps = [
