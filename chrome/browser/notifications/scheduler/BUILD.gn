@@ -28,6 +28,7 @@ source_set("public") {
     "notification_params.cc",
     "notification_params.h",
     "notification_schedule_service.h",
+    "notification_scheduler_types.h",
     "schedule_params.cc",
     "schedule_params.h",
   ]
@@ -50,12 +51,21 @@ source_set("lib") {
     "icon_entry.h",
     "icon_store.cc",
     "icon_store.h",
+    "impression_entry.cc",
+    "impression_entry.h",
+    "notification_entry.cc",
+    "notification_entry.h",
     "notification_schedule_service_impl.cc",
     "notification_schedule_service_impl.h",
     "proto_conversion.cc",
     "proto_conversion.h",
     "proto_db_collection_store.cc",
     "proto_db_collection_store.h",
+    "scheduler_model.h",
+    "scheduler_model_impl.cc",
+    "scheduler_model_impl.h",
+    "type_state.cc",
+    "type_state.h",
   ]
 
   # This target should not depend on anything in //chrome/* except the proto library.
