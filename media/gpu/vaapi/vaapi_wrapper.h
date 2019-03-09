@@ -240,6 +240,9 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   // Attempt to set render mode to "render to texture.". Failure is non-fatal.
   void TryToSetVADisplayAttributeToLocalGPU();
 
+  // Check low-power encode support for the given profile
+  bool IsLowPowerEncSupported(VAProfile va_profile) const;
+
   // Pointer to VADisplayState's member |va_lock_|. Guaranteed to be valid for
   // the lifetime of VaapiWrapper.
   base::Lock* va_lock_;
