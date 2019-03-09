@@ -972,6 +972,10 @@ public class ChromeTabbedActivity
             };
             OnClickListener bookmarkClickHandler = v -> addOrEditBookmark(getActivityTab());
 
+            if (shouldInitializeBottomSheet() && FeatureUtilities.isTabGroupsAndroidEnabled()) {
+                initializeBottomSheet(false);
+            }
+
             getToolbarManager().initializeWithNative(mTabModelSelectorImpl,
                     getFullscreenManager().getBrowserVisibilityDelegate(), getFindToolbarManager(),
                     mOverviewModeController, mLayoutManager, tabSwitcherClickHandler,
@@ -1580,7 +1584,9 @@ public class ChromeTabbedActivity
     @Override
     protected void initializeToolbar() {
         super.initializeToolbar();
-        if (!isTablet() && FeatureUtilities.isBottomToolbarEnabled()) {
+        if (!isTablet()
+                && (FeatureUtilities.isBottomToolbarEnabled()
+                        || FeatureUtilities.isTabGroupsAndroidEnabled())) {
             getToolbarManager().enableBottomToolbar();
         }
     }
@@ -2584,7 +2590,8 @@ public class ChromeTabbedActivity
 
     @Override
     protected boolean shouldInitializeBottomSheet() {
-        return FeatureUtilities.areContextualSuggestionsEnabled(this);
+        return FeatureUtilities.areContextualSuggestionsEnabled(this)
+                || FeatureUtilities.isTabGroupsAndroidEnabled();
     }
 
     @Override

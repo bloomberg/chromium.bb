@@ -11,7 +11,7 @@
     <LinearLayout
         android:id="@+id/main_content"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/bottom_sheet_peek_height"
+        android:layout_height="match_parent"
         android:orientation="horizontal"
         android:gravity="center_vertical"
         android:background="@color/modern_primary_color">

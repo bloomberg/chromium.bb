@@ -304,6 +304,7 @@ public class ToolbarControlContainer extends OptimizedFrameLayout implements Con
 
         @Override
         public boolean shouldRecognizeSwipe(MotionEvent e1, MotionEvent e2) {
+            if (FeatureUtilities.isTabGroupsAndroidEnabled()) return false;
             if (FeatureUtilities.isGridTabSwitcherEnabled(getContext())) return false;
             if (isOnTabStrip(e1)) return false;
             if (mToolbar != null && mToolbar.shouldIgnoreSwipeGesture()) return false;

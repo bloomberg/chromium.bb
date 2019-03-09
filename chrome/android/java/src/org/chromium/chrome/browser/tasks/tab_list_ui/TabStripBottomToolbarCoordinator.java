@@ -34,8 +34,8 @@ public class TabStripBottomToolbarCoordinator
     /**
      * Creates a new {@link TabStripBottomToolbarCoordinator}
      */
-    public TabStripBottomToolbarCoordinator(Context context, ViewGroup parentView) {
-        mContext = context;
+    public TabStripBottomToolbarCoordinator(ViewGroup parentView) {
+        mContext = parentView.getContext();
         mTabStripToolbarModel = new PropertyModel(TabStripToolbarViewProperties.ALL_KEYS);
 
         mTabStripToolbarCoordinator =
