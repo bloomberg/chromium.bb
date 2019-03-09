@@ -55,6 +55,19 @@ GrGLFunction<R GR_GL_FUNCTION_TYPE(Args...)> bind_with_flush_on_mac(
 #endif
 }
 
+template <typename R, typename... Args>
+GrGLFunction<R GR_GL_FUNCTION_TYPE(Args...)> bind_slow_with_flush_on_mac(
+    R(GL_BINDING_CALL* func)(Args...),
+    gl::ProgressReporter* progress_reporter) {
+  if (!progress_reporter) {
+    return bind_with_flush_on_mac(func);
+  }
+  return [func, progress_reporter](Args... args) {
+    ScopedProgressReporter scoped_reporter(progress_reporter);
+    return bind_with_flush_on_mac(func)(args...);
+  };
+}
+
 const GLubyte* GetStringHook(const char* version_string, GLenum name) {
   switch (name) {
     case GL_VERSION:
@@ -161,8 +174,8 @@ sk_sp<GrGLInterface> CreateGrGLInterface(
   functions->fColorMask = gl->glColorMaskFn;
   functions->fCompileShader =
       bind_slow(gl->glCompileShaderFn, progress_reporter);
-  functions->fCompressedTexImage2D =
-      bind_slow(gl->glCompressedTexImage2DFn, progress_reporter);
+  functions->fCompressedTexImage2D = bind_slow_with_flush_on_mac(
+      gl->glCompressedTexImage2DFn, progress_reporter);
   functions->fCompressedTexSubImage2D =
       bind_slow(gl->glCompressedTexSubImage2DFn, progress_reporter);
   functions->fCopyTexSubImage2D =
@@ -177,7 +190,7 @@ sk_sp<GrGLInterface> CreateGrGLInterface(
   functions->fDeleteQueries = gl->glDeleteQueriesFn;
   functions->fDeleteSamplers = gl->glDeleteSamplersFn;
   functions->fDeleteShader = bind_slow(gl->glDeleteShaderFn, progress_reporter);
-  functions->fDeleteTextures = gl->glDeleteTexturesFn;
+  functions->fDeleteTextures = bind_with_flush_on_mac(gl->glDeleteTexturesFn);
   functions->fDepthMask = gl->glDepthMaskFn;
   functions->fDisable = gl->glDisableFn;
   functions->fDisableVertexAttribArray = gl->glDisableVertexAttribArrayFn;
@@ -256,13 +269,14 @@ sk_sp<GrGLInterface> CreateGrGLInterface(
   functions->fStencilOpSeparate = gl->glStencilOpSeparateFn;
   functions->fTexBuffer = gl->glTexBufferFn;
   functions->fTexBufferRange = gl->glTexBufferRangeFn;
-  functions->fTexImage2D = bind_slow(gl->glTexImage2DFn, progress_reporter);
+  functions->fTexImage2D =
+      bind_slow_with_flush_on_mac(gl->glTexImage2DFn, progress_reporter);
   functions->fTexParameterf = gl->glTexParameterfFn;
   functions->fTexParameterfv = gl->glTexParameterfvFn;
   functions->fTexParameteri = gl->glTexParameteriFn;
   functions->fTexParameteriv = gl->glTexParameterivFn;
-  functions->fTexStorage2D = gl->glTexStorage2DEXTFn;
-  functions->fTexSubImage2D = gl->glTexSubImage2DFn;
+  functions->fTexStorage2D = bind_with_flush_on_mac(gl->glTexStorage2DEXTFn);
+  functions->fTexSubImage2D = bind_with_flush_on_mac(gl->glTexSubImage2DFn);
 
   // GL 4.5 or GL_ARB_texture_barrier or GL_NV_texture_barrier
   // functions->fTextureBarrier = gl->glTextureBarrierFn;
@@ -319,20 +333,22 @@ sk_sp<GrGLInterface> CreateGrGLInterface(
       bind_with_flush_on_mac(gl->glBindFramebufferEXTFn);
   functions->fFramebufferTexture2D = gl->glFramebufferTexture2DEXTFn;
   functions->fCheckFramebufferStatus = gl->glCheckFramebufferStatusEXTFn;
-  functions->fDeleteFramebuffers =
-      bind_slow(gl->glDeleteFramebuffersEXTFn, progress_reporter);
-  functions->fRenderbufferStorage = gl->glRenderbufferStorageEXTFn;
+  functions->fDeleteFramebuffers = bind_slow_with_flush_on_mac(
+      gl->glDeleteFramebuffersEXTFn, progress_reporter);
+  functions->fRenderbufferStorage =
+      bind_with_flush_on_mac(gl->glRenderbufferStorageEXTFn);
   functions->fGenRenderbuffers = gl->glGenRenderbuffersEXTFn;
-  functions->fDeleteRenderbuffers = gl->glDeleteRenderbuffersEXTFn;
+  functions->fDeleteRenderbuffers =
+      bind_with_flush_on_mac(gl->glDeleteRenderbuffersEXTFn);
   functions->fFramebufferRenderbuffer = gl->glFramebufferRenderbufferEXTFn;
   functions->fBindRenderbuffer = gl->glBindRenderbufferEXTFn;
   functions->fRenderbufferStorageMultisample =
-      gl->glRenderbufferStorageMultisampleFn;
+      bind_with_flush_on_mac(gl->glRenderbufferStorageMultisampleFn);
   functions->fFramebufferTexture2DMultisample =
       gl->glFramebufferTexture2DMultisampleEXTFn;
   functions->fRenderbufferStorageMultisampleES2EXT =
-      gl->glRenderbufferStorageMultisampleEXTFn;
-  functions->fBlitFramebuffer = gl->glBlitFramebufferFn;
+      bind_with_flush_on_mac(gl->glRenderbufferStorageMultisampleEXTFn);
+  functions->fBlitFramebuffer = bind_with_flush_on_mac(gl->glBlitFramebufferFn);
 
   functions->fMatrixLoadf = gl->glMatrixLoadfEXTFn;
   functions->fMatrixLoadIdentity = gl->glMatrixLoadIdentityEXTFn;
