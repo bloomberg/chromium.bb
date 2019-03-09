@@ -189,7 +189,7 @@ class BlobBuilderFromStreamTest
   }
 };
 
-TEST_P(BlobBuilderFromStreamTest, CallbackCalledOnDeletion) {
+TEST_P(BlobBuilderFromStreamTest, CallbackCalledOnAbortBeforeDeletion) {
   mojo::DataPipe pipe;
 
   base::RunLoop loop;
@@ -204,6 +204,7 @@ TEST_P(BlobBuilderFromStreamTest, CallbackCalledOnDeletion) {
         loop.Quit();
       }));
   builder_ptr = builder.get();
+  builder->Abort();
   builder.reset();
   loop.Run();
 }
