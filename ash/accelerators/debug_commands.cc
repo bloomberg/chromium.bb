@@ -12,9 +12,9 @@
 #include "ash/system/toast/toast_manager.h"
 #include "ash/touch/touch_devices_controller.h"
 #include "ash/wallpaper/wallpaper_controller.h"
-#include "ash/wm/focus_rules.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/widget_finder.h"
+#include "ash/wm/window_properties.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/ws/window_lookup.h"
@@ -91,7 +91,7 @@ void PrintWindowHierarchy(ws::WindowService* window_service,
     *out << " [proxy] id=" << window_service->GetIdForDebugging(window) << " ";
   *out << name << " (" << window << ")"
        << " type=" << window->type();
-  if (ash::IsToplevelWindow(window))
+  if (window->GetProperty(kWindowStateKey))
     *out << " " << wm::GetWindowState(window)->GetStateType();
   *out << ((window == active_window) ? " [active]" : "")
        << ((window == focused_window) ? " [focused]" : "")

@@ -7,8 +7,8 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
+#include "ash/shell_delegate.h"
 #include "ash/wm/container_finder.h"
-#include "ash/wm/focus_rules.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_state.h"
 #include "ui/aura/client/aura_constants.h"
@@ -16,7 +16,6 @@
 #include "ui/events/event.h"
 
 namespace ash {
-namespace wm {
 namespace {
 
 bool BelongsToContainerWithEqualOrGreaterId(const aura::Window* window,
@@ -49,7 +48,14 @@ AshFocusRules::~AshFocusRules() = default;
 // AshFocusRules, ::wm::FocusRules:
 
 bool AshFocusRules::IsToplevelWindow(const aura::Window* window) const {
-  return ash::IsToplevelWindow(window);
+  DCHECK(window);
+  // The window must be in a valid hierarchy.
+  if (!window->GetRootWindow() || !window->parent())
+    return false;
+
+  // The window must exist within a container that supports activation.
+  // The window cannot be blocked by a modal transient.
+  return IsActivatableShellWindowId(window->parent()->id());
 }
 
 bool AshFocusRules::SupportsChildActivation(const aura::Window* window) const {
@@ -58,7 +64,26 @@ bool AshFocusRules::SupportsChildActivation(const aura::Window* window) const {
 
 bool AshFocusRules::IsWindowConsideredVisibleForActivation(
     const aura::Window* window) const {
-  return ash::IsWindowConsideredVisibleForActivation(window);
+  DCHECK(window);
+  // If the |window| doesn't belong to the current active user and also doesn't
+  // show for the current active user, then it should not be activated.
+  if (!Shell::Get()->shell_delegate()->CanShowWindowForUser(window))
+    return false;
+
+  if (window->IsVisible())
+    return true;
+
+  // Minimized windows are hidden in their minimized state, but they can always
+  // be activated.
+  if (wm::GetWindowState(window)->IsMinimized())
+    return true;
+
+  if (!window->TargetVisibility())
+    return false;
+
+  const int parent_shell_window_id = window->parent()->id();
+  return parent_shell_window_id == kShellWindowId_DefaultContainer ||
+         parent_shell_window_id == kShellWindowId_LockScreenContainer;
 }
 
 bool AshFocusRules::CanActivateWindow(const aura::Window* window) const {
@@ -144,8 +169,8 @@ aura::Window* AshFocusRules::GetTopmostWindowToActivateForContainerIndex(
     aura::Window* ignore) const {
   aura::Window* window = nullptr;
   aura::Window* root = ignore ? ignore->GetRootWindow() : nullptr;
-  aura::Window::Windows containers =
-      GetContainersFromAllRootWindows(kActivatableShellWindowIds[index], root);
+  aura::Window::Windows containers = wm::GetContainersFromAllRootWindows(
+      kActivatableShellWindowIds[index], root);
   for (aura::Window* container : containers) {
     window = GetTopmostWindowToActivateInContainer(container, ignore);
     if (window)
@@ -160,7 +185,7 @@ aura::Window* AshFocusRules::GetTopmostWindowToActivateInContainer(
   for (aura::Window::Windows::const_reverse_iterator i =
            container->children().rbegin();
        i != container->children().rend(); ++i) {
-    WindowState* window_state = GetWindowState(*i);
+    wm::WindowState* window_state = wm::GetWindowState(*i);
     if (*i != ignore && window_state->CanActivate() &&
         !window_state->IsMinimized())
       return *i;
@@ -168,5 +193,4 @@ aura::Window* AshFocusRules::GetTopmostWindowToActivateInContainer(
   return nullptr;
 }
 
-}  // namespace wm
 }  // namespace ash

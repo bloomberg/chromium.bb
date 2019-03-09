@@ -1060,8 +1060,6 @@ component("ash") {
     "wm/drag_window_resizer.cc",
     "wm/event_client_impl.cc",
     "wm/event_client_impl.h",
-    "wm/focus_rules.cc",
-    "wm/focus_rules.h",
     "wm/fullscreen_window_finder.cc",
     "wm/fullscreen_window_finder.h",
     "wm/gestures/overview_gesture_handler.cc",
