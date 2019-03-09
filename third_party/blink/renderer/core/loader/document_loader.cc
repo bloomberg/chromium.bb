@@ -1491,6 +1491,19 @@ void DocumentLoader::InstallNewDocument(
       OriginTrialContext::FromOrCreate(document)->AddFeature(
           "ForceTouchEventFeatureDetectionForInspector");
     }
+
+#if defined(OS_CHROMEOS)
+    // Enable Low Latency Canvas for the PDF Annotations feature of the built in
+    // PDF Viewer extension on Chrome OS.
+    const url::Origin origin = document->GetSecurityOrigin()->ToUrlOrigin();
+    if (origin.scheme() == "chrome-extension" &&
+        origin.DomainIs("mhjfbmdgcfjbbpaeojofohoefgiehjai") &&
+        origin.port() == 0) {
+      OriginTrialContext::FromOrCreate(document)->AddFeature(
+          origin_trials::kLowLatencyCanvasTrialName);
+    }
+#endif
+
     OriginTrialContext::AddTokensFromHeader(
         document, response_.HttpHeaderField(http_names::kOriginTrial));
   }
