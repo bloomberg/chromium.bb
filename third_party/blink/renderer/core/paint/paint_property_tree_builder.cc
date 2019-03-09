@@ -1617,16 +1617,6 @@ static MainThreadScrollingReasons GetMainThreadScrollingReasons(
   if (!object.IsBox())
     return reasons;
 
-  if (auto* scrollable_area = ToLayoutBox(object).GetScrollableArea()) {
-    if (scrollable_area->HorizontalScrollbar() &&
-        scrollable_area->HorizontalScrollbar()->IsCustomScrollbar()) {
-      reasons |= cc::MainThreadScrollingReason::kCustomScrollbarScrolling;
-    } else if (scrollable_area->VerticalScrollbar() &&
-               scrollable_area->VerticalScrollbar()->IsCustomScrollbar()) {
-      reasons |= cc::MainThreadScrollingReason::kCustomScrollbarScrolling;
-    }
-  }
-
   if (object.IsLayoutView()) {
     if (object.GetFrameView()->HasBackgroundAttachmentFixedObjects()) {
       reasons |=

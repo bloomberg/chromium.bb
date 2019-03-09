@@ -406,6 +406,9 @@ crbug.com/923429 external/wpt/css/filter-effects/backdrop-filter-basic.html [ Fa
 crbug.com/923429 external/wpt/css/filter-effects/backdrop-filter-fixed-clip.html [ Failure ]
 crbug.com/923429 external/wpt/css/filter-effects/backdrop-filter-isolation.html [ Failure ]
 
+crbug.com/940033 virtual/fractional_scrolling_threaded/fast/scrolling/wheel-scrolling-over-custom-scrollbar.html [ Failure ]
+crbug.com/940033 virtual/threaded/fast/scrolling/wheel-scrolling-over-custom-scrollbar.html [ Failure ]
+
 # Missing composited layer for fixed-position
 crbug.com/931491 compositing/layer-creation/fixed-position-change-out-of-view-in-view.html [ Failure ]
 crbug.com/931491 compositing/layer-creation/fixed-position-in-fixed-overflow.html [ Failure ]
