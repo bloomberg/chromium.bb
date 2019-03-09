@@ -164,6 +164,8 @@ namespace autotestPrivate {
 
   callback SetTabletModeEnabledCallback = void(boolean enabled);
 
+  callback GetShelfAutoHideBehaviorCallback = void (DOMString behavior);
+
   callback VoidCallback = void ();
 
   interface Functions {
@@ -334,7 +336,7 @@ namespace autotestPrivate {
     static void getPrimaryDisplayScaleFactor(
         GetPrimaryDisplayScaleFactorCallback callback);
 
-    // Returns the tablet mode enabled status.
+    // Get the tablet mode enabled status.
     // |callback| is invoked with the tablet mode enablement status.
     static void isTabletModeEnabled(IsTabletModeEnabledCallback callback);
 
@@ -345,5 +347,19 @@ namespace autotestPrivate {
     // |callback|: Called when the operation has completed.
     static void setTabletModeEnabled(boolean enabled,
         SetTabletModeEnabledCallback callback);
+
+    // Get the shelf auto hide behavior.
+    // |displayId|: display that contains the shelf.
+    // |callback| is invoked with the shelf auto hide behavior. Possible
+    // behavior values are: "always", "never" or "hidden".
+    static void getShelfAutoHideBehavior(DOMString displayId,
+        GetShelfAutoHideBehaviorCallback callback);
+
+    // Set the shelf auto hide behavior.
+    // |displayId|: display that contains the shelf.
+    // |behavior|: an enum of "always", "never" or "hidden".
+    // |callback|: Called when the operation has completed.
+    static void setShelfAutoHideBehavior(DOMString displayId,
+        DOMString behavior, VoidCallback callback);
   };
 };
