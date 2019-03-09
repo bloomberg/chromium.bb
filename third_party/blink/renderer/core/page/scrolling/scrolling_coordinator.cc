@@ -438,16 +438,10 @@ void ScrollingCoordinator::ScrollableAreaScrollbarLayerDidChange(
                                : *scrollable_area->VerticalScrollbar();
     if (scrollbar.IsCustomScrollbar()) {
       DetachScrollbarLayer(scrollbar_graphics_layer);
-      scrollbar_graphics_layer->CcLayer()->AddMainThreadScrollingReasons(
-          cc::MainThreadScrollingReason::kCustomScrollbarScrolling);
       scrollbar_graphics_layer->CcLayer()->SetIsScrollbar(true);
       return;
     }
 
-    // Invalidate custom scrollbar scrolling reason in case a custom
-    // scrollbar becomes a non-custom one.
-    scrollbar_graphics_layer->CcLayer()->ClearMainThreadScrollingReasons(
-        cc::MainThreadScrollingReason::kCustomScrollbarScrolling);
     ScrollbarLayerGroup* scrollbar_layer_group =
         GetScrollbarLayerGroup(scrollable_area, orientation);
     if (!scrollbar_layer_group) {

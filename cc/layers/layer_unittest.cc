@@ -879,7 +879,6 @@ TEST_F(LayerTest, TestSettingMainThreadScrollingReason) {
   reasons |= MainThreadScrollingReason::kScrollbarScrolling;
 
   reasons_to_clear |= MainThreadScrollingReason::kHandlingScrollFromMainThread;
-  reasons_to_clear |= MainThreadScrollingReason::kCustomScrollbarScrolling;
 
   reasons_after_clearing |=
       MainThreadScrollingReason::kThreadedScrollingDisabled;
@@ -905,7 +904,6 @@ TEST_F(LayerTest, TestSettingMainThreadScrollingReason) {
 
   // Check that clearing non-set reasons doesn't set needs commit.
   reasons_to_clear = 0;
-  reasons_to_clear |= MainThreadScrollingReason::kCustomScrollbarScrolling;
   reasons_to_clear |= MainThreadScrollingReason::kFrameOverlay;
   EXPECT_SET_NEEDS_COMMIT(
       0, test_layer->ClearMainThreadScrollingReasons(reasons_to_clear));

@@ -3755,7 +3755,12 @@ bool LayerTreeHostImpl::IsTouchDraggingScrollbar(
 }
 
 // Initial scroll hit testing can be unreliable in the presence of squashed
-// layers. In this case, we fall back to main thread scrolling.
+// layers. In this case, we fall back to main thread scrolling. This function
+// compares |layer_impl| returned from a regular hit test to the layer
+// returned from a hit test performed only on scrollers and scrollbars. If the
+// closest scrolling ancestor of |layer_impl| is not the other layer, then the
+// layer_impl must be a squasing layer overtop of some other scroller and we
+// must rely on the main thread.
 bool LayerTreeHostImpl::IsInitialScrollHitTestReliable(
     LayerImpl* layer_impl,
     LayerImpl* first_scrolling_layer_or_scrollbar) {
@@ -3783,9 +3788,14 @@ bool LayerTreeHostImpl::IsInitialScrollHitTestReliable(
            first_scrolling_layer_or_scrollbar->scroll_tree_index();
   }
 
-  // If |first_scrolling_layer_or_scrollbar| is not scrollable, it must
-  // be a drawn scrollbar. It may hit the squashing layer at the same time.
-  // These hit tests require falling back to main-thread scrolling.
+  // If |first_scrolling_layer_or_scrollbar| is not scrollable, it must be a
+  // scrollbar. It may hit the squashing layer at the same time.  These hit
+  // tests require falling back to main-thread scrolling.
+  // TODO(bokan): This causes us to fallback to main anytime we hit a
+  // scrollbar. If |layer_impl == first_scrolling_layer_or_scrollbar| then we
+  // truly hit a scrollbar and the hit test is reliable. Only if they're
+  // different we might have a squashing layer above the scrollbar.
+  // https://crbug.com/939195.
   DCHECK(first_scrolling_layer_or_scrollbar->is_scrollbar());
   return false;
 }
