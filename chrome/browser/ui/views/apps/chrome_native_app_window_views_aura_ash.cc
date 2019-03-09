@@ -260,7 +260,7 @@ bool ChromeNativeAppWindowViewsAuraAsh::IsAlwaysOnTop() const {
 
 ///////////////////////////////////////////////////////////////////////////////
 // views::ContextMenuController implementation:
-void ChromeNativeAppWindowViewsAuraAsh::ShowContextMenuForView(
+void ChromeNativeAppWindowViewsAuraAsh::ShowContextMenuForViewImpl(
     views::View* source,
     const gfx::Point& p,
     ui::MenuSourceType source_type) {

@@ -231,9 +231,9 @@ void BrowserFrame::OnNativeThemeUpdated(ui::NativeTheme* observed_theme) {
   browser_view_->NativeThemeUpdated(observed_theme);
 }
 
-void BrowserFrame::ShowContextMenuForView(views::View* source,
-                                          const gfx::Point& p,
-                                          ui::MenuSourceType source_type) {
+void BrowserFrame::ShowContextMenuForViewImpl(views::View* source,
+                                              const gfx::Point& p,
+                                              ui::MenuSourceType source_type) {
   if (chrome::IsRunningInForcedAppMode())
     return;
 

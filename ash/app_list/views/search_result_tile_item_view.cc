@@ -353,7 +353,7 @@ void SearchResultTileItemView::OnMetadataChanged() {
   Layout();
 }
 
-void SearchResultTileItemView::ShowContextMenuForView(
+void SearchResultTileItemView::ShowContextMenuForViewImpl(
     views::View* source,
     const gfx::Point& point,
     ui::MenuSourceType source_type) {

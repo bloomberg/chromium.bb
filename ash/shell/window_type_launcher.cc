@@ -326,7 +326,7 @@ void WindowTypeLauncher::ExecuteCommand(int id, int event_flags) {
   }
 }
 
-void WindowTypeLauncher::ShowContextMenuForView(
+void WindowTypeLauncher::ShowContextMenuForViewImpl(
     views::View* source,
     const gfx::Point& point,
     ui::MenuSourceType source_type) {

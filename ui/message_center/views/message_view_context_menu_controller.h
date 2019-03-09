@@ -30,9 +30,9 @@ class MESSAGE_CENTER_EXPORT MessageViewContextMenuController
 
  private:
   // Overridden from views::ContextMenuController:
-  void ShowContextMenuForView(views::View* source,
-                              const gfx::Point& point,
-                              ui::MenuSourceType source_type) override;
+  void ShowContextMenuForViewImpl(views::View* source,
+                                  const gfx::Point& point,
+                                  ui::MenuSourceType source_type) override;
 
   // Callback for MenuRunner
   void OnMenuClosed();

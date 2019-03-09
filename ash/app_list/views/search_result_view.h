@@ -116,11 +116,11 @@ class APP_LIST_EXPORT SearchResultView
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // views::ContextMenuController overrides:
-  void ShowContextMenuForView(views::View* source,
-                              const gfx::Point& point,
-                              ui::MenuSourceType source_type) override;
+  void ShowContextMenuForViewImpl(views::View* source,
+                                  const gfx::Point& point,
+                                  ui::MenuSourceType source_type) override;
 
-  // Bound by ShowContextMenuForView().
+  // Bound by ShowContextMenuForViewImpl().
   void OnGetContextMenu(views::View* source,
                         const gfx::Point& point,
                         ui::MenuSourceType source_type,

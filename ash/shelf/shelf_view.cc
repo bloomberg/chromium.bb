@@ -2229,9 +2229,9 @@ void ShelfView::AfterGetContextMenuItems(
            source_type);
 }
 
-void ShelfView::ShowContextMenuForView(views::View* source,
-                                       const gfx::Point& point,
-                                       ui::MenuSourceType source_type) {
+void ShelfView::ShowContextMenuForViewImpl(views::View* source,
+                                           const gfx::Point& point,
+                                           ui::MenuSourceType source_type) {
   // Prevent concurrent requests that may show application or context menus.
   // If a second request is sent before the first one can respond, the Chrome
   // side ShelfItemDelegate may become unresponsive: https://crbug.com/881886

@@ -292,7 +292,7 @@ void MediaGalleriesDialogViews::ButtonPressed(views::Button* sender,
   }
 }
 
-void MediaGalleriesDialogViews::ShowContextMenuForView(
+void MediaGalleriesDialogViews::ShowContextMenuForViewImpl(
     views::View* source,
     const gfx::Point& point,
     ui::MenuSourceType source_type) {
