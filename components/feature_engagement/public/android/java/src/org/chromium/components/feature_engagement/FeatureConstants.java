@@ -42,6 +42,7 @@ public @interface FeatureConstants {
     String CONTEXTUAL_SUGGESTIONS_FEATURE = "IPH_ContextualSuggestions";
     String DATA_SAVER_PREVIEW_FEATURE = "IPH_DataSaverPreview";
     String DATA_SAVER_DETAIL_FEATURE = "IPH_DataSaverDetail";
+    String DATA_SAVER_MILESTONE_PROMO_FEATURE = "IPH_DataSaverMilestonePromo";
     String NTP_BUTTON_FEATURE = "IPH_NewTabPageButton";
     String PREVIEWS_OMNIBOX_UI_FEATURE = "IPH_PreviewsOmniboxUI";
     String HOMEPAGE_TILE_FEATURE = "IPH_HomepageTile";

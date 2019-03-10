@@ -18,6 +18,7 @@ const base::Feature* const kAllFeatures[] = {
     &kIPHDummyFeature,  // Ensures non-empty array for all platforms.
 #if defined(OS_ANDROID)
     &kIPHDataSaverDetailFeature,
+    &kIPHDataSaverMilestonePromoFeature,
     &kIPHDataSaverPreviewFeature,
     &kIPHDownloadHomeFeature,
     &kIPHDownloadPageFeature,
