@@ -88,7 +88,6 @@ EXTRA_DIST =					\
 	sk-g1_harness.yaml			\
 	sl-g1.yaml				\
 	spaces.yaml				\
-	spaces.dis				\
 	sr-g1_harness.yaml			\
 	ta-ta-g1_harness.yaml			\
 	uk.yaml					\

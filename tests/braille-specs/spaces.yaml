@@ -1,4 +1,7 @@
-display: spaces.dis
+display: |
+  include unicode-without-blank.dis
+  display 9 9
+  display a a
 
 table: Es-Es-G0.utb,spaces.uti
 flags: {testmode: bothDirections}
