@@ -184,6 +184,7 @@ component("gpu") {
     libs += [ "android" ]
     deps += [
       "//gpu/ipc/common:android_image_reader_utils",
+      "//third_party/libsync",
 
       # TODO(crbug.com/789435): This can be removed once CdmManager is removed.
       "//gpu/ipc/common:ipc_common_sources",
