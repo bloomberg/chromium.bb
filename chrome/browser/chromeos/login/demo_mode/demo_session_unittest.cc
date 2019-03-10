@@ -421,7 +421,8 @@ TEST_F(DemoSessionTest, MultipleEnsureOfflineResourcesLoaded) {
       demo_session->resources()->GetAbsolutePath(base::FilePath("foo.txt")));
 }
 
-TEST_F(DemoSessionTest, ShowSplashScreenUntilScreensaverShown) {
+// TODO(crbug.com/939687): Reenable the test.
+TEST_F(DemoSessionTest, DISABLED_ShowAndRemoveSplashScreen) {
   DemoSession* demo_session = DemoSession::StartIfInDemoMode();
   ASSERT_TRUE(demo_session);
 
@@ -461,16 +462,23 @@ TEST_F(DemoSessionTest, ShowSplashScreenUntilScreensaverShown) {
       screensaver_app.get());
   demo_session->OnAppWindowActivated(app_window);
   wallpaper_controller_client_->FlushForTesting();
+  // The splash screen is not removed until active session starts.
+  EXPECT_EQ(1, test_wallpaper_controller_.show_always_on_top_wallpaper_count());
+  EXPECT_EQ(0,
+            test_wallpaper_controller_.remove_always_on_top_wallpaper_count());
+  session_manager_->SetSessionState(session_manager::SessionState::ACTIVE);
+  wallpaper_controller_client_->FlushForTesting();
   EXPECT_EQ(1, test_wallpaper_controller_.show_always_on_top_wallpaper_count());
   EXPECT_EQ(1,
             test_wallpaper_controller_.remove_always_on_top_wallpaper_count());
-  app_window->OnNativeClose();
-
-  // The timer is cleared after splash screen is removed by the screensaver.
+  // The timer is cleared after splash screen is removed.
   EXPECT_FALSE(demo_session->GetTimerForTesting());
+
+  app_window->OnNativeClose();
 }
 
-TEST_F(DemoSessionTest, ShowSplashScreenUntilTimeout) {
+// TODO(crbug.com/939687): Reenable the test.
+TEST_F(DemoSessionTest, DISABLED_RemoveSplashScreenWhenTimeout) {
   DemoSession* demo_session = DemoSession::StartIfInDemoMode();
   ASSERT_TRUE(demo_session);
 
@@ -523,6 +531,13 @@ TEST_F(DemoSessionTest, ShowSplashScreenUntilTimeout) {
   EXPECT_EQ(1, test_wallpaper_controller_.show_always_on_top_wallpaper_count());
   EXPECT_EQ(1,
             test_wallpaper_controller_.remove_always_on_top_wallpaper_count());
+  // Entering active session will not trigger splash screen removal anymore.
+  session_manager_->SetSessionState(session_manager::SessionState::ACTIVE);
+  wallpaper_controller_client_->FlushForTesting();
+  EXPECT_EQ(1, test_wallpaper_controller_.show_always_on_top_wallpaper_count());
+  EXPECT_EQ(1,
+            test_wallpaper_controller_.remove_always_on_top_wallpaper_count());
+
   app_window->OnNativeClose();
 }
 
