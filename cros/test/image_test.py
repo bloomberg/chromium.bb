@@ -667,28 +667,37 @@ class SymlinkTest(image_test_lib.ImageTestCase):
   # The key is the symlink and the value is the symlink target.
   # Both accept fnmatch style expressions (i.e. globs).
   _ACCEPTABLE_LINKS = {
-      '/etc/localtime': '/var/lib/timezone/localtime',
-      '/etc/machine-id': '/var/lib/dbus/machine-id',
-      '/etc/mtab': '/proc/mounts',
+      '/etc/localtime': {'/var/lib/timezone/localtime'},
+      '/etc/machine-id': {'/var/lib/dbus/machine-id'},
+      '/etc/mtab': {'/proc/mounts'},
 
       # The kip board has a broken/dangling symlink.  Allow it until we can
       # rewrite the code.  Or kip goes EOL.
-      '/lib/firmware/elan_i2c.bin': '/opt/google/touch/firmware/*',
+      '/lib/firmware/elan_i2c.bin': {'/opt/google/touch/firmware/*'},
 
       # Some boards don't set this up properly.  It's not a big deal.
-      '/usr/libexec/editor': '/usr/bin/*',
+      '/usr/libexec/editor': {'/usr/bin/*'},
 
       # These are hacks to make dev images and `dev_install` work.  Normally
       # /usr/local isn't mounted or populated, so it's not too big a deal to
       # let these things always point there.
-      '/etc/env.d/*': '/usr/local/etc/env.d/*',
-      '/usr/bin/python*': '/usr/local/bin/python*',
-      '/usr/lib/portage': '/usr/local/lib/portage',
-      '/usr/lib/python-exec': '/usr/local/lib/python-exec',
-      '/usr/lib/debug': '/usr/local/usr/lib/debug',
+      '/etc/env.d/*': {'/usr/local/etc/env.d/*'},
+      '/usr/bin/python*': {
+          '/usr/local/usr/bin/python*',
+          '/usr/local/bin/python*',
+      },
+      '/usr/lib/portage': {
+          '/usr/local/usr/lib/portage',
+          '/usr/local/lib/portage',
+      },
+      '/usr/lib/python-exec': {
+          '/usr/local/usr/lib/python-exec',
+          '/usr/local/lib/python-exec',
+      },
+      '/usr/lib/debug': {'/usr/local/usr/lib/debug'},
       # Used by `file` and libmagic.so when the package is in /usr/local.
-      '/usr/share/misc/magic.mgc': '/usr/local/share/misc/magic.mgc',
-      '/usr/share/portage': '/usr/local/share/portage',
+      '/usr/share/misc/magic.mgc': {'/usr/local/share/misc/magic.mgc'},
+      '/usr/share/portage': {'/usr/local/share/portage'},
   }
 
   @classmethod
@@ -699,9 +708,9 @@ class SymlinkTest(image_test_lib.ImageTestCase):
       return True
 
     # Scan the allow list.
-    for allow_source, allow_target in cls._ACCEPTABLE_LINKS.items():
+    for allow_source, allow_targets in cls._ACCEPTABLE_LINKS.items():
       if (fnmatch.fnmatch(source, allow_source) and
-          fnmatch.fnmatch(target, allow_target)):
+          any(fnmatch.fnmatch(target, x) for x in allow_targets)):
         return True
 
     # Reject everything else.
