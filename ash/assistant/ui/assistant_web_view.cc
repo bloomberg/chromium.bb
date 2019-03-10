@@ -11,6 +11,7 @@
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/assistant/util/deep_link_util.h"
+#include "ash/public/cpp/app_list/app_list_features.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "services/content/public/cpp/navigable_contents_view.h"
@@ -27,6 +28,12 @@
 namespace ash {
 
 namespace {
+
+int GetMaxHeight() {
+  return app_list_features::IsEmbeddedAssistantUIEnabled()
+             ? kMaxHeightEmbeddedDip
+             : kMaxHeightDip;
+}
 
 // ContentsMaskPainter ---------------------------------------------------------
 
@@ -68,12 +75,12 @@ AssistantWebView::AssistantWebView(AssistantViewDelegate* delegate)
   InitLayout();
 
   delegate_->AddObserver(this);
+  delegate_->AddUiModelObserver(this);
 }
 
 AssistantWebView::~AssistantWebView() {
+  delegate_->RemoveUiModelObserver(this);
   delegate_->RemoveObserver(this);
-
-  RemoveContents();
 }
 
 const char* AssistantWebView::GetClassName() const {
@@ -85,11 +92,14 @@ gfx::Size AssistantWebView::CalculatePreferredSize() const {
 }
 
 int AssistantWebView::GetHeightForWidth(int width) const {
-  // |height| <= |kMaxHeightDip|.
+  if (app_list_features::IsEmbeddedAssistantUIEnabled())
+    return GetMaxHeight();
+
+  // |height| <= |GetMaxHeight()|.
   // |height| should not exceed the height of the usable work area.
   gfx::Rect usable_work_area = delegate_->GetUiModel()->usable_work_area();
 
-  return std::min(kMaxHeightDip, usable_work_area.height());
+  return std::min(GetMaxHeight(), usable_work_area.height());
 }
 
 void AssistantWebView::ChildPreferredSizeChanged(views::View* child) {
@@ -133,6 +143,8 @@ void AssistantWebView::InitLayout() {
   caption_bar_ = new CaptionBar();
   caption_bar_->set_delegate(this);
   caption_bar_->SetButtonVisible(AssistantButtonId::kMinimize, false);
+  if (app_list_features::IsEmbeddedAssistantUIEnabled())
+    caption_bar_->SetButtonVisible(AssistantButtonId::kClose, false);
   AddChildView(caption_bar_);
 
   // Contents mask.
@@ -177,7 +189,7 @@ void AssistantWebView::OnDeepLinkReceived(
 
   const gfx::Size preferred_size =
       gfx::Size(kPreferredWidthDip,
-                kMaxHeightDip - caption_bar_->GetPreferredSize().height());
+                GetMaxHeight() - caption_bar_->GetPreferredSize().height());
 
   auto contents_params = content::mojom::NavigableContentsParams::New();
   contents_params->enable_view_auto_resize = true;
@@ -244,6 +256,17 @@ void AssistantWebView::DidSuppressNavigation(const GURL& url,
 
   // Otherwise we'll allow our web contents to navigate freely.
   contents_->Navigate(url);
+}
+
+void AssistantWebView::OnUiVisibilityChanged(
+    AssistantVisibility new_visibility,
+    AssistantVisibility old_visibility,
+    base::Optional<AssistantEntryPoint> entry_point,
+    base::Optional<AssistantExitPoint> exit_point) {
+  // When the Assistant UI is closed we need to clear the |contents_| in order
+  // to free the memory.
+  if (new_visibility == AssistantVisibility::kClosed)
+    RemoveContents();
 }
 
 void AssistantWebView::RemoveContents() {

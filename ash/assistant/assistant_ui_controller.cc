@@ -141,17 +141,18 @@ void AssistantUiController::OnScreenContextRequestStateChanged(
   if (model_.ui_mode() == AssistantUiMode::kLauncherEmbeddedUi)
     return;
 
-  DCHECK(container_view_);
   // Once screen context request state has become idle, it is safe to activate
   // the Assistant widget without causing complications.
-  if (request_state == ScreenContextRequestState::kIdle)
+  if (container_view_ && request_state == ScreenContextRequestState::kIdle)
     container_view_->GetWidget()->Activate();
 }
 
 bool AssistantUiController::OnCaptionButtonPressed(AssistantButtonId id) {
   switch (id) {
     case AssistantButtonId::kBack:
-      UpdateUiMode(AssistantUiMode::kMainUi);
+      UpdateUiMode(app_list_features::IsEmbeddedAssistantUIEnabled()
+                       ? AssistantUiMode::kLauncherEmbeddedUi
+                       : AssistantUiMode::kMainUi);
       return true;
     case AssistantButtonId::kClose:
       CloseUi(AssistantExitPoint::kCloseButton);
@@ -238,10 +239,6 @@ void AssistantUiController::OnDeepLinkReceived(
   if (!assistant::util::IsWebDeepLinkType(type))
     return;
 
-  // TODO(wutao): Behavior is not defined.
-  if (app_list_features::IsEmbeddedAssistantUIEnabled())
-    return;
-
   ShowUi(AssistantEntryPoint::kDeepLink);
   UpdateUiMode(AssistantUiMode::kWebUi);
 }
@@ -254,11 +251,11 @@ void AssistantUiController::OnUrlOpened(const GURL& url, bool from_server) {
   // navigation was initiated by a server response. Otherwise the navigation
   // was user initiated so we only hide the UI to retain session state. That way
   // the user can choose to resume their session if they are so inclined.
-  // However, we close the UI if it is in the |kLauncherEmbeddedUi| mode, where
-  // we only maintain |kVisible| and |kClosed| two states.
+  // However, we close the UI if the feature |IsEmbeddedAssistantUIEnabled| is
+  // enabled, where we only maintain |kVisible| and |kClosed| two states.
   if (from_server)
     CloseUi(AssistantExitPoint::kNewBrowserTabFromServer);
-  else if (model_.ui_mode() == AssistantUiMode::kLauncherEmbeddedUi)
+  else if (app_list_features::IsEmbeddedAssistantUIEnabled())
     CloseUi(AssistantExitPoint::kNewBrowserTabFromUser);
   else
     HideUi(AssistantExitPoint::kNewBrowserTabFromUser);
@@ -407,9 +404,6 @@ void AssistantUiController::CloseUi(AssistantExitPoint exit_point) {
     container_view_->GetWidget()->CloseNow();
     DCHECK_EQ(nullptr, container_view_);
   }
-
-  // Reset to default state.
-  model_.SetUiMode(AssistantUiMode::kMainUi);
 }
 
 void AssistantUiController::ToggleUi(
@@ -440,10 +434,8 @@ void AssistantUiController::UpdateUiMode(
   if (ui_mode.has_value()) {
     AssistantUiMode mode = ui_mode.value();
     // TODO(wutao): Behavior is not defined.
-    if (model_.ui_mode() == AssistantUiMode::kLauncherEmbeddedUi) {
+    if (model_.ui_mode() == AssistantUiMode::kLauncherEmbeddedUi)
       DCHECK_NE(AssistantUiMode::kMiniUi, mode);
-      DCHECK_NE(AssistantUiMode::kWebUi, mode);
-    }
     model_.SetUiMode(mode);
     return;
   }

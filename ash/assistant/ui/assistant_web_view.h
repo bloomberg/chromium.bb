@@ -9,6 +9,7 @@
 #include <memory>
 #include <string>
 
+#include "ash/assistant/model/assistant_ui_model_observer.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/assistant/ui/caption_bar.h"
 #include "base/component_export.h"
@@ -33,7 +34,8 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantWebView
       public aura::WindowObserver,
       public AssistantViewDelegateObserver,
       public CaptionBarDelegate,
-      public content::NavigableContentsObserver {
+      public content::NavigableContentsObserver,
+      public AssistantUiModelObserver {
  public:
   explicit AssistantWebView(AssistantViewDelegate* delegate);
   ~AssistantWebView() override;
@@ -67,6 +69,13 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantWebView
   void DidSuppressNavigation(const GURL& url,
                              WindowOpenDisposition disposition,
                              bool from_user_gesture) override;
+
+  // AssistantUiModelObserver:
+  void OnUiVisibilityChanged(
+      AssistantVisibility new_visibility,
+      AssistantVisibility old_visibility,
+      base::Optional<AssistantEntryPoint> entry_point,
+      base::Optional<AssistantExitPoint> exit_point) override;
 
  private:
   void InitLayout();
