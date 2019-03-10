@@ -20,17 +20,6 @@ bool IsFinishingSession(AssistantVisibility new_visibility) {
   return new_visibility == AssistantVisibility::kClosed;
 }
 
-bool IsEmbeddedUiEntryPoint(AssistantEntryPoint entry_point) {
-  return entry_point == AssistantEntryPoint::kDeepLink ||
-         entry_point == AssistantEntryPoint::kHotkey ||
-         entry_point == AssistantEntryPoint::kHotword ||
-         entry_point == AssistantEntryPoint::kLauncherSearchBox ||
-         entry_point == AssistantEntryPoint::kLauncherSearchBoxMic ||
-         entry_point == AssistantEntryPoint::kLauncherSearchResult ||
-         entry_point == AssistantEntryPoint::kLongPressLauncher ||
-         entry_point == AssistantEntryPoint::kUnspecified;
-}
-
 bool IsVoiceEntryPoint(AssistantEntryPoint entry_point, bool prefer_voice) {
   switch (entry_point) {
     case AssistantEntryPoint::kHotword:

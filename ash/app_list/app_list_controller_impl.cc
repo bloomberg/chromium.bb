@@ -696,9 +696,6 @@ void AppListControllerImpl::OnUiVisibilityChanged(
   // TODO(wutao): Handle tablet mode.
   switch (new_visibility) {
     case AssistantVisibility::kVisible:
-      if (!assistant::util::IsEmbeddedUiEntryPoint(entry_point.value()))
-        break;
-
       if (IsTabletMode()) {
         MinimizeAllWindows();
       } else if (!IsVisible()) {
