@@ -76,8 +76,7 @@ class UpdateScreenUnitTest : public testing::Test {
     mock_network_portal_detector_ = new MockNetworkPortalDetector();
     network_portal_detector::SetNetworkPortalDetector(
         mock_network_portal_detector_);
-    mock_error_screen_.reset(
-        new MockErrorScreen(&mock_base_screen_delegate_, &mock_error_view_));
+    mock_error_screen_.reset(new MockErrorScreen(&mock_error_view_));
 
     // Ensure proper behavior of UpdateScreen's supporting objects.
     EXPECT_CALL(*mock_network_portal_detector_, IsEnabled())

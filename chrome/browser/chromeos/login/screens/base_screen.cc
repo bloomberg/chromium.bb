@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
 
 #include "base/logging.h"
-#include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
 #include "chrome/browser/chromeos/login/screens/model_view_channel.h"
 
 namespace chromeos {
@@ -66,9 +65,7 @@ const BaseScreen::ContextEditor& BaseScreen::ContextEditor::SetString16List(
   return *this;
 }
 
-BaseScreen::BaseScreen(BaseScreenDelegate* base_screen_delegate,
-                       OobeScreen screen_id)
-    : base_screen_delegate_(base_screen_delegate), screen_id_(screen_id) {}
+BaseScreen::BaseScreen(OobeScreen screen_id) : screen_id_(screen_id) {}
 
 BaseScreen::~BaseScreen() {}
 

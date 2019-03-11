@@ -7,10 +7,9 @@
 namespace chromeos {
 
 MockEnableDebuggingScreen::MockEnableDebuggingScreen(
-    BaseScreenDelegate* base_screen_delegate,
     EnableDebuggingScreenView* view,
     const base::RepeatingClosure& exit_callback)
-    : EnableDebuggingScreen(base_screen_delegate, view, exit_callback) {}
+    : EnableDebuggingScreen(view, exit_callback) {}
 
 MockEnableDebuggingScreen::~MockEnableDebuggingScreen() {}
 

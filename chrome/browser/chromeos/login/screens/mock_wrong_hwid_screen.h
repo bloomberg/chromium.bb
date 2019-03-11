@@ -11,12 +11,9 @@
 
 namespace chromeos {
 
-class BaseScreenDelegate;
-
 class MockWrongHWIDScreen : public WrongHWIDScreen {
  public:
-  MockWrongHWIDScreen(BaseScreenDelegate* base_screen_delegate,
-                      WrongHWIDScreenView* view,
+  MockWrongHWIDScreen(WrongHWIDScreenView* view,
                       const base::RepeatingClosure& exit_callback);
   ~MockWrongHWIDScreen() override;
 

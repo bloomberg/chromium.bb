@@ -47,8 +47,8 @@ AutoEnrollmentCheckScreen::AutoEnrollmentCheckScreen(
     BaseScreenDelegate* base_screen_delegate,
     AutoEnrollmentCheckScreenView* view,
     const base::RepeatingClosure& exit_callback)
-    : BaseScreen(base_screen_delegate,
-                 OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK),
+    : BaseScreen(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK),
+      base_screen_delegate_(base_screen_delegate),
       view_(view),
       exit_callback_(exit_callback),
       auto_enrollment_controller_(nullptr),
@@ -152,7 +152,7 @@ void AutoEnrollmentCheckScreen::UpdateState() {
     UpdateAutoEnrollmentState(new_auto_enrollment_state);
 
   // Update the connecting indicator.
-  ErrorScreen* error_screen = get_base_screen_delegate()->GetErrorScreen();
+  ErrorScreen* error_screen = base_screen_delegate_->GetErrorScreen();
   error_screen->ShowConnectingIndicator(new_auto_enrollment_state ==
                                         policy::AUTO_ENROLLMENT_STATE_PENDING);
 
@@ -184,7 +184,7 @@ bool AutoEnrollmentCheckScreen::UpdateCaptivePortalStatus(
     case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL:
       ShowErrorScreen(NetworkError::ERROR_STATE_PORTAL);
       if (captive_portal_status_ != new_captive_portal_status)
-        get_base_screen_delegate()->GetErrorScreen()->FixCaptivePortal();
+        base_screen_delegate_->GetErrorScreen()->FixCaptivePortal();
       return true;
     case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PROXY_AUTH_REQUIRED:
       ShowErrorScreen(NetworkError::ERROR_STATE_PROXY);
@@ -229,7 +229,7 @@ void AutoEnrollmentCheckScreen::ShowErrorScreen(
     NetworkError::ErrorState error_state) {
   const NetworkState* network =
       NetworkHandler::Get()->network_state_handler()->DefaultNetwork();
-  ErrorScreen* error_screen = get_base_screen_delegate()->GetErrorScreen();
+  ErrorScreen* error_screen = base_screen_delegate_->GetErrorScreen();
   error_screen->SetUIState(NetworkError::UI_STATE_AUTO_ENROLLMENT_ERROR);
   error_screen->AllowGuestSignin(
       auto_enrollment_controller_->GetFRERequirement() !=
@@ -239,7 +239,7 @@ void AutoEnrollmentCheckScreen::ShowErrorScreen(
   connect_request_subscription_ = error_screen->RegisterConnectRequestCallback(
       base::Bind(&AutoEnrollmentCheckScreen::OnConnectRequested,
                  base::Unretained(this)));
-  get_base_screen_delegate()->ShowErrorScreen();
+  base_screen_delegate_->ShowErrorScreen();
   histogram_helper_->OnErrorShow(error_state);
 }
 

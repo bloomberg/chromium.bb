@@ -83,9 +83,8 @@ constexpr const char ErrorScreen::kUserActionRebootButtonClicked[] = "reboot";
 constexpr const char ErrorScreen::kUserActionShowCaptivePortalClicked[] =
     "show-captive-portal";
 
-ErrorScreen::ErrorScreen(BaseScreenDelegate* base_screen_delegate,
-                         NetworkErrorView* view)
-    : BaseScreen(base_screen_delegate, OobeScreen::SCREEN_ERROR_MESSAGE),
+ErrorScreen::ErrorScreen(NetworkErrorView* view)
+    : BaseScreen(OobeScreen::SCREEN_ERROR_MESSAGE),
       view_(view),
       weak_factory_(this) {
   network_state_informer_ = new NetworkStateInformer();

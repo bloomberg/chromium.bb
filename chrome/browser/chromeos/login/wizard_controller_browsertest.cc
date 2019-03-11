@@ -514,7 +514,7 @@ class WizardControllerSupervisionTransitionOobeTest
     ExpectBindUnbind(mock_supervision_transition_screen_view_.get());
     mock_supervision_transition_screen_ = MockScreenExpectLifecycle(
         std::make_unique<MockSupervisionTransitionScreen>(
-            wizard_controller, mock_supervision_transition_screen_view_.get(),
+            mock_supervision_transition_screen_view_.get(),
             base::BindRepeating(
                 &WizardController::OnSupervisionTransitionScreenExit,
                 base::Unretained(wizard_controller))));
@@ -583,7 +583,7 @@ class WizardControllerFlowTest : public WizardControllerTest {
     // Set up the mocks for all screens.
     mock_welcome_screen_ =
         MockScreenExpectLifecycle(std::make_unique<MockWelcomeScreen>(
-            wizard_controller, wizard_controller, GetOobeUI()->GetWelcomeView(),
+            wizard_controller, GetOobeUI()->GetWelcomeView(),
             base::BindRepeating(&WizardController::OnWelcomeScreenExit,
                                 base::Unretained(wizard_controller))));
 
@@ -591,7 +591,7 @@ class WizardControllerFlowTest : public WizardControllerTest {
         std::make_unique<MockDemoPreferencesScreenView>();
     mock_demo_preferences_screen_ =
         MockScreenExpectLifecycle(std::make_unique<MockDemoPreferencesScreen>(
-            wizard_controller, mock_demo_preferences_screen_view_.get(),
+            mock_demo_preferences_screen_view_.get(),
             base::BindRepeating(&WizardController::OnDemoPreferencesScreenExit,
                                 base::Unretained(wizard_controller))));
 
@@ -599,7 +599,7 @@ class WizardControllerFlowTest : public WizardControllerTest {
         std::make_unique<MockArcTermsOfServiceScreenView>();
     mock_arc_terms_of_service_screen_ =
         MockScreenExpectLifecycle(std::make_unique<MockArcTermsOfServiceScreen>(
-            wizard_controller, mock_arc_terms_of_service_screen_view_.get(),
+            mock_arc_terms_of_service_screen_view_.get(),
             base::BindRepeating(
                 &WizardController::OnArcTermsOfServiceScreenExit,
                 base::Unretained(wizard_controller))));
@@ -607,13 +607,13 @@ class WizardControllerFlowTest : public WizardControllerTest {
     device_disabled_screen_view_ =
         std::make_unique<MockDeviceDisabledScreenView>();
     MockScreen(std::make_unique<DeviceDisabledScreen>(
-        wizard_controller, device_disabled_screen_view_.get()));
+        device_disabled_screen_view_.get()));
     EXPECT_CALL(*device_disabled_screen_view_, Show()).Times(0);
 
     mock_network_screen_view_ = std::make_unique<MockNetworkScreenView>();
     mock_network_screen_ =
         MockScreenExpectLifecycle(std::make_unique<MockNetworkScreen>(
-            wizard_controller, mock_network_screen_view_.get(),
+            mock_network_screen_view_.get(),
             base::BindRepeating(&WizardController::OnNetworkScreenExit,
                                 base::Unretained(wizard_controller))));
 
@@ -627,14 +627,14 @@ class WizardControllerFlowTest : public WizardControllerTest {
     mock_eula_view_ = std::make_unique<MockEulaView>();
     mock_eula_screen_ =
         MockScreenExpectLifecycle(std::make_unique<MockEulaScreen>(
-            wizard_controller, mock_eula_view_.get(),
+            mock_eula_view_.get(),
             base::BindRepeating(&WizardController::OnEulaScreenExit,
                                 base::Unretained(wizard_controller))));
 
     mock_enrollment_screen_view_ = std::make_unique<MockEnrollmentScreenView>();
     mock_enrollment_screen_ =
         MockScreenExpectLifecycle(std::make_unique<MockEnrollmentScreen>(
-            wizard_controller, mock_enrollment_screen_view_.get(),
+            mock_enrollment_screen_view_.get(),
             base::BindRepeating(&WizardController::OnEnrollmentScreenExit,
                                 base::Unretained(wizard_controller))));
 
@@ -652,7 +652,7 @@ class WizardControllerFlowTest : public WizardControllerTest {
     ExpectSetDelegate(mock_wrong_hwid_screen_view_.get());
     mock_wrong_hwid_screen_ =
         MockScreenExpectLifecycle(std::make_unique<MockWrongHWIDScreen>(
-            wizard_controller, mock_wrong_hwid_screen_view_.get(),
+            mock_wrong_hwid_screen_view_.get(),
             base::BindRepeating(&WizardController::OnWrongHWIDScreenExit,
                                 base::Unretained(wizard_controller))));
 
@@ -661,7 +661,7 @@ class WizardControllerFlowTest : public WizardControllerTest {
     ExpectSetDelegate(mock_enable_debugging_screen_view_.get());
     mock_enable_debugging_screen_ =
         MockScreenExpectLifecycle(std::make_unique<MockEnableDebuggingScreen>(
-            wizard_controller, mock_enable_debugging_screen_view_.get(),
+            mock_enable_debugging_screen_view_.get(),
             base::BindRepeating(&WizardController::OnEnableDebuggingScreenExit,
                                 base::Unretained(wizard_controller))));
 
@@ -669,7 +669,7 @@ class WizardControllerFlowTest : public WizardControllerTest {
     ExpectBind(mock_demo_setup_screen_view_.get());
     mock_demo_setup_screen_ =
         MockScreenExpectLifecycle(std::make_unique<MockDemoSetupScreen>(
-            wizard_controller, mock_demo_setup_screen_view_.get(),
+            mock_demo_setup_screen_view_.get(),
             base::BindRepeating(&WizardController::OnDemoSetupScreenExit,
                                 base::Unretained(wizard_controller))));
 
@@ -678,7 +678,7 @@ class WizardControllerFlowTest : public WizardControllerTest {
     ExpectBind(mock_demo_preferences_screen_view_.get());
     mock_demo_preferences_screen_ =
         MockScreenExpectLifecycle(std::make_unique<MockDemoPreferencesScreen>(
-            wizard_controller, mock_demo_preferences_screen_view_.get(),
+            mock_demo_preferences_screen_view_.get(),
             base::BindRepeating(&WizardController::OnDemoPreferencesScreenExit,
                                 base::Unretained(wizard_controller))));
 
@@ -686,7 +686,7 @@ class WizardControllerFlowTest : public WizardControllerTest {
         std::make_unique<MockArcTermsOfServiceScreenView>();
     mock_arc_terms_of_service_screen_ =
         MockScreenExpectLifecycle(std::make_unique<MockArcTermsOfServiceScreen>(
-            wizard_controller, mock_arc_terms_of_service_screen_view_.get(),
+            mock_arc_terms_of_service_screen_view_.get(),
             base::BindRepeating(
                 &WizardController::OnArcTermsOfServiceScreenExit,
                 base::Unretained(wizard_controller))));
@@ -2744,14 +2744,14 @@ class WizardControllerOobeResumeTest : public WizardControllerTest {
     ExpectBindUnbind(mock_welcome_view_.get());
     mock_welcome_screen_ =
         MockScreenExpectLifecycle(std::make_unique<MockWelcomeScreen>(
-            wizard_controller, wizard_controller, mock_welcome_view_.get(),
+            wizard_controller, mock_welcome_view_.get(),
             base::BindRepeating(&WizardController::OnWelcomeScreenExit,
                                 base::Unretained(wizard_controller))));
 
     mock_enrollment_screen_view_ = std::make_unique<MockEnrollmentScreenView>();
     mock_enrollment_screen_ =
         MockScreenExpectLifecycle(std::make_unique<MockEnrollmentScreen>(
-            wizard_controller, mock_enrollment_screen_view_.get(),
+            mock_enrollment_screen_view_.get(),
             base::BindRepeating(&WizardController::OnEnrollmentScreenExit,
                                 base::Unretained(wizard_controller))));
   }
@@ -2844,7 +2844,7 @@ class WizardControllerOobeConfigurationTest : public WizardControllerTest {
     mock_welcome_view_ = std::make_unique<MockWelcomeView>();
     mock_welcome_screen_ =
         MockScreenExpectLifecycle(std::make_unique<MockWelcomeScreen>(
-            wizard_controller, wizard_controller, mock_welcome_view_.get(),
+            wizard_controller, mock_welcome_view_.get(),
             base::BindRepeating(&WizardController::OnWelcomeScreenExit,
                                 base::Unretained(wizard_controller))));
   }

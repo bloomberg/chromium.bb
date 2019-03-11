@@ -40,8 +40,7 @@ class UserImageScreen : public BaseScreen,
  public:
   static UserImageScreen* Get(ScreenManager* manager);
 
-  UserImageScreen(BaseScreenDelegate* base_screen_delegate,
-                  UserImageView* view);
+  explicit UserImageScreen(UserImageView* view);
   ~UserImageScreen() override;
 
   // Called when the UI ready to be shown.

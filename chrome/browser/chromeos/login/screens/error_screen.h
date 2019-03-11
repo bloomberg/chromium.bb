@@ -21,7 +21,6 @@
 
 namespace chromeos {
 
-class BaseScreenDelegate;
 class CaptivePortalWindowProxy;
 class NetworkErrorView;
 
@@ -42,7 +41,7 @@ class ErrorScreen : public BaseScreen,
   static const char kUserActionRebootButtonClicked[];
   static const char kUserActionShowCaptivePortalClicked[];
 
-  ErrorScreen(BaseScreenDelegate* base_screen_delegate, NetworkErrorView* view);
+  explicit ErrorScreen(NetworkErrorView* view);
   ~ErrorScreen() override;
 
   CaptivePortalWindowProxy* captive_portal_window_proxy() {

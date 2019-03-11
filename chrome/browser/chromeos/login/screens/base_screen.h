@@ -10,7 +10,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
-#include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
 #include "components/login/base_screen_handler_utils.h"
 #include "components/login/screens/screen_context.h"
 
@@ -29,8 +28,7 @@ class ModelViewChannel;
 // method called just once.
 class BaseScreen {
  public:
-  explicit BaseScreen(BaseScreenDelegate* base_screen_delegate,
-                      OobeScreen screen_id);
+  explicit BaseScreen(OobeScreen screen_id);
   virtual ~BaseScreen();
 
   // ---- Old implementation ----
@@ -127,10 +125,6 @@ class BaseScreen {
   // This is called when configuration is changed while screen is displayed.
   virtual void OnConfigurationChanged();
 
-  BaseScreenDelegate* get_base_screen_delegate() const {
-    return base_screen_delegate_;
-  }
-
   ::login::ScreenContext context_;
 
  private:
@@ -152,8 +146,6 @@ class BaseScreen {
   base::Value* configuration_ = nullptr;
 
   ModelViewChannel* channel_ = nullptr;
-
-  BaseScreenDelegate* base_screen_delegate_ = nullptr;
 
   const OobeScreen screen_id_;
 

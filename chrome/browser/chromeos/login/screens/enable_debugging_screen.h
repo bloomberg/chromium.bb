@@ -19,8 +19,7 @@ namespace chromeos {
 class EnableDebuggingScreen : public BaseScreen,
                               public EnableDebuggingScreenView::Delegate {
  public:
-  EnableDebuggingScreen(BaseScreenDelegate* delegate,
-                        EnableDebuggingScreenView* view,
+  EnableDebuggingScreen(EnableDebuggingScreenView* view,
                         const base::RepeatingClosure& exit_callback);
   ~EnableDebuggingScreen() override;
 

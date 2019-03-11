@@ -18,7 +18,6 @@
 #include "chrome/browser/chromeos/customization/customization_document.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
 #include "chrome/browser/chromeos/login/screen_manager.h"
-#include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
 #include "chrome/browser/chromeos/login/screens/welcome_view.h"
 #include "chrome/browser/chromeos/login/ui/input_events_blocker.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -53,11 +52,10 @@ WelcomeScreen* WelcomeScreen::Get(ScreenManager* manager) {
       manager->GetScreen(OobeScreen::SCREEN_OOBE_WELCOME));
 }
 
-WelcomeScreen::WelcomeScreen(BaseScreenDelegate* base_screen_delegate,
-                             Delegate* delegate,
+WelcomeScreen::WelcomeScreen(Delegate* delegate,
                              WelcomeView* view,
                              const base::RepeatingClosure& exit_callback)
-    : BaseScreen(base_screen_delegate, OobeScreen::SCREEN_OOBE_WELCOME),
+    : BaseScreen(OobeScreen::SCREEN_OOBE_WELCOME),
       view_(view),
       delegate_(delegate),
       exit_callback_(exit_callback),

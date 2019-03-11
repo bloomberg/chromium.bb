@@ -6,7 +6,6 @@
 
 #include "chrome/browser/chromeos/assistant/assistant_util.h"
 #include "chrome/browser/chromeos/login/screens/assistant_optin_flow_screen_view.h"
-#include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chromeos/assistant/buildflags.h"
@@ -20,10 +19,9 @@ constexpr const char kFlowFinished[] = "flow-finished";
 }  // namespace
 
 AssistantOptInFlowScreen::AssistantOptInFlowScreen(
-    BaseScreenDelegate* base_screen_delegate,
     AssistantOptInFlowScreenView* view,
     const base::RepeatingClosure& exit_callback)
-    : BaseScreen(base_screen_delegate, OobeScreen::SCREEN_ASSISTANT_OPTIN_FLOW),
+    : BaseScreen(OobeScreen::SCREEN_ASSISTANT_OPTIN_FLOW),
       view_(view),
       exit_callback_(exit_callback) {
   DCHECK(view_);

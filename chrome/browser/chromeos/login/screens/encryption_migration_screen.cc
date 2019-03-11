@@ -7,16 +7,13 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 
 namespace chromeos {
 
 EncryptionMigrationScreen::EncryptionMigrationScreen(
-    BaseScreenDelegate* base_screen_delegate,
     EncryptionMigrationScreenView* view)
-    : BaseScreen(base_screen_delegate, OobeScreen::SCREEN_ENCRYPTION_MIGRATION),
-      view_(view) {
+    : BaseScreen(OobeScreen::SCREEN_ENCRYPTION_MIGRATION), view_(view) {
   DCHECK(view_);
   if (view_)
     view_->SetDelegate(this);

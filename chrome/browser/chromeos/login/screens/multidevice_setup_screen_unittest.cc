@@ -8,7 +8,6 @@
 
 #include "base/bind_helpers.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "chrome/browser/chromeos/login/screens/mock_base_screen_delegate.h"
 #include "chrome/browser/chromeos/login/screens/multidevice_setup_screen_view.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -37,8 +36,7 @@ class MultiDeviceSetupScreenTest : public testing::Test {
   // testing::Test:
   void SetUp() override {
     multi_device_setup_screen_ = std::make_unique<MultiDeviceSetupScreen>(
-        &mock_base_screen_delegate_, &fake_multi_device_setup_screen_view_,
-        base::DoNothing());
+        &fake_multi_device_setup_screen_view_, base::DoNothing());
   }
 
   void TearDown() override {}
@@ -75,7 +73,6 @@ class MultiDeviceSetupScreenTest : public testing::Test {
   base::HistogramTester histogram_tester_;
 
   // Accessory objects needed by MultiDeviceSetupScreen
-  MockBaseScreenDelegate mock_base_screen_delegate_;
   FakeMultiDeviceSetupScreenView fake_multi_device_setup_screen_view_;
 
   DISALLOW_COPY_AND_ASSIGN(MultiDeviceSetupScreenTest);

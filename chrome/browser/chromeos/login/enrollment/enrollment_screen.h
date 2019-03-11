@@ -30,7 +30,6 @@ class ElapsedTimer;
 
 namespace chromeos {
 
-class BaseScreenDelegate;
 class ScreenManager;
 
 namespace test {
@@ -48,8 +47,7 @@ class EnrollmentScreen
   enum class Result { COMPLETED, BACK };
 
   using ScreenExitCallback = base::RepeatingCallback<void(Result result)>;
-  EnrollmentScreen(BaseScreenDelegate* base_screen_delegate,
-                   EnrollmentScreenView* view,
+  EnrollmentScreen(EnrollmentScreenView* view,
                    const ScreenExitCallback& exit_callback);
   ~EnrollmentScreen() override;
 

@@ -14,8 +14,7 @@ namespace chromeos {
 
 class MockNetworkScreen : public NetworkScreen {
  public:
-  MockNetworkScreen(BaseScreenDelegate* base_screen_delegate,
-                    NetworkScreenView* view,
+  MockNetworkScreen(NetworkScreenView* view,
                     const ScreenExitCallback& exit_callback);
   ~MockNetworkScreen() override;
 

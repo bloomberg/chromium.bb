@@ -16,10 +16,9 @@
 namespace chromeos {
 
 MarketingOptInScreen::MarketingOptInScreen(
-    BaseScreenDelegate* base_screen_delegate,
     MarketingOptInScreenView* view,
     const base::RepeatingClosure& exit_callback)
-    : BaseScreen(base_screen_delegate, OobeScreen::SCREEN_MARKETING_OPT_IN),
+    : BaseScreen(OobeScreen::SCREEN_MARKETING_OPT_IN),
       view_(view),
       exit_callback_(exit_callback) {
   DCHECK(view_);

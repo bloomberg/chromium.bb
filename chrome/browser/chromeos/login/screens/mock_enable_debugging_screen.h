@@ -14,8 +14,7 @@ namespace chromeos {
 
 class MockEnableDebuggingScreen : public EnableDebuggingScreen {
  public:
-  MockEnableDebuggingScreen(BaseScreenDelegate* base_screen_delegate,
-                            EnableDebuggingScreenView* view,
+  MockEnableDebuggingScreen(EnableDebuggingScreenView* view,
                             const base::RepeatingClosure& exit_callback);
   ~MockEnableDebuggingScreen() override;
 

@@ -16,7 +16,6 @@
 #include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/login/mock_network_state_helper.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
-#include "chrome/browser/chromeos/login/screens/mock_base_screen_delegate.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -65,12 +64,10 @@ class NetworkScreenTest : public InProcessBrowserTest {
   void SetUpOnMainThread() override {
     InProcessBrowserTest::SetUpOnMainThread();
     ShowLoginWizard(OobeScreen::SCREEN_OOBE_NETWORK);
-    mock_base_screen_delegate_ = std::make_unique<MockBaseScreenDelegate>();
     network_screen_ = NetworkScreen::Get(
         WizardController::default_controller()->screen_manager());
     ASSERT_EQ(WizardController::default_controller()->current_screen(),
               network_screen_);
-    network_screen_->base_screen_delegate_ = mock_base_screen_delegate_.get();
     network_screen_->set_exit_callback_for_testing(base::BindRepeating(
         &NetworkScreenTest::HandleScreenExit, base::Unretained(this)));
     ASSERT_TRUE(network_screen_->view_ != nullptr);
@@ -112,7 +109,6 @@ class NetworkScreenTest : public InProcessBrowserTest {
     last_screen_result_ = result;
   }
 
-  std::unique_ptr<MockBaseScreenDelegate> mock_base_screen_delegate_;
   login::MockNetworkStateHelper* mock_network_state_helper_;
   NetworkScreen* network_screen_;
   base::Optional<NetworkScreen::Result> last_screen_result_;

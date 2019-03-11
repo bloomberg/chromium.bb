@@ -73,8 +73,8 @@ class UpdateScreenTest : public InProcessBrowserTest {
   void SetUpOnMainThread() override {
     mock_base_screen_delegate_.reset(new MockBaseScreenDelegate());
     mock_network_error_view_.reset(new MockNetworkErrorView());
-    mock_error_screen_.reset(new MockErrorScreen(
-        mock_base_screen_delegate_.get(), mock_network_error_view_.get()));
+    mock_error_screen_.reset(
+        new MockErrorScreen(mock_network_error_view_.get()));
     EXPECT_CALL(*mock_base_screen_delegate_, ShowCurrentScreen())
         .Times(AnyNumber());
     EXPECT_CALL(*mock_base_screen_delegate_, GetErrorScreen())
@@ -89,7 +89,8 @@ class UpdateScreenTest : public InProcessBrowserTest {
     ASSERT_TRUE(update_screen_ != nullptr);
     ASSERT_EQ(WizardController::default_controller()->current_screen(),
               update_screen_);
-    update_screen_->base_screen_delegate_ = mock_base_screen_delegate_.get();
+    update_screen_->set_base_screen_delegate_for_testing(
+        mock_base_screen_delegate_.get());
     update_screen_->set_exit_callback_for_testing(base::BindRepeating(
         &UpdateScreenTest::HandleScreenExit, base::Unretained(this)));
   }

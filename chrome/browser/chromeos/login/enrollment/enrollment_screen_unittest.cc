@@ -14,7 +14,6 @@
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_helper.h"
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_helper_mock.h"
 #include "chrome/browser/chromeos/login/enrollment/mock_enrollment_screen.h"
-#include "chrome/browser/chromeos/login/screens/mock_base_screen_delegate.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/enrollment_config.h"
 #include "chrome/browser/chromeos/policy/enrollment_status_chromeos.h"
@@ -37,7 +36,7 @@ class EnrollmentScreenUnitTest : public testing::Test {
   // Creates the EnrollmentScreen and sets required parameters.
   virtual void SetUpEnrollmentScreen() {
     enrollment_screen_ = std::make_unique<EnrollmentScreen>(
-        &mock_delegate_, &mock_view_,
+        &mock_view_,
         base::BindRepeating(&EnrollmentScreenUnitTest::HandleScreenExit,
                             base::Unretained(this)));
 
@@ -49,7 +48,6 @@ class EnrollmentScreenUnitTest : public testing::Test {
     runner_.task_runner()->FastForwardBy(time);
   }
 
-  MockBaseScreenDelegate* GetBaseScreenDelegate() { return &mock_delegate_; }
   MockEnrollmentScreenView* GetMockScreenView() { return &mock_view_; }
 
   // testing::Test:
@@ -84,7 +82,6 @@ class EnrollmentScreenUnitTest : public testing::Test {
   ScopedStubInstallAttributes test_install_attributes_;
 
   // Objects required by the EnrollmentScreen that can be re-used.
-  MockBaseScreenDelegate mock_delegate_;
   MockEnrollmentScreenView mock_view_;
 
   DISALLOW_COPY_AND_ASSIGN(EnrollmentScreenUnitTest);

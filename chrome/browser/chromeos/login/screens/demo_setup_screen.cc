@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/login/screens/demo_setup_screen.h"
 
 #include "base/bind.h"
-#include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
 #include "chrome/browser/chromeos/login/screens/demo_setup_screen_view.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -21,10 +20,9 @@ constexpr char kUserActionPowerwash[] = "powerwash";
 
 namespace chromeos {
 
-DemoSetupScreen::DemoSetupScreen(BaseScreenDelegate* base_screen_delegate,
-                                 DemoSetupScreenView* view,
+DemoSetupScreen::DemoSetupScreen(DemoSetupScreenView* view,
                                  const ScreenExitCallback& exit_callback)
-    : BaseScreen(base_screen_delegate, OobeScreen::SCREEN_OOBE_DEMO_SETUP),
+    : BaseScreen(OobeScreen::SCREEN_OOBE_DEMO_SETUP),
       view_(view),
       exit_callback_(exit_callback),
       weak_ptr_factory_(this) {

@@ -17,7 +17,6 @@
 
 namespace chromeos {
 
-class BaseScreenDelegate;
 class EulaView;
 
 // Representation independent class that controls OOBE screen showing EULA
@@ -34,9 +33,7 @@ class EulaScreen : public BaseScreen, public TpmPasswordFetcherDelegate {
   };
 
   using ScreenExitCallback = base::RepeatingCallback<void(Result result)>;
-  EulaScreen(BaseScreenDelegate* base_screen_delegate,
-             EulaView* view,
-             const ScreenExitCallback& exit_callback);
+  EulaScreen(EulaView* view, const ScreenExitCallback& exit_callback);
   ~EulaScreen() override;
 
   // Returns URL of the OEM EULA page that should be displayed using current
