@@ -90,11 +90,11 @@ class CONTENT_EXPORT BrowsingInstance final
   void RenderProcessHostDestroyed(RenderProcessHost* host) final;
 
   // Get the browser context to which this BrowsingInstance belongs.
-  BrowserContext* browser_context() const { return browser_context_; }
+  BrowserContext* GetBrowserContext() const;
 
-  //  Get the IsolationContext associated with this BrowsingInstance.  This can
-  //  be used to track this BrowsingInstance in other areas of the code, along
-  //  with any other state needed to make isolation decisions.
+  // Get the IsolationContext associated with this BrowsingInstance.  This can
+  // be used to track this BrowsingInstance in other areas of the code, along
+  // with any other state needed to make isolation decisions.
   const IsolationContext& isolation_context() { return isolation_context_; }
 
   // Returns whether this BrowsingInstance has registered a SiteInstance for
@@ -168,12 +168,11 @@ class CONTENT_EXPORT BrowsingInstance final
   // The next available browser-global BrowsingInstance ID.
   static int next_browsing_instance_id_;
 
-  // Common browser context to which all SiteInstances in this BrowsingInstance
-  // must belong.
-  BrowserContext* const browser_context_;
-
   // The IsolationContext associated with this BrowsingInstance.  This will not
   // change after the BrowsingInstance is constructed.
+  //
+  // This holds a common BrowserContext to which all SiteInstances in this
+  // BrowsingInstance must belong.
   const IsolationContext isolation_context_;
 
   // Map of site to SiteInstance, to ensure we only have one SiteInstance per

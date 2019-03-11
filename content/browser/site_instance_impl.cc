@@ -147,8 +147,7 @@ bool SiteInstanceImpl::HasProcess() {
 
   // If we would use process-per-site for this site, also check if there is an
   // existing process that we would use if GetProcess() were called.
-  BrowserContext* browser_context =
-      browsing_instance_->browser_context();
+  BrowserContext* browser_context = browsing_instance_->GetBrowserContext();
   if (has_site_ &&
       RenderProcessHost::ShouldUseProcessPerSite(browser_context, site_) &&
       RenderProcessHostImpl::GetSoleProcessHostForSite(
@@ -169,7 +168,7 @@ RenderProcessHost* SiteInstanceImpl::GetProcess() {
 
   // Create a new process if ours went away or was reused.
   if (!process_) {
-    BrowserContext* browser_context = browsing_instance_->browser_context();
+    BrowserContext* browser_context = browsing_instance_->GetBrowserContext();
 
     // Check if the ProcessReusePolicy should be updated.
     bool should_use_process_per_site =
@@ -230,7 +229,7 @@ void SiteInstanceImpl::SetSite(const GURL& url) {
   // Remember that this SiteInstance has been used to load a URL, even if the
   // URL is invalid.
   has_site_ = true;
-  BrowserContext* browser_context = browsing_instance_->browser_context();
+  BrowserContext* browser_context = browsing_instance_->GetBrowserContext();
   original_url_ = url;
   browsing_instance_->GetSiteAndLockForURL(
       url, /* allow_default_instance */ false, &site_, &lock_url_);
@@ -323,7 +322,7 @@ bool SiteInstanceImpl::HasWrongProcessForURL(const GURL& url) {
   browsing_instance_->GetSiteAndLockForURL(
       url, /* allow_default_instance */ true, &site_url, &origin_lock);
   return !RenderProcessHostImpl::IsSuitableHost(
-      GetProcess(), browsing_instance_->browser_context(),
+      GetProcess(), browsing_instance_->GetBrowserContext(),
       GetIsolationContext(), site_url, origin_lock);
 }
 
@@ -363,7 +362,7 @@ void SiteInstanceImpl::RemoveObserver(Observer* observer) {
 }
 
 BrowserContext* SiteInstanceImpl::GetBrowserContext() const {
-  return browsing_instance_->browser_context();
+  return browsing_instance_->GetBrowserContext();
 }
 
 // static
@@ -388,8 +387,8 @@ bool SiteInstance::ShouldAssignSiteForURL(const GURL& url) {
 
 bool SiteInstanceImpl::IsSameSiteWithURL(const GURL& url) {
   return SiteInstanceImpl::IsSameWebSite(
-      browsing_instance_->browser_context(), GetIsolationContext(), site_, url,
-      true /* should_compare_effective_urls */);
+      browsing_instance_->GetBrowserContext(), GetIsolationContext(), site_,
+      url, true /* should_compare_effective_urls */);
 }
 
 // static
@@ -488,34 +487,22 @@ GURL SiteInstance::GetSiteForURL(BrowserContext* browser_context,
   // IsolationContext to be passed in, and this implementation should just
   // become SiteInstanceImpl::GetSiteForURL.
   return SiteInstanceImpl::GetSiteForURL(
-      BrowserOrResourceContext(browser_context),
       IsolationContext(browser_context), url,
       true /* should_use_effective_urls */);
 }
 
 // static
 GURL SiteInstanceImpl::DetermineProcessLockURL(
-    const BrowserOrResourceContext& context,
     const IsolationContext& isolation_context,
     const GURL& url) {
   // For the process lock URL, convert |url| to a site without resolving |url|
   // to an effective URL.
-  return SiteInstanceImpl::GetSiteForURL(context, isolation_context, url,
+  return SiteInstanceImpl::GetSiteForURL(isolation_context, url,
                                          false /* should_use_effective_urls */);
 }
 
 // static
-GURL SiteInstanceImpl::GetSiteForURL(BrowserContext* context,
-                                     const IsolationContext& isolation_context,
-                                     const GURL& url,
-                                     bool should_use_effective_urls) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return GetSiteForURL(BrowserOrResourceContext(context), isolation_context,
-                       url, should_use_effective_urls);
-}
-
-GURL SiteInstanceImpl::GetSiteForURL(const BrowserOrResourceContext& context,
-                                     const IsolationContext& isolation_context,
+GURL SiteInstanceImpl::GetSiteForURL(const IsolationContext& isolation_context,
                                      const GURL& real_url,
                                      bool should_use_effective_urls) {
   // TODO(fsamuel, creis): For some reason appID is not recognized as a host.
@@ -526,8 +513,10 @@ GURL SiteInstanceImpl::GetSiteForURL(const BrowserOrResourceContext& context,
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   GURL url = should_use_effective_urls
-                 ? SiteInstanceImpl::GetEffectiveURL(context.ToBrowserContext(),
-                                                     real_url)
+                 ? SiteInstanceImpl::GetEffectiveURL(
+                       isolation_context.browser_or_resource_context()
+                           .ToBrowserContext(),
+                       real_url)
                  : real_url;
   url::Origin origin = url::Origin::Create(url);
 
@@ -557,7 +546,7 @@ GURL SiteInstanceImpl::GetSiteForURL(const BrowserOrResourceContext& context,
     // a proper security principal.
     if (should_use_effective_urls && url != real_url) {
       std::string non_translated_site_url(
-          GetSiteForURL(context, isolation_context, real_url,
+          GetSiteForURL(isolation_context, real_url,
                         false /* should_use_effective_urls */)
               .spec());
       GURL::Replacements replacements;
@@ -653,9 +642,8 @@ bool SiteInstanceImpl::DoesSiteRequireDedicatedProcess(
     return true;
 
   // Always require a dedicated process for isolated origins.
-  GURL site_url =
-      SiteInstanceImpl::GetSiteForURL(browser_context, isolation_context, url,
-                                      true /* should_compare_effective_urls */);
+  GURL site_url = SiteInstanceImpl::GetSiteForURL(
+      isolation_context, url, true /* should_compare_effective_urls */);
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
   if (policy->IsIsolatedOrigin(isolation_context,
                                url::Origin::Create(site_url)))

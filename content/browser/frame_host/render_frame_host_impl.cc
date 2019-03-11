@@ -5878,7 +5878,6 @@ void RenderFrameHostImpl::SetLastCommittedSiteUrl(const GURL& url) {
   GURL site_url = url.is_empty()
                       ? GURL()
                       : SiteInstanceImpl::GetSiteForURL(
-                            GetSiteInstance()->GetBrowserContext(),
                             GetSiteInstance()->GetIsolationContext(), url);
 
   if (last_committed_site_url_ == site_url)

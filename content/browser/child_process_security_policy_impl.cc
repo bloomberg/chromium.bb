@@ -1312,7 +1312,7 @@ bool ChildProcessSecurityPolicyImpl::CanAccessDataForOrigin(int child_id,
       BrowsingInstanceId browsing_instance_id =
           security_state->lowest_browsing_instance_id();
       expected_process_lock = SiteInstanceImpl::DetermineProcessLockURL(
-          context, IsolationContext(browsing_instance_id, context), url);
+          IsolationContext(browsing_instance_id, context), url);
     }
   }
 
@@ -1354,12 +1354,8 @@ void ChildProcessSecurityPolicyImpl::LockToOrigin(
 #if DCHECK_IS_ON()
   // Sanity-check that the |gurl| argument can be used as a lock.
   RenderProcessHost* rph = RenderProcessHostImpl::FromID(child_id);
-  if (rph) {  // |rph| can be null in unittests.
-    DCHECK_EQ(
-        SiteInstanceImpl::DetermineProcessLockURL(
-            BrowserOrResourceContext(rph->GetBrowserContext()), context, gurl),
-        gurl);
-  }
+  if (rph)  // |rph| can be null in unittests.
+    DCHECK_EQ(SiteInstanceImpl::DetermineProcessLockURL(context, gurl), gurl);
 #endif
 
   base::AutoLock lock(lock_);
