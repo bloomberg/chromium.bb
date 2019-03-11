@@ -9,6 +9,7 @@
 #include "android_webview/browser/android_protocol_handler.h"
 #include "android_webview/browser/aw_contents_client_bridge.h"
 #include "android_webview/browser/aw_contents_io_thread_client.h"
+#include "android_webview/browser/aw_cookie_access_policy.h"
 #include "android_webview/browser/input_stream.h"
 #include "android_webview/browser/net/aw_web_resource_response.h"
 #include "android_webview/browser/net_helpers.h"
@@ -288,6 +289,11 @@ void InterceptedRequest::Restart() {
 
   request_.load_flags =
       UpdateLoadFlags(request_.load_flags, io_thread_client.get());
+  if (!AwCookieAccessPolicy::GetInstance()->ShouldAllowCookiesForRequest(
+          request_, process_id_)) {
+    request_.load_flags |= net::LOAD_DO_NOT_SAVE_COOKIES;
+    request_.load_flags |= net::LOAD_DO_NOT_SEND_COOKIES;
+  }
 
   if (ShouldNotInterceptRequest()) {
     // equivalent to no interception

@@ -13,6 +13,7 @@
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/websocket_handshake_request_info.h"
 #include "net/base/net_errors.h"
+#include "services/network/public/cpp/resource_request.h"
 
 using base::AutoLock;
 using content::BrowserThread;
@@ -45,6 +46,21 @@ bool AwCookieAccessPolicy::GetShouldAcceptCookies() {
 void AwCookieAccessPolicy::SetShouldAcceptCookies(bool allow) {
   AutoLock lock(lock_);
   accept_cookies_ = allow;
+}
+
+bool AwCookieAccessPolicy::ShouldAllowCookiesForRequest(
+    const network::ResourceRequest& request,
+    int process_id) {
+  // process_id == 0 means the render_frame_id is actually a valid
+  // frame_tree_node_id, otherwise use it as a valid render_frame_id.
+  int frame_tree_node_id = process_id
+                               ? content::RenderFrameHost::kNoFrameTreeNodeId
+                               : request.render_frame_id;
+  bool global = GetShouldAcceptCookies();
+  bool third_party = GetShouldAcceptThirdPartyCookies(
+      process_id, request.render_frame_id, frame_tree_node_id);
+  return AwStaticCookiePolicy(global, third_party)
+      .AllowGet(request.url, request.site_for_cookies);
 }
 
 bool AwCookieAccessPolicy::GetShouldAcceptThirdPartyCookies(
@@ -88,8 +104,8 @@ bool AwCookieAccessPolicy::GetShouldAcceptThirdPartyCookies(
 bool AwCookieAccessPolicy::OnCanGetCookies(const net::URLRequest& request,
                                            const net::CookieList& cookie_list) {
   bool global = GetShouldAcceptCookies();
-  bool thirdParty = GetShouldAcceptThirdPartyCookies(request);
-  return AwStaticCookiePolicy(global, thirdParty)
+  bool third_party = GetShouldAcceptThirdPartyCookies(request);
+  return AwStaticCookiePolicy(global, third_party)
       .AllowGet(request.url(), request.site_for_cookies());
 }
 
@@ -97,8 +113,8 @@ bool AwCookieAccessPolicy::OnCanSetCookie(const net::URLRequest& request,
                                           const net::CanonicalCookie& cookie,
                                           net::CookieOptions* options) {
   bool global = GetShouldAcceptCookies();
-  bool thirdParty = GetShouldAcceptThirdPartyCookies(request);
-  return AwStaticCookiePolicy(global, thirdParty)
+  bool third_party = GetShouldAcceptThirdPartyCookies(request);
+  return AwStaticCookiePolicy(global, third_party)
       .AllowSet(request.url(), request.site_for_cookies());
 }
 
@@ -109,10 +125,10 @@ bool AwCookieAccessPolicy::AllowGetCookie(const GURL& url,
                                           int render_process_id,
                                           int render_frame_id) {
   bool global = GetShouldAcceptCookies();
-  bool thirdParty = GetShouldAcceptThirdPartyCookies(
+  bool third_party = GetShouldAcceptThirdPartyCookies(
       render_process_id, render_frame_id,
       content::RenderFrameHost::kNoFrameTreeNodeId);
-  return AwStaticCookiePolicy(global, thirdParty).AllowGet(url, first_party);
+  return AwStaticCookiePolicy(global, third_party).AllowGet(url, first_party);
 }
 
 bool AwCookieAccessPolicy::AllowSetCookie(const GURL& url,
@@ -122,10 +138,10 @@ bool AwCookieAccessPolicy::AllowSetCookie(const GURL& url,
                                           int render_process_id,
                                           int render_frame_id) {
   bool global = GetShouldAcceptCookies();
-  bool thirdParty = GetShouldAcceptThirdPartyCookies(
+  bool third_party = GetShouldAcceptThirdPartyCookies(
       render_process_id, render_frame_id,
       content::RenderFrameHost::kNoFrameTreeNodeId);
-  return AwStaticCookiePolicy(global, thirdParty).AllowSet(url, first_party);
+  return AwStaticCookiePolicy(global, third_party).AllowSet(url, first_party);
 }
 
 AwStaticCookiePolicy::AwStaticCookiePolicy(bool accept_cookies,
