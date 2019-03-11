@@ -90,7 +90,6 @@ import org.chromium.content_public.common.Referrer;
 import org.chromium.content_public.common.ResourceRequestBody;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.WindowAndroid;
-import org.chromium.ui.mojom.WindowOpenDisposition;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -2243,55 +2242,6 @@ public class Tab
     public void requestFocus() {
         View view = getView();
         if (view != null) view.requestFocus();
-    }
-
-    @CalledByNative
-    protected void openNewTab(String url, String initiatorOrigin, String extraHeaders,
-            ResourceRequestBody postData, int disposition, boolean hasParent,
-            boolean isRendererInitiated) {
-        if (isClosing()) return;
-
-        boolean incognito = isIncognito();
-        @TabLaunchType
-        int tabLaunchType = TabLaunchType.FROM_LONGPRESS_FOREGROUND;
-        Tab parentTab = hasParent ? this : null;
-
-        switch (disposition) {
-            case WindowOpenDisposition.NEW_WINDOW: // fall through
-            case WindowOpenDisposition.NEW_FOREGROUND_TAB:
-                break;
-            case WindowOpenDisposition.NEW_POPUP: // fall through
-            case WindowOpenDisposition.NEW_BACKGROUND_TAB:
-                tabLaunchType = TabLaunchType.FROM_LONGPRESS_BACKGROUND;
-                break;
-            case WindowOpenDisposition.OFF_THE_RECORD:
-                assert incognito;
-                incognito = true;
-                break;
-            default:
-                assert false;
-        }
-
-        // If shouldIgnoreNewTab returns true, the intent is handled by another
-        // activity. As a result, don't launch a new tab to open the URL. If TabModelSelector
-        // is not accessible, then we can't open a new tab.
-        if (shouldIgnoreNewTab(url, incognito) || getTabModelSelector() == null) return;
-
-        LoadUrlParams loadUrlParams = new LoadUrlParams(url);
-        loadUrlParams.setInitiatorOrigin(initiatorOrigin);
-        loadUrlParams.setVerbatimHeaders(extraHeaders);
-        loadUrlParams.setPostData(postData);
-        loadUrlParams.setIsRendererInitiated(isRendererInitiated);
-        getTabModelSelector().openNewTab(
-                loadUrlParams, tabLaunchType, parentTab, incognito);
-    }
-
-    /**
-     * @return True if the Tab should block the creation of new tabs via {@link #openNewTab}.
-     */
-    private boolean shouldIgnoreNewTab(String url, boolean incognito) {
-        InterceptNavigationDelegateImpl delegate = getInterceptNavigationDelegate();
-        return delegate != null && delegate.shouldIgnoreNewTab(url, incognito);
     }
 
     /**

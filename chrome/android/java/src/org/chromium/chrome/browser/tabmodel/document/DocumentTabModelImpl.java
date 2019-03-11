@@ -22,6 +22,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelJniBridge;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.common.ResourceRequestBody;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -272,6 +273,11 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
             WebContents webContents, int parentTabId) {
         return false;
     }
+
+    @Override
+    public void openNewTab(Tab tab, String url, String initiatorOrigin, String extraHeaders,
+            ResourceRequestBody postData, int disposition, boolean hasParent,
+            boolean isRendererInitiated) {}
 
     @Override
     protected boolean isSessionRestoreInProgress() {

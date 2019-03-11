@@ -54,6 +54,8 @@ class TabModelJniBridge : public TabModel {
   void CreateTab(TabAndroid* parent,
                  content::WebContents* web_contents,
                  int parent_tab_id) override;
+  void HandlePopupNavigation(TabAndroid* parent,
+                             NavigateParams* params) override;
 
   content::WebContents* CreateNewTabForDevTools(const GURL& url) override;
 

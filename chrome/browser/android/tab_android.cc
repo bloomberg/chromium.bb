@@ -72,7 +72,6 @@
 #include "ui/android/view_android.h"
 #include "ui/android/window_android.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/base/window_open_disposition.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertUTF8ToJavaString;
@@ -213,45 +212,6 @@ void TabAndroid::SetWindowSessionID(SessionID window_id) {
   SessionTabHelper* session_tab_helper =
           SessionTabHelper::FromWebContents(web_contents());
   session_tab_helper->SetWindowID(session_window_id_);
-}
-
-void TabAndroid::HandlePopupNavigation(NavigateParams* params) {
-  DCHECK_EQ(params->source_contents, web_contents());
-  DCHECK(!params->contents_to_insert);
-  DCHECK(!params->switch_to_singleton_tab);
-
-  WindowOpenDisposition disposition = params->disposition;
-  const GURL& url = params->url;
-
-  bool supported = disposition == WindowOpenDisposition::NEW_POPUP ||
-                   disposition == WindowOpenDisposition::NEW_FOREGROUND_TAB ||
-                   disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB ||
-                   disposition == WindowOpenDisposition::NEW_WINDOW ||
-                   disposition == WindowOpenDisposition::OFF_THE_RECORD;
-  if (!supported) {
-    NOTIMPLEMENTED();
-    return;
-  }
-
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> jobj = weak_java_tab_.get(env);
-  ScopedJavaLocalRef<jstring> jurl(ConvertUTF8ToJavaString(env, url.spec()));
-  ScopedJavaLocalRef<jstring> jheaders(
-      ConvertUTF8ToJavaString(env, params->extra_headers));
-  ScopedJavaLocalRef<jstring> jinitiator_origin;
-  if (params->initiator_origin) {
-    jinitiator_origin =
-        ConvertUTF8ToJavaString(env, params->initiator_origin->Serialize());
-  }
-  ScopedJavaLocalRef<jobject> jpost_data;
-  if (params->uses_post && params->post_data) {
-    jpost_data =
-        content::ConvertResourceRequestBodyToJavaObject(env, params->post_data);
-  }
-  Java_Tab_openNewTab(env, jobj, jurl, jinitiator_origin, jheaders, jpost_data,
-                      static_cast<int>(disposition),
-                      params->created_with_opener,
-                      params->is_renderer_initiated);
 }
 
 bool TabAndroid::HasPrerenderedUrl(GURL gurl) {

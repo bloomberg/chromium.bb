@@ -10,10 +10,14 @@ import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.ntp.RecentlyClosedBridge;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
+import org.chromium.chrome.browser.tab.InterceptNavigationDelegateImpl;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager.TabCreator;
 import org.chromium.chrome.browser.util.MathUtils;
+import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.common.ResourceRequestBody;
+import org.chromium.ui.mojom.WindowOpenDisposition;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -737,6 +741,46 @@ public class TabModelImpl extends TabModelJniBridge {
             WebContents webContents, int parentId) {
         return getTabCreator(incognito).createTabWithWebContents(parent, webContents, parentId,
                 TabLaunchType.FROM_LONGPRESS_BACKGROUND);
+    }
+
+    @Override
+    public void openNewTab(Tab parent, String url, String initiatorOrigin, String extraHeaders,
+            ResourceRequestBody postData, int disposition, boolean persistParentage,
+            boolean isRendererInitiated) {
+        if (parent.isClosing()) return;
+
+        boolean incognito = parent.isIncognito();
+        @TabLaunchType
+        int tabLaunchType = TabLaunchType.FROM_LONGPRESS_FOREGROUND;
+
+        switch (disposition) {
+            case WindowOpenDisposition.NEW_WINDOW: // fall through
+            case WindowOpenDisposition.NEW_FOREGROUND_TAB:
+                break;
+            case WindowOpenDisposition.NEW_POPUP: // fall through
+            case WindowOpenDisposition.NEW_BACKGROUND_TAB:
+                tabLaunchType = TabLaunchType.FROM_LONGPRESS_BACKGROUND;
+                break;
+            case WindowOpenDisposition.OFF_THE_RECORD:
+                assert incognito;
+                incognito = true;
+                break;
+            default:
+                assert false;
+        }
+
+        // If shouldIgnoreNewTab returns true, the intent is handled by another
+        // activity. As a result, don't launch a new tab to open the URL.
+        InterceptNavigationDelegateImpl delegate = parent.getInterceptNavigationDelegate();
+        if (delegate != null && delegate.shouldIgnoreNewTab(url, incognito)) return;
+
+        LoadUrlParams loadUrlParams = new LoadUrlParams(url);
+        loadUrlParams.setInitiatorOrigin(initiatorOrigin);
+        loadUrlParams.setVerbatimHeaders(extraHeaders);
+        loadUrlParams.setPostData(postData);
+        loadUrlParams.setIsRendererInitiated(isRendererInitiated);
+        getTabCreator(incognito).createNewTab(
+                loadUrlParams, tabLaunchType, persistParentage ? parent : null);
     }
 
     @Override
