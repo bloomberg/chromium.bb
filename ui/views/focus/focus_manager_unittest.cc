@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/icu_test_util.h"
+#include "build/build_config.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/accelerators/test_accelerator_target.h"
 #include "ui/events/keycodes/keyboard_codes.h"

@@ -6,6 +6,7 @@
 
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/label_button.h"

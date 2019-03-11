@@ -7,6 +7,7 @@
 #include "base/macros.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "build/build_config.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/display/display.h"
