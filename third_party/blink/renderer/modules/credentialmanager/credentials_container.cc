@@ -198,19 +198,9 @@ bool CheckPublicKeySecurityRequirements(ScriptPromiseResolver* resolver,
   return true;
 }
 
-// Checks if the icon URL of |credential| is an a-priori authenticated URL.
+// Checks if the icon URL is an a-priori authenticated URL.
 // https://w3c.github.io/webappsec-credential-management/#dom-credentialuserdata-iconurl
-bool IsIconURLEmptyOrSecure(const Credential* credential) {
-  if (!credential->IsPasswordCredential() &&
-      !credential->IsFederatedCredential()) {
-    DCHECK(credential->IsPublicKeyCredential());
-    return true;
-  }
-
-  const KURL& url =
-      credential->IsFederatedCredential()
-          ? static_cast<const FederatedCredential*>(credential)->iconURL()
-          : static_cast<const PasswordCredential*>(credential)->iconURL();
+bool IsIconURLEmptyOrSecure(const KURL& url) {
   if (url.IsEmpty())
     return true;
 
@@ -551,9 +541,16 @@ ScriptPromise CredentialsContainer::store(ScriptState* script_state,
     resolver->Reject(DOMException::Create(
         DOMExceptionCode::kNotSupportedError,
         "Store operation not permitted for PublicKey credentials."));
+    return promise;
   }
 
-  if (!IsIconURLEmptyOrSecure(credential)) {
+  DCHECK(credential->IsFederatedCredential() ||
+         credential->IsPasswordCredential());
+  const KURL& url =
+      credential->IsFederatedCredential()
+          ? static_cast<const FederatedCredential*>(credential)->iconURL()
+          : static_cast<const PasswordCredential*>(credential)->iconURL();
+  if (!IsIconURLEmptyOrSecure(url)) {
     resolver->Reject(DOMException::Create(DOMExceptionCode::kSecurityError,
                                           "'iconURL' should be a secure URL"));
     return promise;
@@ -657,6 +654,26 @@ ScriptPromise CredentialsContainer::create(
                                               ->GetSecurityOrigin()
                                               ->Domain();
       }
+
+      if (mojo_options->relying_party->icon) {
+        if (!IsIconURLEmptyOrSecure(
+                mojo_options->relying_party->icon.value())) {
+          resolver->Reject(
+              DOMException::Create(DOMExceptionCode::kSecurityError,
+                                   "'rp.icon' should be a secure URL"));
+          return promise;
+        }
+      }
+
+      if (mojo_options->user->icon) {
+        if (!IsIconURLEmptyOrSecure(mojo_options->user->icon.value())) {
+          resolver->Reject(
+              DOMException::Create(DOMExceptionCode::kSecurityError,
+                                   "'user.icon' should be a secure URL"));
+          return promise;
+        }
+      }
+
       auto* authenticator =
           CredentialManagerProxy::From(script_state)->Authenticator();
       authenticator->MakeCredential(

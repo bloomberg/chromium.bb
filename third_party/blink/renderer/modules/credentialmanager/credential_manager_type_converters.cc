@@ -312,6 +312,9 @@ TypeConverter<PublicKeyCredentialRpEntityPtr,
   if (rp->hasId()) {
     entity->id = rp->id();
   }
+  if (!rp->name()) {
+    return nullptr;
+  }
   entity->name = rp->name();
   if (rp->hasIcon()) {
     entity->icon = blink::KURL(blink::KURL(), rp->icon());

@@ -65,6 +65,10 @@ using TestGetCallbackReceiver = ::device::test::StatusAndValueCallbackReceiver<
     AuthenticatorStatus,
     GetAssertionAuthenticatorResponsePtr>;
 
+constexpr char kPublicKeyErrorMessage[] =
+    "webauth: NotSupportedError: Required parameters missing in "
+    "`options.publicKey`.";
+
 constexpr char kTimeoutErrorMessage[] =
     "webauth: NotAllowedError: The operation either timed out or was not "
     "allowed. See: https://w3c.github.io/webauthn/#sec-assertion-privacy.";
@@ -77,6 +81,12 @@ constexpr char kRelyingPartySecurityErrorMessage[] =
     "webauth: SecurityError: The relying party ID 'localhost' is not a "
     "registrable domain suffix of, nor equal to 'https://www.acme.com";
 
+constexpr char kRelyingPartyUserIconUrlSecurityErrorMessage[] =
+    "webauth: SecurityError: 'user.icon' should be a secure URL";
+
+constexpr char kRelyingPartyRpIconUrlSecurityErrorMessage[] =
+    "webauth: SecurityError: 'rp.icon' should be a secure URL";
+
 // Templates to be used with base::ReplaceStringPlaceholders. Can be
 // modified to include up to 9 replacements. The default values for
 // any additional replacements added should also be added to the
@@ -84,12 +94,12 @@ constexpr char kRelyingPartySecurityErrorMessage[] =
 constexpr char kCreatePublicKeyTemplate[] =
     "navigator.credentials.create({ publicKey: {"
     "  challenge: new TextEncoder().encode('climb a mountain'),"
-    "  rp: { id: '$3', name: 'Acme' },"
+    "  rp: { id: '$3', name: 'Acme', icon: '$7'},"
     "  user: { "
     "    id: new TextEncoder().encode('1098237235409872'),"
     "    name: 'avery.a.jones@example.com',"
     "    displayName: 'Avery A. Jones', "
-    "    icon: 'https://pics.acme.com/00/p/aBjjjpqPb.png'},"
+    "    icon: '$8'},"
     "  pubKeyCredParams: [{ type: 'public-key', alg: '$4'}],"
     "  timeout: 1000,"
     "  excludeCredentials: [],"
@@ -116,18 +126,22 @@ struct CreateParameters {
   const char* authenticator_attachment = kCrossPlatform;
   const char* algorithm_identifier = "-7";
   const char* attestation = "none";
+  const char* rp_icon = "https://pics.acme.com/00/p/aBjjjpqPb.png";
+  const char* user_icon = "https://pics.acme.com/00/p/aBjjjpqPb.png";
 };
 
 std::string BuildCreateCallWithParameters(const CreateParameters& parameters) {
-  std::vector<std::string> substititions;
-  substititions.push_back(parameters.require_resident_key ? "true" : "false");
-  substititions.push_back(parameters.user_verification);
-  substititions.push_back(parameters.rp_id);
-  substititions.push_back(parameters.algorithm_identifier);
-  substititions.push_back(parameters.authenticator_attachment);
-  substititions.push_back(parameters.attestation);
+  std::vector<std::string> substitutions;
+  substitutions.push_back(parameters.require_resident_key ? "true" : "false");
+  substitutions.push_back(parameters.user_verification);
+  substitutions.push_back(parameters.rp_id);
+  substitutions.push_back(parameters.algorithm_identifier);
+  substitutions.push_back(parameters.authenticator_attachment);
+  substitutions.push_back(parameters.attestation);
+  substitutions.push_back(parameters.rp_icon);
+  substitutions.push_back(parameters.user_icon);
   return base::ReplaceStringPlaceholders(kCreatePublicKeyTemplate,
-                                         substititions, nullptr);
+                                         substitutions, nullptr);
 }
 
 constexpr char kGetPublicKeyTemplate[] =
@@ -682,6 +696,50 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
 
   ASSERT_EQ(kRelyingPartySecurityErrorMessage,
             result.substr(0, strlen(kRelyingPartySecurityErrorMessage)));
+}
+
+// Tests that when navigator.credentials.create() is called with a null
+// relying party, we get a NotSupportedError.
+IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
+                       CreatePublicKeyWithNullRp) {
+  CreateParameters parameters;
+  parameters.rp_icon = "";
+  std::string script = BuildCreateCallWithParameters(parameters);
+  const char kExpectedSubstr[] = "{ id: 'acme.com', name: 'Acme', icon: ''}";
+  const std::string::size_type offset = script.find(kExpectedSubstr);
+  ASSERT_TRUE(offset != std::string::npos);
+  script.replace(offset, sizeof(kExpectedSubstr) - 1, "null");
+
+  std::string result;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      shell()->web_contents()->GetMainFrame(), script, &result));
+  ASSERT_EQ(kPublicKeyErrorMessage, result);
+}
+
+// Tests that when navigator.credentials.create() is called with an insecure
+// user icon URL, we get a SecurityError.
+IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
+                       CreatePublicKeyWithInsecureUserIconURL) {
+  CreateParameters parameters;
+  parameters.user_icon = "http://fidoalliance.co.nz/testimages/catimage.png";
+  std::string result;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      shell()->web_contents()->GetMainFrame(),
+      BuildCreateCallWithParameters(parameters), &result));
+  ASSERT_EQ(kRelyingPartyUserIconUrlSecurityErrorMessage, result);
+}
+
+// Tests that when navigator.credentials.create() is called with an insecure
+// Relying Party icon URL, we get a SecurityError.
+IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
+                       CreatePublicKeyWithInsecureRpIconURL) {
+  CreateParameters parameters;
+  parameters.rp_icon = "http://fidoalliance.co.nz/testimages/catimage.png";
+  std::string result;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      shell()->web_contents()->GetMainFrame(),
+      BuildCreateCallWithParameters(parameters), &result));
+  ASSERT_EQ(kRelyingPartyRpIconUrlSecurityErrorMessage, result);
 }
 
 // Tests that when navigator.credentials.create() is called with user
