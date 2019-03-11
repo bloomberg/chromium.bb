@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# Targets used by tests.
+
 shared_library("empty_dll") {
   sources = [
     "empty_dll.cc",
@@ -89,18 +91,28 @@ source_set("test_pup_data") {
   sources = [
     "test_pup_data.cc",
     "test_pup_data.h",
+  ]
+
+  deps = [
+    ":test_uws_catalog",
+    "//base:base",
+    "//chrome/chrome_cleaner/proto:shared_pup_enums_proto",
+    "//chrome/chrome_cleaner/pup_data:pup_data_base",
+  ]
+}
+
+source_set("test_uws_catalog") {
+  # This is not testonly because it is used by the test engine, which can be
+  # used in the full executables to detect test UwS.
+  sources = [
     "test_uws_catalog.cc",
     "test_uws_catalog.h",
   ]
 
   deps = [
-    "//base:base",
-    "//chrome/chrome_cleaner/logging/proto:shared_data_proto",
-    "//chrome/chrome_cleaner/proto:shared_pup_enums_proto",
     "//chrome/chrome_cleaner/pup_data:dynamic_pup",
     "//chrome/chrome_cleaner/pup_data:pup_data_base",
     "//chrome/chrome_cleaner/pup_data:test_uws",
-    "//testing/gtest",
   ]
 }
 
@@ -156,6 +168,7 @@ source_set("test_util") {
   deps = [
     ":test_pup_data",
     ":test_strings",
+    ":test_uws_catalog",
     "//base:base",
     "//base/test:test_support",
     "//chrome/chrome_cleaner/constants:common_strings",
@@ -183,6 +196,8 @@ source_set("test_util") {
   ]
 }
 
+# Targets that contain tests.
+
 source_set("unittest_sources") {
   testonly = true
 
@@ -201,6 +216,8 @@ source_set("unittest_sources") {
   ]
 }
 
+# Executable targets.
+
 executable("test_process") {
   testonly = true
 
@@ -216,7 +233,6 @@ executable("test_process") {
     "//build/win:default_exe_manifest",
     "//chrome/chrome_cleaner:other_executable_definitions",
     "//chrome/chrome_cleaner/engines:dummy_resources",
-    "//chrome/chrome_cleaner/engines:resources",
     "//chrome/chrome_cleaner/os:common_os",
     "//chrome/chrome_cleaner/pup_data:dummy_signatures",
   ]

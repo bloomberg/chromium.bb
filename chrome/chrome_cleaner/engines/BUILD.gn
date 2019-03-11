@@ -13,6 +13,7 @@ source_set("resources") {
 
   public_deps = [
     "//chrome/chrome_cleaner/logging/proto:shared_data_proto",
+    "//components/chrome_cleaner/public/constants:constants",
   ]
 }
 
@@ -23,5 +24,7 @@ source_set("dummy_resources") {
 
   deps = [
     ":resources",
+    "//chrome/chrome_cleaner/pup_data:pup_data_base",
+    "//chrome/chrome_cleaner/test:test_uws_catalog",
   ]
 }

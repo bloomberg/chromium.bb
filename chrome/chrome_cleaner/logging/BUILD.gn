@@ -40,6 +40,7 @@ source_set("common") {
     "//chrome/chrome_cleaner//http:http",  # For safe_browsing_reporter
     "//chrome/chrome_cleaner/constants:common_strings",
     "//chrome/chrome_cleaner/constants:version_header",
+    "//chrome/chrome_cleaner/engines:resources",
     "//chrome/chrome_cleaner/http:http_status_codes",
     "//chrome/chrome_cleaner/logging/proto:removal_status_proto",
     "//chrome/chrome_cleaner/os:common_os",
@@ -259,6 +260,7 @@ source_set("unittest_sources") {
     "//chrome/chrome_cleaner/os:common_os",
     "//chrome/chrome_cleaner/proto:shared_pup_enums_proto",
     "//chrome/chrome_cleaner/pup_data:pup_data_base",
+    "//chrome/chrome_cleaner/settings:settings",
     "//chrome/chrome_cleaner/test:test_branding_header",
     "//chrome/chrome_cleaner/test:test_pup_data",
     "//chrome/chrome_cleaner/test:test_util",

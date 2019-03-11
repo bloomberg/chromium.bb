@@ -4,17 +4,40 @@
 
 #include "chrome/chrome_cleaner/engines/engine_resources.h"
 
+#include "chrome/chrome_cleaner/pup_data/pup_data.h"
+#include "chrome/chrome_cleaner/test/test_uws_catalog.h"
+
 namespace chrome_cleaner {
 
-base::string16 GetTestStubFileName(Engine::Name engine) {
-  return base::string16();
+bool IsSupportedEngine(Engine::Name engine) {
+  return engine == Engine::TEST_ONLY;
+}
+
+std::string GetEngineName(Engine::Name engine) {
+  return "Test";
 }
 
 std::string GetEngineVersion(Engine::Name engine) {
-  return std::string();
+  return "0.1";
+}
+
+ProcessInformation::Process GetEngineProcessType(Engine::Name engine) {
+  return ProcessInformation::TEST_SANDBOX;
+}
+
+ResultCode GetEngineDisconnectionErrorCode(Engine::Name engine) {
+  return RESULT_CODE_TEST_ENGINE_SANDBOX_DISCONNECTED_TOO_SOON;
+}
+
+void InitializePUPDataWithCatalog(Engine::Name engine) {
+  PUPData::InitializePUPData({&TestUwSCatalog::GetInstance()});
 }
 
 int GetProtectedFilesDigestResourceId() {
+  return 0;
+}
+
+int GetUwEMatchersResourceID() {
   return 0;
 }
 
@@ -25,6 +48,10 @@ std::unordered_map<base::string16, int> GetEmbeddedLibraryResourceIds(
 
 int GetLibrariesDigestResourcesId(Engine::Name engine) {
   return 0;
+}
+
+base::string16 GetTestStubFileName(Engine::Name engine) {
+  return base::string16();
 }
 
 std::set<base::string16> GetLibrariesToLoad(Engine::Name engine) {

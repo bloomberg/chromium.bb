@@ -28,6 +28,7 @@ source_set("crashpad_lib") {
     "//base:base",
     "//chrome/chrome_cleaner/chrome_utils:chrome_util_lib",
     "//chrome/chrome_cleaner/constants:common_strings",
+    "//chrome/chrome_cleaner/engines:resources",
     "//chrome/chrome_cleaner/logging:common",
     "//chrome/chrome_cleaner/os:common_os",
     "//chrome/chrome_cleaner/settings:settings",
