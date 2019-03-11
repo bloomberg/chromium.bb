@@ -19,7 +19,6 @@
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/camera_presence_notifier.h"
 #include "chrome/browser/chromeos/login/screen_manager.h"
-#include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
 #include "chrome/browser/chromeos/login/screens/user_image_view.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_manager.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
@@ -72,10 +71,8 @@ UserImageScreen* UserImageScreen::Get(ScreenManager* manager) {
       manager->GetScreen(OobeScreen::SCREEN_USER_IMAGE_PICKER));
 }
 
-UserImageScreen::UserImageScreen(BaseScreenDelegate* base_screen_delegate,
-                                 UserImageView* view)
-    : BaseScreen(base_screen_delegate, OobeScreen::SCREEN_USER_IMAGE_PICKER),
-      view_(view) {
+UserImageScreen::UserImageScreen(UserImageView* view)
+    : BaseScreen(OobeScreen::SCREEN_USER_IMAGE_PICKER), view_(view) {
   if (view_)
     view_->Bind(this);
   user_manager::UserManager::Get()->AddObserver(this);

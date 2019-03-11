@@ -91,6 +91,10 @@ class UpdateScreen : public BaseScreen,
 
   base::OneShotTimer& GetErrorMessageTimerForTesting();
 
+  void set_base_screen_delegate_for_testing(BaseScreenDelegate* delegate) {
+    base_screen_delegate_ = delegate;
+  }
+
   void set_exit_callback_for_testing(const ScreenExitCallback& callback) {
     exit_callback_ = callback;
   }
@@ -181,6 +185,7 @@ class UpdateScreen : public BaseScreen,
   // Ignore fist IDLE status that is sent before update screen initiated check.
   bool ignore_idle_status_ = true;
 
+  BaseScreenDelegate* base_screen_delegate_;
   UpdateView* view_ = nullptr;
   ScreenExitCallback exit_callback_;
 

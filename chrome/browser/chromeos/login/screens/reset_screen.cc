@@ -95,7 +95,8 @@ void StartTPMFirmwareUpdate(
 ResetScreen::ResetScreen(BaseScreenDelegate* base_screen_delegate,
                          ResetView* view,
                          const base::RepeatingClosure& exit_callback)
-    : BaseScreen(base_screen_delegate, OobeScreen::SCREEN_OOBE_RESET),
+    : BaseScreen(OobeScreen::SCREEN_OOBE_RESET),
+      base_screen_delegate_(base_screen_delegate),
       view_(view),
       exit_callback_(exit_callback),
       weak_ptr_factory_(this) {
@@ -357,8 +358,9 @@ void ResetScreen::UpdateStatusChanged(
           UpdateEngineClient::UPDATE_STATUS_REPORTING_ERROR_EVENT) {
     GetContextEditor().SetInteger(kContextKeyScreenState, STATE_ERROR);
     // Show error screen.
-    GetErrorScreen()->SetUIState(NetworkError::UI_STATE_ROLLBACK_ERROR);
-    get_base_screen_delegate()->ShowErrorScreen();
+    base_screen_delegate_->GetErrorScreen()->SetUIState(
+        NetworkError::UI_STATE_ROLLBACK_ERROR);
+    base_screen_delegate_->ShowErrorScreen();
   } else if (status.status ==
              UpdateEngineClient::UPDATE_STATUS_UPDATED_NEED_REBOOT) {
     PowerManagerClient::Get()->RequestRestart(
@@ -388,10 +390,6 @@ void ResetScreen::OnTPMFirmwareUpdateAvailableCheck(
         kContextKeyTPMFirmwareUpdateMode,
         static_cast<int>(tpm_firmware_update::Mode::kPowerwash));
   }
-}
-
-ErrorScreen* ResetScreen::GetErrorScreen() {
-  return get_base_screen_delegate()->GetErrorScreen();
 }
 
 }  // namespace chromeos

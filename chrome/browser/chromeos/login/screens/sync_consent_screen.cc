@@ -61,10 +61,9 @@ void SyncConsentScreen::MaybeLaunchSyncConsentSettings(Profile* profile) {
 }
 
 SyncConsentScreen::SyncConsentScreen(
-    BaseScreenDelegate* base_screen_delegate,
     SyncConsentScreenView* view,
     const base::RepeatingClosure& exit_callback)
-    : BaseScreen(base_screen_delegate, OobeScreen::SCREEN_SYNC_CONSENT),
+    : BaseScreen(OobeScreen::SCREEN_SYNC_CONSENT),
       view_(view),
       exit_callback_(exit_callback) {
   DCHECK(view_);

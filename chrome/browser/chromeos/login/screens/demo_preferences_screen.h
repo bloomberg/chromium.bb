@@ -16,7 +16,6 @@
 
 namespace chromeos {
 
-class BaseScreenDelegate;
 class DemoPreferencesScreenView;
 
 // Controls demo mode preferences. The screen can be shown during OOBE. It
@@ -28,8 +27,7 @@ class DemoPreferencesScreen
   enum class Result { COMPLETED, CANCELED };
 
   using ScreenExitCallback = base::RepeatingCallback<void(Result result)>;
-  DemoPreferencesScreen(BaseScreenDelegate* base_screen_delegate,
-                        DemoPreferencesScreenView* view,
+  DemoPreferencesScreen(DemoPreferencesScreenView* view,
                         const ScreenExitCallback& exit_callback);
   ~DemoPreferencesScreen() override;
 

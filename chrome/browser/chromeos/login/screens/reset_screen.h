@@ -22,7 +22,7 @@ class PrefRegistrySimple;
 
 namespace chromeos {
 
-class ErrorScreen;
+class BaseScreenDelegate;
 class ResetView;
 
 // Representation independent class that controls screen showing reset to users.
@@ -70,9 +70,7 @@ class ResetScreen : public BaseScreen, public UpdateEngineClient::Observer {
 
   void ShowHelpArticle(HelpAppLauncher::HelpTopic topic);
 
-  // Returns an instance of the error screen.
-  ErrorScreen* GetErrorScreen();
-
+  BaseScreenDelegate* const base_screen_delegate_;
   ResetView* view_;
   base::RepeatingClosure exit_callback_;
 

@@ -9,9 +9,7 @@ using ::testing::_;
 
 namespace chromeos {
 
-MockErrorScreen::MockErrorScreen(BaseScreenDelegate* base_screen_delegate,
-                                 NetworkErrorView* view)
-    : ErrorScreen(base_screen_delegate, view) {}
+MockErrorScreen::MockErrorScreen(NetworkErrorView* view) : ErrorScreen(view) {}
 
 MockErrorScreen::~MockErrorScreen() {}
 

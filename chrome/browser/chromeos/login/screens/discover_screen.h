@@ -13,13 +13,11 @@
 
 namespace chromeos {
 
-class BaseScreenDelegate;
 class DiscoverScreenView;
 
 class DiscoverScreen : public BaseScreen {
  public:
-  DiscoverScreen(BaseScreenDelegate* base_screen_delegate,
-                 DiscoverScreenView* view,
+  DiscoverScreen(DiscoverScreenView* view,
                  const base::RepeatingClosure& exit_callback);
   ~DiscoverScreen() override;
 

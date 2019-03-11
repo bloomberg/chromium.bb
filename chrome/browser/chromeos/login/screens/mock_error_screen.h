@@ -14,8 +14,7 @@ namespace chromeos {
 
 class MockErrorScreen : public ErrorScreen {
  public:
-  MockErrorScreen(BaseScreenDelegate* base_screen_delegate,
-                  NetworkErrorView* view);
+  explicit MockErrorScreen(NetworkErrorView* view);
   ~MockErrorScreen() override;
 
   void FixCaptivePortal() override;

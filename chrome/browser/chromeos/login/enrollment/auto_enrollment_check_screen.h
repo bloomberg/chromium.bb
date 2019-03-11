@@ -108,6 +108,7 @@ class AutoEnrollmentCheckScreen
   // necessary".
   bool ShouldBlockOnServerError() const;
 
+  BaseScreenDelegate* base_screen_delegate_;
   AutoEnrollmentCheckScreenView* view_;
   base::RepeatingClosure exit_callback_;
   AutoEnrollmentController* auto_enrollment_controller_;

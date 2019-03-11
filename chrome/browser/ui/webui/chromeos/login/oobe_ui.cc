@@ -368,7 +368,7 @@ void OobeUI::ConfigureOobeDisplay() {
   AddScreenHandler(
       std::make_unique<ErrorScreenHandler>(js_calls_container_.get()));
 
-  error_screen_.reset(new ErrorScreen(nullptr, GetView<ErrorScreenHandler>()));
+  error_screen_ = std::make_unique<ErrorScreen>(GetView<ErrorScreenHandler>());
   ErrorScreen* error_screen = error_screen_.get();
 
   AddScreenHandler(std::make_unique<EnrollmentScreenHandler>(

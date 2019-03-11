@@ -16,8 +16,6 @@
 
 namespace chromeos {
 
-class BaseScreenDelegate;
-
 // This is Recommend Apps screen that is displayed as a part of user first
 // sign-in flow.
 class RecommendAppsScreen : public BaseScreen,
@@ -26,8 +24,7 @@ class RecommendAppsScreen : public BaseScreen,
   enum class Result { SELECTED, SKIPPED };
 
   using ScreenExitCallback = base::RepeatingCallback<void(Result result)>;
-  RecommendAppsScreen(BaseScreenDelegate* base_screen_delegate,
-                      RecommendAppsScreenView* view,
+  RecommendAppsScreen(RecommendAppsScreenView* view,
                       const ScreenExitCallback& exit_callback);
   ~RecommendAppsScreen() override;
 

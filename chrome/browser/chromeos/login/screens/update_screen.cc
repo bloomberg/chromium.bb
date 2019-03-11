@@ -106,8 +106,9 @@ UpdateScreen* UpdateScreen::Get(ScreenManager* manager) {
 UpdateScreen::UpdateScreen(BaseScreenDelegate* base_screen_delegate,
                            UpdateView* view,
                            const ScreenExitCallback& exit_callback)
-    : BaseScreen(base_screen_delegate, OobeScreen::SCREEN_OOBE_UPDATE),
+    : BaseScreen(OobeScreen::SCREEN_OOBE_UPDATE),
       reboot_check_delay_(kWaitForRebootTimeSec),
+      base_screen_delegate_(base_screen_delegate),
       view_(view),
       exit_callback_(exit_callback),
       histogram_helper_(new ErrorScreensHistogramHelper("Update")),
@@ -485,11 +486,11 @@ void UpdateScreen::OnWaitForRebootTimeElapsed() {
 
 void UpdateScreen::MakeSureScreenIsShown() {
   if (!is_shown_)
-    get_base_screen_delegate()->ShowCurrentScreen();
+    base_screen_delegate_->ShowCurrentScreen();
 }
 
 ErrorScreen* UpdateScreen::GetErrorScreen() {
-  return get_base_screen_delegate()->GetErrorScreen();
+  return base_screen_delegate_->GetErrorScreen();
 }
 
 void UpdateScreen::StartUpdateCheck() {
@@ -522,13 +523,13 @@ void UpdateScreen::ShowErrorMessage() {
       GetErrorScreen()->RegisterConnectRequestCallback(base::Bind(
           &UpdateScreen::OnConnectRequested, base::Unretained(this)));
   GetErrorScreen()->SetUIState(NetworkError::UI_STATE_UPDATE);
-  get_base_screen_delegate()->ShowErrorScreen();
+  base_screen_delegate_->ShowErrorScreen();
   histogram_helper_->OnErrorShow(GetErrorScreen()->GetErrorState());
 }
 
 void UpdateScreen::HideErrorMessage() {
   LOG(WARNING) << "UpdateScreen::HideErrorMessage()";
-  get_base_screen_delegate()->HideErrorScreen(this);
+  base_screen_delegate_->HideErrorScreen(this);
   histogram_helper_->OnErrorHide();
 }
 

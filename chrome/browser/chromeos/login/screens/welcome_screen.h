@@ -47,8 +47,7 @@ class WelcomeScreen : public BaseScreen,
     virtual void OnLanguageListReloaded() = 0;
   };
 
-  WelcomeScreen(BaseScreenDelegate* base_screen_delegate,
-                Delegate* delegate,
+  WelcomeScreen(Delegate* delegate,
                 WelcomeView* view,
                 const base::RepeatingClosure& exit_callback);
   ~WelcomeScreen() override;

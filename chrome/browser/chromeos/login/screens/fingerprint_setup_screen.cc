@@ -14,10 +14,9 @@ constexpr char kUserActionClose[] = "fingerprint-setup-done";
 }  // namespace
 
 FingerprintSetupScreen::FingerprintSetupScreen(
-    BaseScreenDelegate* base_screen_delegate,
     FingerprintSetupScreenView* view,
     const base::RepeatingClosure& exit_callback)
-    : BaseScreen(base_screen_delegate, OobeScreen::SCREEN_FINGERPRINT_SETUP),
+    : BaseScreen(OobeScreen::SCREEN_FINGERPRINT_SETUP),
       view_(view),
       exit_callback_(exit_callback) {
   DCHECK(view_);
