@@ -188,6 +188,15 @@ void TracingControllerImpl::ConnectToServiceIfNeeded() {
   if (!coordinator_) {
     ServiceManagerConnection::GetForProcess()->GetConnector()->BindInterface(
         tracing::mojom::kServiceName, &coordinator_);
+    coordinator_.set_connection_error_handler(base::BindOnce(
+        [](TracingControllerImpl* controller) {
+          // If the tracing service dies while we're tracing, the browser is
+          // in an unrecoverable state (it'll keep tracing until shared memory
+          // buffers are full and then stall).
+          CHECK(!controller->IsTracing());
+          controller->coordinator_.reset();
+        },
+        base::Unretained(this)));
   }
 }
 

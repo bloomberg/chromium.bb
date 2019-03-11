@@ -126,6 +126,12 @@ void ProducerClient::CreateMojoMessagepipesOnSequence(
 
   binding_ = std::make_unique<mojo::Binding<mojom::ProducerClient>>(
       this, std::move(producer_client_request));
+  binding_->set_connection_error_handler(base::BindOnce(
+      [](ProducerClient* producer_client) {
+        producer_client->binding_->Close();
+      },
+      base::Unretained(this)));
+
   origin_task_runner->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), std::move(producer_client),
                                 mojo::MakeRequest(&producer_host_)));
