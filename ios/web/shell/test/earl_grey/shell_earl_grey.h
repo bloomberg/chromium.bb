@@ -26,14 +26,12 @@
 
 // Waits for the current web view to contain an element matching |selector|.
 // If the condition is not met within a timeout, a GREYAssert is induced.
-+ (void)waitForWebViewContainingElement:
-    (const web::test::ElementSelector)selector;
++ (void)waitForWebViewContainingElement:(ElementSelector*)selector;
 
 // Waits for the current web view to not contain an element matching
 // |selector|. If the condition is not met within a timeout, a GREYAssert is
 // induced.
-+ (void)waitForWebViewNotContainingElement:
-    (const web::test::ElementSelector)selector;
++ (void)waitForWebViewNotContainingElement:(ElementSelector*)selector;
 
 @end
 

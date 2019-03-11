@@ -18,8 +18,7 @@ namespace web {
 // is not expected to trigger events in the webview. This action doesn't fail if
 // the context menu isn't displayed; calling code should check for that
 // separately with a matcher.
-id<GREYAction> LongPressElementForContextMenu(
-    web::test::ElementSelector selector);
+id<GREYAction> LongPressElementForContextMenu(ElementSelector* selector);
 
 }  // namespace web
 

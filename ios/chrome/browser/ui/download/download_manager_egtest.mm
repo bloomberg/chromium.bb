@@ -30,7 +30,6 @@
 using chrome_test_util::ButtonWithAccessibilityLabelId;
 using chrome_test_util::GetCurrentWebState;
 using chrome_test_util::OpenLinkInNewTabButton;
-using web::test::ElementSelector;
 using web::WebViewInWebState;
 
 namespace {
@@ -189,7 +188,7 @@ bool WaitForDownloadButton() {
   // Open context menu for download link.
   [[EarlGrey selectElementWithMatcher:WebViewInWebState(GetCurrentWebState())]
       performAction:chrome_test_util::LongPressElementForContextMenu(
-                        ElementSelector::ElementSelectorId("download"),
+                        [ElementSelector selectorWithElementID:"download"],
                         /*menu_should_appear=*/true)];
 
   // Tap "Open In New Tab".
