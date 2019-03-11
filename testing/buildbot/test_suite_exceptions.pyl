@@ -350,6 +350,12 @@
       'CrWinAsan(dll)', # https://crbug.com/935598
     ],
     'modifications': {
+      # chromium.android
+      'Lollipop Phone Tester': {
+        'swarming': {
+          'shards': 11,
+        },
+      },
       # chromium.linux
       'Cast Audio Linux': {
         'args': [
