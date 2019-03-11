@@ -642,7 +642,7 @@ HRESULT CGaiaCredentialBase::GetBaseGlsCommandline(
   constexpr wchar_t kGlsPath[] = L"gls_path";
 
   wchar_t custom_gls_path_value[MAX_PATH];
-  ULONG path_len = base::size(custom_gls_path_value) * sizeof(wchar_t);
+  ULONG path_len = base::size(custom_gls_path_value);
   HRESULT hr = GetGlobalFlag(kGlsPath, custom_gls_path_value, &path_len);
   if (SUCCEEDED(hr)) {
     base::FilePath custom_gls_path(custom_gls_path_value);
