@@ -48,6 +48,11 @@ enum FileSystemCompatibilityState : int32_t {
   // "compatible" state. Be careful in the case adding a new enum value.
 };
 
+// Returns false if |profile| is not a real user profile but some internal
+// profile for service purposes, which should be ignored for ARC and metrics
+// recording. Also returns false if |profile| is null.
+bool IsRealUserProfile(const Profile* profile);
+
 // Returns true if ARC is allowed to run for the given profile.
 // Otherwise, returns false, e.g. if the Profile is not for the primary user,
 // ARC is not available on the device, it is in the flow to set up managed

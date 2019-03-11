@@ -254,13 +254,16 @@ bool IsArcAllowedForProfileInternal(const Profile* profile,
 
 }  // namespace
 
+bool IsRealUserProfile(const Profile* profile) {
+  // Return false for signin, lock screen and incognito profiles.
+  return profile && !chromeos::ProfileHelper::IsSigninProfile(profile) &&
+         !chromeos::ProfileHelper::IsLockScreenAppProfile(profile) &&
+         !profile->IsOffTheRecord();
+}
+
 bool IsArcAllowedForProfile(const Profile* profile) {
-  // Silently ignore default, lock screen and incognito profiles.
-  if (!profile || chromeos::ProfileHelper::IsSigninProfile(profile) ||
-      profile->IsOffTheRecord() ||
-      chromeos::ProfileHelper::IsLockScreenAppProfile(profile)) {
+  if (!IsRealUserProfile(profile))
     return false;
-  }
 
   auto it = g_profile_status_check.Get().find(profile);
 
