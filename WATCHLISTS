@@ -2216,6 +2216,7 @@
             'zea+watch@chromium.org'],
     'generic_sensor': ['juncai+watch@chromium.org',
                        'mattreynolds+watch@chromium.org',
+                       'raphael.kubo.da.costa@intel.com',
                        'timvolodine@chromium.org',
                        'wanming.lin@intel.com'],
     'geolocation': ['mattreynolds+watch@chromium.org'],
