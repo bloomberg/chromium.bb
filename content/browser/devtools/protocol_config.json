@@ -10,7 +10,8 @@
         "export_header": "content/common/content_export.h",
         "options": [
             {
-                "domain": "BackgroundService"
+                "domain": "BackgroundService",
+                "async": ["startObserving"]
             },
             {
                 "domain": "Browser",

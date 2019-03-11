@@ -4,8 +4,6 @@
 
 #include "content/browser/devtools/protocol/background_service_handler.h"
 
-#include "content/browser/devtools/devtools_background_services.pb.h"
-#include "content/browser/devtools/devtools_background_services_context.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/browser/storage_partition_impl.h"
@@ -27,13 +25,60 @@ devtools::proto::BackgroundService ServiceNameToEnum(
   return devtools::proto::BackgroundService::UNKNOWN;
 }
 
+std::string ServiceEnumToName(devtools::proto::BackgroundService service_enum) {
+  switch (service_enum) {
+    case devtools::proto::BackgroundService::BACKGROUND_FETCH:
+      return BackgroundService::ServiceNameEnum::BackgroundFetch;
+    case devtools::proto::BackgroundService::BACKGROUND_SYNC:
+      return BackgroundService::ServiceNameEnum::BackgroundSync;
+    default:
+      NOTREACHED();
+  }
+
+  return "invalid";
+}
+
+std::unique_ptr<protocol::Array<protocol::BackgroundService::EventMetadata>>
+ProtoMapToArray(
+    const google::protobuf::Map<std::string, std::string>& event_metadata_map) {
+  auto metadata_array =
+      protocol::Array<protocol::BackgroundService::EventMetadata>::create();
+
+  for (const auto& entry : event_metadata_map) {
+    auto event_metadata = protocol::BackgroundService::EventMetadata::Create()
+                              .SetKey(entry.first)
+                              .SetValue(entry.second)
+                              .Build();
+    metadata_array->addItem(std::move(event_metadata));
+  }
+
+  return metadata_array;
+}
+
+std::unique_ptr<protocol::BackgroundService::BackgroundServiceEvent>
+ToBackgroundServiceEvent(const devtools::proto::BackgroundServiceEvent& event) {
+  return protocol::BackgroundService::BackgroundServiceEvent::Create()
+      .SetTimestamp(event.timestamp() / 1'000'000)  // microseconds -> seconds
+      .SetOrigin(event.origin())
+      .SetServiceWorkerRegistrationId(
+          base::NumberToString(event.service_worker_registration_id()))
+      .SetService(ServiceEnumToName(event.background_service()))
+      .SetEventName(event.event_name())
+      .SetInstanceId(event.instance_id())
+      .SetEventMetadata(ProtoMapToArray(event.event_metadata()))
+      .Build();
+}
+
 }  // namespace
 
 BackgroundServiceHandler::BackgroundServiceHandler()
     : DevToolsDomainHandler(BackgroundService::Metainfo::domainName),
-      devtools_context_(nullptr) {}
+      devtools_context_(nullptr),
+      weak_ptr_factory_(this) {}
 
-BackgroundServiceHandler::~BackgroundServiceHandler() = default;
+BackgroundServiceHandler::~BackgroundServiceHandler() {
+  DCHECK(enabled_services_.empty());
+}
 
 void BackgroundServiceHandler::Wire(UberDispatcher* dispatcher) {
   frontend_ =
@@ -45,41 +90,92 @@ void BackgroundServiceHandler::SetRenderer(int process_host_id,
                                            RenderFrameHostImpl* frame_host) {
   RenderProcessHost* process_host = RenderProcessHost::FromID(process_host_id);
   if (!process_host) {
+    if (devtools_context_ && !enabled_services_.empty())
+      devtools_context_->RemoveObserver(this);
+    enabled_services_.clear();
     devtools_context_ = nullptr;
     return;
   }
 
   auto* storage_partition =
       static_cast<StoragePartitionImpl*>(process_host->GetStoragePartition());
+
+  if (devtools_context_) {
+    DCHECK_EQ(devtools_context_,
+              storage_partition->GetDevToolsBackgroundServicesContext());
+    return;
+  }
+
   devtools_context_ = storage_partition->GetDevToolsBackgroundServicesContext();
   DCHECK(devtools_context_);
 }
 
 Response BackgroundServiceHandler::Disable() {
-  return DevToolsDomainHandler::Disable();
+  if (!enabled_services_.empty())
+    devtools_context_->RemoveObserver(this);
+  enabled_services_.clear();
+  return Response::OK();
 }
 
-Response BackgroundServiceHandler::Enable(const std::string& service) {
+void BackgroundServiceHandler::StartObserving(
+    const std::string& service,
+    std::unique_ptr<StartObservingCallback> callback) {
   DCHECK(devtools_context_);
 
   auto service_enum = ServiceNameToEnum(service);
-  if (service_enum == devtools::proto::BackgroundService::UNKNOWN)
-    return Response::InvalidParams("Invalid service name");
+  if (service_enum == devtools::proto::BackgroundService::UNKNOWN) {
+    callback->sendFailure(Response::InvalidParams("Invalid service name"));
+    return;
+  }
+
+  if (enabled_services_.count(service_enum)) {
+    callback->sendSuccess();
+    return;
+  }
+
+  if (enabled_services_.empty())
+    devtools_context_->AddObserver(this);
+  enabled_services_.insert(service_enum);
 
   bool is_recording = devtools_context_->IsRecording(service_enum);
 
   DCHECK(frontend_);
   frontend_->RecordingStateChanged(is_recording, service);
 
-  return Response::OK();
+  devtools_context_->GetLoggedBackgroundServiceEvents(
+      service_enum,
+      base::BindOnce(&BackgroundServiceHandler::DidGetLoggedEvents,
+                     weak_ptr_factory_.GetWeakPtr(), service_enum,
+                     std::move(callback)));
 }
 
-Response BackgroundServiceHandler::Disable(const std::string& service) {
+Response BackgroundServiceHandler::StopObserving(const std::string& service) {
   auto service_enum = ServiceNameToEnum(service);
   if (service_enum == devtools::proto::BackgroundService::UNKNOWN)
     return Response::InvalidParams("Invalid service name");
 
+  if (enabled_services_.count(service_enum))
+    return Response::OK();
+
+  enabled_services_.erase(service_enum);
+  if (enabled_services_.empty())
+    devtools_context_->RemoveObserver(this);
+
   return Response::OK();
+}
+
+void BackgroundServiceHandler::DidGetLoggedEvents(
+    devtools::proto::BackgroundService service,
+    std::unique_ptr<StartObservingCallback> callback,
+    std::vector<devtools::proto::BackgroundServiceEvent> events) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  // These events won't be duplicated in `OnEventReceived` since we are using
+  // sequenced task runners.
+  for (const auto& event : events)
+    frontend_->BackgroundServiceEventReceived(ToBackgroundServiceEvent(event));
+
+  return callback->sendSuccess();
 }
 
 Response BackgroundServiceHandler::SetRecording(bool should_record,
@@ -99,6 +195,14 @@ Response BackgroundServiceHandler::SetRecording(bool should_record,
 
   // TODO(rayankans): Inform all the other open sessions.
   return Response::OK();
+}
+
+void BackgroundServiceHandler::OnEventReceived(
+    const devtools::proto::BackgroundServiceEvent& event) {
+  if (!enabled_services_.count(event.background_service()))
+    return;
+
+  frontend_->BackgroundServiceEventReceived(ToBackgroundServiceEvent(event));
 }
 
 }  // namespace protocol

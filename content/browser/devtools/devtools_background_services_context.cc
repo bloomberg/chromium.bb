@@ -62,6 +62,15 @@ DevToolsBackgroundServicesContext::DevToolsBackgroundServicesContext(
 DevToolsBackgroundServicesContext::~DevToolsBackgroundServicesContext() =
     default;
 
+void DevToolsBackgroundServicesContext::AddObserver(EventObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void DevToolsBackgroundServicesContext::RemoveObserver(
+    const EventObserver* observer) {
+  observers_.RemoveObserver(observer);
+}
+
 void DevToolsBackgroundServicesContext::StartRecording(
     devtools::proto::BackgroundService service) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -93,6 +102,19 @@ bool DevToolsBackgroundServicesContext::IsRecording(
 }
 
 void DevToolsBackgroundServicesContext::GetLoggedBackgroundServiceEvents(
+    devtools::proto::BackgroundService service,
+    GetLoggedBackgroundServiceEventsCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
+      base::BindOnce(&DevToolsBackgroundServicesContext::
+                         GetLoggedBackgroundServiceEventsOnIO,
+                     weak_ptr_factory_.GetWeakPtr(), service,
+                     std::move(callback)));
+}
+
+void DevToolsBackgroundServicesContext::GetLoggedBackgroundServiceEventsOnIO(
     devtools::proto::BackgroundService service,
     GetLoggedBackgroundServiceEventsCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -133,7 +155,10 @@ void DevToolsBackgroundServicesContext::DidGetUserData(
             [](const auto& state1, const auto& state2) {
               return state1.timestamp() < state2.timestamp();
             });
-  std::move(callback).Run(std::move(events));
+
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
+      base::BindOnce(std::move(callback), std::move(events)));
 }
 
 void DevToolsBackgroundServicesContext::ClearLoggedBackgroundServiceEvents(
@@ -171,6 +196,19 @@ void DevToolsBackgroundServicesContext::LogBackgroundServiceEvent(
       service_worker_registration_id, origin.GetURL(),
       {{CreateEntryKey(event.background_service()), event.SerializeAsString()}},
       base::BindOnce(&DidLogServiceEvent));
+
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
+      base::BindOnce(&DevToolsBackgroundServicesContext::NotifyEventObservers,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(event)));
+}
+
+void DevToolsBackgroundServicesContext::NotifyEventObservers(
+    const devtools::proto::BackgroundServiceEvent& event) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  for (EventObserver& observer : observers_)
+    observer.OnEventReceived(event);
 }
 
 }  // namespace content

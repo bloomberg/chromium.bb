@@ -7,20 +7,26 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
+#include "content/browser/devtools/devtools_background_services.pb.h"
+#include "content/browser/devtools/devtools_background_services_context.h"
 #include "content/browser/devtools/protocol/background_service.h"
 #include "content/browser/devtools/protocol/devtools_domain_handler.h"
 
 namespace content {
 
-class DevToolsBackgroundServicesContext;
 class RenderFrameHostImpl;
 
 namespace protocol {
 
-class BackgroundServiceHandler : public DevToolsDomainHandler,
-                                 public BackgroundService::Backend {
+class BackgroundServiceHandler
+    : public DevToolsDomainHandler,
+      public BackgroundService::Backend,
+      public DevToolsBackgroundServicesContext::EventObserver {
  public:
   BackgroundServiceHandler();
   ~BackgroundServiceHandler() override;
@@ -30,16 +36,30 @@ class BackgroundServiceHandler : public DevToolsDomainHandler,
                    RenderFrameHostImpl* frame_host) override;
   Response Disable() override;
 
-  Response Enable(const std::string& service) override;
-  Response Disable(const std::string& service) override;
+  void StartObserving(
+      const std::string& service,
+      std::unique_ptr<StartObservingCallback> callback) override;
+  Response StopObserving(const std::string& service) override;
   Response SetRecording(bool should_record,
                         const std::string& service) override;
 
  private:
+  void DidGetLoggedEvents(
+      devtools::proto::BackgroundService service,
+      std::unique_ptr<StartObservingCallback> callback,
+      std::vector<devtools::proto::BackgroundServiceEvent> events);
+
+  void OnEventReceived(
+      const devtools::proto::BackgroundServiceEvent& event) override;
+
   std::unique_ptr<BackgroundService::Frontend> frontend_;
 
   // Owned by the storage partition.
   DevToolsBackgroundServicesContext* devtools_context_;
+
+  base::flat_set<devtools::proto::BackgroundService> enabled_services_;
+
+  base::WeakPtrFactory<BackgroundServiceHandler> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundServiceHandler);
 };
