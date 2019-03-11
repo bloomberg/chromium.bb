@@ -482,7 +482,6 @@ crbug.com/591099 http/tests/security/video-poster-cross-origin-crash2.html [ Pas
 crbug.com/591099 http/tests/webfont/crbug-655076.html [ Pass ]
 crbug.com/591099 images/feature-policy-oversized-images-resize.html [ Pass ]
 crbug.com/591099 inspector-protocol/dom-snapshot/dom-snapshot-getSnapshot-origin-url.js [ Crash Pass ]
-crbug.com/591099 inspector-protocol/dom-snapshot/dom-snapshot-getSnapshot-pseudo-element.js [ Failure ]
 crbug.com/591099 jquery/offset.html [ Pass ]
 crbug.com/591099 media/autoplay/webaudio-audio-context-resume.html [ Failure Pass ]
 crbug.com/591099 media_capabilities/encodingInfo-avc1.html [ Failure ]
