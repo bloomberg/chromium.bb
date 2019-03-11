@@ -1072,8 +1072,14 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
       return !element.IsDefined() && element.IsUnresolvedV0CustomElement();
     case CSSSelector::kPseudoDefined:
       return element.IsDefined() || element.IsUpgradedV0CustomElement();
-    case CSSSelector::kPseudoHost:
     case CSSSelector::kPseudoHostContext:
+      UseCounter::Count(
+          context.element->GetDocument(),
+          mode_ == kQueryingRules
+              ? WebFeature::kCSSSelectorHostContextInSnapshotProfile
+              : WebFeature::kCSSSelectorHostContextInLiveProfile);
+      FALLTHROUGH;
+    case CSSSelector::kPseudoHost:
       return CheckPseudoHost(context, result);
     case CSSSelector::kPseudoSpatialNavigationFocus:
       DCHECK(is_ua_rule_);

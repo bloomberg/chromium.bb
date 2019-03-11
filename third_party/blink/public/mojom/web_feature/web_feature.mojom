@@ -2262,6 +2262,8 @@ enum WebFeature {
 
   // The above items are available in M74 branch.
   kFlexboxWithOverflowFlexItemIntrinsicSize = 2828,
+  kCSSSelectorHostContextInSnapshotProfile = 2829,
+  kCSSSelectorHostContextInLiveProfile = 2830,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
