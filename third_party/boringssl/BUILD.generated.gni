@@ -404,6 +404,7 @@ crypto_sources_ios_aarch64 = [
   "ios-aarch64/crypto/fipsmodule/sha1-armv8.S",
   "ios-aarch64/crypto/fipsmodule/sha256-armv8.S",
   "ios-aarch64/crypto/fipsmodule/sha512-armv8.S",
+  "ios-aarch64/crypto/fipsmodule/vpaes-armv8.S",
   "ios-aarch64/crypto/test/trampoline-armv8.S",
 ]
 
@@ -429,6 +430,7 @@ crypto_sources_linux_aarch64 = [
   "linux-aarch64/crypto/fipsmodule/sha1-armv8.S",
   "linux-aarch64/crypto/fipsmodule/sha256-armv8.S",
   "linux-aarch64/crypto/fipsmodule/sha512-armv8.S",
+  "linux-aarch64/crypto/fipsmodule/vpaes-armv8.S",
   "linux-aarch64/crypto/test/trampoline-armv8.S",
 ]
 
@@ -459,6 +461,7 @@ crypto_sources_linux_x86 = [
   "linux-x86/crypto/fipsmodule/aesni-x86.S",
   "linux-x86/crypto/fipsmodule/bn-586.S",
   "linux-x86/crypto/fipsmodule/co-586.S",
+  "linux-x86/crypto/fipsmodule/ghash-ssse3-x86.S",
   "linux-x86/crypto/fipsmodule/ghash-x86.S",
   "linux-x86/crypto/fipsmodule/md5-586.S",
   "linux-x86/crypto/fipsmodule/sha1-586.S",
@@ -500,6 +503,7 @@ crypto_sources_mac_x86 = [
   "mac-x86/crypto/fipsmodule/aesni-x86.S",
   "mac-x86/crypto/fipsmodule/bn-586.S",
   "mac-x86/crypto/fipsmodule/co-586.S",
+  "mac-x86/crypto/fipsmodule/ghash-ssse3-x86.S",
   "mac-x86/crypto/fipsmodule/ghash-x86.S",
   "mac-x86/crypto/fipsmodule/md5-586.S",
   "mac-x86/crypto/fipsmodule/sha1-586.S",
@@ -540,6 +544,7 @@ crypto_sources_win_x86 = [
   "win-x86/crypto/fipsmodule/aesni-x86.asm",
   "win-x86/crypto/fipsmodule/bn-586.asm",
   "win-x86/crypto/fipsmodule/co-586.asm",
+  "win-x86/crypto/fipsmodule/ghash-ssse3-x86.asm",
   "win-x86/crypto/fipsmodule/ghash-x86.asm",
   "win-x86/crypto/fipsmodule/md5-586.asm",
   "win-x86/crypto/fipsmodule/sha1-586.asm",
