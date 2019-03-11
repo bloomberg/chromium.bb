@@ -571,11 +571,6 @@ class OmniboxEditModel {
   // and the popup is closed and "goog" is replaced by the permanent display
   // URL, which is the URL of the current page.
   //
-  // original_url_ is only valid when there is temporary text, and is used as
-  // the unique identifier of the originally selected item.  Thus, if the user
-  // arrows to a different item with the same text, we can still distinguish
-  // them and not revert all the way to the permanent display URL.
-  //
   // original_user_text_with_keyword_ tracks the user_text_ before keywords are
   // removed. When accepting a keyword (from either a default match or another
   // lower in the dropdown), the user_text_ is destructively trimmed of its 1st
@@ -585,7 +580,6 @@ class OmniboxEditModel {
   // original_user_text_with_keyword_ is null if a keyword has not been
   // accepted.
   bool has_temporary_text_;
-  GURL original_url_;
   base::string16 original_user_text_with_keyword_;
 
   // When the user's last action was to paste, we disallow inline autocomplete
