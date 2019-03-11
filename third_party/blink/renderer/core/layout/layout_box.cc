@@ -1005,7 +1005,7 @@ bool LayoutBox::CanBeProgramaticallyScrolled() const {
   return node && HasEditableStyle(*node);
 }
 
-void LayoutBox::Autoscroll(const IntPoint& position_in_root_frame) {
+void LayoutBox::Autoscroll(const LayoutPoint& position_in_root_frame) {
   LocalFrame* frame = GetFrame();
   if (!frame)
     return;
@@ -1014,8 +1014,8 @@ void LayoutBox::Autoscroll(const IntPoint& position_in_root_frame) {
   if (!frame_view)
     return;
 
-  IntPoint absolute_position =
-      frame_view->ConvertFromRootFrame(position_in_root_frame);
+  LayoutPoint absolute_position =
+      frame_view->ConvertFromRootFrame(LayoutPoint(position_in_root_frame));
   ScrollRectToVisibleRecursive(
       LayoutRect(absolute_position, LayoutSize(1, 1)),
       WebScrollIntoViewParams(ScrollAlignment::kAlignToEdgeIfNeeded,
@@ -1031,14 +1031,14 @@ bool LayoutBox::CanAutoscroll() const {
 // If specified point is outside the border-belt-excluded box (the border box
 // inset by the autoscroll activation threshold), returned offset denotes
 // direction of scrolling.
-IntSize LayoutBox::CalculateAutoscrollDirection(
-    const IntPoint& point_in_root_frame) const {
+LayoutSize LayoutBox::CalculateAutoscrollDirection(
+    const FloatPoint& point_in_root_frame) const {
   if (!GetFrame())
-    return IntSize();
+    return LayoutSize();
 
   LocalFrameView* frame_view = GetFrame()->View();
   if (!frame_view)
-    return IntSize();
+    return LayoutSize();
 
   LayoutRect absolute_scrolling_box = LayoutRect(AbsoluteBoundingBoxRect());
 
@@ -1047,10 +1047,10 @@ IntSize LayoutBox::CalculateAutoscrollDirection(
   ExcludeScrollbars(absolute_scrolling_box,
                     kExcludeOverlayScrollbarSizeForHitTesting);
 
-  IntRect belt_box = View()->GetFrameView()->ConvertToRootFrame(
-      PixelSnappedIntRect(absolute_scrolling_box));
+  LayoutRect belt_box =
+      View()->GetFrameView()->ConvertToRootFrame(absolute_scrolling_box);
   belt_box.Inflate(-kAutoscrollBeltSize);
-  IntPoint point = point_in_root_frame;
+  LayoutPoint point(point_in_root_frame);
 
   if (point.X() < belt_box.X())
     point.Move(-kAutoscrollBeltSize, 0);
@@ -1062,7 +1062,7 @@ IntSize LayoutBox::CalculateAutoscrollDirection(
   else if (point.Y() > belt_box.MaxY())
     point.Move(0, kAutoscrollBeltSize);
 
-  return point - point_in_root_frame;
+  return point - LayoutPoint(point_in_root_frame);
 }
 
 LayoutBox* LayoutBox::FindAutoscrollable(LayoutObject* layout_object) {

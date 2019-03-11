@@ -232,9 +232,7 @@ void EventHandler::StartMiddleClickAutoscroll(LayoutObject* layout_object) {
   if (!controller)
     return;
   controller->StartMiddleClickAutoscroll(
-      layout_object->GetFrame(),
-      frame_->GetPage()->GetVisualViewport().ViewportToRootFrame(
-          FloatPoint(mouse_event_manager_->LastKnownMousePosition())),
+      layout_object->GetFrame(), LastKnownMousePositionInRootFrame(),
       mouse_event_manager_->LastKnownMousePositionGlobal());
   mouse_event_manager_->InvalidateClick();
 }
@@ -326,9 +324,9 @@ bool EventHandler::BubblingScroll(ScrollDirection direction,
       mouse_event_manager_->MousePressNode());
 }
 
-IntPoint EventHandler::LastKnownMousePositionInRootFrame() const {
+FloatPoint EventHandler::LastKnownMousePositionInRootFrame() const {
   return frame_->GetPage()->GetVisualViewport().ViewportToRootFrame(
-      mouse_event_manager_->LastKnownMousePosition());
+      mouse_event_manager_->LastKnownMousePositionInViewport());
 }
 
 IntPoint EventHandler::DragDataTransferLocationForTesting() {
@@ -377,8 +375,8 @@ void EventHandler::UpdateCursor() {
 
   HitTestRequest request(HitTestRequest::kReadOnly |
                          HitTestRequest::kAllowChildFrameContent);
-  HitTestLocation location(
-      view->ViewportToFrame(mouse_event_manager_->LastKnownMousePosition()));
+  HitTestLocation location(view->ViewportToFrame(
+      mouse_event_manager_->LastKnownMousePositionInViewport()));
   HitTestResult result(request, location);
   layout_view->HitTest(location, result);
 
@@ -1104,8 +1102,7 @@ WebInputEventResult EventHandler::UpdateDragAndDrop(
 
   if (AutoscrollController* controller =
           scroll_manager_->GetAutoscrollController()) {
-    controller->UpdateDragAndDrop(new_target,
-                                  FlooredIntPoint(event.PositionInRootFrame()),
+    controller->UpdateDragAndDrop(new_target, event.PositionInRootFrame(),
                                   event.TimeStamp());
   }
 
@@ -2030,7 +2027,7 @@ void EventHandler::HoverTimerFired(TimerBase*) {
     if (LocalFrameView* view = frame_->View()) {
       HitTestRequest request(HitTestRequest::kMove);
       HitTestLocation location(view->ViewportToFrame(
-          mouse_event_manager_->LastKnownMousePosition()));
+          mouse_event_manager_->LastKnownMousePositionInViewport()));
       HitTestResult result(request, location);
       layout_object->HitTest(location, result);
       frame_->GetDocument()->UpdateHoverActiveState(request,

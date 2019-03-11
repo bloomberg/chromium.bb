@@ -133,7 +133,7 @@ class CORE_EXPORT EventHandler final
 
   void ResizeScrollableAreaDestroyed();
 
-  IntPoint LastKnownMousePositionInRootFrame() const;
+  FloatPoint LastKnownMousePositionInRootFrame() const;
 
   IntPoint DragDataTransferLocationForTesting();
 

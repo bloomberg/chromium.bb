@@ -601,8 +601,8 @@ bool MouseEventManager::IsMousePositionUnknown() {
   return is_mouse_position_unknown_;
 }
 
-IntPoint MouseEventManager::LastKnownMousePosition() {
-  return FlooredIntPoint(last_known_mouse_position_);
+FloatPoint MouseEventManager::LastKnownMousePositionInViewport() {
+  return last_known_mouse_position_;
 }
 
 FloatPoint MouseEventManager::LastKnownMousePositionGlobal() {

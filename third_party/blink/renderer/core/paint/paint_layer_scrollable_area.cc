@@ -687,11 +687,12 @@ void PaintLayerScrollableArea::ContentsResized() {
 }
 
 IntPoint PaintLayerScrollableArea::LastKnownMousePosition() const {
-  return GetLayoutBox()->GetFrame() ? GetLayoutBox()
-                                          ->GetFrame()
-                                          ->GetEventHandler()
-                                          .LastKnownMousePositionInRootFrame()
-                                    : IntPoint();
+  return GetLayoutBox()->GetFrame()
+             ? FlooredIntPoint(GetLayoutBox()
+                                   ->GetFrame()
+                                   ->GetEventHandler()
+                                   .LastKnownMousePositionInRootFrame())
+             : IntPoint();
 }
 
 bool PaintLayerScrollableArea::ScrollAnimatorEnabled() const {
