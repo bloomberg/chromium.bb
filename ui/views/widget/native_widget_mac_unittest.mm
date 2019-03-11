@@ -702,11 +702,6 @@ TEST_F(NativeWidgetMacTest, SetCursor) {
   widget->CloseNow();
 }
 
-// This test uses the deprecated NSObject accessibility API - see
-// https://crbug.com/921109.
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-
 // Tests that an accessibility request from the system makes its way through to
 // a views::Label filling the window.
 TEST_F(NativeWidgetMacTest, AccessibilityIntegration) {
@@ -726,13 +721,13 @@ TEST_F(NativeWidgetMacTest, AccessibilityIntegration) {
 
   id hit = [widget->GetNativeWindow().GetNativeNSWindow()
       accessibilityHitTest:midpoint];
-  id title = [hit accessibilityAttributeValue:NSAccessibilityValueAttribute];
+  ASSERT_TRUE([hit conformsToProtocol:@protocol(NSAccessibility)]);
+  id<NSAccessibility> ax_hit = hit;
+  id title = ax_hit.accessibilityValue;
   EXPECT_NSEQ(title, @"Green");
 
   widget->CloseNow();
 }
-
-#pragma clang diagnostic pop
 
 namespace {
 
