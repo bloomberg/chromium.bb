@@ -828,11 +828,24 @@ A version of pixel-1280x720.jpg converted to grayscale using:
 ```
 jpegtran -grayscale pixel-1280x720.jpg > pixel-1280x720-grayscale.jpg
 ```
+Then, using a hex editor, the Huffman table sections were removed from the
+resulting file.
+
 #### pixel-1280x720-yuv420.jpg
 A version of pixel-1280x720.jpg converted to 4:2:0 subsampling using:
 ```
-convert pixel-1280x720.jpg -sampling-factor 4:2:0 pixel-1280x720-yuv420.jpg
+convert pixel-1280x720.jpg -sampling-factor 4:2:0 -define jpeg:optimize-coding=false pixel-1280x720-yuv420.jpg
 ```
+Then, using a hex editor, the Huffman table sections were removed from the
+resulting file.
+
+#### pixel-1280x720-yuv444.jpg
+A version of pixel-1280x720.jpg converted to 4:4:4 subsampling using:
+```
+convert pixel-1280x720.jpg -sampling-factor 4:4:4 -define jpeg:optimize-coding=false pixel-1280x720-yuv444.jpg
+```
+Then, using a hex editor, the Huffman table sections were removed from the
+resulting file.
 
 #### peach_pi-1280x720.jpg
 Single MJPEG encoded frame of 1280x720, captured on Samsung Chromebook 2(13").
