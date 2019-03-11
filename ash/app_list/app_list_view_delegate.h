@@ -15,6 +15,7 @@
 #include "ash/public/interfaces/menu.mojom.h"
 #include "base/callback_forward.h"
 #include "base/strings/string16.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/content/public/mojom/navigable_contents_factory.mojom.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/ui_base_types.h"
@@ -149,7 +150,8 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
   // initialize new NavigableContents objects for embedding web contents into
   // the app list UI.
   virtual void GetNavigableContentsFactory(
-      content::mojom::NavigableContentsFactoryRequest request) = 0;
+      mojo::PendingReceiver<content::mojom::NavigableContentsFactory>
+          receiver) = 0;
 
   // Returns the AssistantViewDelegate.
   virtual ash::AssistantViewDelegate* GetAssistantViewDelegate() = 0;

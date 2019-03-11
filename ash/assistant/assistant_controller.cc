@@ -227,7 +227,7 @@ void AssistantController::OpenUrl(const GURL& url, bool from_server) {
 }
 
 void AssistantController::GetNavigableContentsFactory(
-    content::mojom::NavigableContentsFactoryRequest request) {
+    mojo::PendingReceiver<content::mojom::NavigableContentsFactory> receiver) {
   const mojom::UserSession* user_session =
       Shell::Get()->session_controller()->GetUserSession(0);
 
@@ -243,10 +243,10 @@ void AssistantController::GetNavigableContentsFactory(
     return;
   }
 
-  Shell::Get()->connector()->BindInterface(
+  Shell::Get()->connector()->Connect(
       service_manager::ServiceFilter::ByNameInGroup(
           content::mojom::kServiceName, *service_instance_group),
-      std::move(request));
+      std::move(receiver));
 }
 
 void AssistantController::NotifyConstructed() {

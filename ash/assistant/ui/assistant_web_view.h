@@ -15,7 +15,7 @@
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "base/optional.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/content/public/cpp/navigable_contents.h"
 #include "ui/aura/window_observer.h"
 #include "ui/views/view.h"
@@ -85,7 +85,7 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantWebView
 
   CaptionBar* caption_bar_;  // Owned by view hierarchy.
 
-  content::mojom::NavigableContentsFactoryPtr contents_factory_;
+  mojo::Remote<content::mojom::NavigableContentsFactory> contents_factory_;
   std::unique_ptr<content::NavigableContents> contents_;
 
   // Our contents are drawn to a layer that is not masked by our widget's layer.

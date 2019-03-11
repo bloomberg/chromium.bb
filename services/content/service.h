@@ -30,8 +30,9 @@ class NavigableContentsImpl;
 class Service : public service_manager::Service {
  public:
   // |delegate| is not owned and must outlive |this|.
-  explicit Service(ServiceDelegate* delegate,
-                   service_manager::mojom::ServiceRequest request);
+  explicit Service(
+      ServiceDelegate* delegate,
+      mojo::PendingReceiver<service_manager::mojom::Service> receiver);
   ~Service() override;
 
   ServiceDelegate* delegate() const { return delegate_; }

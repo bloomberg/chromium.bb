@@ -256,10 +256,10 @@ void AppListClientImpl::OnPageBreakItemDeleted(const std::string& id) {
 }
 
 void AppListClientImpl::GetNavigableContentsFactory(
-    content::mojom::NavigableContentsFactoryRequest request) {
+    mojo::PendingReceiver<content::mojom::NavigableContentsFactory> receiver) {
   if (profile_) {
-    content::BrowserContext::GetConnectorFor(profile_)->BindInterface(
-        content::mojom::kServiceName, std::move(request));
+    content::BrowserContext::GetConnectorFor(profile_)->Connect(
+        content::mojom::kServiceName, std::move(receiver));
   }
 }
 

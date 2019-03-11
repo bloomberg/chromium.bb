@@ -113,7 +113,7 @@ class SearchResultAnswerCardView::AnswerCardResultView
     SetLayoutManager(std::make_unique<views::FillLayout>());
 
     view_delegate_->GetNavigableContentsFactory(
-        mojo::MakeRequest(&contents_factory_));
+        contents_factory_.BindNewPipeAndPassReceiver());
 
     auto params = content::mojom::NavigableContentsParams::New();
     params->enable_view_auto_resize = true;
@@ -300,7 +300,7 @@ class SearchResultAnswerCardView::AnswerCardResultView
 
   SearchResultContainerView* const container_;  // Not owned.
   AppListViewDelegate* const view_delegate_;    // Not owned.
-  content::mojom::NavigableContentsFactoryPtr contents_factory_;
+  mojo::Remote<content::mojom::NavigableContentsFactory> contents_factory_;
   std::unique_ptr<content::NavigableContents> contents_;
 
   bool is_current_navigation_valid_answer_card_ = false;

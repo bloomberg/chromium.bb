@@ -54,7 +54,7 @@ AssistantResponse::GetSuggestions() const {
 }
 
 void AssistantResponse::Process(
-    content::mojom::NavigableContentsFactoryPtr contents_factory,
+    mojo::Remote<content::mojom::NavigableContentsFactory> contents_factory,
     ProcessingCallback callback) {
   processor_ = std::make_unique<Processor>(*this, std::move(contents_factory),
                                            std::move(callback));
@@ -65,7 +65,7 @@ void AssistantResponse::Process(
 
 AssistantResponse::Processor::Processor(
     AssistantResponse& response,
-    content::mojom::NavigableContentsFactoryPtr contents_factory,
+    mojo::Remote<content::mojom::NavigableContentsFactory> contents_factory,
     ProcessingCallback callback)
     : response_(response),
       contents_factory_(std::move(contents_factory)),
