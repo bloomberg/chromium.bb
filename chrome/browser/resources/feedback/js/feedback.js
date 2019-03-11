@@ -386,9 +386,10 @@ function initialize() {
             chrome.feedbackPrivate.logSrtPromptResult(SrtPromptResult.CLOSED);
           }
         });
-      } else if (
-          feedbackInfo.flow ==
-          chrome.feedbackPrivate.FeedbackFlow.GOOGLE_INTERNAL) {
+      } else if (feedbackInfo.includeBluetoothLogs) {
+        assert(
+            feedbackInfo.flow ==
+            chrome.feedbackPrivate.FeedbackFlow.GOOGLE_INTERNAL);
         $('description-text')
             .addEventListener('input', checkForBluetoothKeywords);
         $('srt-prompt').hidden = true;
@@ -571,6 +572,27 @@ function initialize() {
                 });
 
             bluetoothLogsInfoLinkElement.onauxclick = function(e) {
+              e.preventDefault();
+            };
+          };
+        }
+
+        const assistantLogsInfoLinkElement = $('assistant-logs-info-link');
+        if (assistantLogsInfoLinkElement) {
+          assistantLogsInfoLinkElement.onclick = function(e) {
+            e.preventDefault();
+
+            chrome.app.window.create(
+                '/html/assistant_logs_info.html',
+                {width: 400, height: 120, resizable: false, frame: 'none'},
+                function(appWindow) {
+                  appWindow.contentWindow.onload = function() {
+                    i18nTemplate.process(
+                        appWindow.contentWindow.document, loadTimeData);
+                  };
+                });
+
+            assistantLogsInfoLinkElement.onauxclick = function(e) {
               e.preventDefault();
             };
           };
