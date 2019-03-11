@@ -301,14 +301,23 @@ void OriginPolicyThrottle::FetchPolicy(const GURL& url,
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory =
       storage_partition->GetURLLoaderFactoryForBrowserProcess();
 
+  network::mojom::URLLoaderFactory* factory =
+      url_loader_factory_for_testing_ ? url_loader_factory_for_testing_.get()
+                                      : url_loader_factory.get();
+
   // Start the download, and pass the callback for when we're finished.
-  url_loader_->DownloadToString(url_loader_factory.get(), std::move(done),
-                                kMaxPolicySize);
+  url_loader_->DownloadToString(factory, std::move(done), kMaxPolicySize);
 }
 
 void OriginPolicyThrottle::InjectPolicyForTesting(
     const std::string& policy_content) {
   OnTheGloriousPolicyHasArrived(std::make_unique<std::string>(policy_content));
+}
+
+void OriginPolicyThrottle::SetURLLoaderFactoryForTesting(
+    std::unique_ptr<network::mojom::URLLoaderFactory>
+        url_loader_factory_for_testing) {
+  url_loader_factory_for_testing_ = std::move(url_loader_factory_for_testing);
 }
 
 void OriginPolicyThrottle::OnTheGloriousPolicyHasArrived(
