@@ -71,8 +71,24 @@ class Util {
 using KeyFilter = base::RepeatingCallback<bool(const std::string& key)>;
 
 // Interface for classes providing persistent storage of Protocol Buffer
-// entries (T must be a Proto type extending MessageLite).
-template <typename T>
+// entries. P must be a proto type extending MessageLite. T is optional and
+// defaults to P and there is then no additional requirements for clients.
+// If T is set to something else, the client must provide these functions
+// (note the namespace requirement):
+// namespace leveldb_proto {
+// void DataToProto(const T& data, P* proto);
+// void ProtoToData(const P& proto, T* data);
+// }  // namespace leveldb_proto
+// The P type will be stored in the database, and the T type will be required
+// as input and will be provided as output for all API calls. The backend will
+// invoke the methods above for all conversions between the two types.
+// For retrieving a database of proto type ClientProto, use:
+// auto db = ProtoDatabaseProviderFactory::GetForBrowserContext(...)
+//               -> GetDB<ClientProto>(...);
+// For automatically converting to a different data type, use:
+// auto db = ProtoDatabaseProviderFactory::GetForBrowserContext(...)
+//               -> GetDB<ClientProto, ClientStruct>(...);
+template <typename P, typename T = P>
 class ProtoDatabase {
  public:
   // For compatibility:
