@@ -171,6 +171,12 @@ void PaintWorkletGlobalScope::registerPaint(const String& name,
     return;
   }
 
+  if (!paint_ctor->IsConstructor()) {
+    exception_state.ThrowTypeError(
+        "The provided callback is not a constructor.");
+    return;
+  }
+
   v8::Local<v8::Context> context = ScriptController()->GetContext();
 
   v8::Local<v8::Object> v8_paint_ctor = paint_ctor->CallbackObject();

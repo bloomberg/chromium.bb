@@ -75,6 +75,12 @@ void LayoutWorkletGlobalScope::registerLayout(
     return;
   }
 
+  if (!layout_ctor->IsConstructor()) {
+    exception_state.ThrowTypeError(
+        "The provided callback is not a constructor.");
+    return;
+  }
+
   v8::Local<v8::Context> current_context =
       layout_ctor->GetIsolate()->GetCurrentContext();
 
