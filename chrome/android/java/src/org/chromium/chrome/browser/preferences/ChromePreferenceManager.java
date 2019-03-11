@@ -290,11 +290,21 @@ public class ChromePreferenceManager {
     public static final String TWA_DIALOG_NUMBER_OF_DIMSISSALS_ON_CLEAR_DATA =
             "twa_dialog_number_of_dismissals_on_clear_data";
 
+    public static final String INTEREST_FEED_CONTENT_SUGGESTIONS_KEY =
+            "interest_feed_content_suggestions";
+
     /**
      * Whether or not the tab group is enabled.
      * Default value is false.
      */
     public static final String TAB_GROUPS_ANDROID_ENABLED_KEY = "tab_group_android_enabled";
+
+    /**
+     * Key for whether PrefetchBackgroundTask should load native in service manager only mode.
+     * Default value is false.
+     */
+    public static final String SERVICE_MANAGER_FOR_BACKGROUND_PREFETCH_KEY =
+            "service_manager_for_background_prefetch";
 
     /**
      * Deprecated keys for Chrome Home.

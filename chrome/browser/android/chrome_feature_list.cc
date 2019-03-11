@@ -159,6 +159,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kSearchReadyOmniboxFeature,
     &kSearchEnginePromoExistingDevice,
     &kSearchEnginePromoNewDevice,
+    &kServiceManagerForBackgroundPrefetch,
     &kServiceManagerForDownload,
     &kSoleIntegration,
     &kSpannableInlineAutocomplete,
@@ -457,6 +458,9 @@ const base::Feature kRevampedContextMenu{"RevampedContextMenu",
 
 const base::Feature kSearchReadyOmniboxFeature{
     "SearchReadyOmnibox", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kServiceManagerForBackgroundPrefetch{
+    "ServiceManagerForBackgroundPrefetch", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kServiceManagerForDownload{
     "ServiceManagerForDownload", base::FEATURE_DISABLED_BY_DEFAULT};

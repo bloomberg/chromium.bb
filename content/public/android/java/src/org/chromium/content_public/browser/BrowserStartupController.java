@@ -72,6 +72,11 @@ public interface BrowserStartupController {
     boolean isStartupSuccessfullyCompleted();
 
     /**
+     * @return Whether the browser has successfully started in service manager only mode.
+     */
+    boolean isServiceManagerSuccessfullyStarted();
+
+    /**
      * Add startup callback.
      * @param callback Callback to add.
      */
