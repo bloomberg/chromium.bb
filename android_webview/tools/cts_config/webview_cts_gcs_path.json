@@ -213,6 +213,10 @@
           {
             "match": "android.webkit.cts.WebViewSslTest#testSecureServerRequiringClientCertDoesCancelRequest",
             "_bug_id": "crbug.com/922400"
+          },
+          {
+            "match": "android.webkit.cts.WebViewTest#testLoadDataWithBaseUrl",
+            "_bug_id": "crbug.com/900915"
           }
         ]
       },
@@ -244,6 +248,10 @@
           {
             "match": "android.webkit.cts.WebViewSslTest#testSecureServerRequiringClientCertDoesCancelRequest",
             "_bug_id": "crbug.com/922400"
+          },
+          {
+            "match": "android.webkit.cts.WebViewTest#testLoadDataWithBaseUrl",
+            "_bug_id": "crbug.com/900915"
           }
         ]
       },
