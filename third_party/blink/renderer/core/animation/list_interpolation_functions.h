@@ -8,6 +8,7 @@
 #include <memory>
 #include "third_party/blink/renderer/core/animation/interpolation_value.h"
 #include "third_party/blink/renderer/core/animation/pairwise_interpolation_value.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -16,6 +17,8 @@ class UnderlyingValueOwner;
 class InterpolationType;
 
 class CORE_EXPORT ListInterpolationFunctions {
+  STACK_ALLOCATED();
+
  public:
   template <typename CreateItemCallback>
   static InterpolationValue CreateList(wtf_size_t length, CreateItemCallback);
