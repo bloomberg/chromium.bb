@@ -62,7 +62,7 @@ bool ShouldAllowRedirectPreview(content::NavigationHandle* navigation_handle) {
   content::WebContents* web_contents = navigation_handle->GetWebContents();
   auto* previews_service = PreviewsServiceFactory::GetForProfile(
       Profile::FromBrowserContext(web_contents->GetBrowserContext()));
-  PreviewsLitePageNavigationThrottleManager* manager =
+  PreviewsLitePageDecider* decider =
       previews_service->previews_lite_page_decider();
 
   std::vector<PreviewsLitePageNavigationThrottle::IneligibleReason>
@@ -73,7 +73,7 @@ bool ShouldAllowRedirectPreview(content::NavigationHandle* navigation_handle) {
         PreviewsLitePageNavigationThrottle::IneligibleReason::kNonHttpsScheme);
   }
 
-  if (manager->IsServerUnavailable()) {
+  if (decider->IsServerUnavailable()) {
     ineligible_reasons.push_back(PreviewsLitePageNavigationThrottle::
                                      IneligibleReason::kServerUnavailable);
   }
@@ -121,7 +121,7 @@ bool ShouldAllowRedirectPreview(content::NavigationHandle* navigation_handle) {
     }
   }
 
-  if (manager->HostBlacklistedFromBypass(url.host())) {
+  if (decider->HostBlacklistedFromBypass(url.host())) {
     blacklist_reasons.push_back(PreviewsLitePageNavigationThrottle::
                                     BlacklistReason::kHostBypassBlacklisted);
   }
@@ -137,8 +137,8 @@ bool ShouldAllowRedirectPreview(content::NavigationHandle* navigation_handle) {
     return false;
 
   // This should always be at the end, but before the control group check.
-  if (manager->NeedsToNotifyUser()) {
-    manager->NotifyUser(web_contents);
+  if (decider->NeedsToNotifyUser()) {
+    decider->NotifyUser(web_contents);
     PreviewsLitePageNavigationThrottle::LogIneligibleReason(
         PreviewsLitePageNavigationThrottle::IneligibleReason::kInfoBarNotSeen);
     return false;
@@ -148,7 +148,7 @@ bool ShouldAllowRedirectPreview(content::NavigationHandle* navigation_handle) {
   if (previews::params::IsInLitePageRedirectControl()) {
     previews::PreviewsUserData::ServerLitePageInfo* info =
         PreviewsLitePageNavigationThrottle::GetOrCreateServerLitePageInfo(
-            navigation_handle, manager);
+            navigation_handle, decider);
     info->status = previews::ServerLitePageStatus::kControl;
     return false;
   }
