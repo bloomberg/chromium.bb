@@ -133,15 +133,6 @@ bool FragmentRequiresLegacyFallback(const NGPhysicalFragment& fragment) {
 
 }  // anonymous namespace
 
-NGBoxFragmentPainter::NGBoxFragmentPainter(const NGPaintFragment& box)
-    : BoxPainterBase(&box.GetLayoutObject()->GetDocument(),
-                     box.Style(),
-                     box.GetLayoutObject()->GeneratingNode()),
-      box_fragment_(box) {
-  DCHECK(box.PhysicalFragment().IsBox() ||
-         box.PhysicalFragment().IsRenderedLegend());
-}
-
 const NGPhysicalBoxFragment& NGBoxFragmentPainter::PhysicalFragment() const {
   return static_cast<const NGPhysicalBoxFragment&>(
       box_fragment_.PhysicalFragment());
