@@ -1136,9 +1136,10 @@ class ArchivingStageMixin(object):
     Returns:
       True is the build should not be copied to this moblab url
     """
-    bot_filter_list = ['paladin', 'trybot', 'pfq', 'pre-cq', 'tryjob']
-    if (url.find('moblab') != -1 and
-        any(bot_id.find(filter) != -1 for filter in bot_filter_list)):
+    bot_filter_list = ['paladin', 'trybot', 'pfq', 'pre-cq', 'tryjob',
+                       'postsubmit']
+    if ('moblab' in url and
+        any(filter in bot_id for filter in bot_filter_list)):
       return True
     return False
 
