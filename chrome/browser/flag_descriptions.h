@@ -2064,9 +2064,6 @@ extern const char kVirtualKeyboardDescription[];
 extern const char kVirtualKeyboardOverscrollName[];
 extern const char kVirtualKeyboardOverscrollDescription[];
 
-extern const char kVoiceInputName[];
-extern const char kVoiceInputDescription[];
-
 extern const char kWakeOnPacketsName[];
 extern const char kWakeOnPacketsDescription[];
 
