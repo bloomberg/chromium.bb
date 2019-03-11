@@ -34,7 +34,6 @@
 #include "chrome/browser/chromeos/arc/oemcrypto/arc_oemcrypto_bridge.h"
 #include "chrome/browser/chromeos/arc/pip/arc_pip_bridge.h"
 #include "chrome/browser/chromeos/arc/policy/arc_policy_bridge.h"
-#include "chrome/browser/chromeos/arc/policy/arc_policy_util.h"
 #include "chrome/browser/chromeos/arc/print/arc_print_service.h"
 #include "chrome/browser/chromeos/arc/process/arc_process_service.h"
 #include "chrome/browser/chromeos/arc/screen_capture/arc_screen_capture_bridge.h"
@@ -113,13 +112,6 @@ ArcServiceLauncher* ArcServiceLauncher::Get() {
 void ArcServiceLauncher::MaybeSetProfile(Profile* profile) {
   if (!IsArcAllowedForProfile(profile))
     return;
-
-  // TODO(khmel): Move this to IsArcAllowedForProfile.
-  if (policy_util::IsArcDisabledForEnterprise() &&
-      policy_util::IsAccountManaged(profile)) {
-    VLOG(2) << "Enterprise users are not supported in ARC.";
-    return;
-  }
 
   // Do not expect it in real use case, but it is used for testing.
   // Because the ArcService instances tied to the old profile is kept,
