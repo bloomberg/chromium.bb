@@ -490,7 +490,7 @@ WebInputEventResult MouseEventManager::HandleMouseFocus(
   frame_->GetDocument()->UpdateStyleAndLayout();
 
   Element* element = element_under_mouse_;
-  for (; element; element = FlatTreeTraversal::ParentElement(*element)) {
+  for (; element; element = element->ParentOrShadowHostElement()) {
     if (element->IsFocusable() && element->IsFocusedElementInDocument())
       return WebInputEventResult::kNotHandled;
     if (element->IsMouseFocusable())
