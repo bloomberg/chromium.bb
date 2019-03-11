@@ -104,8 +104,9 @@ bool SizeMayChange(const ComputedStyle& style,
     }
   }
 
-  if (new_space.PercentageResolutionInlineSize() !=
-      old_space.PercentageResolutionInlineSize()) {
+  if (style.MayHavePadding() &&
+      new_space.PercentageResolutionInlineSize() !=
+          old_space.PercentageResolutionInlineSize()) {
     // Percentage-based padding is resolved against the inline content box size
     // of the containing block.
     if (style.PaddingTop().IsPercentOrCalc() ||

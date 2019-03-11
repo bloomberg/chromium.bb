@@ -1430,9 +1430,33 @@ class ComputedStyle : public ComputedStyleBase,
   }
 
   // Margin utility functions.
-  bool HasMargin() const {
-    return !MarginLeft().IsZero() || !MarginRight().IsZero() ||
-           !MarginTop().IsZero() || !MarginBottom().IsZero();
+  void SetMarginTop(const Length& v) {
+    if (MarginTop() != v) {
+      if (!v.IsZero())
+        SetMayHaveMargin();
+      MutableMarginTopInternal() = v;
+    }
+  }
+  void SetMarginRight(const Length& v) {
+    if (MarginRight() != v) {
+      if (!v.IsZero())
+        SetMayHaveMargin();
+      MutableMarginRightInternal() = v;
+    }
+  }
+  void SetMarginBottom(const Length& v) {
+    if (MarginBottom() != v) {
+      if (!v.IsZero())
+        SetMayHaveMargin();
+      MutableMarginBottomInternal() = v;
+    }
+  }
+  void SetMarginLeft(const Length& v) {
+    if (MarginLeft() != v) {
+      if (!v.IsZero())
+        SetMayHaveMargin();
+      MutableMarginLeftInternal() = v;
+    }
   }
   bool HasMarginBeforeQuirk() const { return MarginBefore().Quirk(); }
   bool HasMarginAfterQuirk() const { return MarginAfter().Quirk(); }
@@ -1468,6 +1492,35 @@ class ComputedStyle : public ComputedStyleBase,
   }
 
   // Padding utility functions.
+  void SetPaddingTop(const Length& v) {
+    if (PaddingTop() != v) {
+      if (!v.IsZero())
+        SetMayHavePadding();
+      MutablePaddingTopInternal() = v;
+    }
+  }
+  void SetPaddingRight(const Length& v) {
+    if (PaddingRight() != v) {
+      if (!v.IsZero())
+        SetMayHavePadding();
+      MutablePaddingRightInternal() = v;
+    }
+  }
+  void SetPaddingBottom(const Length& v) {
+    if (PaddingBottom() != v) {
+      if (!v.IsZero())
+        SetMayHavePadding();
+      MutablePaddingBottomInternal() = v;
+    }
+  }
+  void SetPaddingLeft(const Length& v) {
+    if (PaddingLeft() != v) {
+      if (!v.IsZero())
+        SetMayHavePadding();
+      MutablePaddingLeftInternal() = v;
+    }
+  }
+
   const Length& PaddingBefore() const {
     return PhysicalPaddingToLogical().Before();
   }
@@ -1483,10 +1536,6 @@ class ComputedStyle : public ComputedStyleBase,
   }
   const Length& PaddingUnder() const {
     return PhysicalPaddingToLogical().Under();
-  }
-  bool HasPadding() const {
-    return !PaddingLeft().IsZero() || !PaddingRight().IsZero() ||
-           !PaddingTop().IsZero() || !PaddingBottom().IsZero();
   }
   void ResetPadding() {
     SetPaddingTop(Length::Fixed());

@@ -297,7 +297,7 @@ bool LayoutImage::ForegroundIsKnownToBeOpaqueInRect(
   // Background shows in padding area.
   if ((background_clip == EFillBox::kBorder ||
        background_clip == EFillBox::kPadding) &&
-      StyleRef().HasPadding())
+      StyleRef().MayHavePadding())
     return false;
   // Object-position may leave parts of the content box empty, regardless of the
   // value of object-fit.

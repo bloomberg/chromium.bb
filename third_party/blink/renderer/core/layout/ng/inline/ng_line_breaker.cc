@@ -1257,8 +1257,8 @@ bool NGLineBreaker::ComputeOpenTagResult(
   const ComputedStyle& style = *item.Style();
   item_result->has_edge = item.HasStartEdge();
   if (item.ShouldCreateBoxFragment() &&
-      (style.HasBorder() || style.HasPadding() ||
-       (style.HasMargin() && item_result->has_edge))) {
+      (style.HasBorder() || style.MayHavePadding() ||
+       (style.MayHaveMargin() && item_result->has_edge))) {
     item_result->borders = ComputeLineBorders(style);
     item_result->padding = ComputeLinePadding(constraint_space, style);
     if (item_result->has_edge) {

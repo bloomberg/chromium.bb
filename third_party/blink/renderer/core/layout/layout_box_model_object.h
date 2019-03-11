@@ -280,10 +280,6 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
                              -BorderLeft());
   }
 
-  bool HasBorderOrPadding() const {
-    return StyleRef().HasBorder() || StyleRef().HasPadding();
-  }
-
   LayoutUnit BorderAndPaddingStart() const {
     return BorderStart() + PaddingStart();
   }
@@ -307,7 +303,7 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
     return BorderLeft() + BorderRight() + PaddingLeft() + PaddingRight();
   }
   DISABLE_CFI_PERF LayoutUnit BorderAndPaddingLogicalHeight() const {
-    return HasBorderOrPadding()
+    return (StyleRef().HasBorder() || StyleRef().MayHavePadding())
                ? BorderAndPaddingBefore() + BorderAndPaddingAfter()
                : LayoutUnit();
   }

@@ -2025,7 +2025,7 @@ NGBoxStrut NGBlockLayoutAlgorithm::CalculateMargins(
   const ComputedStyle& child_style = child.Style();
   bool needs_inline_size =
       NeedsInlineSizeToResolveLineLeft(child_style, Style());
-  if (!needs_inline_size && !child_style.HasMargin())
+  if (!needs_inline_size && !child_style.MayHaveMargin())
     return {};
 
   NGBoxStrut margins = ComputeMarginsFor(

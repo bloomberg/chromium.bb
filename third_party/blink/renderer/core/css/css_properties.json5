@@ -2040,6 +2040,7 @@
       field_template: "<length>",
       default_value: "Length::Fixed()",
       converter: "ConvertQuirkyLength",
+      computed_style_custom_functions: ["setter"],
       keywords: ["auto"],
       typedom_types: ["Keyword", "Length", "Percentage"]
     },
@@ -2052,6 +2053,7 @@
       field_template: "<length>",
       default_value: "Length::Fixed()",
       converter: "ConvertQuirkyLength",
+      computed_style_custom_functions: ["setter"],
       keywords: ["auto"],
       typedom_types: ["Keyword", "Length", "Percentage"]
     },
@@ -2064,6 +2066,7 @@
       field_template: "<length>",
       default_value: "Length::Fixed()",
       converter: "ConvertQuirkyLength",
+      computed_style_custom_functions: ["setter"],
       keywords: ["auto"],
       typedom_types: ["Keyword", "Length", "Percentage"]
     },
@@ -2076,6 +2079,7 @@
       field_template: "<length>",
       default_value: "Length::Fixed()",
       converter: "ConvertQuirkyLength",
+      computed_style_custom_functions: ["setter"],
       keywords: ["auto"],
       typedom_types: ["Keyword", "Length", "Percentage"]
     },
@@ -2444,6 +2448,7 @@
       field_template: "<length>",
       default_value: "Length::Fixed()",
       converter: "ConvertLength",
+      computed_style_custom_functions: ["setter"],
       typedom_types: ["Keyword", "Length", "Percentage"]
     },
     {
@@ -2455,6 +2460,7 @@
       field_template: "<length>",
       default_value: "Length::Fixed()",
       converter: "ConvertLength",
+      computed_style_custom_functions: ["setter"],
       typedom_types: ["Keyword", "Length", "Percentage"]
     },
     {
@@ -2466,6 +2472,7 @@
       field_template: "<length>",
       default_value: "Length::Fixed()",
       converter: "ConvertLength",
+      computed_style_custom_functions: ["setter"],
       typedom_types: ["Keyword", "Length", "Percentage"]
     },
     {
@@ -2477,6 +2484,7 @@
       field_template: "<length>",
       default_value: "Length::Fixed()",
       converter: "ConvertLength",
+      computed_style_custom_functions: ["setter"],
       typedom_types: ["Keyword", "Length", "Percentage"]
     },
     {
