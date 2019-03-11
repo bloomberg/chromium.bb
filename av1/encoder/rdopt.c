@@ -10817,15 +10817,6 @@ static void calc_target_weighted_pred(const AV1_COMMON *cm, const MACROBLOCK *x,
                                       int above_stride, const uint8_t *left,
                                       int left_stride);
 
-static const int ref_frame_flag_list[REF_FRAMES] = { 0,
-                                                     AOM_LAST_FLAG,
-                                                     AOM_LAST2_FLAG,
-                                                     AOM_LAST3_FLAG,
-                                                     AOM_GOLD_FLAG,
-                                                     AOM_BWD_FLAG,
-                                                     AOM_ALT2_FLAG,
-                                                     AOM_ALT_FLAG };
-
 static void rd_pick_skip_mode(RD_STATS *rd_cost,
                               InterModeSearchState *search_state,
                               const AV1_COMP *const cpi, MACROBLOCK *const x,
@@ -11180,7 +11171,7 @@ static void init_mode_skip_mask(mode_skip_mask_t *mask, const AV1_COMP *cpi,
     min_pred_mv_sad = AOMMIN(min_pred_mv_sad, x->pred_mv_sad[ref_frame]);
 
   for (ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame) {
-    if (!(cpi->ref_frame_flags & ref_frame_flag_list[ref_frame])) {
+    if (!(cpi->ref_frame_flags & av1_ref_frame_flag_list[ref_frame])) {
       // Skip checking missing reference in both single and compound reference
       // modes.
       disable_reference(ref_frame, mask->ref_combo);
@@ -11223,7 +11214,7 @@ static void init_mode_skip_mask(mode_skip_mask_t *mask, const AV1_COMP *cpi,
 
   if (cpi->rc.is_src_frame_alt_ref) {
     if (sf->alt_ref_search_fp) {
-      assert(cpi->ref_frame_flags & ref_frame_flag_list[ALTREF_FRAME]);
+      assert(cpi->ref_frame_flags & av1_ref_frame_flag_list[ALTREF_FRAME]);
       mask->pred_modes[ALTREF_FRAME] = 0;
       disable_inter_references_except_altref(mask->ref_combo);
       disable_reference(INTRA_FRAME, mask->ref_combo);
@@ -11305,7 +11296,7 @@ static void set_params_rd_pick_inter_mode(
     x->pred_mv_sad[ref_frame] = INT_MAX;
     x->mbmi_ext->mode_context[ref_frame] = 0;
     mbmi_ext->ref_mv_count[ref_frame] = UINT8_MAX;
-    if (cpi->ref_frame_flags & ref_frame_flag_list[ref_frame]) {
+    if (cpi->ref_frame_flags & av1_ref_frame_flag_list[ref_frame]) {
       if (mbmi->partition != PARTITION_NONE &&
           mbmi->partition != PARTITION_SPLIT) {
         if (skip_ref_frame_mask & (1 << ref_frame)) {
@@ -11332,8 +11323,8 @@ static void set_params_rd_pick_inter_mode(
     x->mbmi_ext->mode_context[ref_frame] = 0;
     mbmi_ext->ref_mv_count[ref_frame] = UINT8_MAX;
     const MV_REFERENCE_FRAME *rf = ref_frame_map[ref_frame - REF_FRAMES];
-    if (!((cpi->ref_frame_flags & ref_frame_flag_list[rf[0]]) &&
-          (cpi->ref_frame_flags & ref_frame_flag_list[rf[1]]))) {
+    if (!((cpi->ref_frame_flags & av1_ref_frame_flag_list[rf[0]]) &&
+          (cpi->ref_frame_flags & av1_ref_frame_flag_list[rf[1]]))) {
       continue;
     }
 
@@ -11442,7 +11433,7 @@ static void set_params_nonrd_pick_inter_mode(
     x->pred_mv_sad[ref_frame] = INT_MAX;
     x->mbmi_ext->mode_context[ref_frame] = 0;
     mbmi_ext->ref_mv_count[ref_frame] = UINT8_MAX;
-    if (cpi->ref_frame_flags & ref_frame_flag_list[ref_frame]) {
+    if (cpi->ref_frame_flags & av1_ref_frame_flag_list[ref_frame]) {
       if (mbmi->partition != PARTITION_NONE &&
           mbmi->partition != PARTITION_SPLIT) {
         if (skip_ref_frame_mask & (1 << ref_frame)) {
@@ -11713,7 +11704,8 @@ static int inter_mode_compatible_skip(const AV1_COMP *cpi, const MACROBLOCK *x,
     if (current_frame->reference_mode == SINGLE_REFERENCE) return 1;
 
     // Skip compound inter modes if ARF is not available.
-    if (!(cpi->ref_frame_flags & ref_frame_flag_list[ref_frame[1]])) return 1;
+    if (!(cpi->ref_frame_flags & av1_ref_frame_flag_list[ref_frame[1]]))
+      return 1;
 
     // Do not allow compound prediction if the segment level reference frame
     // feature is in use as in this case there can only be one reference.
@@ -11897,7 +11889,7 @@ static int inter_mode_search_order_independent_skip(
     // Check if one of the reference is ALTREF2_FRAME and BWDREF_FRAME is a
     // valid reference.
     if ((ref_frame[0] == ALTREF2_FRAME || ref_frame[1] == ALTREF2_FRAME) &&
-        (cpi->ref_frame_flags & ref_frame_flag_list[BWDREF_FRAME])) {
+        (cpi->ref_frame_flags & av1_ref_frame_flag_list[BWDREF_FRAME])) {
       // Check if both ALTREF2_FRAME and BWDREF_FRAME are future references.
       if ((get_relative_dist(
                order_hint_info,

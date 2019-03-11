@@ -145,15 +145,6 @@ static const uint16_t AV1_HIGH_VAR_OFFS_12[MAX_SB_SIZE] = {
   128 * 16, 128 * 16
 };
 
-static const uint8_t ref_frame_flag_list[REF_FRAMES] = { 0,
-                                                         AOM_LAST_FLAG,
-                                                         AOM_LAST2_FLAG,
-                                                         AOM_LAST3_FLAG,
-                                                         AOM_GOLD_FLAG,
-                                                         AOM_BWD_FLAG,
-                                                         AOM_ALT2_FLAG,
-                                                         AOM_ALT_FLAG };
-
 unsigned int av1_get_sby_perpixel_variance(const AV1_COMP *cpi,
                                            const struct buf_2d *ref,
                                            BLOCK_SIZE bs) {
@@ -3340,7 +3331,7 @@ static int simple_motion_search_get_best_ref(
   for (int ref_idx = 0; ref_idx < num_refs; ref_idx++) {
     const int ref = refs[ref_idx];
 
-    if (cpi->ref_frame_flags & ref_frame_flag_list[ref]) {
+    if (cpi->ref_frame_flags & av1_ref_frame_flag_list[ref]) {
       unsigned int curr_sse = 0, curr_var = 0;
       simple_motion_search(cpi, x, mi_row, mi_col, bsize, ref,
                            mv_ref_fulls[ref], num_planes, use_subpixel);
@@ -3387,8 +3378,8 @@ static void simple_motion_search_prune_part_features(
   const int h_mi = mi_size_high[bsize];
   int f_idx = 0;
   assert(mi_size_wide[bsize] == mi_size_high[bsize]);
-  assert(cpi->ref_frame_flags & ref_frame_flag_list[LAST_FRAME] ||
-         cpi->ref_frame_flags & ref_frame_flag_list[ALTREF_FRAME]);
+  assert(cpi->ref_frame_flags & av1_ref_frame_flag_list[LAST_FRAME] ||
+         cpi->ref_frame_flags & av1_ref_frame_flag_list[ALTREF_FRAME]);
 
   // Setting up motion search
   const int ref_list[] = { LAST_FRAME, ALTREF_FRAME };
@@ -5805,7 +5796,7 @@ static void enforce_max_ref_frames(AV1_COMP *cpi) {
   MV_REFERENCE_FRAME ref_frame;
   int total_valid_refs = 0;
   for (ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame) {
-    if (cpi->ref_frame_flags & ref_frame_flag_list[ref_frame]) {
+    if (cpi->ref_frame_flags & av1_ref_frame_flag_list[ref_frame]) {
       total_valid_refs++;
     }
   }
@@ -5824,7 +5815,8 @@ static void enforce_max_ref_frames(AV1_COMP *cpi) {
   for (int i = 0; i < 4 && total_valid_refs > max_allowed_refs; ++i) {
     const MV_REFERENCE_FRAME ref_frame_to_disable = disable_order[i];
 
-    if (!(cpi->ref_frame_flags & ref_frame_flag_list[ref_frame_to_disable])) {
+    if (!(cpi->ref_frame_flags &
+          av1_ref_frame_flag_list[ref_frame_to_disable])) {
       continue;
     }
 
@@ -6261,7 +6253,7 @@ static void encode_frame_internal(AV1_COMP *cpi) {
     // clear disabled ref_frames
     for (frame = LAST_FRAME; frame <= ALTREF_FRAME; ++frame) {
       const int ref_disabled =
-          !(cpi->ref_frame_flags & ref_frame_flag_list[frame]);
+          !(cpi->ref_frame_flags & av1_ref_frame_flag_list[frame]);
       if (ref_disabled && cpi->sf.recode_loop != DISALLOW_RECODE) {
         cpi->gmparams_cost[frame] = 0;
         cm->global_motion[frame] = default_warp_params;
