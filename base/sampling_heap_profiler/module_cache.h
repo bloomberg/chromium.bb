@@ -5,7 +5,6 @@
 #ifndef BASE_SAMPLING_HEAP_PROFILER_MODULE_CACHE_H_
 #define BASE_SAMPLING_HEAP_PROFILER_MODULE_CACHE_H_
 
-#include <map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -71,12 +70,18 @@ class BASE_EXPORT ModuleCache {
   const Module* GetModuleForAddress(uintptr_t address);
   std::vector<const Module*> GetModules() const;
 
+  void InjectModuleForTesting(std::unique_ptr<Module> module);
+
  private:
   // Creates a Module object for the specified memory address. Returns null if
   // the address does not belong to a module.
   static std::unique_ptr<Module> CreateModuleForAddress(uintptr_t address);
 
-  std::map<uintptr_t, std::unique_ptr<Module>> modules_cache_map_;
+  // Unsorted vector of cached modules. The number of loaded modules is
+  // generally much less than 100, and more frequently seen modules will tend to
+  // be added earlier and thus be closer to the front to the vector. So linear
+  // search to find modules should be acceptable.
+  std::vector<std::unique_ptr<Module>> modules_;
 };
 
 }  // namespace base
