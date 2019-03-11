@@ -829,10 +829,12 @@ void TabSpecificContentSettings::DidFinishNavigation(
 void TabSpecificContentSettings::AppCacheAccessed(const GURL& manifest_url,
                                                   bool blocked_by_policy) {
   if (blocked_by_policy) {
-    blocked_local_shared_objects_.appcaches()->AddAppCache(manifest_url);
+    blocked_local_shared_objects_.appcaches()->Add(
+        url::Origin::Create(manifest_url));
     OnContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES);
   } else {
-    allowed_local_shared_objects_.appcaches()->AddAppCache(manifest_url);
+    allowed_local_shared_objects_.appcaches()->Add(
+        url::Origin::Create(manifest_url));
     OnContentAllowed(CONTENT_SETTINGS_TYPE_COOKIES);
   }
 }

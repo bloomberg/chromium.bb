@@ -26,7 +26,6 @@
 #include "content/public/common/url_constants.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/cookies/canonical_cookie.h"
-#include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
 #include "url/gurl.h"
 
 namespace {
@@ -41,7 +40,9 @@ bool SameDomainOrHost(const GURL& gurl1, const GURL& gurl2) {
 }  // namespace
 
 LocalSharedObjectsContainer::LocalSharedObjectsContainer(Profile* profile)
-    : appcaches_(new CannedBrowsingDataAppCacheHelper(profile)),
+    : appcaches_(new CannedBrowsingDataAppCacheHelper(
+          content::BrowserContext::GetDefaultStoragePartition(profile)
+              ->GetAppCacheService())),
       cookies_(new CannedBrowsingDataCookieHelper(
           content::BrowserContext::GetDefaultStoragePartition(profile))),
       databases_(new CannedBrowsingDataDatabaseHelper(profile)),
@@ -66,7 +67,7 @@ LocalSharedObjectsContainer::~LocalSharedObjectsContainer() {
 
 size_t LocalSharedObjectsContainer::GetObjectCount() const {
   size_t count = 0;
-  count += appcaches()->GetAppCacheCount();
+  count += appcaches()->GetCount();
   count += cookies()->GetCookieCount();
   count += databases()->GetCount();
   count += file_systems()->GetCount();
@@ -162,15 +163,9 @@ size_t LocalSharedObjectsContainer::GetObjectCountForDomain(
   }
 
   // Count the AppCache manifest files for the domain of the given |origin|.
-  typedef BrowsingDataAppCacheHelper::OriginAppCacheInfoMap
-      OriginAppCacheInfoMap;
-  const OriginAppCacheInfoMap& map = appcaches()->GetOriginAppCacheInfoMap();
-  for (auto it = map.begin(); it != map.end(); ++it) {
-    const std::vector<blink::mojom::AppCacheInfo>& info_vector = it->second;
-    for (auto info = info_vector.begin(); info != info_vector.end(); ++info) {
-      if (SameDomainOrHost(origin, info->manifest_url))
-        ++count;
-    }
+  for (const auto& storage_origin : appcaches()->GetOrigins()) {
+    if (SameDomainOrHost(origin, storage_origin.GetURL()))
+      ++count;
   }
 
   return count;
