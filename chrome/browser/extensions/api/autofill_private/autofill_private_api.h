@@ -174,44 +174,6 @@ class AutofillPrivateGetCreditCardListFunction
   DISALLOW_COPY_AND_ASSIGN(AutofillPrivateGetCreditCardListFunction);
 };
 
-class AutofillPrivateGetLocalCreditCardListFunction
-    : public UIThreadExtensionFunction {
- public:
-  AutofillPrivateGetLocalCreditCardListFunction();
-  DECLARE_EXTENSION_FUNCTION("autofillPrivate.getLocalCreditCardList",
-                             AUTOFILLPRIVATE_GETLOCALCREDITCARDLIST)
-
- protected:
-  ~AutofillPrivateGetLocalCreditCardListFunction() override;
-
-  // ExtensionFunction overrides.
-  ResponseAction Run() override;
-
- private:
-  ChromeExtensionFunctionDetails chrome_details_;
-
-  DISALLOW_COPY_AND_ASSIGN(AutofillPrivateGetLocalCreditCardListFunction);
-};
-
-class AutofillPrivateGetServerCreditCardListFunction
-    : public UIThreadExtensionFunction {
- public:
-  AutofillPrivateGetServerCreditCardListFunction();
-  DECLARE_EXTENSION_FUNCTION("autofillPrivate.getServerCreditCardList",
-                             AUTOFILLPRIVATE_GETSERVERCREDITCARDLIST)
-
- protected:
-  ~AutofillPrivateGetServerCreditCardListFunction() override;
-
-  // ExtensionFunction overrides.
-  ResponseAction Run() override;
-
- private:
-  ChromeExtensionFunctionDetails chrome_details_;
-
-  DISALLOW_COPY_AND_ASSIGN(AutofillPrivateGetServerCreditCardListFunction);
-};
-
 class AutofillPrivateMigrateCreditCardsFunction
     : public UIThreadExtensionFunction {
  public:
