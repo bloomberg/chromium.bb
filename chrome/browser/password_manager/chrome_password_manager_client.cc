@@ -356,8 +356,7 @@ bool ChromePasswordManagerClient::PromptUserToChooseCredentials(
   AccountChooserDialogAndroid* acccount_chooser_dialog =
       new AccountChooserDialogAndroid(web_contents(), std::move(local_forms),
                                       origin, intercept);
-  acccount_chooser_dialog->ShowDialog();
-  return true;
+  return acccount_chooser_dialog->ShowDialog();
 #else
   return PasswordsClientUIDelegateFromWebContents(web_contents())
       ->OnChooseCredentials(std::move(local_forms), origin, intercept);
