@@ -958,8 +958,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   friend class TestRenderFrameHost;
   friend class TestRenderViewHost;
 
-  FRIEND_TEST_ALL_PREFIXES(NavigatorTestWithBrowserSideNavigation,
-                           TwoNavigationsRacingCommit);
+  FRIEND_TEST_ALL_PREFIXES(NavigatorTest, TwoNavigationsRacingCommit);
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostImplBeforeUnloadBrowserTest,
                            SubframeShowsDialogWhenMainFrameNavigates);
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostImplBeforeUnloadBrowserTest,

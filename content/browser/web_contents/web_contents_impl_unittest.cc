@@ -723,19 +723,20 @@ TEST_F(WebContentsImplTest, NavigateFromSitelessUrl) {
   browser_client.set_assign_site_for_url(true);
   // Navigate to new site (should keep same site instance).
   const GURL url("http://www.google.com");
-  auto navigation =
+  auto navigation1 =
       NavigationSimulator::CreateBrowserInitiated(url, contents());
-  navigation->ReadyToCommit();
+  navigation1->ReadyToCommit();
   EXPECT_FALSE(contents()->CrossProcessNavigationPending());
   EXPECT_EQ(native_url, contents()->GetLastCommittedURL());
   EXPECT_EQ(url, contents()->GetVisibleURL());
   EXPECT_FALSE(contents()->GetPendingMainFrame());
-  navigation->Commit();
+  navigation1->Commit();
 
   // Keep the number of active frames in orig_rfh's SiteInstance
   // non-zero so that orig_rfh doesn't get deleted when it gets
   // swapped out.
   orig_rfh->GetSiteInstance()->IncrementActiveFrameCount();
+  SiteInstanceImpl* orig_site_instance = orig_rfh->GetSiteInstance();
 
   EXPECT_EQ(orig_instance, contents()->GetSiteInstance());
   EXPECT_TRUE(
@@ -744,10 +745,9 @@ TEST_F(WebContentsImplTest, NavigateFromSitelessUrl) {
 
   // Navigate to another new site (should create a new site instance).
   const GURL url2("http://www.yahoo.com");
-  controller().LoadURL(
-      url2, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
-  int entry_id = controller().GetPendingEntry()->GetUniqueID();
-  orig_rfh->PrepareForCommit();
+  auto navigation2 =
+      NavigationSimulator::CreateBrowserInitiated(url2, contents());
+  navigation2->ReadyToCommit();
   EXPECT_TRUE(contents()->CrossProcessNavigationPending());
   EXPECT_EQ(url, contents()->GetLastCommittedURL());
   EXPECT_EQ(url2, contents()->GetVisibleURL());
@@ -757,8 +757,7 @@ TEST_F(WebContentsImplTest, NavigateFromSitelessUrl) {
       &pending_rvh_delete_count);
 
   // DidNavigate from the pending page.
-  contents()->TestDidNavigate(pending_rfh, entry_id, true, url2,
-                              ui::PAGE_TRANSITION_TYPED);
+  navigation2->Commit();
   SiteInstance* new_instance = contents()->GetSiteInstance();
 
   EXPECT_FALSE(contents()->CrossProcessNavigationPending());
@@ -767,11 +766,11 @@ TEST_F(WebContentsImplTest, NavigateFromSitelessUrl) {
   EXPECT_EQ(url2, contents()->GetVisibleURL());
   EXPECT_NE(new_instance, orig_instance);
   EXPECT_FALSE(contents()->GetPendingMainFrame());
+
   // We keep a proxy for the original RFH's SiteInstance.
   EXPECT_TRUE(contents()->GetRenderManagerForTesting()->GetRenderFrameProxyHost(
-      orig_rfh->GetSiteInstance()));
+      orig_site_instance));
   EXPECT_EQ(orig_rvh_delete_count, 0);
-  orig_rfh->OnSwappedOut();
 
   // Close contents and ensure RVHs are deleted.
   DeleteContents();
@@ -1079,28 +1078,23 @@ TEST_F(WebContentsImplTest, CrossSiteNavigationBackPreempted) {
             NavigationEntryImpl::FromNavigationEntry(entry3)->site_instance());
 
   // Go back within the site.
-  controller().GoBack();
-  NavigationEntry* goback_entry = controller().GetPendingEntry();
+  auto back_navigation1 =
+      NavigationSimulator::CreateHistoryNavigation(-1, contents());
+  back_navigation1->Start();
   EXPECT_FALSE(contents()->CrossProcessNavigationPending());
   EXPECT_EQ(entry2, controller().GetPendingEntry());
 
   // Before that commits, go back again.
-  controller().GoBack();
+  back_navigation1->ReadyToCommit();
+  auto back_navigation2 =
+      NavigationSimulator::CreateHistoryNavigation(-1, contents());
+  back_navigation2->Start();
   EXPECT_TRUE(contents()->CrossProcessNavigationPending());
   EXPECT_TRUE(contents()->GetPendingMainFrame());
   EXPECT_EQ(entry1, controller().GetPendingEntry());
 
-  // Simulate beforeunload approval.
-  EXPECT_TRUE(google_rfh->is_waiting_for_beforeunload_ack());
-  base::TimeTicks now = base::TimeTicks::Now();
-  google_rfh->PrepareForCommit();
-  google_rfh->OnMessageReceived(
-      FrameHostMsg_BeforeUnload_ACK(0, true, now, now));
-
   // DidNavigate from the first back. This aborts the second back's pending RFH.
-  contents()->TestDidNavigateWithSequenceNumber(
-      google_rfh, goback_entry->GetUniqueID(), false, url2, Referrer(),
-      ui::PAGE_TRANSITION_TYPED, false, 1, 1);
+  back_navigation1->Commit();
 
   // We should commit this page and forget about the second back.
   EXPECT_FALSE(contents()->CrossProcessNavigationPending());
