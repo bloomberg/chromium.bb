@@ -729,14 +729,16 @@ void PropertyTreeManager::BuildEffectNodesRecursively(
       next_effect.GetCompositorElementId().GetInternalValue();
   effect_node.clip_id = output_clip_id;
 
-  // An effect with filters, backdrop filters or non-kSrcOver blend mode needs
-  // a render surface. The render surface status of opacity-only effects will be
-  // updated in PaintArtifactCompositor::UpdateRenderSurfaceForEffects().
+  // An effect with filters or backdrop filters needs a render surface.
+  // Also, kDstIn and kSrcOver blend modes have fast paths if only one layer
+  // is under the blend mode. This value is adjusted in
+  // PAC::UpdateRenderSurfaceForEffects to account for more than one layer.
   if (!next_effect.Filter().IsEmpty() ||
       next_effect.IsRunningFilterAnimationOnCompositor() ||
       !next_effect.BackdropFilter().IsEmpty() ||
       next_effect.IsRunningBackdropFilterAnimationOnCompositor() ||
-      used_blend_mode != SkBlendMode::kSrcOver)
+      (used_blend_mode != SkBlendMode::kSrcOver &&
+       used_blend_mode != SkBlendMode::kDstIn))
     effect_node.has_render_surface = true;
 
   effect_node.opacity = next_effect.Opacity();
