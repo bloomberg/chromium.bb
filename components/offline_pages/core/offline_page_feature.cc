@@ -29,9 +29,6 @@ const base::Feature kOfflinePagesCTFeature{"OfflinePagesCT",
 const base::Feature kOfflinePagesLivePageSharingFeature{
     "OfflinePagesLivePageSharing", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kOfflinePagesSvelteConcurrentLoadingFeature{
-    "OfflinePagesSvelteConcurrentLoading", base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kOfflinePagesLoadSignalCollectingFeature{
     "OfflinePagesLoadSignalCollecting", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -78,11 +75,6 @@ const char kPrefetchingOfflinePagesExperimentsOption[] = "exp";
 
 bool IsOffliningRecentPagesEnabled() {
   return base::FeatureList::IsEnabled(kOffliningRecentPagesFeature);
-}
-
-bool IsOfflinePagesSvelteConcurrentLoadingEnabled() {
-  return base::FeatureList::IsEnabled(
-      kOfflinePagesSvelteConcurrentLoadingFeature);
 }
 
 bool IsOfflinePagesCTEnabled() {

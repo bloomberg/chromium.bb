@@ -377,11 +377,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "concurrent-background-loading-on-svelte",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "content-suggestions-category-order",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76

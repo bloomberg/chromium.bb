@@ -31,17 +31,6 @@ TEST(OfflinePageFeatureTest, OfflinePagesLivePageSharing) {
   EXPECT_TRUE(offline_pages::IsOfflinePagesLivePageSharingEnabled());
 }
 
-TEST(OfflinePageFeatureTest, OfflinePagesSvelteConcurrentLoading) {
-  // Disabled by default.
-  EXPECT_FALSE(offline_pages::IsOfflinePagesSvelteConcurrentLoadingEnabled());
-
-  // Check if helper method works correctly when the features is enabled.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      kOfflinePagesSvelteConcurrentLoadingFeature);
-  EXPECT_TRUE(offline_pages::IsOfflinePagesSvelteConcurrentLoadingEnabled());
-}
-
 TEST(OfflinePageFeatureTest, OfflinePagesLoadSignalCollecting) {
   // Disabled by default.
   EXPECT_FALSE(offline_pages::IsOfflinePagesLoadSignalCollectingEnabled());
