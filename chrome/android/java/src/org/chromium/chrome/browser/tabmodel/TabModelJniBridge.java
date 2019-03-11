@@ -12,6 +12,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager.TabCreator;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.common.ResourceRequestBody;
 
 /**
  * Bridges between the C++ and Java {@link TabModel} interfaces.
@@ -122,6 +123,11 @@ public abstract class TabModelJniBridge implements TabModel {
     @CalledByNative
     protected abstract boolean createTabWithWebContents(Tab parent, boolean incognito,
             WebContents webContents, int parentId);
+
+    @CalledByNative
+    protected abstract void openNewTab(Tab parent, String url, String initiatorOrigin,
+            String extraHeaders, ResourceRequestBody postData, int disposition,
+            boolean persistParentage, boolean isRendererInitiated);
 
     /**
      * Creates a Tab with the given WebContents for DevTools.

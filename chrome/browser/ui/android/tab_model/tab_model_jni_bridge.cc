@@ -19,8 +19,11 @@
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_observer_jni_bridge.h"
+#include "chrome/browser/ui/browser_navigator_params.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/resource_request_body_android.h"
 #include "jni/TabModelJniBridge_jni.h"
+#include "ui/base/window_open_disposition.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertUTF8ToJavaString;
@@ -94,6 +97,45 @@ void TabModelJniBridge::CreateTab(TabAndroid* parent,
       env, java_object_.get(env), (parent ? parent->GetJavaObject() : nullptr),
       web_contents->GetBrowserContext()->IsOffTheRecord(),
       web_contents->GetJavaWebContents(), parent_tab_id);
+}
+
+void TabModelJniBridge::HandlePopupNavigation(TabAndroid* parent,
+                                              NavigateParams* params) {
+  DCHECK_EQ(params->source_contents, parent->web_contents());
+  DCHECK(!params->contents_to_insert);
+  DCHECK(!params->switch_to_singleton_tab);
+
+  WindowOpenDisposition disposition = params->disposition;
+  bool supported = disposition == WindowOpenDisposition::NEW_POPUP ||
+                   disposition == WindowOpenDisposition::NEW_FOREGROUND_TAB ||
+                   disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB ||
+                   disposition == WindowOpenDisposition::NEW_WINDOW ||
+                   disposition == WindowOpenDisposition::OFF_THE_RECORD;
+  if (!supported) {
+    NOTIMPLEMENTED();
+    return;
+  }
+
+  const GURL& url = params->url;
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> jobj = java_object_.get(env);
+  ScopedJavaLocalRef<jstring> jurl(ConvertUTF8ToJavaString(env, url.spec()));
+  ScopedJavaLocalRef<jstring> jheaders(
+      ConvertUTF8ToJavaString(env, params->extra_headers));
+  ScopedJavaLocalRef<jstring> jinitiator_origin;
+  if (params->initiator_origin) {
+    jinitiator_origin =
+        ConvertUTF8ToJavaString(env, params->initiator_origin->Serialize());
+  }
+  ScopedJavaLocalRef<jobject> jpost_data;
+  if (params->uses_post && params->post_data) {
+    jpost_data =
+        content::ConvertResourceRequestBodyToJavaObject(env, params->post_data);
+  }
+  Java_TabModelJniBridge_openNewTab(
+      env, jobj, parent->GetJavaObject(), jurl, jinitiator_origin, jheaders,
+      jpost_data, static_cast<int>(disposition), params->created_with_opener,
+      params->is_renderer_initiated);
 }
 
 WebContents* TabModelJniBridge::GetWebContentsAt(int index) const {

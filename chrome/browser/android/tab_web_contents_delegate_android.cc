@@ -33,6 +33,7 @@
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ui/android/bluetooth_chooser_android.h"
 #include "chrome/browser/ui/android/infobars/framebust_block_infobar.h"
+#include "chrome/browser/ui/android/tab_model/tab_model_list.h"
 #include "chrome/browser/ui/blocked_content/popup_blocker.h"
 #include "chrome/browser/ui/blocked_content/popup_tracker.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
@@ -387,9 +388,14 @@ WebContents* TabWebContentsDelegateAndroid::OpenURLFromTab(
                                  params.url, &prerender_params)) {
       return prerender_params.replaced_contents;
     }
+
+    // Ask the parent to handle in-place opening.
+    return WebContentsDelegateAndroid::OpenURLFromTab(source, params);
   }
 
-  return WebContentsDelegateAndroid::OpenURLFromTab(source, params);
+  nav_params.created_with_opener = true;
+  TabModelList::HandlePopupNavigation(&nav_params);
+  return nullptr;
 }
 
 bool TabWebContentsDelegateAndroid::ShouldResumeRequestsForCreatedWindow() {

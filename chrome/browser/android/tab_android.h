@@ -28,8 +28,6 @@ namespace cc {
 class Layer;
 }
 
-struct NavigateParams;
-
 namespace android {
 class TabWebContentsDelegateAndroid;
 class TabContentManager;
@@ -106,8 +104,6 @@ class TabAndroid {
 
   void SetWindowSessionID(SessionID window_id);
   void SetSyncId(int sync_id);
-
-  void HandlePopupNavigation(NavigateParams* params);
 
   bool HasPrerenderedUrl(GURL gurl);
 

@@ -47,7 +47,6 @@ import org.chromium.components.embedder_support.delegate.WebContentsDelegateAndr
 import org.chromium.content_public.browser.GestureListenerManager;
 import org.chromium.content_public.browser.InvalidateTypes;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.content_public.common.ResourceRequestBody;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
@@ -290,12 +289,6 @@ public class TabWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
     public boolean isFullscreenForTabOrPending() {
         return mTab.getFullscreenManager() == null
                 ? false : mTab.getFullscreenManager().getPersistentFullscreenMode();
-    }
-
-    @Override
-    public void openNewTab(String url, String extraHeaders, ResourceRequestBody postData,
-            int disposition, boolean isRendererInitiated) {
-        mTab.openNewTab(url, null, extraHeaders, postData, disposition, true, isRendererInitiated);
     }
 
     protected TabModel getTabModel() {
