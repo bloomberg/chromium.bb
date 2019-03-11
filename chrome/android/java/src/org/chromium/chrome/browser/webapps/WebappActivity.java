@@ -371,7 +371,7 @@ public class WebappActivity extends SingleTabActivity {
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
         try {
             long time = SystemClock.elapsedRealtime();
-            TabState.saveState(tabFile, getActivityTab().getState(), false);
+            TabState.saveState(tabFile, TabState.from(getActivityTab()), false);
             RecordHistogram.recordTimesHistogram(
                     "Android.StrictMode.WebappSaveState", SystemClock.elapsedRealtime() - time);
         } finally {

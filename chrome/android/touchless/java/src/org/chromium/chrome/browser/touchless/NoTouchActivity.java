@@ -153,7 +153,7 @@ public class NoTouchActivity extends SingleTabActivity {
         if (tab == null || tab.getUrl() == null || tab.getUrl().isEmpty()) return;
         long time = SystemClock.elapsedRealtime();
         outState.putInt(BUNDLE_TAB_ID, tab.getId());
-        TabState.saveState(outState, tab.getState());
+        TabState.saveState(outState, TabState.from(tab));
         RecordHistogram.recordTimesHistogram("Android.StrictMode.NoTouchActivitySaveState",
                 SystemClock.elapsedRealtime() - time);
     }

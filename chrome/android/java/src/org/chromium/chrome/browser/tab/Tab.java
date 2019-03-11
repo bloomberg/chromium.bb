@@ -86,14 +86,12 @@ import org.chromium.content_public.browser.SelectionPopupController;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsAccessibility;
 import org.chromium.content_public.common.BrowserControlsState;
-import org.chromium.content_public.common.Referrer;
 import org.chromium.content_public.common.ResourceRequestBody;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.WindowAndroid;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.nio.ByteBuffer;
 
 /**
  * The basic Java representation of a tab.  Contains and manages a {@link ContentView}.
@@ -224,12 +222,6 @@ public class Tab
      * app). Allows reusing of tabs opened from the same application.
      */
     private String mAppAssociatedWith;
-
-    /**
-     * Keeps track of whether the Tab should be kept in the TabModel after the user hits "back".
-     * Used by Document mode to keep track of whether we want to remove the tab when user hits back.
-     */
-    private boolean mShouldPreserve;
 
     /**
      * True while a page load is in progress.
@@ -411,7 +403,6 @@ public class Tab
         assert state != null;
         mAppAssociatedWith = state.openerAppId;
         mFrozenContentsState = state.contentsState;
-        mShouldPreserve = state.shouldPreserve;
         mTimestampMillis = state.timestampMillis;
         mUrl = state.getVirtualUrlFromState();
 
@@ -648,56 +639,9 @@ public class Tab
         return getActivity().getTabModelSelector();
     }
 
-    /** @return An opaque "state" object that can be persisted to storage. */
-    public TabState getState() {
-        if (!isInitialized()) return null;
-        TabState tabState = new TabState();
-        tabState.contentsState = getWebContentsState();
-        tabState.openerAppId = mAppAssociatedWith;
-        tabState.parentId = mParentId;
-        tabState.shouldPreserve = mShouldPreserve;
-        tabState.timestampMillis = mTimestampMillis;
-        tabState.tabLaunchTypeAtCreation = mLaunchTypeAtCreation;
-        // Don't save actual default theme color because it could change on night mode state
-        // changed.
-        tabState.themeColor = TabThemeColorHelper.isDefaultColorUsed(this)
-                ? TabState.UNSPECIFIED_THEME_COLOR
-                : TabThemeColorHelper.getColor(this);
-        tabState.rootId = mRootId;
-        return tabState;
-    }
-
     /** @return WebContentsState representing the state of the WebContents (navigations, etc.) */
-    private WebContentsState getFrozenContentsState() {
+    WebContentsState getFrozenContentsState() {
         return mFrozenContentsState;
-    }
-
-    /** Returns an object representing the state of the Tab's WebContents. */
-    private TabState.WebContentsState getWebContentsState() {
-        if (mFrozenContentsState != null) return mFrozenContentsState;
-
-        // Native call returns null when buffer allocation needed to serialize the state failed.
-        ByteBuffer buffer = getWebContentsStateAsByteBuffer();
-        if (buffer == null) return null;
-
-        TabState.WebContentsState state = new TabState.WebContentsState(buffer);
-        state.setVersion(TabState.CONTENTS_STATE_CURRENT_VERSION);
-        return state;
-    }
-
-    /** Returns an ByteBuffer representing the state of the Tab's WebContents. */
-    private ByteBuffer getWebContentsStateAsByteBuffer() {
-        if (mPendingLoadParams == null) {
-            return TabState.getContentsStateAsByteBuffer(this);
-        } else {
-            Referrer referrer = mPendingLoadParams.getReferrer();
-            return TabState.createSingleNavigationStateAsByteBuffer(
-                    mPendingLoadParams.getUrl(),
-                    referrer != null ? referrer.getUrl() : null,
-                    // Policy will be ignored for null referrer url, 0 is just a placeholder.
-                    referrer != null ? referrer.getPolicy() : 0,
-                    isIncognito());
-        }
     }
 
     /**
@@ -1950,7 +1894,7 @@ public class Tab
     /**
      * @return Parameters that should be used for a lazily loaded Tab.  May be null.
      */
-    private LoadUrlParams getPendingLoadParams() {
+    LoadUrlParams getPendingLoadParams() {
         return mPendingLoadParams;
     }
 

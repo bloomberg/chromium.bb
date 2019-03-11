@@ -17,7 +17,9 @@ import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.crypto.CipherFactory;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.util.ColorUtils;
+import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.common.Referrer;
 
 import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
@@ -76,7 +78,6 @@ public class TabState {
     private static final String PARENT_ID = TAB_STATE_BUNDLE_PREFIX + "parentId";
     private static final String OPENER_APP_ID = TAB_STATE_BUNDLE_PREFIX + "openerAppId";
     private static final String VERSION = TAB_STATE_BUNDLE_PREFIX + "version";
-    private static final String SHOULD_PRESERVE = TAB_STATE_BUNDLE_PREFIX + "shouldPreserve";
     private static final String THEME_COLOR = TAB_STATE_BUNDLE_PREFIX + "themeColor";
     private static final String IS_INCOGNITO = TAB_STATE_BUNDLE_PREFIX + "isIncognito";
 
@@ -144,7 +145,6 @@ public class TabState {
 
     public long timestampMillis = TIMESTAMP_NOT_SET;
     public String openerAppId;
-    public boolean shouldPreserve;
 
     /**
      * The tab's brand theme color. Set this to {@link #UNSPECIFIED_THEME_COLOR} for an unspecified
@@ -224,7 +224,6 @@ public class TabState {
         tabState.parentId = bundle.getInt(PARENT_ID);
         tabState.openerAppId = bundle.getString(OPENER_APP_ID);
         tabState.contentsState.setVersion(bundle.getInt(VERSION));
-        tabState.shouldPreserve = bundle.getBoolean(SHOULD_PRESERVE);
         tabState.themeColor = bundle.getInt(THEME_COLOR);
         tabState.mIsIncognito = bundle.getBoolean(IS_INCOGNITO);
 
@@ -300,10 +299,9 @@ public class TabState {
             } catch (EOFException eof) {
             }
             try {
-                tabState.shouldPreserve = stream.readBoolean();
+                boolean shouldPreserveNotUsed = stream.readBoolean();
             } catch (EOFException eof) {
                 // Could happen if reading a version of TabState without this flag set.
-                tabState.shouldPreserve = false;
                 Log.w(TAG,
                         "Failed to read shouldPreserve flag from tab state. "
                                 + "Assuming shouldPreserve is false");
@@ -355,6 +353,47 @@ public class TabState {
         return contentsStateBytes;
     }
 
+    /** @return An opaque "state" object that can be persisted to storage. */
+    public static TabState from(Tab tab) {
+        if (!tab.isInitialized()) return null;
+        TabState tabState = new TabState();
+        tabState.contentsState = getWebContentsState(tab);
+        tabState.openerAppId = tab.getAppAssociatedWith();
+        tabState.parentId = tab.getParentId();
+        tabState.timestampMillis = tab.getTimestampMillis();
+        tabState.tabLaunchTypeAtCreation = tab.getLaunchTypeAtInitialTabCreation();
+        tabState.themeColor = TabThemeColorHelper.getColor(tab);
+        tabState.rootId = tab.getRootId();
+        return tabState;
+    }
+
+    /** Returns an object representing the state of the Tab's WebContents. */
+    private static WebContentsState getWebContentsState(Tab tab) {
+        if (tab.getFrozenContentsState() != null) return tab.getFrozenContentsState();
+
+        // Native call returns null when buffer allocation needed to serialize the state failed.
+        ByteBuffer buffer = getWebContentsStateAsByteBuffer(tab);
+        if (buffer == null) return null;
+
+        WebContentsState state = new WebContentsState(buffer);
+        state.setVersion(CONTENTS_STATE_CURRENT_VERSION);
+        return state;
+    }
+
+    /** Returns an ByteBuffer representing the state of the Tab's WebContents. */
+    private static ByteBuffer getWebContentsStateAsByteBuffer(Tab tab) {
+        LoadUrlParams pendingLoadParams = tab.getPendingLoadParams();
+        if (pendingLoadParams == null) {
+            return getContentsStateAsByteBuffer(tab);
+        } else {
+            Referrer referrer = pendingLoadParams.getReferrer();
+            return createSingleNavigationStateAsByteBuffer(pendingLoadParams.getUrl(),
+                    referrer != null ? referrer.getUrl() : null,
+                    // Policy will be ignored for null referrer url, 0 is just a placeholder.
+                    referrer != null ? referrer.getPolicy() : 0, tab.isIncognito());
+        }
+    }
+
     /**
      * Writes the TabState to disk. This method may be called on either the UI or background thread.
      * @param file File to write the tab's state to.
@@ -397,7 +436,7 @@ public class TabState {
             dataOutputStream.writeUTF(state.openerAppId != null ? state.openerAppId : "");
             dataOutputStream.writeInt(state.contentsState.version());
             dataOutputStream.writeLong(-1); // Obsolete sync ID.
-            dataOutputStream.writeBoolean(state.shouldPreserve);
+            dataOutputStream.writeBoolean(false); // Obsolete attribute |SHOULD_PRESERVE|.
             dataOutputStream.writeInt(state.themeColor);
             dataOutputStream.writeInt(
                     state.tabLaunchTypeAtCreation != null ? state.tabLaunchTypeAtCreation : -1);
@@ -434,7 +473,6 @@ public class TabState {
         bundle.putInt(PARENT_ID, state.parentId);
         bundle.putString(OPENER_APP_ID, state.openerAppId);
         bundle.putInt(VERSION, state.contentsState.version());
-        bundle.putBoolean(SHOULD_PRESERVE, state.shouldPreserve);
         bundle.putInt(THEME_COLOR, state.themeColor);
         bundle.putBoolean(IS_INCOGNITO, state.isIncognito());
     }
