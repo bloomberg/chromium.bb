@@ -651,6 +651,11 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
       REMOVE_APPEARANCE_KEYWORD_M75(ProgressBarValue, "progress-bar-value");
 #undef REMOVE_APPEARANCE_KEYWORD_M75
 
+    case WebFeature::kV8AtomicsWake:
+      return {"V8AtomicsWake", kM76,
+              ReplacedWillBeRemoved("Atomics.wake", "Atomics.notify", kM76,
+                                    "6228189936353280")};
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
       return {"NotDeprecated", kUnknown, ""};
