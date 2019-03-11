@@ -19,8 +19,6 @@ static_library("search_engines") {
     "keyword_web_data_service.h",
     "search_engine_data_type_controller.cc",
     "search_engine_data_type_controller.h",
-    "search_engine_model_type_controller.cc",
-    "search_engine_model_type_controller.h",
     "search_engine_type.h",
     "search_engines_pref_names.cc",
     "search_engines_pref_names.h",

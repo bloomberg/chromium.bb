@@ -346,6 +346,9 @@ class TemplateURLService : public WebDataServiceConsumer,
 
   // syncer::SyncableService implementation.
 
+  // Waits until keywords have been loaded.
+  void WaitUntilReadyToSync(base::OnceClosure done) override;
+
   // Returns all syncable TemplateURLs from this model as SyncData. This should
   // include every search engine and no Extension keywords.
   syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const override;
@@ -829,6 +832,9 @@ class TemplateURLService : public WebDataServiceConsumer,
 
   // Stores a list of callbacks to be run after TemplateURLService has loaded.
   base::CallbackList<void(void)> on_loaded_callbacks_;
+
+  // Similar to |on_loaded_callbacks_| but used for WaitUntilReadyToSync().
+  base::OnceClosure on_loaded_callback_for_sync_;
 
   // Helper class to manage the default search engine.
   DefaultSearchManager default_search_manager_;

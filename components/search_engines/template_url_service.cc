@@ -887,6 +887,17 @@ void TemplateURLService::Shutdown() {
   web_data_service_ = nullptr;
 }
 
+void TemplateURLService::WaitUntilReadyToSync(base::OnceClosure done) {
+  // We force a load here to allow remote updates to be processed, without
+  // waiting for the lazy load.
+  Load();
+
+  if (loaded_)
+    std::move(done).Run();
+  else
+    on_loaded_callback_for_sync_ = std::move(done);
+}
+
 syncer::SyncDataList TemplateURLService::GetAllSyncData(
     syncer::ModelType type) const {
   DCHECK_EQ(syncer::SEARCH_ENGINES, type);
@@ -1583,6 +1594,9 @@ void TemplateURLService::ChangeToLoadedState() {
           : nullptr,
       default_search_provider_source_);
   initial_default_search_provider_.reset();
+
+  if (on_loaded_callback_for_sync_)
+    std::move(on_loaded_callback_for_sync_).Run();
 
   on_loaded_callbacks_.Notify();
 }
