@@ -96,6 +96,8 @@ namespace feedbackPrivate {
     // Whether or not triggered from Assistant.
     boolean? fromAssistant;
 
+    // Whether or not to include bluetooth logs.
+    boolean? includeBluetoothLogs;
   };
 
   // Status of the sending of a feedback report.
