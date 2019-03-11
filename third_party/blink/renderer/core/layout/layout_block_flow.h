@@ -64,7 +64,6 @@ class NGBreakToken;
 class NGConstraintSpace;
 class NGLayoutResult;
 class NGOffsetMapping;
-class NGPaintFragment;
 class NGPhysicalFragment;
 
 struct NGInlineNodeData;
@@ -457,7 +456,6 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
   virtual void ResetNGInlineNodeData() {}
   virtual void ClearNGInlineNodeData() {}
   virtual bool HasNGInlineNodeData() const { return false; }
-  virtual NGPaintFragment* PaintFragment() const { return nullptr; }
   virtual scoped_refptr<const NGLayoutResult> CachedLayoutResult(
       const NGConstraintSpace&,
       const NGBreakToken*);

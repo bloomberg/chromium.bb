@@ -1222,6 +1222,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   void SetFloating(bool is_floating) { bitfields_.SetFloating(is_floating); }
   void SetInline(bool is_inline) { bitfields_.SetIsInline(is_inline); }
 
+  // Returns the associated |NGPaintFragment|. When this is not a |nullptr|,
+  // this is the root of an inline formatting context, laid out by LayoutNG.
+  virtual NGPaintFragment* PaintFragment() const { return nullptr; }
+
   void SetIsInLayoutNGInlineFormattingContext(bool);
   virtual NGPaintFragment* FirstInlineFragment() const { return nullptr; }
   virtual void SetFirstInlineFragment(NGPaintFragment*) {}

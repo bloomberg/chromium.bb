@@ -678,8 +678,7 @@ void NGBoxFragmentPainter::PaintInlineChildBoxUsingLegacyFallback(
     const PaintInfo& paint_info) {
   LayoutObject* child_layout_object = fragment.GetLayoutObject();
   DCHECK(child_layout_object);
-  if (child_layout_object->IsLayoutNGMixin() &&
-      ToLayoutBlockFlow(child_layout_object)->PaintFragment()) {
+  if (child_layout_object->PaintFragment()) {
     // This object will use NGBoxFragmentPainter.
     child_layout_object->Paint(paint_info);
     return;

@@ -448,7 +448,7 @@ NGPaintFragment* NGPaintFragment::GetForInlineContainer(
     // This needs cleanup.
     if (block_flow->IsLayoutFlowThread()) {
       DCHECK(block_flow->Parent() && block_flow->Parent()->IsLayoutBlockFlow());
-      return ToLayoutBlockFlow(block_flow->Parent())->PaintFragment();
+      return block_flow->Parent()->PaintFragment();
     }
   }
   return nullptr;
@@ -617,13 +617,10 @@ void NGPaintFragment::MarkLineBoxesDirtyFor(const LayoutObject& layout_object) {
 
   // The |layout_object| is inserted into an empty block.
   // Mark the first line box dirty.
-  if (parent.IsLayoutNGMixin()) {
-    const LayoutBlockFlow& block = ToLayoutBlockFlow(parent);
-    if (NGPaintFragment* paint_fragment = block.PaintFragment()) {
-      if (NGPaintFragment* first_line = paint_fragment->FirstLineBox()) {
-        first_line->is_dirty_inline_ = true;
-        return;
-      }
+  if (NGPaintFragment* paint_fragment = parent.PaintFragment()) {
+    if (NGPaintFragment* first_line = paint_fragment->FirstLineBox()) {
+      first_line->is_dirty_inline_ = true;
+      return;
     }
   }
 }
