@@ -136,15 +136,14 @@ class AutoclickRingHandler::AutoclickRingView : public views::View {
         current_angle_(kAutoclickRingAngleStartValue),
         current_scale_(kAutoclickRingScaleStartValue),
         outer_radius_(outer_radius),
-        inner_radius_(inner_radius) {
+        inner_radius_(inner_radius),
+        is_v2_enabled_(base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableExperimentalAccessibilityAutoclick)) {
     widget_->SetContentsView(this);
 
     // We are owned by the AutoclickRingHandler.
     set_owned_by_client();
     SetNewLocation(event_location);
-
-    is_v2_enabled_ = base::CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kEnableExperimentalAccessibilityAutoclick);
   }
 
   ~AutoclickRingView() override = default;
