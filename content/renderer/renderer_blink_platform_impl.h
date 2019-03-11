@@ -78,9 +78,8 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   std::unique_ptr<blink::WebSpeechSynthesizer> CreateSpeechSynthesizer(
       blink::WebSpeechSynthesizerClient* client) override;
   virtual bool sandboxEnabled();
-  unsigned long long VisitedLinkHash(const char* canonicalURL,
-                                     size_t length) override;
-  bool IsLinkVisited(unsigned long long linkHash) override;
+  uint64_t VisitedLinkHash(const char* canonicalURL, size_t length) override;
+  bool IsLinkVisited(uint64_t linkHash) override;
   blink::WebPrescientNetworking* PrescientNetworking() override;
   blink::WebString UserAgent() override;
   blink::UserAgentMetadata UserAgentMetadata() override;

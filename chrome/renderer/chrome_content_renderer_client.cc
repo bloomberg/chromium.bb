@@ -1318,13 +1318,13 @@ bool ChromeContentRendererClient::IsPrefetchOnly(
          prerender::PREFETCH_ONLY;
 }
 
-unsigned long long ChromeContentRendererClient::VisitedLinkHash(
-    const char* canonical_url, size_t length) {
+uint64_t ChromeContentRendererClient::VisitedLinkHash(const char* canonical_url,
+                                                      size_t length) {
   return chrome_observer_->visited_link_slave()->ComputeURLFingerprint(
       canonical_url, length);
 }
 
-bool ChromeContentRendererClient::IsLinkVisited(unsigned long long link_hash) {
+bool ChromeContentRendererClient::IsLinkVisited(uint64_t link_hash) {
   return chrome_observer_->visited_link_slave()->IsVisited(link_hash);
 }
 

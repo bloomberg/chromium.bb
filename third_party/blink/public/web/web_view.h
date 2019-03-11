@@ -369,7 +369,7 @@ class WebView {
 
   // Tells all WebView instances to update the visited link state for the
   // specified hash.
-  BLINK_EXPORT static void UpdateVisitedLinkState(unsigned long long hash);
+  BLINK_EXPORT static void UpdateVisitedLinkState(uint64_t hash);
 
   // Tells all WebView instances to update the visited state for all
   // their links. Use invalidateVisitedLinkHashes to inform that the visitedlink

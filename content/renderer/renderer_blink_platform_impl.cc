@@ -368,13 +368,12 @@ bool RendererBlinkPlatformImpl::sandboxEnabled() {
       switches::kSingleProcess);
 }
 
-unsigned long long RendererBlinkPlatformImpl::VisitedLinkHash(
-    const char* canonical_url,
-    size_t length) {
+uint64_t RendererBlinkPlatformImpl::VisitedLinkHash(const char* canonical_url,
+                                                    size_t length) {
   return GetContentClient()->renderer()->VisitedLinkHash(canonical_url, length);
 }
 
-bool RendererBlinkPlatformImpl::IsLinkVisited(unsigned long long link_hash) {
+bool RendererBlinkPlatformImpl::IsLinkVisited(uint64_t link_hash) {
   return GetContentClient()->renderer()->IsLinkVisited(link_hash);
 }
 

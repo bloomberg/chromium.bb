@@ -248,9 +248,8 @@ class CONTENT_EXPORT ContentRendererClient {
                               const blink::WebURLRequest& request);
 
   // See blink::Platform.
-  virtual unsigned long long VisitedLinkHash(const char* canonical_url,
-                                             size_t length);
-  virtual bool IsLinkVisited(unsigned long long link_hash);
+  virtual uint64_t VisitedLinkHash(const char* canonical_url, size_t length);
+  virtual bool IsLinkVisited(uint64_t link_hash);
   virtual blink::WebPrescientNetworking* GetPrescientNetworking();
   virtual bool IsPrerenderingFrame(const RenderFrame* render_frame);
 

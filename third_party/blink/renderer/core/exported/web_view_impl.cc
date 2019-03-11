@@ -273,7 +273,7 @@ WebViewImpl* WebViewImpl::Create(WebViewClient* client,
   return web_view.get();
 }
 
-void WebView::UpdateVisitedLinkState(unsigned long long link_hash) {
+void WebView::UpdateVisitedLinkState(uint64_t link_hash) {
   Page::VisitedStateChanged(link_hash);
 }
 
