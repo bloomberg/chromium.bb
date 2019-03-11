@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_APPS_INTENT_HELPER_PAGE_TRANSITION_UTIL_H_
-#define CHROME_BROWSER_CHROMEOS_APPS_INTENT_HELPER_PAGE_TRANSITION_UTIL_H_
+#ifndef CHROME_BROWSER_APPS_INTENT_HELPER_PAGE_TRANSITION_UTIL_H_
+#define CHROME_BROWSER_APPS_INTENT_HELPER_PAGE_TRANSITION_UTIL_H_
 
 #include "base/macros.h"
 #include "ui/base/page_transition_types.h"
@@ -21,4 +21,4 @@ ui::PageTransition MaskOutPageTransition(ui::PageTransition page_transition,
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_APPS_INTENT_HELPER_PAGE_TRANSITION_UTIL_H_
+#endif  // CHROME_BROWSER_APPS_INTENT_HELPER_PAGE_TRANSITION_UTIL_H_
