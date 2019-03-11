@@ -125,11 +125,11 @@ NSAttributedString* AttributedSubstringFromRange(const EphemeralRange& range,
     else
       [attrs removeObjectForKey:NSBackgroundColorAttributeName];
 
-    ForwardsTextBuffer characters;
-    it.CopyTextTo(&characters);
+    String characters = it.GetText().GetTextForTesting();
+    characters.Ensure16Bit();
     NSString* substring =
-        [[[NSString alloc] initWithCharacters:characters.Data()
-                                       length:characters.Size()] autorelease];
+        [[[NSString alloc] initWithCharacters:characters.Characters16()
+                                       length:characters.length()] autorelease];
     [string replaceCharactersInRange:NSMakeRange(position, 0)
                           withString:substring];
     [string setAttributes:attrs range:NSMakeRange(position, num_characters)];
