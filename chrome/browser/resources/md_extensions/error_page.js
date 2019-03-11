@@ -418,6 +418,9 @@ cr.define('extensions', function() {
         return;
       }
 
+      // Call preventDefault() to avoid the browser scrolling when the space key
+      // is pressed.
+      e.preventDefault();
       this.selectedEntry_ =
           this.selectedEntry_ == e.model.index ? -1 : e.model.index;
     },
