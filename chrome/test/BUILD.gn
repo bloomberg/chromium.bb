@@ -1824,8 +1824,6 @@ test("browser_tests") {
         "../browser/chromeos/login/lock/screen_locker_browsertest.cc",
         "../browser/chromeos/login/lock/screen_locker_tester.cc",
         "../browser/chromeos/login/lock/screen_locker_tester.h",
-        "../browser/chromeos/login/test/login_screen_tester.cc",
-        "../browser/chromeos/login/test/login_screen_tester.h",
         "../browser/chromeos/login/login_auth_recorder_browsertest.cc",
         "../browser/chromeos/login/login_browsertest.cc",
         "../browser/chromeos/login/login_manager_test.cc",
@@ -1887,6 +1885,8 @@ test("browser_tests") {
         "../browser/chromeos/login/test/https_forwarder.h",
         "../browser/chromeos/login/test/local_policy_test_server_mixin.cc",
         "../browser/chromeos/login/test/local_policy_test_server_mixin.h",
+        "../browser/chromeos/login/test/login_screen_tester.cc",
+        "../browser/chromeos/login/test/login_screen_tester.h",
         "../browser/chromeos/login/test/oobe_base_test.cc",
         "../browser/chromeos/login/test/oobe_base_test.h",
         "../browser/chromeos/login/ui/captive_portal_window_browsertest.cc",
@@ -2475,8 +2475,10 @@ test("unit_tests") {
     "../../tools/metrics/histograms/enums.xml",
 
     # flag-metadata.json is analyzed by AboutFlagsTest, so this dependency is
-    # needed to re-run unit_tests on changes to that file.
+    # needed to re-run unit_tests on changes to that file. Likewise for
+    # flag-never-expire-list.json.
     "../browser/flag-metadata.json",
+    "../browser/flag-never-expire-list.json",
 
     # All unittests in browser, common, renderer and service.
     "../browser/about_flags_unittest.cc",
@@ -3038,6 +3040,7 @@ test("unit_tests") {
 
   data = [
     "../browser/flag-metadata.json",
+    "../browser/flag-never-expire-list.json",
     "data/",
     "//base/test/data/",
     "//chrome/third_party/mock4js/",

@@ -1,0 +1,62 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+//
+// This file contains a list of flags that are permitted to have the
+// never-expire flag set (i.e., expiration milestone set to -1). This is a
+// separate file from flag-metadata.json so that that file can have per-file
+// owners set to * while still having flags-team policy about unexpiring flags
+// applied via ownership of this file. Note that these flags are not *required*
+// to have never-expire set; they are simply permitted to (i.e., there is no
+// enforcement the other direction).
+//
+// The format of this file is a list of flag names; it is validated by a unit
+// test (AboutFlagsTest.OnlyPermittedFlagsNeverExpire).
+[
+  "ash-debug-shortcuts",
+  "ash-enable-unified-desktop",
+  "dcheck-is-fatal",
+  "disable-accelerated-2d-canvas",
+  "disable-accelerated-mjpeg-decode",
+  "disable-accelerated-video-decode",
+  "disable-explicit-dma-fences",
+  "disable-threaded-scrolling",
+  "disable-webrtc-hw-decoding",
+  "disable-webrtc-hw-encoding",
+  "enable-autofill-credit-card-upload",
+  "enable-devtools-experiments",
+  "enable-experimental-web-platform-features",
+  "enable-future-v8-vm-features",
+  "enable-gpu-rasterization",
+  "enable-gpu-service-logging",
+  "enable-show-autofill-signatures",
+  "enable-site-per-process",
+  "enable-touchscreen-calibration",
+  "enable-ui-devtools",
+  "enable-virtual-keyboard",
+  "enable-web-authentication-testing-api",
+  "enable-webgl-draft-extensions",
+  "extensions-on-chrome-urls",
+  "force-effective-connection-type",
+  "force-show-update-menu-badge",
+  "force-update-menu-type",
+  "ignore-gpu-blacklist",
+  "ignore-previews-blocklist",
+  "list-all-display-modes",
+  "load-media-router-component-extension",
+  "memlog",
+  "memlog-keep-small-allocations",
+  "memlog-in-process",
+  "memlog-sampling-rate",
+  "memlog-stack-mode",
+  "overlay-strategies",
+  "set-market-url-for-testing",
+  "show-autofill-type-predictions",
+  "show-taps",
+  "show-touch-hud",
+  "tint-gl-composited-content",
+  "translate-android-manual-trigger",
+  "ui-disable-partial-swap",
+  "update-menu-item-custom-summary",
+  "use-angle"
+]
