@@ -531,7 +531,7 @@ std::string GetPathDisplayTextForSettings(Profile* profile,
                                .value(),
                            base::FilePath(kDisplayNameGoogleDrive)
                                .Append(l10n_util::GetStringUTF8(
-                                   IDS_FILE_BROWSER_DRIVE_TEAM_DRIVES_LABEL))
+                                   IDS_FILE_BROWSER_DRIVE_SHARED_DRIVES_LABEL))
                                .value())) {
   } else if (drive_integration_service &&
              ReplacePrefix(&result,
@@ -558,7 +558,7 @@ std::string GetPathDisplayTextForSettings(Profile* profile,
                                .value(),
                            base::FilePath(kDisplayNameGoogleDrive)
                                .Append(l10n_util::GetStringUTF8(
-                                   IDS_FILE_BROWSER_DRIVE_TEAM_DRIVES_LABEL))
+                                   IDS_FILE_BROWSER_DRIVE_SHARED_DRIVES_LABEL))
                                .value())) {
   } else if (drive_integration_service &&
              ReplacePrefix(&result,

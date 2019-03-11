@@ -277,21 +277,21 @@ testcase.metadataTeamDrives = async () => {
 
   // Downloads just some entries. Load some in Downloads and Downloads to
   // check that Downloads entries don't issue metadata calls when navigating on
-  // Drive/Team Drives.
+  // Drive/Shared drives.
   const downloadsEntries = entries.slice(0, 7);
 
-  const teamDriveTreeItem = '#directory-tree [entry-label="Team Drives"]';
+  const sharedDrivesTreeItem = '#directory-tree [entry-label="Shared drives"]';
 
   // Open Files app on Drive.
   const appId = await setupAndWaitUntilReady(
       RootPath.DRIVE, downloadsEntries, entries.concat(driveEntries));
 
-  // Navigate to Team Drives root.
+  // Navigate to Shared drives root.
   await remoteCall.navigateWithDirectoryTree(
-      appId, '/team_drives', 'Team Drives', 'drive');
+      appId, '/team_drives', 'Shared drives', 'drive');
 
   // Expand Team Drives, because expanding might need metadata.
-  const expandIcon = teamDriveTreeItem + ' > .tree-row > .expand-icon';
+  const expandIcon = sharedDrivesTreeItem + ' > .tree-row > .expand-icon';
   await remoteCall.waitForElement(appId, expandIcon);
 
   // Click expand icon.
@@ -300,13 +300,13 @@ testcase.metadataTeamDrives = async () => {
 
   // Wait for the subtree to expand and display its children.
   const expandedSubItems =
-      teamDriveTreeItem + ' > .tree-children[expanded] > .tree-item';
+      sharedDrivesTreeItem + ' > .tree-children[expanded] > .tree-item';
   await remoteCall.waitForElement(appId, expandedSubItems);
 
   // Get all Team Drives' children.
   const elements = await remoteCall.callRemoteTestUtil(
       'queryAllElements', appId,
-      [teamDriveTreeItem + ' > .tree-children[expanded] > .tree-item']);
+      [sharedDrivesTreeItem + ' > .tree-children[expanded] > .tree-item']);
 
   // Check that we have 50 team drives.
   chrome.test.assertEq(50, elements.length);
