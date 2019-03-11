@@ -169,6 +169,7 @@
   X(TRACE_DISABLED_BY_DEFAULT("devtools.timeline.layers"))               \
   X(TRACE_DISABLED_BY_DEFAULT("devtools.timeline.picture"))              \
   X(TRACE_DISABLED_BY_DEFAULT("file"))                                   \
+  X(TRACE_DISABLED_BY_DEFAULT("fonts"))                                  \
   X(TRACE_DISABLED_BY_DEFAULT("gpu_cmd_queue"))                          \
   X(TRACE_DISABLED_BY_DEFAULT("gpu.debug"))                              \
   X(TRACE_DISABLED_BY_DEFAULT("gpu_decoder"))                            \

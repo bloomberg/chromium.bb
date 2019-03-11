@@ -19,6 +19,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
+#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/skia_font_delegate.h"
@@ -128,6 +129,8 @@ FontRenderParams::SubpixelRendering ConvertFontconfigRgba(int rgba) {
 bool QueryFontconfig(const FontRenderParamsQuery& query,
                      FontRenderParams* params_out,
                      std::string* family_out) {
+  TRACE_EVENT0("fonts", "gfx::QueryFontconfig");
+
   struct FcPatternDeleter {
     void operator()(FcPattern* ptr) const { FcPatternDestroy(ptr); }
   };
@@ -172,6 +175,7 @@ bool QueryFontconfig(const FontRenderParamsQuery& query,
     FcConfigSubstituteWithPat(NULL, result_pattern.get(), query_pattern.get(),
                               FcMatchFont);
   } else {
+    TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("fonts"), "FcFontMatch");
     FcResult result;
     result_pattern.reset(FcFontMatch(NULL, query_pattern.get(), &result));
     if (!result_pattern)
@@ -240,6 +244,8 @@ uint32_t HashFontRenderParamsQuery(const FontRenderParamsQuery& query) {
 
 FontRenderParams GetFontRenderParams(const FontRenderParamsQuery& query,
                                      std::string* family_out) {
+  TRACE_EVENT0("fonts", "gfx::GetFontRenderParams");
+
   FontRenderParamsQuery actual_query(query);
   if (actual_query.device_scale_factor == 0)
     actual_query.device_scale_factor = device_scale_factor_;
