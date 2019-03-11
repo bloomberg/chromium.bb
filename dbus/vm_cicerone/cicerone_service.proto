@@ -958,6 +958,9 @@ message ImportLxdContainerProgressSignal {
 
     // The image is being unpacked to create a container.
     IMPORTING_UNPACK = 4;
+
+    // The container could be imported due to mismatched architecture.
+    FAILED_ARCHITECTURE = 5;
   }
 
   // Container status.
@@ -971,4 +974,11 @@ message ImportLxdContainerProgressSignal {
 
   // Details relating to the failure state.
   string failure_reason = 7;
+
+  // Architecture of device.  Set when status is FAILED_ARCHITECTURE.
+  string architecture_device = 8;
+
+  // Architecture of container which failed to import.
+  // Set when status is FAILED_ARCHITECTURE.
+  string architecture_container = 9;
 }
