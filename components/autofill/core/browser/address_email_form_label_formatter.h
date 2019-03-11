@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_CONTACT_FORM_LABEL_FORMATTER_H_
-#define COMPONENTS_AUTOFILL_CORE_BROWSER_CONTACT_FORM_LABEL_FORMATTER_H_
+#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_ADDRESS_EMAIL_FORM_LABEL_FORMATTER_H_
+#define COMPONENTS_AUTOFILL_CORE_BROWSER_ADDRESS_EMAIL_FORM_LABEL_FORMATTER_H_
 
-#include <set>
 #include <string>
 #include <vector>
 
@@ -17,14 +16,15 @@
 namespace autofill {
 
 // A LabelFormatter that creates Suggestions' disambiguating labels for forms
-// containing name and phone or email fields.
-class ContactFormLabelFormatter : public LabelFormatter {
+// with name, address, and email fields and without phone fields.
+class AddressEmailFormLabelFormatter : public LabelFormatter {
  public:
-  ContactFormLabelFormatter(const std::string& app_locale,
-                            FieldTypeGroup focused_group,
-                            const std::vector<ServerFieldType>& field_types);
+  AddressEmailFormLabelFormatter(
+      const std::string& app_locale,
+      FieldTypeGroup focused_group,
+      const std::vector<ServerFieldType>& field_types);
 
-  ~ContactFormLabelFormatter() override;
+  ~AddressEmailFormLabelFormatter() override;
 
   std::vector<base::string16> GetLabels(
       const std::vector<AutofillProfile*>& profiles) const override;
@@ -32,4 +32,4 @@ class ContactFormLabelFormatter : public LabelFormatter {
 
 }  // namespace autofill
 
-#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_CONTACT_FORM_LABEL_FORMATTER_H_
+#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_ADDRESS_EMAIL_FORM_LABEL_FORMATTER_H_

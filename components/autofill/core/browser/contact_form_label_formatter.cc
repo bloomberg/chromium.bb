@@ -8,21 +8,9 @@ namespace autofill {
 
 ContactFormLabelFormatter::ContactFormLabelFormatter(
     const std::string& app_locale,
-    ServerFieldType focused_field_type,
-    const std::vector<ServerFieldType>& field_types,
-    const std::set<FieldTypeGroup>& field_type_groups)
-    : LabelFormatter(app_locale, focused_field_type, field_types),
-      field_type_groups_(field_type_groups),
-      filtered_field_type_groups_(field_type_groups) {
-  for (const ServerFieldType& type : field_types) {
-    if (type != focused_field_type) {
-      field_types_for_labels_.push_back(type);
-    }
-  }
-  const FieldTypeGroup group =
-      AutofillType(AutofillType(focused_field_type).GetStorableType()).group();
-  filtered_field_type_groups_.erase(group);
-}
+    FieldTypeGroup focused_group,
+    const std::vector<ServerFieldType>& field_types)
+    : LabelFormatter(app_locale, focused_group, field_types) {}
 
 ContactFormLabelFormatter::~ContactFormLabelFormatter() {}
 

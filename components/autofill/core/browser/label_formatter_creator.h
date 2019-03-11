@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_LABEL_FORMATTER_UTILS_H_
-#define COMPONENTS_AUTOFILL_CORE_BROWSER_LABEL_FORMATTER_UTILS_H_
+#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_LABEL_FORMATTER_CREATOR_H_
+#define COMPONENTS_AUTOFILL_CORE_BROWSER_LABEL_FORMATTER_CREATOR_H_
 
 #include <memory>
 #include <set>
@@ -32,15 +32,6 @@ constexpr uint32_t kPhone = 1 << 3;
 
 }  // namespace label_formatter_groups
 
-// Returns a subset of meaningful ServerFieldTypes found in |field_types|.
-// ServerFieldTypes like NO_SERVER_DATA and UNKNOWN_TYPE are frequently found in
-// the collection of types sent from the frontend. Other types, e.g.
-// COMPANY_NAME and PHONE_FAX_WHOLE_NUMBER, are also sometimes present. These
-// types are not useful to LabelFormatters, so only types related to names,
-// addresses, emails, and phone numbers are in the results.
-std::vector<ServerFieldType> FilterFieldTypes(
-    const std::vector<ServerFieldType>& field_types);
-
 // Returns a bitmask indicating whether the NAME, ADDRESS_HOME, EMAIL, and
 // PHONE_HOME FieldTypeGroups are associated with the given |field_types|.
 uint32_t DetermineGroups(const std::vector<ServerFieldType>& field_types);
@@ -55,4 +46,4 @@ std::unique_ptr<LabelFormatter> Create(
 
 }  // namespace autofill
 
-#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_LABEL_FORMATTER_UTILS_H_
+#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_LABEL_FORMATTER_CREATOR_H_

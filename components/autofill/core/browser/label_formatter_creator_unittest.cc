@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill/core/browser/label_formatter_utils.h"
+#include "components/autofill/core/browser/label_formatter_creator.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -15,32 +15,6 @@ using label_formatter_groups::kName;
 using label_formatter_groups::kPhone;
 
 }  // namespace
-
-TEST(LabelFormatterUtilsTest, FilterFieldTypesNoFiltering) {
-  const std::vector<ServerFieldType> field_types{
-      NAME_LAST,           NAME_BILLING_LAST, ADDRESS_HOME_ZIP,
-      ADDRESS_BILLING_ZIP, EMAIL_ADDRESS,     PHONE_HOME_NUMBER,
-      PHONE_BILLING_NUMBER};
-  const std::vector<ServerFieldType> filtered_field_types =
-      FilterFieldTypes(field_types);
-  EXPECT_EQ(field_types, filtered_field_types);
-}
-
-TEST(LabelFormatterUtilsTest, FilterFieldTypesFilterCompany) {
-  const std::vector<ServerFieldType> field_types{NAME_LAST, COMPANY_NAME};
-  const std::vector<ServerFieldType> expected_filtered_field_types{NAME_LAST};
-  const std::vector<ServerFieldType> filtered_field_types =
-      FilterFieldTypes(field_types);
-  EXPECT_EQ(expected_filtered_field_types, filtered_field_types);
-}
-
-TEST(LabelFormatterUtilsTest, FilterFieldTypesForNoGivenFieldTypes) {
-  const std::vector<ServerFieldType> field_types =
-      std::vector<ServerFieldType>();
-  const std::vector<ServerFieldType> filtered_field_types =
-      FilterFieldTypes(field_types);
-  EXPECT_EQ(field_types, filtered_field_types);
-}
 
 TEST(LabelFormatterUtilsTest, DetermineGroupsForHomeNameAndAddress) {
   const std::vector<ServerFieldType> field_types{
