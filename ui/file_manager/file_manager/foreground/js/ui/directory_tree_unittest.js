@@ -218,7 +218,8 @@ function testCreateDirectoryTreeWithTeamDrive(callback) {
       }).then(() => {
         // There exist 1 my drive entry and 3 fake entries under the drive item.
         assertEquals(str('DRIVE_MY_DRIVE_LABEL'), driveItem.items[0].label);
-        assertEquals(str('DRIVE_TEAM_DRIVES_LABEL'), driveItem.items[1].label);
+        assertEquals(
+            str('DRIVE_SHARED_DRIVES_LABEL'), driveItem.items[1].label);
         assertEquals(
             str('DRIVE_SHARED_WITH_ME_COLLECTION_LABEL'),
             driveItem.items[2].label);
@@ -261,7 +262,7 @@ function testCreateDirectoryTreeWithEmptyTeamDrive(callback) {
       }).then(() => {
         let teamDrivesItemFound = false;
         for (let i = 0; i < driveItem.items.length; i++) {
-          if (driveItem.items[i].label == str('DRIVE_TEAM_DRIVES_LABEL')) {
+          if (driveItem.items[i].label == str('DRIVE_SHARED_DRIVES_LABEL')) {
             teamDrivesItemFound = true;
             break;
           }
@@ -419,7 +420,8 @@ function testCreateDirectoryTreeWithTeamDrivesAndComputers(callback) {
       }).then(() => {
         // There exist 1 my drive entry and 3 fake entries under the drive item.
         assertEquals(str('DRIVE_MY_DRIVE_LABEL'), driveItem.items[0].label);
-        assertEquals(str('DRIVE_TEAM_DRIVES_LABEL'), driveItem.items[1].label);
+        assertEquals(
+            str('DRIVE_SHARED_DRIVES_LABEL'), driveItem.items[1].label);
         assertEquals(str('DRIVE_COMPUTERS_LABEL'), driveItem.items[2].label);
         assertEquals(
             str('DRIVE_SHARED_WITH_ME_COLLECTION_LABEL'),
@@ -612,7 +614,7 @@ function testAddFirstTeamDrive(callback) {
             return waitUntil(() => {
               for (let i = 0; i < driveItem.items.length; i++) {
                 if (driveItem.items[i].label ==
-                    str('DRIVE_TEAM_DRIVES_LABEL')) {
+                    str('DRIVE_SHARED_DRIVES_LABEL')) {
                   return !driveItem.items[i].hidden;
                 }
               }
@@ -674,7 +676,7 @@ function testRemoveLastTeamDrive(callback) {
             return waitUntil(() => {
               for (let i = 0; i < driveItem.items.length; i++) {
                 if (driveItem.items[i].label ==
-                    str('DRIVE_TEAM_DRIVES_LABEL')) {
+                    str('DRIVE_SHARED_DRIVES_LABEL')) {
                   return false;
                 }
               }

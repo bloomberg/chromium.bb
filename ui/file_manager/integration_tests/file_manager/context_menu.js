@@ -15,7 +15,7 @@
  * creating entries with pre-set combinations of permissions and ensuring the
  * outcome is always as expected.
  *
- * TODO(sashab): Once Team Drives is enabled, add tests for team drive roots
+ * TODO(sashab): Once Shared drives is enabled, add tests for team drive roots
  * and entries as well.
  */
 
@@ -547,11 +547,11 @@ async function checkTeamDriveContextMenuInTree(
   chrome.test.assertTrue(!!await remoteCall.callRemoteTestUtil(
       'focus', appId, ['#file-list:not([hidden])']));
 
-  // Select 'Team Drives'.
+  // Select 'Shared drives'.
   chrome.test.assertTrue(!!await remoteCall.callRemoteTestUtil(
-      'selectFolderInTree', appId, ['Team Drives']));
+      'selectFolderInTree', appId, ['Shared drives']));
 
-  // Expand 'Team Drives'.
+  // Expand 'Shared drives'.
   chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
       'expandSelectedFolderInTree', appId, []));
 

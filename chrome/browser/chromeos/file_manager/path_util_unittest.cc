@@ -195,7 +195,7 @@ TEST_F(FileManagerPathUtilTest, GetPathDisplayTextForSettings) {
               GetPathDisplayTextForSettings(
                   profile_.get(), "/special/drive-0123456789abcdef/root/foo"));
     EXPECT_EQ(
-        "Google Drive \u203a Team Drives \u203a A Team Drive \u203a foo",
+        "Google Drive \u203a Shared drives \u203a A Team Drive \u203a foo",
         GetPathDisplayTextForSettings(
             profile_.get(),
             "/special/drive-0123456789abcdef/team_drives/A Team Drive/foo"));
@@ -225,11 +225,12 @@ TEST_F(FileManagerPathUtilTest, GetPathDisplayTextForSettings) {
         GetPathDisplayTextForSettings(
             &profile2,
             "/media/fuse/drivefs-84675c855b63e12f384d45f033826980/root/foo"));
-    EXPECT_EQ("Google Drive \u203a Team Drives \u203a A Team Drive \u203a foo",
-              GetPathDisplayTextForSettings(
-                  &profile2,
-                  "/media/fuse/drivefs-84675c855b63e12f384d45f033826980/"
-                  "team_drives/A Team Drive/foo"));
+    EXPECT_EQ(
+        "Google Drive \u203a Shared drives \u203a A Team Drive \u203a foo",
+        GetPathDisplayTextForSettings(
+            &profile2,
+            "/media/fuse/drivefs-84675c855b63e12f384d45f033826980/"
+            "team_drives/A Team Drive/foo"));
     EXPECT_EQ(
         "Google Drive \u203a Computers \u203a My Other Computer \u203a bar",
         GetPathDisplayTextForSettings(
@@ -241,7 +242,7 @@ TEST_F(FileManagerPathUtilTest, GetPathDisplayTextForSettings) {
               GetPathDisplayTextForSettings(
                   &profile2, "/special/drive-0123456789abcdef/root/foo"));
     EXPECT_EQ(
-        "Google Drive \u203a Team Drives \u203a A Team Drive \u203a foo",
+        "Google Drive \u203a Shared drives \u203a A Team Drive \u203a foo",
         GetPathDisplayTextForSettings(
             &profile2,
             "/special/drive-0123456789abcdef/team_drives/A Team Drive/foo"));

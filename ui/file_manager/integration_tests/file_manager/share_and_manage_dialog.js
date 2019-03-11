@@ -21,7 +21,7 @@ async function shareWithOthersExpectBrowserURL(
   if (teamDrive !== undefined) {
     await remoteCall.navigateWithDirectoryTree(
         appId, teamDrive === '' ? '/team_drives' : `/team_drives/${teamDrive}`,
-        'Team Drives', 'drive');
+        'Shared drives', 'drive');
 
     // Wait for the file list to update.
     await remoteCall.waitForFileListChange(appId, BASIC_DRIVE_ENTRY_SET.length);
@@ -82,7 +82,7 @@ async function manageWithDriveExpectBrowserURL(
   if (teamDrive !== undefined) {
     await remoteCall.navigateWithDirectoryTree(
         appId, teamDrive === '' ? '/team_drives' : `/team_drives/${teamDrive}`,
-        'Team Drives', 'drive');
+        'Shared drives', 'drive');
 
     // Wait for the file list to update.
     await remoteCall.waitForFileListChange(appId, BASIC_DRIVE_ENTRY_SET.length);
@@ -199,7 +199,7 @@ testcase.shareDirectoryTeamDrive = async () => {
 
   // Navigate to the team drive.
   await remoteCall.navigateWithDirectoryTree(
-      appId, `/team_drives/${teamDrive}`, 'Team Drives', 'drive');
+      appId, `/team_drives/${teamDrive}`, 'Shared drives', 'drive');
 
   // Wait for the file list to update.
   await remoteCall.waitForFileListChange(appId, BASIC_DRIVE_ENTRY_SET.length);
