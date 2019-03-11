@@ -31,7 +31,7 @@ recommend checking llvm's clang source and building the clang-tidy binary
 directly. Instructions for getting started with clang are available from
 [llvm](http://clang.llvm.org/get_started.html). You'll need to get llvm,
 clang, and the extra clang tools (you won't need Compiler-RT or libcxx).
-If you don't have it, you'll also need to install cmake as a part of this
+If you don't have it, you'll also need to install CMake as a part of this
 process.
 
 Instead of building with `"Unix Makefiles"`, generate build files for Ninja with
@@ -73,7 +73,7 @@ cd out/Release
 ```
 4.  Run clang-tidy.
 ```
-<PATH_TO_LLVM_SRC>/tools/clang/tools/extra/clang-tidy/tool/run-clang-tidy.py \
+<PATH_TO_LLVM_SRC>/clang-tools-extra/clang-tidy/tool/run-clang-tidy.py \
     -p . \# Set the root project directory, where compile_commands.json is.
     # Set the clang-tidy binary path, if it's not in your $PATH.
     -clang-tidy-binary <PATH_TO_LLVM_BUILD>/bin/clang-tidy \
@@ -88,7 +88,7 @@ cd out/Release
     chrome/browser # The path to the files you want to check.
 
 Copy-Paste Friendly (though you'll still need to stub in the variables):
-<PATH_TO_LLVM_SRC>/tools/clang/tools/extra/clang-tidy/tool/run-clang-tidy.py \
+<PATH_TO_LLVM_SRC>/clang-tools-extra/clang-tidy/tool/run-clang-tidy.py \
     -p . \
     -clang-tidy-binary <PATH_TO_LLVM_BUILD>/bin/clang-tidy \
     -clang-apply-replacements-binary \
