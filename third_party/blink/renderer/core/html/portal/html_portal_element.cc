@@ -76,23 +76,23 @@ HTMLPortalElement::InsertionNotificationRequest HTMLPortalElement::InsertedInto(
     ContainerNode& node) {
   auto result = HTMLFrameOwnerElement::InsertedInto(node);
 
-  Document& document = GetDocument();
+  if (!node.IsInDocumentTree() || !GetDocument().IsHTMLDocument() ||
+      !GetDocument().GetFrame())
+    return result;
 
   // We don't support embedding portals in nested browsing contexts.
-  if (!document.GetFrame()->IsMainFrame()) {
-    document.AddConsoleMessage(ConsoleMessage::Create(
+  if (!GetDocument().GetFrame()->IsMainFrame()) {
+    GetDocument().AddConsoleMessage(ConsoleMessage::Create(
         kRenderingMessageSource, mojom::ConsoleMessageLevel::kWarning,
         "Cannot use <portal> in a nested browsing context."));
     return result;
   }
 
-  if (node.IsInDocumentTree() && document.IsHTMLDocument()) {
-    std::tie(portal_frame_, portal_token_) =
-        GetDocument().GetFrame()->Client()->CreatePortal(
-            this, mojo::MakeRequest(&portal_ptr_));
-    DocumentPortals::From(GetDocument()).OnPortalInserted(this);
-    Navigate();
-  }
+  std::tie(portal_frame_, portal_token_) =
+      GetDocument().GetFrame()->Client()->CreatePortal(
+          this, mojo::MakeRequest(&portal_ptr_));
+  DocumentPortals::From(GetDocument()).OnPortalInserted(this);
+  Navigate();
 
   return result;
 }
