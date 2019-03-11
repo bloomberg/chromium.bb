@@ -33,6 +33,31 @@ public interface PaymentApp {
     }
 
     /**
+     * The interface for listener to payment method change events. Note: What the spec calls
+     * "payment methods" in the context of a "change event", this code calls "instruments".
+     */
+    public interface PaymentMethodChangeCallback {
+        /**
+         * Called to notify merchant of payment method change. The payment app should block user
+         * interaction until updateWith() or noUpdatedPaymentDetails().
+         * https://w3c.github.io/payment-request/#paymentmethodchangeevent-interface
+         *
+         * @param methodName         Method name. For example, "https://google.com/pay".
+         * @param stringifiedDetails JSON-serialzied object. For example, {"type": "debit"}.
+         */
+        void onPaymentMethodChange(String methodName, String stringifiedDetails);
+    }
+
+    /**
+     * Sets the listener to payment method change events. Should be called before a payment method
+     * has been selected, e.g., before getInstruments(), which constructs the payment methods.
+     *
+     * @param methodChangeCallback The object that will receive notifications of payment method
+     *                             changes.
+     */
+    default void setPaymentMethodChangeCallback(PaymentMethodChangeCallback methodChangeCallback) {}
+
+    /**
      * Provides a list of all payment instruments in this app. For example, this can be all credit
      * cards for the current profile. Can return null or empty list, e.g., if user has no locally
      * stored credit cards.

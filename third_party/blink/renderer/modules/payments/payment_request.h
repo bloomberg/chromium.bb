@@ -113,6 +113,8 @@ class MODULES_EXPORT PaymentRequest final
   void ContextDestroyed(ExecutionContext*) override;
 
   // payments::mojom::blink::PaymentRequestClient:
+  void OnPaymentMethodChange(const String& method_name,
+                             const String& stringified_details) override;
   void OnShippingAddressChange(
       payments::mojom::blink::PaymentAddressPtr) override;
   void OnShippingOptionChange(const String& shipping_option_id) override;

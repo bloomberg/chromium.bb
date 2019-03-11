@@ -60,7 +60,10 @@ enum HasEnrolledInstrumentQueryResult {
   WARNING_HAS_NO_ENROLLED_INSTRUMENT,
 };
 
+// Implemented in the renderer process. Sandboxed. Deals with untrusted data.
+//   components/payments/content/payment_request.h
 interface PaymentRequestClient {
+  OnPaymentMethodChange(string method_name, string stringified_details);
   OnShippingAddressChange(PaymentAddress address);
   OnShippingOptionChange(string shipping_option_id);
   OnPayerDetailChange(PayerDetail detail);
@@ -199,6 +202,12 @@ enum PaymentComplete {
   UNKNOWN
 };
 
+
+// Implemented in the browser process. Not sandboxed. Deals with trusted data.
+// Android implementation:
+//   chrome/android/java/src/org/chromium/chrome/browser/payments/PaymentRequestImpl.java
+// Desktop (Windows, ChromeOS, Linux, MacOS) implementation:
+//   components/payments/content/payment_request.h
 interface PaymentRequest {
   // Instantiates the renderer-browser connection with the information from the
   // JavaScript constructor of PaymentRequest.
