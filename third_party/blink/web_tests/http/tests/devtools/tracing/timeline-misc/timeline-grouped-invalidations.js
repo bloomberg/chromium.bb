@@ -8,10 +8,10 @@
   await TestRunner.showPanel('timeline');
   await TestRunner.loadHTML(`
     <!DOCTYPE HTML>
-    <script src="../../../resources/run-after-layout-and-paint.js"></script>
     <div class="testElement">P</div><div class="testElement">A</div>
     <div class="testElement">S</div><div class="testElement">S</div>
   `);
+  await TestRunner.addScriptTag('../../../resources/run-after-layout-and-paint.js');
   await TestRunner.evaluateInPagePromise(`
     function display()
     {
