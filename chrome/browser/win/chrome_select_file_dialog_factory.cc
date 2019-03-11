@@ -26,7 +26,7 @@ namespace {
 // This feature controls whether or not file dialogs are executed in a utility
 // process on Windows.
 base::Feature kWinOOPSelectFileDialog{"WinOOPSelectFileDialog",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
+                                      base::FEATURE_ENABLED_BY_DEFAULT};
 }  // namespace
 
 std::unique_ptr<service_manager::Connector> GetConnectorOnUIThread() {
