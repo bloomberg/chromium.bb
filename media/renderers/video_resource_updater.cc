@@ -825,9 +825,15 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
       CopyHardwarePlane(video_frame.get(), resource_color_space, mailbox_holder,
                         &external_resources);
     } else {
+      const gfx::Size& coded_size = video_frame->coded_size();
+      const size_t width =
+          VideoFrame::Columns(i, video_frame->format(), coded_size.width());
+      const size_t height =
+          VideoFrame::Rows(i, video_frame->format(), coded_size.height());
+      const gfx::Size plane_size(width, height);
       auto transfer_resource = viz::TransferableResource::MakeGLOverlay(
           mailbox_holder.mailbox, GL_LINEAR, mailbox_holder.texture_target,
-          mailbox_holder.sync_token, video_frame->coded_size(),
+          mailbox_holder.sync_token, plane_size,
           video_frame->metadata()->IsTrue(VideoFrameMetadata::ALLOW_OVERLAY));
       transfer_resource.color_space = resource_color_space;
       transfer_resource.read_lock_fences_enabled =
