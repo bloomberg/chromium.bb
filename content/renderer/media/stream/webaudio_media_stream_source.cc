@@ -11,8 +11,9 @@
 namespace content {
 
 WebAudioMediaStreamSource::WebAudioMediaStreamSource(
-    blink::WebMediaStreamSource* blink_source)
-    : blink::MediaStreamAudioSource(false /* is_remote */),
+    blink::WebMediaStreamSource* blink_source,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    : blink::MediaStreamAudioSource(task_runner, false /* is_remote */),
       is_registered_consumer_(false),
       fifo_(base::Bind(&WebAudioMediaStreamSource::DeliverRebufferedAudio,
                        base::Unretained(this))),

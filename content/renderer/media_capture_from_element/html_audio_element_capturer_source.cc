@@ -17,16 +17,19 @@ namespace content {
 //static
 HtmlAudioElementCapturerSource*
 HtmlAudioElementCapturerSource::CreateFromWebMediaPlayerImpl(
-    blink::WebMediaPlayer* player) {
+    blink::WebMediaPlayer* player,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   DCHECK(player);
   return new HtmlAudioElementCapturerSource(
       static_cast<media::WebAudioSourceProviderImpl*>(
-          player->GetAudioSourceProvider()));
+          player->GetAudioSourceProvider()),
+      task_runner);
 }
 
 HtmlAudioElementCapturerSource::HtmlAudioElementCapturerSource(
-    media::WebAudioSourceProviderImpl* audio_source)
-    : blink::MediaStreamAudioSource(true /* is_local_source */),
+    media::WebAudioSourceProviderImpl* audio_source,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    : blink::MediaStreamAudioSource(task_runner, true /* is_local_source */),
       audio_source_(audio_source),
       is_started_(false),
       last_sample_rate_(0),

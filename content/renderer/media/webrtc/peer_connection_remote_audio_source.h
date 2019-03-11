@@ -59,7 +59,8 @@ class PeerConnectionRemoteAudioSource final
       protected webrtc::AudioTrackSinkInterface {
  public:
   explicit PeerConnectionRemoteAudioSource(
-      scoped_refptr<webrtc::AudioTrackInterface> track_interface);
+      scoped_refptr<webrtc::AudioTrackInterface> track_interface,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~PeerConnectionRemoteAudioSource() final;
 
  protected:

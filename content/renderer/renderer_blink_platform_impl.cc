@@ -780,7 +780,8 @@ void RendererBlinkPlatformImpl::CreateHTMLVideoElementCapturer(
 
 void RendererBlinkPlatformImpl::CreateHTMLAudioElementCapturer(
     WebMediaStream* web_media_stream,
-    WebMediaPlayer* web_media_player) {
+    WebMediaPlayer* web_media_player,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   DCHECK(web_media_stream);
   DCHECK(web_media_player);
 
@@ -795,7 +796,7 @@ void RendererBlinkPlatformImpl::CreateHTMLAudioElementCapturer(
 
   blink::MediaStreamAudioSource* const media_stream_source =
       HtmlAudioElementCapturerSource::CreateFromWebMediaPlayerImpl(
-          web_media_player);
+          web_media_player, task_runner);
 
   // Takes ownership of |media_stream_source|.
   web_media_stream_source.SetPlatformSource(

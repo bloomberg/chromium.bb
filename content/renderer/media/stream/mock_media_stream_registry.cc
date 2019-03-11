@@ -9,6 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/renderer/media/stream/mock_media_stream_video_source.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
+#include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -24,7 +25,10 @@ const char kTestStreamLabel[] = "stream_label";
 
 class MockCDQualityAudioSource : public blink::MediaStreamAudioSource {
  public:
-  MockCDQualityAudioSource() : blink::MediaStreamAudioSource(true) {
+  MockCDQualityAudioSource()
+      : blink::MediaStreamAudioSource(
+            blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
+            true) {
     SetFormat(media::AudioParameters(
         media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
         media::CHANNEL_LAYOUT_STEREO,

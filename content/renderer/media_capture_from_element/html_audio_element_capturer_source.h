@@ -29,11 +29,13 @@ namespace content {
 class CONTENT_EXPORT HtmlAudioElementCapturerSource final
     : public blink::MediaStreamAudioSource {
  public:
-  static HtmlAudioElementCapturerSource*
-  CreateFromWebMediaPlayerImpl(blink::WebMediaPlayer* player);
+  static HtmlAudioElementCapturerSource* CreateFromWebMediaPlayerImpl(
+      blink::WebMediaPlayer* player,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   explicit HtmlAudioElementCapturerSource(
-      media::WebAudioSourceProviderImpl* audio_source);
+      media::WebAudioSourceProviderImpl* audio_source,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~HtmlAudioElementCapturerSource() override;
 
  private:

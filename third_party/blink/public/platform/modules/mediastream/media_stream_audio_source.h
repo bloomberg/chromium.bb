@@ -62,8 +62,13 @@ class MediaStreamAudioTrack;
 class BLINK_PLATFORM_EXPORT MediaStreamAudioSource
     : public WebPlatformMediaStreamSource {
  public:
-  explicit MediaStreamAudioSource(bool is_local_source);
-  MediaStreamAudioSource(bool is_local_source, bool disable_local_echo);
+  explicit MediaStreamAudioSource(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      bool is_local_source);
+  MediaStreamAudioSource(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      bool is_local_source,
+      bool disable_local_echo);
   ~MediaStreamAudioSource() override;
 
   // Returns the MediaStreamAudioSource instance owned by the given blink

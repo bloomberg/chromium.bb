@@ -658,8 +658,10 @@ class BLINK_PLATFORM_EXPORT Platform {
       WebMediaStream*,
       WebMediaPlayer*,
       scoped_refptr<base::SingleThreadTaskRunner>) {}
-  virtual void CreateHTMLAudioElementCapturer(WebMediaStream*,
-                                              WebMediaPlayer*) {}
+  virtual void CreateHTMLAudioElementCapturer(
+      WebMediaStream*,
+      WebMediaPlayer*,
+      scoped_refptr<base::SingleThreadTaskRunner>) {}
 
   // Creates a WebImageCaptureFrameGrabber to take a snapshot of a Video Tracks.
   // May return null if the functionality is not available.

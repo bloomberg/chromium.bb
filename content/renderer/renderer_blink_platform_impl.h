@@ -173,7 +173,8 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
   void CreateHTMLAudioElementCapturer(
       blink::WebMediaStream* web_media_stream,
-      blink::WebMediaPlayer* web_media_player) override;
+      blink::WebMediaPlayer* web_media_player,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
   std::unique_ptr<blink::WebImageCaptureFrameGrabber>
   CreateImageCaptureFrameGrabber() override;
   std::unique_ptr<webrtc::RtpCapabilities> GetRtpSenderCapabilities(

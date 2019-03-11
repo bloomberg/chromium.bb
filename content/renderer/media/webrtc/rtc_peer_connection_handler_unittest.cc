@@ -326,7 +326,8 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
                 media::AudioParameters::kAudioCDSampleRate / 100),
             false /* disable_local_echo */, blink::AudioProcessingProperties(),
             base::Bind(&RTCPeerConnectionHandlerTest::OnAudioSourceStarted),
-            mock_dependency_factory_.get());
+            mock_dependency_factory_.get(),
+            blink::scheduler::GetSingleThreadTaskRunnerForTesting());
     audio_source->SetAllowInvalidRenderFrameIdForTesting(true);
     blink_audio_source.SetPlatformSource(
         base::WrapUnique(audio_source));  // Takes ownership.

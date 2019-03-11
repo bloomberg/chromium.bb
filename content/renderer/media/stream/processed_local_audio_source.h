@@ -45,7 +45,8 @@ class CONTENT_EXPORT ProcessedLocalAudioSource final
       bool disable_local_echo,
       const blink::AudioProcessingProperties& audio_processing_properties,
       const ConstraintsCallback& started_callback,
-      PeerConnectionDependencyFactory* factory);
+      PeerConnectionDependencyFactory* factory,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   ~ProcessedLocalAudioSource() final;
 

@@ -115,7 +115,9 @@ class HTMLAudioElementCapturerSourceTest : public testing::Test {
 
     // |blink_audio_source_| takes ownership of HtmlAudioElementCapturerSource.
     blink_audio_source_.SetPlatformSource(
-        std::make_unique<HtmlAudioElementCapturerSource>(audio_source_.get()));
+        std::make_unique<HtmlAudioElementCapturerSource>(
+            audio_source_.get(),
+            blink::scheduler::GetSingleThreadTaskRunnerForTesting()));
     ASSERT_TRUE(source()->ConnectToTrack(blink_audio_track_));
   }
 

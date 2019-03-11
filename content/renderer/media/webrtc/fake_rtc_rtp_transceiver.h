@@ -27,7 +27,8 @@ blink::WebMediaStreamTrack CreateWebMediaStreamTrack(const std::string& id);
 class CONTENT_EXPORT FakeRTCRtpSender : public blink::WebRTCRtpSender {
  public:
   FakeRTCRtpSender(base::Optional<std::string> track_id,
-                   std::vector<std::string> stream_ids);
+                   std::vector<std::string> stream_ids,
+                   scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   FakeRTCRtpSender(const FakeRTCRtpSender&);
   ~FakeRTCRtpSender() override;
   FakeRTCRtpSender& operator=(const FakeRTCRtpSender&);
@@ -52,12 +53,14 @@ class CONTENT_EXPORT FakeRTCRtpSender : public blink::WebRTCRtpSender {
  private:
   base::Optional<std::string> track_id_;
   std::vector<std::string> stream_ids_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 };
 
 class CONTENT_EXPORT FakeRTCRtpReceiver : public blink::WebRTCRtpReceiver {
  public:
   FakeRTCRtpReceiver(const std::string& track_id,
-                     std::vector<std::string> stream_ids);
+                     std::vector<std::string> stream_ids,
+                     scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   FakeRTCRtpReceiver(const FakeRTCRtpReceiver&);
   ~FakeRTCRtpReceiver() override;
   FakeRTCRtpReceiver& operator=(const FakeRTCRtpReceiver&);

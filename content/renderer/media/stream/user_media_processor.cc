@@ -1033,7 +1033,7 @@ UserMediaProcessor::CreateAudioSource(
           audio_processing_properties)) {
     return std::make_unique<LocalMediaStreamAudioSource>(
         render_frame_->GetRoutingID(), device,
-        stream_controls->disable_local_echo, source_ready);
+        stream_controls->disable_local_echo, source_ready, task_runner_);
   }
 
   // The audio device is not associated with screen capture and also requires
@@ -1041,7 +1041,7 @@ UserMediaProcessor::CreateAudioSource(
   return std::make_unique<ProcessedLocalAudioSource>(
       render_frame_->GetRoutingID(), device,
       stream_controls->disable_local_echo, audio_processing_properties,
-      source_ready, dependency_factory_);
+      source_ready, dependency_factory_, task_runner_);
 }
 
 std::unique_ptr<blink::MediaStreamVideoSource>

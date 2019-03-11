@@ -20,6 +20,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_platform_media_stream_source.h"
+#include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/public/platform/web_string.h"
 
@@ -174,7 +175,7 @@ class MediaStreamConstraintsUtilAudioTest
     return std::make_unique<ProcessedLocalAudioSource>(
         -1, device, disable_local_echo, properties,
         blink::WebPlatformMediaStreamSource::ConstraintsCallback(),
-        &pc_factory_);
+        &pc_factory_, blink::scheduler::GetSingleThreadTaskRunnerForTesting());
   }
 
   std::unique_ptr<ProcessedLocalAudioSource> GetProcessedLocalAudioSource(
@@ -206,7 +207,8 @@ class MediaStreamConstraintsUtilAudioTest
 
     return std::make_unique<LocalMediaStreamAudioSource>(
         -1, device, disable_local_echo,
-        blink::WebPlatformMediaStreamSource::ConstraintsCallback());
+        blink::WebPlatformMediaStreamSource::ConstraintsCallback(),
+        blink::scheduler::GetSingleThreadTaskRunnerForTesting());
   }
 
   AudioCaptureSettings SelectSettings() {
