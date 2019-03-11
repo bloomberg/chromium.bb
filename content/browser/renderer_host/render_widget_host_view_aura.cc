@@ -764,14 +764,7 @@ gfx::Size RenderWidgetHostViewAura::GetVisibleViewportSize() const {
 void RenderWidgetHostViewAura::SetInsets(const gfx::Insets& insets) {
   if (insets != insets_) {
     insets_ = insets;
-    window_->AllocateLocalSurfaceId();
-    if (!insets.IsEmpty()) {
-      inset_surface_id_allocation_ = window_->GetLocalSurfaceIdAllocation();
-    } else {
-      inset_surface_id_allocation_ = viz::LocalSurfaceIdAllocation();
-    }
-    SynchronizeVisualProperties(cc::DeadlinePolicy::UseDefaultDeadline(),
-                                window_->GetLocalSurfaceIdAllocation());
+    host()->SynchronizeVisualProperties(!insets_.IsEmpty());
   }
 }
 
@@ -1978,15 +1971,6 @@ void RenderWidgetHostViewAura::OnRenderFrameMetadataChangedAfterActivation() {
   const cc::RenderFrameMetadata& metadata =
       host()->render_frame_metadata_provider()->LastRenderFrameMetadata();
   SetContentBackgroundColor(metadata.root_background_color);
-  if (inset_surface_id_allocation_.IsValid() &&
-      metadata.local_surface_id_allocation &&
-      metadata.local_surface_id_allocation.value().IsValid() &&
-      metadata.local_surface_id_allocation.value()
-          .local_surface_id()
-          .IsSameOrNewerThan(inset_surface_id_allocation_.local_surface_id())) {
-    inset_surface_id_allocation_ = viz::LocalSurfaceIdAllocation();
-    ScrollFocusedEditableNodeIntoRect(gfx::Rect());
-  }
 
   if (metadata.selection.start != selection_start_ ||
       metadata.selection.end != selection_end_) {
