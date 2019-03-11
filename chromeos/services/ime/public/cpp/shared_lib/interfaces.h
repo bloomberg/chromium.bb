@@ -65,6 +65,9 @@ namespace ime {
 // This class should be provided by the IME service before creating an
 // `ImeEngineMainEntry` and be always owned by the IME service.
 class Platform {
+ protected:
+  ~Platform() = default;
+
  public:
   // The three methods below are Getters of the local data directories on the
   // platform. It's possible for the IME service to be running in a mode where
@@ -91,6 +94,9 @@ class Platform {
 // This is used to send messages to connected IME client from an IME engine.
 // IME service will create then pass it to the engine.
 class ImeClientDelegate {
+ protected:
+  ~ImeClientDelegate() = default;
+
  public:
   // Returns the c_str() of the internal IME specification of ImeClientDelegate.
   // The IME specification will be invalidated by its `Destroy` method.
@@ -103,9 +109,6 @@ class ImeClientDelegate {
   // Destroy the `ImeClientDelegate` instance, which is called in the shared
   // library when the bound engine is destroyed.
   virtual void Destroy() = 0;
-
- protected:
-  ~ImeClientDelegate();
 };
 
 // The main entry point of an IME shared library.
@@ -114,6 +117,9 @@ class ImeClientDelegate {
 // clients of the IME service. The shared library will exposes its create
 // function to the IME service.
 class ImeEngineMainEntry {
+ protected:
+  ~ImeEngineMainEntry() = default;
+
  public:
   // Returns whether a specific IME is supported by this IME shared library.
   // The argument is the specfiation name of an IME, and the caller should
@@ -133,9 +139,6 @@ class ImeEngineMainEntry {
   // Destroy the `ImeEngineMainEntry` instance, which is called in IME service
   // on demand.
   virtual void Destroy() = 0;
-
- protected:
-  ~ImeEngineMainEntry();
 };
 
 // Create ImeEngineMainEntry instance from the IME engine shared library.
