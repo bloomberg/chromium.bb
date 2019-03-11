@@ -25,6 +25,7 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node_data.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_offset_mapping.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/character_names.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -37,6 +38,8 @@ namespace {
 // [1]
 // https://html.spec.whatwg.org/C/#the-innertext-idl-attribute
 class ElementInnerTextCollector final {
+  STACK_ALLOCATED();
+
  public:
   ElementInnerTextCollector() = default;
 
