@@ -637,7 +637,6 @@
   amd64-generic-v4_4-pre-cq
   amd64-llvm-next-toolchain-tryjob
   arkham-compile-only-pre-cq
-  arkham-factory-arkham-7077.113.B-factorybranch-tryjob
   arkham-full-tryjob
   arkham-llvm-next-toolchain-tryjob
   arkham-llvm-toolchain-tryjob
@@ -1492,8 +1491,6 @@
   expresso-tot-chrome-pfq-informational-tryjob
   expresso-tot-chromium-pfq-informational-tryjob
   expresso-unittest-stress
-  factory-arkham-7077.113.B-buildspec-tryjob
-    arkham-factory-arkham-7077.113.B-factorybranch-tryjob
   factory-auron-6459.B-buildspec-tryjob
     auron_paine-factory-auron-6459.B-factorybranch-tryjob
     auron_yuna-factory-auron-6459.B-factorybranch-tryjob
@@ -1579,8 +1576,6 @@
     reef-factory-reef-8811.B-factorybranch-tryjob
     sand-factory-reef-8811.B-factorybranch-tryjob
     snappy-factory-reef-8811.B-factorybranch-tryjob
-  factory-samus-6658.B-buildspec-tryjob
-    samus-factory-samus-6658.B-factorybranch-tryjob
   factory-scarlet-10211.B-buildspec-tryjob
     scarlet-factory-scarlet-10211.B-factorybranch-tryjob
   factory-soraka-10323.39.B-buildspec-tryjob
@@ -3402,7 +3397,6 @@
   samus-chrome-pre-flight-branch-tryjob
   samus-chromium-pfq-tryjob
   samus-compile-only-pre-cq
-  samus-factory-samus-6658.B-factorybranch-tryjob
   samus-full-tryjob
   samus-kernelnext-chrome-pfq-tryjob
   samus-kernelnext-chromium-pfq-tryjob

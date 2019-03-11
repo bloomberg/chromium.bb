@@ -3160,11 +3160,9 @@ def FactoryBuilders(site_config, _boards_dict, _ge_build_config):
           'veyron_jerry', 'veyron_mighty',
           'veyron_speedy', 'veyron_jaq',
           'veyron_minnie', 'veyron_mickey']),
-      (None, 'factory-samus-6658.B', ['samus']),
       (None, 'factory-auron-6772.B', [
           'jecht', 'guado', 'tidus', 'rikku', 'buddy']),
       (None, 'factory-whirlwind-6812.41.B', ['whirlwind']),
-      (None, 'factory-arkham-7077.113.B', ['arkham']),
       (None, 'factory-strago-7458.B', [
           'cyan', 'celes', 'ultima', 'reks', 'terra', 'edgar',
           'wizpig', 'setzer', 'banon', 'kefka', 'relm', 'kip']),
