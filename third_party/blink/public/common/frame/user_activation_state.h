@@ -28,16 +28,25 @@ class BLINK_COMMON_EXPORT UserActivationState {
 
   // Returns the transient activation state, which is |true| if the frame has
   // recently been activated and the transient state hasn't been consumed yet.
-  bool IsActive();
+  bool IsActive() const;
 
   // Consumes the transient activation state if available, and returns |true| if
   // successfully consumed.
   bool ConsumeIfActive();
 
+  // Transfers user activation state from |other| into |this|:
+  // - The sticky bit in |this| gets set if the bit in |other| is set.
+  // - The transient expiry time in |this| becomes the max of the expiry times
+  //   in |this| and |other|.
+  // - The state in |other| is cleared.
+  void TransferFrom(UserActivationState& other);
+
  private:
+  void ActivateTransientState();
+  void DeactivateTransientState();
+
   bool has_been_active_ = false;
-  bool is_active_ = false;
-  base::TimeTicks activation_timestamp_;
+  base::TimeTicks transient_state_expiry_time_;
 };
 
 }  // namespace blink

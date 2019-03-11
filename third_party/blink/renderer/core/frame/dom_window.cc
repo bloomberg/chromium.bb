@@ -497,8 +497,15 @@ void DOMWindow::DoPostMessage(scoped_refptr<SerializedScriptValue> message,
       std::move(channels), std::move(message), source_origin, String(), source,
       user_activation, options->transferUserActivation());
 
-  // TODO(928838): Transfer activation state in current renderer's frame tree if
-  // source frame has transient activation.
+  // TODO(mustaq): Also transfer in the frame trees in all other processes
+  // (browser and other renderers).  See crbug.com/928838.
+  LocalFrame* source_frame = source->GetFrame();
+  if (RuntimeEnabledFeatures::UserActivationDelegationEnabled() &&
+      options->transferUserActivation() &&
+      LocalFrame::HasTransientUserActivation(source_frame)) {
+    GetFrame()->TransferActivationFrom(source_frame);
+  }
+
   SchedulePostMessage(event, std::move(target), source_document);
 }
 
