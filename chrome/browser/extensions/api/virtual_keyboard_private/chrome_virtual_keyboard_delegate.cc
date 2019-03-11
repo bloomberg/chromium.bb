@@ -374,9 +374,7 @@ void ChromeVirtualKeyboardDelegate::OnHasInputDevices(
   keyboard::mojom::KeyboardConfig config = keyboard_client->GetKeyboardConfig();
   // TODO(oka): Change this to use config.voice_input.
   features->AppendString(GenerateFeatureFlag(
-      "voiceinput", has_audio_input_devices && config.voice_input &&
-                        !base::CommandLine::ForCurrentProcess()->HasSwitch(
-                            keyboard::switches::kDisableVoiceInput)));
+      "voiceinput", has_audio_input_devices && config.voice_input));
   features->AppendString(
       GenerateFeatureFlag("autocomplete", config.auto_complete));
   features->AppendString(

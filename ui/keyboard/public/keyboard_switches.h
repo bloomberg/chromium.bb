@@ -10,9 +10,6 @@
 namespace keyboard {
 namespace switches {
 
-// Disables voice input.
-KEYBOARD_EXPORT extern const char kDisableVoiceInput[];
-
 // Flag which disables gesture typing for the virtual keyboard.
 KEYBOARD_EXPORT extern const char kDisableGestureTyping[];
 

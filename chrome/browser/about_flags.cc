@@ -1602,9 +1602,6 @@ const FeatureEntry kFeatureEntries[] = {
      ENABLE_DISABLE_VALUE_TYPE(
          chromeos::switches::kEnablePhysicalKeyboardAutocorrect,
          chromeos::switches::kDisablePhysicalKeyboardAutocorrect)},
-    {"disable-voice-input", flag_descriptions::kVoiceInputName,
-     flag_descriptions::kVoiceInputDescription, kOsCrOS,
-     SINGLE_DISABLE_VALUE_TYPE(keyboard::switches::kDisableVoiceInput)},
     {"gesture-typing", flag_descriptions::kGestureTypingName,
      flag_descriptions::kGestureTypingDescription, kOsCrOS,
      SINGLE_DISABLE_VALUE_TYPE(keyboard::switches::kDisableGestureTyping)},

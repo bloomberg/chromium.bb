@@ -3458,10 +3458,6 @@ const char kVirtualKeyboardOverscrollName[] = "Virtual Keyboard Overscroll";
 const char kVirtualKeyboardOverscrollDescription[] =
     "Enables virtual keyboard overscroll support.";
 
-const char kVoiceInputName[] = "Voice input on virtual keyboard";
-const char kVoiceInputDescription[] =
-    "Enables voice input on virtual keyboard.";
-
 const char kWakeOnPacketsName[] = "Wake On Packets";
 const char kWakeOnPacketsDescription[] =
     "Enables waking the device based on the receipt of some network packets.";
