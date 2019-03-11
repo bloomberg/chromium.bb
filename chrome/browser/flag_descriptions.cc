@@ -1617,13 +1617,6 @@ const char kReducedReferrerGranularityDescription[] =
     "reduce the amount of information in the 'referer' header for cross-origin "
     "requests.";
 
-const char kRegionalLocalesAsDisplayUIName[] =
-    "Allow regional locales as display UI";
-const char kRegionalLocalesAsDisplayUIDescription[] =
-    "This flag allows regional locales to be selected as display UI by the "
-    "user in Language Settings. The actual locale of the system is derived "
-    "from the user selection based on some simple fallback logic.";
-
 const char kRewriteLevelDBOnDeletionName[] =
     "Rewrite LevelDB instances after full deletions";
 const char kRewriteLevelDBOnDeletionDescription[] =

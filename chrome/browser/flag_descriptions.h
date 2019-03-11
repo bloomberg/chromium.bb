@@ -964,9 +964,6 @@ extern const char kRecurrentInterstitialDescription[];
 extern const char kReducedReferrerGranularityName[];
 extern const char kReducedReferrerGranularityDescription[];
 
-extern const char kRegionalLocalesAsDisplayUIName[];
-extern const char kRegionalLocalesAsDisplayUIDescription[];
-
 extern const char kRewriteLevelDBOnDeletionName[];
 extern const char kRewriteLevelDBOnDeletionDescription[];
 
