@@ -98,22 +98,6 @@ class PaintWorkletGlobalScopeTest : public PageTestBase {
     worklet->WaitForShutdownForTesting();
   }
 
-  void RunScriptOnWorklet(String source_code,
-                          WorkerThread* thread,
-                          base::WaitableEvent* waitable_event) {
-    ASSERT_TRUE(thread->IsCurrentThread());
-    auto* global_scope = To<PaintWorkletGlobalScope>(thread->GlobalScope());
-    ScriptState* script_state =
-        global_scope->ScriptController()->GetScriptState();
-    ASSERT_TRUE(script_state);
-    v8::Isolate* isolate = script_state->GetIsolate();
-    ASSERT_TRUE(isolate);
-    ScriptState::Scope scope(script_state);
-    ASSERT_TRUE(global_scope->ScriptController()->Evaluate(
-        ScriptSourceCode(source_code), SanitizeScriptErrors::kDoNotSanitize));
-    waitable_event->Signal();
-  }
-
   void RunBasicParsingTestOnWorklet(WorkerThread* thread,
                                     base::WaitableEvent* waitable_event) {
     ASSERT_TRUE(thread->IsCurrentThread());
