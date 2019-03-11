@@ -220,7 +220,10 @@ public class Clipboard implements ClipboardManager.OnPrimaryClipChangedListener 
 
     @TargetApi(Build.VERSION_CODES.O)
     private void onPrimaryClipTimestampInvalidated() {
-        long timestamp = mClipboardManager.getPrimaryClipDescription().getTimestamp();
+        ClipDescription clipDescription = mClipboardManager.getPrimaryClipDescription();
+        if (clipDescription == null) return;
+
+        long timestamp = clipDescription.getTimestamp();
         nativeOnPrimaryClipTimestampInvalidated(mNativeClipboard, timestamp);
     }
 
