@@ -6771,7 +6771,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "shards": 9
+          "shards": 11
         },
         "test": "content_browsertests"
       },
