@@ -845,6 +845,44 @@ testcase.dirContextMenuMtp = async () => {
 };
 
 /**
+ * Tests context menu for USB root with DCIM folder.
+ */
+testcase.dirContextMenuUsbDcim = async () => {
+  const usbMenus = [
+    ['#unmount', true],
+    ['#format', true],
+    ['#rename', false],
+    ['#share-with-linux', true],
+  ];
+  const dcimFolderMenus = [
+    ['#cut', true],
+    ['#copy', true],
+    ['#paste-into-folder', false],
+    ['#share-with-linux', true],
+    ['#rename', true],
+    ['#delete', true],
+    ['#new-folder', true],
+  ];
+  const usbQuery = '#directory-tree [entry-label="fake-usb"]';
+  const dcimFolderQuery = usbQuery + ' [entry-label="DCIM"]';
+
+  // Mount removable volumes.
+  await sendTestMessage({name: 'mountFakeUsbDcim'});
+
+  // Open Files app on local Downloads.
+  const appId =
+      await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.beautiful], []);
+
+  // Check the context menu for single partition USB.
+  await checkContextMenu(appId, usbQuery, usbMenus, true /* rootMenu */);
+
+  // Check the context menu for the DCIM folder inside USB.
+  await expandTreeItem(appId, usbQuery);
+  await checkContextMenu(
+      appId, dcimFolderQuery, dcimFolderMenus, false /* rootMenu */);
+};
+
+/**
  * Tests context menu for FSP root and a folder inside it.
  */
 testcase.dirContextMenuFsp = async () => {
