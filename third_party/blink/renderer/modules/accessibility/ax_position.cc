@@ -79,6 +79,9 @@ const AXPosition AXPosition::CreateFirstPositionInObject(
     return position.AsUnignoredPosition(adjustment_behavior);
   }
 
+  // If the container is not a text object, creating a position inside an
+  // ignored container might result in an invalid position, because child count
+  // is inaccurate.
   const AXObject* unignored_container = container.AccessibilityIsIgnored()
                                             ? container.ParentObjectUnignored()
                                             : &container;
@@ -103,6 +106,9 @@ const AXPosition AXPosition::CreateLastPositionInObject(
     return position.AsUnignoredPosition(adjustment_behavior);
   }
 
+  // If the container is not a text object, creating a position inside an
+  // ignored container might result in an invalid position, because child count
+  // is inaccurate.
   const AXObject* unignored_container = container.AccessibilityIsIgnored()
                                             ? container.ParentObjectUnignored()
                                             : &container;
@@ -270,6 +276,15 @@ const AXPosition AXPosition::FromPosition(
       if (!container->Children().Contains(ax_child)) {
         // The |ax_child| is aria-owned by another object.
         return CreatePositionBeforeObject(*ax_child, adjustment_behavior);
+      }
+
+      if (ax_child->IsTextObject()) {
+        // The |ax_child| is a text object. In order that equality between
+        // seemingly identical positions would hold, i.e. a "before object"
+        // position before the text object and a "text position" before the
+        // first character of the text object, we would need to convert to the
+        // deep equivalent position.
+        return CreateFirstPositionInObject(*ax_child, adjustment_behavior);
       }
 
       ax_position.text_offset_or_child_index_ = ax_child->IndexInParent();
@@ -486,7 +501,7 @@ const AXPosition AXPosition::AsUnignoredPosition(
   if (!IsValid())
     return {};
 
-  // There are four possibilities:
+  // There are five possibilities:
   //
   // 1. The container object is ignored and this is not a text position or an
   // "after children" position. Try to find the equivalent position in the
@@ -501,6 +516,13 @@ const AXPosition AXPosition::AsUnignoredPosition(
   //
   // 4. The child after a tree position is ignored, but the container object is
   // not. Return a "before children" or an "after children" position.
+  //
+  // 5. We arbitrarily decided to ignore positions that are anchored to before a
+  // text object. We move such positions to before the first character of the
+  // text object. This is in an effort to ensure that two positions, one a
+  // "before object" position anchored to before a text object, and one a "text
+  // position" anchored to before the first character of the same text object,
+  // compare as equivalent.
 
   const AXObject* container = container_object_;
   const AXObject* child = ChildAfterTreePosition();
@@ -554,6 +576,10 @@ const AXPosition AXPosition::AsUnignoredPosition(
         return CreateFirstPositionInObject(*container);
     }
   }
+
+  // Case 5.
+  if (child && child->IsTextObject())
+    return CreateFirstPositionInObject(*child);
 
   // The position is not ignored.
   return *this;

@@ -202,22 +202,19 @@ TEST_F(AccessibilityTest, PositionAfterLineBreak) {
   const AXObject* ax_br = GetAXObjectByElementId("br");
   ASSERT_NE(nullptr, ax_br);
   ASSERT_EQ(ax::mojom::Role::kLineBreak, ax_br->RoleValue());
-  const AXObject* ax_div = ax_br->ParentObjectUnignored();
-  ASSERT_NE(nullptr, ax_div);
-  ASSERT_EQ(ax::mojom::Role::kGenericContainer, ax_div->RoleValue());
   const AXObject* ax_static_text = GetAXRootObject()->DeepestLastChild();
   ASSERT_NE(nullptr, ax_static_text);
   ASSERT_EQ(ax::mojom::Role::kStaticText, ax_static_text->RoleValue());
 
   const auto ax_position = AXPosition::CreatePositionAfterObject(*ax_br);
-  EXPECT_FALSE(ax_position.IsTextPosition());
-  EXPECT_EQ(ax_div, ax_position.ContainerObject());
-  EXPECT_EQ(2, ax_position.ChildIndex());
-  EXPECT_EQ(ax_static_text, ax_position.ChildAfterTreePosition());
+  EXPECT_EQ(ax_static_text, ax_position.ContainerObject());
+  EXPECT_TRUE(ax_position.IsTextPosition());
+  EXPECT_EQ(0, ax_position.TextOffset());
 
   const auto position = ax_position.ToPositionWithAffinity();
-  EXPECT_EQ(GetDocument().body(), position.AnchorNode());
-  EXPECT_EQ(2, position.GetPosition().OffsetInContainerNode());
+  EXPECT_EQ(ax_static_text->GetNode(), position.AnchorNode());
+  EXPECT_TRUE(position.GetPosition().IsOffsetInAnchor());
+  EXPECT_EQ(0, position.GetPosition().OffsetInContainerNode());
 
   const auto ax_position_from_dom = AXPosition::FromPosition(position);
   EXPECT_EQ(ax_position, ax_position_from_dom);
@@ -234,14 +231,21 @@ TEST_F(AccessibilityTest, FirstPositionInDivContainer) {
   ASSERT_NE(nullptr, ax_static_text);
   ASSERT_EQ(ax::mojom::Role::kStaticText, ax_static_text->RoleValue());
 
+  // "Before object" positions that are anchored to before a text object are
+  // always converted to a "text position" before the object's first unignored
+  // character.
   const auto ax_position = AXPosition::CreateFirstPositionInObject(*ax_div);
   const auto position = ax_position.ToPositionWithAffinity();
-  EXPECT_EQ(div, position.AnchorNode());
-  EXPECT_TRUE(position.GetPosition().IsBeforeChildren());
+  EXPECT_EQ(div->firstChild(), position.AnchorNode());
+  EXPECT_TRUE(position.GetPosition().IsOffsetInAnchor());
+  EXPECT_EQ(0, position.GetPosition().OffsetInContainerNode());
 
   const auto ax_position_from_dom = AXPosition::FromPosition(position);
   EXPECT_EQ(ax_position, ax_position_from_dom);
-  EXPECT_EQ(ax_static_text, ax_position_from_dom.ChildAfterTreePosition());
+  EXPECT_TRUE(ax_position_from_dom.IsTextPosition());
+  EXPECT_EQ(ax_static_text, ax_position_from_dom.ContainerObject());
+  EXPECT_EQ(0, ax_position_from_dom.TextOffset());
+  EXPECT_EQ(nullptr, ax_position_from_dom.ChildAfterTreePosition());
 }
 
 TEST_F(AccessibilityTest, LastPositionInDivContainer) {
@@ -469,22 +473,20 @@ TEST_F(AccessibilityTest, PositionAfterLineBreakWithWhiteSpace) {
   const AXObject* ax_br = GetAXObjectByElementId("br");
   ASSERT_NE(nullptr, ax_br);
   ASSERT_EQ(ax::mojom::Role::kLineBreak, ax_br->RoleValue());
-  const AXObject* ax_div = ax_br->ParentObjectUnignored();
-  ASSERT_NE(nullptr, ax_div);
-  ASSERT_EQ(ax::mojom::Role::kGenericContainer, ax_div->RoleValue());
   const AXObject* ax_static_text = GetAXRootObject()->DeepestLastChild();
   ASSERT_NE(nullptr, ax_static_text);
   ASSERT_EQ(ax::mojom::Role::kStaticText, ax_static_text->RoleValue());
 
   const auto ax_position = AXPosition::CreatePositionAfterObject(*ax_br);
-  EXPECT_FALSE(ax_position.IsTextPosition());
-  EXPECT_EQ(ax_div, ax_position.ContainerObject());
-  EXPECT_EQ(2, ax_position.ChildIndex());
-  EXPECT_EQ(ax_static_text, ax_position.ChildAfterTreePosition());
+  EXPECT_EQ(ax_static_text, ax_position.ContainerObject());
+  EXPECT_TRUE(ax_position.IsTextPosition());
+  EXPECT_EQ(0, ax_position.TextOffset());
 
   const auto position = ax_position.ToPositionWithAffinity();
-  EXPECT_EQ(GetDocument().body(), position.AnchorNode());
-  EXPECT_EQ(2, position.GetPosition().OffsetInContainerNode());
+  EXPECT_EQ(ax_static_text->GetNode(), position.AnchorNode());
+  EXPECT_TRUE(position.GetPosition().IsOffsetInAnchor());
+  // Any white space in the DOM should have been skipped.
+  EXPECT_EQ(5, position.GetPosition().OffsetInContainerNode());
 
   const auto ax_position_from_dom = AXPosition::FromPosition(position);
   EXPECT_EQ(ax_position, ax_position_from_dom);
@@ -501,14 +503,22 @@ TEST_F(AccessibilityTest, FirstPositionInDivContainerWithWhiteSpace) {
   ASSERT_NE(nullptr, ax_static_text);
   ASSERT_EQ(ax::mojom::Role::kStaticText, ax_static_text->RoleValue());
 
+  // "Before object" positions that are anchored to before a text object are
+  // always converted to a "text position" before the object's first unignored
+  // character.
   const auto ax_position = AXPosition::CreateFirstPositionInObject(*ax_div);
   const auto position = ax_position.ToPositionWithAffinity();
-  EXPECT_EQ(div, position.AnchorNode());
-  EXPECT_TRUE(position.GetPosition().IsBeforeChildren());
+  EXPECT_EQ(div->firstChild(), position.AnchorNode());
+  EXPECT_TRUE(position.GetPosition().IsOffsetInAnchor());
+  // Any white space in the DOM should have been skipped.
+  EXPECT_EQ(5, position.GetPosition().OffsetInContainerNode());
 
   const auto ax_position_from_dom = AXPosition::FromPosition(position);
   EXPECT_EQ(ax_position, ax_position_from_dom);
-  EXPECT_EQ(ax_static_text, ax_position_from_dom.ChildAfterTreePosition());
+  EXPECT_TRUE(ax_position_from_dom.IsTextPosition());
+  EXPECT_EQ(ax_static_text, ax_position_from_dom.ContainerObject());
+  EXPECT_EQ(0, ax_position_from_dom.TextOffset());
+  EXPECT_EQ(nullptr, ax_position_from_dom.ChildAfterTreePosition());
 }
 
 TEST_F(AccessibilityTest, LastPositionInDivContainerWithWhiteSpace) {
@@ -543,6 +553,7 @@ TEST_F(AccessibilityTest, FirstPositionInTextContainerWithWhiteSpace) {
       AXPosition::CreateFirstPositionInObject(*ax_static_text);
   const auto position = ax_position.ToPositionWithAffinity();
   EXPECT_EQ(text, position.AnchorNode());
+  // Any white space in the DOM should have been skipped.
   EXPECT_EQ(5, position.GetPosition().OffsetInContainerNode());
 
   const auto ax_position_from_dom = AXPosition::FromPosition(position);
@@ -953,17 +964,19 @@ TEST_F(AccessibilityTest, PositionInCanvas) {
   ASSERT_NE(nullptr, ax_button);
   ASSERT_EQ(ax::mojom::Role::kButton, ax_button->RoleValue());
 
+  // The first child of "canvas1" is a text object. Creating a "before children"
+  // position in this canvas should return the equivalent text position anchored
+  // to before the first character of the text object.
   const auto ax_position_1 =
       AXPosition::CreateFirstPositionInObject(*ax_canvas_1);
-  EXPECT_FALSE(ax_position_1.IsTextPosition());
-  EXPECT_EQ(ax_canvas_1, ax_position_1.ContainerObject());
-  EXPECT_EQ(0, ax_position_1.ChildIndex());
-  EXPECT_EQ(ax_text, ax_position_1.ChildAfterTreePosition());
+  EXPECT_TRUE(ax_position_1.IsTextPosition());
+  EXPECT_EQ(ax_text, ax_position_1.ContainerObject());
+  EXPECT_EQ(0, ax_position_1.TextOffset());
 
   const auto position_1 = ax_position_1.ToPositionWithAffinity();
-  EXPECT_EQ(canvas_1, position_1.AnchorNode());
-  EXPECT_TRUE(position_1.GetPosition().IsBeforeChildren());
-  EXPECT_EQ(text, position_1.GetPosition().ComputeNodeAfterPosition());
+  EXPECT_EQ(text, position_1.AnchorNode());
+  EXPECT_TRUE(position_1.GetPosition().IsOffsetInAnchor());
+  EXPECT_EQ(0, position_1.GetPosition().OffsetInContainerNode());
 
   const auto ax_position_from_dom_1 = AXPosition::FromPosition(position_1);
   EXPECT_EQ(ax_position_1, ax_position_from_dom_1);
@@ -1087,15 +1100,15 @@ TEST_F(AccessibilityTest, PositionBeforeListMarker) {
 
   const auto position_3 = ax_position_1.ToPositionWithAffinity(
       AXPositionAdjustmentBehavior::kMoveRight);
-  EXPECT_EQ(item, position_3.AnchorNode());
-  EXPECT_TRUE(position_3.GetPosition().IsBeforeChildren());
-  EXPECT_EQ(text, position_3.GetPosition().ComputeNodeAfterPosition());
+  EXPECT_EQ(text, position_3.AnchorNode());
+  EXPECT_TRUE(position_3.GetPosition().IsOffsetInAnchor());
+  EXPECT_EQ(0, position_3.GetPosition().OffsetInContainerNode());
 
   const auto position_4 = ax_position_2.ToPositionWithAffinity(
       AXPositionAdjustmentBehavior::kMoveRight);
-  EXPECT_EQ(item, position_4.AnchorNode());
-  EXPECT_TRUE(position_4.GetPosition().IsBeforeChildren());
-  EXPECT_EQ(text, position_4.GetPosition().ComputeNodeAfterPosition());
+  EXPECT_EQ(text, position_4.AnchorNode());
+  EXPECT_TRUE(position_4.GetPosition().IsOffsetInAnchor());
+  EXPECT_EQ(0, position_4.GetPosition().OffsetInContainerNode());
 }
 
 TEST_F(AccessibilityTest, PositionAfterListMarker) {
@@ -1124,13 +1137,15 @@ TEST_F(AccessibilityTest, PositionAfterListMarker) {
 
   const auto ax_position = AXPosition::CreatePositionAfterObject(*ax_marker);
   const auto position = ax_position.ToPositionWithAffinity();
-  EXPECT_EQ(item, position.AnchorNode());
-  EXPECT_TRUE(position.GetPosition().IsBeforeChildren());
-  EXPECT_EQ(text, position.GetPosition().ComputeNodeAfterPosition());
+  EXPECT_EQ(text, position.AnchorNode());
+  EXPECT_TRUE(position.GetPosition().IsOffsetInAnchor());
+  EXPECT_EQ(0, position.GetPosition().OffsetInContainerNode());
 
   const auto ax_position_from_dom = AXPosition::FromPosition(position);
   EXPECT_EQ(ax_position, ax_position_from_dom);
-  EXPECT_EQ(ax_text, ax_position_from_dom.ChildAfterTreePosition());
+  EXPECT_EQ(ax_text, ax_position_from_dom.ContainerObject());
+  EXPECT_TRUE(ax_position_from_dom.IsTextPosition());
+  EXPECT_EQ(0, ax_position_from_dom.TextOffset());
 }
 
 TEST_F(AccessibilityTest, PositionInCSSContent) {

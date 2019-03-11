@@ -457,6 +457,9 @@ TEST_F(AccessibilitySelectionTest, SetSelectionAroundListBullet) {
   const Node* item_1 = GetElementById("item1");
   ASSERT_NE(nullptr, item_1);
   ASSERT_FALSE(item_1->IsTextNode());
+  const Node* text_1 = item_1->firstChild();
+  ASSERT_NE(nullptr, text_1);
+  ASSERT_TRUE(text_1->IsTextNode());
   const Node* item_2 = GetElementById("item2");
   ASSERT_NE(nullptr, item_2);
   ASSERT_FALSE(item_2->IsTextNode());
@@ -486,14 +489,15 @@ TEST_F(AccessibilitySelectionTest, SetSelectionAroundListBullet) {
   // The list bullet is not included in the DOM tree. Shrinking the
   // |AXSelection| should skip over it by creating an anchor before the first
   // child of the first <li>, i.e. the text node containing the text "Item 1.".
-  // This should be further optimized to a "before children" position at the
-  // first <li>.
+  // This should be further optimized to a text position at the start of the
+  // text object inside the first <li>.
   ax_selection.Select(AXSelectionBehavior::kShrinkToValidDOMRange);
   const SelectionInDOMTree shrunk_selection =
       Selection().GetSelectionInDOMTree();
 
-  EXPECT_EQ(item_1, shrunk_selection.Base().AnchorNode());
-  EXPECT_TRUE(shrunk_selection.Base().IsBeforeChildren());
+  EXPECT_EQ(text_1, shrunk_selection.Base().AnchorNode());
+  ASSERT_TRUE(shrunk_selection.Base().IsOffsetInAnchor());
+  EXPECT_EQ(0, shrunk_selection.Base().OffsetInContainerNode());
   ASSERT_TRUE(shrunk_selection.Extent().IsOffsetInAnchor());
   EXPECT_EQ(text_2, shrunk_selection.Extent().AnchorNode());
   EXPECT_EQ(7, shrunk_selection.Extent().OffsetInContainerNode());
