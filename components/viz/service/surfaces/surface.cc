@@ -53,9 +53,10 @@ Surface::~Surface() {
   UnrefFrameResourcesAndRunCallbacks(std::move(pending_frame_data_));
   UnrefFrameResourcesAndRunCallbacks(std::move(active_frame_data_));
 
-  // Remove this surface as an observer.
-  for (const FrameSinkId& sink_id : observed_sinks_)
-    surface_manager_->RemoveActivationObserver(sink_id, surface_info_.id());
+  // Unregister this surface as the embedder of all the allocation groups that
+  // it references.
+  for (SurfaceAllocationGroup* group : referenced_allocation_groups_)
+    group->UnregisterActiveEmbedder(this);
 
   DCHECK(deadline_);
   deadline_->Cancel();
@@ -144,42 +145,59 @@ void Surface::UpdateSurfaceReferences() {
     surface_manager_->RemoveSurfaceReferences(references_to_remove);
 }
 
-void Surface::OnChildActivated(const SurfaceId& activated_id) {
+void Surface::OnChildActivatedForActiveFrame(const SurfaceId& activated_id) {
   DCHECK(HasActiveFrame());
 
   for (size_t i = 0;
        i < active_frame_data_->frame.metadata.referenced_surfaces.size(); i++) {
     const SurfaceRange& surface_range =
         active_frame_data_->frame.metadata.referenced_surfaces[i];
-    const SurfaceId& last_id = last_surface_id_for_range_[i];
-
-    // If |activated_id| is in fallback's FrameSinkId but we already reference a
-    // SurfaceId in the primary's FrameSinkId, we do nothing.
-    if (surface_range.HasDifferentFrameSinkIds() && last_id.is_valid() &&
-        last_id.frame_sink_id() == surface_range.end().frame_sink_id() &&
-        activated_id.frame_sink_id() ==
-            surface_range.start()->frame_sink_id()) {
+    if (!surface_range.IsInRangeInclusive(activated_id))
       continue;
+
+    const SurfaceId& last_id = last_surface_id_for_range_[i];
+    // If we already have a reference to a surface in the primary's allocation
+    // group, we should already be unregistered from the allocation group of the
+    // fallback so we shouldn't receive SurfaceIds from that group.
+    DCHECK(!surface_range.HasDifferentEmbedTokens() || !last_id.is_valid() ||
+           !last_id.HasSameEmbedTokenAs(surface_range.end()) ||
+           activated_id.HasSameEmbedTokenAs(last_id));
+
+    // Remove the old reference.
+    if (last_id.is_valid()) {
+      auto old_it = active_referenced_surfaces_.find(last_id);
+      if (old_it != active_referenced_surfaces_.end())
+        active_referenced_surfaces_.erase(old_it);
+      surface_manager_->RemoveSurfaceReferences(
+          {SurfaceReference(surface_info_.id(), last_id)});
     }
 
-    if (surface_range.IsInRangeInclusive(activated_id)) {
-      // Remove the old reference.
-      if (last_id.is_valid()) {
-        auto old_it = active_referenced_surfaces_.find(last_id);
-        if (old_it != active_referenced_surfaces_.end())
-          active_referenced_surfaces_.erase(old_it);
-        surface_manager_->RemoveSurfaceReferences(
-            {SurfaceReference(surface_info_.id(), last_id)});
+    // Add a new reference.
+    active_referenced_surfaces_.insert(activated_id);
+    surface_manager_->AddSurfaceReferences(
+        {SurfaceReference(surface_info_.id(), activated_id)});
+
+    // If we were referencing a surface in the allocation group of the
+    // fallback, but now there is a surface available in the allocation group
+    // of the primary, unregister this surface from the allocation group of
+    // the fallback.
+    if (activated_id.HasSameEmbedTokenAs(surface_range.end()) &&
+        surface_range.HasDifferentEmbedTokens() &&
+        (!last_id.is_valid() || !last_id.HasSameEmbedTokenAs(activated_id))) {
+      DCHECK(surface_range.start());
+      DCHECK(!last_id.is_valid() ||
+             last_id.HasSameEmbedTokenAs(*surface_range.start()));
+      SurfaceAllocationGroup* group =
+          surface_manager_->GetAllocationGroupForSurfaceId(
+              *surface_range.start());
+      if (group && referenced_allocation_groups_.count(group)) {
+        group->UnregisterActiveEmbedder(this);
+        referenced_allocation_groups_.erase(group);
       }
-
-      // Add a new reference.
-      active_referenced_surfaces_.insert(activated_id);
-      surface_manager_->AddSurfaceReferences(
-          {SurfaceReference(surface_info_.id(), activated_id)});
-
-      // Update the referenced surface for this range.
-      last_surface_id_for_range_[i] = activated_id;
     }
+
+    // Update the referenced surface for this range.
+    last_surface_id_for_range_[i] = activated_id;
   }
 }
 
@@ -395,28 +413,22 @@ void Surface::ActivatePendingFrame(base::Optional<base::TimeDelta> duration) {
   ActivateFrame(std::move(frame_data), duration);
 }
 
-void Surface::UpdateObservedSinks(
-    const base::flat_set<FrameSinkId>& new_observed_sinks) {
-  std::vector<FrameSinkId> sinks_to_remove;
-  std::vector<FrameSinkId> sinks_to_add;
+void Surface::UpdateReferencedAllocationGroups(
+    std::vector<SurfaceAllocationGroup*> new_referenced_allocation_groups) {
+  base::flat_set<SurfaceAllocationGroup*> new_set(
+      new_referenced_allocation_groups);
 
-  for (const FrameSinkId& sink_id : new_observed_sinks)
-    if (observed_sinks_.count(sink_id) == 0)
-      sinks_to_add.push_back(sink_id);
-
-  for (const FrameSinkId& sink_id : observed_sinks_)
-    if (new_observed_sinks.count(sink_id) == 0)
-      sinks_to_remove.push_back(sink_id);
-
-  for (const FrameSinkId& sink_id : sinks_to_remove) {
-    observed_sinks_.erase(sink_id);
-    surface_manager_->RemoveActivationObserver(sink_id, surface_info_.id());
+  for (SurfaceAllocationGroup* group : referenced_allocation_groups_) {
+    if (!new_set.count(group))
+      group->UnregisterActiveEmbedder(this);
   }
 
-  for (const FrameSinkId& sink_id : sinks_to_add) {
-    observed_sinks_.insert(sink_id);
-    surface_manager_->AddActivationObserver(sink_id, surface_info_.id());
+  for (SurfaceAllocationGroup* group : new_set) {
+    if (!referenced_allocation_groups_.count(group))
+      group->RegisterActiveEmbedder(this);
   }
+
+  referenced_allocation_groups_ = std::move(new_set);
 }
 
 void Surface::RecomputeActiveReferencedSurfaces() {
@@ -424,14 +436,10 @@ void Surface::RecomputeActiveReferencedSurfaces() {
   // notify SurfaceManager of the new references.
   active_referenced_surfaces_.clear();
   last_surface_id_for_range_.clear();
-  base::flat_set<FrameSinkId> new_observed_sinks;
+  std::vector<SurfaceAllocationGroup*> new_referenced_allocation_groups;
   for (const SurfaceRange& surface_range :
        active_frame_data_->frame.metadata.referenced_surfaces) {
-    // Observe frame sinks of both endpoints of the range.
-    new_observed_sinks.insert(surface_range.end().frame_sink_id());
-    if (surface_range.HasDifferentFrameSinkIds())
-      new_observed_sinks.insert(surface_range.start()->frame_sink_id());
-
+    // Figure out what surface in the |surface_range| needs to be referenced.
     Surface* surface =
         surface_manager_->GetLatestInFlightSurface(surface_range);
     if (surface) {
@@ -440,8 +448,26 @@ void Surface::RecomputeActiveReferencedSurfaces() {
     } else {
       last_surface_id_for_range_.push_back(SurfaceId());
     }
+    // The allocation group for the end of the SurfaceRange should always be
+    // referenced.
+    SurfaceAllocationGroup* end_allocation_group =
+        surface_manager_->GetOrCreateAllocationGroupForSurfaceId(
+            surface_range.end());
+    if (end_allocation_group)
+      new_referenced_allocation_groups.push_back(end_allocation_group);
+    // Only reference the allocation group for the start of SurfaceRange if the
+    // current referenced surface is a part of it.
+    if (surface_range.HasDifferentEmbedTokens() &&
+        (!surface ||
+         surface->surface_id().HasSameEmbedTokenAs(*surface_range.start()))) {
+      SurfaceAllocationGroup* start_allocation_group =
+          surface_manager_->GetOrCreateAllocationGroupForSurfaceId(
+              *surface_range.start());
+      if (start_allocation_group)
+        new_referenced_allocation_groups.push_back(start_allocation_group);
+    }
   }
-  UpdateObservedSinks(new_observed_sinks);
+  UpdateReferencedAllocationGroups(std::move(new_referenced_allocation_groups));
   UpdateSurfaceReferences();
 }
 
@@ -493,6 +519,7 @@ void Surface::ActivateFrame(FrameData frame_data,
         "surface_id", surface_info_.id().ToString());
 
     seen_first_frame_activation_ = true;
+    allocation_group_->OnFirstSurfaceActivation(this);
     surface_manager_->FirstSurfaceActivation(surface_info_);
   }
 

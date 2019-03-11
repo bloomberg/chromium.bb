@@ -226,7 +226,7 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
 
   // Called when |surface_id| is activated for the first time and its part of a
   // referenced SurfaceRange.
-  void OnChildActivated(const SurfaceId& surface_id);
+  void OnChildActivatedForActiveFrame(const SurfaceId& surface_id);
 
   // Called when this surface is embedded by another Surface's CompositorFrame.
   void OnSurfaceDependencyAdded();
@@ -268,10 +268,11 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
   // surface. Once a Surface is closed, it cannot accept CompositorFrames again.
   void Close();
 
-  // Updates the FrameSinkIds observed by this surface to be equal to
-  // |new_observed_sinks|.
-  void UpdateObservedSinks(
-      const base::flat_set<FrameSinkId>& new_observed_sinks);
+  // Updates the set of allocation groups referenced by the active frame. Calls
+  // RegisterEmbedder and UnregisterEmbedder on the allocation groups as
+  // appropriate.
+  void UpdateReferencedAllocationGroups(
+      std::vector<SurfaceAllocationGroup*> new_referenced_allocation_groups);
 
   // Recomputes active references for this surface when it activates. This
   // method will also update the observed sinks based on the referenced ranges
@@ -344,8 +345,8 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
   // entry in this vector is an unvalid SurfaceId.
   std::vector<SurfaceId> last_surface_id_for_range_;
 
-  // Frame sinks that this surface observe for activation events.
-  base::flat_set<FrameSinkId> observed_sinks_;
+  // Allocation groups that this surface references by its active frame.
+  base::flat_set<SurfaceAllocationGroup*> referenced_allocation_groups_;
 
   SurfaceAllocationGroup* const allocation_group_;
 
