@@ -35,8 +35,6 @@ class KeyboardAccessoryModernViewBinder {
             case BarItem.Type.ACTION_BUTTON:
                 return new KeyboardAccessoryViewBinder.BarItemTextViewHolder(
                         parent, R.layout.keyboard_accessory_action_modern);
-            case BarItem.Type.COUNT: // Intentional fallthrough. Use legacy handling.
-                break;
         }
         return KeyboardAccessoryViewBinder.create(parent, viewType);
     }

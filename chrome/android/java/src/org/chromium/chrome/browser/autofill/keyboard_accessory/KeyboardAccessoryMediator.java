@@ -158,11 +158,9 @@ class KeyboardAccessoryMediator
                 return BarItem.Type.ACTION_BUTTON;
             case AccessoryAction.MANAGE_PASSWORDS: // Intentional fallthrough - no view defined.
             case AccessoryAction.COUNT:
-                assert false : "No view defined for :" + accessoryAction;
-                return BarItem.Type.COUNT;
+                throw new IllegalArgumentException("No view defined for :" + accessoryAction);
         }
-        assert false : "Unhandled action type:" + accessoryAction;
-        return BarItem.Type.COUNT;
+        throw new IllegalArgumentException("Unhandled action type:" + accessoryAction);
     }
 
     void requestShowing() {

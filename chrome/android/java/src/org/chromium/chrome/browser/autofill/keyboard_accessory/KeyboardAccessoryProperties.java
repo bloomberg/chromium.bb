@@ -58,13 +58,12 @@ class KeyboardAccessoryProperties {
         /**
          * This type is used to infer which type of view will represent this item.
          */
-        @IntDef({Type.ACTION_BUTTON, Type.SUGGESTION, Type.TAB_LAYOUT, Type.COUNT})
+        @IntDef({Type.ACTION_BUTTON, Type.SUGGESTION, Type.TAB_LAYOUT})
         @Retention(RetentionPolicy.SOURCE)
         public @interface Type {
             int ACTION_BUTTON = 0;
             int SUGGESTION = 1;
             int TAB_LAYOUT = 2;
-            int COUNT = 3;
         }
         private @Type int mType;
         private final @Nullable Action mAction;
