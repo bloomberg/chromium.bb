@@ -50,47 +50,13 @@
 
 namespace blink {
 
-namespace {
-constexpr float kmax_oversize_ratio = 2.0f;
-
-bool CheckForOversizedImagesPolicy(const Document& document,
-                                   ImageResourceContent* new_image,
-                                   LayoutImage* layout_image) {
-  DCHECK(new_image);
-  if (!RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled() ||
-      document.IsFeatureEnabled(mojom::FeaturePolicyFeature::kOversizedImages))
-    return false;
-  if (auto* image = new_image->GetImage()) {
-    // Render the image as a placeholder image if the image's size is more
-    // than 2 times bigger than the size it is being laid-out by.
-    LayoutUnit layout_width = layout_image->ContentWidth();
-    LayoutUnit layout_height = layout_image->ContentHeight();
-    int image_width = image->width();
-    int image_height = image->height();
-
-    if (layout_width > 0 && layout_height > 0 && image_width > 0 &&
-        image_height > 0) {
-      double device_pixel_ratio = document.GetFrame()->DevicePixelRatio();
-      if (LayoutUnit(image_width / (kmax_oversize_ratio * device_pixel_ratio)) >
-              layout_width ||
-          LayoutUnit(image_height / (kmax_oversize_ratio *
-                                     device_pixel_ratio)) > layout_height)
-        return true;
-    }
-  }
-  return false;
-}
-
-}  // namespace
-
 using namespace html_names;
 
 LayoutImage::LayoutImage(Element* element)
     : LayoutReplaced(element, LayoutSize()),
       did_increment_visually_non_empty_pixel_count_(false),
       is_generated_content_(false),
-      image_device_pixel_ratio_(1.0f),
-      is_oversized_image_(false) {}
+      image_device_pixel_ratio_(1.0f) {}
 
 LayoutImage* LayoutImage::CreateAnonymous(PseudoElement& pseudo) {
   LayoutImage* image = new LayoutImage(nullptr);
@@ -245,14 +211,6 @@ void LayoutImage::ImageNotifyFinished(ImageResourceContent* new_image) {
 
   if (DocumentBeingDestroyed())
     return;
-
-  // Check for oversized-images policy.
-  // TODO(loonybear): Support oversized-images policy on other image types
-  // in addition to HTMLImageElement (crbug.com/930281).
-  if (IsHTMLImageElement(GetNode()) && image_resource_->CachedImage()) {
-    is_oversized_image_ = CheckForOversizedImagesPolicy(
-        GetDocument(), image_resource_->CachedImage(), this);
-  }
 
   if (new_image == image_resource_->CachedImage()) {
     // tell any potential compositing layers
@@ -461,25 +419,6 @@ SVGImage* LayoutImage::EmbeddedSVGImage() const {
   return ToSVGImageOrNull(cached_image->GetImage());
 }
 
-bool LayoutImage::IsImagePolicyViolated() const {
-  DCHECK(ToHTMLImageElementOrNull(GetNode()));
-  return is_oversized_image_ ||
-         ToHTMLImageElement(GetNode())->IsImagePolicyViolated();
-}
-
-void LayoutImage::ReportImagePolicyViolation() const {
-  if (is_oversized_image_) {
-    auto state = GetDocument().GetFeatureEnabledState(
-        mojom::FeaturePolicyFeature::kOversizedImages);
-    GetDocument().ReportFeaturePolicyViolation(
-        mojom::FeaturePolicyFeature::kOversizedImages,
-        state == FeatureEnabledState::kReportOnly
-            ? mojom::FeaturePolicyDisposition::kReport
-            : mojom::FeaturePolicyDisposition::kEnforce);
-  }
-  // TODO(loonybear): move unsized-media violation here.
-}
-
 void LayoutImage::UpdateAfterLayout() {
   LayoutBox::UpdateAfterLayout();
   Node* node = GetNode();
@@ -488,11 +427,6 @@ void LayoutImage::UpdateAfterLayout() {
   // TODO(loonybear): Support oversized-images policy on other image types
   // in addition to HTMLImageElement.
   if (auto* image_element = ToHTMLImageElementOrNull(node)) {
-    if (image_resource_ && image_resource_->CachedImage()) {
-      is_oversized_image_ = CheckForOversizedImagesPolicy(
-          GetDocument(), image_resource_->CachedImage(), this);
-    }
-
     // Report violation of unsized-media policy.
     media_element_parser_helpers::ReportUnsizedMediaViolation(
         this, image_element->IsDefaultIntrinsicSize());

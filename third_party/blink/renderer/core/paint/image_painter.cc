@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/html/html_area_element.h"
 #include "third_party/blink/renderer/core/html/html_image_element.h"
+#include "third_party/blink/renderer/core/layout/adjust_for_absolute_zoom.h"
 #include "third_party/blink/renderer/core/layout/layout_image.h"
 #include "third_party/blink/renderer/core/layout/layout_replaced.h"
 #include "third_party/blink/renderer/core/layout/text_run_constructor.h"
@@ -28,6 +29,35 @@
 #include "third_party/blink/renderer/platform/graphics/scoped_interpolation_quality.h"
 
 namespace blink {
+namespace {
+
+// TODO(loonybear): Currently oversized-images policy is only reinforced on
+// HTMLImageElement. Use data from |layout_image|, |content_rect| and/or
+// Document to support this policy on other image types (crbug.com/930281).
+bool CheckForOversizedImagesPolicy(const LayoutImage& layout_image,
+                                   scoped_refptr<Image> image) {
+  DCHECK(image);
+  if (RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled()) {
+    DoubleSize layout_size(layout_image.ContentSize());
+    IntSize image_size = image->Size();
+    if (!layout_size.IsEmpty() && !image_size.IsEmpty()) {
+      double dpr = layout_image.GetDocument().GetFrame()->DevicePixelRatio();
+      double downscale_ratio_width =
+          image_size.Width() / (dpr * layout_size.Width());
+      double downscale_ratio_height =
+          image_size.Height() / (dpr * layout_size.Height());
+      return !layout_image.GetDocument().IsFeatureEnabled(
+          mojom::FeaturePolicyFeature::kOversizedImages,
+          blink::PolicyValue(
+              std::max(downscale_ratio_width, downscale_ratio_height),
+              blink::mojom::PolicyValueType::kDecDouble),
+          ReportOptions::kReportOnFailure);
+      }
+  }
+  return false;
+}
+
+}  // namespace
 
 void ImagePainter::Paint(const PaintInfo& paint_info) {
   layout_image_.LayoutReplaced::Paint(paint_info);
@@ -192,17 +222,17 @@ void ImagePainter::PaintIntoRect(GraphicsContext& context,
 
   // TODO(loonybear): Support image policies on other image types in addition to
   // HTMLImageElement.
-  if (IsHTMLImageElement(node) && layout_image_.IsImagePolicyViolated()) {
-    // Does not set an observer for the placeholder image, setting it to null.
-    scoped_refptr<PlaceholderImage> placeholder_image =
-        PlaceholderImage::Create(nullptr, image->Size(),
-                                 image->Data() ? image->Data()->size() : 0);
-    placeholder_image->SetIconAndTextScaleFactor(
-        layout_image_.GetFrame()->PageZoomFactor());
-    image = std::move(placeholder_image);
-
-    // Report layout related image policy violation.
-    layout_image_.ReportImagePolicyViolation();
+  if (auto* image_element = ToHTMLImageElementOrNull(node)) {
+    if (CheckForOversizedImagesPolicy(layout_image_, image) ||
+        image_element->IsImagePolicyViolated()) {
+      // Does not set an observer for the placeholder image, setting it to null.
+      scoped_refptr<PlaceholderImage> placeholder_image =
+          PlaceholderImage::Create(nullptr, image->Size(),
+                                   image->Data() ? image->Data()->size() : 0);
+      placeholder_image->SetIconAndTextScaleFactor(
+          layout_image_.GetFrame()->PageZoomFactor());
+      image = std::move(placeholder_image);
+    }
   }
 
   context.DrawImage(

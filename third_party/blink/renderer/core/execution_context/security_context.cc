@@ -206,6 +206,17 @@ void SecurityContext::AddReportOnlyFeaturePolicy(
 bool SecurityContext::IsFeatureEnabled(mojom::FeaturePolicyFeature feature,
                                        ReportOptions report_on_failure,
                                        const String& message) const {
+  return IsFeatureEnabled(
+      feature,
+      PolicyValue::CreateMaxPolicyValue(
+          feature_policy_->GetFeatureList().at(feature).second),
+      report_on_failure, message);
+}
+
+bool SecurityContext::IsFeatureEnabled(mojom::FeaturePolicyFeature feature,
+                                       PolicyValue threshold_value,
+                                       ReportOptions report_on_failure,
+                                       const String& message) const {
   if (report_on_failure == ReportOptions::kReportOnFailure) {
     // We are expecting a violation report in case the feature is disabled in
     // the context. Therefore, this qualifies as a potential violation (i.e.,
@@ -213,7 +224,7 @@ bool SecurityContext::IsFeatureEnabled(mojom::FeaturePolicyFeature feature,
     CountPotentialFeaturePolicyViolation(feature);
   }
 
-  FeatureEnabledState state = GetFeatureEnabledState(feature);
+  FeatureEnabledState state = GetFeatureEnabledState(feature, threshold_value);
   if (state == FeatureEnabledState::kEnabled)
     return true;
   if (report_on_failure == ReportOptions::kReportOnFailure) {
@@ -229,13 +240,22 @@ bool SecurityContext::IsFeatureEnabled(mojom::FeaturePolicyFeature feature,
 
 FeatureEnabledState SecurityContext::GetFeatureEnabledState(
     mojom::FeaturePolicyFeature feature) const {
+  return GetFeatureEnabledState(
+      feature, PolicyValue::CreateMaxPolicyValue(
+                   feature_policy_->GetFeatureList().at(feature).second));
+}
+
+FeatureEnabledState SecurityContext::GetFeatureEnabledState(
+    mojom::FeaturePolicyFeature feature,
+    PolicyValue threshold_value) const {
   // The policy should always be initialized before checking it to ensure we
   // properly inherit the parent policy.
   DCHECK(feature_policy_);
 
-  if (feature_policy_->IsFeatureEnabled(feature)) {
+  if (feature_policy_->IsFeatureEnabled(feature, threshold_value)) {
     if (report_only_feature_policy_ &&
-        !report_only_feature_policy_->IsFeatureEnabled(feature)) {
+        !report_only_feature_policy_->IsFeatureEnabled(feature,
+                                                       threshold_value)) {
       return FeatureEnabledState::kReportOnly;
     }
     return FeatureEnabledState::kEnabled;

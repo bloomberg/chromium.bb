@@ -163,7 +163,14 @@ class CORE_EXPORT SecurityContext : public GarbageCollectedMixin {
       mojom::FeaturePolicyFeature,
       ReportOptions report_on_failure = ReportOptions::kDoNotReport,
       const String& message = g_empty_string) const;
+  bool IsFeatureEnabled(
+      mojom::FeaturePolicyFeature,
+      PolicyValue threshold_value,
+      ReportOptions report_on_failure = ReportOptions::kDoNotReport,
+      const String& message = g_empty_string) const;
   FeatureEnabledState GetFeatureEnabledState(mojom::FeaturePolicyFeature) const;
+  FeatureEnabledState GetFeatureEnabledState(mojom::FeaturePolicyFeature,
+                                             PolicyValue threshold_value) const;
   virtual void CountPotentialFeaturePolicyViolation(
       mojom::FeaturePolicyFeature) const {}
   virtual void ReportFeaturePolicyViolation(
