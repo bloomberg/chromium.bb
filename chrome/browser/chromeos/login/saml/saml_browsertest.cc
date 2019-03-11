@@ -388,17 +388,17 @@ class SamlTest : public OobeBaseTest {
   virtual void StartSamlAndWaitForIdpPageLoad(const std::string& gaia_email) {
     WaitForSigninScreen();
 
-    SetupAuthFlowChangeListener();
-
     content::DOMMessageQueue message_queue;  // Start observe before SAML.
+    SetupAuthFlowChangeListener();
     LoginDisplayHost::default_host()
         ->GetOobeUI()
         ->GetGaiaScreenView()
         ->ShowSigninScreenForTest(gaia_email, "", "[]");
 
     std::string message;
-    ASSERT_TRUE(message_queue.WaitForMessage(&message));
-    EXPECT_EQ("\"SamlLoaded\"", message);
+    do {
+      ASSERT_TRUE(message_queue.WaitForMessage(&message));
+    } while (message != "\"SamlLoaded\"");
   }
 
   void SendConfirmPassword(const std::string& password_to_confirm) {
@@ -476,10 +476,10 @@ IN_PROC_BROWSER_TEST_F(SamlTest, MAYBE_SamlUI) {
   base::ReplaceSubstringsAfterOffset(&js, 0, "$Host", kIdPHost);
   test::OobeJS().ExpectTrue(js);
 
-  SetupAuthFlowChangeListener();
 
-  // Click on 'cancel'.
   content::DOMMessageQueue message_queue;  // Observe before 'cancel'.
+  SetupAuthFlowChangeListener();
+  // Click on 'cancel'.
   content::ExecuteScriptAsync(GetLoginUI()->GetWebContents(),
                               "$('gaia-navigation').$.closeButton.click();");
 
@@ -542,6 +542,7 @@ IN_PROC_BROWSER_TEST_F(SamlTest, MAYBE_ScrapedSingle) {
   fake_saml_idp()->SetLoginHTMLTemplate("saml_login.html");
   StartSamlAndWaitForIdpPageLoad(kFirstSAMLUserEmail);
 
+  content::DOMMessageQueue message_queue;
   // Make sure that the password is scraped correctly.
   ASSERT_TRUE(content::ExecuteScript(
       GetLoginUI()->GetWebContents(),
@@ -559,7 +560,6 @@ IN_PROC_BROWSER_TEST_F(SamlTest, MAYBE_ScrapedSingle) {
   content::WindowedNotificationObserver session_start_waiter(
       chrome::NOTIFICATION_SESSION_STARTED,
       content::NotificationService::AllSources());
-  content::DOMMessageQueue message_queue;
   ExecuteJsInSigninFrame("document.getElementById('Submit').click();");
   std::string message;
   do {
@@ -1126,20 +1126,22 @@ void SAMLPolicyTest::SetLoginVideoCaptureAllowedUrls(
 
 void SAMLPolicyTest::ShowGAIALoginForm() {
   login_screen_load_observer_->Wait();
+  content::DOMMessageQueue message_queue;
   ASSERT_TRUE(content::ExecuteScript(
       GetLoginUI()->GetWebContents(),
       "$('gaia-signin').gaiaAuthHost_.addEventListener('ready', function() {"
       "  window.domAutomationController.send('ready');"
       "});"));
   ASSERT_TRUE(test::LoginScreenTester().ClickAddUserButton());
-  content::DOMMessageQueue message_queue;
   std::string message;
-  ASSERT_TRUE(message_queue.WaitForMessage(&message));
-  EXPECT_EQ("\"ready\"", message);
+  do {
+    ASSERT_TRUE(message_queue.WaitForMessage(&message));
+  } while (message != "\"ready\"");
 }
 
 void SAMLPolicyTest::ShowSAMLInterstitial() {
   login_screen_load_observer_->Wait();
+  content::DOMMessageQueue message_queue;
   ASSERT_TRUE(
       content::ExecuteScript(GetLoginUI()->GetWebContents(),
                              "{"
@@ -1157,10 +1159,10 @@ void SAMLPolicyTest::ShowSAMLInterstitial() {
                              "}"));
   ASSERT_TRUE(test::LoginScreenTester().ClickAddUserButton());
 
-  content::DOMMessageQueue message_queue;
   std::string message;
-  ASSERT_TRUE(message_queue.WaitForMessage(&message));
-  EXPECT_EQ("\"samlInterstitialPageReady\"", message);
+  do {
+    ASSERT_TRUE(message_queue.WaitForMessage(&message));
+  } while (message != "\"samlInterstitialPageReady\"");
 }
 
 void SAMLPolicyTest::ClickNextOnSAMLInterstitialPage() {
@@ -1176,11 +1178,11 @@ void SAMLPolicyTest::ClickNextOnSAMLInterstitialPage() {
   do {
     ASSERT_TRUE(message_queue.WaitForMessage(&message));
   } while (message != "\"SamlLoaded\"");
-  EXPECT_EQ("\"SamlLoaded\"", message);
 }
 
 void SAMLPolicyTest::ClickChangeAccountOnSAMLInterstitialPage() {
   login_screen_load_observer_->Wait();
+  content::DOMMessageQueue message_queue;
   ASSERT_TRUE(content::ExecuteScript(
       GetLoginUI()->GetWebContents(),
       "$('gaia-signin').gaiaAuthHost_.addEventListener('ready', function() {"
@@ -1188,10 +1190,10 @@ void SAMLPolicyTest::ClickChangeAccountOnSAMLInterstitialPage() {
       "});"
       "$('saml-interstitial').changeAccountLink.click();"));
 
-  content::DOMMessageQueue message_queue;
   std::string message;
-  ASSERT_TRUE(message_queue.WaitForMessage(&message));
-  EXPECT_EQ("\"ready\"", message);
+  do {
+    ASSERT_TRUE(message_queue.WaitForMessage(&message));
+  } while (message != "\"ready\"");
 }
 
 void SAMLPolicyTest::LogInWithSAML(const std::string& user_id,
