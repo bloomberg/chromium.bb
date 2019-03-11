@@ -839,6 +839,7 @@ bool DrawingBuffer::Initialize(const IntSize& size, bool use_multisampling) {
 bool DrawingBuffer::CopyToPlatformTexture(gpu::gles2::GLES2Interface* dst_gl,
                                           GLenum dst_texture_target,
                                           GLuint dst_texture,
+                                          GLint dst_level,
                                           bool premultiply_alpha,
                                           bool flip_y,
                                           const IntPoint& dst_texture_offset,
@@ -899,7 +900,7 @@ bool DrawingBuffer::CopyToPlatformTexture(gpu::gles2::GLES2Interface* dst_gl,
   dst_gl->BeginSharedImageAccessDirectCHROMIUM(
       src_texture, GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM);
   dst_gl->CopySubTextureCHROMIUM(
-      src_texture, 0, dst_texture_target, dst_texture, 0,
+      src_texture, 0, dst_texture_target, dst_texture, dst_level,
       dst_texture_offset.X(), dst_texture_offset.Y(), src_sub_rectangle.X(),
       src_sub_rectangle.Y(), src_sub_rectangle.Width(),
       src_sub_rectangle.Height(), flip_y, unpack_premultiply_alpha_needed,

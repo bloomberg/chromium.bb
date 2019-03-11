@@ -71,6 +71,7 @@ class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
   bool CopyToTexture(gpu::gles2::GLES2Interface* dest_gl,
                      GLenum dest_target,
                      GLuint dest_texture_id,
+                     GLint dest_level,
                      bool unpack_premultiply_alpha,
                      bool unpack_flip_y,
                      const IntPoint& dest_point,
