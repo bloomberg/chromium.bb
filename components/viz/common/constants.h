@@ -12,10 +12,6 @@
 namespace viz {
 
 // Keep list in alphabetical order.
-VIZ_COMMON_EXPORT extern const int64_t kClientSleepForBeginFrameIntervalMs;
-
-VIZ_COMMON_EXPORT extern const int64_t kClientSpinForBeginFrameIntervalUs;
-
 VIZ_COMMON_EXPORT extern const uint32_t kDefaultActivationDeadlineInFrames;
 
 }  // namespace viz
