@@ -17,6 +17,7 @@
 #include "components/autofill_assistant/browser/chip.h"
 #include "components/autofill_assistant/browser/client.h"
 #include "components/autofill_assistant/browser/details.h"
+#include "components/autofill_assistant/browser/info_box.h"
 #include "components/autofill_assistant/browser/metrics.h"
 #include "components/autofill_assistant/browser/overlay_state.h"
 #include "components/autofill_assistant/browser/ui_controller.h"
@@ -63,6 +64,7 @@ class UiControllerAndroid : public UiController {
   void OnActionsChanged(const std::vector<Chip>& actions) override;
   void OnPaymentRequestChanged(const PaymentRequestOptions* options) override;
   void OnDetailsChanged(const Details* details) override;
+  void OnInfoBoxChanged(const InfoBox* info_box) override;
   void OnProgressChanged(int progress) override;
   void OnProgressVisibilityChanged(bool visible) override;
   void OnTouchableAreaChanged(const std::vector<RectF>& areas) override;
@@ -131,6 +133,7 @@ class UiControllerAndroid : public UiController {
   base::android::ScopedJavaLocalRef<jobject> GetOverlayModel();
   base::android::ScopedJavaLocalRef<jobject> GetHeaderModel();
   base::android::ScopedJavaLocalRef<jobject> GetDetailsModel();
+  base::android::ScopedJavaLocalRef<jobject> GetInfoBoxModel();
   base::android::ScopedJavaLocalRef<jobject> GetPaymentRequestModel();
 
   void SetOverlayState(OverlayState state);

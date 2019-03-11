@@ -418,7 +418,15 @@ void ScriptExecutor::ClearDetails() {
 }
 
 void ScriptExecutor::SetDetails(const Details& details) {
-  return delegate_->SetDetails(details);
+  delegate_->SetDetails(details);
+}
+
+void ScriptExecutor::ClearInfoBox() {
+  delegate_->ClearInfoBox();
+}
+
+void ScriptExecutor::SetInfoBox(const InfoBox& info_box) {
+  delegate_->SetInfoBox(info_box);
 }
 
 void ScriptExecutor::OnGetActions(bool result, const std::string& response) {

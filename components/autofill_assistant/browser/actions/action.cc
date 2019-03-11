@@ -102,6 +102,9 @@ std::ostream& operator<<(std::ostream& out,
     case ActionProto::ActionInfoCase::kSetAttribute:
       out << "SetAttribute";
       break;
+    case ActionProto::ActionInfoCase::kShowInfoBox:
+      out << "ShowInfoBox";
+      break;
     case ActionProto::ActionInfoCase::ACTION_INFO_NOT_SET:
       out << "ACTION_INFO_NOT_SET";
       break;

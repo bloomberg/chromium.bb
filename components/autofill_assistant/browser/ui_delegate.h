@@ -44,6 +44,9 @@ class UiDelegate {
   // Returns the current contextual information. May be null if empty.
   virtual const Details* GetDetails() const = 0;
 
+  // Returns the current info box data. May be null if empty.
+  virtual const InfoBox* GetInfoBox() const = 0;
+
   // Returns the current progress; a percentage.
   virtual int GetProgress() const = 0;
 

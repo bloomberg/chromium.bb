@@ -9,6 +9,7 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantCarouselModel;
 import org.chromium.chrome.browser.autofill_assistant.details.AssistantDetailsModel;
 import org.chromium.chrome.browser.autofill_assistant.header.AssistantHeaderModel;
+import org.chromium.chrome.browser.autofill_assistant.infobox.AssistantInfoBoxModel;
 import org.chromium.chrome.browser.autofill_assistant.overlay.AssistantOverlayModel;
 import org.chromium.chrome.browser.autofill_assistant.payment.AssistantPaymentRequestModel;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -25,6 +26,7 @@ class AssistantModel extends PropertyModel {
     private final AssistantOverlayModel mOverlayModel = new AssistantOverlayModel();
     private final AssistantHeaderModel mHeaderModel = new AssistantHeaderModel();
     private final AssistantDetailsModel mDetailsModel = new AssistantDetailsModel();
+    private final AssistantInfoBoxModel mInfoBoxModel = new AssistantInfoBoxModel();
     private final AssistantPaymentRequestModel mPaymentRequestModel =
             new AssistantPaymentRequestModel();
     private final AssistantCarouselModel mSuggestionsModel = new AssistantCarouselModel();
@@ -47,6 +49,11 @@ class AssistantModel extends PropertyModel {
     @CalledByNative
     public AssistantDetailsModel getDetailsModel() {
         return mDetailsModel;
+    }
+
+    @CalledByNative
+    public AssistantInfoBoxModel getInfoBoxModel() {
+        return mInfoBoxModel;
     }
 
     @CalledByNative
