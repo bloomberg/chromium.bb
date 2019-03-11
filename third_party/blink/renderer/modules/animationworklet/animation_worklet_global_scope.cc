@@ -182,6 +182,12 @@ void AnimationWorkletGlobalScope::registerAnimator(
     return;
   }
 
+  if (!animator_ctor->IsConstructor()) {
+    exception_state.ThrowTypeError(
+        "The provided callback is not a constructor.");
+    return;
+  }
+
   CallbackMethodRetriever retriever(animator_ctor);
   retriever.GetPrototypeObject(exception_state);
   if (exception_state.HadException())
