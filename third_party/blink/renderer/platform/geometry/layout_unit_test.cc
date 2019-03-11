@@ -320,4 +320,26 @@ TEST(LayoutUnitTest, LayoutMod) {
             LayoutMod(LayoutUnit(123 + LayoutUnit::Epsilon()), 2));
 }
 
+TEST(LayoutUnitTest, Fraction) {
+  EXPECT_TRUE(LayoutUnit(-1.9f).HasFraction());
+  EXPECT_TRUE(LayoutUnit(-1.6f).HasFraction());
+  EXPECT_TRUE(LayoutUnit::FromFloatRound(-1.51f).HasFraction());
+  EXPECT_TRUE(LayoutUnit::FromFloatRound(-1.5f).HasFraction());
+  EXPECT_TRUE(LayoutUnit::FromFloatRound(-1.49f).HasFraction());
+  EXPECT_FALSE(LayoutUnit(-1.0f).HasFraction());
+  EXPECT_TRUE(LayoutUnit::FromFloatRound(-0.95f).HasFraction());
+  EXPECT_TRUE(LayoutUnit::FromFloatRound(-0.51f).HasFraction());
+  EXPECT_TRUE(LayoutUnit::FromFloatRound(-0.50f).HasFraction());
+  EXPECT_TRUE(LayoutUnit::FromFloatRound(-0.49f).HasFraction());
+  EXPECT_TRUE(LayoutUnit(-0.1f).HasFraction());
+  EXPECT_FALSE(LayoutUnit(-1.0f).HasFraction());
+  EXPECT_FALSE(LayoutUnit(0.0f).HasFraction());
+  EXPECT_TRUE(LayoutUnit(0.1f).HasFraction());
+  EXPECT_TRUE(LayoutUnit::FromFloatRound(0.49f).HasFraction());
+  EXPECT_TRUE(LayoutUnit::FromFloatRound(0.50f).HasFraction());
+  EXPECT_TRUE(LayoutUnit::FromFloatRound(0.51f).HasFraction());
+  EXPECT_TRUE(LayoutUnit(0.95f).HasFraction());
+  EXPECT_FALSE(LayoutUnit(1.0f).HasFraction());
+}
+
 }  // namespace blink

@@ -572,7 +572,7 @@ void NGBoxFragmentPainter::PaintBoxDecorationBackgroundWithRect(
   GraphicsContextStateSaver state_saver(paint_info.context, false);
 
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
-      LayoutRect(EnclosingIntRect(paint_rect)) == paint_rect &&
+      paint_rect.EdgesOnPixelBoundaries() &&
       BackgroundIsKnownToBeOpaque(paint_info))
     recorder.SetKnownToBeOpaque();
 

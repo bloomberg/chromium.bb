@@ -173,19 +173,24 @@ class PLATFORM_EXPORT LayoutRect {
     SetHeight((Height() + delta).ClampNegativeToZero());
   }
 
-  constexpr LayoutPoint MinXMinYCorner() const {
-    return location_;
-  }  // typically topLeft
+  // Typically top left.
+  constexpr LayoutPoint MinXMinYCorner() const { return location_; }
+
+  // Typically top right.
   LayoutPoint MaxXMinYCorner() const {
     return LayoutPoint(location_.X() + size_.Width(), location_.Y());
-  }  // typically topRight
+  }
+
+  // Typically bottom left.
   LayoutPoint MinXMaxYCorner() const {
     return LayoutPoint(location_.X(), location_.Y() + size_.Height());
-  }  // typically bottomLeft
+  }
+
+  // Typically bottom right.
   LayoutPoint MaxXMaxYCorner() const {
     return LayoutPoint(location_.X() + size_.Width(),
                        location_.Y() + size_.Height());
-  }  // typically bottomRight
+  }
 
   bool Intersects(const LayoutRect&) const;
   bool Contains(const LayoutRect&) const;
@@ -198,6 +203,26 @@ class PLATFORM_EXPORT LayoutRect {
   }
   bool Contains(const LayoutPoint& point) const {
     return Contains(point.X(), point.Y());
+  }
+
+  // Whether all edges of the rect are at full-pixel boundaries.
+  // i.e.: EnclosingIntRect(this)) == this
+  bool EdgesOnPixelBoundaries() const {
+    return !location_.X().HasFraction() && !location_.Y().HasFraction() &&
+           !size_.Width().HasFraction() && !size_.Height().HasFraction();
+  }
+
+  // Expand each edge outwards to the next full-pixel boundary.
+  // i.e.: this = LayoutRect(EnclosingIntRect(this))
+  void ExpandEdgesToPixelBoundaries() {
+    int x = X().Floor();
+    int y = Y().Floor();
+    int max_x = MaxX().Ceil();
+    int max_y = MaxY().Ceil();
+    location_.SetX(LayoutUnit(x));
+    location_.SetY(LayoutUnit(y));
+    size_.SetWidth(LayoutUnit(max_x - x));
+    size_.SetHeight(LayoutUnit(max_y - y));
   }
 
   void Intersect(const LayoutRect&);

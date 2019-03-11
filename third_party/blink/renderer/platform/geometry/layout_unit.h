@@ -177,10 +177,11 @@ class LayoutUnit {
     return value_ > 0 ? LayoutUnit() : *this;
   }
 
+  bool HasFraction() const { return RawValue() % kFixedPointDenominator; }
+
   LayoutUnit Fraction() const {
-    // Add the fraction to the size (as opposed to the full location) to avoid
-    // overflows.  Compute fraction using the mod operator to preserve the sign
-    // of the value as it may affect rounding.
+    // Compute fraction using the mod operator to preserve the sign of the value
+    // as it may affect rounding.
     LayoutUnit fraction;
     fraction.SetRawValue(RawValue() % kFixedPointDenominator);
     return fraction;
