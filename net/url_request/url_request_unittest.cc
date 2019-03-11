@@ -555,10 +555,9 @@ BlockingNetworkDelegate::BlockingNetworkDelegate(BlockMode block_mode)
       retval_(OK),
       auth_retval_(AUTH_REQUIRED_RESPONSE_NO_ACTION),
       block_on_(0),
-      target_auth_credentials_(NULL),
+      target_auth_credentials_(nullptr),
       stage_blocked_for_callback_(NOT_BLOCKED),
-      weak_factory_(this) {
-}
+      weak_factory_(this) {}
 
 void BlockingNetworkDelegate::RunUntilBlocked() {
   base::RunLoop run_loop;
@@ -605,7 +604,7 @@ void BlockingNetworkDelegate::RunCallback(int response,
 void BlockingNetworkDelegate::RunAuthCallback(AuthRequiredResponse response,
                                               AuthCallback callback) {
   if (auth_retval_ == AUTH_REQUIRED_RESPONSE_SET_AUTH) {
-    ASSERT_TRUE(target_auth_credentials_ != NULL);
+    ASSERT_TRUE(target_auth_credentials_ != nullptr);
     *target_auth_credentials_ = auth_credentials_;
   }
   std::move(callback).Run(response);
@@ -1338,7 +1337,7 @@ TEST_F(URLRequestTest, FileDirCancelTest) {
   }
 
   // Take out mock resource provider.
-  NetModule::SetResourceProvider(NULL);
+  NetModule::SetResourceProvider(nullptr);
 }
 
 TEST_F(URLRequestTest, FileDirOutputSanity) {
@@ -1461,7 +1460,7 @@ TEST_F(URLRequestTest, ResolveShortcutTest) {
   {
     Microsoft::WRL::ComPtr<IShellLink> shell;
     ASSERT_TRUE(SUCCEEDED(::CoCreateInstance(
-        CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&shell))));
+        CLSID_ShellLink, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&shell))));
     Microsoft::WRL::ComPtr<IPersistFile> persist;
     ASSERT_TRUE(SUCCEEDED(shell.CopyTo(persist.GetAddressOf())));
     EXPECT_TRUE(SUCCEEDED(shell->SetPath(base::as_wcstr(app_path.value()))));
@@ -1484,14 +1483,14 @@ TEST_F(URLRequestTest, ResolveShortcutTest) {
     GetFileAttributesEx(base::as_wcstr(app_path.value()), GetFileExInfoStandard,
                         &data);
     HANDLE file = CreateFile(base::as_wcstr(app_path.value()), GENERIC_READ,
-                             FILE_SHARE_READ, NULL, OPEN_EXISTING,
-                             FILE_ATTRIBUTE_NORMAL, NULL);
+                             FILE_SHARE_READ, nullptr, OPEN_EXISTING,
+                             FILE_ATTRIBUTE_NORMAL, nullptr);
     EXPECT_NE(INVALID_HANDLE_VALUE, file);
     std::unique_ptr<char[]> buffer(new char[data.nFileSizeLow]);
     DWORD read_size;
     BOOL result;
-    result = ReadFile(file, buffer.get(), data.nFileSizeLow,
-                      &read_size, NULL);
+    result =
+        ReadFile(file, buffer.get(), data.nFileSizeLow, &read_size, nullptr);
     std::string content(buffer.get(), read_size);
     CloseHandle(file);
 
@@ -1827,8 +1826,7 @@ class MockURLRequestInterceptor : public URLRequestInterceptor {
 // Inherit PlatformTest since we require the autorelease pool on Mac OS X.
 class URLRequestInterceptorTest : public URLRequestTest {
  public:
-  URLRequestInterceptorTest() : URLRequestTest(), interceptor_(NULL) {
-  }
+  URLRequestInterceptorTest() : URLRequestTest(), interceptor_(nullptr) {}
 
   ~URLRequestInterceptorTest() override {
     // URLRequestJobs may post clean-up tasks on destruction.
@@ -4541,8 +4539,8 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateRedirectRequest) {
     EXPECT_EQ(307, r->GetResponseCode());
     EXPECT_EQ(307, r->response_headers()->response_code());
     std::string location;
-    ASSERT_TRUE(r->response_headers()->EnumerateHeader(NULL, "Location",
-                                                       &location));
+    ASSERT_TRUE(
+        r->response_headers()->EnumerateHeader(nullptr, "Location", &location));
     EXPECT_EQ(redirect_url, GURL(location));
 
     // Let the request finish.
@@ -4596,8 +4594,8 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateRedirectRequestSynchronously) {
     EXPECT_EQ(307, r->GetResponseCode());
     EXPECT_EQ(307, r->response_headers()->response_code());
     std::string location;
-    ASSERT_TRUE(r->response_headers()->EnumerateHeader(NULL, "Location",
-                                                       &location));
+    ASSERT_TRUE(
+        r->response_headers()->EnumerateHeader(nullptr, "Location", &location));
     EXPECT_EQ(redirect_url, GURL(location));
 
     // Let the request finish.
@@ -4660,8 +4658,8 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateRedirectRequestPost) {
     EXPECT_EQ(307, r->GetResponseCode());
     EXPECT_EQ(307, r->response_headers()->response_code());
     std::string location;
-    ASSERT_TRUE(r->response_headers()->EnumerateHeader(NULL, "Location",
-                                                       &location));
+    ASSERT_TRUE(
+        r->response_headers()->EnumerateHeader(nullptr, "Location", &location));
     EXPECT_EQ(redirect_url, GURL(location));
 
     // Let the request finish.
@@ -5812,7 +5810,7 @@ TEST_F(URLRequestTestHTTP, DelegateInfoBeforeStart) {
 
   TestDelegate request_delegate;
   TestURLRequestContext context(true);
-  context.set_network_delegate(NULL);
+  context.set_network_delegate(nullptr);
   context.set_net_log(&net_log_);
   context.Init();
 
@@ -6048,7 +6046,7 @@ TEST_F(URLRequestTestHTTP, URLRequestDelegateInfo) {
   AsyncLoggingUrlRequestDelegate request_delegate(
       AsyncLoggingUrlRequestDelegate::NO_CANCEL);
   TestURLRequestContext context(true);
-  context.set_network_delegate(NULL);
+  context.set_network_delegate(nullptr);
   context.set_net_log(&net_log_);
   context.Init();
 
@@ -6107,7 +6105,7 @@ TEST_F(URLRequestTestHTTP, URLRequestDelegateInfoOnRedirect) {
   AsyncLoggingUrlRequestDelegate request_delegate(
       AsyncLoggingUrlRequestDelegate::NO_CANCEL);
   TestURLRequestContext context(true);
-  context.set_network_delegate(NULL);
+  context.set_network_delegate(nullptr);
   context.set_net_log(&net_log_);
   context.Init();
 
@@ -6165,7 +6163,7 @@ TEST_F(URLRequestTestHTTP, URLRequestDelegateOnRedirectCancelled) {
     AsyncLoggingUrlRequestDelegate request_delegate(cancel_stage);
     TestNetLog net_log;
     TestURLRequestContext context(true);
-    context.set_network_delegate(NULL);
+    context.set_network_delegate(nullptr);
     context.set_net_log(&net_log);
     context.Init();
 
@@ -8944,7 +8942,7 @@ TEST_F(URLRequestTestHTTP, EmptyHttpUserAgentSettings) {
   context.Init();
   // We override the HttpUserAgentSettings after initialization because empty
   // entries get overridden by Init().
-  context.set_http_user_agent_settings(NULL);
+  context.set_http_user_agent_settings(nullptr);
 
   struct {
     const char* request;
@@ -9207,8 +9205,8 @@ class URLRequestInterceptorTestHTTP : public URLRequestTestHTTP {
   // TODO(bengr): Merge this with the URLRequestInterceptorHTTPTest fixture,
   // ideally remove the dependency on URLRequestTestJob, and maybe move these
   // tests into the factory tests.
-  URLRequestInterceptorTestHTTP() : URLRequestTestHTTP(), interceptor_(NULL) {
-  }
+  URLRequestInterceptorTestHTTP()
+      : URLRequestTestHTTP(), interceptor_(nullptr) {}
 
   void SetUpFactory() override {
     interceptor_ = new MockURLRequestInterceptor();
@@ -9988,11 +9986,12 @@ TEST_F(HTTPSRequestTest, HSTSCrossOriginAddHeaders) {
 
   const HttpResponseHeaders* headers = req->response_headers();
   std::string redirect_location;
-  EXPECT_TRUE(headers->EnumerateHeader(NULL, "Location", &redirect_location));
+  EXPECT_TRUE(
+      headers->EnumerateHeader(nullptr, "Location", &redirect_location));
   EXPECT_EQ(hsts_https_url.spec(), redirect_location);
 
   std::string received_cors_header;
-  EXPECT_TRUE(headers->EnumerateHeader(NULL, "Access-Control-Allow-Origin",
+  EXPECT_TRUE(headers->EnumerateHeader(nullptr, "Access-Control-Allow-Origin",
                                        &received_cors_header));
   EXPECT_EQ(kOriginHeaderValue, received_cors_header);
 }
@@ -10745,7 +10744,7 @@ class HTTPSOCSPTest : public HTTPSRequestTest {
 
     scoped_refptr<X509Certificate> root_cert =
         ImportCertFromFile(GetTestCertsDirectory(), "ocsp-test-root.pem");
-    CHECK_NE(static_cast<X509Certificate*>(NULL), root_cert.get());
+    CHECK_NE(static_cast<X509Certificate*>(nullptr), root_cert.get());
     test_root_.reset(new ScopedTestRoot(root_cert.get()));
 
 #if defined(OS_ANDROID) || defined(USE_BUILTIN_CERT_VERIFIER)

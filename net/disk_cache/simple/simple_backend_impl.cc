@@ -629,7 +629,7 @@ class SimpleBackendImpl::SimpleIterator final : public Iterator {
       uint64_t entry_hash = hashes_to_enumerate_->back();
       hashes_to_enumerate_->pop_back();
       if (backend_->index()->Has(entry_hash)) {
-        *next_entry = NULL;
+        *next_entry = nullptr;
         CompletionOnceCallback continue_iteration = base::BindOnce(
             &SimpleIterator::CheckIterationReturnValue,
             weak_factory_.GetWeakPtr(), next_entry, copyable_callback);

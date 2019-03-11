@@ -41,16 +41,16 @@ BackendIO::BackendIO(InFlightIO* controller,
       backend_(backend),
       callback_(std::move(callback)),
       operation_(OP_NONE),
-      entry_ptr_(NULL),
-      entry_with_opened_ptr_(NULL),
-      iterator_(NULL),
-      entry_(NULL),
+      entry_ptr_(nullptr),
+      entry_with_opened_ptr_(nullptr),
+      iterator_(nullptr),
+      entry_(nullptr),
       index_(0),
       offset_(0),
       buf_len_(0),
       truncate_(false),
       offset64_(0),
-      start_(NULL) {
+      start_(nullptr) {
   start_time_ = base::TimeTicks::Now();
 }
 
@@ -388,7 +388,7 @@ void BackendIO::ExecuteEntryOperation() {
       NOTREACHED() << "Invalid Operation";
       result_ = net::ERR_UNEXPECTED;
   }
-  buf_ = NULL;
+  buf_ = nullptr;
   if (result_ != net::ERR_IO_PENDING)
     NotifyController();
 }

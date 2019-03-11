@@ -94,7 +94,7 @@ TEST_F(MultiThreadedCertVerifierTest, InflightJoin) {
   base::FilePath certs_dir = GetTestCertsDirectory();
   scoped_refptr<X509Certificate> test_cert(
       ImportCertFromFile(certs_dir, "ok_cert.pem"));
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), test_cert.get());
+  ASSERT_NE(static_cast<X509Certificate*>(nullptr), test_cert.get());
 
   int error;
   CertVerifyResult verify_result;
@@ -129,7 +129,7 @@ TEST_F(MultiThreadedCertVerifierTest, CancelRequest) {
   base::FilePath certs_dir = GetTestCertsDirectory();
   scoped_refptr<X509Certificate> test_cert(
       ImportCertFromFile(certs_dir, "ok_cert.pem"));
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), test_cert.get());
+  ASSERT_NE(static_cast<X509Certificate*>(nullptr), test_cert.get());
 
   int error;
   CertVerifyResult verify_result;
@@ -163,7 +163,7 @@ TEST_F(MultiThreadedCertVerifierTest, CancelRequestThenQuit) {
   base::FilePath certs_dir = GetTestCertsDirectory();
   scoped_refptr<X509Certificate> test_cert(
       ImportCertFromFile(certs_dir, "ok_cert.pem"));
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), test_cert.get());
+  ASSERT_NE(static_cast<X509Certificate*>(nullptr), test_cert.get());
 
   int error;
   CertVerifyResult verify_result;

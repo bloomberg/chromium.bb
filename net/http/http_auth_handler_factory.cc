@@ -94,7 +94,7 @@ HttpAuthHandlerFactory* HttpAuthHandlerRegistryFactory::GetSchemeFactory(
   std::string lower_scheme = base::ToLowerASCII(scheme);
   auto it = factory_map_.find(lower_scheme);
   if (it == factory_map_.end()) {
-    return NULL;                  // |scheme| is not registered.
+    return nullptr;  // |scheme| is not registered.
   }
   return it->second.get();
 }

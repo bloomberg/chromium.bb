@@ -43,7 +43,7 @@ class NET_EXPORT SSLInfo {
 
   void Reset();
 
-  bool is_valid() const { return cert.get() != NULL; }
+  bool is_valid() const { return cert.get() != nullptr; }
 
   // Adds the specified |error| to the cert status.
   void SetCertError(int error);

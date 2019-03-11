@@ -163,7 +163,7 @@ TEST_F(DefaultChannelIDStoreTest, TestLoading) {
 //TODO(mattm): add more tests of without a persistent store?
 TEST_F(DefaultChannelIDStoreTest, TestSettingAndGetting) {
   // No persistent store, all calls will be synchronous.
-  DefaultChannelIDStore store(NULL);
+  DefaultChannelIDStore store(nullptr);
   std::unique_ptr<crypto::ECPrivateKey> expected_key(
       crypto::ECPrivateKey::Create());
 

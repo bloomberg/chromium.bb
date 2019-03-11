@@ -516,7 +516,7 @@ ClientSocketPoolManager* HttpNetworkSession::GetSocketPoolManager(
       NOTREACHED();
       break;
   }
-  return NULL;
+  return nullptr;
 }
 
 void HttpNetworkSession::OnMemoryPressure(

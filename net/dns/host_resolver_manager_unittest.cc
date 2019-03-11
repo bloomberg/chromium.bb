@@ -109,7 +109,7 @@ class MockHostResolverProc : public HostResolverProc {
   typedef std::vector<ResolveKey> CaptureList;
 
   MockHostResolverProc()
-      : HostResolverProc(NULL),
+      : HostResolverProc(nullptr),
         num_requests_waiting_(0),
         num_slots_available_(0),
         requests_waiting_(&lock_),
@@ -498,7 +498,8 @@ class HostResolverManagerTest : public TestWithScopedTaskEnvironment {
                                                  bool ipv6_reachable) {
     HostResolverManager::Options options = DefaultOptions();
     options.max_concurrent_resolves = max_concurrent_resolves;
-    resolver_.reset(new TestHostResolverManager(options, NULL, ipv6_reachable));
+    resolver_.reset(
+        new TestHostResolverManager(options, nullptr, ipv6_reachable));
     resolver_->set_proc_params_for_test(params);
   }
 
@@ -1770,7 +1771,7 @@ TEST_F(HostResolverManagerTest, MultipleAttempts) {
   base::TimeDelta kSleepFudgeFactor = base::TimeDelta::FromMilliseconds(1);
 
   scoped_refptr<LookupAttemptHostResolverProc> resolver_proc(
-      new LookupAttemptHostResolverProc(NULL, kAttemptNumberToResolve,
+      new LookupAttemptHostResolverProc(nullptr, kAttemptNumberToResolve,
                                         kTotalAttempts));
 
   ProcTaskParams params = DefaultParams(resolver_proc.get());
@@ -2798,7 +2799,7 @@ DnsConfig CreateValidDnsConfig() {
 // Specialized fixture for tests of DnsTask.
 class HostResolverManagerDnsTest : public HostResolverManagerTest {
  public:
-  HostResolverManagerDnsTest() : dns_client_(NULL) {}
+  HostResolverManagerDnsTest() : dns_client_(nullptr) {}
 
  protected:
   // testing::Test implementation:
@@ -2815,7 +2816,8 @@ class HostResolverManagerDnsTest : public HostResolverManagerTest {
                                          bool ipv6_reachable) override {
     HostResolverManager::Options options = DefaultOptions();
     options.max_concurrent_resolves = max_concurrent_resolves;
-    resolver_.reset(new TestHostResolverManager(options, NULL, ipv6_reachable));
+    resolver_.reset(
+        new TestHostResolverManager(options, nullptr, ipv6_reachable));
     resolver_->set_proc_params_for_test(params);
     UseMockDnsClient(DnsConfig(), CreateDefaultDnsRules());
   }

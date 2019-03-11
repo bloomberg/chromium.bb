@@ -34,8 +34,7 @@ void UnblockPipe(HANDLE handle, DWORD size, bool* unblocked) {
   DWORD bytes_written = 0;
   LOG(WARNING) << "Timeout reached; unblocking pipe by writing "
                << size << " bytes";
-  CHECK(WriteFile(handle, unblock_data.data(), size, &bytes_written,
-                  NULL));
+  CHECK(WriteFile(handle, unblock_data.data(), size, &bytes_written, nullptr));
   CHECK_EQ(size, bytes_written);
   *unblocked = true;
 }
@@ -61,7 +60,7 @@ bool ReadData(HANDLE read_fd,
   while (bytes_read < bytes_max) {
     DWORD num_bytes;
     if (!ReadFile(read_fd, buffer + bytes_read, bytes_max - bytes_read,
-                  &num_bytes, NULL)) {
+                  &num_bytes, nullptr)) {
       PLOG(ERROR) << "ReadFile failed";
       return false;
     }
@@ -97,9 +96,9 @@ bool LocalTestServer::LaunchPython(const base::FilePath& testserver_path) {
   if (!AddCommandLineArguments(&python_command))
     return false;
 
-  HANDLE child_read = NULL;
-  HANDLE child_write = NULL;
-  if (!CreatePipe(&child_read, &child_write, NULL, 0)) {
+  HANDLE child_read = nullptr;
+  HANDLE child_write = nullptr;
+  if (!CreatePipe(&child_read, &child_write, nullptr, 0)) {
     PLOG(ERROR) << "Failed to create pipe";
     return false;
   }

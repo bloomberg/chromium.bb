@@ -47,7 +47,7 @@ URLRequestFtpJob::URLRequestFtpJob(
       priority_(DEFAULT_PRIORITY),
       proxy_resolution_service_(
           request_->context()->proxy_resolution_service()),
-      http_response_info_(NULL),
+      http_response_info_(nullptr),
       read_in_progress_(false),
       ftp_transaction_factory_(ftp_transaction_factory),
       ftp_auth_cache_(ftp_auth_cache),
@@ -146,7 +146,7 @@ void URLRequestFtpJob::Kill() {
 }
 
 void URLRequestFtpJob::OnResolveProxyComplete(int result) {
-  proxy_resolve_request_ = NULL;
+  proxy_resolve_request_ = nullptr;
 
   if (result != OK) {
     OnStartCompletedAsync(result);
@@ -383,7 +383,7 @@ void URLRequestFtpJob::HandleAuthNeededResponse() {
   }
   auth_data_->state = AUTH_STATE_NEED_AUTH;
 
-  FtpAuthCache::Entry* cached_auth = NULL;
+  FtpAuthCache::Entry* cached_auth = nullptr;
   if (ftp_transaction_ && ftp_transaction_->GetResponseInfo()->needs_auth)
     cached_auth = ftp_auth_cache_->Lookup(origin);
   if (cached_auth) {

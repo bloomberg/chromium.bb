@@ -69,7 +69,7 @@ const char kTokenSeparator[] = ";=";
 // Returns true if |c| occurs in |chars|
 // TODO(erikwright): maybe make this take an iterator, could check for end also?
 inline bool CharIsA(const char c, const char* chars) {
-  return strchr(chars, c) != NULL;
+  return strchr(chars, c) != nullptr;
 }
 // Seek the iterator to the first occurrence of a character in |chars|.
 // Returns true if it hit the end, false otherwise.

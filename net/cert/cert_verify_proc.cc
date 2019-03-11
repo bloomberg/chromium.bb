@@ -100,7 +100,7 @@ void RecordPublicKeyHistogram(const char* chain_position,
                          CertTypeToString(cert_type));
   // Do not use UMA_HISTOGRAM_... macros here, as it caches the Histogram
   // instance and thus only works if |histogram_name| is constant.
-  base::HistogramBase* counter = NULL;
+  base::HistogramBase* counter = nullptr;
 
   // Histogram buckets are contingent upon the underlying algorithm being used.
   if (cert_type == X509Certificate::kPublicKeyTypeECDH ||

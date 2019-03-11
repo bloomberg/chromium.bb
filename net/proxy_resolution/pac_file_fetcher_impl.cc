@@ -331,7 +331,7 @@ PacFileFetcherImpl::PacFileFetcherImpl(URLRequestContext* url_request_context,
       next_id_(0),
       cur_request_id_(0),
       result_code_(OK),
-      result_text_(NULL),
+      result_text_(nullptr),
       max_response_bytes_(kDefaultMaxResponseBytes),
       max_duration_(kDefaultMaxDuration),
       allow_file_url_(allow_file_url),
@@ -425,7 +425,7 @@ void PacFileFetcherImpl::ResetCurRequestState() {
   cur_request_id_ = 0;
   callback_.Reset();
   result_code_ = OK;
-  result_text_ = NULL;
+  result_text_ = nullptr;
   fetch_start_time_ = base::TimeTicks();
   fetch_time_to_first_byte_ = base::TimeTicks();
 }

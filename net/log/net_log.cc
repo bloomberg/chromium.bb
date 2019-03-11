@@ -110,8 +110,7 @@ base::Value NetLogNumberValueHelper(T num) {
 
 }  // namespace
 
-NetLog::ThreadSafeObserver::ThreadSafeObserver() : net_log_(NULL) {
-}
+NetLog::ThreadSafeObserver::ThreadSafeObserver() : net_log_(nullptr) {}
 
 NetLog::ThreadSafeObserver::~ThreadSafeObserver() {
   // Make sure we aren't watching a NetLog on destruction.  Because the NetLog
@@ -141,7 +140,7 @@ NetLog::~NetLog() = default;
 
 void NetLog::AddGlobalEntry(NetLogEventType type) {
   AddEntry(type, NetLogSource(NetLogSourceType::NONE, NextID()),
-           NetLogEventPhase::NONE, NULL);
+           NetLogEventPhase::NONE, nullptr);
 }
 
 void NetLog::AddGlobalEntry(
@@ -192,7 +191,7 @@ void NetLog::RemoveObserver(NetLog::ThreadSafeObserver* observer) {
   DCHECK(it != observers_.end());
   observers_.erase(it);
 
-  observer->net_log_ = NULL;
+  observer->net_log_ = nullptr;
   observer->capture_mode_ = NetLogCaptureMode();
   UpdateIsCapturing();
 }
@@ -232,7 +231,7 @@ const char* NetLog::EventTypeToString(NetLogEventType event) {
 #undef EVENT_TYPE
     default:
       NOTREACHED();
-      return NULL;
+      return nullptr;
   }
 }
 
@@ -255,7 +254,7 @@ const char* NetLog::SourceTypeToString(NetLogSourceType source) {
 #undef SOURCE_TYPE
     default:
       NOTREACHED();
-      return NULL;
+      return nullptr;
   }
 }
 
@@ -279,7 +278,7 @@ const char* NetLog::EventPhaseToString(NetLogEventPhase phase) {
       return "PHASE_NONE";
   }
   NOTREACHED();
-  return NULL;
+  return nullptr;
 }
 
 // static

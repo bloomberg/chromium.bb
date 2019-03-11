@@ -364,7 +364,7 @@ void BackendImpl::CleanupCache() {
   }
   block_files_.CloseFiles();
   FlushIndex();
-  index_ = NULL;
+  index_ = nullptr;
   ptr_factory_.InvalidateWeakPtrs();
   done_.Signal();
 }
@@ -441,7 +441,7 @@ int BackendImpl::SyncDoomEntriesBetween(const base::Time initial_time,
         node->GetLastUsed() < end_time) {
       node->DoomImpl();
     } else if (node->GetLastUsed() < initial_time) {
-      next = NULL;
+      next = nullptr;
       SyncEndEnumeration(std::move(iterator));
     }
   }
@@ -509,7 +509,7 @@ void BackendImpl::SyncOnExternalCacheHit(const std::string& key) {
 
 scoped_refptr<EntryImpl> BackendImpl::OpenEntryImpl(const std::string& key) {
   if (disabled_)
-    return NULL;
+    return nullptr;
 
   TimeTicks start = TimeTicks::Now();
   uint32_t hash = base::Hash(key);
@@ -520,7 +520,7 @@ scoped_refptr<EntryImpl> BackendImpl::OpenEntryImpl(const std::string& key) {
       MatchEntry(key, hash, false, Addr(), &error);
   if (cache_entry && ENTRY_NORMAL != cache_entry->entry()->Data()->state) {
     // The entry was already evicted.
-    cache_entry = NULL;
+    cache_entry = nullptr;
     web_fonts_histogram::RecordEvictedEntry(key);
   } else if (!cache_entry) {
     web_fonts_histogram::RecordCacheMiss(key);
@@ -533,7 +533,7 @@ scoped_refptr<EntryImpl> BackendImpl::OpenEntryImpl(const std::string& key) {
 
   if (!cache_entry) {
     stats_.OnEvent(Stats::OPEN_MISS);
-    return NULL;
+    return nullptr;
   }
 
   eviction_.OnOpenEntry(cache_entry.get());
@@ -554,7 +554,7 @@ scoped_refptr<EntryImpl> BackendImpl::OpenEntryImpl(const std::string& key) {
 
 scoped_refptr<EntryImpl> BackendImpl::CreateEntryImpl(const std::string& key) {
   if (disabled_ || key.empty())
-    return NULL;
+    return nullptr;
 
   TimeTicks start = TimeTicks::Now();
   uint32_t hash = base::Hash(key);
@@ -576,7 +576,7 @@ scoped_refptr<EntryImpl> BackendImpl::CreateEntryImpl(const std::string& key) {
     if (!parent && data_->table[hash & mask_]) {
       // We should have corrected the problem.
       NOTREACHED();
-      return NULL;
+      return nullptr;
     }
   }
 
@@ -597,7 +597,7 @@ scoped_refptr<EntryImpl> BackendImpl::CreateEntryImpl(const std::string& key) {
   if (!block_files_.CreateBlock(BLOCK_256, num_blocks, &entry_address)) {
     LOG(ERROR) << "Create entry failed " << key.c_str();
     stats_.OnEvent(Stats::CREATE_ERROR);
-    return NULL;
+    return nullptr;
   }
 
   Addr node_address(0);
@@ -605,7 +605,7 @@ scoped_refptr<EntryImpl> BackendImpl::CreateEntryImpl(const std::string& key) {
     block_files_.DeleteBlock(entry_address, false);
     LOG(ERROR) << "Create entry failed " << key.c_str();
     stats_.OnEvent(Stats::CREATE_ERROR);
-    return NULL;
+    return nullptr;
   }
 
   scoped_refptr<EntryImpl> cache_entry(
@@ -617,7 +617,7 @@ scoped_refptr<EntryImpl> BackendImpl::CreateEntryImpl(const std::string& key) {
     block_files_.DeleteBlock(node_address, false);
     LOG(ERROR) << "Create entry failed " << key.c_str();
     stats_.OnEvent(Stats::CREATE_ERROR);
-    return NULL;
+    return nullptr;
   }
 
   cache_entry->BeginLogging(net_log_, true);
@@ -651,7 +651,7 @@ scoped_refptr<EntryImpl> BackendImpl::CreateEntryImpl(const std::string& key) {
 scoped_refptr<EntryImpl> BackendImpl::OpenNextEntryImpl(
     Rankings::Iterator* iterator) {
   if (disabled_)
-    return NULL;
+    return nullptr;
 
   const int kListsToSearch = 3;
   scoped_refptr<EntryImpl> entries[kListsToSearch];
@@ -666,7 +666,7 @@ scoped_refptr<EntryImpl> BackendImpl::OpenNextEntryImpl(
     }
     if (!ret) {
       iterator->Reset();
-      return NULL;
+      return nullptr;
     }
   } else {
     // Get the next entry from the last list, and the actual entries for the
@@ -702,7 +702,7 @@ scoped_refptr<EntryImpl> BackendImpl::OpenNextEntryImpl(
 
   if (newest < 0 || oldest < 0) {
     iterator->Reset();
-    return NULL;
+    return nullptr;
   }
 
   scoped_refptr<EntryImpl> next_entry = entries[newest];
@@ -747,7 +747,7 @@ base::FilePath BackendImpl::GetFileName(Addr address) const {
 
 MappedFile* BackendImpl::File(Addr address) {
   if (disabled_)
-    return NULL;
+    return nullptr;
   return block_files_.GetFile(address);
 }
 
@@ -935,7 +935,7 @@ EntryImpl* BackendImpl::GetOpenEntry(CacheRankingsBlock* rankings) const {
     return it->second;
   }
 
-  return NULL;
+  return nullptr;
 }
 
 int32_t BackendImpl::GetCurrentEntryId() const {
@@ -1434,7 +1434,7 @@ bool BackendImpl::InitBackingStore(bool* file_created) {
   if (*file_created)
     ret = CreateBackingStore(file.get());
 
-  file = NULL;
+  file = nullptr;
   if (!ret)
     return false;
 
@@ -1496,7 +1496,7 @@ bool BackendImpl::InitStats() {
       return false;
 
     data_->header.stats = address.value();
-    return stats_.Init(NULL, 0, address);
+    return stats_.Init(nullptr, 0, address);
   }
 
   if (!address.is_block_file()) {
@@ -1579,8 +1579,8 @@ void BackendImpl::PrepareForRestart() {
   disabled_ = true;
   data_->header.crash = 0;
   index_->Flush();
-  index_ = NULL;
-  data_ = NULL;
+  index_ = nullptr;
+  data_ = nullptr;
   block_files_.CloseFiles();
   rankings_.Reset();
   init_ = false;
@@ -1606,7 +1606,7 @@ int BackendImpl::NewEntry(Addr address, scoped_refptr<EntryImpl>* entry) {
   scoped_refptr<EntryImpl> cache_entry(
       new EntryImpl(this, address, read_only_));
   IncreaseNumRefs();
-  *entry = NULL;
+  *entry = nullptr;
 
   TimeTicks start = TimeTicks::Now();
   if (!cache_entry->entry()->Load())
@@ -1702,7 +1702,7 @@ scoped_refptr<EntryImpl> BackendImpl::MatchEntry(const std::string& key,
 
       if (parent_entry.get()) {
         parent_entry->SetNextAddress(child);
-        parent_entry = NULL;
+        parent_entry = nullptr;
       } else {
         data_->table[hash & mask_] = child.value();
       }
@@ -1714,7 +1714,7 @@ scoped_refptr<EntryImpl> BackendImpl::MatchEntry(const std::string& key,
         // It is important to call DestroyInvalidEntry after removing this
         // entry from the table.
         DestroyInvalidEntry(cache_entry.get());
-        cache_entry = NULL;
+        cache_entry = nullptr;
       } else {
         Trace("NewEntry failed on MatchEntry 0x%x", address.value());
       }
@@ -1728,19 +1728,19 @@ scoped_refptr<EntryImpl> BackendImpl::MatchEntry(const std::string& key,
     DCHECK_EQ(hash & mask_, cache_entry->entry()->Data()->hash & mask_);
     if (cache_entry->IsSameEntry(key, hash)) {
       if (!cache_entry->Update())
-        cache_entry = NULL;
+        cache_entry = nullptr;
       found = true;
       if (find_parent && entry_addr.value() != address.value()) {
         Trace("Entry not on the index 0x%x", address.value());
         *match_error = true;
-        parent_entry = NULL;
+        parent_entry = nullptr;
       }
       break;
     }
     if (!cache_entry->Update())
-      cache_entry = NULL;
+      cache_entry = nullptr;
     parent_entry = cache_entry;
-    cache_entry = NULL;
+    cache_entry = nullptr;
     if (!parent_entry.get())
       break;
 
@@ -1748,15 +1748,15 @@ scoped_refptr<EntryImpl> BackendImpl::MatchEntry(const std::string& key,
   }
 
   if (parent_entry.get() && (!find_parent || !found))
-    parent_entry = NULL;
+    parent_entry = nullptr;
 
   if (find_parent && entry_addr.is_initialized() && !cache_entry.get()) {
     *match_error = true;
-    parent_entry = NULL;
+    parent_entry = nullptr;
   }
 
   if (cache_entry.get() && (find_parent || !found))
-    cache_entry = NULL;
+    cache_entry = nullptr;
 
   FlushIndex();
 
@@ -1776,7 +1776,7 @@ bool BackendImpl::OpenFollowingEntryFromList(
   Rankings::ScopedRankingsBlock rankings(&rankings_, *from_entry);
   CacheRankingsBlock* next_block = rankings_.GetNext(rankings.get(), list);
   Rankings::ScopedRankingsBlock next(&rankings_, next_block);
-  *from_entry = NULL;
+  *from_entry = nullptr;
 
   *next_entry = GetEnumeratedEntry(next.get(), list);
   if (!*next_entry)
@@ -1790,7 +1790,7 @@ scoped_refptr<EntryImpl> BackendImpl::GetEnumeratedEntry(
     CacheRankingsBlock* next,
     Rankings::List list) {
   if (!next || disabled_)
-    return NULL;
+    return nullptr;
 
   scoped_refptr<EntryImpl> entry;
   int rv = NewEntry(Addr(next->Data()->contents), &entry);
@@ -1801,18 +1801,18 @@ scoped_refptr<EntryImpl> BackendImpl::GetEnumeratedEntry(
       // There is nothing linked from the index. Delete the rankings node.
       DeleteBlock(next->address(), true);
     }
-    return NULL;
+    return nullptr;
   }
 
   if (entry->dirty()) {
     // We cannot trust this entry.
     InternalDoomEntry(entry.get());
-    return NULL;
+    return nullptr;
   }
 
   if (!entry->Update()) {
     STRESS_NOTREACHED();
-    return NULL;
+    return nullptr;
   }
 
   // Note that it is unfortunate (but possible) for this entry to be clean, but
@@ -1835,7 +1835,7 @@ scoped_refptr<EntryImpl> BackendImpl::ResurrectEntry(
     deleted_entry = nullptr;
     stats_.OnEvent(Stats::CREATE_MISS);
     Trace("create entry miss ");
-    return NULL;
+    return nullptr;
   }
 
   // We are attempting to create an entry and found out that the entry was

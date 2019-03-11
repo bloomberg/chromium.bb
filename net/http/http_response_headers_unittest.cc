@@ -559,9 +559,9 @@ TEST(HttpResponseHeadersTest, EnumerateHeader_DateValued) {
   scoped_refptr<HttpResponseHeaders> parsed(new HttpResponseHeaders(headers));
 
   std::string value;
-  EXPECT_TRUE(parsed->EnumerateHeader(NULL, "date", &value));
+  EXPECT_TRUE(parsed->EnumerateHeader(nullptr, "date", &value));
   EXPECT_EQ("Tue, 07 Aug 2007 23:10:55 GMT", value);
-  EXPECT_TRUE(parsed->EnumerateHeader(NULL, "last-modified", &value));
+  EXPECT_TRUE(parsed->EnumerateHeader(nullptr, "last-modified", &value));
   EXPECT_EQ("Wed, 01 Aug 2007 23:23:45 GMT", value);
 }
 

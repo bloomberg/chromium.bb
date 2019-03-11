@@ -282,12 +282,12 @@ std::unique_ptr<base::Value> NetLogProcTaskFailedCallback(
     // Map the error code to a human-readable string.
     LPWSTR error_string = nullptr;
     FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
-                  0,  // Use the internal message table.
+                  nullptr,  // Use the internal message table.
                   os_error,
                   0,  // Use default language.
                   (LPWSTR)&error_string,
-                  0,   // Buffer size.
-                  0);  // Arguments (unused).
+                  0,         // Buffer size.
+                  nullptr);  // Arguments (unused).
     dict->SetString("os_error_string", base::WideToUTF8(error_string));
     LocalFree(error_string);
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
@@ -2116,7 +2116,7 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
 HostResolverManager::HostResolverManager(const Options& options,
                                          NetLog* net_log)
     : max_queued_jobs_(0),
-      proc_params_(NULL, options.max_retry_attempts),
+      proc_params_(nullptr, options.max_retry_attempts),
       net_log_(net_log),
       received_dns_config_(false),
       num_dns_failures_(0),

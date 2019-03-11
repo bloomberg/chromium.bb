@@ -67,7 +67,7 @@ class TestHttpClient {
   int ConnectAndWait(const IPEndPoint& address) {
     AddressList addresses(address);
     NetLogSource source;
-    socket_.reset(new TCPClientSocket(addresses, NULL, NULL, source));
+    socket_.reset(new TCPClientSocket(addresses, nullptr, nullptr, source));
 
     TestCompletionCallback callback;
     int rv = socket_->Connect(callback.callback());
@@ -177,7 +177,7 @@ class HttpServerTest : public TestWithScopedTaskEnvironment,
 
   void SetUp() override {
     std::unique_ptr<ServerSocket> server_socket(
-        new TCPServerSocket(NULL, NetLogSource()));
+        new TCPServerSocket(nullptr, NetLogSource()));
     server_socket->ListenWithAddressAndPort("127.0.0.1", 0, 1);
     server_.reset(new HttpServer(std::move(server_socket), this));
     ASSERT_THAT(server_->GetLocalAddress(&server_address_), IsOk());
@@ -544,10 +544,7 @@ TEST_F(HttpServerTest, WrongProtocolRequest) {
 
 class MockStreamSocket : public StreamSocket {
  public:
-  MockStreamSocket()
-      : connected_(true),
-        read_buf_(NULL),
-        read_buf_len_(0) {}
+  MockStreamSocket() : connected_(true), read_buf_(nullptr), read_buf_len_(0) {}
 
   // StreamSocket
   int Connect(CompletionOnceCallback callback) override {
@@ -556,7 +553,7 @@ class MockStreamSocket : public StreamSocket {
   void Disconnect() override {
     connected_ = false;
     if (!read_callback_.is_null()) {
-      read_buf_ = NULL;
+      read_buf_ = nullptr;
       read_buf_len_ = 0;
       std::move(read_callback_).Run(ERR_CONNECTION_CLOSED);
     }
@@ -625,7 +622,7 @@ class MockStreamSocket : public StreamSocket {
     int read_len = std::min(data_len, read_buf_len_);
     memcpy(read_buf_->data(), data, read_len);
     pending_read_data_.assign(data + read_len, data_len - read_len);
-    read_buf_ = NULL;
+    read_buf_ = nullptr;
     read_buf_len_ = 0;
     std::move(read_callback_).Run(read_len);
   }

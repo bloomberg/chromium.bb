@@ -37,7 +37,7 @@ TestNetLogEntry& TestNetLogEntry::operator=(const TestNetLogEntry& entry) {
   time = entry.time;
   source = entry.source;
   phase = entry.phase;
-  params.reset(entry.params ? entry.params->DeepCopy() : NULL);
+  params.reset(entry.params ? entry.params->DeepCopy() : nullptr);
   return *this;
 }
 

@@ -587,11 +587,11 @@ int MockNetworkLayer::CreateTransaction(
 }
 
 HttpCache* MockNetworkLayer::GetCache() {
-  return NULL;
+  return nullptr;
 }
 
 HttpNetworkSession* MockNetworkLayer::GetSession() {
-  return NULL;
+  return nullptr;
 }
 
 void MockNetworkLayer::SetClock(base::Clock* clock) {

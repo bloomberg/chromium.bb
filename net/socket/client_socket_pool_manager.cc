@@ -129,9 +129,9 @@ CreateSocketParamsAndGetGroupName(
             resolution_callback);
         // Set ssl_params, and unset proxy_tcp_params
         ssl_params = new SSLSocketParams(
-            proxy_tcp_params, NULL, NULL, proxy_server.host_port_pair(),
+            proxy_tcp_params, nullptr, nullptr, proxy_server.host_port_pair(),
             ssl_config_for_proxy, PRIVACY_MODE_DISABLED);
-        proxy_tcp_params = NULL;
+        proxy_tcp_params = nullptr;
       }
 
       if (!proxy_info.is_quic()) {
@@ -428,7 +428,7 @@ int PreconnectSocketsForHttpRequest(
       proxy_info, quic::QUIC_VERSION_UNSUPPORTED, ssl_config_for_origin,
       ssl_config_for_proxy,
       /*force_tunnel=*/false, privacy_mode, SocketTag(), net_log,
-      num_preconnect_streams, NULL, HttpNetworkSession::NORMAL_SOCKET_POOL,
+      num_preconnect_streams, nullptr, HttpNetworkSession::NORMAL_SOCKET_POOL,
       OnHostResolutionCallback(), CompletionOnceCallback(),
       ClientSocketPool::ProxyAuthCallback());
 }

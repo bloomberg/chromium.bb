@@ -53,7 +53,7 @@ class SpdySessionPoolTest : public TestWithScopedTaskEnvironment {
     SPDY_POOL_CLOSE_IDLE_SESSIONS,
   };
 
-  SpdySessionPoolTest() : spdy_session_pool_(NULL) {}
+  SpdySessionPoolTest() : spdy_session_pool_(nullptr) {}
 
   void CreateNetworkSession() {
     http_session_ = SpdySessionDependencies::SpdyCreateSession(&session_deps_);

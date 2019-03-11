@@ -19,7 +19,7 @@ class NetLog;
 // output log messages without needing to pass in the source.
 class NET_EXPORT NetLogWithSource {
  public:
-  NetLogWithSource() : net_log_(NULL) {}
+  NetLogWithSource() : net_log_(nullptr) {}
   ~NetLogWithSource();
 
   // Add a log entry to the NetLog for the bound source.

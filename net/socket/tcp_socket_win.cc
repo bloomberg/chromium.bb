@@ -51,8 +51,8 @@ bool SetTCPKeepAlive(SOCKET socket, BOOL enable, int delay_secs) {
   };
   DWORD bytes_returned = 0xABAB;
   int rv = WSAIoctl(socket, SIO_KEEPALIVE_VALS, &keepalive_vals,
-                    sizeof(keepalive_vals), NULL, 0,
-                    &bytes_returned, NULL, NULL);
+                    sizeof(keepalive_vals), nullptr, 0, &bytes_returned,
+                    nullptr, nullptr);
   int os_error = WSAGetLastError();
   DCHECK(!rv) << "Could not enable TCP Keep-Alive for socket: " << socket
               << " [error: " << os_error << "].";
@@ -259,8 +259,8 @@ TCPSocketWin::TCPSocketWin(
     : socket_(INVALID_SOCKET),
       socket_performance_watcher_(std::move(socket_performance_watcher)),
       accept_event_(WSA_INVALID_EVENT),
-      accept_socket_(NULL),
-      accept_address_(NULL),
+      accept_socket_(nullptr),
+      accept_address_(nullptr),
       waiting_connect_(false),
       waiting_read_(false),
       waiting_write_(false),
@@ -566,7 +566,7 @@ int TCPSocketWin::Write(
   AssertEventNotSignaled(core_->write_overlapped_.hEvent);
   DWORD num;
   int rv = WSASend(socket_, &write_buffer, 1, &num, 0,
-                   &core_->write_overlapped_, NULL);
+                   &core_->write_overlapped_, nullptr);
   int os_error = WSAGetLastError();
   if (rv == 0) {
     if (ResetEventIfSignaled(core_->write_overlapped_.hEvent)) {
@@ -786,7 +786,7 @@ int TCPSocketWin::AcceptInternal(std::unique_ptr<TCPSocketWin>* socket,
     return net_error;
   }
   std::unique_ptr<TCPSocketWin> tcp_socket(
-      new TCPSocketWin(NULL, net_log_.net_log(), net_log_.source()));
+      new TCPSocketWin(nullptr, net_log_.net_log(), net_log_.source()));
   int adopt_result = tcp_socket->AdoptConnectedSocket(new_socket, ip_end_point);
   if (adopt_result != OK) {
     net_log_.EndEventWithNetErrorCode(NetLogEventType::TCP_ACCEPT,
@@ -810,8 +810,8 @@ void TCPSocketWin::OnObjectSignaled(HANDLE object) {
   if (ev.lNetworkEvents & FD_ACCEPT) {
     int result = AcceptInternal(accept_socket_, accept_address_);
     if (result != ERR_IO_PENDING) {
-      accept_socket_ = NULL;
-      accept_address_ = NULL;
+      accept_socket_ = nullptr;
+      accept_address_ = nullptr;
       std::move(accept_callback_).Run(result);
     }
   } else {
@@ -992,7 +992,7 @@ void TCPSocketWin::DidCompleteWrite() {
     }
   }
 
-  core_->write_iobuffer_ = NULL;
+  core_->write_iobuffer_ = nullptr;
 
   DCHECK_NE(rv, ERR_IO_PENDING);
   std::move(write_callback_).Run(rv);

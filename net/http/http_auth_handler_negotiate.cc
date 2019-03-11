@@ -150,7 +150,7 @@ HttpAuthHandlerNegotiate::HttpAuthHandlerNegotiate(
       resolver_(resolver),
       already_called_(false),
       has_credentials_(false),
-      auth_token_(NULL),
+      auth_token_(nullptr),
       next_state_(STATE_NONE),
       http_auth_preferences_(prefs) {}
 
@@ -221,10 +221,10 @@ int HttpAuthHandlerNegotiate::GenerateAuthTokenImpl(
     CompletionOnceCallback callback,
     std::string* auth_token) {
   DCHECK(callback_.is_null());
-  DCHECK(auth_token_ == NULL);
+  DCHECK(auth_token_ == nullptr);
   auth_token_ = auth_token;
   if (already_called_) {
-    DCHECK((!has_credentials_ && credentials == NULL) ||
+    DCHECK((!has_credentials_ && credentials == nullptr) ||
            (has_credentials_ && credentials->Equals(credentials_)));
     next_state_ = STATE_GENERATE_AUTH_TOKEN;
   } else {
@@ -375,7 +375,7 @@ int HttpAuthHandlerNegotiate::DoResolveCanonicalNameComplete(int rv) {
 
 int HttpAuthHandlerNegotiate::DoGenerateAuthToken() {
   next_state_ = STATE_GENERATE_AUTH_TOKEN_COMPLETE;
-  AuthCredentials* credentials = has_credentials_ ? &credentials_ : NULL;
+  AuthCredentials* credentials = has_credentials_ ? &credentials_ : nullptr;
   return auth_system_->GenerateAuthToken(
       credentials, spn_, channel_bindings_, auth_token_,
       base::BindOnce(&HttpAuthHandlerNegotiate::OnIOComplete,
@@ -384,7 +384,7 @@ int HttpAuthHandlerNegotiate::DoGenerateAuthToken() {
 
 int HttpAuthHandlerNegotiate::DoGenerateAuthTokenComplete(int rv) {
   DCHECK_NE(ERR_IO_PENDING, rv);
-  auth_token_ = NULL;
+  auth_token_ = nullptr;
   return rv;
 }
 

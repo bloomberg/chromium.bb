@@ -99,7 +99,7 @@ NextProto HttpProxyClientSocket::GetProxyNegotiatedProtocol() const {
 }
 
 const HttpResponseInfo* HttpProxyClientSocket::GetConnectResponseInfo() const {
-  return response_.headers.get() ? &response_ : NULL;
+  return response_.headers.get() ? &response_ : nullptr;
 }
 
 int HttpProxyClientSocket::Connect(CompletionOnceCallback callback) {

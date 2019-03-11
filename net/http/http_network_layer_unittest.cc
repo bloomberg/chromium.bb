@@ -282,7 +282,7 @@ TEST_F(HttpNetworkLayerTest, CreateAndDestroy) {
   std::unique_ptr<HttpTransaction> trans;
   int rv = factory_->CreateTransaction(DEFAULT_PRIORITY, &trans);
   EXPECT_THAT(rv, IsOk());
-  EXPECT_TRUE(trans.get() != NULL);
+  EXPECT_TRUE(trans.get() != nullptr);
 }
 
 TEST_F(HttpNetworkLayerTest, Suspend) {
@@ -297,7 +297,7 @@ TEST_F(HttpNetworkLayerTest, Suspend) {
   rv = factory_->CreateTransaction(DEFAULT_PRIORITY, &trans);
   EXPECT_THAT(rv, IsError(ERR_NETWORK_IO_SUSPENDED));
 
-  ASSERT_TRUE(trans == NULL);
+  ASSERT_TRUE(trans == nullptr);
 
   factory_->OnResume();
 

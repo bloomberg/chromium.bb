@@ -17,7 +17,7 @@ CookieCallback::CookieCallback(base::Thread* run_in_thread)
     : run_in_thread_(run_in_thread) {}
 
 CookieCallback::CookieCallback()
-    : run_in_thread_(NULL),
+    : run_in_thread_(nullptr),
       run_in_task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
 
 CookieCallback::~CookieCallback() = default;

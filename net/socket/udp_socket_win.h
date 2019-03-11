@@ -141,7 +141,7 @@ class NET_EXPORT DscpManager {
   // The remote addresses currently in the flow.
   std::set<IPEndPoint> configured_;
 
-  HANDLE qos_handle_ = NULL;
+  HANDLE qos_handle_ = nullptr;
   bool handle_is_initializing_ = false;
   // 0 means no flow has been constructed.
   QOS_FLOWID flow_id_ = 0;

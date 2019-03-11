@@ -161,10 +161,9 @@ class CacheDumper {
   explicit CacheDumper(const base::FilePath& path)
       : path_(path),
         block_files_(path),
-        index_(NULL),
+        index_(nullptr),
         current_hash_(0),
-        next_addr_(0) {
-  }
+        next_addr_(0) {}
 
   bool Init();
 

@@ -14,8 +14,7 @@
 namespace net {
 
 MockPacFileFetcher::MockPacFileFetcher()
-    : pending_request_text_(NULL),
-      is_shutdown_(false) {}
+    : pending_request_text_(nullptr), is_shutdown_(false) {}
 
 MockPacFileFetcher::~MockPacFileFetcher() = default;
 
@@ -60,7 +59,7 @@ void MockPacFileFetcher::OnShutdown() {
 }
 
 URLRequestContext* MockPacFileFetcher::GetRequestContext() const {
-  return NULL;
+  return nullptr;
 }
 
 const GURL& MockPacFileFetcher::pending_request_url() const {

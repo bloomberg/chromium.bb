@@ -435,7 +435,7 @@ void MDnsClientImpl::StopListening() {
 }
 
 bool MDnsClientImpl::IsListening() const {
-  return core_.get() != NULL;
+  return core_.get() != nullptr;
 }
 
 std::unique_ptr<MDnsListener> MDnsClientImpl::CreateListener(
@@ -675,9 +675,9 @@ void MDnsTransactionImpl::OnRecordUpdate(MDnsListener::UpdateType update,
 void MDnsTransactionImpl::SignalTransactionOver() {
   DCHECK(started_);
   if (flags_ & MDnsTransaction::SINGLE_RESULT) {
-    TriggerCallback(MDnsTransaction::RESULT_NO_RESULTS, NULL);
+    TriggerCallback(MDnsTransaction::RESULT_NO_RESULTS, nullptr);
   } else {
-    TriggerCallback(MDnsTransaction::RESULT_DONE, NULL);
+    TriggerCallback(MDnsTransaction::RESULT_DONE, nullptr);
   }
 }
 
@@ -700,7 +700,7 @@ void MDnsTransactionImpl::ServeRecordsFromCache() {
             records.front()->rdata<NsecRecordRdata>();
         DCHECK(rdata);
         if (!rdata->GetBit(rrtype_))
-          weak_this->TriggerCallback(MDnsTransaction::RESULT_NSEC, NULL);
+          weak_this->TriggerCallback(MDnsTransaction::RESULT_NSEC, nullptr);
       }
     }
 #endif
@@ -725,7 +725,7 @@ bool MDnsTransactionImpl::QueryAndListen() {
 }
 
 void MDnsTransactionImpl::OnNsecRecord(const std::string& name, unsigned type) {
-  TriggerCallback(RESULT_NSEC, NULL);
+  TriggerCallback(RESULT_NSEC, nullptr);
 }
 
 void MDnsTransactionImpl::OnCachePurged() {

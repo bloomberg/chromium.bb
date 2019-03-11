@@ -120,7 +120,7 @@ struct MockReadWrite {
   MockReadWrite()
       : mode(SYNCHRONOUS),
         result(0),
-        data(NULL),
+        data(nullptr),
         data_len(0),
         sequence_number(0) {}
 
@@ -128,7 +128,7 @@ struct MockReadWrite {
   MockReadWrite(IoMode io_mode, int result)
       : mode(io_mode),
         result(result),
-        data(NULL),
+        data(nullptr),
         data_len(0),
         sequence_number(0) {}
 
@@ -136,7 +136,7 @@ struct MockReadWrite {
   MockReadWrite(IoMode io_mode, int result, int seq)
       : mode(io_mode),
         result(result),
-        data(NULL),
+        data(nullptr),
         data_len(0),
         sequence_number(seq) {}
 

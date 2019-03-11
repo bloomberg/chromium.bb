@@ -127,7 +127,7 @@ TEST_F(SQLiteChannelIDStoreTest, TestPersistence) {
   // Replace the store effectively destroying the current one and forcing it
   // to write its data to disk. Then we can see if after loading it again it
   // is still there.
-  store_ = NULL;
+  store_ = nullptr;
   // Make sure we wait until the destructor has run.
   base::RunLoop().RunUntilIdle();
   store_ = new SQLiteChannelIDStore(
@@ -156,7 +156,7 @@ TEST_F(SQLiteChannelIDStoreTest, TestPersistence) {
   // Now delete the keypair and check persistence again.
   store_->DeleteChannelID(*channel_ids[0]);
   store_->DeleteChannelID(*channel_ids[1]);
-  store_ = NULL;
+  store_ = nullptr;
   // Make sure we wait until the destructor has run.
   base::RunLoop().RunUntilIdle();
   channel_ids.clear();
@@ -168,7 +168,7 @@ TEST_F(SQLiteChannelIDStoreTest, TestPersistence) {
   Load(&channel_ids);
   ASSERT_EQ(0U, channel_ids.size());
   // Close the store.
-  store_ = NULL;
+  store_ = nullptr;
   // Make sure we wait until the destructor has run.
   base::RunLoop().RunUntilIdle();
 }
@@ -183,7 +183,7 @@ TEST_F(SQLiteChannelIDStoreTest, TestDeleteAll) {
   // Replace the store effectively destroying the current one and forcing it
   // to write its data to disk. Then we can see if after loading it again it
   // is still there.
-  store_ = NULL;
+  store_ = nullptr;
   // Make sure we wait until the destructor has run.
   base::RunLoop().RunUntilIdle();
   store_ = new SQLiteChannelIDStore(
@@ -200,7 +200,7 @@ TEST_F(SQLiteChannelIDStoreTest, TestDeleteAll) {
   store_->DeleteAllInList(delete_server_identifiers);
 
   // Now check persistence again.
-  store_ = NULL;
+  store_ = nullptr;
   // Make sure we wait until the destructor has run.
   base::RunLoop().RunUntilIdle();
   channel_ids.clear();
@@ -213,14 +213,14 @@ TEST_F(SQLiteChannelIDStoreTest, TestDeleteAll) {
   ASSERT_EQ(1U, channel_ids.size());
   ASSERT_EQ("foo.com", channel_ids[0]->server_identifier());
   // Close the store.
-  store_ = NULL;
+  store_ = nullptr;
   // Make sure we wait until the destructor has run.
   base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(SQLiteChannelIDStoreTest, TestUpgradeV1) {
   // Reset the store.  We'll be using a different database for this test.
-  store_ = NULL;
+  store_ = nullptr;
 
   base::FilePath v1_db_path(temp_dir_.GetPath().AppendASCII("v1db"));
 
@@ -272,7 +272,7 @@ TEST_F(SQLiteChannelIDStoreTest, TestUpgradeV1) {
     Load(&channel_ids);
     ASSERT_EQ(0U, channel_ids.size());
 
-    store_ = NULL;
+    store_ = nullptr;
     base::RunLoop().RunUntilIdle();
 
     // Verify the database version is updated.
@@ -290,7 +290,7 @@ TEST_F(SQLiteChannelIDStoreTest, TestUpgradeV1) {
 
 TEST_F(SQLiteChannelIDStoreTest, TestUpgradeV2) {
   // Reset the store.  We'll be using a different database for this test.
-  store_ = NULL;
+  store_ = nullptr;
 
   base::FilePath v2_db_path(temp_dir_.GetPath().AppendASCII("v2db"));
 
@@ -346,7 +346,7 @@ TEST_F(SQLiteChannelIDStoreTest, TestUpgradeV2) {
     Load(&channel_ids);
     ASSERT_EQ(0U, channel_ids.size());
 
-    store_ = NULL;
+    store_ = nullptr;
     // Make sure we wait until the destructor has run.
     base::RunLoop().RunUntilIdle();
 
@@ -365,7 +365,7 @@ TEST_F(SQLiteChannelIDStoreTest, TestUpgradeV2) {
 
 TEST_F(SQLiteChannelIDStoreTest, TestUpgradeV3) {
   // Reset the store.  We'll be using a different database for this test.
-  store_ = NULL;
+  store_ = nullptr;
 
   base::FilePath v3_db_path(temp_dir_.GetPath().AppendASCII("v3db"));
 
@@ -423,7 +423,7 @@ TEST_F(SQLiteChannelIDStoreTest, TestUpgradeV3) {
     Load(&channel_ids);
     ASSERT_EQ(0U, channel_ids.size());
 
-    store_ = NULL;
+    store_ = nullptr;
     // Make sure we wait until the destructor has run.
     base::RunLoop().RunUntilIdle();
 
@@ -442,7 +442,7 @@ TEST_F(SQLiteChannelIDStoreTest, TestUpgradeV3) {
 
 TEST_F(SQLiteChannelIDStoreTest, TestUpgradeV4) {
   // Reset the store.  We'll be using a different database for this test.
-  store_ = NULL;
+  store_ = nullptr;
 
   base::FilePath v4_db_path(temp_dir_.GetPath().AppendASCII("v4db"));
 
@@ -516,7 +516,7 @@ TEST_F(SQLiteChannelIDStoreTest, TestUpgradeV4) {
     Load(&channel_ids);
     ASSERT_EQ(0U, channel_ids.size());
 
-    store_ = NULL;
+    store_ = nullptr;
     // Make sure we wait until the destructor has run.
     base::RunLoop().RunUntilIdle();
 
@@ -535,7 +535,7 @@ TEST_F(SQLiteChannelIDStoreTest, TestUpgradeV4) {
 
 TEST_F(SQLiteChannelIDStoreTest, TestUpgradeV5) {
   // Reset the store.  We'll be using a different database for this test.
-  store_ = NULL;
+  store_ = nullptr;
 
   base::FilePath v5_db_path(temp_dir_.GetPath().AppendASCII("v5db"));
 
@@ -591,7 +591,7 @@ TEST_F(SQLiteChannelIDStoreTest, TestUpgradeV5) {
     Load(&channel_ids);
     ASSERT_EQ(0U, channel_ids.size());
 
-    store_ = NULL;
+    store_ = nullptr;
     // Make sure we wait until the destructor has run.
     base::RunLoop().RunUntilIdle();
 

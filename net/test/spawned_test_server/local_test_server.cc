@@ -205,7 +205,7 @@ bool LocalTestServer::AddCommandLineArguments(
 
     // Add arguments from a list.
     if (value.is_list()) {
-      const base::ListValue* list = NULL;
+      const base::ListValue* list = nullptr;
       if (!value.GetAsList(&list) || !list || list->empty())
         return false;
       for (auto list_it = list->begin(); list_it != list->end(); ++list_it) {

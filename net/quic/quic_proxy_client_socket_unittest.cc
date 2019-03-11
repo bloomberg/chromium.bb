@@ -1420,9 +1420,9 @@ TEST_P(QuicProxyClientSocketTest, ReadOnClosedSocketReturnsZero) {
   ResumeAndRun();
 
   ASSERT_FALSE(sock_->IsConnected());
-  ASSERT_EQ(0, sock_->Read(NULL, 1, CompletionOnceCallback()));
-  ASSERT_EQ(0, sock_->Read(NULL, 1, CompletionOnceCallback()));
-  ASSERT_EQ(0, sock_->Read(NULL, 1, CompletionOnceCallback()));
+  ASSERT_EQ(0, sock_->Read(nullptr, 1, CompletionOnceCallback()));
+  ASSERT_EQ(0, sock_->Read(nullptr, 1, CompletionOnceCallback()));
+  ASSERT_EQ(0, sock_->Read(nullptr, 1, CompletionOnceCallback()));
   ASSERT_FALSE(sock_->IsConnectedAndIdle());
 }
 
@@ -1490,8 +1490,8 @@ TEST_P(QuicProxyClientSocketTest, ReadAfterFinReceivedReturnsBufferedData) {
   ResumeAndRun();
 
   AssertSyncReadEquals(kMsg1, kLen1);
-  ASSERT_EQ(0, sock_->Read(NULL, 1, CompletionOnceCallback()));
-  ASSERT_EQ(0, sock_->Read(NULL, 1, CompletionOnceCallback()));
+  ASSERT_EQ(0, sock_->Read(nullptr, 1, CompletionOnceCallback()));
+  ASSERT_EQ(0, sock_->Read(nullptr, 1, CompletionOnceCallback()));
 
   sock_->Disconnect();
   ASSERT_EQ(ERR_SOCKET_NOT_CONNECTED,
@@ -1753,7 +1753,7 @@ class DeleteSockCallback : public TestCompletionCallbackBase {
 
  private:
   void OnComplete(int result) {
-    sock_->reset(NULL);
+    sock_->reset(nullptr);
     SetResult(result);
   }
 

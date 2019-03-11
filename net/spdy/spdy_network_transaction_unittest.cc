@@ -2057,14 +2057,15 @@ TEST_F(SpdyNetworkTransactionTest, SocketWriteReturnsZero) {
   spdy::SpdySerializedFrame rst(
       spdy_util_.ConstructSpdyRstStream(1, spdy::ERROR_CODE_CANCEL));
   MockWrite writes[] = {
-      CreateMockWrite(req, 0, SYNCHRONOUS), MockWrite(SYNCHRONOUS, 0, 0, 2),
+      CreateMockWrite(req, 0, SYNCHRONOUS),
+      MockWrite(SYNCHRONOUS, nullptr, 0, 2),
       CreateMockWrite(rst, 3, SYNCHRONOUS),
   };
 
   spdy::SpdySerializedFrame resp(
       spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
   MockRead reads[] = {
-      CreateMockRead(resp, 1, ASYNC), MockRead(ASYNC, 0, 0, 4)  // EOF
+      CreateMockRead(resp, 1, ASYNC), MockRead(ASYNC, nullptr, 0, 4)  // EOF
   };
 
   SequencedSocketData data(reads, writes);
@@ -2270,7 +2271,7 @@ TEST_F(SpdyNetworkTransactionTest, CancelledTransactionSendRst) {
   spdy::SpdySerializedFrame resp(
       spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
   MockRead reads[] = {
-      CreateMockRead(resp, 1, ASYNC), MockRead(ASYNC, 0, 0, 3)  // EOF
+      CreateMockRead(resp, 1, ASYNC), MockRead(ASYNC, nullptr, 0, 3)  // EOF
   };
 
   SequencedSocketData data(reads, writes);
@@ -2317,10 +2318,10 @@ TEST_F(SpdyNetworkTransactionTest, StartTransactionOnReadCallback) {
       MockRead(ASYNC, reinterpret_cast<const char*>(kGetBodyFrame2),
                base::size(kGetBodyFrame2), 3),
       MockRead(ASYNC, ERR_IO_PENDING, 4),  // Force a pause
-      MockRead(ASYNC, 0, 0, 5),            // EOF
+      MockRead(ASYNC, nullptr, 0, 5),      // EOF
   };
   MockRead reads2[] = {
-      CreateMockRead(resp, 1), MockRead(ASYNC, 0, 0, 2),  // EOF
+      CreateMockRead(resp, 1), MockRead(ASYNC, nullptr, 0, 2),  // EOF
   };
 
   SequencedSocketData data(reads, writes);
@@ -2368,8 +2369,8 @@ TEST_F(SpdyNetworkTransactionTest, DeleteSessionOnReadCallback) {
   spdy::SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, true));
   MockRead reads[] = {
       CreateMockRead(resp, 1),
-      MockRead(ASYNC, ERR_IO_PENDING, 2),                 // Force a pause
-      CreateMockRead(body, 3), MockRead(ASYNC, 0, 0, 4),  // EOF
+      MockRead(ASYNC, ERR_IO_PENDING, 2),                       // Force a pause
+      CreateMockRead(body, 3), MockRead(ASYNC, nullptr, 0, 4),  // EOF
   };
 
   SequencedSocketData data(reads, writes);
@@ -2423,7 +2424,7 @@ TEST_F(SpdyNetworkTransactionTest, TestRawHeaderSizeSuccessfullRequest) {
   MockRead response_headers(CreateMockRead(resp, 1));
   MockRead reads[] = {
       response_headers, CreateMockRead(response_body_frame, 2),
-      MockRead(ASYNC, 0, 0, 3)  // EOF
+      MockRead(ASYNC, nullptr, 0, 3)  // EOF
   };
   SequencedSocketData data(reads, writes);
 
@@ -5125,7 +5126,7 @@ TEST_F(SpdyNetworkTransactionTest, ProxyConnect) {
       MockRead(SYNCHRONOUS, kHTTP200, base::size(kHTTP200) - 1, 1),
       CreateMockRead(resp, 3),
       CreateMockRead(body, 4),
-      MockRead(ASYNC, 0, 0, 5),
+      MockRead(ASYNC, nullptr, 0, 5),
   };
   SequencedSocketData data(reads, writes);
 

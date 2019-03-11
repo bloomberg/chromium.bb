@@ -14,7 +14,7 @@ namespace net {
 
 namespace {
 
-URLRequestInterceptor* g_interceptor_for_testing = NULL;
+URLRequestInterceptor* g_interceptor_for_testing = nullptr;
 
 }  // namespace
 
@@ -56,7 +56,7 @@ URLRequestJob* URLRequestJobFactoryImpl::MaybeCreateJobWithProtocolHandler(
 
   auto it = protocol_handler_map_.find(scheme);
   if (it == protocol_handler_map_.end())
-    return NULL;
+    return nullptr;
   return it->second->MaybeCreateJob(request, network_delegate);
 }
 

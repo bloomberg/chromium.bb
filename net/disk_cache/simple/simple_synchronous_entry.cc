@@ -299,7 +299,7 @@ SimpleStreamPrefetchData::~SimpleStreamPrefetchData() = default;
 
 SimpleEntryCreationResults::SimpleEntryCreationResults(
     SimpleEntryStat entry_stat)
-    : sync_entry(NULL),
+    : sync_entry(nullptr),
       entry_stat(entry_stat),
       result(net::OK),
       created(false) {}
@@ -366,7 +366,7 @@ void SimpleSynchronousEntry::OpenEntry(
   if (out_results->result != net::OK) {
     sync_entry->Doom();
     delete sync_entry;
-    out_results->sync_entry = NULL;
+    out_results->sync_entry = nullptr;
     out_results->stream_prefetch_data[0].data = nullptr;
     out_results->stream_prefetch_data[1].data = nullptr;
     return;
@@ -401,7 +401,7 @@ void SimpleSynchronousEntry::CreateEntry(
     if (out_results->result != net::ERR_FILE_EXISTS)
       sync_entry->Doom();
     delete sync_entry;
-    out_results->sync_entry = NULL;
+    out_results->sync_entry = nullptr;
     return;
   }
   out_results->sync_entry = sync_entry;

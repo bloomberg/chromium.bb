@@ -312,8 +312,8 @@ class TransactionHelper {
   }
 
   void Cancel() {
-    ASSERT_TRUE(transaction_.get() != NULL);
-    transaction_.reset(NULL);
+    ASSERT_TRUE(transaction_.get() != nullptr);
+    transaction_.reset(nullptr);
   }
 
   void OnTransactionComplete(DnsTransaction* t,
@@ -339,7 +339,7 @@ class TransactionHelper {
 
     if (expected_answer_count_ >= 0) {
       ASSERT_THAT(rv, IsOk());
-      ASSERT_TRUE(response != NULL);
+      ASSERT_TRUE(response != nullptr);
       EXPECT_EQ(static_cast<unsigned>(expected_answer_count_),
                 response->answer_count());
       EXPECT_EQ(qtype_, response->qtype());
@@ -593,7 +593,7 @@ class DnsTransactionTestBase : public testing::Test {
         DnsSocketPool::CreateNull(socket_factory_.get(),
                                   base::Bind(base::RandInt)),
         base::Bind(&DnsTransactionTestBase::GetNextId, base::Unretained(this)),
-        NULL /* NetLog */);
+        nullptr /* NetLog */);
     transaction_factory_ = DnsTransactionFactory::CreateFactory(session_.get());
   }
 
@@ -982,7 +982,7 @@ TEST_F(DnsTransactionTest, DestroyFactory) {
   helper0.StartTransaction(transaction_factory_.get());
 
   // Destroying the client does not affect running requests.
-  transaction_factory_.reset(NULL);
+  transaction_factory_.reset(nullptr);
 
   base::RunLoop().RunUntilIdle();
 

@@ -54,7 +54,7 @@ class MockDhcpPacFileAdapterFetcher : public DhcpPacFileAdapterFetcher {
 
   void Cancel() override {
     DhcpPacFileAdapterFetcher::Cancel();
-    fetcher_ = NULL;
+    fetcher_ = nullptr;
   }
 
   std::unique_ptr<PacFileFetcher> ImplCreateScriptFetcher() override {
@@ -116,7 +116,7 @@ class MockDhcpPacFileAdapterFetcher : public DhcpPacFileAdapterFetcher {
     // the simple approach currently used in ImplCreateScriptFetcher above).
     DCHECK(fetcher_ && fetcher_->has_pending_request());
     fetcher_->NotifyFetchCompletion(fetcher_result_, pac_script_);
-    fetcher_ = NULL;
+    fetcher_ = nullptr;
   }
 
   bool IsWaitingForFetcher() const {

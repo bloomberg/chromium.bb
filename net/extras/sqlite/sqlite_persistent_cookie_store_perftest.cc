@@ -87,7 +87,7 @@ class SQLitePersistentCookieStorePerfTest : public testing::Test {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     store_ = new SQLitePersistentCookieStore(
         temp_dir_.GetPath().Append(cookie_filename), client_task_runner_,
-        background_task_runner_, false, NULL);
+        background_task_runner_, false, nullptr);
     std::vector<CanonicalCookie*> cookies;
     Load();
     ASSERT_EQ(0u, cookies_.size());
@@ -99,14 +99,14 @@ class SQLitePersistentCookieStorePerfTest : public testing::Test {
     }
     // Replace the store effectively destroying the current one and forcing it
     // to write its data to disk.
-    store_ = NULL;
+    store_ = nullptr;
 
     // Flush TaskScheduler tasks, causing pending commits to run.
     scoped_task_environment_.RunUntilIdle();
 
     store_ = new SQLitePersistentCookieStore(
         temp_dir_.GetPath().Append(cookie_filename), client_task_runner_,
-        background_task_runner_, false, NULL);
+        background_task_runner_, false, nullptr);
   }
 
   // Pick a random cookie out of the 15000 in the store and return it.
@@ -120,9 +120,7 @@ class SQLitePersistentCookieStorePerfTest : public testing::Test {
     return CookieFromIndices(domain, cookie_num);
   }
 
-  void TearDown() override {
-    store_ = NULL;
-  }
+  void TearDown() override { store_ = nullptr; }
 
   void StartPerfMeasurement() {
     DCHECK(perf_measurement_start_.is_null());

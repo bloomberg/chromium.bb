@@ -205,7 +205,7 @@ class SpdyProxyClientSocketTest : public PlatformTest,
 };
 
 SpdyProxyClientSocketTest::SpdyProxyClientSocketTest()
-    : read_buf_(NULL),
+    : read_buf_(nullptr),
       connect_data_(SYNCHRONOUS, OK),
       user_agent_(kUserAgent),
       url_(kRequestUrl),
@@ -280,7 +280,7 @@ void SpdyProxyClientSocketTest::Initialize(base::span<const MockRead> reads,
       CreateStreamSynchronously(
           SPDY_BIDIRECTIONAL_STREAM, spdy_session_, url_, LOWEST,
           net_log_.bound()));
-  ASSERT_TRUE(spdy_stream.get() != NULL);
+  ASSERT_TRUE(spdy_stream.get() != nullptr);
 
   // Create the SpdyProxyClientSocket.
   sock_ = std::make_unique<SpdyProxyClientSocket>(
@@ -313,7 +313,7 @@ void SpdyProxyClientSocketTest::AssertConnectFails(int result) {
 
 void SpdyProxyClientSocketTest::AssertConnectionEstablished() {
   const HttpResponseInfo* response = sock_->GetConnectResponseInfo();
-  ASSERT_TRUE(response != NULL);
+  ASSERT_TRUE(response != nullptr);
   ASSERT_EQ(200, response->headers->response_code());
 }
 
@@ -528,7 +528,7 @@ TEST_P(SpdyProxyClientSocketTest, ConnectWithAuthRequested) {
   AssertConnectFails(ERR_PROXY_AUTH_REQUESTED);
 
   const HttpResponseInfo* response = sock_->GetConnectResponseInfo();
-  ASSERT_TRUE(response != NULL);
+  ASSERT_TRUE(response != nullptr);
   ASSERT_EQ(407, response->headers->response_code());
 }
 
@@ -569,7 +569,7 @@ TEST_P(SpdyProxyClientSocketTest, ConnectRedirects) {
   AssertConnectFails(ERR_HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT);
 
   const HttpResponseInfo* response = sock_->GetConnectResponseInfo();
-  ASSERT_TRUE(response != NULL);
+  ASSERT_TRUE(response != nullptr);
 
   const HttpResponseHeaders* headers = response->headers.get();
   ASSERT_EQ(302, headers->response_code());
@@ -1166,10 +1166,10 @@ TEST_P(SpdyProxyClientSocketTest, ReadOnDisconnectSocketReturnsNotConnected) {
 
   if (use_read_if_ready()) {
     ASSERT_EQ(ERR_SOCKET_NOT_CONNECTED,
-              sock_->ReadIfReady(NULL, 1, CompletionOnceCallback()));
+              sock_->ReadIfReady(nullptr, 1, CompletionOnceCallback()));
   } else {
     ASSERT_EQ(ERR_SOCKET_NOT_CONNECTED,
-              sock_->Read(NULL, 1, CompletionOnceCallback()));
+              sock_->Read(nullptr, 1, CompletionOnceCallback()));
   }
 
   // Let the RST_STREAM write while |rst| is in-scope.
@@ -1202,11 +1202,11 @@ TEST_P(SpdyProxyClientSocketTest, ReadOnClosedSocketReturnsBufferedData) {
   ASSERT_EQ(kLen1, sock_->Read(buf.get(), kLen1, CompletionOnceCallback()));
   ASSERT_EQ(std::string(kMsg1, kLen1), std::string(buf->data(), kLen1));
 
-  ASSERT_EQ(0, sock_->Read(NULL, 1, CompletionOnceCallback()));
-  ASSERT_EQ(0, sock_->Read(NULL, 1, CompletionOnceCallback()));
+  ASSERT_EQ(0, sock_->Read(nullptr, 1, CompletionOnceCallback()));
+  ASSERT_EQ(0, sock_->Read(nullptr, 1, CompletionOnceCallback()));
   sock_->Disconnect();
   ASSERT_EQ(ERR_SOCKET_NOT_CONNECTED,
-            sock_->Read(NULL, 1, CompletionOnceCallback()));
+            sock_->Read(nullptr, 1, CompletionOnceCallback()));
 }
 
 // Calling Write() on a closed socket is an error
@@ -1484,7 +1484,7 @@ class DeleteSockCallback : public TestCompletionCallbackBase {
 
  private:
   void OnComplete(int result) {
-    sock_->reset(NULL);
+    sock_->reset(nullptr);
     SetResult(result);
   }
 

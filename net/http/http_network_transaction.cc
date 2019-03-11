@@ -102,7 +102,7 @@ HttpNetworkTransaction::HttpNetworkTransaction(RequestPriority priority,
       io_callback_(base::BindRepeating(&HttpNetworkTransaction::OnIOComplete,
                                        base::Unretained(this))),
       session_(session),
-      request_(NULL),
+      request_(nullptr),
       priority_(priority),
       headers_valid_(false),
       can_send_early_data_(false),
@@ -119,7 +119,7 @@ HttpNetworkTransaction::HttpNetworkTransaction(RequestPriority priority,
       establishing_tunnel_(false),
       enable_ip_based_pooling_(true),
       enable_alternative_services_(true),
-      websocket_handshake_stream_base_create_helper_(NULL),
+      websocket_handshake_stream_base_create_helper_(nullptr),
       net_error_details_(),
       retry_attempts_(0),
       num_restarts_(0),
@@ -275,14 +275,14 @@ int HttpNetworkTransaction::RestartWithAuth(const AuthCredentials& credentials,
     // In this case, we've gathered credentials for use with proxy
     // authentication of a tunnel.
     DCHECK_EQ(STATE_CREATE_STREAM_COMPLETE, next_state_);
-    DCHECK(stream_request_ != NULL);
-    auth_controllers_[target] = NULL;
+    DCHECK(stream_request_ != nullptr);
+    auth_controllers_[target] = nullptr;
     ResetStateForRestart();
     rv = stream_request_->RestartTunnelWithProxyAuth();
   } else {
     // In this case, we've gathered credentials for the server or the proxy
     // but it is not during the tunneling phase.
-    DCHECK(stream_request_ == NULL);
+    DCHECK(stream_request_ == nullptr);
     PrepareForAuthRestart(target);
     rv = DoLoop(OK);
     // Note: If an error is encountered while draining the old response body, no
@@ -335,7 +335,7 @@ void HttpNetworkTransaction::DidDrainBodyForAuthRestart(bool keep_alive) {
   if (stream_.get()) {
     total_received_bytes_ += stream_->GetTotalReceivedBytes();
     total_sent_bytes_ += stream_->GetTotalSentBytes();
-    HttpStream* new_stream = NULL;
+    HttpStream* new_stream = nullptr;
     if (keep_alive && stream_->CanReuseConnection()) {
       // We should call connection_->set_idle_time(), but this doesn't occur
       // often enough to be worth the trouble.
@@ -1279,7 +1279,7 @@ int HttpNetworkTransaction::DoReadHeadersComplete(int result) {
 int HttpNetworkTransaction::DoReadBody() {
   DCHECK(read_buf_.get());
   DCHECK_GT(read_buf_len_, 0);
-  DCHECK(stream_ != NULL);
+  DCHECK(stream_ != nullptr);
 
   next_state_ = STATE_READ_BODY_COMPLETE;
   return stream_->ReadResponseBody(
@@ -1329,7 +1329,7 @@ int HttpNetworkTransaction::DoReadBodyComplete(int result) {
   }
 
   // Clear these to avoid leaving around old state.
-  read_buf_ = NULL;
+  read_buf_ = nullptr;
   read_buf_len_ = 0;
 
   return result;
@@ -1736,7 +1736,7 @@ void HttpNetworkTransaction::ResetStateForAuthRestart() {
   send_end_time_ = base::TimeTicks();
 
   pending_auth_target_ = HttpAuth::AUTH_NONE;
-  read_buf_ = NULL;
+  read_buf_ = nullptr;
   read_buf_len_ = 0;
   headers_valid_ = false;
   request_headers_.Clear();
@@ -1763,7 +1763,7 @@ HttpResponseHeaders* HttpNetworkTransaction::GetResponseHeaders() const {
 
 bool HttpNetworkTransaction::ShouldResendRequest() const {
   bool connection_is_proven = stream_->IsConnectionReused();
-  bool has_received_headers = GetResponseHeaders() != NULL;
+  bool has_received_headers = GetResponseHeaders() != nullptr;
 
   // NOTE: we resend a request only if we reused a keep-alive connection.
   // This automatically prevents an infinite resend loop because we'll run

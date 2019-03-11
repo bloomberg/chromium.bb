@@ -38,15 +38,15 @@ ScopedURLFetcherFactory::ScopedURLFetcherFactory(
 ScopedURLFetcherFactory::~ScopedURLFetcherFactory() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(URLFetcherImpl::factory());
-  URLFetcherImpl::set_factory(NULL);
+  URLFetcherImpl::set_factory(nullptr);
 }
 
 TestURLFetcher::TestURLFetcher(int id, const GURL& url, URLFetcherDelegate* d)
-    : owner_(NULL),
+    : owner_(nullptr),
       id_(id),
       original_url_(url),
       delegate_(d),
-      delegate_for_tests_(NULL),
+      delegate_for_tests_(nullptr),
       did_receive_last_chunk_(false),
       fake_load_flags_(0),
       fake_response_code_(-1),
@@ -328,9 +328,8 @@ void TestURLFetcher::SetResponseFilePath(const base::FilePath& path) {
 
 TestURLFetcherFactory::TestURLFetcherFactory()
     : ScopedURLFetcherFactory(this),
-      delegate_for_tests_(NULL),
-      remove_fetcher_on_delete_(false) {
-}
+      delegate_for_tests_(nullptr),
+      remove_fetcher_on_delete_(false) {}
 
 TestURLFetcherFactory::~TestURLFetcherFactory() = default;
 
@@ -452,10 +451,10 @@ std::unique_ptr<URLFetcher> FakeURLFetcherFactory::CreateURLFetcher(
     NetworkTrafficAnnotationTag traffic_annotation) {
   FakeResponseMap::const_iterator it = fake_responses_.find(url);
   if (it == fake_responses_.end()) {
-    if (default_factory_ == NULL) {
+    if (default_factory_ == nullptr) {
       // If we don't have a baked response for that URL we return NULL.
       DLOG(ERROR) << "No baked response for URL: " << url.spec();
-      return NULL;
+      return nullptr;
     } else {
       return default_factory_->CreateURLFetcher(id, url, request_type, d,
                                                 traffic_annotation);

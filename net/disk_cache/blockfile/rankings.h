@@ -81,7 +81,7 @@ class Rankings {
     }
 
     // scoped_ptr::reset will delete the object.
-    void reset(CacheRankingsBlock* p = NULL) {
+    void reset(CacheRankingsBlock* p = nullptr) {
       if (p != get())
         rankings_->FreeRankingsBlock(get());
       std::unique_ptr<CacheRankingsBlock>::reset(p);

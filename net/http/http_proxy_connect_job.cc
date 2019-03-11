@@ -147,8 +147,8 @@ HttpProxySocketParams::HttpProxySocketParams(
       spdy_session_pool_(spdy_session_pool),
       quic_stream_factory_(quic_stream_factory),
       endpoint_(endpoint),
-      http_auth_cache_(tunnel ? http_auth_cache : NULL),
-      http_auth_handler_factory_(tunnel ? http_auth_handler_factory : NULL),
+      http_auth_cache_(tunnel ? http_auth_cache : nullptr),
+      http_auth_handler_factory_(tunnel ? http_auth_handler_factory : nullptr),
       is_trusted_proxy_(is_trusted_proxy),
       tunnel_(tunnel),
       traffic_annotation_(traffic_annotation) {

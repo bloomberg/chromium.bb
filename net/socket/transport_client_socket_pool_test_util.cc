@@ -371,7 +371,7 @@ MockTransportClientSocketFactory::MockTransportClientSocketFactory(
     : net_log_(net_log),
       allocation_count_(0),
       client_socket_type_(MOCK_CLIENT_SOCKET),
-      client_socket_types_(NULL),
+      client_socket_types_(nullptr),
       client_socket_index_(0),
       client_socket_index_max_(0),
       delay_(base::TimeDelta::FromMilliseconds(

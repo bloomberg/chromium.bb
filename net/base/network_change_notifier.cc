@@ -47,10 +47,10 @@ namespace {
 // in ways that would require us to place locks around access to this object.
 // (The prohibition on global non-POD objects makes it tricky to do such a thing
 // anyway.)
-NetworkChangeNotifier* g_network_change_notifier = NULL;
+NetworkChangeNotifier* g_network_change_notifier = nullptr;
 
 // Class factory singleton.
-NetworkChangeNotifierFactory* g_network_change_notifier_factory = NULL;
+NetworkChangeNotifierFactory* g_network_change_notifier_factory = nullptr;
 
 class MockNetworkChangeNotifier : public NetworkChangeNotifier {
  public:
@@ -183,7 +183,7 @@ class NetworkChangeNotifier::NetworkChangeCalculator
 NetworkChangeNotifier::~NetworkChangeNotifier() {
   network_change_calculator_.reset();
   DCHECK_EQ(this, g_network_change_notifier);
-  g_network_change_notifier = NULL;
+  g_network_change_notifier = nullptr;
 }
 
 // static
@@ -864,7 +864,7 @@ void NetworkChangeNotifier::NotifyObserversOfSpecificNetworkChangeImpl(
 NetworkChangeNotifier::DisableForTest::DisableForTest()
     : network_change_notifier_(g_network_change_notifier) {
   DCHECK(g_network_change_notifier);
-  g_network_change_notifier = NULL;
+  g_network_change_notifier = nullptr;
 }
 
 NetworkChangeNotifier::DisableForTest::~DisableForTest() {

@@ -386,7 +386,7 @@ TEST_F(SOCKSClientSocketTest, DisconnectWhileHostResolveInProgress) {
   MockRead data_reads[] = { MockRead(SYNCHRONOUS, "", 0) };
 
   user_sock_ = BuildMockSocket(data_reads, data_writes, hanging_resolver.get(),
-                               "foo", 80, NULL);
+                               "foo", 80, nullptr);
 
   // Start connecting (will get stuck waiting for the host to resolve).
   int rv = user_sock_->Connect(callback_.callback());
@@ -410,7 +410,7 @@ TEST_F(SOCKSClientSocketTest, NoIPv6) {
   const char kHostName[] = "::1";
 
   user_sock_ = BuildMockSocket(base::span<MockRead>(), base::span<MockWrite>(),
-                               host_resolver_.get(), kHostName, 80, NULL);
+                               host_resolver_.get(), kHostName, 80, nullptr);
 
   EXPECT_EQ(ERR_NAME_NOT_RESOLVED,
             callback_.GetResult(user_sock_->Connect(callback_.callback())));
@@ -421,10 +421,10 @@ TEST_F(SOCKSClientSocketTest, NoIPv6RealResolver) {
   const char kHostName[] = "::1";
 
   std::unique_ptr<HostResolver> host_resolver(
-      HostResolver::CreateSystemResolver(HostResolver::Options(), NULL));
+      HostResolver::CreateSystemResolver(HostResolver::Options(), nullptr));
 
   user_sock_ = BuildMockSocket(base::span<MockRead>(), base::span<MockWrite>(),
-                               host_resolver.get(), kHostName, 80, NULL);
+                               host_resolver.get(), kHostName, 80, nullptr);
 
   EXPECT_EQ(ERR_NAME_NOT_RESOLVED,
             callback_.GetResult(user_sock_->Connect(callback_.callback())));

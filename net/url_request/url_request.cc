@@ -211,7 +211,7 @@ const UploadDataStream* URLRequest::get_upload() const {
 }
 
 bool URLRequest::has_upload() const {
-  return upload_data_stream_.get() != NULL;
+  return upload_data_stream_.get() != nullptr;
 }
 
 void URLRequest::SetExtraRequestHeaderByName(const string& name,
@@ -1186,7 +1186,7 @@ void URLRequest::NotifyRequestCompleted() {
   is_redirecting_ = false;
   has_notified_completion_ = true;
   if (network_delegate_)
-    network_delegate_->NotifyCompleted(this, job_.get() != NULL,
+    network_delegate_->NotifyCompleted(this, job_.get() != nullptr,
                                        status_.error());
 }
 
