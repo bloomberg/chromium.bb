@@ -5,6 +5,7 @@
 #include "ui/views/focus/focus_search.h"
 
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/view.h"
