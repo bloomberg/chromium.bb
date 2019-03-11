@@ -2497,14 +2497,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kCloudPrinterHandler)},
 #endif
 #if defined(OS_ANDROID)
-    {"concurrent-background-loading-on-svelte",
-     flag_descriptions::kOfflinePagesSvelteConcurrentLoadingName,
-     flag_descriptions::kOfflinePagesSvelteConcurrentLoadingDescription,
-     kOsAndroid,
-     FEATURE_VALUE_TYPE(
-         offline_pages::kOfflinePagesSvelteConcurrentLoadingFeature)},
-#endif  // !defined(OS_ANDROID)
-#if defined(OS_ANDROID)
     {"video-fullscreen-orientation-lock",
      flag_descriptions::kVideoFullscreenOrientationLockName,
      flag_descriptions::kVideoFullscreenOrientationLockDescription, kOsAndroid,

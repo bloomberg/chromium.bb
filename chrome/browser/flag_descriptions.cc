@@ -2558,13 +2558,6 @@ const char kOfflinePagesShowAlternateDinoPageDescription[] =
     "Enables the dino page to show more buttons and offer existing offline "
     "content.";
 
-const char kOfflinePagesSvelteConcurrentLoadingName[] =
-    "Enables concurrent background loading on svelte.";
-const char kOfflinePagesSvelteConcurrentLoadingDescription[] =
-    "Enables concurrent background loading (or downloading) of pages on "
-    "Android svelte (512MB RAM) devices. Otherwise, background loading will "
-    "happen when the svelte device is idle.";
-
 const char kOffliningRecentPagesName[] =
     "Enable offlining of recently visited pages";
 const char kOffliningRecentPagesDescription[] =

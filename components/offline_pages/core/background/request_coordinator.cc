@@ -700,8 +700,7 @@ RequestCoordinator::TryImmediateStart(
     return OfflinerImmediateStartStatus::BUSY;
 
   // Make sure we are not on svelte device to start immediately.
-  if (is_low_end_device_ &&
-      !offline_pages::IsOfflinePagesSvelteConcurrentLoadingEnabled()) {
+  if (is_low_end_device_) {
     DVLOG(2) << "low end device, returning";
     // Let the scheduler know we are done processing and failed due to svelte.
     callback.Run(false);

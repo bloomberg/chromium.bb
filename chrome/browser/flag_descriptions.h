@@ -1508,9 +1508,6 @@ extern const char kOfflinePagesLivePageSharingDescription[];
 extern const char kOfflinePagesShowAlternateDinoPageName[];
 extern const char kOfflinePagesShowAlternateDinoPageDescription[];
 
-extern const char kOfflinePagesSvelteConcurrentLoadingName[];
-extern const char kOfflinePagesSvelteConcurrentLoadingDescription[];
-
 extern const char kOffliningRecentPagesName[];
 extern const char kOffliningRecentPagesDescription[];
 
