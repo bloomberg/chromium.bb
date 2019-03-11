@@ -154,9 +154,7 @@ ApplicationContext::GetSharedURLLoaderFactory() {
 network::mojom::NetworkContext* ApplicationContext::GetSystemNetworkContext() {
   if (!network_context_) {
     network_context_owner_ = std::make_unique<web::NetworkContextOwner>(
-        GetSystemURLRequestContext(),
-        /*cors_exempt_header_list=*/std::vector<std::string>(),
-        &network_context_);
+        GetSystemURLRequestContext(), &network_context_);
   }
   return network_context_.get();
 }

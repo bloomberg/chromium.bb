@@ -217,8 +217,7 @@ GCMConnectionHandlerImplTest::GCMConnectionHandlerImplTest()
 
   network_context_ = std::make_unique<network::NetworkContext>(
       network_service_.get(), mojo::MakeRequest(&network_context_ptr_),
-      &url_request_context_,
-      /*cors_exempt_header_list=*/std::vector<std::string>());
+      &url_request_context_);
 }
 
 GCMConnectionHandlerImplTest::~GCMConnectionHandlerImplTest() {

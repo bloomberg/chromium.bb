@@ -263,8 +263,7 @@ class SignedExchangeHandlerTest
     url_request_context_ = std::move(context);
     network_context_ = std::make_unique<network::NetworkContext>(
         nullptr, mojo::MakeRequest(&network_context_ptr_),
-        url_request_context_.get(),
-        /*cors_exempt_header_list=*/std::vector<std::string>());
+        url_request_context_.get());
     SignedExchangeHandler::SetNetworkContextForTesting(network_context_.get());
 
     handler_ = std::make_unique<SignedExchangeHandler>(

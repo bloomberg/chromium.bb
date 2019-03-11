@@ -25,7 +25,6 @@ include_rules = [
   "+components/tracing",
   "+components/ukm",
   "+components/url_formatter",
-  "+components/variations/net/variations_http_headers.h",
   "+components/viz",
   "+components/cbor",
 

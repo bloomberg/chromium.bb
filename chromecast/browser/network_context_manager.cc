@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/task/post_task.h"
-#include "components/variations/net/variations_http_headers.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_service_instance.h"
@@ -50,13 +49,9 @@ void NetworkContextManager::InitializeOnIOThread() {
   network::NetworkService* network_service =
       network_service_for_test_ ? network_service_for_test_.get()
                                 : content::GetNetworkServiceImpl();
-  network::mojom::NetworkContextParamsPtr network_context_params =
-      network::mojom::NetworkContextParams::New();
-  variations::UpdateCorsExemptHeaderForVariations(network_context_params.get());
   network_context_ = std::make_unique<network::NetworkContext>(
       network_service, mojo::MakeRequest(&network_context_ptr_),
-      url_request_context_getter_->GetURLRequestContext(),
-      network_context_params->cors_exempt_header_list);
+      url_request_context_getter_->GetURLRequestContext());
 }
 
 void NetworkContextManager::BindRequestOnIOThread(

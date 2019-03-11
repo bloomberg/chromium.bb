@@ -167,7 +167,6 @@ cast_source_set("browser") {
     "//components/metrics",
     "//components/metrics:gpu",
     "//components/metrics:net",
-    "//components/variations/net",
 
     # TODO(gfhuang): Eliminate this dependency if ScreenInfoMetricsProvider
     # isn't needed. crbug.com/541577
@@ -403,7 +402,6 @@ cast_source_set("network_context_manager") {
 
   deps = [
     "//base",
-    "//components/variations/net",
     "//content/public/browser",
     "//net",
     "//services/network:network_service",

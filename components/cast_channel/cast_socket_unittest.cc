@@ -389,8 +389,7 @@ class CastSocketTestBase : public testing::Test {
     url_request_context_.Init();
     network_context_ = std::make_unique<network::NetworkContext>(
         nullptr, mojo::MakeRequest(&network_context_ptr_),
-        &url_request_context_,
-        /*cors_exempt_header_list=*/std::vector<std::string>());
+        &url_request_context_);
   }
 
   // Runs all pending tasks in the message loop.
