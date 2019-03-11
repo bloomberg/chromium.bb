@@ -572,11 +572,12 @@ public class ClearBrowsingDataPreferencesTest {
         Tab[] frozen = new Tab[1];
         WebContents[] restored = new WebContents[1];
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            TabState state = tab.getState();
+            TabState state = TabState.from(tab);
             mActivityTestRule.getActivity().getCurrentTabModel().closeTab(tab);
             frozen[0] = mActivityTestRule.getActivity().getCurrentTabCreator().createFrozenTab(
                     state, tab.getId(), 1);
-            restored[0] = frozen[0].getState().contentsState.restoreContentsFromByteBuffer(false);
+            restored[0] =
+                    TabState.from(frozen[0]).contentsState.restoreContentsFromByteBuffer(false);
         });
 
         // Check content of frozen state.
@@ -594,7 +595,8 @@ public class ClearBrowsingDataPreferencesTest {
 
         // Check that frozen state was cleaned up.
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            restored[0] = frozen[0].getState().contentsState.restoreContentsFromByteBuffer(false);
+            restored[0] =
+                    TabState.from(frozen[0]).contentsState.restoreContentsFromByteBuffer(false);
         });
         controller = restored[0].getNavigationController();
         assertEquals(0, controller.getLastCommittedEntryIndex());
