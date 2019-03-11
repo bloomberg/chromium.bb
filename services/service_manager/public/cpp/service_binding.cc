@@ -174,8 +174,7 @@ void ServiceBinding::OnBindInterface(
     return;
   }
 
-  service_->OnBindInterface(source_info, interface_name,
-                            std::move(interface_pipe));
+  service_->OnConnect(source_info, interface_name, std::move(interface_pipe));
 }
 
 }  // namespace service_manager
