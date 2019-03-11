@@ -49,6 +49,7 @@ mojom("mojom_platform") {
     "frame/frame_host_test_interface.mojom",
     "frame/lifecycle.mojom",
     "frame/navigation_initiator.mojom",
+    "keyboard_lock/keyboard_lock.mojom",
     "leak_detector/leak_detector.mojom",
     "loader/code_cache.mojom",
     "loader/navigation_predictor.mojom",
