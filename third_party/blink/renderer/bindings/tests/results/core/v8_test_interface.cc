@@ -40,6 +40,7 @@
 #include "third_party/blink/renderer/platform/bindings/v8_object_constructor.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_context_data.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/scheduler/public/cooperative_scheduling_manager.h"
 #include "third_party/blink/renderer/platform/wtf/get_ptr.h"
 
 namespace blink {
@@ -1811,6 +1812,8 @@ static void OverloadMethodWithExposedAndRuntimeEnabledFlag3Method(const v8::Func
 }
 
 static void OverloadMethodWithExposedAndRuntimeEnabledFlagMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  scheduler::CooperativeSchedulingManager::Instance()->Safepoint();
+
   bool is_arity_error = false;
 
   switch (std::min(1, info.Length())) {
@@ -1953,6 +1956,8 @@ static void OverloadMethodWithUnionTypeWithStringMember2Method(const v8::Functio
 }
 
 static void OverloadMethodWithUnionTypeWithStringMemberMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  scheduler::CooperativeSchedulingManager::Instance()->Safepoint();
+
   bool is_arity_error = false;
 
   switch (std::min(1, info.Length())) {
@@ -2280,6 +2285,8 @@ static void PartialSecureContextWorkerExposedRuntimeEnabledMethodMethod(const v8
 }
 
 static void VoidMethodPartialOverloadMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  scheduler::CooperativeSchedulingManager::Instance()->Safepoint();
+
   switch (std::min(1, info.Length())) {
     case 0:
       if (true) {
@@ -2304,6 +2311,8 @@ static void VoidMethodPartialOverloadMethod(const v8::FunctionCallbackInfo<v8::V
 }
 
 static void StaticVoidMethodPartialOverloadMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  scheduler::CooperativeSchedulingManager::Instance()->Safepoint();
+
   switch (std::min(1, info.Length())) {
     case 0:
       if (true) {
@@ -2320,6 +2329,8 @@ static void StaticVoidMethodPartialOverloadMethod(const v8::FunctionCallbackInfo
 }
 
 static void PromiseMethodPartialOverloadMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  scheduler::CooperativeSchedulingManager::Instance()->Safepoint();
+
   switch (std::min(1, info.Length())) {
     case 0:
       if (true) {
@@ -2340,6 +2351,8 @@ static void PromiseMethodPartialOverloadMethod(const v8::FunctionCallbackInfo<v8
 }
 
 static void StaticPromiseMethodPartialOverloadMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  scheduler::CooperativeSchedulingManager::Instance()->Safepoint();
+
   switch (std::min(1, info.Length())) {
     case 0:
       if (true) {
@@ -2356,6 +2369,8 @@ static void StaticPromiseMethodPartialOverloadMethod(const v8::FunctionCallbackI
 }
 
 static void Partial2VoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  scheduler::CooperativeSchedulingManager::Instance()->Safepoint();
+
   switch (std::min(1, info.Length())) {
     case 0:
       if (true) {
@@ -2372,6 +2387,8 @@ static void Partial2VoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& 
 }
 
 static void Partial2StaticVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  scheduler::CooperativeSchedulingManager::Instance()->Safepoint();
+
   switch (std::min(1, info.Length())) {
     case 0:
       if (true) {

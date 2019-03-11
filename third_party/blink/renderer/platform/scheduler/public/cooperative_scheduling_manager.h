@@ -35,20 +35,42 @@ class PLATFORM_EXPORT CooperativeSchedulingManager {
   static CooperativeSchedulingManager* Instance();
 
   CooperativeSchedulingManager();
+  virtual ~CooperativeSchedulingManager() = default;
 
   // Returns true if the C++ stack has been whitelisted for reentry.
   bool InWhitelistedStackScope() const {
     return whitelisted_stack_scope_depth_ > 0;
   }
 
+  // Calls to this should be inserted where nested loops can be run safely.
+  // Typically this is is where Blink has not modified any global state that the
+  // nested code could touch.
+  void Safepoint();
+
+ protected:
+  virtual void RunNestedLoop();
+
  private:
   void EnterWhitelistedStackScope();
   void LeaveWhitelistedStackScope();
+  void SafepointSlow();
 
   int whitelisted_stack_scope_depth_ = 0;
+  bool running_nested_loop_ = false;
+  WTF::TimeTicks wait_until_;
 
   DISALLOW_COPY_AND_ASSIGN(CooperativeSchedulingManager);
 };
+
+inline void CooperativeSchedulingManager::Safepoint() {
+  if (!InWhitelistedStackScope())
+    return;
+
+  if (WTF::CurrentTimeTicks() < wait_until_)
+    return;
+
+  SafepointSlow();
+}
 
 }  // namespace scheduler
 }  // namespace blink
