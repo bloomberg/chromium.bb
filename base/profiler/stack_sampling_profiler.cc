@@ -626,15 +626,6 @@ void StackSamplingProfiler::TestPeer::PerformSamplingThreadIdleShutdown(
 void StackSamplingProfiler::ProfileBuilder::RecordMetadata() {}
 
 StackSamplingProfiler::StackSamplingProfiler(
-    const SamplingParams& params,
-    std::unique_ptr<ProfileBuilder> profile_builder,
-    NativeStackSamplerTestDelegate* test_delegate)
-    : StackSamplingProfiler(PlatformThread::CurrentId(),
-                            params,
-                            std::move(profile_builder),
-                            test_delegate) {}
-
-StackSamplingProfiler::StackSamplingProfiler(
     PlatformThreadId thread_id,
     const SamplingParams& params,
     std::unique_ptr<ProfileBuilder> profile_builder,
