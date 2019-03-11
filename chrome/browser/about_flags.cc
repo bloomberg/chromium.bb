@@ -3089,11 +3089,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kImprovedGeoLanguageDataDescription, kOsAll,
      FEATURE_VALUE_TYPE(language::kImprovedGeoLanguageData)},
 
-    {"enable-regional-locales-as-display-ui",
-     flag_descriptions::kRegionalLocalesAsDisplayUIName,
-     flag_descriptions::kRegionalLocalesAsDisplayUIDescription, kOsAll,
-     FEATURE_VALUE_TYPE(translate::kRegionalLocalesAsDisplayUI)},
-
     {"enable-pixel-canvas-recording",
      flag_descriptions::kEnablePixelCanvasRecordingName,
      flag_descriptions::kEnablePixelCanvasRecordingDescription, kOsDesktop,
