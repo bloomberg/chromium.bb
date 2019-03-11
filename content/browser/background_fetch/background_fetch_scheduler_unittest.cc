@@ -23,8 +23,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 
-using ::testing::ElementsAre;
-
 namespace content {
 
 class FakeController : public BackgroundFetchJobController {
@@ -83,6 +81,7 @@ class BackgroundFetchSchedulerTest : public BackgroundFetchTestBase {
 
     scheduler_ = std::make_unique<BackgroundFetchScheduler>(
         data_manager_.get(), nullptr, delegate_proxy_.get(),
+        devtools_context().get(),
         embedded_worker_test_helper()->context_wrapper());
   }
 

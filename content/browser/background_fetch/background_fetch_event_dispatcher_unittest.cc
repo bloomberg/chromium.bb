@@ -29,7 +29,8 @@ const char kExampleUniqueId2[] = "bb48a9fb-c21f-4c2d-a9ae-58bd48a9fb53";
 class BackgroundFetchEventDispatcherTest : public BackgroundFetchTestBase {
  public:
   BackgroundFetchEventDispatcherTest()
-      : event_dispatcher_(embedded_worker_test_helper()->context_wrapper()) {}
+      : event_dispatcher_(embedded_worker_test_helper()->context_wrapper(),
+                          devtools_context().get()) {}
   ~BackgroundFetchEventDispatcherTest() override = default;
 
  protected:

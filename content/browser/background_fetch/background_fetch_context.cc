@@ -33,11 +33,12 @@ using FailureReason = blink::mojom::BackgroundFetchFailureReason;
 BackgroundFetchContext::BackgroundFetchContext(
     BrowserContext* browser_context,
     const scoped_refptr<ServiceWorkerContextWrapper>& service_worker_context,
-    const scoped_refptr<content::CacheStorageContextImpl>&
-        cache_storage_context,
-    scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy)
+    const scoped_refptr<CacheStorageContextImpl>& cache_storage_context,
+    scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
+    scoped_refptr<DevToolsBackgroundServicesContext> devtools_context)
     : browser_context_(browser_context),
       service_worker_context_(service_worker_context),
+      devtools_context_(std::move(devtools_context)),
       registration_notifier_(
           std::make_unique<BackgroundFetchRegistrationNotifier>()),
       delegate_proxy_(browser_context_),
@@ -51,7 +52,7 @@ BackgroundFetchContext::BackgroundFetchContext(
       std::move(quota_manager_proxy));
   scheduler_ = std::make_unique<BackgroundFetchScheduler>(
       data_manager_.get(), registration_notifier_.get(), &delegate_proxy_,
-      service_worker_context_);
+      devtools_context_.get(), service_worker_context_);
 }
 
 BackgroundFetchContext::~BackgroundFetchContext() {
@@ -294,7 +295,7 @@ void BackgroundFetchContext::SetDataManagerForTesting(
   data_manager_ = std::move(data_manager);
   scheduler_ = std::make_unique<BackgroundFetchScheduler>(
       data_manager_.get(), registration_notifier_.get(), &delegate_proxy_,
-      service_worker_context_);
+      devtools_context_.get(), service_worker_context_);
 }
 
 }  // namespace content

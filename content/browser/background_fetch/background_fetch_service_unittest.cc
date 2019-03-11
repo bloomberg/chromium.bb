@@ -89,9 +89,11 @@ std::vector<blink::mojom::FetchAPIRequestPtr> CloneRequestVector(
 
 }  // namespace
 
-class BackgroundFetchServiceTest : public BackgroundFetchTestBase,
-                                   public BackgroundFetchDataManagerObserver,
-                                   public ServiceWorkerContextCoreObserver {
+class BackgroundFetchServiceTest
+    : public BackgroundFetchTestBase,
+      public BackgroundFetchDataManagerObserver,
+      public ServiceWorkerContextCoreObserver,
+      public DevToolsBackgroundServicesContext::EventObserver {
  public:
   BackgroundFetchServiceTest() = default;
   ~BackgroundFetchServiceTest() override = default;
@@ -286,13 +288,14 @@ class BackgroundFetchServiceTest : public BackgroundFetchTestBase,
         browser_context(),
         base::WrapRefCounted(embedded_worker_test_helper()->context_wrapper()),
         /* cache_storage_context= */ nullptr,
-        /* quota_manager_proxy= */ nullptr);
+        /* quota_manager_proxy= */ nullptr, devtools_context());
     context_->SetDataManagerForTesting(
         std::make_unique<BackgroundFetchTestDataManager>(
             browser_context(), storage_partition(),
             embedded_worker_test_helper()->context_wrapper()));
     context_->data_manager_->AddObserver(this);
     embedded_worker_test_helper()->context_wrapper()->AddObserver(this);
+    devtools_context()->AddObserver(this);
 
     context_->InitializeOnIOThread();
     service_ = std::make_unique<BackgroundFetchServiceImpl>(
@@ -306,6 +309,7 @@ class BackgroundFetchServiceTest : public BackgroundFetchTestBase,
 
     service_.reset();
 
+    devtools_context()->RemoveObserver(this);
     embedded_worker_test_helper()->context_wrapper()->RemoveObserver(this);
     context_->data_manager_->RemoveObserver(this);
     context_ = nullptr;
@@ -346,6 +350,12 @@ class BackgroundFetchServiceTest : public BackgroundFetchTestBase,
   MOCK_METHOD2(OnRegistrationDeleted,
                void(int64_t registration_id, const GURL& pattern));
   MOCK_METHOD0(OnStorageWiped, void());
+
+  // DevToolsBackgroundServicesContext::EventObserver implementation.
+  MOCK_METHOD1(OnEventReceived,
+               void(const devtools::proto::BackgroundServiceEvent&));
+  MOCK_METHOD2(OnRecordingStateChanged,
+               void(bool, devtools::proto::BackgroundService));
 
  protected:
   blink::mojom::FetchAPIRequestPtr CreateDefaultRequest() {
@@ -1254,6 +1264,64 @@ TEST_F(BackgroundFetchServiceTest, JobsInitializedOnBrowserRestart) {
     EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
     ASSERT_EQ(developer_ids.size(), 0u);
   }
+}
+
+TEST_F(BackgroundFetchServiceTest,
+       DevToolsContextReceivesBackgroundFetchEvents) {
+  // Allow the DevTools Context to log Background Fetch events.
+  devtools_context()->StartRecording(devtools::proto::BACKGROUND_FETCH);
+
+  // Start a fetch and wait for it to complete.
+  auto* worker =
+      embedded_worker_test_helper()
+          ->AddNewPendingServiceWorker<BackgroundFetchTestServiceWorker>(
+              embedded_worker_test_helper());
+  int64_t service_worker_registration_id = RegisterServiceWorker();
+  ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId,
+            service_worker_registration_id);
+
+  // base::RunLoop that we'll run until the event has been dispatched. If this
+  // test times out, it means that the event could not be dispatched.
+  base::RunLoop event_dispatched_loop;
+  worker->set_fetched_event_closure(event_dispatched_loop.QuitClosure());
+
+  std::vector<blink::mojom::FetchAPIRequestPtr> requests;
+  requests.push_back(CreateRequestWithProvidedResponse(
+      "GET", GURL("https://example.com/funny_cat.txt?id=1"),
+      TestResponseBuilder(200)
+          .SetResponseData("Cat 1")
+          .AddResponseHeader("Content-Type", "text/plain")
+          .AddResponseHeader("X-Cat", "yes")
+          .Build()));
+  requests.push_back(CreateRequestWithProvidedResponse(
+      "GET", GURL("https://example.com/funny_cat.txt?id=2"),
+      TestResponseBuilder(200)
+          .SetResponseData("Cat 2")
+          .AddResponseHeader("Content-Type", "text/plain")
+          .AddResponseHeader("X-Cat", "yes")
+          .Build()));
+
+  // We expect to receive the following events:
+  // 1 Registration + 1 Scheduling
+  // 1 Start + 1 Finish for each request.
+  // 1 Fetch completion (event dispatch).
+  EXPECT_CALL(*this, OnEventReceived(_)).Times(7);
+
+  // Create the registration with the given |requests|.
+  blink::mojom::BackgroundFetchRegistration registration;
+  {
+    auto options = blink::mojom::BackgroundFetchOptions::New();
+    blink::mojom::BackgroundFetchError error;
+
+    // Create the first registration. This must succeed.
+    Fetch(service_worker_registration_id, kExampleDeveloperId,
+          CloneRequestVector(requests), std::move(options), SkBitmap(), &error,
+          &registration);
+    ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
+  }
+
+  // Spin the |event_dispatched_loop| to wait for the dispatched event.
+  event_dispatched_loop.Run();
 }
 
 }  // namespace content
