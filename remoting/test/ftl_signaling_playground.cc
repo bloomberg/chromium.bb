@@ -21,7 +21,7 @@
 #include "base/strings/stringprintf.h"
 #include "remoting/base/fake_oauth_token_getter.h"
 #include "remoting/base/oauth_token_getter_impl.h"
-#include "remoting/signaling/ftl_client.h"
+#include "remoting/signaling/ftl_services.grpc.pb.h"
 #include "remoting/test/test_oauth_token_factory.h"
 #include "remoting/test/test_token_storage.h"
 
@@ -31,6 +31,10 @@ constexpr char kSwitchNameHelp[] = "help";
 constexpr char kSwitchNameAuthCode[] = "code";
 constexpr char kSwitchNameUsername[] = "username";
 constexpr char kSwitchNameStoragePath[] = "storage-path";
+
+constexpr remoting::ftl::FtlCapability::Feature kFtlCapabilities[] = {
+    remoting::ftl::FtlCapability_Feature_RECEIVE_CALLS_FROM_GAIA,
+    remoting::ftl::FtlCapability_Feature_GAIA_REACHABLE};
 
 // Reads a newline-terminated string from stdin.
 std::string ReadString() {
@@ -84,7 +88,7 @@ void FtlSignalingPlayground::StartAndAuthenticate() {
   DCHECK(!storage_);
   DCHECK(!token_getter_factory_);
   DCHECK(!token_getter_);
-  DCHECK(!client_);
+  DCHECK(!ftl_context_);
 
   token_getter_factory_ = std::make_unique<TestOAuthTokenGetterFactory>();
 
@@ -96,13 +100,13 @@ void FtlSignalingPlayground::StartAndAuthenticate() {
 
   std::string access_token = storage_->FetchAccessToken();
   if (access_token.empty()) {
-    AuthenticateAndResetClient();
+    AuthenticateAndResetServices();
   } else {
     VLOG(0) << "Reusing access token: " << access_token;
     token_getter_ = std::make_unique<FakeOAuthTokenGetter>(
         OAuthTokenGetter::Status::SUCCESS, "fake_email@gmail.com",
         access_token);
-    client_ = std::make_unique<FtlClient>(token_getter_.get());
+    ResetServices();
   }
 
   StartLoop();
@@ -140,7 +144,14 @@ void FtlSignalingPlayground::StartLoop() {
   }
 }
 
-void FtlSignalingPlayground::AuthenticateAndResetClient() {
+void FtlSignalingPlayground::ResetServices() {
+  ftl_context_ = std::make_unique<FtlGrpcContext>(token_getter_.get());
+  peer_to_peer_stub_ = PeerToPeer::NewStub(ftl_context_->channel());
+  registration_stub_ = Registration::NewStub(ftl_context_->channel());
+  messaging_stub_ = Messaging::NewStub(ftl_context_->channel());
+}
+
+void FtlSignalingPlayground::AuthenticateAndResetServices() {
   static const std::string read_auth_code_prompt = base::StringPrintf(
       "Please authenticate at:\n\n"
       "  %s\n\n"
@@ -171,7 +182,7 @@ void FtlSignalingPlayground::AuthenticateAndResetClient() {
     run_loop.Run();
   }
 
-  client_ = std::make_unique<FtlClient>(token_getter_.get());
+  ResetServices();
 }
 
 void FtlSignalingPlayground::OnAccessToken(base::OnceClosure on_done,
@@ -198,7 +209,7 @@ void FtlSignalingPlayground::HandleGrpcStatusError(const grpc::Status& status) {
     case grpc::StatusCode::UNAUTHENTICATED:
       VLOG(0) << "Grpc request failed to authenticate. "
               << "Trying to reauthenticate...";
-      AuthenticateAndResetClient();
+      AuthenticateAndResetServices();
       break;
     default:
       break;
@@ -206,11 +217,14 @@ void FtlSignalingPlayground::HandleGrpcStatusError(const grpc::Status& status) {
 }
 
 void FtlSignalingPlayground::GetIceServer(base::OnceClosure on_done) {
-  DCHECK(client_);
-  client_->GetIceServer(
+  DCHECK(peer_to_peer_stub_);
+  VLOG(0) << "Running GetIceServer...";
+  ftl_context_->ExecuteRpc(
+      base::BindOnce(&PeerToPeer::Stub::AsyncGetICEServer,
+                     base::Unretained(peer_to_peer_stub_.get())),
+      ftl::GetICEServerRequest(),
       base::BindOnce(&FtlSignalingPlayground::OnGetIceServerResponse,
                      weak_factory_.GetWeakPtr(), std::move(on_done)));
-  VLOG(0) << "Running GetIceServer...";
 }
 
 void FtlSignalingPlayground::OnGetIceServerResponse(
@@ -241,7 +255,7 @@ void FtlSignalingPlayground::OnGetIceServerResponse(
 }
 
 void FtlSignalingPlayground::SignInGaia(base::OnceClosure on_done) {
-  DCHECK(client_);
+  DCHECK(registration_stub_);
   VLOG(0) << "Running SignInGaia...";
   // TODO(yuweih): Logic should be cleaned up and moved out of the playground.
   std::string device_id = storage_->FetchDeviceId();
@@ -253,8 +267,27 @@ void FtlSignalingPlayground::SignInGaia(base::OnceClosure on_done) {
     VLOG(0) << "Read device_id: " << device_id;
   }
   VLOG(0) << "Using sign_in_gaia_mode: DEFAULT_CREATE_ACCOUNT";
-  client_->SignInGaia(
-      device_id, ftl::SignInGaiaMode_Value_DEFAULT_CREATE_ACCOUNT,
+
+  ftl::SignInGaiaRequest request;
+  request.set_app(FtlGrpcContext::GetChromotingAppIdentifier());
+  request.set_mode(ftl::SignInGaiaMode_Value_DEFAULT_CREATE_ACCOUNT);
+
+  request.mutable_register_data()->mutable_device_id()->set_id(device_id);
+
+  // TODO(yuweih): Consider using different device ID type.
+  request.mutable_register_data()->mutable_device_id()->set_type(
+      ftl::DeviceIdType_Type_WEB_UUID);
+
+  size_t ftl_capability_count =
+      sizeof(kFtlCapabilities) / sizeof(ftl::FtlCapability::Feature);
+  for (size_t i = 0; i < ftl_capability_count; i++) {
+    request.mutable_register_data()->add_caps(kFtlCapabilities[i]);
+  }
+
+  ftl_context_->ExecuteRpc(
+      base::BindOnce(&Registration::Stub::AsyncSignInGaia,
+                     base::Unretained(registration_stub_.get())),
+      request,
       base::BindOnce(&FtlSignalingPlayground::OnSignInGaiaResponse,
                      weak_factory_.GetWeakPtr(), std::move(on_done)));
 }
@@ -275,7 +308,7 @@ void FtlSignalingPlayground::OnSignInGaiaResponse(
         "auth_token.expires_in=%" PRId64 "\n",
         registration_id_base64.c_str(), auth_token_base64.c_str(),
         response.auth_token().expires_in());
-    client_->SetAuthToken(response.auth_token().payload());
+    ftl_context_->SetAuthToken(response.auth_token().payload());
     VLOG(0) << "Auth token set on FtlClient";
   } else {
     HandleGrpcStatusError(status);
@@ -284,9 +317,13 @@ void FtlSignalingPlayground::OnSignInGaiaResponse(
 }
 
 void FtlSignalingPlayground::PullMessages(base::OnceClosure on_done) {
-  DCHECK(client_);
+  DCHECK(messaging_stub_);
   VLOG(0) << "Running PullMessages...";
-  client_->PullMessages(
+
+  ftl_context_->ExecuteRpc(
+      base::BindOnce(&Messaging::Stub::AsyncPullMessages,
+                     base::Unretained(messaging_stub_.get())),
+      ftl::PullMessagesRequest(),
       base::BindOnce(&FtlSignalingPlayground::OnPullMessagesResponse,
                      weak_factory_.GetWeakPtr(), std::move(on_done)));
 }
@@ -305,7 +342,7 @@ void FtlSignalingPlayground::OnPullMessagesResponse(
     return;
   }
 
-  std::vector<ftl::ReceiverMessage> receiver_messages;
+  ftl::AckMessagesRequest ack_request;
   printf("pull_all=%d\n", response.pulled_all());
   for (const auto& message : response.messages()) {
     printf(
@@ -329,23 +366,25 @@ void FtlSignalingPlayground::OnPullMessagesResponse(
       printf("  message(base64)=%s\n", message_base64.c_str());
     }
 
-    ftl::ReceiverMessage receiver_message;
-    receiver_message.set_message_id(message.message_id());
-    receiver_message.set_allocated_receiver_id(
+    ftl::ReceiverMessage* receiver_message = ack_request.add_messages();
+    receiver_message->set_message_id(message.message_id());
+    receiver_message->set_allocated_receiver_id(
         new ftl::Id(message.receiver_id()));
-    receiver_messages.push_back(std::move(receiver_message));
   }
 
-  if (receiver_messages.empty()) {
+  if (ack_request.messages_size() == 0) {
     VLOG(0) << "No message has been received";
     std::move(on_done).Run();
     return;
   }
 
   // TODO(yuweih): Might need retry logic.
-  VLOG(0) << "Acking " << receiver_messages.size() << " messages";
-  client_->AckMessages(
-      receiver_messages,
+  VLOG(0) << "Acking " << ack_request.messages_size() << " messages";
+
+  ftl_context_->ExecuteRpc(
+      base::BindOnce(&Messaging::Stub::AsyncAckMessages,
+                     base::Unretained(messaging_stub_.get())),
+      ack_request,
       base::BindOnce(&FtlSignalingPlayground::OnAckMessagesResponse,
                      weak_factory_.GetWeakPtr(), std::move(on_done)));
 }
