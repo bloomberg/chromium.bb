@@ -367,7 +367,7 @@ const base::Feature kProcessSharingWithStrictSiteInstances{
 // is used by various modules to determine whether special scheduling
 // arrangements need to be made to prioritize certain tasks.
 const base::Feature kPrioritizeBootstrapTasks = {
-    "PrioritizeBootstrapTasks", base::FEATURE_DISABLED_BY_DEFAULT};
+    "PrioritizeBootstrapTasks", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables Purge+Throttle on platforms except Android and MacOS.
 // (Android) Purge+Throttle depends on TabManager, but TabManager doesn't

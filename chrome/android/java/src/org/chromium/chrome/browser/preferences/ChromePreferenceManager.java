@@ -307,7 +307,7 @@ public class ChromePreferenceManager {
 
     /**
      * Whether or not bootstrap tasks should be prioritized (i.e. bootstrap task prioritization
-     * experiment is enabled). Default value is false.
+     * experiment is enabled). Default value is true.
      */
     public static final String PRIORITIZE_BOOTSTRAP_TASKS_KEY = "prioritize_bootstrap_tasks";
 

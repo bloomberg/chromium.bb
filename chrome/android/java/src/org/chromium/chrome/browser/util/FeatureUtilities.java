@@ -600,7 +600,7 @@ public class FeatureUtilities {
             ChromePreferenceManager prefManager = ChromePreferenceManager.getInstance();
 
             sShouldPrioritizeBootstrapTasks = prefManager.readBoolean(
-                    ChromePreferenceManager.PRIORITIZE_BOOTSTRAP_TASKS_KEY, false);
+                    ChromePreferenceManager.PRIORITIZE_BOOTSTRAP_TASKS_KEY, true);
         }
         return sShouldPrioritizeBootstrapTasks;
     }
