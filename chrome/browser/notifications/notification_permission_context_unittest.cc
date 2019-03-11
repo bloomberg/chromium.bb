@@ -473,11 +473,12 @@ TEST_F(NotificationPermissionContextTest, GetNotificationsSettings) {
 
   // The platform isn't guaranteed to return the settings in any particular
   // order, so sort them first.
-  std::sort(
-      settings.begin(), settings.begin() + 4,
-      [](ContentSettingPatternSource& s1, ContentSettingPatternSource& s2) {
-        return s1.primary_pattern.GetHost() < s2.primary_pattern.GetHost();
-      });
+  std::sort(settings.begin(), settings.begin() + 4,
+            [](const ContentSettingPatternSource& s1,
+               const ContentSettingPatternSource& s2) {
+              return s1.primary_pattern.GetHost() <
+                     s2.primary_pattern.GetHost();
+            });
 
   EXPECT_EQ(
       ContentSettingsPattern::FromURLNoWildcard(GURL("https://allowed.com")),
