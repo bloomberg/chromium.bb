@@ -721,10 +721,9 @@ class PersonalDataManager : public KeyedService,
   // Resets |synced_profile_validity_|.
   void ResetProfileValidity();
 
-  // Add/Update/Remove |profile| on DB.
-  void AddProfileToDB(const AutofillProfile& profile);
-  // |enforced| is true when the update should happen regardless of an equal
-  // profile. (equal in the sense of AutofillProfile::EqualForUpdate)
+  // Add/Update/Remove |profile| on DB. |enforced| should be true when the
+  // add/update should happen regardless of an existing/equal profile.
+  void AddProfileToDB(const AutofillProfile& profile, bool enforced = false);
   void UpdateProfileInDB(const AutofillProfile& profile, bool enforced = false);
   void RemoveProfileFromDB(const std::string& guid);
 
