@@ -280,22 +280,22 @@ void HidDeviceManager::LazyInitialize() {
   if (initialized_) {
     return;
   }
+  // |hid_manager_| may already be initialized in tests.
+  if (!hid_manager_) {
+    // |hid_manager_| is initialized and safe to use whether or not the
+    // connection is successful.
+    device::mojom::HidManagerRequest request = mojo::MakeRequest(&hid_manager_);
 
-  DCHECK(!hid_manager_);
-
-  // |hid_manager_| is initialized and safe to use whether or not the
-  // connection is successful.
-  device::mojom::HidManagerRequest request = mojo::MakeRequest(&hid_manager_);
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    DCHECK(content::ServiceManagerConnection::GetForProcess());
+    auto* connector =
+        content::ServiceManagerConnection::GetForProcess()->GetConnector();
+    connector->BindInterface(device::mojom::kServiceName, std::move(request));
+  }
+  // Enumerate HID devices and set client.
+  std::vector<device::mojom::HidDeviceInfoPtr> empty_devices;
   device::mojom::HidManagerClientAssociatedPtrInfo client;
   binding_.Bind(mojo::MakeRequest(&client));
-
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(content::ServiceManagerConnection::GetForProcess());
-  auto* connector =
-      content::ServiceManagerConnection::GetForProcess()->GetConnector();
-  connector->BindInterface(device::mojom::kServiceName, std::move(request));
-
-  std::vector<device::mojom::HidDeviceInfoPtr> empty_devices;
   hid_manager_->GetDevicesAndSetClient(
       std::move(client),
       mojo::WrapCallbackWithDefaultInvokeIfNotRun(
@@ -306,6 +306,13 @@ void HidDeviceManager::LazyInitialize() {
   initialized_ = true;
 }
 
+void HidDeviceManager::SetFakeHidManagerForTesting(
+    device::mojom::HidManagerPtr fake_hid_manager) {
+  DCHECK(!hid_manager_);
+  DCHECK(fake_hid_manager);
+  hid_manager_ = std::move(fake_hid_manager);
+  LazyInitialize();
+}
 std::unique_ptr<base::ListValue> HidDeviceManager::CreateApiDeviceList(
     const Extension* extension,
     const std::vector<HidDeviceFilter>& filters) {
