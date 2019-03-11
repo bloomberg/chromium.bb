@@ -719,28 +719,7 @@ bool FrameLoader::PrepareRequestForThisFrame(FrameLoadRequest& request) {
     return false;
   }
 
-  // Block renderer-initiated loads of data: and filesystem: URLs in the top
-  // frame.
-  //
-  // If the mime type of the data URL is supported, the URL will
-  // eventually be rendered, so block it here. Otherwise, the load might be
-  // handled by a plugin or end up as a download, so allow it to let the
-  // embedder figure out what to do with it. Navigations to filesystem URLs are
-  // always blocked here.
-  if (frame_->IsMainFrame() &&
-      !frame_->Client()->AllowContentInitiatedDataUrlNavigations(
-          request.OriginDocument()->Url()) &&
-      (url.ProtocolIs("filesystem") ||
-       (url.ProtocolIsData() &&
-        network_utils::IsDataURLMimeTypeSupported(url)))) {
-    frame_->GetDocument()->AddConsoleMessage(ConsoleMessage::Create(
-        kSecurityMessageSource, mojom::ConsoleMessageLevel::kError,
-        "Not allowed to navigate top frame to " + url.Protocol() +
-            " URL: " + url.ElidedString()));
-    return false;
-  }
-
-  if (!request.Form() && request.FrameName().IsEmpty())
+  if (request.FrameName().IsEmpty())
     request.SetFrameName(frame_->GetDocument()->BaseTarget());
   return true;
 }
@@ -810,12 +789,8 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
   if (!PrepareRequestForThisFrame(request))
     return;
 
-  // Form submissions appear to need their special-case of finding the target at
-  // schedule rather than at fire.
-  Frame* target_frame =
-      request.Form() ? nullptr
-                     : frame_->FindFrameForNavigation(
-                           AtomicString(request.FrameName()), *frame_, url);
+  Frame* target_frame = frame_->FindFrameForNavigation(
+      AtomicString(request.FrameName()), *frame_, url);
 
   // Downloads and navigations which specifically target a *new* frame
   // (e.g. because of a ctrl-click) should ignore the target.
@@ -834,6 +809,27 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
     Page* page = target_frame->GetPage();
     if (!was_in_same_page && page)
       page->GetChromeClient().Focus(frame_);
+    return;
+  }
+
+  // Block renderer-initiated loads of data: and filesystem: URLs in the top
+  // frame.
+  //
+  // If the mime type of the data URL is supported, the URL will
+  // eventually be rendered, so block it here. Otherwise, the load might be
+  // handled by a plugin or end up as a download, so allow it to let the
+  // embedder figure out what to do with it. Navigations to filesystem URLs are
+  // always blocked here.
+  if (frame_->IsMainFrame() && origin_document &&
+      !frame_->Client()->AllowContentInitiatedDataUrlNavigations(
+          request.OriginDocument()->Url()) &&
+      (url.ProtocolIs("filesystem") ||
+       (url.ProtocolIsData() &&
+        network_utils::IsDataURLMimeTypeSupported(url)))) {
+    frame_->GetDocument()->AddConsoleMessage(ConsoleMessage::Create(
+        kSecurityMessageSource, mojom::ConsoleMessageLevel::kError,
+        "Not allowed to navigate top frame to " + url.Protocol() +
+            " URL: " + url.ElidedString()));
     return;
   }
 

@@ -41,6 +41,7 @@
 #include "third_party/blink/renderer/core/frame/frame_view.h"
 #include "third_party/blink/renderer/core/frame/navigation_rate_limiter.h"
 #include "third_party/blink/renderer/core/loader/frame_loader_types.h"
+#include "third_party/blink/renderer/core/loader/navigation_policy.h"
 #include "third_party/blink/renderer/core/page/frame_tree.h"
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/graphics/touch_action.h"
@@ -100,7 +101,9 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
                                   WebFrameLoadType,
                                   UserGestureStatus) = 0;
   // Synchronously begins a navigation.
-  virtual void Navigate(const FrameLoadRequest&, WebFrameLoadType) = 0;
+  virtual void Navigate(const FrameLoadRequest&,
+                        WebFrameLoadType,
+                        NavigationPolicy = kNavigationPolicyCurrentTab) = 0;
 
   void Detach(FrameDetachType);
   void DisconnectOwnerElement();

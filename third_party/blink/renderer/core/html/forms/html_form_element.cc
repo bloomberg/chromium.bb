@@ -39,6 +39,7 @@
 #include "third_party/blink/renderer/core/dom/events/scoped_event_queue.h"
 #include "third_party/blink/renderer/core/dom/node_lists_node_data.h"
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
+#include "third_party/blink/renderer/core/events/current_input_event.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -474,27 +475,6 @@ void HTMLFormElement::ScheduleFormSubmission(FormSubmission* submission) {
     return;
   }
 
-  if (submission->Action().ProtocolIsJavaScript()) {
-    if (FastHasAttribute(kDisabledAttr)) {
-      UseCounter::Count(GetDocument(),
-                        WebFeature::kFormDisabledAttributePresentAndSubmit);
-    }
-    GetDocument().ProcessJavaScriptUrl(submission->Action(),
-                                       kCheckContentSecurityPolicy);
-    return;
-  }
-
-  Frame* target_frame = GetDocument().GetFrame()->FindFrameForNavigation(
-      submission->Target(), *GetDocument().GetFrame(),
-      submission->RequestURL());
-  if (!target_frame) {
-    target_frame = GetDocument().GetFrame();
-  } else {
-    submission->ClearTarget();
-  }
-  if (!target_frame->GetPage())
-    return;
-
   UseCounter::Count(GetDocument(), WebFeature::kFormsSubmitted);
   if (MixedContentChecker::IsMixedFormAction(GetDocument().GetFrame(),
                                              submission->Action())) {
@@ -505,22 +485,16 @@ void HTMLFormElement::ScheduleFormSubmission(FormSubmission* submission) {
                       WebFeature::kFormDisabledAttributePresentAndSubmit);
   }
 
-  // TODO(lukasza): Investigate if the code below can uniformly handle remote
-  // and local frames (i.e. by calling virtual Frame::navigate from a timer).
-  // See also https://goo.gl/95d2KA.
-  if (auto* target_local_frame = DynamicTo<LocalFrame>(target_frame)) {
-    target_local_frame->GetNavigationScheduler().ScheduleFormSubmission(
-        &GetDocument(), submission);
-  } else {
-    FrameLoadRequest frame_load_request =
-        submission->CreateFrameLoadRequest(&GetDocument());
-    frame_load_request.GetResourceRequest().SetHasUserGesture(
-        LocalFrame::HasTransientUserActivation(GetDocument().GetFrame()));
-    // TODO(dgozman): we lose information about triggering event and desired
-    // navigation policy here.
-    To<RemoteFrame>(target_frame)
-        ->Navigate(frame_load_request, WebFrameLoadType::kStandard);
-  }
+  FrameLoadRequest frame_load_request =
+      submission->CreateFrameLoadRequest(&GetDocument());
+  frame_load_request.SetClientRedirect(ClientRedirectPolicy::kClientRedirect);
+  frame_load_request.GetResourceRequest().SetHasUserGesture(
+      LocalFrame::HasTransientUserActivation(GetDocument().GetFrame()));
+  if (const WebInputEvent* input_event = CurrentInputEvent::Get())
+    frame_load_request.SetInputStartTime(input_event->TimeStamp());
+  GetDocument().GetFrame()->Navigate(frame_load_request,
+                                     WebFrameLoadType::kStandard,
+                                     submission->GetNavigationPolicy());
 }
 
 void HTMLFormElement::reset() {
