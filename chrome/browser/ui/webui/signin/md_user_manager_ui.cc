@@ -13,6 +13,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_shortcut_manager.h"
 #include "chrome/browser/signin/signin_util.h"
+#include "chrome/browser/ui/webui/dark_mode_handler.h"
 #include "chrome/browser/ui/webui/signin/signin_create_profile_handler.h"
 #include "chrome/browser/ui/webui/signin/signin_utils.h"
 #include "chrome/browser/ui/webui/signin/user_manager_screen_handler.h"
@@ -44,6 +45,7 @@ MDUserManagerUI::MDUserManagerUI(content::WebUI* web_ui)
 
   // Set up the chrome://md-user-manager/ source.
   auto* md_user_source = CreateUIDataSource(localized_strings);
+  DarkModeHandler::Initialize(web_ui, md_user_source);
   content::WebUIDataSource::Add(profile, md_user_source);
 
   // Set up the chrome://theme/ source
