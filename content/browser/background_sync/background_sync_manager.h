@@ -23,6 +23,7 @@
 #include "content/browser/background_sync/background_sync_registration.h"
 #include "content/browser/background_sync/background_sync_status.h"
 #include "content/browser/cache_storage/cache_storage_scheduler.h"
+#include "content/browser/devtools/devtools_background_services_context.h"
 #include "content/browser/service_worker/service_worker_context_core_observer.h"
 #include "content/browser/service_worker/service_worker_storage.h"
 #include "content/common/content_export.h"
@@ -37,8 +38,8 @@
 namespace blink {
 namespace mojom {
 enum class PermissionStatus;
-}
-}
+}  // namespace mojom
+}  // namespace blink
 
 namespace content {
 
@@ -63,7 +64,8 @@ class CONTENT_EXPORT BackgroundSyncManager
       std::vector<std::unique_ptr<BackgroundSyncRegistration>>)>;
 
   static std::unique_ptr<BackgroundSyncManager> Create(
-      scoped_refptr<ServiceWorkerContextWrapper> service_worker_context);
+      scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
+      scoped_refptr<DevToolsBackgroundServicesContext> devtools_context);
   ~BackgroundSyncManager() override;
 
   // Stores the given background sync registration and adds it to the scheduling
@@ -122,8 +124,9 @@ class CONTENT_EXPORT BackgroundSyncManager
   void FireReadyEventsThenRunCallback(base::OnceClosure callback);
 
  protected:
-  explicit BackgroundSyncManager(
-      scoped_refptr<ServiceWorkerContextWrapper> context);
+  BackgroundSyncManager(
+      scoped_refptr<ServiceWorkerContextWrapper> context,
+      scoped_refptr<DevToolsBackgroundServicesContext> devtools_context);
 
   // Init must be called before any public member function. Only call it once.
   void Init();
@@ -306,6 +309,7 @@ class CONTENT_EXPORT BackgroundSyncManager
   SWIdToRegistrationsMap active_registrations_;
   CacheStorageScheduler op_scheduler_;
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
+  scoped_refptr<DevToolsBackgroundServicesContext> devtools_context_;
 
   std::unique_ptr<BackgroundSyncParameters> parameters_;
 

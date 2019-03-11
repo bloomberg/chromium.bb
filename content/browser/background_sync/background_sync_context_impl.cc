@@ -11,6 +11,7 @@
 #include "base/task/post_task.h"
 #include "content/browser/background_sync/background_sync_manager.h"
 #include "content/browser/background_sync/background_sync_service_impl.h"
+#include "content/browser/devtools/devtools_background_services_context.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -31,13 +32,14 @@ BackgroundSyncContextImpl::~BackgroundSyncContextImpl() {
 }
 
 void BackgroundSyncContextImpl::Init(
-    const scoped_refptr<ServiceWorkerContextWrapper>& context) {
+    const scoped_refptr<ServiceWorkerContextWrapper>& service_worker_context,
+    const scoped_refptr<DevToolsBackgroundServicesContext>& devtools_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&BackgroundSyncContextImpl::CreateBackgroundSyncManager,
-                     this, context));
+                     this, service_worker_context, devtools_context));
 }
 
 void BackgroundSyncContextImpl::Shutdown() {
@@ -91,11 +93,13 @@ void BackgroundSyncContextImpl::FireBackgroundSyncEventsForStoragePartition(
 }
 
 void BackgroundSyncContextImpl::CreateBackgroundSyncManager(
-    scoped_refptr<ServiceWorkerContextWrapper> context) {
+    scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
+    scoped_refptr<DevToolsBackgroundServicesContext> devtools_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!background_sync_manager_);
 
-  background_sync_manager_ = BackgroundSyncManager::Create(context);
+  background_sync_manager_ = BackgroundSyncManager::Create(
+      std::move(service_worker_context), std::move(devtools_context));
 }
 
 void BackgroundSyncContextImpl::CreateServiceOnIOThread(

@@ -24,6 +24,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/background_sync/background_sync_network_observer.h"
 #include "content/browser/background_sync/background_sync_status.h"
+#include "content/browser/devtools/devtools_background_services_context.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
@@ -85,7 +86,9 @@ void UnregisterServiceWorkerCallback(bool* called,
 
 }  // namespace
 
-class BackgroundSyncManagerTest : public testing::Test {
+class BackgroundSyncManagerTest
+    : public testing::Test,
+      public DevToolsBackgroundServicesContext::EventObserver {
  public:
   BackgroundSyncManagerTest()
       : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {
@@ -112,8 +115,9 @@ class BackgroundSyncManagerTest : public testing::Test {
 
     // Create a StoragePartition with the correct BrowserContext so that the
     // BackgroundSyncManager can find the BrowserContext through it.
-    storage_partition_impl_.reset(new StoragePartitionImpl(
-        helper_->browser_context(), base::FilePath(), nullptr));
+    storage_partition_impl_ = StoragePartitionImpl::Create(
+        helper_->browser_context(), /* in_memory= */ true, base::FilePath(),
+        /* partition_domain= */ "");
     helper_->context_wrapper()->set_storage_partition(
         storage_partition_impl_.get());
 
@@ -123,10 +127,15 @@ class BackgroundSyncManagerTest : public testing::Test {
     // workers.
     base::RunLoop().RunUntilIdle();
     RegisterServiceWorkers();
+
+    storage_partition_impl_->GetDevToolsBackgroundServicesContext()
+        ->AddObserver(this);
   }
 
   void TearDown() override {
-    // Restore the network observer functionality for subsequent tests
+    storage_partition_impl_->GetDevToolsBackgroundServicesContext()
+        ->RemoveObserver(this);
+    // Restore the network observer functionality for subsequent tests.
     background_sync_test_util::SetIgnoreNetworkChanges(false);
   }
 
@@ -202,10 +211,17 @@ class BackgroundSyncManagerTest : public testing::Test {
   }
 
  protected:
+  MOCK_METHOD1(OnEventReceived,
+               void(const devtools::proto::BackgroundServiceEvent&));
+  MOCK_METHOD2(OnRecordingStateChanged,
+               void(bool, devtools::proto::BackgroundService));
+
   void CreateBackgroundSyncManager() {
+    background_sync_manager_ = std::make_unique<TestBackgroundSyncManager>(
+        helper_->context_wrapper(),
+        storage_partition_impl_->GetDevToolsBackgroundServicesContext());
     test_background_sync_manager_ =
-        new TestBackgroundSyncManager(helper_->context_wrapper());
-    background_sync_manager_.reset(test_background_sync_manager_);
+        static_cast<TestBackgroundSyncManager*>(background_sync_manager_.get());
 
     background_sync_manager_->set_clock(&test_clock_);
 
@@ -1504,4 +1520,45 @@ TEST_F(BackgroundSyncManagerTest, EmulateDispatchSyncEvent) {
 
   EXPECT_EQ(2, sync_events_called_);
 }
+
+TEST_F(BackgroundSyncManagerTest, EventsLoggedForRegistration) {
+  // Note that the dispatch is mocked out, so those events are not registered
+  // by these tests.
+  storage_partition_impl_->GetDevToolsBackgroundServicesContext()
+      ->StartRecording(devtools::proto::BACKGROUND_SYNC);
+
+  SetMaxSyncAttemptsAndRestartManager(3);
+  InitFailedSyncEventTest();
+
+  {
+    // We expect a "Registered" event and a "Fail" event.
+    EXPECT_CALL(*this, OnEventReceived(_)).Times(2);
+    // The first run will fail but it will setup a timer to try again.
+    EXPECT_TRUE(Register(sync_options_1_));
+    EXPECT_TRUE(GetRegistration(sync_options_1_));
+    EXPECT_TRUE(test_background_sync_manager_->IsDelayedTaskScheduled());
+  }
+
+  test_clock_.Advance(test_background_sync_manager_->delayed_task_delta());
+  {
+    // Expect another "Fail" event.
+    EXPECT_CALL(*this, OnEventReceived(_)).Times(1);
+    test_background_sync_manager_->RunDelayedTask();
+    base::RunLoop().RunUntilIdle();
+    EXPECT_TRUE(GetRegistration(sync_options_1_));
+  }
+
+  // The event should succeed now.
+  InitSyncEventTest();
+
+  test_clock_.Advance(test_background_sync_manager_->delayed_task_delta());
+  {
+    // Expect a "Completion" event.
+    EXPECT_CALL(*this, OnEventReceived(_)).Times(1);
+    test_background_sync_manager_->RunDelayedTask();
+    base::RunLoop().RunUntilIdle();
+    EXPECT_FALSE(GetRegistration(sync_options_1_));
+  }
+}
+
 }  // namespace content

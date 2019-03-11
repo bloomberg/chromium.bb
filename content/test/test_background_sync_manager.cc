@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "content/browser/devtools/devtools_background_services_context.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -14,8 +15,10 @@
 namespace content {
 
 TestBackgroundSyncManager::TestBackgroundSyncManager(
-    scoped_refptr<ServiceWorkerContextWrapper> service_worker_context)
-    : BackgroundSyncManager(service_worker_context) {}
+    scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
+    scoped_refptr<DevToolsBackgroundServicesContext> devtools_context)
+    : BackgroundSyncManager(std::move(service_worker_context),
+                            std::move(devtools_context)) {}
 
 TestBackgroundSyncManager::~TestBackgroundSyncManager() {}
 

@@ -133,8 +133,9 @@ class BackgroundSyncServiceImplTest : public testing::Test {
   void CreateStoragePartition() {
     // Creates a StoragePartition so that the BackgroundSyncManager can
     // use it to access the BrowserContext.
-    storage_partition_impl_.reset(new StoragePartitionImpl(
-        embedded_worker_helper_->browser_context(), base::FilePath(), nullptr));
+    storage_partition_impl_ = StoragePartitionImpl::Create(
+        embedded_worker_helper_->browser_context(), /* in_memory= */ true,
+        base::FilePath(), /* partition_domain= */ "");
     embedded_worker_helper_->context_wrapper()->set_storage_partition(
         storage_partition_impl_.get());
   }
@@ -144,7 +145,9 @@ class BackgroundSyncServiceImplTest : public testing::Test {
     // main frame. Use a test context that allows control over that check.
     background_sync_context_ =
         base::MakeRefCounted<TestBackgroundSyncContext>();
-    background_sync_context_->Init(embedded_worker_helper_->context_wrapper());
+    background_sync_context_->Init(
+        embedded_worker_helper_->context_wrapper(),
+        storage_partition_impl_->GetDevToolsBackgroundServicesContext());
 
     // Tests do not expect the sync event to fire immediately after
     // register (and cleanup up the sync registrations).  Prevent the sync
