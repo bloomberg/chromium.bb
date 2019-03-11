@@ -655,7 +655,11 @@ BluetoothTestWinrt::BluetoothTestWinrt() {
   }
 }
 
-BluetoothTestWinrt::~BluetoothTestWinrt() = default;
+BluetoothTestWinrt::~BluetoothTestWinrt() {
+  // The callbacks run by |notify_sessions_| may end up calling back into
+  // |this|, so run them early to prevent a use-after-free.
+  notify_sessions_.clear();
+}
 
 bool BluetoothTestWinrt::PlatformSupportsLowEnergy() {
   return GetParam() ? base::win::GetVersion() >= base::win::VERSION_WIN10
