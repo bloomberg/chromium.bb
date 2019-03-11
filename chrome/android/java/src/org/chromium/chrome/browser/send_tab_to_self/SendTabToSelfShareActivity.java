@@ -21,10 +21,7 @@ public class SendTabToSelfShareActivity extends ShareActivity {
     @Override
     protected void handleShareAction(ChromeActivity triggeringActivity) {
         Tab tab = triggeringActivity.getActivityTabProvider().getActivityTab();
-        SendTabToSelfAndroidBridge bridge = new SendTabToSelfAndroidBridge(tab.getProfile());
-        bridge.addEntry(tab.getUrl(), tab.getTitle());
-        bridge.destroy();
-
+        SendTabToSelfAndroidBridge.addEntry(tab.getProfile(), tab.getUrl(), tab.getTitle());
         Toast.makeText(triggeringActivity, R.string.send_tab_to_self_toast, Toast.LENGTH_SHORT)
                 .show();
     }

@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.send_tab_to_self;
 import android.support.annotation.Nullable;
 
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.base.annotations.JCaller;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -19,43 +18,21 @@ import java.util.List;
  * Bridge to interface with send_tab_to_self_android_bridge which interacts with the corresponding
  * sync service. This is used by SendTabToSelfShareActivity when a user taps to share a tab. The
  * bridge is created and destroyed within the same method call.
- *
- * <p>TODO(tgupta): Add a paragraph describing the expected lifecycle of this class I.e. who would
- * own it, when is it destroyed, etc?
  */
 @JNINamespace("send_tab_to_self")
 public class SendTabToSelfAndroidBridge {
     // TODO(tgupta): Add logic back in to track whether model is loaded.
     private boolean mIsNativeSendTabToSelfModelLoaded;
-    private long mNativeSendTabToSelfAndroidBridge;
 
     /**
-     * Handler to fetch the share entries
-     *
-     * @param profile Profile instance corresponding to the active profile.
+     * @param profile Profile of the user to retrieve the GUIDs for.
+     * @returns All GUIDs for all SendTabToSelf entries
      */
-    public SendTabToSelfAndroidBridge(Profile profile) {
-        Natives jni = SendTabToSelfAndroidBridgeJni.get();
-        mNativeSendTabToSelfAndroidBridge = jni.init(this, profile);
-    }
-
-    /** Destroys this instance so no further calls can be executed. */
-    public void destroy() {
-        if (mNativeSendTabToSelfAndroidBridge != 0) {
-            Natives jni = SendTabToSelfAndroidBridgeJni.get();
-            jni.destroy(this, mNativeSendTabToSelfAndroidBridge);
-            mNativeSendTabToSelfAndroidBridge = 0;
-            mIsNativeSendTabToSelfModelLoaded = false;
-        }
-    }
-
-    /** @returns All GUIDs for all SendTabToSelf entries */
-    public List<String> getAllGuids() {
+    public static List<String> getAllGuids(Profile profile) {
         // TODO(tgupta): Add this assertion back in once the code to load is in place.
         // assert mIsNativeSendTabToSelfModelLoaded;
         List<String> toPopulate = new ArrayList<String>();
-        Natives jni = SendTabToSelfAndroidBridgeJni.get();
-        jni.getAllGuids(this, mNativeSendTabToSelfAndroidBridge, toPopulate);
+        SendTabToSelfAndroidBridgeJni.get().getAllGuids(profile, toPopulate);
         return toPopulate;
     }
 
@@ -71,60 +48,74 @@ public class SendTabToSelfAndroidBridge {
     }
 
     /** Deletes all SendTabToSelf entries. This is called when the user disables sync. */
-    public void deleteAllEntries() {
+    public static void deleteAllEntries(Profile profile) {
         // TODO(tgupta): Add this assertion back in once the code to load is in place.
         // assert mIsNativeSendTabToSelfModelLoaded;
-        Natives jni = SendTabToSelfAndroidBridgeJni.get();
-        jni.deleteAllEntries(this, mNativeSendTabToSelfAndroidBridge);
+        SendTabToSelfAndroidBridgeJni.get().deleteAllEntries(profile);
     }
 
     /**
      * Creates a new entry to be persisted to the sync backend.
      *
+     * @param profile Profile of the user to add entry for.
      * @param url URL to be shared
      * @param title Title of the page
      * @return The persisted entry which contains additional information such as the GUID or null in
      *     the case of an error.
      */
     @Nullable
-    public SendTabToSelfEntry addEntry(String url, String title) {
+    public static SendTabToSelfEntry addEntry(Profile profile, String url, String title) {
         // TODO(tgupta): Add this assertion back in once the code to load is in place.
         // assert mIsNativeSendTabToSelfModelLoaded;
-        Natives jni = SendTabToSelfAndroidBridgeJni.get();
-        return jni.addEntry(this, mNativeSendTabToSelfAndroidBridge, url, title);
+        return SendTabToSelfAndroidBridgeJni.get().addEntry(profile, url, title);
     }
 
     /**
      * Return the entry associated with a particular GUID
      *
+     * @param profile Profile of the user to get entry for.
      * @param guid The GUID to retrieve the entry for
      * @return The found entry or null if none exists
      */
     @Nullable
-    public SendTabToSelfEntry getEntryByGUID(String guid) {
+    public static SendTabToSelfEntry getEntryByGUID(Profile profile, String guid) {
         // TODO(tgupta): Add this assertion back in once the code to load is in place.
         // assert mIsNativeSendTabToSelfModelLoaded;
-        Natives jni = SendTabToSelfAndroidBridgeJni.get();
-        return jni.getEntryByGUID(this, mNativeSendTabToSelfAndroidBridge, guid);
+        return SendTabToSelfAndroidBridgeJni.get().getEntryByGUID(profile, guid);
+    }
+
+    /**
+     * Deletes the entry associated with the GUID.
+     *
+     * @param profile Profile of the user to delete entry for.
+     * @param guid The GUID to delete the entry for.
+     */
+    public static void deleteEntry(Profile profile, String guid) {
+        SendTabToSelfAndroidBridgeJni.get().deleteEntry(profile, guid);
+    }
+
+    /**
+     * Dismiss the entry associated with the GUID.
+     *
+     * @param profile Profile of the user to dismiss entry for.
+     * @param guid The GUID to dismiss the entry for.
+     */
+    public static void dismissEntry(Profile profile, String guid) {
+        SendTabToSelfAndroidBridgeJni.get().dismissEntry(profile, guid);
     }
 
     @NativeMethods
     interface Natives {
-        long init(@JCaller SendTabToSelfAndroidBridge bridge, Profile profile);
+        SendTabToSelfEntry addEntry(Profile profile, String url, String title);
 
-        void destroy(
-                @JCaller SendTabToSelfAndroidBridge bridge, long nativeSendTabToSelfAndroidBridge);
+        void getAllGuids(Profile profile, List<String> guids);
 
-        SendTabToSelfEntry addEntry(@JCaller SendTabToSelfAndroidBridge bridge,
-                long nativeSendTabToSelfAndroidBridge, String url, String title);
+        void deleteAllEntries(Profile profile);
 
-        void getAllGuids(@JCaller SendTabToSelfAndroidBridge bridge,
-                long nativeSendTabToSelfAndroidBridge, List<String> guids);
+        void deleteEntry(Profile profile, String guid);
 
-        void deleteAllEntries(
-                @JCaller SendTabToSelfAndroidBridge bridge, long nativeSendTabToSelfAndroidBridge);
+        void dismissEntry(Profile profile, String guid);
 
-        SendTabToSelfEntry getEntryByGUID(@JCaller SendTabToSelfAndroidBridge bridge,
-                long nativeSendTabToSelfAndroidBridge, String guid);
+        SendTabToSelfEntry getEntryByGUID(Profile profile, String guid);
     }
 }

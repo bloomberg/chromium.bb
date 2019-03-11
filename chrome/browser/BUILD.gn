@@ -2501,7 +2501,6 @@ jumbo_split_static_library("browser") {
       "android/send_tab_to_self/android_notification_handler.cc",
       "android/send_tab_to_self/android_notification_handler.h",
       "android/send_tab_to_self/send_tab_to_self_android_bridge.cc",
-      "android/send_tab_to_self/send_tab_to_self_android_bridge.h",
       "android/service_tab_launcher.cc",
       "android/service_tab_launcher.h",
       "android/sessions/session_tab_helper_android.cc",

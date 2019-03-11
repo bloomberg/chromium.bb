@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/send_tab_to_self/send_tab_to_self_android_bridge.h"
-
 #include <string>
 #include <vector>
 
@@ -27,6 +25,9 @@ using base::android::JavaRef;
 using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
 
+// The delegate to fetch SendTabToSelf information and persist new
+// SendTabToSelf entries. The functions are called by the SendTabToSelf Java
+// counterpart.
 namespace send_tab_to_self {
 
 namespace {
@@ -43,42 +44,26 @@ ScopedJavaLocalRef<jobject> CreateJavaSendTabToSelfEntry(
       ConvertUTF8ToJavaString(env, entry->GetDeviceName()));
 }
 
+SendTabToSelfModel* GetModel(const JavaParamRef<jobject>& j_profile) {
+  Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
+  return SendTabToSelfSyncServiceFactory::GetInstance()
+      ->GetForProfile(profile)
+      ->GetSendTabToSelfModel();
+}
+
 }  // namespace
 
-SendTabToSelfAndroidBridge::SendTabToSelfAndroidBridge(
+// Populates a list of GUIDs in the model.
+static void JNI_SendTabToSelfAndroidBridge_GetAllGuids(
     JNIEnv* env,
-    const JavaRef<jobject>& obj,
-    const JavaRef<jobject>& j_profile)
-    : send_tab_to_self_model_(nullptr), weak_java_ref_(env, obj) {
-  Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
-  send_tab_to_self_model_ = SendTabToSelfSyncServiceFactory::GetInstance()
-                                ->GetForProfile(profile)
-                                ->GetSendTabToSelfModel();
-}
-
-static jlong JNI_SendTabToSelfAndroidBridge_Init(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jobject>& j_profile) {
-  SendTabToSelfAndroidBridge* send_tab_to_self_android_bridge =
-      new SendTabToSelfAndroidBridge(env, obj, j_profile);
-  return reinterpret_cast<intptr_t>(send_tab_to_self_android_bridge);
-}
-
-void SendTabToSelfAndroidBridge::Destroy(JNIEnv*,
-                                         const JavaParamRef<jobject>&) {
-  delete this;
-}
-
-void SendTabToSelfAndroidBridge::GetAllGuids(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& j_profile,
     const JavaParamRef<jobject>& j_guid_list_obj) {
   // TODO(tgupta): Check that the model is loaded
   // if (!send_tab_to_self_model_->loaded()())
   //   return;
 
-  std::vector<std::string> all_ids = send_tab_to_self_model_->GetAllGuids();
+  SendTabToSelfModel* model = GetModel(j_profile);
+  std::vector<std::string> all_ids = model->GetAllGuids();
   for (std::vector<std::string>::iterator it = all_ids.begin();
        it != all_ids.end(); ++it) {
     ScopedJavaLocalRef<jstring> j_guid = ConvertUTF8ToJavaString(env, *it);
@@ -86,22 +71,25 @@ void SendTabToSelfAndroidBridge::GetAllGuids(
   }
 }
 
-void SendTabToSelfAndroidBridge::DeleteAllEntries(
+// Deletes all entries in the model.
+void JNI_SendTabToSelfAndroidBridge_DeleteAllEntries(
     JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  send_tab_to_self_model_->DeleteAllEntries();
+    const JavaParamRef<jobject>& j_profile) {
+  GetModel(j_profile)->DeleteAllEntries();
 }
 
-ScopedJavaLocalRef<jobject> SendTabToSelfAndroidBridge::AddEntry(
+// Adds a new entry with the specified parameters. Returns the persisted
+// version which contains additional information such as GUID.
+static ScopedJavaLocalRef<jobject> JNI_SendTabToSelfAndroidBridge_AddEntry(
     JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& j_profile,
     const JavaParamRef<jstring>& j_url,
     const JavaParamRef<jstring>& j_title) {
   const std::string url = ConvertJavaStringToUTF8(env, j_url);
   const std::string title = ConvertJavaStringToUTF8(env, j_title);
 
   const SendTabToSelfEntry* persisted_entry =
-      send_tab_to_self_model_->AddEntry(GURL(url), title);
+      GetModel(j_profile)->AddEntry(GURL(url), title);
 
   if (persisted_entry == nullptr) {
     return nullptr;
@@ -110,19 +98,40 @@ ScopedJavaLocalRef<jobject> SendTabToSelfAndroidBridge::AddEntry(
   return CreateJavaSendTabToSelfEntry(env, persisted_entry);
 }
 
-ScopedJavaLocalRef<jobject> SendTabToSelfAndroidBridge::GetEntryByGUID(
+// Returns the entry associated with a GUID. May return nullptr if none is
+// found.
+static ScopedJavaLocalRef<jobject>
+JNI_SendTabToSelfAndroidBridge_GetEntryByGUID(
     JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& j_profile,
     const JavaParamRef<jstring>& j_guid) {
   const std::string guid = ConvertJavaStringToUTF8(env, j_guid);
   const SendTabToSelfEntry* found_entry =
-      send_tab_to_self_model_->GetEntryByGUID(guid);
+      GetModel(j_profile)->GetEntryByGUID(guid);
 
   if (found_entry == nullptr) {
     return nullptr;
   }
 
   return CreateJavaSendTabToSelfEntry(env, found_entry);
+}
+
+// Deletes the entry associated with the passed in GUID.
+static void JNI_SendTabToSelfAndroidBridge_DeleteEntry(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& j_profile,
+    const JavaParamRef<jstring>& j_guid) {
+  const std::string guid = ConvertJavaStringToUTF8(env, j_guid);
+  GetModel(j_profile)->DeleteEntry(guid);
+}
+
+// Marks the entry with the associated GUID as dismissed.
+static void JNI_SendTabToSelfAndroidBridge_DismissEntry(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& j_profile,
+    const JavaParamRef<jstring>& j_guid) {
+  const std::string guid = ConvertJavaStringToUTF8(env, j_guid);
+  GetModel(j_profile)->DismissEntry(guid);
 }
 
 }  // namespace send_tab_to_self
