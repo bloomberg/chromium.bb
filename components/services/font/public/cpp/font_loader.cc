@@ -62,6 +62,11 @@ SkStreamAsset* FontLoader::openStream(const FontIdentity& identity) {
   }
 }
 
+sk_sp<SkTypeface> FontLoader::makeTypeface(const FontIdentity& identity) {
+  TRACE_EVENT0("fonts", "FontServiceThread::makeTypeface");
+  return SkFontConfigInterface::makeTypeface(identity);
+}
+
 // Additional cross-thread accessible methods.
 bool FontLoader::FallbackFontForCharacter(
     uint32_t character,

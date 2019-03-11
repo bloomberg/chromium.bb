@@ -13,6 +13,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
+#include "base/trace_event/trace_event.h"
 #include "ui/gfx/font.h"
 
 namespace gfx {
@@ -41,6 +42,8 @@ std::string GetFilenameFromFcPattern(FcPattern* pattern) {
 }  // namespace
 
 std::vector<Font> GetFallbackFonts(const Font& font) {
+  TRACE_EVENT0("fonts", "gfx::GetFallbackFonts");
+
   std::string font_family = font.GetFontName();
   std::vector<Font>* fallback_fonts =
       &g_fallback_cache.Get()[font_family];
@@ -154,6 +157,8 @@ class CachedFontSet {
   }
 
   FallbackFontData GetFallbackFontForChar(UChar32 c) {
+    TRACE_EVENT0("fonts", "gfx::CachedFontSet::GetFallbackFontForChar");
+
     for (const auto& cached_font : fallback_list_) {
       if (cached_font.HasGlyphForCharacter(c))
         return cached_font.fallback_font();
@@ -197,6 +202,8 @@ class CachedFontSet {
   }
 
   void FillFallbackList() {
+    TRACE_EVENT0("fonts", "gfx::CachedFontSet::FillFallbackList");
+
     DCHECK(fallback_list_.empty());
     if (!font_set_)
       return;
