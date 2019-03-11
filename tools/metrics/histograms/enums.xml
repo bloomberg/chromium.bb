@@ -33145,6 +33145,7 @@ from previous Chrome versions.
   <int value="726764779" label="WebXRGamepadSupport:enabled"/>
   <int value="727270087" label="PromosOnLocalNtp:enabled"/>
   <int value="727571565" label="PasswordForceSaving"/>
+  <int value="728064595" label="RevampedContextMenu:disabled"/>
   <int value="728656094" label="PasswordForceSaving:disabled"/>
   <int value="730024226" label="enable-out-of-process-pdf"/>
   <int value="730750097" label="PermissionsBlacklist:disabled"/>
@@ -33524,6 +33525,7 @@ from previous Chrome versions.
   <int value="1353629763" label="MediaSessionAccelerators:enabled"/>
   <int value="1355923367" label="CrOSContainer:disabled"/>
   <int value="1359972809" label="enable-gesture-deletion"/>
+  <int value="1360969228" label="RevampedContextMenu:enabled"/>
   <int value="1361047396" label="disable-click-delay"/>
   <int value="1361073386" label="ContentSuggestionsNotifications:enabled"/>
   <int value="1363136936" label="VrCustomTabBrowsing:enabled"/>

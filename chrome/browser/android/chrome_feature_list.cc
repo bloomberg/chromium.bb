@@ -155,6 +155,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kPwaPersistentNotification,
     &kReachedCodeProfiler,
     &kReaderModeInCCT,
+    &kRevampedContextMenu,
     &kSearchReadyOmniboxFeature,
     &kSearchEnginePromoExistingDevice,
     &kSearchEnginePromoNewDevice,
@@ -450,6 +451,9 @@ const base::Feature kReachedCodeProfiler{"ReachedCodeProfiler",
 
 const base::Feature kReaderModeInCCT{"ReaderModeInCCT",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kRevampedContextMenu{"RevampedContextMenu",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kSearchReadyOmniboxFeature{
     "SearchReadyOmnibox", base::FEATURE_DISABLED_BY_DEFAULT};

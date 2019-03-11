@@ -2768,6 +2768,13 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chrome::android::kCustomContextMenu)},
 #endif  // OS_ANDROID
 
+#if defined(OS_ANDROID)
+    {"enable-revamped-context-menu",
+     flag_descriptions::kEnableRevampedContextMenuName,
+     flag_descriptions::kEnableRevampedContextMenuDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kRevampedContextMenu)},
+#endif  // OS_ANDROID
+
     {"omnibox-display-title-for-current-url",
      flag_descriptions::kOmniboxDisplayTitleForCurrentUrlName,
      flag_descriptions::kOmniboxDisplayTitleForCurrentUrlDescription, kOsAll,

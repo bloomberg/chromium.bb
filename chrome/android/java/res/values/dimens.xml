@@ -548,6 +548,9 @@
     <dimen name="context_menu_image_vertical_margin">30dp</dimen>
     <dimen name="context_menu_selectable_items_min_size">120dp</dimen>
 
+    <!-- Revamped Context Menu Dimensions -->
+    <dimen name="revamped_context_menu_header_image_max_size">64dp</dimen>
+
     <!-- Reader Mode dimensions -->
     <!-- Padding surrounding the message. -->
     <dimen name="reader_mode_infobar_text_padding">8dp</dimen>

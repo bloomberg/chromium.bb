@@ -2324,6 +2324,12 @@ const char kEnableCustomContextMenuDescription[] =
     "Enables a new context menu when a link, image, or video is pressed within "
     "Chrome.";
 
+const char kEnableRevampedContextMenuName[] =
+    "Enable the revamped context menu";
+const char kEnableRevampedContextMenuDescription[] =
+    "Enables a revamped context menu when a link, image, or video is long "
+    "pressed within Chrome.";
+
 const char kEnableNtpAssetDownloadSuggestionsName[] =
     "Show asset downloads on the New Tab page";
 const char kEnableNtpAssetDownloadSuggestionsDescription[] =
