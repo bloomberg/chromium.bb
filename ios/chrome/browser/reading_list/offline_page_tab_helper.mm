@@ -21,9 +21,11 @@
 #include "ios/chrome/browser/reading_list/offline_url_utils.h"
 #include "ios/chrome/browser/reading_list/reading_list_download_service.h"
 #include "ios/chrome/browser/reading_list/reading_list_download_service_factory.h"
+#import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/web_state/navigation_context.h"
 #include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
+#include "ui/base/page_transition_types.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -148,8 +150,11 @@ void OfflinePageTabHelper::DidStartNavigation(web::WebState* web_state,
   loading_slow_or_failed_ = false;
   navigation_committed_ = false;
   last_navigation_started_++;
-  bool is_reload = PageTransitionTypeIncludingQualifiersIs(
+  bool is_reload = ui::PageTransitionTypeIncludingQualifiersIs(
       context->GetPageTransition(), ui::PAGE_TRANSITION_RELOAD);
+  is_offline_navigation_ = reading_list::IsOfflineURL(initial_navigation_url_);
+  navigation_transition_type_ = context->GetPageTransition();
+  navigation_is_renderer_initiated_ = context->IsRendererInitiated();
   if (!is_reload || !presenting_offline_page_) {
     StartCheckingLoadingProgress(initial_navigation_url_);
   }
@@ -224,10 +229,47 @@ void OfflinePageTabHelper::ReadingListModelBeingDeleted(
 }
 
 void OfflinePageTabHelper::PresentOfflinePageForOnlineUrl(const GURL& url) {
-  if (!navigation_committed_ || !loading_slow_or_failed_) {
+  // As presenting the offline version will replace the content of the committed
+  // page, the offline version can only be presented if the navigation currently
+  // tracked by the OfflinePageTabHelper is the last committed one.
+  // This is the case in three scenarios:
+  // - the navigation has been committed (here, navigation_committed_ is true),
+  // - the navigation is a reload, which means it has been committed on the
+  //   previous load (here, is_reload is true),
+  // - if the navigation is a new navigation (here, is_new_navigation is true).
+  //   In this case, it will be cancel and a new placeholder navigation will be
+  //   triggerred that will always becommitted. This new navigation will be
+  //   replaced by offline version.
+  bool is_reload = ui::PageTransitionTypeIncludingQualifiersIs(
+      navigation_transition_type_, ui::PAGE_TRANSITION_RELOAD);
+  bool is_new_navigation =
+      ui::PageTransitionIsNewNavigation(navigation_transition_type_);
+  bool can_work_on_not_committed_navigation = is_reload || is_new_navigation;
+  bool can_load_offline =
+      navigation_committed_ || can_work_on_not_committed_navigation;
+  if (!can_load_offline) {
+    return;
+  }
+  if (!loading_slow_or_failed_) {
     return;
   }
   if (!HasDistilledVersionForOnlineUrl(url)) {
+    return;
+  }
+  GURL entry_url = GetOnlineURLFromNavigationURL(url);
+  const ReadingListEntry* entry = reading_list_model_->GetEntryByURL(entry_url);
+  if (!is_offline_navigation_ && is_new_navigation && !navigation_committed_) {
+    // If the current navigation was not committed, but it was a new navigation,
+    // a new placeholder navigation with a chrome://offline URL can be created
+    // which will be replaced by the offline version on load failure.
+    GURL offlineURL = reading_list::OfflineURLForPath(
+        entry->DistilledPath(), entry_url, entry->DistilledURL());
+
+    web::NavigationManager::WebLoadParams params(offlineURL);
+    params.transition_type = navigation_transition_type_;
+    params.virtual_url = entry_url;
+    params.is_renderer_initiated = navigation_is_renderer_initiated_;
+    web_state_->GetNavigationManager()->LoadURLWithParams(params);
     return;
   }
   ios::ChromeBrowserState* browser_state =
@@ -236,8 +278,7 @@ void OfflinePageTabHelper::PresentOfflinePageForOnlineUrl(const GURL& url) {
       ReadingListDownloadServiceFactory::GetForBrowserState(browser_state)
           ->OfflineRoot()
           .DirName();
-  GURL entry_url = GetOnlineURLFromNavigationURL(url);
-  const ReadingListEntry* entry = reading_list_model_->GetEntryByURL(entry_url);
+
   base::FilePath offline_path = entry->DistilledPath();
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE,
