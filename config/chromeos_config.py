@@ -2158,6 +2158,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
     if board in _paladin_jetstream_hwtest_boards:
       customizations.update(
           hw_tests=[
+              hw_test_list.DefaultListCQ()[0],
               config_lib.HWTestConfig(
                   constants.HWTEST_JETSTREAM_COMMIT_SUITE,
                   pool=constants.HWTEST_PALADIN_POOL)
