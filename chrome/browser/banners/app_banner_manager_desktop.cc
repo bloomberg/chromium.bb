@@ -11,8 +11,9 @@
 #include "chrome/browser/banners/app_banner_infobar_delegate_desktop.h"
 #include "chrome/browser/banners/app_banner_metrics.h"
 #include "chrome/browser/banners/app_banner_settings_helper.h"
-#include "chrome/browser/extensions/bookmark_app_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/web_applications/web_app_dialog_utils.h"
+#include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/web_application_info.h"
@@ -47,53 +48,45 @@ AppBannerManagerDesktop::AppBannerManagerDesktop(
 
 AppBannerManagerDesktop::~AppBannerManagerDesktop() { }
 
-void AppBannerManagerDesktop::CreateBookmarkApp(
-    WebappInstallSource install_source) {
+void AppBannerManagerDesktop::CreateWebApp(WebappInstallSource install_source) {
   content::WebContents* contents = web_contents();
   DCHECK(contents);
 
-  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
-  WebApplicationInfo web_app_info;
-
-  bookmark_app_helper_.reset(new extensions::BookmarkAppHelper(
-      profile, web_app_info, contents, install_source));
-
-  bookmark_app_helper_->Create(base::BindRepeating(
-      &AppBannerManager::DidFinishCreatingBookmarkApp, GetWeakPtr()));
+  // TODO(loyso): Take appropriate action if WebApps disabled for profile.
+  web_app::CreateWebAppFromBanner(
+      contents, install_source,
+      base::BindOnce(&AppBannerManager::DidFinishCreatingWebApp, GetWeakPtr()));
 }
 
-void AppBannerManagerDesktop::DidFinishCreatingBookmarkApp(
-    const extensions::Extension* extension,
-    const WebApplicationInfo& web_app_info) {
+void AppBannerManagerDesktop::DidFinishCreatingWebApp(
+    const web_app::AppId& app_id,
+    web_app::InstallResultCode code) {
   content::WebContents* contents = web_contents();
   if (!contents)
     return;
 
-  if (extension) {
-    SendBannerAccepted();
-    AppBannerSettingsHelper::RecordBannerInstallEvent(
-        contents, GetAppIdentifier(), AppBannerSettingsHelper::WEB);
-
-    // OnInstall must be called last since it resets Mojo bindings.
-    OnInstall(false /* is_native app */, blink::kWebDisplayModeStandalone);
-    return;
-  }
-
-  // |extension| is null, so we assume that the confirmation dialog was
-  // cancelled. Alternatively, the extension installation may have failed, but
+  // BookmarkAppInstallManager returns kFailedUnknownReason for any error.
+  // We can't distinguish kUserInstallDeclined case so far.
+  // If kFailedUnknownReason, we assume that the confirmation dialog was
+  // cancelled. Alternatively, the web app installation may have failed, but
   // we can't tell the difference here.
   // TODO(crbug.com/789381): plumb through enough information to be able to
   // distinguish between extension install failures and user-cancellations of
   // the app install dialog.
-  SendBannerDismissed();
-  TrackUserResponse(USER_RESPONSE_WEB_APP_DISMISSED);
-  AppBannerSettingsHelper::RecordBannerDismissEvent(
-      contents, GetAppIdentifier(), AppBannerSettingsHelper::WEB);
-}
+  if (code != web_app::InstallResultCode::kSuccess) {
+    SendBannerDismissed();
+    TrackUserResponse(USER_RESPONSE_WEB_APP_DISMISSED);
+    AppBannerSettingsHelper::RecordBannerDismissEvent(
+        contents, GetAppIdentifier(), AppBannerSettingsHelper::WEB);
+    return;
+  }
 
-void AppBannerManagerDesktop::ResetCurrentPageData() {
-  bookmark_app_helper_.reset();
-  AppBannerManager::ResetCurrentPageData();
+  SendBannerAccepted();
+  AppBannerSettingsHelper::RecordBannerInstallEvent(
+      contents, GetAppIdentifier(), AppBannerSettingsHelper::WEB);
+
+  // OnInstall must be called last since it resets Mojo bindings.
+  OnInstall(false /* is_native app */, blink::kWebDisplayModeStandalone);
 }
 
 bool AppBannerManagerDesktop::IsWebAppConsideredInstalled(
@@ -111,7 +104,7 @@ void AppBannerManagerDesktop::ShowBannerUi(WebappInstallSource install_source) {
     TrackDisplayEvent(DISPLAY_EVENT_WEB_APP_BANNER_CREATED);
     TrackUserResponse(USER_RESPONSE_WEB_APP_ACCEPTED);
     ReportStatus(SHOWING_APP_INSTALLATION_DIALOG);
-    CreateBookmarkApp(install_source);
+    CreateWebApp(install_source);
     return;
   }
 

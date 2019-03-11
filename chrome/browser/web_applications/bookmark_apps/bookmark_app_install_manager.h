@@ -10,6 +10,8 @@
 
 namespace extensions {
 
+// TODO(loyso): Erase this subclass together with BookmarkAppHelper.
+// crbug.com/915043.
 class BookmarkAppInstallManager final : public web_app::InstallManager {
  public:
   BookmarkAppInstallManager();
@@ -22,6 +24,10 @@ class BookmarkAppInstallManager final : public web_app::InstallManager {
                      WebappInstallSource install_source,
                      WebAppInstallDialogCallback dialog_callback,
                      OnceInstallCallback callback) override;
+  void InstallWebAppFromBanner(content::WebContents* web_contents,
+                               WebappInstallSource install_source,
+                               WebAppInstallDialogCallback dialog_callback,
+                               OnceInstallCallback callback) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BookmarkAppInstallManager);
