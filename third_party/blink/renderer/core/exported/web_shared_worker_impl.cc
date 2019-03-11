@@ -348,8 +348,6 @@ void WebSharedWorkerImpl::ContinueStartWorkerContext() {
     // worker script fetch on the worker thread.
     // TODO(nhiroki): Currently |address_space| and |origin_trial_tokens| are
     // not updated after worker script fetch. Update them.
-    // TODO(crbug.com/937191): Make SharedWorkerGlobalScope use CSP list from
-    // the response of the main script.
     auto creation_params = std::make_unique<GlobalScopeCreationParams>(
         script_request_url_, script_type,
         OffMainThreadWorkerScriptFetchOption::kEnabled, name_,
@@ -361,7 +359,9 @@ void WebSharedWorkerImpl::ContinueStartWorkerContext() {
         nullptr /* origin_trial_tokens */, devtools_worker_token_,
         std::make_unique<WorkerSettings>(document->GetFrame()->GetSettings()),
         kV8CacheOptionsDefault, nullptr /* worklet_module_response_map */,
-        std::move(pending_interface_provider_));
+        std::move(pending_interface_provider_), BeginFrameProviderParams(),
+        nullptr /* parent_feature_policy */, base::UnguessableToken(),
+        GlobalScopeCSPApplyMode::kUseResponseCSP);
     StartWorkerThread(std::move(creation_params), script_request_url_,
                       String() /* source_code */, *outside_settings_object);
     return;
