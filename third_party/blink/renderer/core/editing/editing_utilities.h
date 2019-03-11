@@ -167,7 +167,6 @@ bool IsPresentationalHTMLElement(const Node*);
 bool IsRenderedAsNonInlineTableImageOrHR(const Node*);
 bool IsNonTableCellHTMLBlockElement(const Node*);
 bool IsBlockFlowElement(const Node&);
-EUserSelect UsedValueOfUserSelect(const Node&);
 bool IsInPasswordField(const Position&);
 CORE_EXPORT TextDirection DirectionOfEnclosingBlockOf(const Position&);
 CORE_EXPORT TextDirection
