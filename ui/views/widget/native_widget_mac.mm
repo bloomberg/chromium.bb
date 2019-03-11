@@ -374,7 +374,7 @@ void NativeWidgetMac::StackAbove(gfx::NativeView native_view) {
 }
 
 void NativeWidgetMac::StackAtTop() {
-  NOTIMPLEMENTED();
+  [GetNativeWindow().GetNativeNSWindow() setOrderedIndex:0];
 }
 
 void NativeWidgetMac::SetShape(std::unique_ptr<Widget::ShapeRects> shape) {
