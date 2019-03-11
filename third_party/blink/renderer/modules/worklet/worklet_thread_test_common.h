@@ -16,9 +16,10 @@ class Document;
 class WorkerReportingProxy;
 
 std::unique_ptr<AnimationAndPaintWorkletThread>
-CreateAnimationAndPaintWorkletThread(Document*,
-                                     WorkerReportingProxy*,
-                                     AnimationWorkletProxyClient* = nullptr);
+CreateThreadAndProvideAnimationWorkletProxyClient(
+    Document*,
+    WorkerReportingProxy*,
+    AnimationWorkletProxyClient* = nullptr);
 
 }  // namespace blink
 

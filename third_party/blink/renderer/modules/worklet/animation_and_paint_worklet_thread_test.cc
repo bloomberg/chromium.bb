@@ -90,8 +90,8 @@ class AnimationAndPaintWorkletThreadTest : public PageTestBase {
 
 TEST_F(AnimationAndPaintWorkletThreadTest, Basic) {
   std::unique_ptr<AnimationAndPaintWorkletThread> worklet =
-      CreateAnimationAndPaintWorkletThread(&GetDocument(),
-                                           reporting_proxy_.get());
+      CreateThreadAndProvideAnimationWorkletProxyClient(&GetDocument(),
+                                                        reporting_proxy_.get());
   CheckWorkletCanExecuteScript(worklet.get());
   worklet->Terminate();
   worklet->WaitForShutdownForTesting();
@@ -102,8 +102,8 @@ TEST_F(AnimationAndPaintWorkletThreadTest, Basic) {
 TEST_F(AnimationAndPaintWorkletThreadTest, CreateSecondAndTerminateFirst) {
   // Create the first worklet and wait until it is initialized.
   std::unique_ptr<AnimationAndPaintWorkletThread> first_worklet =
-      CreateAnimationAndPaintWorkletThread(&GetDocument(),
-                                           reporting_proxy_.get());
+      CreateThreadAndProvideAnimationWorkletProxyClient(&GetDocument(),
+                                                        reporting_proxy_.get());
   WebThreadSupportingGC* first_thread =
       &first_worklet->GetWorkerBackingThread().BackingThread();
   CheckWorkletCanExecuteScript(first_worklet.get());
@@ -112,8 +112,8 @@ TEST_F(AnimationAndPaintWorkletThreadTest, CreateSecondAndTerminateFirst) {
 
   // Create the second worklet and immediately destroy the first worklet.
   std::unique_ptr<AnimationAndPaintWorkletThread> second_worklet =
-      CreateAnimationAndPaintWorkletThread(&GetDocument(),
-                                           reporting_proxy_.get());
+      CreateThreadAndProvideAnimationWorkletProxyClient(&GetDocument(),
+                                                        reporting_proxy_.get());
   // We don't use terminateAndWait here to avoid forcible termination.
   first_worklet->Terminate();
   first_worklet->WaitForShutdownForTesting();
@@ -140,8 +140,8 @@ TEST_F(AnimationAndPaintWorkletThreadTest, CreateSecondAndTerminateFirst) {
 TEST_F(AnimationAndPaintWorkletThreadTest, TerminateFirstAndCreateSecond) {
   // Create the first worklet, wait until it is initialized, and terminate it.
   std::unique_ptr<AnimationAndPaintWorkletThread> worklet =
-      CreateAnimationAndPaintWorkletThread(&GetDocument(),
-                                           reporting_proxy_.get());
+      CreateThreadAndProvideAnimationWorkletProxyClient(&GetDocument(),
+                                                        reporting_proxy_.get());
   WebThreadSupportingGC* first_thread =
       &worklet->GetWorkerBackingThread().BackingThread();
   CheckWorkletCanExecuteScript(worklet.get());
@@ -151,8 +151,8 @@ TEST_F(AnimationAndPaintWorkletThreadTest, TerminateFirstAndCreateSecond) {
   worklet->WaitForShutdownForTesting();
 
   // Create the second worklet. The backing thread is same.
-  worklet = CreateAnimationAndPaintWorkletThread(&GetDocument(),
-                                                 reporting_proxy_.get());
+  worklet = CreateThreadAndProvideAnimationWorkletProxyClient(
+      &GetDocument(), reporting_proxy_.get());
   WebThreadSupportingGC* second_thread =
       &worklet->GetWorkerBackingThread().BackingThread();
   EXPECT_EQ(first_thread, second_thread);
@@ -167,8 +167,8 @@ TEST_F(AnimationAndPaintWorkletThreadTest, TerminateFirstAndCreateSecond) {
 TEST_F(AnimationAndPaintWorkletThreadTest,
        CreatingSecondDuringTerminationOfFirst) {
   std::unique_ptr<AnimationAndPaintWorkletThread> first_worklet =
-      CreateAnimationAndPaintWorkletThread(&GetDocument(),
-                                           reporting_proxy_.get());
+      CreateThreadAndProvideAnimationWorkletProxyClient(&GetDocument(),
+                                                        reporting_proxy_.get());
   CheckWorkletCanExecuteScript(first_worklet.get());
   v8::Isolate* first_isolate = first_worklet->GetIsolate();
   ASSERT_TRUE(first_isolate);
@@ -181,8 +181,8 @@ TEST_F(AnimationAndPaintWorkletThreadTest,
   // on the worklet thread so quickly. This could be a source of flakiness.
 
   std::unique_ptr<AnimationAndPaintWorkletThread> second_worklet =
-      CreateAnimationAndPaintWorkletThread(&GetDocument(),
-                                           reporting_proxy_.get());
+      CreateThreadAndProvideAnimationWorkletProxyClient(&GetDocument(),
+                                                        reporting_proxy_.get());
 
   v8::Isolate* second_isolate = second_worklet->GetIsolate();
   ASSERT_TRUE(second_isolate);
@@ -203,16 +203,16 @@ TEST_F(AnimationAndPaintWorkletThreadTest,
       AnimationAndPaintWorkletThread::GetWorkletThreadHolderForTesting());
 
   std::unique_ptr<AnimationAndPaintWorkletThread> worklet =
-      CreateAnimationAndPaintWorkletThread(&GetDocument(),
-                                           reporting_proxy_.get());
+      CreateThreadAndProvideAnimationWorkletProxyClient(&GetDocument(),
+                                                        reporting_proxy_.get());
   ASSERT_TRUE(worklet.get());
   WorkletThreadHolder<AnimationAndPaintWorkletThread>* holder =
       AnimationAndPaintWorkletThread::GetWorkletThreadHolderForTesting();
   EXPECT_TRUE(holder);
 
   std::unique_ptr<AnimationAndPaintWorkletThread> worklet2 =
-      CreateAnimationAndPaintWorkletThread(&GetDocument(),
-                                           reporting_proxy_.get());
+      CreateThreadAndProvideAnimationWorkletProxyClient(&GetDocument(),
+                                                        reporting_proxy_.get());
   ASSERT_TRUE(worklet2.get());
   WorkletThreadHolder<AnimationAndPaintWorkletThread>* holder2 =
       AnimationAndPaintWorkletThread::GetWorkletThreadHolderForTesting();
@@ -231,8 +231,8 @@ TEST_F(AnimationAndPaintWorkletThreadTest,
       AnimationAndPaintWorkletThread::GetWorkletThreadHolderForTesting());
 
   std::unique_ptr<AnimationAndPaintWorkletThread> worklet3 =
-      CreateAnimationAndPaintWorkletThread(&GetDocument(),
-                                           reporting_proxy_.get());
+      CreateThreadAndProvideAnimationWorkletProxyClient(&GetDocument(),
+                                                        reporting_proxy_.get());
   ASSERT_TRUE(worklet3.get());
   EXPECT_TRUE(
       AnimationAndPaintWorkletThread::GetWorkletThreadHolderForTesting());

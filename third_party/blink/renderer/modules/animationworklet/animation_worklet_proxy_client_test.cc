@@ -66,23 +66,23 @@ class AnimationWorkletProxyClientTest : public RenderingTest {
                                                 AnimationWorkletProxyClient*,
                                                 base::WaitableEvent*);
   void RunTestOnWorkletThread(TestCallback callback) {
-    std::unique_ptr<WorkerThread> worklet =
-        CreateAnimationAndPaintWorkletThread(
+    std::unique_ptr<WorkerThread> worklet_thread =
+        CreateThreadAndProvideAnimationWorkletProxyClient(
             &GetDocument(), reporting_proxy_.get(), proxy_client_);
 
     base::WaitableEvent waitable_event;
     PostCrossThreadTask(
-        *worklet->GetTaskRunner(TaskType::kInternalTest), FROM_HERE,
+        *worklet_thread->GetTaskRunner(TaskType::kInternalTest), FROM_HERE,
         CrossThreadBind(
             callback, CrossThreadUnretained(this),
-            CrossThreadUnretained(worklet.get()),
+            CrossThreadUnretained(worklet_thread.get()),
             CrossThreadPersistent<AnimationWorkletProxyClient>(proxy_client_),
             CrossThreadUnretained(&waitable_event)));
     waitable_event.Wait();
     waitable_event.Reset();
 
-    worklet->Terminate();
-    worklet->WaitForShutdownForTesting();
+    worklet_thread->Terminate();
+    worklet_thread->WaitForShutdownForTesting();
   }
 
   void RunMutateCorrectAnimatorOnWorklet(
@@ -196,10 +196,10 @@ TEST_F(AnimationWorkletProxyClientTest, RegisteredAnimatorNameShouldSyncOnce) {
 TEST_F(AnimationWorkletProxyClientTest, SelectGlobalScope) {
   // Global scopes must be created on worker threads.
   std::unique_ptr<WorkerThread> first_worklet =
-      CreateAnimationAndPaintWorkletThread(
+      CreateThreadAndProvideAnimationWorkletProxyClient(
           &GetDocument(), reporting_proxy_.get(), proxy_client_);
   std::unique_ptr<WorkerThread> second_worklet =
-      CreateAnimationAndPaintWorkletThread(
+      CreateThreadAndProvideAnimationWorkletProxyClient(
           &GetDocument(), reporting_proxy_.get(), proxy_client_);
 
   ASSERT_NE(first_worklet, second_worklet);
