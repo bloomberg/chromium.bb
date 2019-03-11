@@ -43,7 +43,6 @@ class TestURLLoaderFactory;
 }  // namespace network
 
 // Necessary to declare these classes as friends.
-class IdentityManagerFactory;
 class PrefRegistrySimple;
 class SigninManagerAndroid;
 
@@ -519,7 +518,6 @@ class IdentityManager : public SigninManagerBase::Observer,
   // These clients needs to call SetPrimaryAccountSynchronously().
   friend chromeos::ChromeSessionManager;
   friend chromeos::UserSessionManager;
-  friend IdentityManagerFactory;
 
   // This friend is temporary during the conversion process.
   // TODO(crbug.com/889902): Delete this friendship when conversion is done.
@@ -530,14 +528,6 @@ class IdentityManager : public SigninManagerBase::Observer,
   ProfileOAuth2TokenService* GetTokenService();
   AccountTrackerService* GetAccountTrackerService();
   GaiaCookieManagerService* GetGaiaCookieManagerService();
-
-  // Sets the primary account info synchronously with both the IdentityManager
-  // and its backing SigninManager/ProfileOAuth2TokenService instances.
-  // Prefer using the methods in identity_test_{environment, utils}.h to using
-  // this method directly.
-  void SetPrimaryAccountSynchronouslyForTests(const std::string& gaia_id,
-                                              const std::string& email_address,
-                                              const std::string& refresh_token);
 
   // Sets the primary account info synchronously with both the IdentityManager
   // and its backing SigninManager instance. If |refresh_token| is not empty,
