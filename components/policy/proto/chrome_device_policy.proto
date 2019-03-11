@@ -325,7 +325,7 @@ message SystemTimezoneProto {
     IP_ONLY = 2;
     SEND_WIFI_ACCESS_POINTS = 3;
     SEND_ALL_LOCATION_INFO = 4;
-  };
+  }
 
   optional AutomaticTimezoneDetectionType timezone_detection_type = 2;
 }
@@ -407,7 +407,7 @@ message DeviceLocalAccountInfoProto {
     // An account that serves as a container for a single full-screen
     // Android app.
     ACCOUNT_TYPE_KIOSK_ANDROID_APP = 2;
-  };
+  }
 
   // The account type.
   optional AccountType type = 3;
@@ -555,7 +555,7 @@ message AccessibilitySettingsProto {
     SCREEN_MAGNIFIER_TYPE_NONE = 0;
     // Full-screen magnifier enabled.
     SCREEN_MAGNIFIER_TYPE_FULL = 1;
-  };
+  }
 
   // Sets the default type of screen magnifier that is enabled on the login
   // screen. If this policy is set, it controls the type of screen magnifier
@@ -760,7 +760,7 @@ message DisplayRotationDefaultProto {
     ROTATE_90 = 1;
     ROTATE_180 = 2;
     ROTATE_270 = 3;
-  };
+  }
   optional Rotation display_rotation_default = 1;
 }
 
@@ -796,7 +796,7 @@ message LoginAuthenticationBehaviorProto {
   enum LoginBehavior {
     GAIA = 0;
     SAML_INTERSTITIAL = 1;
-  };
+  }
 
   optional LoginBehavior login_authentication_behavior = 1 [default = GAIA];
 }
@@ -879,7 +879,7 @@ message DeviceEcryptfsMigrationStrategyProto {
     DISALLOW_ARC = 1;
     // The data migration is allowed, opening the possibility to use ARC.
     ALLOW_MIGRATION = 2;
-  };
+  }
 
   optional MigrationStrategy migration_strategy = 1;
 }
@@ -898,7 +898,7 @@ message DeviceSecondFactorAuthenticationProto {
     U2F = 2;
     // U2F plus extensions for individual attestation certificate.
     U2F_EXTENDED = 3;
-  };
+  }
 
   optional U2fMode mode = 1;
 }
@@ -1021,7 +1021,7 @@ message DeviceLoginScreenAutoSelectCertificateForUrls {
   // CommonName $ISSUER_CN. If $FILTER is the empty dictionary {}, the selection
   // of client certificates is not additionally restricted.
   repeated string login_screen_auto_select_certificate_rules = 1;
-};
+}
 
 // Setting that controls whether unaffiliated users are allowed to use ARC
 // (true by default)
