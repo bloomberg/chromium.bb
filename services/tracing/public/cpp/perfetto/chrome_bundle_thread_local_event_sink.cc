@@ -293,8 +293,20 @@ void ChromeBundleThreadLocalEventSink::UpdateDuration(
     return;
   }
 
-  DCHECK_EQ(handle.event_index, current_stack_depth_);
   DCHECK_GE(current_stack_depth_, 1u);
+  // During trace shutdown, as the list of enabled categories are
+  // non-monotonically shut down, there's the possibility that events higher in
+  // the stack will have their category disabled prior to events lower in the
+  // stack, hence we get misaligned here. In this case, as we know we're
+  // shutting down, we leave the events unfinished.
+  if (handle.event_index != current_stack_depth_) {
+    DCHECK(handle.event_index > 0 &&
+           handle.event_index < current_stack_depth_ &&
+           !base::trace_event::TraceLog::GetInstance()->IsEnabled());
+    current_stack_depth_ = handle.event_index - 1;
+    return;
+  }
+
   current_stack_depth_--;
   complete_event_stack_[current_stack_depth_].UpdateDuration(now, thread_now);
   AddTraceEvent(&complete_event_stack_[current_stack_depth_], nullptr);
