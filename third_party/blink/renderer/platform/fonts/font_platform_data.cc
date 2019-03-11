@@ -171,12 +171,6 @@ FontPlatformData::~FontPlatformData() = default;
 CTFontRef FontPlatformData::CtFont() const {
   return SkTypeface_GetCTFontRef(typeface_.get());
 }
-
-CGFontRef FontPlatformData::CgFont() const {
-  if (!CtFont())
-    return nullptr;
-  return CTFontCopyGraphicsFont(CtFont(), 0);
-}
 #endif
 
 const FontPlatformData& FontPlatformData::operator=(
