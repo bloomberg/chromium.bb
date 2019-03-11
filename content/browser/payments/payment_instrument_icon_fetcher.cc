@@ -99,8 +99,8 @@ void DownloadBestMatchingIcon(
   bool can_download_icon = ManifestIconDownloader::Download(
       web_contents, icon_url, kPaymentAppIdealIconSize,
       kPaymentAppMinimumIconSize,
-      base::Bind(&OnIconFetched, web_contents, copy_icons,
-                 base::Passed(std::move(callback))));
+      base::BindOnce(&OnIconFetched, web_contents, copy_icons,
+                     std::move(callback)));
   DCHECK(can_download_icon);
 }
 
