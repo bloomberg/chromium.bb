@@ -3009,6 +3009,8 @@
       'tags': [],
       'desc': '''Allows you to specify the proxy server used by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing proxy settings.
 
+          This policy only takes effect if the <ph name="PROXY_SETTINGS_POLICY_NAME">ProxySettings</ph> policy has not been specified.
+
           If you choose to never use a proxy server and always connect directly, all other options are ignored.
 
           If you choose to use system proxy settings, all other options are ignored.
@@ -3083,6 +3085,8 @@
 
           Allows you to specify the proxy server used by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing proxy settings.
 
+          This policy only takes effect  if the <ph name="PROXY_SETTINGS_POLICY_NAME">ProxySettings</ph> policy has not been specified.
+
           If you choose to never use a proxy server and always connect directly, all other options are ignored.
 
           If you choose to use system proxy settings or auto detect the proxy server, all other options are ignored.
@@ -3116,7 +3120,7 @@
       'tags': [],
       'desc': '''You can specify the URL of the proxy server here.
 
-          This policy only takes effect if you have selected manual proxy settings at 'Choose how to specify proxy server settings'.
+          This policy only takes effect if you have selected manual proxy settings at 'Choose how to specify proxy server settings' and if the <ph name="PROXY_SETTINGS_POLICY_NAME">ProxySettings</ph> policy has not been specified.
 
           You should leave this policy not set if you have selected any other mode for setting proxy policies.
 
@@ -3143,7 +3147,7 @@
       'tags': [],
       'desc': '''You can specify a URL to a proxy .pac file here.
 
-          This policy only takes effect if you have selected manual proxy settings at 'Choose how to specify proxy server settings'.
+          This policy only takes effect if you have selected manual proxy settings at 'Choose how to specify proxy server settings' and if the <ph name="PROXY_SETTINGS_POLICY_NAME">ProxySettings</ph> policy has not been specified.
 
           You should leave this policy not set if you have selected any other mode for setting proxy policies.
 
@@ -3170,7 +3174,7 @@
       'tags': [],
       'desc': '''<ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will bypass any proxy for the list of hosts given here.
 
-          This policy only takes effect if you have selected manual proxy settings at 'Choose how to specify proxy server settings'.
+          This policy only takes effect if you have selected manual proxy settings at 'Choose how to specify proxy server settings' and if the <ph name="PROXY_SETTINGS_POLICY_NAME">ProxySettings</ph> policy has not been specified.
 
           You should leave this policy not set if you have selected any other mode for setting proxy policies.
 
@@ -3185,7 +3189,10 @@
       'schema': {
         'type': 'object',
         'properties': {
-          'ProxyMode': { 'type': 'string' },
+          'ProxyMode': {
+            'type': 'string',
+            'enum': ['direct', 'auto_detect', 'pac_script', 'fixed_servers', 'system'],
+          },
           'ProxyPacUrl': { 'type': 'string' },
           'ProxyServer': { 'type': 'string' },
           'ProxyBypassList': { 'type': 'string' },
@@ -3197,7 +3204,6 @@
         'chrome_os:18-',
         'android:30-',
       ],
-      'future': True,
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -3208,7 +3214,32 @@
       'tags': ['system-security'],
       'desc': '''Configures the proxy settings for <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>. These proxy settings will be available for ARC-apps too.
 
-      This policy isn't ready for usage yet, please don't use it.''',
+          If you enable this setting, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and ARC-apps ignore all proxy-related options specified from the command line.
+
+          Leaving this policy not set will allow the users to choose the proxy settings on their own.
+
+          If the <ph name="PROXY_SETTINGS_POLICY_NAME">ProxySettings</ph> policy is set, it will override any of the individual policies <ph name="PROXY_MODE_POLICY_NAME">ProxyMode</ph>, <ph name="PROXY_PAC_URL_POLICY_NAME">ProxyPacUrl</ph>, <ph name="PROXY_SERVER_POLICY_NAME">ProxyServer</ph>, <ph name="PROXY_BYPASS_POLICY_NAME">ProxyBypassList</ph> and <ph name="PROXY_SERVER_MODE_POLICY_NAME">ProxyServerMode</ph>.
+
+          The <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD">ProxyMode</ph> field allows you to specify the proxy server used by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing proxy settings.
+
+          The <ph name="PROXY_PAC_URL_PROXY_SETTINGS_FIELD">ProxyPacUrl</ph> field is a URL to a proxy .pac file.
+
+          The <ph name="PROXY_SERVER_PROXY_SETTINGS_FIELD">ProxyServer</ph> field is a URL of the proxy server.
+
+          The <ph name="PROXY_BYPASS_LIST_PROXY_SETTINGS_FIELD">ProxyBypassList</ph> field is a list of proxy hosts that <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will bypass.
+
+          The <ph name="PROXY_SERVER_MODE_PROXY_SETTINGS_FIELD">ProxyServerMode</ph> field is deprecated in favor of the field 'ProxyMode'. It allows you to specify the proxy server used by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing proxy settings.
+
+          If you choose the value 'direct' as 'ProxyMode', a proxy will never be used and all other fields will be ignored.
+
+          If you choose the value 'system' as 'ProxyMode', the systems's proxy will be used and all other fields will be ignored.
+
+          If you choose the value 'auto_detect' as 'ProxyMode', all other fields will be ignored.
+
+          If you choose the value 'fixed_server' as 'ProxyMode', the 'ProxyServer' and 'ProxyBypassList' fields will be used.
+
+          If you choose the value 'pac_script' as 'ProxyMode', the 'ProxyPacUrl' and 'ProxyBypassList' fields will be used.''',
+
       'arc_support': 'Only a subset of proxy configuration options are made available to Android apps. Android apps may voluntarily choose to use the proxy. You cannot force them to use a proxy.',
     },
     {
