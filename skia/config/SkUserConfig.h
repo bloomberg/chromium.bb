@@ -155,6 +155,11 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #define SK_DISABLE_EXPLICIT_GPU_RESOURCE_ALLOCATION
 #endif
 
+// Chrome should only sort opLists within DDLs
+#ifndef SK_DISABLE_OPLIST_SORTING
+#define SK_DISABLE_OPLIST_SORTING
+#endif
+
 #ifndef SK_IGNORE_LINEONLY_AA_CONVEX_PATH_OPTS
 #define SK_IGNORE_LINEONLY_AA_CONVEX_PATH_OPTS
 #endif
