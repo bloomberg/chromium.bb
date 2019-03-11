@@ -63,7 +63,6 @@
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/sync/password_model_worker.h"
 #include "components/search_engines/search_engine_data_type_controller.h"
-#include "components/search_engines/search_engine_model_type_controller.h"
 #include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "components/sync/base/pref_names.h"
@@ -395,20 +394,19 @@ ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
 
   // Search Engine sync is enabled by default.  Register unless explicitly
   // disabled. The service can be null in tests.
-  TemplateURLService* template_url_service =
-      TemplateURLServiceFactory::GetForProfile(profile_);
   if (!disabled_types.Has(syncer::SEARCH_ENGINES)) {
-    // TODO(mastiz): For the null case exercised in some tests, we should also
-    // exercise the new controller (which currently requires a non-null
-    // service).
-    if (base::FeatureList::IsEnabled(switches::kSyncPseudoUSSSearchEngines) &&
-        template_url_service) {
-      controllers.push_back(std::make_unique<SearchEngineModelTypeController>(
-          dump_stack, GetModelTypeStoreService()->GetStoreFactory(),
-          template_url_service));
+    if (base::FeatureList::IsEnabled(switches::kSyncPseudoUSSSearchEngines)) {
+      controllers.push_back(
+          std::make_unique<syncer::SyncableServiceBasedModelTypeController>(
+              syncer::SEARCH_ENGINES,
+              GetModelTypeStoreService()->GetStoreFactory(),
+              base::BindOnce(&ChromeSyncClient::GetSyncableServiceForType,
+                             base::Unretained(this), syncer::SEARCH_ENGINES),
+              dump_stack));
     } else {
       controllers.push_back(std::make_unique<SearchEngineDataTypeController>(
-          dump_stack, sync_service, this, template_url_service));
+          dump_stack, sync_service, this,
+          TemplateURLServiceFactory::GetForProfile(profile_)));
     }
   }
 #endif  // !defined(OS_ANDROID)
