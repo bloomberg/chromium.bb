@@ -124,19 +124,11 @@ class BASE_EXPORT StackSamplingProfiler {
     DISALLOW_COPY_AND_ASSIGN(ProfileBuilder);
   };
 
-  // Creates a profiler for the CURRENT thread. An optional |test_delegate| can
-  // be supplied by tests. The caller must ensure that this object gets
-  // destroyed before the current thread exits.
-  StackSamplingProfiler(
-      const SamplingParams& params,
-      std::unique_ptr<ProfileBuilder> profile_builder,
-      NativeStackSamplerTestDelegate* test_delegate = nullptr);
-
-  // Creates a profiler for ANOTHER thread. An optional |test_delegate| can be
-  // supplied by tests.
+  // Creates a profiler for the specified thread. An optional |test_delegate|
+  // can be supplied by tests.
   //
-  // IMPORTANT: The caller must ensure that the thread being sampled does not
-  // exit before this object gets destructed or Bad Things(tm) may occur.
+  // The caller must ensure that this object gets destroyed before the thread
+  // exits.
   StackSamplingProfiler(
       PlatformThreadId thread_id,
       const SamplingParams& params,
