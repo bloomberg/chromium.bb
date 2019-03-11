@@ -92,7 +92,8 @@ class ArcFileSystemBridgeTest : public testing::Test {
   std::unique_ptr<ArcFileSystemBridge> arc_file_system_bridge_;
 };
 
-TEST_F(ArcFileSystemBridgeTest, GetFileName) {
+// TODO(crbug.com/939935): test is flaky, disabled.
+TEST_F(ArcFileSystemBridgeTest, DISABLED_GetFileName) {
   base::RunLoop run_loop;
   arc_file_system_bridge_->GetFileName(
       EncodeToChromeContentProviderUrl(GURL(kTestUrl)).spec(),
