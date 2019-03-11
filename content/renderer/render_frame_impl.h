@@ -948,7 +948,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void SyncSelectionIfRequired();
 
   void ScrollFocusedEditableElementIntoRect(const gfx::Rect& rect);
-  void DidChangeVisibleViewport();
+  void ResetHasScrolledFocusedEditableIntoView();
 
   // Called to notify a frame that it called |window.focus()| on a different
   // frame.
