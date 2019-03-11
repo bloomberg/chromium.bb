@@ -144,6 +144,7 @@
   X(TRACE_DISABLED_BY_DEFAULT("animation-worklet"))                      \
   X(TRACE_DISABLED_BY_DEFAULT("audio-worklet"))                          \
   X(TRACE_DISABLED_BY_DEFAULT("blink.debug"))                            \
+  X(TRACE_DISABLED_BY_DEFAULT("blink.debug.display_lock"))               \
   X(TRACE_DISABLED_BY_DEFAULT("blink.debug.layout"))                     \
   X(TRACE_DISABLED_BY_DEFAULT("blink.debug.layout.trees"))               \
   X(TRACE_DISABLED_BY_DEFAULT("blink.feature_usage"))                    \
