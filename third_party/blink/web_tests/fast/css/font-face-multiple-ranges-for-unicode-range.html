@@ -125,6 +125,7 @@ function createAndAppendSpan(id, subId, fontFamily)
     testsElement.appendChild(document.createElement("br"));
 }
 
+var test_pairs = [];
 for (var mainTestId = 0; mainTestId < expectedResults.length; mainTestId++) {
     for (var subTestId = 0; subTestId < testStrings.length; subTestId++) {
         var testId = "test_" + mainTestId + "_" + subTestId;
@@ -135,11 +136,23 @@ for (var mainTestId = 0; mainTestId < expectedResults.length; mainTestId++) {
         var refFontFamily = expectedResults[mainTestId][subTestId];
         createAndAppendSpan(refId, subTestId, refFontFamily);
 
-        shouldBe("document.getElementById('" + testId + "').offsetWidth", "document.getElementById('" + refId + "').offsetWidth");
+        test_pairs.push([testId, refId]);
+
     }
     testsElement.appendChild(document.createElement("br"));
 }
+
+function validate() {
+  for (pair of test_pairs) {
+    var testId = pair[0];
+    var refId = pair[1];
+    shouldBe("document.getElementById('" + testId + "').offsetWidth", "document.getElementById('" + refId + "').offsetWidth");
+  }
+  finishJSTest();
+}
+
+window.jsTestIsAsync = true;
+document.fonts.ready.then(validate);
 </script>
 </body>
 </html>
-

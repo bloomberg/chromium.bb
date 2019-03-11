@@ -39,8 +39,12 @@
 <span id="ref" class="ref">m</span>
 <script>
 description('@font-face should not affect width of characters outside of its unicode-range');
-shouldBe("document.getElementById('test1').offsetWidth", "document.getElementById('ref').offsetWidth");
-shouldBe("document.getElementById('test2').offsetWidth", "document.getElementById('ref').offsetWidth");
+window.jsTestIsAsync = true;
+document.fonts.ready.then(() => {
+  shouldBe("document.getElementById('test1').offsetWidth", "document.getElementById('ref').offsetWidth");
+  shouldBe("document.getElementById('test2').offsetWidth", "document.getElementById('ref').offsetWidth");
+  finishJSTest();
+});
 </script>
 </body>
 </html>
