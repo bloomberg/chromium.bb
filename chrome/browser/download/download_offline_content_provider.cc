@@ -198,7 +198,6 @@ void DownloadOfflineContentProvider::OnDownloadUpdated(DownloadItem* item) {
   if (item->GetState() == DownloadItem::COMPLETE) {
     // TODO(crbug.com/938152): May be move this to DownloadItem.
     AddCompletedDownload(item);
-    return;
   }
 
   UpdateObservers(item);
@@ -219,23 +218,23 @@ void DownloadOfflineContentProvider::OnDownloadRemoved(DownloadItem* item) {
 
 void DownloadOfflineContentProvider::AddCompletedDownload(DownloadItem* item) {
 #if defined(OS_ANDROID)
-  if (!item->GetTargetFilePath().IsContentUri()) {
-    DownloadManagerBridge::AddCompletedDownload(
-        item, base::BindOnce(
-                  &DownloadOfflineContentProvider::AddCompletedDownloadDone,
-                  weak_ptr_factory_.GetWeakPtr(), item));
-  } else {
-    AddCompletedDownloadDone(item, -1);
-  }
-#else
-  AddCompletedDownloadDone(item, -1);
+  if (completed_downloads_.find(item->GetGuid()) != completed_downloads_.end())
+    return;
+  completed_downloads_.insert(item->GetGuid());
+
+  DownloadManagerBridge::AddCompletedDownload(
+      item,
+      base::BindOnce(&DownloadOfflineContentProvider::AddCompletedDownloadDone,
+                     weak_ptr_factory_.GetWeakPtr(), item));
 #endif
 }
 
 void DownloadOfflineContentProvider::AddCompletedDownloadDone(
     DownloadItem* item,
-    int64_t system_download_id) {
-  UpdateObservers(item);
+    int64_t system_download_id,
+    bool can_resolve) {
+  if (can_resolve && item->HasUserGesture())
+    item->OpenDownload();
 }
 
 DownloadItem* DownloadOfflineContentProvider::GetDownload(
