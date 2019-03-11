@@ -5,18 +5,22 @@
 #include "components/viz/service/surfaces/surface_allocation_group.h"
 
 #include "components/viz/service/surfaces/surface.h"
+#include "components/viz/service/surfaces/surface_manager.h"
 
 namespace viz {
 
 SurfaceAllocationGroup::SurfaceAllocationGroup(
+    SurfaceManager* surface_manager,
     const FrameSinkId& submitter,
     const base::UnguessableToken& embed_token)
-    : submitter_(submitter), embed_token_(embed_token) {}
+    : submitter_(submitter),
+      embed_token_(embed_token),
+      surface_manager_(surface_manager) {}
 
 SurfaceAllocationGroup::~SurfaceAllocationGroup() = default;
 
 bool SurfaceAllocationGroup::IsReadyToDestroy() const {
-  return surfaces_.empty();
+  return surfaces_.empty() && active_embedders_.empty();
 }
 
 void SurfaceAllocationGroup::RegisterSurface(Surface* surface) {
@@ -32,6 +36,18 @@ void SurfaceAllocationGroup::UnregisterSurface(Surface* surface) {
   auto it = std::find(surfaces_.begin(), surfaces_.end(), surface);
   DCHECK(it != surfaces_.end());
   surfaces_.erase(it);
+  MaybeMarkForDestruction();
+}
+
+void SurfaceAllocationGroup::RegisterActiveEmbedder(Surface* surface) {
+  DCHECK(!active_embedders_.count(surface));
+  active_embedders_.insert(surface);
+}
+
+void SurfaceAllocationGroup::UnregisterActiveEmbedder(Surface* surface) {
+  DCHECK(active_embedders_.count(surface));
+  active_embedders_.erase(surface);
+  MaybeMarkForDestruction();
 }
 
 Surface* SurfaceAllocationGroup::FindLatestActiveSurfaceInRange(
@@ -73,6 +89,11 @@ Surface* SurfaceAllocationGroup::FindLatestActiveSurfaceInRange(
   return result;
 }
 
+void SurfaceAllocationGroup::OnFirstSurfaceActivation(Surface* surface) {
+  for (Surface* embedder : active_embedders_)
+    embedder->OnChildActivatedForActiveFrame(surface->surface_id());
+}
+
 Surface* SurfaceAllocationGroup::FindOlderOrEqual(
     const SurfaceId& surface_id) const {
   DCHECK_EQ(submitter_, surface_id.frame_sink_id());
@@ -110,6 +131,11 @@ Surface* SurfaceAllocationGroup::FindOlderOrEqual(
   // No active surface was found, so return null.
   DCHECK_EQ(-1, begin);
   return nullptr;
+}
+
+void SurfaceAllocationGroup::MaybeMarkForDestruction() {
+  if (IsReadyToDestroy())
+    surface_manager_->SetAllocationGroupsNeedGarbageCollection();
 }
 
 }  // namespace viz
