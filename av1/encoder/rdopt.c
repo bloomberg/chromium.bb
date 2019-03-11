@@ -3935,6 +3935,24 @@ static void fetch_tx_rd_info(int n4, const MB_RD_INFO *const tx_rd_info,
   *rd_stats = tx_rd_info->rd_stats;
 }
 
+static INLINE int32_t find_mb_rd_info(const MB_RD_RECORD *const mb_rd_record,
+                                      const int64_t ref_best_rd,
+                                      const uint32_t hash) {
+  int32_t match_index = -1;
+  if (ref_best_rd != INT64_MAX) {
+    for (int i = 0; i < mb_rd_record->num; ++i) {
+      const int index = (mb_rd_record->index_start + i) % RD_RECORD_BUFFER_LEN;
+      // If there is a match in the tx_rd_record, fetch the RD decision and
+      // terminate early.
+      if (mb_rd_record->tx_rd_info[index].hash_value == hash) {
+        match_index = index;
+        break;
+      }
+    }
+  }
+  return match_index;
+}
+
 static void super_block_yrd(const AV1_COMP *const cpi, MACROBLOCK *x,
                             RD_STATS *rd_stats, BLOCK_SIZE bs,
                             int64_t ref_best_rd) {
@@ -3947,6 +3965,7 @@ static void super_block_yrd(const AV1_COMP *const cpi, MACROBLOCK *x,
   const int mi_col = -xd->mb_to_left_edge >> (3 + MI_SIZE_LOG2);
 
   uint32_t hash = 0;
+  int32_t match_index = -1;
   MB_RD_RECORD *mb_rd_record = NULL;
   const int within_border = mi_row >= xd->tile.mi_row_start &&
                             (mi_row + mi_size_high[bs] < xd->tile.mi_row_end) &&
@@ -3958,21 +3977,14 @@ static void super_block_yrd(const AV1_COMP *const cpi, MACROBLOCK *x,
   if (is_mb_rd_hash_enabled) {
     hash = get_block_residue_hash(x, bs);
     mb_rd_record = &x->mb_rd_record;
-    if (ref_best_rd != INT64_MAX) {
-      for (int i = 0; i < mb_rd_record->num; ++i) {
-        const int index =
-            (mb_rd_record->index_start + i) % RD_RECORD_BUFFER_LEN;
-        // If there is a match in the tx_rd_record, fetch the RD decision and
-        // terminate early.
-        if (mb_rd_record->tx_rd_info[index].hash_value == hash) {
-          MB_RD_INFO *tx_rd_info = &mb_rd_record->tx_rd_info[index];
-          fetch_tx_rd_info(n4, tx_rd_info, rd_stats, x);
-          // Reset the pruning flags.
-          av1_zero(x->tx_search_prune);
-          x->tx_split_prune_flag = 0;
-          return;
-        }
-      }
+    match_index = find_mb_rd_info(mb_rd_record, ref_best_rd, hash);
+    if (match_index != -1) {
+      MB_RD_INFO *tx_rd_info = &mb_rd_record->tx_rd_info[match_index];
+      fetch_tx_rd_info(n4, tx_rd_info, rd_stats, x);
+      // Reset the pruning flags.
+      av1_zero(x->tx_search_prune);
+      x->tx_split_prune_flag = 0;
+      return;
     }
   }
 
@@ -5877,6 +5889,7 @@ static void pick_tx_size_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
   }
 
   uint32_t hash = 0;
+  int32_t match_index = -1;
   MB_RD_RECORD *mb_rd_record = NULL;
   const int within_border =
       mi_row >= xd->tile.mi_row_start &&
@@ -5888,18 +5901,11 @@ static void pick_tx_size_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
   if (is_mb_rd_hash_enabled) {
     hash = get_block_residue_hash(x, bsize);
     mb_rd_record = &x->mb_rd_record;
-    if (ref_best_rd != INT64_MAX) {
-      for (int i = 0; i < mb_rd_record->num; ++i) {
-        const int index =
-            (mb_rd_record->index_start + i) % RD_RECORD_BUFFER_LEN;
-        // If there is a match in the tx_rd_record, fetch the RD decision and
-        // terminate early.
-        if (mb_rd_record->tx_rd_info[index].hash_value == hash) {
-          MB_RD_INFO *tx_rd_info = &mb_rd_record->tx_rd_info[index];
-          fetch_tx_rd_info(n4, tx_rd_info, rd_stats, x);
-          return;
-        }
-      }
+    match_index = find_mb_rd_info(mb_rd_record, ref_best_rd, hash);
+    if (match_index != -1) {
+      MB_RD_INFO *tx_rd_info = &mb_rd_record->tx_rd_info[match_index];
+      fetch_tx_rd_info(n4, tx_rd_info, rd_stats, x);
+      return;
     }
   }
 
