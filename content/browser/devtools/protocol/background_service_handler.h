@@ -42,6 +42,7 @@ class BackgroundServiceHandler
   Response StopObserving(const std::string& service) override;
   Response SetRecording(bool should_record,
                         const std::string& service) override;
+  Response ClearEvents(const std::string& service) override;
 
  private:
   void DidGetLoggedEvents(
