@@ -33,6 +33,7 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "services/network/public/cpp/features.h"
 #include "storage/browser/quota/special_storage_policy.h"
+#include "url/gurl.h"
 #include "url/origin.h"
 
 using base::UserMetricsAction;
@@ -64,17 +65,16 @@ bool DoesOriginMatchMaskAndURLs(
     const base::Callback<bool(const GURL&)>& predicate,
     const BrowsingDataRemoverDelegate::EmbedderOriginTypeMatcher&
         embedder_matcher,
-    const GURL& origin,
+    const url::Origin& origin,
     storage::SpecialStoragePolicy* policy) {
-  if (!predicate.is_null() && !predicate.Run(origin))
+  if (!predicate.is_null() && !predicate.Run(origin.GetURL()))
     return false;
 
   const std::vector<std::string>& schemes = url::GetWebStorageSchemes();
-  bool is_web_scheme =
-      base::ContainsValue(schemes, origin.GetOrigin().scheme());
+  bool is_web_scheme = base::ContainsValue(schemes, origin.scheme());
 
   // If a websafe origin is unprotected, it matches iff UNPROTECTED_WEB.
-  if ((!policy || !policy->IsStorageProtected(origin.GetOrigin())) &&
+  if ((!policy || !policy->IsStorageProtected(origin.GetURL())) &&
       is_web_scheme &&
       (origin_type_mask & BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB)) {
     return true;
@@ -82,8 +82,7 @@ bool DoesOriginMatchMaskAndURLs(
   origin_type_mask &= ~BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB;
 
   // Hosted applications (protected and websafe origins) iff PROTECTED_WEB.
-  if (policy && policy->IsStorageProtected(origin.GetOrigin()) &&
-      is_web_scheme &&
+  if (policy && policy->IsStorageProtected(origin.GetURL()) && is_web_scheme &&
       (origin_type_mask & BrowsingDataRemover::ORIGIN_TYPE_PROTECTED_WEB)) {
     return true;
   }
@@ -144,7 +143,7 @@ void BrowsingDataRemoverImpl::SetEmbedderDelegate(
 
 bool BrowsingDataRemoverImpl::DoesOriginMatchMask(
     int origin_type_mask,
-    const GURL& origin,
+    const url::Origin& origin,
     storage::SpecialStoragePolicy* policy) const {
   BrowsingDataRemoverDelegate::EmbedderOriginTypeMatcher embedder_matcher;
   if (embedder_delegate_)

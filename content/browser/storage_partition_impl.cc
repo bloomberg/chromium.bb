@@ -181,8 +181,7 @@ void OnLocalStorageUsageInfo(
       base::BarrierClosure(infos.size(), std::move(done_callback));
   for (size_t i = 0; i < infos.size(); ++i) {
     if (!origin_matcher.is_null() &&
-        !origin_matcher.Run(infos[i].origin.GetURL(),
-                            special_storage_policy.get())) {
+        !origin_matcher.Run(infos[i].origin, special_storage_policy.get())) {
       barrier.Run();
       continue;
     }
@@ -217,7 +216,8 @@ void OnSessionStorageUsageInfo(
 
   for (size_t i = 0; i < infos.size(); ++i) {
     if (!origin_matcher.is_null() &&
-        !origin_matcher.Run(infos[i].origin, special_storage_policy.get())) {
+        !origin_matcher.Run(url::Origin::Create(infos[i].origin),
+                            special_storage_policy.get())) {
       barrier.Run();
       continue;
     }
@@ -238,7 +238,7 @@ void ClearLocalStorageOnUIThread(
 
   if (!storage_origin.is_empty()) {
     bool can_delete = origin_matcher.is_null() ||
-                      origin_matcher.Run(storage_origin,
+                      origin_matcher.Run(url::Origin::Create(storage_origin),
                                          special_storage_policy.get());
     if (can_delete) {
       dom_storage_context->DeleteLocalStorage(
@@ -1127,7 +1127,7 @@ void StoragePartitionImpl::QuotaManagedDataDeletionHelper::
       continue;
 
     if (!origin_matcher.is_null() &&
-        !origin_matcher.Run(origin.GetURL(), special_storage_policy.get())) {
+        !origin_matcher.Run(origin, special_storage_policy.get())) {
       continue;
     }
 

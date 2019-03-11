@@ -225,7 +225,7 @@ void ClearPrecacheInBackground(content::BrowserContext* browser_context) {
 
 // Returned by ChromeBrowsingDataRemoverDelegate::GetOriginTypeMatcher().
 bool DoesOriginMatchEmbedderMask(int origin_type_mask,
-                                 const GURL& origin,
+                                 const url::Origin& origin,
                                  storage::SpecialStoragePolicy* policy) {
   DCHECK_EQ(
       0,
@@ -236,7 +236,7 @@ bool DoesOriginMatchEmbedderMask(int origin_type_mask,
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   // Packaged apps and extensions match iff EXTENSION.
-  if ((origin.GetOrigin().scheme() == extensions::kExtensionScheme) &&
+  if ((origin.scheme() == extensions::kExtensionScheme) &&
       (origin_type_mask &
        ChromeBrowsingDataRemoverDelegate::ORIGIN_TYPE_EXTENSION)) {
     return true;
