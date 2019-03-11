@@ -805,46 +805,6 @@ testcase.dirContextMenuUsbs = async () => {
 };
 
 /**
- * Tests context menu for Mtp root and a folder inside it.
- */
-testcase.dirContextMenuMtp = async () => {
-  const folderMenus = [
-    ['#cut', true],
-    ['#copy', true],
-    ['#paste-into-folder', false],
-    ['#rename', true],
-    ['#delete', true],
-    ['#new-folder', true],
-  ];
-  const mtpQuery = '#directory-tree [entry-label="fake-mtp"]';
-  const folderQuery = mtpQuery + ' [entry-label="A"]';
-
-  // Mount fake MTP volume.
-  await sendTestMessage({name: 'mountFakeMtp'});
-
-  // Open Files app on local Downloads.
-  const appId =
-      await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.beautiful], []);
-
-  // Right click on MTP root.
-  await remoteCall.waitForElement(appId, mtpQuery);
-  chrome.test.assertTrue(
-      !!await remoteCall.callRemoteTestUtil(
-          'fakeMouseRightClick', appId, [mtpQuery]),
-      'fakeMouseRightClick failed');
-
-  // Check that both menus are still hidden, since there is not context menu for
-  // MTP root.
-  await remoteCall.waitForElement(appId, '#roots-context-menu[hidden]');
-  await remoteCall.waitForElement(
-      appId, '#directory-tree-context-menu[hidden]');
-
-  // Check the context menu for a folder inside a MTP.
-  await expandTreeItem(appId, mtpQuery);
-  await checkContextMenu(appId, folderQuery, folderMenus, false /* rootMenu */);
-};
-
-/**
  * Tests context menu for FSP root and a folder inside it.
  */
 testcase.dirContextMenuFsp = async () => {
