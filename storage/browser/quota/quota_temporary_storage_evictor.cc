@@ -59,8 +59,6 @@ void QuotaTemporaryStorageEvictor::GetStatistics(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(statistics);
 
-  (*statistics)["errors-on-evicting-origin"] =
-      statistics_.num_errors_on_evicting_origin;
   (*statistics)["errors-on-getting-usage-and-quota"] =
       statistics_.num_errors_on_getting_usage_and_quota;
   (*statistics)["evicted-origins"] =
@@ -259,7 +257,6 @@ void QuotaTemporaryStorageEvictor::OnEvictionComplete(
     // We many need to get rid of more space so reconsider immediately.
     ConsiderEviction();
   } else {
-    ++statistics_.num_errors_on_evicting_origin;
     // Sleep for a while and retry again until we see too many errors.
     StartEvictionTimerWithDelay(interval_ms_);
     OnEvictionRoundFinished();
