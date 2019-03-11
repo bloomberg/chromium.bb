@@ -1116,11 +1116,11 @@ static int rc_pick_q_and_bounds_two_pass(const AV1_COMP *cpi, int width,
       } else {
         if (gf_group->update_type[gf_group->index] == ARF_UPDATE) {
           active_best_quality = get_gf_active_quality(rc, q, bit_depth);
-          *arf_q = active_best_quality;
           const int min_boost = get_gf_high_motion_quality(q, bit_depth);
           const int boost = min_boost - active_best_quality;
 
           active_best_quality = min_boost - (int)(boost * rc->arf_boost_factor);
+          *arf_q = active_best_quality;
         } else {
           assert(rc->arf_q >= 0);  // Ensure it is set to a valid value.
           active_best_quality = rc->arf_q;
