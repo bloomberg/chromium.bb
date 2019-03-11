@@ -103,6 +103,10 @@ Polymer({
    */
   onBackgroundClick_: function(e) {
     this.selectedBackground_ = e.model.item;
+    this.fire('iron-announce', {
+      text: this.i18n(
+          'ntpBackgroundPreviewUpdated', this.selectedBackground_.title)
+    });
   },
 
   /**
