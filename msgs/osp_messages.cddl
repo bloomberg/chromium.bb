@@ -48,7 +48,7 @@ timestamp = (
 
 presentation-url-availability-request = {
   request
-  urls: [* url]
+  urls: [* text]
   watch-duration: uint
   watch-id: uint
 }

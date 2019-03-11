@@ -576,10 +576,31 @@ CppType* MakeCppType(CppSymbolTable* table,
   return cpp_type;
 }
 
+void PrePopulateCppTypes(CppSymbolTable* table) {
+  std::vector<std::pair<std::string, CppType::Which>> default_types;
+  default_types.emplace_back("text", CppType::Which::kString);
+  default_types.emplace_back("tstr", CppType::Which::kString);
+  default_types.emplace_back("bstr", CppType::Which::kBytes);
+  default_types.emplace_back("bytes", CppType::Which::kBytes);
+  default_types.emplace_back("uint", CppType::Which::kUint64);
+
+  for (auto& pair : default_types) {
+    auto entry = table->cpp_type_map.find(pair.first);
+    if (entry != table->cpp_type_map.end())
+      continue;
+    table->cpp_types.emplace_back(new CppType);
+    auto* type = table->cpp_types.back().get();
+    type->name = pair.first;
+    type->which = pair.second;
+    table->cpp_type_map.emplace(pair.first, type);
+  }
+}
+
 std::pair<bool, CppSymbolTable> BuildCppTypes(
     const CddlSymbolTable& cddl_table) {
   std::pair<bool, CppSymbolTable> result;
   result.first = false;
+  PrePopulateCppTypes(&result.second);
   auto& table = result.second;
   table.root_rule = cddl_table.root_rule;
   for (const auto& type_entry : cddl_table.type_map) {
