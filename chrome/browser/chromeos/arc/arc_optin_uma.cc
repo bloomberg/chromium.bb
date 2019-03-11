@@ -64,17 +64,11 @@ ArcEnabledState ComputeEnabledState(bool enabled, const Profile* profile) {
 
 void UpdateEnabledStateByUserTypeUMA() {
   const Profile* profile = ProfileManager::GetPrimaryUserProfile();
-  // Don't record UMA for the set of cases:
-  // * No primary profile is set at this moment.
-  // * Primary profile matches the built-in profile used for signing in or the
-  //   lock screen.
-  // * Primary profile matches guest session.
-  // * Primary profile is in incognito mode.
-  if (!profile || chromeos::ProfileHelper::IsSigninProfile(profile) ||
-      chromeos::ProfileHelper::IsLockScreenAppProfile(profile) ||
-      profile->IsOffTheRecord() || profile->IsGuestSession()) {
+
+  // Don't record UMA if current primary user profile should be ignored in the
+  // first place, or we're currently in guest session.
+  if (!IsRealUserProfile(profile) || profile->IsGuestSession())
     return;
-  }
 
   base::Optional<bool> enabled_state;
   if (auto* stability_metrics_manager = StabilityMetricsManager::Get())
