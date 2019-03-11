@@ -604,22 +604,26 @@ message PromptProto {
   // One of these protos must is transmitted as-is back to the server as part of
   // ProcessedActionProto.
   message Choice {
-    // Localized text message to display. Not required if element_exists is set.
+    // Localized text message to display. Not required if
+    // auto_select_if_element_exists is set.
     optional string name = 2;
 
     // Describes the chip to be shown. The name of the chip is set by the
     // name field.
     optional ChipType chip_type = 7;
 
-    // Optionally auto-select this choice if the given element exist.
-    optional ElementReferenceProto element_exists = 4;
+    // Auto-select this choice if the given element exist.
+    optional ElementReferenceProto auto_select_if_element_exists = 4;
+
+    // The chip is only visible if all the given element exists.
+    repeated ElementReferenceProto show_only_if_element_exists = 6;
+
+    // The chip is only visible if all the form values match.
+    repeated FormValueMatchProto show_only_if_form_value_matches = 8;
 
     // Server payload originally sent by the server. This should
     // be transmitted as-is by the client without interpreting.
     optional bytes server_payload = 5;
-
-    // The chip is only visible if the given element exists.
-    optional ElementReferenceProto show_only_if_element_exists = 6;
   }
   repeated Choice choices = 4;
 }

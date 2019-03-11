@@ -64,11 +64,6 @@ class ScriptPreconditionTest : public testing::Test {
         .WillByDefault(RunOnceCallback<2>(false));
 
     SetUrl("http://www.example.com/path");
-    ON_CALL(mock_web_controller_, OnGetFieldValue(Eq(Selector({"exists"})), _))
-        .WillByDefault(RunOnceCallback<1>(true, "foo"));
-    ON_CALL(mock_web_controller_,
-            OnGetFieldValue(Eq(Selector({"does_not_exist"})), _))
-        .WillByDefault(RunOnceCallback<1>(false, ""));
   }
 
  protected:
@@ -314,23 +309,6 @@ TEST_F(ScriptPreconditionTest, MultipleConditions) {
 
   proto.mutable_elements_exist(0)->set_selectors(0, "does_not_exist");
   EXPECT_FALSE(Check(proto)) << "Element can not match.";
-}
-
-TEST_F(ScriptPreconditionTest, FormValueMatch) {
-  ScriptPreconditionProto proto;
-  FormValueMatchProto* match = proto.add_form_value_match();
-  match->mutable_element()->add_selectors("exists");
-  EXPECT_TRUE(Check(proto));
-
-  match->set_value("bar");
-  EXPECT_FALSE(Check(proto));
-
-  match->set_value("foo");
-  EXPECT_TRUE(Check(proto));
-
-  match->clear_value();
-  match->mutable_element()->set_selectors(0, "does_not_exist");
-  EXPECT_FALSE(Check(proto));
 }
 
 }  // namespace
