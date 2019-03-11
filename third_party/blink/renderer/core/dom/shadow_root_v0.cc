@@ -116,10 +116,8 @@ inline DistributionPool::~DistributionPool() {
 
 inline void DistributionPool::DetachNonDistributedNodes() {
   for (wtf_size_t i = 0; i < nodes_.size(); ++i) {
-    if (distributed_[i])
-      continue;
-    if (nodes_[i]->GetLayoutObject())
-      nodes_[i]->LazyReattachIfAttached();
+    if (!distributed_[i])
+      nodes_[i]->RemovedFromFlatTree();
   }
 }
 
