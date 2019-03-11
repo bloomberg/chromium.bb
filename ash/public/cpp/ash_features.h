@@ -18,7 +18,7 @@ ASH_PUBLIC_EXPORT extern const base::Feature kDockedMagnifier;
 
 // Enables dragging one or more tabs out of a browser window in tablet mode.
 // TODO(xdai): Remove this after the feature is launched.
-// https://crbug.com/823769.
+// https://crbug.com/940565
 ASH_PUBLIC_EXPORT extern const base::Feature kDragTabsInTabletMode;
 
 // Enables rounded corners in overview mode for testing.

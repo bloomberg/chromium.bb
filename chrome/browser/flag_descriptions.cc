@@ -3158,11 +3158,6 @@ const char kEnableDiscoverAppName[] = "Enable Discover App";
 const char kEnableDiscoverAppDescription[] =
     "Enable Discover App icon in launcher.";
 
-const char kEnableDragTabsInTabletModeName[] =
-    "Enable dragging tabs in tablet mode";
-const char kEnableDragTabsInTabletModeDescription[] =
-    "Allows the user to drag the tabs out of a browser window in tablet mode.";
-
 const char kEnableDriveFsName[] = "Enable DriveFS";
 const char kEnableDriveFsDescription[] =
     "Enables use of the new DriveFS-based Drive sync client.";
