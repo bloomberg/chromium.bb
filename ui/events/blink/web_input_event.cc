@@ -256,7 +256,7 @@ blink::WebMouseEvent MakeWebMouseEvent(const MouseEvent& event) {
   webkit_event.SetPositionInWidget(event.x(), event.y());
 
 #if defined(OS_WIN)
-  if (event.native_event().message)
+  if (event.native_event().message && event.type() != ET_MOUSE_EXITED)
     return webkit_event;
 #endif
 
