@@ -296,17 +296,11 @@ scoped_refptr<base::SingleThreadTaskRunner> BrowserTaskExecutor::GetTaskRunner(
   DCHECK_LT(task_type, BrowserTaskType::kBrowserTaskType_Last);
   switch (task_type) {
     case BrowserTaskType::kBootstrap:
-      // TODO(alexclarke): Lets do this at compile time instead.
-      DCHECK(!traits.priority_set_explicitly())
-          << "Combining BrowserTaskType and TaskPriority is not currently"
-             " supported.";
+      // Note we currently ignore the priority for bootstrap tasks.
       return browser_ui_thread_scheduler_->GetTaskRunner(QueueType::kBootstrap);
 
     case BrowserTaskType::kNavigation:
-      // TODO(alexclarke): Lets do this at compile time instead.
-      DCHECK(!traits.priority_set_explicitly())
-          << "Combining BrowserTaskType and TaskPriority is not currently"
-             " supported.";
+      // Note we currently ignore the priority for navigation tasks.
       return browser_ui_thread_scheduler_->GetTaskRunner(
           QueueType::kNavigation);
 
