@@ -91,6 +91,12 @@ Polymer({
     },
 
     /** @private */
+    hotwordEnforced_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /** @private */
     hotwordDefaultOn_: {
       type: Boolean,
       value: false,
@@ -180,6 +186,12 @@ Polymer({
         (this.getPref(
           'settings.voice_interaction.activity_control.consent_status.value') ==
             ConsentStatus.kActivityControlAccepted);
+
+    const hotwordEnabled =
+        this.getPref('settings.voice_interaction.hotword.enabled');
+
+    this.hotwordEnforced_ = hotwordEnabled.enforcement ==
+        chrome.settingsPrivate.Enforcement.ENFORCED;
   },
 
   /** @private */
@@ -199,14 +211,5 @@ Polymer({
     if (this.$$('#dspHotwordState')) {
       this.$$('#dspHotwordState').value = this.dspHotwordState_;
     }
-  },
-
-  /** @private */
-  hotwordDisabled_: function() {
-    const hotwordPref =
-        this.getPref('prefs.settings.voice_interaction.hotword.enabled');
-
-    return !!hotwordPref &&
-        hotwordPref.enforcement == chrome.settingsPrivate.Enforcement.ENFORCED;
   },
 });
