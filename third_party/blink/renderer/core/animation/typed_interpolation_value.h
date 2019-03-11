@@ -10,6 +10,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "third_party/blink/renderer/core/animation/interpolation_value.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -18,6 +19,8 @@ class InterpolationType;
 // Represents an interpolated value between an adjacent pair of
 // PropertySpecificKeyframes.
 class TypedInterpolationValue {
+  USING_FAST_MALLOC(TypedInterpolationValue);
+
  public:
   static std::unique_ptr<TypedInterpolationValue> Create(
       const InterpolationType& type,
