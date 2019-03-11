@@ -223,6 +223,8 @@ source_set("test_support") {
 source_set("wayland_unittests") {
   testonly = true
 
+  assert(use_wayland_gbm)
+
   sources = [
     "wayland_buffer_manager_unittest.cc",
     "wayland_connection_unittest.cc",
@@ -254,6 +256,7 @@ source_set("wayland_unittests") {
     "//ui/events/ozone:events_ozone_layout",
     "//ui/ozone:platform",
     "//ui/ozone:test_support",
+    "//ui/ozone/common/linux:gbm",
   ]
 
   import("//ui/base/ui_features.gni")
@@ -261,10 +264,10 @@ source_set("wayland_unittests") {
     deps += [ "//ui/events/keycodes:xkb" ]
   }
 
-  defines = [ "WL_HIDE_DEPRECATED" ]
-  if (use_wayland_gbm) {
-    defines += [ "WAYLAND_GBM" ]
-  }
+  defines = [
+    "WL_HIDE_DEPRECATED",
+    "WAYLAND_GBM",
+  ]
 }
 
 fuzzer_test("wayland_buffer_fuzzer") {
