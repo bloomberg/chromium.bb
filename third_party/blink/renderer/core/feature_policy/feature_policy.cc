@@ -305,6 +305,8 @@ const FeatureNameMap& GetDefaultFeatureNameMap() {
                                  mojom::FeaturePolicyFeature::kSpeaker);
     default_feature_name_map.Set("sync-xhr",
                                  mojom::FeaturePolicyFeature::kSyncXHR);
+    default_feature_name_map.Set("frobulate",
+                                 mojom::FeaturePolicyFeature::kFrobulate);
     // Under origin trial: Should be made conditional on WebVR and WebXR
     // runtime flags once it is out of trial.
     ASSERT_ORIGIN_TRIAL(WebVR);
@@ -389,6 +391,15 @@ const FeatureNameMap& GetDefaultFeatureNameMap() {
     }
   }
   return default_feature_name_map;
+}
+
+const Vector<String> GetAvailableFeatures(ExecutionContext* execution_context) {
+  Vector<String> available_features;
+  for (const auto& feature : GetDefaultFeatureNameMap()) {
+    if (!IsOriginTrialDisabled(feature.key, execution_context))
+      available_features.push_back(feature.key);
+  }
+  return available_features;
 }
 
 const String& GetNameForFeature(mojom::FeaturePolicyFeature feature) {
