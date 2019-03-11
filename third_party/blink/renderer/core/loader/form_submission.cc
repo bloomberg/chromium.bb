@@ -272,8 +272,10 @@ void FormSubmission::Trace(blink::Visitor* visitor) {
 }
 
 KURL FormSubmission::RequestURL() const {
-  if (method_ == FormSubmission::kPostMethod)
+  if (method_ == FormSubmission::kPostMethod ||
+      action_.ProtocolIsJavaScript()) {
     return action_;
+  }
 
   KURL request_url(action_);
   request_url.SetQuery(form_data_->FlattenToString());
