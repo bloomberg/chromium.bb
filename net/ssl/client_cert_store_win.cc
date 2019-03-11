@@ -93,7 +93,7 @@ static BOOL WINAPI ClientCertFindCallback(PCCERT_CONTEXT cert_context,
   }
 
   // Verify the current time is within the certificate's validity period.
-  if (CertVerifyTimeValidity(NULL, cert_context->pCertInfo) != 0)
+  if (CertVerifyTimeValidity(nullptr, cert_context->pCertInfo) != 0)
     return FALSE;
 
   // Verify private key metadata is associated with this certificate.
@@ -102,7 +102,7 @@ static BOOL WINAPI ClientCertFindCallback(PCCERT_CONTEXT cert_context,
   // CertFindChainInStore()?
   DWORD size = 0;
   if (!CertGetCertificateContextProperty(
-          cert_context, CERT_KEY_PROV_INFO_PROP_ID, NULL, &size)) {
+          cert_context, CERT_KEY_PROV_INFO_PROP_ID, nullptr, &size)) {
     return FALSE;
   }
 
@@ -134,7 +134,7 @@ ClientCertIdentityList GetClientCertsImpl(HCERTSTORE cert_store,
       reinterpret_cast<CERT_NAME_BLOB*>(issuers.data());
   find_by_issuer_para.pfnFindCallback = ClientCertFindCallback;
 
-  PCCERT_CHAIN_CONTEXT chain_context = NULL;
+  PCCERT_CHAIN_CONTEXT chain_context = nullptr;
   DWORD find_flags = CERT_CHAIN_FIND_BY_ISSUER_CACHE_ONLY_FLAG |
                      CERT_CHAIN_FIND_BY_ISSUER_CACHE_ONLY_URL_FLAG;
   for (;;) {
@@ -155,10 +155,9 @@ ClientCertIdentityList GetClientCertsImpl(HCERTSTORE cert_store,
     PCCERT_CONTEXT cert_context =
         chain_context->rgpChain[0]->rgpElement[0]->pCertContext;
     // Copy the certificate, so that it is valid after |cert_store| is closed.
-    PCCERT_CONTEXT cert_context2 = NULL;
-    BOOL ok = CertAddCertificateContextToStore(NULL, cert_context,
-                                               CERT_STORE_ADD_USE_EXISTING,
-                                               &cert_context2);
+    PCCERT_CONTEXT cert_context2 = nullptr;
+    BOOL ok = CertAddCertificateContextToStore(
+        nullptr, cert_context, CERT_STORE_ADD_USE_EXISTING, &cert_context2);
     if (!ok) {
       NOTREACHED();
       continue;
@@ -169,8 +168,8 @@ ClientCertIdentityList GetClientCertsImpl(HCERTSTORE cert_store,
     for (DWORD i = 1; i < chain_context->rgpChain[0]->cElement; ++i) {
       PCCERT_CONTEXT chain_intermediate =
           chain_context->rgpChain[0]->rgpElement[i]->pCertContext;
-      PCCERT_CONTEXT copied_intermediate = NULL;
-      ok = CertAddCertificateContextToStore(NULL, chain_intermediate,
+      PCCERT_CONTEXT copied_intermediate = nullptr;
+      ok = CertAddCertificateContextToStore(nullptr, chain_intermediate,
                                             CERT_STORE_ADD_USE_EXISTING,
                                             &copied_intermediate);
       if (ok)
@@ -270,15 +269,15 @@ bool ClientCertStoreWin::SelectClientCertsForTesting(
     const CertificateList& input_certs,
     const SSLCertRequestInfo& request,
     ClientCertIdentityList* selected_identities) {
-  ScopedHCERTSTORE test_store(CertOpenStore(CERT_STORE_PROV_MEMORY, 0, NULL, 0,
-                                            NULL));
+  ScopedHCERTSTORE test_store(
+      CertOpenStore(CERT_STORE_PROV_MEMORY, 0, NULL, 0, nullptr));
   if (!test_store)
     return false;
 
   // Add available certificates to the test store.
   for (const auto& input_cert : input_certs) {
     // Add the certificate to the test store.
-    PCCERT_CONTEXT cert = NULL;
+    PCCERT_CONTEXT cert = nullptr;
     if (!CertAddEncodedCertificateToStore(
             test_store, X509_ASN_ENCODING,
             reinterpret_cast<const BYTE*>(

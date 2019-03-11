@@ -498,11 +498,11 @@ void MockDnsClient::SetConfig(const DnsConfig& config) {
 }
 
 const DnsConfig* MockDnsClient::GetConfig() const {
-  return config_.IsValid() ? &config_ : NULL;
+  return config_.IsValid() ? &config_ : nullptr;
 }
 
 DnsTransactionFactory* MockDnsClient::GetTransactionFactory() {
-  return config_.IsValid() ? factory_.get() : NULL;
+  return config_.IsValid() ? factory_.get() : nullptr;
 }
 
 AddressSorter* MockDnsClient::GetAddressSorter() {

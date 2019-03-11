@@ -164,7 +164,7 @@ class URLRequestThrottlerEntryTest : public TestWithScopedTaskEnvironment {
   URLRequestThrottlerEntryTest()
       : request_(context_.CreateRequest(GURL(),
                                         DEFAULT_PRIORITY,
-                                        NULL,
+                                        nullptr,
                                         TRAFFIC_ANNOTATION_FOR_TESTS)) {}
 
   void SetUp() override;
@@ -315,7 +315,7 @@ class URLRequestThrottlerManagerTest : public TestWithScopedTaskEnvironment {
   URLRequestThrottlerManagerTest()
       : request_(context_.CreateRequest(GURL(),
                                         DEFAULT_PRIORITY,
-                                        NULL,
+                                        nullptr,
                                         TRAFFIC_ANNOTATION_FOR_TESTS)) {}
 
   void SetUp() override { request_->SetLoadFlags(0); }

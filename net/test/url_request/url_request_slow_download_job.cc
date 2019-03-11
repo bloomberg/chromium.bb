@@ -216,12 +216,12 @@ int URLRequestSlowDownloadJob::ReadRawData(IOBuffer* buf, int buf_size) {
 void URLRequestSlowDownloadJob::CheckDoneStatus() {
   if (should_finish_download_) {
     VLOG(10) << __FUNCTION__ << " called w/ should_finish_download_ set.";
-    DCHECK(NULL != buffer_.get());
+    DCHECK(nullptr != buffer_.get());
     int bytes_written = 0;
     ReadStatus status =
         FillBufferHelper(buffer_.get(), buffer_size_, &bytes_written);
     DCHECK_EQ(BUFFER_FILLED, status);
-    buffer_ = NULL;  // Release the reference.
+    buffer_ = nullptr;  // Release the reference.
     ReadRawDataComplete(bytes_written);
   } else if (should_error_download_) {
     VLOG(10) << __FUNCTION__ << " called w/ should_finish_ownload_ set.";

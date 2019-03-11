@@ -321,8 +321,8 @@ ProxyClientSocketDataProvider::~ProxyClientSocketDataProvider() = default;
 SSLSocketDataProvider::SSLSocketDataProvider(IoMode mode, int result)
     : connect(mode, result),
       next_proto(kProtoUnknown),
-      cert_request_info(NULL),
-      channel_id_service(NULL),
+      cert_request_info(nullptr),
+      channel_id_service(nullptr),
       expected_ssl_version_min(kDefaultSSLVersionMin),
       expected_ssl_version_max(kDefaultSSLVersionMax) {
   SSLConnectionStatusSetVersion(SSL_CONNECTION_VERSION_TLS1_3,
@@ -913,7 +913,7 @@ MockTCPClientSocket::MockTCPClientSocket(const AddressList& addresses,
       read_data_(SYNCHRONOUS, ERR_UNEXPECTED),
       need_read_data_(true),
       peer_closed_connection_(false),
-      pending_read_buf_(NULL),
+      pending_read_buf_(nullptr),
       pending_read_buf_len_(0),
       was_used_to_convey_data_(false),
       enable_read_if_ready_(false) {
@@ -1482,7 +1482,7 @@ int MockSSLClientSocket::Connect(CompletionOnceCallback callback) {
 }
 
 void MockSSLClientSocket::Disconnect() {
-  if (stream_socket_ != NULL)
+  if (stream_socket_ != nullptr)
     stream_socket_->Disconnect();
 }
 
@@ -1582,7 +1582,7 @@ int MockSSLClientSocket::ExportKeyingMaterial(const base::StringPiece& label,
 
 crypto::ECPrivateKey* MockSSLClientSocket::GetChannelIDKey() const {
   NOTREACHED();
-  return NULL;
+  return nullptr;
 }
 
 void MockSSLClientSocket::RunCallbackAsync(CompletionOnceCallback callback,
@@ -1619,7 +1619,7 @@ MockUDPClientSocket::MockUDPClientSocket(SocketDataProvider* data,
       need_read_data_(true),
       source_port_(123),
       network_(NetworkChangeNotifier::kInvalidNetworkHandle),
-      pending_read_buf_(NULL),
+      pending_read_buf_(nullptr),
       pending_read_buf_len_(0),
       net_log_(NetLogWithSource::Make(net_log, NetLogSourceType::NONE)),
       weak_factory_(this) {
@@ -1903,7 +1903,7 @@ int MockUDPClientSocket::CompleteRead() {
   scoped_refptr<IOBuffer> buf = pending_read_buf_;
   int buf_len = pending_read_buf_len_;
   CompletionOnceCallback callback = std::move(pending_read_callback_);
-  pending_read_buf_ = NULL;
+  pending_read_buf_ = nullptr;
   pending_read_buf_len_ = 0;
 
   int result = read_data_.result;
@@ -2031,7 +2031,7 @@ bool MockTransportClientSocketPool::MockConnectJob::CancelHandle(
   if (handle != handle_)
     return false;
   socket_.reset();
-  handle_ = NULL;
+  handle_ = nullptr;
   user_callback_.Reset();
   return true;
 }
@@ -2060,7 +2060,7 @@ void MockTransportClientSocketPool::MockConnectJob::OnConnect(int rv) {
     handle_->set_connection_attempts(attempts);
   }
 
-  handle_ = NULL;
+  handle_ = nullptr;
 
   if (!user_callback_.is_null()) {
     std::move(user_callback_).Run(rv);
@@ -2110,7 +2110,7 @@ int MockTransportClientSocketPool::RequestSocket(
   last_request_priority_ = priority;
   std::unique_ptr<StreamSocket> socket =
       client_socket_factory_->CreateTransportClientSocket(
-          AddressList(), NULL, net_log.net_log(), NetLogSource());
+          AddressList(), nullptr, net_log.net_log(), NetLogSource());
   MockConnectJob* job = new MockConnectJob(
       std::move(socket), handle, socket_tag, std::move(callback), priority);
   job_list_.push_back(base::WrapUnique(job));

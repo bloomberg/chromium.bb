@@ -747,7 +747,7 @@ bool SQLitePersistentCookieStore::Backend::InitializeDatabase() {
   if (initialized_ || corruption_detected_) {
     // Return false if we were previously initialized but the DB has since been
     // closed, or if corruption caused a database reset during initialization.
-    return db_ != NULL;
+    return db_ != nullptr;
   }
 
   base::Time start = base::Time::Now();

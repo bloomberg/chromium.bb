@@ -106,7 +106,7 @@ class HttpNetworkTransactionSSLTest : public TestWithScopedTaskEnvironment {
 };
 
 TEST_F(HttpNetworkTransactionSSLTest, ChannelID) {
-  ChannelIDService channel_id_service(new DefaultChannelIDStore(NULL));
+  ChannelIDService channel_id_service(new DefaultChannelIDStore(nullptr));
   session_context_.channel_id_service = &channel_id_service;
 
   HttpNetworkSession::Params params;

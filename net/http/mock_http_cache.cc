@@ -343,7 +343,7 @@ void MockDiskEntry::IgnoreCallbacks(bool value) {
     return;
   ignore_callbacks_ = value;
   if (!value)
-    StoreAndDeliverCallbacks(false, NULL, CompletionOnceCallback(), 0);
+    StoreAndDeliverCallbacks(false, nullptr, CompletionOnceCallback(), 0);
 }
 
 MockDiskEntry::~MockDiskEntry() = default;
@@ -728,7 +728,7 @@ disk_cache::Backend* MockHttpCache::backend() {
   disk_cache::Backend* backend;
   int rv = http_cache_.GetBackend(&backend, cb.callback());
   rv = cb.GetResult(rv);
-  return (rv == OK) ? backend : NULL;
+  return (rv == OK) ? backend : nullptr;
 }
 
 MockDiskCache* MockHttpCache::disk_cache() {
@@ -864,10 +864,7 @@ int MockBackendNoCbFactory::CreateBackend(
 //-----------------------------------------------------------------------------
 
 MockBlockingBackendFactory::MockBlockingBackendFactory()
-    : backend_(NULL),
-      block_(true),
-      fail_(false) {
-}
+    : backend_(nullptr), block_(true), fail_(false) {}
 
 MockBlockingBackendFactory::~MockBlockingBackendFactory() = default;
 

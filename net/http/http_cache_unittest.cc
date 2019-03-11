@@ -576,8 +576,8 @@ void Verify206Response(const std::string& response, int start, int end) {
 void CreateTruncatedEntry(std::string raw_headers, MockHttpCache* cache) {
   // Create a disk cache entry that stores an incomplete resource.
   disk_cache::Entry* entry;
-  ASSERT_TRUE(cache->CreateBackendEntry(kRangeGET_TransactionOK.url, &entry,
-                                        NULL));
+  ASSERT_TRUE(
+      cache->CreateBackendEntry(kRangeGET_TransactionOK.url, &entry, nullptr));
 
   raw_headers =
       HttpUtil::AssembleRawHeaders(raw_headers.data(), raw_headers.size());
@@ -5106,14 +5106,14 @@ static void ConditionalizedRequestUpdatesCacheHelper(
 
   // We will control the network layer's responses for |kUrl| using
   // |mock_network_response|.
-  MockTransaction mock_network_response = { 0 };
+  MockTransaction mock_network_response = {nullptr};
   mock_network_response.url = kUrl;
   AddMockTransaction(&mock_network_response);
 
   // Request |kUrl| for the first time. It should hit the network and
   // receive |kNetResponse1|, which it saves into the HTTP cache.
 
-  MockTransaction request = { 0 };
+  MockTransaction request = {nullptr};
   request.url = kUrl;
   request.method = "GET";
   request.request_headers = "";
@@ -5297,11 +5297,11 @@ TEST_F(HttpCacheTest, ConditionalizedRequestUpdatesCache4) {
 
   // We will control the network layer's responses for |kUrl| using
   // |mock_network_response|.
-  MockTransaction mock_network_response = { 0 };
+  MockTransaction mock_network_response = {nullptr};
   mock_network_response.url = kUrl;
   AddMockTransaction(&mock_network_response);
 
-  MockTransaction request = { 0 };
+  MockTransaction request = {nullptr};
   request.url = kUrl;
   request.method = "GET";
   request.request_headers = kExtraRequestHeaders;
@@ -5341,11 +5341,11 @@ TEST_F(HttpCacheTest, ConditionalizedRequestUpdatesCache5) {
 
   // We will control the network layer's responses for |kUrl| using
   // |mock_network_response|.
-  MockTransaction mock_network_response = { 0 };
+  MockTransaction mock_network_response = {nullptr};
   mock_network_response.url = kUrl;
   AddMockTransaction(&mock_network_response);
 
-  MockTransaction request = { 0 };
+  MockTransaction request = {nullptr};
   request.url = kUrl;
   request.method = "GET";
   request.request_headers = kExtraRequestHeaders;
@@ -5601,7 +5601,8 @@ TEST_F(HttpCacheTest, SimplePOST_LoadOnlyFromCache_Hit) {
   request.upload_data_stream = &upload_data_stream;
 
   // Populate the cache.
-  RunTransactionTestWithRequest(cache.http_cache(), transaction, request, NULL);
+  RunTransactionTestWithRequest(cache.http_cache(), transaction, request,
+                                nullptr);
 
   EXPECT_EQ(1, cache.network_layer()->transaction_count());
   EXPECT_EQ(0, cache.disk_cache()->open_count());
@@ -5609,7 +5610,8 @@ TEST_F(HttpCacheTest, SimplePOST_LoadOnlyFromCache_Hit) {
 
   // Load from cache.
   request.load_flags |= LOAD_ONLY_FROM_CACHE | LOAD_SKIP_CACHE_VALIDATION;
-  RunTransactionTestWithRequest(cache.http_cache(), transaction, request, NULL);
+  RunTransactionTestWithRequest(cache.http_cache(), transaction, request,
+                                nullptr);
 
   EXPECT_EQ(1, cache.network_layer()->transaction_count());
   EXPECT_EQ(1, cache.disk_cache()->open_count());
@@ -5639,7 +5641,8 @@ TEST_F(HttpCacheTest, SimplePOST_WithRanges) {
   request.upload_data_stream = &upload_data_stream;
 
   // Attempt to populate the cache.
-  RunTransactionTestWithRequest(cache.http_cache(), transaction, request, NULL);
+  RunTransactionTestWithRequest(cache.http_cache(), transaction, request,
+                                nullptr);
 
   EXPECT_EQ(1, cache.network_layer()->transaction_count());
   EXPECT_EQ(0, cache.disk_cache()->open_count());
@@ -5659,7 +5662,7 @@ TEST_F(HttpCacheTest, SimplePOST_SeparateCache) {
   MockHttpRequest req1(transaction);
   req1.upload_data_stream = &upload_data_stream;
 
-  RunTransactionTestWithRequest(cache.http_cache(), transaction, req1, NULL);
+  RunTransactionTestWithRequest(cache.http_cache(), transaction, req1, nullptr);
 
   EXPECT_EQ(1, cache.network_layer()->transaction_count());
   EXPECT_EQ(0, cache.disk_cache()->open_count());
@@ -5668,7 +5671,7 @@ TEST_F(HttpCacheTest, SimplePOST_SeparateCache) {
   transaction.method = "GET";
   MockHttpRequest req2(transaction);
 
-  RunTransactionTestWithRequest(cache.http_cache(), transaction, req2, NULL);
+  RunTransactionTestWithRequest(cache.http_cache(), transaction, req2, nullptr);
 
   EXPECT_EQ(2, cache.network_layer()->transaction_count());
   EXPECT_EQ(0, cache.disk_cache()->open_count());
@@ -5684,7 +5687,7 @@ TEST_F(HttpCacheTest, SimplePOST_Invalidate_205) {
   MockHttpRequest req1(transaction);
 
   // Attempt to populate the cache.
-  RunTransactionTestWithRequest(cache.http_cache(), transaction, req1, NULL);
+  RunTransactionTestWithRequest(cache.http_cache(), transaction, req1, nullptr);
 
   EXPECT_EQ(1, cache.network_layer()->transaction_count());
   EXPECT_EQ(0, cache.disk_cache()->open_count());
@@ -5700,13 +5703,13 @@ TEST_F(HttpCacheTest, SimplePOST_Invalidate_205) {
   MockHttpRequest req2(transaction);
   req2.upload_data_stream = &upload_data_stream;
 
-  RunTransactionTestWithRequest(cache.http_cache(), transaction, req2, NULL);
+  RunTransactionTestWithRequest(cache.http_cache(), transaction, req2, nullptr);
 
   EXPECT_EQ(2, cache.network_layer()->transaction_count());
   EXPECT_EQ(0, cache.disk_cache()->open_count());
   EXPECT_EQ(2, cache.disk_cache()->create_count());
 
-  RunTransactionTestWithRequest(cache.http_cache(), transaction, req1, NULL);
+  RunTransactionTestWithRequest(cache.http_cache(), transaction, req1, nullptr);
 
   EXPECT_EQ(3, cache.network_layer()->transaction_count());
   EXPECT_EQ(0, cache.disk_cache()->open_count());
@@ -5730,12 +5733,13 @@ TEST_F(HttpCacheTest, SimplePOST_Invalidate_205_SplitCache) {
   req1.top_frame_origin = origin_a;
 
   // Attempt to populate the cache.
-  RunTransactionTestWithRequest(cache.http_cache(), transaction, req1, NULL);
+  RunTransactionTestWithRequest(cache.http_cache(), transaction, req1, nullptr);
 
   // Same for a different origin.
   MockHttpRequest req1b(transaction);
   req1b.top_frame_origin = origin_b;
-  RunTransactionTestWithRequest(cache.http_cache(), transaction, req1b, NULL);
+  RunTransactionTestWithRequest(cache.http_cache(), transaction, req1b,
+                                nullptr);
 
   EXPECT_EQ(2, cache.network_layer()->transaction_count());
   EXPECT_EQ(0, cache.disk_cache()->open_count());
@@ -5752,7 +5756,7 @@ TEST_F(HttpCacheTest, SimplePOST_Invalidate_205_SplitCache) {
   req2.upload_data_stream = &upload_data_stream;
   req2.top_frame_origin = origin_a;
 
-  RunTransactionTestWithRequest(cache.http_cache(), transaction, req2, NULL);
+  RunTransactionTestWithRequest(cache.http_cache(), transaction, req2, nullptr);
 
   EXPECT_EQ(3, cache.network_layer()->transaction_count());
   EXPECT_EQ(0, cache.disk_cache()->open_count());
@@ -5760,13 +5764,14 @@ TEST_F(HttpCacheTest, SimplePOST_Invalidate_205_SplitCache) {
 
   // req1b should still be cached, since it has a different top-level frame
   // origin.
-  RunTransactionTestWithRequest(cache.http_cache(), transaction, req1b, NULL);
+  RunTransactionTestWithRequest(cache.http_cache(), transaction, req1b,
+                                nullptr);
   EXPECT_EQ(3, cache.network_layer()->transaction_count());
   EXPECT_EQ(1, cache.disk_cache()->open_count());
   EXPECT_EQ(3, cache.disk_cache()->create_count());
 
   // req1 should not be cached after the POST.
-  RunTransactionTestWithRequest(cache.http_cache(), transaction, req1, NULL);
+  RunTransactionTestWithRequest(cache.http_cache(), transaction, req1, nullptr);
   EXPECT_EQ(4, cache.network_layer()->transaction_count());
   EXPECT_EQ(1, cache.disk_cache()->open_count());
   EXPECT_EQ(4, cache.disk_cache()->create_count());
@@ -5784,7 +5789,7 @@ TEST_F(HttpCacheTest, SimplePOST_NoUploadId_Invalidate_205) {
   MockHttpRequest req1(transaction);
 
   // Attempt to populate the cache.
-  RunTransactionTestWithRequest(cache.http_cache(), transaction, req1, NULL);
+  RunTransactionTestWithRequest(cache.http_cache(), transaction, req1, nullptr);
 
   EXPECT_EQ(1, cache.network_layer()->transaction_count());
   EXPECT_EQ(0, cache.disk_cache()->open_count());
@@ -5800,13 +5805,13 @@ TEST_F(HttpCacheTest, SimplePOST_NoUploadId_Invalidate_205) {
   MockHttpRequest req2(transaction);
   req2.upload_data_stream = &upload_data_stream;
 
-  RunTransactionTestWithRequest(cache.http_cache(), transaction, req2, NULL);
+  RunTransactionTestWithRequest(cache.http_cache(), transaction, req2, nullptr);
 
   EXPECT_EQ(2, cache.network_layer()->transaction_count());
   EXPECT_EQ(0, cache.disk_cache()->open_count());
   EXPECT_EQ(1, cache.disk_cache()->create_count());
 
-  RunTransactionTestWithRequest(cache.http_cache(), transaction, req1, NULL);
+  RunTransactionTestWithRequest(cache.http_cache(), transaction, req1, nullptr);
 
   EXPECT_EQ(3, cache.network_layer()->transaction_count());
   EXPECT_EQ(0, cache.disk_cache()->open_count());
@@ -5832,7 +5837,7 @@ TEST_F(HttpCacheTest, SimplePOST_NoUploadId_NoBackend) {
   MockHttpRequest req(transaction);
   req.upload_data_stream = &upload_data_stream;
 
-  RunTransactionTestWithRequest(cache.http_cache(), transaction, req, NULL);
+  RunTransactionTestWithRequest(cache.http_cache(), transaction, req, nullptr);
 
   RemoveMockTransaction(&transaction);
 }
@@ -5846,7 +5851,7 @@ TEST_F(HttpCacheTest, SimplePOST_DontInvalidate_100) {
   MockHttpRequest req1(transaction);
 
   // Attempt to populate the cache.
-  RunTransactionTestWithRequest(cache.http_cache(), transaction, req1, NULL);
+  RunTransactionTestWithRequest(cache.http_cache(), transaction, req1, nullptr);
 
   EXPECT_EQ(1, cache.network_layer()->transaction_count());
   EXPECT_EQ(0, cache.disk_cache()->open_count());
@@ -5862,13 +5867,13 @@ TEST_F(HttpCacheTest, SimplePOST_DontInvalidate_100) {
   MockHttpRequest req2(transaction);
   req2.upload_data_stream = &upload_data_stream;
 
-  RunTransactionTestWithRequest(cache.http_cache(), transaction, req2, NULL);
+  RunTransactionTestWithRequest(cache.http_cache(), transaction, req2, nullptr);
 
   EXPECT_EQ(2, cache.network_layer()->transaction_count());
   EXPECT_EQ(0, cache.disk_cache()->open_count());
   EXPECT_EQ(2, cache.disk_cache()->create_count());
 
-  RunTransactionTestWithRequest(cache.http_cache(), transaction, req1, NULL);
+  RunTransactionTestWithRequest(cache.http_cache(), transaction, req1, nullptr);
 
   EXPECT_EQ(2, cache.network_layer()->transaction_count());
   EXPECT_EQ(1, cache.disk_cache()->open_count());
@@ -6173,7 +6178,8 @@ TEST_F(HttpCacheTest, SimplePUT_Miss) {
   request.upload_data_stream = &upload_data_stream;
 
   // Attempt to populate the cache.
-  RunTransactionTestWithRequest(cache.http_cache(), transaction, request, NULL);
+  RunTransactionTestWithRequest(cache.http_cache(), transaction, request,
+                                nullptr);
 
   EXPECT_EQ(1, cache.network_layer()->transaction_count());
   EXPECT_EQ(0, cache.disk_cache()->open_count());
@@ -6188,7 +6194,7 @@ TEST_F(HttpCacheTest, SimplePUT_Invalidate) {
   MockHttpRequest req1(transaction);
 
   // Attempt to populate the cache.
-  RunTransactionTestWithRequest(cache.http_cache(), transaction, req1, NULL);
+  RunTransactionTestWithRequest(cache.http_cache(), transaction, req1, nullptr);
 
   EXPECT_EQ(1, cache.network_layer()->transaction_count());
   EXPECT_EQ(0, cache.disk_cache()->open_count());
@@ -6203,13 +6209,13 @@ TEST_F(HttpCacheTest, SimplePUT_Invalidate) {
   MockHttpRequest req2(transaction);
   req2.upload_data_stream = &upload_data_stream;
 
-  RunTransactionTestWithRequest(cache.http_cache(), transaction, req2, NULL);
+  RunTransactionTestWithRequest(cache.http_cache(), transaction, req2, nullptr);
 
   EXPECT_EQ(2, cache.network_layer()->transaction_count());
   EXPECT_EQ(1, cache.disk_cache()->open_count());
   EXPECT_EQ(1, cache.disk_cache()->create_count());
 
-  RunTransactionTestWithRequest(cache.http_cache(), transaction, req1, NULL);
+  RunTransactionTestWithRequest(cache.http_cache(), transaction, req1, nullptr);
 
   EXPECT_EQ(3, cache.network_layer()->transaction_count());
   EXPECT_EQ(1, cache.disk_cache()->open_count());
@@ -6225,7 +6231,7 @@ TEST_F(HttpCacheTest, SimplePUT_Invalidate_305) {
   MockHttpRequest req1(transaction);
 
   // Attempt to populate the cache.
-  RunTransactionTestWithRequest(cache.http_cache(), transaction, req1, NULL);
+  RunTransactionTestWithRequest(cache.http_cache(), transaction, req1, nullptr);
 
   EXPECT_EQ(1, cache.network_layer()->transaction_count());
   EXPECT_EQ(0, cache.disk_cache()->open_count());
@@ -6241,13 +6247,13 @@ TEST_F(HttpCacheTest, SimplePUT_Invalidate_305) {
   MockHttpRequest req2(transaction);
   req2.upload_data_stream = &upload_data_stream;
 
-  RunTransactionTestWithRequest(cache.http_cache(), transaction, req2, NULL);
+  RunTransactionTestWithRequest(cache.http_cache(), transaction, req2, nullptr);
 
   EXPECT_EQ(2, cache.network_layer()->transaction_count());
   EXPECT_EQ(1, cache.disk_cache()->open_count());
   EXPECT_EQ(1, cache.disk_cache()->create_count());
 
-  RunTransactionTestWithRequest(cache.http_cache(), transaction, req1, NULL);
+  RunTransactionTestWithRequest(cache.http_cache(), transaction, req1, nullptr);
 
   EXPECT_EQ(3, cache.network_layer()->transaction_count());
   EXPECT_EQ(1, cache.disk_cache()->open_count());
@@ -6264,7 +6270,7 @@ TEST_F(HttpCacheTest, SimplePUT_DontInvalidate_404) {
   MockHttpRequest req1(transaction);
 
   // Attempt to populate the cache.
-  RunTransactionTestWithRequest(cache.http_cache(), transaction, req1, NULL);
+  RunTransactionTestWithRequest(cache.http_cache(), transaction, req1, nullptr);
 
   EXPECT_EQ(1, cache.network_layer()->transaction_count());
   EXPECT_EQ(0, cache.disk_cache()->open_count());
@@ -6280,13 +6286,13 @@ TEST_F(HttpCacheTest, SimplePUT_DontInvalidate_404) {
   MockHttpRequest req2(transaction);
   req2.upload_data_stream = &upload_data_stream;
 
-  RunTransactionTestWithRequest(cache.http_cache(), transaction, req2, NULL);
+  RunTransactionTestWithRequest(cache.http_cache(), transaction, req2, nullptr);
 
   EXPECT_EQ(2, cache.network_layer()->transaction_count());
   EXPECT_EQ(1, cache.disk_cache()->open_count());
   EXPECT_EQ(1, cache.disk_cache()->create_count());
 
-  RunTransactionTestWithRequest(cache.http_cache(), transaction, req1, NULL);
+  RunTransactionTestWithRequest(cache.http_cache(), transaction, req1, nullptr);
 
   EXPECT_EQ(2, cache.network_layer()->transaction_count());
   EXPECT_EQ(2, cache.disk_cache()->open_count());
@@ -6310,7 +6316,8 @@ TEST_F(HttpCacheTest, SimpleDELETE_Miss) {
   request.upload_data_stream = &upload_data_stream;
 
   // Attempt to populate the cache.
-  RunTransactionTestWithRequest(cache.http_cache(), transaction, request, NULL);
+  RunTransactionTestWithRequest(cache.http_cache(), transaction, request,
+                                nullptr);
 
   EXPECT_EQ(1, cache.network_layer()->transaction_count());
   EXPECT_EQ(0, cache.disk_cache()->open_count());
@@ -6325,7 +6332,7 @@ TEST_F(HttpCacheTest, SimpleDELETE_Invalidate) {
   MockHttpRequest req1(transaction);
 
   // Attempt to populate the cache.
-  RunTransactionTestWithRequest(cache.http_cache(), transaction, req1, NULL);
+  RunTransactionTestWithRequest(cache.http_cache(), transaction, req1, nullptr);
 
   EXPECT_EQ(1, cache.network_layer()->transaction_count());
   EXPECT_EQ(0, cache.disk_cache()->open_count());
@@ -6340,13 +6347,13 @@ TEST_F(HttpCacheTest, SimpleDELETE_Invalidate) {
   MockHttpRequest req2(transaction);
   req2.upload_data_stream = &upload_data_stream;
 
-  RunTransactionTestWithRequest(cache.http_cache(), transaction, req2, NULL);
+  RunTransactionTestWithRequest(cache.http_cache(), transaction, req2, nullptr);
 
   EXPECT_EQ(2, cache.network_layer()->transaction_count());
   EXPECT_EQ(1, cache.disk_cache()->open_count());
   EXPECT_EQ(1, cache.disk_cache()->create_count());
 
-  RunTransactionTestWithRequest(cache.http_cache(), transaction, req1, NULL);
+  RunTransactionTestWithRequest(cache.http_cache(), transaction, req1, nullptr);
 
   EXPECT_EQ(3, cache.network_layer()->transaction_count());
   EXPECT_EQ(1, cache.disk_cache()->open_count());
@@ -6565,7 +6572,7 @@ TEST_F(HttpCacheTest, GET_Crazy206) {
   MockTransaction transaction(kRangeGET_TransactionOK);
   AddMockTransaction(&transaction);
   transaction.request_headers = EXTRA_HEADER;
-  transaction.handler = NULL;
+  transaction.handler = nullptr;
   RunTransactionTest(cache.http_cache(), transaction);
 
   EXPECT_EQ(1, cache.network_layer()->transaction_count());
@@ -6777,7 +6784,7 @@ TEST_F(HttpCacheTest, RangeGET_NoContentLength) {
   transaction.response_headers = "ETag: \"foo\"\n"
                                  "Accept-Ranges: bytes\n"
                                  "Content-Range: bytes 40-49/80\n";
-  transaction.handler = NULL;
+  transaction.handler = nullptr;
   RunTransactionTestWithResponse(cache.http_cache(), transaction, &headers);
 
   EXPECT_EQ(1, cache.network_layer()->transaction_count());
@@ -7375,7 +7382,7 @@ TEST_F(HttpCacheTest, RangeGET_301) {
   transaction.status = "HTTP/1.1 301 Moved Permanently";
   transaction.response_headers = "Location: http://www.bar.com/\n";
   transaction.data = "";
-  transaction.handler = NULL;
+  transaction.handler = nullptr;
 
   // Write to the cache.
   RunTransactionTest(cache.http_cache(), transaction);
@@ -7631,8 +7638,8 @@ TEST_F(HttpCacheTest, GET_Previous206_NotSparse) {
 
   // Create a disk cache entry that stores 206 headers while not being sparse.
   disk_cache::Entry* entry;
-  ASSERT_TRUE(cache.CreateBackendEntry(kSimpleGET_Transaction.url, &entry,
-                                       NULL));
+  ASSERT_TRUE(
+      cache.CreateBackendEntry(kSimpleGET_Transaction.url, &entry, nullptr));
 
   std::string raw_headers(kRangeGET_TransactionOK.status);
   raw_headers.append("\n");
@@ -7679,8 +7686,8 @@ TEST_F(HttpCacheTest, RangeGET_Previous206_NotSparse_2) {
 
   // Create a disk cache entry that stores 206 headers while not being sparse.
   disk_cache::Entry* entry;
-  ASSERT_TRUE(cache.CreateBackendEntry(kRangeGET_TransactionOK.url, &entry,
-                                       NULL));
+  ASSERT_TRUE(
+      cache.CreateBackendEntry(kRangeGET_TransactionOK.url, &entry, nullptr));
 
   std::string raw_headers(kRangeGET_TransactionOK.status);
   raw_headers.append("\n");
@@ -7720,8 +7727,8 @@ TEST_F(HttpCacheTest, GET_Previous206_NotValidation) {
 
   // Create a disk cache entry that stores 206 headers.
   disk_cache::Entry* entry;
-  ASSERT_TRUE(cache.CreateBackendEntry(kSimpleGET_Transaction.url, &entry,
-                                       NULL));
+  ASSERT_TRUE(
+      cache.CreateBackendEntry(kSimpleGET_Transaction.url, &entry, nullptr));
 
   // Make sure that the headers cannot be validated with the server.
   std::string raw_headers(kRangeGET_TransactionOK.status);
@@ -8088,7 +8095,7 @@ TEST_F(HttpCacheTest, RangeGET_InvalidResponse1) {
   std::string headers;
 
   MockTransaction transaction(kRangeGET_TransactionOK);
-  transaction.handler = NULL;
+  transaction.handler = nullptr;
   transaction.response_headers = "Content-Range: bytes 40-49/45\n"
                                  "Content-Length: 10\n";
   AddMockTransaction(&transaction);
@@ -8116,7 +8123,7 @@ TEST_F(HttpCacheTest, RangeGET_InvalidResponse2) {
   std::string headers;
 
   MockTransaction transaction(kRangeGET_TransactionOK);
-  transaction.handler = NULL;
+  transaction.handler = nullptr;
   transaction.response_headers = "Content-Range: bytes 40-49/80\n"
                                  "Content-Length: 20\n";
   AddMockTransaction(&transaction);
@@ -8145,7 +8152,7 @@ TEST_F(HttpCacheTest, RangeGET_InvalidResponse3) {
   std::string headers;
 
   MockTransaction transaction(kRangeGET_TransactionOK);
-  transaction.handler = NULL;
+  transaction.handler = nullptr;
   transaction.request_headers = "Range: bytes = 50-59\r\n" EXTRA_HEADER;
   std::string response_headers(transaction.response_headers);
   response_headers.append("Content-Range: bytes 50-59/160\n");
@@ -8185,7 +8192,7 @@ TEST_F(HttpCacheTest, RangeGET_LargeValues) {
   std::string headers;
 
   MockTransaction transaction(kRangeGET_TransactionOK);
-  transaction.handler = NULL;
+  transaction.handler = nullptr;
   transaction.request_headers = "Range: bytes = 4294967288-4294967297\r\n"
                                 EXTRA_HEADER;
   transaction.response_headers =
@@ -8283,7 +8290,7 @@ TEST_F(HttpCacheTest, RangeGET_FastFlakyServer2) {
   MockTransaction transaction(kRangeGET_TransactionOK);
   transaction.request_headers = "Range: bytes = 40-49\r\n" EXTRA_HEADER;
   transaction.data = "rg: 40-";  // Less than expected.
-  transaction.handler = NULL;
+  transaction.handler = nullptr;
   std::string headers(transaction.response_headers);
   headers.append("Content-Range: bytes 40-49/80\n");
   transaction.response_headers = headers.c_str();
@@ -8357,8 +8364,8 @@ TEST_F(HttpCacheTest, RangeGET_OK_LoadOnlyFromCache) {
 TEST_F(HttpCacheTest, WriteResponseInfo_Truncated) {
   MockHttpCache cache;
   disk_cache::Entry* entry;
-  ASSERT_TRUE(cache.CreateBackendEntry("http://www.google.com", &entry,
-                                       NULL));
+  ASSERT_TRUE(
+      cache.CreateBackendEntry("http://www.google.com", &entry, nullptr));
 
   std::string headers("HTTP/1.1 200 OK");
   headers = HttpUtil::AssembleRawHeaders(headers.data(), headers.size());
@@ -9187,7 +9194,7 @@ TEST_F(HttpCacheTest, CachedRedirect) {
     EXPECT_EQ(info->headers->response_code(), 301);
 
     std::string location;
-    info->headers->EnumerateHeader(NULL, "Location", &location);
+    info->headers->EnumerateHeader(nullptr, "Location", &location);
     EXPECT_EQ(location, "http://www.bar.com/");
 
     // Mark the transaction as completed so it is cached.
@@ -9221,7 +9228,7 @@ TEST_F(HttpCacheTest, CachedRedirect) {
     EXPECT_EQ(info->headers->response_code(), 301);
 
     std::string location;
-    info->headers->EnumerateHeader(NULL, "Location", &location);
+    info->headers->EnumerateHeader(nullptr, "Location", &location);
     EXPECT_EQ(location, "http://www.bar.com/");
 
     // Mark the transaction as completed so it is cached.
@@ -9447,14 +9454,14 @@ TEST_F(HttpCacheTest, UpdatesRequestResponseTimeOn304) {
   const char kUrl[] = "http://foobar";
   const char kData[] = "body";
 
-  MockTransaction mock_network_response = { 0 };
+  MockTransaction mock_network_response = {nullptr};
   mock_network_response.url = kUrl;
 
   AddMockTransaction(&mock_network_response);
 
   // Request |kUrl|, causing |kNetResponse1| to be written to the cache.
 
-  MockTransaction request = { 0 };
+  MockTransaction request = {nullptr};
   request.url = kUrl;
   request.method = "GET";
   request.request_headers = "\r\n";
@@ -9634,11 +9641,11 @@ TEST_F(HttpCacheTest, WriteMetadata_OK) {
   HttpResponseInfo response;
   RunTransactionTestWithResponseInfo(cache.http_cache(), kSimpleGET_Transaction,
                                      &response);
-  EXPECT_TRUE(response.metadata.get() == NULL);
+  EXPECT_TRUE(response.metadata.get() == nullptr);
 
   // Trivial call.
   cache.http_cache()->WriteMetadata(GURL("foo"), DEFAULT_PRIORITY, Time::Now(),
-                                    NULL, 0);
+                                    nullptr, 0);
 
   // Write meta data to the same entry.
   scoped_refptr<IOBufferWithSize> buf =
@@ -9650,14 +9657,14 @@ TEST_F(HttpCacheTest, WriteMetadata_OK) {
                                     buf.get(), buf->size());
 
   // Release the buffer before the operation takes place.
-  buf = NULL;
+  buf = nullptr;
 
   // Makes sure we finish pending operations.
   base::RunLoop().RunUntilIdle();
 
   RunTransactionTestWithResponseInfo(cache.http_cache(), kSimpleGET_Transaction,
                                      &response);
-  ASSERT_TRUE(response.metadata.get() != NULL);
+  ASSERT_TRUE(response.metadata.get() != nullptr);
   EXPECT_EQ(50, response.metadata->size());
   EXPECT_EQ(0, strcmp(response.metadata->data(), "Hi there"));
 
@@ -9677,11 +9684,11 @@ TEST_F(HttpCacheTest, ReadMetadata_IsolatedCache) {
   HttpResponseInfo response;
   RunTransactionTestWithResponseInfo(cache.http_cache(), kSimpleGET_Transaction,
                                      &response);
-  EXPECT_TRUE(response.metadata.get() == NULL);
+  EXPECT_TRUE(response.metadata.get() == nullptr);
 
   // Trivial call.
   cache.http_cache()->WriteMetadata(GURL("foo"), DEFAULT_PRIORITY, Time::Now(),
-                                    NULL, 0);
+                                    nullptr, 0);
 
   // Write meta data to the same entry.
   scoped_refptr<IOBufferWithSize> buf =
@@ -9693,14 +9700,14 @@ TEST_F(HttpCacheTest, ReadMetadata_IsolatedCache) {
                                     buf.get(), buf->size());
 
   // Release the buffer before the operation takes place.
-  buf = NULL;
+  buf = nullptr;
 
   // Makes sure we finish pending operations.
   base::RunLoop().RunUntilIdle();
 
   RunTransactionTestWithResponseInfo(cache.http_cache(), kSimpleGET_Transaction,
                                      &response);
-  ASSERT_TRUE(response.metadata.get() == NULL);
+  ASSERT_TRUE(response.metadata.get() == nullptr);
 
   EXPECT_EQ(1, cache.network_layer()->transaction_count());
   EXPECT_EQ(2, cache.disk_cache()->open_count());
@@ -9718,7 +9725,7 @@ TEST_F(HttpCacheTest, WriteMetadata_Fail) {
   HttpResponseInfo response;
   RunTransactionTestWithResponseInfo(cache.http_cache(), kSimpleGET_Transaction,
                                      &response);
-  EXPECT_TRUE(response.metadata.get() == NULL);
+  EXPECT_TRUE(response.metadata.get() == nullptr);
 
   // Attempt to write meta data to the same entry.
   scoped_refptr<IOBufferWithSize> buf =
@@ -9736,7 +9743,7 @@ TEST_F(HttpCacheTest, WriteMetadata_Fail) {
 
   RunTransactionTestWithResponseInfo(cache.http_cache(), kSimpleGET_Transaction,
                                      &response);
-  EXPECT_TRUE(response.metadata.get() == NULL);
+  EXPECT_TRUE(response.metadata.get() == nullptr);
 
   EXPECT_EQ(1, cache.network_layer()->transaction_count());
   EXPECT_EQ(2, cache.disk_cache()->open_count());
@@ -9889,7 +9896,7 @@ TEST_F(HttpCacheTest, ReadMetadata) {
   HttpResponseInfo response;
   RunTransactionTestWithResponseInfo(cache.http_cache(),
                                      kTypicalGET_Transaction, &response);
-  EXPECT_TRUE(response.metadata.get() == NULL);
+  EXPECT_TRUE(response.metadata.get() == nullptr);
 
   // Write meta data to the same entry.
   scoped_refptr<IOBufferWithSize> buf =
@@ -9908,7 +9915,7 @@ TEST_F(HttpCacheTest, ReadMetadata) {
   trans1.load_flags = LOAD_ONLY_FROM_CACHE | LOAD_SKIP_CACHE_VALIDATION;
 
   RunTransactionTestWithResponseInfo(cache.http_cache(), trans1, &response);
-  ASSERT_TRUE(response.metadata.get() != NULL);
+  ASSERT_TRUE(response.metadata.get() != nullptr);
   EXPECT_EQ(50, response.metadata->size());
   EXPECT_EQ(0, strcmp(response.metadata->data(), "Hi there"));
 
@@ -9922,9 +9929,9 @@ TEST_F(HttpCacheTest, ReadMetadata) {
   trans1.status = "HTTP/1.1 304 Not Modified";
   AddMockTransaction(&trans1);
 
-  response.metadata = NULL;
+  response.metadata = nullptr;
   RunTransactionTestWithResponseInfo(cache.http_cache(), trans1, &response);
-  EXPECT_TRUE(response.metadata.get() != NULL);
+  EXPECT_TRUE(response.metadata.get() != nullptr);
 
   EXPECT_EQ(2, cache.network_layer()->transaction_count());
   EXPECT_EQ(3, cache.disk_cache()->open_count());
@@ -9936,7 +9943,7 @@ TEST_F(HttpCacheTest, ReadMetadata) {
   MockTransaction trans2(kTypicalGET_Transaction);
   trans2.load_flags = LOAD_VALIDATE_CACHE;
   RunTransactionTestWithResponseInfo(cache.http_cache(), trans2, &response);
-  EXPECT_TRUE(response.metadata.get() == NULL);
+  EXPECT_TRUE(response.metadata.get() == nullptr);
 
   EXPECT_EQ(3, cache.network_layer()->transaction_count());
   EXPECT_EQ(4, cache.disk_cache()->open_count());

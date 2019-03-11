@@ -329,7 +329,7 @@ void SimpleIndexFile::SyncWriteToDisk(net::CacheType cache_type,
   }
 
   // Atomically rename the temporary index file to become the real one.
-  if (!base::ReplaceFile(temp_index_filename, index_filename, NULL))
+  if (!base::ReplaceFile(temp_index_filename, index_filename, nullptr))
     return;
 
   if (app_on_background) {

@@ -108,7 +108,7 @@ TEST(NetworkDelegateErrorObserverTest, NoDelegate) {
   base::Thread thread("test_thread");
   thread.Start();
   NetworkDelegateErrorObserver observer(
-      NULL, base::ThreadTaskRunnerHandle::Get().get());
+      nullptr, base::ThreadTaskRunnerHandle::Get().get());
   thread.task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(&NetworkDelegateErrorObserver::OnPACScriptError,

@@ -796,7 +796,7 @@ void ClientSocketPoolBaseHelper::CheckForStalledSocketGroups() {
   while (true) {
     // If we have idle sockets, see if we can give one to the top-stalled group.
     std::string top_group_name;
-    Group* top_group = NULL;
+    Group* top_group = nullptr;
     if (!FindTopStalledGroup(&top_group, &top_group_name))
       return;
 
@@ -823,8 +823,8 @@ bool ClientSocketPoolBaseHelper::FindTopStalledGroup(
     Group** group,
     std::string* group_name) const {
   CHECK((group && group_name) || (!group && !group_name));
-  Group* top_group = NULL;
-  const std::string* top_group_name = NULL;
+  Group* top_group = nullptr;
+  const std::string* top_group_name = nullptr;
   bool has_stalled_group = false;
   for (auto i = group_map_.begin(); i != group_map_.end(); ++i) {
     Group* curr_group = i->second;
@@ -1018,7 +1018,7 @@ bool ClientSocketPoolBaseHelper::ReachedMaxSocketsLimit() const {
 bool ClientSocketPoolBaseHelper::CloseOneIdleSocket() {
   if (idle_socket_count() == 0)
     return false;
-  return CloseOneIdleSocketExceptInGroup(NULL);
+  return CloseOneIdleSocketExceptInGroup(nullptr);
 }
 
 bool ClientSocketPoolBaseHelper::CloseOneIdleSocketExceptInGroup(

@@ -67,7 +67,7 @@ SpdyProxyClientSocket::~SpdyProxyClientSocket() {
 }
 
 const HttpResponseInfo* SpdyProxyClientSocket::GetConnectResponseInfo() const {
-  return response_.headers.get() ? &response_ : NULL;
+  return response_.headers.get() ? &response_ : nullptr;
 }
 
 const scoped_refptr<HttpAuthController>&
@@ -121,7 +121,7 @@ int SpdyProxyClientSocket::Connect(CompletionOnceCallback callback) {
 
 void SpdyProxyClientSocket::Disconnect() {
   read_buffer_queue_.Clear();
-  user_buffer_ = NULL;
+  user_buffer_ = nullptr;
   user_buffer_len_ = 0;
   read_callback_.Reset();
 
@@ -464,7 +464,7 @@ void SpdyProxyClientSocket::OnDataReceived(std::unique_ptr<SpdyBuffer> buffer) {
     read_buffer_queue_.Enqueue(std::move(buffer));
   } else {
     net_log_.AddByteTransferEvent(NetLogEventType::SOCKET_BYTES_RECEIVED, 0,
-                                  NULL);
+                                  nullptr);
   }
 
   if (read_callback_) {

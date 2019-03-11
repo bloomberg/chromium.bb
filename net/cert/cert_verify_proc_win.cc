@@ -183,7 +183,7 @@ bool CertSubjectCommonNameHasNull(PCCERT_CONTEXT cert) {
   decode_para.cbSize = sizeof(decode_para);
   decode_para.pfnAlloc = crypto::CryptAlloc;
   decode_para.pfnFree = crypto::CryptFree;
-  CERT_NAME_INFO* name_info = NULL;
+  CERT_NAME_INFO* name_info = nullptr;
   DWORD name_info_size = 0;
   BOOL rv;
   rv = CryptDecodeObjectEx(X509_ASN_ENCODING | PKCS_7_ASN_ENCODING,
@@ -279,7 +279,7 @@ void GetCertChainInfo(PCCERT_CHAIN_CONTEXT chain_context,
   DWORD num_elements = first_chain->cElement;
   PCERT_CHAIN_ELEMENT* element = first_chain->rgpElement;
 
-  PCCERT_CONTEXT verified_cert = NULL;
+  PCCERT_CONTEXT verified_cert = nullptr;
   std::vector<PCCERT_CONTEXT> verified_chain;
 
   bool has_root_ca = num_elements > 1 &&
@@ -335,7 +335,7 @@ void GetCertPoliciesInfo(
   decode_para.cbSize = sizeof(decode_para);
   decode_para.pfnAlloc = crypto::CryptAlloc;
   decode_para.pfnFree = crypto::CryptFree;
-  CERT_POLICIES_INFO* policies_info = NULL;
+  CERT_POLICIES_INFO* policies_info = nullptr;
   DWORD policies_info_size = 0;
   BOOL rv;
   rv = CryptDecodeObjectEx(X509_ASN_ENCODING | PKCS_7_ASN_ENCODING,
@@ -628,7 +628,7 @@ class RevocationInjector {
          reinterpret_cast<void*>(&CertDllVerifyRevocationWithCRLSet)},
     };
     BOOL ok = CryptInstallOIDFunctionAddress(
-        NULL, X509_ASN_ENCODING, CRYPT_OID_VERIFY_REVOCATION_FUNC,
+        nullptr, X509_ASN_ENCODING, CRYPT_OID_VERIFY_REVOCATION_FUNC,
         base::size(kInterceptFunction), kInterceptFunction,
         CRYPT_INSTALL_OID_FUNC_BEFORE_FLAG);
     DCHECK(ok);
@@ -882,7 +882,7 @@ int CertVerifyProcWin::VerifyInternal(
 
   // Get the certificatePolicies extension of the certificate.
   std::unique_ptr<CERT_POLICIES_INFO, base::FreeDeleter> policies_info;
-  LPSTR ev_policy_oid = NULL;
+  LPSTR ev_policy_oid = nullptr;
   GetCertPoliciesInfo(cert_list.get(), &policies_info);
   if (policies_info) {
     EVRootCAMetadata* metadata = EVRootCAMetadata::GetInstance();
@@ -982,9 +982,9 @@ int CertVerifyProcWin::VerifyInternal(
   // calls will use the fallback path.
   BOOL chain_result =
       CertGetCertificateChain(chain_engine, cert_list.get(),
-                              NULL,  // current system time
+                              nullptr,  // current system time
                               cert_list->hCertStore, &chain_para, chain_flags,
-                              NULL,  // reserved
+                              nullptr,  // reserved
                               &chain_context);
   if (chain_result && chain_context &&
       (chain_context->TrustStatus.dwErrorStatus &
@@ -999,9 +999,9 @@ int CertVerifyProcWin::VerifyInternal(
     chain_para.dwStrongSignFlags = 0;
     chain_result =
         CertGetCertificateChain(chain_engine, cert_list.get(),
-                                NULL,  // current system time
+                                nullptr,  // current system time
                                 cert_list->hCertStore, &chain_para, chain_flags,
-                                NULL,  // reserved
+                                nullptr,  // reserved
                                 &chain_context);
   }
 
@@ -1028,15 +1028,12 @@ int CertVerifyProcWin::VerifyInternal(
     verify_result->cert_status |= CERT_STATUS_REV_CHECKING_ENABLED;
 
     CertFreeCertificateChain(chain_context);
-    if (!CertGetCertificateChain(
-             chain_engine,
-             cert_list.get(),
-             NULL,  // current system time
-             cert_list->hCertStore,
-             &chain_para,
-             chain_flags,
-             NULL,  // reserved
-             &chain_context)) {
+    if (!CertGetCertificateChain(chain_engine, cert_list.get(),
+                                 nullptr,  // current system time
+                                 cert_list->hCertStore, &chain_para,
+                                 chain_flags,
+                                 nullptr,  // reserved
+                                 &chain_context)) {
       verify_result->cert_status |= CERT_STATUS_INVALID;
       return MapSecurityError(GetLastError());
     }
@@ -1044,19 +1041,16 @@ int CertVerifyProcWin::VerifyInternal(
 
   if (chain_context->TrustStatus.dwErrorStatus &
       CERT_TRUST_IS_NOT_VALID_FOR_USAGE) {
-    ev_policy_oid = NULL;
+    ev_policy_oid = nullptr;
     chain_para.RequestedIssuancePolicy.Usage.cUsageIdentifier = 0;
-    chain_para.RequestedIssuancePolicy.Usage.rgpszUsageIdentifier = NULL;
+    chain_para.RequestedIssuancePolicy.Usage.rgpszUsageIdentifier = nullptr;
     CertFreeCertificateChain(chain_context);
-    if (!CertGetCertificateChain(
-             chain_engine,
-             cert_list.get(),
-             NULL,  // current system time
-             cert_list->hCertStore,
-             &chain_para,
-             chain_flags,
-             NULL,  // reserved
-             &chain_context)) {
+    if (!CertGetCertificateChain(chain_engine, cert_list.get(),
+                                 nullptr,  // current system time
+                                 cert_list->hCertStore, &chain_para,
+                                 chain_flags,
+                                 nullptr,  // reserved
+                                 &chain_context)) {
       verify_result->cert_status |= CERT_STATUS_INVALID;
       return MapSecurityError(GetLastError());
     }
@@ -1073,15 +1067,12 @@ int CertVerifyProcWin::VerifyInternal(
     chain_flags &= ~CERT_CHAIN_REVOCATION_CHECK_CACHE_ONLY;
 
     CertFreeCertificateChain(chain_context);
-    if (!CertGetCertificateChain(
-             chain_engine,
-             cert_list.get(),
-             NULL,  // current system time
-             cert_list->hCertStore,
-             &chain_para,
-             chain_flags,
-             NULL,  // reserved
-             &chain_context)) {
+    if (!CertGetCertificateChain(chain_engine, cert_list.get(),
+                                 nullptr,  // current system time
+                                 cert_list->hCertStore, &chain_para,
+                                 chain_flags,
+                                 nullptr,  // reserved
+                                 &chain_context)) {
       verify_result->cert_status |= CERT_STATUS_INVALID;
       return MapSecurityError(GetLastError());
     }

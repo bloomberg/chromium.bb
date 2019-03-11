@@ -951,7 +951,7 @@ void SimpleEntryImpl::CloseInternal() {
         results.get());
     OnceClosure reply = base::BindOnce(&SimpleEntryImpl::CloseOperationComplete,
                                        this, base::Passed(&results));
-    synchronous_entry_ = NULL;
+    synchronous_entry_ = nullptr;
     prioritized_task_runner_->PostTaskAndReply(
         FROM_HERE, std::move(task), std::move(reply), entry_priority_);
 

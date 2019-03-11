@@ -39,7 +39,7 @@ class NET_EXPORT HttpAuthHandlerFactory {
     CREATE_PREEMPTIVE,    // Create a handler preemptively.
   };
 
-  HttpAuthHandlerFactory() : http_auth_preferences_(NULL) {}
+  HttpAuthHandlerFactory() : http_auth_preferences_(nullptr) {}
   virtual ~HttpAuthHandlerFactory() {}
 
   // Sets the source of the HTTP authentication preferences.

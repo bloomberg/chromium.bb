@@ -86,7 +86,7 @@ TEST(TCPClientSocketTest, BindLoopbackToExternal) {
 
   IPAddress external_ip(72, 14, 213, 105);
   TCPClientSocket socket(AddressList::CreateFromIPAddress(external_ip, 80),
-                         NULL, NULL, NetLogSource());
+                         nullptr, nullptr, NetLogSource());
 
   EXPECT_THAT(socket.Bind(IPEndPoint(IPAddress::IPv4Localhost(), 0)), IsOk());
 
@@ -101,7 +101,7 @@ TEST(TCPClientSocketTest, BindLoopbackToExternal) {
 // Bind a socket to the IPv4 loopback interface and try to connect to
 // the IPv6 loopback interface, verify that connection fails.
 TEST(TCPClientSocketTest, BindLoopbackToIPv6) {
-  TCPServerSocket server(NULL, NetLogSource());
+  TCPServerSocket server(nullptr, NetLogSource());
   int listen_result =
       server.Listen(IPEndPoint(IPAddress::IPv6Localhost(), 0), 1);
   if (listen_result != OK) {
@@ -112,7 +112,7 @@ TEST(TCPClientSocketTest, BindLoopbackToIPv6) {
 
   IPEndPoint server_address;
   ASSERT_THAT(server.GetLocalAddress(&server_address), IsOk());
-  TCPClientSocket socket(AddressList(server_address), NULL, NULL,
+  TCPClientSocket socket(AddressList(server_address), nullptr, nullptr,
                          NetLogSource());
 
   EXPECT_THAT(socket.Bind(IPEndPoint(IPAddress::IPv4Localhost(), 0)), IsOk());
@@ -213,7 +213,7 @@ TEST(TCPClientSocketTest, MAYBE_TestSocketPerformanceWatcher) {
 
   TCPClientSocket socket(
       AddressList::CreateFromIPAddressList(ip_list, "example.com"),
-      std::move(watcher), NULL, NetLogSource());
+      std::move(watcher), nullptr, NetLogSource());
 
   EXPECT_THAT(socket.Bind(IPEndPoint(IPAddress::IPv4Localhost(), 0)), IsOk());
 

@@ -19,11 +19,11 @@
 namespace net {
 
 URLFetcherStringWriter* URLFetcherResponseWriter::AsStringWriter() {
-  return NULL;
+  return nullptr;
 }
 
 URLFetcherFileWriter* URLFetcherResponseWriter::AsFileWriter() {
-  return NULL;
+  return nullptr;
 }
 
 URLFetcherStringWriter::URLFetcherStringWriter() = default;

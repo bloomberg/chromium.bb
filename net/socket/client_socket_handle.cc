@@ -20,8 +20,8 @@ namespace net {
 
 ClientSocketHandle::ClientSocketHandle()
     : is_initialized_(false),
-      pool_(NULL),
-      higher_pool_(NULL),
+      pool_(nullptr),
+      higher_pool_(nullptr),
       reuse_type_(ClientSocketHandle::UNUSED),
       is_ssl_error_(false) {}
 
@@ -74,7 +74,7 @@ void ClientSocketHandle::ResetInternal(bool cancel) {
   callback_.Reset();
   if (higher_pool_)
     RemoveHigherLayeredPool(higher_pool_);
-  pool_ = NULL;
+  pool_ = nullptr;
   idle_time_ = base::TimeDelta();
   // Connection timing is still needed for handling
   // ERR_HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT errors.
@@ -126,7 +126,7 @@ void ClientSocketHandle::RemoveHigherLayeredPool(
   CHECK_EQ(higher_pool_, higher_pool);
   if (pool_) {
     pool_->RemoveHigherLayeredPool(higher_pool);
-    higher_pool_ = NULL;
+    higher_pool_ = nullptr;
   }
 }
 

@@ -74,9 +74,9 @@ int DiskCacheTestWithCache::TestIterator::OpenNextEntry(
 }
 
 DiskCacheTestWithCache::DiskCacheTestWithCache()
-    : cache_impl_(NULL),
-      simple_cache_impl_(NULL),
-      mem_cache_(NULL),
+    : cache_impl_(nullptr),
+      simple_cache_impl_(nullptr),
+      mem_cache_(nullptr),
       mask_(0),
       size_(0),
       type_(net::DISK_CACHE),
@@ -97,7 +97,7 @@ void DiskCacheTestWithCache::InitCache() {
   else
     InitDiskCache();
 
-  ASSERT_TRUE(NULL != cache_);
+  ASSERT_TRUE(nullptr != cache_);
   if (first_cleanup_)
     ASSERT_EQ(0, cache_->GetEntryCount());
 }
@@ -321,7 +321,7 @@ void DiskCacheTestWithCache::TearDown() {
 }
 
 void DiskCacheTestWithCache::InitMemoryCache() {
-  mem_cache_ = new disk_cache::MemBackendImpl(NULL);
+  mem_cache_ = new disk_cache::MemBackendImpl(nullptr);
   cache_.reset(mem_cache_);
   ASSERT_TRUE(cache_);
 

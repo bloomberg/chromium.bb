@@ -47,7 +47,7 @@ TEST(NetLogUtil, GetNetInfo) {
   EXPECT_GT(net_info_without_cache->size(), 0u);
 
   // Fore creation of a cache backend, and get NetInfo again.
-  disk_cache::Backend* backend = NULL;
+  disk_cache::Backend* backend = nullptr;
   EXPECT_EQ(OK, context.http_transaction_factory()->GetCache()->GetBackend(
                     &backend, TestCompletionCallback().callback()));
   EXPECT_TRUE(http_cache->GetCurrentBackend());

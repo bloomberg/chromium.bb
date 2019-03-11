@@ -360,8 +360,8 @@ class TestConnectJob : public ConnectJob {
 
   int ConnectInternal() override {
     AddressList ignored;
-    client_socket_factory_->CreateTransportClientSocket(ignored, NULL, NULL,
-                                                        NetLogSource());
+    client_socket_factory_->CreateTransportClientSocket(
+        ignored, nullptr, nullptr, NetLogSource());
     switch (job_type_) {
       case kMockJob:
         return DoConnect(true /* successful */, false /* sync */,
@@ -537,7 +537,7 @@ class TestConnectJobFactory
             net_log,
             nullptr /* websocket_endpoint_lock_manager */),
         job_type_(TestConnectJob::kMockJob),
-        job_types_(NULL),
+        job_types_(nullptr),
         client_socket_factory_(client_socket_factory) {}
 
   ~TestConnectJobFactory() override = default;
@@ -876,7 +876,7 @@ TEST_F(ClientSocketPoolBaseTest, InitConnectionFailure) {
                   log.bound()));
   EXPECT_FALSE(handle.socket());
   EXPECT_FALSE(handle.is_ssl_error());
-  EXPECT_TRUE(handle.ssl_error_response_info().headers.get() == NULL);
+  EXPECT_TRUE(handle.ssl_error_response_info().headers.get() == nullptr);
   TestLoadTimingInfoNotConnected(handle);
 
   TestNetLogEntry::List entries;
@@ -1885,7 +1885,7 @@ TEST_F(ClientSocketPoolBaseTest,
   EXPECT_EQ(LOAD_STATE_CONNECTING, pool_->GetLoadState("a", &handle));
   EXPECT_THAT(callback.WaitForResult(), IsError(ERR_CONNECTION_FAILED));
   EXPECT_FALSE(handle.is_ssl_error());
-  EXPECT_TRUE(handle.ssl_error_response_info().headers.get() == NULL);
+  EXPECT_TRUE(handle.ssl_error_response_info().headers.get() == nullptr);
 
   TestNetLogEntry::List entries;
   log.GetEntries(&entries);
@@ -2292,7 +2292,7 @@ TEST_F(ClientSocketPoolBaseTest, AdditionalErrorStateSynchronous) {
   EXPECT_FALSE(handle.is_initialized());
   EXPECT_FALSE(handle.socket());
   EXPECT_TRUE(handle.is_ssl_error());
-  EXPECT_FALSE(handle.ssl_error_response_info().headers.get() == NULL);
+  EXPECT_FALSE(handle.ssl_error_response_info().headers.get() == nullptr);
 }
 
 TEST_F(ClientSocketPoolBaseTest, AdditionalErrorStateAsynchronous) {
@@ -2313,7 +2313,7 @@ TEST_F(ClientSocketPoolBaseTest, AdditionalErrorStateAsynchronous) {
   EXPECT_FALSE(handle.is_initialized());
   EXPECT_FALSE(handle.socket());
   EXPECT_TRUE(handle.is_ssl_error());
-  EXPECT_FALSE(handle.ssl_error_response_info().headers.get() == NULL);
+  EXPECT_FALSE(handle.ssl_error_response_info().headers.get() == nullptr);
 }
 
 // Make sure we can reuse sockets.
@@ -2336,7 +2336,7 @@ TEST_F(ClientSocketPoolBaseTest, CleanupTimedOutIdleSocketsReuse) {
   ASSERT_THAT(callback.WaitForResult(), IsOk());
 
   // Use and release the socket.
-  EXPECT_EQ(1, handle.socket()->Write(NULL, 1, CompletionOnceCallback(),
+  EXPECT_EQ(1, handle.socket()->Write(nullptr, 1, CompletionOnceCallback(),
                                       TRAFFIC_ANNOTATION_FOR_TESTS));
   TestLoadTimingInfoConnectedNotReused(handle);
   handle.Reset();
@@ -2402,7 +2402,7 @@ TEST_F(ClientSocketPoolBaseTest, CleanupTimedOutIdleSocketsNoReuse) {
   handle.Reset();
   ASSERT_THAT(callback2.WaitForResult(), IsOk());
   // Use the socket.
-  EXPECT_EQ(1, handle2.socket()->Write(NULL, 1, CompletionOnceCallback(),
+  EXPECT_EQ(1, handle2.socket()->Write(nullptr, 1, CompletionOnceCallback(),
                                        TRAFFIC_ANNOTATION_FOR_TESTS));
   handle2.Reset();
 
@@ -2666,7 +2666,8 @@ TEST_F(ClientSocketPoolBaseTest, AdditionalErrorSocketsDontUseSlot) {
   EXPECT_FALSE(req.handle()->is_initialized());
   EXPECT_FALSE(req.handle()->socket());
   EXPECT_TRUE(req.handle()->is_ssl_error());
-  EXPECT_FALSE(req.handle()->ssl_error_response_info().headers.get() == NULL);
+  EXPECT_FALSE(req.handle()->ssl_error_response_info().headers.get() ==
+               nullptr);
 }
 
 // http://crbug.com/44724 regression test.
@@ -3203,9 +3204,9 @@ TEST_F(ClientSocketPoolBaseTest, PreferUsedSocketToUnusedSocket) {
   EXPECT_THAT(callback3.WaitForResult(), IsOk());
 
   // Use the socket.
-  EXPECT_EQ(1, handle1.socket()->Write(NULL, 1, CompletionOnceCallback(),
+  EXPECT_EQ(1, handle1.socket()->Write(nullptr, 1, CompletionOnceCallback(),
                                        TRAFFIC_ANNOTATION_FOR_TESTS));
-  EXPECT_EQ(1, handle3.socket()->Write(NULL, 1, CompletionOnceCallback(),
+  EXPECT_EQ(1, handle3.socket()->Write(nullptr, 1, CompletionOnceCallback(),
                                        TRAFFIC_ANNOTATION_FOR_TESTS));
 
   handle1.Reset();
@@ -3914,7 +3915,7 @@ TEST_F(ClientSocketPoolBaseTest, PreconnectWithUnreadData) {
   EXPECT_EQ(1, pool_->NumActiveSocketsInGroup("a"));
 
   // Drain the pending read.
-  EXPECT_EQ(1, handle.socket()->Read(NULL, 1, CompletionOnceCallback()));
+  EXPECT_EQ(1, handle.socket()->Read(nullptr, 1, CompletionOnceCallback()));
 
   TestLoadTimingInfoConnectedReused(handle);
   handle.Reset();

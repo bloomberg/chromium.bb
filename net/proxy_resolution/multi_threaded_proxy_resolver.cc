@@ -158,7 +158,7 @@ class MultiThreadedProxyResolver : public ProxyResolver,
 
 class Job : public base::RefCountedThreadSafe<Job> {
  public:
-  Job() : executor_(NULL), was_cancelled_(false) {}
+  Job() : executor_(nullptr), was_cancelled_(false) {}
 
   void set_executor(Executor* executor) {
     executor_ = executor;
@@ -303,8 +303,8 @@ class MultiThreadedProxyResolver::GetProxyForURLJob : public Job {
   void Run(scoped_refptr<base::SingleThreadTaskRunner> origin_runner) override {
     ProxyResolver* resolver = executor()->resolver();
     DCHECK(resolver);
-    int rv = resolver->GetProxyForURL(url_, &results_buf_,
-                                      CompletionOnceCallback(), NULL, net_log_);
+    int rv = resolver->GetProxyForURL(
+        url_, &results_buf_, CompletionOnceCallback(), nullptr, net_log_);
     DCHECK_NE(rv, ERR_IO_PENDING);
 
     origin_runner->PostTask(
@@ -368,7 +368,7 @@ void Executor::StartJob(Job* job) {
 
 void Executor::OnJobCompleted(Job* job) {
   DCHECK_EQ(job, outstanding_job_.get());
-  outstanding_job_ = NULL;
+  outstanding_job_ = nullptr;
   coordinator_->OnExecutorReady(this);
 }
 
@@ -388,7 +388,7 @@ void Executor::Destroy() {
   if (outstanding_job_.get()) {
     outstanding_job_->Cancel();
     // Orphan the job (since this executor may be deleted soon).
-    outstanding_job_->set_executor(NULL);
+    outstanding_job_->set_executor(nullptr);
   }
 
   // It is now safe to free the ProxyResolver, since all the tasks that
@@ -396,8 +396,8 @@ void Executor::Destroy() {
   resolver_.reset();
 
   // Null some stuff as a precaution.
-  coordinator_ = NULL;
-  outstanding_job_ = NULL;
+  coordinator_ = nullptr;
+  outstanding_job_ = nullptr;
 }
 
 Executor::~Executor() {
@@ -479,7 +479,7 @@ Executor* MultiThreadedProxyResolver::FindIdleExecutor() {
     if (!executor->outstanding_job())
       return executor;
   }
-  return NULL;
+  return nullptr;
 }
 
 void MultiThreadedProxyResolver::AddNewExecutor() {

@@ -113,7 +113,8 @@ size_t DnsResourceRecord::CalculateRecordSize() const {
          (owned_rdata.empty() ? rdata.size() : owned_rdata.size());
 }
 
-DnsRecordParser::DnsRecordParser() : packet_(nullptr), length_(0), cur_(0) {}
+DnsRecordParser::DnsRecordParser()
+    : packet_(nullptr), length_(0), cur_(nullptr) {}
 
 DnsRecordParser::DnsRecordParser(const void* packet,
                                  size_t length,

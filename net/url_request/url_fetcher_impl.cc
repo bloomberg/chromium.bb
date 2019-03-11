@@ -15,7 +15,7 @@
 
 namespace net {
 
-static URLFetcherFactory* g_factory = NULL;
+static URLFetcherFactory* g_factory = nullptr;
 
 URLFetcherImpl::URLFetcherImpl(
     const GURL& url,

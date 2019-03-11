@@ -298,10 +298,11 @@ class SSLClientSocketImpl::SSLContext {
 
   SSLContext() {
     crypto::EnsureOpenSSLInit();
-    ssl_socket_data_index_ = SSL_get_ex_new_index(0, 0, 0, 0, 0);
+    ssl_socket_data_index_ =
+        SSL_get_ex_new_index(0, nullptr, nullptr, nullptr, nullptr);
     DCHECK_NE(ssl_socket_data_index_, -1);
     ssl_ctx_.reset(SSL_CTX_new(TLS_with_buffers_method()));
-    SSL_CTX_set_cert_cb(ssl_ctx_.get(), ClientCertRequestCallback, NULL);
+    SSL_CTX_set_cert_cb(ssl_ctx_.get(), ClientCertRequestCallback, nullptr);
 
     // Verifies the server certificate even on resumed sessions.
     SSL_CTX_set_reverify_on_resume(ssl_ctx_.get(), 1);
@@ -510,9 +511,9 @@ void SSLClientSocketImpl::Disconnect() {
   user_connect_callback_.Reset();
   user_read_callback_.Reset();
   user_write_callback_.Reset();
-  user_read_buf_ = NULL;
+  user_read_buf_ = nullptr;
   user_read_buf_len_ = 0;
-  user_write_buf_ = NULL;
+  user_write_buf_ = nullptr;
   user_write_buf_len_ = 0;
 
   stream_socket_->Disconnect();
@@ -741,7 +742,7 @@ int SSLClientSocketImpl::Write(
   } else {
     if (rv > 0)
       was_ever_used_ = true;
-    user_write_buf_ = NULL;
+    user_write_buf_ = nullptr;
     user_write_buf_len_ = 0;
   }
 
@@ -875,7 +876,7 @@ int SSLClientSocketImpl::Init() {
     std::vector<uint8_t> wire_protos =
         SerializeNextProtos(ssl_config_.alpn_protos);
     SSL_set_alpn_protos(ssl_.get(),
-                        wire_protos.empty() ? NULL : &wire_protos[0],
+                        wire_protos.empty() ? nullptr : &wire_protos[0],
                         wire_protos.size());
   }
 
@@ -907,7 +908,7 @@ void SSLClientSocketImpl::DoWriteCallback(int rv) {
   // up front.
   if (rv > 0)
     was_ever_used_ = true;
-  user_write_buf_ = NULL;
+  user_write_buf_ = nullptr;
   user_write_buf_len_ = 0;
   std::move(user_write_callback_).Run(rv);
 }
@@ -972,7 +973,7 @@ int SSLClientSocketImpl::DoHandshakeComplete(int result) {
     ssl_client_session_cache_->ResetLookupCount(GetSessionCacheKey());
   }
 
-  const uint8_t* alpn_proto = NULL;
+  const uint8_t* alpn_proto = nullptr;
   unsigned alpn_len = 0;
   SSL_get0_alpn_selected(ssl_.get(), &alpn_proto, &alpn_len);
   if (alpn_len > 0) {

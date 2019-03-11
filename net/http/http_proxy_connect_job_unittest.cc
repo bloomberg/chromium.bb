@@ -511,7 +511,7 @@ TEST_P(HttpProxyConnectJobTest, NeedAuth) {
 
     SpdyTestUtil spdy_util;
     spdy::SpdySerializedFrame connect(spdy_util.ConstructSpdyConnect(
-        NULL, 0, 1, DEFAULT_PRIORITY, HostPortPair(kEndpointHost, 443)));
+        nullptr, 0, 1, DEFAULT_PRIORITY, HostPortPair(kEndpointHost, 443)));
     spdy::SpdySerializedFrame rst(
         spdy_util.ConstructSpdyRstStream(1, spdy::ERROR_CODE_CANCEL));
     spdy_util.UpdateWithStreamDestruction(1);
@@ -627,7 +627,7 @@ TEST_P(HttpProxyConnectJobTest, NeedAuthTwice) {
 
     SpdyTestUtil spdy_util;
     spdy::SpdySerializedFrame connect(spdy_util.ConstructSpdyConnect(
-        NULL, 0, 1, DEFAULT_PRIORITY, HostPortPair(kEndpointHost, 443)));
+        nullptr, 0, 1, DEFAULT_PRIORITY, HostPortPair(kEndpointHost, 443)));
     spdy::SpdySerializedFrame rst(
         spdy_util.ConstructSpdyRstStream(1, spdy::ERROR_CODE_CANCEL));
     spdy_util.UpdateWithStreamDestruction(1);
@@ -1111,7 +1111,7 @@ TEST_P(HttpProxyConnectJobTest, TestTimeoutsAuthChallenge) {
 
   SpdyTestUtil spdy_util;
   spdy::SpdySerializedFrame connect(spdy_util.ConstructSpdyConnect(
-      NULL, 0, 1, DEFAULT_PRIORITY, HostPortPair(kEndpointHost, 443)));
+      nullptr, 0, 1, DEFAULT_PRIORITY, HostPortPair(kEndpointHost, 443)));
   spdy::SpdySerializedFrame rst(
       spdy_util.ConstructSpdyRstStream(1, spdy::ERROR_CODE_CANCEL));
   spdy_util.UpdateWithStreamDestruction(1);

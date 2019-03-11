@@ -44,7 +44,7 @@ class MockChannelIDStoreWithAsyncGet
     : public DefaultChannelIDStore {
  public:
   MockChannelIDStoreWithAsyncGet()
-      : DefaultChannelIDStore(NULL), channel_id_count_(0) {}
+      : DefaultChannelIDStore(nullptr), channel_id_count_(0) {}
 
   int GetChannelID(const std::string& server_identifier,
                    std::unique_ptr<crypto::ECPrivateKey>* key_result,
@@ -91,7 +91,7 @@ void MockChannelIDStoreWithAsyncGet::CallGetChannelIDCallbackWithResult(
 class ChannelIDServiceTest : public TestWithScopedTaskEnvironment {
  public:
   ChannelIDServiceTest()
-      : service_(new ChannelIDService(new DefaultChannelIDStore(NULL))) {}
+      : service_(new ChannelIDService(new DefaultChannelIDStore(nullptr))) {}
 
  protected:
   std::unique_ptr<ChannelIDService> service_;

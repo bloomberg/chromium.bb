@@ -107,11 +107,11 @@ const char* NetInfoSourceToString(NetInfoSource source) {
 // Despite the name, can return an in memory "disk cache".
 disk_cache::Backend* GetDiskCacheBackend(URLRequestContext* context) {
   if (!context->http_transaction_factory())
-    return NULL;
+    return nullptr;
 
   HttpCache* http_cache = context->http_transaction_factory()->GetCache();
   if (!http_cache)
-    return NULL;
+    return nullptr;
 
   return http_cache->GetCurrentBackend();
 }

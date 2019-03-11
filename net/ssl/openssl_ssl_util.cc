@@ -138,7 +138,7 @@ std::unique_ptr<base::Value> NetLogOpenSSLErrorCallback(
     dict->SetInteger("error_lib", ERR_GET_LIB(error_info.error_code));
     dict->SetInteger("error_reason", ERR_GET_REASON(error_info.error_code));
   }
-  if (error_info.file != NULL)
+  if (error_info.file != nullptr)
     dict->SetString("file", error_info.file);
   if (error_info.line != 0)
     dict->SetInteger("line", error_info.line);

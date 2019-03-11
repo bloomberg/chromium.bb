@@ -75,7 +75,7 @@ void SyncCallback::OnFileIOComplete(int bytes_copied) {
           disk_cache::CreateNetLogReadWriteCompleteCallback(bytes_copied));
     }
     entry_->ReportIOTime(disk_cache::EntryImpl::kAsyncIO, start_);
-    buf_ = NULL;  // Release the buffer before invoking the callback.
+    buf_ = nullptr;  // Release the buffer before invoking the callback.
     std::move(callback_).Run(bytes_copied);
   }
   delete this;
@@ -83,7 +83,7 @@ void SyncCallback::OnFileIOComplete(int bytes_copied) {
 
 void SyncCallback::Discard() {
   callback_.Reset();
-  buf_ = NULL;
+  buf_ = nullptr;
   OnFileIOComplete(0);
 }
 
@@ -130,7 +130,7 @@ class EntryImpl::UserBuffer {
   // Prepare this buffer for reuse.
   void Reset();
 
-  char* Data() { return buffer_.size() ? &buffer_[0] : NULL; }
+  char* Data() { return buffer_.size() ? &buffer_[0] : nullptr; }
   int Size() { return static_cast<int>(buffer_.size()); }
   int Start() { return offset_; }
   int End() { return offset_ + Size(); }
@@ -302,8 +302,11 @@ bool EntryImpl::UserBuffer::GrowBuffer(int required, int limit) {
 // ------------------------------------------------------------------------
 
 EntryImpl::EntryImpl(BackendImpl* backend, Addr address, bool read_only)
-    : entry_(NULL, Addr(0)), node_(NULL, Addr(0)),
-      backend_(backend->GetWeakPtr()), doomed_(false), read_only_(read_only),
+    : entry_(nullptr, Addr(0)),
+      node_(nullptr, Addr(0)),
+      backend_(backend->GetWeakPtr()),
+      doomed_(false),
+      read_only_(read_only),
       dirty_(false) {
   entry_.LazyInit(backend->File(address), address);
   for (int i = 0; i < kNumStreams; i++) {
@@ -1070,7 +1073,7 @@ int EntryImpl::InternalReadData(int index,
                    kBlockHeaderSize;
   }
 
-  SyncCallback* io_callback = NULL;
+  SyncCallback* io_callback = nullptr;
   bool null_callback = callback.is_null();
   if (!null_callback) {
     io_callback =
@@ -1178,7 +1181,7 @@ int EntryImpl::InternalWriteData(int index,
   if (!buf_len)
     return 0;
 
-  SyncCallback* io_callback = NULL;
+  SyncCallback* io_callback = nullptr;
   bool null_callback = callback.is_null();
   if (!null_callback) {
     io_callback = new SyncCallback(this, buf, std::move(callback),
@@ -1257,7 +1260,7 @@ void EntryImpl::DeleteData(Addr address, int index) {
           backend_->GetFileName(address).value() << " from the cache.";
     }
     if (files_[index].get())
-      files_[index] = NULL;  // Releases the object.
+      files_[index] = nullptr;  // Releases the object.
   } else {
     backend_->DeleteBlock(address, true);
   }
@@ -1282,7 +1285,7 @@ void EntryImpl::UpdateRank(bool modified) {
 
 File* EntryImpl::GetBackingFile(Addr address, int index) {
   if (!backend_.get())
-    return NULL;
+    return nullptr;
 
   File* file;
   if (address.is_separate_file())
@@ -1410,7 +1413,7 @@ bool EntryImpl::CopyToLocalBuffer(int index) {
 
   int len = std::min(entry_.Data()->data_size[index], kMaxBlockSize);
   user_buffers_[index].reset(new UserBuffer(backend_.get()));
-  user_buffers_[index]->Write(len, NULL, 0);
+  user_buffers_[index]->Write(len, nullptr, 0);
 
   File* file = GetBackingFile(address, index);
   int offset = 0;
@@ -1418,8 +1421,8 @@ bool EntryImpl::CopyToLocalBuffer(int index) {
   if (address.is_block_file())
     offset = address.start_block() * address.BlockSize() + kBlockHeaderSize;
 
-  if (!file ||
-      !file->Read(user_buffers_[index]->Data(), len, offset, NULL, NULL)) {
+  if (!file || !file->Read(user_buffers_[index]->Data(), len, offset, nullptr,
+                           nullptr)) {
     user_buffers_[index].reset();
     return false;
   }
@@ -1516,7 +1519,7 @@ bool EntryImpl::Flush(int index, int min_len) {
   if (!file)
     return false;
 
-  if (!file->Write(user_buffers_[index]->Data(), len, offset, NULL, NULL))
+  if (!file->Write(user_buffers_[index]->Data(), len, offset, nullptr, nullptr))
     return false;
   user_buffers_[index]->Reset();
 
@@ -1570,7 +1573,7 @@ void EntryImpl::GetData(int index, char** buffer, Addr* address) {
 
   // Bad news: we'd have to read the info from disk so instead we'll just tell
   // the caller where to read from.
-  *buffer = NULL;
+  *buffer = nullptr;
   address->set_value(entry_.Data()->data_addr[index]);
   if (address->is_initialized()) {
     // Prevent us from deleting the block from the backing store.

@@ -81,7 +81,7 @@ URLFetcherCore::URLFetcherCore(
       load_flags_(LOAD_NORMAL),
       allow_credentials_(base::nullopt),
       response_code_(URLFetcher::RESPONSE_CODE_INVALID),
-      url_request_data_key_(NULL),
+      url_request_data_key_(nullptr),
       was_fetched_via_proxy_(false),
       was_cached_(false),
       received_response_content_length_(0),
@@ -126,8 +126,8 @@ void URLFetcherCore::Stop() {
   if (delegate_task_runner_)  // May be NULL in tests.
     DCHECK(delegate_task_runner_->RunsTasksInCurrentSequence());
 
-  delegate_ = NULL;
-  fetcher_ = NULL;
+  delegate_ = nullptr;
+  fetcher_ = nullptr;
   if (!network_task_runner_.get())
     return;
   if (network_task_runner_->RunsTasksInCurrentSequence()) {
@@ -368,7 +368,7 @@ void URLFetcherCore::ReceivedContentWasMalformed() {
 bool URLFetcherCore::GetResponseAsString(
     std::string* out_response_string) const {
   URLFetcherStringWriter* string_writer =
-      response_writer_ ? response_writer_->AsStringWriter() : NULL;
+      response_writer_ ? response_writer_->AsStringWriter() : nullptr;
   if (!string_writer)
     return false;
 
@@ -381,7 +381,7 @@ bool URLFetcherCore::GetResponseAsFilePath(bool take_ownership,
   DCHECK(delegate_task_runner_->RunsTasksInCurrentSequence());
 
   URLFetcherFileWriter* file_writer =
-      response_writer_ ? response_writer_->AsFileWriter() : NULL;
+      response_writer_ ? response_writer_->AsFileWriter() : nullptr;
   if (!file_writer)
     return false;
 
@@ -714,9 +714,9 @@ void URLFetcherCore::CancelURLRequest(int error) {
   // references to URLFetcher::Core at this point so it may take a while to
   // delete the object, but we cannot delay the destruction of the request
   // context.
-  request_context_getter_ = NULL;
+  request_context_getter_ = nullptr;
   initiator_.reset();
-  url_request_data_key_ = NULL;
+  url_request_data_key_ = nullptr;
   url_request_create_data_callback_.Reset();
   was_cancelled_ = true;
 }
@@ -805,9 +805,9 @@ void URLFetcherCore::RetryOrCompleteUrlFetch() {
     return;
   }
 
-  request_context_getter_ = NULL;
+  request_context_getter_ = nullptr;
   initiator_.reset();
-  url_request_data_key_ = NULL;
+  url_request_data_key_ = nullptr;
   url_request_create_data_callback_.Reset();
   bool posted = delegate_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&URLFetcherCore::OnCompletedURLRequest, this,

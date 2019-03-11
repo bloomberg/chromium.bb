@@ -46,7 +46,7 @@ TEST(RecordRdataTest, ParseSrvRecord) {
 
   std::unique_ptr<SrvRecordRdata> record1_obj =
       SrvRecordRdata::Create(record1_strpiece, parser);
-  ASSERT_TRUE(record1_obj != NULL);
+  ASSERT_TRUE(record1_obj != nullptr);
   ASSERT_EQ(1, record1_obj->priority());
   ASSERT_EQ(2, record1_obj->weight());
   ASSERT_EQ(80, record1_obj->port());
@@ -55,7 +55,7 @@ TEST(RecordRdataTest, ParseSrvRecord) {
 
   std::unique_ptr<SrvRecordRdata> record2_obj =
       SrvRecordRdata::Create(record2_strpiece, parser);
-  ASSERT_TRUE(record2_obj != NULL);
+  ASSERT_TRUE(record2_obj != nullptr);
   ASSERT_EQ(257, record2_obj->priority());
   ASSERT_EQ(258, record2_obj->weight());
   ASSERT_EQ(259, record2_obj->port());
@@ -79,7 +79,7 @@ TEST(RecordRdataTest, ParseARecord) {
 
   std::unique_ptr<ARecordRdata> record_obj =
       ARecordRdata::Create(record_strpiece, parser);
-  ASSERT_TRUE(record_obj != NULL);
+  ASSERT_TRUE(record_obj != nullptr);
 
   ASSERT_EQ("127.0.0.1", record_obj->address().ToString());
 
@@ -100,7 +100,7 @@ TEST(RecordRdataTest, ParseAAAARecord) {
 
   std::unique_ptr<AAAARecordRdata> record_obj =
       AAAARecordRdata::Create(record_strpiece, parser);
-  ASSERT_TRUE(record_obj != NULL);
+  ASSERT_TRUE(record_obj != nullptr);
 
   ASSERT_EQ("1234:5678::9", record_obj->address().ToString());
 
@@ -119,7 +119,7 @@ TEST(RecordRdataTest, ParseCnameRecord) {
 
   std::unique_ptr<CnameRecordRdata> record_obj =
       CnameRecordRdata::Create(record_strpiece, parser);
-  ASSERT_TRUE(record_obj != NULL);
+  ASSERT_TRUE(record_obj != nullptr);
 
   ASSERT_EQ("www.google.com", record_obj->cname());
 
@@ -138,7 +138,7 @@ TEST(RecordRdataTest, ParsePtrRecord) {
 
   std::unique_ptr<PtrRecordRdata> record_obj =
       PtrRecordRdata::Create(record_strpiece, parser);
-  ASSERT_TRUE(record_obj != NULL);
+  ASSERT_TRUE(record_obj != nullptr);
 
   ASSERT_EQ("www.google.com", record_obj->ptrdomain());
 
@@ -157,7 +157,7 @@ TEST(RecordRdataTest, ParseTxtRecord) {
 
   std::unique_ptr<TxtRecordRdata> record_obj =
       TxtRecordRdata::Create(record_strpiece, parser);
-  ASSERT_TRUE(record_obj != NULL);
+  ASSERT_TRUE(record_obj != nullptr);
 
   std::vector<std::string> expected;
   expected.push_back("www");
@@ -182,7 +182,7 @@ TEST(RecordRdataTest, ParseNsecRecord) {
 
   std::unique_ptr<NsecRecordRdata> record_obj =
       NsecRecordRdata::Create(record_strpiece, parser);
-  ASSERT_TRUE(record_obj != NULL);
+  ASSERT_TRUE(record_obj != nullptr);
 
   ASSERT_EQ(16u, record_obj->bitmap_length());
 

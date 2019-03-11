@@ -594,7 +594,7 @@ void FakeBlockingStreamSocket::UnblockWrite() {
                      base::Unretained(this)),
       TRAFFIC_ANNOTATION_FOR_TESTS);
 
-  pending_write_buf_ = NULL;
+  pending_write_buf_ = nullptr;
   pending_write_len_ = -1;
   if (rv != ERR_IO_PENDING) {
     std::move(pending_write_callback_).Run(rv);
@@ -696,7 +696,7 @@ class DeleteSocketCallback : public TestCompletionCallbackBase {
   void OnComplete(int result) {
     if (socket_) {
       delete socket_;
-      socket_ = NULL;
+      socket_ = nullptr;
     } else {
       ADD_FAILURE() << "Deleting socket twice";
     }
@@ -872,7 +872,7 @@ class SSLClientSocketTest : public PlatformTest,
       const HostPortPair& host_port_pair,
       int* result) {
     std::unique_ptr<StreamSocket> transport(
-        new TCPClientSocket(addr_, NULL, &log_, NetLogSource()));
+        new TCPClientSocket(addr_, nullptr, &log_, NetLogSource()));
     int rv = callback_.GetResult(transport->Connect(callback_.callback()));
     if (rv != OK) {
       LOG(ERROR) << "Could not connect to SpawnedTestServer";
@@ -996,16 +996,16 @@ class SSLClientSocketCertRequestInfoTest : public SSLClientSocketTest {
     SpawnedTestServer spawned_test_server(SpawnedTestServer::TYPE_HTTPS,
                                           ssl_options, base::FilePath());
     if (!spawned_test_server.Start())
-      return NULL;
+      return nullptr;
 
     AddressList addr;
     if (!spawned_test_server.GetAddressList(&addr))
-      return NULL;
+      return nullptr;
 
     TestCompletionCallback callback;
     TestNetLog log;
     std::unique_ptr<StreamSocket> transport(
-        new TCPClientSocket(addr, NULL, &log, NetLogSource()));
+        new TCPClientSocket(addr, nullptr, &log, NetLogSource()));
     int rv = callback.GetResult(transport->Connect(callback.callback()));
     EXPECT_THAT(rv, IsOk());
 
@@ -1051,7 +1051,7 @@ class SSLClientSocketFalseStartTest : public SSLClientSocketTest {
     CHECK(spawned_test_server());
 
     std::unique_ptr<StreamSocket> real_transport(
-        new TCPClientSocket(addr(), NULL, NULL, NetLogSource()));
+        new TCPClientSocket(addr(), nullptr, nullptr, NetLogSource()));
     std::unique_ptr<FakeBlockingStreamSocket> transport(
         new FakeBlockingStreamSocket(std::move(real_transport)));
     int rv = callback->GetResult(transport->Connect(callback->callback()));
@@ -1092,7 +1092,7 @@ class SSLClientSocketFalseStartTest : public SSLClientSocketTest {
     ASSERT_TRUE(StartTestServer(server_options));
 
     TestCompletionCallback callback;
-    FakeBlockingStreamSocket* raw_transport = NULL;
+    FakeBlockingStreamSocket* raw_transport = nullptr;
     std::unique_ptr<SSLClientSocket> sock;
     ASSERT_NO_FATAL_FAILURE(CreateAndConnectUntilServerFinishedReceived(
         client_config, &callback, &raw_transport, &sock));
@@ -1218,7 +1218,7 @@ class SSLClientSocketZeroRTTTest : public SSLClientSocketTest {
     ssl_config.early_data_enabled = early_data_enabled;
 
     real_transport_.reset(
-        new TCPClientSocket(address_, NULL, NULL, NetLogSource()));
+        new TCPClientSocket(address_, nullptr, nullptr, NetLogSource()));
     std::unique_ptr<FakeBlockingStreamSocket> transport(
         new FakeBlockingStreamSocket(std::move(real_transport_)));
     FakeBlockingStreamSocket* raw_transport = transport.get();
@@ -1354,7 +1354,7 @@ TEST_F(SSLClientSocketTest, Connect) {
   TestCompletionCallback callback;
   TestNetLog log;
   std::unique_ptr<StreamSocket> transport(
-      new TCPClientSocket(addr(), NULL, &log, NetLogSource()));
+      new TCPClientSocket(addr(), nullptr, &log, NetLogSource()));
   int rv = callback.GetResult(transport->Connect(callback.callback()));
   EXPECT_THAT(rv, IsOk());
 
@@ -1532,7 +1532,7 @@ TEST_F(SSLClientSocketTest, ConnectClientAuthSendNullCert) {
   // TODO(davidben): Add a test which requires them and verify the error.
   SSLConfig ssl_config;
   ssl_config.send_client_cert = true;
-  ssl_config.client_cert = NULL;
+  ssl_config.client_cert = nullptr;
 
   int rv;
   ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
@@ -1561,7 +1561,7 @@ TEST_P(SSLClientSocketReadTest, Read) {
 
   TestCompletionCallback callback;
   std::unique_ptr<StreamSocket> transport(
-      new TCPClientSocket(addr(), NULL, NULL, NetLogSource()));
+      new TCPClientSocket(addr(), nullptr, nullptr, NetLogSource()));
   EXPECT_EQ(0, transport->GetTotalReceivedBytes());
 
   int rv = callback.GetResult(transport->Connect(callback.callback()));
@@ -1618,7 +1618,7 @@ TEST_F(SSLClientSocketTest, Connect_WithSynchronousError) {
 
   TestCompletionCallback callback;
   std::unique_ptr<StreamSocket> real_transport(
-      new TCPClientSocket(addr(), NULL, NULL, NetLogSource()));
+      new TCPClientSocket(addr(), nullptr, nullptr, NetLogSource()));
   std::unique_ptr<SynchronousErrorStreamSocket> transport(
       new SynchronousErrorStreamSocket(std::move(real_transport)));
   int rv = callback.GetResult(transport->Connect(callback.callback()));
@@ -1649,7 +1649,7 @@ TEST_P(SSLClientSocketReadTest, Read_WithSynchronousError) {
 
   TestCompletionCallback callback;
   std::unique_ptr<StreamSocket> real_transport(
-      new TCPClientSocket(addr(), NULL, NULL, NetLogSource()));
+      new TCPClientSocket(addr(), nullptr, nullptr, NetLogSource()));
   std::unique_ptr<SynchronousErrorStreamSocket> transport(
       new SynchronousErrorStreamSocket(std::move(real_transport)));
   int rv = callback.GetResult(transport->Connect(callback.callback()));
@@ -1701,7 +1701,7 @@ TEST_F(SSLClientSocketTest, Write_WithSynchronousError) {
 
   TestCompletionCallback callback;
   std::unique_ptr<StreamSocket> real_transport(
-      new TCPClientSocket(addr(), NULL, NULL, NetLogSource()));
+      new TCPClientSocket(addr(), nullptr, nullptr, NetLogSource()));
   // Note: |error_socket|'s ownership is handed to |transport|, but a pointer
   // is retained in order to configure additional errors.
   std::unique_ptr<SynchronousErrorStreamSocket> error_socket(
@@ -1770,7 +1770,7 @@ TEST_F(SSLClientSocketTest, Write_WithSynchronousErrorNoRead) {
 
   TestCompletionCallback callback;
   std::unique_ptr<StreamSocket> real_transport(
-      new TCPClientSocket(addr(), NULL, NULL, NetLogSource()));
+      new TCPClientSocket(addr(), nullptr, nullptr, NetLogSource()));
   // Note: intermediate sockets' ownership are handed to |sock|, but a pointer
   // is retained in order to query them.
   std::unique_ptr<SynchronousErrorStreamSocket> error_socket(
@@ -1874,7 +1874,7 @@ TEST_P(SSLClientSocketReadTest, Read_DeleteWhilePendingFullDuplex) {
 
   TestCompletionCallback callback;
   std::unique_ptr<StreamSocket> real_transport(
-      new TCPClientSocket(addr(), NULL, NULL, NetLogSource()));
+      new TCPClientSocket(addr(), nullptr, nullptr, NetLogSource()));
   // Note: |error_socket|'s ownership is handed to |transport|, but a pointer
   // is retained in order to configure additional errors.
   std::unique_ptr<SynchronousErrorStreamSocket> error_socket(
@@ -1960,7 +1960,7 @@ TEST_P(SSLClientSocketReadTest, Read_WithWriteError) {
 
   TestCompletionCallback callback;
   std::unique_ptr<StreamSocket> real_transport(
-      new TCPClientSocket(addr(), NULL, NULL, NetLogSource()));
+      new TCPClientSocket(addr(), nullptr, nullptr, NetLogSource()));
   // Note: |error_socket|'s ownership is handed to |transport|, but a pointer
   // is retained in order to configure additional errors.
   std::unique_ptr<SynchronousErrorStreamSocket> error_socket(
@@ -2051,7 +2051,7 @@ TEST_F(SSLClientSocketTest, Connect_WithZeroReturn) {
 
   TestCompletionCallback callback;
   std::unique_ptr<StreamSocket> real_transport(
-      new TCPClientSocket(addr(), NULL, NULL, NetLogSource()));
+      new TCPClientSocket(addr(), nullptr, nullptr, NetLogSource()));
   std::unique_ptr<SynchronousErrorStreamSocket> transport(
       new SynchronousErrorStreamSocket(std::move(real_transport)));
   int rv = callback.GetResult(transport->Connect(callback.callback()));
@@ -2077,7 +2077,7 @@ TEST_P(SSLClientSocketReadTest, Read_WithZeroReturn) {
 
   TestCompletionCallback callback;
   std::unique_ptr<StreamSocket> real_transport(
-      new TCPClientSocket(addr(), NULL, NULL, NetLogSource()));
+      new TCPClientSocket(addr(), nullptr, nullptr, NetLogSource()));
   std::unique_ptr<SynchronousErrorStreamSocket> transport(
       new SynchronousErrorStreamSocket(std::move(real_transport)));
   int rv = callback.GetResult(transport->Connect(callback.callback()));
@@ -2110,7 +2110,7 @@ TEST_P(SSLClientSocketReadTest, Read_WithAsyncZeroReturn) {
 
   TestCompletionCallback callback;
   std::unique_ptr<StreamSocket> real_transport(
-      new TCPClientSocket(addr(), NULL, NULL, NetLogSource()));
+      new TCPClientSocket(addr(), nullptr, nullptr, NetLogSource()));
   std::unique_ptr<SynchronousErrorStreamSocket> error_socket(
       new SynchronousErrorStreamSocket(std::move(real_transport)));
   SynchronousErrorStreamSocket* raw_error_socket = error_socket.get();
@@ -2193,7 +2193,7 @@ TEST_P(SSLClientSocketReadTest, Read_ManySmallRecords) {
   TestCompletionCallback callback;
 
   std::unique_ptr<StreamSocket> real_transport(
-      new TCPClientSocket(addr(), NULL, NULL, NetLogSource()));
+      new TCPClientSocket(addr(), nullptr, nullptr, NetLogSource()));
   std::unique_ptr<ReadBufferingStreamSocket> transport(
       new ReadBufferingStreamSocket(std::move(real_transport)));
   ReadBufferingStreamSocket* raw_transport = transport.get();
@@ -2266,7 +2266,7 @@ TEST_P(SSLClientSocketReadTest, Read_FullLogging) {
   TestNetLog log;
   log.SetCaptureMode(NetLogCaptureMode::IncludeSocketBytes());
   std::unique_ptr<StreamSocket> transport(
-      new TCPClientSocket(addr(), NULL, &log, NetLogSource()));
+      new TCPClientSocket(addr(), nullptr, &log, NetLogSource()));
   int rv = callback.GetResult(transport->Connect(callback.callback()));
   EXPECT_THAT(rv, IsOk());
 
@@ -2335,7 +2335,7 @@ TEST_F(SSLClientSocketTest, PrematureApplicationData) {
 
   TestCompletionCallback callback;
   std::unique_ptr<StreamSocket> transport(
-      new MockTCPClientSocket(addr(), NULL, &data));
+      new MockTCPClientSocket(addr(), nullptr, &data));
   int rv = callback.GetResult(transport->Connect(callback.callback()));
   EXPECT_THAT(rv, IsOk());
 
@@ -2380,7 +2380,7 @@ TEST_F(SSLClientSocketTest, ClientSocketHandleNotFromPool) {
 
   TestCompletionCallback callback;
   std::unique_ptr<StreamSocket> transport(
-      new TCPClientSocket(addr(), NULL, NULL, NetLogSource()));
+      new TCPClientSocket(addr(), nullptr, nullptr, NetLogSource()));
   int rv = callback.GetResult(transport->Connect(callback.callback()));
   EXPECT_THAT(rv, IsOk());
 
@@ -2556,7 +2556,7 @@ TEST_F(SSLClientSocketTest, VerifyReturnChainProperlyOrdered) {
   // Load and install the root for the validated chain.
   scoped_refptr<X509Certificate> root_cert = ImportCertFromFile(
       GetTestCertsDirectory(), "redundant-validated-chain-root.pem");
-  ASSERT_NE(static_cast<X509Certificate*>(NULL), root_cert.get());
+  ASSERT_NE(static_cast<X509Certificate*>(nullptr), root_cert.get());
   ScopedTestRoot scoped_root(root_cert.get());
 
   // Set up a test server with CERT_CHAIN_WRONG_ROOT.
@@ -2942,7 +2942,7 @@ TEST_F(SSLClientSocketTest, ReusableAfterWrite) {
 
   TestCompletionCallback callback;
   std::unique_ptr<StreamSocket> real_transport(
-      new TCPClientSocket(addr(), NULL, NULL, NetLogSource()));
+      new TCPClientSocket(addr(), nullptr, nullptr, NetLogSource()));
   std::unique_ptr<FakeBlockingStreamSocket> transport(
       new FakeBlockingStreamSocket(std::move(real_transport)));
   FakeBlockingStreamSocket* raw_transport = transport.get();
@@ -3001,7 +3001,7 @@ TEST_F(SSLClientSocketTest, SessionResumption) {
 
   // Using a different HostPortPair uses a different session cache key.
   std::unique_ptr<StreamSocket> transport(
-      new TCPClientSocket(addr(), NULL, &log_, NetLogSource()));
+      new TCPClientSocket(addr(), nullptr, &log_, NetLogSource()));
   TestCompletionCallback callback;
   ASSERT_THAT(callback.GetResult(transport->Connect(callback.callback())),
               IsOk());
@@ -3104,7 +3104,7 @@ TEST_F(SSLClientSocketTest, VersionInterferenceProbe) {
   // Failed connections pass through.
   TestCompletionCallback callback;
   std::unique_ptr<StreamSocket> real_transport(
-      new TCPClientSocket(addr(), NULL, NULL, NetLogSource()));
+      new TCPClientSocket(addr(), nullptr, nullptr, NetLogSource()));
   std::unique_ptr<SynchronousErrorStreamSocket> transport(
       new SynchronousErrorStreamSocket(std::move(real_transport)));
   rv = callback.GetResult(transport->Connect(callback.callback()));
@@ -3228,7 +3228,7 @@ TEST_F(SSLClientSocketFalseStartTest, NoSessionResumptionBeforeFinished) {
 
   // Start a handshake up to the server Finished message.
   TestCompletionCallback callback;
-  FakeBlockingStreamSocket* raw_transport1 = NULL;
+  FakeBlockingStreamSocket* raw_transport1 = nullptr;
   std::unique_ptr<SSLClientSocket> sock1;
   ASSERT_NO_FATAL_FAILURE(CreateAndConnectUntilServerFinishedReceived(
       client_config, &callback, &raw_transport1, &sock1));
@@ -3282,7 +3282,7 @@ TEST_F(SSLClientSocketFalseStartTest, NoSessionResumptionBadFinished) {
 
   // Start a handshake up to the server Finished message.
   TestCompletionCallback callback;
-  FakeBlockingStreamSocket* raw_transport1 = NULL;
+  FakeBlockingStreamSocket* raw_transport1 = nullptr;
   std::unique_ptr<SSLClientSocket> sock1;
   ASSERT_NO_FATAL_FAILURE(CreateAndConnectUntilServerFinishedReceived(
       client_config, &callback, &raw_transport1, &sock1));
@@ -4109,7 +4109,7 @@ TEST_F(SSLClientSocketTest, HandshakeFailureServerHello) {
 
   TestCompletionCallback callback;
   std::unique_ptr<StreamSocket> real_transport(
-      new TCPClientSocket(addr(), NULL, NULL, NetLogSource()));
+      new TCPClientSocket(addr(), nullptr, nullptr, NetLogSource()));
   std::unique_ptr<FakeBlockingStreamSocket> transport(
       new FakeBlockingStreamSocket(std::move(real_transport)));
   FakeBlockingStreamSocket* raw_transport = transport.get();
@@ -4142,7 +4142,7 @@ TEST_F(SSLClientSocketTest, HandshakeFailureNoClientCerts) {
 
   TestCompletionCallback callback;
   std::unique_ptr<StreamSocket> real_transport(
-      new TCPClientSocket(addr(), NULL, NULL, NetLogSource()));
+      new TCPClientSocket(addr(), nullptr, nullptr, NetLogSource()));
   std::unique_ptr<FakeBlockingStreamSocket> transport(
       new FakeBlockingStreamSocket(std::move(real_transport)));
   FakeBlockingStreamSocket* raw_transport = transport.get();
@@ -4190,7 +4190,7 @@ TEST_F(SSLClientSocketTest, LateHandshakeFailureMissingClientCerts) {
 
   TestCompletionCallback callback;
   std::unique_ptr<StreamSocket> real_transport(
-      new TCPClientSocket(addr(), NULL, NULL, NetLogSource()));
+      new TCPClientSocket(addr(), nullptr, nullptr, NetLogSource()));
   std::unique_ptr<FakeBlockingStreamSocket> transport(
       new FakeBlockingStreamSocket(std::move(real_transport)));
   FakeBlockingStreamSocket* raw_transport = transport.get();
@@ -4239,7 +4239,7 @@ TEST_F(SSLClientSocketTest, LateHandshakeFailureSendClientCerts) {
 
   TestCompletionCallback callback;
   std::unique_ptr<StreamSocket> real_transport(
-      new TCPClientSocket(addr(), NULL, NULL, NetLogSource()));
+      new TCPClientSocket(addr(), nullptr, nullptr, NetLogSource()));
   std::unique_ptr<FakeBlockingStreamSocket> transport(
       new FakeBlockingStreamSocket(std::move(real_transport)));
   FakeBlockingStreamSocket* raw_transport = transport.get();
@@ -4289,7 +4289,7 @@ TEST_F(SSLClientSocketTest, AccessDeniedNoClientCerts) {
 
   TestCompletionCallback callback;
   std::unique_ptr<StreamSocket> real_transport(
-      new TCPClientSocket(addr(), NULL, NULL, NetLogSource()));
+      new TCPClientSocket(addr(), nullptr, nullptr, NetLogSource()));
   std::unique_ptr<FakeBlockingStreamSocket> transport(
       new FakeBlockingStreamSocket(std::move(real_transport)));
   FakeBlockingStreamSocket* raw_transport = transport.get();
@@ -4335,7 +4335,7 @@ TEST_F(SSLClientSocketTest, AccessDeniedClientCerts) {
 
   TestCompletionCallback callback;
   std::unique_ptr<StreamSocket> real_transport(
-      new TCPClientSocket(addr(), NULL, NULL, NetLogSource()));
+      new TCPClientSocket(addr(), nullptr, nullptr, NetLogSource()));
   std::unique_ptr<FakeBlockingStreamSocket> transport(
       new FakeBlockingStreamSocket(std::move(real_transport)));
   FakeBlockingStreamSocket* raw_transport = transport.get();
@@ -4710,7 +4710,7 @@ TEST_P(SSLClientSocketReadTest, DumpMemoryStats) {
 
 TEST_P(SSLClientSocketReadTest, IdleAfterRead) {
   // Set up a TCP server.
-  TCPServerSocket server_listener(NULL, NetLogSource());
+  TCPServerSocket server_listener(nullptr, NetLogSource());
   ASSERT_THAT(
       server_listener.Listen(IPEndPoint(IPAddress::IPv4Localhost(), 0), 1),
       IsOk());
@@ -4725,7 +4725,7 @@ TEST_P(SSLClientSocketReadTest, IdleAfterRead) {
 
   TestCompletionCallback client_callback;
   std::unique_ptr<TCPClientSocket> client_transport(new TCPClientSocket(
-      AddressList(server_address), NULL, NULL, NetLogSource()));
+      AddressList(server_address), nullptr, nullptr, NetLogSource()));
   int client_rv = client_transport->Connect(client_callback.callback());
 
   EXPECT_THAT(server_callback.GetResult(server_rv), IsOk());
@@ -4790,7 +4790,7 @@ TEST_F(SSLClientSocketTest, Tag) {
 
   TestNetLog log;
   std::unique_ptr<StreamSocket> transport(
-      new TCPClientSocket(addr(), NULL, &log, NetLogSource()));
+      new TCPClientSocket(addr(), nullptr, &log, NetLogSource()));
 
   MockTaggingStreamSocket* tagging_sock =
       new MockTaggingStreamSocket(std::move(transport));

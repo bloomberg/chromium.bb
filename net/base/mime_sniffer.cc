@@ -325,7 +325,7 @@ static bool MatchMagicNumber(const char* content,
   // pretend the length is content_size.
   const char* end = static_cast<const char*>(memchr(content, '\0', size));
   const size_t content_strlen =
-      (end != NULL) ? static_cast<size_t>(end - content) : size;
+      (end != nullptr) ? static_cast<size_t>(end - content) : size;
 
   bool match = false;
   if (magic_entry.is_string) {

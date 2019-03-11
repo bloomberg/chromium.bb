@@ -192,7 +192,7 @@ void UpdateTimes(disk_cache::CacheRankingsBlock* node, bool modified) {
 
 namespace disk_cache {
 
-Rankings::ScopedRankingsBlock::ScopedRankingsBlock() : rankings_(NULL) {}
+Rankings::ScopedRankingsBlock::ScopedRankingsBlock() : rankings_(nullptr) {}
 
 Rankings::ScopedRankingsBlock::ScopedRankingsBlock(Rankings* rankings)
     : rankings_(rankings) {}
@@ -242,7 +242,7 @@ void Rankings::Reset() {
     heads_[i].set_value(0);
     tails_[i].set_value(0);
   }
-  control_data_ = NULL;
+  control_data_ = nullptr;
 }
 
 void Rankings::Insert(CacheRankingsBlock* node, bool modified, List list) {
@@ -420,30 +420,30 @@ CacheRankingsBlock* Rankings::GetNext(CacheRankingsBlock* node, List list) {
   if (!node) {
     Addr& my_head = heads_[list];
     if (!my_head.is_initialized())
-      return NULL;
+      return nullptr;
     next.reset(new CacheRankingsBlock(backend_->File(my_head), my_head));
   } else {
     if (!node->HasData())
       node->Load();
     Addr& my_tail = tails_[list];
     if (!my_tail.is_initialized())
-      return NULL;
+      return nullptr;
     if (my_tail.value() == node->address().value())
-      return NULL;
+      return nullptr;
     Addr address(node->Data()->next);
     if (address.value() == node->address().value())
-      return NULL;  // Another tail? fail it.
+      return nullptr;  // Another tail? fail it.
     next.reset(new CacheRankingsBlock(backend_->File(address), address));
   }
 
   TrackRankingsBlock(next.get(), true);
 
   if (!GetRanking(next.get()))
-    return NULL;
+    return nullptr;
 
   ConvertToLongLived(next.get());
   if (node && !CheckSingleLink(node, next.get()))
-    return NULL;
+    return nullptr;
 
   return next.release();
 }
@@ -453,30 +453,30 @@ CacheRankingsBlock* Rankings::GetPrev(CacheRankingsBlock* node, List list) {
   if (!node) {
     Addr& my_tail = tails_[list];
     if (!my_tail.is_initialized())
-      return NULL;
+      return nullptr;
     prev.reset(new CacheRankingsBlock(backend_->File(my_tail), my_tail));
   } else {
     if (!node->HasData())
       node->Load();
     Addr& my_head = heads_[list];
     if (!my_head.is_initialized())
-      return NULL;
+      return nullptr;
     if (my_head.value() == node->address().value())
-      return NULL;
+      return nullptr;
     Addr address(node->Data()->prev);
     if (address.value() == node->address().value())
-      return NULL;  // Another head? fail it.
+      return nullptr;  // Another head? fail it.
     prev.reset(new CacheRankingsBlock(backend_->File(address), address));
   }
 
   TrackRankingsBlock(prev.get(), true);
 
   if (!GetRanking(prev.get()))
-    return NULL;
+    return nullptr;
 
   ConvertToLongLived(prev.get());
   if (node && !CheckSingleLink(prev.get(), node))
-    return NULL;
+    return nullptr;
 
   return prev.release();
 }
@@ -627,7 +627,7 @@ void Rankings::ConvertToLongLived(CacheRankingsBlock* rankings) {
   // We cannot return a shared node because we are not keeping a reference
   // to the entry that owns the buffer. Make this node a copy of the one that
   // we have, and let the iterator logic update it when the entry changes.
-  CacheRankingsBlock temp(NULL, Addr(0));
+  CacheRankingsBlock temp(nullptr, Addr(0));
   *temp.Data() = *rankings->Data();
   rankings->StopSharingData();
   *rankings->Data() = *temp.Data();

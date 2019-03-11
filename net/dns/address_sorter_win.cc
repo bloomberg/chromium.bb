@@ -96,7 +96,7 @@ class AddressSorterWin : public AddressSorter {
       DWORD result_size = 0;
       int result = WSAIoctl(sock, SIO_ADDRESS_LIST_SORT, input_buffer_.get(),
                             buffer_size_, output_buffer_.get(), buffer_size_,
-                            &result_size, NULL, NULL);
+                            &result_size, nullptr, nullptr);
       if (result == SOCKET_ERROR) {
         LOG(ERROR) << "SIO_ADDRESS_LIST_SORT failed " << WSAGetLastError();
       } else {

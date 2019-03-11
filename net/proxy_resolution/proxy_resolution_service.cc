@@ -431,7 +431,7 @@ class ProxyResolutionService::InitProxyResolver {
  public:
   InitProxyResolver()
       : proxy_resolver_factory_(nullptr),
-        proxy_resolver_(NULL),
+        proxy_resolver_(nullptr),
         resolver_using_auto_detected_script_(nullptr),
         next_state_(STATE_NONE),
         quick_check_enabled_(true) {}
@@ -747,7 +747,7 @@ class ProxyResolutionService::PacFileDeciderPoller {
     // Start the PAC file decider to see if anything has changed.
     // TODO(eroman): Pass a proper NetLog rather than NULL.
     decider_.reset(
-        new PacFileDecider(pac_file_fetcher_, dhcp_pac_file_fetcher_, NULL));
+        new PacFileDecider(pac_file_fetcher_, dhcp_pac_file_fetcher_, nullptr));
     decider_->set_quick_check_enabled(quick_check_enabled_);
     int result = decider_->Start(
         config_, TimeDelta(), proxy_resolver_expects_pac_bytes_,
@@ -844,7 +844,7 @@ class ProxyResolutionService::PacFileDeciderPoller {
 
 // static
 const ProxyResolutionService::PacPollPolicy*
-    ProxyResolutionService::PacFileDeciderPoller::poll_policy_ = NULL;
+    ProxyResolutionService::PacFileDeciderPoller::poll_policy_ = nullptr;
 
 class ProxyResolutionService::RequestImpl
     : public ProxyResolutionService::Request {
@@ -1097,7 +1097,7 @@ std::unique_ptr<ProxyResolutionService> ProxyResolutionService::CreateFixed(
   // TODO(eroman): This isn't quite right, won't work if |pc| specifies
   //               a PAC script.
   return CreateUsingSystemProxyResolver(
-      std::make_unique<ProxyConfigServiceFixed>(pc), NULL);
+      std::make_unique<ProxyConfigServiceFixed>(pc), nullptr);
 }
 
 // static
@@ -1339,7 +1339,7 @@ void ProxyResolutionService::OnInitProxyResolverComplete(int result) {
                  base::Unretained(this)),
       fetched_config_.value(), resolver_factory_->expects_pac_bytes(),
       pac_file_fetcher_.get(), dhcp_pac_file_fetcher_.get(), result,
-      init_proxy_resolver_->script_data(), NULL));
+      init_proxy_resolver_->script_data(), nullptr));
   script_poller_->set_quick_check_enabled(quick_check_enabled_);
 
   init_proxy_resolver_.reset();

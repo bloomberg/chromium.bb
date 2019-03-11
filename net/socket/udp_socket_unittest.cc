@@ -542,7 +542,7 @@ TEST_F(UDPSocketTest, ClientGetLocalPeerAddresses) {
 
 TEST_F(UDPSocketTest, ServerGetLocalAddress) {
   IPEndPoint bind_address(IPAddress::IPv4Localhost(), 0);
-  UDPServerSocket server(NULL, NetLogSource());
+  UDPServerSocket server(nullptr, NetLogSource());
   int rv = server.Listen(bind_address);
   EXPECT_THAT(rv, IsOk());
 
@@ -557,7 +557,7 @@ TEST_F(UDPSocketTest, ServerGetLocalAddress) {
 
 TEST_F(UDPSocketTest, ServerGetPeerAddress) {
   IPEndPoint bind_address(IPAddress::IPv4Localhost(), 0);
-  UDPServerSocket server(NULL, NetLogSource());
+  UDPServerSocket server(nullptr, NetLogSource());
   int rv = server.Listen(bind_address);
   EXPECT_THAT(rv, IsOk());
 
@@ -612,7 +612,7 @@ TEST_F(UDPSocketTest, ServerSetDoNotFragment) {
 // Close the socket while read is pending.
 TEST_F(UDPSocketTest, CloseWithPendingRead) {
   IPEndPoint bind_address(IPAddress::IPv4Localhost(), 0);
-  UDPServerSocket server(NULL, NetLogSource());
+  UDPServerSocket server(nullptr, NetLogSource());
   int rv = server.Listen(bind_address);
   EXPECT_THAT(rv, IsOk());
 
@@ -1200,7 +1200,7 @@ TEST_F(UDPSocketTest, ReadWithSocketOptimization) {
 
   // Setup the server to listen.
   IPEndPoint server_address(IPAddress::IPv4Localhost(), 0 /* port */);
-  UDPServerSocket server(NULL, NetLogSource());
+  UDPServerSocket server(nullptr, NetLogSource());
   server.AllowAddressReuse();
   ASSERT_THAT(server.Listen(server_address), IsOk());
   // Get bound port.
@@ -1241,7 +1241,7 @@ TEST_F(UDPSocketTest, ReadWithSocketOptimizationTruncation) {
 
   // Setup the server to listen.
   IPEndPoint server_address(IPAddress::IPv4Localhost(), 0 /* port */);
-  UDPServerSocket server(NULL, NetLogSource());
+  UDPServerSocket server(nullptr, NetLogSource());
   server.AllowAddressReuse();
   ASSERT_THAT(server.Listen(server_address), IsOk());
   // Get bound port.

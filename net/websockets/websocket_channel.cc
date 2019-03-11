@@ -888,7 +888,7 @@ ChannelState WebSocketChannel::HandleDataFrame(
     // This call is not redundant when size == 0 because it tells us what
     // the current state is.
     StreamingUtf8Validator::State state = incoming_utf8_validator_.AddBytes(
-        size ? data_buffer->data() : NULL, static_cast<size_t>(size));
+        size ? data_buffer->data() : nullptr, static_cast<size_t>(size));
     if (state == StreamingUtf8Validator::INVALID ||
         (state == StreamingUtf8Validator::VALID_MIDPOINT && final)) {
       FailChannel("Could not decode a text frame as UTF-8.",

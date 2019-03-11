@@ -154,7 +154,7 @@ int HttpAuthController::MaybeGenerateAuthToken(
   bool needs_auth = HaveAuth() || SelectPreemptiveAuth(net_log);
   if (!needs_auth)
     return OK;
-  const AuthCredentials* credentials = NULL;
+  const AuthCredentials* credentials = nullptr;
   if (identity_.source != HttpAuth::IDENT_SRC_DEFAULT_CREDENTIALS)
     credentials = &identity_.credentials;
   DCHECK(auth_token_.empty());
@@ -385,7 +385,7 @@ void HttpAuthController::ResetAuth(const AuthCredentials& credentials) {
 }
 
 bool HttpAuthController::HaveAuthHandler() const {
-  return handler_.get() != NULL;
+  return handler_.get() != nullptr;
 }
 
 bool HttpAuthController::HaveAuth() const {

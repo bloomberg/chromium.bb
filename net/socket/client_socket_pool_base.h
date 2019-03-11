@@ -296,7 +296,7 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
  private:
   // Entry for a persistent socket which became idle at time |start_time|.
   struct IdleSocket {
-    IdleSocket() : socket(NULL) {}
+    IdleSocket() : socket(nullptr) {}
 
     // An idle socket can't be used if it is disconnected or has been used
     // before and has received data unexpectedly (hence no longer idle).  The

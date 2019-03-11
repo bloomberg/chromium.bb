@@ -84,7 +84,7 @@ void ExampleEmployer::ExampleWorker::DoCallback() {
   // Drop the employer_'s reference to us.  Do this before running the
   // callback since the callback might result in the employer being
   // destroyed.
-  employer_->request_ = NULL;
+  employer_->request_ = nullptr;
 
   std::move(callback_).Run(kMagicResult);
 }
@@ -101,7 +101,7 @@ bool ExampleEmployer::DoSomething(CompletionOnceCallback callback) {
   if (!base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::BindOnce(&ExampleWorker::DoWork, request_))) {
     NOTREACHED();
-    request_ = NULL;
+    request_ = nullptr;
     return false;
   }
 

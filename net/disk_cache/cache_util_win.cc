@@ -35,8 +35,8 @@ bool DeleteCacheFile(const base::FilePath& name) {
     DWORD sharing = FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE;
     DWORD access = SYNCHRONIZE;
     base::win::ScopedHandle file(CreateFile(base::as_wcstr(name.value()),
-                                            access, sharing, NULL,
-                                            OPEN_EXISTING, 0, NULL));
+                                            access, sharing, nullptr,
+                                            OPEN_EXISTING, 0, nullptr));
     if (file.IsValid())
       return false;
 

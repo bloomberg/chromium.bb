@@ -354,7 +354,7 @@ bool BaseTestServer::GetAddressList(AddressList* address_list) const {
   DCHECK(address_list);
 
   std::unique_ptr<HostResolver> resolver(
-      HostResolver::CreateDefaultResolver(NULL));
+      HostResolver::CreateDefaultResolver(nullptr));
 
   // Limit the lookup to IPv4 (DnsQueryType::A). When started with the default
   // address of kLocalhost, testserver.py only supports IPv4.

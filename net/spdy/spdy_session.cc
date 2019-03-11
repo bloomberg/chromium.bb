@@ -841,7 +841,7 @@ SpdySession::SpdySession(
     NetLog* net_log)
     : in_io_loop_(false),
       spdy_session_key_(spdy_session_key),
-      pool_(NULL),
+      pool_(nullptr),
       http_server_properties_(http_server_properties),
       transport_security_state_(transport_security_state),
       ssl_config_service_(ssl_config_service),

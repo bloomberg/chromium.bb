@@ -341,8 +341,8 @@ TEST(HttpStreamParser, EncodeChunk_TooLargePayload) {
 
 TEST(HttpStreamParser, ShouldMergeRequestHeadersAndBody_NoBody) {
   // Shouldn't be merged if upload data is non-existent.
-  ASSERT_FALSE(HttpStreamParser::ShouldMergeRequestHeadersAndBody(
-      "some header", NULL));
+  ASSERT_FALSE(HttpStreamParser::ShouldMergeRequestHeadersAndBody("some header",
+                                                                  nullptr));
 }
 
 TEST(HttpStreamParser, ShouldMergeRequestHeadersAndBody_EmptyBody) {

@@ -1239,7 +1239,7 @@ void URLRequestHttpJob::CancelAuth() {
   }
 
   // These will be reset in OnStartCompleted.
-  response_info_ = NULL;
+  response_info_ = nullptr;
   receive_headers_end_ = base::TimeTicks::Now();
   // TODO(davidben,mmenke): We should either reset override_response_headers_
   // here or not call NotifyHeadersReceived a second time on the same response
@@ -1387,7 +1387,7 @@ void URLRequestHttpJob::DoneReading() {
 
 void URLRequestHttpJob::DoneReadingRedirectResponse() {
   if (transaction_) {
-    if (transaction_->GetResponseInfo()->headers->IsRedirect(NULL)) {
+    if (transaction_->GetResponseInfo()->headers->IsRedirect(nullptr)) {
       // If the original headers indicate a redirect, go ahead and cache the
       // response, even if the |override_response_headers_| are a redirect to
       // another location.
@@ -1396,7 +1396,7 @@ void URLRequestHttpJob::DoneReadingRedirectResponse() {
       // Otherwise, |override_response_headers_| must be non-NULL and contain
       // bogus headers indicating a redirect.
       DCHECK(override_response_headers_.get());
-      DCHECK(override_response_headers_->IsRedirect(NULL));
+      DCHECK(override_response_headers_->IsRedirect(nullptr));
       transaction_->StopCaching();
     }
   }

@@ -611,7 +611,7 @@ void CookieMonster::GetAllCookies(GetCookieListCallback callback) {
   // Note that this does not prune cookies to be below our limits (if we've
   // exceeded them) the way that calling GarbageCollect() would.
   GarbageCollectExpired(
-      Time::Now(), CookieMapItPair(cookies_.begin(), cookies_.end()), NULL);
+      Time::Now(), CookieMapItPair(cookies_.begin(), cookies_.end()), nullptr);
 
   // Copy the CanonicalCookie pointers from the map so that we can use the same
   // sorter as elsewhere, then copy the result out.

@@ -50,7 +50,7 @@ int HttpNetworkLayer::CreateTransaction(
 }
 
 HttpCache* HttpNetworkLayer::GetCache() {
-  return NULL;
+  return nullptr;
 }
 
 HttpNetworkSession* HttpNetworkLayer::GetSession() {

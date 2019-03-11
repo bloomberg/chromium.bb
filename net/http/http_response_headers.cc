@@ -889,7 +889,8 @@ void HttpResponseHeaders::GetMimeTypeAndCharset(std::string* mime_type,
 
   size_t iter = 0;
   while (EnumerateHeader(&iter, name, &value))
-    HttpUtil::ParseContentType(value, mime_type, charset, &had_charset, NULL);
+    HttpUtil::ParseContentType(value, mime_type, charset, &had_charset,
+                               nullptr);
 }
 
 bool HttpResponseHeaders::GetMimeType(std::string* mime_type) const {
@@ -1279,9 +1280,9 @@ bool HttpResponseHeaders::HasStrongValidators() const {
 
 bool HttpResponseHeaders::HasValidators() const {
   std::string etag_header;
-  EnumerateHeader(NULL, "etag", &etag_header);
+  EnumerateHeader(nullptr, "etag", &etag_header);
   std::string last_modified_header;
-  EnumerateHeader(NULL, "Last-Modified", &last_modified_header);
+  EnumerateHeader(nullptr, "Last-Modified", &last_modified_header);
   return HttpUtil::HasValidators(GetHttpVersion(), etag_header,
                                  last_modified_header);
 }

@@ -205,7 +205,7 @@ class DnsUDPAttempt : public DnsAttempt {
 
   const DnsResponse* GetResponse() const override {
     const DnsResponse* resp = response_.get();
-    return (resp != NULL && resp->IsValid()) ? resp : NULL;
+    return (resp != nullptr && resp->IsValid()) ? resp : nullptr;
   }
 
   const NetLogWithSource& GetSocketNetLog() const override {
@@ -419,7 +419,7 @@ class DnsHTTPAttempt : public DnsAttempt, public URLRequest::Delegate {
   const DnsQuery* GetQuery() const override { return query_.get(); }
   const DnsResponse* GetResponse() const override {
     const DnsResponse* resp = response_.get();
-    return (resp != NULL && resp->IsValid()) ? resp : NULL;
+    return (resp != nullptr && resp->IsValid()) ? resp : nullptr;
   }
   const NetLogWithSource& GetSocketNetLog() const override { return net_log_; }
   bool secure() const override { return true; }
@@ -579,7 +579,7 @@ class DnsTCPAttempt : public DnsAttempt {
 
   const DnsResponse* GetResponse() const override {
     const DnsResponse* resp = response_.get();
-    return (resp != NULL && resp->IsValid()) ? resp : NULL;
+    return (resp != nullptr && resp->IsValid()) ? resp : nullptr;
   }
 
   const NetLogWithSource& GetSocketNetLog() const override {
@@ -845,7 +845,7 @@ class DnsTransactionImpl : public DnsTransaction,
     DCHECK(attempts_.empty());
     net_log_.BeginEvent(NetLogEventType::DNS_TRANSACTION,
                         base::Bind(&NetLogStartCallback, &hostname_, qtype_));
-    AttemptResult result(PrepareSearch(), NULL);
+    AttemptResult result(PrepareSearch(), nullptr);
     if (result.rv == OK) {
       qnames_initial_size_ = qnames_.size();
       result = ProcessAttemptResult(StartQuery());
@@ -937,8 +937,8 @@ class DnsTransactionImpl : public DnsTransaction,
       return;
 
     const DnsResponse* response =
-        result.attempt ? result.attempt->GetResponse() : NULL;
-    CHECK(result.rv != OK || response != NULL);
+        result.attempt ? result.attempt->GetResponse() : nullptr;
+    CHECK(result.rv != OK || response != nullptr);
 
     bool secure = result.attempt ? result.attempt->secure() : false;
 
@@ -1000,7 +1000,7 @@ class DnsTransactionImpl : public DnsTransaction,
     ++attempts_count_;
 
     if (!got_socket)
-      return AttemptResult(ERR_CONNECTION_REFUSED, NULL);
+      return AttemptResult(ERR_CONNECTION_REFUSED, nullptr);
 
     net_log_.AddEvent(
         NetLogEventType::DNS_TRANSACTION_ATTEMPT,
@@ -1214,7 +1214,7 @@ class DnsTransactionImpl : public DnsTransaction,
           if (result.attempt != attempts_.back().get()) {
             // This attempt already timed out. Ignore it.
             session_->RecordServerFailure(result.attempt->server_index());
-            return AttemptResult(ERR_IO_PENDING, NULL);
+            return AttemptResult(ERR_IO_PENDING, nullptr);
           }
           if (!MoreAttemptsAllowed()) {
             return result;

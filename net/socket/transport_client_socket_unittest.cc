@@ -106,7 +106,7 @@ void TransportClientSocketTest::SetUp() {
   ::testing::TestWithParam<ClientSocketTestTypes>::SetUp();
 
   // Open a server socket on an ephemeral port.
-  listen_sock_.reset(new TCPServerSocket(NULL, NetLogSource()));
+  listen_sock_.reset(new TCPServerSocket(nullptr, NetLogSource()));
   IPEndPoint local_address(IPAddress::IPv4Localhost(), 0);
   ASSERT_THAT(listen_sock_->Listen(local_address, 1), IsOk());
   // Get the server's address (including the actual port number).
@@ -118,7 +118,7 @@ void TransportClientSocketTest::SetUp() {
 
   AddressList addr = AddressList::CreateFromIPAddress(
       IPAddress::IPv4Localhost(), listen_port_);
-  sock_ = socket_factory_->CreateTransportClientSocket(addr, NULL, &net_log_,
+  sock_ = socket_factory_->CreateTransportClientSocket(addr, nullptr, &net_log_,
                                                        NetLogSource());
 }
 

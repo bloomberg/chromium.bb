@@ -172,14 +172,14 @@ class HttpCache::WorkItem {
       : operation_(operation),
         transaction_(transaction),
         entry_(entry),
-        backend_(NULL) {}
+        backend_(nullptr) {}
   WorkItem(WorkItemOperation operation,
            Transaction* transaction,
            CompletionOnceCallback callback,
            disk_cache::Backend** backend)
       : operation_(operation),
         transaction_(transaction),
-        entry_(NULL),
+        entry_(nullptr),
         callback_(std::move(callback)),
         backend_(backend) {}
   ~WorkItem() = default;
@@ -206,8 +206,8 @@ class HttpCache::WorkItem {
   }
 
   WorkItemOperation operation() { return operation_; }
-  void ClearTransaction() { transaction_ = NULL; }
-  void ClearEntry() { entry_ = NULL; }
+  void ClearTransaction() { transaction_ = nullptr; }
+  void ClearEntry() { entry_ = nullptr; }
   void ClearCallback() { callback_.Reset(); }
   bool Matches(Transaction* transaction) const {
     return transaction == transaction_;
@@ -433,7 +433,7 @@ void HttpCache::WriteMetadata(const GURL& url,
   // Do lazy initialization of disk cache if needed.
   if (!disk_cache_.get()) {
     // We don't care about the result.
-    CreateBackend(NULL, CompletionOnceCallback());
+    CreateBackend(nullptr, CompletionOnceCallback());
   }
 
   HttpCache::Transaction* transaction =
@@ -477,7 +477,7 @@ int HttpCache::CreateTransaction(
   // Do lazy initialization of disk cache if needed.
   if (!disk_cache_.get()) {
     // We don't care about the result.
-    CreateBackend(NULL, CompletionOnceCallback());
+    CreateBackend(nullptr, CompletionOnceCallback());
   }
 
   HttpCache::Transaction* new_transaction =
@@ -638,7 +638,7 @@ void HttpCache::DoomActiveEntry(const std::string& key) {
 
   // This is not a performance critical operation, this is handling an error
   // condition so it is OK to look up the entry again.
-  int rv = DoomEntry(key, NULL);
+  int rv = DoomEntry(key, nullptr);
   DCHECK_EQ(OK, rv);
 }
 
@@ -707,9 +707,9 @@ void HttpCache::DoomMainEntryForUrl(
   // Defer to DoomEntry if there is an active entry, otherwise call
   // AsyncDoomEntry without triggering a callback.
   if (active_entries_.count(key))
-    DoomEntry(key, NULL);
+    DoomEntry(key, nullptr);
   else
-    AsyncDoomEntry(key, NULL);
+    AsyncDoomEntry(key, nullptr);
 }
 
 void HttpCache::FinalizeDoomedEntry(ActiveEntry* entry) {
@@ -1443,18 +1443,18 @@ void HttpCache::OnIOComplete(int result, PendingOp* pending_op) {
     }
 
     if (try_restart_requests) {
-      item->NotifyTransaction(ERR_CACHE_RACE, NULL);
+      item->NotifyTransaction(ERR_CACHE_RACE, nullptr);
       continue;
     }
     // At this point item->operation() is anything except Doom.
     if (item->operation() == WI_CREATE_ENTRY) {
       if (result == OK) {
         // Successful OpenOrCreate, Open, or Create followed by a Create.
-        item->NotifyTransaction(ERR_CACHE_CREATE_FAILURE, NULL);
+        item->NotifyTransaction(ERR_CACHE_CREATE_FAILURE, nullptr);
       } else {
         if (op != WI_CREATE_ENTRY && op != WI_OPEN_OR_CREATE_ENTRY) {
           // Failed Open or Doom followed by a Create.
-          item->NotifyTransaction(ERR_CACHE_RACE, NULL);
+          item->NotifyTransaction(ERR_CACHE_RACE, nullptr);
           try_restart_requests = true;
         } else {
           item->NotifyTransaction(result, entry);
@@ -1465,7 +1465,7 @@ void HttpCache::OnIOComplete(int result, PendingOp* pending_op) {
     else if (item->operation() == WI_OPEN_OR_CREATE_ENTRY) {
       if ((op == WI_OPEN_ENTRY || op == WI_CREATE_ENTRY) && result != OK) {
         // Failed Open or Create followed by an OpenOrCreate.
-        item->NotifyTransaction(ERR_CACHE_RACE, NULL);
+        item->NotifyTransaction(ERR_CACHE_RACE, nullptr);
         try_restart_requests = true;
       } else {
         item->NotifyTransaction(result, entry);
@@ -1475,7 +1475,7 @@ void HttpCache::OnIOComplete(int result, PendingOp* pending_op) {
     else {
       if (op == WI_CREATE_ENTRY && result != OK) {
         // Failed Create followed by an Open.
-        item->NotifyTransaction(ERR_CACHE_RACE, NULL);
+        item->NotifyTransaction(ERR_CACHE_RACE, nullptr);
         try_restart_requests = true;
       } else {
         item->NotifyTransaction(result, entry);
@@ -1533,7 +1533,7 @@ void HttpCache::OnBackendCreated(int result, PendingOp* pending_op) {
 
   // The cache may be gone when we return from the callback.
   if (!item->DoCallback(result, disk_cache_.get()))
-    item->NotifyTransaction(result, NULL);
+    item->NotifyTransaction(result, nullptr);
 }
 
 }  // namespace net
