@@ -757,14 +757,16 @@ void Window::OnDeviceScaleFactorChanged(float old_device_scale_factor,
 #if !defined(NDEBUG)
 std::string Window::GetDebugInfo() const {
   return base::StringPrintf(
-      "%s<%d> bounds(%d, %d, %d, %d) %s %s opacity=%.1f",
+      "%s<%d> bounds(%d, %d, %d, %d) %s %s opacity=%.1f "
+      "occlusion_state=%s",
       GetName().empty() ? "Unknown" : GetName().c_str(), id(), bounds().x(),
       bounds().y(), bounds().width(), bounds().height(),
       visible_ ? "WindowVisible" : "WindowHidden",
       layer()
           ? (layer()->GetTargetVisibility() ? "LayerVisible" : "LayerHidden")
           : "NoLayer",
-      layer() ? layer()->opacity() : 1.0f);
+      layer() ? layer()->opacity() : 1.0f,
+      OcclusionStateToString(occlusion_state_));
 }
 
 void Window::PrintWindowHierarchy(int depth) const {
@@ -1173,6 +1175,24 @@ void Window::TrackOcclusionState() {
 
 bool Window::RequiresDoubleTapGestureEvents() const {
   return delegate_ && delegate_->RequiresDoubleTapGestureEvents();
+}
+
+// static
+const char* Window::OcclusionStateToString(OcclusionState state) {
+#define CASE_TYPE(t) \
+  case t:            \
+    return #t
+
+  switch (state) {
+    CASE_TYPE(OcclusionState::UNKNOWN);
+    CASE_TYPE(OcclusionState::VISIBLE);
+    CASE_TYPE(OcclusionState::OCCLUDED);
+    CASE_TYPE(OcclusionState::HIDDEN);
+  }
+#undef CASE_TYPE
+
+  NOTREACHED();
+  return "";
 }
 
 void Window::NotifyResizeLoopStarted() {

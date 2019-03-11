@@ -128,7 +128,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
     kMaxValue = HIDDEN,
   };
 
-  typedef std::vector<Window*> Windows;
+  using Windows = std::vector<Window*>;
 
   explicit Window(WindowDelegate* delegate,
                   client::WindowType type = client::WINDOW_TYPE_UNKNOWN,
@@ -467,6 +467,9 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
 
   // ui::GestureConsumer:
   bool RequiresDoubleTapGestureEvents() const override;
+
+  // Returns |state| as a string. This is generally only useful for debugging.
+  static const char* OcclusionStateToString(OcclusionState state);
 
  protected:
   // Deletes (or removes if not owned by parent) all child windows. Intended for

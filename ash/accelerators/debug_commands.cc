@@ -96,7 +96,10 @@ void PrintWindowHierarchy(ws::WindowService* window_service,
   *out << ((window == active_window) ? " [active]" : "")
        << ((window == focused_window) ? " [focused]" : "")
        << (window->IsVisible() ? " visible" : "") << " "
-       << window->bounds().ToString();
+       << (window->occlusion_state() != aura::Window::OcclusionState::UNKNOWN
+               ? aura::Window::OcclusionStateToString(window->occlusion_state())
+               : "")
+       << " " << window->bounds().ToString();
   if (window->GetProperty(::wm::kSnapChildrenToPixelBoundary))
     *out << " [snapped]";
   if (!subpixel_position_offset.IsZero())
