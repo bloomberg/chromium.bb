@@ -8,6 +8,7 @@ import android.content.Context;
 import android.util.AttributeSet;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.datareduction.DataReductionBrandingResourceProvider;
 import org.chromium.chrome.browser.preferences.ChromeBasePreference;
 
 /**

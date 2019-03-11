@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.preferences.datareduction;
+package org.chromium.chrome.browser.datareduction;
 
 import android.app.Activity;
 import android.content.DialogInterface;
@@ -85,8 +85,7 @@ public class DataReductionPromoScreen extends PromoDialog {
     }
 
     private void handleEnableButtonPressed() {
-        DataReductionProxySettings.getInstance().setDataReductionProxyEnabled(
-                getContext(), true);
+        DataReductionProxySettings.getInstance().setDataReductionProxyEnabled(getContext(), true);
         dismiss();
         Toast.makeText(getContext(),
                      getContext().getString(
