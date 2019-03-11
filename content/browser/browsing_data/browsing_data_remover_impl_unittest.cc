@@ -102,12 +102,13 @@ const char kTestOriginDevTools[] = "chrome-devtools://abcdefghijklmnopqrstuvw/";
 // For HTTP auth.
 const char kTestRealm[] = "TestRealm";
 
-const GURL kOrigin1(kTestOrigin1);
-const GURL kOrigin2(kTestOrigin2);
-const GURL kOrigin3(kTestOrigin3);
-const GURL kOrigin4(kTestOrigin4);
-const GURL kOriginExt(kTestOriginExt);
-const GURL kOriginDevTools(kTestOriginDevTools);
+const url::Origin kOrigin1 = url::Origin::Create(GURL(kTestOrigin1));
+const url::Origin kOrigin2 = url::Origin::Create(GURL(kTestOrigin2));
+const url::Origin kOrigin3 = url::Origin::Create(GURL(kTestOrigin3));
+const url::Origin kOrigin4 = url::Origin::Create(GURL(kTestOrigin4));
+const url::Origin kOriginExt = url::Origin::Create(GURL(kTestOriginExt));
+const url::Origin kOriginDevTools =
+    url::Origin::Create(GURL(kTestOriginDevTools));
 
 struct StoragePartitionRemovalData {
   StoragePartitionRemovalData()
@@ -149,10 +150,10 @@ struct StoragePartitionRemovalData {
   base::RepeatingCallback<bool(const GURL&)> url_matcher;
 };
 
-net::CanonicalCookie CreateCookieWithHost(const GURL& source) {
+net::CanonicalCookie CreateCookieWithHost(const url::Origin& origin) {
   std::unique_ptr<net::CanonicalCookie> cookie(
       std::make_unique<net::CanonicalCookie>(
-          "A", "1", source.host(), "/", base::Time::Now(), base::Time::Now(),
+          "A", "1", origin.host(), "/", base::Time::Now(), base::Time::Now(),
           base::Time(), false, false, net::CookieSameSite::DEFAULT_MODE,
           net::COOKIE_PRIORITY_MEDIUM));
   EXPECT_TRUE(cookie);
@@ -264,8 +265,8 @@ class ProbablySameFilterMatcher
     if (filter.is_null() != to_match_.is_null())
       return false;
 
-    const GURL urls_to_test_[] = {kOrigin1, kOrigin2, kOrigin3,
-                                  GURL("invalid spec")};
+    const GURL urls_to_test_[] = {kOrigin1.GetURL(), kOrigin2.GetURL(),
+                                  kOrigin3.GetURL(), GURL("invalid spec")};
     for (GURL url : urls_to_test_) {
       if (filter.Run(url) != to_match_.Run(url)) {
         if (listener)
@@ -479,7 +480,8 @@ class BrowsingDataRemoverImplTest : public testing::Test {
   bool Match(const GURL& origin,
              int mask,
              storage::SpecialStoragePolicy* policy) {
-    return remover_->DoesOriginMatchMask(mask, origin, policy);
+    return remover_->DoesOriginMatchMask(mask, url::Origin::Create(origin),
+                                         policy);
   }
 
  private:
@@ -585,18 +587,18 @@ TEST_F(BrowsingDataRemoverImplTest, ClearHttpAuthCache_RemoveCookies) {
   ASSERT_TRUE(http_session);
 
   net::HttpAuthCache* http_auth_cache = http_session->http_auth_cache();
-  http_auth_cache->Add(kOrigin1, kTestRealm, net::HttpAuth::AUTH_SCHEME_BASIC,
-                       "test challenge",
+  http_auth_cache->Add(kOrigin1.GetURL(), kTestRealm,
+                       net::HttpAuth::AUTH_SCHEME_BASIC, "test challenge",
                        net::AuthCredentials(base::ASCIIToUTF16("foo"),
                                             base::ASCIIToUTF16("bar")),
                        "/");
-  ASSERT_TRUE(http_auth_cache->Lookup(kOrigin1, kTestRealm,
+  ASSERT_TRUE(http_auth_cache->Lookup(kOrigin1.GetURL(), kTestRealm,
                                       net::HttpAuth::AUTH_SCHEME_BASIC));
 
   BlockUntilBrowsingDataRemoved(base::Time(), base::Time::Max(),
                                 BrowsingDataRemover::DATA_TYPE_COOKIES, false);
 
-  EXPECT_EQ(nullptr, http_auth_cache->Lookup(kOrigin1, kTestRealm,
+  EXPECT_EQ(nullptr, http_auth_cache->Lookup(kOrigin1.GetURL(), kTestRealm,
                                              net::HttpAuth::AUTH_SCHEME_BASIC));
 }
 
@@ -613,12 +615,13 @@ TEST_F(BrowsingDataRemoverImplTest,
   ASSERT_TRUE(http_session);
 
   net::HttpAuthCache* http_auth_cache = http_session->http_auth_cache();
-  net::HttpAuthCache::Entry* entry = http_auth_cache->Add(
-      kOrigin1, kTestRealm, net::HttpAuth::AUTH_SCHEME_BASIC, "test challenge",
-      net::AuthCredentials(base::ASCIIToUTF16("foo"),
-                           base::ASCIIToUTF16("bar")),
-      "/");
-  ASSERT_TRUE(http_auth_cache->Lookup(kOrigin1, kTestRealm,
+  net::HttpAuthCache::Entry* entry =
+      http_auth_cache->Add(kOrigin1.GetURL(), kTestRealm,
+                           net::HttpAuth::AUTH_SCHEME_BASIC, "test challenge",
+                           net::AuthCredentials(base::ASCIIToUTF16("foo"),
+                                                base::ASCIIToUTF16("bar")),
+                           "/");
+  ASSERT_TRUE(http_auth_cache->Lookup(kOrigin1.GetURL(), kTestRealm,
                                       net::HttpAuth::AUTH_SCHEME_BASIC));
 
   BlockUntilBrowsingDataRemoved(
@@ -628,7 +631,7 @@ TEST_F(BrowsingDataRemoverImplTest,
       false);
 
   // The entry stays unchanged.
-  EXPECT_EQ(entry, http_auth_cache->Lookup(kOrigin1, kTestRealm,
+  EXPECT_EQ(entry, http_auth_cache->Lookup(kOrigin1.GetURL(), kTestRealm,
                                            net::HttpAuth::AUTH_SCHEME_BASIC));
 }
 
@@ -722,7 +725,7 @@ TEST_F(BrowsingDataRemoverImplTest, RemoveChannelIDsAvoidClosingConnections) {
 TEST_F(BrowsingDataRemoverImplTest, RemoveUnprotectedLocalStorageForever) {
   MockSpecialStoragePolicy* policy = CreateMockPolicy();
   // Protect kOrigin1.
-  policy->AddProtected(kOrigin1.GetOrigin());
+  policy->AddProtected(kOrigin1.GetURL());
 
   BlockUntilBrowsingDataRemoved(base::Time(), base::Time::Max(),
                                 BrowsingDataRemover::DATA_TYPE_LOCAL_STORAGE,
@@ -750,7 +753,7 @@ TEST_F(BrowsingDataRemoverImplTest, RemoveUnprotectedLocalStorageForever) {
 TEST_F(BrowsingDataRemoverImplTest, RemoveProtectedLocalStorageForever) {
   // Protect kOrigin1.
   MockSpecialStoragePolicy* policy = CreateMockPolicy();
-  policy->AddProtected(kOrigin1.GetOrigin());
+  policy->AddProtected(kOrigin1.GetURL());
 
   BlockUntilBrowsingDataRemoved(base::Time(), base::Time::Max(),
                                 BrowsingDataRemover::DATA_TYPE_LOCAL_STORAGE,
@@ -1124,7 +1127,7 @@ TEST_F(BrowsingDataRemoverImplTest, RemoveQuotaManagedDataForLastWeek) {
 TEST_F(BrowsingDataRemoverImplTest, RemoveQuotaManagedUnprotectedOrigins) {
   MockSpecialStoragePolicy* policy = CreateMockPolicy();
   // Protect kOrigin1.
-  policy->AddProtected(kOrigin1.GetOrigin());
+  policy->AddProtected(kOrigin1.GetURL());
 
   BlockUntilBrowsingDataRemoved(
       base::Time(), base::Time::Max(),
@@ -1168,7 +1171,7 @@ TEST_F(BrowsingDataRemoverImplTest, RemoveQuotaManagedUnprotectedOrigins) {
 TEST_F(BrowsingDataRemoverImplTest, RemoveQuotaManagedProtectedSpecificOrigin) {
   MockSpecialStoragePolicy* policy = CreateMockPolicy();
   // Protect kOrigin1.
-  policy->AddProtected(kOrigin1.GetOrigin());
+  policy->AddProtected(kOrigin1.GetURL());
 
   std::unique_ptr<BrowsingDataFilterBuilder> builder(
       BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::WHITELIST));
@@ -1219,7 +1222,7 @@ TEST_F(BrowsingDataRemoverImplTest, RemoveQuotaManagedProtectedSpecificOrigin) {
 TEST_F(BrowsingDataRemoverImplTest, RemoveQuotaManagedProtectedOrigins) {
   MockSpecialStoragePolicy* policy = CreateMockPolicy();
   // Protect kOrigin1.
-  policy->AddProtected(kOrigin1.GetOrigin());
+  policy->AddProtected(kOrigin1.GetURL());
 
   // Try to remove kOrigin1. Expect success.
   BlockUntilBrowsingDataRemoved(

@@ -160,8 +160,8 @@ class CONTENT_EXPORT StoragePartition {
   // A callback type to check if a given origin matches a storage policy.
   // Can be passed empty/null where used, which means the origin will always
   // match.
-  typedef base::Callback<bool(const GURL&, storage::SpecialStoragePolicy*)>
-      OriginMatcherFunction;
+  using OriginMatcherFunction =
+      base::Callback<bool(const url::Origin&, storage::SpecialStoragePolicy*)>;
 
   // Similar to ClearDataForOrigin().
   // Deletes all data out for the StoragePartition if |storage_origin| is empty.

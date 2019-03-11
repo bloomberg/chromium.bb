@@ -20,7 +20,7 @@
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browsing_data_remover.h"
-#include "url/gurl.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -43,7 +43,7 @@ class CONTENT_EXPORT BrowsingDataRemoverImpl
       BrowsingDataRemoverDelegate* embedder_delegate) override;
   bool DoesOriginMatchMask(
       int origin_type_mask,
-      const GURL& origin,
+      const url::Origin& origin,
       storage::SpecialStoragePolicy* special_storage_policy) const override;
   void Remove(const base::Time& delete_begin,
               const base::Time& delete_end,

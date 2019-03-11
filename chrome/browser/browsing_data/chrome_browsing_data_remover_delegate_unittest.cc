@@ -1263,7 +1263,8 @@ class ChromeBrowsingDataRemoverDelegateTest : public testing::Test {
   bool Match(const GURL& origin,
              int mask,
              storage::SpecialStoragePolicy* policy) {
-    return remover_->DoesOriginMatchMask(mask, origin, policy);
+    return remover_->DoesOriginMatchMask(mask, url::Origin::Create(origin),
+                                         policy);
   }
 
  private:

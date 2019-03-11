@@ -7,14 +7,16 @@
 
 #include "base/callback_forward.h"
 
-class GURL;
-
 namespace base {
 class Time;
 }
 
 namespace storage {
 class SpecialStoragePolicy;
+}
+
+namespace url {
+class Origin;
 }
 
 namespace content {
@@ -25,10 +27,10 @@ class BrowsingDataRemoverDelegate {
  public:
   // Determines whether |origin| matches |origin_type_mask| given
   // the |special_storage_policy|.
-  typedef base::Callback<bool(int origin_type_mask,
-                              const GURL& origin,
-                              storage::SpecialStoragePolicy* policy)>
-      EmbedderOriginTypeMatcher;
+  using EmbedderOriginTypeMatcher =
+      base::Callback<bool(int origin_type_mask,
+                          const url::Origin& origin,
+                          storage::SpecialStoragePolicy* policy)>;
 
   virtual ~BrowsingDataRemoverDelegate() {}
 
