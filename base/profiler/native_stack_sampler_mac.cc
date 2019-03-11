@@ -4,6 +4,7 @@
 
 #include "base/profiler/native_stack_sampler.h"
 
+#include <dlfcn.h>
 #include <libkern/OSByteOrder.h>
 #include <libunwind.h>
 #include <mach-o/compact_unwind_encoding.h>
@@ -184,12 +185,22 @@ bool HasValidRbp(unw_cursor_t* unwind_cursor, uintptr_t stack_top) {
   return true;
 }
 
-const ModuleCache::Module* GetLibSystemKernelModule(ModuleCache* module_cache) {
-  const ModuleCache::Module* module =
-      module_cache->GetModuleForAddress(reinterpret_cast<uintptr_t>(_exit));
-  DCHECK(module);
-  DCHECK_EQ(FilePath("libsystem_kernel.dylib"), module->GetDebugBasename());
-  return module;
+const char* LibSystemKernelName() {
+  static char path[PATH_MAX];
+  static char* name = nullptr;
+  if (name)
+    return name;
+
+  Dl_info info;
+  dladdr(reinterpret_cast<void*>(_exit), &info);
+  strlcpy(path, info.dli_fname, PATH_MAX);
+  name = path;
+
+#if !defined(ADDRESS_SANITIZER)
+  DCHECK_EQ(std::string(name),
+            std::string("/usr/lib/system/libsystem_kernel.dylib"));
+#endif
+  return name;
 }
 
 void GetSigtrampRange(uintptr_t* start, uintptr_t* end) {
@@ -282,9 +293,6 @@ class NativeStackSamplerMac : public NativeStackSampler {
   // The stack base address corresponding to |thread_handle_|.
   const void* const thread_stack_base_address_;
 
-  // Cached pointer to the libsystem_kernel module.
-  const ModuleCache::Module* const libsystem_kernel_module_;
-
   // The address range of |_sigtramp|, the signal trampoline function.
   uintptr_t sigtramp_start_;
   uintptr_t sigtramp_end_;
@@ -300,8 +308,7 @@ NativeStackSamplerMac::NativeStackSamplerMac(
       module_cache_(module_cache),
       test_delegate_(test_delegate),
       thread_stack_base_address_(
-          pthread_get_stackaddr_np(pthread_from_mach_thread_np(thread_port))),
-      libsystem_kernel_module_(GetLibSystemKernelModule(module_cache)) {
+          pthread_get_stackaddr_np(pthread_from_mach_thread_np(thread_port))) {
   GetSigtrampRange(&sigtramp_start_, &sigtramp_end_);
   // This class suspends threads, and those threads might be suspended in dyld.
   // Therefore, for all the system functions that might be linked in dynamically
@@ -479,7 +486,9 @@ void NativeStackSamplerMac::WalkStack(
     // function in libsystem_kernel.
     uint64_t& rsp = unwind_context.data[7];
     uint64_t& rip = unwind_context.data[16];
-    if (module_cache_->GetModuleForAddress(rip) == libsystem_kernel_module_) {
+    Dl_info info;
+    if (dladdr(reinterpret_cast<void*>(rip), &info) != 0 &&
+        strcmp(info.dli_fname, LibSystemKernelName()) == 0) {
       rip = *reinterpret_cast<uint64_t*>(rsp);
       rsp += 8;
       WalkStackFromContext(&unwind_context, &frame_count, callback,
