@@ -342,9 +342,7 @@ void ShelfLayoutManager::UpdateAutoHideState() {
             shelf_widget_->GetWindowBoundsInScreen().Contains(
                 display::Screen::GetScreen()->GetCursorScreenPoint());
       }
-      auto_hide_timer_.Start(
-          FROM_HERE, base::TimeDelta::FromMilliseconds(kAutoHideDelayMS), this,
-          &ShelfLayoutManager::UpdateAutoHideStateNow);
+      StartAutoHideTimer();
     }
   } else {
     StopAutoHideTimer();
@@ -366,10 +364,22 @@ void ShelfLayoutManager::UpdateAutoHideForMouseEvent(ui::MouseEvent* event,
     return;
 
   if (event->type() == ui::ET_MOUSE_PRESSED ||
-      (event->type() == ui::ET_MOUSE_MOVED &&
-       GetVisibleShelfBounds().Contains(
-           display::Screen::GetScreen()->GetCursorScreenPoint()))) {
-    UpdateAutoHideState();
+      event->type() == ui::ET_MOUSE_MOVED) {
+    if (GetVisibleShelfBounds().Contains(
+            display::Screen::GetScreen()->GetCursorScreenPoint())) {
+      UpdateAutoHideState();
+      last_seen_mouse_position_was_over_shelf_ = true;
+    } else {
+      // The event happened outside the shelf's bounds. If it's a click, hide
+      // the shelf immediately. If it's a mouse-out, hide after a delay (but
+      // only if it really is a mouse-out, meaning the mouse actually exited the
+      // shelf bounds as opposed to having been outside all along).
+      if (event->type() == ui::ET_MOUSE_PRESSED)
+        UpdateAutoHideState();
+      else if (last_seen_mouse_position_was_over_shelf_)
+        StartAutoHideTimer();
+      last_seen_mouse_position_was_over_shelf_ = false;
+    }
   }
 }
 
@@ -1059,6 +1069,12 @@ void ShelfLayoutManager::UpdateAutoHideStateNow() {
   StopAutoHideTimer();
 }
 
+void ShelfLayoutManager::StartAutoHideTimer() {
+  auto_hide_timer_.Start(FROM_HERE,
+                         base::TimeDelta::FromMilliseconds(kAutoHideDelayMS),
+                         this, &ShelfLayoutManager::UpdateAutoHideStateNow);
+}
+
 void ShelfLayoutManager::StopAutoHideTimer() {
   auto_hide_timer_.Stop();
   mouse_over_shelf_when_auto_hide_timer_started_ = false;
@@ -1183,7 +1199,7 @@ ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
 
   gfx::Point cursor_position_in_screen =
       display::Screen::GetScreen()->GetCursorScreenPoint();
-  // Cursor is invisible in talbet mode and plug in an external mouse in tablet
+  // Cursor is invisible in tablet mode and plug in an external mouse in tablet
   // mode will switch to clamshell mode.
   if (shelf_region.Contains(cursor_position_in_screen) &&
       !IsTabletModeEnabled()) {
