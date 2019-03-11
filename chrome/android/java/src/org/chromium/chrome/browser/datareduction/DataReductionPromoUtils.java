@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.preferences.datareduction;
+package org.chromium.chrome.browser.datareduction;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
@@ -78,8 +78,8 @@ public class DataReductionPromoUtils {
      * run promo screen has been displayed at the current time.
      */
     public static void saveFreOrSecondRunPromoDisplayed() {
-        AboutVersionStrings versionStrings = PrefServiceBridge.getInstance()
-                .getAboutVersionStrings();
+        AboutVersionStrings versionStrings =
+                PrefServiceBridge.getInstance().getAboutVersionStrings();
         ContextUtils.getAppSharedPreferences()
                 .edit()
                 .putBoolean(SHARED_PREF_DISPLAYED_FRE_OR_SECOND_RUN_PROMO, true)
@@ -108,8 +108,8 @@ public class DataReductionPromoUtils {
      * @return The version the data reduction proxy promo was displayed on.
      */
     public static String getDisplayedFreOrSecondRunPromoVersion() {
-        return ContextUtils.getAppSharedPreferences()
-                .getString(SHARED_PREF_DISPLAYED_FRE_OR_SECOND_PROMO_VERSION, "");
+        return ContextUtils.getAppSharedPreferences().getString(
+                SHARED_PREF_DISPLAYED_FRE_OR_SECOND_PROMO_VERSION, "");
     }
 
     /**
@@ -141,8 +141,8 @@ public class DataReductionPromoUtils {
      * at the current time.
      */
     public static void saveInfoBarPromoDisplayed() {
-        AboutVersionStrings versionStrings = PrefServiceBridge.getInstance()
-                .getAboutVersionStrings();
+        AboutVersionStrings versionStrings =
+                PrefServiceBridge.getInstance().getAboutVersionStrings();
         ContextUtils.getAppSharedPreferences()
                 .edit()
                 .putBoolean(SHARED_PREF_DISPLAYED_INFOBAR_PROMO, true)

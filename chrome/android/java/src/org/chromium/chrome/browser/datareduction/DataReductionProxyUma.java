@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.preferences.datareduction;
+package org.chromium.chrome.browser.datareduction;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.util.ConversionUtils;
@@ -11,7 +11,6 @@ import org.chromium.chrome.browser.util.ConversionUtils;
  * Centralizes UMA data collection for the Data Reduction Proxy.
  */
 public class DataReductionProxyUma {
-
     public static final String UI_ACTION_HISTOGRAM_NAME = "DataReductionProxy.UIAction";
     public static final String PREVIEWS_HISTOGRAM_NAME = "Previews.ContextMenuAction.LoFi";
 
@@ -73,8 +72,7 @@ public class DataReductionProxyUma {
     public static void dataReductionProxyUIAction(int action) {
         assert action >= 0 && action < ACTION_INDEX_BOUNDARY;
         RecordHistogram.recordEnumeratedHistogram(
-                UI_ACTION_HISTOGRAM_NAME, action,
-                DataReductionProxyUma.ACTION_INDEX_BOUNDARY);
+                UI_ACTION_HISTOGRAM_NAME, action, DataReductionProxyUma.ACTION_INDEX_BOUNDARY);
     }
 
     /**
@@ -115,7 +113,6 @@ public class DataReductionProxyUma {
     public static void previewsLoFiContextMenuAction(int action) {
         assert action >= 0 && action < ACTION_LOFI_CONTEXT_MENU_INDEX_BOUNDARY;
         RecordHistogram.recordEnumeratedHistogram(
-                PREVIEWS_HISTOGRAM_NAME, action,
-                ACTION_LOFI_CONTEXT_MENU_INDEX_BOUNDARY);
+                PREVIEWS_HISTOGRAM_NAME, action, ACTION_LOFI_CONTEXT_MENU_INDEX_BOUNDARY);
     }
 }
