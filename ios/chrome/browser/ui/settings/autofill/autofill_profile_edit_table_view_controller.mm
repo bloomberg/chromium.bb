@@ -131,7 +131,7 @@ static const AutofillFieldDisplayInfo kFieldsToDisplay[] = {
   // In the case of server profiles, open the Payments editing page instead.
   if (_autofillProfile.record_type() ==
       autofill::AutofillProfile::SERVER_PROFILE) {
-    GURL paymentsURL = autofill::payments::GetManageAddressesUrl(0);
+    GURL paymentsURL = autofill::payments::GetManageAddressesUrl();
     OpenNewTabCommand* command =
         [OpenNewTabCommand commandWithURLFromChrome:paymentsURL];
     [self.dispatcher closeSettingsUIAndOpenURL:command];

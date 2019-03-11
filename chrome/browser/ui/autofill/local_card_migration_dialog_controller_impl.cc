@@ -209,8 +209,7 @@ void LocalCardMigrationDialogControllerImpl::OnViewCardsButtonClicked() {
       AutofillMetrics::
           LOCAL_CARD_MIGRATION_DIALOG_CLOSED_VIEW_CARDS_BUTTON_CLICKED);
 
-  constexpr int kPaymentsProfileUserIndex = 0;
-  OpenUrl(payments::GetManageInstrumentsUrl(kPaymentsProfileUserIndex));
+  OpenUrl(payments::GetManageInstrumentsUrl());
   NotifyMigrationNoLongerAvailable();
 }
 

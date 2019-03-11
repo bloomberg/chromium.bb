@@ -98,7 +98,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   // In the case of server cards, open the Payments editing page instead.
   if (_creditCard.record_type() == autofill::CreditCard::FULL_SERVER_CARD ||
       _creditCard.record_type() == autofill::CreditCard::MASKED_SERVER_CARD) {
-    GURL paymentsURL = autofill::payments::GetManageInstrumentsUrl(0);
+    GURL paymentsURL = autofill::payments::GetManageInstrumentsUrl();
     OpenNewTabCommand* command =
         [OpenNewTabCommand commandWithURLFromChrome:paymentsURL];
     [self.dispatcher closeSettingsUIAndOpenURL:command];
