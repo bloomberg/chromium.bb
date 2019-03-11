@@ -622,10 +622,14 @@ class Channel::ReadBuffer {
   DISALLOW_COPY_AND_ASSIGN(ReadBuffer);
 };
 
-Channel::Channel(Delegate* delegate, HandlePolicy handle_policy)
+Channel::Channel(Delegate* delegate,
+                 HandlePolicy handle_policy,
+                 DispatchBufferPolicy buffer_policy)
     : delegate_(delegate),
       handle_policy_(handle_policy),
-      read_buffer_(new ReadBuffer) {}
+      read_buffer_(buffer_policy == DispatchBufferPolicy::kManaged
+                       ? new ReadBuffer
+                       : nullptr) {}
 
 Channel::~Channel() {}
 
@@ -645,7 +649,8 @@ char* Channel::GetReadBuffer(size_t* buffer_capacity) {
 }
 
 bool Channel::OnReadComplete(size_t bytes_read, size_t* next_read_size_hint) {
-  bool did_consume_message = false;
+  DCHECK(read_buffer_);
+  *next_read_size_hint = kReadBufferSize;
   read_buffer_->Claim(bytes_read);
   while (read_buffer_->num_occupied_bytes() >= sizeof(Message::LegacyHeader)) {
     // Ensure the occupied data is properly aligned. If it isn't, a SIGBUS could
@@ -656,98 +661,115 @@ bool Channel::OnReadComplete(size_t bytes_read, size_t* next_read_size_hint) {
       read_buffer_->Realign();
     }
 
-    // We have at least enough data available for a LegacyHeader.
-    const Message::LegacyHeader* legacy_header =
-        reinterpret_cast<const Message::LegacyHeader*>(
-            read_buffer_->occupied_bytes());
-
-    const size_t kMaxMessageSize = GetConfiguration().max_message_num_bytes;
-    if (legacy_header->num_bytes < sizeof(Message::LegacyHeader) ||
-        legacy_header->num_bytes > kMaxMessageSize) {
-      LOG(ERROR) << "Invalid message size: " << legacy_header->num_bytes;
+    DispatchResult result =
+        TryDispatchMessage(base::make_span(read_buffer_->occupied_bytes(),
+                                           read_buffer_->num_occupied_bytes()),
+                           next_read_size_hint);
+    if (result == DispatchResult::kOK) {
+      read_buffer_->Discard(*next_read_size_hint);
+      *next_read_size_hint = 0;
+    } else if (result == DispatchResult::kNotEnoughData) {
+      return true;
+    } else if (result == DispatchResult::kMissingHandles) {
+      break;
+    } else if (result == DispatchResult::kError) {
       return false;
     }
+  }
+  return true;
+}
 
-    if (read_buffer_->num_occupied_bytes() < legacy_header->num_bytes) {
-      // Not enough data available to read the full message. Hint to the
-      // implementation that it should try reading the full size of the message.
-      *next_read_size_hint =
-          legacy_header->num_bytes - read_buffer_->num_occupied_bytes();
-      return true;
-    }
+Channel::DispatchResult Channel::TryDispatchMessage(
+    base::span<const char> buffer,
+    size_t* size_hint) {
+  bool did_consume_message = false;
 
-    const Message::Header* header = nullptr;
-    if (legacy_header->message_type != Message::MessageType::NORMAL_LEGACY) {
-      header = reinterpret_cast<const Message::Header*>(legacy_header);
-    }
+  // We have at least enough data available for a LegacyHeader.
+  const Message::LegacyHeader* legacy_header =
+      reinterpret_cast<const Message::LegacyHeader*>(buffer.data());
 
-    size_t extra_header_size = 0;
-    const void* extra_header = nullptr;
-    size_t payload_size = 0;
-    void* payload = nullptr;
-    if (header) {
-      if (header->num_header_bytes < sizeof(Message::Header) ||
-          header->num_header_bytes > header->num_bytes) {
-        LOG(ERROR) << "Invalid message header size: "
-                   << header->num_header_bytes;
-        return false;
-      }
-      extra_header_size = header->num_header_bytes - sizeof(Message::Header);
-      extra_header = extra_header_size ? header + 1 : nullptr;
-      payload_size = header->num_bytes - header->num_header_bytes;
-      payload = payload_size
-                    ? reinterpret_cast<Message::Header*>(
-                          const_cast<char*>(read_buffer_->occupied_bytes()) +
-                          header->num_header_bytes)
-                    : nullptr;
-    } else {
-      payload_size = legacy_header->num_bytes - sizeof(Message::LegacyHeader);
-      payload = payload_size
-                    ? const_cast<Message::LegacyHeader*>(&legacy_header[1])
-                    : nullptr;
-    }
-
-    const uint16_t num_handles =
-        header ? header->num_handles : legacy_header->num_handles;
-    std::vector<PlatformHandle> handles;
-    bool deferred = false;
-    if (num_handles > 0) {
-      if (handle_policy_ == HandlePolicy::kRejectHandles)
-        return false;
-
-      if (!GetReadPlatformHandles(payload, payload_size, num_handles,
-                                  extra_header, extra_header_size, &handles,
-                                  &deferred)) {
-        return false;
-      }
-
-      if (handles.empty()) {
-        // Not enough handles available for this message.
-        break;
-      }
-    }
-
-    // We've got a complete message! Dispatch it and try another.
-    if (legacy_header->message_type != Message::MessageType::NORMAL_LEGACY &&
-        legacy_header->message_type != Message::MessageType::NORMAL) {
-      DCHECK(!deferred);
-      if (!OnControlMessage(legacy_header->message_type, payload, payload_size,
-                            std::move(handles))) {
-        return false;
-      }
-      did_consume_message = true;
-    } else if (deferred) {
-      did_consume_message = true;
-    } else if (delegate_) {
-      delegate_->OnChannelMessage(payload, payload_size, std::move(handles));
-      did_consume_message = true;
-    }
-
-    read_buffer_->Discard(legacy_header->num_bytes);
+  const size_t kMaxMessageSize = GetConfiguration().max_message_num_bytes;
+  if (legacy_header->num_bytes < sizeof(Message::LegacyHeader) ||
+      legacy_header->num_bytes > kMaxMessageSize) {
+    LOG(ERROR) << "Invalid message size: " << legacy_header->num_bytes;
+    return DispatchResult::kError;
   }
 
-  *next_read_size_hint = did_consume_message ? 0 : kReadBufferSize;
-  return true;
+  if (buffer.size() < legacy_header->num_bytes) {
+    // Not enough data available to read the full message. Hint to the
+    // implementation that it should try reading the full size of the message.
+    *size_hint = legacy_header->num_bytes - buffer.size();
+    return DispatchResult::kNotEnoughData;
+  }
+
+  const Message::Header* header = nullptr;
+  if (legacy_header->message_type != Message::MessageType::NORMAL_LEGACY) {
+    header = reinterpret_cast<const Message::Header*>(legacy_header);
+  }
+
+  size_t extra_header_size = 0;
+  const void* extra_header = nullptr;
+  size_t payload_size = 0;
+  void* payload = nullptr;
+  if (header) {
+    if (header->num_header_bytes < sizeof(Message::Header) ||
+        header->num_header_bytes > header->num_bytes) {
+      LOG(ERROR) << "Invalid message header size: " << header->num_header_bytes;
+      return DispatchResult::kError;
+    }
+    extra_header_size = header->num_header_bytes - sizeof(Message::Header);
+    extra_header = extra_header_size ? header + 1 : nullptr;
+    payload_size = header->num_bytes - header->num_header_bytes;
+    payload =
+        payload_size
+            ? reinterpret_cast<Message::Header*>(
+                  const_cast<char*>(buffer.data()) + header->num_header_bytes)
+            : nullptr;
+  } else {
+    payload_size = legacy_header->num_bytes - sizeof(Message::LegacyHeader);
+    payload = payload_size
+                  ? const_cast<Message::LegacyHeader*>(&legacy_header[1])
+                  : nullptr;
+  }
+
+  const uint16_t num_handles =
+      header ? header->num_handles : legacy_header->num_handles;
+  std::vector<PlatformHandle> handles;
+  bool deferred = false;
+  if (num_handles > 0) {
+    if (handle_policy_ == HandlePolicy::kRejectHandles)
+      return DispatchResult::kError;
+
+    if (!GetReadPlatformHandles(payload, payload_size, num_handles,
+                                extra_header, extra_header_size, &handles,
+                                &deferred)) {
+      return DispatchResult::kError;
+    }
+
+    if (handles.empty()) {
+      // Not enough handles available for this message.
+      return DispatchResult::kMissingHandles;
+    }
+  }
+
+  // We've got a complete message! Dispatch it and try another.
+  if (legacy_header->message_type != Message::MessageType::NORMAL_LEGACY &&
+      legacy_header->message_type != Message::MessageType::NORMAL) {
+    DCHECK(!deferred);
+    if (!OnControlMessage(legacy_header->message_type, payload, payload_size,
+                          std::move(handles))) {
+      return DispatchResult::kError;
+    }
+    did_consume_message = true;
+  } else if (deferred) {
+    did_consume_message = true;
+  } else if (delegate_) {
+    delegate_->OnChannelMessage(payload, payload_size, std::move(handles));
+    did_consume_message = true;
+  }
+
+  *size_hint = legacy_header->num_bytes;
+  return DispatchResult::kOK;
 }
 
 void Channel::OnError(Error error) {
