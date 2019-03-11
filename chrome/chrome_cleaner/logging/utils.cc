@@ -15,8 +15,10 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/chrome_cleaner/constants/chrome_cleaner_switches.h"
+#include "chrome/chrome_cleaner/engines/engine_resources.h"
 #include "chrome/chrome_cleaner/logging/proto/removal_status.pb.h"
 #include "chrome/chrome_cleaner/os/disk_util.h"
+#include "chrome/chrome_cleaner/settings/settings.h"
 #include "components/chrome_cleaner/public/constants/constants.h"
 
 namespace chrome_cleaner {
@@ -249,8 +251,9 @@ ProcessInformation GetProcessInformationProtoObject(
     case SandboxType::kNonSandboxed:
       process_info.set_process(ProcessInformation::MAIN);
       break;
-    case SandboxType::kEset:
-      process_info.set_process(ProcessInformation::ESET_SANDBOX);
+    case SandboxType::kEngine:
+      process_info.set_process(
+          GetEngineProcessType(Settings::GetInstance()->engine()));
       break;
     case SandboxType::kParser:
       process_info.set_process(ProcessInformation::PARSER_SANDBOX);

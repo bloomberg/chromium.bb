@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "chrome/chrome_cleaner/http/http_agent_factory.h"
@@ -16,12 +17,17 @@
 #include "chrome/chrome_cleaner/logging/proto/reporter_logs.pb.h"
 #include "chrome/chrome_cleaner/logging/safe_browsing_reporter.h"
 #include "chrome/chrome_cleaner/logging/test_utils.h"
+#include "chrome/chrome_cleaner/settings/settings.h"
+#include "chrome/chrome_cleaner/test/test_settings_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chrome_cleaner {
 
 namespace {
+
+using ::testing::Return;
+using ::testing::StrictMock;
 
 constexpr UwSId kDefaultUwSId = 1;
 
@@ -236,13 +242,19 @@ TEST_F(ReporterLoggingServiceTest, LogProcessInformation) {
   SystemResourceUsage usage = {io_counters, base::TimeDelta::FromSeconds(10),
                                base::TimeDelta::FromSeconds(20), 123456};
 
-  reporter_logging_service_->LogProcessInformation(SandboxType::kEset, usage);
+  StrictMock<MockSettings> mock_settings;
+  EXPECT_CALL(mock_settings, engine()).WillOnce(Return(Engine::TEST_ONLY));
+  Settings::SetInstanceForTesting(&mock_settings);
+  base::ScopedClosureRunner restore_settings(
+      base::BindOnce(&Settings::SetInstanceForTesting, nullptr));
+
+  reporter_logging_service_->LogProcessInformation(SandboxType::kEngine, usage);
 
   FoilReporterLogs report;
   ASSERT_TRUE(
       report.ParseFromString(reporter_logging_service_->RawReportContent()));
   ASSERT_EQ(1, report.process_information_size());
-  EXPECT_EQ(ProcessInformation::ESET_SANDBOX,
+  EXPECT_EQ(ProcessInformation::TEST_SANDBOX,
             report.process_information(0).process());
 
   ProcessInformation::SystemResourceUsage usage_msg =

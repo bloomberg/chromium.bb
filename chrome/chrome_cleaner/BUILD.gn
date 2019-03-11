@@ -28,6 +28,7 @@ test("chrome_cleaner_unittests") {
     "//chrome/chrome_cleaner/settings:settings_types",
     "//chrome/chrome_cleaner/test:test_pup_data",
     "//chrome/chrome_cleaner/test:test_util",
+    "//chrome/chrome_cleaner/test:test_uws_catalog",
     "//sandbox/win:sandbox",
     "//testing/gtest",
 

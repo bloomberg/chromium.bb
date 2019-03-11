@@ -23,6 +23,7 @@
 #include "base/win/win_util.h"
 #include "chrome/chrome_cleaner/constants/chrome_cleaner_switches.h"
 #include "chrome/chrome_cleaner/crash/crash_reporter.h"
+#include "chrome/chrome_cleaner/engines/engine_resources.h"
 #include "chrome/chrome_cleaner/os/disk_util.h"
 #include "chrome/chrome_cleaner/os/inheritable_event.h"
 #include "chrome/chrome_cleaner/os/initializer.h"
@@ -404,8 +405,9 @@ ResultCode RunSandboxTarget(const base::CommandLine& command_line,
 ResultCode GetResultCodeForSandboxConnectionError(SandboxType sandbox_type) {
   ResultCode result_code = RESULT_CODE_INVALID;
   switch (sandbox_type) {
-    case SandboxType::kEset:
-      result_code = RESULT_CODE_ESET_SANDBOX_DISCONNECTED_TOO_SOON;
+    case SandboxType::kEngine:
+      result_code =
+          GetEngineDisconnectionErrorCode(Settings::GetInstance()->engine());
       break;
     case SandboxType::kParser:
       result_code = RESULT_CODE_PARSER_SANDBOX_DISCONNECTED_TOO_SOON;
