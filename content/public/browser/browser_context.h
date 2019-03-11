@@ -246,7 +246,9 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   // Returns the path of the directory where this context's data is stored.
   virtual base::FilePath GetPath() const = 0;
 
-  // Return whether this context is incognito. Default is false.
+  // Return whether this context is off the record. Default is false.
+  // Note that for Chrome this does not imply Incognito as Guest sessions are
+  // also off the record.
   virtual bool IsOffTheRecord() const = 0;
 
   // Returns the resource context.

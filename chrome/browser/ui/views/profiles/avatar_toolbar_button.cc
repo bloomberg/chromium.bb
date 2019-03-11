@@ -246,7 +246,7 @@ void AvatarToolbarButton::OnTouchUiChanged() {
 }
 
 bool AvatarToolbarButton::IsIncognito() const {
-  return profile_->IsOffTheRecord() && !profile_->IsGuestSession();
+  return profile_->IsIncognito();
 }
 
 bool AvatarToolbarButton::IsIncognitoCounterActive() const {
@@ -262,7 +262,7 @@ bool AvatarToolbarButton::ShouldShowGenericIcon() const {
   // This function should only be used for regular profiles. Guest and Incognito
   // sessions should be handled separately and never call this function.
   DCHECK(!profile_->IsGuestSession());
-  DCHECK(!profile_->IsOffTheRecord());
+  DCHECK(!profile_->IsIncognito());
 #if !defined(OS_CHROMEOS)
   if (!signin_ui_util::GetAccountsForDicePromos(profile_).empty())
     return false;

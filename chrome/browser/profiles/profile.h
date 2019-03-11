@@ -270,6 +270,10 @@ class Profile : public content::BrowserContext {
 
   std::string GetDebugName();
 
+  // Returns whether it is an Incognito session. An Incognito session is an
+  // off-the-record session that is not a guest session.
+  bool IsIncognito() const;
+
   // Returns whether it is a guest session.
   virtual bool IsGuestSession() const;
 
