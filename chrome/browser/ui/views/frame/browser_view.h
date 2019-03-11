@@ -414,7 +414,6 @@ class BrowserView : public BrowserWindow,
       const signin::ManageAccountsParams& manage_accounts_params,
       signin_metrics::AccessPoint access_point,
       bool is_source_keyboard) override;
-  int GetRenderViewHeightInsetWithDetachedBookmarkBar() override;
   void ExecuteExtensionCommand(const extensions::Extension* extension,
                                const extensions::Command& command) override;
   ExclusiveAccessContext* GetExclusiveAccessContext() override;
@@ -592,11 +591,6 @@ class BrowserView : public BrowserWindow,
   // Browser type) and there should be a subsequent re-layout to show it.
   // |contents| can be null.
   bool MaybeShowBookmarkBar(content::WebContents* contents);
-
-  // Moves the bookmark bar view to the specified parent, which may be null,
-  // |this|, or |top_container_|. Ensures that |top_container_| stays in front
-  // of |bookmark_bar_view_|.
-  void SetBookmarkBarParent(views::View* new_parent);
 
   // Prepare to show an Info Bar for the specified WebContents. Returns
   // true if there is an Info Bar to show and one is supported for this Browser

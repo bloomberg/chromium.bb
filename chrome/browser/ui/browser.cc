@@ -1837,25 +1837,6 @@ bool Browser::RequestPpapiBrokerPermission(
   return true;
 }
 
-gfx::Size Browser::GetSizeForNewRenderView(WebContents* web_contents) const {
-  // When navigating away from NTP with unpinned bookmark bar, the bookmark bar
-  // would disappear on non-NTP pages, resulting in a bigger size for the new
-  // render view.
-  gfx::Size size = web_contents->GetContainerBounds().size();
-  // Don't change render view size if bookmark bar is currently not detached,
-  // or there's no pending entry, or navigating to a NTP page.
-  if (size.IsEmpty() || bookmark_bar_state_ != BookmarkBar::DETACHED)
-    return size;
-  NavigationEntry* pending_entry =
-      web_contents->GetController().GetPendingEntry();
-  if (pending_entry &&
-      !search::IsNTPURL(pending_entry->GetVirtualURL(), profile_)) {
-    size.Enlarge(
-        0, window()->GetRenderViewHeightInsetWithDetachedBookmarkBar());
-  }
-  return size;
-}
-
 #if BUILDFLAG(ENABLE_PRINTING)
 void Browser::PrintCrossProcessSubframe(
     content::WebContents* web_contents,

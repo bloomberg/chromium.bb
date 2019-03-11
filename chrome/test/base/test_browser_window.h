@@ -163,7 +163,6 @@ class TestBrowserWindow : public BrowserWindow {
   void ShowHatsBubbleFromAppMenuButton() override {}
 #endif
 
-  int GetRenderViewHeightInsetWithDetachedBookmarkBar() override;
   void ExecuteExtensionCommand(const extensions::Extension* extension,
                                const extensions::Command& command) override;
   ExclusiveAccessContext* GetExclusiveAccessContext() override;

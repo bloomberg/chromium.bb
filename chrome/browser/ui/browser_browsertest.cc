@@ -2364,8 +2364,6 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, GetSizeForNewRenderView) {
   WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   content::RenderViewHost* prev_rvh = web_contents->GetRenderViewHost();
-  const int height_inset =
-      browser()->window()->GetRenderViewHeightInsetWithDetachedBookmarkBar();
   const gfx::Size initial_wcv_size =
       web_contents->GetContainerBounds().size();
   RenderViewSizeObserver observer(web_contents, browser()->window());
@@ -2382,9 +2380,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, GetSizeForNewRenderView) {
                                     &rwhv_create_size0,
                                     &rwhv_commit_size0,
                                     &wcv_commit_size0);
-  // The create height of RenderWidgetHostView should include the height inset.
-  EXPECT_EQ(gfx::Size(initial_wcv_size.width(),
-                      initial_wcv_size.height() + height_inset),
+  EXPECT_EQ(gfx::Size(initial_wcv_size.width(), initial_wcv_size.height()),
             rwhv_create_size0);
   // When a navigation entry is committed, the size of RenderWidgetHostView
   // should be the same as when it was first created.
@@ -2401,8 +2397,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, GetSizeForNewRenderView) {
 // bookmark bar disappears (correct).
 // In views, the wcv changes size at commit time.
 #if defined(OS_MACOSX)
-  EXPECT_EQ(gfx::Size(wcv_commit_size0.width(),
-                      wcv_commit_size0.height() + height_inset),
+  EXPECT_EQ(gfx::Size(wcv_commit_size0.width(), wcv_commit_size0.height()),
             web_contents->GetContainerBounds().size());
 #else
   EXPECT_EQ(wcv_commit_size0, web_contents->GetContainerBounds().size());
@@ -2452,9 +2447,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, GetSizeForNewRenderView) {
   // On views, the commit wcv size is (101, 141)
   // All other sizes are correct.
 
-  // The create height of RenderWidgetHostView should include the height inset.
-  EXPECT_EQ(gfx::Size(initial_wcv_size.width(),
-                      initial_wcv_size.height() + height_inset),
+  EXPECT_EQ(gfx::Size(initial_wcv_size.width(), initial_wcv_size.height()),
             rwhv_create_size2);
   gfx::Size exp_commit_size(initial_wcv_size);
 
@@ -2463,14 +2456,13 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, GetSizeForNewRenderView) {
                           wcv_resize_insets.height());
 #else
   exp_commit_size.Enlarge(wcv_resize_insets.width(),
-                          wcv_resize_insets.height() + height_inset);
+                          wcv_resize_insets.height());
 #endif
   EXPECT_EQ(exp_commit_size, rwhv_commit_size2);
   EXPECT_EQ(exp_commit_size, wcv_commit_size2);
 
   gfx::Size exp_final_size(initial_wcv_size);
-  exp_final_size.Enlarge(wcv_resize_insets.width(),
-                         wcv_resize_insets.height() + height_inset);
+  exp_final_size.Enlarge(wcv_resize_insets.width(), wcv_resize_insets.height());
   EXPECT_EQ(exp_final_size,
             web_contents->GetRenderWidgetHostView()->GetViewBounds().size());
   EXPECT_EQ(exp_final_size, web_contents->GetContainerBounds().size());

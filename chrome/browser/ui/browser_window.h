@@ -426,11 +426,6 @@ class BrowserWindow : public ui::BaseWindow {
   virtual void ShowHatsBubbleFromAppMenuButton() = 0;
 #endif
 
-  // Returns the height inset for RenderView when detached bookmark bar is
-  // shown.  Invoked when a new RenderHostView is created for a non-NTP
-  // navigation entry and the bookmark bar is detached.
-  virtual int GetRenderViewHeightInsetWithDetachedBookmarkBar() = 0;
-
   // Executes |command| registered by |extension|.
   virtual void ExecuteExtensionCommand(const extensions::Extension* extension,
                                        const extensions::Command& command) = 0;
