@@ -96,7 +96,6 @@ class ProtoDatabaseSelector
 
  private:
   friend class base::RefCountedThreadSafe<ProtoDatabaseSelector>;
-  template <typename T>
   friend class ProtoDatabaseImplTest;
 
   enum class InitStatus {

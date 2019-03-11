@@ -8,24 +8,18 @@
 #include <map>
 #include <memory>
 #include <string>
-#include <type_traits>
 #include <utility>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
+#include "base/memory/weak_ptr.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/leveldb_proto/internal/proto_database_selector.h"
 #include "components/leveldb_proto/internal/shared_proto_database.h"
 #include "components/leveldb_proto/internal/shared_proto_database_provider.h"
 #include "components/leveldb_proto/public/proto_database.h"
 #include "components/leveldb_proto/public/shared_proto_database_client_list.h"
-
-namespace google {
-namespace protobuf {
-class MessageLite;
-}  // namespace protobuf
-}  // namespace google
 
 namespace leveldb_proto {
 
@@ -64,8 +58,8 @@ void RunDestroyCallback(
 // wrapper needing to know.
 // This allows clients to request a DB instance without knowing whether or not
 // it's a UniqueProtoDatabase or a SharedProtoDatabaseClient.
-template <typename P, typename T = P>
-class ProtoDatabaseImpl : public ProtoDatabase<P, T> {
+template <typename T>
+class ProtoDatabaseImpl : public ProtoDatabase<T> {
  public:
   // DEPRECATED. Force usage of unique db. The clients must use Init(name,
   // db_dir, options, callback) version.
@@ -157,7 +151,6 @@ class ProtoDatabaseImpl : public ProtoDatabase<P, T> {
   ProtoDatabaseSelector* db_wrapper_for_testing() { return db_wrapper_.get(); }
 
  private:
-  template <typename T_>
   friend class ProtoDatabaseImplTest;
 
   void Init(const std::string& client_name,
@@ -172,67 +165,17 @@ class ProtoDatabaseImpl : public ProtoDatabase<P, T> {
   const scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   base::FilePath db_dir_;
+
+  std::unique_ptr<base::WeakPtrFactory<ProtoDatabaseImpl<T>>> weak_ptr_factory_;
 };
 
 namespace {
-
-template <typename P,
-          typename T,
-          std::enable_if_t<std::is_base_of<google::protobuf::MessageLite,
-                                           T>::value>* = nullptr>
-std::string SerializeAsString(const T& entry) {
-  return entry.SerializeAsString();
-}
-
-template <typename P,
-          typename T,
-          std::enable_if_t<!std::is_base_of<google::protobuf::MessageLite,
-                                            T>::value>* = nullptr>
-std::string SerializeAsString(const T& entry) {
-  P proto;
-  DataToProto(entry, &proto);
-  return proto.SerializeAsString();
-}
-
-template <typename P>
-std::unique_ptr<P> ParseToProto(const std::string& serialized_entry) {
-  auto proto = std::make_unique<P>();
-  if (proto->ParseFromString(serialized_entry)) {
-    return proto;
-  } else {
-    DLOG(WARNING) << "Unable to parse leveldb_proto entry";
-    DCHECK_EQ(std::make_unique<P>(), proto);
-    return proto;
-  }
-}
-
-template <typename P,
-          typename T,
-          std::enable_if_t<std::is_base_of<google::protobuf::MessageLite,
-                                           T>::value>* = nullptr>
-std::unique_ptr<T> ParseToClientType(const std::string& serialized_entry) {
-  return ParseToProto<T>(serialized_entry);
-}
-
-template <typename P,
-          typename T,
-          std::enable_if_t<!std::is_base_of<google::protobuf::MessageLite,
-                                            T>::value>* = nullptr>
-std::unique_ptr<T> ParseToClientType(const std::string& serialized_entry) {
-  auto entry = std::make_unique<T>();
-  auto proto = ParseToProto<P>(serialized_entry);
-  if (!proto)
-    return entry;
-
-  ProtoToData(*proto, entry.get());
-  return entry;
-}
 
 // Update transactions need to serialize the entries to be updated on background
 // task runner. The database can be accessed on same task runner. The caller
 // must wrap the callback using RunUpdateCallback() to ensure the callback runs
 // in client task runner.
-template <typename P, typename T>
+template <typename T>
 void UpdateEntriesFromTaskRunner(
     std::unique_ptr<typename Util::Internal<T>::KeyEntryVector> entries_to_save,
     std::unique_ptr<KeyVector> keys_to_remove,
@@ -241,8 +184,8 @@ void UpdateEntriesFromTaskRunner(
   // Serialize the values from Proto to string before passing on to database.
   auto pairs_to_save = std::make_unique<KeyValueVector>();
   for (const auto& pair : *entries_to_save) {
-    auto serialized = SerializeAsString<P, T>(pair.second);
-    pairs_to_save->push_back(std::make_pair(pair.first, serialized));
+    pairs_to_save->push_back(
+        std::make_pair(pair.first, pair.second.SerializeAsString()));
   }
 
   db->UpdateEntries(std::move(pairs_to_save), std::move(keys_to_remove),
@@ -253,7 +196,7 @@ void UpdateEntriesFromTaskRunner(
 // task runner. The database can be accessed on same task runner. The caller
 // must wrap the callback using RunUpdateCallback() to ensure the callback runs
 // in client task runner.
-template <typename P, typename T>
+template <typename T>
 void UpdateEntriesWithRemoveFilterFromTaskRunner(
     std::unique_ptr<typename ProtoDatabase<T>::KeyEntryVector> entries_to_save,
     const KeyFilter& delete_key_filter,
@@ -262,8 +205,8 @@ void UpdateEntriesWithRemoveFilterFromTaskRunner(
   // Serialize the values from Proto to string before passing on to database.
   auto pairs_to_save = std::make_unique<KeyValueVector>();
   for (const auto& pair : *entries_to_save) {
-    auto serialized = SerializeAsString<P, T>(pair.second);
-    pairs_to_save->push_back(std::make_pair(pair.first, serialized));
+    pairs_to_save->push_back(
+        std::make_pair(pair.first, pair.second.SerializeAsString()));
   }
 
   db->UpdateEntriesWithRemoveFilter(std::move(pairs_to_save), delete_key_filter,
@@ -273,7 +216,7 @@ void UpdateEntriesWithRemoveFilterFromTaskRunner(
 // Load transactions happen on background task runner. The loaded entries need
 // to be parsed into proto in background thread. This wraps the load callback
 // and parses the entries and posts result onto client task runner.
-template <typename P, typename T>
+template <typename T>
 void ParseLoadedEntries(
     scoped_refptr<base::SequencedTaskRunner> callback_task_runner,
     typename Callbacks::Internal<T>::LoadCallback callback,
@@ -285,8 +228,13 @@ void ParseLoadedEntries(
     entries.reset();
   } else {
     for (const auto& serialized_entry : *loaded_entries) {
-      auto entry = ParseToClientType<P, T>(serialized_entry);
-      entries->push_back(*entry);
+      T entry;
+      if (!entry.ParseFromString(serialized_entry)) {
+        DLOG(WARNING) << "Unable to parse leveldb_proto entry";
+        // TODO(cjhopman): Decide what to do about un-parseable entries.
+      }
+
+      entries->push_back(entry);
     }
   }
 
@@ -298,7 +246,7 @@ void ParseLoadedEntries(
 // Load transactions happen on background task runner. The loaded entries need
 // to be parsed into proto in background thread. This wraps the load callback
 // and parses the entries and posts result onto client task runner.
-template <typename P, typename T>
+template <typename T>
 void ParseLoadedKeysAndEntries(
     scoped_refptr<base::SequencedTaskRunner> callback_task_runner,
     typename Callbacks::Internal<T>::LoadKeysAndEntriesCallback callback,
@@ -309,8 +257,13 @@ void ParseLoadedKeysAndEntries(
     keys_entries.reset();
   } else {
     for (const auto& pair : *loaded_entries) {
-      auto entry = ParseToClientType<P, T>(pair.second);
-      keys_entries->emplace(pair.first, *entry);
+      T entry;
+      if (!entry.ParseFromString(pair.second)) {
+        DLOG(WARNING) << "Unable to parse leveldb_proto entry";
+        // TODO(cjhopman): Decide what to do about un-parseable entries.
+      }
+
+      keys_entries->insert(std::make_pair(pair.first, entry));
     }
   }
 
@@ -322,7 +275,7 @@ void ParseLoadedKeysAndEntries(
 // Load transactions happen on background task runner. The loaded entries need
 // to be parsed into proto in background thread. This wraps the load callback
 // and parses the entries and posts result onto client task runner.
-template <typename P, typename T>
+template <typename T>
 void ParseLoadedEntry(
     scoped_refptr<base::SequencedTaskRunner> callback_task_runner,
     typename Callbacks::Internal<T>::GetCallback callback,
@@ -332,10 +285,10 @@ void ParseLoadedEntry(
 
   if (!success || !serialized_entry) {
     entry.reset();
-  } else {
-    entry = ParseToClientType<P, T>(*serialized_entry);
-    if (!entry)
-      success = false;
+  } else if (!entry->ParseFromString(*serialized_entry)) {
+    DLOG(WARNING) << "Unable to parse leveldb_proto entry";
+    success = false;
+    entry.reset();
   }
   callback_task_runner->PostTask(
       FROM_HERE,
@@ -344,16 +297,18 @@ void ParseLoadedEntry(
 
 }  // namespace
 
-template <typename P, typename T>
-ProtoDatabaseImpl<P, T>::ProtoDatabaseImpl(
+template <typename T>
+ProtoDatabaseImpl<T>::ProtoDatabaseImpl(
     const scoped_refptr<base::SequencedTaskRunner>& task_runner)
     : db_type_(ProtoDbType::LAST),
       db_wrapper_(new ProtoDatabaseSelector(db_type_, task_runner, nullptr)),
       force_unique_db_(true),
-      task_runner_(task_runner) {}
+      task_runner_(task_runner),
+      weak_ptr_factory_(
+          std::make_unique<base::WeakPtrFactory<ProtoDatabaseImpl<T>>>(this)) {}
 
-template <typename P, typename T>
-ProtoDatabaseImpl<P, T>::ProtoDatabaseImpl(
+template <typename T>
+ProtoDatabaseImpl<T>::ProtoDatabaseImpl(
     ProtoDbType db_type,
     const base::FilePath& db_dir,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner,
@@ -364,13 +319,15 @@ ProtoDatabaseImpl<P, T>::ProtoDatabaseImpl(
                                             std::move(db_provider))),
       force_unique_db_(false),
       task_runner_(task_runner),
-      db_dir_(db_dir) {}
+      db_dir_(db_dir),
+      weak_ptr_factory_(
+          std::make_unique<base::WeakPtrFactory<ProtoDatabaseImpl<T>>>(this)) {}
 
-template <typename P, typename T>
-void ProtoDatabaseImpl<P, T>::Init(const char* client_uma_name,
-                                   const base::FilePath& database_dir,
-                                   const leveldb_env::Options& options,
-                                   Callbacks::InitCallback callback) {
+template <typename T>
+void ProtoDatabaseImpl<T>::Init(const char* client_uma_name,
+                                const base::FilePath& database_dir,
+                                const leveldb_env::Options& options,
+                                Callbacks::InitCallback callback) {
   DCHECK(force_unique_db_);
   task_runner_->PostTask(
       FROM_HERE,
@@ -385,8 +342,8 @@ void ProtoDatabaseImpl<P, T>::Init(const char* client_uma_name,
               std::move(callback))));
 }
 
-template <typename P, typename T>
-void ProtoDatabaseImpl<P, T>::Init(
+template <typename T>
+void ProtoDatabaseImpl<T>::Init(
     const std::string& client_uma_name,
     typename Callbacks::InitStatusCallback callback) {
   bool use_shared_db =
@@ -395,10 +352,10 @@ void ProtoDatabaseImpl<P, T>::Init(
   Init(client_uma_name, use_shared_db, std::move(callback));
 }
 
-template <typename P, typename T>
-void ProtoDatabaseImpl<P, T>::Init(const std::string& client_name,
-                                   bool use_shared_db,
-                                   Callbacks::InitStatusCallback callback) {
+template <typename T>
+void ProtoDatabaseImpl<T>::Init(const std::string& client_name,
+                                bool use_shared_db,
+                                Callbacks::InitStatusCallback callback) {
   auto options = CreateSimpleOptions();
   // If we're NOT using a shared DB, we want to force creation of the unique one
   // because that's what we expect to be using moving forward. If we ARE using
@@ -413,8 +370,8 @@ void ProtoDatabaseImpl<P, T>::Init(const std::string& client_name,
                      std::move(callback)));
 }
 
-template <typename P, typename T>
-void ProtoDatabaseImpl<P, T>::InitWithDatabase(
+template <typename T>
+void ProtoDatabaseImpl<T>::InitWithDatabase(
     LevelDB* database,
     const base::FilePath& database_dir,
     const leveldb_env::Options& options,
@@ -428,48 +385,48 @@ void ProtoDatabaseImpl<P, T>::InitWithDatabase(
                      std::move(callback)));
 }
 
-template <typename P, typename T>
-void ProtoDatabaseImpl<P, T>::UpdateEntries(
+template <typename T>
+void ProtoDatabaseImpl<T>::UpdateEntries(
     std::unique_ptr<typename ProtoDatabase<T>::KeyEntryVector> entries_to_save,
     std::unique_ptr<KeyVector> keys_to_remove,
     Callbacks::UpdateCallback callback) {
   base::OnceClosure update_task = base::BindOnce(
-      &UpdateEntriesFromTaskRunner<P, T>, std::move(entries_to_save),
+      &UpdateEntriesFromTaskRunner<T>, std::move(entries_to_save),
       std::move(keys_to_remove), db_wrapper_,
       base::BindOnce(&RunUpdateCallback, base::SequencedTaskRunnerHandle::Get(),
                      std::move(callback)));
   PostTransaction(std::move(update_task));
 }
 
-template <typename P, typename T>
-void ProtoDatabaseImpl<P, T>::UpdateEntriesWithRemoveFilter(
+template <typename T>
+void ProtoDatabaseImpl<T>::UpdateEntriesWithRemoveFilter(
     std::unique_ptr<typename ProtoDatabase<T>::KeyEntryVector> entries_to_save,
     const KeyFilter& delete_key_filter,
     Callbacks::UpdateCallback callback) {
   base::OnceClosure update_task = base::BindOnce(
-      &UpdateEntriesWithRemoveFilterFromTaskRunner<P, T>,
+      &UpdateEntriesWithRemoveFilterFromTaskRunner<T>,
       std::move(entries_to_save), delete_key_filter, db_wrapper_,
       base::BindOnce(&RunUpdateCallback, base::SequencedTaskRunnerHandle::Get(),
                      std::move(callback)));
   PostTransaction(std::move(update_task));
 }
 
-template <typename P, typename T>
-void ProtoDatabaseImpl<P, T>::LoadEntries(
+template <typename T>
+void ProtoDatabaseImpl<T>::LoadEntries(
     typename Callbacks::Internal<T>::LoadCallback callback) {
   LoadEntriesWithFilter(KeyFilter(), std::move(callback));
 }
 
-template <typename P, typename T>
-void ProtoDatabaseImpl<P, T>::LoadEntriesWithFilter(
+template <typename T>
+void ProtoDatabaseImpl<T>::LoadEntriesWithFilter(
     const KeyFilter& filter,
     typename Callbacks::Internal<T>::LoadCallback callback) {
   LoadEntriesWithFilter(filter, leveldb::ReadOptions(), std::string(),
                         std::move(callback));
 }
 
-template <typename P, typename T>
-void ProtoDatabaseImpl<P, T>::LoadEntriesWithFilter(
+template <typename T>
+void ProtoDatabaseImpl<T>::LoadEntriesWithFilter(
     const KeyFilter& key_filter,
     const leveldb::ReadOptions& options,
     const std::string& target_prefix,
@@ -477,28 +434,28 @@ void ProtoDatabaseImpl<P, T>::LoadEntriesWithFilter(
   base::OnceClosure load_task =
       base::BindOnce(&ProtoDatabaseSelector::LoadEntriesWithFilter, db_wrapper_,
                      key_filter, options, target_prefix,
-                     base::BindOnce(&ParseLoadedEntries<P, T>,
+                     base::BindOnce(&ParseLoadedEntries<T>,
                                     base::SequencedTaskRunnerHandle::Get(),
                                     std::move(callback)));
   PostTransaction(std::move(load_task));
 }
 
-template <typename P, typename T>
-void ProtoDatabaseImpl<P, T>::LoadKeysAndEntries(
+template <typename T>
+void ProtoDatabaseImpl<T>::LoadKeysAndEntries(
     typename Callbacks::Internal<T>::LoadKeysAndEntriesCallback callback) {
   LoadKeysAndEntriesWithFilter(KeyFilter(), std::move(callback));
 }
 
-template <typename P, typename T>
-void ProtoDatabaseImpl<P, T>::LoadKeysAndEntriesWithFilter(
+template <typename T>
+void ProtoDatabaseImpl<T>::LoadKeysAndEntriesWithFilter(
     const KeyFilter& filter,
     typename Callbacks::Internal<T>::LoadKeysAndEntriesCallback callback) {
   LoadKeysAndEntriesWithFilter(filter, leveldb::ReadOptions(), std::string(),
                                std::move(callback));
 }
 
-template <typename P, typename T>
-void ProtoDatabaseImpl<P, T>::LoadKeysAndEntriesWithFilter(
+template <typename T>
+void ProtoDatabaseImpl<T>::LoadKeysAndEntriesWithFilter(
     const KeyFilter& filter,
     const leveldb::ReadOptions& options,
     const std::string& target_prefix,
@@ -506,28 +463,28 @@ void ProtoDatabaseImpl<P, T>::LoadKeysAndEntriesWithFilter(
   base::OnceClosure load_task =
       base::BindOnce(&ProtoDatabaseSelector::LoadKeysAndEntriesWithFilter,
                      db_wrapper_, filter, options, target_prefix,
-                     base::BindOnce(&ParseLoadedKeysAndEntries<P, T>,
+                     base::BindOnce(&ParseLoadedKeysAndEntries<T>,
                                     base::SequencedTaskRunnerHandle::Get(),
                                     std::move(callback)));
   PostTransaction(std::move(load_task));
 }
 
-template <typename P, typename T>
-void ProtoDatabaseImpl<P, T>::LoadKeysAndEntriesInRange(
+template <typename T>
+void ProtoDatabaseImpl<T>::LoadKeysAndEntriesInRange(
     const std::string& start,
     const std::string& end,
     typename Callbacks::Internal<T>::LoadKeysAndEntriesCallback callback) {
   base::OnceClosure load_task =
       base::BindOnce(&ProtoDatabaseSelector::LoadKeysAndEntriesInRange,
                      db_wrapper_, start, end,
-                     base::BindOnce(&ParseLoadedKeysAndEntries<P, T>,
+                     base::BindOnce(&ParseLoadedKeysAndEntries<T>,
                                     base::SequencedTaskRunnerHandle::Get(),
                                     std::move(callback)));
   PostTransaction(std::move(load_task));
 }
 
-template <typename P, typename T>
-void ProtoDatabaseImpl<P, T>::LoadKeys(Callbacks::LoadKeysCallback callback) {
+template <typename T>
+void ProtoDatabaseImpl<T>::LoadKeys(Callbacks::LoadKeysCallback callback) {
   base::OnceClosure load_task =
       base::BindOnce(&ProtoDatabaseSelector::LoadKeys, db_wrapper_,
                      base::BindOnce(&RunLoadKeysCallback,
@@ -536,20 +493,20 @@ void ProtoDatabaseImpl<P, T>::LoadKeys(Callbacks::LoadKeysCallback callback) {
   PostTransaction(std::move(load_task));
 }
 
-template <typename P, typename T>
-void ProtoDatabaseImpl<P, T>::GetEntry(
+template <typename T>
+void ProtoDatabaseImpl<T>::GetEntry(
     const std::string& key,
     typename Callbacks::Internal<T>::GetCallback callback) {
   base::OnceClosure get_task =
       base::BindOnce(&ProtoDatabaseSelector::GetEntry, db_wrapper_, key,
-                     base::BindOnce(&ParseLoadedEntry<P, T>,
+                     base::BindOnce(&ParseLoadedEntry<T>,
                                     base::SequencedTaskRunnerHandle::Get(),
                                     std::move(callback)));
   PostTransaction(std::move(get_task));
 }
 
-template <typename P, typename T>
-void ProtoDatabaseImpl<P, T>::Destroy(Callbacks::DestroyCallback callback) {
+template <typename T>
+void ProtoDatabaseImpl<T>::Destroy(Callbacks::DestroyCallback callback) {
   base::OnceClosure destroy_task =
       base::BindOnce(&ProtoDatabaseSelector::Destroy, db_wrapper_,
                      base::BindOnce(&RunDestroyCallback,
@@ -558,8 +515,8 @@ void ProtoDatabaseImpl<P, T>::Destroy(Callbacks::DestroyCallback callback) {
   PostTransaction(std::move(destroy_task));
 }
 
-template <typename P, typename T>
-void ProtoDatabaseImpl<P, T>::RemoveKeysForTesting(
+template <typename T>
+void ProtoDatabaseImpl<T>::RemoveKeysForTesting(
     const KeyFilter& key_filter,
     const std::string& target_prefix,
     Callbacks::UpdateCallback callback) {
@@ -571,8 +528,8 @@ void ProtoDatabaseImpl<P, T>::RemoveKeysForTesting(
   PostTransaction(std::move(update_task));
 }
 
-template <typename P, typename T>
-void ProtoDatabaseImpl<P, T>::PostTransaction(base::OnceClosure task) {
+template <typename T>
+void ProtoDatabaseImpl<T>::PostTransaction(base::OnceClosure task) {
   task_runner_->PostTask(FROM_HERE,
                          base::BindOnce(&ProtoDatabaseSelector::AddTransaction,
                                         db_wrapper_, std::move(task)));
