@@ -723,8 +723,7 @@ void NavigationRequest::BeginNavigation() {
 
   CreateNavigationHandle(false);
 
-  if (IsURLHandledByNetworkStack(common_params_.url) &&
-      !navigation_handle_->IsSameDocument()) {
+  if (IsURLHandledByNetworkStack(common_params_.url) && !IsSameDocument()) {
     // Update PreviewsState if we are going to use the NetworkStack.
     common_params_.previews_state =
         GetContentClient()->browser()->DetermineAllowedPreviews(
@@ -799,10 +798,8 @@ void NavigationRequest::CreateNavigationHandle(bool is_for_commit) {
 
   std::unique_ptr<NavigationHandleImpl> navigation_handle =
       base::WrapUnique(new NavigationHandleImpl(
-          this, redirect_chain,
-          FrameMsg_Navigate_Type::IsSameDocument(
-              common_params_.navigation_type),
-          nav_entry_id_, std::move(navigation_ui_data_), std::move(headers),
+          this, redirect_chain, nav_entry_id_, std::move(navigation_ui_data_),
+          std::move(headers),
           Referrer::SanitizeForRequest(common_params_.url,
                                        common_params_.referrer)));
 
@@ -816,8 +813,7 @@ void NavigationRequest::CreateNavigationHandle(bool is_for_commit) {
 }
 
 void NavigationRequest::ResetForCrossDocumentRestart() {
-  DCHECK(
-      FrameMsg_Navigate_Type::IsSameDocument(common_params_.navigation_type));
+  DCHECK(IsSameDocument());
 
   // Reset the NavigationHandle, which is now incorrectly marked as
   // same-document. Ensure |loader_| does not exist as it can hold raw pointers
@@ -1836,7 +1832,7 @@ void NavigationRequest::CommitErrorPage(
 void NavigationRequest::CommitNavigation() {
   UpdateCommitNavigationParamsHistory();
   DCHECK(response_ || !IsURLHandledByNetworkStack(common_params_.url) ||
-         navigation_handle_->IsSameDocument());
+         IsSameDocument());
   DCHECK(!common_params_.url.SchemeIs(url::kJavaScriptScheme));
 
   DCHECK(render_frame_host_ ==
@@ -2153,6 +2149,10 @@ void NavigationRequest::IgnoreInterfaceDisconnection() {
 void NavigationRequest::IgnoreCommitInterfaceDisconnection() {
   return commit_navigation_client_.set_connection_error_handler(
       base::DoNothing());
+}
+
+bool NavigationRequest::IsSameDocument() const {
+  return FrameMsg_Navigate_Type::IsSameDocument(common_params_.navigation_type);
 }
 
 }  // namespace content

@@ -267,6 +267,8 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   // navigation_client used to commit.
   void IgnoreCommitInterfaceDisconnection();
 
+  bool IsSameDocument() const;
+
  private:
   NavigationRequest(FrameTreeNode* frame_tree_node,
                     const CommonNavigationParams& common_params,

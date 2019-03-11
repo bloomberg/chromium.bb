@@ -353,7 +353,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle,
   // this navigation.
   NavigationHandleImpl(NavigationRequest* navigation_request,
                        const std::vector<GURL>& redirect_chain,
-                       bool is_same_document,
                        int pending_nav_entry_id,
                        std::unique_ptr<NavigationUIData> navigation_ui_data,
                        net::HttpRequestHeaders request_headers,
@@ -405,7 +404,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle,
   // See NavigationHandle for a description of those member variables.
   Referrer sanitized_referrer_;
   net::Error net_error_code_;
-  const bool is_same_document_;
   bool was_redirected_;
   bool did_replace_entry_;
   bool should_update_history_;

@@ -123,14 +123,12 @@ void LogIsSameProcess(ui::PageTransition transition, bool is_same_process) {
 NavigationHandleImpl::NavigationHandleImpl(
     NavigationRequest* navigation_request,
     const std::vector<GURL>& redirect_chain,
-    bool is_same_document,
     int pending_nav_entry_id,
     std::unique_ptr<NavigationUIData> navigation_ui_data,
     net::HttpRequestHeaders request_headers,
     const Referrer& sanitized_referrer)
     : navigation_request_(navigation_request),
       net_error_code_(net::OK),
-      is_same_document_(is_same_document),
       was_redirected_(false),
       did_replace_entry_(false),
       should_update_history_(false),
@@ -205,7 +203,7 @@ NavigationHandleImpl::NavigationHandleImpl(
         url.spec());
   }
 
-  if (is_same_document_) {
+  if (IsSameDocument()) {
     TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationHandle", this,
                                  "Same document");
   }
@@ -332,7 +330,7 @@ RenderFrameHostImpl* NavigationHandleImpl::GetRenderFrameHost() {
 }
 
 bool NavigationHandleImpl::IsSameDocument() {
-  return is_same_document_;
+  return navigation_request_->IsSameDocument();
 }
 
 const net::HttpRequestHeaders& NavigationHandleImpl::GetRequestHeaders() {
@@ -795,7 +793,7 @@ void NavigationHandleImpl::DidCommitNavigation(
     // The last committed load in collapsed frames will be an error page with
     // |kUnreachableWebDataURL|. Same-document navigation should not be
     // possible.
-    DCHECK(!is_same_document_ || !frame_tree_node()->is_collapsed());
+    DCHECK(!IsSameDocument() || !frame_tree_node()->is_collapsed());
     frame_tree_node()->SetCollapsed(false);
   }
 }

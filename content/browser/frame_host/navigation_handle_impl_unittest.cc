@@ -235,7 +235,6 @@ class NavigationHandleImplTest : public RenderViewHostImplTestHarness {
         *frame_entry, nullptr, nullptr, nullptr);
     test_handle_ = base::WrapUnique<NavigationHandleImpl>(
         new NavigationHandleImpl(request_.get(), std::vector<GURL>(),
-                                 false,  // is_same_document
                                  0,
                                  nullptr,  // navigation_ui_data
                                  net::HttpRequestHeaders(), Referrer()));
