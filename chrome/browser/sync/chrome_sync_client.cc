@@ -498,9 +498,6 @@ ChromeSyncClient::GetExtensionsActivity() {
 
 base::WeakPtr<syncer::SyncableService>
 ChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
-  if (!profile_) {  // For tests.
-     return base::WeakPtr<syncer::SyncableService>();
-  }
   switch (type) {
     case syncer::PREFERENCES:
       return PrefServiceSyncableFromProfile(profile_)
