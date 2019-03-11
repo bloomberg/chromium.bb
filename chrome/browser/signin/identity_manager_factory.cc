@@ -129,20 +129,6 @@ void IdentityManagerFactory::EnsureFactoryAndDependeeFactoriesBuilt() {
   SigninManagerFactory::GetInstance();
 }
 
-// static
-std::unique_ptr<KeyedService>
-IdentityManagerFactory::BuildAuthenticatedServiceInstanceForTesting(
-    const std::string& gaia_id,
-    const std::string& email,
-    const std::string& refresh_token,
-    content::BrowserContext* context) {
-  auto identity_manager = std::make_unique<IdentityManagerWrapper>(
-      Profile::FromBrowserContext(context));
-  identity_manager->SetPrimaryAccountSynchronouslyForTests(gaia_id, email,
-                                                           refresh_token);
-  return identity_manager;
-}
-
 void IdentityManagerFactory::AddObserver(Observer* observer) {
   observer_list_.AddObserver(observer);
 }

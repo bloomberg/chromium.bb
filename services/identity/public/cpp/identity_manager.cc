@@ -386,14 +386,6 @@ GaiaCookieManagerService* IdentityManager::GetGaiaCookieManagerService() {
   return gaia_cookie_manager_service_;
 }
 
-void IdentityManager::SetPrimaryAccountSynchronouslyForTests(
-    const std::string& gaia_id,
-    const std::string& email_address,
-    const std::string& refresh_token) {
-  DCHECK(!refresh_token.empty());
-  SetPrimaryAccountSynchronously(gaia_id, email_address, refresh_token);
-}
-
 void IdentityManager::SetPrimaryAccountSynchronously(
     const std::string& gaia_id,
     const std::string& email_address,
