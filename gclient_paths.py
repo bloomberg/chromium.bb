@@ -106,6 +106,7 @@ def GetBuildtoolsPlatformBinaryPath():
   if not buildtools_path:
     return None
 
+  import sys
   if sys.platform.startswith(('cygwin', 'win')):
     subdir = 'win'
   elif sys.platform == 'darwin':
@@ -119,6 +120,7 @@ def GetBuildtoolsPlatformBinaryPath():
 
 def GetExeSuffix():
   """Returns '' or '.exe' depending on how executables work on this platform."""
+  import sys
   if sys.platform.startswith(('cygwin', 'win')):
     return '.exe'
   return ''
