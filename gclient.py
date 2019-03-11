@@ -102,6 +102,7 @@ import detect_host_arch
 import fix_encoding
 import gclient_eval
 import gclient_scm
+import gclient_paths
 import gclient_utils
 import git_cache
 import metrics
@@ -1459,7 +1460,7 @@ it or fix the checkout.
       if options.verbose:
         print('Looking for %s starting from %s\n' % (
             options.config_filename, os.getcwd()))
-      path = gclient_utils.FindGclientRoot(os.getcwd(), options.config_filename)
+      path = gclient_paths.FindGclientRoot(os.getcwd(), options.config_filename)
       if not path:
         if options.verbose:
           print('Couldn\'t find configuration file.')

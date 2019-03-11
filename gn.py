@@ -12,7 +12,7 @@ binary. It will also automatically try to find the gn binary when run inside
 the chrome source tree, so users can just type "gn" on the command line
 (normally depot_tools is on the path)."""
 
-import gclient_utils
+import gclient_paths
 import os
 import subprocess
 import sys
@@ -45,22 +45,22 @@ def main(args):
 
   # Try in primary solution location first, with the gn binary having been
   # downloaded by cipd in the projects DEPS.
-  primary_solution_path = gclient_utils.GetPrimarySolutionPath()
+  primary_solution_path = gclient_paths.GetPrimarySolutionPath()
   if primary_solution_path:
     gn_path = os.path.join(primary_solution_path, 'third_party',
-                           'gn', 'gn' + gclient_utils.GetExeSuffix())
+                           'gn', 'gn' + gclient_paths.GetExeSuffix())
     if os.path.exists(gn_path):
       return subprocess.call([gn_path] + args[1:])
 
   # Otherwise try the old .sha1 and download_from_google_storage locations
   # inside of buildtools.
-  bin_path = gclient_utils.GetBuildtoolsPlatformBinaryPath()
+  bin_path = gclient_paths.GetBuildtoolsPlatformBinaryPath()
   if not bin_path:
     print >> sys.stderr, ('gn.py: Could not find checkout in any parent of '
                           'the current path.\nThis must be run inside a '
                           'checkout.')
     return 1
-  gn_path = os.path.join(bin_path, 'gn' + gclient_utils.GetExeSuffix())
+  gn_path = os.path.join(bin_path, 'gn' + gclient_paths.GetExeSuffix())
   if not os.path.exists(gn_path):
     print >> sys.stderr, 'gn.py: Could not find gn executable at: %s' % gn_path
     return 2
