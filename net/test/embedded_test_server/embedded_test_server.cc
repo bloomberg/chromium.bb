@@ -171,6 +171,7 @@ void EmbeddedTestServer::InitializeSSLServerContext() {
 }
 
 void EmbeddedTestServer::StartAcceptingConnections() {
+  DCHECK(Started());
   DCHECK(!io_thread_.get())
       << "Server must not be started while server is running";
   base::Thread::Options thread_options;
