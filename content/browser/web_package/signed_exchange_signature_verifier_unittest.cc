@@ -18,7 +18,7 @@ const uint64_t kSignatureHeaderExpires = 1517895941;
 
 // See content/test/data/sxg/README on how to generate these data.
 // clang-format off
-constexpr char kSignatureHeaderECDSAP256[] = R"(label; sig=*MEUCICLHwHwNFwbVUeu6a9AV8hVxvXfcYkWEMHnPFHYQfN/UAiEA3VQwLi1TJFvihZqasnpzuYlJte2E7Q4YEvtEnVZPOXE=*; validity-url="https://example.com/resource.validity.msg"; integrity="digest/mi-sha256-03"; cert-url="https://example.com/cert.msg"; cert-sha256=*KX+BYLSMgDOON8Ju65RoId39Qvajxa12HO+WnD4HpS0=*; date=1517892341; expires=1517895941)";
+constexpr char kSignatureHeaderECDSAP256[] = R"(label; sig=*MEUCIQCG/Oyo2geBPXXVRy6aN44z9Zn/B/6y/2MBwJfgltYjzAIgXIL1cdNfyHb8pC9efCsSqhVDCuMAS2XwYMLpvfJ0lCo=*; validity-url="https://test.example.org/resource.validity.msg"; integrity="digest/mi-sha256-03"; cert-url="https://example.com/cert.msg"; cert-sha256=*KX+BYLSMgDOON8Ju65RoId39Qvajxa12HO+WnD4HpS0=*; date=1517892341; expires=1517895941)";
 constexpr uint8_t kCborHeadersECDSAP256[] = {
   0xa4, 0x46, 0x64, 0x69, 0x67, 0x65, 0x73, 0x74, 0x58, 0x39, 0x6d, 0x69,
   0x2d, 0x73, 0x68, 0x61, 0x32, 0x35, 0x36, 0x2d, 0x30, 0x33, 0x3d, 0x77,
@@ -34,7 +34,7 @@ constexpr uint8_t kCborHeadersECDSAP256[] = {
   0x69, 0x6e, 0x67, 0x4c, 0x6d, 0x69, 0x2d, 0x73, 0x68, 0x61, 0x32, 0x35,
   0x36, 0x2d, 0x30, 0x33
 };
-constexpr char kSignatureHeaderECDSAP384[] = R"(label; sig=*MGQCMC0aEYoyk7KXfA3xy6RUiIMAk4t3VGe3aLVHZTQ67+ti1NuFP31x6UBhtuc87xXQRgIwUPJLxGuo6K4vGtBvI69lFY9cGUn/FmgiutReZ42Ju/onGt7RL1rjTe8AhsO1Z8xc*; validity-url="https://example.com/resource.validity.msg"; integrity="digest/mi-sha256-03"; cert-url="https://example.com/cert.msg"; cert-sha256=*8X8y8nj8vDJHSSa0cxn+TCu+8zGpIJfbdzAnd5cW+jA=*; date=1517892341; expires=1517895941)";
+constexpr char kSignatureHeaderECDSAP384[] = R"(label; sig=*MGUCMEeJujTLUifd561fwNZEzDptyEkXIKzkMOzbQFwlUpU3SWjY//58aRr6w6+V1jFa9wIxAPVlX3ia5a0wRYLfAXHO0Jm9bRKPoPUk7o9H/95eroC7BUL7ow+4H1W+20MuO1wbkw==*; validity-url="https://test.example.org/resource.validity.msg"; integrity="digest/mi-sha256-03"; cert-url="https://example.com/cert.msg"; cert-sha256=*8X8y8nj8vDJHSSa0cxn+TCu+8zGpIJfbdzAnd5cW+jA=*; date=1517892341; expires=1517895941)";
 // clang-format on
 
 // |expires| (1518497142) is more than 7 days (604800 seconds) after |date|

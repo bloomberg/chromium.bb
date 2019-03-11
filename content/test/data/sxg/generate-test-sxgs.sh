@@ -155,17 +155,19 @@ gen-signedexchange \
   -certificate ./prime256v1-sha256.public.pem \
   -privateKey ./prime256v1.key \
   -date 2018-02-06T04:45:41Z \
+  -validityUrl https://test.example.org/resource.validity.msg \
   -o $tmpdir/out.htxg \
   -dumpHeadersCbor $tmpdir/out.cborheader
 
 dumpSignature kSignatureHeaderECDSAP256 $tmpdir/out.htxg
 
-echo 'constexpr uint8_t kCborHeaderECDSAP256[] = {'
+echo 'constexpr uint8_t kCborHeadersECDSAP256[] = {'
 xxd --include $tmpdir/out.cborheader | sed '1d;$d'
 
 gen-signedexchange \
   -version 1b3 \
   -uri https://test.example.org/test/ \
+  -validityUrl https://test.example.org/resource.validity.msg \
   -content test.html \
   -certificate ./secp384r1-sha256.public.pem \
   -privateKey ./secp384r1.key \
