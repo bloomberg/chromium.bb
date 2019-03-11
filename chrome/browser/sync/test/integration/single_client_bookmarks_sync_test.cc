@@ -21,6 +21,7 @@
 #include "components/sync/test/fake_server/bookmark_entity_builder.h"
 #include "components/sync/test/fake_server/entity_builder_factory.h"
 #include "components/sync/test/fake_server/fake_server_verifier.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/layout.h"
 
@@ -492,6 +493,71 @@ IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest, DownloadBookmarkFolder) {
   ASSERT_TRUE(SetupSync());
 
   ASSERT_EQ(1, CountFoldersWithTitlesMatching(kSingleProfileIndex, title));
+}
+
+// Legacy bookmark clients append a blank space to empty titles, ".", ".." tiles
+// before committing them because historically they were illegal server titles.
+// This test makes sure that this functionality is implemented for backward
+// compatibility with legacy clients.
+IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
+                       ShouldCommitBookmarksWithIllegalServerNames) {
+  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+
+  const std::vector<std::string> illegal_titles = {"", ".", ".."};
+  // Create 3 bookmarks under the bookmark bar with illegal titles.
+  for (const std::string& illegal_title : illegal_titles) {
+    ASSERT_TRUE(AddURL(kSingleProfileIndex, illegal_title,
+                       GURL("http://www.google.com")));
+  }
+
+  // Wait till all entities are committed.
+  ASSERT_TRUE(
+      UpdatedProgressMarkerChecker(GetSyncService(kSingleProfileIndex)).Wait());
+
+  // Collect the titles committed on the server.
+  std::vector<sync_pb::SyncEntity> entities =
+      fake_server_->GetSyncEntitiesByModelType(syncer::BOOKMARKS);
+  std::vector<std::string> committed_titles;
+  for (const sync_pb::SyncEntity& entity : entities) {
+    committed_titles.push_back(entity.specifics().bookmark().title());
+  }
+
+  // A space should have been appended to each illegal title before committing.
+  EXPECT_THAT(committed_titles,
+              testing::UnorderedElementsAre(" ", ". ", ".. "));
+}
+
+// This test the opposite functionality in the test above. Legacy bookmark
+// clients omit a blank space from blank space title, ". ", ".. " tiles upon
+// receiving the remote updates. An extra space has been appended during a
+// commit because historically they were considered illegal server titles. This
+// test makes sure that this functionality is implemented for backward
+// compatibility with legacy clients.
+IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
+                       ShouldCreateLocalBookmarksWithIllegalServerNames) {
+  const std::vector<std::string> illegal_titles = {"", ".", ".."};
+
+  // Create 3 bookmarks on the server under BookmarkBar with illegal server
+  // titles with a blank space appended to simulate a commit from a legacy
+  // client.
+  fake_server::EntityBuilderFactory entity_builder_factory;
+  for (const std::string& illegal_title : illegal_titles) {
+    fake_server::BookmarkEntityBuilder bookmark_builder =
+        entity_builder_factory.NewBookmarkEntityBuilder(illegal_title + " ");
+    fake_server_->InjectEntity(
+        bookmark_builder.BuildBookmark(GURL("http://www.google.com")));
+  }
+
+  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
+  DisableVerifier();
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+
+  // There should be bookmark with illegal title (without the appended space).
+  for (const std::string& illegal_title : illegal_titles) {
+    EXPECT_EQ(1, CountBookmarksWithTitlesMatching(kSingleProfileIndex,
+                                                  illegal_title));
+  }
 }
 
 // Legacy bookmark clients append a blank space to empty titles. This tests that

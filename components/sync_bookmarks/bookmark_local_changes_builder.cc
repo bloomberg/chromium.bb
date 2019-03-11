@@ -10,7 +10,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/sync/base/time.h"
-#include "components/sync/engine/engine_util.h"
 #include "components/sync/protocol/bookmark_model_metadata.pb.h"
 #include "components/sync_bookmarks/bookmark_specifics_conversions.h"
 #include "components/sync_bookmarks/synced_bookmark_tracker.h"
@@ -61,18 +60,12 @@ BookmarkLocalChangesBuilder::BuildCommitRequests(size_t max_entries) const {
       // 2. Bookmarks (maybe ancient legacy bookmarks only?) use/used |name| to
       //    encode the title.
       data.is_folder = node->is_folder();
-      // Adjust the non_unique_name for backward compatibility with legacy
-      // clients.
-      std::string new_legal_title;
-      syncer::SyncAPINameToServerName(base::UTF16ToUTF8(node->GetTitle()),
-                                      &new_legal_title);
-      base::TruncateUTF8ToByteSize(new_legal_title, 255, &new_legal_title);
-      data.non_unique_name = new_legal_title;
       data.unique_position = metadata->unique_position();
       // Assign specifics only for the non-deletion case. In case of deletion,
       // EntityData should contain empty specifics to indicate deletion.
       data.specifics = CreateSpecificsFromBookmarkNode(
           node, bookmark_model_, /*force_favicon_load=*/true);
+      data.non_unique_name = data.specifics.bookmark().title();
     }
     request.entity = data.PassToPtr();
     request.sequence_number = metadata->sequence_number();
