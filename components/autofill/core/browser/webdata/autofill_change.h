@@ -106,8 +106,8 @@ class AutofillProfileDeepChange : public AutofillProfileChange {
   void validation_effort_made() const { validation_effort_made_ = true; }
   bool has_validation_effort_made() const { return validation_effort_made_; }
 
-  void set_enforce_update() { enforce_update_ = true; }
-  bool enforce_update() const { return enforce_update_; }
+  void set_enforced() { enforced_ = true; }
+  bool enforced() const { return enforced_; }
 
  private:
   AutofillProfile profile_;
@@ -121,9 +121,9 @@ class AutofillProfileDeepChange : public AutofillProfileChange {
   // validity may or may not be updated.
   mutable bool validation_effort_made_ = false;
 
-  // Is true when the update should happen regardless of an equal profile.
-  // (equal in the sense of AutofillProfile::EqualForUpdate)
-  mutable bool enforce_update_ = false;
+  // Is true when the change should happen regardless of an existing or equal
+  // profile.
+  mutable bool enforced_ = false;
 };
 
 }  // namespace autofill
