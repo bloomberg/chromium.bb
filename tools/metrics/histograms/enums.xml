@@ -10138,6 +10138,9 @@ Called by update_net_error_codes.py.-->
 
 <enum name="CryptohomeDeprecatedApiCalled">
   <int value="0" label="InitializeCastKey"/>
+  <int value="1" label="GetBootAttribute"/>
+  <int value="2" label="SetBootAttribute"/>
+  <int value="3" label="FlushAndSignBootAttributes"/>
 </enum>
 
 <enum name="CryptohomeDiskCleanupProgress">
