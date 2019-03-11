@@ -24,6 +24,7 @@
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
+#include "chrome/browser/site_isolation_policy.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -926,15 +927,24 @@ void ChromePasswordManagerClient::PasswordFormSubmitted(
 
 void ChromePasswordManagerClient::ShowManualFallbackForSaving(
     const autofill::PasswordForm& password_form) {
+  content::RenderFrameHost* frame =
+      password_manager_driver_bindings_.GetCurrentTargetFrame();
   if (!password_manager::bad_message::CheckChildProcessSecurityPolicy(
-          password_manager_driver_bindings_.GetCurrentTargetFrame(),
-          password_form,
+          frame, password_form,
           BadMessageReason::CPMD_BAD_ORIGIN_SHOW_FALLBACK_FOR_SAVING))
     return;
   password_manager::PasswordManagerDriver* driver =
-      driver_factory_->GetDriverForFrame(
-          password_manager_driver_bindings_.GetCurrentTargetFrame());
+      driver_factory_->GetDriverForFrame(frame);
   GetPasswordManager()->ShowManualFallbackForSaving(driver, password_form);
+
+  if (SiteIsolationPolicy::IsIsolationForPasswordSitesEnabled()) {
+    // This function signals that the user is typing a password into
+    // |password_form|.  Use this as a heuristic to start site-isolating the
+    // form's site.  This is intended to be used primarily when full site
+    // isolation is not used, such as on Android.
+    content::SiteInstance::StartIsolatingSite(
+        frame->GetSiteInstance()->GetBrowserContext(), password_form.origin);
+  }
 }
 
 void ChromePasswordManagerClient::SameDocumentNavigation(

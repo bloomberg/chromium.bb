@@ -31895,6 +31895,7 @@ from previous Chrome versions.
   <int value="-1335017208" label="KeyboardLockAPI:enabled"/>
   <int value="-1334327410" label="ash-enable-touch-view-testing"/>
   <int value="-1332267458" label="RemoveNavigationHistory:enabled"/>
+  <int value="-1331831950" label="site-isolation-for-password-sites:enabled"/>
   <int value="-1327676774" label="disable-accelerated-mjpeg-decode"/>
   <int value="-1326463296" label="SSLCommittedInterstitials:disabled"/>
   <int value="-1325887476" label="NewPrintPreview:enabled"/>
@@ -32727,6 +32728,7 @@ from previous Chrome versions.
   <int value="54571864" label="EnableDisplayZoomSetting:enabled"/>
   <int value="56723110" label="enable-webfonts-intervention"/>
   <int value="56900498" label="OmniboxOneClickUnelide:enabled"/>
+  <int value="57255632" label="site-isolation-for-password-sites:disabled"/>
   <int value="57555893" label="NewContactsPicker:disabled"/>
   <int value="57639188" label="SoundContentSetting:disabled"/>
   <int value="57791920" label="MemoryCoordinator:enabled"/>

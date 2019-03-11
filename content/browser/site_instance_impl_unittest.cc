@@ -1272,4 +1272,30 @@ TEST_F(SiteInstanceTest, IsOriginLockASite) {
       GURL("http://user:pass@google.com:99/foo;bar?q=a#ref")));
 }
 
+TEST_F(SiteInstanceTest, StartIsolatingSite) {
+  IsolationContext isolation_context(context());
+  auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
+
+  // StartIsolatingSite() should convert the URL to a site before isolating it.
+  SiteInstance::StartIsolatingSite(context(),
+                                   GURL("http://bar.foo.com/foo/bar.html"));
+  EXPECT_TRUE(IsIsolatedOrigin(GURL("http://foo.com")));
+  SiteInstance::StartIsolatingSite(context(), GURL("https://a.b.c.com:8000/"));
+  EXPECT_TRUE(IsIsolatedOrigin(GURL("https://c.com")));
+  SiteInstance::StartIsolatingSite(context(),
+                                   GURL("http://bar.com/foo/bar.html"));
+  EXPECT_TRUE(IsIsolatedOrigin(GURL("http://bar.com")));
+
+  // Attempts to isolate an unsupported isolated origin should be ignored.
+  GURL data_url("data:,");
+  GURL blank_url(url::kAboutBlankURL);
+  SiteInstance::StartIsolatingSite(context(), data_url);
+  SiteInstance::StartIsolatingSite(context(), blank_url);
+  EXPECT_FALSE(IsIsolatedOrigin(data_url));
+  EXPECT_FALSE(IsIsolatedOrigin(blank_url));
+
+  // Cleanup.
+  policy->RemoveIsolatedOriginsForBrowserContext(*context());
+}
+
 }  // namespace content

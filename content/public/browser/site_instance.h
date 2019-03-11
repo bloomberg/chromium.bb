@@ -175,6 +175,20 @@ class CONTENT_EXPORT SiteInstance : public base::RefCounted<SiteInstance> {
   // ContentBrowserClient::GetEffectiveURL().
   static GURL GetSiteForURL(BrowserContext* context, const GURL& url);
 
+  // Starts requiring a dedicated process for |url|'s site.  On platforms where
+  // strict site isolation is disabled, this may be used as a runtime signal
+  // that a certain site should become process-isolated, because its security
+  // is important to the user (e.g., if the user has typed a password on that
+  // site).  The site will be determined from |url|'s scheme and eTLD+1. If
+  // |context| is non-null, the site will be isolated only within that
+  // BrowserContext; if |context| is null, the site will be isolated globally
+  // for all BrowserContexts.
+  //
+  // Note that this has no effect if site isolation is turned off, such as via
+  // the kDisableSiteIsolation cmdline flag or enterprise policy -- see also
+  // SiteIsolationPolicy::AreDynamicIsolatedOriginsEnabled().
+  static void StartIsolatingSite(BrowserContext* context, const GURL& url);
+
  protected:
   friend class base::RefCounted<SiteInstance>;
 
