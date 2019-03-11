@@ -54177,6 +54177,7 @@ Full version information for the fingerprint enum values:
   <int value="8" label="Passwords"/>
   <int value="9" label="Autofill"/>
   <int value="10" label="Payments"/>
+  <int value="11" label="Sync (Mobile only)"/>
 </enum>
 
 <enum name="UniformityTrialGroupNotActive">
