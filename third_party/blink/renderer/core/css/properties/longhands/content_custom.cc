@@ -133,9 +133,9 @@ void Content::ApplyInherit(StyleResolverState& state) const {
 
 void Content::ApplyValue(StyleResolverState& state,
                          const CSSValue& value) const {
-  if (value.IsIdentifierValue()) {
-    DCHECK(ToCSSIdentifierValue(value).GetValueID() == CSSValueNormal ||
-           ToCSSIdentifierValue(value).GetValueID() == CSSValueNone);
+  if (auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
+    DCHECK(identifier_value->GetValueID() == CSSValueNormal ||
+           identifier_value->GetValueID() == CSSValueNone);
     state.Style()->SetContent(nullptr);
     return;
   }
@@ -157,9 +157,10 @@ void Content::ApplyValue(StyleResolverState& state,
               AtomicString(counter_value->Identifier()), list_style_type,
               AtomicString(counter_value->Separator()));
       next_content = ContentData::Create(std::move(counter));
-    } else if (item->IsIdentifierValue()) {
+    } else if (auto* item_identifier_value =
+                   DynamicTo<CSSIdentifierValue>(item.Get())) {
       QuoteType quote_type;
-      switch (ToCSSIdentifierValue(*item).GetValueID()) {
+      switch (item_identifier_value->GetValueID()) {
         default:
           NOTREACHED();
           FALLTHROUGH;

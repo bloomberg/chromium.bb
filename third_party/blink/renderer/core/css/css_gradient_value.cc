@@ -91,9 +91,10 @@ bool AppendPosition(StringBuilder& result,
 }  // anonymous ns
 
 bool CSSGradientColorStop::IsCacheable() const {
-  if (!IsHint() && color_->IsIdentifierValue() &&
-      ColorIsDerivedFromElement(ToCSSIdentifierValue(*color_))) {
-    return false;
+  if (!IsHint()) {
+    auto* identifier_value = DynamicTo<CSSIdentifierValue>(color_.Get());
+    if (identifier_value && ColorIsDerivedFromElement(*identifier_value))
+      return false;
   }
 
   return !offset_ || !offset_->IsFontRelativeLength();
@@ -639,7 +640,7 @@ static float PositionFromValue(const CSSValue* value,
   // form of: [ top | bottom | right | left ] [ <percentage> | <length> ].
   if (value->IsValuePair()) {
     const CSSValuePair& pair = ToCSSValuePair(*value);
-    CSSValueID origin_id = ToCSSIdentifierValue(pair.First()).GetValueID();
+    CSSValueID origin_id = To<CSSIdentifierValue>(pair.First()).GetValueID();
     value = &pair.Second();
 
     if (origin_id == CSSValueRight || origin_id == CSSValueBottom) {
@@ -649,8 +650,8 @@ static float PositionFromValue(const CSSValue* value,
     }
   }
 
-  if (value->IsIdentifierValue()) {
-    switch (ToCSSIdentifierValue(value)->GetValueID()) {
+  if (auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
+    switch (identifier_value->GetValueID()) {
       case CSSValueTop:
         DCHECK(!is_horizontal);
         return 0;
@@ -781,7 +782,7 @@ String CSSLinearGradientValue::CustomCSSText() const {
       wrote_something = true;
     } else if ((first_x_ || first_y_) &&
                !(!first_x_ && first_y_ && first_y_->IsIdentifierValue() &&
-                 ToCSSIdentifierValue(first_y_.Get())->GetValueID() ==
+                 To<CSSIdentifierValue>(first_y_.Get())->GetValueID() ==
                      CSSValueBottom)) {
       result.Append("to ");
       if (first_x_ && first_y_) {
@@ -915,13 +916,15 @@ scoped_refptr<Gradient> CSSLinearGradientValue::CreateGradient(
           // "Magic" corners, so the 50% line touches two corners.
           float rise = size.Width();
           float run = size.Height();
-          if (first_x_ && first_x_->IsIdentifierValue() &&
-              ToCSSIdentifierValue(first_x_.Get())->GetValueID() ==
-                  CSSValueLeft)
+          auto* first_x_identifier_value =
+              DynamicTo<CSSIdentifierValue>(first_x_.Get());
+          if (first_x_identifier_value &&
+              first_x_identifier_value->GetValueID() == CSSValueLeft)
             run *= -1;
-          if (first_y_ && first_y_->IsIdentifierValue() &&
-              ToCSSIdentifierValue(first_y_.Get())->GetValueID() ==
-                  CSSValueBottom)
+          auto* first_y_identifier_value =
+              DynamicTo<CSSIdentifierValue>(first_y_.Get());
+          if (first_y_identifier_value &&
+              first_y_identifier_value->GetValueID() == CSSValueBottom)
             rise *= -1;
           // Compute angle, and flip it back to "bearing angle" degrees.
           float angle = 90 - rad2deg(atan2(rise, run));

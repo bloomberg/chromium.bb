@@ -21,9 +21,8 @@ bool IsValidPositionCoord(CSSNumericValue* v) {
 }
 
 CSSNumericValue* FromSingleValue(const CSSValue& value) {
-  if (value.IsIdentifierValue()) {
-    const auto& ident = ToCSSIdentifierValue(value);
-    switch (ident.GetValueID()) {
+  if (const auto* ident = DynamicTo<CSSIdentifierValue>(value)) {
+    switch (ident->GetValueID()) {
       case CSSValueLeft:
       case CSSValueTop:
         return CSSUnitValue::Create(0,
@@ -53,7 +52,7 @@ CSSNumericValue* FromSingleValue(const CSSValue& value) {
       CSSNumericValue::FromCSSValue(ToCSSPrimitiveValue(pair.Second()));
   DCHECK(offset);
 
-  switch (ToCSSIdentifierValue(pair.First()).GetValueID()) {
+  switch (To<CSSIdentifierValue>(pair.First()).GetValueID()) {
     case CSSValueLeft:
     case CSSValueTop:
       return offset;

@@ -157,8 +157,8 @@ FilterOperations FilterOperationResolver::CreateFilterOperations(
     const CSSValue& in_value) {
   FilterOperations operations;
 
-  if (in_value.IsIdentifierValue()) {
-    DCHECK_EQ(ToCSSIdentifierValue(in_value).GetValueID(), CSSValueNone);
+  if (auto* in_identifier_value = DynamicTo<CSSIdentifierValue>(in_value)) {
+    DCHECK_EQ(in_identifier_value->GetValueID(), CSSValueNone);
     return operations;
   }
 
@@ -245,8 +245,8 @@ FilterOperations FilterOperationResolver::CreateOffscreenFilterOperations(
     const Font& font) {
   FilterOperations operations;
 
-  if (in_value.IsIdentifierValue()) {
-    DCHECK_EQ(ToCSSIdentifierValue(in_value).GetValueID(), CSSValueNone);
+  if (auto* in_identifier_value = DynamicTo<CSSIdentifierValue>(in_value)) {
+    DCHECK_EQ(in_identifier_value->GetValueID(), CSSValueNone);
     return operations;
   }
 

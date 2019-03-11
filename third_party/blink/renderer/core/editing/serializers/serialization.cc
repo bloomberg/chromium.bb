@@ -161,9 +161,10 @@ bool PropertyMissingOrEqualToNone(CSSPropertyValueSet* style,
   const CSSValue* value = style->GetPropertyCSSValue(property_id);
   if (!value)
     return true;
-  if (!value->IsIdentifierValue())
+  auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
+  if (!identifier_value)
     return false;
-  return ToCSSIdentifierValue(value)->GetValueID() == CSSValueNone;
+  return identifier_value->GetValueID() == CSSValueNone;
 }
 
 template <typename Strategy>

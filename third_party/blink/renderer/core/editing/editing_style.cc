@@ -236,9 +236,12 @@ bool HTMLElementEquivalent::ValueIsPresentInStyle(
   //   }
   // }
 
-  return Matches(element) && value && value->IsIdentifierValue() &&
-         ToCSSIdentifierValue(value)->GetValueID() ==
-             identifier_value_->GetValueID();
+  if (!Matches(element))
+    return false;
+
+  auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
+  return identifier_value &&
+         identifier_value->GetValueID() == identifier_value_->GetValueID();
 }
 
 void HTMLElementEquivalent::AddToStyle(Element* element,
@@ -632,21 +635,22 @@ bool EditingStyle::GetTextDirection(WritingDirection& writing_direction) const {
 
   const CSSValue* unicode_bidi =
       mutable_style_->GetPropertyCSSValue(CSSPropertyUnicodeBidi);
-  if (!unicode_bidi || !unicode_bidi->IsIdentifierValue())
+  auto* unicode_bidi_identifier_value =
+      DynamicTo<CSSIdentifierValue>(unicode_bidi);
+  if (!unicode_bidi_identifier_value)
     return false;
 
-  CSSValueID unicode_bidi_value =
-      ToCSSIdentifierValue(unicode_bidi)->GetValueID();
+  CSSValueID unicode_bidi_value = unicode_bidi_identifier_value->GetValueID();
   if (EditingStyleUtilities::IsEmbedOrIsolate(unicode_bidi_value)) {
     const CSSValue* direction =
         mutable_style_->GetPropertyCSSValue(CSSPropertyDirection);
-    if (!direction || !direction->IsIdentifierValue())
+    auto* direction_identifier_value = DynamicTo<CSSIdentifierValue>(direction);
+    if (!direction_identifier_value)
       return false;
 
-    writing_direction =
-        ToCSSIdentifierValue(direction)->GetValueID() == CSSValueLtr
-            ? WritingDirection::kLeftToRight
-            : WritingDirection::kRightToLeft;
+    writing_direction = direction_identifier_value->GetValueID() == CSSValueLtr
+                            ? WritingDirection::kLeftToRight
+                            : WritingDirection::kRightToLeft;
 
     return true;
   }
@@ -875,7 +879,7 @@ EditingTriState EditingStyle::TriStateOfStyle(
         if (is_vertical_align_ &&
             GetIdentifierValue(node_style, CSSPropertyVerticalAlign) ==
                 CSSValueBaseline) {
-          const CSSIdentifierValue* vertical_align = ToCSSIdentifierValue(
+          const auto* vertical_align = To<CSSIdentifierValue>(
               mutable_style_->GetPropertyCSSValue(CSSPropertyVerticalAlign));
           if (EditingStyleUtilities::HasAncestorVerticalAlignStyle(
                   node, vertical_align->GetValueID()))
@@ -1213,13 +1217,14 @@ void EditingStyle::PrepareToApplyAt(
           BackgroundColorInEffect(position.ComputeContainerNode()))
     mutable_style_->RemoveProperty(CSSPropertyBackgroundColor);
 
-  if (unicode_bidi && unicode_bidi->IsIdentifierValue()) {
-    mutable_style_->SetProperty(
-        CSSPropertyUnicodeBidi,
-        ToCSSIdentifierValue(unicode_bidi)->GetValueID());
-    if (direction && direction->IsIdentifierValue()) {
-      mutable_style_->SetProperty(
-          CSSPropertyDirection, ToCSSIdentifierValue(direction)->GetValueID());
+  if (auto* unicode_bidi_identifier_value =
+          DynamicTo<CSSIdentifierValue>(unicode_bidi)) {
+    mutable_style_->SetProperty(CSSPropertyUnicodeBidi,
+                                unicode_bidi_identifier_value->GetValueID());
+    if (auto* direction_identifier_value =
+            DynamicTo<CSSIdentifierValue>(direction)) {
+      mutable_style_->SetProperty(CSSPropertyDirection,
+                                  direction_identifier_value->GetValueID());
     }
   }
 }
@@ -1738,12 +1743,13 @@ static void DiffTextDecorations(MutableCSSPropertyValueSet* style,
 }
 
 static bool FontWeightIsBold(const CSSValue* font_weight) {
-  if (font_weight->IsIdentifierValue()) {
+  if (auto* font_weight_identifier_value =
+          DynamicTo<CSSIdentifierValue>(font_weight)) {
     // Because b tag can only bold text, there are only two states in plain
     // html: bold and not bold. Collapse all other values to either one of these
     // two states for editing purposes.
 
-    switch (ToCSSIdentifierValue(font_weight)->GetValueID()) {
+    switch (font_weight_identifier_value->GetValueID()) {
       case CSSValueNormal:
         return false;
       case CSSValueBold:
@@ -1761,9 +1767,11 @@ static bool FontWeightIsBold(const CSSValue* font_weight) {
 static bool FontWeightNeedsResolving(const CSSValue* font_weight) {
   if (font_weight->IsPrimitiveValue())
     return false;
-  if (!font_weight->IsIdentifierValue())
+  auto* font_weight_identifier_value =
+      DynamicTo<CSSIdentifierValue>(font_weight);
+  if (!font_weight_identifier_value)
     return true;
-  const CSSValueID value = ToCSSIdentifierValue(font_weight)->GetValueID();
+  const CSSValueID value = font_weight_identifier_value->GetValueID();
   return value == CSSValueLighter || value == CSSValueBolder;
 }
 
@@ -1818,9 +1826,10 @@ CSSValueID GetIdentifierValue(CSSPropertyValueSet* style,
   if (!style)
     return CSSValueInvalid;
   const CSSValue* value = style->GetPropertyCSSValue(property_id);
-  if (!value || !value->IsIdentifierValue())
+  auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
+  if (!identifier_value)
     return CSSValueInvalid;
-  return ToCSSIdentifierValue(value)->GetValueID();
+  return identifier_value->GetValueID();
 }
 
 CSSValueID GetIdentifierValue(CSSStyleDeclaration* style,
@@ -1828,9 +1837,10 @@ CSSValueID GetIdentifierValue(CSSStyleDeclaration* style,
   if (!style)
     return CSSValueInvalid;
   const CSSValue* value = style->GetPropertyCSSValueInternal(property_id);
-  if (!value || !value->IsIdentifierValue())
+  auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
+  if (!identifier_value)
     return CSSValueInvalid;
-  return ToCSSIdentifierValue(value)->GetValueID();
+  return identifier_value->GetValueID();
 }
 
 int LegacyFontSizeFromCSSValue(Document* document,
@@ -1861,11 +1871,10 @@ int LegacyFontSizeFromCSSValue(Document* document,
     }
   }
 
-  if (value->IsIdentifierValue()) {
-    const CSSIdentifierValue& identifier_value = ToCSSIdentifierValue(*value);
-    if (CSSValueXSmall <= identifier_value.GetValueID() &&
-        identifier_value.GetValueID() <= CSSValueWebkitXxxLarge)
-      return identifier_value.GetValueID() - CSSValueXSmall + 1;
+  if (const auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
+    if (CSSValueXSmall <= identifier_value->GetValueID() &&
+        identifier_value->GetValueID() <= CSSValueWebkitXxxLarge)
+      return identifier_value->GetValueID() - CSSValueXSmall + 1;
   }
 
   return 0;

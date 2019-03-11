@@ -32,9 +32,9 @@ CSSKeywordValue* CSSKeywordValue::FromCSSValue(const CSSValue& value) {
     return MakeGarbageCollected<CSSKeywordValue>(getValueName(CSSValueInitial));
   if (value.IsUnsetValue())
     return MakeGarbageCollected<CSSKeywordValue>(getValueName(CSSValueUnset));
-  if (value.IsIdentifierValue()) {
+  if (auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
     return MakeGarbageCollected<CSSKeywordValue>(
-        getValueName(ToCSSIdentifierValue(value).GetValueID()));
+        getValueName(identifier_value->GetValueID()));
   }
   if (const auto* ident_value = DynamicTo<CSSCustomIdentValue>(value)) {
     if (ident_value->IsKnownPropertyID()) {

@@ -356,11 +356,11 @@ bool FontFace::SetFamilyValue(const CSSValue& value) {
   AtomicString family;
   if (auto* family_value = DynamicTo<CSSFontFamilyValue>(value)) {
     family = AtomicString(family_value->Value());
-  } else if (value.IsIdentifierValue()) {
+  } else if (auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
     // We need to use the raw text for all the generic family types, since
     // @font-face is a way of actually defining what font to use for those
     // types.
-    switch (ToCSSIdentifierValue(value).GetValueID()) {
+    switch (identifier_value->GetValueID()) {
       case CSSValueSerif:
         family = font_family_names::kWebkitSerif;
         break;
@@ -498,8 +498,9 @@ FontSelectionCapabilities FontFace::GetFontSelectionCapabilities() const {
   FontSelectionCapabilities capabilities(normal_capabilities);
 
   if (stretch_) {
-    if (stretch_->IsIdentifierValue()) {
-      switch (ToCSSIdentifierValue(stretch_.Get())->GetValueID()) {
+    if (auto* stretch_identifier_value =
+            DynamicTo<CSSIdentifierValue>(stretch_.Get())) {
+      switch (stretch_identifier_value->GetValueID()) {
         case CSSValueUltraCondensed:
           capabilities.width = {UltraCondensedWidthValue(),
                                 UltraCondensedWidthValue()};
@@ -564,8 +565,8 @@ FontSelectionCapabilities FontFace::GetFontSelectionCapabilities() const {
   }
 
   if (style_) {
-    if (style_->IsIdentifierValue()) {
-      switch (ToCSSIdentifierValue(style_.Get())->GetValueID()) {
+    if (auto* identifier_value = DynamicTo<CSSIdentifierValue>(style_.Get())) {
+      switch (identifier_value->GetValueID()) {
         case CSSValueNormal:
           capabilities.slope = {NormalSlopeValue(), NormalSlopeValue()};
           break;
@@ -617,8 +618,8 @@ FontSelectionCapabilities FontFace::GetFontSelectionCapabilities() const {
   }
 
   if (weight_) {
-    if (weight_->IsIdentifierValue()) {
-      switch (ToCSSIdentifierValue(weight_.Get())->GetValueID()) {
+    if (auto* identifier_value = DynamicTo<CSSIdentifierValue>(weight_.Get())) {
+      switch (identifier_value->GetValueID()) {
         // Although 'lighter' and 'bolder' are valid keywords for
         // font-weights, they are invalid inside font-face rules so they are
         // ignored. Reference:

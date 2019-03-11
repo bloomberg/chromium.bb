@@ -279,19 +279,19 @@ template <typename T>
 T StyleBuilderConverter::ConvertFlags(StyleResolverState& state,
                                       const CSSValue& value) {
   T flags = static_cast<T>(0);
-  if (value.IsIdentifierValue() &&
-      ToCSSIdentifierValue(value).GetValueID() == CSSValueNone)
+  auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
+  if (identifier_value && identifier_value->GetValueID() == CSSValueNone)
     return flags;
   for (auto& flag_value : ToCSSValueList(value))
-    flags |= ToCSSIdentifierValue(*flag_value).ConvertTo<T>();
+    flags |= To<CSSIdentifierValue>(*flag_value).ConvertTo<T>();
   return flags;
 }
 
 template <typename T>
 T StyleBuilderConverter::ConvertLineWidth(StyleResolverState& state,
                                           const CSSValue& value) {
-  if (value.IsIdentifierValue()) {
-    CSSValueID value_id = ToCSSIdentifierValue(value).GetValueID();
+  if (auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
+    CSSValueID value_id = identifier_value->GetValueID();
     if (value_id == CSSValueThin)
       return 1;
     if (value_id == CSSValueMedium)
@@ -322,14 +322,15 @@ Length StyleBuilderConverter::ConvertPositionLength(StyleResolverState& state,
   if (value.IsValuePair()) {
     const CSSValuePair& pair = ToCSSValuePair(value);
     Length length = StyleBuilderConverter::ConvertLength(state, pair.Second());
-    if (ToCSSIdentifierValue(pair.First()).GetValueID() == cssValueFor0)
+    if (To<CSSIdentifierValue>(pair.First()).GetValueID() == cssValueFor0)
       return length;
-    DCHECK_EQ(ToCSSIdentifierValue(pair.First()).GetValueID(), cssValueFor100);
+    DCHECK_EQ(To<CSSIdentifierValue>(pair.First()).GetValueID(),
+              cssValueFor100);
     return length.SubtractFromOneHundredPercent();
   }
 
-  if (value.IsIdentifierValue()) {
-    switch (ToCSSIdentifierValue(value).GetValueID()) {
+  if (auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
+    switch (identifier_value->GetValueID()) {
       case cssValueFor0:
         return Length::Percent(0);
       case cssValueFor100:
@@ -350,7 +351,7 @@ AtomicString StyleBuilderConverter::ConvertString(StyleResolverState&,
                                                   const CSSValue& value) {
   if (value.IsStringValue())
     return AtomicString(ToCSSStringValue(value).Value());
-  DCHECK_EQ(ToCSSIdentifierValue(value).GetValueID(), IdForNone);
+  DCHECK_EQ(To<CSSIdentifierValue>(value).GetValueID(), IdForNone);
   return g_null_atom;
 }
 

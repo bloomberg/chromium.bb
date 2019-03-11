@@ -75,13 +75,13 @@ CSSStyleValue* CreateStyleValueWithPropertyInternal(CSSPropertyID property_id,
       }
       return nullptr;
     }
-    case CSSPropertyCaretColor:
+    case CSSPropertyCaretColor: {
       // caret-color also supports 'auto'
-      if (value.IsIdentifierValue() &&
-          ToCSSIdentifierValue(value).GetValueID() == CSSValueAuto) {
+      auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
+      if (identifier_value && identifier_value->GetValueID() == CSSValueAuto)
         return CSSKeywordValue::Create("auto");
-      }
       FALLTHROUGH;
+    }
     case CSSPropertyBackgroundColor:
     case CSSPropertyBorderBottomColor:
     case CSSPropertyBorderLeftColor:
@@ -94,14 +94,15 @@ CSSStyleValue* CreateStyleValueWithPropertyInternal(CSSPropertyID property_id,
     case CSSPropertyOutlineColor:
     case CSSPropertyStopColor:
     case CSSPropertyTextDecorationColor:
-    case CSSPropertyWebkitTextEmphasisColor:
+    case CSSPropertyWebkitTextEmphasisColor: {
       // Only 'currentcolor' is supported.
-      if (value.IsIdentifierValue() &&
-          ToCSSIdentifierValue(value).GetValueID() == CSSValueCurrentcolor) {
+      auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
+      if (identifier_value &&
+          identifier_value->GetValueID() == CSSValueCurrentcolor)
         return CSSKeywordValue::Create("currentcolor");
-      }
       return CSSUnsupportedStyleValue::Create(CSSPropertyName(property_id),
                                               value);
+    }
     case CSSPropertyContain: {
       if (value.IsIdentifierValue())
         return CreateStyleValue(value);
@@ -195,9 +196,9 @@ CSSStyleValue* CreateStyleValueWithPropertyInternal(CSSPropertyID property_id,
         return CreateStyleValue(value);
 
       const auto& value_list = ToCSSValueList(value);
-      if (value_list.length() == 1U && value_list.Item(0).IsIdentifierValue()) {
-        const auto& ident = ToCSSIdentifierValue(value_list.Item(0));
-        if (ident.GetValueID() == CSSValueAuto)
+      if (value_list.length() == 1U) {
+        const auto* ident = DynamicTo<CSSIdentifierValue>(value_list.Item(0));
+        if (ident && ident->GetValueID() == CSSValueAuto)
           return CreateStyleValue(value_list.Item(0));
       }
       return nullptr;
