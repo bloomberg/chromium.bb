@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.send_tab_to_self;
 
 import static org.mockito.AdditionalAnswers.answerVoid;
 import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.anyLong;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.eq;
@@ -22,7 +21,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.mockito.stubbing.VoidAnswer3;
+import org.mockito.stubbing.VoidAnswer2;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
@@ -42,7 +41,6 @@ public class SendTabToSelfAndroidBridgeTest {
     SendTabToSelfAndroidBridge.Natives mNativeMock;
     private Profile mProfile;
 
-    private SendTabToSelfAndroidBridge mBridge;
     private static final String GUID = "randomguid";
     private static final String URL = "http://www.tanyastacos.com";
     private static final String TITLE = "Come try Tanya's famous tacos";
@@ -54,39 +52,33 @@ public class SendTabToSelfAndroidBridgeTest {
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         mocker.mock(SendTabToSelfAndroidBridgeJni.TEST_HOOKS, mNativeMock);
-
-        mBridge = new SendTabToSelfAndroidBridge(mProfile);
-        verify(mNativeMock).init(any(SendTabToSelfAndroidBridge.class), eq(mProfile));
     }
 
     @Test
     @SmallTest
     public void testAddEntry() {
-        mBridge.addEntry(URL, TITLE);
-        verify(mNativeMock)
-                .addEntry(any(SendTabToSelfAndroidBridge.class), anyLong(), eq(URL), eq(TITLE));
+        SendTabToSelfAndroidBridge.addEntry(mProfile, URL, TITLE);
+        verify(mNativeMock).addEntry(eq(mProfile), eq(URL), eq(TITLE));
     }
 
     @Test
     @SmallTest
     @SuppressWarnings("unchecked")
     public void testGetAllGuids() {
-        doAnswer(answerVoid(new VoidAnswer3<SendTabToSelfAndroidBridge, Long, List<String>>() {
+        doAnswer(answerVoid(new VoidAnswer2<Profile, List<String>>() {
             @Override
-            public void answer(SendTabToSelfAndroidBridge bridge, Long nativeBridgeAddress,
-                    List<String> guids) {
+            public void answer(Profile profile, List<String> guids) {
                 guids.add("one");
                 guids.add("two");
                 guids.add("three");
             }
         }))
                 .when(mNativeMock)
-                .getAllGuids(any(SendTabToSelfAndroidBridge.class), anyLong(), any(List.class));
+                .getAllGuids(eq(mProfile), any(List.class));
 
-        List<String> actual = mBridge.getAllGuids();
+        List<String> actual = SendTabToSelfAndroidBridge.getAllGuids(mProfile);
 
-        verify(mNativeMock)
-                .getAllGuids(any(SendTabToSelfAndroidBridge.class), anyLong(), any(List.class));
+        verify(mNativeMock).getAllGuids(eq(mProfile), any(List.class));
         Assert.assertEquals(3, actual.size());
         Assert.assertArrayEquals(new String[] {"one", "two", "three"}, actual.toArray());
     }
@@ -96,14 +88,12 @@ public class SendTabToSelfAndroidBridgeTest {
     public void testGetEntryByGUID() {
         SendTabToSelfEntry expected = new SendTabToSelfEntry(
                 GUID, URL, TITLE, SHARE_TIME_MS, NAVIGATION_TIME_MS, DEVICE_NAME);
-        when(mNativeMock.getEntryByGUID(
-                     any(SendTabToSelfAndroidBridge.class), anyLong(), anyString()))
-                .thenReturn(expected);
+        when(mNativeMock.getEntryByGUID(eq(mProfile), anyString())).thenReturn(expected);
         // Note that the GUID passed in this function does not match the GUID of the returned entry.
         // This is okay because the purpose of the test is to make sure that the JNI layer passes
         // the entry returned by the native code. The native code does the actual matching of
         // the GUID but since that is mocked out and not the purpose of the test, this is fine.
-        SendTabToSelfEntry actual = mBridge.getEntryByGUID("guid");
+        SendTabToSelfEntry actual = SendTabToSelfAndroidBridge.getEntryByGUID(mProfile, "guid");
         Assert.assertEquals(expected.guid, actual.guid);
         Assert.assertEquals(expected.url, actual.url);
         Assert.assertEquals(expected.title, actual.title);
@@ -115,7 +105,21 @@ public class SendTabToSelfAndroidBridgeTest {
     @Test
     @SmallTest
     public void testDeleteAllEntries() {
-        mBridge.deleteAllEntries();
-        verify(mNativeMock).deleteAllEntries(any(SendTabToSelfAndroidBridge.class), anyLong());
+        SendTabToSelfAndroidBridge.deleteAllEntries(mProfile);
+        verify(mNativeMock).deleteAllEntries(eq(mProfile));
+    }
+
+    @Test
+    @SmallTest
+    public void testDismissEntry() {
+        SendTabToSelfAndroidBridge.dismissEntry(mProfile, GUID);
+        verify(mNativeMock).dismissEntry(eq(mProfile), eq(GUID));
+    }
+
+    @Test
+    @SmallTest
+    public void testDeleteEntry() {
+        SendTabToSelfAndroidBridge.deleteEntry(mProfile, GUID);
+        verify(mNativeMock).deleteEntry(eq(mProfile), eq(GUID));
     }
 }
