@@ -761,8 +761,6 @@ class Browser : public TabStripModelObserver,
       const GURL& url,
       const base::FilePath& plugin_path,
       const base::Callback<void(bool)>& callback) override;
-  gfx::Size GetSizeForNewRenderView(
-      content::WebContents* web_contents) const override;
 
 #if BUILDFLAG(ENABLE_PRINTING)
   void PrintCrossProcessSubframe(

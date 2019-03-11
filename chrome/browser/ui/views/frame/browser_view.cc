@@ -243,38 +243,13 @@ void InsertIntoFocusOrderAfter(views::View* insert_after,
     old_prev->SetNextFocusableView(old_next);
 }
 
-// Paints the horizontal border separating the Bookmarks Bar from the Toolbar
-// or page content according to |at_top| with |color|.
-void PaintDetachedBookmarkBar(gfx::Canvas* canvas,
-                              BookmarkBarView* view) {
-  // Paint background for detached state; if animating, this is fade in/out.
-  const ui::ThemeProvider* tp = view->GetThemeProvider();
-  gfx::Rect fill_rect = view->GetLocalBounds();
-
-  // In detached mode, the bar is meant to overlap with |contents_container_|.
-  // The detached background color may be partially transparent, but the layer
-  // for |view| must be painted opaquely to avoid subpixel anti-aliasing
-  // artifacts, so we recreate the contents container base color here.
-  canvas->FillRect(fill_rect,
-                   tp->GetColor(ThemeProperties::COLOR_CONTROL_BACKGROUND));
-  canvas->FillRect(
-      fill_rect,
-      tp->GetColor(ThemeProperties::COLOR_DETACHED_BOOKMARK_BAR_BACKGROUND));
-
-  // Draw the separator below the detached bookmark bar.
-  BrowserView::Paint1pxHorizontalLine(
-      canvas,
-      tp->GetColor(ThemeProperties::COLOR_DETACHED_BOOKMARK_BAR_SEPARATOR),
-      view->GetLocalBounds(), true);
-}
-
 // Paints the background (including the theme image behind content area) for
-// the Bookmarks Bar when it is attached to the Toolbar into |bounds|.
+// the Bookmarks Bar.
 // |background_origin| is the origin to use for painting the theme image.
-void PaintBackgroundAttachedMode(gfx::Canvas* canvas,
-                                 const ui::ThemeProvider* theme_provider,
-                                 const gfx::Rect& bounds,
-                                 const gfx::Point& background_origin) {
+void PaintBackground(gfx::Canvas* canvas,
+                     const ui::ThemeProvider* theme_provider,
+                     const gfx::Rect& bounds,
+                     const gfx::Point& background_origin) {
   canvas->DrawColor(theme_provider->GetColor(ThemeProperties::COLOR_TOOLBAR));
 
   // If there's a non-default background image, tile it.
@@ -289,16 +264,16 @@ void PaintBackgroundAttachedMode(gfx::Canvas* canvas,
   }
 }
 
-void PaintAttachedBookmarkBar(gfx::Canvas* canvas,
-                              BookmarkBarView* view,
-                              BrowserView* browser_view,
-                              int toolbar_overlap) {
+void PaintBookmarkBar(gfx::Canvas* canvas,
+                      BookmarkBarView* view,
+                      BrowserView* browser_view,
+                      int toolbar_overlap) {
   // Paint background for attached state.
   gfx::Point background_image_offset =
       browser_view->OffsetPointForToolbarBackgroundImage(
           gfx::Point(view->GetMirroredX(), view->y()));
-  PaintBackgroundAttachedMode(canvas, view->GetThemeProvider(),
-                              view->GetLocalBounds(), background_image_offset);
+  PaintBackground(canvas, view->GetThemeProvider(), view->GetLocalBounds(),
+                  background_image_offset);
   if (view->height() >= toolbar_overlap) {
     BrowserView::Paint1pxHorizontalLine(
         canvas,
@@ -458,21 +433,7 @@ void BookmarkBarViewBackground::Paint(gfx::Canvas* canvas,
                                       views::View* view) const {
   int toolbar_overlap = bookmark_bar_view_->GetToolbarOverlap();
 
-  SkAlpha detached_alpha = static_cast<SkAlpha>(
-      bookmark_bar_view_->size_animation().CurrentValueBetween(0xff, 0));
-  if (detached_alpha != 0xff) {
-    PaintAttachedBookmarkBar(canvas, bookmark_bar_view_, browser_view_,
-                             toolbar_overlap);
-  }
-
-  if (!bookmark_bar_view_->IsDetached() || detached_alpha == 0)
-    return;
-
-  // While animating, set opacity to cross-fade between attached and detached
-  // backgrounds including their respective separators.
-  canvas->SaveLayerAlpha(detached_alpha);
-  PaintDetachedBookmarkBar(canvas, bookmark_bar_view_);
-  canvas->Restore();
+  PaintBookmarkBar(canvas, bookmark_bar_view_, browser_view_, toolbar_overlap);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -805,13 +766,6 @@ void BrowserView::BookmarkBarStateChanged(
     BookmarkBar::AnimateChangeType change_type) {
   if (bookmark_bar_view_.get()) {
     BookmarkBar::State new_state = browser_->bookmark_bar_state();
-
-    // We don't properly support animating the bookmark bar to and from the
-    // detached state in immersive fullscreen.
-    bool detached_changed = (new_state == BookmarkBar::DETACHED) ||
-                            bookmark_bar_view_->IsDetached();
-    if (detached_changed && immersive_mode_controller_->IsEnabled())
-      change_type = BookmarkBar::DONT_ANIMATE_STATE_CHANGE;
     bookmark_bar_view_->SetBookmarkBarState(new_state, change_type);
   }
 
@@ -1292,9 +1246,7 @@ bool BrowserView::IsBookmarkBarVisible() const {
     return false;
   if (bookmark_bar_view_->GetPreferredSize().height() == 0)
     return false;
-  // New tab page needs visible bookmarks even when top-views are hidden.
-  if (immersive_mode_controller_->ShouldHideTopViews() &&
-      !bookmark_bar_view_->IsDetached())
+  if (immersive_mode_controller_->ShouldHideTopViews())
     return false;
   return true;
 }
@@ -1929,25 +1881,7 @@ int BrowserView::GetBookmarkBarContentVerticalOffset() const {
     return 0;
   }
 
-  // If the info bar is visible and the bookmark bar is detached, the info bar
-  // will be rendered above the bookmark bar. When this is the case, the shadow
-  // of the info bar will overlap onto the bookmark bar. The icons on the
-  // bookmark bar should be moved down so the icons appeared centered on the non
-  // shaded parts of the bookmark bar.
-  if (IsInfoBarVisible() && bookmark_bar_view_->IsDetached()) {
-    // 2 is roughly the number of visible pixels of the infobar shadow over the
-    // bookmark bar, so if we shift the top of the bookmark buttons down by this
-    // value, it will appear centered.
-    return 2;
-  }
-
-  // If the bookmark bar is attached, there will appear to be extra space above
-  // the bookmark bar icons due to the space below the location bar on the
-  // toolbar. The bookmark bar icons need to be moved up to compensate.
-  if (!bookmark_bar_view_->IsDetached()) {
-    return -GetBottomInsetOfLocationBarWithinToolbar() / 2;
-  }
-  return 0;
+  return -GetBottomInsetOfLocationBarWithinToolbar() / 2;
 }
 
 int BrowserView::GetBottomInsetOfLocationBarWithinToolbar() const {
@@ -2639,13 +2573,17 @@ bool BrowserView::MaybeShowBookmarkBar(WebContents* contents) {
   bool needs_layout = false;
   views::View* new_parent = nullptr;
   if (show_bookmark_bar) {
-    if (bookmark_bar_view_->IsDetached())
-      new_parent = this;
-    else
-      new_parent = top_container_;
+    new_parent = top_container_;
   }
   if (new_parent != bookmark_bar_view_->parent()) {
-    SetBookmarkBarParent(new_parent);
+    if (new_parent == top_container_) {
+      // BookmarkBarView is attached.
+      new_parent->AddChildView(bookmark_bar_view_.get());
+    } else {
+      DCHECK(!new_parent);
+      // Bookmark bar is being detached from all views because it is hidden.
+      bookmark_bar_view_->parent()->RemoveChildView(bookmark_bar_view_.get());
+    }
     needs_layout = true;
   }
 
@@ -2655,25 +2593,6 @@ bool BrowserView::MaybeShowBookmarkBar(WebContents* contents) {
     needs_layout = true;
 
   return needs_layout;
-}
-
-void BrowserView::SetBookmarkBarParent(views::View* new_parent) {
-  if (new_parent == this) {
-    // BookmarkBarView is detached.
-    views::View* target_view = infobar_container_;
-    const int target_index = GetIndexOf(target_view);
-    DCHECK_GE(target_index, 0);
-    // Putting the bookmark bar ahead of the infobar container ensures infobar
-    // shadows can draw atop it.
-    AddChildViewAt(bookmark_bar_view_.get(), target_index);
-  } else if (new_parent == top_container_) {
-    // BookmarkBarView is attached.
-    new_parent->AddChildView(bookmark_bar_view_.get());
-  } else {
-    DCHECK(!new_parent);
-    // Bookmark bar is being detached from all views because it is hidden.
-    bookmark_bar_view_->parent()->RemoveChildView(bookmark_bar_view_.get());
-  }
 }
 
 bool BrowserView::MaybeShowInfoBar(WebContents* contents) {
@@ -2988,16 +2907,6 @@ void BrowserView::ShowAvatarBubbleFromAvatarButton(
 #else
   NOTREACHED();
 #endif
-}
-
-int BrowserView::GetRenderViewHeightInsetWithDetachedBookmarkBar() {
-  if (browser_->bookmark_bar_state() != BookmarkBar::DETACHED ||
-      !bookmark_bar_view_ || !bookmark_bar_view_->IsDetached()) {
-    return 0;
-  }
-  // Don't use bookmark_bar_view_->height() which won't be the final height if
-  // the bookmark bar is animating.
-  return GetLayoutConstant(BOOKMARK_BAR_NTP_HEIGHT);
 }
 
 void BrowserView::ExecuteExtensionCommand(

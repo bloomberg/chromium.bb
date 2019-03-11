@@ -545,7 +545,6 @@ BookmarkBarView::BookmarkBarView(Browser* browser, BrowserView* browser_view)
       size_animation_(this),
       throbbing_view_(nullptr),
       bookmark_bar_state_(BookmarkBar::SHOW),
-      animating_detached_(false),
       show_folder_method_factory_(this) {
   set_id(VIEW_ID_BOOKMARK_BAR);
   Init();
@@ -612,8 +611,6 @@ void BookmarkBarView::SetBookmarkBarState(
     BookmarkBar::State state,
     BookmarkBar::AnimateChangeType animate_type) {
   if (animate_type == BookmarkBar::ANIMATE_STATE_CHANGE && animations_enabled) {
-    animating_detached_ = (state == BookmarkBar::DETACHED ||
-                           bookmark_bar_state_ == BookmarkBar::DETACHED);
     if (state == BookmarkBar::SHOW)
       size_animation_.Show();
     else
@@ -746,40 +743,15 @@ base::string16 BookmarkBarView::CreateToolTipForURLAndTitle(
   return result;
 }
 
-bool BookmarkBarView::IsDetached() const {
-  return (bookmark_bar_state_ == BookmarkBar::DETACHED) ||
-         (animating_detached_ && size_animation_.is_animating());
-}
-
 int BookmarkBarView::GetToolbarOverlap() const {
-  constexpr int kOverlap = 1;  // Cover toolbar bottom stroke
-
-  if (!IsDetached())
-    return kOverlap;
-
-  // Do not animate the overlap when the infobar is above us (i.e. when we're
-  // detached), since drawing over the infobar looks weird.
-  if (infobar_visible_)
-    return 0;
-
-  // When detached with no infobar, animate the overlap between the attached and
-  // detached states.
-  return gfx::ToRoundedInt(kOverlap * size_animation_.GetCurrentValue());
+  return 1;
 }
 
 gfx::Size BookmarkBarView::CalculatePreferredSize() const {
   gfx::Size prefsize;
   int preferred_height = GetLayoutConstant(BOOKMARK_BAR_HEIGHT);
-  if (IsDetached()) {
-    prefsize.set_height(
-        preferred_height +
-        static_cast<int>(
-            (GetLayoutConstant(BOOKMARK_BAR_NTP_HEIGHT) - preferred_height) *
-            (1 - size_animation_.GetCurrentValue())));
-  } else {
-    prefsize.set_height(
-        static_cast<int>(preferred_height * size_animation_.GetCurrentValue()));
-  }
+  prefsize.set_height(
+      static_cast<int>(preferred_height * size_animation_.GetCurrentValue()));
   return prefsize;
 }
 
@@ -791,11 +763,6 @@ gfx::Size BookmarkBarView::GetMinimumSize() const {
   int width = kBookmarkBarHorizontalMargin;
 
   int height = GetLayoutConstant(BOOKMARK_BAR_HEIGHT);
-  if (IsDetached()) {
-    double current_state = 1 - size_animation_.GetCurrentValue();
-    height += static_cast<int>(
-        (GetLayoutConstant(BOOKMARK_BAR_NTP_HEIGHT) - height) * current_state);
-  }
 
   const int bookmark_bar_button_padding =
       GetLayoutConstant(TOOLBAR_ELEMENT_PADDING);
@@ -1324,8 +1291,7 @@ void BookmarkBarView::WriteDragDataForView(View* sender,
 int BookmarkBarView::GetDragOperationsForView(View* sender,
                                               const gfx::Point& p) {
   if (size_animation_.is_animating() ||
-      (size_animation_.GetCurrentValue() == 0 &&
-       bookmark_bar_state_ != BookmarkBar::DETACHED)) {
+      size_animation_.GetCurrentValue() == 0) {
     // Don't let the user drag while animating open or we're closed (and not
     // detached, when detached size_animation_ is always 0). This typically is
     // only hit if the user does something to inadvertently trigger DnD such as
@@ -1543,8 +1509,7 @@ views::LabelButton* BookmarkBarView::GetBookmarkButton(int index) {
 }
 
 BookmarkLaunchLocation BookmarkBarView::GetBookmarkLaunchLocation() const {
-  return IsDetached() ? BOOKMARK_LAUNCH_LOCATION_DETACHED_BAR
-                      : BOOKMARK_LAUNCH_LOCATION_ATTACHED_BAR;
+  return BOOKMARK_LAUNCH_LOCATION_ATTACHED_BAR;
 }
 
 int BookmarkBarView::GetFirstHiddenNodeIndex() {
@@ -2064,11 +2029,7 @@ int BookmarkBarView::GetIndexForButton(views::View* button) {
 
 SkColor BookmarkBarView::GetBookmarkBarTextColor() {
   const ui::ThemeProvider* theme_provider = GetThemeProvider();
-  int background_color_id =
-      bookmark_bar_state_ == BookmarkBar::DETACHED
-          ? ThemeProperties::COLOR_DETACHED_BOOKMARK_BAR_BACKGROUND
-          : ThemeProperties::COLOR_TOOLBAR;
   return color_utils::GetColorWithMinimumContrast(
       theme_provider->GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT),
-      theme_provider->GetColor(background_color_id));
+      theme_provider->GetColor(ThemeProperties::COLOR_TOOLBAR));
 }

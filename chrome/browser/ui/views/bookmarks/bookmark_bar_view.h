@@ -151,9 +151,6 @@ class BookmarkBarView : public views::AccessiblePaneView,
       const GURL& url,
       const base::string16& title);
 
-  // Returns true if Bookmarks Bar is currently detached from the Toolbar.
-  bool IsDetached() const;
-
   // Returns the current amount of overlap atop the browser toolbar.
   int GetToolbarOverlap() const;
 
@@ -443,9 +440,6 @@ class BookmarkBarView : public views::AccessiblePaneView,
   views::Button* throbbing_view_;
 
   BookmarkBar::State bookmark_bar_state_;
-
-  // Are we animating to or from the detached state?
-  bool animating_detached_;
 
   base::ObserverList<BookmarkBarViewObserver>::Unchecked observers_;
 

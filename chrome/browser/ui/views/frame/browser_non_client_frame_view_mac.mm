@@ -360,13 +360,6 @@ CGFloat BrowserNonClientFrameViewMac::FullscreenBackingBarHeight() const {
   if (browser_view->IsToolbarVisible())
     total_height += browser_view->toolbar()->bounds().height();
 
-  if (browser_view->IsBookmarkBarVisible() &&
-      browser_view->GetBookmarkBarView()->IsDetached()) {
-    // Only when the bookmark bar is shown and not in 'detached' mode, it will
-    // show up along with slide down panel.
-    total_height += browser_view->GetBookmarkBarView()->height();
-  }
-
   return total_height;
 }
 
