@@ -1865,7 +1865,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'amd64-generic',
       'arm-generic',
       'arm64-generic',
-      'atlas',
       'auron_paine',
       'auron_yuna',
       'beaglebone',
@@ -1978,6 +1977,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   # The definition of what paladins run HW tests are in the
   # _paladin_hwtest_assignments table further down this script.
   _paladin_new_boards = frozenset([
+      'atlas',
   ])
 
   # Paladin configs that exist and should stay as experimental until further
@@ -2043,6 +2043,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   ])
 
   _paladin_enable_skylab_hwtest = frozenset([
+      'atlas',
       'auron_paine',
       'auron_yuna',
       'bob',
@@ -2242,6 +2243,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
     ('coral',         None,            None,               'coral'),            # coral (APL)
     (None,            'eve',           'soraka',           'eve'),              # poppy (KBL)
     ('nocturne',      None,            None,               'nocturne'),         # Nocturne (KBL)
+    ('atlas',         'atlas',         None,               'atlas'),            # Atlas (KBL)
     ('octopus',       None,            None,               'octopus'),          # Octopus (GLK unibuild)
     (None,            None,            'kevin-arcnext',    'kevin-arcnext'),    # gru + arcnext
     (None,            None,            'caroline-arcnext', 'caroline-arcnext'), # arcnext
@@ -2932,6 +2934,7 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
   )
 
   _chrome_pfq_important_boards = frozenset([
+      'atlas',
       'betty',
       'betty-arcnext',
       'bob',
