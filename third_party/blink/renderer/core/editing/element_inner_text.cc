@@ -443,7 +443,7 @@ void ElementInnerTextCollector::Result::FlushRequiredLineBreak() {
 String Element::innerText() {
   // We need to update layout, since |ElementInnerTextCollector()| uses line
   // boxes in the layout tree.
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
+  GetDocument().UpdateStyleAndLayoutForNode(this);
   return ElementInnerTextCollector().RunOn(*this);
 }
 

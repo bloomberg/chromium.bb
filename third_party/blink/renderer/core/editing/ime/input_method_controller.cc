@@ -160,9 +160,9 @@ void InsertTextDuringCompositionWithEvents(
   if (!frame.GetDocument())
     return;
 
-  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): The use of UpdateStyleAndLayout
   // needs to be audited. see http://crbug.com/590369 for more details.
-  frame.GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  frame.GetDocument()->UpdateStyleAndLayout();
 
   const bool is_incremental_insertion = NeedsIncrementalInsertion(frame, text);
 
@@ -174,7 +174,7 @@ void InsertTextDuringCompositionWithEvents(
       // https://crbug.com/693481
       if (text.IsEmpty())
         TypingCommand::DeleteSelection(*frame.GetDocument(), 0);
-      frame.GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+      frame.GetDocument()->UpdateStyleAndLayout();
       TypingCommand::InsertText(*frame.GetDocument(), text, options,
                                 composition_type, is_incremental_insertion);
       break;
@@ -296,9 +296,9 @@ Element* RootEditableElementOfSelection(const FrameSelection& frameSelection) {
   // element as editable[1]
   // [1] http://crbug.com/712761
 
-  // TODO(editing-dev): Use of updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): Use of UpdateStyleAndLayout
   // needs to be audited. see http://crbug.com/590369 for more details.
-  frameSelection.GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  frameSelection.GetDocument().UpdateStyleAndLayout();
   const VisibleSelection& visibleSeleciton =
       frameSelection.ComputeVisibleSelectionInDOMTree();
   return RootEditableElementOf(visibleSeleciton.Start());
@@ -453,7 +453,7 @@ bool InputMethodController::FinishComposingText(
 
   // TODO(editing-dev): Use of UpdateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited. see http://crbug.com/590369 for more details.
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  GetDocument().UpdateStyleAndLayout();
   const String& composing = ComposingText();
 
   // Suppress input event (if we hit the is_too_long case) and compositionend
@@ -478,7 +478,7 @@ bool InputMethodController::FinishComposingText(
 
     // TODO(editing-dev): Use of updateStyleAndLayoutIgnorePendingStylesheets
     // needs to be audited. see http://crbug.com/590369 for more details.
-    GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+    GetDocument().UpdateStyleAndLayout();
 
     const EphemeralRange& old_selection_range =
         EphemeralRangeForOffsets(old_offsets);
@@ -654,9 +654,9 @@ bool InputMethodController::ReplaceCompositionAndMoveCaret(
   if (!ReplaceComposition(text))
     return false;
 
-  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): The use of UpdateStyleAndLayout
   // needs to be audited. see http://crbug.com/590369 for more details.
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  GetDocument().UpdateStyleAndLayout();
 
   AddImeTextSpans(ime_text_spans, root_editable_element, text_start);
 
@@ -770,9 +770,9 @@ void InputMethodController::SetComposition(
   if (!target)
     return;
 
-  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): The use of UpdateStyleAndLayout
   // needs to be audited. see http://crbug.com/590369 for more details.
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  GetDocument().UpdateStyleAndLayout();
 
   PlainTextRange selected_range = CreateSelectionRangeForSetComposition(
       selection_start, selection_end, text.length());
@@ -810,9 +810,9 @@ void InputMethodController::SetComposition(
         return;
     }
 
-    // TODO(editing-dev): Use of updateStyleAndLayoutIgnorePendingStylesheets
+    // TODO(editing-dev): Use of UpdateStyleAndLayout
     // needs to be audited. see http://crbug.com/590369 for more details.
-    GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+    GetDocument().UpdateStyleAndLayout();
 
     SetEditableSelectionOffsets(selected_range);
     return;
@@ -839,9 +839,9 @@ void InputMethodController::SetComposition(
   if (!IsAvailable())
     return;
 
-  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): The use of UpdateStyleAndLayout
   // needs to be audited. see http://crbug.com/590369 for more details.
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  GetDocument().UpdateStyleAndLayout();
 
   // The undo stack could become empty if a JavaScript event handler calls
   // execCommand('undo') to pop elements off the stack. Or, the top element of
@@ -878,9 +878,9 @@ void InputMethodController::SetComposition(
   if (base_node->GetLayoutObject())
     base_node->GetLayoutObject()->SetShouldDoFullPaintInvalidation();
 
-  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): The use of UpdateStyleAndLayout
   // needs to be audited. see http://crbug.com/590369 for more details.
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  GetDocument().UpdateStyleAndLayout();
 
   // We shouldn't close typing in the middle of setComposition.
   SetEditableSelectionOffsets(selected_range, TypingContinuation::kContinue);
@@ -1124,7 +1124,7 @@ bool InputMethodController::DeleteSelection() {
 }
 
 bool InputMethodController::MoveCaret(int new_caret_position) {
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  GetDocument().UpdateStyleAndLayout();
   PlainTextRange selected_range =
       CreateRangeForSelection(new_caret_position, new_caret_position, 0);
   if (selected_range.IsNull())
@@ -1303,9 +1303,9 @@ WebTextInputInfo InputMethodController::TextInputInfo() const {
   if (!GetFrame().GetEditor().CanEdit())
     return info;
 
-  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): The use of UpdateStyleAndLayout
   // needs to be audited.  see http://crbug.com/590369 for more details.
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  GetDocument().UpdateStyleAndLayout();
 
   DocumentLifecycle::DisallowTransitionScope disallow_transition(
       GetDocument().Lifecycle());

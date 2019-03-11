@@ -316,10 +316,6 @@
       status: "stable",
     },
     {
-      name: "CSSInBodyDoesNotBlockPaint",
-      status: "stable",
-    },
-    {
       name: "CSSIndependentTransformProperties",
       status: "experimental",
     },

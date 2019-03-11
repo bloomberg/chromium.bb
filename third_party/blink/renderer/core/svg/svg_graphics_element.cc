@@ -88,13 +88,13 @@ AffineTransform SVGGraphicsElement::ComputeCTM(
 }
 
 SVGMatrixTearOff* SVGGraphicsElement::getCTM() {
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
+  GetDocument().UpdateStyleAndLayoutForNode(this);
 
   return SVGMatrixTearOff::Create(ComputeCTM(kNearestViewportScope));
 }
 
 SVGMatrixTearOff* SVGGraphicsElement::getScreenCTM() {
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
+  GetDocument().UpdateStyleAndLayoutForNode(this);
 
   return SVGMatrixTearOff::Create(ComputeCTM(kScreenScope));
 }
@@ -167,7 +167,7 @@ FloatRect SVGGraphicsElement::GetBBox() {
 }
 
 SVGRectTearOff* SVGGraphicsElement::getBBoxFromJavascript() {
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  GetDocument().UpdateStyleAndLayout();
 
   // FIXME: Eventually we should support getBBox for detached elements.
   FloatRect boundingBox;

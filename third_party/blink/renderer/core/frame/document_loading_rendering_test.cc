@@ -256,8 +256,7 @@ TEST_F(DocumentLoadingRenderingTest,
   // script that touched offsetTop in the child frame.
   auto* child_frame =
       ToHTMLIFrameElement(GetDocument().getElementById("frame"));
-  child_frame->contentDocument()
-      ->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  child_frame->contentDocument()->UpdateStyleAndLayout();
 
   auto frame2 = Compositor().BeginFrame();
 

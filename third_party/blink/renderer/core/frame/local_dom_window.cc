@@ -759,7 +759,7 @@ bool LocalDOMWindow::find(const String& string,
 
   // Up-to-date, clean tree is required for finding text in page, since it
   // relies on TextIterator to look over the text.
-  document()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  document()->UpdateStyleAndLayout();
 
   // FIXME (13016): Support searchInFrames and showDialog
   FindOptions options =
@@ -822,14 +822,13 @@ IntSize LocalDOMWindow::GetViewportSize() const {
   // after a layout, perform one now so queries during page load will use the
   // up to date viewport.
   if (page->GetSettings().GetViewportEnabled() && GetFrame()->IsMainFrame())
-    document()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+    document()->UpdateStyleAndLayout();
 
   // FIXME: This is potentially too much work. We really only need to know the
   // dimensions of the parent frame's layoutObject.
   if (Frame* parent = GetFrame()->Tree().Parent()) {
     if (auto* parent_local_frame = DynamicTo<LocalFrame>(parent))
-      parent_local_frame->GetDocument()
-          ->UpdateStyleAndLayoutIgnorePendingStylesheets();
+      parent_local_frame->GetDocument()->UpdateStyleAndLayout();
   }
 
   return document()->View()->Size();
@@ -895,7 +894,7 @@ double LocalDOMWindow::scrollX() const {
   if (!view)
     return 0;
 
-  document()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  document()->UpdateStyleAndLayout();
 
   // TODO(bokan): This is wrong when the document.rootScroller is non-default.
   // crbug.com/505516.
@@ -912,7 +911,7 @@ double LocalDOMWindow::scrollY() const {
   if (!view)
     return 0;
 
-  document()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  document()->UpdateStyleAndLayout();
 
   // TODO(bokan): This is wrong when the document.rootScroller is non-default.
   // crbug.com/505516.
@@ -1004,7 +1003,7 @@ void LocalDOMWindow::scrollBy(const ScrollToOptions* scroll_to_options) const {
   if (!IsCurrentlyDisplayedInFrame())
     return;
 
-  document()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  document()->UpdateStyleAndLayout();
 
   LocalFrameView* view = GetFrame()->View();
   if (!view)
@@ -1067,7 +1066,7 @@ void LocalDOMWindow::scrollTo(const ScrollToOptions* scroll_to_options) const {
   // clamped, which is never the case for (0, 0).
   if (!scroll_to_options->hasLeft() || !scroll_to_options->hasTop() ||
       scroll_to_options->left() || scroll_to_options->top()) {
-    document()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+    document()->UpdateStyleAndLayout();
   }
 
   double scaled_x = 0.0;

@@ -301,9 +301,9 @@ void SpellChecker::MarkAndReplaceFor(
     return;
   }
 
-  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): The use of UpdateStyleAndLayout
   // needs to be audited.  See http://crbug.com/590369 for more details.
-  GetFrame().GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  GetFrame().GetDocument()->UpdateStyleAndLayout();
 
   DocumentLifecycle::DisallowTransitionScope disallow_transition(
       GetFrame().GetDocument()->Lifecycle());
@@ -487,9 +487,9 @@ void SpellChecker::ReplaceMisspelledRange(const String& text) {
 
   Document& current_document = *GetFrame().GetDocument();
 
-  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): The use of UpdateStyleAndLayout
   // needs to be audited.  See http://crbug.com/590369 for more details.
-  current_document.UpdateStyleAndLayoutIgnorePendingStylesheets();
+  current_document.UpdateStyleAndLayout();
 
   // Dispatch 'beforeinput'.
   Element* const target = FindEventTargetFrom(
@@ -507,9 +507,9 @@ void SpellChecker::ReplaceMisspelledRange(const String& text) {
   if (current_document != GetFrame().GetDocument())
     return;
 
-  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): The use of UpdateStyleAndLayout
   // needs to be audited.  See http://crbug.com/590369 for more details.
-  GetFrame().GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  GetFrame().GetDocument()->UpdateStyleAndLayout();
 
   if (cancel)
     return;

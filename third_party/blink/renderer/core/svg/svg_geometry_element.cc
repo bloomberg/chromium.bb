@@ -84,7 +84,7 @@ void SVGGeometryElement::Trace(blink::Visitor* visitor) {
 }
 
 bool SVGGeometryElement::isPointInFill(SVGPointTearOff* point) const {
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
+  GetDocument().UpdateStyleAndLayoutForNode(this);
 
   // FIXME: Eventually we should support isPointInFill for display:none
   // elements.
@@ -98,7 +98,7 @@ bool SVGGeometryElement::isPointInFill(SVGPointTearOff* point) const {
 }
 
 bool SVGGeometryElement::isPointInStroke(SVGPointTearOff* point) const {
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
+  GetDocument().UpdateStyleAndLayoutForNode(this);
 
   // FIXME: Eventually we should support isPointInStroke for display:none
   // elements.
@@ -135,7 +135,7 @@ Path SVGGeometryElement::ToClipPath() const {
 }
 
 float SVGGeometryElement::getTotalLength() {
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
+  GetDocument().UpdateStyleAndLayoutForNode(this);
 
   if (!GetLayoutObject())
     return 0;
@@ -143,7 +143,7 @@ float SVGGeometryElement::getTotalLength() {
 }
 
 SVGPointTearOff* SVGGeometryElement::getPointAtLength(float length) {
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
+  GetDocument().UpdateStyleAndLayoutForNode(this);
 
   FloatPoint point;
   if (GetLayoutObject()) {

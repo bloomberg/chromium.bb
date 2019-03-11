@@ -1339,8 +1339,7 @@ TEST_P(FrameThrottlingTest, RebuildCompositedLayerTreeOnLayerRemoval) {
   // This simulates a javascript query to layout results, e.g.
   // document.body.offsetTop, which will force style & layout to be computed,
   // whether the frame is throttled or not.
-  frame_element->contentDocument()
-      ->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  frame_element->contentDocument()->UpdateStyleAndLayout();
   EXPECT_EQ(DocumentLifecycle::kLayoutClean,
             frame_element->contentDocument()->Lifecycle().GetState());
   {

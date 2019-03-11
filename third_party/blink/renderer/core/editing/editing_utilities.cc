@@ -1561,9 +1561,9 @@ FloatQuad LocalToAbsoluteQuadOf(const LocalCaretRect& caret_rect) {
 }
 
 const StaticRangeVector* TargetRangesForInputEvent(const Node& node) {
-  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): The use of UpdateStyleAndLayout
   // needs to be audited. see http://crbug.com/590369 for more details.
-  node.GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  node.GetDocument().UpdateStyleAndLayout();
   if (!HasRichlyEditableStyle(node))
     return nullptr;
   const EphemeralRange& range =

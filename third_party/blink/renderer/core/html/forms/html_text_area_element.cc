@@ -332,9 +332,9 @@ void HTMLTextAreaElement::HandleBeforeTextInsertedEvent(
   // that case, and nothing in the text field will be removed.
   unsigned selection_length = 0;
   if (IsFocused()) {
-    // TODO(editing-dev): Use of updateStyleAndLayoutIgnorePendingStylesheets
+    // TODO(editing-dev): Use of UpdateStyleAndLayout
     // needs to be audited.  See http://crbug.com/590369 for more details.
-    GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+    GetDocument().UpdateStyleAndLayout();
 
     selection_length = ComputeLengthForAPIValue(
         GetDocument().GetFrame()->Selection().SelectedText());

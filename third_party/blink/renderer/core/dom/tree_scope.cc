@@ -208,7 +208,7 @@ static bool PointInFrameContentIfVisible(Document& document,
     return false;
 
   // The VisibleContentRect check below requires that scrollbars are up-to-date.
-  document.UpdateStyleAndLayoutIgnorePendingStylesheets();
+  document.UpdateStyleAndLayout();
 
   auto* scrollable_area = frame_view->LayoutViewport();
   IntRect visible_frame_rect(IntPoint(),

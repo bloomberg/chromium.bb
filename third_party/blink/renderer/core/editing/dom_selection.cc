@@ -452,9 +452,9 @@ void DOMSelection::modify(const String& alter_string,
   else
     return;
 
-  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): The use of UpdateStyleAndLayout
   // needs to be audited.  See http://crbug.com/590369 for more details.
-  GetFrame()->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  GetFrame()->GetDocument()->UpdateStyleAndLayout();
 
   Element* focused_element = GetFrame()->GetDocument()->FocusedElement();
   GetFrame()->Selection().Modify(alter, direction, granularity,
@@ -686,9 +686,9 @@ void DOMSelection::deleteFromDocument() {
     return;
   }
 
-  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): The use of UpdateStyleAndLayout
   // needs to be audited.  See http://crbug.com/590369 for more details.
-  GetFrame()->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  GetFrame()->GetDocument()->UpdateStyleAndLayout();
 
   // The following code is necessary for
   // editing/selection/deleteFromDocument-crash.html, which assumes
@@ -721,10 +721,10 @@ bool DOMSelection::containsNode(const Node* n, bool allow_partial) const {
 
   unsigned node_index = n->NodeIndex();
 
-  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): The use of UpdateStyleAndLayout
   // needs to be audited.  See http://crbug.com/590369 for more details.
   // |VisibleSelection::toNormalizedEphemeralRange| requires clean layout.
-  GetFrame()->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  GetFrame()->GetDocument()->UpdateStyleAndLayout();
 
   FrameSelection& selection = GetFrame()->Selection();
   const EphemeralRange selected_range =
@@ -782,9 +782,9 @@ String DOMSelection::toString() {
   if (!IsAvailable())
     return String();
 
-  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): The use of UpdateStyleAndLayout
   // needs to be audited.  See http://crbug.com/590369 for more details.
-  GetFrame()->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  GetFrame()->GetDocument()->UpdateStyleAndLayout();
 
   DocumentLifecycle::DisallowTransitionScope disallow_transition(
       GetFrame()->GetDocument()->Lifecycle());

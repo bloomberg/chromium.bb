@@ -282,8 +282,7 @@ class CORE_EXPORT VisualViewport final
  private:
   bool DidSetScaleOrLocation(float scale, const FloatPoint& location);
 
-
-  void UpdateStyleAndLayoutIgnorePendingStylesheets() const;
+  void UpdateStyleAndLayout() const;
 
   void EnqueueScrollEvent();
   void EnqueueResizeEvent();

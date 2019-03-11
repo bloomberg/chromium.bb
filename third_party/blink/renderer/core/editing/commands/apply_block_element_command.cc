@@ -108,7 +108,7 @@ void ApplyBlockElementCommand::DoApply(EditingState* editing_state) {
   if (editing_state->IsAborted())
     return;
 
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  GetDocument().UpdateStyleAndLayout();
 
   DCHECK_EQ(start_scope, end_scope);
   DCHECK_GE(start_index, 0);
@@ -212,7 +212,7 @@ void ApplyBlockElementCommand::FormatSelection(
         !end_of_next_paragraph.IsConnected())
       return;
 
-    GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+    GetDocument().UpdateStyleAndLayout();
     end_of_current_paragraph = CreateVisiblePosition(end_of_next_paragraph);
   }
 }
@@ -373,7 +373,7 @@ ApplyBlockElementCommand::EndOfNextParagrahSplittingTextNodesIfNeeded(
   // pointing at this same text node, endOfNextParagraph will be shifted by one
   // paragraph. Avoid this by splitting "\n"
   SplitTextNode(end_of_next_paragraph_text, 1);
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  GetDocument().UpdateStyleAndLayout();
   Text* const previous_text =
       end_of_next_paragraph_text->previousSibling() &&
               end_of_next_paragraph_text->previousSibling()->IsTextNode()

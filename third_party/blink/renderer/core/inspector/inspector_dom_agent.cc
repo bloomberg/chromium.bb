@@ -1251,7 +1251,7 @@ Response InspectorDOMAgent::focus(Maybe<int> node_id,
   if (!node->IsElementNode())
     return Response::Error("Node is not an Element");
   Element* element = ToElement(node);
-  element->GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  element->GetDocument().UpdateStyleAndLayout();
   if (!element->IsFocusable())
     return Response::Error("Element is not focusable");
   element->focus();

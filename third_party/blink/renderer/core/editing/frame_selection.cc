@@ -148,9 +148,9 @@ size_t FrameSelection::CharacterIndexForPoint(const IntPoint& point) const {
 
 VisibleSelection FrameSelection::ComputeVisibleSelectionInDOMTreeDeprecated()
     const {
-  // TODO(editing-dev): Hoist updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): Hoist UpdateStyleAndLayout
   // to caller. See http://crbug.com/590369 for more details.
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  GetDocument().UpdateStyleAndLayout();
   return ComputeVisibleSelectionInDOMTree();
 }
 
@@ -422,9 +422,9 @@ void FrameSelection::Clear() {
 }
 
 bool FrameSelection::SelectionHasFocus() const {
-  // TODO(editing-dev): Hoist UpdateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): Hoist UpdateStyleAndLayout
   // to caller. See http://crbug.com/590369 for more details.
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  GetDocument().UpdateStyleAndLayout();
   if (ComputeVisibleSelectionInFlatTree().IsNone())
     return false;
   const Node* current =
@@ -536,9 +536,9 @@ bool FrameSelection::ComputeAbsoluteBounds(IntRect& anchor,
   if (!IsAvailable() || GetSelectionInDOMTree().IsNone())
     return false;
 
-  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): The use of UpdateStyleAndLayout
   // needs to be audited.  See http://crbug.com/590369 for more details.
-  frame_->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  frame_->GetDocument()->UpdateStyleAndLayout();
   if (ComputeVisibleSelectionInDOMTree().IsNone()) {
     // plugins/mouse-capture-inside-shadow.html reaches here.
     return false;
@@ -633,9 +633,9 @@ void FrameSelection::SelectFrameElementInParentIfFullySelected() {
     return;
   }
 
-  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): The use of UpdateStyleAndLayout
   // needs to be audited.  See http://crbug.com/590369 for more details.
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  GetDocument().UpdateStyleAndLayout();
 
   if (!IsStartOfDocument(ComputeVisibleSelectionInDOMTree().VisibleStart()))
     return;
@@ -657,10 +657,9 @@ void FrameSelection::SelectFrameElementInParentIfFullySelected() {
   if (!owner_element_parent)
     return;
 
-  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
-  // needs to be audited.  See http://crbug.com/590369 for more details.
-  owner_element_parent->GetDocument()
-      .UpdateStyleAndLayoutIgnorePendingStylesheets();
+  // TODO(editing-dev): The use of UpdateStyleAndLayout
+  // needs to be audited. See http://crbug.com/590369 for more details.
+  owner_element_parent->GetDocument().UpdateStyleAndLayout();
 
   // This method's purpose is it to make it easier to select iframes (in order
   // to delete them).  Don't do anything if the iframe isn't deletable.
@@ -900,7 +899,7 @@ void FrameSelection::SetFocusedNodeIfNeeded() {
   if (Element* target =
           ComputeVisibleSelectionInDOMTreeDeprecated().RootEditableElement()) {
     // Walk up the DOM tree to search for a node to focus.
-    GetDocument().UpdateStyleAndLayoutTreeIgnorePendingStylesheets();
+    GetDocument().UpdateStyleAndLayoutTree();
     while (target) {
       // We don't want to set focus on a subframe when selecting in a parent
       // frame, so add the !isFrameElement check here. There's probably a better
@@ -988,10 +987,10 @@ void FrameSelection::RevealSelection(const ScrollAlignment& alignment,
                                      RevealExtentOption reveal_extent_option) {
   DCHECK(IsAvailable());
 
-  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): The use of UpdateStyleAndLayout
   // needs to be audited.  See http://crbug.com/590369 for more details.
   // Calculation of absolute caret bounds requires clean layout.
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  GetDocument().UpdateStyleAndLayout();
 
   const VisibleSelection& selection = ComputeVisibleSelectionInDOMTree();
   if (selection.IsNone())

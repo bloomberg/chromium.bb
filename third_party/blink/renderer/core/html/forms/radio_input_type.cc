@@ -109,7 +109,7 @@ void RadioInputType::HandleKeydownEvent(KeyboardEvent& event) {
                      : (key == "ArrowDown" || key == "ArrowRight");
 
   // Force layout for isFocusable() in findNextFocusableRadioButtonInGroup().
-  document.UpdateStyleAndLayoutIgnorePendingStylesheets();
+  document.UpdateStyleAndLayout();
 
   // We can only stay within the form's children if the form hasn't been demoted
   // to a leaf because of malformed HTML.

@@ -180,7 +180,7 @@ void ApplyStyleCommand::UpdateStartEnd(const EphemeralRange& range) {
   if (!use_ending_selection_ &&
       (range.StartPosition() != start_ || range.EndPosition() != end_))
     use_ending_selection_ = true;
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  GetDocument().UpdateStyleAndLayout();
   const bool was_base_first =
       StartingSelection().IsBaseFirst() || !SelectionIsDirectional();
   SelectionInDOMTree::Builder builder;
@@ -250,7 +250,7 @@ void ApplyStyleCommand::ApplyBlockStyle(EditingStyle* style,
   // update document layout once before removing styles
   // so that we avoid the expense of updating before each and every call
   // to check a computed style
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  GetDocument().UpdateStyleAndLayout();
 
   // get positions we want to use for applying style
   Position start = StartPosition();
@@ -312,7 +312,7 @@ void ApplyStyleCommand::ApplyBlockStyle(EditingStyle* style,
         if (new_block) {
           block = new_block;
           if (paragraph_start.IsOrphan()) {
-            GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+            GetDocument().UpdateStyleAndLayout();
             paragraph_start = CreateVisiblePosition(
                 Position::FirstPositionInNode(*new_block));
           }
@@ -330,7 +330,7 @@ void ApplyStyleCommand::ApplyBlockStyle(EditingStyle* style,
         }
       }
 
-      GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+      GetDocument().UpdateStyleAndLayout();
 
       // Make the VisiblePositions valid again after style changes.
       // TODO(editing-dev): We shouldn't store VisiblePositions and inspect
@@ -355,7 +355,7 @@ void ApplyStyleCommand::ApplyBlockStyle(EditingStyle* style,
   // Update style and layout again, since added or removed styles could have
   // affected the layout. We need clean layout in order to compute
   // plain-text ranges below.
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  GetDocument().UpdateStyleAndLayout();
 
   EphemeralRange start_ephemeral_range =
       PlainTextRange(start_index)
@@ -687,7 +687,7 @@ void ApplyStyleCommand::ApplyInlineStyle(EditingStyle* style,
   // update document layout once before removing styles
   // so that we avoid the expense of updating before each and every call
   // to check a computed style
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  GetDocument().UpdateStyleAndLayout();
 
   // adjust to the positions we want to use for applying style
   Position start = StartPosition();
@@ -819,7 +819,7 @@ void ApplyStyleCommand::ApplyInlineStyle(EditingStyle* style,
   // update document layout once before running the rest of the function
   // so that we avoid the expense of updating before each and every call
   // to check a computed style
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  GetDocument().UpdateStyleAndLayout();
 
   EditingStyle* style_to_apply = style;
   if (has_text_direction) {
@@ -857,7 +857,7 @@ void ApplyStyleCommand::ApplyInlineStyle(EditingStyle* style,
     }
   }
 
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  GetDocument().UpdateStyleAndLayout();
   FixRangeAndApplyInlineStyle(style_to_apply, start, end, editing_state);
   if (editing_state->IsAborted())
     return;
@@ -974,7 +974,7 @@ void ApplyStyleCommand::ApplyInlineStyleToNodeRange(
   if (remove_only_)
     return;
 
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  GetDocument().UpdateStyleAndLayout();
 
   HeapVector<InlineRunToApplyStyle> runs;
   Node* node = start_node;
@@ -1049,7 +1049,7 @@ void ApplyStyleCommand::ApplyInlineStyleToNodeRange(
     }
   }
 
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  GetDocument().UpdateStyleAndLayout();
 
   for (auto& run : runs) {
     if (run.position_for_style_computation.IsNotNull())
@@ -1428,9 +1428,9 @@ void ApplyStyleCommand::RemoveInlineStyle(EditingStyle* style,
   // FIXME: We should assert that start/end are not in the middle of a text
   // node.
 
-  // TODO(editing-dev): Use of updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): Use of UpdateStyleAndLayout
   // needs to be audited.  See http://crbug.com/590369 for more details.
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  GetDocument().UpdateStyleAndLayout();
 
   Position push_down_start = MostForwardCaretPosition(start);
   // If the pushDownStart is at the end of a text node, then this node is not
@@ -1446,9 +1446,9 @@ void ApplyStyleCommand::RemoveInlineStyle(EditingStyle* style,
           ToText(push_down_start_container)->length())
     push_down_start = NextVisuallyDistinctCandidate(push_down_start);
 
-  // TODO(editing-dev): Use of updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): Use of UpdateStyleAndLayout
   // needs to be audited.  See http://crbug.com/590369 for more details.
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  GetDocument().UpdateStyleAndLayout();
 
   Position push_down_end = MostBackwardCaretPosition(end);
   // If pushDownEnd is at the start of a text node, then this node is not fully
@@ -1552,7 +1552,7 @@ bool ApplyStyleCommand::ElementFullySelected(const HTMLElement& element,
                                              const Position& end) const {
   // The tree may have changed and Position::upstream() relies on an up-to-date
   // layout.
-  element.GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  element.GetDocument().UpdateStyleAndLayout();
 
   return ComparePositions(FirstPositionInOrBeforeNode(element), start) >= 0 &&
          ComparePositions(

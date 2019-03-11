@@ -309,7 +309,7 @@ TEST_F(LocalFrameViewSimTest, FragmentNavChangesFocusWhileRenderingBlocked) {
   // Force a layout.
   anchor->style()->setProperty(&GetDocument(), "display", "block", String(),
                                ASSERT_NO_EXCEPTION);
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  GetDocument().UpdateStyleAndLayout();
 
   EXPECT_EQ(GetDocument().body(), GetDocument().ActiveElement())
       << "Active element changed due to layout while rendering is blocked";
@@ -349,7 +349,7 @@ TEST_F(LocalFrameViewSimTest, ForcedLayoutWithIncompleteSVGChildFrame) {
   // Mark the top-level document for layout and then force layout. This will
   // cause the layout tree in the <object> object to be built.
   GetDocument().View()->SetNeedsLayout();
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  GetDocument().UpdateStyleAndLayout();
 
   svg_resource.Finish();
 }

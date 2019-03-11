@@ -52,7 +52,7 @@ void UndoStep::Unapply() {
   // operations, like RemoveNodeCommand, don't require a layout because the high
   // level operations that use them perform one if one is necessary (like for
   // the creation of VisiblePositions).
-  document_->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  document_->UpdateStyleAndLayout();
 
   {
     wtf_size_t size = commands_.size();
@@ -94,7 +94,7 @@ void UndoStep::Reapply() {
   // operations, like RemoveNodeCommand, don't require a layout because the high
   // level operations that use them perform one if one is necessary (like for
   // the creation of VisiblePositions).
-  document_->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  document_->UpdateStyleAndLayout();
 
   {
     for (const auto& command : commands_)

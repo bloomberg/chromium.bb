@@ -512,20 +512,16 @@ class CORE_EXPORT Document : public ContainerNode,
   // Update ComputedStyles and attach LayoutObjects if necessary, but don't
   // lay out.
   void UpdateStyleAndLayoutTree();
-  // Same as updateStyleAndLayoutTree() except ignoring pending stylesheets.
-  void UpdateStyleAndLayoutTreeIgnorePendingStylesheets();
   void UpdateStyleAndLayoutTreeForNode(const Node*);
-  void UpdateStyleAndLayout();
+
+  enum ForcedLayoutStatus { IsForcedLayout, IsNotForcedLayout };
+  void UpdateStyleAndLayout(ForcedLayoutStatus = IsForcedLayout);
   void LayoutUpdated();
   enum RunPostLayoutTasks {
     kRunPostLayoutTasksAsynchronously,
     kRunPostLayoutTasksSynchronously,
   };
-  void UpdateStyleAndLayoutIgnorePendingStylesheets();
-  // Same as UpdateStyleAndLayoutIgnorePendingStyleSheets()
-  // but allows style & layout tree calculation for invisible nodes.
-  void UpdateStyleAndLayoutIgnorePendingStylesheetsConsideringInvisibleNodes();
-  void UpdateStyleAndLayoutIgnorePendingStylesheetsForNode(const Node*);
+  void UpdateStyleAndLayoutForNode(const Node*);
   scoped_refptr<ComputedStyle> StyleForPage(int page_index);
 
   // Ensures that location-based data will be valid for a given node.
@@ -1032,20 +1028,6 @@ class CORE_EXPORT Document : public ContainerNode,
     kDidLayoutWithPendingSheets,
     kIgnoreLayoutWithPendingSheets
   };
-
-  bool DidLayoutWithPendingStylesheets() const {
-    return pending_sheet_layout_ == kDidLayoutWithPendingSheets;
-  }
-  bool IgnoreLayoutWithPendingStylesheets() const {
-    return pending_sheet_layout_ == kIgnoreLayoutWithPendingSheets;
-  }
-
-  bool HasNodesWithPlaceholderStyle() const {
-    return has_nodes_with_placeholder_style_;
-  }
-  void SetHasNodesWithPlaceholderStyle() {
-    has_nodes_with_placeholder_style_ = true;
-  }
 
   Vector<IconURL> IconURLs(int icon_types_mask);
 
@@ -1639,7 +1621,6 @@ class CORE_EXPORT Document : public ContainerNode,
 
   bool HaveScriptBlockingStylesheetsLoaded() const;
   bool HaveRenderBlockingResourcesLoaded() const;
-  void StyleResolverMayHaveChanged();
 
   void SetHoverElement(Element*);
 
@@ -1684,7 +1665,6 @@ class CORE_EXPORT Document : public ContainerNode,
 
   DocumentLifecycle lifecycle_;
 
-  bool has_nodes_with_placeholder_style_;
   bool evaluate_media_queries_on_style_recalc_;
 
   // If we do ignore the pending stylesheet count, then we need to add a boolean

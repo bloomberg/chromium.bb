@@ -280,12 +280,12 @@ void VisualViewport::Trace(blink::Visitor* visitor) {
   ScrollableArea::Trace(visitor);
 }
 
-void VisualViewport::UpdateStyleAndLayoutIgnorePendingStylesheets() const {
+void VisualViewport::UpdateStyleAndLayout() const {
   if (!MainFrame())
     return;
 
   if (Document* document = MainFrame()->GetDocument())
-    document->UpdateStyleAndLayoutIgnorePendingStylesheets();
+    document->UpdateStyleAndLayout();
 }
 
 void VisualViewport::EnqueueScrollEvent() {
@@ -401,7 +401,7 @@ double VisualViewport::OffsetLeft() const {
   if (!MainFrame())
     return 0;
 
-  UpdateStyleAndLayoutIgnorePendingStylesheets();
+  UpdateStyleAndLayout();
 
   return VisibleRect().X() / MainFrame()->PageZoomFactor();
 }
@@ -410,18 +410,18 @@ double VisualViewport::OffsetTop() const {
   if (!MainFrame())
     return 0;
 
-  UpdateStyleAndLayoutIgnorePendingStylesheets();
+  UpdateStyleAndLayout();
 
   return VisibleRect().Y() / MainFrame()->PageZoomFactor();
 }
 
 double VisualViewport::Width() const {
-  UpdateStyleAndLayoutIgnorePendingStylesheets();
+  UpdateStyleAndLayout();
   return VisibleWidthCSSPx();
 }
 
 double VisualViewport::Height() const {
-  UpdateStyleAndLayoutIgnorePendingStylesheets();
+  UpdateStyleAndLayout();
   return VisibleHeightCSSPx();
 }
 

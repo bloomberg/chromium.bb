@@ -422,9 +422,7 @@ class Internals final : public ScriptWrappable {
 
   void startTrackingRepaints(Document*, ExceptionState&);
   void stopTrackingRepaints(Document*, ExceptionState&);
-  void updateLayoutIgnorePendingStylesheetsAndRunPostLayoutTasks(
-      Node*,
-      ExceptionState&);
+  void updateLayoutAndRunPostLayoutTasks(Node*, ExceptionState&);
   void forceFullRepaint(Document*, ExceptionState&);
 
   DOMRectList* draggableRegions(Document*, ExceptionState&);
@@ -497,8 +495,6 @@ class Internals final : public ScriptWrappable {
 
   void setFocused(bool);
   void setInitialFocus(bool);
-
-  bool ignoreLayoutWithPendingStylesheets(Document*);
 
   Element* interestedElement();
 

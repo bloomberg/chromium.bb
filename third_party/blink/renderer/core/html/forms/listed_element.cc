@@ -480,7 +480,7 @@ bool ListedElement::reportValidity() {
   // Update layout now before calling IsFocusable(), which has
   // !LayoutObject()->NeedsLayout() assertion.
   HTMLElement& element = ToHTMLElement(*this);
-  element.GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  element.GetDocument().UpdateStyleAndLayout();
   if (element.IsFocusable()) {
     ShowValidationMessage();
     return false;

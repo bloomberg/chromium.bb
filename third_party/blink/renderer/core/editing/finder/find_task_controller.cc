@@ -106,9 +106,9 @@ class FindTaskController::IdleFindTask
         return;
     }
 
-    // TODO(editing-dev): Use of updateStyleAndLayoutIgnorePendingStylesheets
+    // TODO(editing-dev): Use of UpdateStyleAndLayout
     // needs to be audited.  see http://crbug.com/590369 for more details.
-    search_start.GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+    search_start.GetDocument()->UpdateStyleAndLayout();
 
     int match_count = 0;
     bool full_range_searched = false;

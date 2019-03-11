@@ -25,19 +25,6 @@
 
 namespace blink {
 
-static inline bool ShouldSuppressPaintingLayer(const PaintLayer& layer) {
-  // Avoid painting descendants of the root layer when stylesheets haven't
-  // loaded. This avoids some FOUC.  It's ok not to draw, because later on, when
-  // all the stylesheets do load, Document::styleResolverMayHaveChanged() will
-  // invalidate all painted output via a call to
-  // LayoutView::invalidatePaintForViewAndCompositedLayers().  We also avoid
-  // caching subsequences in this mode; see shouldCreateSubsequence().
-  return layer.GetLayoutObject()
-             .GetDocument()
-             .DidLayoutWithPendingStylesheets() &&
-         !layer.IsRootLayer() && !layer.GetLayoutObject().IsDocumentElement();
-}
-
 void PaintLayerPainter::Paint(GraphicsContext& context,
                               const CullRect& cull_rect,
                               const GlobalPaintFlags global_paint_flags,
@@ -114,9 +101,6 @@ PaintResult PaintLayerPainter::Paint(
       !paint_layer_.HasSelfPaintingLayerDescendant())
     return kFullyPainted;
 
-  if (ShouldSuppressPaintingLayer(paint_layer_))
-    return kFullyPainted;
-
   // If this layer is totally invisible then there is nothing to paint. In CAP
   // we simplify this optimization by painting even when effectively invisible
   // but skipping the painted content during layerization in
@@ -170,15 +154,6 @@ static bool ShouldCreateSubsequence(const PaintLayer& paint_layer,
     return false;
   if (paint_flags &
       (kPaintLayerPaintingOverlayScrollbars | kPaintLayerUncachedClipRects))
-    return false;
-
-  // When in FOUC-avoidance mode, don't cache any subsequences, to avoid having
-  // to invalidate all of them when leaving this mode. There is an early-out in
-  // BlockPainter::paintContents that may result in nothing getting painted in
-  // this mode, in addition to early-out logic in PaintLayerPainter.
-  if (paint_layer.GetLayoutObject()
-          .GetDocument()
-          .DidLayoutWithPendingStylesheets())
     return false;
 
   return true;
@@ -791,18 +766,12 @@ void PaintLayerPainter::PaintFragmentWithPhase(
   new_cull_rect.MoveBy(
       RoundedIntPoint(fragment.root_fragment_data->PaintOffset()));
 
-  // If we had pending stylesheets, we should avoid painting descendants of
-  // layout view to avoid FOUC.
-  bool suppress_painting_descendants = paint_layer_.GetLayoutObject()
-                                           .GetDocument()
-                                           .DidLayoutWithPendingStylesheets();
   PaintInfo paint_info(context, PixelSnappedIntRect(new_cull_rect), phase,
                        painting_info.GetGlobalPaintFlags(), paint_flags,
                        &painting_info.root_layer->GetLayoutObject(),
                        fragment.fragment_data
                            ? fragment.fragment_data->LogicalTopInFlowThread()
-                           : LayoutUnit(),
-                       suppress_painting_descendants);
+                           : LayoutUnit());
   paint_layer_.GetLayoutObject().Paint(paint_info);
 }
 

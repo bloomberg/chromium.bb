@@ -487,7 +487,7 @@ WebInputEventResult MouseEventManager::HandleMouseFocus(
   }
 
   // The layout needs to be up to date to determine if an element is focusable.
-  frame_->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  frame_->GetDocument()->UpdateStyleAndLayout();
 
   Element* element = element_under_mouse_;
   for (; element; element = FlatTreeTraversal::ParentElement(*element)) {
@@ -674,7 +674,7 @@ WebInputEventResult MouseEventManager::HandleMousePressEvent(
   ResetDragSource();
   CancelFakeMouseMoveEvent();
 
-  frame_->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  frame_->GetDocument()->UpdateStyleAndLayout();
 
   bool single_click = event.Event().click_count <= 1;
 
@@ -994,7 +994,7 @@ bool MouseEventManager::TryStartDrag(
   // TODO(editing-dev): The use of
   // updateStyleAndLayoutIgnorePendingStylesheets needs to be audited.  See
   // http://crbug.com/590369 for more details.
-  frame_->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  frame_->GetDocument()->UpdateStyleAndLayout();
   if (IsInPasswordField(
           frame_->Selection().ComputeVisibleSelectionInDOMTree().Start()))
     return false;

@@ -484,9 +484,9 @@ void SelectionController::UpdateSelectionForMouseDrag(
   if (!target)
     return;
 
-  // TODO(editing-dev): Use of updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): Use of UpdateStyleAndLayout
   // needs to be audited.  See http://crbug.com/590369 for more details.
-  frame_->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  frame_->GetDocument()->UpdateStyleAndLayout();
 
   const PositionWithAffinity& raw_target_position =
       Selection().SelectionHasFocus()
@@ -582,9 +582,9 @@ bool SelectionController::UpdateSelectionForMouseDownDispatchingSelectStart(
   if (!this->Selection().IsAvailable())
     return false;
 
-  // TODO(editing-dev): Use of updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): Use of UpdateStyleAndLayout
   // needs to be audited.  See http://crbug.com/590369 for more details.
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  GetDocument().UpdateStyleAndLayout();
   const SelectionInFlatTree visible_selection =
       CreateVisibleSelection(selection).AsSelection();
 
@@ -1074,9 +1074,9 @@ bool SelectionController::HandleMouseReleaseEvent(
       drag_start_pos == FlooredIntPoint(event.Event().PositionInRootFrame()) &&
       Selection().ComputeVisibleSelectionInDOMTreeDeprecated().IsRange() &&
       event.Event().button != WebPointerProperties::Button::kRight) {
-    // TODO(editing-dev): Use of updateStyleAndLayoutIgnorePendingStylesheets
+    // TODO(editing-dev): Use of UpdateStyleAndLayout
     // needs to be audited.  See http://crbug.com/590369 for more details.
-    frame_->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+    frame_->GetDocument()->UpdateStyleAndLayout();
 
     SelectionInFlatTree::Builder builder;
     Node* node = event.InnerNode();
@@ -1237,9 +1237,9 @@ void SelectionController::SendContextMenuEvent(
 
 void SelectionController::PassMousePressEventToSubframe(
     const MouseEventWithHitTestResults& mev) {
-  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): The use of UpdateStyleAndLayout
   // needs to be audited.  See http://crbug.com/590369 for more details.
-  frame_->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  frame_->GetDocument()->UpdateStyleAndLayout();
 
   // If we're clicking into a frame that is selected, the frame will appear
   // greyed out even though we're clicking on the selection.  This looks
