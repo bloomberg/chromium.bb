@@ -6929,7 +6929,7 @@ void RenderFrameImpl::ScrollFocusedEditableElementIntoRect(
   }
 }
 
-void RenderFrameImpl::DidChangeVisibleViewport() {
+void RenderFrameImpl::ResetHasScrolledFocusedEditableIntoView() {
   has_scrolled_focused_editable_node_into_rect_ = false;
 }
 

@@ -2374,6 +2374,78 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest, ScrollEventToOOPIF) {
                                   blink::WebInputEvent::kMouseWheel));
 }
 
+// Tests that touching an OOPIF editable element correctly resizes the
+// viewport and scrolls the element into view so that the element is not
+// occluded by the on screen keyboard (https://crbug.com/927483)
+IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
+                       ScrollOOPIFEditableElement) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "/frame_tree/oopif_form_scroll_main.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  ASSERT_EQ(1U, root->child_count());
+
+  // Get the first iframe, which contains the editable element
+  FrameTreeNode* child_node = root->child_at(0);
+  GURL site_url(embedded_test_server()->GetURL(
+      "baz.com", "/frame_tree/page_with_editable_elements.html"));
+  ASSERT_EQ(site_url, child_node->current_url());
+
+  // Make sure the child frame is indeed a OOPIF
+  EXPECT_TRUE(child_node->current_frame_host()->IsCrossProcessSubframe());
+
+  // Set focus on an element in the OOPIF
+  EXPECT_TRUE(ExecJs(child_node->current_frame_host(),
+                     "document.getElementById('oopif_element').focus()"));
+  MainThreadFrameObserver observer(
+      root->current_frame_host()->GetRenderWidgetHost());
+  observer.Wait();
+  // We reset the scroll to 0,0 because setting focus on element
+  // will bring it into view
+  ASSERT_TRUE(ExecJs(root->current_frame_host(),
+                     base::StringPrintf("window.scrollTo(%d, %d);", 0, 0)));
+  content::RenderFrameSubmissionObserver root_frame_observer(root);
+  gfx::Vector2dF zero_offset;
+  root_frame_observer.WaitForScrollOffset(zero_offset);
+  ASSERT_TRUE(ExecJs(child_node->current_frame_host(),
+                     base::StringPrintf("window.scrollTo(%d, %d);", 0, 0)));
+  content::RenderFrameSubmissionObserver child_frame_observer(child_node);
+  child_frame_observer.WaitForScrollOffset(zero_offset);
+
+  RenderWidgetHostViewChildFrame* child_render_widget_host_view_child_frame =
+      static_cast<RenderWidgetHostViewChildFrame*>(
+          child_node->current_frame_host()->GetRenderWidgetHost()->GetView());
+
+  RenderWidgetHostViewAura* parent_render_widget_host_aura =
+      static_cast<RenderWidgetHostViewAura*>(
+          child_render_widget_host_view_child_frame->GetRootView());
+
+  gfx::Size original_viewport_size =
+      parent_render_widget_host_aura->GetVisibleViewportSize();
+  parent_render_widget_host_aura->SetLastPointerType(
+      ui::EventPointerType::POINTER_TYPE_TOUCH);
+  parent_render_widget_host_aura->FocusedNodeTouched(true);
+  parent_render_widget_host_aura->SetInsets(gfx::Insets(0, 0, 200, 0));
+
+  // After focus on editable element, we expect element to be scrolled
+  // into view. Verify that the scroll offset on the root document
+  // matches a value that would make the OOPIF element visible.
+  gfx::Vector2dF final_root_offset(0, 904);
+  root_frame_observer.WaitForScrollOffset(final_root_offset);
+  EXPECT_EQ(EvalJs(root->current_frame_host(), "window.scrollY").ExtractInt(),
+            704);
+  EXPECT_GE(
+      EvalJs(child_node->current_frame_host(), "window.scrollY").ExtractInt(),
+      721);
+  // Viewport should be resized by keyboard height
+  EXPECT_NE(parent_render_widget_host_aura->GetVisibleViewportSize(),
+            original_viewport_size);
+}
+
 IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
                        InputEventRouterWheelCoalesceTest) {
   GURL main_url(embedded_test_server()->GetURL(
