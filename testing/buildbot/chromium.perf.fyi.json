@@ -184,8 +184,10 @@
       {
         "args": [
           "-v",
-          "--browser=android-chrome",
+          "--browser=exact",
           "--upload-results",
+          "--browser-executable=../../out/Release/bin/monochrome_64_32_bundle",
+          "--device=android",
           "--run-ref-build",
           "--test-shard-map-filename=android-pixel2-perf_map.json"
         ],
