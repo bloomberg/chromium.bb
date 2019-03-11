@@ -152,7 +152,7 @@ class PreviewsOptimizationGuide
 
   // HintsFetcher handles the request to update Hints from OnePlatform Guide
   // Service.
-  std::unique_ptr<HintsFetcher> hintsfetcher_;
+  std::unique_ptr<HintsFetcher> hints_fetcher_;
 
   // TopHostProvider that this guide can query. Not owned.
   PreviewsTopHostProvider* previews_top_host_provider_ = nullptr;
