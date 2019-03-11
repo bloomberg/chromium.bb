@@ -5,7 +5,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#      https://www.apache.org/licenses/LICENSE-2.0
+#      http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -232,14 +232,13 @@ cc_library(
 cc_test(
     name = "flat_hash_map_test",
     srcs = ["flat_hash_map_test.cc"],
-    copts = ABSL_TEST_COPTS,
+    copts = ABSL_TEST_COPTS + ["-DUNORDERED_MAP_CXX17"],
     tags = NOTEST_TAGS_NONMOBILE,
     deps = [
         ":flat_hash_map",
         ":hash_generator_testing",
         ":unordered_map_constructor_test",
         ":unordered_map_lookup_test",
-        ":unordered_map_members_test",
         ":unordered_map_modifiers_test",
         "//absl/types:any",
         "@com_google_googletest//:gtest_main",
@@ -270,7 +269,6 @@ cc_test(
         ":hash_generator_testing",
         ":unordered_set_constructor_test",
         ":unordered_set_lookup_test",
-        ":unordered_set_members_test",
         ":unordered_set_modifiers_test",
         "//absl/memory",
         "//absl/strings",
@@ -295,7 +293,7 @@ cc_library(
 cc_test(
     name = "node_hash_map_test",
     srcs = ["node_hash_map_test.cc"],
-    copts = ABSL_TEST_COPTS,
+    copts = ABSL_TEST_COPTS + ["-DUNORDERED_MAP_CXX17"],
     tags = NOTEST_TAGS_NONMOBILE,
     deps = [
         ":hash_generator_testing",
@@ -303,7 +301,6 @@ cc_test(
         ":tracked",
         ":unordered_map_constructor_test",
         ":unordered_map_lookup_test",
-        ":unordered_map_members_test",
         ":unordered_map_modifiers_test",
         "@com_google_googletest//:gtest_main",
     ],
@@ -328,10 +325,10 @@ cc_test(
     copts = ABSL_TEST_COPTS + ["-DUNORDERED_SET_CXX17"],
     tags = NOTEST_TAGS_NONMOBILE,
     deps = [
+        ":hash_generator_testing",
         ":node_hash_set",
         ":unordered_set_constructor_test",
         ":unordered_set_lookup_test",
-        ":unordered_set_members_test",
         ":unordered_set_modifiers_test",
         "@com_google_googletest//:gtest_main",
     ],
@@ -450,6 +447,15 @@ cc_library(
 )
 
 cc_library(
+    name = "hashtablez_force_sampling",
+    srcs = ["internal/hashtablez_force_sampling.cc"],
+    copts = ABSL_DEFAULT_COPTS,
+    deps = [
+        ":hashtablez_sampler",
+    ],
+)
+
+cc_library(
     name = "hashtablez_sampler",
     srcs = [
         "internal/hashtablez_sampler.cc",
@@ -478,6 +484,20 @@ cc_test(
         "//absl/synchronization",
         "//absl/synchronization:thread_pool",
         "//absl/time",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "hashtablez_force_sampling_test",
+    srcs = ["internal/hashtablez_force_sampling_test.cc"],
+    tags = [
+        "no_test_darwin_x86_64",
+        "no_test_msvc_x64",
+    ],
+    deps = [
+        ":hashtablez_force_sampling",
+        ":hashtablez_sampler",
         "@com_google_googletest//:gtest_main",
     ],
 )
@@ -662,29 +682,6 @@ cc_library(
     deps = [
         ":hash_generator_testing",
         ":hash_policy_testing",
-        "//absl/meta:type_traits",
-        "@com_google_googletest//:gtest",
-    ],
-)
-
-cc_library(
-    name = "unordered_set_members_test",
-    testonly = 1,
-    hdrs = ["internal/unordered_set_members_test.h"],
-    copts = ABSL_TEST_COPTS,
-    deps = [
-        "//absl/meta:type_traits",
-        "@com_google_googletest//:gtest",
-    ],
-)
-
-cc_library(
-    name = "unordered_map_members_test",
-    testonly = 1,
-    hdrs = ["internal/unordered_map_members_test.h"],
-    copts = ABSL_TEST_COPTS,
-    deps = [
-        "//absl/meta:type_traits",
         "@com_google_googletest//:gtest",
     ],
 )
@@ -721,7 +718,6 @@ cc_test(
     deps = [
         ":unordered_set_constructor_test",
         ":unordered_set_lookup_test",
-        ":unordered_set_members_test",
         ":unordered_set_modifiers_test",
         "@com_google_googletest//:gtest_main",
     ],
@@ -735,7 +731,6 @@ cc_test(
     deps = [
         ":unordered_map_constructor_test",
         ":unordered_map_lookup_test",
-        ":unordered_map_members_test",
         ":unordered_map_modifiers_test",
         "@com_google_googletest//:gtest_main",
     ],
