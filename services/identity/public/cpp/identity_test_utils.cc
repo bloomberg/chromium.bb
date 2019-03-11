@@ -94,10 +94,11 @@ CoreAccountInfo SetPrimaryAccount(IdentityManager* identity_manager,
 
 #if defined(OS_CHROMEOS)
   // ChromeOS has no real notion of signin, so just plumb the information
-  // through (note: supply an empty string as the refresh token so that no
-  // refresh token is set).
-  identity_manager->SetPrimaryAccountSynchronously(gaia_id, email,
-                                                   /*refresh_token=*/"");
+  // through. TODO(https://crbug.com/814787): What is the right long-term
+  // solution here? Tests shouldn't need to call legacy APIs, so either the
+  // need for this test flow should be eliminated or there should be a
+  // test-only API.
+  identity_manager->LegacySetPrimaryAccount(gaia_id, email);
 #else
   SigninManager* real_signin_manager =
       SigninManager::FromSigninManagerBase(signin_manager);

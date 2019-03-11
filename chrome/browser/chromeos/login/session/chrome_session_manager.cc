@@ -249,13 +249,10 @@ void ChromeSessionManager::Initialize(
     // In these contexts, emulate as if sync has been initialized.
     VLOG(1) << "Starting Chrome with stub login.";
 
-    // TODO(https://crbug.com/814787): Change this flow to go through a
-    // mainstream Identity Service API once that API exists. Note that this
-    // might require supplying a valid refresh token here as opposed to an
-    // empty string.
+    // TODO(https://crbug.com/814787): Determine the right long-term flow here.
     std::string login_user_id = login_account_id.GetUserEmail();
-    IdentityManagerFactory::GetForProfile(profile)
-        ->SetPrimaryAccountSynchronously(login_user_id, login_user_id, "");
+    IdentityManagerFactory::GetForProfile(profile)->LegacySetPrimaryAccount(
+        login_user_id, login_user_id);
     StartUserSession(profile, login_user_id);
     return;
   }
