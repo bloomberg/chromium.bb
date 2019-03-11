@@ -144,6 +144,23 @@ int Controller::GetProgress() const {
   return progress_;
 }
 
+void Controller::SetInfoBox(const InfoBox& info_box) {
+  if (!info_box_) {
+    info_box_ = std::make_unique<InfoBox>();
+  }
+  *info_box_ = info_box;
+  GetUiController()->OnInfoBoxChanged(info_box_.get());
+}
+
+void Controller::ClearInfoBox() {
+  info_box_.reset();
+  GetUiController()->OnInfoBoxChanged(nullptr);
+}
+
+const InfoBox* Controller::GetInfoBox() const {
+  return info_box_.get();
+}
+
 void Controller::SetProgress(int progress) {
   // Progress can only increase.
   if (progress_ >= progress)
@@ -228,6 +245,7 @@ void Controller::SelectChip(std::vector<Chip>* chips, int chip_index) {
 }
 
 void Controller::StopAndShutdown(Metrics::DropOutReason reason) {
+  ClearInfoBox();
   ClearDetails();
   SetChips(nullptr);
   SetPaymentRequestOptions(nullptr);

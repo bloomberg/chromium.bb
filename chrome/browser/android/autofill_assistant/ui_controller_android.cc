@@ -39,6 +39,8 @@
 #include "jni/AssistantDetailsModel_jni.h"
 #include "jni/AssistantDetails_jni.h"
 #include "jni/AssistantHeaderModel_jni.h"
+#include "jni/AssistantInfoBoxModel_jni.h"
+#include "jni/AssistantInfoBox_jni.h"
 #include "jni/AssistantModel_jni.h"
 #include "jni/AssistantOverlayModel_jni.h"
 #include "jni/AssistantPaymentRequestModel_jni.h"
@@ -122,6 +124,7 @@ void UiControllerAndroid::Attach(content::WebContents* web_contents,
     OnStatusMessageChanged(ui_delegate->GetStatusMessage());
     OnProgressChanged(ui_delegate->GetProgress());
     OnProgressVisibilityChanged(ui_delegate->GetProgressVisible());
+    OnInfoBoxChanged(ui_delegate_->GetInfoBox());
     OnDetailsChanged(ui_delegate->GetDetails());
     OnSuggestionsChanged(ui_delegate->GetSuggestions());
     UpdateActions();
@@ -602,6 +605,28 @@ void UiControllerAndroid::OnDetailsChanged(const Details* details) {
       changes.highlight_line1(), changes.highlight_line2(),
       proto.animate_placeholders());
   Java_AssistantDetailsModel_setDetails(env, jmodel, jdetails);
+}
+
+// InfoBox related method.
+
+base::android::ScopedJavaLocalRef<jobject>
+UiControllerAndroid::GetInfoBoxModel() {
+  return Java_AssistantModel_getInfoBoxModel(AttachCurrentThread(), GetModel());
+}
+
+void UiControllerAndroid::OnInfoBoxChanged(const InfoBox* info_box) {
+  JNIEnv* env = AttachCurrentThread();
+  auto jmodel = GetInfoBoxModel();
+  if (!info_box) {
+    Java_AssistantInfoBoxModel_clearInfoBox(env, jmodel);
+    return;
+  }
+
+  const InfoBoxProto& proto = info_box->proto().info_box();
+  auto jinfo_box = Java_AssistantInfoBox_create(
+      env, base::android::ConvertUTF8ToJavaString(env, proto.image_path()),
+      base::android::ConvertUTF8ToJavaString(env, proto.explanation()));
+  Java_AssistantInfoBoxModel_setInfoBox(env, jmodel, jinfo_box);
 }
 
 void UiControllerAndroid::Stop(JNIEnv* env,

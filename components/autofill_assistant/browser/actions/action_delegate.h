@@ -12,6 +12,7 @@
 #include "base/callback_forward.h"
 #include "components/autofill_assistant/browser/batch_element_checker.h"
 #include "components/autofill_assistant/browser/details.h"
+#include "components/autofill_assistant/browser/info_box.h"
 #include "components/autofill_assistant/browser/selector.h"
 #include "components/autofill_assistant/browser/ui_controller.h"
 #include "third_party/blink/public/mojom/payments/payment_request.mojom.h"
@@ -188,6 +189,12 @@ class ActionDelegate {
 
   // Sets or updates contextual information.
   virtual void SetDetails(const Details& details) = 0;
+
+  // Clears the info box.
+  virtual void ClearInfoBox() = 0;
+
+  // Sets or updates info box.
+  virtual void SetInfoBox(const InfoBox& infoBox) = 0;
 
   // Show the progress bar and set it at |progress|%.
   virtual void SetProgress(int progress) = 0;

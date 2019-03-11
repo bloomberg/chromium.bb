@@ -2112,6 +2112,8 @@ generate_jni("jni_headers") {
     "features/autofill_assistant/java/src/org/chromium/chrome/browser/autofill_assistant/details/AssistantDetailsModel.java",
     "features/autofill_assistant/java/src/org/chromium/chrome/browser/autofill_assistant/header/AssistantHeaderDelegate.java",
     "features/autofill_assistant/java/src/org/chromium/chrome/browser/autofill_assistant/header/AssistantHeaderModel.java",
+    "features/autofill_assistant/java/src/org/chromium/chrome/browser/autofill_assistant/infobox/AssistantInfoBox.java",
+    "features/autofill_assistant/java/src/org/chromium/chrome/browser/autofill_assistant/infobox/AssistantInfoBoxModel.java",
     "features/autofill_assistant/java/src/org/chromium/chrome/browser/autofill_assistant/overlay/AssistantOverlayDelegate.java",
     "features/autofill_assistant/java/src/org/chromium/chrome/browser/autofill_assistant/overlay/AssistantOverlayModel.java",
     "features/autofill_assistant/java/src/org/chromium/chrome/browser/autofill_assistant/payment/AssistantPaymentRequestDelegate.java",

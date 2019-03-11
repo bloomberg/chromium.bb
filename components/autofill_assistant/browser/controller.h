@@ -88,6 +88,8 @@ class Controller : public ScriptExecutorDelegate,
   std::string GetStatusMessage() const override;
   void SetDetails(const Details& details) override;
   void ClearDetails() override;
+  void SetInfoBox(const InfoBox& info_box) override;
+  void ClearInfoBox() override;
   void SetProgress(int progress) override;
   void SetProgressVisible(bool visible) override;
   void SetChips(std::unique_ptr<std::vector<Chip>> chips) override;
@@ -105,6 +107,7 @@ class Controller : public ScriptExecutorDelegate,
   void UpdateTouchableArea() override;
   void OnUserInteractionInsideTouchableArea() override;
   const Details* GetDetails() const override;
+  const InfoBox* GetInfoBox() const override;
   int GetProgress() const override;
   bool GetProgressVisible() const override;
   const std::vector<Chip>& GetSuggestions() const override;
@@ -250,6 +253,9 @@ class Controller : public ScriptExecutorDelegate,
 
   // Current details, may be null.
   std::unique_ptr<Details> details_;
+
+  // Current info box, may be null.
+  std::unique_ptr<InfoBox> info_box_;
 
   // Current progress.
   int progress_ = 0;

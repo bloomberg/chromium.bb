@@ -36,6 +36,8 @@ import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChip;
 import org.chromium.chrome.browser.autofill_assistant.details.AssistantDetails;
 import org.chromium.chrome.browser.autofill_assistant.details.AssistantDetailsModel;
 import org.chromium.chrome.browser.autofill_assistant.header.AssistantHeaderModel;
+import org.chromium.chrome.browser.autofill_assistant.infobox.AssistantInfoBox;
+import org.chromium.chrome.browser.autofill_assistant.infobox.AssistantInfoBoxModel;
 import org.chromium.chrome.browser.autofill_assistant.overlay.AssistantOverlayModel;
 import org.chromium.chrome.browser.autofill_assistant.overlay.AssistantOverlayState;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
@@ -183,6 +185,17 @@ public class AutofillAssistantUiTest {
                         -> assistantCoordinator.getModel().getHeaderModel().set(
                                 AssistantHeaderModel.PROGRESS_VISIBLE, false));
         Assert.assertFalse(bottomSheet.findViewById(R.id.progress_bar).isShown());
+
+        // Show info box content.
+        String infoBoxExplanation = "InfoBox explanation.";
+        ThreadUtils.runOnUiThreadBlocking(
+                ()
+                        -> assistantCoordinator.getModel().getInfoBoxModel().set(
+                                AssistantInfoBoxModel.INFO_BOX,
+                                new AssistantInfoBox(
+                                        /* imagePath = */ "", infoBoxExplanation)));
+        TextView infoBoxExplanationView = bottomSheet.findViewById(R.id.info_box_explanation);
+        Assert.assertEquals(infoBoxExplanationView.getText(), infoBoxExplanation);
     }
 
     private void testChips(InOrder inOrder, AssistantCarouselModel carouselModel,

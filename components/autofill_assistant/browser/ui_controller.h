@@ -12,6 +12,7 @@
 #include "base/callback_forward.h"
 #include "components/autofill_assistant/browser/chip.h"
 #include "components/autofill_assistant/browser/details.h"
+#include "components/autofill_assistant/browser/info_box.h"
 #include "components/autofill_assistant/browser/metrics.h"
 #include "components/autofill_assistant/browser/payment_request.h"
 #include "components/autofill_assistant/browser/script.h"
@@ -54,6 +55,10 @@ class UiController {
   // Called when details have changed. Details will be null if they have been
   // cleared.
   virtual void OnDetailsChanged(const Details* details);
+
+  // Called when info box has changed. |info_box| will be null if it has been
+  // cleared.
+  virtual void OnInfoBoxChanged(const InfoBox* info_box);
 
   // Called when the current progress has changed. Progress, is expressed as a
   // percentage.

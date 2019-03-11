@@ -36,6 +36,8 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
   std::string GetStatusMessage() const override;
   void SetDetails(const Details& details) override;
   void ClearDetails() override;
+  void SetInfoBox(const InfoBox& info_box) override;
+  void ClearInfoBox() override;
   void SetProgress(int progress) override;
   void SetProgressVisible(bool visible) override;
   void SetChips(std::unique_ptr<std::vector<Chip>> chips) override;
@@ -62,6 +64,8 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
 
   Details* GetDetails() { return details_.get(); }
 
+  InfoBox* GetInfoBox() { return info_box_.get(); }
+
   std::vector<Chip>* GetChips() { return chips_.get(); }
 
   PaymentRequestOptions* GetOptions() { return payment_request_options_.get(); }
@@ -76,6 +80,7 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
   AutofillAssistantState state_ = AutofillAssistantState::INACTIVE;
   std::string status_message_;
   std::unique_ptr<Details> details_;
+  std::unique_ptr<InfoBox> info_box_;
   std::unique_ptr<std::vector<Chip>> chips_;
   std::unique_ptr<PaymentRequestOptions> payment_request_options_;
 

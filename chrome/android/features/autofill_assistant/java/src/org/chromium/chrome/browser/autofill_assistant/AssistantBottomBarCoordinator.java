@@ -18,13 +18,14 @@ import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantCarouselCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.details.AssistantDetailsCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.header.AssistantHeaderCoordinator;
+import org.chromium.chrome.browser.autofill_assistant.infobox.AssistantInfoBoxCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.payment.AssistantPaymentRequestCoordinator;
 
 /**
  * Coordinator responsible for the Autofill Assistant bottom bar. This coordinator allows to enable
  * or disable the swipeable behavior of the bottom bar and ensures that the bottom bar height is
  * constant during the script execution (if possible) by adapting the spacing between its child
- * views (details, payment request and carousel).
+ * views (details, infobox, payment request and carousel).
  */
 class AssistantBottomBarCoordinator {
     // The top padding that should be applied to the bottom bar when the swiping indicator is
@@ -41,6 +42,7 @@ class AssistantBottomBarCoordinator {
 
     // Child coordinators.
     private final AssistantHeaderCoordinator mHeaderCoordinator;
+    private final AssistantInfoBoxCoordinator mInfoBoxCoordinator;
     private final AssistantDetailsCoordinator mDetailsCoordinator;
     private final AssistantPaymentRequestCoordinator mPaymentRequestCoordinator;
     private final AssistantCarouselCoordinator mSuggestionsCoordinator;
@@ -61,6 +63,7 @@ class AssistantBottomBarCoordinator {
         // Instantiate child components.
         mHeaderCoordinator =
                 new AssistantHeaderCoordinator(context, mBottomBarView, model.getHeaderModel());
+        mInfoBoxCoordinator = new AssistantInfoBoxCoordinator(context, model.getInfoBoxModel());
         mDetailsCoordinator = new AssistantDetailsCoordinator(context, model.getDetailsModel());
         mPaymentRequestCoordinator =
                 new AssistantPaymentRequestCoordinator(context, model.getPaymentRequestModel());
@@ -69,6 +72,7 @@ class AssistantBottomBarCoordinator {
         mActionsCoordinator = new AssistantCarouselCoordinator(context, model.getActionsModel());
 
         // Add child views to bottom bar container.
+        mBottomBarContainerView.addView(mInfoBoxCoordinator.getView());
         mBottomBarContainerView.addView(mDetailsCoordinator.getView());
         mBottomBarContainerView.addView(mPaymentRequestCoordinator.getView());
         mBottomBarContainerView.addView(mSuggestionsCoordinator.getView());
@@ -77,6 +81,7 @@ class AssistantBottomBarCoordinator {
         // We set the horizontal margins of the details and payment request. We don't set a padding
         // to the container as we want the carousels children to be scrolled at the limit of the
         // screen.
+        setHorizontalMargins(mInfoBoxCoordinator.getView());
         setHorizontalMargins(mDetailsCoordinator.getView());
         setHorizontalMargins(mPaymentRequestCoordinator.getView());
     }

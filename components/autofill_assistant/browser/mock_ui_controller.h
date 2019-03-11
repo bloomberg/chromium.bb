@@ -31,6 +31,7 @@ class MockUiController : public UiController {
   MOCK_METHOD1(OnPaymentRequestChanged,
                void(const PaymentRequestOptions* options));
   MOCK_METHOD1(OnDetailsChanged, void(const Details* details));
+  MOCK_METHOD1(OnInfoBoxChanged, void(const InfoBox* info_box));
   MOCK_METHOD1(OnProgressChanged, void(int progress));
   MOCK_METHOD1(OnProgressVisibilityChanged, void(bool visible));
   MOCK_METHOD1(OnTouchableAreaChanged, void(const std::vector<RectF>& areas));
