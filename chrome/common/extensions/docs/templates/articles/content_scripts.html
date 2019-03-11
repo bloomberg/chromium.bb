@@ -232,6 +232,25 @@
      for information on how to exclude URLs.
    </td>
  </tr>
+ <tr id="matches_about_blank">
+   <td>
+     <code>matches_about_blank</code>
+   </td>
+   <td>
+     boolean
+   </td>
+   <td>
+     <em>Optional.</em>
+     Defaults to <code>false</code>.
+     <br><br>
+     Whether to insert the content script on <code>about:blank</code> and
+     <code>about:srcdoc</code>. Content scripts will only be injected on pages
+     when the URL of the document that created the frame or window is matched
+     by one of the declared patterns in the <code>matches</code> field.
+     <br>
+     Content scripts cannot be inserted in sandboxed frames.
+   </td>
+ </tr>
  <tr id="css">
    <td>
      <code>css<code>
