@@ -62,7 +62,7 @@
         Google Credential Provider
       </message>
       <message name="IDS_INVALID_UI_RESPONSE" desc="">
-        Signing in to your Google Account failed. Make sure the computer has an internet connection, then try again.
+        Signing in to your work account failed. Make sure the computer has an internet connection, then try again.
       </message>
       <message name="IDS_CANT_CREATE_USER" desc="">
         A user could not be created.
@@ -74,10 +74,10 @@
         An internal error occurred.
       </message>
       <message name="IDS_EMAIL_MISMATCH" desc="">
-         Signing in with this Google Account is not allowed. Try a different account.
+         Signing in with this account is not allowed. Try a different account.
       </message>
       <message name="IDS_INVALID_EMAIL_DOMAIN" desc="">
-        Signing in with Google Accounts on this domain is not allowed. Try a different account.
+        Signing in with a work account on this domain is not allowed. Try a different account.
       </message>
       <message name="IDS_GAIA_ACCOUNT_FULLNAME" desc="">
         Google Credential Provider Helper
@@ -86,37 +86,37 @@
         Used to run Google Credential Provider sign in page.
       </message>
       <message name="IDS_AUTH_FID_DESCRIPTION" desc="">
-        Sign in using your Google Account.
+        Sign in using your work account.
       </message>
       <message name="IDS_AUTH_FID_PROVIDER_LABEL" desc="">
         Add person
       </message>
       <message name="IDS_EXISTING_AUTH_FID_PROVIDER_LABEL" desc="">
-        Sign in using your Google Account
+        Sign in using your work account.
       </message>
       <message name="IDS_USER_ACCOUNT_COMMENT" desc="">
-        Google user
+        User created from a work account
       </message>
       <message name="IDS_NO_NETWORK" desc="">
         Make sure you have a network connection and try again.
       </message>
       <message name="IDS_PASSWORD_UPDATE_NEEDED" desc="">
-        Your password has changed on Google. Please enter your current Windows password in order to sync your Windows Account with your Google Account.
+        Your account password has changed. Please enter your current Windows password in order to sync your Windows account with your work account.
       </message>
       <message name="IDS_ACCOUNT_IN_USE" desc="">
-        Another account on this computer has already registered with this Google Account. Please sign in with a different Google Account.
+        A user on this computer was already added using this account. Please sign in with a different account.
       </message>
       <message name="IDS_ACCOUNT_LOCKED" desc="">
         Your account has been locked. Please contact a system adminstrator.
       </message>
       <message name="IDS_MDM_ENROLLMENT_FAILED" desc="">
-        Unable to enroll this computer for enterprise management.  Please sign in with a different Google Account.
+        Unable to enroll this computer for enterprise management.  Please sign in with a different work account.
       </message>
       <message name="IDS_INVALID_UNLOCK_WORKSTATION_USER" desc="">
-        Only the user that locked this workstation is currently allowed sign in to the system.
+        Only the user that locked this computer is currently allowed sign in.
       </message>
       <message name="IDS_ADD_USER_DISALLOWED" desc="">
-        Failed to create new registered Google user. This system only allows one registered Google user to be created.
+        Failed to add a new user. This computer only allows one user to be created using a work account.
       </message>
     </messages>
   </release>
