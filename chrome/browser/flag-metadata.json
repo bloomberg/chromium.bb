@@ -1582,6 +1582,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "enable-revamped-context-menu",
+    "owners": [ "twellington" ],
+    "expiry_milestone": 77
+  },
+  {
     "name": "enable-safe-browsing-ap-download-verdicts",
     "owners": [ "drubery" ],
     "expiry_milestone": 76
