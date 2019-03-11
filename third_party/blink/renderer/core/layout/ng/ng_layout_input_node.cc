@@ -125,9 +125,7 @@ NGPhysicalSize NGLayoutInputNode::InitialContainingBlockSize() const {
 }
 
 const NGPaintFragment* NGLayoutInputNode::PaintFragment() const {
-  if (LayoutBlockFlow* block_flow = ToLayoutBlockFlowOrNull(GetLayoutBox()))
-    return block_flow->PaintFragment();
-  return nullptr;
+  return GetLayoutBox()->PaintFragment();
 }
 
 String NGLayoutInputNode::ToString() const {
