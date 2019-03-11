@@ -649,14 +649,25 @@ testcase.dirContextMenuMyFiles = async () => {
 };
 
 /**
- * Tests context menu for Crostini real root.
- * TODO(lucmult): Check menus for a crostini folder.
+ * Tests context menu for Crostini real root and a folder inside it.
  */
 testcase.dirContextMenuCrostini = async () => {
   const linuxMenus = [
     ['#new-folder', true],
   ];
+  const folderMenus = [
+    ['#cut', true],
+    ['#copy', true],
+    ['#paste-into-folder', false],
+    ['#rename', true],
+    ['#delete', true],
+    ['#new-folder', true],
+  ];
   const linuxQuery = '#directory-tree [entry-label="Linux files"]';
+  const folderQuery = linuxQuery + ' [entry-label="photos"]';
+
+  // Add a crostini folder.
+  await addEntries(['crostini'], [ENTRIES.photos]);
 
   // Open Files app on local Downloads.
   const appId = await setupAndWaitUntilReady(
@@ -678,18 +689,37 @@ testcase.dirContextMenuCrostini = async () => {
 
   // Check the context menu for Linux files.
   await checkContextMenu(appId, linuxQuery, linuxMenus, false /* rootMenu */);
+
+  // Expand Crostini to display its folders, it dismisses the context menu.
+  await expandTreeItem(appId, linuxQuery);
+
+  // Check the context menu for a folder in Linux files.
+  await checkContextMenu(appId, folderQuery, folderMenus, false /* rootMenu */);
 };
 
 /**
- * Tests context menu for ARC++/Play files root.
- * TODO(lucmult): Check menus for a Play folder.
+ * Tests context menu for ARC++/Play files root and a folder inside it.
  */
 testcase.dirContextMenuPlayFiles = async () => {
   const playFilesMenus = [
     ['#share-with-linux', true],
     ['#new-folder', false],
   ];
+  const folderMenus = [
+    ['#cut', true],
+    ['#copy', true],
+    ['#paste-into-folder', false],
+    ['#share-with-linux', true],
+    ['#rename', false],
+    ['#delete', true],
+    ['#new-folder', true],
+  ];
+
   const playFilesQuery = '#directory-tree [entry-label="Play files"]';
+  const folderQuery = playFilesQuery + ' [entry-label="Documents"]';
+
+  // Add an Android folder.
+  await addEntries(['android_files'], [ENTRIES.directoryDocuments]);
 
   // Open Files app on local Downloads.
   const appId = await setupAndWaitUntilReady(
@@ -698,11 +728,16 @@ testcase.dirContextMenuPlayFiles = async () => {
   // Check the context menu for Play files.
   await checkContextMenu(
       appId, playFilesQuery, playFilesMenus, false /* rootMenu */);
+
+  // Expand Play files to display its folders, it dismisses the context menu.
+  await expandTreeItem(appId, playFilesQuery);
+
+  // Check the context menu for a folder in Play files.
+  await checkContextMenu(appId, folderQuery, folderMenus, false /* rootMenu */);
 };
 
 /**
  * Tests context menu for USB root (single and multiple partitions).
- * TODO(lucmult): Check menus for a USB folder.
  */
 testcase.dirContextMenuUsbs = async () => {
   const singleUsbMenus = [
@@ -721,10 +756,21 @@ testcase.dirContextMenuUsbs = async () => {
     ['#rename', false],
     ['#new-folder', true],
   ];
+  const folderMenus = [
+    ['#cut', true],
+    ['#copy', true],
+    ['#paste-into-folder', false],
+    ['#share-with-linux', true],
+    ['#rename', true],
+    ['#delete', true],
+    ['#new-folder', true],
+  ];
 
   const singleUsbQuery = '#directory-tree [entry-label="fake-usb"]';
   const partitionsRootQuery = '#directory-tree [entry-label="Drive Label"]';
   const partition1Query = '#directory-tree [entry-label="partition-1"]';
+  const singleUsbFolderQuery = singleUsbQuery + ' [entry-label="A"]';
+  const partition1FolderQuery = partition1Query + ' [entry-label="Folder"]';
 
   // Mount removable volumes.
   await sendTestMessage({name: 'mountUsbWithPartitions'});
@@ -745,17 +791,36 @@ testcase.dirContextMenuUsbs = async () => {
   // Check the context menu for multiple partitions USB (actual partition).
   await checkContextMenu(
       appId, partition1Query, partition1Menus, false /* rootMenu */);
+
+  // Check the context menu for a folder inside a singlue USB partition.
+  await expandTreeItem(appId, singleUsbQuery);
+  await checkContextMenu(
+      appId, singleUsbFolderQuery, folderMenus, false /* rootMenu */);
+
+  // Check the context menu for a folder inside a partition1.
+  await expandTreeItem(appId, partition1Query);
+  await checkContextMenu(
+      appId, partition1FolderQuery, folderMenus, false /* rootMenu */);
+
 };
 
 /**
- * Tests context menu for FSP root.
- * TODO(lucmult): Check menus for a FSP.
+ * Tests context menu for FSP root and a folder inside it.
  */
 testcase.dirContextMenuFsp = async () => {
   const fspMenus = [
     ['#unmount', true],
   ];
+  const folderMenus = [
+    ['#cut', false],
+    ['#copy', true],
+    ['#paste-into-folder', false],
+    ['#rename', false],
+    ['#delete', false],
+    ['#new-folder', false],
+  ];
   const fspQuery = '#directory-tree [entry-label="Test (1)"]';
+  const folderQuery = fspQuery + ' [entry-label="folder"]';
 
   // Install a FSP.
   const manifest = 'manifest_source_file.json';
@@ -767,6 +832,47 @@ testcase.dirContextMenuFsp = async () => {
 
   // Check the context menu for FSP.
   await checkContextMenu(appId, fspQuery, fspMenus, true /* rootMenu */);
+
+  // Check the context menu for a folder inside a FSP.
+  await expandTreeItem(appId, fspQuery);
+  await checkContextMenu(appId, folderQuery, folderMenus, false /* rootMenu */);
+};
+
+/**
+ * Tests context menu for DocumentsProvider root and a folder inside it.
+ */
+testcase.dirContextMenuDocumentsProvider = async () => {
+  const folderMenus = [
+    ['#cut', false],
+    ['#copy', true],
+    ['#paste-into-folder', false],
+    ['#rename', false],
+    ['#delete', false],
+    ['#new-folder', false],
+  ];
+  const documentsProviderQuery =
+      '#directory-tree [entry-label="DocumentsProvider"]';
+  const folderQuery = documentsProviderQuery + ' [entry-label="photos"]';
+
+  // Add a DocumentsProvider folder.
+  await addEntries(['documents_provider'], [ENTRIES.photos]);
+
+  // Open Files app on local Downloads.
+  const appId =
+      await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.beautiful], []);
+
+  // Wait for DocumentsProvider to appear.
+  await remoteCall.waitForElement(appId, documentsProviderQuery);
+
+  // Check that both menus are still hidden, because DocumentsProvider root
+  // doesn't show any context menu.
+  await remoteCall.waitForElement(appId, '#roots-context-menu[hidden]');
+  await remoteCall.waitForElement(
+      appId, '#directory-tree-context-menu[hidden]');
+
+  // Check the context menu for a folder inside a DocumentsProvider.
+  await expandTreeItem(appId, documentsProviderQuery);
+  await checkContextMenu(appId, folderQuery, folderMenus, false /* rootMenu */);
 };
 
 })();
