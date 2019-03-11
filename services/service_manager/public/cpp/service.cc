@@ -28,6 +28,12 @@ void Service::RunAsyncUntilTermination(std::unique_ptr<Service> service,
 
 void Service::OnStart() {}
 
+void Service::OnConnect(const ConnectSourceInfo& source,
+                        const std::string& interface_name,
+                        mojo::ScopedMessagePipeHandle receiver_pipe) {
+  OnBindInterface(source, interface_name, std::move(receiver_pipe));
+}
+
 void Service::OnBindInterface(const BindSourceInfo& source,
                               const std::string& interface_name,
                               mojo::ScopedMessagePipeHandle interface_pipe) {}

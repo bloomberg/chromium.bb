@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/optional.h"
 #include "base/sequence_checker.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/service_manager/public/cpp/export.h"
 #include "services/service_manager/public/cpp/identity.h"
 #include "services/service_manager/public/mojom/connector.mojom.h"
@@ -116,6 +117,30 @@ class SERVICE_MANAGER_PUBLIC_CPP_EXPORT Connector {
   void QueryService(const std::string& service_name,
                     mojom::Connector::QueryServiceCallback callback);
 
+  // All variants of |Connect()| ask the Service Manager to route a
+  // |mojo::Receiver<T>| for any interface type T to a service instance
+  // identified by a ServiceFilter. If no running service instance matches the
+  // provided ServiceFilter, the Service Manager may start a new instance which
+  // does, before routing the Receiver to it.
+  template <typename Interface>
+  void Connect(const ServiceFilter& filter,
+               mojo::PendingReceiver<Interface> receiver) {
+    BindInterface(filter,
+                  mojo::InterfaceRequest<Interface>(std::move(receiver)));
+  }
+
+  // A variant of the above which constructs a simple ServiceFilter by service
+  // name only. This will route the Receiver to any available instance of the
+  // named service.
+  template <typename Interface>
+  void Connect(const std::string& service_name,
+               mojo::PendingReceiver<Interface> receiver) {
+    Connect(ServiceFilter::ByName(service_name), std::move(receiver));
+  }
+
+  // DEPRECATED: Prefer |Connect()| above. |BindInterface()| uses deprecated
+  // InterfaceRequest and InterfacePtr types.
+  //
   // All variants of |BindInterface()| ask the Service Manager to route an
   // interface request to a service instance matching |filter|. If no running
   // service instance matches |filter|, the Service Manager may start a new

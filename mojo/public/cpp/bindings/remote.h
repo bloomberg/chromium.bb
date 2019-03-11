@@ -10,12 +10,10 @@
 
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
-#include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/sequenced_task_runner.h"
-#include "mojo/public/cpp/bindings/call_internal.h"
 #include "mojo/public/cpp/bindings/interface_ptr_info.h"
 #include "mojo/public/cpp/bindings/lib/interface_ptr_state.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -35,13 +33,13 @@ namespace mojo {
 // response callbacks and disconnection notifications.
 //
 // The most common ways to bind a Remote are to consume to a PendingRemote
-// received via some IPC, or to call |BindNewReceiver()| and send the returned
-// PendingReceiver somewhere useful (i.e., to a remote Receiver who will consume
-// it). For example:
+// received via some IPC, or to call |BindNewPipeAndPassReceiver()| and send the
+// returned PendingReceiver somewhere useful (i.e., to a remote Receiver who
+// will consume it). For example:
 //
 //     mojo::Remote<mojom::Widget> widget;
-//     widget_factory->CreateWidget(widget.BindNewReceiver());
-//     widget.rpc(FROM_HERE)->Click();
+//     widget_factory->CreateWidget(widget.BindNewPipeAndPassReceiver());
+//     widget->Click();
 //
 // IMPORTANT: There are some things to be aware of regarding Interface method
 // calls as they relate to Remote object lifetime:
@@ -85,25 +83,8 @@ class Remote {
 
   ~Remote() = default;
 
-  // Issue a method call to the remote implementation of Interface. If the
-  // remote end is still a PendingReceiver, the call will be queued within that
-  // object. If the remote end is bound to a live Receiver, the call will
-  // eventually be dispatched in the order it was received.
-  //
-  // If the Remote is no longer connected because the receiver has been
-  // destroyed, the call will be dropped.
-  internal::CallProxyWrapper<Interface> rpc(const base::Location& from_here) {
-    internal_state_.SetNextCallLocation(from_here);
-    return internal::CallProxyWrapper<Interface>(internal_state_.instance());
-  }
-
   // Exposes access to callable Interface methods directed at this Remote's
   // receiver. Must only be called on a bound Remote.
-  //
-  // Direct use of this accessor is discouraged and callers should prefer to use
-  // |rpc()| instead when making remote calls. Using |rpc()| can provide
-  // useful call-site attribution in DCHECK-enabled builds and makes IPC call
-  // sites easier to grok.
   typename Interface::Proxy_* get() const {
     DCHECK(is_bound())
         << "Cannot issue Interface method calls on an unbound Remote";
@@ -111,13 +92,10 @@ class Remote {
   }
 
   // Shorthand form of |get()|. See above.
-  //
-  // TODO(https://crbug.com/934883): Figure out whether to disallow use of this
-  // operator in certain environments.
   typename Interface::Proxy_* operator->() const { return get(); }
 
   // Indicates whether this Remote is bound and thus can issue Interface method
-  // calls via e.g. |rpc()|.
+  // calls via the above accessors.
   //
   // NOTE: The state of being "bound" should not be confused with the state of
   // being "connected" (see |is_connected()| below). A Remote is NEVER passively
@@ -171,15 +149,15 @@ class Remote {
   // will schedule any response callbacks or disconnection notifications on the
   // default SequencedTaskRunner (i.e. base::SequencedTaskRunnerHandle::Get() at
   // the time of this call). Must only be called on an unbound Remote.
-  PendingReceiver<Interface> BindNewReceiver() WARN_UNUSED_RESULT {
-    return BindNewReceiver(nullptr);
+  PendingReceiver<Interface> BindNewPipeAndPassReceiver() WARN_UNUSED_RESULT {
+    return BindNewPipeAndPassReceiver(nullptr);
   }
 
   // Like above, but the Remote will schedule response callbacks and
   // disconnection notifications on |task_runner| instead of the default
   // SequencedTaskRunner. |task_runner| must run tasks on the same sequence that
   // owns this Remote.
-  PendingReceiver<Interface> BindNewReceiver(
+  PendingReceiver<Interface> BindNewPipeAndPassReceiver(
       scoped_refptr<base::SequencedTaskRunner> task_runner) WARN_UNUSED_RESULT {
     MessagePipe pipe;
     Bind(PendingRemote<Interface>(std::move(pipe.handle0), 0),
@@ -204,7 +182,7 @@ class Remote {
   void Bind(PendingRemote<Interface> pending_remote,
             scoped_refptr<base::SequencedTaskRunner> task_runner) {
     DCHECK(!is_bound()) << "Remote is already bound";
-    internal_state_.Bind(InterfacePtrInfo<Interface>(pending_remote.TakePipe(),
+    internal_state_.Bind(InterfacePtrInfo<Interface>(pending_remote.PassPipe(),
                                                      pending_remote.version()),
                          std::move(task_runner));
 

@@ -38,11 +38,12 @@ class PendingRemote {
   // receiver and cannot be used to bind a Remote.
   //
   // A valid PendingRemote is typically obtained by calling
-  // |Receiver::BindNewRemote()| on an existing unbound Receiver instance.
+  // |Receiver::BindNewPipeAndPassRemote()| on an existing unbound Receiver
+  // instance.
   //
   // To simultaneously create a valid PendingRemote and an entangled
   // PendingReceiver for rarer cases where both objects need to be passed
-  // elsewhere, use the |MakeReceiver()| method defined below.
+  // elsewhere, use the |InitWithNewPipeAndPassReceiver()| method defined below.
   PendingRemote() = default;
   PendingRemote(PendingRemote&&) noexcept = default;
 
@@ -73,7 +74,7 @@ class PendingRemote {
   // Takes ownership of this PendingRemote's message pipe handle. After this
   // call, the PendingRemote is no longer in a valid state and can no longer be
   // used to bind a Remote.
-  ScopedMessagePipeHandle TakePipe() WARN_UNUSED_RESULT {
+  ScopedMessagePipeHandle PassPipe() WARN_UNUSED_RESULT {
     version_ = 0;
     return std::move(pipe_);
   }
@@ -83,9 +84,11 @@ class PendingRemote {
   // always zero.
   uint32_t version() const { return version_; }
 
-  // Creates a new PendingReceiver and entangles this PendingRemote with it.
-  // May only be called on an invalid PendingRemote.
-  PendingReceiver<Interface> MakeReceiver() WARN_UNUSED_RESULT {
+  // Creates a new message pipe, retaining one end in the PendingRemote (making
+  // it valid) and returning the other end as its entangled PendingReceiver. May
+  // only be called on an invalid PendingRemote.
+  PendingReceiver<Interface> InitWithNewPipeAndPassReceiver()
+      WARN_UNUSED_RESULT {
     DCHECK(!is_valid()) << "PendingRemote already has a receiver";
     MessagePipe pipe;
     pipe_ = std::move(pipe.handle0);
