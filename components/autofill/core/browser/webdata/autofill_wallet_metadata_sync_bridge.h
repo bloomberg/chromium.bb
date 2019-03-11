@@ -88,6 +88,16 @@ class AutofillWalletMetadataSyncBridge
   // tracking changes.
   void LoadDataCacheAndMetadata();
 
+  // Deletes old metadata entities that have no corresponding data entities.
+  // This routine is here to help with really corner-case scenarios, e.g.
+  //  - having one client create a metadata entity M for new data D while other
+  //  clients are off;
+  //  - switch off this client forever and remove the entity D from Wallet;
+  //  - turn on other clients so that they receive M from sync;
+  //  - these other clients never knew about D and thus they have no reason to
+  //  delete M when they receive an update from the Walllet server.
+  void DeleteOldOrphanMetadata();
+
   // Reads local wallet metadata from the database and passes them into
   // |callback|. If |storage_keys_set| is not set, it returns all data entries.
   // Otherwise, it returns only entries with storage key in |storage_keys_set|.

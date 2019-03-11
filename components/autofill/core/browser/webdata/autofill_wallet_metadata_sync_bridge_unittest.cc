@@ -19,6 +19,7 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
+#include "components/autofill/core/browser/autofill_metadata.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/country_names.h"
 #include "components/autofill/core/browser/credit_card.h"
@@ -85,12 +86,13 @@ const char kLocalAddr1ServerId[] = "e171e3ed-858a-4dd5-9bf3-8517f14ba5fc";
 const char kLocalAddr2ServerId[] = "fa232b9a-f248-4e5a-8d76-d46f821c0c5f";
 
 const char kLocaleString[] = "en-US";
-const base::Time kJune2017 = base::Time::FromDoubleT(1497552271);
 
 base::Time UseDateFromProtoValue(int64_t use_date_proto_value) {
   return base::Time::FromDeltaSinceWindowsEpoch(
       base::TimeDelta::FromMicroseconds(use_date_proto_value));
 }
+
+const base::Time kDefaultTime = UseDateFromProtoValue(100);
 
 int64_t UseDateToProtoValue(base::Time use_date) {
   return use_date.ToDeltaSinceWindowsEpoch().InMicroseconds();
@@ -127,7 +129,7 @@ WalletMetadataSpecifics CreateWalletMetadataSpecificsForAddress(
   // clock value is overrided by TestAutofillClock in the test fixture).
   return CreateWalletMetadataSpecificsForAddressWithDetails(
       specifics_id, /*use_count=*/1,
-      /*use_date=*/UseDateToProtoValue(kJune2017));
+      /*use_date=*/UseDateToProtoValue(kDefaultTime));
 }
 
 WalletMetadataSpecifics CreateWalletMetadataSpecificsForCardWithDetails(
@@ -152,7 +154,7 @@ WalletMetadataSpecifics CreateWalletMetadataSpecificsForCard(
   // clock value is overrided by TestAutofillClock in the test fixture).
   return CreateWalletMetadataSpecificsForCardWithDetails(
       specifics_id, /*use_count=*/1,
-      /*use_date=*/UseDateToProtoValue(kJune2017));
+      /*use_date=*/UseDateToProtoValue(kDefaultTime));
 }
 
 AutofillProfile CreateServerProfileWithDetails(const std::string& server_id,
@@ -265,7 +267,7 @@ class AutofillWalletMetadataSyncBridgeTest : public testing::Test {
 
   void SetUp() override {
     // Fix a time for implicitly constructed use_dates in AutofillProfile.
-    test_clock_.SetNow(kJune2017);
+    test_clock_.SetNow(kDefaultTime);
     CountryNames::SetLocaleString(kLocaleString);
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     db_.AddTable(&table_);
@@ -378,6 +380,10 @@ class AutofillWalletMetadataSyncBridgeTest : public testing::Test {
                           }));
     loop.Run();
     return data;
+  }
+
+  void AdvanceTestClockByTwoYears() {
+    test_clock_.Advance(base::TimeDelta::FromDays(365 * 2));
   }
 
   AutofillWalletMetadataSyncBridge* bridge() { return bridge_.get(); }
@@ -738,6 +744,84 @@ TEST_F(AutofillWalletMetadataSyncBridgeTest,
 
   // Check that there is also no metadata at the end.
   EXPECT_THAT(GetAllLocalDataInclRestart(), IsEmpty());
+}
+
+// Verify that old orphan metadata gets deleted on startup.
+TEST_F(AutofillWalletMetadataSyncBridgeTest, DeleteOldOrphanMetadataOnStartup) {
+  WalletMetadataSpecifics profile =
+      CreateWalletMetadataSpecificsForAddressWithDetails(
+          kAddr1SpecificsId, /*use_count=*/10, /*use_date=*/20);
+  WalletMetadataSpecifics card =
+      CreateWalletMetadataSpecificsForCardWithDetails(
+          kCard1SpecificsId, /*use_count=*/30, /*use_date=*/40);
+
+  // Save only metadata and not data - simulate an orphan.
+  table()->AddServerAddressMetadata(
+      CreateServerProfileFromSpecifics(profile).GetMetadata());
+  table()->AddServerCardMetadata(
+      CreateServerCreditCardFromSpecifics(card).GetMetadata());
+
+  // Make the orphans old by advancing time.
+  AdvanceTestClockByTwoYears();
+
+  EXPECT_CALL(mock_processor(), Delete(kAddr1StorageKey, _));
+  EXPECT_CALL(mock_processor(), Delete(kCard1StorageKey, _));
+
+  ResetBridge();
+
+  ASSERT_THAT(GetAllLocalDataInclRestart(), IsEmpty());
+}
+
+// Verify that recent orphan metadata does not get deleted on startup.
+TEST_F(AutofillWalletMetadataSyncBridgeTest,
+       DoNotDeleteOldNonOrphanMetadataOnStartup) {
+  WalletMetadataSpecifics profile =
+      CreateWalletMetadataSpecificsForAddressWithDetails(
+          kAddr1SpecificsId, /*use_count=*/10, /*use_date=*/20);
+  WalletMetadataSpecifics card =
+      CreateWalletMetadataSpecificsForCardWithDetails(
+          kCard1SpecificsId, /*use_count=*/30, /*use_date=*/40);
+
+  // Save both data and metadata - these are not orphans.
+  table()->SetServerProfiles({CreateServerProfileFromSpecifics(profile)});
+  table()->SetServerCreditCards({CreateServerCreditCardFromSpecifics(card)});
+
+  // Make the entities old by advancing time.
+  AdvanceTestClockByTwoYears();
+
+  // Since the entities are non-oprhans, they should not get deleted.
+  EXPECT_CALL(mock_processor(), Delete(_, _)).Times(0);
+  ResetBridge();
+
+  EXPECT_THAT(
+      GetAllLocalDataInclRestart(),
+      UnorderedElementsAre(EqualsSpecifics(profile), EqualsSpecifics(card)));
+}
+
+// Verify that recent orphan metadata does not get deleted on startup.
+TEST_F(AutofillWalletMetadataSyncBridgeTest,
+       DoNotDeleteRecentOrphanMetadataOnStartup) {
+  WalletMetadataSpecifics profile =
+      CreateWalletMetadataSpecificsForAddressWithDetails(
+          kAddr1SpecificsId, /*use_count=*/10, /*use_date=*/20);
+  WalletMetadataSpecifics card =
+      CreateWalletMetadataSpecificsForCardWithDetails(
+          kCard1SpecificsId, /*use_count=*/30, /*use_date=*/40);
+
+  // Save only metadata and not data - simulate an orphan.
+  table()->AddServerAddressMetadata(
+      CreateServerProfileFromSpecifics(profile).GetMetadata());
+  table()->AddServerCardMetadata(
+      CreateServerCreditCardFromSpecifics(card).GetMetadata());
+
+  // We do not advance time so the orphans are recent, should not get deleted.
+  EXPECT_CALL(mock_processor(), Delete(_, _)).Times(0);
+
+  ResetBridge();
+
+  EXPECT_THAT(
+      GetAllLocalDataInclRestart(),
+      UnorderedElementsAre(EqualsSpecifics(profile), EqualsSpecifics(card)));
 }
 
 enum RemoteChangesMode {
