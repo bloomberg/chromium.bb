@@ -1157,10 +1157,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kWebrtcHideLocalIpsWithMdnsName,
      flag_descriptions::kWebrtcHideLocalIpsWithMdnsDecription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kWebRtcHideLocalIpsWithMdns)},
-    {"webrtc-unified-plan-by-default",
-     flag_descriptions::kWebrtcUnifiedPlanByDefaultName,
-     flag_descriptions::kWebrtcUnifiedPlanByDefaultDescription, kOsAll,
-     FEATURE_VALUE_TYPE(blink::features::kRTCUnifiedPlanByDefault)},
 #if defined(OS_ANDROID)
     {"clear-old-browsing-data", flag_descriptions::kClearOldBrowsingDataName,
      flag_descriptions::kClearOldBrowsingDataDescription, kOsAndroid,

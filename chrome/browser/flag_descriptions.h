@@ -1238,9 +1238,6 @@ extern const char kWebrtcSrtpEncryptedHeadersDescription[];
 extern const char kWebrtcStunOriginName[];
 extern const char kWebrtcStunOriginDescription[];
 
-extern const char kWebrtcUnifiedPlanByDefaultName[];
-extern const char kWebrtcUnifiedPlanByDefaultDescription[];
-
 extern const char kWebvrName[];
 extern const char kWebvrDescription[];
 
