@@ -38,7 +38,6 @@ class KeyboardAccessoryViewBinder {
             case BarItem.Type.SUGGESTION:
                 return new BarItemTextViewHolder(parent, R.layout.keyboard_accessory_chip);
             case BarItem.Type.TAB_LAYOUT: // Intentional fallthrough. Not supported.
-            case BarItem.Type.COUNT:
                 assert false : "Type " + viewType + " is not a valid accessory bar action!";
         }
         assert false : "Action type " + viewType + " was not handled!";
