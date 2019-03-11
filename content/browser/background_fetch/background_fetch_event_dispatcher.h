@@ -17,6 +17,7 @@
 namespace content {
 
 class BackgroundFetchRegistrationId;
+class DevToolsBackgroundServicesContext;
 class ServiceWorkerContextWrapper;
 class ServiceWorkerRegistration;
 class ServiceWorkerVersion;
@@ -35,8 +36,9 @@ class CONTENT_EXPORT BackgroundFetchEventDispatcher {
     DISPATCH_RESULT_COUNT
   };
 
-  explicit BackgroundFetchEventDispatcher(
-      scoped_refptr<ServiceWorkerContextWrapper> service_worker_context);
+  BackgroundFetchEventDispatcher(
+      scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
+      DevToolsBackgroundServicesContext* devtools_context);
   ~BackgroundFetchEventDispatcher();
 
   // Dispatches one of the update, fail, or success events depending on the
@@ -134,7 +136,16 @@ class CONTENT_EXPORT BackgroundFetchEventDispatcher {
       scoped_refptr<ServiceWorkerVersion> service_worker_version,
       int request_id);
 
+  // Informs the DevToolsBackgroundServicesContext of the completion event.
+  void LogBackgroundFetchCompletionForDevTools(
+      const BackgroundFetchRegistrationId& registration_id,
+      ServiceWorkerMetrics::EventType event_type,
+      blink::mojom::BackgroundFetchFailureReason failure_reason);
+
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
+
+  // Owned by BackgroundFetchContext.
+  DevToolsBackgroundServicesContext* devtools_context_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundFetchEventDispatcher);
 };

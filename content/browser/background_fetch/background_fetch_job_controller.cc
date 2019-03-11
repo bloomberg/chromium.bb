@@ -289,6 +289,7 @@ void BackgroundFetchJobController::Finish(
 }
 
 void BackgroundFetchJobController::PopNextRequest(
+    RequestStartedCallback request_started_callback,
     RequestFinishedCallback request_finished_callback) {
   DCHECK(HasMoreRequests());
 
@@ -297,10 +298,12 @@ void BackgroundFetchJobController::PopNextRequest(
       registration_id(),
       base::BindOnce(&BackgroundFetchJobController::DidPopNextRequest,
                      weak_ptr_factory_.GetWeakPtr(),
+                     std::move(request_started_callback),
                      std::move(request_finished_callback)));
 }
 
 void BackgroundFetchJobController::DidPopNextRequest(
+    RequestStartedCallback request_started_callback,
     RequestFinishedCallback request_finished_callback,
     BackgroundFetchError error,
     scoped_refptr<BackgroundFetchRequestInfo> request_info) {
@@ -310,6 +313,8 @@ void BackgroundFetchJobController::DidPopNextRequest(
     return;
   }
 
+  std::move(request_started_callback)
+      .Run(registration_id(), request_info.get());
   StartRequest(std::move(request_info), std::move(request_finished_callback));
 }
 

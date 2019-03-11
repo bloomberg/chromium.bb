@@ -29,6 +29,7 @@ class BackgroundFetchJobController;
 class BackgroundFetchRegistrationId;
 class BackgroundFetchRegistrationNotifier;
 class BackgroundFetchRequestInfo;
+class DevToolsBackgroundServicesContext;
 
 // Maintains a list of Controllers and chooses which ones should launch new
 // downloads.
@@ -40,6 +41,7 @@ class CONTENT_EXPORT BackgroundFetchScheduler
       BackgroundFetchDataManager* data_manager,
       BackgroundFetchRegistrationNotifier* registration_notifier,
       BackgroundFetchDelegateProxy* delegate_proxy,
+      DevToolsBackgroundServicesContext* devtools_context,
       scoped_refptr<ServiceWorkerContextWrapper> service_worker_context);
   ~BackgroundFetchScheduler() override;
 
@@ -83,6 +85,7 @@ class CONTENT_EXPORT BackgroundFetchScheduler
  private:
   friend class BackgroundFetchJobControllerTest;
   friend class BackgroundFetchSchedulerTest;
+  enum class Event;
 
   // Schedules a download, if possible, and returns whether successful.
   bool ScheduleDownload();
@@ -110,6 +113,8 @@ class CONTENT_EXPORT BackgroundFetchScheduler
           active_fetch_requests,
       bool start_paused);
 
+  void DidStartRequest(const BackgroundFetchRegistrationId& registration_id,
+                       const BackgroundFetchRequestInfo* request_info);
   void DidCompleteRequest(
       const BackgroundFetchRegistrationId& registration_id,
       scoped_refptr<BackgroundFetchRequestInfo> request_info);
@@ -131,10 +136,21 @@ class CONTENT_EXPORT BackgroundFetchScheduler
 
   void DispatchClickEvent(const std::string& unique_id);
 
+  // Information needed to send over to the DevToolsBackgroundServicesContext.
+  // |event| is an enum describing the stage of the fetch. |request_info| is
+  // nullptr if not available at the moment. Any additional data to log can be
+  // passed through the |metadata| map.
+  void LogBackgroundFetchEventForDevTools(
+      Event event,
+      const BackgroundFetchRegistrationId& registration_id,
+      const BackgroundFetchRequestInfo* request_info,
+      std::map<std::string, std::string> metadata = {});
+
   // Owned by BackgroundFetchContext.
   BackgroundFetchDataManager* data_manager_;
   BackgroundFetchRegistrationNotifier* registration_notifier_;
   BackgroundFetchDelegateProxy* delegate_proxy_;
+  DevToolsBackgroundServicesContext* devtools_context_;
 
   BackgroundFetchEventDispatcher event_dispatcher_;
 

@@ -21,6 +21,7 @@
 #include "content/browser/background_fetch/background_fetch_registration_id.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_registration.h"
+#include "content/browser/storage_partition_impl.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_thread.h"
@@ -189,6 +190,13 @@ BackgroundFetchTestBase::CreateBackgroundFetchRegistration(
   return blink::mojom::BackgroundFetchRegistration::New(
       developer_id, unique_id, /* upload_total= */ 0, /* uploaded= */ 0,
       /* download_total= */ 0, /* downloaded= */ 0, result, failure_reason);
+}
+
+scoped_refptr<DevToolsBackgroundServicesContext>
+BackgroundFetchTestBase::devtools_context() const {
+  DCHECK(storage_partition_);
+  return static_cast<StoragePartitionImpl*>(storage_partition_)
+      ->GetDevToolsBackgroundServicesContext();
 }
 
 }  // namespace content

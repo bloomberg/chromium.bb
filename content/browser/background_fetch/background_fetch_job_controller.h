@@ -48,6 +48,9 @@ class CONTENT_EXPORT BackgroundFetchJobController
                               ErrorCallback)>;
   using ProgressCallback = base::RepeatingCallback<void(
       const blink::mojom::BackgroundFetchRegistration&)>;
+  using RequestStartedCallback =
+      base::OnceCallback<void(const BackgroundFetchRegistrationId&,
+                              const BackgroundFetchRequestInfo*)>;
   using RequestFinishedCallback =
       base::OnceCallback<void(const BackgroundFetchRegistrationId&,
                               scoped_refptr<BackgroundFetchRequestInfo>)>;
@@ -110,8 +113,10 @@ class CONTENT_EXPORT BackgroundFetchJobController
              ErrorCallback callback);
 
   // Request processing.
-  void PopNextRequest(RequestFinishedCallback request_finished_callback);
+  void PopNextRequest(RequestStartedCallback request_started_callback,
+                      RequestFinishedCallback request_finished_callback);
   void DidPopNextRequest(
+      RequestStartedCallback request_started_callback,
       RequestFinishedCallback request_finished_callback,
       blink::mojom::BackgroundFetchError error,
       scoped_refptr<BackgroundFetchRequestInfo> request_info);

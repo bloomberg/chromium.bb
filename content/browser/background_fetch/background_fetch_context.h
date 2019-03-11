@@ -17,13 +17,14 @@
 #include "content/browser/background_fetch/background_fetch_delegate_proxy.h"
 #include "content/browser/background_fetch/background_fetch_event_dispatcher.h"
 #include "content/browser/background_fetch/storage/get_initialization_data_task.h"
+#include "content/browser/devtools/devtools_background_services_context.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/blink/public/mojom/background_fetch/background_fetch.mojom.h"
 
 namespace storage {
 class QuotaManagerProxy;
-}
+}  // namespace storage
 
 namespace content {
 
@@ -49,9 +50,9 @@ class CONTENT_EXPORT BackgroundFetchContext
   BackgroundFetchContext(
       BrowserContext* browser_context,
       const scoped_refptr<ServiceWorkerContextWrapper>& service_worker_context,
-      const scoped_refptr<content::CacheStorageContextImpl>&
-          cache_storage_context,
-      scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy);
+      const scoped_refptr<CacheStorageContextImpl>& cache_storage_context,
+      scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
+      scoped_refptr<DevToolsBackgroundServicesContext> devtools_context);
 
   void InitializeOnIOThread();
 
@@ -190,6 +191,7 @@ class CONTENT_EXPORT BackgroundFetchContext
 
   std::unique_ptr<BackgroundFetchDataManager> data_manager_;
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
+  scoped_refptr<DevToolsBackgroundServicesContext> devtools_context_;
   std::unique_ptr<BackgroundFetchRegistrationNotifier> registration_notifier_;
   BackgroundFetchDelegateProxy delegate_proxy_;
   std::unique_ptr<BackgroundFetchScheduler> scheduler_;
