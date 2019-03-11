@@ -659,7 +659,8 @@ void CacheStorage::DoomCache(const std::string& cache_name,
                      scheduler_->WrapCallbackToRunNext(std::move(callback))));
 }
 
-void CacheStorage::EnumerateCaches(int64_t trace_id, IndexCallback callback) {
+void CacheStorage::EnumerateCaches(int64_t trace_id,
+                                   EnumerateCachesCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (!initialized_)
@@ -1054,11 +1055,18 @@ void CacheStorage::DeleteCacheDidGetSize(CacheStorageCache* doomed_cache,
 }
 
 void CacheStorage::EnumerateCachesImpl(int64_t trace_id,
-                                       IndexCallback callback) {
+                                       EnumerateCachesCallback callback) {
   TRACE_EVENT_WITH_FLOW0("CacheStorage", "CacheStorage::EnumerateCachesImpl",
                          TRACE_ID_GLOBAL(trace_id),
                          TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
-  std::move(callback).Run(*cache_index_);
+
+  std::vector<std::string> list;
+
+  for (const auto& metadata : cache_index_->ordered_cache_metadata()) {
+    list.push_back(metadata.name);
+  }
+
+  std::move(callback).Run(std::move(list));
 }
 
 void CacheStorage::MatchCacheImpl(

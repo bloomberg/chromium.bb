@@ -385,10 +385,10 @@ class CacheStorageDispatcherHost::CacheStorageImpl final
     auto cb = base::BindOnce(
         [](base::TimeTicks start_time, int64_t trace_id,
            blink::mojom::CacheStorage::KeysCallback callback,
-           const CacheStorageIndex& cache_index) {
+           std::vector<std::string> cache_names) {
           std::vector<base::string16> string16s;
-          for (const auto& metadata : cache_index.ordered_cache_metadata()) {
-            string16s.push_back(base::UTF8ToUTF16(metadata.name));
+          for (const auto& name : cache_names) {
+            string16s.push_back(base::UTF8ToUTF16(name));
           }
           UMA_HISTOGRAM_LONG_TIMES(
               "ServiceWorkerCache.CacheStorage.Browser.Keys",
@@ -405,7 +405,7 @@ class CacheStorageDispatcherHost::CacheStorageImpl final
 
     content::CacheStorage* cache_storage = GetOrCreateCacheStorage();
     if (!cache_storage) {
-      std::move(cb).Run(CacheStorageIndex());
+      std::move(cb).Run(std::vector<std::string>());
       return;
     }
 

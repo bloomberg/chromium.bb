@@ -31,7 +31,6 @@
 #include "content/browser/cache_storage/cache_storage.pb.h"
 #include "content/browser/cache_storage/cache_storage_cache_handle.h"
 #include "content/browser/cache_storage/cache_storage_context_impl.h"
-#include "content/browser/cache_storage/cache_storage_index.h"
 #include "content/browser/cache_storage/cache_storage_quota_client.h"
 #include "content/common/background_fetch/background_fetch_types.h"
 #include "content/public/browser/browser_thread.h"
@@ -117,13 +116,6 @@ bool IsIndexFileCurrent(const base::FilePath& cache_dir) {
   return true;
 }
 
-void CopyCacheStorageIndex(CacheStorageIndex* dest,
-                           const CacheStorageIndex& src) {
-  DCHECK_EQ(0U, dest->num_entries());
-  for (const auto& cache_metadata : src.ordered_cache_metadata())
-    dest->Insert(cache_metadata);
-}
-
 class TestCacheStorageObserver : public CacheStorageContextImpl::Observer {
  public:
   void OnCacheListChanged(const url::Origin& origin) override {
@@ -201,22 +193,14 @@ class CacheStorageManagerTest : public testing::Test {
   }
 
   void CacheMetadataCallback(base::RunLoop* run_loop,
-                             const CacheStorageIndex& cache_index) {
-    callback_cache_index_ = CacheStorageIndex();
-    CopyCacheStorageIndex(&callback_cache_index_, cache_index);
+                             std::vector<std::string> cache_names) {
+    cache_names_ = std::move(cache_names);
     run_loop->Quit();
   }
 
-  const std::string& GetFirstIndexName() const {
-    return callback_cache_index_.ordered_cache_metadata().front().name;
-  }
+  const std::string& GetFirstIndexName() const { return cache_names_.front(); }
 
-  std::vector<std::string> GetIndexNames() const {
-    std::vector<std::string> cache_names;
-    for (const auto& metadata : callback_cache_index_.ordered_cache_metadata())
-      cache_names.push_back(metadata.name);
-    return cache_names;
-  }
+  std::vector<std::string> GetIndexNames() const { return cache_names_; }
 
   void CachePutCallback(base::RunLoop* run_loop,
                         CacheStorageVerboseErrorPtr error) {
@@ -301,7 +285,7 @@ class CacheStorageManagerTest : public testing::Test {
     callback_cache_handle_ = CacheStorageCacheHandle();
     callback_bool_ = false;
     callback_cache_handle_response_ = nullptr;
-    callback_cache_index_ = CacheStorageIndex();
+    cache_names_.clear();
     callback_all_origins_usage_.clear();
 
     base::RunLoop().RunUntilIdle();
@@ -393,7 +377,7 @@ class CacheStorageManagerTest : public testing::Test {
                        base::Unretained(this), base::Unretained(&loop)));
     loop.Run();
     CheckOpHistograms(histogram_tester, "Keys");
-    return callback_cache_index_.num_entries();
+    return cache_names_.size();
   }
 
   bool StorageMatch(const url::Origin& origin,
@@ -681,7 +665,7 @@ class CacheStorageManagerTest : public testing::Test {
   CacheStorageError callback_error_;
   blink::mojom::FetchAPIResponsePtr callback_cache_handle_response_;
   std::unique_ptr<storage::BlobDataHandle> callback_data_handle_;
-  CacheStorageIndex callback_cache_index_;
+  std::vector<std::string> cache_names_;
 
   const url::Origin origin1_;
   const url::Origin origin2_;

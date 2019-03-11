@@ -61,7 +61,8 @@ class CONTENT_EXPORT CacheStorage : public CacheStorageCacheObserver {
   using CacheAndErrorCallback =
       base::OnceCallback<void(CacheStorageCacheHandle,
                               blink::mojom::CacheStorageError)>;
-  using IndexCallback = base::OnceCallback<void(const CacheStorageIndex&)>;
+  using EnumerateCachesCallback =
+      base::OnceCallback<void(std::vector<std::string> cache_names)>;
   using SizeCallback = base::OnceCallback<void(int64_t)>;
 
   static const char kIndexFileName[];
@@ -120,8 +121,8 @@ class CONTENT_EXPORT CacheStorage : public CacheStorageCacheObserver {
                  int64_t trace_id,
                  ErrorCallback callback);
 
-  // Calls the callback with the cache index.
-  void EnumerateCaches(int64_t trace_id, IndexCallback callback);
+  // Calls the callback with the existing cache names.
+  void EnumerateCaches(int64_t trace_id, EnumerateCachesCallback callback);
 
   // Calls match on the cache with the given |cache_name|.
   void MatchCache(const std::string& cache_name,
@@ -234,7 +235,7 @@ class CONTENT_EXPORT CacheStorage : public CacheStorageCacheObserver {
   void DeleteCacheDidCleanUp(bool success);
 
   // The EnumerateCache callbacks are below.
-  void EnumerateCachesImpl(int64_t trace_id, IndexCallback callback);
+  void EnumerateCachesImpl(int64_t trace_id, EnumerateCachesCallback callback);
 
   // The MatchCache callbacks are below.
   void MatchCacheImpl(const std::string& cache_name,
