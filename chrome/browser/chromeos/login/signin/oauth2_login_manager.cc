@@ -159,7 +159,7 @@ void OAuth2LoginManager::StoreOAuth2Token() {
   DCHECK(!refresh_token_.empty());
 
   // On ChromeOS, the primary account is set via
-  // IdentityManager::SetPrimaryAccountSynchronously(), which seeds the account
+  // IdentityManager::LegacySetPrimaryAccount(), which seeds the account
   // info with AccountTrackerService. Hence, the primary account info will be
   // available at this point.
   const CoreAccountInfo primary_account_info =

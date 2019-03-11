@@ -315,6 +315,14 @@ std::string IdentityManager::LegacySeedAccountInfo(const AccountInfo& info) {
   return account_tracker_service_->SeedAccountInfo(info);
 }
 
+#if defined(OS_CHROMEOS)
+void IdentityManager::LegacySetPrimaryAccount(
+    const std::string& gaia_id,
+    const std::string& email_address) {
+  signin_manager_->SetAuthenticatedAccountInfo(gaia_id, email_address);
+}
+#endif
+
 #if defined(OS_IOS)
 void IdentityManager::ForceTriggerOnCookieChange() {
   gaia_cookie_manager_service_->ForceOnCookieChangeProcessing();
@@ -384,21 +392,6 @@ AccountTrackerService* IdentityManager::GetAccountTrackerService() {
 
 GaiaCookieManagerService* IdentityManager::GetGaiaCookieManagerService() {
   return gaia_cookie_manager_service_;
-}
-
-void IdentityManager::SetPrimaryAccountSynchronously(
-    const std::string& gaia_id,
-    const std::string& email_address,
-    const std::string& refresh_token) {
-  signin_manager_->SetAuthenticatedAccountInfo(gaia_id, email_address);
-
-  if (!refresh_token.empty()) {
-    // Note: Source for the operation is |Unknown| as the method
-    // |SetPrimaryAccountSynchronously| is only used for testing.
-    token_service_->UpdateCredentials(
-        GetPrimaryAccountId(), refresh_token,
-        signin_metrics::SourceForRefreshTokenOperation::kUnknown);
-  }
 }
 
 AccountInfo IdentityManager::GetAccountInfoForAccountWithRefreshToken(

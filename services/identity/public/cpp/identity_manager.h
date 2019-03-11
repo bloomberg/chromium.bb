@@ -31,12 +31,6 @@
 #include "base/android/jni_android.h"
 #endif
 
-// Necessary to declare these classes as friends.
-namespace chromeos {
-class ChromeSessionManager;
-class UserSessionManager;
-}  // namespace chromeos
-
 namespace network {
 class SharedURLLoaderFactory;
 class TestURLLoaderFactory;
@@ -404,6 +398,13 @@ class IdentityManager : public SigninManagerBase::Observer,
   // account id. It's only for replacement of production code.
   std::string LegacySeedAccountInfo(const AccountInfo& info);
 
+#if defined(OS_CHROMEOS)
+  // Sets the primary account info with IdentityManager.
+  // TODO(https://crbug.com/814787): Eliminate this method.
+  void LegacySetPrimaryAccount(const std::string& gaia_id,
+                               const std::string& email_address);
+#endif
+
 #if defined(OS_IOS)
   // Forces the processing of GaiaCookieManagerService::OnCookieChange. On
   // iOS, it's necessary to force-trigger the processing of cookie changes
@@ -515,10 +516,6 @@ class IdentityManager : public SigninManagerBase::Observer,
       const std::string& locale,
       const std::string& picture_url);
 
-  // These clients needs to call SetPrimaryAccountSynchronously().
-  friend chromeos::ChromeSessionManager;
-  friend chromeos::UserSessionManager;
-
   // This friend is temporary during the conversion process.
   // TODO(crbug.com/889902): Delete this friendship when conversion is done.
   friend SigninManagerAndroid;
@@ -528,16 +525,6 @@ class IdentityManager : public SigninManagerBase::Observer,
   ProfileOAuth2TokenService* GetTokenService();
   AccountTrackerService* GetAccountTrackerService();
   GaiaCookieManagerService* GetGaiaCookieManagerService();
-
-  // Sets the primary account info synchronously with both the IdentityManager
-  // and its backing SigninManager instance. If |refresh_token| is not empty,
-  // sets the refresh token with the backing ProfileOAuth2TokenService
-  // instance. This method should not be used directly; it exists only to serve
-  // one legacy use case at this point.
-  // TODO(https://crbug.com/814787): Eliminate the need for this method.
-  void SetPrimaryAccountSynchronously(const std::string& gaia_id,
-                                      const std::string& email_address,
-                                      const std::string& refresh_token);
 
   // Populates and returns an AccountInfo object corresponding to |account_id|,
   // which must be an account with a refresh token.

@@ -1339,13 +1339,9 @@ void UserSessionManager::InitProfilePreferences(
     // Make sure that the google service username is properly set (we do this
     // on every sign in, not just the first login, to deal with existing
     // profiles that might not have it set yet).
-    // TODO(https://crbug.com/814787): Change this flow to go through a
-    // mainstream Identity Service API once that API exists. Note that this
-    // might require supplying a valid refresh token here as opposed to an
-    // empty string.
-    identity_manager->SetPrimaryAccountSynchronously(
-        gaia_id, user_context.GetAccountId().GetUserEmail(),
-        /*refresh_token=*/std::string());
+    // TODO(https://crbug.com/814787): Determine the right long-term flow here.
+    identity_manager->LegacySetPrimaryAccount(
+        gaia_id, user_context.GetAccountId().GetUserEmail());
     std::string account_id = identity_manager->GetPrimaryAccountId();
     VLOG(1) << "Seed IdentityManager with the authenticated account info, "
             << "success=" << !account_id.empty();
