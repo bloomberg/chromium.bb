@@ -4276,6 +4276,8 @@ jumbo_split_static_library("browser") {
     sources += [
       "android/feed/feed_content_bridge.cc",
       "android/feed/feed_content_bridge.h",
+      "android/feed/feed_debugging_bridge.cc",
+      "android/feed/feed_debugging_bridge.h",
       "android/feed/feed_host_service_factory.cc",
       "android/feed/feed_host_service_factory.h",
       "android/feed/feed_journal_bridge.cc",

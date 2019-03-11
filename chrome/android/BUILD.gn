@@ -2424,6 +2424,7 @@ generate_jni("jni_headers") {
   if (enable_feed_in_chrome) {
     sources += [
       "feed/core/java/src/org/chromium/chrome/browser/feed/FeedContentBridge.java",
+      "feed/core/java/src/org/chromium/chrome/browser/feed/FeedDebuggingBridge.java",
       "feed/core/java/src/org/chromium/chrome/browser/feed/FeedJournalBridge.java",
       "feed/core/java/src/org/chromium/chrome/browser/feed/FeedLifecycleBridge.java",
       "feed/core/java/src/org/chromium/chrome/browser/feed/FeedLoggingBridge.java",

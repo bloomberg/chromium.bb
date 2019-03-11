@@ -20,6 +20,7 @@ function updatePageWithProperties() {
     /** @type {!feedInternals.mojom.Properties} */
     const properties = response.properties;
     $('is-feed-enabled').textContent = properties.isFeedEnabled;
+    $('feed-fetch-url').textContent = properties.feedFetchUrl.url;
   });
 }
 
@@ -70,9 +71,9 @@ function updatePageWithCurrentContent() {
       item.querySelector('.publisher').textContent = suggestion.publisherName;
 
       // Populate template with link metadata.
-      setLinkNode(item.querySelector('a.url'), suggestion.url);
-      setLinkNode(item.querySelector('a.image'), suggestion.imageUrl);
-      setLinkNode(item.querySelector('a.favicon'), suggestion.faviconUrl);
+      setLinkNode(item.querySelector('a.url'), suggestion.url.url);
+      setLinkNode(item.querySelector('a.image'), suggestion.imageUrl.url);
+      setLinkNode(item.querySelector('a.favicon'), suggestion.faviconUrl.url);
 
       after.appendChild(item);
     }
