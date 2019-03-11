@@ -441,7 +441,7 @@ void XRSession::EnsureEnvironmentErrorHandler() {
       xr_->xrEnvironmentProviderPtr()) {
     environment_error_handler_subscribed_ = true;
     xr_->AddEnvironmentProviderErrorHandler(WTF::Bind(
-        &XRSession::OnEnvironmentProviderError, WrapPersistent(this)));
+        &XRSession::OnEnvironmentProviderError, WrapWeakPersistent(this)));
   }
 }
 
