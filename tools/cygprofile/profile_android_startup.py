@@ -25,9 +25,7 @@ from devil.android import device_errors
 from devil.android import device_utils
 from devil.android import flag_changer
 from devil.android import forwarder
-from devil.android.ndk import abis
 from devil.android.sdk import intent
-from devil.android.sdk import version_codes
 
 sys.path.append(os.path.join(_SRC_PATH, 'build', 'android'))
 import devil_chromium
@@ -193,7 +191,7 @@ class AndroidProfileTool(object):
       os.path.dirname(__file__), 'memory_top_10_mobile_000.wprgo')
 
   def __init__(self, output_directory, host_profile_dir, use_wpr, urls,
-               simulate_user, device=None):
+               simulate_user, device):
     """Constructor.
 
     Args:
@@ -203,22 +201,11 @@ class AndroidProfileTool(object):
       urls: (str) URLs to load. Have to be contained in the WPR archive if
                   use_wpr is True.
       simulate_user: (bool) Whether to simulate a user.
+      device: (DeviceUtils) Android device selected to be used to
+                            generate orderfile.
     """
-    if device is None:
-      devices = device_utils.DeviceUtils.HealthyDevices()
-      assert devices, 'Expected at least one connected device'
-      # Favor device running Android version[K,L] if exists.
-      # Code ordering is not yet supported on Monochrome.
-      preferred_device = None
-      for device in devices:
-        device_version = device.build_version_sdk
-        if (device_version >= version_codes.KITKAT
-            and device_version <= version_codes.LOLLIPOP_MR1):
-         preferred_device = device
-         break
-      self._device = preferred_device if preferred_device else devices[0]
-    else:
-      self._device = device_utils.DeviceUtils(device)
+    assert device, 'Expected a valid device'
+    self._device = device
     self._cygprofile_tests = os.path.join(
         output_directory, 'cygprofile_unittests')
     self._host_profile_dir = host_profile_dir
@@ -544,9 +531,12 @@ def main():
   trace_directory = args.trace_directory
   if not trace_directory:
     trace_directory = os.path.join(args.output_directory, 'profile_data')
+  devices = device_utils.DeviceUtils.HealthyDevices()
+  assert devices, 'Expected at least one connected device'
   profiler = AndroidProfileTool(
       args.output_directory, host_profile_dir=trace_directory,
-      use_wpr=not args.no_wpr, urls=args.urls, simulate_user=args.simulate_user)
+      use_wpr=not args.no_wpr, urls=args.urls, simulate_user=args.simulate_user,
+      device=devices[0])
   profiler.CollectProfile(args.apk_path, package_info)
   return 0
 

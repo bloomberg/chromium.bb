@@ -35,6 +35,11 @@ import process_profiles
 import profile_android_startup
 import symbol_extractor
 
+_SRC_PATH = os.path.join(os.path.dirname(__file__), os.pardir, os.pardir)
+sys.path.append(os.path.join(_SRC_PATH, 'third_party', 'catapult', 'devil'))
+from devil.android import device_utils
+from devil.android.sdk import version_codes
+
 
 _SRC_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)),
                          os.pardir, os.pardir)
@@ -437,6 +442,48 @@ class OrderfileGenerator(object):
     """Gets the path to the architecture-specific unpatched orderfile."""
     return self._UNPATCHED_ORDERFILE_FILENAME % self._options.arch
 
+  def _SetDevice(self):
+    """ Selects the device to be used by the script.
+
+    Returns:
+      (Device with given serial ID) : if the --device flag is set.
+      (Device running Android[K,L]) : if --use-legacy-chrome-apk flag is set or
+                                      no device running Android N+ was found.
+      (Device running Android N+) : Otherwise.
+
+    Raises Error:
+      If no device meeting the requirements has been found.
+    """
+    devices = None
+    if self._options.device:
+      devices = [device_utils.DeviceUtils(self._options.device)]
+    else:
+      devices = device_utils.DeviceUtils.HealthyDevices()
+
+    assert devices, 'Expected at least one connected device'
+
+    if self._options.use_legacy_chrome_apk:
+      self._monochrome = False
+      for device in devices:
+        device_version = device.build_version_sdk
+        if (device_version >= version_codes.KITKAT
+            and device_version <= version_codes.LOLLIPOP_MR1):
+          return device
+
+    assert not self._options.use_legacy_chrome_apk, \
+      'No device found running suitable android version for Chrome.apk.'
+
+    preferred_device = None
+    for device in devices:
+      if device.build_version_sdk >= version_codes.NOUGAT:
+       preferred_device = device
+       break
+
+    self._monochrome = preferred_device is not None
+
+    return preferred_device if preferred_device else devices[0]
+
+
   def __init__(self, options, orderfile_updater_class):
     self._options = options
 
@@ -454,9 +501,10 @@ class OrderfileGenerator(object):
       urls = options.urls
       use_wpr = not options.no_wpr
       simulate_user = options.simulate_user
+      device = self._SetDevice()
       self._profiler = profile_android_startup.AndroidProfileTool(
           output_directory, host_profile_dir, use_wpr, urls, simulate_user,
-          device=options.device)
+          device=device)
       if options.pregenerated_profiles:
         self._profiler.SetPregeneratedProfiles(
             glob.glob(options.pregenerated_profiles))
@@ -465,6 +513,7 @@ class OrderfileGenerator(object):
           '--pregenerated-profiles cannot be used with --skip-profile')
       assert not options.profile_save_dir, (
           '--profile-save-dir cannot be used with --skip-profile')
+      self._monochrome = not self._options.use_legacy_chrome_apk
 
     # Outlined function handling enabled by default for all architectures.
     self._order_outlined_functions = not options.noorder_outlined_functions
@@ -706,7 +755,7 @@ class OrderfileGenerator(object):
             self._step_recorder, self._options.arch, self._options.jobs,
             self._options.max_load, self._options.use_goma,
             self._options.goma_dir, self._options.system_health_orderfile,
-            self._options.monochrome)
+            self._monochrome)
         if not self._options.pregenerated_profiles:
           # If there are pregenerated profiles, the instrumented build should
           # not be changed to avoid invalidating the pregenerated profile
@@ -743,7 +792,7 @@ class OrderfileGenerator(object):
             self._uninstrumented_out_dir, self._step_recorder,
             self._options.arch, self._options.jobs, self._options.max_load,
             self._options.use_goma, self._options.goma_dir,
-            self._options.system_health_orderfile, self._options.monochrome)
+            self._options.system_health_orderfile, self._monochrome)
         self._compiler.CompileLibchrome(False)
         self._PatchOrderfile()
         # Because identical code folding is a bit different with and without
@@ -824,9 +873,9 @@ def CreateArgumentParser():
                       help=('Create an orderfile based on an about:blank '
                             'startup benchmark instead of system health '
                             'benchmarks.'))
-  parser.add_argument('--monochrome', action='store_true',
-                      help=('Compile and instrument monochrome (for post-N '
-                            'devices).'))
+  parser.add_argument(
+      '--use-legacy-chrome-apk', action='store_true', default=False,
+      help=('Compile and instrument chrome for [L, K] devices.'))
 
   parser.add_argument('--manual-symbol-offsets', default=None, type=str,
                       help=('File of list of ordered symbol offsets generated '
