@@ -23,6 +23,7 @@
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "components/safe_browsing/common/safe_browsing.mojom.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/db/database_manager.h"
 #include "components/safe_browsing/db/whitelist_checker_client.h"
@@ -366,26 +367,11 @@ ClientSideDetectionHost::ClientSideDetectionHost(WebContents* tab)
     database_manager_ = sb_service->database_manager();
     ui_manager_->AddObserver(this);
   }
-  registry_.AddInterface(base::BindRepeating(
-      &ClientSideDetectionHost::PhishingDetectorClientRequest,
-      base::Unretained(this)));
 }
 
 ClientSideDetectionHost::~ClientSideDetectionHost() {
   if (ui_manager_.get())
     ui_manager_->RemoveObserver(this);
-}
-
-void ClientSideDetectionHost::PhishingDetectorClientRequest(
-    mojom::PhishingDetectorClientRequest request) {
-  phishing_detector_client_bindings_.AddBinding(this, std::move(request));
-}
-
-void ClientSideDetectionHost::OnInterfaceRequestFromFrame(
-    content::RenderFrameHost* render_frame_host,
-    const std::string& interface_name,
-    mojo::ScopedMessagePipeHandle* interface_pipe) {
-  registry_.TryBindInterface(interface_name, interface_pipe);
 }
 
 void ClientSideDetectionHost::DidFinishNavigation(
@@ -523,9 +509,11 @@ void ClientSideDetectionHost::OnPhishingPreClassificationDone(
     DVLOG(1) << "Instruct renderer to start phishing detection for URL: "
              << browse_info_->url;
     content::RenderFrameHost* rfh = web_contents()->GetMainFrame();
-    safe_browsing::mojom::PhishingDetectorPtr phishing_detector;
-    rfh->GetRemoteInterfaces()->GetInterface(&phishing_detector);
-    phishing_detector->StartPhishingDetection(browse_info_->url);
+    rfh->GetRemoteInterfaces()->GetInterface(&phishing_detector_);
+    phishing_detector_->StartPhishingDetection(
+        browse_info_->url,
+        base::BindRepeating(&ClientSideDetectionHost::PhishingDetectionDone,
+                            weak_factory_.GetWeakPtr()));
   }
 }
 

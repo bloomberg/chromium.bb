@@ -223,9 +223,6 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
                     media::mojom::MediaEngagementScoreDetailsProvider,
                     media_router::mojom::MediaRouter,
                     page_load_metrics::mojom::PageLoadMetrics,
-#if defined(FULL_SAFE_BROWSING)
-                    safe_browsing::mojom::PhishingDetectorClient,
-#endif
                     translate::mojom::ContentTranslateDriver,
 
                     // WebUI-only interfaces go below this line. These should be
