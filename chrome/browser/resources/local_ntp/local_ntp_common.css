@@ -49,17 +49,17 @@ html {
   --GR800-dark-rgb: 180, 27, 26;
 }
 
-body {
+body * {
   /* Default font families for Linux and ChromeOS. */
   font-family: 'Roboto', arial, sans-serif;
 }
 
-.win {
+.win * {
   /* Default font families for Windows */
   font-family: 'Segoe UI', 'Roboto', arial, sans-serif;
 }
 
-.mac {
+.mac * {
   /* Default font families for MacOS */
   font-family: system-ui, BlinkMacSystemFont, 'Roboto', arial, sans-serif;
 }
