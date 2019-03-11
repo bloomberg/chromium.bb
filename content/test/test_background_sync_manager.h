@@ -12,20 +12,18 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
+#include "base/time/time.h"
 #include "content/browser/background_sync/background_sync_manager.h"
 #include "content/browser/service_worker/service_worker_storage.h"
 
-namespace base {
-class TimeDelta;
-}
-
 namespace url {
 class Origin;
-}
+}  // namespace url
 
 namespace content {
 
 struct BackgroundSyncParameters;
+class DevToolsBackgroundServicesContext;
 class ServiceWorkerContextWrapper;
 class ServiceWorkerVersion;
 
@@ -41,8 +39,9 @@ class TestBackgroundSyncManager : public BackgroundSyncManager {
       base::RepeatingCallback<void(scoped_refptr<ServiceWorkerVersion>,
                                    ServiceWorkerVersion::StatusCallback)>;
 
-  explicit TestBackgroundSyncManager(
-      scoped_refptr<ServiceWorkerContextWrapper> service_worker_context);
+  TestBackgroundSyncManager(
+      scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
+      scoped_refptr<DevToolsBackgroundServicesContext> devtools_context);
   ~TestBackgroundSyncManager() override;
 
   // Force a call to the internal Init() method.

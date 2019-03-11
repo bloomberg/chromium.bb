@@ -700,7 +700,9 @@ std::unique_ptr<StoragePartitionImpl> StoragePartitionImpl::Create(
 
   partition->background_sync_context_ =
       base::MakeRefCounted<BackgroundSyncContextImpl>();
-  partition->background_sync_context_->Init(partition->service_worker_context_);
+  partition->background_sync_context_->Init(
+      partition->service_worker_context_,
+      partition->devtools_background_services_context_);
 
   partition->payment_app_context_ = new PaymentAppContextImpl();
   partition->payment_app_context_->Init(partition->service_worker_context_);

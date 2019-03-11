@@ -185,11 +185,12 @@ BackgroundSyncManager::BackgroundSyncRegistrations::
 
 // static
 std::unique_ptr<BackgroundSyncManager> BackgroundSyncManager::Create(
-    scoped_refptr<ServiceWorkerContextWrapper> service_worker_context) {
+    scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
+    scoped_refptr<DevToolsBackgroundServicesContext> devtools_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  BackgroundSyncManager* sync_manager =
-      new BackgroundSyncManager(service_worker_context);
+  BackgroundSyncManager* sync_manager = new BackgroundSyncManager(
+      std::move(service_worker_context), std::move(devtools_context));
   sync_manager->Init();
   return base::WrapUnique(sync_manager);
 }
@@ -299,6 +300,7 @@ void BackgroundSyncManager::EmulateDispatchSyncEvent(
     std::move(callback).Run(code);
     return;
   }
+
   DispatchSyncEvent(tag, std::move(active_version), last_chance,
                     std::move(callback));
 }
@@ -319,15 +321,18 @@ void BackgroundSyncManager::EmulateServiceWorkerOffline(
 }
 
 BackgroundSyncManager::BackgroundSyncManager(
-    scoped_refptr<ServiceWorkerContextWrapper> service_worker_context)
+    scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
+    scoped_refptr<DevToolsBackgroundServicesContext> devtools_context)
     : op_scheduler_(CacheStorageSchedulerClient::kBackgroundSync),
-      service_worker_context_(service_worker_context),
+      service_worker_context_(std::move(service_worker_context)),
+      devtools_context_(std::move(devtools_context)),
       parameters_(std::make_unique<BackgroundSyncParameters>()),
       disabled_(false),
       num_firing_registrations_(0),
       clock_(base::DefaultClock::GetInstance()),
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(devtools_context_);
 
   service_worker_context_->AddObserver(this);
 
@@ -764,6 +769,14 @@ void BackgroundSyncManager::AddActiveRegistration(
 
   registrations->registration_map[sync_registration.options()->tag] =
       sync_registration;
+
+  if (devtools_context_->IsRecording(devtools::proto::BACKGROUND_SYNC)) {
+    devtools_context_->LogBackgroundServiceEvent(
+        sw_registration_id, origin, devtools::proto::BACKGROUND_SYNC,
+        /* event_name= */ "Registered Sync",
+        /* instance_id= */ sync_registration.options()->tag,
+        /* event_metadata= */ {});
+  }
 }
 
 void BackgroundSyncManager::StoreDataInBackend(
@@ -819,6 +832,16 @@ void BackgroundSyncManager::DispatchSyncEvent(
       tag, last_chance, parameters_->max_sync_event_duration,
       base::BindOnce(&OnSyncEventFinished, active_version, request_id,
                      std::move(repeating_callback)));
+
+  if (devtools_context_->IsRecording(devtools::proto::BACKGROUND_SYNC)) {
+    devtools_context_->LogBackgroundServiceEvent(
+        active_version->registration_id(), active_version->script_origin(),
+        devtools::proto::BACKGROUND_SYNC,
+        /* event_name= */ "Dispatched Sync Event",
+        /* instance_id= */ tag,
+        /* event_metadata= */
+        {{"Last Chance", last_chance ? "Yes" : "No"}});
+  }
 }
 
 void BackgroundSyncManager::ScheduleDelayedTask(base::OnceClosure callback,
@@ -1152,9 +1175,11 @@ void BackgroundSyncManager::EventCompleteImpl(
   // from here.
   ServiceWorkerRegistration* sw_registration =
       service_worker_context_->GetLiveRegistration(service_worker_id);
+  url::Origin origin =
+      url::Origin::Create(sw_registration->scope().GetOrigin());
   if (sw_registration) {
     HasMainFrameProviderHost(
-        url::Origin::Create(sw_registration->scope().GetOrigin()),
+        origin,
         base::BindOnce(&BackgroundSyncMetrics::RecordEventResult,
                        status_code == blink::ServiceWorkerStatusCode::kOk));
   }
@@ -1171,19 +1196,34 @@ void BackgroundSyncManager::EventCompleteImpl(
   } else if (status_code != blink::ServiceWorkerStatusCode::kOk &&
              can_retry) {  // Sync failed but can retry
     registration->set_sync_state(blink::mojom::BackgroundSyncState::PENDING);
-    registration->set_delay_until(clock_->Now() +
-                                  parameters_->initial_retry_delay *
-                                      pow(parameters_->retry_delay_factor,
-                                          registration->num_attempts() - 1));
+    base::TimeDelta delay =
+        parameters_->initial_retry_delay *
+        pow(parameters_->retry_delay_factor, registration->num_attempts() - 1);
+    registration->set_delay_until(clock_->Now() + delay);
     registration_completed = false;
+
+    if (devtools_context_->IsRecording(devtools::proto::BACKGROUND_SYNC)) {
+      devtools_context_->LogBackgroundServiceEvent(
+          sw_registration->id(), origin, devtools::proto::BACKGROUND_SYNC,
+          /* event_name= */ "Sync Event Failed",
+          /* instance_id= */ tag,
+          /* event_metadata= */
+          {{"Next Attempt Delay (ms)",
+            base::NumberToString(delay.InMilliseconds())}});
+    }
   }
 
   if (registration_completed) {
-    const std::string& registration_tag = registration->options()->tag;
-    BackgroundSyncRegistration* active_registration =
-        LookupActiveRegistration(service_worker_id, registration_tag);
-    if (active_registration) {
-      RemoveActiveRegistration(service_worker_id, registration_tag);
+    RemoveActiveRegistration(service_worker_id, tag);
+
+    if (devtools_context_->IsRecording(devtools::proto::BACKGROUND_SYNC)) {
+      bool succeded = status_code == blink::ServiceWorkerStatusCode::kOk;
+      devtools_context_->LogBackgroundServiceEvent(
+          sw_registration->id(), origin, devtools::proto::BACKGROUND_SYNC,
+          /* event_name= */ "Sync Complete",
+          /* instance_id= */ tag,
+          /* event_metadata= */
+          {{"Succeeded", succeded ? "Yes" : "No"}});
     }
   }
 
