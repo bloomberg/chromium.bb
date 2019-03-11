@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
+#include "chrome/browser/previews/previews_lite_page_decider.h"
 #include "chrome/browser/previews/previews_top_host_provider_impl.h"
 #include "components/blacklist/opt_out_blacklist/opt_out_blacklist_data.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -32,8 +33,6 @@ namespace previews {
 class PreviewsTopHostProviderImpl;
 class PreviewsUIService;
 }
-
-class PreviewsLitePageDecider;
 
 // Keyed service that owns a previews::PreviewsUIService. PreviewsService lives
 // on the UI thread.
@@ -66,6 +65,12 @@ class PreviewsService : public KeyedService {
 
   // The server lite page preview decider.
   PreviewsLitePageDecider* previews_lite_page_decider() {
+    return previews_lite_page_decider_.get();
+  }
+
+  // The https notification infobar decider.
+  PreviewsHTTPSNotificationInfoBarDecider*
+  previews_https_notification_infobar_decider() {
     return previews_lite_page_decider_.get();
   }
 

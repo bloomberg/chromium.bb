@@ -10,7 +10,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_tick_clock.h"
-#include "chrome/browser/previews/previews_lite_page_navigation_throttle_manager.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
@@ -48,37 +47,36 @@ TEST_F(PreviewsLitePageDeciderTest, TestHostBypassBlacklist) {
 
   std::unique_ptr<PreviewsLitePageDecider> decider =
       std::make_unique<PreviewsLitePageDecider>(nullptr);
-  PreviewsLitePageNavigationThrottleManager* manager = decider.get();
 
   // Simple happy case.
-  manager->BlacklistBypassedHost(kHost, kOneDay);
-  EXPECT_TRUE(manager->HostBlacklistedFromBypass(kHost));
+  decider->BlacklistBypassedHost(kHost, kOneDay);
+  EXPECT_TRUE(decider->HostBlacklistedFromBypass(kHost));
   decider->ClearStateForTesting();
 
   // Old entries are deleted.
-  manager->BlacklistBypassedHost(kHost, kYesterday);
-  EXPECT_FALSE(manager->HostBlacklistedFromBypass(kHost));
+  decider->BlacklistBypassedHost(kHost, kYesterday);
+  EXPECT_FALSE(decider->HostBlacklistedFromBypass(kHost));
   decider->ClearStateForTesting();
 
   // Oldest entry is thrown out.
-  manager->BlacklistBypassedHost(kHost, kOneDay);
-  EXPECT_TRUE(manager->HostBlacklistedFromBypass(kHost));
+  decider->BlacklistBypassedHost(kHost, kOneDay);
+  EXPECT_TRUE(decider->HostBlacklistedFromBypass(kHost));
   for (int i = 1; i <= kBlacklistDurationDays; i++) {
-    manager->BlacklistBypassedHost(kHost + base::NumberToString(i),
+    decider->BlacklistBypassedHost(kHost + base::NumberToString(i),
                                    kOneDay + base::TimeDelta::FromSeconds(i));
   }
-  EXPECT_FALSE(manager->HostBlacklistedFromBypass(kHost));
+  EXPECT_FALSE(decider->HostBlacklistedFromBypass(kHost));
   decider->ClearStateForTesting();
 
   // Oldest entry is not thrown out if there was a stale entry to remove.
-  manager->BlacklistBypassedHost(kHost, kOneDay);
-  EXPECT_TRUE(manager->HostBlacklistedFromBypass(kHost));
+  decider->BlacklistBypassedHost(kHost, kOneDay);
+  EXPECT_TRUE(decider->HostBlacklistedFromBypass(kHost));
   for (int i = 1; i <= kBlacklistDurationDays - 1; i++) {
-    manager->BlacklistBypassedHost(kHost + base::NumberToString(i),
+    decider->BlacklistBypassedHost(kHost + base::NumberToString(i),
                                    kOneDay + base::TimeDelta::FromSeconds(i));
   }
-  manager->BlacklistBypassedHost(kOtherHost, kYesterday);
-  EXPECT_TRUE(manager->HostBlacklistedFromBypass(kHost));
+  decider->BlacklistBypassedHost(kOtherHost, kYesterday);
+  EXPECT_TRUE(decider->HostBlacklistedFromBypass(kHost));
   decider->ClearStateForTesting();
 }
 
@@ -87,13 +85,12 @@ TEST_F(PreviewsLitePageDeciderTest, TestClearHostBypassBlacklist) {
 
   std::unique_ptr<PreviewsLitePageDecider> decider =
       std::make_unique<PreviewsLitePageDecider>(nullptr);
-  PreviewsLitePageNavigationThrottleManager* manager = decider.get();
 
-  manager->BlacklistBypassedHost(kHost, base::TimeDelta::FromMinutes(1));
-  EXPECT_TRUE(manager->HostBlacklistedFromBypass(kHost));
+  decider->BlacklistBypassedHost(kHost, base::TimeDelta::FromMinutes(1));
+  EXPECT_TRUE(decider->HostBlacklistedFromBypass(kHost));
 
   decider->ClearBlacklist();
-  EXPECT_FALSE(manager->HostBlacklistedFromBypass(kHost));
+  EXPECT_FALSE(decider->HostBlacklistedFromBypass(kHost));
 }
 
 TEST_F(PreviewsLitePageDeciderTest, TestServerUnavailable) {
@@ -188,8 +185,7 @@ class PreviewsLitePageDeciderPrefTest : public ChromeRenderViewHostTestHarness {
     ChromeRenderViewHostTestHarness::TearDown();
   }
 
-  PreviewsLitePageNavigationThrottleManager* GetManagerWithDRPEnabled(
-      bool enabled) {
+  PreviewsLitePageDecider* GetDeciderWithDRPEnabled(bool enabled) {
     drp_test_context_->SetDataReductionProxyEnabled(enabled);
 
     decider_ = std::make_unique<PreviewsLitePageDecider>(
@@ -201,8 +197,6 @@ class PreviewsLitePageDeciderPrefTest : public ChromeRenderViewHostTestHarness {
     return decider_.get();
   }
 
-  PreviewsLitePageDecider* decider() { return decider_.get(); }
-
  private:
   std::unique_ptr<data_reduction_proxy::DataReductionProxyTestContext>
       drp_test_context_;
@@ -210,53 +204,49 @@ class PreviewsLitePageDeciderPrefTest : public ChromeRenderViewHostTestHarness {
 };
 
 TEST_F(PreviewsLitePageDeciderPrefTest, TestDRPDisabled) {
-  PreviewsLitePageNavigationThrottleManager* manager =
-      GetManagerWithDRPEnabled(false);
-  EXPECT_FALSE(manager->NeedsToNotifyUser());
+  PreviewsLitePageDecider* decider = GetDeciderWithDRPEnabled(false);
+  EXPECT_FALSE(decider->NeedsToNotifyUser());
 
   content::WebContentsTester::For(web_contents())
       ->NavigateAndCommit(GURL(kTestUrl));
 
   // Should still be false after a navigation
-  EXPECT_FALSE(manager->NeedsToNotifyUser());
+  EXPECT_FALSE(decider->NeedsToNotifyUser());
 }
 
 TEST_F(PreviewsLitePageDeciderPrefTest, TestDRPEnabled) {
-  PreviewsLitePageNavigationThrottleManager* manager =
-      GetManagerWithDRPEnabled(true);
-  EXPECT_TRUE(manager->NeedsToNotifyUser());
+  PreviewsLitePageDecider* decider = GetDeciderWithDRPEnabled(true);
+  EXPECT_TRUE(decider->NeedsToNotifyUser());
 
   content::WebContentsTester::For(web_contents())
       ->NavigateAndCommit(GURL(kTestUrl));
 
   // Should still be true after a navigation
-  EXPECT_TRUE(manager->NeedsToNotifyUser());
+  EXPECT_TRUE(decider->NeedsToNotifyUser());
 }
 
 TEST_F(PreviewsLitePageDeciderPrefTest, TestDRPEnabledCmdLineIgnored) {
-  PreviewsLitePageNavigationThrottleManager* manager =
-      GetManagerWithDRPEnabled(true);
+  PreviewsLitePageDecider* decider = GetDeciderWithDRPEnabled(true);
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       previews::switches::kDoNotRequireLitePageRedirectInfoBar);
-  EXPECT_FALSE(manager->NeedsToNotifyUser());
+  EXPECT_FALSE(decider->NeedsToNotifyUser());
 
   content::WebContentsTester::For(web_contents())
       ->NavigateAndCommit(GURL(kTestUrl));
 
   // Should still be false after a navigation.
-  EXPECT_FALSE(manager->NeedsToNotifyUser());
+  EXPECT_FALSE(decider->NeedsToNotifyUser());
 }
 
 TEST_F(PreviewsLitePageDeciderPrefTest, TestDRPEnabledThenNotify) {
-  PreviewsLitePageNavigationThrottleManager* manager =
-      GetManagerWithDRPEnabled(true);
-  EXPECT_TRUE(manager->NeedsToNotifyUser());
+  PreviewsLitePageDecider* decider = GetDeciderWithDRPEnabled(true);
+  EXPECT_TRUE(decider->NeedsToNotifyUser());
 
   // Simulate the callback being run.
-  decider()->SetUserHasSeenUINotification();
+  decider->SetUserHasSeenUINotification();
 
   content::WebContentsTester::For(web_contents())
       ->NavigateAndCommit(GURL(kTestUrl));
 
-  EXPECT_FALSE(manager->NeedsToNotifyUser());
+  EXPECT_FALSE(decider->NeedsToNotifyUser());
 }

@@ -1308,6 +1308,7 @@ jumbo_split_static_library("browser") {
     "prerender/prerender_util.h",
     "previews/previews_content_util.cc",
     "previews/previews_content_util.h",
+    "previews/previews_https_notification_infobar_decider.h",
     "previews/previews_infobar_delegate.cc",
     "previews/previews_infobar_delegate.h",
     "previews/previews_lite_page_decider.cc",
