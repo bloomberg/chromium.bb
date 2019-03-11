@@ -66,13 +66,14 @@ class LayoutUnit {
 
  public:
   constexpr LayoutUnit() : value_(0) {}
-  explicit LayoutUnit(int value) { SetValue(value); }
-  explicit LayoutUnit(uint16_t value) { SetValue(value); }
-  explicit LayoutUnit(unsigned value) { SetValue(value); }
-  explicit LayoutUnit(unsigned long value) {
-    value_ = base::saturated_cast<int>(value * kFixedPointDenominator);
+  template <typename IntegerType>
+  explicit LayoutUnit(IntegerType value) {
+    if (std::is_signed<IntegerType>::value)
+      SetValue(static_cast<int>(value));
+    else
+      SetValue(static_cast<unsigned>(value));
   }
-  explicit LayoutUnit(unsigned long long value) {
+  explicit LayoutUnit(uint64_t value) {
     value_ = base::saturated_cast<int>(value * kFixedPointDenominator);
   }
   explicit LayoutUnit(float value) {
@@ -414,43 +415,13 @@ inline float operator*(const LayoutUnit& a, float b) {
   return a.ToFloat() * b;
 }
 
-inline LayoutUnit operator*(const LayoutUnit& a, int b) {
+template <typename IntegerType>
+inline LayoutUnit operator*(const LayoutUnit& a, IntegerType b) {
   return a * LayoutUnit(b);
 }
 
-inline LayoutUnit operator*(const LayoutUnit& a, uint16_t b) {
-  return a * LayoutUnit(b);
-}
-
-inline LayoutUnit operator*(const LayoutUnit& a, unsigned b) {
-  return a * LayoutUnit(b);
-}
-
-inline LayoutUnit operator*(const LayoutUnit& a, unsigned long b) {
-  return a * LayoutUnit(b);
-}
-
-inline LayoutUnit operator*(const LayoutUnit& a, unsigned long long b) {
-  return a * LayoutUnit(b);
-}
-
-inline LayoutUnit operator*(uint16_t a, const LayoutUnit& b) {
-  return LayoutUnit(a) * b;
-}
-
-inline LayoutUnit operator*(unsigned a, const LayoutUnit& b) {
-  return LayoutUnit(a) * b;
-}
-
-inline LayoutUnit operator*(unsigned long a, const LayoutUnit& b) {
-  return LayoutUnit(a) * b;
-}
-
-inline LayoutUnit operator*(unsigned long long a, const LayoutUnit& b) {
-  return LayoutUnit(a) * b;
-}
-
-inline LayoutUnit operator*(const int a, const LayoutUnit& b) {
+template <typename IntegerType>
+inline LayoutUnit operator*(IntegerType a, const LayoutUnit& b) {
   return LayoutUnit(a) * b;
 }
 
@@ -478,23 +449,8 @@ constexpr double operator/(const LayoutUnit& a, double b) {
   return a.ToDouble() / b;
 }
 
-inline LayoutUnit operator/(const LayoutUnit& a, int b) {
-  return a / LayoutUnit(b);
-}
-
-inline LayoutUnit operator/(const LayoutUnit& a, uint16_t b) {
-  return a / LayoutUnit(b);
-}
-
-inline LayoutUnit operator/(const LayoutUnit& a, unsigned b) {
-  return a / LayoutUnit(b);
-}
-
-inline LayoutUnit operator/(const LayoutUnit& a, unsigned long b) {
-  return a / LayoutUnit(b);
-}
-
-inline LayoutUnit operator/(const LayoutUnit& a, unsigned long long b) {
+template <typename IntegerType>
+inline LayoutUnit operator/(const LayoutUnit& a, IntegerType b) {
   return a / LayoutUnit(b);
 }
 
@@ -506,23 +462,8 @@ constexpr double operator/(const double a, const LayoutUnit& b) {
   return a / b.ToDouble();
 }
 
-inline LayoutUnit operator/(const int a, const LayoutUnit& b) {
-  return LayoutUnit(a) / b;
-}
-
-inline LayoutUnit operator/(uint16_t a, const LayoutUnit& b) {
-  return LayoutUnit(a) / b;
-}
-
-inline LayoutUnit operator/(unsigned a, const LayoutUnit& b) {
-  return LayoutUnit(a) / b;
-}
-
-inline LayoutUnit operator/(unsigned long a, const LayoutUnit& b) {
-  return LayoutUnit(a) / b;
-}
-
-inline LayoutUnit operator/(unsigned long long a, const LayoutUnit& b) {
+template <typename IntegerType>
+inline LayoutUnit operator/(const IntegerType a, const LayoutUnit& b) {
   return LayoutUnit(a) / b;
 }
 
@@ -532,7 +473,8 @@ ALWAYS_INLINE LayoutUnit operator+(const LayoutUnit& a, const LayoutUnit& b) {
   return return_val;
 }
 
-inline LayoutUnit operator+(const LayoutUnit& a, int b) {
+template <typename IntegerType>
+inline LayoutUnit operator+(const LayoutUnit& a, IntegerType b) {
   return a + LayoutUnit(b);
 }
 
@@ -544,7 +486,8 @@ inline double operator+(const LayoutUnit& a, double b) {
   return a.ToDouble() + b;
 }
 
-inline LayoutUnit operator+(const int a, const LayoutUnit& b) {
+template <typename IntegerType>
+inline LayoutUnit operator+(const IntegerType a, const LayoutUnit& b) {
   return LayoutUnit(a) + b;
 }
 
@@ -562,11 +505,8 @@ ALWAYS_INLINE LayoutUnit operator-(const LayoutUnit& a, const LayoutUnit& b) {
   return return_val;
 }
 
-inline LayoutUnit operator-(const LayoutUnit& a, int b) {
-  return a - LayoutUnit(b);
-}
-
-inline LayoutUnit operator-(const LayoutUnit& a, unsigned b) {
+template <typename IntegerType>
+inline LayoutUnit operator-(const LayoutUnit& a, IntegerType b) {
   return a - LayoutUnit(b);
 }
 
@@ -578,7 +518,8 @@ constexpr double operator-(const LayoutUnit& a, double b) {
   return a.ToDouble() - b;
 }
 
-inline LayoutUnit operator-(const int a, const LayoutUnit& b) {
+template <typename IntegerType>
+inline LayoutUnit operator-(const IntegerType a, const LayoutUnit& b) {
   return LayoutUnit(a) - b;
 }
 
@@ -612,7 +553,8 @@ inline LayoutUnit LayoutMod(const LayoutUnit& a, const LayoutUnit& b) {
   return return_val;
 }
 
-inline LayoutUnit LayoutMod(const LayoutUnit& a, int b) {
+template <typename IntegerType>
+inline LayoutUnit LayoutMod(const LayoutUnit& a, IntegerType b) {
   return LayoutMod(a, LayoutUnit(b));
 }
 
@@ -621,7 +563,8 @@ inline LayoutUnit& operator+=(LayoutUnit& a, const LayoutUnit& b) {
   return a;
 }
 
-inline LayoutUnit& operator+=(LayoutUnit& a, int b) {
+template <typename IntegerType>
+inline LayoutUnit& operator+=(LayoutUnit& a, IntegerType b) {
   a = a + LayoutUnit(b);
   return a;
 }
@@ -636,7 +579,8 @@ inline float& operator+=(float& a, const LayoutUnit& b) {
   return a;
 }
 
-inline LayoutUnit& operator-=(LayoutUnit& a, int b) {
+template <typename IntegerType>
+inline LayoutUnit& operator-=(LayoutUnit& a, IntegerType b) {
   a = a - LayoutUnit(b);
   return a;
 }
