@@ -44,6 +44,7 @@ class CORE_EXPORT CompositingReasonFinder {
   static bool RequiresCompositingForTransformAnimation(const ComputedStyle&);
   static bool RequiresCompositingForTransform(const LayoutObject&);
   static bool RequiresCompositingForRootScroller(const PaintLayer&);
+  static bool RequiresCompositingForScrollTimeline(const PaintLayer&);
 
   static bool RequiresCompositingForScrollDependentPosition(const PaintLayer&);
 };

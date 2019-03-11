@@ -8,7 +8,6 @@
 
 #include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/input/overscroll_behavior.h"
-#include "third_party/blink/renderer/core/animation/scroll_timeline.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/frame/link_highlights.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -252,52 +251,36 @@ class FragmentPaintPropertyTreeBuilder {
       PaintPropertyChangeType::kUnchanged;
 };
 
-static bool IsRootScroller(const LayoutBox& box) {
-  auto* scrollable_area = box.GetScrollableArea();
-  DCHECK(scrollable_area);
-  auto* layer = scrollable_area->Layer();
-  return layer &&
-         CompositingReasonFinder::RequiresCompositingForRootScroller(*layer);
-}
-
-static bool HasScrollsOverflow(const LayoutBox& box) {
-  // TODO(crbug.com/839341): Remove ScrollTimeline check once we support
-  // main-thread AnimationWorklet and don't need to promote the scroll-source.
-  return box.GetScrollableArea()->ScrollsOverflow() ||
-         ScrollTimeline::HasActiveScrollTimeline(box.GetNode());
-}
-
-static bool NeedsScrollNode(const LayoutObject& object) {
+static bool NeedsScrollNode(const LayoutObject& object,
+                            CompositingReasons direct_compositing_reasons) {
   if (!object.HasOverflowClip())
     return false;
-  const LayoutBox& box = ToLayoutBox(object);
+
   // TODO(pdr): CAP has invalidation issues (crbug.com/732611) as well as
   // subpixel issues (crbug.com/693741) which prevent us from compositing the
   // root scroller.
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    return HasScrollsOverflow(box);
-  return HasScrollsOverflow(box) || IsRootScroller(box);
-}
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    if (direct_compositing_reasons & CompositingReason::kRootScroller)
+      return true;
+  }
 
-static CompositingReasons CompositingReasonsForScroll(const LayoutBox& box) {
-  CompositingReasons compositing_reasons = CompositingReason::kNone;
+  if (direct_compositing_reasons & CompositingReason::kScrollTimelineTarget)
+    return true;
 
-  if (IsRootScroller(box))
-    compositing_reasons |= CompositingReason::kRootScroller;
-
-  // TODO(pdr): Set other compositing reasons for scroll here, see:
-  // PaintLayerScrollableArea::ComputeNeedsCompositedScrolling.
-  return compositing_reasons;
+  return ToLayoutBox(object).GetScrollableArea()->ScrollsOverflow();
 }
 
 // True if a scroll translation is needed for static scroll offset (e.g.,
 // overflow hidden with scroll), or if a scroll node is needed for composited
 // scrolling.
-static bool NeedsScrollOrScrollTranslation(const LayoutObject& object) {
+static bool NeedsScrollOrScrollTranslation(
+    const LayoutObject& object,
+    CompositingReasons direct_compositing_reasons) {
   if (!object.HasOverflowClip())
     return false;
   IntSize scroll_offset = ToLayoutBox(object).ScrolledContentOffset();
-  return !scroll_offset.IsZero() || NeedsScrollNode(object);
+  return !scroll_offset.IsZero() ||
+         NeedsScrollNode(object, direct_compositing_reasons);
 }
 
 static bool NeedsReplacedContentTransform(const LayoutObject& object) {
@@ -404,7 +387,7 @@ static bool NeedsPaintOffsetTranslation(
                                   kGlobalPaintFlattenCompositingLayers)) {
     return true;
   }
-  if (NeedsScrollOrScrollTranslation(object))
+  if (NeedsScrollOrScrollTranslation(object, direct_compositing_reasons))
     return true;
   if (NeedsStickyTranslation(object))
     return true;
@@ -1672,7 +1655,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation() {
   DCHECK(properties_);
 
   if (NeedsPaintPropertyUpdate()) {
-    if (NeedsScrollNode(object_)) {
+    if (NeedsScrollNode(object_, full_context_.direct_compositing_reasons)) {
       const LayoutBox& box = ToLayoutBox(object_);
       PaintLayerScrollableArea* scrollable_area = box.GetScrollableArea();
       ScrollPaintPropertyNode::State state;
@@ -1761,7 +1744,8 @@ void FragmentPaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation() {
 
     // A scroll translation node is created for static offset (e.g., overflow
     // hidden with scroll offset) or cases that scroll and have a scroll node.
-    if (NeedsScrollOrScrollTranslation(object_)) {
+    if (NeedsScrollOrScrollTranslation(
+            object_, full_context_.direct_compositing_reasons)) {
       const auto& box = ToLayoutBox(object_);
       // Bake ScrollOrigin into ScrollTranslation. See comments for
       // ScrollTranslation in object_paint_properties.h for details.
@@ -1770,7 +1754,10 @@ void FragmentPaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation() {
           -FloatSize(ToIntSize(scroll_position))};
       state.flattens_inherited_transform =
           context_.current.should_flatten_inherited_transform;
-      state.direct_compositing_reasons = CompositingReasonsForScroll(box);
+      state.direct_compositing_reasons =
+          full_context_.direct_compositing_reasons &
+          (CompositingReason::kRootScroller |
+           CompositingReason::kScrollTimelineTarget);
       if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
           RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
         state.rendering_context_id = context_.current.rendering_context_id;
@@ -2993,7 +2980,8 @@ bool PaintPropertyTreeBuilder::UpdateFragments() {
       NeedsOverflowClip(object_) || NeedsPerspective(object_) ||
       NeedsReplacedContentTransform(object_) ||
       NeedsLinkHighlightEffect(object_) ||
-      NeedsScrollOrScrollTranslation(object_);
+      NeedsScrollOrScrollTranslation(object_,
+                                     context_.direct_compositing_reasons);
   // Need of fragmentation clip will be determined in CreateFragmentContexts().
 
   if (object_.IsFixedPositionObjectInPagedMedia()) {
