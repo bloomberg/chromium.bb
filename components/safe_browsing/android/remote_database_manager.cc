@@ -295,6 +295,10 @@ safe_browsing::ThreatSource RemoteSafeBrowsingDatabaseManager::GetThreatSource()
 }
 
 std::string RemoteSafeBrowsingDatabaseManager::GetSafetyNetId() const {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (!enabled_)
+    return std::string();
+
   SafeBrowsingApiHandler* api_handler = SafeBrowsingApiHandler::GetInstance();
   DCHECK(api_handler) << "SafeBrowsingApiHandler was never constructed";
   return api_handler->GetSafetyNetId();
