@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/containers/queue.h"
 #include "base/debug/alias.h"
@@ -220,9 +221,6 @@ const void* const kRenderFrameHostAndroidKey = &kRenderFrameHostAndroidKey;
 
 // The next value to use for the accessibility reset token.
 int g_next_accessibility_reset_token = 1;
-
-// The next value to use for the javascript callback id.
-int g_next_javascript_callback_id = 1;
 
 #if defined(OS_ANDROID) || defined(OS_FUCHSIA)
 // Whether to allow injecting javascript into any kind of frame, for Android
@@ -1195,11 +1193,18 @@ void RenderFrameHostImpl::AddMessageToConsole(ConsoleMessageLevel level,
   Send(new FrameMsg_AddMessageToConsole(routing_id_, level, message));
 }
 
+namespace {
+
+void ForwardJavaScriptResult(RenderFrameHost::JavaScriptResultCallback callback,
+                             base::Value result) {
+  std::move(callback).Run(&result);
+}
+
+}  // namespace
+
 void RenderFrameHostImpl::ExecuteJavaScript(
     const base::string16& javascript) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  CHECK(CanExecuteJavaScript());
-  GetNavigationControl()->JavaScriptExecuteRequest(javascript, 0, false);
+  ExecuteJavaScript(javascript, base::NullCallback());
 }
 
 void RenderFrameHostImpl::ExecuteJavaScript(
@@ -1207,33 +1212,10 @@ void RenderFrameHostImpl::ExecuteJavaScript(
      const JavaScriptResultCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   CHECK(CanExecuteJavaScript());
-  int key = g_next_javascript_callback_id++;
-  GetNavigationControl()->JavaScriptExecuteRequest(javascript, key, true);
-  javascript_callbacks_.emplace(key, callback);
-}
 
-void RenderFrameHostImpl::ExecuteJavaScriptForTests(
-    const base::string16& javascript) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  GetNavigationControl()->JavaScriptExecuteRequestForTests(javascript, 0, false,
-                                                           false);
-}
-
-void RenderFrameHostImpl::ExecuteJavaScriptForTests(
-    const base::string16& javascript,
-    const JavaScriptResultCallback& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  int key = g_next_javascript_callback_id++;
-  GetNavigationControl()->JavaScriptExecuteRequestForTests(javascript, key,
-                                                           true, false);
-  javascript_callbacks_.emplace(key, callback);
-}
-
-void RenderFrameHostImpl::ExecuteJavaScriptWithUserGestureForTests(
-    const base::string16& javascript) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  GetNavigationControl()->JavaScriptExecuteRequestForTests(javascript, 0, false,
-                                                           true);
+  GetNavigationControl()->JavaScriptExecuteRequest(
+      javascript, callback ? base::BindOnce(ForwardJavaScriptResult, callback)
+                           : base::NullCallback());
 }
 
 void RenderFrameHostImpl::ExecuteJavaScriptInIsolatedWorld(
@@ -1241,23 +1223,39 @@ void RenderFrameHostImpl::ExecuteJavaScriptInIsolatedWorld(
     const JavaScriptResultCallback& callback,
     int world_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (world_id <= ISOLATED_WORLD_ID_GLOBAL ||
-      world_id > ISOLATED_WORLD_ID_MAX) {
-    // Return if the world_id is not valid.
-    NOTREACHED();
-    return;
-  }
-
-  int key = 0;
-  bool request_reply = false;
-  if (!callback.is_null()) {
-    request_reply = true;
-    key = g_next_javascript_callback_id++;
-    javascript_callbacks_.emplace(key, callback);
-  }
+  DCHECK_GT(world_id, ISOLATED_WORLD_ID_GLOBAL);
+  DCHECK_LE(world_id, ISOLATED_WORLD_ID_MAX);
 
   GetNavigationControl()->JavaScriptExecuteRequestInIsolatedWorld(
-      javascript, key, request_reply, world_id);
+      javascript, world_id,
+      callback ? base::BindOnce(ForwardJavaScriptResult, callback)
+               : base::NullCallback());
+}
+
+void RenderFrameHostImpl::ExecuteJavaScriptForTests(
+    const base::string16& javascript) {
+  ExecuteJavaScriptForTests(javascript, base::NullCallback());
+}
+
+void RenderFrameHostImpl::ExecuteJavaScriptForTests(
+    const base::string16& javascript,
+    const JavaScriptResultCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  const bool has_user_gesture = false;
+  GetNavigationControl()->JavaScriptExecuteRequestForTests(
+      javascript, has_user_gesture,
+      callback ? base::BindOnce(ForwardJavaScriptResult, callback)
+               : base::NullCallback());
+}
+
+void RenderFrameHostImpl::ExecuteJavaScriptWithUserGestureForTests(
+    const base::string16& javascript) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  const bool has_user_gesture = true;
+  GetNavigationControl()->JavaScriptExecuteRequestForTests(
+      javascript, has_user_gesture, base::NullCallback());
 }
 
 void RenderFrameHostImpl::CopyImageAt(int x, int y) {
@@ -2542,7 +2540,6 @@ void RenderFrameHostImpl::OnRenderProcessGone(int status, int exit_code) {
 #endif  // defined(OS_ANDROID)
 
   ax_tree_snapshot_callbacks_.clear();
-  javascript_callbacks_.clear();
   visual_state_callbacks_.clear();
 
   // Ensure that future remote interface requests are associated with the new
@@ -2633,17 +2630,6 @@ void RenderFrameHostImpl::OnContextMenu(const ContextMenuParams& params) {
   }
 
   delegate_->ShowContextMenu(this, validated_params);
-}
-
-void RenderFrameHostImpl::JavaScriptExecuteResponse(int id,
-                                                    base::Value result) {
-  auto it = javascript_callbacks_.find(id);
-  if (it != javascript_callbacks_.end()) {
-    it->second.Run(&result);
-    javascript_callbacks_.erase(it);
-  } else {
-    NOTREACHED() << "Received script response for unknown request";
-  }
 }
 
 #if defined(OS_ANDROID)

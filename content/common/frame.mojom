@@ -179,31 +179,24 @@ interface FrameNavigationControl {
   // |javascript| is the string containing the JavaScript to be executed in the
   // target frame's context.
   //
-  // If |notify_result| is true the result is sent back to the browser using
-  // the message FrameHost::JavaScriptExecuteResponse.
-  // FrameHost::JavaScriptExecuteResponse is passed the ID parameter so that the
-  // host can uniquely identify the request.
-  //
   // TODO(hajimehoshi): This requires navigate association to keep the message
   // order with other navigation-related messages. Fix this and move this to a
   // non-navigate-related interface if possible.
-  JavaScriptExecuteRequest(mojo_base.mojom.String16 javascript,
-                           int32 id,
-                           bool notify_result);
+  JavaScriptExecuteRequest(
+      mojo_base.mojom.String16 javascript) => (mojo_base.mojom.Value result);
 
-  // ONLY FOR TESTS: Same as above but adds a fake UserGestureindicator around
+  // ONLY FOR TESTS: Same as above but adds a fake UserGestureIndicator around
   // execution. (crbug.com/408426)
-  JavaScriptExecuteRequestForTests(mojo_base.mojom.String16 javascript,
-                                   int32 id,
-                                   bool notify_result,
-                                   bool has_user_gesture);
+  JavaScriptExecuteRequestForTests(
+      mojo_base.mojom.String16 javascript,
+      bool has_user_gesture)
+      => (mojo_base.mojom.Value result);
 
   // Same as JavaScriptExecuteRequest above except the script is run in the
   // isolated world specified by the fourth parameter.
-  JavaScriptExecuteRequestInIsolatedWorld(mojo_base.mojom.String16 javascript,
-                                          int32 id,
-                                          bool notify_result,
-                                          int32 world_id);
+  JavaScriptExecuteRequestInIsolatedWorld(
+      mojo_base.mojom.String16 javascript,
+      int32 world_id) => (mojo_base.mojom.Value result);
 };
 
 // Implemented by the frame (e.g. renderer processes).
@@ -429,10 +422,4 @@ interface FrameHost {
   // were initiated by a gesture too, otherwise the navigation may be blocked.
   [EnableIf=is_android]
   UpdateUserGestureCarryoverInfo();
-
-  // Response for JavaScriptExecuteRequest, sent when a reply was requested.
-  // The ID is the parameter supplied to
-  // Frame::JavaScriptExecuteRequest. The result is the value returned by the
-  // script, one of Null, Boolean, Integer, Real, or String.
-  JavaScriptExecuteResponse(int32 id, mojo_base.mojom.Value result);
 };

@@ -29,6 +29,7 @@
 #include "base/process/process_handle.h"
 #include "base/single_thread_task_runner.h"
 #include "base/unguessable_token.h"
+#include "base/values.h"
 #include "build/build_config.h"
 #include "content/common/buildflags.h"
 #include "content/common/download/mhtml_save_status.h"
@@ -622,17 +623,17 @@ class CONTENT_EXPORT RenderFrameImpl
       blink::mojom::DevToolsAgentHostAssociatedPtrInfo host,
       blink::mojom::DevToolsAgentAssociatedRequest request) override;
 
-  void JavaScriptExecuteRequest(const base::string16& javascript,
-                                int id,
-                                bool notify_result) override;
-  void JavaScriptExecuteRequestForTests(const base::string16& javascript,
-                                        int id,
-                                        bool notify_result,
-                                        bool has_user_gesture) override;
-  void JavaScriptExecuteRequestInIsolatedWorld(const base::string16& jscript,
-                                               int id,
-                                               bool notify_result,
-                                               int world_id) override;
+  void JavaScriptExecuteRequest(
+      const base::string16& javascript,
+      JavaScriptExecuteRequestCallback callback) override;
+  void JavaScriptExecuteRequestForTests(
+      const base::string16& javascript,
+      bool has_user_gesture,
+      JavaScriptExecuteRequestForTestsCallback callback) override;
+  void JavaScriptExecuteRequestInIsolatedWorld(
+      const base::string16& javascript,
+      int32_t world_id,
+      JavaScriptExecuteRequestInIsolatedWorldCallback callback) override;
 
   // mojom::FullscreenVideoElementHandler implementation:
   void RequestFullscreenVideoElement() override;
@@ -1003,18 +1004,16 @@ class CONTENT_EXPORT RenderFrameImpl
       : public blink::WebScriptExecutionCallback {
    public:
     JavaScriptIsolatedWorldRequest(
-        int id,
-        bool notify_result,
-        base::WeakPtr<RenderFrameImpl> render_frame_impl);
+        base::WeakPtr<RenderFrameImpl> render_frame_impl,
+        JavaScriptExecuteRequestInIsolatedWorldCallback callback);
     void Completed(
         const blink::WebVector<v8::Local<v8::Value>>& result) override;
 
    private:
     ~JavaScriptIsolatedWorldRequest() override;
 
-    int id_;
-    bool notify_result_;
     base::WeakPtr<RenderFrameImpl> render_frame_impl_;
+    JavaScriptExecuteRequestInIsolatedWorldCallback callback_;
 
     DISALLOW_COPY_AND_ASSIGN(JavaScriptIsolatedWorldRequest);
   };
@@ -1208,10 +1207,7 @@ class CONTENT_EXPORT RenderFrameImpl
       bool replace_current_item,
       bool inherit_document_state);
 
-  void HandleJavascriptExecutionResult(const base::string16& javascript,
-                                       int id,
-                                       bool notify_result,
-                                       v8::Local<v8::Value> result);
+  base::Value GetJavaScriptExecutionResult(v8::Local<v8::Value> result);
 
   // Initializes |web_user_media_client_|. If this fails, because it wasn't
   // possible to create a MediaStreamClient (e.g., WebRTC is disabled), then

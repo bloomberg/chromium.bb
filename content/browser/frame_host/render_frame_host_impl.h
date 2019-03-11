@@ -1137,7 +1137,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
           validated_params,
       mojom::DidCommitProvisionalLoadInterfaceParamsPtr interface_params)
       override;
-  void JavaScriptExecuteResponse(int id, base::Value result) override;
 
   // This function mimics DidCommitProvisionalLoad but is a direct mojo
   // callback from NavigationClient::CommitNavigation.
@@ -1578,9 +1577,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // transfers work for net errors.  See https://crbug.com/588314.
   GURL last_successful_url_;
 
-  // The mapping of pending JavaScript calls created by
-  // ExecuteJavaScript and their corresponding callbacks.
-  std::map<int, JavaScriptResultCallback> javascript_callbacks_;
   std::map<uint64_t, VisualStateCallback> visual_state_callbacks_;
 
   // RenderFrameHosts that need management of the rendering and input events
