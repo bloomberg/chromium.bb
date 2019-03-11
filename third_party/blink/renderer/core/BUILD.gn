@@ -510,14 +510,14 @@ css_properties("make_core_generated_css_property_baseclass") {
   other_inputs = [
     "../build/scripts/core/css/properties/templates/css_property.cc.tmpl",
     "../build/scripts/core/css/properties/templates/css_property.h.tmpl",
-    "../build/scripts/core/css/properties/templates/css_unresolved_property.cc.tmpl",
-    "../build/scripts/core/css/properties/templates/css_unresolved_property.h.tmpl",
+    "../build/scripts/core/css/properties/templates/css_property_instances.cc.tmpl",
+    "../build/scripts/core/css/properties/templates/css_property_instances.h.tmpl",
   ]
   outputs = [
     "$blink_core_output_dir/css/properties/css_property.cc",
     "$blink_core_output_dir/css/properties/css_property.h",
-    "$blink_core_output_dir/css/properties/css_unresolved_property.cc",
-    "$blink_core_output_dir/css/properties/css_unresolved_property.h",
+    "$blink_core_output_dir/css/properties/css_property_instances.cc",
+    "$blink_core_output_dir/css/properties/css_property_instances.h",
   ]
 }
 

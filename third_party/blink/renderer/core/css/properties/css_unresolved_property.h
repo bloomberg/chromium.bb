@@ -1,15 +1,11 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-{% from 'templates/macros.tmpl' import source_files_for_generated_file %}
-{{source_files_for_generated_file(template_file, input_files)}}
-// clang-format off
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PROPERTIES_CSS_UNRESOLVED_PROPERTY_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PROPERTIES_CSS_UNRESOLVED_PROPERTY_H_
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_UNRESOLVED_PROPERTY_H_
-#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_UNRESOLVED_PROPERTY_H_
-
-#include "third_party/blink/renderer/core/css/css_property_names.h"
+#include "third_party/blink/renderer/core/css/properties/css_property_instances.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -17,9 +13,10 @@ namespace blink {
 // TODO(crbug.com/793288): audit and consider redesigning how aliases are
 // handled once more of project Ribbon is done and all use of aliases can be
 // found and (hopefully) constrained.
-class CSSUnresolvedProperty {
+class CORE_EXPORT CSSUnresolvedProperty {
  public:
-  CORE_EXPORT static const CSSUnresolvedProperty& Get(CSSPropertyID);
+  static const CSSUnresolvedProperty& Get(CSSPropertyID);
+  static const CSSUnresolvedProperty* GetAliasProperty(CSSPropertyID);
 
   virtual bool IsEnabled() const { return true; }
   virtual bool IsResolvedProperty() const { return false; }
@@ -40,18 +37,14 @@ class CSSUnresolvedProperty {
     return GetPropertyNameAtomicString().GetString();
   }
 
-  static const CSSUnresolvedProperty& GetCSSPropertyVariableInternal();
-  {% for property_class_data in property_classes_by_property_id %}
-  static const CSSUnresolvedProperty& Get{{property_class_data.property_id}}Internal();
-  {% endfor %}
-
-  CORE_EXPORT static const CSSUnresolvedProperty* GetAliasProperty(CSSPropertyID);
-
  protected:
-  constexpr CSSUnresolvedProperty() {}
   static const CSSUnresolvedProperty& GetNonAliasProperty(CSSPropertyID);
+
+  constexpr CSSUnresolvedProperty() {}
 };
+
+const CSSUnresolvedProperty& GetCSSPropertyVariableInternal();
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_UNRESOLVED_PROPERTY_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PROPERTIES_CSS_UNRESOLVED_PROPERTY_H_
