@@ -13,6 +13,8 @@
 #include "base/macros.h"
 #include "base/strings/string_util.h"
 
+namespace password_manager {
+
 namespace {
 
 // Returns all the characters from the start of |input| until the first '\n',
@@ -138,6 +140,9 @@ class FieldParser {
   // reading is done.
   size_t position_ = 0;
 
+  // The number of successful past invocations of NextField().
+  size_t fields_returned_ = 0;
+
   DISALLOW_COPY_AND_ASSIGN(FieldParser);
 };
 
@@ -147,6 +152,8 @@ FieldParser::~FieldParser() = default;
 
 bool FieldParser::NextField(base::StringPiece* field_contents) {
   DCHECK(HasMoreFields());
+  if (fields_returned_ >= CSVTable::kMaxColumns)
+    return false;
 
   if (state_ != State::kInit) {
     state_ = State::kError;
@@ -169,6 +176,7 @@ bool FieldParser::NextField(base::StringPiece* field_contents) {
       field_contents->remove_prefix(1);
       field_contents->remove_suffix(1);
     }
+    ++fields_returned_;
     return true;
   }
   return false;
@@ -289,8 +297,6 @@ bool CSVParser::ParseNextCSVRow(std::vector<std::string>* fields) {
 }
 
 }  // namespace
-
-namespace password_manager {
 
 CSVTable::CSVTable() = default;
 
