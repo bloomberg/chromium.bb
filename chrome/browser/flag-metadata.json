@@ -3132,11 +3132,6 @@
     "expiry_milestone": 77
   },
   {
-    "name": "webrtc-unified-plan-by-default",
-    "owners": [ "//third_party/blink/renderer/modules/peerconnection/OWNERS", "hbos@chromium.org" ],
-    "expiry_milestone": 75
-  },
-  {
     "name": "webxr",
     "owners": [ "//third_party/blink/renderer/modules/xr/OWNERS", "xr-dev@chromium.org" ],
     "expiry_milestone": 79

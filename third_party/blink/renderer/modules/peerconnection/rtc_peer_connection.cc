@@ -352,14 +352,14 @@ webrtc::PeerConnectionInterface::RTCConfiguration ParseConfiguration(
       web_configuration.sdp_semantics = webrtc::SdpSemantics::kUnifiedPlan;
     }
   } else {
+    // RTCUnifiedPlanByDefault decides the SDP semantics unless specified by the
+    // configuration (see above). By default RTCUnifiedPlanByDefault is enabled,
+    // meaning "Unified Plan" is used. For "Plan B"-by-default, pass the flag:
+    // --disable-features=RTCUnifiedPlanByDefault
     if (!base::FeatureList::IsEnabled(features::kRTCUnifiedPlanByDefault) &&
         !RuntimeEnabledFeatures::RTCUnifiedPlanByDefaultEnabled()) {
-      // By default: The default SDP semantics is: "kPlanB".
       web_configuration.sdp_semantics = webrtc::SdpSemantics::kPlanB;
     } else {
-      // Override default SDP semantics to "kUnifiedPlan" with
-      // --enable-features=RTCUnifiedPlanByDefault or with
-      // --enable-blink-features=RTCUnifiedPlanByDefault.
       web_configuration.sdp_semantics = webrtc::SdpSemantics::kUnifiedPlan;
     }
   }
