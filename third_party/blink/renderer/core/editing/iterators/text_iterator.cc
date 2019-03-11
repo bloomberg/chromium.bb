@@ -999,40 +999,6 @@ int TextIteratorAlgorithm<Strategy>::RangeLength(
   return RangeLength(range.StartPosition(), range.EndPosition(), behavior);
 }
 
-template <typename Strategy>
-bool TextIteratorAlgorithm<Strategy>::IsBetweenSurrogatePair(
-    unsigned position) const {
-  return position > 0 && position < static_cast<unsigned>(length()) &&
-         U16_IS_LEAD(CharacterAt(position - 1)) &&
-         U16_IS_TRAIL(CharacterAt(position));
-}
-
-template <typename Strategy>
-int TextIteratorAlgorithm<Strategy>::CopyTextTo(ForwardsTextBuffer* output,
-                                                int position,
-                                                int min_length) const {
-  unsigned end = std::min(length(), position + min_length);
-  if (IsBetweenSurrogatePair(end))
-    ++end;
-  unsigned copied_length = end - position;
-  CopyCodeUnitsTo(output, position, copied_length);
-  return copied_length;
-}
-
-template <typename Strategy>
-int TextIteratorAlgorithm<Strategy>::CopyTextTo(ForwardsTextBuffer* output,
-                                                int position) const {
-  return CopyTextTo(output, position, length() - position);
-}
-
-template <typename Strategy>
-void TextIteratorAlgorithm<Strategy>::CopyCodeUnitsTo(
-    ForwardsTextBuffer* output,
-    unsigned position,
-    unsigned copy_length) const {
-  text_state_.AppendTextTo(output, position, copy_length);
-}
-
 // --------
 
 template <typename Strategy>

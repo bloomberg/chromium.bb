@@ -413,35 +413,6 @@ UChar SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::CharacterAt(
   return text_state_.CharacterAt(text_state_.length() - index - 1);
 }
 
-template <typename Strategy>
-bool SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::IsBetweenSurrogatePair(
-    int position) const {
-  DCHECK_GE(position, 0);
-  return position > 0 && position < length() &&
-         U16_IS_TRAIL(CharacterAt(position - 1)) &&
-         U16_IS_LEAD(CharacterAt(position));
-}
-
-template <typename Strategy>
-int SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::CopyTextTo(
-    BackwardsTextBuffer* output,
-    int position,
-    int min_length) const {
-  int end = std::min(length(), position + min_length);
-  if (IsBetweenSurrogatePair(end))
-    ++end;
-  int copied_length = end - position;
-  text_state_.PrependTextTo(output, position, copied_length);
-  return copied_length;
-}
-
-template <typename Strategy>
-int SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::CopyTextTo(
-    BackwardsTextBuffer* output,
-    int position) const {
-  return CopyTextTo(output, position, text_state_.length() - position);
-}
-
 template class CORE_TEMPLATE_EXPORT
     SimplifiedBackwardsTextIteratorAlgorithm<EditingStrategy>;
 template class CORE_TEMPLATE_EXPORT
