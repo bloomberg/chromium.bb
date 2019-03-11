@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/platform/text/text_boundaries.h"
 #include "third_party/blink/renderer/platform/text/text_break_iterator_internal_icu.h"
 #include "third_party/blink/renderer/platform/text/unicode_utilities.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/character_names.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -57,6 +58,8 @@ UStringSearch* CreateSearcher() {
 }
 
 class ICULockableSearcher {
+  STACK_ALLOCATED();
+
  public:
   static UStringSearch* AcquireSearcher() {
     Instance().lock();

@@ -68,6 +68,7 @@
 #include "third_party/blink/renderer/core/scroll/scrollbar.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 #include <iterator>
@@ -234,6 +235,8 @@ EphemeralRange ComputeRangeForTranspose(LocalFrame& frame) {
 }  // anonymous namespace
 
 class EditorInternalCommand {
+  STACK_ALLOCATED();
+
  public:
   WebEditingCommandType command_type;
   bool (*execute)(LocalFrame&, Event*, EditorCommandSource, const String&);
