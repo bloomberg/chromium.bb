@@ -376,6 +376,8 @@ BASE_EXPORT extern "C" NSString* const kCWSSIDDidChangeNotification;
 // this preprocessor block can be removed.
 #if !defined(MAC_OS_X_VERSION_10_13)
 typedef NSString* NSTextCheckingOptionKey;
+typedef NSString* NSAccessibilityRole;
+typedef NSString* NSAccessibilitySubrole;
 #endif
 
 #endif  // BASE_MAC_SDK_FORWARD_DECLARATIONS_H_

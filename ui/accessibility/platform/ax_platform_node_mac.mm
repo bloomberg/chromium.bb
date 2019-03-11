@@ -7,6 +7,8 @@
 #import <Cocoa/Cocoa.h>
 #include <stddef.h>
 
+#include "base/mac/foundation_util.h"
+#include "base/mac/sdk_forward_declarations.h"
 #include "base/macros.h"
 #include "base/no_destructor.h"
 #include "base/strings/sys_string_conversions.h"
@@ -438,6 +440,9 @@ bool AlsoUseShowMenuActionForDefaultAction(const ui::AXNodeData& data) {
   return node_ ? node_->GetDelegate()->GetFocus() : nil;
 }
 
+// This function and accessibilityPerformAction:, while deprecated, are a) still
+// called by AppKit internally and b) not implemented by NSAccessibilityElement,
+// so this class needs its own implementations.
 - (NSArray*)accessibilityActionNames {
   if (!node_)
     return @[];
@@ -489,200 +494,30 @@ bool AlsoUseShowMenuActionForDefaultAction(const ui::AXNodeData& data) {
     node_->GetDelegate()->AccessibilityPerformAction(data);
 }
 
-- (NSArray*)accessibilityAttributeNames {
-  if (!node_)
-    return @[];
-
-  // These attributes are required on all accessibility objects.
-  NSArray* const kAllRoleAttributes = @[
-    NSAccessibilityChildrenAttribute,
-    NSAccessibilityParentAttribute,
-    NSAccessibilityPositionAttribute,
-    NSAccessibilityRoleAttribute,
-    NSAccessibilitySizeAttribute,
-    NSAccessibilitySubroleAttribute,
-
-    // Title is required for most elements. Cocoa asks for the value even if it
-    // is omitted here, but won't present it to accessibility APIs without this.
-    NSAccessibilityTitleAttribute,
-
-    // Attributes which are not required, but are general to all roles.
-    NSAccessibilityRoleDescriptionAttribute,
-    NSAccessibilityEnabledAttribute,
-    NSAccessibilityFocusedAttribute,
-    NSAccessibilityHelpAttribute,
-    NSAccessibilityTopLevelUIElementAttribute,
-    NSAccessibilityWindowAttribute,
-  ];
-
-  // Attributes required for user-editable controls.
-  NSArray* const kValueAttributes = @[ NSAccessibilityValueAttribute ];
-
-  // Attributes required for unprotected textfields and labels.
-  NSArray* const kUnprotectedTextAttributes = @[
-    NSAccessibilityInsertionPointLineNumberAttribute,
-    NSAccessibilityNumberOfCharactersAttribute,
-    NSAccessibilitySelectedTextAttribute,
-    NSAccessibilitySelectedTextRangeAttribute,
-    NSAccessibilityVisibleCharacterRangeAttribute,
-  ];
-
-  // Required for all text, including protected textfields.
-  NSString* const kTextAttributes = NSAccessibilityPlaceholderValueAttribute;
-
-  base::scoped_nsobject<NSMutableArray> axAttributes(
-      [[NSMutableArray alloc] init]);
-
-  [axAttributes addObjectsFromArray:kAllRoleAttributes];
-
-  switch (node_->GetData().role) {
-    case ax::mojom::Role::kTextField:
-    case ax::mojom::Role::kTextFieldWithComboBox:
-    case ax::mojom::Role::kStaticText:
-      [axAttributes addObject:kTextAttributes];
-      if (!node_->GetData().HasState(ax::mojom::State::kProtected))
-        [axAttributes addObjectsFromArray:kUnprotectedTextAttributes];
-      FALLTHROUGH;
-    case ax::mojom::Role::kCheckBox:
-    case ax::mojom::Role::kComboBoxMenuButton:
-    case ax::mojom::Role::kMenuItemCheckBox:
-    case ax::mojom::Role::kMenuItemRadio:
-    case ax::mojom::Role::kRadioButton:
-    case ax::mojom::Role::kSearchBox:
-    case ax::mojom::Role::kSlider:
-    case ax::mojom::Role::kSliderThumb:
-    case ax::mojom::Role::kToggleButton:
-      [axAttributes addObjectsFromArray:kValueAttributes];
-      break;
-    // TODO(tapted): Add additional attributes based on role.
-    default:
-      break;
-  }
-
-  if (node_->GetData().HasBoolAttribute(ax::mojom::BoolAttribute::kSelected)) {
-    [axAttributes addObjectsFromArray:@[ NSAccessibilitySelectedAttribute ]];
-  }
-
-  if (ui::IsMenuItem(node_->GetData().role)) {
-    [axAttributes addObjectsFromArray:@[ @"AXMenuItemMarkChar" ]];
-  }
-
-  return axAttributes.autorelease();
-}
-
-- (NSArray*)accessibilityParameterizedAttributeNames {
-  if (!node_)
-    return @[];
-
-  static NSArray* const kSelectableTextAttributes = [@[
-    NSAccessibilityLineForIndexParameterizedAttribute,
-    NSAccessibilityRangeForLineParameterizedAttribute,
-    NSAccessibilityStringForRangeParameterizedAttribute,
-    NSAccessibilityRangeForPositionParameterizedAttribute,
-    NSAccessibilityRangeForIndexParameterizedAttribute,
-    NSAccessibilityBoundsForRangeParameterizedAttribute,
-    NSAccessibilityRTFForRangeParameterizedAttribute,
-    NSAccessibilityStyleRangeForIndexParameterizedAttribute,
-    NSAccessibilityAttributedStringForRangeParameterizedAttribute,
-  ] retain];
-
-  switch (node_->GetData().role) {
-    case ax::mojom::Role::kTextField:
-    case ax::mojom::Role::kStaticText:
-      return kSelectableTextAttributes;
-    default:
-      break;
-  }
-  return nil;
-}
-
-- (BOOL)accessibilityIsAttributeSettable:(NSString*)attributeName {
-  if (!node_)
-    return NO;
-
-  const ax::mojom::Restriction restriction = node_->GetData().GetRestriction();
-  if (restriction == ax::mojom::Restriction::kDisabled)
-    return NO;
-
-  // Allow certain attributes to be written via an accessibility client. A
-  // writable attribute will only appear as such if the accessibility element
-  // has a value set for that attribute.
-  if ([attributeName
-          isEqualToString:NSAccessibilitySelectedChildrenAttribute] ||
-      [attributeName
-          isEqualToString:NSAccessibilityVisibleCharacterRangeAttribute]) {
-    return NO;
-  }
-
-  if ([attributeName isEqualToString:NSAccessibilityValueAttribute]) {
-    // Since tabs use the Radio Button role on Mac, the standard way to set
-    // them is via the value attribute rather than the selected attribute.
-    if (node_->GetData().role == ax::mojom::Role::kTab)
-      return !node_->GetData().GetBoolAttribute(
-          ax::mojom::BoolAttribute::kSelected);
-
-    return restriction != ax::mojom::Restriction::kReadOnly;
-  }
-
-  // Readonly fields and selected text operations:
-  // - Selecting different text via NSAccessibilitySelectedTextRangeAttribute
-  //   should work but it does not - see http://crbug.com/692362 .
-  // - Changing the actual text contents in the selection via
-  //   NSAccessibilitySelectedTextAttribute is prevented, which is correct.
-  if ([attributeName isEqualToString:NSAccessibilitySelectedTextAttribute] ||
-      [attributeName isEqualToString:NSAccessibilitySelectedTextRangeAttribute])
-    return restriction != ax::mojom::Restriction::kReadOnly;
-
-  if ([attributeName isEqualToString:NSAccessibilityFocusedAttribute]) {
-    return node_->GetData().HasState(ax::mojom::State::kFocusable);
-  }
-
-  // TODO(patricialor): Add callbacks for updating the above attributes except
-  // NSAccessibilityValueAttribute and return YES.
-  return NO;
-}
-
+// Despite it being deprecated, AppKit internally calls this function sometimes
+// in unclear circumstances. It is implemented in terms of the new a11y API
+// here.
 - (void)accessibilitySetValue:(id)value forAttribute:(NSString*)attribute {
   if (!node_)
     return;
 
-  ui::AXActionData data;
-
-  // Check for attributes first. Only the |data.action| should be set here - any
-  // type-specific information, if needed, should be set below.
   if ([attribute isEqualToString:NSAccessibilityValueAttribute]) {
-    data.action = node_->GetData().role == ax::mojom::Role::kTab
-                      ? ax::mojom::Action::kSetSelection
-                      : ax::mojom::Action::kSetValue;
+    [self setAccessibilityValue:value];
   } else if ([attribute isEqualToString:NSAccessibilitySelectedTextAttribute]) {
-    data.action = ax::mojom::Action::kReplaceSelectedText;
+    [self setAccessibilitySelectedText:base::mac::ObjCCastStrict<NSString>(
+                                           value)];
   } else if ([attribute
                  isEqualToString:NSAccessibilitySelectedTextRangeAttribute]) {
-    data.action = ax::mojom::Action::kSetSelection;
+    [self setAccessibilitySelectedTextRange:base::mac::ObjCCastStrict<NSValue>(
+                                                value)
+                                                .rangeValue];
   } else if ([attribute isEqualToString:NSAccessibilityFocusedAttribute]) {
-    if ([value isKindOfClass:[NSNumber class]]) {
-      data.action = [value boolValue] ? ax::mojom::Action::kFocus
-                                      : ax::mojom::Action::kBlur;
-    }
+    [self setAccessibilityFocused:base::mac::ObjCCastStrict<NSNumber>(value)
+                                      .boolValue];
   }
-
-  // Set type-specific information as necessary for actions set above.
-  if ([value isKindOfClass:[NSString class]]) {
-    data.value = base::SysNSStringToUTF8(value);
-  } else if (data.action == ax::mojom::Action::kSetSelection &&
-             [value isKindOfClass:[NSValue class]]) {
-    NSRange range = [value rangeValue];
-    data.anchor_offset = range.location;
-    data.focus_offset = NSMaxRange(range);
-  }
-
-  if (data.action != ax::mojom::Action::kNone)
-    node_->GetDelegate()->AccessibilityPerformAction(data);
-
-  // TODO(patricialor): Plumb through all the other writable attributes as
-  // specified in accessibilityIsAttributeSettable.
 }
 
+// This method, while deprecated, is still called internally by AppKit.
 - (id)accessibilityAttributeValue:(NSString*)attribute {
   if (!node_)
     return nil;  // Return nil when detached. Even for ax::mojom::Role.
@@ -949,6 +784,149 @@ bool AlsoUseShowMenuActionForDefaultAction(const ui::AXNodeData& data) {
 - (NSString*)description {
   return [NSString stringWithFormat:@"%@ - %@ (%@)", [super description],
                                     [self AXTitle], [self AXRole]];
+}
+
+// The methods below implement the NSAccessibility protocol. These methods
+// appear to be the minimum needed to avoid AppKit refusing to handle the
+// element or crashing internally. Most of the remaining old API methods (the
+// ones from NSObject) are implemented in terms of the new NSAccessibility
+// methods.
+//
+// TODO(https://crbug.com/386671): Does this class need to implement the various
+// accessibilityPerformFoo methods, or are the stub implementations from
+// NSAccessibilityElement sufficient?
+- (NSArray*)accessibilityChildren {
+  return [self AXChildren];
+}
+
+- (BOOL)isAccessibilityElement {
+  if (!node_)
+    return NO;
+
+  return (![[self AXRole] isEqualToString:NSAccessibilityUnknownRole] &&
+          !node_->GetData().HasState(ax::mojom::State::kInvisible));
+}
+- (BOOL)isAccessibilityEnabled {
+  if (!node_)
+    return NO;
+
+  return node_->GetData().GetRestriction() != ax::mojom::Restriction::kDisabled;
+}
+- (NSRect)accessibilityFrame {
+  return [self boundsInScreen];
+}
+
+- (NSString*)accessibilityLabel {
+  // accessibilityLabel is "a short description of the accessibility element",
+  // and accessibilityTitle is "the title of the accessibility element"; at
+  // least in Chromium, the title usually is a short description of the element,
+  // so it also functions as a label.
+  return [self AXTitle];
+}
+
+- (NSString*)accessibilityTitle {
+  return [self AXTitle];
+}
+
+- (id)accessibilityValue {
+  return [self AXValue];
+}
+
+- (NSAccessibilityRole)accessibilityRole {
+  return [self AXRole];
+}
+
+- (NSAccessibilitySubrole)accessibilitySubrole {
+  return [self AXSubrole];
+}
+
+- (BOOL)isAccessibilitySelectorAllowed:(SEL)selector {
+  if (!node_)
+    return NO;
+
+  const ax::mojom::Restriction restriction = node_->GetData().GetRestriction();
+  if (restriction == ax::mojom::Restriction::kDisabled)
+    return NO;
+
+  if (selector == @selector(setAccessibilityValue:)) {
+    // Tabs use the radio button role on Mac, so they are selected by calling
+    // setSelected on an individual tab, rather than by setting the selected
+    // element on the tabstrip as a whole.
+    if (node_->GetData().role == ax::mojom::Role::kTab) {
+      return !node_->GetData().GetBoolAttribute(
+          ax::mojom::BoolAttribute::kSelected);
+    }
+    return restriction != ax::mojom::Restriction::kReadOnly;
+  }
+
+  // TODO(https://crbug.com/692362): Once the underlying bug in
+  // views::Textfield::SetSelectionRange() described in that bug is fixed,
+  // remove the check here; right now, this check serves to prevent
+  // accessibility clients from trying to set the selection range, which won't
+  // work because of 692362.
+  if (selector == @selector(setAccessibilitySelectedText:) ||
+      selector == @selector(setAccessibilitySelectedTextRange:)) {
+    return restriction != ax::mojom::Restriction::kReadOnly;
+  }
+
+  if (selector == @selector(setAccessibilityFocused:))
+    return node_->GetData().HasState(ax::mojom::State::kFocusable);
+
+  // TODO(https://crbug.com/386671): What about role-specific selectors?
+  return [super isAccessibilitySelectorAllowed:selector];
+}
+
+- (void)setAccessibilityValue:(id)value {
+  if (!node_)
+    return;
+
+  ui::AXActionData data;
+  data.action = node_->GetData().role == ax::mojom::Role::kTab
+                    ? ax::mojom::Action::kSetSelection
+                    : ax::mojom::Action::kSetValue;
+  if ([value isKindOfClass:[NSString class]]) {
+    data.value = base::SysNSStringToUTF8(value);
+  } else if ([value isKindOfClass:[NSValue class]]) {
+    // TODO(https://crbug.com/386671): Is this case actually needed? The
+    // NSObject accessibility implementation supported this, but can it actually
+    // occur?
+    NSRange range = [value rangeValue];
+    data.anchor_offset = range.location;
+    data.focus_offset = NSMaxRange(range);
+  }
+  node_->GetDelegate()->AccessibilityPerformAction(data);
+}
+
+- (void)setAccessibilityFocused:(BOOL)isFocused {
+  if (!node_)
+    return;
+
+  ui::AXActionData data;
+  data.action =
+      isFocused ? ax::mojom::Action::kFocus : ax::mojom::Action::kBlur;
+  node_->GetDelegate()->AccessibilityPerformAction(data);
+}
+
+- (void)setAccessibilitySelectedText:(NSString*)text {
+  if (!node_)
+    return;
+
+  ui::AXActionData data;
+  data.action = ax::mojom::Action::kReplaceSelectedText;
+  data.value = base::SysNSStringToUTF8(text);
+
+  node_->GetDelegate()->AccessibilityPerformAction(data);
+}
+
+- (void)setAccessibilitySelectedTextRange:(NSRange)range {
+  if (!node_)
+    return;
+
+  ui::AXActionData data;
+  data.action = ax::mojom::Action::kSetSelection;
+  data.anchor_offset = range.location;
+  data.focus_offset = NSMaxRange(range);
+  node_->GetDelegate()->AccessibilityPerformAction(data);
 }
 
 @end
