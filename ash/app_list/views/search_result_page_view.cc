@@ -31,7 +31,6 @@
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
-#include "ui/views/shadow_border.h"
 
 namespace app_list {
 
