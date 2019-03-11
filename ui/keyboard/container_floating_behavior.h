@@ -35,8 +35,6 @@ class KEYBOARD_EXPORT ContainerFloatingBehavior : public ContainerBehavior {
       const gfx::Rect& display_bounds,
       const gfx::Rect& requested_bounds_in_screen_coords) override;
   bool IsOverscrollAllowed() const override;
-  bool IsDragHandle(const gfx::Vector2d& offset,
-                    const gfx::Size& keyboard_size) const override;
   void SavePosition(const gfx::Rect& keyboard_bounds_in_screen,
                     const gfx::Size& screen_size) override;
   bool HandlePointerEvent(const ui::LocatedEvent& event,

@@ -188,11 +188,6 @@ class TestContainerBehavior : public keyboard::ContainerBehavior {
 
   bool IsOverscrollAllowed() const override { return true; }
 
-  bool IsDragHandle(const gfx::Vector2d& offset,
-                    const gfx::Size& keyboard_size) const override {
-    return false;
-  }
-
   void SavePosition(const gfx::Rect& keyboard_bounds_in_screen,
                     const gfx::Size& screen_size) override {}
 
