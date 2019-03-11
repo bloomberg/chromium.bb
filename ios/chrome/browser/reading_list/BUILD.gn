@@ -49,6 +49,7 @@ source_set("reading_list") {
     "//ios/web",
     "//ios/web/public",
     "//net",
+    "//ui/base",
     "//url",
   ]
   public_deps = [
