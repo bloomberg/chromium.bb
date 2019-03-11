@@ -238,7 +238,7 @@ base::LazyInstance<RoutingIDFrameMap>::DestructorAtExit g_routing_id_frame_map =
     LAZY_INSTANCE_INITIALIZER;
 
 RenderFrameHostImpl::CreateNetworkFactoryCallback&
-GetCreateNetworkFactoryCallback() {
+GetCreateNetworkFactoryCallbackForRenderFrame() {
   static base::NoDestructor<RenderFrameHostImpl::CreateNetworkFactoryCallback>
       s_callback;
   return *s_callback;
@@ -719,10 +719,11 @@ void RenderFrameHostImpl::SetNetworkFactoryForTesting(
   DCHECK(!BrowserThread::IsThreadInitialized(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(create_network_factory_callback.is_null() ||
-         GetCreateNetworkFactoryCallback().is_null())
+         GetCreateNetworkFactoryCallbackForRenderFrame().is_null())
       << "It is not expected that this is called with non-null callback when "
       << "another overriding callback is already set.";
-  GetCreateNetworkFactoryCallback() = create_network_factory_callback;
+  GetCreateNetworkFactoryCallbackForRenderFrame() =
+      create_network_factory_callback;
 }
 
 RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
@@ -4581,14 +4582,14 @@ void RenderFrameHostImpl::CommitNavigation(
           std::move(subresource_loader_params->appcache_loader_factory_info);
 
       // Inject test intermediary if needed.
-      if (!GetCreateNetworkFactoryCallback().is_null()) {
+      if (!GetCreateNetworkFactoryCallbackForRenderFrame().is_null()) {
         network::mojom::URLLoaderFactoryPtrInfo original_factory =
             std::move(subresource_loader_factories->appcache_factory_info());
         network::mojom::URLLoaderFactoryRequest new_request = mojo::MakeRequest(
             &subresource_loader_factories->appcache_factory_info());
-        GetCreateNetworkFactoryCallback().Run(std::move(new_request),
-                                              GetProcess()->GetID(),
-                                              std::move(original_factory));
+        GetCreateNetworkFactoryCallbackForRenderFrame().Run(
+            std::move(new_request), GetProcess()->GetID(),
+            std::move(original_factory));
       }
     }
 
@@ -5400,16 +5401,16 @@ bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryInternal(
       &default_factory_request);
 
   // Create the URLLoaderFactory - either via ContentBrowserClient or ourselves.
-  if (GetCreateNetworkFactoryCallback().is_null()) {
+  if (GetCreateNetworkFactoryCallbackForRenderFrame().is_null()) {
     GetProcess()->CreateURLLoaderFactory(origin, std::move(header_client),
                                          std::move(default_factory_request));
   } else {
     network::mojom::URLLoaderFactoryPtr original_factory;
     GetProcess()->CreateURLLoaderFactory(origin, std::move(header_client),
                                          mojo::MakeRequest(&original_factory));
-    GetCreateNetworkFactoryCallback().Run(std::move(default_factory_request),
-                                          GetProcess()->GetID(),
-                                          original_factory.PassInterface());
+    GetCreateNetworkFactoryCallbackForRenderFrame().Run(
+        std::move(default_factory_request), GetProcess()->GetID(),
+        original_factory.PassInterface());
   }
 
   return bypass_redirect_checks;

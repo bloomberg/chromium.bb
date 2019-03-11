@@ -39,7 +39,7 @@ namespace content {
 namespace {
 
 SharedWorkerHost::CreateNetworkFactoryCallback&
-GetCreateNetworkFactoryCallback() {
+GetCreateNetworkFactoryCallbackForSharedWorker() {
   static base::NoDestructor<SharedWorkerHost::CreateNetworkFactoryCallback>
       s_callback;
   return *s_callback;
@@ -153,10 +153,11 @@ void SharedWorkerHost::SetNetworkFactoryForTesting(
   DCHECK(!BrowserThread::IsThreadInitialized(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(create_network_factory_callback.is_null() ||
-         GetCreateNetworkFactoryCallback().is_null())
+         GetCreateNetworkFactoryCallbackForSharedWorker().is_null())
       << "It is not expected that this is called with non-null callback when "
       << "another overriding callback is already set.";
-  GetCreateNetworkFactoryCallback() = create_network_factory_callback;
+  GetCreateNetworkFactoryCallbackForSharedWorker() =
+      create_network_factory_callback;
 }
 
 void SharedWorkerHost::Start(
@@ -306,15 +307,15 @@ void SharedWorkerHost::CreateNetworkFactory(
   RenderProcessHost* process = RenderProcessHost::FromID(process_id_);
   url::Origin origin = instance_->constructor_origin();
   network::mojom::TrustedURLLoaderHeaderClientPtrInfo no_header_client;
-  if (GetCreateNetworkFactoryCallback().is_null()) {
+  if (GetCreateNetworkFactoryCallbackForSharedWorker().is_null()) {
     process->CreateURLLoaderFactory(origin, std::move(no_header_client),
                                     std::move(request));
   } else {
     network::mojom::URLLoaderFactoryPtr original_factory;
     process->CreateURLLoaderFactory(origin, std::move(no_header_client),
                                     mojo::MakeRequest(&original_factory));
-    GetCreateNetworkFactoryCallback().Run(std::move(request), process_id_,
-                                          original_factory.PassInterface());
+    GetCreateNetworkFactoryCallbackForSharedWorker().Run(
+        std::move(request), process_id_, original_factory.PassInterface());
   }
 }
 
