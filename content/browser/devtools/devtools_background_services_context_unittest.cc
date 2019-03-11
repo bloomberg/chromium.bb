@@ -112,6 +112,9 @@ class DevToolsBackgroundServicesContextTest
  protected:
   MOCK_METHOD1(OnEventReceived,
                void(const devtools::proto::BackgroundServiceEvent& event));
+  MOCK_METHOD2(OnRecordingStateChanged,
+               void(bool shoul_record,
+                    devtools::proto::BackgroundService service));
 
   void SimulateBrowserRestart() {
     if (context_)
@@ -162,6 +165,10 @@ class DevToolsBackgroundServicesContextTest
   }
 
   void StartRecording() {
+    EXPECT_CALL(
+        *this,
+        OnRecordingStateChanged(
+            true, devtools::proto::BackgroundService::TEST_BACKGROUND_SERVICE));
     context_->StartRecording(
         devtools::proto::BackgroundService::TEST_BACKGROUND_SERVICE);
 
@@ -170,6 +177,11 @@ class DevToolsBackgroundServicesContextTest
   }
 
   void StopRecording() {
+    EXPECT_CALL(
+        *this,
+        OnRecordingStateChanged(
+            false,
+            devtools::proto::BackgroundService::TEST_BACKGROUND_SERVICE));
     context_->StopRecording(
         devtools::proto::BackgroundService::TEST_BACKGROUND_SERVICE);
 

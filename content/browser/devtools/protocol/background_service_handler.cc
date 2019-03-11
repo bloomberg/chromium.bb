@@ -191,9 +191,6 @@ Response BackgroundServiceHandler::SetRecording(bool should_record,
   else
     devtools_context_->StopRecording(service_enum);
 
-  frontend_->RecordingStateChanged(should_record, service);
-
-  // TODO(rayankans): Inform all the other open sessions.
   return Response::OK();
 }
 
@@ -203,6 +200,15 @@ void BackgroundServiceHandler::OnEventReceived(
     return;
 
   frontend_->BackgroundServiceEventReceived(ToBackgroundServiceEvent(event));
+}
+
+void BackgroundServiceHandler::OnRecordingStateChanged(
+    bool should_record,
+    devtools::proto::BackgroundService service) {
+  if (!enabled_services_.count(service))
+    return;
+
+  frontend_->RecordingStateChanged(should_record, ServiceEnumToName(service));
 }
 
 }  // namespace protocol

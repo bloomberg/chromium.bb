@@ -51,6 +51,9 @@ class BackgroundServiceHandler
 
   void OnEventReceived(
       const devtools::proto::BackgroundServiceEvent& event) override;
+  void OnRecordingStateChanged(
+      bool should_record,
+      devtools::proto::BackgroundService service) override;
 
   std::unique_ptr<BackgroundService::Frontend> frontend_;
 

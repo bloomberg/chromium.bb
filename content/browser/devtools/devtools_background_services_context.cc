@@ -83,6 +83,9 @@ void DevToolsBackgroundServicesContext::StartRecording(
 
   GetContentClient()->browser()->UpdateDevToolsBackgroundServiceExpiration(
       browser_context_, service, expiration_time);
+
+  for (EventObserver& observer : observers_)
+    observer.OnRecordingStateChanged(/* should_record= */ true, service);
 }
 
 void DevToolsBackgroundServicesContext::StopRecording(
@@ -94,6 +97,9 @@ void DevToolsBackgroundServicesContext::StopRecording(
 
   GetContentClient()->browser()->UpdateDevToolsBackgroundServiceExpiration(
       browser_context_, service, base::Time());
+
+  for (EventObserver& observer : observers_)
+    observer.OnRecordingStateChanged(/* should_record= */ false, service);
 }
 
 bool DevToolsBackgroundServicesContext::IsRecording(

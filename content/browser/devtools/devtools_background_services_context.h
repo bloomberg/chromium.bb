@@ -49,6 +49,9 @@ class CONTENT_EXPORT DevToolsBackgroundServicesContext
     // Notifies observers of the logged event.
     virtual void OnEventReceived(
         const devtools::proto::BackgroundServiceEvent& event) = 0;
+    virtual void OnRecordingStateChanged(
+        bool should_record,
+        devtools::proto::BackgroundService service) = 0;
   };
 
   DevToolsBackgroundServicesContext(
