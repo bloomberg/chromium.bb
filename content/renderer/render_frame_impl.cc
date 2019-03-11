@@ -2433,43 +2433,43 @@ void RenderFrameImpl::OnAddMessageToConsole(ConsoleMessageLevel level,
   AddMessageToConsole(level, message);
 }
 
-void RenderFrameImpl::JavaScriptExecuteRequest(const base::string16& jscript,
-                                               int id,
-                                               bool notify_result) {
+void RenderFrameImpl::JavaScriptExecuteRequest(
+    const base::string16& javascript,
+    JavaScriptExecuteRequestCallback callback) {
   TRACE_EVENT_INSTANT0("test_tracing", "JavaScriptExecuteRequest",
                        TRACE_EVENT_SCOPE_THREAD);
 
   v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
   v8::Local<v8::Value> result = frame_->ExecuteScriptAndReturnValue(
-      WebScriptSource(WebString::FromUTF16(jscript)));
+      WebScriptSource(WebString::FromUTF16(javascript)));
 
-  HandleJavascriptExecutionResult(jscript, id, notify_result, result);
+  std::move(callback).Run(GetJavaScriptExecutionResult(result));
 }
 
 void RenderFrameImpl::JavaScriptExecuteRequestForTests(
-    const base::string16& jscript,
-    int id,
-    bool notify_result,
-    bool has_user_gesture) {
+    const base::string16& javascript,
+    bool has_user_gesture,
+    JavaScriptExecuteRequestForTestsCallback callback) {
   TRACE_EVENT_INSTANT0("test_tracing", "JavaScriptExecuteRequestForTests",
                        TRACE_EVENT_SCOPE_THREAD);
 
   // A bunch of tests expect to run code in the context of a user gesture, which
   // can grant additional privileges (e.g. the ability to create popups).
-  std::unique_ptr<blink::WebScopedUserGesture> gesture(
-      has_user_gesture ? new blink::WebScopedUserGesture(frame_) : nullptr);
+  base::Optional<blink::WebScopedUserGesture> gesture;
+  if (has_user_gesture)
+    gesture.emplace(frame_);
+
   v8::HandleScope handle_scope(blink::MainThreadIsolate());
   v8::Local<v8::Value> result = frame_->ExecuteScriptAndReturnValue(
-      WebScriptSource(WebString::FromUTF16(jscript)));
+      WebScriptSource(WebString::FromUTF16(javascript)));
 
-  HandleJavascriptExecutionResult(jscript, id, notify_result, result);
+  std::move(callback).Run(GetJavaScriptExecutionResult(result));
 }
 
 void RenderFrameImpl::JavaScriptExecuteRequestInIsolatedWorld(
-    const base::string16& jscript,
-    int id,
-    bool notify_result,
-    int world_id) {
+    const base::string16& javascript,
+    int32_t world_id,
+    JavaScriptExecuteRequestInIsolatedWorldCallback callback) {
   TRACE_EVENT_INSTANT0("test_tracing",
                        "JavaScriptExecuteRequestInIsolatedWorld",
                        TRACE_EVENT_SCOPE_THREAD);
@@ -2479,25 +2479,22 @@ void RenderFrameImpl::JavaScriptExecuteRequestInIsolatedWorld(
     // Return if the world_id is not valid. world_id is passed as a plain int
     // over IPC and needs to be verified here, in the IPC endpoint.
     NOTREACHED();
+    std::move(callback).Run(base::Value());
     return;
   }
 
   v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
-  WebScriptSource script = WebScriptSource(WebString::FromUTF16(jscript));
+  WebScriptSource script = WebScriptSource(WebString::FromUTF16(javascript));
   JavaScriptIsolatedWorldRequest* request = new JavaScriptIsolatedWorldRequest(
-      id, notify_result, weak_factory_.GetWeakPtr());
+      weak_factory_.GetWeakPtr(), std::move(callback));
   frame_->RequestExecuteScriptInIsolatedWorld(
       world_id, &script, 1, false, WebLocalFrame::kSynchronous, request);
 }
 
 RenderFrameImpl::JavaScriptIsolatedWorldRequest::JavaScriptIsolatedWorldRequest(
-    int id,
-    bool notify_result,
-    base::WeakPtr<RenderFrameImpl> render_frame_impl)
-    : id_(id),
-      notify_result_(notify_result),
-      render_frame_impl_(render_frame_impl) {
-}
+    base::WeakPtr<RenderFrameImpl> render_frame_impl,
+    JavaScriptExecuteRequestInIsolatedWorldCallback callback)
+    : render_frame_impl_(render_frame_impl), callback_(std::move(callback)) {}
 
 RenderFrameImpl::JavaScriptIsolatedWorldRequest::
     ~JavaScriptIsolatedWorldRequest() {
@@ -2505,57 +2502,43 @@ RenderFrameImpl::JavaScriptIsolatedWorldRequest::
 
 void RenderFrameImpl::JavaScriptIsolatedWorldRequest::Completed(
     const blink::WebVector<v8::Local<v8::Value>>& result) {
-  if (!render_frame_impl_.get()) {
-    return;
+  base::Value value;
+  if (render_frame_impl_.get() && !result.empty()) {
+    // It's safe to always use the main world context when converting
+    // here. V8ValueConverterImpl shouldn't actually care about the
+    // context scope, and it switches to v8::Object's creation context
+    // when encountered. (from extensions/renderer/script_injection.cc)
+    v8::Local<v8::Context> context =
+        render_frame_impl_.get()->frame_->MainWorldScriptContext();
+    v8::Context::Scope context_scope(context);
+    V8ValueConverterImpl converter;
+    converter.SetDateAllowed(true);
+    converter.SetRegExpAllowed(true);
+    std::unique_ptr<base::Value> new_value =
+        converter.FromV8Value(*result.begin(), context);
+    if (new_value)
+      value = base::Value::FromUniquePtrValue(std::move(new_value));
   }
 
-  if (notify_result_) {
-    base::Value value;
-    if (!result.empty()) {
-      // It's safe to always use the main world context when converting
-      // here. V8ValueConverterImpl shouldn't actually care about the
-      // context scope, and it switches to v8::Object's creation context
-      // when encountered. (from extensions/renderer/script_injection.cc)
-      v8::Local<v8::Context> context =
-          render_frame_impl_.get()->frame_->MainWorldScriptContext();
-      v8::Context::Scope context_scope(context);
-      V8ValueConverterImpl converter;
-      converter.SetDateAllowed(true);
-      converter.SetRegExpAllowed(true);
-      std::unique_ptr<base::Value> new_value =
-          converter.FromV8Value(*result.begin(), context);
-      if (new_value) {
-        value = std::move(*new_value);
-      }
-    }
-    render_frame_impl_->GetFrameHost()->JavaScriptExecuteResponse(
-        id_, std::move(value));
-  }
+  std::move(callback_).Run(std::move(value));
 
   delete this;
 }
 
-void RenderFrameImpl::HandleJavascriptExecutionResult(
-    const base::string16& jscript,
-    int id,
-    bool notify_result,
+base::Value RenderFrameImpl::GetJavaScriptExecutionResult(
     v8::Local<v8::Value> result) {
-  if (notify_result) {
-    base::Value value;
-    if (!result.IsEmpty()) {
-      v8::Local<v8::Context> context = frame_->MainWorldScriptContext();
-      v8::Context::Scope context_scope(context);
-      V8ValueConverterImpl converter;
-      converter.SetDateAllowed(true);
-      converter.SetRegExpAllowed(true);
-      std::unique_ptr<base::Value> new_value =
-          converter.FromV8Value(result, context);
-      if (new_value) {
-        value = std::move(*new_value);
-      }
-    }
-    GetFrameHost()->JavaScriptExecuteResponse(id, std::move(value));
+  if (!result.IsEmpty()) {
+    v8::Local<v8::Context> context = frame_->MainWorldScriptContext();
+    v8::Context::Scope context_scope(context);
+    V8ValueConverterImpl converter;
+    converter.SetDateAllowed(true);
+    converter.SetRegExpAllowed(true);
+    std::unique_ptr<base::Value> new_value =
+        converter.FromV8Value(result, context);
+    if (new_value)
+      return std::move(*new_value);
   }
+  return base::Value();
 }
 
 void RenderFrameImpl::OnVisualStateRequest(uint64_t id) {
@@ -3028,7 +3011,7 @@ void RenderFrameImpl::LoadErrorPage(int reason) {
 }
 
 void RenderFrameImpl::ExecuteJavaScript(const base::string16& javascript) {
-  JavaScriptExecuteRequest(javascript, 0, false);
+  JavaScriptExecuteRequest(javascript, base::DoNothing());
 }
 
 void RenderFrameImpl::BindLocalInterface(

@@ -113,8 +113,6 @@ class MockFrameHost : public mojom::FrameHost {
     last_commit_params_ = std::move(params);
   }
 
-  void JavaScriptExecuteResponse(int id, base::Value result) override {}
-
   void BeginNavigation(const CommonNavigationParams& common_params,
                        mojom::BeginNavigationParamsPtr begin_params,
                        blink::mojom::BlobURLTokenPtr blob_url_token,

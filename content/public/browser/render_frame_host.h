@@ -175,26 +175,34 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   virtual void AddMessageToConsole(ConsoleMessageLevel level,
                                    const std::string& message) = 0;
 
-  // Runs some JavaScript in this frame's context. If a callback is provided, it
-  // will be used to return the result, when the result is available.
-  // This API can only be called on chrome:// or chrome-devtools:// URLs.
+  // Functions to run JavaScript in this frame's context. Pass in a callback to
+  // receive a result when it is available. If there is no need to receive the
+  // result, pass in a default-constructed callback. If provided, the callback
+  // will be invoked on the UI thread.
   typedef base::Callback<void(const base::Value*)> JavaScriptResultCallback;
+
+  // This is the default API to run JavaScript in this frame. This API can only
+  // be called on chrome:// or chrome-devtools:// URLs.
   virtual void ExecuteJavaScript(const base::string16& javascript) = 0;
   virtual void ExecuteJavaScript(const base::string16& javascript,
                                  const JavaScriptResultCallback& callback) = 0;
 
-  // Runs some JavaScript in an isolated world of top of this frame's context.
+  // This runs the JavaScript in an isolated world of the top of this frame's
+  // context.
   virtual void ExecuteJavaScriptInIsolatedWorld(
       const base::string16& javascript,
       const JavaScriptResultCallback& callback,
       int world_id) = 0;
 
-  // ONLY FOR TESTS: Same as above but without restrictions. Optionally, adds a
-  // fake UserGestureIndicator around execution. (crbug.com/408426)
+  // This runs the JavaScript, but without restrictions. THIS IS ONLY FOR TESTS.
   virtual void ExecuteJavaScriptForTests(const base::string16& javascript) = 0;
   virtual void ExecuteJavaScriptForTests(
       const base::string16& javascript,
       const JavaScriptResultCallback& callback) = 0;
+
+  // This runs the JavaScript, but without restrictions. THIS IS ONLY FOR TESTS.
+  // This version adds a fake UserGestureIndicator to test functionality that
+  // requires such a user gesture. https://crbug.com/408426
   virtual void ExecuteJavaScriptWithUserGestureForTests(
       const base::string16& javascript) = 0;
 
