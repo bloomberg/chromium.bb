@@ -493,18 +493,6 @@ class BuildStore(object):
       else:
         return []
 
-  def ExtendDeadline(self, build_id, timeout):
-    """Extend the deadline for the given metadata row in the database.
-
-    Args:
-      build_id: CIDB id of the build to update.
-      timeout: new timeout value.
-    """
-    if not self.InitializeClients():
-      raise BuildStoreException('BuildStore clients could not be initialized.')
-    if self._write_to_cidb:
-      return self.cidb_conn.ExtendDeadline(build_id, timeout)
-
   def GetBuildStatuses(self, buildbucket_ids=None, build_ids=None):
     """Retrieve the build statuses of list of builds.
 
@@ -649,9 +637,6 @@ class FakeBuildStore(object):
       return self.fake_cidb.GetBuildsStages(build_ids)
     else:
       return []
-
-  def ExtendDeadline(self, build_id, timeout):
-    return
 
   def GetBuildStatuses(self, buildbucket_ids=None, build_ids=None):
     if buildbucket_ids:

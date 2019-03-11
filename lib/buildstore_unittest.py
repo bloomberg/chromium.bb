@@ -439,21 +439,6 @@ class TestBuildStore(cros_test_lib.MockTestCase):
     with self.assertRaises(buildstore.BuildStoreException):
       bs.GetBuildsStages(build_ids=build_ids)
 
-  def testExtendDeadline(self):
-    """Tests the redirect for ExtendDeadline function."""
-    init = self.PatchObject(BuildStore, 'InitializeClients',
-                            return_value=True)
-    bs = BuildStore()
-    bs.cidb_conn = mock.MagicMock()
-    mock_timeout = mock.Mock()
-    self.PatchObject(bs.cidb_conn, 'ExtendDeadline')
-    bs.ExtendDeadline(constants.MOCK_BUILD_ID, mock_timeout)
-    bs.cidb_conn.ExtendDeadline.assert_called_once_with(
-        constants.MOCK_BUILD_ID, mock_timeout)
-    init.return_value = False
-    with self.assertRaises(buildstore.BuildStoreException):
-      bs.ExtendDeadline(constants.MOCK_BUILD_ID, mock_timeout)
-
   def testGetBuildStatuses(self):
     """Tests the redirect for GetBuildStatuses function."""
     init = self.PatchObject(BuildStore, 'InitializeClients',

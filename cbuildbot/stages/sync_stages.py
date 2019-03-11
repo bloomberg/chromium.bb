@@ -1086,13 +1086,8 @@ class CommitQueueSyncStage(MasterSlaveLKGMSyncStage):
       logging.warning(str(e))
       return None
 
-    # We must extend the builder deadline before publishing a new manifest to
-    # ensure that slaves have enough time to complete the builds about to
-    # start.
     build_identifier, _ = self._run.GetCIDBHandle()
     build_id = build_identifier.cidb_id
-    if self.buildstore.AreClientsReady():
-      self.buildstore.ExtendDeadline(build_id, self._run.config.build_timeout)
 
     logging.info('Creating new candidate manifest.')
     manifest = self.manifest_manager.CreateNewCandidate(
