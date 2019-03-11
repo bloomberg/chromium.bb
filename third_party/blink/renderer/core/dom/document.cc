@@ -4607,20 +4607,28 @@ static Element* SkipDisplayNoneAncestors(Element* element) {
   return nullptr;
 }
 
+static Element* SkipDisplayNoneAncestorsOrReturnNullIfFlatTreeIsDirty(
+    Element& element) {
+  if (element.GetDocument().IsSlotAssignmentOrLegacyDistributionDirty()) {
+    // We shouldn't use FlatTreeTraversal during detach if slot assignment is
+    // dirty because it might trigger assignment recalc. The hover and active
+    // elements are then set to null. The hover element is updated on the next
+    // lifecycle update instead.
+    //
+    // TODO(crbug.com/939769): The active element is not updated on the next
+    // lifecycle update, and is generally not correctly updated on re-slotting.
+    return nullptr;
+  }
+  return SkipDisplayNoneAncestors(&element);
+}
+
 void Document::HoveredElementDetached(Element& element) {
   if (!hover_element_)
     return;
   if (element != hover_element_)
     return;
-
-  // While in detaching, we shouldn't use FlatTreeTraversal if slot assignemnt
-  // is dirty because it might triger assignement recalc. hover_element_ will be
-  // updated after recalc assignment is calculated (and re-layout is done).
-  if (IsSlotAssignmentOrLegacyDistributionDirty()) {
-    hover_element_ = nullptr;
-  } else {
-    hover_element_ = SkipDisplayNoneAncestors(&element);
-  }
+  hover_element_ =
+      SkipDisplayNoneAncestorsOrReturnNullIfFlatTreeIsDirty(element);
 
   // If the mouse cursor is not visible, do not clear existing
   // hover effects on the ancestors of |element| and do not invoke
@@ -4633,8 +4641,10 @@ void Document::HoveredElementDetached(Element& element) {
 }
 
 void Document::ActiveChainNodeDetached(Element& element) {
-  if (element == active_element_)
-    active_element_ = SkipDisplayNoneAncestors(&element);
+  if (active_element_ && element == active_element_) {
+    active_element_ =
+        SkipDisplayNoneAncestorsOrReturnNullIfFlatTreeIsDirty(element);
+  }
 }
 
 const Vector<AnnotatedRegionValue>& Document::AnnotatedRegions() const {
