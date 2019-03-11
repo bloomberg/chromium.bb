@@ -24,7 +24,6 @@ struct RendererSettings {
   bool record_sk_picture;
   bool allow_overlays;
   bool requires_alpha_channel;
-  bool enable_shared_mem_begin_frame;
 
   [EnableIf=is_android]
   gfx.mojom.Size initial_screen_size;
