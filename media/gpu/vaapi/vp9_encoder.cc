@@ -150,7 +150,13 @@ void VP9Encoder::InitializeFrameHeader() {
   current_frame_hdr_.frame_height = visible_size_.height();
   current_frame_hdr_.render_width = visible_size_.width();
   current_frame_hdr_.render_height = visible_size_.height();
-  current_frame_hdr_.quant_params.base_q_idx = current_params_.initial_qp;
+  // Since initial_qp is always kDefaultQP (=31), base_q_idx should be 24
+  // (the table index for kDefaultQP, see rfc 8.6.1 table ac_qlookup[3][256])
+  // Note: This needs to be revisited once we have 10&12 bit encoder support
+  DCHECK_EQ(current_params_.initial_qp, kDefaultQP);
+  constexpr uint8_t kDefaultQPACQIndex = 24;
+  current_frame_hdr_.quant_params.base_q_idx = kDefaultQPACQIndex;
+
   current_frame_hdr_.show_frame = true;
 }
 
