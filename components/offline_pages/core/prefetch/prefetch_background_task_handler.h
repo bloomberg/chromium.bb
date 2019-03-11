@@ -6,6 +6,7 @@
 #define COMPONENTS_OFFLINE_PAGES_CORE_PREFETCH_PREFETCH_BACKGROUND_TASK_HANDLER_H_
 
 #include <memory>
+#include <string>
 
 namespace offline_pages {
 
@@ -19,7 +20,7 @@ class PrefetchBackgroundTaskHandler {
 
   // Ensures that Chrome will be started using a background task at an
   // appropriate time in the future.
-  virtual void EnsureTaskScheduled() = 0;
+  virtual void EnsureTaskScheduled(const std::string& gcm_token) = 0;
 
   // Requests that the network backoff be increased due to a server response.
   virtual void Backoff() = 0;

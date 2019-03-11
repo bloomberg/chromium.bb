@@ -26,6 +26,9 @@ public class PrefetchBackgroundTask extends NativeBackgroundTask {
     /** Key used in the extra data {@link Bundle} when the limitless flag is enabled. */
     public static final String LIMITLESS_BUNDLE_KEY = "limitlessPrefetching";
 
+    /** Key used in the extra data {@link Bundle} to store the GCM token. */
+    public static final String GCM_TOKEN_BUNDLE_KEY = "gcmToken";
+
     private static final int MINIMUM_BATTERY_PERCENTAGE_FOR_PREFETCHING = 50;
 
     private static boolean sSkipConditionCheckingForTesting;
@@ -39,6 +42,8 @@ public class PrefetchBackgroundTask extends NativeBackgroundTask {
     // up native.
     private boolean mCachedRescheduleResult = true;
     private boolean mLimitlessPrefetchingEnabled;
+
+    private String mGcmToken;
 
     public PrefetchBackgroundTask() {}
 
@@ -59,6 +64,7 @@ public class PrefetchBackgroundTask extends NativeBackgroundTask {
 
         mTaskFinishedCallback = callback;
         mLimitlessPrefetchingEnabled = taskParameters.getExtras().getBoolean(LIMITLESS_BUNDLE_KEY);
+        mGcmToken = taskParameters.getExtras().getString(GCM_TOKEN_BUNDLE_KEY);
 
         // Check current device conditions. They might be set to null when testing and for some
         // specific Android devices.
@@ -95,7 +101,7 @@ public class PrefetchBackgroundTask extends NativeBackgroundTask {
         assert taskParameters.getTaskId() == TaskIds.OFFLINE_PAGES_PREFETCH_JOB_ID;
         if (mNativeTask != 0) return;
 
-        nativeStartPrefetchTask(getProfile());
+        nativeStartPrefetchTask(getProfile(), mGcmToken);
     }
 
     @Override
@@ -117,9 +123,9 @@ public class PrefetchBackgroundTask extends NativeBackgroundTask {
     public void reschedule(Context context) {
         // TODO(dewittj): Set the backoff time appropriately.
         if (mLimitlessPrefetchingEnabled) {
-            PrefetchBackgroundTaskScheduler.scheduleTaskLimitless(0);
+            PrefetchBackgroundTaskScheduler.scheduleTaskLimitless(0, mGcmToken);
         } else {
-            PrefetchBackgroundTaskScheduler.scheduleTask(0);
+            PrefetchBackgroundTaskScheduler.scheduleTask(0, mGcmToken);
         }
     }
 
@@ -177,7 +183,7 @@ public class PrefetchBackgroundTask extends NativeBackgroundTask {
     }
 
     @VisibleForTesting
-    native boolean nativeStartPrefetchTask(Profile profile);
+    native boolean nativeStartPrefetchTask(Profile profile, String gcmToken);
     @VisibleForTesting
     native boolean nativeOnStopTask(long nativePrefetchBackgroundTaskAndroid);
     native void nativeSetTaskReschedulingForTesting(

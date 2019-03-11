@@ -38,6 +38,7 @@ class GeneratePageBundleTaskTest : public PrefetchTaskTestBase {
   ~GeneratePageBundleTaskTest() override = default;
 
   TestPrefetchGCMHandler* gcm_handler() { return &gcm_handler_; }
+  std::string gcm_token() { return "dummy_gcm_token"; }
 
   TestPrefetchDispatcher* dispatcher() { return &dispatcher_; }
 
@@ -51,16 +52,16 @@ TEST_F(GeneratePageBundleTaskTest, StoreFailure) {
 
   base::MockCallback<PrefetchRequestFinishedCallback> callback;
   RunTask(std::make_unique<GeneratePageBundleTask>(
-      dispatcher(), store(), gcm_handler(), prefetch_request_factory(),
-      callback.Get()));
+      dispatcher(), store(), gcm_handler(), gcm_token(),
+      prefetch_request_factory(), callback.Get()));
   EXPECT_EQ(0, dispatcher()->generate_page_bundle_requested);
 }
 
 TEST_F(GeneratePageBundleTaskTest, EmptyTask) {
   base::MockCallback<PrefetchRequestFinishedCallback> callback;
   RunTask(std::make_unique<GeneratePageBundleTask>(
-      dispatcher(), store(), gcm_handler(), prefetch_request_factory(),
-      callback.Get()));
+      dispatcher(), store(), gcm_handler(), gcm_token(),
+      prefetch_request_factory(), callback.Get()));
 
   EXPECT_FALSE(prefetch_request_factory()->HasOutstandingRequests());
   auto requested_urls = prefetch_request_factory()->GetAllUrlsRequested();
@@ -103,7 +104,7 @@ TEST_F(GeneratePageBundleTaskTest, TaskMakesNetworkRequest) {
 
   clock.Advance(base::TimeDelta::FromHours(1));
 
-  GeneratePageBundleTask task(dispatcher(), store(), gcm_handler(),
+  GeneratePageBundleTask task(dispatcher(), store(), gcm_handler(), gcm_token(),
                               prefetch_request_factory(),
                               request_callback.Get());
   RunTask(&task);

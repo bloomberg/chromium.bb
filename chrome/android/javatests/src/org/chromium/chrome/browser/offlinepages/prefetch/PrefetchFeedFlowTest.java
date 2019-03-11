@@ -95,6 +95,7 @@ public class PrefetchFeedFlowTest implements WebServer.RequestHandler {
             "https://www.nytimes.com/2017/11/10/world/asia/trump-apec-asia-trade.html";
     private static final String THUMBNAIL_URL2 =
             "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRh1tEaJT-br6mBxM89U3vgjDldwb9L_baZszhstAGMQh3_fuG13ax3C9ewR2tq45tbZj74CHl3KNU";
+    private static final String GCM_TOKEN = "dummy_gcm_token";
 
     // Returns a small PNG image data.
     private static byte[] testImageData() {
@@ -231,7 +232,9 @@ public class PrefetchFeedFlowTest implements WebServer.RequestHandler {
         PrefetchBackgroundTask task = new PrefetchBackgroundTask();
         ThreadUtils.runOnUiThreadBlocking(() -> {
             TaskParameters.Builder builder =
-                    TaskParameters.create(TaskIds.OFFLINE_PAGES_PREFETCH_JOB_ID);
+                    TaskParameters.create(TaskIds.OFFLINE_PAGES_PREFETCH_JOB_ID)
+                            .addExtras(PrefetchBackgroundTaskScheduler.createGCMTokenBundle(
+                                    GCM_TOKEN));
             PrefetchBackgroundTask.skipConditionCheckingForTesting();
             task.onStartTask(ContextUtils.getApplicationContext(), builder.build(),
                     (boolean needsReschedule) -> { finished.notifyCalled(); });
@@ -319,7 +322,11 @@ public class PrefetchFeedFlowTest implements WebServer.RequestHandler {
         Assert.assertEquals(THUMBNAIL_HEIGHT, visuals.getHeight());
     }
 
-    /** Request two pages. One is ready later, and one fails immediately. */
+    /**
+     *  Request two pages. One is ready later, and one fails immediately.
+     *
+     *  WARNING: this test might be flakey, sometimes waiting for the callback times out regardless.
+     */
     @Test
     @MediumTest
     @Feature({"OfflinePrefetchFeed"})
