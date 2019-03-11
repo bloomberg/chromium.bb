@@ -132,8 +132,7 @@ class CORE_EXPORT MouseEventManager final
   // refactoring to be able to remove the dependency from EventHandler.
   Element* GetElementUnderMouse();
   bool IsMousePositionUnknown();
-  // TODO(aelias): Make LastKnownMousePosition return FloatPoint.
-  IntPoint LastKnownMousePosition();
+  FloatPoint LastKnownMousePositionInViewport();
   FloatPoint LastKnownMousePositionGlobal();
 
   bool MousePressed();

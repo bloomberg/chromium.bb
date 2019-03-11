@@ -1100,10 +1100,10 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
 
   bool CanBeScrolledAndHasScrollableArea() const;
   virtual bool CanBeProgramaticallyScrolled() const;
-  virtual void Autoscroll(const IntPoint&);
+  virtual void Autoscroll(const LayoutPoint&);
   bool CanAutoscroll() const;
-  IntSize CalculateAutoscrollDirection(
-      const IntPoint& point_in_root_frame) const;
+  LayoutSize CalculateAutoscrollDirection(
+      const FloatPoint& point_in_root_frame) const;
   static LayoutBox* FindAutoscrollable(LayoutObject*);
   virtual void StopAutoscroll() {}
   virtual void MayUpdateHoverWhenContentUnderMouseChanged(EventHandler&);
