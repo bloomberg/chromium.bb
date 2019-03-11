@@ -415,6 +415,7 @@ void CreateSystemProfileForUserManager(
 }
 
 void BubbleViewModeFromAvatarBubbleMode(BrowserWindow::AvatarBubbleMode mode,
+                                        Profile* profile,
                                         BubbleViewMode* bubble_view_mode) {
   switch (mode) {
     case BrowserWindow::AVATAR_BUBBLE_MODE_SIGNIN:
@@ -432,11 +433,11 @@ void BubbleViewModeFromAvatarBubbleMode(BrowserWindow::AvatarBubbleMode mode,
     case BrowserWindow::AVATAR_BUBBLE_MODE_SHOW_ERROR:
       *bubble_view_mode = BUBBLE_VIEW_MODE_PROFILE_CHOOSER;
       return;
-    case BrowserWindow::AVATAR_BUBBLE_MODE_INCOGNITO:
-      *bubble_view_mode = BUBBLE_VIEW_MODE_INCOGNITO;
-      return;
-    default:
-      *bubble_view_mode = profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER;
+    case BrowserWindow::AVATAR_BUBBLE_MODE_DEFAULT:
+      *bubble_view_mode =
+          profile->GetProfileType() == Profile::INCOGNITO_PROFILE
+              ? profiles::BUBBLE_VIEW_MODE_INCOGNITO
+              : profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER;
   }
 }
 

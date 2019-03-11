@@ -162,6 +162,11 @@ void ProfileChooserView::ShowBubble(
   if (IsShowing())
     return;
 
+  const bool is_incognito_profile =
+      browser->profile()->GetProfileType() == Profile::INCOGNITO_PROFILE;
+  DCHECK_EQ(is_incognito_profile,
+            view_mode == profiles::BUBBLE_VIEW_MODE_INCOGNITO);
+
   profile_bubble_ = new ProfileChooserView(
       anchor_button, anchor_rect, parent_window, browser, view_mode,
       manage_accounts_params.service_type, access_point, is_source_keyboard);

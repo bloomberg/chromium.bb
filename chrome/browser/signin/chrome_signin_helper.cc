@@ -187,44 +187,33 @@ void ProcessMirrorHeaderUIThread(
       AccountReconcilorFactory::GetForProfile(profile);
   account_reconcilor->OnReceivedManageAccountsResponse(service_type);
 #if defined(OS_CHROMEOS)
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
-  if (browser) {
-    BrowserWindow::AvatarBubbleMode bubble_mode;
-    switch (service_type) {
-      case GAIA_SERVICE_TYPE_INCOGNITO:
-        chrome::NewIncognitoWindow(profile);
-        return;
-      case GAIA_SERVICE_TYPE_ADDSESSION:
-        bubble_mode = BrowserWindow::AVATAR_BUBBLE_MODE_ADD_ACCOUNT;
-        break;
-      case GAIA_SERVICE_TYPE_REAUTH:
-        bubble_mode = BrowserWindow::AVATAR_BUBBLE_MODE_REAUTH;
-        break;
-      default:
-        bubble_mode = BrowserWindow::AVATAR_BUBBLE_MODE_ACCOUNT_MANAGEMENT;
-    }
-    signin_metrics::LogAccountReconcilorStateOnGaiaResponse(
-        account_reconcilor->GetState());
-
-    if (chromeos::switches::IsAccountManagerEnabled()) {
-      // Chrome OS Account Manager is available. The only allowed operations
-      // are:
-      //
-      // - Going Incognito (already handled in above switch-case).
-      // - Displaying the Account Manager for managing accounts.
-      chrome::SettingsWindowManager::GetInstance()->ShowChromePageForProfile(
-          profile, GURL("chrome://settings/accountManager"));
-      return;
-    }
-
-    // TODO(sinhak): Remove this when Chrome OS Account Manager is released.
-    // Chrome OS does not have an account picker right now. To fix
-    // https://crbug.com/807568, this is a no-op here. This is OK because in
-    // the limited cases where Mirror is available on Chrome OS, 1:1 account
-    // consistency is enforced and adding/removing accounts is not allowed,
-    // GAIA_SERVICE_TYPE_INCOGNITO may be allowed though.
+  if (chrome::FindBrowserWithWebContents(web_contents) &&
+      service_type == GAIA_SERVICE_TYPE_INCOGNITO) {
+    chrome::NewIncognitoWindow(profile);
     return;
   }
+  signin_metrics::LogAccountReconcilorStateOnGaiaResponse(
+      account_reconcilor->GetState());
+
+  if (chromeos::switches::IsAccountManagerEnabled()) {
+    // Chrome OS Account Manager is available. The only allowed operations
+    // are:
+    //
+    // - Going Incognito (already handled in above switch-case).
+    // - Displaying the Account Manager for managing accounts.
+    chrome::SettingsWindowManager::GetInstance()->ShowChromePageForProfile(
+        profile, GURL("chrome://settings/accountManager"));
+    return;
+  }
+
+  // TODO(sinhak): Remove this when Chrome OS Account Manager is released.
+  // Chrome OS does not have an account picker right now. To fix
+  // https://crbug.com/807568, this is a no-op here. This is OK because in
+  // the limited cases where Mirror is available on Chrome OS, 1:1 account
+  // consistency is enforced and adding/removing accounts is not allowed,
+  // GAIA_SERVICE_TYPE_INCOGNITO may be allowed though.
+  return;
+
 #else   // !defined(OS_CHROMEOS)
   if (service_type == signin::GAIA_SERVICE_TYPE_INCOGNITO) {
     GURL url(manage_accounts_params.continue_url.empty()

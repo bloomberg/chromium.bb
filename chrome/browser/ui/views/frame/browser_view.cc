@@ -2974,7 +2974,8 @@ void BrowserView::ShowAvatarBubbleFromAvatarButton(
     return;
 
   profiles::BubbleViewMode bubble_view_mode;
-  profiles::BubbleViewModeFromAvatarBubbleMode(mode, &bubble_view_mode);
+  profiles::BubbleViewModeFromAvatarBubbleMode(mode, GetProfile(),
+                                               &bubble_view_mode);
   if (SigninViewController::ShouldShowSigninForMode(bubble_view_mode)) {
     browser_->signin_view_controller()->ShowSignin(
         bubble_view_mode, browser_.get(), access_point);
