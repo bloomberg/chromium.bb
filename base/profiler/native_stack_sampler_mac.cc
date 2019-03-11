@@ -255,6 +255,15 @@ class NativeStackSamplerMac : public NativeStackSampler {
                          ProfileBuilder* profile_builder) override;
 
  private:
+  // Walks the stack represented by |unwind_context|, calling back to the
+  // provided lambda for each frame. Returns false if an error occurred,
+  // otherwise returns true.
+  template <typename StackFrameCallback, typename ContinueUnwindPredicate>
+  bool WalkStackFromContext(unw_context_t* unwind_context,
+                            size_t* frame_count,
+                            const StackFrameCallback& callback,
+                            const ContinueUnwindPredicate& continue_unwind);
+
   // Walks the stack represented by |thread_state|, calling back to the
   // provided lambda for each frame.
   template <typename StackFrameCallback, typename ContinueUnwindPredicate>
@@ -391,28 +400,19 @@ void NativeStackSamplerMac::RecordStackFrames(StackBuffer* stack_buffer,
 }
 
 template <typename StackFrameCallback, typename ContinueUnwindPredicate>
-void NativeStackSamplerMac::WalkStack(
-    const x86_thread_state64_t& thread_state,
+bool NativeStackSamplerMac::WalkStackFromContext(
+    unw_context_t* unwind_context,
+    size_t* frame_count,
     const StackFrameCallback& callback,
     const ContinueUnwindPredicate& continue_unwind) {
-  // There isn't an official way to create a unw_context other than to create it
-  // from the current state of the current thread's stack. Since we're walking a
-  // different thread's stack we must forge a context. The unw_context is just a
-  // copy of the 16 main registers followed by the instruction pointer, nothing
-  // more.  Coincidentally, the first 17 items of the x86_thread_state64_t type
-  // are exactly those registers in exactly the same order, so just bulk copy
-  // them over.
-  unw_context_t unwind_context;
-  memcpy(&unwind_context, &thread_state, sizeof(uintptr_t) * 17);
-
   unw_cursor_t unwind_cursor;
-  unw_init_local(&unwind_cursor, &unwind_context);
+  unw_init_local(&unwind_cursor, unwind_context);
 
-  bool at_top_frame = true;
   int step_result;
+  unw_word_t rip;
   do {
-    unw_word_t instruction_pointer;
-    unw_get_reg(&unwind_cursor, UNW_REG_IP, &instruction_pointer);
+    ++(*frame_count);
+    unw_get_reg(&unwind_cursor, UNW_REG_IP, &rip);
 
     // Ensure IP is in a module.
     //
@@ -425,42 +425,67 @@ void NativeStackSamplerMac::WalkStack(
     // libunwind adds the expected stack size, it will look for the return
     // address in the wrong place. This check should ensure that we bail before
     // trying to deref a bad IP obtained this way in the previous frame.
-    const ModuleCache::Module* module =
-        module_cache_->GetModuleForAddress(instruction_pointer);
+    const ModuleCache::Module* module = module_cache_->GetModuleForAddress(rip);
     if (!module)
-      return;
+      return false;
 
-    callback(static_cast<uintptr_t>(instruction_pointer), module);
+    callback(static_cast<uintptr_t>(rip), module);
 
     if (!continue_unwind(&unwind_cursor))
-      return;
+      return false;
 
     step_result = unw_step(&unwind_cursor);
-
-    if (step_result == 0 && at_top_frame) {
-      // libunwind is designed to be triggered by user code on their own thread,
-      // if it hits a library that has no unwind info for the function that is
-      // being executed, it just stops. This isn't a problem in the normal case,
-      // but in this case, it's quite possible that the stack being walked is
-      // stopped in a function that bridges to the kernel and thus is missing
-      // the unwind info.
-
-      // For now, just unwind the single case where the thread is stopped in a
-      // function in libsystem_kernel.
-      uint64_t& rsp = unwind_context.data[7];
-      uint64_t& rip = unwind_context.data[16];
-      if (module_cache_->GetModuleForAddress(rip) == libsystem_kernel_module_) {
-        rip = *reinterpret_cast<uint64_t*>(rsp);
-        rsp += 8;
-        // Reset the cursor.
-        unw_init_local(&unwind_cursor, &unwind_context);
-        // Mock a successful step_result.
-        step_result = 1;
-      }
-    }
-
-    at_top_frame = false;
   } while (step_result > 0);
+
+  if (step_result != 0)
+    return false;
+
+  return true;
+}
+
+template <typename StackFrameCallback, typename ContinueUnwindPredicate>
+void NativeStackSamplerMac::WalkStack(
+    const x86_thread_state64_t& thread_state,
+    const StackFrameCallback& callback,
+    const ContinueUnwindPredicate& continue_unwind) {
+  size_t frame_count = 0;
+  // This uses libunwind to walk the stack. libunwind is designed to be used for
+  // a thread to walk its own stack. This creates two problems.
+
+  // Problem 1: There is no official way to create a unw_context other than to
+  // create it from the current state of the current thread's stack. To get
+  // around this, forge a context. A unw_context is just a copy of the 16 main
+  // registers followed by the instruction pointer, nothing more.
+  // Coincidentally, the first 17 items of the x86_thread_state64_t type are
+  // exactly those registers in exactly the same order, so just bulk copy them
+  // over.
+  unw_context_t unwind_context;
+  memcpy(&unwind_context, &thread_state, sizeof(uintptr_t) * 17);
+  bool result = WalkStackFromContext(&unwind_context, &frame_count, callback,
+                                     continue_unwind);
+
+  if (!result)
+    return;
+
+  if (frame_count == 1) {
+    // Problem 2: Because libunwind is designed to be triggered by user code on
+    // their own thread, if it hits a library that has no unwind info for the
+    // function that is being executed, it just stops. This isn't a problem in
+    // the normal case, but in this case, it's quite possible that the stack
+    // being walked is stopped in a function that bridges to the kernel and thus
+    // is missing the unwind info.
+
+    // For now, just unwind the single case where the thread is stopped in a
+    // function in libsystem_kernel.
+    uint64_t& rsp = unwind_context.data[7];
+    uint64_t& rip = unwind_context.data[16];
+    if (module_cache_->GetModuleForAddress(rip) == libsystem_kernel_module_) {
+      rip = *reinterpret_cast<uint64_t*>(rsp);
+      rsp += 8;
+      WalkStackFromContext(&unwind_context, &frame_count, callback,
+                           continue_unwind);
+    }
+  }
 }
 
 // NativeStackSampler ---------------------------------------------------------
