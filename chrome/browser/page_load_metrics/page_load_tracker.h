@@ -12,6 +12,7 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
+#include "chrome/browser/page_load_metrics/page_load_metrics_observer_delegate.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_update_dispatcher.h"
 #include "chrome/common/page_load_metrics/page_load_timing.h"
 #include "content/public/browser/global_request_id.h"
@@ -27,6 +28,7 @@ class WebInputEvent;
 
 namespace content {
 class NavigationHandle;
+class WebContents;
 }  // namespace content
 
 namespace page_load_metrics {
@@ -156,7 +158,8 @@ bool IsNavigationUserInitiated(content::NavigationHandle* handle);
 // provisional load, until a new navigation commits or the navigation fails.
 // MetricsWebContentsObserver manages a set of provisional PageLoadTrackers, as
 // well as a committed PageLoadTracker.
-class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client {
+class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
+                        PageLoadMetricsObserverDelegate {
  public:
   // Caller must guarantee that the embedder_interface pointer outlives this
   // class. The PageLoadTracker must not hold on to
@@ -185,6 +188,11 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client {
       const std::vector<mojom::ResourceDataUpdatePtr>& resources) override;
   void UpdateFrameCpuTiming(content::RenderFrameHost* rfh,
                             const mojom::CpuTiming& timing) override;
+
+  // PageLoadMetricsDelegate implementation:
+  content::WebContents* GetWebContents() const override;
+  base::TimeTicks GetNavigationStart() const override;
+  bool DidCommit() const override;
 
   void Redirect(content::NavigationHandle* navigation_handle);
   void WillProcessNavigationResponse(
@@ -388,6 +396,8 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client {
   PageLoadMetricsUpdateDispatcher metrics_update_dispatcher_;
 
   const ukm::SourceId source_id_;
+
+  content::WebContents* const web_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(PageLoadTracker);
 };

@@ -109,7 +109,6 @@ AdsPageLoadMetricsObserver::OnStart(
   // filtering isn't enabled.
   if (observer_manager)
     subresource_observer_.Add(observer_manager);
-  web_contents_ = navigation_handle->GetWebContents();
   main_frame_data_ =
       std::make_unique<FrameData>(navigation_handle->GetFrameTreeNodeId());
   aggregate_frame_data_ =
@@ -388,7 +387,7 @@ void AdsPageLoadMetricsObserver::MediaStartedPlaying(
     const content::WebContentsObserver::MediaPlayerInfo& video_type,
     content::RenderFrameHost* render_frame_host) {
   aggregate_frame_data_->set_media_status(FrameData::MediaStatus::kPlayed);
-  if (render_frame_host == web_contents_->GetMainFrame())
+  if (render_frame_host == GetDelegate()->GetWebContents()->GetMainFrame())
     main_frame_data_->set_media_status(FrameData::MediaStatus::kPlayed);
 
   const auto& id_and_data =
@@ -462,7 +461,7 @@ void AdsPageLoadMetricsObserver::ProcessResourceForFrame(
   if (ancestor_data->size_intervention_status() ==
       FrameData::FrameSizeInterventionStatus::kTriggered) {
     RecordSingleFeatureUsage(
-        web_contents_->GetMainFrame(),
+        GetDelegate()->GetWebContents()->GetMainFrame(),
         blink::mojom::WebFeature::kAdFrameSizeIntervention);
   }
 }

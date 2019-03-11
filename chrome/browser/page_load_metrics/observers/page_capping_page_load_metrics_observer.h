@@ -17,10 +17,6 @@
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
 #include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom.h"
 
-namespace content {
-class WebContents;
-}  // namespace content
-
 class PageLoadCappingBlacklist;
 
 // A class that tracks the data usage of a page load and triggers an infobar
@@ -133,9 +129,6 @@ class PageCappingPageLoadMetricsObserver
 
   // The current bytes threshold of the capping page triggering.
   base::Optional<int64_t> page_cap_;
-
-  // The WebContents for this page load. |this| cannot outlive |web_contents|.
-  content::WebContents* web_contents_ = nullptr;
 
   // The host to attribute savings to.
   std::string url_host_;

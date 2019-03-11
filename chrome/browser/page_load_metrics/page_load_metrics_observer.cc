@@ -188,4 +188,14 @@ bool PageLoadMetricsObserver::AssignTimeAndSizeForLargestContentfulPaint(
   return true;
 }
 
+PageLoadMetricsObserverDelegate* PageLoadMetricsObserver::GetDelegate() const {
+  return delegate_;
+}
+
+void PageLoadMetricsObserver::SetDelegate(
+    PageLoadMetricsObserverDelegate* delegate) {
+  DCHECK(!delegate_);
+  delegate_ = delegate;
+}
+
 }  // namespace page_load_metrics

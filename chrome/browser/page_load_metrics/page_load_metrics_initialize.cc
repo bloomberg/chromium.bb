@@ -150,8 +150,7 @@ void PageLoadMetricsEmbedder::RegisterObservers(
     if (no_state_prefetch_observer)
       tracker->AddObserver(std::move(no_state_prefetch_observer));
 #if defined(OS_ANDROID)
-    tracker->AddObserver(
-        std::make_unique<AndroidPageLoadMetricsObserver>(web_contents_));
+    tracker->AddObserver(std::make_unique<AndroidPageLoadMetricsObserver>());
 #endif  // OS_ANDROID
     std::unique_ptr<page_load_metrics::PageLoadMetricsObserver>
         loading_predictor_observer =
