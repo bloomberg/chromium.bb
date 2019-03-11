@@ -90,6 +90,7 @@ ARRAY_BUFFER_AND_VIEW_TYPES = TYPED_ARRAY_TYPES.union(frozenset([
 # disable the hack.
 _CALLBACK_CONSTRUCTORS = frozenset((
     'AnimatorConstructor',
+    'BlinkAudioWorkletProcessorConstructor',
     'CustomElementConstructor',
     'NoArgumentConstructor',
 ))

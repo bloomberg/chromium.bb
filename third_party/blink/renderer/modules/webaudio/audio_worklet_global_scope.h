@@ -5,13 +5,11 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_WORKLET_GLOBAL_SCOPE_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_WORKLET_GLOBAL_SCOPE_H_
 
-#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/workers/worklet_global_scope.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_param_descriptor.h"
 #include "third_party/blink/renderer/platform/audio/audio_array.h"
-#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 
@@ -24,6 +22,7 @@ class CrossThreadAudioWorkletProcessorInfo;
 class ExceptionState;
 class MessagePortChannel;
 class SerializedScriptValue;
+class V8BlinkAudioWorkletProcessorConstructor;
 struct GlobalScopeCreationParams;
 
 
@@ -66,9 +65,10 @@ class MODULES_EXPORT AudioWorkletGlobalScope final : public WorkletGlobalScope {
   void Dispose() final;
   bool IsClosing() const final { return is_closing_; }
 
-  void registerProcessor(const String& name,
-                         const ScriptValue& class_definition,
-                         ExceptionState&);
+  void registerProcessor(
+      const String& name,
+      V8BlinkAudioWorkletProcessorConstructor* processor_ctor,
+      ExceptionState&);
 
   // Creates an instance of AudioWorkletProcessor from a registered name.
   // This is invoked by AudioWorkletMessagingProxy upon the construction of

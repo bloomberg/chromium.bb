@@ -182,8 +182,6 @@ class AudioWorkletGlobalScopeTest : public PageTestBase {
         global_scope->FindDefinition("testProcessor");
     EXPECT_TRUE(definition);
     EXPECT_EQ(definition->GetName(), "testProcessor");
-    EXPECT_TRUE(definition->ConstructorLocal(isolate)->IsFunction());
-    EXPECT_TRUE(definition->ProcessLocal(isolate)->IsFunction());
     MessageChannel* channel = MessageChannel::Create(thread->GlobalScope());
     MessagePortChannel dummy_port_channel = channel->port2()->Disentangle();
 
