@@ -441,8 +441,10 @@ bool TabletModeWindowManager::ShouldHandleWindow(aura::Window* window) {
 
   // If the changing bounds in the maximized/fullscreen is allowed, then
   // let the client manage it even in tablet mode.
-  if (wm::GetWindowState(window)->allow_set_bounds_direct())
+  if (!wm::GetWindowState(window) ||
+      wm::GetWindowState(window)->allow_set_bounds_direct()) {
     return false;
+  }
 
   return window->type() == aura::client::WINDOW_TYPE_NORMAL;
 }
