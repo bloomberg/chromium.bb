@@ -75,6 +75,7 @@ class PLATFORM_EXPORT StaticBitmapImage : public Image {
   virtual bool CopyToTexture(gpu::gles2::GLES2Interface*,
                              GLenum,
                              GLuint,
+                             GLint,
                              bool,
                              bool,
                              const IntPoint&,

@@ -1618,7 +1618,7 @@ bool WebGLRenderingContextBase::CopyRenderingResultsFromDrawingBuffer(
 
     bool flip_y = is_origin_top_left_ && !canvas()->LowLatencyEnabled();
     return drawing_buffer_->CopyToPlatformTexture(
-        gl, GL_TEXTURE_2D, texture_id, true, flip_y,
+        gl, GL_TEXTURE_2D, texture_id, 0 /*texture LOD */, true, flip_y,
         IntPoint(0, 0), IntRect(IntPoint(0, 0), drawing_buffer_->Size()),
         source_buffer);
   }
@@ -5244,7 +5244,7 @@ void WebGLRenderingContextBase::TexImageViaGPU(
     ScopedUnpackParametersResetRestore temporaryResetUnpack(this);
     if (source_image) {
       source_image->CopyToTexture(
-          ContextGL(), target, target_texture, premultiply_alpha, flip_y,
+          ContextGL(), target, target_texture, level, premultiply_alpha, flip_y,
           IntPoint(xoffset, yoffset), source_sub_rectangle);
     } else {
       WebGLRenderingContextBase* gl = source_canvas_webgl_context;
@@ -5252,9 +5252,9 @@ void WebGLRenderingContextBase::TexImageViaGPU(
         flip_y = !flip_y;
       ScopedTexture2DRestorer inner_restorer(gl);
       if (!gl->GetDrawingBuffer()->CopyToPlatformTexture(
-              ContextGL(), target, target_texture, unpack_premultiply_alpha_,
-              !flip_y, IntPoint(xoffset, yoffset), source_sub_rectangle,
-              kBackBuffer)) {
+              ContextGL(), target, target_texture, level,
+              unpack_premultiply_alpha_, !flip_y, IntPoint(xoffset, yoffset),
+              source_sub_rectangle, kBackBuffer)) {
         NOTREACHED();
       }
     }
