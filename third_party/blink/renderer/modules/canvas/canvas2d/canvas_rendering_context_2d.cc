@@ -666,7 +666,7 @@ HitTestCanvasResult* CanvasRenderingContext2D::GetControlAndIdIfHitRegionExists(
   LayoutBox* box = canvas()->GetLayoutBox();
   FloatPoint local_pos =
       box->AbsoluteToLocal(FloatPoint(location), kUseTransforms);
-  if (box->HasBorderOrPadding())
+  if (box->StyleRef().HasBorder() || box->StyleRef().MayHavePadding())
     local_pos.Move(-box->PhysicalContentBoxOffset());
   float scaleWidth = box->ContentWidth().ToFloat() == 0.0f
                          ? 1.0f

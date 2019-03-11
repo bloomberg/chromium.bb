@@ -317,7 +317,7 @@ void LayoutInline::StyleDidChange(StyleDifference diff,
     if (!AlwaysCreateLineBoxes()) {
       bool always_create_line_boxes_new =
           HasSelfPaintingLayer() || HasBoxDecorationBackground() ||
-          new_style.HasPadding() || new_style.HasMargin() ||
+          new_style.MayHavePadding() || new_style.MayHaveMargin() ||
           new_style.HasOutline();
       if (old_style && always_create_line_boxes_new) {
         DirtyLineBoxes(false);
@@ -399,8 +399,8 @@ void LayoutInline::UpdateAlwaysCreateLineBoxes(bool full_layout) {
 
 bool LayoutInline::ComputeInitialShouldCreateBoxFragment(
     const ComputedStyle& style) const {
-  if (style.HasBoxDecorationBackground() || style.HasPadding() ||
-      style.HasMargin())
+  if (style.HasBoxDecorationBackground() || style.MayHavePadding() ||
+      style.MayHaveMargin())
     return true;
 
   return style.CanContainAbsolutePositionObjects() ||

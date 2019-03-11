@@ -204,7 +204,7 @@ bool NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::BoxInfo::
     ShouldCreateBoxFragmentForChild(const BoxInfo& child) const {
   // When a child inline box has margins, the parent has different width/height
   // from the union of children.
-  if (child.style.HasMargin())
+  if (child.style.MayHaveMargin())
     return true;
 
   // Returns true when parent and child boxes have different font metrics, since

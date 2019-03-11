@@ -752,7 +752,7 @@ LayoutUnit ResolveUsedColumnGap(LayoutUnit available_size,
 NGPhysicalBoxStrut ComputePhysicalMargins(
     const ComputedStyle& style,
     LayoutUnit percentage_resolution_size) {
-  if (!style.HasMargin())
+  if (!style.MayHaveMargin())
     return NGPhysicalBoxStrut();
 
   return {
@@ -765,7 +765,7 @@ NGPhysicalBoxStrut ComputePhysicalMargins(
 NGBoxStrut ComputeMarginsFor(const NGConstraintSpace& constraint_space,
                              const ComputedStyle& style,
                              const NGConstraintSpace& compute_for) {
-  if (constraint_space.IsAnonymous())
+  if (!style.MayHaveMargin() || constraint_space.IsAnonymous())
     return NGBoxStrut();
   LayoutUnit percentage_resolution_size =
       constraint_space.PercentageResolutionInlineSizeForParentWritingMode();
@@ -776,7 +776,7 @@ NGBoxStrut ComputeMarginsFor(const NGConstraintSpace& constraint_space,
 NGBoxStrut ComputeMinMaxMargins(const ComputedStyle& parent_style,
                                 NGLayoutInputNode child) {
   // An inline child just produces line-boxes which don't have any margins.
-  if (child.IsInline())
+  if (child.IsInline() || !child.Style().MayHaveMargin())
     return NGBoxStrut();
 
   const Length& inline_start_margin_length =
@@ -854,7 +854,7 @@ NGBoxStrut ComputePadding(const NGConstraintSpace& constraint_space,
                           const ComputedStyle& style) {
   // If we are producing an anonymous fragment (e.g. a column) we shouldn't
   // have any padding.
-  if (constraint_space.IsAnonymous())
+  if (!style.MayHavePadding() || constraint_space.IsAnonymous())
     return NGBoxStrut();
 
   LayoutUnit percentage_resolution_size =

@@ -197,7 +197,7 @@ inline NGBoxStrut ComputeMarginsFor(const ComputedStyle& child_style,
 inline NGBoxStrut ComputeMarginsForSelf(
     const NGConstraintSpace& constraint_space,
     const ComputedStyle& style) {
-  if (constraint_space.IsAnonymous())
+  if (!style.MayHaveMargin() || constraint_space.IsAnonymous())
     return NGBoxStrut();
   LayoutUnit percentage_resolution_size =
       constraint_space.PercentageResolutionInlineSizeForParentWritingMode();
@@ -212,7 +212,7 @@ inline NGBoxStrut ComputeMarginsForSelf(
 inline NGLineBoxStrut ComputeLineMarginsForSelf(
     const NGConstraintSpace& constraint_space,
     const ComputedStyle& style) {
-  if (constraint_space.IsAnonymous())
+  if (!style.MayHaveMargin() || constraint_space.IsAnonymous())
     return NGLineBoxStrut();
   LayoutUnit percentage_resolution_size =
       constraint_space.PercentageResolutionInlineSizeForParentWritingMode();
@@ -225,7 +225,7 @@ inline NGLineBoxStrut ComputeLineMarginsForSelf(
 inline NGLineBoxStrut ComputeLineMarginsForVisualContainer(
     const NGConstraintSpace& constraint_space,
     const ComputedStyle& style) {
-  if (constraint_space.IsAnonymous())
+  if (!style.MayHaveMargin() || constraint_space.IsAnonymous())
     return NGLineBoxStrut();
   LayoutUnit percentage_resolution_size =
       constraint_space.PercentageResolutionInlineSizeForParentWritingMode();
