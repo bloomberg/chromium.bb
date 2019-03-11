@@ -28,6 +28,9 @@ class SecurityStateTabHelper
   // See security_state::GetSecurityInfo.
   void GetSecurityInfo(
       security_state::SecurityInfo* result) const;
+  security_state::SecurityLevel GetSecurityLevel() const;
+  std::unique_ptr<security_state::VisibleSecurityState>
+  GetVisibleSecurityState() const;
 
   // content::WebContentsObserver:
   void DidStartNavigation(
@@ -42,8 +45,6 @@ class SecurityStateTabHelper
 
   bool UsedPolicyInstalledCertificate() const;
   security_state::MaliciousContentStatus GetMaliciousContentStatus() const;
-  std::unique_ptr<security_state::VisibleSecurityState>
-  GetVisibleSecurityState() const;
   std::vector<std::string> GetSecureOriginsAndPatterns() const;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();

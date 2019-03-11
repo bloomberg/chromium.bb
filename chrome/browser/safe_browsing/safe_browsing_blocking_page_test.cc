@@ -780,11 +780,9 @@ class SafeBrowsingBlockingPageBrowserTest
     SecurityStateTabHelper* helper =
         SecurityStateTabHelper::FromWebContents(tab);
     ASSERT_TRUE(helper);
-    security_state::SecurityInfo security_info;
-    helper->GetSecurityInfo(&security_info);
-    EXPECT_EQ(security_state::DANGEROUS, security_info.security_level);
+    EXPECT_EQ(security_state::DANGEROUS, helper->GetSecurityLevel());
     EXPECT_NE(security_state::MALICIOUS_CONTENT_STATUS_NONE,
-              security_info.malicious_content_status);
+              helper->GetVisibleSecurityState()->malicious_content_status);
     // TODO(felt): Restore this check when https://crbug.com/641187 is fixed.
     // EXPECT_EQ(cert_status, helper->GetSecurityInfo().cert_status);
   }
@@ -793,11 +791,9 @@ class SafeBrowsingBlockingPageBrowserTest
     SecurityStateTabHelper* helper =
         SecurityStateTabHelper::FromWebContents(tab);
     ASSERT_TRUE(helper);
-    security_state::SecurityInfo security_info;
-    helper->GetSecurityInfo(&security_info);
-    EXPECT_EQ(security_state::NONE, security_info.security_level);
+    EXPECT_EQ(security_state::NONE, helper->GetSecurityLevel());
     EXPECT_EQ(security_state::MALICIOUS_CONTENT_STATUS_NONE,
-              security_info.malicious_content_status);
+              helper->GetVisibleSecurityState()->malicious_content_status);
   }
 
   bool hit_report_sent() {

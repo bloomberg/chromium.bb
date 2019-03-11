@@ -58,9 +58,7 @@ namespace SecurityStyle {
 void Check(content::WebContents* tab,
            security_state::SecurityLevel expected_security_level) {
   SecurityStateTabHelper* helper = SecurityStateTabHelper::FromWebContents(tab);
-  security_state::SecurityInfo security_info;
-  helper->GetSecurityInfo(&security_info);
-  EXPECT_EQ(expected_security_level, security_info.security_level);
+  EXPECT_EQ(expected_security_level, helper->GetSecurityLevel());
 }
 
 }  // namespace SecurityStyle

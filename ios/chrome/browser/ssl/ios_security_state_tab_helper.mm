@@ -35,6 +35,15 @@ void IOSSecurityStateTabHelper::GetSecurityInfo(
                                   base::Bind(&web::IsOriginSecure), result);
 }
 
+security_state::SecurityLevel IOSSecurityStateTabHelper::GetSecurityLevel()
+    const {
+  security_state::SecurityInfo result;
+  security_state::GetSecurityInfo(
+      GetVisibleSecurityState(), false /* used policy installed certificate */,
+      base::BindRepeating(&web::IsOriginSecure), &result);
+  return result.security_level;
+}
+
 std::unique_ptr<security_state::VisibleSecurityState>
 IOSSecurityStateTabHelper::GetVisibleSecurityState() const {
   auto state = std::make_unique<security_state::VisibleSecurityState>();

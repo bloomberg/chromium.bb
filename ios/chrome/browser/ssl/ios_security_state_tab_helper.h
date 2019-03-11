@@ -8,19 +8,15 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "components/security_state/core/security_state.h"
 #import "ios/web/public/web_state/web_state_user_data.h"
-
-namespace security_state {
-struct SecurityInfo;
-struct VisibleSecurityState;
-}  // namespace security_state
 
 namespace web {
 class WebState;
 }  // namespace web
 
 // Tab helper that provides the page's security status. Uses a WebState to
-// provide a security_state::GetSecurityInfo() with the relevant
+// provide a security_state::GetSecurityLevel() with the relevant
 // VisibleSecurityState information.
 class IOSSecurityStateTabHelper
     : public web::WebStateUserData<IOSSecurityStateTabHelper> {
@@ -28,13 +24,13 @@ class IOSSecurityStateTabHelper
   ~IOSSecurityStateTabHelper() override;
 
   void GetSecurityInfo(security_state::SecurityInfo* result) const;
+  security_state::SecurityLevel GetSecurityLevel() const;
+  std::unique_ptr<security_state::VisibleSecurityState>
+  GetVisibleSecurityState() const;
 
  private:
   explicit IOSSecurityStateTabHelper(web::WebState* web_state);
   friend class web::WebStateUserData<IOSSecurityStateTabHelper>;
-
-  std::unique_ptr<security_state::VisibleSecurityState>
-  GetVisibleSecurityState() const;
 
   web::WebState* web_state_;
 

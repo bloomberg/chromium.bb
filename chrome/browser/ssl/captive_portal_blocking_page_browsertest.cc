@@ -342,9 +342,7 @@ void CaptivePortalBlockingPageTest::TestInterstitial(
     SecurityStateTabHelper* helper =
         SecurityStateTabHelper::FromWebContents(contents);
     ASSERT_TRUE(helper);
-    security_state::SecurityInfo security_info;
-    helper->GetSecurityInfo(&security_info);
-    EXPECT_EQ(security_state::DANGEROUS, security_info.security_level);
+    EXPECT_EQ(security_state::DANGEROUS, helper->GetSecurityLevel());
   }
 }
 

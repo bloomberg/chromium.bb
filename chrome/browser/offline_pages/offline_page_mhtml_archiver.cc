@@ -191,10 +191,7 @@ bool OfflinePageMHTMLArchiver::HasConnectionSecurityError(
   SecurityStateTabHelper* helper =
       SecurityStateTabHelper::FromWebContents(web_contents);
   DCHECK(helper);
-  security_state::SecurityInfo security_info;
-  helper->GetSecurityInfo(&security_info);
-  return security_state::SecurityLevel::DANGEROUS ==
-         security_info.security_level;
+  return security_state::SecurityLevel::DANGEROUS == helper->GetSecurityLevel();
 }
 
 content::PageType OfflinePageMHTMLArchiver::GetPageType(

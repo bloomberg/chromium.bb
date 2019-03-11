@@ -111,9 +111,7 @@ SecurityStatePageLoadMetricsObserver::OnCommit(
   // resolved.
   security_state_tab_helper_ =
       SecurityStateTabHelper::FromWebContents(web_contents);
-  security_state::SecurityInfo security_info;
-  security_state_tab_helper_->GetSecurityInfo(&security_info);
-  initial_security_level_ = security_info.security_level;
+  initial_security_level_ = security_state_tab_helper_->GetSecurityLevel();
   current_security_level_ = initial_security_level_;
 
   base::UmaHistogramEnumeration(kSecurityLevelOnCommit, initial_security_level_,
@@ -194,8 +192,5 @@ void SecurityStatePageLoadMetricsObserver::OnComplete(
 void SecurityStatePageLoadMetricsObserver::DidChangeVisibleSecurityState() {
   if (!security_state_tab_helper_)
     return;
-
-  security_state::SecurityInfo security_info;
-  security_state_tab_helper_->GetSecurityInfo(&security_info);
-  current_security_level_ = security_info.security_level;
+  current_security_level_ = security_state_tab_helper_->GetSecurityLevel();
 }

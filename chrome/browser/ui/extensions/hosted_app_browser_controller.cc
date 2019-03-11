@@ -44,9 +44,7 @@ bool IsSiteSecure(const content::WebContents* web_contents) {
   const SecurityStateTabHelper* helper =
       SecurityStateTabHelper::FromWebContents(web_contents);
   if (helper) {
-    security_state::SecurityInfo security_info;
-    helper->GetSecurityInfo(&security_info);
-    switch (security_info.security_level) {
+    switch (helper->GetSecurityLevel()) {
       case security_state::SECURITY_LEVEL_COUNT:
         NOTREACHED();
         return false;
