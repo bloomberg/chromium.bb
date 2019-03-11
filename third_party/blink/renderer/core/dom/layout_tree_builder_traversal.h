@@ -31,12 +31,15 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/v0_insertion_point.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
 class LayoutObject;
 
 class CORE_EXPORT LayoutTreeBuilderTraversal {
+  STATIC_ONLY(LayoutTreeBuilderTraversal);
+
  public:
   static const int32_t kTraverseAllSiblings = -2;
   class ParentDetails {
