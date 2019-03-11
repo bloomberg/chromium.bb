@@ -32,7 +32,7 @@ class InterstitialPageImpl;
 class NavigationControllerImpl;
 class NavigationEntry;
 class NavigationRequest;
-class NavigatorTestWithBrowserSideNavigation;
+class NavigatorTest;
 class RenderFrameHostManagerTest;
 class RenderFrameProxyHost;
 class RenderViewHost;
@@ -525,7 +525,7 @@ class CONTENT_EXPORT RenderFrameHostManager
   }
 
  private:
-  friend class NavigatorTestWithBrowserSideNavigation;
+  friend class NavigatorTest;
   friend class RenderFrameHostManagerTest;
   friend class RenderFrameHostTester;
   friend class TestWebContents;
