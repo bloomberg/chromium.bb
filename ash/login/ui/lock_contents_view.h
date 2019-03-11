@@ -398,6 +398,9 @@ class ASH_EXPORT LockContentsView
   // state is reported as kActive by the data dispatcher).
   bool lock_screen_apps_active_ = false;
 
+  // Tracks the visibility of the OOBE dialog.
+  bool oobe_dialog_visible_ = false;
+
   // Whether the lock screen note is disabled. Used to override the actual lock
   // screen note state.
   bool disable_lock_screen_note_ = false;
