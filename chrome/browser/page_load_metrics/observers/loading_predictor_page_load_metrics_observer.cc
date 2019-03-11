@@ -34,17 +34,15 @@ LoadingPredictorPageLoadMetricsObserver::CreateIfNeeded(
     return nullptr;
   return std::make_unique<LoadingPredictorPageLoadMetricsObserver>(
       loading_predictor->resource_prefetch_predictor(),
-      loading_predictor->loading_data_collector(), web_contents);
+      loading_predictor->loading_data_collector());
 }
 
 LoadingPredictorPageLoadMetricsObserver::
     LoadingPredictorPageLoadMetricsObserver(
         predictors::ResourcePrefetchPredictor* predictor,
-        predictors::LoadingDataCollector* collector,
-        content::WebContents* web_contents)
+        predictors::LoadingDataCollector* collector)
     : predictor_(predictor),
       collector_(collector),
-      web_contents_(web_contents),
       record_histogram_preconnectable_(false) {
   DCHECK(predictor_);
   DCHECK(collector_);
@@ -76,7 +74,7 @@ LoadingPredictorPageLoadMetricsObserver::OnHidden(
 void LoadingPredictorPageLoadMetricsObserver::OnFirstContentfulPaintInPage(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
-  predictors::NavigationID navigation_id(web_contents_);
+  predictors::NavigationID navigation_id(GetDelegate()->GetWebContents());
 
   collector_->RecordFirstContentfulPaint(
       navigation_id, extra_info.navigation_start +

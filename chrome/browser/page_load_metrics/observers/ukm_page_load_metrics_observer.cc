@@ -136,7 +136,6 @@ UkmPageLoadMetricsObserver::ObservePolicy UkmPageLoadMetricsObserver::OnCommit(
   was_cached_ = navigation_handle->WasResponseCached();
   is_signed_exchange_inner_response_ =
       navigation_handle->IsSignedExchangeInnerResponse();
-  navigation_start_ = navigation_handle->NavigationStart();
   return CONTINUE_OBSERVING;
 }
 
@@ -453,9 +452,9 @@ void UkmPageLoadMetricsObserver::ReportMainResourceTimingMetrics(
       request_start_to_receive_headers_end_ms);
 
   if (!main_frame_timing_->request_start.is_null() &&
-      !navigation_start_.is_null()) {
+      !GetDelegate()->GetNavigationStart().is_null()) {
     base::TimeDelta navigation_start_to_request_start =
-        main_frame_timing_->request_start - navigation_start_;
+        main_frame_timing_->request_start - GetDelegate()->GetNavigationStart();
 
     builder->SetMainFrameResource_NavigationStartToRequestStart(
         navigation_start_to_request_start.InMilliseconds());

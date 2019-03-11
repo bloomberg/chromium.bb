@@ -186,7 +186,8 @@ PageLoadTracker::PageLoadTracker(
       embedder_interface_(embedder_interface),
       metrics_update_dispatcher_(this, navigation_handle, embedder_interface),
       source_id_(ukm::ConvertToSourceId(navigation_handle->GetNavigationId(),
-                                        ukm::SourceIdType::NAVIGATION_ID)) {
+                                        ukm::SourceIdType::NAVIGATION_ID)),
+      web_contents_(navigation_handle->GetWebContents()) {
   DCHECK(!navigation_handle->HasCommitted());
   embedder_interface_->RegisterObservers(this);
   INVOKE_AND_PRUNE_OBSERVERS(observers_, OnStart, navigation_handle,
@@ -467,6 +468,7 @@ void PageLoadTracker::StopTracking() {
 
 void PageLoadTracker::AddObserver(
     std::unique_ptr<PageLoadMetricsObserver> observer) {
+  observer->SetDelegate(this);
   observers_.push_back(std::move(observer));
 }
 
@@ -698,6 +700,18 @@ void PageLoadTracker::UpdateFrameCpuTiming(content::RenderFrameHost* rfh,
   for (const auto& observer : observers_) {
     observer->OnCpuTimingUpdate(rfh, timing);
   }
+}
+
+content::WebContents* PageLoadTracker::GetWebContents() const {
+  return web_contents_;
+}
+
+base::TimeTicks PageLoadTracker::GetNavigationStart() const {
+  return navigation_start_;
+}
+
+bool PageLoadTracker::DidCommit() const {
+  return did_commit_;
 }
 
 }  // namespace page_load_metrics

@@ -30,9 +30,8 @@ class TestAndroidPageLoadMetricsObserver
     : public AndroidPageLoadMetricsObserver {
  public:
   TestAndroidPageLoadMetricsObserver(
-      content::WebContents* web_contents,
       network::NetworkQualityTracker* network_quality_tracker)
-      : AndroidPageLoadMetricsObserver(web_contents, network_quality_tracker) {}
+      : AndroidPageLoadMetricsObserver(network_quality_tracker) {}
 
   net::EffectiveConnectionType reported_connection_type() const {
     return reported_connection_type_;
@@ -115,8 +114,8 @@ class AndroidPageLoadMetricsObserverTest
     PageLoadMetricsObserverTestHarness::SetUp();
     // Save observer_ptr_ so we can query for test results, while the
     // PageLoadTracker owns it.
-    observer_ptr_ = new TestAndroidPageLoadMetricsObserver(
-        web_contents(), &mock_network_quality_tracker_);
+    observer_ptr_ =
+        new TestAndroidPageLoadMetricsObserver(&mock_network_quality_tracker_);
     observer_ = base::WrapUnique<page_load_metrics::PageLoadMetricsObserver>(
         observer_ptr_);
   }

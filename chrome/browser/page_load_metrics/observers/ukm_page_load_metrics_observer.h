@@ -123,9 +123,6 @@ class UkmPageLoadMetricsObserver
   // PAGE_TRANSITION_LINK is the default PageTransition value.
   ui::PageTransition page_transition_ = ui::PAGE_TRANSITION_LINK;
 
-  // Time of navigation start.
-  base::TimeTicks navigation_start_;
-
   // True if the page started hidden, or ever became hidden.
   bool was_hidden_ = false;
 

@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/optional.h"
+#include "chrome/browser/page_load_metrics/page_load_metrics_observer_delegate.h"
 #include "chrome/common/page_load_metrics/page_load_timing.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "content/public/browser/navigation_handle.h"
@@ -315,6 +316,12 @@ class PageLoadMetricsObserver {
       uint64_t* largest_content_paint_size,
       LargestContentType* largest_content_type);
 
+  // Gets/Sets the delegate. The delegate must outlive the observer and is
+  // normally set when the observer is first registered for the page load. The
+  // delegate can only be set once.
+  PageLoadMetricsObserverDelegate* GetDelegate() const;
+  void SetDelegate(PageLoadMetricsObserverDelegate*);
+
   // The page load started, with the given navigation handle.
   // currently_committed_url contains the URL of the committed page load at the
   // time the navigation for navigation_handle was initiated, or the empty URL
@@ -538,6 +545,9 @@ class PageLoadMetricsObserver {
   // Called when the event corresponding to |event_key| occurs in this page
   // load.
   virtual void OnEventOccurred(const void* const event_key) {}
+
+ private:
+  PageLoadMetricsObserverDelegate* delegate_ = nullptr;
 };
 
 }  // namespace page_load_metrics

@@ -161,9 +161,6 @@ class AdsPageLoadMetricsObserver
   std::map<int, page_load_metrics::mojom::ResourceDataUpdatePtr>
       page_resources_;
 
-  // The web contents associated with this page load.
-  content::WebContents* web_contents_ = nullptr;
-
   // Tracks byte counts only for resources loaded in the main frame.
   std::unique_ptr<FrameData> main_frame_data_;
 

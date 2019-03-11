@@ -100,7 +100,6 @@ PageCappingPageLoadMetricsObserver::OnCommit(
     content::NavigationHandle* navigation_handle,
     ukm::SourceId source_id) {
   last_data_use_time_ = clock_->NowTicks();
-  web_contents_ = navigation_handle->GetWebContents();
   page_cap_ = GetPageLoadCappingBytesThreshold(false /* media_page_load */);
   url_host_ = navigation_handle->GetURL().host();
   fuzzing_offset_ = GetFuzzingOffset();
@@ -129,7 +128,7 @@ void PageCappingPageLoadMetricsObserver::MaybeCreate() {
     return;
 
   // If the page has not committed, don't show an InfoBar.
-  if (!web_contents_)
+  if (!GetDelegate()->DidCommit())
     return;
 
   // If there is no capping threshold or the threshold is not met, do not show
@@ -144,7 +143,7 @@ void PageCappingPageLoadMetricsObserver::MaybeCreate() {
   // synchronously, if the InfoBar is not created, set it back.
   page_capping_state_ = PageCappingState::kInfoBarShown;
   if (!PageLoadCappingInfoBarDelegate::Create(
-          web_contents_,
+          GetDelegate()->GetWebContents(),
           base::BindRepeating(
               &PageCappingPageLoadMetricsObserver::PauseSubresourceLoading,
               weak_factory_.GetWeakPtr()),
@@ -185,7 +184,7 @@ void PageCappingPageLoadMetricsObserver::PauseSubresourceLoading(bool pause) {
   page_capping_state_ =
       pause ? PageCappingState::kPagePaused : PageCappingState::kPageResumed;
   if (pause)
-    handles_ = web_contents_->PauseSubresourceLoading();
+    handles_ = GetDelegate()->GetWebContents()->PauseSubresourceLoading();
   else
     handles_.clear();
 }
@@ -263,7 +262,7 @@ void PageCappingPageLoadMetricsObserver::WriteToSavings(int64_t bytes_saved) {
   data_reduction_proxy::DataReductionProxySettings*
       data_reduction_proxy_settings =
           DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
-              web_contents_->GetBrowserContext());
+              GetDelegate()->GetWebContents()->GetBrowserContext());
 
   bool data_saver_enabled =
       data_reduction_proxy_settings->IsDataReductionProxyEnabled();
@@ -339,7 +338,7 @@ PageLoadCappingBlacklist*
 PageCappingPageLoadMetricsObserver::GetPageLoadCappingBlacklist() const {
   auto* data_reduction_proxy_settings =
       DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
-          web_contents_->GetBrowserContext());
+          GetDelegate()->GetWebContents()->GetBrowserContext());
 
   if (!data_reduction_proxy_settings ||
       !data_reduction_proxy_settings->IsDataReductionProxyEnabled()) {
@@ -348,7 +347,7 @@ PageCappingPageLoadMetricsObserver::GetPageLoadCappingBlacklist() const {
 
   auto* page_capping_service =
       PageLoadCappingServiceFactory::GetForBrowserContext(
-          web_contents_->GetBrowserContext());
+          GetDelegate()->GetWebContents()->GetBrowserContext());
   if (!page_capping_service)
     return nullptr;
 
