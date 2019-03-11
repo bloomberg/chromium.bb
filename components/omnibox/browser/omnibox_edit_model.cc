@@ -888,18 +888,14 @@ bool OmniboxEditModel::AcceptKeyword(
   // here, may have generated a new match, which the user won't actually see and
   // which we don't want to switch back to when exiting keyword mode; see
   // comments in ClearKeyword().
+  const AutocompleteMatch& match = CurrentMatch(nullptr);
   if (entry_method == OmniboxEventProto::TAB) {
     // Ensure the current selection is saved before showing keyword mode
     // so that moving to another line and then reverting the text will restore
     // the current state properly.
-    bool save_original_selection = !has_temporary_text_;
-    has_temporary_text_ = true;
-    const AutocompleteMatch& match = CurrentMatch(nullptr);
-    original_url_ = match.destination_url;
     view_->OnTemporaryTextMaybeChanged(MaybeStripKeyword(match.fill_into_edit),
-                                       match, save_original_selection, true);
+                                       match, !has_temporary_text_, true);
   } else {
-    const AutocompleteMatch& match = CurrentMatch(nullptr);
     view_->OnTemporaryTextMaybeChanged(user_text_, match, !has_temporary_text_,
                                        true);
   }
@@ -932,20 +928,22 @@ void OmniboxEditModel::ClearKeyword() {
       popup_model() &&
       popup_model()->selected_line_state() == OmniboxPopupModel::KEYWORD;
 
+  bool entry_by_tab = keyword_mode_entry_method_ == OmniboxEventProto::TAB;
+
   omnibox_controller_->ClearPopupKeywordMode();
 
   // There are several possible states we could have been in before the user hit
   // backspace or shift-tab to enter this function:
-  // (1) was_toggled_into_keyword_mode == false, has_temporary_text_ == false
+  // (1) was_toggled_into_keyword_mode == false, entry_by_tab == false
   //     The user typed a further key after being in keyword mode already, e.g.
   //     "google.com f".
-  // (2) was_toggled_into_keyword_mode == false, has_temporary_text_ == true
+  // (2) was_toggled_into_keyword_mode == false, entry_by_tab == true
   //     The user tabbed away from a dropdown entry in keyword mode, then tabbed
   //     back to it, e.g. "google.com f<tab><shift-tab>".
-  // (3) was_toggled_into_keyword_mode == true, has_temporary_text_ == false
+  // (3) was_toggled_into_keyword_mode == true, entry_by_tab == false
   //     The user had just typed space to enter keyword mode, e.g.
   //     "google.com ".
-  // (4) was_toggled_into_keyword_mode == true, has_temporary_text_ == true
+  // (4) was_toggled_into_keyword_mode == true, entry_by_tab == true
   //     The user had just typed tab to enter keyword mode, e.g.
   //     "google.com<tab>".
   //
@@ -973,7 +971,7 @@ void OmniboxEditModel::ClearKeyword() {
   // autocomplete to "xyz.com", hitting space will toggle into keyword mode, but
   // then hitting backspace could wind up with the default match as the "x y"
   // search, which feels bizarre.
-  if (was_toggled_into_keyword_mode && has_temporary_text_) {
+  if (was_toggled_into_keyword_mode && entry_by_tab) {
     // State 4 above.
     is_keyword_hint_ = true;
     keyword_mode_entry_method_ = OmniboxEventProto::INVALID;
@@ -1083,14 +1081,11 @@ void OmniboxEditModel::OnKillFocus() {
 }
 
 bool OmniboxEditModel::WillHandleEscapeKey() const {
-  return user_input_in_progress_ ||
-      (has_temporary_text_ &&
-       (CurrentMatch(nullptr).destination_url != original_url_));
+  return user_input_in_progress_ || has_temporary_text_;
 }
 
 bool OmniboxEditModel::OnEscapeKeyPressed() {
-  if (has_temporary_text_ &&
-      (CurrentMatch(nullptr).destination_url != original_url_)) {
+  if (has_temporary_text_) {
     RevertTemporaryText(true);
     return true;
   }
@@ -1218,7 +1213,6 @@ void OmniboxEditModel::OnPopupDataChanged(
     if (save_original_selection) {
       // Save the original selection and URL so it can be reverted later.
       has_temporary_text_ = true;
-      original_url_ = *destination_for_temporary_text_change;
       inline_autocomplete_text_.clear();
       view_->OnInlineAutocompleteTextCleared();
     }
