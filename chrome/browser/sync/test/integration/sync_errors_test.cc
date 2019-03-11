@@ -201,11 +201,12 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest, BirthdayErrorUsingActionableErrorTest) {
   SetTitle(0, node1, "new_title1");
   ASSERT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
 
-  std::string description = "Not My Fault";
-  std::string url = "www.google.com";
+  // Clear the server data so that the birthday gets incremented, and also send
+  // an appropriate error.
+  GetFakeServer()->ClearServerData();
   ASSERT_TRUE(GetFakeServer()->TriggerActionableError(
-      sync_pb::SyncEnums::NOT_MY_BIRTHDAY, description, url,
-      sync_pb::SyncEnums::DISABLE_SYNC_ON_CLIENT));
+      sync_pb::SyncEnums::NOT_MY_BIRTHDAY, "Not My Fault", "www.google.com",
+      sync_pb::SyncEnums::UNKNOWN_ACTION));
 
   // Now make one more change so we will do another sync.
   const BookmarkNode* node2 = AddFolder(0, 0, "title2");
@@ -215,17 +216,13 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest, BirthdayErrorUsingActionableErrorTest) {
     syncer::SyncStatus status;
     GetSyncService(0)->QueryDetailedSyncStatus(&status);
 
-    // Note: If SyncStandaloneTransport is enabled, then on
-    // receiving the error, the SyncService will immediately
-    // start up again in transport mode, which resets the
-    // status. So query the status that the checker recorded at
-    // the time Sync was off. syncer::SyncStatus status =
-    // checker.GetSyncStatusAtExit();
+    // Note: If SyncStandaloneTransport is enabled, then on receiving the error,
+    // the SyncService will immediately start up again in transport mode, which
+    // resets the status. So query the status that the checker recorded at the
+    // time Sync was off.
     EXPECT_EQ(status.sync_protocol_error.error_type, syncer::NOT_MY_BIRTHDAY);
     EXPECT_EQ(status.sync_protocol_error.action,
               syncer::DISABLE_SYNC_ON_CLIENT);
-    EXPECT_EQ(status.sync_protocol_error.url, url);
-    EXPECT_EQ(status.sync_protocol_error.error_description, description);
   });
   EXPECT_TRUE(SyncDisabledChecker(GetSyncService(0), condition).Wait());
 }

@@ -167,11 +167,13 @@ IN_PROC_BROWSER_TEST_F(SingleClientStandaloneTransportSyncTest,
   ASSERT_TRUE(GetSyncService(0)->IsSyncFeatureEnabled());
   ASSERT_TRUE(GetSyncService(0)->IsSyncFeatureActive());
 
-  // Trigger a "Reset Sync" from the dashboard and wait for it to apply.
+  // Trigger a "Reset Sync" from the dashboard and wait for it to apply. This
+  // involves clearing the server data so that the birthday gets incremented,
+  // and also sending an appropriate error.
+  GetFakeServer()->ClearServerData();
   ASSERT_TRUE(GetFakeServer()->TriggerActionableError(
       sync_pb::SyncEnums::NOT_MY_BIRTHDAY, "Reset Sync from Dashboard",
-      "https://chrome.google.com/sync",
-      sync_pb::SyncEnums::DISABLE_SYNC_ON_CLIENT));
+      "https://chrome.google.com/sync", sync_pb::SyncEnums::UNKNOWN_ACTION));
   EXPECT_TRUE(SyncDisabledByUserChecker(GetSyncService(0)).Wait());
   GetFakeServer()->ClearActionableError();
 
