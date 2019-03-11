@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_NAME_CLIENT_H_
 
 #include "base/macros.h"
+#include "third_party/blink/renderer/platform/bindings/buildflags.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace blink {
@@ -14,6 +15,15 @@ namespace blink {
 // the object graph.
 class PLATFORM_EXPORT NameClient {
  public:
+  static constexpr bool HideInternalName() {
+#if BUILDFLAG(FULL_HEAP_SNAPSHOTS) && \
+    (defined(COMPILER_GCC) || defined(__clang__))
+    return false;
+#else
+    return true;
+#endif  // BUILDFLAG(FULL_HEAP_SNAPSHOTS)
+  }
+
   NameClient() = default;
   ~NameClient() = default;
 

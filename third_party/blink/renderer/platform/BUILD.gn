@@ -13,6 +13,7 @@ import("//third_party/blink/public/public_features.gni")
 import("//third_party/blink/renderer/build/scripts/scripts.gni")
 import("//third_party/blink/renderer/config.gni")
 import("//third_party/blink/renderer/platform/platform_generated.gni")
+import("//v8/gni/v8.gni")
 
 # Most targets in this file are private actions so use that as the default.
 visibility = [ ":*" ]
@@ -164,8 +165,8 @@ group("blink_platform_public_deps") {
   visibility = []  # Allow re-assignment of list.
   visibility = [ "//third_party/blink/renderer/platform/*" ]
   public_deps = [
+    ":bindings_buildflags",
     ":make_platform_generated",
-    ":rcs_count_everything_buildflags",
     "//base",
     "//cc",
     "//cc/animation",
@@ -210,12 +211,14 @@ declare_args() {
   runtime_call_stats_count_everything = false
 }
 
-buildflag_header("rcs_count_everything_buildflags") {
-  header = "runtime_call_stats_count_everything_buildflags.h"
-
+buildflag_header("bindings_buildflags") {
+  header = "buildflags.h"
   header_dir = "third_party/blink/renderer/platform/bindings"
 
-  flags = [ "RCS_COUNT_EVERYTHING=$runtime_call_stats_count_everything" ]
+  flags = [
+    "FULL_HEAP_SNAPSHOTS=$v8_enable_full_heap_snapshots",
+    "RCS_COUNT_EVERYTHING=$runtime_call_stats_count_everything",
+  ]
 }
 
 config("blink_platform_implementation") {
