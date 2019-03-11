@@ -418,6 +418,8 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
   void SetHitTestInsets(Id transport_window_id,
                         const gfx::Insets& mouse,
                         const gfx::Insets& touch) override;
+  void SetShape(Id transport_window_id,
+                const std::vector<gfx::Rect>& shape) override;
   void AttachFrameSinkId(Id transport_window_id,
                          const viz::FrameSinkId& f) override;
   void UnattachFrameSinkId(Id transport_window_id) override;

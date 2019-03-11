@@ -110,6 +110,11 @@ void WindowTreeTestHelper::SetHitTestInsets(aura::Window* window,
   window_tree_->SetHitTestInsets(TransportIdForWindow(window), mouse, touch);
 }
 
+void WindowTreeTestHelper::SetShape(aura::Window* window,
+                                    const std::vector<gfx::Rect>& shape) {
+  window_tree_->SetShape(TransportIdForWindow(window), shape);
+}
+
 bool WindowTreeTestHelper::SetWindowVisibility(aura::Window* window,
                                                bool visible) {
   return window_tree_->SetWindowVisibilityImpl(ClientWindowIdForWindow(window),

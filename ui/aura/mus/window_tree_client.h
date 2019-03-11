@@ -147,6 +147,8 @@ class AURA_EXPORT WindowTreeClient
   void SetHitTestInsets(WindowMus* window,
                         const gfx::Insets& mouse,
                         const gfx::Insets& touch);
+  void SetShape(WindowMus* window,
+                std::unique_ptr<std::vector<gfx::Rect>> shape);
   void TrackOcclusionState(WindowMus* window);
   void PauseWindowOcclusionTracking();
   void UnpauseWindowOcclusionTracking();

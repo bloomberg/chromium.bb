@@ -150,6 +150,13 @@ interface WindowTree {
                    gfx.mojom.Insets mouse,
                    gfx.mojom.Insets touch);
 
+  // Specifies the shape of the window. The region outside of the shape becomes
+  // transparent and should be considered to be outside of the widget, so
+  // underlying window will be targeted. Each element of |shape| is relative to
+  // the window's coordinate. Empty means to reset the settings, so the normal
+  // rectangular region will be used.
+  SetShape(uint64 window_id, array<gfx.mojom.Rect> shape);
+
   // Called by clients that want to accept drag and drops. Windows default to
   // this being disabled; a window must actively opt-in to receiving OnDrag*()
   // calls.
