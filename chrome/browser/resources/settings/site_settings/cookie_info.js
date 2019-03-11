@@ -34,8 +34,8 @@ const cookieInfo = {
     ['created', 'cookieCreated'], ['expires', 'cookieExpires']
   ],
   'app_cache': [
-    ['manifest', 'appCacheManifest'], ['size', 'localStorageSize'],
-    ['created', 'cookieCreated'], ['accessed', 'cookieLastAccessed']
+    ['origin', 'appCacheOrigin'], ['size', 'localStorageSize'],
+    ['modified', 'localStorageLastModified']
   ],
   'database': [
     ['origin', 'databaseOrigin'], ['size', 'localStorageSize'],
