@@ -65,7 +65,6 @@ void RemoteFrameView::AttachToLayout() {
     SetParentVisible(true);
   UpdateVisibility(true);
 
-  SetupRenderThrottling();
   subtree_throttled_ = ParentFrameView()->CanThrottleRendering();
 
   FrameRectsChanged();
@@ -90,67 +89,53 @@ void RemoteFrameView::UpdateViewportIntersectionsForSubtree(
     return;
   }
 
-  LayoutEmbeddedContent* owner = remote_frame_->OwnerLayoutObject();
+  // This should only run in child frames.
+  HTMLFrameOwnerElement* owner_element = remote_frame_->DeprecatedLocalOwner();
+  DCHECK(owner_element);
+  LayoutEmbeddedContent* owner = owner_element->GetLayoutEmbeddedContent();
   if (!owner)
     return;
-
-  LocalFrameView* local_root_view = ParentLocalRootFrameView();
-  if (!local_root_view)
-    return;
-
   IntRect viewport_intersection;
   bool occluded_or_obscured = false;
-  DocumentLifecycle::LifecycleState parent_state =
-      owner->GetDocument().Lifecycle().GetState();
 
   // If the parent LocalFrameView is throttled and out-of-date, then we can't
   // get any useful information.
+  DocumentLifecycle::LifecycleState parent_state =
+      owner_element->GetDocument().Lifecycle().GetState();
   if (parent_state >= DocumentLifecycle::kLayoutClean) {
-    // Start with rect in remote frame's coordinate space. Then
-    // mapToVisualRectInAncestorSpace will move it to the local root's
-    // coordinate space and account for any clip from containing elements such
-    // as a scrollable div. Passing nullptr as an argument to
-    // mapToVisualRectInAncestorSpace causes it to be clipped to the viewport,
-    // even if there are RemoteFrame ancestors in the frame tree.
-    LayoutRect rect(0, 0, frame_rect_.Width(), frame_rect_.Height());
-    rect.Move(owner->PhysicalContentBoxOffset());
-    if (owner->MapToVisualRectInAncestorSpace(nullptr, rect,
-                                              kUseGeometryMapper)) {
-      IntRect root_visible_rect(IntPoint(), local_root_view->Size());
-      IntRect intersected_rect = EnclosingIntRect(rect);
-      intersected_rect.Intersect(root_visible_rect);
-
-      // Translate the intersection rect from the root frame's coordinate space
-      // to the remote frame's coordinate space.
-      FloatRect viewport_intersection_float =
-          remote_frame_->OwnerLayoutObject()
-              ->AncestorToLocalQuad(
-                  local_root_view->GetLayoutView(), FloatQuad(intersected_rect),
-                  kTraverseDocumentBoundaries | kUseTransforms)
-              .BoundingBox();
-      viewport_intersection_float.Move(
-          -remote_frame_->OwnerLayoutObject()->PhysicalContentBoxOffset());
-      viewport_intersection = EnclosingIntRect(viewport_intersection_float);
+    unsigned geometry_flags =
+        IntersectionGeometry::kShouldUseReplacedContentRect;
+    if (parent_state >= DocumentLifecycle::kPrePaintClean &&
+        RuntimeEnabledFeatures::IntersectionObserverV2Enabled()) {
+      geometry_flags |= IntersectionGeometry::kShouldComputeVisibility;
     }
-  }
-
-  if (parent_state >= DocumentLifecycle::kPrePaintClean &&
-      RuntimeEnabledFeatures::IntersectionObserverV2Enabled()) {
-    // TODO(layout-dev): As an optimization, we should only check for
-    // occlusion and effects if the remote frame needs it, i.e., if it has at
-    // least one active IntersectionObserver with trackVisibility:true.
-    if (owner->GetDocument()
-            .GetFrame()
-            ->LocalFrameRoot()
-            .MayBeOccludedOrObscuredByRemoteAncestor() ||
-        owner->HasDistortingVisualEffects()) {
-      occluded_or_obscured = true;
+    IntersectionGeometry geometry(nullptr, *owner_element, {},
+                                  {IntersectionObserver::kMinimumThreshold},
+                                  geometry_flags);
+    // geometry.IntersectionRect() is in absolute coordinates of the owning
+    // document. Map it down to absolute coordinates in the child document.
+    LayoutRect intersection_rect = LayoutRect(
+        owner
+            ->AncestorToLocalQuad(
+                nullptr, FloatQuad(FloatRect(geometry.IntersectionRect())),
+                kUseTransforms)
+            .BoundingBox());
+    // Map from the box coordinates of the owner to the inner frame.
+    intersection_rect.Move(-owner->PhysicalContentBoxOffset());
+    // Don't let EnclosingIntRect turn an empty rect into a non-empty one.
+    if (intersection_rect.IsEmpty()) {
+      viewport_intersection =
+          IntRect(FlooredIntPoint(intersection_rect.Location()), IntSize());
     } else {
-      HitTestResult result(owner->HitTestForOcclusion());
-      occluded_or_obscured =
-          result.InnerNode() && result.InnerNode() != owner->GetNode();
+      viewport_intersection = EnclosingIntRect(intersection_rect);
     }
+    occluded_or_obscured = !geometry.IsVisible();
   }
+
+  // TODO(szager): There are some redundant IPC's here; clean them up.
+  bool is_visible_for_throttling = !viewport_intersection.IsEmpty();
+  UpdateVisibility(is_visible_for_throttling);
+  UpdateRenderThrottlingStatus(!is_visible_for_throttling, subtree_throttled_);
 
   if (viewport_intersection == last_viewport_intersection_ &&
       occluded_or_obscured == last_occluded_or_obscured_) {
@@ -339,29 +324,6 @@ void RemoteFrameView::UpdateVisibility(bool scroll_visible) {
     return;
   visibility_ = visibility;
   remote_frame_->Client()->VisibilityChanged(visibility);
-}
-
-void RemoteFrameView::OnViewportIntersectionChanged(
-    const HeapVector<Member<IntersectionObserverEntry>>& entries) {
-  bool is_visible = entries.back()->intersectionRatio() > 0;
-  UpdateVisibility(is_visible);
-  UpdateRenderThrottlingStatus(!is_visible, subtree_throttled_);
-}
-
-void RemoteFrameView::SetupRenderThrottling() {
-  if (visibility_observer_)
-    return;
-
-  Element* target_element = GetFrame().DeprecatedLocalOwner();
-  if (!target_element)
-    return;
-
-  visibility_observer_ = IntersectionObserver::Create(
-      {}, {IntersectionObserver::kMinimumThreshold},
-      &target_element->GetDocument(),
-      WTF::BindRepeating(&RemoteFrameView::OnViewportIntersectionChanged,
-                         WrapWeakPersistent(this)));
-  visibility_observer_->observe(target_element);
 }
 
 void RemoteFrameView::UpdateRenderThrottlingStatus(bool hidden,

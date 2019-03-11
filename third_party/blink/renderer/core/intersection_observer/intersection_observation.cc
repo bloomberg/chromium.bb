@@ -60,7 +60,7 @@ void IntersectionObservation::Compute(unsigned flags) {
   bool report_root_bounds = observer_->AlwaysReportRootBounds() ||
                             (flags & kReportImplicitRootBounds) ||
                             !observer_->RootIsImplicit();
-  unsigned geometry_flags = 0;
+  unsigned geometry_flags = IntersectionGeometry::kShouldConvertToCSSPixels;
   if (report_root_bounds)
     geometry_flags |= IntersectionGeometry::kShouldReportRootBounds;
   if (Observer()->trackVisibility())
