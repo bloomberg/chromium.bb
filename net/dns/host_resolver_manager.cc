@@ -2419,8 +2419,14 @@ HostCache::Entry HostResolverManager::ResolveLocally(
   if (ip_address.AssignFromIPLiteral(hostname)) {
     ip_address_ptr = &ip_address;
   } else {
-    // Check that the caller supplied a valid hostname to resolve.
-    if (!IsValidDNSDomain(hostname)) {
+    // Check that the caller supplied a valid hostname to resolve. For
+    // MULTICAST_DNS, we are less restrictive.
+    // TODO(ericorth): Control validation based on an explicit flag rather
+    // than implicitly based on |source|.
+    const bool is_valid_hostname = source == HostResolverSource::MULTICAST_DNS
+                                       ? IsValidUnrestrictedDNSDomain(hostname)
+                                       : IsValidDNSDomain(hostname);
+    if (!is_valid_hostname) {
       return HostCache::Entry(ERR_NAME_NOT_RESOLVED,
                               HostCache::Entry::SOURCE_UNKNOWN);
     }
