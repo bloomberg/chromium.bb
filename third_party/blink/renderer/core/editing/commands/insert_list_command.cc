@@ -76,7 +76,7 @@ HTMLElement* InsertListCommand::MergeWithNeighboringLists(
   DCHECK(passed_list);
   HTMLElement* list = passed_list;
   Element* previous_list = ElementTraversal::PreviousSibling(*list);
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  GetDocument().UpdateStyleAndLayout();
   if (previous_list && CanMergeLists(*previous_list, *list)) {
     MergeIdenticalElements(previous_list, list, editing_state);
     if (editing_state->IsAborted())
@@ -91,7 +91,7 @@ HTMLElement* InsertListCommand::MergeWithNeighboringLists(
     return list;
 
   HTMLElement* next_list = ToHTMLElement(next_sibling);
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  GetDocument().UpdateStyleAndLayout();
   if (CanMergeLists(*list, *next_list)) {
     MergeIdenticalElements(list, next_list, editing_state);
     if (editing_state->IsAborted())
@@ -244,7 +244,7 @@ void InsertListCommand::DoApply(EditingState* editing_state) {
         if (!single_paragraph_result)
           break;
 
-        GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+        GetDocument().UpdateStyleAndLayout();
 
         // Make |visibleEndOfSelection| valid again.
         if (!end_of_selection.IsConnected() ||
@@ -280,7 +280,7 @@ void InsertListCommand::DoApply(EditingState* editing_state) {
     if (editing_state->IsAborted())
       return;
 
-    GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+    GetDocument().UpdateStyleAndLayout();
 
     // Fetch the end of the selection, for the reason mentioned above.
     if (!end_of_selection.IsConnected()) {
@@ -358,7 +358,7 @@ bool InsertListCommand::DoApplyForSingleParagraph(
       list_element = MergeWithNeighboringLists(list_element, editing_state);
       if (editing_state->IsAborted())
         return false;
-      GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+      GetDocument().UpdateStyleAndLayout();
     }
     DCHECK(HasEditableStyle(*list_element));
     DCHECK(HasEditableStyle(*list_element->parentNode()));
@@ -393,7 +393,7 @@ bool InsertListCommand::DoApplyForSingleParagraph(
       if (editing_state->IsAborted())
         return false;
 
-      GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+      GetDocument().UpdateStyleAndLayout();
       Node* first_child_in_list =
           EnclosingListChild(VisiblePosition::FirstPositionInNode(*list_element)
                                  .DeepEquivalent()
@@ -449,7 +449,7 @@ bool InsertListCommand::DoApplyForSingleParagraph(
                        list_child_node, editing_state);
     if (editing_state->IsAborted())
       return false;
-    GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+    GetDocument().UpdateStyleAndLayout();
   }
 
   if (!list_child_node || switch_list_type || force_create_list) {
@@ -538,7 +538,7 @@ void InsertListCommand::UnlistifyParagraph(
   if (editing_state->IsAborted())
     return;
 
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  GetDocument().UpdateStyleAndLayout();
 
   // Make |start| and |end| valid again.
   start = CreateVisiblePosition(start_position);
@@ -603,7 +603,7 @@ void InsertListCommand::ListifyParagraph(const VisiblePosition& original_start,
     if (editing_state->IsAborted())
       return;
 
-    GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+    GetDocument().UpdateStyleAndLayout();
     if (previous_list && next_list && CanMergeLists(*previous_list, *next_list))
       MergeIdenticalElements(previous_list, next_list, editing_state);
 
@@ -625,7 +625,7 @@ void InsertListCommand::ListifyParagraph(const VisiblePosition& original_start,
     start_pos = Position::BeforeNode(*placeholder);
   }
 
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  GetDocument().UpdateStyleAndLayout();
 
   // Insert the list at a position visually equivalent to start of the
   // paragraph that is being moved into the list.
@@ -668,7 +668,7 @@ void InsertListCommand::ListifyParagraph(const VisiblePosition& original_start,
     MoveParagraphOverPositionIntoEmptyListItem(
         original_start, list_item_element, editing_state);
   } else {
-    GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+    GetDocument().UpdateStyleAndLayout();
     MoveParagraphOverPositionIntoEmptyListItem(
         CreateVisiblePosition(start_pos), list_item_element, editing_state);
   }
@@ -691,7 +691,7 @@ void InsertListCommand::MoveParagraphOverPositionIntoEmptyListItem(
     return;
   // Inserting list element and list item list may change start of pargraph
   // to move. We calculate start of paragraph again.
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  GetDocument().UpdateStyleAndLayout();
   const VisiblePosition& valid_pos =
       CreateVisiblePosition(pos.ToPositionWithAffinity());
   const VisiblePosition& start =

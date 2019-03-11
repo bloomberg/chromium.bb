@@ -2507,10 +2507,10 @@ bool AXLayoutObject::OnNativeSetSelectionAction(const AXSelection& selection) {
   if (!frame || !frame->Selection().IsAvailable())
     return false;
 
-  // TODO(editing-dev): Use of updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): Use of UpdateStyleAndLayout
   // needs to be audited.  see http://crbug.com/590369 for more details.
   // This callsite should probably move up the stack.
-  frame->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  frame->GetDocument()->UpdateStyleAndLayout();
 
   // Set the selection based on visible positions, because the offsets in
   // accessibility nodes are based on visible indexes, which often skips

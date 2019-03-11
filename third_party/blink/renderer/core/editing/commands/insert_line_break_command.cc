@@ -67,7 +67,7 @@ void InsertLineBreakCommand::DoApply(EditingState* editing_state) {
   if (!DeleteSelection(editing_state, DeleteSelectionOptions::NormalDelete()))
     return;
 
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  GetDocument().UpdateStyleAndLayout();
 
   VisibleSelection selection = EndingVisibleSelection();
   if (selection.IsNone() || selection.Start().IsOrphan() ||
@@ -97,7 +97,7 @@ void InsertLineBreakCommand::DoApply(EditingState* editing_state) {
   else
     node_to_insert = GetDocument().createTextNode("\n");
 
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  GetDocument().UpdateStyleAndLayout();
 
   // FIXME: Need to merge text nodes when inserting just after or before text.
 
@@ -136,7 +136,7 @@ void InsertLineBreakCommand::DoApply(EditingState* editing_state) {
     InsertNodeAt(node_to_insert, pos, editing_state);
     if (editing_state->IsAborted())
       return;
-    GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+    GetDocument().UpdateStyleAndLayout();
 
     // Insert an extra br or '\n' if the just inserted one collapsed.
     if (!IsStartOfParagraph(VisiblePosition::BeforeNode(*node_to_insert))) {
@@ -172,7 +172,7 @@ void InsertLineBreakCommand::DoApply(EditingState* editing_state) {
     Position ending_position = Position::FirstPositionInNode(*text_node);
 
     // Handle whitespace that occurs after the split
-    GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+    GetDocument().UpdateStyleAndLayout();
     if (!IsRenderedCharacter(ending_position)) {
       Position position_before_text_node(
           Position::InParentBeforeNode(*text_node));

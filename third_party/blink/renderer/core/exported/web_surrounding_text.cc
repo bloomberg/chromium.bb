@@ -43,9 +43,9 @@ namespace {
 EphemeralRange ComputeRangeFromFrameSelection(WebLocalFrame* frame) {
   LocalFrame* web_frame = To<WebLocalFrameImpl>(frame)->GetFrame();
 
-  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): The use of UpdateStyleAndLayout
   // needs to be audited.  See http://crbug.com/590369 for more details.
-  web_frame->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  web_frame->GetDocument()->UpdateStyleAndLayout();
 
   return web_frame->Selection()
       .ComputeVisibleSelectionInDOMTree()

@@ -287,16 +287,13 @@ void BlockPainter::PaintObject(const PaintInfo& paint_info,
 void BlockPainter::PaintBlockFlowContents(const PaintInfo& paint_info,
                                           const LayoutPoint& paint_offset) {
   DCHECK(layout_block_.IsLayoutBlockFlow());
-  if (layout_block_.IsLayoutView() ||
-      !paint_info.SuppressPaintingDescendants()) {
-    if (!layout_block_.ChildrenInline()) {
-      PaintContents(paint_info, paint_offset);
-    } else if (ShouldPaintDescendantOutlines(paint_info.phase)) {
-      ObjectPainter(layout_block_).PaintInlineChildrenOutlines(paint_info);
-    } else {
-      LineBoxListPainter(ToLayoutBlockFlow(layout_block_).LineBoxes())
-          .Paint(layout_block_, paint_info, paint_offset);
-    }
+  if (!layout_block_.ChildrenInline()) {
+    PaintContents(paint_info, paint_offset);
+  } else if (ShouldPaintDescendantOutlines(paint_info.phase)) {
+    ObjectPainter(layout_block_).PaintInlineChildrenOutlines(paint_info);
+  } else {
+    LineBoxListPainter(ToLayoutBlockFlow(layout_block_).LineBoxes())
+        .Paint(layout_block_, paint_info, paint_offset);
   }
 
   // If we don't have any floats to paint, or we're in the wrong paint phase,

@@ -61,8 +61,7 @@ struct CORE_EXPORT PaintInfo {
             GlobalPaintFlags global_paint_flags,
             PaintLayerFlags paint_flags,
             const LayoutBoxModelObject* paint_container = nullptr,
-            LayoutUnit fragment_logical_top_in_flow_thread = LayoutUnit(),
-            bool suppress_painting_descendants = false)
+            LayoutUnit fragment_logical_top_in_flow_thread = LayoutUnit())
       : context(context),
         phase(phase),
         cull_rect_(cull_rect),
@@ -71,7 +70,6 @@ struct CORE_EXPORT PaintInfo {
             fragment_logical_top_in_flow_thread),
         paint_flags_(paint_flags),
         global_paint_flags_(global_paint_flags),
-        suppress_painting_descendants_(suppress_painting_descendants),
         is_painting_scrolling_background_(false) {}
 
   PaintInfo(GraphicsContext& new_context,
@@ -84,8 +82,6 @@ struct CORE_EXPORT PaintInfo {
             copy_other_fields_from.fragment_logical_top_in_flow_thread_),
         paint_flags_(copy_other_fields_from.paint_flags_),
         global_paint_flags_(copy_other_fields_from.global_paint_flags_),
-        suppress_painting_descendants_(
-            copy_other_fields_from.suppress_painting_descendants_),
         is_painting_scrolling_background_(false) {
     // We should never pass is_painting_scrolling_background_ other PaintInfo.
     DCHECK(!copy_other_fields_from.is_painting_scrolling_background_);
@@ -126,10 +122,6 @@ struct CORE_EXPORT PaintInfo {
   }
 
   bool IsPrinting() const { return global_paint_flags_ & kGlobalPaintPrinting; }
-
-  bool SuppressPaintingDescendants() const {
-    return suppress_painting_descendants_;
-  }
 
   DisplayItem::Type DisplayItemTypeForClipping() const {
     return DisplayItem::PaintPhaseToClipType(phase);
@@ -195,7 +187,6 @@ struct CORE_EXPORT PaintInfo {
 
   PaintLayerFlags paint_flags_;
   const GlobalPaintFlags global_paint_flags_;
-  const bool suppress_painting_descendants_;
 
   // For CAP only.
   bool is_painting_scrolling_background_;

@@ -242,7 +242,7 @@ bool ScrollManager::LogicalScroll(ScrollDirection direction,
 
   Document& document = node->GetDocument();
 
-  document.UpdateStyleAndLayoutIgnorePendingStylesheets();
+  document.UpdateStyleAndLayout();
 
   std::deque<DOMNodeId> scroll_chain;
   std::unique_ptr<ScrollStateData> scroll_state_data =
@@ -332,7 +332,7 @@ bool ScrollManager::BubblingScroll(ScrollDirection direction,
   // The layout needs to be up to date to determine if we can scroll. We may be
   // here because of an onLoad event, in which case the final layout hasn't been
   // performed yet.
-  frame_->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  frame_->GetDocument()->UpdateStyleAndLayout();
   // FIXME: enable scroll customization in this case. See crbug.com/410974.
   if (LogicalScroll(direction, granularity, starting_node, mouse_press_node))
     return true;
@@ -351,7 +351,7 @@ void ScrollManager::CustomizedScroll(ScrollState& scroll_state) {
     return;
 
   if (scroll_state.deltaX() || scroll_state.deltaY())
-    frame_->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+    frame_->GetDocument()->UpdateStyleAndLayout();
 
   DCHECK(!current_scroll_chain_.empty());
 

@@ -1120,14 +1120,13 @@ void HTMLDocumentParser::ExecuteScriptsWaitingForResources() {
 }
 
 void HTMLDocumentParser::DidAddPendingStylesheetInBody() {
-  // When in-body CSS doesn't block painting, the parser needs to pause so that
+  // In-body CSS doesn't block painting. The parser needs to pause so that
   // the DOM doesn't include any elements that may depend on the CSS for style.
   // The stylesheet can be added and removed during the parsing of a single
   // token so don't actually set the bit to block parsing here, just track
   // the state of the added sheet in case it does persist beyond a single
   // token.
-  if (RuntimeEnabledFeatures::CSSInBodyDoesNotBlockPaintEnabled())
-    added_pending_stylesheet_in_body_ = true;
+  added_pending_stylesheet_in_body_ = true;
 }
 
 void HTMLDocumentParser::DidLoadAllBodyStylesheets() {

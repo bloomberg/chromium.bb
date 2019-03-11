@@ -35,7 +35,7 @@ void SpellCheckerTest::ForceLayout() {
   frame_rect.SetWidth(frame_rect.Width() + 1);
   frame_rect.SetHeight(frame_rect.Height() + 1);
   Page().GetFrameView().SetFrameRect(frame_rect);
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  GetDocument().UpdateStyleAndLayout();
 }
 
 TEST_F(SpellCheckerTest, AdvanceToNextMisspellingWithEmptyInputNoCrash) {

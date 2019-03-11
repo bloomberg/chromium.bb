@@ -120,8 +120,7 @@ void FindBuffer::InvisibleLayoutScope::EnsureRecalc(Node& block_root) {
   // TODO(rakina): This currently does layout too and might be expensive. In the
   // future, we might to figure out a way to make NGOffsetMapping work with only
   // style & layout tree so that we don't have to do layout here.
-  invisible_root_->GetDocument()
-      .UpdateStyleAndLayoutIgnorePendingStylesheetsConsideringInvisibleNodes();
+  invisible_root_->GetDocument().UpdateStyleAndLayout();
 }
 
 FindBuffer::InvisibleLayoutScope::~InvisibleLayoutScope() {
@@ -133,7 +132,7 @@ FindBuffer::InvisibleLayoutScope::~InvisibleLayoutScope() {
   invisible_root_->SetNeedsStyleRecalc(
       kSubtreeStyleChange,
       StyleChangeReasonForTracing::Create(style_change_reason::kFindInvisible));
-  invisible_root_->GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  invisible_root_->GetDocument().UpdateStyleAndLayout();
 }
 
 bool ShouldIgnoreContents(const Node& node) {
@@ -345,7 +344,7 @@ void FindBuffer::CollectTextUntilBlockBoundary(
   if (node) {
     CollectScopedForcedUpdates(*node, end_node, just_after_block);
     if (!scoped_forced_update_list_.IsEmpty())
-      node->GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+      node->GetDocument().UpdateStyleAndLayout();
   }
 
   while (node && node != just_after_block) {

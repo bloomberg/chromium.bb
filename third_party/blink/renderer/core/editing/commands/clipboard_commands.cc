@@ -132,9 +132,9 @@ bool ClipboardCommands::DispatchClipboardEvent(LocalFrame& frame,
 bool ClipboardCommands::DispatchCopyOrCutEvent(LocalFrame& frame,
                                                EditorCommandSource source,
                                                const AtomicString& event_type) {
-  // TODO(editing-dev): The use of UpdateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): The use of UpdateStyleAndLayout
   // needs to be audited.  See http://crbug.com/590369 for more details.
-  frame.GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  frame.GetDocument()->UpdateStyleAndLayout();
   if (IsInPasswordField(
           frame.Selection().ComputeVisibleSelectionInDOMTree().Start()))
     return true;
@@ -229,11 +229,11 @@ bool ClipboardCommands::ExecuteCopy(LocalFrame& frame,
 
   Document* const document = frame.GetDocument();
 
-  // TODO(editing-dev): The use of UpdateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): The use of UpdateStyleAndLayout
   // needs to be audited.  See http://crbug.com/590369 for more details.
   // A 'copy' event handler might have dirtied the layout so we need to update
   // before we obtain the selection.
-  document->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  document->UpdateStyleAndLayout();
 
   if (HTMLImageElement* image_element =
           ImageElementFromImageDocument(document)) {
@@ -285,11 +285,11 @@ bool ClipboardCommands::ExecuteCut(LocalFrame& frame,
   if (!frame.GetEditor().CanCut())
     return true;
 
-  // TODO(editing-dev): The use of UpdateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): The use of UpdateStyleAndLayout
   // needs to be audited.  See http://crbug.com/590369 for more details.
   // A 'cut' event handler might have dirtied the layout so we need to update
   // before we obtain the selection.
-  frame.GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  frame.GetDocument()->UpdateStyleAndLayout();
 
   if (source == EditorCommandSource::kMenuOrKeyBinding &&
       !frame.Selection().SelectionHasFocus())
@@ -369,11 +369,11 @@ ClipboardCommands::GetFragmentFromClipboard(LocalFrame& frame) {
   if (text.IsEmpty())
     return std::make_pair(fragment, false);
 
-  // TODO(editing-dev): Use of UpdateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): Use of UpdateStyleAndLayout
   // needs to be audited. See http://crbug.com/590369 for more details.
   // |SelectedRange| requires clean layout for visible selection
   // normalization.
-  frame.GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  frame.GetDocument()->UpdateStyleAndLayout();
   fragment = CreateFragmentFromText(frame.GetEditor().SelectedRange(), text);
   return std::make_pair(fragment, true);
 }
@@ -398,11 +398,11 @@ void ClipboardCommands::Paste(LocalFrame& frame, EditorCommandSource source) {
   if (!frame.GetEditor().CanPaste())
     return;
 
-  // TODO(editing-dev): The use of UpdateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): The use of UpdateStyleAndLayout
   // needs to be audited.  See http://crbug.com/590369 for more details.
   // A 'paste' event handler might have dirtied the layout so we need to update
   // before we obtain the selection.
-  frame.GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  frame.GetDocument()->UpdateStyleAndLayout();
 
   if (source == EditorCommandSource::kMenuOrKeyBinding &&
       !frame.Selection().SelectionHasFocus())
@@ -470,11 +470,11 @@ bool ClipboardCommands::ExecutePasteAndMatchStyle(LocalFrame& frame,
   if (!frame.GetEditor().CanPaste())
     return false;
 
-  // TODO(editing-dev): The use of UpdateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): The use of UpdateStyleAndLayout
   // needs to be audited.  See http://crbug.com/590369 for more details.
   // A 'paste' event handler might have dirtied the layout so we need to update
   // before we obtain the selection.
-  frame.GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  frame.GetDocument()->UpdateStyleAndLayout();
 
   if (source == EditorCommandSource::kMenuOrKeyBinding &&
       !frame.Selection().SelectionHasFocus())

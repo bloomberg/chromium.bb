@@ -483,7 +483,7 @@ LayoutEmbeddedContent* HTMLPlugInElement::LayoutEmbeddedContentForJSBindings()
   // Needs to load the plugin immediatedly because this function is called
   // when JavaScript code accesses the plugin.
   // FIXME: Check if dispatching events here is safe.
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  GetDocument().UpdateStyleAndLayout();
   GetDocument().View()->FlushAnyPendingPostLayoutTasks();
 
   return ExistingLayoutEmbeddedContent();

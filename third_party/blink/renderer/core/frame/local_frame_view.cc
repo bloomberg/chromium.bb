@@ -2096,7 +2096,7 @@ void LocalFrameView::NotifyResizeObservers() {
        min_depth != ResizeObserverController::kDepthBottom;
        min_depth = resize_controller.GatherObservations(min_depth)) {
     resize_controller.DeliverObservations();
-    GetFrame().GetDocument()->UpdateStyleAndLayout();
+    GetFrame().GetDocument()->UpdateStyleAndLayout(Document::IsNotForcedLayout);
   }
 
   if (resize_controller.SkippedObservations()) {

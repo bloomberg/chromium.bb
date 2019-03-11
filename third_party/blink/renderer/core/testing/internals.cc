@@ -891,7 +891,7 @@ DOMRectReadOnly* Internals::absoluteCaretBounds(
     return nullptr;
   }
 
-  document_->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  document_->UpdateStyleAndLayout();
   return DOMRectReadOnly::FromIntRect(
       GetFrame()->Selection().AbsoluteCaretBounds());
 }
@@ -912,7 +912,7 @@ String Internals::textAffinity() {
 DOMRectReadOnly* Internals::boundingBox(Element* element) {
   DCHECK(element);
 
-  element->GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  element->GetDocument().UpdateStyleAndLayout();
   LayoutObject* layout_object = element->GetLayoutObject();
   if (!layout_object)
     return DOMRectReadOnly::Create(0, 0, 0, 0);
@@ -947,7 +947,7 @@ void Internals::setMarker(Document* document,
     return;
   }
 
-  document->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  document->UpdateStyleAndLayout();
   if (type == DocumentMarker::kSpelling)
     document->Markers().AddSpellingMarker(EphemeralRange(range));
   else
@@ -1079,7 +1079,7 @@ void Internals::addTextMatchMarker(const Range* range,
     return;
   }
 
-  range->OwnerDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  range->OwnerDocument().UpdateStyleAndLayout();
   range->OwnerDocument().Markers().AddTextMatchMarker(
       EphemeralRange(range), match_status_enum.value());
 
@@ -1123,7 +1123,7 @@ void addStyleableMarkerHelper(
         void(const EphemeralRange&, Color, ImeTextSpanThickness, Color)>
         create_marker) {
   DCHECK(range);
-  range->OwnerDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  range->OwnerDocument().UpdateStyleAndLayout();
 
   base::Optional<ImeTextSpanThickness> thickness =
       ThicknessFrom(thickness_value);
@@ -1247,7 +1247,7 @@ String Internals::viewportAsText(Document* document,
     return String();
   }
 
-  document->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  document->UpdateStyleAndLayout();
 
   Page* page = document->GetPage();
 
@@ -1410,7 +1410,7 @@ Range* Internals::rangeFromLocationAndLength(Element* scope,
   DCHECK(scope);
 
   // TextIterator depends on Layout information, make sure layout it up to date.
-  scope->GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  scope->GetDocument().UpdateStyleAndLayout();
 
   return CreateRange(
       PlainTextRange(range_location, range_location + range_length)
@@ -1421,7 +1421,7 @@ unsigned Internals::locationFromRange(Element* scope, const Range* range) {
   DCHECK(scope && range);
   // PlainTextRange depends on Layout information, make sure layout it up to
   // date.
-  scope->GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  scope->GetDocument().UpdateStyleAndLayout();
 
   return PlainTextRange::Create(*scope, *range).Start();
 }
@@ -1430,7 +1430,7 @@ unsigned Internals::lengthFromRange(Element* scope, const Range* range) {
   DCHECK(scope && range);
   // PlainTextRange depends on Layout information, make sure layout it up to
   // date.
-  scope->GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  scope->GetDocument().UpdateStyleAndLayout();
 
   return PlainTextRange::Create(*scope, *range).length();
 }
@@ -1438,7 +1438,7 @@ unsigned Internals::lengthFromRange(Element* scope, const Range* range) {
 String Internals::rangeAsText(const Range* range) {
   DCHECK(range);
   // Clean layout is required by plain text extraction.
-  range->OwnerDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  range->OwnerDocument().UpdateStyleAndLayout();
 
   return range->GetText();
 }
@@ -2085,7 +2085,7 @@ bool Internals::hasSpellingMarker(Document* document,
     return false;
   }
 
-  document->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  document->UpdateStyleAndLayout();
   return document->GetFrame()->GetSpellChecker().SelectionStartHasMarkerFor(
       DocumentMarker::kSpelling, from, length);
 }
@@ -2100,7 +2100,7 @@ void Internals::replaceMisspelled(Document* document,
     return;
   }
 
-  document->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  document->UpdateStyleAndLayout();
   document->GetFrame()->GetSpellChecker().ReplaceMisspelledRange(replacement);
 }
 
@@ -2149,7 +2149,7 @@ bool Internals::hasGrammarMarker(Document* document,
     return false;
   }
 
-  document->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  document->UpdateStyleAndLayout();
   return document->GetFrame()->GetSpellChecker().SelectionStartHasMarkerFor(
       DocumentMarker::kGrammar, from, length);
 }
@@ -2647,7 +2647,7 @@ void Internals::stopTrackingRepaints(Document* document,
   frame_view->SetTracksPaintInvalidations(false);
 }
 
-void Internals::updateLayoutIgnorePendingStylesheetsAndRunPostLayoutTasks(
+void Internals::updateLayoutAndRunPostLayoutTasks(
     Node* node,
     ExceptionState& exception_state) {
   Document* document = nullptr;
@@ -2664,7 +2664,7 @@ void Internals::updateLayoutIgnorePendingStylesheetsAndRunPostLayoutTasks(
         "The node provided is neither a document nor an IFrame.");
     return;
   }
-  document->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  document->UpdateStyleAndLayout();
   document->View()->FlushAnyPendingPostLayoutTasks();
 }
 
@@ -3215,11 +3215,6 @@ void Internals::setInitialFocus(bool reverse) {
       reverse ? kWebFocusTypeBackward : kWebFocusTypeForward);
 }
 
-bool Internals::ignoreLayoutWithPendingStylesheets(Document* document) {
-  DCHECK(document);
-  return document->IgnoreLayoutWithPendingStylesheets();
-}
-
 Element* Internals::interestedElement() {
   if (!GetFrame() || !GetFrame()->GetPage())
     return nullptr;
@@ -3268,7 +3263,7 @@ String Internals::selectedHTMLForClipboard() {
     return String();
 
   // Selection normalization and markup generation require clean layout.
-  GetFrame()->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  GetFrame()->GetDocument()->UpdateStyleAndLayout();
 
   return GetFrame()->Selection().SelectedHTMLForClipboard();
 }
@@ -3278,7 +3273,7 @@ String Internals::selectedTextForClipboard() {
     return String();
 
   // Clean layout is required for extracting plain text from selection.
-  GetFrame()->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  GetFrame()->GetDocument()->UpdateStyleAndLayout();
 
   return GetFrame()->Selection().SelectedTextForClipboard();
 }

@@ -213,26 +213,6 @@ TEST_F(WebMeaningfulLayoutsTest, LayoutWithPendingRenderBlockingStylesheet) {
   EXPECT_TRUE(GetDocument().IsRenderingReady());
 }
 
-// A pending stylesheet in the body is not render-blocking and should not
-// be considered a pending stylesheet if a layout is triggered before it loads.
-TEST_F(WebMeaningfulLayoutsTest, LayoutWithPendingScriptBlockingStylesheet) {
-  SimRequest main_resource("https://example.com/index.html", "text/html");
-  SimSubresourceRequest style_resource("https://example.com/style.css",
-                                       "text/css");
-
-  LoadURL("https://example.com/index.html");
-
-  main_resource.Complete(
-      "<html><head></head><body>"
-      "<link rel=\"stylesheet\" href=\"style.css\">"
-      "</body></html>");
-
-  GetDocument().UpdateStyleAndLayoutTreeIgnorePendingStylesheets();
-  EXPECT_FALSE(GetDocument().DidLayoutWithPendingStylesheets());
-
-  style_resource.Complete("");
-}
-
 // A pending import in the head is render-blocking and will be treated like
 // a pending stylesheet if a layout is triggered before it loads.
 TEST_F(WebMeaningfulLayoutsTest, LayoutWithPendingImportInHead) {

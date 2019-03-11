@@ -607,7 +607,6 @@ Document::Document(const DocumentInit& initializer,
     : ContainerNode(nullptr, kCreateDocument),
       TreeScope(*this),
       ExecutionContext(V8PerIsolateData::MainThreadIsolate()),
-      has_nodes_with_placeholder_style_(false),
       evaluate_media_queries_on_style_recalc_(false),
       pending_sheet_layout_(kNoLayoutWithPendingSheets),
       frame_(initializer.GetFrame()),
@@ -2298,7 +2297,6 @@ void Document::UpdateStyle() {
   if (GetStyleChangeType() == kSubtreeStyleChange) {
     change = change.ForceRecalcDescendants();
 
-    has_nodes_with_placeholder_style_ = false;
     // TODO(futhark@chromium.org): Cannot access the EnsureStyleResolver()
     // before calling StyleForViewport() below because apparently the
     // StyleResolver's constructor has side effects. We should fix it. See
@@ -2457,8 +2455,7 @@ void Document::UpdateStyleAndLayoutTreeForNode(const Node* node) {
   UpdateStyleAndLayoutTree();
 }
 
-void Document::UpdateStyleAndLayoutIgnorePendingStylesheetsForNode(
-    const Node* node) {
+void Document::UpdateStyleAndLayoutForNode(const Node* node) {
   DCHECK(node);
   if (!node->InActiveDocument())
     return;
@@ -2476,16 +2473,19 @@ void Document::UpdateStyleAndLayoutIgnorePendingStylesheetsForNode(
     }
   }
 
-  UpdateStyleAndLayoutIgnorePendingStylesheets();
+  UpdateStyleAndLayout();
 }
 
-void Document::UpdateStyleAndLayout() {
+void Document::UpdateStyleAndLayout(ForcedLayoutStatus status) {
   DCHECK(IsMainThread());
+  LocalFrameView* frame_view = View();
+
+  if (status == IsForcedLayout && frame_view)
+    frame_view->WillStartForcedLayout();
 
   HTMLFrameOwnerElement::PluginDisposeSuspendScope suspend_plugin_dispose;
   ScriptForbiddenScope forbid_script;
 
-  LocalFrameView* frame_view = View();
   DCHECK(!frame_view || !frame_view->IsInPerformLayout())
       << "View layout should not be re-entrant";
 
@@ -2508,6 +2508,9 @@ void Document::UpdateStyleAndLayout() {
 
   if (LocalFrameView* frame_view_anchored = View())
     frame_view_anchored->PerformScrollAnchoringAdjustments();
+
+  if (status == IsForcedLayout && frame_view)
+    frame_view->DidFinishForcedLayout();
 }
 
 void Document::LayoutUpdated() {
@@ -2552,71 +2555,6 @@ void Document::ClearFocusedElementTimerFired(TimerBase*) {
     focused_element_->blur();
 }
 
-// FIXME: This is a bad idea and needs to be removed eventually.
-// Other browsers load stylesheets before they continue parsing the web page.
-// Since we don't, we can run JavaScript code that needs answers before the
-// stylesheets are loaded. Doing a layout ignoring the pending stylesheets
-// lets us get reasonable answers. The long term solution to this problem is
-// to instead suspend JavaScript execution.
-void Document::UpdateStyleAndLayoutTreeIgnorePendingStylesheets() {
-  if (RuntimeEnabledFeatures::CSSInBodyDoesNotBlockPaintEnabled()) {
-    UpdateStyleAndLayoutTree();
-    return;
-  }
-  if (Lifecycle().LifecyclePostponed())
-    return;
-  // See comment for equivalent CHECK in Document::UpdateStyleAndLayoutTree.
-  // Updating style and layout can dirty state that must remain clean during
-  // lifecycle updates.
-  CHECK(Lifecycle().StateAllowsTreeMutations());
-  StyleEngine::IgnoringPendingStylesheet ignoring(GetStyleEngine());
-
-  if (!HaveRenderBlockingResourcesLoaded()) {
-    // FIXME: We are willing to attempt to suppress painting with outdated style
-    // info only once.  Our assumption is that it would be dangerous to try to
-    // stop it a second time, after page content has already been loaded and
-    // displayed with accurate style information. (Our suppression involves
-    // blanking the whole page at the moment. If it were more refined, we might
-    // be able to do something better.) It's worth noting though that this
-    // entire method is a hack, since what we really want to do is suspend JS
-    // instead of doing a layout with inaccurate information.
-    HTMLElement* body_element = body();
-    if (body_element && !body_element->GetLayoutObject() &&
-        pending_sheet_layout_ == kNoLayoutWithPendingSheets) {
-      pending_sheet_layout_ = kDidLayoutWithPendingSheets;
-      GetStyleEngine().MarkAllTreeScopesDirty();
-    }
-    if (has_nodes_with_placeholder_style_) {
-      // If new nodes have been added or style recalc has been done with style
-      // sheets still pending, some nodes may not have had their real style
-      // calculated yet.  Normally this gets cleaned when style sheets arrive
-      // but here we need up-to-date style immediately.
-      SetNeedsStyleRecalc(kSubtreeStyleChange,
-                          StyleChangeReasonForTracing::Create(
-                              style_change_reason::kCleanupPlaceholderStyles));
-    }
-  }
-  UpdateStyleAndLayoutTree();
-}
-
-void Document::UpdateStyleAndLayoutIgnorePendingStylesheets() {
-  DCHECK(!find_in_page_root_);
-  UpdateStyleAndLayoutIgnorePendingStylesheetsConsideringInvisibleNodes();
-}
-
-void Document::
-    UpdateStyleAndLayoutIgnorePendingStylesheetsConsideringInvisibleNodes() {
-  LocalFrameView* local_view = View();
-  if (local_view)
-    local_view->WillStartForcedLayout();
-  if (!RuntimeEnabledFeatures::CSSInBodyDoesNotBlockPaintEnabled())
-    UpdateStyleAndLayoutTreeIgnorePendingStylesheets();
-  UpdateStyleAndLayout();
-
-  if (local_view)
-    local_view->DidFinishForcedLayout();
-}
-
 scoped_refptr<ComputedStyle> Document::StyleForPage(int page_index) {
   UpdateDistributionForUnknownReasons();
   return EnsureStyleResolver().StyleForPage(page_index);
@@ -2650,7 +2588,7 @@ void Document::EnsurePaintLocationDataValidForNode(const Node* node) {
 
   // For all nodes we must have up-to-date style and have performed layout to do
   // any location-based calculation.
-  UpdateStyleAndLayoutIgnorePendingStylesheets();
+  UpdateStyleAndLayout();
 
   // The location of elements that are position: sticky is not known until
   // compositing inputs are cleaned. Therefore, for any elements that are either
@@ -4228,8 +4166,6 @@ void Document::DisableEval(const String& error_message) {
 void Document::DidLoadAllImports() {
   if (!HaveScriptBlockingStylesheetsLoaded())
     return;
-  if (!ImportLoader())
-    StyleResolverMayHaveChanged();
   DidLoadAllScriptBlockingResources();
 }
 
@@ -4239,8 +4175,6 @@ void Document::DidAddPendingStylesheetInBody() {
 }
 
 void Document::DidRemoveAllPendingStylesheet() {
-  StyleResolverMayHaveChanged();
-
   // Only imports on master documents can trigger rendering.
   if (HTMLImportLoader* import = ImportLoader())
     import->DidRemoveAllPendingStylesheet();
@@ -4636,25 +4570,6 @@ void Document::SetResizedForViewportUnits() {
 
 void Document::ClearResizedForViewportUnits() {
   EnsureStyleResolver().ClearResizedForViewportUnits();
-}
-
-void Document::StyleResolverMayHaveChanged() {
-  if (HasNodesWithPlaceholderStyle()) {
-    SetNeedsStyleRecalc(kSubtreeStyleChange,
-                        StyleChangeReasonForTracing::Create(
-                            style_change_reason::kCleanupPlaceholderStyles));
-  }
-
-  if (DidLayoutWithPendingStylesheets() &&
-      HaveRenderBlockingResourcesLoaded()) {
-    // We need to manually repaint because we avoid doing all repaints in layout
-    // or style recalc while sheets are still loading to avoid FOUC.
-    pending_sheet_layout_ = kIgnoreLayoutWithPendingSheets;
-
-    DCHECK(GetLayoutView() || ImportsController());
-    if (GetLayoutView())
-      GetLayoutView()->InvalidatePaintForViewAndCompositedLayers();
-  }
 }
 
 void Document::SetHoverElement(Element* new_hover_element) {
@@ -6741,8 +6656,7 @@ bool Document::CanExecuteScripts(ReasonForCallingCanExecuteScripts reason) {
 }
 
 bool Document::IsRenderingReady() const {
-  return style_engine_->IgnoringPendingStylesheets() ||
-         HaveRenderBlockingResourcesLoaded();
+  return HaveRenderBlockingResourcesLoaded();
 }
 
 bool Document::AllowInlineEventHandler(Node* node,
@@ -7308,12 +7222,8 @@ bool Document::HaveScriptBlockingStylesheetsLoaded() const {
 }
 
 bool Document::HaveRenderBlockingResourcesLoaded() const {
-  if (RuntimeEnabledFeatures::CSSInBodyDoesNotBlockPaintEnabled()) {
-    return HaveImportsLoaded() &&
-           style_engine_->HaveRenderBlockingStylesheetsLoaded();
-  }
   return HaveImportsLoaded() &&
-         style_engine_->HaveScriptBlockingStylesheetsLoaded();
+         style_engine_->HaveRenderBlockingStylesheetsLoaded();
 }
 
 Locale& Document::GetCachedLocale(const AtomicString& locale) {

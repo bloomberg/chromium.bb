@@ -245,7 +245,7 @@ CSSComputedStyleDeclaration::GetFontSizeCSSValuePreferringKeyword() const {
   if (!node_)
     return nullptr;
 
-  node_->GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  node_->GetDocument().UpdateStyleAndLayout();
 
   const ComputedStyle* style =
       node_->EnsureComputedStyle(pseudo_element_specifier_);
@@ -357,7 +357,7 @@ const CSSValue* CSSComputedStyleDeclaration::GetPropertyCSSValue(
   const ComputedStyle* style = ComputeComputedStyle();
 
   if (property_class.IsLayoutDependent(style, layout_object)) {
-    document.UpdateStyleAndLayoutIgnorePendingStylesheetsForNode(styled_node);
+    document.UpdateStyleAndLayoutForNode(styled_node);
     styled_node = StyledNode();
     style = ComputeComputedStyle();
     layout_object = StyledLayoutObject();
@@ -409,7 +409,7 @@ bool CSSComputedStyleDeclaration::CssPropertyMatches(
       (property_value.IsPrimitiveValue() ||
        property_value.IsIdentifierValue()) &&
       node_) {
-    node_->GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+    node_->GetDocument().UpdateStyleAndLayout();
     const ComputedStyle* style =
         node_->EnsureComputedStyle(pseudo_element_specifier_);
     if (style && style->GetFontDescription().KeywordSize()) {

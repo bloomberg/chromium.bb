@@ -373,7 +373,7 @@ StaticNodeList* SVGSVGElement::CollectIntersectionOrEnclosureList(
 StaticNodeList* SVGSVGElement::getIntersectionList(
     SVGRectTearOff* rect,
     SVGElement* reference_element) const {
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
+  GetDocument().UpdateStyleAndLayoutForNode(this);
 
   return CollectIntersectionOrEnclosureList(
       rect->Target()->Value(), reference_element, kCheckIntersection);
@@ -382,7 +382,7 @@ StaticNodeList* SVGSVGElement::getIntersectionList(
 StaticNodeList* SVGSVGElement::getEnclosureList(
     SVGRectTearOff* rect,
     SVGElement* reference_element) const {
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
+  GetDocument().UpdateStyleAndLayoutForNode(this);
 
   return CollectIntersectionOrEnclosureList(rect->Target()->Value(),
                                             reference_element, kCheckEnclosure);
@@ -391,7 +391,7 @@ StaticNodeList* SVGSVGElement::getEnclosureList(
 bool SVGSVGElement::checkIntersection(SVGElement* element,
                                       SVGRectTearOff* rect) const {
   DCHECK(element);
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
+  GetDocument().UpdateStyleAndLayoutForNode(this);
 
   return CheckIntersectionOrEnclosure(*element, rect->Target()->Value(),
                                       kCheckIntersection);
@@ -400,7 +400,7 @@ bool SVGSVGElement::checkIntersection(SVGElement* element,
 bool SVGSVGElement::checkEnclosure(SVGElement* element,
                                    SVGRectTearOff* rect) const {
   DCHECK(element);
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
+  GetDocument().UpdateStyleAndLayoutForNode(this);
 
   return CheckIntersectionOrEnclosure(*element, rect->Target()->Value(),
                                       kCheckEnclosure);

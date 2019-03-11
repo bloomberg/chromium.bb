@@ -529,8 +529,8 @@ void Node::NativeApplyScroll(ScrollState& scroll_state) {
     return;
 
   // TODO(esprehn): This should use
-  // updateStyleAndLayoutIgnorePendingStylesheetsForNode.
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  // updateStyleAndLayoutForNode.
+  GetDocument().UpdateStyleAndLayout();
 
   LayoutBox* box_to_scroll = ToLayoutBox(GetLayoutObject());
 
@@ -2699,7 +2699,7 @@ void Node::DefaultEventHandler(Event& event) {
       // FIXME: We should avoid synchronous layout if possible. We can
       // remove this synchronous layout if we avoid synchronous layout in
       // LayoutTextControlSingleLine::scrollHeight
-      GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+      GetDocument().UpdateStyleAndLayout();
       LayoutObject* layout_object = GetLayoutObject();
       while (
           layout_object &&

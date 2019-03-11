@@ -1360,8 +1360,7 @@ void StyleEngine::InvalidateForRuleSetChanges(
   if (tree_scope.GetDocument().HasPendingForcedStyleRecalc())
     return;
 
-  if (!tree_scope.GetDocument().body() ||
-      tree_scope.GetDocument().HasNodesWithPlaceholderStyle()) {
+  if (!tree_scope.GetDocument().body()) {
     tree_scope.GetDocument().SetNeedsStyleRecalc(
         kSubtreeStyleChange,
         StyleChangeReasonForTracing::Create(

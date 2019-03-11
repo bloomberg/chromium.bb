@@ -64,12 +64,12 @@ Path SVGPathElement::AsPath() const {
 }
 
 float SVGPathElement::getTotalLength() {
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
+  GetDocument().UpdateStyleAndLayoutForNode(this);
   return SVGPathQuery(PathByteStream()).GetTotalLength();
 }
 
 SVGPointTearOff* SVGPathElement::getPointAtLength(float length) {
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
+  GetDocument().UpdateStyleAndLayoutForNode(this);
   SVGPathQuery path_query(PathByteStream());
   if (length < 0) {
     length = 0;

@@ -1855,7 +1855,7 @@ WebInputEventResult EventHandler::SendContextMenuEvent(
   // Since |Document::performMouseEventHitTest()| modifies layout tree for
   // setting hover element, we need to update layout tree for requirement of
   // |SelectionController::sendContextMenuEvent()|.
-  frame_->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  frame_->GetDocument()->UpdateStyleAndLayout();
 
   GetSelectionController().SendContextMenuEvent(mev, position_in_contents);
 
@@ -1868,9 +1868,9 @@ WebInputEventResult EventHandler::SendContextMenuEvent(
 }
 
 static bool ShouldShowContextMenuAtSelection(const FrameSelection& selection) {
-  // TODO(editing-dev): The use of UpdateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): The use of UpdateStyleAndLayout
   // needs to be audited.  See http://crbug.com/590369 for more details.
-  selection.GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  selection.GetDocument().UpdateStyleAndLayout();
 
   const VisibleSelection& visible_selection =
       selection.ComputeVisibleSelectionInDOMTree();

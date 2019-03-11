@@ -1123,8 +1123,7 @@ TEST_F(EventHandlerSimTest, MouseLeaveIFrameResets) {
       GetDocument().GetFrame()->GetEventHandler().IsMousePositionUnknown());
   auto* child_frame =
       ToHTMLIFrameElement(GetDocument().getElementById("frame"));
-  child_frame->contentDocument()
-      ->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  child_frame->contentDocument()->UpdateStyleAndLayout();
   EXPECT_TRUE(GetDocument().GetFrame()->Tree().FirstChild());
   EXPECT_FALSE(To<LocalFrame>(GetDocument().GetFrame()->Tree().FirstChild())
                    ->GetEventHandler()

@@ -487,9 +487,9 @@ static bool SetSelectionToDragCaret(LocalFrame* frame,
                                     const LayoutPoint& point) {
   frame->Selection().SetSelectionAndEndTyping(drag_caret);
   // TODO(editing-dev): The use of
-  // UpdateStyleAndLayoutIgnorePendingStylesheets
+  // UpdateStyleAndLayout
   // needs to be audited.  See http://crbug.com/590369 for more details.
-  frame->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  frame->GetDocument()->UpdateStyleAndLayout();
   if (!frame->Selection().ComputeVisibleSelectionInDOMTree().IsNone()) {
     return frame->Selection()
         .ComputeVisibleSelectionInDOMTree()
@@ -503,9 +503,9 @@ static bool SetSelectionToDragCaret(LocalFrame* frame,
   frame->Selection().SetSelectionAndEndTyping(
       SelectionInDOMTree::Builder().Collapse(position).Build());
   // TODO(editing-dev): The use of
-  // UpdateStyleAndLayoutIgnorePendingStylesheets
+  // UpdateStyleAndLayout
   // needs to be audited.  See http://crbug.com/590369 for more details.
-  frame->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  frame->GetDocument()->UpdateStyleAndLayout();
   const VisibleSelection& visible_selection =
       frame->Selection().ComputeVisibleSelectionInDOMTree();
   range = CreateRange(visible_selection.ToNormalizedEphemeralRange());
@@ -576,13 +576,13 @@ bool DragController::ConcludeEditDrag(DragData* drag_data) {
   }
 
   if (page_->GetDragCaret().HasCaret()) {
-    // TODO(editing-dev): Use of updateStyleAndLayoutIgnorePendingStylesheets
+    // TODO(editing-dev): Use of UpdateStyleAndLayout
     // needs to be audited.  See http://crbug.com/590369 for more details.
     page_->GetDragCaret()
         .CaretPosition()
         .GetPosition()
         .GetDocument()
-        ->UpdateStyleAndLayoutIgnorePendingStylesheets();
+        ->UpdateStyleAndLayout();
   }
 
   const PositionWithAffinity& caret_position =

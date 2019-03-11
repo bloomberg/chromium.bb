@@ -87,18 +87,6 @@ class CORE_EXPORT StyleEngine final
   USING_GARBAGE_COLLECTED_MIXIN(StyleEngine);
 
  public:
-  class IgnoringPendingStylesheet {
-    STACK_ALLOCATED();
-
-   public:
-    IgnoringPendingStylesheet(StyleEngine& engine)
-        : scope_(&engine.ignore_pending_stylesheets_,
-                 !RuntimeEnabledFeatures::CSSInBodyDoesNotBlockPaintEnabled()) {
-    }
-
-   private:
-    base::AutoReset<bool> scope_;
-  };
 
   class DOMRemovalScope {
     STACK_ALLOCATED();
@@ -195,9 +183,6 @@ class CORE_EXPORT StyleEngine final
   }
   bool HaveRenderBlockingStylesheetsLoaded() const {
     return !HasPendingRenderBlockingSheets();
-  }
-  bool IgnoringPendingStylesheets() const {
-    return ignore_pending_stylesheets_;
   }
 
   unsigned MaxDirectAdjacentSelectors() const {
@@ -494,7 +479,6 @@ class CORE_EXPORT StyleEngine final
   String preferred_stylesheet_set_name_;
 
   bool uses_rem_units_ = false;
-  bool ignore_pending_stylesheets_ = false;
   bool in_layout_tree_rebuild_ = false;
   bool in_dom_removal_ = false;
 

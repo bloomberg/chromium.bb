@@ -212,7 +212,7 @@ bool SpatialNavigationController::Advance(
   if (!interest_node)
     return false;
 
-  interest_node->GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  interest_node->GetDocument().UpdateStyleAndLayout();
 
   Node* container = ScrollableAreaOrDocumentOf(interest_node);
 
@@ -249,7 +249,7 @@ bool SpatialNavigationController::Advance(
     // Currently this will fail if we're going from an inner document to a
     // sub-scroller in a parent document.
     if (auto* document = DynamicTo<Document>(container))
-      document->UpdateStyleAndLayoutIgnorePendingStylesheets();
+      document->UpdateStyleAndLayout();
   }
 
   return false;

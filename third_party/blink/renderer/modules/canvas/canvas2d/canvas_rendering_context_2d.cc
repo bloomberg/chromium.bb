@@ -341,7 +341,7 @@ void CanvasRenderingContext2D::ScrollPathIntoViewInternal(const Path& path) {
   if (!GetState().IsTransformInvertible() || path.IsEmpty())
     return;
 
-  canvas()->GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  canvas()->GetDocument().UpdateStyleAndLayout();
 
   LayoutObject* renderer = canvas()->GetLayoutObject();
   LayoutBox* layout_box = canvas()->GetLayoutBox();
@@ -1012,7 +1012,7 @@ void CanvasRenderingContext2D::DrawFocusRing(const Path& path) {
 
 void CanvasRenderingContext2D::UpdateElementAccessibility(const Path& path,
                                                           Element* element) {
-  element->GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  element->GetDocument().UpdateStyleAndLayout();
   AXObjectCache* ax_object_cache =
       element->GetDocument().ExistingAXObjectCache();
   LayoutBoxModelObject* lbmo = canvas()->GetLayoutBoxModelObject();
