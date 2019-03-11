@@ -15,11 +15,14 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/origin.h"
 
 namespace content {
 namespace {
+
+using testing::_;
 
 const std::string kEventName = "Test Event";
 const std::string kInstanceId = "my-instance";
@@ -82,7 +85,9 @@ void DidGetLoggedBackgroundServiceEvents(
 
 }  // namespace
 
-class DevToolsBackgroundServicesContextTest : public ::testing::Test {
+class DevToolsBackgroundServicesContextTest
+    : public ::testing::Test,
+      DevToolsBackgroundServicesContext::EventObserver {
  public:
   DevToolsBackgroundServicesContextTest()
       : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
@@ -102,11 +107,19 @@ class DevToolsBackgroundServicesContextTest : public ::testing::Test {
     SimulateBrowserRestart();
   }
 
+  void TearDown() override { context_->RemoveObserver(this); }
+
  protected:
+  MOCK_METHOD1(OnEventReceived,
+               void(const devtools::proto::BackgroundServiceEvent& event));
+
   void SimulateBrowserRestart() {
+    if (context_)
+      context_->RemoveObserver(this);
     // Create |context_|.
     context_ = base::MakeRefCounted<DevToolsBackgroundServicesContext>(
         &browser_context_, embedded_worker_test_helper_.context_wrapper());
+    context_->AddObserver(this);
     ASSERT_TRUE(context_);
   }
 
@@ -337,6 +350,22 @@ TEST_F(DevToolsBackgroundServicesContextTest, ClearLoggedEvents) {
   // Should be empty now.
   feature_events = GetLoggedBackgroundServiceEvents();
   EXPECT_TRUE(feature_events.empty());
+}
+
+TEST_F(DevToolsBackgroundServicesContextTest, EventObserverCalled) {
+  {
+    EXPECT_CALL(*this, OnEventReceived(_)).Times(0);
+    LogTestBackgroundServiceEvent("f1");
+    thread_bundle_.RunUntilIdle();
+  }
+
+  StartRecording();
+
+  {
+    EXPECT_CALL(*this, OnEventReceived(_));
+    LogTestBackgroundServiceEvent("f2");
+    thread_bundle_.RunUntilIdle();
+  }
 }
 
 }  // namespace content
