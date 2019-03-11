@@ -15,25 +15,15 @@
 
 namespace blink {
 
+namespace {
+
 std::unique_ptr<AnimationAndPaintWorkletThread>
-CreateAnimationAndPaintWorkletThread(
-    Document* document,
-    WorkerReportingProxy* reporting_proxy,
-    AnimationWorkletProxyClient* proxy_client) {
+CreateAnimationAndPaintWorkletThread(Document* document,
+                                     WorkerReportingProxy* reporting_proxy,
+                                     WorkerClients* clients) {
   std::unique_ptr<AnimationAndPaintWorkletThread> thread =
       AnimationAndPaintWorkletThread::CreateForAnimationWorklet(
           *reporting_proxy);
-
-  if (!proxy_client) {
-    proxy_client = MakeGarbageCollected<AnimationWorkletProxyClient>(
-        1, nullptr, /* mutator_dispatcher */
-        nullptr,    /* mutator_runner */
-        nullptr,    /* mutator_dispatcher */
-        nullptr     /* mutator_runner */
-    );
-  }
-  WorkerClients* clients = WorkerClients::Create();
-  ProvideAnimationWorkletProxyClientTo(clients, proxy_client);
 
   thread->Start(
       std::make_unique<GlobalScopeCreationParams>(
@@ -50,6 +40,28 @@ CreateAnimationAndPaintWorkletThread(
       base::nullopt, std::make_unique<WorkerDevToolsParams>(),
       ParentExecutionContextTaskRunners::Create());
   return thread;
+}
+
+}  // namespace
+
+std::unique_ptr<AnimationAndPaintWorkletThread>
+CreateThreadAndProvideAnimationWorkletProxyClient(
+    Document* document,
+    WorkerReportingProxy* reporting_proxy,
+    AnimationWorkletProxyClient* proxy_client) {
+  if (!proxy_client) {
+    proxy_client = MakeGarbageCollected<AnimationWorkletProxyClient>(
+        1, nullptr, /* mutator_dispatcher */
+        nullptr,    /* mutator_runner */
+        nullptr,    /* mutator_dispatcher */
+        nullptr     /* mutator_runner */
+    );
+  }
+  WorkerClients* clients = WorkerClients::Create();
+  ProvideAnimationWorkletProxyClientTo(clients, proxy_client);
+
+  return CreateAnimationAndPaintWorkletThread(document, reporting_proxy,
+                                              clients);
 }
 
 }  // namespace blink

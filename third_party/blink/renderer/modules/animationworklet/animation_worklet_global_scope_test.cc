@@ -79,8 +79,8 @@ class AnimationWorkletGlobalScopeTest : public PageTestBase {
   // the worklet once the task completion is signaled.
   void RunTestOnWorkletThread(TestCalback callback) {
     std::unique_ptr<WorkerThread> worklet =
-        CreateAnimationAndPaintWorkletThread(&GetDocument(),
-                                             reporting_proxy_.get());
+        CreateThreadAndProvideAnimationWorkletProxyClient(
+            &GetDocument(), reporting_proxy_.get());
     base::WaitableEvent waitable_event;
     PostCrossThreadTask(
         *worklet->GetTaskRunner(TaskType::kInternalTest), FROM_HERE,
@@ -482,8 +482,9 @@ TEST_F(AnimationWorkletGlobalScopeTest,
        ShouldRegisterItselfAfterFirstAnimatorRegistration) {
   MockAnimationWorkletProxyClient* proxy_client =
       MakeGarbageCollected<MockAnimationWorkletProxyClient>();
-  std::unique_ptr<WorkerThread> worklet = CreateAnimationAndPaintWorkletThread(
-      &GetDocument(), reporting_proxy_.get(), proxy_client);
+  std::unique_ptr<WorkerThread> worklet =
+      CreateThreadAndProvideAnimationWorkletProxyClient(
+          &GetDocument(), reporting_proxy_.get(), proxy_client);
   // Animation worklet global scope (AWGS) should not register itself upon
   // creation.
   EXPECT_FALSE(proxy_client->did_add_global_scope());
