@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/platform/bindings/v8_object_constructor.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_context_data.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/scheduler/public/cooperative_scheduling_manager.h"
 #include "third_party/blink/renderer/platform/wtf/get_ptr.h"
 
 namespace blink {
@@ -98,6 +99,8 @@ static void VoidMethodPartialOverload3Method(const v8::FunctionCallbackInfo<v8::
 }
 
 static void VoidMethodPartialOverloadMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  scheduler::CooperativeSchedulingManager::Instance()->Safepoint();
+
   bool is_arity_error = false;
 
   switch (std::min(1, info.Length())) {
@@ -129,6 +132,8 @@ static void StaticVoidMethodPartialOverload2Method(const v8::FunctionCallbackInf
 }
 
 static void StaticVoidMethodPartialOverloadMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  scheduler::CooperativeSchedulingManager::Instance()->Safepoint();
+
   bool is_arity_error = false;
 
   switch (std::min(1, info.Length())) {
@@ -173,6 +178,8 @@ static void PromiseMethodPartialOverload3Method(const v8::FunctionCallbackInfo<v
 }
 
 static void PromiseMethodPartialOverloadMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  scheduler::CooperativeSchedulingManager::Instance()->Safepoint();
+
   bool is_arity_error = false;
 
   switch (std::min(1, info.Length())) {
@@ -208,6 +215,8 @@ static void StaticPromiseMethodPartialOverload2Method(const v8::FunctionCallback
 }
 
 static void StaticPromiseMethodPartialOverloadMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  scheduler::CooperativeSchedulingManager::Instance()->Safepoint();
+
   bool is_arity_error = false;
 
   switch (std::min(1, info.Length())) {
@@ -255,6 +264,8 @@ static void Partial2VoidMethod3Method(const v8::FunctionCallbackInfo<v8::Value>&
 }
 
 static void Partial2VoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  scheduler::CooperativeSchedulingManager::Instance()->Safepoint();
+
   bool is_arity_error = false;
 
   switch (std::min(1, info.Length())) {
@@ -315,6 +326,8 @@ static void Partial2StaticVoidMethod2Method(const v8::FunctionCallbackInfo<v8::V
 }
 
 static void Partial2StaticVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  scheduler::CooperativeSchedulingManager::Instance()->Safepoint();
+
   bool is_arity_error = false;
 
   switch (std::min(1, info.Length())) {
