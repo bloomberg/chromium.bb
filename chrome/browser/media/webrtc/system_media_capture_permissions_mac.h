@@ -18,13 +18,6 @@ enum class SystemPermission {
   kAllowed = 2
 };
 
-// On 10.14 and above: returns true if permission is not allowed in system
-// settings, false otherwise, including if permission is not determined yet.
-// On 10.13 and below: returns false, since there are no system media capture
-// permissions.
-bool SystemAudioCapturePermissionIsDisallowed();
-bool SystemVideoCapturePermissionIsDisallowed();
-
 // On 10.14 and above: returns if system permission is allowed or not, or not
 // determined.
 // On 10.13 and below: returns |SystemPermission::kAllowed|, since there are no
