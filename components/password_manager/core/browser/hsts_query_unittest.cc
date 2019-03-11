@@ -64,8 +64,7 @@ class HSTSQueryTest : public testing::Test {
         network_context_(std::make_unique<network::NetworkContext>(
             nullptr,
             mojo::MakeRequest(&network_context_pipe_),
-            request_context_->GetURLRequestContext(),
-            /*cors_exempt_header_list=*/std::vector<std::string>())) {}
+            request_context_->GetURLRequestContext())) {}
 
   network::NetworkContext* network_context() { return network_context_.get(); }
 

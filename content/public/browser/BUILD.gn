@@ -107,8 +107,6 @@ jumbo_source_set("browser_sources") {
     "content_browser_client.cc",
     "content_browser_client.h",
     "cookie_store_factory.h",
-    "cors_exempt_headers.cc",
-    "cors_exempt_headers.h",
     "cors_origin_pattern_setter.cc",
     "cors_origin_pattern_setter.h",
     "delegate_to_browser_gpu_service_accelerator_factory.h",

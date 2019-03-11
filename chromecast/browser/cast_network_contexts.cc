@@ -17,7 +17,6 @@
 #include "chromecast/browser/url_request_context_factory.h"
 #include "chromecast/common/cast_content_client.h"
 #include "components/proxy_config/pref_proxy_config_tracker_impl.h"
-#include "components/variations/net/variations_http_headers.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/network_service_instance.h"
@@ -101,14 +100,9 @@ class CastNetworkContexts::SystemNetworkContextOwner {
                   scoped_refptr<net::URLRequestContextGetter> context_getter) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     context_getter_ = std::move(context_getter);
-    network::mojom::NetworkContextParamsPtr network_context_params =
-        network::mojom::NetworkContextParams::New();
-    variations::UpdateCorsExemptHeaderForVariations(
-        network_context_params.get());
     network_context_ = std::make_unique<network::NetworkContext>(
         content::GetNetworkServiceImpl(), std::move(network_context_request),
-        context_getter_->GetURLRequestContext(),
-        network_context_params->cors_exempt_header_list);
+        context_getter_->GetURLRequestContext());
   }
 
  private:

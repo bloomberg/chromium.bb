@@ -97,7 +97,6 @@ include_rules = [
   "+components/upload_list",
   "+components/url_formatter",
   "+components/variations",
-  "+components/variations/net",
   "+components/version_info",
   "+components/version_ui",
   "+components/web_resource",

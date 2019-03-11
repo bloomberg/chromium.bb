@@ -391,13 +391,10 @@ const int kLocationAuthorizationStatusCount = 4;
                                           : variations::InIncognito::kNo,
       &resource_request);
   NSMutableDictionary* result = [NSMutableDictionary dictionary];
-  // The variations header appears in cors_exempt_headers rather than in
-  // headers.
-  net::HttpRequestHeaders::Iterator header_iterator(
-      resource_request.cors_exempt_headers);
-  while (header_iterator.GetNext()) {
-    NSString* name = base::SysUTF8ToNSString(header_iterator.name());
-    NSString* value = base::SysUTF8ToNSString(header_iterator.value());
+  if (!resource_request.client_data_header.empty()) {
+    NSString* name = base::SysUTF8ToNSString("X-Client-Data");
+    NSString* value =
+        base::SysUTF8ToNSString(resource_request.client_data_header);
     result[name] = value;
   }
   return [result copy];

@@ -4,7 +4,6 @@
 
 #include "ios/chrome/browser/ios_chrome_io_thread.h"
 
-#include "components/variations/net/variations_http_headers.h"
 #include "ios/chrome/browser/net/ios_chrome_network_delegate.h"
 #include "ios/chrome/common/channel_info.h"
 #include "ios/web/public/network_context_owner.h"
@@ -33,13 +32,8 @@ std::string IOSChromeIOThread::GetChannelString() const {
 
 network::mojom::NetworkContext* IOSChromeIOThread::GetSystemNetworkContext() {
   if (!network_context_) {
-    network::mojom::NetworkContextParamsPtr network_context_params =
-        network::mojom::NetworkContextParams::New();
-    variations::UpdateCorsExemptHeaderForVariations(
-        network_context_params.get());
     network_context_owner_ = std::make_unique<web::NetworkContextOwner>(
-        system_url_request_context_getter(),
-        network_context_params->cors_exempt_header_list, &network_context_);
+        system_url_request_context_getter(), &network_context_);
   }
   return network_context_.get();
 }

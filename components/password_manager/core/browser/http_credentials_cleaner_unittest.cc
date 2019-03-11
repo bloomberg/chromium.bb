@@ -177,8 +177,7 @@ TEST_P(HttpCredentialCleanerTest, ReportHttpMigrationMetrics) {
   network::mojom::NetworkContextPtr network_context_pipe;
   auto network_context = std::make_unique<network::NetworkContext>(
       nullptr, mojo::MakeRequest(&network_context_pipe),
-      request_context->GetURLRequestContext(),
-      /*cors_exempt_header_list=*/std::vector<std::string>());
+      request_context->GetURLRequestContext());
 
   if (test.is_hsts_enabled) {
     base::RunLoop run_loop;
@@ -285,8 +284,7 @@ TEST(HttpCredentialCleaner, StartCleanUpTest) {
     network::mojom::NetworkContextPtr network_context_pipe;
     auto network_context = std::make_unique<network::NetworkContext>(
         nullptr, mojo::MakeRequest(&network_context_pipe),
-        request_context->GetURLRequestContext(),
-        /*cors_exempt_header_list=*/std::vector<std::string>());
+        request_context->GetURLRequestContext());
 
     MockCredentialsCleanerObserver observer;
     HttpCredentialCleaner cleaner(

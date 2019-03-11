@@ -426,6 +426,14 @@ void WebURLRequest::SetRequestedWithHeader(const WebString& value) {
   resource_request_->SetRequestedWithHeader(value);
 }
 
+const WebString WebURLRequest::GetClientDataHeader() const {
+  return resource_request_->GetClientDataHeader();
+}
+
+void WebURLRequest::SetClientDataHeader(const WebString& value) {
+  resource_request_->SetClientDataHeader(value);
+}
+
 const base::UnguessableToken& WebURLRequest::GetFetchWindowId() const {
   return resource_request_->GetFetchWindowId();
 }
