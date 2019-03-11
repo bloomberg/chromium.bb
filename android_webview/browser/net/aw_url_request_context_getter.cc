@@ -5,6 +5,7 @@
 #include "android_webview/browser/net/aw_url_request_context_getter.h"
 
 #include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -42,8 +43,6 @@
 #include "net/base/cache_type.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cookies/cookie_store.h"
-#include "net/dns/host_resolver.h"
-#include "net/dns/mapped_host_resolver.h"
 #include "net/http/http_auth_filter.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_auth_preferences.h"
@@ -86,17 +85,11 @@ bool g_check_cleartext_permitted = false;
 const char kProxyServerSwitch[] = "proxy-server";
 const char kProxyBypassListSwitch[] = "proxy-bypass-list";
 
-void ApplyCmdlineOverridesToHostResolver(
-    net::MappedHostResolver* host_resolver) {
+std::string GetCmdlineOverridesForHostResolver() {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(network::switches::kHostResolverRules)) {
-    // If hostname remappings were specified on the command-line, layer these
-    // rules on top of the real host resolver. This allows forwarding all
-    // requests through a designated test server.
-    host_resolver->SetRulesFromString(command_line.GetSwitchValueASCII(
-        network::switches::kHostResolverRules));
-  }
+  return command_line.GetSwitchValueASCII(
+      network::switches::kHostResolverRules);
 }
 
 void ApplyCmdlineOverridesToNetworkSessionParams(
@@ -317,12 +310,8 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
   // Quic is not currently supported in WebView (http://crbug.com/763187).
   builder.SetSpdyAndQuicEnabled(true, false);
 
-  std::unique_ptr<net::MappedHostResolver> host_resolver(
-      new net::MappedHostResolver(
-          net::HostResolver::CreateDefaultResolver(nullptr)));
-  ApplyCmdlineOverridesToHostResolver(host_resolver.get());
   builder.SetHttpAuthHandlerFactory(CreateAuthHandlerFactory());
-  builder.set_host_resolver(std::move(host_resolver));
+  builder.set_host_mapping_rules(GetCmdlineOverridesForHostResolver());
 
   url_request_context_ = builder.Build();
 
