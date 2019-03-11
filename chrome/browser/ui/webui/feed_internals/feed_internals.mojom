@@ -4,10 +4,15 @@
 
 module feed_internals.mojom;
 
+import "url/mojom/url.mojom";
+
 // General properties of Feed suggestions.
 struct Properties {
   // Whether the Feed is enabled.
   bool is_feed_enabled;
+
+  // Feed fetch URL.
+  url.mojom.Url feed_fetch_url;
 };
 
 struct UserClassifier {
@@ -41,16 +46,16 @@ struct Suggestion {
   string title;
 
   // URL of the suggested page.
-  string url;
+  url.mojom.Url url;
 
   // Name of the content's publisher.
   string publisher_name;
 
   // URL of the image associated with the suggestion.
-  string image_url;
+  url.mojom.Url image_url;
 
   // URL of the suggested page's favicon.
-  string favicon_url;
+  url.mojom.Url favicon_url;
 };
 
 // Time wrapper to allow for nullable objects.

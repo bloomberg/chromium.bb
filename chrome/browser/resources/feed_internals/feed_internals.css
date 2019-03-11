@@ -19,6 +19,7 @@ table > tbody > tr:nth-child(odd) {
 }
 
 table td {
+  vertical-align: top;
   width: 50%;
   word-wrap: break-word;
 }

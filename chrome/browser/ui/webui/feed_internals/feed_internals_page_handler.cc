@@ -4,10 +4,12 @@
 
 #include "chrome/browser/ui/webui/feed_internals/feed_internals_page_handler.h"
 
+#include <string>
 #include <utility>
 
 #include "base/feature_list.h"
 #include "base/time/time.h"
+#include "chrome/browser/android/feed/feed_debugging_bridge.h"
 #include "chrome/browser/android/feed/feed_lifecycle_bridge.h"
 #include "components/feed/content/feed_host_service.h"
 #include "components/feed/content/feed_offline_host.h"
@@ -45,6 +47,7 @@ void FeedInternalsPageHandler::GetGeneralProperties(
 
   properties->is_feed_enabled =
       base::FeatureList::IsEnabled(feed::kInterestFeedContentSuggestions);
+  properties->feed_fetch_url = feed::GetFeedFetchUrlForDebugging();
 
   std::move(callback).Run(std::move(properties));
 }
@@ -104,10 +107,10 @@ void FeedInternalsPageHandler::OnGetCurrentArticleSuggestionsDone(
   for (offline_pages::PrefetchSuggestion result : results) {
     auto suggestion = feed_internals::mojom::Suggestion::New();
     suggestion->title = std::move(result.article_title);
-    suggestion->url = result.article_url.spec();
+    suggestion->url = std::move(result.article_url);
     suggestion->publisher_name = std::move(result.article_attribution);
-    suggestion->image_url = result.thumbnail_url.spec();
-    suggestion->favicon_url = result.favicon_url.spec();
+    suggestion->image_url = std::move(result.thumbnail_url);
+    suggestion->favicon_url = std::move(result.favicon_url);
 
     suggestions.push_back(std::move(suggestion));
   }
