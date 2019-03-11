@@ -16,16 +16,19 @@ import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.CommandLine;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.ScalableTimeout;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.DeferredStartupHandler;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
+import org.chromium.chrome.browser.tab.TabWebContentsDelegateAndroid;
 import org.chromium.chrome.browser.test.MockCertVerifierRuleAndroid;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
@@ -66,10 +69,11 @@ public class WebApkIntegrationTest {
     public void startWebApkActivity(String webApkPackageName, final String startUrl)
             throws InterruptedException {
         Intent intent =
-                new Intent(InstrumentationRegistry.getTargetContext(), WebApkActivity.class);
+                new Intent(InstrumentationRegistry.getTargetContext(), WebApkActivity0.class);
         intent.putExtra(WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, webApkPackageName);
         intent.putExtra(ShortcutHelper.EXTRA_URL, startUrl);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.addFlags(
+                Intent.FLAG_ACTIVITY_NEW_TASK | ApiCompatibilityUtils.getActivityNewDocumentFlag());
 
         WebApkActivity webApkActivity =
                 (WebApkActivity) InstrumentationRegistry.getInstrumentation().startActivitySync(
@@ -118,6 +122,7 @@ public class WebApkIntegrationTest {
         Uri mapToUri = Uri.parse(mTestServerRule.getServer().getURL("/"));
         CommandLine.getInstance().appendSwitchWithValue(
                 ContentSwitches.HOST_RESOLVER_RULES, "MAP * " + mapToUri.getAuthority());
+        WebApkValidator.disableValidationForTesting();
     }
 
     /**
@@ -134,9 +139,8 @@ public class WebApkIntegrationTest {
         intent.setPackage(InstrumentationRegistry.getTargetContext().getPackageName());
         intent.setAction(WebappLauncherActivity.ACTION_START_WEBAPP);
         intent.putExtra(WebApkConstants.EXTRA_URL, pwaRocksUrl)
-                .putExtra(WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, "org.chromium.webapk");
+                .putExtra(WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, "org.chromium.webapk.test");
 
-        WebApkValidator.disableValidationForTesting();
         mActivityTestRule.startActivityCompletely(intent);
 
         WebApkActivity lastActivity = (WebApkActivity) mActivityTestRule.getActivity();
@@ -151,7 +155,7 @@ public class WebApkIntegrationTest {
     @LargeTest
     @Feature({"WebApk"})
     public void testLaunchAndNavigateOffOrigin() throws Exception {
-        startWebApkActivity("org.chromium.webapk", getUrlForHost("pwa.rocks"));
+        startWebApkActivity("org.chromium.webapk.test", getUrlForHost("pwa.rocks"));
         waitUntilSplashscreenHides();
         WebApkActivity webApkActivity = (WebApkActivity) mActivityTestRule.getActivity();
         WebappActivityTestRule.assertToolbarShowState(webApkActivity, false);
@@ -174,7 +178,7 @@ public class WebApkIntegrationTest {
     @Feature({"WebApk"})
     public void testLaunchAndOpenNewWindowInOrigin() throws Exception {
         String pwaRocksUrl = getUrlForHost("pwa.rocks");
-        startWebApkActivity("org.chromium.webapk", pwaRocksUrl);
+        startWebApkActivity("org.chromium.webapk.test", pwaRocksUrl);
         waitUntilSplashscreenHides();
 
         WebappActivityTestRule.jsWindowOpen(mActivityTestRule.getActivity(), pwaRocksUrl);
@@ -198,7 +202,7 @@ public class WebApkIntegrationTest {
     public void testLaunchAndNavigationInNewWindowOffandInOrigin() throws Exception {
         String pwaRocksUrl = getUrlForHost("pwa.rocks");
         String googleUrl = getUrlForHost("www.google.com");
-        startWebApkActivity("org.chromium.webapk", pwaRocksUrl);
+        startWebApkActivity("org.chromium.webapk.test", pwaRocksUrl);
         waitUntilSplashscreenHides();
 
         WebappActivityTestRule.jsWindowOpen(mActivityTestRule.getActivity(), googleUrl);
@@ -223,7 +227,7 @@ public class WebApkIntegrationTest {
     @Feature({"WebApk"})
     public void testLaunchIntervalHistogramNotRecordedOnFirstLaunch() throws Exception {
         final String histogramName = "WebApk.LaunchInterval";
-        final String packageName = "org.chromium.webapk";
+        final String packageName = "org.chromium.webapk.test";
         startWebApkActivity(packageName, getUrlForHost("pwa.rocks"));
 
         CriteriaHelper.pollUiThread(new Criteria("Deferred startup never completed") {
@@ -246,7 +250,7 @@ public class WebApkIntegrationTest {
         mNativeLibraryTestRule.loadNativeLibraryNoBrowserProcess();
 
         final String histogramName = "WebApk.LaunchInterval2";
-        final String packageName = "org.chromium.webapk";
+        final String packageName = "org.chromium.webapk.test";
 
         WebappDataStorage storage =
                 registerWithStorage(WebApkConstants.WEBAPK_ID_PREFIX + packageName);
@@ -264,5 +268,33 @@ public class WebApkIntegrationTest {
         });
 
         Assert.assertEquals(1, RecordHistogram.getHistogramTotalCountForTesting(histogramName));
+    }
+
+    /**
+     * Test that {@link TabWebContentsDelegateAndroid#activateContents} brings a WebAPK to the
+     * foreground.
+     */
+    @LargeTest
+    @Test
+    public void testActivateWebApk() throws Exception {
+        // Launch WebAPK.
+        startWebApkActivity("org.chromium.webapk.test", getUrlForHost("pwa.rocks"));
+        waitUntilSplashscreenHides();
+
+        // Move WebAPK to the background by launching Chrome.
+        Intent intent =
+                new Intent(InstrumentationRegistry.getTargetContext(), ChromeTabbedActivity.class);
+        intent.setFlags(
+                Intent.FLAG_ACTIVITY_NEW_TASK | ApiCompatibilityUtils.getActivityNewDocumentFlag());
+        InstrumentationRegistry.getTargetContext().startActivity(intent);
+        ChromeActivityTestRule.waitFor(ChromeTabbedActivity.class);
+
+        WebApkActivity webApkActivity = (WebApkActivity) mActivityTestRule.getActivity();
+        TabWebContentsDelegateAndroid tabDelegate =
+                webApkActivity.getActivityTab().getTabWebContentsDelegateAndroid();
+        tabDelegate.activateContents();
+
+        // WebApkActivity should have been brought back to the foreground.
+        ChromeActivityTestRule.waitFor(WebApkActivity.class);
     }
 }

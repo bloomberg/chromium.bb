@@ -1849,7 +1849,7 @@ chrome_test_apk_tmpl("chrome_public_test_apk") {
 
   additional_apks = [
     "//chrome/android/webapk/libs/runtime_library/javatests/apk_with_webapk_service:apk_with_webapk_service",
-    "//chrome/android/webapk/shell_apk:webapk",
+    "//chrome/android/webapk/shell_apk:javatests_webapk",
     "//chrome/android/webapk/shell_apk/javatests/dex_optimizer:dex_optimizer_apk",
     "//chrome/test/android/chrome_public_test_support:chrome_public_test_support_apk",
   ]

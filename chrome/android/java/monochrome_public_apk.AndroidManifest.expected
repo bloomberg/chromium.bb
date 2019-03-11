@@ -948,6 +948,15 @@
       </intent-filter>
     </activity>
     <activity
+        android:exported="true"
+        android:name="org.chromium.chrome.browser.webapps.ActivateWebApkActivity"
+        android:theme="@android:style/Theme.NoDisplay">
+      <intent-filter>
+        <action android:name="org.chromium.chrome.browser.webapps.ActivateWebApkActivity.ACTIVATE"/>
+        <category android:name="android.intent.category.DEFAULT"/>
+      </intent-filter>
+    </activity>
+    <activity
         android:label="@string/license_activity_title"
         android:name="com.android.webview.chromium.LicenseActivity">
       <intent-filter>
