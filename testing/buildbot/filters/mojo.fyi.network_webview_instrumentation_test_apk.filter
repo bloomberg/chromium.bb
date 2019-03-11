@@ -17,15 +17,10 @@
 # https://crbug.com/893575
 -org.chromium.android_webview.test.CookieManagerStartupTest.testStartup
 
-# https://crbug.com/936317
--org.chromium.android_webview.test.CookieManagerTest.testAcceptCookie_falseDoNotSendCookies
--org.chromium.android_webview.test.CookieManagerTest.testAcceptCookie_falseWontSetCookies
-
-# https://crbug.com/893576
+# https://crbug.com/933458
 -org.chromium.android_webview.test.CookieManagerTest.testAcceptFileSchemeCookies
--org.chromium.android_webview.test.CookieManagerTest.testThirdPartyCookie
 
-# https://crbug.com/931641
+# https://crbug.com/936706
 -org.chromium.android_webview.test.CookieManagerTest.testThirdPartyCookieForWebSocketDisabledCase
 
 # https://crbug.com/893580
