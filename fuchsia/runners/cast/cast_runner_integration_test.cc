@@ -119,7 +119,7 @@ class CastRunnerIntegrationTest : public testing::Test {
 
     // Create the CastRunner, published into |test_services_|.
     cast_runner_ = std::make_unique<CastRunner>(
-        public_services_.get(), WebContentRunner::CreateDefaultWebContext(),
+        public_services_.get(), WebContentRunner::CreateIncognitoWebContext(),
         std::move(app_config_manager_ptr), cast_runner_run_loop_.QuitClosure());
 
     // Connect to the CastRunner's fuchsia.sys.Runner interface.

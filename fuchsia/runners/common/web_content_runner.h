@@ -26,6 +26,11 @@ class WebContentRunner : public fuchsia::sys::Runner {
   // is configured to exit this process on error.
   static chromium::web::ContextPtr CreateDefaultWebContext();
 
+  // Creates and returns an incognito web.Context  with access to the same
+  // services as this Runner. The returned binding is configured to exit this
+  // process on error.
+  static chromium::web::ContextPtr CreateIncognitoWebContext();
+
   // |service_directory|: ServiceDirectory into which this Runner will be
   //   published. |on_idle_closure| will be invoked when the final client of the
   //   published service disconnects, even if one or more Components are still
