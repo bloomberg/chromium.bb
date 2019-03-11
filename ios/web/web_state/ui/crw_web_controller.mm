@@ -3374,9 +3374,10 @@ GURL URLEscapedForHistory(const GURL& url) {
                  stateObject:stateObject
                   transition:transition
               hasUserGesture:[context[kUserIsInteractingKey] boolValue]];
+  [self updateSSLStatusForCurrentNavigationItem];
 
-  NSString* replaceWebViewJS =
-      [self javaScriptToReplaceWebViewURL:pushURL stateObjectJSON:stateObject];
+  NSString* replaceWebViewJS = [self javaScriptToReplaceWebViewURL:pushURL
+                                                   stateObjectJSON:stateObject];
   __weak CRWWebController* weakSelf = self;
   [self executeJavaScript:replaceWebViewJS
         completionHandler:^(id, NSError*) {
