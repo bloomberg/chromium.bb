@@ -165,9 +165,7 @@ void AvatarToolbarButton::NotifyClick(const ui::Event& event) {
     return;
 
   browser_->window()->ShowAvatarBubbleFromAvatarButton(
-      IsIncognito() ? BrowserWindow::AVATAR_BUBBLE_MODE_INCOGNITO
-                    : BrowserWindow::AVATAR_BUBBLE_MODE_DEFAULT,
-      signin::ManageAccountsParams(),
+      BrowserWindow::AVATAR_BUBBLE_MODE_DEFAULT, signin::ManageAccountsParams(),
       signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN,
       event.IsKeyEvent());
 }

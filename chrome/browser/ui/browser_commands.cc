@@ -1177,12 +1177,8 @@ void ShowAppMenu(Browser* browser) {
 }
 
 void ShowAvatarMenu(Browser* browser) {
-  const bool incognito =
-      browser->profile()->GetProfileType() == Profile::INCOGNITO_PROFILE;
   browser->window()->ShowAvatarBubbleFromAvatarButton(
-      incognito ? BrowserWindow::AVATAR_BUBBLE_MODE_INCOGNITO
-                : BrowserWindow::AVATAR_BUBBLE_MODE_DEFAULT,
-      signin::ManageAccountsParams(),
+      BrowserWindow::AVATAR_BUBBLE_MODE_DEFAULT, signin::ManageAccountsParams(),
       signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN, true);
 }
 
