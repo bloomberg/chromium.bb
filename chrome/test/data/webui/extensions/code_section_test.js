@@ -43,6 +43,7 @@ cr.define('extension_code_section_tests', function() {
       expectTrue(testIsVisible('#no-code'));
 
       codeSection.code = code;
+      codeSection.isActive = true;
       expectTrue(testIsVisible('#main'));
       expectFalse(testIsVisible('#no-code'));
 

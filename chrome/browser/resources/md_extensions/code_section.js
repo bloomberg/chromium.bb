@@ -33,6 +33,8 @@ cr.define('extensions', function() {
         value: null,
       },
 
+      isActive: Boolean,
+
       /** @private Highlighted code. */
       highlighted_: String,
 
@@ -41,6 +43,12 @@ cr.define('extensions', function() {
 
       /** @private Code after the highlighted section. */
       after_: String,
+
+      /** @private */
+      showNoCode_: {
+        type: Boolean,
+        computed: 'computeShowNoCode_(isActive, highlighted_)',
+      },
 
       /** @private Description for the highlighted section. */
       highlightDescription_: String,
@@ -174,6 +182,14 @@ cr.define('extensions', function() {
       } else {
         return this.i18n('accessibilityErrorLine', lineStart.toString());
       }
+    },
+
+    /**
+     * @private
+     * @return {boolean}
+     */
+    computeShowNoCode_: function() {
+      return this.isActive && !this.highlighted_;
     },
   });
 
