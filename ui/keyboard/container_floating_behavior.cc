@@ -177,16 +177,10 @@ gfx::Point ContainerFloatingBehavior::GetPositionForShowingKeyboard(
   return valid_keyboard_bounds.origin();
 }
 
-bool ContainerFloatingBehavior::IsDragHandle(
-    const gfx::Vector2d& offset,
-    const gfx::Size& keyboard_size) const {
-  return draggable_area_.Contains(offset.x(), offset.y());
-}
-
 bool ContainerFloatingBehavior::HandlePointerEvent(
     const ui::LocatedEvent& event,
     const display::Display& current_display) {
-  auto kb_offset = gfx::Vector2d(event.x(), event.y());
+  const gfx::Vector2d kb_offset(event.x(), event.y());
 
   const gfx::Rect& keyboard_bounds_in_screen = delegate_->GetBoundsInScreen();
 
@@ -194,7 +188,7 @@ bool ContainerFloatingBehavior::HandlePointerEvent(
   if (keyboard_bounds_in_screen.height() <= 0)
     return false;
 
-  ui::PointerId pointer_id = -1;
+  ui::PointerId pointer_id = ui::MouseEvent::kMousePointerId;
   if (event.IsTouchEvent()) {
     const ui::TouchEvent* te = event.AsTouchEvent();
     pointer_id = te->pointer_details().id;
@@ -204,18 +198,15 @@ bool ContainerFloatingBehavior::HandlePointerEvent(
   switch (type) {
     case ui::ET_TOUCH_PRESSED:
     case ui::ET_MOUSE_PRESSED:
-      if (!IsDragHandle(kb_offset, keyboard_bounds_in_screen.size())) {
-        drag_descriptor_ = nullptr;
+      if (!draggable_area_.Contains(kb_offset.x(), kb_offset.y())) {
+        drag_descriptor_.reset();
       } else if (type == ui::ET_MOUSE_PRESSED &&
-                 !((const ui::MouseEvent*)&event)->IsOnlyLeftMouseButton()) {
+                 !((const ui::MouseEvent&)event).IsOnlyLeftMouseButton()) {
         // Mouse events are limited to just the left mouse button.
-        drag_descriptor_ = nullptr;
+        drag_descriptor_.reset();
       } else if (!drag_descriptor_) {
-        // If there is no active drag descriptor, start a new one.
-        bool drag_started_by_touch = (type == ui::ET_TOUCH_PRESSED);
-        drag_descriptor_.reset(
-            new DragDescriptor{keyboard_bounds_in_screen.origin(), kb_offset,
-                               drag_started_by_touch, pointer_id});
+        drag_descriptor_.reset(new DragDescriptor{
+            keyboard_bounds_in_screen.origin(), kb_offset, pointer_id});
       }
       break;
 
@@ -223,11 +214,6 @@ bool ContainerFloatingBehavior::HandlePointerEvent(
     case ui::ET_TOUCH_MOVED:
       if (!drag_descriptor_) {
         // do nothing
-      } else if (drag_descriptor_->is_touch_drag !=
-                 (type == ui::ET_TOUCH_MOVED)) {
-        // If the event isn't of the same type that started the drag, end the
-        // drag to prevent confusion.
-        drag_descriptor_ = nullptr;
       } else if (drag_descriptor_->pointer_id != pointer_id) {
         // do nothing.
       } else {
@@ -257,7 +243,7 @@ bool ContainerFloatingBehavior::HandlePointerEvent(
         } else {
           // Since the keyboard has jumped across screens, cancel the current
           // drag descriptor as though the user has lifted their finger.
-          drag_descriptor_ = nullptr;
+          drag_descriptor_.reset();
 
           gfx::Rect new_bounds_in_screen =
               new_bounds_in_local +
@@ -279,7 +265,7 @@ bool ContainerFloatingBehavior::HandlePointerEvent(
       break;
 
     default:
-      drag_descriptor_ = nullptr;
+      drag_descriptor_.reset();
       break;
   }
   return false;
