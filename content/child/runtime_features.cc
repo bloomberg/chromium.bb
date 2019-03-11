@@ -307,7 +307,7 @@ void SetIndividualRuntimeFeatures(
   if (base::FeatureList::IsEnabled(features::kGenericSensorExtraClasses))
     WebRuntimeFeatures::EnableGenericSensorExtraClasses(true);
 
-  if (network::features::ShouldEnableOutOfBlinkCors())
+  if (base::FeatureList::IsEnabled(network::features::kOutOfBlinkCors))
     WebRuntimeFeatures::EnableOutOfBlinkCors(true);
 
   WebRuntimeFeatures::EnableMediaCastOverlayButton(

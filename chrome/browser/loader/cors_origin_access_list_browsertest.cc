@@ -41,16 +41,34 @@ const char kTestHost[] = "crossorigin.example.com";
 const char kTestHostInDifferentCase[] = "CrossOrigin.example.com";
 const char kTestSubdomainHost[] = "subdomain.crossorigin.example.com";
 
+enum class TestMode {
+  kOutOfBlinkCorsWithServicification,
+  kOutOfBlinkCorsWithoutServicification,
+};
+
 // Tests end to end functionality of CORS access origin allow lists.
-class CorsOriginAccessListBrowserTest : public InProcessBrowserTest {
+class CorsOriginAccessListBrowserTest
+    : public InProcessBrowserTest,
+      public testing::WithParamInterface<TestMode> {
  public:
   CorsOriginAccessListBrowserTest() {
-    scoped_feature_list_.InitWithFeatures(
-        // Enabled features
-        {network::features::kOutOfBlinkCors,
-         network::features::kNetworkService},
-        // Disabled features
-        {});
+    switch (GetParam()) {
+      case TestMode::kOutOfBlinkCorsWithServicification:
+        scoped_feature_list_.InitWithFeatures(
+            // Enabled features
+            {network::features::kOutOfBlinkCors,
+             network::features::kNetworkService},
+            // Disabled features
+            {});
+        break;
+      case TestMode::kOutOfBlinkCorsWithoutServicification:
+        scoped_feature_list_.InitWithFeatures(
+            // Enabled features
+            {network::features::kOutOfBlinkCors},
+            // Disabled features
+            {network::features::kNetworkService});
+        break;
+    }
   }
 
  protected:
@@ -148,7 +166,7 @@ class CorsOriginAccessListBrowserTest : public InProcessBrowserTest {
 };
 
 // Tests if specifying only protocol allows all hosts to pass.
-IN_PROC_BROWSER_TEST_F(CorsOriginAccessListBrowserTest, AllowAll) {
+IN_PROC_BROWSER_TEST_P(CorsOriginAccessListBrowserTest, AllowAll) {
   SetAllowList("http", "", kAllowSubdomains);
 
   std::unique_ptr<content::TitleWatcher> watcher = CreateWatcher();
@@ -159,7 +177,7 @@ IN_PROC_BROWSER_TEST_F(CorsOriginAccessListBrowserTest, AllowAll) {
 }
 
 // Tests if specifying only protocol allows all IP address based hosts to pass.
-IN_PROC_BROWSER_TEST_F(CorsOriginAccessListBrowserTest, AllowAllForIp) {
+IN_PROC_BROWSER_TEST_P(CorsOriginAccessListBrowserTest, AllowAllForIp) {
   SetAllowList("http", "", kAllowSubdomains);
 
   std::unique_ptr<content::TitleWatcher> watcher = CreateWatcher();
@@ -172,7 +190,7 @@ IN_PROC_BROWSER_TEST_F(CorsOriginAccessListBrowserTest, AllowAllForIp) {
 }
 
 // Tests if complete allow list set allows only exactly matched host to pass.
-IN_PROC_BROWSER_TEST_F(CorsOriginAccessListBrowserTest, AllowExactHost) {
+IN_PROC_BROWSER_TEST_P(CorsOriginAccessListBrowserTest, AllowExactHost) {
   SetAllowList("http", kTestHost, kDisallowSubdomains);
 
   std::unique_ptr<content::TitleWatcher> watcher = CreateWatcher();
@@ -184,7 +202,7 @@ IN_PROC_BROWSER_TEST_F(CorsOriginAccessListBrowserTest, AllowExactHost) {
 
 // Tests if complete allow list set allows host that matches exactly, but in
 // case insensitive way to pass.
-IN_PROC_BROWSER_TEST_F(CorsOriginAccessListBrowserTest,
+IN_PROC_BROWSER_TEST_P(CorsOriginAccessListBrowserTest,
                        AllowExactHostInCaseInsensitive) {
   SetAllowList("http", kTestHost, kDisallowSubdomains);
 
@@ -198,7 +216,7 @@ IN_PROC_BROWSER_TEST_F(CorsOriginAccessListBrowserTest,
 
 // Tests if complete allow list set does not allow a host with a different port
 // to pass.
-IN_PROC_BROWSER_TEST_F(CorsOriginAccessListBrowserTest, BlockDifferentPort) {
+IN_PROC_BROWSER_TEST_P(CorsOriginAccessListBrowserTest, BlockDifferentPort) {
   SetAllowList("http", kTestHost, kDisallowSubdomains);
 
   std::unique_ptr<content::TitleWatcher> watcher = CreateWatcher();
@@ -209,7 +227,7 @@ IN_PROC_BROWSER_TEST_F(CorsOriginAccessListBrowserTest, BlockDifferentPort) {
 }
 
 // Tests if complete allow list set allows a subdomain to pass if it is allowed.
-IN_PROC_BROWSER_TEST_F(CorsOriginAccessListBrowserTest, AllowSubdomain) {
+IN_PROC_BROWSER_TEST_P(CorsOriginAccessListBrowserTest, AllowSubdomain) {
   SetAllowList("http", kTestHost, kAllowSubdomains);
 
   std::unique_ptr<content::TitleWatcher> watcher = CreateWatcher();
@@ -220,7 +238,7 @@ IN_PROC_BROWSER_TEST_F(CorsOriginAccessListBrowserTest, AllowSubdomain) {
 }
 
 // Tests if complete allow list set does not allow a subdomain to pass.
-IN_PROC_BROWSER_TEST_F(CorsOriginAccessListBrowserTest, BlockSubdomain) {
+IN_PROC_BROWSER_TEST_P(CorsOriginAccessListBrowserTest, BlockSubdomain) {
   SetAllowList("http", kTestHost, kDisallowSubdomains);
 
   std::unique_ptr<content::TitleWatcher> watcher = CreateWatcher();
@@ -232,7 +250,7 @@ IN_PROC_BROWSER_TEST_F(CorsOriginAccessListBrowserTest, BlockSubdomain) {
 
 // Tests if complete allow list set does not allow a host with a different
 // protocol to pass.
-IN_PROC_BROWSER_TEST_F(CorsOriginAccessListBrowserTest,
+IN_PROC_BROWSER_TEST_P(CorsOriginAccessListBrowserTest,
                        BlockDifferentProtocol) {
   SetAllowList("https", kTestHost, kDisallowSubdomains);
 
@@ -244,7 +262,7 @@ IN_PROC_BROWSER_TEST_F(CorsOriginAccessListBrowserTest,
 }
 
 // Tests if IP address based hosts should not follow subdomain match rules.
-IN_PROC_BROWSER_TEST_F(CorsOriginAccessListBrowserTest,
+IN_PROC_BROWSER_TEST_P(CorsOriginAccessListBrowserTest,
                        SubdomainMatchShouldNotBeAppliedForIPAddress) {
   SetAllowList("http", "*.0.0.1", kAllowSubdomains);
 
@@ -256,5 +274,18 @@ IN_PROC_BROWSER_TEST_F(CorsOriginAccessListBrowserTest,
           base::StringPrintf("%s?target=%s", kTestPath, host_ip().c_str()))));
   EXPECT_EQ(fail_string(), watcher->WaitAndGetTitle()) << GetReason();
 }
+
+INSTANTIATE_TEST_SUITE_P(
+    OutOfBlinkCorsWithServicification,
+    CorsOriginAccessListBrowserTest,
+    ::testing::Values(TestMode::kOutOfBlinkCorsWithServicification));
+
+INSTANTIATE_TEST_SUITE_P(
+    OutOfBlinkCorsWithoutServicification,
+    CorsOriginAccessListBrowserTest,
+    ::testing::Values(TestMode::kOutOfBlinkCorsWithoutServicification));
+
+// TODO(toyoshim): Instantiates tests for the case kOutOfBlinkCors is disabled
+// and remove relevant web tests if it's possible.
 
 }  // namespace
