@@ -985,19 +985,6 @@ Element* EnclosingBlockFlowElement(const Node& node) {
   return nullptr;
 }
 
-EUserSelect UsedValueOfUserSelect(const Node& node) {
-  if (node.IsHTMLElement() && ToHTMLElement(node).IsTextControl())
-    return EUserSelect::kText;
-  if (!node.GetLayoutObject())
-    return EUserSelect::kNone;
-
-  const ComputedStyle* style = node.GetLayoutObject()->Style();
-  if (style->UserModify() != EUserModify::kReadOnly)
-    return EUserSelect::kText;
-
-  return style->UserSelect();
-}
-
 template <typename Strategy>
 TextDirection DirectionOfEnclosingBlockOfAlgorithm(
     const PositionTemplate<Strategy>& position) {
