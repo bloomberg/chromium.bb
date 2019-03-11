@@ -2005,6 +2005,26 @@ TEST_F(LayerTreeHostImplTest, ScrollWithUserUnscrollableLayers) {
   EXPECT_VECTOR_EQ(gfx::Vector2dF(10, 20), overflow->CurrentScrollOffset());
 }
 
+TEST_F(LayerTreeHostImplTest, ForceMainThreadScrollWithoutScrollLayer) {
+  SetupScrollAndContentsLayers(gfx::Size(200, 200));
+  host_impl_->active_tree()->SetDeviceViewportSize(gfx::Size(100, 100));
+
+  host_impl_->active_tree()->BuildPropertyTreesForTesting();
+  ScrollNode* scroll_node =
+      host_impl_->active_tree()->property_trees()->scroll_tree.Node(
+          host_impl_->OuterViewportScrollLayer()->scroll_tree_index());
+  // Change the scroll node so that it no longer has an associated layer.
+  scroll_node->element_id = ElementId(42);
+
+  DrawFrame();
+
+  InputHandler::ScrollStatus status = host_impl_->ScrollBegin(
+      BeginState(gfx::Point(25, 25)).get(), InputHandler::WHEEL);
+  EXPECT_EQ(InputHandler::SCROLL_ON_MAIN_THREAD, status.thread);
+  EXPECT_EQ(MainThreadScrollingReason::kNonFastScrollableRegion,
+            status.main_thread_scrolling_reasons);
+}
+
 TEST_F(CommitToPendingTreeLayerTreeHostImplTest,
        AnimationSchedulingPendingTree) {
   EXPECT_FALSE(host_impl_->CommitToActiveTree());

@@ -3452,13 +3452,20 @@ InputHandler::ScrollStatus LayerTreeHostImpl::TryScroll(
   LayerImpl* layer =
       active_tree_->ScrollableLayerByElementId(scroll_node->element_id);
 
-  // We may not find an associated layer for the root or secondary root node -
-  // that's fine, they're not associated with any elements on the page. We also
-  // won't find a layer for the inner viewport (in CompositeAfterPaint) since it
-  // doesn't require hit testing.
-  DCHECK(layer || scroll_node->id == ScrollTree::kRootNodeId ||
-         scroll_node->id == ScrollTree::kSecondaryRootNodeId ||
-         scroll_node->scrolls_inner_viewport);
+  // If an associated scrolling layer is not found, the scroll node must not
+  // support impl-scrolling. The root, secondary root, and inner viewports are
+  // all exceptions to this and may not have a layer because it is not required
+  // for hit testing.
+  if (!layer && scroll_node->id != ScrollTree::kRootNodeId &&
+      scroll_node->id != ScrollTree::kSecondaryRootNodeId &&
+      !scroll_node->scrolls_inner_viewport) {
+    TRACE_EVENT0("cc",
+                 "LayerImpl::tryScroll: Failed due to no scrolling layer");
+    scroll_status.thread = InputHandler::SCROLL_ON_MAIN_THREAD;
+    scroll_status.main_thread_scrolling_reasons =
+        MainThreadScrollingReason::kNonFastScrollableRegion;
+    return scroll_status;
+  }
 
   if (layer && !layer->non_fast_scrollable_region().IsEmpty()) {
     bool clipped = false;
