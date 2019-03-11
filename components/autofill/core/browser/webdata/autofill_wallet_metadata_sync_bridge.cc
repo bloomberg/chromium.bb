@@ -4,8 +4,10 @@
 
 #include "components/autofill/core/browser/webdata/autofill_wallet_metadata_sync_bridge.h"
 
-#include <unordered_map>
+#include <map>
+#include <unordered_set>
 #include <utility>
+#include <vector>
 
 #include "base/base64.h"
 #include "base/logging.h"
@@ -80,16 +82,17 @@ struct TypeAndMetadataId {
 
 TypeAndMetadataId ParseWalletMetadataStorageKey(
     const std::string& storage_key) {
-  TypeAndMetadataId parsed;
-
   base::Pickle pickle(storage_key.data(), storage_key.size());
   base::PickleIterator iterator(pickle);
   int type_int;
-  if (!iterator.ReadInt(&type_int) ||
-      !iterator.ReadString(&parsed.metadata_id)) {
+  std::string specifics_id;
+  if (!iterator.ReadInt(&type_int) || !iterator.ReadString(&specifics_id)) {
     NOTREACHED() << "Unsupported storage_key provided " << storage_key;
   }
+
+  TypeAndMetadataId parsed;
   parsed.type = static_cast<WalletMetadataSpecifics::Type>(type_int);
+  parsed.metadata_id = GetMetadataIdForSpecificsId(specifics_id);
   return parsed;
 }
 
@@ -238,6 +241,17 @@ bool IsMetadataWorthUpdating(AutofillMetadata existing_entry,
   return false;
 }
 
+bool IsAnyMetadataDeletable(
+    const std::map<std::string, AutofillMetadata>& metadata_map) {
+  for (const auto& pair : metadata_map) {
+    const AutofillMetadata& metadata = pair.second;
+    if (metadata.IsDeletable()) {
+      return true;
+    }
+  }
+  return false;
+}
+
 bool AddServerMetadata(AutofillTable* table,
                        WalletMetadataSpecifics::Type type,
                        const AutofillMetadata& metadata) {
@@ -318,6 +332,8 @@ AutofillWalletMetadataSyncBridge::AutofillWalletMetadataSyncBridge(
   scoped_observer_.Add(web_data_backend_);
 
   LoadDataCacheAndMetadata();
+
+  DeleteOldOrphanMetadata();
 }
 
 AutofillWalletMetadataSyncBridge::~AutofillWalletMetadataSyncBridge() {
@@ -445,6 +461,54 @@ void AutofillWalletMetadataSyncBridge::LoadDataCacheAndMetadata() {
   }
 
   change_processor()->ModelReadyToSync(std::move(batch));
+}
+
+void AutofillWalletMetadataSyncBridge::DeleteOldOrphanMetadata() {
+  if (!web_data_backend_ || !web_data_backend_->GetDatabase() ||
+      !GetAutofillTable()) {
+    // We have a problem with the database, not an issue, we clean up next time.
+    return;
+  }
+  if (!IsAnyMetadataDeletable(cache_)) {
+    return;
+  }
+
+  // Load up (metadata) ids for which data exists; we do not delete those.
+  std::unordered_set<std::string> non_orphan_ids;
+  std::vector<std::unique_ptr<AutofillProfile>> profiles;
+  std::vector<std::unique_ptr<CreditCard>> cards;
+  if (!GetAutofillTable()->GetServerProfiles(&profiles) ||
+      !GetAutofillTable()->GetServerCreditCards(&cards)) {
+    return;
+  }
+  for (const std::unique_ptr<AutofillProfile>& profile : profiles) {
+    non_orphan_ids.insert(profile->server_id());
+  }
+  for (const std::unique_ptr<CreditCard>& card : cards) {
+    non_orphan_ids.insert(card->server_id());
+  }
+
+  // Identify storage keys of old orphans (we delete them below to avoid
+  // modifying |cache_| while iterating).
+  std::unordered_set<std::string> old_orphan_keys;
+  for (const auto& pair : cache_) {
+    const AutofillMetadata& metadata = pair.second;
+    if (metadata.IsDeletable() && !non_orphan_ids.count(metadata.id)) {
+      old_orphan_keys.insert(pair.first);
+    }
+  }
+
+  std::unique_ptr<MetadataChangeList> metadata_change_list =
+      CreateMetadataChangeList();
+  for (const std::string storage_key : old_orphan_keys) {
+    TypeAndMetadataId parsed_storage_key =
+        ParseWalletMetadataStorageKey(storage_key);
+    if (RemoveServerMetadata(GetAutofillTable(), parsed_storage_key.type,
+                             parsed_storage_key.metadata_id)) {
+      cache_.erase(storage_key);
+      change_processor()->Delete(storage_key, metadata_change_list.get());
+    }
+  }
 }
 
 void AutofillWalletMetadataSyncBridge::GetDataImpl(
