@@ -654,8 +654,6 @@ class RemovableTestVolume : public LocalTestVolume {
                                                  "text.txt", "hello.txt")
                     .SetMimeType("text/plain"));
 
-    CreateEntry(AddEntriesMessage::TestEntryInfo(AddEntriesMessage::DIRECTORY,
-                                                 "", "Folder"));
     base::RunLoop().RunUntilIdle();
     return true;
   }

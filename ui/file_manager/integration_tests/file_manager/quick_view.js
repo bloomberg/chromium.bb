@@ -195,10 +195,7 @@ testcase.openQuickViewRemovablePartitions = async () => {
       'fakeMouseClick failed');
 
   // Check: the 'hello.txt' file should appear in the file list.
-  const files = [
-    ENTRIES.hello.getExpectedRow(),
-    ['Folder', '--', 'Folder', Date()],
-  ];
+  const files = [ENTRIES.hello.getExpectedRow()];
   await remoteCall.waitForFiles(appId, files, {ignoreLastModifiedTime: true});
 
   // Open the file in Quick View.
