@@ -13,13 +13,13 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/audio/audio_manager.h"
 #include "media/audio/simple_sources.h"
-#include "media/audio/sounds/audio_stream_handler.h"
-#include "media/audio/sounds/sounds_manager.h"
-#include "media/audio/sounds/test_data.h"
 #include "media/audio/test_audio_thread.h"
+#include "services/audio/public/cpp/sounds/test_data.h"
+#include "services/audio/public/cpp/sounds/audio_stream_handler.h"
+#include "services/audio/public/cpp/sounds/sounds_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace media {
+namespace audio {
 
 class SoundsManagerTest : public testing::Test {
  public:
@@ -27,8 +27,8 @@ class SoundsManagerTest : public testing::Test {
   ~SoundsManagerTest() override = default;
 
   void SetUp() override {
-    audio_manager_ =
-        AudioManager::CreateForTesting(std::make_unique<TestAudioThread>());
+    audio_manager_ = media::AudioManager::CreateForTesting(
+        std::make_unique<media::TestAudioThread>());
     SoundsManager::Create();
     base::RunLoop().RunUntilIdle();
   }
@@ -44,13 +44,13 @@ class SoundsManagerTest : public testing::Test {
   }
 
   void SetAudioSourceForTesting(
-      AudioOutputStream::AudioSourceCallback* source) {
+      media::AudioOutputStream::AudioSourceCallback* source) {
     AudioStreamHandler::SetAudioSourceForTesting(source);
   }
 
  private:
   base::TestMessageLoop message_loop_;
-  std::unique_ptr<AudioManager> audio_manager_;
+  std::unique_ptr<media::AudioManager> audio_manager_;
 };
 
 TEST_F(SoundsManagerTest, Play) {
@@ -93,7 +93,7 @@ TEST_F(SoundsManagerTest, Stop) {
   const int kChannels = 1;
   const double kFreq = 200;
   const double kSampleFreq = 44100;
-  SineWaveAudioSource sine_source(kChannels, kFreq, kSampleFreq);
+  media::SineWaveAudioSource sine_source(kChannels, kFreq, kSampleFreq);
   SetAudioSourceForTesting(&sine_source);
 
   ASSERT_EQ(0, observer.num_play_requests());
@@ -115,4 +115,4 @@ TEST_F(SoundsManagerTest, Uninitialized) {
   ASSERT_FALSE(SoundsManager::Get()->Stop(kTestAudioKey));
 }
 
-}  // namespace media
+}  // namespace audio

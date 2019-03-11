@@ -83,7 +83,7 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
-#include "media/audio/sounds/sounds_manager.h"
+#include "services/audio/public/cpp/sounds/sounds_manager.h"
 #include "services/ws/public/cpp/property_type_converters.h"
 #include "services/ws/public/mojom/window_manager.mojom.h"
 #include "ui/aura/window.h"
@@ -432,7 +432,7 @@ LoginDisplayHostWebUI::LoginDisplayHostWebUI()
           << " wait_for_wp_load_: " << waiting_for_wallpaper_load_
           << " init_webui_hidden_: " << initialize_webui_hidden_;
 
-  media::SoundsManager* manager = media::SoundsManager::Get();
+  audio::SoundsManager* manager = audio::SoundsManager::Get();
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   manager->Initialize(SOUND_STARTUP,
                       bundle.GetRawDataResource(IDR_SOUND_STARTUP_WAV));

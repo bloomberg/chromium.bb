@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/audio/sounds/sounds_manager.h"
+#include "services/audio/public/cpp/sounds/sounds_manager.h"
 
 #include <vector>
 
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "media/audio/audio_manager.h"
-#include "media/audio/sounds/audio_stream_handler.h"
+#include "services/audio/public/cpp/sounds/audio_stream_handler.h"
 
-namespace media {
+namespace audio {
 
 namespace {
 
@@ -131,4 +131,4 @@ void SoundsManager::InitializeForTesting(SoundsManager* manager) {
   g_initialized_for_testing = true;
 }
 
-}  // namespace media
+}  // namespace audio

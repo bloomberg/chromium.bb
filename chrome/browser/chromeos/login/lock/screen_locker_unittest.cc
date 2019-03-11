@@ -33,8 +33,9 @@
 #include "content/public/test/test_service_manager_context.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #include "media/audio/audio_manager.h"
-#include "media/audio/sounds/sounds_manager.h"
 #include "media/audio/test_audio_thread.h"
+#include "services/audio/public/cpp/sounds/audio_stream_handler.h"
+#include "services/audio/public/cpp/sounds/sounds_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -57,7 +58,7 @@ class ScreenLockerUnitTest : public testing::Test {
     session_controller_client_->Init();
 
     // Initialize AccessibilityManager and dependencies:
-    media::SoundsManager::Create();
+    audio::SoundsManager::Create();
     input_method::InputMethodManager::Initialize(
         // Owned by InputMethodManager
         new input_method::MockInputMethodManagerImpl());
@@ -77,7 +78,7 @@ class ScreenLockerUnitTest : public testing::Test {
 
   void TearDown() override {
     input_method::InputMethodManager::Shutdown();
-    media::SoundsManager::Shutdown();
+    audio::SoundsManager::Shutdown();
     media::AudioManager::Get()->Shutdown();
     session_controller_client_.reset();
     chromeos::LoginState::Shutdown();

@@ -171,13 +171,13 @@
 #include "dbus/object_path.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
-#include "media/audio/sounds/sounds_manager.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/network_change_notifier_posix.h"
 #include "net/cert/nss_cert_database.h"
 #include "net/cert/nss_cert_database_chromeos.h"
 #include "printing/backend/print_backend.h"
 #include "rlz/buildflags/buildflags.h"
+#include "services/audio/public/cpp/sounds/sounds_manager.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/ime/chromeos/ime_keyboard.h"
@@ -728,7 +728,7 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
         new default_app_order::ExternalLoader(true /* async */));
   }
 
-  media::SoundsManager::Create();
+  audio::SoundsManager::Create();
 
   // |arc_service_launcher_| must be initialized before NoteTakingHelper.
   NoteTakingHelper::Initialize();
@@ -1104,7 +1104,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   if (!::features::IsMultiProcessMash())
     MagnificationManager::Shutdown();
 
-  media::SoundsManager::Shutdown();
+  audio::SoundsManager::Shutdown();
 
   system::StatisticsProvider::GetInstance()->Shutdown();
 

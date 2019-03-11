@@ -26,8 +26,8 @@
 #include "components/login/localized_values_builder.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/user_manager/user.h"
-#include "media/audio/sounds/sounds_manager.h"
 #include "net/base/data_url.h"
+#include "services/audio/public/cpp/sounds/sounds_manager.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "url/gurl.h"
 
@@ -44,7 +44,7 @@ UserImageScreenHandler::UserImageScreenHandler(
     : BaseScreenHandler(kScreenId, js_calls_container) {
   set_call_js_prefix(kJsScreenPath);
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-  media::SoundsManager* manager = media::SoundsManager::Get();
+  audio::SoundsManager* manager = audio::SoundsManager::Get();
   manager->Initialize(SOUND_OBJECT_DELETE,
                       bundle.GetRawDataResource(IDR_SOUND_OBJECT_DELETE_WAV));
   manager->Initialize(SOUND_CAMERA_SNAP,

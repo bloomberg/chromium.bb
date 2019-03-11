@@ -81,8 +81,8 @@
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/extension_resource.h"
 #include "extensions/common/host_id.h"
-#include "media/audio/sounds/sounds_manager.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "services/audio/public/cpp/sounds/sounds_manager.h"
 #include "services/media_session/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/accessibility/accessibility_switches.h"
@@ -259,7 +259,7 @@ AccessibilityManager::AccessibilityManager()
   input_method::InputMethodManager::Get()->AddObserver(this);
 
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-  media::SoundsManager* manager = media::SoundsManager::Get();
+  audio::SoundsManager* manager = audio::SoundsManager::Get();
   manager->Initialize(SOUND_SHUTDOWN,
                       bundle.GetRawDataResource(IDR_SOUND_SHUTDOWN_WAV));
   manager->Initialize(
@@ -554,7 +554,7 @@ bool AccessibilityManager::PlayEarcon(int sound_key, PlaySoundOption option) {
       !IsSpokenFeedbackEnabled()) {
     return false;
   }
-  return media::SoundsManager::Get()->Play(sound_key);
+  return audio::SoundsManager::Get()->Play(sound_key);
 }
 
 void AccessibilityManager::OnTwoFingerTouchStart() {
@@ -617,7 +617,7 @@ bool AccessibilityManager::ShouldToggleSpokenFeedbackViaTouch() {
 }
 
 bool AccessibilityManager::PlaySpokenFeedbackToggleCountdown(int tick_count) {
-  return media::SoundsManager::Get()->Play(
+  return audio::SoundsManager::Get()->Play(
       tick_count % 2 ? SOUND_SPOKEN_FEEDBACK_TOGGLE_COUNTDOWN_HIGH
                      : SOUND_SPOKEN_FEEDBACK_TOGGLE_COUNTDOWN_LOW);
 }
@@ -1135,7 +1135,7 @@ base::TimeDelta AccessibilityManager::PlayShutdownSound() {
                   PlaySoundOption::ONLY_IF_SPOKEN_FEEDBACK_ENABLED)) {
     return base::TimeDelta();
   }
-  return media::SoundsManager::Get()->GetDuration(SOUND_SHUTDOWN);
+  return audio::SoundsManager::Get()->GetDuration(SOUND_SHUTDOWN);
 }
 
 std::unique_ptr<AccessibilityStatusSubscription>

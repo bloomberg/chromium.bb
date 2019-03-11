@@ -141,18 +141,14 @@ source_set("audio") {
     "scoped_task_runner_observer.h",
     "simple_sources.cc",
     "simple_sources.h",
-    "sounds/audio_stream_handler.cc",
-    "sounds/audio_stream_handler.h",
-    "sounds/sounds_manager.cc",
-    "sounds/sounds_manager.h",
-    "sounds/wav_audio_handler.cc",
-    "sounds/wav_audio_handler.h",
     "virtual_audio_input_stream.cc",
     "virtual_audio_input_stream.h",
     "virtual_audio_output_stream.cc",
     "virtual_audio_output_stream.h",
     "virtual_audio_sink.cc",
     "virtual_audio_sink.h",
+    "wav_audio_handler.cc",
+    "wav_audio_handler.h",
   ]
   deps = [
     "//base",
@@ -421,11 +417,8 @@ source_set("unit_tests") {
 
   if (is_chromeos || is_chromecast) {
     sources += [
-      "sounds/audio_stream_handler_unittest.cc",
-      "sounds/sounds_manager_unittest.cc",
-      "sounds/test_data.cc",
-      "sounds/test_data.h",
-      "sounds/wav_audio_handler_unittest.cc",
+      "test_data.h",
+      "wav_audio_handler_unittest.cc",
     ]
 
     if (!is_chromecast) {

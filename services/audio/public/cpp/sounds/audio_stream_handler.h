@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_AUDIO_SOUNDS_AUDIO_STREAM_HANDLER_H_
-#define MEDIA_AUDIO_SOUNDS_AUDIO_STREAM_HANDLER_H_
+#ifndef SERVICES_AUDIO_PUBLIC_CPP_SOUNDS_AUDIO_STREAM_HANDLER_H_
+#define SERVICES_AUDIO_PUBLIC_CPP_SOUNDS_AUDIO_STREAM_HANDLER_H_
 
 #include <stddef.h>
 
@@ -18,10 +18,10 @@
 #include "media/base/audio_parameters.h"
 #include "media/base/media_export.h"
 
-namespace media {
+namespace audio {
 
 // This class sends a sound to the audio manager.
-class MEDIA_EXPORT AudioStreamHandler {
+class AudioStreamHandler {
  public:
   class TestObserver {
    public:
@@ -66,7 +66,7 @@ class MEDIA_EXPORT AudioStreamHandler {
 
   static void SetObserverForTesting(TestObserver* observer);
   static void SetAudioSourceForTesting(
-      AudioOutputStream::AudioSourceCallback* source);
+      media::AudioOutputStream::AudioSourceCallback* source);
 
   base::TimeDelta duration_;
   std::unique_ptr<AudioStreamContainer> stream_;
@@ -76,6 +76,6 @@ class MEDIA_EXPORT AudioStreamHandler {
   DISALLOW_COPY_AND_ASSIGN(AudioStreamHandler);
 };
 
-}  // namespace media
+}  // namespace audio
 
-#endif  // MEDIA_AUDIO_SOUNDS_AUDIO_STREAM_HANDLER_H_
+#endif  // SERVICES_AUDIO_PUBLIC_CPP_SOUNDS_AUDIO_STREAM_HANDLER_H_

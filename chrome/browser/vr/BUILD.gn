@@ -274,6 +274,7 @@ component("vr_common") {
     "//device/vr/public/mojom",
     "//media",
     "//net",
+    "//services/audio/public/cpp",
     "//services/metrics/public/cpp:ukm_builders",
     "//skia",
     "//ui/base",
