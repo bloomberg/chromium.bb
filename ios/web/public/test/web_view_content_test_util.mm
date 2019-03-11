@@ -164,10 +164,10 @@ bool WaitForWebViewContainingImage(std::string image_id,
 }
 
 bool IsWebViewContainingElement(web::WebState* web_state,
-                                const web::test::ElementSelector& selector) {
+                                ElementSelector* selector) {
   // Script that tests presence of element.
-  std::string script =
-      base::StringPrintf("!!(%s)", selector.GetSelectorScript().c_str());
+  std::string script = base::SysNSStringToUTF8(
+      [NSString stringWithFormat:@"!!(%@)", selector.selectorScript]);
 
   bool did_succeed = false;
   std::unique_ptr<base::Value> value =
@@ -178,23 +178,19 @@ bool IsWebViewContainingElement(web::WebState* web_state,
   return did_succeed;
 }
 
-bool WaitForWebViewContainingElement(
-    web::WebState* web_state,
-    const web::test::ElementSelector& selector) {
-  web::test::ElementSelector selector_in_block = selector;
+bool WaitForWebViewContainingElement(web::WebState* web_state,
+                                     ElementSelector* selector) {
   return WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^{
     base::RunLoop().RunUntilIdle();
-    return IsWebViewContainingElement(web_state, selector_in_block);
+    return IsWebViewContainingElement(web_state, selector);
   });
 }
 
-bool WaitForWebViewNotContainingElement(
-    web::WebState* web_state,
-    const web::test::ElementSelector& selector) {
-  web::test::ElementSelector selector_in_block = selector;
+bool WaitForWebViewNotContainingElement(web::WebState* web_state,
+                                        ElementSelector* selector) {
   return WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^{
     base::RunLoop().RunUntilIdle();
-    return !IsWebViewContainingElement(web_state, selector_in_block);
+    return !IsWebViewContainingElement(web_state, selector);
   });
 }
 

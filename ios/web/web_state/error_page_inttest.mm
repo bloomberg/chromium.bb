@@ -32,7 +32,6 @@
 
 using base::test::ios::kWaitForPageLoadTimeout;
 using base::test::ios::WaitUntilConditionOrTimeout;
-using web::test::ElementSelector;
 
 namespace web {
 
@@ -286,7 +285,7 @@ TEST_P(ErrorPageTest, ErrorPageInIFrame) {
   EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
     return test::IsWebViewContainingElement(
         web_state(),
-        ElementSelector::ElementSelectorCss("iframe[src*='echo-query']"));
+        [ElementSelector selectorWithCSSSelector:"iframe[src*='echo-query']"]);
   }));
 }
 

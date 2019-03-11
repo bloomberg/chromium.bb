@@ -24,8 +24,6 @@
 #error "This file requires ARC support."
 #endif
 
-using web::test::ElementSelector;
-
 namespace {
 
 const std::string kFormElementID1 = "username";
@@ -66,7 +64,7 @@ void TapOnWebElementWithID(const std::string& elementID) {
                                    chrome_test_util::GetCurrentWebState())]
       performAction:web::WebViewTapElement(
                         chrome_test_util::GetCurrentWebState(),
-                        ElementSelector::ElementSelectorId(elementID))];
+                        [ElementSelector selectorWithElementID:elementID])];
 }
 
 }  // namespace

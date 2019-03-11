@@ -14,8 +14,7 @@
 
 namespace web {
 
-id<GREYAction> LongPressElementForContextMenu(
-    web::test::ElementSelector selector) {
+id<GREYAction> LongPressElementForContextMenu(ElementSelector* selector) {
   return WebViewLongPressElementForContextMenu(
       shell_test_util::GetCurrentWebState(), std::move(selector), true);
 }

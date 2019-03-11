@@ -27,7 +27,6 @@
 
 using testing::ButtonWithAccessibilityLabel;
 using testing::ElementToDismissAlert;
-using web::test::ElementSelector;
 
 // Context menu test cases for the web shell.
 @interface ContextMenuTestCase : WebShellTestCase
@@ -57,7 +56,7 @@ using web::test::ElementSelector;
 
   [[EarlGrey selectElementWithMatcher:web::WebView()]
       performAction:web::LongPressElementForContextMenu(
-                        ElementSelector::ElementSelectorId(linkID))];
+                        [ElementSelector selectorWithElementID:linkID])];
 
   id<GREYMatcher> copyItem = ButtonWithAccessibilityLabel(@"Copy Link");
 
@@ -99,7 +98,7 @@ using web::test::ElementSelector;
 
   [[EarlGrey selectElementWithMatcher:web::WebView()]
       performAction:web::LongPressElementForContextMenu(
-                        ElementSelector::ElementSelectorId(linkID))];
+                        [ElementSelector selectorWithElementID:linkID])];
 
   id<GREYMatcher> copyItem = ButtonWithAccessibilityLabel(@"Copy Link");
 

@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #include "base/values.h"
 #import "ios/web/public/test/earl_grey/web_view_matchers.h"
@@ -40,7 +41,7 @@ const NSTimeInterval kWaitForVerificationTimeout = 8.0;
 // RemoveVerifierWithPrefix should be called after this to ensure
 // future tests can add verifiers with the same prefix.
 bool AddVerifierToElementWithPrefix(web::WebState* web_state,
-                                    const web::test::ElementSelector& selector,
+                                    ElementSelector* selector,
                                     const std::string& prefix,
                                     bool* verified) {
   const char kCallbackCommand[] = "verified";
@@ -64,9 +65,11 @@ bool AddVerifierToElementWithPrefix(web::WebState* web_state,
       "  return true;"
       "})();";
 
-  const std::string kAddVerifierScript = base::StringPrintf(
-      kAddInteractionVerifierScriptTemplate,
-      selector.GetSelectorScript().c_str(), kCallbackInvocation.c_str());
+  std::string selector_script =
+      base::SysNSStringToUTF8(selector.selectorScript);
+  const std::string kAddVerifierScript =
+      base::StringPrintf(kAddInteractionVerifierScriptTemplate,
+                         selector_script.c_str(), kCallbackInvocation.c_str());
 
   bool success = base::test::ios::WaitUntilConditionOrTimeout(
       base::test::ios::kWaitForUIElementTimeout, ^{
@@ -111,12 +114,11 @@ void RemoveVerifierWithPrefix(web::WebState* web_state,
 }
 
 // Returns a no element found error.
-id<GREYAction> WebViewElementNotFound(web::test::ElementSelector selector) {
-  NSString* description =
-      [NSString stringWithFormat:
-                    @"Couldn't locate a bounding rect for element %s; "
-                    @"either it isn't there or it has no area.",
-                    selector.GetSelectorDescription().c_str()];
+id<GREYAction> WebViewElementNotFound(ElementSelector* selector) {
+  NSString* description = [NSString
+      stringWithFormat:@"Couldn't locate a bounding rect for element %@; "
+                       @"either it isn't there or it has no area.",
+                       selector.selectorDescription];
   GREYPerformBlock throw_error =
       ^BOOL(id /* element */, __strong NSError** error) {
         NSDictionary* user_info = @{NSLocalizedDescriptionKey : description};
@@ -159,13 +161,12 @@ bool IsRectVisibleInView(CGRect rect, UIView* view) {
 
 namespace web {
 
-id<GREYAction> WebViewVerifiedActionOnElement(
-    WebState* state,
-    id<GREYAction> action,
-    web::test::ElementSelector selector) {
-  NSString* action_name = [NSString
-      stringWithFormat:@"Verified action (%@) on webview element %s.",
-                       action.name, selector.GetSelectorDescription().c_str()];
+id<GREYAction> WebViewVerifiedActionOnElement(WebState* state,
+                                              id<GREYAction> action,
+                                              ElementSelector* selector) {
+  NSString* action_name =
+      [NSString stringWithFormat:@"Verified action (%@) on webview element %@.",
+                                 action.name, selector.selectorDescription];
   const std::string prefix =
       base::StringPrintf("__web_test_%p_interaction", &selector);
 
@@ -185,11 +186,10 @@ id<GREYAction> WebViewVerifiedActionOnElement(
     bool verifier_added =
         AddVerifierToElementWithPrefix(state, selector, prefix, &verified);
     if (!verifier_added) {
-      NSString* description =
-          [NSString stringWithFormat:
-                        @"It wasn't possible to add the verification "
-                        @"javascript for element %s",
-                        selector.GetSelectorDescription().c_str()];
+      NSString* description = [NSString
+          stringWithFormat:@"It wasn't possible to add the verification "
+                           @"javascript for element %@",
+                           selector.selectorDescription];
       NSDictionary* user_info = @{NSLocalizedDescriptionKey : description};
       *error = [NSError errorWithDomain:kGREYInteractionErrorDomain
                                    code:kGREYInteractionActionFailedErrorCode
@@ -208,10 +208,9 @@ id<GREYAction> WebViewVerifiedActionOnElement(
 
     // Wait for the verified to trigger and set |verified|.
     NSString* verification_timeout_message =
-        [NSString stringWithFormat:
-                      @"The action (%@) on element %s wasn't "
-                      @"verified before timing out.",
-                      action.name, selector.GetSelectorDescription().c_str()];
+        [NSString stringWithFormat:@"The action (%@) on element %@ wasn't "
+                                   @"verified before timing out.",
+                                   action.name, selector.selectorDescription];
     GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(
                    kWaitForVerificationTimeout,
                    ^{
@@ -233,11 +232,11 @@ id<GREYAction> WebViewVerifiedActionOnElement(
 
 id<GREYAction> WebViewLongPressElementForContextMenu(
     WebState* state,
-    web::test::ElementSelector selector,
+    ElementSelector* selector,
     bool triggers_context_menu) {
   CGRect rect = web::test::GetBoundingRectOfElement(state, selector);
   if (CGRectIsEmpty(rect)) {
-    return WebViewElementNotFound(std::move(selector));
+    return WebViewElementNotFound(selector);
   }
   CGPoint point = CGPointMake(CGRectGetMidX(rect), CGRectGetMidY(rect));
   id<GREYAction> longpress =
@@ -245,30 +244,29 @@ id<GREYAction> WebViewLongPressElementForContextMenu(
   if (triggers_context_menu) {
     return longpress;
   }
-  return WebViewVerifiedActionOnElement(state, longpress, std::move(selector));
+  return WebViewVerifiedActionOnElement(state, longpress, selector);
 }
 
-id<GREYAction> WebViewTapElement(WebState* state,
-                                 web::test::ElementSelector selector) {
+id<GREYAction> WebViewTapElement(WebState* state, ElementSelector* selector) {
   CGRect rect = web::test::GetBoundingRectOfElement(state, selector);
   CGPoint point = CGPointMake(CGRectGetMidX(rect), CGRectGetMidY(rect));
-  return CGRectIsEmpty(rect)
-             ? WebViewElementNotFound(std::move(selector))
-             : WebViewVerifiedActionOnElement(state, grey_tapAtPoint(point),
-                                              std::move(selector));
+  return CGRectIsEmpty(rect) ? WebViewElementNotFound(selector)
+                             : WebViewVerifiedActionOnElement(
+                                   state, grey_tapAtPoint(point), selector);
 }
 
-id<GREYAction> WebViewScrollElementToVisible(
-    WebState* state,
-    web::test::ElementSelector selector) {
+id<GREYAction> WebViewScrollElementToVisible(WebState* state,
+                                             ElementSelector* selector) {
   const char kScrollToVisibleTemplate[] = "%1$s.scrollIntoView();";
 
-  const std::string kScrollToVisibleScript = base::StringPrintf(
-      kScrollToVisibleTemplate, selector.GetSelectorScript().c_str());
+  std::string selector_script =
+      base::SysNSStringToUTF8(selector.selectorScript);
+  const std::string kScrollToVisibleScript =
+      base::StringPrintf(kScrollToVisibleTemplate, selector_script.c_str());
 
   NSString* action_name =
-      [NSString stringWithFormat:@"Scroll element %s to visible",
-                                 selector.GetSelectorDescription().c_str()];
+      [NSString stringWithFormat:@"Scroll element %@ to visible",
+                                 selector.selectorDescription];
 
   NSError* (^error_block)(NSString* error) = ^NSError*(NSString* error) {
     return [NSError errorWithDomain:kGREYInteractionErrorDomain

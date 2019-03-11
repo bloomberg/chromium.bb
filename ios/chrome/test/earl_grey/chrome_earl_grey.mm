@@ -215,8 +215,7 @@ id ExecuteJavaScript(NSString* javascript,
       @"Failed waiting for web view containing %s", text.c_str());
 }
 
-+ (void)waitForWebViewContainingElement:
-    (const web::test::ElementSelector)selector {
++ (void)waitForWebViewContainingElement:(ElementSelector*)selector {
   GREYCondition* condition = [GREYCondition
       conditionWithName:@"Wait for web view containing Element"
                   block:^BOOL {
@@ -225,8 +224,8 @@ id ExecuteJavaScript(NSString* javascript,
                   }];
   GREYAssert(
       [condition waitWithTimeout:base::test::ios::kWaitForUIElementTimeout],
-      @"Failed waiting for web view containing element %s",
-      selector.GetSelectorDescription().c_str());
+      @"Failed waiting for web view containing element %@",
+      selector.selectorDescription);
 }
 
 + (void)waitForWebViewNotContainingText:(std::string)text {

@@ -63,7 +63,6 @@ using chrome_test_util::SettingsMenuBackButton;
 using chrome_test_util::SetUpAndReturnMockReauthenticationModule;
 using chrome_test_util::SetUpAndReturnMockReauthenticationModuleForExport;
 using chrome_test_util::TurnSettingsSwitchOn;
-using web::test::ElementSelector;
 
 namespace {
 
@@ -1511,7 +1510,7 @@ PasswordForm CreateSampleFormWithIndex(int index) {
                                    chrome_test_util::GetCurrentWebState())]
       performAction:web::WebViewTapElement(
                         chrome_test_util::GetCurrentWebState(),
-                        ElementSelector::ElementSelectorId("password"))];
+                        [ElementSelector selectorWithElementID:"password"])];
 
   // Wait until the keyboard shows up before tapping.
   id<GREYMatcher> showAll = grey_allOf(
