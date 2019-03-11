@@ -828,9 +828,13 @@ operator=(State new_state) {
     return *this;
 
   if (state_ == kUnlocked) {
-    TRACE_EVENT_ASYNC_BEGIN0("blink", "LockedDisplayLock", this);
+    TRACE_EVENT_ASYNC_BEGIN0(
+        TRACE_DISABLED_BY_DEFAULT("blink.debug.display_lock"),
+        "LockedDisplayLock", this);
   } else if (new_state == kUnlocked) {
-    TRACE_EVENT_ASYNC_END0("blink", "LockedDisplayLock", this);
+    TRACE_EVENT_ASYNC_END0(
+        TRACE_DISABLED_BY_DEFAULT("blink.debug.display_lock"),
+        "LockedDisplayLock", this);
   }
 
   bool was_activatable = context_->IsActivatable();
@@ -838,8 +842,9 @@ operator=(State new_state) {
 
   state_ = new_state;
   if (state_ != kUnlocked) {
-    TRACE_EVENT_ASYNC_STEP_INTO0("blink", "LockedDisplayLock", this,
-                                 StateToString(state_));
+    TRACE_EVENT_ASYNC_STEP_INTO0(
+        TRACE_DISABLED_BY_DEFAULT("blink.debug.display_lock"),
+        "LockedDisplayLock", this, StateToString(state_));
   }
 
   if (!context_->document_)
