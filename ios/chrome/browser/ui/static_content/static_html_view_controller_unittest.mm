@@ -9,7 +9,6 @@
 #import "base/mac/foundation_util.h"
 #import "base/test/ios/wait_util.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
-#import "ios/chrome/browser/ui/url_loader.h"
 #include "ios/chrome/browser/url_loading/test_url_loading_service.h"
 #include "ios/chrome/browser/url_loading/url_loading_service_factory.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -27,6 +26,7 @@
 #import "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+#include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -50,27 +50,6 @@
 - (void)generateHtml:(HtmlCallback)callback {
   callback(l10n_util::GetNSString(messageId_));
 }
-@end
-
-@interface LoadTestMockLoader : OCMockComplexTypeHelper
-@end
-
-@implementation LoadTestMockLoader
-
-typedef void (^LoadURL_Referrer_transition_renderInitiated)(
-    const GURL&,
-    const web::Referrer&,
-    ui::PageTransition,
-    BOOL);
-
-- (void)loadURL:(const GURL&)url
-             referrer:(const web::Referrer&)referrer
-           transition:(ui::PageTransition)transition
-    rendererInitiated:(BOOL)rendererInitiated {
-  static_cast<LoadURL_Referrer_transition_renderInitiated>([self
-      blockForSelector:_cmd])(url, referrer, transition, rendererInitiated);
-}
-
 @end
 
 namespace {
@@ -119,10 +98,6 @@ class StaticHtmlViewControllerTest : public PlatformTest {
 
 // Tests the creation of a StaticHtmlViewController displaying a resource file.
 TEST_F(StaticHtmlViewControllerTest, LoadResourceTest) {
-  id loader = [[LoadTestMockLoader alloc]
-      initWithRepresentedObject:[OCMockObject
-                                    mockForProtocol:@protocol(UrlLoader)]];
-
   id<CRWNativeContentDelegate> delegate =
       [OCMockObject mockForProtocol:@protocol(CRWNativeContentDelegate)];
   GURL referrer_url("chrome://foo");
@@ -144,32 +119,18 @@ TEST_F(StaticHtmlViewControllerTest, LoadResourceTest) {
   TestUrlLoadingService* url_loader =
       (TestUrlLoadingService*)UrlLoadingServiceFactory::GetForBrowserState(
           chrome_browser_state_.get());
-  EXPECT_EQ(GURL("terms_en.html"), url_loader->last_web_params.url);
-
-  ASSERT_OCMOCK_VERIFY((OCMockObject*)delegate);
-  id block = [(id) ^ (const GURL& url, const web::Referrer& referrer,
-                      ui::PageTransition transition, BOOL rendererInitiated) {
-    EXPECT_EQ(url, GURL());
-    EXPECT_EQ(referrer.url, referrer_url);
-    EXPECT_EQ(referrer.policy, web::ReferrerPolicyDefault);
-    EXPECT_TRUE(PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_LINK));
-    EXPECT_TRUE(rendererInitiated);
-  } copy];
-
-  [loader onSelector:@selector(loadURL:referrer:transition:rendererInitiated:)
-      callBlockExpectation:block];
+  EXPECT_EQ(0, url_loader->load_url_call_count);
+  EXPECT_EQ(0, url_loader->open_new_tab_call_count);
 
   DryRunLoop(true);
-  ASSERT_OCMOCK_VERIFY(loader);
+
+  EXPECT_EQ(0, url_loader->load_url_call_count);
+  EXPECT_EQ(0, url_loader->open_new_tab_call_count);
   ASSERT_OCMOCK_VERIFY((OCMockObject*)delegate);
 }
 
 // Tests the creation of a StaticHtmlViewController displaying a local file.
 TEST_F(StaticHtmlViewControllerTest, LoadFileURLTest) {
-  id loader = [[LoadTestMockLoader alloc]
-      initWithRepresentedObject:[OCMockObject
-                                    mockForProtocol:@protocol(UrlLoader)]];
-
   id<CRWNativeContentDelegate> delegate =
       [OCMockObject mockForProtocol:@protocol(CRWNativeContentDelegate)];
   GURL referrer_url("chrome://foo");
@@ -197,23 +158,13 @@ TEST_F(StaticHtmlViewControllerTest, LoadFileURLTest) {
   TestUrlLoadingService* url_loader =
       (TestUrlLoadingService*)UrlLoadingServiceFactory::GetForBrowserState(
           chrome_browser_state_.get());
-  EXPECT_EQ(GURL("terms_en.html"), url_loader->last_web_params.url);
-
-  ASSERT_OCMOCK_VERIFY((OCMockObject*)delegate);
-  id block = [(id) ^ (const GURL& url, const web::Referrer& referrer,
-                      ui::PageTransition transition, BOOL rendererInitiated) {
-    EXPECT_EQ(url, GURL());
-    EXPECT_EQ(referrer.url, referrer_url);
-    EXPECT_EQ(referrer.policy, web::ReferrerPolicyDefault);
-    EXPECT_TRUE(PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_LINK));
-    EXPECT_TRUE(rendererInitiated);
-  } copy];
-
-  [loader onSelector:@selector(loadURL:referrer:transition:rendererInitiated:)
-      callBlockExpectation:block];
+  EXPECT_EQ(0, url_loader->load_url_call_count);
+  EXPECT_EQ(0, url_loader->open_new_tab_call_count);
 
   DryRunLoop(true);
-  ASSERT_OCMOCK_VERIFY(loader);
+
+  EXPECT_EQ(0, url_loader->load_url_call_count);
+  EXPECT_EQ(0, url_loader->open_new_tab_call_count);
   ASSERT_OCMOCK_VERIFY((OCMockObject*)delegate);
 }
 

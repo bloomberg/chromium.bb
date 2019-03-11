@@ -28,6 +28,9 @@ class TestUrlLoadingService : public UrlLoadingService {
   web::NavigationManager::WebLoadParams last_web_params;
   WindowOpenDisposition last_disposition;
   OpenNewTabCommand* last_command;
+  int load_url_call_count = 0;
+  int switch_tab_call_count = 0;
+  int open_new_tab_call_count = 0;
 };
 
 #endif  // IOS_CHROME_BROWSER_URL_LOADING_TEST_URL_LOADING_SERVICE_H_

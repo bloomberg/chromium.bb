@@ -18,14 +18,17 @@ void TestUrlLoadingService::LoadUrlInCurrentTab(
     const ChromeLoadParams& chrome_params) {
   last_web_params = chrome_params.web_params;
   last_disposition = chrome_params.disposition;
+  load_url_call_count++;
 }
 
 void TestUrlLoadingService::SwitchToTab(
     const web::NavigationManager::WebLoadParams& web_params) {
   last_web_params = web_params;
   last_disposition = WindowOpenDisposition::SWITCH_TO_TAB;
+  switch_tab_call_count++;
 }
 
 void TestUrlLoadingService::OpenUrlInNewTab(OpenNewTabCommand* command) {
   last_command = command;
+  open_new_tab_call_count++;
 }
