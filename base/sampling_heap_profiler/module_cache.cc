@@ -12,28 +12,32 @@ ModuleCache::ModuleCache() = default;
 ModuleCache::~ModuleCache() = default;
 
 const ModuleCache::Module* ModuleCache::GetModuleForAddress(uintptr_t address) {
-  auto it = modules_cache_map_.upper_bound(address);
-  if (it != modules_cache_map_.begin()) {
-    DCHECK(!modules_cache_map_.empty());
-    --it;
-    const Module* module = it->second.get();
-    if (address < module->GetBaseAddress() + module->GetSize())
-      return module;
-  }
+  auto it = std::find_if(modules_.begin(), modules_.end(),
+                         [address](const std::unique_ptr<Module>& module) {
+                           return address >= module->GetBaseAddress() &&
+                                  address < module->GetBaseAddress() +
+                                                module->GetSize();
+                         });
+  if (it != modules_.end())
+    return it->get();
 
   std::unique_ptr<Module> module = CreateModuleForAddress(address);
   if (!module)
     return nullptr;
-  return modules_cache_map_.emplace(module->GetBaseAddress(), std::move(module))
-      .first->second.get();
+  modules_.push_back(std::move(module));
+  return modules_.back().get();
 }
 
 std::vector<const ModuleCache::Module*> ModuleCache::GetModules() const {
   std::vector<const Module*> result;
-  result.reserve(modules_cache_map_.size());
-  for (const auto& it : modules_cache_map_)
-    result.push_back(it.second.get());
+  result.reserve(modules_.size());
+  for (const std::unique_ptr<Module>& module : modules_)
+    result.push_back(module.get());
   return result;
+}
+
+void ModuleCache::InjectModuleForTesting(std::unique_ptr<Module> module) {
+  modules_.push_back(std::move(module));
 }
 
 }  // namespace base
