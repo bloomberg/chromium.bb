@@ -421,6 +421,8 @@ blink_core_sources("css") {
     "properties/css_property_base_custom.cc",
     "properties/css_property_ref.cc",
     "properties/css_property_ref.h",
+    "properties/css_unresolved_property.cc",
+    "properties/css_unresolved_property.h",
     "properties/longhand.h",
     "properties/longhands/align_content_custom.cc",
     "properties/longhands/align_items_custom.cc",
