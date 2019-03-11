@@ -135,7 +135,6 @@ include_rules = [
   "+third_party/blink/public/platform/modules/geolocation/geolocation_service.mojom.h",
   "+third_party/blink/public/platform/modules/installedapp/installed_app_provider.mojom.h",
   "+third_party/blink/public/platform/modules/installedapp/related_application.mojom.h",
-  "+third_party/blink/public/platform/modules/keyboard_lock/keyboard_lock.mojom.h",
   "+third_party/blink/public/platform/modules/mediasession/media_session.mojom.h",
   "+third_party/blink/public/platform/modules/mediastream/media_devices.mojom.h",
   "+third_party/blink/public/platform/modules/notifications/notification_service.mojom.h",
