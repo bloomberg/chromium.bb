@@ -4232,6 +4232,8 @@ crbug.com/835717 virtual/omt-worker-fetch/external/wpt/service-workers/service-w
 # These are timing out.
 crbug.com/835717 virtual/omt-worker-fetch/external/wpt/content-security-policy/inside-worker/dedicated-script.html [ Skip ]
 crbug.com/835717 virtual/omt-worker-fetch/external/wpt/content-security-policy/inside-worker/dedicated-inheritance.html [ Skip ]
+# This is failing because of the lack of CSP support.
+crbug.com/940316 virtual/omt-worker-fetch/external/wpt/content-security-policy/inside-worker/shared-script.html [ Failure Pass ]
 
 # This fails because AllowedByNoSniff::MimeTypeAsScript() blocks the nested worker's
 # worker script, because the script url has a .html file extension.
