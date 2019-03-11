@@ -404,7 +404,7 @@ public final class ChildProcessLauncherHelperImpl {
 
     // Called on client (UI or IO) thread.
     @CalledByNative
-    private void getTerminationInfo(long terminationInfoPtr) {
+    private void getTerminationInfoAndStop(long terminationInfoPtr) {
         ChildProcessConnection connection = mLauncher.getConnection();
         // Here we are accessing the connection from a thread other than the launcher thread, but it
         // does not change once it's been set. So it is safe to test whether it's null here and
@@ -416,6 +416,7 @@ public final class ChildProcessLauncherHelperImpl {
                 connection.isKilledByUs(), connection.hasCleanExit(),
                 bindingCounts[ChildBindingState.STRONG], bindingCounts[ChildBindingState.MODERATE],
                 bindingCounts[ChildBindingState.WAIVED]);
+        LauncherThread.post(() -> mLauncher.stop());
     }
 
     @CalledByNative

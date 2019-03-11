@@ -159,7 +159,7 @@ ChildProcessTerminationInfo ChildProcessLauncherHelper::GetTerminationInfo(
   if (!java_peer_avaiable_on_client_thread_)
     return info;
 
-  Java_ChildProcessLauncherHelperImpl_getTerminationInfo(
+  Java_ChildProcessLauncherHelperImpl_getTerminationInfoAndStop(
       AttachCurrentThread(), java_peer_, reinterpret_cast<intptr_t>(&info));
 
   base::android::ApplicationState app_state =
