@@ -548,7 +548,7 @@ void CreditCardEditorViewController::StyledLabelLinkClicked(
   // link for a server card.
   chrome::ScopedTabbedBrowserDisplayer displayer(dialog()->GetProfile());
   ShowSingletonTab(displayer.browser(),
-                   autofill::payments::GetManageAddressesUrl(0));
+                   autofill::payments::GetManageAddressesUrl());
 }
 
 void CreditCardEditorViewController::SelectBasicCardNetworkIcon(

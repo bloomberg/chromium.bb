@@ -1557,13 +1557,13 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
   html_source->AddString("passwordManagerLearnMoreURL",
                          chrome::kPasswordManagerLearnMoreURL);
   html_source->AddString("manageAddressesUrl",
-                         autofill::payments::GetManageAddressesUrl(0).spec());
+                         autofill::payments::GetManageAddressesUrl().spec());
   html_source->AddString("manageCreditCardsLabel",
                          l10n_util::GetStringFUTF16(
                              IDS_SETTINGS_PAYMENTS_MANAGE_CREDIT_CARDS,
                              base::UTF8ToUTF16(chrome::kPaymentMethodsURL)));
   html_source->AddString("manageCreditCardsUrl",
-                         autofill::payments::GetManageInstrumentsUrl(0).spec());
+                         autofill::payments::GetManageInstrumentsUrl().spec());
   html_source->AddString("paymentMethodsLearnMoreURL",
                          chrome::kPaymentMethodsLearnMoreURL);
   html_source->AddBoolean(
