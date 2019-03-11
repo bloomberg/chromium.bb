@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_AUDIO_SOUNDS_TEST_DATA_H_
-#define MEDIA_AUDIO_SOUNDS_TEST_DATA_H_
+#ifndef SERVICES_AUDIO_PUBLIC_CPP_SOUNDS_TEST_DATA_H_
+#define SERVICES_AUDIO_PUBLIC_CPP_SOUNDS_TEST_DATA_H_
 
 #include <stddef.h>
 
@@ -12,9 +12,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
-#include "media/audio/sounds/audio_stream_handler.h"
+#include "services/audio/public/cpp/sounds/audio_stream_handler.h"
 
-namespace media {
+namespace audio {
 
 const int kTestAudioKey = 1000;
 
@@ -58,6 +58,6 @@ class TestObserver : public AudioStreamHandler::TestObserver {
   DISALLOW_COPY_AND_ASSIGN(TestObserver);
 };
 
-}  // namespace media
+}  // namespace audio
 
-#endif  // MEDIA_AUDIO_SOUNDS_TEST_DATA_H_
+#endif  // SERVICES_AUDIO_PUBLIC_CPP_SOUNDS_TEST_DATA_H_

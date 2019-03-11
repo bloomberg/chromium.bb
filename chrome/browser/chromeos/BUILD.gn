@@ -205,6 +205,7 @@ source_set("chromeos") {
     # TODO: care about enable_basic_printing and enable_print_preview.
     "//printing",
     "//remoting/host/it2me:chrome_os_host",
+    "//services/audio/public/cpp",
     "//services/data_decoder/public/cpp",
     "//services/device/public/mojom",
     "//services/identity/public/cpp",

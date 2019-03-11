@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/vr/sounds_manager_audio_delegate.h"
-#include "media/audio/sounds/sounds_manager.h"
+#include "services/audio/public/cpp/sounds/sounds_manager.h"
 
 namespace vr {
 
@@ -17,7 +17,7 @@ void SoundsManagerAudioDelegate::ResetSounds() {
   // Because SoundsManager cannot replace a registered sound, start fresh
   // with a new manager if needed.
   if (!sounds_.empty()) {
-    media::SoundsManager::Shutdown();
+    audio::SoundsManager::Shutdown();
     sounds_.clear();
   }
 }
@@ -29,15 +29,15 @@ bool SoundsManagerAudioDelegate::RegisterSound(
   DCHECK(sounds_.find(id) == sounds_.end());
 
   if (sounds_.empty())
-    media::SoundsManager::Create();
+    audio::SoundsManager::Create();
 
   sounds_[id] = std::move(data);
-  return media::SoundsManager::Get()->Initialize(id, *sounds_[id]);
+  return audio::SoundsManager::Get()->Initialize(id, *sounds_[id]);
 }
 
 void SoundsManagerAudioDelegate::PlaySound(SoundId id) {
   if (sounds_.find(id) != sounds_.end())
-    media::SoundsManager::Get()->Play(id);
+    audio::SoundsManager::Get()->Play(id);
 }
 
 }  // namespace vr

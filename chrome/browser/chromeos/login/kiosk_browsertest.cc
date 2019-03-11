@@ -79,12 +79,12 @@
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_switches.h"
 #include "google_apis/gaia/gaia_urls.h"
-#include "media/audio/sounds/audio_stream_handler.h"
-#include "media/audio/sounds/sounds_manager.h"
 #include "media/audio/test_audio_thread.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/audio/public/cpp/fake_system_info.h"
+#include "services/audio/public/cpp/sounds/audio_stream_handler.h"
+#include "services/audio/public/cpp/sounds/sounds_manager.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/aura/window.h"
@@ -2290,7 +2290,7 @@ IN_PROC_BROWSER_TEST_F(KioskEnterpriseTest, PrivateStore) {
 }
 
 // A custom SoundsManagerTestImpl implements Initialize and Play only.
-// The difference with media::SoundsManagerImpl is AudioStreamHandler is
+// The difference with audio::SoundsManagerImpl is AudioStreamHandler is
 // only initialized upon Play is called, so the most recent AudioManager
 // instance could be used, to make sure of using MockAudioManager to play
 // bundled sounds.
@@ -2298,7 +2298,7 @@ IN_PROC_BROWSER_TEST_F(KioskEnterpriseTest, PrivateStore) {
 // declaration of a nested class is not possible.
 // TODO(crbug.com/805319): remove this fake impl for test.
 class KioskVirtualKeyboardTestSoundsManagerTestImpl
-    : public media::SoundsManager {
+    : public audio::SoundsManager {
  public:
   KioskVirtualKeyboardTestSoundsManagerTestImpl() {}
 
@@ -2313,7 +2313,7 @@ class KioskVirtualKeyboardTestSoundsManagerTestImpl
       LOG(WARNING) << "Playing non-existent key = " << key;
       return false;
     }
-    auto handler = std::make_unique<media::AudioStreamHandler>(iter->second);
+    auto handler = std::make_unique<audio::AudioStreamHandler>(iter->second);
     if (!handler->IsInitialized()) {
       LOG(WARNING) << "Can't initialize AudioStreamHandler for key = " << key;
       return false;
@@ -2353,7 +2353,7 @@ class KioskVirtualKeyboardTest : public KioskTest,
  protected:
   // KioskVirtualKeyboardTest overrides:
   void SetUp() override {
-    media::SoundsManager::InitializeForTesting(
+    audio::SoundsManager::InitializeForTesting(
         new KioskVirtualKeyboardTestSoundsManagerTestImpl());
     KioskTest::SetUp();
   }

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_AUDIO_SOUNDS_WAV_AUDIO_HANDLER_H_
-#define MEDIA_AUDIO_SOUNDS_WAV_AUDIO_HANDLER_H_
+#ifndef MEDIA_AUDIO_WAV_AUDIO_HANDLER_H_
+#define MEDIA_AUDIO_WAV_AUDIO_HANDLER_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -69,4 +69,4 @@ class MEDIA_EXPORT WavAudioHandler {
 
 }  // namespace media
 
-#endif  // MEDIA_AUDIO_SOUNDS_WAV_AUDIO_HANDLER_H_
+#endif  // MEDIA_AUDIO_WAV_AUDIO_HANDLER_H_

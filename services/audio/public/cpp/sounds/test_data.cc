@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/audio/sounds/test_data.h"
+#include "services/audio/public/cpp/sounds/test_data.h"
 
 #include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
 
-namespace media {
+namespace audio {
 
 TestObserver::TestObserver(const base::Closure& quit)
     : task_runner_(base::ThreadTaskRunnerHandle::Get()),
@@ -28,4 +28,4 @@ void TestObserver::OnStop(size_t cursor) {
   task_runner_->PostTask(FROM_HERE, quit_);
 }
 
-}  // namespace media
+}  // namespace audio

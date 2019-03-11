@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_AUDIO_SOUNDS_SOUNDS_MANAGER_H_
-#define MEDIA_AUDIO_SOUNDS_SOUNDS_MANAGER_H_
+#ifndef SERVICES_AUDIO_PUBLIC_CPP_SOUNDS_SOUNDS_MANAGER_H_
+#define SERVICES_AUDIO_PUBLIC_CPP_SOUNDS_SOUNDS_MANAGER_H_
 
 #include "base/macros.h"
 #include "base/sequence_checker.h"
@@ -11,11 +11,11 @@
 #include "base/time/time.h"
 #include "media/base/media_export.h"
 
-namespace media {
+namespace audio {
 
 // This class is used for reproduction of system sounds. All methods
 // should be accessed from the Audio thread.
-class MEDIA_EXPORT SoundsManager {
+class SoundsManager {
  public:
   typedef int SoundKey;
 
@@ -60,6 +60,6 @@ class MEDIA_EXPORT SoundsManager {
   DISALLOW_COPY_AND_ASSIGN(SoundsManager);
 };
 
-}  // namespace media
+}  // namespace audio
 
-#endif  // MEDIA_AUDIO_SOUNDS_SOUNDS_MANAGER_H_
+#endif  // SERVICES_AUDIO_PUBLIC_CPP_SOUNDS_SOUNDS_MANAGER_H_

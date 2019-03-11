@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/audio/sounds/audio_stream_handler.h"
+#include "services/audio/public/cpp/sounds/audio_stream_handler.h"
 
 #include <memory>
 
@@ -18,12 +18,12 @@
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_manager.h"
 #include "media/audio/simple_sources.h"
-#include "media/audio/sounds/test_data.h"
 #include "media/audio/test_audio_thread.h"
+#include "services/audio/public/cpp/sounds/test_data.h"
 #include "media/base/channel_layout.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace media {
+namespace audio {
 
 class AudioStreamHandlerTest : public testing::Test {
  public:
@@ -31,8 +31,8 @@ class AudioStreamHandlerTest : public testing::Test {
   ~AudioStreamHandlerTest() override = default;
 
   void SetUp() override {
-    audio_manager_ =
-        AudioManager::CreateForTesting(std::make_unique<TestAudioThread>());
+    audio_manager_ = media::AudioManager::CreateForTesting(
+        std::make_unique<media::TestAudioThread>());
     base::RunLoop().RunUntilIdle();
 
     base::StringPiece data(kTestAudioData, base::size(kTestAudioData));
@@ -54,13 +54,13 @@ class AudioStreamHandlerTest : public testing::Test {
   }
 
   void SetAudioSourceForTesting(
-      AudioOutputStream::AudioSourceCallback* source) {
+      media::AudioOutputStream::AudioSourceCallback* source) {
     AudioStreamHandler::SetAudioSourceForTesting(source);
   }
 
  private:
   base::TestMessageLoop message_loop_;
-  std::unique_ptr<AudioManager> audio_manager_;
+  std::unique_ptr<media::AudioManager> audio_manager_;
   std::unique_ptr<AudioStreamHandler> audio_stream_handler_;
 };
 
@@ -88,7 +88,7 @@ TEST_F(AudioStreamHandlerTest, Play) {
 TEST_F(AudioStreamHandlerTest, ConsecutivePlayRequests) {
   base::RunLoop run_loop;
   TestObserver observer(run_loop.QuitClosure());
-  SineWaveAudioSource source(CHANNEL_LAYOUT_STEREO, 200.0, 8000);
+  media::SineWaveAudioSource source(media::CHANNEL_LAYOUT_STEREO, 200.0, 8000);
 
   SetObserverForTesting(&observer);
   SetAudioSourceForTesting(&source);
@@ -130,4 +130,4 @@ TEST_F(AudioStreamHandlerTest, BadWavDataDoesNotInitialize) {
   handler.Stop();
 }
 
-}  // namespace media
+}  // namespace audio

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/audio/sounds/wav_audio_handler.h"
+#include "media/audio/wav_audio_handler.h"
 
 #include <stddef.h>
 
@@ -11,7 +11,7 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
-#include "media/audio/sounds/test_data.h"
+#include "media/audio/test_data.h"
 #include "media/base/audio_bus.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
