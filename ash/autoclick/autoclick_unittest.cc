@@ -126,6 +126,17 @@ class AutoclickTest : public AshTestBase {
     return Shell::Get()->autoclick_controller();
   }
 
+  // Calculates and returns full delay from the animation delay, after setting
+  // that delay on the autoclick controller.
+  int UpdateAnimationDelayAndGetFullDelay(float animation_delay) {
+    float ratio =
+        GetAutoclickController()->GetStartGestureDelayRatioForTesting();
+    int full_delay = ceil(1.0 / ratio) * animation_delay;
+    GetAutoclickController()->SetAutoclickDelay(
+        base::TimeDelta::FromMilliseconds(full_delay));
+    return full_delay;
+  }
+
   AutoclickTray* GetAutoclickTray() {
     return StatusAreaWidgetTestHelper::GetStatusAreaWidget()->autoclick_tray();
   }
@@ -259,6 +270,35 @@ TEST_F(AutoclickTest, MovementThreshold) {
   GetAutoclickController()->SetMovementThreshold(20);
 }
 
+TEST_F(AutoclickTest, MovementWithinThresholdWhileTimerRunning) {
+  GetAutoclickController()->SetEnabled(true);
+  GetAutoclickController()->SetMovementThreshold(20);
+  int animation_delay = 5;
+  int full_delay = UpdateAnimationDelayAndGetFullDelay(animation_delay);
+
+  GetEventGenerator()->MoveMouseTo(100, 100);
+  FastForwardBy(animation_delay + 1);
+
+  // Move the mouse within the threshold. It shouldn't change the eventual
+  // target of the event, or cancel the click.
+  GetEventGenerator()->MoveMouseTo(110, 110);
+
+  ClearMouseEvents();
+  FastForwardBy(full_delay);
+  std::vector<ui::MouseEvent> events = GetMouseEvents();
+
+  EXPECT_EQ(2u, events.size());
+  EXPECT_EQ(gfx::Point(100, 100), events[0].location());
+  EXPECT_EQ(ui::ET_MOUSE_PRESSED, events[0].type());
+  EXPECT_EQ(ui::EF_LEFT_MOUSE_BUTTON, events[0].flags());
+  EXPECT_EQ(gfx::Point(100, 100), events[1].location());
+  EXPECT_EQ(ui::ET_MOUSE_RELEASED, events[1].type());
+  EXPECT_EQ(ui::EF_LEFT_MOUSE_BUTTON, events[1].flags());
+
+  // Reset delay.
+  GetAutoclickController()->SetAutoclickDelay(base::TimeDelta());
+}
+
 TEST_F(AutoclickTest, SingleKeyModifier) {
   GetAutoclickController()->SetEnabled(true);
   MoveMouseWithFlagsTo(20, 20, ui::EF_SHIFT_DOWN);
@@ -339,6 +379,15 @@ TEST_F(AutoclickTest, UserInputCancelsAutoclick) {
                                       100, 3, 2);
   events = WaitForMouseEvents();
   EXPECT_EQ(0u, events.size());
+
+  // However, just starting a scroll doesn't cancel. If you tap a touchpad on
+  // an Eve chromebook, for example, it can send an ET_SCROLL_FLING_CANCEL
+  // event, which shouldn't actually cancel autoclick.
+  GetEventGenerator()->MoveMouseTo(100, 100);
+  GetEventGenerator()->ScrollSequence(gfx::Point(100, 100), base::TimeDelta(),
+                                      0, 0, 0, 1);
+  events = WaitForMouseEvents();
+  EXPECT_EQ(2u, events.size());
 }
 
 TEST_F(AutoclickTest, SynthesizedMouseMovesIgnored) {
@@ -516,11 +565,8 @@ TEST_F(AutoclickTest, AutoclickRevertsToLeftClick) {
 }
 
 TEST_F(AutoclickTest, WaitsToDrawAnimationAfterDwellBegins) {
-  float ratio = GetAutoclickController()->GetStartGestureDelayRatioForTesting();
-  int full_delay = ceil(1.0 / ratio) * 5;
   int animation_delay = 5;
-  GetAutoclickController()->SetAutoclickDelay(
-      base::TimeDelta::FromMilliseconds(full_delay));
+  int full_delay = UpdateAnimationDelayAndGetFullDelay(animation_delay);
   GetAutoclickController()->SetEnabled(true);
   std::vector<ui::MouseEvent> events;
 
@@ -632,11 +678,8 @@ TEST_F(AutoclickTest,
   GetAutoclickController()->SetAutoclickEventType(
       mojom::AutoclickEventType::kNoAction);
 
-  float ratio = GetAutoclickController()->GetStartGestureDelayRatioForTesting();
-  int full_delay = ceil(1.0 / ratio) * 5;
   int animation_delay = 5;
-  GetAutoclickController()->SetAutoclickDelay(
-      base::TimeDelta::FromMilliseconds(full_delay));
+  int full_delay = UpdateAnimationDelayAndGetFullDelay(animation_delay);
 
   std::vector<ui::MouseEvent> events;
   AutoclickTray* tray = GetAutoclickTray();

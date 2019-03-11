@@ -449,6 +449,12 @@ void AutoclickController::OnGestureEvent(ui::GestureEvent* event) {
 }
 
 void AutoclickController::OnScrollEvent(ui::ScrollEvent* event) {
+  // A single tap can create a scroll event, so ignore scroll starts and
+  // cancels but cancel autoclicks when scrolls actually occur.
+  if (event->type() == ui::EventType::ET_SCROLL_FLING_START ||
+      event->type() == ui::EventType::ET_SCROLL_FLING_CANCEL)
+    return;
+
   CancelAutoclickAction();
 }
 
