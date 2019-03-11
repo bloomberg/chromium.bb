@@ -435,6 +435,8 @@ void HeapCompact::RemoveSlot(MovableReference* slot) {
 }
 
 void HeapCompact::RegisterMovingObjectReference(MovableReference* slot) {
+  CHECK(heap_->LookupPageForAddress(reinterpret_cast<Address>(slot)));
+
   if (!do_compact_)
     return;
 
@@ -444,6 +446,8 @@ void HeapCompact::RegisterMovingObjectReference(MovableReference* slot) {
 void HeapCompact::RegisterMovingObjectCallback(MovableReference* slot,
                                                MovingObjectCallback callback,
                                                void* callback_data) {
+  DCHECK(heap_->LookupPageForAddress(reinterpret_cast<Address>(slot)));
+
   if (!do_compact_)
     return;
 
