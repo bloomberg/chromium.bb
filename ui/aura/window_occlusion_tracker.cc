@@ -13,7 +13,9 @@
 #include "ui/aura/env.h"
 #include "ui/aura/window_occlusion_change_builder.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
+#include "ui/gfx/skia_util.h"
 #include "ui/gfx/transform.h"
 
 namespace aura {
@@ -78,9 +80,7 @@ SkIRect GetWindowBoundsInRootWindow(
   gfx::RectF bounds(0.0f, 0.0f, static_cast<float>(window->bounds().width()),
                     static_cast<float>(window->bounds().height()));
   transform_relative_to_root.TransformRect(&bounds);
-  SkIRect skirect_bounds = SkIRect::MakeXYWH(
-      gfx::ToFlooredInt(bounds.x()), gfx::ToFlooredInt(bounds.y()),
-      gfx::ToFlooredInt(bounds.width()), gfx::ToFlooredInt(bounds.height()));
+  SkIRect skirect_bounds = gfx::RectToSkIRect(gfx::ToEnclosedRect(bounds));
   // If necessary, clip the bounds.
   if (clipped_bounds && !skirect_bounds.intersect(*clipped_bounds))
     return SkIRect::MakeEmpty();
