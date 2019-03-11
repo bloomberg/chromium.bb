@@ -317,13 +317,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   // Called when dictation is ended.
   void OnDictationEnded();
 
-  // Enables the keyboard and associate it with the primary root window
-  // controller.
-  void EnableKeyboard();
-
-  // Hides and disables the virtual keyboard.
-  void DisableKeyboard();
-
   // Test if TabletModeWindowManager is not enabled, and if
   // TabletModeController is not currently setting a display rotation. Or if
   // the |resolution_notification_controller_| is not showing its confirmation

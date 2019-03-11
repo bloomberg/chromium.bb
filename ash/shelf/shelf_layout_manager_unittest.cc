@@ -2721,7 +2721,6 @@ class ShelfLayoutManagerKeyboardTest : public AshTestBase {
     UpdateDisplay("800x600");
     keyboard::SetTouchKeyboardEnabled(true);
     keyboard::SetAccessibilityKeyboardEnabled(true);
-    Shell::Get()->EnableKeyboard();
   }
 
   // AshTestBase:

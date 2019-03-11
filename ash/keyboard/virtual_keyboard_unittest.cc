@@ -25,7 +25,6 @@ class VirtualKeyboardTest : public AshTestBase {
         keyboard::switches::kEnableVirtualKeyboard);
     AshTestBase::SetUp();
     keyboard::SetTouchKeyboardEnabled(true);
-    Shell::Get()->EnableKeyboard();
   }
 
   void TearDown() override {

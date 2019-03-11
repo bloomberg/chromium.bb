@@ -15,6 +15,7 @@
 #include "ash/events/select_to_speak_event_handler.h"
 #include "ash/events/switch_access_event_handler.h"
 #include "ash/high_contrast/high_contrast_controller.h"
+#include "ash/keyboard/ash_keyboard_controller.h"
 #include "ash/policy/policy_recommendation_restorer.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/notification_utils.h"
@@ -1219,6 +1220,7 @@ void AccessibilityController::UpdateVirtualKeyboardFromPref() {
   if (virtual_keyboard_enabled_ == enabled)
     return;
 
+  const bool was_enabled = virtual_keyboard_enabled_;
   virtual_keyboard_enabled_ = enabled;
 
   NotifyAccessibilityStatusChanged();
@@ -1237,10 +1239,8 @@ void AccessibilityController::UpdateVirtualKeyboardFromPref() {
   // provide a layout with larger keys to facilitate touch typing. In the event
   // that the a11y keyboard is being disabled, an on-screen keyboard might still
   // be enabled and a forced reset is required to pick up the layout change.
-  if (keyboard::IsKeyboardEnabled())
-    Shell::Get()->EnableKeyboard();
-  else
-    Shell::Get()->DisableKeyboard();
+  if (was_enabled)
+    Shell::Get()->ash_keyboard_controller()->RebuildKeyboardIfEnabled();
 }
 
 void AccessibilityController::GetBatteryDescription(

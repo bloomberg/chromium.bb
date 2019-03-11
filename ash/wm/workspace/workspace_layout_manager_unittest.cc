@@ -1792,7 +1792,6 @@ TEST_F(WorkspaceLayoutManagerKeyboardTest,
        IgnoreWorkAreaChangeinNonStickyMode) {
   keyboard::SetAccessibilityKeyboardEnabled(true);
   InitKeyboardBounds();
-  Shell::Get()->EnableKeyboard();
   auto* kb_controller = keyboard::KeyboardController::Get();
 
   gfx::Rect work_area(

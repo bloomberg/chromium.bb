@@ -90,8 +90,8 @@ static_library("test_support") {
     "test/keyboard_test_util.h",
     "test/test_keyboard_layout_delegate.cc",
     "test/test_keyboard_layout_delegate.h",
-    "test/test_keyboard_ui.cc",
-    "test/test_keyboard_ui.h",
+    "test/test_keyboard_ui_factory.cc",
+    "test/test_keyboard_ui_factory.h",
   ]
   deps = [
     ":keyboard",

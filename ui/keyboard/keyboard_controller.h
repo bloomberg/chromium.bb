@@ -45,6 +45,7 @@ namespace keyboard {
 class CallbackAnimationObserver;
 class KeyboardControllerObserver;
 class KeyboardUI;
+class KeyboardUIFactory;
 
 // Represents the current state of the keyboard managed by the controller.
 // Don't change the numeric value of the members because they are used in UMA
@@ -76,6 +77,15 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   KeyboardController();
   ~KeyboardController() override;
 
+  // Initialize the virtual keyboard controller with two delegates:
+  // - ui_factory: Responsible for keyboard window loading.
+  // - layout_delegate: Responsible for moving keyboard window across displays.
+  void Initialize(std::unique_ptr<KeyboardUIFactory> ui_factory,
+                  KeyboardLayoutDelegate* layout_delegate);
+
+  // Resets all the flags and disables the virtual keyboard.
+  void Shutdown();
+
   // Retrieves the active keyboard controller. Guaranteed to not be null while
   // there is an ash::Shell.
   // TODO(stevenjb/shuchen/shend): Remove all access from src/chrome.
@@ -85,17 +95,6 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   // Returns true if there is a valid KeyboardController instance (e.g. while
   // there is an ash::Shell).
   static bool HasInstance();
-
-  // Enables the virtual keyboard with a specified |ui| and |delegate|.
-  // Immediately starts pre-loading the keyboard window in the background.
-  // Disables and re-enables the keyboard if it is already enabled.
-  void EnableKeyboard(std::unique_ptr<KeyboardUI> ui,
-                      KeyboardLayoutDelegate* delegate);
-
-  // Disables the virtual keyboard. Resets the keyboard to its initial disabled
-  // state and destroys the keyboard window.
-  // Does nothing if the keyboard is already disabled.
-  void DisableKeyboard();
 
   // Returns the keyboard window, or null if the keyboard window has not been
   // created yet.
@@ -116,6 +115,10 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   // loaded yet.
   void Reload();
 
+  // Rebuilds the keyboard by disabling and enabling it again.
+  // TODO(https://crbug.com/845780): Can this be replaced with |Reload|?
+  void RebuildKeyboardIfEnabled();
+
   // Management of the observer list.
   void AddObserver(KeyboardControllerObserver* observer);
   bool HasObserver(KeyboardControllerObserver* observer) const;
@@ -133,12 +136,6 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   const std::set<mojom::KeyboardEnableFlag>& keyboard_enable_flags() const {
     return keyboard_enable_flags_;
   }
-
-  // Returns true if the keyboard should be enabled, i.e. the current result
-  // of Set/ClearEnableFlag should cause the keyboard to be enabled.
-  // TODO(stevenjb/shend): Consider removing this and have all calls to
-  // Set/ClearEnableFlag always enable or disable the keyboard directly.
-  bool IsKeyboardEnableRequested() const;
 
   // Returns true if keyboard overscroll is enabled.
   bool IsKeyboardOverscrollEnabled() const;
@@ -310,6 +307,20 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   void OnTextInputStateChanged(const ui::TextInputClient* client) override;
   void OnShowVirtualKeyboardIfEnabled() override;
 
+  // Enables the virtual keyboard.
+  // Immediately starts pre-loading the keyboard window in the background.
+  // Does nothing if the keyboard is already enabled.
+  void EnableKeyboard();
+
+  // Disables the virtual keyboard. Resets the keyboard to its initial disabled
+  // state and destroys the keyboard window.
+  // Does nothing if the keyboard is already disabled.
+  void DisableKeyboard();
+
+  // Returns true if the keyboard should be enabled, i.e. the current result
+  // of Set/ClearEnableFlag should cause the keyboard to be enabled.
+  bool IsKeyboardEnableRequested() const;
+
   // Attach the keyboard window as a child of the given parent window.
   // Can only be called when the keyboard is not activated. |parent| must not
   // have any children.
@@ -392,6 +403,7 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   // keyboard is loaded.
   void MarkKeyboardLoadFinished();
 
+  std::unique_ptr<KeyboardUIFactory> ui_factory_;
   std::unique_ptr<KeyboardUI> ui_;
   std::unique_ptr<ui::InputMethodKeyboardController>
       input_method_keyboard_controller_;

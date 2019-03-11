@@ -67,9 +67,6 @@ class ASH_EXPORT VirtualKeyboardController
   // Updates the keyboard state.
   void UpdateKeyboardEnabled();
 
-  // Creates the keyboard if |enabled|, else destroys it.
-  void SetKeyboardEnabled(bool enabled);
-
   // Force enable the keyboard and show it, even in laptop mode.
   void ForceShowKeyboard();
 

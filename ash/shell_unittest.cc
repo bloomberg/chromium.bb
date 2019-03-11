@@ -553,21 +553,6 @@ TEST_F(ShellTest, EnvPreTargetHandler) {
   Shell::Get()->aura_env()->RemovePreTargetHandler(&event_handler);
 }
 
-// Verifies keyboard is re-enabled on proper timing.
-TEST_F(ShellTest, KeyboardCreation) {
-  keyboard::SetTouchKeyboardEnabled(true);
-
-  ASSERT_TRUE(keyboard::IsKeyboardEnabled());
-
-  EXPECT_FALSE(keyboard::KeyboardController::Get()->IsEnabled());
-
-  mojom::SessionInfoPtr info = mojom::SessionInfo::New();
-  info->state = session_manager::SessionState::LOGGED_IN_NOT_ACTIVE;
-  ash::Shell::Get()->session_controller()->SetSessionInfo(std::move(info));
-
-  EXPECT_TRUE(keyboard::KeyboardController::Get()->IsEnabled());
-}
-
 // This verifies WindowObservers are removed when a window is destroyed after
 // the Shell is destroyed. This scenario (aura::Windows being deleted after the
 // Shell) occurs if someone is holding a reference to an unparented Window, as
