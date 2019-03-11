@@ -110,8 +110,8 @@ class SheetEditor():
       flow = client.flow_from_clientsecrets(client_secret_file_path,
                                             self.SCOPES)
       flow.user_agent = self.APPLICATION_NAME
-      if flags:
-        credentials = tools.run_flow(flow, store, flags)
+      flags = tools.argparser.parse_args([])
+      credentials = tools.run_flow(flow, store, flags)
       print("Storing credentials to " + credentials_file_path)
     return credentials
 
