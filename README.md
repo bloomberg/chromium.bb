@@ -40,6 +40,9 @@ This folder contains all the third_party python libraries required by Chromite. 
 ### `chromite/utils`
 This folder contains smaller, generic utility functionality that is not tied to any specific entities in the codebase that would make them more at home in a lib module.
 
+### `chromite/infra`
+This folder contains the chromite-specific infra repos.
+
 ### `chromite/*`
 There are smaller folders with miscellaneous functions like config, licencing, cidb, etc.
 
