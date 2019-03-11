@@ -60,12 +60,8 @@ std::string FakeScriptExecutorDelegate::GetStatusMessage() const {
   return status_message_;
 }
 
-void FakeScriptExecutorDelegate::SetDetails(const Details& details) {
-  details_ = std::make_unique<Details>(details);
-}
-
-void FakeScriptExecutorDelegate::ClearDetails() {
-  details_ = nullptr;
+void FakeScriptExecutorDelegate::SetDetails(std::unique_ptr<Details> details) {
+  details_ = std::move(details);
 }
 
 void FakeScriptExecutorDelegate::SetInfoBox(const InfoBox& info_box) {

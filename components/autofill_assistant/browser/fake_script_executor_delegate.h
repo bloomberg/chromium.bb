@@ -34,8 +34,7 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
   void SetTouchableElementArea(const ElementAreaProto& element) override;
   void SetStatusMessage(const std::string& message) override;
   std::string GetStatusMessage() const override;
-  void SetDetails(const Details& details) override;
-  void ClearDetails() override;
+  void SetDetails(std::unique_ptr<Details> details) override;
   void SetInfoBox(const InfoBox& info_box) override;
   void ClearInfoBox() override;
   void SetProgress(int progress) override;
