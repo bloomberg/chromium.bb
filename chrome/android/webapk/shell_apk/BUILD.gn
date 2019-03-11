@@ -266,6 +266,14 @@ webapk_tmpl("new_splash_webapk") {
   apk_package_name = "org.chromium.webapk.new.splash"
 }
 
+# Used by javatests
+webapk_tmpl("javatests_webapk") {
+  config_file = "manifest/bound_manifest_config.json"
+  delta_config_file = "manifest/javatest_manifest_config_delta.json"
+  apk_name = "JavatestsWebApk"
+  apk_package_name = "org.chromium.webapk.test"
+}
+
 # Used by webapk_shell_apk_h2o_junit_tests
 webapk_tmpl("h2o_j_unit_webapk") {
   use_new_splash = true

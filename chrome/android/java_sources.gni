@@ -1671,6 +1671,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/util/ViewUtils.java",
   "java/src/org/chromium/chrome/browser/vr/ArDelegate.java",
   "java/src/org/chromium/chrome/browser/vr/ArDelegateProvider.java",
+  "java/src/org/chromium/chrome/browser/webapps/ActivateWebApkActivity.java",
   "java/src/org/chromium/chrome/browser/webapps/ActivityAssigner.java",
   "java/src/org/chromium/chrome/browser/webapps/AddToHomescreenDialog.java",
   "java/src/org/chromium/chrome/browser/webapps/AddToHomescreenManager.java",

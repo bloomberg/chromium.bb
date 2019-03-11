@@ -115,7 +115,7 @@ public class StartupLoadingMetricsTest {
     private void startWebApkActivity(final String startUrl) throws InterruptedException {
         Intent intent =
                 new Intent(InstrumentationRegistry.getTargetContext(), WebApkActivity.class);
-        intent.putExtra(WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, "org.chromium.webapk");
+        intent.putExtra(WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, "org.chromium.webapk.test");
         intent.putExtra(ShortcutHelper.EXTRA_URL, startUrl);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
