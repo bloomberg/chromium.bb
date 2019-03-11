@@ -98,22 +98,6 @@ bool ShouldShowUIForPreviewsType(previews::PreviewsType type) {
   return true;
 }
 
-void LoadOriginalForLitePageRedirect(content::WebContents* web_contents) {
-  std::string original_url;
-  bool extracted = previews::ExtractOriginalURLFromLitePageRedirectURL(
-      web_contents->GetController().GetLastCommittedEntry()->GetURL(),
-      &original_url);
-  ALLOW_UNUSED_LOCAL(extracted);
-  DCHECK(extracted);
-  content::OpenURLParams url_params(GURL(original_url), content::Referrer(),
-                                    WindowOpenDisposition::CURRENT_TAB,
-                                    ui::PAGE_TRANSITION_RELOAD,
-                                    false /* is_render_initiated */);
-  url_params.user_gesture = true;
-  url_params.started_from_context_menu = false;
-  web_contents->OpenURL(url_params);
-}
-
 }  // namespace
 
 PreviewsUITabHelper::~PreviewsUITabHelper() {
@@ -240,6 +224,7 @@ void PreviewsUITabHelper::ReloadWithoutPreviews(
     case previews::PreviewsType::OFFLINE:
     case previews::PreviewsType::NOSCRIPT:
     case previews::PreviewsType::RESOURCE_LOADING_HINTS:
+    case previews::PreviewsType::LITE_PAGE_REDIRECT:
       // Previews may cause a redirect, so we should use the original URL. The
       // black list prevents showing the preview again.
       web_contents()->GetController().Reload(
@@ -247,9 +232,6 @@ void PreviewsUITabHelper::ReloadWithoutPreviews(
       break;
     case previews::PreviewsType::LOFI:
       web_contents()->ReloadLoFiImages();
-      break;
-    case previews::PreviewsType::LITE_PAGE_REDIRECT:
-      LoadOriginalForLitePageRedirect(web_contents());
       break;
     case previews::PreviewsType::NONE:
     case previews::PreviewsType::UNSPECIFIED:
