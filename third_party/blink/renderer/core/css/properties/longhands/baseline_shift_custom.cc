@@ -55,13 +55,14 @@ void BaselineShift::ApplyInherit(StyleResolverState& state) const {
 void BaselineShift::ApplyValue(StyleResolverState& state,
                                const CSSValue& value) const {
   SVGComputedStyle& svg_style = state.Style()->AccessSVGStyle();
-  if (!value.IsIdentifierValue()) {
+  auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
+  if (!identifier_value) {
     svg_style.SetBaselineShift(BS_LENGTH);
     svg_style.SetBaselineShiftValue(StyleBuilderConverter::ConvertLength(
         state, ToCSSPrimitiveValue(value)));
     return;
   }
-  switch (ToCSSIdentifierValue(value).GetValueID()) {
+  switch (identifier_value->GetValueID()) {
     case CSSValueBaseline:
       svg_style.SetBaselineShift(BS_LENGTH);
       svg_style.SetBaselineShiftValue(Length::Fixed());

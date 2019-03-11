@@ -19,7 +19,7 @@ const CSSValue* TextOrientation::CSSValueFromComputedStyleInternal(
 void TextOrientation::ApplyValue(StyleResolverState& state,
                                  const CSSValue& value) const {
   state.SetTextOrientation(
-      ToCSSIdentifierValue(value).ConvertTo<ETextOrientation>());
+      To<CSSIdentifierValue>(value).ConvertTo<ETextOrientation>());
 }
 
 }  // namespace css_longhand

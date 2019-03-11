@@ -19,7 +19,7 @@ const CSSValue* Direction::CSSValueFromComputedStyleInternal(
 void Direction::ApplyValue(StyleResolverState& state,
                            const CSSValue& value) const {
   state.Style()->SetDirection(
-      ToCSSIdentifierValue(value).ConvertTo<TextDirection>());
+      To<CSSIdentifierValue>(value).ConvertTo<TextDirection>());
 }
 
 }  // namespace css_longhand

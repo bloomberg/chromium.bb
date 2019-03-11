@@ -18,18 +18,17 @@ const CSSValue* TextAlign::CSSValueFromComputedStyleInternal(
 
 void TextAlign::ApplyValue(StyleResolverState& state,
                            const CSSValue& value) const {
-  if (value.IsIdentifierValue() &&
-      ToCSSIdentifierValue(value).GetValueID() != CSSValueWebkitMatchParent) {
+  const auto* ident_value = DynamicTo<CSSIdentifierValue>(value);
+  if (ident_value && ident_value->GetValueID() != CSSValueWebkitMatchParent) {
     // Special case for th elements - UA stylesheet text-align does not apply if
     // parent's computed value for text-align is not its initial value
     // https://html.spec.whatwg.org/C/#tables-2
-    const CSSIdentifierValue& ident_value = ToCSSIdentifierValue(value);
-    if (ident_value.GetValueID() == CSSValueInternalCenter &&
+    if (ident_value->GetValueID() == CSSValueInternalCenter &&
         state.ParentStyle()->GetTextAlign() !=
             ComputedStyleInitialValues::InitialTextAlign())
       state.Style()->SetTextAlign(state.ParentStyle()->GetTextAlign());
     else
-      state.Style()->SetTextAlign(ident_value.ConvertTo<ETextAlign>());
+      state.Style()->SetTextAlign(ident_value->ConvertTo<ETextAlign>());
   } else if (state.ParentStyle()->GetTextAlign() == ETextAlign::kStart) {
     state.Style()->SetTextAlign(state.ParentStyle()->IsLeftToRightDirection()
                                     ? ETextAlign::kLeft

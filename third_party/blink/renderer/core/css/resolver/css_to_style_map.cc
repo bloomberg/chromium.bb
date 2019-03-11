@@ -55,11 +55,11 @@ void CSSToStyleMap::MapFillAttachment(StyleResolverState&,
     return;
   }
 
-  if (!value.IsIdentifierValue())
+  const auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
+  if (!identifier_value)
     return;
 
-  const CSSIdentifierValue& identifier_value = ToCSSIdentifierValue(value);
-  switch (identifier_value.GetValueID()) {
+  switch (identifier_value->GetValueID()) {
     case CSSValueFixed:
       layer->SetAttachment(EFillAttachment::kFixed);
       break;
@@ -82,11 +82,11 @@ void CSSToStyleMap::MapFillClip(StyleResolverState&,
     return;
   }
 
-  if (!value.IsIdentifierValue())
+  const auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
+  if (!identifier_value)
     return;
 
-  const CSSIdentifierValue& identifier_value = ToCSSIdentifierValue(value);
-  layer->SetClip(identifier_value.ConvertTo<EFillBox>());
+  layer->SetClip(identifier_value->ConvertTo<EFillBox>());
 }
 
 void CSSToStyleMap::MapFillComposite(StyleResolverState&,
@@ -97,11 +97,11 @@ void CSSToStyleMap::MapFillComposite(StyleResolverState&,
     return;
   }
 
-  if (!value.IsIdentifierValue())
+  const auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
+  if (!identifier_value)
     return;
 
-  const CSSIdentifierValue& identifier_value = ToCSSIdentifierValue(value);
-  layer->SetComposite(identifier_value.ConvertTo<CompositeOperator>());
+  layer->SetComposite(identifier_value->ConvertTo<CompositeOperator>());
 }
 
 void CSSToStyleMap::MapFillBlendMode(StyleResolverState&,
@@ -112,11 +112,11 @@ void CSSToStyleMap::MapFillBlendMode(StyleResolverState&,
     return;
   }
 
-  if (!value.IsIdentifierValue())
+  const auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
+  if (!identifier_value)
     return;
 
-  const CSSIdentifierValue& identifier_value = ToCSSIdentifierValue(value);
-  layer->SetBlendMode(identifier_value.ConvertTo<BlendMode>());
+  layer->SetBlendMode(identifier_value->ConvertTo<BlendMode>());
 }
 
 void CSSToStyleMap::MapFillOrigin(StyleResolverState&,
@@ -127,11 +127,11 @@ void CSSToStyleMap::MapFillOrigin(StyleResolverState&,
     return;
   }
 
-  if (!value.IsIdentifierValue())
+  const auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
+  if (!identifier_value)
     return;
 
-  const CSSIdentifierValue& identifier_value = ToCSSIdentifierValue(value);
-  layer->SetOrigin(identifier_value.ConvertTo<EFillBox>());
+  layer->SetOrigin(identifier_value->ConvertTo<EFillBox>());
 }
 
 void CSSToStyleMap::MapFillImage(StyleResolverState& state,
@@ -156,11 +156,11 @@ void CSSToStyleMap::MapFillRepeatX(StyleResolverState&,
     return;
   }
 
-  if (!value.IsIdentifierValue())
+  const auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
+  if (!identifier_value)
     return;
 
-  const CSSIdentifierValue& identifier_value = ToCSSIdentifierValue(value);
-  layer->SetRepeatX(identifier_value.ConvertTo<EFillRepeat>());
+  layer->SetRepeatX(identifier_value->ConvertTo<EFillRepeat>());
 }
 
 void CSSToStyleMap::MapFillRepeatY(StyleResolverState&,
@@ -171,11 +171,11 @@ void CSSToStyleMap::MapFillRepeatY(StyleResolverState&,
     return;
   }
 
-  if (!value.IsIdentifierValue())
+  const auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
+  if (!identifier_value)
     return;
 
-  const CSSIdentifierValue& identifier_value = ToCSSIdentifierValue(value);
-  layer->SetRepeatY(identifier_value.ConvertTo<EFillRepeat>());
+  layer->SetRepeatY(identifier_value->ConvertTo<EFillRepeat>());
 }
 
 void CSSToStyleMap::MapFillSize(StyleResolverState& state,
@@ -187,24 +187,21 @@ void CSSToStyleMap::MapFillSize(StyleResolverState& state,
     return;
   }
 
-  if (!value.IsIdentifierValue() && !value.IsPrimitiveValue() &&
-      !value.IsValuePair())
+  const auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
+  if (!identifier_value && !value.IsPrimitiveValue() && !value.IsValuePair())
     return;
 
-  if (value.IsIdentifierValue() &&
-      ToCSSIdentifierValue(value).GetValueID() == CSSValueContain)
+  if (identifier_value && identifier_value->GetValueID() == CSSValueContain)
     layer->SetSizeType(EFillSizeType::kContain);
-  else if (value.IsIdentifierValue() &&
-           ToCSSIdentifierValue(value).GetValueID() == CSSValueCover)
+  else if (identifier_value && identifier_value->GetValueID() == CSSValueCover)
     layer->SetSizeType(EFillSizeType::kCover);
   else
     layer->SetSizeType(EFillSizeType::kSizeLength);
 
   LengthSize b = FillLayer::InitialFillSizeLength(layer->GetType());
 
-  if (value.IsIdentifierValue() &&
-      (ToCSSIdentifierValue(value).GetValueID() == CSSValueContain ||
-       ToCSSIdentifierValue(value).GetValueID() == CSSValueCover)) {
+  if (identifier_value && (identifier_value->GetValueID() == CSSValueContain ||
+                           identifier_value->GetValueID() == CSSValueCover)) {
     layer->SetSizeLength(b);
     return;
   }
@@ -237,8 +234,8 @@ void CSSToStyleMap::MapFillPositionX(StyleResolverState& state,
     return;
   }
 
-  if (!value.IsIdentifierValue() && !value.IsPrimitiveValue() &&
-      !value.IsValuePair())
+  const auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
+  if (!identifier_value && !value.IsPrimitiveValue() && !value.IsValuePair())
     return;
 
   Length length;
@@ -253,7 +250,7 @@ void CSSToStyleMap::MapFillPositionX(StyleResolverState& state,
   layer->SetPositionX(length);
   if (value.IsValuePair())
     layer->SetBackgroundXOrigin(
-        ToCSSIdentifierValue(ToCSSValuePair(value).First())
+        To<CSSIdentifierValue>(ToCSSValuePair(value).First())
             .ConvertTo<BackgroundEdgeOrigin>());
 }
 
@@ -265,8 +262,8 @@ void CSSToStyleMap::MapFillPositionY(StyleResolverState& state,
     return;
   }
 
-  if (!value.IsIdentifierValue() && !value.IsPrimitiveValue() &&
-      !value.IsValuePair())
+  const auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
+  if (!identifier_value && !value.IsPrimitiveValue() && !value.IsValuePair())
     return;
 
   Length length;
@@ -281,7 +278,7 @@ void CSSToStyleMap::MapFillPositionY(StyleResolverState& state,
   layer->SetPositionY(length);
   if (value.IsValuePair())
     layer->SetBackgroundYOrigin(
-        ToCSSIdentifierValue(ToCSSValuePair(value).First())
+        To<CSSIdentifierValue>(ToCSSValuePair(value).First())
             .ConvertTo<BackgroundEdgeOrigin>());
 }
 
@@ -294,10 +291,11 @@ void CSSToStyleMap::MapFillMaskSourceType(StyleResolverState&,
     return;
   }
 
-  if (!value.IsIdentifierValue())
+  const auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
+  if (!identifier_value)
     return;
 
-  switch (ToCSSIdentifierValue(value).GetValueID()) {
+  switch (identifier_value->GetValueID()) {
     case CSSValueAlpha:
       type = EMaskSourceType::kAlpha;
       break;
@@ -324,7 +322,7 @@ Timing::PlaybackDirection CSSToStyleMap::MapAnimationDirection(
   if (value.IsInitialValue())
     return CSSAnimationData::InitialDirection();
 
-  switch (ToCSSIdentifierValue(value).GetValueID()) {
+  switch (To<CSSIdentifierValue>(value).GetValueID()) {
     case CSSValueNormal:
       return Timing::PlaybackDirection::NORMAL;
     case CSSValueAlternate:
@@ -349,7 +347,7 @@ Timing::FillMode CSSToStyleMap::MapAnimationFillMode(const CSSValue& value) {
   if (value.IsInitialValue())
     return CSSAnimationData::InitialFillMode();
 
-  switch (ToCSSIdentifierValue(value).GetValueID()) {
+  switch (To<CSSIdentifierValue>(value).GetValueID()) {
     case CSSValueNone:
       return Timing::FillMode::NONE;
     case CSSValueForwards:
@@ -367,8 +365,8 @@ Timing::FillMode CSSToStyleMap::MapAnimationFillMode(const CSSValue& value) {
 double CSSToStyleMap::MapAnimationIterationCount(const CSSValue& value) {
   if (value.IsInitialValue())
     return CSSAnimationData::InitialIterationCount();
-  if (value.IsIdentifierValue() &&
-      ToCSSIdentifierValue(value).GetValueID() == CSSValueInfinite)
+  auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
+  if (identifier_value && identifier_value->GetValueID() == CSSValueInfinite)
     return std::numeric_limits<double>::infinity();
   return ToCSSPrimitiveValue(value).GetFloatValue();
 }
@@ -378,16 +376,16 @@ AtomicString CSSToStyleMap::MapAnimationName(const CSSValue& value) {
     return CSSAnimationData::InitialName();
   if (auto* custom_ident_value = DynamicTo<CSSCustomIdentValue>(value))
     return AtomicString(custom_ident_value->Value());
-  DCHECK_EQ(ToCSSIdentifierValue(value).GetValueID(), CSSValueNone);
+  DCHECK_EQ(To<CSSIdentifierValue>(value).GetValueID(), CSSValueNone);
   return CSSAnimationData::InitialName();
 }
 
 EAnimPlayState CSSToStyleMap::MapAnimationPlayState(const CSSValue& value) {
   if (value.IsInitialValue())
     return CSSAnimationData::InitialPlayState();
-  if (ToCSSIdentifierValue(value).GetValueID() == CSSValuePaused)
+  if (To<CSSIdentifierValue>(value).GetValueID() == CSSValuePaused)
     return EAnimPlayState::kPaused;
-  DCHECK_EQ(ToCSSIdentifierValue(value).GetValueID(), CSSValueRunning);
+  DCHECK_EQ(To<CSSIdentifierValue>(value).GetValueID(), CSSValueRunning);
   return EAnimPlayState::kPlaying;
 }
 
@@ -402,9 +400,9 @@ CSSTransitionData::TransitionProperty CSSToStyleMap::MapAnimationProperty(
     }
     return CSSTransitionData::TransitionProperty(custom_ident_value->Value());
   }
-  if (ToCSSIdentifierValue(value).GetValueID() == CSSValueAll)
+  if (To<CSSIdentifierValue>(value).GetValueID() == CSSValueAll)
     return CSSTransitionData::InitialProperty();
-  DCHECK_EQ(ToCSSIdentifierValue(value).GetValueID(), CSSValueNone);
+  DCHECK_EQ(To<CSSIdentifierValue>(value).GetValueID(), CSSValueNone);
   return CSSTransitionData::TransitionProperty(
       CSSTransitionData::kTransitionNone);
 }
@@ -416,9 +414,8 @@ scoped_refptr<TimingFunction> CSSToStyleMap::MapAnimationTimingFunction(
   // currently get into here with initial since the parser expands unset
   // properties in shorthands to initial.
 
-  if (value.IsIdentifierValue()) {
-    const CSSIdentifierValue& identifier_value = ToCSSIdentifierValue(value);
-    switch (identifier_value.GetValueID()) {
+  if (const auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
+    switch (identifier_value->GetValueID()) {
       case CSSValueLinear:
         return LinearTimingFunction::Shared();
       case CSSValueEase:
@@ -603,9 +600,10 @@ void CSSToStyleMap::MapNinePieceImageRepeat(StyleResolverState&,
     return;
 
   const CSSValuePair& pair = ToCSSValuePair(value);
-  CSSValueID first_identifier = ToCSSIdentifierValue(pair.First()).GetValueID();
+  CSSValueID first_identifier =
+      To<CSSIdentifierValue>(pair.First()).GetValueID();
   CSSValueID second_identifier =
-      ToCSSIdentifierValue(pair.Second()).GetValueID();
+      To<CSSIdentifierValue>(pair.Second()).GetValueID();
 
   ENinePieceImageRule horizontal_rule;
   switch (first_identifier) {

@@ -850,16 +850,18 @@ static CSSValue* ConsumePositionComponent(CSSParserTokenRange& range,
 }
 
 static bool IsHorizontalPositionKeywordOnly(const CSSValue& value) {
-  if (!value.IsIdentifierValue())
+  auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
+  if (!identifier_value)
     return false;
-  CSSValueID value_id = ToCSSIdentifierValue(value).GetValueID();
+  CSSValueID value_id = identifier_value->GetValueID();
   return value_id == CSSValueLeft || value_id == CSSValueRight;
 }
 
 static bool IsVerticalPositionKeywordOnly(const CSSValue& value) {
-  if (!value.IsIdentifierValue())
+  auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
+  if (!identifier_value)
     return false;
-  CSSValueID value_id = ToCSSIdentifierValue(value).GetValueID();
+  CSSValueID value_id = identifier_value->GetValueID();
   return value_id == CSSValueTop || value_id == CSSValueBottom;
 }
 
@@ -895,7 +897,7 @@ static void PositionFromThreeOrFourValues(CSSValue** values,
                                           CSSValue*& result_y) {
   CSSIdentifierValue* center = nullptr;
   for (int i = 0; values[i]; i++) {
-    CSSIdentifierValue* current_value = ToCSSIdentifierValue(values[i]);
+    auto* current_value = To<CSSIdentifierValue>(values[i]);
     CSSValueID id = current_value->GetValueID();
 
     if (id == CSSValueCenter) {
@@ -958,11 +960,14 @@ bool ConsumePosition(CSSParserTokenRange& range,
 
   CSSParserTokenRange range_after_second_consume = range;
   CSSValue* value3 = nullptr;
-  if (value1->IsIdentifierValue() &&
-      value2->IsIdentifierValue() != (range.Peek().GetType() == kIdentToken) &&
-      (value2->IsIdentifierValue()
-           ? ToCSSIdentifierValue(value2)->GetValueID()
-           : ToCSSIdentifierValue(value1)->GetValueID()) != CSSValueCenter)
+  auto* identifier_value1 = DynamicTo<CSSIdentifierValue>(value1);
+  auto* identifier_value2 = DynamicTo<CSSIdentifierValue>(value2);
+  // TODO(crbug.com/940442): Fix the strange comparison of a
+  // CSSIdentifierValue instance against a specific "range peek" type check.
+  if (identifier_value1 &&
+      !!identifier_value2 != (range.Peek().GetType() == kIdentToken) &&
+      (identifier_value2 ? identifier_value2->GetValueID()
+                         : identifier_value1->GetValueID()) != CSSValueCenter)
     value3 = ConsumePositionComponent(range, context.Mode(), unitless,
                                       horizontal_edge, vertical_edge);
   if (!value3) {
@@ -976,8 +981,8 @@ bool ConsumePosition(CSSParserTokenRange& range,
   }
 
   CSSValue* value4 = nullptr;
-  if (value3->IsIdentifierValue() &&
-      ToCSSIdentifierValue(value3)->GetValueID() != CSSValueCenter &&
+  auto* identifier_value3 = DynamicTo<CSSIdentifierValue>(value3);
+  if (identifier_value3 && identifier_value3->GetValueID() != CSSValueCenter &&
       range.Peek().GetType() != kIdentToken)
     value4 = ConsumePositionComponent(range, context.Mode(), unitless,
                                       horizontal_edge, vertical_edge);

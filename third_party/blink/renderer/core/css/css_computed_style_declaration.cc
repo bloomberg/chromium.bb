@@ -415,8 +415,8 @@ bool CSSComputedStyleDeclaration::CssPropertyMatches(
     if (style && style->GetFontDescription().KeywordSize()) {
       CSSValueID size_value = CssIdentifierForFontSizeKeyword(
           style->GetFontDescription().KeywordSize());
-      if (property_value.IsIdentifierValue() &&
-          ToCSSIdentifierValue(property_value).GetValueID() == size_value)
+      auto* identifier_value = DynamicTo<CSSIdentifierValue>(property_value);
+      if (identifier_value && identifier_value->GetValueID() == size_value)
         return true;
     }
   }

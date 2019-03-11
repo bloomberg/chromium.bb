@@ -72,8 +72,7 @@ InterpolationValue CSSFontWeightInterpolationType::MaybeConvertValue(
         FontSelectionValue(ToCSSPrimitiveValue(value).GetFloatValue()));
   }
 
-  CHECK(value.IsIdentifierValue());
-  const CSSIdentifierValue& identifier_value = ToCSSIdentifierValue(value);
+  const auto& identifier_value = To<CSSIdentifierValue>(value);
   CSSValueID keyword = identifier_value.GetValueID();
 
   switch (keyword) {

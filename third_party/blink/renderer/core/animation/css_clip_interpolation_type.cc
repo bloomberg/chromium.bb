@@ -205,8 +205,8 @@ InterpolationValue CSSClipInterpolationType::MaybeConvertInherit(
 }
 
 static bool IsCSSAuto(const CSSValue& value) {
-  return value.IsIdentifierValue() &&
-         ToCSSIdentifierValue(value).GetValueID() == CSSValueAuto;
+  auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
+  return identifier_value && identifier_value->GetValueID() == CSSValueAuto;
 }
 
 static std::unique_ptr<InterpolableValue> ConvertClipComponent(

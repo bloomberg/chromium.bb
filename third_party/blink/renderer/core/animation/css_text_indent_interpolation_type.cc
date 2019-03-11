@@ -168,11 +168,11 @@ InterpolationValue CSSTextIndentInterpolationType::MaybeConvertValue(
   TextIndentType type = ComputedStyleInitialValues::InitialTextIndentType();
 
   for (const auto& item : ToCSSValueList(value)) {
-    if (item->IsIdentifierValue() &&
-        ToCSSIdentifierValue(*item).GetValueID() == CSSValueEachLine)
+    auto* identifier_value = DynamicTo<CSSIdentifierValue>(item.Get());
+    if (identifier_value && identifier_value->GetValueID() == CSSValueEachLine)
       line = TextIndentLine::kEachLine;
-    else if (item->IsIdentifierValue() &&
-             ToCSSIdentifierValue(*item).GetValueID() == CSSValueHanging)
+    else if (identifier_value &&
+             identifier_value->GetValueID() == CSSValueHanging)
       type = TextIndentType::kHanging;
     else
       length = LengthInterpolationFunctions::MaybeConvertCSSValue(*item);

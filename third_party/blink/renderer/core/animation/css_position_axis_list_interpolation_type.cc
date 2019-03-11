@@ -19,7 +19,7 @@ CSSPositionAxisListInterpolationType::ConvertPositionAxisCSSValue(
     const CSSValuePair& pair = ToCSSValuePair(value);
     InterpolationValue result =
         LengthInterpolationFunctions::MaybeConvertCSSValue(pair.Second());
-    CSSValueID side = ToCSSIdentifierValue(pair.First()).GetValueID();
+    CSSValueID side = To<CSSIdentifierValue>(pair.First()).GetValueID();
     if (side == CSSValueRight || side == CSSValueBottom)
       LengthInterpolationFunctions::SubtractFromOneHundredPercent(result);
     return result;
@@ -28,11 +28,11 @@ CSSPositionAxisListInterpolationType::ConvertPositionAxisCSSValue(
   if (value.IsPrimitiveValue())
     return LengthInterpolationFunctions::MaybeConvertCSSValue(value);
 
-  if (!value.IsIdentifierValue())
+  const auto* ident = DynamicTo<CSSIdentifierValue>(value);
+  if (!ident)
     return nullptr;
 
-  const CSSIdentifierValue& ident = ToCSSIdentifierValue(value);
-  switch (ident.GetValueID()) {
+  switch (ident->GetValueID()) {
     case CSSValueLeft:
     case CSSValueTop:
       return LengthInterpolationFunctions::CreateInterpolablePercent(0);

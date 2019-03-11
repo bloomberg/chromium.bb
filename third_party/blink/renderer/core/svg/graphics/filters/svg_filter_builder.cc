@@ -149,8 +149,8 @@ static EColorInterpolation ColorInterpolationForElement(
           element.PresentationAttributeStyle()) {
     const CSSValue* css_value =
         property_set->GetPropertyCSSValue(CSSPropertyColorInterpolationFilters);
-    if (css_value && css_value->IsIdentifierValue()) {
-      return ToCSSIdentifierValue(*css_value).ConvertTo<EColorInterpolation>();
+    if (auto* identifier_value = DynamicTo<CSSIdentifierValue>(css_value)) {
+      return identifier_value->ConvertTo<EColorInterpolation>();
     }
   }
   // 'auto' is the default (per Filter Effects), but since the property is

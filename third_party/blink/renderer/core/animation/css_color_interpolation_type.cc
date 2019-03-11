@@ -85,12 +85,12 @@ std::unique_ptr<InterpolableValue>
 CSSColorInterpolationType::MaybeCreateInterpolableColor(const CSSValue& value) {
   if (auto* color_value = DynamicTo<CSSColorValue>(value))
     return CreateInterpolableColor(color_value->Value());
-  if (!value.IsIdentifierValue())
+  auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
+  if (!identifier_value)
     return nullptr;
-  const CSSIdentifierValue& identifier_value = ToCSSIdentifierValue(value);
-  if (!StyleColor::IsColorKeyword(identifier_value.GetValueID()))
+  if (!StyleColor::IsColorKeyword(identifier_value->GetValueID()))
     return nullptr;
-  return CreateInterpolableColor(identifier_value.GetValueID());
+  return CreateInterpolableColor(identifier_value->GetValueID());
 }
 
 static void AddPremultipliedColor(double& red,
@@ -230,11 +230,13 @@ InterpolationValue CSSColorInterpolationType::MaybeConvertValue(
     const CSSValue& value,
     const StyleResolverState* state,
     ConversionCheckers& conversion_checkers) const {
-  if (CssProperty().PropertyID() == CSSPropertyColor &&
-      value.IsIdentifierValue() &&
-      ToCSSIdentifierValue(value).GetValueID() == CSSValueCurrentcolor) {
-    DCHECK(state);
-    return MaybeConvertInherit(*state, conversion_checkers);
+  if (CssProperty().PropertyID() == CSSPropertyColor) {
+    auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
+    if (identifier_value &&
+        identifier_value->GetValueID() == CSSValueCurrentcolor) {
+      DCHECK(state);
+      return MaybeConvertInherit(*state, conversion_checkers);
+    }
   }
 
   std::unique_ptr<InterpolableValue> interpolable_color =

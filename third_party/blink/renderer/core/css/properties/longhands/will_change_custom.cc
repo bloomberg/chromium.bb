@@ -106,18 +106,18 @@ void WillChange::ApplyValue(StyleResolverState& state,
   bool will_change_scroll_position = false;
   Vector<CSSPropertyID> will_change_properties;
 
-  if (value.IsIdentifierValue()) {
-    DCHECK_EQ(ToCSSIdentifierValue(value).GetValueID(), CSSValueAuto);
+  if (auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
+    DCHECK_EQ(identifier_value->GetValueID(), CSSValueAuto);
   } else {
     DCHECK(value.IsValueList());
     for (auto& will_change_value : ToCSSValueList(value)) {
       if (auto* ident_value =
               DynamicTo<CSSCustomIdentValue>(will_change_value.Get())) {
         will_change_properties.push_back(ident_value->ValueAsPropertyID());
-      } else if (ToCSSIdentifierValue(*will_change_value).GetValueID() ==
+      } else if (To<CSSIdentifierValue>(*will_change_value).GetValueID() ==
                  CSSValueContents) {
         will_change_contents = true;
-      } else if (ToCSSIdentifierValue(*will_change_value).GetValueID() ==
+      } else if (To<CSSIdentifierValue>(*will_change_value).GetValueID() ==
                  CSSValueScrollPosition) {
         will_change_scroll_position = true;
       } else {

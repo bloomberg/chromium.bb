@@ -439,11 +439,13 @@ WritingDirection StyleCommands::TextDirectionForSelection(
           *CSSComputedStyleDeclaration::Create(&node);
       const CSSValue* unicode_bidi =
           style.GetPropertyCSSValue(GetCSSPropertyUnicodeBidi());
-      if (!unicode_bidi || !unicode_bidi->IsIdentifierValue())
+      auto* unicode_bidi_identifier_value =
+          DynamicTo<CSSIdentifierValue>(unicode_bidi);
+      if (!unicode_bidi_identifier_value)
         continue;
 
       const CSSValueID unicode_bidi_value =
-          ToCSSIdentifierValue(unicode_bidi)->GetValueID();
+          unicode_bidi_identifier_value->GetValueID();
       if (IsUnicodeBidiNestedOrMultipleEmbeddings(unicode_bidi_value))
         return WritingDirection::kNatural;
     }
@@ -475,11 +477,13 @@ WritingDirection StyleCommands::TextDirectionForSelection(
         *CSSComputedStyleDeclaration::Create(element);
     const CSSValue* unicode_bidi =
         style.GetPropertyCSSValue(GetCSSPropertyUnicodeBidi());
-    if (!unicode_bidi || !unicode_bidi->IsIdentifierValue())
+    auto* unicode_bidi_identifier_value =
+        DynamicTo<CSSIdentifierValue>(unicode_bidi);
+    if (!unicode_bidi_identifier_value)
       continue;
 
     const CSSValueID unicode_bidi_value =
-        ToCSSIdentifierValue(unicode_bidi)->GetValueID();
+        unicode_bidi_identifier_value->GetValueID();
     if (unicode_bidi_value == CSSValueNormal)
       continue;
 
@@ -490,10 +494,11 @@ WritingDirection StyleCommands::TextDirectionForSelection(
         << unicode_bidi_value;
     const CSSValue* direction =
         style.GetPropertyCSSValue(GetCSSPropertyDirection());
-    if (!direction || !direction->IsIdentifierValue())
+    auto* direction_identifier_value = DynamicTo<CSSIdentifierValue>(direction);
+    if (!direction_identifier_value)
       continue;
 
-    const int direction_value = ToCSSIdentifierValue(direction)->GetValueID();
+    const int direction_value = direction_identifier_value->GetValueID();
     if (direction_value != CSSValueLtr && direction_value != CSSValueRtl)
       continue;
 

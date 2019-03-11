@@ -22,7 +22,7 @@ const CSSValue* Resize::CSSValueFromComputedStyleInternal(
 
 void Resize::ApplyValue(StyleResolverState& state,
                         const CSSValue& value) const {
-  const CSSIdentifierValue& identifier_value = ToCSSIdentifierValue(value);
+  const CSSIdentifierValue& identifier_value = To<CSSIdentifierValue>(value);
 
   EResize r = EResize::kNone;
   if (identifier_value.GetValueID() == CSSValueAuto) {

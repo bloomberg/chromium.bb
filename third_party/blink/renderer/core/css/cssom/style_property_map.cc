@@ -175,7 +175,7 @@ const CSSValue* StyleValueToCSSValue(
       // level 1 only accept single keywords, but font-variant-* store
       // them as a list
       if (const auto* value =
-              ToCSSIdentifierValueOrNull(style_value.ToCSSValue())) {
+              DynamicTo<CSSIdentifierValue>(style_value.ToCSSValue())) {
         // 'none' and 'normal' are stored as a single value
         if (value->GetValueID() == CSSValueNone ||
             value->GetValueID() == CSSValueNormal) {
@@ -216,8 +216,9 @@ const CSSValue* StyleValueToCSSValue(
       const auto* value = style_value.ToCSSValue();
       // only 'normal' is stored as an identifier, the other keywords are
       // wrapped in a list.
-      if (value->IsIdentifierValue() && !value->IsCSSWideKeyword() &&
-          ToCSSIdentifierValue(value)->GetValueID() != CSSValueNormal) {
+      auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
+      if (identifier_value && !value->IsCSSWideKeyword() &&
+          identifier_value->GetValueID() != CSSValueNormal) {
         CSSValueList* list = CSSValueList::CreateSpaceSeparated();
         list->Append(*style_value.ToCSSValue());
         return list;
@@ -229,8 +230,9 @@ const CSSValue* StyleValueToCSSValue(
       const auto* value = style_value.ToCSSValue();
       // only 'none' is stored as an identifier, the other keywords are
       // wrapped in a list.
-      if (value->IsIdentifierValue() && !value->IsCSSWideKeyword() &&
-          ToCSSIdentifierValue(value)->GetValueID() != CSSValueNone) {
+      auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
+      if (identifier_value && !value->IsCSSWideKeyword() &&
+          identifier_value->GetValueID() != CSSValueNone) {
         CSSValueList* list = CSSValueList::CreateSpaceSeparated();
         list->Append(*style_value.ToCSSValue());
         return list;

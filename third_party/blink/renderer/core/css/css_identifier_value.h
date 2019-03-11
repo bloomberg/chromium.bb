@@ -65,8 +65,6 @@ class CORE_EXPORT CSSIdentifierValue : public CSSValue {
   CSSValueID value_id_;
 };
 
-DEFINE_CSS_VALUE_TYPE_CASTS(CSSIdentifierValue, IsIdentifierValue());
-
 template <>
 struct DowncastTraits<CSSIdentifierValue> {
   static bool AllowFrom(const CSSValue& value) {

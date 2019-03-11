@@ -97,8 +97,8 @@ InterpolationValue CSSLengthInterpolationType::MaybeConvertValue(
     const CSSValue& value,
     const StyleResolverState*,
     ConversionCheckers& conversion_checkers) const {
-  if (value.IsIdentifierValue()) {
-    CSSValueID value_id = ToCSSIdentifierValue(value).GetValueID();
+  if (auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
+    CSSValueID value_id = identifier_value->GetValueID();
     double pixels;
     if (!LengthPropertyFunctions::GetPixelsForKeyword(CssProperty(), value_id,
                                                       pixels))

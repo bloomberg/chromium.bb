@@ -59,9 +59,8 @@ void Zoom::ApplyInherit(StyleResolverState& state) const {
 void Zoom::ApplyValue(StyleResolverState& state, const CSSValue& value) const {
   SECURITY_DCHECK(value.IsPrimitiveValue() || value.IsIdentifierValue());
 
-  if (value.IsIdentifierValue()) {
-    const CSSIdentifierValue& identifier_value = ToCSSIdentifierValue(value);
-    if (identifier_value.GetValueID() == CSSValueNormal) {
+  if (const auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
+    if (identifier_value->GetValueID() == CSSValueNormal) {
       state.SetZoom(ComputedStyleInitialValues::InitialZoom());
     }
   } else if (value.IsPrimitiveValue()) {

@@ -41,8 +41,9 @@ SideType GetSideType(const CSSValue& side) {
   if (side.IsPrimitiveValue() && ToCSSPrimitiveValue(side).IsNumber()) {
     return SideType::kNumber;
   }
-  if (side.IsIdentifierValue() &&
-      ToCSSIdentifierValue(side).GetValueID() == CSSValueAuto) {
+  auto* side_identifier_value = DynamicTo<CSSIdentifierValue>(side);
+  if (side_identifier_value &&
+      side_identifier_value->GetValueID() == CSSValueAuto) {
     return SideType::kAuto;
   }
   return SideType::kLength;
@@ -312,18 +313,23 @@ InterpolationValue CSSBorderImageLengthBoxInterpolationType::MaybeConvertValue(
     if (side.IsPrimitiveValue() && ToCSSPrimitiveValue(side).IsNumber()) {
       list->Set(i, InterpolableNumber::Create(
                        ToCSSPrimitiveValue(side).GetDoubleValue()));
-    } else if (side.IsIdentifierValue() &&
-               ToCSSIdentifierValue(side).GetValueID() == CSSValueAuto) {
-      list->Set(i, InterpolableList::Create(0));
-    } else {
-      InterpolationValue converted_side =
-          LengthInterpolationFunctions::MaybeConvertCSSValue(side);
-      if (!converted_side)
-        return nullptr;
-      list->Set(i, std::move(converted_side.interpolable_value));
-      non_interpolable_values[i] =
-          std::move(converted_side.non_interpolable_value);
+      continue;
     }
+
+    auto* side_identifier_value = DynamicTo<CSSIdentifierValue>(side);
+    if (side_identifier_value &&
+        side_identifier_value->GetValueID() == CSSValueAuto) {
+      list->Set(i, InterpolableList::Create(0));
+      continue;
+    }
+
+    InterpolationValue converted_side =
+        LengthInterpolationFunctions::MaybeConvertCSSValue(side);
+    if (!converted_side)
+      return nullptr;
+    list->Set(i, std::move(converted_side.interpolable_value));
+    non_interpolable_values[i] =
+        std::move(converted_side.non_interpolable_value);
   }
 
   return InterpolationValue(
