@@ -587,9 +587,13 @@ class OrderfileGenerator(object):
     profiles = process_profiles.ProfileManager(files)
     processor = process_profiles.SymbolOffsetProcessor(
         self._compiler.lib_chrome_so)
-    ordered_symbols= cluster.ClusterOffsets(profiles, processor)
+    ordered_symbols = cluster.ClusterOffsets(profiles, processor)
     if not ordered_symbols:
       raise Exception('Failed to get ordered symbols')
+    for sym in ordered_symbols:
+      assert not sym.startswith('OUTLINED_FUNCTION_'), (
+          'Outlined function found in instrumented function, very likely '
+          'something has gone very wrong!')
     self._output_data['offsets_kib'] = processor.SymbolsSize(
             ordered_symbols) / 1024
     with open(self._GetUnpatchedOrderfileFilename(), 'w') as orderfile:
