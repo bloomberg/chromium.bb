@@ -194,6 +194,17 @@ Response BackgroundServiceHandler::SetRecording(bool should_record,
   return Response::OK();
 }
 
+Response BackgroundServiceHandler::ClearEvents(const std::string& service) {
+  DCHECK(devtools_context_);
+
+  auto service_enum = ServiceNameToEnum(service);
+  if (service_enum == devtools::proto::BackgroundService::UNKNOWN)
+    return Response::InvalidParams("Invalid service name");
+
+  devtools_context_->ClearLoggedBackgroundServiceEvents(service_enum);
+  return Response::OK();
+}
+
 void BackgroundServiceHandler::OnEventReceived(
     const devtools::proto::BackgroundServiceEvent& event) {
   if (!enabled_services_.count(event.background_service()))

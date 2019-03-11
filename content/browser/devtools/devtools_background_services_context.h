@@ -79,7 +79,7 @@ class CONTENT_EXPORT DevToolsBackgroundServicesContext
       GetLoggedBackgroundServiceEventsCallback callback);
 
   // Clears all logged events related to |service|.
-  // Must be called from the IO thread.
+  // Must be called from the UI thread.
   void ClearLoggedBackgroundServiceEvents(
       devtools::proto::BackgroundService service);
 
@@ -108,6 +108,9 @@ class CONTENT_EXPORT DevToolsBackgroundServicesContext
       GetLoggedBackgroundServiceEventsCallback callback,
       const std::vector<std::pair<int64_t, std::string>>& user_data,
       blink::ServiceWorkerStatusCode status);
+
+  void ClearLoggedBackgroundServiceEventsOnIO(
+      devtools::proto::BackgroundService service);
 
   void NotifyEventObservers(
       const devtools::proto::BackgroundServiceEvent& event);

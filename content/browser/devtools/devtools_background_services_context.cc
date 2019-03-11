@@ -169,6 +169,17 @@ void DevToolsBackgroundServicesContext::DidGetUserData(
 
 void DevToolsBackgroundServicesContext::ClearLoggedBackgroundServiceEvents(
     devtools::proto::BackgroundService service) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
+      base::BindOnce(&DevToolsBackgroundServicesContext::
+                         ClearLoggedBackgroundServiceEventsOnIO,
+                     weak_ptr_factory_.GetWeakPtr(), service));
+}
+
+void DevToolsBackgroundServicesContext::ClearLoggedBackgroundServiceEventsOnIO(
+    devtools::proto::BackgroundService service) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   service_worker_context_->ClearUserDataForAllRegistrationsByKeyPrefix(
