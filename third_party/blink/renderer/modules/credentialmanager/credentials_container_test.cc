@@ -18,6 +18,7 @@
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/testing/gc_object_liveness_observer.h"
+#include "third_party/blink/renderer/modules/credentialmanager/credential.h"
 #include "third_party/blink/renderer/modules/credentialmanager/credential_manager_proxy.h"
 #include "third_party/blink/renderer/modules/credentialmanager/credential_request_options.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
@@ -117,6 +118,15 @@ class CredentialManagerTestingContext {
 
 }  // namespace
 
+class MockPublicKeyCredential : public Credential {
+ public:
+  MockPublicKeyCredential() : Credential("test", "public-key") {}
+  bool IsPublicKeyCredential() const override { return true; }
+  static MockPublicKeyCredential* Create() {
+    return MakeGarbageCollected<MockPublicKeyCredential>();
+  }
+};
+
 // The completion callbacks for pending mojom::CredentialManager calls each own
 // a persistent handle to a ScriptPromiseResolver instance. Ensure that if the
 // document is destored while a call is pending, it can still be freed up.
@@ -161,6 +171,17 @@ TEST(CredentialsContainerTest,
   proxy->FlushCredentialManagerConnectionForTesting();
 
   EXPECT_EQ(v8::Promise::kPending,
+            promise.V8Value().As<v8::Promise>()->State());
+}
+
+TEST(CredentialsContainerTest, RejectPublicKeyCredentialStoreOperation) {
+  MockCredentialManager mock_credential_manager;
+  CredentialManagerTestingContext context(&mock_credential_manager);
+
+  auto promise = CredentialsContainer::Create()->store(
+      context.GetScriptState(), MockPublicKeyCredential::Create());
+
+  EXPECT_EQ(v8::Promise::kRejected,
             promise.V8Value().As<v8::Promise>()->State());
 }
 
