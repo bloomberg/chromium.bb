@@ -539,7 +539,7 @@ bool LayoutView::MapToVisualRectInAncestorSpaceInternal(
     // compute the subpixel offset of painting at this point in a a bottom-up
     // walk, round to the enclosing int rect, which will enclose the actual
     // visible rect.
-    rect = LayoutRect(EnclosingIntRect(rect));
+    rect.ExpandEdgesToPixelBoundaries();
 
     // Adjust for frame border.
     rect.Move(obj->PhysicalContentBoxOffset());
