@@ -714,6 +714,7 @@
   atlas-chrome-pfq-tryjob
   atlas-chromium-pfq-tryjob
   atlas-compile-only-pre-cq
+  atlas-factory-atlas-11907.B-factorybranch-tryjob
   atlas-full-tryjob
   atlas-llvm-next-toolchain-tryjob
   atlas-llvm-toolchain-tryjob
@@ -1492,6 +1493,8 @@
   expresso-tot-chrome-pfq-informational-tryjob
   expresso-tot-chromium-pfq-informational-tryjob
   expresso-unittest-stress
+  factory-atlas-11907.B-buildspec-tryjob
+    atlas-factory-atlas-11907.B-factorybranch-tryjob
   factory-auron-6459.B-buildspec-tryjob
     auron_paine-factory-auron-6459.B-factorybranch-tryjob
     auron_yuna-factory-auron-6459.B-factorybranch-tryjob

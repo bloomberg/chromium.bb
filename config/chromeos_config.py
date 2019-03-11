@@ -3191,6 +3191,7 @@ def FactoryBuilders(site_config, _boards_dict, _ge_build_config):
       (None, 'factory-grunt-11164.B', ['grunt']),
       (None, 'factory-rammus-11289.B', ['rammus']),
       (None, 'factory-octopus-11512.B', ['octopus']),
+      (None, 'factory-atlas-11907.B', ['atlas']),
   ]
 
   # Requires that you set boards, and workspace_branch.
