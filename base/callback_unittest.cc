@@ -85,41 +85,41 @@ TEST_F(CallbackTest, IsNull) {
 }
 
 TEST_F(CallbackTest, Equals) {
-  EXPECT_TRUE(callback_a_.Equals(callback_a_));
-  EXPECT_FALSE(callback_a_.Equals(callback_b_));
-  EXPECT_FALSE(callback_b_.Equals(callback_a_));
+  EXPECT_EQ(callback_a_, callback_a_);
+  EXPECT_NE(callback_a_, callback_b_);
+  EXPECT_NE(callback_b_, callback_a_);
 
   // We should compare based on instance, not type.
   RepeatingCallback<void()> callback_c(new FakeBindState());
   RepeatingCallback<void()> callback_a2 = callback_a_;
-  EXPECT_TRUE(callback_a_.Equals(callback_a2));
-  EXPECT_FALSE(callback_a_.Equals(callback_c));
+  EXPECT_EQ(callback_a_, callback_a2);
+  EXPECT_NE(callback_a_, callback_c);
 
   // Empty, however, is always equal to empty.
   RepeatingCallback<void()> empty2;
-  EXPECT_TRUE(null_callback_.Equals(empty2));
+  EXPECT_EQ(null_callback_, empty2);
 }
 
 TEST_F(CallbackTest, Reset) {
   // Resetting should bring us back to empty.
   ASSERT_FALSE(callback_a_.is_null());
-  ASSERT_FALSE(callback_a_.Equals(null_callback_));
+  EXPECT_NE(callback_a_, null_callback_);
 
   callback_a_.Reset();
 
   EXPECT_TRUE(callback_a_.is_null());
-  EXPECT_TRUE(callback_a_.Equals(null_callback_));
+  EXPECT_EQ(callback_a_, null_callback_);
 }
 
 TEST_F(CallbackTest, Move) {
   // Moving should reset the callback.
   ASSERT_FALSE(callback_a_.is_null());
-  ASSERT_FALSE(callback_a_.Equals(null_callback_));
+  EXPECT_NE(callback_a_, null_callback_);
 
   auto tmp = std::move(callback_a_);
 
   EXPECT_TRUE(callback_a_.is_null());
-  EXPECT_TRUE(callback_a_.Equals(null_callback_));
+  EXPECT_EQ(callback_a_, null_callback_);
 }
 
 struct TestForReentrancy {
