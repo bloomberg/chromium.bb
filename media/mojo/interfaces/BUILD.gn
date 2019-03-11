@@ -72,7 +72,7 @@ mojom("interfaces") {
   # classes. Enabling this for other builds would result in ODR violations.
   # TODO(crbug.com/921170): Remove this once the issue is resolved.
   if (is_win && is_component_build) {
-    export_class_attribute_blink = "PLATFORM_EXPORT"
+    export_class_attribute_blink = "BLINK_PLATFORM_EXPORT"
     export_define_blink = "BLINK_PLATFORM_IMPLEMENTATION=1"
     export_header_blink = "third_party/blink/public/platform/web_common.h"
   }
