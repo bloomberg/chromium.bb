@@ -30,8 +30,7 @@ static const char *level_fail_messages[TARGET_LEVEL_FAIL_IDS] = {
 
 static void check_level_constraints(AV1_COMP *cpi,
                                     const AV1LevelSpec *level_spec) {
-  if (cpi->target_seq_level_idx < 0) return;
-  const AV1_LEVEL target_seq_level_idx = (AV1_LEVEL)cpi->target_seq_level_idx;
+  const AV1_LEVEL target_seq_level_idx = cpi->target_seq_level_idx;
   if (target_seq_level_idx >= SEQ_LEVELS) return;
   TARGET_LEVEL_FAIL_ID fail_id = TARGET_LEVEL_FAIL_IDS;
   // Check level conformance

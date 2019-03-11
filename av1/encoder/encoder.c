@@ -2394,7 +2394,7 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
                  seq_params->bit_depth <= AOM_BITS_10));
 
   cpi->target_seq_level_idx = oxcf->target_seq_level_idx;
-  cpi->keep_level_stats = cpi->target_seq_level_idx >= 0;
+  cpi->keep_level_stats = cpi->target_seq_level_idx < SEQ_LEVELS;
 
   cm->timing_info_present = oxcf->timing_info_present;
   cm->timing_info.num_units_in_display_tick =

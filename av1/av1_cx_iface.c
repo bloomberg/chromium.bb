@@ -129,7 +129,7 @@ struct av1_extracfg {
   int use_inter_dct_only;
   int use_intra_default_tx_only;
   int quant_b_adapt;
-  int target_seq_level_idx;
+  AV1_LEVEL target_seq_level_idx;
   // Bit mask to specify which tier each of the 32 possible operating points
   // conforms to.
   unsigned int tier_mask;
@@ -234,7 +234,7 @@ static struct av1_extracfg default_extra_cfg = {
   0,            // use_inter_dct_only
   0,            // use_intra_default_tx_only
   0,            // quant_b_adapt
-  -1,           // target_seq_level_idx
+  31,           // target_seq_level_idx
   0,            // tier_mask
   COST_UPD_SB,  // coeff_cost_upd_freq
   COST_UPD_SB,  // mode_cost_upd_freq
@@ -451,9 +451,7 @@ static aom_codec_err_t validate_config(aom_codec_alg_priv_t *ctx,
   RANGE_CHECK(extra_cfg, coeff_cost_upd_freq, 0, 2);
   RANGE_CHECK(extra_cfg, mode_cost_upd_freq, 0, 2);
 
-  const int target_seq_level_idx = extra_cfg->target_seq_level_idx;
-  if ((target_seq_level_idx > 23 && target_seq_level_idx != 31) ||
-      target_seq_level_idx < -1)
+  if (!is_valid_seq_level_idx(extra_cfg->target_seq_level_idx))
     ERROR("Target sequence level index is invalid");
 
   return AOM_CODEC_OK;

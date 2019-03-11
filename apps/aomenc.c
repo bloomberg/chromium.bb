@@ -628,9 +628,9 @@ static const arg_def_t reduced_reference_set =
 static const arg_def_t target_seq_level_idx =
     ARG_DEF(NULL, "target-seq-level-idx", 1,
             "Target sequence level index. "
-            "(-1: Not enabled(default); "
-            "0~23: Target for the given level index; "
-            "31: Passively measure the level of the encoded bitstream.)");
+            "(0~23: Target for the given level index; "
+            "31(default): Maximum level parameter, no level-based "
+            "constraints.)");
 
 static const struct arg_enum_list color_primaries_enum[] = {
   { "bt709", AOM_CICP_CP_BT_709 },
