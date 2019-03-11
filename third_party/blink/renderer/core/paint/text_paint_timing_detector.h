@@ -29,24 +29,19 @@ class TextRecord : public base::SupportsWeakPtr<TextRecord> {
 #endif
 };
 
-// TextPaintTimingDetector contains Largest Text Paint and Last Text Paint.
+// TextPaintTimingDetector contains Largest Text Paint.
 //
 // Largest Text Paint timing measures when the largest text element gets painted
-// within viewport. Last Text Paint timing measures when the last text element
-// gets painted within viewport. Specifically, they:
+// within viewport. Specifically, it:
 // 1. Tracks all texts' first invalidation, recording their visual size, paint
 // time.
 // 2. Every 1 second after the first text pre-paint, the algorithm starts an
 // analysis. In the analysis:
-// 2.1 Largest Text Paint finds the text with the
-// largest first visual size, reports its first paint time as a candidate
-// result.
-// 2.2 Last Text Paint finds the text with the largest first paint time,
-// report its first paint time as a candidate result.
+// 2.1 Largest Text Paint finds the text with the  largest first visual size,
+// reports its first paint time as a candidate result.
 //
 // For all these candidate results, Telemetry picks the lastly reported
-// Largest Text Paint candidate and Last Text Paint candidate respectively as
-// their final result.
+// Largest Text Paint candidate as the final result.
 //
 // See also:
 // https://docs.google.com/document/d/1DRVd4a2VU8-yyWftgOparZF-sf16daf0vfbsHuz2rws/edit#heading=h.lvno2v283uls
@@ -65,14 +60,11 @@ class CORE_EXPORT TextPaintTimingDetector final
   TextPaintTimingDetector(LocalFrameView* frame_view);
   void RecordText(const LayoutObject& object, const PropertyTreeState&);
   TextRecord* FindLargestPaintCandidate();
-  TextRecord* FindLastPaintCandidate();
   void OnPaintFinished();
   void NotifyNodeRemoved(DOMNodeId);
   void Dispose() { timer_.Stop(); }
   base::TimeTicks LargestTextPaint() const { return largest_text_paint_; }
   uint64_t LargestTextPaintSize() const { return largest_text_paint_size_; }
-  base::TimeTicks LastTextPaint() const { return last_text_paint_; }
-  uint64_t LastTextPaintSize() const { return last_text_paint_size_; }
   void StopRecordEntries();
   bool IsRecording() const { return is_recording_; }
   void Trace(blink::Visitor*);
@@ -88,26 +80,21 @@ class CORE_EXPORT TextPaintTimingDetector final
                       base::TimeTicks timestamp);
   void RegisterNotifySwapTime(ReportTimeCallback callback);
   void OnLargestTextDetected(const TextRecord&);
-  void OnLastTextDetected(const TextRecord&);
   TextRecord* FindCandidate(const TextRecordSet& ordered_set);
 
   HashMap<DOMNodeId, std::unique_ptr<TextRecord>> id_record_map_;
   HashSet<DOMNodeId> size_zero_node_ids_;
   HashSet<DOMNodeId> detached_ids_;
   TextRecordSet size_ordered_set_;
-  TextRecordSet time_ordered_set_;
   std::queue<DOMNodeId> texts_to_record_swap_time_;
 
   // Make sure that at most one swap promise is ongoing.
   bool awaiting_swap_promise_ = false;
   unsigned largest_text_candidate_index_max_ = 0;
-  unsigned last_text_candidate_index_max_ = 0;
   bool is_recording_ = true;
 
   base::TimeTicks largest_text_paint_;
   uint64_t largest_text_paint_size_ = 0;
-  base::TimeTicks last_text_paint_;
-  uint64_t last_text_paint_size_ = 0;
   TaskRunnerTimer<TextPaintTimingDetector> timer_;
   Member<LocalFrameView> frame_view_;
 };

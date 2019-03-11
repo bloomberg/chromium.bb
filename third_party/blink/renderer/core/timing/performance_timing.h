@@ -126,11 +126,6 @@ class CORE_EXPORT PerformanceTiming final : public ScriptWrappable,
   // are the time and size of it.
   uint64_t LargestTextPaint() const;
   uint64_t LargestTextPaintSize() const;
-  // Last Text Paint is the first paint after the last text within viewport
-  // being painted. LastTextPaint and LastTextPaintSize are the time and
-  // size of it.
-  uint64_t LastTextPaint() const;
-  uint64_t LastTextPaintSize() const;
   // The first time the page is considered 'interactive'. This is determined
   // using heuristics based on main thread and network activity.
   uint64_t PageInteractive() const;

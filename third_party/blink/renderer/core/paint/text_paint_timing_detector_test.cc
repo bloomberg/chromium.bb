@@ -65,12 +65,6 @@ class TextPaintTimingDetectorTest
         .largest_text_paint_;
   }
 
-  TimeTicks LastPaintStoredResult() {
-    return GetPaintTimingDetector()
-        .GetTextPaintTimingDetector()
-        .last_text_paint_;
-  }
-
   // This only triggers ReportSwapTime in main frame.
   void UpdateAllLifecyclePhasesAndSimulateSwapTime() {
     UpdateAllLifecyclePhasesForTest();
@@ -129,12 +123,6 @@ class TextPaintTimingDetectorTest
     return GetPaintTimingDetector()
         .GetTextPaintTimingDetector()
         .FindLargestPaintCandidate();
-  }
-
-  TextRecord* TextRecordOfLastTextPaint() {
-    return GetPaintTimingDetector()
-        .GetTextPaintTimingDetector()
-        .FindLastPaintCandidate();
   }
 
   void SetFontSize(Element* font_element, uint8_t font_size) {
@@ -205,11 +193,8 @@ TEST_F(TextPaintTimingDetectorTest, UpdateResultWhenCandidateChanged) {
   SimulateAnalyze();
   TimeTicks time2 = CurrentTimeTicks();
   TimeTicks first_largest = LargestPaintStoredResult();
-  TimeTicks first_last = LastPaintStoredResult();
   EXPECT_GE(first_largest, time1);
   EXPECT_GE(time2, first_largest);
-  EXPECT_GE(first_last, time1);
-  EXPECT_GE(time2, first_last);
 
   Text* larger_text = GetDocument().createTextNode("a long-long-long text");
   GetDocument().body()->AppendChild(larger_text);
@@ -217,11 +202,8 @@ TEST_F(TextPaintTimingDetectorTest, UpdateResultWhenCandidateChanged) {
   SimulateAnalyze();
   TimeTicks time3 = CurrentTimeTicks();
   TimeTicks second_largest = LargestPaintStoredResult();
-  TimeTicks second_last = LastPaintStoredResult();
   EXPECT_GE(second_largest, time2);
   EXPECT_GE(time3, second_largest);
-  EXPECT_GE(second_last, time2);
-  EXPECT_GE(time3, second_last);
 }
 
 // There is a risk that a text that is just recorded is selected to be the
@@ -293,9 +275,6 @@ TEST_F(TextPaintTimingDetectorTest,
   EXPECT_FALSE(GetPaintTimingDetector()
                    .GetTextPaintTimingDetector()
                    .FindLargestPaintCandidate());
-  EXPECT_FALSE(GetPaintTimingDetector()
-                   .GetTextPaintTimingDetector()
-                   .FindLastPaintCandidate());
 }
 
 TEST_F(TextPaintTimingDetectorTest, LargestTextPaint_IgnoreRemovedText) {
@@ -352,65 +331,6 @@ TEST_F(TextPaintTimingDetectorTest, LargestTextPaint_CompareSizesAtFirstPaint) {
   UpdateAllLifecyclePhasesAndSimulateSwapTime();
   EXPECT_EQ(TextRecordOfLargestTextPaint()->node_id,
             NodeIdOfText(shortening_long_text));
-}
-
-TEST_F(TextPaintTimingDetectorTest, LastTextPaint_NoText) {
-  SetBodyInnerHTML(R"HTML(
-    <div></div>
-  )HTML");
-  UpdateAllLifecyclePhasesAndSimulateSwapTime();
-  TextRecord* record = GetPaintTimingDetector()
-                           .GetTextPaintTimingDetector()
-                           .FindLastPaintCandidate();
-  EXPECT_FALSE(record);
-}
-
-TEST_F(TextPaintTimingDetectorTest, LastTextPaint_OneText) {
-  SetBodyInnerHTML(R"HTML(
-  )HTML");
-  Element* text = AppendDivElementToBody("The only text");
-  UpdateAllLifecyclePhasesAndSimulateSwapTime();
-  EXPECT_EQ(TextRecordOfLargestTextPaint()->node_id, NodeIdOfText(text));
-}
-
-TEST_F(TextPaintTimingDetectorTest, LastTextPaint_LastText) {
-  SetBodyInnerHTML(R"HTML(
-    <div>1st text</div>
-  )HTML");
-  AppendDivElementToBody("s");
-  UpdateAllLifecyclePhasesAndSimulateSwapTime();
-
-  AppendDivElementToBody("loooooooong");
-  UpdateAllLifecyclePhasesAndSimulateSwapTime();
-
-  Element* third_text = AppendDivElementToBody("medium");
-  UpdateAllLifecyclePhasesAndSimulateSwapTime();
-
-  EXPECT_EQ(TextRecordOfLastTextPaint()->node_id, NodeIdOfText(third_text));
-}
-
-TEST_F(TextPaintTimingDetectorTest, LastTextPaint_ReportFirstPaintTime) {
-  SetBodyInnerHTML(R"HTML(
-  )HTML");
-  AppendDivElementToBody("a loooooooooooooooooooong text");
-  UpdateAllLifecyclePhasesAndSimulateSwapTime();
-
-  TimeTicks time1 = CurrentTimeTicks();
-  Element* latest_text = AppendFontElementToBody("latest text");
-  UpdateAllLifecyclePhasesAndSimulateSwapTime();
-
-  TimeTicks time2 = CurrentTimeTicks();
-  SetFontSize(latest_text, 50);
-  UpdateAllLifecyclePhasesAndSimulateSwapTime();
-
-  SetFontSize(latest_text, 100);
-  UpdateAllLifecyclePhasesAndSimulateSwapTime();
-
-  TextRecord* record = TextRecordOfLastTextPaint();
-  EXPECT_EQ(record->node_id, NodeIdOfText(latest_text));
-  TimeTicks firing_time = record->first_paint_time;
-  EXPECT_GE(firing_time, time1);
-  EXPECT_GE(time2, firing_time);
 }
 
 TEST_F(TextPaintTimingDetectorTest, TreatEllipsisAsText) {
@@ -473,21 +393,7 @@ TEST_F(TextPaintTimingDetectorTest, CaptureSVGText) {
   EXPECT_EQ(TextRecordOfLargestTextPaint()->node_id, NodeIdOfText(elem));
 }
 
-TEST_F(TextPaintTimingDetectorTest, LastTextPaint_IgnoreRemovedText) {
-  SetBodyInnerHTML(R"HTML(
-  )HTML");
-  Element* first_text = AppendDivElementToBody("1st text");
-  UpdateAllLifecyclePhasesAndSimulateSwapTime();
-
-  Element* second_text = AppendDivElementToBody("2nd text");
-  UpdateAllLifecyclePhasesAndSimulateSwapTime();
-
-  RemoveElement(second_text);
-  UpdateAllLifecyclePhasesAndSimulateSwapTime();
-  EXPECT_EQ(TextRecordOfLastTextPaint()->node_id, NodeIdOfText(first_text));
-}
-
-TEST_F(TextPaintTimingDetectorTest, LastTextPaint_StopRecordingOverNodeLimit) {
+TEST_F(TextPaintTimingDetectorTest, StopRecordingOverNodeLimit) {
   SetBodyInnerHTML(R"HTML(
   )HTML");
   UpdateAllLifecyclePhasesAndSimulateSwapTime();
@@ -497,29 +403,13 @@ TEST_F(TextPaintTimingDetectorTest, LastTextPaint_StopRecordingOverNodeLimit) {
 
   UpdateAllLifecyclePhasesAndSimulateSwapTime();
 
-  Element* text_5000 = AppendDivElementToBody(WTF::String::Number(5000));
+  AppendDivElementToBody(WTF::String::Number(5000));
   UpdateAllLifecyclePhasesAndSimulateSwapTime();
-  EXPECT_EQ(TextRecordOfLastTextPaint()->node_id, NodeIdOfText(text_5000));
+  EXPECT_EQ(CountVisibleTexts(), 5000u);
 
   AppendDivElementToBody(WTF::String::Number(5001));
   UpdateAllLifecyclePhasesAndSimulateSwapTime();
-  EXPECT_EQ(TextRecordOfLastTextPaint()->node_id, NodeIdOfText(text_5000));
-}
-
-TEST_F(TextPaintTimingDetectorTest, LastTextPaint_ReportLastNullCandidate) {
-  SetBodyInnerHTML(R"HTML(
-  )HTML");
-  Element* text = AppendDivElementToBody("text");
-  UpdateAllLifecyclePhasesAndSimulateSwapTime();
-  SimulateAnalyze();
-  EXPECT_EQ(TextRecordOfLastTextPaint()->node_id, NodeIdOfText(text));
-  EXPECT_NE(LastPaintStoredResult(), base::TimeTicks());
-
-  RemoveElement(text);
-  UpdateAllLifecyclePhasesAndSimulateSwapTime();
-  SimulateAnalyze();
-  EXPECT_FALSE(TextRecordOfLastTextPaint());
-  EXPECT_EQ(LastPaintStoredResult(), base::TimeTicks());
+  EXPECT_EQ(CountVisibleTexts(), 5000u);
 }
 
 // This is for comparison with the ClippedByViewport test.

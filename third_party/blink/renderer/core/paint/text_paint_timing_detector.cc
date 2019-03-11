@@ -29,14 +29,8 @@ static bool LargeTextFirst(const base::WeakPtr<TextRecord>& a,
   return a->first_size > b->first_size;
 }
 
-static bool LateTextFirst(const base::WeakPtr<TextRecord>& a,
-                          const base::WeakPtr<TextRecord>& b) {
-  return a->first_paint_time > b->first_paint_time;
-}
-
 TextPaintTimingDetector::TextPaintTimingDetector(LocalFrameView* frame_view)
     : size_ordered_set_(&LargeTextFirst),
-      time_ordered_set_(&LateTextFirst),
       timer_(frame_view->GetFrame().GetTaskRunner(TaskType::kInternalDefault),
              this,
              &TextPaintTimingDetector::TimerFired),
@@ -71,19 +65,6 @@ void TextPaintTimingDetector::OnLargestTextDetected(
       largest_text_paint_, "data", std::move(value));
 }
 
-void TextPaintTimingDetector::OnLastTextDetected(
-    const TextRecord& last_text_record) {
-  last_text_paint_ = last_text_record.first_paint_time;
-  last_text_paint_size_ = last_text_record.first_size;
-
-  std::unique_ptr<TracedValue> value = TracedValue::Create();
-  PopulateTraceValue(*value, last_text_record,
-                     last_text_candidate_index_max_++);
-  TRACE_EVENT_INSTANT_WITH_TIMESTAMP1(
-      "loading", "LastTextPaint::Candidate", TRACE_EVENT_SCOPE_THREAD,
-      last_text_paint_, "data", std::move(value));
-}
-
 void TextPaintTimingDetector::TimerFired(TimerBase* time) {
   // Wrap Analyze method in TimerFired so that we can drop |time| for Analyze
   // in testing.
@@ -92,23 +73,11 @@ void TextPaintTimingDetector::TimerFired(TimerBase* time) {
 
 void TextPaintTimingDetector::Analyze() {
   TextRecord* largest_text_first_paint = FindLargestPaintCandidate();
-  bool new_candidate_detected = false;
   DCHECK(!largest_text_first_paint ||
          !largest_text_first_paint->first_paint_time.is_null());
   if (largest_text_first_paint &&
       largest_text_first_paint->first_paint_time != largest_text_paint_) {
     OnLargestTextDetected(*largest_text_first_paint);
-    new_candidate_detected = true;
-  }
-  TextRecord* last_text_first_paint = FindLastPaintCandidate();
-  DCHECK(!last_text_first_paint ||
-         !last_text_first_paint->first_paint_time.is_null());
-  if (last_text_first_paint &&
-      last_text_first_paint->first_paint_time != last_text_paint_) {
-    OnLastTextDetected(*last_text_first_paint);
-    new_candidate_detected = true;
-  }
-  if (new_candidate_detected) {
     frame_view_->GetPaintTimingDetector().DidChangePerformanceTiming();
   }
 }
@@ -133,18 +102,10 @@ void TextPaintTimingDetector::NotifyNodeRemoved(DOMNodeId node_id) {
   if (id_record_map_.find(node_id) == id_record_map_.end())
     return;
   detached_ids_.insert(node_id);
-  if (id_record_map_.size() - detached_ids_.size() == 0) {
-    const bool largest_text_paint_invalidated =
-        largest_text_paint_ != base::TimeTicks();
-    const bool last_text_paint_invalidated =
-        last_text_paint_ != base::TimeTicks();
-    if (largest_text_paint_invalidated)
-      largest_text_paint_ = base::TimeTicks();
-    if (last_text_paint_invalidated)
-      last_text_paint_ = base::TimeTicks();
-    if (largest_text_paint_invalidated || last_text_paint_invalidated) {
-      frame_view_->GetPaintTimingDetector().DidChangePerformanceTiming();
-    }
+  if (id_record_map_.size() == detached_ids_.size() &&
+      largest_text_paint_ != base::TimeTicks()) {
+    largest_text_paint_ = base::TimeTicks();
+    frame_view_->GetPaintTimingDetector().DidChangePerformanceTiming();
   }
 }
 
@@ -175,7 +136,6 @@ void TextPaintTimingDetector::ReportSwapTime(
     TextRecord* record = id_record_map_.at(node_id);
     record->first_paint_time = timestamp;
     size_ordered_set_.insert(record->AsWeakPtr());
-    time_ordered_set_.insert(record->AsWeakPtr());
 
     texts_to_record_swap_time_.pop();
   }
@@ -257,10 +217,6 @@ void TextPaintTimingDetector::StopRecordEntries() {
 
 TextRecord* TextPaintTimingDetector::FindLargestPaintCandidate() {
   return FindCandidate(size_ordered_set_);
-}
-
-TextRecord* TextPaintTimingDetector::FindLastPaintCandidate() {
-  return FindCandidate(time_ordered_set_);
 }
 
 TextRecord* TextPaintTimingDetector::FindCandidate(
