@@ -151,10 +151,10 @@ const char* ProtoEnumToString(sync_pb::SyncEnums::Action action) {
                      UNKNOWN_ACTION);
   switch (action) {
     ENUM_CASE(sync_pb::SyncEnums, UPGRADE_CLIENT);
-    ENUM_CASE(sync_pb::SyncEnums, CLEAR_USER_DATA_AND_RESYNC);
-    ENUM_CASE(sync_pb::SyncEnums, ENABLE_SYNC_ON_ACCOUNT);
-    ENUM_CASE(sync_pb::SyncEnums, STOP_AND_RESTART_SYNC);
-    ENUM_CASE(sync_pb::SyncEnums, DISABLE_SYNC_ON_CLIENT);
+    ENUM_CASE(sync_pb::SyncEnums, DEPRECATED_CLEAR_USER_DATA_AND_RESYNC);
+    ENUM_CASE(sync_pb::SyncEnums, DEPRECATED_ENABLE_SYNC_ON_ACCOUNT);
+    ENUM_CASE(sync_pb::SyncEnums, DEPRECATED_STOP_AND_RESTART_SYNC);
+    ENUM_CASE(sync_pb::SyncEnums, DEPRECATED_DISABLE_SYNC_ON_CLIENT);
     ENUM_CASE(sync_pb::SyncEnums, UNKNOWN_ACTION);
   }
   NOTREACHED();
