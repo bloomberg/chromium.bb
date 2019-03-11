@@ -14,6 +14,8 @@
 
 namespace blink {
 
+class LayoutObject;
+
 // This is the helper class for constructing the DOM-to-TextContent offset
 // mapping. It holds an offset mapping, and provides APIs to modify the mapping
 // step by step until the construction is finished.
@@ -62,7 +64,7 @@ class CORE_EXPORT NGOffsetMappingBuilder {
 
    private:
     NGOffsetMappingBuilder* const builder_ = nullptr;
-    base::AutoReset<Persistent<const Node>> layout_object_auto_reset_;
+    base::AutoReset<const LayoutObject*> layout_object_auto_reset_;
     base::AutoReset<unsigned> appended_length_auto_reset_;
 
     DISALLOW_COPY_AND_ASSIGN(SourceNodeScope);
@@ -111,7 +113,7 @@ class CORE_EXPORT NGOffsetMappingBuilder {
   NGOffsetMapping Build();
 
  private:
-  Persistent<const Node> current_node_ = nullptr;
+  const LayoutObject* current_layout_object_ = nullptr;
   unsigned current_offset_ = 0;
   bool has_open_unit_ = false;
 #if DCHECK_IS_ON()

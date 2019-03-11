@@ -290,8 +290,6 @@ Vector<LayoutText::TextBoxInfo> LayoutText::GetTextBoxInfo() const {
       // produces one fragment but legacy produces multiple text boxes broken at
       // collapsed whitespaces. We break the fragment at collapsed whitespaces
       // to match the legacy output.
-      // TODO(xiaochengh): We need to report boxes of ::before/after text, which
-      // |NGOffsetMapping| doesn't support.
       for (const NGOffsetMappingUnit& unit :
            mapping->GetMappingUnitsForTextContentOffsetRange(
                text_fragment.StartOffset(), text_fragment.EndOffset())) {
@@ -311,10 +309,21 @@ Vector<LayoutText::TextBoxInfo> LayoutText::GetTextBoxInfo() const {
         rect.MoveBy(fragment->InlineOffsetToContainerBox().ToLayoutPoint());
 
         // Compute start of the legacy text box.
-        const base::Optional<unsigned> box_start =
-            CaretOffsetForPosition(mapping->GetLastPosition(clamped_start));
-        DCHECK(box_start.has_value());
-        results.push_back(TextBoxInfo{rect, box_start.value(), box_length});
+        if (unit.AssociatedNode()) {
+          // In case of |text_| comes from DOM node.
+          const base::Optional<unsigned> box_start =
+              CaretOffsetForPosition(mapping->GetLastPosition(clamped_start));
+          DCHECK(box_start.has_value());
+          results.push_back(TextBoxInfo{rect, *box_start, box_length});
+          continue;
+        }
+        // Handle CSS generated content, e.g. ::before/::after
+        const NGOffsetMappingUnit* const mapping_unit =
+            mapping->GetLastMappingUnit(clamped_start);
+        DCHECK(mapping_unit) << this << " at " << clamped_start;
+        const unsigned dom_offset =
+            mapping_unit->ConvertTextContentToLastDOMOffset(clamped_start);
+        results.push_back(TextBoxInfo{rect, dom_offset, box_length});
       }
     }
     return results;
