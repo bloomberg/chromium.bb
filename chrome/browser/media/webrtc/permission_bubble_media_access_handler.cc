@@ -57,7 +57,8 @@ struct PermissionBubbleMediaAccessHandler::PendingAccessRequest {
   RepeatingMediaResponseCallback callback;
 };
 
-PermissionBubbleMediaAccessHandler::PermissionBubbleMediaAccessHandler() {
+PermissionBubbleMediaAccessHandler::PermissionBubbleMediaAccessHandler()
+    : weak_factory_(this) {
   // PermissionBubbleMediaAccessHandler should be created on UI thread.
   // Otherwise, it will not receive
   // content::NOTIFICATION_WEB_CONTENTS_DESTROYED, and that will result in
@@ -128,17 +129,7 @@ void PermissionBubbleMediaAccessHandler::HandleRequest(
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_MACOSX)
-  // Fail if access is denied in system permissions. Note that if permissions
-  // have not yet been determined, we don't fail. If all other permissions are
-  // OK, we'll allow access. The reason for doing this is that if the permission
-  // is not yet determined, the user will get an async system dialog and we
-  // don't wait on that response before resolving getUserMedia. getUserMedia
-  // will succeed, but audio/video will be silent/black until user allows
-  // permission in the dialog. If the user denies permission audio/video will
-  // continue to be silent/black but they will likely understand why since they
-  // denied access. We trigger the system dialog explicitly in
-  // OnAccessRequestResponse().
-  // TODO(https://crbug.com/885184): Handle the not determined case better.
+  // Fail if access is denied in system permissions.
   if ((request.audio_type == blink::MEDIA_DEVICE_AUDIO_CAPTURE &&
        SystemAudioCapturePermissionIsDisallowed()) ||
       (request.video_type == blink::MEDIA_DEVICE_VIDEO_CAPTURE &&
@@ -150,12 +141,14 @@ void PermissionBubbleMediaAccessHandler::HandleRequest(
   }
 #endif  // defined(OS_MACOSX)
 
-  RequestsQueue& queue = pending_requests_[web_contents];
-  queue.push_back(PendingAccessRequest(
-      request, base::AdaptCallbackForRepeating(std::move(callback))));
+  RequestsMap& requests_map = pending_requests_[web_contents];
+  requests_map.emplace(
+      next_request_id_++,
+      PendingAccessRequest(
+          request, base::AdaptCallbackForRepeating(std::move(callback))));
 
   // If this is the only request then show the infobar.
-  if (queue.size() == 1)
+  if (requests_map.size() == 1)
     ProcessQueuedAccessRequest(web_contents);
 }
 
@@ -172,13 +165,15 @@ void PermissionBubbleMediaAccessHandler::ProcessQueuedAccessRequest(
 
   DCHECK(!it->second.empty());
 
-  const content::MediaStreamRequest request = it->second.front().request;
+  const int request_id = it->second.begin()->first;
+  const content::MediaStreamRequest& request =
+      it->second.begin()->second.request;
 #if defined(OS_ANDROID)
   if (IsScreenCaptureMediaType(request.video_type)) {
     ScreenCaptureInfoBarDelegateAndroid::Create(
         web_contents, request,
         base::Bind(&PermissionBubbleMediaAccessHandler::OnAccessRequestResponse,
-                   base::Unretained(this), web_contents));
+                   base::Unretained(this), web_contents, request_id));
     return;
   }
 #endif
@@ -186,7 +181,7 @@ void PermissionBubbleMediaAccessHandler::ProcessQueuedAccessRequest(
   MediaStreamDevicesController::RequestPermissions(
       request,
       base::Bind(&PermissionBubbleMediaAccessHandler::OnAccessRequestResponse,
-                 base::Unretained(this), web_contents));
+                 base::Unretained(this), web_contents, request_id));
 }
 
 void PermissionBubbleMediaAccessHandler::UpdateMediaRequestState(
@@ -200,14 +195,15 @@ void PermissionBubbleMediaAccessHandler::UpdateMediaRequestState(
     return;
 
   bool found = false;
-  for (auto rqs_it = pending_requests_.begin();
-       rqs_it != pending_requests_.end(); ++rqs_it) {
-    RequestsQueue& queue = rqs_it->second;
-    for (RequestsQueue::iterator it = queue.begin(); it != queue.end(); ++it) {
-      if (it->request.render_process_id == render_process_id &&
-          it->request.render_frame_id == render_frame_id &&
-          it->request.page_request_id == page_request_id) {
-        queue.erase(it);
+  for (auto requests_it = pending_requests_.begin();
+       requests_it != pending_requests_.end(); ++requests_it) {
+    RequestsMap& requests_map = requests_it->second;
+    for (RequestsMap::iterator it = requests_map.begin();
+         it != requests_map.end(); ++it) {
+      if (it->second.request.render_process_id == render_process_id &&
+          it->second.request.render_frame_id == render_frame_id &&
+          it->second.request.page_request_id == page_request_id) {
+        requests_map.erase(it);
         found = true;
         break;
       }
@@ -219,38 +215,77 @@ void PermissionBubbleMediaAccessHandler::UpdateMediaRequestState(
 
 void PermissionBubbleMediaAccessHandler::OnAccessRequestResponse(
     content::WebContents* web_contents,
+    int request_id,
     const blink::MediaStreamDevices& devices,
     blink::MediaStreamRequestResult result,
     std::unique_ptr<content::MediaStreamUI> ui) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  auto it = pending_requests_.find(web_contents);
-  if (it == pending_requests_.end()) {
+  auto request_maps_it = pending_requests_.find(web_contents);
+  if (request_maps_it == pending_requests_.end()) {
     // WebContents has been destroyed. Don't need to do anything.
     return;
   }
 
-  RequestsQueue& queue(it->second);
-  if (queue.empty())
+  RequestsMap& requests_map(request_maps_it->second);
+  if (requests_map.empty())
     return;
 
+  auto request_it = requests_map.find(request_id);
+  DCHECK(request_it != requests_map.end());
+  if (request_it == requests_map.end())
+    return;
+
+  blink::MediaStreamRequestResult final_result = result;
+
 #if defined(OS_MACOSX)
-  // If the request was approved, trigger system user dialogs if needed. We must
-  // do this explicitly so that the system gives the correct information about
-  // the permission states in future requests, see HandleRequest().
+  // If the request was approved, ask for system permissions if needed, and run
+  // this function again when done.
   if (result == blink::MEDIA_DEVICE_OK) {
-    const content::MediaStreamRequest& request = queue.front().request;
-    if (request.audio_type == blink::MEDIA_DEVICE_AUDIO_CAPTURE)
-      EnsureSystemAudioCapturePermissionIsOrGetsDetermined();
-    if (request.video_type == blink::MEDIA_DEVICE_VIDEO_CAPTURE)
-      EnsureSystemVideoCapturePermissionIsOrGetsDetermined();
+    const content::MediaStreamRequest& request = request_it->second.request;
+    if (request.audio_type == blink::MEDIA_DEVICE_AUDIO_CAPTURE) {
+      const SystemPermission system_audio_permission =
+          CheckSystemAudioCapturePermission();
+      if (system_audio_permission == SystemPermission::kNotDetermined) {
+        // Using WeakPtr since callback can come at any time and we might be
+        // destroyed.
+        RequestSystemAudioCapturePermisson(
+            base::BindOnce(
+                &PermissionBubbleMediaAccessHandler::OnAccessRequestResponse,
+                weak_factory_.GetWeakPtr(), web_contents, request_id, devices,
+                result, std::move(ui)),
+            {content::BrowserThread::UI});
+        return;
+      } else if (system_audio_permission == SystemPermission::kNotAllowed) {
+        final_result = blink::MEDIA_DEVICE_SYSTEM_PERMISSION_DENIED;
+      }
+    }
+
+    if (request.video_type == blink::MEDIA_DEVICE_VIDEO_CAPTURE) {
+      const SystemPermission system_video_permission =
+          CheckSystemVideoCapturePermission();
+      if (system_video_permission == SystemPermission::kNotDetermined) {
+        // Using WeakPtr since callback can come at any time and we might be
+        // destroyed.
+        RequestSystemVideoCapturePermisson(
+            base::BindOnce(
+                &PermissionBubbleMediaAccessHandler::OnAccessRequestResponse,
+                weak_factory_.GetWeakPtr(), web_contents, request_id, devices,
+                result, std::move(ui)),
+            {content::BrowserThread::UI});
+        return;
+      } else if (system_video_permission == SystemPermission::kNotAllowed) {
+        final_result = blink::MEDIA_DEVICE_SYSTEM_PERMISSION_DENIED;
+      }
+    }
   }
 #endif  // defined(OS_MACOSX)
 
-  RepeatingMediaResponseCallback callback = queue.front().callback;
-  queue.pop_front();
+  RepeatingMediaResponseCallback callback =
+      std::move(request_it->second.callback);
+  requests_map.erase(request_it);
 
-  if (!queue.empty()) {
+  if (!requests_map.empty()) {
     // Post a task to process next queued request. It has to be done
     // asynchronously to make sure that calling infobar is not destroyed until
     // after this function returns.
@@ -261,7 +296,7 @@ void PermissionBubbleMediaAccessHandler::OnAccessRequestResponse(
             base::Unretained(this), web_contents));
   }
 
-  callback.Run(devices, result, std::move(ui));
+  std::move(callback).Run(devices, final_result, std::move(ui));
 }
 
 void PermissionBubbleMediaAccessHandler::Observe(

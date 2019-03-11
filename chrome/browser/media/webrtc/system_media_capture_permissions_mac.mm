@@ -18,7 +18,14 @@
 
 #import <AVFoundation/AVFoundation.h>
 
+#include "base/bind_helpers.h"
+#include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/logging.h"
+#include "base/task/post_task.h"
+#include "base/task/task_traits.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace {
 
@@ -48,21 +55,51 @@ bool SystemMediaCapturePermissionIsDisallowed(NSString* media_type) {
   return false;
 }
 
-void EnsureSystemMediaCapturePermissionIsOrGetsDetermined(
-    NSString* media_type) {
+SystemPermission CheckSystemMediaCapturePermission(NSString* media_type) {
   if (@available(macOS 10.14, *)) {
-    if (MediaAuthorizationStatus(media_type) == 0) {
+    NSInteger auth_status = MediaAuthorizationStatus(media_type);
+    switch (auth_status) {
+      case 0:
+        return SystemPermission::kNotDetermined;
+      case 1:
+      case 2:
+        return SystemPermission::kNotAllowed;
+      case 3:
+        return SystemPermission::kAllowed;
+      default:
+        NOTREACHED();
+        return SystemPermission::kAllowed;
+    }
+  }
+
+  // On pre-10.14, there are no system permissions, so we return allowed.
+  return SystemPermission::kAllowed;
+}
+
+// Use RepeatingCallback since it must be copyable for use in the block. It's
+// only called once though.
+void RequestSystemMediaCapturePermission(NSString* media_type,
+                                         base::RepeatingClosure callback,
+                                         const base::TaskTraits& traits) {
+  if (@available(macOS 10.14, *)) {
       AVCaptureDevice* target = [AVCaptureDevice class];
       SEL selector = @selector(requestAccessForMediaType:completionHandler:);
       if ([target respondsToSelector:selector]) {
         [target performSelector:selector
                      withObject:media_type
-                     withObject:^(BOOL granted){
+                     withObject:^(BOOL granted) {
+                       base::PostTaskWithTraits(FROM_HERE, traits,
+                                                std::move(callback));
                      }];
       } else {
         DLOG(WARNING) << "requestAccessForMediaType could not be executed";
       }
-    }
+  } else {
+    NOTREACHED();
+    // Should never happen since for pre-10.14 system permissions don't exist
+    // and checking them in CheckSystemAudioCapturePermission() will always
+    // return allowed, and this function should not be called.
+    base::PostTaskWithTraits(FROM_HERE, traits, std::move(callback));
   }
 }
 
@@ -76,10 +113,24 @@ bool SystemVideoCapturePermissionIsDisallowed() {
   return SystemMediaCapturePermissionIsDisallowed(AVMediaTypeVideo);
 }
 
-void EnsureSystemAudioCapturePermissionIsOrGetsDetermined() {
-  EnsureSystemMediaCapturePermissionIsOrGetsDetermined(AVMediaTypeAudio);
+SystemPermission CheckSystemAudioCapturePermission() {
+  return CheckSystemMediaCapturePermission(AVMediaTypeAudio);
 }
 
-void EnsureSystemVideoCapturePermissionIsOrGetsDetermined() {
-  EnsureSystemMediaCapturePermissionIsOrGetsDetermined(AVMediaTypeVideo);
+SystemPermission CheckSystemVideoCapturePermission() {
+  return CheckSystemMediaCapturePermission(AVMediaTypeVideo);
+}
+
+void RequestSystemAudioCapturePermisson(base::OnceClosure callback,
+                                        const base::TaskTraits& traits) {
+  RequestSystemMediaCapturePermission(
+      AVMediaTypeAudio, base::AdaptCallbackForRepeating(std::move(callback)),
+      traits);
+}
+
+void RequestSystemVideoCapturePermisson(base::OnceClosure callback,
+                                        const base::TaskTraits& traits) {
+  RequestSystemMediaCapturePermission(
+      AVMediaTypeVideo, base::AdaptCallbackForRepeating(std::move(callback)),
+      traits);
 }

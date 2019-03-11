@@ -7,7 +7,7 @@
 
 #include <map>
 
-#include "base/containers/circular_deque.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/media/media_access_handler.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -41,11 +41,12 @@ class PermissionBubbleMediaAccessHandler
 
  private:
   struct PendingAccessRequest;
-  using RequestsQueue = base::circular_deque<PendingAccessRequest>;
-  using RequestsQueues = std::map<content::WebContents*, RequestsQueue>;
+  using RequestsMap = std::map<int, PendingAccessRequest>;
+  using RequestsMaps = std::map<content::WebContents*, RequestsMap>;
 
   void ProcessQueuedAccessRequest(content::WebContents* web_contents);
   void OnAccessRequestResponse(content::WebContents* web_contents,
+                               int request_id,
                                const blink::MediaStreamDevices& devices,
                                blink::MediaStreamRequestResult result,
                                std::unique_ptr<content::MediaStreamUI> ui);
@@ -55,7 +56,11 @@ class PermissionBubbleMediaAccessHandler
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
-  RequestsQueues pending_requests_;
+  int next_request_id_ = 0;
+  RequestsMaps pending_requests_;
   content::NotificationRegistrar notifications_registrar_;
+
+  base::WeakPtrFactory<PermissionBubbleMediaAccessHandler> weak_factory_;
 };
+
 #endif  // CHROME_BROWSER_MEDIA_WEBRTC_PERMISSION_BUBBLE_MEDIA_ACCESS_HANDLER_H_
