@@ -62,14 +62,21 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
     # The number of attempted runs is 1 + the retry limit.
     self.assertEquals(self._test_state['num_test_runs'], 3)
 
-  def testUseTestExpectationsFileToHandleExpectedSkip(self):
+  def _RunTestsWithExpectationsFiles(self):
     self._RunIntegrationTest(
       'run_tests_with_expectations_files',
-      [],
-      [],
+      [('unittest_data.integration_tests'
+        '.RunTestsWithExpectationsFiles.unexpected_test_failure')],
+      [('unittest_data.integration_tests'
+        '.RunTestsWithExpectationsFiles.expected_failure'),
+       ('unittest_data.integration_tests'
+        '.RunTestsWithExpectationsFiles.expected_flaky')],
       [('unittest_data.integration_tests'
         '.RunTestsWithExpectationsFiles.expected_skip')],
-      ['--test-filter=expected_skip'])
+      ['--retry-limit=3', '--retry-only-retry-on-failure-tests'])
+
+  def testUseTestExpectationsFileToHandleExpectedSkip(self):
+    self._RunTestsWithExpectationsFiles()
     results = (self._test_result['tests']['unittest_data']['integration_tests']
                ['RunTestsWithExpectationsFiles']['expected_skip'])
     self.assertEqual(results['expected'], 'SKIP')
@@ -77,13 +84,7 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
     self.assertNotIn('is_regression', results)
 
   def testUseTestExpectationsFileToHandleUnexpectedTestFailure(self):
-    self._RunIntegrationTest(
-      'run_tests_with_expectations_files',
-      [('unittest_data.integration_tests'
-        '.RunTestsWithExpectationsFiles.unexpected_test_failure')],
-      [],
-      [],
-      ['--test-filter=unexpected_test_failure'])
+    self._RunTestsWithExpectationsFiles()
     results = (self._test_result['tests']['unittest_data']['integration_tests']
                ['RunTestsWithExpectationsFiles']['unexpected_test_failure'])
     self.assertEqual(results['expected'], 'PASS')
@@ -91,13 +92,7 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
     self.assertIn('is_regression', results)
 
   def testUseTestExpectationsFileToHandleExpectedFailure(self):
-    self._RunIntegrationTest(
-      'run_tests_with_expectations_files',
-      [],
-      [('unittest_data.integration_tests'
-        '.RunTestsWithExpectationsFiles.expected_failure')],
-      [],
-      ['--test-filter=expected_failure'])
+    self._RunTestsWithExpectationsFiles()
     results = (self._test_result['tests']['unittest_data']['integration_tests']
                ['RunTestsWithExpectationsFiles']['expected_failure'])
     self.assertEqual(results['expected'], 'FAIL')
@@ -105,14 +100,7 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
     self.assertNotIn('is_regression', results)
 
   def testUseTestExpectationsFileToHandleExpectedFlakyTest(self):
-    self._RunIntegrationTest(
-      'run_tests_with_expectations_files',
-      [],
-      [('unittest_data.integration_tests'
-        '.RunTestsWithExpectationsFiles.expected_flaky')],
-      [],
-      ['--test-filter=expected_flaky', '--retry-limit=3',
-       '--retry-only-retry-on-failure-tests'])
+    self._RunTestsWithExpectationsFiles()
     results = (self._test_result['tests']['unittest_data']['integration_tests']
                ['RunTestsWithExpectationsFiles']['expected_flaky'])
     self.assertEqual(results['expected'], 'PASS')
