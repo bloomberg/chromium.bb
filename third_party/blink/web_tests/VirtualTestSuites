@@ -456,47 +456,47 @@
   {
     "prefix": "outofblink-cors",
     "base": "external/wpt/fetch",
-    "args": ["--enable-features=OutOfBlinkCors,NetworkService"]
+    "args": ["--enable-features=OutOfBlinkCors,ServiceWorkerServicification"]
   },
   {
     "prefix": "outofblink-cors",
     "base": "external/wpt/http",
-    "args": ["--enable-features=OutOfBlinkCors,NetworkService"]
+    "args": ["--enable-features=OutOfBlinkCors,ServiceWorkerServicification"]
   },
   {
     "prefix": "outofblink-cors",
     "base": "external/wpt/referrer-policy",
-    "args": ["--enable-features=OutOfBlinkCors,NetworkService"]
+    "args": ["--enable-features=OutOfBlinkCors,ServiceWorkerServicification"]
   },
   {
     "prefix": "outofblink-cors",
     "base": "external/wpt/service-workers",
-    "args": ["--enable-features=OutOfBlinkCors,NetworkService"]
+    "args": ["--enable-features=OutOfBlinkCors,ServiceWorkerServicification"]
   },
   {
     "prefix": "outofblink-cors",
     "base": "external/wpt/xhr",
-    "args": ["--enable-features=OutOfBlinkCors,NetworkService"]
+    "args": ["--enable-features=OutOfBlinkCors,ServiceWorkerServicification"]
   },
   {
     "prefix": "outofblink-cors",
     "base": "http/tests/fetch",
-    "args": ["--enable-features=OutOfBlinkCors,NetworkService"]
+    "args": ["--enable-features=OutOfBlinkCors,ServiceWorkerServicification"]
   },
   {
     "prefix": "outofblink-cors",
     "base": "http/tests/navigation",
-    "args": ["--enable-features=OutOfBlinkCors,NetworkService"]
+    "args": ["--enable-features=OutOfBlinkCors,ServiceWorkerServicification"]
   },
   {
     "prefix": "outofblink-cors",
     "base": "http/tests/security",
-    "args": ["--enable-features=OutOfBlinkCors,NetworkService"]
+    "args": ["--enable-features=OutOfBlinkCors,ServiceWorkerServicification"]
   },
   {
     "prefix": "outofblink-cors",
     "base": "http/tests/xmlhttprequest",
-    "args": ["--enable-features=OutOfBlinkCors,NetworkService"]
+    "args": ["--enable-features=OutOfBlinkCors,ServiceWorkerServicification"]
   },
   {
     "prefix": "presentation",
