@@ -4,7 +4,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//      http://www.apache.org/licenses/LICENSE-2.0
+//      https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -515,7 +515,7 @@ inline size_t GrowthToLowerboundCapacity(size_t growth) {
 // if they are equal, false if they are not. If two keys compare equal, then
 // their hash values as defined by Hash MUST be equal.
 //
-// Allocator: an Allocator [http://devdocs.io/cpp/concept/allocator] with which
+// Allocator: an Allocator [https://devdocs.io/cpp/concept/allocator] with which
 // the storage of the hashtable will be allocated and the elements will be
 // constructed and destroyed.
 template <class Policy, class Hash, class Eq, class Alloc>
@@ -763,8 +763,8 @@ class raw_hash_set {
   // that accept std::initializer_list<T> and std::initializer_list<init_type>.
   // This is advantageous for performance.
   //
-  //   // Turns {"abc", "def"} into std::initializer_list<std::string>, then copies
-  //   // the strings into the set.
+  //   // Turns {"abc", "def"} into std::initializer_list<std::string>, then
+  //   // copies the strings into the set.
   //   std::unordered_set<std::string> s = {"abc", "def"};
   //
   //   // Turns {"abc", "def"} into std::initializer_list<const char*>, then

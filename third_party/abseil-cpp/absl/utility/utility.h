@@ -4,7 +4,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//      http://www.apache.org/licenses/LICENSE-2.0
+//      https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -32,8 +32,8 @@
 //
 // References:
 //
-//  http://en.cppreference.com/w/cpp/utility/integer_sequence
-//  http://en.cppreference.com/w/cpp/utility/apply
+//  https://en.cppreference.com/w/cpp/utility/integer_sequence
+//  https://en.cppreference.com/w/cpp/utility/apply
 //  http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2013/n3658.html
 //
 
@@ -238,14 +238,14 @@ auto apply_helper(Functor&& functor, Tuple&& t, index_sequence<Indexes...>)
 //    public:
 //     void Bar(int);
 //   };
-//   void user_function1(int, string);
+//   void user_function1(int, std::string);
 //   void user_function2(std::unique_ptr<Foo>);
 //   auto user_lambda = [](int, int) {};
 //
 //   int main()
 //   {
-//       std::tuple<int, string> tuple1(42, "bar");
-//       // Invokes the first user function on int, string.
+//       std::tuple<int, std::string> tuple1(42, "bar");
+//       // Invokes the first user function on int, std::string.
 //       absl::apply(&user_function1, tuple1);
 //
 //       std::tuple<std::unique_ptr<Foo>> tuple2(absl::make_unique<Foo>());
