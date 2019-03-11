@@ -26,6 +26,10 @@ class ExecutionContext;
 typedef HashMap<String, mojom::FeaturePolicyFeature> FeatureNameMap;
 CORE_EXPORT const FeatureNameMap& GetDefaultFeatureNameMap();
 
+// Returns the list of features which are currently available in this context,
+// including any features which have been made available by an origin trial.
+CORE_EXPORT const Vector<String> GetAvailableFeatures(ExecutionContext*);
+
 // Converts a header policy string into a vector of allowlists, one for each
 // feature specified. Unrecognized features are filtered out. If |messages| is
 // not null, then any message in the input will cause a warning message to be
