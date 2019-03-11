@@ -13,16 +13,6 @@
 
 namespace views {
 
-const double InkDropRipple::kSlowAnimationDurationFactor = 3.0;
-
-bool InkDropRipple::UseFastAnimations() {
-  static bool fast =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          (::switches::kMaterialDesignInkDropAnimationSpeed)) !=
-      ::switches::kMaterialDesignInkDropAnimationSpeedSlow;
-  return fast;
-}
-
 const float InkDropRipple::kHiddenOpacity = 0.f;
 
 InkDropRipple::InkDropRipple()

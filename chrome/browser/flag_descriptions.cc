@@ -3278,14 +3278,6 @@ const char kMashOopVizDescription[] =
     "Runs viz in a separate process when mash is enabled (otherwise viz would "
     "run in ash process)";
 
-const char kMaterialDesignInkDropAnimationSpeedName[] =
-    "Material design ink drop animation speed";
-const char kMaterialDesignInkDropAnimationSpeedDescription[] =
-    "Sets the speed of the experimental visual feedback animations for "
-    "material design.";
-const char kMaterialDesignInkDropAnimationFast[] = "Fast";
-const char kMaterialDesignInkDropAnimationSlow[] = "Slow";
-
 const char kMemoryPressureThresholdName[] =
     "Memory discard strategy for advanced pressure handling";
 const char kMemoryPressureThresholdDescription[] =

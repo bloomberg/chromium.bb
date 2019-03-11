@@ -502,15 +502,6 @@ const FeatureEntry::Choice kAshShelfColorSchemeChoices[] = {
      ash::switches::kAshShelfColorSchemeDarkMuted},
 };
 
-const FeatureEntry::Choice kAshMaterialDesignInkDropAnimationSpeed[] = {
-    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
-    {flag_descriptions::kMaterialDesignInkDropAnimationFast,
-     switches::kMaterialDesignInkDropAnimationSpeed,
-     switches::kMaterialDesignInkDropAnimationSpeedFast},
-    {flag_descriptions::kMaterialDesignInkDropAnimationSlow,
-     switches::kMaterialDesignInkDropAnimationSpeed,
-     switches::kMaterialDesignInkDropAnimationSpeedSlow}};
-
 const FeatureEntry::Choice kUiShowCompositedLayerBordersChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
     {flag_descriptions::kUiShowCompositedLayerBordersRenderPass,
@@ -1477,10 +1468,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"ash-shelf-color-scheme", flag_descriptions::kAshShelfColorScheme,
      flag_descriptions::kAshShelfColorSchemeDescription, kOsCrOS,
      MULTI_VALUE_TYPE(kAshShelfColorSchemeChoices)},
-    {"material-design-ink-drop-animation-speed",
-     flag_descriptions::kMaterialDesignInkDropAnimationSpeedName,
-     flag_descriptions::kMaterialDesignInkDropAnimationSpeedDescription,
-     kOsCrOS, MULTI_VALUE_TYPE(kAshMaterialDesignInkDropAnimationSpeed)},
     {"ui-slow-animations", flag_descriptions::kUiSlowAnimationsName,
      flag_descriptions::kUiSlowAnimationsDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(switches::kUISlowAnimations)},

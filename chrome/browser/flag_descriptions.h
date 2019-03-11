@@ -1959,11 +1959,6 @@ extern const char kLockScreenNotificationDescription[];
 extern const char kMashOopVizName[];
 extern const char kMashOopVizDescription[];
 
-extern const char kMaterialDesignInkDropAnimationSpeedName[];
-extern const char kMaterialDesignInkDropAnimationSpeedDescription[];
-extern const char kMaterialDesignInkDropAnimationFast[];
-extern const char kMaterialDesignInkDropAnimationSlow[];
-
 extern const char kMemoryPressureThresholdName[];
 extern const char kMemoryPressureThresholdDescription[];
 extern const char kConservativeThresholds[];

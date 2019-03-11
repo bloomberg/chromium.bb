@@ -135,11 +135,7 @@ base::TimeDelta GetAnimationDuration(InkDropSubAnimations state) {
     return base::TimeDelta();
   }
 
-  return base::TimeDelta::FromMilliseconds(
-      (InkDropRipple::UseFastAnimations()
-           ? 1
-           : InkDropRipple::kSlowAnimationDurationFactor) *
-      kAnimationDurationInMs[state]);
+  return base::TimeDelta::FromMilliseconds(kAnimationDurationInMs[state]);
 }
 
 }  // namespace
