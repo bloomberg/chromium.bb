@@ -197,7 +197,8 @@ class ASH_EXPORT AppListControllerImpl
                                   const gfx::Point& screen_location) override;
   bool CanProcessEventsOnApplistViews() override;
   void GetNavigableContentsFactory(
-      content::mojom::NavigableContentsFactoryRequest request) override;
+      mojo::PendingReceiver<content::mojom::NavigableContentsFactory> receiver)
+      override;
   ash::AssistantViewDelegate* GetAssistantViewDelegate() override;
   void OnSearchResultVisibilityChanged(const std::string& id,
                                        bool visibility) override;

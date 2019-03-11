@@ -35,6 +35,7 @@
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/content/public/mojom/navigable_contents_factory.mojom.h"
 
 class PrefRegistrySimple;
@@ -112,7 +113,7 @@ class ASH_EXPORT AssistantController
   // Acquires a NavigableContentsFactory from the Content Service to allow
   // Assistant to display embedded web contents.
   void GetNavigableContentsFactory(
-      content::mojom::NavigableContentsFactoryRequest request);
+      mojo::PendingReceiver<content::mojom::NavigableContentsFactory> receiver);
 
   AssistantAlarmTimerController* alarm_timer_controller() {
     return &assistant_alarm_timer_controller_;

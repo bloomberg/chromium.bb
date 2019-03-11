@@ -16,9 +16,10 @@
 
 namespace content {
 
-Service::Service(ServiceDelegate* delegate,
-                 service_manager::mojom::ServiceRequest request)
-    : delegate_(delegate), service_binding_(this, std::move(request)) {
+Service::Service(
+    ServiceDelegate* delegate,
+    mojo::PendingReceiver<service_manager::mojom::Service> receiver)
+    : delegate_(delegate), service_binding_(this, std::move(receiver)) {
   binders_.Add(base::BindRepeating(
       [](Service* service,
          mojo::PendingReceiver<mojom::NavigableContentsFactory> receiver) {

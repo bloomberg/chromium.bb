@@ -32,6 +32,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/services/assistant/public/features.h"
 #include "components/prefs/pref_service.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace ash {
@@ -600,13 +601,13 @@ void AssistantInteractionController::OnProcessPendingResponse() {
 
   // Bind an interface to a navigable contents factory that is needed for
   // processing card elements.
-  content::mojom::NavigableContentsFactoryPtr contents_factory;
+  mojo::Remote<content::mojom::NavigableContentsFactory> factory;
   assistant_controller_->GetNavigableContentsFactory(
-      mojo::MakeRequest(&contents_factory));
+      factory.BindNewPipeAndPassReceiver());
 
   // Start processing.
   model_.pending_response()->Process(
-      std::move(contents_factory),
+      std::move(factory),
       base::BindOnce(
           &AssistantInteractionController::OnPendingResponseProcessed,
           weak_factory_.GetWeakPtr()));

@@ -78,7 +78,8 @@ class AppListClientImpl
                             const syncer::StringOrdinal& position) override;
   void OnPageBreakItemDeleted(const std::string& id) override;
   void GetNavigableContentsFactory(
-      content::mojom::NavigableContentsFactoryRequest request) override;
+      mojo::PendingReceiver<content::mojom::NavigableContentsFactory> receiver)
+      override;
   void OnSearchResultVisibilityChanged(const std::string& id,
                                        bool visible) override;
 

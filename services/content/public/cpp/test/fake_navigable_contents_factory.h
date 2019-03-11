@@ -23,12 +23,6 @@ class FakeNavigableContentsFactory : public mojom::NavigableContentsFactory {
   FakeNavigableContentsFactory();
   ~FakeNavigableContentsFactory() override;
 
-  // DEPRECATED: Use |BindReceiver()|.
-  void BindRequest(mojom::NavigableContentsFactoryRequest request) {
-    BindReceiver(mojo::PendingReceiver<mojom::NavigableContentsFactory>(
-        request.PassMessagePipe()));
-  }
-
   // Bind a new factory receiver. A single FakeNavigableContentsFactory supports
   // binding any number of receivers simultaneously.
   void BindReceiver(

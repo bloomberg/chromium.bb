@@ -104,8 +104,8 @@ bool AppListTestViewDelegate::CanProcessEventsOnApplistViews() {
 }
 
 void AppListTestViewDelegate::GetNavigableContentsFactory(
-    content::mojom::NavigableContentsFactoryRequest request) {
-  fake_navigable_contents_factory_.BindRequest(std::move(request));
+    mojo::PendingReceiver<content::mojom::NavigableContentsFactory> receiver) {
+  fake_navigable_contents_factory_.BindReceiver(std::move(receiver));
 }
 
 void AppListTestViewDelegate::GetSearchResultContextMenuModel(

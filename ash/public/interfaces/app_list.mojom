@@ -392,5 +392,6 @@ interface AppListClient {
   // Acquires a NavigableContentsFactory (indirectly) from the Content Service
   // to allow the app list to display embedded web contents. Currently used only
   // for answer card search results.
-  GetNavigableContentsFactory(content.mojom.NavigableContentsFactory& request);
+  GetNavigableContentsFactory(
+      pending_receiver<content.mojom.NavigableContentsFactory> receiver);
 };

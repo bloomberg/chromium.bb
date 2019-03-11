@@ -1034,9 +1034,9 @@ bool AppListControllerImpl::CanProcessEventsOnApplistViews() {
 }
 
 void AppListControllerImpl::GetNavigableContentsFactory(
-    content::mojom::NavigableContentsFactoryRequest request) {
+    mojo::PendingReceiver<content::mojom::NavigableContentsFactory> receiver) {
   if (client_)
-    client_->GetNavigableContentsFactory(std::move(request));
+    client_->GetNavigableContentsFactory(std::move(receiver));
 }
 
 ash::AssistantViewDelegate* AppListControllerImpl::GetAssistantViewDelegate() {

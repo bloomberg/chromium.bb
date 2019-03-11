@@ -185,7 +185,7 @@ void AssistantWebView::OnDeepLinkReceived(
   RemoveContents();
 
   delegate_->GetNavigableContentsFactoryForView(
-      mojo::MakeRequest(&contents_factory_));
+      contents_factory_.BindNewPipeAndPassReceiver());
 
   const gfx::Size preferred_size =
       gfx::Size(kPreferredWidthDip,

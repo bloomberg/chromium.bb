@@ -25,6 +25,7 @@
 #include "base/component_export.h"
 #include "base/observer_list_types.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/content/public/mojom/navigable_contents_factory.mojom.h"
 #include "ui/wm/core/cursor_manager.h"
 
@@ -137,7 +138,8 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantViewDelegate {
   // Acquires a NavigableContentsFactory from the Content Service to allow
   // Assistant to display embedded web contents.
   virtual void GetNavigableContentsFactoryForView(
-      content::mojom::NavigableContentsFactoryRequest request) = 0;
+      mojo::PendingReceiver<content::mojom::NavigableContentsFactory>
+          receiver) = 0;
 
   // Returns the root window that newly created windows should be added to.
   virtual aura::Window* GetRootWindowForNewWindows() = 0;
