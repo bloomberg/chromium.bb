@@ -8,8 +8,8 @@
 #import <UIKit/UIKit.h>
 #import <WebKit/WebKit.h>
 
-#import "ios/chrome/browser/ui/url_loader.h"
 #import "ios/web/public/block_types.h"
+#include "url/gurl.h"
 
 @protocol CRWNativeContentDelegate;
 
