@@ -239,6 +239,13 @@ def GeneralTemplates(site_config):
   )
 
   site_config.AddTemplate(
+      'informational',
+      display_label=config_lib.DISPLAY_LABEL_INFORMATIONAL,
+      description='Informational Builds',
+      luci_builder=config_lib.LUCI_BUILDER_INFORMATIONAL,
+  )
+
+  site_config.AddTemplate(
       'external',
       internal=False,
       overlays=constants.PUBLIC_OVERLAYS,
@@ -423,7 +430,7 @@ def GeneralTemplates(site_config):
   site_config.AddTemplate(
       'fuzzer',
       site_config.templates.full,
-      display_label=config_lib.DISPLAY_LABEL_INFORMATIONAL,
+      site_config.templates.informational,
       profile='fuzzer',
       chrome_sdk=False,
       sync_chrome=False,
@@ -487,6 +494,7 @@ def GeneralTemplates(site_config):
       'chromium_pfq_informational',
       site_config.templates.external_chromium_pfq,
       site_config.templates.chrome_try,
+      site_config.templates.informational,
       display_label=config_lib.DISPLAY_LABEL_CHROME_INFORMATIONAL,
       chrome_sdk=False,
       unittests=False,
@@ -521,7 +529,7 @@ def GeneralTemplates(site_config):
       'tot_asan_informational',
       site_config.templates.chromium_pfq_informational,
       site_config.templates.asan,
-      display_label=config_lib.DISPLAY_LABEL_INFORMATIONAL,
+      site_config.templates.informational,
       unittests=True,
       description='Build TOT Chrome with Address Sanitizer (Clang)',
   )
@@ -530,7 +538,7 @@ def GeneralTemplates(site_config):
       'tot_ubsan_informational',
       site_config.templates.chromium_pfq_informational,
       site_config.templates.ubsan,
-      display_label=config_lib.DISPLAY_LABEL_INFORMATIONAL,
+      site_config.templates.informational,
       unittests=True,
       description='Build TOT Chrome with Undefined Behavior Sanitizer (Clang)',
   )
@@ -2692,7 +2700,7 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.asan,
       site_config.templates.incremental,
       site_config.templates.no_hwtest_builder,
-      display_label=config_lib.DISPLAY_LABEL_INFORMATIONAL,
+      site_config.templates.informational,
       boards=['amd64-generic'],
       description='Build with Address Sanitizer (Clang)',
       # THESE IMAGES CAN DAMAGE THE LAB and cannot be used for hardware testing.
@@ -2715,7 +2723,7 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.incremental,
       site_config.templates.no_hwtest_builder,
       site_config.templates.internal,
-      display_label=config_lib.DISPLAY_LABEL_INFORMATIONAL,
+      site_config.templates.informational,
       boards=['betty'],
       description='Build with Address Sanitizer (Clang)',
       # Once every day. 3 PM UTC is 7 AM PST (no daylight savings).
@@ -2757,7 +2765,7 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.ubsan,
       site_config.templates.incremental,
       site_config.templates.no_hwtest_builder,
-      display_label=config_lib.DISPLAY_LABEL_INFORMATIONAL,
+      site_config.templates.informational,
       boards=['amd64-generic'],
       description='Build with Undefined Behavior Sanitizer (Clang)',
       # THESE IMAGES CAN DAMAGE THE LAB and cannot be used for hardware testing.
@@ -3818,11 +3826,11 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       gs_path=os.path.join(constants.TRASH_BUCKET, 'branch-util-noise/')
   )
 
-  site_config.AddWithoutTemplate(
+  site_config.Add(
       'betty-vmtest-informational',
+      site_config.templates.informational,
       site_config.templates.internal,
       site_config.templates.no_hwtest_builder,
-      display_label=config_lib.DISPLAY_LABEL_INFORMATIONAL,
       description='VMTest Informational Builder for running long run tests.',
       build_type=constants.GENERIC_TYPE,
       boards=['betty'],
