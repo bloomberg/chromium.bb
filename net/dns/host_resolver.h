@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/optional.h"
+#include "base/strings/string_piece.h"
 #include "net/base/address_family.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/host_port_pair.h"
@@ -295,9 +296,13 @@ class NET_EXPORT HostResolver {
   // Creates a HostResolver implementation that queries the underlying system.
   // (Except if a unit-test has changed the global HostResolverProc using
   // ScopedHostResolverProc to intercept requests to the system).
+  //
+  // If |mapping_rules| is non-empty, the mapping rules will be applied to
+  // requests.  See MappedHostResolver for details.
   static std::unique_ptr<HostResolver> CreateSystemResolver(
       const Options& options,
-      NetLog* net_log);
+      NetLog* net_log,
+      base::StringPiece host_mapping_rules = "");
   // Same, but explicitly returns the implementing ContextHostResolver. Only
   // used by tests.
   static std::unique_ptr<ContextHostResolver> CreateSystemResolverImpl(

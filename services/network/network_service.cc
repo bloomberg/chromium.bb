@@ -29,7 +29,6 @@
 #include "net/cert/signed_tree_head.h"
 #include "net/dns/dns_config_overrides.h"
 #include "net/dns/host_resolver.h"
-#include "net/dns/mapped_host_resolver.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/log/file_net_log_observer.h"
 #include "net/log/net_log.h"
@@ -107,18 +106,15 @@ std::unique_ptr<net::NetworkChangeNotifier> CreateNetworkChangeNotifierIfNeeded(
 }
 
 std::unique_ptr<net::HostResolver> CreateHostResolver(net::NetLog* net_log) {
+  // Use hostname remappings if specified on the command-line. This allows
+  // forwarding all requests through a designated test server.
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
-  std::unique_ptr<net::HostResolver> host_resolver(
-      net::HostResolver::CreateDefaultResolver(net_log));
-  if (!command_line.HasSwitch(switches::kHostResolverRules))
-    return host_resolver;
+  std::string host_mapping_rules =
+      command_line.GetSwitchValueASCII(switches::kHostResolverRules);
 
-  std::unique_ptr<net::MappedHostResolver> remapped_host_resolver(
-      new net::MappedHostResolver(std::move(host_resolver)));
-  remapped_host_resolver->SetRulesFromString(
-      command_line.GetSwitchValueASCII(switches::kHostResolverRules));
-  return std::move(remapped_host_resolver);
+  return net::HostResolver::CreateSystemResolver(net::HostResolver::Options(),
+                                                 net_log, host_mapping_rules);
 }
 
 // This is duplicated in content/browser/loader/resource_dispatcher_host_impl.cc

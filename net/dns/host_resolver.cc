@@ -20,6 +20,7 @@
 #include "net/dns/dns_util.h"
 #include "net/dns/host_cache.h"
 #include "net/dns/host_resolver_manager.h"
+#include "net/dns/mapped_host_resolver.h"
 
 namespace net {
 
@@ -144,8 +145,17 @@ HostResolver::GetDnsOverHttpsServersForTesting() const {
 // static
 std::unique_ptr<HostResolver> HostResolver::CreateSystemResolver(
     const Options& options,
-    NetLog* net_log) {
-  return CreateSystemResolverImpl(options, net_log);
+    NetLog* net_log,
+    base::StringPiece host_mapping_rules) {
+  std::unique_ptr<ContextHostResolver> resolver =
+      CreateSystemResolverImpl(options, net_log);
+
+  if (host_mapping_rules.empty())
+    return resolver;
+  auto remapped_resolver =
+      std::make_unique<MappedHostResolver>(std::move(resolver));
+  remapped_resolver->SetRulesFromString(host_mapping_rules);
+  return remapped_resolver;
 }
 
 // static

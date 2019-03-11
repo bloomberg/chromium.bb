@@ -326,12 +326,21 @@ void URLRequestContextBuilder::SetProtocolHandler(
 void URLRequestContextBuilder::set_host_resolver(
     std::unique_ptr<HostResolver> host_resolver) {
   DCHECK(!shared_host_resolver_);
+  DCHECK(host_mapping_rules_.empty());
   host_resolver_ = std::move(host_resolver);
+}
+
+void URLRequestContextBuilder::set_host_mapping_rules(
+    std::string host_mapping_rules) {
+  DCHECK(!host_resolver_);
+  DCHECK(!shared_host_resolver_);
+  host_mapping_rules_ = std::move(host_mapping_rules);
 }
 
 void URLRequestContextBuilder::set_shared_host_resolver(
     HostResolver* shared_host_resolver) {
   DCHECK(!host_resolver_);
+  DCHECK(host_mapping_rules_.empty());
   shared_host_resolver_ = shared_host_resolver;
 }
 
@@ -413,12 +422,14 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
 
   if (host_resolver_) {
     DCHECK(!shared_host_resolver_);
+    DCHECK(host_mapping_rules_.empty());
     storage->set_host_resolver(std::move(host_resolver_));
   } else if (shared_host_resolver_) {
+    DCHECK(host_mapping_rules_.empty());
     context->set_host_resolver(shared_host_resolver_);
   } else {
-    storage->set_host_resolver(
-        HostResolver::CreateDefaultResolver(context->net_log()));
+    storage->set_host_resolver(HostResolver::CreateSystemResolver(
+        HostResolver::Options(), context->net_log(), host_mapping_rules_));
   }
 
   if (ssl_config_service_) {

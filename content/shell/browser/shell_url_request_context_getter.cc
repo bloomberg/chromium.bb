@@ -29,8 +29,6 @@
 #include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/ct_policy_status.h"
 #include "net/cookies/cookie_store.h"
-#include "net/dns/host_resolver.h"
-#include "net/dns/mapped_host_resolver.h"
 #include "net/http/http_network_session.h"
 #include "net/net_buildflags.h"
 #include "net/proxy_resolution/proxy_config_service.h"
@@ -198,14 +196,8 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
         ignore_certificate_errors_;
     builder.set_http_network_session_params(network_session_params);
 
-    if (command_line.HasSwitch(network::switches::kHostResolverRules)) {
-      std::unique_ptr<net::MappedHostResolver> mapped_host_resolver(
-          new net::MappedHostResolver(
-              net::HostResolver::CreateDefaultResolver(net_log_)));
-      mapped_host_resolver->SetRulesFromString(command_line.GetSwitchValueASCII(
-          network::switches::kHostResolverRules));
-      builder.set_host_resolver(std::move(mapped_host_resolver));
-    }
+    builder.set_host_mapping_rules(command_line.GetSwitchValueASCII(
+        network::switches::kHostResolverRules));
 
     // Keep ProtocolHandlers added in sync with
     // ShellContentBrowserClient::IsHandledURL().

@@ -60,9 +60,7 @@
 #include "net/cert/cert_verify_proc.h"
 #include "net/cert/ct_log_verifier.h"
 #include "net/cert/multi_threaded_cert_verifier.h"
-#include "net/dns/host_cache.h"
 #include "net/dns/host_resolver.h"
-#include "net/dns/mapped_host_resolver.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties_impl.h"
 #include "net/http/http_transaction_factory.h"
@@ -148,23 +146,15 @@ std::unique_ptr<net::HostResolver> CreateGlobalHostResolver(
     net::NetLog* net_log) {
   TRACE_EVENT0("startup", "IOThread::CreateGlobalHostResolver");
 
-  std::unique_ptr<net::HostResolver> global_host_resolver =
-      net::HostResolver::CreateSystemResolver(net::HostResolver::Options(),
-                                              net_log);
-
-  // If hostname remappings were specified on the command-line, layer these
-  // rules on top of the real host resolver. This allows forwarding all requests
-  // through a designated test server.
+  // Use hostname remappings if specified on the command-line. This allows
+  // forwarding all requests through a designated test server.
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
-  if (!command_line.HasSwitch(network::switches::kHostResolverRules))
-    return global_host_resolver;
+  std::string host_mapping_rules =
+      command_line.GetSwitchValueASCII(network::switches::kHostResolverRules);
 
-  auto remapped_resolver = std::make_unique<net::MappedHostResolver>(
-      std::move(global_host_resolver));
-  remapped_resolver->SetRulesFromString(
-      command_line.GetSwitchValueASCII(network::switches::kHostResolverRules));
-  return std::move(remapped_resolver);
+  return net::HostResolver::CreateSystemResolver(net::HostResolver::Options(),
+                                                 net_log, host_mapping_rules);
 }
 
 }  // namespace

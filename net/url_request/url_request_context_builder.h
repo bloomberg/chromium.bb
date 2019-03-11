@@ -239,9 +239,14 @@ class NET_EXPORT URLRequestContextBuilder {
 
   // By default host_resolver is constructed with CreateDefaultResolver.
   void set_host_resolver(std::unique_ptr<HostResolver> host_resolver);
+  // If set to non-empty, the mapping rules will be applied to requests to the
+  // created host resolver. See MappedHostResolver for details. Should not be
+  // used if set_host_resolver() or set_shared_host_resolver() are used.
+  void set_host_mapping_rules(std::string host_mapping_rules);
   // Allows sharing the HostResolver with other URLRequestContexts. Should not
-  // be used if set_host_resolver() is used. The consumer must ensure the
-  // HostResolver outlives the URLRequestContext returned by the builder.
+  // be used if set_host_resolver() or set_host_mapping_rules() are used. The
+  // consumer must ensure the HostResolver outlives the URLRequestContext
+  // returned by the builder.
   //
   // TODO(mmenke): Figure out the cost/benefits of not supporting sharing
   // HostResolvers between URLRequestContexts. See: https://crbug.com/743251.
@@ -399,6 +404,7 @@ class NET_EXPORT URLRequestContextBuilder {
   base::FilePath transport_security_persister_path_;
   NetLog* net_log_ = nullptr;
   std::unique_ptr<HostResolver> host_resolver_;
+  std::string host_mapping_rules_;
   HostResolver* shared_host_resolver_ = nullptr;
   std::unique_ptr<ProxyConfigService> proxy_config_service_;
   bool pac_quick_check_enabled_ = true;
