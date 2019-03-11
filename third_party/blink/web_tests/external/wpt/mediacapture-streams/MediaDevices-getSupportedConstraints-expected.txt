@@ -1,0 +1,20 @@
+This is a testharness.js-based test.
+FAIL navigator.mediaDevices.getSupportedConstraints exists assert_inherits: provided value is not an object
+FAIL width is supported Cannot read property 'getSupportedConstraints' of undefined
+FAIL height is supported Cannot read property 'getSupportedConstraints' of undefined
+FAIL aspectRatio is supported Cannot read property 'getSupportedConstraints' of undefined
+FAIL frameRate is supported Cannot read property 'getSupportedConstraints' of undefined
+FAIL facingMode is supported Cannot read property 'getSupportedConstraints' of undefined
+FAIL resizeMode is supported Cannot read property 'getSupportedConstraints' of undefined
+FAIL volume is supported Cannot read property 'getSupportedConstraints' of undefined
+FAIL sampleRate is supported Cannot read property 'getSupportedConstraints' of undefined
+FAIL sampleSize is supported Cannot read property 'getSupportedConstraints' of undefined
+FAIL echoCancellation is supported Cannot read property 'getSupportedConstraints' of undefined
+FAIL autoGainControl is supported Cannot read property 'getSupportedConstraints' of undefined
+FAIL noiseSuppression is supported Cannot read property 'getSupportedConstraints' of undefined
+FAIL latency is supported Cannot read property 'getSupportedConstraints' of undefined
+FAIL channelCount is supported Cannot read property 'getSupportedConstraints' of undefined
+FAIL deviceId is supported Cannot read property 'getSupportedConstraints' of undefined
+FAIL groupId is supported Cannot read property 'getSupportedConstraints' of undefined
+Harness: the test ran to completion.
+
