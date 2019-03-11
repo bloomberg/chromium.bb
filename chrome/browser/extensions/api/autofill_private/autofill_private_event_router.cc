@@ -50,7 +50,7 @@ void AutofillPrivateEventRouter::Shutdown() {
     personal_data_->RemoveObserver(this);
 }
 
-// TODO(crbug.com/923868): Change the 4 calls to a single OnPersonalDataChanged.
+// TODO(crbug.com/923868): Change the 2 calls to a single OnPersonalDataChanged.
 void AutofillPrivateEventRouter::OnPersonalDataChanged() {
   // Ignore any updates before data is loaded. This can happen in tests.
   if (!(personal_data_ && personal_data_->IsDataLoaded()))
@@ -76,28 +76,6 @@ void AutofillPrivateEventRouter::OnPersonalDataChanged() {
       new Event(events::AUTOFILL_PRIVATE_ON_CREDIT_CARD_LIST_CHANGED,
                 api::autofill_private::OnCreditCardListChanged::kEventName,
                 std::move(args)));
-  event_router_->BroadcastEvent(std::move(extension_event));
-
-  autofill_util::CreditCardEntryList localCreditCardList =
-      extensions::autofill_util::GenerateLocalCreditCardList(*personal_data_);
-  args.reset(api::autofill_private::OnLocalCreditCardListChanged::Create(
-                 localCreditCardList)
-                 .release());
-  extension_event.reset(
-      new Event(events::AUTOFILL_PRIVATE_ON_LOCAL_CREDIT_CARD_LIST_CHANGED,
-                api::autofill_private::OnLocalCreditCardListChanged::kEventName,
-                std::move(args)));
-  event_router_->BroadcastEvent(std::move(extension_event));
-
-  autofill_util::CreditCardEntryList serverCreditCardList =
-      extensions::autofill_util::GenerateServerCreditCardList(*personal_data_);
-  args.reset(api::autofill_private::OnLocalCreditCardListChanged::Create(
-                 serverCreditCardList)
-                 .release());
-  extension_event.reset(new Event(
-      events::AUTOFILL_PRIVATE_ON_SERVER_CREDIT_CARD_LIST_CHANGED,
-      api::autofill_private::OnServerCreditCardListChanged::kEventName,
-      std::move(args)));
   event_router_->BroadcastEvent(std::move(extension_event));
 }
 
