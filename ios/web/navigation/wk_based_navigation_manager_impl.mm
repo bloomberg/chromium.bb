@@ -21,6 +21,7 @@
 #include "ios/web/navigation/navigation_item_impl_list.h"
 #import "ios/web/navigation/navigation_manager_delegate.h"
 #import "ios/web/navigation/wk_navigation_util.h"
+#include "ios/web/public/features.h"
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/web_client.h"
 #import "ios/web/web_state/ui/crw_web_view_navigation_proxy.h"
@@ -260,9 +261,57 @@ void WKBasedNavigationManagerImpl::CommitPendingItem() {
 
 void WKBasedNavigationManagerImpl::CommitPendingItem(
     std::unique_ptr<NavigationItemImpl> item) {
-  // TODO(crbug.com/899827): Store Pending Item in NavigationContext with
-  // slim-navigation-manager.
-  CommitPendingItem();
+  if (!web::features::StorePendingItemInContext()) {
+    CommitPendingItem();
+    return;
+  }
+
+  DCHECK(web_view_cache_.IsAttachedToWebView());
+
+  // CommitPendingItem may be called multiple times. Do nothing if there is no
+  // pending item.
+  if (!item)
+    return;
+
+  bool last_committed_item_was_empty_window_open_item =
+      empty_window_open_item_ != nullptr;
+
+  item->ResetForCommit();
+  item->SetTimestamp(time_smoother_.GetSmoothedTime(base::Time::Now()));
+
+  id<CRWWebViewNavigationProxy> proxy = delegate_->GetWebViewNavigationProxy();
+
+  // If WKBackForwardList exists but |currentItem| is nil at this point, it is
+  // because the current navigation is an empty window open navigation.
+  // If |currentItem| is not nil, it is the last committed item in the
+  // WKWebView.
+  if (proxy.backForwardList && !proxy.backForwardList.currentItem) {
+    // WKWebView's URL should be about:blank for empty window open item.
+    // TODO(crbug.com/885249): Use GURL::IsAboutBlank() instead.
+    DCHECK(base::StartsWith(net::GURLWithNSURL(proxy.URL).spec(),
+                            url::kAboutBlankURL, base::CompareCase::SENSITIVE));
+    // There should be no back-forward history for empty window open item.
+    DCHECK_EQ(0UL, proxy.backForwardList.backList.count);
+    DCHECK_EQ(0UL, proxy.backForwardList.forwardList.count);
+
+    empty_window_open_item_ = std::move(item);
+  } else {
+    empty_window_open_item_.reset();
+    SetNavigationItemInWKItem(proxy.backForwardList.currentItem,
+                              std::move(item));
+  }
+
+  pending_item_index_ = -1;
+  // If the last committed item is the empty window open item, then don't update
+  // previous item because the new commit replaces the last committed item.
+  if (!last_committed_item_was_empty_window_open_item) {
+    previous_item_index_ = last_committed_item_index_;
+  }
+  // If the newly committed item is the empty window open item, fake an index of
+  // 0 because WKBackForwardList is empty at this point.
+  last_committed_item_index_ =
+      empty_window_open_item_ ? 0 : web_view_cache_.GetCurrentItemIndex();
+  OnNavigationItemCommitted();
 }
 
 int WKBasedNavigationManagerImpl::GetIndexForOffset(int offset) const {

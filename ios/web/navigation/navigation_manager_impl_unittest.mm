@@ -2626,6 +2626,11 @@ TEST_P(NavigationManagerTest, CommitNonNilPendingItem) {
   }
 
   // Create navigation manager with a single forward item and no back items.
+  [mock_wk_list_ setCurrentURL:@"http://www.url.test"
+                  backListURLs:@[
+                    @"www.url.test/0",
+                  ]
+               forwardListURLs:nil];
   navigation_manager()->AddPendingItem(
       GURL("http://www.url.test/0"), Referrer(), ui::PAGE_TRANSITION_TYPED,
       web::NavigationInitiationType::BROWSER_INITIATED,
@@ -2637,8 +2642,17 @@ TEST_P(NavigationManagerTest, CommitNonNilPendingItem) {
       web::NavigationManager::UserAgentOverrideOption::INHERIT);
   navigation_manager()->CommitPendingItem();
   SimulateGoToIndex(0);
+  if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+    mock_wk_list_.backList = @[ mock_wk_list_.currentItem ];
+    mock_wk_list_.currentItem =
+        [CRWFakeBackForwardList itemWithURLString:@"http://www.url.com/new"];
+    mock_wk_list_.forwardList = nil;
+    ASSERT_EQ(1, navigation_manager()->GetLastCommittedItemIndex());
+  } else {
+    ASSERT_EQ(0, navigation_manager()->GetLastCommittedItemIndex());
+  }
+
   ASSERT_EQ(2, navigation_manager()->GetItemCount());
-  ASSERT_EQ(0, navigation_manager()->GetLastCommittedItemIndex());
 
   // Call CommitPendingItem() with a valid pending item.
   auto item = std::make_unique<web::NavigationItemImpl>();
@@ -2647,7 +2661,11 @@ TEST_P(NavigationManagerTest, CommitNonNilPendingItem) {
   navigation_manager()->CommitPendingItem(std::move(item));
 
   // Verify navigation manager and navigation item states.
-  EXPECT_EQ(0, navigation_manager()->GetPreviousItemIndex());
+  if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+    EXPECT_EQ(1, navigation_manager()->GetPreviousItemIndex());
+  } else {
+    EXPECT_EQ(0, navigation_manager()->GetPreviousItemIndex());
+  }
   EXPECT_EQ(1, navigation_manager()->GetLastCommittedItemIndex());
   EXPECT_EQ(-1, navigation_manager()->GetPendingItemIndex());
   ASSERT_TRUE(navigation_manager()->GetLastCommittedItem());
