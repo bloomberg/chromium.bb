@@ -8,7 +8,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "base/metrics/histogram_macros_local.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
 #include "components/optimization_guide/hints_component_info.h"
@@ -272,14 +272,11 @@ void PreviewsOptimizationGuide::GetOnePlatformClientHints() {
       previews::params::MaxOnePlatformUpdateHosts());
   DCHECK_GE(previews::params::MaxOnePlatformUpdateHosts(), top_hosts.size());
 
-  LOCAL_HISTOGRAM_COUNTS_100("Previews.HintsFetcher.GetHintsRequest.HostCount",
-                             top_hosts.size());
-
-  if (!hintsfetcher_) {
-    hintsfetcher_ = std::make_unique<HintsFetcher>(hint_cache_.get());
+  if (!hints_fetcher_) {
+    hints_fetcher_ = std::make_unique<HintsFetcher>(hint_cache_.get());
   }
 
-  hintsfetcher_->FetchHintsForHosts(top_hosts);
+  hints_fetcher_->FetchHintsForHosts(top_hosts);
 
   // TODO(mcrouse) to build SimpleURLLoader to perform request from service
   // for per-user client hints.

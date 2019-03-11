@@ -19,6 +19,8 @@ HintsFetcher::~HintsFetcher() {}
 void HintsFetcher::FetchHintsForHosts(const std::vector<std::string>& hosts) {
   SEQUENCE_CHECKER(sequence_checker_);
 
+  UMA_HISTOGRAM_COUNTS_100("Previews.HintsFetcher.GetHintsRequest.HostCount",
+                           hosts.size());
   GetRemoteHints(hosts);
 }
 
