@@ -76,11 +76,11 @@ class Platform {
   // Get the local IME bundle directory, which is read-only.
   virtual const char* GetImeBundleDir() = 0;
 
-  // Get the local IME global directory, which is accessible to all users.
+  // Get the IME global directory, which is accessible to all users.
   virtual const char* GetImeGlobalDir() = 0;
 
-  // Get the local IME directory in the acitve user's home, which is only
-  // accessible to that user.
+  // Get the local IME directory in home directory of the active user, which
+  // is only accessible to the user itself.
   virtual const char* GetImeUserHomeDir() = 0;
 
   // TODO(https://crbug.com/837156): Provide Downloader/Logger for main entry.
