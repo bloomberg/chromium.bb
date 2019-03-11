@@ -55,24 +55,6 @@
       },
     },
   },
-  'blink_common_unittests': {
-    'remove_from': [
-      # chromium.linux
-      'Fuchsia x64',
-    ],
-  },
-  'blink_heap_unittests': {
-    'remove_from': [
-      # chromium.linux
-      'Fuchsia x64',
-    ],
-  },
-  'blink_platform_unittests': {
-    'remove_from': [
-      # chromium.linux
-      'Fuchsia x64',
-    ],
-  },
   'browser_tests': {
     'remove_from': [
       # chromium.clang
