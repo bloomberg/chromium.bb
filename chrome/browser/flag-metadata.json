@@ -363,7 +363,7 @@
   },
   {
     "name": "click-to-open-pdf",
-    // "owners": [ "your-team" ],
+    "owners": [ "tommycli" ],
     "expiry_milestone": 76
   },
   {
@@ -2657,12 +2657,12 @@
   },
   {
     "name": "pdf-form-save",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "thestig" ],
+    "expiry_milestone": 78
   },
   {
     "name": "pdf-isolation",
-    // "owners": [ "your-team" ],
+    "owners": [ "tsepez" ],
     "expiry_milestone": 76
   },
   {
