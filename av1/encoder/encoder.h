@@ -350,8 +350,13 @@ typedef struct AV1EncoderConfig {
   unsigned int motion_vector_unit_test;
   const cfg_options_t *cfg;
   int enable_rect_partitions;
+  int enable_ab_partitions;
+  int enable_1to4_partitions;
+  int min_partition_size;
+  int max_partition_size;
   int enable_intra_edge_filter;
   int enable_tx64;
+  int enable_flip_idtx;
   int enable_order_hint;
   int enable_dist_wtd_comp;
   int enable_ref_frame_mvs;
@@ -359,6 +364,7 @@ typedef struct AV1EncoderConfig {
   int enable_reduced_reference_set;
   unsigned int allow_ref_frame_mvs;
   int enable_masked_comp;
+  int enable_onesided_comp;
   int enable_interintra_comp;
   int enable_smooth_interintra;
   int enable_diff_wtd_comp;

@@ -728,6 +728,38 @@ enum aome_enc_control_id {
    */
   AV1E_SET_ENABLE_RECT_PARTITIONS,
 
+  /*!\brief Codec control function to enable/disable AB partitions.
+   *
+   * This will enable or disable usage of AB partitions. The default
+   * value is 1.
+   *
+   */
+  AV1E_SET_ENABLE_AB_PARTITIONS,
+
+  /*!\brief Codec control function to enable/disable 1:4 and 4:1 partitions.
+   *
+   * This will enable or disable usage of 1:4 and 4:1 partitions. The default
+   * value is 1.
+   *
+   */
+  AV1E_SET_ENABLE_1TO4_PARTITIONS,
+
+  /*!\brief Codec control function to set min partition size.
+   *
+   * This will set min partition size. The default value is 4.
+   * valid values are [4, 8, 16, 32, 64, 128]
+   *
+   */
+  AV1E_SET_MIN_PARTITION_SIZE,
+
+  /*!\brief Codec control function to set max partition size.
+   *
+   * This will set max partition size. The default value is 128.
+   * valid values are [4, 8, 16, 32, 64, 128]
+   *
+   */
+  AV1E_SET_MAX_PARTITION_SIZE,
+
   /*!\brief Codec control function to turn on / off intra edge filter
    * at sequence level.
    *
@@ -756,6 +788,17 @@ enum aome_enc_control_id {
    *
    */
   AV1E_SET_ENABLE_TX64,
+
+  /*!\brief Codec control function to turn on / off flip and identity
+   * transforms.
+   *
+   * This will enable or disable usage of flip and identity transform
+   * typess in any direction. The default value is 1. Including:
+   * FLIPADST_DCT, DCT_FLIPADST, FLIPADST_FLIPADST, ADST_FLIPADST,
+   * FLIPADST_ADST, IDTX, V_DCT, H_DCT, V_ADST, H_ADST, V_FLIPADST,
+   * H_FLIPADST
+   */
+  AV1E_SET_ENABLE_FLIP_IDTX,
 
   /*!\brief Codec control function to turn on / off dist-wtd compound mode
    * at sequence level.
@@ -802,6 +845,15 @@ enum aome_enc_control_id {
    *
    */
   AV1E_SET_ENABLE_MASKED_COMP,
+
+  /*!\brief Codec control function to turn on / off one sided compound usage
+   * for a sequence.
+   *
+   * This will enable or disable usage of one sided compound
+   * modes. The default value is 1.
+   *
+   */
+  AV1E_SET_ENABLE_ONESIDED_COMP,
 
   /*!\brief Codec control function to turn on / off interintra compound
    * for a sequence.
@@ -1232,6 +1284,18 @@ AOM_CTRL_USE_TYPE(AV1E_SET_TIMING_INFO_TYPE, int) /* aom_timing_info_type_t */
 AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_RECT_PARTITIONS, int)
 #define AOM_CTRL_AV1E_SET_ENABLE_RECT_PARTITIONS
 
+AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_AB_PARTITIONS, int)
+#define AOM_CTRL_AV1E_SET_ENABLE_AB_PARTITIONS
+
+AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_1TO4_PARTITIONS, int)
+#define AOM_CTRL_AV1E_SET_ENABLE_1TO4_PARTITIONS
+
+AOM_CTRL_USE_TYPE(AV1E_SET_MIN_PARTITION_SIZE, int)
+#define AOM_CTRL_AV1E_SET_MIN_PARTITION_SIZE
+
+AOM_CTRL_USE_TYPE(AV1E_SET_MAX_PARTITION_SIZE, int)
+#define AOM_CTRL_AV1E_SET_MAX_PARTITION_SIZE
+
 AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_INTRA_EDGE_FILTER, int)
 #define AOM_CTRL_AV1E_SET_ENABLE_INTRA_EDGE_FILTER
 
@@ -1240,6 +1304,9 @@ AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_ORDER_HINT, int)
 
 AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_TX64, int)
 #define AOM_CTRL_AV1E_SET_ENABLE_TX64
+
+AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_FLIP_IDTX, int)
+#define AOM_CTRL_AV1E_SET_ENABLE_FLIP_IDTX
 
 AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_DIST_WTD_COMP, int)
 #define AOM_CTRL_AV1E_SET_ENABLE_DIST_WTD_COMP
@@ -1255,6 +1322,9 @@ AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_DUAL_FILTER, int)
 
 AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_MASKED_COMP, int)
 #define AOM_CTRL_AV1E_SET_ENABLE_MASKED_COMP
+
+AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_ONESIDED_COMP, int)
+#define AOM_CTRL_AV1E_SET_ENABLE_ONESIDED_COMP
 
 AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_INTERINTRA_COMP, int)
 #define AOM_CTRL_AV1E_SET_ENABLE_INTERINTRA_COMP

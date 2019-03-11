@@ -3190,6 +3190,13 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
       }
     }
   }
+
+  if (cpi->oxcf.enable_flip_idtx == 0) {
+    for (TX_TYPE tx_type = FLIPADST_DCT; tx_type <= H_FLIPADST; ++tx_type) {
+      allowed_tx_mask &= ~(1 << tx_type);
+    }
+  }
+
   // Need to have at least one transform type allowed.
   if (allowed_tx_mask == 0) {
     txk_start = txk_end = (plane ? uv_tx_type : DCT_DCT);
@@ -6436,6 +6443,11 @@ static int64_t rd_pick_intra_sbuv_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
     if (!(cpi->sf.intra_uv_mode_mask[txsize_sqr_up_map[max_tx_size]] &
           (1 << mode)))
       continue;
+    if (!cpi->oxcf.enable_smooth_intra && mode >= UV_SMOOTH_PRED &&
+        mode <= UV_SMOOTH_H_PRED)
+      continue;
+
+    if (!cpi->oxcf.enable_paeth_intra && mode == UV_PAETH_PRED) continue;
 
     mbmi->uv_mode = mode;
     int cfl_alpha_rate = 0;
@@ -10870,6 +10882,10 @@ static void rd_pick_skip_mode(RD_STATS *rd_cost,
     return;
   }
 
+  if (!cpi->oxcf.enable_onesided_comp && cpi->all_one_sided_refs) {
+    return;
+  }
+
   mbmi->mode = this_mode;
   mbmi->uv_mode = UV_DC_PRED;
   mbmi->ref_frame[0] = ref_frame;
@@ -11944,6 +11960,16 @@ static int inter_mode_search_order_independent_skip(
   if (skip_motion_mode) {
     return 2;
   }
+
+  if (!cpi->oxcf.enable_global_motion &&
+      (this_mode == GLOBALMV || this_mode == GLOBAL_GLOBALMV)) {
+    return 1;
+  }
+
+  if (!cpi->oxcf.enable_onesided_comp && comp_pred && cpi->all_one_sided_refs) {
+    return 1;
+  }
+
   return 0;
 }
 
@@ -11979,6 +12005,7 @@ static int64_t handle_intra_mode(InterModeSearchState *search_state,
   assert(mbmi->ref_frame[0] == INTRA_FRAME);
   PALETTE_MODE_INFO *const pmi = &mbmi->palette_mode_info;
   const int try_palette =
+      cpi->oxcf.enable_palette &&
       av1_allow_palette(cm->allow_screen_content_tools, mbmi->sb_type);
   const int *const intra_mode_cost = x->mbmode_cost[size_group_lookup[bsize]];
   const int intra_cost_penalty = av1_get_intra_cost_penalty(
