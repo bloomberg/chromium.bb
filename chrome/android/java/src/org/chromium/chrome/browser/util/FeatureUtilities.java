@@ -83,6 +83,8 @@ public class FeatureUtilities {
     private static Boolean sIsNightModeForCustomTabsAvailable;
     private static Boolean sShouldPrioritizeBootstrapTasks;
     private static Boolean sIsTabGroupsAndroidEnabled;
+    private static Boolean sFeedEnabled;
+    private static Boolean sServiceManagerForBackgroundPrefetch;
 
     private static Boolean sDownloadAutoResumptionEnabledInNative;
 
@@ -202,6 +204,8 @@ public class FeatureUtilities {
         cacheNightModeForCustomTabsAvailable();
         cacheDownloadAutoResumptionEnabledInNative();
         cachePrioritizeBootstrapTasks();
+        cacheFeedEnabled();
+        cacheServiceManagerForBackgroundPrefetch();
 
         if (isDeviceEligibleForTabGroups()) cacheTabGroupsAndroidEnabled();
 
@@ -254,6 +258,54 @@ public class FeatureUtilities {
      */
     public static void resetHomePageButtonForceEnabledForTests() {
         sIsHomePageButtonForceEnabled = null;
+    }
+
+    private static void cacheServiceManagerForBackgroundPrefetch() {
+        boolean backgroundPrefetchInReducedMode = ChromeFeatureList.isEnabled(
+                ChromeFeatureList.SERVICE_MANAGER_FOR_BACKGROUND_PREFETCH);
+
+        ChromePreferenceManager.getInstance().writeBoolean(
+                ChromePreferenceManager.SERVICE_MANAGER_FOR_BACKGROUND_PREFETCH_KEY,
+                backgroundPrefetchInReducedMode);
+    }
+
+    /**
+     * @return if PrefetchBackgroundTask should load native in service manager only mode.
+     */
+    public static boolean isServiceManagerForBackgroundPrefetchEnabled() {
+        if (sServiceManagerForBackgroundPrefetch == null) {
+            ChromePreferenceManager prefManager = ChromePreferenceManager.getInstance();
+
+            sServiceManagerForBackgroundPrefetch = prefManager.readBoolean(
+                    ChromePreferenceManager.SERVICE_MANAGER_FOR_BACKGROUND_PREFETCH_KEY, false);
+        }
+        return sServiceManagerForBackgroundPrefetch;
+    }
+
+    /**
+     * Cache the value of the flag whether or not to use Feed so it can be checked in Java before
+     * native is loaded.
+     */
+    public static void cacheFeedEnabled() {
+        boolean feedEnabled =
+                ChromeFeatureList.isEnabled(ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS);
+
+        ChromePreferenceManager.getInstance().writeBoolean(
+                ChromePreferenceManager.INTEREST_FEED_CONTENT_SUGGESTIONS_KEY, feedEnabled);
+        sFeedEnabled = feedEnabled;
+    }
+
+    /**
+     * @return Whether or not the Feed is enabled (based on the cached value in SharedPrefs).
+     */
+    public static boolean isFeedEnabled() {
+        if (sFeedEnabled == null) {
+            ChromePreferenceManager prefManager = ChromePreferenceManager.getInstance();
+
+            sFeedEnabled = prefManager.readBoolean(
+                    ChromePreferenceManager.INTEREST_FEED_CONTENT_SUGGESTIONS_KEY, false);
+        }
+        return sFeedEnabled;
     }
 
     /**

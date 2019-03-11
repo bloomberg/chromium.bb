@@ -80,6 +80,11 @@ public class NativeBackgroundTaskTest {
         }
 
         @Override
+        public boolean isServiceManagerSuccessfullyStarted() {
+            return mStartupSucceeded;
+        }
+
+        @Override
         public void addStartupCompletedObserver(StartupCallback callback) {}
 
         @Override

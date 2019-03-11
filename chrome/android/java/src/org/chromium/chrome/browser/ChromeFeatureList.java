@@ -325,6 +325,8 @@ public abstract class ChromeFeatureList {
     public static final String WEB_PAYMENTS_RETURN_GOOGLE_PAY_IN_BASIC_CARD =
             "ReturnGooglePayInBasicCard";
     public static final String WEB_PAYMENTS_SINGLE_APP_UI_SKIP = "WebPaymentsSingleAppUiSkip";
+    public static final String SERVICE_MANAGER_FOR_BACKGROUND_PREFETCH =
+            "ServiceManagerForBackgroundPrefetch";
 
     private static native boolean nativeIsInitialized();
     private static native boolean nativeIsEnabled(String featureName);

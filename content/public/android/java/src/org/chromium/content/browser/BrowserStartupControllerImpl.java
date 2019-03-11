@@ -306,6 +306,12 @@ public class BrowserStartupControllerImpl implements BrowserStartupController {
     }
 
     @Override
+    public boolean isServiceManagerSuccessfullyStarted() {
+        ThreadUtils.assertOnUiThread();
+        return mServiceManagerStarted && mStartupSuccess;
+    }
+
+    @Override
     public void addStartupCompletedObserver(StartupCallback callback) {
         ThreadUtils.assertOnUiThread();
         if (mFullBrowserStartupDone) {

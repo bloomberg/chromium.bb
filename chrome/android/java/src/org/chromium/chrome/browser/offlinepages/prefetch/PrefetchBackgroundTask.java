@@ -9,11 +9,11 @@ import android.content.Context;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.DeviceConditions;
 import org.chromium.chrome.browser.background_task_scheduler.NativeBackgroundTask;
-import org.chromium.chrome.browser.background_task_scheduler.NativeBackgroundTask.StartBeforeNativeResult;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.components.background_task_scheduler.BackgroundTask.TaskFinishedCallback;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.components.background_task_scheduler.TaskIds;
 import org.chromium.components.background_task_scheduler.TaskParameters;
 import org.chromium.net.ConnectionType;
@@ -101,7 +101,24 @@ public class PrefetchBackgroundTask extends NativeBackgroundTask {
         assert taskParameters.getTaskId() == TaskIds.OFFLINE_PAGES_PREFETCH_JOB_ID;
         if (mNativeTask != 0) return;
 
+        // Only Feed is supported in reduced mode.
+        // If we launched chrome in reduced mode but it turns out that Feed is not enabled (because
+        // the cached value of the flag was stale), we should cache the new value and reschedule
+        // this task so that next time full browser is started rather than just reduced mode.
+        if (isBrowserRunningInReducedMode()
+                && !ChromeFeatureList.isEnabled(
+                        ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS)) {
+            FeatureUtilities.cacheFeedEnabled();
+            mTaskFinishedCallback.taskFinished(true /* needsReschedule */);
+            return;
+        }
+
         nativeStartPrefetchTask(getProfile(), mGcmToken);
+    }
+
+    private boolean isBrowserRunningInReducedMode() {
+        return getBrowserStartupController().isServiceManagerSuccessfullyStarted()
+                && !getBrowserStartupController().isStartupSuccessfullyCompleted();
     }
 
     @Override
@@ -180,6 +197,12 @@ public class PrefetchBackgroundTask extends NativeBackgroundTask {
     void signalTaskFinishedForTesting() {
         if (mNativeTask == 0) return;
         nativeSignalTaskFinishedForTesting(mNativeTask);
+    }
+
+    @Override
+    protected boolean supportsServiceManagerOnly() {
+        return FeatureUtilities.isServiceManagerForBackgroundPrefetchEnabled()
+                && FeatureUtilities.isFeedEnabled();
     }
 
     @VisibleForTesting
