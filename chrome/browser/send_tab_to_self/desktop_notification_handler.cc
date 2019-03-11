@@ -41,13 +41,13 @@ void DesktopNotificationHandler::DisplayNewEntry(
   const gfx::Image notification_icon = gfx::Image();
   const GURL& url = entry->GetURL();
   message_center::RichNotificationData optional_fields;
-  optional_fields.settings_button_handler =
-      message_center::SettingsButtonHandler::NONE;
+  // Set the notification to be persistent
+  optional_fields.never_timeout = true;
 
   // Declare a notification
   message_center::Notification notification(
-      message_center::NOTIFICATION_TYPE_SIMPLE, entry->GetGUID(), device_info,
-      base::UTF8ToUTF16(entry->GetTitle()), notification_icon,
+      message_center::NOTIFICATION_TYPE_SIMPLE, entry->GetGUID(),
+      base::UTF8ToUTF16(entry->GetTitle()), device_info, notification_icon,
       base::UTF8ToUTF16(url.host()), url, message_center::NotifierId(url),
       optional_fields, nullptr);
 
