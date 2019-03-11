@@ -20,6 +20,9 @@ function updatePageWithProperties() {
     /** @type {!feedInternals.mojom.Properties} */
     const properties = response.properties;
     $('is-feed-enabled').textContent = properties.isFeedEnabled;
+    $('is-feed-visible').textContent = properties.isFeedVisible;
+    $('is-feed-allowed').textContent = properties.isFeedAllowed;
+    $('is-prefetching-enabled').textContent = properties.isPrefetchingEnabled;
     $('feed-fetch-url').textContent = properties.feedFetchUrl.url;
   });
 }
@@ -45,6 +48,7 @@ function updatePageWithLastFetchProperties() {
     /** @type {!feedInternals.mojom.LastFetchProperties} */
     const properties = response.properties;
     $('last-fetch-status').textContent = properties.lastFetchStatus;
+    $('last-fetch-trigger').textContent = properties.lastFetchTrigger;
     $('last-fetch-time').textContent = toDateString(properties.lastFetchTime);
     $('refresh-suppress-time').textContent =
         toDateString(properties.refreshSuppressTime);

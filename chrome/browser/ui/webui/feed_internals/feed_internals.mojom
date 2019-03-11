@@ -8,8 +8,17 @@ import "url/mojom/url.mojom";
 
 // General properties of Feed suggestions.
 struct Properties {
-  // Whether the Feed is enabled.
+  // Whether the Feed feature flag is enabled.
   bool is_feed_enabled;
+
+  // Whether suggested articles section is expanded.
+  bool is_feed_visible;
+
+  // Whether suggested articles are allowed. Typically set by policy.
+  bool is_feed_allowed;
+
+  // Whether prefetching for offline availability is enabled.
+  bool is_prefetching_enabled;
 
   // Feed fetch URL.
   url.mojom.Url feed_fetch_url;
@@ -31,6 +40,9 @@ struct UserClassifier {
 struct LastFetchProperties {
   // Last fetch status.
   int32 last_fetch_status;
+
+  // Reason for the last fetch.
+  string last_fetch_trigger;
 
   // Last fetch time.
   Time? last_fetch_time;

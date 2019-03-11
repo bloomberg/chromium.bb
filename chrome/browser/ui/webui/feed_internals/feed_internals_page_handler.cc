@@ -17,6 +17,7 @@
 #include "components/feed/core/pref_names.h"
 #include "components/feed/core/user_classifier.h"
 #include "components/feed/feed_feature_list.h"
+#include "components/offline_pages/core/prefetch/prefetch_prefs.h"
 #include "components/offline_pages/core/prefetch/suggestions_provider.h"
 #include "components/prefs/pref_service.h"
 
@@ -25,6 +26,17 @@ namespace {
 feed_internals::mojom::TimePtr ToMojoTime(base::Time time) {
   return time.is_null() ? nullptr
                         : feed_internals::mojom::Time::New(time.ToJsTime());
+}
+
+std::string TriggerTypeToString(feed::FeedSchedulerHost::TriggerType trigger) {
+  switch (trigger) {
+    case feed::FeedSchedulerHost::TriggerType::kNtpShown:
+      return "NTP Shown";
+    case feed::FeedSchedulerHost::TriggerType::kForegrounded:
+      return "Foregrounded";
+    case feed::FeedSchedulerHost::TriggerType::kFixedTimer:
+      return "Fixed Timer";
+  }
 }
 
 }  // namespace
@@ -47,6 +59,12 @@ void FeedInternalsPageHandler::GetGeneralProperties(
 
   properties->is_feed_enabled =
       base::FeatureList::IsEnabled(feed::kInterestFeedContentSuggestions);
+  properties->is_feed_visible =
+      pref_service_->GetBoolean(feed::prefs::kArticlesListVisible);
+  properties->is_feed_allowed =
+      pref_service_->GetBoolean(feed::prefs::kEnableSnippets);
+  properties->is_prefetching_enabled =
+      offline_pages::prefetch_prefs::IsEnabled(pref_service_);
   properties->feed_fetch_url = feed::GetFeedFetchUrlForDebugging();
 
   std::move(callback).Run(std::move(properties));
@@ -75,6 +93,8 @@ void FeedInternalsPageHandler::GetLastFetchProperties(
 
   properties->last_fetch_status =
       feed_scheduler_host_->GetLastFetchStatusForDebugging();
+  properties->last_fetch_trigger = TriggerTypeToString(
+      feed_scheduler_host_->GetLastFetchTriggerTypeForDebugging());
   properties->last_fetch_time =
       ToMojoTime(pref_service_->GetTime(feed::prefs::kLastFetchAttemptTime));
   properties->refresh_suppress_time =
