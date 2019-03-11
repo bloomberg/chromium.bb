@@ -1901,7 +1901,11 @@ ui::AXNodeData GetFocusedAccessibilityNodeInfo(WebContents* web_contents) {
 
 bool AccessibilityTreeContainsNodeWithName(BrowserAccessibility* node,
                                            const std::string& name) {
-  if (node->GetStringAttribute(ax::mojom::StringAttribute::kName) == name)
+  // If an image annotation is set, it plays the same role as a name, so it
+  // makes sense to check both in the same test helper.
+  if (node->GetStringAttribute(ax::mojom::StringAttribute::kName) == name ||
+      node->GetStringAttribute(ax::mojom::StringAttribute::kImageAnnotation) ==
+          name)
     return true;
   for (unsigned i = 0; i < node->PlatformChildCount(); i++) {
     if (AccessibilityTreeContainsNodeWithName(node->PlatformGetChild(i), name))

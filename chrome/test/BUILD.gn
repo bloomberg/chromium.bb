@@ -581,6 +581,7 @@ test("browser_tests") {
       "../app/chrome_version.rc.version",
       "../browser/accessibility/accessibility_labels_service_browsertest.cc",
       "../browser/accessibility/browser_accessibility_state_browsertest.cc",
+      "../browser/accessibility/image_annotation_browsertest.cc",
       "../browser/accessibility/interstitial_accessibility_browsertest.cc",
       "../browser/app_controller_mac_browsertest.mm",
       "../browser/apps/app_shim/app_shim_host_manager_browsertest_mac.mm",
