@@ -292,21 +292,6 @@ source_set("hashtable_debug_hooks") {
   ]
 }
 
-source_set("hashtablez_force_sampling") {
-  configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [
-    "//build/config/compiler:no_chromium_code",
-    "//third_party/abseil-cpp:absl_default_cflags_cc",
-  ]
-  public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
-  sources = [
-    "internal/hashtablez_force_sampling.cc",
-  ]
-  deps = [
-    ":hashtablez_sampler",
-  ]
-}
-
 source_set("hashtablez_sampler") {
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [
@@ -522,6 +507,41 @@ source_set("unordered_set_constructor_test") {
   deps = [
     ":hash_generator_testing",
     ":hash_policy_testing",
+    "../meta:type_traits",
+    "//testing/gtest",
+  ]
+}
+
+source_set("unordered_set_members_test") {
+  testonly = true
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [
+    "//build/config/compiler:no_chromium_code",
+    "//third_party/abseil-cpp:absl_default_cflags_cc",
+  ]
+  public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
+  public = [
+    "internal/unordered_set_members_test.h",
+  ]
+  deps = [
+    "../meta:type_traits",
+    "//testing/gtest",
+  ]
+}
+
+source_set("unordered_map_members_test") {
+  testonly = true
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [
+    "//build/config/compiler:no_chromium_code",
+    "//third_party/abseil-cpp:absl_default_cflags_cc",
+  ]
+  public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
+  public = [
+    "internal/unordered_map_members_test.h",
+  ]
+  deps = [
+    "../meta:type_traits",
     "//testing/gtest",
   ]
 }
