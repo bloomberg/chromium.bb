@@ -33,6 +33,7 @@
       "file_manager/launcher_search.js",
       "file_manager/metadata.js",
       "file_manager/my_files.js",
+      "file_manager/navigation_list.js",
       "file_manager/open_audio_files.js",
       "file_manager/open_image_files.js",
       "file_manager/open_video_files.js",

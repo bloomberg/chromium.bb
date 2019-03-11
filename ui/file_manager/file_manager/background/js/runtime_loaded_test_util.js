@@ -60,6 +60,9 @@ function extractElementInfo(element, contentWindow, opt_styleNames) {
   result.renderedTop = size.top;
   result.renderedLeft = size.left;
 
+  // Get the scroll position of the element.
+  result.scrollLeft = element.scrollLeft;
+
   return result;
 }
 
@@ -286,6 +289,31 @@ test.util.sync.getActiveElement = (contentWindow, opt_styleNames) => {
 test.util.sync.inputText = (contentWindow, query, text) => {
   const input = contentWindow.document.querySelector(query);
   input.value = text;
+};
+
+/**
+ * Sets the left scroll position of an element.
+ * Used to enable testing of horizontal scrolled areas.
+ * @param {Window} contentWindow Window to be tested.
+ * @param {string} query Query for the test element.
+ * @param {number} position scrollLeft position to set.
+ */
+test.util.sync.setScrollLeft = (contentWindow, query, position) => {
+  const scrollablElement = contentWindow.document.querySelector(query);
+  scrollablElement.scrollLeft = position;
+};
+
+/**
+ * Sets style properties for an element using the CSS OM.
+ * @param {Window} contentWindow Window to be tested.
+ * @param {string} query Query for the test element.
+ * @param {!Object<?, string>} properties CSS Property name/values to set.
+ */
+test.util.sync.setElementStyles = (contentWindow, query, properties) => {
+  const element = contentWindow.document.querySelector(query);
+  for (let [prop, value] of Object.entries(properties)) {
+    element.style[prop] = value;
+  }
 };
 
 /**
