@@ -586,8 +586,8 @@ void UiControllerAndroid::OnDetailsChanged(const Details* details) {
     return;
   }
 
-  const DetailsProto& proto = details->proto().details();
-  const DetailsChangesProto& changes = details->proto().change_flags();
+  const DetailsProto& proto = details->detailsProto();
+  const DetailsChangesProto& changes = details->changes();
 
   auto jdetails = Java_AssistantDetails_create(
       env, base::android::ConvertUTF8ToJavaString(env, proto.title()),

@@ -123,17 +123,9 @@ std::string Controller::GetStatusMessage() const {
   return status_message_;
 }
 
-void Controller::SetDetails(const Details& details) {
-  if (!details_) {
-    details_ = std::make_unique<Details>();
-  }
-  *details_ = details;
+void Controller::SetDetails(std::unique_ptr<Details> details) {
+  details_ = std::move(details);
   GetUiController()->OnDetailsChanged(details_.get());
-}
-
-void Controller::ClearDetails() {
-  details_.reset();
-  GetUiController()->OnDetailsChanged(nullptr);
 }
 
 const Details* Controller::GetDetails() const {
@@ -246,7 +238,7 @@ void Controller::SelectChip(std::vector<Chip>* chips, int chip_index) {
 
 void Controller::StopAndShutdown(Metrics::DropOutReason reason) {
   ClearInfoBox();
-  ClearDetails();
+  SetDetails(nullptr);
   SetChips(nullptr);
   SetPaymentRequestOptions(nullptr);
   EnterState(AutofillAssistantState::STOPPED);
@@ -542,9 +534,9 @@ void Controller::FinishStart() {
 }
 
 void Controller::MaybeSetInitialDetails() {
-  Details details;
-  if (details.UpdateFromParameters(parameters_))
-    SetDetails(details);
+  auto details = std::make_unique<Details>();
+  if (details->UpdateFromParameters(parameters_))
+    SetDetails(std::move(details));
 }
 
 bool Controller::NeedsUI() const {

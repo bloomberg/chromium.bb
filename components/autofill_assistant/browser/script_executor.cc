@@ -413,12 +413,8 @@ content::WebContents* ScriptExecutor::GetWebContents() {
   return delegate_->GetWebContents();
 }
 
-void ScriptExecutor::ClearDetails() {
-  delegate_->ClearDetails();
-}
-
-void ScriptExecutor::SetDetails(const Details& details) {
-  delegate_->SetDetails(details);
+void ScriptExecutor::SetDetails(std::unique_ptr<Details> details) {
+  return delegate_->SetDetails(std::move(details));
 }
 
 void ScriptExecutor::ClearInfoBox() {
@@ -492,7 +488,7 @@ void ScriptExecutor::ReportScriptsUpdateToListener(
 void ScriptExecutor::RunCallback(bool success) {
   DCHECK(callback_);
   if (should_clean_contextual_ui_on_finish_ || !success) {
-    ClearDetails();
+    SetDetails(nullptr);
     should_clean_contextual_ui_on_finish_ = false;
   }
 
