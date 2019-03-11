@@ -28,7 +28,7 @@ AllocatorState::GetMetadataReturnType AllocatorState::GetMetadataForAddress(
     return GetMetadataReturnType::kUnrelatedCrash;
 
   size_t slot_idx = GetNearestSlot(exception_address);
-  if (slot_idx >= kGpaMaxPages)
+  if (slot_idx >= total_pages)
     return GetMetadataReturnType::kErrorBadSlot;
 
   *slot_address = metadata_addr + (slot_idx * sizeof(SlotMetadata));
