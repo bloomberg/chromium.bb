@@ -1,5 +1,7 @@
 {
-  "features": [],
+  "features": [
+    "isolated-persistent-storage"
+  ],
   "services": [
       "chromium.web.ContextProvider",
       "fuchsia.fonts.Provider",

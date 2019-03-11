@@ -14,7 +14,7 @@ int main(int argc, char** argv) {
 
   CastRunner runner(
       base::fuchsia::ServiceDirectory::GetDefault(),
-      WebContentRunner::CreateDefaultWebContext(),
+      WebContentRunner::CreateIncognitoWebContext(),
       base::fuchsia::ServiceDirectoryClient::ForCurrentProcess()
           ->ConnectToService<chromium::cast::ApplicationConfigManager>(),
       run_loop.QuitClosure());
