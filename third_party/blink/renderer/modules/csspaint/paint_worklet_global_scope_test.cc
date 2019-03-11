@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/csspaint/paint_worklet_global_scope.h"
 
 #include "base/synchronization/waitable_event.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
 #include "third_party/blink/renderer/core/inspector/worker_devtools_params.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
@@ -108,7 +109,8 @@ class PaintWorkletGlobalScopeTest : public PageTestBase {
     v8::Isolate* isolate = script_state->GetIsolate();
     ASSERT_TRUE(isolate);
     ScriptState::Scope scope(script_state);
-    ASSERT_TRUE(EvaluateScriptModule(global_scope, source_code));
+    ASSERT_TRUE(global_scope->ScriptController()->Evaluate(
+        ScriptSourceCode(source_code), SanitizeScriptErrors::kDoNotSanitize));
     waitable_event->Signal();
   }
 
@@ -134,7 +136,8 @@ class PaintWorkletGlobalScopeTest : public PageTestBase {
               paint (ctx, size) {}
             });
           )JS";
-      ASSERT_TRUE(EvaluateScriptModule(global_scope, source_code));
+      ASSERT_TRUE(global_scope->ScriptController()->Evaluate(
+          ScriptSourceCode(source_code), SanitizeScriptErrors::kDoNotSanitize));
 
       CSSPaintDefinition* definition = global_scope->FindDefinition("test");
       ASSERT_TRUE(definition);
@@ -144,7 +147,8 @@ class PaintWorkletGlobalScopeTest : public PageTestBase {
       // registerPaint() with a null class definition should fail to define
       // an painter.
       String source_code = "registerPaint('null', null);";
-      ASSERT_FALSE(EvaluateScriptModule(global_scope, source_code));
+      ASSERT_FALSE(global_scope->ScriptController()->Evaluate(
+          ScriptSourceCode(source_code), SanitizeScriptErrors::kDoNotSanitize));
       EXPECT_FALSE(global_scope->FindDefinition("null"));
     }
 
@@ -154,23 +158,6 @@ class PaintWorkletGlobalScopeTest : public PageTestBase {
   }
 
  private:
-  bool EvaluateScriptModule(PaintWorkletGlobalScope* global_scope,
-                            const String& source_code) {
-    ScriptState* script_state =
-        global_scope->ScriptController()->GetScriptState();
-    EXPECT_TRUE(script_state);
-    const KURL js_url("https://example.com/worklet.js");
-    ScriptModule module = ScriptModule::Compile(
-        script_state->GetIsolate(), source_code, js_url, js_url,
-        ScriptFetchOptions(), TextPosition::MinimumPosition(),
-        ASSERT_NO_EXCEPTION);
-    EXPECT_FALSE(module.IsNull());
-    ScriptValue exception = module.Instantiate(script_state);
-    EXPECT_TRUE(exception.IsEmpty());
-    ScriptValue value = module.Evaluate(script_state);
-    return value.IsEmpty();
-  }
-
   std::unique_ptr<WorkerReportingProxy> reporting_proxy_;
 };
 
