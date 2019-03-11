@@ -26,6 +26,9 @@ import com.google.android.libraries.feed.host.stream.CardConfiguration;
 import com.google.android.libraries.feed.host.stream.SnackbarApi;
 import com.google.android.libraries.feed.host.stream.SnackbarCallbackApi;
 import com.google.android.libraries.feed.host.stream.StreamConfiguration;
+import com.google.android.libraries.feed.host.stream.TooltipApi;
+import com.google.android.libraries.feed.host.stream.TooltipCallbackApi;
+import com.google.android.libraries.feed.host.stream.TooltipInfo;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
@@ -97,6 +100,14 @@ public class FeedNewTabPage extends NewTabPage {
         public void show(String message, String action, SnackbarCallbackApi callback) {
             // TODO(https://crbug.com/924742): Set action text and correctly invoke callback.
             show(message);
+        }
+    }
+
+    private static class BasicTooltipApi implements TooltipApi {
+        @Override
+        public boolean maybeShowHelpUi(
+                TooltipInfo tooltipInfo, View view, TooltipCallbackApi tooltipCallback) {
+            return false;
         }
     }
 
@@ -355,6 +366,8 @@ public class FeedNewTabPage extends NewTabPage {
                 consumptionObserver, offlineIndicator, OfflinePageBridge.getForProfile(profile),
                 loggingBridge);
 
+        TooltipApi tooltipApi = new BasicTooltipApi();
+
         FeedStreamScope streamScope =
                 feedProcessScope
                         .createFeedStreamScopeBuilder(chromeActivity, mImageLoader, actionApi,
@@ -362,7 +375,7 @@ public class FeedNewTabPage extends NewTabPage {
                                 new BasicCardConfiguration(
                                         chromeActivity.getResources(), mUiConfig),
                                 new BasicSnackbarApi(mNewTabPageManager.getSnackbarManager()),
-                                offlineIndicator)
+                                offlineIndicator, tooltipApi)
                         .build();
 
         mStream = streamScope.getStream();
