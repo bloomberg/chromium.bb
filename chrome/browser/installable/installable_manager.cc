@@ -621,8 +621,8 @@ void InstallableManager::CheckAndFetchBestIcon(int ideal_icon_size_in_px,
     bool can_download_icon = content::ManifestIconDownloader::Download(
         GetWebContents(), icon_url, ideal_icon_size_in_px,
         minimum_icon_size_in_px,
-        base::Bind(&InstallableManager::OnIconFetched,
-                   weak_factory_.GetWeakPtr(), icon_url, purpose));
+        base::BindOnce(&InstallableManager::OnIconFetched,
+                       weak_factory_.GetWeakPtr(), icon_url, purpose));
     if (can_download_icon)
       return;
     icon.error = CANNOT_DOWNLOAD_ICON;

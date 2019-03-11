@@ -403,7 +403,7 @@ void InstallablePaymentAppCrawler::DownloadAndDecodeWebAppIcon(
   bool can_download_icon = content::ManifestIconDownloader::Download(
       web_contents(), best_icon_url, kPaymentAppIdealIconSize,
       kPaymentAppMinimumIconSize,
-      base::Bind(
+      base::BindOnce(
           &InstallablePaymentAppCrawler::OnPaymentWebAppIconDownloadAndDecoded,
           weak_ptr_factory_.GetWeakPtr(), method_manifest_url,
           web_app_manifest_url));

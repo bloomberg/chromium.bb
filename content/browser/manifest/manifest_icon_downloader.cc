@@ -7,8 +7,10 @@
 #include <stddef.h>
 
 #include <limits>
+#include <utility>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -46,12 +48,11 @@ void ManifestIconDownloader::DevToolsConsoleHelper::AddMessage(
   web_contents()->GetMainFrame()->AddMessageToConsole(level, message);
 }
 
-bool ManifestIconDownloader::Download(
-    WebContents* web_contents,
-    const GURL& icon_url,
-    int ideal_icon_size_in_px,
-    int minimum_icon_size_in_px,
-    const ManifestIconDownloader::IconFetchCallback& callback) {
+bool ManifestIconDownloader::Download(WebContents* web_contents,
+                                      const GURL& icon_url,
+                                      int ideal_icon_size_in_px,
+                                      int minimum_icon_size_in_px,
+                                      IconFetchCallback callback) {
   DCHECK(minimum_icon_size_in_px <= ideal_icon_size_in_px);
   if (!web_contents || !icon_url.is_valid())
     return false;
@@ -64,7 +65,7 @@ bool ManifestIconDownloader::Download(
       base::BindOnce(&ManifestIconDownloader::OnIconFetched,
                      ideal_icon_size_in_px, minimum_icon_size_in_px,
                      base::Owned(new DevToolsConsoleHelper(web_contents)),
-                     callback));
+                     std::move(callback)));
   return true;
 }
 
@@ -72,7 +73,7 @@ void ManifestIconDownloader::OnIconFetched(
     int ideal_icon_size_in_px,
     int minimum_icon_size_in_px,
     DevToolsConsoleHelper* console_helper,
-    const ManifestIconDownloader::IconFetchCallback& callback,
+    IconFetchCallback callback,
     int id,
     int http_status_code,
     const GURL& url,
@@ -86,7 +87,7 @@ void ManifestIconDownloader::OnIconFetched(
         "Error while trying to use the following icon from the Manifest: " +
             url.spec() + " (Download error or resource isn't a valid image)");
 
-    callback.Run(SkBitmap());
+    std::move(callback).Run(SkBitmap());
     return;
   }
 
@@ -100,7 +101,7 @@ void ManifestIconDownloader::OnIconFetched(
             url.spec() +
             " (Resource size is not correct - typo in the Manifest?)");
 
-    callback.Run(SkBitmap());
+    std::move(callback).Run(SkBitmap());
     return;
   }
 
@@ -114,17 +115,16 @@ void ManifestIconDownloader::OnIconFetched(
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&ManifestIconDownloader::ScaleIcon,
-                       ideal_icon_size_in_px, chosen, callback));
+                       ideal_icon_size_in_px, chosen, std::move(callback)));
     return;
   }
 
-  callback.Run(chosen);
+  std::move(callback).Run(chosen);
 }
 
-void ManifestIconDownloader::ScaleIcon(
-    int ideal_icon_size_in_px,
-    const SkBitmap& bitmap,
-    const ManifestIconDownloader::IconFetchCallback& callback) {
+void ManifestIconDownloader::ScaleIcon(int ideal_icon_size_in_px,
+                                       const SkBitmap& bitmap,
+                                       IconFetchCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   const SkBitmap& scaled = skia::ImageOperations::Resize(
@@ -132,7 +132,7 @@ void ManifestIconDownloader::ScaleIcon(
       ideal_icon_size_in_px);
 
   base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                           base::BindOnce(callback, scaled));
+                           base::BindOnce(std::move(callback), scaled));
 }
 
 int ManifestIconDownloader::FindClosestBitmapIndex(

@@ -113,7 +113,7 @@ bool AppBannerManagerAndroid::OnAppDetailsRetrieved(
       web_contents(), primary_icon_url_,
       ShortcutHelper::GetIdealHomescreenIconSizeInPx(),
       ShortcutHelper::GetMinimumHomescreenIconSizeInPx(),
-      base::Bind(&AppBannerManager::OnAppIconFetched, GetWeakPtr()));
+      base::BindOnce(&AppBannerManager::OnAppIconFetched, GetWeakPtr()));
 }
 
 void AppBannerManagerAndroid::RequestAppBanner(const GURL& validated_url,

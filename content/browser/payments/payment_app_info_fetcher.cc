@@ -283,8 +283,8 @@ void PaymentAppInfoFetcher::SelfDeleteFetcher::FetchPaymentAppManifestCallback(
   bool can_download = ManifestIconDownloader::Download(
       web_contents_helper_->web_contents(), icon_url_, kPaymentAppIdealIconSize,
       kPaymentAppMinimumIconSize,
-      base::Bind(&PaymentAppInfoFetcher::SelfDeleteFetcher::OnIconFetched,
-                 base::Unretained(this)));
+      base::BindOnce(&PaymentAppInfoFetcher::SelfDeleteFetcher::OnIconFetched,
+                     base::Unretained(this)));
   // |can_download| is false only if web contents are  null or the icon URL is
   // not valid. Both of these conditions are manually checked above, so
   // |can_download| should never be false. The manual checks above are necessary
