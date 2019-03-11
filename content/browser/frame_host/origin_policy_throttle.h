@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "content/public/browser/navigation_throttle.h"
+#include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 class GURL;
 
@@ -76,6 +77,11 @@ class CONTENT_EXPORT OriginPolicyThrottle : public NavigationThrottle {
   static KnownVersionMap& GetKnownVersionsForTesting();
 
   void InjectPolicyForTesting(const std::string& policy_content);
+
+  void SetURLLoaderFactoryForTesting(
+      std::unique_ptr<network::mojom::URLLoaderFactory>
+          url_loader_factory_for_testing);
+
   static PolicyVersionAndReportTo
   GetRequestedPolicyAndReportGroupFromHeaderStringForTesting(
       const std::string& header);
@@ -113,6 +119,9 @@ class CONTENT_EXPORT OriginPolicyThrottle : public NavigationThrottle {
   // We may need the SimpleURLLoader to download the policy. The loader must
   // be kept alive while the load is ongoing.
   std::unique_ptr<network::SimpleURLLoader> url_loader_;
+
+  std::unique_ptr<network::mojom::URLLoaderFactory>
+      url_loader_factory_for_testing_;
 
   DISALLOW_COPY_AND_ASSIGN(OriginPolicyThrottle);
 };
