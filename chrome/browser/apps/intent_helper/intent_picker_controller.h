@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_ARC_INTENT_HELPER_INTENT_PICKER_CONTROLLER_H_
-#define CHROME_BROWSER_CHROMEOS_ARC_INTENT_HELPER_INTENT_PICKER_CONTROLLER_H_
+#ifndef CHROME_BROWSER_APPS_INTENT_HELPER_INTENT_PICKER_CONTROLLER_H_
+#define CHROME_BROWSER_APPS_INTENT_HELPER_INTENT_PICKER_CONTROLLER_H_
 
 #include "base/macros.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
@@ -35,4 +35,4 @@ class IntentPickerController : public TabStripModelObserver {
 
 }  // namespace arc
 
-#endif  // CHROME_BROWSER_CHROMEOS_ARC_INTENT_HELPER_INTENT_PICKER_CONTROLLER_H_
+#endif  // CHROME_BROWSER_APPS_INTENT_HELPER_INTENT_PICKER_CONTROLLER_H_

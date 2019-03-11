@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/views/location_bar/intent_picker_view.h"
 
-#include "chrome/browser/chromeos/apps/intent_helper/apps_navigation_throttle.h"
-#include "chrome/browser/chromeos/arc/intent_helper/intent_picker_controller.h"
+#include "chrome/browser/apps/intent_helper/apps_navigation_throttle.h"
+#include "chrome/browser/apps/intent_helper/intent_picker_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/browser.h"

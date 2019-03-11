@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/apps/intent_helper/apps_navigation_throttle.h"
-#include "chrome/browser/chromeos/apps/intent_helper/apps_navigation_types.h"
+#include "chrome/browser/apps/intent_helper/apps_navigation_throttle.h"
+#include "chrome/browser/apps/intent_helper/apps_navigation_types.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
