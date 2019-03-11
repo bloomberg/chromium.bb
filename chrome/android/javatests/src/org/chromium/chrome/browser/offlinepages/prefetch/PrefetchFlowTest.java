@@ -58,6 +58,7 @@ import java.util.concurrent.TimeoutException;
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class PrefetchFlowTest implements WebServer.RequestHandler {
     private static final String TAG = "PrefetchFlowTest";
+    private static final String GCM_TOKEN = "dummy_gcm_token";
     private TestOfflinePageService mOPS = new TestOfflinePageService();
     private TestSuggestionsService mSuggestionsService = new TestSuggestionsService();
     private WebServer mServer;
@@ -162,7 +163,9 @@ public class PrefetchFlowTest implements WebServer.RequestHandler {
         PrefetchBackgroundTask task = new PrefetchBackgroundTask();
         ThreadUtils.runOnUiThreadBlocking(() -> {
             TaskParameters.Builder builder =
-                    TaskParameters.create(TaskIds.OFFLINE_PAGES_PREFETCH_JOB_ID);
+                    TaskParameters.create(TaskIds.OFFLINE_PAGES_PREFETCH_JOB_ID)
+                            .addExtras(PrefetchBackgroundTaskScheduler.createGCMTokenBundle(
+                                    GCM_TOKEN));
             PrefetchBackgroundTask.skipConditionCheckingForTesting();
             task.onStartTask(ContextUtils.getApplicationContext(), builder.build(),
                     (boolean needsReschedule) -> { finished.notifyCalled(); });

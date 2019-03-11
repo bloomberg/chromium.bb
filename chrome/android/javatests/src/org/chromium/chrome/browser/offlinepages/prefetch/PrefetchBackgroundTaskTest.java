@@ -45,6 +45,7 @@ public class PrefetchBackgroundTaskTest {
 
     private static final double BACKOFF_JITTER_FACTOR = 0.33;
     private static final int SEMAPHORE_TIMEOUT_MS = 5000;
+    private static final String GCM_TOKEN = "dummy_gcm_token";
     private TestBackgroundTaskScheduler mScheduler;
 
     private static class TestPrefetchBackgroundTask extends PrefetchBackgroundTask {
@@ -57,7 +58,9 @@ public class PrefetchBackgroundTaskTest {
 
         public void startTask(Context context, final TaskFinishedCallback callback) {
             TaskParameters.Builder builder =
-                    TaskParameters.create(TaskIds.OFFLINE_PAGES_PREFETCH_JOB_ID);
+                    TaskParameters.create(TaskIds.OFFLINE_PAGES_PREFETCH_JOB_ID)
+                            .addExtras(PrefetchBackgroundTaskScheduler.createGCMTokenBundle(
+                                    GCM_TOKEN));
             TaskParameters params = builder.build();
             onStartTask(context, params, new TaskFinishedCallback() {
                 @Override
@@ -82,7 +85,9 @@ public class PrefetchBackgroundTaskTest {
                 @Override
                 public void run() {
                     TaskParameters.Builder builder =
-                            TaskParameters.create(TaskIds.OFFLINE_PAGES_PREFETCH_JOB_ID);
+                            TaskParameters.create(TaskIds.OFFLINE_PAGES_PREFETCH_JOB_ID)
+                                    .addExtras(PrefetchBackgroundTaskScheduler.createGCMTokenBundle(
+                                            GCM_TOKEN));
                     TaskParameters params = builder.build();
                     onStopTask(ContextUtils.getApplicationContext(), params);
                 }
@@ -206,7 +211,7 @@ public class PrefetchBackgroundTaskTest {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                PrefetchBackgroundTaskScheduler.scheduleTask(additionalDelaySeconds);
+                PrefetchBackgroundTaskScheduler.scheduleTask(additionalDelaySeconds, GCM_TOKEN);
             }
         });
     }

@@ -88,8 +88,15 @@ void PrefetchDispatcherImpl::EnsureTaskScheduled() {
     background_task_->SetReschedule(
         PrefetchBackgroundTaskRescheduleType::RESCHEDULE_WITHOUT_BACKOFF);
   } else {
-    service_->GetPrefetchBackgroundTaskHandler()->EnsureTaskScheduled();
+    service_->GetGCMToken(
+        base::BindOnce(&PrefetchDispatcherImpl::EnsureTaskScheduledWithGCMToken,
+                       weak_factory_.GetWeakPtr()));
   }
+}
+
+void PrefetchDispatcherImpl::EnsureTaskScheduledWithGCMToken(
+    const std::string& gcm_token) {
+  service_->GetPrefetchBackgroundTaskHandler()->EnsureTaskScheduled(gcm_token);
 }
 
 void PrefetchDispatcherImpl::AddCandidatePrefetchURLs(
@@ -231,6 +238,7 @@ void PrefetchDispatcherImpl::QueueActionTasks() {
   // as we need to ensure WiFi access at that time.
   if (!background_task_)
     return;
+  DCHECK(!service_->GetCachedGCMToken().empty());
 
   std::unique_ptr<Task> get_operation_task = std::make_unique<GetOperationTask>(
       service_->GetPrefetchStore(),
@@ -243,6 +251,7 @@ void PrefetchDispatcherImpl::QueueActionTasks() {
   std::unique_ptr<Task> generate_page_bundle_task =
       std::make_unique<GeneratePageBundleTask>(
           this, service_->GetPrefetchStore(), service_->GetPrefetchGCMHandler(),
+          service_->GetCachedGCMToken(),
           service_->GetPrefetchNetworkRequestFactory(),
           base::BindOnce(
               &PrefetchDispatcherImpl::DidGenerateBundleOrGetOperationRequest,

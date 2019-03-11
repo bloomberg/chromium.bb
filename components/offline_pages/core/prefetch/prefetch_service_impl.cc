@@ -51,7 +51,8 @@ PrefetchServiceImpl::PrefetchServiceImpl(
           std::move(prefetch_background_task_handler)),
       suggested_articles_observer_(std::move(suggested_articles_observer)),
       thumbnail_fetcher_(std::move(thumbnail_fetcher)),
-      thumbnail_image_fetcher_(thumbnail_image_fetcher) {
+      thumbnail_image_fetcher_(thumbnail_image_fetcher),
+      weak_ptr_factory_(this) {
   prefetch_dispatcher_->SetService(this);
   prefetch_downloader_->SetPrefetchService(this);
   prefetch_gcm_handler_->SetService(this);
@@ -63,6 +64,30 @@ PrefetchServiceImpl::~PrefetchServiceImpl() {
   // The dispatcher needs to be disposed first because it may need to
   // communicate with other members owned by the service at destruction time.
   prefetch_dispatcher_.reset();
+}
+
+void PrefetchServiceImpl::SetCachedGCMToken(const std::string& gcm_token) {
+  gcm_token_ = gcm_token;
+}
+
+const std::string& PrefetchServiceImpl::GetCachedGCMToken() const {
+  return gcm_token_;
+}
+
+void PrefetchServiceImpl::GetGCMToken(GCMTokenCallback callback) {
+  DCHECK(prefetch_gcm_handler_);
+  prefetch_gcm_handler_->GetGCMToken(base::AdaptCallbackForRepeating(
+      base::BindOnce(&PrefetchServiceImpl::OnGCMTokenReceived,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback))));
+}
+
+void PrefetchServiceImpl::OnGCMTokenReceived(
+    GCMTokenCallback callback,
+    const std::string& gcm_token,
+    instance_id::InstanceID::Result result) {
+  // Keep the token fresh
+  gcm_token_ = gcm_token;
+  std::move(callback).Run(gcm_token);
 }
 
 void PrefetchServiceImpl::SetContentSuggestionsService(

@@ -145,11 +145,13 @@ GeneratePageBundleTask::GeneratePageBundleTask(
     PrefetchDispatcher* prefetch_dispatcher,
     PrefetchStore* prefetch_store,
     PrefetchGCMHandler* gcm_handler,
+    const std::string& gcm_token,
     PrefetchNetworkRequestFactory* request_factory,
     PrefetchRequestFinishedCallback callback)
     : prefetch_dispatcher_(prefetch_dispatcher),
       prefetch_store_(prefetch_store),
       gcm_handler_(gcm_handler),
+      gcm_token_(gcm_token),
       request_factory_(request_factory),
       callback_(std::move(callback)),
       weak_factory_(this) {}
@@ -173,9 +175,15 @@ void GeneratePageBundleTask::StartGeneratePageBundle(
   DCHECK(!url_and_ids->urls.empty());
   DCHECK_EQ(url_and_ids->urls.size(), url_and_ids->ids.size());
 
-  gcm_handler_->GetGCMToken(base::AdaptCallbackForRepeating(
-      base::BindOnce(&GeneratePageBundleTask::GotRegistrationId,
-                     weak_factory_.GetWeakPtr(), std::move(url_and_ids))));
+  if (gcm_handler_) {
+    gcm_handler_->GetGCMToken(base::AdaptCallbackForRepeating(
+        base::BindOnce(&GeneratePageBundleTask::GotRegistrationId,
+                       weak_factory_.GetWeakPtr(), std::move(url_and_ids))));
+  } else {
+    DCHECK(!gcm_token_.empty());
+    GotRegistrationId(std::move(url_and_ids), gcm_token_,
+                      instance_id::InstanceID::Result::SUCCESS);
+  }
 }
 
 void GeneratePageBundleTask::GotRegistrationId(

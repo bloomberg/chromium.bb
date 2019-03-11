@@ -72,6 +72,8 @@ class PrefetchDispatcherImpl : public PrefetchDispatcher,
 
   void DisposeTask();
 
+  void EnsureTaskScheduledWithGCMToken(const std::string& gcm_token);
+
   // Callbacks for network requests.
   void DidGenerateBundleOrGetOperationRequest(
       const std::string& request_name_for_logging,

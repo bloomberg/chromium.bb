@@ -6,23 +6,28 @@
 
 #include <memory>
 
+#include "base/android/jni_string.h"
 #include "jni/PrefetchBackgroundTaskScheduler_jni.h"
 
 namespace offline_pages {
 
 // static
-void PrefetchBackgroundTaskScheduler::Schedule(int additional_delay_seconds) {
+void PrefetchBackgroundTaskScheduler::Schedule(int additional_delay_seconds,
+                                               const std::string& gcm_token) {
   JNIEnv* env = base::android::AttachCurrentThread();
   prefetch::Java_PrefetchBackgroundTaskScheduler_scheduleTask(
-      env, additional_delay_seconds);
+      env, additional_delay_seconds,
+      base::android::ConvertUTF8ToJavaString(env, gcm_token));
 }
 
 // static
 void PrefetchBackgroundTaskScheduler::ScheduleLimitless(
-    int additional_delay_seconds) {
+    int additional_delay_seconds,
+    const std::string& gcm_token) {
   JNIEnv* env = base::android::AttachCurrentThread();
   prefetch::Java_PrefetchBackgroundTaskScheduler_scheduleTaskLimitless(
-      env, additional_delay_seconds);
+      env, additional_delay_seconds,
+      base::android::ConvertUTF8ToJavaString(env, gcm_token));
 }
 
 // static
