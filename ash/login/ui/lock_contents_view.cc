@@ -1096,24 +1096,33 @@ void LockContentsView::OnFocusLeavingLockScreenApps(bool reverse) {
 }
 
 void LockContentsView::OnOobeDialogStateChanged(mojom::OobeDialogState state) {
+  oobe_dialog_visible_ = state != mojom::OobeDialogState::HIDDEN;
+
+  // Deactivate the lock screen widget while the dialog is visible to
+  // prevent lock screen from grabbing focus and hiding the OOBE dialog.
+  GetWidget()->widget_delegate()->SetCanActivate(!oobe_dialog_visible_);
+
   if (state == mojom::OobeDialogState::HIDDEN && primary_big_view_)
     primary_big_view_->RequestFocus();
 }
 
 void LockContentsView::OnFocusLeavingSystemTray(bool reverse) {
   // This function is called when the system tray is losing focus. We want to
-  // focus the first or last child in this view, or a lock screen app window if
-  // one is active (in which case lock contents should not have focus). In the
-  // later case, still focus lock screen first, to synchronously take focus away
-  // from the system shelf (or tray) - lock shelf view expect the focus to be
-  // taken when it passes it to lock screen view, and can misbehave in case the
-  // focus is kept in it.
+  // focus the first or last child in this view, a lock screen app window if
+  // one is active (in which case lock contents should not have focus), or the
+  // OOBE dialog modal if it's active. In the later cases, still focus lock
+  // screen first, to synchronously take focus away from the system shelf (or
+  // tray) - lock shelf view expect the focus to be taken when it passes it
+  // to lock screen view, and can misbehave in case the focus is kept in it.
   FocusFirstOrLastFocusableChild(this, reverse);
 
   if (lock_screen_apps_active_) {
     Shell::Get()->login_screen_controller()->FocusLockScreenApps(reverse);
     return;
   }
+
+  if (oobe_dialog_visible_)
+    Shell::Get()->login_screen_controller()->FocusOobeDialog();
 }
 
 void LockContentsView::OnDisplayMetricsChanged(const display::Display& display,

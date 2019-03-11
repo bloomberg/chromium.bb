@@ -2232,4 +2232,38 @@ TEST_F(LockContentsViewUnitTest, OnFocusLeavingSystemTrayWithNoUsers) {
   EXPECT_TRUE(lock->GetFocusManager()->GetFocusedView());
 }
 
+TEST_F(LockContentsViewUnitTest, OnFocusLeavingSystemTrayWithOobeDialogOpen) {
+  auto* lock = new LockContentsView(
+      mojom::TrayActionState::kNotAvailable, LockScreen::ScreenType::kLock,
+      DataDispatcher(),
+      std::make_unique<FakeLoginDetachableBaseModel>(DataDispatcher()));
+  SetWidget(CreateWidgetWithContent(lock));
+
+  // FocusOobeDialog called when OOBE dialog visible.
+  std::unique_ptr<MockLoginScreenClient> client = BindMockLoginScreenClient();
+  EXPECT_CALL(*client, FocusOobeDialog()).Times(1);
+
+  Shell::Get()->login_screen_controller()->NotifyOobeDialogState(
+      mojom::OobeDialogState::GAIA_SIGNIN);
+  lock->OnFocusLeavingSystemTray(false /* reverse */);
+  Shell::Get()->login_screen_controller()->FlushForTesting();
+}
+
+TEST_F(LockContentsViewUnitTest, OnFocusLeavingSystemTrayWithOobeDialogClosed) {
+  auto* lock = new LockContentsView(
+      mojom::TrayActionState::kNotAvailable, LockScreen::ScreenType::kLock,
+      DataDispatcher(),
+      std::make_unique<FakeLoginDetachableBaseModel>(DataDispatcher()));
+  SetWidget(CreateWidgetWithContent(lock));
+
+  // FocusOobeDialog not called when OOBE dialog not visible.
+  std::unique_ptr<MockLoginScreenClient> client = BindMockLoginScreenClient();
+  EXPECT_CALL(*client, FocusOobeDialog()).Times(0);
+
+  Shell::Get()->login_screen_controller()->NotifyOobeDialogState(
+      mojom::OobeDialogState::HIDDEN);
+  lock->OnFocusLeavingSystemTray(false /* reverse */);
+  Shell::Get()->login_screen_controller()->FlushForTesting();
+}
+
 }  // namespace ash

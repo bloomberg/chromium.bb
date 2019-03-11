@@ -582,6 +582,8 @@ void LoginScreenController::ShowAccountAccessHelpApp() {
 }
 
 void LoginScreenController::FocusOobeDialog() {
+  if (!login_screen_client_)
+    return;
   login_screen_client_->FocusOobeDialog();
 }
 
