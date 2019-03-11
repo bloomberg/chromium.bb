@@ -10217,20 +10217,6 @@ interface WebGLUniformLocation
 interface WebGLVertexArrayObject
     attribute @@toStringTag
     method constructor
-interface WebGPU
-    attribute @@toStringTag
-    method constructor
-    method getAdapter
-interface WebGPUAdapter
-    attribute @@toStringTag
-    getter name
-    method constructor
-    method createDevice
-interface WebGPUDevice
-    attribute @@toStringTag
-    getter adapter
-    method constructor
-    method dummy
 interface WebKitCSSMatrix : DOMMatrixReadOnly
     attribute @@toStringTag
     getter a
@@ -10975,7 +10961,6 @@ interface webkitURL
     getter taskWorklet
     getter toolbar
     getter visualViewport
-    getter webgpu
     getter webkitStorageInfo
     method NodeFilter
     method alert
@@ -11167,7 +11152,6 @@ interface webkitURL
     setter statusbar
     setter toolbar
     setter visualViewport
-    setter webgpu
 PASS successfullyParsed is true
 
 TEST COMPLETE

@@ -1487,11 +1487,10 @@
     // WebGPU adds a large attack surface area to the GPU process and allows
     // running arbitrary programs on the GPU (compute shaders), which may
     // perform arbitrary read/writes of GPU memory if not properly sandboxed.
-    // That's why it is marked as "test" and not enabled as part of the
+    // That's why it is not enabled as part of the
     // --enable-experimental-web-platform-features flag.
     {
       name: "WebGPU",
-      status: "test",
     },
     {
       name: "WebHID",
