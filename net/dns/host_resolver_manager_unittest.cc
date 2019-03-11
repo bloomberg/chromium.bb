@@ -2178,6 +2178,58 @@ const uint8_t kMdnsResponseSrv[] = {
     // "foo.com."
     0x03, 'f', 'o', 'o', 0x03, 'c', 'o', 'm', 0x00};
 
+const uint8_t kMdnsResponseSrvUnrestricted[] = {
+    // Header
+    0x00, 0x00,  // ID is zeroed out
+    0x81, 0x80,  // Standard query response, RA, no error
+    0x00, 0x00,  // No questions (for simplicity)
+    0x00, 0x01,  // 1 RR (answers)
+    0x00, 0x00,  // 0 authority RRs
+    0x00, 0x00,  // 0 additional RRs
+
+    // "foo bar(A1B2)._ipps._tcp.local"
+    0x0d, 'f', 'o', 'o', ' ', 'b', 'a', 'r', '(', 'A', '1', 'B', '2', ')', 0x05,
+    '_', 'i', 'p', 'p', 's', 0x04, '_', 't', 'c', 'p', 0x05, 'l', 'o', 'c', 'a',
+    'l', 0x00,
+
+    0x00, 0x21,              // TYPE is SRV.
+    0x00, 0x01,              // CLASS is IN.
+    0x00, 0x00, 0x00, 0x13,  // TTL is 19 (seconds)
+    0x00, 0x0f,              // RDLENGTH is 15 bytes.
+
+    0x00, 0x05,  // Priority 5
+    0x00, 0x01,  // Weight 1
+    0x20, 0x49,  // Port 8265
+
+    // "foo.com."
+    0x03, 'f', 'o', 'o', 0x03, 'c', 'o', 'm', 0x00};
+
+const uint8_t kMdnsResponseSrvUnrestrictedResult[] = {
+    // Header
+    0x00, 0x00,  // ID is zeroed out
+    0x81, 0x80,  // Standard query response, RA, no error
+    0x00, 0x00,  // No questions (for simplicity)
+    0x00, 0x01,  // 1 RR (answers)
+    0x00, 0x00,  // 0 authority RRs
+    0x00, 0x00,  // 0 additional RRs
+
+    // "myhello.local."
+    0x07, 'm', 'y', 'h', 'e', 'l', 'l', 'o', 0x05, 'l', 'o', 'c', 'a', 'l',
+    0x00,
+
+    0x00, 0x21,              // TYPE is SRV.
+    0x00, 0x01,              // CLASS is IN.
+    0x00, 0x00, 0x00, 0x13,  // TTL is 19 (seconds)
+    0x00, 0x15,              // RDLENGTH is 21 bytes.
+
+    0x00, 0x05,  // Priority 5
+    0x00, 0x01,  // Weight 1
+    0x20, 0x49,  // Port 8265
+
+    // "foo bar.local"
+    0x07, 'f', 'o', 'o', ' ', 'b', 'a', 'r', 0x05, 'l', 'o', 'c', 'a', 'l',
+    0x00};
+
 TEST_F(HostResolverManagerTest, Mdns) {
   auto socket_factory = std::make_unique<MockMDnsSocketFactory>();
   MockMDnsSocketFactory* socket_factory_ptr = socket_factory.get();
@@ -2300,6 +2352,58 @@ TEST_F(HostResolverManagerTest, Mdns_Srv) {
   EXPECT_THAT(
       response.request()->GetHostnameResults(),
       testing::Optional(testing::ElementsAre(HostPortPair("foo.com", 8265))));
+}
+
+// Test that we are able to create multicast DNS requests that contain
+// characters not permitted in the DNS spec such as spaces and parenthesis.
+TEST_F(HostResolverManagerTest, Mdns_Srv_Unrestricted) {
+  auto socket_factory = std::make_unique<MockMDnsSocketFactory>();
+  MockMDnsSocketFactory* socket_factory_ptr = socket_factory.get();
+  resolver_->SetMdnsSocketFactoryForTesting(std::move(socket_factory));
+
+  HostResolver::ResolveHostParameters parameters;
+  parameters.dns_query_type = DnsQueryType::SRV;
+  parameters.source = HostResolverSource::MULTICAST_DNS;
+
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      HostPortPair("foo bar(A1B2)._ipps._tcp.local", 83), NetLogWithSource(),
+      parameters));
+
+  socket_factory_ptr->SimulateReceive(kMdnsResponseSrvUnrestricted,
+                                      sizeof(kMdnsResponseSrvUnrestricted));
+
+  EXPECT_THAT(response.result_error(), IsOk());
+  EXPECT_FALSE(response.request()->GetAddressResults());
+  EXPECT_FALSE(response.request()->GetTextResults());
+  EXPECT_THAT(
+      response.request()->GetHostnameResults(),
+      testing::Optional(testing::ElementsAre(HostPortPair("foo.com", 8265))));
+}
+
+// Test that we are able to create multicast DNS requests that contain
+// characters not permitted in the DNS spec such as spaces and parenthesis.
+TEST_F(HostResolverManagerTest, Mdns_Srv_Result_Unrestricted) {
+  auto socket_factory = std::make_unique<MockMDnsSocketFactory>();
+  MockMDnsSocketFactory* socket_factory_ptr = socket_factory.get();
+  resolver_->SetMdnsSocketFactoryForTesting(std::move(socket_factory));
+
+  HostResolver::ResolveHostParameters parameters;
+  parameters.dns_query_type = DnsQueryType::SRV;
+  parameters.source = HostResolverSource::MULTICAST_DNS;
+
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      HostPortPair("myhello.local", 83), NetLogWithSource(), parameters));
+
+  socket_factory_ptr->SimulateReceive(
+      kMdnsResponseSrvUnrestrictedResult,
+      sizeof(kMdnsResponseSrvUnrestrictedResult));
+
+  EXPECT_THAT(response.result_error(), IsOk());
+  EXPECT_FALSE(response.request()->GetAddressResults());
+  EXPECT_FALSE(response.request()->GetTextResults());
+  EXPECT_THAT(response.request()->GetHostnameResults(),
+              testing::Optional(
+                  testing::ElementsAre(HostPortPair("foo bar.local", 8265))));
 }
 
 // Test multicast DNS handling of NSEC responses (used for explicit negative

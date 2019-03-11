@@ -51,9 +51,12 @@ const uint16_t kFlagNamePointer = 0xc000;
 #endif
 
 namespace net {
+namespace {
 
 // Based on DJB's public domain code.
-bool DNSDomainFromDot(const base::StringPiece& dotted, std::string* out) {
+bool DNSDomainFromDot(const base::StringPiece& dotted,
+                      bool is_unrestricted,
+                      std::string* out) {
   const char* buf = dotted.data();
   size_t n = dotted.size();
   char label[kMaxLabelLength];
@@ -81,7 +84,7 @@ bool DNSDomainFromDot(const base::StringPiece& dotted, std::string* out) {
     }
     if (labellen >= sizeof label)
       return false;
-    if (!IsValidHostLabelCharacter(ch, labellen == 0)) {
+    if (!is_unrestricted && !IsValidHostLabelCharacter(ch, labellen == 0)) {
       return false;
     }
     label[labellen++] = ch;
@@ -107,9 +110,25 @@ bool DNSDomainFromDot(const base::StringPiece& dotted, std::string* out) {
   return true;
 }
 
+}  // namespace
+
+bool DNSDomainFromDot(const base::StringPiece& dotted, std::string* out) {
+  return DNSDomainFromDot(dotted, false /* is_unrestricted */, out);
+}
+
+bool DNSDomainFromUnrestrictedDot(const base::StringPiece& dotted,
+                                  std::string* out) {
+  return DNSDomainFromDot(dotted, true /* is_unrestricted */, out);
+}
+
 bool IsValidDNSDomain(const base::StringPiece& dotted) {
   std::string dns_formatted;
   return DNSDomainFromDot(dotted, &dns_formatted);
+}
+
+bool IsValidUnrestrictedDNSDomain(const base::StringPiece& dotted) {
+  std::string dns_formatted;
+  return DNSDomainFromUnrestrictedDot(dotted, &dns_formatted);
 }
 
 bool IsValidHostLabelCharacter(char c, bool is_first_char) {
