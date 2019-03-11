@@ -134,12 +134,12 @@ bool ContentRendererClient::IsPrefetchOnly(
   return false;
 }
 
-unsigned long long ContentRendererClient::VisitedLinkHash(
-    const char* canonical_url, size_t length) {
-  return 0LL;
+uint64_t ContentRendererClient::VisitedLinkHash(const char* canonical_url,
+                                                size_t length) {
+  return 0;
 }
 
-bool ContentRendererClient::IsLinkVisited(unsigned long long link_hash) {
+bool ContentRendererClient::IsLinkVisited(uint64_t link_hash) {
   return false;
 }
 

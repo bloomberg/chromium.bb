@@ -145,9 +145,8 @@ class ChromeContentRendererClient
                        bool* attach_same_site_cookies) override;
   bool IsPrefetchOnly(content::RenderFrame* render_frame,
                       const blink::WebURLRequest& request) override;
-  unsigned long long VisitedLinkHash(const char* canonical_url,
-                                     size_t length) override;
-  bool IsLinkVisited(unsigned long long link_hash) override;
+  uint64_t VisitedLinkHash(const char* canonical_url, size_t length) override;
+  bool IsLinkVisited(uint64_t link_hash) override;
   blink::WebPrescientNetworking* GetPrescientNetworking() override;
   bool IsPrerenderingFrame(const content::RenderFrame* render_frame) override;
   bool IsExternalPepperPlugin(const std::string& module_name) override;
