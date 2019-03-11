@@ -2238,11 +2238,6 @@
     "expiry_milestone": 74
   },
   {
-    "name": "material-design-ink-drop-animation-speed",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "media-router-cast-allow-all-ips",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76

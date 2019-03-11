@@ -448,9 +448,6 @@ base::TimeDelta FloodFillInkDropRipple::GetAnimationDuration(int state) {
   }
 
   return base::TimeDelta::FromMilliseconds(
-      (views::InkDropRipple::UseFastAnimations()
-           ? 1
-           : views::InkDropRipple::kSlowAnimationDurationFactor) *
       kAnimationDurationInMs[state_override] * duration_factor_);
 }
 
