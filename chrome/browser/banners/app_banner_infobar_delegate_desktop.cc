@@ -91,7 +91,7 @@ bool AppBannerInfoBarDelegateDesktop::Accept() {
   has_user_interaction_ = true;
 
   if (weak_manager_)
-    weak_manager_->CreateBookmarkApp(install_source_);
+    weak_manager_->CreateWebApp(install_source_);
 
   return true;
 }

@@ -22,6 +22,8 @@ namespace web_app {
 
 enum class InstallResultCode;
 
+// TODO(loyso): Rework this interface once BookmarkAppHelper erased. Unify the
+// API and merge similar InstallWebAppZZZZ functions. crbug.com/915043.
 class InstallManager {
  public:
   using OnceInstallCallback =
@@ -52,6 +54,14 @@ class InstallManager {
                              WebappInstallSource install_source,
                              WebAppInstallDialogCallback dialog_callback,
                              OnceInstallCallback callback) = 0;
+
+  // Starts a web app installation process for a given |web_contents|, initiated
+  // by WebApp script. Bypasses the GetWebApplicationInfo from renderer step.
+  virtual void InstallWebAppFromBanner(
+      content::WebContents* web_contents,
+      WebappInstallSource install_source,
+      WebAppInstallDialogCallback dialog_callback,
+      OnceInstallCallback callback) = 0;
 
   virtual ~InstallManager() = default;
 };

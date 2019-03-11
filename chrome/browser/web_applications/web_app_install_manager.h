@@ -44,6 +44,10 @@ class WebAppInstallManager final : public InstallManager,
                      WebappInstallSource install_source,
                      WebAppInstallDialogCallback dialog_callback,
                      OnceInstallCallback callback) override;
+  void InstallWebAppFromBanner(content::WebContents* contents,
+                               WebappInstallSource install_source,
+                               WebAppInstallDialogCallback dialog_callback,
+                               OnceInstallCallback callback) override;
 
   // WebContentsObserver:
   void WebContentsDestroyed() override;

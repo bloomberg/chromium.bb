@@ -18,6 +18,7 @@
 #include "chrome/browser/installable/installable_ambient_badge_infobar_delegate.h"
 #include "chrome/browser/installable/installable_logging.h"
 #include "chrome/browser/installable/installable_manager.h"
+#include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/blink/public/common/manifest/web_display_mode.h"
@@ -26,17 +27,16 @@
 enum class WebappInstallSource;
 class InstallableManager;
 class SkBitmap;
-struct WebApplicationInfo;
 
 namespace content {
 class RenderFrameHost;
 class WebContents;
 }  // namespace content
 
-// This forward declaration exists solely for the DidFinishCreatingBookmarkApp
+// This forward declaration exists solely for the DidFinishCreatingWebApp
 // callback, implemented and called on desktop platforms only.
-namespace extensions {
-class Extension;
+namespace web_app {
+enum class InstallResultCode;
 }
 
 namespace banners {
@@ -175,16 +175,15 @@ class AppBannerManager : public content::WebContentsObserver,
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
-  // Overridden on desktop platforms. Called to initiate the bookmark app
+  // Overridden on desktop platforms. Called to initiate the web app
   // install. Not used on Android.
-  virtual void CreateBookmarkApp(WebappInstallSource install_source) {}
+  virtual void CreateWebApp(WebappInstallSource install_source) {}
 
   // Overridden and passed through base::Bind on desktop platforms. Called when
-  // the bookmark app install initiated by a banner has completed. Not used on
+  // the web app install initiated by a banner has completed. Not used on
   // Android.
-  virtual void DidFinishCreatingBookmarkApp(
-      const extensions::Extension* extension,
-      const WebApplicationInfo& web_app_info) {}
+  virtual void DidFinishCreatingWebApp(const web_app::AppId& app_id,
+                                       web_app::InstallResultCode code) {}
 
   // Overridden and passed through base::Bind on Android. Called when the
   // download of a native app's icon is complete, as native banners use an icon

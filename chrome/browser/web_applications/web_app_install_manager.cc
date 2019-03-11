@@ -65,6 +65,15 @@ void WebAppInstallManager::InstallWebApp(
                      weak_ptr_factory_.GetWeakPtr(), force_shortcut_app));
 }
 
+void WebAppInstallManager::InstallWebAppFromBanner(
+    content::WebContents* contents,
+    WebappInstallSource install_source,
+    WebAppInstallDialogCallback dialog_callback,
+    OnceInstallCallback callback) {
+  // TODO(loyso): Implement it.
+  NOTIMPLEMENTED();
+}
+
 void WebAppInstallManager::WebContentsDestroyed() {
   ReturnError(InstallResultCode::kWebContentsDestroyed);
 }
