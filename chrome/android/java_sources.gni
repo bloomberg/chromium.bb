@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/android/config.gni")
+import("//chrome/android/features/tab_ui/tab_management_java_sources.gni")
 import("//chrome/android/feed/feed_java_sources.gni")
 import("//components/feed/features.gni")
 import("//components/offline_pages/buildflags/features.gni")
@@ -1564,32 +1565,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/tasks/TasksUma.java",
   "java/src/org/chromium/chrome/browser/tasks/tabgroup/TabGroupModelFilter.java",
   "java/src/org/chromium/chrome/browser/tasks/tab_groups/LayoutTabGroupCreationButton.java",
-  "java/src/org/chromium/chrome/browser/tasks/tab_groups/TabGroupUtils.java",
-  "java/src/org/chromium/chrome/browser/tasks/tab_list_ui/TabStripToolbarViewProperties.java",
-  "java/src/org/chromium/chrome/browser/tasks/tab_list_ui/BottomTabListToolbarView.java",
-  "java/src/org/chromium/chrome/browser/tasks/tab_list_ui/BottomTabStripToolbarViewBinder.java",
-  "java/src/org/chromium/chrome/browser/tasks/tab_list_ui/TabStripBottomToolbarMediator.java",
-  "java/src/org/chromium/chrome/browser/tasks/tab_list_ui/TabStripToolbarCoordinator.java",
-  "java/src/org/chromium/chrome/browser/tasks/tab_list_ui/TabStripBottomToolbarCoordinator.java",
-  "java/src/org/chromium/chrome/browser/tasks/tab_list_ui/BottomTabGridSheetProperties.java",
-  "java/src/org/chromium/chrome/browser/tasks/tab_list_ui/BottomTabGridSheetToolbarCoordinator.java",
-  "java/src/org/chromium/chrome/browser/tasks/tab_list_ui/BottomTabGridSheetViewBinder.java",
-  "java/src/org/chromium/chrome/browser/tasks/tab_list_ui/BottomTabGridCoordinator.java",
-  "java/src/org/chromium/chrome/browser/tasks/tab_list_ui/BottomTabGridMediator.java",
-  "java/src/org/chromium/chrome/browser/tasks/tab_list_ui/BottomTabGridSheetContent.java",
-  "java/src/org/chromium/chrome/browser/tasks/tab_list_ui/GridTabSwitcherCoordinator.java",
-  "java/src/org/chromium/chrome/browser/tasks/tab_list_ui/GridTabSwitcherMediator.java",
-  "java/src/org/chromium/chrome/browser/tasks/tab_list_ui/TabGridContainerViewBinder.java",
-  "java/src/org/chromium/chrome/browser/tasks/tab_list_ui/TabGridViewBinder.java",
-  "java/src/org/chromium/chrome/browser/tasks/tab_list_ui/TabGridViewHolder.java",
-  "java/src/org/chromium/chrome/browser/tasks/tab_list_ui/TabListContainerProperties.java",
-  "java/src/org/chromium/chrome/browser/tasks/tab_list_ui/TabListCoordinator.java",
-  "java/src/org/chromium/chrome/browser/tasks/tab_list_ui/TabListMediator.java",
-  "java/src/org/chromium/chrome/browser/tasks/tab_list_ui/TabListModel.java",
-  "java/src/org/chromium/chrome/browser/tasks/tab_list_ui/TabListRecyclerView.java",
-  "java/src/org/chromium/chrome/browser/tasks/tab_list_ui/TabProperties.java",
-  "java/src/org/chromium/chrome/browser/tasks/tab_list_ui/TabStripViewBinder.java",
-  "java/src/org/chromium/chrome/browser/tasks/tab_list_ui/TabStripViewHolder.java",
   "java/src/org/chromium/chrome/browser/toolbar/HomeButton.java",
   "java/src/org/chromium/chrome/browser/toolbar/IncognitoStateProvider.java",
   "java/src/org/chromium/chrome/browser/toolbar/IncognitoToggleTabLayout.java",
@@ -2313,9 +2288,6 @@ chrome_test_java_sources = [
   "javatests/src/org/chromium/chrome/browser/tabmodel/TestTabModelDirectory.java",
   "javatests/src/org/chromium/chrome/browser/tabmodel/UndoTabModelTest.java",
   "javatests/src/org/chromium/chrome/browser/tabmodel/document/MockDocumentTabModel.java",
-  "javatests/src/org/chromium/chrome/browser/tasks/tab_list_ui/TabListViewHolderTest.java",
-  "javatests/src/org/chromium/chrome/browser/tasks/tab_list_ui/TabGridContainerViewBinderTest.java",
-  "javatests/src/org/chromium/chrome/browser/tasks/tab_list_ui/TestRecyclerViewSimpleViewBinder.java",
   "javatests/src/org/chromium/chrome/browser/test/ChromeBrowserTestRule.java",
   "javatests/src/org/chromium/chrome/browser/test/ClearAppDataTestRule.java",
   "javatests/src/org/chromium/chrome/browser/test/CommandLineInitRule.java",
@@ -2540,8 +2512,6 @@ chrome_junit_test_java_sources = [
   "junit/src/org/chromium/chrome/browser/tab/TabAttributesTest.java",
   "junit/src/org/chromium/chrome/browser/tabmodel/TabPersistentStoreUnitTest.java",
   "junit/src/org/chromium/chrome/browser/tabstate/TabStateUnitTest.java",
-  "junit/src/org/chromium/chrome/browser/tasks/tab_list_ui/GridTabSwitcherMediatorUnitTest.java",
-  "junit/src/org/chromium/chrome/browser/tasks/tab_list_ui/TabListMediatorUnitTest.java",
   "junit/src/org/chromium/chrome/browser/toolbar/ToolbarSecurityIconTest.java",
   "junit/src/org/chromium/chrome/browser/usage_stats/EventTrackerTest.java",
   "junit/src/org/chromium/chrome/browser/usage_stats/PageViewObserverTest.java",
@@ -2571,6 +2541,9 @@ if (enable_feed_in_chrome) {
   chrome_junit_test_java_sources += feed_junit_test_java_sources
   chrome_test_java_sources += feed_test_java_sources
 }
+
+chrome_junit_test_java_sources += tab_management_junit_java_sources
+chrome_test_java_sources += tab_management_test_java_sources
 
 # This is enable_arcore, not package_arcore because the apk merger, for
 # example, would complain that the java classes.dex differs between 32bit and

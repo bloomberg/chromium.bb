@@ -30,6 +30,7 @@ import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.tabmodel.DocumentModeAssassin;
+import org.chromium.chrome.browser.tasks.tab_management.TabManagementModuleProvider;
 import org.chromium.chrome.browser.touchless.TouchlessDelegate;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.variations.VariationsAssociatedData;
@@ -530,7 +531,8 @@ public class FeatureUtilities {
         // changing that setting while Chrome is alive.
         return !DeviceFormFactor.isNonMultiDisplayContextOnTablet(activityContext)
                 && !SysUtils.isLowEndDevice() && !DeviceClassManager.enableAccessibilityLayout()
-                && ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID);
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID)
+                && TabManagementModuleProvider.getTabManagementModule() != null;
     }
 
     private static void cacheTabGroupsAndroidEnabled() {
@@ -553,7 +555,8 @@ public class FeatureUtilities {
                     ChromePreferenceManager.TAB_GROUPS_ANDROID_ENABLED_KEY, false);
         }
 
-        return sIsTabGroupsAndroidEnabled;
+        return sIsTabGroupsAndroidEnabled
+                && TabManagementModuleProvider.getTabManagementModule() != null;
     }
 
     private static boolean isDeviceEligibleForTabGroups() {
