@@ -1337,7 +1337,7 @@ void AccessibilityManager::PostLoadChromeVox() {
   }
 
   audio_focus_manager_ptr_->SetEnforcementMode(
-      media_session::mojom::EnforcementMode::kSingleSession);
+      media_session::mojom::EnforcementMode::kNone);
 
   InitializeFocusRings(extension_id);
 }
