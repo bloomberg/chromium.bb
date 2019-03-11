@@ -48,6 +48,7 @@
 #include "third_party/blink/renderer/modules/payments/payment_details_init.h"
 #include "third_party/blink/renderer/modules/payments/payment_details_update.h"
 #include "third_party/blink/renderer/modules/payments/payment_item.h"
+#include "third_party/blink/renderer/modules/payments/payment_method_change_event.h"
 #include "third_party/blink/renderer/modules/payments/payment_request_update_event.h"
 #include "third_party/blink/renderer/modules/payments/payment_response.h"
 #include "third_party/blink/renderer/modules/payments/payment_shipping_option.h"
@@ -1168,6 +1169,57 @@ void PaymentRequest::ContextDestroyed(ExecutionContext*) {
   ClearResolversAndCloseMojoConnection();
 }
 
+void PaymentRequest::OnPaymentMethodChange(const String& method_name,
+                                           const String& stringified_details) {
+  DCHECK(GetPendingAcceptPromiseResolver());
+  DCHECK(!complete_resolver_);
+
+  if (!RuntimeEnabledFeatures::PaymentMethodChangeEventEnabled()) {
+    payment_provider_->NoUpdatedPaymentDetails();
+    return;
+  }
+
+  ScriptState* script_state =
+      GetPendingAcceptPromiseResolver()->GetScriptState();
+  ScriptState::Scope scope(script_state);
+
+  PaymentMethodChangeEventInit* init = PaymentMethodChangeEventInit::Create();
+  init->setMethodName(method_name);
+
+  if (!stringified_details.IsEmpty()) {
+    ExceptionState exception_state(script_state->GetIsolate(),
+                                   ExceptionState::kConstructionContext,
+                                   "PaymentMethodChangeEvent");
+    v8::Local<v8::Value> parsed_value =
+        FromJSONString(script_state->GetIsolate(), script_state->GetContext(),
+                       stringified_details, exception_state);
+    if (exception_state.HadException()) {
+      GetPendingAcceptPromiseResolver()->Reject(DOMException::Create(
+          DOMExceptionCode::kSyntaxError, exception_state.Message()));
+      ClearResolversAndCloseMojoConnection();
+      return;
+    }
+    init->setMethodDetails(ScriptValue(script_state, parsed_value));
+  }
+
+  PaymentRequestUpdateEvent* event = PaymentMethodChangeEvent::Create(
+      script_state, event_type_names::kPaymentmethodchange, init);
+  event->SetTarget(this);
+  event->SetPaymentDetailsUpdater(this);
+  DispatchEvent(*event);
+  if (!event->is_waiting_for_update()) {
+    // DispatchEvent runs synchronously. The method is_waiting_for_update()
+    // returns true if the merchant called event.updateWith() within the event
+    // handler. Calling this method is optional. If the method is not called,
+    // the renderer sends a message to the browser to re-enable UI interactions.
+    GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
+        kJSMessageSource, mojom::ConsoleMessageLevel::kWarning,
+        "No updateWith() call in 'paymentmethodchange' event handler. User "
+        "may see outdated line items and total."));
+    payment_provider_->NoUpdatedPaymentDetails();
+  }
+}
+
 void PaymentRequest::OnShippingAddressChange(PaymentAddressPtr address) {
   DCHECK(GetPendingAcceptPromiseResolver());
   DCHECK(!complete_resolver_);
@@ -1188,6 +1240,10 @@ void PaymentRequest::OnShippingAddressChange(PaymentAddressPtr address) {
   event->SetPaymentDetailsUpdater(this);
   DispatchEvent(*event);
   if (!event->is_waiting_for_update()) {
+    // DispatchEvent runs synchronously. The method is_waiting_for_update()
+    // returns true if the merchant called event.updateWith() within the event
+    // handler. Calling this method is optional. If the method is not called,
+    // the renderer sends a message to the browser to re-enable UI interactions.
     GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
         kJSMessageSource, mojom::ConsoleMessageLevel::kWarning,
         "No updateWith() call in 'shippingaddresschange' event handler. User "
@@ -1207,6 +1263,10 @@ void PaymentRequest::OnShippingOptionChange(const String& shipping_option_id) {
   event->SetPaymentDetailsUpdater(this);
   DispatchEvent(*event);
   if (!event->is_waiting_for_update()) {
+    // DispatchEvent runs synchronously. The method is_waiting_for_update()
+    // returns true if the merchant called event.updateWith() within the event
+    // handler. Calling this method is optional. If the method is not called,
+    // the renderer sends a message to the browser to re-enable UI interactions.
     GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
         kJSMessageSource, mojom::ConsoleMessageLevel::kWarning,
         "No updateWith() call in 'shippingoptionchange' event handler. User "
@@ -1228,8 +1288,13 @@ void PaymentRequest::OnPayerDetailChange(
   event->SetPaymentDetailsUpdater(this);
   payment_response_->UpdatePayerDetail(std::move(detail));
   payment_response_->DispatchEvent(*event);
-  if (!event->is_waiting_for_update())
+  if (!event->is_waiting_for_update()) {
+    // DispatchEvent runs synchronously. The method is_waiting_for_update()
+    // returns true if the merchant called event.updateWith() within the event
+    // handler. Calling this method is optional. If the method is not called,
+    // the renderer sends a message to the browser to re-enable UI interactions.
     payment_provider_->NoUpdatedPaymentDetails();
+  }
 }
 
 void PaymentRequest::OnPaymentResponse(PaymentResponsePtr response) {
