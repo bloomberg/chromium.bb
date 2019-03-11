@@ -9,6 +9,7 @@ Version: 28
   Android SDK Tools 26.1.1
   Android Support Repository 47.0.0
   Android Support Library 23.2.1
+  Android Lint 26.4.0-alpha04
   Google Cloud Messaging 3
   SDK Patch Applier v4
 Security Critical: no
@@ -23,5 +24,15 @@ Local Modifications:
 - public/
   - Included the Android support library and required extras packages.
   - Added extras/chromium/.
+- public/tools-lint/
+  - Go to go/studio-master-grid
+  - Find the first green build under sdk_tools_linux
+  - Email tnorbye@google.com and cc android-devtools@ to determine if that build
+    can be used publicly.
+  - Click through to Artifacts.
+  - Click the copy icon at the right for sdk-repo-linux-tools-XXXXXXX.zip
+  - Use the copied command to download the zip.
+  - Unzip and rename tools to tools-lint and move to the right spot in our repo.
+  - Create CL and carbon copy tnorbye@google.com
 
 No other modifications has been made to the public Android SDK/NDK.
