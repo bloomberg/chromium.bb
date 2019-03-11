@@ -3628,7 +3628,7 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_PROPERTY_VALUE);
 
   constexpr long kFirstKnownUiaPropertyId = UIA_RuntimeIdPropertyId;
-  constexpr long kLastKnownUiaPropertyId = UIA_IsDialogPropertyId;
+  constexpr long kLastKnownUiaPropertyId = UIA_HeadingLevelPropertyId;
   if (property_id >= kFirstKnownUiaPropertyId &&
       property_id <= kLastKnownUiaPropertyId) {
     base::UmaHistogramSparse("Accessibility.WinAPIs.GetPropertyValue",
