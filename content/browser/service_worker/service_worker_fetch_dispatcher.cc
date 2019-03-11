@@ -479,9 +479,18 @@ ServiceWorkerFetchDispatcher::ServiceWorkerFetchDispatcher(
   if (blink::ServiceWorkerUtils::IsServicificationEnabled())
     DCHECK(!request_->blob);
 #endif  // DCHECK_IS_ON()
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN1(
+      "ServiceWorker", "ServiceWorkerFetchDispatcher::DispatchFetchEvent", this,
+      "event_type", ServiceWorkerMetrics::EventTypeToString(GetEventType()));
 }
 
-ServiceWorkerFetchDispatcher::~ServiceWorkerFetchDispatcher() = default;
+ServiceWorkerFetchDispatcher::~ServiceWorkerFetchDispatcher() {
+  if (!did_complete_) {
+    TRACE_EVENT_NESTABLE_ASYNC_END0(
+        "ServiceWorker", "ServiceWorkerFetchDispatcher::DispatchFetchEvent",
+        this);
+  }
+}
 
 void ServiceWorkerFetchDispatcher::Run() {
   DCHECK(version_->status() == ServiceWorkerVersion::ACTIVATING ||
@@ -489,6 +498,9 @@ void ServiceWorkerFetchDispatcher::Run() {
       << version_->status();
 
   if (version_->status() == ServiceWorkerVersion::ACTIVATING) {
+    TRACE_EVENT_NESTABLE_ASYNC_BEGIN0(
+        "ServiceWorker", "ServiceWorkerFetchDispatcher::WaitForActivation",
+        this);
     version_->RegisterStatusChangeCallback(
         base::BindOnce(&ServiceWorkerFetchDispatcher::DidWaitForActivation,
                        weak_factory_.GetWeakPtr()));
@@ -498,6 +510,8 @@ void ServiceWorkerFetchDispatcher::Run() {
 }
 
 void ServiceWorkerFetchDispatcher::DidWaitForActivation() {
+  TRACE_EVENT_NESTABLE_ASYNC_END0(
+      "ServiceWorker", "ServiceWorkerFetchDispatcher::WaitForActivation", this);
   StartWorker();
 }
 
@@ -515,6 +529,8 @@ void ServiceWorkerFetchDispatcher::StartWorker() {
     return;
   }
 
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0(
+      "ServiceWorker", "ServiceWorkerFetchDispatcher::StartWorker", this);
   version_->RunAfterStartWorker(
       GetEventType(),
       base::BindOnce(&ServiceWorkerFetchDispatcher::DidStartWorker,
@@ -523,6 +539,9 @@ void ServiceWorkerFetchDispatcher::StartWorker() {
 
 void ServiceWorkerFetchDispatcher::DidStartWorker(
     blink::ServiceWorkerStatusCode status) {
+  TRACE_EVENT_NESTABLE_ASYNC_END1("ServiceWorker",
+                                  "ServiceWorkerFetchDispatcher::StartWorker",
+                                  this, "status", status);
   if (status != blink::ServiceWorkerStatusCode::kOk) {
     DidFail(status);
     return;
@@ -543,6 +562,8 @@ void ServiceWorkerFetchDispatcher::DispatchFetchEvent() {
   // Run callback to say that the fetch event will be dispatched.
   DCHECK(prepare_callback_);
   std::move(prepare_callback_).Run();
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0(
+      "ServiceWorker", "ServiceWorkerFetchDispatcher::FetchEvent", this);
 
   // Set up for receiving the response.
   blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback_ptr;
@@ -588,6 +609,9 @@ void ServiceWorkerFetchDispatcher::DispatchFetchEvent() {
 void ServiceWorkerFetchDispatcher::DidFailToDispatch(
     std::unique_ptr<ResponseCallback> response_callback,
     blink::ServiceWorkerStatusCode status) {
+  TRACE_EVENT_NESTABLE_ASYNC_END1("ServiceWorker",
+                                  "ServiceWorkerFetchDispatcher::FetchEvent",
+                                  this, "status", status);
   DidFail(status);
 }
 
@@ -605,6 +629,8 @@ void ServiceWorkerFetchDispatcher::DidFinish(
     blink::mojom::FetchAPIResponsePtr response,
     blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
     blink::mojom::ServiceWorkerFetchEventTimingPtr timing) {
+  TRACE_EVENT_NESTABLE_ASYNC_END0(
+      "ServiceWorker", "ServiceWorkerFetchDispatcher::FetchEvent", this);
   Complete(blink::ServiceWorkerStatusCode::kOk, fetch_result,
            std::move(response), std::move(body_as_stream), std::move(timing));
 }
@@ -618,6 +644,9 @@ void ServiceWorkerFetchDispatcher::Complete(
   DCHECK(fetch_callback_);
 
   did_complete_ = true;
+  TRACE_EVENT_NESTABLE_ASYNC_END1(
+      "ServiceWorker", "ServiceWorkerFetchDispatcher::DispatchFetchEvent", this,
+      "result", fetch_result);
   std::move(fetch_callback_)
       .Run(status, fetch_result, std::move(response), std::move(body_as_stream),
            std::move(timing), version_);
