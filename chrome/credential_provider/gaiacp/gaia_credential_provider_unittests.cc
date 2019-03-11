@@ -556,7 +556,7 @@ TEST_P(GcpCredentialProviderAvailableCredentialsTest, AvailableCredentials) {
                       base::size(guid_in_wchar));
 
     wchar_t guid_in_registry[64];
-    ULONG length = base::size(guid_in_registry) * sizeof(guid_in_registry[0]);
+    ULONG length = base::size(guid_in_registry);
     EXPECT_EQ(S_OK, GetMachineRegString(kLogonUiUserTileRegKey, sid,
                                         guid_in_registry, &length));
     EXPECT_EQ(base::string16(guid_in_wchar), base::string16(guid_in_registry));

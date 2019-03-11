@@ -701,7 +701,7 @@ base::FilePath::StringType GetInstallParentDirectoryName() {
 
 base::string16 GetWindowsVersion() {
   wchar_t release_id[32];
-  ULONG length = base::size(release_id) * sizeof(release_id[0]);
+  ULONG length = base::size(release_id);
   HRESULT hr =
       GetMachineRegString(L"SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion",
                           L"ReleaseId", release_id, &length);
