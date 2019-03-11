@@ -44,6 +44,7 @@
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
+#include "ui/gfx/gpu_fence.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/presentation_feedback.h"
 #include "ui/gfx/transform_util.h"
@@ -260,6 +261,10 @@ void Surface::Attach(Buffer* buffer) {
                GetApplicationId(window_.get()));
   has_pending_contents_ = true;
   pending_buffer_.Reset(buffer ? buffer->AsWeakPtr() : base::WeakPtr<Buffer>());
+}
+
+bool Surface::HasPendingAttachedBuffer() const {
+  return pending_buffer_.buffer() != nullptr;
 }
 
 void Surface::Damage(const gfx::Rect& damage) {
@@ -510,6 +515,17 @@ int32_t Surface::GetClientSurfaceId() const {
   return window_->GetProperty(kClientSurfaceIdKey);
 }
 
+void Surface::SetAcquireFence(std::unique_ptr<gfx::GpuFence> gpu_fence) {
+  TRACE_EVENT1("exo", "Surface::SetAcquireFence", "fence_fd",
+               gpu_fence ? gpu_fence->GetGpuFenceHandle().native_fd.fd : -1);
+
+  pending_acquire_fence_ = std::move(gpu_fence);
+}
+
+bool Surface::HasPendingAcquireFence() const {
+  return !!pending_acquire_fence_;
+}
+
 void Surface::Commit() {
   TRACE_EVENT0("exo", "Surface::Commit");
 
@@ -572,9 +588,14 @@ void Surface::CommitSurfaceHierarchy(bool synchronized) {
         needs_update_buffer_transform = true;
 
       current_buffer_ = std::move(pending_buffer_);
+      acquire_fence_ = std::move(pending_acquire_fence_);
       if (state_.alpha)
         needs_update_resource_ = true;
     }
+    // Either we didn't have a pending acquire fence, or we had one along with
+    // a new buffer, and it was already moved to acquire_fence_. Note that
+    // it is a commit-time client error to commit a fence without a buffer.
+    DCHECK(!pending_acquire_fence_);
 
     if (needs_update_buffer_transform)
       UpdateBufferTransform(pending_invert_y);
@@ -684,6 +705,13 @@ void Surface::AppendSurfaceHierarchyContentsToFrame(
 
   if (needs_update_resource_)
     UpdateResource(resource_manager);
+
+  // TODO(afrantzis): Propagate fence to the consumer of the buffer instead of
+  // waiting here.
+  if (acquire_fence_) {
+    acquire_fence_->Wait();
+    acquire_fence_ = nullptr;
+  }
 
   AppendContentsToFrame(origin, device_scale_factor, frame);
 
