@@ -3629,14 +3629,14 @@ static int drmParseOFDeviceInfo(int maj, int min, char ***compatible)
             free(value);
         }
 
-        *compatible[i] = tmp_name;
+        (*compatible)[i] = tmp_name;
     }
 
     return 0;
 
 free:
     while (i--)
-        free(*compatible[i]);
+        free((*compatible)[i]);
 
     free(*compatible);
     return err;
