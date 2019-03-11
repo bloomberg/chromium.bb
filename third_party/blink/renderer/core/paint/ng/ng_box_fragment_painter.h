@@ -172,6 +172,15 @@ class NGBoxFragmentPainter : public BoxPainterBase {
   mutable base::Optional<NGBorderEdges> border_edges_;
 };
 
+inline NGBoxFragmentPainter::NGBoxFragmentPainter(const NGPaintFragment& box)
+    : BoxPainterBase(&box.GetLayoutObject()->GetDocument(),
+                     box.Style(),
+                     box.GetLayoutObject()->GeneratingNode()),
+      box_fragment_(box) {
+  DCHECK(box.PhysicalFragment().IsBox() ||
+         box.PhysicalFragment().IsRenderedLegend());
+}
+
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_NG_NG_BOX_FRAGMENT_PAINTER_H_
