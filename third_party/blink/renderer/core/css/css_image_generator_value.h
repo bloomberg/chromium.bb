@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/core/css/css_value.h"
 #include "third_party/blink/renderer/platform/geometry/float_size.h"
 #include "third_party/blink/renderer/platform/heap/self_keep_alive.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 
 namespace blink {
@@ -61,6 +62,8 @@ using GeneratedImageMap =
     std::map<FloatSize, scoped_refptr<Image>, FloatSizeCompare>;
 
 class GeneratedImageCache {
+  DISALLOW_NEW();
+
  public:
   void AddSize(const FloatSize&);
   void RemoveSize(const FloatSize&);
