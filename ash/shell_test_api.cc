@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "ash/accelerators/accelerator_commands.h"
+#include "ash/keyboard/ash_keyboard_controller.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/system/power/backlights_forced_off_setter.h"
@@ -84,7 +85,11 @@ void ShellTestApi::EnableTabletModeWindowManager(bool enable) {
 }
 
 void ShellTestApi::EnableVirtualKeyboard(EnableVirtualKeyboardCallback cb) {
-  shell_->EnableKeyboard();
+  // TODO(https://crbug.com/845780): The callers to this function have already
+  // enabled the virtual keyboard. For some reason, in those tests, the virtual
+  // keyboard requires a rebuild. Remove this function once we no longer need a
+  // rebuild.
+  shell_->ash_keyboard_controller()->RebuildKeyboardIfEnabled();
   std::move(cb).Run();
 }
 

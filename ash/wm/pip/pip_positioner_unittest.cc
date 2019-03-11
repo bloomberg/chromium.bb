@@ -95,8 +95,6 @@ class PipPositionerDisplayTest : public AshTestBase,
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         keyboard::switches::kEnableVirtualKeyboard);
     AshTestBase::SetUp();
-    SetTouchKeyboardEnabled(true);
-    Shell::Get()->EnableKeyboard();
 
     const std::string& display_string = std::get<0>(GetParam());
     const std::size_t root_window_index = std::get<1>(GetParam());
@@ -108,7 +106,6 @@ class PipPositionerDisplayTest : public AshTestBase,
 
   void TearDown() override {
     scoped_root_.reset();
-    SetTouchKeyboardEnabled(false);
     AshTestBase::TearDown();
   }
 
@@ -226,7 +223,7 @@ TEST_P(PipPositionerDisplayTest, PipAdjustPositionForDragClampsToMovementArea) {
 }
 
 TEST_P(PipPositionerDisplayTest, PipRestingPositionWorksIfKeyboardIsDisabled) {
-  Shell::Get()->DisableKeyboard();
+  SetTouchKeyboardEnabled(false);
   auto display = GetDisplay();
 
   // Snap near top edge to top.

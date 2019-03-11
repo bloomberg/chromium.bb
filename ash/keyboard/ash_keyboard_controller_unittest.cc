@@ -140,6 +140,8 @@ class TestClient {
     keyboard_controller_ptr_.FlushForTesting();
   }
 
+  void FlushMojoForTesting() { keyboard_controller_ptr_.FlushForTesting(); }
+
   int got_keyboard_config_count() const { return got_keyboard_config_count_; }
   const KeyboardConfig& keyboard_config() const { return keyboard_config_; }
 
@@ -456,6 +458,24 @@ TEST_F(AshKeyboardControllerTest, SetDraggableArea) {
   gfx::Rect bounds(10, 20, 30, 40);
   test_client()->SetDraggableArea(bounds);
   EXPECT_EQ(bounds, behavior->draggable_area());
+}
+
+TEST_F(AshKeyboardControllerTest, ChangingSessionRebuildsKeyboard) {
+  // Enable the keyboard.
+  test_client()->SetEnableFlag(KeyboardEnableFlag::kExtensionEnabled);
+
+  // LOGGED_IN_NOT_ACTIVE session state needs to rebuild keyboard for supervised
+  // user profile.
+  Shell::Get()->ash_keyboard_controller()->OnSessionStateChanged(
+      session_manager::SessionState::LOGGED_IN_NOT_ACTIVE);
+  test_client()->FlushMojoForTesting();
+  EXPECT_EQ(1, test_observer()->destroyed_count());
+
+  // ACTIVE session state also needs to rebuild keyboard for guest user profile.
+  Shell::Get()->ash_keyboard_controller()->OnSessionStateChanged(
+      session_manager::SessionState::ACTIVE);
+  test_client()->FlushMojoForTesting();
+  EXPECT_EQ(2, test_observer()->destroyed_count());
 }
 
 }  // namespace ash

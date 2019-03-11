@@ -426,7 +426,7 @@ IN_PROC_BROWSER_TEST_F(KeyboardControllerStateTest,
   EXPECT_EQ(controller->GetStateForTest(),
             keyboard::KeyboardControllerState::LOADING_EXTENSION);
 
-  controller->DisableKeyboard();
+  controller->Shutdown();
   EXPECT_EQ(controller->GetStateForTest(),
             keyboard::KeyboardControllerState::INITIAL);
 }

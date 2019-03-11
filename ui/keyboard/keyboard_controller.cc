@@ -37,6 +37,7 @@
 #include "ui/keyboard/keyboard_controller_observer.h"
 #include "ui/keyboard/keyboard_layout_manager.h"
 #include "ui/keyboard/keyboard_ui.h"
+#include "ui/keyboard/keyboard_ui_factory.h"
 #include "ui/keyboard/keyboard_util.h"
 #include "ui/keyboard/notification_manager.h"
 #include "ui/keyboard/public/keyboard_switches.h"
@@ -163,7 +164,7 @@ class InputMethodKeyboardController : public ui::InputMethodKeyboardController {
   // ui::InputMethodKeyboardController
   bool DisplayVirtualKeyboard() override {
     // Calling |ShowKeyboardInternal| may move the keyboard to another display.
-    if (keyboard_controller_->IsKeyboardEnableRequested() &&
+    if (keyboard_controller_->IsEnabled() &&
         !keyboard_controller_->keyboard_locked()) {
       keyboard_controller_->ShowKeyboard(false /* locked */);
       return true;
@@ -249,16 +250,34 @@ bool KeyboardController::HasInstance() {
   return g_keyboard_controller;
 }
 
-void KeyboardController::EnableKeyboard(std::unique_ptr<KeyboardUI> ui,
-                                        KeyboardLayoutDelegate* delegate) {
-  if (ui_)
-    DisableKeyboard();
+void KeyboardController::Initialize(
+    std::unique_ptr<KeyboardUIFactory> ui_factory,
+    KeyboardLayoutDelegate* layout_delegate) {
+  DCHECK(ui_factory);
+  DCHECK(layout_delegate);
 
-  ui_ = std::move(ui);
+  ui_factory_ = std::move(ui_factory);
+  layout_delegate_ = layout_delegate;
+
+  DCHECK(!IsKeyboardEnableRequested());
+}
+
+void KeyboardController::Shutdown() {
+  keyboard_enable_flags_.clear();
+  for (KeyboardControllerObserver& observer : observer_list_)
+    observer.OnKeyboardEnableFlagsChanged(keyboard_enable_flags_);
+
+  DCHECK(!IsKeyboardEnableRequested());
+  DisableKeyboard();
+}
+
+void KeyboardController::EnableKeyboard() {
+  if (ui_)
+    return;
+
+  ui_ = ui_factory_->CreateKeyboardUI();
   DCHECK(ui_);
 
-  DCHECK(delegate);
-  layout_delegate_ = delegate;
   show_on_keyboard_window_load_ = false;
   keyboard_locked_ = false;
   state_ = KeyboardControllerState::UNKNOWN;
@@ -414,6 +433,14 @@ void KeyboardController::Reload() {
   ui_->ReloadKeyboardIfNeeded();
 }
 
+void KeyboardController::RebuildKeyboardIfEnabled() {
+  if (!IsEnabled())
+    return;
+
+  DisableKeyboard();
+  EnableKeyboard();
+}
+
 void KeyboardController::AddObserver(KeyboardControllerObserver* observer) {
   observer_list_.AddObserver(observer);
 }
@@ -461,12 +488,25 @@ void KeyboardController::SetEnableFlag(mojom::KeyboardEnableFlag flag) {
   }
   for (KeyboardControllerObserver& observer : observer_list_)
     observer.OnKeyboardEnableFlagsChanged(keyboard_enable_flags_);
+
+  if (IsKeyboardEnableRequested() && !IsEnabled())
+    EnableKeyboard();
+  else if (!IsKeyboardEnableRequested() && IsEnabled())
+    DisableKeyboard();
 }
 
 void KeyboardController::ClearEnableFlag(mojom::KeyboardEnableFlag flag) {
+  if (!IsEnableFlagSet(flag))
+    return;
+
   keyboard_enable_flags_.erase(flag);
   for (KeyboardControllerObserver& observer : observer_list_)
     observer.OnKeyboardEnableFlagsChanged(keyboard_enable_flags_);
+
+  if (IsKeyboardEnableRequested() && !IsEnabled())
+    EnableKeyboard();
+  else if (!IsKeyboardEnableRequested() && IsEnabled())
+    DisableKeyboard();
 }
 
 bool KeyboardController::IsEnableFlagSet(mojom::KeyboardEnableFlag flag) const {
@@ -502,7 +542,7 @@ bool KeyboardController::IsKeyboardEnableRequested() const {
 }
 
 bool KeyboardController::IsKeyboardOverscrollEnabled() const {
-  if (!IsKeyboardEnableRequested())
+  if (!IsEnabled())
     return false;
 
   // Users of the sticky accessibility on-screen keyboard are likely to be using
@@ -824,9 +864,9 @@ void KeyboardController::ShowKeyboardIfWithinTransientBlurThreshold() {
 }
 
 void KeyboardController::OnShowVirtualKeyboardIfEnabled() {
-  DVLOG(1) << "OnShowVirtualKeyboardIfEnabled: " << IsKeyboardEnableRequested();
+  DVLOG(1) << "OnShowVirtualKeyboardIfEnabled: " << IsEnabled();
   // Calling |ShowKeyboardInternal| may move the keyboard to another display.
-  if (IsKeyboardEnableRequested() && !keyboard_locked_)
+  if (IsEnabled() && !keyboard_locked_)
     ShowKeyboardInternal(layout_delegate_->GetContainerForDefaultDisplay());
 }
 

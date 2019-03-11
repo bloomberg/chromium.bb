@@ -141,7 +141,6 @@ TEST_F(PipTest, PipInitialPositionAvoidsObstacles) {
   window_state->OnWMEvent(&enter_pip);
   window->Show();
 
-  Shell::Get()->EnableKeyboard();
   auto* keyboard_controller = keyboard::KeyboardController::Get();
   keyboard_controller->ShowKeyboard(/*lock=*/true);
   ASSERT_TRUE(keyboard::WaitUntilShown());
@@ -156,7 +155,6 @@ TEST_F(PipTest, PipInitialPositionAvoidsObstacles) {
 
 TEST_F(PipTest, TargetBoundsAffectedByWorkAreaChange) {
   UpdateDisplay("400x400");
-  Shell::Get()->EnableKeyboard();
 
   // Place a keyboard window at the initial position of a PIP window.
   auto* keyboard_controller = keyboard::KeyboardController::Get();

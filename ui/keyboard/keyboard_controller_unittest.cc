@@ -38,7 +38,7 @@
 #include "ui/keyboard/keyboard_util.h"
 #include "ui/keyboard/test/keyboard_test_util.h"
 #include "ui/keyboard/test/test_keyboard_layout_delegate.h"
-#include "ui/keyboard/test/test_keyboard_ui.h"
+#include "ui/keyboard/test/test_keyboard_ui_factory.h"
 #include "ui/wm/core/default_activation_client.h"
 
 #if defined(USE_OZONE)
@@ -158,17 +158,16 @@ class KeyboardControllerTest : public aura::test::AuraTestBase,
     layout_delegate_.reset(new TestKeyboardLayoutDelegate(root_window()));
 
     // Force enable the virtual keyboard.
-    keyboard::SetTouchKeyboardEnabled(true);
-    controller_.EnableKeyboard(
-        std::make_unique<TestKeyboardUI>(host()->GetInputMethod()),
+    controller_.Initialize(
+        std::make_unique<TestKeyboardUIFactory>(host()->GetInputMethod()),
         layout_delegate_.get());
+    keyboard::SetTouchKeyboardEnabled(true);
     controller_.AddObserver(this);
   }
 
   void TearDown() override {
     keyboard::SetTouchKeyboardEnabled(false);
     controller_.RemoveObserver(this);
-    controller_.DisableKeyboard();
     focus_controller_.reset();
     aura::test::AuraTestBase::TearDown();
   }
@@ -496,7 +495,7 @@ TEST_F(KeyboardControllerTest, DisableKeyboard) {
   EXPECT_TRUE(keyboard_window->IsVisible());
   EXPECT_FALSE(IsKeyboardDisabled());
 
-  controller().DisableKeyboard();
+  keyboard::SetTouchKeyboardEnabled(false);
   EXPECT_TRUE(IsKeyboardDisabled());
 }
 
@@ -762,16 +761,14 @@ TEST_F(KeyboardControllerTest, DontClearObserverList) {
   EXPECT_TRUE(keyboard_window->IsVisible());
   EXPECT_FALSE(IsKeyboardDisabled());
 
-  controller().DisableKeyboard();
+  keyboard::SetTouchKeyboardEnabled(false);
   EXPECT_TRUE(IsKeyboardDisabled());
 
-  controller().EnableKeyboard(
-      std::make_unique<TestKeyboardUI>(host()->GetInputMethod()),
-      layout_delegate());
+  keyboard::SetTouchKeyboardEnabled(true);
   ClearKeyboardDisabled();
   EXPECT_FALSE(IsKeyboardDisabled());
 
-  controller().DisableKeyboard();
+  keyboard::SetTouchKeyboardEnabled(false);
   EXPECT_TRUE(IsKeyboardDisabled());
 }
 

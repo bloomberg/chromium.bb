@@ -714,7 +714,7 @@ void RootWindowController::Init(RootWindowType root_window_type) {
 
   root_window_layout_manager_->OnWindowResized();
   if (root_window_type == RootWindowType::PRIMARY) {
-    shell->EnableKeyboard();
+    shell->ash_keyboard_controller()->RebuildKeyboardIfEnabled();
   } else {
     window_tree_host_->Show();
 

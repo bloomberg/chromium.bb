@@ -13,7 +13,7 @@
 #include "ui/keyboard/keyboard_util.h"
 #include "ui/keyboard/test/keyboard_test_util.h"
 #include "ui/keyboard/test/test_keyboard_layout_delegate.h"
-#include "ui/keyboard/test/test_keyboard_ui.h"
+#include "ui/keyboard/test/test_keyboard_ui_factory.h"
 
 namespace keyboard {
 namespace {
@@ -56,7 +56,20 @@ class KeyboardUtilTest : public aura::test::AuraTestBase {
 
   void SetUp() override {
     aura::test::AuraTestBase::SetUp();
+
+    layout_delegate_ =
+        std::make_unique<TestKeyboardLayoutDelegate>(root_window());
+    keyboard_controller_.Initialize(
+        std::make_unique<TestKeyboardUIFactory>(&input_method_),
+        layout_delegate_.get());
+
     ResetAllFlags();
+  }
+
+  void TearDown() override {
+    ResetAllFlags();
+
+    aura::test::AuraTestBase::TearDown();
   }
 
  protected:
@@ -70,6 +83,8 @@ class KeyboardUtilTest : public aura::test::AuraTestBase {
 
   // Used indirectly by keyboard utils.
   KeyboardController keyboard_controller_;
+  ui::DummyInputMethod input_method_;
+  std::unique_ptr<TestKeyboardLayoutDelegate> layout_delegate_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(KeyboardUtilTest);
@@ -158,11 +173,6 @@ TEST_F(KeyboardUtilTest, UpdateKeyboardConfig) {
 TEST_F(KeyboardUtilTest, IsOverscrollEnabled) {
   ResetAllFlags();
 
-  ui::DummyInputMethod input_method;
-  TestKeyboardLayoutDelegate layout_delegate(root_window());
-  keyboard_controller_.EnableKeyboard(
-      std::make_unique<TestKeyboardUI>(&input_method), &layout_delegate);
-
   // Return false when keyboard is disabled.
   EXPECT_FALSE(keyboard_controller_.IsKeyboardOverscrollEnabled());
 
@@ -187,8 +197,6 @@ TEST_F(KeyboardUtilTest, IsOverscrollEnabled) {
   keyboard_controller_.set_keyboard_locked(true);
   EXPECT_TRUE(keyboard_controller_.keyboard_locked());
   EXPECT_FALSE(keyboard_controller_.IsKeyboardOverscrollEnabled());
-
-  keyboard_controller_.DisableKeyboard();
 }
 
 }  // namespace keyboard

@@ -485,16 +485,6 @@ void Shell::OnDictationEnded() {
     observer.OnDictationEnded();
 }
 
-void Shell::EnableKeyboard() {
-  // The keyboard controller is persistent; this will create or recreate the
-  // keyboard window as necessary.
-  ash_keyboard_controller_->EnableKeyboard();
-}
-
-void Shell::DisableKeyboard() {
-  ash_keyboard_controller_->DisableKeyboard();
-}
-
 bool Shell::ShouldSaveDisplaySettings() {
   return !(
       screen_orientation_controller_->ignore_display_configuration_updates() ||
@@ -766,10 +756,6 @@ Shell::~Shell() {
   // Destroy tablet mode controller early on since it has some observers which
   // need to be removed.
   tablet_mode_controller_.reset();
-
-  // Destroy the keyboard before closing the shelf, since it will invoke a shelf
-  // layout.
-  DisableKeyboard();
 
   toast_manager_.reset();
 
@@ -1224,10 +1210,13 @@ void Shell::Init(
   system_notification_controller_ =
       std::make_unique<SystemNotificationController>();
 
+  window_tree_host_manager_->InitHosts();
+
+  // Create virtual keyboard after WindowTreeHostManager::InitHosts() since
+  // it may enable the virtual keyboard immediately, which requires a
+  // WindowTreeHostManager to host the keyboard window.
   ash_keyboard_controller_->CreateVirtualKeyboard(
       std::move(keyboard_ui_factory));
-
-  window_tree_host_manager_->InitHosts();
 
   cursor_manager_->HideCursor();  // Hide the mouse cursor on startup.
   cursor_manager_->SetCursor(ui::CursorType::kPointer);
