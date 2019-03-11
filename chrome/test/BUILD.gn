@@ -4075,6 +4075,7 @@ test("unit_tests") {
       "//google_apis",
       "//google_apis/drive",
       "//media/cast:test_support",
+      "//services/device/public/cpp/hid:test_support",
       "//services/network/public/mojom",
 
       # This will add all of the unit tests for the schema compiler to this
