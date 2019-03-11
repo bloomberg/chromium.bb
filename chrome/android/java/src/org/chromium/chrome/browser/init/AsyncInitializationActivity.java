@@ -20,7 +20,6 @@ import android.support.annotation.CallSuper;
 import android.support.annotation.Nullable;
 import android.view.Display;
 import android.view.Menu;
-import android.view.Surface;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.view.ViewTreeObserver.OnPreDrawListener;
@@ -75,7 +74,7 @@ public abstract class AsyncInitializationActivity
     private ActivityWindowAndroid mWindowAndroid;
     private ModalDialogManager mModalDialogManager;
     private Bundle mSavedInstanceState;
-    private int mCurrentOrientation = Surface.ROTATION_0;
+    private int mCurrentOrientation;
     private boolean mDestroyed;
     private long mLastUserInteractionTime;
     private boolean mIsTablet;
@@ -693,9 +692,8 @@ public abstract class AsyncInitializationActivity
     /**
      * Called when the orientation of the device changes.  The orientation is checked/detected on
      * root view layouts.
-     * @param orientation One of {@link Surface#ROTATION_0} (no rotation),
-     *                    {@link Surface#ROTATION_90}, {@link Surface#ROTATION_180}, or
-     *                    {@link Surface#ROTATION_270}.
+     * @param orientation One of {@link Configuration#ORIENTATION_PORTRAIT} or
+     *                    {@link Configuration#ORIENTATION_LANDSCAPE}.
      */
     protected void onOrientationChange(int orientation) {
     }
@@ -708,7 +706,7 @@ public abstract class AsyncInitializationActivity
         if (display == null) return;
 
         int oldOrientation = mCurrentOrientation;
-        mCurrentOrientation = display.getRotation();
+        mCurrentOrientation = getResources().getConfiguration().orientation;
 
         if (oldOrientation != mCurrentOrientation) onOrientationChange(mCurrentOrientation);
     }
