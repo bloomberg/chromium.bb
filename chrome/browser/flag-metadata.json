@@ -2229,8 +2229,8 @@
   },
   {
     "name": "mac-views-task-manager",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "ellyjones" ],
+    "expiry_milestone": 77
   },
   {
     "name": "manual-password-generation-android",
