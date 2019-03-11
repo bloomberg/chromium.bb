@@ -326,7 +326,7 @@ String CSSValue::CssText() const {
     case kRayClass:
       return ToCSSRayValue(this)->CustomCSSText();
     case kIdentifierClass:
-      return ToCSSIdentifierValue(this)->CustomCSSText();
+      return To<CSSIdentifierValue>(this)->CustomCSSText();
     case kQuadClass:
       return ToCSSQuadValue(this)->CustomCSSText();
     case kReflectClass:
@@ -465,7 +465,7 @@ void CSSValue::FinalizeGarbageCollectedObject() {
       ToCSSRayValue(this)->~CSSRayValue();
       return;
     case kIdentifierClass:
-      ToCSSIdentifierValue(this)->~CSSIdentifierValue();
+      To<CSSIdentifierValue>(this)->~CSSIdentifierValue();
       return;
     case kQuadClass:
       ToCSSQuadValue(this)->~CSSQuadValue();
@@ -622,7 +622,7 @@ void CSSValue::Trace(blink::Visitor* visitor) {
       ToCSSRayValue(this)->TraceAfterDispatch(visitor);
       return;
     case kIdentifierClass:
-      ToCSSIdentifierValue(this)->TraceAfterDispatch(visitor);
+      To<CSSIdentifierValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kQuadClass:
       ToCSSQuadValue(this)->TraceAfterDispatch(visitor);

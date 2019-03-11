@@ -614,8 +614,8 @@ bool StylePropertySerializer::AppendFontLonghandValueIfNotNormal(
       return false;
     val = keyword;
   }
-  if (val->IsIdentifierValue() &&
-      ToCSSIdentifierValue(val)->GetValueID() == CSSValueNormal)
+  auto* identifier_value = DynamicTo<CSSIdentifierValue>(val);
+  if (identifier_value && identifier_value->GetValueID() == CSSValueNormal)
     return true;
 
   char prefix = '\0';
@@ -644,9 +644,8 @@ bool StylePropertySerializer::AppendFontLonghandValueIfNotNormal(
   String value;
   // In the font-variant shorthand a "none" ligatures value needs to be
   // expanded.
-  if (property.IDEquals(CSSPropertyFontVariantLigatures) &&
-      val->IsIdentifierValue() &&
-      ToCSSIdentifierValue(val)->GetValueID() == CSSValueNone) {
+  if (property.IDEquals(CSSPropertyFontVariantLigatures) && identifier_value &&
+      identifier_value->GetValueID() == CSSValueNone) {
     value =
         "no-common-ligatures no-discretionary-ligatures "
         "no-historical-ligatures no-contextual";
@@ -696,15 +695,24 @@ String StylePropertySerializer::FontValue() const {
   const CSSValue* ligatures_value = font_variant_ligatures_property.Value();
   const CSSValue* numeric_value = font_variant_numeric_property.Value();
   const CSSValue* east_asian_value = font_variant_east_asian_property.Value();
-  if ((ligatures_value->IsIdentifierValue() &&
-       ToCSSIdentifierValue(ligatures_value)->GetValueID() != CSSValueNormal) ||
-      ligatures_value->IsValueList() ||
-      (numeric_value->IsIdentifierValue() &&
-       ToCSSIdentifierValue(numeric_value)->GetValueID() != CSSValueNormal) ||
-      numeric_value->IsValueList() ||
-      (east_asian_value->IsIdentifierValue() &&
-       ToCSSIdentifierValue(east_asian_value)->GetValueID() !=
-           CSSValueNormal) ||
+
+  auto* ligatures_identifier_value =
+      DynamicTo<CSSIdentifierValue>(ligatures_value);
+  if ((ligatures_identifier_value &&
+       ligatures_identifier_value->GetValueID() != CSSValueNormal) ||
+      ligatures_value->IsValueList())
+    return g_empty_string;
+
+  auto* numeric_identifier_value = DynamicTo<CSSIdentifierValue>(numeric_value);
+  if ((numeric_identifier_value &&
+       numeric_identifier_value->GetValueID() != CSSValueNormal) ||
+      numeric_value->IsValueList())
+    return g_empty_string;
+
+  auto* east_asian_identifier_value =
+      DynamicTo<CSSIdentifierValue>(east_asian_value);
+  if ((east_asian_identifier_value &&
+       east_asian_identifier_value->GetValueID() != CSSValueNormal) ||
       east_asian_value->IsValueList())
     return g_empty_string;
 
@@ -712,9 +720,10 @@ String StylePropertySerializer::FontValue() const {
   AppendFontLonghandValueIfNotNormal(GetCSSPropertyFontStyle(), result);
 
   const CSSValue* val = font_variant_caps_property.Value();
-  if (val->IsIdentifierValue() &&
-      (ToCSSIdentifierValue(val)->GetValueID() != CSSValueSmallCaps &&
-       ToCSSIdentifierValue(val)->GetValueID() != CSSValueNormal))
+  auto* identifier_value = DynamicTo<CSSIdentifierValue>(val);
+  if (identifier_value &&
+      (identifier_value->GetValueID() != CSSValueSmallCaps &&
+       identifier_value->GetValueID() != CSSValueNormal))
     return g_empty_string;
   AppendFontLonghandValueIfNotNormal(GetCSSPropertyFontVariantCaps(), result);
 
@@ -934,11 +943,12 @@ String StylePropertySerializer::GetLayeredShorthandValue(
         // FIXME: At some point we need to fix this code to avoid returning an
         // invalid shorthand, since some longhand combinations are not
         // serializable into a single shorthand.
-        if (!value->IsIdentifierValue() || !y_value.IsIdentifierValue())
+        if (!IsA<CSSIdentifierValue>(value) ||
+            !IsA<CSSIdentifierValue>(y_value))
           continue;
 
-        CSSValueID x_id = ToCSSIdentifierValue(value)->GetValueID();
-        CSSValueID y_id = ToCSSIdentifierValue(y_value).GetValueID();
+        CSSValueID x_id = To<CSSIdentifierValue>(value)->GetValueID();
+        CSSValueID y_id = To<CSSIdentifierValue>(y_value).GetValueID();
         // Maybe advance propertyIndex to look at the next CSSValue in the list
         // for the checks below.
         if (x_id == y_id) {
@@ -1078,11 +1088,11 @@ static void AppendBackgroundRepeatValue(StringBuilder& builder,
   const CSSIdentifierValue& repeat_x =
       repeat_xcss_value.IsInitialValue()
           ? *initial_repeat_value
-          : ToCSSIdentifierValue(repeat_xcss_value);
+          : To<CSSIdentifierValue>(repeat_xcss_value);
   const CSSIdentifierValue& repeat_y =
       repeat_ycss_value.IsInitialValue()
           ? *initial_repeat_value
-          : ToCSSIdentifierValue(repeat_ycss_value);
+          : To<CSSIdentifierValue>(repeat_ycss_value);
   CSSValueID repeat_x_value_id = repeat_x.GetValueID();
   CSSValueID repeat_y_value_id = repeat_y.GetValueID();
   if (repeat_x_value_id == repeat_y_value_id) {
@@ -1146,7 +1156,7 @@ String StylePropertySerializer::PageBreakPropertyValue(
     const StylePropertyShorthand& shorthand) const {
   const CSSValue* value =
       property_set_.GetPropertyCSSValue(*shorthand.properties()[0]);
-  CSSValueID value_id = ToCSSIdentifierValue(value)->GetValueID();
+  CSSValueID value_id = To<CSSIdentifierValue>(value)->GetValueID();
   // https://drafts.csswg.org/css-break/#page-break-properties
   if (value_id == CSSValuePage)
     return "always";

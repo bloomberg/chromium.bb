@@ -132,7 +132,7 @@ TransformOperations TransformBuilder::CreateTransformOperations(
     const CSSToLengthConversionData& conversion_data) {
   TransformOperations operations;
   if (!in_value.IsValueList()) {
-    DCHECK_EQ(ToCSSIdentifierValue(in_value).GetValueID(), CSSValueNone);
+    DCHECK_EQ(To<CSSIdentifierValue>(in_value).GetValueID(), CSSValueNone);
     return operations;
   }
 

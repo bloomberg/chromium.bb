@@ -92,13 +92,13 @@ bool IsBaselineKeyword(CSSValueID id) {
 
 CSSValueID GetBaselineKeyword(CSSValue& value) {
   if (!value.IsValuePair()) {
-    DCHECK(ToCSSIdentifierValue(value).GetValueID() == CSSValueBaseline);
+    DCHECK(To<CSSIdentifierValue>(value).GetValueID() == CSSValueBaseline);
     return CSSValueBaseline;
   }
 
-  DCHECK(ToCSSIdentifierValue(ToCSSValuePair(value).First()).GetValueID() ==
+  DCHECK(To<CSSIdentifierValue>(ToCSSValuePair(value).First()).GetValueID() ==
          CSSValueLast);
-  DCHECK(ToCSSIdentifierValue(ToCSSValuePair(value).Second()).GetValueID() ==
+  DCHECK(To<CSSIdentifierValue>(ToCSSValuePair(value).Second()).GetValueID() ==
          CSSValueBaseline);
   return CSSValueLastBaseline;
 }
@@ -1606,8 +1606,8 @@ CSSValue* ConsumeFitContent(CSSParserTokenRange& range,
 }
 
 bool IsGridBreadthFixedSized(const CSSValue& value) {
-  if (value.IsIdentifierValue()) {
-    CSSValueID value_id = ToCSSIdentifierValue(value).GetValueID();
+  if (auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
+    CSSValueID value_id = identifier_value->GetValueID();
     return !(value_id == CSSValueMinContent || value_id == CSSValueMaxContent ||
              value_id == CSSValueAuto);
   }
@@ -2531,8 +2531,8 @@ bool IsValidPropertyList(const CSSValueList& value_list) {
   if (value_list.length() < 2)
     return true;
   for (auto& value : value_list) {
-    if (value->IsIdentifierValue() &&
-        ToCSSIdentifierValue(*value).GetValueID() == CSSValueNone)
+    auto* identifier_value = DynamicTo<CSSIdentifierValue>(value.Get());
+    if (identifier_value && identifier_value->GetValueID() == CSSValueNone)
       return false;
   }
   return true;

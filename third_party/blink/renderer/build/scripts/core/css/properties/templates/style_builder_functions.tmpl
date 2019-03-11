@@ -62,7 +62,7 @@ state.Style()->{{property.setter}}
   {% if property.converter == 'CSSPrimitiveValue' %}
 {{set_value(property)}}(ToCSSPrimitiveValue(value).ConvertTo<{{property.type_name}}>());
   {%- elif property.converter == 'CSSIdentifierValue' %}
-{{set_value(property)}}(ToCSSIdentifierValue(value).ConvertTo<blink::{{property.type_name}}>());
+{{set_value(property)}}(To<CSSIdentifierValue>(value).ConvertTo<blink::{{property.type_name}}>());
   {%- elif property.converter %}
 {{set_value(property)}}(StyleBuilderConverter::{{property.converter}}(state, value));
   {%- endif %}
@@ -143,8 +143,8 @@ To<Longhand>(resolved_property).{{apply_call}};
     {{set_value(property)}}(state.ParentStyle()->{{property.getter}}());
     {% endcall %}
     {% call(property) apply_value(property, header) %}
-  if (value.IsIdentifierValue() &&
-      ToCSSIdentifierValue(value).GetValueID() == CSSValueAuto)
+  auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
+  if (identifier_value && identifier_value->GetValueID() == CSSValueAuto)
     state.Style()->{{auto_setter}}();
   else
     {{convert_and_set_value(property)}}
@@ -395,8 +395,7 @@ To<Longhand>(resolved_property).{{apply_call}};
   state.Style()->Clear{{action}}Directives();
 
   if (!value.IsValueList()) {
-    DCHECK(value.IsIdentifierValue());
-    DCHECK_EQ(ToCSSIdentifierValue(value).GetValueID(), CSSValueNone);
+    DCHECK_EQ(To<CSSIdentifierValue>(value).GetValueID(), CSSValueNone);
     return;
   }
 

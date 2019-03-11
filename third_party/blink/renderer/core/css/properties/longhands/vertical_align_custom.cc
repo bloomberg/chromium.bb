@@ -70,9 +70,9 @@ void VerticalAlign::ApplyInherit(StyleResolverState& state) const {
 
 void VerticalAlign::ApplyValue(StyleResolverState& state,
                                const CSSValue& value) const {
-  if (value.IsIdentifierValue()) {
+  if (auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
     state.Style()->SetVerticalAlign(
-        ToCSSIdentifierValue(value).ConvertTo<EVerticalAlign>());
+        identifier_value->ConvertTo<EVerticalAlign>());
   } else {
     state.Style()->SetVerticalAlignLength(
         ToCSSPrimitiveValue(value).ConvertToLength(

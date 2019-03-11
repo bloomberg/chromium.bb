@@ -791,7 +791,7 @@ StyleRuleFontFeatureValues* CSSParserImpl::ConsumeFontFeatureValuesRule(
             To<StyleRuleFontFace>(rule)->Properties().GetPropertyCSSValue(
                 CSSPropertyFontDisplay);
         if (value)
-          font_display = ToCSSIdentifierValue(value);
+          font_display = To<CSSIdentifierValue>(value);
       });
 
   if (observer_)

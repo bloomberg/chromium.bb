@@ -64,7 +64,7 @@ Color TextLinkColors::ColorFromCSSValue(const CSSValue& value,
   if (auto* color_value = DynamicTo<CSSColorValue>(value))
     return color_value->Value();
 
-  CSSValueID value_id = ToCSSIdentifierValue(value).GetValueID();
+  CSSValueID value_id = To<CSSIdentifierValue>(value).GetValueID();
   switch (value_id) {
     case CSSValueInvalid:
       NOTREACHED();
