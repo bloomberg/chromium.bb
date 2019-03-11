@@ -2262,9 +2262,7 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, MarkFileAsNonSecure) {
   ASSERT_TRUE(helper);
 
   ui_test_utils::NavigateToURL(browser(), GURL("file:///"));
-  security_state::SecurityInfo security_info;
-  helper->GetSecurityInfo(&security_info);
-  EXPECT_EQ(security_state::NONE, security_info.security_level);
+  EXPECT_EQ(security_state::NONE, helper->GetSecurityLevel());
 }
 
 // Ensure that about-protocol origins are marked as neutral when the
@@ -2285,9 +2283,7 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, MarkAboutAsNonSecure) {
   ASSERT_TRUE(helper);
 
   ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
-  security_state::SecurityInfo security_info;
-  helper->GetSecurityInfo(&security_info);
-  EXPECT_EQ(security_state::NONE, security_info.security_level);
+  EXPECT_EQ(security_state::NONE, helper->GetSecurityLevel());
 }
 
 // Data URLs should always be marked as non-secure.
@@ -2301,9 +2297,7 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, MarkDataAsNonSecure) {
   ASSERT_TRUE(helper);
 
   ui_test_utils::NavigateToURL(browser(), GURL("data:text/plain,hello"));
-  security_state::SecurityInfo security_info;
-  helper->GetSecurityInfo(&security_info);
-  EXPECT_EQ(security_state::HTTP_SHOW_WARNING, security_info.security_level);
+  EXPECT_EQ(security_state::HTTP_SHOW_WARNING, helper->GetSecurityLevel());
 }
 
 // Ensure that HTTP-protocol origins are marked as Dangerous when the
@@ -2327,9 +2321,7 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, MarkHTTPAsDangerous) {
   SecurityStateTabHelper* helper = SecurityStateTabHelper::FromWebContents(tab);
   ASSERT_TRUE(helper);
 
-  security_state::SecurityInfo security_info;
-  helper->GetSecurityInfo(&security_info);
-  EXPECT_EQ(security_state::DANGEROUS, security_info.security_level);
+  EXPECT_EQ(security_state::DANGEROUS, helper->GetSecurityLevel());
 }
 
 // Ensure that blob-protocol origins are marked as neutral when the
@@ -2352,9 +2344,7 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, MarkBlobAsNonSecure) {
   ui_test_utils::NavigateToURL(
       browser(),
       GURL("blob:chrome://newtab/49a463bb-fac8-476c-97bf-5d7076c3ea1a"));
-  security_state::SecurityInfo security_info;
-  helper->GetSecurityInfo(&security_info);
-  EXPECT_EQ(security_state::NONE, security_info.security_level);
+  EXPECT_EQ(security_state::NONE, helper->GetSecurityLevel());
 }
 
 #if defined(USE_NSS_CERTS)
@@ -3959,12 +3949,12 @@ IN_PROC_BROWSER_TEST_P(SSLUIWorkerFetchTest,
 
   SecurityStateTabHelper* helper = SecurityStateTabHelper::FromWebContents(tab);
   ASSERT_TRUE(helper);
-  security_state::SecurityInfo security_info;
-  helper->GetSecurityInfo(&security_info);
-  EXPECT_EQ(security_state::CONTENT_STATUS_NONE,
-            security_info.mixed_content_status);
-  EXPECT_EQ(security_state::CONTENT_STATUS_NONE,
-            security_info.content_with_cert_errors_status);
+  std::unique_ptr<security_state::VisibleSecurityState> visible_security_state =
+      helper->GetVisibleSecurityState();
+  EXPECT_FALSE(visible_security_state->ran_mixed_content);
+  EXPECT_FALSE(visible_security_state->displayed_mixed_content);
+  EXPECT_FALSE(visible_security_state->ran_content_with_cert_errors);
+  EXPECT_FALSE(visible_security_state->displayed_content_with_cert_errors);
 
   const base::string16 loaded_title = base::ASCIIToUTF16("LOADED");
   const base::string16 failed_title = base::ASCIIToUTF16("FAILED");
@@ -3980,11 +3970,11 @@ IN_PROC_BROWSER_TEST_P(SSLUIWorkerFetchTest,
   EXPECT_EQ(loaded_title, watcher.WaitAndGetTitle());
   CheckAuthenticationBrokenState(tab, CertError::NONE, AuthState::NONE);
 
-  helper->GetSecurityInfo(&security_info);
-  EXPECT_EQ(security_state::CONTENT_STATUS_NONE,
-            security_info.mixed_content_status);
-  EXPECT_EQ(security_state::CONTENT_STATUS_RAN,
-            security_info.content_with_cert_errors_status);
+  visible_security_state = helper->GetVisibleSecurityState();
+  EXPECT_FALSE(visible_security_state->ran_mixed_content);
+  EXPECT_FALSE(visible_security_state->displayed_mixed_content);
+  EXPECT_TRUE(visible_security_state->ran_content_with_cert_errors);
+  EXPECT_FALSE(visible_security_state->displayed_content_with_cert_errors);
 }
 
 // This test checks the behavior of mixed content blocking for the requests
@@ -4182,12 +4172,12 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, TestUnsafeContentsWithUserException) {
 
   SecurityStateTabHelper* helper = SecurityStateTabHelper::FromWebContents(tab);
   ASSERT_TRUE(helper);
-  security_state::SecurityInfo security_info;
-  helper->GetSecurityInfo(&security_info);
-  EXPECT_EQ(security_state::CONTENT_STATUS_NONE,
-            security_info.mixed_content_status);
-  EXPECT_EQ(security_state::CONTENT_STATUS_DISPLAYED_AND_RAN,
-            security_info.content_with_cert_errors_status);
+  std::unique_ptr<security_state::VisibleSecurityState> visible_security_state =
+      helper->GetVisibleSecurityState();
+  EXPECT_FALSE(visible_security_state->ran_mixed_content);
+  EXPECT_FALSE(visible_security_state->displayed_mixed_content);
+  EXPECT_TRUE(visible_security_state->ran_content_with_cert_errors);
+  EXPECT_TRUE(visible_security_state->displayed_content_with_cert_errors);
 
   int img_width;
   EXPECT_TRUE(content::ExecuteScriptAndExtractInt(
@@ -4216,11 +4206,11 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, TestUnsafeContentsWithUserException) {
   CheckAuthenticationBrokenState(tab, net::CERT_STATUS_COMMON_NAME_INVALID,
                                  AuthState::NONE);
 
-  helper->GetSecurityInfo(&security_info);
-  EXPECT_EQ(security_state::CONTENT_STATUS_NONE,
-            security_info.mixed_content_status);
-  EXPECT_EQ(security_state::CONTENT_STATUS_DISPLAYED_AND_RAN,
-            security_info.content_with_cert_errors_status);
+  visible_security_state = helper->GetVisibleSecurityState();
+  EXPECT_FALSE(visible_security_state->ran_mixed_content);
+  EXPECT_FALSE(visible_security_state->displayed_mixed_content);
+  EXPECT_TRUE(visible_security_state->ran_content_with_cert_errors);
+  EXPECT_TRUE(visible_security_state->displayed_content_with_cert_errors);
 }
 
 // Like the test above, but only displaying inactive content (an image).
@@ -4231,14 +4221,13 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, TestUnsafeImageWithUserException) {
 
   SecurityStateTabHelper* helper = SecurityStateTabHelper::FromWebContents(tab);
   ASSERT_TRUE(helper);
-  security_state::SecurityInfo security_info;
-  helper->GetSecurityInfo(&security_info);
-  EXPECT_EQ(security_state::CONTENT_STATUS_NONE,
-            security_info.mixed_content_status);
-  EXPECT_EQ(security_state::CONTENT_STATUS_DISPLAYED,
-            security_info.content_with_cert_errors_status);
-  EXPECT_EQ(security_state::NONE, security_info.security_level);
-  EXPECT_EQ(0u, security_info.cert_status);
+  std::unique_ptr<security_state::VisibleSecurityState> visible_security_state =
+      helper->GetVisibleSecurityState();
+  EXPECT_FALSE(visible_security_state->ran_mixed_content);
+  EXPECT_FALSE(visible_security_state->displayed_mixed_content);
+  EXPECT_FALSE(visible_security_state->ran_content_with_cert_errors);
+  EXPECT_TRUE(visible_security_state->displayed_content_with_cert_errors);
+  EXPECT_EQ(0u, visible_security_state->cert_status);
 
   int img_width;
   EXPECT_TRUE(content::ExecuteScriptAndExtractInt(

@@ -171,9 +171,7 @@ ChromeAutofillClientIOS::GetSecurityLevelForUmaHistograms() {
   if (!ios_security_state_tab_helper)
     return security_state::SecurityLevel::SECURITY_LEVEL_COUNT;
 
-  security_state::SecurityInfo result;
-  ios_security_state_tab_helper->GetSecurityInfo(&result);
-  return result.security_level;
+  return ios_security_state_tab_helper->GetSecurityLevel();
 }
 
 std::string ChromeAutofillClientIOS::GetPageLanguage() const {

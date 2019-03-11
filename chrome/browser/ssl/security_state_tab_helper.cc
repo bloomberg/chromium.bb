@@ -48,18 +48,6 @@
 
 namespace {
 
-void RecordSecurityLevel(const security_state::SecurityInfo& security_info) {
-  if (security_info.scheme_is_cryptographic) {
-    UMA_HISTOGRAM_ENUMERATION("Security.SecurityLevel.CryptographicScheme",
-                              security_info.security_level,
-                              security_state::SECURITY_LEVEL_COUNT);
-  } else {
-    UMA_HISTOGRAM_ENUMERATION("Security.SecurityLevel.NoncryptographicScheme",
-                              security_info.security_level,
-                              security_state::SECURITY_LEVEL_COUNT);
-  }
-}
-
 bool IsOriginSecureWithWhitelist(
     const std::vector<std::string>& secure_origins_and_patterns,
     const GURL& url) {
@@ -95,13 +83,32 @@ void SecurityStateTabHelper::GetSecurityInfo(
       result);
 }
 
+security_state::SecurityLevel SecurityStateTabHelper::GetSecurityLevel() const {
+  security_state::SecurityInfo result;
+  security_state::GetSecurityInfo(
+      GetVisibleSecurityState(), UsedPolicyInstalledCertificate(),
+      base::BindRepeating(&IsOriginSecureWithWhitelist,
+                          GetSecureOriginsAndPatterns()),
+      &result);
+  return result.security_level;
+}
+
+std::unique_ptr<security_state::VisibleSecurityState>
+SecurityStateTabHelper::GetVisibleSecurityState() const {
+  auto state = security_state::GetVisibleSecurityState(web_contents());
+
+  // Malware status might already be known even if connection security
+  // information is still being initialized, thus no need to check for that.
+  state->malicious_content_status = GetMaliciousContentStatus();
+
+  return state;
+}
+
 void SecurityStateTabHelper::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
   if (navigation_handle->IsFormSubmission()) {
-    security_state::SecurityInfo info;
-    GetSecurityInfo(&info);
     UMA_HISTOGRAM_ENUMERATION("Security.SecurityLevel.FormSubmission",
-                              info.security_level,
+                              GetSecurityLevel(),
                               security_state::SECURITY_LEVEL_COUNT);
   }
 }
@@ -125,10 +132,10 @@ void SecurityStateTabHelper::DidFinishNavigation(
         net::ct::CTPolicyCompliance::CT_POLICY_COUNT);
   }
 
-  security_state::SecurityInfo security_info;
-  GetSecurityInfo(&security_info);
-  if (net::IsCertStatusError(security_info.cert_status) &&
-      !net::IsCertStatusMinorError(security_info.cert_status) &&
+  std::unique_ptr<security_state::VisibleSecurityState> visible_security_state =
+      GetVisibleSecurityState();
+  if (net::IsCertStatusError(visible_security_state->cert_status) &&
+      !net::IsCertStatusMinorError(visible_security_state->cert_status) &&
       !navigation_handle->IsErrorPage()) {
     // Record each time a user visits a site after having clicked through a
     // certificate warning interstitial. This is used as a baseline for
@@ -147,7 +154,7 @@ void SecurityStateTabHelper::DidFinishNavigation(
                 omnibox::kSimplifyHttpsIndicator,
                 OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterName)
           : std::string();
-  if (security_info.security_level == security_state::EV_SECURE) {
+  if (GetSecurityLevel() == security_state::EV_SECURE) {
     if (parameter ==
         OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterEvToSecure) {
       web_contents()->GetMainFrame()->AddMessageToConsole(
@@ -168,9 +175,18 @@ void SecurityStateTabHelper::DidFinishNavigation(
 }
 
 void SecurityStateTabHelper::DidChangeVisibleSecurityState() {
-  security_state::SecurityInfo security_info;
-  GetSecurityInfo(&security_info);
-  RecordSecurityLevel(security_info);
+  std::unique_ptr<security_state::VisibleSecurityState> visible_security_state =
+      GetVisibleSecurityState();
+  security_state::SecurityLevel security_level = GetSecurityLevel();
+  if (security_state::IsSchemeCryptographic(visible_security_state->url)) {
+    UMA_HISTOGRAM_ENUMERATION("Security.SecurityLevel.CryptographicScheme",
+                              security_level,
+                              security_state::SECURITY_LEVEL_COUNT);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION("Security.SecurityLevel.NoncryptographicScheme",
+                              security_level,
+                              security_state::SECURITY_LEVEL_COUNT);
+  }
 }
 
 bool SecurityStateTabHelper::UsedPolicyInstalledCertificate() const {
@@ -258,17 +274,6 @@ SecurityStateTabHelper::GetMaliciousContentStatus() const {
     }
   }
   return security_state::MALICIOUS_CONTENT_STATUS_NONE;
-}
-
-std::unique_ptr<security_state::VisibleSecurityState>
-SecurityStateTabHelper::GetVisibleSecurityState() const {
-  auto state = security_state::GetVisibleSecurityState(web_contents());
-
-  // Malware status might already be known even if connection security
-  // information is still being initialized, thus no need to check for that.
-  state->malicious_content_status = GetMaliciousContentStatus();
-
-  return state;
 }
 
 std::vector<std::string> SecurityStateTabHelper::GetSecureOriginsAndPatterns()

@@ -49,10 +49,8 @@ SaveCardBubbleControllerImpl::SaveCardBubbleControllerImpl(
       web_contents_(web_contents),
       pref_service_(
           user_prefs::UserPrefs::Get(web_contents->GetBrowserContext())) {
-  security_state::SecurityInfo security_info;
-  SecurityStateTabHelper::FromWebContents(web_contents)
-      ->GetSecurityInfo(&security_info);
-  security_level_ = security_info.security_level;
+  security_level_ =
+      SecurityStateTabHelper::FromWebContents(web_contents)->GetSecurityLevel();
 
   personal_data_manager_ =
       PersonalDataManagerFactory::GetInstance()->GetForProfile(

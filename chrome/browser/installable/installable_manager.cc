@@ -87,10 +87,9 @@ bool IsContentSecure(content::WebContents* web_contents) {
     return true;
   }
 
-  security_state::SecurityInfo security_info;
-  SecurityStateTabHelper::FromWebContents(web_contents)
-      ->GetSecurityInfo(&security_info);
-  return security_state::IsSslCertificateValid(security_info.security_level);
+  return security_state::IsSslCertificateValid(
+      SecurityStateTabHelper::FromWebContents(web_contents)
+          ->GetSecurityLevel());
 }
 
 // Returns true if |manifest| specifies a PNG icon with IconPurpose::ANY and of
