@@ -208,8 +208,7 @@ bool IsCrostiniAllowedForProfileImpl(Profile* profile) {
     return false;
   }
 
-  return virtual_machines::AreVirtualMachinesAllowedByVersionAndChannel() &&
-         base::FeatureList::IsEnabled(features::kCrostini);
+  return base::FeatureList::IsEnabled(features::kCrostini);
 }
 
 }  // namespace
