@@ -123,11 +123,12 @@ InterpolationValue CSSFontSizeInterpolationType::MaybeConvertValue(
   if (result)
     return InterpolationValue(std::move(result));
 
-  if (!value.IsIdentifierValue())
+  auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
+  if (!identifier_value)
     return nullptr;
 
   DCHECK(state);
-  return MaybeConvertKeyword(ToCSSIdentifierValue(value).GetValueID(), *state,
+  return MaybeConvertKeyword(identifier_value->GetValueID(), *state,
                              conversion_checkers);
 }
 

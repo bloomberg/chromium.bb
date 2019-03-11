@@ -777,8 +777,9 @@ scoped_refptr<ComputedStyle> StyleResolver::StyleForElement(
       for (const auto& matched : matched_range) {
         const CSSValue* value =
             matched.properties->GetPropertyCSSValue(CSSPropertyDisplay);
-        if (value && value->IsIdentifierValue() &&
-            ToCSSIdentifierValue(*value).GetValueID() == CSSValueBlock) {
+        auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
+        if (identifier_value &&
+            identifier_value->GetValueID() == CSSValueBlock) {
           UseCounter::Count(
               element->GetDocument(),
               WebFeature::kSummaryElementWithDisplayBlockAuthorRule);

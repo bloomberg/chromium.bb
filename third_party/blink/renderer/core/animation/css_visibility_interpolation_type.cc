@@ -139,17 +139,17 @@ InterpolationValue CSSVisibilityInterpolationType::MaybeConvertValue(
     const CSSValue& value,
     const StyleResolverState*,
     ConversionCheckers& conversion_checkers) const {
-  if (!value.IsIdentifierValue())
+  const auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
+  if (!identifier_value)
     return nullptr;
 
-  const CSSIdentifierValue& identifier_value = ToCSSIdentifierValue(value);
-  CSSValueID keyword = identifier_value.GetValueID();
+  CSSValueID keyword = identifier_value->GetValueID();
 
   switch (keyword) {
     case CSSValueHidden:
     case CSSValueVisible:
     case CSSValueCollapse:
-      return CreateVisibilityValue(identifier_value.ConvertTo<EVisibility>());
+      return CreateVisibilityValue(identifier_value->ConvertTo<EVisibility>());
     default:
       return nullptr;
   }

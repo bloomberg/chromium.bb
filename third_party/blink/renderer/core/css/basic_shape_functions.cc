@@ -229,10 +229,11 @@ static BasicShapeCenterCoordinate ConvertToCenterCoordinate(
   CSSValueID keyword = CSSValueTop;
   if (!value) {
     keyword = CSSValueCenter;
-  } else if (value->IsIdentifierValue()) {
-    keyword = ToCSSIdentifierValue(value)->GetValueID();
+  } else if (auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
+    keyword = identifier_value->GetValueID();
   } else if (value->IsValuePair()) {
-    keyword = ToCSSIdentifierValue(ToCSSValuePair(value)->First()).GetValueID();
+    keyword =
+        To<CSSIdentifierValue>(ToCSSValuePair(value)->First()).GetValueID();
     offset = ConvertToLength(
         state, &ToCSSPrimitiveValue(ToCSSValuePair(value)->Second()));
   } else {
@@ -267,8 +268,8 @@ static BasicShapeRadius CssValueToBasicShapeRadius(
   if (!radius)
     return BasicShapeRadius(BasicShapeRadius::kClosestSide);
 
-  if (radius->IsIdentifierValue()) {
-    switch (ToCSSIdentifierValue(radius)->GetValueID()) {
+  if (auto* radius_identifier_value = DynamicTo<CSSIdentifierValue>(radius)) {
+    switch (radius_identifier_value->GetValueID()) {
       case CSSValueClosestSide:
         return BasicShapeRadius(BasicShapeRadius::kClosestSide);
       case CSSValueFarthestSide:

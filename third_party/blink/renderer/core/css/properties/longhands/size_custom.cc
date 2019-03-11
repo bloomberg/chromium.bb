@@ -106,11 +106,11 @@ void Size::ApplyValue(StyleResolverState& state, const CSSValue& value) const {
               state.CssToLengthConversionData().CopyWithAdjustedZoom(1.0)));
     } else {
       // <page-size> <orientation>
-      size = GetPageSizeFromName(ToCSSIdentifierValue(first));
+      size = GetPageSizeFromName(To<CSSIdentifierValue>(first));
 
-      DCHECK(ToCSSIdentifierValue(second).GetValueID() == CSSValueLandscape ||
-             ToCSSIdentifierValue(second).GetValueID() == CSSValuePortrait);
-      if (ToCSSIdentifierValue(second).GetValueID() == CSSValueLandscape)
+      DCHECK(To<CSSIdentifierValue>(second).GetValueID() == CSSValueLandscape ||
+             To<CSSIdentifierValue>(second).GetValueID() == CSSValuePortrait);
+      if (To<CSSIdentifierValue>(second).GetValueID() == CSSValueLandscape)
         size = size.TransposedSize();
     }
     page_size_type = EPageSizeType::kResolved;
@@ -125,7 +125,7 @@ void Size::ApplyValue(StyleResolverState& state, const CSSValue& value) const {
           state.CssToLengthConversionData().CopyWithAdjustedZoom(1.0));
       size = FloatSize(width, width);
     } else {
-      const CSSIdentifierValue& ident = ToCSSIdentifierValue(first);
+      const auto& ident = To<CSSIdentifierValue>(first);
       switch (ident.GetValueID()) {
         case CSSValueAuto:
           page_size_type = EPageSizeType::kAuto;

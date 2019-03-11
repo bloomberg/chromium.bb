@@ -167,8 +167,8 @@ InterpolationValue CSSFilterListInterpolationType::MaybeConvertValue(
     const CSSValue& value,
     const StyleResolverState*,
     ConversionCheckers&) const {
-  if (value.IsIdentifierValue() &&
-      ToCSSIdentifierValue(value).GetValueID() == CSSValueNone)
+  auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
+  if (identifier_value && identifier_value->GetValueID() == CSSValueNone)
     return InterpolationValue(InterpolableList::Create(0),
                               NonInterpolableList::Create());
 

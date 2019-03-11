@@ -23,7 +23,7 @@ const CSSValue* WebkitTextOrientation::CSSValueFromComputedStyleInternal(
 void WebkitTextOrientation::ApplyValue(StyleResolverState& state,
                                        const CSSValue& value) const {
   state.SetTextOrientation(
-      ToCSSIdentifierValue(value).ConvertTo<ETextOrientation>());
+      To<CSSIdentifierValue>(value).ConvertTo<ETextOrientation>());
 }
 
 }  // namespace css_longhand

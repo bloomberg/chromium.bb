@@ -73,9 +73,8 @@ void Display::ApplyInherit(StyleResolverState& state) const {
 
 void Display::ApplyValue(StyleResolverState& state,
                          const CSSValue& value) const {
-  if (value.IsIdentifierValue()) {
-    state.Style()->SetDisplay(
-        ToCSSIdentifierValue(value).ConvertTo<EDisplay>());
+  if (auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
+    state.Style()->SetDisplay(identifier_value->ConvertTo<EDisplay>());
     state.Style()->SetDisplayLayoutCustomName(
         ComputedStyleInitialValues::InitialDisplayLayoutCustomName());
     return;

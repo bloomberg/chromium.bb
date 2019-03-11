@@ -106,10 +106,10 @@ void TextIndent::ApplyValue(StyleResolverState& state,
       length_or_percentage_value =
           ToCSSPrimitiveValue(*list_value)
               .ConvertToLength(state.CssToLengthConversionData());
-    } else if (ToCSSIdentifierValue(*list_value).GetValueID() ==
+    } else if (To<CSSIdentifierValue>(*list_value).GetValueID() ==
                CSSValueEachLine) {
       text_indent_line_value = TextIndentLine::kEachLine;
-    } else if (ToCSSIdentifierValue(*list_value).GetValueID() ==
+    } else if (To<CSSIdentifierValue>(*list_value).GetValueID() ==
                CSSValueHanging) {
       text_indent_type_value = TextIndentType::kHanging;
     } else {

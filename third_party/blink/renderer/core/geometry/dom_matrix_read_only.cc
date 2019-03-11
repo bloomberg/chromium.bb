@@ -481,8 +481,8 @@ void DOMMatrixReadOnly::SetMatrixValueFromString(
     return;
   }
 
-  if (value->IsIdentifierValue()) {
-    DCHECK(ToCSSIdentifierValue(value)->GetValueID() == CSSValueNone);
+  if (auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
+    DCHECK(identifier_value->GetValueID() == CSSValueNone);
     matrix_->MakeIdentity();
     is2d_ = true;
     return;

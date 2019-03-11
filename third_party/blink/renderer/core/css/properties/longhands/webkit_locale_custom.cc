@@ -33,8 +33,8 @@ const CSSValue* WebkitLocale::CSSValueFromComputedStyleInternal(
 
 void WebkitLocale::ApplyValue(StyleResolverState& state,
                               const CSSValue& value) const {
-  if (value.IsIdentifierValue()) {
-    DCHECK_EQ(ToCSSIdentifierValue(value).GetValueID(), CSSValueAuto);
+  if (auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
+    DCHECK_EQ(identifier_value->GetValueID(), CSSValueAuto);
     state.GetFontBuilder().SetLocale(nullptr);
   } else {
     state.GetFontBuilder().SetLocale(

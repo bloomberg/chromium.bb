@@ -30,7 +30,7 @@ void WebkitAppRegion::ApplyInherit(StyleResolverState& state) const {}
 
 void WebkitAppRegion::ApplyValue(StyleResolverState& state,
                                  const CSSValue& value) const {
-  const CSSIdentifierValue& identifier_value = ToCSSIdentifierValue(value);
+  const auto& identifier_value = To<CSSIdentifierValue>(value);
   state.Style()->SetDraggableRegionMode(identifier_value.GetValueID() ==
                                                 CSSValueDrag
                                             ? EDraggableRegionMode::kDrag

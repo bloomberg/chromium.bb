@@ -104,17 +104,19 @@ InterpolationValue SizeInterpolationFunctions::MaybeConvertCSSSizeSide(
   if (value.IsValuePair()) {
     const CSSValuePair& pair = ToCSSValuePair(value);
     const CSSValue& side = convert_width ? pair.First() : pair.Second();
-    if (side.IsIdentifierValue() &&
-        ToCSSIdentifierValue(side).GetValueID() == CSSValueAuto)
+    auto* side_identifier_value = DynamicTo<CSSIdentifierValue>(side);
+    if (side_identifier_value &&
+        side_identifier_value->GetValueID() == CSSValueAuto)
       return ConvertKeyword(CSSValueAuto);
     return WrapConvertedLength(
         LengthInterpolationFunctions::MaybeConvertCSSValue(side));
   }
 
-  if (!value.IsIdentifierValue() && !value.IsPrimitiveValue())
+  auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
+  if (!identifier_value && !value.IsPrimitiveValue())
     return nullptr;
-  if (value.IsIdentifierValue())
-    return ConvertKeyword(ToCSSIdentifierValue(value).GetValueID());
+  if (identifier_value)
+    return ConvertKeyword(identifier_value->GetValueID());
 
   // A single length is equivalent to "<length> auto".
   if (convert_width)

@@ -79,9 +79,9 @@ void GridTemplateAreas::ApplyInherit(StyleResolverState& state) const {
 
 void GridTemplateAreas::ApplyValue(StyleResolverState& state,
                                    const CSSValue& value) const {
-  if (value.IsIdentifierValue()) {
+  if (auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
     // FIXME: Shouldn't we clear the grid-area values
-    DCHECK_EQ(ToCSSIdentifierValue(value).GetValueID(), CSSValueNone);
+    DCHECK_EQ(identifier_value->GetValueID(), CSSValueNone);
     return;
   }
 

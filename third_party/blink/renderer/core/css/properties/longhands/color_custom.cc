@@ -59,8 +59,9 @@ void Color::ApplyInherit(StyleResolverState& state) const {
 
 void Color::ApplyValue(StyleResolverState& state, const CSSValue& value) const {
   // As per the spec, 'color: currentColor' is treated as 'color: inherit'
-  if (value.IsIdentifierValue() &&
-      ToCSSIdentifierValue(value).GetValueID() == CSSValueCurrentcolor) {
+  auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
+  if (identifier_value &&
+      identifier_value->GetValueID() == CSSValueCurrentcolor) {
     ApplyInherit(state);
     return;
   }

@@ -123,11 +123,12 @@ void Cursor::ApplyValue(StyleResolverState& state,
                                  cursor->HotSpotSpecified(), cursor->HotSpot());
       } else {
         state.Style()->SetCursor(
-            ToCSSIdentifierValue(*item).ConvertTo<ECursor>());
+            To<CSSIdentifierValue>(*item).ConvertTo<ECursor>());
       }
     }
   } else {
-    state.Style()->SetCursor(ToCSSIdentifierValue(value).ConvertTo<ECursor>());
+    state.Style()->SetCursor(
+        To<CSSIdentifierValue>(value).ConvertTo<ECursor>());
   }
 }
 

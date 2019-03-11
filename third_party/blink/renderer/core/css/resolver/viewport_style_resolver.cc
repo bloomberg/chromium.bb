@@ -234,11 +234,12 @@ float ViewportStyleResolver::ViewportArgumentValue(CSSPropertyID id) const {
     default_value = 1;
 
   const CSSValue* value = property_set_->GetPropertyCSSValue(id);
-  if (!value || !(value->IsPrimitiveValue() || value->IsIdentifierValue()))
+  auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
+  if (!value || !(value->IsPrimitiveValue() || identifier_value))
     return default_value;
 
-  if (value->IsIdentifierValue()) {
-    switch (ToCSSIdentifierValue(value)->GetValueID()) {
+  if (identifier_value) {
+    switch (identifier_value->GetValueID()) {
       case CSSValueAuto:
         return default_value;
       case CSSValueLandscape:
@@ -291,8 +292,8 @@ Length ViewportStyleResolver::ViewportLengthValue(CSSPropertyID id) {
   if (!value || !(value->IsPrimitiveValue() || value->IsIdentifierValue()))
     return Length();  // auto
 
-  if (value->IsIdentifierValue()) {
-    CSSValueID value_id = ToCSSIdentifierValue(value)->GetValueID();
+  if (auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
+    CSSValueID value_id = identifier_value->GetValueID();
     if (value_id == CSSValueInternalExtendToZoom)
       return Length::ExtendToZoom();
     if (value_id == CSSValueAuto)
@@ -324,8 +325,8 @@ Length ViewportStyleResolver::ViewportLengthValue(CSSPropertyID id) {
 mojom::ViewportFit ViewportStyleResolver::ViewportFitValue() const {
   const CSSValue* value =
       property_set_->GetPropertyCSSValue(CSSPropertyViewportFit);
-  if (value->IsIdentifierValue()) {
-    switch (ToCSSIdentifierValue(value)->GetValueID()) {
+  if (auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
+    switch (identifier_value->GetValueID()) {
       case CSSValueCover:
         return mojom::ViewportFit::kCover;
       case CSSValueContain:

@@ -66,10 +66,11 @@ CSSValue* ComputedStyleUtils::ValueForOffset(const ComputedStyle& style,
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   if (RuntimeEnabledFeatures::CSSOffsetPositionAnchorEnabled()) {
     CSSValue* position = ValueForPosition(style.OffsetPosition(), style);
-    if (!position->IsIdentifierValue())
+    auto* position_identifier_value = DynamicTo<CSSIdentifierValue>(position);
+    if (!position_identifier_value)
       list->Append(*position);
     else
-      DCHECK(ToCSSIdentifierValue(position)->GetValueID() == CSSValueAuto);
+      DCHECK(position_identifier_value->GetValueID() == CSSValueAuto);
   }
 
   static const CSSProperty* longhands[3] = {&GetCSSPropertyOffsetPath(),
@@ -84,14 +85,15 @@ CSSValue* ComputedStyleUtils::ValueForOffset(const ComputedStyle& style,
 
   if (RuntimeEnabledFeatures::CSSOffsetPositionAnchorEnabled()) {
     CSSValue* anchor = ValueForPosition(style.OffsetAnchor(), style);
-    if (!anchor->IsIdentifierValue()) {
+    auto* anchor_identifier_value = DynamicTo<CSSIdentifierValue>(anchor);
+    if (!anchor_identifier_value) {
       // Add a slash before anchor.
       CSSValueList* result = CSSValueList::CreateSlashSeparated();
       result->Append(*list);
       result->Append(*anchor);
       return result;
     }
-    DCHECK(ToCSSIdentifierValue(anchor)->GetValueID() == CSSValueAuto);
+    DCHECK(anchor_identifier_value->GetValueID() == CSSValueAuto);
   }
   return list;
 }
@@ -2270,12 +2272,13 @@ CSSValue* ComputedStyleUtils::ValuesForFontVariantProperty(
         shorthand.properties()[i]->CSSValueFromComputedStyle(
             style, layout_object, styled_node, allow_visited_style);
 
-    if (shorthand_case == kAllNormal && value->IsIdentifierValue() &&
-        ToCSSIdentifierValue(value)->GetValueID() == CSSValueNone &&
+    auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
+    if (shorthand_case == kAllNormal && identifier_value &&
+        identifier_value->GetValueID() == CSSValueNone &&
         shorthand.properties()[i]->IDEquals(CSSPropertyFontVariantLigatures)) {
       shorthand_case = kNoneLigatures;
-    } else if (!(value->IsIdentifierValue() &&
-                 ToCSSIdentifierValue(value)->GetValueID() == CSSValueNormal)) {
+    } else if (!(identifier_value &&
+                 identifier_value->GetValueID() == CSSValueNormal)) {
       shorthand_case = kConcatenateNonNormal;
       break;
     }
@@ -2293,12 +2296,12 @@ CSSValue* ComputedStyleUtils::ValuesForFontVariantProperty(
             shorthand.properties()[i]->CSSValueFromComputedStyle(
                 style, layout_object, styled_node, allow_visited_style);
         DCHECK(value);
-        if (value->IsIdentifierValue() &&
-            ToCSSIdentifierValue(value)->GetValueID() == CSSValueNone) {
+        auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
+        if (identifier_value &&
+            identifier_value->GetValueID() == CSSValueNone) {
           list->Append(*ExpandNoneLigaturesValue());
-        } else if (!(value->IsIdentifierValue() &&
-                     ToCSSIdentifierValue(value)->GetValueID() ==
-                         CSSValueNormal)) {
+        } else if (!(identifier_value &&
+                     identifier_value->GetValueID() == CSSValueNormal)) {
           list->Append(*value);
         }
       }

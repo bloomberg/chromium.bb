@@ -35,7 +35,7 @@ void OutlineStyle::ApplyInherit(StyleResolverState& state) const {
 
 void OutlineStyle::ApplyValue(StyleResolverState& state,
                               const CSSValue& value) const {
-  const CSSIdentifierValue& identifier_value = ToCSSIdentifierValue(value);
+  const auto& identifier_value = To<CSSIdentifierValue>(value);
   state.Style()->SetOutlineStyleIsAuto(
       static_cast<bool>(identifier_value.ConvertTo<OutlineIsAuto>()));
   state.Style()->SetOutlineStyle(identifier_value.ConvertTo<EBorderStyle>());
