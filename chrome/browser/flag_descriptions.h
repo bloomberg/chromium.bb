@@ -1886,9 +1886,6 @@ extern const char kEnableChromeOsAccountManagerDescription[];
 extern const char kEnableDiscoverAppName[];
 extern const char kEnableDiscoverAppDescription[];
 
-extern const char kEnableDragTabsInTabletModeName[];
-extern const char kEnableDragTabsInTabletModeDescription[];
-
 extern const char kEnableDriveFsName[];
 extern const char kEnableDriveFsDescription[];
 

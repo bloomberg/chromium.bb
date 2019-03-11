@@ -3532,11 +3532,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableAppDataSearchDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(app_list_features::kEnableAppDataSearch)},
 
-    {"enable-drag-tabs-in-tablet-mode",
-     flag_descriptions::kEnableDragTabsInTabletModeName,
-     flag_descriptions::kEnableDragTabsInTabletModeDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kDragTabsInTabletMode)},
-
     {"enable-app-grid-ghost", flag_descriptions::kEnableAppGridGhostName,
      flag_descriptions::kEnableAppGridGhostDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(app_list_features::kEnableAppGridGhost)},

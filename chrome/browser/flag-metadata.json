@@ -1064,11 +1064,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "enable-drag-tabs-in-tablet-mode",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-drive-fs",
     "owners": [ "sammc", "dats" ],
     "expiry_milestone": 76
