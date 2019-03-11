@@ -1008,6 +1008,7 @@
 <translation id="2484959914739448251">同期しているすべての端末と Google アカウントから閲覧データを削除するには、<ph name="BEGIN_LINK" />パスフレーズを入力<ph name="END_LINK" />してください。</translation>
 <translation id="2485422356828889247">アンインストール</translation>
 <translation id="2487067538648443797">新しいブックマークを追加</translation>
+<translation id="2489829450872380594">次回から、新しいスマートフォンでこの <ph name="DEVICE_TYPE" /> のロックを解除できます。Smart Lock を無効にするには [設定] をご利用ください。</translation>
 <translation id="2489918096470125693">フォルダを追加(&amp;F)...</translation>
 <translation id="249113932447298600">デバイス <ph name="DEVICE_LABEL" /> は現在サポートされていません。</translation>
 <translation id="249303669840926644">登録を完了できませんでした</translation>
@@ -1765,6 +1766,7 @@
 <translation id="3627588569887975815">シークレット ウィンドウで開く(&amp;G)</translation>
 <translation id="3627671146180677314">Netscape 証明書更新時間</translation>
 <translation id="3627879631695760395">「<ph name="APP" />」をインストール...</translation>
+<translation id="3629631988386925734">パスワードを入力すると Smart Lock が有効になり、次回から、スマートフォンで <ph name="DEVICE_TYPE" /> のロックを解除できます。Smart Lock を無効にするには [設定] をご利用ください。</translation>
 <translation id="3630132874740063857">スマートフォン</translation>
 <translation id="3630995161997703415">このサイトをシェルフに追加するといつでも使えるようになります</translation>
 <translation id="3636096452488277381">こんにちは、<ph name="USER_GIVEN_NAME" /> さん。</translation>
@@ -2110,6 +2112,7 @@
 <translation id="4109135793348361820"><ph name="USER_NAME" />（<ph name="USER_EMAIL" />）にウィンドウを移動</translation>
 <translation id="4110490973560452005">ダウンロードが完了しました（<ph name="FILE_NAME" />）。ダウンロード バーの領域に切り替えるには Shift+F6 キーを押してください。</translation>
 <translation id="4110895898888439383">ハイ コントラスト モードでウェブをブラウジングする</translation>
+<translation id="4112221174576828331">画像に有効な説明がない場合に、Chrome で説明を自動的に生成できるよう画像をスキャンします。</translation>
 <translation id="4115002065223188701">ネットワークが圏外です</translation>
 <translation id="4115080753528843955">コンテンツ サービスによっては、保護されたコンテンツへのアクセスを認証する目的で、固有の識別子が使用されます</translation>
 <translation id="4118579674665737931">端末を再起動してもう一度お試しください。</translation>
@@ -2662,6 +2665,7 @@
 <translation id="4998873842614926205">変更内容を確認</translation>
 <translation id="5000922062037820727">ブロック（推奨）</translation>
 <translation id="5004584466530475658"><ph name="FILE_COUNT" /> 件の新しい写真</translation>
+<translation id="5008936837313706385">アクティビティ名</translation>
 <translation id="5010043101506446253">認証局</translation>
 <translation id="5010406651457630570">パソコン</translation>
 <translation id="5015344424288992913">プロキシを解決しています...</translation>
@@ -2993,6 +2997,7 @@
 <translation id="5507756662695126555">否認防止</translation>
 <translation id="5509693895992845810">別名で保存(&amp;A)...</translation>
 <translation id="5509914365760201064">発行元: <ph name="CERTIFICATE_AUTHORITY" /></translation>
+<translation id="5510775624736435856">Google から画像の説明を取得</translation>
 <translation id="5511379779384092781">特小</translation>
 <translation id="5511823366942919280">このデバイスを「Shark」として設定してもよろしいですか？</translation>
 <translation id="5512653252560939721">ユーザー証明書はハードウェア式である必要があります。</translation>
@@ -3575,6 +3580,7 @@
 <translation id="6341850831632289108">現在地を検出する</translation>
 <translation id="6344170822609224263">ネットワーク接続のリストにアクセスする</translation>
 <translation id="6346310558342052870">アクセスが制限されています</translation>
+<translation id="6349101878882523185"><ph name="APP_NAME" /> をインストールします</translation>
 <translation id="6349170655202535379">同期が機能していません。ログアウトして再度ログインしてみてください。</translation>
 <translation id="6351063337294363751">このメニューで閲覧データを削除できます</translation>
 <translation id="6352773953037195952">最も高い</translation>
@@ -3992,6 +3998,7 @@
 <translation id="6990081529015358884">空き容量が不足しています</translation>
 <translation id="6990778048354947307">暗色系テーマ</translation>
 <translation id="6991665348624301627">送信先の選択</translation>
+<translation id="6997642619627518301"><ph name="NAME_PH" /> - アクティビティ ログ</translation>
 <translation id="6997707937646349884">端末で次の操作を行います。</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> 個のフォルダを選択しました</translation>
 <translation id="6998793565256476099">デバイスをビデオ会議用に登録</translation>
@@ -4295,6 +4302,7 @@
 <translation id="7456142309650173560">Dev</translation>
 <translation id="7456847797759667638">場所を開く...</translation>
 <translation id="7461924472993315131">固定</translation>
+<translation id="746216226901520237">次回から、スマートフォンで <ph name="DEVICE_TYPE" /> のロックを解除できます。Smart Lock を無効にするには [設定] をご利用ください。</translation>
 <translation id="7463006580194749499">ユーザーを追加</translation>
 <translation id="7465778193084373987">Netscape 証明書取り消し URL</translation>
 <translation id="7469894403370665791">このネットワークに自動接続する</translation>
@@ -4373,6 +4381,7 @@
 <translation id="7580671184200851182">すべてのスピーカーで同じオーディオを再生（モノラル オーディオ）</translation>
 <translation id="7581462281756524039">クリーンアップ ツール</translation>
 <translation id="7582582252461552277">このネットワークを優先する</translation>
+<translation id="7583948862126372804">数</translation>
 <translation id="7586498138629385861">Chrome アプリが開いている間 Chrome は実行され続けます。</translation>
 <translation id="7589461650300748890">データが失われる危険があります。</translation>
 <translation id="7589661784326793847">少々お待ちください</translation>
@@ -5485,6 +5494,7 @@
 <translation id="93393615658292258">パスワードのみ</translation>
 <translation id="934503638756687833">ここに表示されていないアイテムも、必要に応じて削除されます。&lt;a href="<ph name="URL" />"&gt;迷惑ソフトウェアからの保護&lt;/a&gt;について詳しくは、Chrome のプライバシーに関するホワイト ペーパーをご覧ください。</translation>
 <translation id="935490618240037774">ブックマーク、履歴、パスワード、その他の設定が Google アカウントに同期され、どの端末でも利用できるようになります。</translation>
+<translation id="935854577147268200">Smart Lock に使用するスマートフォンが変更されました。パスワードを入力して Smart Lock を更新すると、次回から、新しいスマートフォンで <ph name="DEVICE_TYPE" /> のロックを解除できます。Smart Lock を無効にするには [設定] をご利用ください。</translation>
 <translation id="936801553271523408">システム診断データ</translation>
 <translation id="93766956588638423">拡張機能を修復</translation>
 <translation id="938339467127511841">Linux（ベータ版）ストレージ</translation>

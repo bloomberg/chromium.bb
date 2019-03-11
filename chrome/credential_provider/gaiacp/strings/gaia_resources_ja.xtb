@@ -3,6 +3,7 @@
 <translationbundle lang="ja">
 <translation id="1296843352074373664">Google ユーザー</translation>
 <translation id="1383286653814676580">Google 認証プロバイダのログインページを実行するために使用します。</translation>
+<translation id="1644179990571656190">新しい登録済み Google ユーザーを作成できませんでした。このシステムで作成できる登録済み Google ユーザーは 1 人のみです。</translation>
 <translation id="1813213595719100133">このドメインでは、Google アカウントでのログインは許可されていません。別のアカウントをご利用ください。</translation>
 <translation id="195232392645680541">Google アカウントでログインします。</translation>
 <translation id="2595469428674600431">Windows のパスワードを確認できませんでした。もう一度お試しください。</translation>

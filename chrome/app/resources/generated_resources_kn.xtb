@@ -1004,6 +1004,7 @@
 <translation id="2484959914739448251">ಸಿಂಕ್ ಮಾಡಿರುವ ನಿಮ್ಮ ಎಲ್ಲಾ ಸಾಧನಗಳು ಮತ್ತು ನಿಮ್ಮ Google ಖಾತೆಯಿಂದ ಬ್ರೌಸಿಂಗ್ ಡೇಟಾವನ್ನು ತೆರವುಗೊಳಿಸಲು, <ph name="BEGIN_LINK" />ನಿಮ್ಮ ಪಾಸ್‌ಫ್ರೇಸ್ ನಮೂದಿಸಿ<ph name="END_LINK" />.</translation>
 <translation id="2485422356828889247">ಅನ್‌ಇನ್‌ಸ್ಟಾಲ್</translation>
 <translation id="2487067538648443797">ಹೊಸ ಬುಕ್‌ಮಾರ್ಕ್‌ ಸೇರಿಸಿ</translation>
+<translation id="2489829450872380594">ಮುಂದಿನ ಬಾರಿ, ಹೊಸ ಫೋನ್ ಈ <ph name="DEVICE_TYPE" /> ಅನ್ನು ಅನ್‌ಲಾಕ್ ಮಾಡುತ್ತದೆ. ನೀವು ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ Smart Lock ಅನ್ನು ಆಫ್ ಮಾಡಬಹುದು.</translation>
 <translation id="2489918096470125693">&amp;ಫೋಲ್ಡರ್ ಅನ್ನು ಸೇರಿಸಿ...</translation>
 <translation id="249113932447298600">ಕ್ಷಮಿಸಿ, ಈ ಸಮಯದಲ್ಲಿ <ph name="DEVICE_LABEL" /> ಸಾಧನಕ್ಕೆ ಬೆಂಬಲ ದೊರೆಯುತ್ತಿಲ್ಲ.</translation>
 <translation id="249303669840926644">ನೋಂದಣಿ ಪೂರೈಸಲಾಗಲಿಲ್ಲ</translation>
@@ -1761,6 +1762,7 @@
 <translation id="3627588569887975815">ಲಿಂಕ್‌ ಅನ್ನು ಅಜ್ಞಾ&amp;ತ ವಿಂಡೋದಲ್ಲಿ ತೆರೆಯಿರಿ</translation>
 <translation id="3627671146180677314">Netscape ಪ್ರಮಾಣಪತ್ರ ಅಪ್‌ಡೇಟ್‌‌ ಸಮಯ</translation>
 <translation id="3627879631695760395"><ph name="APP" /> ಅನ್ನು ಇನ್‌ಸ್ಟಾಲ್‌ ಮಾಡಿ...</translation>
+<translation id="3629631988386925734">Smart Lock ಸಕ್ರಿಯಗೊಳಿಸಲು ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್ ನಮೂದಿಸಿ. ಮುಂದಿನ ಬಾರಿ, ನಿಮ್ಮ ಫೋನ್ ನಿಮ್ಮ <ph name="DEVICE_TYPE" /> ಅನ್ನು ಅನ್‌ಲಾಕ್ ಮಾಡುತ್ತದೆ. ನೀವು ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ Smart Lock ಅನ್ನು ಆಫ್ ಮಾಡಬಹುದು.</translation>
 <translation id="3630132874740063857">ನಿಮ್ಮ ಫೋನ್</translation>
 <translation id="3630995161997703415">ಈ ಸೈಟ್‌ ಅನ್ನು ಯಾವುದೇ ಸಮಯದಲ್ಲಿ ಬಳಸಲು ನಿಮ್ಮ ಶೆಲ್ಫ್‌ಗೆ ಅದನ್ನು ಸೇರಿಸಿ</translation>
 <translation id="3636096452488277381">ಹೇಗಿರುವಿರಿ, <ph name="USER_GIVEN_NAME" />.</translation>
@@ -2106,6 +2108,7 @@
 <translation id="4109135793348361820">ವಿಂಡೋವನ್ನು <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />) ಗೆ ಸರಿಸಿ</translation>
 <translation id="4110490973560452005">ಡೌನ್‌ಲೋಡ್‌‌ ಪೂರ್ಣಗೊಂಡಿದೆ: <ph name="FILE_NAME" />. ಡೌನ್‌ಲೋಡ್‌ ಪಟ್ಟಿಯ ಜಾಗಕ್ಕೆ ಹೋಗಲು Shift+F6 ಅನ್ನು ಒತ್ತಿ.</translation>
 <translation id="4110895898888439383">ಅಧಿಕ ಕಾಂಟ್ರಾಸ್ಟ್ ಮೋಡ್‌ನಲ್ಲಿ ವೆಬ್ ಅನ್ನು ಬ್ರೌಸ್ ಮಾಡಿ</translation>
+<translation id="4112221174576828331">ಚಿತ್ರದಲ್ಲಿ ಉಪಯುಕ್ತ ವಿವರಣೆಯು ಇಲ್ಲದಿದ್ದರೆ, Chrome ನಿಮಗಾಗಿ ಒಂದು ವಿವರಣೆಯನ್ನು ಒದಗಿಸುತ್ತದೆ. ಚಿತ್ರಗಳನ್ನು Google ಸ್ಕ್ಯಾನ್ ಮಾಡಿದೆ.</translation>
 <translation id="4115002065223188701">ನೆಟ್‌ವರ್ಕ್ ವ್ಯಾಪ್ತಿಯ ಹೊರಗಿದೆ</translation>
 <translation id="4115080753528843955">ರಕ್ಷಿತ ವಿಷಯಕ್ಕೆ ಪ್ರವೇಶವನ್ನು ದೃಢೀಕರಿಸುವ ಉದ್ದೇಶಕ್ಕಾಗಿ ಕೆಲವು ವಿಷಯ ಸೇವೆಗಳು ಅನನ್ಯ ಗುರುತಿಸುವಿಕೆಗಳನ್ನು ಬಳಸುತ್ತವೆ</translation>
 <translation id="4118579674665737931">ಸಾಧನವನ್ನು ರೀಬೂಟ್ ಮಾಡಿ ಪುನಃ ಪ್ರಯತ್ನಿಸಿ.</translation>
@@ -2659,6 +2662,7 @@
 <translation id="4998873842614926205">ಬದಲಾವಣೆಗಳನ್ನು ದೃಢೀಕರಿಸಿ</translation>
 <translation id="5000922062037820727">ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ (ಶಿಫಾರಸು ಮಾಡಲಾಗಿದೆ)</translation>
 <translation id="5004584466530475658"><ph name="FILE_COUNT" /> ಹೊಸ ಫೋಟೋಗಳು</translation>
+<translation id="5008936837313706385">ಚಟುವಟಿಕೆ ಹೆಸರು</translation>
 <translation id="5010043101506446253">ಪ್ರಮಾಣಪತ್ರ ಪ್ರಾಧಿಕಾರ</translation>
 <translation id="5010406651457630570">ಕಂಪ್ಯೂಟರ್‌ಗಳು</translation>
 <translation id="5015344424288992913">ಪ್ರಾಕ್ಸಿಯನ್ನು ಪರಿಹರಿಸಲಾಗುತ್ತಿದೆ...</translation>
@@ -2992,6 +2996,7 @@
 <translation id="5507756662695126555">ನಿರಾಕರಣ-ರಹಿತ</translation>
 <translation id="5509693895992845810">&amp;ಇದರಂತೆ ಉಳಿಸು...</translation>
 <translation id="5509914365760201064">ನೀಡುವವರು: <ph name="CERTIFICATE_AUTHORITY" /></translation>
+<translation id="5510775624736435856">Google ನಿಂದ ಚಿತ್ರದ ವಿವರಣೆಗಳನ್ನು ಪಡೆಯಿರಿ</translation>
 <translation id="5511379779384092781">ತುಂಬಾ ಸಣ್ಣದು</translation>
 <translation id="5511823366942919280">ಈ ಸಾಧನವನ್ನು ನೀವು "ಶಾರ್ಕ್‌" ನಂತೆ ಹೊಂದಿಸಲು ಖಚಿತವಾಗಿ ಬಯಸುವಿರಾ?</translation>
 <translation id="5512653252560939721">ಬಳಕೆದಾರರ ಪ್ರಮಾಣಪತ್ರವು ಹಾರ್ಡ್‌ವೇರ್-ಹಿಂತಿರುಗಿಸಿರುವುದಾಗಿರಬೇಕು.</translation>
@@ -3573,6 +3578,7 @@
 <translation id="6341850831632289108">ನಿಮ್ಮ ದೈಹಿಕ ಸ್ಥಾನವನ್ನು ಪತ್ತೆಹಚ್ಚಿ</translation>
 <translation id="6344170822609224263">ನೆಟ್‌ವರ್ಕ್ ಸಂಪರ್ಕಗಳ ಪಟ್ಟಿಯನ್ನು ಪ್ರವೇಶಿಸಿ</translation>
 <translation id="6346310558342052870">ಪ್ರವೇಶ ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ</translation>
+<translation id="6349101878882523185"><ph name="APP_NAME" /> ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಿ</translation>
 <translation id="6349170655202535379">ಸಿಂಕ್ ಕಾರ್ಯನಿರ್ವಹಿಸುತ್ತಿಲ್ಲ. ಸೈನ್ ಔಟ್ ಮಾಡಲು ಹಾಗೂ ಮರಳಿ ಸೈನ್ ಇನ್ ಮಾಡಲು ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="6351063337294363751">ಈ ಮೆನುವಿನಿಂದ ನಿಮ್ಮ ಬ್ರೌಸಿಂಗ್ ಡೇಟಾವನ್ನು ನೀವು ತೆರವುಗೊಳಿಸಬಹುದು</translation>
 <translation id="6352773953037195952">ಹೆಚ್ಚು</translation>
@@ -3989,6 +3995,7 @@
 <translation id="6990081529015358884">ನಿಮ್ಮ ಬಳಿ ಇದ್ದ ಸ್ಥಳ ಖಾಲಿಯಾಗಿದೆ</translation>
 <translation id="6990778048354947307">ಗಾಢ ಥೀಮ್</translation>
 <translation id="6991665348624301627">ಗಮ್ಯಸ್ಥಾನವನ್ನು ಆಯ್ಕೆಮಾಡಿ</translation>
+<translation id="6997642619627518301"><ph name="NAME_PH" /> - ಚಟುವಟಿಕೆ ಲಾಗ್</translation>
 <translation id="6997707937646349884">ನಿಮ್ಮ ಸಾಧನಗಳಲ್ಲಿ:</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> ಫೋಲ್ಡರ್‌ಗಳನ್ನು ಆಯ್ಕೆಮಾಡಲಾಗಿದೆ</translation>
 <translation id="6998793565256476099">ವೀಡಿಯೊ ಸಂವಾದ ನಡೆಸಲು ಸಾಧನವನ್ನು ನೋಂದಾಯಿಸಿ</translation>
@@ -4292,6 +4299,7 @@
 <translation id="7456142309650173560">dev</translation>
 <translation id="7456847797759667638">ಸ್ಥಳವನ್ನು ತೆರೆ...</translation>
 <translation id="7461924472993315131">ಪಿನ್</translation>
+<translation id="746216226901520237">ಮುಂದಿನ ಬಾರಿ, ನಿಮ್ಮ ಫೋನ್ ನಿಮ್ಮ <ph name="DEVICE_TYPE" /> ಅನ್ನು ಅನ್‌ಲಾಕ್ ಮಾಡುತ್ತದೆ. ನೀವು ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ Smart Lock ಅನ್ನು ಆಫ್ ಮಾಡಬಹುದು.</translation>
 <translation id="7463006580194749499">ವ್ಯಕ್ತಿಯನ್ನು ಸೇರಿಸು</translation>
 <translation id="7465778193084373987">Netscape ಪ್ರಮಾಣಪತ್ರ ಹಿಂತೆಗೆದುಕೊಳ್ಳುವಿಕೆ URL</translation>
 <translation id="7469894403370665791">ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಈ ನೆಟ್‌ವರ್ಕ್‌ಗೆ ಸಂಪರ್ಕಿಸಿ</translation>
@@ -4368,6 +4376,7 @@
 <translation id="7580671184200851182">ಎಲ್ಲಾ ಸ್ಪೀಕರ್‌ಗಳ ಮೂಲಕ ಒಂದೇ ಆಡಿಯೋ ಪ್ಲೇ ಮಾಡಿ (ಮೋನೋ ಆಡಿಯೋ)</translation>
 <translation id="7581462281756524039">ಕ್ಲೀನಪ್ ಪರಿಕರ</translation>
 <translation id="7582582252461552277">ಈ ನೆಟ್‌ವರ್ಕ್‌ಗೆ ಆದ್ಯತೆ ನೀಡಿ</translation>
+<translation id="7583948862126372804">ಎಣಿಕೆ</translation>
 <translation id="7586498138629385861">Chrome Apps ತೆರೆದಿರುವಾಗ Chrome ರನ್ ಆಗುತ್ತಲೇ ಇರುತ್ತದೆ.</translation>
 <translation id="7589461650300748890">ವಾಹ್, ಇಲ್ಲ. ಜಾಗರೂಕರಾಗಿರಿ.</translation>
 <translation id="7589661784326793847">ಸ್ವಲ್ಪ ಕಾಯಿರಿ</translation>
@@ -5477,6 +5486,7 @@
 <translation id="93393615658292258">ಪಾಸ್‌ವರ್ಡ್ ಮಾತ್ರ</translation>
 <translation id="934503638756687833">ಅಗತ್ಯವಿದ್ದರೆ, ಇಲ್ಲಿ ಪಟ್ಟಿ ಮಾಡಿರದ ಐಟಂಗಳನ್ನು ಸಹ ತೆಗೆದುಹಾಕಲಾಗುತ್ತದೆ. &lt;a href="<ph name="URL" />"&gt;ಅನಪೇಕ್ಷಿತ ಸಾಫ್ಟ್‌ವೇರ್‌ನಿಂದ ಸಂರಕ್ಷಣೆ&lt;/a&gt; ಕುರಿತು Chrome ಗೌಪ್ಯತೆ ಬಿಳಿ ಹಾಳೆಯಲ್ಲಿ ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ.</translation>
 <translation id="935490618240037774">ನಿಮ್ಮ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು, ಇತಿಹಾಸ, ಪಾಸ್‌ವರ್ಡ್‌ಗಳು ಮತ್ತು ಇತರ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ನಿಮ್ಮ Google ಖಾತೆಗೆ ಸಿಂಕ್ ಮಾಡಲಾಗುತ್ತದೆ ಈ ಮೂಲಕ ಅವುಗಳನ್ನು ನಿಮ್ಮ ಎಲ್ಲಾ ಸಾಧನಗಳಲ್ಲಿ ನೀವು ಬಳಸಬಹುದು.</translation>
+<translation id="935854577147268200">Smart Lock ಫೋನ್ ಬದಲಾಗಿದೆ. Smart Lock ಅನ್ನು ಅಪ್‌ಡೇಟ್ ಮಾಡಲು ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್ ನಮೂದಿಸಿ. ಮುಂದಿನ ಬಾರಿ, ನಿಮ್ಮ ಫೋನ್ ನಿಮ್ಮ <ph name="DEVICE_TYPE" /> ಅನ್ನು ಅನ್‌ಲಾಕ್ ಮಾಡುತ್ತದೆ. ನೀವು ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ Smart Lock ಅನ್ನು ಆಫ್ ಮಾಡಬಹುದು</translation>
 <translation id="936801553271523408">ಸಿಸ್ಟಂ ವಿಶ್ಲೇಷಣಾತ್ಮಕ ಡೇಟಾ</translation>
 <translation id="93766956588638423">ವಿಸ್ತರಣೆ ದುರಸ್ತಿಪಡಿಸಿ</translation>
 <translation id="938339467127511841">Linux (ಬೀಟಾ) ಸಂಗ್ರಹಣೆ</translation>

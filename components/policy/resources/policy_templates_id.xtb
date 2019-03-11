@@ -423,6 +423,7 @@ Secara default, tidak ada mode buka kunci cepat yang tersedia untuk perangkat ya
       Jika setelan ini diaktifkan, layanan perlindungan sandi akan mengambil sidik jari sandi di URL tersebut untuk tujuan deteksi penggunaan ulang sandi.
       Jika setelan ini dinonaktifkan atau tidak disetel, layanan perlindungan sandi hanya akan mengambil sidik jari sandi di https://accounts.google.com.
       Kebijakan ini hanya tersedia pada instance Windows yang dihubungkan ke domain <ph name="MS_AD_NAME" />, atau instance Windows 10 Pro atau Enterprise yang terdaftar untuk pengelolaan perangkat.</translation>
+<translation id="1919802376548418720">Gunakan kebijakan KDC untuk mendelegasikan kredensial.</translation>
 <translation id="1920046221095339924">Mengizinkan sesi yang dikelola di perangkat</translation>
 <translation id="1929709556673267855">Memberikan konfigurasi untuk printer perusahaan yang terkait dengan perangkat.
 
@@ -586,6 +587,15 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
 <translation id="2231817271680715693">Impor histori browseran dari browser default saat pertama kali dijalankan</translation>
 <translation id="2236488539271255289">Jangan izinkan situs mana pun menyetel data lokal</translation>
 <translation id="2240879329269430151">Memungkinkan Anda menentukan apakah situs diizinkan untuk menampilkan pop-up. Menampilkan pop-up dapat diizinkan atau diblokir untuk semua situs. Jika kebijakan ini tidak disetel, 'BlockPopups' akan digunakan dan pengguna dapat mengubahnya.</translation>
+<translation id="2265214338421787313">Kebijakan ini memungkinkan admin menentukan bahwa halaman dapat menampilkan pop-up saat kontennya dibuka.
+
+      Jika kebijakan ini ditetapkan ke aktif, halaman diizinkan menampilkan pop-up saat kontennya dibuka.
+
+      Jika kebijakan ini ditetapkan ke tidak aktif, atau tidak ditetapkan, halaman tidak diizinkan menampilkan pop-up saat kontennya dibuka, sesuai spesifikasi (https://html.spec.whatwg.org/#apis-for-creating-and-navigating-browsing-contexts-by-name).
+
+      Kebijakan ini akan dihapus pada Chrome 82.
+
+      Buka https://www.chromestatus.com/feature/5989473649164288 .</translation>
 <translation id="2269319728625047531">Aktifkan menampilkan Izin Sinkronisasi saat login</translation>
 <translation id="2274864612594831715">Kebijakan ini mengonfigurasi pengaktifkan keyboard virtual sebagai perangkat masukan di ChromeOS. Pengguna tidak dapat mengganti kebijakan ini.
 
@@ -2193,6 +2203,7 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 <translation id="602728333950205286">URL sekejap penyedia penelusuran default</translation>
 <translation id="603410445099326293">Parameter untuk URL yang disarankan yang menggunakan POST</translation>
 <translation id="6034341625190551415">Mengontrol sesi publik dan jenis akun kios.</translation>
+<translation id="6034603289689965535">Mengizinkan halaman menampilkan pop-up saat kontennya dibuka</translation>
 <translation id="6036523166753287175">Mengaktifkan firewall traversal dari host akses jarak jauh</translation>
 <translation id="6070667616071269965">Tata letak keyboard layar login perangkat</translation>
 <translation id="6074963268421707432">Jangan izinkan situs apa pun menampilkan pemberitahuan desktop</translation>

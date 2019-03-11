@@ -446,6 +446,7 @@
       Če je ta nastavitev omogočena, bo storitev za zaščito gesel na teh URL-jih zajela prstni odtis gesla in ga uporabila za odkrivanje vnovične uporabe enakega gesla.
       Če je ta nastavitev onemogočena ali ni nastavljena, bo storitev za zaščito gesel prstni odtis gesla zajela samo na naslovu https://accounts.google.com.
       Ta pravilnik je na voljo samo v primerkih s sistemom Windows, ki so pridruženi v domeno <ph name="MS_AD_NAME" />, ali primerkih s sistemom Windows 10 Pro ali Enterprise, ki so včlanjeni v upravljanje naprav.</translation>
+<translation id="1919802376548418720">Uporabi pravilnik KDC za delegiranje poverilnic.</translation>
 <translation id="1920046221095339924">Omogočanje upravljane seje v napravi</translation>
 <translation id="1929709556673267855">Posreduje konfiguracije za tiskalnike v podjetjih, vezane na naprave.
 
@@ -613,6 +614,15 @@
 <translation id="2240879329269430151">Omogoča nastavitev, ali je spletnim mestom dovoljeno prikazovati pojavna okna. Prikazovanje pojavnih oken je mogoče dovoliti ali zavrniti za vsa spletna mesta.
 
          Če ta pravilnik ni nastavljen, bo uporabljen pravilnik »BlockPopups« in uporabnik ga bo lahko spremenil.</translation>
+<translation id="2265214338421787313">Skrbnik lahko s tem pravilnikom določi, da lahko stran med razkladanjem prikazuje pojavna okna
+
+      Če je ta pravilnik omogočen, je stranem med razkladanjem dovoljeno prikazovanje pojavnih oken.
+
+      Če je pravilnik onemogočen ali ni nastavljen, stranem med razkladanjem ni dovoljeno prikazovanje pojavnih oken, kar je v skladu s specifikacijo (https://html.spec.whatwg.org/#apis-for-creating-and-navigating-browsing-contexts-by-name).
+
+      Ta pravilnik bo odstranjen v različici Chrome 82.
+
+      Glejte https://www.chromestatus.com/feature/5989473649164288 .</translation>
 <translation id="2269319728625047531">Omogočanje prikaza soglasja za sinhronizacijo med prijavo</translation>
 <translation id="2274864612594831715">Ta pravilnik nastavi omogočanje navidezne tipkovnice kot vhodne naprave v sistemu Chrome OS. Uporabniki tega pravilnika ne morejo preglasiti.
 
@@ -2284,6 +2294,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 <translation id="602728333950205286">Privzeti URL iskalnika za dinamično iskanje</translation>
 <translation id="603410445099326293">Parametri za URL predloga, ki uporablja POST</translation>
 <translation id="6034341625190551415">Nadzira vrste računov za javne seje in kiosk.</translation>
+<translation id="6034603289689965535">Strani med razkladanjem dovoli prikazovanje pojavnih oken</translation>
 <translation id="6036523166753287175">Omogoči prehod skozi požarni zid iz gostitelja za oddaljeni dostop</translation>
 <translation id="6070667616071269965">Postavitve tipkovnice na zaslonu za prijavo v napravi</translation>
 <translation id="6074963268421707432">Nobenemu spletnemu mestu ne dovoli, da pokaže namizna obvestila</translation>

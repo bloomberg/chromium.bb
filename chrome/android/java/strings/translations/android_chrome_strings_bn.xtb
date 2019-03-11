@@ -114,7 +114,7 @@
 <translation id="1853692000353488670">নতুন ছদ্মবেশী ট্যাব</translation>
 <translation id="1856325424225101786">লাইট মোড রিসেট করবেন?</translation>
 <translation id="1868024384445905608">Chrome এখন আরও দ্রুত ফাইল ডাউনলোড করে</translation>
-<translation id="1869137256605757565">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> ট্যাব}one{<ph name="TABS_COUNT_MANY" /> ট্যাব}other{<ph name="TABS_COUNT_MANY" /> ট্যাব}}</translation>
+<translation id="1869137256605757565">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" />টি ট্যাব}one{<ph name="TABS_COUNT_MANY" />টি ট্যাব}other{<ph name="TABS_COUNT_MANY" />টি ট্যাব}}</translation>
 <translation id="1880072593381090678">Chrome এর জনপ্রিয় পৃষ্ঠাগুলি</translation>
 <translation id="1883903952484604915">আমার ফাইল</translation>
 <translation id="1887786770086287077">এই ডিভাইসে লোকেশন অ্যাক্সেস বন্ধ আছে। চালু করতে <ph name="BEGIN_LINK" />Android সেটিংসে<ph name="END_LINK" /> যান।</translation>
@@ -149,6 +149,7 @@
 <translation id="204321170514947529"><ph name="APP_NAME" /> অ্যাপের ডেটা Chrome ব্রাউজারেও আছে</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB অন্যান্য অ্যাপ্লিকেশান</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
+<translation id="2056878612599315956">সাইট পজ করা আছে</translation>
 <translation id="2063713494490388661">সার্চ করতে আলতো চাপুন</translation>
 <translation id="2079545284768500474">পূর্বাবস্থায় ফিরুন</translation>
 <translation id="2082238445998314030"><ph name="TOTAL_RESULTS" /> এর মধ্যে <ph name="RESULT_NUMBER" /> টি ফলাফল</translation>
@@ -314,7 +315,7 @@
 <translation id="3298243779924642547">লাইট</translation>
 <translation id="3303414029551471755">সামগ্রী ডাউনলোড করার জন্য অগ্রসর হতে চান?</translation>
 <translation id="3306398118552023113">Chrome-এ এই অ্যাপটি চলছে</translation>
-<translation id="3315103659806849044">আপনি এখন আপনার সিঙ্ক এবং Google পরিষেবার সেটিংস কাস্টমাইজ করছেন। সিঙ্ক চালু করা শেষ করতে স্ক্রিনের নিচের দিকে থাকা কনফার্ম করুন বোতামটিতে ট্যাপ করুন। উপরে নেভিগেট করুন</translation>
+<translation id="3315103659806849044">আপনি এখন আপনার সিঙ্ক এবং Google পরিষেবার সেটিংস কাস্টমাইজ করছেন। স্ক্রিনের নিচের দিকে থাকা 'কনফার্ম করুন' বোতামে ট্যাপ করে সিঙ্ক চালু দিন। উপরে নেভিগেট করুন</translation>
 <translation id="3328801116991980348">সাইট তথ্য</translation>
 <translation id="3333961966071413176">সব পরিচিতি</translation>
 <translation id="3341058695485821946">দেখুন আপনি কত ডেটা সাশ্রয় করেছেন</translation>
@@ -779,6 +780,7 @@
 <translation id="6709133671862442373">সংবাদ</translation>
 <translation id="6710213216561001401">পূর্ববর্তী</translation>
 <translation id="6712388303105732168">Google-এ 'এর মত আরও' বোতাম ব্যবহার করে এই ধরণের আরও কিছু দেখুন</translation>
+<translation id="671481426037969117">আপনার <ph name="FQDN" /> টাইমারের মেয়াদ পেরিয়ে গেছে। আগামীকাল আবার এটি শুরু হবে।</translation>
 <translation id="6738867403308150051">ডাউনলোড হচ্ছে...</translation>
 <translation id="6746124502594467657">নিচে যান</translation>
 <translation id="6766622839693428701">বন্ধ করতে নিচের দিকে সোয়াইপ করুন।</translation>
@@ -825,7 +827,7 @@
 <translation id="7031882061095297553">এতে সিঙ্ক করুন</translation>
 <translation id="7032663816368481562">আপনি অ্যাড্রেস বারে 'এর মত আরও' <ph name="ICON" />-এ ট্যাপ করলে, প্রাসঙ্গিক পৃষ্ঠার কুইক লিঙ্কগুলি দেখানো হয়। আপনার দেখা পৃষ্ঠাগুলির ইউআরএল Google-এ পাঠানো হয়।</translation>
 <translation id="7034608350006174882">Google Pay ব্যবহার করে এমন কার্ড এবং ঠিকানা</translation>
-<translation id="7037082443972906537">নাম নেই</translation>
+<translation id="7037082443972906537">নামটি উপলভ্য নেই</translation>
 <translation id="7053983685419859001">ব্লক করুন</translation>
 <translation id="7055152154916055070">রিডাইরেক্ট ব্লক করা হয়েছে:</translation>
 <translation id="7062545763355031412">স্বীকার করে অ্যাকাউন্টগুলি সুইচ করুন</translation>

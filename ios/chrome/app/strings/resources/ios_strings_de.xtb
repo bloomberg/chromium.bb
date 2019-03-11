@@ -155,6 +155,7 @@
 <translation id="3324193307694657476">Adresse 2</translation>
 <translation id="3329904751041170572">Verbindung zum Server konnte nicht hergestellt werden.</translation>
 <translation id="3335947283844343239">Geschlossenen Tab wieder öffnen</translation>
+<translation id="3371831930909698441">Übersetzer ist verfügbar. Optionen sind unten auf dem Bildschirm verfügbar.</translation>
 <translation id="3393920035788932672">Pop-ups erlaubt</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> Min.</translation>
 <translation id="3448016392200048164">Geteilte Ansicht</translation>
@@ -353,9 +354,11 @@ Ihre Daten wurden am <ph name="TIME" /> mit Ihrer Synchronisierungspassphrase ve
 <translation id="6445051938772793705">Land</translation>
 <translation id="6445981559479772097">Nachricht gesendet</translation>
 <translation id="6464071786529933911">In neuem Inkognito-Tab öffnen</translation>
+<translation id="6476800141292307438">Die Seite wird in die Sprache <ph name="LANGUAGE" /> übersetzt. Optionen sind unten auf dem Bildschirm verfügbar.</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> Lesezeichen gelöscht</translation>
 <translation id="6513773942555305766">Von Chrome vorgeschlagenes Passwort: <ph name="SUGGESTED_PASSWORD" /></translation>
 <translation id="6541915733953096570">Für die letzte Stunde</translation>
+<translation id="6610002944194042868">Übersetzungsoptionen</translation>
 <translation id="6642362222295953972">Zu vorhandenem Tab wechseln</translation>
 <translation id="6643016212128521049">Löschen</translation>
 <translation id="6656103420185847513">Ordner bearbeiten</translation>
@@ -376,6 +379,7 @@ Ihre Daten wurden am <ph name="TIME" /> mit Ihrer Synchronisierungspassphrase ve
 <translation id="6903907808598579934">Synchronisierung aktivieren</translation>
 <translation id="6914583639806229067">Nach dem kopierten Bild suchen</translation>
 <translation id="6914783257214138813">Ihre Passwörter sind für jeden zugänglich, der die exportierte Passwortdatei aufrufen kann.</translation>
+<translation id="6944369514868857500">Anderes Konto auswählen</translation>
 <translation id="6945221475159498467">Auswählen</translation>
 <translation id="6973630695168034713">Ordner</translation>
 <translation id="6979158407327259162">Google Drive</translation>
@@ -455,6 +459,7 @@ Ihre Daten wurden am <ph name="TIME" /> mit Ihrer Synchronisierungspassphrase ve
 <translation id="8281781826761538115">Standard: <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8328777765163860529">Alle schließen</translation>
 <translation id="8381750437846184350">Festlegen, wie Google Ihren Browserverlauf nutzt, um die Suche, Werbung und andere Google-Dienste zu personalisieren</translation>
+<translation id="8407669440184693619">Keine Passwörter für diese Website gefunden</translation>
 <translation id="842017693807136194">Angemeldet mit</translation>
 <translation id="8428045167754449968">Stadt/Ort</translation>
 <translation id="8428213095426709021">Einstellungen</translation>

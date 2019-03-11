@@ -149,6 +149,7 @@
 <translation id="204321170514947529">Pārlūkā Chrome ir arī “<ph name="APP_NAME" />” dati</translation>
 <translation id="2045104531052923016">Citas lietotnes: <ph name="GIGABYTES" /> GB</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
+<translation id="2056878612599315956">Vietne apturēta</translation>
 <translation id="2063713494490388661">Pieskarties, lai meklētu</translation>
 <translation id="2079545284768500474">Atsaukt</translation>
 <translation id="2082238445998314030"><ph name="RESULT_NUMBER" />. rezultāts no <ph name="TOTAL_RESULTS" /></translation>
@@ -777,6 +778,7 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="6709133671862442373">Ziņas</translation>
 <translation id="6710213216561001401">Iepriekšējais</translation>
 <translation id="6712388303105732168">Skatīt līdzīgus Google ieteikumus, izmantojot pogu Līdzīgi vienumi</translation>
+<translation id="671481426037969117">Jūsu lietotnes <ph name="FQDN" /> taimera laiks ir beidzies. Tas atkal sāksies rīt.</translation>
 <translation id="6738867403308150051">Notiek lejupielāde…</translation>
 <translation id="6746124502594467657">Pārvietot uz leju</translation>
 <translation id="6766622839693428701">Velciet uz leju, lai aizvērtu.</translation>

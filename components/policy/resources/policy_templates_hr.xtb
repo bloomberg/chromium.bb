@@ -425,6 +425,7 @@
       Ako je ta postavka omogućena, usluga za zaštitu zaporke na tim će URL-ovima snimati otisak prsta zaporke u svrhu otkrivanja ponovne upotrebe zaporke.
       Ako se postavka onemogući ili ne postavi, usluga za zaštitu zaporke otisak prsta zaporke snimat će samo na stranici https://accounts.google.com.
       Pravilo je dostupno samo na instancama Windowsa koje su pridružene domeni <ph name="MS_AD_NAME" /> ili instancama Windowsa 10 Pro ili Enterprise prijavljenim za upravljanje uređajima.</translation>
+<translation id="1919802376548418720">Koristi pravila KDC-a za dodjeljivanje vjerodajnica.</translation>
 <translation id="1920046221095339924">Dopusti upravljanu sesiju na uređaju</translation>
 <translation id="1929709556673267855">Pruža konfiguracije za pisače tvrtke koji su povezani s uređajima.
 
@@ -590,6 +591,15 @@
 <translation id="2231817271680715693">Uvoz povijesti pregledavanja iz zadanog preglednika pri prvom pokretanju</translation>
 <translation id="2236488539271255289">Ne dopusti nijednoj web-lokaciji postavljanje lokalnih podataka</translation>
 <translation id="2240879329269430151">Omogućuje da postavite smiju li web-lokacije prikazivati skočne prozore. Prikazivanje skočnih prozora može biti dopušteno za sve web-lokacije ili odbijeno za sve web-lokacije. Ako to pravilo nije postavljeno, upotrebljavat će se pravilo "BlockPopups", a korisnik će to moći promijeniti.</translation>
+<translation id="2265214338421787313">Ovo pravilo omogućuje administratoru da odredi da stranica može prikazivati skočne prozore tijekom unloadinga.
+
+      Kad se to pravilo postavi na Enabled, stranice mogu prikazivati skočne prozore tijekom unloadinga.
+
+      Kad se to pravilo postavi na Disabled ili se ne postavi, stranice ne mogu prikazivati skočne prozore tijekom unloadinga, u skladu sa specifikacijom (https://html.spec.whatwg.org/#apis-for-creating-and-navigating-browsing-contexts-by-name).
+
+      To će se pravilo ukloniti u Chromeu 82.
+
+      Pročitajte https://www.chromestatus.com/feature/5989473649164288</translation>
 <translation id="2269319728625047531">Omogući prikaz pristanka na sinkronizaciju tijekom prijave</translation>
 <translation id="2274864612594831715">To pravilo konfigurira omogućivanje virtualne tipkovnice kao uređaja za unos na OS-u Chrome. Korisnici ne mogu nadjačati to pravilo.
 
@@ -2199,6 +2209,7 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
 <translation id="602728333950205286">Instant URL zadanog davatelja usluge pretraživanja</translation>
 <translation id="603410445099326293">Parametri URL-a za prijedloge koji upotrebljava POST</translation>
 <translation id="6034341625190551415">Upravlja javnom sesijom i vrstama računa za kiosk.</translation>
+<translation id="6034603289689965535">Omogućuje stranici da prikazuje skočne prozore tijekom unloadinga</translation>
 <translation id="6036523166753287175">Omogući prijelaz vatrozida iz hosta za daljinski pristup</translation>
 <translation id="6070667616071269965">Rasporedi tipkovnice za zaslon za prijavu na uređaju</translation>
 <translation id="6074963268421707432">Nemoj dopustiti nijednoj web-lokaciji da prikazuje obavijesti radne površine</translation>

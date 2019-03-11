@@ -155,6 +155,7 @@
 <translation id="3324193307694657476">Endereço 2</translation>
 <translation id="3329904751041170572">Não foi possível se conectar ao servidor.</translation>
 <translation id="3335947283844343239">Reabrir guia fechada</translation>
+<translation id="3371831930909698441">Tradução disponível. Opções disponíveis perto da parte inferior da tela.</translation>
 <translation id="3393920035788932672">Pop-ups permitidos</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> minutos</translation>
 <translation id="3448016392200048164">Visualização dividida</translation>
@@ -353,9 +354,11 @@ Seus dados foram criptografados com sua senha longa de sincronização no dia <p
 <translation id="6445051938772793705">País</translation>
 <translation id="6445981559479772097">Mensagem enviada.</translation>
 <translation id="6464071786529933911">Abrir em nova guia anônima</translation>
+<translation id="6476800141292307438">Tradução da página para <ph name="LANGUAGE" />. Opções disponíveis na parte inferior da tela.</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> itens excluídos</translation>
 <translation id="6513773942555305766">Senha sugerida pelo Chrome: <ph name="SUGGESTED_PASSWORD" /></translation>
 <translation id="6541915733953096570">Da última hora</translation>
+<translation id="6610002944194042868">Opções de tradução</translation>
 <translation id="6642362222295953972">Alternar para guia existente</translation>
 <translation id="6643016212128521049">Limpar</translation>
 <translation id="6656103420185847513">Editar pasta</translation>
@@ -376,6 +379,7 @@ Seus dados foram criptografados com sua senha longa de sincronização no dia <p
 <translation id="6903907808598579934">Ativar a sincronização</translation>
 <translation id="6914583639806229067">Pesquisar imagem que você copiou</translation>
 <translation id="6914783257214138813">Suas senhas ficarão visíveis para qualquer pessoa que tiver acesso ao arquivo exportado.</translation>
+<translation id="6944369514868857500">Escolher outra conta</translation>
 <translation id="6945221475159498467">Selecionar</translation>
 <translation id="6973630695168034713">Pastas</translation>
 <translation id="6979158407327259162">Google Drive</translation>
@@ -455,6 +459,7 @@ Seus dados foram criptografados com sua senha longa de sincronização no dia <p
 <translation id="8281781826761538115">Padrão: <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8328777765163860529">Fechar todos</translation>
 <translation id="8381750437846184350">Controlar a maneira como o Google usa seu histórico de navegação para personalizar a Pesquisa Google, os anúncios e outros serviços nossos</translation>
+<translation id="8407669440184693619">Nenhuma senha encontrada para este site</translation>
 <translation id="842017693807136194">Conectado com</translation>
 <translation id="8428045167754449968">Cidade</translation>
 <translation id="8428213095426709021">Configurações</translation>

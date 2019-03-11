@@ -446,6 +446,7 @@
       Įgalinus šį nustatymą, taikant slaptažodžio apsaugos paslaugą bus fiksuojamas slaptažodžio kontrolinis kodas šiais URL adresais, siekiant aptikti, kada slaptažodis naudojamas pakartotinai.
       Jei šis nustatymas išjungtas arba nenustatytas, taikant slaptažodžio apsaugos paslaugą slaptažodžio kontrolinis kodas bus užfiksuotas tik adresu https://accounts.google.com.
       Ši politika pasiekiama tik „Windows“ objektuose, kurie susieti su „<ph name="MS_AD_NAME" />“ domenu, arba „Windows 10 Pro“ ar „Enterprise“ objektuose, kurie užregistruoti naudoti įrenginių tvarkymo funkciją.</translation>
+<translation id="1919802376548418720">KDC politikos naudojimas prisijungimo duomenims perduoti.</translation>
 <translation id="1920046221095339924">Įrenginio valdomų seansų leidimas</translation>
 <translation id="1929709556673267855">Nurodoma su įrenginiais susietų įmonės spausdintuvų konfigūracija.
 
@@ -613,6 +614,15 @@
 <translation id="2240879329269430151">Leidžiama nustatyti, ar svetainėse leidžiama rodyti iššokančiuosius langus. Iššokančiųjų langų rodymas gali būti leidžiamas arba draudžiamas visose svetainėse.
 
           Nenustačius šios politikos, bus naudojama „Blokuoti iššokančiuosius langus“ ir naudotojas (-a) galės tai pakeisti.</translation>
+<translation id="2265214338421787313">Pagal šią politiką leidžiama administratoriui nurodyti, kad iškeliant puslapį gali būti rodomi iššokantieji langai.
+
+      Kai politika nustatyta kaip įgalinta, iškeliant puslapius leidžiama rodyti iššokančiuosius langus.
+
+      Kai politika nustatyta kaip išjungta arba nenustatyta, puslapiuose neleidžiama rodyti iššokančiųjų langų, kol jie įkeliami, vadovaujantis specifikacijomis (https://html.spec.whatwg.org/#apis-for-creating-and-navigating-browsing-contexts-by-name).
+
+      Ši politika bus pašalinta 82 versijos „Chrome“.
+
+      Žr. https://www.chromestatus.com/feature/5989473649164288.</translation>
 <translation id="2269319728625047531">Įgalinama sutikimo sinchronizuoti pateiktis prisijungiant</translation>
 <translation id="2274864612594831715">Pagal šią politiką sukonfigūruojamas virtualiosios klaviatūros kaip įvesties įrenginio įgalinimas „Chrome“ OS. Naudotojai negali nepaisyti šios politikos.
 
@@ -2282,6 +2292,7 @@
 <translation id="602728333950205286">Numatytojo paieškos teikėjo intuityviosios paieškos URL</translation>
 <translation id="603410445099326293">Pasiūlymų URL parametrai, kuriuose naudojama POST</translation>
 <translation id="6034341625190551415">Valdoma viešoji sesija ir viešojo terminalo sąskaitų tipai.</translation>
+<translation id="6034603289689965535">Leidžiama puslapiui rodyti iššokančiuosius langus jį iškeliant</translation>
 <translation id="6036523166753287175">Įgalinkite užkardos apėjimą iš nuotolinės prieigos prieglobos</translation>
 <translation id="6070667616071269965">Įrenginio prisijungimo ekrano klaviatūros išdėstymai</translation>
 <translation id="6074963268421707432">Neleisti jokioje svetainėje rodyti darbalaukio pranešimų</translation>

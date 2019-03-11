@@ -425,6 +425,7 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
       Hvis denne indstilling er aktiveret, registrerer tjenesten til adgangskodebeskyttelse fingeraftryk for adgangskoder på disse webadresser med henblik på at registrere genbrug af adgangskoder.
       Hvis denne indstilling er deaktiveret eller ikke er angivet, registrerer tjenesten til adgangskodebeskyttelse kun fingeraftryk for adgangskoder på https://accounts.google.com.
       Denne politik er kun tilgængelig for Windows-forekomster, der er knyttet til et <ph name="MS_AD_NAME" />-domæne, eller Windows 10 Pro- eller Enterprise-forekomster, der er tilmeldt administration af enheder.</translation>
+<translation id="1919802376548418720">Brug KDC-politik til at overdrage loginoplysninger.</translation>
 <translation id="1920046221095339924">Tillad administreret session på enheden</translation>
 <translation id="1929709556673267855">Angiver konfigurationer af virksomhedsprintere, der er knyttet til enheder.
 
@@ -590,6 +591,15 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="2231817271680715693">Import af browseroversigt fra standardbrowser ved første visning</translation>
 <translation id="2236488539271255289">Tillad ikke, at websites angiver lokale data</translation>
 <translation id="2240879329269430151">Giver dig mulighed for at bestemme, om websites må vise pop op-vinduer. Visning af pop op-vinduer kan enten være tilladt for alle websites eller nægtet for alle websites. Hvis denne politik ikke angives, anvendes "BlockPopups", og brugeren vil kunne ændre den.</translation>
+<translation id="2265214338421787313">Denne politik tillader, at en administrator kan angive en side til at vise pop op-vinduer, når den unloades.
+
+      Når politikken er angivet som aktiveret, har sider tilladelse til at vise pop op-vinduer, når de unloades.
+
+      Når politikken er angivet som deaktiveret eller ikke er konfigureret, har sider ikke tilladelse til at vise pop op-vinduer, når de unloades, i henhold til specifikationerne (https://html.spec.whatwg.org/#apis-for-creating-and-navigating-browsing-contexts-by-name).
+
+      Denne politik fjernes i Chrome 82.
+
+      Gå til https://www.chromestatus.com/feature/5989473649164288.</translation>
 <translation id="2269319728625047531">Aktivér visning af samtykke til synkronisering under login</translation>
 <translation id="2274864612594831715">Denne politik konfigurerer aktiveringen af det virtuelle tastatur som inputenhed i ChromeOS. Brugere kan ikke tilsidesætte denne politik.
 
@@ -2200,6 +2210,7 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
 <translation id="602728333950205286">Direkte webadresse til standardsøgemaskinen</translation>
 <translation id="603410445099326293">Parametre for forslagswebadresser, som anvender POST</translation>
 <translation id="6034341625190551415">Styrer offentlige kontotyper og terminalkontotyper.</translation>
+<translation id="6034603289689965535">Tillader, at en side viser pop op-vinduer under indlæsning</translation>
 <translation id="6036523166753287175">Aktiver gennemgang af firewall fra vært for fjernadgang</translation>
 <translation id="6070667616071269965">Tastaturlayouts for loginskærme på enheder</translation>
 <translation id="6074963268421707432">Tillad ikke, at websites viser skrivebordsunderretninger</translation>

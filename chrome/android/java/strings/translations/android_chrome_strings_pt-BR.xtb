@@ -149,6 +149,7 @@
 <translation id="204321170514947529">O app <ph name="APP_NAME" /> também tem dados no Chrome</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB de outros apps</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
+<translation id="2056878612599315956">Site pausado</translation>
 <translation id="2063713494490388661">Tocar para pesquisar</translation>
 <translation id="2079545284768500474">Desfazer</translation>
 <translation id="2082238445998314030">Resultado <ph name="RESULT_NUMBER" /> de <ph name="TOTAL_RESULTS" /></translation>
@@ -778,6 +779,7 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="6709133671862442373">Notícias</translation>
 <translation id="6710213216561001401">Anterior</translation>
 <translation id="6712388303105732168">Veja mais páginas do Google como esta usando o botão "Mais opções semelhantes"</translation>
+<translation id="671481426037969117">Seu timer para <ph name="FQDN" /> chegou ao fim. Ele será iniciado novamente amanhã.</translation>
 <translation id="6738867403308150051">Fazendo o download...</translation>
 <translation id="6746124502594467657">Mover para baixo</translation>
 <translation id="6766622839693428701">Deslize para baixo para fechar.</translation>

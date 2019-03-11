@@ -83,6 +83,7 @@
 <translation id="1348198688976932919">যে সাইট খুলতে চলেছেন সেটিতে বিপজ্জনক অ্যাপ আছে</translation>
 <translation id="1348779747280417563">নাম কনফার্ম করুন</translation>
 <translation id="1357195169723583938">সম্প্রতি ডিভাইসটি কে এবং কখন ব্যবহার করেছেন</translation>
+<translation id="1364822246244961190">এই নীতি ব্লক করা আছে তাই এর মান কাজ করবে না।</translation>
 <translation id="1374468813861204354">প্রস্তাবনাগুলি</translation>
 <translation id="1374692235857187091">Index-4x6 (Postcard)</translation>
 <translation id="1375198122581997741">ভার্সন সম্পর্কে</translation>
@@ -105,6 +106,7 @@
 <translation id="1472675084647422956">আরও দেখান</translation>
 <translation id="147358896496811705">2A0</translation>
 <translation id="1484290072879560759">শিপিং ঠিকানা বেছে নিন</translation>
+<translation id="1492194039220927094">নীতি সংক্রান্ত পুশ:</translation>
 <translation id="1501859676467574491">আপনার Google Account থেকে কার্ড দেখুন</translation>
 <translation id="1507202001669085618">&lt;p&gt;আপনি যদি এমন কোনও ওয়াই-ফাই পোর্টাল ব্যবহার করেন যেখানে অনলাইন হওয়ার জন্য সাইন-ইন করতে হয়, তাহলে এই সমস্যাটি হতে পারে।&lt;/p&gt;
     &lt;p&gt;এই সমস্যার সমাধান করতে, যে পৃষ্ঠাটি খুলতে চান সেটিতে &lt;strong&gt;কানেক্ট করুন&lt;/strong&gt; বোতামে ক্লিক করুন।&lt;/p&gt;</translation>
@@ -125,6 +127,7 @@
 <translation id="1559572115229829303">&lt;p&gt;<ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> এ একটি ব্যক্তিগত সংযোগ স্থাপন করা যায়নি কারণ আপনার ডিভাইসের তারিখ এবং সময় (<ph name="DATE_AND_TIME" />) সঠিক নয়৷&lt;/p&gt;
 
 &lt;p&gt;দয়া করে &lt;strong&gt;সেটিংস&lt;/strong&gt; অ্যাপ্লিকেশানের &lt;strong&gt;সাধারণ&lt;/strong&gt; বিভাগ থেকে তারিখ এবং সময় সংশোধন করুন৷&lt;/p&gt;</translation>
+<translation id="1569487616857761740">মেয়াদ শেষ হওয়ার তারিখ লিখুন</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">এই ওয়েবপৃষ্ঠাটি দেখানোর সময় কোনো সমস্যা হয়েছে।</translation>
 <translation id="1592005682883173041">স্থানীয় ডেটা অ্যাক্সেস</translation>
@@ -161,7 +164,7 @@
 <translation id="1734878702283171397">সিস্টেম প্রশাসকের সাথে যোগাযোগ করে দেখুন।</translation>
 <translation id="1740951997222943430">মেয়াদ শেষ হওয়ার মাসের সঠিক মান লিখুন</translation>
 <translation id="1743520634839655729">পরেরবার আরও দ্রুত পেমেন্ট করা জন্য আপনার কার্ড, নাম এবং বিলিং ঠিকানাটি Google অ্যাকাউন্টে এবং এই ডিভাইসে সেভ করে রাখুন।</translation>
-<translation id="1745880797583122200">আপনার ব্রাউজারটি ম্যানেজ করা হয়েছে</translation>
+<translation id="1745880797583122200">আপনার ব্রাউজারটি ম্যানেজ করা হচ্ছে</translation>
 <translation id="17513872634828108">খোলা ট্যাব</translation>
 <translation id="1753706481035618306">পৃষ্ঠা সংখ্যা</translation>
 <translation id="1763864636252898013">এই সার্ভার প্রমাণ করতে পারেনি যে এটি <ph name="DOMAIN" />; এর নিরাপত্তা সার্টিফিকেটটি আপনার ডিভােইসের নিকট বিশ্বাসযোগ্য নয়। কোনো ভুল কনফিগারেশনের কারণে অথবা কোনো আক্রমণকারী আপনার সংযোগ মাঝপথে আটকে দিচ্ছে বলে এমনটা হতে পারে।</translation>
@@ -496,6 +499,7 @@
 <translation id="3658742229777143148">পুনর্বিবেচনা</translation>
 <translation id="366077651725703012">ক্রেডিট কার্ড আপডেট করুন</translation>
 <translation id="3676592649209844519">ডিভাইস আইডি:</translation>
+<translation id="3677008721441257057">আপনি কি &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt; বোঝাতে চাইছেন?</translation>
 <translation id="3678029195006412963">অনুরোধটি স্বাক্ষরিত করা যায়নি</translation>
 <translation id="3678529606614285348">নতুন ছদ্মবেশী উইন্ডোতে (Ctrl-Shift-N) করে একটি পৃষ্ঠা খুলুন</translation>
 <translation id="3679803492151881375">ক্র্যাশ প্রতিবেদন <ph name="CRASH_TIME" /> এ ক্যাপচার করা হয়েছে, <ph name="UPLOAD_TIME" /> এ আপলোড করা হয়েছে</translation>
@@ -1104,6 +1108,7 @@
 <translation id="7220786058474068424">প্রক্রিয়ায় রয়েছে</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">এই সাইটটিতে ম্যালওয়্যার আছে</translation>
+<translation id="724766306220616965">সতর্কতা, দ্বন্দ্ব</translation>
 <translation id="724975217298816891">আপনার কার্ডের বিবরণ আপডেট করার জন্য মেয়াদ শেষের তারিখ এবং <ph name="CREDIT_CARD" /> এর CVC  লিখুন। আপনি নিশ্চিত করলে, আপনার কার্ডের বিবরণ এই সাইটের সাথে শেয়ার করা হবে।</translation>
 <translation id="7251437084390964440">নেটওয়ার্ক কনফিগারেশন ONC মানদণ্ড মেনে চলছে না। কনফিগারেশনের কিছু অংশ ইমপোর্ট করা নাও হতে পারে৷
 অতিরিক্ত বিবরণ:
@@ -1116,6 +1121,7 @@
 <translation id="7300012071106347854">কোবাল্ট নীল</translation>
 <translation id="7302712225291570345">"<ph name="TEXT" />"</translation>
 <translation id="7309308571273880165"><ph name="CRASH_TIME" />-এ ক্র্যাশ প্রতিবেদন ক্যাপচার করা হয়েছে (ব্যবহারকারীর আপলোডের অনুরোধ করেছেন, এখনও আপলোড করা হয়নি)</translation>
+<translation id="7313965965371928911"><ph name="BEGIN_LINK" />Safe Browsing<ph name="END_LINK" /> সংক্রান্ত সতর্কতা</translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">কানেকশন সহায়তা</translation>
 <translation id="7334320624316649418">&amp;পুনর্বিন্যাসকে আবার করুন</translation>
@@ -1130,7 +1136,7 @@
 <translation id="7381288752349550461">ম্যানেজ করা সেশন ওভাররাইড</translation>
 <translation id="7390545607259442187">কার্ড নিশ্চিত করুন</translation>
 <translation id="7400418766976504921">URL</translation>
-<translation id="7403591733719184120">আপনার <ph name="DEVICE_NAME" /> ম্যানেজ করা হয়েছে</translation>
+<translation id="7403591733719184120">আপনার <ph name="DEVICE_NAME" /> ম্যানেজ করা হচ্ছে</translation>
 <translation id="7407424307057130981">&lt;p&gt;আপনার Windows কম্পিউটারে Superfish সফ্টওয়্যারটি ইনস্টল করা থাকলে এই সমস্যাটি হবে।&lt;/p&gt;
       &lt;p&gt;ইন্টারনেটে কানেক্ট করার জন্য এই সফ্টওয়্যারটি সাময়িকভাবে বন্ধ রাখতে এই ধাপগুলি অনুসরণ করুন। এর জন্য অ্যাডমিনিস্ট্রেটরের সুবিধা থাকতে হবে।&lt;/p&gt;
       &lt;ol&gt;
@@ -1310,7 +1316,7 @@
 <translation id="825929999321470778">সেভ করা সমস্ত পাসওয়ার্ড দেখান</translation>
 <translation id="8261506727792406068">মুছুন</translation>
 <translation id="8267698848189296333"><ph name="USERNAME" /> হিসেবে প্রবেশ করুন করছেন</translation>
-<translation id="8278457561961988242">এই ব্রাউজারটি <ph name="ENROLLMENT_DOMAIN" /> ম্যানেজ করে। আপনার অ্যাডমিনিস্ট্রেটর রিমোট লোকেশন থেকে আপনার ব্রাউজারের সেট-আপ পরিবর্তন করতে পারেন। এই ডিভাইসের অ্যাক্টিভিটি Chrome-এর বাইরে থেকে ম্যানেজ করা হতে পারে। <ph name="BEGIN_LINK" />আরও জানুন<ph name="END_LINK" /></translation>
+<translation id="8278457561961988242">এই ব্রাউজারটি <ph name="ENROLLMENT_DOMAIN" /> ম্যানেজ করছে। আপনার অ্যাডমিনিস্ট্রেটর রিমোট লোকেশন থেকে আপনার ব্রাউজারের সেট-আপ পরিবর্তন করতে পারেন। এই ডিভাইসের অ্যাক্টিভিটি Chrome-এর বাইরে থেকে ম্যানেজ করা হতে পারে। <ph name="BEGIN_LINK" />আরও জানুন<ph name="END_LINK" /></translation>
 <translation id="8281084378435768645">Large-Photo</translation>
 <translation id="8286036467436129157">প্রবেশ করুন</translation>
 <translation id="8288807391153049143">সার্টিফিকেট দেখান</translation>

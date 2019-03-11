@@ -155,6 +155,7 @@
 <translation id="3324193307694657476">Adresa 2</translation>
 <translation id="3329904751041170572">Nepodarilo sa pripojiť k serveru.</translation>
 <translation id="3335947283844343239">Znova otvoriť zatvorenú kartu</translation>
+<translation id="3371831930909698441">Prekladač je k dispozícii. Možnosti nájdete v dolnej časti obrazovky.</translation>
 <translation id="3393920035788932672">Povolené okná</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Rozdelené zobrazenie</translation>
@@ -353,9 +354,11 @@ Vaše údaje boli <ph name="TIME" /> zašifrované pomocou vlastnej prístupovej
 <translation id="6445051938772793705">Krajina</translation>
 <translation id="6445981559479772097">Správa sa odoslala.</translation>
 <translation id="6464071786529933911">Otvoriť na novej karte inkognito</translation>
+<translation id="6476800141292307438">Stránka sa prekladá do jazyka <ph name="LANGUAGE" />. Možnosti nájdete v dolnej časti obrazovky.</translation>
 <translation id="6482629121755362506">Počet odstránených položiek: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="6513773942555305766">Heslo navrhnuté Chromom: <ph name="SUGGESTED_PASSWORD" /></translation>
 <translation id="6541915733953096570">Posledná hodina</translation>
+<translation id="6610002944194042868">Možnosti prekladu</translation>
 <translation id="6642362222295953972">Prepnúť na existujúcu kartu</translation>
 <translation id="6643016212128521049">Vymazať</translation>
 <translation id="6656103420185847513">Upraviť priečinok</translation>
@@ -376,6 +379,7 @@ Vaše údaje boli <ph name="TIME" /> zašifrované pomocou vlastnej prístupovej
 <translation id="6903907808598579934">Zapnúť synchronizáciu</translation>
 <translation id="6914583639806229067">Vyhľadať skopírovaný obrázok</translation>
 <translation id="6914783257214138813">Vaše heslá uvidí každý, kto si môže zobraziť exportovaný súbor.</translation>
+<translation id="6944369514868857500">Vybrať iný účet</translation>
 <translation id="6945221475159498467">Vybrať</translation>
 <translation id="6973630695168034713">Priečinky</translation>
 <translation id="6979158407327259162">Disk Google</translation>
@@ -455,6 +459,7 @@ Vaše údaje boli <ph name="TIME" /> zašifrované pomocou vlastnej prístupovej
 <translation id="8281781826761538115">Predvolené – <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8328777765163860529">Zavrieť všetky</translation>
 <translation id="8381750437846184350">Ovládajte, ako Google môže používať vašu históriu prehliadania na prispôsobenie Vyhľadávania, reklám a ďalších služieb Google</translation>
+<translation id="8407669440184693619">Pre tento web sa nenašli žiadne heslá</translation>
 <translation id="842017693807136194">Prihlásenie pomocou</translation>
 <translation id="8428045167754449968">Mesto</translation>
 <translation id="8428213095426709021">Nastavenia</translation>

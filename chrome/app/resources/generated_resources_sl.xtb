@@ -1008,6 +1008,7 @@
 <translation id="2484959914739448251">Če želite izbrisati podatke brskanja iz vseh sinhroniziranih naprav in Google Računa, <ph name="BEGIN_LINK" />vnesite geslo<ph name="END_LINK" />.</translation>
 <translation id="2485422356828889247">Odstranjevanje</translation>
 <translation id="2487067538648443797">Dodaj nov zaznamek</translation>
+<translation id="2489829450872380594">Naslednjič bo nov telefon odklenil to napravo <ph name="DEVICE_TYPE" />. Funkcijo Smart Lock lahko izklopite v nastavitvah.</translation>
 <translation id="2489918096470125693">Dodaj &amp;mapo ...</translation>
 <translation id="249113932447298600">Oprostite, naprava <ph name="DEVICE_LABEL" /> še ni podprta.</translation>
 <translation id="249303669840926644">Registracije ni bilo mogoče dokončati</translation>
@@ -1765,6 +1766,7 @@
 <translation id="3627588569887975815">Odpri povezavo v oknu brez bele&amp;ženja zgodovine</translation>
 <translation id="3627671146180677314">Čas podaljšanja Netscapeovega potrdila</translation>
 <translation id="3627879631695760395">Namestitev aplikacije <ph name="APP" /> ...</translation>
+<translation id="3629631988386925734">Vnesite geslo, če želite omogočiti Smart Lock. Naslednjič bo telefon odklenil napravo <ph name="DEVICE_TYPE" />. Funkcijo Smart Lock lahko izklopite v nastavitvah.</translation>
 <translation id="3630132874740063857">Vaš telefon</translation>
 <translation id="3630995161997703415">Dodajte to spletno mesto na polico, da ga lahko kadar koli uporabljate</translation>
 <translation id="3636096452488277381">Zdravo, <ph name="USER_GIVEN_NAME" />.</translation>
@@ -2110,6 +2112,7 @@
 <translation id="4109135793348361820">Premakni okno uporabniku <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
 <translation id="4110490973560452005">Prenos je končan: <ph name="FILE_NAME" />. Pritisnite Shift + F6, če želite krožiti do območja vrstice s prenosi.</translation>
 <translation id="4110895898888439383">Brskajte po spletu v visokokontrastnem načinu</translation>
+<translation id="4112221174576828331">Če slika nima koristnega opisa, ga bo Chrome poskušal zagotoviti. Slike pregleduje Google.</translation>
 <translation id="4115002065223188701">Omrežje zunaj dosega</translation>
 <translation id="4115080753528843955">Nekatere storitve za zagotavljanje vsebine uporabljajo enolične identifikatorje zaradi pooblaščanja dostopa do zaščitene vsebine</translation>
 <translation id="4118579674665737931">Znova zaženite napravo in poskusite znova.</translation>
@@ -2662,6 +2665,7 @@
 <translation id="4998873842614926205">Potrdi spremembe</translation>
 <translation id="5000922062037820727">Blokirano (priporočeno)</translation>
 <translation id="5004584466530475658">Št. novih fotografij: <ph name="FILE_COUNT" /></translation>
+<translation id="5008936837313706385">Ime dejavnosti</translation>
 <translation id="5010043101506446253">Overitelj potrdila</translation>
 <translation id="5010406651457630570">Računalniki</translation>
 <translation id="5015344424288992913">Razrešujem proxy ...</translation>
@@ -2993,6 +2997,7 @@
 <translation id="5507756662695126555">Brez zavračanja</translation>
 <translation id="5509693895992845810">Shrani &amp;kot ...</translation>
 <translation id="5509914365760201064">Izdajatelj: <ph name="CERTIFICATE_AUTHORITY" /></translation>
+<translation id="5510775624736435856">Pridobivanje opisov slik iz Googla</translation>
 <translation id="5511379779384092781">Zelo majhno</translation>
 <translation id="5511823366942919280">Ali ste prepričani, da želite to napravo nastaviti kot »Morski pes«?</translation>
 <translation id="5512653252560939721">Uporabniško potrdilo mora biti podprto s strojno opremo.</translation>
@@ -3577,6 +3582,7 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="6341850831632289108">Odkrijte svojo fizično lokacijo</translation>
 <translation id="6344170822609224263">Dostop do seznama omrežnih povezav</translation>
 <translation id="6346310558342052870">Dostop je omejen</translation>
+<translation id="6349101878882523185">Namestite <ph name="APP_NAME" /></translation>
 <translation id="6349170655202535379">Sinhronizacija ne deluje. Poskusite se odjaviti in znova prijaviti.</translation>
 <translation id="6351063337294363751">Podatke o brskanju lahko izbrišete v tem meniju</translation>
 <translation id="6352773953037195952">Najvišja</translation>
@@ -3994,6 +4000,7 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="6990081529015358884">Zmanjkalo vam je prostora</translation>
 <translation id="6990778048354947307">Temna tema</translation>
 <translation id="6991665348624301627">Izberite cilj</translation>
+<translation id="6997642619627518301"><ph name="NAME_PH" /> – dnevnik dejavnosti</translation>
 <translation id="6997707937646349884">V vaših napravah:</translation>
 <translation id="6998711733709403587">Izbranih toliko map: <ph name="SELCTED_FOLDERS_COUNT" /></translation>
 <translation id="6998793565256476099">Včlanitev naprave za videokonference</translation>
@@ -4296,6 +4303,7 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="7456142309650173560">dev</translation>
 <translation id="7456847797759667638">Odpri mesto ...</translation>
 <translation id="7461924472993315131">Pripni</translation>
+<translation id="746216226901520237">Naslednjič bo telefon odklenil napravo <ph name="DEVICE_TYPE" />. Funkcijo Smart Lock lahko izklopite v nastavitvah.</translation>
 <translation id="7463006580194749499">Dodaj osebo</translation>
 <translation id="7465778193084373987">Spletni naslov ukinjenega Netscapeovega potrdila</translation>
 <translation id="7469894403370665791">Samodejno vzpostavi povezavo s tem omrežjem</translation>
@@ -4374,6 +4382,7 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="7580671184200851182">Predvajaj isti zvok prek vseh zvočnikov (mono zvok)</translation>
 <translation id="7581462281756524039">Orodje za čiščenje</translation>
 <translation id="7582582252461552277">Prednostno uporabi to omrežje</translation>
+<translation id="7583948862126372804">Število</translation>
 <translation id="7586498138629385861">Chrome se izvaja naprej, dokler so odprte aplikacije za Chrome.</translation>
 <translation id="7589461650300748890">Počasi. Previdno.</translation>
 <translation id="7589661784326793847">Počakajte trenutek</translation>
@@ -5486,6 +5495,7 @@ Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih r
 <translation id="93393615658292258">Samo geslo</translation>
 <translation id="934503638756687833">Elementi, ki niso navedeni tukaj, bodo po potrebi morda tudi odstranjeni. Preberite več o &lt;a href="<ph name="URL" />"&gt;zaščiti pred neželeno programsko opremo&lt;/a&gt; v beli knjigi o zasebnosti za Chrome.</translation>
 <translation id="935490618240037774">Vaši zaznamki, zgodovina, gesla in druge nastavitve bodo sinhronizirani z Google Računom, tako da jih boste lahko uporabljali v vseh svojih napravah.</translation>
+<translation id="935854577147268200">Telefon za Smart Lock je spremenjen. Vnesite geslo, če želite posodobiti Smart Lock. Naslednjič bo telefon odklenil napravo <ph name="DEVICE_TYPE" />. Smart Lock lahko izklopite v nastavitvah.</translation>
 <translation id="936801553271523408">Sistemski diagnostični podatki</translation>
 <translation id="93766956588638423">Popravi razširitev</translation>
 <translation id="938339467127511841">Shramba za Linux (beta)</translation>

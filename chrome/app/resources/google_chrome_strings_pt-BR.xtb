@@ -99,9 +99,11 @@ Verifique seu e-mail em <ph name="ACCOUNT_EMAIL" /> para ver mais instruções.<
 <translation id="3398288718845740432">Esconder no menu do Google Chrome</translation>
 <translation id="3451115285585441894">Adicionando ao Google Chrome...</translation>
 <translation id="345171907106878721">Cadastrar-se no Chrome</translation>
+<translation id="3457651673823986489">Se uma imagem não tiver uma descrição útil, o Chrome tentará fornecer uma para você. As imagens são verificadas pelo Google. É possível desativar essa opção nas configurações a qualquer momento.</translation>
 <translation id="3479552764303398839">Não agora</translation>
 <translation id="34857402635545079">Limpar também dados do Chrome (<ph name="URL" />)</translation>
 <translation id="3503306920980160878">O Chrome precisa acessar seu local para compartilhá-lo com este site</translation>
+<translation id="3576528680708590453">O administrador do seu sistema configurou o Google Chrome para abrir um navegador alternativo para acessar <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="3582972582564653026">Sincronize e personalize o Chrome em todos os seus dispositivos</translation>
 <translation id="3622797965165704966">Agora ficou mais fácil usar o Chrome com sua Conta do Google e em computadores compartilhados.</translation>
 <translation id="3637702109597584617"><ph name="TERMS_OF_SERVICE_LINK" />Termos de Serviço<ph name="END_TERMS_OF_SERVICE_LINK" /> do Google Chrome OS</translation>
@@ -249,6 +251,7 @@ Verifique seu e-mail em <ph name="ACCOUNT_EMAIL" /> para ver mais instruções.<
 <translation id="8129812357326543296">Sobre o Google Chrome</translation>
 <translation id="8179874765710681175">Instale o Chrome no seu smartphone. Enviaremos um SMS para seu número.</translation>
 <translation id="8183957050892517584">O Chrome armazenará seus dados pessoais com segurança para que não seja necessário digitá-los novamente.</translation>
+<translation id="8224281044825492187">Se uma imagem não tiver uma descrição útil, o Chrome tentará fornecer uma para você. As imagens são verificadas pelo Google.</translation>
 <translation id="8226081633851087288">{0,plural, =0{O Chrome OS será reiniciado agora}=1{O Chrome OS será reiniciado em 1 segundo}one{O Chrome OS será reiniciado em # segundo}other{O Chrome OS será reiniciado em # segundos}}</translation>
 <translation id="825412236959742607">Como esta página usa muita memória, o Chrome removeu parte do conteúdo.</translation>
 <translation id="8255190535488645436">O Google Chrome está usando sua câmera e seu microfone.</translation>

@@ -149,6 +149,7 @@
 <translation id="204321170514947529">Dane aplikacji <ph name="APP_NAME" /> znajdują się też w Chrome</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB innych aplikacji</translation>
 <translation id="2049574241039454490"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE_OF_TOTAL" /></translation>
+<translation id="2056878612599315956">Strona wstrzymana</translation>
 <translation id="2063713494490388661">Kliknij, by wyszukać</translation>
 <translation id="2079545284768500474">Cofnij</translation>
 <translation id="2082238445998314030">Wynik <ph name="RESULT_NUMBER" /> z <ph name="TOTAL_RESULTS" /></translation>
@@ -777,6 +778,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="6709133671862442373">Wiadomości</translation>
 <translation id="6710213216561001401">Wstecz</translation>
 <translation id="6712388303105732168">Zobacz więcej podobnych informacji od Google – kliknij przycisk Więcej podobnych</translation>
+<translation id="671481426037969117">Licznik czasu w aplikacji <ph name="FQDN" /> dobiegł końca. Jutro zacznie działać od nowa.</translation>
 <translation id="6738867403308150051">Pobieram…</translation>
 <translation id="6746124502594467657">W dół</translation>
 <translation id="6766622839693428701">Przesuń w dół, by zamknąć.</translation>

@@ -155,6 +155,7 @@
 <translation id="3324193307694657476">Cím 2. sora</translation>
 <translation id="3329904751041170572">Nem lehet kapcsolódni a szerverhez.</translation>
 <translation id="3335947283844343239">Bezárt lap megnyitása</translation>
+<translation id="3371831930909698441">Rendelkezésre áll fordítás. A beállítások a képernyő alsó részén találhatók.</translation>
 <translation id="3393920035788932672">Pop-up megengedett</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> perc</translation>
 <translation id="3448016392200048164">Osztott nézet</translation>
@@ -353,9 +354,11 @@ Adatainak titkosítása megtörtént összetett szinkronizálási jelszavával a
 <translation id="6445051938772793705">Ország</translation>
 <translation id="6445981559479772097">Üzenet elküldve.</translation>
 <translation id="6464071786529933911">Megnyitás új inkognitólapon</translation>
+<translation id="6476800141292307438">Az oldal lefordítása <ph name="LANGUAGE" /> nyelvre. A képernyő alján láthatók a rendelkezésre álló lehetőségek.</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elem törölve</translation>
 <translation id="6513773942555305766">Chrome által javasolt jelszó: <ph name="SUGGESTED_PASSWORD" /></translation>
 <translation id="6541915733953096570">Elmúlt óra</translation>
+<translation id="6610002944194042868">Fordítási beállítások</translation>
 <translation id="6642362222295953972">Váltás a meglévő lapra</translation>
 <translation id="6643016212128521049">Törlés</translation>
 <translation id="6656103420185847513">Mappa szerkesztése</translation>
@@ -376,6 +379,7 @@ Adatainak titkosítása megtörtént összetett szinkronizálási jelszavával a
 <translation id="6903907808598579934">Szinkronizálás bekapcsolása</translation>
 <translation id="6914583639806229067">Vágólapra másolt kép keresése</translation>
 <translation id="6914783257214138813">Jelszavai mindenki számára láthatók lesznek, aki hozzáfér az exportált fájlhoz.</translation>
+<translation id="6944369514868857500">Másik fiók választása</translation>
 <translation id="6945221475159498467">Kiválasztás</translation>
 <translation id="6973630695168034713">Mappák</translation>
 <translation id="6979158407327259162">Google Drive</translation>
@@ -455,6 +459,7 @@ Adatainak titkosítása megtörtént összetett szinkronizálási jelszavával a
 <translation id="8281781826761538115">Alapértelmezett – <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8328777765163860529">Összes bezárása</translation>
 <translation id="8381750437846184350">Annak szabályozása, hogy a Google hogyan használhatja fel az Ön böngészési előzményeit a Keresés, a hirdetések és más Google-szolgáltatások személyre szabására</translation>
+<translation id="8407669440184693619">Nem található jelszó a webhelyhez</translation>
 <translation id="842017693807136194">Bejelentkezve a következővel:</translation>
 <translation id="8428045167754449968">Város/helység</translation>
 <translation id="8428213095426709021">Beállítások</translation>

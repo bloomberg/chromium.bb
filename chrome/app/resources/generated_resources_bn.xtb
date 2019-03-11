@@ -1006,6 +1006,7 @@
 <translation id="2484959914739448251">আপনার সিঙ্ক করা সমস্ত ডিভাইস এবং Google অ্যাকাউন্ট থেকে ব্রাউজিং ডেটা খালি করার জন্য <ph name="BEGIN_LINK" />আপনার পাসফ্রেজ লিখুন<ph name="END_LINK" />।</translation>
 <translation id="2485422356828889247">আনইনস্টল</translation>
 <translation id="2487067538648443797">নতুন বুকমার্ক যোগ করুন</translation>
+<translation id="2489829450872380594">পরের বার, নতুন ফোন এই <ph name="DEVICE_TYPE" /> আনলক করবে। সেটিংসে গিয়ে Smart Lock বন্ধ করতে পারেন।</translation>
 <translation id="2489918096470125693">ফোল্ডার যুক্ত &amp;করুন...</translation>
 <translation id="249113932447298600">দুঃখিত, <ph name="DEVICE_LABEL" /> ডিভাইসটি এই মুহুর্তে সমর্থিত নয়৷</translation>
 <translation id="249303669840926644">নিবন্ধন সম্পূর্ণ করতে পারেনি</translation>
@@ -1762,6 +1763,7 @@
 <translation id="3627588569887975815">লিঙ্কটি ছ&amp;দ্মবেশী উইন্ডোতে খুলুন</translation>
 <translation id="3627671146180677314">Netscape সার্টিফিকেট পুনর্নবীকরণ সময়</translation>
 <translation id="3627879631695760395"><ph name="APP" /> ইনস্টল করুন...</translation>
+<translation id="3629631988386925734">Smart Lock চালু করতে আপনার পাসওয়ার্ড লিখুন। পরের বার, আপনার ফোন <ph name="DEVICE_TYPE" /> আনলক করবে। সেটিংসে গিয়ে Smart Lock বন্ধ করতে পারবেন।</translation>
 <translation id="3630132874740063857">আপনার ফোন</translation>
 <translation id="3630995161997703415">যেকোনও সময় ব্যবহার করার জন্য এই সাইটটিকে আপনার শেল্ফে যোগ করুন</translation>
 <translation id="3636096452488277381"><ph name="USER_GIVEN_NAME" />, কেমন আছেন?</translation>
@@ -1883,7 +1885,7 @@
 <translation id="379082410132524484">আপনার কার্ডের মেয়াদ শেষ হয়ে গেছে</translation>
 <translation id="3792890930871100565">প্রিন্টার সংযোগ বিচ্ছিন্ন করুন</translation>
 <translation id="3796648294839530037">পছন্দসই নেটওয়ার্কগুলি:</translation>
-<translation id="3797739167230984533">আপনার সংস্থা আপনার <ph name="BEGIN_LINK" /><ph name="DEVICE_TYPE" /> <ph name="END_LINK" /> ম্যানেজ করে</translation>
+<translation id="3797739167230984533">আপনার সংস্থা আপনার <ph name="BEGIN_LINK" /><ph name="DEVICE_TYPE" /> ম্যানেজ<ph name="END_LINK" /> করে</translation>
 <translation id="3797900183766075808"><ph name="SEARCH_ENGINE" /> এ “<ph name="SEARCH_TERMS" />” এর &amp;অনুসন্ধান করুন</translation>
 <translation id="3798449238516105146">ভার্সন</translation>
 <translation id="3799201711591988491">{COUNT,plural, =0{সবগুলি &amp;খুলুন}=1{বুকমার্ক &amp;খুলুন}one{সবগুলি (#টি) &amp;খুলুন}other{সবগুলি (#টি) &amp;খুলুন}}</translation>
@@ -2106,6 +2108,7 @@
 <translation id="4109135793348361820"><ph name="USER_NAME" /> (<ph name="USER_EMAIL" />) এ উইন্ডো সরান</translation>
 <translation id="4110490973560452005">ডাউনলোড হয়ে গেছে: <ph name="FILE_NAME" />। Shift+F6 প্রেস করে ডাউনলোড বার এরিয়াতে যান।</translation>
 <translation id="4110895898888439383">উচ্চ কনট্রাস্ট মোডে ওয়েব ব্রাউজ করুন</translation>
+<translation id="4112221174576828331">যদি ছবিতে প্রয়োজনীয় বিবরণ দেওয়া না থাকে, তাহলে Chrome আপনাকে একটি বিবরণ দেওয়ার চেষ্টা করবে। ছবিগুলি Google স্ক্যান করে।</translation>
 <translation id="4115002065223188701">নেটওয়ার্ক সীমার বাইরে</translation>
 <translation id="4115080753528843955">কিছু কনটেন্ট পরিষেবা অনন্য আইডেন্টিফায়ার ব্যবহার করে সুরক্ষিত কনটেন্টে অ্যাক্সেস দেয়</translation>
 <translation id="4118579674665737931">ডিভাইসটি রিবুট করে আবার চেষ্টা করুন।</translation>
@@ -2658,6 +2661,7 @@
 <translation id="4998873842614926205">পরিবর্তনগুলি নিশ্চিত করুন</translation>
 <translation id="5000922062037820727">অবরুদ্ধ (প্রস্তাবিত)</translation>
 <translation id="5004584466530475658"><ph name="FILE_COUNT" /> নতুন ফটো</translation>
+<translation id="5008936837313706385">অ্যাক্টিভিটির নাম</translation>
 <translation id="5010043101506446253">সার্টিফিকেট কর্তৃপক্ষ</translation>
 <translation id="5010406651457630570">কম্পিউটার</translation>
 <translation id="5015344424288992913">প্রক্সি স্থির করা হচ্ছে...</translation>
@@ -2988,6 +2992,7 @@
 <translation id="5507756662695126555">অ-অস্বীকৃতি</translation>
 <translation id="5509693895992845810">এই &amp;রূপে সেভ করুন...</translation>
 <translation id="5509914365760201064">ইস্যুকারী: <ph name="CERTIFICATE_AUTHORITY" /></translation>
+<translation id="5510775624736435856">Google থেকে ছবির বিবরণ পান</translation>
 <translation id="5511379779384092781">অনেক ছোট</translation>
 <translation id="5511823366942919280">আপনি কি "শার্ক" হিসেবে এই ডিভাইসটিকে সেটআপ করতে ইচ্ছুক?</translation>
 <translation id="5512653252560939721">ব্যবহারকারীর সার্টিফিকেট হার্ডওয়্যার-সাহায্যপ্রাপ্ত হওয়া আবশ্যক৷</translation>
@@ -3572,6 +3577,7 @@
 <translation id="6341850831632289108">আপনার শারীরিক লোকেশন শনাক্ত করুন</translation>
 <translation id="6344170822609224263">নেটওয়ার্ক সংযোগের তালিকা অ্যাক্সেস করে</translation>
 <translation id="6346310558342052870">সীমাবদ্ধ অ্যাক্সেস</translation>
+<translation id="6349101878882523185"><ph name="APP_NAME" /> ইনস্টল করুন</translation>
 <translation id="6349170655202535379">সিঙ্ক কাজ করছে না। সাইন আউট করে আবার ফিরে এসে দেখুন।</translation>
 <translation id="6351063337294363751">আপনি এই মেনু থেকে আপনার ব্রাউজিং ডেটা সাফ করতে পারেন</translation>
 <translation id="6352773953037195952">সর্বোচ্চ</translation>
@@ -3989,6 +3995,7 @@
 <translation id="6990081529015358884">আপনি জায়গা সমাপ্ত করে ফেলেছেন৷</translation>
 <translation id="6990778048354947307">ডার্ক থিম</translation>
 <translation id="6991665348624301627">একটি গন্তব্যস্থল বেছে নিন</translation>
+<translation id="6997642619627518301"><ph name="NAME_PH" /> - অ্যাক্টিভিটি লগ</translation>
 <translation id="6997707937646349884">আপনার ডিভাইসে:</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" />টি ফোল্ডার নির্বাচিত</translation>
 <translation id="6998793565256476099">ভিডিও কনফারেন্সিংয়ের জন্য ডিভাইস যোগ করুন</translation>
@@ -4291,6 +4298,7 @@
 <translation id="7456142309650173560">dev</translation>
 <translation id="7456847797759667638">লোকেশন খুলুন...</translation>
 <translation id="7461924472993315131">পিন</translation>
+<translation id="746216226901520237">পরের বার, আপনার ফোন <ph name="DEVICE_TYPE" /> আনলক করবে। সেটিংসে গিয়ে Smart Lock বন্ধ করতে পারবেন।</translation>
 <translation id="7463006580194749499">একজন ব্যক্তিকে যোগ করুন</translation>
 <translation id="7465778193084373987">Netscape সার্টিফিকেট রদকরণ ইউআরএল</translation>
 <translation id="7469894403370665791">স্বয়ংক্রিয়ভাবে এই নেটওয়ার্কে সংযোগ করুন</translation>
@@ -4369,6 +4377,7 @@
 <translation id="7580671184200851182">সব স্পিকারে একই অডিও বাজান (মোনো অডিও)</translation>
 <translation id="7581462281756524039">একটি পরিষ্কারের টুল</translation>
 <translation id="7582582252461552277">এই নেটওয়ার্কটিকে অগ্রাধিকার দিন</translation>
+<translation id="7583948862126372804">সংখ্যা</translation>
 <translation id="7586498138629385861">Chrome অ্যাপ্লিকেশানগুলি খোলা থাকার সময় Chrome চালু থাকবে।</translation>
 <translation id="7589461650300748890">দাঁড়ান। সাবধান।</translation>
 <translation id="7589661784326793847">এক সেকেন্ড অপেক্ষা করুন</translation>
@@ -5480,6 +5489,7 @@
 <translation id="93393615658292258">শুধুমাত্র পাসওয়ার্ড</translation>
 <translation id="934503638756687833">কোনও আইটেম এখানে উল্লেখ করা না থাকলেও সেটি প্রয়োজন অনুযায়ী সরিয়ে দেওয়া হবে। &lt;a href="<ph name="URL" />"&gt;অবাঞ্ছিত সফ্টওয়্যার থেকে সুরক্ষার&lt;/a&gt; বিষয়ে আরও জানতে Chrome এর গোপনীয়তা বিষয়ক শ্বেতপত্র পড়ুন।</translation>
 <translation id="935490618240037774">আপনার বুকমার্ক, ইতিহাস এবং অন্যান্য সেটিংস আপনার Google অ্যাকাউন্টে সিঙ্ক হবে যাতে আপনি আপনার সমস্ত ডিভাইসে সেগুলি ব্যবহার করতে পারেন।</translation>
+<translation id="935854577147268200">ফোনে Smart Lock ফিচার পরিবর্তিত হয়েছে। Smart Lock আপডেট করতে আপনার পাসওয়ার্ড লিখুন। পরের বার, আপনার ফোন <ph name="DEVICE_TYPE" /> আনলক করতে পারবে। সেটিংসে গিয়ে Smart Lock বন্ধ করতে পারেন।</translation>
 <translation id="936801553271523408">সিস্টেম ডায়াগনোস্টিক ডেটা</translation>
 <translation id="93766956588638423">এক্সটেনশন মেরামত করুন</translation>
 <translation id="938339467127511841">Linux (বিটা) স্টোরেজ</translation>

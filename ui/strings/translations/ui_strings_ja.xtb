@@ -14,6 +14,7 @@
 <translation id="1368832886055348810">左から右</translation>
 <translation id="1383876407941801731">検索</translation>
 <translation id="1398853756734560583">最大化</translation>
+<translation id="1409544243779336081">おすすめのアプリ</translation>
 <translation id="1413622004203049571"><ph name="NOTIFIER_NAME" /> からの通知を無効にする</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 分 }other{# 分 }}</translation>
 <translation id="1643823602425662293">通知</translation>
@@ -69,6 +70,7 @@
 <translation id="3479552764303398839">後で</translation>
 <translation id="348799646910989694">シェルフは自動的に非表示になります</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{残り 1 日}other{残り # 日}}</translation>
+<translation id="3600969208114796418"><ph name="SAVEAS_EXTENSION_TYPE" /> ファイル</translation>
 <translation id="3608915363409716668"><ph name="MAXIMUM_VALUE" />～</translation>
 <translation id="3618849550573277856">「<ph name="LOOKUP_STRING" />」を検索</translation>
 <translation id="364720409959344976">アップロードするフォルダを選択</translation>
@@ -143,6 +145,7 @@
 <translation id="6808150112686056157">メディアの停止</translation>
 <translation id="6845383723252244143">フォルダを選択</translation>
 <translation id="6845533974506654842">押す</translation>
+<translation id="686304767576508198">次から共有:</translation>
 <translation id="6863590663815976734">{HOURS,plural, =1{残り 1 時間}other{残り # 時間}}</translation>
 <translation id="688711909580084195">無題のウェブページ</translation>
 <translation id="6907759265145635167"><ph name="QUANTITY" /> PB/秒</translation>

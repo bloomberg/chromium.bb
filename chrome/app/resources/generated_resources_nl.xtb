@@ -1008,6 +1008,7 @@
 <translation id="2484959914739448251">Als je browsergegevens wilt wissen van al je gesynchroniseerde apparaten en je Google-account, <ph name="BEGIN_LINK" />geef je je wachtwoordzin op<ph name="END_LINK" />.</translation>
 <translation id="2485422356828889247">Installatie ongedaan maken</translation>
 <translation id="2487067538648443797">Nieuwe bladwijzer toevoegen</translation>
+<translation id="2489829450872380594">De volgende keer wordt deze <ph name="DEVICE_TYPE" /> ontgrendeld met een nieuwe telefoon. Je kunt Smart Lock uitschakelen in Instellingen.</translation>
 <translation id="2489918096470125693">&amp;Map toevoegen...</translation>
 <translation id="249113932447298600">Het apparaat <ph name="DEVICE_LABEL" /> wordt momenteel niet ondersteund.</translation>
 <translation id="249303669840926644">Kan de registratie niet voltooien</translation>
@@ -1765,6 +1766,7 @@
 <translation id="3627588569887975815">Link openen in inco&amp;gnitovenster</translation>
 <translation id="3627671146180677314">Vernieuwingsmoment voor Netscape-certificaat</translation>
 <translation id="3627879631695760395"><ph name="APP" /> installeren...</translation>
+<translation id="3629631988386925734">Voer je wachtwoord in om Smart Lock in te schakelen. De volgende keer wordt <ph name="DEVICE_TYPE" /> ontgrendeld met je telefoon. Je kunt Smart Lock uitschakelen in Instellingen.</translation>
 <translation id="3630132874740063857">Je telefoon</translation>
 <translation id="3630995161997703415">Voeg deze site aan je plank toe om hem altijd te kunnen gebruiken</translation>
 <translation id="3636096452488277381">Hallo, <ph name="USER_GIVEN_NAME" />.</translation>
@@ -2110,6 +2112,7 @@
 <translation id="4109135793348361820">Venster verplaatsen naar <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
 <translation id="4110490973560452005">Download voltooid: <ph name="FILE_NAME" />. Druk op Shift+F6 om naar het gedeelte met de downloadbalk te gaan.</translation>
 <translation id="4110895898888439383">Surf op internet in de modus voor hoog contrast</translation>
+<translation id="4112221174576828331">Als een afbeelding geen nuttige beschrijving bevat, levert Chrome er een voor je. De afbeeldingen worden gescand door Google.</translation>
 <translation id="4115002065223188701">Netwerk buiten bereik</translation>
 <translation id="4115080753528843955">Sommige contentservices gebruiken unieke ID's om de toegang tot beveiligde content te autoriseren</translation>
 <translation id="4118579674665737931">Start het apparaat opnieuw op en probeer het opnieuw.</translation>
@@ -2662,6 +2665,7 @@
 <translation id="4998873842614926205">Wijzigingen bevestigen</translation>
 <translation id="5000922062037820727">Geblokkeerd (aanbevolen)</translation>
 <translation id="5004584466530475658"><ph name="FILE_COUNT" /> nieuwe foto's</translation>
+<translation id="5008936837313706385">Naam van activiteit</translation>
 <translation id="5010043101506446253">Certificeringsinstantie</translation>
 <translation id="5010406651457630570">Computers</translation>
 <translation id="5015344424288992913">Proxy laden...</translation>
@@ -2994,6 +2998,7 @@
 <translation id="5507756662695126555">Onweerlegbaarheid</translation>
 <translation id="5509693895992845810">Opslaan &amp;als...</translation>
 <translation id="5509914365760201064">Uitgever: <ph name="CERTIFICATE_AUTHORITY" /></translation>
+<translation id="5510775624736435856">Afbeeldingsbeschrijvingen ophalen van Google</translation>
 <translation id="5511379779384092781">Extra klein</translation>
 <translation id="5511823366942919280">Weet je zeker dat je dit apparaat wilt instellen als een 'Shark'?</translation>
 <translation id="5512653252560939721">Gebruikerscertificaat moet door hardware worden ondersteund.</translation>
@@ -3576,6 +3581,7 @@
 <translation id="6341850831632289108">Je fysieke locatie detecteren</translation>
 <translation id="6344170822609224263">Toegang tot lijst met netwerkverbindingen</translation>
 <translation id="6346310558342052870">Beperkte toegang</translation>
+<translation id="6349101878882523185"><ph name="APP_NAME" /> installeren</translation>
 <translation id="6349170655202535379">Synchronisatie werkt niet. Probeer uit en weer in te loggen.</translation>
 <translation id="6351063337294363751">Je kunt je browsergegevens wissen vanuit dit menu</translation>
 <translation id="6352773953037195952">Hoogste</translation>
@@ -3993,6 +3999,7 @@
 <translation id="6990081529015358884">Er is onvoldoende ruimte beschikbaar</translation>
 <translation id="6990778048354947307">Donker thema</translation>
 <translation id="6991665348624301627">Een bestemming selecteren</translation>
+<translation id="6997642619627518301"><ph name="NAME_PH" /> - Activiteitenlogboek</translation>
 <translation id="6997707937646349884">Op je apparaten:</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> mappen geselecteerd</translation>
 <translation id="6998793565256476099">Apparaat aanmelden voor videovergaderingen</translation>
@@ -4295,6 +4302,7 @@
 <translation id="7456142309650173560">dev</translation>
 <translation id="7456847797759667638">Open locatie...</translation>
 <translation id="7461924472993315131">Vastzetten</translation>
+<translation id="746216226901520237">De volgende keer wordt <ph name="DEVICE_TYPE" /> ontgrendeld met je telefoon. Je kunt Smart Lock uitschakelen in Instellingen.</translation>
 <translation id="7463006580194749499">Persoon toevoegen</translation>
 <translation id="7465778193084373987">URL voor intrekken van Netscape-certificaat</translation>
 <translation id="7469894403370665791">Automatisch verbinding maken met dit netwerk</translation>
@@ -4373,6 +4381,7 @@
 <translation id="7580671184200851182">Dezelfde audio afspelen via alle speakers (mono-audio)</translation>
 <translation id="7581462281756524039">Een cleanup-tool</translation>
 <translation id="7582582252461552277">Dit netwerk voorrang geven</translation>
+<translation id="7583948862126372804">Aantal</translation>
 <translation id="7586498138629385861">Chrome blijft actief terwijl er Chrome-apps zijn geopend.</translation>
 <translation id="7589461650300748890">Oei, wees voorzichtig!</translation>
 <translation id="7589661784326793847">Een ogenblik geduld</translation>
@@ -5485,6 +5494,7 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="93393615658292258">Alleen wachtwoord</translation>
 <translation id="934503638756687833">Items die hier niet worden vermeld, worden zo nodig ook verwijderd. Lees meer informatie over &lt;a href="<ph name="URL" />"&gt;bescherming tegen ongewenste software&lt;/a&gt; in de whitepaper over privacy in Chrome.</translation>
 <translation id="935490618240037774">Je bladwijzers, geschiedenis, wachtwoorden en andere instellingen worden gesynchroniseerd met je Google-account, zodat je ze op al je apparaten kunt gebruiken.</translation>
+<translation id="935854577147268200">Telefoon voor Smart Lock gewijzigd. Geef je wachtwoord op om Smart Lock te updaten. De volgende keer wordt je <ph name="DEVICE_TYPE" /> ontgrendeld met je telefoon. Je kunt Smart Lock uitschakelen in Instellingen.</translation>
 <translation id="936801553271523408">Diagnostische systeemgegevens</translation>
 <translation id="93766956588638423">Extensie repareren</translation>
 <translation id="938339467127511841">Linux-opslag (bèta)</translation>

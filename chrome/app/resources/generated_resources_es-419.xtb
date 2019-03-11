@@ -1005,6 +1005,7 @@
 <translation id="2484959914739448251">Para borrar los datos de navegación de todos los dispositivos sincronizados y de tu Cuenta de Google, <ph name="BEGIN_LINK" />ingresa la frase de contraseña<ph name="END_LINK" />.</translation>
 <translation id="2485422356828889247">Desinstalación</translation>
 <translation id="2487067538648443797">Agregar un favorito nuevo</translation>
+<translation id="2489829450872380594">La próxima vez, un nuevo teléfono desbloqueará este <ph name="DEVICE_TYPE" />. Puedes desactivar Smart Lock en la configuración.</translation>
 <translation id="2489918096470125693">Agregar &amp;carpeta...</translation>
 <translation id="249113932447298600">Lo sentimos, el dispositivo <ph name="DEVICE_LABEL" /> no se admite en este momento.</translation>
 <translation id="249303669840926644">Error al completar el registro</translation>
@@ -1762,6 +1763,7 @@
 <translation id="3627588569887975815">Abrir el enlace en una ventana de navegación de incó&amp;gnito</translation>
 <translation id="3627671146180677314">Tiempo de renovación del certificado Netscape</translation>
 <translation id="3627879631695760395">Instalar <ph name="APP" />…</translation>
+<translation id="3629631988386925734">Ingresa tu contraseña para habilitar Smart Lock. La próxima vez, tu teléfono desbloqueará tu <ph name="DEVICE_TYPE" />Puedes desactivar Smart Lock en la configuración.</translation>
 <translation id="3630132874740063857">Tu teléfono</translation>
 <translation id="3630995161997703415">Agrega el sitio a tu biblioteca para usarlo en cualquier momento</translation>
 <translation id="3636096452488277381">Hola, <ph name="USER_GIVEN_NAME" />.</translation>
@@ -2107,6 +2109,7 @@
 <translation id="4109135793348361820">Mover ventana a <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
 <translation id="4110490973560452005">Se completó la descarga: <ph name="FILE_NAME" />. Presiona mayúscula + F6 para ir al área de la barra de descargas.</translation>
 <translation id="4110895898888439383">Navegar en la Web en el modo de contraste alto</translation>
+<translation id="4112221174576828331">Si una imagen no tiene una descripción útil, Chrome le proporcionará una. Google escanea las imágenes.</translation>
 <translation id="4115002065223188701">La red está fuera de alcance</translation>
 <translation id="4115080753528843955">Algunos servicios de contenido usan identificadores únicos para autorizar el acceso a contenido protegido</translation>
 <translation id="4118579674665737931">Reinicia el dispositivo y vuelve a intentarlo.</translation>
@@ -2659,6 +2662,7 @@
 <translation id="4998873842614926205">Confirmar cambios</translation>
 <translation id="5000922062037820727">Bloqueado (recomendado)</translation>
 <translation id="5004584466530475658"><ph name="FILE_COUNT" /> fotos nuevas</translation>
+<translation id="5008936837313706385">Nombre de la actividad</translation>
 <translation id="5010043101506446253">Autoridad de certificación</translation>
 <translation id="5010406651457630570">Computadoras</translation>
 <translation id="5015344424288992913">Resolviendo proxy...</translation>
@@ -2990,6 +2994,7 @@
 <translation id="5507756662695126555">No rechazo</translation>
 <translation id="5509693895992845810">Gu&amp;ardar como...</translation>
 <translation id="5509914365760201064">Emisor: <ph name="CERTIFICATE_AUTHORITY" /></translation>
+<translation id="5510775624736435856">Obtener descripciones de imágenes de Google</translation>
 <translation id="5511379779384092781">Extrapequeño</translation>
 <translation id="5511823366942919280">¿Confirmas que quieres configurar este dispositivo como "Shark"?</translation>
 <translation id="5512653252560939721">El certificado de usuario debe estar respaldado por el hardware.</translation>
@@ -3572,6 +3577,7 @@
 <translation id="6341850831632289108">Detectar tu ubicación física</translation>
 <translation id="6344170822609224263">Acceder a la lista de conexiones de red</translation>
 <translation id="6346310558342052870">El acceso está restringido</translation>
+<translation id="6349101878882523185">Instalar <ph name="APP_NAME" /></translation>
 <translation id="6349170655202535379">La sincronización no funciona. Intenta salir y volver a acceder.</translation>
 <translation id="6351063337294363751">Puedes borrar los datos de navegación desde este menú</translation>
 <translation id="6352773953037195952">Muy alto</translation>
@@ -3989,6 +3995,7 @@
 <translation id="6990081529015358884">Te has quedado sin espacio.</translation>
 <translation id="6990778048354947307">Tema oscuro</translation>
 <translation id="6991665348624301627">Seleccionar un destino</translation>
+<translation id="6997642619627518301"><ph name="NAME_PH" />: Registro de actividad</translation>
 <translation id="6997707937646349884">En tus dispositivos:</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> carpetas seleccionadas</translation>
 <translation id="6998793565256476099">Inscribe el dispositivo para realizar videoconferencias</translation>
@@ -4291,6 +4298,7 @@
 <translation id="7456142309650173560">para programadores</translation>
 <translation id="7456847797759667638">Abrir ubicación...</translation>
 <translation id="7461924472993315131">Fijar</translation>
+<translation id="746216226901520237">La próxima vez, tu teléfono desbloqueará tu <ph name="DEVICE_TYPE" />Puedes desactivar Smart Lock en la configuración.</translation>
 <translation id="7463006580194749499">Agregar a una persona</translation>
 <translation id="7465778193084373987">URL de revocación del certificado de Netscape</translation>
 <translation id="7469894403370665791">Conectarse automáticamente a esta red</translation>
@@ -4369,6 +4377,7 @@
 <translation id="7580671184200851182">Reproducir el mismo audio en todos los altavoces (sonido mono)</translation>
 <translation id="7581462281756524039">Una herramienta de limpieza</translation>
 <translation id="7582582252461552277">Preferir esta red</translation>
+<translation id="7583948862126372804">Recuento</translation>
 <translation id="7586498138629385861">Chrome se seguirá ejecutando mientras haya aplicaciones de Chrome abiertas.</translation>
 <translation id="7589461650300748890">¡Espera! Ten cuidado.</translation>
 <translation id="7589661784326793847">Espera un momento.</translation>
@@ -5482,6 +5491,7 @@ Es posible que los usuarios con conexiones lentas no puedan ver tu contenido.</t
 <translation id="93393615658292258">Solo contraseña</translation>
 <translation id="934503638756687833">Los elementos que no se muestran aquí también se quitarán si es necesario. Obtén más información sobre &lt;a href="<ph name="URL" />"&gt;la protección contra software no deseado&lt;/a&gt; en el informe de privacidad de Chrome.</translation>
 <translation id="935490618240037774">Tus favoritos, historial, contraseñas y otras opciones de configuración se sincronizarán con tu cuenta de Google para que puedas usarlos en todos tus dispositivos.</translation>
+<translation id="935854577147268200">Se cambió el número de Smart Lock. Ingresa tu contraseña para actualizar Smart Lock. La próxima vez, tu teléfono desbloqueará tu <ph name="DEVICE_TYPE" />. Puedes desactivar Smart Lock en la configuración</translation>
 <translation id="936801553271523408">Datos de diagnóstico del sistema</translation>
 <translation id="93766956588638423">Reparar extensión</translation>
 <translation id="938339467127511841">Almacenamiento en Linux (Beta)</translation>

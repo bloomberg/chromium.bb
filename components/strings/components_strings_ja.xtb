@@ -83,6 +83,7 @@
 <translation id="1348198688976932919">アクセス先のサイトには危険なアプリがあります</translation>
 <translation id="1348779747280417563">名前を確認</translation>
 <translation id="1357195169723583938">最近デバイスを使用したユーザーとその日時</translation>
+<translation id="1364822246244961190">このポリシーはブロックされているため、値は無視されます。</translation>
 <translation id="1374468813861204354">ヒント</translation>
 <translation id="1374692235857187091">Index-4x6（ポストカード）</translation>
 <translation id="1375198122581997741">バージョン情報</translation>
@@ -103,6 +104,7 @@
 <translation id="1472675084647422956">表示項目を増やす</translation>
 <translation id="147358896496811705">2A0</translation>
 <translation id="1484290072879560759">配送先住所を選択</translation>
+<translation id="1492194039220927094">ポリシーのプッシュ:</translation>
 <translation id="1501859676467574491">Google アカウントに保存したカードを表示</translation>
 <translation id="1507202001669085618">&lt;p&gt;インターネットに接続するために Wi-Fi ポータルへのログインが必要な場合は、このエラーが表示されます。&lt;/p&gt;
     &lt;p&gt;エラーを解決するには、開こうとしているページで [&lt;strong&gt;接続&lt;/strong&gt;] をクリックします。&lt;/p&gt;</translation>
@@ -123,6 +125,7 @@
 <translation id="1559572115229829303">&lt;p&gt;デバイスの日時（<ph name="DATE_AND_TIME" />）が正しくないため、<ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> へのプライベート接続を確立できません。&lt;/p&gt;
 
       &lt;p&gt;&lt;strong&gt;設定&lt;/strong&gt;アプリの [&lt;strong&gt;全般&lt;/strong&gt;] セクションで日時を調整してください。&lt;/p&gt;</translation>
+<translation id="1569487616857761740">有効期限の入力</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">このウェブページを表示中に問題が発生しました。</translation>
 <translation id="1592005682883173041">ローカルデータへのアクセス</translation>
@@ -487,6 +490,7 @@
 <translation id="3658742229777143148">変更履歴</translation>
 <translation id="366077651725703012">クレジット カードを更新する</translation>
 <translation id="3676592649209844519">端末 ID:</translation>
+<translation id="3677008721441257057">もしかして: &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;</translation>
 <translation id="3678029195006412963">リクエストに署名できませんでした</translation>
 <translation id="3678529606614285348">ページを新しいシークレット ウィンドウで開く（Ctrl-Shift-N）</translation>
 <translation id="3679803492151881375"><ph name="CRASH_TIME" /> にクラッシュ レポートが作成され、<ph name="UPLOAD_TIME" /> にアップロードされました</translation>
@@ -1093,6 +1097,7 @@
 <translation id="7220786058474068424">処理しています</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />、<ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">アクセス先のサイトで不正なソフトウェアを検出しました</translation>
+<translation id="724766306220616965">警告、競合</translation>
 <translation id="724975217298816891">カードの詳細を更新するには <ph name="CREDIT_CARD" /> の有効期限と CVC を入力します。確認を行うと、カードの詳細がこのサイトと共有されます。</translation>
 <translation id="7251437084390964440">ネットワーク設定が ONC 標準に準拠していません。設定の一部がインポートされない可能性があります。
 詳細:
@@ -1105,6 +1110,7 @@
 <translation id="7300012071106347854">コバルトブルー</translation>
 <translation id="7302712225291570345">「<ph name="TEXT" />」</translation>
 <translation id="7309308571273880165"><ph name="CRASH_TIME" /> にクラッシュ レポートが作成されました（ユーザーからアップロードがリクエストされましたが、まだアップロードされていません）</translation>
+<translation id="7313965965371928911"><ph name="BEGIN_LINK" />セーフ ブラウジング<ph name="END_LINK" />の警告</translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">接続に関するヘルプ</translation>
 <translation id="7334320624316649418">順序変更のやり直し（&amp;R）</translation>

@@ -1004,6 +1004,7 @@
 <translation id="2484959914739448251">Wenn Sie Browserdaten von all Ihren synchronisierten Geräten und aus Ihrem Google-Konto löschen möchten, <ph name="BEGIN_LINK" />geben Sie Ihre Passphrase ein<ph name="END_LINK" />.</translation>
 <translation id="2485422356828889247">Deinstallieren</translation>
 <translation id="2487067538648443797">Neues Lesezeichen hinzufügen</translation>
+<translation id="2489829450872380594">Das nächste Mal wird dieses <ph name="DEVICE_TYPE" /> durch ein neues Smartphone entsperrt. Sie können Smart Lock in den Einstellungen deaktivieren.</translation>
 <translation id="2489918096470125693">&amp;Ordner hinzufügen...</translation>
 <translation id="249113932447298600">Das Gerät <ph name="DEVICE_LABEL" /> wird derzeit nicht unterstützt.</translation>
 <translation id="249303669840926644">Registrierung konnte nicht abgeschlossen werden</translation>
@@ -1760,6 +1761,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3627588569887975815">Link in Inko&amp;gnito-Fenster öffnen</translation>
 <translation id="3627671146180677314">Verlängerungszeit für Netscape-Zertifikate</translation>
 <translation id="3627879631695760395"><ph name="APP" /> installieren...</translation>
+<translation id="3629631988386925734">Geben Sie Ihr Passwort ein, um Smart Lock zu aktivieren. Beim nächsten Mal wird Ihr <ph name="DEVICE_TYPE" /> durch Ihr Smartphone entsperrt. Sie können Smart Lock in den Einstellungen deaktivieren.</translation>
 <translation id="3630132874740063857">Meine Telefonnummer</translation>
 <translation id="3630995161997703415">Fügen Sie diese Website Ihrer Ablage hinzu, um sie jederzeit zu verwenden</translation>
 <translation id="3636096452488277381">Hallo <ph name="USER_GIVEN_NAME" /></translation>
@@ -2105,6 +2107,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4109135793348361820">Fenster zu <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />) verschieben</translation>
 <translation id="4110490973560452005">Download abgeschlossen: <ph name="FILE_NAME" />. Drücken Sie Umschalttaste + F6, um zum Bereich mit der Downloadleiste zu wechseln.</translation>
 <translation id="4110895898888439383">Das Web in Modus mit hohem Kontrast durchsuchen</translation>
+<translation id="4112221174576828331">Wenn ein Bild keine brauchbare Beschreibung hat, versucht Chrome, eine für Sie zu finden. Bilder werden von Google gescannt.</translation>
 <translation id="4115002065223188701">Netzwerk außer Reichweite</translation>
 <translation id="4115080753528843955">Einige Inhaltsdienste verwenden eindeutige IDs, um den Zugriff auf geschützte Inhalte zu gestatten</translation>
 <translation id="4118579674665737931">Bitte starten Sie das Gerät neu und versuchen Sie es noch einmal.</translation>
@@ -2657,6 +2660,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4998873842614926205">Änderungen bestätigen</translation>
 <translation id="5000922062037820727">Blockiert (empfohlen)</translation>
 <translation id="5004584466530475658"><ph name="FILE_COUNT" /> neue Fotos</translation>
+<translation id="5008936837313706385">Aktivitätsname</translation>
 <translation id="5010043101506446253">Zertifizierungsstelle</translation>
 <translation id="5010406651457630570">Computer</translation>
 <translation id="5015344424288992913">Proxy auflösen...</translation>
@@ -2988,6 +2992,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5507756662695126555">Zugelassen</translation>
 <translation id="5509693895992845810">Speichern &amp;unter...</translation>
 <translation id="5509914365760201064">Aussteller: <ph name="CERTIFICATE_AUTHORITY" /></translation>
+<translation id="5510775624736435856">Bildbeschreibungen von Google abrufen</translation>
 <translation id="5511379779384092781">Sehr klein</translation>
 <translation id="5511823366942919280">Möchten Sie dieses Gerät wirklich als "Shark" einrichten?</translation>
 <translation id="5512653252560939721">Hardwaregestütztes Nutzerzertifikat erforderlich</translation>
@@ -3570,6 +3575,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6341850831632289108">Ihren physischen Standort ermitteln</translation>
 <translation id="6344170822609224263">Auf Liste der Netzwerkverbindungen zugreifen</translation>
 <translation id="6346310558342052870">Zugriff eingeschränkt</translation>
+<translation id="6349101878882523185"><ph name="APP_NAME" /> installieren</translation>
 <translation id="6349170655202535379">Die Synchronisierung funktioniert nicht. Melden Sie sich ab und dann wieder an.</translation>
 <translation id="6351063337294363751">Über dieses Menü können Sie Ihre Browserdaten löschen</translation>
 <translation id="6352773953037195952">Höchste</translation>
@@ -3987,6 +3993,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6990081529015358884">Sie haben keinen freien Speicherplatz mehr.</translation>
 <translation id="6990778048354947307">Dunkles Design</translation>
 <translation id="6991665348624301627">Ziel auswählen</translation>
+<translation id="6997642619627518301"><ph name="NAME_PH" /> – Aktivitätsprotokoll</translation>
 <translation id="6997707937646349884">Auf Ihren Geräten:</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> Ordner ausgewählt</translation>
 <translation id="6998793565256476099">Gerät für Videokonferenzen registrieren</translation>
@@ -4289,6 +4296,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7456142309650173560">Dev</translation>
 <translation id="7456847797759667638">Adresse öffnen...</translation>
 <translation id="7461924472993315131">Anpinnen</translation>
+<translation id="746216226901520237">Das nächste Mal wird Ihr <ph name="DEVICE_TYPE" /> von Ihrem Smartphone entsperrt. Sie können Smart Lock in den Einstellungen deaktivieren.</translation>
 <translation id="7463006580194749499">Person hinzufügen</translation>
 <translation id="7465778193084373987">URL zum Zurückrufen von Netscape-Zertifikaten</translation>
 <translation id="7469894403370665791">Verbindung zu diesem Netzwerk automatisch herstellen</translation>
@@ -4367,6 +4375,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7580671184200851182">Dieselben Audioinhalte über alle Lautsprecher wiedergeben (Mono-Audio)</translation>
 <translation id="7581462281756524039">Ein Bereinigungstool</translation>
 <translation id="7582582252461552277">Dieses Netzwerk bevorzugen</translation>
+<translation id="7583948862126372804">Anzahl</translation>
 <translation id="7586498138629385861">Chrome wird weiter ausgeführt, solange die Chrome-Apps geöffnet sind.</translation>
 <translation id="7589461650300748890">Vorsicht!</translation>
 <translation id="7589661784326793847">Einen Moment bitte</translation>
@@ -5480,6 +5489,7 @@ Andere Personen mit langsamen Verbindungen sehen Ihre Inhalte möglicherweise ni
 <translation id="93393615658292258">Nur Passwort</translation>
 <translation id="934503638756687833">Elemente, die hier nicht aufgeführt sind, werden bei Bedarf ebenfalls entfernt. Weitere Informationen zum &lt;a href="<ph name="URL" />"&gt;Schutz vor unerwünschter Software&lt;/a&gt; finden Sie im Whitepaper zum Datenschutz in Chrome.</translation>
 <translation id="935490618240037774">Lesezeichen, Verlauf, Passwörter und andere Einstellungen werden mit Ihrem Google-Konto synchronisiert, damit Sie sie auf allen Ihren Geräten nutzen können.</translation>
+<translation id="935854577147268200">Das Smartphone für Smart Lock wurde geändert. Geben Sie Ihr Passwort ein, um Smart Lock zu aktualisieren. Das nächste Mal wird Ihr <ph name="DEVICE_TYPE" /> von Ihrem Smartphone entsperrt. Sie können Smart Lock in den Einstellungen deaktivieren.</translation>
 <translation id="936801553271523408">Diagnosedaten des Systems</translation>
 <translation id="93766956588638423">Erweiterung reparieren</translation>
 <translation id="938339467127511841">Linux-Speicher (Beta)</translation>

@@ -442,6 +442,7 @@
       Als deze instelling ingeschakeld is, legt de wachtwoordbeveiligingsservice de vingerafdruk van het wachtwoord vast op deze URL's om hergebruik van het wachtwoord te kunnen detecteren.
       Als deze instelling uitgeschakeld of niet ingesteld is, legt de wachtwoordbeveiligingsservice de vingerafdruk van het wachtwoord alleen vast op https://accounts.google.com.
       Dit beleid is alleen beschikbaar op Windows-instanties die gekoppeld zijn aan een <ph name="MS_AD_NAME" />-domein of op instanties van Windows 10 Pro of Enterprise die ingeschreven zijn voor apparaatbeheer.</translation>
+<translation id="1919802376548418720">Gebruik KDC-beleid om gegevens te delegeren.</translation>
 <translation id="1920046221095339924">Beheerde sessie op apparaat toestaan</translation>
 <translation id="1929709556673267855">Hiermee worden configuraties geleverd voor zakelijke printers die aan apparaten zijn gekoppeld.
 
@@ -611,6 +612,15 @@
 <translation id="2240879329269430151">Hiermee kun je instellen of websites pop-ups mogen weergeven. Het weergeven van pop-ups kan worden toegestaan voor alle websites of worden geweigerd voor alle websites.
 
           Als dit beleid niet is ingesteld, wordt 'BlockPopups' gebruikt en kan de gebruiker dit wijzigen.</translation>
+<translation id="2265214338421787313">Via dit beleid kan een beheerder opgeven dat een pagina pop-upvensters mag weergegeven tijdens het unloaden.
+
+      Wanneer het beleid is ingesteld op ingeschakeld, kunnen pagina's pop-upvensters weergeven terwijl ze worden geünload.
+
+      Wanneer het beleid is ingesteld op uitgeschakeld of niet is ingesteld, mogen pagina's geen pop-upvensters weergeven terwijl ze worden geünload. Dit is volgens de specificatie (https://html.spec.whatwg.org/#apis-for-creating-and-navigating-browsing-contexts-by-name).
+
+      Dit beleid wordt verwijderd in Chrome 82.
+
+      Zie https://www.chromestatus.com/feature/5989473649164288.</translation>
 <translation id="2269319728625047531">Weergave van synchronisatietoestemming inschakelen tijdens het inloggen</translation>
 <translation id="2274864612594831715">Dit beleid configureert de inschakeling van het virtuele toetsenbord als invoerapparaat in ChromeOS. Gebruikers kunnen dit beleid niet overschrijven.
 
@@ -2279,6 +2289,7 @@ Anders dan bij <ph name="URL_LIST_POLICY_NAME" /> kunnen regels in twee richting
 <translation id="602728333950205286">Instant-URL voor standaardzoekprovider</translation>
 <translation id="603410445099326293">Parameters voor suggestie-URL die POST gebruikt</translation>
 <translation id="6034341625190551415">Beheert accounttypen voor openbare sessies en kiosken.</translation>
+<translation id="6034603289689965535">Hiermee wordt toegestaan dat een pagina pop-upvensters weergeeft tijdens het unloaden</translation>
 <translation id="6036523166753287175">Firewallpassage vanaf host voor externe toegang inschakelen</translation>
 <translation id="6070667616071269965">Toetsenbordindelingen voor inlogscherm van apparaat</translation>
 <translation id="6074963268421707432">Niet toestaan dat sites bureaubladmeldingen weergeven</translation>

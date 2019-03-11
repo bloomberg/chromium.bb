@@ -99,9 +99,11 @@ Verifică e-mailul la <ph name="ACCOUNT_EMAIL" /> pentru instrucțiuni supliment
 <translation id="3398288718845740432">Ascunde în meniul Chrome</translation>
 <translation id="3451115285585441894">Se adaugă la Chrome...</translation>
 <translation id="345171907106878721">Adăugați-vă la Chrome</translation>
+<translation id="3457651673823986489">Dacă o imagine nu are o descriere utilă, Chrome va încerca să o completeze. Imaginile sunt scanate de Google. Poți dezactiva această opțiune oricând din setări.</translation>
 <translation id="3479552764303398839">Nu acum</translation>
 <translation id="34857402635545079">Șterge și datele din Chrome (<ph name="URL" />)</translation>
 <translation id="3503306920980160878">Chrome are nevoie de acces la locația ta ca să permită accesul la locație pentru acest site</translation>
+<translation id="3576528680708590453">Administratorul sistemului a configurat Google Chrome astfel încât să deschidă un browser secundar pentru a accesa <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="3582972582564653026">Sincronizează și personalizează Chrome pe toate dispozitivele</translation>
 <translation id="3622797965165704966">Acum este mai ușor să folosiți Chrome cu Contul Google și pe computerele utilizate în comun.</translation>
 <translation id="3637702109597584617"><ph name="TERMS_OF_SERVICE_LINK" />Termenii și condițiile<ph name="END_TERMS_OF_SERVICE_LINK" /> sistemului de operare Google Chrome</translation>
@@ -248,6 +250,7 @@ Verifică e-mailul la <ph name="ACCOUNT_EMAIL" /> pentru instrucțiuni supliment
 <translation id="8129812357326543296">Despre &amp;Google Chrome</translation>
 <translation id="8179874765710681175">Instalează Chrome pe telefon. Vom trimite un SMS pe telefon.</translation>
 <translation id="8183957050892517584">Chrome va stoca în siguranță detaliile personale, pentru a nu fi necesar să le introduci din nou.</translation>
+<translation id="8224281044825492187">Dacă o imagine nu are o descriere utilă, Chrome va încerca să o completeze. Imaginile sunt scanate de Google.</translation>
 <translation id="8226081633851087288">{0,plural, =0{Sistemul de operare Chrome va reporni acum}=1{Sistemul de operare Chrome va reporni într-o secundă}few{Sistemul de operare Chrome va reporni în # secunde}other{Sistemul de operare Chrome va reporni în # de secunde}}</translation>
 <translation id="825412236959742607">Această pagină folosește prea multă memorie, prin urmare Chrome a eliminat o parte din conținut.</translation>
 <translation id="8255190535488645436">Google Chrome utilizează camera foto și microfonul.</translation>

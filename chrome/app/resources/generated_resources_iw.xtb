@@ -1386,7 +1386,7 @@
 <translation id="3038612606416062604">הוספה ידנית של מדפסת</translation>
 <translation id="3038675903128704560">אל תאפשר לאף אתר להשתמש בפלאגין כדי לגשת למחשב שלך</translation>
 <translation id="3039491566278747710">התקנת המדיניות הלא מקוונת במכשיר נכשלה.</translation>
-<translation id="3040310857793999281">החלפת מצב ההשתקה</translation>
+<translation id="3040310857793999281">השתקה או ביטול ההשתקה</translation>
 <translation id="3045447014237878114">האתר הזה הוריד קבצים מרובים באופן אוטומטי</translation>
 <translation id="3046910703532196514">דף אינטרנט, שלם</translation>
 <translation id="304747341537320566">מנועי דיבור</translation>
@@ -1594,7 +1594,7 @@
 <translation id="3393352139658145068">‏הפעלה של ה-Assistant כשמישהו אומר "Ok Google". כדי לחסוך בסוללה, התכונה "Ok Google" פועלת רק כשהמכשיר מחובר למקור חשמל.</translation>
 <translation id="3396800784455899911">‏לחיצה על הלחצן "קבלה והמשך" מבטאת את הסכמתך לעיבוד שתואר קודם לכן לגבי השירותים האלה של Google.</translation>
 <translation id="3399432415385675819">הודעות יושבתו</translation>
-<translation id="3400390787768057815">‏<ph name="WIDTH" /> x <ph name="HEIGHT" /> (<ph name="REFRESH_RATE" /> הרץ) – שזור (Interlaced)</translation>
+<translation id="3400390787768057815">‏<ph name="WIDTH" /> x <ph name="HEIGHT" /> (<ph name="REFRESH_RATE" /> הרץ) – סריקה שזורה (Interlaced)</translation>
 <translation id="340282674066624"><ph name="DOWNLOAD_RECEIVED" />, <ph name="TIME_LEFT" /></translation>
 <translation id="3404065873681873169">לא נשמרו סיסמאות לאתר הזה</translation>
 <translation id="340485819826776184">‏שימוש בשירות השלמות כדי לעזור בהשלמת חיפושים וכתובות URL שמוקלדים בשורת כתובת האתר</translation>
@@ -4318,7 +4318,7 @@
 <translation id="7494694779888133066">‏<ph name="WIDTH" /> ‏x ‏<ph name="HEIGHT" /></translation>
 <translation id="7495778526395737099">שכחת את הסיסמה הקודמת?</translation>
 <translation id="7496511874649569424"><ph name="LINUX_APP_NAME" /> והנתונים שמשויכים לאפליקציה יוסרו מהמכשיר הזה.</translation>
-<translation id="7496732379142025470">‏כדי לחסוך בסוללה, הזיהוי של "Ok Google" מופעל רק כשהמכשיר שלך מחובר למקור חשמל. אפשר לשנות את ההתנהגות הזאת דרך ההגדרות.</translation>
+<translation id="7496732379142025470">‏כדי לחסוך בסוללה, הזיהוי של "Ok Google" מופעל רק כשהמכשיר מחובר למקור חשמל. אפשר לשנות את ההתנהגות הזאת דרך ההגדרות.</translation>
 <translation id="7497215489070763236">‏אישור CA של שרת</translation>
 <translation id="7497981768003291373">‏אין לך יומני טקסט של WebRTC שתועדו לאחרונה.</translation>
 <translation id="7502658306369382406">‏כתובת IPv6</translation>
@@ -4905,7 +4905,7 @@
 <translation id="8329978297633540474">טקסט רגיל</translation>
 <translation id="8335587457941836791">ביטול הצמדה למדף</translation>
 <translation id="8336153091935557858">אתמול <ph name="YESTERDAY_DAYTIME" /></translation>
-<translation id="8337047789441383384">כבר רשמת את מפתח האבטחה זה. אין צורך לרשום אותו שוב.</translation>
+<translation id="8337047789441383384">כבר רשמת את מפתח האבטחה הזה. אין צורך לרשום אותו שוב.</translation>
 <translation id="8338952601723052325">אתר האינטרנט של המפתח</translation>
 <translation id="8339059274628563283">נתונים המאוחסנים באופן מקומי עבור <ph name="SITE" /></translation>
 <translation id="833986336429795709">צריך לבחור אפליקציה כדי לפתוח את הקישור הזה</translation>

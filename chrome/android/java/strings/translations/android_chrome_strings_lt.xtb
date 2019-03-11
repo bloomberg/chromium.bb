@@ -149,6 +149,7 @@
 <translation id="204321170514947529">„<ph name="APP_NAME" />“ duomenų taip pat yra naršyklėje „Chrome“</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB užima kitos programos</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
+<translation id="2056878612599315956">Svetainė pristabdyta</translation>
 <translation id="2063713494490388661">Paliesti ir ieškoti</translation>
 <translation id="2079545284768500474">Anuliuoti</translation>
 <translation id="2082238445998314030">Rezultatų: <ph name="RESULT_NUMBER" /> iš <ph name="TOTAL_RESULTS" /></translation>
@@ -777,6 +778,7 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="6709133671862442373">Naujienos</translation>
 <translation id="6710213216561001401">Ankstesnis</translation>
 <translation id="6712388303105732168">Žr. daugiau panašių pasiūlymų iš „Google“ naudodami mygtuką „Daugiau panašių“</translation>
+<translation id="671481426037969117"><ph name="FQDN" /> laikmatis sustojo. Jis vėl bus paleistas rytoj.</translation>
 <translation id="6738867403308150051">Atsisiunčiama...</translation>
 <translation id="6746124502594467657">Perkelti žemyn</translation>
 <translation id="6766622839693428701">Perbraukite žemyn, kad uždarytumėte.</translation>

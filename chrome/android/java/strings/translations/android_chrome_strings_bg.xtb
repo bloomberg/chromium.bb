@@ -149,6 +149,7 @@
 <translation id="204321170514947529"><ph name="APP_NAME" /> също има данни в Chrome</translation>
 <translation id="2045104531052923016">Други приложения: <ph name="GIGABYTES" /> ГБ</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /><ph name="SEPARATOR" /><ph name="DESCRIPTION" /></translation>
+<translation id="2056878612599315956">Сайтът е на пауза</translation>
 <translation id="2063713494490388661">Търсене с докосване</translation>
 <translation id="2079545284768500474">Отмяна</translation>
 <translation id="2082238445998314030">Резултат <ph name="RESULT_NUMBER" /> от <ph name="TOTAL_RESULTS" /></translation>
@@ -778,6 +779,7 @@
 <translation id="6709133671862442373">Новини</translation>
 <translation id="6710213216561001401">Предишна</translation>
 <translation id="6712388303105732168">Вижте още подобни предложения от Google чрез бутона „Още като това“</translation>
+<translation id="671481426037969117">Таймерът ви за <ph name="FQDN" /> изтече и ще се стартира отново утре.</translation>
 <translation id="6738867403308150051">Изтегля се…</translation>
 <translation id="6746124502594467657">Придвижване надолу</translation>
 <translation id="6766622839693428701">Прекарайте пръст надолу, за да затворите.</translation>

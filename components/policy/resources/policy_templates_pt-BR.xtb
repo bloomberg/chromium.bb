@@ -431,6 +431,7 @@
       Se essa configuração estiver ativada, a impressão digital da senha será capturada nesses URLs pelo serviço de proteção de senhas para detecção de reutilização.
       Se essa configuração estiver desativada ou não estiver definida, a impressão digital da senha será capturada pelo serviço de proteção de senhas apenas em https://accounts.google.com.br.
       Esta política está disponível apenas em instâncias do Windows associadas a um domínio <ph name="MS_AD_NAME" /> ou instâncias do Windows 10 Pro ou Enterprise inscritas no gerenciamento de dispositivos.</translation>
+<translation id="1919802376548418720">Usar a política KDC para delegar credenciais.</translation>
 <translation id="1920046221095339924">Permite sessão gerenciada no dispositivo</translation>
 <translation id="1929709556673267855">Fornece configurações para impressoras corporativas associadas a dispositivos.
 
@@ -596,6 +597,15 @@
 <translation id="2231817271680715693">Importar histórico de navegação do navegador padrão na primeira execução</translation>
 <translation id="2236488539271255289">Não permitir que nenhum site defina dados locais</translation>
 <translation id="2240879329269430151">Permite que você defina se websites estão autorizados a exibir pop-ups. A exibição de pop-ups pode ser permitida ou negada para todos os websites. Se esta política for deixada sem definição, a política "BlockPopups" será utilizada, mas pode ser modificada pelo usuário.</translation>
+<translation id="2265214338421787313">Esta política permite que um administrador especifique que uma página pode mostrar pop-ups ao fazer unload.
+
+      Quando a política for definida como ativada, as páginas poderão mostrar pop-ups enquanto estiverem passando por unload.
+
+      Quando a política for definida como desativada ou não for definida, as páginas não mostrarão pop-ups enquanto estiverem passando por unload, de acordo com a especificação (https://html.spec.whatwg.org/#apis-for-creating-and-navigating-browsing-contexts-by-name).
+
+      Essa política será removida no Chrome 82.
+
+      Consulte https://www.chromestatus.com/feature/5989473649164288 .</translation>
 <translation id="2269319728625047531">Ativa a exibição do consentimento de sincronização durante o login</translation>
 <translation id="2274864612594831715">Esta política é definida de modo a ativar o teclado virtual como um dispositivo de entrada no ChromeOS. Os usuários não podem substituir essa política.
 
@@ -2197,6 +2207,7 @@
 <translation id="602728333950205286">URL instantâneo do provedor de pesquisa padrão</translation>
 <translation id="603410445099326293">Parâmetros para URL de sugestões que usa POST</translation>
 <translation id="6034341625190551415">Controla sessões públicas e tipos de conta de quiosque.</translation>
+<translation id="6034603289689965535">Permite que uma página mostre pop-ups ao fazer unload</translation>
 <translation id="6036523166753287175">Habilitar passagem de firewall a partir do host de acesso remoto</translation>
 <translation id="6070667616071269965">Layouts de teclado da tela de login do dispositivo</translation>
 <translation id="6074963268421707432">Não permitir que nenhum site exiba notificações da área de trabalho</translation>

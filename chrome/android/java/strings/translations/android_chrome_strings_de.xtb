@@ -149,6 +149,7 @@
 <translation id="204321170514947529"><ph name="APP_NAME" /> hat auch Daten in Chrome</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB sonstiger Apps</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
+<translation id="2056878612599315956">Website pausiert</translation>
 <translation id="2063713494490388661">Zum Suchen tippen</translation>
 <translation id="2079545284768500474">Rückgängig machen</translation>
 <translation id="2082238445998314030">Ergebnis <ph name="RESULT_NUMBER" /> von <ph name="TOTAL_RESULTS" /></translation>
@@ -777,6 +778,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="6709133671862442373">Nachrichten</translation>
 <translation id="6710213216561001401">Zurück</translation>
 <translation id="6712388303105732168">Über die Schaltfläche "Weitere ähnliche" sehen Sie ähnliche Inhalte von Google</translation>
+<translation id="671481426037969117">Ihr <ph name="FQDN" />-Timer ist abgelaufen. Morgen startet er neu.</translation>
 <translation id="6738867403308150051">Wird heruntergeladen...</translation>
 <translation id="6746124502594467657">Nach unten</translation>
 <translation id="6766622839693428701">Zum Schließen nach unten wischen.</translation>

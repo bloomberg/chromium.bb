@@ -149,6 +149,7 @@
 <translation id="204321170514947529">Aplikacija <ph name="APP_NAME" /> ima prav tako podatke v Chromu</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB drugih aplikacij</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /><ph name="SEPARATOR" /><ph name="DESCRIPTION" /></translation>
+<translation id="2056878612599315956">Spletno mesto začasno ustavljeno</translation>
 <translation id="2063713494490388661">Iskanje z dotikom</translation>
 <translation id="2079545284768500474">Razveljavi</translation>
 <translation id="2082238445998314030"><ph name="RESULT_NUMBER" />. rezultat od <ph name="TOTAL_RESULTS" /></translation>
@@ -776,6 +777,7 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="6709133671862442373">Novice</translation>
 <translation id="6710213216561001401">Nazaj</translation>
 <translation id="6712388303105732168">Oglejte si več podobnega v Googlu z gumbom za več podobnega</translation>
+<translation id="671481426037969117">Merilnik časa za <ph name="FQDN" /> je potekel. Jutri se začne znova.</translation>
 <translation id="6738867403308150051">Prenašanje ...</translation>
 <translation id="6746124502594467657">Premakni dol</translation>
 <translation id="6766622839693428701">Povlecite navzdol, da zaprete.</translation>

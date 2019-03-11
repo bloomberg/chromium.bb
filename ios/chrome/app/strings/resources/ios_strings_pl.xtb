@@ -155,6 +155,7 @@
 <translation id="3324193307694657476">Adres 2</translation>
 <translation id="3329904751041170572">Nie można połączyć się z serwerem.</translation>
 <translation id="3335947283844343239">Otwórz ponownie zamkniętą kartę</translation>
+<translation id="3371831930909698441">Dostępne jest tłumaczenie. Opcje znajdują się u dołu ekranu.</translation>
 <translation id="3393920035788932672">Pop-upy akceptowane</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Widok dzielony</translation>
@@ -353,9 +354,11 @@ Twoje dane zostały zaszyfrowane z użyciem hasła synchronizacji w dniu <ph n
 <translation id="6445051938772793705">Kraj</translation>
 <translation id="6445981559479772097">Wiadomość została wysłana.</translation>
 <translation id="6464071786529933911">Otwórz w karcie incognito</translation>
+<translation id="6476800141292307438">Tłumaczę stronę na <ph name="LANGUAGE" />. Opcje znajdują się na dole ekranu.</translation>
 <translation id="6482629121755362506">Usunięte elementy: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="6513773942555305766">Hasło proponowane przez Chrome: <ph name="SUGGESTED_PASSWORD" /></translation>
 <translation id="6541915733953096570">Ostatnia godzina</translation>
+<translation id="6610002944194042868">Opcje tłumaczenia</translation>
 <translation id="6642362222295953972">Przełącz na istniejącą kartę</translation>
 <translation id="6643016212128521049">Wyczyść</translation>
 <translation id="6656103420185847513">Folder edytora</translation>
@@ -376,6 +379,7 @@ Twoje dane zostały zaszyfrowane z użyciem hasła synchronizacji w dniu <ph n
 <translation id="6903907808598579934">Włącz synchronizację</translation>
 <translation id="6914583639806229067">Wyszukaj skopiowany obraz</translation>
 <translation id="6914783257214138813">Twoje hasła będą widoczne dla każdego, kto może zobaczyć wyeksportowany plik.</translation>
+<translation id="6944369514868857500">Wybierz inne konto</translation>
 <translation id="6945221475159498467">Wybierz</translation>
 <translation id="6973630695168034713">Foldery</translation>
 <translation id="6979158407327259162">Dysk Google</translation>
@@ -455,6 +459,7 @@ Twoje dane zostały zaszyfrowane z użyciem hasła synchronizacji w dniu <ph n
 <translation id="8281781826761538115">Domyślny – <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8328777765163860529">Zamknij wszystkie</translation>
 <translation id="8381750437846184350">Określ, jak Google może korzystać z Twojej historii przeglądania, by dostosowywać wyniki wyszukiwania, reklamy i działanie innych usług</translation>
+<translation id="8407669440184693619">Nie znaleziono haseł do tej strony</translation>
 <translation id="842017693807136194">Zalogowano za pomocą:</translation>
 <translation id="8428045167754449968">Miejscowość</translation>
 <translation id="8428213095426709021">Ustawienia</translation>

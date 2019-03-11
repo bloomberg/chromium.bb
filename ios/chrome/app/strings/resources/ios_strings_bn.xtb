@@ -155,6 +155,7 @@
 <translation id="3324193307694657476">ঠিকানা ২</translation>
 <translation id="3329904751041170572">সার্ভারের সাথে সংযোগ করা যাযনি৷</translation>
 <translation id="3335947283844343239">বন্ধ হওয়া ট্যাব আবার খুলুন</translation>
+<translation id="3371831930909698441">অনুবাদ পাওয়া যাচ্ছে। স্ক্রিনের একটু নিচের দিকে বিকল্পগুলি দেওয়া আছে।</translation>
 <translation id="3393920035788932672">মঞ্জুরিপ্রাপ্ত পপ-আপ</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> মিনিট</translation>
 <translation id="3448016392200048164">বিভক্ত দৃশ্য</translation>
@@ -354,9 +355,11 @@
 <translation id="6445051938772793705">দেশ</translation>
 <translation id="6445981559479772097">বার্তা পাঠানো হয়েছে৷</translation>
 <translation id="6464071786529933911">নতুন ছদ্মবেশী ট্যাবে খুলুন</translation>
+<translation id="6476800141292307438">পৃষ্ঠাটি <ph name="LANGUAGE" /> ভাষাতে অনুবাদ হচ্ছে। স্ক্রিনের নিচের দিকে বিকল্পগুলি দেওয়া আছে।</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" />টি আইটেম মোছা হয়েছে</translation>
 <translation id="6513773942555305766">Chrome-এর সাজেস্ট করা পাসওয়ার্ড: <ph name="SUGGESTED_PASSWORD" /></translation>
 <translation id="6541915733953096570">গত এক ঘণ্টা</translation>
+<translation id="6610002944194042868">অনুবাদের বিকল্প</translation>
 <translation id="6642362222295953972">আগে থেকে থাকা ট্যাবে পাল্টান</translation>
 <translation id="6643016212128521049">সাফ করুন</translation>
 <translation id="6656103420185847513">ফোল্ডার সম্পাদনা করুন</translation>
@@ -377,6 +380,7 @@
 <translation id="6903907808598579934">সিঙ্ক চালু করুন</translation>
 <translation id="6914583639806229067">আপনার কপি করা ছবি সার্চ করুন</translation>
 <translation id="6914783257214138813">এক্সপোর্ট করা ফাইল যারা দেখতে পান তারা আপনার পাসওয়ার্ডগুলিও দেখতে পাবেন।</translation>
+<translation id="6944369514868857500">অন্য অ্যাকাউন্ট বেছে নিন</translation>
 <translation id="6945221475159498467">নির্বাচন</translation>
 <translation id="6973630695168034713">ফোল্ডারগুলি</translation>
 <translation id="6979158407327259162">Google ড্রাইভ</translation>
@@ -456,6 +460,7 @@
 <translation id="8281781826761538115">ডিফল্ট - <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8328777765163860529">সমস্ত বন্ধ করুন</translation>
 <translation id="8381750437846184350">সার্চ, বিজ্ঞাপন এবং অন্যান্য Google পরিষেবা ব্যক্তিগতকৃত করতে Google কীভাবে আপনার ব্রাউজিং ইতিহাস ব্যবহার করে তা নিয়ন্ত্রণ করুন</translation>
+<translation id="8407669440184693619">এই সাইটের জন্য কোনও পাসওয়ার্ড পাওয়া যায়নি</translation>
 <translation id="842017693807136194">এটি দিয়ে সাইন-ইন করেছেন</translation>
 <translation id="8428045167754449968">নগর / ছোট শহর</translation>
 <translation id="8428213095426709021">সেটিংস</translation>

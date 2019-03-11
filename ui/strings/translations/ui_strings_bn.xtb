@@ -14,6 +14,7 @@
 <translation id="1368832886055348810">বাঁ থেকে ডান</translation>
 <translation id="1383876407941801731">সার্চ করুন</translation>
 <translation id="1398853756734560583">বড় করুন</translation>
+<translation id="1409544243779336081">অ্যাপের সাজেশন</translation>
 <translation id="1413622004203049571"><ph name="NOTIFIER_NAME" /> এর থেকে বিজ্ঞপ্তিগুলি অক্ষম করুন</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{১ মিনিট এবং }one{# মিনিট এবং }other{# মিনিট এবং }}</translation>
 <translation id="1643823602425662293">বিজ্ঞপ্তি</translation>
@@ -69,6 +70,7 @@
 <translation id="3479552764303398839">এখনই নয়</translation>
 <translation id="348799646910989694">শেল্ফ অটোমেটিক লুকানো হবে</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{১ দিন বাকি}one{# দিন বাকি}other{# দিন বাকি}}</translation>
+<translation id="3600969208114796418"><ph name="SAVEAS_EXTENSION_TYPE" /> ফাইল</translation>
 <translation id="3608915363409716668"><ph name="MAXIMUM_VALUE" />+</translation>
 <translation id="3618849550573277856">“<ph name="LOOKUP_STRING" />” খুঁজে দেখুন</translation>
 <translation id="364720409959344976">আপলোড করার জন্য ফোল্ডার বেছে নিন</translation>
@@ -143,6 +145,7 @@
 <translation id="6808150112686056157">মিডিয়া থামান</translation>
 <translation id="6845383723252244143">ফোল্ডার বেছে নিন</translation>
 <translation id="6845533974506654842">টিপুন</translation>
+<translation id="686304767576508198">শেয়ার করা হয়েছে</translation>
 <translation id="6863590663815976734">{HOURS,plural, =1{১ ঘণ্টা বাকি}one{# ঘণ্টা বাকি}other{# ঘণ্টা বাকি}}</translation>
 <translation id="688711909580084195">শিরোনামহীন ওয়েবপৃষ্ঠা</translation>
 <translation id="6907759265145635167"><ph name="QUANTITY" /> PB/s</translation>

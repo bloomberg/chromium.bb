@@ -433,6 +433,7 @@
       Jeśli to ustawienie jest włączone, usługa ochrony haseł będzie rejestrować na tych stronach odciski cyfrowe haseł służące do wykrywania przypadków użycia tego samego hasła w różnych miejscach.
       Jeśli to ustawienie jest wyłączone lub nieskonfigurowane, usługa ochrony haseł rejestruje odciski cyfrowe haseł tylko na stronie https://accounts.google.com.
       Ta zasada jest dostępna tylko w wystąpieniach systemu Windows, które należą do domeny <ph name="MS_AD_NAME" />, oraz w wystąpieniach systemu Windows 10 Pro lub Enterprise zarejestrowanych w funkcji zarządzania urządzeniami.</translation>
+<translation id="1919802376548418720">Używaj zasady KDC do przekazywania danych logowania.</translation>
 <translation id="1920046221095339924">Zezwalaj na sesję zarządzaną na urządzeniu</translation>
 <translation id="1929709556673267855">Udostępnia konfiguracje drukarek firmowych powiązanych z urządzeniami.
 
@@ -600,6 +601,15 @@ Format jest taki sam jak w słowniku NativePrinters. Dodatkowo w przypadku każd
 <translation id="2231817271680715693">Importuj historię przeglądania z przeglądarki domyślnej przy pierwszym uruchomieniu</translation>
 <translation id="2236488539271255289">Nie zezwalaj żadnej witrynie na tworzenie danych lokalnych</translation>
 <translation id="2240879329269430151">Umożliwia określenie, czy w witrynach mogą być pokazywane wyskakujące okienka. Pokazywanie wyskakujących okienek może być dozwolone lub zabronione we wszystkich witrynach. W przypadku nieskonfigurowania tej zasady będzie używane ustawienie „BlockPopups”, a użytkownik będzie mógł je zmienić.</translation>
+<translation id="2265214338421787313">Ta zasada umożliwia administratorowi zezwolenie na wyświetlanie wyskakujących okienek przez stronę podczas jej zamykania.
+
+      Gdy zasada jest włączona, strony mogą wyświetlać wyskakujące okienka podczas ich zamykania.
+
+      Gdy zasada jest wyłączona lub nieskonfigurowana, strony nie mogą wyświetlać wyskakujących okienek podczas ich zamykania – zgodnie ze specyfikacją (https://html.spec.whatwg.org/#apis-for-creating-and-navigating-browsing-contexts-by-name).
+
+      Ta zasada zostanie usunięta w Chrome 82.
+
+      Patrz https://www.chromestatus.com/feature/5989473649164288 .</translation>
 <translation id="2269319728625047531">Włącz wyświetlanie pytania o synchronizację podczas logowania</translation>
 <translation id="2274864612594831715">Ta zasada konfiguruje włączanie klawiatury wirtualnej jako urządzenia wejściowego w Chrome OS. Użytkownicy nie mogą jej zastąpić.
 
@@ -2211,6 +2221,7 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 <translation id="602728333950205286">Adres URL wyszukiwania dynamicznego od domyślnego dostawcy wyszukiwania</translation>
 <translation id="603410445099326293">Parametry dla sugerowania URL-i używających POST</translation>
 <translation id="6034341625190551415">Kontroluje sesje publiczne i rodzaje kont kiosku.</translation>
+<translation id="6034603289689965535">Zezwala stronie na wyświetlanie wyskakujących okienek podczas jej zamykania</translation>
 <translation id="6036523166753287175">Włącz omijanie zapory sieciowej przez hosta dostępu zdalnego</translation>
 <translation id="6070667616071269965">Układy klawiatury na ekranie logowania na urządzeniu</translation>
 <translation id="6074963268421707432">Nie zezwalaj żadnej witrynie na pokazywanie powiadomień na pulpicie</translation>

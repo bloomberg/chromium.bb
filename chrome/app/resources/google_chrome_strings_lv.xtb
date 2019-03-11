@@ -101,9 +101,11 @@ Papildu norādījumus skatiet e-pasta ziņojumā šeit: <ph name="ACCOUNT_EMAIL"
 <translation id="3398288718845740432">Paslēpšana Chrome izvēlnē</translation>
 <translation id="3451115285585441894">Notiek pievienošana pārlūkam Chrome...</translation>
 <translation id="345171907106878721">Pievienot savu kontu pārlūkā Chrome</translation>
+<translation id="3457651673823986489">Ja attēlam nav vērtīga apraksta, pārlūks Chrome mēģinās jums tādu nodrošināt. Attēlus pārmeklē Google. Jebkurā brīdī varat izslēgt šo iespēju iestatījumos.</translation>
 <translation id="3479552764303398839">Vēlāk</translation>
 <translation id="34857402635545079">Notīrīt arī datus no Chrome (<ph name="URL" />)</translation>
 <translation id="3503306920980160878">Pārlūkam Chrome ir nepieciešama piekļuve jūsu atrašanās vietas datiem, lai varētu tos kopīgot ar šo vietni.</translation>
+<translation id="3576528680708590453">Sistēmas administrators ir konfigurējis pārlūku Google Chrome, lai vietne <ph name="TARGET_URL_HOSTNAME" /> tiktu atvērta papildu pārlūkā.</translation>
 <translation id="3582972582564653026">Chrome sinhronizēšana un personalizēšana visās jūsu ierīcēs</translation>
 <translation id="3622797965165704966">Tagad pārlūkā Chrome ir vieglāk izmantot Google kontu, kā arī ir atvieglota lietošana datoros, ko izmanto vairākas personas.</translation>
 <translation id="3637702109597584617">Google Chrome OS <ph name="TERMS_OF_SERVICE_LINK" />pakalpojumu sniegšanas noteikumi<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
@@ -252,6 +254,7 @@ Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai li
 <translation id="8129812357326543296">Par &amp;Google Chrome</translation>
 <translation id="8179874765710681175">Instalējiet pārlūkprogrammu Chrome savā tālrunī. Mēs nosūtīsim īsziņu uz jūsu tālruņa numuru.</translation>
 <translation id="8183957050892517584">Chrome droši saglabās jūsu privāto informāciju, lai tā vairs nebūtu atkārtoti jāievada.</translation>
+<translation id="8224281044825492187">Ja attēlam nav vērtīga apraksta, pārlūks Chrome mēģinās jums tādu nodrošināt. Attēlus pārmeklē Google.</translation>
 <translation id="8226081633851087288">{0,plural, =0{Operētājsistēma Chrome OS tiks restartēta tūlīt}=1{Operētājsistēma Chrome OS tiks restartēta pēc 1 sekundes}zero{Operētājsistēma Chrome OS tiks restartēta pēc # sekundēm}one{Operētājsistēma Chrome OS tiks restartēta pēc # sekundes}other{Operētājsistēma Chrome OS tiks restartēta pēc # sekundēm}}</translation>
 <translation id="825412236959742607">Šī lapa izmanto pārāk daudz atmiņas, tādēļ pārlūks Chrome noņēma daļu satura.</translation>
 <translation id="8255190535488645436">Pārlūkā Google Chrome tiek izmantota kamera un mikrofons.</translation>

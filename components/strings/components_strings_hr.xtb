@@ -83,6 +83,7 @@
 <translation id="1348198688976932919">Sljedeća web-lokacija sadrži opasne aplikacije</translation>
 <translation id="1348779747280417563">Potvrda imena</translation>
 <translation id="1357195169723583938">Tko je nedavno upotrebljavao uređaj i kada</translation>
+<translation id="1364822246244961190">To je pravilo blokirano i njegova će se vrijednost zanemariti.</translation>
 <translation id="1374468813861204354">prijedlozi</translation>
 <translation id="1374692235857187091">Index-4x6 (dopisnica)</translation>
 <translation id="1375198122581997741">O verziji</translation>
@@ -105,6 +106,7 @@
 <translation id="1472675084647422956">Prikaži više</translation>
 <translation id="147358896496811705">2A0</translation>
 <translation id="1484290072879560759">Odaberite adresu za dostavu</translation>
+<translation id="1492194039220927094">Push slanje pravila:</translation>
 <translation id="1501859676467574491">Prikaži kartice s Google računa</translation>
 <translation id="1507202001669085618">&lt;p&gt;Ta će se pogreška prikazati ako upotrebljavate Wi-Fi portal na koji se morate prijaviti da biste se povezali s internetom.&lt;/p&gt;
     &lt;p&gt;Da biste ispravili tu pogrešku, kliknite &lt;strong&gt;Poveži se&lt;/strong&gt; na stranici koju pokušavate otvoriti.&lt;/p&gt;</translation>
@@ -125,6 +127,7 @@
 <translation id="1559572115229829303">&lt;p&gt;Sigurna veza s domenom <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> ne može se uspostaviti jer datum i vrijeme na uređaju (<ph name="DATE_AND_TIME" />) nisu točni.&lt;/p&gt;
 
       &lt;p&gt;Prilagodite datum i vrijeme putem odjeljka &lt;strong&gt;Općenito&lt;/strong&gt; u aplikaciji &lt;strong&gt;Postavke&lt;/strong&gt;.&lt;/p&gt;</translation>
+<translation id="1569487616857761740">Unesite datum isteka</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">Nešto nije u redu s prikazivanjem ove web-stranice.</translation>
 <translation id="1592005682883173041">Pristup lokalnim podacima</translation>
@@ -494,6 +497,7 @@
 <translation id="3658742229777143148">Izmjena</translation>
 <translation id="366077651725703012">Ažuriraj kreditnu karticu</translation>
 <translation id="3676592649209844519">ID uređaja:</translation>
+<translation id="3677008721441257057">Jeste li mislili &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;?</translation>
 <translation id="3678029195006412963">Zahtjev nije bilo moguće potpisati</translation>
 <translation id="3678529606614285348">Otvorite stranicu u novom anonimnom prozoru (Ctrl – Shift – N)</translation>
 <translation id="3679803492151881375">Izvješće o rušenju programa generirano u <ph name="CRASH_TIME" />, preneseno u <ph name="UPLOAD_TIME" /></translation>
@@ -1103,6 +1107,7 @@
 <translation id="7220786058474068424">Obrada</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">Web-lokacija pred vama sadrži zlonamjerni softver</translation>
+<translation id="724766306220616965">Upozorenja, sukob</translation>
 <translation id="724975217298816891">Unesite datum isteka i CVC za karticu <ph name="CREDIT_CARD" /> da biste ažurirali podatke o kartici. Nakon što ih potvrdite, podaci o kartici dijelit će se s ovom web-lokacijom.</translation>
 <translation id="7251437084390964440">Konfiguracija mreže nije u skladu sa standardom ONC. Dijelovi konfiguracije možda se neće uvesti.
 Dodatne pojedinosti:
@@ -1115,6 +1120,7 @@ Dodatne pojedinosti:
 <translation id="7300012071106347854">Kobaltno plava</translation>
 <translation id="7302712225291570345">"<ph name="TEXT" />"</translation>
 <translation id="7309308571273880165">Izvješće o rušenju programa generirano <ph name="CRASH_TIME" /> (prijenos zatražio korisnik, još nije preneseno)</translation>
+<translation id="7313965965371928911">Upozorenja <ph name="BEGIN_LINK" />Sigurnog pregledavanja<ph name="END_LINK" /></translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">Pomoć za povezivanje</translation>
 <translation id="7334320624316649418">&amp;Ponovi promjenu rasporeda</translation>

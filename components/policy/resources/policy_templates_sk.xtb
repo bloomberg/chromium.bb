@@ -423,6 +423,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
       Ak toto nastavenie povolíte, služba ochrany hesla zaznamená digitálny odtlačok hesla na týchto webových adresách na účely rozpoznania opätovného použitia hesla.
       Ak toto nastavenie zakážete alebo nenastavíte, služba ochrany hesla bude zaznamenávať iba digitálne odtlačky hesiel na https://accounts.google.com.
       Toto pravidlo je k dispozícii iba v inštanciách systému Windows, ktoré sú zapojené do domény <ph name="MS_AD_NAME" />, alebo v inštanciách systému Windows 10 Pro alebo Enterprise, ktoré sú zaregistrované do správy zariadení.</translation>
+<translation id="1919802376548418720">Delegovať poverenia pomocou pravidla KDC.</translation>
 <translation id="1920046221095339924">Povoliť spravovanú reláciu v zariadení</translation>
 <translation id="1929709556673267855">Umožňuje poskytnúť konfigurácie pre podnikové tlačiarne združené so zariadeniami.
 
@@ -589,6 +590,15 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 <translation id="2240879329269430151">Umožňuje nastaviť, či môžu webové stránky zobrazovať kontextové okná. Zobrazovanie kontextových okien je možné pre všetky webové stránky buď umožniť, alebo zamietnuť.
 
           Ak toto pravidlo ponecháte nenastavené, použije sa pravidlo „BlockPopups“ a používateľ ho bude môcť zmeniť.</translation>
+<translation id="2265214338421787313">Toto pravidlo umožňuje správcovi určiť, že určitá stránka môže zobrazovať vyskakovacie okná počas rušenia jej načítania.
+
+      Keď je toto pravidlo povolené, stránky môžu zobrazovať vyskakovacie okná počas rušenia ich načítania.
+
+      Keď je pravidlo zakázané alebo nie je nastavené, stránky nemôžu zobrazovať vyskakovacie okná počas rušenia ich načítania podľa špecifikácií (https://html.spec.whatwg.org/#apis-for-creating-and-navigating-browsing-contexts-by-name).
+
+      Toto pravidlo bude odstránené v Chrome verzie 82.
+
+      Ďalšie informácie nájdete na https://www.chromestatus.com/feature/5989473649164288.</translation>
 <translation id="2269319728625047531">Povolenie zobrazovania súhlasu so synchronizáciou počas prihlasovania</translation>
 <translation id="2274864612594831715">Toto pravidlo konfiguruje povolenie virtuálnej klávesnice ako zariadenia vstupu v systéme OS Chrome. Používatelia nemôžu toto pravidlo prepísať.
 
@@ -1071,7 +1081,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 <translation id="3264793472749429012">Kódovania predvoleného poskytovateľa vyhľadávania</translation>
 <translation id="3273221114520206906">Predvolené nastavenie kódu JavaScript</translation>
 <translation id="3284094172359247914">Ovládať používanie rozhrania WebUSB API</translation>
-<translation id="3288595667065905535">Kanál verzie</translation>
+<translation id="3288595667065905535">Kanál verzií</translation>
 <translation id="3292147213643666827">Umožňuje prehliadaču <ph name="PRODUCT_NAME" /> fungovať ako server proxy medzi službou <ph name="CLOUD_PRINT_NAME" /> a staršími tlačiarňami pripojenými k počítaču.
 
       Ak je toto nastavenie povolené alebo nebolo nakonfigurované, používatelia môžu povoliť server proxy pre tlač z cloudu prostredníctvom overenia totožnosti pomocou účtu Google.
@@ -2258,6 +2268,7 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
 <translation id="602728333950205286">Webová adresa dynamického vyhľadávania predvoleného poskytovateľa vyhľadávania</translation>
 <translation id="603410445099326293">Parametre pre webovú adresu návrhov, ktorá používa metódu POST</translation>
 <translation id="6034341625190551415">Ovláda typy účtov verejných relácií a verejných terminálov.</translation>
+<translation id="6034603289689965535">Povoľuje stránke zobrazovať vyskakovacie okná počas rušenia jej načítania</translation>
 <translation id="6036523166753287175">Povoliť prechod cez bránu firewall v smere od hostiteľa vzdialeného prístupu</translation>
 <translation id="6070667616071269965">Rozloženie klávesnice na prihlasovacej obrazovke zariadenia</translation>
 <translation id="6074963268421707432">Nepovoliť žiadnym stránkam zobrazovať upozornenia na pracovnej ploche</translation>
@@ -2370,7 +2381,7 @@ Ak značku recommended nastavíte na hodnotu true, používatelia môžu zmeniť
           Toto pravidlo je voliteľné. Ak nie je nastavené, žiadosť o vyhľadávanie sa odošle pomocou metódy GET.
 
           Toto pravidlo sa rešpektuje iba v prípade, ak je povolené pravidlo DefaultSearchProviderEnabled.</translation>
-<translation id="6367755442345892511">Či má byť kanál na vydávanie nových verzií konfigurovateľný používateľom</translation>
+<translation id="6367755442345892511">Či má byť kanál verzií nastaviteľný používateľom</translation>
 <translation id="6368011194414932347">Konfigurovať webovú adresu domovskej stránky</translation>
 <translation id="6368403635025849609">Povoliť JavaScript na týchto weboch</translation>
 <translation id="6376659517206731212">Môže byť povinné</translation>
@@ -2449,7 +2460,7 @@ Ak značku recommended nastavíte na hodnotu true, používatelia môžu zmeniť
 <translation id="6536600139108165863">Automaticky reštartovať po vypnutí zariadenia</translation>
 <translation id="6539246272469751178">Toto pravidlo nemá žiaden vplyv na aplikácie pre Android. Aplikácie pre Android vždy používajú predvolený adresár sťahovania a nemôžu pristupovať k súborom stiahnutým systémom <ph name="PRODUCT_OS_NAME" /> do iného ako predvoleného adresára.</translation>
 <translation id="654303922206238013">Stratégia migrácie pre šifrovanie ecryptfs</translation>
-<translation id="6544897973797372144">Ak je toto pravidlo nastavené na možnosť True a pravidlo ChromeOsReleaseChannel nie je určené, používatelia budú môcť v zariadení meniť kanál na vydávanie nových verzií. Ak je toto pravidlo nastavené na možnosť False, zariadenie bude uzamknuté v kanáli, v ktorom bolo naposledy nastavené.
+<translation id="6544897973797372144">Ak je toto pravidlo nastavené na možnosť True a pravidlo ChromeOsReleaseChannel nie je nastavené, používatelia budú môcť v zariadení meniť kanál verzií. Ak je toto pravidlo nastavené na možnosť False, zariadenie bude uzamknuté v kanáli, v ktorom bolo naposledy nastavené.
 
       Kanál vybratý používateľom bude prepísaný pravidlom ChromeOsReleaseChannel, avšak ak je kanál pravidla stabilnejší ako kanál nainštalovaný v zariadení, kanál sa zmení až potom, čo bude stabilnejší kanál vo vyššej verzii ako kanál nainštalovaný v zariadení.</translation>
 <translation id="6553143066970470539">Percento jasu obrazovky</translation>
@@ -3004,7 +3015,7 @@ Ak toto pravidlo nastavíte na hodnotu True, vstavaný klient DNS sa použije (p
       Tieto pravidlá sa používajú iba pre detských používateľov.
       Ak je toto pravidlo nastavené, prístupový kód rodiča je možné overiť v zariadení detského používateľa.
       Ak toto pravidlo nie je nastavené, prístupový kód rodiča nie je možné overiť v zariadení detského používateľa.</translation>
-<translation id="7625444193696794922">Určuje, aký kanál verzie by mal byť v zariadení uzamknutý.</translation>
+<translation id="7625444193696794922">Určuje, aký kanál verzií by mal byť v zariadení uzamknutý.</translation>
 <translation id="7632724434767231364">Názov knižnice GSSAPI</translation>
 <translation id="7635471475589566552">Slúži na konfiguráciu miestneho nastavenia aplikácie v prehliadači <ph name="PRODUCT_NAME" /> a bráni používateľom miestne nastavenie zmeniť.
 

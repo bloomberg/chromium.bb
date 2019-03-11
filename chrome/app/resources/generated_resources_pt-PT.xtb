@@ -1007,6 +1007,7 @@
 <translation id="2484959914739448251">Para limpar os dados de navegação de todos os seus dispositivos sincronizados e da sua Conta Google, <ph name="BEGIN_LINK" />introduza a sua frase de acesso<ph name="END_LINK" />.</translation>
 <translation id="2485422356828889247">Desinstalar</translation>
 <translation id="2487067538648443797">Adicionar novo marcador</translation>
+<translation id="2489829450872380594">Da próxima vez, um novo telemóvel irá desbloquear o <ph name="DEVICE_TYPE" />. Pode desativar o Smart Lock nas Definições.</translation>
 <translation id="2489918096470125693">Adicionar &amp;Pasta...</translation>
 <translation id="249113932447298600">Lamentamos, mas de momento o aparelho <ph name="DEVICE_LABEL" /> não é suportado.</translation>
 <translation id="249303669840926644">Não foi possível concluir o registo</translation>
@@ -1765,6 +1766,7 @@ Pretende pará-lo?</translation>
 <translation id="3627588569887975815">Abrir link numa janela sem re&amp;gisto</translation>
 <translation id="3627671146180677314">Período de renovação do certificado Netscape</translation>
 <translation id="3627879631695760395">Instalar a aplicação <ph name="APP" />...</translation>
+<translation id="3629631988386925734">Introduza a palavra-passe para ativar o Smart Lock. Da próxima vez, o telemóvel irá desbloquear o <ph name="DEVICE_TYPE" />. Desative o Smart Lock nas Definições.</translation>
 <translation id="3630132874740063857">O seu telemóvel</translation>
 <translation id="3630995161997703415">Adicione este site à prateleira para o utilizar em qualquer altura.</translation>
 <translation id="3636096452488277381">Olá <ph name="USER_GIVEN_NAME" />.</translation>
@@ -2110,6 +2112,7 @@ Pretende pará-lo?</translation>
 <translation id="4109135793348361820">Mover a janela para <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
 <translation id="4110490973560452005">Transferência concluída: <ph name="FILE_NAME" />. Prima Shift+F6 para aceder à área da barra de transferências.</translation>
 <translation id="4110895898888439383">Navegar na Web no Modo de alto contraste</translation>
+<translation id="4112221174576828331">Se uma imagem não tiver uma descrição útil, o Chrome fornece uma. As imagens são analisadas pelo Google.</translation>
 <translation id="4115002065223188701">Rede fora do alcance</translation>
 <translation id="4115080753528843955">Alguns serviços de conteúdo utilizam identificadores exclusivos para autorizar o acesso a conteúdo protegido</translation>
 <translation id="4118579674665737931">Reinicie o dispositivo e tente novamente.</translation>
@@ -2662,6 +2665,7 @@ Pretende pará-lo?</translation>
 <translation id="4998873842614926205">Confirmar Alterações</translation>
 <translation id="5000922062037820727">Bloqueado (recomendado)</translation>
 <translation id="5004584466530475658"><ph name="FILE_COUNT" /> novas fotos</translation>
+<translation id="5008936837313706385">Nome da atividade</translation>
 <translation id="5010043101506446253">Autoridade de certificação</translation>
 <translation id="5010406651457630570">Computadores</translation>
 <translation id="5015344424288992913">A resolver proxy...</translation>
@@ -2993,6 +2997,7 @@ Pretende pará-lo?</translation>
 <translation id="5507756662695126555">Não repudiação</translation>
 <translation id="5509693895992845810">Guard&amp;ar Como...</translation>
 <translation id="5509914365760201064">Emissor: <ph name="CERTIFICATE_AUTHORITY" /></translation>
+<translation id="5510775624736435856">Obter descrições de imagens a partir do Google</translation>
 <translation id="5511379779384092781">Extra pequeno</translation>
 <translation id="5511823366942919280">Tem a certeza de que pretende configurar este dispositivo como um "Tubarão"?</translation>
 <translation id="5512653252560939721">O certificado de utilizador tem de ter uma garantia de hardware.</translation>
@@ -3576,6 +3581,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6341850831632289108">Detetar a sua localização física</translation>
 <translation id="6344170822609224263">Lista de acesso de ligações de rede</translation>
 <translation id="6346310558342052870">Acesso restrito</translation>
+<translation id="6349101878882523185">Instale a aplicação <ph name="APP_NAME" /></translation>
 <translation id="6349170655202535379">A sincronização não está a funcionar. Experimente terminar e iniciar sessão novamente.</translation>
 <translation id="6351063337294363751">Pode limpar os dados de navegação a partir deste menu</translation>
 <translation id="6352773953037195952">A mais alta</translation>
@@ -3993,6 +3999,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6990081529015358884">Já não tem espaço</translation>
 <translation id="6990778048354947307">Tema Escuro</translation>
 <translation id="6991665348624301627">Selecione um destino</translation>
+<translation id="6997642619627518301"><ph name="NAME_PH" /> – Registo de atividade</translation>
 <translation id="6997707937646349884">Nos seus dispositivos:</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> pastas selecionadas</translation>
 <translation id="6998793565256476099">Inscrever dispositivo para videoconferência</translation>
@@ -4295,6 +4302,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7456142309650173560">programador</translation>
 <translation id="7456847797759667638">Abrir localização...</translation>
 <translation id="7461924472993315131">Fixar</translation>
+<translation id="746216226901520237">Da próxima vez, o telemóvel irá desbloquear o <ph name="DEVICE_TYPE" />. Pode desativar o Smart Lock nas Definições.</translation>
 <translation id="7463006580194749499">Adicionar pessoa</translation>
 <translation id="7465778193084373987">URL de revogação do certificado Netscape</translation>
 <translation id="7469894403370665791">Ligar automaticamente a esta rede</translation>
@@ -4373,6 +4381,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7580671184200851182">Reproduzir o mesmo áudio em todas as colunas (áudio mono)</translation>
 <translation id="7581462281756524039">Uma ferramenta de limpeza</translation>
 <translation id="7582582252461552277">Preferir esta rede</translation>
+<translation id="7583948862126372804">Contagem</translation>
 <translation id="7586498138629385861">O Chrome continuará em execução enquanto as Aplicações Chrome estiverem abertas.</translation>
 <translation id="7589461650300748890">Pare. Tenha cuidado.</translation>
 <translation id="7589661784326793847">Aguarde um momento</translation>
@@ -5484,6 +5493,7 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="93393615658292258">Apenas palavra-passe</translation>
 <translation id="934503638756687833">Também serão removidos itens não indicados aqui, se necessário. Saiba mais acerca da &lt;a href="<ph name="URL" />"&gt;proteção contra software indesejado&lt;/a&gt; no documento técnico da Privacidade do Chrome.</translation>
 <translation id="935490618240037774">Os marcadores, o histórico, as palavras-passe e outras definições são sincronizados com a sua Conta Google para que os possa utilizar em todos os dispositivos.</translation>
+<translation id="935854577147268200">O telemóvel com Smart Lock foi alterado. Introduza a palavra-passe para atualizar o Smart Lock. Da próxima vez, o telemóvel irá desbloquear o <ph name="DEVICE_TYPE" />. Desative o Smart Lock nas Definições.</translation>
 <translation id="936801553271523408">Dados de diagnóstico do sistema</translation>
 <translation id="93766956588638423">Reparar extensão</translation>
 <translation id="938339467127511841">Armazenamento do Linux (beta)</translation>

@@ -149,6 +149,7 @@
 <translation id="204321170514947529">Anche <ph name="APP_NAME" /> presenta dati in Chrome</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB per altre app</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
+<translation id="2056878612599315956">Sito in pausa</translation>
 <translation id="2063713494490388661">Tocca per cercare</translation>
 <translation id="2079545284768500474">Annulla</translation>
 <translation id="2082238445998314030">Risultato <ph name="RESULT_NUMBER" /> di <ph name="TOTAL_RESULTS" /></translation>
@@ -777,6 +778,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="6709133671862442373">Notizie</translation>
 <translation id="6710213216561001401">Indietro</translation>
 <translation id="6712388303105732168">Scopri altre pagine simili di Google usando il pulsante Altri contenuti simili</translation>
+<translation id="671481426037969117">Il timer di <ph name="FQDN" /> è scaduto. Verrà riavviato domani.</translation>
 <translation id="6738867403308150051">Download in corso…</translation>
 <translation id="6746124502594467657">Sposta giù</translation>
 <translation id="6766622839693428701">Fai scorrere verso il basso per chiudere.</translation>

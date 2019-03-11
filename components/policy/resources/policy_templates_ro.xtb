@@ -425,6 +425,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       Dacă această setare este activată, serviciul de protecție prin parolă va scana amprenta parolei la aceste adrese URL pentru a detecta refolosirea parolelor.
       Dacă această setare este dezactivată sau nu este configurată, serviciul de protecție prin parolă va scana amprenta parolei doar la https://accounts.google.com.
       Această politică este disponibilă doar în instanțe Windows asociate unui domeniu <ph name="MS_AD_NAME" />, instanțele Windows 10 Pro sau instanțele Enterprise care au fost înscrise pentru gestionarea dispozitivului.</translation>
+<translation id="1919802376548418720">Folosește politica KDC pentru a delega datele de conectare.</translation>
 <translation id="1920046221095339924">Permite sesiunea gestionată pe dispozitiv</translation>
 <translation id="1929709556673267855">Specifică configurațiile pentru imprimantele companiei asociate dispozitivelor.
 
@@ -590,6 +591,15 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="2231817271680715693">Importați istoricul de navigare din browserul prestabilit, la prima rulare</translation>
 <translation id="2236488539271255289">Nu permite niciunui site să seteze date locale</translation>
 <translation id="2240879329269430151">Vă permite să setați dacă site-urile web au permisiunea să afișeze ferestre de tip pop-up. Afișarea ferestrelor de tip pop-up poate fi permisă sau refuzată în bloc pentru toate site-urile web. Dacă această politică este lăsată nesetată, va fi utilizată politica „BlockPopups”, dar utilizatorul va putea să o schimbe.</translation>
+<translation id="2265214338421787313">Cu ajutorul acestei politici, un administrator poate specifica dacă o pagină poate afișa pop-upuri în timpul unloadingului.
+
+      Când politica este activată, paginile pot afișa pop-upuri în timpul unloadingului.
+
+      Când politica este dezactivată sau nu este configurată, paginile nu pot afișa pop-upuri în timpul unloadingului, conform specificațiilor (https://html.spec.whatwg.org/#apis-for-creating-and-navigating-browsing-contexts-by-name).
+
+      Politica va fi eliminată în Chrome 82.
+
+      Consultați https://www.chromestatus.com/feature/5989473649164288 .</translation>
 <translation id="2269319728625047531">Activează afișarea Consimțământului de sincronizare în timpul conectării</translation>
 <translation id="2274864612594831715">Această politică configurează activarea tastaturii virtuale ca dispozitiv de introducere a textului în sistemul de operare Chrome. Utilizatorii nu pot înlocui această politică.
 
@@ -2209,6 +2219,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="602728333950205286">Adresa URL instant a furnizorului de căutare prestabilit</translation>
 <translation id="603410445099326293">Parametrii pentru adresa URL a sugestiei care utilizează POST</translation>
 <translation id="6034341625190551415">Controlează sesiunile publice și tipurile de cont kiosk.</translation>
+<translation id="6034603289689965535">Permite unei pagini să afișeze pop-upuri în timpul unloadingului</translation>
 <translation id="6036523166753287175">Activați trecerea prin firewall de la gazda de acces la distanță</translation>
 <translation id="6070667616071269965">Aspectele tastaturii de pe ecranul de conectare al dispozitivului</translation>
 <translation id="6074963268421707432">Nu permite niciunui site să afișeze notificări pe desktop</translation>

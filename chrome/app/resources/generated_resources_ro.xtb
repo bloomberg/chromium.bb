@@ -1008,6 +1008,7 @@
 <translation id="2484959914739448251">Pentru a șterge datele de navigare de pe toate dispozitivele sincronizate și din Contul Google, <ph name="BEGIN_LINK" />introdu expresia de acces<ph name="END_LINK" />.</translation>
 <translation id="2485422356828889247">Dezinstalează</translation>
 <translation id="2487067538648443797">Adaugă un marcaj nou</translation>
+<translation id="2489829450872380594">Data viitoare, un telefon nou va debloca acest <ph name="DEVICE_TYPE" />. Poți dezactiva Smart Lock în Setări.</translation>
 <translation id="2489918096470125693">Adăugați un &amp;dosar...</translation>
 <translation id="249113932447298600">Ne pare rău, dispozitivul <ph name="DEVICE_LABEL" /> nu este acceptat în prezent.</translation>
 <translation id="249303669840926644">Înregistrarea nu s-a putut finaliza</translation>
@@ -1765,6 +1766,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="3627588569887975815">Deschide linkul într-o fereastră inco&amp;gnito</translation>
 <translation id="3627671146180677314">Interval de reînnoire a certificatului Netscape</translation>
 <translation id="3627879631695760395">Instalează <ph name="APP" />...</translation>
+<translation id="3629631988386925734">Introdu parola pentru a activa Smart Lock. Data viitoare, telefonul tău va debloca dispozitivul <ph name="DEVICE_TYPE" />. Poți dezactiva Smart Lock din Setări.</translation>
 <translation id="3630132874740063857">Telefonul</translation>
 <translation id="3630995161997703415">Adaugă acest site pe raft pentru a-l folosi oricând</translation>
 <translation id="3636096452488277381">Bună ziua, <ph name="USER_GIVEN_NAME" />.</translation>
@@ -2110,6 +2112,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4109135793348361820">Mutați fereastra la <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
 <translation id="4110490973560452005">Descărcare finalizată: <ph name="FILE_NAME" />. Apasă Shift+F6 ca să revii la zona barei de descărcări.</translation>
 <translation id="4110895898888439383">Navighează pe web în modul Contrast ridicat</translation>
+<translation id="4112221174576828331">Dacă o imagine nu are o descriere utilă, Chrome o va completa. Imaginile sunt scanate de Google.</translation>
 <translation id="4115002065223188701">Rețea în afara ariei de acoperire</translation>
 <translation id="4115080753528843955">Unele servicii de conținut folosesc identificatori unici pentru autorizarea accesului la conținutul protejat</translation>
 <translation id="4118579674665737931">Repornește dispozitivul și încearcă din nou.</translation>
@@ -2662,6 +2665,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4998873842614926205">Confirmați modificările</translation>
 <translation id="5000922062037820727">Blocată (recomandat)</translation>
 <translation id="5004584466530475658"><ph name="FILE_COUNT" /> fotografii noi</translation>
+<translation id="5008936837313706385">Numele activității</translation>
 <translation id="5010043101506446253">Autoritate de certificare</translation>
 <translation id="5010406651457630570">Computere</translation>
 <translation id="5015344424288992913">Se rezolvă proxy-ul...</translation>
@@ -2993,6 +2997,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="5507756662695126555">Non-repudiere</translation>
 <translation id="5509693895992845810">Salvează c&amp;a...</translation>
 <translation id="5509914365760201064">Emitent: <ph name="CERTIFICATE_AUTHORITY" /></translation>
+<translation id="5510775624736435856">Descarcă descrierile imaginii de la Google</translation>
 <translation id="5511379779384092781">Foarte mică</translation>
 <translation id="5511823366942919280">Sigur dorești să configurezi acest dispozitiv drept „Rechin”?</translation>
 <translation id="5512653252560939721">Certificatul de utilizator trebuie să fie susținut de hardware.</translation>
@@ -3575,6 +3580,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="6341850831632289108">Detectează locația dvs. fizică</translation>
 <translation id="6344170822609224263">Accesează lista conexiunilor de rețea</translation>
 <translation id="6346310558342052870">Acces restricționat</translation>
+<translation id="6349101878882523185">Instalează <ph name="APP_NAME" /></translation>
 <translation id="6349170655202535379">Sincronizarea nu funcționează. Deconectează-te și conectează-te din nou.</translation>
 <translation id="6351063337294363751">Poți șterge datele de navigare din acest meniu</translation>
 <translation id="6352773953037195952">Cea mai înaltă</translation>
@@ -3992,6 +3998,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="6990081529015358884">Nu aveți spațiu suficient</translation>
 <translation id="6990778048354947307">Temă în culori întunecate</translation>
 <translation id="6991665348624301627">Selectați o destinație</translation>
+<translation id="6997642619627518301"><ph name="NAME_PH" /> - Jurnalul de activități</translation>
 <translation id="6997707937646349884">Pe dispozitivele tale:</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> (de) dosare selectate</translation>
 <translation id="6998793565256476099">Înscrie dispozitivul pentru conferințe video</translation>
@@ -4294,6 +4301,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="7456142309650173560">dezvoltatori</translation>
 <translation id="7456847797759667638">Deschide o locație...</translation>
 <translation id="7461924472993315131">PIN</translation>
+<translation id="746216226901520237">Data viitoare, telefonul va debloca dispozitivul <ph name="DEVICE_TYPE" />. Poți debloca Smart Lock în Setări.</translation>
 <translation id="7463006580194749499">Adăugați o persoană</translation>
 <translation id="7465778193084373987">Adresă URL de revocare a certificatului Netscape</translation>
 <translation id="7469894403370665791">Conectează-te automat la această rețea</translation>
@@ -4372,6 +4380,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="7580671184200851182">Redă același conținut audio în toate difuzoarele (audio mono)</translation>
 <translation id="7581462281756524039">Un instrument de curățare</translation>
 <translation id="7582582252461552277">Prefer această rețea</translation>
+<translation id="7583948862126372804">Număr</translation>
 <translation id="7586498138629385861">Chrome va rula în continuare când sunt deschise aplicații Chrome.</translation>
 <translation id="7589461650300748890">Ușurel. Fiți atent(ă).</translation>
 <translation id="7589661784326793847">Așteptați puțin</translation>
@@ -5484,6 +5493,7 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="93393615658292258">Numai parola</translation>
 <translation id="934503638756687833">Vor fi șterse și articole care nu sunt afișate aici, dacă este necesar. Află mai multe despre &lt;a href="<ph name="URL" />"&gt;protecția împotriva software-ului nedorit&lt;/a&gt; din cartea albă privind confidențialitatea Chrome.</translation>
 <translation id="935490618240037774">Marcajele, istoricul, parolele și alte setări vor fi sincronizate cu Contul Google, pentru a le putea folosi pe toate dispozitivele.</translation>
+<translation id="935854577147268200">Telefonul Smart Lock s-a schimbat. Introdu parola pentru a actualiza Smart Lock. Data viitoare, telefonul tău va debloca dispozitivul <ph name="DEVICE_TYPE" />. Poți dezactiva Smart Lock din Setări.</translation>
 <translation id="936801553271523408">Date de diagnosticare a sistemului</translation>
 <translation id="93766956588638423">Repară extensia</translation>
 <translation id="938339467127511841">Spațiu de stocare Linux (Beta)</translation>

@@ -101,9 +101,11 @@
 <translation id="3398288718845740432">Chrome ಮೆನುವಿನಲ್ಲಿ ಮರೆಮಾಡು</translation>
 <translation id="3451115285585441894">Chrome ಗೆ ಸೇರಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="345171907106878721">ನಿಮ್ಮನ್ನು Chrome ಗೆ ಸೇರಿಸಿಕೊಳ್ಳಿ</translation>
+<translation id="3457651673823986489">ಚಿತ್ರದಲ್ಲಿ ಉಪಯುಕ್ತ ವಿವರಣೆಯು ಇಲ್ಲದಿದ್ದರೆ, Chrome ನಿಮಗಾಗಿ ಒಂದು ವಿವರಣೆಯನ್ನು ಒದಗಿಸಲು ಪ್ರಯತ್ನಿಸುತ್ತದೆ. ಚಿತ್ರಗಳನ್ನು Google ಸ್ಕ್ಯಾನ್ ಮಾಡಿದೆ. ನೀವು ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ಇದನ್ನು ಯಾವಾಗ ಬೇಕಾದರೂ ಆಫ್ ಮಾಡಬಹುದು.</translation>
 <translation id="3479552764303398839">ಈಗ ಬೇಡ</translation>
 <translation id="34857402635545079">Chrome ನಿಂದಲೂ ಡೇಟಾವನ್ನು ತೆರವುಗೊಳಿಸಿ (<ph name="URL" />)</translation>
 <translation id="3503306920980160878">ಈ ಸೈಟ್‌ ಜೊತೆ ನಿಮ್ಮ ಸ್ಥಳವನ್ನು ಹಂಚಿಕೊಳ್ಳಲು Chrome ಗೆ ನಿಮ್ಮ ಸ್ಥಳವನ್ನು ಪ್ರವೇಶಿಸುವ ಅಗತ್ಯವಿದೆ</translation>
+<translation id="3576528680708590453"><ph name="TARGET_URL_HOSTNAME" /> ಗೆ ಪ್ರವೇಶಿಸಲು ಒಂದು ಪರ್ಯಾಯ ಬ್ರೌಸರ್ ತೆರೆಯುವಂತೆ ನಿಮ್ಮ ಸಿಸ್ಟಂ ನಿರ್ವಾಹಕರು Google Chrome ಅನ್ನು ಕಾನ್ಫಿಗರ್ ಮಾಡಿದ್ದಾರೆ.</translation>
 <translation id="3582972582564653026">ನಿಮ್ಮ ಎಲ್ಲಾ ಸಾಧನಗಳಲ್ಲಿ Chrome ಅನ್ನು ಸಿಂಕ್ ಮಾಡಿ ಮತ್ತು ವೈಯಕ್ತೀಕರಿಸಿ</translation>
 <translation id="3622797965165704966">ನಿಮ್ಮ Google ಖಾತೆಯ ಮೂಲಕ ಮತ್ತು ಹಂಚಿದ ಕಂಪ್ಯೂಟರ್‌ಗಳಲ್ಲಿ Chrome ಬಳಕೆ ಈಗ ತುಂಬಾ ಸುಲಭವಾಗಿದೆ.</translation>
 <translation id="3637702109597584617">Google Chrome OS ನ <ph name="TERMS_OF_SERVICE_LINK" />ಸೇವಾ ನಿಯಮಗಳು<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
@@ -250,6 +252,7 @@
 <translation id="8129812357326543296">&amp;Google Chrome ಕುರಿತು</translation>
 <translation id="8179874765710681175">ನಿಮ್ಮ ಫೋನ್‌ನಲ್ಲಿ Chrome ಅನ್ನು ಸ್ಥಾಪಿಸಿ. ನಿಮ್ಮ ಫೋನ್‌‌ಗೆ ನಾವು ಎಸ್ಎಂಎಸ್ ಕಳುಹಿಸುತ್ತೇವೆ.</translation>
 <translation id="8183957050892517584">Chrome ನಿಮ್ಮ ವೈಯಕ್ತಿಕ ವಿವರಗಳನ್ನು ಸುರಕ್ಷಿತವಾಗಿ ಸಂಗ್ರಹಿಸಿಕೊಳ್ಳುತ್ತದೆ ಇದರಿಂದಾಗಿ ನೀವು ಅವುಗಳನ್ನು ಮತ್ತೆ ಟೈಪ್ ಮಾಡಬೇಕಾಗಿಲ್ಲ.</translation>
+<translation id="8224281044825492187">ಚಿತ್ರದಲ್ಲಿ ಉಪಯುಕ್ತ ವಿವರಣೆಯು ಇಲ್ಲದಿದ್ದರೆ, Chrome ನಿಮಗಾಗಿ ಒಂದು ವಿವರಣೆಯನ್ನು ಒದಗಿಸಲು ಪ್ರಯತ್ನಿಸುತ್ತದೆ. ಚಿತ್ರಗಳನ್ನು Google ಸ್ಕ್ಯಾನ್ ಮಾಡಿದೆ.</translation>
 <translation id="8226081633851087288">{0,plural, =0{ಇದೀಗ Chrome OS ಮರುಪ್ರಾರಂಭಗೊಳ್ಳುತ್ತದೆ}=1{1 ಸೆಕೆಂಡ್‌ನಲ್ಲಿ Chrome OS ಮರುಪ್ರಾರಂಭಗೊಳ್ಳುತ್ತದೆ}one{# ಸೆಕೆಂಡುಗಳಲ್ಲಿ Chrome OS ಮರುಪ್ರಾರಂಭಗೊಳ್ಳುತ್ತದೆ}other{# ಸೆಕೆಂಡುಗಳಲ್ಲಿ Chrome OS ಮರುಪ್ರಾರಂಭಗೊಳ್ಳುತ್ತದೆ}}</translation>
 <translation id="825412236959742607">ಈ ಪುಟವು ತೀರಾ ಹೆಚ್ಚು ಮೆಮೊರಿಯನ್ನು ಬಳಸುತ್ತದೆ, ಆದ್ದರಿಂದ Chrome ಕೆಲವು ವಿಷಯಗಳನ್ನು ತೆಗೆದುಹಾಕಿದೆ.</translation>
 <translation id="8255190535488645436">Google Chrome ನಿಮ್ಮ ಕ್ಯಾಮರಾ ಮತ್ತು ಮೈಕ್ರೋಫೋನ್ ಅನ್ನು ಬಳಸುತ್ತಿದೆ.</translation>

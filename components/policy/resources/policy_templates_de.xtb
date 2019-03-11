@@ -426,6 +426,7 @@ Wenn die Richtlinie "EnableMediaRouter" auf "false" gesetzt ist, hat der Wert di
       Wenn diese Einstellung aktiviert ist, erfasst der Passwortschutzdienst den Fingerabdruck zur Autorisierung auf diesen URLs, der dann zur Prüfung der Wiederverwendung von Passwörtern genutzt wird.
       Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, erfasst der Passwortschutzdienst den Fingerabdruck zur Autorisierung nur auf https://accounts.google.com.
       Diese Richtlinie steht nur bei Windows-Instanzen zur Verfügung, die Teil einer <ph name="MS_AD_NAME" />-Domain sind, oder bei Windows 10 Pro- oder Enterprise-Instanzen, bei denen zur Geräteverwaltung eine Anmeldung vorgenommen wurde.</translation>
+<translation id="1919802376548418720">Sie können die KDC-Richtlinie verwenden, um Anmeldedaten zu delegieren.</translation>
 <translation id="1920046221095339924">Verwaltete Sitzung auf Gerät zulassen</translation>
 <translation id="1929709556673267855">Stellt Konfigurationen für gerätegebundene Unternehmensdrucker bereit.
 
@@ -592,6 +593,15 @@ Diese Richtlinie gilt auch für Komponentenerweiterungen, zum Beispiel die Hango
 <translation id="2231817271680715693">Browserverlauf bei erster Ausführung aus Standardbrowser importieren</translation>
 <translation id="2236488539271255289">Speichern von lokalen Daten für keine Website zulassen</translation>
 <translation id="2240879329269430151">Ermöglicht Ihnen zu bestimmen, ob Websites Pop-ups anzeigen dürfen. Das Anzeigen von Pop-ups kann entweder allen Websites gestattet oder für alle unterbunden werden. Wenn diese Richtlinie nicht konfiguriert ist, so kommt "BlockPopups" zum Einsatz, wobei der Nutzer dies ändern kann.</translation>
+<translation id="2265214338421787313">Mit dieser Richtlinie kann ein Administrator festlegen, ob eine Seite Pop-ups einblenden darf, während sie entladen wird.
+
+      Wenn sie aktiviert ist, sind Seiten dazu in der Lage, Pop-ups einzublenden, während sie entladen werden.
+
+      Ist die Richtlinie nicht festgelegt oder deaktiviert, dürfen Seiten keine Pop-ups einblenden, während sie entladen werden. Dies entspricht den Spezifikationen (https://html.spec.whatwg.org/#apis-for-creating-and-navigating-browsing-contexts-by-name).
+
+      Diese Richtlinie wird in Chrome 82 entfernt.
+
+      Siehe https://www.chromestatus.com/feature/5989473649164288.</translation>
 <translation id="2269319728625047531">Einwilligung zur Synchronisierung beim Anmelden anzeigen</translation>
 <translation id="2274864612594831715">Diese Richtlinie konfiguriert die Aktivierung der Bildschirmtastatur als Eingabegerät unter Chrome OS. Diese Richtlinie kann nicht von Nutzern überschrieben werden.
 
@@ -2192,6 +2202,7 @@ Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, wird kein Proxy 
 <translation id="602728333950205286">Google Instant-URL der Standardsuchmaschine</translation>
 <translation id="603410445099326293">Parameter für URL der Vorschlagsuche, die POST verwendet</translation>
 <translation id="6034341625190551415">Legt die Typen für öffentliche Sitzungen und Kiosk-Konten fest.</translation>
+<translation id="6034603289689965535">Erlaubt einer Seite, Pop-ups einzublenden, während sie entladen wird</translation>
 <translation id="6036523166753287175">Firewallausnahme über Host für Remotezugriff aktivieren</translation>
 <translation id="6070667616071269965">Tastaturlayouts der Anmeldeseite</translation>
 <translation id="6074963268421707432">Anzeige von Desktop-Benachrichtigungen für keine Website zulassen</translation>

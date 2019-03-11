@@ -1005,6 +1005,7 @@
 <translation id="2484959914739448251">За да изчистите данните за сърфирането от всичките си синхронизирани устройства и от профила си в Google, <ph name="BEGIN_LINK" />въведете пропуска си<ph name="END_LINK" />.</translation>
 <translation id="2485422356828889247">Деинсталиране</translation>
 <translation id="2487067538648443797">Добавяне на нова отметка</translation>
+<translation id="2489829450872380594">Следващия път нов телефон ще отключи това устройство <ph name="DEVICE_TYPE" />. Можете да изключите Smart Lock от настройките.</translation>
 <translation id="2489918096470125693">Добавяне на &amp;папка...</translation>
 <translation id="249113932447298600">За съжаление понастоящем устройството <ph name="DEVICE_LABEL" /> не се поддържа.</translation>
 <translation id="249303669840926644">Регистрацията не можа да завърши</translation>
@@ -1762,6 +1763,7 @@
 <translation id="3627588569887975815">О&amp;тваряне на връзката в прозореца „инкогнито“</translation>
 <translation id="3627671146180677314">Време на подновяване на сертификат на Netscape</translation>
 <translation id="3627879631695760395">Инсталиране на <ph name="APP" />...</translation>
+<translation id="3629631988386925734">Въведете паролата си, за да активирате Smart Lock. Следващия път телефонът ви ще отключи устройството ви <ph name="DEVICE_TYPE" />. Можете да изключите Smart Lock от настройките.</translation>
 <translation id="3630132874740063857">Вашият телефон</translation>
 <translation id="3630995161997703415">Добавете този сайт към лавицата си, за да го използвате по всяко време</translation>
 <translation id="3636096452488277381">Здравейте, <ph name="USER_GIVEN_NAME" />.</translation>
@@ -2109,6 +2111,7 @@
 <translation id="4109135793348361820">Преместване на прозореца към <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
 <translation id="4110490973560452005">Изтеглянето завърши: <ph name="FILE_NAME" />. Натиснете Shift + F6, за да преминете към лентата на изтеглянето.</translation>
 <translation id="4110895898888439383">Сърфирайте в мрежата в режим на повишена четливост</translation>
+<translation id="4112221174576828331">Ако няма полезно описание за дадено изображение, Chrome ще предостави такова. Изображенията се сканират от Google.</translation>
 <translation id="4115002065223188701">Мрежата е извън обхват</translation>
 <translation id="4115080753528843955">Някои услуги за съдържание използват уникални идентификатори за целите на упълномощаването на достъп до защитено съдържание</translation>
 <translation id="4118579674665737931">Моля, рестартирайте устройството и опитайте отново.</translation>
@@ -2661,6 +2664,7 @@
 <translation id="4998873842614926205">Потвърждаване на промените</translation>
 <translation id="5000922062037820727">Блокирано (препоръчително)</translation>
 <translation id="5004584466530475658"><ph name="FILE_COUNT" /> нови снимки</translation>
+<translation id="5008936837313706385">Име на активността</translation>
 <translation id="5010043101506446253">Сертифициращ орган</translation>
 <translation id="5010406651457630570">Компютри</translation>
 <translation id="5015344424288992913">Получава се разрешение от прокси сървъра...</translation>
@@ -2992,6 +2996,7 @@
 <translation id="5507756662695126555">Невъзможност за отричане</translation>
 <translation id="5509693895992845810">Запазване &amp;като...</translation>
 <translation id="5509914365760201064">Издател: <ph name="CERTIFICATE_AUTHORITY" /></translation>
+<translation id="5510775624736435856">Изтегляне от Google на описания за изображенията</translation>
 <translation id="5511379779384092781">Много нисък</translation>
 <translation id="5511823366942919280">Наистина ли искате да настроите това устройство като Shark?</translation>
 <translation id="5512653252560939721">Потребителският сертификат трябва да бъде с хардуерна поддръжка.</translation>
@@ -3575,6 +3580,7 @@
 <translation id="6341850831632289108">Откриване на физическото ви местоположение</translation>
 <translation id="6344170822609224263">Достъп до списъка с мрежови връзки</translation>
 <translation id="6346310558342052870">Достъпът е ограничен</translation>
+<translation id="6349101878882523185">Инсталиране на <ph name="APP_NAME" /></translation>
 <translation id="6349170655202535379">Синхронизирането не работи. Опитайте да излезете от профила си и отново да влезете в него.</translation>
 <translation id="6351063337294363751">Можете да изчистите данните за сърфирането си от това меню</translation>
 <translation id="6352773953037195952">Най-висока</translation>
@@ -3992,6 +3998,7 @@
 <translation id="6990081529015358884">Нямате свободно място</translation>
 <translation id="6990778048354947307">Тъмна тема</translation>
 <translation id="6991665348624301627">Избиране на местоназначение</translation>
+<translation id="6997642619627518301"><ph name="NAME_PH" /> – регистрационен файл за активността</translation>
 <translation id="6997707937646349884">На устройствата си:</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> избрани папки</translation>
 <translation id="6998793565256476099">Регистриране на устройството за видеоконференции</translation>
@@ -4294,6 +4301,7 @@
 <translation id="7456142309650173560">за програмисти</translation>
 <translation id="7456847797759667638">Отваряне на местоположение...</translation>
 <translation id="7461924472993315131">Фиксиране</translation>
+<translation id="746216226901520237">Следващия път телефонът ви ще отключи устройството ви <ph name="DEVICE_TYPE" />. Можете да изключите Smart Lock от настройките.</translation>
 <translation id="7463006580194749499">Добавяне на човек</translation>
 <translation id="7465778193084373987">URL адрес за анулиране на сертификат на Netscape</translation>
 <translation id="7469894403370665791">Автоматично свързване с тази мрежа</translation>
@@ -4372,6 +4380,7 @@
 <translation id="7580671184200851182">Възпроизвеждане на един и същ звук през всички високоговорители (моно)</translation>
 <translation id="7581462281756524039">Инструмент за почистване</translation>
 <translation id="7582582252461552277">Да се предпочита тази мрежа</translation>
+<translation id="7583948862126372804">Брой</translation>
 <translation id="7586498138629385861">Браузърът ще продължи да работи, докато приложенията в Chrome са отворени.</translation>
 <translation id="7589461650300748890">Не бързайте! Внимавайте.</translation>
 <translation id="7589661784326793847">Изчакайте само секунда</translation>
@@ -5484,6 +5493,7 @@
 <translation id="93393615658292258">Само парола</translation>
 <translation id="934503638756687833">При необходимост ще бъдат премахнати и елементи, които не са посочени тук. Научете повече за &lt;a href="<ph name="URL" />"&gt;защитата от нежелан софтуер&lt;/a&gt; в информационния бюлетин за поверителността на Chrome.</translation>
 <translation id="935490618240037774">Вашите отметки, история, пароли и други настройки ще се синхронизират с профила ви в Google, за да можете да ги използвате на всичките си устройства.</translation>
+<translation id="935854577147268200">Телефонът за Smart Lock е променен. Въведете паролата си, за да актуализирате функцията. Следващия път телефонът ви ще отключи устройството ви <ph name="DEVICE_TYPE" />. Можете да изключите Smart Lock от настройките.</translation>
 <translation id="936801553271523408">Диагностични данни за системата</translation>
 <translation id="93766956588638423">Поправяне на разширението</translation>
 <translation id="938339467127511841">Хранилище (бета) за Linux</translation>

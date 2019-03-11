@@ -155,6 +155,7 @@
 <translation id="3324193307694657476">Naslov 2</translation>
 <translation id="3329904751041170572">Povezave s strežnikom ni mogoče vzpostaviti.</translation>
 <translation id="3335947283844343239">Znova odpri zaprt zavihek</translation>
+<translation id="3371831930909698441">Prevod je na voljo. Možnosti so na voljo pri dnu zaslona.</translation>
 <translation id="3393920035788932672">Pojavna okna so dovoljena</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Razdeljeni pogled</translation>
@@ -351,9 +352,11 @@ Podatki so bili šifrirani z vašim geslom za sinhronizacijo <ph name="TIME" />.
 <translation id="6445051938772793705">Država</translation>
 <translation id="6445981559479772097">Sporočilo poslano.</translation>
 <translation id="6464071786529933911">Open in New Incognito Tab</translation>
+<translation id="6476800141292307438">Prevajanje strani v ta jezik: <ph name="LANGUAGE" />. Možnosti so na voljo blizu dna zaslona.</translation>
 <translation id="6482629121755362506">Št. izbrisanih elementov: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="6513773942555305766">Geslo, ki ga predlaga Chrome: <ph name="SUGGESTED_PASSWORD" /></translation>
 <translation id="6541915733953096570">Past Hour</translation>
+<translation id="6610002944194042868">Možnosti prevajanja</translation>
 <translation id="6642362222295953972">Preklop na obstoječi zavihek</translation>
 <translation id="6643016212128521049">Počisti</translation>
 <translation id="6656103420185847513">Urejanje mape</translation>
@@ -374,6 +377,7 @@ Podatki so bili šifrirani z vašim geslom za sinhronizacijo <ph name="TIME" />.
 <translation id="6903907808598579934">Vklopi sinhronizacijo</translation>
 <translation id="6914583639806229067">Iskanje slike, ki ste jo kopirali</translation>
 <translation id="6914783257214138813">Gesla bodo vidna vsakomur, ki si lahko ogleda izvoženo datoteko z gesli.</translation>
+<translation id="6944369514868857500">Izberi drug račun</translation>
 <translation id="6945221475159498467">Izberi</translation>
 <translation id="6973630695168034713">Mape</translation>
 <translation id="6979158407327259162">Google Drive</translation>
@@ -453,6 +457,7 @@ Podatki so bili šifrirani z vašim geslom za sinhronizacijo <ph name="TIME" />.
 <translation id="8281781826761538115">Privzeto - <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8328777765163860529">Zapri vse</translation>
 <translation id="8381750437846184350">Nadzirajte, kako Google na podlagi vaše zgodovine brskanja prilagaja Iskanje Google, oglase in druge Googlove storitve.</translation>
+<translation id="8407669440184693619">Za to spletno mesto ni najdenih gesel</translation>
 <translation id="842017693807136194">Prijava z/s</translation>
 <translation id="8428045167754449968">Mesto</translation>
 <translation id="8428213095426709021">Nastavitve</translation>

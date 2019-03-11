@@ -23,6 +23,7 @@
 <translation id="1120743664840974483">{"a": "alfa", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliett","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu"}</translation>
 <translation id="1120938014254001895">Veeg met twee vingers omhoog</translation>
 <translation id="1124771028211010580">De huidige weergavestijl is naast elkaar.</translation>
+<translation id="1126928665165112660">Niet cursief</translation>
 <translation id="113582498867142724"><ph name="TAG" />-collectie met <ph name="NUM" /> items</translation>
 <translation id="1155043339247954670">Geen volgend lijstitem.</translation>
 <translation id="1157782847298808853">Help bij toetsenbord</translation>
@@ -55,6 +56,7 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="1325946044405407859">Geelbruin</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> van <ph name="TOTAL" /></translation>
 <translation id="1334095593597963605">teken- en woordecho</translation>
+<translation id="1334570596456017464">Subscript</translation>
 <translation id="1339428534620983148">Vorige kolom van tabel</translation>
 <translation id="1342835525016946179">artikel</translation>
 <translation id="1346059596910821859">Fooi</translation>
@@ -130,6 +132,7 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="1905379170753160525">Lijst met koppen weergeven</translation>
 <translation id="1912556590115083156">vlnk</translation>
 <translation id="1913761808037590218">genummerd</translation>
+<translation id="1914424852593176649">Grootte <ph name="FONT_SIZE" /></translation>
 <translation id="1914635379910604678">Combinatie <ph name="DOT" /></translation>
 <translation id="1923956950274750765">Midden orchidee</translation>
 <translation id="1954623340234317532">Bedieningselement voor week van het jaar</translation>
@@ -139,6 +142,7 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="1990932729021763163">Koptekst rij:</translation>
 <translation id="2002895034995108595">Huidige toetsenindeling opnieuw instellen</translation>
 <translation id="2007545860310005685">{COUNT,plural, =1{vierkante haak links}other{# vierkante haken links}}</translation>
+<translation id="2009187674653301682">Geen superscript</translation>
 <translation id="2010555995361223825">ChromeVox-menu's</translation>
 <translation id="2045490512405922022">niet aangevinkt</translation>
 <translation id="20601713649439366">Geen vorige wiskundige uitdrukking.</translation>
@@ -167,6 +171,7 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="2278490101488436824">Veeg met drie vingers naar links</translation>
 <translation id="2281234842553884450">Vorige scrollbar</translation>
 <translation id="2311237334957139798">Naar het vorige detailniveau</translation>
+<translation id="2314393392395134769">Geen subscript</translation>
 <translation id="2318372665160196757">Hoofd</translation>
 <translation id="2329324941084714723">Deelvenster met tabblad</translation>
 <translation id="2344193891939537199">Bedieningselement voor datum/tijd</translation>
@@ -298,10 +303,12 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="3163593631834463955">Lege koptekst kolom</translation>
 <translation id="316542773973815724">Navigatie</translation>
 <translation id="3172700825913348768">{COUNT,plural, =1{spatie}other{# spaties}}</translation>
+<translation id="3179119189286472195">Geen link</translation>
 <translation id="320961988183078793"><ph name="TYPE" /> geopend</translation>
 <translation id="321072937702597574">Orchidee</translation>
 <translation id="3218691001991391708"><ph name="TEXT" /> plakken.</translation>
 <translation id="3223701887221307104"><ph name="NAME" />, tabblad</translation>
+<translation id="3223779237381380437">Niet doorgestreept</translation>
 <translation id="3226035351387556942">chk</translation>
 <translation id="3229375994964697375">Bezochte link</translation>
 <translation id="3232388865800379423">Een pop-upknop</translation>
@@ -515,6 +522,7 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="4763296182459741068">Omloop naar beneden</translation>
 <translation id="4763480195061959176">video</translation>
 <translation id="4764692524839457597">standaard</translation>
+<translation id="4772771694153161212">Niet onderstreept</translation>
 <translation id="479989351350248267">zoeken</translation>
 <translation id="4804818685124855865">Verbinding verbreken</translation>
 <translation id="481165870889056555">De titel van de huidige pagina melden</translation>
@@ -530,6 +538,7 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="4846428657345567687">Welkom bij ChromeVox.</translation>
 <translation id="4848993367330139335">timer</translation>
 <translation id="4850023505158945298">Vorig vergelijkbaar element.</translation>
+<translation id="4862744964787595316">Niet vet</translation>
 <translation id="4866956062845190338">rdmnuitm</translation>
 <translation id="4867316986324544967">TTS-registratie inschakelen</translation>
 <translation id="4877261390094455813">Een zoekopdracht opgeven.</translation>
@@ -841,6 +850,7 @@ Als je het menu van de Chrome-browser wilt openen, druk je op Alt + F.</translat
 <translation id="712735679809149106">woordecho</translation>
 <translation id="7137397390322864165">Zalmroze</translation>
 <translation id="713824876195128146">Volgend blok met geciteerde tekst</translation>
+<translation id="7140168702531682811">Superscript</translation>
 <translation id="7143034430156387447">Schakelen tussen zes- en achtpuntsbraille</translation>
 <translation id="7143207342074048698">Verbinding maken</translation>
 <translation id="7153618581592392745">Lavendel</translation>
@@ -1137,6 +1147,7 @@ Als je het menu van de Chrome-browser wilt openen, druk je op Alt + F.</translat
 <translation id="8883850400338911892">8-punts: URL bewerken</translation>
 <translation id="8896347895970027998">ChromeVox instellen op actief of inactief.</translation>
 <translation id="8896479570570613387">Middenpaars</translation>
+<translation id="8897030325301866860">Lettertype <ph name="FONT_FAMILY" /></translation>
 <translation id="8898516272131543774">Interpunctie-echo doorlopen</translation>
 <translation id="8900148057318340779">Voorvoegseltoets</translation>
 <translation id="8908714597367957477">colhdr</translation>

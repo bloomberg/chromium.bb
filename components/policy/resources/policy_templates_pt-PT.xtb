@@ -439,6 +439,7 @@
       Se esta definição estiver ativada, o serviço de proteção por palavra-passe captura a pegada digital da palavra-passe nestes URLs para fins de deteção de reutilização da palavra-passe.
       Se esta definição estiver desativada ou não estiver configurada, o serviço de proteção por palavra-passe apenas captura a pegada digital da palavra-passe em https://accounts.google.com.
       Esta política está apenas disponível em instâncias do Windows associadas a um domínio do <ph name="MS_AD_NAME" /> ou em instâncias do Windows 10 Pro ou Enterprise inscritas para gestão de dispositivos.</translation>
+<translation id="1919802376548418720">Utilize a política do KDC para delegar credenciais.</translation>
 <translation id="1920046221095339924">Permitir sessões geridas no dispositivo</translation>
 <translation id="1929709556673267855">Fornece configurações para impressoras empresariais associadas a dispositivos.
 
@@ -611,6 +612,15 @@
 <translation id="2231817271680715693">Importar histórico de navegação a partir do navegador predefinido na primeira execução</translation>
 <translation id="2236488539271255289">Não permitir que os sites definam dados de local</translation>
 <translation id="2240879329269430151">Permite definir se os Web sites estão autorizados a apresentar janelas de pop-up. A apresentação de janelas de pop-up pode ser permitida para todos os Web sites ou negada para todos os Web sites. Se esta política não for definida, será utilizada a definição "BlockPopups" e o utilizador poderá alterá-la.</translation>
+<translation id="2265214338421787313">Esta política permite a um administrador especificar que uma página pode mostrar pop-ups durante o descarregamento.
+
+      Quando a política está definida como ativada, as páginas podem apresentar pop-ups quando estiverem a ser descarregadas.
+
+      Quando a política está definida como desativada, as páginas não podem apresentar pop-ups quando estiverem a ser descarregadas, conforme a especificação (https://html.spec.whatwg.org/#apis-for-creating-and-navigating-browsing-contexts-by-name).
+
+      Esta política será removida no Chrome 82.
+
+      Consulte https://www.chromestatus.com/feature/5989473649164288.</translation>
 <translation id="2269319728625047531">Ativar a apresentação do Consentimento de sincronização durante o início de sessão.</translation>
 <translation id="2274864612594831715">Esta política configura a ativação do teclado virtual como um dispositivo de introdução no Chrome OS. Os utilizadores não podem substituir esta política.
 
@@ -2215,6 +2225,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="602728333950205286">URL instantâneo do fornecedor de pesquisas predefinido</translation>
 <translation id="603410445099326293">Parâmetros do URL de sugestões que utilize POST</translation>
 <translation id="6034341625190551415">Controla os tipos de conta de sessão pública e quiosque.</translation>
+<translation id="6034603289689965535">Permite a uma página mostrar pop-ups durante o descarregamento</translation>
 <translation id="6036523166753287175">Ativar transposição da firewall a partir do anfitrião de acesso remoto</translation>
 <translation id="6070667616071269965">Esquemas de teclado do ecrã de início de sessão do dispositivo</translation>
 <translation id="6074963268421707432">Não permitir que os sites mostrem notificações do ambiente de trabalho</translation>

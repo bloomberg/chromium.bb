@@ -149,6 +149,7 @@
 <translation id="204321170514947529"><ph name="APP_NAME" /> juga memiliki data di Chrome</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB aplikasi lain</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
+<translation id="2056878612599315956">Situs dijeda</translation>
 <translation id="2063713494490388661">Ketuk untuk Menelusuri</translation>
 <translation id="2079545284768500474">Urungkan</translation>
 <translation id="2082238445998314030">Hasil <ph name="RESULT_NUMBER" /> dari <ph name="TOTAL_RESULTS" /></translation>
@@ -777,6 +778,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="6709133671862442373">Berita</translation>
 <translation id="6710213216561001401">Sebelumnya</translation>
 <translation id="6712388303105732168">Lihat lainnya yang seperti ini dari Google menggunakan tombol Lainnya, Yang Seperti Ini</translation>
+<translation id="671481426037969117">Timer <ph name="FQDN" /> Anda telah berakhir. Timer akan dimulai lagi besok.</translation>
 <translation id="6738867403308150051">Mendownload…</translation>
 <translation id="6746124502594467657">Berpindah ke bawah</translation>
 <translation id="6766622839693428701">Geser ke bawah untuk menutup.</translation>

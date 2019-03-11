@@ -1008,6 +1008,7 @@
 <translation id="2484959914739448251">Untuk menghapus data browsing dari semua perangkat yang disinkronkan dan dari Akun Google, <ph name="BEGIN_LINK" />masukkan frasa sandi<ph name="END_LINK" />.</translation>
 <translation id="2485422356828889247">Uninstal</translation>
 <translation id="2487067538648443797">Tambahkan bookmark baru</translation>
+<translation id="2489829450872380594">Saat digunakan lagi, ponsel baru akan membuka kunci <ph name="DEVICE_TYPE" /> ini. Anda dapat menonaktifkan Smart Lock di Setelan.</translation>
 <translation id="2489918096470125693">Tambahkan &amp;Map...</translation>
 <translation id="249113932447298600">Maaf, saat ini perangkat <ph name="DEVICE_LABEL" /> tidak didukung.</translation>
 <translation id="249303669840926644">Tidak dapat menyelesaikan pendaftaran</translation>
@@ -1763,6 +1764,7 @@
 <translation id="3627588569887975815">Buka link di jendela penya&amp;maran</translation>
 <translation id="3627671146180677314">Netscape Certificate Renewal Time</translation>
 <translation id="3627879631695760395">Menginstal <ph name="APP" />...</translation>
+<translation id="3629631988386925734">Masukkan sandi Anda untuk mengaktifkan Smart Lock. Saat digunakan lagi, ponsel Anda akan membuka kunci <ph name="DEVICE_TYPE" /> ini. Anda dapat menonaktifkan Smart Lock di Setelan.</translation>
 <translation id="3630132874740063857">Telepon Anda</translation>
 <translation id="3630995161997703415">Tambahkan situs ini ke rak Anda agar dapat digunakan setiap saat</translation>
 <translation id="3636096452488277381">Hai, <ph name="USER_GIVEN_NAME" />.</translation>
@@ -2108,6 +2110,7 @@
 <translation id="4109135793348361820">Pindahkan jendela ke <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
 <translation id="4110490973560452005">Download selesai: <ph name="FILE_NAME" />. Tekan Shift+F6 untuk masuk ke area kotak download</translation>
 <translation id="4110895898888439383">Akses web dalam mode kontras tinggi</translation>
+<translation id="4112221174576828331">Jika gambar tidak memiliki deskripsi yang berguna, Chrome akan memberikan deskripsi untuk Anda. Gambar akan dipindai oleh Google.</translation>
 <translation id="4115002065223188701">Jaringan di luar jangkauan</translation>
 <translation id="4115080753528843955">Beberapa layanan konten menggunakan pengenal unik untuk memberi otorisasi akses ke konten yang dilindungi</translation>
 <translation id="4118579674665737931">Harap reboot perangkat, lalu coba lagi.</translation>
@@ -2660,6 +2663,7 @@
 <translation id="4998873842614926205">Konfirmasikan Perubahan</translation>
 <translation id="5000922062037820727">Diblokir (disarankan)</translation>
 <translation id="5004584466530475658"><ph name="FILE_COUNT" /> foto baru</translation>
+<translation id="5008936837313706385">Nama Aktivitas</translation>
 <translation id="5010043101506446253">Otoritas sertifikat</translation>
 <translation id="5010406651457630570">Komputer</translation>
 <translation id="5015344424288992913">Mengontak proxy...</translation>
@@ -2991,6 +2995,7 @@
 <translation id="5507756662695126555">Non-repudiasi</translation>
 <translation id="5509693895992845810">Simp&amp;an Sebagai...</translation>
 <translation id="5509914365760201064">Penerbit: <ph name="CERTIFICATE_AUTHORITY" /></translation>
+<translation id="5510775624736435856">Dapatkan Deskripsi Gambar dari Google</translation>
 <translation id="5511379779384092781">Sangat kecil</translation>
 <translation id="5511823366942919280">Yakin ingin menyiapkan perangkat ini sebagai "Shark"?</translation>
 <translation id="5512653252560939721">Sertifikat pengguna harus dicadangkan di hardware.</translation>
@@ -3573,6 +3578,7 @@
 <translation id="6341850831632289108">Mendeteksi lokasi fisik Anda</translation>
 <translation id="6344170822609224263">Mengakses daftar sambungan jaringan</translation>
 <translation id="6346310558342052870">Akses dibatasi</translation>
+<translation id="6349101878882523185">Instal <ph name="APP_NAME" /></translation>
 <translation id="6349170655202535379">Sinkronisasi tidak berjalan. Coba keluar dan masuk lagi.</translation>
 <translation id="6351063337294363751">Anda dapat menghapus data penjelajahan dari menu ini</translation>
 <translation id="6352773953037195952">Tertinggi</translation>
@@ -3990,6 +3996,7 @@
 <translation id="6990081529015358884">Anda telah kehabisan ruang</translation>
 <translation id="6990778048354947307">Tema Gelap</translation>
 <translation id="6991665348624301627">Pilih tujuan</translation>
+<translation id="6997642619627518301"><ph name="NAME_PH" /> - Log Aktivitas</translation>
 <translation id="6997707937646349884">Di perangkat Anda:</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> folder dipilih</translation>
 <translation id="6998793565256476099">Daftarkan perangkat untuk konferensi video</translation>
@@ -4292,6 +4299,7 @@
 <translation id="7456142309650173560">dev</translation>
 <translation id="7456847797759667638">Buka Lokasi...</translation>
 <translation id="7461924472993315131">Pasang Pin</translation>
+<translation id="746216226901520237">Saat digunakan lagi, ponsel Anda akan membuka kunci <ph name="DEVICE_TYPE" /> ini. Anda dapat menonaktifkan Smart Lock di Setelan.</translation>
 <translation id="7463006580194749499">Tambahkan pengguna</translation>
 <translation id="7465778193084373987">Netscape Certificate Revocation URL</translation>
 <translation id="7469894403370665791">Sambungkan ke jaringan ini secara otomatis</translation>
@@ -4370,6 +4378,7 @@
 <translation id="7580671184200851182">Putar audio yang sama melalui semua speaker (audio mono)</translation>
 <translation id="7581462281756524039">Alat pembersih</translation>
 <translation id="7582582252461552277">Pilih jaringan ini</translation>
+<translation id="7583948862126372804">Jumlah</translation>
 <translation id="7586498138629385861">Chrome akan tetap berjalan meskipun Aplikasi Chrome dibuka.</translation>
 <translation id="7589461650300748890">Aduh, hati-hati dong.</translation>
 <translation id="7589661784326793847">Tunggu sebentar</translation>
@@ -5482,6 +5491,7 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="93393615658292258">Sandi saja</translation>
 <translation id="934503638756687833">Item yang tidak tercantum di sini juga akan dihapus, jika perlu. Pelajari lebih lanjut tentang &lt;a href="<ph name="URL" />"&gt;perlindungan terhadap software yang tidak diinginkan&lt;/a&gt; di panduan layanan privasi Chrome.</translation>
 <translation id="935490618240037774">Bookmark, histori, sandi, dan setelan lainnya akan disinkronkan ke Akun Google agar Anda dapat menggunakannya di semua perangkat.</translation>
+<translation id="935854577147268200">Ponsel Smart Lock diubah. Masukkan sandi Anda untuk memperbarui Smart Lock. Saat digunakan lagi, ponsel Anda akan membuka kunci <ph name="DEVICE_TYPE" /> ini. Anda dapat menonaktifkan Smart Lock di Setelan</translation>
 <translation id="936801553271523408">Data diagnosis sistem</translation>
 <translation id="93766956588638423">Perbaiki ekstensi</translation>
 <translation id="938339467127511841">Penyimpanan Linux (Beta)</translation>

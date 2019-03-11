@@ -39,6 +39,7 @@
 <translation id="1525508553941733066">TUTUP</translation>
 <translation id="1537254971476575106">Kaca pembesar layar penuh</translation>
 <translation id="15373452373711364">Kursor mouse besar</translation>
+<translation id="1546492247443594934">Halaman kerja 2</translation>
 <translation id="1550523713251050646">Klik untuk opsi lainnya</translation>
 <translation id="1570871743947603115">Alihkan Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">Akses semua aktivitas Anda di sesi ini</translation>
@@ -143,8 +144,10 @@
 <translation id="3087734570205094154">Bawah</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
 <translation id="3126069444801937830">Mulai ulang untuk memperbarui</translation>
+<translation id="3139942575505304791">Halaman kerja 1</translation>
 <translation id="315116470104423982">Data seluler</translation>
 <translation id="3151786313568798007">Orientasi</translation>
+<translation id="3152934361839663679">Perangkat Anda tersambung ke sejumlah maksimum monitor, sehingga salah satu layar telah diputus.</translation>
 <translation id="3153444934357957346">Anda hanya dapat memiliki maksimum <ph name="MULTI_PROFILE_USER_LIMIT" /> akun dalam fitur login multipel.</translation>
 <translation id="3154351730702813399">Admin perangkat dapat memantau aktivitas akses internet Anda.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Tersambung ke satu perangkat}other{Tersambung ke # perangkat}}</translation>
@@ -257,6 +260,7 @@
 <translation id="5207949376430453814">Sorot tempat penyisipan teks</translation>
 <translation id="5222676887888702881">Logout</translation>
 <translation id="523505283826916779">Setelan aksesibilitas</translation>
+<translation id="5260676007519551770">Halaman kerja 4</translation>
 <translation id="5283198616748585639">Tambahkan 1 mnt</translation>
 <translation id="5302048478445481009">Bahasa</translation>
 <translation id="5313326810920013265">Setelan bluetooth</translation>
@@ -342,6 +346,7 @@
 <translation id="6650933572246256093">Perangkat Bluetooth "<ph name="DEVICE_NAME" />" meminta izin untuk bersanding. Masukkan kunci sandi ini pada perangkat tersebut: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Sandi</translation>
 <translation id="6665545700722362599">Berikan izin ke situs, aplikasi, atau ekstensi untuk menggunakan layanan lokasi, mikrofon perangkat, kamera, atau fitur lainnya</translation>
+<translation id="6670153871843998651">Halaman kerja 3</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6696025732084565524">Keyboard yang dapat dilepas memerlukan update penting</translation>
 <translation id="6700713906295497288">Tombol menu IME</translation>

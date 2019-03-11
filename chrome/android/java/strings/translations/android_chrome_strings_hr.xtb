@@ -149,6 +149,7 @@
 <translation id="204321170514947529"><ph name="APP_NAME" /> ima podatke i u Chromeu</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB ostale aplikacije</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
+<translation id="2056878612599315956">Web-lokacija pauzirana</translation>
 <translation id="2063713494490388661">Dodirnite za pretraživanje</translation>
 <translation id="2079545284768500474">Poništi</translation>
 <translation id="2082238445998314030"><ph name="RESULT_NUMBER" /> od <ph name="TOTAL_RESULTS" /> rezultata</translation>
@@ -777,6 +778,7 @@ Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikaž
 <translation id="6709133671862442373">Vijesti</translation>
 <translation id="6710213216561001401">Prethodno</translation>
 <translation id="6712388303105732168">Pogledajte više ovakvih rezultata s Googlea pomoću gumba Više ovakvih rezultata</translation>
+<translation id="671481426037969117">Isteklo je odbrojavanje za aplikaciju <ph name="FQDN" />. Ponovo će se pokrenuti sutra.</translation>
 <translation id="6738867403308150051">Preuzimanje...</translation>
 <translation id="6746124502594467657">Pomakni dolje</translation>
 <translation id="6766622839693428701">Prijeđite prstom prema dolje da biste zatvorili.</translation>

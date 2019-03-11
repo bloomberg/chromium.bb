@@ -14,6 +14,7 @@
 <translation id="1368832886055348810">Da esquerda para a direita</translation>
 <translation id="1383876407941801731">Pesquisar</translation>
 <translation id="1398853756734560583">Maximizar</translation>
+<translation id="1409544243779336081">Recomendação de apps</translation>
 <translation id="1413622004203049571">Desativar notificações de <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{Um minuto e }one{# minutos e }other{# minutos e }}</translation>
 <translation id="1643823602425662293">Notificação</translation>
@@ -69,6 +70,7 @@
 <translation id="3479552764303398839">Não agora</translation>
 <translation id="348799646910989694">Estante automaticamente oculta</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{Um dia restante}one{# dias restantes}other{# dias restantes}}</translation>
+<translation id="3600969208114796418">Arquivo <ph name="SAVEAS_EXTENSION_TYPE" /></translation>
 <translation id="3608915363409716668">+<ph name="MAXIMUM_VALUE" /></translation>
 <translation id="3618849550573277856">Pesquisar “<ph name="LOOKUP_STRING" />”</translation>
 <translation id="364720409959344976">Selecionar pasta para upload</translation>
@@ -143,6 +145,7 @@
 <translation id="6808150112686056157">Parar mídia</translation>
 <translation id="6845383723252244143">Selecionar pasta</translation>
 <translation id="6845533974506654842">pressione</translation>
+<translation id="686304767576508198">Compartilhado de</translation>
 <translation id="6863590663815976734">{HOURS,plural, =1{Uma hora restante}one{# horas restantes}other{# horas restantes}}</translation>
 <translation id="688711909580084195">Página da web sem título</translation>
 <translation id="6907759265145635167"><ph name="QUANTITY" /> PB/s</translation>

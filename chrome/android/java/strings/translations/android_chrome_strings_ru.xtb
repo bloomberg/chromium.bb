@@ -149,6 +149,7 @@
 <translation id="204321170514947529">Приложение "<ph name="APP_NAME" />" также хранит свои данные в Chrome</translation>
 <translation id="2045104531052923016">Другие приложения: <ph name="GIGABYTES" /> ГБ</translation>
 <translation id="2049574241039454490"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE_OF_TOTAL" /></translation>
+<translation id="2056878612599315956">Доступ к сайту приостановлен</translation>
 <translation id="2063713494490388661">Нажмите для поиска</translation>
 <translation id="2079545284768500474">Отмена</translation>
 <translation id="2082238445998314030">Результат <ph name="RESULT_NUMBER" />, всего <ph name="TOTAL_RESULTS" /></translation>
@@ -777,6 +778,7 @@
 <translation id="6709133671862442373">Новости</translation>
 <translation id="6710213216561001401">Назад</translation>
 <translation id="6712388303105732168">Чтобы увидеть подобные результаты из Google Поиска, нажмите кнопку "Показать похожие страницы".</translation>
+<translation id="671481426037969117">Время на таймере <ph name="FQDN" /> истекло. Завтра сайт снова станет доступен.</translation>
 <translation id="6738867403308150051">Скачивание…</translation>
 <translation id="6746124502594467657">Переместить вниз</translation>
 <translation id="6766622839693428701">Проведите вниз, чтобы закрыть панель.</translation>
