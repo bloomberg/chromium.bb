@@ -18,7 +18,7 @@ namespace autofill {
 class LabelFormatter {
  public:
   LabelFormatter(const std::string& app_locale,
-                 ServerFieldType focused_field_type,
+                 FieldTypeGroup focused_group,
                  const std::vector<ServerFieldType>& field_types);
   virtual ~LabelFormatter();
 
@@ -29,9 +29,9 @@ class LabelFormatter {
 
  protected:
   const std::string& app_locale() const { return app_locale_; }
-  ServerFieldType focused_field_type() const { return focused_field_type_; }
-  const std::vector<ServerFieldType>& field_types() const {
-    return field_types_;
+  FieldTypeGroup focused_group() const { return focused_group_; }
+  const std::vector<ServerFieldType>& field_types_for_labels() const {
+    return field_types_for_labels_;
   }
 
  private:
@@ -40,12 +40,14 @@ class LabelFormatter {
   // English.
   std::string app_locale_;
 
-  // The field on which the user is currently focused.
-  ServerFieldType focused_field_type_;
+  // The group of the field on which the user is focused. For example, NAME
+  // is the group of the NAME_FIRST and NAME_MIDDLE fields.
+  FieldTypeGroup focused_group_;
 
-  // A collection of meaningful field types in the form with which the user is
-  // interacting.
-  std::vector<ServerFieldType> field_types_;
+  // A collection of field types that can be used to make labels. It includes
+  // types related to names, addresses, email addresses, and phone numbers.
+  // It excludes types related to countries and to focused_group_.
+  std::vector<ServerFieldType> field_types_for_labels_;
 };
 
 }  // namespace autofill

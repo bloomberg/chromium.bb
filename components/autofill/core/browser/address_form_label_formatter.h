@@ -20,18 +20,13 @@ namespace autofill {
 class AddressFormLabelFormatter : public LabelFormatter {
  public:
   AddressFormLabelFormatter(const std::string& app_locale,
-                            ServerFieldType focused_field_type,
+                            FieldTypeGroup focused_group,
                             const std::vector<ServerFieldType>& field_types);
 
   ~AddressFormLabelFormatter() override;
 
   std::vector<base::string16> GetLabels(
       const std::vector<AutofillProfile*>& profiles) const override;
-
- private:
-  // A collection of field types that can be used to make labels. This
-  // collection excludes the focused_field_type_ and address countries.
-  std::vector<ServerFieldType> field_types_for_labels_;
 };
 
 }  // namespace autofill
