@@ -215,6 +215,13 @@ bool IsArcAllowedForProfileInternal(const Profile* profile,
     return false;
   }
 
+  if (policy_util::IsArcDisabledForEnterprise() &&
+      policy_util::IsAccountManaged(profile)) {
+    VLOG_IF(1, should_report_reason)
+        << "ARC is disabled by flag for managed users.";
+    return false;
+  }
+
   // Play Store requires an appropriate application install mechanism. Normal
   // users do this through GAIA, but Kiosk and Active Directory users use
   // different application install mechanism. ARC is not allowed otherwise

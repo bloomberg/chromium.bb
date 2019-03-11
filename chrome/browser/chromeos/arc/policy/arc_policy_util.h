@@ -42,7 +42,7 @@ constexpr size_t kEcryptfsMigrationActionMaxValue =
 // Returns true if the account is managed. Otherwise false.
 bool IsAccountManaged(const Profile* profile);
 
-// Returns true if ARC is disabled by --enterprise-diable-arc flag.
+// Returns true if ARC is disabled by --enterprise-disable-arc flag.
 bool IsArcDisabledForEnterprise();
 
 // Returns the default ecryptfs migration action for a managed user.
