@@ -194,11 +194,6 @@ typedef struct BufferPool {
   InternalFrameBufferList int_frame_buffers;
 } BufferPool;
 
-typedef struct BitstreamLevel {
-  uint8_t major;
-  uint8_t minor;
-} BitstreamLevel;
-
 typedef struct {
   int cdef_pri_damping;
   int cdef_sec_damping;
@@ -280,7 +275,7 @@ typedef struct SequenceHeader {
   int operating_point_idc[MAX_NUM_OPERATING_POINTS];
   uint8_t display_model_info_present_flag;
   uint8_t decoder_model_info_present_flag;
-  BitstreamLevel level[MAX_NUM_OPERATING_POINTS];
+  AV1_LEVEL seq_level_idx[MAX_NUM_OPERATING_POINTS];
   uint8_t tier[MAX_NUM_OPERATING_POINTS];  // seq_tier in the spec. One bit: 0
                                            // or 1.
 
@@ -1389,17 +1384,8 @@ static INLINE int is_coded_lossless(const AV1_COMMON *cm,
   return coded_lossless;
 }
 
-static INLINE int is_valid_seq_level_idx(uint8_t seq_level_idx) {
-  return seq_level_idx < 24 || seq_level_idx == 31;
-}
-
-static INLINE uint8_t major_minor_to_seq_level_idx(BitstreamLevel bl) {
-  assert(bl.major >= LEVEL_MAJOR_MIN && bl.major <= LEVEL_MAJOR_MAX);
-  // Since bl.minor is unsigned a comparison will return a warning:
-  // comparison is always true due to limited range of data type
-  assert(LEVEL_MINOR_MIN == 0);
-  assert(bl.minor <= LEVEL_MINOR_MAX);
-  return ((bl.major - LEVEL_MAJOR_MIN) << LEVEL_MINOR_BITS) + bl.minor;
+static INLINE int is_valid_seq_level_idx(AV1_LEVEL seq_level_idx) {
+  return seq_level_idx < SEQ_LEVELS || seq_level_idx == SEQ_LEVEL_MAX;
 }
 
 #ifdef __cplusplus

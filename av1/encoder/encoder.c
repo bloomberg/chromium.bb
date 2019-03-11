@@ -962,76 +962,58 @@ static void set_bitstream_level_tier(SequenceHeader *seq, AV1_COMMON *cm,
   // and max display sample rates.
   // Need to add checks for max bit rate, max decoded luma sample rate, header
   // rate, etc. that are not covered by this function.
-  (void)oxcf;
-  BitstreamLevel bl = { 9, 3 };
+  AV1_LEVEL level = SEQ_LEVEL_MAX;
   if (does_level_match(oxcf->width, oxcf->height, oxcf->init_framerate, 512,
                        288, 30.0, 4)) {
-    bl.major = 2;
-    bl.minor = 0;
+    level = SEQ_LEVEL_2_0;
   } else if (does_level_match(oxcf->width, oxcf->height, oxcf->init_framerate,
                               704, 396, 30.0, 4)) {
-    bl.major = 2;
-    bl.minor = 1;
+    level = SEQ_LEVEL_2_1;
   } else if (does_level_match(oxcf->width, oxcf->height, oxcf->init_framerate,
                               1088, 612, 30.0, 4)) {
-    bl.major = 3;
-    bl.minor = 0;
+    level = SEQ_LEVEL_3_0;
   } else if (does_level_match(oxcf->width, oxcf->height, oxcf->init_framerate,
                               1376, 774, 30.0, 4)) {
-    bl.major = 3;
-    bl.minor = 1;
+    level = SEQ_LEVEL_3_1;
   } else if (does_level_match(oxcf->width, oxcf->height, oxcf->init_framerate,
                               2048, 1152, 30.0, 3)) {
-    bl.major = 4;
-    bl.minor = 0;
+    level = SEQ_LEVEL_4_0;
   } else if (does_level_match(oxcf->width, oxcf->height, oxcf->init_framerate,
                               2048, 1152, 60.0, 3)) {
-    bl.major = 4;
-    bl.minor = 1;
+    level = SEQ_LEVEL_4_1;
   } else if (does_level_match(oxcf->width, oxcf->height, oxcf->init_framerate,
                               4096, 2176, 30.0, 2)) {
-    bl.major = 5;
-    bl.minor = 0;
+    level = SEQ_LEVEL_5_0;
   } else if (does_level_match(oxcf->width, oxcf->height, oxcf->init_framerate,
                               4096, 2176, 60.0, 2)) {
-    bl.major = 5;
-    bl.minor = 1;
+    level = SEQ_LEVEL_5_1;
   } else if (does_level_match(oxcf->width, oxcf->height, oxcf->init_framerate,
                               4096, 2176, 120.0, 2)) {
-    bl.major = 5;
-    bl.minor = 2;
+    level = SEQ_LEVEL_5_2;
   } else if (does_level_match(oxcf->width, oxcf->height, oxcf->init_framerate,
                               8192, 4352, 30.0, 2)) {
-    bl.major = 6;
-    bl.minor = 0;
+    level = SEQ_LEVEL_6_0;
   } else if (does_level_match(oxcf->width, oxcf->height, oxcf->init_framerate,
                               8192, 4352, 60.0, 2)) {
-    bl.major = 6;
-    bl.minor = 1;
   } else if (does_level_match(oxcf->width, oxcf->height, oxcf->init_framerate,
                               8192, 4352, 120.0, 2)) {
-    bl.major = 6;
-    bl.minor = 2;
+    level = SEQ_LEVEL_6_2;
   } else if (does_level_match(oxcf->width, oxcf->height, oxcf->init_framerate,
                               16384, 8704, 30.0, 2)) {
-    bl.major = 7;
-    bl.minor = 0;
+    level = SEQ_LEVEL_7_0;
   } else if (does_level_match(oxcf->width, oxcf->height, oxcf->init_framerate,
                               16384, 8704, 60.0, 2)) {
-    bl.major = 7;
-    bl.minor = 1;
+    level = SEQ_LEVEL_7_1;
   } else if (does_level_match(oxcf->width, oxcf->height, oxcf->init_framerate,
                               16384, 8704, 120.0, 2)) {
-    bl.major = 7;
-    bl.minor = 2;
+    level = SEQ_LEVEL_7_2;
   }
   for (int i = 0; i < MAX_NUM_OPERATING_POINTS; ++i) {
-    seq->level[i] = bl;
+    seq->seq_level_idx[i] = level;
     // Set the maximum parameters for bitrate and buffer size for this profile,
     // level, and tier
     cm->op_params[i].bitrate = max_level_bitrate(
-        cm->seq_params.profile, major_minor_to_seq_level_idx(seq->level[i]),
-        seq->tier[i]);
+        cm->seq_params.profile, seq->seq_level_idx[i], seq->tier[i]);
     // Level with seq_level_idx = 31 returns a high "dummy" bitrate to pass the
     // check
     if (cm->op_params[i].bitrate == 0)

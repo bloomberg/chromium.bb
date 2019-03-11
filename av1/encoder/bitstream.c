@@ -3279,9 +3279,8 @@ static void add_trailing_bits(struct aom_write_bit_buffer *wb) {
   }
 }
 
-static void write_bitstream_level(BitstreamLevel bl,
+static void write_bitstream_level(AV1_LEVEL seq_level_idx,
                                   struct aom_write_bit_buffer *wb) {
-  uint8_t seq_level_idx = major_minor_to_seq_level_idx(bl);
   assert(is_valid_seq_level_idx(seq_level_idx));
   aom_wb_write_literal(wb, seq_level_idx, LEVEL_BITS);
 }
@@ -3304,7 +3303,7 @@ uint32_t write_sequence_header_obu(AV1_COMP *cpi, uint8_t *const dst) {
     assert(cm->timing_info_present == 0);
     assert(cm->seq_params.decoder_model_info_present_flag == 0);
     assert(cm->seq_params.display_model_info_present_flag == 0);
-    write_bitstream_level(cm->seq_params.level[0], &wb);
+    write_bitstream_level(cm->seq_params.seq_level_idx[0], &wb);
   } else {
     aom_wb_write_bit(&wb, cm->timing_info_present);  // timing info present flag
 
@@ -3323,8 +3322,8 @@ uint32_t write_sequence_header_obu(AV1_COMP *cpi, uint8_t *const dst) {
     for (i = 0; i < cm->seq_params.operating_points_cnt_minus_1 + 1; i++) {
       aom_wb_write_literal(&wb, cm->seq_params.operating_point_idc[i],
                            OP_POINTS_IDC_BITS);
-      write_bitstream_level(cm->seq_params.level[i], &wb);
-      if (cm->seq_params.level[i].major > 3)
+      write_bitstream_level(cm->seq_params.seq_level_idx[i], &wb);
+      if (cm->seq_params.seq_level_idx[i] >= SEQ_LEVEL_4_0)
         aom_wb_write_bit(&wb, cm->seq_params.tier[i]);
       if (cm->seq_params.decoder_model_info_present_flag) {
         aom_wb_write_bit(&wb,
