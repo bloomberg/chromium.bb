@@ -3885,6 +3885,10 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="Experimental.PaintTiming.NavigationToLastTextPaint">
+    <obsolete>
+      Deprecated on March 2019. This metric as a page load metric hasn't shown a
+      good correlation with user experience.
+    </obsolete>
     <summary>
       Measures the time in milliseconds from navigation timing's navigation
       start to the time when the page first paints the last Text within

@@ -271,12 +271,6 @@ void UkmPageLoadMetricsObserver::RecordTimingMetrics(
     builder.SetExperimental_PaintTiming_NavigationToLargestTextPaint(
         timing.paint_timing->largest_text_paint.value().InMilliseconds());
   }
-  if (timing.paint_timing->last_text_paint.has_value() &&
-      WasStartedInForegroundOptionalEventInForeground(
-          timing.paint_timing->last_text_paint, info)) {
-    builder.SetExperimental_PaintTiming_NavigationToLastTextPaint(
-        timing.paint_timing->last_text_paint.value().InMilliseconds());
-  }
   base::Optional<base::TimeDelta> largest_content_paint_time;
   uint64_t largest_content_paint_size;
   PageLoadMetricsObserver::LargestContentType largest_content_type;

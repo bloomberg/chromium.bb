@@ -91,8 +91,6 @@ const char kHistogramLastImagePaint[] =
     "PageLoad.Experimental.PaintTiming.NavigationToLastImagePaint";
 const char kHistogramLargestTextPaint[] =
     "PageLoad.Experimental.PaintTiming.NavigationToLargestTextPaint";
-const char kHistogramLastTextPaint[] =
-    "PageLoad.Experimental.PaintTiming.NavigationToLastTextPaint";
 const char kHistogramLargestContentPaint[] =
     "PageLoad.Experimental.PaintTiming.NavigationToLargestContentPaint";
 const char kHistogramLargestContentPaintContentType[] =
@@ -772,11 +770,6 @@ void CorePageLoadMetricsObserver::RecordTimingHistograms(
           timing.paint_timing->largest_text_paint, info)) {
     PAGE_LOAD_HISTOGRAM(internal::kHistogramLargestTextPaint,
                         timing.paint_timing->largest_text_paint.value());
-  }
-  if (WasStartedInForegroundOptionalEventInForeground(
-          timing.paint_timing->last_text_paint, info)) {
-    PAGE_LOAD_HISTOGRAM(internal::kHistogramLastTextPaint,
-                        timing.paint_timing->last_text_paint.value());
   }
   base::Optional<base::TimeDelta> largest_content_paint_time;
   uint64_t largest_content_paint_size;

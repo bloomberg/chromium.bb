@@ -346,12 +346,6 @@ mojom::PageLoadTimingPtr MetricsRenderFrameObserver::GetTiming() const {
     DCHECK(perf.LargestTextPaintSize() > 0);
     timing->paint_timing->largest_text_paint_size = perf.LargestTextPaintSize();
   }
-  if (perf.LastTextPaint() > 0.0) {
-    timing->paint_timing->last_text_paint =
-        ClampDelta(perf.LastTextPaint(), start);
-    DCHECK(perf.LastTextPaintSize() > 0);
-    timing->paint_timing->last_text_paint_size = perf.LastTextPaintSize();
-  }
   if (perf.ParseStart() > 0.0)
     timing->parse_timing->parse_start = ClampDelta(perf.ParseStart(), start);
   if (perf.ParseStop() > 0.0)

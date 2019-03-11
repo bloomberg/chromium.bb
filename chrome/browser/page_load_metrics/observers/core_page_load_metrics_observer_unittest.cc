@@ -1090,25 +1090,6 @@ TEST_F(CorePageLoadMetricsObserverTest, LargestTextPaint) {
       testing::ElementsAre(base::Bucket(4780, 1)));
 }
 
-TEST_F(CorePageLoadMetricsObserverTest, LastTextPaint) {
-  page_load_metrics::mojom::PageLoadTiming timing;
-  page_load_metrics::InitPageLoadTimingForTest(&timing);
-  timing.navigation_start = base::Time::FromDoubleT(1);
-  // Pick a value that lines up with a histogram bucket.
-  timing.paint_timing->last_text_paint =
-      base::TimeDelta::FromMilliseconds(4780);
-  PopulateRequiredTimingFields(&timing);
-
-  NavigateAndCommit(GURL(kDefaultTestUrl));
-  SimulateTimingUpdate(timing);
-  // Navigate again to force histogram recording.
-  NavigateAndCommit(GURL(kDefaultTestUrl2));
-
-  EXPECT_THAT(
-      histogram_tester().GetAllSamples(internal::kHistogramLastTextPaint),
-      testing::ElementsAre(base::Bucket(4780, 1)));
-}
-
 TEST_F(CorePageLoadMetricsObserverTest, LargestContentPaint_NoTextOrImage) {
   page_load_metrics::mojom::PageLoadTiming timing;
   page_load_metrics::InitPageLoadTimingForTest(&timing);
