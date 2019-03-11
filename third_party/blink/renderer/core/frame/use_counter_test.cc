@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/use_counter/css_property_id.mojom-blink.h"
+#include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/html/html_html_element.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
@@ -439,6 +440,68 @@ TEST_F(UseCounterTest, CSSUnknownNamespacePrefixInSelector) {
 
   document.documentElement()->SetInnerHTMLFromString("<style>foo|a {}</style>");
   UpdateAllLifecyclePhases(document);
+  EXPECT_TRUE(UseCounter::IsCounted(document, feature));
+}
+
+TEST_F(UseCounterTest, CSSSelectorHostContextInLiveProfile) {
+  std::unique_ptr<DummyPageHolder> dummy_page_holder =
+      DummyPageHolder::Create(IntSize(800, 600));
+  Page::InsertOrdinaryPageForTesting(&dummy_page_holder->GetPage());
+  Document& document = dummy_page_holder->GetDocument();
+  WebFeature feature = WebFeature::kCSSSelectorHostContextInLiveProfile;
+
+  document.body()->SetInnerHTMLFromString(R"HTML(
+    <div id="parent">
+      <div id="host"></div>
+    </div>
+  )HTML");
+
+  Element* host = document.getElementById("host");
+  ASSERT_TRUE(host);
+  ShadowRoot& shadow_root =
+      host->AttachShadowRootInternal(ShadowRootType::kOpen);
+  UpdateAllLifecyclePhases(document);
+  EXPECT_FALSE(UseCounter::IsCounted(document, feature));
+
+  shadow_root.SetInnerHTMLFromString(R"HTML(
+      <style>
+        :host-context(#parent) span {
+          color: green
+        }
+      </style>
+      <span></span>
+  )HTML");
+
+  UpdateAllLifecyclePhases(document);
+  EXPECT_TRUE(UseCounter::IsCounted(document, feature));
+}
+
+TEST_F(UseCounterTest, CSSSelectorHostContextInSnapshotProfile) {
+  std::unique_ptr<DummyPageHolder> dummy_page_holder =
+      DummyPageHolder::Create(IntSize(800, 600));
+  Page::InsertOrdinaryPageForTesting(&dummy_page_holder->GetPage());
+  Document& document = dummy_page_holder->GetDocument();
+  WebFeature feature = WebFeature::kCSSSelectorHostContextInSnapshotProfile;
+
+  document.body()->SetInnerHTMLFromString(R"HTML(
+    <div id="parent">
+      <div id="host"></div>
+    </div>
+  )HTML");
+
+  Element* host = document.getElementById("host");
+  ASSERT_TRUE(host);
+  ShadowRoot& shadow_root =
+      host->AttachShadowRootInternal(ShadowRootType::kOpen);
+  UpdateAllLifecyclePhases(document);
+  EXPECT_FALSE(UseCounter::IsCounted(document, feature));
+
+  shadow_root.SetInnerHTMLFromString("<span></span>");
+  UpdateAllLifecyclePhases(document);
+  EXPECT_FALSE(UseCounter::IsCounted(document, feature));
+
+  Element* span = shadow_root.QuerySelector(":host-context(#parent) span");
+  EXPECT_TRUE(span);
   EXPECT_TRUE(UseCounter::IsCounted(document, feature));
 }
 
