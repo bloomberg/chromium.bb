@@ -17,7 +17,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
-#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -25,7 +24,6 @@
 #include "chrome/browser/badging/badge_manager_delegate.h"
 #include "chrome/browser/badging/badge_manager_factory.h"
 #include "chrome/browser/banners/test_app_banner_manager_desktop.h"
-#include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -90,7 +88,6 @@ using extensions::Extension;
 namespace {
 
 constexpr const char kExampleURL[] = "http://example.org/";
-constexpr const char kExampleURL2[] = "http://example.com/";
 constexpr const char kImagePath[] = "/ssl/google_files/logo.gif";
 constexpr const char kAppDotComManifest[] =
     "{"
@@ -1647,113 +1644,6 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, ShouldShowToolbarForSystemApp) {
 
   // Navigate to the app's launch page; the toolbar should be hidden.
   NavigateAndCheckForToolbar(app_browser_, app_url, false);
-}
-
-// TODO(loyso): crbug.com/918089. This test is deprecated in favor of
-// BookmarkAppTest.EngagementHistogramForAppInWindow and
-// BookmarkAppTest.EngagementHistogramForAppInTab.
-IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, EngagementHistogram) {
-  base::HistogramTester histograms;
-  WebApplicationInfo web_app_info;
-  web_app_info.app_url = GURL(kExampleURL);
-  web_app_info.scope = GURL(kExampleURL);
-  web_app_info.theme_color = base::Optional<SkColor>();
-  const extensions::Extension* app = InstallBookmarkApp(web_app_info);
-  Browser* app_browser = LaunchAppBrowser(app);
-  NavigateToURLAndWait(app_browser, GURL(kExampleURL));
-
-  // Test shortcut launch.
-  EXPECT_EQ(web_app::GetAppIdFromApplicationName(app_browser->app_name()),
-            app->id());
-
-  histograms.ExpectUniqueSample(
-      extensions::kPwaWindowEngagementTypeHistogram,
-      SiteEngagementService::ENGAGEMENT_WEBAPP_SHORTCUT_LAUNCH, 1);
-
-  // Test some other engagement events by directly calling into
-  // SiteEngagementService.
-  content::WebContents* web_contents =
-      app_browser->tab_strip_model()->GetActiveWebContents();
-  SiteEngagementService* site_engagement_service =
-      SiteEngagementService::Get(app_browser->profile());
-  site_engagement_service->HandleMediaPlaying(web_contents, false);
-  site_engagement_service->HandleMediaPlaying(web_contents, true);
-  site_engagement_service->HandleNavigation(web_contents,
-                                            ui::PAGE_TRANSITION_TYPED);
-  site_engagement_service->HandleUserInput(
-      web_contents, SiteEngagementService::ENGAGEMENT_MOUSE);
-
-  histograms.ExpectTotalCount(extensions::kPwaWindowEngagementTypeHistogram, 5);
-  histograms.ExpectBucketCount(extensions::kPwaWindowEngagementTypeHistogram,
-                               SiteEngagementService::ENGAGEMENT_MEDIA_VISIBLE,
-                               1);
-  histograms.ExpectBucketCount(extensions::kPwaWindowEngagementTypeHistogram,
-                               SiteEngagementService::ENGAGEMENT_MEDIA_HIDDEN,
-                               1);
-  histograms.ExpectBucketCount(extensions::kPwaWindowEngagementTypeHistogram,
-                               SiteEngagementService::ENGAGEMENT_NAVIGATION, 1);
-  histograms.ExpectBucketCount(extensions::kPwaWindowEngagementTypeHistogram,
-                               SiteEngagementService::ENGAGEMENT_MOUSE, 1);
-}
-
-// TODO(loyso): crbug.com/918089. This test is deprecated in favor of
-// BookmarkAppTest.EngagementHistogramAppWithoutScope and
-// BookmarkAppTest.EngagementHistogramRecordedForNonApps.
-IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest,
-                       EngagementHistogramNotRecordedIfNoScope) {
-  base::HistogramTester histograms;
-  WebApplicationInfo web_app_info;
-  // App with no scope.
-  web_app_info.app_url = GURL(kExampleURL);
-  web_app_info.theme_color = base::Optional<SkColor>();
-  const extensions::Extension* app = InstallBookmarkApp(web_app_info);
-  Browser* app_browser = LaunchAppBrowser(app);
-
-  EXPECT_EQ(web_app::GetAppIdFromApplicationName(app_browser->app_name()),
-            app->id());
-
-  histograms.ExpectTotalCount(extensions::kPwaWindowEngagementTypeHistogram, 0);
-}
-
-// TODO(loyso): crbug.com/918089. This test is deprecated in favor of
-// BookmarkAppTest.EngagementHistogramTwoApps.
-IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, EngagementHistogramTwoApps) {
-  base::HistogramTester histograms;
-  const extensions::Extension *app1, *app2;
-
-  // Install two apps.
-  {
-    WebApplicationInfo web_app_info;
-    web_app_info.app_url = GURL(kExampleURL);
-    web_app_info.scope = GURL(kExampleURL);
-    web_app_info.theme_color = base::Optional<SkColor>();
-    app1 = InstallBookmarkApp(web_app_info);
-  }
-  {
-    WebApplicationInfo web_app_info;
-    web_app_info.app_url = GURL(kExampleURL2);
-    web_app_info.scope = GURL(kExampleURL2);
-    web_app_info.theme_color = base::Optional<SkColor>();
-    app2 = InstallBookmarkApp(web_app_info);
-  }
-
-  // Launch them three times. This ensures that each launch only logs once.
-  // (Since all apps receive the notification on launch, there is a danger that
-  // we might log too many times.)
-  Browser* app_browser1 = LaunchAppBrowser(app1);
-  Browser* app_browser2 = LaunchAppBrowser(app1);
-  Browser* app_browser3 = LaunchAppBrowser(app2);
-
-  EXPECT_EQ(web_app::GetAppIdFromApplicationName(app_browser1->app_name()),
-            app1->id());
-  EXPECT_EQ(web_app::GetAppIdFromApplicationName(app_browser2->app_name()),
-            app1->id());
-  EXPECT_EQ(web_app::GetAppIdFromApplicationName(app_browser3->app_name()),
-            app2->id());
-
-  histograms.ExpectUniqueSample(
-      extensions::kPwaWindowEngagementTypeHistogram,
-      SiteEngagementService::ENGAGEMENT_WEBAPP_SHORTCUT_LAUNCH, 3);
 }
 
 // Common app manifest for HostedAppProcessModelTests.

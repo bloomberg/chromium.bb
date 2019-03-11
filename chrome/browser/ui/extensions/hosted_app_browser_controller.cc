@@ -4,9 +4,7 @@
 
 #include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
 
-#include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -112,10 +110,6 @@ bool IsSameScope(const GURL& app_url,
              profile, page_url, extensions::LAUNCH_CONTAINER_WINDOW);
 }
 
-// TODO(loyso): Erase this histogram. crbug.com/918089.
-const char kPwaWindowEngagementTypeHistogram[] =
-    "Webapp.Engagement.EngagementType";
-
 // static
 bool HostedAppBrowserController::IsForExperimentalHostedAppBrowser(
     const Browser* browser) {
@@ -154,8 +148,7 @@ base::string16 HostedAppBrowserController::FormatUrlOrigin(const GURL& url) {
 }
 
 HostedAppBrowserController::HostedAppBrowserController(Browser* browser)
-    : SiteEngagementObserver(SiteEngagementService::Get(browser->profile())),
-      browser_(browser),
+    : browser_(browser),
       extension_id_(web_app::GetAppIdFromApplicationName(browser->app_name())),
       // If a bookmark app has a URL handler, then it is a PWA.
       // TODO(https://crbug.com/774918): Replace once there is a more explicit
@@ -354,24 +347,6 @@ void HostedAppBrowserController::Uninstall(UninstallReason reason,
 
 bool HostedAppBrowserController::IsInstalled() const {
   return GetExtension();
-}
-
-void HostedAppBrowserController::OnEngagementEvent(
-    content::WebContents* web_contents,
-    const GURL& /*url*/,
-    double /*score*/,
-    SiteEngagementService::EngagementType type) {
-  if (!created_for_installed_pwa_)
-    return;
-
-  // Check the event belongs to the controller's associated browser window.
-  if (!web_contents ||
-      web_contents != browser_->tab_strip_model()->GetActiveWebContents()) {
-    return;
-  }
-
-  UMA_HISTOGRAM_ENUMERATION(kPwaWindowEngagementTypeHistogram, type,
-                            SiteEngagementService::ENGAGEMENT_LAST);
 }
 
 void HostedAppBrowserController::OnTabStripModelChanged(

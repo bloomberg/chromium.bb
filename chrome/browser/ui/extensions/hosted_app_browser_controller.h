@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/engagement/site_engagement_observer.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -30,14 +29,10 @@ bool IsSameScope(const GURL& app_url,
                  const GURL& page_url,
                  content::BrowserContext* profile);
 
-// TODO(loyso): Erase this histogram. crbug.com/918089.
-extern const char kPwaWindowEngagementTypeHistogram[];
-
 class Extension;
 
 // Class to encapsulate logic to control the browser UI for hosted apps.
-class HostedAppBrowserController : public SiteEngagementObserver,
-                                   public TabStripModelObserver,
+class HostedAppBrowserController : public TabStripModelObserver,
                                    public ExtensionUninstallDialog::Delegate {
  public:
   // Returns whether |browser| uses the experimental hosted app experience.
@@ -114,12 +109,6 @@ class HostedAppBrowserController : public SiteEngagementObserver,
   // Returns whether the app is installed (uninstallation may complete within
   // the lifetime of HostedAppBrowserController).
   bool IsInstalled() const;
-
-  // SiteEngagementObserver overrides.
-  void OnEngagementEvent(content::WebContents* web_contents,
-                         const GURL& url,
-                         double score,
-                         SiteEngagementService::EngagementType type) override;
 
   // TabStripModelObserver overrides.
   void OnTabStripModelChanged(
