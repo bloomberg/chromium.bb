@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "remoting/base/oauth_token_getter.h"
-#include "remoting/signaling/ftl_client.h"
+#include "remoting/signaling/ftl_grpc_context.h"
 
 namespace remoting {
 
@@ -32,8 +32,16 @@ class FtlSignalingPlayground {
   void StartAndAuthenticate();
 
  private:
+  using PeerToPeer =
+      google::internal::communications::instantmessaging::v1::PeerToPeer;
+  using Registration =
+      google::internal::communications::instantmessaging::v1::Registration;
+  using Messaging =
+      google::internal::communications::instantmessaging::v1::Messaging;
+
   void StartLoop();
-  void AuthenticateAndResetClient();
+  void ResetServices();
+  void AuthenticateAndResetServices();
   void OnAccessToken(base::OnceClosure on_done,
                      OAuthTokenGetter::Status status,
                      const std::string& user_email,
@@ -61,7 +69,11 @@ class FtlSignalingPlayground {
   std::unique_ptr<test::TestTokenStorage> storage_;
   std::unique_ptr<TestOAuthTokenGetterFactory> token_getter_factory_;
   std::unique_ptr<OAuthTokenGetter> token_getter_;
-  std::unique_ptr<FtlClient> client_;
+  std::unique_ptr<FtlGrpcContext> ftl_context_;
+
+  std::unique_ptr<PeerToPeer::Stub> peer_to_peer_stub_;
+  std::unique_ptr<Registration::Stub> registration_stub_;
+  std::unique_ptr<Messaging::Stub> messaging_stub_;
 
   base::WeakPtrFactory<FtlSignalingPlayground> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(FtlSignalingPlayground);
