@@ -26,7 +26,8 @@ class CONTENT_EXPORT ExternalMediaStreamAudioSource final
       int sample_rate,
       media::ChannelLayout channel_layout,
       int frames_per_buffer,
-      bool is_remote);
+      bool is_remote,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   ~ExternalMediaStreamAudioSource() final;
 

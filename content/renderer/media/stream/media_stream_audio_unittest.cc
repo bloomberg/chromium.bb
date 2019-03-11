@@ -17,6 +17,7 @@
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_track.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_audio_sink.h"
+#include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/web_heap.h"
 
@@ -38,7 +39,9 @@ class FakeMediaStreamAudioSource : public blink::MediaStreamAudioSource,
                                    public base::PlatformThread::Delegate {
  public:
   FakeMediaStreamAudioSource()
-      : blink::MediaStreamAudioSource(true),
+      : blink::MediaStreamAudioSource(
+            blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
+            true),
         stop_event_(base::WaitableEvent::ResetPolicy::MANUAL,
                     base::WaitableEvent::InitialState::NOT_SIGNALED),
         next_buffer_size_(kBufferSize),

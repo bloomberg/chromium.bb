@@ -19,6 +19,7 @@
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_processor_options.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_track.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_audio_sink.h"
+#include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/public/web/web_heap.h"
 
@@ -108,7 +109,8 @@ class ProcessedLocalAudioSourceTest : public testing::Test {
             false /* disable_local_echo */, properties,
             base::Bind(&ProcessedLocalAudioSourceTest::OnAudioSourceStarted,
                        base::Unretained(this)),
-            &mock_dependency_factory_);
+            &mock_dependency_factory_,
+            blink::scheduler::GetSingleThreadTaskRunnerForTesting());
     source->SetAllowInvalidRenderFrameIdForTesting(true);
     blink_audio_source_.SetPlatformSource(
         std::move(source));  // Takes ownership.

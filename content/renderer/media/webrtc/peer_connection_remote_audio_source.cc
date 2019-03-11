@@ -60,8 +60,9 @@ void* PeerConnectionRemoteAudioTrack::GetClassIdentifier() const {
 }
 
 PeerConnectionRemoteAudioSource::PeerConnectionRemoteAudioSource(
-    scoped_refptr<webrtc::AudioTrackInterface> track_interface)
-    : blink::MediaStreamAudioSource(false /* is_local_source */),
+    scoped_refptr<webrtc::AudioTrackInterface> track_interface,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    : blink::MediaStreamAudioSource(task_runner, false /* is_local_source */),
       track_interface_(std::move(track_interface)),
       is_sink_of_peer_connection_(false) {
   DCHECK(track_interface_);

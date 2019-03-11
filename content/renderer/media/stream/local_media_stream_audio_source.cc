@@ -14,8 +14,10 @@ LocalMediaStreamAudioSource::LocalMediaStreamAudioSource(
     int consumer_render_frame_id,
     const blink::MediaStreamDevice& device,
     bool disable_local_echo,
-    const ConstraintsCallback& started_callback)
-    : blink::MediaStreamAudioSource(true /* is_local_source */,
+    const ConstraintsCallback& started_callback,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    : blink::MediaStreamAudioSource(task_runner,
+                                    true /* is_local_source */,
                                     disable_local_echo),
       consumer_render_frame_id_(consumer_render_frame_id),
       started_callback_(started_callback) {

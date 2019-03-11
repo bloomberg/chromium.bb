@@ -11,8 +11,9 @@ ExternalMediaStreamAudioSource::ExternalMediaStreamAudioSource(
     int sample_rate,
     media::ChannelLayout channel_layout,
     int frames_per_buffer,
-    bool is_remote)
-    : blink::MediaStreamAudioSource(!is_remote),
+    bool is_remote,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    : blink::MediaStreamAudioSource(task_runner, !is_remote),
       source_(std::move(source)),
       was_started_(false) {
   DVLOG(1)

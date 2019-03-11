@@ -37,7 +37,8 @@ namespace content {
 namespace {
 
 void CreateNativeAudioMediaStreamTrack(
-    const blink::WebMediaStreamTrack& track) {
+    const blink::WebMediaStreamTrack& track,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   blink::WebMediaStreamSource source = track.Source();
   blink::MediaStreamAudioSource* media_stream_source =
       blink::MediaStreamAudioSource::From(source);
@@ -51,7 +52,7 @@ void CreateNativeAudioMediaStreamTrack(
   // special case code isn't needed here.
   if (!media_stream_source && source.RequiresAudioConsumer()) {
     DVLOG(1) << "Creating WebAudio media stream source.";
-    media_stream_source = new WebAudioMediaStreamSource(&source);
+    media_stream_source = new WebAudioMediaStreamSource(&source, task_runner);
     source.SetPlatformSource(
         base::WrapUnique(media_stream_source));  // Takes ownership.
 
@@ -106,7 +107,9 @@ void CloneNativeVideoMediaStreamTrack(
 
 }  // namespace
 
-MediaStreamCenter::MediaStreamCenter() = default;
+MediaStreamCenter::MediaStreamCenter(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    : task_runner_(task_runner) {}
 
 MediaStreamCenter::~MediaStreamCenter() = default;
 
@@ -118,7 +121,7 @@ void MediaStreamCenter::DidCreateMediaStreamTrack(
 
   switch (track.Source().GetType()) {
     case blink::WebMediaStreamSource::kTypeAudio:
-      CreateNativeAudioMediaStreamTrack(track);
+      CreateNativeAudioMediaStreamTrack(track, task_runner_);
       break;
     case blink::WebMediaStreamSource::kTypeVideo:
       CreateNativeVideoMediaStreamTrack(track);
@@ -135,7 +138,7 @@ void MediaStreamCenter::DidCloneMediaStreamTrack(
 
   switch (clone.Source().GetType()) {
     case blink::WebMediaStreamSource::kTypeAudio:
-      CreateNativeAudioMediaStreamTrack(clone);
+      CreateNativeAudioMediaStreamTrack(clone, task_runner_);
       break;
     case blink::WebMediaStreamSource::kTypeVideo:
       CloneNativeVideoMediaStreamTrack(original, clone);

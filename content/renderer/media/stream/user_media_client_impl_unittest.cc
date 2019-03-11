@@ -141,7 +141,9 @@ void CheckVideoSourceAndTrack(blink::MediaStreamVideoSource* source,
 class MockLocalMediaStreamAudioSource : public blink::MediaStreamAudioSource {
  public:
   MockLocalMediaStreamAudioSource()
-      : blink::MediaStreamAudioSource(true /* is_local_source */) {}
+      : blink::MediaStreamAudioSource(
+            blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
+            true /* is_local_source */) {}
 
   MOCK_METHOD0(EnsureSourceIsStopped, void());
 
@@ -360,7 +362,10 @@ class UserMediaProcessorUnderTest : public UserMediaProcessor {
     if (create_source_that_fails_) {
       class FailedAtLifeAudioSource : public blink::MediaStreamAudioSource {
        public:
-        FailedAtLifeAudioSource() : blink::MediaStreamAudioSource(true) {}
+        FailedAtLifeAudioSource()
+            : blink::MediaStreamAudioSource(
+                  blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
+                  true) {}
         ~FailedAtLifeAudioSource() override {}
 
        protected:
@@ -371,7 +376,8 @@ class UserMediaProcessorUnderTest : public UserMediaProcessor {
       local_audio_source_ = new MockLocalMediaStreamAudioSource();
       source = base::WrapUnique(local_audio_source_);
     } else {
-      source = std::make_unique<blink::MediaStreamAudioSource>(true);
+      source = std::make_unique<blink::MediaStreamAudioSource>(
+          blink::scheduler::GetSingleThreadTaskRunnerForTesting(), true);
     }
 
     source->SetDevice(device);

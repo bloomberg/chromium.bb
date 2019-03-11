@@ -34,22 +34,28 @@ static_assert(kFallbackAudioLatencyMs >= 0,
 static_assert(kFallbackAudioLatencyMs <= kMaxAudioLatencyMs,
               "Fallback audio latency exceeds maximum.");
 
-MediaStreamAudioSource::MediaStreamAudioSource(bool is_local_source,
-                                               bool disable_local_echo)
+MediaStreamAudioSource::MediaStreamAudioSource(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    bool is_local_source,
+    bool disable_local_echo)
     : is_local_source_(is_local_source),
       disable_local_echo_(disable_local_echo),
       is_stopped_(false),
-      task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      task_runner_(task_runner),
       weak_factory_(this) {
   DVLOG(1) << "MediaStreamAudioSource@" << this << "::MediaStreamAudioSource("
            << (is_local_source_ ? "local" : "remote") << " source)";
 }
 
-MediaStreamAudioSource::MediaStreamAudioSource(bool is_local_source)
-    : MediaStreamAudioSource(is_local_source, false /* disable_local_echo */) {}
+MediaStreamAudioSource::MediaStreamAudioSource(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    bool is_local_source)
+    : MediaStreamAudioSource(std::move(task_runner),
+                             is_local_source,
+                             false /* disable_local_echo */) {}
 
 MediaStreamAudioSource::~MediaStreamAudioSource() {
-  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   DVLOG(1) << "MediaStreamAudioSource@" << this << " is being destroyed.";
 }
 
@@ -64,7 +70,7 @@ MediaStreamAudioSource* MediaStreamAudioSource::From(
 
 bool MediaStreamAudioSource::ConnectToTrack(
     const WebMediaStreamTrack& blink_track) {
-  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(!blink_track.IsNull());
 
   // Sanity-check that there is not already a MediaStreamAudioTrack instance
@@ -111,7 +117,7 @@ media::AudioParameters MediaStreamAudioSource::GetAudioParameters() const {
 }
 
 bool MediaStreamAudioSource::RenderToAssociatedSinkEnabled() const {
-  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   return device().matched_output_device_id.has_value();
 }
 
@@ -121,7 +127,7 @@ void* MediaStreamAudioSource::GetClassIdentifier() const {
 
 void MediaStreamAudioSource::DoChangeSource(
     const MediaStreamDevice& new_device) {
-  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(task_runner_->BelongsToCurrentThread());
 
   if (is_stopped_)
     return;
@@ -131,25 +137,25 @@ void MediaStreamAudioSource::DoChangeSource(
 
 std::unique_ptr<MediaStreamAudioTrack>
 MediaStreamAudioSource::CreateMediaStreamAudioTrack(const std::string& id) {
-  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   return std::unique_ptr<MediaStreamAudioTrack>(
       new MediaStreamAudioTrack(is_local_source()));
 }
 
 bool MediaStreamAudioSource::EnsureSourceIsStarted() {
-  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   DVLOG(1) << "MediaStreamAudioSource@" << this << "::EnsureSourceIsStarted()";
   return true;
 }
 
 void MediaStreamAudioSource::EnsureSourceIsStopped() {
-  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   DVLOG(1) << "MediaStreamAudioSource@" << this << "::EnsureSourceIsStopped()";
 }
 
 void MediaStreamAudioSource::ChangeSourceImpl(
     const MediaStreamDevice& new_device) {
-  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   DVLOG(1) << "MediaStreamAudioSource@" << this << "::ChangeSourceImpl()";
   NOTIMPLEMENTED();
 }
@@ -168,13 +174,13 @@ void MediaStreamAudioSource::DeliverDataToTracks(
 }
 
 void MediaStreamAudioSource::DoStopSource() {
-  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   EnsureSourceIsStopped();
   is_stopped_ = true;
 }
 
 void MediaStreamAudioSource::StopAudioDeliveryTo(MediaStreamAudioTrack* track) {
-  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(task_runner_->BelongsToCurrentThread());
 
   const bool did_remove_last_track = deliverer_.RemoveConsumer(track);
   DVLOG(1) << "Removed MediaStreamAudioTrack@" << track

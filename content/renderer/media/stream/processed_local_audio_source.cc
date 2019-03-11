@@ -93,8 +93,10 @@ ProcessedLocalAudioSource::ProcessedLocalAudioSource(
     bool disable_local_echo,
     const blink::AudioProcessingProperties& audio_processing_properties,
     const ConstraintsCallback& started_callback,
-    PeerConnectionDependencyFactory* factory)
-    : blink::MediaStreamAudioSource(true /* is_local_source */,
+    PeerConnectionDependencyFactory* factory,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    : blink::MediaStreamAudioSource(task_runner,
+                                    true /* is_local_source */,
                                     disable_local_echo),
       consumer_render_frame_id_(consumer_render_frame_id),
       pc_factory_(factory),

@@ -20,6 +20,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
+#include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/web_heap.h"
 #include "third_party/opus/src/include/opus.h"
@@ -250,7 +251,8 @@ class AudioTrackRecorderTest : public TestWithParam<ATRTestParams> {
                             blink::WebString::FromUTF8("dummy_source_name"),
                             false /* remote */);
     audio_source.SetPlatformSource(
-        std::make_unique<blink::MediaStreamAudioSource>(true));
+        std::make_unique<blink::MediaStreamAudioSource>(
+            blink::scheduler::GetSingleThreadTaskRunnerForTesting(), true));
     blink_track_.Initialize(blink::WebString::FromUTF8("audio_track"),
                             audio_source);
     CHECK(blink::MediaStreamAudioSource::From(audio_source)
