@@ -5,7 +5,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//      https://www.apache.org/licenses/LICENSE-2.0
+//      http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -24,8 +24,7 @@
 //
 // Example:
 //
-//   std::string s = absl::StrFormat(
-//                      "%s %s You have $%d!", "Hello", name, dollars);
+//   string s = absl::StrFormat("%s %s You have $%d!", "Hello", name, dollars);
 //
 // The library consists of the following basic utilities:
 //
@@ -90,7 +89,7 @@ namespace absl {
 // Example:
 //
 //   absl::UntypedFormatSpec format("%d");
-//   std::string out;
+//   string out;
 //   CHECK(absl::FormatUntyped(&out, format, {absl::FormatArg(1)}));
 class UntypedFormatSpec {
  public:
@@ -136,8 +135,8 @@ str_format_internal::StreamedWrapper<T> FormatStreamed(const T& v) {
 // Example:
 //
 //   int n = 0;
-//   std::string s = absl::StrFormat("%s%d%n", "hello", 123,
-//                       absl::FormatCountCapture(&n));
+//   string s = absl::StrFormat("%s%d%n", "hello", 123,
+//                   absl::FormatCountCapture(&n));
 //   EXPECT_EQ(8, n);
 class FormatCountCapture {
  public:
@@ -224,7 +223,7 @@ class FormatCountCapture {
 //     "%p", *int               -> "0x7ffdeb6ad2a4"
 //
 //     int n = 0;
-//     std::string s = absl::StrFormat(
+//     string s = absl::StrFormat(
 //         "%s%d%n", "hello", 123, absl::FormatCountCapture(&n));
 //     EXPECT_EQ(8, n);
 //
@@ -291,14 +290,14 @@ using ParsedFormat = str_format_internal::ExtendedParsedFormat<
 //
 // Example:
 //
-//   std::string s = absl::StrFormat(
+//   string s = absl::StrFormat(
 //       "Welcome to %s, Number %d!", "The Village", 6);
 //   EXPECT_EQ("Welcome to The Village, Number 6!", s);
 //
 // Returns an empty string in case of error.
 template <typename... Args>
 ABSL_MUST_USE_RESULT std::string StrFormat(const FormatSpec<Args...>& format,
-                                           const Args&... args) {
+                                      const Args&... args) {
   return str_format_internal::FormatPack(
       str_format_internal::UntypedFormatSpecImpl::Extract(format),
       {str_format_internal::FormatArgImpl(args)...});
@@ -312,12 +311,11 @@ ABSL_MUST_USE_RESULT std::string StrFormat(const FormatSpec<Args...>& format,
 //
 // Example:
 //
-//   std::string orig("For example PI is approximately ");
+//   string orig("For example PI is approximately ");
 //   std::cout << StrAppendFormat(&orig, "%12.6f", 3.14);
 template <typename... Args>
-std::string& StrAppendFormat(std::string* dst,
-                             const FormatSpec<Args...>& format,
-                             const Args&... args) {
+std::string& StrAppendFormat(std::string* dst, const FormatSpec<Args...>& format,
+                        const Args&... args) {
   return str_format_internal::AppendPack(
       dst, str_format_internal::UntypedFormatSpecImpl::Extract(format),
       {str_format_internal::FormatArgImpl(args)...});
@@ -436,8 +434,7 @@ class FormatRawSink {
 // `absl::FormatRawSink` interface), using a format string and zero or more
 // additional arguments.
 //
-// By default, `std::string` and `std::ostream` are supported as destination
-// objects.
+// By default, `string` and `std::ostream` are supported as destination objects.
 //
 // `absl::Format()` is a generic version of `absl::StrFormat(), for custom
 // sinks. The format string, like format strings for `StrFormat()`, is checked
@@ -486,10 +483,9 @@ using FormatArg = str_format_internal::FormatArgImpl;
 //
 // Example:
 //
-//   std::optional<std::string> FormatDynamic(
-//       const std::string& in_format,
-//       const vector<std::string>& in_args) {
-//     std::string out;
+//   std::optional<string> FormatDynamic(const string& in_format,
+//                                       const vector<string>& in_args) {
+//     string out;
 //     std::vector<absl::FormatArg> args;
 //     for (const auto& v : in_args) {
 //       // It is important that 'v' is a reference to the objects in in_args.
