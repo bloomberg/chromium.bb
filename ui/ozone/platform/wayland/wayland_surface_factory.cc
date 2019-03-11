@@ -28,8 +28,9 @@ namespace {
 
 class GLOzoneEGLWayland : public GLOzoneEGL {
  public:
-  explicit GLOzoneEGLWayland(WaylandConnectionProxy* connection)
-      : connection_(connection) {}
+  GLOzoneEGLWayland(WaylandConnectionProxy* connection,
+                    WaylandSurfaceFactory* factory)
+      : connection_(connection), factory_(factory) {}
   ~GLOzoneEGLWayland() override {}
 
   scoped_refptr<gl::GLSurface> CreateViewGLSurface(
@@ -46,7 +47,8 @@ class GLOzoneEGLWayland : public GLOzoneEGL {
   bool LoadGLES2Bindings(gl::GLImplementation impl) override;
 
  private:
-  WaylandConnectionProxy* connection_ = nullptr;
+  WaylandConnectionProxy* const connection_;
+  WaylandSurfaceFactory* const factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GLOzoneEGLWayland);
 };
@@ -72,6 +74,8 @@ scoped_refptr<gl::GLSurface> GLOzoneEGLWayland::CreateViewGLSurface(
 
 scoped_refptr<gl::GLSurface> GLOzoneEGLWayland::CreateSurfacelessViewGLSurface(
     gfx::AcceleratedWidget window) {
+  DCHECK(factory_);
+
   // Only EGLGLES2 is supported with surfaceless view gl.
   if (gl::GetGLImplementation() != gl::kGLImplementationEGLGLES2)
     return nullptr;
@@ -80,10 +84,7 @@ scoped_refptr<gl::GLSurface> GLOzoneEGLWayland::CreateSurfacelessViewGLSurface(
   // If there is a gbm device available, use surfaceless gl surface.
   if (!connection_->gbm_device())
     return nullptr;
-  return gl::InitializeGLSurface(new GbmSurfacelessWayland(
-      static_cast<WaylandSurfaceFactory*>(
-          OzonePlatform::GetInstance()->GetSurfaceFactoryOzone()),
-      window));
+  return gl::InitializeGLSurface(new GbmSurfacelessWayland(factory_, window));
 #else
   return nullptr;
 #endif
@@ -115,7 +116,8 @@ bool GLOzoneEGLWayland::LoadGLES2Bindings(gl::GLImplementation impl) {
 WaylandSurfaceFactory::WaylandSurfaceFactory(WaylandConnectionProxy* connection)
     : connection_(connection) {
   if (connection_)
-    egl_implementation_ = std::make_unique<GLOzoneEGLWayland>(connection_);
+    egl_implementation_ =
+        std::make_unique<GLOzoneEGLWayland>(connection_, this);
 }
 
 WaylandSurfaceFactory::~WaylandSurfaceFactory() {}
