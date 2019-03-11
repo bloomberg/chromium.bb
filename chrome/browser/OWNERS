@@ -2,6 +2,7 @@
 # usual OWNERS rules.
 per-file about_flags.cc=*
 per-file flag_descriptions.*=*
+per-file flag-metadata.json=*
 
 per-file about_flags_unittest.cc=file://components/flags_ui/OWNERS
 
@@ -45,8 +46,8 @@ per-file chrome_webusb_browser_client*=file://chrome/browser/usb/OWNERS
 
 per-file exo_parts.*=reveman@chromium.org
 
-per-file flag-metadata.json=avi@chromium.org
-per-file flag-metadata.json=ellyjones@chromium.org
+per-file flag-never-expire-list.json=avi@chromium.org
+per-file flag-never-expire-list.json=ellyjones@chromium.org
 
 per-file io_thread*=mmenke@chromium.org
 per-file io_thread*=rch@chromium.org
