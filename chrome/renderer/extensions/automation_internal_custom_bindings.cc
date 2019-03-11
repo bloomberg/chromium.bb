@@ -34,6 +34,7 @@
 #include "gin/converter.h"
 #include "gin/data_object_builder.h"
 #include "ipc/message_filter.h"
+#include "third_party/blink/public/web/web_local_frame.h"
 #include "ui/accessibility/ax_enum_util.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_event.h"
@@ -438,11 +439,12 @@ class NodeIDPlusDimensionsWrapper
 
 class AutomationMessageFilter : public IPC::MessageFilter {
  public:
-  explicit AutomationMessageFilter(AutomationInternalCustomBindings* owner)
-      : owner_(owner), removed_(false) {
+  AutomationMessageFilter(
+      AutomationInternalCustomBindings* owner,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+      : owner_(owner), removed_(false), task_runner_(std::move(task_runner)) {
     DCHECK(owner);
     content::RenderThread::Get()->AddFilter(this);
-    task_runner_ = base::ThreadTaskRunnerHandle::Get();
   }
 
   void Detach() {
@@ -1243,8 +1245,12 @@ void AutomationInternalCustomBindings::StartCachingAccessibilityTrees(
   if (should_ignore_context_)
     return;
 
-  if (!message_filter_)
-    message_filter_ = new AutomationMessageFilter(this);
+  if (!message_filter_) {
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+        context()->web_frame()->GetTaskRunner(
+            blink::TaskType::kInternalDefault);
+    message_filter_ = new AutomationMessageFilter(this, std::move(task_runner));
+  }
 }
 
 void AutomationInternalCustomBindings::GetSchemaAdditions(
