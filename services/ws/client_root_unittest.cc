@@ -18,6 +18,8 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/aura/window_tracker.h"
+#include "ui/gfx/geometry/vector2d_conversions.h"
+#include "ui/gfx/transform.h"
 
 namespace ws {
 namespace {
@@ -245,6 +247,35 @@ TEST(ClientRoot, EmbedWindowClientVisibilityChanges) {
                                                                  false);
   EXPECT_FALSE(embed_window->TargetVisibility());
   EXPECT_TRUE(embedding_changes->empty());
+}
+
+TEST(ClientRoot, TransformShouldntAffectBounds) {
+  WindowServiceTestSetup setup;
+  aura::Window* top_level =
+      setup.window_tree_test_helper()->NewTopLevelWindow();
+  top_level->SetBounds(gfx::Rect(50, 60, 100, 200));
+  gfx::Transform transform;
+  gfx::Vector2dF translate(20, 30);
+  transform.Translate(translate);
+  top_level->SetTransform(transform);
+  top_level->Show();
+
+  setup.changes()->clear();
+  gfx::Rect new_bounds(100, 120, 100, 200);
+  top_level->SetBounds(new_bounds);
+  EXPECT_EQ(new_bounds + gfx::ToFlooredVector2d(translate),
+            top_level->GetBoundsInScreen());
+  auto iter =
+      FirstChangeOfType(*setup.changes(), CHANGE_TYPE_NODE_BOUNDS_CHANGED);
+  ASSERT_NE(iter, setup.changes()->end());
+  EXPECT_EQ(new_bounds, iter->bounds);
+  setup.changes()->clear();
+
+  top_level->SetTransform(gfx::Transform());
+  EXPECT_EQ(new_bounds, top_level->GetBoundsInScreen());
+  EXPECT_EQ(
+      setup.changes()->end(),
+      FirstChangeOfType(*setup.changes(), CHANGE_TYPE_NODE_BOUNDS_CHANGED));
 }
 
 }  // namespace

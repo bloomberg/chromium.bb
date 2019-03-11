@@ -27,6 +27,7 @@
 #include "ui/compositor/property_change_reason.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/gfx/geometry/point_conversions.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
 namespace ws {
@@ -45,6 +46,25 @@ bool ShouldAssignLocalSurfaceIdImpl(aura::Window* window, bool is_top_level) {
     return true;
   ProxyWindow* proxy_window = ProxyWindow::GetMayBeNull(window);
   return proxy_window->owning_window_tree() == nullptr;
+}
+
+// Returns the bounds of the |window| in screen coordinate, without affect of
+// the gfx::Transform. aura::Window::GetBoundsInScreen() is affected by
+// Transform and may return wrong origin on overview mode, which may confuse
+// locations of transient clients or tooltip windows. See
+// https://crbug.com/931161.
+gfx::Rect GetBoundsToSend(aura::Window* window) {
+  gfx::Rect bounds = window->bounds();
+  // Window may not have the root window in some tests, so use the topmost
+  // window in the hierarchy for root window.
+  aura::Window* root = window;
+  for (auto* w = window->parent(); w; w = w->parent()) {
+    bounds += w->bounds().OffsetFromOrigin();
+    root = w;
+  }
+  // Typically root window bounds should be (0, 0), but it's not on some tests.
+  bounds += (root->GetBoundsInScreen().origin() - root->bounds().origin());
+  return bounds;
 }
 
 }  // namespace
@@ -152,7 +172,7 @@ bool ClientRoot::SetBoundsInScreenFromClient(
   if (starting_allocation != proxy_window->local_surface_id_allocation())
     UpdateLocalSurfaceIdAndClientSurfaceEmbedder();
 
-  const bool succeeded = bounds == window_->GetBoundsInScreen();
+  const bool succeeded = bounds == GetBoundsToSend(window_);
   if (!succeeded)
     NotifyClientOfNewBounds();
   return succeeded;
@@ -282,7 +302,7 @@ void ClientRoot::HandleBoundsOrScaleFactorChange() {
 }
 
 void ClientRoot::NotifyClientOfNewBounds() {
-  last_bounds_ = window_->GetBoundsInScreen();
+  last_bounds_ = GetBoundsToSend(window_);
   auto id = ProxyWindow::GetMayBeNull(window_)->local_surface_id_allocation();
   window_tree_->window_tree_client_->OnWindowBoundsChanged(
       window_tree_->TransportIdForWindow(window_), last_bounds_,
@@ -303,7 +323,7 @@ void ClientRoot::NotifyClientOfVisibilityChange(bool new_value) {
 
 void ClientRoot::OnPositionInRootChanged() {
   DCHECK(!is_top_level_);
-  gfx::Rect bounds_in_screen = window_->GetBoundsInScreen();
+  gfx::Rect bounds_in_screen = GetBoundsToSend(window_);
   if (bounds_in_screen.origin() != last_bounds_.origin())
     NotifyClientOfNewBounds();
 }
