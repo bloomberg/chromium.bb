@@ -3910,11 +3910,10 @@ RenderProcessHost* RenderProcessHostImpl::GetSoleProcessHostForURL(
     BrowserContext* browser_context,
     const IsolationContext& isolation_context,
     const GURL& url) {
-  GURL site_url =
-      SiteInstanceImpl::GetSiteForURL(browser_context, isolation_context, url,
-                                      true /* should_use_effective_urls */);
-  GURL lock_url = SiteInstanceImpl::DetermineProcessLockURL(
-      BrowserOrResourceContext(browser_context), isolation_context, url);
+  GURL site_url = SiteInstanceImpl::GetSiteForURL(
+      isolation_context, url, true /* should_use_effective_urls */);
+  GURL lock_url =
+      SiteInstanceImpl::DetermineProcessLockURL(isolation_context, url);
   return GetSoleProcessHostForSite(browser_context, isolation_context, site_url,
                                    lock_url);
 }

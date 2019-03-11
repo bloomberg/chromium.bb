@@ -1585,7 +1585,6 @@ scoped_refptr<SiteInstance> RenderFrameHostManager::ConvertToSiteInstance(
       !current_instance->IsRelatedSiteInstance(candidate_instance) &&
       candidate_instance->GetSiteURL() ==
           SiteInstanceImpl::GetSiteForURL(
-              descriptor.browser_context,
               static_cast<SiteInstanceImpl*>(candidate_instance)
                   ->GetIsolationContext(),
               descriptor.dest_url)) {

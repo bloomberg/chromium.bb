@@ -603,8 +603,8 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTest, ProcessLimit) {
   auto is_suitable_host = [browser_context, &isolation_context](
                               RenderProcessHost* process, const GURL& url) {
     GURL site_url(SiteInstance::GetSiteForURL(browser_context, url));
-    GURL lock_url(SiteInstanceImpl::DetermineProcessLockURL(
-        BrowserOrResourceContext(browser_context), isolation_context, url));
+    GURL lock_url(
+        SiteInstanceImpl::DetermineProcessLockURL(isolation_context, url));
     return RenderProcessHostImpl::IsSuitableHost(
         process, browser_context, isolation_context, site_url, lock_url);
   };

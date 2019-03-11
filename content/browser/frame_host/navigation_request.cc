@@ -552,7 +552,6 @@ NavigationRequest::NavigationRequest(
   // TODO(alexmos): Using |starting_site_instance_|'s IsolationContext may not
   // be correct for cross-BrowsingInstance redirects.
   site_url_ = SiteInstanceImpl::GetSiteForURL(
-      starting_site_instance_->GetBrowserContext(),
       starting_site_instance_->GetIsolationContext(), common_params_.url);
 
   // Update the load flags with cache information.
@@ -1917,7 +1916,6 @@ void NavigationRequest::UpdateSiteURL(
   // TODO(alexmos): Using |starting_site_instance_|'s IsolationContext may not
   // be correct for cross-BrowsingInstance redirects.
   GURL new_site_url = SiteInstanceImpl::GetSiteForURL(
-      frame_tree_node()->navigator()->GetController()->GetBrowserContext(),
       starting_site_instance_->GetIsolationContext(), common_params_.url);
   int post_redirect_process_id = post_redirect_process
                                      ? post_redirect_process->GetID()
