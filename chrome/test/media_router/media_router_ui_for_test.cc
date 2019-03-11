@@ -158,8 +158,8 @@ void MediaRouterUiForTest::StartCasting(const std::string& sink_name) {
 
 void MediaRouterUiForTest::StopCasting(const std::string& sink_name) {
   CastDialogSinkButton* sink_button = GetSinkButton(sink_name);
-  sink_button->icon_view()->OnMousePressed(CreateMousePressedEvent());
-  sink_button->icon_view()->OnMouseReleased(CreateMouseReleasedEvent());
+  sink_button->OnMousePressed(CreateMousePressedEvent());
+  sink_button->OnMouseReleased(CreateMouseReleasedEvent());
   base::RunLoop().RunUntilIdle();
 }
 
@@ -169,8 +169,8 @@ void MediaRouterUiForTest::StopCasting() {
   for (CastDialogSinkButton* sink_button :
        dialog_view->sink_buttons_for_test()) {
     if (sink_button->sink().state == UIMediaSinkState::CONNECTED) {
-      sink_button->icon_view()->OnMousePressed(CreateMousePressedEvent());
-      sink_button->icon_view()->OnMouseReleased(CreateMouseReleasedEvent());
+      sink_button->OnMousePressed(CreateMousePressedEvent());
+      sink_button->OnMouseReleased(CreateMouseReleasedEvent());
       base::RunLoop().RunUntilIdle();
       return;
     }
