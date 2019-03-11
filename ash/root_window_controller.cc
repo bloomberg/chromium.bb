@@ -93,6 +93,18 @@
 namespace ash {
 namespace {
 
+bool IsInShelfContainer(aura::Window* container) {
+  if (!container)
+    return false;
+  int id = container->id();
+  if (id == ash::kShellWindowId_StatusContainer ||
+      id == ash::kShellWindowId_ShelfContainer ||
+      id == ash::kShellWindowId_ShelfBubbleContainer) {
+    return true;
+  }
+  return IsInShelfContainer(container->parent());
+}
+
 bool IsWindowAboveContainer(aura::Window* window,
                             aura::Window* blocking_container) {
   std::vector<aura::Window*> target_path;
@@ -473,6 +485,9 @@ bool RootWindowController::CanWindowReceiveEvents(aura::Window* window) {
   // one.
   if (modal_container && modal_container->Contains(window))
     return modal_layout_manager->IsPartOfActiveModalWindow(window);
+
+  if (IsInShelfContainer(window->parent()))
+    return false;
 
   return true;
 }
@@ -962,7 +977,7 @@ void RootWindowController::CreateContainers() {
       new AccessibilityPanelLayoutManager());
 
   aura::Window* virtual_keyboard_parent_container = CreateContainer(
-      kShellWindowId_ImeWindowParentContainer, "VirtualKeyboardParentContainer",
+      kShellWindowId_ImeWindowParentContainer, "ImeWindowParentContainer",
       lock_screen_related_containers);
   wm::SetSnapsChildrenToPhysicalPixelBoundary(
       virtual_keyboard_parent_container);
