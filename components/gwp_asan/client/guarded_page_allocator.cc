@@ -71,9 +71,8 @@ void GuardedPageAllocator::Init(size_t max_alloced_pages, size_t total_pages) {
     // there should be no risk of a race here.
     base::AutoLock lock(lock_);
     for (size_t i = 0; i < total_pages; i++)
-      free_slot_ring_buffer_[i] = static_cast<AllocatorState::SlotIdx>(i);
-    base::RandomShuffle(free_slot_ring_buffer_.begin(),
-                        std::next(free_slot_ring_buffer_.begin(), total_pages));
+      free_slots_[i] = i;
+    free_slots_end_ = total_pages;
   }
 
   metadata_ = std::make_unique<AllocatorState::SlotMetadata[]>(total_pages);
@@ -169,13 +168,16 @@ bool GuardedPageAllocator::ReserveSlot(AllocatorState::SlotIdx* slot) {
 
   if (num_alloced_pages_ == max_alloced_pages_)
     return false;
-
-  *slot = free_slot_ring_buffer_[free_slot_start_idx_];
-  free_slot_start_idx_ = (free_slot_start_idx_ + 1) % state_.total_pages;
-  DCHECK_LT(*slot, state_.total_pages);
   num_alloced_pages_++;
-  DCHECK_EQ((free_slot_end_idx_ + num_alloced_pages_) % state_.total_pages,
-            free_slot_start_idx_);
+
+  DCHECK_GT(free_slots_end_, 0U);
+  DCHECK_LE(free_slots_end_, state_.total_pages);
+  size_t rand = base::RandGenerator(free_slots_end_);
+  *slot = free_slots_[rand];
+  free_slots_end_--;
+  free_slots_[rand] = free_slots_[free_slots_end_];
+  DCHECK_EQ(free_slots_end_, state_.total_pages - num_alloced_pages_);
+
   return true;
 }
 
@@ -183,13 +185,14 @@ void GuardedPageAllocator::FreeSlot(AllocatorState::SlotIdx slot) {
   DCHECK_LT(slot, state_.total_pages);
 
   base::AutoLock lock(lock_);
+  DCHECK_LT(free_slots_end_, state_.total_pages);
+  free_slots_[free_slots_end_] = slot;
+  free_slots_end_++;
+
   DCHECK_GT(num_alloced_pages_, 0U);
   num_alloced_pages_--;
-  free_slot_ring_buffer_[free_slot_end_idx_] =
-      static_cast<AllocatorState::SlotIdx>(slot);
-  free_slot_end_idx_ = (free_slot_end_idx_ + 1) % state_.total_pages;
-  DCHECK_EQ((free_slot_end_idx_ + num_alloced_pages_) % state_.total_pages,
-            free_slot_start_idx_);
+
+  DCHECK_EQ(free_slots_end_, state_.total_pages - num_alloced_pages_);
 }
 
 void GuardedPageAllocator::RecordAllocationMetadata(

@@ -5,7 +5,6 @@
 #ifndef COMPONENTS_GWP_ASAN_CLIENT_GUARDED_PAGE_ALLOCATOR_H_
 #define COMPONENTS_GWP_ASAN_CLIENT_GUARDED_PAGE_ALLOCATOR_H_
 
-#include <array>
 #include <atomic>
 #include <memory>
 
@@ -107,12 +106,11 @@ class GWP_ASAN_EXPORT GuardedPageAllocator {
   // Lock that synchronizes allocating/freeing slots between threads.
   base::Lock lock_;
 
-  // Ring buffer used to store free slots.
-  std::array<AllocatorState::SlotIdx, AllocatorState::kGpaMaxPages>
-      free_slot_ring_buffer_ GUARDED_BY(lock_);
-  // Stores the start and end indices into the ring buffer.
-  AllocatorState::SlotIdx free_slot_start_idx_ GUARDED_BY(lock_) = 0;
-  AllocatorState::SlotIdx free_slot_end_idx_ GUARDED_BY(lock_) = 0;
+  // Fixed-size array used to store all free slot indices.
+  AllocatorState::SlotIdx free_slots_[AllocatorState::kGpaMaxPages] GUARDED_BY(
+      lock_);
+  // Stores the end index of the array.
+  size_t free_slots_end_ GUARDED_BY(lock_) = 0;
 
   // Number of currently-allocated pages.
   size_t num_alloced_pages_ GUARDED_BY(lock_) = 0;
