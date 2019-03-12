@@ -32,6 +32,9 @@ namespace {
 const int kMinUploadDelayMs = 60 * 1000;  // 60 seconds
 // Minimum delay after scheduling an upload
 const int kMinUploadScheduleDelayMs = 60 * 1000;  // 60 seconds
+// Minimum interval between the last upload and the next immediate upload
+constexpr base::TimeDelta kMinImmediateUploadInterval =
+    base::TimeDelta::FromSeconds(10);
 }  // namespace
 
 namespace policy {
@@ -81,14 +84,19 @@ bool StatusUploader::ScheduleNextStatusUpload(bool immediately) {
     return false;
   }
 
+  base::Time now = base::Time::NowFromSystemTime();
+
   // Calculate when to fire off the next update (if it should have already
   // happened, this yields a TimeDelta of kMinUploadScheduleDelayMs).
-  base::TimeDelta delay = std::max(
-      (last_upload_ + upload_frequency_) - base::Time::NowFromSystemTime(),
-      base::TimeDelta::FromMilliseconds(kMinUploadScheduleDelayMs));
-  // If we want an immediate status upload, set delay to 0.
+  base::TimeDelta delay =
+      std::max((last_upload_ + upload_frequency_) - now,
+               base::TimeDelta::FromMilliseconds(kMinUploadScheduleDelayMs));
+
+  // The next upload should be scheduled for at least
+  // kMinImmediateUploadInterval after the last upload if it is immediately.
   if (immediately)
-    delay = base::TimeDelta();
+    delay = std::max((last_upload_ + kMinImmediateUploadInterval) - now,
+                     base::TimeDelta());
 
   upload_callback_.Reset(base::Bind(&StatusUploader::UploadStatus,
                                     base::Unretained(this)));

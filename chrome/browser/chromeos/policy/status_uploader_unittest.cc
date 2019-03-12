@@ -47,6 +47,8 @@ namespace {
 
 constexpr base::TimeDelta kDefaultStatusUploadDelay =
     base::TimeDelta::FromHours(1);
+constexpr base::TimeDelta kMinImmediateUploadInterval =
+    base::TimeDelta::FromSeconds(10);
 
 class MockDeviceStatusCollector : public policy::DeviceStatusCollector {
  public:
@@ -158,15 +160,17 @@ class StatusUploaderTest : public testing::Test {
     // upload should be queued.
     EXPECT_EQ(1U, task_runner_->NumPendingTasks());
 
-    CheckPendingTaskDelay(uploader, expected_delay);
+    CheckPendingTaskDelay(uploader, expected_delay,
+                          task_runner_->NextPendingTaskDelay());
   }
 
   void CheckPendingTaskDelay(const StatusUploader& uploader,
-                             base::TimeDelta expected_delay) {
+                             base::TimeDelta expected_delay,
+                             base::TimeDelta task_delay) {
     // The next task should be scheduled sometime between |last_upload| +
     // |expected_delay| and |now| + |expected_delay|.
     base::Time now = base::Time::NowFromSystemTime();
-    base::Time next_task = now + task_runner_->NextPendingTaskDelay();
+    base::Time next_task = now + task_delay;
 
     EXPECT_LE(next_task, now + expected_delay);
     EXPECT_GE(next_task, uploader.last_upload() + expected_delay);
@@ -253,7 +257,8 @@ TEST_F(StatusUploaderTest, ResetTimerAfterFailedStatusCollection) {
   EXPECT_EQ(1U, task_runner_->NumPendingTasks());
 
   // Check the delay of the queued upload
-  CheckPendingTaskDelay(uploader, kDefaultStatusUploadDelay);
+  CheckPendingTaskDelay(uploader, kDefaultStatusUploadDelay,
+                        task_runner_->NextPendingTaskDelay());
 }
 
 TEST_F(StatusUploaderTest, ResetTimerAfterUploadError) {
@@ -294,7 +299,8 @@ TEST_F(StatusUploaderTest, ResetTimerAfterUnregisteredClient) {
   // A task to try again should be queued.
   ASSERT_EQ(1U, task_runner_->NumPendingTasks());
 
-  CheckPendingTaskDelay(uploader, kDefaultStatusUploadDelay);
+  CheckPendingTaskDelay(uploader, kDefaultStatusUploadDelay,
+                        task_runner_->NextPendingTaskDelay());
 }
 
 TEST_F(StatusUploaderTest, ChangeFrequency) {
@@ -335,6 +341,46 @@ TEST_F(StatusUploaderTest, NoUploadAfterVideoCapture) {
       content::MEDIA_REQUEST_STATE_OPENING);
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(uploader.IsSessionDataUploadAllowed());
+}
+
+TEST_F(StatusUploaderTest, ScheduleImmediateStatusUpload) {
+  EXPECT_FALSE(task_runner_->HasPendingTask());
+  StatusUploader uploader(&client_, std::move(collector_), task_runner_,
+                          kDefaultStatusUploadDelay);
+  EXPECT_EQ(1U, task_runner_->NumPendingTasks());
+
+  // On startup, first update should happen in 1 minute.
+  EXPECT_EQ(base::TimeDelta::FromMinutes(1),
+            task_runner_->NextPendingTaskDelay());
+
+  // Schedule an immediate status upload.
+  uploader.ScheduleNextStatusUploadImmediately();
+  EXPECT_EQ(2U, task_runner_->NumPendingTasks());
+  CheckPendingTaskDelay(uploader, base::TimeDelta(),
+                        task_runner_->FinalPendingTaskDelay());
+}
+
+TEST_F(StatusUploaderTest, ScheduleImmediateStatusUploadConsecutively) {
+  EXPECT_FALSE(task_runner_->HasPendingTask());
+  StatusUploader uploader(&client_, std::move(collector_), task_runner_,
+                          kDefaultStatusUploadDelay);
+  EXPECT_EQ(1U, task_runner_->NumPendingTasks());
+
+  // On startup, first update should happen in 1 minute.
+  EXPECT_EQ(base::TimeDelta::FromMinutes(1),
+            task_runner_->NextPendingTaskDelay());
+
+  // Schedule an immediate status upload and run it.
+  uploader.ScheduleNextStatusUploadImmediately();
+  RunPendingUploadTaskAndCheckNext(uploader, kDefaultStatusUploadDelay,
+                                   true /* upload_success */);
+
+  // Schedule the next one and check that it was scheduled after
+  // kMinImmediateUploadInterval of the last upload.
+  uploader.ScheduleNextStatusUploadImmediately();
+  EXPECT_EQ(2U, task_runner_->NumPendingTasks());
+  CheckPendingTaskDelay(uploader, kMinImmediateUploadInterval,
+                        task_runner_->FinalPendingTaskDelay());
 }
 
 }  // namespace policy
