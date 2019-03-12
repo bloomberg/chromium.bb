@@ -14,7 +14,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/task/sequence_manager/lazy_now.h"
-#include "base/task/sequence_manager/moveable_auto_lock.h"
 #include "base/task/sequence_manager/tasks.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
@@ -339,8 +338,6 @@ class BASE_EXPORT TaskQueue : public RefCountedThreadSafe<TaskQueue> {
 
   bool IsOnMainThread() const;
 
-  Optional<MoveableAutoLock> AcquireImplReadLockIfNeeded() const;
-
   // TaskQueue has ownership of an underlying implementation but in certain
   // cases (e.g. detached frames) their lifetime may diverge.
   // This method should be used to take away the impl for graceful shutdown.
@@ -362,6 +359,7 @@ class BASE_EXPORT TaskQueue : public RefCountedThreadSafe<TaskQueue> {
 
   int enabled_voter_count_ = 0;
   int voter_count_ = 0;
+  const char* name_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskQueue);
 };
