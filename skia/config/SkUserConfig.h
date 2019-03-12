@@ -155,6 +155,12 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #define SK_DISABLE_EXPLICIT_GPU_RESOURCE_ALLOCATION
 #endif
 
+// Switching to explicit allocation causes some image diffs in
+// Chrome's layout tests. This define allows us to stage the change.
+#ifndef SK_OLD_STYLE_RESOURCE_ALLOCATION
+#define SK_OLD_STYLE_RESOURCE_ALLOCATION
+#endif
+
 // Chrome should only sort opLists within DDLs
 #ifndef SK_DISABLE_OPLIST_SORTING
 #define SK_DISABLE_OPLIST_SORTING
