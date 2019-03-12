@@ -345,9 +345,8 @@ ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
           std::make_unique<ExtensionSettingModelTypeController>(
               syncer::EXTENSION_SETTINGS,
               GetModelTypeStoreService()->GetStoreFactory(),
-              base::BindOnce(&ChromeSyncClient::GetSyncableServiceForType,
-                             base::Unretained(this),
-                             syncer::EXTENSION_SETTINGS),
+              extensions::settings_sync_util::GetSyncableServiceProvider(
+                  profile_, syncer::EXTENSION_SETTINGS),
               dump_stack, profile_));
     } else {
       controllers.push_back(
@@ -366,8 +365,8 @@ ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
           std::make_unique<ExtensionSettingModelTypeController>(
               syncer::APP_SETTINGS,
               GetModelTypeStoreService()->GetStoreFactory(),
-              base::BindOnce(&ChromeSyncClient::GetSyncableServiceForType,
-                             base::Unretained(this), syncer::APP_SETTINGS),
+              extensions::settings_sync_util::GetSyncableServiceProvider(
+                  profile_, syncer::APP_SETTINGS),
               dump_stack, profile_));
     } else {
       controllers.push_back(
@@ -536,6 +535,8 @@ ChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
     case syncer::APPS:
     case syncer::EXTENSIONS:
       return ExtensionSyncService::Get(profile_)->AsWeakPtr();
+    // TODO(crbug.com/933874): Remove these two from here once the old
+    // controllers are deleted.
     case syncer::APP_SETTINGS:
     case syncer::EXTENSION_SETTINGS:
       return extensions::settings_sync_util::GetSyncableService(profile_, type)
