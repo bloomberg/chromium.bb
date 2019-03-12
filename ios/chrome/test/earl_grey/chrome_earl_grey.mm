@@ -28,6 +28,10 @@
 #import "ios/web/public/web_state/web_state.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using base::test::ios::kWaitForJSCompletionTimeout;
+using base::test::ios::kWaitForUIElementTimeout;
+using base::test::ios::WaitUntilConditionOrTimeout;
+
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
@@ -48,14 +52,11 @@ id ExecuteJavaScript(NSString* javascript,
                temp_error = [error copy];
              }];
 
-  // Wait for completion.
-  GREYCondition* condition = [GREYCondition
-      conditionWithName:@"Wait for JavaScript execution to complete."
-                  block:^BOOL {
-                    return did_complete;
-                  }];
-  [condition waitWithTimeout:base::test::ios::kWaitForJSCompletionTimeout];
-  if (!did_complete)
+  bool success =
+      WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^bool {
+        return did_complete;
+      });
+  if (!success)
     return nil;
   if (out_error) {
     NSError* __autoreleasing auto_released_error = temp_error;
@@ -178,66 +179,47 @@ id ExecuteJavaScript(NSString* javascript,
 }
 
 + (void)waitForStaticHTMLViewContainingText:(NSString*)text {
-  GREYCondition* condition = [GREYCondition
-      conditionWithName:@"Wait for static HTML text."
-                  block:^BOOL {
-                    return chrome_test_util::StaticHtmlViewContainingText(
-                        chrome_test_util::GetCurrentWebState(),
-                        base::SysNSStringToUTF8(text));
-                  }];
-  GREYAssert(
-      [condition waitWithTimeout:base::test::ios::kWaitForUIElementTimeout],
-      @"Failed to find static html view containing %@", text);
+  bool success = WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^bool {
+    return chrome_test_util::StaticHtmlViewContainingText(
+        chrome_test_util::GetCurrentWebState(), base::SysNSStringToUTF8(text));
+  });
+  GREYAssert(success, @"Failed to find static html view containing %@", text);
 }
 
 + (void)waitForStaticHTMLViewNotContainingText:(NSString*)text {
-  GREYCondition* condition = [GREYCondition
-      conditionWithName:@"Wait for absence of static HTML text."
-                  block:^BOOL {
-                    return !chrome_test_util::StaticHtmlViewContainingText(
-                        chrome_test_util::GetCurrentWebState(),
-                        base::SysNSStringToUTF8(text));
-                  }];
-  GREYAssert(
-      [condition waitWithTimeout:base::test::ios::kWaitForUIElementTimeout],
-      @"Failed, there was a static html view containing %@", text);
+  bool success = WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^bool {
+    return !chrome_test_util::StaticHtmlViewContainingText(
+        chrome_test_util::GetCurrentWebState(), base::SysNSStringToUTF8(text));
+  });
+  GREYAssert(success, @"Failed, there was a static html view containing %@",
+             text);
 }
 
 + (void)waitForWebViewContainingText:(std::string)text {
-  GREYCondition* condition = [GREYCondition
-      conditionWithName:@"Wait for web view containing text"
-                  block:^BOOL {
-                    return web::test::IsWebViewContainingText(
-                        chrome_test_util::GetCurrentWebState(), text);
-                  }];
-  GREYAssert(
-      [condition waitWithTimeout:base::test::ios::kWaitForUIElementTimeout],
-      @"Failed waiting for web view containing %s", text.c_str());
+  bool success = WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^bool {
+    return web::test::IsWebViewContainingText(
+        chrome_test_util::GetCurrentWebState(), text);
+  });
+  GREYAssert(success, @"Failed waiting for web view containing %s",
+             text.c_str());
 }
 
 + (void)waitForWebViewContainingElement:(ElementSelector*)selector {
-  GREYCondition* condition = [GREYCondition
-      conditionWithName:@"Wait for web view containing Element"
-                  block:^BOOL {
-                    return web::test::IsWebViewContainingElement(
-                        chrome_test_util::GetCurrentWebState(), selector);
-                  }];
-  GREYAssert(
-      [condition waitWithTimeout:base::test::ios::kWaitForUIElementTimeout],
-      @"Failed waiting for web view containing element %@",
-      selector.selectorDescription);
+  bool success = WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^bool {
+    return web::test::IsWebViewContainingElement(
+        chrome_test_util::GetCurrentWebState(), selector);
+  });
+  GREYAssert(success, @"Failed waiting for web view containing element %@",
+             selector.selectorDescription);
 }
 
 + (void)waitForWebViewNotContainingText:(std::string)text {
-  GREYCondition* condition = [GREYCondition
-      conditionWithName:@"Wait for web view not containing text"
-                  block:^BOOL {
-                    return !web::test::IsWebViewContainingText(
-                        chrome_test_util::GetCurrentWebState(), text);
-                  }];
-  GREYAssert(
-      [condition waitWithTimeout:base::test::ios::kWaitForUIElementTimeout],
-      @"Failed waiting for web view not containing %s", text.c_str());
+  bool success = WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^bool {
+    return !web::test::IsWebViewContainingText(
+        chrome_test_util::GetCurrentWebState(), text);
+  });
+  GREYAssert(success, @"Failed waiting for web view not containing %s",
+             text.c_str());
 }
 
 + (void)waitForMainTabCount:(NSUInteger)count {
@@ -281,12 +263,12 @@ id ExecuteJavaScript(NSString* javascript,
 }
 
 + (void)waitForBookmarksToFinishLoading {
-  GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(
-                 base::test::ios::kWaitForUIElementTimeout,
-                 ^{
-                   return chrome_test_util::BookmarksLoaded();
-                 }),
-             @"Bookmark model did not load");
+  GREYAssert(
+      WaitUntilConditionOrTimeout(kWaitForUIElementTimeout,
+                                  ^{
+                                    return chrome_test_util::BookmarksLoaded();
+                                  }),
+      @"Bookmark model did not load");
 }
 
 + (void)waitForElementWithMatcherSufficientlyVisible:(id<GREYMatcher>)matcher {
