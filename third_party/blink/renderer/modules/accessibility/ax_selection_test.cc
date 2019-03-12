@@ -1144,6 +1144,87 @@ TEST_F(AccessibilitySelectionTest, InvalidSelectionInTextarea) {
   EXPECT_EQ("backward", ToTextControl(*textarea).selectionDirection());
 }
 
+TEST_F(AccessibilitySelectionTest,
+       SelectEachConsecutiveCharacterInContenteditable) {
+  // The text should wrap after each word.
+  SetBodyInnerHTML(R"HTML(
+      <div id="contenteditable" contenteditable role="textbox"
+          style="max-width: 5px; overflow-wrap: normal;">
+        This is a test.
+      </div>
+      )HTML");
+
+  const Element* contenteditable =
+      GetDocument().QuerySelector("div[contenteditable]");
+  ASSERT_NE(nullptr, contenteditable);
+  const Node* text = contenteditable->firstChild();
+  ASSERT_NE(nullptr, text);
+  ASSERT_TRUE(text->IsTextNode());
+
+  const AXObject* ax_contenteditable =
+      GetAXObjectByElementId("contenteditable");
+  ASSERT_NE(nullptr, ax_contenteditable);
+  ASSERT_EQ(ax::mojom::Role::kTextField, ax_contenteditable->RoleValue());
+  ASSERT_EQ(1, ax_contenteditable->ChildCount());
+  const AXObject* ax_static_text = ax_contenteditable->FirstChild();
+  ASSERT_NE(nullptr, ax_static_text);
+  ASSERT_EQ(ax::mojom::Role::kStaticText, ax_static_text->RoleValue());
+  String computed_name = ax_static_text->ComputedName();
+  ASSERT_LE(1u, computed_name.length());
+
+  for (unsigned int i = 0; i < computed_name.length() - 1; ++i) {
+    AXSelection::Builder builder;
+    AXSelection ax_selection =
+        builder
+            .SetBase(AXPosition::CreatePositionInTextObject(*ax_static_text, i))
+            .SetExtent(
+                AXPosition::CreatePositionInTextObject(*ax_static_text, i + 1))
+            .Build();
+
+    testing::Message message;
+    message << "While selecting forward character " << computed_name[i]
+            << " at position " << i << " in contenteditable.";
+    SCOPED_TRACE(message);
+    EXPECT_TRUE(ax_selection.Select());
+
+    const SelectionInDOMTree dom_selection =
+        Selection().GetSelectionInDOMTree();
+    EXPECT_EQ(text, dom_selection.Base().AnchorNode());
+    EXPECT_EQ(text, dom_selection.Extent().AnchorNode());
+    // The discrepancy between DOM and AX text offsets is due to the fact that
+    // there is some white space in the DOM that is compressed in the
+    // accessibility tree.
+    EXPECT_EQ(int{i + 9}, dom_selection.Base().OffsetInContainerNode());
+    EXPECT_EQ(int{i + 10}, dom_selection.Extent().OffsetInContainerNode());
+  }
+
+  for (unsigned int i = computed_name.length(); i > 0; --i) {
+    AXSelection::Builder builder;
+    AXSelection ax_selection =
+        builder
+            .SetBase(AXPosition::CreatePositionInTextObject(*ax_static_text, i))
+            .SetExtent(
+                AXPosition::CreatePositionInTextObject(*ax_static_text, i - 1))
+            .Build();
+
+    testing::Message message;
+    message << "While selecting backward character " << computed_name[i]
+            << " at position " << i << " in contenteditable.";
+    SCOPED_TRACE(message);
+    EXPECT_TRUE(ax_selection.Select());
+
+    const SelectionInDOMTree dom_selection =
+        Selection().GetSelectionInDOMTree();
+    EXPECT_EQ(text, dom_selection.Base().AnchorNode());
+    EXPECT_EQ(text, dom_selection.Extent().AnchorNode());
+    // The discrepancy between DOM and AX text offsets is due to the fact that
+    // there is some white space in the DOM that is compressed in the
+    // accessibility tree.
+    EXPECT_EQ(int{i + 9}, dom_selection.Base().OffsetInContainerNode());
+    EXPECT_EQ(int{i + 8}, dom_selection.Extent().OffsetInContainerNode());
+  }
+}
+
 //
 // Declarative tests.
 //
