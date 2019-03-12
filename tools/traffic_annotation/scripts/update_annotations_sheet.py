@@ -233,7 +233,8 @@ class SheetEditor():
         print("Added: %s" %id)
 
     empty_row = [''] * len(file_contents[0])
-    row = 0
+    # Skip first row (it's the header row).
+    row = 1
     while row < len(sheet_contents):
       row_id = sheet_contents[row][0]
       # If a row is removed, remove it from previous sheet.
