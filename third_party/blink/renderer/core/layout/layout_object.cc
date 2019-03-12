@@ -2078,15 +2078,8 @@ void LayoutObject::SetStyle(scoped_refptr<ComputedStyle> style,
   DCHECK(style);
 
   StyleDifference diff;
-  if (style_) {
+  if (style_)
     diff = style_->VisualInvalidationDiff(GetDocument(), *style);
-  } else {
-    // If there was no previous style, set the object as at least needing
-    // paint invalidation, to prevent diff.HasDifference() from returning
-    // false.
-    // TODO(chrishtr): shouldn't this set all of the bits? crbug.com/817610.
-    diff.SetNeedsPaintInvalidationObject();
-  }
 
   diff = AdjustStyleDifference(diff);
 
