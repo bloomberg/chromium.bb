@@ -705,7 +705,7 @@ IN_PROC_BROWSER_TEST_F(NavigationDisableWebSecurityTest,
   std::string script = base::StringPrintf(
       "var xhr = new XMLHttpRequest()\n"
       "xhr.open('GET', '%s', false);\n"
-      "xhr.send();\n"
+      "try { xhr.send(); } catch (e) {}\n"
       "window.domAutomationController.send(xhr.responseText);",
       file_url.spec().c_str());
   std::string result;

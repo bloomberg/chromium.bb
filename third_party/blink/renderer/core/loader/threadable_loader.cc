@@ -949,13 +949,7 @@ void ThreadableLoader::NotifyFinished(Resource* resource) {
 
   checker_.NotifyFinished(resource);
 
-  // Don't throw an exception for failed sync local file loads.
-  // TODO(japhet): This logic has been moved around but unchanged since 2007.
-  // Tested by fast/xmlhttprequest/xmlhttprequest-missing-file-exception.html
-  // Do we still need this?
-  bool is_sync_to_local_file = resource->Url().IsLocalFile() && !async_;
-
-  if (resource->ErrorOccurred() && !is_sync_to_local_file) {
+  if (resource->ErrorOccurred()) {
     DispatchDidFail(resource->GetResourceError());
     return;
   }

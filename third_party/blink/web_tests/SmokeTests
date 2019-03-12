@@ -769,7 +769,6 @@ fast/workers/worker-sharedarraybuffer-transfer.html
 fast/writing-mode/english-lr-text.html
 fast/writing-mode/flipped-blocks-outline-crash.html
 fast/writing-mode/percentage-padding.html
-fast/xmlhttprequest/xmlhttprequest-missing-file-exception.html
 fast/xmlhttprequest/xmlhttprequest-responseXML-invalid-xml.html
 fast/xmlhttprequest/xmlhttprequest-responseXML-xml-text-responsetype.html
 fast/xpath/nodeset-duplicates.html
