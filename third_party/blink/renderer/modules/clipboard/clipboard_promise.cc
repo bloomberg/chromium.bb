@@ -279,6 +279,7 @@ void ClipboardPromise::HandleWriteWithPermission(PermissionStatus status) {
           DOMException::Create(DOMExceptionCode::kNotAllowedError,
                                "Attempting to write duplicate type " + type +
                                    +". All types must be unique"));
+      return;
     }
     unique_types.insert(type);
   }
