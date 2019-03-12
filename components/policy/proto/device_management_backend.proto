@@ -8,6 +8,9 @@ option optimize_for = LITE_RUNTIME;
 
 package enterprise_management;
 
+// Everything below this comment will be synchronized between client and server
+// repos ( go/cros-proto-sync ).
+
 // This enum needs to be shared between DeviceRegisterRequest and
 // LicenseAvailability protos. With java_api_version 1, this means that enum
 // needs to be wrapped into a message.
