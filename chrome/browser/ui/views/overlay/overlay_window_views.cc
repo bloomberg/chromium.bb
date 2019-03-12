@@ -441,6 +441,14 @@ void OverlayWindowViews::UpdateLayerBoundsWithLetterboxing(
   if (letterbox_region.IsEmpty())
     return;
 
+  // To avoid one-pixel black line in the window when floated aspect ratio is
+  // not perfect (e.g. 848x480 for 16:9 video), letterbox region size is the
+  // same as window size.
+  if ((std::abs(window_size.width() - letterbox_region.width()) <= 1) &&
+      (std::abs(window_size.height() - letterbox_region.height()) <= 1)) {
+    letterbox_region.set_size(window_size);
+  }
+
   gfx::Size letterbox_size = letterbox_region.size();
   gfx::Point origin =
       gfx::Point((window_size.width() - letterbox_size.width()) / 2,
