@@ -69,8 +69,6 @@ bool SkiaGlRenderer::Initialize() {
       sk_sp<const GrGLInterface>(GrGLCreateNativeInterface());
   DCHECK(native_interface);
   GrContextOptions options;
-  if (use_ddl_)
-    options.fExplicitlyAllocateGPUResources = GrContextOptions::Enable::kYes;
   gr_context_ = GrContext::MakeGL(std::move(native_interface), options);
   DCHECK(gr_context_);
 
