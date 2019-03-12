@@ -78,7 +78,8 @@ class MODULES_EXPORT Gamepad final : public ScriptWrappable,
   GamepadHapticActuator* vibrationActuator() const {
     return vibration_actuator_;
   }
-  void SetVibrationActuator(const device::GamepadHapticActuator&);
+  void SetVibrationActuatorInfo(const device::GamepadHapticActuator&);
+  bool HasVibrationActuator() const { return has_vibration_actuator_; }
 
   GamepadPose* pose() const { return pose_; }
   void SetPose(const device::GamepadPose&);
@@ -89,21 +90,57 @@ class MODULES_EXPORT Gamepad final : public ScriptWrappable,
   unsigned displayId() const { return display_id_; }
   void SetDisplayId(unsigned val) { display_id_ = val; }
 
+  void InitializeSharedState();
+  void CopySharedStateFromBackBuffer(const Gamepad* back);
+
   void Trace(blink::Visitor*) override;
 
  private:
+  // A string identifying the gamepad model.
   String id_;
+
+  // The index of this gamepad within the GamepadList.
   unsigned index_;
+
+  // True if this gamepad was still connected when gamepad state was captured.
   bool connected_;
+
+  // The current time when the gamepad state was captured.
   DOMHighResTimeStamp timestamp_;
+
+  // A string indicating whether the standard mapping is in use.
   String mapping_;
+
+  // Snapshot of the axis state.
   DoubleVector axes_;
+
+  // Snapshot of the button state.
   GamepadButtonVector buttons_;
+
+  // True if the gamepad can produce haptic vibration effects.
+  bool has_vibration_actuator_;
+
+  // The type of haptic actuator used for vibration effects.
+  device::GamepadHapticActuatorType vibration_actuator_type_;
+
+  // The vibration actuator, or nullptr if the gamepad has none.
   Member<GamepadHapticActuator> vibration_actuator_;
+
+  // Snapshot of the gamepad pose.
   Member<GamepadPose> pose_;
+
+  // A string representing the handedness of the gamepad.
   String hand_;
+
+  // An identifier for associating a gamepad with a VR headset.
   unsigned display_id_;
+
+  // True if the data in |axes_| has changed since the last time it was
+  // accessed.
   bool is_axis_data_dirty_;
+
+  // True if the data in |buttons_| has changed since the last time it was
+  // accessed.
   bool is_button_data_dirty_;
 };
 

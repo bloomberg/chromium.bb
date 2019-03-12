@@ -33,6 +33,8 @@ Gamepad::Gamepad(ExecutionContext* context)
     : ContextClient(context),
       index_(0),
       timestamp_(0.0),
+      has_vibration_actuator_(false),
+      vibration_actuator_type_(device::GamepadHapticActuatorType::kDualRumble),
       display_id_(0),
       is_axis_data_dirty_(true),
       is_button_data_dirty_(true) {}
@@ -87,20 +89,10 @@ void Gamepad::SetButtons(unsigned count, const device::GamepadButton* data) {
   is_button_data_dirty_ = true;
 }
 
-void Gamepad::SetVibrationActuator(
+void Gamepad::SetVibrationActuatorInfo(
     const device::GamepadHapticActuator& actuator) {
-  if (!actuator.not_null) {
-    if (vibration_actuator_)
-      vibration_actuator_ = nullptr;
-    return;
-  }
-
-  if (!vibration_actuator_) {
-    vibration_actuator_ =
-        GamepadHapticActuator::Create(GetExecutionContext(), index_);
-  }
-
-  vibration_actuator_->SetType(actuator.type);
+  has_vibration_actuator_ = actuator.not_null;
+  vibration_actuator_type_ = actuator.type;
 }
 
 void Gamepad::SetPose(const device::GamepadPose& pose) {
@@ -130,6 +122,23 @@ void Gamepad::SetHand(const device::GamepadHand& hand) {
     default:
       NOTREACHED();
   }
+}
+
+void Gamepad::InitializeSharedState() {
+  if (has_vibration_actuator_) {
+    vibration_actuator_ =
+        GamepadHapticActuator::Create(GetExecutionContext(), index_);
+    vibration_actuator_->SetType(vibration_actuator_type_);
+  } else {
+    vibration_actuator_ = nullptr;
+  }
+}
+
+void Gamepad::CopySharedStateFromBackBuffer(const Gamepad* back) {
+  DCHECK(back);
+  // Haptic actuators retain state about ongoing effects that should be
+  // preserved when the buffers are swapped.
+  vibration_actuator_ = back->vibration_actuator_;
 }
 
 void Gamepad::Trace(blink::Visitor* visitor) {
