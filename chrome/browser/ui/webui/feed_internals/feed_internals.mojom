@@ -96,4 +96,7 @@ interface PageHandler {
 
   // Get the last known content with metadata.
   GetCurrentContent() => (array<Suggestion> suggestions);
+
+  // Internal state dump of the Feed library's process scope.
+  GetFeedProcessScopeDump() => (string dump);
 };

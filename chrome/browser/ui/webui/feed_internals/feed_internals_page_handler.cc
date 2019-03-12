@@ -137,3 +137,7 @@ void FeedInternalsPageHandler::OnGetCurrentArticleSuggestionsDone(
 
   std::move(callback).Run(std::move(suggestions));
 }
+void FeedInternalsPageHandler::GetFeedProcessScopeDump(
+    GetFeedProcessScopeDumpCallback callback) {
+  std::move(callback).Run(feed::GetFeedProcessScopeDumpForDebugging());
+}

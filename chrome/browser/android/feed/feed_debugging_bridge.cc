@@ -17,4 +17,11 @@ GURL GetFeedFetchUrlForDebugging() {
   return GURL(ConvertJavaStringToUTF8(env, j_string));
 }
 
+std::string GetFeedProcessScopeDumpForDebugging() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  base::android::ScopedJavaLocalRef<jstring> j_string =
+      Java_FeedDebuggingBridge_getFeedProcessScopeDump(env);
+  return ConvertJavaStringToUTF8(env, j_string);
+}
+
 }  // namespace feed

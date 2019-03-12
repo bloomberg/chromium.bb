@@ -127,6 +127,13 @@ function setupEventListeners() {
     setTimeout(updatePageWithLastFetchProperties, 1000);
     setTimeout(updatePageWithCurrentContent, 1000);
   });
+
+  $('dump-feed-process-scope').addEventListener('click', function() {
+    pageHandler.getFeedProcessScopeDump().then(response => {
+      $('feed-process-scope-dump').textContent = response.dump;
+      $('feed-process-scope-details').open = true;
+    });
+  });
 }
 
 document.addEventListener('DOMContentLoaded', function() {
