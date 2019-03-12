@@ -219,7 +219,7 @@ class MessageValidator {
 
   String GetPositionString() {
     return "at index " + String::Number(offset_) + " (" +
-           String::Number(data_[offset_]) + ").";
+           String::Number(static_cast<uint16_t>(data_[offset_])) + ").";
   }
 
   const unsigned char* data_;

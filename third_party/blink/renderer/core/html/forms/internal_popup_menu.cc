@@ -343,7 +343,7 @@ void InternalPopupMenu::AddElementStyle(ItemIterationContext& context,
   }
   // Our UA stylesheet has font-weight:normal for OPTION.
   if (NormalWeightValue() != font_description.Weight()) {
-    AddProperty("fontWeight", String::Number(font_description.Weight()), data);
+    AddProperty("fontWeight", font_description.Weight().ToString(), data);
   }
   if (base_font.Family() != font_description.Family()) {
     PagePopupClient::AddString("fontFamily: [\n", data);
