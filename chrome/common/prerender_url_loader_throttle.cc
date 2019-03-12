@@ -158,8 +158,11 @@ void PrerenderURLLoaderThrottle::WillRedirectRequest(
   }
 
   std::string follow_only_when_prerender_shown_header;
-  response_head.headers->GetNormalizedHeader(
-      kFollowOnlyWhenPrerenderShown, &follow_only_when_prerender_shown_header);
+  if (response_head.headers) {
+    response_head.headers->GetNormalizedHeader(
+        kFollowOnlyWhenPrerenderShown,
+        &follow_only_when_prerender_shown_header);
+  }
   // Abort any prerenders with requests which redirect to invalid schemes.
   if (!DoesURLHaveValidScheme(redirect_info->new_url)) {
     delegate_->CancelWithError(net::ERR_ABORTED);
