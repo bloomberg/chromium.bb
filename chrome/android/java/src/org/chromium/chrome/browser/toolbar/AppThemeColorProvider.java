@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.toolbar.bottom;
+package org.chromium.chrome.browser.toolbar;
 
 import android.content.Context;
 
@@ -14,12 +14,10 @@ import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior.OverviewModeObserver;
 import org.chromium.chrome.browser.device.DeviceClassManager;
-import org.chromium.chrome.browser.toolbar.IncognitoStateProvider;
 import org.chromium.chrome.browser.toolbar.IncognitoStateProvider.IncognitoStateObserver;
 
-/** A ThemeColorProvider for the bottom toolbar. */
-public class BottomToolbarThemeColorProvider
-        extends ThemeColorProvider implements IncognitoStateObserver {
+/** A ThemeColorProvider for the app theme (incognito or standard theming). */
+public class AppThemeColorProvider extends ThemeColorProvider implements IncognitoStateObserver {
     /** Primary color for light mode. */
     private final int mLightPrimaryColor;
 
@@ -35,16 +33,13 @@ public class BottomToolbarThemeColorProvider
     /** Observer to know when overview mode is entered/exited. */
     private final OverviewModeObserver mOverviewModeObserver;
 
-    /** Whether theme is dark mode. */
-    private boolean mIsUsingDarkBackground;
-
     /** Whether app is in incognito mode. */
     private boolean mIsIncognito;
 
     /** Whether app is in overview mode. */
     private boolean mIsOverviewVisible;
 
-    public BottomToolbarThemeColorProvider(Context context) {
+    AppThemeColorProvider(Context context) {
         super(context);
         mLightPrimaryColor = ApiCompatibilityUtils.getColor(
                 context.getResources(), R.color.modern_primary_color);
