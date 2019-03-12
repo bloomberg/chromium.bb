@@ -28,7 +28,9 @@ namespace {
 constexpr SkColor kBackgroundColor = SkColorSetA(gfx::kGoogleGrey100, 0x14);
 constexpr SkColor kTextColor = gfx::kGoogleGrey100;
 constexpr SkColor kRippleColor = SkColorSetA(gfx::kGoogleGrey100, 0x0F);
-constexpr SkColor kFocusColor = SkColorSetA(gfx::kGoogleGrey100, 0x14);
+constexpr SkColor kFocusRingColor = gfx::kGoogleBlue300;
+constexpr int kFocusRingWidth = 2;
+constexpr int kFocusRingCornerRadius = 16;
 constexpr int kMaxTextWidth = 192;
 constexpr int kBlurRadius = 5;
 constexpr int kIconMarginDip = 8;
@@ -109,6 +111,9 @@ void SuggestionChipView::InitLayout(const Params& params) {
   layout_manager_->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_CENTER);
 
+  // Create an empty border wherin the focus ring can appear.
+  SetBorder(views::CreateEmptyBorder(gfx::Insets(kFocusRingWidth)));
+
   // Icon.
   const int icon_size =
       AppListConfig::instance().suggestion_chip_icon_dimension();
@@ -141,8 +146,13 @@ void SuggestionChipView::OnPaintBackground(gfx::Canvas* canvas) {
   flags.setColor(kBackgroundColor);
   canvas->DrawRoundRect(bounds, height() / 2, flags);
   if (HasFocus()) {
-    flags.setColor(kFocusColor);
-    canvas->DrawRoundRect(bounds, height() / 2, flags);
+    flags.setColor(kFocusRingColor);
+    flags.setStyle(cc::PaintFlags::Style::kStroke_Style);
+    flags.setStrokeWidth(kFocusRingWidth);
+
+    // Pushes the focus ring outside of the chip to create a border.
+    bounds.Inset(-1, -1);
+    canvas->DrawRoundRect(bounds, kFocusRingCornerRadius, flags);
   }
 }
 
