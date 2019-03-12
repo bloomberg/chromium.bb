@@ -1578,13 +1578,14 @@ config("chromium_code") {
     ]
 
     # TODO(thakis): Enable this for more platforms, https://crbug.com/926235
+    # ChromeOS: http://crbug.com/940863
     has_dchecks = is_debug || dcheck_always_on
     if (!has_dchecks && is_ios) {
       # clang currently doesn't support static_assert()s in Obj-C classes,
       # https://crbug.com/936856
       cflags_c = [ "-Wextra-semi" ]
       cflags_cc = [ "-Wextra-semi" ]
-    } else {
+    } else if (has_dchecks || !is_chrome_branded || !is_chromeos) {
       cflags += [ "-Wextra-semi" ]
     }
   }
