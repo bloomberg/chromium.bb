@@ -33,9 +33,6 @@ namespace identity {
 class IdentityManagerDependenciesOwner;
 class TestIdentityManagerObserver;
 
-// Necessary to declare this test as a temporary friend.
-class IdentityAccessorImplTest;
-
 // Class that creates an IdentityManager for use in testing contexts and
 // provides facilities for driving that IdentityManager. The IdentityManager
 // instance is brought up in an environment where the primary account is
@@ -275,10 +272,6 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   friend class ::IdentityTestEnvironmentChromeBrowserStateAdaptor;
   friend class ::IdentityTestEnvironmentProfileAdaptor;
 
-  // TODO(https://crbug.com/933109): Remove friendship after conversion to
-  // IdentityManager is complete.
-  friend class identity::IdentityAccessorImplTest;
-
   struct AccessTokenRequestState {
     AccessTokenRequestState();
     ~AccessTokenRequestState();
@@ -292,22 +285,6 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
     base::Optional<std::string> account_id;
     base::OnceClosure on_available;
   };
-
-  // Constructor that takes in instances of the dependencies of
-  // IdentityManager and constructs an IdentityManager instance from those
-  // dependencies. For use in contexts where those dependencies are still
-  // being used directly by the creator of this object (i.e., while a test is
-  // being incrementally converted). Prefer the above constructor, and switch to
-  // that constructor once possible (e.g., when an incremental conversion is
-  // completed). NOTE: The passed-in objects must all outlive this object.
-  IdentityTestEnvironment(
-      PrefService* pref_service,
-      AccountTrackerService* account_tracker_service,
-      AccountFetcherService* account_fetcher_service,
-      FakeProfileOAuth2TokenService* token_service,
-      SigninManagerBase* signin_manager,
-      GaiaCookieManagerService* gaia_cookie_manager_service,
-      network::TestURLLoaderFactory* test_url_loader_factory = nullptr);
 
   // Constructor that takes in an IdentityManager instance as well as instances
   // of the dependencies of that IdentityManager. For use only in contexts where
