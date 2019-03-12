@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_ANDROID_SEND_TAB_TO_SELF_ANDROID_NOTIFICATION_HANDLER_H_
 #define CHROME_BROWSER_ANDROID_SEND_TAB_TO_SELF_ANDROID_NOTIFICATION_HANDLER_H_
 
+#include <string>
+#include <vector>
+
 #include "chrome/browser/send_tab_to_self/receiving_ui_handler.h"
 
 namespace send_tab_to_self {
@@ -21,7 +24,7 @@ class AndroidNotificationHandler : public ReceivingUiHandler {
  private:
   // ReceivingUiHandler implementation.
   void DisplayNewEntry(const SendTabToSelfEntry* entry) override;
-  void DismissEntry(const SendTabToSelfEntry* entry) override;
+  void DismissEntries(const std::vector<std::string>& guids) override;
 };
 
 }  // namespace send_tab_to_self

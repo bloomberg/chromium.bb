@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_SEND_TAB_TO_SELF_RECEIVING_UI_HANDLER_H_
 #define CHROME_BROWSER_SEND_TAB_TO_SELF_RECEIVING_UI_HANDLER_H_
 
-#include <memory>
+#include <string>
 #include <vector>
 
 namespace send_tab_to_self {
@@ -29,7 +29,7 @@ class ReceivingUiHandler {
   // modified by any implementors of this class.
   // TODO(crbug.com/935719): Figure out whether we need to pass the entire entry
   // or we can pass a smaller subset of information.
-  virtual void DismissEntry(const SendTabToSelfEntry* entry) = 0;
+  virtual void DismissEntries(const std::vector<std::string>& guids) = 0;
 };
 
 }  // namespace send_tab_to_self
