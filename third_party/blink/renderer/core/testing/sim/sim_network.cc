@@ -94,7 +94,7 @@ void SimNetwork::DidFinishLoading(WebURLLoaderClient* client,
 void SimNetwork::AddRequest(SimRequestBase& request) {
   requests_.insert(request.url_.GetString(), &request);
   WebURLResponse response(request.url_);
-  response.SetMIMEType(request.mime_type_);
+  response.SetMimeType(request.mime_type_);
 
   if (request.redirect_url_.IsEmpty()) {
     response.SetHttpStatusCode(200);
@@ -116,7 +116,7 @@ bool SimNetwork::FillNavigationParamsResponse(WebNavigationParams* params) {
   auto it = requests_.find(params->url.GetString());
   SimRequestBase* request = it->value;
   params->response = WebURLResponse(params->url);
-  params->response.SetMIMEType(request->mime_type_);
+  params->response.SetMimeType(request->mime_type_);
   params->response.SetHttpStatusCode(200);
   auto body_loader = std::make_unique<StaticDataNavigationBodyLoader>();
   request->UsedForNavigation(body_loader.get());

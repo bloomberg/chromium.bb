@@ -98,7 +98,7 @@ TEST_F(DocumentLoaderTest, MultiChunkWithReentrancy) {
     // WebURLLoaderTestDelegate overrides:
     bool FillNavigationParamsResponse(WebNavigationParams* params) override {
       params->response = WebURLResponse(params->url);
-      params->response.SetMIMEType("text/html");
+      params->response.SetMimeType("text/html");
       params->response.SetHttpStatusCode(200);
 
       std::string data("<html><body>foo</body></html>");

@@ -1219,7 +1219,7 @@ void WebURLLoaderImpl::PopulateURLResponse(
     int request_id) {
   response->SetCurrentRequestUrl(url);
   response->SetResponseTime(info.response_time);
-  response->SetMIMEType(WebString::FromUTF8(info.mime_type));
+  response->SetMimeType(WebString::FromUTF8(info.mime_type));
   response->SetTextEncodingName(WebString::FromUTF8(info.charset));
   response->SetExpectedContentLength(info.content_length);
   response->SetHasMajorCertificateErrors(

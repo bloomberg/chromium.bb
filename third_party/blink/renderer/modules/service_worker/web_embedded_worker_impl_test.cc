@@ -134,7 +134,7 @@ class WebEmbeddedWorkerImplTest : public testing::Test {
     WebURL script_url =
         url_test_helpers::ToKURL("https://www.example.com/sw.js");
     WebURLResponse response(script_url);
-    response.SetMIMEType("text/javascript");
+    response.SetMimeType("text/javascript");
     response.SetHttpStatusCode(200);
     Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(script_url,
                                                                 response, "");
@@ -231,7 +231,7 @@ TEST_F(WebEmbeddedWorkerImplTest, ScriptNotFound) {
   WebURL script_url =
       url_test_helpers::ToKURL("https://www.example.com/sw-404.js");
   WebURLResponse response;
-  response.SetMIMEType("text/javascript");
+  response.SetMimeType("text/javascript");
   response.SetHttpStatusCode(404);
   ResourceError error = ResourceError::Failure(script_url);
   Platform::Current()->GetURLLoaderMockFactory()->RegisterErrorURL(

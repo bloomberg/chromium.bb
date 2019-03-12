@@ -116,7 +116,7 @@ WebString WebURLResponse::MimeType() const {
   return resource_response_->MimeType();
 }
 
-void WebURLResponse::SetMIMEType(const WebString& mime_type) {
+void WebURLResponse::SetMimeType(const WebString& mime_type) {
   resource_response_->SetMimeType(mime_type);
 }
 

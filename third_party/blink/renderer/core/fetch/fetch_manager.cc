@@ -425,7 +425,7 @@ void FetchManager::Loader::DidReceiveResponse(
     response_data->SetURLList(response.UrlListViaServiceWorker());
   }
 
-  response_data->SetMIMEType(response.MimeType());
+  response_data->SetMimeType(response.MimeType());
   response_data->SetResponseTime(response.ResponseTime());
 
   if (response.WasCached()) {

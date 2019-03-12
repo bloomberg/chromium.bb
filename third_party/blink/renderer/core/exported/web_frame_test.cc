@@ -228,7 +228,7 @@ class WebFrameTest : public testing::Test {
                                         const std::string& csp,
                                         bool report_only = false) {
     WebURLResponse response;
-    response.SetMIMEType("text/html");
+    response.SetMimeType("text/html");
     response.AddHTTPHeaderField(
         report_only ? WebString("Content-Security-Policy-Report-Only")
                     : WebString("Content-Security-Policy"),
@@ -7283,14 +7283,14 @@ TEST_F(WebFrameTest, SiteForCookiesForRedirect) {
   char redirect[] = "http://internal.test/first_party.html";
   WebURL redirect_url(ToKURL(redirect));
   WebURLResponse redirect_response;
-  redirect_response.SetMIMEType("text/html");
+  redirect_response.SetMimeType("text/html");
   redirect_response.SetHttpStatusCode(302);
   redirect_response.SetHTTPHeaderField("Location", redirect);
   Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(
       test_url, redirect_response, file_path);
 
   WebURLResponse final_response;
-  final_response.SetMIMEType("text/html");
+  final_response.SetMimeType("text/html");
   Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(
       redirect_url, final_response, file_path);
 

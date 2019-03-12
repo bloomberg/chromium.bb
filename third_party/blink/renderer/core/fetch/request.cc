@@ -562,7 +562,7 @@ Request* Request::CreateRequestWithRequestOrString(
 
   // "Set |r|'s MIME type to the result of extracting a MIME type from |r|'s
   // request's header list."
-  r->request_->SetMIMEType(r->request_->HeaderList()->ExtractMIMEType());
+  r->request_->SetMimeType(r->request_->HeaderList()->ExtractMIMEType());
 
   // "If |input| is a Request object and |input|'s request's body is
   // non-null, run these substeps:"
