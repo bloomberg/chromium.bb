@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "ash/accessibility/accessibility_observer.h"
-#include "ash/app_list/app_list_controller_observer.h"
 #include "ash/shell_observer.h"
 #include "ash/wallpaper/wallpaper_controller_observer.h"
 #include "ash/wm/overview/overview_observer.h"
@@ -46,7 +45,6 @@ class BackdropDelegate;
 // 2) BackdropDelegate::HasBackdrop(aura::Window* window) returns true.
 // 3) Active ARC window when the spoken feedback is enabled.
 class BackdropController : public AccessibilityObserver,
-                           public AppListControllerObserver,
                            public ShellObserver,
                            public OverviewObserver,
                            public SplitViewController::Observer,
@@ -80,9 +78,6 @@ class BackdropController : public AccessibilityObserver,
   void OnOverviewModeEnding(OverviewSession* overview_session) override;
   void OnOverviewModeEndingAnimationComplete(bool canceled) override;
 
-  // AppListControllerObserver:
-  void OnAppListVisibilityChanged(bool shown, int64_t display_id) override;
-
   // AccessibilityObserver:
   void OnAccessibilityStatusChanged() override;
 
@@ -112,7 +107,7 @@ class BackdropController : public AccessibilityObserver,
   void Show();
 
   // Hide the backdrop window.
-  void Hide();
+  void Hide(bool animate = true);
 
   // Returns true if the backdrop window should be fullscreen. It should not be
   // fullscreen only if 1) split view is active and 2) there is only one snapped
@@ -125,6 +120,9 @@ class BackdropController : public AccessibilityObserver,
   // backdrop should not cover the non-snapped side of the screen, thus the
   // backdrop bounds should be the bounds of the snapped window.
   gfx::Rect GetBackdropBounds();
+
+  // Sets the animtion type of |backdrop_window_| to |type|.
+  void SetBackdropAnimationType(int type);
 
   // The backdrop which covers the rest of the screen.
   views::Widget* backdrop_ = nullptr;

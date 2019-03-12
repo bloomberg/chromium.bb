@@ -64,6 +64,10 @@ const float kWindowAnimation_ShowBrightnessGrayscale = 0.f;
 const float kWindowAnimation_HideOpacity = 0.f;
 const float kWindowAnimation_ShowOpacity = 1.f;
 
+// Duration for gfx::Tween::ZERO animation of showing window.
+constexpr base::TimeDelta kZeroAnimationMs =
+    base::TimeDelta::FromMilliseconds(300);
+
 int64_t Round64(float f) {
   return static_cast<int64_t>(f + 0.5f);
 }
@@ -296,6 +300,14 @@ void AnimateHideWindow_SlideOut(aura::Window* window) {
   window->layer()->SetBounds(dismissed_bounds);
 }
 
+void AnimateShowWindow_StepEnd(aura::Window* window) {
+  window->layer()->SetOpacity(kWindowAnimation_HideOpacity);
+  ui::ScopedLayerAnimationSettings settings(window->layer()->GetAnimator());
+  settings.SetTransitionDuration(kZeroAnimationMs);
+  settings.SetTweenType(gfx::Tween::ZERO);
+  window->layer()->SetOpacity(kWindowAnimation_ShowOpacity);
+}
+
 bool AnimateShowWindow(aura::Window* window) {
   if (!::wm::HasWindowVisibilityAnimationTransition(window,
                                                     ::wm::ANIMATE_SHOW)) {
@@ -314,6 +326,9 @@ bool AnimateShowWindow(aura::Window* window) {
       return true;
     case wm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE_IN_SLIDE_OUT:
       AnimateShowWindow_FadeIn(window);
+      return true;
+    case wm::WINDOW_VISIBILITY_ANIMATION_TYPE_STEP_END:
+      AnimateShowWindow_StepEnd(window);
       return true;
     default:
       NOTREACHED();
@@ -339,6 +354,12 @@ bool AnimateHideWindow(aura::Window* window) {
     case wm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE_IN_SLIDE_OUT:
       AnimateHideWindow_SlideOut(window);
       return true;
+    case wm::WINDOW_VISIBILITY_ANIMATION_TYPE_STEP_END:
+      NOTREACHED()
+          << "wm::WINDOW_VISIBILITY_ANIMATION_TYPE_STEP_END is only an "
+             "animation type for showing window. Hiding window with this type "
+             "of animation is not supported.";
+      return false;
     default:
       NOTREACHED();
       return false;
