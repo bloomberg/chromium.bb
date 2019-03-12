@@ -276,16 +276,6 @@ class MapFileParserGold(object):
               sym = models.Symbol(section_name, size, address=address,
                                   full_name=full_name, object_path=path)
               syms.append(sym)
-          section_end_address = section_address + section_size
-          if section_name != models.SECTION_BSS and (
-              syms[-1].end_address < section_end_address):
-            # Set size=0 so that it will show up as padding.
-            sym = models.Symbol(
-                section_name, 0,
-                address=section_end_address,
-                full_name=(
-                    '** symbol gap %d (end of section)' % symbol_gap_count))
-            syms.append(sym)
           logging.debug('Symbol count for %s: %d', section_name,
                         len(syms) - sym_count_at_start)
       except:
