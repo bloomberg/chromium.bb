@@ -12,6 +12,7 @@
 #include "base/bind_helpers.h"
 #include "base/build_time.h"
 #include "base/macros.h"
+#include "base/scoped_observer.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/system/timezone_util.h"
@@ -35,18 +36,15 @@ class SetTimeMessageHandler : public content::WebUIMessageHandler,
                               public chromeos::SystemClockClient::Observer,
                               public system::TimezoneSettings::Observer {
  public:
-  SetTimeMessageHandler() {
-    system::TimezoneSettings::GetInstance()->AddObserver(this);
-    SystemClockClient::Get()->AddObserver(this);
-  }
-
-  ~SetTimeMessageHandler() override {
-    system::TimezoneSettings::GetInstance()->RemoveObserver(this);
-    SystemClockClient::Get()->RemoveObserver(this);
-  }
+  SetTimeMessageHandler() = default;
+  ~SetTimeMessageHandler() override = default;
 
   // WebUIMessageHandler:
   void RegisterMessages() override {
+    web_ui()->RegisterMessageCallback(
+        "setTimePageReady",
+        base::BindRepeating(&SetTimeMessageHandler::OnPageReady,
+                            base::Unretained(this)));
     web_ui()->RegisterMessageCallback(
         "setTimeInSeconds",
         base::BindRepeating(&SetTimeMessageHandler::OnSetTime,
@@ -57,10 +55,22 @@ class SetTimeMessageHandler : public content::WebUIMessageHandler,
                             base::Unretained(this)));
   }
 
+  void OnJavascriptAllowed() override {
+    clock_observer_.Add(SystemClockClient::Get());
+    timezone_observer_.Add(system::TimezoneSettings::GetInstance());
+  }
+
+  void OnJavascriptDisallowed() override {
+    clock_observer_.RemoveAll();
+    timezone_observer_.RemoveAll();
+  }
+
  private:
+  void OnPageReady(const base::ListValue* args) { AllowJavascript(); }
+
   // SystemClockClient::Observer:
   void SystemClockUpdated() override {
-    web_ui()->CallJavascriptFunctionUnsafe("settime.TimeSetter.updateTime");
+    CallJavascriptFunction("settime.TimeSetter.updateTime");
   }
 
   // UI actually shows real device timezone, but only allows changing the user
@@ -70,8 +80,7 @@ class SetTimeMessageHandler : public content::WebUIMessageHandler,
   // system::TimezoneSettings::Observer:
   void TimezoneChanged(const icu::TimeZone& timezone) override {
     base::Value timezone_id(system::TimezoneSettings::GetTimezoneID(timezone));
-    web_ui()->CallJavascriptFunctionUnsafe("settime.TimeSetter.setTimezone",
-                                           timezone_id);
+    CallJavascriptFunction("settime.TimeSetter.setTimezone", timezone_id);
   }
 
   // Handler for Javascript call to set the system clock when the user sets a
@@ -101,6 +110,11 @@ class SetTimeMessageHandler : public content::WebUIMessageHandler,
     DCHECK(profile);
     system::SetTimezoneFromUI(profile, timezone_id);
   }
+
+  ScopedObserver<SystemClockClient, SystemClockClient::Observer>
+      clock_observer_{this};
+  ScopedObserver<system::TimezoneSettings, system::TimezoneSettings::Observer>
+      timezone_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SetTimeMessageHandler);
 };
@@ -143,7 +157,6 @@ SetTimeUI::SetTimeUI(content::WebUI* web_ui) : WebDialogUI(web_ui) {
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source);
 }
 
-SetTimeUI::~SetTimeUI() {
-}
+SetTimeUI::~SetTimeUI() = default;
 
 }  // namespace chromeos

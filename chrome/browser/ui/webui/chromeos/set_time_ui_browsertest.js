@@ -20,7 +20,22 @@ SetTimeWebUITest.prototype = {
    * @override
    */
   browsePreload: 'chrome://set-time/',
+
+  /** @override */
+  preLoad: function() {
+    testing.Test.prototype.preLoad.call(this);
+    registerMessageCallback('setTimePageReady', this, function() {
+      assertFalse(this.setTimePageReadyCalled);
+      this.setTimePageReadyCalled = true;
+    });
+  },
+
+  setTimePageReadyCalled: false,
 };
+
+TEST_F('SetTimeWebUITest', 'testPageReady', function() {
+  assertTrue(this.setTimePageReadyCalled);
+});
 
 TEST_F('SetTimeWebUITest', 'testChangeTimezone', function() {
   assertEquals(this.browsePreload, document.location.href);

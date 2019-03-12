@@ -65,6 +65,8 @@ cr.define('settime', function() {
 
       $('set-time')
           .addEventListener('submit', this.onSubmit_.bind(this), false);
+
+      chrome.send('setTimePageReady');
     },
 
     /**
