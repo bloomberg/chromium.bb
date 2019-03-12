@@ -236,6 +236,11 @@ extern const base::Feature kIncompatibleApplicationsWarning;
 
 #if !defined(OS_ANDROID)
 COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kIntentPicker;
+#endif
+
+#if !defined(OS_ANDROID)
+COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kLocalScreenCasting;
 #endif
 
