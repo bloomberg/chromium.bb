@@ -189,12 +189,6 @@ void MediaPerceptionAPIManager::GetState(APIStateCallback callback) {
 void MediaPerceptionAPIManager::SetAnalyticsComponent(
     const extensions::api::media_perception_private::Component& component,
     APISetAnalyticsComponentCallback callback) {
-  if (analytics_process_state_ != AnalyticsProcessState::IDLE) {
-    LOG(WARNING) << "Analytics process is not STOPPED.";
-    std::move(callback).Run(GetFailedToInstallComponentState());
-    return;
-  }
-
   MediaPerceptionAPIDelegate* delegate =
       ExtensionsAPIClient::Get()->GetMediaPerceptionAPIDelegate();
   if (!delegate) {
