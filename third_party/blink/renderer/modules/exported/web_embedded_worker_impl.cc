@@ -556,4 +556,9 @@ WebEmbeddedWorkerImpl::CreateFetchClientSettingsObject() {
       document->Fetcher()->GetProperties().GetFetchClientSettingsObject());
 }
 
+void WebEmbeddedWorkerImpl::WaitForShutdownForTesting() {
+  DCHECK(worker_thread_);
+  worker_thread_->WaitForShutdownForTesting();
+}
+
 }  // namespace blink
