@@ -81,6 +81,7 @@ RenderFrameProxyHost* Portal::CreateProxyAndAttachPortal() {
   std::unique_ptr<WebContents> portal_contents = WebContents::Create(params);
   portal_contents_impl_ = static_cast<WebContentsImpl*>(portal_contents.get());
   portal_contents_impl_->set_portal(this);
+  portal_contents_impl_->SetDelegate(this);
 
   outer_contents_impl->AttachInnerWebContents(std::move(portal_contents),
                                               outer_node->current_frame_host());
@@ -92,8 +93,7 @@ RenderFrameProxyHost* Portal::CreateProxyAndAttachPortal() {
   proxy_host->set_render_frame_proxy_created(true);
   portal_contents_impl_->ReattachToOuterWebContentsFrame();
 
-  outer_contents_impl->GetDelegate()->PortalWebContentsCreated(
-      portal_contents_impl_);
+  PortalWebContentsCreated(portal_contents_impl_);
 
   return proxy_host;
 }
@@ -130,6 +130,13 @@ void Portal::RenderFrameDeleted(RenderFrameHost* render_frame_host) {
 
 void Portal::WebContentsDestroyed() {
   binding_->Close();  // Also deletes |this|.
+}
+
+void Portal::PortalWebContentsCreated(WebContents* portal_web_contents) {
+  WebContentsImpl* outer_contents = static_cast<WebContentsImpl*>(
+      WebContents::FromRenderFrameHost(owner_render_frame_host_));
+  DCHECK(outer_contents->GetDelegate());
+  outer_contents->GetDelegate()->PortalWebContentsCreated(portal_web_contents);
 }
 
 WebContentsImpl* Portal::GetPortalContents() {
