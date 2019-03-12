@@ -152,10 +152,10 @@ base::subtle::Atomic32 g_instance_count = 0;
 
 void JavaScriptResultCallbackForTesting(
     const ScopedJavaGlobalRef<jobject>& callback,
-    const base::Value* result) {
+    base::Value result) {
   JNIEnv* env = base::android::AttachCurrentThread();
   std::string json;
-  base::JSONWriter::Write(*result, &json);
+  base::JSONWriter::Write(result, &json);
   ScopedJavaLocalRef<jstring> j_json = ConvertUTF8ToJavaString(env, json);
   Java_AwContents_onEvaluateJavaScriptResultForTesting(env, j_json, callback);
 }
@@ -1470,10 +1470,10 @@ void AwContents::EvaluateJavaScriptOnInterstitialForTesting(
   ScopedJavaGlobalRef<jobject> j_callback;
   j_callback.Reset(env, callback);
   RenderFrameHost::JavaScriptResultCallback js_callback =
-      base::Bind(&JavaScriptResultCallbackForTesting, j_callback);
+      base::BindOnce(&JavaScriptResultCallbackForTesting, j_callback);
 
   interstitial->GetMainFrame()->ExecuteJavaScriptForTests(
-      ConvertJavaStringToUTF16(env, script), js_callback);
+      ConvertJavaStringToUTF16(env, script), std::move(js_callback));
 }
 
 void AwContents::RendererUnresponsive(

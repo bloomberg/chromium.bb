@@ -101,7 +101,7 @@ class DistillerPageWebContents : public DistillerPage,
   // Called when the distillation is done or if the page load failed.
   void OnWebContentsDistillationDone(const GURL& page_url,
                                      const base::TimeTicks& javascript_start,
-                                     const base::Value* value);
+                                     base::Value value);
 
   // The current state of the |DistillerPage|, initially |IDLE|.
   State state_;

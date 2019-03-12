@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/arc/fileapi/arc_select_files_handler.h"
 
+#include <string>
+
 #include "base/json/json_reader.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/mock_callback.h"
@@ -91,10 +93,10 @@ class MockSelectFileDialog : public SelectFileDialog {
 class MockSelectFileDialogScriptExecutor
     : public SelectFileDialogScriptExecutor {
  public:
-  MockSelectFileDialogScriptExecutor(ui::SelectFileDialog* dialog)
+  explicit MockSelectFileDialogScriptExecutor(ui::SelectFileDialog* dialog)
       : SelectFileDialogScriptExecutor(dialog) {}
   MOCK_METHOD2(ExecuteJavaScript,
-               void(const std::string&, const JavaScriptResultCallback&));
+               void(const std::string&, JavaScriptResultCallback));
 
  protected:
   ~MockSelectFileDialogScriptExecutor() override = default;
@@ -255,11 +257,11 @@ TEST_F(ArcSelectFilesHandlerTest, OnFileSelectorEvent) {
 TEST_F(ArcSelectFilesHandlerTest, GetFileSelectorElements) {
   EXPECT_CALL(*mock_script_executor_, ExecuteJavaScript(kScriptGetElements, _))
       .WillOnce(testing::Invoke(
-          [](const std::string&, const JavaScriptResultCallback& callback) {
-            callback.Run(base::JSONReader::ReadDeprecated(
-                             "{\"dirNames\" :[\"dir1\", \"dir2\"],"
-                             " \"fileNames\":[\"file1\",\"file2\"]}")
-                             .get());
+          [](const std::string&, JavaScriptResultCallback callback) {
+            std::move(callback).Run(
+                base::JSONReader::Read("{\"dirNames\" :[\"dir1\", \"dir2\"],"
+                                       " \"fileNames\":[\"file1\",\"file2\"]}")
+                    .value());
           }));
 
   mojom::FileSelectorElementsPtr expectedElements =

@@ -73,7 +73,7 @@ class ScriptCallback {
  public:
   ScriptCallback() { }
   virtual ~ScriptCallback() { }
-  void ResultCallback(const base::Value* result);
+  void ResultCallback(base::Value result);
 
   std::unique_ptr<base::Value> result() { return std::move(result_); }
 
@@ -83,9 +83,8 @@ class ScriptCallback {
   DISALLOW_COPY_AND_ASSIGN(ScriptCallback);
 };
 
-void ScriptCallback::ResultCallback(const base::Value* result) {
-  if (result)
-    result_.reset(result->DeepCopy());
+void ScriptCallback::ResultCallback(base::Value result) {
+  result_.reset(result.DeepCopy());
   base::RunLoop::QuitCurrentWhenIdleDeprecated();
 }
 
@@ -207,8 +206,8 @@ std::unique_ptr<base::Value> ExecuteScriptAndGetValue(
   ScriptCallback observer;
 
   render_frame_host->ExecuteJavaScriptForTests(
-      base::UTF8ToUTF16(script),
-      base::Bind(&ScriptCallback::ResultCallback, base::Unretained(&observer)));
+      base::UTF8ToUTF16(script), base::BindOnce(&ScriptCallback::ResultCallback,
+                                                base::Unretained(&observer)));
   base::RunLoop().Run();
   return observer.result();
 }

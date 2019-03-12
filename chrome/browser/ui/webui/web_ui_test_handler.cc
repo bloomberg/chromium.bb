@@ -53,8 +53,8 @@ bool WebUITestHandler::RunJavaScriptTestWithResult(
   content::RenderFrameHost* frame =
       GetWebUI()->GetWebContents()->GetMainFrame();
   frame->ExecuteJavaScriptForTests(
-      js_text, base::Bind(&WebUITestHandler::JavaScriptComplete,
-                          base::Unretained(this)));
+      js_text, base::BindOnce(&WebUITestHandler::JavaScriptComplete,
+                              base::Unretained(this)));
   return WaitForResult();
 }
 
@@ -76,7 +76,7 @@ void WebUITestHandler::RunQuitClosure() {
   quit_closure_.Run();
 }
 
-void WebUITestHandler::JavaScriptComplete(const base::Value* result) {
+void WebUITestHandler::JavaScriptComplete(base::Value result) {
   // To ensure this gets done, do this before ASSERT* calls.
   RunQuitClosure();
 
@@ -86,7 +86,7 @@ void WebUITestHandler::JavaScriptComplete(const base::Value* result) {
   run_test_done_ = true;
   run_test_succeeded_ = false;
 
-  ASSERT_TRUE(result->GetAsBoolean(&run_test_succeeded_));
+  ASSERT_TRUE(result.GetAsBoolean(&run_test_succeeded_));
 }
 
 bool WebUITestHandler::WaitForResult() {

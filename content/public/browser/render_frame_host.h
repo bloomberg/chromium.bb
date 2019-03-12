@@ -179,26 +179,25 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // receive a result when it is available. If there is no need to receive the
   // result, pass in a default-constructed callback. If provided, the callback
   // will be invoked on the UI thread.
-  typedef base::Callback<void(const base::Value*)> JavaScriptResultCallback;
+  using JavaScriptResultCallback = base::OnceCallback<void(base::Value)>;
 
   // This is the default API to run JavaScript in this frame. This API can only
   // be called on chrome:// or chrome-devtools:// URLs.
   virtual void ExecuteJavaScript(const base::string16& javascript) = 0;
   virtual void ExecuteJavaScript(const base::string16& javascript,
-                                 const JavaScriptResultCallback& callback) = 0;
+                                 JavaScriptResultCallback callback) = 0;
 
   // This runs the JavaScript in an isolated world of the top of this frame's
   // context.
   virtual void ExecuteJavaScriptInIsolatedWorld(
       const base::string16& javascript,
-      const JavaScriptResultCallback& callback,
+      JavaScriptResultCallback callback,
       int world_id) = 0;
 
   // This runs the JavaScript, but without restrictions. THIS IS ONLY FOR TESTS.
   virtual void ExecuteJavaScriptForTests(const base::string16& javascript) = 0;
-  virtual void ExecuteJavaScriptForTests(
-      const base::string16& javascript,
-      const JavaScriptResultCallback& callback) = 0;
+  virtual void ExecuteJavaScriptForTests(const base::string16& javascript,
+                                         JavaScriptResultCallback callback) = 0;
 
   // This runs the JavaScript, but without restrictions. THIS IS ONLY FOR TESTS.
   // This version adds a fake UserGestureIndicator to test functionality that

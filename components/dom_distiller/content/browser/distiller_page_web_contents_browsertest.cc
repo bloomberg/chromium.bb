@@ -113,8 +113,8 @@ class DistillerPageWebContentsTest : public ContentBrowserTest {
     quit_closure.Run();
   }
 
-  void OnJsExecutionDone(base::Closure callback, const base::Value* value) {
-    js_result_.reset(value->DeepCopy());
+  void OnJsExecutionDone(base::Closure callback, base::Value value) {
+    js_result_ = std::move(value);
     callback.Run();
   }
 
@@ -152,7 +152,7 @@ class DistillerPageWebContentsTest : public ContentBrowserTest {
 
   DistillerPageWebContents* distiller_page_;
   std::unique_ptr<proto::DomDistillerResult> distiller_result_;
-  std::unique_ptr<base::Value> js_result_;
+  base::Value js_result_;
 };
 
 // Use this class to be able to leak the WebContents, which is needed for when
@@ -570,19 +570,15 @@ IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest, MAYBE_TestPinch) {
   base::RunLoop run_loop;
   web_contents->GetMainFrame()->ExecuteJavaScriptForTests(
       base::UTF8ToUTF16("(function() {return pinchtest.run();})();"),
-      base::Bind(&DistillerPageWebContentsTest::OnJsExecutionDone,
-                 base::Unretained(this), run_loop.QuitClosure()));
+      base::BindOnce(&DistillerPageWebContentsTest::OnJsExecutionDone,
+                     base::Unretained(this), run_loop.QuitClosure()));
   run_loop.Run();
 
-  // Convert to dictionary and parse the results.
-  const base::DictionaryValue* dict;
-  ASSERT_TRUE(js_result_);
-  ASSERT_TRUE(js_result_->GetAsDictionary(&dict));
+  ASSERT_TRUE(js_result_.is_dict());
 
-  ASSERT_TRUE(dict->HasKey("success"));
-  bool success;
-  ASSERT_TRUE(dict->GetBoolean("success", &success));
-  EXPECT_TRUE(success);
+  base::Optional<bool> value = js_result_.FindBoolKey("success");
+  ASSERT_TRUE(value.has_value());
+  EXPECT_TRUE(value.value());
 }
 
 }  // namespace dom_distiller
