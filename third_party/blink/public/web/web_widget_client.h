@@ -108,13 +108,6 @@ class WebWidgetClient {
   virtual void AutoscrollFling(const WebFloatSize& velocity) {}
   virtual void AutoscrollEnd() {}
 
-  // Called when the window for this top-level widget should be closed.
-  // WebWidget::Close() should be called asynchronously as a result of this
-  // notification.
-  // TODO(danakj): Move this to WebView::CloseWindowSoon(), so we can call
-  // it when the main frame is remote and there is no top-level widget.
-  virtual void CloseWidgetSoon() {}
-
   // Called to show the widget according to the given policy.
   virtual void Show(WebNavigationPolicy) {}
 

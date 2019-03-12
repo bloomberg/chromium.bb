@@ -9628,10 +9628,10 @@ TEST_F(WebFrameSwapTest, WindowOpenOnRemoteFrame) {
   Reset();
 }
 
-class RemoteWindowCloseClient : public frame_test_helpers::TestWebWidgetClient {
+class RemoteWindowCloseClient : public frame_test_helpers::TestWebViewClient {
  public:
-  // WebWidgetClient implementation.
-  void CloseWidgetSoon() override { closed_ = true; }
+  // WebViewClient implementation.
+  void CloseWindowSoon() override { closed_ = true; }
 
   bool Closed() const { return closed_; }
 
@@ -9646,7 +9646,7 @@ TEST_F(WebFrameTest, WindowOpenRemoteClose) {
   // Create a remote window that will be closed later in the test.
   RemoteWindowCloseClient client;
   frame_test_helpers::WebViewHelper popup;
-  popup.InitializeRemote(nullptr, nullptr, nullptr, &client);
+  popup.InitializeRemote(nullptr, nullptr, &client);
   popup.RemoteMainFrame()->SetOpener(main_web_view.LocalMainFrame());
 
   LocalFrame* local_frame = main_web_view.LocalMainFrame()->GetFrame();

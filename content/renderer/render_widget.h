@@ -57,6 +57,7 @@
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_text_input_info.h"
 #include "third_party/blink/public/web/web_ime_text_span.h"
+#include "third_party/blink/public/web/web_page_popup.h"
 #include "third_party/blink/public/web/web_text_direction.h"
 #include "third_party/blink/public/web/web_widget.h"
 #include "third_party/blink/public/web/web_widget_client.h"
@@ -141,7 +142,7 @@ struct VisualProperties;
 class CONTENT_EXPORT RenderWidget
     : public IPC::Listener,
       public IPC::Sender,
-      public blink::WebWidgetClient,
+      public blink::WebPagePopupClient,  // Is-a WebWidgetClient also.
       public mojom::Widget,
       public LayerTreeViewDelegate,
       public RenderWidgetInputHandlerDelegate,
@@ -390,7 +391,7 @@ class CONTENT_EXPORT RenderWidget
   void AutoscrollStart(const blink::WebFloatPoint& point) override;
   void AutoscrollFling(const blink::WebFloatSize& velocity) override;
   void AutoscrollEnd() override;
-  void CloseWidgetSoon() override;
+  void ClosePopupWidgetSoon() override;
   void Show(blink::WebNavigationPolicy) override;
   blink::WebRect WindowRect() override;
   blink::WebRect ViewRect() override;
@@ -432,6 +433,9 @@ class CONTENT_EXPORT RenderWidget
   // Override point to obtain that the current input method state and caret
   // position.
   ui::TextInputType GetTextInputType();
+
+  // Sends a request to the browser to close this RenderWidget.
+  void CloseWidgetSoon();
 
   static cc::LayerTreeSettings GenerateLayerTreeSettings(
       CompositorDependencies* compositor_deps,

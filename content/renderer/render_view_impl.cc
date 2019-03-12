@@ -1489,7 +1489,7 @@ blink::WebPagePopup* RenderViewImpl::CreatePopup(
       /*never_visible=*/false, std::move(widget_channel_request));
 
   // The returned WebPagePopup is self-referencing, so the pointer here is not
-  // an owning pointer.
+  // an owning pointer. It is de-referenced by calling Close().
   blink::WebPagePopup* popup_web_widget =
       blink::WebPagePopup::Create(popup_widget.get());
 
@@ -1508,6 +1508,20 @@ blink::WebPagePopup* RenderViewImpl::CreatePopup(
   popup_widget->ApplyEmulatedScreenMetricsForPopupWidget(view_render_widget);
 
   return popup_web_widget;
+}
+
+void RenderViewImpl::CloseWindowSoon() {
+  if (render_widget_->is_frozen()) {
+    // The main widget is currently not active. The active main frame widget is
+    // in a different process.  Have the browser route the close request to the
+    // active widget instead, so that the correct unload handlers are run.
+    Send(new ViewHostMsg_RouteCloseEvent(GetRoutingID()));
+    return;
+  }
+
+  // If the main widget is not frozen then the Close request goes directly
+  // through it, because the RenderWidget ultimately owns the RenderViewImpl.
+  render_widget_->CloseWidgetSoon();
 }
 
 base::StringPiece RenderViewImpl::GetSessionStorageNamespaceId() {

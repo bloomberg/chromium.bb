@@ -234,6 +234,7 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
       const blink::SessionStorageNamespaceId& session_storage_namespace_id)
       override;
   blink::WebPagePopup* CreatePopup(blink::WebLocalFrame* creator) override;
+  void CloseWindowSoon() override;
   base::StringPiece GetSessionStorageNamespaceId() override;
   void PrintPage(blink::WebLocalFrame* frame) override;
   void SetValidationMessageDirection(base::string16* main_text,

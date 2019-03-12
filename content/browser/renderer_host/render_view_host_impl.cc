@@ -829,6 +829,7 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShowWidget, OnShowWidget)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShowFullscreenWidget,
                         OnShowFullscreenWidget)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_RouteCloseEvent, OnRouteCloseEvent)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateTargetURL, OnUpdateTargetURL)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DocumentAvailableInMainFrame,
                         OnDocumentAvailableInMainFrame)
@@ -851,11 +852,6 @@ void RenderViewHostImpl::RenderWidgetDidClose() {
   // If the renderer is telling us to close, it has already run the unload
   // events, and we can take the fast path.
   ClosePageIgnoringUnloadEvents();
-}
-
-void RenderViewHostImpl::RenderWidgetNeedsToRouteCloseEvent() {
-  // Have the delegate route this to the active RenderViewHost.
-  delegate_->RouteCloseEvent(this);
 }
 
 void RenderViewHostImpl::ShutdownAndDestroy() {
@@ -894,6 +890,17 @@ void RenderViewHostImpl::OnShowFullscreenWidget(int widget_route_id) {
   delegate_->ShowCreatedFullscreenWidget(GetProcess()->GetID(),
                                          widget_route_id);
   Send(new WidgetMsg_SetBounds_ACK(widget_route_id));
+}
+
+void RenderViewHostImpl::OnRouteCloseEvent() {
+  // This is only used when the RenderViewHost is not active, to signal to
+  // the active RenderViewHost that JS has requested the page to close.
+  //
+  // TODO(https://crbug.com/419087): Move to RenderFrameHost or
+  // RenderFrameProxyHost.
+  //
+  // The delegate will route the close request to the active RenderViewHost.
+  delegate_->RouteCloseEvent(this);
 }
 
 void RenderViewHostImpl::OnUpdateTargetURL(const GURL& url) {

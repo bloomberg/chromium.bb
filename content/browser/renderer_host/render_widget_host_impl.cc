@@ -710,7 +710,6 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_RenderProcessGone, OnRenderProcessGone)
     IPC_MESSAGE_HANDLER(FrameHostMsg_HittestData, OnHittestData)
     IPC_MESSAGE_HANDLER(WidgetHostMsg_Close, OnClose)
-    IPC_MESSAGE_HANDLER(WidgetHostMsg_RouteCloseEvent, OnRouteCloseEvent)
     IPC_MESSAGE_HANDLER(WidgetHostMsg_UpdateScreenRects_ACK,
                         OnUpdateScreenRectsAck)
     IPC_MESSAGE_HANDLER(WidgetHostMsg_RequestSetBounds, OnRequestSetBounds)
@@ -2302,17 +2301,6 @@ void RenderWidgetHostImpl::OnClose() {
   } else {
     ShutdownAndDestroyWidget(true);
   }
-}
-
-void RenderWidgetHostImpl::OnRouteCloseEvent() {
-  // This is only used by swapped out RenderWidgets to signal to the active
-  // RenderWidget that JS has requested a page to close. It is only triggered
-  // by blink::WebPagePopupImpl and blink::Page (through ChromeCilent). This
-  // message should be on RenderFrameHost or RenderFrameProxyHost.
-  //
-  // TODO(https://crbug.com/419087): Move to RenderFrameHost or
-  // RenderFrameProxyHost.
-  owner_delegate_->RenderWidgetNeedsToRouteCloseEvent();
 }
 
 void RenderWidgetHostImpl::OnSetTooltipText(
