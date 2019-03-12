@@ -64,10 +64,6 @@ class DateView : public views::Button,
 
   // views::Button:
   gfx::Insets GetInsets() const override;
-  std::unique_ptr<views::InkDrop> CreateInkDrop() override;
-  std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
-  std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
-      const override;
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
@@ -95,9 +91,13 @@ DateView::DateView(UnifiedSystemTrayController* controller)
   Update();
 
   Shell::Get()->system_tray_model()->clock()->AddObserver(this);
-  TrayPopupUtils::ConfigureTrayPopupButton(this);
 
   SetEnabled(Shell::Get()->system_tray_model()->clock()->IsSettingsAvailable());
+
+  SetFocusPainter(TrayPopupUtils::CreateFocusPainter());
+  SetFocusForPlatform();
+
+  SetInkDropMode(views::InkDropHostView::InkDropMode::OFF);
 }
 
 DateView::~DateView() {
@@ -120,22 +120,6 @@ void DateView::Update() {
 gfx::Insets DateView::GetInsets() const {
   // This padding provides room to render the focus ring around this button.
   return kUnifiedSystemInfoDateViewPadding;
-}
-
-std::unique_ptr<views::InkDrop> DateView::CreateInkDrop() {
-  return TrayPopupUtils::CreateInkDrop(this);
-}
-
-std::unique_ptr<views::InkDropRipple> DateView::CreateInkDropRipple() const {
-  return TrayPopupUtils::CreateInkDropRipple(
-      TrayPopupInkDropStyle::FILL_BOUNDS, this,
-      GetInkDropCenterBasedOnLastEvent());
-}
-
-std::unique_ptr<views::InkDropHighlight> DateView::CreateInkDropHighlight()
-    const {
-  return TrayPopupUtils::CreateInkDropHighlight(
-      TrayPopupInkDropStyle::FILL_BOUNDS, this);
 }
 
 void DateView::OnDateFormatChanged() {}
@@ -242,12 +226,6 @@ class ManagedStateView : public views::Button {
  public:
   ~ManagedStateView() override = default;
 
-  // views::Button:
-  std::unique_ptr<views::InkDrop> CreateInkDrop() override;
-  std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
-  std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
-      const override;
-
  protected:
   ManagedStateView(views::ButtonListener* listener,
                    int label_id,
@@ -277,24 +255,10 @@ ManagedStateView::ManagedStateView(views::ButtonListener* listener,
       gfx::Size(kUnifiedSystemInfoHeight, kUnifiedSystemInfoHeight));
   AddChildView(image);
 
-  TrayPopupUtils::ConfigureTrayPopupButton(this);
-}
+  SetFocusPainter(TrayPopupUtils::CreateFocusPainter());
+  SetFocusForPlatform();
 
-std::unique_ptr<views::InkDrop> ManagedStateView::CreateInkDrop() {
-  return TrayPopupUtils::CreateInkDrop(this);
-}
-
-std::unique_ptr<views::InkDropRipple> ManagedStateView::CreateInkDropRipple()
-    const {
-  return TrayPopupUtils::CreateInkDropRipple(
-      TrayPopupInkDropStyle::FILL_BOUNDS, this,
-      GetInkDropCenterBasedOnLastEvent());
-}
-
-std::unique_ptr<views::InkDropHighlight>
-ManagedStateView::CreateInkDropHighlight() const {
-  return TrayPopupUtils::CreateInkDropHighlight(
-      TrayPopupInkDropStyle::FILL_BOUNDS, this);
+  SetInkDropMode(views::InkDropHostView::InkDropMode::OFF);
 }
 
 // A view that shows whether the device is enterprise managed or not. It updates
