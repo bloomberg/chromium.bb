@@ -1833,7 +1833,16 @@
         {
           "board_name": "fizz-moblab",
           "name": "fizz",
-          "cq_test_enabled": false,
+          "test_suites": [
+            "bvt-inline",
+            "bvt-tast-cq",
+            "bvt-installer",
+            "au",
+            "bvt-cq",
+            "bvt-perbuild",
+            "bvt-tast-informational"
+          ],
+          "cq_test_enabled": true,
           "release_builder_test_pool": "bvt"
         },
         {
