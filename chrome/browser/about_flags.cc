@@ -3953,11 +3953,10 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(autofill::features::kAutofillSettingsCardTypeSplit)},
 #endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#if !defined(OS_ANDROID)
     {"hardware-media-key-handling",
      flag_descriptions::kHardwareMediaKeyHandling,
-     flag_descriptions::kHardwareMediaKeyHandlingDescription,
-     kOsWin | kOsMac | kOsCrOS,
+     flag_descriptions::kHardwareMediaKeyHandlingDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(media::kHardwareMediaKeyHandling)},
 #endif
 
