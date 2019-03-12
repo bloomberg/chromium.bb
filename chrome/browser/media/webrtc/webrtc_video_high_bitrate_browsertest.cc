@@ -96,11 +96,11 @@ IN_PROC_BROWSER_TEST_F(WebRtcVideoHighBitrateBrowserTest,
       OpenPageAndGetUserMediaInNewTabWithConstraints(
           embedded_test_server()->GetURL(kMainWebrtcTestHtmlPage),
           "{audio: true, video: false}");
-  SetupPeerconnectionWithLocalStream(left_tab);
-  SetupPeerconnectionWithLocalStream(right_tab);
-  const int target_bits_per_second = 80000;
+  const int target_bits_per_second = 50000;
   SetDefaultVideoTargetBitrate(left_tab, target_bits_per_second);
   SetDefaultVideoTargetBitrate(right_tab, target_bits_per_second);
+  SetupPeerconnectionWithLocalStream(left_tab);
+  SetupPeerconnectionWithLocalStream(right_tab);
   NegotiateCall(left_tab, right_tab);
 
   // Run the connection a bit to ramp up.
@@ -131,10 +131,10 @@ IN_PROC_BROWSER_TEST_F(WebRtcVideoHighBitrateBrowserTest,
       (video_bytes_received_after - video_bytes_received_before) /
       duration_in_seconds;
 
-  perf_test::PrintResult("video", "", "send_rate", video_send_rate,
+  perf_test::PrintResult("video", "_high_bitrate", "send_rate", video_send_rate,
                          "bytes/second", false);
-  perf_test::PrintResult("video", "", "receive_rate", video_receive_rate,
-                         "bytes/second", false);
+  perf_test::PrintResult("video", "_high_bitrate", "receive_rate",
+                         video_receive_rate, "bytes/second", false);
 
   HangUp(left_tab);
   HangUp(right_tab);

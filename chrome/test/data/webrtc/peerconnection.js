@@ -246,6 +246,10 @@ function receiveOfferFromPeer(sessionDescJson, constraints) {
         if (gOpusDtx) {
           answer.sdp = setOpusDtxEnabled(answer.sdp);
         }
+        if (gDefaultVideoTargetBitrate !== null) {
+          answer.sdp = setSdpVideoTargetBitrate(answer.sdp,
+                                                gDefaultVideoTargetBitrate);
+        }
         returnToTest('ok-' + JSON.stringify(answer));
       },
       function(error) { failure('createAnswer', error); },
