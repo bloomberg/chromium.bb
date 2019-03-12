@@ -329,7 +329,13 @@ TEST_F(EditableComboboxTest, CtrlLeftOrRightMovesToNextWords) {
   SendKeyEvent(ui::VKEY_RIGHT, /*alt=*/false, /*shift=*/false,
                /*ctrl_cmd=*/true);
   SendKeyEvent(ui::VKEY_Y);
+#if defined(OS_WIN)
+  // Matches Windows-specific logic in
+  // RenderTextHarfBuzz::AdjacentWordSelectionModel.
+  EXPECT_EQ(ASCIIToUTF16("foo xbar yfoobar"), combobox_->GetText());
+#else
   EXPECT_EQ(ASCIIToUTF16("foo xbary foobar"), combobox_->GetText());
+#endif
 }
 
 #endif

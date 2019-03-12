@@ -593,10 +593,6 @@ jumbo_component("views") {
       "//third_party/iaccessible2",
       "//third_party/wtl",
     ]
-
-    # TODO(edinkadric): Add EditableCombobox support on Windows.
-    public -= [ "controls/editable_combobox/editable_combobox.h" ]
-    sources -= [ "controls/editable_combobox/editable_combobox.cc" ]
   }
 
   if (use_ozone) {
@@ -1158,9 +1154,6 @@ test("views_unittests") {
       "accessibility/view_ax_platform_node_delegate_win_unittest.cc",
       "win/pen_event_processor_unittest.cc",
     ]
-
-    # TODO(edinkadric): Add EditableCombobox support on Windows.
-    sources -= [ "controls/editable_combobox/editable_combobox_unittest.cc" ]
   }
 
   if (has_native_accessibility) {
