@@ -702,7 +702,8 @@ void AppListView::HandleClickOrTap(ui::LocatedEvent* event) {
     return;
   }
 
-  if (!search_box_view_->is_search_box_active()) {
+  if (!search_box_view_->is_search_box_active() &&
+      model_->state() != ash::AppListState::kStateEmbeddedAssistant) {
     if (!is_tablet_mode())
       Dismiss();
     return;
@@ -1192,15 +1193,6 @@ void AppListView::OnTabletModeChanged(bool started) {
                    app_list_state_ == AppListViewState::FULLSCREEN_SEARCH
                ? AppListViewState::FULLSCREEN_SEARCH
                : AppListViewState::FULLSCREEN_ALL_APPS);
-
-  // Put app list window in corresponding container based on whether the
-  // tablet mode is enabled.
-  aura::Window* window = GetWidget()->GetNativeWindow();
-  aura::Window* root_window = window->GetRootWindow();
-  aura::Window* parent_window =
-      root_window->GetChildById(ash::kShellWindowId_AppListTabletModeContainer);
-  if (parent_window && !parent_window->Contains(window))
-    parent_window->AddChild(window);
 
   // Update background color opacity.
   SetBackgroundShieldColor();

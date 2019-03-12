@@ -4,6 +4,10 @@
 
 #include "ash/home_screen/home_launcher_gesture_handler.h"
 
+#include <algorithm>
+#include <memory>
+
+#include "ash/app_list/app_list_controller_impl.h"
 #include "ash/home_screen/home_launcher_gesture_handler_observer.h"
 #include "ash/home_screen/home_screen_controller.h"
 #include "ash/home_screen/home_screen_delegate.h"
@@ -24,7 +28,6 @@
 #include "ash/wm/workspace_controller.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/logging.h"
 #include "base/metrics/user_metrics.h"
 #include "base/numerics/ranges.h"
 #include "services/ws/public/mojom/window_tree_constants.mojom.h"
@@ -558,9 +561,16 @@ void HomeLauncherGestureHandler::AnimateToFinalState() {
 void HomeLauncherGestureHandler::UpdateSettings(
     ui::ScopedLayerAnimationSettings* settings,
     bool observe) {
-  settings->SetTransitionDuration(IsDragInProgress()
-                                      ? kAnimationDurationMs
-                                      : kActivationChangedAnimationDurationMs);
+  auto duration_ms = kActivationChangedAnimationDurationMs;
+  if (IsDragInProgress())
+    duration_ms = kAnimationDurationMs;
+
+  HomeScreenDelegate* home_screen_delegate =
+      Shell::Get()->home_screen_controller()->delegate();
+  duration_ms = home_screen_delegate->GetOptionalAnimationDuration().value_or(
+      duration_ms);
+
+  settings->SetTransitionDuration(duration_ms);
   settings->SetTweenType(IsDragInProgress() ? gfx::Tween::LINEAR
                                             : gfx::Tween::FAST_OUT_SLOW_IN);
   settings->SetPreemptionStrategy(

@@ -259,6 +259,7 @@ class ASH_EXPORT AppListControllerImpl
       float opacity,
       UpdateAnimationSettingsCallback callback) override;
   void UpdateAfterHomeLauncherShown() override;
+  base::Optional<base::TimeDelta> GetOptionalAnimationDuration() override;
 
   bool onscreen_keyboard_shown() const { return onscreen_keyboard_shown_; }
 
@@ -307,6 +308,9 @@ class ASH_EXPORT AppListControllerImpl
   void ShowHomeLauncher();
 
   void ResetHomeLauncherIfShown();
+
+  // Updates which container the launcher window should be in.
+  void UpdateLauncherContainer();
 
   base::string16 last_raw_query_;
 

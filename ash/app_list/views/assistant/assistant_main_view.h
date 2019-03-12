@@ -5,8 +5,11 @@
 #ifndef ASH_APP_LIST_VIEWS_ASSISTANT_ASSISTANT_MAIN_VIEW_H_
 #define ASH_APP_LIST_VIEWS_ASSISTANT_ASSISTANT_MAIN_VIEW_H_
 
+#include <memory>
+
 #include "ash/app_list/app_list_export.h"
 #include "base/macros.h"
+#include "ui/compositor/layer_owner.h"
 #include "ui/views/view.h"
 
 namespace ash {
@@ -29,6 +32,7 @@ class APP_LIST_EXPORT AssistantMainView : public views::View {
   void ChildPreferredSizeChanged(views::View* child) override;
   void ChildVisibilityChanged(views::View* child) override;
   void RequestFocus() override;
+  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
 
   // Returns the first focusable view or nullptr to defer to views::FocusSearch.
   views::View* FindFirstFocusableView();
@@ -40,6 +44,9 @@ class APP_LIST_EXPORT AssistantMainView : public views::View {
 
   DialogPlate* dialog_plate_;            // Owned by view hierarchy.
   AssistantMainStage* main_stage_;       // Owned by view hierarchy.
+
+  // Used to enforce child layers clip to rounded corner bounds.
+  std::unique_ptr<ui::LayerOwner> layer_mask_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantMainView);
 };
