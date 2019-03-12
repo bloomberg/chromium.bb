@@ -8,11 +8,6 @@ source_set("cpp") {
     "//media/learning/mojo/public/cpp:unit_tests",
   ]
 
-  sources = [
-    "mojo_learning_session.cc",
-    "mojo_learning_session.h",
-  ]
-
   defines = [ "IS_MEDIA_LEARNING_MOJO_IMPL" ]
 
   deps = [
@@ -24,10 +19,6 @@ source_set("cpp") {
 
 source_set("unit_tests") {
   testonly = true
-
-  sources = [
-    "mojo_learning_session_unittest.cc",
-  ]
 
   deps = [
     "//base",

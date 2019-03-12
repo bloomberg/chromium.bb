@@ -5,6 +5,7 @@
 #ifndef MEDIA_LEARNING_COMMON_LEARNING_SESSION_H_
 #define MEDIA_LEARNING_COMMON_LEARNING_SESSION_H_
 
+#include <memory>
 #include <string>
 
 #include "base/component_export.h"
@@ -15,18 +16,17 @@
 namespace media {
 namespace learning {
 
+class LearningTaskController;
+
 // Interface to provide a Learner given the task name.
 class COMPONENT_EXPORT(LEARNING_COMMON) LearningSession {
  public:
   LearningSession();
   virtual ~LearningSession();
 
-  // Add an observed example |example| to the learning task |task_name|.
-  // TODO(liberato): Consider making this an enum to match mojo.
-  virtual void AddExample(const std::string& task_name,
-                          const LabelledExample& example) = 0;
-
-  // TODO(liberato): Add prediction API.
+  // Return a LearningTaskController for the given task.
+  virtual std::unique_ptr<LearningTaskController> GetController(
+      const std::string& task_name) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LearningSession);

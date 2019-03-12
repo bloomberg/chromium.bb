@@ -8,6 +8,7 @@
 #include <map>
 
 #include "base/component_export.h"
+#include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/sequence_bound.h"
 #include "media/learning/common/learning_session.h"
@@ -36,8 +37,8 @@ class COMPONENT_EXPORT(LEARNING_IMPL) LearningSessionImpl
   void SetTaskControllerFactoryCBForTesting(CreateTaskControllerCB cb);
 
   // LearningSession
-  void AddExample(const std::string& task_name,
-                  const LabelledExample& example) override;
+  std::unique_ptr<LearningTaskController> GetController(
+      const std::string& task_name) override;
 
   // Registers |task|, so that calls to AddExample with |task.name| will work.
   // This will create a new controller for the task.
@@ -55,6 +56,8 @@ class COMPONENT_EXPORT(LEARNING_IMPL) LearningSessionImpl
   LearningTaskMap task_map_;
 
   CreateTaskControllerCB controller_factory_;
+
+  base::WeakPtrFactory<LearningSessionImpl> weak_factory_;
 };
 
 }  // namespace learning
