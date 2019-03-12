@@ -82,7 +82,7 @@ TEST_F(JsSyncManagerObserverTest, OnSyncCycleCompleted) {
 
 TEST_F(JsSyncManagerObserverTest, OnActionableError) {
   SyncProtocolError sync_error;
-  sync_error.action = CLEAR_USER_DATA_AND_RESYNC;
+  sync_error.action = RESET_LOCAL_SYNC_DATA;
   sync_error.error_type = TRANSIENT_ERROR;
   base::DictionaryValue expected_details;
   expected_details.Set("syncError", sync_error.ToValue());

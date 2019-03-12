@@ -257,29 +257,14 @@ TEST_F(SyncUIUtilTest, ActionableErrorWithPassiveMessage) {
   status.sync_protocol_error.action = syncer::UPGRADE_CLIENT;
   service->SetDetailedSyncStatus(true, status);
 
-  base::string16 first_actionable_error_status_label;
+  base::string16 actionable_error_status_label;
   base::string16 link_label;
   sync_ui_util::ActionType action_type = sync_ui_util::NO_ACTION;
-  sync_ui_util::GetStatusLabels(profile.get(),
-                                &first_actionable_error_status_label,
+  sync_ui_util::GetStatusLabels(profile.get(), &actionable_error_status_label,
                                 &link_label, &action_type);
   // Expect a 'client upgrade' call to action.
   EXPECT_EQ(sync_ui_util::UPGRADE_CLIENT, action_type);
-
-  // This time set action to ENABLE_SYNC_ON_ACCOUNT.
-  status.sync_protocol_error.action = syncer::ENABLE_SYNC_ON_ACCOUNT;
-  service->SetDetailedSyncStatus(true, status);
-
-  base::string16 second_actionable_error_status_label;
-  action_type = sync_ui_util::NO_ACTION;
-  sync_ui_util::GetStatusLabels(profile.get(),
-                                &second_actionable_error_status_label,
-                                &link_label, &action_type);
-  // Expect a passive message instead of a call to action.
-  EXPECT_EQ(sync_ui_util::NO_ACTION, action_type);
-
-  EXPECT_NE(first_actionable_error_status_label,
-            second_actionable_error_status_label);
+  EXPECT_NE(actionable_error_status_label, base::string16());
 }
 
 TEST_F(SyncUIUtilTest, SyncSettingsConfirmationNeededTest) {

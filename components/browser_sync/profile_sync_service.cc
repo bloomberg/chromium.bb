@@ -979,9 +979,6 @@ void ProfileSyncService::OnActionableError(
   DCHECK_NE(last_actionable_error_.action, syncer::UNKNOWN_ACTION);
   switch (error.action) {
     case syncer::UPGRADE_CLIENT:
-    case syncer::CLEAR_USER_DATA_AND_RESYNC:
-    case syncer::ENABLE_SYNC_ON_ACCOUNT:
-    case syncer::STOP_AND_RESTART_SYNC:
       // TODO(lipalani) : if setup in progress we want to display these
       // actions in the popup. The current experience might not be optimal for
       // the user. We just dismiss the dialog.

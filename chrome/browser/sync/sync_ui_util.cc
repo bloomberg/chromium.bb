@@ -64,12 +64,6 @@ bool GetStatusForActionableError(syncer::ClientAction action,
         *action_type = UPGRADE_CLIENT;
       }
       return true;
-    case syncer::ENABLE_SYNC_ON_ACCOUNT:
-      if (status_label) {
-        *status_label =
-            l10n_util::GetStringUTF16(IDS_SYNC_STATUS_ENABLE_SYNC_ON_ACCOUNT);
-      }
-      return true;
     default:
       if (status_label) {
         *status_label = base::string16();

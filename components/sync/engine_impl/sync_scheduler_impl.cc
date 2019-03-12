@@ -63,10 +63,6 @@ bool ShouldRequestEarlyExit(const SyncProtocolError& error) {
       // waiting forever. So assert we would send something.
       DCHECK_NE(error.action, UNKNOWN_ACTION);
       return true;
-    case INVALID_CREDENTIAL:
-      // The notification for this is handled by PostAndProcessHeaders|.
-      // Server does no have to send any action for this.
-      return true;
     // Make UNKNOWN_ERROR a NOTREACHED. All the other error should be explicitly
     // handled.
     case UNKNOWN_ERROR:

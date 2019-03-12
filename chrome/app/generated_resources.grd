@@ -7160,9 +7160,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
         <message name="IDS_SYNC_STATUS_NEEDS_PASSWORD_LINK_LABEL" desc="Hyperlink text indicating user must re-enter their sync password.">
           Enter passphrase
         </message>
-        <message name="IDS_SYNC_STATUS_ENABLE_SYNC_ON_ACCOUNT" desc="Message indicating user needs to ask the administrator to enable sync.">
-          Sync is disabled by your administrator
-        </message>
 
         <message name="IDS_SYNC_SERVER_IS_UNREACHABLE" desc="The message to display in the New Tab Page and Settings Page sync section when the server is unreachable.">
           Couldn't connect to the sync server. Retrying...
