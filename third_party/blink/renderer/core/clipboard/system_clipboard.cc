@@ -100,19 +100,15 @@ String SystemClipboard::ReadPlainText(mojom::ClipboardBuffer buffer) {
 }
 
 void SystemClipboard::WritePlainText(const String& plain_text,
-                                     SmartReplaceOption) {
-  // FIXME: add support for smart replace
-  String text = plain_text;
-#if defined(OS_WIN)
-  ReplaceNewlinesWithWindowsStyleNewlines(text);
-#endif
-  clipboard_->WriteText(mojom::ClipboardBuffer::kStandard, NonNullString(text));
+                                     SmartReplaceOption smart_replace) {
+  WritePlainTextNoCommit(plain_text, smart_replace);
   clipboard_->CommitWrite(mojom::ClipboardBuffer::kStandard);
 }
 
 void SystemClipboard::WritePlainTextNoCommit(const String& plain_text,
                                              SmartReplaceOption) {
-  // TODO(huangdarwin): add support for smart replace
+  // TODO(https://crbug.com/106449): add support for smart replace, which is
+  // currently under-specified.
   String text = plain_text;
 #if defined(OS_WIN)
   ReplaceNewlinesWithWindowsStyleNewlines(text);
