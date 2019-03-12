@@ -122,6 +122,8 @@ enum FeaturePolicyFeature {
   kSerial = 42,
   // Controls access to WebHID.
   kHid = 43,
+  // Controls access to Idle Detection
+  kIdleDetection = 44,
 
   // Don't change assigned numbers of any item, and don't reuse removed slots.
   // Also, run update_feature_policy_enum.py in

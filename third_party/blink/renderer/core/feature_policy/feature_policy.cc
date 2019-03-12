@@ -359,6 +359,10 @@ const FeatureNameMap& GetDefaultFeatureNameMap() {
     if (RuntimeEnabledFeatures::WebHIDEnabled()) {
       default_feature_name_map.Set("hid", mojom::FeaturePolicyFeature::kHid);
     }
+    if (RuntimeEnabledFeatures::IdleDetectionEnabled()) {
+      default_feature_name_map.Set("idle-detection",
+                                   mojom::FeaturePolicyFeature::kIdleDetection);
+    }
     if (RuntimeEnabledFeatures::PaymentRequestEnabled()) {
       default_feature_name_map.Set("payment",
                                    mojom::FeaturePolicyFeature::kPayment);

@@ -14,6 +14,7 @@ fullscreen
 geolocation
 gyroscope
 hid
+idle-detection
 layout-animations
 lazyload
 legacy-image-formats
