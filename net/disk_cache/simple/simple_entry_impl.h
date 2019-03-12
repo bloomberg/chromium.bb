@@ -226,13 +226,9 @@ class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
   // the last reference.
   void RunNextOperationIfNeeded();
 
-  void OpenEntryInternal(bool have_index,
-                         CompletionOnceCallback callback,
-                         Entry** out_entry);
+  void OpenEntryInternal(CompletionOnceCallback callback, Entry** out_entry);
 
-  void CreateEntryInternal(bool have_index,
-                           CompletionOnceCallback callback,
-                           Entry** out_entry);
+  void CreateEntryInternal(CompletionOnceCallback callback, Entry** out_entry);
 
   void OpenOrCreateEntryInternal(OpenEntryIndexEnum index_state,
                                  CompletionOnceCallback callback,
