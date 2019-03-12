@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/oauth2_token_service_delegate.h"
+#include "components/signin/core/browser/profile_oauth2_token_service_delegate_chromeos.h"
 
 #include <memory>
 #include <set>
@@ -28,12 +28,12 @@
 #include "services/network/test/test_network_connection_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace chromeos {
+namespace signin {
 
 namespace {
 
-using account_manager::AccountType::ACCOUNT_TYPE_GAIA;
-using account_manager::AccountType::ACCOUNT_TYPE_ACTIVE_DIRECTORY;
+using chromeos::account_manager::AccountType::ACCOUNT_TYPE_ACTIVE_DIRECTORY;
+using chromeos::account_manager::AccountType::ACCOUNT_TYPE_GAIA;
 
 constexpr char kGaiaId[] = "gaia-id";
 constexpr char kGaiaToken[] = "gaia-token";
@@ -158,7 +158,7 @@ class CrOSOAuthDelegateTest : public testing::Test {
     gaia_account_key_ = {account_info_.gaia, ACCOUNT_TYPE_GAIA};
     ad_account_key_ = {"object-guid", ACCOUNT_TYPE_ACTIVE_DIRECTORY};
 
-    delegate_ = std::make_unique<ChromeOSOAuth2TokenServiceDelegate>(
+    delegate_ = std::make_unique<ProfileOAuth2TokenServiceDelegateChromeOS>(
         &account_tracker_service_,
         network::TestNetworkConnectionTracker::GetInstance(),
         &account_manager_);
@@ -198,12 +198,12 @@ class CrOSOAuthDelegateTest : public testing::Test {
 
   base::ScopedTempDir tmp_dir_;
   AccountInfo account_info_;
-  AccountManager::AccountKey gaia_account_key_;
-  AccountManager::AccountKey ad_account_key_;
+  chromeos::AccountManager::AccountKey gaia_account_key_;
+  chromeos::AccountManager::AccountKey ad_account_key_;
   AccountTrackerService account_tracker_service_;
-  AccountManager account_manager_;
-  std::unique_ptr<ChromeOSOAuth2TokenServiceDelegate> delegate_;
-  AccountManager::DelayNetworkCallRunner immediate_callback_runner_ =
+  chromeos::AccountManager account_manager_;
+  std::unique_ptr<ProfileOAuth2TokenServiceDelegateChromeOS> delegate_;
+  chromeos::AccountManager::DelayNetworkCallRunner immediate_callback_runner_ =
       base::BindRepeating(
           [](base::OnceClosure closure) -> void { std::move(closure).Run(); });
   sync_preferences::TestingPrefServiceSyncable pref_service_;
@@ -241,7 +241,7 @@ TEST_F(CrOSOAuthDelegateTest,
       base::ContainsValue(delegate_->GetAccounts(), account_info_.account_id));
 
   account_manager_.UpsertAccount(gaia_account_key_, kUserEmail,
-                                 AccountManager::kInvalidToken);
+                                 chromeos::AccountManager::kInvalidToken);
 
   EXPECT_TRUE(delegate_->RefreshTokenIsAvailable(account_info_.account_id));
   EXPECT_TRUE(
@@ -285,7 +285,7 @@ TEST_F(CrOSOAuthDelegateTest,
 TEST_F(CrOSOAuthDelegateTest, DummyTokensArePreEmptivelyRejected) {
   TokenServiceObserver observer(delegate_.get());
   delegate_->UpdateCredentials(account_info_.account_id,
-                               AccountManager::kInvalidToken);
+                               chromeos::AccountManager::kInvalidToken);
 
   const GoogleServiceAuthError error =
       delegate_->GetAuthError(account_info_.account_id);
@@ -334,8 +334,8 @@ TEST_F(CrOSOAuthDelegateTest,
 }
 
 // If observers register themselves with |OAuth2TokenServiceDelegate| before
-// |AccountManager| has been initialized, they should receive all the accounts
-// stored in |AccountManager| in a single batch.
+// |chromeos::AccountManager| has been initialized, they should receive all the
+// accounts stored in |chromeos::AccountManager| in a single batch.
 TEST_F(CrOSOAuthDelegateTest, BatchChangeObserversAreNotifiedOncePerBatch) {
   // Setup
   AccountInfo account1 = CreateAccountInfoTestFixture(
@@ -346,37 +346,38 @@ TEST_F(CrOSOAuthDelegateTest, BatchChangeObserversAreNotifiedOncePerBatch) {
   account_tracker_service_.SeedAccountInfo(account1);
   account_tracker_service_.SeedAccountInfo(account2);
   account_manager_.UpsertAccount(
-      AccountManager::AccountKey{account1.gaia, ACCOUNT_TYPE_GAIA},
+      chromeos::AccountManager::AccountKey{account1.gaia, ACCOUNT_TYPE_GAIA},
       "user1@example.com", "token1");
   account_manager_.UpsertAccount(
-      AccountManager::AccountKey{account2.gaia, ACCOUNT_TYPE_GAIA},
+      chromeos::AccountManager::AccountKey{account2.gaia, ACCOUNT_TYPE_GAIA},
       "user2@example.com", "token2");
   task_environment_.RunUntilIdle();
 
-  AccountManager account_manager;
-  // AccountManager will not be fully initialized until
+  chromeos::AccountManager account_manager;
+  // chromeos::AccountManager will not be fully initialized until
   // |task_environment_.RunUntilIdle()| is called.
   account_manager.Initialize(tmp_dir_.GetPath(), client_->GetURLLoaderFactory(),
                              immediate_callback_runner_);
 
-  // Register callbacks before AccountManager has been fully initialized.
-  auto delegate = std::make_unique<ChromeOSOAuth2TokenServiceDelegate>(
+  // Register callbacks before chromeos::AccountManager has been fully
+  // initialized.
+  auto delegate = std::make_unique<ProfileOAuth2TokenServiceDelegateChromeOS>(
       &account_tracker_service_,
       network::TestNetworkConnectionTracker::GetInstance(), &account_manager);
   delegate->LoadCredentials(account1.account_id /* primary_account_id */);
   TokenServiceObserver observer(delegate.get());
-  // Wait until AccountManager is fully initialized.
+  // Wait until chromeos::AccountManager is fully initialized.
   task_environment_.RunUntilIdle();
 
   // Tests
 
   // The observer should receive 3 batch change callbacks:
-  // First - A batch of all accounts stored in AccountManager: because of the
-  // delegate's invocation of |AccountManager::GetAccounts| in its constructor.
-  // Followed by 2 updates for the individual accounts (|account1| and
-  // |account2|): because of the delegate's registration as an
-  // |AccountManager::Observer| before |AccountManager| has been fully
-  // initialized.
+  // First - A batch of all accounts stored in chromeos::AccountManager: because
+  // of the delegate's invocation of |chromeos::AccountManager::GetAccounts| in
+  // its constructor. Followed by 2 updates for the individual accounts
+  // (|account1| and |account2|): because of the delegate's registration as an
+  // |chromeos::AccountManager::Observer| before |chromeos::AccountManager| has
+  // been fully initialized.
   EXPECT_EQ(3UL, observer.batch_change_records_.size());
 
   const std::vector<std::string>& first_batch =
@@ -389,9 +390,10 @@ TEST_F(CrOSOAuthDelegateTest, BatchChangeObserversAreNotifiedOncePerBatch) {
 TEST_F(CrOSOAuthDelegateTest, GetAccountsShouldNotReturnAdAccounts) {
   EXPECT_TRUE(delegate_->GetAccounts().empty());
 
-  // Insert an Active Directory account into AccountManager.
-  account_manager_.UpsertAccount(ad_account_key_, kUserEmail,
-                                 AccountManager::kActiveDirectoryDummyToken);
+  // Insert an Active Directory account into chromeos::AccountManager.
+  account_manager_.UpsertAccount(
+      ad_account_key_, kUserEmail,
+      chromeos::AccountManager::kActiveDirectoryDummyToken);
 
   // OAuth delegate should not return Active Directory accounts.
   EXPECT_TRUE(delegate_->GetAccounts().empty());
@@ -413,7 +415,7 @@ TEST_F(CrOSOAuthDelegateTest, GetAccountsReturnsGaiaAccountsWithInvalidTokens) {
   EXPECT_TRUE(delegate_->GetAccounts().empty());
 
   account_manager_.UpsertAccount(gaia_account_key_, kUserEmail,
-                                 AccountManager::kInvalidToken);
+                                 chromeos::AccountManager::kInvalidToken);
 
   std::vector<std::string> accounts = delegate_->GetAccounts();
   EXPECT_EQ(1UL, accounts.size());
@@ -433,15 +435,16 @@ TEST_F(CrOSOAuthDelegateTest,
   // accounts, 1 has a valid refresh token and 1 has a dummy token.
   account_manager_.UpsertAccount(gaia_account_key_, kUserEmail, kGaiaToken);
 
-  AccountManager::AccountKey gaia_account_key2{"random-gaia-id",
-                                               ACCOUNT_TYPE_GAIA};
+  chromeos::AccountManager::AccountKey gaia_account_key2{"random-gaia-id",
+                                                         ACCOUNT_TYPE_GAIA};
   account_tracker_service_.SeedAccountInfo(
       CreateAccountInfoTestFixture(gaia_account_key2.id, kUserEmail2));
   account_manager_.UpsertAccount(gaia_account_key2, kUserEmail2,
-                                 AccountManager::kInvalidToken);
+                                 chromeos::AccountManager::kInvalidToken);
 
-  account_manager_.UpsertAccount(ad_account_key_, kUserEmail3,
-                                 AccountManager::kActiveDirectoryDummyToken);
+  account_manager_.UpsertAccount(
+      ad_account_key_, kUserEmail3,
+      chromeos::AccountManager::kActiveDirectoryDummyToken);
 
   // Verify.
   const std::vector<std::string> accounts = delegate_->GetAccounts();
@@ -572,4 +575,4 @@ TEST_F(CrOSOAuthDelegateTest, BackOffIsResetOnNetworkChange) {
   EXPECT_EQ(1, access_token_consumer.num_access_token_fetch_failure_);
 }
 
-}  // namespace chromeos
+}  // namespace signin

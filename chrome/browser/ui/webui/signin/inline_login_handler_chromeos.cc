@@ -56,10 +56,11 @@ class SigninHelper : public GaiaAuthConsumer {
   void OnClientOAuthSuccess(const ClientOAuthResult& result) override {
     // Flow of control after this call:
     // |AccountManager::UpsertAccount| updates / inserts the account and calls
-    // its |Observer|s, one of which is |ChromeOSOAuth2TokenServiceDelegate|.
-    // |ChromeOSOAuth2TokenServiceDelegate::OnTokenUpserted| seeds the Gaia id
-    // and email id for this account in |AccountTrackerService| and invokes
-    // |FireRefreshTokenAvailable|. This causes the account to propagate
+    // its |Observer|s, one of which is
+    // |ProfileOAuth2TokenServiceDelegateChromeOS|.
+    // |ProfileOAuth2TokenServiceDelegateChromeOS::OnTokenUpserted| seeds the
+    // Gaia id and email id for this account in |AccountTrackerService| and
+    // invokes |FireRefreshTokenAvailable|. This causes the account to propagate
     // throughout the Identity Service chain, including in
     // |AccountFetcherService|. |AccountFetcherService::OnRefreshTokenAvailable|
     // invokes |AccountTrackerService::StartTrackingAccount|, triggers a fetch

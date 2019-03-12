@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_OAUTH2_TOKEN_SERVICE_DELEGATE_H_
-#define CHROME_BROWSER_CHROMEOS_OAUTH2_TOKEN_SERVICE_DELEGATE_H_
+#ifndef COMPONENTS_SIGNIN_CORE_BROWSER_PROFILE_OAUTH2_TOKEN_SERVICE_DELEGATE_CHROMEOS_H_
+#define COMPONENTS_SIGNIN_CORE_BROWSER_PROFILE_OAUTH2_TOKEN_SERVICE_DELEGATE_CHROMEOS_H_
 
 #include <map>
 #include <memory>
@@ -20,21 +20,21 @@
 
 class AccountTrackerService;
 
-namespace chromeos {
+namespace signin {
 
-class ChromeOSOAuth2TokenServiceDelegate
+class ProfileOAuth2TokenServiceDelegateChromeOS
     : public OAuth2TokenServiceDelegate,
-      public AccountManager::Observer,
+      public chromeos::AccountManager::Observer,
       public network::NetworkConnectionTracker::NetworkConnectionObserver {
  public:
   // Accepts non-owning pointers to |AccountTrackerService|,
-  // |NetworkConnectorTracker|, and |AccountManager|. These objects must all
-  // outlive |this| delegate.
-  ChromeOSOAuth2TokenServiceDelegate(
+  // |NetworkConnectorTracker|, and |chromeos::AccountManager|. These objects
+  // must all outlive |this| delegate.
+  ProfileOAuth2TokenServiceDelegateChromeOS(
       AccountTrackerService* account_tracker_service,
       network::NetworkConnectionTracker* network_connection_tracker,
-      AccountManager* account_manager);
-  ~ChromeOSOAuth2TokenServiceDelegate() override;
+      chromeos::AccountManager* account_manager);
+  ~ProfileOAuth2TokenServiceDelegateChromeOS() override;
 
   // OAuth2TokenServiceDelegate overrides.
   OAuth2AccessTokenFetcher* CreateAccessTokenFetcher(
@@ -56,9 +56,11 @@ class ChromeOSOAuth2TokenServiceDelegate
   void RevokeAllCredentials() override;
   const net::BackoffEntry* BackoffEntry() const override;
 
-  // |AccountManager::Observer| overrides.
-  void OnTokenUpserted(const AccountManager::Account& account) override;
-  void OnAccountRemoved(const AccountManager::Account& account) override;
+  // |chromeos::AccountManager::Observer| overrides.
+  void OnTokenUpserted(
+      const chromeos::AccountManager::Account& account) override;
+  void OnAccountRemoved(
+      const chromeos::AccountManager::Account& account) override;
 
   // |NetworkConnectionTracker::NetworkConnectionObserver| overrides.
   void OnConnectionChanged(network::mojom::ConnectionType type) override;
@@ -75,8 +77,9 @@ class ChromeOSOAuth2TokenServiceDelegate
     GoogleServiceAuthError last_auth_error;
   };
 
-  // Callback handler for |AccountManager::GetAccounts|.
-  void OnGetAccounts(const std::vector<AccountManager::Account>& accounts);
+  // Callback handler for |chromeos::AccountManager::GetAccounts|.
+  void OnGetAccounts(
+      const std::vector<chromeos::AccountManager::Account>& accounts);
 
   // A non-owning pointer.
   AccountTrackerService* const account_tracker_service_;
@@ -84,12 +87,12 @@ class ChromeOSOAuth2TokenServiceDelegate
   // A non-owning pointer.
   network::NetworkConnectionTracker* const network_connection_tracker_;
 
-  // A non-owning pointer. |AccountManager| is available
+  // A non-owning pointer. |chromeos::AccountManager| is available
   // throughout the lifetime of a user session.
-  AccountManager* const account_manager_;
+  chromeos::AccountManager* const account_manager_;
 
   // A cache of AccountKeys.
-  std::set<AccountManager::AccountKey> account_keys_;
+  std::set<chromeos::AccountManager::AccountKey> account_keys_;
 
   // A map from account id to the last seen error for that account.
   std::map<std::string, AccountErrorStatus> errors_;
@@ -99,11 +102,11 @@ class ChromeOSOAuth2TokenServiceDelegate
   GoogleServiceAuthError backoff_error_;
 
   SEQUENCE_CHECKER(sequence_checker_);
-  base::WeakPtrFactory<ChromeOSOAuth2TokenServiceDelegate> weak_factory_;
+  base::WeakPtrFactory<ProfileOAuth2TokenServiceDelegateChromeOS> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(ChromeOSOAuth2TokenServiceDelegate);
+  DISALLOW_COPY_AND_ASSIGN(ProfileOAuth2TokenServiceDelegateChromeOS);
 };
 
-}  // namespace chromeos
+}  // namespace signin
 
-#endif  // CHROME_BROWSER_CHROMEOS_OAUTH2_TOKEN_SERVICE_DELEGATE_H_
+#endif  // COMPONENTS_SIGNIN_CORE_BROWSER_PROFILE_OAUTH2_TOKEN_SERVICE_DELEGATE_CHROMEOS_H_
