@@ -644,7 +644,7 @@ void InsertListCommand::ListifyParagraph(const VisiblePosition& original_start,
     insertion_pos =
         Position::InParentBeforeNode(*insertion_pos.ComputeContainerNode());
   }
-  while (IsInline(insertion_pos.AnchorNode()) && !insertion_pos.AnchorNode()->HasTagName(brTag)) {
+  while (IsInline(insertion_pos.AnchorNode()) && !insertion_pos.AnchorNode()->HasTagName(kBrTag)) {
     insertion_pos = PositionTemplate<EditingStrategy>::InParentBeforeNode(*insertion_pos.AnchorNode());
   }
 
