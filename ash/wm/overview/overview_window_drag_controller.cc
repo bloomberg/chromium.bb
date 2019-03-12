@@ -112,12 +112,6 @@ void OverviewWindowDragController::Drag(const gfx::PointF& location_in_screen) {
     UpdateDragIndicatorsAndOverviewGrid(location_in_screen);
   }
 
-  // Update the split view divider bar status if necessary. If splitview is
-  // active when dragging the overview window, the split divider bar should be
-  // placed below the dragged window during dragging.
-  if (ShouldAllowSplitView())
-    split_view_controller_->OnWindowDragStarted(item_->GetWindow());
-
   // Update the dragged |item_|'s bounds accordingly. The distance from the new
   // location to the new centerpoint should be the same it was initially. Do not
   // update x bounds if dragging to close.
@@ -195,6 +189,12 @@ void OverviewWindowDragController::StartSplitViewDragMode(
       CanSnapInSplitview(item_->GetWindow()) ? IndicatorState::kDragArea
                                              : IndicatorState::kCannotSnap,
       gfx::ToRoundedPoint(location_in_screen));
+
+  // Update the split view divider bar status if necessary. If splitview is
+  // active when dragging the overview window, the split divider bar should be
+  // placed below the dragged window during dragging.
+  if (ShouldAllowSplitView())
+    split_view_controller_->OnWindowDragStarted(item_->GetWindow());
 }
 
 void OverviewWindowDragController::Fling(const gfx::PointF& location_in_screen,
