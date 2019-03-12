@@ -16,7 +16,6 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/values.h"
 #include "components/sync/base/cancelation_signal.h"
-#include "components/sync/base/experiments.h"
 #include "components/sync/base/invalidation_interface.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/nigori.h"
@@ -962,27 +961,6 @@ SyncManagerImpl::GetModelTypeConnectorProxy() {
 const std::string SyncManagerImpl::cache_guid() {
   DCHECK(initialized_);
   return directory()->cache_guid();
-}
-
-bool SyncManagerImpl::ReceivedExperiment(Experiments* experiments) {
-  ReadTransaction trans(FROM_HERE, GetUserShare());
-  ReadNode nigori_node(&trans);
-  if (nigori_node.InitTypeRoot(NIGORI) != BaseNode::INIT_OK) {
-    DVLOG(1) << "Couldn't find Nigori node.";
-    return false;
-  }
-
-  ReadNode favicon_sync_node(&trans);
-  if (favicon_sync_node.InitByClientTagLookup(EXPERIMENTS, kFaviconSyncTag) ==
-      BaseNode::INIT_OK) {
-    experiments->favicon_sync_limit =
-        favicon_sync_node.GetExperimentsSpecifics()
-            .favicon_sync()
-            .favicon_sync_limit();
-    return true;
-  }
-
-  return false;
 }
 
 bool SyncManagerImpl::HasUnsyncedItemsForTest() {

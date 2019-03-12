@@ -16,7 +16,6 @@
 #include "components/invalidation/impl/invalidation_switches.h"
 #include "components/invalidation/public/invalidation_service.h"
 #include "components/invalidation/public/object_id_invalidation_map.h"
-#include "components/sync/base/experiments.h"
 #include "components/sync/base/invalidation_helper.h"
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync/driver/glue/sync_backend_host_core.h"
@@ -303,13 +302,6 @@ void SyncEngineImpl::FinishConfigureDataTypesOnFrontendLoop(
     ready_task.Run(succeeded_configuration_types, failed_configuration_types);
 }
 
-void SyncEngineImpl::AddExperimentalTypes() {
-  DCHECK(initialized());
-  Experiments experiments;
-  if (core_->sync_manager()->ReceivedExperiment(&experiments))
-    host_->OnExperimentsChanged(experiments);
-}
-
 void SyncEngineImpl::HandleInitializationSuccessOnFrontendLoop(
     ModelTypeSet initial_types,
     const WeakHandle<JsBackend> js_backend,
@@ -334,10 +326,6 @@ void SyncEngineImpl::HandleInitializationSuccessOnFrontendLoop(
     OnInvalidatorStateChange(invalidator_->GetInvalidatorState());
   }
 
-  // Now that we've downloaded the control types, we can see if there are any
-  // experimental types to enable. This should be done before we inform
-  // the host to ensure they're visible in the customize screen.
-  AddExperimentalTypes();
   host_->OnEngineInitialized(initial_types, js_backend, debug_info_listener,
                              cache_guid, session_name, birthday, bag_of_chips,
                              /*success=*/true);
@@ -359,7 +347,6 @@ void SyncEngineImpl::HandleSyncCycleCompletedOnFrontendLoop(
   // Process any changes to the datatypes we're syncing.
   // TODO(sync): add support for removing types.
   if (initialized()) {
-    AddExperimentalTypes();
     host_->OnSyncCycleCompleted(snapshot);
   }
 }

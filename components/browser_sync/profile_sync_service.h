@@ -21,7 +21,6 @@
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "components/invalidation/public/identity_provider.h"
-#include "components/sync/base/experiments.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync/base/unrecoverable_error_handler.h"
@@ -254,7 +253,6 @@ class ProfileSyncService : public syncer::SyncService,
       const syncer::StatusCounters& counters) override;
   void OnConnectionStatusChange(syncer::ConnectionStatus status) override;
   void OnMigrationNeededForTypes(syncer::ModelTypeSet types) override;
-  void OnExperimentsChanged(const syncer::Experiments& experiments) override;
   void OnActionableError(const syncer::SyncProtocolError& error) override;
 
   // DataTypeManagerObserver implementation.
@@ -568,9 +566,6 @@ class ProfileSyncService : public syncer::SyncService,
   // Tracks the set of failed data types (those that encounter an error
   // or must delay loading for some reason).
   syncer::DataTypeStatusTable::TypeErrorMap data_type_error_map_;
-
-  // The set of currently enabled sync experiments.
-  syncer::Experiments current_experiments_;
 
   // This providers tells the invalidations code which identity to register for.
   // The account that it registers for should be the same as the currently
