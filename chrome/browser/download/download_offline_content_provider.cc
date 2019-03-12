@@ -262,8 +262,9 @@ void DownloadOfflineContentProvider::AddCompletedDownloadDone(
 DownloadItem* DownloadOfflineContentProvider::GetDownload(
     const std::string& download_guid) {
 #if defined(OS_ANDROID)
-  bool incognito =
-      manager_ ? manager_->GetBrowserContext()->IsOffTheRecord() : false;
+  bool incognito = manager_ && manager_->GetBrowserContext()
+                       ? manager_->GetBrowserContext()->IsOffTheRecord()
+                       : false;
   return DownloadManagerService::GetInstance()->GetDownload(download_guid,
                                                             incognito);
 #else
@@ -274,8 +275,9 @@ DownloadItem* DownloadOfflineContentProvider::GetDownload(
 void DownloadOfflineContentProvider::GetAllDownloads(
     DownloadManager::DownloadVector* all_items) {
 #if defined(OS_ANDROID)
-  bool incognito =
-      manager_ ? manager_->GetBrowserContext()->IsOffTheRecord() : false;
+  bool incognito = manager_ && manager_->GetBrowserContext()
+                       ? manager_->GetBrowserContext()->IsOffTheRecord()
+                       : false;
   DownloadManagerService::GetInstance()->GetAllDownloads(all_items, incognito);
 #else
   manager_->GetAllDownloads(all_items);
