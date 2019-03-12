@@ -31,30 +31,11 @@ class BaseScreen {
   explicit BaseScreen(OobeScreen screen_id);
   virtual ~BaseScreen();
 
-  // ---- Old implementation ----
-
   // Makes wizard screen visible.
   virtual void Show() = 0;
 
   // Makes wizard screen invisible.
   virtual void Hide() = 0;
-
-  // ---- New Implementation ----
-
-  // Called when screen appears.
-  virtual void OnShow();
-  // Called when screen disappears, either because it finished it's work, or
-  // because some other screen pops up.
-  virtual void OnHide();
-
-  // Called when we navigate from screen so that we will never return to it.
-  // This is a last chance to call JS counterpart, this object will be deleted
-  // soon.
-  virtual void OnClose();
-
-  // Indicates whether status area should be displayed while this screen is
-  // displayed.
-  virtual bool IsStatusAreaDisplayed();
 
   // Returns the identifier of the screen.
   OobeScreen screen_id() const { return screen_id_; }
@@ -131,7 +112,6 @@ class BaseScreen {
   friend class BaseWebUIHandler;
   friend class EnrollmentScreenTest;
   friend class NetworkScreenTest;
-  friend class ScreenEditor;
   friend class ScreenManager;
   friend class UpdateScreenTest;
 
