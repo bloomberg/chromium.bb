@@ -52,10 +52,12 @@ public class GCMMessageTest {
             assertArrayEquals(new String[] {}, message.getDataKeysAndValuesArray());
         }
 
-        // Add the optional fields: collapse key, raw binary data and a custom property.
+        // Add the optional fields: collapse key, raw binary data, a custom property and an original
+        // priority.
         extras.putString("collapse_key", "MyCollapseKey");
         extras.putByteArray("rawData", new byte[] {0x00, 0x15, 0x30, 0x45});
         extras.putString("property", "value");
+        extras.putString("google.original_priority", "normal");
 
         {
             GCMMessage message = new GCMMessage("MySenderId", extras);
@@ -65,6 +67,7 @@ public class GCMMessageTest {
             assertEquals("MyCollapseKey", message.getCollapseKey());
             assertArrayEquals(
                     new String[] {"property", "value"}, message.getDataKeysAndValuesArray());
+            assertEquals(GCMMessage.Priority.NORMAL, message.getOriginalPriority());
         }
     }
 
@@ -122,6 +125,7 @@ public class GCMMessageTest {
         // Add the optional fields: collapse key, raw binary data and a custom property.
         extras.putString("collapse_key", "MyCollapseKey");
         extras.putString("property", "value");
+        extras.putString("google.original_priority", "normal");
 
         {
             GCMMessage message = new GCMMessage("MySenderId", extras);
@@ -199,6 +203,7 @@ public class GCMMessageTest {
         // Add the optional fields: collapse key, raw binary data and a custom property.
         extras.putString("collapse_key", "MyCollapseKey");
         extras.putString("property", "value");
+        extras.putString("google.original_priority", "normal");
 
         {
             GCMMessage message = new GCMMessage("MySenderId", extras);

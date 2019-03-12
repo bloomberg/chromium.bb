@@ -7,6 +7,7 @@ package org.chromium.components.gcm_driver;
 import android.annotation.TargetApi;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 
 import org.json.JSONArray;
@@ -16,6 +17,8 @@ import org.json.JSONObject;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,6 +41,7 @@ public class GCMMessage {
     private static final String KEY_DATA = "data";
     private static final String KEY_RAW_DATA = "rawData";
     private static final String KEY_SENDER_ID = "senderId";
+    private static final String KEY_ORIGINAL_PRIORITY = "originalPriority";
 
     private final String mSenderId;
     private final String mAppId;
@@ -46,6 +50,24 @@ public class GCMMessage {
     private final String mCollapseKey;
     @Nullable
     private final byte[] mRawData;
+
+    /**
+     * A list of possible priority values the GCMMessage can have.
+     */
+    @IntDef({Priority.NONE, Priority.NORMAL, Priority.HIGH})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface Priority {
+        int NONE = 0;
+        int NORMAL = 1;
+        int HIGH = 2;
+        int NUM_ENTRIES = 3;
+    }
+
+    /**
+     * The priority at which this GCMMessage was originally sent.
+     */
+    @Nullable
+    private final String mOriginalPriority;
 
     /**
      * Array that contains pairs of entries in the format of {key, value}.
@@ -61,6 +83,7 @@ public class GCMMessage {
         String bundleRawData = "rawData";
         String bundleSenderId = "from";
         String bundleSubtype = "subtype";
+        String bundleOriginalPriority = "google.original_priority";
 
         if (!extras.containsKey(bundleSubtype)) {
             throw new IllegalArgumentException("Received push message with no subtype");
@@ -71,12 +94,13 @@ public class GCMMessage {
 
         mCollapseKey = extras.getString(bundleCollapseKey); // May be null.
         mRawData = extras.getByteArray(bundleRawData); // May be null.
+        mOriginalPriority = extras.getString(bundleOriginalPriority); // May be null.
 
         List<String> dataKeysAndValues = new ArrayList<String>();
         for (String key : extras.keySet()) {
             if (key.equals(bundleSubtype) || key.equals(bundleSenderId)
                     || key.equals(bundleCollapseKey) || key.equals(bundleRawData)
-                    || key.startsWith(bundleGcmplex)) {
+                    || key.equals(bundleOriginalPriority) || key.startsWith(bundleGcmplex)) {
                 continue;
             }
 
@@ -131,13 +155,14 @@ public class GCMMessage {
     private static <T> boolean validate(T in, Reader<T> reader) {
         return reader.hasKey(in, KEY_APP_ID) && reader.hasKey(in, KEY_COLLAPSE_KEY)
                 && reader.hasKey(in, KEY_DATA) && reader.hasKey(in, KEY_RAW_DATA)
-                && reader.hasKey(in, KEY_SENDER_ID);
+                && reader.hasKey(in, KEY_SENDER_ID) && reader.hasKey(in, KEY_ORIGINAL_PRIORITY);
     }
 
     private <T> GCMMessage(T source, Reader<T> reader) {
         mSenderId = reader.readString(source, KEY_SENDER_ID);
         mAppId = reader.readString(source, KEY_APP_ID);
         mCollapseKey = reader.readString(source, KEY_COLLAPSE_KEY);
+        mOriginalPriority = reader.readString(source, KEY_ORIGINAL_PRIORITY);
         // The rawData field needs to distinguish between {not set, set but empty, set with data}.
         String rawDataString = reader.readString(source, KEY_RAW_DATA);
         if (rawDataString != null) {
@@ -172,6 +197,17 @@ public class GCMMessage {
     @Nullable
     public byte[] getRawData() {
         return mRawData;
+    }
+
+    public @Priority int getOriginalPriority() {
+        switch (mOriginalPriority) {
+            case "normal":
+                return Priority.NORMAL;
+            case "high":
+                return Priority.HIGH;
+            default:
+                return Priority.NONE;
+        }
     }
 
     /**
@@ -227,6 +263,7 @@ public class GCMMessage {
         writer.writeString(out, KEY_SENDER_ID, mSenderId);
         writer.writeString(out, KEY_APP_ID, mAppId);
         writer.writeString(out, KEY_COLLAPSE_KEY, mCollapseKey);
+        writer.writeString(out, KEY_ORIGINAL_PRIORITY, mOriginalPriority);
 
         // The rawData field needs to distinguish between {not set, set but empty, set with data}.
         if (mRawData != null) {
