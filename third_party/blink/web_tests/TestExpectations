@@ -161,10 +161,6 @@ crbug.com/771003 virtual/feature-policy-for-sandbox/http/tests/security/mixedCon
 # Text auto-sizing:
 crbug.com/393285 http/tests/text-autosizing/narrow-iframe.html [ Failure Crash ]
 crbug.com/393285 http/tests/text-autosizing/wide-iframe.html [ Failure Crash ]
-# Console message differences (e.g. full URI vs origin-only):
-crbug.com/669083 http/tests/security/frameNavigation/xss-DENIED-top-navigation-without-user-gesture.html [ Failure ]
-crbug.com/669083 virtual/outofblink-cors/http/tests/security/frameNavigation/xss-DENIED-top-navigation-without-user-gesture.html [ Failure ]
-crbug.com/669083 virtual/feature-policy-for-sandbox/http/tests/security/frameNavigation/xss-DENIED-top-navigation-without-user-gesture.html [ Failure ]
 crbug.com/886588 external/wpt/dom/events/EventListener-addEventListener.sub.window.html [ Failure ]
 
 # Tests temporarily disabled with Site Isolation - uninvestigated bugs:
