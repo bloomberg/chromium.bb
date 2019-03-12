@@ -133,7 +133,13 @@ TEST_F(BrowsingDataRemoverTest, MAYBE_RemoveCookie) {
 }
 
 // Tests that removing the anything but cookies leave the cookies in the store.
-TEST_F(BrowsingDataRemoverTest, RemoveNothing) {
+// TODO(crbug.com/940880):Fix this test on iOS 11 device.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_RemoveNothing RemoveNothing
+#else
+#define MAYBE_RemoveNothing DISABLED_RemoveNothing
+#endif
+TEST_F(BrowsingDataRemoverTest, MAYBE_RemoveNothing) {
   ASSERT_TRUE(AddCookie());
   ASSERT_TRUE(HasCookies(true));
 
@@ -146,7 +152,13 @@ TEST_F(BrowsingDataRemoverTest, RemoveNothing) {
 }
 
 // Tests that removing nothing still call the closure.
-TEST_F(BrowsingDataRemoverTest, KeepCookie) {
+// TODO(crbug.com/940880):Fix this test on iOS 11 device.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_KeepCookie KeepCookie
+#else
+#define MAYBE_KeepCookie DISABLED_KeepCookie
+#endif
+TEST_F(BrowsingDataRemoverTest, MAYBE_KeepCookie) {
   ASSERT_TRUE(AddCookie());
 
   // Don't remove anything but check that the closure is still called.
