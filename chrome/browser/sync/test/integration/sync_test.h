@@ -80,9 +80,8 @@ class SyncTest : public InProcessBrowserTest {
 
     // Tests that use one client profile and are not compatible with
     // FakeServer.
-    // TODO(pvalenzuela): Delete this value when all SINGLE_CLIENT_LEGACY tests
-    // are compatible with FakeServer and switched to SINGLE_CLIENT. See
-    // crbug.com/323265.
+    // TODO(crbug.com/406545): Delete this value when all SINGLE_CLIENT_LEGACY
+    // tests are compatible with FakeServer and switched to SINGLE_CLIENT.
     SINGLE_CLIENT_LEGACY,
 
     // Tests where two client profiles are synced with the server. Typically
@@ -91,9 +90,8 @@ class SyncTest : public InProcessBrowserTest {
 
     // Tests that use two client profiles and are not compatible with
     // FakeServer.
-    // TODO(pvalenzuela): Delete this value when all TWO_CLIENT_LEGACY tests are
-    // compatible with FakeServer and switched to TWO_CLIENT. See
-    // crbug.com/323265.
+    // TODO(crbug.com/406545): Delete this value when all TWO_CLIENT_LEGACY
+    // tests are compatible with FakeServer and switched to TWO_CLIENT.
     TWO_CLIENT_LEGACY
   };
 
@@ -207,31 +205,11 @@ class SyncTest : public InProcessBrowserTest {
   // Returns true if we are running tests against external servers.
   bool UsingExternalServers();
 
-  // Returns true if the server being used supports controlling
-  // notifications.
-  bool ServerSupportsNotificationControl() const;
-
-  // Disable notifications on the server.  This operation is available
-  // only if ServerSupportsNotificationControl() returned true.
-  void DisableNotifications();
-
-  // Enable notifications on the server.  This operation is available
-  // only if ServerSupportsNotificationControl() returned true.
-  void EnableNotifications();
-
   // Sets the mock gaia response for when an OAuth2 token is requested.
   // Each call to this method will overwrite responses that were previously set.
   void SetOAuth2TokenResponse(const std::string& response_data,
                               net::HttpStatusCode response_code,
                               net::URLRequestStatus::Status status);
-
-  // Trigger a notification to be sent to all clients.  This operation
-  // is available only if ServerSupportsNotificationControl() returned
-  // true.
-  void TriggerNotification(syncer::ModelTypeSet changed_types);
-
-  // Returns true if the server being used supports injecting errors.
-  bool ServerSupportsErrorTriggering() const;
 
   // Triggers a migration for one or more datatypes, and waits
   // for the server to complete it.  This operation is available

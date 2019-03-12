@@ -1148,68 +1148,15 @@ bool SyncTest::UsingExternalServers() {
   return server_type_ == EXTERNAL_LIVE_SERVER;
 }
 
-bool SyncTest::ServerSupportsNotificationControl() const {
-  EXPECT_NE(SERVER_TYPE_UNDECIDED, server_type_);
-
-  // Supported only if we're using the python testserver.
-  return server_type_ == LOCAL_PYTHON_SERVER;
-}
-
-void SyncTest::DisableNotificationsImpl() {
-  ASSERT_TRUE(ServerSupportsNotificationControl());
-  std::string path = "chromiumsync/disablenotifications";
-  ui_test_utils::NavigateToURL(browser(), sync_server_.GetURL(path));
-  ASSERT_EQ(
-      "Notifications disabled",
-      base::UTF16ToASCII(
-          browser()->tab_strip_model()->GetActiveWebContents()->GetTitle()));
-}
-
-void SyncTest::DisableNotifications() {
-  DisableNotificationsImpl();
-}
-
-void SyncTest::EnableNotificationsImpl() {
-  ASSERT_TRUE(ServerSupportsNotificationControl());
-  std::string path = "chromiumsync/enablenotifications";
-  ui_test_utils::NavigateToURL(browser(), sync_server_.GetURL(path));
-  ASSERT_EQ(
-      "Notifications enabled",
-      base::UTF16ToASCII(
-          browser()->tab_strip_model()->GetActiveWebContents()->GetTitle()));
-}
-
-void SyncTest::EnableNotifications() {
-  EnableNotificationsImpl();
-}
-
-void SyncTest::TriggerNotification(syncer::ModelTypeSet changed_types) {
-  ASSERT_TRUE(ServerSupportsNotificationControl());
-  const std::string& data =
-      syncer::P2PNotificationData(
-          "from_server", syncer::NOTIFY_ALL,
-          syncer::ObjectIdInvalidationMap::InvalidateAll(
-              syncer::ModelTypeSetToObjectIdSet(changed_types)))
-          .ToString();
-  const std::string& path =
-      std::string("chromiumsync/sendnotification?channel=") +
-      syncer::kSyncP2PNotificationChannel + "&data=" + data;
-  ui_test_utils::NavigateToURL(browser(), sync_server_.GetURL(path));
-  ASSERT_EQ(
-      "Notification sent",
-      base::UTF16ToASCII(
-          browser()->tab_strip_model()->GetActiveWebContents()->GetTitle()));
-}
-
-bool SyncTest::ServerSupportsErrorTriggering() const {
-  EXPECT_NE(SERVER_TYPE_UNDECIDED, server_type_);
-
-  // Supported only if we're using the python testserver.
-  return server_type_ == LOCAL_PYTHON_SERVER;
-}
-
 void SyncTest::TriggerMigrationDoneError(syncer::ModelTypeSet model_types) {
-  ASSERT_TRUE(ServerSupportsErrorTriggering());
+  ASSERT_TRUE(server_type_ == LOCAL_PYTHON_SERVER ||
+              server_type_ == IN_PROCESS_FAKE_SERVER);
+
+  if (server_type_ == IN_PROCESS_FAKE_SERVER) {
+    fake_server_->TriggerMigrationDoneError(model_types);
+    return;
+  }
+
   std::string path = "chromiumsync/migrate";
   char joiner = '?';
   for (syncer::ModelType type : model_types) {

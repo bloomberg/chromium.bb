@@ -458,6 +458,11 @@ void FakeServer::SetBagOfChips(const sync_pb::ChipBag& bag_of_chips) {
   loopback_server_->SetBagOfChipsForTesting(bag_of_chips);
 }
 
+void FakeServer::TriggerMigrationDoneError(syncer::ModelTypeSet types) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  loopback_server_->TriggerMigrationForTesting(types);
+}
+
 const std::set<std::string>& FakeServer::GetCommittedHistoryURLs() const {
   return committed_history_urls_;
 }

@@ -176,6 +176,8 @@ class FakeServer : public syncer::LoopbackServer::ObserverForTests {
   // Sets the bag of chips returned by the server.
   void SetBagOfChips(const sync_pb::ChipBag& bag_of_chips);
 
+  void TriggerMigrationDoneError(syncer::ModelTypeSet types);
+
   // Implement LoopbackServer::ObserverForTests:
   void OnCommit(const std::string& committer_id,
                 syncer::ModelTypeSet committed_model_types) override;
