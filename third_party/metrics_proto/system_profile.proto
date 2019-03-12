@@ -15,7 +15,7 @@ import "extension_install.proto";
 
 // Stores information about the user's brower and system configuration.
 // The system configuration fields are recorded once per client session.
-// Next tag: 29
+// Next tag: 30
 message SystemProfileProto {
   // The time when the client was compiled/linked, in seconds since the epoch.
   optional int64 build_timestamp = 1;
@@ -1013,4 +1013,23 @@ message SystemProfileProto {
   // The Chrome package name on Android, if it's different from
   // "com.android.chrome".
   optional string app_package_name = 26;
+
+  // Data related to the "Better Together" multi-device features. This is only
+  // uploaded on Chrome OS.
+  // Next Tag: 5
+  message LinkedAndroidPhoneData {
+    // The pii-free model name of the phone used for Better Together with this
+    // device. Will not be set if Better Together is not set up.
+    optional fixed32 phone_model_name_hash = 1;
+
+    // True if SmartLock is enabled on this Chromebook.
+    optional bool is_smartlock_enabled = 2;
+
+    // True if Instant Tethering is enabled on this Chromebook.
+    optional bool is_instant_tethering_enabled = 3;
+
+    // True if Messages integration is enabled on this Chromebook.
+    optional bool is_messages_enabled = 4;
+  }
+  optional LinkedAndroidPhoneData linked_android_phone_data = 29;
 }
