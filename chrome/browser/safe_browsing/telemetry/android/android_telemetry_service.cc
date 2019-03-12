@@ -45,28 +45,6 @@ bool IsFeatureEnabled() {
   return base::FeatureList::IsEnabled(safe_browsing::kTelemetryForApkDownloads);
 }
 
-// Enumerates the possibilities for whether the CSBRR report was sent (or not).
-enum class ApkDownloadTelemetryOutcome {
-  NOT_SENT_SAFE_BROWSING_NOT_ENABLED = 0,
-  // |web_contents| was nullptr. This happens sometimes when downloads are
-  // resumed but it's not clear exactly when.
-  NOT_SENT_MISSING_WEB_CONTENTS = 1,
-  // No ping sent because the user is in Incognito mode.
-  NOT_SENT_INCOGNITO = 2,
-  // No ping sent because the user hasn't enabled extended reporting.
-  NOT_SENT_EXTENDED_REPORTING_DISABLED = 3,
-  // Download was cancelled.
-  NOT_SENT_DOWNLOAD_CANCELLED = 4,
-  // Failed to serialize the report.
-  NOT_SENT_FAILED_TO_SERIALIZE = 5,
-  // Feature not enabled so don't send.
-  NOT_SENT_FEATURE_NOT_ENABLED = 6,
-  // Download completed. Ping sent.
-  SENT = 7,
-
-  kMaxValue = SENT
-};
-
 void RecordApkDownloadTelemetryOutcome(ApkDownloadTelemetryOutcome outcome) {
   UMA_HISTOGRAM_ENUMERATION("SafeBrowsing.AndroidTelemetry.ApkDownload.Outcome",
                             outcome);
@@ -147,7 +125,8 @@ void AndroidTelemetryService::OnDownloadUpdated(download::DownloadItem* item) {
 
   if (item->GetState() == download::DownloadItem::COMPLETE) {
     // Download completed. Send report.
-    MaybeSendApkDownloadReport(item);
+    std::unique_ptr<ClientSafeBrowsingReportRequest> report = GetReport(item);
+    MaybeSendApkDownloadReport(std::move(report));
     // No longer interested in this |DownloadItem| since the report has been
     // sent so remove the observer.
     item->RemoveObserver(this);
@@ -238,30 +217,14 @@ void AndroidTelemetryService::FillReferrerChain(
       recent_navigations_to_collect, report->mutable_referrer_chain());
 }
 
-void AndroidTelemetryService::MaybeCaptureSafetyNetId() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(sb_service_->database_manager());
-  if (!safety_net_id_on_ui_thread_.empty()) {
-    return;
-  }
-
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {content::BrowserThread::IO},
-      base::BindOnce(&SafeBrowsingDatabaseManager::GetSafetyNetId,
-                     sb_service_->database_manager()),
-      base::BindOnce(&AndroidTelemetryService::SetSafetyNetIdOnUIThread,
-                     weak_ptr_factory_.GetWeakPtr()));
-}
-
-void AndroidTelemetryService::MaybeSendApkDownloadReport(
-    download::DownloadItem* item) {
+std::unique_ptr<ClientSafeBrowsingReportRequest>
+AndroidTelemetryService::GetReport(download::DownloadItem* item) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(item->IsDone());
 
   std::unique_ptr<ClientSafeBrowsingReportRequest> report(
       new ClientSafeBrowsingReportRequest());
-  report->set_type(
-      safe_browsing::ClientSafeBrowsingReportRequest::APK_DOWNLOAD);
+  report->set_type(ClientSafeBrowsingReportRequest::APK_DOWNLOAD);
   report->set_url(item->GetOriginalUrl().spec());
   report->set_page_url(item->GetTabUrl().spec());
 
@@ -280,6 +243,26 @@ void AndroidTelemetryService::MaybeSendApkDownloadReport(
       item->GetTargetFilePath().BaseName().value());
   report->set_safety_net_id(safety_net_id_on_ui_thread_);
 
+  return report;
+}
+
+void AndroidTelemetryService::MaybeCaptureSafetyNetId() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(sb_service_->database_manager());
+  if (!safety_net_id_on_ui_thread_.empty()) {
+    return;
+  }
+
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, {content::BrowserThread::IO},
+      base::BindOnce(&SafeBrowsingDatabaseManager::GetSafetyNetId,
+                     sb_service_->database_manager()),
+      base::BindOnce(&AndroidTelemetryService::SetSafetyNetIdOnUIThread,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void AndroidTelemetryService::MaybeSendApkDownloadReport(
+    std::unique_ptr<ClientSafeBrowsingReportRequest> report) {
   std::string serialized;
   if (!report->SerializeToString(&serialized)) {
     DLOG(ERROR) << "Unable to serialize the APK download telemetry report.";
