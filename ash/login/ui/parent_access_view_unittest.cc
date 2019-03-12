@@ -12,6 +12,7 @@
 #include "ash/login/ui/login_button.h"
 #include "ash/login/ui/login_pin_view.h"
 #include "ash/login/ui/login_test_base.h"
+#include "ash/login/ui/login_test_utils.h"
 #include "ash/shell.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/bind.h"
@@ -22,6 +23,7 @@
 #include "ui/events/event.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -301,6 +303,64 @@ TEST_F(ParentAccessViewTest, ErrorState) {
   SimulateButtonPress(test_api.submit_button());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, successful_validation_);
+}
+
+// Tests children views traversal with tab key.
+TEST_F(ParentAccessViewTest, TabKeyTraversal) {
+  ParentAccessView::TestApi test_api(view_);
+  EXPECT_TRUE(HasFocusInAnyChildView(test_api.access_code_view()));
+
+  // Enter access code, so submit button is enabled and focusable.
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  for (int i = 0; i < 6; ++i)
+    generator->PressKey(ui::KeyboardCode::VKEY_0, ui::EF_NONE);
+
+  generator->PressKey(ui::KeyboardCode::VKEY_TAB, ui::EF_NONE);
+  EXPECT_TRUE(test_api.help_button()->HasFocus());
+
+  generator->PressKey(ui::KeyboardCode::VKEY_TAB, ui::EF_NONE);
+  EXPECT_TRUE(test_api.submit_button()->HasFocus());
+
+  generator->PressKey(ui::KeyboardCode::VKEY_TAB, ui::EF_NONE);
+  EXPECT_TRUE(test_api.back_button()->HasFocus());
+
+  generator->PressKey(ui::KeyboardCode::VKEY_TAB, ui::EF_NONE);
+  EXPECT_TRUE(test_api.title_label()->HasFocus());
+
+  generator->PressKey(ui::KeyboardCode::VKEY_TAB, ui::EF_NONE);
+  EXPECT_TRUE(test_api.description_label()->HasFocus());
+
+  generator->PressKey(ui::KeyboardCode::VKEY_TAB, ui::EF_NONE);
+  EXPECT_TRUE(HasFocusInAnyChildView(test_api.access_code_view()));
+}
+
+// Tests children views backwards traversal with tab key.
+TEST_F(ParentAccessViewTest, BackwardTabKeyTraversal) {
+  ParentAccessView::TestApi test_api(view_);
+  EXPECT_TRUE(HasFocusInAnyChildView(test_api.access_code_view()));
+
+  // Enter access code, so submit button is enabled and focusable.
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  for (int i = 0; i < 6; ++i)
+    generator->PressKey(ui::KeyboardCode::VKEY_0, ui::EF_NONE);
+
+  generator->PressKey(ui::KeyboardCode::VKEY_TAB, ui::EF_SHIFT_DOWN);
+  EXPECT_TRUE(test_api.description_label()->HasFocus());
+
+  generator->PressKey(ui::KeyboardCode::VKEY_TAB, ui::EF_SHIFT_DOWN);
+  EXPECT_TRUE(test_api.title_label()->HasFocus());
+
+  generator->PressKey(ui::KeyboardCode::VKEY_TAB, ui::EF_SHIFT_DOWN);
+  EXPECT_TRUE(test_api.back_button()->HasFocus());
+
+  generator->PressKey(ui::KeyboardCode::VKEY_TAB, ui::EF_SHIFT_DOWN);
+  EXPECT_TRUE(test_api.submit_button()->HasFocus());
+
+  generator->PressKey(ui::KeyboardCode::VKEY_TAB, ui::EF_SHIFT_DOWN);
+  EXPECT_TRUE(test_api.help_button()->HasFocus());
+
+  generator->PressKey(ui::KeyboardCode::VKEY_TAB, ui::EF_SHIFT_DOWN);
+  EXPECT_TRUE(HasFocusInAnyChildView(test_api.access_code_view()));
 }
 
 }  // namespace ash

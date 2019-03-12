@@ -12,6 +12,20 @@ namespace ash {
 namespace {
 constexpr char kPrimaryName[] = "primary";
 constexpr char kSecondaryName[] = "secondary";
+
+mojom::LoginUserInfoPtr CreateUserWithType(const std::string& email,
+                                           user_manager::UserType user_type) {
+  auto user = mojom::LoginUserInfo::New();
+  user->basic_user_info = mojom::UserInfo::New();
+  user->basic_user_info->type = user_type;
+  user->basic_user_info->avatar = mojom::UserAvatar::New();
+  user->basic_user_info->account_id = AccountId::FromUserEmail(email);
+  user->basic_user_info->display_name = base::SplitString(
+      email, "@", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)[0];
+  user->basic_user_info->display_email = email;
+  return user;
+}
+
 }  // namespace
 
 const char* AuthTargetToString(AuthTarget target) {
@@ -51,14 +65,11 @@ LoginPasswordView::TestApi MakeLoginPasswordTestApi(LockContentsView* view,
 }
 
 mojom::LoginUserInfoPtr CreateUser(const std::string& email) {
-  auto user = mojom::LoginUserInfo::New();
-  user->basic_user_info = mojom::UserInfo::New();
-  user->basic_user_info->avatar = mojom::UserAvatar::New();
-  user->basic_user_info->account_id = AccountId::FromUserEmail(email);
-  user->basic_user_info->display_name = base::SplitString(
-      email, "@", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)[0];
-  user->basic_user_info->display_email = email;
-  return user;
+  return CreateUserWithType(email, user_manager::UserType::USER_TYPE_REGULAR);
+}
+
+mojom::LoginUserInfoPtr CreateChildUser(const std::string& email) {
+  return CreateUserWithType(email, user_manager::UserType::USER_TYPE_CHILD);
 }
 
 mojom::LoginUserInfoPtr CreatePublicAccountUser(const std::string& email) {
