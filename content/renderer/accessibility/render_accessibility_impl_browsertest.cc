@@ -397,6 +397,7 @@ class AXImageAnnotatorTest : public RenderAccessibilityImplTest {
 TEST_F(AXImageAnnotatorTest, OnImageAdded) {
   LoadHTMLAndRefreshAccessibilityTree(R"HTML(
       <body>
+        <p>Test document</p>
         <img id="A" src="test1.jpg"
             style="width: 200px; height: 150px;">
         <img id="B" src="test2.jpg"
@@ -409,7 +410,6 @@ TEST_F(AXImageAnnotatorTest, OnImageAdded) {
   // check test expectations.
   scoped_task_environment_.RunUntilIdle();
 
-  ASSERT_EQ(4, CountAccessibilityNodesSentToBrowser());
   EXPECT_THAT(mock_annotator().image_ids_, ElementsAre("test1.jpg"));
   ASSERT_EQ(1u, mock_annotator().image_processors_.size());
   EXPECT_TRUE(mock_annotator().image_processors_[0].is_bound());
@@ -441,6 +441,7 @@ TEST_F(AXImageAnnotatorTest, OnImageAdded) {
 TEST_F(AXImageAnnotatorTest, OnImageUpdated) {
   LoadHTMLAndRefreshAccessibilityTree(R"HTML(
       <body>
+        <p>Test document</p>
         <img id="A" src="test1.jpg"
             style="width: 200px; height: 150px;">
       </body>
@@ -451,7 +452,6 @@ TEST_F(AXImageAnnotatorTest, OnImageUpdated) {
   // check test expectations.
   scoped_task_environment_.RunUntilIdle();
 
-  ASSERT_EQ(3, CountAccessibilityNodesSentToBrowser());
   EXPECT_THAT(mock_annotator().image_ids_, ElementsAre("test1.jpg"));
   ASSERT_EQ(1u, mock_annotator().image_processors_.size());
   EXPECT_TRUE(mock_annotator().image_processors_[0].is_bound());
