@@ -140,9 +140,7 @@ void WorkerOrWorkletScriptController::DisposeContextIfNeeded() {
   script_state_->DissociateContext();
 }
 
-bool WorkerOrWorkletScriptController::InitializeContext(
-    const String& human_readable_name,
-    const KURL& url_for_debugger) {
+bool WorkerOrWorkletScriptController::Initialize(const KURL& url_for_debugger) {
   v8::HandleScope handle_scope(isolate_);
 
   DCHECK(!IsContextInitialized());
@@ -219,12 +217,10 @@ bool WorkerOrWorkletScriptController::InitializeContext(
   V8PerContextData::From(context)->ConstructorForType(wrapper_type_info);
 
   if (global_scope_->IsMainThreadWorkletGlobalScope()) {
-    // Set the human readable name for the world if the call passes an actual
-    // |human_readable name|.
-    if (!human_readable_name.IsEmpty()) {
-      world_->SetNonMainWorldHumanReadableName(world_->GetWorldId(),
-                                               human_readable_name);
-    }
+    // Set the human readable name for the world.
+    DCHECK(!global_scope_->Name().IsEmpty());
+    world_->SetNonMainWorldHumanReadableName(world_->GetWorldId(),
+                                             global_scope_->Name());
   } else {
     // Name new context for debugging. For main thread worklet global scopes
     // this is done once the context is initialized.

@@ -194,8 +194,7 @@ void ModuleScriptLoaderTest::InitializeForWorklet() {
       MakeGarbageCollected<WorkletModuleResponsesMap>());
   global_scope_ = MakeGarbageCollected<WorkletGlobalScope>(
       std::move(creation_params), *reporting_proxy_, &GetFrame());
-  ASSERT_TRUE(global_scope_->ScriptController()->InitializeContext(
-      "Dummy Context", NullURL()));
+  ASSERT_TRUE(global_scope_->ScriptController()->Initialize(NullURL()));
   modulator_ = MakeGarbageCollected<ModuleScriptLoaderTestModulator>(
       global_scope_->ScriptController()->GetScriptState());
 }
