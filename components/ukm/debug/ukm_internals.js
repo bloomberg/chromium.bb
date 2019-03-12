@@ -340,7 +340,7 @@ function updateUkmData() {
       data.sources = [...CachedSources.values()];
     }
     $('state').innerText = data.state? 'ENABLED' : 'DISABLED';
-    $('clientid').innerText = as64Bit(data.client_id);
+    $('clientid').innerText = '0x' + data.client_id;
     $('sessionid').innerText = data.session_id;
 
     const sourcesDiv = /** @type {!Element} */ ($('sources'));
