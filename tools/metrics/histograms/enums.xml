@@ -22237,6 +22237,7 @@ Called by update_net_error_codes.py.-->
   <int value="41" label="Frobulate"/>
   <int value="42" label="Serial"/>
   <int value="43" label="Hid"/>
+  <int value="44" label="IdleDetection"/>
 </enum>
 
 <enum name="FeedbackSource">

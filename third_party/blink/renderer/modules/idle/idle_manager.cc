@@ -17,7 +17,14 @@
 
 namespace blink {
 
+namespace {
+
+const char kFeaturePolicyBlocked[] =
+    "Access to the feature \"idle-detection\" is disallowed by feature policy.";
+
 const uint32_t kDefaultThresholdSeconds = 60;
+
+}  // namespace
 
 IdleManager::IdleManager(ExecutionContext* context) {}
 
@@ -38,7 +45,13 @@ ScriptPromise IdleManager::query(ScriptState* script_state,
 
   base::TimeDelta threshold = base::TimeDelta::FromSeconds(threshold_seconds);
 
-  // TODO: Permission check.
+  if (!context->GetSecurityContext().IsFeatureEnabled(
+          mojom::FeaturePolicyFeature::kIdleDetection,
+          ReportOptions::kReportOnFailure)) {
+    return ScriptPromise::RejectWithDOMException(
+        script_state, DOMException::Create(DOMExceptionCode::kSecurityError,
+                                           kFeaturePolicyBlocked));
+  }
 
   if (!service_) {
     // NOTE(goto): what are the benefits of initializing this here
