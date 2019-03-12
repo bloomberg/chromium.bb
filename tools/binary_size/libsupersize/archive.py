@@ -1484,7 +1484,7 @@ def _AutoIdentifyInputFile(args):
   elif args.f.endswith('.apk'):
     args.apk_file = args.f
     logging.info('Auto-identified --apk-file.')
-  elif args.f.endswith('.so') or '.' not in args.f:
+  elif args.f.endswith('.so') or '.' not in os.path.basename(args.f):
     logging.info('Auto-identified --elf-file.')
     args.elf_file = args.f
   elif args.f.endswith('.map') or args.f.endswith('.map.gz'):
