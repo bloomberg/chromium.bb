@@ -195,15 +195,16 @@ void DidGetUsageAndQuotaForWebApps(
 
 }  // namespace
 
-class QuotaManager::UsageAndQuotaHelper : public QuotaTask {
+// Helper to asynchronously gather usage and quota information.
+class QuotaManager::UsageAndQuotaInfoGatherer : public QuotaTask {
  public:
-  UsageAndQuotaHelper(QuotaManager* manager,
-                      const url::Origin& origin,
-                      StorageType type,
-                      bool is_unlimited,
-                      bool is_session_only,
-                      bool is_incognito,
-                      UsageAndQuotaWithBreakdownCallback callback)
+  UsageAndQuotaInfoGatherer(QuotaManager* manager,
+                            const url::Origin& origin,
+                            StorageType type,
+                            bool is_unlimited,
+                            bool is_session_only,
+                            bool is_incognito,
+                            UsageAndQuotaWithBreakdownCallback callback)
       : QuotaTask(manager),
         origin_(origin),
         callback_(std::move(callback)),
@@ -219,20 +220,20 @@ class QuotaManager::UsageAndQuotaHelper : public QuotaTask {
     // Gather 4 pieces of info before computing an answer:
     // settings, device_storage_capacity, host_usage, and host_quota.
     base::Closure barrier = base::BarrierClosure(
-        4, base::BindOnce(&UsageAndQuotaHelper::OnBarrierComplete,
+        4, base::BindOnce(&UsageAndQuotaInfoGatherer::OnBarrierComplete,
                           weak_factory_.GetWeakPtr()));
 
     std::string host = net::GetHostOrSpecFromURL(origin_.GetURL());
 
     manager()->GetQuotaSettings(
-        base::BindOnce(&UsageAndQuotaHelper::OnGotSettings,
+        base::BindOnce(&UsageAndQuotaInfoGatherer::OnGotSettings,
                        weak_factory_.GetWeakPtr(), barrier));
     manager()->GetStorageCapacity(
-        base::BindOnce(&UsageAndQuotaHelper::OnGotCapacity,
+        base::BindOnce(&UsageAndQuotaInfoGatherer::OnGotCapacity,
                        weak_factory_.GetWeakPtr(), barrier));
     manager()->GetHostUsageWithBreakdown(
         host, type_,
-        base::BindOnce(&UsageAndQuotaHelper::OnGotHostUsage,
+        base::BindOnce(&UsageAndQuotaInfoGatherer::OnGotHostUsage,
                        weak_factory_.GetWeakPtr(), barrier));
 
     // Determine host_quota differently depending on type.
@@ -244,7 +245,7 @@ class QuotaManager::UsageAndQuotaHelper : public QuotaTask {
                           kSyncableStorageDefaultHostQuota);
     } else if (type_ == StorageType::kPersistent) {
       manager()->GetPersistentHostQuota(
-          host, base::BindOnce(&UsageAndQuotaHelper::SetDesiredHostQuota,
+          host, base::BindOnce(&UsageAndQuotaInfoGatherer::SetDesiredHostQuota,
                                weak_factory_.GetWeakPtr(), barrier));
     } else {
       DCHECK_EQ(StorageType::kTemporary, type_);
@@ -341,8 +342,8 @@ class QuotaManager::UsageAndQuotaHelper : public QuotaTask {
   int64_t host_usage_ = 0;
   blink::mojom::UsageBreakdownPtr host_usage_breakdown_;
   QuotaSettings settings_;
-  base::WeakPtrFactory<UsageAndQuotaHelper> weak_factory_;
-  DISALLOW_COPY_AND_ASSIGN(UsageAndQuotaHelper);
+  base::WeakPtrFactory<UsageAndQuotaInfoGatherer> weak_factory_;
+  DISALLOW_COPY_AND_ASSIGN(UsageAndQuotaInfoGatherer);
 };
 
 // Helper to asynchronously gather information needed at the start of an
@@ -930,7 +931,7 @@ void QuotaManager::GetUsageAndQuotaWithBreakdown(
   bool is_session_only =
       type == StorageType::kTemporary && special_storage_policy_ &&
       special_storage_policy_->IsStorageSessionOnly(origin.GetURL());
-  UsageAndQuotaHelper* helper = new UsageAndQuotaHelper(
+  UsageAndQuotaInfoGatherer* helper = new UsageAndQuotaInfoGatherer(
       this, origin, type, IsStorageUnlimited(origin, type), is_session_only,
       is_incognito_, std::move(callback));
   helper->Start();
