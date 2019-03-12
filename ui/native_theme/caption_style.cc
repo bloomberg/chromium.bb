@@ -29,7 +29,7 @@ CaptionStyle CaptionStyle::FromSpec(const std::string& spec) {
   return style;
 }
 
-#if !defined(OS_WIN)
+#if !defined(OS_WIN) && !defined(OS_MACOSX)
 CaptionStyle CaptionStyle::FromSystemSettings() {
   return CaptionStyle();
 }
