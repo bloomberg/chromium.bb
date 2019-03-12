@@ -12,7 +12,6 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
-#include "content/public/browser/plugin_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/site_instance.h"
@@ -22,8 +21,13 @@
 #include "content/public/common/webplugininfo.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
 #include "extensions/common/guest_view/extensions_guest_view_messages.h"
+#include "ppapi/buildflags/buildflags.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/skia/include/core/SkColor.h"
+
+#if BUILDFLAG(ENABLE_PLUGINS)
+#include "content/public/browser/plugin_service.h"
+#endif
 
 using content::BrowserThread;
 using content::RenderFrameHost;
@@ -45,6 +49,7 @@ const uint32_t kFullPageMimeHandlerViewDataPipeSize = 256U;
 
 SkColor GetBackgroundColorStringForMimeType(const GURL& url,
                                             const std::string& mime_type) {
+#if BUILDFLAG(ENABLE_PLUGINS)
   std::vector<content::WebPluginInfo> web_plugin_info_array;
   std::vector<std::string> unused_actual_mime_types;
   content::PluginService::GetInstance()->GetPluginInfoArray(
@@ -55,6 +60,7 @@ SkColor GetBackgroundColorStringForMimeType(const GURL& url,
         return info.background_color;
     }
   }
+#endif
   return content::WebPluginInfo::kDefaultBackgroundColor;
 }
 
