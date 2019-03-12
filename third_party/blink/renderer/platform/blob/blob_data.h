@@ -160,21 +160,22 @@ class PLATFORM_EXPORT BlobDataHandle
 
   // For initial creation.
   static scoped_refptr<BlobDataHandle> Create(std::unique_ptr<BlobData> data,
-                                              long long size) {
+                                              uint64_t size) {
     return base::AdoptRef(new BlobDataHandle(std::move(data), size));
   }
 
   // For deserialization of script values and ipc messages.
   static scoped_refptr<BlobDataHandle> Create(const String& uuid,
                                               const String& type,
-                                              long long size) {
+                                              uint64_t size) {
     return base::AdoptRef(new BlobDataHandle(uuid, type, size));
   }
 
-  static scoped_refptr<BlobDataHandle> Create(const String& uuid,
-                                       const String& type,
-                                       long long size,
-                                       mojom::blink::BlobPtrInfo blob_info) {
+  static scoped_refptr<BlobDataHandle> Create(
+      const String& uuid,
+      const String& type,
+      uint64_t size,
+      mojom::blink::BlobPtrInfo blob_info) {
     if (blob_info.is_valid()) {
       return base::AdoptRef(
           new BlobDataHandle(uuid, type, size, std::move(blob_info)));
@@ -205,16 +206,16 @@ class PLATFORM_EXPORT BlobDataHandle
 
  private:
   BlobDataHandle();
-  BlobDataHandle(std::unique_ptr<BlobData>, long long size);
-  BlobDataHandle(const String& uuid, const String& type, long long size);
+  BlobDataHandle(std::unique_ptr<BlobData>, uint64_t size);
+  BlobDataHandle(const String& uuid, const String& type, uint64_t size);
   BlobDataHandle(const String& uuid,
                  const String& type,
-                 long long size,
+                 uint64_t size,
                  mojom::blink::BlobPtrInfo);
 
   const String uuid_;
   const String type_;
-  const long long size_;
+  const uint64_t size_;
   const bool is_single_unknown_size_file_;
   // This class is supposed to be thread safe. So to be able to use the mojo
   // Blob interface from multiple threads store a InterfacePtrInfo combined with

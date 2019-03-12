@@ -45,8 +45,8 @@ namespace blink {
 static String GetContentTypeFromFileName(const String& name,
                                          File::ContentTypeLookupPolicy policy) {
   String type;
-  int index = name.ReverseFind('.');
-  if (index != -1) {
+  wtf_size_t index = name.ReverseFind('.');
+  if (index != WTF::kNotFound) {
     if (policy == File::kWellKnownContentTypes) {
       type = MIMETypeRegistry::GetWellKnownMIMETypeForExtension(
           name.Substring(index + 1));
@@ -193,7 +193,6 @@ File::File(const String& path,
       user_visibility_(user_visibility),
       path_(path),
       name_(FilePathToWebString(WebStringToFilePath(path).BaseName())),
-      snapshot_size_(-1),
       snapshot_modification_time_ms_(InvalidFileTime()) {}
 
 File::File(const String& path,
@@ -202,12 +201,11 @@ File::File(const String& path,
            UserVisibility user_visibility)
     : Blob(BlobDataHandle::Create(
           CreateBlobDataForFileWithName(path, name, policy),
-          -1)),
+          std::numeric_limits<uint64_t>::max())),
       has_backing_file_(true),
       user_visibility_(user_visibility),
       path_(path),
       name_(name),
-      snapshot_size_(-1),
       snapshot_modification_time_ms_(InvalidFileTime()) {}
 
 File::File(const String& path,
@@ -223,10 +221,12 @@ File::File(const String& path,
       user_visibility_(user_visibility),
       path_(path),
       name_(name),
-      snapshot_size_(has_snapshot_data ? static_cast<long long>(size) : -1),
       snapshot_modification_time_ms_(has_snapshot_data ? last_modified
                                                        : InvalidFileTime()),
-      relative_path_(relative_path) {}
+      relative_path_(relative_path) {
+  if (has_snapshot_data)
+    snapshot_size_ = size;
+}
 
 File::File(const String& name,
            double modification_time_ms,
@@ -236,7 +236,11 @@ File::File(const String& name,
       user_visibility_(File::kIsNotUserVisible),
       name_(name),
       snapshot_size_(Blob::size()),
-      snapshot_modification_time_ms_(modification_time_ms) {}
+      snapshot_modification_time_ms_(modification_time_ms) {
+  uint64_t size = Blob::size();
+  if (size != std::numeric_limits<uint64_t>::max())
+    snapshot_size_ = size;
+}
 
 File::File(const String& name,
            const FileMetadata& metadata,
@@ -248,8 +252,10 @@ File::File(const String& name,
       user_visibility_(user_visibility),
       path_(metadata.platform_path),
       name_(name),
-      snapshot_size_(metadata.length),
-      snapshot_modification_time_ms_(metadata.modification_time) {}
+      snapshot_modification_time_ms_(metadata.modification_time) {
+  if (metadata.length >= 0)
+    snapshot_size_ = metadata.length;
+}
 
 File::File(const KURL& file_system_url,
            const FileMetadata& metadata,
@@ -262,8 +268,10 @@ File::File(const KURL& file_system_url,
       name_(DecodeURLEscapeSequences(file_system_url.LastPathComponent(),
                                      DecodeURLMode::kUTF8OrIsomorphic)),
       file_system_url_(file_system_url),
-      snapshot_size_(metadata.length),
-      snapshot_modification_time_ms_(metadata.modification_time) {}
+      snapshot_modification_time_ms_(metadata.modification_time) {
+  if (metadata.length >= 0)
+    snapshot_size_ = metadata.length;
+}
 
 File::File(const File& other)
     : Blob(other.GetBlobDataHandle()),
@@ -325,7 +333,7 @@ double File::lastModifiedDate() const {
 
 uint64_t File::size() const {
   if (HasValidSnapshotMetadata())
-    return snapshot_size_;
+    return *snapshot_size_;
 
   // FIXME: JavaScript cannot represent sizes as large as uint64_t, we need
   // to come up with an exception to throw if file size is not representable.
@@ -344,7 +352,7 @@ Blob* File::slice(long long start,
 
   // FIXME: This involves synchronous file operation. We need to figure out how
   // to make it asynchronous.
-  long long size;
+  uint64_t size;
   double modification_time_ms;
   CaptureSnapshot(size, modification_time_ms);
   ClampSliceOffsets(size, start, end);
@@ -358,10 +366,10 @@ Blob* File::slice(long long start,
   return Blob::Create(BlobDataHandle::Create(std::move(blob_data), length));
 }
 
-void File::CaptureSnapshot(long long& snapshot_size,
+void File::CaptureSnapshot(uint64_t& snapshot_size,
                            double& snapshot_modification_time_ms) const {
   if (HasValidSnapshotMetadata()) {
-    snapshot_size = snapshot_size_;
+    snapshot_size = *snapshot_size_;
     snapshot_modification_time_ms = snapshot_modification_time_ms_;
     return;
   }
@@ -377,7 +385,7 @@ void File::CaptureSnapshot(long long& snapshot_size,
     return;
   }
 
-  snapshot_size = metadata.length;
+  snapshot_size = static_cast<uint64_t>(metadata.length);
   snapshot_modification_time_ms = metadata.modification_time;
 }
 
@@ -389,7 +397,7 @@ void File::AppendTo(BlobData& blob_data) const {
 
   // FIXME: This involves synchronous file operation. We need to figure out how
   // to make it asynchronous.
-  long long size;
+  uint64_t size;
   double modification_time_ms;
   CaptureSnapshot(size, modification_time_ms);
   DCHECK(!path_.IsEmpty());

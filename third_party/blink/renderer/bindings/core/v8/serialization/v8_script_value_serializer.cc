@@ -575,7 +575,7 @@ bool V8ScriptValueSerializer::WriteFile(File* file,
   if (blob_info_array_) {
     size_t index = blob_info_array_->size();
     DCHECK_LE(index, std::numeric_limits<uint32_t>::max());
-    long long size = -1;
+    uint64_t size;
     double last_modified_ms = InvalidFileTime();
     file->CaptureSnapshot(size, last_modified_ms);
     // FIXME: transition WebBlobInfo.lastModified to be milliseconds-based also.
@@ -594,11 +594,11 @@ bool V8ScriptValueSerializer::WriteFile(File* file,
     // Why this inconsistency?
     if (file->HasValidSnapshotMetadata()) {
       WriteUint32(1);
-      long long size;
+      uint64_t size;
       double last_modified_ms;
       file->CaptureSnapshot(size, last_modified_ms);
-      DCHECK_GE(size, 0);
-      WriteUint64(static_cast<uint64_t>(size));
+      DCHECK_NE(size, std::numeric_limits<uint64_t>::max());
+      WriteUint64(size);
       WriteDouble(last_modified_ms);
     } else {
       WriteUint32(0);
