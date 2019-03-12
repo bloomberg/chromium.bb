@@ -12,7 +12,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/test/scoped_command_line.h"
-#include "base/test/scoped_feature_list.h"
 #include "components/handoff/handoff_utility.h"
 #include "ios/chrome/app/application_delegate/fake_startup_information.h"
 #include "ios/chrome/app/application_delegate/mock_tab_opener.h"
@@ -25,7 +24,6 @@
 #include "ios/chrome/browser/app_startup_parameters.h"
 #include "ios/chrome/browser/chrome_switches.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
-#include "ios/chrome/browser/system_flags.h"
 #import "ios/chrome/browser/tabs/legacy_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
@@ -144,13 +142,6 @@ class FakeU2FTabHelper : public U2FTabHelper {
 
 #pragma mark - Test class.
 
-// UserActivityHandlerTest is parameterized on this enum to test with
-// enabled and disabled kExternalFilesLoadedInWebState feature flag.
-enum class ExternalFilesLoadedInWebStateFeature {
-  Disabled = 0,
-  Enabled,
-};
-
 // A block that takes as arguments the caller and the arguments from
 // UserActivityHandler +handleStartupParameters and returns nothing.
 typedef void (^startupParameterBlock)(id,
@@ -161,20 +152,8 @@ typedef void (^startupParameterBlock)(id,
 // A block that takes a BOOL argument and returns nothing.
 typedef void (^conditionBlock)(BOOL);
 
-class UserActivityHandlerTest
-    : public PlatformTest,
-      public testing::WithParamInterface<ExternalFilesLoadedInWebStateFeature> {
+class UserActivityHandlerTest : public PlatformTest {
  protected:
-  UserActivityHandlerTest() {
-    if (GetParam() == ExternalFilesLoadedInWebStateFeature::Enabled) {
-      scoped_feature_list_.InitAndEnableFeature(
-          experimental_flags::kExternalFilesLoadedInWebState);
-    } else {
-      scoped_feature_list_.InitAndDisableFeature(
-          experimental_flags::kExternalFilesLoadedInWebState);
-    }
-  }
-
   void swizzleHandleStartupParameters() {
     handle_startup_parameters_has_been_called_ = NO;
     swizzle_block_ = [^(id self) {
@@ -217,14 +196,13 @@ class UserActivityHandlerTest
   startupParameterBlock swizzle_block_;
   conditionBlock completion_block_;
   __block BOOL handle_startup_parameters_has_been_called_;
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 #pragma mark - Tests.
 
 // Tests that Chrome notifies the user if we are passing a correct
 // userActivityType.
-TEST_P(UserActivityHandlerTest, WillContinueUserActivityCorrectActivity) {
+TEST_F(UserActivityHandlerTest, WillContinueUserActivityCorrectActivity) {
   EXPECT_TRUE([UserActivityHandler
       willContinueUserActivityWithType:handoff::kChromeHandoffActivityType]);
 
@@ -236,7 +214,7 @@ TEST_P(UserActivityHandlerTest, WillContinueUserActivityCorrectActivity) {
 
 // Tests that Chrome does not notifies the user if we are passing an incorrect
 // userActivityType.
-TEST_P(UserActivityHandlerTest, WillContinueUserActivityIncorrectActivity) {
+TEST_F(UserActivityHandlerTest, WillContinueUserActivityIncorrectActivity) {
   EXPECT_FALSE([UserActivityHandler
       willContinueUserActivityWithType:[handoff::kChromeHandoffActivityType
                                            stringByAppendingString:@"test"]]);
@@ -251,7 +229,7 @@ TEST_P(UserActivityHandlerTest, WillContinueUserActivityIncorrectActivity) {
 
 // Tests that Chrome does not continue the activity is the activity type is
 // random.
-TEST_P(UserActivityHandlerTest, ContinueUserActivityFromGarbage) {
+TEST_F(UserActivityHandlerTest, ContinueUserActivityFromGarbage) {
   // Setup.
   NSString* handoffWithSuffix =
       [handoff::kChromeHandoffActivityType stringByAppendingString:@"test"];
@@ -284,7 +262,7 @@ TEST_P(UserActivityHandlerTest, ContinueUserActivityFromGarbage) {
 
 // Tests that Chrome does not continue the activity if the webpage url is not
 // set.
-TEST_P(UserActivityHandlerTest, ContinueUserActivityNoWebpage) {
+TEST_F(UserActivityHandlerTest, ContinueUserActivityNoWebpage) {
   // Setup.
   NSUserActivity* userActivity = [[NSUserActivity alloc]
       initWithActivityType:handoff::kChromeHandoffActivityType];
@@ -307,7 +285,7 @@ TEST_P(UserActivityHandlerTest, ContinueUserActivityNoWebpage) {
 
 // Tests that Chrome does not continue the activity if the activity is a
 // Spotlight action of an unknown type.
-TEST_P(UserActivityHandlerTest,
+TEST_F(UserActivityHandlerTest,
        ContinueUserActivitySpotlightActionFromGarbage) {
   // Only test Spotlight if it is enabled and available on the device.
   if (!spotlight::IsSpotlightAvailable()) {
@@ -346,7 +324,7 @@ TEST_P(UserActivityHandlerTest,
 
 // Tests that Chrome continues the activity if the application is in background
 // by saving the url to startupParameters.
-TEST_P(UserActivityHandlerTest, ContinueUserActivityBackground) {
+TEST_F(UserActivityHandlerTest, ContinueUserActivityBackground) {
   // Setup.
   NSUserActivity* userActivity = [[NSUserActivity alloc]
       initWithActivityType:handoff::kChromeHandoffActivityType];
@@ -381,7 +359,7 @@ TEST_P(UserActivityHandlerTest, ContinueUserActivityBackground) {
 
 // Tests that Chrome continues the activity if the application is in foreground
 // by opening a new tab.
-TEST_P(UserActivityHandlerTest, ContinueUserActivityForeground) {
+TEST_F(UserActivityHandlerTest, ContinueUserActivityForeground) {
   // Setup.
   NSUserActivity* userActivity = [[NSUserActivity alloc]
       initWithActivityType:handoff::kChromeHandoffActivityType];
@@ -413,7 +391,7 @@ TEST_P(UserActivityHandlerTest, ContinueUserActivityForeground) {
 
 // Tests that a new tab is created when application is started via Universal
 // Link.
-TEST_P(UserActivityHandlerTest, ContinueUserActivityBrowsingWeb) {
+TEST_F(UserActivityHandlerTest, ContinueUserActivityBrowsingWeb) {
   NSUserActivity* userActivity = [[NSUserActivity alloc]
       initWithActivityType:NSUserActivityTypeBrowsingWeb];
   // This URL is passed to application by iOS but is not used in this part
@@ -446,7 +424,7 @@ TEST_P(UserActivityHandlerTest, ContinueUserActivityBrowsingWeb) {
 
 // Tests that continueUserActivity sets startupParameters accordingly to the
 // Spotlight action used.
-TEST_P(UserActivityHandlerTest, ContinueUserActivityShortcutActions) {
+TEST_F(UserActivityHandlerTest, ContinueUserActivityShortcutActions) {
   // Only test Spotlight if it is enabled and available on the device.
   if (!spotlight::IsSpotlightAvailable()) {
     return;
@@ -509,7 +487,7 @@ TEST_P(UserActivityHandlerTest, ContinueUserActivityShortcutActions) {
 
 // Tests that handleStartupParameters with a file url. "external URL" gets
 // rewritten to chrome://URL, while "complete URL" remains full local file URL.
-TEST_P(UserActivityHandlerTest, HandleStartupParamsWithExternalFile) {
+TEST_F(UserActivityHandlerTest, HandleStartupParamsWithExternalFile) {
   // Setup.
   GURL externalURL("chrome://test.pdf");
   GURL completeURL("file://test.pdf");
@@ -540,23 +518,16 @@ TEST_P(UserActivityHandlerTest, HandleStartupParamsWithExternalFile) {
 
   // Tests.
   EXPECT_OCMOCK_VERIFY(startupInformationMock);
-  if (GetParam() == ExternalFilesLoadedInWebStateFeature::Enabled) {
-    // External file:// URL will be loaded by WebState, which expects complete
-    // file:// URL. chrome:// URL is expected to be displayed in the omnibox,
-    // and omnibox shows virtual URL.
-    EXPECT_EQ(completeURL, tabOpener.url);
-    EXPECT_EQ(externalURL, tabOpener.virtualURL);
-  } else {
-    // External file:// URL will be loaded by ExternalFileController, which
-    // expects chrome:// URL.
-    EXPECT_EQ(externalURL, tabOpener.url);
-    EXPECT_TRUE(tabOpener.virtualURL.is_empty());
-  }
+  // External file:// URL will be loaded by WebState, which expects complete
+  // file:// URL. chrome:// URL is expected to be displayed in the omnibox,
+  // and omnibox shows virtual URL.
+  EXPECT_EQ(completeURL, tabOpener.url);
+  EXPECT_EQ(externalURL, tabOpener.virtualURL);
   EXPECT_EQ(ApplicationMode::INCOGNITO, [tabOpener applicationMode]);
 }
 
 // Tests that handleStartupParameters with a non-U2F url opens a new tab.
-TEST_P(UserActivityHandlerTest, HandleStartupParamsNonU2F) {
+TEST_F(UserActivityHandlerTest, HandleStartupParamsNonU2F) {
   // Setup.
   GURL gurl("http://www.google.com");
 
@@ -591,7 +562,7 @@ TEST_P(UserActivityHandlerTest, HandleStartupParamsNonU2F) {
 }
 
 // Tests that handleStartupParameters with a U2F url opens in the correct tab.
-TEST_P(UserActivityHandlerTest, HandleStartupParamsU2F) {
+TEST_F(UserActivityHandlerTest, HandleStartupParamsU2F) {
   // Setup.
   UserActivityHandlerTabModelMock* mockTabModel =
       [[UserActivityHandlerTabModelMock alloc] init];
@@ -635,7 +606,7 @@ TEST_P(UserActivityHandlerTest, HandleStartupParamsU2F) {
 
 // Tests that performActionForShortcutItem set startupParameters accordingly to
 // the shortcut used
-TEST_P(UserActivityHandlerTest, PerformActionForShortcutItemWithRealShortcut) {
+TEST_F(UserActivityHandlerTest, PerformActionForShortcutItemWithRealShortcut) {
   // Setup.
   GURL gurlNewTab("chrome://newtab/");
 
@@ -686,7 +657,7 @@ TEST_P(UserActivityHandlerTest, PerformActionForShortcutItemWithRealShortcut) {
 
 // Tests that performActionForShortcutItem just executes the completionHandler
 // with NO if the firstRunUI is present.
-TEST_P(UserActivityHandlerTest, PerformActionForShortcutItemWithFirstRunUI) {
+TEST_F(UserActivityHandlerTest, PerformActionForShortcutItemWithFirstRunUI) {
   // Setup.
   id startupInformationMock =
       [OCMockObject mockForProtocol:@protocol(StartupInformation)];
@@ -715,9 +686,3 @@ TEST_P(UserActivityHandlerTest, PerformActionForShortcutItemWithFirstRunUI) {
   EXPECT_FALSE(completionHandlerArgument());
   EXPECT_FALSE(getHandleStartupParametersHasBeenCalled());
 }
-
-INSTANTIATE_TEST_SUITE_P(
-    ProgrammaticUserActivityHandlerTest,
-    UserActivityHandlerTest,
-    ::testing::Values(ExternalFilesLoadedInWebStateFeature::Enabled,
-                      ExternalFilesLoadedInWebStateFeature::Disabled));

@@ -205,8 +205,6 @@ bundle_data("resources") {
 source_set("external_files") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
-    "external_file_controller.h",
-    "external_file_controller.mm",
     "external_file_remover.h",
     "external_file_remover_factory.h",
     "external_file_remover_factory.mm",
