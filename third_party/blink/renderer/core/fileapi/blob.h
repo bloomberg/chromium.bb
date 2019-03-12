@@ -123,7 +123,7 @@ class CORE_EXPORT Blob : public ScriptWrappable,
       BlobData*,
       const HeapVector<ArrayBufferOrArrayBufferViewOrBlobOrUSVString>& parts,
       bool normalize_line_endings_to_native);
-  static void ClampSliceOffsets(long long size,
+  static void ClampSliceOffsets(uint64_t size,
                                 long long& start,
                                 long long& end);
 

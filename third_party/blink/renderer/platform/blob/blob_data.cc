@@ -310,7 +310,7 @@ BlobDataHandle::BlobDataHandle()
                                         {});
 }
 
-BlobDataHandle::BlobDataHandle(std::unique_ptr<BlobData> data, long long size)
+BlobDataHandle::BlobDataHandle(std::unique_ptr<BlobData> data, uint64_t size)
     : uuid_(CreateCanonicalUUIDString()),
       type_(data->ContentType().IsolatedCopy()),
       size_(size),
@@ -324,7 +324,7 @@ BlobDataHandle::BlobDataHandle(std::unique_ptr<BlobData> data, long long size)
 
 BlobDataHandle::BlobDataHandle(const String& uuid,
                                const String& type,
-                               long long size)
+                               uint64_t size)
     : uuid_(uuid.IsolatedCopy()),
       type_(IsValidBlobType(type) ? type.IsolatedCopy() : ""),
       size_(size),
@@ -336,7 +336,7 @@ BlobDataHandle::BlobDataHandle(const String& uuid,
 
 BlobDataHandle::BlobDataHandle(const String& uuid,
                                const String& type,
-                               long long size,
+                               uint64_t size,
                                BlobPtrInfo blob_info)
     : uuid_(uuid.IsolatedCopy()),
       type_(IsValidBlobType(type) ? type.IsolatedCopy() : ""),

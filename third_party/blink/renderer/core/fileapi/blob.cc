@@ -144,8 +144,8 @@ void Blob::PopulateBlobData(
 }
 
 // static
-void Blob::ClampSliceOffsets(long long size, long long& start, long long& end) {
-  DCHECK_NE(size, -1);
+void Blob::ClampSliceOffsets(uint64_t size, long long& start, long long& end) {
+  DCHECK_NE(size, std::numeric_limits<uint64_t>::max());
 
   // Convert the negative value that is used to select from the end.
   if (start < 0)
@@ -158,12 +158,12 @@ void Blob::ClampSliceOffsets(long long size, long long& start, long long& end) {
     start = 0;
   if (end < 0)
     end = 0;
-  if (start >= size) {
+  if (static_cast<uint64_t>(start) >= size) {
     start = 0;
     end = 0;
   } else if (end < start) {
     end = start;
-  } else if (end > size) {
+  } else if (static_cast<uint64_t>(end) > size) {
     end = size;
   }
 }
