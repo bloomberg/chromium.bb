@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_WIDGET_DESKTOP_AURA_DESKTOP_WINDOW_TREE_HOST_MUS_H_
-#define UI_VIEWS_WIDGET_DESKTOP_AURA_DESKTOP_WINDOW_TREE_HOST_MUS_H_
+#ifndef UI_VIEWS_MUS_DESKTOP_WINDOW_TREE_HOST_MUS_H_
+#define UI_VIEWS_MUS_DESKTOP_WINDOW_TREE_HOST_MUS_H_
 
 #include <memory>
 #include <set>
@@ -221,4 +221,4 @@ class VIEWS_MUS_EXPORT DesktopWindowTreeHostMus
 
 }  // namespace views
 
-#endif  // UI_VIEWS_WIDGET_DESKTOP_AURA_DESKTOP_WINDOW_TREE_HOST_MUS_H_
+#endif  // UI_VIEWS_MUS_DESKTOP_WINDOW_TREE_HOST_MUS_H_

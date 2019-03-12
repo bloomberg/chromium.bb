@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_ANIMATION_TEST_INK_DROP_H_
-#define UI_VIEWS_ANIMATION_TEST_INK_DROP_H_
+#ifndef UI_VIEWS_ANIMATION_TEST_TEST_INK_DROP_H_
+#define UI_VIEWS_ANIMATION_TEST_TEST_INK_DROP_H_
 
 #include "ui/views/animation/ink_drop.h"
 
@@ -44,4 +44,4 @@ class TestInkDrop : public InkDrop {
 }  // namespace test
 }  // namespace views
 
-#endif  // UI_VIEWS_ANIMATION_TEST_INK_DROP_H_
+#endif  // UI_VIEWS_ANIMATION_TEST_TEST_INK_DROP_H_
