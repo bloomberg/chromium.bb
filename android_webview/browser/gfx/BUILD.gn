@@ -17,6 +17,8 @@ source_set("gfx") {
     "aw_picture.h",
     "aw_render_thread_context_provider.cc",
     "aw_render_thread_context_provider.h",
+    "aw_vulkan_context_provider.cc",
+    "aw_vulkan_context_provider.h",
     "browser_view_renderer.cc",
     "browser_view_renderer.h",
     "browser_view_renderer_client.h",

@@ -13,6 +13,10 @@
 
 #include <vulkan/vulkan.h>
 
+#if defined(OS_ANDROID)
+#include <vulkan/vulkan_android.h>
+#endif
+
 #include "base/native_library.h"
 #include "build/build_config.h"
 #include "gpu/vulkan/vulkan_export.h"
