@@ -5418,7 +5418,6 @@ crbug.com/824539 [ Android ] fast/text/international/bidi-LDB-2-HTML.html [ Fail
 crbug.com/824539 [ Android ] fast/text/international/bidi-LDB-2-formatting-characters.html [ Failure ]
 crbug.com/824539 [ Android ] fast/text/international/bidi-neutral-directionality-paragraph-start.html [ Failure ]
 crbug.com/824539 [ Android ] fast/writing-mode/english-lr-text.html [ Failure ]
-crbug.com/824539 [ Android ] fast/xmlhttprequest/xmlhttprequest-missing-file-exception.html [ Failure ]
 crbug.com/824539 [ Android ] http/tests/plugins/navigator-plugins-in-cross-origin-frame.html [ Failure ]
 crbug.com/824539 [ Android ] http/tests/security/local-JavaScript-from-remote.html [ Crash Failure ]
 crbug.com/824539 [ Android ] virtual/outofblink-cors/http/tests/security/local-JavaScript-from-remote.html [ Crash Failure ]
