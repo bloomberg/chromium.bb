@@ -5,6 +5,10 @@
 #ifndef GPU_COMMAND_BUFFER_CLIENT_WEBGPU_IMPLEMENTATION_H_
 #define GPU_COMMAND_BUFFER_CLIENT_WEBGPU_IMPLEMENTATION_H_
 
+#include <dawn/dawn.h>
+#include <dawn_wire/WireClient.h>
+
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -15,12 +19,17 @@
 #include "gpu/command_buffer/client/webgpu_cmd_helper.h"
 #include "gpu/command_buffer/client/webgpu_export.h"
 #include "gpu/command_buffer/client/webgpu_interface.h"
+#include "ui/gl/buildflags.h"
 
 namespace gpu {
 namespace webgpu {
 
-class WEBGPU_EXPORT WebGPUImplementation final : public WebGPUInterface,
-                                                 public ImplementationBase {
+class WEBGPU_EXPORT WebGPUImplementation final
+    : public dawn_wire::CommandSerializer,
+      public WebGPUInterface,
+      public ImplementationBase {
+  friend class WireClientCommandSerializer;
+
  public:
   explicit WebGPUImplementation(WebGPUCmdHelper* helper,
                                 TransferBufferInterface* transfer_buffer,
@@ -86,11 +95,26 @@ class WEBGPU_EXPORT WebGPUImplementation final : public WebGPUInterface,
                              const gfx::PresentationFeedback& feedback) final;
   void OnGpuControlReturnData(base::span<const uint8_t> data) final;
 
+  // dawn_wire::CommandSerializer implementation
+  void* GetCmdSpace(size_t size) final;
+  bool Flush() final;
+
  private:
   const char* GetLogPrefix() const { return "webgpu"; }
 
   WebGPUCmdHelper* helper_;
+#if BUILDFLAG(USE_DAWN)
+  std::unique_ptr<dawn_wire::WireClient> wire_client_;
+#endif
+  DawnProcTable procs_ = {};
+
+  uint32_t c2s_buffer_size_ = 0;
+  uint32_t c2s_put_offset_ = 0;
+  ScopedTransferBufferPtr c2s_buffer_;
+
   LogSettings log_settings_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebGPUImplementation);
 };
 
 }  // namespace webgpu

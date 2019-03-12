@@ -24,14 +24,32 @@ WebGPUImplementation::WebGPUImplementation(
     TransferBufferInterface* transfer_buffer,
     GpuControl* gpu_control)
     : ImplementationBase(helper, transfer_buffer, gpu_control),
-      helper_(helper) {}
+      helper_(helper),
+#if BUILDFLAG(USE_DAWN)
+      wire_client_(new dawn_wire::WireClient(this)),
+      procs_(wire_client_->GetProcs()),
+#endif
+      c2s_buffer_(helper, transfer_buffer) {
+}
 
 WebGPUImplementation::~WebGPUImplementation() {}
 
 gpu::ContextResult WebGPUImplementation::Initialize(
     const SharedMemoryLimits& limits) {
   TRACE_EVENT0("gpu", "WebGPUImplementation::Initialize");
-  return ImplementationBase::Initialize(limits);
+  auto result = ImplementationBase::Initialize(limits);
+  if (result != gpu::ContextResult::kSuccess) {
+    return result;
+  }
+
+  // TODO(enga): Keep track of how much command space the application is using
+  // and adjust c2s_buffer_size_ accordingly.
+  c2s_buffer_size_ = limits.start_transfer_buffer_size;
+  DCHECK_GT(c2s_buffer_size_, 0u);
+  DCHECK(
+      base::CheckAdd(c2s_buffer_size_, c2s_buffer_size_).IsValid<uint32_t>());
+
+  return gpu::ContextResult::kSuccess;
 }
 
 // ContextSupport implementation.
@@ -149,8 +167,10 @@ void WebGPUImplementation::OnSwapBufferPresented(
 }
 void WebGPUImplementation::OnGpuControlReturnData(
     base::span<const uint8_t> data) {
-  // TODO: Handle return commands
-  NOTIMPLEMENTED();
+#if BUILDFLAG(USE_DAWN)
+  wire_client_->HandleCommands(reinterpret_cast<const char*>(data.data()),
+                               data.size());
+#endif
 }
 
 void WebGPUImplementation::Dummy() {
@@ -158,6 +178,58 @@ void WebGPUImplementation::Dummy() {
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] wgDummy()");
   helper_->Dummy();
   helper_->Flush();
+}
+
+void* WebGPUImplementation::GetCmdSpace(size_t size) {
+  // The buffer size must be initialized before any commands are serialized.
+  if (c2s_buffer_size_ == 0u) {
+    NOTREACHED();
+    return nullptr;
+  }
+
+  // TODO(enga): Handle chunking commands if size > c2s_buffer_size_.
+  if (size > c2s_buffer_size_) {
+    NOTREACHED();
+    return nullptr;
+  }
+
+  // This should never be more than 2 * c2s_buffer_size_ which is checked in
+  // WebGPUImplementation::Initialize.
+  DCHECK_LE(c2s_put_offset_, c2s_buffer_size_);
+  DCHECK_LE(size, c2s_buffer_size_);
+  uint32_t next_offset = c2s_put_offset_ + static_cast<uint32_t>(size);
+
+  // If the buffer does not have enough space, or if the buffer is not
+  // initialized, flush and reset the command stream.
+  if (next_offset > c2s_buffer_.size() || !c2s_buffer_.valid()) {
+    Flush();
+
+    c2s_buffer_.Reset(c2s_buffer_size_);
+    c2s_put_offset_ = 0;
+    next_offset = size;
+
+    if (size > c2s_buffer_.size() || !c2s_buffer_.valid()) {
+      // TODO(enga): Handle OOM.
+      return nullptr;
+    }
+  }
+
+  DCHECK(c2s_buffer_.valid());
+  uint8_t* ptr = static_cast<uint8_t*>(c2s_buffer_.address());
+  ptr += c2s_put_offset_;
+
+  c2s_put_offset_ = next_offset;
+  return ptr;
+}
+
+bool WebGPUImplementation::Flush() {
+  if (c2s_buffer_.valid()) {
+    helper_->DawnCommands(c2s_buffer_.shm_id(), c2s_buffer_.offset(),
+                          c2s_put_offset_);
+    c2s_put_offset_ = 0;
+    c2s_buffer_.Release();
+  }
+  return true;
 }
 
 }  // namespace webgpu
