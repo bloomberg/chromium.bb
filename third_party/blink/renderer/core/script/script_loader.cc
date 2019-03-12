@@ -198,6 +198,8 @@ ShouldFireErrorEvent ParseAndRegisterImportMap(ScriptElementBase& element) {
     return ShouldFireErrorEvent::kShouldFire;
   }
 
+  UseCounter::Count(*context_document, WebFeature::kImportMap);
+
   KURL base_url = element_document.BaseURL();
   ImportMap* import_map = ImportMap::Create(
       *modulator, element.TextFromChildren(), base_url, element_document);
