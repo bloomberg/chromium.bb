@@ -59,6 +59,7 @@ class NET_EXPORT CanonicalCookie {
     EXCLUDE_NOT_ON_PATH,
     EXCLUDE_SAMESITE_STRICT,
     EXCLUDE_SAMESITE_LAX,
+    EXCLUDE_USER_PREFERENCES,
 
     // Statuses specific to setting cookies
     EXCLUDE_FAILURE_TO_STORE,
@@ -66,8 +67,7 @@ class NET_EXPORT CanonicalCookie {
     EXCLUDE_OVERWRITE_SECURE,
     EXCLUDE_OVERWRITE_HTTP_ONLY,
     EXCLUDE_INVALID_DOMAIN,
-    EXCLUDE_INVALID_PREFIX,
-    EXCLUDE_THIRD_PARTY_POLICY
+    EXCLUDE_INVALID_PREFIX
   };
 
   // Creates a new |CanonicalCookie| from the |cookie_line| and the

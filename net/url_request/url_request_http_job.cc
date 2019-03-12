@@ -714,17 +714,29 @@ void URLRequestHttpJob::AddCookieHeaderAndStart() {
 void URLRequestHttpJob::SetCookieHeaderAndStart(
     const CookieList& cookie_list,
     const CookieStatusList& excluded_list) {
-  if (!cookie_list.empty() && CanGetCookies(cookie_list)) {
-    LogCookieUMA(cookie_list, *request_, request_info_);
+  if (!cookie_list.empty()) {
+    // |excluded_cookies| isn't currently being used, but it will be as part of
+    // crbug.com/856777
+    CookieStatusList excluded_cookies = excluded_list;
+    if (!CanGetCookies(cookie_list)) {
+      for (auto cookie : cookie_list) {
+        excluded_cookies.push_back(
+            {cookie,
+             CanonicalCookie::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES});
+      }
+    } else {
+      LogCookieUMA(cookie_list, *request_, request_info_);
 
-    std::string cookie_line = CanonicalCookie::BuildCookieLine(cookie_list);
-    UMA_HISTOGRAM_COUNTS_10000("Cookie.HeaderLength", cookie_line.length());
-    request_info_.extra_headers.SetHeader(HttpRequestHeaders::kCookie,
-                                          cookie_line);
+      std::string cookie_line = CanonicalCookie::BuildCookieLine(cookie_list);
+      UMA_HISTOGRAM_COUNTS_10000("Cookie.HeaderLength", cookie_line.length());
+      request_info_.extra_headers.SetHeader(HttpRequestHeaders::kCookie,
+                                            cookie_line);
 
-    // Disable privacy mode as we are sending cookies anyway.
-    request_info_.privacy_mode = PRIVACY_MODE_DISABLED;
+      // Disable privacy mode as we are sending cookies anyway.
+      request_info_.privacy_mode = PRIVACY_MODE_DISABLED;
+    }
   }
+
   StartTransaction();
 }
 
@@ -790,7 +802,7 @@ void URLRequestHttpJob::SaveCookiesAndNotifyHeadersComplete(int result) {
     if (!CanSetCookie(*cookie, &options)) {
       OnSetCookieResult(
           std::move(cookie_string),
-          CanonicalCookie::CookieInclusionStatus::EXCLUDE_THIRD_PARTY_POLICY);
+          CanonicalCookie::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES);
       continue;
     }
 
