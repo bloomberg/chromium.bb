@@ -2952,6 +2952,7 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
       'nocturne',
       'nyan_big',
       'peach_pit',
+      'peppy',
       'reef',
       'scarlet',
       'terra',
@@ -2961,8 +2962,6 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
   ])
 
   _chrome_pfq_experimental_boards = frozenset([
-      # crbug/938664 : Being migrated to Skylab.
-      'peppy',
   ])
 
   _chrome_pfq_skylab_boards = frozenset([
