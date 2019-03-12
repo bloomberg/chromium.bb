@@ -162,6 +162,8 @@ Polymer({
         return 'cr:computer';
       case management.DeviceReportingType.LOGS:
         return 'management:report';
+      case management.DeviceReportingType.PRINT:
+        return 'cr:print';
       default:
         return 'cr:computer';
     }
